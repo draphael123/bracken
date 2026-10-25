@@ -55,3 +55,5 @@ function addIslandPostsBase(L, id, T) {
   }
   return L;
 }
+/* (claude/palisadewood) THE PALISADE WOOD: its scaffold tiers, walkways, decks and the half-built gatehouse stand on timber posts (greybox; the art lane draws them) */
+POST_LEVELS.add('palisadewood');

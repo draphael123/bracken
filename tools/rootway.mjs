@@ -15,7 +15,7 @@ import { readFileSync } from 'node:fs';
 const TS = 16;
 let bad = 0; const ok = (c, m) => { console.log((c ? '  ok   ' : '  FAIL ') + m); if (!c) bad++; };
 const lv = LEVELS.find(l => l.id === 'rootway'), L = lv && lv.build();
-ok(!!lv && lv.needs === 'spore' && LEVELS.find(l => l.id === 'kings').needs === 'rootway', 'THE ROOTWAY follows SPOREWOOD and KINGSWOOD follows it');
+ok(!!lv && lv.needs === 'spore' && LEVELS.find(l => l.id === 'palisadewood').needs === 'rootway' && LEVELS.find(l => l.id === 'kings').needs === 'palisadewood', 'THE ROOTWAY follows SPOREWOOD, THE PALISADE WOOD follows it and KINGSWOOD follows that (BATCH120)');
 const main = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
 ok(/id: 'rootway', kind: 'level'/.test(main), 'a map node on the wood sheet');
 const lq = readFileSync(new URL('./level-quality.mjs', import.meta.url), 'utf8'), onf = readFileSync(new URL('./one-new-foe.mjs', import.meta.url), 'utf8');

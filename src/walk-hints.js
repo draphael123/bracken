@@ -57,7 +57,7 @@ function glassSea(BK, P, mem) {
 }
 /* UNDERLEAF (claude/underleaf2, src/hush-hands.js walkHint): the one required throw - a pot from the school roof's chimney stack, lobbed (UP) at the
    bell-cote's nail, and the bone key that falls */
-const underleaf = (BK, P) => (BK.hushHands && BK.hushHands() ? BK.hushHands().walkHint(P) : null);
+const underleaf = (BK, P) => (BK.potions && BK.potions() ? BK.potions().walkHint(P) : null);   /* (claude/underleaf3) UNDERLEAF 3: the next jar the route needs - fetched, carried to its throw spot, tossed DOWN (src/potion-hands.js walkHint) */
 /* THE MONASTERY (claude/monastery2, review: "the walker cannot drive vents or wheels, so 88% of the level is unmeasured"): what a player does with
    what the monks built. AN INCENSE BRAZIER the route rises from (a route node over its column, its smoke's height above it): stand in its column and
    wait for its breath - or, cold or spent, strike it (STRIKE THE CENSER). A PRAYER WHEEL whose OTHER stair the route walks: strike it. A BELL whose
@@ -178,4 +178,13 @@ function hornetsNest(BK, P) {
 }
 /* SPOREWOOD 2 (claude/sporewood2): the level's own hands say it (src/sporewood-hands.js walkHint) - a dark bud's lantern cap, an unstruck seed cap, a web across the way */
 const sporewood = (BK, P, mem) => { const S = BK.sporewood ? BK.sporewood() : null; return S && S.on() && S.walkHint ? S.walkHint(P, mem && mem.route) : null; };
-export const WALK_HINTS = { hornetsnest: hornetsNest, spore: sporewood, stockade, glasssea: glassSea, underleaf, spire, undercrown: slabHint, flotilla, wood: lumberTrail, marsh: marshBoom, fenroad: fenRoad };
+/* THE BURNING VILLAGE (claude/burning3): the barn roof is the other way past THE BARN DOOR (a burning gate) - a wall of fire stands in front of its hatch, put out twelve seconds by striking the water trough
+   beside it (a player reads the sign at 378): stand west of the trough on the roof and strike it, then the walker runs through to the hatch */
+function burning(BK, P) {
+  if (!P || P.dead || !BK.props || !BK.fires) return null;
+  if (P.x < 366 * TS || P.x > 389 * TS || Math.abs(P.y - 10 * TS) > 20) return null;
+  if (!BK.fires().some(f => f.barrier && !f.heap && !(f.delay > 0))) return null;
+  const tr = BK.props().find(q => q.t === 'vtrough' && Math.abs(q.x - (381 * TS + 8)) < 8 && q.water >= 1); if (!tr) return null;
+  return { x: 379 * TS + 8, y: 10 * TS, key: 'atk', face: 1, r: 14 };
+}
+export const WALK_HINTS = { burning,  hornetsnest: hornetsNest, spore: sporewood, stockade, glasssea: glassSea, underleaf, spire, undercrown: slabHint, flotilla, wood: lumberTrail, marsh: marshBoom, fenroad: fenRoad };

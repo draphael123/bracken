@@ -7,6 +7,7 @@ export const MAP_BLURB = {
   wood: 'a logging trail to the hive',
   hornetsnest: 'the paper nest in the great pine',
   rootway: "the way up out of the fungus",
+  palisadewood: 'an autumn wood being walled off',
   fenroad: 'the boardwalk to the stockade',
   fair: 'abandoned mid-festival, at sundown',
   waymeet: 'where the roads meet',

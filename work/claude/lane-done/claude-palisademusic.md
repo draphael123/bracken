@@ -1,0 +1,1 @@
+palisademusic: THE PALISADE WOOD plays "Zozy's Woods" (AiTechEye, CC-BY 4.0); THE BATTERING BEAST plays "The Tread of War" (Jonathan Shaw, CC-BY 3.0). Candidates: scratch/palisade-music-candidates.md. Checks: boss-music, audio-assets, ship-fixes, palisadewood, level-quality (music row lifted) green; no browser check run. Audition by ear before release.

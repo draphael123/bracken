@@ -142,7 +142,7 @@ export const THREAT = { crackfloor: 0, crackpillar: 0, cracknest: 0, crackslab: 
   /* THE SANDWORM (claude/desertfoes, src/desert-foes2.js): the sand goblin's buried strike with the Dune Worm's told ripple and an open beat after it: a 2.5 */
   sandworm: 2.5,
   waterthief: 3, cisternqueen: 6, gangleader: 5, qwindlass: 0, djwindlass: 0, djinn: 6, skinwell: 0, mudwall: 0, oilfire: 0, windlass: 0, cistern: 0,
-  gsmirror: 0, gscampfire: 0, colmirror: 0, gsheap: 0, gscrack: 0, skitter: 0.6, colossus: 6, trophyhunter: 2.5, huntmaster: 6, hoist: 0,   /* THE ROOTWAY (claude/rootway): the trophy-hunter rides a hoist down and lunges (a runner, as the kite-rider); THE GOBLIN HUNTMASTER a boss */   /* THE GLASS SEA (claude/glasssea): its mirrors, fires, sand heaps and cracks are things you work; the skitter is a swarm's small biter; THE GLASS COLOSSUS */
+  gsmirror: 0, gscampfire: 0, colmirror: 0, gsheap: 0, gscrack: 0, skitter: 0.6, colossus: 6, trophyhunter: 2.5, huntmaster: 6, hoist: 0, scaffoldprop: 0, towerprop: 0, crewprop: 0, stakeprop: 0, batteringbeast: 6,   /* THE PALISADE WOOD (claude/palisadewood): its props are machines (worth 0); THE BATTERING BEAST a boss */   /* THE ROOTWAY (claude/rootway): the trophy-hunter rides a hoist down and lunges (a runner, as the kite-rider); THE GOBLIN HUNTMASTER a boss */   /* THE GLASS SEA (claude/glasssea): its mirrors, fires, sand heaps and cracks are things you work; the skitter is a swarm's small biter; THE GLASS COLOSSUS */
   mcpoints: 0, mccart: 0, mcramp: 0, mccrusher: 0, mcgate: 0, mcrock: 0, mcbeam: 0, mcgap: 0, mcgobcart: 0, drillpoints: 0, oretip: 0, greatdrill: 6,   /* THE DEEP RAILS (claude/minecart): its points, crushers, gates, rockfalls, beams, boost gaps and goblin carts are things you ride or work; THE GREAT DRILL */   /* THE GLASS SEA (claude/glasssea): its mirrors, fires, sand heaps and cracks are things you work; the skitter is a swarm's small biter; THE GLASS COLOSSUS */
   sconce: 0, nestplug: 0, greatlamp: 0, fountain: 0,   /* THE UNDERWELL (claude/underwell): its wall torches, brood nests, great lamp and dry fountain are things you work, not foes */
   /* THE RED GORGE (src/red-gorge.js, claude/redgorge): the CLIFF RAPTOR is the vulture's dive (a 2) over a bridge with a flood under it: a 2.5. THE GREAT RED CRAB is a
@@ -181,7 +181,7 @@ export const THREAT = { crackfloor: 0, crackpillar: 0, cracknest: 0, crackslab: 
   gustframe: 0,
   /* UNDERLEAF 2 (claude/underleaf2, src/hush-hands.js): THE BELLMAN rings the street awake more than he fights (a weak handbell swing): a 1.5. The pots, the
      streets' gates, alarms and caches, the toll bell, the key's nail and the Grandmother's bell-pulls and candles are things you work, not foes */
-  bellman: 1.5, npot: 0, streetgate: 0, alarm: 0, darkcache: 0, tollbell: 0, keynail: 0, granpull: 0, grancandle: 0,
+  bellman: 1.5, jarshelf: 0, brewpot: 0, vinebed: 0, thornhedge: 0, floatwell: 0, npot: 0, streetgate: 0, alarm: 0, darkcache: 0, tollbell: 0, keynail: 0, granpull: 0, grancandle: 0,
 };
 
 // THE INDEX, also in one place: what a level CONTAINS, not how a player does. Deliberately crude and

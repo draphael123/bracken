@@ -24,7 +24,7 @@ const lv = LEVELS.find(l => l.id === 'kings'), L = lv.build();
 const src = f => readFileSync(new URL('../' + f, import.meta.url), 'utf8');
 
 // ---- THE ROAD ----
-ok(lv.needs === 'rootway' && LEVELS.find(l => l.id === 'underleaf').needs === 'kings', 'Rootway > KINGSWOOD > Underleaf');
+ok(lv.needs === 'palisadewood' && LEVELS.find(l => l.id === 'palisadewood').needs === 'rootway' && LEVELS.find(l => l.id === 'scree').needs === 'kings' && LEVELS.find(l => l.id === 'underleaf').needs === 'scree', 'Rootway > PALISADE WOOD > KINGSWOOD > Scree > Underleaf (claude/underorder)');   /* (BATCH120: the Palisade Wood is on the road before Kingswood, claude/palisadewood) */
 ok(lv.rule === 'THE COURT HOLDS THE ROAD, AND WHAT HANGS OVER IT CAN BE DROPPED ON IT.', 'the rule line (true to the code: the court holds the road with checkpoints and a procession; ropes and plates drop what hangs)');
 ok(/GATE = \[[^\]]*'kings'/.test(src('tools/level-quality.mjs')), 'gated by level-quality');
 ok(L.kwood === true && L.W === KINGSWOOD.W, 'the level is src/kingswood.js (L.kwood)');

@@ -56,7 +56,7 @@ export const TURN_WORD = {
   chief: (e, fromX) => behind(e, fromX) ? TURN.WARDED : TURN.ROUND,
   frog: 'IN THE AIR',   /* (claude/frogking2) no hide on his pad: only his leap turns a blow (0.4x, B15) */
   windcaller: e => e.mode === 'blink' || e.mode === 'appear' || e.mode === 'gone' ? TURN.NOT_THERE : e.mode === 'step' && !(e.ward > 0) ? 'HE STEPS AWAY' : TURN.WARDED,   // (claude/windcaller3) a duelist on his ledge: his ward after a fall, his step away
-  grandmother: e => (e.ward > 0 ? TURN.WARDED : 'SHE HEARD YOU'),           // (claude/underleaf2) B14 FROM BEHIND: her front hears the blade and turns it; her ward after an opening
+  grandmother: e => (e.gm3 || e.ward > 0 ? TURN.WARDED : 'SHE HEARD YOU'),   /* (claude/underleaf3: the Grandmother 3 is warded by her brood or her ward after an opening) */           // (claude/underleaf2) B14 FROM BEHIND: her front hears the blade and turns it; her ward after an opening
   winchmaster: e => (e.ward > 0 && !e.armour ? TURN.WARDED : 'ORE: THROW IT'),   // (claude/winch5) his ORE ARMOUR: a rock off his skip breaks it; his ward after a stagger
   greathound: TURN.ROUND,                                   // (claude/hound) his jaws turn part of a blow into his face: go round, or come down on him
   queen: 'THE SWARM',                                       // her drones close over her
@@ -73,6 +73,7 @@ export const TURN_WORD = {
   bogtroll: e => (e.ward > 0 ? TURN.WARDED : 'PEAT HIDE'),   // (claude/fenroad) his peat hide takes most of a blow (B15: x0.4); stuck in a rotten section he takes it double
   hornetqueen: e => (e.ward > 0 ? TURN.WARDED : e.cloak > 0 ? 'CLOAKED' : 'HARD SHELL'),   // (claude/hornetsnest) her shell turns half a cut (B15 x0.5), her swarm cloak more (x0.4); a plunge from above lands whole; her openings x1.5-x2
   shrieksisters: e => (e.ward > 0 ? TURN.WARDED : 'ON THE WING'),   // (claude/rookery) on the wing a sister takes most of a cut (B15: x0.4); low, whole; stunned in the rubble x2
+  batteringbeast: e => (e.ward > 0 ? TURN.WARDED : 'ARMOURED'),   // (claude/palisadewood) his plates take most of a cut (B15: x0.4); a plunge on his back, a scaffold's wreck, a wall, his harness cut open him
   oldtusker: e => (e.ward > 0 ? TURN.WARDED : 'THICK HIDE'),   // (claude/oldtusker) his hide takes most of a cut (B15: x0.4); a plunge on his back, a ram, a felled pine open him
   tombking: e => (e.ward > 0 ? TURN.WARDED : 'SEALED'),   // (claude/pyramidboss) his lid takes most of a blow until a switch or a trap tips him (B15: x0.4, never nothing)
   scarabmother: e => (e.ward > 0 ? TURN.WARDED : e.mode === 'burrowed' ? 'UNDER THE SAND' : 'HER SHELL'),   // (claude/sealedpyramid) her shell takes most of a blow until a trap opens her (B15: x0.45, never nothing)

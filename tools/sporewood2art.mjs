@@ -36,7 +36,7 @@ try {
   for (const [sk, v] of Object.entries(o.sheets)) ok(v.have && v.frames === v.base && v.left === v.base && v.white, sk + ' has its own sheet with the goblin\'s ' + v.base + ' frames, mirrored and white-flash');
   ok(o.brood.have && o.brood.frames === o.brood.base, 'her brood (puffbrood) has its own ' + o.brood.base + ' frames');
   ok(o.icon.w >= 40 && o.icon.h >= 40, 'the Mother Cap\'s bestiary portrait is repainted (' + o.icon.w + 'x' + o.icon.h + ')');
-  { const src = (await import('node:fs')).readFileSync(new URL('./corpses.mjs', import.meta.url), 'utf8'); ok(/'spore']/.test(src), 'tools/corpses.mjs kills the wood\'s reskins and reads their bodies back (CORPSES_ONLY=spore node tools/corpses.mjs)'); }
+  { const src = (await import('node:fs')).readFileSync(new URL('./corpses.mjs', import.meta.url), 'utf8'); ok(/'spore'(,|])/.test(src), 'tools/corpses.mjs kills the wood\'s reskins and reads their bodies back (CORPSES_ONLY=spore node tools/corpses.mjs)'); }
   const need = ['idle', 'lashTell', 'lash', 'crushTell', 'crush', 'bloomTell', 'bloom', 'broodTell', 'brood', 'witherTell', 'wither', 'open', 'ward', 'phaseRise', 'wake', 'dead'];
   ok(need.every(n => o.poses.includes(n)), 'every windup and release has its own frame set: ' + need.join(' '));
   const idle = o.sig.idle[0], all = new Map(); let dup = [];

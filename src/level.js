@@ -13,7 +13,8 @@ import { buildWellTown } from './well-town.js';   /* THE WELL TOWN (claude/wellt
 import { buildRedGorge } from './red-gorge.js'; import { buildSkyRoad } from './sky-road.js'; import { buildGlassSea } from './glass-sea.js'; import { buildKsar } from './ksar.js'; import { buildTowpath } from './towpath.js';   /* THE TOWPATH (claude/towpath, the greybox): the bridge level WAYMEET -> THE TOWPATH -> THE FOG CANAL; its boss is THE FOG KNIGHT (src/fog-knight.js) */ import { buildLitChurch, RULE as CHURCH_RULE } from './lit-church.js';   /* THE BANDIT KSAR (claude/ksar, the greybox): the main road past THE GLASS SEA; its boss is THE HAWK-MISTRESS */   /* THE GLASS SEA (claude/glasssea, the greybox): desert arc level 4, past THE RED GORGE; its boss is THE GLASS COLOSSUS */   /* THE SKY ROAD (claude/skyroad, the greybox; docs/concepts/sky-road.md): after GALE MOOR on the main road; its boss is THE ROC (src/roc-eyrie.js) */   /* THE RED GORGE (claude/redgorge, the greybox; docs/concepts/red-gorge.md): desert arc level 3, after THE WELL TOWN; its boss is THE RAPTOR MATRIARCH (src/raptor-matriarch.js, claude/redgorge2 - THE GREAT RED CRAB, src/gorge-crab.js, is benched) */ import { buildBuriedCity } from './buried-city.js'; import { buildSealedPyramid, RULE as PYRAMID_RULE } from './sealed-pyramid.js';   /* THE SEALED PYRAMID (claude/sealedpyramid, the greybox): the main road past THE BURIED CITY; its boss is THE SCARAB MOTHER */   /* THE BURIED CITY (claude/buriedcity, the greybox): the main road past THE BANDIT KSAR; its boss is THE HOURGLASS KING */
 import { buildRookery, RK_RULE } from './rookery.js';   /* THE ROOKERY (claude/rookery, the OPUS GREYBOX): between GALE MOOR and THE SKY ROAD - src/rookery-hands.js its rule, src/shriek-sisters.js its boss */
 import { buildLumberTrail } from './lumber-trail.js';   /* THE LUMBER TRAIL (claude/lumbertrail, the OPUS greybox; scratch/brief-first2.md sec.1): BRACKEN WOOD reworked - level id 'wood', its boss THE HORNET QUEEN */
-import { buildRootway } from './rootway.js'; import { buildKingswood } from './kingswood.js'; import { buildSporewood } from './sporewood.js';   /* SPOREWOOD 2, THE MOTHER'S KNOT (claude/sporewood2): the level laid by hand, src/sporewood-hands.js its rule, src/mother-cap2.js its boss */   /* KINGSWOOD 2, THE KING'S HUNTING WOOD (claude/kingswood2): the level laid by hand, src/kingswood-hands.js its rule */   /* THE ROOTWAY (claude/rootway, the greybox; .claude/briefs/brief-rootway.md): the bridge between SPOREWOOD and KINGSWOOD; its boss is THE GOBLIN HUNTMASTER (src/huntmaster.js) */
+import { buildPalisadeWood, PW_RULE } from './palisade-wood.js';   /* THE PALISADE WOOD (claude/palisadewood, the greybox): between THE ROOTWAY and KINGSWOOD - src/palisade-hands.js its rule, src/battering-beast.js its boss */
+import { buildUnderleaf3, UL3_RULE } from './underleaf3.js'; import { buildRootway } from './rootway.js'; import { buildKingswood } from './kingswood.js'; import { buildSporewood } from './sporewood.js';   /* SPOREWOOD 2, THE MOTHER'S KNOT (claude/sporewood2): the level laid by hand, src/sporewood-hands.js its rule, src/mother-cap2.js its boss */   /* KINGSWOOD 2, THE KING'S HUNTING WOOD (claude/kingswood2): the level laid by hand, src/kingswood-hands.js its rule */   /* THE ROOTWAY (claude/rootway, the greybox; .claude/briefs/brief-rootway.md): the bridge between SPOREWOOD and KINGSWOOD; its boss is THE GOBLIN HUNTMASTER (src/huntmaster.js) */
 import { buildMinecart } from './minecart.js';   /* THE DEEP RAILS (claude/minecart, the greybox): the side road off the Ore Road; its boss is THE GREAT DRILL (src/great-drill.js) */
 import { buildUnderwell } from './underwell.js';   /* THE UNDERWELL (claude/underwell, the greybox; docs/concepts/the-underwell.md): desert arc, between THE WELL TOWN and THE RED GORGE; its boss is THE CISTERN QUEEN */
 import { buildMaskwrightTheatre } from './maskwright-theatre.js';   /* THE MASKWRIGHT'S THEATRE (docs/briefs/maskwright-theatre.md): between WAYMEET and THE HARVEST FAIR; its machinery is src/theatre-rig.js */
@@ -1814,6 +1815,12 @@ function hangingVillage() {
   ent('sprig', 50, 107, { face: -1 }); ent('spider', 76, 100, { drop: 110 }); ent('squirrel', 88, 107, { face: -1 }); ent('shield', 94, 107, { face: -1 });
   plat(24, 104, 3); plat(38, 102, 3); ent('mover', 68, 103, { len: 2, range: 6, speed: 40 }); ent('wasp', 45, 101); coins([8, 105], [25, 103], [39, 101], [66, 105], [72, 100], [84, 105], [98, 105]);
   ent('check', 98, 107);
+  /* CUT IT AND RIDE IT (claude/hanging3, src/hanging-ropes.js): THE VERB IS TAUGHT HERE, where it costs nothing. A cargo net hangs from the first
+     bough on a rope run to a red-and-gold knot; its landing is drawn on the road in gold before you touch it. The shield comes down the road to
+     you under it: cut the knot as he passes and the net takes him. Miss, and you fight him as before - and the net lies there as a step. */
+  const ropes = [];
+  ropes.push({ kind: 'net', id: 'net-roots', x: 90, w: 2, hang: 104, land: 107, ring: [91, 98], knot: [86, 107] });
+  ent('sign', 83, 107, { text: 'A RED AND GOLD KNOT IS A ROPE YOU CAN CUT. CUT THIS ONE AS HE COMES UNDER THE NET.' });
   // ---- THE WEB HOLLOW: under the roots. Everything down here is webbed, and something made it. ----
   ent('doorway', 66, 107, { id: 'hollow-out', to: 'hollow-in', kind: 'goblin' });
   ent('doorway', 74, 107, { id: 'hollow-far', to: 'hollow-back', kind: 'goblin' });
@@ -1848,9 +1855,12 @@ function hangingVillage() {
   hole(66, 71, tops.t1); shelf(66, tops.t1, 6); vine(68, tops.t1, tops.t0 - 1); // the snapping branch: fall and you land on the roots, and a vine climbs back up through the gap
   hole(50, 55, tops.t1); movers.push({ kind: 'swing', px: 52 * TS + 8, py: (tops.t1 - 9) * TS, arm: 76, x: 0, y: 0, w: 32, h: 8, period: 3.0, phase: 0.5, vine: true }); vine(52, tops.t1, tops.t0 - 1); // a vine swings over a second gap; the vine below it is the way back up
   pit(78, 79, tops.t1); ent('sign', 82, 93, { text: 'THE BOUGH IS ROTTEN IN PLACES, WITH SPIKES BELOW. VINES CLIMB LIKE ROPES.' });
-  hole(28, 33, tops.t1); ent('mover', 28, tops.t1, { len: 2, range: 4, speed: 44 }); ent('wasp', 30, 90); // a second gap: a bough that slides, and a wasp over it
+  hole(28, 33, tops.t1); ent('wasp', 20, 89);   /* (claude/hanging3) THE SWING BRIDGE: the second gap had a bough that slid across it. Now a hanging bridge stands
+     tied up on its east lip - cut the tie and it swings down across (the only way on to the hoist: the verb's first REQUIRED use, under the archer's eye) */
+  ropes.push({ kind: 'bridge', id: 'bridge-rope', span: [28, 33, tops.t1], hinge: 1, knot: [36, 93] });
+  ent('sign', 41, 93, { text: 'THE BRIDGE IS TIED UP. CUT ITS KNOT AND IT SWINGS DOWN ACROSS THE GAP.' });
   ent('sign', 74, 93, { text: 'THE BRANCH SNAPS UNDER A STANDING WEIGHT. KEEP MOVING. IT GROWS BACK IN A BREATH OR TWO.' });
-  ent('spider', 84, 86, { drop: 100 }); ent('spider', 58, 86, { drop: 100 }); ent('spider', 36, 86, { drop: 100 });
+  ent('spider', 84, 86, { drop: 100 }); ent('spider', 58, 86, { drop: 100 }); ent('spider', 46, 86, { drop: 100 });
   ent('sprig', 46, 93, { face: 1 }); ent('thorn', 38, 93, { face: 1 }); plat(38, 90, 3); ent('archer', 39, 89, { face: 1 });   /* the archer's nest stands east of the rope-makers' store now: the hoist is taught with nothing shooting at you */
   ent('door', 44, 93, { at: 44 }); ent('folk', 47, 93, { door: 44 });
   coins([92, 91], [80, 91], [62, 91], [54, 91], [40, 91], [39, 88], [12, 91]);
@@ -1873,6 +1883,7 @@ function hangingVillage() {
   ent('door', 32, 79, { kind: 'cottage', at: 32 }); ent('folk', 35, 79, { door: 32, alt: true }); ent('deco', 40, 79, { kind: 'well' });
   ent('door', 50, 79, { at: 50 }); ent('folk', 47, 79, { door: 50 }); ent('deco', 56, 79, { kind: 'fence', v: 0 }); ent('door', 64, 79, { at: 64 }); ent('folk', 67, 79, { door: 64 });
   ent('squirrel', 74, 79, { face: -1 }); ent('snuffer', 62, 79, { face: -1 }); ent('shield', 92, 79, { face: -1 });
+  ropes.push({ kind: 'net', id: 'net-market', x: 61, w: 2, hang: 76, land: 79, ring: [62, 70], knot: [58, 79] });   /* (claude/hanging3) THE NET, TESTED: the snuffer walks under it to put out the street lamp - no sign this time */
   plat(58, 76, 3); failing(78, 75, 3); coins([59, 75], [79, 74], [18, 77], [38, 77], [70, 77], [88, 77], [96, 77]);
   movers.push({ kind: 'swing', px: 44 * TS, py: 70 * TS, arm: 70, x: 0, y: 0, w: 32, h: 8, period: 3.0, phase: 0 }); plat(40, 73, 2); plat(48, 72, 2); ent('spit', 49, 71, { face: -1 }); coins([44, 71]); // a rope swing over the well to a spitter's ledge
   ent('check', 96, 79); ent('check', 43, 79);   /* mid-market: the ropewalk hoist to the market's east end was 103 walked tiles (B6 is a hundred) */
@@ -1887,7 +1898,7 @@ function hangingVillage() {
   ent('sign', 93, 65, { text: 'THE CRAG WIND COMES IN GUSTS. WAIT FOR THE LULL OR RIDE IT. THE FLAGS SHOW IT.' });
   gusts.push({ x0: 20 * TS, x1: 92 * TS, y0: 56 * TS, y1: 66 * TS, dir: -1, period: 5, on: 1.6, phase: 0 });
   gusts.push({ x0: 20 * TS, x1: 90 * TS, y0: 12 * TS, y1: 20 * TS, dir: 1, period: 9, on: 2.2, phase: 3, alt: true, arena: true }); // the crown's crosswind, only while the Reeve fights
-  hole(36, 40, tops.t3); ent('mover', 36, tops.t3, { len: 2, range: 3, speed: 36 }); hole(70, 74, tops.t3); ent('mover', 70, tops.t3, { len: 2, range: 3, speed: 36 }); // gaps in the bough with sliding boughs across them: the wind wants you off
+  hole(36, 40, tops.t3); ropes.push({ kind: 'bridge', id: 'bridge-wind', span: [36, 40, tops.t3], hinge: 1, knot: [43, 65] });   /* (claude/hanging3) THE BRIDGE, TESTED: the sliding bough became a tied-up bridge, cut with the gusts pushing you at the gap (the vine swing beside it stays) */ hole(70, 74, tops.t3); ent('mover', 70, tops.t3, { len: 2, range: 3, speed: 36 }); // gaps in the bough with sliding boughs across them: the wind wants you off
   movers.push({ kind: 'swing', px: 38 * TS + 8, py: (tops.t3 - 9) * TS, arm: 60, x: 0, y: 0, w: 32, h: 8, period: 3.0, phase: 0.7, vine: true }); // MORE SWINGING ROPES (Daniel's backlog): a rope beside the sliding bough, not only a ride
   /* THE CLIFF HALL's own rope bridge (AMBUSH.hanging above, its cutter's 'bridge: 50'): a plank span over the same shallow spike-pit the
      wind already wants you in, cut down to it in three chops mid-fight (src/main.js updateCutter/L.bridges) instead of standing open from
@@ -1897,23 +1908,35 @@ function hangingVillage() {
   ent('spider', 80, 58, { drop: 100 }); ent('spider', 48, 58, { drop: 100 }); ent('snuffer', 34, 65, { face: 1 }); ent('sprig', 26, 65, { face: 1 }); ent('wasp', 56, 60);
   plat(70, 63, 3); failing(40, 61, 3); coins([71, 62],   /* the lamp's ledge was four rows off the floor */ [41, 60], [86, 63], [56, 63], [26, 63]);
   ent('door', 88, 65, { at: 88 }); ent('folk', 91, 65, { door: 88 }); ent('deco', 14, 65, { kind: 'lanternPost' }); ent('lantern', 14, 65); ent('lantern', 64, 65);
-  ent('check', 20, 65);
+  /* (claude/hanging3) the windy bough's west checkpoint goes: six shrines in 537 route tiles was one per 89 (level-quality wants 90+; Daniel: fewer). The cliff hall's
+     own shrine (96,79) and the top of the rookery climb (96,37) bracket it at 170 walked tiles. */
   /* THE MILL HOIST: a flour sack hangs on a peg over the well. Cut the peg and it drops in - the crown's peg-cut, taught where nothing is
      trying to kill you - and the deck lifts you to the ledge the lamp was carried up to */
   plat(72, 59, 4); hoist('mill', 76, 65, 58, 78, 1); ent('load', 78, 65, { kind: 'sack', hoist: 'mill', peg: 75, hy: 61, ropeTop: 56 });
   ent('sign', 80, 65, { text: 'THE MILL HOIST: CUT THE PEG AND THE SACK DROPS IN. BE ON THE DECK WHEN IT DOES.' });
   // 3 -> 4: snapping branches up the trunk
-  band(1, W - 2, tops.t4); hole(2, 9, tops.t4);
+  band(1, W - 2, tops.t4); hole(2, 11, tops.t4);
   shelf(8, 63, 2); shelf(4, 60, 2); shelf(8, 57, 2); shelf(4, 54, 2); shelf(7, 51, 2);
-  ent('sign', 12, 65, { text: 'THE BRANCHES SNAP UNDER YOU. CLIMB QUICK.' });
+  ent('sign', 16, 65, { text: 'THE BRANCHES SNAP UNDER YOU. CLIMB QUICK.' });
+  /* (claude/hanging3) THE COUNTERWEIGHT, TAUGHT: beside the snapping branches, by the checkpoint, nothing to fight. A deck tied down to a knot, a
+     sandbag hung over a wheel up the shaft: stand on the deck, cut the knot, the bag falls and the deck shoots you up to the upper boughs. It comes
+     back down empty for the next ride. (The branches are still there for whoever would rather climb.) */
+  movers.push({ kind: 'lift', rope: 'cw-trunk', x: 10 * TS, x0r: 10 * TS, y: 66 * TS - 8, y0: 66 * TS - 8, y1: 52 * TS, w: 32, h: 8, speed: 0 });
+  ropes.push({ kind: 'counter', id: 'cw-trunk', knot: [12, 65], bag: 3, wheelRow: 43 });
+  ent('sign', 18, 65, { text: 'THE COUNTERWEIGHT: STAND ON THE DECK AND CUT ITS KNOT. THE SANDBAG TAKES YOU UP.' });
 
   // ---- Tier 4. THE UPPER BOUGHS (walk right): the squirrel knight's ground; spiders, an archer nest, silver on a high ledge ----
-  ent('sign', 10, 51, { text: 'THE SQUIRREL KNIGHT STEALS GOLD. CATCH IT BEFORE IT REACHES THE TRUNK.' });
+  ent('sign', 14, 51, { text: 'THE SQUIRREL KNIGHT STEALS GOLD. CATCH IT BEFORE IT REACHES THE TRUNK.' });
   ent('door', 20, 51, { kind: 'cottage', at: 20 }); ent('folk', 17, 51, { door: 20, alt: true });
   hole(32, 37, tops.t4); movers.push({ kind: 'swing', px: 34 * TS + 8, py: (tops.t4 - 9) * TS, arm: 76, x: 0, y: 0, w: 32, h: 8, period: 3.2, phase: 1.2, vine: true }); vine(34, tops.t4, tops.t3 - 1); pit(90, 91, tops.t4); // a vine swing over a gap to the windy bough, a vine up through it, a pit by the thorn
   ent('squirrel', 30, 51, { face: 1 }); ent('spider', 45, 44, { drop: 100 }); ent('spider', 65, 44, { drop: 100 });
   plat(56, 48, 3); ent('archer', 57, 47, { face: -1 }); plat(72, 46, 2); ent('silver', 73, 45); plat(76, 49, 3);
-  set(40, tops.t4 - 1, T.BOUNCER); plat(38, 45, 2); plat(43, 43, 3); coins([39, 44], [44, 42], [45, 42]); ent('wasp', 48, 44); // a springy bough up to a high ledge
+  set(40, tops.t4 - 1, T.BOUNCER); plat(38, 45, 2); plat(43, 43, 3); coins([39, 44], [44, 42], [45, 42]); ent('wasp', 28, 45); // a springy bough up to a high ledge
+  /* (claude/hanging3) THE PULLEY LINE, TAUGHT: off the springy bough's high ledge a rope runs down over the spiders and the archer to the far
+     ledge. Its seat is tied off at the ledge: sit on it, cut the knot behind you, and ride the line down. One way - it comes back empty. */
+  movers.push({ kind: 'hvseat', rope: 'line-rook', x: 46 * TS, x0r: 46 * TS, y: 43 * TS, y0: 43 * TS, w: 32, h: 6 });
+  ropes.push({ kind: 'line', id: 'line-rook', a: [46, 42], b: [74, 48], knot: [45, 42] });
+  ent('sign', 42, 51, { text: 'THE PULLEY LINE ON THE HIGH LEDGE: SIT ON ITS SEAT, CUT THE KNOT, RIDE IT DOWN.' });
   /* THE NEST HOIST, UNDER THREAT: it wants TWO sacks, and the second is up on the springy bough - you walk it back, slowly, under the spiders */
   hoist('nest', 64, 51, 43, 66, 2);   /* the deck tops out level with the nest and against it: you walk off onto the nest's silver */ plat(66, 44, 3); coins([67, 43]); ent('vault', 68, 43); ent('load', 58, 51, { kind: 'sack', hoist: 'nest' }); ent('load', 43, 42, { kind: 'sack', hoist: 'nest' });
   ent('sign', 56, 51, { text: 'THE NEST HOIST WANTS TWO SACKS. THE SECOND IS UP ON THE SPRINGY BOUGH.' });
@@ -1930,8 +1953,8 @@ function hangingVillage() {
   // ---- Tier 5. THE LANTERN STAIR (walk left): the last lamp, a brute at the door, the way to the crown ----
   ent('sign', 93, 37, { text: 'THE REEVE HATES LIGHT. LIGHT EVERY LANTERN; KILL WHAT COMES TO PUT THEM OUT.' });
   ent('door', 88, 37, { kind: 'cottage', at: 88 }); ent('folk', 91, 37, { door: 88, alt: true }); ent('deco', 84, 37, { kind: 'lanternPost' });
-  ent('spider', 70, 30, { drop: 100 }); ent('brute', 50, 37, { face: 1 }); ent('door', 60, 37, { kind: 'cottage', at: 60 }); ent('folk', 63, 37, { door: 60, alt: true });
-  ent('spider', 40, 30, { drop: 100 }); ent('snuffer', 54, 37, { face: -1 }); ent('snuffer', 24, 37, { face: 1 }); ent('deco', 48, 37, { kind: 'lanternPost' }); ent('deco', 20, 37, { kind: 'lanternPost' }); ent('lantern', 20, 37); ent('lantern', 48, 37); ent('lantern', 84, 37);
+  ent('spider', 70, 30, { drop: 100 }); ent('brute', 50, 37, { face: 1 }); ent('door', 63, 37, { kind: 'cottage', at: 63 }); ent('folk', 61, 37, { door: 63, alt: true });
+  ent('spider', 40, 30, { drop: 100 }); ent('snuffer', 46, 37, { face: -1 }); ent('snuffer', 24, 37, { face: 1 }); ent('deco', 48, 37, { kind: 'lanternPost' }); ent('deco', 20, 37, { kind: 'lanternPost' }); ent('lantern', 20, 37); ent('lantern', 48, 37); ent('lantern', 84, 37);
   plat(76, 34, 3); plat(26, 33, 3); ent('silver', 28, 32); coins([77, 33], [27, 32], [66, 35], [44, 35], [12, 35]);
   pit(42, 43, tops.t5);
   /* THE EXAM (game-wide pattern 1: the last stretch before a boss must be one, not a rest) STARTS HERE: the lantern stair carries the
@@ -1942,8 +1965,17 @@ function hangingVillage() {
      already lands on would only open a second, shorter way past the upper boughs' own content - not what B4 asks for.) */
   hole(64, 75, tops.t5); for (let x = 64; x <= 75; x++) set(x, tops.t5, T.PLANK); ent('bridge', 64, tops.t5, { x1: 75 });
   ent('sprig', 77, 37, { face: -1, cutter: true });
-  ent('sign', 80, 37, { text: 'HE SAWS THROUGH THE ROPE ONCE YOU ARE OUT ON IT. DO NOT STOP HALFWAY.' });
-  hole(52, 57, tops.t5); shelf(52, tops.t5, 6); hole(14, 18, tops.t5); ent('mover', 14, tops.t5, { len: 2, range: 3, speed: 40 });
+  ent('sign', 80, 37, { text: 'HE SAWS THROUGH THE ROPE ONCE YOU ARE OUT ON IT. DROP THE NET ON HIM FIRST.' });
+  /* (claude/hanging3) THE EXAM REMIXES THE VERB. 1) THE NET ON THE CUTTER: the cargo net hangs off the coin ledge over his post - cut it onto him and
+     the bridge holds (the rope used against you, answered by the rope). 2) THE BRIDGE TIED UP HIGH: the snapping branch over the next gap is gone; a
+     bridge stands tied up on its east lip, its knot on a hook six rows up the rock - out of any jump. A counterweight deck stands under it: ride it
+     up and cut the bridge's knot from the deck (ride a counterweight, cut a bridge mid-ride). Fall through and you land on the upper boughs, as before. */
+  ropes.push({ kind: 'net', id: 'net-cutter', x: 76, w: 2, hang: 35, land: 37, ring: [77, 34], knot: [82, 37] });
+  movers.push({ kind: 'lift', rope: 'cw-stair', x: 58 * TS, x0r: 58 * TS, y: 38 * TS - 8, y0: 38 * TS - 8, y1: 32 * TS, w: 32, h: 8, speed: 0 });
+  ropes.push({ kind: 'counter', id: 'cw-stair', knot: [60, 37], bag: 62, wheelRow: 26 });
+  ropes.push({ kind: 'bridge', id: 'bridge-stair', span: [52, 57, tops.t5], hinge: 1, knot: [57, 31], high: true });
+  ent('sign', 62, 37, { text: 'THE NEXT BRIDGE IS TIED UP HIGH. RIDE THE COUNTERWEIGHT UP AND CUT ITS KNOT.' });
+  hole(52, 57, tops.t5); hole(14, 18, tops.t5); ent('mover', 14, tops.t5, { len: 2, range: 3, speed: 40 });
   movers.push({ kind: 'swing', px: 16 * TS + 8, py: (tops.t5 - 9) * TS, arm: 50, x: 0, y: 0, w: 32, h: 8, period: 2.8, phase: 1.0, vine: true }); // MORE SWINGING ROPES: an alternate to the sliding bough, right at the exam's tail
   ent('wasp', 55, 33); ent('thorn', 36, 37, { face: 1 }); // snapping branch and a sliding bough on the way to the crown
   ent('check', 10, 37); ent('check', 96, 37);   /* THE TOP OF THE ROOKERY CLIMB: the run from the rookery's west end to here and on to the stair's west end was 162 walked tiles with nothing in it (tools/checkpoint-gaps.mjs) */
@@ -1953,23 +1985,29 @@ function hangingVillage() {
   // ---- The crown: THE OWL REEVE. Three perches on the high branches with a dark lantern on each; ledges climb to every one. ----
   ent('sign', 8, 19, { text: 'A STRUCK LAMP BURNS TWO BREATHS. LIGHT IT AS SHE COMES AND SHE CRASHES INTO IT.' });   /* (claude/owl3: OWL_LAMP) */
   ent('sign', 10, 19, { text: 'HER WING BEAT BLOWS YOU TO THE DROP. HOLD DOWN TO BRACE, OR HOLD A ROPE.' });   /* (claude/owl3: THE DROP, below) */
-  ent('sign', 16, 19, { text: 'DEAD BOUGHS HANG ON PEGS. CUT A PEG WHEN THE REEVE IS LOW UNDER ITS BOUGH.' });
+  ent('sign', 16, 19, { text: 'HER PERCHES HANG ON ROPES. CUT A PERCH KNOT WHILE SHE SITS AND SHE COMES DOWN WITH IT.' });
   ent('check', 12, 19);
   for (const x of [32, 54, 76]) ent('lantern', x, 19, {owl: true, dark: true}); // two lit lanterns on the floor: a swooping owl still crashes into light
   plat(24, 17, 3); plat(84, 17, 3); plat(29, 14, 3); plat(79, 14, 3); plat(34, 11, 3); plat(74, 11, 3); // the climb either side
   plat(40, 9, 5); plat(51, 12, 6); plat(63, 9, 5); // the three perches
   plat(47, 11, 2); plat(60, 10, 2); plat(70, 11, 2); // the links between them
-  for (const [x, y] of [[42, 8], [54, 11], [65, 8]]) ent('lantern', x, y, { dark: true, perch: true, owl: true }); // a dark lantern on each perch: light it and the perch is denied
   vine(48, 12, 19); vine(61, 11, 19); // two vines from the floor up to the links
-  ent('deco', 38, 19, { kind: 'stone', v: 0 }); ent('deco', 70, 19, { kind: 'cairn' });
+  ent('deco', 35, 19, { kind: 'stone', v: 0 }); ent('deco', 74, 19, { kind: 'cairn' });
   const CROWN_BOUGH = [22, 88, 3];
   const CROWN_DROPS = [[24, 26], [83, 85]];   /* (claude/owl3) THE DROP: tile columns, at each end of the crown, open to the night */   /* the dead pine's great bough across the top of the crown (drawn by src/hanging-village.js drawCrown): ropes, chains and festoons hang off it */
-  /* THE CROWN HOIST, PAID OFF: one stone and it lifts you level with her middle perch. At half blood she cuts its rope (updateOwl, ropeGo) */
-  hoist('crown', 57, 19, 11, 56, 1, { topRow: 5, arena: true }); ent('load', 65, 19, { kind: 'stone', hoist: 'crown' }); ent('load', 67, 19, { kind: 'stone', hoist: 'crown' });
-  ent('sign', 6, 19, { text: 'THE HOIST LIFTS YOU TO HER PERCH. SHE WILL NOT SUFFER IT FOR LONG.' });
-  // THE DEAD BOUGHS: under each outer perch a dead limb hangs on a rope run along the branch to a peg on the floor. Cut the peg while the Reeve
-  // is LOW under the limb (skimming, stuck in the boards, dazed) and it pins it: the one window the player makes. Placed on the row under the branch.
-  ent('deadfall', 41, 10, { peg: 44, pegY: 19, hang: true }); ent('deadfall', 66, 10, { peg: 63, pegY: 19, hang: true });
+  /* THE OWL REEVE REBUILT ON ROPES (claude/hanging3, the level's verb is her fight). HER THREE PERCHES HANG from the dead pine's bough on ropes tied off
+     at red-and-gold knots on the floor: cut a perch's knot while she sits on it and she comes down with it - OPEN (src/main.js updateOwl, perchFall /
+     perchDown). A perch that is down is no seat for her until the village hauls it back up. TWO COUNTERWEIGHT DECKS stand on the floor beside the outer
+     perches: cut one and it takes you up level with her (her hoot still throws you off her branch). THE SIDE CLIMBS AND THE LINKS HANG TOO: past half
+     blood she cuts them herself, told (ropeGo / ropeTell: the creak, the fray, 0.8 s) - and the deck you ride drops back to the boards under you.
+     The two ledges over THE DROP stay fixed (a ledge that fell there would fall through the boards). The lamps stay: a minor extra now. */
+  ropes.push({ kind: 'perch', id: 'perch-w', k: 0, x0: 40, x1: 44, row: 9, top: 3, floor: 20, knot: [37, 19] }, { kind: 'perch', id: 'perch-m', k: 1, x0: 51, x1: 56, row: 12, top: 3, floor: 20, knot: [58, 19] },
+    { kind: 'perch', id: 'perch-e', k: 2, x0: 63, x1: 67, row: 9, top: 3, floor: 20, knot: [62, 19] });
+  for (const [x0, x1, row] of [[29, 31, 14], [79, 81, 14], [34, 36, 11], [74, 76, 11], [47, 48, 11], [60, 61, 10], [70, 71, 11]]) ropes.push({ kind: 'ledge', id: 'ledge-' + x0, x0, x1, row, top: 3, floor: 20 });
+  movers.push({ kind: 'lift', rope: 'cw-crown-w', x: 45 * TS, x0r: 45 * TS, y: 20 * TS - 8, y0: 20 * TS - 8, y1: 9 * TS, w: 32, h: 8, speed: 0, arena: true });
+  movers.push({ kind: 'lift', rope: 'cw-crown-e', x: 68 * TS, x0r: 68 * TS, y: 20 * TS - 8, y0: 20 * TS - 8, y1: 9 * TS, w: 32, h: 8, speed: 0, arena: true });
+  ropes.push({ kind: 'counter', id: 'cw-crown-w', knot: [44, 19], bag: 49, wheelRow: 4, arena: true }, { kind: 'counter', id: 'cw-crown-e', knot: [70, 19], bag: 72, wheelRow: 4, arena: true });
+  ent('sign', 6, 19, { text: 'CUT A DECK KNOT AND THE COUNTERWEIGHT LIFTS YOU TO HER. LATER SHE CUTS ROPES TOO.' });
   coins([25, 16], [30, 13], [35, 10], [85, 16], [80, 13], [75, 10], [47, 10], [61, 9], [71, 10]);
   ent('owl', 54, 11);
   /* THE DROP (claude/owl3, Daniel 10-15: her wing beat pushes you "toward the drop"): two breaks in the crown's boards, one toward each end, clean
@@ -1992,6 +2030,7 @@ function hangingVillage() {
   return {
     hangingTown:true, hoists: movers.filter(m => m.hoist).map(m => m.hoist), W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: 107 }, pools: [], falls: [], moversExtra: movers, gusts, interiors, crumbles,
     bridges: [{ x: 50, x1: 56, y: tops.t3 }],   /* THE CLIFF HALL's own rope (src/main.js L.bridges/updateCutter): whole every attempt, cut by the ambush's cutter, hauled back once you step off it */
+    ropes, reachSpans: ropes.filter(r => r.kind === 'bridge').map(r => r.span),   /* (claude/hanging3) CUT IT AND RIDE IT: every rope you can cut (src/hanging-ropes.js); a bridge's span is road once its tie is cut (src/reachcore.js) */
     hangers: [CROWN_BOUGH],   /* (claude/owl2) what a HUNG thing may hang from that is not rock: the crown pine's bough [x0, x1, row] - her perch lamps hang on chains off it (tools/floaters.mjs) */
     vines: [52, 68, 34, 48, 61, 41, 63], perches: [[42, 9], [54, 12], [65, 9]], tall: { top: 20 * TS, bottom: 108 * TS },
     duskStart: -1, duskLen: 1, music: 'hangingvillage', night: false, glowNight: true,   /* "Dark Shrine Loop" by qubodup, CC0 - THE HANGING VILLAGE's own theme, benching town (audio/CREDITS.txt) */
@@ -7813,9 +7852,9 @@ export const LEVELS = [
   { id: 'marsh', name: 'MARSH WOOD', sub: 'water and the frog', rule: 'PADS SINK. THE CHANNEL IS DEEP: PAY THE FERRYMAN OR DRAIN IT.', build: marshWood, needs: 'hornetsnest' },   /* (claude/hornetsnest2, Daniel 10-23: THE HORNET'S NEST is MAIN ROAD level 2 - the Lumber Trail -> the nest -> here; a save past the trail keeps this open: src/main.js progDefaults nestRoadMig, PROG.marshOpen) */
   { id: 'stockade', name: 'THE STOCKADE', sub: 'the goblin camp', rule: 'EVERY TOWER HAS A HORN. SILENCE THE BLOWER BEFORE IT SOUNDS.', build: theStockade, needs: 'fenroad' },   /* (claude/fenroad, Daniel 10-20: THE FEN ROAD stands between MARSH WOOD and here) */
   { id: 'spore', name: 'SPOREWOOD', sub: 'the deep fungus', rule: "THE CAPS GROW INTO STEPS, AND THE SPORES HELP YOU: BOUNCE CAPS THROW YOU, LANTERN CAPS LIGHT THE DARK, MEND PUFFS HEAL. CLIMB TO THE MOTHER'S KNOT.", build: () => buildSporewood({ painter, T, TS }), needs: 'stockade' },   /* (claude/sporewood2, Daniel 10-14: "spores help you, fewer debuff clouds" - SPOREWOOD 2, THE MOTHER'S KNOT, src/sporewood.js; the old builder sporewood() stays below, unused, for the art lane's reference until it merges) */
-  { id: 'kings', name: 'KINGSWOOD', sub: 'up from the deep fungus, the goblins made a court of the old wood', rule: 'THE COURT HOLDS THE ROAD, AND WHAT HANGS OVER IT CAN BE DROPPED ON IT.', build: () => buildKingswood({ painter, T, TS }), needs: 'rootway' },   /* (claude/kingswood2, Daniel 10-14: "fine but very BLAND" - THE KING'S HUNTING WOOD, src/kingswood.js; the old builder kingswood() stays below, unused, for the art lane's reference until it merges) */   /* (claude/rootway, Daniel 10-07: THE ROOTWAY comes between it and Sporewood) */
-  { id: 'scree', arc: 'the crags', name: 'THE SCREE PATH', sub: 'the foothills at dusk', rule: 'THE SLOPE MOVES UNDER YOU AND THE CLIFF DROPS WHAT IT LIKES.', build: screePath, needs: 'underleaf' },   /* (claude/underleafroad, Daniel 10-08: UNDERLEAF sits between Kingswood and here) */
-  { id: 'hanging', name: 'THE HANGING VILLAGE', sub: 'the town on the cliff', rule: 'THE VILLAGE HANGS ON ROPES, AND A ROPE CAN BE CUT.', build: hangingVillage, needs: 'scree' },
+  { id: 'kings', name: 'KINGSWOOD', sub: 'up from the deep fungus, the goblins made a court of the old wood', rule: 'THE COURT HOLDS THE ROAD, AND WHAT HANGS OVER IT CAN BE DROPPED ON IT.', build: () => buildKingswood({ painter, T, TS }), needs: 'palisadewood' },   /* (claude/palisadewood, Daniel 10-15: THE PALISADE WOOD comes between it and the Rootway; a save that had Kingswood open keeps it: src/main.js progDefaults palisadeRoadMig, PROG.kingsOpen) */   /* (claude/kingswood2, Daniel 10-14: "fine but very BLAND" - THE KING'S HUNTING WOOD, src/kingswood.js; the old builder kingswood() stays below, unused, for the art lane's reference until it merges) */   /* (claude/rootway, Daniel 10-07: THE ROOTWAY comes between it and Sporewood) */
+  { id: 'scree', arc: 'the crags', name: 'THE SCREE PATH', sub: 'the foothills at dusk', rule: 'THE SLOPE MOVES UNDER YOU AND THE CLIFF DROPS WHAT IT LIKES.', build: screePath, needs: 'kings' },   /* (claude/underorder, Daniel 10-24: the crags OPEN here, straight off Kingswood; UNDERLEAF now comes after it: Kingswood -> SCREE -> UNDERLEAF -> HANGING. Was needs: 'underleaf' from 10-08) */
+  { id: 'hanging', name: 'THE HANGING VILLAGE', sub: 'the town on the cliff', rule: 'THE VILLAGE HANGS ON ROPES, AND A ROPE CAN BE CUT.', build: hangingVillage, needs: 'underleaf' }, /* (claude/underorder, Daniel 10-24: after UNDERLEAF; saves that cleared Scree but not Underleaf keep this open: PROG.underOrderMig in src/main.js) */
   { id: 'spire', name: 'THE MONASTERY', sub: 'and the goblin in its chair', rule: 'WHAT THE MONKS BUILT STILL ANSWERS A BLOW. CLIMB.', build: theMonastery, needs: 'hanging' },
   { id: 'moor', name: 'GALE MOOR', sub: 'the high moor', rule: 'THE WIND COMES IN GUSTS, AND YOU CAN HEAR EACH ONE COMING.', build: galeMoor, needs: 'spire' },
   { id: 'storm', name: 'STORMHOLD', sub: 'the last hold', rule: 'THREE GATES. EVERY KEY HANGS IN A WATCHTOWER.', build: () => stormholdTown({ painter, T, TS }), needs: 'minecart' },   /* (claude/deeprails2, Daniel 10-09: THE DEEP RAILS is on the main road - Ore Road -> Deep Rails -> Stormhold) */
@@ -7825,7 +7864,7 @@ export const LEVELS = [
   { id: 'flotilla', name: 'THE FLOTILLA', sub: 'the town of ships', rule: 'FOUR HULLS LASHED TOGETHER: THE WAY PAST IS OVER THEM, NOT THROUGH.', build: theFlotilla, needs: 'reef' },
   { id: 'hurricane', name: 'THE HURRICANE DECK', sub: 'one ship, one storm', rule: 'THE SEA AND THE SKY TAKE TURNS: THE WAVE KNOCKS YOU FLAT, THE LIGHTNING SHOWS YOU THE WAY.', build: theHurricane, needs: 'flotilla' },
   { id: 'lamplit', name: 'THE LAMPLIT STREET', sub: 'the city under it', rule: 'THE LAMPS ARE AIR.', build: theLamplitStreet, needs: 'hurricane' },
-  { id: 'underleaf', name: 'UNDERLEAF', sub: "the king's own village, asleep", rule: 'NOTHING HERE CAN SEE YOU, ONLY HEAR YOU. A THROWN POT IS A SOUND YOU CHOOSE.', build: underleaf, needs: 'kings' },   /* (claude/underleafroad, Daniel 10-08: a MAIN-ROAD level now - Kingswood -> UNDERLEAF -> THE SCREE PATH. It was `hidden: true, secret: true, needsTime: { id: 'kings', t: 180 }`: only on level select, after Gorm in under three minutes. ARRAY position unchanged (saves count levels by index); the road is the `needs` chain) */
+  { id: 'underleaf', name: 'UNDERLEAF', sub: "the grandmother's leaf village", rule: UL3_RULE, build: () => buildUnderleaf3({ painter, T, TS, knightRow }), needs: 'scree' },   /* (claude/underleaf3, Daniel 10-15: UNDERLEAF 3 - THE GRANDMOTHER'S VILLAGE + HER POTIONS, src/underleaf3.js + src/potion-hands.js; the hush is retired from it. The old builder underleaf() stays below, unused, for the art lane's reference) */   /* (claude/underleafroad, Daniel 10-08: a MAIN-ROAD level now - Kingswood -> UNDERLEAF -> THE SCREE PATH. It was `hidden: true, secret: true, needsTime: { id: 'kings', t: 180 }`: only on level select, after Gorm in under three minutes. ARRAY position unchanged (saves count levels by index); the road is the `needs` chain) */
   { id: 'shop', name: 'THE STORE', sub: 'ask the keeper', build: theShop, hidden: true },
   { id: 'trial_open', name: 'THE OPEN YARD', sub: 'straw men, ledges and room', build: openYard, hidden: true },
   { id: 'trial_knight', name: "THE KNIGHT'S TRIAL", sub: 'sword, shield and plunge', build: () => trialYard('knight'), hidden: true },
@@ -7939,6 +7978,9 @@ export const LEVELS = [
 /* THE ROOKERY (claude/rookery, the OPUS GREYBOX; scratch/brief-rookery-1024.md, Daniel 10-24): APPENDED (saves count levels by index) - pushed under the array on its own
    line so a branch that edits the array's last row merges clean. On the road between GALE MOOR and THE SKY ROAD by its needs (the Sky Road needs it). Its boss: THE SHRIEK SISTERS */
 LEVELS.push({ id: 'rookery', name: 'THE ROOKERY', sub: "the harpies' crags under the Roc's peak", rule: RK_RULE, build: () => buildRookery({ painter, T, TS }), needs: 'moor' });
+/* THE PALISADE WOOD (claude/palisadewood, the OPUS GREYBOX; scratch/brief-palisadewood-1015.md, Daniel 10-15 + the 10-18 autumn note): APPENDED (saves count levels by index) -
+   pushed here, under the array, so a branch that edits the array's last row merges clean. On the road by its needs: THE ROOTWAY -> HERE -> KINGSWOOD (kings needs it) */
+LEVELS.push({ id: 'palisadewood', name: 'THE PALISADE WOOD', sub: 'an autumn wood, and the goblins walling it off for their king', rule: PW_RULE, build: () => buildPalisadeWood({ painter, T, TS }), needs: 'rootway' });
 
 /* THE MIX. A level that is one creature is one question asked forty times. Some of each crowd is swapped for a
    creature from elsewhere, standing on the same spot, so the second half of a level asks something the first did
@@ -8030,7 +8072,7 @@ export const DRESS = {
   storm: [['barrels', 2], ['lanternPost', 2], ['cart'], ['trough'], ['waterButt', 2], ['wares', 2], ['banner', 2], ['spearRack'], ['gobPennant', 2], ['warStandard'], ['stakeFence']],   /* a town's own furniture, and what an occupying army leaves on it */
   crown: [['banner', 2], ['barrels'], ['spearRack'], ['lanternPost'], ['hangCage'], ['clothStrip', 4], ['warStandard', 2], ['gobPennant', 4], ['lootHeap', 2], ['trophyRack', 2], ['idol', 2], ['cauldron'], ['boneChime', 2]],   /* the Queen's castle: her strips in the halls, the loot of the whole wood */
   lamplit: [['cityWeed', 3], ['shellDrift', 2], ['lampWreck', 2], ['sealDrift', 2], ['drownedCart'], ['column', 2]],
-  underleaf: [['barrels'], ['wares'], ['fence', 2], ['cart'], ['well'], ['lanternPost'], ['beehive'], ['idol', 2], ['hideRack', 2], ['cauldron'], ['cookSpit'], ['gobPennant', 3], ['lootHeap', 2], ['boneChime', 2], ['clothStrip', 3], ['trophyRack', 2]],   /* a village at home: pots on, hides out, the household gods */
+  underleaf: [['beehive', 2], ['hideRack', 3], ['cauldron', 2], ['idol', 2], ['boneChime', 2], ['clothStrip', 3], ['barrels'], ['fence', 2]],   /* (claude/underleaf3) her village: herbs drying, hives, pots and charms - no war-camp pennants or loot heaps */   /* a village at home: pots on, hides out, the household gods */
   undercrown: [['barrels'], ['wares'], ['bones', 2], ['cairn'], ['stone', 3], ['cart'], ['spearRack'], ['lootHeap', 2], ['cauldron'], ['boneChime', 2], ['skullTotem', 2], ['warnPost', 2], ['clothStrip', 3], ['ragBanner', 3]],   /* the mine: the dig's takings and its warnings */
   quarry: [['stone', 3], ['cairn'], ['bones', 2], ['cart'], ['barrels'], ['wares', 2], ['fence', 2], ['rock', 3], ['warnPost', 2], ['stakeFence', 2], ['cookSpit'], ['lootHeap', 2], ['gobPennant', 2]],   /* the diggers' camp: posts on the ledges, a spit going, what they have dug up */
   deep: [['glowCoral', 3], ['tubeWorms', 2], ['seaLily', 2], ['boneHeap', 2], ['tributeSpill', 2], ['shellDrift', 2], ['seaChest']],   /* THE TRENCH's own, not the reef's: coral that makes its light, worms off the warmth, lilies, bones and spilt tribute */
@@ -8287,7 +8329,7 @@ const GOBLIN_CAMP = {
   /* (claude/kingswood2) kings: the old camp props (by the old columns) went with the old wood - KINGSWOOD 2 places its own court props */
   storm: [['warnPost', 66, 35, 0], ['hideRack', 119, 15, 0], ['lootHeap', 133, 15, 1], ['gobPennant', 178, 31, 1], ['cookSpit', 266, 31], ['cauldron', 420, 29]],
   crown: [['warnPost', 22, 71, 1], ['hideBanner', 33, 71, 1],['gobPennant', 684, 7, 3], ['ragBanner', 716, 7, 2], ['cauldron', 706, 63], ['boneChime', 712, 54, 0, true], ['trophyRack', 710, 51, 1], ['skullTotem', 745, 51, 0], ['clothStrip', 724, 10, 3, true], ['warStandard', 738, 19, 1]],   /* the keep's own moved 220 right with the siege lines, the crag walk and the bakehouse yard grown in front of it, and 84 more with the armoury */
-  underleaf: [['gobPennant', 32, 33, 2], ['cookSpit', 333, 33], ['lootHeap', 394, 33, 0], ['boneChime', 237, 7, 1, true], ['idol', 444, 33, 1]],
+  underleaf: [['boneChime', 30, 21, 0], ['idol', 59, 29, 1], ['cookSpit', 106, 21], ['boneChime', 174, 21, 1], ['idol', 296, 22, 0], ['cauldron', 342, 15], ['boneChime', 398, 23, 1]],   /* (claude/underleaf3) her village's own: bone charms, the household gods, her old hearth's pot - by UNDERLEAF 3's columns */
   undercrown: [['stakeFence', 80, 28, 0], ['skullTotem', 42, 111, 1], ['boneChime', 26, 88, 0, true], ['ragBanner', 58, 122, 0], ['clothStrip', 20, 88, 2, true], ['warnPost', 26, 140, 0], ['lootHeap', 52, 140, 1], ['cauldron', 68, 140]],
 };
 /* WHAT HANGS FROM THE ROCK, and how tall it is. The sprinkler finds floor; one of these wants a roof over that floor
@@ -8311,7 +8353,7 @@ function dressLevel(L, id) {
   const rooms = [L.arena, L.mini].filter(Boolean).map(A => [A.x0 / TS - 2, A.x1 / TS + 2, (A.y0 !== undefined ? A.y0 / TS : A.floor / TS - 16) - 1, A.floor / TS + 1]);
   /* 'cover' and the siege engines (THE UNBURIED FIELD): a shield wall that stops a volley must never have a dressed shield or a
      wreck set down beside it, or the thing that saves you and the thing that does not look alike */
-  const KEEP = new Set(['firepit', 'firevent', 'hotplate', 'cover', 'ballista', 'trebuchet', 'oilbarrel', 'sign', 'check', 'npc', 'doorway', 'gate', 'lockgate', 'key', 'stray', 'silver', 'vault', 'shrine', 'cage', 'lever', 'vent', 'torch', 'brazier',   /* a fire on the floor is kept clear like a brazier: Kingswood's Fired Wood grew a skull totem in its firepits' reach (level review, 2026-09-24) */ 'lantern', 'mover', 'nest', 'deco', 'stormkite', 'winch', 'bell', 'weight', 'support', 'rod', 'felltree', 'sluice', 'crank', 'flagpost', 'barricade', 'sheet', 'balloon', 'sail']);
+  const KEEP = new Set(['jarshelf', 'vinebed', 'thornhedge', 'floatwell', 'firepit', 'firevent', 'hotplate', 'cover', 'ballista', 'trebuchet', 'oilbarrel', 'sign', 'check', 'npc', 'doorway', 'gate', 'lockgate', 'key', 'stray', 'silver', 'vault', 'shrine', 'cage', 'lever', 'vent', 'torch', 'brazier',   /* a fire on the floor is kept clear like a brazier: Kingswood's Fired Wood grew a skull totem in its firepits' reach (level review, 2026-09-24) */ 'lantern', 'mover', 'nest', 'deco', 'stormkite', 'winch', 'bell', 'weight', 'support', 'rod', 'felltree', 'sluice', 'crank', 'flagpost', 'barricade', 'sheet', 'balloon', 'sail']);
   const keep = L.ents.filter(e => KEEP.has(e.t)).map(e => [e.x, e.y]);
   const placed = [];
   /* AND A GATE THE GAME DROPS AT RUN TIME IS NOT OPEN GROUND. An elite's gate, a winch's gate and the hulk's grate (e.gate, a column)

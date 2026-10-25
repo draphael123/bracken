@@ -13,9 +13,10 @@ import { PLAN as RT_QUEEN } from './cistern-queen.js'; import { DJ_PLAN as RT_DJ
 import { COL_PLAN as RT_COL } from './glass-colossus.js'; import { PLAN as RT_FOG } from './fog-knight.js'; import { PLAN as RT_GANG } from './gang-leader.js'; import { PLAN as RT_CRAB } from './gorge-crab.js';
 import { PLAN as RT_HAWK } from './hawk-mistress.js'; import { PLAN as RT_HOUR } from './hourglass-king.js'; import { PLAN as RT_HUNT } from './huntmaster.js'; import { PLAN as RT_LANT } from './lantern-eater.js';
 import { PLAN as RT_PAL } from './paladin-boss.js'; import { PLAN as RT_PUP } from './puppeteer.js'; import { PLAN as RT_MAT } from './raptor-matriarch.js'; import { PLAN as RT_SCARAB } from './scarab-mother.js'; import { ROC_LAG as RT_ROC } from './roc-eyrie.js';
+import { bbPlan, bbOpen, PLAN as RT_BB } from './battering-beast.js';   /* THE BATTERING BEAST (claude/palisadewood): the bot reads his tells, the stakes' rings, the waves and the clearing's scaffolds off his own module */
 import { hqPlan } from './hornet-queen-plan.js'; import { hqOpen } from './hornet-queen.js';   /* THE HORNET QUEEN 2 (claude/hornetsnest): the bot reads her tells, the rings, the stingers, her loop and works her rules */ import { otPlan, otOpen, PLAN as RT_OT, OT as OT_K, underLine as OT_UNDER } from './old-tusker.js'; import { btPlan, btOpen } from './bog-troll.js'; const OT_W = OT_K.w; const GEO_FELL = false;   /* THE BOG TROLL (claude/fenroad): the bot reads the bubbles, the bulge, his tells and the rings off his own module, and works the lure */   /* OLD TUSKER (claude/oldtusker): the bot reads his tells, the clods, the waves and the clearing's pines off his own module */
 import { ssPlan, ssOpen, PLAN as RT_SS } from './shriek-sisters.js';   /* THE SHRIEK SISTERS (claude/rookery): the bot reads the red lines (and their lock), the rocks' rings, the marks, the wave, the snatch off their own module */
-const PLAN_CLOCKS = [RT_SS, RT_OT, RT_QUEEN, RT_DJINN, RT_DRILL, RT_FOREMAN, RT_COL, RT_FOG, RT_GANG, RT_CRAB, RT_HAWK, RT_HOUR, RT_HUNT, RT_LANT, RT_PAL, RT_PUP, RT_MAT, RT_SCARAB];
+const PLAN_CLOCKS = [RT_SS, RT_BB, RT_OT, RT_QUEEN, RT_DJINN, RT_DRILL, RT_FOREMAN, RT_COL, RT_FOG, RT_GANG, RT_CRAB, RT_HAWK, RT_HOUR, RT_HUNT, RT_LANT, RT_PAL, RT_PUP, RT_MAT, RT_SCARAB];
 import { profileOf, SKILL_RANGE } from './bot-profile.js'; import { makePerception, makeSkillHands } from './lab-perceive.js';   /* (claude/bot2) WHO THE BOT IS (opts.profile; 'legacy' = the old bot, the default) and ITS EYES */
 import { CHARGE_TELL } from './crouch-a.js';   /* THE CROUCH TWISTS, PART A (claude/croucha): what the warden sets her spear against */
 import { FLIGHTS as SPIRAL_FLIGHTS, pendSafe as spiralPendSafe } from './spiral-chase.js';
@@ -847,7 +848,7 @@ async function runbossLab(BK, opts) {
         if (dkS.hp >= 0 && P.hp < dkS.hp - 0.5) { dkS.hitF = f; if (P.atk >= 0) dkS.hitSwF = f; } dkS.hp = P.hp; }
       if(!normalHealth){P.hp = P.maxHp; P.dead = 0;} // refill mode observes health separately; stamina must be earned back by the real recovery rule
       const hum=BK.labHuman!==false;if(P.st<(hum?(ROLL_COST[h]||24)+2:12))P.labRest=true;if(P.st>=(hum?Math.min(60,P.maxSt*.65):Math.min(48,P.maxSt*.6)))P.labRest=false;   /* WEIGHT: rest before the bar is below a roll (it was below 12), back in at 60 (it was 48) */
-      if(P.labRest&&!P.plunge&&boss.t!=='windcaller'&&boss.t!=='hourglassking'&&boss.t!=='scarabmother'&&boss.t!=='tombking'&&boss.t!=='oldtusker'&&boss.t!=='shrieksisters'&&boss.t!=='hornetqueen'&&boss.t!=='bogtroll'&&boss.t!=='matriarch'&&boss.t!=='colossus'&&boss.t!=='greatdrill'&&boss.t!=='mother'&&boss.t!=='undeadmage'&&boss.t!=='pyromancer'&&boss.t!=='gravewarden'&&boss.t!=='hedgewarden'&&boss.t!=='gargoyle'&&boss.t!=='winchmaster'&&boss.t!=='duneworm'&&boss.t!=='lanterneater'&&boss.t!=='cisternqueen'&&boss.t!=='gangleader'&&boss.t!=='djinn'&&boss.t!=='hawkmistress'&&boss.t!=='fogknight'&&boss.t!=='huntmaster'&&boss.t!=='owl'&&boss.t!=='champion'&&boss.t!=='frog'){   /* (claude/owl3: and the Owl Reeve's - a rest stood still on her pellets' marks and backed blind toward THE DROP; her hands wait by a lamp in their own branch, still off every mark) */   /* (and the Dune Worm's: his hands rest inside their own branch, still off every tell - a rest that backed off blind stood in his sinkholes) */   /* (the Winchmaster's too, round three: its floor is the pit, and this rest backs 30 px away from him - off his ledge into the spikes, measured, over and over) */   /* (the Mother's pilot rests inside its own branch: resting used to stand it still under her vines) */
+      if(P.labRest&&!P.plunge&&boss.t!=='windcaller'&&boss.t!=='hourglassking'&&boss.t!=='scarabmother'&&boss.t!=='tombking'&&boss.t!=='oldtusker'&&boss.t!=='shrieksisters'&&boss.t!=='batteringbeast'&&boss.t!=='hornetqueen'&&boss.t!=='bogtroll'&&boss.t!=='matriarch'&&boss.t!=='colossus'&&boss.t!=='greatdrill'&&boss.t!=='mother'&&boss.t!=='undeadmage'&&boss.t!=='pyromancer'&&boss.t!=='gravewarden'&&boss.t!=='hedgewarden'&&boss.t!=='gargoyle'&&boss.t!=='winchmaster'&&boss.t!=='duneworm'&&boss.t!=='lanterneater'&&boss.t!=='cisternqueen'&&boss.t!=='gangleader'&&boss.t!=='djinn'&&boss.t!=='hawkmistress'&&boss.t!=='fogknight'&&boss.t!=='huntmaster'&&boss.t!=='owl'&&boss.t!=='champion'&&boss.t!=='frog'){   /* (claude/owl3: and the Owl Reeve's - a rest stood still on her pellets' marks and backed blind toward THE DROP; her hands wait by a lamp in their own branch, still off every mark) */   /* (and the Dune Worm's: his hands rest inside their own branch, still off every tell - a rest that backed off blind stood in his sinkholes) */   /* (the Winchmaster's too, round three: its floor is the pit, and this rest backs 30 px away from him - off his ledge into the spikes, measured, over and over) */   /* (the Mother's pilot rests inside its own branch: resting used to stand it still under her vines) */
         k.left=k.right=k.up=k.down=k.jump=k.block=k.atk=k.throw=false;
         const wet=(L.pools||[]).some(q=>P.x>q.x0&&P.x<q.x1&&P.y>q.y);
         if(wet&&P.ground){BK.press('jump');P.labJump=24;}if(P.labJump>0){P.labJump--;k.jump=true;}
@@ -1717,6 +1718,24 @@ async function runbossLab(BK, opts) {
         const ssO=S?ssOpen(S):false;if(ssO&&!wasOpen)opened++;wasOpen=ssO;
         const was=P.hp,m0=boss.mode;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(m0,Math.max(0,was-P.hp));if(opts.onFrame)await opts.onFrame({boss,P,f,h,lvl:lvId,open:ssO,why:pl.why});if(f%600===599)await yieldNow();continue;
       }
+      if(boss.t==='batteringbeast'){
+        /* THE BATTERING BEAST (claude/palisadewood): src/battering-beast.js bbPlan reads what a player sees - his tells a reaction late, the stakes' rings, the trample's
+           waves, the scaffolds' fall lines - and works THE RULE: a prop knocked so the wreck lies between him and you (or on him), his charge rams it and sticks; in phase
+           two a jump at the buckle while he is open. It rests inside its own branch */
+        k.left=k.right=k.up=k.down=k.jump=k.block=false;
+        const BH=BK.batteringBeastHands(),S=BH&&BH.show();
+        if(f===0||!P.labBbMem)P.labBbMem={};
+        const pl=S?bbPlan({tip:h==='warden'?WARDEN_TIP:0,v2:!!LABP.v2,hero:h,rest:!!P.labRest,P:{x:P.x,y:P.y,vy:P.vy,face:P.face,ground:P.ground,atk:P.atk},e:boss,S,reach:LAB_REACH[h],shield:(SHIELDED(h)&&(h!=='geomancer'||P.st>=30))||h==='warden',dodge:!(h==='warden'&&!LABP.v2),t:f/60,rng:Math.random,mem:P.labBbMem}):{gx:null,face:P.face};
+        if(pl.dodge&&P.ground&&(P.labDodgeF===undefined||f-P.labDodgeF>30)){if(pl.gx!=null)k[pl.gx>P.x?'right':'left']=true;if(h==='warden'&&LABP.v2&&pl.gx!=null)P.face=pl.gx>P.x?-1:1;BK.press('dodge');P.labDodgeF=f;}
+        if(pl.jump&&P.ground){if(P.labJumpF===undefined||f-P.labJumpF>14){BK.press('jump');P.labJumpF=f;P.labJump=16;}}
+        if(P.labJump>0){P.labJump--;k.jump=true;}
+        if(pl.block)k.block=h==='warden'?(LABP.v2?f%2===0:DEFLECT_TAP(f)):DEFLECTS(h)?DEFLECT_TAP(f):true;
+        if(!pl.block&&pl.gx!=null&&Math.abs(pl.gx-P.x)>3)k[pl.gx>P.x?'right':'left']=true;else if(!k.left&&!k.right)P.face=pl.face||P.face;
+        if(pl.down&&!P.ground)k.down=true;
+        if(pl.atk&&P.atk<0){P.face=pl.face||P.face;BK.press('atk');swings++;}
+        if(bbOpen(boss)&&!wasOpen)opened++;wasOpen=bbOpen(boss);
+        const was=P.hp,m0=boss.mode;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(m0,Math.max(0,was-P.hp));if(opts.onFrame)await opts.onFrame({boss,P,f,h,lvl:lvId,open:bbOpen(boss),why:pl.why});if(f%600===599)await yieldNow();continue;
+      }
       if(boss.t==='oldtusker'){
         /* OLD TUSKER (claude/oldtusker): src/old-tusker.js otPlan reads what a player sees - his tells a reaction late (the v2 eyes), the clods' red rings, the stomp's
            waves, the pines' lines and their stroke tallies - and works THE RULE: three strokes laid in a marked pine, behind it (its wall side), and the fourth when he
@@ -2461,7 +2480,22 @@ async function runbossLab(BK, opts) {
       /* THE GRANDMOTHER (claude/underleaf2, B14 keyed FROM BEHIND): her front turns a blade, so a player MAKES her back - he strikes a bell-pull whose
          chime rings on her far side (or lobs a pot over her), and cuts her back while she lashes at the sound; in her told ward he stands off; when she
          listens he stands still (the branch below). Nothing is rung or thrown for the bot: a real swing at the cord, a real pot taken and thrown. */
-      else if (boss.t === 'grandmother' && BK.hushHands && BK.hushHands() && !['listenTell', 'listen', 'sleep', 'wake'].includes(boss.mode)) {
+      /* THE GRANDMOTHER 3 (claude/underleaf3, src/potion-hands.js): a player keeps off the spots she marks (her fireballs, her jars, her cauldron's gouts),
+         cuts her BROOD down first (while one stands she is warded x0.4), then takes a BLUE jar off her shelf and throws it at her from a stride off -
+         a real jar taken (INTERACT) and thrown (ATTACK) - and cuts her while she floats. Her ward after an opening is chipped through (x0.4 is still a blow) */
+      else if (boss.t === 'grandmother' && boss.gm3 && BK.potions && BK.potions() && !['sleep', 'wake'].includes(boss.mode)) {
+        const PH = BK.potions(), mk = PH.marks().find(m => Math.abs(m.x - P.x) < m.r + 9), gp = PH.gpatches().find(q => Math.abs(q.x - P.x) < 28);
+        const br = PH.broodOf(boss).sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0], c = P.carry && P.carry.t === 'jar' ? P.carry.col : null;
+        if (mk || gp) { const bad = x => PH.marks().some(m => Math.abs(m.x - x) < m.r + 10) || PH.gpatches().some(q => Math.abs(q.x - x) < 30);   /* the nearest floor no mark covers */
+          let gx = P.x; for (let dd = 8; dd < 260; dd += 8) { if (P.x + dd < A.x1 - 16 && !bad(P.x + dd)) { gx = P.x + dd; break; } if (P.x - dd > A.x0 + 16 && !bad(P.x - dd)) { gx = P.x - dd; break; } } goal = gx; strike = false; }
+        else if (boss.mode === 'floated') { goal = boss.x; strike = true; }
+        else if (br) { goal = br.x; strike = false; if (Math.abs(br.x - P.x) < LAB_REACH[h] + 8 && Math.abs(br.y - P.y) < 22 && P.atk < 0) { P.face = Math.sign(br.x - P.x) || P.face; if (keyVerb(BK, h, br) === 'sweep') k.down = true; BK.press('atk'); swings++; } }   /* her brood is family 'small': the low sweep, as the Mother's sporelings (small-adds) */
+        else if (boss.ward > 0) { goal = boss.x; strike = true; }
+        else if (c === 'blue') { const dx = boss.x - P.x; if (Math.abs(Math.abs(dx) - 56) > 22) { goal = boss.x - (Math.sign(dx) || 1) * 56; strike = false; } else { goal = null; strike = false; k.left = k.right = false; k.up = k.down = false; P.face = Math.sign(dx) || P.face; BK.press('atk'); } }
+        else if (c) { k.down = true; BK.press('atk'); }
+        else { const j = PH.state().jars.filter(q => q.state === 'rest' && q.col === 'blue').sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0];
+          if (j && !(ad < 60 && /Tell$/.test(boss.mode || ''))) { goal = j.x; strike = false; if (Math.abs(j.x - P.x) < 10 && P.ground && f % 8 === 0) BK.press('talk'); } else { goal = boss.x; strike = true; } } }
+      else if (boss.t === 'grandmother' && !boss.gm3 && BK.hushHands && BK.hushHands() && !['listenTell', 'listen', 'sleep', 'wake'].includes(boss.mode)) {
         const side = Math.sign(P.x - boss.x) || -1, back = -(boss.face || 1), behind = side === back;
         const knell = BK.hushHands().knells().some(q => Math.abs(q.x - P.x) < 36 && (P.x - q.x) * q.dir > 0);   /* HER KNELL runs the boards at you: jumped as it comes, as a player jumps a wave he can see */
         if (knell || P.labKnell > 0) { if (knell && P.ground && !(P.labKnell > 0)) { BK.press('jump'); P.labKnell = 16; } if (P.labKnell > 0) { P.labKnell--; k.jump = true; } goal = null; strike = false; }
@@ -2566,11 +2600,17 @@ async function runbossLab(BK, opts) {
       else { goal = boss.x; strike = true; }
       /* THE OWL'S DEAD BOUGHS: when the Reeve is low under one the bot cuts its peg, as a player standing at it would, and it hops the skim */
       if (boss.t === 'owl') {
-        const down=['grounded','crash','pinned','stuckTalons'].includes(boss.mode);
+        const down=['grounded','crash','pinned','stuckTalons','perchDown','perchFall'].includes(boss.mode);
         /* (claude/owl3) A LAMP IS A MOMENT: it burns two seconds and one crash spends it, so a player waits by a lamp and strikes it AS SHE COMES -
            her swoop or skim told and set on its line (she runs through him, and the lamp beside him), or her shadow over him for the plunge - never before */
         const comes = (boss.mode === 'swoopTell' && boss.swAt) || (boss.mode === 'skimTell' && boss.skimAt) || boss.mode === 'stalk';
         if(!down){strike=false;const lamps=BK.props().filter(p=>p.owl&&!p.perch);const lamp=lamps.sort((a,b)=>Math.abs(a.x-P.x)-Math.abs(b.x-P.x))[0];const run=(boss.mode==='swoopTell'&&boss.swAt)||(boss.mode==='skimTell'&&boss.skimAt);if(lamp){goal=run?lamp.x+(Math.sign(lamp.x-boss.x)||1)*12:lamp.x+(Math.sign((A.x0+A.x1)/2-lamp.x)||1)*10;   /* (set on her line: to the lamp's far side from her, so she meets the light before him) */   /* (stood on the lamp's inner side, away from the drop: a goal that flipped sides of the lamp each frame set off the stuck-hop, and the hop carried him into the drop) */if(comes&&!lamp.lit&&!(lamp.cool>0)&&Math.abs(P.x-lamp.x)<22&&P.atk<0&&(!run||(P.x-lamp.x)*(lamp.x-boss.x)>=0)){k.block=false;P.face=Math.sign(lamp.x-P.x)||1;BK.press('atk');swings++;}}}
+        /* (claude/hanging3) HER PERCH HANGS ON A ROPE: while she sits on a perch whose rope is still tied, a player walks to its red-and-gold knot on the floor
+           and cuts it - she comes down with it, open. (The lamps stay the minor extra above; her told moves below still come first.) */
+        { const hv = BK.hvr ? BK.hvr() : null; if (!down && hv && P.ground && ['sit','land','screechTell','screech','fanTell','fan','gustTell','gust','pelletTell','pellet','hootTell','douseTell'].includes(boss.mode)) {
+          const pr = hv.ropes.find(r => r.kind === 'perch' && r.k === boss.perchI && r.state === 'tied');
+          if (pr) { const kx = pr.knot[0] * 16 + 8, side = Math.sign(P.x - kx) || 1; goal = kx + side * 12; strike = false;
+            if (Math.abs(P.x - kx) < 22 && P.atk < 0) { k.block = false; P.face = Math.sign(kx - P.x) || 1; BK.press('atk'); swings++; } } } }
         /* (claude/owl3) HER PLUNGE with no lamp to give her (the nearest one lit already, or its wick still smoking): out from under her shadow */
         if ((boss.mode === 'stalk' || boss.mode === 'plunge') && P.ground) { const lp = BK.props().filter(p => p.owl && !p.perch).sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0]; if (!lp || lp.cool > 0 || Math.abs(lp.x - P.x) > 24 || (lp.lit && lp.lampT < 0.6)) { goal = P.x + (Math.sign(P.x - boss.x) || 1) * 44; strike = false; } }
         /* (claude/owl3) HER SKIM, LED: a player who has read the mantle and its low line jumps as she will arrive - its hold, then her run to him - not when he first sees her moving (a reaction late, she is on him) */

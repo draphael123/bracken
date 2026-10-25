@@ -244,7 +244,8 @@ function drawCrown(g, L, crown, cx, cy, time, VW, VH) {
     if (k === 2 && (x >> 5) % 2) { g.fillStyle = '#8a6a3a'; g.fillRect(sx - 1, by - 8, 5, 2); g.fillStyle = '#a07a40'; g.fillRect(sx, by - 9, 2, 1); } }
   g.fillStyle = '#3e3228'; for (const [ex, dir] of [[bx0, -1], [bx1, 1]]) { fillPoly(g, [[ex, by - 6], [ex + dir * 16, by - 2], [ex, by + 5]], '#3e3228'); }
   /* A LIMB OR A ROPE TO EVERY LEDGE (the ledges were stone floating in the sky, the review B9) */
-  for (const [lx0, lx1, ly] of ledges) { const Y = ly * T + 4, X0 = lx0 * T + 3, X1 = (lx1 + 1) * T - 4;
+  const hung = new Set((L.ropes || []).filter(r => r.kind === 'perch' || r.kind === 'ledge').map(r => r.x0 + ',' + r.row));   /* (claude/hanging3) a ledge that hangs on a cuttable rope draws its own ropes (src/hanging-ropes.js) */
+  for (const [lx0, lx1, ly] of ledges) { if (hung.has(lx0 + ',' + ly)) continue; const Y = ly * T + 4, X0 = lx0 * T + 3, X1 = (lx1 + 1) * T - 4;
     if (Math.abs((lx0 + lx1) / 2 - trunk) < 9) { g.strokeStyle = '#3e3228'; g.lineWidth = 5; g.beginPath(); g.moveTo(tx, R(Y + 30 - cy)); g.lineTo(R((X0 + X1) / 2 - cx), R(Y + 2 - cy)); g.stroke(); g.strokeStyle = '#54443a'; g.lineWidth = 1; g.beginPath(); g.moveTo(tx, R(Y + 28 - cy)); g.lineTo(R((X0 + X1) / 2 - cx), R(Y - cy)); g.stroke(); }
     else { for (const rx of [X0, X1]) { g.fillStyle = '#9a8460'; g.fillRect(R(rx - cx), by + 4, 1, R(Y - BY) - 4); g.fillStyle = '#c8b088'; for (let y = BY + 10; y < Y; y += 6) g.fillRect(R(rx - cx), R(y - cy), 1, 2); g.fillStyle = '#3e3228'; g.fillRect(R(rx - cx) - 1, by + 3, 3, 2); } } }
   /* HER PERCH LAMPS HANG: a short limb down off the bough over each, and a chain from it to the lamp's ring (src/main.js draws the lamp) */

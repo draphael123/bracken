@@ -1,5 +1,25 @@
 [
   {
+    "date": "2026-10-25",
+    "batch": 121,
+    "lines": [
+      "The road changes: Kingswood, then the Scree Path, then Underleaf, then the Hanging Village",
+      "Underleaf now belongs to act II",
+      "The Pyromancer duel is tougher: more health and less time to rest between his attacks",
+      "Old saves carry over: levels you cleared stay cleared"
+    ]
+  },
+  {
+    "date": "2026-10-25",
+    "batch": 120,
+    "lines": [
+      "New level: the Palisade Wood, an autumn forest before Kingswood, with the Battering Beast",
+      "Underleaf rebuilt: the Grandmother's jars, and a new Grandmother fight",
+      "Burning Village: water waves, a soaking, and falling debris",
+      "Hanging Village: cut ropes to ride them, and the Owl Reeve now fights on ropes"
+    ]
+  },
+  {
     "date": "2026-10-24",
     "batch": 119,
     "lines": [

@@ -63,6 +63,7 @@ export const AFFIX_AT = {
   'stockade|archer#amb': 'SWIFT',   /* (claude/wardens12: the camp brute is THE HORN LANCE now - his SUMMONER rides his ent) */
   'spore|shield#amb': 'THORNED',   /* (claude/wardens12: the cap-top shield is THE SPORE MAGE now - VENOMOUS rides his ent) */
   'kings|brute#1': 'UNSTOPPABLE', 'kings|brute#2': 'SWIFT',   /* (integ115: the rebuilt Hunting Wood places two brutes - the road's keeps UNSTOPPABLE, the second is quick) */ 'kings|archer#amb': 'WARDING',
+  'underleaf|shield': 'SHIELDED', 'underleaf|brute': 'THORNED',   /* (claude/underleaf3) THE HERB WARDEN at the garden wall; THE THORN-BEAST CAPTAIN before the third hedge (his thorns are his coat's: burn it) */
   'underleaf|brute#1': 'WARDING', 'underleaf|brute#2': 'SWIFT', 'underleaf|shield#1': 'SHIELDED', 'underleaf|shield#2': 'WARDING', 'underleaf|archer': 'SWIFT', 'underleaf|hearthgob#1': 'THORNED', 'underleaf|hearthgob#2': 'SUMMONER',   /* (claude/underleaf2) the terrace's captain at the windmill foot (his sprig takes half from the front: him first), the green's captain in the open */
   'burning|brute#amb': 'BURNING',   /* (claude/wardens12: the crofts' shield is THE EMBER BLADE now - BURNING rides his ent) */
   'scree|troll#amb': 'THORNED',   /* (claude/wardens12: the crag troll at 505 is THE SCREE MAUL now) */

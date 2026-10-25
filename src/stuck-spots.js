@@ -261,6 +261,14 @@ export const STUCK = {
       { at: [258, 14], done: ['hoist', 258, 14, 'on'], line: 'THE THIRD CAGE STILL HANGS: ITS PEG' } ] },
     { id: 'kg-court-gate', zone: [396, 0, 409, 13], at: [405, 11], done: ['plate', 405, 11, 'down'], line: 'THE COURT GATE IS SHUT: STAND ON THE PLATE ON THE STEP' },
   ],
+  /* THE PALISADE WOOD (claude/palisadewood): every prop the route needs until it is knocked out (the two ramps, the two watchtowers, the gatehouse ditch's scaffold) */
+  palisadewood: [
+    { id: 'pw-edge-ramp', zone: [12, 33, 24, 37], at: [19, 37], done: ['scaffoldprop', 19, 37, 'on'], line: 'THE LEDGE IS TOO HIGH: KNOCK OUT THE SCAFFOLD PROP' },
+    { id: 'pw-yard-tower', zone: [136, 27, 146, 31], at: [142, 31], done: ['towerprop', 142, 31, 'on'], line: "NO JUMP CROSSES: KNOCK OUT THE WATCHTOWER'S PROP" },
+    { id: 'pw-wall-ramp', zone: [205, 18, 221, 28], at: [215, 28], done: ['scaffoldprop', 215, 28, 'on'], line: 'THE WALL IS TOO HIGH: KNOCK OUT THE TOP TIER PROP' },
+    { id: 'pw-wall-tower', zone: [244, 8, 253, 12], at: [249, 12], done: ['towerprop', 249, 12, 'on'], line: "THE UNBUILT SPAN: KNOCK OUT THE WATCHTOWER'S PROP" },
+    { id: 'pw-gate-bridge', zone: [318, 20, 329, 24], at: [325, 24], done: ['towerprop', 325, 24, 'on'], line: 'THE DITCH: KNOCK OUT THE PROP UNDER THE GATEHOUSE SCAFFOLD' },
+  ],
   theatre: [
     { id: 'th-hatch-rope', zone: [108, 26, 140, 34], at: [130, 28], line: 'A ROPE BY THE RACKS: CLIMB IT' },
     { id: 'th-quick-lock', zone: [122, 18, 141, 25], at: [140, 24], line: 'THE ROPE-LOCK BY THE SHUTTER: STRIKE IT' },
@@ -295,24 +303,29 @@ export const STUCK = {
     { id: 'fr-night-striker', zone: [545, 15, 566, 28], at: [566, 27], line: 'THE STRIKER PAD IS THE WAY UP' },
     { id: 'fr-night-targets', zone: [563, 5, 594, 27], ats: [[570, 13], [578, 13], [587, 14]], line: 'THE BARS DROP FOR THE TARGETS: HIT ALL THREE, FAST' },
   ],
+  /* (claude/underleaf3) UNDERLEAF 3: every REQUIRED jar use - the seed bed (until its vine grows), the thorn hedge (until it burns), the float well (until a bubble has lifted you from it).
+     The beds, hedges and wells are src/potion-hands.js's props (main.js hands them to the guide: POH.props): their tile is where the glint stands */
   underleaf: [
-    { id: 'ul-brass', zone: [90, 2, 170, 45], steps: [
-      { zone: [96, 2, 124, 17], at: [112, 6], done: ['key', 112, 6, 'got'], line: 'THE BRASS KEY HANGS ON THE HOIST BEAM' },
-      { zone: [90, 18, 170, 45], at: [122, 33], done: ['key', 112, 6, 'got'], line: 'THE BRASS KEY IS IN THE MILL: FIND ITS DOOR' },
-      { zone: [96, 18, 170, 45], at: [157, 33], done: ['lockgate', 157, 33, 'open'], line: 'THE BRASS GATE WANTS THE KEY YOU CARRY' } ] },
-    { id: 'ul-iron', zone: [140, 2, 345, 45], steps: [
-      { zone: [140, 2, 196, 17], at: [188, 8], done: ['key', 188, 8, 'got'], line: 'THE IRON KEY IS ON THE ROOD BEAM' },
-      { zone: [175, 18, 345, 45], at: [278, 33], done: ['key', 188, 8, 'got'], line: 'THE IRON KEY IS IN THE CHURCH: FIND ITS DOOR' },
-      { zone: [175, 18, 345, 45], at: [336, 33], when: ['key', 188, 8, 'got'], done: ['lockgate', 336, 33, 'open'], line: 'THE IRON GATE WANTS THE KEY YOU CARRY' } ] },
-    /* (claude/underleaf2) THE ONE REQUIRED THROW: the bone key hangs on the school's bell-cote - its nail glints from the roof (and the chimney pots
-       by the ladder), the key where it falls, then the gate. (A street gate the alarm drops is glinted and nudged by src/hush-hands.js itself: it is
-       not there in a fresh street, so it is no route-list spot) */
-    { id: 'ul-bone', zone: [337, 2, 475, 45], steps: [
-      { zone: [345, 18, 400, 33], ats: [[378, 22], [355, 27]], done: ['keynail', 378, 22, 'down'], line: 'THE BONE KEY HANGS ON THE BELL-COTE' },
-      { zone: [345, 18, 470, 45], at: [378, 27], when: ['keynail', 378, 22, 'down'], done: ['key', 378, 27, 'got'], line: 'THE BONE KEY FELL ON THE SCHOOL ROOF' },
-      { zone: [340, 18, 475, 45], at: [469, 33], when: ['key', 378, 27, 'got'], done: ['lockgate', 469, 33, 'open'], line: 'THE BONE GATE WANTS THE KEY YOU CARRY' } ] },
+    { id: 'ul-bed-garden', zone: [1,20,13,31], at: [13,29], done: ['vinebed', 13, 29, 'grown'], line: "THE SEED BED AT THE WALL: HER GREEN JAR IS BY IT" },
+    { id: 'ul-bed-ditch', zone: [44,20,49,31], at: [49,29], done: ['vinebed', 49, 29, 'grown'], line: "THE SEED BED ON THE DITCH'S LIP: A GREEN JAR GROWS A BRIDGE" },
+    { id: 'ul-bed-warden', zone: [76,20,87,31], at: [87,29], done: ['vinebed', 87, 29, 'grown'], line: "THE SEED BED AT THE WALL: THE GREEN JAR IS BACK ALONG THE LANE" },
+    { id: 'ul-well-loft', zone: [97,20,104,31], at: [103,29], done: ['floatwell', 103, 29, 'used'], line: "THE FLOAT WELL UNDER THE LOFT: HER BLUE JAR IS BY IT" },
+    { id: 'ul-well-rack', zone: [136,12,146,19], at: [144,17], done: ['floatwell', 144, 17, 'used'], line: "THE HIGH RACK: A BLUE BUBBLE OFF THE BOARD" },
+    { id: 'ul-hedge-1', zone: [189,20,197,31], at: [198,29], done: ['thornhedge', 198, 29, 'burnt'], line: "THE THORN HEDGE: HER RED JAR BURNS IT" },
+    { id: 'ul-hedge-2', zone: [217,25,231,33], at: [232,32], done: ['thornhedge', 232, 32, 'burnt'], line: "THE THORN HEDGE IN THE HOLLOW: A RED JAR" },
+    { id: 'ul-hedge-3', zone: [255,20,269,31], at: [270,29], done: ['thornhedge', 270, 29, 'burnt'], line: "THE THIRD HEDGE: A RED JAR BURNS IT" },
+    { id: 'ul-yard', zone: [279,20,292,31], steps: [   /* the remix: the thorns first, then the bed they hid */
+      { at: [290,29], done: ['thornhedge', 290, 29, 'burnt'], line: "THE THORNS HIDE A SEED BED: BURN THEM FIRST" },
+      { at: [292,29], done: ['vinebed', 292, 29, 'grown'], line: "THE SEED BED UNDER THE YARD: A GREEN JAR" } ] },
+    { id: 'ul-well-yard', zone: [306,17,318,23], at: [316,22], done: ['floatwell', 316, 22, 'used'], line: "THE FLOAT WELL: A BUBBLE UP TO HER LEAF" },
+    { id: 'ul-bed-leaf', zone: [317,10,322,16], at: [322,15], done: ['vinebed', 322, 15, 'grown'], line: "THE SEED BED ON THE LEAF: A BRIDGE TO THE HEARTH" },
+    { id: 'ul-hedge-leaf', zone: [372,20,381,31], at: [382,29], done: ['thornhedge', 382, 29, 'burnt'], line: "HER LEAF: THE THORNS FIRST" },
+    { id: 'ul-bed-great', zone: [384,20,392,31], at: [392,29], done: ['vinebed', 392, 29, 'grown'], line: "THE SEED BED AT HER WALL: A GREEN JAR" },
+    { id: 'ul-well-great', zone: [393,15,410,24], at: [408,23], done: ['floatwell', 408, 23, 'used'], line: "THE FLOAT WELL: A BUBBLE TO HER STOOP" },
   ],
   burning: [
+    { id: 'bn-yard-gate', zone: [124, 18, 137, 30], at: [137, 23], glint: 'stall', line: 'THE GATE BURNS: WATER OPENS IT, OR THE ROOF' },
+    { id: 'bn-barn-gate', zone: [304, 18, 321, 30], at: [322, 24], glint: 'stall', line: 'THE BARN DOOR BURNS: WATER OPENS IT, OR THE ROOF' },
     { id: 'bn-fallen-house', zone: [200, 22, 232, 30], ats: [[227, 25], [208, 23]], line: 'TOO HIGH TO JUMP: WATER, OR THE ROOFS' },
     { id: 'bn-trench', zone: [240, 18, 252, 30], at: [252, 23], line: 'THE STREET IS GONE: GO OVER THE ROOFS' },
   ],
@@ -365,7 +378,10 @@ export const STUCK = {
     { id: 'hg-wheels', zone: [90, 58, 112, 84], ats: [[104, 75], [104, 68]], glint: 'stall', line: 'THE WATER WHEEL PADDLES CARRY YOU UP' },
     { id: 'hg-hoist-mill', zone: [64, 56, 92, 68], mover: {hoist:'mill'}, glint: 'stall', line: 'THE MILL HOIST NEEDS A SACK IN ITS WELL' },
     { id: 'hg-hoist-nest', zone: [52, 40, 76, 53], mover: {hoist:'nest'}, glint: 'stall', line: 'THE NEST HOIST NEEDS TWO SACKS IN ITS WELL' },
-    { id: 'hg-hoist-crown', zone: [46, 5, 70, 21], mover: {hoist:'crown'}, glint: 'stall', line: 'THE CROWN HOIST NEEDS A COIL IN ITS WELL' },
+    /* (claude/hanging3) CUT IT AND RIDE IT: the ropes the route needs - the tied-up bridges (the knot glints until it is cut) and the exam's deck-then-bridge */
+    { id: 'hg-bridge-rope', zone: [34, 84, 52, 93], at: [36, 93], done: ['hvrope', 36, 93, 'cut'], line: 'THE RED AND GOLD KNOT HOLDS THE BRIDGE UP' },
+    { id: 'hg-bridge-wind', zone: [41, 56, 60, 65], at: [43, 65], done: ['hvrope', 43, 65, 'cut'], glint: 'stall', line: 'THE KNOT BY THE GAP HOLDS A BRIDGE UP' },
+    { id: 'hg-stair-bridge', zone: [56, 24, 64, 37], ats: [[60, 37], [57, 31]], done: ['hvrope', 57, 31, 'cut'], line: 'THE COUNTERWEIGHT RIDES UP TO THE BRIDGE KNOT' },
   ],
   spire: [
     { id: 'sp-baskets', zone: [14, 126, 34, 140], mover: { cw: 'cw0' }, line: 'THE BOOK-HOIST BASKETS CARRY YOU UP' },
@@ -836,9 +852,7 @@ export const STUCK_SIGNS = {
     { x: 205, y: 27, text: 'THE BOAT SWINGS TO YOU. STEP IN, AND LET GO AT THE TOP.' },
     { x: 564, y: 27, text: 'THE HIGH STRIKER AGAIN. COME DOWN ON THE PAD HARD.' },
     { x: 566, y: 13, text: 'THREE TARGETS, NINE SECONDS: THE BARS DROP FOR THEM.' } ] },
-  underleaf: { add: [
-    { x: 118, y: 33, text: 'THE MILL. THE BRASS KEY IS IN THE LOFT.' },
-    { x: 274, y: 33, text: 'THE CHURCH. THE IRON KEY IS ON THE ROOD BEAM.' } ] },
+  /* (claude/underleaf3: the mill's and the church's route signs went with UNDERLEAF 2's village) */
   burning: { add: [
     { x: 224, y: 25, text: 'TOO HIGH TO JUMP. WATER PUTS IT OUT, OR GO OVER THE ROOFS.' },
     { x: 245, y: 25, text: 'THE STREET IS GONE. GO OVER THE ROOFS.' } ] },
