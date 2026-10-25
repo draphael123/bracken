@@ -86,7 +86,7 @@ export function makeBatteringBeastHands(ctx) {
     for (const s of S.scafs) { if (s.st !== 'stand') continue; const box = { l: s.x - 8, r: s.x + 8, t: S.G.floorY - 40, b: S.G.floorY };
       if (hb.l < box.r && hb.r > box.l && hb.t < box.b && hb.b > box.t && ctx.hitOnce(s)) BBM.knockProp(S, s, w); }
     if (S.ph > 1 && !S.harness.cut) { const bx = BBM.buckleBox(e); if (hb.l < bx.r && hb.r > bx.l && hb.t < bx.b && hb.b > bx.t && ctx.hitOnce(S.harness)) { S.harness.lastT = ctx.time(); BBM.hitBuckle(e, S, w); } } };
-  H.take = (e, dmg, fromX, pl) => { if (!S) return dmg; const [d, word] = BBM.takeBlow(e, S, dmg, pl);
+  H.take = (e, dmg, fromX, pl, tag) => { if (!S) return dmg; const [d, word] = BBM.takeBlow(e, S, dmg, pl);
     if (word) { e.chipHit = ctx.time(); e.guardFx = 0.25; e.guardWord = word; ctx.sfx.clank && ctx.sfx.clank(); const sd = Math.sign(ctx.hero().x - e.x) || 1; ctx.sparks(e.x + sd * 20, e.y - 20, sd, 4);
       if (!S.told.hide && word === 'ARMOURED') { S.told.hide = 1; ctx.hint && ctx.hint('HIS ARMOUR TURNS A CUT. KNOCK OUT A SCAFFOLD PROP: ON HIM, OR IN HIS PATH, HE STICKS IN THE WRECK. OR COME DOWN ON HIS BACK.'); } }
     return d; };
