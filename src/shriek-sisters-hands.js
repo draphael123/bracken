@@ -12,6 +12,7 @@
 import * as SSM from './shriek-sisters.js';
 import { BOSS_PHASE } from './boss-music.js';
 import { canvas, flipX, whiten } from './px.js';
+import { drawSister } from './redraw/shriek_sisters_art.js';
 const { SS, ROLES } = SSM;
 
 const SOUND = { screech: s => (s.screech || s.tell)(), lock: s => (s.tell || s.clank)(), dive: s => (s.whoosh || s.throwWhoosh || s.screech || s.tell)(), smash: s => { (s.crack || s.stone || s.thud)(); (s.heavy || s.thud)(); },
@@ -34,28 +35,7 @@ export const POSE = {
   dropTell: { wing: -1.1, pitch: -0.1, head: [7, 2], rock: true, talon: 'open', eye: 'red' }, drop: { wing: -0.8, pitch: 0, head: [8, -2], talon: 'spread' },
   snatchTell: { wing: -1.0, pitch: 0.3, head: [10, 2], talon: 'spread', eye: 'red' }, snatch: { wing: 0.1, pitch: 0.15, head: [13, 1], talon: 'fwd', fold: true },
 };
-/* A SISTER (greybox): a harpy twice the crag harpy's size - wings, a body, a crested head, talons; her role in her colour (and the shrieker's crest, the snatcher's rock) */
-function drawSister(g, role, p, flash, time, rocks) {
-  const c = COL[role], beat = p.flap ? Math.sin(time * 14) * 0.5 : 0, wa = (p.wing || 0) + beat;
-  g.save(); g.rotate(p.pitch || 0);
-  /* the far wing, the body, the near wing */
-  const wing = (dir, col) => { g.save(); g.translate(-2, -12); g.rotate(dir * wa - (p.fold ? 0.2 : 0)); rect(g, -26, -3, 26, 6, col); rect(g, -30, -1, 6, 3, col); for (let k = 0; k < 4; k++) rect(g, -26 + k * 6, 2, 4, 3, c.dark); g.restore(); };
-  if (!p.sprawl) wing(1, c.dark);
-  rect(g, -8, -18, 18, 12, flash ? '#ffffff' : c.body); rect(g, -8, -18, 18, 2, c.light); if (p.chest) rect(g, 2, -16, 7, 8, c.light);
-  const [hx, hy] = p.head || [8, -2]; rect(g, hx, -20 + hy, 9, 8, flash ? '#ffffff' : c.body); rect(g, hx + 3, -23 + hy, 2, 4, c.crest); rect(g, hx + 6, -24 + hy, 2, 5, c.crest);
-  rect(g, hx + 9, -16 + hy, p.beak ? 5 : 4, 2, '#e8c870'); if (p.beak) rect(g, hx + 9, -13 + hy, 4, 2, '#c8a050');
-  rect(g, hx + 5, -18 + hy, 2, 2, p.eye === 'red' ? '#ff4a2a' : '#ffe9a0');
-  if (p.sprawl) { g.save(); g.translate(0, -8); rect(g, -30, -2, 28, 5, c.dark); rect(g, 8, -2, 26, 5, c.dark); g.restore(); } else wing(-1, c.body);
-  /* talons */
-  const tl = p.talon === 'fwd' ? [[6, -4], [10, -2]] : p.talon === 'spread' || p.talon === 'open' ? [[-4, -2], [8, -2]] : [[0, -5], [4, -5]];
-  for (const [tx, ty] of tl) { rect(g, tx, ty - 3, 2, 5, '#3a2e22'); rect(g, tx - 1, ty + 1, 4, 2, '#e0d0a0'); }
-  if (p.rock && rocks !== false) { rect(g, -3, -2, 11, 8, '#8a8478'); rect(g, -3, -2, 11, 2, '#b4ae9f'); rect(g, 0, 1, 1, 4, '#2a2620'); }
-  g.restore();
-  if (p.rubble) for (let k = 0; k < 5; k++) rect(g, -16 + k * 7, -3 - (k % 2) * 3, 6, 4, k % 2 ? '#8a8478' : '#5e594f');
-  if (p.stars) for (let k = 0; k < 3; k++) { const a = time * 5 + k * 2.1; rect(g, 4 + Math.cos(a) * 10, -30 + Math.sin(a) * 4, 3, 3, '#ffe9a0'); }
-  if (p.rings) { const k = (time * 3) % 1; g.strokeStyle = 'rgba(255,90,74,' + (1 - k).toFixed(2) + ')'; g.beginPath(); g.arc(hx + 14, -14 + hy, 6 + k * 26, -0.9, 0.9); g.stroke(); }
-  if (p.cone) { g.fillStyle = 'rgba(255,211,107,0.35)'; g.beginPath(); g.moveTo(hx + 12, -14 + hy); g.lineTo(hx + 44, -30 + hy); g.lineTo(hx + 44, 4 + hy); g.closePath(); g.fill(); }
-}
+/* A SISTER is drawn by src/redraw/shriek_sisters_art.js (claude/rookeryart: three different birds, baked per pose; the greybox's rectangles are gone) */
 
 export function makeShriekSistersHands(ctx) {
   let S = null, A0 = null; const H = {}, bodies = {};
