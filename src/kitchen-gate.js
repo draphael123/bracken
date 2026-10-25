@@ -9,7 +9,7 @@
 //   so the pilot bot and the guide read it unchanged). STRIKE IT and the fire ROARS for K.roar s (a heat gauge over it drains - the rule's state, drawn) and works
 //   what it serves:
 //     copper  a STEAM column rises off the copper while it roars: stand in it and it lifts you (L.kgPots; L.reachVents for the reach model)
-//     spit    THE GREAT SPIT, a turnspit wheel of four iron spits round a hub over the fire pit: it TURNS while the fire roars (and stops when it dies) - ride a spit
+//     spit    THE GREAT SPIT, a turnspit frame of two iron spits round a hub over the fire pit: it TURNS while the fire roars (and stops when it dies) - ride a spit
 //             up (L.kgWheels; its spits are movers, L.moversExtra kg:'spit')
 //     trail   a GREASE TRAIL from the fire's grate: the fire CATCHES it, the flame runs along it - burning whatever stands on it (the cooks, THE BUTCHER) - and at
 //             its end a TALLOW DOOR (a wall of hard white fat) MELTS: a way opens, and stays open (L.kgTrails, L.kgDoors)
@@ -28,19 +28,19 @@
 //    300-372  THE FEAST HALL        EXAM    THE THIRD SPIT up to the minstrels' gallery (REQUIRED), THE HEARTH TRENCH on the hooks (REQUIRED), a butcher, a thrower and
 //                                           cooks on the grease before THE BUTTERY DOOR (REQUIRED); THE SPICE VAULT (the three recipe pages open it: silver); shrine 368
 //    372-420  GRUBBAG'S TABLE       BOSS    LORD GRUBBAG THE GLUTTON in his chair at the high table
-export const KITCHEN = { W: 420, H: 48, arena: [374, 416], floor: 22 };
+export const KITCHEN = { W: 420, H: 48, arena: [390, 416], floor: 22 };
 export const SECTIONS = [['THE UNDERCELLARS', 0, 104], ['THE SPIT HALL', 104, 201], ['THE GREASE KITCHENS', 201, 300], ['THE FEAST HALL', 300, 372], ["GRUBBAG'S TABLE", 372, 420]];
 /* the rule's arc in COLUMNS - TAUGHT, TESTED, REMIXED, EXAMINED - read by tools/kitchengate.mjs and the brief */
 export const ARCS = {
   copper: { teach: [56, 70], test: [82, 98], remix: [160, 186] },
   spit: { teach: [106, 120], test: [134, 148], exam: [302, 316] },
   trail: { teach: [221, 240], remix: [283, 297], exam: [342, 357] },
-  hooks: { teach: [30, 52], remix: [164, 186], develop: [250, 282], exam: [320, 342] },
+  hooks: { teach: [30, 52], test: [164, 186], develop: [250, 282], exam: [320, 342] },
   grease: { teach: [202, 221], develop: [246, 282], exam: [342, 354] },
   butcher: { teach: [283, 298], exam: [342, 356] },
 };
 export const KG_RULE = 'STRIKE A BELLOWS AND ITS FIRE ROARS: THE SPIT OVER IT TURNS, THE COPPER ON IT STEAMS, THE GREASE BY IT BURNS.';
-export const WHEEL = { R: 56, n: 4, w: 36, h: 6, period: 6.5 };   /* THE GREAT SPIT: its radius (px, to a spit's top), spits, a spit's size and one turn's time while it roars */
+export const WHEEL = { R: 64, n: 2, w: 36, h: 6, period: 7 };   /* THE GREAT SPIT: its radius (px, to a spit's top), its two spits (opposite: banked, one rests in the pit and one at the top - never a stair), a spit's size and one turn's time while it roars */
 
 export function buildKitchenGate({ painter, T, TS }) {
   const { W, H } = KITCHEN;
@@ -61,7 +61,7 @@ export function buildKitchenGate({ painter, T, TS }) {
   const copper = (fd, id, x, f, top) => { const d = { id, fire: fd.id, x, f, top }; pots.push(d); fd.pots.push(id); ent('kgpot', x, f - 1, { id });
     reachVents.push({ t: 'vent', x, y: f - 1, h: (f - top) * TS }); return d; };
   /* THE GREAT SPIT over its fire pit: the hub at column hx, its bottom spit's top on floor row f (the pit's lip) */
-  const spitWheel = (fd, id, hx, f) => { const d = { id, fire: fd.id, hx, f, x: hx * TS + 8, y: f * TS - WHEEL.R, rest: Math.PI / 4 }; wheels.push(d); fd.wheels.push(id); ent('kgspit', hx, f - 1, { id });
+  const spitWheel = (fd, id, hx, f, rest = Math.PI / 2) => { const d = { id, fire: fd.id, hx, f, x: hx * TS + 8, y: f * TS - WHEEL.R, rest };   /* rest: where its spits stand while it is banked (never a stair: tools/kitchengate.mjs) */ wheels.push(d); fd.wheels.push(id); ent('kgspit', hx, f - 1, { id });
     for (let k = 0; k < WHEEL.n; k++) movers.push({ kg: 'spit', wheel: id, k, x: d.x - WHEEL.w / 2, y: d.y, w: WHEEL.w, h: WHEEL.h }); return d; };
   /* A GREASE TRAIL from the fire's grate along floor row f, x0 -> x1 (columns), and the TALLOW DOOR at its end, if any */
   const trail = (fd, id, x0, x1, f, door) => { const d = { id, fire: fd.id, x0, x1, f, door: door ? door.id : null }; trails.push(d); fd.trails.push(id); ent('kgtrail', x0, f - 1, { id }); return d; };
@@ -103,7 +103,7 @@ export function buildKitchenGate({ painter, T, TS }) {
   coins([60, 26], [70, 26], [78, 26]);
   /* THE BREWHOUSE COPPER (the area's EXAM, REQUIRED): a face eight high; the copper's steam up it, a pot-thrower on the top, a cook at its foot */
   air(84, 89, 9, 16);                                                                    /* the brewhouse flue over the copper */
-  air(90, 104, 9, 18);                                                                   /* the brewhouse floor (row 19) */
+  air(90, 104, 9, 18); air(102, 104, 19, 25);                                            /* the brewhouse floor (row 19), and its lip (it ends at 101) */
   const brew = fire('brewhouse', 85, 26, 87, 27);
   copper(brew, 'brewCopper', 87, 27, 12);
   sign(83, 26, 'THE BREWHOUSE. STRIKE THE BELLOWS, RIDE THE STEAM UP.');
@@ -113,7 +113,7 @@ export function buildKitchenGate({ painter, T, TS }) {
 
   // ================= 2. THE SPIT HALL (104-201): TEST - the great spits =================
   air(105, 200, 4, 25);                                                                  /* THE SPIT HALL (floor row 26) */
-  sign(103, 18, 'THE SPIT HALL. THE GREAT SPITS TURN ONLY WHILE THEIR FIRES ROAR.');
+  sign(99, 18, 'THE SPIT HALL. THE GREAT SPITS TURN ONLY WHILE THEIR FIRES ROAR.');
   /* THE FIRST SPIT (REQUIRED): the ledge is six high; strike the bellows and ride a spit up */
   const spit1 = fire('spit1', 108, 25, 114, 26);
   air(111, 117, 26, 27); spike(111, 117, 28);                                             /* its fire pit */
@@ -216,14 +216,15 @@ export function buildKitchenGate({ painter, T, TS }) {
   /* The high table's hall: the floor (row 22), his reinforced chair at the east end behind the high table, the KITCHEN HATCH and its PIE OVEN at the west end with the
      oven's bellows, and THE SERVING LINE - a hook rail under the roof from the hatch to his table (the dishes ride it). Two benches (shelves) along the west wall */
   const [A0, A1] = KITCHEN.arena, FL = KITCHEN.floor;
+  air(373, A0 - 2, 12, FL - 1);                                                          /* the passage from the feast hall to his table */
   air(A0 - 1, A1 + 1, 8, FL - 1);
-  shelf(A0 + 3, A0 + 7, FL - 3); shelf(A0 + 12, A0 + 16, FL - 3);
+  shelf(A0 + 2, A0 + 5, FL - 3); shelf(A0 + 9, A0 + 12, FL - 3);
   ent('torch', A0 + 1, FL - 1); ent('torch', A1 - 1, FL - 1);
   ent('grubbag', A1 - 6, FL - 1);
 
   const arena = { x0: A0 * TS, x1: (A1 + 1) * TS, floor: FL * TS, y0: 8 * TS, trigger: (A0 + 6) * TS, wallL: A0 - 1, wallR: A1 + 1, boss: 'grubbag', music: 'boss3', tint: '#f0c890', tintA: 0.06,
     /* THE TABLE (src/grubbag.js geom): his chair's column, the high table's span, the hatch / oven and its bellows, the serving line's two ends (columns, rows) */
-    chair: A1 - 6, table: [A1 - 15, A1 - 8], oven: A0 + 2, bellows: A0 + 4, line: [A0 + 2, 11, A1 - 9, 13] };
+    chair: A1 - 6, table: [A1 - 11, A1 - 8], oven: A0 + 1, bellows: A0 + 3, line: [A0 + 1, 11, A1 - 9, 13] };
   return {
     W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: 39 }, pools: [], falls: [],
     arena, kitchen: true, hoists, kgFires: fires, kgPots: pots, kgWheels: wheels, kgTrails: trails, kgDoors: doors, kgRace: race, kgPages: pages, kgVault: vault, kgRacks: racks,
