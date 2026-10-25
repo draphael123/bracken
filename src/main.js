@@ -4890,7 +4890,7 @@ const WOOD_NODES = [
   { id: 'burning', kind: 'level', level: LEVELS.findIndex(l => l.id === 'burning'), x: 304, y: 38, plate: 'above', spur: true, name: 'THE BURNING VILLAGE' },   /* A SPUR off the road between the Stockade and Sporewood: the Pyromancer's class level, and optional, so the road does not go through it */
   { id: 'spore', kind: 'level', level: 3, x: 199, y: 38, plate: 'above', name: 'SPOREWOOD' },
   { id: 'rootway', kind: 'level', level: LEVELS.findIndex(l => l.id === 'rootway'), x: 221, y: 68, plate: 'right', name: 'THE ROOTWAY' },   /* THE ROOTWAY (claude/rootway): between SPOREWOOD and KINGSWOOD (Daniel 10-07): the only spot map-spacing passes near them, so the road dips south to it and climbs back to Kingswood (the map lane may relay the sheet) */
-  { id: 'palisadewood', kind: 'level', level: LEVELS.findIndex(l => l.id === 'palisadewood'), x: 178, y: 58, plate: 'below', name: 'THE PALISADE WOOD' },   /* THE PALISADE WOOD (claude/palisadewood, Daniel 10-15): ON the road between THE ROOTWAY and KINGSWOOD */
+  { id: 'palisadewood', kind: 'level', level: LEVELS.findIndex(l => l.id === 'palisadewood'), x: 178, y: 58, plate: 'below', board: 'PALISADE', name: 'THE PALISADE WOOD' },   /* THE PALISADE WOOD (claude/palisadewood, Daniel 10-15): ON the road between THE ROOTWAY and KINGSWOOD */
   { id: 'kings', kind: 'level', level: 4, x: 141, y: 24, name: 'KINGSWOOD' },
   { id: 'underleaf', kind: 'level', level: LEVELS.findIndex(l => l.id === 'underleaf'), x: 60, y: 56, plate: 'below', name: 'UNDERLEAF' },   /* UNDERLEAF (claude/underleafroad, Daniel 10-08): a MAIN-ROAD level now, between KINGSWOOD and THE SCREE PATH - it was a secret spur at (67,70); the road bends through it */
 ];
@@ -5335,7 +5335,7 @@ function drawMap() {
     const nw = nd('wood'), nm = nd('marsh'), ns = nd('stockade'), np = nd('spore'), nk = nd('kings'), nh = nd('hanging');
     if (nw) drawMapPortrait('wood', SPR.queen, Math.floor(time * 20) % 2, nw.x + 30, nw.y - 16 + qb, -1, 20, cl('wood'));
     if (nh) drawMapPortrait('hanging', SPR.owl, 0, nh.x + 30, nh.y - 10 + qb, -1, 18, cl('hanging'));
-    { const nn = nd('hornetsnest'); if (nn) drawMapPortrait('hornetsnest', SPR.mapNest, 0, nn.x - 14, nn.y - 22, 1, 22, cl('hornetsnest')); }   /* (claude/hornets2art) a little great pine with its paper nest, above its node */
+    { const nn = nd('hornetsnest'); if (nn) drawMapPortrait('hornetsnest', SPR.mapNest, 0, nn.x - 38, nn.y - 22, 1, 22, cl('hornetsnest')); }   /* (claude/hornets2art) a little great pine with its paper nest, above its node */
     { const nc = nd('crown'); if (nc) { const cw0 = PROP.castle.width, kc = Math.max(1, Math.round(cw0 / 60)), cc = MAP_CASTLE || (MAP_CASTLE = MPX.blockVote(PROP.castle, kc, { outline: ART.OUT })); { const bx = Math.round(nc.x - cc.width / 2), by = Math.round(nc.y - 58); g.drawImage(cc, bx, by); MAP_PORT_BOX.castle = { x: bx, y: by, w: cc.width, h: cc.height, k: kc }; } drawMapPortrait('crown', SPR.gqueen, 3, nc.x + 30, nc.y + 6, -1, 18, cl('crown')); } }
     { const nr = nd('scree'); if (nr) drawMapPortrait('scree', SPR.ram, 0, nr.x + 28, nr.y + 8, -1, 14, cl('scree')); }
     if (nm) drawMapPortrait('marsh', SPR.frog, Math.floor(time * 1.5) % 2, nm.x - 26, nm.y + 4, 1, 12, cl('marsh'));

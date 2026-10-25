@@ -48,7 +48,7 @@ if (otherSign) notes.push(otherSign + ' board(s) lie over a NEIGHBOUR\'s signpos
 let softTotal = 0, worst = 0;
 for (const n of nodes) { const r = placePanel(n, nodes, plates); if (!r.ok) bad.push(n.id + ': its card hides ' + r.hits.map(h => h.id + ' ' + h.what).join(', ')); else { softTotal += r.soft; worst = Math.max(worst, r.soft); } }
 notes.push('info cards: ' + softTotal + ' other boards/nodes still under a card across ' + nodes.length + ' nodes (worst ' + worst + ' for one card)');
-for (const n of nodes) if (n.label !== plateLabel(LEVELS[NODES.find(q => q.id === n.id).level]?.name || n.label) && n.kind === 'level') bad.push(n.id + ': board label is not plateLabel()');
+for (const n of nodes) if (n.label !== plateLabel(NODES.find(q => q.id === n.id).board || LEVELS[NODES.find(q => q.id === n.id).level]?.name || n.label) && n.kind === 'level') bad.push(n.id + ': board label is not plateLabel()');
 
 /* 3. THE CARD */
 if (panelSize({ kind: 'level' }).h > SCREEN.VH * 0.3) bad.push('the info card is ' + panelSize({ kind: 'level' }).h + ' px tall: over 30% of the screen (' + SCREEN.VH * 0.3 + ')');
