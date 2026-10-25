@@ -2471,7 +2471,7 @@ async function runbossLab(BK, opts) {
         if (mk || gp) { const bad = x => PH.marks().some(m => Math.abs(m.x - x) < m.r + 10) || PH.gpatches().some(q => Math.abs(q.x - x) < 30);   /* the nearest floor no mark covers */
           let gx = P.x; for (let dd = 8; dd < 260; dd += 8) { if (P.x + dd < A.x1 - 16 && !bad(P.x + dd)) { gx = P.x + dd; break; } if (P.x - dd > A.x0 + 16 && !bad(P.x - dd)) { gx = P.x - dd; break; } } goal = gx; strike = false; }
         else if (boss.mode === 'floated') { goal = boss.x; strike = true; }
-        else if (br) { goal = br.x; strike = false; if (Math.abs(br.x - P.x) < LAB_REACH[h] + 8 && Math.abs(br.y - P.y) < 22 && P.atk < 0) { P.face = Math.sign(br.x - P.x) || P.face; BK.press('atk'); swings++; } }
+        else if (br) { goal = br.x; strike = false; if (Math.abs(br.x - P.x) < LAB_REACH[h] + 8 && Math.abs(br.y - P.y) < 22 && P.atk < 0) { P.face = Math.sign(br.x - P.x) || P.face; if (keyVerb(BK, h, br) === 'sweep') k.down = true; BK.press('atk'); swings++; } }   /* her brood is family 'small': the low sweep, as the Mother's sporelings (small-adds) */
         else if (boss.ward > 0) { goal = boss.x; strike = true; }
         else if (c === 'blue') { const dx = boss.x - P.x; if (Math.abs(Math.abs(dx) - 56) > 22) { goal = boss.x - (Math.sign(dx) || 1) * 56; strike = false; } else { goal = null; strike = false; k.left = k.right = false; k.up = k.down = false; P.face = Math.sign(dx) || P.face; BK.press('atk'); } }
         else if (c) { k.down = true; BK.press('atk'); }
