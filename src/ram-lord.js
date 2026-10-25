@@ -17,8 +17,8 @@ import { drawArm, drawSlab, drawProp } from './scree-lip.js';
 //     jump it. NO ADDS: his flock call is gone (Daniel: no adds unless the brief says so).
 // main.js wires it (updateRam calls ramStep; the hit code asks ramGuard; the draw asks drawRamLips/drawRamRead). tools/ram-lord.mjs is its check.
 export const RAM = {
-  hp: 3600,             // (was 360 on the chip; a duelist's blows land - and a fight is ~90-150 s)
-  stunT: 3.4, stunMul: 6, crashMul: 6,   /* (Daniel 10-24: x8 measured 92% with flasks -> x6) */ wardT: 2, frontMul: 0.4, burnMul: 0.4, paceExtra: [0.5, 0.35, 0.2],   /* burnMul: a burn tick outside his openings (off the chip, the pyro's fire ran whole: 4/4 in 34-48 s) */
+  hp: 6000,             // (was 360 on the chip; a duelist's blows land - and a fight is ~90-150 s)
+  stunT: 3.4, stunMul: 6, crashMul: 6,   /* (Daniel 10-24: x8 measured 92% with flasks -> x6) */ wardT: 2, frontMul: 0.4, burnMul: 0.4, paceExtra: [0.1, 0.05, 0],   /* burnMul: a burn tick outside his openings (off the chip, the pyro's fire ran whole: 4/4 in 34-48 s) */
   p2: 0.66, p3: 0.33,
   rainEvery: 2.1, rainTell: 0.95,
   sweepTell: 0.65, sweepR: 42, sweepH: 22,
