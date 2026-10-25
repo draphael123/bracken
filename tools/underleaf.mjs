@@ -183,5 +183,5 @@ try {
   ok(!r.save.err && r.save.silver === 5 && r.save.cleared && r.save.jars > 10, 'an old save that cleared Underleaf loads the new village with its bits kept: ' + JSON.stringify(r.save));
   ok(!r.save.mid, 'a save standing at Underleaf (the Rootway cleared) loads it: ' + r.save.mid);
   assert.deepEqual(pg.errors.slice(0, 3), [], 'no page errors');
-  console.log('underleaf: ' + n + ' checks - her jars, the vines, the bubbles, the fires, the locks, the potion crossing and THE POTION MASTER's three phases all hold');
+  console.log('underleaf: ' + n + ' checks - her jars, the vines, the bubbles, the fires, the locks, the potion crossing and THE POTION MASTER three phases all hold');
 } finally { pg.close(); }

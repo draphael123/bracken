@@ -243,3 +243,37 @@ export function drawCoatFire(g, e, cx, cy, time) {
   for (let q = 0; q < 5; q++) { const ph = (time * 1.5 + q / 5) % 1; g.globalAlpha = (1 - ph) * k; R(g, '#2a2420', x - 8 + q * 4, y - h - ph * 14, 2, 2); }
   g.globalAlpha = 1; glowAt(g, '255,154,92', x, y - h * 0.5, 50, 40, 0.5 * k);
 }
+
+/* ------------------------------------------------------------------ (claude/underleaf4art) HER GUARDS AND HER TRAPS ------------------------------------------------------------------ */
+/* THE VINE THAT PULLS HER DOWN (P2): a thick twisted vine up from the floor, coiling round her, thorns, leaves, a bloom at the top; it grows up in 0.25 s */
+export function drawSnareVine(g, x0, yTop, yFloor, cx, cy, time, k = 1) {
+  const x = rc(x0 - cx), y0 = rc(yTop - cy), y1 = rc(yFloor - cy), h = Math.max(4, (y1 - y0) * Math.min(1, k)), J = COL.green;
+  for (const [off, ph] of [[-3, 0], [2, 2]]) for (let q = 0; q < h; q++) { const sx = x + off + rc(Math.sin(q * 0.35 + ph + time * 2) * 3); R(g, q % 6 < 3 ? J[1] : J[0], sx, y1 - q, 3, 1); R(g, J[2], sx, y1 - q, 1, 1); }
+  for (let q = 4; q < h; q += 7) { const sx = x + (q % 2 ? 7 : -9); R(g, J[1], sx, y1 - q, 5, 2); R(g, J[2], sx, y1 - q, 2, 1); R(g, '#e8dcc0', sx + (q % 2 ? 5 : -1), y1 - q - 1, 1, 2); }
+  R(g, '#f0ecd0', x - 2, y1 - h - 3, 5, 1); R(g, '#f0ecd0', x, y1 - h - 5, 1, 5); R(g, '#e0b040', x, y1 - h - 3, 1, 1);
+  glowAt(g, rgbOf(J[0]), x, y1 - h * 0.5, 30, h + 10, 0.2);
+}
+/* HER THORN-HEDGE WARD (P1): a dome of bramble round her, canes arching over, pale thorns; it flares and blackens as it burns (b = burn 0..1) */
+export function drawWardHedge(g, x0, floorY, cx, cy, time, b = 0) {
+  const x = rc(x0 - cx), fy = rc(floorY - cy); g.save();
+  for (const side of [-1, 1]) for (let q = 0; q < 5; q++) { const hh = 44 - q * 3, sx = x + side * (13 + q * 3), sy = fy - hh; const wob = rc(Math.sin(time * 2 + q + side) * 1);
+    for (let t = 0; t < hh; t += 2) { const lx = sx + wob * (t / hh) - side * rc(Math.pow(t / hh, 3) * 8); R(g, b > 0.3 ? '#1a1410' : (t % 6 < 3 ? '#243a16' : '#386a24'), lx, fy - t, 3, 2); if (t % 8 === 4) R(g, '#e8dcc0', lx + (side > 0 ? 3 : -1), fy - t, 1, 2); } }
+  for (let q = -10; q <= 10; q += 2) R(g, '#243a16', x + q, fy - 50 + Math.abs(q) * 0.5 + (q % 4 ? 1 : 0), 2, 3);   /* the arch over her head */
+  if (b > 0) for (let q = 0; q < 14; q++) { const fh = 8 + ((q * 5 + rc(time * 16)) % 14); R(g, q % 2 ? '#ff9a5c' : '#d8502a', x - 20 + q * 3, fy - fh - ((q * 7) % 20), 3, fh * 0.6); glowAt(g, '255,154,92', x, fy - 24, 60, 60, 0.5 * b); }
+  g.restore();
+}
+/* HER RING OF CAULDRON FIRE (P3): two arcs of flame on the floor either side of her with a rim of embers rising and a glow (the ring she stands in) */
+export function drawFireRing(g, x0, floorY, r, cx, cy, time) {
+  const x = rc(x0 - cx), fy = rc(floorY - cy);
+  for (let q = -r; q <= r; q += 3) { const d = Math.abs(q) / r, fl = Math.floor(time * 13 + q) % 2, fh = rc(5 + (1 - d * 0.5) * 9 + fl * 2 + Math.sin(time * 9 + q) * 1.5);
+    R(g, fl ? '#d8502a' : '#a83a1c', x + q, fy - fh, 3, fh); R(g, fl ? '#ff9a5c' : '#ffb070', x + q + 1, fy - fh + 2, 1, Math.max(1, fh - 4)); if (fh > 10) R(g, '#ffe6c0', x + q + 1, fy - 3, 1, 2); }
+  for (let q = 0; q < 7; q++) { const ph = (time * 0.8 + q / 7) % 1; g.globalAlpha = 1 - ph; R(g, q % 2 ? '#ffd36b' : '#ff9a5c', x - r + ((q * 11) % (2 * r)) , fy - 10 - ph * 34, 1, 1); } g.globalAlpha = 1;
+  glowAt(g, '255,154,92', x, fy - 8, r * 2 + 40, 40, 0.4 + 0.1 * Math.sin(time * 8));
+}
+/* HER BUBBLE TRAP (P2): a bubble with a thorn-dark core and a hungry pale-green rim, tiny spikes round it, so it reads as hers and as a TRAP, not as the lift you want */
+export function drawTrapBubble(g, b, cx, cy, time, bubbleR) {
+  drawBubble(g, b, cx, cy, time, bubbleR);
+  const x = rc(b.x - cx), y = rc(b.y - cy), r = bubbleR, J = COL.green;
+  g.save(); g.globalAlpha = 0.85; for (let a = 0; a < 10; a++) { const t = a / 10 * Math.PI * 2 + time * 1.4, px = x + rc(Math.cos(t) * (r + 1)), py = y + rc(Math.sin(t) * (r + 1)); R(g, a % 2 ? J[2] : J[0], px, py, 1, 1); R(g, '#e8dcc0', x + rc(Math.cos(t) * (r + 3)), y + rc(Math.sin(t) * (r + 3)), 1, 1); }
+  g.globalAlpha = 0.5; R(g, '#1c2a30', x - 2, y - 1, 4, 3); R(g, J[1], x - 1, y, 1, 1); g.restore();
+}

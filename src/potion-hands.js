@@ -289,7 +289,7 @@ export function makePotionHands(ctx) {
     let want = 0;
     /* THE PHASE TURNS (on her feet, between moves): the next potion's guard; her shelves brew its colour */
     const next = ph === 1 && e.hp <= e.maxHp * GM.p2 ? 2 : ph === 2 && e.hp <= e.maxHp * GM.p3 ? 3 : 0;
-    if (next && e.mode === 'walk') { e.phase = next; e.mode = 'kick'; e.modeT = GM.kick; e.vx = 0; if (next === 3) e.skinNow = 'grandmother2'; guardUp(e); arenaCol(next); for (const q of brood(e)) { q.hp = 0; q.alive = false; }
+    if (next && e.mode === 'walk') { e.phase = next; e.mode = 'kick'; e.modeT = GM.kick; e.vx = 0; if (next === 2) e.skinNow = 'grandmother3'; if (next === 3) e.skinNow = 'grandmother2'; guardUp(e); arenaCol(next); for (const q of brood(e)) { q.hp = 0; q.alive = false; }
       ctx.sfx.roar && ctx.sfx.roar(); ctx.shake(5); say(e.x, e.y - e.h - 24, 'phase' + next, next === 2 ? '#a8d8ff' : '#ff9a5c'); ctx.hint(PO_SAY['shelf' + next], 4);
       e.fireT = 2.2; e.trapT = 3.4; e.hurlT = 2.4; e.stirT = 3.6; e.sweepT = 1.5; }
     switch (e.mode) {
@@ -426,7 +426,7 @@ export function makePotionHands(ctx) {
     for (const b of balls) UW.drawBall(g, b, cx, cy, time);
     for (const p of pots) UW.drawHurledJar(g, p, cx, cy, time);
     for (const q of gpatches) UW.drawGranPatch(g, q, A().floor, cx, cy, time);
-    for (const q of traps) UW.drawBubble(g, { x: q.x, y: q.y, state: q.rider ? 'rise' : 'hover', t: q.t }, cx, cy, time, GM.trapR + (q.rider ? 6 : 0));   /* (claude/underleaf4) HER BUBBLE TRAPS */
+    for (const q of traps) UW.drawTrapBubble(g, { x: q.x, y: q.y, state: q.rider ? 'rise' : 'hover', t: q.t }, cx, cy, time, GM.trapR + (q.rider ? 6 : 0));   /* (claude/underleaf4) HER BUBBLE TRAPS */
     drawBanner(g, time);
   };
   const k0 = q => Math.floor(q.x);
@@ -435,12 +435,10 @@ export function makePotionHands(ctx) {
     if (!e.gm3) return; const x = R(e.x - cx), y = R(e.y - cy), pul = 0.5 + 0.5 * Math.sin(time * 10), fy = R(A().floor - cy);
     { const lp = UG.LANTERN[UG.frameOf(e)]; if (lp) UW.glowAt(g, e.phase >= 3 ? "255,154,92" : e.phase === 2 ? "168,216,255" : "184,240,112", e.x - cx + e.face * (lp[0] - 28), e.y - cy - (60 - lp[1]), 54, 54, 0.38 + 0.12 * Math.sin(time * 7)); }   /* her witch-fire lantern lights her */
     /* (claude/underleaf4) HER GUARD, DRAWN: P1 a thorn hedge either side of her (burning when it goes), P2 the bubbles she hangs on, P3 her ring of cauldron fire */
-    if (e.hedge || e.hedgeBurn > 0) { const tx = Math.floor(e.x / TS), ty = Math.round(A().floor / TS);
-      for (const hx of [tx - 2, tx + 1]) UW.drawHedge(g, { x0: hx, x1: hx, y0: ty - 3, y1: ty - 1, burnt: false, burnT: e.hedge ? 0 : 0.6 - (e.hedgeBurn || 0) }, cx, cy, time); }
+    if (e.hedge || e.hedgeBurn > 0) UW.drawWardHedge(g, e.x, A().floor, cx, cy, time, e.hedge ? 0 : Math.max(0.05, (e.hedgeBurn || 0) / 0.7));
     if (e.aloft && e.mode !== 'opened') for (const k of [-1, 0, 1]) UW.drawBubble(g, { x: e.x + k * 12, y: e.y + 6 - (k ? 0 : 4), state: 'hover', t: time + k }, cx, cy, time, k ? 9 : 12);
-    if (e.ring && e.mode !== 'floated') for (const k of [-2, -1, 0, 1, 2]) UW.drawGranPatch(g, { x: e.x + k * GM.ringR / 2, col: 'red', t: (time * 0.7 + k * 0.2) % 1 * 2, life: GM.patchLife }, A().floor, cx, cy, time);
-    if (e.mode === 'opened' && e.phase === 2) { g.fillStyle = '#2e5a1c'; g.fillRect(x - 2, y - 24, 5, fy - y + 24); g.fillStyle = '#5fae3a'; g.fillRect(x - 1, y - 24, 3, fy - y + 24);
-      for (let k = 0; k < 4; k++) { g.fillStyle = '#9be06a'; g.fillRect(x + (k % 2 ? 2 : -5), y - 20 + k * 8, 4, 2); } }   /* the vine that snared her down */
+    if (e.ring && e.mode !== 'floated') UW.drawFireRing(g, e.x, A().floor, GM.ringR, cx, cy, time);
+    if (e.mode === 'opened' && e.phase === 2) UW.drawSnareVine(g, e.x, e.y - 26, A().floor, cx, cy, time, Math.min(1, (1 - Math.max(0, e.modeT) / (e.openLen || 1)) * 5 + 0.2));   /* the vine that snared her down */
     if (e.mode === "floated") UW.drawBubble(g, { x: e.x, y: e.y - 24 + cy * 0, state: "hover", t: 0 }, cx, cy, time, 27);   /* the bubble she hangs in */
     if (isOpen(e)) { const k = Math.max(0, e.modeT / (e.openLen || GM.float));
       g.globalAlpha = 0.5 + 0.35 * pul; g.strokeStyle = '#ffd36b'; g.lineWidth = 2; g.beginPath(); g.ellipse(x, y - 1, 18 + pul * 2, 5, 0, 0, 7); g.stroke(); g.lineWidth = 1; g.globalAlpha = 1;
@@ -478,6 +476,6 @@ export function makePotionHands(ctx) {
   H.read = () => (S ? { n: { ...S.n }, jars: S.jars.map(j => ({ x: j.x, y: j.y, col: j.col, state: j.state })), beds: S.beds.map(b => ({ x: b.tx, y: b.ty, grow: b.grow, grown: b.grown })),
     hedges: S.hedges.map(h => ({ x0: h.x0, x1: h.x1, burnt: h.burnt })), wells: S.wells.map(w => ({ x: w.x, used: w.used })), bubbles: S.bubbles.map(b => ({ x: b.x, y: b.y, state: b.state, rider: b.rider === 'P' ? 'P' : b.rider ? b.rider.t : null })),
     marks: marks.map(m => ({ x: m.x, r: m.r, kind: m.kind })), balls: balls.length, gpatches: gpatches.map(q => ({ x: q.x, col: q.col })), traps: traps.map(q => ({ x: q.x, y: q.y, rider: q.rider === 'P' })) } : null);
-  H.state = () => S; H.marks = () => marks; H.gpatches = () => gpatches; H.traps = () => traps; H.broodOf = e => brood(e);
+  H.state = () => S; H.growBed = b => grow(b); H.tile = (x, y) => ctx.tileAt(x, y); H.burnHedge = h => burnHedge(h); H.marks = () => marks; H.gpatches = () => gpatches; H.traps = () => traps; H.broodOf = e => brood(e);
   return H;
 }
