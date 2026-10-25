@@ -267,7 +267,7 @@ export const STUCK = {
     { id: 'pw-yard-tower', zone: [136, 27, 146, 31], at: [142, 31], done: ['towerprop', 142, 31, 'on'], line: "NO JUMP CROSSES: KNOCK OUT THE WATCHTOWER'S PROP" },
     { id: 'pw-wall-ramp', zone: [205, 18, 221, 28], at: [215, 28], done: ['scaffoldprop', 215, 28, 'on'], line: 'THE WALL IS TOO HIGH: KNOCK OUT THE TOP TIER PROP' },
     { id: 'pw-wall-tower', zone: [244, 8, 253, 12], at: [249, 12], done: ['towerprop', 249, 12, 'on'], line: "THE UNBUILT SPAN: KNOCK OUT THE WATCHTOWER'S PROP" },
-    { id: 'pw-gate-bridge', zone: [318, 20, 329, 24], at: [325, 24], done: ['towerprop', 325, 24, 'on'], line: 'THE DITCH: KNOCK OUT THE PROP UNDER THE GATEHOUSE SCAFFOLD' },
+    { id: 'pw-gate-bridge', zone: [378, 20, 389, 24], at: [385, 24], done: ['towerprop', 385, 24, 'on'], line: 'THE DITCH: KNOCK OUT THE PROP UNDER THE GATEHOUSE SCAFFOLD' },
   ],
   theatre: [
     { id: 'th-hatch-rope', zone: [108, 26, 140, 34], at: [130, 28], line: 'A ROPE BY THE RACKS: CLIMB IT' },
