@@ -21,7 +21,7 @@ try {
     const out=[];
     ${only && !only.has('sheet') ? '' : `{const A=(await import('/src/redraw/hornsman_art.js')).bakeHornsman();const n=A.R.length,S=4,w=A.R[0].width,h=A.R[0].height,c=document.createElement('canvas');c.width=n*w*S;c.height=h*S*2+8;const g=c.getContext('2d');g.imageSmoothingEnabled=false;g.fillStyle='#46506a';g.fillRect(0,0,c.width,c.height);
       for(let i=0;i<n;i++){g.drawImage(A.R[i],i*w*S,0,w*S,h*S);g.drawImage(A.white.R[i],i*w*S,h*S+8,w*S,h*S);}out.push({tag:'poses-sheet',png:c.toDataURL('image/png')});}`}
-    for(const [tag,x,y,extra] of ${JSON.stringify(SHOTS)}){load();BK.tp(x,y);BK.sim(20);eval(extra);for(let k=0;k<4;k++)BK.step(1);out.push({tag,png:snap()});}
+    for(const [tag,x,y,extra] of ${JSON.stringify(SHOTS)}){load();BK.tp(x,y);BK.sim(300);eval(extra);for(let k=0;k<4;k++)BK.step(1);out.push({tag,png:snap()});}
     BK.manualSimulation=false;return out;})()`, 600000);
   for (const s of r) { writeFileSync(join(OUT, 'palisadefoe-' + s.tag + '.png'), Buffer.from(s.png.split(',')[1], 'base64')); console.log('palisadefoe-' + s.tag + '.png'); }
   if (pg.errors.length) console.log('page errors', pg.errors.slice(0, 3));
