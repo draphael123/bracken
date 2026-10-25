@@ -50,6 +50,8 @@ function handler(d, x, y, hand, step, cut) {
   else if (hand === 'flail') { const a = step ? -9 : 1; arm(x + 5, yy - 7, x + 10, yy - 8 + a); arm(x + 1, yy - 7, x - 4, yy - 8 + (step ? 1 : -9)); }
   else if (hand === 'cling') { arm(x + 5, yy - 7, x + 9, yy - 2); arm(x + 1, yy - 7, x - 3, yy - 3); }
   else if (hand === 'sit') { arm(x + 5, yy - 7, x + 9, yy - 4); }
+  else if (hand === 'pot') { arm(x + 5, yy - 7, x + 3, yy - 17); d.rc(x, yy - 24, 7, 7, OUT); d.rc(x + 1, yy - 23, 5, 5, '#8a4a22'); d.rc(x + 1, yy - 23, 5, 1, '#b8743a'); d.rc(x + 2, yy - 29 - (step & 1), 3, 5, '#ff6a1a'); d.rc(x + 3, yy - 30 - (step & 1), 1, 3, '#ffd36b'); }   /* (claude/palisade2) PITCH: a pot held up, lit */
+  else if (hand === 'lob') { arm(x + 5, yy - 7, x + 15, yy - 14); d.rc(x + 15, yy - 19, 5, 5, OUT); d.rc(x + 16, yy - 18, 3, 3, '#8a4a22'); d.rc(x + 16, yy - 22, 2, 3, '#ffb03a'); }
   else { arm(x + 5, yy - 7, x + 10, yy - 4); }
 }
 /* ===== THE RAM on its chains ===== */
@@ -84,6 +86,8 @@ function legsFor(kind, step) {
     case 'brace': return mk([[-7, 0], [-4, 0], [4, 0], [8, 0]]);
     case 'lunge': return mk([[-5, 0], [-2, 0], [9, 0], [14, 0]]);
     case 'lie': return mk([[2, -8, 0], [-2, -8, 0], [10, -6, 12], [14, -6, 12]]);
+    case 'kickTell': return mk([[6, 6, -6], [8, 8, -6], [-2, 0], [2, 0]]);      /* (claude/palisade2) THE BUCK: the hind legs gathered under him */
+    case 'kick': return mk([[-18, 14, 4], [-22, 18, 4], [-4, 0], [0, 0]]);     /* ... and lashed out behind */
     default: return mk([]);
   }
 }
@@ -142,7 +146,25 @@ export const POSES = {
   tear: { head: [-2, -4], ram: [12, -18, -0.35], legs: 'splay', shake: true, hand: 'cling', timber: true },
   loose: { head: [8, 3], legs: 'run', pitch: 0.05, eye: 'red', speed: true, trail: true, noRam: true },
   dead: { lie: true, head: [10, 20], eye: 'shut', legs: 'lie', dead: true },
+  /* (claude/palisade2) THE NEW MOVES - P1 the handlers' orders, P2 the beast unchained */
+  sweepMid: { head: [3, 2], ram: [-18, -8, -0.5], legs: 'stand', hand: 'hold', twist: true },
+  sweepBack: { head: [-3, 3], ram: [-26, -6, -0.3], legs: 'lunge', hand: 'hold', swing: true },
+  potTell: { head: [0, 2], ram: [14, -12, 0], legs: 'stand', hand: 'pot' },
+  pot: { head: [1, 2], ram: [14, -12, 0], legs: 'stand', hand: 'lob' },
+  batterTell: { head: [6, 12], ram: [16, -9, 0.08], legs: 'brace', pitch: 0.08, hand: 'whip', eye: 'red', steam: true },
+  batter: { head: [12, 10], ram: [28, -9, 0], legs: 'lunge', pitch: 0.06, hand: 'cling', eye: 'red', shake: true, dust: true },
+  unchain: { rear: true, head: [-4, -6], ram: [2, -22, -0.9], hand: 'flail', eye: 'red', steam: true, snap: true },
+  flailTell: { head: [-6, -4], legs: 'brace', eye: 'red', noRam: true, chain: 'coil', steam: true },
+  flail: { head: [10, 6], legs: 'lunge', eye: 'red', noRam: true, chain: 'out', speed: true },
+  kickTell: { head: [-2, 10], legs: 'kickTell', eye: 'red', noRam: true, pitch: 0.14 },
+  kick: { head: [2, 14], legs: 'kick', eye: 'red', noRam: true, pitch: 0.26, dust: true },
 };
+/* (claude/palisade2) THE BROKEN RAM CHAIN (P2): dragged from the collar, coiled for the flail, whipped out in it */
+function chain(d, kind, step) {
+  const pts = kind === 'out' ? [[38, -30], [56, -26], [74, -22], [92, -18], [104, -16]] : kind === 'coil' ? [[38, -30], [30, -42], [18, -48], [8, -40], [14, -30], [26, -28]] : [[36, -24], [44, -12], [52, -4], [64, -1], [78, 0 - (step & 1)]];
+  for (let i = 0; i < pts.length - 1; i++) { const [x0, y0] = pts[i], [x1, y1] = pts[i + 1]; d.line(x0, y0, x1, y1, IRON[1], 2); for (let k = 0; k < 3; k++) { const t = k / 3; d.rc(x0 + (x1 - x0) * t - 1, y0 + (y1 - y0) * t - 1, 3, 2, IRON[3]); } }
+  const [ex, ey] = pts[pts.length - 1]; d.rc(ex - 3, ey - 3, 6, 6, IRON[2]); d.rc(ex - 3, ey - 3, 6, 1, IRON[4]);   /* the torn shackle at its end */
+}
 function bakeFrame(mode, cut, step, ph) {
   const p = POSES[mode] || POSES.walk, [c, g] = canvas(CW, CH);
   const sunk = p.sunk || 0, lift = p.lie ? 10 : 0;
@@ -166,6 +188,8 @@ function bakeFrame(mode, cut, step, ph) {
   leg(dBody, 23, hipY + 2, p.rear ? 30 : lg[3][0], p.rear ? -22 : lg[3][1], p.rear ? 12 : lg[3][2], false);
   if (!cut) { handler(dBody, -22, -45, p.hand, step, cut); handler(dBody, -6, -45, p.hand, step + 1, cut); }
   if (!p.noRam && !p.dead) ram(dBody, ...(p.ram || [14, -13, 0]), cut, null);
+  if (cut && !p.dead && !p.lie) chain(p.chain ? dBody : d0, p.chain || 'drag', step);   /* (claude/palisade2) unchained: the broken chain */
+  if (p.snap) for (let k = 0; k < 4; k++) { d0.line(-20 + k * 9, -70 + (k & 1) * 4, -14 + k * 9, -78 - (k & 1) * 3, IRON[3]); }   /* the chains snapping */
   if (p.dead) deadExtras(d0);
   if (p.timber && !p.dead) wreck(dBody, false);
   g.restore();
