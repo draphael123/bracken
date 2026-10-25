@@ -1781,7 +1781,7 @@ function underleaf() {
 // ---------- LEVEL 7: THE HANGING VILLAGE ----------
 // A tree-city that goes up, not across. Six tiers of floor bands zig-zag to the crown; every tier has a different way up.
 function hangingVillage() {
-  const W = 110, H = 132; const L = painter(W, H); // rows 112-131 are under the roots: the Weaver's hollow
+  const W = 110, H = 132; const L = painter(W, H); // rows 112-131 are solid rock under the roots (the Web Hollow and its mini went: claude/hangingpolish)
   const { block, plat, ent, coins, set } = L;
   const movers = [], gusts = [], interiors = [], crumbles = [];
   const band = (x0, x1, top) => block(x0, x1, top, top + 3);
@@ -1820,32 +1820,6 @@ function hangingVillage() {
   const ropes = [];
   ropes.push({ kind: 'net', id: 'net-roots', x: 90, w: 2, hang: 104, land: 107, ring: [91, 98], knot: [86, 107] });
   ent('sign', 83, 107, { text: 'A RED AND GOLD KNOT IS A ROPE YOU CAN CUT. CUT THIS ONE AS HE COMES UNDER THE NET.' });
-  // ---- THE WEB HOLLOW: under the roots. Everything down here is webbed, and something made it. ----
-  ent('doorway', 66, 107, { id: 'hollow-out', to: 'hollow-in', kind: 'goblin' });
-  ent('doorway', 74, 107, { id: 'hollow-far', to: 'hollow-back', kind: 'goblin' });
-  ent('sign', 62, 107, { text: 'SOMETHING WENT DOWN THROUGH THE ROOTS AND DID NOT COME BACK. THE HOLE IS FULL OF WEB.' });
-  /* THE LARDER HOLLOW (docs/briefs/hanging-village-rework.md §5). It was an empty box fifty-five tiles wide with the Weaver waiting off
-     screen (the review). The REASON: the hoists' loads have been going missing for a month, and they are down here, webbed to her ceiling
-     beside a goat. The SHAPE: a low web tunnel in, then her room at thirty-eight wide (A7), with ROOTS THROUGH THE CEILING you can climb -
-     her own code says "stand on a net and the line holds", and her reel had never had a net in its room to answer it (A12) - two low web
-     shelves at the sides, and a web bridge between the middle roots. Her kit is unchanged: the room now supplies what it assumes. */
-  for (let y = 124; y <= 128; y++) for (let x = 20; x <= 31; x++) set(x, y, 0);   // the web tunnel in: five rows, low
-  for (let y = 116; y <= 128; y++) for (let x = 32; x <= 69; x++) set(x, y, 0);   // her larder
-  interiors.push([20, 31, 124, 128, 'earth'], [32, 69, 116, 128, 'earth']);
-  ent('doorway', 22, 128, { id: 'hollow-in', to: 'hollow-out', lock: [20, 69], label: 'THE WEB HOLLOW' });
-  ent('torch', 26, 128); ent('spider', 29, 124, { drop: 50 });
-  ent('sign', 24, 128, { text: 'HOLD A ROOT-NET AND HER LINE CANNOT REEL YOU. HIT HER WHEN SHE DROPS TO THE FLOOR.' });
-  plat(33, 127, 4); plat(65, 127, 4); plat(47, 123, 5);   // the web shelves either side, and the web bridge between the middle roots
-  for (const x of [34, 44, 60, 68]) ent('deco', x, 116, { kind: 'cobweb', v: x % 3, hang: true });
-  for (const x of [38, 56]) ent('deco', x, 128, { kind: 'cobweb', v: (x + 1) % 3 });
-  for (const [x, v] of [[37, 0], [45, 1], [57, 0], [67, 2], [49, 0]]) ent('deco', x, 116, { kind: 'cocoon', v, hang: true });   // the missing loads, and a goat
-  ent('spider', 46, 118, { drop: 170, big: true, mini: true });
-  for (let y = 122; y <= 128; y++) set(70, y, T.PORT); // her larder door, shut until she is dead
-  for (let y = 122; y <= 128; y++) for (let x = 71; x <= 79; x++) set(x, y, 0);
-  interiors.push([71, 79, 122, 128, 'earth']);
-  ent('silver', 77, 128); coins([73, 127], [75, 127], [78, 127]);
-  ent('doorway', 79, 128, { id: 'hollow-back', to: 'hollow-far', lock: [20, 69], label: 'OUT THE FAR SPLIT' });   /* out through her larder: somewhere to go the moment she falls */
-  for (const x of [41, 52, 63]) for (let y = 116; y <= 126; y++) set(x, y, T.NET);   /* THE ROOTS, HUNG LAST (RULES I): nothing is cut or laid over them after this */
   // 0 -> 1: a rope ladder through the first bough
   band(1, W - 2, tops.t1); hole(100, 105, tops.t1); ladder(102, 103, tops.t1, tops.t0 - 1); // the first ladder stands in the open: nothing between the roots road and its foot
   ent('sign', 93, 107, { text: 'JUMP UP THROUGH ROPE LADDERS; DOWN+JUMP TO DROP. SEVEN TIERS, THEN THE CROWN.' });
@@ -2048,7 +2022,6 @@ function hangingVillage() {
     ambient: [{ x0: 0, x1: 99999, kind: 'wind' }],
 
     arena: { x0: 20 * TS, x1: 90 * TS, floor: 20 * TS, trigger: 21 * TS, y0: 4 * TS, wallL: 19, wallR: 90, boss: 'owl', music: 'owlreeve', tint: '#ffd36b', tintA: 0.08, fx: 'motes', drops: CROWN_DROPS },
-    mini: { x0: 32 * TS, x1: 70 * TS, floor: 129 * TS, trigger: 35 * TS, wallL: 31, gate: 70, boss: 'spider', y0: 114 * TS, y1: 131 * TS },   /* thirty-eight wide (A7); the tunnel's mouth shuts behind you */
   };
 }
 

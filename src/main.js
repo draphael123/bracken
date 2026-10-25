@@ -1466,6 +1466,7 @@ function resolveTiles() {
     else if (t === T.SOFT) s = villT ? VILL.turf[(tileAt(x - 1, y) === T.AIR ? 1 : 0) + '' + (tileAt(x + 1, y) === T.AIR ? 1 : 0)][(rnd() * 4) | 0] : TILE.soft[(x + y) % 3];
     else if (t === T.SPIKE) s = L.fallingTower ? (TILE.towerSpikes || (TILE.towerSpikes = FTW.bakeTowerSpikes()))[(rnd() * 4) | 0] : L.palette && L.palette.nearSet === 'town' ? (TILE.townSpikes || (TILE.townSpikes = bakeTownSpikes()))[(rnd() * 4) | 0] : TILE.thorns[(rnd() * 4) | 0];   /* A TOWN DOES NOT GROW BRAMBLES: a railing with its points up and glass in the kerb */
     else if (t === T.CRATE) s = TILE.crate;
+    if (L.hangingTown && (t === T.PLANK || t === T.SHELF)) { const ts = HV.hvTile(t, T, x, y, tileAt); if (ts) s = ts; }   /* (claude/hangingpolish) THE VILLAGE'S OWN BOARDS: hemp-lashed bridge planks and the snapping branch's split bark, not the old generic wood (src/hanging-village.js hvTile) */
     if (L.canal) { const ts = CNH.canalTile(t, x, y, tileAt, T, L); if (ts) s = ts; }   /* THE FOG CANAL's tile kit: wet brick quays, the lit coping, the towpath, the decks, the gates (src/redraw/canal_tiles.js) */
     if (L.welltown) { const ts = WTT.wellTownTile(t, x, y, tileAt, T, L); if (ts) s = ts; }   /* THE WELL TOWN's tile kit: sandstone streets, mudbrick houses, the cisterns' cut stone, palm boards, rope ladders (src/redraw/welltown_tiles.js) */
     if (L.redgorge) { const ts = RGT.gorgeTile(t, x, y, tileAt, T, L); if (ts) s = ts; }   /* THE RED GORGE's tile kit: strata, lit lips, the scoured channel, lashed bridges (src/redraw/redgorge_tiles.js) */
@@ -4443,7 +4444,7 @@ const RUSH = [
   { lv: 'palisadewood', boss: 'batteringbeast' },   /* (claude/palisadewood) THE BATTERING BEAST, between the Rootway and Kingswood */
   { lv: 'kings', boss: 'greathound', mini: true }, { lv: 'kings', boss: 'king' },
   { lv: 'scree', boss: 'ram' },
-  { lv: 'hanging', boss: 'spider', mini: true }, { lv: 'hanging', boss: 'owl' },
+  { lv: 'hanging', boss: 'owl' },
   { lv: 'spire', boss: 'roc' },
   { lv: 'moor', boss: 'windcaller' },
   { lv: 'storm', boss: 'lance' },

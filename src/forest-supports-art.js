@@ -4,7 +4,7 @@ import { drawSpireSupport } from './spire-supports-art.js';
 import { drawCrib } from './redraw/lumber_trail_tiles.js'; import { drawStalkSupport } from './redraw/sporewood2_world.js';   /* (claude/sporewood2art) SPOREWOOD 2's cap stalks */   /* (claude/lumbertrailart) THE LUMBER TRAIL's cribwork */
 const R = (g, c, x, y, w, h) => { g.fillStyle = c; g.fillRect(x, y, w, h); };
 const PAL = {
-  rock: ['#4b4640', '#7d756b', '#2e2a27', '#5f7d3b'], vine: ['#44331f', '#7a5c36', '#2c2214', '#3e8040'], pile: ['#2f2a24', '#5d5446', '#1c1915', '#8a5f93'],
+  rock: ['#4b4640', '#7d756b', '#2e2a27', '#5f7d3b'], vine: ['#6e5236', '#9a7a52', '#3e2c1c', '#d8bc78'], pile: ['#2f2a24', '#5d5446', '#1c1915', '#8a5f93'],
   crib: ['#6b4a2a', '#a67c4e', '#3d2816', '#c9a46a'], cloud: ['#b9c4dc', '#f0f5ff', '#8392b5', '#dfe8f8'], root: ['#4d3622', '#85633b', '#2e1f13', '#6a8f3a'], ice: ['#4fa9c4', '#d5f6ff', '#2a6f8f', '#8fe0ee'], rune: ['#2e2842', '#524a73', '#1a1626', '#b790ff'],
   stilt: ['#3a3026', '#6a5a44', '#211b15', '#5a8a4a'], reed: ['#5f7a3a', '#9ab85a', '#3d5226', '#c9b27c'],   /* (claude/marsh2) MARSH WOOD: bog-oak stilts, reed bundles */
 };
@@ -25,11 +25,16 @@ export function drawForestSupport(g, p, cx, cy) {
     for (let y = h0 + 6; y < h0 + body - 2; y += 9 + (sd & 3)) R(g, c[2], x, y, w, 1);
     if (sd & 1) R(g, c[3], x + 1, h0 + 4, 3, 2);
     if (!p.free) { R(g, c[0], x - 2, bot - 4, w + 4, 4); R(g, c[1], x - 2, bot - 4, w + 4, 1); }
-  } else if (k === 'vine') {   /* a bough wrapped in vine, leaf tufts */
-    R(g, c[1], x - 1, h0 - 2, w + 2, 2);
-    for (let y = h0 + 3; y < h0 + body; y += 7) { R(g, c[3], x - 1 + ((y >> 2) & 1), y, w + 1, 2); if (((y + sd) & 3) === 0) R(g, '#79b552', x + w, y - 1, 2, 2); }
-    if (p.free) for (let d = 0; d < 3; d++) { R(g, c[3], x + d * 2 - 1, h0 + body, 1, tip + 4 - d * 3); R(g, '#79b552', x + d * 2 - 1, h0 + body + tip + 3 - d * 3, 2, 2); }
-    else { R(g, c[2], x - 3, bot - 3, w + 6, 3); R(g, c[3], x - 2, bot - 4, 3, 2); R(g, c[3], x + w - 1, bot - 4, 3, 2); }
+  } else if (k === 'vine') {   /* THE HANGING VILLAGE's post (claude/hangingpolish, Daniel 10-25: the old vine-wrapped poles looked cheap): a carved post, its hemp lashings every few rows (a knot and a tail on each), a bracket under the board, a stone-footed sill - or, over open air, a hawser with a tassel */
+    const hemp = '#d8bc78', hempD = '#a88848', hempL = '#f0dc9c';
+    R(g, c[1], x - 2, h0 - 2, w + 4, 2); R(g, c[2], x - 2, h0, w + 4, 1);   /* the bracket the board rests on */
+    R(g, c[1], x - 1, h0 + 1, 1, 4); R(g, c[2], x + w, h0 + 1, 1, 4); R(g, c[1], x - 2, h0 + 4, 1, 1); R(g, c[1], x + w + 1, h0 + 4, 1, 1);   /* its knees */
+    for (let y = h0 + 12; y < h0 + body - 3; y += 19) {   /* a lashing: three turns of hemp, a knot, a tail */
+      R(g, hemp, x - 1, y, w + 2, 2); R(g, hempL, x - 1, y, w + 2, 1); R(g, hempD, x - 1, y + 2, w + 2, 1);
+      const side = ((y + sd) & 1) ? x + w + 1 : x - 2; R(g, hempD, side, y + 1, 1, 3); R(g, hemp, side, y + 3, 1, 1); }
+    for (let y = h0 + 6; y < h0 + body - 2; y += 5) { R(g, c[2], x + 1 + (((y >> 2) + sd) & 1), y, 1, 3); if (y % 10 === 1) R(g, c[1], x + w - 2, y + 1, 1, 2); }   /* the adze marks of the carving */
+    if (p.free) { for (let d = 0; d < 3; d++) { R(g, hempD, x + 1 + (d >> 1) * 2 - 0, h0 + body + d * 3, 1, 3); } R(g, hemp, x - 1, h0 + body + 9, w + 2, 2); R(g, hempL, x - 1, h0 + body + 9, w + 2, 1); for (let d = 0; d < w; d += 2) R(g, hempD, x + d, h0 + body + 11, 1, 3 + (d & 2)); }   /* a hawser end, whipped and left to hang in a tassel */
+    else { R(g, c[2], x - 3, bot - 3, w + 6, 3); R(g, c[1], x - 3, bot - 4, w + 6, 1); R(g, '#6e6a60', x - 3, bot - 2, w + 6, 1); R(g, hemp, x - 1, bot - 7, w + 2, 2); }   /* the sill, the foot lashed to it */
   } else if (k === 'pile') {   /* bog-oak pile, heather at the board */
     R(g, c[1], x - 1, h0 - 2, w + 2, 2); R(g, c[3], x - 1, h0 - 4, 2, 2); R(g, c[3], x + w - 1, h0 - 4, 2, 2);
     for (let y = h0 + 5; y < h0 + body - 1; y += 8) R(g, c[2], x, y, w, 1);
