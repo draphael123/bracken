@@ -100,6 +100,8 @@ export function drawGrubbagArt(g, p, flash, time, holding) {
   g.drawImage(c, -OX, -OY);
   drawLive(g, p, flash, time, holding);
 }
+/* bake ONE pose not baked yet (called each frame from the fight: the ~18 bakes are spread over his first frames, not one hitch each the first time he strikes) */
+export function warmOne(poses) { for (const p of Object.values(poses)) { let m = BAKED.get(p); if (!m) { m = {}; BAKED.set(p, m); } if (!m[0]) { m[0] = bakePose(p, 0); return true; } if (p.mouth === 'chew' && !m[1]) { m[1] = bakePose(p, 1); return true; } } return false; }
 function drawBody(g, p, j) {
   const k = mk(g, false), lean = p.lean || 0, bk = p.belly || 1, red = !!p.red, [hx, hy] = p.head;
   const skin = red ? SK.flush : SK.skin, skinL = red ? SK.flushL : SK.skinL, skinD = red ? SK.flushD : SK.skinD;

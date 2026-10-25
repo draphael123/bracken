@@ -39,13 +39,13 @@ export const GB = {
   slam: { tell: [1.0, 0.92, 0.85], n: 4, flight: 0.9, r: 16, dmg: 9, shock: 10, shockDmg: 12, rec: 0.8, top: 44 },
   flood: { tell: 1.0, sp: 120, h: 12, dmg: 13, lie: 4, slow: 0.55, rec: 0.9, from: 118 },
   grab: { tell: 0.85, t: 0.55, reach: 210, h: 26, hand: 20, dmg: 28, rec: 0.9, throwV: 260 },
-  choke: { t: 9, mul: 2, cap: 0.12, boom: 0.14 },
+  choke: { t: 9, mul: 2, cap: 0.13, boom: 0.16 },
   ward: 2.6, coughRest: 2.2,
   eat: 0.7,
   dish: { every: [9, 7.5, 6.5], v: 120, heal: 0.005, power: 1.3, hang: 64, box: 8 },
   hungry: { t: 6, mul: 0.7, cd: 0.8 },
   oven: { bake: 1.3, cool: 2.5, burst: 10, box: 16 },
-  bz: { hurt: 1.5 }, dmgMul: 1.5,
+  bz: { hurt: 1.5 }, dmgMul: 1.6,
 };
 export const GB_SAY = { wake: 'LORD GRUBBAG THE GLUTTON', rule: 'STOKE THE OVEN: IT BAKES A POWDER PIE, AND HE EATS WHATEVER THE LINE BRINGS HIM.', p2: 'MORE! FASTER!', p3: 'HE REACHES FOR YOU',
   bake: 'THE OVEN BAKES A POWDER PIE', pie: 'THE POWDER PIE GOES OUT ON THE LINE', choke: 'HE CHOKES ON IT', ward: 'HE COUGHS IT UP', eats: 'HE EATS: HEALED', powered: 'FED: HIS NEXT BLOW IS HEAVIER',
@@ -225,7 +225,7 @@ function gbPlan0(s) {
   const roll = (key, pr) => { if (!mem.roll.has(key)) mem.roll.set(key, rng() < pr); return mem.roll.get(key); };
   const half = GB.w / 2, lo = G.x0 + 10, hi = G.x1 - 10, clamp = x => Math.max(lo, Math.min(hi, x));
   const kx = e.x, side = Math.sign(P.x - kx) || -1, dx = Math.abs(kx - P.x), hitR = reach + half - 4;
-  const strikeSpot = clamp(kx - (s.tip ? 30 : half + 2));   /* his west side, against his belly */
+  const strikeSpot = clamp(kx - (half + (s.tip ? 4 : 2)));   /* his west side, against his belly (claude/grubbagbig: the warden's point at his belly's edge, as at his old size - not 30 px in, now under it) */
   const hz = gbHazards(S), inHaz = x => hz.some(([hx, r]) => Math.abs(x - hx) < r);
   const safeX = x => { let q = clamp(x); for (let k = 0; k < 3; k++) for (const [hx, r] of hz) if (Math.abs(q - hx) < r) q = clamp(q < hx ? hx - r - 4 : hx + r + 4); return q; };
   const swing = fx => { out.face = Math.sign(fx - P.x) || out.face; out.atk = P.atk < 0; };

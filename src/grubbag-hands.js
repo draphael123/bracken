@@ -90,6 +90,7 @@ export function makeGrubbagHands(ctx) {
   }
   H.update = (e, dt) => {
     if (!S || !e.alive || !A()) return;
+    if (!S.warm) S.warm = !GA.warmOne(POSE);   /* (claude/grubbagbig) bake his poses one a frame */
     if (e.mode === 'wake' && !S.woke) { S.woke = true; e.modeT = 1.8; ctx.number(e.x, e.y - GB.markH - 16, GBM.GB_SAY.wake, '#ffd36b'); SOUND.roar(ctx.sfx); ctx.shake(5); }
     if (S.woke && !S.told.rule && e.mode !== 'wake') { S.told.rule = 1; ctx.number(S.G.mid, S.G.floorY - 130, GBM.GB_SAY.rule, '#ffd36b'); ctx.hint && ctx.hint(GBM.GB_SAY.rule); }
     GBM.stepGrubbag(e, S, dt, heroes(), world(e));
