@@ -115,11 +115,24 @@ ok(Object.values(KG_SAY).every(s => SAY_LINES.has(s)) && Object.values(GBM.GB_SA
   const e = { t: 'grubbag', x: G.chairX, y: G.floorY, w: GBM.GB.w, h: GBM.GB.h, hp: 1000, maxHp: 1000, mode: 'sit', modeT: 0, face: -1, alive: true };
   const P = { x: G.chairX - 100, y: G.floorY, ground: true, alive: true };
   const floor = mode => { e.mode = mode; S.ward = 0; S.hungry = 0; return GBM.takeBlow(e, S, 100, false)[0]; };
-  const modes = ['sit', 'belchTell', 'belch', 'throwTell', 'throw', 'forkTell', 'fork', 'slamTell', 'slam', 'floodTell', 'flood', 'grabTell', 'grab', 'eat', 'recover'];
+  const modes = ['sit', 'belchTell', 'belch', 'throwTell', 'throw', 'forkTell', 'fork', 'slamTell', 'slam', 'floodTell', 'flood', 'grabTell', 'grab', 'eat', 'recover', 'flopTell', 'flop', 'flopDown', 'flopRoll'];
   ok(modes.every(m => floor(m) >= 40), 'B15: no mode of his is ever under 0.4x outside his opening (' + modes.map(m => m + ' ' + floor(m)).join(', ') + ')');
   e.mode = 'sit'; S.ward = 1; ok(GBM.takeBlow(e, S, 100, false)[1] === 'WARDED' && GBM.takeBlow(e, S, 100, false)[0] === 40, 'WARDED: x0.4 and told'); S.ward = 0;
   ok(GBM.takeBlow(e, S, 100, false)[1] === 'WELL FED' && GBM.takeBlow(e, S, 100, false)[0] === 45, 'well fed: x0.45 and told (WELL FED)');
   S.hungry = 2; ok(GBM.takeBlow(e, S, 100, false)[0] === 70, 'HUNGRY: x0.7'); S.hungry = 0;
+  /* THE BELLY FLOP (claude/grubbagbig, Daniel 10-25): told, out of the chair, down on the shadow (a crush and a shockwave each way), winded on the floor (blades land whole), rolled back up */
+  { const F = GBM.GB.flop, Sf = GBM.newFight(G), ef = { ...e, mode: 'sit', modeT: 0, x: G.chairX, w: GBM.GB.w, h: GBM.GB.h }, Pf = { x: G.chairX - 200, y: G.floorY, ground: true, alive: true }, hf = [], sf = [];
+    const wf = { ...w, hitArea: (b, d, n) => { if (Pf.x > b[0] && Pf.x < b[1]) hf.push(n); }, hitHero: (h, d, n) => hf.push(n), number: (x, y, t) => sf.push(t) };
+    Sf.restT = 0; Sf.last = ['belch', 'throw']; const r0 = Math.random; Math.random = () => 0.01;
+    GBM.stepGrubbag(ef, Sf, 1 / 60, [Pf], wf); Math.random = r0;
+    ok(ef.mode === 'flopTell' && Math.abs(ef.landX - Pf.x) < 1 && GBM.gbTelling(ef) && sf.includes(GBM.GB_SAY.flop), 'THE BELLY FLOP is told (flopTell, red !!) and his shadow marks where he lands - on the hero (' + Math.round(ef.landX - G.chairX) + ' px from his chair)');
+    const runF = (s, f) => { for (let i = 0; i < Math.round(s * 60); i++) { GBM.stepGrubbag(ef, Sf, 1 / 60, [Pf], wf); if (f && f()) return true; } return false; };
+    let peak = 0; runF(F.tell[0] + F.air + 0.1, () => { peak = Math.max(peak, ef.flopY || 0); return ef.mode === 'flopDown'; });
+    ok(ef.mode === 'flopDown' && ef.x === ef.landX && peak > F.rise * 0.9 && hf.includes('flop') && Sf.waves.filter(q => q.kind === 'flop').length === 2, 'up out of the chair (' + Math.round(peak) + ' px), down on the shadow: the crush and a shockwave each way');
+    ok(GBM.takeBlow(ef, Sf, 100, false)[0] === Math.round(100 * F.mul) && GBM.takeBlow(ef, Sf, 100, false)[1] === null && ef.w === F.lieW, 'winded on the floor: blades land x' + F.mul + ' (a punish, not the choke), his box the lying belly (' + F.lieW + ' x ' + F.lieH + ')');
+    runF(F.down + F.roll + 0.1, () => ef.mode === 'recover'); ok(ef.mode === 'recover' && ef.x === G.chairX && ef.w === GBM.GB.w, 'he rolls back up into his chair (' + F.down + ' s down, ' + F.roll + ' s roll)');
+    const Pin = { x: ef.x, y: G.floorY, ground: true, alive: true }; Sf.waves = []; hf.length = 0; Pf.x = G.chairX - 300; Sf.last = []; ef.mode = 'flopTell'; ef.modeT = 0.01; ef.landX = Pf.x; Pf.x = ef.landX + F.crush + 30; runF(F.air + 0.05, () => ef.mode === 'flopDown');
+    ok(!hf.includes('flop'), 'out from under his shadow, the crush misses'); }
   /* the oven, the pie, the choke */
   ok(GBM.stokeOven(S, w) && S.oven.st === 'bake', 'a blow on the oven bellows: it bakes a powder pie');
   const run = (s, f) => { for (let i = 0; i < Math.round(s * 60); i++) { GBM.stepGrubbag(e, S, 1 / 60, [P], w); if (f && f()) return true; } return false; };
@@ -135,16 +148,16 @@ ok(Object.values(KG_SAY).every(s => SAY_LINES.has(s)) && Object.values(GBM.GB_SA
   /* the phases: one new move each */
   const S2 = GBM.newFight(G), e2 = { ...e, hp: 1000, maxHp: 1000, mode: 'sit', modeT: 0 }; S2.restT = 0;
   const seen = new Set(); const runP = (s) => { for (let i = 0; i < Math.round(s * 60); i++) { GBM.stepGrubbag(e2, S2, 1 / 60, [P], w); seen.add(e2.mode); if (e2.mode === 'choke') e2.mode = 'sit'; } };
-  P.x = G.chairX - 90; runP(30); const p1 = new Set(seen); P.x = G.chairX - 280; runP(30); const p1b = new Set(seen);
-  ok(['belchTell', 'throwTell', 'forkTell', 'slamTell'].every(m => p1b.has(m)) && !p1b.has('floodTell') && !p1b.has('grabTell'), 'P1: THE BELCH, THROWN FOOD, THE GIANT FORK, THE TABLE SLAM (no flood, no grab) ' + [...p1b].filter(m => /Tell$/.test(m)).join(' '));
+  P.x = G.chairX - 90; runP(60); const p1 = new Set(seen); P.x = G.chairX - 280; runP(60); const p1b = new Set(seen);
+  ok(['belchTell', 'throwTell', 'forkTell', 'slamTell', 'flopTell'].every(m => p1b.has(m)) && !p1b.has('floodTell') && !p1b.has('grabTell'), 'P1: THE BELCH, THROWN FOOD, THE GIANT FORK, THE TABLE SLAM, THE BELLY FLOP (no flood, no grab) ' + [...p1b].filter(m => /Tell$/.test(m)).join(' '));
   e2.hp = 600; seen.clear(); runP(40); ok(S2.ph === 2 && seen.has('floodTell') && !seen.has('grabTell'), 'P2 (' + GBM.GB.p2 + '): THE GRAVY FLOOD joins');
   e2.hp = 250; seen.clear(); P.x = G.chairX - 200; runP(40); ok(S2.ph === 3 && seen.has('grabTell'), 'P3 (' + GBM.GB.p3 + '): THE GRAB joins');
   ok(S2.last.length <= 3, 'never the same move three times running');
   /* B16 / B17: six told attacks, each its own windup and release pose */
-  const tells = ['belch', 'throw', 'fork', 'slam', 'flood', 'grab'];
+  const tells = ['belch', 'throw', 'fork', 'slam', 'flood', 'grab', 'flop'];
   ok(tells.every(k => POSE_GB[k + 'Tell'] && POSE_GB[k] && JSON.stringify(POSE_GB[k + 'Tell']) !== JSON.stringify(POSE_GB[k])), 'B16: every attack its own windup and release pose (' + tells.join(', ') + ')');
-  ok(['eat', 'choke', 'recover', 'sleep', 'wake', 'sit'].every(k => POSE_GB[k]), 'and his eating, choking, coughing, sleeping and waking each their own');
-  ok(tells.length >= 4 && /OWN_WARD = new Set\(\['grubbag'/.test(src('src/boss-greed.js')) && /grubbag: e => e\.mode === 'choke'/.test(src('src/boss-greed.js')), 'B17: six told attacks and one central mechanic - the level\'s own verb (the oven\'s bellows) and its hooks (the serving line); boss-greed knows his opening and his own ward');
+  ok(['eat', 'choke', 'recover', 'sleep', 'wake', 'sit', 'flopDown', 'flopRoll'].every(k => POSE_GB[k]), 'and his eating, choking, coughing, sleeping and waking each their own');
+  ok(tells.length >= 4 && /OWN_WARD = new Set\(\['grubbag'/.test(src('src/boss-greed.js')) && /grubbag: e => e\.mode === 'choke'/.test(src('src/boss-greed.js')), 'B17: seven told attacks (the belly flop the seventh, Daniel 10-25) and one central mechanic - the level\'s own verb (the oven\'s bellows) and its hooks (the serving line); boss-greed knows his opening and his own ward');
   /* the bot stokes the oven when it is hot */
   const S3 = GBM.newFight(G), e3 = { ...e, mode: 'sit' }; const pl = GBM.gbPlan({ P: { x: G.mid, y: G.floorY, vy: 0, face: 1, ground: true, atk: -1 }, e: e3, S: S3, reach: 30, t: 0, rng: () => 0.9, mem: {} });
   ok(pl.why === 'to the oven' && pl.gx < G.mid, 'the bot goes to the oven when it is hot (' + pl.why + ')'); }

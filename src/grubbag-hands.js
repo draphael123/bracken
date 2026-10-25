@@ -16,7 +16,7 @@ const { GB } = GBM;
 
 const SOUND = { belchTell: s => (s.charge || s.tell)(), belch: s => (s.boreRoar || s.roar || s.thud)(), throwTell: s => (s.gobShout || s.tell)(), throw: s => (s.throwWhoosh || s.whoosh || s.tell)(),
   forkTell: s => (s.charge || s.tell)(), stab: s => (s.slash || s.tell)(), slamTell: s => (s.gobShout || s.roar || s.tell)(), slam: s => { (s.heavy || s.thud)(); (s.crack || s.thud)(); },
-  floodTell: s => (s.tell)(), flood: s => (s.splash || s.thud)(), grabTell: s => (s.roar || s.tell)(), grab: s => (s.whoosh || s.throwWhoosh || s.tell)(),
+  floodTell: s => (s.tell)(), flood: s => (s.splash || s.thud)(), flopTell: s => (s.boreRoar || s.roar || s.tell)(), flopUp: s => (s.whoosh || s.throwWhoosh || s.thud)(), flop: s => { (s.heavy || s.thud)(); (s.boom || s.thud)(); (s.crack || s.thud)(); }, grabTell: s => (s.roar || s.tell)(), grab: s => (s.whoosh || s.throwWhoosh || s.tell)(),
   roar: s => (s.boreRoar || s.roar)(), chew: s => (s.thud || s.tell)(), boom: s => { (s.boom || s.heavy || s.thud)(); (s.puff || s.thud)(); }, cough: s => (s.gobDieLow || s.thud)(),
   pie: s => (s.clank || s.thud)(), smash: s => (s.crack || s.glass || s.thud)(), plate: s => (s.crack || s.thud)(), thud: s => (s.thud)(), clank: s => (s.clank || s.thud)() };
 const C = { skin: '#7a8a52', skinD: '#4e5a32', skinL: '#a0b070', robe: '#6a2a3a', robeD: '#3e1622', gold: '#ffd36b', goldD: '#b08a30', chair: '#4a3020', chairL: '#6e4a2e', iron: '#3a3a42', ironL: '#7a7a86',
@@ -46,6 +46,12 @@ export const POSE = {
   eat: { head: [0, -4], belly: 1.05, hand: [40, -118], far: [-62, -66], fork: FORK_REST, eyes: 'shut', mouth: 'chew', item: 'dish' },
   choke: { head: [0, -6], belly: 1.1, hand: [30, -112], far: [0, -114], fork: [70, -6, 0.02, 120], eyes: 'bulge', mouth: 'wide', smoke: true, shake: true, red: true },
   recover: { head: [4, 4], belly: 1, hand: [52, -88], far: [-62, -72], fork: [52, -88, -1.48, 76], eyes: 'open', mouth: 'open', cough: true },
+  /* THE BELLY FLOP (claude/grubbagbig, Daniel 10-25): the heave (both fists on the chair's arms, up off the seat, belly swelling, mouth wide), up and over (out of the chair, fists
+     flung up), belly down on the boards (sunk to the floor line, the belly spread wide, arms splayed flat, eyes bulging), and the roll back up (half up, pushing off the floor) */
+  flopTell: { head: [6, -10], belly: 1.08, hand: [116, -66], far: [-124, -64], fork: FORK_REST, eyes: 'red', mouth: 'wide', lean: 10, lift: 12 },
+  flop: { head: [4, -6], belly: 1.04, hand: [84, -184], far: [-80, -178], fork: null, eyes: 'red', mouth: 'wide', lean: 6, noChair: true },
+  flopDown: { head: [8, 14], belly: 1.1, wide: 1.22, tall: 0.86, hand: [132, -40], far: [-134, -40], fork: null, eyes: 'bulge', mouth: 'wide', lean: 4, noChair: true, sink: 30 },
+  flopRoll: { head: [0, 6], belly: 1.04, wide: 1.1, hand: [104, -30], far: [-108, -32], fork: null, eyes: 'open', mouth: 'open', lean: -8, noChair: true, sink: 14, cough: true },
 };
 /* HIM (claude/kitchengateart: src/redraw/grubbag_art.js draws him; POSE above is still the contract) */
 function drawGrubbag(g, p, flash, time, holding) { GA.drawGrubbagArt(g, p, flash, time, holding); }
@@ -73,7 +79,8 @@ export function makeGrubbagHands(ctx) {
       music: ph => { BOSS_PHASE.grubbag = ph; },
       mark: m => ctx.number(e.x, e.y - GB.markH, m, m === '!' ? '#ffd36b' : '#ff6b6b'),
       dust: (x, y, n) => ctx.dust(x, y, n),
-      fx: (k, x, y) => { if (k === 'open') { ctx.ring(x, y - GB.h / 2, GB.w * 0.6, '#ffd36b'); ctx.burst(x - e.face * 30, y - GB.h, 34, ['#ff9a3c', '#ffd36b', '#4a4440', '#fff6c8'], 170, 0.9); } else if (k === 'ward') ctx.ring(x, y - GB.h / 2, GB.w * 0.62, '#c8d8e8'); },
+      fx: (k, x, y) => { if (k === 'open') { ctx.ring(x, y - GB.h / 2, GB.w * 0.6, '#ffd36b'); ctx.burst(x - e.face * 30, y - GB.h, 34, ['#ff9a3c', '#ffd36b', '#4a4440', '#fff6c8'], 170, 0.9); } else if (k === 'ward') ctx.ring(x, y - GB.h / 2, GB.w * 0.62, '#c8d8e8');
+        else if (k === 'flop') { ctx.ring(x, y - 10, GB.flop.crush + 20, '#c9a878'); ctx.burst(x, y - 6, 40, ['#8a7a64', '#c9b28c', '#5a4a3a', '#e8dcc0'], 220, 0.8); } },
       oven: on => { if (on) ctx.burst(S.G.ovenX, S.G.floorY - 26, 20, ['#ffd36b', '#ff9a3c', '#fff6c8'], 90, 0.5); },
       burst: (x, y) => ctx.burst(x, y, 20, ['#ff9a3c', '#ffd36b', '#4a4440'], 130, 0.7),
       smash: (x, y) => ctx.burst(x, y, 14, ['#c8ccd4', '#a0602a', '#e8dcc0'], 110, 0.6),
@@ -108,8 +115,11 @@ export function makeGrubbagHands(ctx) {
     if (word) { e.chipHit = ctx.time(); e.guardFx = 0.25; e.guardWord = word; ctx.sfx.clank && word === 'WARDED' ? ctx.sfx.clank() : (ctx.sfx.thud && ctx.sfx.thud()); const sd = Math.sign(ctx.hero().x - e.x) || 1; ctx.sparks(e.x + sd * GB.w / 2, e.y - GB.h / 2, sd, 4);
       if (!S.told.fed && word === 'WELL FED') { S.told.fed = 1; ctx.hint && ctx.hint('WELL FED, HE BARELY FEELS A BLADE. STOKE THE PIE OVEN: HE EATS THE POWDER PIE AND CHOKES. KNOCK A DISH OFF THE LINE WITH A JUMPING BLOW: HE GOES HUNGRY.'); } }
     return d; };
+  /* THE CAMERA (the boss camera: the whole of him in the picture, and your feet): he stands ~200 px from the floor in his chair and the belly flop lifts him higher - so the
+     camera holds the hall from the floor up to his top (and a margin) when the view is tall enough, and never loses the floor */
+  H.camY = (ty, VH) => { const Ar = A(); if (!S || !Ar || !ctx.bossActive || !ctx.boss || !ctx.boss.alive || ctx.boss.t !== 'grubbag') return ty; const top = S.G.floorY - GB.markH - GB.flop.rise + 8; return Math.max(S.G.floorY + 28 - VH, Math.min(ty, top)); };
   H.barName = e => 'LORD GRUBBAG' + (GBM.gbOpen(e) ? '  CHOKING' : S && S.ward > 0 ? '  WARDED' : S && S.hungry > 0 ? '  HUNGRY' : '');
-  H.end = () => { if (S) { S.waves = []; S.throws = []; S.floods = []; S.items = []; S.gravy = 0; } BOSS_PHASE.grubbag = 1; };
+  H.end = () => { const e = ctx.boss; if (e && e.t === 'grubbag') { e.w = GB.w; e.h = GB.h; } if (S) { S.waves = []; S.throws = []; S.floods = []; S.items = []; S.gravy = 0; } BOSS_PHASE.grubbag = 1; };
   H.read = () => S && { mode: ctx.boss && ctx.boss.mode, ph: S.ph, ward: S.ward, hungry: S.hungry, oven: { ...S.oven }, items: S.items.map(q => ({ kind: q.kind, x: Math.round(q.x), state: q.state })), n: JSON.parse(JSON.stringify(S.n)), hurt: { ...(S.hurt || {}) } };
   const X = cx => v => R(v - cx), Y = cy => v => R(v - cy);
   /* THE HALL: the kitchen hatch and the pie oven (its gauge), the oven's bellows, the serving line and its hooks, the high table */
@@ -122,6 +132,7 @@ export function makeGrubbagHands(ctx) {
     GA.drawTable(g, x(G.table[0]), x(G.table[1]), fy, time); };
   H.drawBoss = (g, e, cx, cy, time) => { if (!S) return; e.guardFx = Math.max(0, (e.guardFx || 0) - 1 / 60);
     const p = POSE[e.mode] || POSE.sit, flash = (e.hurtT || 0) > 0 || (e.flash || 0) > 0.06, f = e.face || -1;
+    if (p.noChair) { g.save(); g.translate(R(S.G.chairX - cx), R(S.G.floorY - cy)); g.scale(e.chairFace || -1, 1); GA.drawChairArt(g); g.restore(); }   /* (the belly flop) his chair, empty */
     g.save(); g.translate(R(e.x - cx + (p.shake ? Math.sin(time * 50) * 2 : 0)), R(e.y - cy)); g.scale(f, 1); drawGrubbag(g, p, flash, time, e.eating ? e.eating.kind : null); g.restore();
     /* THE GRAB's arm drawn the whole way out to his hand (it reaches along the floor) */
     if (e.mode === 'grab' && e.handX != null) { const el = POSE.grab.hand, ex = R(e.x - cx + f * el[0]), ey = R(e.y - cy + el[1]), hx = R(e.handX - cx), hy = R(e.y - cy) - 12; GA.drawGrabArm(g, ex, ey, hx, hy, flash); } };
@@ -135,13 +146,20 @@ export function makeGrubbagHands(ctx) {
     const blink = Math.floor(time * 12) % 2 ? '#ff6b6b' : '#fff6e0';
     for (const c of S.throws) { const q = GBM.throwAt(c, G.floorY); if (c.t > 0) { g.save(); g.translate(x(q.x), y(q.y)); g.rotate(q.k * 7); if (c.plate) { rect(g, -6, -1, 12, 3, C.dish); } else { rect(g, -5, -3, 8, 6, C.food); rect(g, 3, -1, 4, 2, C.tooth); } g.restore(); }
       g.strokeStyle = blink; g.strokeRect(x(c.tx) - GB.food.r, fy - 3, GB.food.r * 2, 3); }
-    for (const q of S.waves) { if (q.delay > 0) continue; for (let k = 0; k < 3; k++) { g.strokeStyle = 'rgba(160,200,90,' + (0.85 - k * 0.25).toFixed(2) + ')'; g.beginPath(); g.arc(x(q.x) - q.dir * k * 5, fy - 2, 7 + k * 2, Math.PI, 0); g.stroke(); } }
+    for (const q of S.waves) { if (q.delay > 0) continue; if (q.kind === 'flop') { for (let k = 0; k < 4; k++) { g.strokeStyle = 'rgba(201,178,140,' + (0.9 - k * 0.2).toFixed(2) + ')'; g.lineWidth = 2; g.beginPath(); g.arc(x(q.x) - q.dir * k * 7, fy - 1, 9 + k * 4, Math.PI, 0); g.stroke(); } g.lineWidth = 1; rect(g, x(q.x) - 3, fy - 22, 6, 4, '#8a7a64'); continue; }
+      for (let k = 0; k < 3; k++) { g.strokeStyle = 'rgba(160,200,90,' + (0.85 - k * 0.25).toFixed(2) + ')'; g.beginPath(); g.arc(x(q.x) - q.dir * k * 5, fy - 2, 7 + k * 2, Math.PI, 0); g.stroke(); } }
     /* the fork's reach and the grab's line, red while they are told */
     if (e.mode === 'forkTell') { g.globalAlpha = 0.35; g.fillStyle = '#ffd36b'; const a = e.x + e.face * GB.w / 2, b = a + e.face * GB.fork.reach; for (let q = Math.min(a, b); q < Math.max(a, b); q += 9) g.fillRect(x(q), fy - 2, 5, 1); g.globalAlpha = 1; }
     if (e.mode === 'grabTell') { g.globalAlpha = 0.4; g.fillStyle = '#ff6b6b'; const a = e.x + e.face * GB.w / 2, b = a + e.face * GB.grab.reach; for (let q = Math.min(a, b); q < Math.max(a, b); q += 9) g.fillRect(x(q), fy - 6, 5, 2); g.globalAlpha = 1; }
+    /* THE BELLY FLOP: his shadow on the floor where he will land (darker as he comes), the crush's two ends blinking red; the shock's dust */
+    if ((e.mode === 'flopTell' || e.mode === 'flop') && e.landX != null) { const F = GB.flop, k = e.mode === 'flopTell' ? 0.35 + 0.25 * (1 - Math.max(0, e.modeT) / F.tell[0]) : 0.6 + 0.35 * (1 - Math.max(0, e.modeT) / F.air), lx = x(e.landX);
+      g.globalAlpha = k; g.fillStyle = '#120a10'; g.beginPath(); g.ellipse(lx, fy - 1, F.crush * (0.7 + 0.3 * k), 7, 0, 0, Math.PI * 2); g.fill(); g.globalAlpha = 1;
+      g.fillStyle = blink; for (const sd of [-1, 1]) { const ex2 = lx + sd * F.crush; g.fillRect(ex2 - (sd > 0 ? 2 : 0), fy - 14, 2, 14); g.fillRect(ex2 - (sd > 0 ? 8 : 0), fy - 14, 8, 2); }
+      g.globalAlpha = 0.5; for (let q = lx - F.crush; q < lx + F.crush; q += 10) g.fillRect(q, fy - 2, 6, 2); g.globalAlpha = 1; }
+    if (e.mode === 'flopDown') ctx.text(GBM.GB_SAY.winded, x(e.x), y(e.y - GB.flop.lieH - 34), '#ffd36b', 'center', 6);
     if (e.mode === 'slamTell') { g.globalAlpha = 0.35; g.fillStyle = '#ff6b6b'; g.fillRect(x(G.table[0] - GB.slam.shock), fy - 2, x(G.x1) - x(G.table[0] - GB.slam.shock), 2); g.globalAlpha = 1; }
     const ex = x(e.x);
-    const bw = GB.w + 12, bh = GB.h + 12, by0 = y(e.y - GB.h - 8);
+    const bw = (e.w || GB.w) + 12, bh = (e.h || GB.h) + 12, by0 = y(e.y - (e.h || GB.h) - 8);
     if (GBM.gbOpen(e)) { const kk = Math.max(0, e.modeT / (e.openT0 || 1)); g.globalAlpha = 0.6 + 0.3 * Math.sin(time * 10); g.strokeStyle = '#ffd36b'; g.lineWidth = 2; g.strokeRect(ex - bw / 2, by0, bw, bh); g.lineWidth = 1; g.globalAlpha = 1;
       const by = y(e.y - GB.h - 40); ctx.text(GBM.OPEN_NAME[e.mode] || 'OPEN', ex, by - 6, '#ffd36b', 'center', 6); g.fillStyle = '#1b1626'; g.fillRect(ex - 18, by, 36, 3); g.fillStyle = '#ffd36b'; g.fillRect(ex - 18, by, R(36 * kk), 3); }
     if (S.ward > 0) { g.globalAlpha = 0.35 + 0.25 * Math.sin(time * 6); g.strokeStyle = '#c8d8e8'; g.lineWidth = 2; g.strokeRect(ex - bw / 2 - 2, by0 - 2, bw + 4, bh + 4); g.lineWidth = 1; g.globalAlpha = 1; ctx.text('WARDED', ex, y(e.y - GB.h - 44), '#c8d8e8', 'center', 5); }

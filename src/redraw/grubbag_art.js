@@ -102,10 +102,22 @@ export function drawGrubbagArt(g, p, flash, time, holding) {
 }
 /* bake ONE pose not baked yet (called each frame from the fight: the ~18 bakes are spread over his first frames, not one hitch each the first time he strikes) */
 export function warmOne(poses) { for (const p of Object.values(poses)) { let m = BAKED.get(p); if (!m) { m = {}; BAKED.set(p, m); } if (!m[0]) { m[0] = bakePose(p, 0); return true; } if (p.mouth === 'chew' && !m[1]) { m[1] = bakePose(p, 1); return true; } } return false; }
+/* THE CHAIR LEFT EMPTY (the belly flop: he is out of it) - the chair, the tureen on the table's end and the fork stuck upright in it, baked once, drawn at his chair's place */
+let CHAIR_C = null;
+export function drawChairArt(g) {
+  if (!CHAIR_C) { const [c, cg] = canvas(BW, BH); cg.translate(OX, OY); chair(cg); fork(cg, 130, -40, -1.42, 76); tureen(cg, 0); CHAIR_C = c; }
+  g.drawImage(CHAIR_C, -OX, -OY);
+}
+function tureen(g, tip) { g.save(); g.translate(BIG.tureen[0], BIG.tureen[1]); g.rotate(tip || 0); g.imageSmoothingEnabled = false; g.drawImage(tureenFlat((tip || 0) > 0.6), -60, -64); g.restore(); }
+/* THE BODY. (claude/grubbagbig, the belly flop) a pose can leave the chair out (noChair: he is up out of it - the chair is drawn on its own, drawChairArt), lift him off the seat
+   (lift px, the heave), sink him into the floor (sink px: belly down on the boards after the flop, cut off at the floor line) and spread the belly (wide, tall: the belly's own
+   ellipse, drawn at that size - not a stretched bitmap) */
 function drawBody(g, p, j) {
   const k = mk(g, false), lean = p.lean || 0, bk = p.belly || 1, red = !!p.red, [hx, hy] = p.head;
   const skin = red ? SK.flush : SK.skin, skinL = red ? SK.flushL : SK.skinL, skinD = red ? SK.flushD : SK.skinD;
-  chair(g);
+  if (!p.noChair) chair(g);
+  g.save(); if (p.sink) { g.beginPath(); g.rect(-OX, -OY, BW, OY); g.clip(); } g.translate(0, (p.sink || 0) - (p.lift || 0));
+  if (p.sink) { k.e(10, -2, 128, 10, SK.skinDD); }   /* the boards bowed under him */
   /* the slippers under the belly (gold, toes curled), and the short legs into them */
   for (const [x, w, far] of [[44, 40, 0], [-52, 32, 1]]) { k.r(x, -26, w, 18, SK.out); k.r(x + 1, -25, w - 2, 16, far ? SK.robeDD : SK.robeD);
     k.p([[x - 2, -12], [x + w + 8, -12], [x + w + 12, -20], [x + w + 14, -10], [x + w + 6, 0], [x - 2, 0]], SK.out); k.p([[x - 1, -11], [x + w + 7, -11], [x + w + 11, -17], [x + w + 12, -10], [x + w + 5, -1], [x - 1, -1]], far ? SK.trimD : SK.trim); k.r(x, -11, w + 6, 2, '#fff0b0'); }
@@ -124,7 +136,7 @@ function drawBody(g, p, j) {
     for (const yy of [-14, 4, 20]) k.a(cx, cy + yy - 8, rx - 4, 9, Math.PI * 0.15, Math.PI * 0.85, SK.skinDD, 2);
   }
   /* THE BELLY: most of him. Shade low and right, lit high and left, a deep navel, the apron of fat folded over the sash, stretch marks */
-  const bx = 10, by = -58, rx = 88 * bk, ry = 53 * bk;
+  const bx = 10, by = -58 + (1 - (p.tall || 1)) * 53, rx = 88 * bk * (p.wide || 1), ry = 53 * bk * (p.tall || 1);
   k.e(bx, by, rx + 1, ry + 1, SK.out); k.e(bx, by, rx, ry, skinD); k.e(bx - 5, by - 6, rx - 6, ry - 7, skin); k.e(bx - 22, by - 22, rx * 0.56, ry * 0.5, skinL); k.e(bx - 36, by - 32, rx * 0.2, ry * 0.13, red ? '#e0a080' : SK.skinLL);
   k.a(bx + 4, by + 10, rx * 0.78, ry * 0.62, Math.PI * 0.12, Math.PI * 0.88, SK.skinDD, 2);   /* the apron's fold */
   k.a(bx + 4, by + 12, rx * 0.78, ry * 0.62, Math.PI * 0.2, Math.PI * 0.8, red ? '#c8785a' : SK.fat, 1);
@@ -160,9 +172,9 @@ function drawBody(g, p, j) {
   else { arm(g, sx, sy, p.hand[0] - lean, p.hand[1], true, false); hand(g, p.hand[0] - lean, p.hand[1], !!p.fingers, Math.atan2(p.hand[1] - sy, p.hand[0] - lean - sx)); }
   if (p.item === 'drumstick') { const [dx, dy] = [p.hand[0] - lean, p.hand[1]]; k.e(dx - 2, dy - 18, 13, 11, SK.out); k.e(dx - 2, dy - 18, 12, 10, SK.food); k.e(dx - 5, dy - 22, 6, 4, SK.foodL); k.r(dx + 8, dy - 20, 12, 5, SK.out); k.r(dx + 9, dy - 19, 10, 3, SK.tooth); k.e(dx + 21, dy - 22, 3, 3, SK.tooth); k.e(dx + 21, dy - 16, 3, 3, SK.tooth); }
   g.restore();
-  /* the gravy tureen on the table's end in front of him: copper, banded, a ladle in it */
-  g.save(); g.translate(BIG.tureen[0], BIG.tureen[1]); g.rotate(p.cauldron || 0); g.imageSmoothingEnabled = false; g.drawImage(tureenFlat((p.cauldron || 0) > 0.6), -60, -64);
   g.restore();
+  /* the gravy tureen on the table's end in front of him: copper, banded, a ladle in it (with the chair when he is out of it) */
+  if (!p.noChair) tureen(g, p.cauldron);
 }
 const TUREENS = {};
 function tureenFlat(pour) {
