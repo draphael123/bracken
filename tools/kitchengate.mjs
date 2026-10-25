@@ -125,9 +125,9 @@ ok(Object.values(KG_SAY).every(s => SAY_LINES.has(s)) && Object.values(GBM.GB_SA
   const run = (s, f) => { for (let i = 0; i < Math.round(s * 60); i++) { GBM.stepGrubbag(e, S, 1 / 60, [P], w); if (f && f()) return true; } return false; };
   e.mode = 'sit'; S.restT = 99;
   ok(run(12, () => e.mode === 'choke') && S.n.pies === 1 && said.includes(GBM.GB_SAY.choke), 'the pie rides the serving line to him, he eats it and CHOKES');
-  S.purse = 1e6; const [d1] = GBM.takeBlow(e, S, 100, false); ok(d1 === 200, 'choking: x2'); S.purse = 50; const [d2] = GBM.takeBlow(e, S, 100, false); ok(d2 === 50 && e.modeT <= 0.01, 'the choke is capped (' + GBM.GB.choke.cap + ' of him): the last of it ends it');
-  run(1.2); ok(S.ward > 0 && said.includes(GBM.GB_SAY.ward), 'he coughs it up behind a told WARD (' + GBM.GB.ward + ' s)');
+  S.purse = 1e6; const [d1] = GBM.takeBlow(e, S, 100, false); ok(d1 === 200, 'choking: x2'); S.purse = 50; const [d2] = GBM.takeBlow(e, S, 100, false); ok(d2 === 50 && S.purse === 0 && e.modeT > 1, 'the choke is capped (' + GBM.GB.choke.cap + ' of him): the purse empties but the choke runs its whole ' + GBM.GB.choke.t + ' s (every hero spends the same opening, claude/kitchengateart)');
   ok(S.oven.st === 'cool' && !GBM.stokeOven(S, w), 'the oven cools before it bakes again');
+  run(GBM.GB.choke.t + 0.4); ok(S.ward > 0 && said.includes(GBM.GB_SAY.ward), 'he coughs it up behind a told WARD (' + GBM.GB.ward + ' s)');
   /* a dish: eaten, it heals and powers; knocked off, he goes hungry */
   S.items.push({ id: 900, kind: 'dish', x: G.line.x1, state: 'wait', k: 1 }); e.mode = 'sit'; S.ward = 0; e.hp = 900; run(0.05); ok(e.hp === 900 + Math.round(e.maxHp * GBM.GB.dish.heal) && S.powered, 'a dish that reaches him: he eats it, HEALED (' + GBM.GB.dish.heal + ' of him) and his next blow is heavier');
   const dish = { id: 901, kind: 'dish', x: G.mid, state: 'ride', k: 0 }; S.items.push(dish); ok(GBM.smashItem(S, dish, w) && S.hungry > 0 && !S.powered, 'a dish knocked off the line: it smashes, he goes HUNGRY');

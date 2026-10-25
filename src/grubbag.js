@@ -22,6 +22,8 @@
 //     P3 (30-0%)    6 THE GRAB (he leans out of the chair, his arm drawn back, red !!): his arm sweeps out along the floor to take you as food - jump it or roll; caught, he
 //                   bites (GB.grab.dmg) and throws you down the hall
 //   NO ADDS (Daniel: no adds unless the brief says so - the serving line is the "servers"; see the lane report's questions).
+/* (claude/kitchengateart TUNE, BOT_PROFILE=human + flasks, campaign L19, n=12: knight 10, warden 11, pyro 3 = 67%; mash 0/6) THE CHOKE RUNS ITS WHOLE choke.t FOR EVERY HERO (the purse empties but the opening does not end early: the cycle was the knight 45 s / the pyro 95 s apart),
+   boom 0.14 + cap 0.12 per choke, the giant fork 10 (a shield turns it, a pyro cannot: it was the pyro's worst hurt), dmgMul 1.5 on every blow he lands (src/grubbag-hands.js bzD) */
 export const GB = {
   hp: 3000, w: 52, h: 46, markH: 66,
   fed: 0.45, above: 0.7, wardMul: 0.4,
@@ -29,17 +31,17 @@ export const GB = {
   rest: [1.4, 1.2, 1.0],
   belch: { tell: [0.95, 0.85, 0.8], sp: 155, life: 2.8, h: 14, w: 9, dmg: 13, rec: 0.7 },
   food: { tell: [0.8, 0.72, 0.65], n: [2, 3, 3], flight: 1.05, r: 15, dmg: 8, spread: 64, rec: 0.6 },
-  fork: { tell: [0.72, 0.64, 0.58], t: 0.34, reach: 110, h: 8, dmg: 24, chip: 0.7, rec: 0.75, range: 140 },
+  fork: { tell: [0.72, 0.64, 0.58], t: 0.34, reach: 110, h: 8, dmg: 10, chip: 0.7, rec: 0.75, range: 140 },
   slam: { tell: [1.0, 0.92, 0.85], n: 4, flight: 0.9, r: 16, dmg: 9, shock: 10, shockDmg: 12, rec: 0.8 },
   flood: { tell: 1.0, sp: 120, h: 12, dmg: 13, lie: 4, slow: 0.55, rec: 0.9 },
   grab: { tell: 0.85, t: 0.55, reach: 200, h: 20, dmg: 28, rec: 0.9, throwV: 260 },
-  choke: { t: 9, mul: 2, cap: 0.07, boom: 0.13 },
+  choke: { t: 9, mul: 2, cap: 0.12, boom: 0.14 },
   ward: 2.6, coughRest: 2.2,
   eat: 0.7,
   dish: { every: [9, 7.5, 6.5], v: 120, heal: 0.005, power: 1.3, hang: 64, box: 8 },
   hungry: { t: 6, mul: 0.7, cd: 0.8 },
   oven: { bake: 1.3, cool: 2.5, burst: 10 },
-  bz: { hurt: 1.5 }, dmgMul: 1.3,
+  bz: { hurt: 1.5 }, dmgMul: 1.5,
 };
 export const GB_SAY = { wake: 'LORD GRUBBAG THE GLUTTON', rule: 'STOKE THE OVEN: IT BAKES A POWDER PIE, AND HE EATS WHATEVER THE LINE BRINGS HIM.', p2: 'MORE! FASTER!', p3: 'HE REACHES FOR YOU',
   bake: 'THE OVEN BAKES A POWDER PIE', pie: 'THE POWDER PIE GOES OUT ON THE LINE', choke: 'HE CHOKES ON IT', ward: 'HE COUGHS IT UP', eats: 'HE EATS: HEALED', powered: 'FED: HIS NEXT BLOW IS HEAVIER',
@@ -196,7 +198,7 @@ export function throwAt(c, floorY) { const k = Math.max(0, Math.min(1, c.t / c.T
 export function takeBlow(e, S, dmg, plunge) {
   if (S.ward > 0 || (e.mode === 'recover' && S.ward > 0)) return [Math.max(1, Math.round(dmg * GB.wardMul)), 'WARDED'];
   if (e.mode === 'choke') { const d = Math.round(dmg * GB.choke.mul), left = S.purse ?? Infinity;
-    if (d >= left) { S.purse = 0; e.modeT = Math.min(e.modeT, 0.01); return [Math.max(1, Math.round(left)), null]; } S.purse = left - d; return [d, null]; }
+    if (d >= left) { S.purse = 0; return [Math.max(1, Math.round(left)), null]; } S.purse = left - d; return [d, null]; }
   if (S.hungry > 0) return [Math.max(1, Math.round(dmg * GB.hungry.mul)), null];
   if (plunge) return [Math.max(1, Math.round(dmg * GB.above)), null];
   return [Math.max(1, Math.round(dmg * GB.fed)), 'WELL FED'];
