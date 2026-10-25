@@ -37,7 +37,7 @@ const mk = () => ({ t: 'admiral', x: G.hulls[1][0] + 200, y: G.floorY, face: -1,
   ok(AD0.floorHp(e, S) === AD.hp * AD.floor, 'armoured, his plate holds him over ' + AD.floor + ' of his health');
   /* THE GUNS: three plates, then bare, then flat */
   e.mode = 'swing'; ok(AD0.blowPlate(e, S, W0, 'gun', -1) === 'air', 'on his line a ball passes under him'); e.mode = 'walk';
-  for (let i = 3; i >= 1; i--) { const r = AD0.blowPlate(e, S, W0, 'gun', i % 2 ? 1 : -1); ok(r === 'plate' && S.plates === i - 1 && e.mode === 'stagger' && e.open > 2, 'a ball blows a plate (' + i + ' -> ' + S.plates + '), staggered OPEN ' + e.open);
+  for (let i = 3; i >= 1; i--) { const r = AD0.blowPlate(e, S, W0, 'gun', i % 2 ? 1 : -1); ok(r === 'plate' && S.plates === i - 1 && e.mode === 'stagger' && e.open > 1.5, 'a ball blows a plate (' + i + ' -> ' + S.plates + '), staggered OPEN ' + e.open);
     ok(AD0.blowPlate(e, S, W0, 'gun', 1) === 'busy', 'staggered, a second ball is spent'); e.mode = 'walk'; e.open = 0; S.ward = 1; ok(AD0.blowPlate(e, S, W0, 'gun', 1) === 'ward', 'in his ward a ball glances'); S.ward = 0; }
   ok(new Set(S.off).size === 3, 'the three plates are three different plates: ' + S.off);
   e.mode = 'walk'; ok(AD0.takeAt(e, S).k === 1, 'bare: x1 outside his openings'); ok(AD0.floorHp(e, S) === 0, 'bare: no floor');
@@ -130,7 +130,7 @@ try {
 for (const [h, o] of Object.entries(R.heroes)) {
   if (o.err) { ok(false, h + ': ' + o.err); continue; }
   ok(o.iron.d > 0 && o.iron.chipped > 0, h + ': a real blow on his iron chips it (' + o.iron.d + ') and says IRON PLATE (' + o.iron.chipped + ')');
-  ok(o.plate.st && o.plate.plates === 2 && o.plate.open >= 2, h + ': a real blow on the deck gun\'s breech, him in its line, blows a plate and opens him: ' + JSON.stringify(o.plate));
+  ok(o.plate.st && o.plate.plates === 2 && o.plate.open >= 1.5, h + ': a real blow on the deck gun\'s breech, him in its line, blows a plate and opens him: ' + JSON.stringify(o.plate));
   ok(o.openD >= o.iron.d * 3, h + ': staggered, a blow pays ' + o.openD + ' (on his iron ' + o.iron.d + ')');
   ok(o.ward.spent && o.ward.glanced > 0, h + ': a ball in his ward glances off');
   ok(o.keg.plates === o.keg.p0 - 1 && o.keg.back > 0, h + ': his keg struck back blows a plate on him: ' + JSON.stringify(o.keg));

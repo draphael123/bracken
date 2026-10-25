@@ -31,12 +31,12 @@
 // PURE: no DOM, no main.js. The world is a context `c` (src/admiral-hands.js binds it). adPlan is the boss lab's HUMAN bot (src/lab.js).
 
 /* (tune) THE PER-HERO TUNE: { in: x what his blows take off this hero, out: x what this hero's blows take off him }. Heroes not listed are 1 / 1. */
-export const TUNE = { knight: { in: 1, out: 1 }, warden: { in: 1, out: 1 }, pyro: { in: 1, out: 1 }, paladin: { in: 1, out: 1 }, ranger: { in: 1, out: 1 } };
+export const TUNE = { knight: { in: 1.1, out: 1 }, paladin: { in: 0.9, out: 1 }, reaper: { in: 0.85, out: 1.05 }, geomancer: { in: 0.85, out: 1.15 }, ranger: { in: 0.85, out: 1.15 } };
 export const tuneOf = h => TUNE[h] || { in: 1, out: 1 };
 export const AD = {
-  hp: 2400, w: 22, h: 40, markH: 64,
-  plates: 3, chip: [1, 0.35, 0.25, 0.15], floor: 0.5, openMul: 1.6, flatCap: 0.08, wardT: 2.6, gunHot: 9,
-  staggerT: 2.4, reloadT: 2.0, soakedT: 2.3, axeT: 1.6, flatT: 2.4,
+  hp: 3250, w: 22, h: 40, markH: 64,
+  plates: 3, chip: [1, 0.35, 0.25, 0.15], floor: 0.5, openMul: 1.6, flatCap: 0.06, wardT: 3.0, gunHot: 13,
+  staggerT: 1.9, reloadT: 1.8, soakedT: 2.1, axeT: 1.5, flatT: 2.0,
   walk: 46, keep: 44, turn: 0.45, gap: [0.6, 0.48],
   /* THE CUTLASS: told cutTell s, then cutNext s; each cut cutT s at cutReach px; a step cutStep px between; cutRec s after */
   cutTell: 0.58, cutNext: 0.4, cutT: 0.15, cutReach: 52, cutStep: 14, cutRec: 0.7,
@@ -51,7 +51,7 @@ export const AD = {
   /* PHASE TWO: the list told listTell s; on the flagship's deck a hero slides listV px/s toward the lashing; THE FLURRY: flurryTell s, flurryN cuts of flurryT s,
      flurryNext s apart, a step flurryStep px each; THE AXE: axeTell s over [axeNear, axeFar] px in front of him */
   listTell: 1.4, listV: 16, flurryTell: 0.7, flurryN: 4, flurryT: 0.13, flurryNext: 0.2, flurryStep: 16, flurryReach: 48, axeTell: 0.6, axeSwingT: 0.14, axeNear: 6, axeFar: 56, axeRec: 0.6,
-  dmg: { cut: 34, pistol: 30, keg: 46, broadside: 48, land: 40, flurry: 22, axe: 52 },
+  dmg: { cut: 41, pistol: 38, keg: 54, broadside: 54, land: 48, flurry: 25, axe: 62 },
 };
 /* EVERY CYCLE CHANGES: the order of each pass by phase (cycle k uses [k % n]) */
 export const CYCLES = {
