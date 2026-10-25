@@ -29,7 +29,7 @@
 //                                              required back to back; shrine 424 at her door
 //   427-477  HER COTTAGE         THE BOSS      THE GRANDMOTHER 3 (src/potion-hands.js): her brood wards her, her blue-jar opening, her cauldron
 export const UL3 = { W: 478, H: 40, G: 30, arena: [433, 474] };
-export const SECTIONS = [['THE HERB GARDEN', 0, 96], ['THE DRYING LOFTS', 96, 189], ['THE THORN HEDGES', 189, 279], ['THE CAULDRON YARD', 279, 372], ['HER GREAT LEAF', 372, 427], ["THE GRANDMOTHER'S COTTAGE", 427, 478]];
+export const SECTIONS = [['THE HERB GARDEN', 0, 96], ['THE DRYING LOFTS', 96, 189], ['THE THORN HEDGES', 189, 279], ['THE CAULDRON YARD', 279, 372], ['HER GREAT LEAF', 372, 427], ["THE POTION MASTER'S COTTAGE", 427, 478]];
 /* each colour's arc in COLUMNS - TAUGHT, TESTED, REMIXED, EXAMINED - read by tools/underleaf.mjs and the brief */
 export const ARCS = {
   green: { teach: [9, 15], test: [46, 58], remix: [282, 340], exam: [384, 393] },
@@ -67,11 +67,11 @@ export function buildUnderleaf3({ painter, T, TS, knightRow }) {
 
   // ================= 1. THE HERB GARDEN (0-96): TEACH green, where a miss costs nothing =================
   ground(1, 14, G);
-  sign(4, 29, "UNDERLEAF: THE GRANDMOTHER'S VILLAGE. HER JARS CHANGE WHAT THEY BREAK ON.");
+  sign(4, 29, "UNDERLEAF: THE POTION MASTER'S VILLAGE. HER JARS CHANGE WHAT THEY BREAK ON.");
   jar(9, 29, 'green');
   sign(7, 29, 'HER GREEN JAR: INTERACT TAKES IT, ATTACK THROWS IT. ON A SEED BED, A VINE GROWS.');
   ladderBed(13, 29, 23);                                                                   /* up the garden wall: nothing to fight here */
-  deco(3, 29, 'beehive'); deco(11, 29, 'hideRack', 0);
+  deco(3, 29, 'barrels', 1); deco(11, 29, 'hideRack', 0);
   coins([5, 28], [10, 28]);
   board(2, 5, 27); board(8, 11, 27);
   ground(14, 44, 24);                                                                      /* the upper garden: six rows over the lane */
@@ -79,7 +79,7 @@ export function buildUnderleaf3({ painter, T, TS, knightRow }) {
   foe('sprig', 22, 23, { squad: 'garden' }); foe('sprig', 34, 23, { squad: 'garden' }); foe('thief', 40, 23, { face: -1 });
   board(16, 25, 20); board(31, 41, 20);                                                    /* drying racks over the beds (a second height) */
   coins([19, 19], [21, 19], [28, 21], [37, 19], [39, 19], [42, 23]);
-  deco(24, 23, 'hideRack', 1); deco(32, 21, 'beehive');
+  deco(24, 23, 'hideRack', 1); deco(32, 21, 'barrels', 2);
   ground(45, 49, G);                                                                       /* down off the upper garden into the ditch lane */
   jar(46, 29, 'green'); board(44, 47, 27);
   sign(47, 29, "A SEED BED ON THE DITCH'S LIP: A GREEN JAR ON IT GROWS A BRIDGE ACROSS.");
@@ -207,7 +207,7 @@ export function buildUnderleaf3({ painter, T, TS, knightRow }) {
   foe('rockgoblin', 417, 17, { face: -1, herb: 'jarthrower' });
   ent('check', 424, 17);
   coins([395, 23], [398, 23], [413, 17], [416, 17], [421, 17]);
-  sign(421, 17, 'HER BROOD WARDS HER. KILL IT, THEN A BLUE JAR LIFTS HER HELPLESS.');
+  sign(421, 17, 'THE POTION MASTER. RED BURNS HER HEDGE, GREEN PULLS HER DOWN, BLUE LIFTS HER OUT.');
 
   // ================= 6. HER COTTAGE (427-477): THE GRANDMOTHER 3 =================
   ground(427, 428, 22); ground(429, 431, 26); ground(432, 477, G);

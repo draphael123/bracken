@@ -195,6 +195,23 @@ DEF.push(
     { c: 17, sit: true, lean: 5, hdx: 2, hdy: 8, eyes: 'closed', hair: 2, staff: [34, 58, 54, 51], lan: [53, 54, 0], fh: [30, 54, { fd: 1 }], bh: [12, 56, {}], noBelt: false },
     null][i]],
 );
+/* (claude/underleaf4) THE VINE LASH: the staff dragged low and back along the floor (green sparks run up it), then flung forward along the boards;
+   THE BUBBLE TRAP: the lantern held out in both hands, a blue bubble swelling at its mouth, then pushed off */
+const vineUp = k => P => { for (let q = 0; q < 3 + k; q++) { P.put(8 + q * 3, 52 - q * 2, q % 2 ? '#9be06a' : '#5fae3a'); P.put(9 + q * 3, 53 - q * 2, '#2e5a1c'); } };
+const bub = (bx, by, r) => P => { for (let a = 0; a < 16; a++) { const t = a / 16 * Math.PI * 2; P.put(bx + Math.round(Math.cos(t) * r), by + Math.round(Math.sin(t) * r), a % 4 ? '#a8d8ff' : '#ffffff'); } P.put(bx - 1, by - 1, '#ffffff'); };
+DEF.push(
+  ['lashTell', 3, i => [{ lean: -3, c: 2, hdx: -1, eyes: 'open', mouth: true, staff: [32, 42, 8, 54], lan: [20, 30, 1], fh: [30, 42, { fist: true }], bh: [40, 40, { fd: 1 }], over: vineUp(0) },
+    { lean: -5, c: 3, hdx: -2, eyes: 'blaze', mouth: true, hair: -2, tipSwing: 2, staff: [30, 44, 4, 56], lan: [16, 32, 2], fh: [28, 44, { fist: true }], bh: [42, 38, { fd: 1 }], over: vineUp(2) },
+    { lean: -6, c: 4, hdx: -2, eyes: 'blaze', mouth: true, hair: -3, tipSwing: 3, staff: [30, 46, 2, 57], lan: [14, 33, 2], fh: [28, 46, { fist: true }], bh: [43, 37, { fd: 1 }], over: vineUp(4) }][i]],
+  ['lash', 3, i => [{ dx: 2, lean: 3, c: 2, hdx: 1, mouth: true, staff: [30, 46, 56, 56], lan: [52, 48, 1], fh: [34, 44, { fist: true }], bh: [14, 46, {}], step: [2, -2], under: smearP(20, 50, 58, 56, '#5fae3a') },
+    { dx: 4, lean: 5, c: 3, hdx: 2, hdy: 1, mouth: true, staff: [34, 48, 60, 57], lan: [56, 50, 1], fh: [38, 46, { fist: true }], bh: [12, 46, {}], step: [3, -3], over: sparks([[58, 55], [60, 52]]) },
+    { dx: 4, lean: 4, c: 3, hdx: 2, hdy: 2, mouth: true, staff: [34, 48, 59, 57], lan: [55, 51, 1], fh: [38, 46, { fist: true }], bh: [12, 46, {}], step: [3, -3] }][i]],
+  ['trapTell', 3, i => [{ lean: -1, c: 1, eyes: 'open', mouth: true, staff: [20, 59, 22, 10], lan: [44, 30, 1], fh: [42, 34, { fist: true }], bh: [46, 32, { fist: true }], over: bub(52, 26, 2) },
+    { lean: -2, c: 1, hood: 0.5, eyes: 'blaze', mouth: true, staff: [20, 59, 22, 10], lan: [44, 28, 2], fh: [42, 32, { fist: true }], bh: [46, 30, { fist: true }], over: bub(53, 24, 4) },
+    { lean: -3, c: 0, hood: 1, eyes: 'blaze', mouth: true, hair: 2, staff: [20, 59, 22, 10], lan: [44, 27, 2], fh: [42, 31, { fist: true }], bh: [46, 29, { fist: true }], over: bub(54, 22, 6) }][i]],
+  ['trap', 2, i => [{ dx: 2, lean: 4, c: 2, hdx: 2, eyes: 'open', mouth: true, staff: [20, 59, 22, 10], lan: [50, 30, 1], fh: [48, 32, { fist: true }], bh: [52, 30, { fd: 1 }], over: bub(60, 26, 6) },
+    { dx: 3, lean: 5, c: 3, hdx: 2, hdy: 1, eyes: 'open', mouth: true, staff: [20, 59, 22, 10], lan: [50, 32, 1], fh: [48, 34, { fist: true }], bh: [54, 34, { fd: 1 }] }][i]],
+);
 export const F = {}, N = {}; const ORDER = []; for (const [name, n] of DEF) { F[name] = ORDER.length; N[name] = n; for (let i = 0; i < n; i++) ORDER.push([name, i]); }
 
 /* the heap: a pile of shawl on the floor, the hood fallen, the staff broken beside her, the lantern out */
@@ -216,13 +233,18 @@ export function bakeSets() { const p1 = bakeSet(0), p2 = bakeSet(1), pick = (s, 
 
 /* THE FRAME FOR WHAT SHE IS DOING: each move walks its own frames over its own length (DUR is potion-hands.js GM's, kept here so this module needs nothing of it).
    A flinch shows over a quiet moment only - never over a windup, which is the tell. */
-const DUR = { staffTell: 0.55, staff: 0.32, fireballTell: 0.85, cast: 0.5, jarTell: 0.6, hurled: 0.45, broodTell: 1.0, kick: 1.2, stirTell: 1.0, stir: 0.6, wake: 1.6 };
+const DUR = { lashTell: 0.7, lash: 0.4, trapTell: 0.8, trap: 0.45, staffTell: 0.55, staff: 0.32, fireballTell: 0.85, cast: 0.5, jarTell: 0.6, hurled: 0.45, broodTell: 1.0, kick: 1.2, stirTell: 1.0, stir: 0.6, wake: 1.6 };
 const along = (base, e, key) => { const n = N[base], p = Math.max(0, Math.min(0.999, 1 - Math.max(0, e.modeT) / (DUR[key || base] || 1))); return F[base] + Math.floor(p * n); };
 export function frameOf(e) {
   const m = e.mode, an = e.anim || 0;
   if (m === 'sleep') return F.sleep + [0, 1, 2, 1][Math.floor(an * 1.6) % 4];
   if (m === 'wake') return along('wake', e);
   if (m === 'floated') return F.floated + (Math.floor(an * 8) % 4);
+  if (m === 'lashTell') return along('lashTell', e); if (m === 'lash') return along('lash', e);   /* (claude/underleaf4) THE POTION MASTER's new moves */
+  if (m === 'trapTell') return along('trapTell', e); if (m === 'trap') return along('trap', e);
+  if (m === 'opened') return e.phase === 1 ? F.hurt + (Math.floor(an * 6) % 3) : F.ward + (Math.floor(an * 5) % 3);   /* her hedge burning off her / the vine's grip */
+  if (m === 'reform') return F.ward + (Math.floor(an * 5) % 3);
+  if (e.aloft && (m === 'walk' || m === 'kick')) return F.floated + (Math.floor(an * 4) % 4);   /* aloft on her bubbles */
   if (m === 'staffTell') return along('staffTell', e); if (m === 'staff') return along('staff', e);
   if (m === 'fireballTell') return along('fireballTell', e); if (m === 'cast') return along('cast', e);
   if (m === 'jarTell') return along(e.hurlCol === 'green' ? 'jarTellG' : 'jarTellR', e, 'jarTell'); if (m === 'hurled') return along(e.hurlCol === 'green' ? 'hurledG' : 'hurledR', e, 'hurled');

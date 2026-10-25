@@ -162,9 +162,7 @@ export const GROUND_KITS = {
     "density": 0.38,
     "kinds": [
       "tuft",
-      "flower",
-      "skep",
-      "gardenWall"
+      "flower"
     ]
   },
   "shop": {
