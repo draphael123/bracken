@@ -1,0 +1,229 @@
+{
+  "proof": {
+    "time": "2026-10-25T23:34:47.697Z",
+    "controller": "dc5e9a879381067f6b5afeb784e407b924b8fd0b",
+    "gameSource": "62d9c02c102decc69ceaef4e1ec593a23170f1ff",
+    "gameTree": "d6f20846727ec42b3cca651d1b061136d9c6d2f1",
+    "originalMainSha256": "81866b69fec64de5fdd00da316fb0d1e8e997ae9912f73f280981f0a70cb36d8",
+    "candidateMainSha256": "2f1578f65113d95a8ee040b7d5e7fa9ebc3e7dc3fcd0c13291bbd218efed5b94",
+    "cacheEntries": 1,
+    "colourKeys": [
+      "berry",
+      "canopy",
+      "dirt",
+      "dirtD",
+      "dirtL",
+      "gold",
+      "grass",
+      "grassD",
+      "grassL",
+      "stone",
+      "stoneD",
+      "stoneL",
+      "wood",
+      "woodD",
+      "woodL"
+    ],
+    "extraInputs": [
+      "belowGround(L)",
+      "pal.boneSoil"
+    ],
+    "originalBakersAndMissPathPreserved": true,
+    "originalGeneratorLabelsRecordedAndReplayed": true,
+    "backgroundAlwaysRebaked": true,
+    "modelContainersCopiedCanvasPixelsShared": true,
+    "evictedCanvasesQueuedForOriginalRetirement": true,
+    "contextListenersDetachedOnEviction": true,
+    "lineCountUnchanged": true,
+    "originalFixtureAssertionDeadlineQualityRngAudioClockAndBalancePolicyUnchanged": true,
+    "outsideMutations": [
+      {
+        "root": "TILE",
+        "path": "clear",
+        "line": 1398
+      },
+      {
+        "root": "PROP",
+        "path": "ropeBeam",
+        "line": 1444
+      },
+      {
+        "root": "TILE",
+        "path": "ice",
+        "line": 1446
+      },
+      {
+        "root": "TILE",
+        "path": "web",
+        "line": 1447
+      },
+      {
+        "root": "TILE",
+        "path": "towerSpikes",
+        "line": 1450
+      },
+      {
+        "root": "TILE",
+        "path": "townSpikes",
+        "line": 1450
+      },
+      {
+        "root": "TILE",
+        "path": "ice",
+        "line": 11351
+      },
+      {
+        "root": "PROP",
+        "path": "fallArt.[]",
+        "line": 29678
+      },
+      {
+        "root": "PROP",
+        "path": "castleRange",
+        "line": 31456
+      },
+      {
+        "root": "PROP",
+        "path": "glassShardIcon",
+        "line": 32111
+      },
+      {
+        "root": "PROP",
+        "path": "oreIcon",
+        "line": 32111
+      },
+      {
+        "root": "PROP",
+        "path": "tapIcon",
+        "line": 32111
+      },
+      {
+        "root": "PROP",
+        "path": "featherIcon",
+        "line": 32111
+      },
+      {
+        "root": "PROP",
+        "path": "waterskinIcon",
+        "line": 32111
+      },
+      {
+        "root": "PROP",
+        "path": "pickIcon",
+        "line": 32111
+      },
+      {
+        "root": "PROP",
+        "path": "tagIcon",
+        "line": 32111
+      },
+      {
+        "root": "PROP",
+        "path": "kiteIcon",
+        "line": 32111
+      },
+      {
+        "root": "PROP",
+        "path": "pigeonIcon",
+        "line": 32111
+      },
+      {
+        "root": "PROP",
+        "path": "caravanSealIcon",
+        "line": 32111
+      },
+      {
+        "root": "PROP",
+        "path": "caravanSealIcon",
+        "line": 34644
+      }
+    ],
+    "adopted": false
+  },
+  "edits": [
+    {
+      "start": 233442,
+      "end": 233442,
+      "before": "",
+      "after": "paletteBaseRemember(baseKey,{tile:TILE,prop:PROP},baseLabels); "
+    },
+    {
+      "start": 231477,
+      "end": 231490,
+      "before": "yield 'props'",
+      "after": "yield paletteBaseLabel(baseLabels,\"props\")"
+    },
+    {
+      "start": 224885,
+      "end": 224896,
+      "before": "yield 'sub'",
+      "after": "yield paletteBaseLabel(baseLabels,\"sub\")"
+    },
+    {
+      "start": 221485,
+      "end": 221496,
+      "before": "yield 'sub'",
+      "after": "yield paletteBaseLabel(baseLabels,\"sub\")"
+    },
+    {
+      "start": 220898,
+      "end": 220909,
+      "before": "yield 'sub'",
+      "after": "yield paletteBaseLabel(baseLabels,\"sub\")"
+    },
+    {
+      "start": 218373,
+      "end": 218384,
+      "before": "yield 'sub'",
+      "after": "yield paletteBaseLabel(baseLabels,\"sub\")"
+    },
+    {
+      "start": 217713,
+      "end": 217724,
+      "before": "yield 'sub'",
+      "after": "yield paletteBaseLabel(baseLabels,\"sub\")"
+    },
+    {
+      "start": 217372,
+      "end": 217385,
+      "before": "yield 'tiles'",
+      "after": "yield paletteBaseLabel(baseLabels,\"tiles\")"
+    },
+    {
+      "start": 217353,
+      "end": 217364,
+      "before": "yield 'sub'",
+      "after": "yield paletteBaseLabel(baseLabels,\"sub\")"
+    },
+    {
+      "start": 215198,
+      "end": 215209,
+      "before": "yield 'sub'",
+      "after": "yield paletteBaseLabel(baseLabels,\"sub\")"
+    },
+    {
+      "start": 214893,
+      "end": 214904,
+      "before": "yield 'sub'",
+      "after": "yield paletteBaseLabel(baseLabels,\"sub\")"
+    },
+    {
+      "start": 213880,
+      "end": 213880,
+      "before": "",
+      "after": " const baseKey=paletteBaseKey(pal);if(paletteBaseReady(baseKey)){const model=paletteBaseClone(PALETTE_BASE_CACHE.model);TILE=model.tile;PROP=model.prop;for(const label of PALETTE_BASE_CACHE.labels)yield label;CROWN = CROWN || CRT.bakeCrownTiles(); VILL = VILL || bakeVillageTiles(); SHORE = SHORE || LWT.bakeShoreTiles(); REEF = REEF || RFT.bakeReefTiles(); FLOT = FLOT || FLT.bakeFlotTiles(); CITY = CITY || CTT.bakeCityTiles(); RAINART = RAINART || RFT.bakeRain(64, 64); PROP.fallArt = PROP.fallArt || { make: h => LWT.bakeWaterfall(h) };bakeBackdrop(pal);yield 'sky';return;}paletteBaseRelease();const baseLabels=[];"
+    },
+    {
+      "start": 212412,
+      "end": 212447,
+      "before": "stack = [TILE, PROP, BG, LEDGE_SETS",
+      "after": "stack = [TILE, PROP, BG, PALETTE_BASE_CACHE, LEDGE_SETS"
+    },
+    {
+      "start": 210022,
+      "end": 210022,
+      "before": "",
+      "after": "  let PALETTE_BASE_CACHE = null; const PALETTE_BASE_KEYS = [\"berry\",\"canopy\",\"dirt\",\"dirtD\",\"dirtL\",\"gold\",\"grass\",\"grassD\",\"grassL\",\"stone\",\"stoneD\",\"stoneL\",\"wood\",\"woodD\",\"woodL\"]; function paletteBaseKey(pal) {   const values=[];   for(const key of PALETTE_BASE_KEYS){const v=ART.C[key];if(v===undefined)values.push([key,'undefined']);else if(typeof v==='string')values.push([key,'string',v]);else if(Array.isArray(v)&&v.every(c=>typeof c==='string'))values.push([key,'array',...v]);else return null;}   let below=false;try{below=belowGround(L);}catch{}   return JSON.stringify([values,below,!!pal.boneSoil]); } function paletteBaseClone(value,seen=new Map()) {   if(!value||typeof value!=='object'||value instanceof HTMLCanvasElement||ArrayBuffer.isView(value))return value;   if(seen.has(value))return seen.get(value);   const proto=Object.getPrototypeOf(value);if(proto!==Object.prototype&&proto!==null&&!Array.isArray(value))throw new Error('unsupported art model prototype');   const out=Array.isArray(value)?[]:Object.create(proto);seen.set(value,out);   for(const key of Reflect.ownKeys(value)){const d=Object.getOwnPropertyDescriptor(value,key);if(!('value'in d))throw new Error('art model accessor');d.value=paletteBaseClone(d.value,seen);Object.defineProperty(out,key,d);}   if(!Object.isExtensible(value))Object.preventExtensions(out);return out; } function paletteBaseCanvases(model) {   const seen=new Set(),stack=[model],canvases=[];   while(stack.length){const v=stack.pop();if(!v||typeof v!=='object'||seen.has(v))continue;seen.add(v);if(v instanceof HTMLCanvasElement){canvases.push(v);for(const key of Object.keys(v)){const q=v[key];if(q&&typeof q==='object')stack.push(q);}continue;}if(ArrayBuffer.isView(v))continue;for(const key of Object.keys(v)){const d=Object.getOwnPropertyDescriptor(v,key);if(d&&'value'in d&&d.value&&typeof d.value==='object')stack.push(d.value);}}   return canvases; } function paletteBaseRelease() {   const old=PALETTE_BASE_CACHE;if(!old)return;PALETTE_BASE_CACHE=null;   for(const item of old.surfaces){item.canvas.removeEventListener('contextlost',old.invalidate);item.canvas.removeEventListener('contextrestored',old.invalidate);}   const queued=new Set(BAKE_OLD);for(const canvas of paletteBaseCanvases(old.model))if(!queued.has(canvas)){queued.add(canvas);BAKE_OLD.push(canvas);} } function paletteBaseReady(key) { const e=PALETTE_BASE_CACHE;return key!==null&&e&&e.key===key&&e.valid&&e.surfaces.every(s=>s.canvas.width===s.w&&s.canvas.height===s.h); } function paletteBaseRemember(key,model,labels) {   if(key===null)return;let copy;try{copy=paletteBaseClone(model);}catch{return;}delete copy.prop.fallArt;   const e={key,model:copy,labels:labels.slice(),valid:true,surfaces:paletteBaseCanvases(copy).map(canvas=>({canvas,w:canvas.width,h:canvas.height}))};e.invalidate=()=>{e.valid=false;};   for(const s of e.surfaces){s.canvas.addEventListener('contextlost',e.invalidate);s.canvas.addEventListener('contextrestored',e.invalidate);}PALETTE_BASE_CACHE=e; } function paletteBaseLabel(labels,label){labels.push(label);return label;} "
+    }
+  ]
+}

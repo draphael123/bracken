@@ -4,7 +4,7 @@ on:
     inputs:
       mode:
         type: choice
-        options: [layout-candidate, foreground-reuse, foreground-direct, fixed-ornaments, region-props, border-present, tile-warm, captain-boot, cpu-profile, tile-cache, paladin-boot, hero-reuse, profile, sfx, compare, mobile, calls, present, campaign, variant, pixel-debug]
+        options: [palette-base, layout-candidate, foreground-reuse, foreground-direct, fixed-ornaments, region-props, border-present, tile-warm, captain-boot, cpu-profile, tile-cache, paladin-boot, hero-reuse, profile, sfx, compare, mobile, calls, present, campaign, variant, pixel-debug]
         default: profile
       baseline:
         type: string
@@ -28,6 +28,56 @@ env:
 permissions:
   contents: read
 jobs:
+  palette-base-campaign:
+    if: inputs.mode == 'palette-base'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1,2,3,4,5,6,7,8]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.11.1'
+      - run: node tools/palette-base-cache-proof.mjs campaign "$SHARD"
+        env:
+          SHARD: ${{ matrix.shard }}
+          PALETTE_CACHE_OUT: ${{ runner.temp }}/palette-base-campaign-${{ matrix.shard }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: palette-base-campaign-${{ matrix.shard }}
+          path: ${{ runner.temp }}/palette-base-campaign-${{ matrix.shard }}/
+          if-no-files-found: error
+  palette-base-original:
+    if: inputs.mode == 'palette-base'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        scope: [memory,layout]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.11.1'
+      - run: node tools/palette-base-cache-proof.mjs "$SCOPE"
+        env:
+          SCOPE: ${{ matrix.scope }}
+          PALETTE_CACHE_OUT: ${{ runner.temp }}/palette-base-original-${{ matrix.scope }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: palette-base-original-${{ matrix.scope }}
+          path: ${{ runner.temp }}/palette-base-original-${{ matrix.scope }}/
+          if-no-files-found: error
   layout-candidate:
     if: inputs.mode == 'layout-candidate'
     runs-on: ubuntu-latest
