@@ -624,7 +624,7 @@ function addLayer(name) {
   const s = ac.createBufferSource(), g = ac.createGain(); s.buffer = trackBuf[L.file]; s.loop = true; g.gain.value = L.gain; s.connect(g); g.connect(trackG); s.start(); musicSrcs.push(s);
 }
 // the files were mastered all over the place: the cave loop sits 7 dB under the rest and theme3/4 3 dB over
-const TRACK_GAIN = { witchlight: 1.0, fallingtower: 1.0, underkeep: 1.1, stormharbor: 1.0, burial: 1.0,   /* THE FOUR NEW LEVELS ARE COMPOSED TRACKS NOW, not 22 kHz mono synth: levelled to -15 LUFS like the rest of the library, so they need gain of about one. The 3.5 and 5.0 here were a script trying to make thin mono loops carry, and they would now be deafening. */ hurricane: 1.25, drowned: 1.3, cave: 2.1, adventure: 1.7, theme3: 0.8, reef: 1.5, longwater: 1.25, flotilla: 1.0 };
+const TRACK_GAIN = { witchlight: 1.0, fallingtower: 1.0, underkeep: 1.1, stormharbor: 1.0, burial: 1.0,   /* THE FOUR NEW LEVELS ARE COMPOSED TRACKS NOW, not 22 kHz mono synth: levelled to -15 LUFS like the rest of the library, so they need gain of about one. The 3.5 and 5.0 here were a script trying to make thin mono loops carry, and they would now be deafening. */ hurricane: 1.25, drowned: 1.3, cave: 2.1, adventure: 1.7, theme3: 0.8, reef: 1.5, longwater: 1.25, flotilla: 1.41 };   /* (claude/flotilla3, review Q9 approved 10-18: +3 dB - the flotilla track sat ~3 dB under its siblings) */
 const trackVol = name => (name === 'boss' ? 0.5 : 0.45) * duckT * musicVol;
 /* a synth boss theme has no currentTrack (the step scheduler plays it), so its loudness is set here: on play, on duck, on the volume slider */
 const synthBossGain = () => BOSS_SYNTH_GAIN * duckT * musicVol;
@@ -1860,7 +1860,7 @@ const CAST = {
   cutlass: { kit: 'm1', rate: 1.05, mat: 'cloth', human: true }, boarder: { kit: 'm5', rate: 0.9, mat: 'cloth', human: true }, marine: { kit: 'm6', rate: 1.08, mat: 'cloth', human: true },
   bosun: { kit: 'm4', rate: 0.9, mat: 'cloth', human: true }, lookout: { kit: 'm6', rate: 1.22, mat: 'cloth', human: true }, sailor: { kit: 'm5', rate: 1, mat: 'cloth', human: true },
   seawitch: { kit: 'f3', rate: 1.04, mat: 'cloth', human: true },   /* the only woman in the crew with a voice, and she is not a goblin: no gibberish, no gob laugh */
-  netter: { kit: 'm3', rate: 1.05, mat: 'cloth', human: true }, quarter: { kit: 'm1', rate: 0.95, mat: 'cloth', human: true, boss: true }, champion: { kit: 'm4', rate: 0.72, mat: 'plate', human: true, boss: true }, captain: { kit: 'm4', rate: 0.84, mat: 'cloth', human: true, boss: true },
+  netter: { kit: 'm3', rate: 1.05, mat: 'cloth', human: true }, quarter: { kit: 'm1', rate: 0.95, mat: 'cloth', human: true, boss: true }, champion: { kit: 'm4', rate: 0.72, mat: 'plate', human: true, boss: true }, admiral: { kit: 'm4', rate: 0.86, mat: 'plate', human: true, boss: true }, captain: { kit: 'm4', rate: 0.84, mat: 'cloth', human: true, boss: true },
   merrowspear: { kit: 'm3', rate: 1.05, mat: 'cloth', human: true }, merrowcaller: { kit: 'f3', rate: 0.95, mat: 'cloth', human: true },   /* fish-folk, not goblins: no gibberish, no goblin laugh */
   watch: { kit: 'm5', rate: 0.9, lp: 1800, mat: 'plate', human: true }, lampreeve: { kit: 'm1', rate: 0.82, mat: 'cloth', human: true, boss: true }, tollmaster: { kit: 'm4', rate: 0.72, mat: 'cloth', human: true, boss: true },
   folk: { kit: 'hd', rate: 1, human: true, alert: 'vo_hum_alert' },

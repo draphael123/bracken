@@ -90,6 +90,8 @@ export function floodReach(L, T, opts = {}) { const L0 = L;   /* (the level as b
   // a gun laid on a hull opens the hull, and a stowed boarding plank becomes a bridge: both are one blow, so the
   // model treats them as already done rather than calling the far side unreachable
   for (const e of (L.ents || [])) {
+    /* THE FLOTILLA 3's LAID GUNS (claude/flotilla3, src/flotilla3.js): one blow on the breech - the hole is open, the yard is down across its gap: done, like the gun's hole */
+    if (e.t === 'aimgun') { if (e.hole) { const [x0, x1, y0, y1] = e.hole; for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) g[y * W + x] = T.AIR; } if (e.bridge) { const [x0, x1, row] = e.bridge; for (let x = x0; x <= x1; x++) { const i = row * W + x; if (g[i] === T.AIR) g[i] = T.ONEWAY; } } }
     if (e.t === 'cannon' && e.hole) { const [x0, x1, y0, y1] = e.hole; for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) g[y * W + x] = T.AIR; }
     /* THE LUMBER TRAIL's MARKED PINES (src/felling.js, claude/lumbertrail): four strokes every hero has, and the trunk STAYS where it fell - a bridge, a lean-to up a cliff, a drop into a hollow - so the fill has it down (the plain fill: legs only). tools/lumber-trail.mjs proves the required ones are locks */
     if (!plain && e.t === 'felltree') for (const [x, y, t] of fellCells(e, g, W, T)) g[y * W + x] = t;
