@@ -1997,8 +1997,10 @@ function allyTick() {
   }
   /* THE LAST HIT ON AN OPENING IS HIS */
   const holdOff = !!foe && one !== p && !!foe.maxHp && foe.open > 0 && Math.abs(one.x - foe.x) < 120 && foe.hp <= swordDmg() * 2;
-  Object.assign(S, AIC.stuckStep(S, dLead, fdt, !!foe && !S.raft && dLead <= B.stray + 20));   /* a fight pauses the stuck clock only near him: a foe behind a wall it cannot reach is no reason to stay stuck */
+  const lowerFooting = !!foe && h === 'warden' && AIC.needsLowerFooting(p, box(foe), attackBox());
+  Object.assign(S, AIC.stuckStep(S, dLead, fdt, !!foe && !lowerFooting && !S.raft && dLead <= B.stray + 20));   /* moving onto a foe's lower footing is navigation, not a fight that pauses catch-up */
   if (foe && !holdOff && !S.raft) {
+    if (lowerFooting) { p.aiWalk(allySafeGoal(foe.x)); return; }   /* use the existing safe walker to leave a high lip instead of thrusting over the foe's head */
     p.aiF = (p.aiF || 0) + 1;
     LABMOD.labDuelFrame(window.BK, h, foe, p.aiF, 'human', p.aiRead);
     if (one !== p) { const away = one.x > p.x ? 'left' : 'right'; if (Math.abs(p.x - one.x) > B.stray && keys[away]) keys[away] = false; }   /* never further from him than its behaviour strays */

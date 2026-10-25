@@ -83,6 +83,13 @@ export function stuckStep(s, d, dt, busy) {
   return { best: d, stuckT: 0 };
 }
 
+// A grounded spear cannot reach a body entirely below its footing. Walk down before duelling;
+// a live attack that already reaches the body keeps its original combat path.
+export function needsLowerFooting(me, targetBox, attackBox) {
+  return !!(me && me.hero === 'warden' && me.ground && !me.swim && !me.climb && !me.flip && !me.held && !me.flying
+    && targetBox && Number.isFinite(targetBox.t) && targetBox.t > me.y && (!attackBox || attackBox.b <= targetBox.t));
+}
+
 /* THE WORDS (claude/coopclarity's rule: every seat line says where what it earns goes) */
 export const AI_TAG = 'AI PARTNER';
 export const DEFAULT_LINE = 'DEFAULT: PLAYS AT YOUR LEVEL - NOTHING IS SAVED';

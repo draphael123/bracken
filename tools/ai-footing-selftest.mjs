@@ -1,0 +1,15 @@
+import assert from 'node:assert/strict';import {execFileSync} from 'node:child_process';import * as AIC from '../src/ai-companion.js';
+const before=await import('data:text/javascript;base64,'+Buffer.from(execFileSync('git',['show','4a6812ccbc8ef2a866776736deb7a4482c7f27ea:src/ai-companion.js'],{encoding:'utf8'})).toString('base64'));
+for(const key of ['BEH','CATCH','AI_WEIGHT','BEH_ORDER','BEH_LINE'])assert.deepEqual(AIC[key],before[key],key+' must retain its original balance/design values');
+const me={hero:'warden',x:7855.75,y:128,ground:true},foe={l:7888,r:7900,t:133,b:144},spear={l:7857.75,r:7899.75,t:112,b:127},snapshot=JSON.stringify({me,foe,spear});
+assert(AIC.needsLowerFooting(me,foe,spear),'Captured spear passes above the short Thorn: reach its footing first');
+assert(AIC.needsLowerFooting(me,foe,null),'Idle grounded Warden can navigate before starting the same unreachable thrust');
+assert(!AIC.needsLowerFooting(me,foe,{...spear,b:134}),'Keep a live attack that actually reaches the body');
+assert(AIC.needsLowerFooting(me,foe,{...spear,b:133}),'Touching hitbox edges do not overlap');
+assert(!AIC.needsLowerFooting({...me,y:144},foe,spear),'Same footing keeps normal combat');
+assert(!AIC.needsLowerFooting(me,{...foe,t:128},spear),'A body reaching the feet keeps the original combat decision');
+for(const key of ['swim','climb','flip','held','flying'])assert(!AIC.needsLowerFooting({...me,[key]:true},foe,spear),key+' retains its original movement path');
+assert(!AIC.needsLowerFooting({...me,ground:false},foe,spear),'Air and plunges retain their original path');
+for(const hero of ['knight','pyro','paladin','pirate','reaper','geomancer','berserker','ranger'])assert(!AIC.needsLowerFooting({...me,hero},foe,spear),hero+' combat is unchanged');
+assert(!AIC.needsLowerFooting(me,null,spear));assert(!AIC.needsLowerFooting(me,{t:NaN},spear));assert.equal(JSON.stringify({me,foe,spear}),snapshot,'Observation must not mutate player, enemy or hitbox');
+console.log('PASS captured footing geometry, reachable-attack and movement guards; original behavior/range/scaling/catch-up values unchanged');
