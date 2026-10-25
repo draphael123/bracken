@@ -106,7 +106,7 @@ export function buildBurningVillage({ painter, T, TS }) {
   house(96, 108, 19, 1); captive(101, S, { hot: true }); ent('watertrough', 106, S);
   /* (claude/burning3) SOAKED, TAUGHT SAFE: strike the trough beside you and you are soaked for ten seconds - the flames pass a soaked hero. The house's gable stair (optional: nothing on the road
      needs the roof) has a pool of OIL fire on its first ledge, three tiles - the coins on the ledge above and on the roof pay the soaked climb; no water puts oil out, which is the whole point of being soaked */
-  ent('sign', 108, S, { text: 'STRIKE THE TROUGH AND YOU ARE SOAKED. A SOAKED HERO CLIMBS THROUGH FIRE. NO WATER PUTS OUT OIL.' }); oil(111, 113, 22); coins([109, 19], [110, 19], [100, 15], [104, 15], [108, 15]);
+  ent('sign', 108, S, { text: 'STRIKE THE TROUGH: SOAKED, YOU CLIMB THROUGH FIRE. WATER DOES NOT PUT OUT OIL.' }); oil(111, 113, 22); coins([109, 19], [110, 19], [100, 15], [104, 15], [108, 15]);
   straw(114, 128); foe('burngob', 122, S); foe('hound', 116, S); foe('sprig', 127, S); foe('emberwisp', 118, 20);
   /* (claude/burning3) BURST, TAUGHT: a rain barrel in the middle of the burning yard - strike it and the wave puts out the straw and knocks the foes down (its sign stands in the bare gap) */
   ent('sign', 119, S, { text: 'A RAIN BARREL: STRIKE IT. THE WAVE PUTS OUT THE STRAW AND KNOCKS FOES DOWN.' }); tank(120, 'barrel');

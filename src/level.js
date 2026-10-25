@@ -2006,7 +2006,7 @@ function hangingVillage() {
   movers.push({ kind: 'lift', rope: 'cw-crown-w', x: 45 * TS, x0r: 45 * TS, y: 20 * TS - 8, y0: 20 * TS - 8, y1: 9 * TS, w: 32, h: 8, speed: 0, arena: true });
   movers.push({ kind: 'lift', rope: 'cw-crown-e', x: 68 * TS, x0r: 68 * TS, y: 20 * TS - 8, y0: 20 * TS - 8, y1: 9 * TS, w: 32, h: 8, speed: 0, arena: true });
   ropes.push({ kind: 'counter', id: 'cw-crown-w', knot: [44, 19], bag: 49, wheelRow: 4, arena: true }, { kind: 'counter', id: 'cw-crown-e', knot: [70, 19], bag: 72, wheelRow: 4, arena: true });
-  ent('sign', 6, 19, { text: 'CUT A DECK KNOT AND THE COUNTERWEIGHT TAKES YOU UP TO HER. PAST HALF BLOOD SHE CUTS ROPES TOO.' });
+  ent('sign', 6, 19, { text: 'CUT A DECK KNOT AND THE COUNTERWEIGHT LIFTS YOU TO HER. LATER SHE CUTS ROPES TOO.' });
   coins([25, 16], [30, 13], [35, 10], [85, 16], [80, 13], [75, 10], [47, 10], [61, 9], [71, 10]);
   ent('owl', 54, 11);
   /* THE DROP (claude/owl3, Daniel 10-15: her wing beat pushes you "toward the drop"): two breaks in the crown's boards, one toward each end, clean
