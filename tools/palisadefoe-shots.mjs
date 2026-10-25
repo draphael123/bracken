@@ -11,7 +11,7 @@ const hm = (i, mode, t, more) => `const h=BK.enemies().filter(e=>e.t==='hornsman
 const ORD = 'for(const a of BK.enemies())if(a.t==="archer")a.ordered=2.2;h.orderFx=0.35;';
 const SHOTS = [
   ['wallend', 293, 12, ''], ['tower2', 345, 20, ''], ['tower2-horn', 345, 20, hm(1, 'orderTell', 0.4)], ['tower2-blast', 345, 20, hm(1, 'order', 0.4, ORD)],
-  ['tower2-maulTell', 349, 17, hm(1, 'maulTell', 0.3)], ['tower3-exam', 355, 19, hm(2, 'orderTell', 0.4)], ['tower3-blast', 355, 19, hm(2, 'order', 0.4, ORD)], ['yard', 368, 24, ''],
+  ['tower2-maulTell', 349, 17, hm(1, 'maulTell', 0.3)], ['tower3-exam', 361, 24, hm(2, 'orderTell', 0.4)], ['tower3-blast', 361, 24, hm(2, 'order', 0.4, ORD)], ['yard', 368, 24, ''],
 ].filter(s => !only || only.has(s[0]) || (only.has('sheet') && false));
 const pg = await openPage({ audio: false, fonts: false });
 try {
