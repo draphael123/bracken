@@ -161,15 +161,6 @@ function owlBox(phase, opt = {}) {
   while (e.mode === 'perchDown') c.updateOwl(e, 1 / 60); assert(e.ward > 0, 'and she gathers herself after (B3: a told ward)');
   for (let i = 0; i < 60 * 3 && e.mode !== 'sit'; i++) c.updateOwl(e, 1 / 60); assert(e.mode !== 'sit' || e.perchI !== 1, 'she does not sit on the perch that is down');
   down.add(0); down.add(2); e.mode = 'fly'; e.next = 0; e.modeT = 3; c.updateOwl(e, 1 / 60); assert.equal(e.mode, 'descend', 'with all three down she has NOWHERE TO SIT and comes down'); }
-/* ---- 4. THE WEAVER'S ROOM (§5): a room, not a box. Thirty-eight wide against the fifty-five it was (A7); she starts where the door can see
-   her; and her reel - which a hero on a net beats ("THE LINE HOLDS", src/main.js) - has nets in her room to beat it with (A12) ---- */
-{ const M = L.mini, W0 = M.x0 / TS, W1 = M.x1 / TS, fy = M.floor / TS - 1, wv = L.ents.find(e => e.t === 'spider' && e.big && e.mini);
-  assert.equal(M.boss, 'spider'); assert(W1 - W0 <= 40, 'the Weaver\'s room is ' + (W1 - W0) + ' wide: about forty (A7), it was fifty-five');
-  assert(wv && wv.x > W0 && wv.x < W1 && Math.abs(wv.x - M.trigger / TS) <= 18, 'she hangs where the doorway can see her: within 18 tiles of where the fight starts');
-  assert(/THE LINE HOLDS/.test(src) && /t === T\.NET \|\| t === T\.CLIMB/.test(src), 'a hero on a net beats her line');
-  const R = floodReach({ ...L, START: { x: Math.round(M.trigger / TS) + 1, y: fy } }, T);
-  const nets = []; for (let x = W0; x < W1; x++) for (let y = fy - 12; y <= fy; y++) if (at(x, y) === T.NET && R.seen.has(x + ',' + y)) { nets.push(x); break; }
-  assert(new Set(nets).size >= 2, 'her room has nets a hero can reach from its floor (' + nets.join(',') + '): the answer to her line is in the room');
-  let ledges = 0; for (let x = W0; x < W1; x++) for (let y = fy - 6; y < fy; y++) if (at(x, y + 1) === T.ONEWAY && R.seen.has(x + ',' + y)) ledges++;
-  assert(ledges >= 6, 'and footing off her webbed boards (' + ledges + ' reachable ledge tiles)'); }
-console.log('hanging-hoist  ' + decks.length + ' hoists (' + decks.map(m => m.hoist + (m.arena ? '*' : '') + ':' + (m.need || 1)).join(', ') + '), every well on the far side of its deck from its loads; the rules run; ' + ropes.length + ' ropes (' + [...kinds].join(', ') + '); the Reeve comes down with her perch, and cuts ropes told and fair in phase two only; the Weaver\'s room is ' + (L.mini.x1 - L.mini.x0) / TS + ' wide with its nets in reach.');
+/* ---- 4. NO MINI (Daniel 10-25, claude/hangingpolish): the Web Hollow, its Weaver and its door are gone; the Reeve is the village's only boss ---- */
+{ assert(!L.mini, 'the village has no mini boss'); assert(!L.ents.some(e => e.mini), 'and no mini creature'); assert(!L.ents.some(e => e.t === 'doorway'), 'and no hollow doorway'); assert(!L.ents.some(e => e.t === 'deco' && /^cocoon/.test(e.kind || '')), 'nor her cocoons'); }
+console.log('hanging-hoist  ' + decks.length + ' hoists (' + decks.map(m => m.hoist + (m.arena ? '*' : '') + ':' + (m.need || 1)).join(', ') + '), every well on the far side of its deck from its loads; the rules run; ' + ropes.length + ' ropes (' + [...kinds].join(', ') + '); the Reeve comes down with her perch, and cuts ropes told and fair in phase two only; no mini, no hollow door.');

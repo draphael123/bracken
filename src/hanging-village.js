@@ -118,6 +118,43 @@ export function hvGround(look) {
     under: [0, 1, 2].map(i => underTile(P, s0 + 90 + i)), kit: { kinds: KITS[look] || [], density: look === 'crown' ? 0.12 : 0.3, props: kitProps(P) } });
 }
 
+/* ---- THE VILLAGE'S OWN BOARDS (claude/hangingpolish, Daniel 10-25: "the old wood block tiles don't fit") ----
+   The two wooden things that were still the old generic tiles: T.PLANK (the hanging walks and rope bridges) and T.SHELF (the snapping
+   branches). The bridge is rope-bound hemp-lashed planks hung from a hand-rope; the snapping branch is a split bough of bark with a hemp
+   lashing at each end and a crack down it. Same footprint as a ledge (rows 3-8) so every jump reads as before. */
+const BR = { top: '#b8946a', mid: '#8a6a44', low: '#5a4430', dark: '#3e2c1c', hemp: '#d8bc78', hempD: '#a88848', cord: '#7a6038' };
+const PLANKS = {};
+export function hvPlank(l, r, v) {   /* l, r: a plank tile of the same span on that side; v: 0..3 variation */
+  const key = (l ? 1 : 0) + '' + (r ? 1 : 0) + v; if (PLANKS[key]) return PLANKS[key];
+  return (PLANKS[key] = tile(g => { const x0 = l ? 0 : 1, x1 = r ? T : T - 1, w = x1 - x0;
+    rect(g, x0, 3, w, 5, BR.mid); rect(g, x0, 3, w, 1, BR.top); rect(g, x0, 7, w, 1, BR.low);   /* the deck boards */
+    for (let x = x0 + ((v * 3) % 5) + 3; x < x1; x += 5 + (v & 1)) rect(g, x, 3, 1, 5, BR.dark);   /* butt joints */
+    px(g, x0 + 2 + v, 5, BR.low); px(g, x0 + 7 + v, 4, BR.top);   /* grain */
+    rect(g, x0, 8, w, 1, BR.cord);   /* the stringer under the boards */
+    for (let x = x0 + 1 + (v & 1) * 3; x < x1 - 1; x += 8) { rect(g, x, 2, 3, 7, BR.hemp); rect(g, x, 2, 3, 1, '#f0dc9c'); px(g, x + 1, 5, BR.hempD); px(g, x, 8, BR.hempD); px(g, x + 2, 8, BR.hempD); }   /* hemp lashings: each one binds the board to the stringer */
+    if (!l) { rect(g, 1, 2, 2, 8, BR.hemp); rect(g, 1, 2, 2, 1, '#f0dc9c'); px(g, 0, 9, BR.cord); px(g, 0, 10, BR.cord); px(g, 1, 10, BR.hempD); }   /* a bridge's end: the hawser is wrapped round and a tail left */
+    if (!r) { rect(g, T - 3, 2, 2, 8, BR.hemp); rect(g, T - 3, 2, 2, 1, '#f0dc9c'); px(g, T - 1, 9, BR.cord); px(g, T - 1, 10, BR.cord); px(g, T - 2, 10, BR.hempD); }
+    for (let x = x0 + 2; x < x1 - 1; x += 4) px(g, x, 9, BR.cord);   /* the slack rope under the boards, beading */
+  }));
+}
+const SHELVES = {};
+export function hvShelf(v) {   /* a snapping branch: a split bough of bark, lashed at both ends, with the crack in it */
+  v &= 3; if (SHELVES[v]) return SHELVES[v];
+  return (SHELVES[v] = tile(g => { const rnd = mulberry(7100 + v);
+    rect(g, 0, 3, T, 5, '#5a4636'); rect(g, 0, 3, T, 1, '#8a7258'); rect(g, 0, 7, T, 1, '#2e2218');   /* bark */
+    for (let x = 1; x < T; x += 3) px(g, x + ((rnd() * 2) | 0), 4 + ((rnd() * 3) | 0), '#3e3024');
+    const cx = 5 + v * 2; line(g, cx, 3, cx + 2, 7, '#1e1610'); px(g, cx + 1, 5, '#a88860');   /* the split, with raw wood showing */
+    for (const x of [0, T - 3]) { rect(g, x, 2, 3, 7, BR.hemp); rect(g, x, 2, 3, 1, '#f0dc9c'); px(g, x + 1, 5, BR.hempD); px(g, x, 8, BR.hempD); }   /* a hemp lashing at each end */
+    px(g, 3, 9, BR.cord); px(g, 3, 10, BR.cord); px(g, T - 4, 9, BR.cord); px(g, T - 4, 10, BR.cord);
+  }));
+}
+/* the tile main.js asks for: null for anything the village does not own */
+export function hvTile(t, TT, x, y, tileAt) {
+  if (t === TT.PLANK) return hvPlank(tileAt(x - 1, y) === TT.PLANK, tileAt(x + 1, y) === TT.PLANK, (x * 7 + y) & 3);
+  if (t === TT.SHELF) return hvShelf(x + y);
+  return null;
+}
+
 /* ---- THE FLOORS' OWN PROPS (hand-placed decos) ---- */
 const DECO = {};
 export function hvDeco(kind) {
