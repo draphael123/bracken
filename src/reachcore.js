@@ -70,6 +70,12 @@ export function floodReach(L, T, opts = {}) { const L0 = L;   /* (the level as b
     /* THE ROOTWAY (src/rootway.js, claude/rootway): a HOIST is one blow on its cleat (or one arrow struck back through its rope) and what it drops STAYS - a span
        across its gap, a cage as a 2x2 step where it lands - so both count as done; THE TROPHY LOFT opens on the four tags the level lays down (tools/rootway.mjs proves
        each required hoist is a lock). A boss cage is winched back up: not footing. The plain fill: legs only */
+    /* THE ROOKERY (src/rookery.js, claude/rookery): a CRACKED ROCK breaks under a harpy's dive - every hero baits one by standing on its mark (its roost sends another
+       harpy if hers is dead) - and what it breaks STAYS: a hole, a fallen pillar's bridge, a dropped nest's platform, a slab's steps. So each counts as done
+       (tools/rookery.mjs proves each required one is a lock). The plain fill: legs only */
+    if (L.rookery) for (const h of (L.hoists || [])) { if (h.span) for (let x = h.span[0]; x <= h.span[1]; x++) { const i = h.span[2] * W + x; if (g[i] === T.AIR) g[i] = T.ONEWAY; }
+      if (h.clear) for (let y = h.clear[2]; y <= h.clear[3]; y++) for (let x = h.clear[0]; x <= h.clear[1]; x++) g[y * W + x] = T.AIR;
+      if (h.steps) for (const [x0, x1, row, k] of h.steps) for (let x = x0; x <= x1; x++) { if (k === 'O') { const i = row * W + x; if (g[i] === T.AIR) g[i] = T.ONEWAY; continue; } for (let y = row, n = 0; n < 8 && g[y * W + x] !== T.SOLID; y++, n++) g[y * W + x] = T.SOLID; } }
     if (L.rootway || L.kwood) { for (const m of (L.vaultDoors || [])) for (let y = m.y0; y <= m.y1; y++) for (let x = m.x0; x <= m.x1; x++) g[y * W + x] = T.AIR;   /* (claude/kingswood2) KINGSWOOD 2's royal ropes are the same shape: a step or a bridge a rope drops stays (src/kingswood-hands.js) */
       for (const h of (L.hoists || [])) { if (h.boss) continue; if (h.span) for (let x = h.span[0]; x <= h.span[1]; x++) { const i = h.span[2] * W + x; if (g[i] === T.AIR) g[i] = T.ONEWAY; }
         if (h.land) for (let y = h.land[1]; y <= h.land[1] + 1; y++) for (let x = h.land[0]; x <= h.land[0] + 1; x++) g[y * W + x] = T.SOLID; } }

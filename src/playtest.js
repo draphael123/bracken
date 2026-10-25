@@ -247,7 +247,7 @@ export function makeBot(BK, opts = {}) {   /* opts.fightThrough (claude/foepass)
     //   CUT THE CLEAT: an uncut hoist's cleat up to six tiles ahead (and no more than eight rows over his feet): walk to the tile before it, face it and
     //   swing - a JUMP and a swing when it is over his head (THE HIGH CLEAT, from its grown cap). STRIKE THE ARROW BACK: at an `arrow` hoist (THE LOOKOUT)
     //   stand on the near lip of its gap, face the post, and swing at an arrow that comes into reach. Ten seconds on one and he gives it up for twenty.
-    { const RWB = L.rootway && BK.rootway ? BK.rootway() : (L.kwood && BK.kwood ? BK.kwood() : null);   /* (claude/kingswood2) KINGSWOOD 2's royal ropes: the same data, the same two hands (its pegs are struck like cleats) */
+    { const RWB = L.rootway && BK.rootway ? BK.rootway() : (L.kwood && BK.kwood ? BK.kwood() : (L.rookery && BK.rookery ? BK.rookery() : null));   /* (claude/rookery) THE ROOKERY's cracked rocks: the same data - he stands on the mark (a cleat), and her dive breaks it */   /* (claude/kingswood2) KINGSWOOD 2's royal ropes: the same data, the same two hands (its pegs are struck like cleats) */
       if (RWB && !P.swim && !(P.dead > 0) && !P.climb) {
         tick.rwNo = tick.rwNo || new Map(); tick.frame2 = (tick.frame2 || 0) + 1;
         const gd = Math.sign(goalX - P.x) || P.face || 1; let job = null, jd = 1e9;

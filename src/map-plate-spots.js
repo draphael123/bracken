@@ -15,6 +15,7 @@ export const PLATE_SPOTS = {
   "highstore": [-17, 10, 70, 10],
   "spire": [-74, -6, 64, 10],
   "moor": [-52, 8, 64, 10],
+  "rookery": [8, -16, 70, 10],
   "skyroad": [-12, 10, 58, 10],
   "oreroad": [-69, -10, 58, 10],
   "minecart": [-59, -32, 70, 10],
