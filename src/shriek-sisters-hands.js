@@ -35,8 +35,8 @@ export const POSE = {
   sleep: { wing: 0.9, pitch: 0, head: [6, 2], fold: true }, wake: { wing: -0.6, pitch: 0, head: [8, -6], beak: true },
   hover: { wing: -0.4, flap: true, pitch: 0, head: [8, -2] }, rise: { wing: -0.7, flap: true, pitch: -0.2, head: [8, -4] }, fly: { wing: -0.3, flap: true, pitch: 0.1, head: [9, -1] },
   diveTell: { wing: -1.2, pitch: 0.35, head: [9, 4], talon: 'fwd', eye: 'red' }, dive: { wing: 0.15, pitch: 0.9, head: [11, 2], fold: true, talon: 'fwd', eye: 'red' },
-  land: { wing: -0.2, pitch: 0.1, head: [8, 0], talon: 'spread' }, downed: { wing: 0.6, pitch: 0.5, head: [7, 4], sprawl: true, stars: true },
-  stuck: { wing: 0.8, pitch: 0.6, head: [6, 6], sprawl: true, stars: true, rubble: true }, tear: { wing: -1.3, pitch: -0.2, head: [8, -6], beak: true, rubble: true },
+  land: { wing: -0.2, pitch: 0.1, head: [8, 0], talon: 'spread' }, downed: { wing: 0.6, pitch: 0.12, head: [7, 4], sprawl: true, stars: true },
+  stuck: { wing: 0.8, pitch: 0.12, head: [6, 6], sprawl: true, stars: true, rubble: true }, tear: { wing: -1.3, pitch: -0.2, head: [8, -6], beak: true, rubble: true },
   screamTell: { wing: -1.5, pitch: -0.35, head: [4, -9], beak: true, eye: 'red' }, scream: { wing: -0.9, pitch: 0.15, head: [12, -2], beak: true, rings: true },
   swoop: { wing: -0.05, pitch: 0.05, head: [10, 0] }, waveTell: { wing: -1.0, pitch: -0.3, head: [5, -6], chest: true, eye: 'red' }, wave: { wing: -0.6, pitch: 0.2, head: [13, 0], beak: true, cone: true },
   pick: { wing: 0.4, pitch: 0.5, head: [9, 6], talon: 'grip', rock: true }, carry: { wing: -0.5, flap: true, pitch: 0, head: [8, -2], rock: true, talon: 'grip' },
@@ -48,8 +48,8 @@ export const POSE = {
      SHOCK SHRIEK - the swell (leaning back, wings drawn in low, the throat sac blown up tight) and the shriek (lunging forward, beak wide, blast rings)
      CRACKING ECHO - head down at the floor (wings high, beak open) and the scream into it (pitched over, rings at the floor)
      THE GRAB     - wings high, both feet reaching forward claws open; the lunge (wings back, feet out); THE LIFT and THE HOLD (beating hard, claws closed on your shoulders) */
-  chainTell: { wing: -1.45, pitch: -0.45, head: [6, -8], beak: true, talon: 'fwd', eye: 'red' }, jar: { wing: 0.35, pitch: 0.3, head: [9, 3], talon: 'spread', rubble: true, beak: true },
-  rakeTell: { wing: -0.1, pitch: 0.6, head: [12, 6], talon: 'rake', eye: 'red', sparks: true }, rake: { wing: 0.3, pitch: 0.2, head: [13, 3], talon: 'rake', streak: true },
+  chainTell: { wing: -1.45, pitch: -0.45, head: [6, -8], beak: true, talon: 'fwd', eye: 'red' }, jar: { wing: 0.35, pitch: 0.1, head: [9, 3], talon: 'spread', rubble: true, beak: true },
+  rakeTell: { wing: -0.1, pitch: 0.25, head: [12, 6], talon: 'rake', eye: 'red', sparks: true }, rake: { wing: 0.3, pitch: 0.08, head: [13, 3], talon: 'rake', streak: true },
   shockTell: { wing: 0.55, pitch: -0.5, head: [2, -9], chest: true, sac: true, eye: 'red' }, shock: { wing: -1.0, pitch: 0.3, head: [14, 1], beak: true, sac: true, blast: true },
   echoTell: { wing: -1.25, pitch: 0.75, head: [10, 8], beak: true, eye: 'red' }, echo: { wing: -0.55, pitch: 0.95, head: [12, 9], beak: true, down: true },
   grabTell: { wing: -1.35, pitch: 0.2, head: [10, -1], talon: 'reach', eye: 'red' }, grab: { wing: -0.15, pitch: 0.25, head: [12, 1], talon: 'reach' },
@@ -190,12 +190,12 @@ export function makeShriekSistersHands(ctx) {
         g.strokeStyle = '#ff3a2a'; g.strokeRect(tx - 12, fy - 3, 24, 4); }
       if (s.mode === 'snatchTell') { g.fillStyle = 'rgba(255,90,74,0.35)'; for (let q = G.x0; q < G.x1; q += 12) g.fillRect(x(q), y(G.floorY - SS.snatch.h) - 1, 7, 2); }
       /* (claude/sisters2) the signature moves' reads */
-      if (s.mode === 'diveTell' && s.aim && s.aim.n) ctx.text(s.aim.n + '/' + s.aim.of, x(s.aim.x), fy - 12, s.aim.lock ? '#ff3a2a' : blink, 'center', 6);   /* CHAIN STOOP: which dive of the chain */
+      if (s.mode === 'diveTell' && s.aim && s.aim.n) ctx.text(s.aim.n + '/' + s.aim.of, x(s.aim.x), fy - 40, s.aim.lock ? '#ff3a2a' : '#ffd36b', 'center', 8);   /* CHAIN STOOP: which dive of the chain */
       if (s.mode === 'chainTell') { g.globalAlpha = 0.5 + 0.4 * Math.sin(time * 14); g.strokeStyle = '#ff3a2a'; g.lineWidth = 2; g.beginPath(); g.moveTo(sx - 8, sy + 10); g.lineTo(sx, sy + 2); g.lineTo(sx + 8, sy + 10); g.stroke(); g.lineWidth = 1; g.globalAlpha = 1; }
       if (s.mode === 'rakeTell') { g.fillStyle = Math.floor(time * 10) % 2 ? '#ffd36b' : 'rgba(255,211,107,0.45)'; const L = SS.rake.v * SS.rake.T; for (let q = 14; q < L; q += 14) { const cx2 = x(s.x + s.rDir * q); for (let k = 0; k < 4; k++) { g.fillRect(cx2 - s.rDir * k, fy - 3 - k, 1, 1); g.fillRect(cx2 - s.rDir * k, fy - 9 + k, 1, 1); } } }   /* TALON RAKE: chevrons along her path */
       if (s.mode === 'shockTell' || s.mode === 'shock') { const k = s.mode === 'shock' ? 1 : 1 - Math.max(0, s.modeT) / SS.shock.tell, L = SS.shock.range, top = fy - SS.shock.h;   /* SHOCK SHRIEK: the cone, pale, filling as she swells */
         g.globalAlpha = 0.12 + 0.22 * k; g.fillStyle = '#ffe9a0'; g.beginPath(); g.moveTo(sx + s.face * 8, sy + 2); g.lineTo(sx + s.face * L, top); g.lineTo(sx + s.face * L, fy); g.lineTo(sx + s.face * 8, fy); g.closePath(); g.fill(); g.globalAlpha = 0.6 + 0.3 * k;
-        g.strokeStyle = '#ffd36b'; for (let q = 1; q <= 3; q++) { const r0 = (q / 3) * L * (s.mode === 'shock' ? 1 : 0.35 + 0.65 * k); g.beginPath(); if (s.face > 0) g.arc(sx, sy + 2, r0, -0.35, 0.55); else g.arc(sx, sy + 2, r0, Math.PI - 0.55, Math.PI + 0.35); g.stroke(); } g.globalAlpha = 1; }
+        g.strokeStyle = '#ffd36b'; for (let q = 1; q <= 3; q++) { const r0 = (q / 3) * L * (s.mode === 'shock' ? 1 : 0.35 + 0.65 * k); g.beginPath(); if (s.face > 0) g.arc(sx, sy + 2, r0, -0.45, 0.18); else g.arc(sx, sy + 2, r0, Math.PI - 0.18, Math.PI + 0.45); g.stroke(); } g.globalAlpha = 1; }
       if (s.mode === 'echoTell' && s.echoX != null) { const ex = x(s.echoX), w2 = SS.echo.w / 2; g.strokeStyle = blink; g.strokeRect(ex - w2 - 0.5, fy - 3.5, w2 * 2 + 1, 5);   /* CRACKING ECHO: the tile shivers red */
         g.fillStyle = '#ff3a2a'; for (let k = 0; k < 6; k++) { const jx = Math.round(Math.sin(time * 40 + k * 2.3) * 1.5); g.fillRect(ex - w2 + 2 + k * 3 + jx, fy - 1 - (k % 3), 2, 1); } }
       if (s.mode === 'grabTell') { const L = 150, hy = fy - SS.grab.h - 6; g.fillStyle = Math.floor(time * 12) % 2 ? '#ff3a2a' : 'rgba(255,58,42,0.5)'; for (let q = 10; q < L; q += 9) g.fillRect(sx + s.gDir * q, hy, 5, 2);   /* THE GRAB: the talon line at your height */

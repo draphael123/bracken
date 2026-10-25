@@ -15,7 +15,7 @@ const ROLE = {
   snatcher: { body: '#8a7048', dark: '#443420', light: '#b8966a', hi: '#e4cc9c', belly: '#d8c8a0', crest: '#c8a060', face: '#dcc4a4', faceD: '#a88c6c', beak: '#d8b060', beakD: '#8a6a28', talon: '#e8dcb0', size: 1.15, nf: 7, wlen: 32, fan: 0.14, tail: 3, bar: true },
 };
 const memo = new Map();
-const AX = 46, AY = 62, CW = 92, CH = 70;   /* the canvas, and the talons' point in it */
+const AX = 58, AY = 62, CW = 116, CH = 70;   /* (claude/sisters2: 92 -> 116 wide, so the snatcher's level wings - the jar, the rake, the grab - are not clipped) */   /* the canvas, and the talons' point in it */
 /* a feather: a tapered stroke from (x0, y0) along angle a for len px, colour c, tip colour t (the last two px) */
 function feather(g, x0, y0, a, len, w, c, t) {
   const ca = Math.cos(a), sa = Math.sin(a);
