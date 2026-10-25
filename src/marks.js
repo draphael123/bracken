@@ -234,7 +234,7 @@ export const MARK = {
   'gravewarden|tossTell': '!', 'greathound|boughTell': '!!', 'greathound|howlTell': '', 'greathound|lungeTell': '!', 'greathound|pounceTell': '!!', 'greathound|snapTell': '!',
   'grindylow|boardTell': '!!', 'grindylow|deckTell': '!!', 'grindylow|rippleTell': '!!', 'grub|spit': '!', 'harbormaster|anchorTell': '!', 'harbormaster|harpoonTell': '!',
   'harbormaster|highTell': '!!', 'harbormaster|lowTell': '!!', 'harbormaster|pressureTell': '!!', 'harbormaster|twinTell': '!!', 'hare|run': '!', 'harlequin|jabTell': '!',
-  'harlequin|kickTell': '!!', 'harpy|aim': '!', 'shrieker|aim': '!!', 'haunt|throwTell': '!', 'hawkmistress|callTell': '!', 'hawkmistress|cutTell': '!', 'hawkmistress|fanTell': '!',
+  'harlequin|kickTell': '!!', 'harpy|aim': '!', 'shrieker|aim': '!!', 'shrieksister|diveTell': '!!', 'shrieksister|screamTell': '!!', 'shrieksister|dropTell': '!!', 'shrieksister|snatchTell': '!!', 'shrieksister|waveTell': '!',   /* (claude/rookery) THE SHRIEK SISTERS, by hand (src/shriek-sisters.js): the dive a shield turns (she is knocked down) is still a red !! - off the line is the read */ 'haunt|throwTell': '!', 'hawkmistress|callTell': '!', 'hawkmistress|cutTell': '!', 'hawkmistress|fanTell': '!',
   'hawkmistress|feintTell': '', 'hawkmistress|hawkGrabTell': '!', 'hawkmistress|kegTell': '!!', 'hawkmistress|lashTell': '!!', 'hawkmistress|markLashTell': '!!', 'hawkmistress|rakeTell': '!',
   'hawkmistress|snareTell': '!!', 'hawkmistress|spotTell': '!', 'hawkscout|diveTell': '!!', 'hearthgob|ekCleaverTell': '!', 'hearthgob|ekPot2Tell': '!!', 'hearthgob|ekPotTell': '!!',
   'hearthgob|raise': '!', 'heavy|ekCleaveTell': '!', 'heavy|ekLeapTell': '!!', 'heavy|grabTell': '!!', 'heavy|raise': '!!', 'heavy|slashTell': '!',
@@ -425,7 +425,7 @@ export const ANSWER = {
   'wickerman|throwTell': 'jump', 'wickerman|swingTell': 'block',   // (claude/fairfix6) THE WICKER MAN: its fire rolls along the ground - jump it (or strike it back); its arms the shield takes
   'willowisp|flareTell': 'block',   // THE FOG CANAL: the false lantern flares (a yellow !) - the shield turns the burst, as every yellow ! does
   'hare|run': 'block',
-  'harpy|aim': 'block', 'shrieker|aim': 'dodge',   /* (claude/rookery) her scream marks your spot: get off it */
+  'harpy|aim': 'block', 'shrieker|aim': 'dodge', 'shrieksister|diveTell': 'dodge', 'shrieksister|screamTell': 'dodge', 'shrieksister|dropTell': 'dodge', 'shrieksister|snatchTell': 'jump', 'shrieksister|waveTell': 'block',   /* (claude/rookery) her scream marks your spot: get off it */
   'haunt|throwTell': 'block',
   'hearthgob|raise': 'block',
   'heavy|grabTell': 'dodge', 'heavy|raise': 'dodge', 'heavy|slashTell': 'block', 'heavy|windUp': 'block',
@@ -690,7 +690,7 @@ export const HEIGHT = {
   'grindylow|deckTell': 'low', 'grindylow|boardTell': 'low',
   'grindylow|rippleTell': 'low',
   'hare|run': 'low',
-  'harpy|aim': 'low', 'shrieker|aim': 'low',
+  'harpy|aim': 'low', 'shrieker|aim': 'low', 'shrieksister|diveTell': 'low', 'shrieksister|screamTell': 'low', 'shrieksister|dropTell': 'low', 'shrieksister|snatchTell': 'low', 'shrieksister|waveTell': 'low',
   'haunt|throwTell': 'low',
   'hearthgob|raise': 'low',
   'heavy|grabTell': 'low', 'heavy|raise': 'low', 'heavy|slashTell': 'low', 'heavy|windUp': 'low',
