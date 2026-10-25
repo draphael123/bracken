@@ -192,14 +192,14 @@
   "bare": true
  },
  "underleaf": {
-  "hash": "3d5dd5571299",
+  "hash": "9aea76bcc829",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 29,
-  "deaths": 3,
-  "kills": 17,
-  "lifts": 79,
+  "hits": 55,
+  "deaths": 7,
+  "kills": 21,
+  "lifts": 105,
   "walked": 100,
   "bare": true
  },
