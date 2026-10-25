@@ -29,12 +29,12 @@ export const GB = {
   rest: [1.4, 1.2, 1.0],
   belch: { tell: [0.95, 0.85, 0.8], sp: 155, life: 2.8, h: 14, w: 9, dmg: 13, rec: 0.7 },
   food: { tell: [0.8, 0.72, 0.65], n: [2, 3, 3], flight: 1.05, r: 15, dmg: 8, spread: 64, rec: 0.6 },
-  fork: { tell: [0.72, 0.64, 0.58], t: 0.34, reach: 110, h: 8, dmg: 30, chip: 0.7, rec: 0.75, range: 140 },
+  fork: { tell: [0.72, 0.64, 0.58], t: 0.34, reach: 110, h: 8, dmg: 24, chip: 0.7, rec: 0.75, range: 140 },
   slam: { tell: [1.0, 0.92, 0.85], n: 4, flight: 0.9, r: 16, dmg: 9, shock: 10, shockDmg: 12, rec: 0.8 },
   flood: { tell: 1.0, sp: 120, h: 12, dmg: 13, lie: 4, slow: 0.55, rec: 0.9 },
   grab: { tell: 0.85, t: 0.55, reach: 200, h: 20, dmg: 28, rec: 0.9, throwV: 260 },
   choke: { t: 6.5, mul: 2, cap: 0.07, boom: 0.11 },
-  ward: 2.6,
+  ward: 2.6, coughRest: 2.2,
   eat: 0.7,
   dish: { every: [9, 7.5, 6.5], v: 120, heal: 0.005, power: 1.3, hang: 64, box: 8 },
   hungry: { t: 6, mul: 0.7, cd: 0.8 },
@@ -126,8 +126,8 @@ export function stepGrubbag(e, S, dt, heroes, w) {
       const res = w.hit([Math.min(hand - 14, hand + 14), Math.max(hand - 14, hand + 14), G.floorY - GB.grab.h, G.floorY], GB.grab.dmg * (e.grabPw || 1), 'grab', { key: e.hitKey, throwV: f * GB.grab.throwV });
       if (res === 'hit' || res === 'blocked') { S.n.caught++; w.number(hand, G.floorY - 60, GB_SAY.caught, '#ff6b6b'); }
       if (e.modeT <= 0) { e.mode = 'recover'; e.modeT = GB.grab.rec; e.handX = null; } return; }
-    case 'choke': if (e.modeT <= 0) { e.mode = 'recover'; e.modeT = 0.5; S.ward = GB.ward; e.ward = S.ward; w.fx('ward', e.x, e.y); w.number(e.x, e.y - GB.h - 26, GB_SAY.ward, '#c8d8e8'); w.sound('cough'); } return;
-    case 'recover': if (e.modeT <= 0) { e.mode = 'sit'; S.restT = GB.rest[i] * cdK(S); } return;
+    case 'choke': if (e.modeT <= 0) { e.mode = 'recover'; e.modeT = 0.5; e.coughed = true; S.ward = GB.ward; e.ward = S.ward; w.fx('ward', e.x, e.y); w.number(e.x, e.y - GB.h - 26, GB_SAY.ward, '#c8d8e8'); w.sound('cough'); } return;
+    case 'recover': if (e.modeT <= 0) { e.mode = 'sit'; S.restT = e.coughed ? GB.coughRest : GB.rest[i] * cdK(S); e.coughed = false; } return;   /* (after the choke he coughs a while before his next blow: time to step back) */
     default: e.mode = 'sit';
   }
 }
