@@ -10022,7 +10022,7 @@
   }
  },
  "rookery": {
-  "hash": "94898799520e",
+  "hash": "ee598da83779",
   "boss": {
    "boss": "shrieksisters",
    "wins": 0,
@@ -10120,6 +10120,12 @@
      "reprisalPct": 0,
      "chip": []
     }
+   ]
+  },
+  "carried": {
+   "from": "94898799520e",
+   "parts": [
+    "boss"
    ]
   },
   "level": {

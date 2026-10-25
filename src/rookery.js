@@ -201,7 +201,7 @@ export function buildRookery({ painter, T, TS }) {
   /* The summit: a flat crag top, guano-white, three CRACKED SLABS in its floor (the opening: a dive baited onto one stuns the diving sister in the rubble -
      src/shriek-sisters.js), two rock shelves three rows up at its ends, THE ROC'S PEAK beyond it */
   const [A0, A1] = ROOKERY.arena, FL = r(ROOKERY.floor - 6);
-  plank(A0 + 3, A0 + 7, FL - 3); plank(A1 - 7, A1 - 3, FL - 3);
+  plank(A0 + 3, A0 + 7, ROOKERY.floor - 9); plank(A1 - 7, A1 - 3, ROOKERY.floor - 9);   /* (plank() lays in the level's own rows: r(floor - 9) is three rows over the summit) */
   ent('torch', A0 + 1, FL - 1); ent('torch', A1 - 1, FL - 1);
   ent('shrieksisters', A0 + 21, FL - 1);
   block(W - 1, W - 1, 0, H - 1);                                                    /* the world's east edge */
