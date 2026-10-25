@@ -8325,7 +8325,7 @@ const GOBLIN_CAMP = {
   /* (claude/kingswood2) kings: the old camp props (by the old columns) went with the old wood - KINGSWOOD 2 places its own court props */
   storm: [['warnPost', 66, 35, 0], ['hideRack', 119, 15, 0], ['lootHeap', 133, 15, 1], ['gobPennant', 178, 31, 1], ['cookSpit', 266, 31], ['cauldron', 420, 29]],
   crown: [['warnPost', 22, 71, 1], ['hideBanner', 33, 71, 1],['gobPennant', 684, 7, 3], ['ragBanner', 716, 7, 2], ['cauldron', 706, 63], ['boneChime', 712, 54, 0, true], ['trophyRack', 710, 51, 1], ['skullTotem', 745, 51, 0], ['clothStrip', 724, 10, 3, true], ['warStandard', 738, 19, 1]],   /* the keep's own moved 220 right with the siege lines, the crag walk and the bakehouse yard grown in front of it, and 84 more with the armoury */
-  underleaf: [['boneChime', 30, 21, 0], ['idol', 59, 29, 1], ['cookSpit', 106, 21], ['boneChime', 174, 21, 1], ['idol', 296, 22, 0], ['cauldron', 342, 15], ['boneChime', 398, 23, 1]],   /* (claude/underleaf3) her village's own: bone charms, the household gods, her old hearth's pot - by UNDERLEAF 3's columns */
+  underleaf: [['boneChime', 30, 21, 0], ['idol', 59, 29, 1], ['cookSpit', 106, 21], ['boneChime', 174, 21, 1], ['idol', 296, 22, 0], ['cauldron', 342, 15], ['boneChime', 398 + 86, 23, 1]],   /* (claude/underleaf3) her village's own: bone charms, the household gods, her old hearth's pot - by UNDERLEAF 3's columns */
   undercrown: [['stakeFence', 80, 28, 0], ['skullTotem', 42, 111, 1], ['boneChime', 26, 88, 0, true], ['ragBanner', 58, 122, 0], ['clothStrip', 20, 88, 2, true], ['warnPost', 26, 140, 0], ['lootHeap', 52, 140, 1], ['cauldron', 68, 140]],
 };
 /* WHAT HANGS FROM THE ROCK, and how tall it is. The sprinkler finds floor; one of these wants a roof over that floor

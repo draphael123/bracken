@@ -9,7 +9,7 @@ import { addSpireSupports } from './spire-supports.js'; import { addSupports as 
 export const MAX_DROP = 16;
 const HOVER = 6;
 const HOVER_ID = { fair: 30 };   /* (claude/theatrelines) the fair's stage and slide are timber: a stilt may run the whole way down to the ground */   /* rows of air under a laid wall / stone stub that a stilt may cover */
-const DROP = { fields: 24, lamplit: 20, fair: 30 };   /* the Hexed Fields: its planks ride up in the dead trees, twenty rows over the stubble */
+const DROP = { fields: 24, lamplit: 20, fair: 30, underleaf: 28 };   /* (claude/underleaf4) UNDERLEAF's BUBBLE SHAFTS: her drying racks stand on tall bone poles out of the thorn chasm */ //   /* the Hexed Fields: its planks ride up in the dead trees, twenty rows over the stubble */
 
 /* levels that get the posts: the BUILT places (THE STOCKADE joined them, claude/stockade2: a goblin camp is lashed poles). The organic ones (the Wood, the Marsh, the Spore Forest, Kingswood, the crags and passes,
    the Hanging Gardens, the Rootway, the Glass Sea, the Witchlight) draw logs, caps, reeds and slabs that grow where they are: tools/solid-islands.mjs ALLOW. */

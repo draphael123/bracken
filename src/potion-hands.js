@@ -459,7 +459,11 @@ export function makePotionHands(ctx) {
     if (!S || !H.on() || !P || P.dead) return null;
     const bb = S.bubbles.find(b => b.state === 'hover' && Math.abs(b.x - P.x) < 80 && Math.abs(b.y - P.y) < 40);
     if (bb) return { x: bb.x, y: P.y, key: null, face: 0, r: 6 };
-    if (S.bubbles.some(b => b.rider === 'P')) return { x: P.x + P.face * 30, y: P.y, key: null, face: P.face, r: 4 };
+    { const rb = S.bubbles.find(b => b.rider === 'P');   /* (claude/underleaf4) RIDING: steer to the nearest footing ahead the bubble rises past (a rack, a ledge, a lip) - not a blind run */
+      if (rb) { const tx = Math.floor(P.x / TS), ty = Math.floor(P.y / TS), topRow = Math.floor((rb.y0 - (rb.max || JAR.riseMax)) / TS);
+        const stand = (x, r) => { const u = ctx.tileAt(x, r + 1), a = ctx.tileAt(x, r); return (u === T.ONEWAY || u === T.SOLID) && a === T.AIR; };
+        for (let dx = 0; dx <= 7; dx++) for (const sgn of dx ? [P.face || 1, -(P.face || 1)] : [1]) { const x = tx + dx * sgn; for (let r = ty - 1; r >= topRow; r--) if (stand(x, r)) return { x: x * TS + 8, y: r * TS, key: null, face: sgn, r: 4 }; }
+        return { x: P.x + P.face * 30, y: P.y, key: null, face: P.face, r: 4 }; } }
     /* the nearest need ahead on his floor (or the well under the ledge he cannot climb) */
     const nd = needs().filter(n => n.x > P.x - 2 * TS && n.x < P.x + 16 * TS && Math.abs(n.y - P.y) < 2 * TS && !(n.kind === 'green' && n.o.grow === 'ladder' && false)).sort((a, b) => a.x - b.x)[0];
     if (!nd) return null;
