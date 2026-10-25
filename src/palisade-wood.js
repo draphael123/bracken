@@ -189,6 +189,7 @@ export function buildPalisadeWood({ painter, T, TS }) {
   foe('sprig', 290, 7, 'wallEnd', { face: -1, perch: true });
   foe('brute', 291, 12, 'wallEnd', { face: -1 }); setter(287, 12, 'wallEnd');
   plank(295, 298, 9); foe('archer', 297, 8, 'wallEnd', { face: -1, perch: true });
+  foe('hornsman', 295, 8, 'wallEndHorn', { face: -1 });   /* (claude/palisadefoe) THE HORNSMAN, TAUGHT: the crew's handler on the end scaffold beside the archer - his horn hurries the archer over the brute's fight (src/hornsman.js) */
   sign(282, 12, "THE WALL'S END. ITS CREW STANDS OVER THE BRUTE.");
   coins([286, 11], [294, 11]);
   ent('check', 299, 12);                                                           /* SHRINE THREE: the wall top is behind you */
@@ -214,6 +215,7 @@ export function buildPalisadeWood({ painter, T, TS }) {
   block(344, 345, 21, 32);                                                          /* a stump */
   plank(347, 347, 19);                                                              /* a stake butt's head: the step up to tower two */
   block(349, 351, 18, 32); foe('archer', 350, 17, 'breachB', { face: -1, perch: true });   /* TOWER TWO */
+  foe('hornsman', 349, 17, 'breachB', { face: -1 });   /* (claude/palisadefoe) THE HORNSMAN on tower two: storm the tower and he is the one to reach (his horn hurries both towers' archers over the crossing) */
   coins([340, 20], [347, 17]);
   /* THE EXAM: the last crossing - crumbling boards over the pit under TOWER THREE's archer, and a pike waiting at the landing */
   sign(352, 17, 'THE LAST CROSSING. THE BOARDS GIVE WAY: KEEP MOVING.');
@@ -223,6 +225,7 @@ export function buildPalisadeWood({ painter, T, TS }) {
   ground(362, 389, 25);
   block(365, 366, 22, 24); foe('archer', 366, 21, 'breachC', { face: -1, perch: true });   /* TOWER THREE (a stump of a tower: up three) */
   foe('pike', 363, 24, 'breachC', { face: -1 });
+  foe('hornsman', 365, 21, 'breachCHorn', { face: -1 });   /* (claude/palisadefoe) THE EXAM's horn: tower three's hornsman hurries the archers over the crumbling boards - cut his horn short, or storm him */
   /* the breach's wreck: what the beast left (art: burnt timber, a broken ram's track, scorched leaves) */
   /* (claude/palisade2) THE SIEGE CAMP'S DRESSING through the wood: the palisade's own stock and the crews' gear (rope, tools, sawdust, stakes cut to length) */
   harvest.push([3, 37, 'sawdust'], [20, 37, 'stakePile'], [42, 32, 'ropeCoil'], [56, 34, 'logStack'], [63, 34, 'sawdust'], [78, 34, 'toolRack'], [99, 31, 'ropeCoil'],
@@ -232,7 +235,7 @@ export function buildPalisadeWood({ painter, T, TS }) {
   sign(367, 24, "THE HALF-BUILT GATEHOUSE. THE KING'S SIEGE ENGINES ARE READIED HERE.");
   deco(370, 24, 'siege', 0); deco(376, 24, 'cart', 1); deco(380, 24, 'batteringRam', 0); crop(373, 24, 'apples'); crop(378, 24, 'basket');
   plank(368, 374, 22); coins([369, 21], [373, 21]);
-  foe('pike', 372, 24, 'yard2', { face: -1 }); foe('shield', 377, 24, 'yard2', { face: -1 }); foe('brute', 381, 24, 'yard2', { face: -1 }); foe('archer', 371, 21, 'yard2', { face: -1, perch: true });
+  foe('pike', 372, 24, 'yard2', { face: -1 }); foe('shield', 377, 24, 'yard2', { face: -1 }); foe('brute', 381, 24, 'yard2', { face: -1 }); foe('archer', 371, 21, 'yard2', { face: -1, perch: true }); foe('hornsman', 374, 24, 'yard2', { face: -1 });   /* (claude/palisadefoe) THE HORNSMAN, REMIXED: on the yard's floor under the archer's board, behind the pike and the shield */
   coins([368, 23], [374, 23], [382, 23]);
   /* THE DITCH (REQUIRED): eight wide; the gatehouse scaffold stands on its lip on a prop - it falls across. A fall is a climb (a board up its west wall) */
   prop('gateBridge', { x: 388, top: 14, cleat: [385, 24], load: 'bridge', span: [390, 397, 25] });
