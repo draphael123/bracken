@@ -23,17 +23,17 @@
 //                   bites (GB.grab.dmg) and throws you down the hall
 //   NO ADDS (Daniel: no adds unless the brief says so - the serving line is the "servers"; see the lane report's questions).
 export const GB = {
-  hp: 2500, w: 52, h: 46, markH: 66,
+  hp: 3000, w: 52, h: 46, markH: 66,
   fed: 0.45, above: 0.7, wardMul: 0.4,
   p2: 0.62, p3: 0.3,
-  rest: [1.6, 1.35, 1.15],
-  belch: { tell: [0.95, 0.85, 0.8], sp: 155, life: 2.8, h: 14, w: 9, dmg: 11, rec: 0.7 },
+  rest: [1.4, 1.2, 1.0],
+  belch: { tell: [0.95, 0.85, 0.8], sp: 155, life: 2.8, h: 14, w: 9, dmg: 13, rec: 0.7 },
   food: { tell: [0.8, 0.72, 0.65], n: [2, 3, 3], flight: 1.05, r: 15, dmg: 8, spread: 64, rec: 0.6 },
-  fork: { tell: [0.72, 0.64, 0.58], t: 0.34, reach: 110, h: 16, dmg: 17, chip: 0.35, rec: 0.75, range: 140 },
+  fork: { tell: [0.72, 0.64, 0.58], t: 0.34, reach: 110, h: 8, dmg: 30, chip: 0.7, rec: 0.75, range: 140 },
   slam: { tell: [1.0, 0.92, 0.85], n: 4, flight: 0.9, r: 16, dmg: 9, shock: 10, shockDmg: 12, rec: 0.8 },
   flood: { tell: 1.0, sp: 120, h: 12, dmg: 13, lie: 4, slow: 0.55, rec: 0.9 },
-  grab: { tell: 0.85, t: 0.55, reach: 200, h: 20, dmg: 22, rec: 0.9, throwV: 260 },
-  choke: { t: 7.5, mul: 2, cap: 0.12, boom: 0.06 },
+  grab: { tell: 0.85, t: 0.55, reach: 200, h: 20, dmg: 28, rec: 0.9, throwV: 260 },
+  choke: { t: 6.5, mul: 2, cap: 0.07, boom: 0.11 },
   ward: 2.6,
   eat: 0.7,
   dish: { every: [9, 7.5, 6.5], v: 120, heal: 0.005, power: 1.3, hang: 64, box: 8 },
@@ -244,7 +244,7 @@ function gbPlan0(s) {
           out.gx = P.x; out.why = 'the grab: ready to jump'; return out; } }
       if ((e.mode === 'forkTell' || e.mode === 'fork') && dx < half + GB.fork.reach + 20) {
         if (s.shield && !roll(key + 'b', 0.45)) { out.block = true; out.face = Math.sign(kx - P.x) || 1; out.why = 'block the fork'; return out; }
-        if (!s.shield && dx < half + GB.fork.reach + 14 && P.ground && ((e.mode === 'forkTell' && e.modeT < 0.14) || (e.mode === 'fork' && e.modeT > GB.fork.t * 0.5))) { out.jump = true; out.gx = P.x; mem.jumpT = t; mem.jumpX = P.x; out.why = 'jump the fork'; return out; }
+        if (!s.shield && dx < half + GB.fork.reach + 14 && P.ground && ((e.mode === 'forkTell' && e.modeT < 0.24) || (e.mode === 'fork' && e.modeT > GB.fork.t * 0.5))) { out.jump = true; out.gx = P.x; mem.jumpT = t; mem.jumpX = P.x; out.why = 'jump the fork'; return out; }
         if (!s.shield && dx < half + GB.fork.reach + 14) { out.gx = P.x; out.why = 'the fork: ready to jump it'; return out; }
         out.gx = safeX(kx - (half + GB.fork.reach + 34)); out.why = 'back off the fork'; return out; }
       if (e.mode === 'slamTell' && P.x > G.table[0] - GB.slam.shock - 30) { out.gx = safeX(G.table[0] - GB.slam.shock - 46); out.why = 'off the table end'; return out; }
