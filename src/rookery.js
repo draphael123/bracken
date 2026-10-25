@@ -221,7 +221,7 @@ export function buildRookery({ painter, T, TS }) {
     ],
     duskStart: -1, duskLen: 1, music: 'northumberland', night: false, glowNight: false,
     interiors: [],
-    palette: { sky: [[150, 160, 196], [232, 222, 214]], far: 'crag', mid: 'crag', near: 'none', dress: 'crag', noNear: true, haze: 'rgba(236,232,240,0.15)', grass: '#7a7a5a', grassL: '#a8a488', grassD: '#4e4e3a', dirt: '#8a8478', dirtL: '#b4ae9f', dirtD: '#5e594f', canopy: ['#6a6a7a', '#8a8a9a', '#b0b0be', '#e0e0e8'] },
+    palette: { sky: [[150, 160, 196], [232, 222, 214]], far: 'crag', mid: 'crag', near: 'none', dress: 'crag', noNear: true, fg: 'rookery', haze: 'rgba(224,220,240,0.06)', grass: '#7a7a5a', grassL: '#a8a488', grassD: '#4e4e3a', dirt: '#8a8478', dirtL: '#b4ae9f', dirtD: '#5e594f', canopy: ['#6a6a7a', '#8a8a9a', '#b0b0be', '#e0e0e8'] },
     weather: [{ x0: 0, x1: 99999, kind: 'wind' }],
     ambient: [{ x0: 0, x1: 99999, kind: 'wind' }],
     tints: [[-24, 106, [210, 205, 225], 0.06], [106, 206, [205, 200, 220], 0.07], [206, 316, [200, 200, 225], 0.07], [316, 368, [215, 195, 210], 0.08], [368, W + 24, [220, 190, 205], 0.09]],

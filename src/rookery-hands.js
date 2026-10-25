@@ -235,14 +235,7 @@ export function makeRookeryHands(ctx) {
   H.harpyOver = (g, e, cx, cy, time) => { if (!S || !e.alive) return; const x = R(e.x - cx), y = R(e.y - cy);
     if (e.rkShriek) { rect(g, x - 3, y - 12, 2, 5, '#c0302a'); rect(g, x, y - 13, 2, 6, '#e04a3a'); rect(g, x + 3, y - 12, 2, 5, '#c0302a');
       if (e.rkSm === 'tell') { const k = (time * 3) % 1; g.strokeStyle = 'rgba(255,90,74,' + (1 - k).toFixed(2) + ')'; g.beginPath(); g.arc(x + e.face * 6, y - 4, 6 + k * 22, 0, Math.PI * 2); g.stroke(); } } };
-  /* THE LANDMARK (parallax): THE MONASTERY ROOF far below and behind you, THE ROC'S PEAK ahead, growing as you climb */
-  H.drawSky = (g, cx, cy, VW, VH) => { if (!S) return; const lv = L(), W = (lv.W || 420) * TS, k = Math.max(0, Math.min(1, cx / Math.max(1, W - VW)));
-    const mx = R(VW * 0.18 - cx * 0.05), my = R(VH * 0.78 + k * 30);   /* the monastery: its long roof and bell tower, sinking as you climb */
-    g.fillStyle = 'rgba(70,64,82,0.55)'; g.fillRect(mx - 50, my - 14, 100, 14); g.beginPath(); g.moveTo(mx - 56, my - 14); g.lineTo(mx, my - 34); g.lineTo(mx + 56, my - 14); g.fill();
-    g.fillRect(mx + 30, my - 58, 14, 44); g.beginPath(); g.moveTo(mx + 26, my - 58); g.lineTo(mx + 37, my - 74); g.lineTo(mx + 48, my - 58); g.fill();
-    g.fillStyle = 'rgba(255,210,120,0.6)'; g.fillRect(mx + 35, my - 50, 4, 5);
-    const px = R(VW * 0.86 - cx * 0.08 + W * 0.08 * 0), py = R(VH * 0.62 - k * 40);   /* the Roc's peak: a crag spire with her eyrie's masts on it */
-    g.fillStyle = 'rgba(96,104,124,0.6)'; g.beginPath(); g.moveTo(px - 70, VH); g.lineTo(px - 14, py); g.lineTo(px + 6, py - 18 - k * 20); g.lineTo(px + 24, py + 6); g.lineTo(px + 80, VH); g.fill();
-    g.fillStyle = 'rgba(40,36,44,0.6)'; for (const dx of [-6, 4, 14]) g.fillRect(px + dx, py - 30 - k * 20, 1, 16); };
+  /* THE SKY AND THE LANDMARKS (parallax): the cold pearl sky and its sun, THE ROC'S PEAK ahead (growing as you climb), THE MONASTERY far below and behind (sinking) - drawn by src/redraw/rookery_backdrop.js (claude/rookeryart; the greybox's flat silhouettes are gone) */
+  H.drawSky = (g, cx, cy, VW, VH, time, dY) => { /* the level is dusk the whole way (the game paints its dusk wash over whatever is drawn here), so the sky and the two landmarks are drawn by RKB.drawBackdrop from main.js, after the wash; this stays for the tools */ };
   return H;
 }
