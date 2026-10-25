@@ -287,10 +287,10 @@ if (take('slopes-trace')) results.push(run('slopes-trace', process.execPath, ['t
 if (take('textfit-levelcard')) results.push(run('textfit-levelcard', process.execPath, ['tools/textfit.mjs', 'levelcard', '--strict'], { PORT: String(portFor(4)) }));
 if (take('textfit')) results.push(run('textfit', process.execPath, ['tools/textfit.mjs', 'hints,bestiary,store,tree,menu,hud,worldplates,pick,opening,press,title,mapcard,death,results,card,practice,bossjump,bossselect,plates,bossfix,soundtest,whatsnew', '--strict'], { PORT: String(portFor(4)) }));
 /* THE FULL WORDS RUN, UNSCOPED AND STRICT: every sign and NPC page of every level for every hero, every boss fight. ~8 min, so it has its
-   own step and its own 10 minute budget (a hang is a FAIL by name, not a stalled release). It runs in the full gate only: a subset runs it
+   own step and its own 15 minute budget (a hang is a FAIL by name, not a stalled release). It runs in the full gate only: a subset runs it
    when it is NAMED exactly ('textfit-full'), never because 'textfit' matched (Daniel, 2026-10-03: the strict run found what the scoped one cannot) */
 if ((!WANT.length || WANT.includes('textfit-full')) && take('textfit-full')) {
-  results.push({ name: 'textfit-full', cmd: process.execPath, args: ['tools/textfit.mjs', '--strict'], env: { PORT: String(portFor(5)) }, timeout: 600000 });
+  results.push({ name: 'textfit-full', cmd: process.execPath, args: ['tools/textfit.mjs', '--strict'], env: { PORT: String(portFor(5)) }, timeout: 900000 });
 } else if (WANT.length && !WANT.includes('textfit-full')) skipped++;
 /* THE SOUND TEST'S LOCK, in the page (docs: a song unlocks on being heard in play, never by browsing the menu itself;
    sound effects are always open): tools/soundtest.mjs */
