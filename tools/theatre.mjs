@@ -195,7 +195,7 @@ if (!NOPAGE && lv) {
       fresh(); for (const s of TH().spots) { s.off = true; s.show = false; } BK.enemies().filter(e => e.t === 'mummer').forEach(e => e.alive = false);
       const dr = BK.enemies().find(e => e.t === 'drunk' && e.x > (215 + HX) * TS && e.x < (222 + HX) * TS); BK.tp(206 + HX, 33); let dark = 0;
       for (let i = 0; i < 400; i++) { BK.sim(1); if (dr.mode === 'lobTell' || dr.mode === 'bottleTell') dark++; }
-      const s1 = TH().spots.find(s => Math.abs(s.x - ((216 + HX) * TS + 8)) < 4); s1.off = false; s1.aims = [[P.x, 34 * TS]]; s1.i = 0; s1.from = 0; s1.k = 1; s1.cue = 0; let lit = 0;
+      const s1 = TH().spots.find(s => Math.abs(s.x - ((216 + HX) * TS + 8)) < 4); s1.off = false; s1.show = true; s1.aims = [[P.x, 34 * TS]]; s1.i = 0; s1.from = 0; s1.k = 1; s1.cue = 0; let lit = 0;
       for (let i = 0; i < 600; i++) { BK.sim(1); if (dr.mode === 'lobTell' || dr.mode === 'bottleTell') lit++; } out.audience = [dark, lit];
       // 6. THE STAR TRAP: stand on the spring, hold jump, and it throws you up through the stage floor
       fresh(); BK.tp(226 + HX, 38); BK.sim(20); BK.keys.right = true; BK.keys.jump = true; BK.press('jump'); let top = 1e9;
