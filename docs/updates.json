@@ -1,6 +1,16 @@
 [
   {
     "date": "2026-10-25",
+    "batch": 121,
+    "lines": [
+      "The road changes: Kingswood, then the Scree Path, then Underleaf, then the Hanging Village",
+      "Underleaf now belongs to act II",
+      "The Pyromancer duel is tougher: more health and less time to rest between his attacks",
+      "Old saves carry over: levels you cleared stay cleared"
+    ]
+  },
+  {
+    "date": "2026-10-25",
     "batch": 120,
     "lines": [
       "New level: the Palisade Wood, an autumn forest before Kingswood, with the Battering Beast",
