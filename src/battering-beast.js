@@ -34,7 +34,7 @@ export const BB = {
   walk: 46, rest: [0.7, 0.45],
   armour: 0.4, above: 1, wardMul: 0.4,
   p2: 0.5,
-  charge: { tell: [1.0, 0.8], speed: 280, sp2: 1.08, dmg: 12, hitH: 24, minD: 110 },
+  charge: { tell: [1.15, 0.92], speed: 280, sp2: 1.08, dmg: 12, hitH: 24, minD: 110 },
   daze: { t: [1.7, 1.4], mul: 1.25 },
   stuck: { t: 3.0, mul: 2, cap: 0.11, ward: 3, wreckBlow: 0.03 },
   sweep: { tell: [0.78, 0.62], t: 0.42, mid: 0.3, reach: 50, h: 14, dmg: 15, chip: 0.8, rec: 0.6, range: 80 },
@@ -48,6 +48,7 @@ export const BB = {
   unchain: { tell: 1.0, adds: 2, addHp: 2.4 },
   harness: { loose: 2.6, mul: 2, cap: 0.08 },
   bz: { hurt: 1.6 },
+  py: { hurt: 0.92 },   /* (claude/palisade2art) PYRO's pool is the smallest (126 hp at L7) and the bot dies to the charge at 13-31% boss left: his blows from the beast land at 0.92 (the berserker's bz precedent, the other way) */
 };
 export const BB_SAY = { wake: 'THE BATTERING BEAST', rule: 'KNOCK OUT A SCAFFOLD PROP: ON HIM, OR IN HIS PATH, HE STICKS IN THE WRECK.', p2: 'THE CHAINS SNAP',
   stuck: 'STUCK IN THE WRECK', dazed: 'HE CRASHES INTO THE WALL', gate: 'THE OLD GATE HOLDS', bounce: 'IT BOUNCES OFF HIM: WARDED', ward: 'HE TEARS OUT OF THE TIMBER',

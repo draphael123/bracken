@@ -59,7 +59,7 @@ export function makeBatteringBeastHands(ctx) {
     const e = { ...base, t: 'batteringbeast', w: BB.w, h: BB.h, hp, maxHp: hp, noGrav: true, markH: BB.markH, face: -1, mode: 'sleep', modeT: 0, phase: 1, boss: true, ward: 0 };
     e.x = base.x; e.y = S.G.floorY; for (const pp of ctx.players) pp.bbKeys = null; return e; };
   const heroes = () => ctx.players.map(pp => ({ x: pp.x, y: pp.y, ground: !!pp.ground, alive: ctx.upright(pp) && !pp.dead, pp }));
-  const bzD = d => ctx.heroId && ctx.heroId() === 'berserker' ? Math.round(d * BB.bz.hurt) : d;
+  const bzD = d => ctx.heroId && ctx.heroId() === 'berserker' ? Math.round(d * BB.bz.hurt) : ctx.heroId && ctx.heroId() === 'pyro' ? Math.max(1, Math.round(d * BB.py.hurt)) : d;
   function world(e) {
     return {
       number: (x, y, t, col) => ctx.number(x, y, t, col), sound: k => { const f = SOUND[k]; if (f) try { f(ctx.sfx); } catch {} }, shake: n => ctx.shake(n),
