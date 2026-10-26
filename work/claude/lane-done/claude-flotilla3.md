@@ -1,5 +1,50 @@
 # claude/flotilla3 - THE FLOTILLA 3 + THE ADMIRAL (Opus greybox, 2026-10-25 15:10-18:20) - PAUSED by the coordinator (18:20, gate122 needs RAM)
 
+## SESSION 2 (2026-10-26 07:35-09:45, Opus, PORT 6601): NEXT STEPS DONE. GREYBOX COMPLETE. READY FOR THE ART SONNET.
+- **Status:** all checks are green. Head commit: see the branch tip (claude/flotilla3). Not merged and not deployed. **NOT LIVE-READY:** the art pass must merge first.
+- **Rates on the FINAL TUNE** (boss-rates flotilla, human profile, kit flasks, campaign L22, practiced, n=12):
+
+| Hero | Wins |
+|---|---|
+| knight | 9/12 |
+| warden | 8/12 |
+| pyro | 10/12 |
+| paladin | 9/12 |
+| pirate | 7/12 |
+| reaper | 7/12 |
+| geomancer | 7/12 |
+| berserker | 8/12 |
+| ranger | 8/12 |
+| **Total** | **73/108 = 68%, IN BAND** |
+
+  - How it was measured: the full run (r5) gave 71%. I then re-tuned pyro and pirate, and re-measured only those two heroes on the final TUNE. A hero's TUNE only moves that hero's row.
+  - Pyro is the high outlier at 83%. He barely moved between in 1.2 and in 1.3 (11/12, then 10/12 at out 0.85).
+  - No hero is at 0. Winning fights took ~93 s on average (practiced).
+  - **Final TUNE:** pyro in 1.3 / out 0.85; pirate in 0.95 / out 1.0. Every other hero is unchanged.
+- **DRY** (bare flasks, n=4 a hero): 1/4 each for pyro, paladin, pirate, geomancer and ranger; 0/4 for knight, warden, reaper and berserker. That is 5/36 = 14%. It is report-only: the band is read with flasks.
+  - That is a big gap between flasks and dry. In this fight the flasks carry the hero.
+- **Mash 0/6:** the mash heroes die at 96-98% of his health. The level row was re-stamped too, so the mash table is level THEN boss again.
+- **Green:**
+  - boss-fight-end: it was RED and I fixed it in the tool. His plate floor read as UNKILLABLE BY SCRIPT, so the tool now holds him bare and staggered, like the other bosses' openings. All 52 arena levels pass, run one level a page.
+  - textfit bestiary --strict: 0 issues.
+  - mobile-perf flotilla: inside the budget.
+  - ambush-listed, ambush-reach, elites, spawns.
+  - signs: it was RED (4 Flotilla signs ran to 3 lines) and I cut all four to 2 lines.
+  - stuck (static + runtime).
+  - corpses: run one level at a time, all 30 levels ok, including the flotilla reskins.
+  - killzones flotilla, boss-music, lab-reach, tools/admiral.mjs (all 9 heroes).
+  - level1-pilot and curve re-stamped. level-quality: FLOTILLA CLEARS THE BAR.
+- **A note for the gate:**
+  - boss-fight-end and corpses each STALLED as one whole-game page in my runs. The page sat idle with CPU ~0 until the evaluate timed out (601 s for corpses, and >30 min for boss-fight-end before I killed it).
+  - Split one level a page, every level passes.
+  - Watch both in the nightly suite. They may stall there too: I saw it twice in two runs. I did not find the cause.
+- **After shots:** work/claude/shots/flotilla3/after/{galley,hull,prize,hold,topgun,doors,arena}.png.
+  - Before shots: work/claude/shots/flotilla2art/a1/*.png and a2/.
+- **Not done:**
+  - The SHIP KIT hand-off commit for Hurricane 3 (checklist item 5). It was not in NEXT STEPS, and Hurricane 3 is already running.
+  - Ambient gulls and creak, the skiff, and the quarterdeck swivel. They are still for the art lane (list below).
+
+
 Base 1dacbb8d (BATCH121 LIVE). Brief: scratch/brief-flotilla3-1018.md parts C + D, folded with the approved review scratch/review-flotilla-1018.md.
 Part A (deadly water) was not touched. Part B (Champion -> Keep mini) was not done. The Champion is **off the Flotilla but still fully registered**: his fight, hands, art, music, marks, greed and bestiary are all still wired. No level places him until KEEP 2.
 Port block 6600 (I used 6601). One browser at a time. No processes of mine are left running. Paused cleanly; everything is committed and pushed. **NOT LIVE-READY: greybox, and the art pass must merge first.**
@@ -165,3 +210,4 @@ Files:
    - Rec: keep both (built).
 4. **The plate hp floor.** Armoured, he can't be cut below 50% health, so the guns are needed.
    - Rec: keep (built).
+5. **The dry rate.** Dry is 14 0x0p+0gainst 68
