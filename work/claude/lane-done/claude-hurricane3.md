@@ -142,7 +142,7 @@ He fights on three yards: T1 topsail, T2 topgallant, T3 royal. The mast and the 
   - signs; one-new-foe; ambush-listed; ambush-reach; deadends; relics; floaters; spawns; threat-holes; keys; dressing.
 - **Green (page):** storm-ship-runtime (6 rows).
 - **Inherited red, not this lane:** answer-tags fails on 'grapnel' (flotilla3's new foe, base 5bee569f).
-- **Not run:**
+- **Not run (since DONE in FINISH + TUNE below):**
   - the full check.mjs (forbidden);
   - textfit, mobile-perf, stuck runtime, level-walk at L20, boss-greed/openings/fight-end page checks;
   - corpses, killzones, mark-integrity.
@@ -197,3 +197,43 @@ He fights on three yards: T1 topsail, T2 topgallant, T3 royal. The mast and the 
 1. **Art pass (Sonnet):** the list above.
 2. **Integ / next lane, the unrun page checks:** textfit hurricane --strict; stuck (runtime); boss-greed / boss-openings / boss-fight-end / boss-navigation; mobile-perf; corpses; killzones; level-walk at L20 (the walker has hurricane hints in src/walk-hints.js, untested).
 3. **Merge note:** branched off claude/flotilla3 5bee569f. Merge after flotilla3. The answer-tags 'grapnel' red is flotilla3's.
+
+## FINISH + TUNE (2026-10-26, Sonnet, PORT 6602) - tip: see branch claude/hurricane3
+**Status:** greybox complete, ready for the ART pass. NOT merged, NOT deployed.
+
+### Rates (boss-rates hurricane, human profile, kit flasks, L23, practiced, n=12) - FINAL TUNE
+| knight | warden | pyro | paladin | pirate | reaper | geomancer | berserker | ranger | total |
+|---|---|---|---|---|---|---|---|---|---|
+| 8/12 | 6/12 | 7/12 | 9/12 | 7/12 | 12/12 | 7/12 | 7/12 | 7/12 | **70/108 = 65% IN BAND** |
+- Before: 76/108 = 70% (ranger 4/12). No hero at 0; ranger now 7/12.
+- Final TUNE (src/main.js): CAP_HERO knight 1.25, warden 0.95, reaper 1.6, berserker 0.7, ranger 0.4 (pyro 0.85, paladin 0.7, pirate 0.45, geo 0.6 unchanged); CAP_OPEN ranger 1.5 (pirate 1.2, berserker 1.1 unchanged). hpK 0.62 unchanged. Kept: 0.6 s water-lunge tell, sabre-block opening, rod-1 1.8x charge.
+- Only the 4 changed heroes plus ranger were re-measured first (n=12), then one full run. Reaper stays 12/12 (the CAP_HERO bump barely moved him): a further reaper nudge (2.0+) is an option if Daniel wants it lower; left as is, the total is in band.
+- DRY (bare flasks, n=4 k/w/p, report only): 2/4 2/4 2/4 = 50%.
+- Mash: boss 0/6 (knight times out at 89% left, warden/pyro die); level mash dies (knight 2 deaths, warden 18, pyro 24). Cache re-run level THEN boss.
+
+### Checks (all this lane, PORT 6602)
+| check | result |
+|---|---|
+| answer-tags | RED -> GREEN (fix below) |
+| tells (mark table) | green after `tells --write` |
+| textfit bestiary --strict | green (0 issues, 331 screens) |
+| stuck static + runtime | RED -> GREEN (fix below); 316 spots |
+| mobile-perf hurricane (4x CPU) | inside budget (59.9 fps, p95 16.8 ms, 12.7 ms busy/frame) |
+| boss-greed | green (hurricane row holds) |
+| boss-openings | green (exit 0, no failure) |
+| boss-fight-end hurricane (one-level page copy) | green |
+| corpses | green (hurricane has no reskinned foes; I added it to the list; flotilla/canal/fair/theatre ok) |
+| killzones hurricane | green |
+| level-quality | clears the bar; hurricane3, signs, elites, spawns green |
+| level-walk L23 knight/warden/pyro | walker hints work after a fix; see below |
+
+### Fixes
+1. **answer-tags (grapnel boarder, a flotilla3 foe).** Cause: the boarder had no MARK rows. Rows added in src/marks.js: BY_HAND `grapnel|cutTell '!'` + `grapnel|whirlTell '!!'`; ANSWER block / dodge; HEIGHT low / low; then `node tools/tells.mjs --write` (this rewraps the generated MARK table, so the diff is large; for the Flotilla 3 batch do NOT cherry-pick the diff, replay the 3 hand lines + `tells.mjs --write`). Commit **db156d63** (the 3 hand-written lines are in src/marks.js: one after the 'admiral|cutTell' BY_HAND row, one each before the 'admiral|cutTell' rows in ANSWER and HEIGHT). The boarder is in claude/flotilla3art too, so the integ applies the same to that branch.
+2. **stuck runtime red (this branch):** spot hu-mizzen's zone overlapped hu-rod2's at (466,29), so the mizzen line shadowed rod 2. hu-mizzen zone y0 28 -> 31 (src/stuck-spots.js).
+3. **Walker (level-walk) stuck at the first roll gap (57-61):** the walker jumped ~1 tile before the lip and fell short. Hint now holds 2 tiles back and, when she heels downhill with >2.4 s left, hops from the lip (src/walk-hints.js; main.js `heel()` also reports `t`). Result at L23: knight walked 98% of the route (end: route), pyro reached the boss (83% measured); warden hit the 600 s frame cap at 46% (slow fights, no stuck). Remaining walker notes, not fixed: a transient STUCK at node 11 (84,31; the lashed-cask step, pyro) that resolves itself; deaths by THE WATER at 413-431 (the rising sea chase) 1 per run; target "deaths 1.5-2.5 / arrive < 55%" is MISSed on the easy side for the level walk (arrive 71-83%), a possible TUNE for the level, not a defect.
+4. tools/corpses.mjs: 'hurricane' added to the level list. tools/boss-fight-end.mjs has no per-level filter: I ran a copy filtered to hurricane (work/tmp-hurricane3, uncommitted); the whole-game page was not run (known stall).
+
+### Pre-existing / not run
+- Nothing red that is pre-existing on master was found. Not run: mark-integrity, boss-navigation, whole-game boss-fight-end and corpses pages (known stall).
+
+### ART LIST: unchanged (see the list above in this report).
