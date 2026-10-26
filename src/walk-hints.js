@@ -207,7 +207,7 @@ function hurricane(BK, P, mem) {
   const F = (L.felled || [])[0]; if (F && F.state !== 'down' && px > F.zone[0] - 4 && px <= F.zone[1] + 1 && py > 33 && py < 37) return { x: (F.zone[0] + 3) * TS, y: P.y, key: null, hold: true, r: 99 };
   const wall = (BK.props() || []).find(q => q.t === 'cargowall' && !q.open); if (wall && px > 296 && px < wall.span[0] && py > 39 && py < 43) return { x: (wall.span[0] - 6) * TS, y: P.y, key: null, hold: true, r: 99 };
   const hl = H3.heel();
-  for (const z of (L.rollGaps || [])) { if (!z.hole) continue; const [h0] = z.hole; if (px < h0 - 6 || px > h0 || !floor(36 * TS)) continue; if (hl.on && hl.dir > 0 && hl.k > 0.6) return null; return { x: (h0 - 4) * TS, y: P.y, key: null, hold: true, r: 99 }; }
+  for (const z of (L.rollGaps || [])) { if (!z.hole) continue; const [h0] = z.hole; if (px < h0 - 6 || px > h0 || !floor(36 * TS)) continue; if (hl.on && hl.dir > 0 && hl.k > 0.6 && hl.t > 2.4) return { x: h0 * TS - 3, y: P.y, hop: 1, hold: 40, at: true, r: 99 }; /* (she heels downhill with time to spare: run to the lip and jump from its very edge, as a player does) */ return { x: (h0 - 2) * TS, y: P.y, key: null, hold: true, r: 99 }; }
   for (const z of (L.gusts || [])) { if (z.arena || !z.carry) continue; const G = H3.gustNow(z), x0 = z.x0 / TS, x1 = z.x1 / TS; if (px < x0 || px > x1 || P.y < z.y0 || P.y > z.y1 + 4) continue;
     const go = G.on ? G.dir === z.dir || z.alt && G.dir < 0 : G.tell > 0.4 && G.dir === (z.alt ? -1 : z.dir); if (go) return null; return { x: P.x, y: P.y, key: null, hold: true, r: 99 }; }
   return null;
