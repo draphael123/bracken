@@ -676,5 +676,32 @@ const toFoot = w => { w.e.hp = w.e.maxHp * 0.24; w.run(WINCH.tell.descend + WINC
     death: /e\.t === 'winchmaster' \|\| e\.t === 'gargoyle'/, bestiary: /t: 'winchmaster', name: 'THE WINCHMASTER'/, bossBar: /winchmaster:'THE WINCHMASTER'/, felled: /winchmaster: 'THE ROAD STOPS RUNNING'/, open: /e\.t === 'winchmaster' \? winchOpen\(e\)/, poise: /POISE_SKIP = new Set\(\['winchmaster'/ };
   const miss = Object.entries(wiring).filter(([, re]) => !re.test(msrc)).map(([k]) => k);
   ok(!miss.length, 'A8: his wiring in main.js is all there (' + Object.keys(wiring).join(', ') + ')' + (miss.length ? ' - MISSING ' + miss.join(', ') : '')); }
+/* ---- THE LAUNCHED CARTS (claude/oreroadminor, Daniel 10-26): launch-only, the player never rides. src/ore-carts.js is pure, so the roll is proved here with no page. */
+console.log('\nTHE LAUNCHED CARTS');
+{ const OCR = await import('../src/ore-carts.js'), { OC } = OCR, C = (L.oreWorks && L.oreWorks.carts) || [], hl = readFileSync(new URL('../src/hint-lines.js', import.meta.url), 'utf8'), osrc = readFileSync(new URL('../src/ore-works.js', import.meta.url), 'utf8');
+  ok(C.length === 2 && C[0].kind === 'teach' && C[1].kind === 'test', 'two carts: THE ORE STORE (taught, on the sorting floor) and THE SORTING RAIL (tested, on the dark middle deck)');
+  const [te, ts] = C;
+  ok(te.bar && te.cells.every(([x, y]) => at(x, y) === T.SOLID) && te.cells.length === 2, 'the teach barricade is two cells of real rock at build time (a blade does nothing; the reach tools see a plain wall)');
+  ok(te.cells.every(([x]) => x * TS === te.bar.l) && te.bar.r - te.bar.l === TS && te.bar.b === te.y, "and it stands at the rail's east end, its foot on the rail's surface");
+  const d0 = OCR.dryRun(te, 1, 0), d1 = OCR.dryRun(te, 1, 120);
+  ok(d0.broken && d0.ev.includes('smash') && d1.broken, `a standing shove (OC.v0 ${OC.v0} px/s) from the cart's home breaks the barricade - and so does a running one; the cart ends at x ${Math.round(d0.x)} in the store`);
+  const [lo, hi] = OCR.limits(OCR.makeCart(te)), weak = OCR.makeCart(te); weak.x = hi - 20; weak.v = OC.vSmash - 25; weak.st = 'roll'; let wev = []; for (let f = 0; f < 120; f++) wev = wev.concat(OCR.stepCart(weak, 1 / 60, null));
+  ok(!weak.broken && wev.includes('bump') && weak.st !== 'roll', 'a roll too weak (under OC.vSmash) thuds on the barricade and the cart gives up: the barricade stands, nothing breaks, nothing sticks');
+  const sp = OCR.makeCart(te); OCR.shove(sp, 1, 0); for (let f = 0; f < 120; f++) OCR.stepCart(sp, 1 / 60, null); let homed = false; for (let f = 0; f < 60 * 12 && !homed; f++) homed = OCR.stepCart(sp, 1 / 60, null).includes('home');
+  ok(homed && sp.st === 'rest' && Math.abs(sp.x - te.home) < 1, 'NEVER A SOFT-LOCK: a spent cart is hauled home by its chain (' + OC.spentT + ' s, then ' + OC.homeV + ' px/s) and can be shoved again');
+  ok(te.home >= lo - 4 && te.home <= lo + 6, "the cart's home rests a hair off its west buffer (it cannot start inside it)");
+  const st1 = OCR.dryRun(ts, 1, 0), tr = OCR.makeCart(ts); OCR.shove(tr, 1, 0); const evs = []; for (let f = 0; f < 600 && tr.st === 'roll'; f++) evs.push(...OCR.stepCart(tr, 1 / 60, (c, r) => { if (r.r > 2984 - 7 && !c.rammed.has('t')) { c.rammed.add('t'); c.v *= OC.ramKeep; } }));
+  ok(st1.ev.includes('trip') && evs.includes('trip') && tr.tripped, "THE SORTING RAIL: a standing shove runs the deck to the buffer and trips the chain - even after it rams the tippler's post (the speed it keeps is over OC.vTrip)");
+  const wl = L.oreWorks.lamps.find(q => q.id === ts.trip.lamp);
+  ok(wl && wl.zone === 'deck' && wl.trip && Math.abs(ts.trip.x - 6 - wl.x) < 1 && wl.x === ts.x1, "the chain's lamp is the sorting deck's SECOND lamp, straight over the rail's end (the lever's chain climbs vertically to it)");
+  const rock = L.oreWorks.lamps.find(q => q.id === 'deck');
+  ok(rock && wl.y === rock.y, "it hangs at the first lamp's height, out of a sword's reach (it is lit by the cart, or a thrown rock, an arrow in flight, an ember)");
+  const rs = L.ents.filter(e => e.t === 'tippler' && e.x === 186 && e.y === 28);
+  ok(rs.length === 1, 'a foe stands ON the test rail (the tippler at column 186): the cart has something to ram');
+  ok(te.x0 > (OR.LIFTS[0].x + 3) * TS, "the teach rail does not run under the first lift's pan or its rock pile");
+  ok(!(L.moversExtra || []).length && !(L.movers || []).some(m => m.kind === 'cart'), "NO CART IS A MOVER: nothing to stand on or ride - the player never rides one here (that is THE DEEP RAILS' verb)");
+  ok(!/P\.onMover\s*=\s*c\b|P\.riding|boardCart|\.ride\(/.test(osrc.split('THE CARTS: a blade shoves one')[1] || ''), "and the cart's hands never seat, carry or board the hero");
+  ok(L.oreWorks.carts.every(c => !c.cells.some(([x, y]) => L.ents.some(e => (e.t === 'check' || e.t === 'sign') && e.x === x && e.y === y))), 'no sign or checkpoint stands inside a barricade');
+  ok(['ROLLING', 'FASTER', 'RAMMED', 'THE BARRICADE BREAKS', 'TOO SLOW: BACK UP AND SHOVE IT', 'THE CHAIN PULLS'].every(k => hl.includes("'" + k + "'")), 'every word a cart says is routed in hint-lines.js (hint-shown)'); }
 console.log(fails ? `\n${fails} ore road check(s) FAILED` : '\nall ore road checks pass');
 process.exit(fails ? 1 : 0);

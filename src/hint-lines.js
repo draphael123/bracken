@@ -19,6 +19,8 @@ import { LP3_SAY } from './lamplit-fire.js'; import { WK_SAY } from './wickling.
 export const CALL_LINES = new Set([
   /* (claude/oreroadminor) THE ORE ROAD's minor pass (src/ore-works.js): the lamps you strike and the counterweight lifts - routed as hint-shown requires */
   'LIT: THE STRETCH LIGHTS FOR GOOD', 'ONE ROCK IN: ONE MORE', 'THE WEIGHT TAKES: THE PAN RISES', 'THE ORE TIPS OUT: THE PAN COMES DOWN', 'THE ROCK STAYS OUTSIDE',
+  /* (claude/oreroadminor) THE LAUNCHED CARTS (src/ore-works.js, src/ore-carts.js): a shove, a ram, the barricade breaking, a bump too slow, the trip chain */
+  'ROLLING', 'FASTER', 'RAMMED', 'THE BARRICADE BREAKS', 'TOO SLOW: BACK UP AND SHOVE IT', 'THE CHAIN PULLS',
   /* (claude/burning3) THE BURNING VILLAGE 3: a burning gate put out - the way is open (main.js putOutHeap), routed as hint-shown requires */
   'THE GATE BURNS DOWN - THE WAY IS OPEN',
   /* (claude/hanging3) THE OWL REEVE REBUILT ON ROPES (src/main.js updateOwl): her perch cut under her, her rope cuts in phase two, all three perches down - routed as hint-shown requires */

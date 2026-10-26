@@ -163,6 +163,11 @@ export const OR = {
   /* THE COUNTERWEIGHT LIFTS (src/ore-works.js), in the sorting tower and standing on what is already there - no new rock, so the route is the route it was: THE FIRST (taught) carries you from the sorting floor up to the middle deck for ONE rock; THE SECOND (tested)
      from the middle deck up to the top deck for TWO, and its bucket hangs out of a flat throw's reach: hold UP to lob. x is the pan's west edge (tile), from/to the TOWER decks, aTravel how far the bucket drops (px) while the pan rises the whole way (a 2:1 block) */
   LIFTS: [{ id: 'teach', x: 160, from: 0, to: 1, aTravel: 64, need: 1, hold: 30 }, { id: 'test', x: 170, from: 1, to: 2, aTravel: 76, need: 2, hold: 16 }],
+  /* THE LAUNCHED CARTS (src/ore-carts.js; Daniel 10-26 14:35: launch-only, the player never rides - riding is THE DEEP RAILS'). Two short rails in the sorting tower, both standing on what is already there:
+     THE ORE STORE (TEACH, the sorting floor): a cart on a rail, a barred store at the rail's end - a blade does not touch the barricade, the cart does. Rock-solid at build time (so the reach tools see a plain wall) and opened by the cart. Optional, with a purse.
+     THE SORTING RAIL (TEST, the middle deck - the dark stretch): the cart rolls the deck east, RAMS what stands on its rail (the tippler's post; the down line's goblin riders step off at the deck's east end and walk it) and at the line's end a
+     buffer trips a CHAIN that runs up to a SECOND cold lamp: the stretch lights for good. t0/t1 are rail tiles (the rail runs t0*16 to t1*16); store = [barricade col, the store's far wall col]. */
+  CARTS: [{ id: 'feed', name: 'THE ORE STORE', kind: 'teach', t0: 164, t1: 175, store: [175, 182] }, { id: 'sort', name: 'THE SORTING RAIL', kind: 'test', t0: 179, t1: 189, lamp: 'deck2' }],
   DARK: 0.34,                                                    // how black the cavern is away from the lamps
   CEIL_GAP: 6,                                                   // how many rows the cavern's ceiling keeps above anything anyone uses
   WORK_FAR: 240, WORK_CHIPS: 6, WORK_CHIP: 0.4, WORK_WALK: 18,                   // a miner works a seam while no hero is within 240 px: six blows, then he carries it
@@ -346,6 +351,14 @@ export function buildOreRoad({ painter, T }) {
   ent('sign', 154, TOWER[0], { text: 'E TAKES A ROCK. THROW IT IN THE HIGH BUCKET AND THE PAN YOU STAND ON RISES.' });
   ent('sign', 164, TOWER[1], { text: 'TWO ROCKS, AND THE BUCKET HANGS HIGHER: HOLD UP AND ATTACK TO LOB.' });
   ent('sign', 145, TOWER[1], { text: 'THE DECK IS DARK. TAKE A ROCK AND THROW IT UP AT THE COLD LAMP.' });
+  /* (claude/oreroadminor) THE LAUNCHED CARTS. TEACH: THE ORE STORE on the sorting floor - a rock store (rows TOWER[0]-2..TOWER[0], a roof one row thick, a hollow two rows tall - the hero is 14 px) whose mouth is a barricade; the cart waits on its rail a few tiles west.
+     A hero can climb on the store's roof from the mid deck as always; the way on is the ropes it always was. */
+  { const [bx, ex] = OR.CARTS[0].store;
+    block(bx, ex, TOWER[0] - 2, TOWER[0]);
+    for (let y = TOWER[0] - 1; y <= TOWER[0]; y++) for (let x = bx + 1; x <= ex - 1; x++) set(x, y, T.AIR);
+    coins([bx + 1, TOWER[0] - 1], [bx + 1, TOWER[0]], [bx + 5, TOWER[0] - 1], [bx + 5, TOWER[0]], [bx + 2, TOWER[0] - 1], [bx + 4, TOWER[0] - 1]);   /* the store's purse (the three on the floor there already are part of it) */ }
+  ent('sign', 163, TOWER[0], { text: 'THE STORE IS BARRED AND A BLADE WILL NOT MOVE IT. HIT THE CART AND IT ROLLS.' });
+  ent('sign', 177, TOWER[1], { text: 'THE CART RAMS WHAT STANDS ON ITS RAIL. AT THE END A CHAIN PULLS THE COLD LAMP.' });
 
   // ---- THE ORE CHUTE (c 204-271) — down thirteen rows, steered, over the crusher run ----
   /* THE CRUSHER RUN under the chute: what misses the buckets goes down it, and so does anything that comes off one. It is the
@@ -539,10 +552,17 @@ export function buildOreRoad({ painter, T }) {
         if (top && run < 0) run = x; if (!top && run >= 0) { const end = x - 1; for (let q = run; q <= end; q++) if (q === run || q === end || (q - run) % 5 === 0) owGlints.push({ zone: z.id, x: q * TS + 8, y: y * TS });
           run = -1; } }
       for (let x = c0; x <= c1; x++) if (L.grid[y * W + x] === T.NET && L.grid[(y - 1) * W + x] !== T.NET) owGlints.push({ zone: z.id, x: x * TS + 8, y: y * TS + 2, rope: true }); } }
+  /* the second lamp of the sorting deck hangs over the TEST rail's end; the cart's buffer trips the chain that runs up to it */
+  const CT0 = OR.CARTS[0], CT1 = OR.CARTS[1];
+  owLamps.push({ id: CT1.lamp, zone: 'deck', x: CT1.t1 * TS, y: (TOWER[1] + 1) * TS - 74, top: (TOWER[2] + 2) * TS, trip: true });
+  const owCarts = [
+    { id: CT0.id, name: CT0.name, kind: CT0.kind, x0: CT0.t0 * TS, x1: CT0.t1 * TS, y: (TOWER[0] + 1) * TS, home: CT0.t0 * TS + 27, ext: CT0.store[1] * TS,
+      bar: { l: CT0.store[0] * TS, r: (CT0.store[0] + 1) * TS, t: (TOWER[0] - 1) * TS, b: (TOWER[0] + 1) * TS }, cells: [0, 1].map(k => [CT0.store[0], TOWER[0] - 1 + k]), trip: null },
+    { id: CT1.id, name: CT1.name, kind: CT1.kind, x0: CT1.t0 * TS, x1: CT1.t1 * TS, y: (TOWER[1] + 1) * TS, home: CT1.t0 * TS + 27, ext: 0, bar: null, cells: [], trip: { lamp: CT1.lamp, x: CT1.t1 * TS + 6 } }];
   const owZones = OWL.map(z => ({ x0: z.x0, x1: z.x1, y0: z.y0, y1: z.y1, dark: OR.OW.dark, darkVal: OR.OW.dark, litDark: OR.DARK, name: z.name, ow: z.id, dim: z.id !== 'steep' }));
   return {
     seams, mine,
-    oreWorks: { lamps: owLamps, heaps: owHeaps, lifts: owLifts, glints: owGlints },
+    oreWorks: { lamps: owLamps, heaps: owHeaps, lifts: owLifts, glints: owGlints, carts: owCarts },
     W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: YARD }, pools: [], falls: [], moversExtra: [], interiors: [], gusts: [],
     music: 'oreroad',   /* its own track at last (Daniel 2026-09-23): 'mineworks' was a sparse synth that played as silence. audio/CREDITS.txt */ duskStart: -1, duskLen: 1,
     /* ONE VAST CAVERN (Daniel, 2026-09-25): no sky. The engine's dark (black, with a hole for every lamp and the light you carry)

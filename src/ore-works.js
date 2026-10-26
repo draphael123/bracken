@@ -13,6 +13,7 @@
 //   gauge (the teaching lift wants ONE rock, the testing one TWO and a lob) and the pan lifts you to a stone pier with a purse on it; the ore tips out after the gauge runs down and the pan comes back.
 // PURE but for ctx (main.js builds it). Data: L.oreWorks = { zones, lamps, heaps, lifts, glints } (src/ore-road.js buildOreRoad).
 import * as CT from './carry-throw.js';
+import * as OCR from './ore-carts.js';
 export const OW = { reachX: 14, reachY: 16, lampW: 9, lampH: 11, pan: { w: 26, h: 6 }, bucketW: 20, bucketH: 14, rise: 34, fall: 46, ripple: 280, headlamp: 52, col: '#ffd36b', rust: '#c8583a' };
 CT.addKind('orerock', CT.KINDS.orerock || { aims: { low: { vx: 115, vy: -170 }, mid: { vx: 150, vy: -265 }, high: { vx: 95, vy: -340 } }, g: 640, r: 3, ring: 10, dots: 14 });
 
@@ -23,8 +24,8 @@ export function liftGeom(lf) {
 }
 
 export function makeOreWorks(ctx) {
-  let D = null, zones = [], lamps = [], heaps = [], lifts = [], glints = [], rocks = [], ripple = [], near = null, arc = null, t = 0, told = {};
-  const W = { n: { taken: 0, thrown: 0, lit: 0, loaded: 0, rose: 0, dropped: 0 } };
+  let D = null, zones = [], lamps = [], heaps = [], lifts = [], glints = [], rocks = [], ripple = [], near = null, arc = null, t = 0, told = {}, carts = [], debris = [], rollT = 0, nearCart = null;
+  const W = { n: { taken: 0, thrown: 0, lit: 0, loaded: 0, rose: 0, dropped: 0, shoved: 0, rams: 0, smashed: 0, tripped: 0 } };
   const held = P => (P && P.carry && P.carry.t === 'orerock' && P.carry.ow ? P.carry : null);
   const handAt = P => ({ x: P.x + (P.face || 1) * 6, y: P.y - 18 });
   const bucketBox = lf => { const y = lf.rim; return { l: lf.g.ax - OW.bucketW / 2 - 1, r: lf.g.ax + OW.bucketW / 2 + 1, t: y - 2, b: y + OW.bucketH }; };
@@ -39,8 +40,19 @@ export function makeOreWorks(ctx) {
   const zoneOf = id => zones.find(z => z.id === id);
   const inZone = (z, x, y) => x > z.x0 && x < z.x1 && y > z.y0 && y < z.y1;
 
+  /* THE CARTS' HANDS: the cart's box (a blade's reach is OC.hitPad past it), and what a rolling cart rams (a foe whose feet are on the rail and whose body meets the cart) */
+  const cartBox = c => ({ l: c.x - OCR.OC.w / 2, r: c.x + OCR.OC.w / 2, t: c.y - OCR.OC.h - 4, b: c.y + 2 });
+  const ramsFor = (c, r) => {
+    if (!ctx.enemies) return 0; let k = 0;
+    for (const e of ctx.enemies()) {
+      if (!e.alive || (e.gone | 0) > 0 || c.rammed.has(e) || !(e.hp > 0) || Math.abs(c.v) < OCR.OC.vRam || Math.abs(e.y - c.y) > 12) continue;
+      const b = ctx.box(e); if (b.r < r.l || b.l > r.r) continue;
+      const dir = Math.sign(c.v) || 1; c.rammed.add(e); ctx.hurtFoe(e, OCR.OC.ram, c.x - dir * 12); e.vx = dir * 170; c.v *= OCR.OC.ramKeep; k++; W.n.rams++;
+      ctx.burst(e.x, e.y - 10, 8, ['#9a9aa8', '#ffd36b', '#ff9a5c'], 90, 0.4); ctx.number(e.x, e.y - 34, 'RAMMED', '#ff9a5c'); if (ctx.sfx.clank) ctx.sfx.clank(); if (ctx.sfx.thud) ctx.sfx.thud(); ctx.shake(2);
+    } return k;
+  };
   W.on = () => !!(ctx.L() && ctx.L().oreWorks);
-  W.data = () => ({ zones, lamps, heaps, lifts, glints });
+  W.data = () => ({ zones, lamps, heaps, lifts, glints, carts });
   W.held = () => !!held(ctx.P());
   W.reset = () => {
     const L = ctx.L(); D = L && L.oreWorks; rocks = []; ripple = []; near = null; arc = null; t = 0; zones = []; lamps = []; heaps = []; lifts = []; glints = [];
@@ -51,6 +63,10 @@ export function makeOreWorks(ctx) {
     /* a DIM stretch puts its own pit lamps out until its lamp is struck (the light of a pit lamp reaches through a floor: they are part of the dark) */
     for (const z of zones) { z.id = z.ow; z.lit = false; z.dark = z.darkVal; z.lamps = z.dim ? ctx.props().filter(pr => pr.t === 'minerlamp' && pr.x > z.x0 - 8 && pr.x < z.x1 + 8 && pr.y > z.y0 - 150 && pr.y < z.y1 + 16) : []; for (const pr of z.lamps) pr.lit = false; }
     lamps = D.lamps.map(d => ({ ...d, lit: false, swing: 0, hitCd: 0 }));
+    /* THE CARTS (src/ore-carts.js): each one home on its rail, its barricade whole again (the cells come back from the level's own grid) */
+    debris = []; rollT = 0; nearCart = null;
+    carts = (D.carts || []).map(d => { const c = OCR.makeCart(d); c.pulled = 0; if (d.bar) { for (const [x, y] of d.cells) ctx.mendCell(x, y); } return c; });
+    if (carts.some(c => c.bar)) ctx.resolve();
     heaps = D.heaps.map(d => ({ ...d }));
     glints = D.glints.map(d => ({ ...d }));
     lifts = D.lifts.map(d => { const g = liftGeom(d), lf = { ...d, g, load: 0, state: 'rest', holdT: 0, p: 0, rim: g.rimHigh, y: d.yLow };
@@ -61,6 +77,7 @@ export function makeOreWorks(ctx) {
   /* LIGHT A LAMP: it and its stretch, for good. quiet = a restore (no sparks, the pit lamps light at once) */
   function light(lp, quiet) {
     if (lp.lit) return; lp.lit = true; lp.swing = quiet ? 0 : 1; W.n.lit++;
+    for (const q of lamps) if (q !== lp && q.zone === lp.zone && !q.lit) { q.lit = true; q.swing = quiet ? 0 : 0.6; }   /* (a stretch with a second lamp: the whole stretch lights, so both burn) */
     const z = zoneOf(lp.zone); if (z) { z.lit = true; z.dark = z.litDark; }
     if (ctx.marks) ctx.marks.add('orelamp:' + lp.id);
     if (z) for (const pr of z.lamps) if (!pr.lit) { if (quiet) pr.lit = true; else ripple.push({ pr, at: t + Math.abs(pr.x - lp.x) / OW.ripple }); }
@@ -93,7 +110,9 @@ export function makeOreWorks(ctx) {
     for (const lp of lamps) { lp.swing = Math.max(0, lp.swing - dt * 0.9); lp.hitCd = Math.max(0, lp.hitCd - dt); if (lp.lit || !P || P.dead) continue;
       const hb = ctx.attackBox(), b = lampBox(lp), struck = hb && !P.plunge && hb.r > b.l && hb.l < b.r && hb.b > b.t && hb.t < b.b;
       const emb = (ctx.embers ? ctx.embers() : []).find(e => Math.abs(e.x - lp.x) < 14 && Math.abs(e.y - lp.y) < 16);
-      if (struck || emb) { if (emb) emb.life = 0; light(lp); } }
+      const jb = ctx.jetBox ? ctx.jetBox() : null, jet = !!jb && jb.r > b.l && jb.l < b.r && jb.b > b.t && jb.t < b.b;   /* the pyromancer's flame jet */
+      const ar = (P.rgArrows || []).find(a => a.state === 'fly' && Math.abs(a.x - lp.x) < OW.lampW + 5 && Math.abs(a.y - lp.y) < OW.lampH + 5);   /* the ranger's arrow in flight */
+      if (struck || emb || jet || ar) { if (emb) emb.life = 0; if (ar) { ar.state = 'drop'; ar.vx = 0; ar.vy = -40; } light(lp); } }
     /* the rocks */
     for (const q of rocks) {
       if (q.state === 'held') { const H = q.holder;
@@ -111,6 +130,29 @@ export function makeOreWorks(ctx) {
         q.t0 = (q.t0 || 0) + dt; if (q.t0 > 4) q.state = 'gone'; continue; }
     }
     rocks = rocks.filter(q => q.state !== 'gone');
+    /* THE CARTS: a blade shoves one (it rolls away from you), it rams what stands on its rail, breaks a barricade with speed enough, and at the line's end trips a chain; never a floor, never a ride */
+    nearCart = null; rollT -= dt; let rolling = false;
+    for (const c of carts) {
+      const hb = ctx.attackBox();
+      if (hb && P && !P.dead && !P.plunge && !P.hitSet.has(c)) { const bx = cartBox(c), pad = OCR.OC.hitPad;
+        if (hb.r > bx.l - pad && hb.l < bx.r + pad && hb.b > bx.t && hb.t < bx.b) { P.hitSet.add(c);
+          const dir = Math.sign(c.x - P.x) || (P.face || 1), how = OCR.shove(c, dir, P.vx || 0); W.n.shoved++;
+          ctx.burst(c.x - dir * 9, c.y - 4, 7, ['#9a9aa8', '#ffd36b', '#fff6c8'], 80, 0.35); if (ctx.sfx.clank) ctx.sfx.clank(); if (how === 'launch' && ctx.sfx.screech) ctx.sfx.screech();
+          ctx.number(c.x, c.y - 32, how === 'launch' ? 'ROLLING' : 'FASTER', OW.col); } }
+      const ev = OCR.stepCart(c, dt, ramsFor);
+      if (c.st === 'roll' && Math.abs(c.v) > 40) { rolling = true; if (Math.random() < dt * 16) ctx.burst(c.x - Math.sign(c.v) * 10, c.y - 1, 1, ['#9a9aa8', '#ffd36b'], 30, 0.25); }
+      for (const e of ev) {
+        if (e === 'smash') { const r = c.bar, dir = Math.sign(c.v) || 1; for (const [x, y] of c.cells) ctx.openCell(x, y); ctx.resolve(); if (ctx.art) ctx.art.spawnDebris(debris, r, dir); W.n.smashed++;
+          ctx.burst((r.l + r.r) / 2, (r.t + r.b) / 2, 18, ['#7a5632', '#c8a266', '#fff6c8', '#9a9aa8'], 130, 0.6); ctx.number((r.l + r.r) / 2, r.t - 10, 'THE BARRICADE BREAKS', OW.col); ctx.shake(4); if (ctx.sfx.stone) ctx.sfx.stone(); if (ctx.sfx.thud) ctx.sfx.thud(); if (ctx.sfx.heavy) ctx.sfx.heavy(); }
+        else if (e === 'bump') { ctx.number(c.x, c.y - 32, 'TOO SLOW: BACK UP AND SHOVE IT', '#ff9a5c'); if (ctx.sfx.thud) ctx.sfx.thud(); ctx.shake(1); }
+        else if (e === 'end') { ctx.burst(c.x + (c.v >= 0 ? 1 : -1) * 10, c.y - 4, 8, ['#ffd36b', '#fff6c8', '#9a9aa8'], 90, 0.35); if (ctx.sfx.clank) ctx.sfx.clank(); if (ctx.sfx.screech) ctx.sfx.screech(); }
+        else if (e === 'trip') { W.n.tripped++; const lp = lamps.find(q => q.id === c.trip.lamp); ctx.number(c.x, c.y - 44, 'THE CHAIN PULLS', OW.col); if (ctx.sfx.heavy) ctx.sfx.heavy(); if (lp) light(lp); }
+      }
+      c.pulled = c.tripped ? Math.min(1, (c.pulled || 0) + dt * 3) : 0;
+      if (P && !P.dead && c.st === 'rest' && W.n.shoved < 1 && Math.abs(P.x - c.x) < 110 && Math.abs(P.y - c.y) < 40) nearCart = c;
+    }
+    if (rolling && rollT <= 0 && ctx.sfx.cartRoll) { ctx.sfx.cartRoll(); rollT = 0.17; }
+    if (ctx.art && debris.length) debris = ctx.art.stepDebris(debris, dt);
     /* the lifts: ore in, the pan up, held while the gauge runs down, then the ore tips out and the pan comes home */
     for (const lf of lifts) { const oy = lf.m.y, travel = lf.g.rise;
       if (lf.state === 'rise') { lf.m.y = Math.max(lf.g.yHigh, lf.m.y - OW.rise * dt); if (lf.m.y <= lf.g.yHigh) { lf.state = 'top'; lf.holdT = lf.hold; W.n.rose++; } }
@@ -130,6 +172,8 @@ export function makeOreWorks(ctx) {
     for (const z of zones) { if (z.x1 < cx - 60 || z.x0 > cx + VW + 60) continue;
       if (!z.lit && P && !P.dead && inZone(z, P.x, P.y)) hole(P.x - cx, P.y - 8 - cy, OW.headlamp, 0.8); }
     for (const lp of lamps) { if (lp.x < cx - 140 || lp.x > cx + VW + 140) continue; hole(lp.x - cx, lp.y - cy, lp.lit ? 118 : 18, lp.lit ? 1 : 0.55); }
+    for (const c of carts) { if (c.x < cx - 80 || c.x > cx + VW + 80) continue; hole(c.x - cx, c.y - 12 - cy, 30, 0.75);   /* a cart carries its own lantern */
+      if (c.bar && !c.broken) hole((c.bar.l + c.bar.r) / 2 - cx, (c.bar.t + c.bar.b) / 2 - cy, 26, 0.55); if (c.trip) hole(c.trip.x - cx, c.y - 10 - cy, 20, 0.55); }
     for (const q of heaps) if (q.x > cx - 40 && q.x < cx + VW + 40) hole(q.x - cx, q.y - 8 - cy, 26, 0.7);
     for (const lf of lifts) if (lf.g.ax > cx - 80 && lf.g.ax < cx + VW + 80) { hole(lf.g.ax - cx, lf.rim + 6 - cy, 26, 0.7); hole(lf.m.x + lf.m.w / 2 - cx, lf.m.y - cy, 22, 0.6); }
     for (const g of glints) { const z = zoneOf(g.zone); if (z && !z.lit && g.x > cx - 20 && g.x < cx + VW + 20) hole(g.x - cx, g.y - 2 - cy, 14, 0.5); }
@@ -192,6 +236,13 @@ export function makeOreWorks(ctx) {
   }
   W.drawWorld = (g, cx, cy, time) => {
     if (!D) return; const VW = ctx.VW();
+    if (ctx.art) for (const c of carts) { if (c.x1 < cx - 60 || c.x0 > cx + VW + 60) continue;
+      const open = c.bar && c.broken, endX = c.bar ? (open ? c.ext : c.bar.l) : c.x1;
+      ctx.art.drawRail(g, c, cx, cy, time, endX, !c.bar || open);
+      if (c.trip) { const lp = lamps.find(q => q.id === c.trip.lamp); if (lp) ctx.art.drawTrip(g, c.trip.x, c.y, lp.y + 11, cx, cy, time, c.pulled || 0); }
+      if (c.bar && !c.broken) ctx.art.drawBarricade(g, c.bar, cx, cy, time, c.st === 'roll');
+      ctx.art.drawCart(g, c, cx, cy, time, true); }
+    if (ctx.art && debris.length) ctx.art.drawDebris(g, debris, cx, cy);
     for (const lf of lifts) drawLift(g, lf, cx, cy, time);
     for (const q of heaps) if (q.x > cx - 40 && q.x < cx + VW + 40) drawHeap(g, q, cx, cy, time, near === q);
     for (const lp of lamps) if (lp.x > cx - 40 && lp.x < cx + VW + 40) drawLamp(g, lp, cx, cy, time);
@@ -210,7 +261,8 @@ export function makeOreWorks(ctx) {
       if (lp.lit) { const gr = g.createRadialGradient(x, y, 2, x, y, 70); gr.addColorStop(0, 'rgba(255,214,130,0.22)'); gr.addColorStop(1, 'rgba(255,214,130,0)'); g.fillStyle = gr; g.fillRect(x - 70, y - 70, 140, 140); }
       else { const k = 0.5 + 0.5 * Math.sin(time * 1.7 + lp.x * 0.1); g.globalAlpha = 0.5 + 0.4 * k; g.fillStyle = '#ff9a5c'; g.fillRect(x, y + 2, 2, 2); g.globalAlpha = 1; } }
     if (arc) CT.drawArc(g, arc, cx, cy, time, arc.land && arc.land.hit ? '#ffd36b' : '#c8ccd4');
-    if (P && !P.dead) for (const lp of lamps) if (!lp.lit && Math.abs(P.x - lp.x) < 70 && Math.abs(P.y - lp.y) < 90 && ctx.text) ctx.text('A COLD LAMP: STRIKE IT', R(lp.x - cx), R(lp.y - cy) - 24, OW.col, 'center');
+    if (nearCart && ctx.text) ctx.text('ATTACK: SHOVE THE CART', R(nearCart.x - cx), R(nearCart.y - cy) - 34, OW.col, 'center');
+    if (P && !P.dead) for (const lp of lamps) if (!lp.lit && Math.abs(P.x - lp.x) < 70 && Math.abs(P.y - lp.y) < 90 && ctx.text) ctx.text(lp.trip ? 'A COLD LAMP: SHOVE THE CART' : 'A COLD LAMP: STRIKE IT', R(lp.x - cx), R(lp.y - cy) - 24, OW.col, 'center');
   };
   return W;
 }
