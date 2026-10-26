@@ -96,6 +96,6 @@ export function cpPlan(s) {
   function follow(why) {
     if (hisT > my) { const x = upNet(my + 1); if (x !== null) { out.gx = x; if (Math.abs(x - P.x) < 5 && P.ground) { out.up = true; mem.after = 'up'; } out.why = why + ': up'; return out; } }
     if (hisT < my && hisT >= 0) { const q = T[hisT]; out.gx = Math.max(q.x0 * TS + 12, Math.min((q.x1 + 1) * TS - 12, P.x)); out.drop = P.ground; out.why = why + ': drop through'; return out; }
-    if (P.ground && my >= 0 && P.y < T[my].row * TS - 6) { out.gx = clamp(P.x + (Math.sign(kx - P.x) || 1) * 40); out.why = why + ': step off the line onto the yard'; return out; }
+    if (P.ground && my >= 0 && P.y < T[my].row * TS - 6) { { const q = T[my], mid = (q.x0 + q.x1 + 1) / 2 * TS; out.gx = clamp(P.x + (Math.sign(mid - P.x) || 1) * 48); } out.why = why + ': step off the line onto the yard'; return out; }
     out.gx = clamp(kx + side * (hitR - 6)); out.why = why; return out; }
 }

@@ -133,7 +133,9 @@ export function makeHurricane3(ctx) {
       const near = P && !P.dead && Math.abs(P.x / TS - r.x) < 24 && Math.abs(P.y / TS - r.y) < 14;
       if (r.cool > 0) { r.cool -= dt; continue; }
       if (!near) { r.charge = Math.max(0, r.charge - dt * 0.2); continue; }
-      r.charge += dt / H3.rodCharge;
+      /* HER SEA WITCH by the chain calls the sky onto it: it charges near twice as fast (kill her, or time the chain) */
+      const witch = ctx.enemies().some(e => e.alive && e.t === 'seawitch' && Math.abs(e.x - (r.x * TS + 8)) < 7 * TS && Math.abs(e.y - (r.y + 1) * TS) < 4 * TS); r.witch = witch;
+      r.charge += dt / H3.rodCharge * (witch ? 1.8 : 1);
       if (r.charge > 1 - H3.rodTell / H3.rodCharge) { r.tellSnd -= dt; if (r.tellSnd <= 0) { r.tellSnd = 0.35; ctx.sound('crackle'); } if (!S.told['rc' + r.id]) { S.told['rc' + r.id] = 1; ctx.number(r.x * TS + 8, (r.y - 2) * TS, H3_SAY.charging, '#9ab8ff'); } }
       if (r.charge >= 1) rodFire(r); } }
   function rodFire(r) { r.charge = 0; r.cool = H3.rodCool; r.bolt = 0.35; r.glow = 0.6;
@@ -156,6 +158,7 @@ export function makeHurricane3(ctx) {
   H.bossRodState = () => (S ? S.boss : null);
   H.rodTold = k => k > 1 - H3.rodTell / H3.bossRodT;
   H.rodInfo = id => (S ? S.rods.find(r => r.id === id) : null);
+  H.heel = () => ctx.heel(); H.gustNow = z => ctx.gustNow(z);   /* (for the walker: her heel now - on, dir, k - and a gust) */
 
   /* ---------- THE BANNERS ---------- */
   function banner(dt) { const P = hero(); if (!P) return; const secs = lv().h3.sections || [];
@@ -179,6 +182,13 @@ export function makeHurricane3(ctx) {
     mast(301, 3, 36, 8);   /* THE MAINMAST, deck to truck */
     const r2 = S.rods.find(r => r.id === 'r2'); mast(467, r2 && r2.done ? 30 : 14, 36, 7);   /* THE MIZZEN (her topmast goes when rod 2 fells it) */
     if (!ctx.felledDown(0)) mast(173, 13, 36, 7);   /* THE FOREMAST until the sky lays her over */
+    /* HER STAYS (greybox: the art pass draws them laid and tarred): the mizzen-main stay from her mizzen masthead to the main top, and the lifts every stays platform hangs on */
+    const line = (x0, y0, x1, y1, col = '#8a7040') => { const n = Math.max(2, R(Math.hypot(x1 - x0, y1 - y0) / 3)); for (let i = 0; i <= n; i++) { const u = i / n; rc(g, x0 + (x1 - x0) * u - cx, y0 + (y1 - y0) * u + Math.sin(u * Math.PI) * 6 - cy, 1, 1, col); } };
+    const sx0 = 467 * TS, sy0 = (r2 && r2.done ? 26 : 14) * TS, sx1 = 302 * TS, sy1 = 24 * TS, stayY = x => sy0 + (sy1 - sy0) * (x - sx0) / (sx1 - sx0);
+    if (Math.max(sx0, sx1) > cx - 40 && Math.min(sx0, sx1) < cx + vw + 40) line(sx0, sy0, sx1, sy1, '#b59a62');
+    for (const m of (lv().ents || [])) { if (m.t !== 'mast' || !m.h3) continue; const x = m.x * TS + 8; if (x < cx - 80 || x > cx + vw + 80) continue;
+      if (m.h3 === 'stay') { const y = (m.y + 1) * TS; for (const dx of [-40, 40]) line(x + dx, stayY(x + dx), x + dx, y, '#e0cc9c'); }
+      if (m.h3 === 'davits') { const y = (m.y + 1) * TS; for (const dx of [-56, 56]) { rc(g, x + dx - 2 - cx, y - 20 - cy, 4, 20 + 3 * TS, '#3a3a44'); rc(g, x + dx - (dx > 0 ? 12 : -2) - cx, y - 22 - cy, 14, 3, '#3a3a44'); line(x + dx - (dx > 0 ? 10 : -10), y - 20, x + dx - (dx > 0 ? 10 : -10), y, '#e0cc9c'); } } }
     for (const s of (lv().h3.sails || [])) { const z = (lv().gusts || [])[s.gust]; const G = z ? ctx.gustNow(z) : { on: false, tell: -1, dir: 1 };
       const fill = G.on ? 1 : G.tell >= 0 ? G.tell : 0.08, snap = G.tell >= 0 && Math.floor(time * 12) % 2 ? 2 : 0, x = R(s.x * TS - cx), y0 = R(s.y0 * TS - cy), h = (s.y1 - s.y0) * TS;
       if (x < -60 || x > vw + 60) continue;
@@ -216,6 +226,6 @@ export function makeHurricane3(ctx) {
     g.globalAlpha = 0.75; rc(g, x, wy, w, y + h - wy, S.groan > 0 && Math.floor(time * 8) % 2 ? '#ff6b6b' : '#2e7a88'); g.globalAlpha = 1; rc(g, x, wy, w, 1, '#eefaff');
     ctx.text('SHE SINKS', x + w / 2, y + h + 7, '#a8cfc6', 'center', 4);
     if (S.banner) { const k = Math.min(1, S.banner.t / 0.4, (3 - S.banner.t) / 0.3 + 0.2); g.globalAlpha = Math.max(0, Math.min(1, k)); ctx.text(S.banner.name, vw / 2, 34, '#ffd36b', 'center', 8); g.globalAlpha = 1; } };
-  H.read = () => S && { step: S.step, rising: S.rising, seaY: R(S.seaY), fightPh: S.fightPh, floods: S.floods.map(f => ({ id: f.id, ph: f.ph, k: +f.k.toFixed(2) })), rods: S.rods.map(r => ({ id: r.id, charge: +r.charge.toFixed(2), connected: r.connected, done: r.done })), boss: { charge: +S.boss.charge.toFixed(2) }, banner: S.banner && S.banner.name };
+  H.read = () => S && { step: S.step, rising: S.rising, seaY: R(S.seaY), fightPh: S.fightPh, floods: S.floods.map(f => ({ id: f.id, ph: f.ph, k: +f.k.toFixed(2) })), rods: S.rods.map(r => ({ id: r.id, charge: +r.charge.toFixed(2), connected: r.connected, done: r.done, witch: !!r.witch })), boss: { charge: +S.boss.charge.toFixed(2) }, banner: S.banner && S.banner.name };
   return H;
 }

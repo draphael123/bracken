@@ -5254,7 +5254,7 @@ function theHurricane() {
   // brings you back to the near side)
   ent('sign', 50, DK - 1, { text: 'THE FORE HATCH: WAIT FOR HER TO HEEL TOWARD THE STERN, THEN JUMP. DOWNHILL GOES LONG.' });
   air(56, 61, DK, DK + 4); net(56, 56, DK, DK + 4);   /* the hatch's well (57-61), four rows: its ladder is on the near side */
-  rollGaps.push({ x0: 50 * TS, x1: 66 * TS, y0: (DK - 6) * TS, y1: DK * TS, carry: 2, dir: 1, alt: true, roll: true });   /* (src/reachcore.js reads it as a carry: a jump taken in the heel goes two columns further) */
+  rollGaps.push({ x0: 50 * TS, x1: 66 * TS, y0: (DK - 6) * TS, y1: DK * TS, carry: 2, dir: 1, alt: true, roll: true, hole: [57, 61] });   /* (src/reachcore.js reads it as a carry: a jump taken in the heel goes two columns further) */
   // THE FORE HOUSE: four rows of deckhouse across her deck. A cask lashed by the bitt: strike its lashing and the next heel to the stern runs it to the house - a step
   set(67, DK - 1, T.SOLID);   // a bitt (it holds the cask when she heels to the bow)
   cask(70, DK - 1, { lashed: true, id: 'step1', rest: [78, DK - 1] });
@@ -5310,7 +5310,7 @@ function theHurricane() {
   cask(244, DK - 1); set(252, DK - 1, T.SOLID); set(232, DK - 1, T.SOLID);   // a cask between two bitts: a step to the shroud? no - a hazard that rolls in the fight
   // THE AFTER SCUTTLE: a second hatch open on her main deck, five boards - jumped DOWNHILL (two rows deep: a cheap fall; a crate stack in the gun deck under it)
   air(266, 270, DK, DK + 1);   /* (its floor is a crate stack laid after the gun deck is cut, below) */
-  rollGaps.push({ x0: 260 * TS, x1: 276 * TS, y0: (DK - 6) * TS, y1: DK * TS, carry: 2, dir: 1, alt: true, roll: true });
+  rollGaps.push({ x0: 260 * TS, x1: 276 * TS, y0: (DK - 6) * TS, y1: DK * TS, carry: 2, dir: 1, alt: true, roll: true, hole: [266, 270] });
   ent('cutlass', 276, DK - 1, { face: -1 });
   // THE MAINMAST stands at 300 (drawn, and nothing to climb from the deck: her shrouds start at the main yard). ROD 1: the masthead rod's CHAIN runs down her mast and
   // hangs loose by the main hatch. Strike it onto the hatch's iron coaming and the next bolt comes down it: the TARRED NET over the main hatch burns.
@@ -5356,7 +5356,7 @@ function theHurricane() {
   coins([434, DK - 2], [440, DK - 2], [455, DK - 2]);
   // HER AFTER COMPANIONWAY: open, five boards, three rows deep - jumped downhill (its ladder on the near side)
   air(446, 451, DK, DK + 2); net(446, 446, DK, DK + 2);
-  rollGaps.push({ x0: 440 * TS, x1: 456 * TS, y0: (DK - 6) * TS, y1: DK * TS, carry: 2, dir: 1, alt: true, roll: true });
+  rollGaps.push({ x0: 440 * TS, x1: 456 * TS, y0: (DK - 6) * TS, y1: DK * TS, carry: 2, dir: 1, alt: true, roll: true, hole: [447, 451] });
   // HER STERN, going under: her after deck two rows lower than the quarterdeck (the sea takes it at the third step: deadly)
   air(471, 510, DK, DK + 1); block(511, 512, DK - 2, DK + 1);
   ent('deco', 490, DK + 1, { kind: 'wheel' }); ent('deco', 505, DK + 1, { kind: 'sternWindows' });
