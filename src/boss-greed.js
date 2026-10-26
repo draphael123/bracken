@@ -115,6 +115,7 @@ export const OPEN_RULE = {
   bogtroll: e => btOpen(e),                                                  // THE BOG TROLL (claude/fenroad): STUCK in a rotten section he burst up through
   hornetqueen: e => hqOpen(e),                                               // THE HORNET QUEEN 2 (claude/hornetsnest): STUCK in comb/wood, STAGGERED off a shield, DAZED by smoke under her, PINNED under a pine or the last comb
   grubbag: e => e.mode === 'choke',                                        // LORD GRUBBAG (claude/kitchengate): CHOKING on a powder pie he ate off the serving line (src/grubbag.js)
+  shrieksisters: e => e.mode === 'open',                                    // THE SHRIEK SISTERS (claude/rookery): a sister STUNNED in the rubble (a dive into cracked rock) or knocked down - the anchor reads 'open' (src/shriek-sisters-hands.js)
   batteringbeast: e => bbOpen(e),                                           // THE BATTERING BEAST (claude/palisadewood): STUCK in a scaffold's wreck, DAZED off a wall, LOOSE (his harness cut)
   oldtusker: e => otOpen(e),                                                 // OLD TUSKER (claude/oldtusker): PINNED under a felled pine, or DAZED off a ram into a pine or the wall
   tombking: e => tkOpen(e),                                                  // THE COFFIN KING (claude/pyramidboss): tipped over by a switch's counterweight, or a chamber trap (a plate) - the lid off, open
@@ -143,7 +144,7 @@ export const OPEN_RULE = {
    blows is the answer, not greed: no reprisal (claude/burnvillage2: and no chip either - he is a duelist on FULL_DAMAGE) */
 export const NO_GREED = new Set(['pyromancer']);
 /* (claude/minecart) THE GREAT DRILL is on OWN_WARD: its number is its own (src/great-drill.js takeBlow: the cab ALWAYS takes a whole blow - B13/B14, Daniel 10-07 - x2 jammed, nothing while warded); greed is still counted */
-export const OWN_WARD = new Set(['grubbag', 'batteringbeast', 'mother', 'hornetqueen', 'bogtroll', 'oldtusker', 'tombking', 'scarabmother', 'hourglassking', 'greatdrill', 'puppeteer', 'wickerqueen', 'lanterneater', 'duneworm', 'colossus', 'winchmaster']);   /* (claude/duneworm2) THE DUNE WORM's ward is his CROWN PLATES (src/dune-worm.js wormTake): nothing from the front, whole from behind or on his reared belly, double tangled - B11's guard by angle, not a chip to wait out (B13) */
+export const OWN_WARD = new Set(['grubbag', 'shrieksisters', 'batteringbeast', 'mother', 'hornetqueen', 'bogtroll', 'oldtusker', 'tombking', 'scarabmother', 'hourglassking', 'greatdrill', 'puppeteer', 'wickerqueen', 'lanterneater', 'duneworm', 'colossus', 'winchmaster']);   /* (claude/duneworm2) THE DUNE WORM's ward is his CROWN PLATES (src/dune-worm.js wormTake): nothing from the front, whole from behind or on his reared belly, double tangled - B11's guard by angle, not a chip to wait out (B13) */
 /* NO OPENING IN CODE, OR NO BLADE EVER REACHES THE BODY: left at full damage (a boss-wave TODO), never made unbeatable */
 export const NO_OPENING = {
   /* (claude/sporewood2) mother: off this list - THE MOTHER CAP 2 has an opening (her knot) and her own number (OWN_WARD: 0.4 sealed, x2 open) */

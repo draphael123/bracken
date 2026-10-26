@@ -26,7 +26,7 @@ export const KIND_OF = {
   wood: 'forest', hornetsnest: 'forest',
   marsh: 'marsh', fenroad: 'marsh', stockade: 'marsh', burning: 'marsh',
   spore: 'fungus', rootway: 'fungus', kings: 'fungus', underleaf: 'fungus',
-  scree: 'crag', hanging: 'crag', spire: 'crag', moor: 'crag', skyroad: 'crag',
+  scree: 'crag', hanging: 'crag', spire: 'crag', moor: 'crag', rookery: 'crag', skyroad: 'crag',
   oreroad: 'mine', minecart: 'mine',
   storm: 'storm', crown: 'storm', undercrown: 'storm', kitchengate: 'storm',
   longwater: 'coast', reef: 'coast', flotilla: 'coast', hurricane: 'coast', lamplit: 'coast', deep: 'coast', keep: 'coast', causeway: 'coast', harbor: 'coast',

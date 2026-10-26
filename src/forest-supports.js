@@ -4,7 +4,7 @@
      glasssea glass pedestals, witchlight rune-stone pillars, THE LUMBER TRAIL (wood) woodsmen's timber cribs (claude/lumbertrail).
    A support runs down to the first tile under it (<= GROUND rows); with nothing near, it ends free in the level's own manner (a tapering stalactite, dangling roots, a cloud).
    NO tile changes: route, walker and mash rows are untouched. tools/solid-islands.mjs counts these as drawn supports. */
-export const FOREST_KIT = { wood: 'crib', scree: 'rock', hanging: 'vine', moor: 'pile', skyroad: 'cloud', rootway: 'root', spore: 'stalk',   /* (claude/sporewood2: SPOREWOOD 2's shelves hang on the Mother's roots - the art lane may give them cap stalks) */ glasssea: 'ice', witchlight: 'rune', marsh: 'stilt' };   /* (claude/marsh2) MARSH WOOD: a bog-oak stilt under a board, a bundle of reed stalks under a tuft - driven into the bed under the water */
+export const FOREST_KIT = { wood: 'crib', scree: 'rock', rookery: 'rock', hanging: 'vine', moor: 'pile', skyroad: 'cloud', rootway: 'root', spore: 'stalk',   /* (claude/sporewood2: SPOREWOOD 2's shelves hang on the Mother's roots - the art lane may give them cap stalks) */ glasssea: 'ice', witchlight: 'rune', marsh: 'stilt' };   /* (claude/marsh2) MARSH WOOD: a bog-oak stilt under a board, a bundle of reed stalks under a tuft - driven into the bed under the water */
 export const FREE_LEN = { crib: 4, rock: 5, vine: 6, pile: 3, cloud: 6, root: 6, stalk: 6, ice: 5, rune: 6, stilt: 4, reed: 4 };
 const GROUND = 16, STEP = 10;
 
@@ -36,7 +36,7 @@ export function addForestSupports(L, id, T, islandsOf) {
       if (g[b * W + x] === T.AIR || b - y > GROUND) { free = true; b = y + 1; const n = FREE_LEN[kindI]; while (b - y <= n && b < H - 1 && g[b * W + x] === T.AIR) b++; b = Math.min(b, y + 1 + n); }
       if (free && id === 'marsh') { const q = (L.pools || []).find(p => x * 16 + 8 >= p.x0 && x * 16 + 8 < p.x1 && p.y > y * 16); if (q) { free = false; b = Math.floor(q.y / 16) + 2; } }   /* (claude/marsh2) a reed bundle over the deep water goes down into it: its foot is in the pool */
       if (b - y < 2) continue;
-      L.routeSupports.push(widths.has(x) ? { x, y, bottom: b, kind: kindI, free, w: widths.get(x) } : { x, y, bottom: b, kind: kindI, free }); have.add(x + ',' + y); }
+      L.routeSupports.push(widths.has(x) ? { x, y, bottom: b, kind: kindI, free, w: widths.get(x), ...(id === 'rookery' ? { rk: 1 } : {}) } : { x, y, bottom: b, kind: kindI, free, ...(id === 'rookery' ? { rk: 1 } : {}) });   /* (claude/rookeryart: rk = THE ROOKERY's own grey, guano-streaked piers, src/redraw/rookery_world.js drawPier) */ have.add(x + ',' + y); }
   }
   return L;
 }

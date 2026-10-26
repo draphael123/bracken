@@ -1100,7 +1100,8 @@ GROUND_KITS.underwell={density:0,kinds:[]};   /* THE UNDERWELL (claude/underwell
 ALLOWED_DECORATIONS.underwell=['husk'];   /* the Queen's cast shell by her door (the only placed decoration) */
 GROUND_KITS.kitchengate={density:0,kinds:[]}; ALLOWED_DECORATIONS.kitchengate=['barrel'];   /* THE KITCHEN GATE (claude/kitchengate): castle stone, nothing sprinkled; the cellar barrels are placed by hand */
 GROUND_KITS.skyroad={density:0,kinds:[]};   /* THE SKY ROAD (claude/skyroad): basalt and cloud, nothing sprinkled; its dressing is src/redraw/skyroad_dress.js and the level's own */
-ALLOWED_DECORATIONS.skyroad=['bones'];   /* the bones in the Roc's nest (the only placed decoration) */
+ALLOWED_DECORATIONS.skyroad=['bones'];
+GROUND_KITS.rookery={density:0,kinds:[]}; ALLOWED_DECORATIONS.rookery=['bones'];   /* THE ROOKERY (claude/rookery): crag and guano, nothing sprinkled; the bones are placed by hand */   /* the bones in the Roc's nest (the only placed decoration) */
 GROUND_KITS.rootway={density:0.22,kinds:['moss','rock','fern']};   /* THE ROOTWAY (claude/rootway): fungus at the foot thinning to fern and stone in the canopy (the art pass gives it its own kit) */
 ALLOWED_DECORATIONS.rootway=['sporePod','tinyCap','moss','mushroom','rootDecor','rock','fern','bones','skullPile','gobPennant','warnPost','trophyRack','hangCage','skullTotem','boneChime','hornMount','skinRack','lodgeBeam'];   /* the fungus's own, and the goblins' first marks (+ the lodge's hall: its horn mount, skin racks and beams) (their pennants, posts, trophy racks and cages) */
 GROUND_KITS.glasssea={density:0,kinds:[]};   /* THE GLASS SEA (claude/glasssea, batch75 merge): fused glass and sand, nothing grows or is sprinkled; its dressing is src/redraw/glasssea_set.js and the hands' own (no placed decoration) */

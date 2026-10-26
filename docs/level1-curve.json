@@ -661,5 +661,18 @@
   "walked": 100,
   "bare": true,
   "lostPct": 119
+ },
+ "rookery": {
+  "hash": "ee598da83779",
+  "hero": "knight",
+  "steps": 30000,
+  "runs": 3,
+  "hits": 41,
+  "deaths": 2,
+  "kills": 43,
+  "lifts": 71,
+  "walked": 100,
+  "bare": true,
+  "lostPct": 231
  }
 }
