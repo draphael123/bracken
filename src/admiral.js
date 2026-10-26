@@ -31,7 +31,7 @@
 // PURE: no DOM, no main.js. The world is a context `c` (src/admiral-hands.js binds it). adPlan is the boss lab's HUMAN bot (src/lab.js).
 
 /* (tune) THE PER-HERO TUNE: { in: x what his blows take off this hero, out: x what this hero's blows take off him }. Heroes not listed are 1 / 1. */
-export const TUNE = { knight: { in: 1.1, out: 1 }, pyro: { in: 1.2, out: 0.95 }, warden: { in: 0.9, out: 1.05 }, pirate: { in: 0.85, out: 1.1 }, paladin: { in: 0.9, out: 1 }, reaper: { in: 0.85, out: 1.05 }, geomancer: { in: 0.85, out: 1.15 }, ranger: { in: 0.85, out: 1.15 } };
+export const TUNE = { knight: { in: 1.1, out: 1 }, pyro: { in: 1.3, out: 0.85 }, warden: { in: 0.9, out: 1.05 }, pirate: { in: 0.95, out: 1.0 }, paladin: { in: 0.9, out: 1 }, reaper: { in: 0.85, out: 1.05 }, geomancer: { in: 0.85, out: 1.15 }, ranger: { in: 0.85, out: 1.15 } };
 export const tuneOf = h => TUNE[h] || { in: 1, out: 1 };
 export const AD = {
   hp: 3250, w: 22, h: 40, markH: 64,
