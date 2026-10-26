@@ -21417,7 +21417,7 @@ function forgePick(e, ad, p2) {
   const A = L.mini || L.arena, bang = c2 => number(e.x, e.y - e.h - 24, c2 ? '!!' : '!', c2 ? '#ff6b6b' : '#ffd36b'), say = (w, c) => number(e.x, e.y - e.h - 12, w, c);
   const cart = FGR ? FGR.chainCart(e, A) : null;
   if (e.dragT <= 0 && cart && ad > 70) { e.dragT = p2 ? 8 : 11; e.mode = 'dragTell'; e.modeT = 0.7; e.cart = cart; bang(true); say('THE CHAIN', '#ffd36b'); SFX.forgeChain(); return; }
-  if (e.ladleT <= 0 && ad > 90 && Math.abs(P.y - e.y) < 60) { e.ladleT = p2 ? 7 : 9.5; e.mode = 'ladleTell'; e.modeT = FGR_K.ingotTell; bang(true); say('HOT INGOTS', '#ff9a5c'); SFX.forgeSteam(); SFX.hiss();
+  if (e.ladleT <= 0 && ad > 90 && Math.abs(P.y - e.y) < 60) { e.ladleT = p2 ? 7 : 9.5; e.mode = 'ladleTell'; e.modeT = FGR_K.ingotTell; bang(true); number(e.x, e.y - e.h - 12, 'HOT INGOTS', '#ff9a5c'); SFX.forgeSteam(); SFX.hiss();
     const n = p2 ? 4 : 3; e.ingots = []; for (let k = 0; k < n; k++) { let tx = P.x + (k - (n - 1) / 2) * 38; if (Math.abs(tx - e.x) < 84) tx = e.x + (Math.sign(tx - e.x) || e.face) * 84; e.ingots.push(Math.max(A.x0 + 16, Math.min(A.x1 - 16, tx))); } return; }
   if (p2 && e.breathT <= 0 && ad < 140) { e.breathT = 9; e.mode = 'breathTell'; bang(true); e.modeT = 0.8; say('THE FURNACE', '#ff6b2c'); SFX.gasp(); return; }
   if (e.tongsT <= 0 && ad < 76) { e.tongsT = p2 ? 5.5 : 7.5; e.mode = 'tongsTell'; bang(false); e.modeT = 0.6; say('HAMMER AND TONGS', '#ffd36b'); SFX.charge(); return; }
