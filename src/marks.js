@@ -440,7 +440,7 @@ export const ANSWER = {
   'wickerman|throwTell': 'jump', 'wickerman|swingTell': 'block',   // (claude/fairfix6) THE WICKER MAN: its fire rolls along the ground - jump it (or strike it back); its arms the shield takes
   'willowisp|flareTell': 'block',   // THE FOG CANAL: the false lantern flares (a yellow !) - the shield turns the burst, as every yellow ! does
   'hare|run': 'block',
-  'harpy|aim': 'block', 'shrieker|aim': 'dodge', 'shrieksister|diveTell': 'dodge', 'shrieksister|screamTell': 'dodge', 'shrieksister|dropTell': 'dodge', 'shrieksister|snatchTell': 'jump', 'shrieksister|waveTell': 'block',   /* (claude/rookery) her scream marks your spot: get off it */
+  'harpy|aim': 'block', 'shrieker|aim': 'block', 'shrieksister|diveTell': 'dodge', 'shrieksister|screamTell': 'dodge', 'shrieksister|dropTell': 'dodge', 'shrieksister|snatchTell': 'jump', 'shrieksister|waveTell': 'block',   /* (claude/rookery) her scream marks your spot: get off it */
   'shrieksister|chainTell': 'dodge', 'shrieksister|rakeTell': 'block', 'shrieksister|shockTell': 'block', 'shrieksister|echoTell': 'dodge', 'shrieksister|grabTell': 'dodge',   /* (claude/sisters2) the rake: block it (or jump it); the shock: brace (or roll); off the echo's tile; roll through the grab (or jump it) */
   'haunt|throwTell': 'block',
   'hearthgob|raise': 'block',
