@@ -1,0 +1,1341 @@
+{
+  "proof": {
+    "time": "2026-10-26T19:49:36.678Z",
+    "controller": "1a576c3f4511b6856df9fb4738df5aaae9987e81",
+    "gameSource": "dc02ecc059959b795f76dee47665b54f349d4e2f",
+    "gameTree": "9d8acbb7f3182c1d29ac71f4a3b0227224446718",
+    "originalMainSha256": "1573d2d744b753e5611b021d97b70b013f7e2e6773640b707ae85d5ab5dae594",
+    "candidateMainSha256": "106e070279b09f6a15ecb3ee8ab57b1fb839dc3fe5c6697b56956df499e8d84b",
+    "originalPxSha256": "9d3feee0d3a14e186f3259e7b7a1279b579989a0461de55d594f676f525533ae",
+    "candidatePxSha256": "99c3ba33703354388c9341f1b0a651396fa9719e2e5191a10ec6a647ead3ea4a",
+    "helperSha256": "c380f16cfb0238cd6f542e1f1cfedcdc18d5dbb516a627ba5e8df3ce092695cd",
+    "targetCalls": 102,
+    "targetModules": [
+      {
+        "file": "redraw/foes1.js",
+        "sha256": "a9460dfcb865838979d601e93900af30e679c198d1f54ac4ce92f32b6b6a0fd9",
+        "safeFactories": [
+          "bakeThornback",
+          "bakeHopper",
+          "bakeHarpy",
+          "bakeHound"
+        ],
+        "privateData": [
+          "EP",
+          "HOPPER_COLORS"
+        ],
+        "publicOrEscapedData": []
+      },
+      {
+        "file": "redraw/queenchief.js",
+        "sha256": "2f22bc3e71570ae4cbcb372be68946bbc7be83e828c789c0a5375c8e5799ef37",
+        "safeFactories": [
+          "bakeQueen",
+          "bakeChief"
+        ],
+        "privateData": [
+          "HQ",
+          "CK"
+        ],
+        "publicOrEscapedData": []
+      },
+      {
+        "file": "redraw/frogking.js",
+        "sha256": "bbc22d1e8f757bf6f3564f075483171c8b2638917b977853414e92ad0333f035",
+        "safeFactories": [
+          "bakeFrog"
+        ],
+        "privateData": [
+          "C",
+          "W",
+          "PADT",
+          "H",
+          "GY"
+        ],
+        "publicOrEscapedData": []
+      },
+      {
+        "file": "redraw/foes2.js",
+        "sha256": "327809ea4b19c2ebde14a69a1976d9d5208ecaf7bdcbbcd70d7eb62f49b11c6f",
+        "safeFactories": [
+          "bakeGrub",
+          "bakeDrone",
+          "bakeGreatHound",
+          "bakeTroll"
+        ],
+        "privateData": [],
+        "publicOrEscapedData": []
+      },
+      {
+        "file": "redraw/fields_foes.js",
+        "sha256": "d52b3380ac21ff91e92c8e5115be3744904ae52328efc87612365fcdba17ae17",
+        "safeFactories": [
+          "bakeScarecrow",
+          "bakeRook",
+          "bakeFarmhand",
+          "bakePumpkin",
+          "bakeMarshlight",
+          "bakeHaunt",
+          "bakeBoo",
+          "bakeFarmGhosts"
+        ],
+        "privateData": [
+          "D2",
+          "LX",
+          "LY",
+          "LZ",
+          "R0",
+          "SCP",
+          "SCARECROW_F",
+          "RKP",
+          "ROOK_F",
+          "GH",
+          "GHP",
+          "FARMHAND_F",
+          "PKP",
+          "PUMPKIN_F",
+          "GG",
+          "MARSHLIGHT_F",
+          "HTP",
+          "HAUNT_F",
+          "BOOP",
+          "BOO_F",
+          "FG"
+        ],
+        "publicOrEscapedData": [
+          "SCARECROW_F",
+          "ROOK_F",
+          "FARMHAND_F",
+          "PUMPKIN_F",
+          "MARSHLIGHT_F",
+          "HAUNT_F",
+          "BOO_F"
+        ]
+      },
+      {
+        "file": "redraw/strawking.js",
+        "sha256": "fdacae9348c9e19324553077690a2f0f0b569957a98bd68ecb4a67cf5c930415",
+        "safeFactories": [
+          "bakeStrawKing",
+          "bakePloughman",
+          "bakePloughHead"
+        ],
+        "privateData": [
+          "KP",
+          "STRAW",
+          "STRAW_F",
+          "COAT",
+          "COAT_F",
+          "TWIG",
+          "CROW_PERCH",
+          "CROW_FLY",
+          "CROW_FLY2",
+          "CROW_DEAD",
+          "HUSK",
+          "HG",
+          "HC",
+          "STRAWKING_F",
+          "PP",
+          "PLOUGHMAN_F"
+        ],
+        "publicOrEscapedData": [
+          "STRAWKING_F",
+          "PLOUGHMAN_F"
+        ]
+      },
+      {
+        "file": "redraw/mage_foes.js",
+        "sha256": "2655f591fdd141189c205058d2a63df536d7d25ddb42bcce376459349acac67c",
+        "safeFactories": [
+          "bakeBroom",
+          "bakeHomunculus",
+          "bakeApprentice"
+        ],
+        "privateData": [
+          "VIOLET",
+          "FORM_COL",
+          "BRASS",
+          "STEEL",
+          "LEAF",
+          "SKIN",
+          "R0",
+          "D2",
+          "LX",
+          "LY",
+          "LZ",
+          "HOMUNCULUS_F",
+          "ARCHMAGE_F",
+          "FAMILIAR_F"
+        ],
+        "publicOrEscapedData": [
+          "VIOLET",
+          "FORM_COL",
+          "HOMUNCULUS_F",
+          "ARCHMAGE_F",
+          "FAMILIAR_F"
+        ]
+      },
+      {
+        "file": "redraw/tome.js",
+        "sha256": "9b7200e9b1aaaac2344d780f0c3e7b57a059c942c9a0f903f0e24ec2bd60c6a8",
+        "safeFactories": [
+          "bakeTome"
+        ],
+        "privateData": [
+          "C"
+        ],
+        "publicOrEscapedData": []
+      },
+      {
+        "file": "redraw/prince.js",
+        "sha256": "ce297474b5976806733c7176a3e6678f5ba9c97a7d5c5e06a51ea9535c8b7546",
+        "safeFactories": [
+          "bakeBuriedPrince",
+          "bakeCourtier",
+          "bakeSarcophagus",
+          "bakeCrownSpin"
+        ],
+        "privateData": [
+          "PR",
+          "SKIN",
+          "SKIN_F",
+          "COAT",
+          "COAT_F",
+          "HG",
+          "HC",
+          "HEAD_S",
+          "PRINCE_F",
+          "CP"
+        ],
+        "publicOrEscapedData": [
+          "PRINCE_F"
+        ]
+      },
+      {
+        "file": "redraw/waymeet.js",
+        "sha256": "a8df7755630025a897761be5a795258203139d6078ed586a73696bf8b1e021d6",
+        "safeFactories": [
+          "bakePaladinBoss",
+          "bakeLancer",
+          "bakeLancerHorse",
+          "bakeGuests",
+          "bakeDrunk",
+          "bakeTownSpikes",
+          "bakeBarkeep"
+        ],
+        "privateData": [],
+        "publicOrEscapedData": []
+      },
+      {
+        "file": "redraw/pirates.js",
+        "sha256": "59d6e78e1a147726ac34425f77f170af1ca2fb846c607bd9bbf010a3eb4688a8",
+        "safeFactories": [
+          "bakeCutlass",
+          "bakeBoarder",
+          "bakeMarine",
+          "bakeBosun",
+          "bakeLookout",
+          "bakeCaptain",
+          "bakeQuarter"
+        ],
+        "privateData": [
+          "PR",
+          "TRILL",
+          "GRAP_U",
+          "GRAP_D",
+          "COIL"
+        ],
+        "publicOrEscapedData": []
+      },
+      {
+        "file": "redraw/reef.js",
+        "sha256": "6ba1de63f3ea09735cc7c924c7a5f0faf9b1152acc895e296a192a1e4beedc33",
+        "safeFactories": [
+          "bakeSailor",
+          "bakeMerrowSpear",
+          "bakeNetter",
+          "bakeNet",
+          "bakeUrchin",
+          "bakeAngler",
+          "bakePetrel",
+          "bakeReefmaw"
+        ],
+        "privateData": [
+          "RF",
+          "MF",
+          "UR",
+          "AN",
+          "PT",
+          "MW"
+        ],
+        "publicOrEscapedData": []
+      },
+      {
+        "file": "redraw/shore.js",
+        "sha256": "2c92d0d625094b1a46ffc042a7a338eaccc67a1b5606ce93f67c2e453e07fea1",
+        "safeFactories": [
+          "bakeTurtle",
+          "bakeEel",
+          "bakeHeronFoe",
+          "bakeCrab"
+        ],
+        "privateData": [
+          "TU",
+          "EE",
+          "HE",
+          "CR"
+        ],
+        "publicOrEscapedData": []
+      },
+      {
+        "file": "redraw/wildwood.js",
+        "sha256": "bab14bac56e48deb515c1c4ce2cd2847c174c9a659c7ddc91bda93d806abff1c",
+        "safeFactories": [
+          "bakeBadger",
+          "bakeGar",
+          "bakeBoar",
+          "bakePineMoth"
+        ],
+        "privateData": [
+          "BA",
+          "GA",
+          "BO",
+          "MO"
+        ],
+        "publicOrEscapedData": []
+      },
+      {
+        "file": "redraw/tidebound.js",
+        "sha256": "43d6fd36e51beef70ce39c25aee0719f8faba0aab67fd112b75effbc30899bd0",
+        "safeFactories": [
+          "bakeScout",
+          "bakeSiren",
+          "bakeTideguard",
+          "bakeHerald",
+          "bakeFisher",
+          "bakeFisherIcon"
+        ],
+        "privateData": [
+          "TB",
+          "FP"
+        ],
+        "publicOrEscapedData": []
+      },
+      {
+        "file": "redraw/soldiers.js",
+        "sha256": "8bff24188b99e8f17ac0b720fe0e5ff3ce5d3b8ee011bd63316c49207194727b",
+        "safeFactories": [
+          "bakeSoldier",
+          "bakeJavelineer",
+          "bakeHeavyKnight"
+        ],
+        "privateData": [
+          "SOL",
+          "JAV",
+          "HK"
+        ],
+        "publicOrEscapedData": []
+      },
+      {
+        "file": "redraw/city.js",
+        "sha256": "77799a19c7388efa16e1706d87f231fdaf4857b22bc3b2ca8e9b6d02d2666a01",
+        "safeFactories": [
+          "bakeWatch",
+          "bakeLampreeve",
+          "bakeTollmaster"
+        ],
+        "privateData": [
+          "CY"
+        ],
+        "publicOrEscapedData": []
+      },
+      {
+        "file": "redraw/sea_wildlife.js",
+        "sha256": "b5591225f7bee8a38b273f54fb94c077a976147b698ca9634614c7a7c1961d92",
+        "safeFactories": [
+          "bakePuffer",
+          "bakeJellyfish",
+          "bakeLamprey",
+          "bakeManta"
+        ],
+        "privateData": [
+          "PF",
+          "JF",
+          "LP",
+          "MT"
+        ],
+        "publicOrEscapedData": []
+      },
+      {
+        "file": "redraw/masthead.js",
+        "sha256": "41156f124cf1270be0e316c7da3ba84bb885f7cfc91a03680230eb404c1b018b",
+        "safeFactories": [
+          "bakeMasthead"
+        ],
+        "privateData": [
+          "MP"
+        ],
+        "publicOrEscapedData": []
+      },
+      {
+        "file": "redraw/kraken.js",
+        "sha256": "abf3a6c7796751a4c472b00460f73d7236f673f01b1ca77e36c0941f8f6d04e4",
+        "safeFactories": [
+          "bakeKrakenHead",
+          "bakeKrakenArms",
+          "bakeKrakenEye",
+          "bakeKraken",
+          "bakeFeeler",
+          "bakeFarCauseway",
+          "bakeMidCauseway",
+          "bakeLeviathan",
+          "bakeKrakenFar",
+          "bakeCargo",
+          "bakeTideBoat",
+          "bakeSeal",
+          "bakeDeckBoard",
+          "bakeBreaker",
+          "bakeLampRoom",
+          "bakeWaystone",
+          "bakeWayShrine",
+          "bakeBrokenArch",
+          "bakeDrownedTree",
+          "bakeFencePosts",
+          "bakeTribute",
+          "bakeTideBell"
+        ],
+        "privateData": [
+          "KP",
+          "RAMP",
+          "D2",
+          "LX",
+          "LY",
+          "LZ",
+          "ARMRAMP",
+          "SEA",
+          "SIL",
+          "ST"
+        ],
+        "publicOrEscapedData": []
+      },
+      {
+        "file": "redraw/queue_bosses.js",
+        "sha256": "e22c1c5cd0474f15a1aa2c8a9bf878723cd6f73f4b6a8a3b58fec3b23d8a281e",
+        "safeFactories": [
+          "bakeGraveWarden",
+          "bakeHedgeWarden",
+          "bakeGateGargoyle"
+        ],
+        "privateData": [
+          "GW",
+          "HW",
+          "GG",
+          "GARG_K",
+          "FIRE"
+        ],
+        "publicOrEscapedData": []
+      },
+      {
+        "file": "redraw/false_abbot.js",
+        "sha256": "350daf3baf0375b973ae1b994ea25fc7a04c57f58e284af8a442707639c94274",
+        "safeFactories": [
+          "bakeFalseAbbot"
+        ],
+        "privateData": [
+          "A"
+        ],
+        "publicOrEscapedData": []
+      },
+      {
+        "file": "redraw/winchmaster.js",
+        "sha256": "bb919c3bc3af5db1dc3245d04b4ef84107428790016c47fec5a098fcd599e22c",
+        "safeFactories": [
+          "bakeWinchmaster",
+          "bakeWinchHook"
+        ],
+        "privateData": [
+          "C"
+        ],
+        "publicOrEscapedData": []
+      },
+      {
+        "file": "redraw/hunt.js",
+        "sha256": "f91fc6516357d033bd6fef5a133afa9c77bda8a74221ad870b27226e60547323",
+        "safeFactories": [
+          "bakeHoundMaster"
+        ],
+        "privateData": [],
+        "publicOrEscapedData": []
+      },
+      {
+        "file": "redraw/fair_folk.js",
+        "sha256": "deceb0c1d18c7fa03906f9c1d80216ae8d7f54c58da3a50f97f6e6050f18eb8b",
+        "safeFactories": [
+          "bakeStrongman"
+        ],
+        "privateData": [
+          "S"
+        ],
+        "publicOrEscapedData": []
+      },
+      {
+        "file": "redraw/caravan_bandits.js",
+        "sha256": "d8de5d9e1c18446083203879e6ea5a35e9755feef95236ac10d28cbad6f5792f",
+        "safeFactories": [
+          "bakeCutthroat",
+          "bakeSlinger",
+          "bakeSlingStone",
+          "bakeAmbusher"
+        ],
+        "privateData": [
+          "CT",
+          "SL",
+          "AM",
+          "BANDIT_ART"
+        ],
+        "publicOrEscapedData": [
+          "BANDIT_ART"
+        ]
+      },
+      {
+        "file": "redraw/welltown_art.js",
+        "sha256": "ebc271ae08f0aa556ad10cabd4151ade80b99d78b2d721e597495c56d4fae28d",
+        "safeFactories": [
+          "bakeBanditBowman",
+          "bakeWaterThief",
+          "bakeSkinIcon"
+        ],
+        "privateData": [
+          "BW",
+          "DYE"
+        ],
+        "publicOrEscapedData": []
+      },
+      {
+        "file": "redraw/gang_leader_art.js",
+        "sha256": "64b28c8f02e5e5c5ae25bbfb7e614ccf056495805a25c901d2bbc9d9e1f3c5a9",
+        "safeFactories": [
+          "bakeGangLeader"
+        ],
+        "privateData": [
+          "GL_F",
+          "C"
+        ],
+        "publicOrEscapedData": [
+          "GL_F"
+        ]
+      },
+      {
+        "file": "redraw/desert_foes.js",
+        "sha256": "a4325a54ca8c307883a123dfbe820aa70a86b2182d646f26f7d25e32dedb6b4a",
+        "safeFactories": [
+          "bakeScorpion",
+          "bakeVulture",
+          "bakeSandGoblin",
+          "bakeDuneWorm",
+          "bakeDuneWormRipple",
+          "bakeDuneWormLunge"
+        ],
+        "privateData": [
+          "SC",
+          "VU",
+          "SG",
+          "DW",
+          "CANVAS",
+          "CANVAS_D",
+          "DW_F"
+        ],
+        "publicOrEscapedData": [
+          "DW_F"
+        ]
+      },
+      {
+        "file": "redraw/rootway_art.js",
+        "sha256": "229778d288db1be4c25a42d2c8d171f2901fabcf87e2b6b314d28fb9f3694d18",
+        "safeFactories": [
+          "bakeTrophyHunter",
+          "bakeRootSkins",
+          "bakeHuntmasterCard",
+          "bakeTagIcon"
+        ],
+        "privateData": [
+          "K",
+          "SCOUT_MAP",
+          "HK"
+        ],
+        "publicOrEscapedData": []
+      },
+      {
+        "file": "redraw/desert_foes2.js",
+        "sha256": "fde606a4f8a84b564bddfcee09920ff91687369b34b0a35b784c164a3aef414f",
+        "safeFactories": [
+          "bakeFireScorpion",
+          "bakeVenomScorpion",
+          "bakeSandworm",
+          "bakeShieldGuard",
+          "bakeDynamiter",
+          "bakeCharge"
+        ],
+        "privateData": [
+          "SW",
+          "MN"
+        ],
+        "publicOrEscapedData": []
+      },
+      {
+        "file": "redraw/redgorge_art.js",
+        "sha256": "fe9f0da242e5c0097c3394c2f165634a1313a40da8760f6d563e9b856a73dd03",
+        "safeFactories": [
+          "bakeRaptor",
+          "bakeFeatherIcon"
+        ],
+        "privateData": [
+          "RP",
+          "CRAB_F",
+          "CR"
+        ],
+        "publicOrEscapedData": [
+          "CRAB_F"
+        ]
+      },
+      {
+        "file": "redraw/matriarch_young.js",
+        "sha256": "f632fa16df373e9d8ce5e67e10842dab12ae424c2630b4d1b6d689249f165d57",
+        "safeFactories": [
+          "bakeYoung"
+        ],
+        "privateData": [
+          "Y"
+        ],
+        "publicOrEscapedData": []
+      }
+    ],
+    "excluded": [
+      {
+        "file": "redraw/paladin_art.js",
+        "reasons": [
+          "public mutable input dependency"
+        ]
+      },
+      {
+        "file": "redraw/sexton.js",
+        "reasons": [
+          "public mutable input dependency"
+        ]
+      },
+      {
+        "file": "redraw/undercrown_skins.js",
+        "reasons": [
+          "public mutable input dependency"
+        ]
+      },
+      {
+        "file": "redraw/variety_skins.js",
+        "reasons": [
+          "public mutable input dependency"
+        ]
+      }
+    ],
+    "rejects": [],
+    "exactUndo": true,
+    "lineLocationsPreservedBeforeReadOnlyProbe": true,
+    "onlyVerifiedFixedPrimitiveInputs": true,
+    "heroGearWeaponAndMutableCharsExcluded": true,
+    "noOtherPrototypeCombined": true,
+    "originalStartupOwnershipRestoredAroundDeferredCalls": true,
+    "privatePaletteFreezeProofPending": true,
+    "originalPublicDescriptorsAndAliasesRequireProof": true,
+    "adopted": false,
+    "noLayoutMemoryCampaign425Or40FpsPass": true,
+    "candidateUiSha256": "def29ae7f0ea4c55ab29e3652a351d0d03c90a4c1c5f7f83ee39692c21c3061f",
+    "originalUiSha256": "6182574fc740afab14d0dfa4862b55f676d9c85df04f87b8fe2053648719ecce",
+    "diagnosticProbeRemoved": true,
+    "readOnlyProbeRemovalHasNoGameStateOrPaintEffects": true,
+    "transferFactoryKeysExactlyMatchTask5": true,
+    "task5ScopedProof": "outputs/receipts/deferred-pure-sprites-oct26.json",
+    "sameOriginalArtAndPxBytes": true,
+    "uiCorrection": {
+      "file": "src/puppeteer-hands.js",
+      "before": "R(S.y0 + 26 - cy)",
+      "after": "Math.max(26, R(S.y0 + 26 - cy))",
+      "originalSha256": "6182574fc740afab14d0dfa4862b55f676d9c85df04f87b8fe2053648719ecce",
+      "candidateSha256": "def29ae7f0ea4c55ab29e3652a351d0d03c90a4c1c5f7f83ee39692c21c3061f",
+      "onlyVerticalTitleAnchorChanged": true,
+      "noTextAlphaTimerSceneMechanicsOrCameraChange": true
+    },
+    "noOtherCacheVignetteOrRecorderPrototypeCombined": true,
+    "sourceSpecificFullProofPending": true
+  },
+  "files": [
+    {
+      "file": "src/main.js",
+      "originalSha256": "1573d2d744b753e5611b021d97b70b013f7e2e6773640b707ae85d5ab5dae594",
+      "candidateSha256": "106e070279b09f6a15ecb3ee8ab57b1fb839dc3fe5c6697b56956df499e8d84b",
+      "edits": [
+        {
+          "start": 3066470,
+          "end": 3066494,
+          "before": "DFA.bakeDuneWormRipple()",
+          "after": "deferredPureSpriteCall(DFA.bakeDuneWormRipple,DFA,[])"
+        },
+        {
+          "start": 3066429,
+          "end": 3066447,
+          "before": "DFA.bakeDuneWorm()",
+          "after": "deferredPureSpriteCall(DFA.bakeDuneWorm,DFA,[])"
+        },
+        {
+          "start": 3032148,
+          "end": 3032159,
+          "before": "bakeYoung()",
+          "after": "deferredPureSpriteCall(bakeYoung,void 0,[])"
+        },
+        {
+          "start": 3032112,
+          "end": 3032128,
+          "before": "RGA.bakeRaptor()",
+          "after": "deferredPureSpriteCall(RGA.bakeRaptor,RGA,[])"
+        },
+        {
+          "start": 3028603,
+          "end": 3028623,
+          "before": "DF2A.bakeDynamiter()",
+          "after": "deferredPureSpriteCall(DF2A.bakeDynamiter,DF2A,[])"
+        },
+        {
+          "start": 3028563,
+          "end": 3028585,
+          "before": "DF2A.bakeShieldGuard()",
+          "after": "deferredPureSpriteCall(DF2A.bakeShieldGuard,DF2A,[])"
+        },
+        {
+          "start": 3028524,
+          "end": 3028543,
+          "before": "DF2A.bakeSandworm()",
+          "after": "deferredPureSpriteCall(DF2A.bakeSandworm,DF2A,[])"
+        },
+        {
+          "start": 3027846,
+          "end": 3027870,
+          "before": "RWA.bakeHuntmasterCard()",
+          "after": "deferredPureSpriteCall(RWA.bakeHuntmasterCard,RWA,[])"
+        },
+        {
+          "start": 3027558,
+          "end": 3027580,
+          "before": "RWA.bakeTrophyHunter()",
+          "after": "deferredPureSpriteCall(RWA.bakeTrophyHunter,RWA,[])"
+        },
+        {
+          "start": 3027222,
+          "end": 3027242,
+          "before": "DFA.bakeSandGoblin()",
+          "after": "deferredPureSpriteCall(DFA.bakeSandGoblin,DFA,[])"
+        },
+        {
+          "start": 3027189,
+          "end": 3027206,
+          "before": "DFA.bakeVulture()",
+          "after": "deferredPureSpriteCall(DFA.bakeVulture,DFA,[])"
+        },
+        {
+          "start": 3027155,
+          "end": 3027173,
+          "before": "DFA.bakeScorpion()",
+          "after": "deferredPureSpriteCall(DFA.bakeScorpion,DFA,[])"
+        },
+        {
+          "start": 3026845,
+          "end": 3026861,
+          "before": "bakeGangLeader()",
+          "after": "deferredPureSpriteCall(bakeGangLeader,void 0,[])"
+        },
+        {
+          "start": 3026804,
+          "end": 3026826,
+          "before": "WTA.bakeBanditBowman()",
+          "after": "deferredPureSpriteCall(WTA.bakeBanditBowman,WTA,[])"
+        },
+        {
+          "start": 3026570,
+          "end": 3026587,
+          "before": "CB.bakeAmbusher()",
+          "after": "deferredPureSpriteCall(CB.bakeAmbusher,CB,[])"
+        },
+        {
+          "start": 3026537,
+          "end": 3026553,
+          "before": "CB.bakeSlinger()",
+          "after": "deferredPureSpriteCall(CB.bakeSlinger,CB,[])"
+        },
+        {
+          "start": 3026503,
+          "end": 3026521,
+          "before": "CB.bakeCutthroat()",
+          "after": "deferredPureSpriteCall(CB.bakeCutthroat,CB,[])"
+        },
+        {
+          "start": 3022610,
+          "end": 3022629,
+          "before": "FFK.bakeStrongman()",
+          "after": "deferredPureSpriteCall(FFK.bakeStrongman,FFK,[])"
+        },
+        {
+          "start": 3022543,
+          "end": 3022559,
+          "before": "bakeDrunk('shy')",
+          "after": "deferredPureSpriteCall(bakeDrunk,void 0,['shy'])"
+        },
+        {
+          "start": 207106,
+          "end": 207123,
+          "before": "bakeHoundMaster()",
+          "after": "deferredPureSpriteCall(bakeHoundMaster,void 0,[])"
+        },
+        {
+          "start": 206123,
+          "end": 206141,
+          "before": "bakeGateGargoyle()",
+          "after": "deferredPureSpriteCall(bakeGateGargoyle,void 0,[])"
+        },
+        {
+          "start": 206062,
+          "end": 206079,
+          "before": "bakeHedgeWarden()",
+          "after": "deferredPureSpriteCall(bakeHedgeWarden,void 0,[])"
+        },
+        {
+          "start": 206025,
+          "end": 206042,
+          "before": "bakeWinchmaster()",
+          "after": "deferredPureSpriteCall(bakeWinchmaster,void 0,[])"
+        },
+        {
+          "start": 205989,
+          "end": 206005,
+          "before": "bakeFalseAbbot()",
+          "after": "deferredPureSpriteCall(bakeFalseAbbot,void 0,[])"
+        },
+        {
+          "start": 205958,
+          "end": 205975,
+          "before": "bakeGraveWarden()",
+          "after": "deferredPureSpriteCall(bakeGraveWarden,void 0,[])"
+        },
+        {
+          "start": 205829,
+          "end": 205845,
+          "before": "KRA.bakeFeeler()",
+          "after": "deferredPureSpriteCall(KRA.bakeFeeler,KRA,[])"
+        },
+        {
+          "start": 205798,
+          "end": 205814,
+          "before": "KRA.bakeKraken()",
+          "after": "deferredPureSpriteCall(KRA.bakeKraken,KRA,[])"
+        },
+        {
+          "start": 205769,
+          "end": 205783,
+          "before": "bakeMasthead()",
+          "after": "deferredPureSpriteCall(bakeMasthead,void 0,[])"
+        },
+        {
+          "start": 204760,
+          "end": 204771,
+          "before": "bakeManta()",
+          "after": "deferredPureSpriteCall(bakeManta,void 0,[])"
+        },
+        {
+          "start": 204733,
+          "end": 204746,
+          "before": "bakeLamprey()",
+          "after": "deferredPureSpriteCall(bakeLamprey,void 0,[])"
+        },
+        {
+          "start": 204702,
+          "end": 204717,
+          "before": "bakeJellyfish()",
+          "after": "deferredPureSpriteCall(bakeJellyfish,void 0,[])"
+        },
+        {
+          "start": 204676,
+          "end": 204688,
+          "before": "bakePuffer()",
+          "after": "deferredPureSpriteCall(bakePuffer,void 0,[])"
+        },
+        {
+          "start": 204645,
+          "end": 204661,
+          "before": "bakeTollmaster()",
+          "after": "deferredPureSpriteCall(bakeTollmaster,void 0,[])"
+        },
+        {
+          "start": 204611,
+          "end": 204626,
+          "before": "bakeLampreeve()",
+          "after": "deferredPureSpriteCall(bakeLampreeve,void 0,[])"
+        },
+        {
+          "start": 204582,
+          "end": 204593,
+          "before": "bakeWatch()",
+          "after": "deferredPureSpriteCall(bakeWatch,void 0,[])"
+        },
+        {
+          "start": 203883,
+          "end": 203900,
+          "before": "bakeMerrowSpear()",
+          "after": "deferredPureSpriteCall(bakeMerrowSpear,void 0,[])"
+        },
+        {
+          "start": 203617,
+          "end": 203634,
+          "before": "bakeHeavyKnight()",
+          "after": "deferredPureSpriteCall(bakeHeavyKnight,void 0,[])"
+        },
+        {
+          "start": 203587,
+          "end": 203603,
+          "before": "bakeJavelineer()",
+          "after": "deferredPureSpriteCall(bakeJavelineer,void 0,[])"
+        },
+        {
+          "start": 203535,
+          "end": 203548,
+          "before": "bakeSoldier()",
+          "after": "deferredPureSpriteCall(bakeSoldier,void 0,[])"
+        },
+        {
+          "start": 203503,
+          "end": 203519,
+          "before": "bakeFisherIcon()",
+          "after": "deferredPureSpriteCall(bakeFisherIcon,void 0,[])"
+        },
+        {
+          "start": 203427,
+          "end": 203439,
+          "before": "bakeHerald()",
+          "after": "deferredPureSpriteCall(bakeHerald,void 0,[])"
+        },
+        {
+          "start": 203397,
+          "end": 203412,
+          "before": "bakeTideguard()",
+          "after": "deferredPureSpriteCall(bakeTideguard,void 0,[])"
+        },
+        {
+          "start": 203368,
+          "end": 203379,
+          "before": "bakeSiren()",
+          "after": "deferredPureSpriteCall(bakeSiren,void 0,[])"
+        },
+        {
+          "start": 203343,
+          "end": 203354,
+          "before": "bakeScout()",
+          "after": "deferredPureSpriteCall(bakeScout,void 0,[])"
+        },
+        {
+          "start": 203319,
+          "end": 203329,
+          "before": "bakeCrab()",
+          "after": "deferredPureSpriteCall(bakeCrab,void 0,[])"
+        },
+        {
+          "start": 203297,
+          "end": 203306,
+          "before": "bakeGar()",
+          "after": "deferredPureSpriteCall(bakeGar,void 0,[])"
+        },
+        {
+          "start": 203116,
+          "end": 203130,
+          "before": "bakePineMoth()",
+          "after": "deferredPureSpriteCall(bakePineMoth,void 0,[])"
+        },
+        {
+          "start": 203089,
+          "end": 203099,
+          "before": "bakeBoar()",
+          "after": "deferredPureSpriteCall(bakeBoar,void 0,[])"
+        },
+        {
+          "start": 203064,
+          "end": 203076,
+          "before": "bakeBadger()",
+          "after": "deferredPureSpriteCall(bakeBadger,void 0,[])"
+        },
+        {
+          "start": 203035,
+          "end": 203049,
+          "before": "bakeHeronFoe()",
+          "after": "deferredPureSpriteCall(bakeHeronFoe,void 0,[])"
+        },
+        {
+          "start": 203009,
+          "end": 203018,
+          "before": "bakeEel()",
+          "after": "deferredPureSpriteCall(bakeEel,void 0,[])"
+        },
+        {
+          "start": 202962,
+          "end": 202974,
+          "before": "bakeTurtle()",
+          "after": "deferredPureSpriteCall(bakeTurtle,void 0,[])"
+        },
+        {
+          "start": 202934,
+          "end": 202947,
+          "before": "bakeReefmaw()",
+          "after": "deferredPureSpriteCall(bakeReefmaw,void 0,[])"
+        },
+        {
+          "start": 202906,
+          "end": 202918,
+          "before": "bakePetrel()",
+          "after": "deferredPureSpriteCall(bakePetrel,void 0,[])"
+        },
+        {
+          "start": 202879,
+          "end": 202891,
+          "before": "bakeAngler()",
+          "after": "deferredPureSpriteCall(bakeAngler,void 0,[])"
+        },
+        {
+          "start": 202852,
+          "end": 202864,
+          "before": "bakeUrchin()",
+          "after": "deferredPureSpriteCall(bakeUrchin,void 0,[])"
+        },
+        {
+          "start": 202828,
+          "end": 202837,
+          "before": "bakeNet()",
+          "after": "deferredPureSpriteCall(bakeNet,void 0,[])"
+        },
+        {
+          "start": 202801,
+          "end": 202813,
+          "before": "bakeNetter()",
+          "after": "deferredPureSpriteCall(bakeNetter,void 0,[])"
+        },
+        {
+          "start": 202774,
+          "end": 202786,
+          "before": "bakeSailor()",
+          "after": "deferredPureSpriteCall(bakeSailor,void 0,[])"
+        },
+        {
+          "start": 202746,
+          "end": 202759,
+          "before": "bakeQuarter()",
+          "after": "deferredPureSpriteCall(bakeQuarter,void 0,[])"
+        },
+        {
+          "start": 202717,
+          "end": 202730,
+          "before": "bakeCaptain()",
+          "after": "deferredPureSpriteCall(bakeCaptain,void 0,[])"
+        },
+        {
+          "start": 202659,
+          "end": 202672,
+          "before": "bakeLookout()",
+          "after": "deferredPureSpriteCall(bakeLookout,void 0,[])"
+        },
+        {
+          "start": 202609,
+          "end": 202620,
+          "before": "bakeBosun()",
+          "after": "deferredPureSpriteCall(bakeBosun,void 0,[])"
+        },
+        {
+          "start": 202583,
+          "end": 202595,
+          "before": "bakeMarine()",
+          "after": "deferredPureSpriteCall(bakeMarine,void 0,[])"
+        },
+        {
+          "start": 202555,
+          "end": 202568,
+          "before": "bakeBoarder()",
+          "after": "deferredPureSpriteCall(bakeBoarder,void 0,[])"
+        },
+        {
+          "start": 202526,
+          "end": 202539,
+          "before": "bakeCutlass()",
+          "after": "deferredPureSpriteCall(bakeCutlass,void 0,[])"
+        },
+        {
+          "start": 202227,
+          "end": 202237,
+          "before": "bakeGrub()",
+          "after": "deferredPureSpriteCall(bakeGrub,void 0,[])"
+        },
+        {
+          "start": 202044,
+          "end": 202055,
+          "before": "bakeDrunk()",
+          "after": "deferredPureSpriteCall(bakeDrunk,void 0,[])"
+        },
+        {
+          "start": 202017,
+          "end": 202030,
+          "before": "bakeBarkeep()",
+          "after": "deferredPureSpriteCall(bakeBarkeep,void 0,[])"
+        },
+        {
+          "start": 201989,
+          "end": 202001,
+          "before": "bakeGuests()",
+          "after": "deferredPureSpriteCall(bakeGuests,void 0,[])"
+        },
+        {
+          "start": 201957,
+          "end": 201974,
+          "before": "bakeLancerHorse()",
+          "after": "deferredPureSpriteCall(bakeLancerHorse,void 0,[])"
+        },
+        {
+          "start": 201921,
+          "end": 201937,
+          "before": "bakeLancer(true)",
+          "after": "deferredPureSpriteCall(bakeLancer,void 0,[true])"
+        },
+        {
+          "start": 201886,
+          "end": 201903,
+          "before": "bakeLancer(false)",
+          "after": "deferredPureSpriteCall(bakeLancer,void 0,[false])"
+        },
+        {
+          "start": 201854,
+          "end": 201871,
+          "before": "bakePaladinBoss()",
+          "after": "deferredPureSpriteCall(bakePaladinBoss,void 0,[])"
+        },
+        {
+          "start": 200935,
+          "end": 200949,
+          "before": "bakeCourtier()",
+          "after": "deferredPureSpriteCall(bakeCourtier,void 0,[])"
+        },
+        {
+          "start": 200900,
+          "end": 200918,
+          "before": "bakeBuriedPrince()",
+          "after": "deferredPureSpriteCall(bakeBuriedPrince,void 0,[])"
+        },
+        {
+          "start": 200444,
+          "end": 200460,
+          "before": "bakeGreatHound()",
+          "after": "deferredPureSpriteCall(bakeGreatHound,void 0,[])"
+        },
+        {
+          "start": 200414,
+          "end": 200425,
+          "before": "bakeTroll()",
+          "after": "deferredPureSpriteCall(bakeTroll,void 0,[])"
+        },
+        {
+          "start": 200288,
+          "end": 200299,
+          "before": "bakeHarpy()",
+          "after": "deferredPureSpriteCall(bakeHarpy,void 0,[])"
+        },
+        {
+          "start": 200121,
+          "end": 200131,
+          "before": "bakeTome()",
+          "after": "deferredPureSpriteCall(bakeTome,void 0,[])"
+        },
+        {
+          "start": 200089,
+          "end": 200108,
+          "before": "MF.bakeApprentice()",
+          "after": "deferredPureSpriteCall(MF.bakeApprentice,MF,[])"
+        },
+        {
+          "start": 199871,
+          "end": 199890,
+          "before": "MF.bakeHomunculus()",
+          "after": "deferredPureSpriteCall(MF.bakeHomunculus,MF,[])"
+        },
+        {
+          "start": 199756,
+          "end": 199770,
+          "before": "MF.bakeBroom()",
+          "after": "deferredPureSpriteCall(MF.bakeBroom,MF,[])"
+        },
+        {
+          "start": 199458,
+          "end": 199477,
+          "before": "SK.bakePloughHead()",
+          "after": "deferredPureSpriteCall(SK.bakePloughHead,SK,[])"
+        },
+        {
+          "start": 199421,
+          "end": 199439,
+          "before": "SK.bakeStrawKing()",
+          "after": "deferredPureSpriteCall(SK.bakeStrawKing,SK,[])"
+        },
+        {
+          "start": 199385,
+          "end": 199403,
+          "before": "SK.bakePloughman()",
+          "after": "deferredPureSpriteCall(SK.bakePloughman,SK,[])"
+        },
+        {
+          "start": 199242,
+          "end": 199254,
+          "before": "FF.bakeBoo()",
+          "after": "deferredPureSpriteCall(FF.bakeBoo,FF,[])"
+        },
+        {
+          "start": 199216,
+          "end": 199230,
+          "before": "FF.bakeHaunt()",
+          "after": "deferredPureSpriteCall(FF.bakeHaunt,FF,[])"
+        },
+        {
+          "start": 199183,
+          "end": 199202,
+          "before": "FF.bakeMarshlight()",
+          "after": "deferredPureSpriteCall(FF.bakeMarshlight,FF,[])"
+        },
+        {
+          "start": 199148,
+          "end": 199164,
+          "before": "FF.bakePumpkin()",
+          "after": "deferredPureSpriteCall(FF.bakePumpkin,FF,[])"
+        },
+        {
+          "start": 199115,
+          "end": 199132,
+          "before": "FF.bakeFarmhand()",
+          "after": "deferredPureSpriteCall(FF.bakeFarmhand,FF,[])"
+        },
+        {
+          "start": 199085,
+          "end": 199098,
+          "before": "FF.bakeRook()",
+          "after": "deferredPureSpriteCall(FF.bakeRook,FF,[])"
+        },
+        {
+          "start": 199054,
+          "end": 199072,
+          "before": "FF.bakeScarecrow()",
+          "after": "deferredPureSpriteCall(FF.bakeScarecrow,FF,[])"
+        },
+        {
+          "start": 198938,
+          "end": 198938,
+          "before": "",
+          "after": ",withStartupBakeOwnership)"
+        },
+        {
+          "start": 198747,
+          "end": 198758,
+          "before": "bakeDrone()",
+          "after": "deferredPureSpriteCall(bakeDrone,void 0,[])"
+        },
+        {
+          "start": 198677,
+          "end": 198688,
+          "before": "bakeChief()",
+          "after": "deferredPureSpriteCall(bakeChief,void 0,[])"
+        },
+        {
+          "start": 198579,
+          "end": 198590,
+          "before": "bakeHound()",
+          "after": "deferredPureSpriteCall(bakeHound,void 0,[])"
+        },
+        {
+          "start": 198492,
+          "end": 198510,
+          "before": "bakeHopper('blue')",
+          "after": "deferredPureSpriteCall(bakeHopper,void 0,['blue'])"
+        },
+        {
+          "start": 198457,
+          "end": 198477,
+          "before": "bakeHopper('yellow')",
+          "after": "deferredPureSpriteCall(bakeHopper,void 0,['yellow'])"
+        },
+        {
+          "start": 198421,
+          "end": 198440,
+          "before": "bakeHopper('green')",
+          "after": "deferredPureSpriteCall(bakeHopper,void 0,['green'])"
+        },
+        {
+          "start": 198401,
+          "end": 198411,
+          "before": "bakeFrog()",
+          "after": "deferredPureSpriteCall(bakeFrog,void 0,[])"
+        },
+        {
+          "start": 198360,
+          "end": 198371,
+          "before": "bakeQueen()",
+          "after": "deferredPureSpriteCall(bakeQueen,void 0,[])"
+        },
+        {
+          "start": 198336,
+          "end": 198351,
+          "before": "bakeThornback()",
+          "after": "deferredPureSpriteCall(bakeThornback,void 0,[])"
+        },
+        {
+          "start": 198202,
+          "end": 198202,
+          "before": "",
+          "after": "makeDeferredSpriteCatalogue("
+        },
+        {
+          "start": 0,
+          "end": 25,
+          "before": "import './bug-report.js';",
+          "after": "import './bug-report.js'; import {deferredPureSpriteCall,makeDeferredSpriteCatalogue,deferredSpriteState} from './deferred-pure-sprite-catalogue.js'; import {withStartupBakeOwnership} from './px.js';"
+        }
+      ]
+    },
+    {
+      "file": "src/px.js",
+      "originalSha256": "9d3feee0d3a14e186f3259e7b7a1279b579989a0461de55d594f676f525533ae",
+      "candidateSha256": "99c3ba33703354388c9341f1b0a651396fa9719e2e5191a10ec6a647ead3ea4a",
+      "edits": [
+        {
+          "start": 6561,
+          "end": 6561,
+          "before": "",
+          "after": "\n// Preserve the original startup-art ownership (outside all level bake scopes).\nexport function withStartupBakeOwnership(build){const previous=OWN;OWN=null;try{return build();}finally{OWN=previous;}}\n"
+        }
+      ]
+    },
+    {
+      "file": "src/deferred-pure-sprite-catalogue.js",
+      "newFile": true,
+      "content": "// Only separately verified, fixed-input pure art factories may enter this catalogue.\n// Reflection materializes data properties, preserving the original public descriptors.\nconst factories=new WeakMap();\nconst catalogueStates=new WeakMap();\nexport function deferredPureSprite(build){const token=Object.create(null);factories.set(token,build);return token;}\nexport function deferredPureSpriteCall(fn,receiver,args){return deferredPureSprite(()=>Reflect.apply(fn,receiver,args));}\nexport function deferredSpriteState(catalogue){return catalogueStates.get(catalogue)?.();}\nexport function makeDeferredSpriteCatalogue(target,withOriginalOwnership){\n let proxy,built=0;\n const materialize=key=>{const d=Reflect.getOwnPropertyDescriptor(target,key);if(d&&'value'in d&&factories.has(d.value)){const value=withOriginalOwnership(factories.get(d.value));if(!Reflect.defineProperty(target,key,{...d,value}))throw new TypeError('cannot materialize sprite data');built++;return {...d,value};}return d;};\n const handlers={\n  get(t,key,receiver){materialize(key);return Reflect.get(t,key,receiver);},\n  getOwnPropertyDescriptor(t,key){return materialize(key);},\n  set(t,key,value,receiver){if(receiver===proxy){const d=Reflect.getOwnPropertyDescriptor(t,key);if(d&&'value'in d){if(!d.writable)return false;return Reflect.defineProperty(t,key,{...d,value});}}return Reflect.set(t,key,value,receiver);},\n  defineProperty(t,key,descriptor){const current=Reflect.getOwnPropertyDescriptor(t,key),next={...descriptor};if('value'in next&&factories.has(next.value)&&(next.writable===false||next.configurable===false||(!current&&next.configurable!==true)))next.value=withOriginalOwnership(factories.get(next.value));else if(current&&'value'in current&&factories.has(current.value)&&(next.writable===false||next.configurable===false))materialize(key);return Reflect.defineProperty(t,key,next);}\n };\n proxy=new Proxy(target,handlers);catalogueStates.set(proxy,()=>({built,pending:Reflect.ownKeys(target).filter(key=>{const d=Reflect.getOwnPropertyDescriptor(target,key);return d&&'value'in d&&factories.has(d.value);}).length}));return proxy;\n}\n",
+      "candidateSha256": "c380f16cfb0238cd6f542e1f1cfedcdc18d5dbb516a627ba5e8df3ce092695cd"
+    },
+    {
+      "file": "src/puppeteer-hands.js",
+      "canonicalLineEndings": true,
+      "originalSha256": "6182574fc740afab14d0dfa4862b55f676d9c85df04f87b8fe2053648719ecce",
+      "candidateSha256": "def29ae7f0ea4c55ab29e3652a351d0d03c90a4c1c5f7f83ee39692c21c3061f",
+      "edits": [
+        {
+          "start": 42639,
+          "end": 42656,
+          "before": "R(S.y0 + 26 - cy)",
+          "after": "Math.max(26, R(S.y0 + 26 - cy))"
+        }
+      ]
+    }
+  ]
+}
