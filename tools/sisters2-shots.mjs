@@ -22,7 +22,7 @@ const SHOTS = [
   ['rakeTell', set('diver', 'rakeTell', 0.35, 'P.x+80', 'F', "s.rDir=-1;s.raked=true")],
   ['rake', set('diver', 'rake', 0.4, 'P.x+44', 'F', "s.rDir=-1;s.raked=true;s.hitKey='zz'")],
   /* THE SHRIEKER */
-  ['screamTell', set('shrieker', 'screamTell', 0.5, 'P.x+40', 'F-124', '', '__foc={x:P.x+40,y:F-60}')],
+  ['screamTell', set('shrieker', 'screamTell', 0.5, 'P.x+40', 'F-150', '', '__foc={x:P.x+40,y:F-60}')],
   ['shockTell', set('shrieker', 'shockTell', 0.3, 'P.x+64', 'F-30', "s.shSide=1;s.shX=P.x+64")],
   ['shock', set('shrieker', 'shock', 0.35, 'P.x+64', 'F-30', "")],
   ['teeter', set('shrieker', 'hover', 1, 'G.x0+140', 'F-140', "P.x=G.x0+12;P.ssShove={t:0.9,dir:-1}", '__foc={x:G.x0+150,y:F-40}')],
