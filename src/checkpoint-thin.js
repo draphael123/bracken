@@ -27,7 +27,7 @@ export const CHECK_DROP = {
   hanging: [[13,51],[43,79],[98,107]],   /* (claude/hanging3: the upper boughs' west checkpoint stands at 13 now - the counterweight's shaft took 10-11) */
   spire: [[8,195],[13,117],[21,217],[22,55],[30,99],[72,151]],
   moor: [[25,21],[52,21],[204,21],[296,13],[399,13],[406,13],[494,13]],
-  storm: [[29,35],[76,35],[173,31],[190,31],[258,31],[274,31],[306,31],[351,29],[388,29],[425,29],[503,28],[533,29]],
+  storm: [],   /* (claude/stormhold3) THE OUTER WORKS places one shrine at the end of each named area's exam + one before the boss (A10c) by hand - nothing to drop */
   crown: [[12,95],[196,63],[282,63],[326,63],[395,63],[660,63],[750,51]],
   longwater: [[4,7],[165,27],[319,25],[442,26]],
   reef: [[9,27],[152,17],[272,11],[414,29]],

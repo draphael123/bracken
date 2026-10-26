@@ -31775,7 +31775,7 @@ function drawSwing(cx, cy) {
 // down behind the hills and fades into the haze, and it grows as you cross the level toward it.
 function drawCastleBack(cx, cy) {
   if (!L.castle) return; const art = PROP.castleRange || (PROP.castleRange = ART.bakeCastleRange(5));
-  const k = Math.max(0, Math.min(1, cx / Math.max(1, (LW * TS - VW)))), sc = (0.75 + k * 0.9) * (VH / 180);
+  const k = Math.max(0, Math.min(1, cx / Math.max(1, (LW * TS - VW)))), sc = (0.75 + k * (L.castleGrow || 0.9)) * (VH / 180);   /* (claude/stormhold3: THE OUTER WORKS climb under its walls - L.castleGrow, it comes on faster) */
   const w = Math.round(art.width * sc), h = Math.round(art.height * sc);
   const bx = Math.round(VW * 0.62 - w / 2 - cx * 0.04), by = Math.round(VH * 0.30 - 120 * sc + (bgDY(cy) * 0.04));
   // scaled by a fraction that changes as you walk, nearest-neighbour broke her dithering into crawling checkers and stair-stepped
