@@ -4978,7 +4978,7 @@ function theFlotilla() {
   // the deck between: an overseer and a hand
   ent('bosun', 115, 23, { face: -1 }); ent('cutlass', 116, 23, { face: -1 });
   block(113, 113, 22, 23); block(146, 146, 22, 23);   /* (claude/flotilla3) her mantlets between the wells */
-  ent('sign', 110, 23, { text: 'ON HIS RED FLAG THE SHOT CROSSES HER WELLS AT DECK HEIGHT. STOP A BENCH LOW, OR KEEP BEHIND A MANTLET.' }); ent('signalhoist', 204, 23, { zone: 'hull' });
+  ent('sign', 110, 23, { text: 'ON HIS RED FLAG HIS SHOT SWEEPS HER WELLS. DUCK A BENCH LOW, OR GET BEHIND A MANTLET.' }); ent('signalhoist', 204, 23, { zone: 'hull' });
   ent('deco', 112, 23, { kind: 'coiledCable', v: 1 });
   // TEST: three benches out of step across a wide well, a netter on the far side
   bench(121, 29, 4, 3.6, 0.0); bench(127, 28, 4, 3.2, 0.45); bench(133, 29, 5, 4.0, 0.2);
@@ -5124,18 +5124,18 @@ function theFlotilla() {
   // REMIX 2: ONE GUN, TWO DOORS - fire, and the first door goes; the gun is hot; her men come through it; fire again and the second goes
   ent('cannon', 482, 24, { deck: true, aim: 1 }); door(490); door(500);
   ent('cutlass', 495, 24, { face: -1 }); ent('marine', 497, 24, { face: -1, cnSkin: 'pistoleer' }); ent('signalhoist', 503, 24, { zone: 'doors' });
-  ent('sign', 480, 24, { text: 'ONE GUN, TWO DOORS. YOUR SHOT TAKES THE NEAR ONE - AND WHEN HIS FLAG RUNS RED, HIS SHOT TAKES THE FAR ONE.' });
+  ent('sign', 480, 24, { text: 'ONE GUN, TWO DOORS. YOUR SHOT TAKES THE NEAR ONE; ON HIS RED FLAG, HIS TAKES THE FAR.' });
   coins([486, 24], [494, 24], [497, 24]);
   // EXAM: THE ADMIRAL'S MEN, on the deck before his lashing: a gun behind you, a heavy elite coming at you down its line, a marine in the mizzen
   ent('cannon', 504, 24, { deck: true, aim: 1 });
   ent('cutlass', 520, 24, { face: -1 }); ent('cutlass', 526, 24, { face: -1 }); ent('keg', 516, 24);
   mast(522, 8, 24, 5); ent('marine', 522, 7, { face: -1 });
-  ent('sign', 506, 24, { text: 'HIS PLATED BOSUN WEARS HULL IRON LIKE HIS ADMIRAL. A ROUND SHOT PUTS DOWN WHAT NO BLADE WILL.' }); ent('signalhoist', 534, 24, { zone: 'exam' });
+  ent('sign', 506, 24, { text: 'HIS PLATED BOSUN WEARS HULL IRON LIKE HIS ADMIRAL. ROUND SHOT DOWNS WHAT NO BLADE WILL.' }); ent('signalhoist', 534, 24, { zone: 'exam' });
   ent('deco', 512, 24, { kind: 'kegStack' }); ent('deco', 530, 24, { kind: 'plunder', v: 0 });
   coins([510, 24], [518, 24], [524, 24], [532, 24]);
   for (const x of [394, 414, 434, 466, 488, 512, 530]) ent('deco', x, 27, { kind: 'gunport', v: x % 2 });
   ent('check', 535, 24);   /* the shrine before the boss's lashing (A10c: +1 before the boss) */
-  ent('sign', 537, 24, { text: 'THE LASHINGS. THE ADMIRAL WAITS ON HIS FLAGSHIP. A GUN AT EITHER END: IN ITS LINE, A SHOT BLOWS HIS IRON OFF.' });
+  ent('sign', 537, 24, { text: "THE ADMIRAL WAITS ON THE LASHINGS. IN A GUN'S LINE, ONE SHOT BLOWS HIS IRON OFF." });
 
   // ================= THE LASHINGS: the Powder Ship's stern lashed to the Flagship's waist (src/admirals-champion.js CH_STAGE: 52 columns, a duel's room) =================
   const AS = 540, AR = 25, S = { W: 52, gap: [24, 26], guns: [3, 48], him: 40 };
