@@ -8001,6 +8001,7 @@ function reskinSet(e) {
   if (e.lamplighter && SPR.lamplighter) s = SPR.lamplighter; if (e.cnSkin && SPR[e.cnSkin]) s = SPR[e.cnSkin]; if (e.t === 'construct' && e.elite && SPR.constructelite) s = SPR.constructelite;   /* THE FOG CANAL: the goblins' AI under a man's skin */
   if (e.skinNow && SPR[e.skinNow]) s = SPR[e.skinNow];   /* (claude/ksarfoes) the skin he wears NOW (the Ksar's plated man with his plate blown off) */
   if (e.bone && e.t === 'archer' && SPR.bonearcher) s = SPR.bonearcher;
+  if (e.t === 'petrel' && L.flot3 && SPR.gull) s = SPR.gull;   /* (claude/flotilla3art) the flotilla's petrels are GULLS */
   if (e.t === 'mummy' && e.elite && SPR.mummywarden) s = SPR.mummywarden;   /* THE TOMB-WARDEN wears his own sheet (claude/spart) */
   if (e.t === 'bat' && L.fields && SPR.batHaunt) s = SPR.batHaunt;
   if (L.theatre) s = THF.foeSet(e) || s;   /* THE THEATRE's cast: the flyman, the prompter, the patron, the usher */
@@ -32024,7 +32025,7 @@ function drawWorld(cx, cy, showPlayer) {
      level: the port's horizon a little over the middle of the frame, the moored hulls under it, and each layer's life laid on it */
   if (L.palette && L.palette.far === 'harbour') { const dY = bgDY(cy);
     if (SET.parallax === 'full') HB.drawHarbourLayer(g, 'far', BG.far, 0.15, VH - 186, cx, dY, time, VW, VH);
-    HB.drawHarbourLayer(g, 'mid', BG.mid, 0.3, VH - 215, cx, dY, time, VW, VH); }
+    HB.drawHarbourLayer(g, 'mid', BG.mid, 0.3, VH - 215, cx, dY, time, VW, VH); if (F3H && F3H.on()) F3H.drawHarbour(g, cx, cy, dY, time); }   /* (claude/flotilla3art) THE FLAGSHIP on the port's horizon and the fisherfolk's skiff on the water */
   else if (BG.storm) SM.drawStormBack(g, BG.storm, { cx, dY: bgDY(cy), time, VW, VH, tilt: stormHorizon(), flash: boltFlash(), boltX: boltBack.x, boltI: boltBack.i, calm: seaCalm() });   /* THE HURRICANE: only her and the sea */
   else if (L.redgorge) RGB.drawBackdrop(g, cx, cy, VW, VH, L, time, bgDY(cy), SET.parallax === 'full');   /* THE RED GORGE's own sky slit, far mesas and shaded back wall (src/redraw/redgorge_backdrop.js) */
   else if (L.pwood) PWB.drawBackdrop(g, cx, cy, VW, VH, L, time, bgDY(cy), SET.parallax === 'full');   /* (claude/palisadeart) THE PALISADE WOOD's own autumn sky, far wood, the palisade line and the half-built gatehouse, the place's mid row (src/redraw/palisade_backdrop.js) */
@@ -32841,7 +32842,7 @@ function drawWorld(cx, cy, showPlayer) {
     else if (e.t === 'tideguard') frame = e.mode === 'thrustTell' ? 5 : e.mode === 'thrust' ? 6 : (e.stagger > 0 || e.guardT > 0) ? 4 : Math.abs(e.vx) > 4 ? Math.floor(e.anim * 7) % 4 : 0;
     else if (e.t === 'cutlass') frame = e.mode === 'slashTell' ? 5 : e.mode === 'slash' ? 6 : e.guardT > 0 ? 4 : Math.abs(e.vx) > 4 ? Math.floor(e.anim * 9) % 4 : 0;
     else if (e.t === 'boarder') frame = e.mode === 'throwTell' ? 4 : e.mode === 'throw' ? 5 : e.mode === 'haul' ? 6 : Math.abs(e.vx) > 4 ? Math.floor(e.anim * 7) % 4 : 0;
-    else if (e.t === 'marine') frame = e.mode === 'shootTell' ? 2 : e.mode === 'shoot' ? 3 : Math.floor(e.anim * 0.7) % 2;
+    else if (e.t === 'marine') frame = e.mode === 'shootTell' ? 2 : e.mode === 'shoot' ? 3 : e.cnSkin === 'pistoleer' && e.mode === 'reload' ? 4 + Math.floor(e.anim * 0.9) % 2 : Math.floor(e.anim * 0.7) % 2;
     else if(e.salvage) frame=e.mode==='salvagePinTell'||e.mode==='salvageHookTell'?5:e.mode==='salvagePin'?6:/Tell$/.test(e.mode)||e.mode==='salvageRally'?4:Math.abs(e.vx)>4?Math.floor(e.anim*7)%4:0;
     else if (e.t === 'bosun') frame = e.mode === 'whistle' ? 4 : e.mode === 'swingTell' ? 5 : e.mode === 'swing' ? 6 : Math.abs(e.vx) > 4 ? Math.floor(e.anim * 7) % 4 : 0;
     else if (e.t === 'lookout') frame = e.mode === 'shout' ? 3 : e.mode === 'spot' ? 2 : e.modeT % 2 < 1 ? 1 : 0;

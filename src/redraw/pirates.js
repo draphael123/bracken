@@ -534,10 +534,11 @@ export function bakeBoarder() {
 }
 
 // ---------- MARINE ----------
-export function bakeMarine() {
+export function bakeMarine(opt = {}) {
   const W = 28, H = 26, X = 13;
-  const q = G => outline(fromGrid(rowsOf(settle(G)), PR, 1), OUT);
-  const HEAD = [
+  let PAL = PR;
+  const q = G => outline(fromGrid(rowsOf(settle(G)), PAL, 1), OUT);
+  let HEAD = [
     '...fFf...',
     '..ffFff..',
     '.fffffffF',
@@ -547,7 +548,7 @@ export function bakeMarine() {
     '....kSs..',
   ];
   // head turned out to the viewer: the brim squares up and both eyes show under it
-  const HEAD_F = [
+  let HEAD_F = [
     '..ffFf...',
     '.fffFff..',
     'ffffffff.',
@@ -557,7 +558,7 @@ export function bakeMarine() {
     '...kSs...',
   ];
   // sighting down the weapon: the off eye is shut to a dark line
-  const HEAD_A = [
+  let HEAD_A = [
     '...fFf...',
     '..ffFff..',
     '.fffffffF',
@@ -567,7 +568,7 @@ export function bakeMarine() {
     '....kSs..',
   ];
   // the bandolier runs from the shoulder by his face down across the chest, with the bolt heads showing above it
-  const TORSO = [
+  let TORSO = [
     '..sShhS..',
     '.lLlUUq..',
     'lLliUUq..',
@@ -577,7 +578,7 @@ export function bakeMarine() {
     '.rRrrRq..',
     '.qLllLq..',
   ];
-  const LEGS = {
+  let LEGS = {
     crouch: ['...qqLLll....',
       '..qqLLllss...',
       '..qSllssss...',
@@ -619,9 +620,18 @@ export function bakeMarine() {
       '.......ss....',
       '......shhh...'],
   };
+  /* THE PISTOLEER (claude/flotilla3art): the marine's frame builder with his own coat, tricorn, black breeches, boots and a flintlock in the fist (opt.pistoleer) */
+  if (opt.pistoleer) {
+    PAL = { ...PR, l: '#c8423a', L: '#8e2b26', q: '#561518', U: '#1c1612', v: '#0e0a08', f: '#1a1620', F: '#3a3446', u: '#6e5238', x: '#fff6d2' };
+    const face = HEAD.slice(3), faceF = HEAD_F.slice(3), faceA = HEAD_A.slice(3);
+    HEAD = ['..rfFf...', '.rfffFfy.', 'yyyyyyyyy', ...face]; HEAD_F = ['..rfFf...', '.rfffFf..', 'yyyyyyyy.', ...faceF]; HEAD_A = ['..rfFf...', '.rfffFfy.', 'yyyyyyyyy', ...faceA];
+    TORSO = ['..sShhS..', '.lLlUUq..', 'lyLUUlq..', 'lLUUylq..', 'lUUyLLq..', 'UUlLyLq..', '.yYyyYq..', '.qLllLq..'];
+    const boot = r => r.replace(/q/g, 'f').replace(/[Ll]/g, 'F').replace(/S/g, 'v').replace(/s/g, 'U').replace(/h/g, 'u');
+    for (const k in LEGS) LEGS[k] = LEGS[k].map(boot);
+  }
   const arm = (G, sh, el, hd, far) => layer(G, g => {
     limb(g, sh, el, 2.2, far ? ['q', 'q', 'L'] : ['q', 'L', 'l']);
-    limb(g, el, hd, 1.9, far ? ['g', 'S', 'S'] : ['S', 's', 'h']);
+    limb(g, el, hd, 1.9, opt.pistoleer ? (far ? ['q', 'q', 'L'] : ['q', 'L', 'l']) : far ? ['g', 'S', 'S'] : ['S', 's', 'h']);
     put(g, hd[0], hd[1], far ? 'S' : 'h');
   });
   const frame = o => {
@@ -632,7 +642,7 @@ export function bakeMarine() {
     stamp(G, O, 11 + dy, TORSO);
     layer(G, g => stamp(g, O + (o.hx || 0), 4 + dy, o.head === 'front' ? HEAD_F : o.head === 'aim' ? HEAD_A : HEAD));
     if (o.legsFront) layer(G, g => stamp(g, B - 6, o.legsY || 19, LEGS[o.legs]));
-    if (o.bow) layer(G, g => pxbow(g, P(o.bow[0]), o.bow[1], o.bow[2]));
+    if (o.bow) layer(G, g => (opt.pistoleer ? pistol(g, P(o.bow[0]), o.bow[1] < 0 && o.bow[1] > -40 ? o.bow[1] : o.bow[1], o.bow[3] || 9) : pxbow(g, P(o.bow[0]), o.bow[1], o.bow[2])));
     arm(G, P([2, 13]), P(o.near[0]), P(o.near[1]), false);
     if (o.puff) { const [cx, cy] = P(o.puff); layer(G, g => { stamp(g, cx, cy, ['.zZ.', 'zZ.z', '.Zz.']); put(g, cx - 1, cy + 1, 'x'); }); }
     if (o.rope) layer(G, g => { for (let y = o.rope[1]; y <= o.rope[2]; y++) { put(g, o.rope[0], y, y % 3 ? 'p' : 'P'); put(g, o.rope[0] + 1, y, y % 3 === 1 ? 'p' : 'P'); } });
@@ -651,6 +661,12 @@ export function bakeMarine() {
   // HURT: knocked back off the aim, the bow dropped across him
   const hurtM = frame({ legs: 'brace', dx: -2, dy: 2, hx: -1, head: 'front',
     far: [[-3, 16], [-6, 18]], near: [[-2, 16], [-4, 18]], bow: [[-4, 18], 148, true] });
+  if (opt.pistoleer) {   /* frames 4, 5: THE RELOAD (the opening): the pistol stood on its butt, muzzle up, head down over it, the ramrod going in, a thread of smoke */
+    const rl = (ramY) => frame({ legs: 'brace', dy: 1, head: 'front', hx: 0, far: [[1, 14], [5, ramY]], near: [[3, 14], [4, 15]], bow: [[4, 15], -88, true, 7] });
+    const rA = rl(12), rB = rl(7);
+    const smoke = c => { const g = c.getContext('2d'); px(g, 18, 3, '#c6c2bb'); px(g, 19, 2, '#8e8a85'); px(g, 18, 1, '#c6c2bb'); return c; };
+    return pack([perch('side'), perch('front'), aim, shoot, smoke(rA), smoke(rB), hurtM], X + 1, H + 1, 10, 18);
+  }
   return pack([perch('side'), perch('front'), aim, shoot, climbA, climbB, hurtM], X + 1, H + 1, 10, 18);
 }
 

@@ -133,6 +133,8 @@ export function makeAdmiralHands(ctx) {
   /* THE YARD, THE LINE, THE KEG, THE SHOTS, THE CELLS, THE LIST, THE PLATES FALLING, THE MARKS AND THE READ */
   H.drawOver = (g, cx, cy, time) => { const Ar = A(); if (!S || !Ar) return; const G = S.G, fy = R(G.floorY - cy);
     ART.drawYard(g, R(G.yard.x - cx), R(G.yard.y - cy), time);
+    ART.drawLanterns(g, [G.x0 + 12 * ctx.TS + 8, G.x0 + 36 * ctx.TS + 8, G.yard.x - 66, G.yard.x + 66].map(x => R(x - cx)), R(G.floorY - cy - 84), time);   /* the lashings at nightfall: ship's lanterns on her masts and the yard's ends */
+    if (S.dead && S.dead.t0 !== null) ART.drawEnsign(g, R(G.x1 - cx) - 26, fy, Math.min(1, (time - S.dead.t0) / 3), time);   /* her colours come down */
     for (let i = splashes.length - 1; i >= 0; i--) { const k = (time - splashes[i].t) / 0.9; if (k > 1 || k < 0) { splashes.splice(i, 1); continue; } g.globalAlpha = 1 - k; g.fillStyle = '#dff2f8'; g.fillRect(R(splashes[i].x - cx) - 6, fy + 4 - R(k * 14), 12, 2); g.globalAlpha = 1; }
     for (let i = falls.length - 1; i >= 0; i--) { const k = (time - falls[i].t) / 1.1; if (k > 1 || k < 0) { falls.splice(i, 1); continue; } ART.drawPlateFall(g, R(falls[i].x - cx), R(falls[i].y - cy), k, falls[i].which); }
     if (S.list) ART.drawList(g, R(G.hulls[1][0] - cx), R(G.hulls[1][1] - cx), fy, time);

@@ -15,6 +15,8 @@
 //   THE KEG ROLLER's keg (the powder monkey's machine, cnSkin 'kegroller'): he rolls it lit down the deck at you; STRIKE IT and it rolls back at him.
 // main.js calls: on, clear, update(dt), strike(hb), ownsFoe(e), spawnFoe(base, e), updateFoe(e, dt), takeFoe(e, dmg, blow), drawFoe(g, e, cx, cy, time), rollKeg(e),
 //   drawBack(g, cx, cy, time), drawOver(g, cx, cy, time), read().
+import * as ART from './redraw/admiral_art.js';
+import * as WD from './redraw/flotilla3_world.js';
 const R = Math.round;
 export const F3 = {
   tell: 2.5, every: 10, shotV: 520, pct: 0.25, shove: 150, examShove: 260,
@@ -29,7 +31,7 @@ export const F3_SAY = { flag: 'HIS FLAG RUNS RED: OFF THE MARKED ROW, OR BEHIND 
   fired: 'THE SHOT FLIES ITS LINE', hole: 'THE DECK IS OPEN', bridge: 'THE YARD DROPS: A BRIDGE', cut: 'CUT OFF HIS LINE', wet: 'INTO THE HARBOUR', back: 'STRUCK BACK AT HIM',
   boarders: 'BOARDERS! CUT THEM OFF THEIR LINES', kegWet: 'THE KEG GOES IN THE HARBOUR', reloading: 'RELOADING' };
 export function makeFlotilla3(ctx) {
-  const H = {}; let Z = [], GUNS = [], KEGS = [], TOLD = {};
+  const H = {}; let Z = [], GUNS = [], KEGS = [], TOLD = {}; let FSH = null, DR = null, SKF = null;
   const F = () => (ctx.L && ctx.L.flot3) || null, TS = () => ctx.TS;
   H.on = () => !!F();
   H.clear = () => { const f = F(); TOLD = {}; KEGS = [];
@@ -64,12 +66,12 @@ export function makeFlotilla3(ctx) {
   /* ---------- THE LAID GUNS ---------- */
   function fireGun(gn) { if (gn.fired) return; const T = TS(); gn.fired = true; gn.smoke = 1.2; const sx = gn.x * T + 8, sy = gn.y * T + 4, tx = gn.tx * T + 8, ty = gn.ty * T + 8, d = Math.hypot(tx - sx, ty - sy) || 1;
     gn.ball = { x: sx, y: sy, tx, ty, vx: (tx - sx) / d * 420, vy: (ty - sy) / d * 420, left: d }; ctx.sound('boom'); ctx.shake(7); ctx.number(sx, sy - 18, F3_SAY.fired, '#ffd36b'); }
-  function landGun(gn) { const T = TS(), L = ctx.L;
+  function landGun(gn) { const T = TS(), L = ctx.L; gn.drop = 0.45;
     if (gn.hole) { const [x0, x1, y0, y1] = gn.hole; for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) if (L.grid[y * L.W + x] !== 0) { ctx.cellSet(x, y, 0); ctx.burst(x * T + 8, y * T + 8, 3, ['#6a5a44', '#c9b27c', '#3a2e22'], 140, 0.9, 260); }
       ctx.number((x0 + x1 + 1) / 2 * T, y0 * T - 12, F3_SAY.hole, '#8fd160'); }
     if (gn.bridge) { const [x0, x1, y] = gn.bridge; for (let x = x0; x <= x1; x++) if (L.grid[y * L.W + x] === 0) ctx.cellSet(x, y, ctx.T.ONEWAY); ctx.number((x0 + x1 + 1) / 2 * T, y * T - 14, F3_SAY.bridge, '#8fd160'); }
     ctx.resolve(); ctx.sound('crack'); ctx.shake(8); ctx.burst(gn.tx * T + 8, gn.ty * T + 8, 18, ['#ffd36b', '#9aa39a', '#e8dcc0'], 140, 0.7, 0); }
-  function stepGuns(dt) { for (const gn of GUNS) { gn.smoke = Math.max(0, gn.smoke - dt); const b = gn.ball; if (!b) continue; const s = Math.hypot(b.vx, b.vy) * dt; b.x += b.vx * dt; b.y += b.vy * dt; b.left -= s;
+  function stepGuns(dt) { for (const gn of GUNS) { gn.smoke = Math.max(0, gn.smoke - dt); if (gn.drop > 0) gn.drop = Math.max(0, gn.drop - dt); const b = gn.ball; if (!b) continue; const s = Math.hypot(b.vx, b.vy) * dt; b.x += b.vx * dt; b.y += b.vy * dt; b.left -= s;
       if (b.left <= 0) { gn.ball = null; landGun(gn); } } }
   /* ---------- THE KEG ROLLER's keg ---------- */
   H.rollKeg = e => { if (!F()) return false; const P = hero(), dir = Math.sign(P.x - e.x) || e.face || 1; KEGS.push({ x: e.x + dir * 10, y: e.y, vx: dir * F3.kegV, vy: 0, fuse: F3.kegFuse, from: e, back: false });
@@ -126,52 +128,91 @@ export function makeFlotilla3(ctx) {
   function fall(e, dt) { const T = TS(); e.vy = Math.min(420, (e.vy || 0) + 900 * dt); const r = ctx.moveBody(e, 0, e.vy * dt); if (r && r.ground) e.vy = 0; if (ctx.wet(e.x, e.y - 4)) ctx.hurtEnemy(e, 9999, e.x); }
   function walk(e, vx, dt) { const T = TS(), ax = e.x + Math.sign(vx) * 8, tx = Math.floor(ax / T), ty = Math.floor((e.y + 2) / T);
     if (!ctx.isSolid(tx, ty) && !ctx.oneWay(tx, ty)) return;   /* he will not walk off his deck */ ctx.moveBody(e, vx * dt, 0); }
+
+  /* THE HARBOUR (called by main.js right after the harbour's own layers, behind the tiles): THE FLAGSHIP lying off the port on its horizon, growing as you near her (review fix 8), her signal hoist running red on his guns;
+     the fisherfolk's skiff drifting on the water between the moored hulls, its lantern lit */
+  H.drawHarbour = (g, cx, cy, dY, time) => { if (!F()) return; const f = F(), VW = ctx.VW(), VH = ctx.VH();
+    const P = hero(), k = Math.max(0, Math.min(1, (P ? P.x : 0) / ((f.flagX || 560) * TS()))), sc = 0.45 + 0.75 * k * k, hx = R(VW * (0.86 - 0.18 * k) - (cx * 0.02) % 40), hy = R(VH - 186 + dY * 0.15 + 70);
+    FSH = FSH || WD.bakeFlagship(); const dw = R(WD.FS.W * sc), dh = R(WD.FS.H * sc), dx = hx - R(dw / 2), dy = hy - R(WD.FS.HY * sc);
+    g.globalAlpha = 0.6 + 0.35 * k; g.drawImage(FSH, dx, dy, dw, dh); g.globalAlpha = 1; WD.drawFlagshipHoist(g, dx, dy, sc, red(), time);
+    SKF = SKF || WD.bakeSkiff(); const wy = R(VH - 215 + dY * 0.3 + 110), per = 900, sx = ((R(300 - cx * 0.3 + time * 3) % per) + per) % per - 60;
+    if (sx > -40 && sx < VW + 10) { const bob = R(Math.sin(time * 1.3) * 1.2); g.globalAlpha = 0.9; g.drawImage(SKF[Math.floor(time * 0.7) % 2], sx, wy - 22 + bob); g.globalAlpha = 0.35; g.fillStyle = '#ffe0a0'; g.fillRect(sx + 24, wy - 18 + bob, 5, 5); g.globalAlpha = 0.5; g.fillStyle = '#dff2f8'; g.fillRect(sx - 6, wy + bob, 8, 1); g.fillRect(sx - 12, wy + 1 + bob, 6, 1); g.globalAlpha = 1; } };
+  /* THE PERCHED GULLS in the play plane: they stand on the rails, hull tops and coamings, and go up off them when you come near (and come back to another perch later) */
+  const GLS = new Map(); let GLP = null;
+  function perches() { if (GLP) return GLP; GLP = []; const Lg = ctx.L, W = Lg.W; for (let x = 6; x < W - 4; x++) { if (((Math.imul(x, 2654435761) >>> 0) % 1000) / 1000 > 0.045) continue;
+      for (let y = 8; y < Lg.H - 2; y++) { if (ctx.isSolid(x, y) && !ctx.isSolid(x, y - 1) && !ctx.isSolid(x, y - 2) && !ctx.wet(x * TS() + 8, y * TS() - 6)) { GLP.push({ x: x * TS() + 8, y: y * TS(), i: x }); break; } } } return GLP; }
+  function drawGulls(g, cx, cy, time) { if (!DR || !DR.gull) DR = Object.assign(DR || {}, { gull: WD.bakeGull() }); const A = DR.gull, VW = ctx.VW(), P = hero();
+    for (const p of perches()) { const sx = p.x - cx; if (sx < -40 || sx > VW + 40) continue; let st = GLS.get(p.i); if (!st) { st = { t0: -99, gone: -99 }; GLS.set(p.i, st); }
+      if (time - st.gone < 14) continue; const near = P && !P.dead && Math.abs(P.x - p.x) < 70 && Math.abs(P.y - p.y) < 60;
+      if (near && st.t0 < 0) { st.t0 = time; if (ctx.sound) ctx.sound('petrel'); }
+      if (st.t0 >= 0) { const u = time - st.t0, dir = (P && P.x < p.x) ? 1 : -1; if (u > 2.6) { st.t0 = -99; st.gone = time; continue; }
+        const x = R(sx + dir * u * 55), y = R(p.y - cy - u * 38 - Math.sin(u * 5) * 2); g.globalAlpha = Math.min(1, (2.6 - u) * 2); g.drawImage((dir > 0 ? A.R : A.L)[Math.floor(time * 9) % 2], x - 11, y - 15); g.globalAlpha = 1; continue; }
+      g.drawImage(A.perch, R(sx) - 11, R(p.y - cy) - 15); } }
+  /* ---------- THE DRESSING (claude/flotilla3art): the mantlets, THE PRIZE's sloop, poop, the hulk's deckhouse and rotten deck, the cocked yard - baked once, laid over the greybox blocks (all level cells and numbers untouched) ---------- */
+  const MANTLETS = [70, 87, 113, 146];
+  function drawDressing(g, cx, cy, time) { const T = TS(), VW = ctx.VW(), VH = ctx.VH(), Lg = ctx.L; DR = DR || { mant: WD.bakeMantlet(), sloop: WD.bakeSloopHull(), poop: WD.bakePoop(), house: WD.bakeDeckhouse(), rot: WD.bakeRotDeck() };
+    const at = (img, tx, ty, dyo = 0) => { const x = tx * T - cx, y = ty * T - cy + dyo; if (x > VW + 8 || x + img.width < -8 || y > VH + 8 || y + img.height < -8) return; g.drawImage(img, R(x), R(y)); };
+    const solid = (x, y) => Lg.grid[y * Lg.W + x] !== 0;
+    for (const mx of MANTLETS) if (solid(mx, 22)) at(DR.mant, mx, 22);
+    if (solid(225, 27)) at(DR.sloop, 225, 27);
+    if (solid(242, 20)) at(DR.poop, 242, 19);
+    if (solid(263, 5)) at(DR.house, 263, 4, -14 + 16 * 0);
+    if (solid(257, 22)) at(DR.rot, 257, 22);
+    for (const gn of GUNS) if (gn.id === 'topgun') { const x0 = gn.bridge ? gn.bridge[0] : 289, x1 = (gn.bridge ? gn.bridge[1] : 300) + 1, y0 = (gn.bridge ? gn.bridge[2] : 10) * T, sx = x0 * T - cx, ex = x1 * T - cx;
+      if (ex < -10 || sx > VW + 10) continue; const st = !gn.fired || gn.ball ? 'cocked' : gn.drop > 0 ? 'falling' : 'level'; WD.drawCockedYard(g, R(sx), R(y0 - cy + 1), R(ex), R(y0 - cy - 56), st, st === 'falling' ? 1 - gn.drop / 0.45 : 0); } }
   /* ---------- ONE FRAME ---------- */
   H.update = dt => { if (!F()) return; for (const z of Z) stepZone(z, dt); stepGuns(dt); stepKegs(dt); };
   /* ---------- DRAWING (GREYBOX: the ART sonnet dresses the hoists, the flagship, the swivel, the boarder) ---------- */
   const red = () => Z.some(z => z.st === 'tell' && !z.harmless) || Z.some(z => z.st === 'tell');
   H.drawBack = (g, cx, cy, time) => { if (!F()) return; const f = F(), VW = ctx.VW(), VH = ctx.VH();
-    /* THE FLAGSHIP, the landmark: far off on the harbour, his black hull and red-and-gold stern, growing as you near her (review fix 8) */
-    const P = hero(), k = Math.max(0, Math.min(1, (P ? P.x : 0) / ((f.flagX || 560) * TS()))), sc = 0.45 + 0.75 * k * k, hx = R(VW * (0.86 - 0.18 * k) - (cx * 0.02) % 40), hy = R(VH * 0.52 - 6 * k);
-    g.globalAlpha = 0.5 + 0.3 * k; g.fillStyle = '#16121a'; g.fillRect(hx - R(60 * sc), hy, R(120 * sc), R(14 * sc)); g.fillStyle = '#6a1c1e'; g.fillRect(hx + R(40 * sc), hy - R(10 * sc), R(20 * sc), R(10 * sc));
-    g.fillStyle = '#d8b04a'; for (let i = 0; i < 3; i++) g.fillRect(hx + R((42 + i * 6) * sc), hy - R(6 * sc), R(2 * sc) || 1, R(2 * sc) || 1);
-    g.fillStyle = '#2a2230'; for (const m of [-30, 0, 30]) g.fillRect(hx + R(m * sc), hy - R(60 * sc), Math.max(1, R(2 * sc)), R(60 * sc));
-    const rf = red(); g.fillStyle = rf ? (Math.floor(time * 6) % 2 ? '#ff3a2a' : '#ff9a7a') : '#e8dcc0'; g.fillRect(hx + R(1 * sc), hy - R(60 * sc), R(10 * sc) || 2, R(6 * sc) || 2);   /* his SIGNAL HOIST: red = his guns */
-    g.globalAlpha = 1;
+    drawDressing(g, cx, cy, time); drawGulls(g, cx, cy, time);
     /* the laid guns' targets, drawn first (A8): a dotted line from the breech to what it will take */
     const T = TS(); for (const gn of GUNS) { if (gn.fired) continue; const sx = gn.x * T + 8 - cx, sy = gn.y * T + 4 - cy, tx = gn.tx * T + 8 - cx, ty = gn.ty * T + 8 - cy, n = Math.max(1, R(Math.hypot(tx - sx, ty - sy) / 6));
       if (Math.max(sx, tx) < -20 || Math.min(sx, tx) > VW + 20) continue; g.globalAlpha = 0.55 + 0.25 * Math.sin(time * 4); g.fillStyle = '#ffd36b'; for (let i = 0; i <= n; i += 1) g.fillRect(R(sx + (tx - sx) * i / n), R(sy + (ty - sy) * i / n), 2, 2);
       g.strokeStyle = '#ffd36b'; g.strokeRect(R(tx) - 6, R(ty) - 6, 12, 12); g.globalAlpha = 1; } };
   H.drawOver = (g, cx, cy, time) => { if (!F()) return; const T = TS(), VW = ctx.VW();
     for (const e of (ctx.L.ents || [])) { if (e.t !== 'signalhoist') continue; const x = R(e.x * T + 8 - cx), y = R((e.y + 1) * T - cy); if (x < -30 || x > VW + 30) continue;
-      const z = Z.find(q => q.id === e.zone), on = z && z.st === 'tell';
-      g.fillStyle = '#3a2e22'; g.fillRect(x - 1, y - 64, 3, 64); g.fillStyle = '#5a4a34'; g.fillRect(x - 6, y - 64, 13, 2);
-      for (let i = 0; i < 3; i++) { g.fillStyle = on ? (Math.floor(time * 8 + i) % 2 ? '#ff3a2a' : '#c9182a') : ['#e8dcc0', '#2a4a7a', '#e8dcc0'][i]; g.fillRect(x + 2, y - 62 + i * 8 + (on ? 0 : 0), on ? 12 : 8, 6); } }
+      const z = Z.find(q => q.id === e.zone); WD.drawHoist(g, x, y, !!(z && z.st === 'tell'), time); }
     for (const z of Z) { if (z.st === 'tell') { const a = R(z.x0 * T - cx), b = R((z.x1 + 1) * T - cx), top = R(z.y0 * T - cy), bot = R((z.y1 + 1) * T - cy), k = 1 - z.t / F3.tell, pul = 0.35 + 0.35 * (0.5 + 0.5 * Math.sin(time * (6 + 16 * k)));
         g.globalAlpha = pul; g.fillStyle = z.harmless ? '#ffd36b' : '#ff4a3a'; for (let x = Math.max(a, -8); x < Math.min(b, VW + 8); x += 8) { g.fillRect(x, top, 5, 1); g.fillRect(x, bot - 1, 5, 1); }
         g.globalAlpha = 0.08 + 0.1 * k; g.fillRect(Math.max(a, 0), top, Math.min(b, VW) - Math.max(a, 0), bot - top); g.globalAlpha = 1;
         const ex = R((z.from > 0 ? z.x1 + 1 : z.x0) * T - cx); for (let i = 0; i < 3; i++) { g.fillStyle = Math.floor(time * 10 + i) % 2 ? '#ffd36b' : '#ff9a5c'; g.fillRect(ex - 4, top + 2 + i * R((bot - top) / 3), 4, 4); } }   /* her gunports glowing */
       for (const b of z.balls) { const x = R(b.x - cx), y = R(b.y - cy); g.fillStyle = '#1b1626'; g.fillRect(x - 3, y - 3, 6, 6); g.fillStyle = '#9aa39a'; g.fillRect(x + 3, y - 1, 6, 2); } }
-    for (const gn of GUNS) { const x = R(gn.x * T - cx), y = R(gn.y * T - cy); if (x < -40 || x > VW + 40) continue;
-      g.fillStyle = '#2a2b32'; g.fillRect(x, y + 6, 16, 6); g.fillStyle = '#4b4d5a'; const ang = Math.atan2(gn.ty - gn.y, gn.tx - gn.x); for (let i = 0; i < 12; i++) g.fillRect(R(x + 8 + Math.cos(ang) * i), R(y + 6 + Math.sin(ang) * i), 3, 3);
-      g.fillStyle = gn.fired ? '#6a6a6a' : '#c9a44c'; g.fillRect(x + 2, y + 4, 4, 4); if (gn.smoke > 0) { g.globalAlpha = gn.smoke / 1.2 * 0.6; g.fillStyle = '#e8dcc0'; g.fillRect(x + 6, y - 6, 12, 8); g.globalAlpha = 1; }
-      if (gn.ball) { g.fillStyle = '#1b1626'; g.fillRect(R(gn.ball.x - cx) - 3, R(gn.ball.y - cy) - 3, 6, 6); } }
-    for (const k of KEGS) { const x = R(k.x - cx), y = R(k.y - cy); g.save(); g.translate(x, y - 6); g.rotate(k.x / 6); g.fillStyle = '#6a4a2a'; g.fillRect(-6, -6, 12, 12); g.fillStyle = '#3a3a40'; g.fillRect(-6, -2, 12, 2); g.restore();
-      if (Math.floor(time * 16) % 2) { g.fillStyle = k.fuse < 0.8 ? '#ff6b6b' : '#ffd36b'; g.fillRect(x - 1, y - 15, 3, 3); } if (k.back) { g.fillStyle = '#8fd160'; g.fillRect(x - 6, y - 18, 12, 1); } } };
+    for (const gn of GUNS) { const x = R(gn.x * T - cx), y = R(gn.y * T - cy); if (x < -40 || x > VW + 40) continue; const ang = Math.atan2(gn.ty - gn.y, gn.tx - gn.x);
+      if (gn.id === 'topgun') WD.drawTopGun(g, x, y + 1, ang, gn.fired, gn.smoke); else WD.drawSwivel(g, x, y - 3, ang, gn.fired, gn.smoke);
+      if (gn.ball) { g.fillStyle = '#0a080e'; g.fillRect(R(gn.ball.x - cx) - 3, R(gn.ball.y - cy) - 3, 6, 6); g.fillStyle = '#474d5a'; g.fillRect(R(gn.ball.x - cx) - 3, R(gn.ball.y - cy) - 3, 6, 1); g.fillStyle = '#fff2c8'; g.fillRect(R(gn.ball.x - cx) - 1, R(gn.ball.y - cy) - 3, 2, 1);
+        g.globalAlpha = 0.5; g.fillStyle = '#cfcac2'; g.fillRect(R(gn.ball.x - cx - gn.ball.vx * 0.02) - 3, R(gn.ball.y - cy - gn.ball.vy * 0.02) - 1, 5, 3); g.globalAlpha = 1; } }
+    for (const k of KEGS) ART.drawKeg(g, R(k.x - cx), R(k.y - cy), k.fuse, F3.kegFuse, time, k.back); };
   H.drawFoe = (g, e, cx, cy, time) => { const x = R(e.x - cx), y = R(e.y - cy), f = e.face || 1, fl = (e.hurtT || 0) > 0;
     const L2 = lineOf(e); if (L2) { g.fillStyle = '#c9b27c'; const n = Math.max(1, R(Math.hypot(L2[2] - L2[0], L2[3] - L2[1]) / 2)); for (let i = 0; i <= n; i++) g.fillRect(R(L2[0] + (L2[2] - L2[0]) * i / n - cx), R(L2[1] + (L2[3] - L2[1]) * i / n - cy), 1, 1); }
     if (e.gmode === 'whirl' && e.sw) { g.globalAlpha = 0.5; g.fillStyle = '#ff6b6b'; g.fillRect(R(e.sw.x1 - cx) - F3.landR, R(e.sw.y1 - cy) - 2, F3.landR * 2, 2); g.globalAlpha = 1; }
     drawBoarder(g, x, y, f, e.gmode, time, fl); };
   return H;
 }
-/* THE GRAPNEL BOARDER, GREYBOX: a pirate in a striped jersey and a red head-scarf, a cutlass, a grapnel and its coil of line over the shoulder */
+/* THE GRAPNEL BOARDER (claude/flotilla3art): a deckhand in a blue-and-cream striped jersey with the sleeves rolled, a red head-scarf knotted behind, a stubbled sun-dark face, a wide belt with a brass buckle, dark slops and bare feet,
+   a cutlass at the hip and a GRAPNEL (three flukes on a ring) and its coil of line. Poses: wait/fight (the stance, the cutlass low), whirl (the hook whirled over the scarf), swing (both fists up on the line, knees tucked), fall (flung, arms up),
+   landed (a knee down), cutTell (the cutlass drawn back over the shoulder), cut (struck through, the crescent). */
 export function drawBoarder(g, x, y, f, mode, time, flash) {
-  const c = flash ? { j: '#ffffff', j2: '#f0f0f0', s: '#ffffff', h: '#ffffff', b: '#e0e0e0' } : { j: '#e8dcc0', j2: '#2a4a7a', s: '#c9463d', h: '#d8a07a', b: '#2a2018' };
+  const c = flash ? { j: '#ffffff', j2: '#e8e8f0', s: '#ffffff', s2: '#f0f0f0', h: '#ffffff', h2: '#f0f0f0', b: '#e0e0e0', p: '#ffffff', br: '#ffffff', st: '#ffffff', g: '#ffffff', ln: '#ffffff' }
+    : { j: '#ece0c4', j2: '#2e4e86', s: '#c9463d', s2: '#8e2b26', h: '#d8a07a', h2: '#a8704e', b: '#2a2018', p: '#3a3248', br: '#d8b04a', st: '#dfe6ec', g: '#4a4e58', ln: '#c9b27c' };
   const fr = (u, v, w, h, col) => { g.fillStyle = col; g.fillRect(f > 0 ? x + u : x - u - w, y - v - h, w, h); };
-  const sw = mode === 'swing' || mode === 'fall', bob = mode === 'fight' ? R(Math.abs(Math.sin(time * 8))) : 0;
-  fr(-4, 0, 3, sw ? 4 : 7, c.b); fr(1, 0, 3, sw ? 4 : 7, c.b);
-  for (let i = 0; i < 4; i++) fr(-4, 7 + i * 2 + bob, 8, 1, c.j); for (let i = 0; i < 4; i++) fr(-4, 8 + i * 2 + bob, 8, 1, c.j2);
-  fr(-3, 15 + bob, 6, 5, c.h); fr(-4, 19 + bob, 8, 3, c.s); fr(1, 17 + bob, 1, 1, '#1a1010');
-  if (sw || mode === 'whirl') { fr(2, 14, 2, 8, c.h); fr(2, 22, 2, 2, '#4a4e58'); } else { fr(4, 10 + bob, 2, 3, c.h); fr(5, 12 + bob, mode === 'cut' ? 10 : 2, mode === 'cut' ? 1 : 8, '#dfe6ec'); }
-  fr(-6, 9 + bob, 2, 6, '#c9b27c');
+  const pl = (u0, v0, u1, v1, w, col) => { const n = Math.max(1, Math.ceil(Math.max(Math.abs(u1 - u0), Math.abs(v1 - v0)))); for (let i = 0; i <= n; i++) fr(u0 + (u1 - u0) * i / n - w / 2, v0 + (v1 - v0) * i / n - w / 2, w, w, col); };
+  const sw = mode === 'swing' || mode === 'fall', kn = mode === 'landed', bob = mode === 'fight' ? R(Math.abs(Math.sin(time * 8))) : 0, st = mode === 'fight' ? Math.sin(time * 8) * 2 : 0, cr = kn ? 5 : 0;
+  /* legs: slops, bare feet */
+  if (sw) { fr(-4, 3, 4, 6, c.p); fr(1, 5, 4, 6, c.p); fr(-4, 2, 4, 2, c.h2); fr(1, 4, 4, 2, c.h2); }
+  else { fr(-4 + st, 3, 3, 7 - cr, c.p); fr(1 - st, 3, 3, 7 - cr, c.p); fr(-4 + st, 0, 4, 3, c.h2); fr(1 - st, 0, 4, 3, c.h2); fr(-3 + st, 2, 2, 1, c.h); }
+  /* torso: the striped jersey */
+  const ty = (sw ? 9 : 10 - cr) + bob;
+  fr(-4, ty, 9, 8, c.j); for (let i = 0; i < 4; i++) fr(-4, ty + 1 + i * 2, 9, 1, c.j2); fr(-4, ty, 2, 8, c.j2 === '#2e4e86' ? '#1e3560' : c.j2); fr(-4, ty - 1, 9, 2, c.b); fr(0, ty - 1, 2, 2, c.br);   /* the belt, the buckle */
+  fr(-6, ty + 2, 2, 6, '#c9b27c'); fr(-7, ty + 1, 2, 4, '#9a8454');   /* the coil of line over the shoulder */
+  /* head: the face, the scarf and its knot */
+  const hy = ty + 8;
+  fr(-3, hy, 7, 5, c.h); fr(-3, hy, 2, 5, c.h2); fr(2, hy + 3, 2, 1, '#1a1010'); fr(1, hy + 1, 3, 1, c.h2); fr(-3, hy + 5, 7, 3, c.s); fr(-3, hy + 5, 7, 1, c.s2); fr(-6, hy + 4, 3, 2, c.s); fr(-8, hy + 2, 2, 3, c.s2);
+  /* arms and what they hold */
+  if (sw) { pl(3, ty + 6, 4, ty + 15, 2, c.h); pl(-2, ty + 6, 2, ty + 15, 2, c.h2); fr(2, ty + 15, 4, 3, c.h); pl(3, ty + 18, 3, ty + 26, 1, c.ln); }
+  else if (mode === 'whirl') { const a = time * 14; pl(3, ty + 6, 3, ty + 14, 2, c.h); for (let k = 0; k < 6.3; k += 0.5) fr(3 + Math.cos(k + a) * 7, ty + 14 + Math.sin(k + a) * 4, 1, 1, c.ln); fr(3 + Math.cos(a) * 7 - 2, ty + 14 + Math.sin(a) * 4 - 2, 5, 4, c.g); }
+  else if (mode === 'cutTell') { pl(3, ty + 6, -1, ty + 14, 2, c.h); pl(-1, ty + 14, -7, ty + 24, 1, c.st); fr(-2, ty + 13, 3, 2, c.br); }
+  else if (mode === 'cut') { pl(3, ty + 6, 9, ty + 7, 2, c.h); pl(9, ty + 7, 20, ty + 4, 1, c.st); pix2(g, f, x, y, 20, ty + 4, '#fff6dc'); fr(8, ty + 5, 2, 4, c.br); }
+  else { pl(3, ty + 6, 6, ty + 2, 2, c.h); pl(6, ty + 2, 9, ty + 10, 1, c.st); fr(5, ty + 1, 3, 2, c.br); fr(-5, ty + 1, 2, 4, c.h2); fr(-9, ty - 1, 3, 4, c.g); fr(-10, ty, 5, 1, c.g); }   /* the cutlass low, the grapnel on his hip */
 }
+const pix2 = (g, f, x, y, u, v, col) => { g.fillStyle = col; g.fillRect(f > 0 ? x + u : x - u - 1, y - v - 1, 1, 1); };
