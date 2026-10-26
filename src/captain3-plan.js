@@ -85,7 +85,7 @@ export function cpPlan(s) {
     if (Math.abs(kx - rx) > col - 4 || !told) { out.gx = spot; out.face = Math.sign(kx - P.x) || 1; out.why = 'bait the rod: past the column from him'; if (dx < hitR && !COMMIT.has(e.mode)) swing(kx); return out; } }
   if (s.rest) { out.gx = same ? clamp(kx + side * 90) : P.x; out.why = 'winded: off him'; return out; }
   /* 8. ON ANOTHER YARD: follow him (on its feet: in the air it only steers) */
-  if (!P.ground && !P.climb) { out.gx = same ? clamp(kx + side * (hitR - 6)) : P.x; out.why = 'in the air'; return out; }
+  if (!P.ground && !P.climb) { const near1 = hisT === my && Math.abs(e.y - P.y) < 40; out.gx = near1 ? clamp(kx + side * (hitR - 6)) : P.x; if (near1 && dx < hitR + 4 && !COMMIT.has(e.mode) && roll('air' + Math.floor(t * 3), 0.5)) swing(kx); out.why = 'in the air'; return out; }
   if (!same) return follow('to his yard');
   /* 9. THE DUEL */
   if (COMMIT.has(e.mode)) { if (dx < hitR) { swing(kx); out.gx = P.x; out.why = 'cut him in his recovery'; return out; } out.gx = clamp(kx + side * (hitR - 8)); out.why = 'in on his recovery'; return out; }

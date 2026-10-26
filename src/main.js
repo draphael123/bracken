@@ -14002,8 +14002,8 @@ function updateWatch(e, dt) {
    him into the column and step out of it: STRUCK, OPEN x1.5; you in it are struck too. KNOCKED FLAT off his line (x2). TURNED on a shield (x1.5). After any opening a
    TOLD WARD (CAP2.ward s, the pale shell): every blow 0.4 and no verb takes him again (B3). THE SEA IS HIS PHASES: it takes the topsail yard at 62%, the topgallant at
    32% (src/hurricane3.js fightSea; deadly water - the drain). Never totally invulnerable (B15): 0.4 is the floor outside his openings. */
-const CAP2 = { openCap: 0.09, sabreFrom: 84, step: 118, hpK: 0.8, turned: 1.4, brace: 124, flat: 2.6, flatP3: 2.2, struck: 1.9, ward: 3, lineGrab: 7, lineTaken: 18 };
-const CAP3 = { walk: 70, walkP3: 84, climb: 80, braceEvery: [10.5, 9, 8], braceCall: 1.35, sweepT: 0.6, sweepDmg: 16, sweepThrow: 260, rodCol: 28, rodAvoid: 30, swayPush: 1.6, swayK: 1.5,
+const CAP2 = { openCap: 0.09, sabreFrom: 84, step: 118, hpK: 0.8, turned: 1.4, brace: 100, flat: 2.6, flatP3: 2.2, struck: 1.9, ward: 3, lineGrab: 7, lineTaken: 18 };
+const CAP3 = { walk: 70, walkP3: 84, climb: 80, braceEvery: [10.5, 9, 8], braceCall: 1.15, sweepT: 0.6, sweepDmg: 16, sweepThrow: 260, rodCol: 28, rodAvoid: 30, swayPush: 1.6, swayK: 1.5,
   pressIn: 92, diveEvery: 8.5, diveTell: 0.75, diveMax: 1.1, diveV: 230, surgeTell: 0.6, surgeR: 28, surgeDmg: 15, surgeRec: 0.7, kegWind: 90 };
 const capArena = () => (L && L.arena && L.arena.boss === 'captain' && L.arena.tiers ? L.arena : null);
 /* THE YARDS, by tile row; which is drowned in this phase (the sea takes T1 at phase two, T2 at three) */
@@ -14097,16 +14097,16 @@ function updateCaptain(e, dt) {
       want = lv && ad > 40 ? e.face * (p3 ? CAP3.walkP3 : CAP3.walk) : lv && ad < 28 ? -e.face * 40 : 0;
       /* THE ROD BURNS BLUE: he will not WAIT in its column - but a man he is pressing (close, on his yard) he follows into it: that is the bait. Stand just past the column, close, and step out of it yourself */
       if (rodTold && capInCol(e.x + want * 0.25) && !(lv && ad < CAP3.pressIn)) { const out = Math.sign(e.x - capRodX()) || -e.face; want = out * CAP3.walk; }
-      if (e.braceT <= 0 && !e.sweep && !rodTold) { const az = (L.gusts || []).find(z => z.arena); e.braceT = CAP3.braceEvery[e.phase - 1]; e.mode = 'braceTell'; e.modeT = CAP3.braceCall; e.sweepCD = CAP3.braceCall; e.line = capLineFor(e); e.sweepDir = az ? gustDir(az, time) : (Math.random() < 0.5 ? 1 : -1);
-        number(e.x, e.y - e.h - 24, '!!', '#ff6b6b'); number(e.x, e.y - 42, 'BRACE!', '#a8cfc6'); SFX.whistleCall(); break; }
-      if (lv && ad < CAP2.sabreFrom && e.sabreT <= 0) { e.mode = p3 ? 'swayTell' : 'sabreTell'; e.modeT = p3 ? 0.42 : 0.5; e.sabreT = p3 ? 1.8 : 2.5; number(e.x, e.y - e.h - 24, '!', '#ffd36b'); SFX.charge(); }
+      if (e.braceT <= 0 && !e.sweep && !rodTold) { const az = (L.gusts || []).find(z => z.arena); e.braceT = CAP3.braceEvery[e.phase - 1]; e.mode = 'braceTell'; number(e.x, e.y - e.h - 24, '!!', '#ff6b6b'); e.modeT = CAP3.braceCall; e.sweepCD = CAP3.braceCall; e.line = capLineFor(e); e.sweepDir = az ? gustDir(az, time) : (Math.random() < 0.5 ? 1 : -1);
+        number(e.x, e.y - 42, 'BRACE!', '#a8cfc6'); SFX.whistleCall(); break; }
+      if (lv && ad < CAP2.sabreFrom && e.sabreT <= 0) { if (p3) { e.mode = 'swayTell'; number(e.x, e.y - e.h - 24, '!', '#ffd36b'); e.modeT = 0.42; e.sabreT = 1.8; } else { e.mode = 'sabreTell'; number(e.x, e.y - e.h - 24, '!', '#ffd36b'); e.modeT = 0.5; e.sabreT = 2.5; } SFX.charge(); }   /* (THE SWAY in phase three: the same two cuts, the lunge carried by her heel) */
       else if (p2 && e.diveT <= 0 && ad > 70 && target !== undefined && capTiers()[e.tier - 1] && !capDry(e, e.tier - 1)) { e.mode = 'diveTell'; e.modeT = CAP3.diveTell; e.diveT = CAP3.diveEvery; number(e.x, e.y - e.h - 24, '!!', '#ff6b6b'); number(e.x, e.y - 42, 'HE DIVES', '#7cc8c8'); SFX.splash(); }
       else if (lv && e.hookT <= 0 && ad > 54 && ad < 230) { e.mode = 'hookTell'; number(e.x, e.y - e.h - 24, '!', '#ffd36b'); e.modeT = 0.55; e.hookT = p3 ? 4.5 : 6; number(e.x, e.y - 42, 'THE GRAPNEL', '#ff9a5c'); SFX.grapple(); }
       else if (lv && p2 && e.kegT <= 0 && ad > 56) { e.mode = 'kegTell'; number(e.x, e.y - e.h - 24, '!!', '#ff6b6b'); e.modeT = 0.5; e.kegT = p3 ? 5.5 : 7.5; number(e.x, e.y - 42, 'A KEG', '#ff6b6b'); SFX.fuse(); }
       else if (e.shotT <= 0 && ad > 40) { e.mode = 'shootTell'; number(e.x, e.y - e.h - 24, '!!', '#ff6b6b'); e.modeT = p3 ? 0.42 : 0.55; e.shotT = p3 ? 2.6 : 3.4; e.shots = p2 ? 2 : 1; e.aimY = P.y - 9; number(e.x, e.y - 42, 'TAKING AIM', '#ff9a5c'); }
       break; }
-    case 'sabreTell': case 'swayTell': { const k = capSway(e); want = ad > 36 ? e.face * CAP2.step * k : 0; if (e.modeT <= 0) { e.mode = 'sabre1'; e.modeT = 0.26; SFX.foeSlash(); e.vx = e.face * 150 * k; capCut(e, 56, DMG.capSabre); } break; }
-    case 'sabre1': if (e.modeT <= 0) { e.mode = 'sabre2'; e.modeT = 0.3; SFX.foeSlash(); e.vx = e.face * 90 * capSway(e); capCut(e, 50, Math.round(DMG.capSabre * 0.8)); } break;
+    case 'sabreTell': case 'swayTell': { const k = capSway(e); want = ad > 36 ? e.face * CAP2.step * k : 0; if (e.modeT <= 0) { e.mode = 'sabre1'; e.modeT = 0.26; SFX.foeSlash(); e.vx = ad > 44 ? e.face * 150 * k : 0; capCut(e, 56, DMG.capSabre); } break; }   /* (close, he cuts from where he stands: a man baiting the rod at its edge keeps him in it - and takes the cut on his guard) */
+    case 'sabre1': if (e.modeT <= 0) { e.mode = 'sabre2'; e.modeT = 0.3; SFX.foeSlash(); e.vx = ad > 44 ? e.face * 90 * capSway(e) : 0; capCut(e, 50, Math.round(DMG.capSabre * 0.8)); } break;
     case 'sabre2': if (e.modeT <= 0) { e.mode = 'stride'; e.modeT = 0.4; } break;
     case 'shootTell': { e.face = Math.sign(d) || e.face; e.vx = 0;
       if (Math.random() < dt * 26) parts.push({ x: e.x + e.face * 14, y: e.y - 18, vx: 0, vy: -18, life: 0.3, max: 0.3, col: '#ffd36b', size: 1, grav: 0 });
@@ -14127,7 +14127,8 @@ function updateCaptain(e, dt) {
     case 'diveTell': { e.vx = 0; e.face = Math.sign(d) || e.face; if (Math.random() < dt * 20) parts.push({ x: e.x + (Math.random() - 0.5) * 20, y: e.y - 2, vx: 0, vy: -30, life: 0.4, max: 0.4, col: '#a8cfc6', size: 1, grav: 60 });
       if (e.modeT <= 0) { e.mode = 'dive'; e.modeT = CAP3.diveMax; e.diveY = floorOf(e.tier - 1) + 10; e.y = e.diveY; e.tier = e.tier - 1; SFX.splash(); burst(e.x, H3H ? H3H.seaY() : e.y, 14, ['#eefaff', '#bfe6f5'], 80, 0.5); } break; }
     case 'dive': { const tx0 = P.x; e.x += Math.sign(tx0 - e.x) * Math.min(Math.abs(tx0 - e.x), CAP3.diveV * dt); e.x = Math.max(A.x0 + 16, Math.min(A.x1 - 16, e.x)); e.y = e.diveY;
-      if (Math.abs(tx0 - e.x) < 10 || e.modeT <= 0) { e.mode = 'surgeTell'; e.modeT = CAP3.surgeTell; e.surgeX = e.x; e.surgeTo = Math.max(capNearTier(P.y, e), e.tier + 1); number(e.x, (H3H ? H3H.seaY() : e.y) - 30, '!!', '#ff6b6b'); SFX.charge(); } return; }
+      const sy = H3H ? H3H.seaY() : e.y;
+      if (Math.abs(tx0 - e.x) < 10 || e.modeT <= 0) { e.mode = 'surgeTell'; e.modeT = CAP3.surgeTell; e.surgeX = e.x; e.surgeTo = Math.max(capNearTier(P.y, e), e.tier + 1); number(e.x, sy - 30, '!!', '#ff6b6b'); SFX.charge(); } return; }
     case 'surgeTell': { e.x = e.surgeX; if (Math.random() < dt * 30) parts.push({ x: e.x + (Math.random() - 0.5) * 30, y: (H3H ? H3H.seaY() : e.y) - 2, vx: 0, vy: -50, life: 0.35, max: 0.35, col: '#eefaff', size: 2, grav: 120 });
       if (e.modeT <= 0) { e.mode = 'surge'; e.modeT = 0.28; e.tier = Math.min(T3.length - 1, e.surgeTo); e.y = floorOf(e.tier); SFX.splash(); SFX.foeSlash(); shakeCam(5); burst(e.x, e.y, 18, ['#eefaff', '#bfe6f5', '#a8cfc6'], 130, 0.6);
         if (!P.dead && Math.abs(P.x - e.x) < CAP3.surgeR && Math.abs(P.y - e.y) < 44) { const res = damagePlayer(e.x, Math.round(CAP3.surgeDmg), { unblockable: true, up: true, name: 'THE WATER-LUNGE' }); if (res === 'hit') { P.vy = -220; P.ground = false; } } } return; }

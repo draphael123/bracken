@@ -77,7 +77,7 @@ export const AFFIX_AT = {
   'ksar|shield': 'SHIELDED',   /* (batch82 integ: the Ksar's bridge champion, the far lip's planted shield at col 683 - ksar2 placed it without an affix) */
   'rootway|shield#1': 'SHIELDED', 'rootway|shield#2': 'WARDING',   /* (claude/wardens12: the hollow trunk's shield (the old #1) is THE HOIST MAUL now; the gantry's and the lodge's keep their affixes, renumbered) */
   'flotilla|boarder': 'SWIFT', 'flotilla|boarder#amb': 'SHIELDED',
-  'hurricane|tideguard': 'UNSTOPPABLE', 'hurricane|boarder': 'SUMMONER', 'hurricane|cutlass#amb': 'WARDING',   /* (claude/hurricane2) the bow's exam (the wave behind him) and the stern's */
+  'hurricane|tideguard': 'UNSTOPPABLE', 'hurricane|boarder#1': 'SWIFT', 'hurricane|boarder#2': 'SUMMONER', 'hurricane|cutlass#amb': 'WARDING',   /* (claude/hurricane3) the galley roof's boarder comes at you out of the wind (SWIFT); the main yard's calls her hands up the shrouds (SUMMONER) */   /* (claude/hurricane2) the bow's exam (the wave behind him) and the stern's */
   'lamplit|watch': 'WARDING', 'lamplit|watch#amb': 'SHIELDED',
   'deep|watch': 'UNSTOPPABLE',
   'keep|drownedcaptain': 'SHIELDED', 'keep|tideguard': 'SHIELDED',

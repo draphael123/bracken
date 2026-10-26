@@ -132,13 +132,18 @@ export const STUCK = {
     { id: 'fl-doors-490', zone: [478, 18, 499, 26], at: [482, 24], glint: 'stall', done: ['bulkhead', 500, 24, 'open'], line: 'ONE GUN, TWO DOORS: FIRE, LET IT COOL, FIRE AGAIN' },
   ],
   /* (claude/stuckguides) HURRICANE: every route verb, a glint and the 10 s stall nudge (keyed by id so a rework can rewrite them) */
-  hurricane: [   /* (claude/hurricane2) THE HURRICANE DECK 2: the four crossings, the gun, the poop break */
-    { id: 'hu-foremast', zone: [118, 12, 137, 21], at: [127, 19], glint: 'stall', line: 'STAND AT THE BREACH: THE SKY FELLS HER FOREMAST INTO A ROAD' },
-    { id: 'hu-ratlines-240', zone: [228, 8, 252, 20], at: [240, 19], glint: 'stall', line: 'UP HER RATLINES AND OUT ALONG THE YARD' },
-    { id: 'hu-covers-388', zone: [368, 14, 392, 21], at: [388, 20], glint: 'stall', line: 'HER HATCH COVERS RIDE THE SWELL: STEP ON AS ONE RISES' },
-    { id: 'hu-loosegun', zone: [412, 10, 437, 21], ats: [[420, 18], [434, 14]], glint: 'stall', line: 'WHEN SHE HEELS, THE GUN SMASHES THE CARGO. OR TAKE THE YARD' },
-    { id: 'hu-poop', zone: [440, 8, 451, 21], ats: [[441, 20], [448, 9]], glint: 'stall', line: 'THE HATCH TO THE DARK STORE, OR THE SHROUD UP TO THE SWING' },
-    { id: 'hu-mizzen', zone: [473, 4, 486, 34], at: [484, 12], glint: 'stall', line: 'CLIMB HER MIZZEN AND RUN THE TOPMAST - DO NOT STOP' },
+  hurricane: [   /* (claude/hurricane3) THE HURRICANE DECK 3: every storm verb on the road - the roll, the lashing, the flood, the foremast, the rods, the gun, the mizzen, the gusts, the main shrouds */
+    { id: 'hu-forehatch', zone: [48, 28, 56, 36], at: [58, 35], glint: 'stall', line: 'WAIT FOR HER TO HEEL AFT, THEN JUMP THE HATCH DOWNHILL' },
+    { id: 'hu-lashing', zone: [63, 28, 78, 36], at: [70, 35], glint: 'stall', line: 'STRIKE THE LASHING: SHE RUNS THE CASK TO THE HOUSE' },
+    { id: 'hu-waist', zone: [104, 28, 150, 44], at: [151, 32], glint: 'stall', line: 'WAIT FOR THE FLOOD: SWIM UP ONTO THE GALLEY ROOF' },
+    { id: 'hu-foremast', zone: [164, 28, 175, 37], at: [172, 35], glint: 'stall', line: 'STAND BY HER FOREMAST: THE SKY LAYS IT ACROSS' },
+    { id: 'hu-rod1', zone: [276, 28, 303, 37], at: [296, 35], glint: 'stall', line: 'STRIKE THE CHAIN ONTO THE IRON, THEN STAND CLEAR' },
+    { id: 'hu-loosegun', zone: [286, 37, 311, 42], at: [300, 41], glint: 'stall', line: 'WHEN SHE HEELS AFT THE GUN RUNS INTO THE CARGO' },
+    { id: 'hu-mizzen', zone: [452, 28, 466, 37], at: [464, 33], glint: 'stall', line: 'SHE IS GOING DOWN BY THE STERN: UP HER MIZZEN' },
+    { id: 'hu-rod2', zone: [456, 22, 470, 30], at: [469, 29], glint: 'stall', line: 'STRIKE THE MIZZEN CHAIN: THE BOLT FELLS HER TOPMAST' },
+    { id: 'hu-gust1', zone: [432, 18, 442, 29], at: [427, 24], glint: 'stall', line: 'WAIT FOR THE SAIL TO SNAP, THEN JUMP WITH THE GUST' },
+    { id: 'hu-gust2', zone: [414, 16, 425, 29], at: [409, 22], glint: 'stall', line: 'WAIT FOR THE GUST THAT BLOWS FORWARD, THEN JUMP' },
+    { id: 'hu-mainshrouds', zone: [280, 24, 335, 30], at: [308, 26], glint: 'stall', line: 'UP THE MAIN SHROUDS TO THE TOP' },
   ],
   /* (claude/stuckguides) DEEP: every route verb, a glint and the 10 s stall nudge (keyed by id so a rework can rewrite them) */
   deep: [
