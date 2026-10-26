@@ -36,9 +36,9 @@
 //     the LAST SISTER is frantic: every cooldown x SS.last
 //   NO ADDS (the three are the fight). Every move TOLD with its own windup and release pose (B16, src/shriek-sisters-hands.js POSE) and its own sound.
 export const SS = {
-  hp: { diver: 760, shrieker: 570, snatcher: 660 },   /* (claude/sisters2 tune, n=24/hero BOT_PROFILE=human L14: 920/690/800 -> 760/570/660, grab dmg 12 -> 10, grab cd 8/5.5/4.5 -> 10/7/5.5 first 7 -> 9: 47% -> 69%) */
+  hp: { diver: 770, shrieker: 580, snatcher: 670 },   /* (claude/sisters2 tune, BOT_PROFILE=human L14 n=36/hero: 920/690/800 -> 770/580/670, grab dmg 12 -> 10, grab cd 8/5.5/4.5 -> 10/7/5.5 first 7 -> 9: 47% -> 68%) */
   wing: 0.4, downK: 1.5, wardMul: 0.4, last: 0.8,
-  hover: { diver: 112, shrieker: 124, snatcher: 104 },   /* (claude/sisters2: the shrieker 150 -> 124 and the boulder's carry 150 -> 118, so the screamTell / dropTell poses and their marks are on the arena's screen, not over its top edge) */
+  hover: { diver: 112, shrieker: 150, snatcher: 104 },   /* (claude/sisters2: the boulder's carry 150 -> 118 so the dropTell pose and its mark are on the arena's screen; the shrieker stays at 150 - at 124 her own dives after the diver falls came too fast: 54%) */
   dive: { tell: [0.85, 0.75, 0.7], lock: 0.24, markTell: 0.62, v: 430, dmg: 22, land: 0.7, rise: 0.8, cd: [2.4, 2.1, 1.8], second: 0.55, downed: 1.3 },
   stun: { t: 2.6, mul: 2, cap: 0.24 },
   ward: 2.5,
