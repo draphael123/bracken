@@ -1,4 +1,4 @@
-# SISTERS2 lane (restart) - DONE - head on claude/sisters2 (pushed; see git log; tune commit c4420ff4). Not merged, not deployed (Rookery ships Wed in BATCH124).
+# SISTERS2 lane (restart) - DONE - head 36959b37 on claude/sisters2 (pushed; tune commit c4420ff4). Not merged, not deployed (Rookery ships Wed in BATCH124).
 Worktree: bracken-sisters2. The previous lane left 2 changed files and the stills tool uncommitted. I committed them as WIP (8fbaaed6): a wider sister canvas (92 -> 116) so the snatcher's wings don't clip, flatter downed/stuck/jar/rake pitch, the chain counter moved above the mark, and the shock arcs. No stash was used.
 
 ## THE SIX MOVES (Daniel 10-25). All work in tools/rookery.mjs (green) and have stills.
