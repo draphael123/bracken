@@ -944,7 +944,7 @@ async function runbossLab(BK, opts) {
         continue; }
       /* THE MOTHER CAP 2 (claude/sporewood2): src/lab-mother.js plays her - her seed caps struck and climbed, a plunge on her knot, her told moves answered; nothing is grown or opened for the bot */
       if(boss.t==='mother'){
-        k.left=k.right=k.up=k.down=k.jump=k.block=false;
+        k.left=k.right=k.up=k.down=k.jump=k.block=false;if(!(P.labRotHold>0))k.atk=false;   /* (claude/labkeys) the attack key let go too, unless the rotation holds it */
         const mh=motherHands({BK,boss,P,k,A,h,f,reach:LAB_REACH[h],strike:labStrike});if(mh.swing&&P.atk<0){BK.press('atk');swings++;}if(mh.struck)swings++;
         if(opts.samples&&f%20===0){const R=BK.motherCap();out.samples=out.samples||[];out.samples.push([h,+(f/60).toFixed(1),boss.mode,Math.round(P.x-boss.x),Math.round(P.y-A.floor),P.onMover?(P.onMover.seed?'S'+Math.round((P.onMover.x-boss.x)/16):'m'):P.ground?'g':'air',Math.round(P.st),boss.hp,R?R.seeds.map(q=>q.state[0]+(q.cd>0?'*':'')).join(''):'',R&&R.ready?'R':'-',mh.swing?'X':'',+(P.stDelay||0).toFixed(2),k.jump?'J':'',P.jet?'JET':'',P.labRest?'REST':'',Math.round(P.heat||0),(BK.clouds?BK.clouds():[]).filter(c=>Math.hypot(P.x-c.x,P.y-8-c.y)<c.r).map(c=>(c.mild?'m':'')+Math.round(c.r)+'/'+(c.life||0).toFixed(1)).join(';'),P.winded?'W':'',P.exhaustT>0?'EX':'']);} const was=P.hp,m0=boss.mode;advance(1);taken+=Math.max(0,was-P.hp);ledger(m0,Math.max(0,was-P.hp));if(f%600===599)await yieldNow();continue;
       }
@@ -953,7 +953,7 @@ async function runbossLab(BK, opts) {
          carry one), and away from the death hand. Otherwise it closes on him and cuts - and when the mark has come back on him
          (gather) it goes in hard. Resting is done on the wing, away from him. */
       if(boss.t==='undeadmage'){
-        k.left=k.right=k.up=k.down=k.jump=k.block=false;
+        k.left=k.right=k.up=k.down=k.jump=k.block=false;if(!(P.labRotHold>0))k.atk=false;   /* (claude/labkeys) the attack key let go too, unless the rotation holds it */
         const py=P.y-8,by=boss.y-24,dx=boss.x-P.x,dy=by-py,side=Math.sign(dx)||1,m=boss.mode;let vx=0,vy=0,threat=false;
         if(boss.open>0&&!wasOpen)opened++;wasOpen=boss.open>0;
         const away=(x,y,r,w=1)=>{const ex=P.x-x,ey=py-y,d=Math.hypot(ex,ey)||1;if(d<r){vx+=ex/d*w;vy+=ey/d*w;threat=true;}};
@@ -1074,7 +1074,7 @@ async function runbossLab(BK, opts) {
          close, and puts everything into him while he kneels in the grave. It does not hunt the opening on purpose: it gets the
          kneels a player gets by moving off a dig that was aimed beside a grave. */
       if(boss.t==='gravewarden'){
-        k.left=k.right=k.up=k.down=k.jump=k.block=false;
+        k.left=k.right=k.up=k.down=k.jump=k.block=false;if(!(P.labRotHold>0))k.atk=false;   /* (claude/labkeys) the attack key let go too, unless the rotation holds it */
         if(boss.open>0&&!wasOpen)opened++;wasOpen=boss.open>0;
         const fl=A.floor,m=boss.mode,dx=boss.x-P.x,side=Math.sign(dx)||1,danger=[];
         if(m==='digTell'||m==='dig')danger.push([boss.markX-30,boss.markX+30]);
@@ -1103,7 +1103,7 @@ async function runbossLab(BK, opts) {
          caught in the pit. Before the spikes it played him with the generic walker, which stood on counting planks and fell into a pit
          that cost nothing - so its 3/3 measured a bot that ignored the room. */
       if(boss.t==='sexton'){
-        k.left=k.right=k.up=k.down=k.jump=k.block=false;
+        k.left=k.right=k.up=k.down=k.jump=k.block=false;if(!(P.labRotHold>0))k.atk=false;   /* (claude/labkeys) the attack key let go too, unless the rotation holds it */
         if(boss.open>0&&!wasOpen)opened++;wasOpen=boss.open>0;
         const fl=A.floor,m=boss.mode,dx=boss.x-P.x,side=Math.sign(dx)||1,danger=[];
         for(const c of (L.crumbles||[]))if(c.kind==='deck'&&(c.st==='count'||c.st==='down'))danger.push([c.x0*16-8,(c.x1+1)*16+8]);
@@ -1134,7 +1134,7 @@ async function runbossLab(BK, opts) {
          (claude/hedgewarden2) it guards with a shield and jumps without one; a ROOT crawling at it it jumps (standing past the brazier,
          most of them burn out before they reach it). */
       if(boss.t==='hedgewarden'){
-        k.left=k.right=k.up=k.down=k.jump=k.block=false;
+        k.left=k.right=k.up=k.down=k.jump=k.block=false;if(!(P.labRotHold>0))k.atk=false;   /* (claude/labkeys) the attack key let go too, unless the rotation holds it */
         if(boss.open>0&&!wasOpen)opened++;wasOpen=boss.open>0;
         const m=boss.mode,dx=boss.x-P.x,side=Math.sign(dx)||1,stump=m==='felled'||m==='stump'||m==='stuck',opn=boss.open>0;   /* (claude/hedgewarden4: he is on the chip - the bot swings only into his opening, and meets his cut/rush/lash on the beat) */
         const add=BK.enemies().filter(q=>q.alive&&q.fromHedge&&Math.abs(q.y-P.y)<30).sort((a,b)=>Math.abs(a.x-P.x)-Math.abs(b.x-P.x))[0];
@@ -1171,7 +1171,7 @@ async function runbossLab(BK, opts) {
          shield); the hook jumped as it comes; a ring on the floor from the roof stepped out of. When he retreats they chase. If a
          jam puts him down on a ledge they cut him there. They never tip a skip and never ride - the jam is the bonus, not the plan. */
       if(boss.t==='winchmaster'){
-        k.left=k.right=k.up=k.down=k.jump=k.block=false;
+        k.left=k.right=k.up=k.down=k.jump=k.block=false;if(!(P.labRotHold>0))k.atk=false;   /* (claude/labkeys) the attack key let go too, unless the rotation holds it */
         if(boss.open>0&&!wasOpen)opened++;wasOpen=boss.open>0;
         /* ROUND FIVE (claude/winch3, 2026-09-28): EVERY COLUMN AND ROW BELOW IS READ OFF OR.ARENA (and the drum pit off OR.PITS) - these
            hands used to carry their own copies of his ladder columns, and a room edit that moved one stalled the warden at the cap while
@@ -1299,7 +1299,7 @@ async function runbossLab(BK, opts) {
         if(opts.onFrame)await opts.onFrame({boss,P,f,h,lvl:lvId,open:boss.open>0});if(f%600===599)await yieldNow();continue;
       }
       if(boss.t==='gargoyle'){
-        k.left=k.right=k.up=k.down=k.jump=k.block=false;
+        k.left=k.right=k.up=k.down=k.jump=k.block=false;if(!(P.labRotHold>0))k.atk=false;   /* (claude/labkeys) the attack key let go too, unless the rotation holds it */
         if(boss.open>0&&!wasOpen)opened++;wasOpen=boss.open>0;
         const m=boss.mode,slabs=BK.movers().filter(q=>q.arena&&q.slab&&!q.broken),on=P.onMover&&slabs.includes(P.onMover)?P.onMover:null,cen=q=>q.x+q.w/2;
         const dx=boss.x-P.x,side=Math.sign(dx)||1;
@@ -1384,7 +1384,7 @@ async function runbossLab(BK, opts) {
         if(opts.onFrame)await opts.onFrame({boss,P,f,h,lvl:lvId,open:wasOpen});if(P.dead)falls++;if(f%600===599)await yieldNow();continue;
       }
       if(boss.t==='burieddead'){
-        k.left=k.right=k.up=k.down=k.jump=k.block=false;
+        k.left=k.right=k.up=k.down=k.jump=k.block=false;if(!(P.labRotHold>0))k.atk=false;   /* (claude/labkeys) the attack key let go too, unless the rotation holds it */
         const add=BK.enemies().filter(e=>e.alive&&e.graveAdd&&e.mode!=='riseTell').sort((a,b)=>Math.abs(a.x-P.x)-Math.abs(b.x-P.x))[0];
         const target=add&&Math.abs(add.x-P.x)<130?add:boss,dx=target.x-P.x,side=Math.sign(dx)||1,mode=boss.mode;let gx=target.x-side*(target.graveAdd?12:Math.max(20,LAB_REACH[h]*.65));
         const eruption=mode==='burrow'||mode==='eruptTell';
@@ -1422,7 +1422,7 @@ async function runbossLab(BK, opts) {
       }
       if(boss.t==='roc'&&BK.L.arena&&BK.L.arena.eyrie){
         /* THE ROC on her EYRIE (claude/skyroad): src/roc-eyrie.js rocEyriePlan reads what a player sees a quarter-second late and works the level's verb (the thermal plunge) */
-        k.left=k.right=k.up=k.down=k.jump=k.block=false;
+        k.left=k.right=k.up=k.down=k.jump=k.block=false;if(!(P.labRotHold>0))k.atk=false;   /* (claude/labkeys) the attack key let go too, unless the rotation holds it */
         if(f===0||!P.labRocMem)P.labRocMem={};
         const A=BK.L.arena,therms=BK.props().filter(p=>p.t==='vent'&&p.thermal&&p.arena).map(p=>({x:p.x,k:p.k||0,top:p.top||0})),st=BK.skyroad()&&BK.skyroad().stone('s5');
         const pl=rocEyriePlan({P,e:boss,R:BK.rocEyrie().read(),A,therms,stone:st?{x:st.x,on:st.on}:null,reach:LAB_REACH[h],shield:SHIELDED(h),t:f/60,rng:Math.random,mem:P.labRocMem,eyes:!!LABP.v2});
@@ -1441,7 +1441,7 @@ async function runbossLab(BK, opts) {
         /* THE RAPTOR MATRIARCH (claude/redgorge2): src/raptor-matriarch.js matPlan reads what a player sees - her tells a quarter-second late (some misread), the horn
            and the water, the levers' sluices, her bridges, the pillar tops - and works the gorge: a lever pulled while she is in the channel, a post struck while she
            perches, a narrow top to stand on when the dam has cracked; it cuts her openings and her back. It rests inside its own branch */
-        k.left=k.right=k.up=k.down=k.jump=k.block=false;
+        k.left=k.right=k.up=k.down=k.jump=k.block=false;if(!(P.labRotHold>0))k.atk=false;   /* (claude/labkeys) the attack key let go too, unless the rotation holds it */
         const MH=BK.matriarchHands(),S=MH&&MH.show();
         if(f===0||!P.labRmMem)P.labRmMem={};
         const pl=S?matPlan({tip:h==='warden'?WARDEN_TIP:0,noRoll:h==='warden'&&!LABP.v2,v2:!!LABP.v2,hero:h,deflect:h==='warden',brood:LABP.v2?BK.enemies().filter(q=>q.alive&&q.rmBrood):null,P:{x:P.x,y:P.y,face:P.face,ground:P.ground,atk:P.atk,vy:P.vy,deflectT:P.deflectT||0},e:boss,S,reach:LAB_REACH[h],shield:SHIELDED(h),t:f/60,rng:Math.random,mem:P.labRmMem}):{gx:null,face:P.face};
@@ -1460,7 +1460,7 @@ async function runbossLab(BK, opts) {
       if(boss.mcCart&&boss.mcCart.foreman){
         /* THE FOREMAN (claude/deeprails3): src/foreman.js foremanPlan reads what a player sees - his brake sparks, his '!', his red shoes, a quarter-second late (some misread) - and rides:
            RIGHT / LEFT hold its place on the loop, JUMP onto his cart as he drops back (a stomp), DOWN + JUMP off the HIGH line onto him, X while it stands on his cart */
-        k.left=k.right=k.up=k.down=k.jump=k.block=false;
+        k.left=k.right=k.up=k.down=k.jump=k.block=false;if(!(P.labRotHold>0))k.atk=false;   /* (claude/labkeys) the attack key let go too, unless the rotation holds it */
         const MH=BK.minecart(),F=MH&&MH.foreman(),S=F&&F.S;
         if(f===0||!P.labFmMem)P.labFmMem={};
         const fmHuman=!!(LABP.v2&&LABP.perceive),fmRt=()=>{if(!fmHuman)return 0.25;const lo=LABP.rtMin,hi=LABP.rtMax,c=LABP.rtMode,u=Math.random(),F=(c-lo)/(hi-lo);return(u<F?lo+Math.sqrt(u*(hi-lo)*(c-lo)):hi-Math.sqrt((1-u)*(hi-lo)*(hi-c)))/1000;},fmMiss=fmHuman?(LABP.misread??0.12):0.12;   /* (the Foreman's bot SEES like the profile's human: a read is rtMin..rtMax late and sometimes misread - it had perfect eyes, so no pick or tell ever caught it) */
@@ -1479,7 +1479,7 @@ async function runbossLab(BK, opts) {
         /* THE GREAT DRILL (claude/minecart): src/great-drill.js drillPlan reads what a player sees - its bore's line a quarter-second late (some misread), the roof's
            shadows, the ore carts and the chute, the points mast - and rides: RIGHT (boost) and LEFT (brake) hold its place on the treadmill, JUMP / DOWN + JUMP change
            line, E sets the points for an ore cart, X strikes the cab (always), harder when it is JAMMED. It rests inside its own branch */
-        k.left=k.right=k.up=k.down=k.jump=k.block=false;
+        k.left=k.right=k.up=k.down=k.jump=k.block=false;if(!(P.labRotHold>0))k.atk=false;   /* (claude/labkeys) the attack key let go too, unless the rotation holds it */
         const DH=BK.drillHands(),S=DH&&DH.show();
         if(f===0||!P.labGdMem)P.labGdMem={};
         const pl=S?drillPlan({P:{x:P.x,y:P.y,face:P.face,ground:P.ground,atk:P.atk,vy:P.vy,lane:P.ground?drillLane(S.G,P.y):-1,v:BK.minecart()?BK.minecart().cart(P).v:0,snagged:!!(S.snag&&S.snag.pp===P)},e:boss,S,reach:LAB_REACH[h],tip:h==='warden'?WARDEN_TIP:0,t:f/60,rng:Math.random,mem:P.labGdMem,eyes:!!LABP.v2}):{gx:null,face:P.face};
@@ -1499,7 +1499,7 @@ async function runbossLab(BK, opts) {
            and where it will end, the rings, the shard marks, the wave, the mirrors' notches - and works the rule: it waits behind a mirror FACING the giant for the lance,
            climbs its holds to the crack the lance opened, grips (DOWN) through THE SHAKE, turns a mirror TO THE FIRE by night and TO THE SKY at dawn, and cuts its
            knees while their purse lasts. It rests inside its own branch */
-        k.left=k.right=k.up=k.down=k.jump=k.block=false;
+        k.left=k.right=k.up=k.down=k.jump=k.block=false;if(!(P.labRotHold>0))k.atk=false;   /* (claude/labkeys) the attack key let go too, unless the rotation holds it */
         const CO=BK.colossusHands(),S=CO&&CO.show();
         if(f===0||!P.labCoMem)P.labCoMem={};
         const pl=S?colPlan({P:{x:P.x,y:P.y,face:P.face,ground:P.ground,atk:P.atk,vy:P.vy},e:boss,S,reach:LAB_REACH[h],tip:h==='warden'?WARDEN_TIP:0,shield:SHIELDED(h),t:f/60,rng:Math.random,mem:P.labCoMem,eyes:!!LABP.v2}):{gx:null,face:P.face};   /* (claude/glasssea2, v2: the eyes already read his tells late - the plan does not react twice) */
@@ -1517,7 +1517,7 @@ async function runbossLab(BK, opts) {
         /* THE GREAT RED CRAB (claude/redgorge): src/gorge-crab.js gorgeCrabPlan reads what a player sees - his tells a quarter-second late (some misread), the boulders'
            marks, the dam's water (the horn, a flood running, the gate holding one) - and works the level's machine: it shuts the gate at a wheel, waits for a flood to
            bank, baits him into the channel, releases (INTERACT) and cuts him on his back. It rests inside its own branch */
-        k.left=k.right=k.up=k.down=k.jump=k.block=false;
+        k.left=k.right=k.up=k.down=k.jump=k.block=false;if(!(P.labRotHold>0))k.atk=false;   /* (claude/labkeys) the attack key let go too, unless the rotation holds it */
         const CH=BK.gorgeCrabHands(),F=CH&&CH.fight(),Wt=CH?CH.water():{};
         if(f===0||!P.labGcMem)P.labGcMem={};
         const pl=F?gorgeCrabPlan({P:{x:P.x,y:P.y,face:P.face,ground:P.ground,atk:P.atk},F,e:boss,water:Wt,wheels:BK.L.arena.wheels,ch:BK.L.arena.ch,reach:LAB_REACH[h],shield:SHIELDED(h),t:f/60,rng:Math.random,mem:P.labGcMem}):{gx:null,face:P.face};
@@ -1534,7 +1534,7 @@ async function runbossLab(BK, opts) {
            under the sand, her wall, the bands, the rubble's shadows, the claw - and works the level's verb: it fills the skin at a basin, floods her burrow (a pour
            on the mound, or the windlass's bucket on the sump), climbs to her wall's ledge and pours down the wall, strikes the claw or mashes out of it, and cuts
            in her openings. It rests inside its own branch */
-        k.left=k.right=k.up=k.down=k.jump=k.block=false;
+        k.left=k.right=k.up=k.down=k.jump=k.block=false;if(!(P.labRotHold>0))k.atk=false;   /* (claude/labkeys) the attack key let go too, unless the rotation holds it */
         const QH=BK.cisternQueenHands(),S=QH&&QH.show();
         if(f===0||!P.labCqMem)P.labCqMem={};
         const pl=S?queenPlan({tip:h==='warden'?WARDEN_TIP:0,P:{x:P.x,y:P.y,face:P.face,ground:P.ground,atk:P.atk,climb:!!P.climb,onLedge:QH.onLedge(P),snare:P.snare||0,busy:BUSY_C(h,P)},e:boss,S,sips:(P.skin&&P.skin.sips)||0,reach:LAB_REACH[h],shield:SHIELDED(h),deflect:LABP.v2&&h==='warden',t:f/60,rng:Math.random,mem:P.labCqMem,eyes:!!LABP.v2,greed:LABP.v2&&BK.greed?BK.greed.count(boss):0,fire:LABP.v2?labCqFire(P,f):null,jar:QH.jarView?QH.jarView(P):null,tipPays:QH.tipPays?QH.tipPays(boss):true}):{gx:null,face:P.face};   /* (claude/cisternqueen3) her water jars, and whether her free stinger pays now */
@@ -1554,7 +1554,7 @@ async function runbossLab(BK, opts) {
            marks on the floor, the devil and the waves, his hand on a ledge - and works the level's verb: it fills the skin at a spring, pours on him (mud, then
            the douse), douses itself, climbs to the east ledge in the flood and strikes the crank, and cuts in his openings. It rests inside its own branch.
            (claude/djinn4) THE PAIL: in the flood it scoops its pail a step off the windlass and throws it (E; a strike by the windlass) when he rears up in reach */
-        k.left=k.right=k.up=k.down=k.jump=k.block=false;
+        k.left=k.right=k.up=k.down=k.jump=k.block=false;if(!(P.labRotHold>0))k.atk=false;   /* (claude/labkeys) the attack key let go too, unless the rotation holds it */
         const DH=BK.djinnHands(),S=DH&&DH.show();
         if(f===0||!P.labDjMem)P.labDjMem={};
         const pl=S?djinnPlan({tip:h==='warden'?WARDEN_TIP:0,P:{x:P.x,y:P.y,face:P.face,ground:P.ground,atk:P.atk,climb:!!P.climb,onLedge:DH.onLedge(P),snare:P.snare||0,burn:P.djBurn||0,busy:BUSY_C(h,P)},e:boss,S,sips:(P.skin&&P.skin.sips)||0,pail:P.djPail?(P.djPail.full?'full':'empty'):'',reach:LAB_REACH[h],shield:SHIELDED(h),deflect:h==='warden',t:f/60,rng:Math.random,mem:P.labDjMem,eyes:!!LABP.v2}):{gx:null,face:P.face};
@@ -1573,7 +1573,7 @@ async function runbossLab(BK, opts) {
         /* THE PALADIN, THE HERO AS THE BOSS (claude/church2): src/paladin-boss.js pbPlan reads what a player sees - his tells, the hammer of light, the spires and the quake
            on the floor, the judgement's crosses, the leap's ring, his holy circle - and works THE RULE: it never swings into his aegis on purpose (it goes round him or
            comes down from a jump), cuts his vigil, and snuffs his lamps when he is far; it hits him hard while he falters. It rests inside its own branch (off him) */
-        k.left=k.right=k.up=k.down=k.jump=k.block=false;
+        k.left=k.right=k.up=k.down=k.jump=k.block=false;if(!(P.labRotHold>0))k.atk=false;   /* (claude/labkeys) the attack key let go too, unless the rotation holds it */
         const PH=BK.paladinHands(),S=PH&&PH.show(),LCX=BK.litChurchHands?BK.litChurchHands():null;
         if(f===0||!P.labPbMem)P.labPbMem={};
         const lamps=LCX&&LCX.on()?LCX.lampsOf('sanctuary'):[],fires=S&&LCX&&LCX.on()&&LCX.firesIn?LCX.firesIn(S.G.x0,S.G.x1).map(q=>q.x):[];   /* (claude/church3) his braziers, and the fires a flame is taken at (the votive stand, the altar fire, a lit brazier) */
@@ -1591,7 +1591,7 @@ async function runbossLab(BK, opts) {
       if(boss.t==='deacon'){
         /* THE DEACON (claude/church2): src/deacon.js dcPlan reads his tells and the fire on the floor, snuffs his lamps (a jump at a chandelier), hits him LOW
            (down + X) or from behind, cuts his kindling, and hits him hard while he gropes */
-        k.left=k.right=k.up=k.down=k.jump=k.block=false;
+        k.left=k.right=k.up=k.down=k.jump=k.block=false;if(!(P.labRotHold>0))k.atk=false;   /* (claude/labkeys) the attack key let go too, unless the rotation holds it */
         const DH=BK.deaconHands(),S=DH&&DH.show(),LCX=BK.litChurchHands?BK.litChurchHands():null;
         if(f===0||!P.labDcMem)P.labDcMem={};
         const lamps=LCX&&LCX.on()?LCX.deaconLamps():[],fires=LCX&&LCX.on()&&LCX.firesIn?LCX.firesIn(S?S.G.x0:0,S?S.G.x1:0):[];   /* (claude/church3) the fires a flame is taken at: the votive stand, his lit lamps, his arc's own fire */
@@ -1611,7 +1611,7 @@ async function runbossLab(BK, opts) {
         /* THE ADMIRAL'S CHAMPION (claude/flotilla2): src/admirals-champion.js chPlan reads what a player sees - his tells a reaction late, the slam's mark, the leap's
            mark, the anchor's sweep and chain, the tilt - and works THE RULE: a cool deck gun on his deck with him in its line, it goes to the breech and strikes it.
            Out of the harbour it climbs the hull's net (up). It rests inside its own branch (off him) */
-        k.left=k.right=k.up=k.down=k.jump=k.block=false;
+        k.left=k.right=k.up=k.down=k.jump=k.block=false;if(!(P.labRotHold>0))k.atk=false;   /* (claude/labkeys) the attack key let go too, unless the rotation holds it */
         const CHh=BK.championHands(),S=CHh&&CHh.show();
         if(f===0||!P.labChMem)P.labChMem={};
         const guns=BK.props().filter(q=>q.t==='cannon'&&q.deck&&q.x>A.x0-16&&q.x<A.x1+16).map(q=>({x:q.x,y:q.y,cool:q.cool||0,aim:q.aim||Math.sign(boss.x-q.x)||1}));
@@ -1630,7 +1630,7 @@ async function runbossLab(BK, opts) {
         /* THE FOG KNIGHT (claude/towpath): src/fog-knight.js fkPlan reads what a player sees - his STANCE (high: a low cut; low: a jump cut; full: a plunge), his tells, the
            double, the bridge - and works THE RULE: it keeps its lantern lit (E, off the gadgets) and near him to burn the fog out, strikes a capstan when he is in the
            bridge's arc, drains the lock under a double, lights a lock lamp in the shroud. It rests inside its own branch (off him, the lantern still on him) */
-        k.left=k.right=k.up=k.down=k.jump=k.block=false;
+        k.left=k.right=k.up=k.down=k.jump=k.block=false;if(!(P.labRotHold>0))k.atk=false;   /* (claude/labkeys) the attack key let go too, unless the rotation holds it */
         const FH=BK.fogKnightHands(),S=FH&&FH.show(),TH=BK.towpathHands?BK.towpathHands():null,TS0=TH&&TH.state?TH.state():null;
         if(f===0||!P.labFkMem)P.labFkMem={};
         const ln=TH?TH.lanternOf(P):{has:false,lit:false},br=TH?TH.bridge('fkBridge'):null;
@@ -1651,7 +1651,7 @@ async function runbossLab(BK, opts) {
         /* THE SCARAB MOTHER (claude/sealedpyramid): src/scarab-mother.js smPlan reads what a player sees - her tells a reaction late (the v2 eyes), the spit's mark, the
            puddles, the mound, the quake's shadows, her brood - and works THE RULE: it waits by the far side of the plate on her side of the room, and steps onto it when she
            stops in that trap's reach (the plate's reload is drawn on it: it reads the traps' state off the level's hands). It rests inside its own branch */
-        k.left=k.right=k.up=k.down=k.jump=k.block=false;
+        k.left=k.right=k.up=k.down=k.jump=k.block=false;if(!(P.labRotHold>0))k.atk=false;   /* (claude/labkeys) the attack key let go too, unless the rotation holds it */
         const SH=BK.scarabMotherHands(),S=SH&&SH.show(),PH=BK.sealedPyramidHands();
         if(f===0||!P.labSmMem)P.labSmMem={};
         const ready=PH?{block:PH.trapReady('smBlock'),darts:PH.trapReady('smDarts'),stone:PH.trapReady('smStone')}:{};
@@ -1684,7 +1684,7 @@ async function runbossLab(BK, opts) {
       if(boss.t==='hornetqueen'){
         /* THE HORNET QUEEN 2 (claude/hornetsnest): src/hornet-queen-plan.js hqPlan - her hall (perch-baited dives, a shield's block, a carried smoke pot, the pulsing cells), the falling nest
            down the trunk, the great pine (three strokes laid in a pine, the fourth as she comes under; the last comb cut from the bough). It rests inside its own branch */
-        k.left=k.right=k.up=k.down=k.jump=k.block=false;
+        k.left=k.right=k.up=k.down=k.jump=k.block=false;if(!(P.labRotHold>0))k.atk=false;   /* (claude/labkeys) the attack key let go too, unless the rotation holds it */
         const QH=BK.hornetQueenHands(),S=QH&&QH.show(),NH=BK.nestHands&&BK.nestHands();
         if(f===0||!P.labHqMem)P.labHqMem={};
         const pl=S?hqPlan({v2:!!LABP.v2,hero:h,rest:!!P.labRest,P:{x:P.x,y:P.y,vy:P.vy,face:P.face,ground:P.ground,atk:P.atk,held:!!(P.carry&&P.carry.t==='smokepot')},e:boss,S,reach:LAB_REACH[h],shield:SHIELDED(h)&&(h!=='geomancer'||P.st>=30),dodge:!(h==='warden'&&!LABP.v2),t:f/60,rng:Math.random,mem:P.labHqMem,stands:NH&&NH.on()?NH.stands():[],adds:BK.enemies().filter(q=>q.alive&&q!==boss&&q.t==='wasp').map(q=>({x:q.x,y:q.y}))}):{gx:null,face:P.face};
@@ -1704,7 +1704,7 @@ async function runbossLab(BK, opts) {
         /* THE BATTERING BEAST (claude/palisadewood): src/battering-beast.js bbPlan reads what a player sees - his tells a reaction late, the stakes' rings, the trample's
            waves, the scaffolds' fall lines - and works THE RULE: a prop knocked so the wreck lies between him and you (or on him), his charge rams it and sticks; in phase
            two a jump at the buckle while he is open. It rests inside its own branch */
-        k.left=k.right=k.up=k.down=k.jump=k.block=false;
+        k.left=k.right=k.up=k.down=k.jump=k.block=false;if(!(P.labRotHold>0))k.atk=false;   /* (claude/labkeys) the attack key let go too, unless the rotation holds it */
         const BH=BK.batteringBeastHands(),S=BH&&BH.show();
         if(f===0||!P.labBbMem)P.labBbMem={};
         const pl=S?bbPlan({tip:h==='warden'?WARDEN_TIP:0,v2:!!LABP.v2,hero:h,rest:!!P.labRest,P:{x:P.x,y:P.y,vy:P.vy,face:P.face,ground:P.ground,atk:P.atk},e:boss,S,reach:LAB_REACH[h],shield:(SHIELDED(h)&&(h!=='geomancer'||P.st>=30))||h==='warden',dodge:!(h==='warden'&&!LABP.v2),t:f/60,rng:Math.random,mem:P.labBbMem}):{gx:null,face:P.face};
@@ -1722,7 +1722,7 @@ async function runbossLab(BK, opts) {
         /* OLD TUSKER (claude/oldtusker): src/old-tusker.js otPlan reads what a player sees - his tells a reaction late (the v2 eyes), the clods' red rings, the stomp's
            waves, the pines' lines and their stroke tallies - and works THE RULE: three strokes laid in a marked pine, behind it (its wall side), and the fourth when he
            is under its line (rammed into it, or in a slow tell). It rests inside its own branch */
-        k.left=k.right=k.up=k.down=k.jump=k.block=false;
+        k.left=k.right=k.up=k.down=k.jump=k.block=false;if(!(P.labRotHold>0)&&!(h==='geomancer'&&(P.charge>0||P.atkHeld>0)))k.atk=false;   /* (claude/labkeys) the attack key let go too, unless the rotation holds it */
         const OH=BK.oldTuskerHands(),S=OH&&OH.show();
         if(f===0||!P.labOtMem)P.labOtMem={};
         const pl=S?otPlan({tip:h==='warden'?WARDEN_TIP:0,v2:!!LABP.v2,hero:h,rest:!!P.labRest,P:{x:P.x,y:P.y,vy:P.vy,face:P.face,ground:P.ground,atk:P.atk},e:boss,S,reach:LAB_REACH[h],shield:(SHIELDED(h)&&(h!=='geomancer'||P.st>=30))||h==='warden',dodge:!(h==='warden'&&!LABP.v2),t:f/60,rng:Math.random,mem:P.labOtMem}):{gx:null,face:P.face};
@@ -1756,7 +1756,7 @@ async function runbossLab(BK, opts) {
            the platform it stands on, the shock line, the lid, the jars' marks and clouds, the pit, the curse's mark, the chain that has it, his dead - and works THE RULE:
            up on the ledge of the half he is in, it strikes the switch when he walks into the counterweight's sweep; from his phase two it treads a plate whose trap's reach he
            stands in (the plates' reload is drawn on them: it reads the traps' state off the level's hands). It rests inside its own branch */
-        k.left=k.right=k.up=k.down=k.jump=k.block=false;
+        k.left=k.right=k.up=k.down=k.jump=k.block=false;if(!(P.labRotHold>0))k.atk=false;   /* (claude/labkeys) the attack key let go too, unless the rotation holds it */
         const TH=BK.tombKingHands(),S=TH&&TH.show(),PH=BK.sealedPyramidHands();
         if(f===0||!P.labTkMem)P.labTkMem={};
         const levers=S?S.levers.map(l=>({side:l.side,ready:l.st==='ready'})):[],plates=S&&PH?S.G.plates.map(p=>({id:p.id,ready:TH.trapsOn()&&p.traps.every(id=>PH.trapReady(id))})):[];
@@ -1774,7 +1774,7 @@ async function runbossLab(BK, opts) {
         /* THE HOURGLASS KING (claude/buriedcity): src/hourglass-king.js hkPlan reads what a player sees - his tells a reaction late (the v2 eyes), the cogs and waves on the
            floor, the stream's X and the slip's swirl, phase three's pours, HIS GLASS (its gauge over him) - and works THE RULE: as his glass runs low it goes to the nearer
            sand-gate lever and pulls it (E), then cuts him stalled. Early in the glass it fights his brass and his turns. It rests inside its own branch */
-        k.left=k.right=k.up=k.down=k.jump=k.block=false;
+        k.left=k.right=k.up=k.down=k.jump=k.block=false;if(!(P.labRotHold>0))k.atk=false;   /* (claude/labkeys) the attack key let go too, unless the rotation holds it */
         const HH=BK.hourglassKingHands(),S=HH&&HH.show();
         if(f===0||!P.labHkMem)P.labHkMem={};
         const pl=S?hkPlan({tip:h==='warden'?WARDEN_TIP:0,noRoll:h==='warden'&&!LABP.v2,v2:!!LABP.v2,hero:h,rest:!!P.labRest,P:{x:P.x,y:P.y,face:P.face,ground:P.ground,atk:P.atk,qs:(P.qsDepth||0)>0},e:boss,S,levers:S.G.levers,reach:LAB_REACH[h],shield:SHIELDED(h),t:f/60,rng:Math.random,mem:P.labHkMem}):{gx:null,face:P.face};
@@ -1792,7 +1792,7 @@ async function runbossLab(BK, opts) {
         /* THE HAWK-MISTRESS (claude/ksar): src/hawk-mistress.js hmPlan reads what a player sees - her tells, the hawk's mark and its shadow, the runner on the wall walk, the
            courtyard's gongs and flask racks - and works THE RULE: it rings a gong while the hawk is up, cuts the rope her guard runs for, takes a flask and throws it at
            the hawk; it cuts her open, her back, and from a jump over her gauntlet. It rests inside its own branch (off her, still working the gongs) */
-        k.left=k.right=k.up=k.down=k.jump=k.block=false;
+        k.left=k.right=k.up=k.down=k.jump=k.block=false;if(!(P.labRotHold>0))k.atk=false;   /* (claude/labkeys) the attack key let go too, unless the rotation holds it */
         const HH=BK.hawkMistressHands(),S=HH&&HH.show(),KSX=BK.ksar?BK.ksar():null;
         if(f===0||!P.labHmMem)P.labHmMem={};
         const gongs=KSX?KSX.gongs.filter(g=>g.arena).map(g=>({id:g.id,x:g.x*16+8,cut:g.cut,hum:g.hum})):[],racks=KSX?KSX.stacks.filter(q=>q.arena).map(q=>({id:q.id,x:q.x*16+8,n:q.left,kind:q.kind})):[];   /* (claude/ksarhawk) the roofs' braziers' torches and the keg stack */
@@ -1810,7 +1810,7 @@ async function runbossLab(BK, opts) {
       if(boss.t==='huntmaster'){
         /* THE GOBLIN HUNTMASTER (claude/rootway): src/huntmaster.js hmPlan - his tells a reaction late, his arrows in the air (v2 STRIKES THE GOLD ONES BACK, some let go;
            red ones rolled or jumped), out from under the cage he aims at, a perch's rope cut when he stands under its cage, up a bud after him, round or over his guard */
-        k.left=k.right=k.up=k.down=k.jump=k.block=false;
+        k.left=k.right=k.up=k.down=k.jump=k.block=false;if(!(P.labRotHold>0))k.atk=false;   /* (claude/labkeys) the attack key let go too, unless the rotation holds it */
         const HH=BK.huntmaster(),RW=BK.rootway();
         if(f===0||!P.labHmMem)P.labHmMem={};
         const greed=BK.greed?BK.greed.count(boss):0;
@@ -1830,7 +1830,7 @@ async function runbossLab(BK, opts) {
         /* THE BULLFROG KING (claude/marsh2): src/frog-king.js frogPlan reads what a player sees - his tells a reaction late (some misread), the flies on him (led onto his head as
            the tongue comes), the belly-flop's wave and the ripple's ring (jumped), his deep pond and its sinking pads (off them before the slap; on one for the ripple, and
            down on him off it), his openings cut. It rests inside its own branch (off him, on a bank) */
-        k.left=k.right=k.up=k.down=k.jump=k.block=false;
+        k.left=k.right=k.up=k.down=k.jump=k.block=false;if(!(P.labRotHold>0))k.atk=false;   /* (claude/labkeys) the attack key let go too, unless the rotation holds it */
         const C=BK.frogCourt();if(f===0||!P.labFkMem)P.labFkMem={};
         const greed=BK.greed?BK.greed.count(boss):0,glim=BK.greed?BK.greed.limit(boss):99,pad=P.onMover&&P.onMover.kind==='pad'?P.onMover:null;
         const F=C&&C.chase?{A,royal:C.royal,bank:C.bank,lanes:C.lanes,pads:C.pads,swarm:C.swarm,reel:C.reel,tongueMax:C.tongueMax,waves:BK.waves().filter(w=>w.life>0&&!w.royal).map(w=>({x:w.x,dir:w.dir})),greedNear:greed>=glim-1}:C?{A,pond:C.pond,pads:C.pads,swarm:C.swarm,ripples:C.ripples,fling:C.fling,reel:C.reel,tongueMax:C.tongueMax,waves:BK.waves().filter(w=>w.life>0&&!w.royal).map(w=>({x:w.x,dir:w.dir})),greedNear:greed>=glim-1,add:(()=>{const q=smallAim();if(!q)return null;const band=[q.y-(q.h||8)-P.y,q.y-P.y],inSweep=band[1]>=-8&&band[0]<=2,inCut=band[1]>=-12&&band[0]<=-1;return{x:q.x,y:q.y,air:!!q.air,ok:inSweep||inCut,sweep:inSweep&&keyVerb(BK,h,q)==='sweep'};})()}:null;
@@ -1849,7 +1849,7 @@ async function runbossLab(BK, opts) {
       if(boss.t==='gangleader'){
         /* THE GANG LEADER (claude/welltown3): src/gang-leader.js glPlan - his tells a quarter-second late (some misread), a bottle struck back when it comes in
            reach (some let go), cuts between his blows a blow short of greed, the whirl and the fire stepped out of, hard cuts while he burns */
-        k.left=k.right=k.up=k.down=k.jump=k.block=false;
+        k.left=k.right=k.up=k.down=k.jump=k.block=false;if(!(P.labRotHold>0))k.atk=false;   /* (claude/labkeys) the attack key let go too, unless the rotation holds it */
         const GH=BK.gangLeaderHands(),F=GH&&GH.fight();
         if(f===0||!P.labGlMem)P.labGlMem={};
         const greed=BK.greed?BK.greed.count(boss):0;
@@ -1868,7 +1868,7 @@ async function runbossLab(BK, opts) {
         /* THE LANTERN-EATER (claude/lanterneater): src/lantern-eater.js lanternPlan reads what a player sees - the lights' sway and flicker, the red zones and
            marks of its tells, the snap's mark, the swell's crest, the lantern's light, OPEN - a reaction late through the eyes, and not always right (PLAN: it misreads
            a light now and then, misses some tells, swings at the wrong height). HIGH is a jump attack or the rising cut; LOW is DOWN + strike. It rests inside its own branch */
-        k.left=k.right=k.up=k.down=k.jump=k.block=false;
+        k.left=k.right=k.up=k.down=k.jump=k.block=false;if(!(P.labRotHold>0))k.atk=false;   /* (claude/labkeys) the attack key let go too, unless the rotation holds it */
         const LH=BK.lanternEaterHands(),show=LH&&LH.show();
         if(f===0||!P.labLeMem)P.labLeMem={};
         const pl=show?lanternPlan({P:{x:P.x,y:P.y,face:P.face,ground:P.ground,swim:!!P.swim,snare:(P.snare||0)+(P.rootT||0),atk:P.atk},e:boss,show,reach:h==='ranger'?LE_RG_REACH:LAB_REACH[h],t:f/60,rng:Math.random,mem:P.labLeMem,eyes:!!LABP.v2}):{gx:null,face:P.face};
@@ -1885,7 +1885,7 @@ async function runbossLab(BK, opts) {
            (INTERACT) and THROWN at it from a few steps off (ATTACK); with none standing, the hands go up onto the gallery under a bell, let it walk into that
            bell's drawn reach, and strike the bell from a jump (up and strike near the top) - unless its toll has the bells swinging. Staggered (its gold ring),
            they drop down and cut it; warded, they stand off at a blade's length and chip it short of its greed */
-        k.left=k.right=k.up=k.down=k.jump=k.block=false;
+        k.left=k.right=k.up=k.down=k.jump=k.block=false;if(!(P.labRotHold>0))k.atk=false;   /* (claude/labkeys) the attack key let go too, unless the rotation holds it */
         const TGs=BK.tg(),Mn=BK.L.mini,fl=Mn.floor,dg=boss.x-P.x,adg=Math.abs(dg),sg=Math.sign(dg)||1,reachG=LAB_REACH[h]+boss.w/2,onGal=P.ground&&P.y<fl-20;
         const bells=BK.props().filter(p=>p.t==='tbell'&&p.guard),ready=b=>!(b.cool>0)&&!(b.tollT>0);
         const tollNear=(TGs.tolls||[]).some(w=>w.life>0&&Math.abs(w.x-P.x)<38&&(P.x-w.x)*w.dir>0);
@@ -1919,7 +1919,7 @@ async function runbossLab(BK, opts) {
       if(boss.t==='puppeteer'){
         /* THE PUPPETEER (claude/puppeteer): src/puppeteer.js puppetPlan reads what a player sees - a glowing string in reach is cut, a told blow is blocked,
            jumped, ducked or stepped out of, the opening (him re-stringing, or fallen) is run to, and from phase 2 the batten takes it up to the gallery */
-        k.left=k.right=k.up=k.down=k.jump=k.block=false;
+        k.left=k.right=k.up=k.down=k.jump=k.block=false;if(!(P.labRotHold>0))k.atk=false;   /* (claude/labkeys) the attack key let go too, unless the rotation holds it */
         const PH=BK.puppeteerHands(),show=PH&&PH.show(),bat=show&&show.batten;
         if(f===0||!P.labPupMem)P.labPupMem={};
         const pl=show?puppetPlan({P:{x:P.x,y:P.y,face:P.face,ground:P.ground,atk:P.atk,snare:P.snare,dazzle:P.pupDazzle||0},e:boss,show,reach:LAB_REACH[h],shield:SHIELDED(h),onBatten:!!bat&&P.onMover===bat,t:f/60,rng:Math.random,mem:P.labPupMem,eyes:!!LABP.v2}):{gx:null,face:P.face};   /* A HUMAN BOT (claude/puppeteer2): it sees a tell or a glow a quarter-second late, lets some glows go, misreads some tells (puppeteer.js PLAN); Math.random is the row's own seeded dice */
@@ -1941,7 +1941,7 @@ async function runbossLab(BK, opts) {
            enough for the look to reach her); cut her while she burns. Looking at her he lets the ride carry him (it carries her the same, so the look
            holds) rather than walk against it with his back to her. The rest of the time: face her (she cannot move), jump the low ribbon, turn on a reap's
            glow, and cut down a crowned mummer that gets near. */
-        k.left=k.right=k.up=k.down=k.jump=k.block=false;
+        k.left=k.right=k.up=k.down=k.jump=k.block=false;if(!(P.labRotHold>0))k.atk=false;   /* (claude/labkeys) the attack key let go too, unless the rotation holds it */
         /* (claude/fairfix3) HER FIRES ARE SEVERAL NOW (BK.L.wqPits: the firebox and the ring pits): lure her to the hot one nearest her; her ball is jumped, her sweep read like a
            lash (low: jump each pass; high: duck), her leap's crouch looked at (it holds her), and a told landing stepped away from */
         const G=BK.L.green,q=boss,mx=G.maypole*16+8,hot=(BK.L.wqPits||[]).filter(p=>!(p.fire?q.bank>0:p.bank>0)),pit=hot.sort((a,b)=>Math.abs(a.mid-q.x)-Math.abs(b.mid-q.x))[0],mid=pit?pit.mid:G.bonfire*16+8,E=pit?(pit.x1-pit.x0)/2:40,dq=q.x-P.x,sq=Math.sign(dq)||1;
@@ -2003,7 +2003,7 @@ async function runbossLab(BK, opts) {
         const was=P.hp,m0=q.mode;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(m0,Math.max(0,was-P.hp));if(opts.onFrame)await opts.onFrame({boss,P,f,h,lvl:lvId,open:q.open>0});if(f%600===599)await yieldNow();continue;
       }
       if(boss.t==='harbormaster'){
-        k.left=k.right=k.up=k.down=k.jump=k.block=false;
+        k.left=k.right=k.up=k.down=k.jump=k.block=false;if(!(P.labRotHold>0))k.atk=false;   /* (claude/labkeys) the attack key let go too, unless the rotation holds it */
         const dx=boss.x-P.x,side=Math.sign(dx)||1;let gx=boss.x-side*Math.max(18,LAB_REACH[h]*.65);
         const pressure=['pressureTell','twinTell'].includes(boss.mode),marked=pressure&&(boss.marks||[]).some(x=>Math.abs(P.x-x)<31);
         if(pressure){const gaps=(boss.marks||[]).flatMap(x=>[x-34,x+34]).filter(x=>x>A.x0+18&&x<A.x1-18&&(boss.marks||[]).every(m=>Math.abs(x-m)>30));gx=gaps.sort((a,b)=>Math.abs(a-P.x)-Math.abs(b-P.x))[0]??P.x;}
@@ -2018,7 +2018,7 @@ async function runbossLab(BK, opts) {
         const was=P.hp,m0=boss.mode;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(m0,Math.max(0,was-P.hp));if(opts.onFrame)await opts.onFrame({boss,P,f,h,lvl:lvId,open:boss.open>0});if(f%600===599)await yieldNow();continue;
       }
       if(boss.salvage){
-        k.left=k.right=k.up=k.down=k.jump=k.block=false;
+        k.left=k.right=k.up=k.down=k.jump=k.block=false;if(!(P.labRotHold>0))k.atk=false;   /* (claude/labkeys) the attack key let go too, unless the rotation holds it */
         const dx=boss.x-P.x,side=Math.sign(dx)||1;let gx=boss.x-side*Math.max(20,LAB_REACH[h]*.7);
         const cargo=['salvageCargoTell','salvageCargo'].includes(boss.mode)&&(boss.cargo||[]).find(x=>Math.abs(P.x-x)<30);
         if(cargo!==false&&cargo!==undefined){const gaps=[cargo-34,cargo+34].filter(x=>x>A.x0+18&&x<A.x1-18&&(boss.cargo||[]).every(m=>Math.abs(x-m)>27));gx=gaps.sort((a,b)=>Math.abs(a-P.x)-Math.abs(b-P.x))[0]??P.x;}
