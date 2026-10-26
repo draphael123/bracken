@@ -20,6 +20,12 @@ const SC = {
   topmastRun: `BK.tp(380,22);run(20);`,
   mainYard: `BK.tp(322,28);run(40);`,
   arena: `BK.tp(298,18);run(240);`,
+  boats: `BK.tp(201,33);run(40);`,
+  cabin: `BK.tp(390,35);run(40);`,
+  deckhouse: `BK.tp(300,35);run(40);`,
+  galley: `BK.tp(150,35);run(40);`,
+  sternwell: `BK.tp(480,35);run(40);`,
+  fight: `BK.tp(298,18);run(240);BK.sim(1200);`,
 };
 const want = (process.argv[2] || Object.keys(SC).join(',')).split(',');
 const pg = await openPage({ audio: false, fonts: false, seed: 11 });

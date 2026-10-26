@@ -25,7 +25,7 @@ const YARDS = [
   [118, 124, 33, 'top']];                                                        /* her boat's gunwale on its davits */
 const TOPS = [[456, 463, 30], [466, 470, 30]];
 /* her houses (SOLID blocks above her main deck, row 35 = the deck's last row): [x0, x1, y0, y1, kind] */
-const HOUSES = [[79, 88, 32, 35, 'fore'], [151, 168, 33, 35, 'galley'], [304, 327, 30, 35, 'main'], [384, 398, 31, 35, 'cabin']];
+const HOUSES = [[79, 88, 32, 35, 'fore'], [151, 168, 33, 35, 'galley'], [304, 327, 30, 35, 'main']];
 const BOATS = [199, 204, 34, 35];   /* her boats on their chocks, past the breach */                                   /* the mizzen's top: a grating on cross-trees */
 const MASTS = [
   { id: 'h3main', x: 301 * TS, top: 3 * TS, base: 36 * TS, w: 12, truck: true },
