@@ -19,6 +19,7 @@
 // GREYBOX drawing throughout (the art list is in the lane report). main.js calls: on, clear, update(dt), strike(hb), mover(m, dt), drawMover(g, m, cx, cy, t),
 //   drawBack(g, cx, cy, t), drawOver(g, cx, cy, t), hud(g, t), seaY(), step(), bossRod(dt, live), rodInfo(id), fightSea(phase), read().
 const R = Math.round;
+import { makeHurricane3Art } from './redraw/hurricane3_art.js';
 export const H3 = {
   /* THE CASKS: heel push px/s2, top speed, friction (share kept a second off the heel), the speed past which a running cask hurts, its blow */
   caskAcc: 210, caskTop: 115, caskFric: 0.25, caskHurt: 55, caskDmg: 12, caskBack: 8,
@@ -36,6 +37,9 @@ export function makeHurricane3(ctx) {
   const H = {}; let S = null;
   const TS = 16, lv = () => ctx.L, on = () => !!(lv() && lv().h3);
   H.on = on;
+  /* (claude/hurricane3art) THE ART PASS: src/redraw/hurricane3_art.js draws what this module's greybox drew, with the ship kit of the Hurricane 2 + the Flotilla 3 */
+  let ART = null; const art = () => ART || (ART = makeHurricane3Art({ get L() { return lv(); }, T: ctx.T, VW: ctx.VW, felledDown: i => ctx.felledDown(i), gustNow: z => ctx.gustNow(z), text: (...a) => ctx.text(...a), hero: () => ctx.hero(), bossActive: () => ctx.bossActive(), rodTold: k => H.rodTold(k), H3 }, ctx.kit()));
+  H.art = art;
   const hero = () => ctx.hero();
   const seaPool = () => (lv().pools || []).find(p => p.h3sea);
   const inBox = (P, b) => { const tx = P.x / TS, ty = P.y / TS; return tx >= b[0] && tx <= b[1] + 1 && ty >= b[2] && ty <= b[3] + 1; };
@@ -129,7 +133,7 @@ export function makeHurricane3(ctx) {
 
   /* ---------- HER RODS ---------- */
   function rods(dt) { const P = hero();
-    for (const r of S.rods) { r.glow = Math.max(0, r.glow - dt); r.bolt = Math.max(0, r.bolt - dt); if (r.boss || r.done) continue;
+    for (const r of S.rods) { r.glow = Math.max(0, r.glow - dt); r.bolt = Math.max(0, r.bolt - dt); if (r.burnT > 0) r.burnT -= dt; if (r.boss || r.done) continue;
       const near = P && !P.dead && Math.abs(P.x / TS - r.x) < 24 && Math.abs(P.y / TS - r.y) < 14;
       if (r.cool > 0) { r.cool -= dt; continue; }
       if (!near) { r.charge = Math.max(0, r.charge - dt * 0.2); continue; }
@@ -145,7 +149,7 @@ export function makeHurricane3(ctx) {
     for (const pp of ctx.players) ctx.asPlayer(pp, () => { const P = hero(); if (!P.dead && Math.abs(P.x - bx) < H3.rodHit && Math.abs(P.y - by) < 40) { ctx.damagePlayer(bx, ctx.skybolt(), { up: true, unblockable: true, name: 'THE ROD' }); ctx.number(P.x, P.y - 34, H3_SAY.struck, '#dfe8ff'); } });
     for (const e of ctx.enemies()) if (e.alive && !e.maxHp && Math.abs(e.x - bx) < 26 && Math.abs(e.y - by) < 40) ctx.hurtEnemy(e, 30, bx);
     if (!r.connected) { ctx.burst(bx, by - 4, 14, ['#dfe8ff', '#9ab8ff', '#ffffff'], 110, 0.5); return; }
-    r.done = true;
+    r.done = true; if (r.burn) r.burnT = 3;   /* (art only: the burning net smoulders for three seconds) */
     if (r.burn) { const [x0, x1, y0, y1] = r.burn; for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) ctx.destroyCell(x, y);
       ctx.resolve(); for (let x = x0; x <= x1; x++) ctx.burst(x * TS + 8, y0 * TS + 4, 6, ['#ff9a5c', '#ffd36b', '#3a2a1a'], 90, 0.7);
       ctx.bolt((x0 + x1 + 1) / 2 * TS, y0 * TS, r.top[1] * TS); ctx.cue(H3_SAY.burnt, '#8fd160', 2.6); ctx.sound('fire'); }
@@ -166,18 +170,20 @@ export function makeHurricane3(ctx) {
     if (k >= 0 && k !== S.sec) { S.banner = { name: secs[k].name, t: 3 }; S.sec = k; }
     if (S.banner) { S.banner.t -= dt; if (S.banner.t <= 0) S.banner = null; } }
 
+  H.drawSea = (g, p, x0, x1, y, h, cx, cy, time) => art().sea(g, p, x0, x1, y, h, cx, cy, time, !!p.h3flood);
   H.update = dt => { if (!on() || !S) return; sink(dt); floods(dt); rods(dt); banner(dt); S.gauge += (((S.step >= 4 ? 4 : S.step) + (S.rising ? 0.5 : 0)) - S.gauge) * Math.min(1, dt * 2); };
 
   /* ---------- DRAWING (GREYBOX) ---------- */
   const rc = (g, x, y, w, h, c) => { g.fillStyle = c; g.fillRect(R(x), R(y), R(w), R(h)); };
   H.drawMover = (g, m, cx, cy, time) => { if (m.kind !== 'cask' || m.gone) return; const x = R(m.x - cx), y = R(m.y - cy); if (x < -20 || x > ctx.VW() + 20) return;
+    if (ctx.kit) { art().cask(g, m, x, y, time, Math.abs(m.vx) > H3.caskHurt && Math.floor(time * 10) % 2); return; }
     const roll = Math.abs(m.vx) > 4 ? Math.floor(time * 10 * Math.sign(m.vx)) & 1 : 0;
     rc(g, x + 1, y + 1, 14, 15, '#4a3018'); rc(g, x + 2, y + 2, 12, 13, '#8a5a32'); rc(g, x + 2, y + 2, 12, 2, '#a8743a');
     for (const yy of [4, 11]) rc(g, x + 1, y + yy + roll, 14, 2, '#2a2630');   /* her hoops */
     if (m.lashed) { rc(g, x - 1, y + 6, 18, 1, '#e0cc9c'); rc(g, x - 1, y + 9, 18, 1, '#b59a62'); rc(g, x + 15, y + 6, 3, 4, '#c9b27c'); }   /* the lashing: STRIKE it */
     if (Math.abs(m.vx) > H3.caskHurt && Math.floor(time * 10) % 2) rc(g, x + (m.vx > 0 ? 14 : 0), y - 3, 2, 2, '#ff6b6b'); };
   /* her masts and her sails, behind the bodies (the mainmast and the mizzen are not tiles below their shrouds: drawn) */
-  H.drawBack = (g, cx, cy, time) => { if (!on() || !S) return; const vw = ctx.VW(), vh = ctx.VH();
+  H.drawBack = (g, cx, cy, time) => { if (!on() || !S) return; if (ctx.kit) { art().drawBack(g, cx, cy, time, S); return; } const vw = ctx.VW(), vh = ctx.VH();
     const mast = (x, top, base, w) => { const sx = R(x * TS - cx); if (sx < -20 || sx > vw + 20) return; rc(g, sx - w / 2, R(top * TS - cy), w, (base - top) * TS, '#5a4630'); rc(g, sx - w / 2, R(top * TS - cy), 2, (base - top) * TS, '#8a7454'); for (let y = top + 2; y < base; y += 5) rc(g, sx - w / 2 - 1, R(y * TS - cy), w + 2, 2, '#2a2630'); };
     mast(301, 3, 36, 8);   /* THE MAINMAST, deck to truck */
     const r2 = S.rods.find(r => r.id === 'r2'); mast(467, r2 && r2.done ? 30 : 14, 36, 7);   /* THE MIZZEN (her topmast goes when rod 2 fells it) */
@@ -203,7 +209,7 @@ export function makeHurricane3(ctx) {
     for (const f of S.floods) { const p = (lv().pools || []).find(q => q.h3flood === f.id); if (!p) continue; if (f.ph === 'warn') { g.globalAlpha = 0.5 + 0.4 * Math.sin(time * 12); for (let x = p.x0; x < p.x1; x += 6) rc(g, x - cx, p.hiY - cy - 1, 4, 2, '#eefaff'); g.globalAlpha = 1; } }
   };
   /* the rods: their chains, the charge, the bolt; the tarred net; the gauge in the world (a waterline mark on her mainmast) */
-  H.drawOver = (g, cx, cy, time) => { if (!on() || !S) return; const vw = ctx.VW();
+  H.drawOver = (g, cx, cy, time) => { if (!on() || !S) return; if (ctx.kit) { art().drawOver(g, cx, cy, time, S); return; } const vw = ctx.VW();
     for (const r of S.rods) { const tx = r.top[0] * TS + 8, ty = r.top[1] * TS, ex = r.x * TS + 8, ey = (r.y + 1) * TS - 4;
       if (Math.max(tx, ex) < cx - 40 || Math.min(tx, ex) > cx + vw + 40) continue;
       const k = r.boss ? S.boss.charge : r.charge, told = r.boss ? H.rodTold(k) : k > 1 - H3.rodTell / H3.rodCharge, glow = r.boss ? S.boss.glow : r.glow;
@@ -220,6 +226,7 @@ export function makeHurricane3(ctx) {
   };
   /* THE HUD: the waterline gauge (she is going down: a little hull, the sea climbing it by step) and the area banner */
   H.hud = (g, time) => { if (!on() || !S) return; const vw = ctx.VW(); const x = vw - 62, y = 22, w = 44, h = 22;
+    if (ctx.kit) { art().hud(g, S, time, vw); ctx.text('SHE SINKS', x + w / 2, y + h + 7, '#a8cfc6', 'center', 4); if (S.banner) { const k = Math.min(1, S.banner.t / 0.4, (3 - S.banner.t) / 0.3 + 0.2); g.globalAlpha = Math.max(0, Math.min(1, k)); ctx.text(S.banner.name, vw / 2, 34, '#ffd36b', 'center', 8); g.globalAlpha = 1; } return; }
     g.globalAlpha = 0.85; rc(g, x - 2, y - 2, w + 4, h + 4, 'rgba(10,14,20,0.6)'); g.globalAlpha = 1;
     rc(g, x + 4, y + 10, w - 8, 8, '#5a4630'); rc(g, x + 2, y + 10, 4, 4, '#5a4630'); for (const mx of [12, 22, 32]) rc(g, x + mx, y + 1, 1, 9, '#8a7454');   /* her hull and three masts */
     const lvl = Math.min(1, S.gauge / 4.5), wy = R(y + h - 2 - lvl * (h - 4));

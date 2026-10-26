@@ -11,11 +11,11 @@
 import { canvas, px } from './px.js';
 
 const R = Math.round, TS = 16;
-const rc = (g, x, y, w, h, c) => { g.fillStyle = c; g.fillRect(R(x), R(y), R(w), R(h)); };
-const hash = (a, b = 0, c = 0) => { const v = Math.sin(a * 12.9898 + b * 78.233 + c * 37.719) * 43758.5453; return v - Math.floor(v); };
+export const rc = (g, x, y, w, h, c) => { g.fillStyle = c; g.fillRect(R(x), R(y), R(w), R(h)); };
+export const hash = (a, b = 0, c = 0) => { const v = Math.sin(a * 12.9898 + b * 78.233 + c * 37.719) * 43758.5453; return v - Math.floor(v); };
 /* tarred spar wood: lit on top, bleached by salt, dark under; rope; iron; canvas */
-const SP = ['#b6a47e', '#8e7d5c', '#6a5a42', '#4a3d2c', '#2c2318'], SALT = '#ece6d2', TAR = '#1a1510';
-const ROPE = ['#e0cc9c', '#b59a62', '#8a7040', '#4a3a20'], IRON = ['#5a5a66', '#3a3a44', '#22222a'], CAN = ['#d8d0b8', '#b8ae98', '#8a8068', '#5e5642'];
+export const SP = ['#b6a47e', '#8e7d5c', '#6a5a42', '#4a3d2c', '#2c2318'], SALT = '#ece6d2', TAR = '#1a1510';
+export const ROPE = ['#e0cc9c', '#b59a62', '#8a7040', '#4a3a20'], IRON = ['#5a5a66', '#3a3a44', '#22222a'], CAN = ['#d8d0b8', '#b8ae98', '#8a8068', '#5e5642'];
 /* where the level put things (tile columns/rows) */
 const YARDS = [   /* [x0, x1, row, kind] every walkable spar */
   [117, 133, 10, 'fore'], [242, 296, 12, 'main'], [434, 440, 12, 'cross'], [486, 503, 7, 'top'], [576, 592, 9, 'gaff']];
@@ -116,7 +116,7 @@ export function makeHurricane2Art(ctx) {
   /* what the tile pass asks: a sprite for this cell, or null (the stock tile stands) */
   A.tile = (t, x, y, tileAt, T) => {
     if (ctx.h3 && ctx.h3()) {   /* (claude/hurricane3) THE HURRICANE 3 keeps only the generic rigging: every line a shroud or a lift; her yards, houses and breaches are its own (src/hurricane3.js, the art pass) */
-      if (t !== T.NET) return null; const n = (dx, dy) => tileAt(x + dx, y + dy) === T.NET, l = n(-1, 0), r = n(1, 0), up = !n(0, -1), dn = !n(0, 1);
+      if (t !== T.NET) return ctx.h3tile ? ctx.h3tile(t, x, y, tileAt, T) : null; const n = (dx, dy) => tileAt(x + dx, y + dy) === T.NET, l = n(-1, 0), r = n(1, 0), up = !n(0, -1), dn = !n(0, 1);
       const bt = dn ? (tileAt(x, y + 1) === T.RAIL || tileAt(x, y + 1) === T.SOLID ? 2 : 1) : 0; if (!l && !r) return lift(up ? 1 : 0, dn ? 1 : 0); return shroud(r ? 'L' : 'R', up ? 1 : 0, bt); }
     if (t === T.NET) {
       const n = (dx, dy) => tileAt(x + dx, y + dy) === T.NET, l = n(-1, 0), r = n(1, 0), up = !n(0, -1), dn = !n(0, 1);
@@ -484,6 +484,8 @@ export function makeHurricane2Art(ctx) {
     storeSeams(g, cx, cy, vw, time, glow);
   };
   A.hullBack = hullBack; A.shroudTile = shroud;
+  /* (claude/hurricane3art) the primitives the Hurricane 3's own art module (src/redraw/hurricane3_art.js) draws with, so the ship reads as one kit */
+  A.kit = { bake, line, ln, block, knot, spar, topT, rigOf, topYard, boom, pole, lift, shroud, caskSpr, crateSpr, gunSpr, roof, wall };
 
   A.on = on;
   return A;

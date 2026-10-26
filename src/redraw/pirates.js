@@ -1023,6 +1023,7 @@ export function bakeCaptain() {
     const c = q(G);
     if (o.smear) smear(c, ...o.smear);
     if (o.arcs) for (const pl of o.arcs) bolt(c, pl.map(([x, y]) => [B + 1 + x, y + 1 + dy]));   /* (claude/hurricane2art) the sky in him */
+    if (o.drips) for (const [x, y, k] of o.drips) { const gg = c.getContext('2d'); px(gg, B + 1 + x, y + 1 + dy, k === 't' ? '#f2f8ff' : k === 'N' ? '#2c5e73' : '#7ec4d6'); }   /* (claude/hurricane3art) the sea running off him */
     return c;
   };
   const idle = frame({ boots: 'stand', coat: 'stand',
@@ -1105,7 +1106,20 @@ export function bakeCaptain() {
     layer(G, g => gline(g, 20, fl, 36, fl - 1, i => (i < 3 ? 'y' : i < 6 ? 'Y' : i % 2 ? 'i' : 'I')));   // the sabre lying loose along the deck
     return q(G);
   })();
-  return pack([idle, walk1, walk2, slashTell, slash1, slash2, shootTell, shoot, hookTell, hook, callT, ride, held, brace, struck, kegTell, kegRel, turned, flat], X, FL, 16, 26);
+  /* ---- (claude/hurricane3art) THE HURRICANE 3's OWN POSES: 19/20 climbing a shroud hand over hand, 21 the water-lunge's windup, 22 the surge up out of the sea, 23 the sway lunge
+     (two hands on a long thrust, the whole body behind it), 24 its windup (weight rocked back, the blade low), 25 the BRACE! shout (head back, one fist up at his line) ---- */
+  const climbA = frame({ boots: 'walkA', dy: -1, coat: 'swing', far: [[-4, 14], [-3, 6]], near: [[5, 15], [4, 9]], blade: [[-6, 18], 150, 13, 'back'], hook: [[-4, 20], 0, 'back'] });
+  const climbB = frame({ boots: 'walkB', dy: -1, coat: 'stand', far: [[-4, 16], [-3, 10]], near: [[5, 12], [4, 4]], blade: [[-6, 18], 150, 13, 'back'], hook: [[-4, 20], 0, 'back'] });
+  // DIVE: down on his heels at the yard's edge, head under the brim, both arms swept back like a swimmer's, the sabre sheathed across his back
+  const diveWind = frame({ boots: 'plant', dx: 1, dy: 4, hx: 2, coat: 'stream', down: true, far: [[-3, 20], [-9, 22]], near: [[3, 20], [-5, 25]], blade: [[-5, 22], 150, 14, 'back'], hook: [[-9, 22], 0, 'back'] });
+  // SURGE: up out of the sea, off the water on both boots, arms thrown up and out, the sabre high, the sea streaming off his coat
+  const surge = frame({ boots: 'wide', dy: -3, hx: 0, up: true, coat: 'spread', far: [[-6, 12], [-10, 5]], near: [[6, 12], [10, 3]], blade: [[10, 3], -78, 16], hook: [[-10, 5], 1, 'back'],
+    drips: [[-12, 10, 'n'], [-14, 14, 't'], [-9, 19, 'n'], [8, 22, 'n'], [12, 18, 't'], [-5, 27, 'N'], [3, 28, 'n'], [10, 26, 't'], [-16, 20, 'n']] });
+  // SWAY: the long lunge: front knee down on the roll, both fists on the hilt and the blade run out level, the coat streaming behind
+  const sway = frame({ boots: 'lunge', dx: 4, dy: 3, hx: 3, coat: 'stream', far: [[2, 17], [9, 18]], near: [[7, 16], [11, 18]], blade: [[11, 18], 0, 20], hook: [[2, 17], 0, 'back'], smear: [1 + X + 11, 1 + 18, 20, -22, 18] });
+  const swayTell = frame({ boots: 'tell', dx: -3, dy: 2, hx: -2, coat: 'swing', down: true, far: [[-2, 18], [1, 20]], near: [[-5, 18], [-9, 21]], blade: [[-9, 21], 168, 17, 'back'], hook: [[1, 20], 0, 'back'] });
+  const braceShout = frame({ boots: 'wide', dy: -1, hx: 1, up: true, coat: 'spread', far: [[-4, 14], [-7, 9]], near: [[4, 13], [8, 6]], blade: [[-6, 18], 150, 13, 'back'], hook: [[-7, 9], 1, 'back'], trill: [7, 8] });
+  return pack([idle, walk1, walk2, slashTell, slash1, slash2, shootTell, shoot, hookTell, hook, callT, ride, held, brace, struck, kegTell, kegRel, turned, flat, climbA, climbB, diveWind, surge, sway, swayTell, braceShout], X, FL, 16, 26);
 }
 
 export function bakeQuarter() {
