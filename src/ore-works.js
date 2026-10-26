@@ -45,6 +45,7 @@ export function makeOreWorks(ctx) {
   W.reset = () => {
     const L = ctx.L(); D = L && L.oreWorks; rocks = []; ripple = []; near = null; arc = null; t = 0; zones = []; lamps = []; heaps = []; lifts = []; glints = [];
     for (const k of Object.keys(W.n)) W.n[k] = 0;
+    { const arr = ctx.movers(); for (let i = arr.length - 1; i >= 0; i--) if (arr[i].kind === 'orecw') arr.splice(i, 1); }   /* (a respawn runs reset again: never a second pan) */
     if (!D) return;
     zones = (L.darkZones || []).filter(z => z.ow);
     /* a DIM stretch puts its own pit lamps out until its lamp is struck (the light of a pit lamp reaches through a floor: they are part of the dark) */
