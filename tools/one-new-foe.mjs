@@ -65,7 +65,7 @@ for (const lv of LEVELS) {
   const roster = new Set((L.ents || []).filter(e => e && e.t && EHP.has(e.t)).map(e => e.t));
   for (const r of (L.garrison || [])) if (Array.isArray(r) && EHP.has(r[0])) roster.add(r[0]);
   rows.push({ id: lv.id, needs: lv.needs, needsTime: lv.needsTime, needsKills: lv.needsKills, roster,
-    bosses: new Set([L.arena && L.arena.boss, L.mini && L.mini.boss].filter(Boolean)) });
+    bosses: new Set([L.arena && L.arena.boss, L.mini && L.mini.boss, L.mini2 && L.mini2.boss].filter(Boolean)) });   /* (claude/forgemaster: a level's second mini) */
 }
 
 const C = chainOf(rows);

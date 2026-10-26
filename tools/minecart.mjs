@@ -47,7 +47,7 @@ ok(MC.ramV > MC.cruise + 20 && MC.ramV < MC.boost, 'the RAM pace (' + MC.ramV + 
 ok(cartSpeed(MC.cruise, { boost: true }, 1) === MC.boost && cartSpeed(0, {}, 10) === MC.cruise, 'the cart: pump to ' + MC.boost + ', cruise at ' + MC.cruise);
 /* THE ARCS */
 for (const k of ['points', 'speed', 'combat', 'switch']) ok(['teach', 'test', 'remix', 'exam', 'boss'].every(s => ARCS[k][s]), 'the ' + k + ' arc is taught, tested, remixed, examined and in the boss');
-ok(SECTIONS.length === 12 && SECTIONS.find(s => s[0] === 'THE TWIN LINES') && SECTIONS.find(s => s[0] === 'THE SPOIL PITS') && SECTIONS.every((s, i) => i === 0 || s[1] > SECTIONS[i - 1][1]), 'eleven sections (deeprails4: THE TWIN LINES went in before the flooded run; deeprails5: THE SPOIL PITS after it) and the arena, in order');
+ok(SECTIONS.length === 14 && SECTIONS.find(s => s[0] === 'THE TWIN LINES') && SECTIONS.find(s => s[0] === 'THE SPOIL PITS') && SECTIONS.find(s => s[0] === 'THE SMELTER FLOOR') && SECTIONS.find(s => s[0] === 'THE FORGE') && SECTIONS.every((s, i) => i === 0 || s[1] > SECTIONS[i - 1][1]), 'thirteen sections (deeprails4: THE TWIN LINES went in before the flooded run; deeprails5: THE SPOIL PITS after it; claude/forgemaster: THE SMELTER FLOOR and THE FORGE after them) and the arena, in order');
 const sec = name => { const i = SECTIONS.findIndex(s => s[0] === name); return [SECTIONS[i][1], SECTIONS[i + 1][1]]; };
 /* THE AREAS (A8: dark and light stretches) */
 { const dz = (L.darkZones || [])[0], [d0, d1] = sec('THE DARK DRIFT'); ok(dz && dz.dark >= 0.8 && dz.x0 <= (d0 + 6) * TS && dz.x1 >= (d1 - 6) * TS && L.dark > 0, 'THE DARK DRIFT is pitch (dark ' + (dz && dz.dark) + ': the headlamp cone, src/minecart-hands.js holes)');
@@ -125,7 +125,7 @@ ok(!runeHits(0, 150, { boost: true }), 'cruising, a PUMP past the rune dodges it
 ok(!runeHits(0, 150, { brake: true }) && !runeHits(0, 230, { brake: true }), 'a BRAKE short of the rune dodges it (from cruise and from a pump)');
 ok(!runeHits(0, 150, { jump: MC.runeT - 0.35 }), 'a JUMP over the rune as it bursts dodges it');
 ok(runeHits(0, 150, {}, 1 / 60, MC.throwT, MC.throwR) && !runeHits(0, 150, { brake: true }, 1 / 60, MC.throwT, MC.throwR) && !runeHits(0, 150, { boost: true }, 1 / 60, MC.throwT, MC.throwR), 'a THROWN PICK: cruise held is hit, a brake (or a pump) off his mark dodges it');
-const kinds = new Set(L.ents.filter(e => THREAT[e.t] > 0 && e.t !== 'greatdrill').map(e => e.t));
+const kinds = new Set(L.ents.filter(e => THREAT[e.t] > 0 && e.t !== 'greatdrill' && e.t !== 'forgemaster').map(e => e.t));   /* (claude/forgemaster: the smith is the level's second MINI, a named fight - not a foe type) */
 ok([...kinds].every(t => ['archer', 'gobmage', 'tippler', 'miner', 'brute', 'sapper', 'bat'].includes(t)), 'no new foe type: ' + [...kinds].join(', '));
 /* CART COMBAT 2 (deeprails3): foes that come TO your line - each told, each answered with the cart's own verbs */
 { const perch = riders.filter(e => e.ride.perch), swing = riders.filter(e => e.ride.swing), jump = riders.filter(e => e.ride.jumper);
@@ -222,12 +222,12 @@ ok(L.decor.some(d => d.kind === 'buffer' && d.x === FOOT[0].x0 + 1) && at(FOOT[0
 /* THE SPOIL PITS (deeprails5, Daniel 10-14 #1): a PIT section on foot after the Foreman - lots of pits; hazards in the way you JUMP UP over or DROP DOWN under; high or low;
    A14 platforming with its own exam; teach -> test -> remix -> exam; A10b kept; the cart parked at its end */
 { const [p0, p1] = sec('THE SPOIL PITS'), A = ARCS.pits, D = 30, U = 26, f = FOOT.find(q => q.id === 'pits'), SP = T.SPIKE;
-  ok(p0 > FMG.FOREMAN.cols[1] && p1 <= ARENA_X && f && f.x0 >= p0 && f.board < p1, 'THE SPOIL PITS stand after the Foreman (and his station) and before the drill, on foot (' + f.x0 + '-' + f.board + ')');
+  ok(p0 > FMG.FOREMAN.cols[1] && p1 <= ARENA_X && f && f.x0 >= p0 && f.board > sec('THE FORGE')[0] && f.board < ARENA_X, 'THE SPOIL PITS stand after the Foreman (and his station) and before the drill, on foot - the stretch runs on through THE SMELTER FLOOR and THE FORGE to its cart (claude/forgemaster; ' + f.x0 + '-' + f.board + ')');
   ok(A && A.teach[1] < A.test[0] && A.test[1] < A.remix[0] && A.remix[1] < A.exam[0] && A.exam[1] < f.board, 'the pits arc runs teach -> test -> remix -> exam in order');
   const pits = L.mcPits.filter(([a]) => a >= p0 && a < p1); ok(pits.length >= 6, pits.length + ' pits');
   for (const [a, b] of pits) { ok(b - a + 1 <= 4, 'the pit at ' + a + ' is ' + (b - a + 1) + ' wide (every hero clears it with base movement)');
     let floor = -1; for (let y = D; y < L.H; y++) if (at(a, y) === SP) { floor = y; break; } ok(floor > D && at(a, floor + 1) === T.SOLID && [a, b].every(x => !stand(at(x, D))), 'the pit at ' + a + ' has a floor of spoil (spikes) under it - never a bottomless drop'); }
-  ok(L.examSpans.length === 1 && L.examSpans[0][0] === A.exam[0] && L.examSpans[0][1] === A.exam[1] && pits.some(([a]) => a >= A.exam[0] && a <= A.exam[1]), 'its exam is an exam span: the pits kill there (src/survival.js examAt)');
+  ok(L.examSpans.some(s => s[0] === A.exam[0] && s[1] === A.exam[1]) && pits.some(([a]) => a >= A.exam[0] && a <= A.exam[1]), 'its exam is an exam span: the pits kill there (src/survival.js examAt)');
   ok(pits.some(([a]) => a < A.exam[0]) && T_.some(t => /PITS KILL/.test(t.text) && t.at <= A.exam[0] + 1 && t.at >= A.exam[0] - 1), 'taught first where they only bite, and the exam is told before it kills (never an untold death)');
   { const cat = c => at(c, U) === T.ONEWAY, low = c => at(c, D) === T.SOLID, cols = []; for (let c = A.teach[0]; c <= A.exam[1]; c++) cols.push(c);
     ok(cols.filter(cat).length >= 50 && cols.filter(low).length >= 50, 'TWO LINES across it: the high catwalk (' + cols.filter(cat).length + ' columns, one-way planks: down + jump drops) and the low walk (' + cols.filter(low).length + ')');
@@ -238,7 +238,7 @@ ok(L.decor.some(d => d.kind === 'buffer' && d.x === FOOT[0].x0 + 1) && at(FOOT[0
     const steps = cols.filter(c => at(c, D - 2) === T.SOLID && at(c, D - 3) === T.AIR && low(c)); ok(steps.length >= 4, 'steps off the low walk back up to the catwalk (' + steps.length + ' columns)');
     ok(L.ents.some(e => e.t === 'sign' && e.x >= p0 && e.x <= A.teach[1] && /HIGH/.test(e.text) && /LOW/.test(e.text)) && L.ents.some(e => e.t === 'sign' && e.x >= p0 && e.x <= A.teach[1] && /DROP/.test(e.text)), 'taught by signs at the point of use (high / low; drop under the crusher)'); }
   { const el = L.ents.filter(e => e.elite && e.x >= A.exam[0] && e.x <= A.exam[1]); ok(el.length === 1 && el[0].t === 'brute' && pits.some(([a, b]) => b < el[0].x && el[0].x - b <= 4), 'its exam: one weighty elite (an elite brute) on the last pier, a pit at your back');
-    const stp = L.ents.filter(e => e.t === 'check' && e.x > A.exam[1] && e.x < f.board); ok(stp.length === 1, 'a station after the exam (CP after), before the parked cart'); }
+    const stp = L.ents.filter(e => e.t === 'check' && e.x > A.exam[1] && e.x < sec('THE SMELTER FLOOR')[0]); ok(stp.length === 1, 'a station after the exam (CP after), before the smelter floor (claude/forgemaster: the parked cart waits past THE FORGE)'); }
   ok(!L.ents.some(e => e.t === 'stray' && e.x >= p0 && e.x < p1), 'no ore here: the quest\'s ten stand where they were'); }
 /* THE HAND-OFF (deeprails5, Daniel 10-14 #4): at the end of EVERY on-foot stretch the cart is PARKED (visible: drawn on its own rail, not the column's first rock), you JUMP INTO it,
    and a GATE shuts the line past its nose until you do; taught once (THE WRECK: a sign, a tell, a glint at once) */

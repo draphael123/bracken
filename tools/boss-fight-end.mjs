@@ -9,9 +9,10 @@ const pg = await openPage({ audio: false, fonts: false }); let r;
 try {
   r = await pg.evalp(`(async()=>{const {LEVELS}=await import('/src/level.js');BK.manualSimulation=true;const rows=[];
 for(const [i,lv] of LEVELS.entries()){let b;try{b=lv.build();}catch{continue;}
- for(const kind of ['boss','mini']){const A0=kind==='boss'?b.arena:b.mini;if(!A0)continue;
+ for(const kind of ['boss','mini','mini2']){const A0=kind==='boss'?b.arena:kind==='mini2'?b.mini2:b.mini;if(!A0)continue;/* (claude/forgemaster) mini2: a level's second mini - the first counts as down */
+  if(kind==='mini2'){BKT.PROG[lv.id]=BKT.PROG[lv.id]||{};BKT.PROG[lv.id].mini=true;BKT.PROG[lv.id].mini2=false;}else if(kind==='mini'&&BKT.PROG[lv.id]){BKT.PROG[lv.id].mini=false;BKT.PROG[lv.id].mini2=false;}
   BK.setHero('knight');BK.reset({fresh:true});BK.load(i);BK.start();BK.god=true;BK.sim(10);BK.reset();
-  const L=BK.L,A=kind==='boss'?L.arena:L.mini,live=()=>kind==='boss'?BK.bossActive:BK.miniActive;
+  const L=BK.L,A=kind==='boss'?L.arena:L.mini,live=()=>kind==='boss'?BK.bossActive:BK.miniActive;if(kind==='mini2'&&L.mini!==L.mini2){rows.push({lv:lv.id,kind,t:A0.boss,res:'NOT THE ROAD\'S MINI'});continue;}
   const e=BK.enemies().find(q=>q.t===A.boss&&q.alive&&(kind==='boss'||q.mini||q.t==='greathound'));if(!e){rows.push({lv:lv.id,kind,t:A.boss,res:'NO BOSS'});continue;}
   for(const q of BK.enemies())if(q!==e&&!q.maxHp)q.alive=false;
   if(A.carpet){BK.board();BK.sim(30);}else{BK.tp(Math.round(A.trigger/16)+(A.reverse?-1:1),Math.round(A.floor/16)-1);BK.sim(200);}
@@ -27,4 +28,4 @@ return rows;})()`, 3600000);
 const bad = r.filter(x => x.res !== 'ended'), notStarted = r.filter(x => x.res === 'ended' && !x.started);
 for (const x of r) if (x.res !== 'ended' || !x.started) console.log('  ' + x.lv.padEnd(13) + x.kind.padEnd(5) + x.t.padEnd(16) + x.res + (x.started ? '' : ' (the fight never started)'));
 if (bad.length || notStarted.length) { console.log('BOSS-FIGHT-END: ' + (bad.length + notStarted.length) + ' of ' + r.length + ' fights do not end on the boss\'s death'); process.exit(1); }
-console.log('Every one of ' + r.length + ' boss and mini fights (' + r.filter(x => x.kind === 'boss').length + ' bosses, ' + r.filter(x => x.kind === 'mini').length + ' minis) ends when its boss dies.');
+console.log('Every one of ' + r.length + ' boss and mini fights (' + r.filter(x => x.kind === 'boss').length + ' bosses, ' + r.filter(x => x.kind !== 'boss').length + ' minis) ends when its boss dies.');

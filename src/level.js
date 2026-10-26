@@ -3510,14 +3510,11 @@ function highcrownWhole() {
     ent('hammer', c(150), 63); ent('anvil', c(158), 63); ent('boiler', c(176), 63); for (const x of [144, 166, 186]) ent('hotplate', c(x), 63);
     for (const x of [130, 150, 172, 194]) ent('torch', c(x), 63);
     ent('deco', c(138), 63, { kind: 'barrels' });
-    ent('forgemaster', c(172), 63, { mini: true });
-    for (let y = 50; y <= 63; y++) set(c(199), y, T.PORT);                    // his gate onto the bakehouse yard, shut until the smith is down
-    ent('check', X + 1, 63); ent('sign', X + 2, 63, { text: 'THE ARMOURY. THE SMITH\'S IRON TURNS HALF A CUT. ROLL A TUB INTO HIM AND HE TAKES IT ALL.' });
+    /* (claude/forgemaster, Daniel 10-15/10-26) THE FORGEMASTER LEFT: he is THE DEEP RAILS' second mini now (src/minecart.js THE FORGE, src/forge-rails.js) - no
+       boss in two levels. His crown:mini row, his ent, his room's mini and his gate onto the bakehouse yard went with him; the room itself stays as it was
+       for the Highcrown 2 lane, which CUTS the armoury (scratch/brief-highcrown2.md item 1 - no castle mini replaces him). */
+    ent('check', X + 1, 63); ent('sign', X + 2, 63, { text: 'THE ARMOURY. THE SMITH IS GONE DOWN TO THE DEEP RAILS: HIS FORGE IS COLD.' });
     ent('torch', X + 82, 63);
-    /* THE BEAM RAIL over the armoury floor is his second storey: he leaps to it, pours off it, and drops off it. Written here, in the
-       columns he fights in, and laid last of all the grows, so nothing after it has to carry beamL/beamR or the slag across a cut. */
-    F.R.mini = { x0: c(126) * TS, x1: c(198) * TS, floor: 64 * TS, trigger: c(134) * TS, wallL: c(125), gate: c(199), boss: 'forgemaster', y0: 50 * TS, y1: 65 * TS,
-      slag: [c(140) * TS + 8, c(158) * TS + 8, c(180) * TS + 8], beam: 59 * TS, beamL: c(142) * TS, beamR: c(182) * TS };
     F.R.interiors = F.R.interiors.concat([[X + 6, X + 79, 50, 65, 'forge']]);
     F.R.masonry = F.R.masonry.concat([[X + 4, X + 81, 46, 49], [X + 4, X + 5, 50, 57], [X + 80, X + 81, 50, 57], [X + 54, X + 57, 40, 45]]);
     R = F.done(); }
@@ -8524,7 +8521,8 @@ const ELITES = {
   spire: [knightRow('spire'), ['goat', 62, 79]],   /* (claude/wardens12) THE GONG MAUL of the Scree Chapter REPLACES the scriptorium's crag troll (61, 171); the herd billy on the shrines' ledge stays */   /* was ['troll', 61, 171] */
   /* moor: the Kite Field's herd billy and the Gallery's crag troll are built in galeMoor() in their final columns */
   storm: [['shield', 33, 35, { face: -1, gate: 38 }], ['brute', 162, 31, { face: -1 }], ['brute', 214, 31, { face: -1 }], ['shield', 343, 31, { face: -1 }], knightRow('storm'), ['shield', 470, 43, { face: -1, gate: 475 }]],   /* (claude/wardens12) THE STORM LANCE of the Storm Chapter REPLACES the Pike Serjeant at 373 and holds the Halls' gate (378) */   /* was ['pike', 373, 29, { gate: 378 }] */   /* (claude/stormtough: one weighty elite a section, the exams of the Road, the Square, Smoke Row, the Close's far bank and the gorge; the Pike Serjeant keeps the Halls) */   /* THE PIKE SERJEANT, THE HALLS: he holds the gap the Longhouse's second roof frames at 378 (this rework, docs/briefs/stormhold-town.md) */
-  /* HIGHCROWN has the Forgemaster's armoury, so neither holds a gate: the King's Champion alone in the siege yard (clear of
+  /* (claude/forgemaster: the Forgemaster has gone to the Deep Rails; his armoury is the Highcrown 2 lane's to cut, and its gate-keeper question goes with it - tools/elites.mjs NO_KEEPER)
+     HIGHCROWN has the Forgemaster's armoury, so neither holds a gate: the King's Champion alone in the siege yard (clear of
      its winch), and the Hearth Boss rallying his cooks in the keep's kitchen. The Leads' alarm gate at 880 is left alone */
   crown: [['heavy', 208, 63], ['hearthgob', 710, 51]],
   longwater: [['tideguard', 507, 26, { gate: 515 }]],   /* +88 (the river grew, 2026-09-25) */

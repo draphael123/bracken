@@ -50,7 +50,7 @@ export const AFFIX_FIT = {
   4: ['WARDING', 'SUMMONER', 'UNSTOPPABLE', 'THORNED', 'SHIELDED', 'VENOMOUS', 'SWIFT'],
   5: ['BURNING', 'VENOMOUS', 'SWIFT', 'SUMMONER', 'UNSTOPPABLE', 'SHIELDED'],
 };
-export const LEVEL_FIT = { burning: ['BURNING'], crown: ['BURNING'], marsh: ['VENOMOUS'], spore: ['VENOMOUS'], hornetsnest: ['VENOMOUS'] };   /* (claude/hornetsnest: the nest stings) */
+export const LEVEL_FIT = { burning: ['BURNING'], crown: ['BURNING'], minecart: ['BURNING'] /* (claude/forgemaster: THE DEEP RAILS' smelter floor burns - the Forgemaster's furnace) */, marsh: ['VENOMOUS'], spore: ['VENOMOUS'], hornetsnest: ['VENOMOUS'] };   /* (claude/hornetsnest: the nest stings) */
 export const affixFits = (id, affix, ambush) => !!AFFIX[affix] && !(ambush && affix === 'SUMMONER') && ((AFFIX_FIT[actOf(id).act] || []).includes(affix) || (LEVEL_FIT[id] || []).includes(affix));
 /* THE HAND-PICKED TABLE. One row a placed elite (and one an ambush room's captain, #amb: a room has waves of its own, so no SUMMONER there).
    The key is level|kind, or level|kind#n for the nth of that kind in the level by column. Edit only your own rows. */
@@ -89,7 +89,8 @@ export const AFFIX_AT = {
   'fallingtower|husk': 'VENOMOUS', 'fallingtower|apprentice#amb': 'WARDING',
   'witchlight|husk': 'SUMMONER', 'witchlight|armour': 'THORNED',
   'oreroad|gaffer#amb': 'SWIFT',   /* (claude/order: the drum yard's King's Champion is THE ORE LANCE now) */
-  'minecart|brute': 'UNSTOPPABLE',   /* (claude/deeprails2) THE FOREMAN in his armoured cart: no blow throws him - only a ram dents it */
+  'minecart|brute#1': 'UNSTOPPABLE',   /* (claude/deeprails2) THE FOREMAN in his armoured cart: no blow throws him - only a ram dents it */   /* (claude/forgemaster: #1 now - the spoil pits' elite; #2 the smelter floor's) */
+  'minecart|brute#2': 'BURNING',   /* (claude/forgemaster) THE SMELTER FLOOR's exam: a smelter brute hot from the furnace - a fire trail where he walks, the slag gutter at your back */
   'unburied|husk#amb': 'VENOMOUS',
   'fair|barker#1': 'WARDING', 'fair|barker#2': 'SUMMONER', 'fair|hobbyhorse': 'SWIFT',
   'canal|gaffer': 'UNSTOPPABLE',

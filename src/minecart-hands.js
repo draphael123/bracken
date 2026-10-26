@@ -432,7 +432,8 @@ export function makeMinecartHands(ctx) {
 
   /* ---------- THE GLINT AND THE NUDGE (src/stuck-spots.js STUCK_HANDS.minecart: points.<id> open / set) ---------- */
   const handsState = name => { const [kind, id] = name.split('.'); if (kind === 'points') { const p = M.points.find(q => q.id === id); return p ? p.state : ''; }
-    if (kind === 'board') { const P0 = ctx.players[0]; return P0 && P0.mcIn === id ? 'in' : 'out'; }   /* (deeprails5) a parked cart: 'out' until you jump into it */
+    if (kind === 'board') { const P0 = ctx.players[0]; return P0 && P0.mcIn === id ? 'in' : 'out'; }
+    if (kind === 'forge' && ctx.forgeState) return ctx.forgeState(name);   /* (claude/forgemaster) THE SMELTER FLOOR's slag plugs: shut / open (src/forge-rails.js) */   /* (deeprails5) a parked cart: 'out' until you jump into it */
     return ''; };
   H.handsState = n => (M ? handsState(n) : '');
   const stall = (P, dt) => { if (!P || P.dead) return; const ts = TS();

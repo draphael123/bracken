@@ -9,7 +9,7 @@ export function carryRows(old, hash, modes, say = () => {}) {
   if (!old) return { hash };
   if (old.hash === hash) return old;
   const fresh = { hash }, kept = [], lost = [];
-  for (const key of ['boss', 'mini', 'level']) {
+  for (const key of ['boss', 'mini', 'mini2', 'level']) {   /* (claude/forgemaster: mini2, a level's second mini) */
     if (!old[key]) continue;
     const mine = key === 'level' ? modes.level : modes.boss;   /* this run re-measures it: nothing to carry */
     if (mine) continue;
