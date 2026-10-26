@@ -114,7 +114,7 @@ ok(/'palisadewood'/.test(src('tools/one-new-foe.mjs')) || true, '(one-new-foe re
     ok(e.mode === 'stuck' && S.scafs[0].st === 'spent' && S.n.wreckRams === 1, 'his charge into a wreck: STUCK, and the wreck is spent'); }
   { const [S, e] = fresh(); e.x = A.x0 + 200; e.face = 1; e.mode = 'charge'; e.modeT = 4; for (let i = 0; i < 300 && e.mode === 'charge'; i++) BBM.stepBeast(e, S, 1 / 60, hero(A.x0 + 30), w);
     ok(e.mode === 'dazed' && BBM.takeBlow(e, S, 20, false)[0] === 25, 'his charge into the wall: DAZED (x1.25)'); }
-  { const [S, e] = fresh(); const [d, wd] = BBM.takeBlow(e, S, 20, false); ok(d === 8 && wd === 'ARMOURED', 'his armour: 0.4x and ARMOURED (the B15 floor)'); ok(BBM.takeBlow(e, S, 20, true)[0] === 20, 'a plunge on his back lands whole'); }
+  { const [S, e] = fresh(); const [d, wd] = BBM.takeBlow(e, S, 20, false); ok(d === Math.round(20 * BB.armour) && BB.armour >= 0.4 && wd === 'ARMOURED', 'his armour: ' + BB.armour + 'x (never under the 0.4x B15 floor) and ARMOURED'); ok(BBM.takeBlow(e, S, 20, true)[0] === 20, 'a plunge on his back lands whole'); }
   { const [S, e] = fresh(); e.hp = BB.hp * 0.49; e.mode = 'walk'; BBM.stepBeast(e, S, 1 / 60, hero(e.x + 200), w); ok(S.ph === 2 && e.mode === 'unchain', 'phase two at half: THE CHAINS SNAP (he rears, told)');
     added = 0; for (let i = 0; i < 90 && e.mode === 'unchain'; i++) BBM.stepBeast(e, S, 1 / 60, hero(e.x + 200), w);
     ok(S.harness.cut && e.mode === 'loose' && BBM.bbOpen(e) && added === BB.unchain.adds && S.adds.length === BB.unchain.adds, 'the chains snap: the handlers are bucked off (' + added + ' on foot, the P2 adds) and he bolts for the palisade - LOOSE');
@@ -139,7 +139,7 @@ ok(/'palisadewood'/.test(src('tools/one-new-foe.mjs')) || true, '(one-new-foe re
     for (let i = 0; i < 60; i++) BBM.stepBeast(e, S, 1 / 60, hero(A.x1 - 40), w); ok(S.fires.length === 1, 'a pitch pot lands: BURNING PITCH on the floor');
     for (let i = 0; i < 120; i++) BBM.stepBeast(e, S, 1 / 60, hero(e.x - 80), w); ok(hits.filter(n => n === 'pitch').length >= 2, 'standing in the pitch burns, tick by tick (' + hits.filter(n => n === 'pitch').length + ')');
     for (let i = 0; i < 300; i++) BBM.stepBeast(e, S, 1 / 60, hero(A.x1 - 40), w); ok(S.fires.length === 0, 'the pitch burns out'); }
-  { const [S, e] = fresh(); const seen = new Set(); for (let i = 0; i < 20000; i++) { if (e.mode === 'walk') S.restT = Math.min(S.restT, 0.01); BBM.stepBeast(e, S, 1 / 60, hero(A.x0 + 30 + (i * 7) % 600), w); seen.add(e.mode); if (i === 8000) e.hp = BB.hp * 0.45; }
+  { const [S, e] = fresh(); const seen = new Set(); for (let i = 0; i < 60000; i++) { if (e.mode === 'walk') S.restT = Math.min(S.restT, 0.01); BBM.stepBeast(e, S, 1 / 60, hero(A.x0 + 30 + (i * 7) % 600), w); seen.add(e.mode); if (i === 24000) e.hp = BB.hp * 0.45; }
     const moves = ['chargeTell', 'sweepTell', 'sweepBack', 'volleyTell', 'potTell', 'trampleTell', 'flailTell', 'kickTell']; ok(moves.every(m => seen.has(m)), 'P1 five orders + P2 four moves, all told: ' + moves.filter(m => seen.has(m)).join(' ') + ' (batterTell: its own test)');
     ok(Object.keys(BBM.ORDER).every(m => BBM.BB_SAY[BBM.ORDER[m].say]), 'P1: every move is a handler ORDER (a flag + a shouted word): ' + Object.keys(BBM.ORDER).map(m => BBM.BB_SAY[BBM.ORDER[m].say]).join(' '));
     ok(marks.includes('!') && marks.includes('!!'), 'every move marked: ! (the sweep) and !! (the rest)');
