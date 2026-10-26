@@ -4909,7 +4909,7 @@ function theFlotilla() {
   net(50, 51, 12, 23); plat(47, 11, 7); // her shrouds and the crow's nest
   ent('lookout', 50, 10, { face: 1 });
   ent('sign', 40, 23, { text: 'THE GALLEY. STOP THE LOOKOUT BEFORE HIS WHISTLE WAKES THE TOWN.' });
-  ent('cannon', 37, 23, { deck: true, aim: 1 }); ent('sign', 35, 23, { text: 'HER BOW CHASER IS LAID DOWN HER DECK. STRIKE THE BREECH: THE SHOT CLEARS ITS LINE.' });   /* (claude/flotilla3) TEACH the verb: a miss costs nothing */
+  ent('cannon', 37, 23, { deck: true, aim: 1 }); ent('sign', 36, 23, { text: 'HER BOW CHASER IS LAID DOWN HER DECK. STRIKE THE BREECH: THE SHOT CLEARS ITS LINE.' });   /* (claude/flotilla3) TEACH the verb: a miss costs nothing */
   block(70, 70, 22, 23); block(87, 87, 22, 23);   /* her MANTLETS: shot-plank screens on the deck - behind one, his broadside does not reach you */
   ent('signalhoist', 95, 23, { zone: 'galley' });
   ent('vault', 82, 29);
