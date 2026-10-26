@@ -5279,7 +5279,7 @@ function theHurricane() {
   /* (the galley is a solid house: the flood is the only way onto its roof) */
 
   ent('deco', 156, DK - 4, { kind: 'chickenCoop' }); ent('deco', 166, DK - 4, { kind: 'kegStack' });
-  pools.push({ x0: 107 * TS, x1: 151 * TS, y: (DK - 1) * TS, base: 44 * TS, loY: 44 * TS, hiY: (DK - 1) * TS, swim: true, clear: true, shallow: false, bottom: 44 * TS, h3flood: 'waist', sea: true });   /* (built at HIGH water: the reach fill swims it full; src/hurricane3.js drains it on load) */
+  pools.push({ x0: 107 * TS, x1: 151 * TS, y: (DK - 3) * TS - 6, base: 44 * TS, loY: 44 * TS, hiY: (DK - 3) * TS - 6,   /* (high water stands just over the galley roof: a swimmer at its wall steps out - a swim leap is barely a row) */ swim: true, clear: true, shallow: false, bottom: 44 * TS, h3flood: 'waist', sea: true });   /* (built at HIGH water: the reach fill swims it full; src/hurricane3.js drains it on load) */
   ent('sign', 102, DK - 1, { text: 'HER WAIST FLOODS WHEN THE SEA BREAKS. SWIM UP WITH IT: THE GALLEY ROOF IS THE WAY ON.' });
   ent('sailor', 118, 43, { rise: true, face: 1 }); ent('sailor', 140, 43, { rise: true, face: -1 });   /* drowned hands: they come up out of her flooded waist */
   /* her boat skids over the waist: only a swimmer on the flood reaches them */
