@@ -139,7 +139,7 @@ export const STUCK = {
     { id: 'hu-foremast', zone: [164, 28, 175, 37], at: [172, 35], glint: 'stall', line: 'STAND BY HER FOREMAST: THE SKY LAYS IT ACROSS' },
     { id: 'hu-rod1', zone: [276, 28, 303, 37], at: [296, 35], glint: 'stall', line: 'STRIKE THE CHAIN ONTO THE IRON, THEN STAND CLEAR' },
     { id: 'hu-loosegun', zone: [286, 37, 311, 42], at: [300, 41], glint: 'stall', line: 'WHEN SHE HEELS AFT THE GUN RUNS INTO THE CARGO' },
-    { id: 'hu-mizzen', zone: [452, 28, 466, 37], at: [464, 33], glint: 'stall', line: 'SHE IS GOING DOWN BY THE STERN: UP HER MIZZEN' },
+    { id: 'hu-mizzen', zone: [452, 31, 466, 37], at: [464, 33], glint: 'stall', line: 'SHE IS GOING DOWN BY THE STERN: UP HER MIZZEN' },
     { id: 'hu-rod2', zone: [456, 22, 470, 30], at: [469, 29], glint: 'stall', line: 'STRIKE THE MIZZEN CHAIN: THE BOLT FELLS HER TOPMAST' },
     { id: 'hu-gust1', zone: [432, 18, 442, 29], at: [427, 24], glint: 'stall', line: 'WAIT FOR THE SAIL TO SNAP, THEN JUMP WITH THE GUST' },
     { id: 'hu-gust2', zone: [414, 16, 425, 29], at: [409, 22], glint: 'stall', line: 'WAIT FOR THE GUST THAT BLOWS FORWARD, THEN JUMP' },
