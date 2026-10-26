@@ -1,9 +1,9 @@
 /* tools/underleaf4art-sheet.mjs [poses] [scale] - a contact sheet of THE POTION MASTER's three looks (green P1 / blue P2 / red P3) over the named poses (default: the new ones).
    Writes scratch/lane-reports/underleaf4art-<PREFIX>-sheet.png.   PREFIX=after node tools/underleaf4art-sheet.mjs singed,snared,aloft,idle 5 */
-import { openPage } from './cdp.mjs';
+import { openPage, ROOT } from './cdp.mjs';
 import { writeFileSync, mkdirSync } from 'fs';
 import { join } from 'path';
-const OUT = process.env.OUTDIR || 'C:/Users/Daniel Raphael/.claude/bracken-lanes/scratch/lane-reports', PFX = process.env.PREFIX || 'after';
+const OUT = process.env.OUTDIR || join(ROOT, 'audits', 'lane-shots'), PFX = process.env.PREFIX || 'after';
 mkdirSync(OUT, { recursive: true });
 const poses = (process.argv[2] || 'singed,snared,aloft,lashTell,trapTell,floated,idle').split(','), sc = +(process.argv[3] || 5);
 const pg = await openPage({ audio: false, fonts: false });

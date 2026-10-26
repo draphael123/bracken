@@ -39,6 +39,7 @@ export const SIG = {
   badger: { mode: 'chargeTell', answer: 'parry' }, crow: { mode: 'diveTell', answer: 'duck' },      heavy: { mode: 'slashTell', answer: 'parry' },
   soldier: { mode: 'slashTell', answer: 'parry' }, berserker: { mode: 'flailTell', answer: 'parry' }, cutter: { mode: 'raise', answer: 'parry' },
   swornsword: { mode: 'cutTell', answer: 'parry' }, hearthgob: { mode: 'raise', answer: 'parry' },
+  hornsman: { mode: 'maulTell', answer: 'parry' },   /* (batch122, claude/palisadefoe) THE HORNSMAN's MAUL: a shield turns it (the horn is no blow) */
   honeyhornet: { mode: 'ramTell', answer: 'parry' },   /* (claude/hornetsnest2) THE FAT HONEY HORNET's RAM: meet it on the shield - it reels, its soft head to you */
   swarm: { mode: 'rise', answer: 'jump' },   /* (integ116, claude/hornetsnest: THE SWARM's red !! rise is the told beat before it stings - its mark is low, so the answer read is the jump out of the cloud) */
   royalboar: { mode: 'tell', answer: 'parry' },   /* (integ115: King Gorm's hall boar - its charge is told '!' and a shield turns it (src/royal-boar.js), so the answer is the parry) */
