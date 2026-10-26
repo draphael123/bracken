@@ -33,7 +33,7 @@ import { wormOpen } from './dune-worm.js';
 import { mageOpen, mageSoft } from './undead-mage.js';
 import { pupOpen } from './puppeteer.js';
 import { wqOpen } from './wicker-queen.js';
-import { leOpen } from './lantern-eater.js'; import { chOpen } from './admirals-champion.js';   /* THE ADMIRAL'S CHAMPION (claude/flotilla2) */   /* THE LANTERN-EATER (claude/lanterneater) */
+import { leOpen } from './lantern-eater.js'; import { chOpen } from './admirals-champion.js'; import { adOpen } from './admiral.js';   /* THE ADMIRAL (claude/flotilla3) */   /* THE ADMIRAL'S CHAMPION (claude/flotilla2) */   /* THE LANTERN-EATER (claude/lanterneater) */
 import { qOpen } from './cistern-queen.js';
 import { matOpen } from './raptor-matriarch.js';
 import { colOpen } from './glass-colossus.js';
@@ -125,6 +125,7 @@ export const OPEN_RULE = {
   hawkmistress: e => hmOpen(e),                                              // THE HAWK-MISTRESS (claude/ksar): the hawk wheeled off by a gong or blinded by a flash - she whistles it back, open
   huntmaster: e => hnOpen(e),                                               // THE GOBLIN HUNTMASTER (claude/rootway): his own gold arrow struck home (a weak point broken, or a stagger), or caught in his own cage
   greatdrill: e => drillHittable(e),                                         // THE GREAT DRILL 2 (claude/deeprails2): its opening is the JAM (an ore cart rammed into its gears); outside it the cab is armoured x0.4 (B15) - a blow there is greed. (was: claude/minecart) a CONSTRUCT whose cab is ALWAYS hittable (B13/B14, Daniel 10-07) - only its told ward after a jam turns a blow, so only a blow on the ward is greed; the jam (a routed ore cart in its gears) pays x2 in its own code
+  admiral: e => adOpen(e),                                                   // THE ADMIRAL (claude/flotilla3): STAGGERED by a blown plate, RELOADING, SOAKED off his cut line, the AXE in the deck, KNOCKED FLAT bare
   champion: e => chOpen(e),                                                  // THE ADMIRAL'S CHAMPION (claude/flotilla2): KNOCKED FLAT by a deck gun's round shot, or his blade (the anchor) stuck in the deck
   fogknight: e => fkOpen(e) || e.mode === 'reel',                            // THE FOG KNIGHT (claude/towpath): the armour standing empty - the lantern burnt the fog out of it, or the swing bridge scattered it - and reeling from a plunge through his full guard
   colossus: e => colOpen(e),                                                 // THE GLASS COLOSSUS (claude/glasssea): its chest cracked by its own lance off a mirror, its shoulders blazing (the swarm held by firelight), its crown dazzled by the dawn - its legs are its own purse (OWN_WARD)
@@ -162,6 +163,7 @@ export const FULL_DAMAGE = {
   paladinboss: 'a human duelist (design standard B11; Daniel 10-07: "B11 duelist, NOT x0.05 chip"): always hittable, his AEGIS GUARDS BY ANGLE (a blow from the front at his height while he is on guard is turned - and feeds his light; from behind, from above or in his tells and swings it lands and drains it); STARVED of light he FALTERS (x1.8, 3 s): src/paladin-boss.js',
   hawkmistress: 'always hittable (B15): (claude/ksarhawk, Daniel 10-13) HER HAWK IS HER SHIELD - while it rides over her a blow lands at the 0.4 floor; FIRE (a thrown torch, or a keg) brings it down and she is OPEN (x2), a gong / a flash / a struck stoop leaves her BARE (x1.4), and while it is out on a stoop of its own she takes a blow whole - all in her own code (src/hawk-mistress-hands.js take)',
   huntmaster: 'a duelist (design standard B11, claude/rootway): always hittable, he GUARDS BY ANGLE between his moves (a blow from his front at his height is turned: GO ROUND, or from above); his openings pay x1.5 (x2 behind the broken mask) in his own code (src/huntmaster.js)',
+  admiral: 'his own numbers (claude/flotilla3, src/admiral.js take): armoured, a blade CHIPS his salvaged iron at 0.15 / 0.25 / 0.35 by plates left (Daniel-approved armour exception to B15) and his plate holds him over half his health until a deck gun blows it off; his openings x1 armoured, x1.6 bare; bare x1 outside them',
   champion: 'a duelist (design standard B11/B15, claude/flotilla2): always hittable - his PLATE takes every blow at x0.5 on guard (HIS PLATE), x1 in the recovery after each committed blow, x1.5 with the blade (or the anchor) stuck in the deck, x2 KNOCKED FLAT by a deck gun (one knockdown 11% of him at most), x0.4 in his told ward after it (src/admirals-champion.js)',
   fogknight: 'a duelist (design standard B11): always hittable, GUARDS BY STANCE (high: a low blow lands; low: a high blow or a plunge; full: only a plunge, which breaks it); every angle lands in his own blows; his openings pay x1.6 in his own code (claude/towpath)',
   bloodknight: "Daniel 10-03: he shouldn't be invulnerable most of the time, he should play like the player character - FULL DAMAGE, DEFENDS HIMSELF (claude/dk3)",

@@ -109,6 +109,10 @@ export function slabHint(BK, P) {
    a shut door (or a keg on the crate hatch) with a gun laid at it from the west: stand at the gun's breech, face down its line, strike (the ranger: DOWN+X, her knife's
    low sweep). A gun still hot: wait at it. */
 function flotilla(BK, P, mem) {
+  /* (claude/flotilla3) A LAID GUN ahead on his floor, not fired yet (a swivel on a rotten deck, a top gun at a yard's lift): stand at its breech and strike it */
+  { const F3 = BK.flotilla3 ? BK.flotilla3() : null, G = F3 && F3.guns ? F3.guns() : [];
+    const gn = P && G.filter(q => !q.fired && q.x * TS > P.x - 4 * TS && q.x * TS < P.x + 14 * TS && Math.abs((q.y + 1) * TS - P.y) < 3 * TS).sort((a, b) => a.x - b.x)[0];
+    if (gn) return { x: gn.x * TS - 4, y: (gn.y + 1) * TS, key: 'atk', face: 1, r: 14 }; }
   if (!P || !BK.props) return null; const pr = BK.props(), L = BK.L, near = (a, b) => Math.abs(a - b) < 40;
   const tgt = pr.filter(q => ((q.t === 'bulkhead' && !q.open) || (q.t === 'keg' && !q.gone && L.grid[Math.floor(q.y / TS) * L.W + Math.floor(q.x / TS)] === 4)) && q.x > P.x - 16 && q.x < P.x + 30 * TS && near(q.y, P.y)).sort((a, b) => a.x - b.x)[0];
   if (!tgt) return null;
