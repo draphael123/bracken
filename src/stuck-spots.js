@@ -262,6 +262,17 @@ export const STUCK = {
     { id: 'kg-court-gate', zone: [396, 0, 409, 13], at: [405, 11], done: ['plate', 405, 11, 'down'], line: 'THE COURT GATE IS SHUT: STAND ON THE PLATE ON THE STEP' },
   ],
   /* THE PALISADE WOOD (claude/palisadewood): every prop the route needs until it is knocked out (the two ramps, the two watchtowers, the gatehouse ditch's scaffold) */
+  /* THE KITCHEN GATE (claude/kitchengate): every bellows the route needs (strike it: its fire roars and works its copper, its great spit or its trail) */
+  kitchengate: [
+    { id: 'kg-scullery', zone: [50, 28, 72, 39], at: [60, 39], done: ['kgbellows', 60, 39, 'on'], line: 'UP THE WELL: STRIKE THE BELLOWS, STAND IN THE STEAM' },
+    { id: 'kg-brewhouse', zone: [74, 17, 89, 26], at: [85, 26], done: ['kgbellows', 85, 26, 'on'], line: 'THE FACE IS TOO HIGH: STRIKE THE BELLOWS, STAND IN THE STEAM' },
+    { id: 'kg-spit1', zone: [105, 19, 118, 25], at: [108, 25], done: ['kgbellows', 108, 25, 'on'], line: 'THE LEDGE IS TOO HIGH: STRIKE THE BELLOWS, RIDE A SPIT UP' },
+    { id: 'kg-spit2', zone: [120, 14, 146, 19], at: [135, 19], done: ['kgbellows', 135, 19, 'on'], line: 'THE LEDGE IS TOO HIGH: STRIKE THE BELLOWS, RIDE A SPIT UP' },
+    { id: 'kg-trench', zone: [147, 4, 166, 13], at: [161, 13], done: ['kgbellows', 161, 13, 'on'], line: 'STRIKE THE BELLOWS: RISE ON THE STEAM, CATCH A HOOK' },
+    { id: 'kg-door1', zone: [221, 14, 237, 23], at: [223, 23], done: ['kgbellows', 223, 23, 'on'], line: 'A TALLOW DOOR: STRIKE THE BELLOWS, LET THE GREASE BURN' },
+    { id: 'kg-spit3', zone: [300, 8, 315, 21], at: [304, 21], done: ['kgbellows', 304, 21, 'on'], line: 'THE GALLERY IS TOO HIGH: STRIKE THE BELLOWS, RIDE A SPIT UP' },
+    { id: 'kg-door2', zone: [341, 13, 354, 21], at: [343, 21], done: ['kgbellows', 343, 21, 'on'], line: 'THE BUTTERY DOOR: STRIKE THE BELLOWS, LET IT BURN' },
+  ],
   palisadewood: [
     { id: 'pw-edge-ramp', zone: [12, 33, 24, 37], at: [19, 37], done: ['scaffoldprop', 19, 37, 'on'], line: 'THE LEDGE IS TOO HIGH: KNOCK OUT THE SCAFFOLD PROP' },
     { id: 'pw-yard-tower', zone: [136, 27, 146, 31], at: [142, 31], done: ['towerprop', 142, 31, 'on'], line: "NO JUMP CROSSES: KNOCK OUT THE WATCHTOWER'S PROP" },

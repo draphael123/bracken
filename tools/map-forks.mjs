@@ -54,10 +54,15 @@ try {
     BKT.PROG.stockade = { cleared: true, medal: 1, best: 400 }; out.slowStockade = { info: info('burning'), up: go('stockade', 'up'), right: go('stockade', 'right') };
     const { ROAD_OPEN } = await import('/src/level.js');
     if (ROAD_OPEN.undercrown) {   /* (claude/undercrown2, DANIEL'S DESIGN CHANGE 10-15) the Undercrown is ON THE ROAD: Stormhold -> THE UNDERCROWN -> Highcrown */
-      const road = () => { for (const l of LEVELS) if (!['burning', 'church', 'unburied', 'harbor', 'undercrown', 'crown', 'storm'].includes(l.id)) BKT.PROG[l.id] = { cleared: true, medal: 3, best: 400, silver: 7 }; };
+      const road = () => { for (const l of LEVELS) if (!['burning', 'church', 'unburied', 'harbor', 'undercrown', 'crown', 'storm', 'kitchengate'].includes(l.id)) BKT.PROG[l.id] = { cleared: true, medal: 3, best: 400, silver: 7 }; };
       wipe(); road(); delete BKT.PROG.crownOpen; out.ucBefore = { uc: info('undercrown'), crown: info('crown') };
       BKT.PROG.storm = { cleared: true, medal: 1, best: 400 }; out.ucOpen = { uc: info('undercrown'), crown: info('crown'), right: go('storm', 'right') };
-      BKT.PROG.undercrown = { cleared: true, medal: 1, best: 400 }; out.ucDone = { crown: info('crown'), right: go('undercrown', 'right') };
+      BKT.PROG.undercrown = { cleared: true, medal: 1, best: 400 }; out.ucDone = { crown: info('crown'), kg: info('kitchengate'), right: go('undercrown', 'right') };   /* (claude/kitchengate) THE KITCHEN GATE comes next */
+      BKT.PROG.kitchengate = { cleared: true, medal: 1, best: 400 }; out.kgDone = { crown: info('crown'), right: go('kitchengate', 'right') };
+      /* (claude/kitchengate) GRANDFATHERED: a save made before THE KITCHEN GATE, the Undercrown cleared and Highcrown open, keeps Highcrown open (once: PROG.kitchenRoadMig), and finds the kitchens unlocked as an extra */
+      { const K = 'bracken.progress.4', raw = JSON.parse(JSON.stringify(BKT.PROG)); delete raw.kitchenRoadMig; delete raw.crownOpen; delete raw.kitchengate; delete raw.crown; raw.ucRoadMig = 1;
+        localStorage.setItem(K, JSON.stringify(raw)); BK.loadSlot(4); out.kgGrand = { open: !!BKT.PROG.crownOpen, crown: info('crown'), kg: info('kitchengate') };
+        localStorage.setItem(K, JSON.stringify({ ...raw, kitchenRoadMig: 1 })); BK.loadSlot(4); out.kgFresh = { open: !!BKT.PROG.crownOpen, crown: info('crown'), kg: info('kitchengate') }; localStorage.removeItem(K); }
       /* GRANDFATHERED: a save made before the road changed, Stormhold cleared and Highcrown open, keeps Highcrown open (once: PROG.ucRoadMig) */
       { const K = 'bracken.progress.4', raw = JSON.parse(JSON.stringify(BKT.PROG)); delete raw.ucRoadMig; delete raw.crownOpen; delete raw.undercrown; delete raw.crown; raw.storm = { cleared: true, medal: 1, best: 400 };
         localStorage.setItem(K, JSON.stringify(raw)); BK.loadSlot(4); out.grand = { open: !!BKT.PROG.crownOpen, crown: info('crown') };
@@ -80,7 +85,9 @@ try {
   if (ROAD_OPEN.undercrown) {
     !S.ucBefore.uc.secret && S.ucBefore.uc.locked && S.ucBefore.crown.locked ? ok('undercrown on the road: shown and shut before Stormhold is cleared, Highcrown shut behind it') : fail('undercrown before stormhold: ' + JSON.stringify(S.ucBefore));
     !S.ucOpen.uc.locked && S.ucOpen.crown.locked && S.ucOpen.right === 'undercrown' ? ok('Stormhold cleared: the road walks on to THE UNDERCROWN, and Highcrown waits for it') : fail('undercrown after stormhold: ' + JSON.stringify(S.ucOpen));
-    !S.ucDone.crown.locked && S.ucDone.right === 'crown' ? ok('THE UNDERCROWN cleared: Highcrown opens and the road walks on to it') : fail('highcrown after the undercrown: ' + JSON.stringify(S.ucDone));
+    S.ucDone.crown.locked && !S.ucDone.kg.locked && S.ucDone.right === 'kitchengate' ? ok('THE UNDERCROWN cleared: THE KITCHEN GATE opens and the road walks on to it; Highcrown waits for it') : fail('the kitchen gate after the undercrown: ' + JSON.stringify(S.ucDone));
+    !S.kgDone.crown.locked && S.kgDone.right === 'crown' ? ok('THE KITCHEN GATE cleared: Highcrown opens and the road walks on to it') : fail('highcrown after the kitchen gate: ' + JSON.stringify(S.kgDone));
+    S.kgGrand.open && !S.kgGrand.crown.locked && !S.kgGrand.kg.locked && !S.kgFresh.open && S.kgFresh.crown.locked && !S.kgFresh.kg.locked ? ok('an old save past the Undercrown keeps Highcrown open (grandfathered once) and finds THE KITCHEN GATE unlocked as an extra; a save made on the new road walks the kitchens first') : fail('kitchen grandfathering: ' + JSON.stringify({ grand: S.kgGrand, fresh: S.kgFresh }));
     S.grand.open && !S.grand.crown.locked && !S.fresh.open && S.fresh.crown.locked ? ok('an old save with Stormhold cleared keeps Highcrown open (grandfathered once); a save made on the new road must walk the Undercrown first') : fail('grandfathering: ' + JSON.stringify({ grand: S.grand, fresh: S.fresh }));
     !S.nest.nest.locked && S.nest.marsh.locked && S.nest.right === 'hornetsnest' ? ok("the Lumber Trail cleared: the road walks on to THE HORNET'S NEST, and MARSH WOOD waits for it") : fail('the nest on the road: ' + JSON.stringify(S.nest));
     S.nestGrand.open && !S.nestGrand.marsh.locked && !S.nestFresh.open && S.nestFresh.marsh.locked ? ok('an old save past the Lumber Trail keeps MARSH WOOD open (grandfathered once); a save made on the new road walks the nest first') : fail('nest grandfathering: ' + JSON.stringify({ grand: S.nestGrand, fresh: S.nestFresh }));

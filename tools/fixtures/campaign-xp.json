@@ -300,6 +300,12 @@
    "foeXp": 532,
    "bossXp": 234,
    "clear": 319
+  },
+  "kitchengate": {
+   "run": 643,
+   "foeXp": 202,
+   "bossXp": 360,
+   "clear": 121
   }
  }
 }

@@ -648,5 +648,18 @@
   "walked": 100,
   "bare": true,
   "lostPct": 171
+ },
+ "kitchengate": {
+  "hash": "3f776e548fbf",
+  "hero": "knight",
+  "steps": 30000,
+  "runs": 3,
+  "hits": 26,
+  "deaths": 1,
+  "kills": 21,
+  "lifts": 63,
+  "walked": 100,
+  "bare": true,
+  "lostPct": 119
  }
 }
