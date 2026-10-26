@@ -81,7 +81,7 @@ try {
     const keys = Object.keys(r.rows);
     for (const k of keys) { const x = r.rows[k]; const bad = [];
       if (x.landed === 0) bad.push('PHANTOM MARK: ' + x.mark + ' shown ' + x.n + 'x and nothing ever landed');
-      if (x.poseN > 1 && x.posed === 0) bad.push('PHANTOM POSE: the windup is drawn the same as ' + 'the mode before it (' + x.maxPose + ' px differ at most)');
+      if (x.poseN > 0 && x.posed === 0) bad.push('PHANTOM POSE: the windup is drawn the same as ' + 'the mode before it (' + x.maxPose + ' px differ at most)');
       const line = (row.kind + ' ' + row.t).padEnd(20) + k.padEnd(30) + (x.mark || '').padEnd(3) + ' seen ' + x.n + ', landed ' + x.landed + ', posed ' + x.posed + '/' + x.poseN + (x.poseN ? ' (px ' + x.minPose + '-' + x.maxPose + ')' : '');
       report.push(line + (bad.length ? '   <- ' + bad.join('; ') + (KNOWN[k] ? '   [KNOWN: ' + KNOWN[k] + ']' : '') : ''));
       if (bad.length && !KNOWN[k]) fails.push(k + ': ' + bad.join('; ')); }

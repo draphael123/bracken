@@ -370,8 +370,7 @@ if (fair) {
     ok(!FGM.mirrorSees(L, at3(300, 1)) && !FGM.mirrorSees(L, at3(345, -1)), 'a hero outside the hall sees behind him');
     const foe = { x: 400, y: 27 * TS3 }, back = { x: 500, y: 27 * TS3, face: 1, alive: true };
     ok(!M.looks(foe, back) && M.looks(foe, { ...back, mirror: true }) && !M.looks(foe, { ...back, mirror: true, blind: true }), 'the mirror flag does not turn the look round, or a wall does not stop it');
-    ok(!M.looks({ x: 500 + 120, y: 27 * TS3 }, back, 88, 88), '(a foe 120 px ahead is out of a dim 88 px look)');
- }
+    ok(!M.looks({ x: 500 + 120, y: 27 * TS3 }, back, 88, 88), '(a foe 120 px ahead is out of a dim 88 px look)'); }
   // THE EFFIGY CATCHES FIRE (claude/fairfix2; it was the ghost train): a chase down the sunken straw lane from BEHIND, kill on contact like every chase, told speed-ups, the fair's own shrine within
   // fifteen columns of its start; TWO LANES to choose - the LOW lane's burning bunting (timed, to duck or wait), fallen stalls to hop and two mummers each a few steps before a line of bunting;
   // the HIGH lane's stall roofs, every one giving way under you. No free heart in it
@@ -568,7 +567,7 @@ ok(R.n >= 6, 'the page spawned ' + R.n + ' mummers');
 ok(R.facedMoved < 0.5, 'in the page a faced mummer moved ' + R.facedMoved + ' px');
 ok(R.creepDx > 20, 'in the page a mummer with the hero\'s back turned crept only ' + R.creepDx + ' px in 2 s');
 ok(R.hit.hp1 < R.hit.hp0, 'a frozen mummer was not hurt by the hero facing it');
-ok(!R.hit.alive && R.hit.blows >= 2 && R.hit.blows <= 12, 'a frozen mummer did not die within the bounded 12-blow combat probe (took ' + R.hit.blows + ')');
+ok(!R.hit.alive && R.hit.blows >= 2 && R.hit.blows <= 5, 'a frozen mummer took ' + R.hit.blows + ' blows (about three)');
 // a lone BULL'S-EYE (claude/fairfix2): its target struck where its ride has carried it opens it at once - its planks and its bars go to the host
 { const L0 = { strikers: [], tickets: [], galleries: [{ id: 9, targets: [{ x: 10, row: 10, on: { kind: 'gondola', idx: 0 } }], window: 1, planks: [[1, 2, 3]], bars: [[4, 4, 5, 6]] }] }, G0 = FGM.newGames(L0); let got = null, said = '';
   FK.liveTargets(G0.galleries, [{ fair: 'gondola', idx: 0, x: 400, y: 300, w: 30 }]); const t = G0.galleries[0].targets[0];
