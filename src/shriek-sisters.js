@@ -38,14 +38,14 @@
 export const SS = {
   hp: { diver: 760, shrieker: 570, snatcher: 660 },   /* (claude/sisters2 tune, n=24/hero BOT_PROFILE=human L14: 920/690/800 -> 760/570/660, grab dmg 12 -> 10, grab cd 8/5.5/4.5 -> 10/7/5.5 first 7 -> 9: 47% -> 69%) */
   wing: 0.4, downK: 1.5, wardMul: 0.4, last: 0.8,
-  hover: { diver: 112, shrieker: 150, snatcher: 104 },
+  hover: { diver: 112, shrieker: 124, snatcher: 104 },   /* (claude/sisters2: the shrieker 150 -> 124 and the boulder's carry 150 -> 118, so the screamTell / dropTell poses and their marks are on the arena's screen, not over its top edge) */
   dive: { tell: [0.85, 0.75, 0.7], lock: 0.24, markTell: 0.62, v: 430, dmg: 22, land: 0.7, rise: 0.8, cd: [2.4, 2.1, 1.8], second: 0.55, downed: 1.3 },
   stun: { t: 2.6, mul: 2, cap: 0.24 },
   ward: 2.5,
   slab: { w: 48, regrow: [9, 9, 6.5] },
   scream: { tell: 0.95, cd: [4.6, 4.0, 3.4], mark: 1.6, swoop: 1.9, low: 34 },
   wave: { tell: 0.8, v: 230, h: 26, dmg: 18, life: 1.8 },
-  rock: { tell: 0.8, fall: 0.62, r: 22, dmg: 21, life: 11, pick: 1.0, carry: 2.2, high: 150 },   /* THE BOULDER DROP (claude/sisters2: carried high, a shadow marker) */
+  rock: { tell: 0.8, fall: 0.62, r: 22, dmg: 21, life: 11, pick: 1.0, carry: 2.2, high: 118 },   /* THE BOULDER DROP (claude/sisters2: carried high, a shadow marker) */
   snatch: { tell: 0.8, v: 320, h: 16, dmg: 22, cd: 6.5 },
   sister: { w: 26, h: 18 },
   /* (claude/sisters2) THE SIGNATURE MOVES. sig: each survivor's own cooldown x this by phase (0 = all three, 1 = one fallen, 2 = the last) */
