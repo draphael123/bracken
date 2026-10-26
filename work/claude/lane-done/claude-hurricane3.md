@@ -125,11 +125,14 @@ He fights on three yards: T1 topsail, T2 topgallant, T3 royal. The mast and the 
   - CAP2.hpK 0.62;
   - CAP_HERO per hero (his blows on that hero): knight 1, warden 0.62, pyro 0.85, paladin 0.7, pirate 0.45, reaper 1.15, geo 0.6, berserker 0.55, ranger 0.5;
   - CAP_OPEN: pirate 1.2, ranger 1.3, berserker 1.1.
-- **Dry** (bare flasks): see the checks section.
+- **Dry** (bare flasks, n=4): knight 3/4, warden 2/4, pyro 2/4 = 58%. Report only.
+- **Mash:** the boss holds at 0/6 (the mash pyro dies with the boss at 50-71%). The level mash dies (the best mash hero, the knight, takes 2 deaths).
+- **Level-1 pilot:** 25 blows, 9 deaths over 3 runs, 100% walked. Curve: act III, 395% a run, 9 deaths (in band).
+- **Rows restamped** in docs/mash-bot.json, level1-pilot.json and level1-curve.json, in the order level then boss.
 
 ## Checks
 - **Green (Node):**
-  - level-quality: everything except pilot/mash until restamped (see below);
+  - level-quality: CLEARS THE BAR (pilot, mash and curve restamped);
   - reach (nothing stranded);
   - reach-heroes (all 9 heroes, 6 route targets);
   - hurricane3; storm-ship;
@@ -147,7 +150,7 @@ He fights on three yards: T1 topsail, T2 topgallant, T3 royal. The mast and the 
 
 ## Shots
 - **Before** (the live H2 look): work/claude/shots/hurricane2art/t2/*.png and before/*.png in the main repo.
-- **After:** work/claude/shots/hurricane3/after/*.png.
+- **After:** work/claude/shots/hurricane3/after/*.png on this branch (16 shots, forecastle to arena).
 
 ## ART LIST (Sonnet art pass; the level ships only after it)
 1. **Her hull** in the sinking sea:
@@ -189,3 +192,8 @@ He fights on three yards: T1 topsail, T2 topgallant, T3 royal. The mast and the 
    - Rec: keep, tuned by CAP_HERO. Built.
 4. **The sea witch at rod 1** makes the rod charge 1.8x faster.
    - Rec: keep, as the pressure on the chain verb. Built.
+
+## NEXT STEPS
+1. **Art pass (Sonnet):** the list above.
+2. **Integ / next lane, the unrun page checks:** textfit hurricane --strict; stuck (runtime); boss-greed / boss-openings / boss-fight-end / boss-navigation; mobile-perf; corpses; killzones; level-walk at L20 (the walker has hurricane hints in src/walk-hints.js, untested).
+3. **Merge note:** branched off claude/flotilla3 5bee569f. Merge after flotilla3. The answer-tags 'grapnel' red is flotilla3's.
