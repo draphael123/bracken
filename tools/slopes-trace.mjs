@@ -144,7 +144,8 @@ const compare = (want, got) => {
   return bad;
 };
 
-const pg = await openPage({ port: portFor(7), fonts: false });
+/* (redcleanup 10-26) audio OFF: with the sound on, footsteps and hits draw Math.random at moments set by the audio clock, so the seeded stream was consumed differently run to run and a level with random foes (KINGSWOOD) traced differently every few runs (the same tree, two fresh pages: first difference at frame 712). Off, two fresh pages are frame-identical on all six levels. */
+const pg = await openPage({ port: portFor(7), fonts: false, audio: false });
 try {
   const got = await trace(pg);
   assert.deepEqual(pg.errors, [], 'the page threw while tracing');
