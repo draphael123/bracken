@@ -1,0 +1,1534 @@
+{
+  "proof": {
+    "time": "2026-10-26T00:17:51.885Z",
+    "controller": "1a576c3f4511b6856df9fb4738df5aaae9987e81",
+    "gameSource": "dc02ecc059959b795f76dee47665b54f349d4e2f",
+    "gameTree": "9d8acbb7f3182c1d29ac71f4a3b0227224446718",
+    "originalMainSha256": "1573d2d744b753e5611b021d97b70b013f7e2e6773640b707ae85d5ab5dae594",
+    "candidateMainSha256": "2480e86f7cd4a87ae177144016b6a034881ee7510650fc313824e43050d145c6",
+    "cacheEntries": 1,
+    "colourKeys": [
+      "berry",
+      "canopy",
+      "dirt",
+      "dirtD",
+      "dirtL",
+      "gold",
+      "grass",
+      "grassD",
+      "grassL",
+      "stone",
+      "stoneD",
+      "stoneL",
+      "wood",
+      "woodD",
+      "woodL"
+    ],
+    "extraInputs": [
+      "belowGround(L)",
+      "pal.boneSoil"
+    ],
+    "originalBakersAndMissPathPreserved": false,
+    "originalGeneratorLabelsRecordedAndReplayed": true,
+    "backgroundAlwaysRebaked": true,
+    "modelContainersCopiedCanvasPixelsShared": true,
+    "evictedCanvasesQueuedForOriginalRetirement": true,
+    "contextListenersDetachedOnEviction": true,
+    "lineCountUnchanged": true,
+    "originalFixtureAssertionDeadlineQualityRngAudioClockAndBalancePolicyUnchanged": true,
+    "outsideMutations": [
+      {
+        "root": "TILE",
+        "path": "clear",
+        "line": 1396
+      },
+      {
+        "root": "PROP",
+        "path": "ropeBeam",
+        "line": 1442
+      },
+      {
+        "root": "TILE",
+        "path": "ice",
+        "line": 1444
+      },
+      {
+        "root": "TILE",
+        "path": "web",
+        "line": 1445
+      },
+      {
+        "root": "TILE",
+        "path": "towerSpikes",
+        "line": 1448
+      },
+      {
+        "root": "TILE",
+        "path": "townSpikes",
+        "line": 1448
+      },
+      {
+        "root": "TILE",
+        "path": "ice",
+        "line": 11349
+      },
+      {
+        "root": "PROP",
+        "path": "fallArt.[]",
+        "line": 29675
+      },
+      {
+        "root": "PROP",
+        "path": "castleRange",
+        "line": 31453
+      },
+      {
+        "root": "PROP",
+        "path": "glassShardIcon",
+        "line": 32108
+      },
+      {
+        "root": "PROP",
+        "path": "oreIcon",
+        "line": 32108
+      },
+      {
+        "root": "PROP",
+        "path": "tapIcon",
+        "line": 32108
+      },
+      {
+        "root": "PROP",
+        "path": "featherIcon",
+        "line": 32108
+      },
+      {
+        "root": "PROP",
+        "path": "waterskinIcon",
+        "line": 32108
+      },
+      {
+        "root": "PROP",
+        "path": "pickIcon",
+        "line": 32108
+      },
+      {
+        "root": "PROP",
+        "path": "tagIcon",
+        "line": 32108
+      },
+      {
+        "root": "PROP",
+        "path": "kiteIcon",
+        "line": 32108
+      },
+      {
+        "root": "PROP",
+        "path": "pigeonIcon",
+        "line": 32108
+      },
+      {
+        "root": "PROP",
+        "path": "caravanSealIcon",
+        "line": 32108
+      },
+      {
+        "root": "PROP",
+        "path": "caravanSealIcon",
+        "line": 34648
+      }
+    ],
+    "adopted": false,
+    "parentCandidateMainSha256": "44afb5dd02e6e14652cec7048461238eae146d98192365896dab5a6479fda8ac",
+    "originalFactoryBodiesAndArgumentEvaluationOrderPreserved": true,
+    "missPathNowMemoizesOnlyReviewedPaletteIndependentFactories": true,
+    "paletteIndependentFactories": 166,
+    "replacedFactoryCallSites": 210,
+    "fixedEntriesLimit": 512,
+    "fixedPixelsLimit": 1048576,
+    "profileTargetMs": 377.2590000000004,
+    "profileSamplingNotSpeedProof": true,
+    "standingSource": true,
+    "originalBakeRegionSha256": "101db215eb933333a8cc3b843f9161ca28ef9f106d7d520f323e596aa30c95f0",
+    "bakeRegionIdenticalAcrossTask3Task5": true,
+    "artAndPxIdenticalAcrossTask3Task5": true,
+    "noWholeGameEquivalenceClaim": true,
+    "sourceSpecificFullProofStillRequired": true,
+    "parentCacheCandidateMainSha256": "502c75279cecc9eedc70e7fc2201410c1a7c77e09956cf42aca5f5d1eb3e9968",
+    "recorderOnlyCandidateMainSha256": "64f5a4198aaed14ed529f6c97359ecd00870680d2b88a9a39512c760adb8c6e1",
+    "uiModule": {
+      "file": "src/puppeteer-hands.js",
+      "before": "R(S.y0 + 26 - cy)",
+      "after": "Math.max(26, R(S.y0 + 26 - cy))",
+      "originalSha256": "6182574fc740afab14d0dfa4862b55f676d9c85df04f87b8fe2053648719ecce",
+      "candidateSha256": "def29ae7f0ea4c55ab29e3652a351d0d03c90a4c1c5f7f83ee39692c21c3061f",
+      "onlyVerticalTitleAnchorChanged": true,
+      "noTextAlphaTimerSceneMechanicsOrCameraChange": true
+    },
+    "originalRecorderFieldsAndCallerLinesRetained": true,
+    "componentCases": 672,
+    "componentGlobalRngCalls": 0,
+    "fullSourceProofPending": true
+  },
+  "edits": [
+    {
+      "start": 4044445,
+      "end": 4044509,
+      "before": "const st = (new Error().stack || '').split('\\n').slice(3, 6).map",
+      "after": "const descriptor = Object.getOwnPropertyDescriptor(Error, 'stackTraceLimit'), trim = descriptor && descriptor.writable && typeof descriptor.value === 'number' && descriptor.value > 5 && !Object.getOwnPropertyDescriptor(Error, 'prepareStackTrace'); let stack; try { if (trim) Error.stackTraceLimit = 5; stack = new Error().stack || ''; } finally { if (trim) Error.stackTraceLimit = descriptor.value; } const st = stack.split('\\n').slice(3, 6).map"
+    },
+    {
+      "start": 233343,
+      "end": 233343,
+      "before": "",
+      "after": "paletteBaseRemember(baseKey,{tile:TILE,prop:PROP},baseLabels); "
+    },
+    {
+      "start": 231378,
+      "end": 231391,
+      "before": "yield 'props'",
+      "after": "yield paletteBaseLabel(baseLabels,\"props\")"
+    },
+    {
+      "start": 229391,
+      "end": 229405,
+      "before": "ART.bakeFire()",
+      "after": "paletteFixedBake(ART.bakeFire,\"bakeFire\",[])"
+    },
+    {
+      "start": 229369,
+      "end": 229383,
+      "before": "ART.bakeHorn()",
+      "after": "paletteFixedBake(ART.bakeHorn,\"bakeHorn\",[])"
+    },
+    {
+      "start": 229293,
+      "end": 229314,
+      "before": "ART.bakeBrazier(true)",
+      "after": "paletteFixedBake(ART.bakeBrazier,\"bakeBrazier\",[true])"
+    },
+    {
+      "start": 229269,
+      "end": 229291,
+      "before": "ART.bakeBrazier(false)",
+      "after": "paletteFixedBake(ART.bakeBrazier,\"bakeBrazier\",[false])"
+    },
+    {
+      "start": 229217,
+      "end": 229231,
+      "before": "ART.bakeCage()",
+      "after": "paletteFixedBake(ART.bakeCage,\"bakeCage\",[])"
+    },
+    {
+      "start": 229081,
+      "end": 229098,
+      "before": "ART.bakeCastle(5)",
+      "after": "paletteFixedBake(ART.bakeCastle,\"bakeCastle\",[5])"
+    },
+    {
+      "start": 229023,
+      "end": 229041,
+      "before": "ART.bakeFolkIcon()",
+      "after": "paletteFixedBake(ART.bakeFolkIcon,\"bakeFolkIcon\",[])"
+    },
+    {
+      "start": 228996,
+      "end": 229011,
+      "before": "ART.bakeAnvil()",
+      "after": "paletteFixedBake(ART.bakeAnvil,\"bakeAnvil\",[])"
+    },
+    {
+      "start": 228972,
+      "end": 228987,
+      "before": "ART.bakeForge()",
+      "after": "paletteFixedBake(ART.bakeForge,\"bakeForge\",[])"
+    },
+    {
+      "start": 228944,
+      "end": 228963,
+      "before": "ART.bakeGatehouse()",
+      "after": "paletteFixedBake(ART.bakeGatehouse,\"bakeGatehouse\",[])"
+    },
+    {
+      "start": 228910,
+      "end": 228931,
+      "before": "ART.bakeBridgeTower()",
+      "after": "paletteFixedBake(ART.bakeBridgeTower,\"bakeBridgeTower\",[])"
+    },
+    {
+      "start": 228875,
+      "end": 228895,
+      "before": "ART.bakeBridgePost()",
+      "after": "paletteFixedBake(ART.bakeBridgePost,\"bakeBridgePost\",[])"
+    },
+    {
+      "start": 228842,
+      "end": 228861,
+      "before": "ART.bakeGroundWeb()",
+      "after": "paletteFixedBake(ART.bakeGroundWeb,\"bakeGroundWeb\",[])"
+    },
+    {
+      "start": 228814,
+      "end": 228829,
+      "before": "ART.bakeStilt()",
+      "after": "paletteFixedBake(ART.bakeStilt,\"bakeStilt\",[])"
+    },
+    {
+      "start": 228787,
+      "end": 228804,
+      "before": "ART.bakeFrozen(v)",
+      "after": "paletteFixedBake(ART.bakeFrozen,\"bakeFrozen\",[v])"
+    },
+    {
+      "start": 228744,
+      "end": 228760,
+      "before": "ART.bakeFrost(v)",
+      "after": "paletteFixedBake(ART.bakeFrost,\"bakeFrost\",[v])"
+    },
+    {
+      "start": 228701,
+      "end": 228718,
+      "before": "ART.bakeIcicle(v)",
+      "after": "paletteFixedBake(ART.bakeIcicle,\"bakeIcicle\",[v])"
+    },
+    {
+      "start": 224948,
+      "end": 224964,
+      "before": "ART.bakeOrbWeb()",
+      "after": "paletteFixedBake(ART.bakeOrbWeb,\"bakeOrbWeb\",[])"
+    },
+    {
+      "start": 224920,
+      "end": 224937,
+      "before": "ART.bakeCobweb(v)",
+      "after": "paletteFixedBake(ART.bakeCobweb,\"bakeCobweb\",[v])"
+    },
+    {
+      "start": 224869,
+      "end": 224891,
+      "before": "ART.bakeSunshardIcon()",
+      "after": "paletteFixedBake(ART.bakeSunshardIcon,\"bakeSunshardIcon\",[])"
+    },
+    {
+      "start": 224836,
+      "end": 224853,
+      "before": "ART.bakeInnSign()",
+      "after": "paletteFixedBake(ART.bakeInnSign,\"bakeInnSign\",[])"
+    },
+    {
+      "start": 224786,
+      "end": 224797,
+      "before": "yield 'sub'",
+      "after": "yield paletteBaseLabel(baseLabels,\"sub\")"
+    },
+    {
+      "start": 224753,
+      "end": 224776,
+      "before": "ART.bakeMote('#4aa0b0')",
+      "after": "paletteFixedBake(ART.bakeMote,\"bakeMote\",['#4aa0b0'])"
+    },
+    {
+      "start": 224721,
+      "end": 224744,
+      "before": "ART.bakeMote('#9a5aa8')",
+      "after": "paletteFixedBake(ART.bakeMote,\"bakeMote\",['#9a5aa8'])"
+    },
+    {
+      "start": 224695,
+      "end": 224712,
+      "before": "ART.bakeGillPod()",
+      "after": "paletteFixedBake(ART.bakeGillPod,\"bakeGillPod\",[])"
+    },
+    {
+      "start": 224658,
+      "end": 224683,
+      "before": "ART.bakeGlowShroom(false)",
+      "after": "paletteFixedBake(ART.bakeGlowShroom,\"bakeGlowShroom\",[false])"
+    },
+    {
+      "start": 224632,
+      "end": 224656,
+      "before": "ART.bakeGlowShroom(true)",
+      "after": "paletteFixedBake(ART.bakeGlowShroom,\"bakeGlowShroom\",[true])"
+    },
+    {
+      "start": 224597,
+      "end": 224622,
+      "before": "ART.bakeDeadTree(880 + i)",
+      "after": "paletteFixedBake(ART.bakeDeadTree,\"bakeDeadTree\",[880 + i])"
+    },
+    {
+      "start": 224420,
+      "end": 224438,
+      "before": "ART.bakeLampIcon()",
+      "after": "paletteFixedBake(ART.bakeLampIcon,\"bakeLampIcon\",[])"
+    },
+    {
+      "start": 224199,
+      "end": 224219,
+      "before": "ART.bakeBoiler(true)",
+      "after": "paletteFixedBake(ART.bakeBoiler,\"bakeBoiler\",[true])"
+    },
+    {
+      "start": 224176,
+      "end": 224197,
+      "before": "ART.bakeBoiler(false)",
+      "after": "paletteFixedBake(ART.bakeBoiler,\"bakeBoiler\",[false])"
+    },
+    {
+      "start": 224149,
+      "end": 224165,
+      "before": "ART.bakeHammer()",
+      "after": "paletteFixedBake(ART.bakeHammer,\"bakeHammer\",[])"
+    },
+    {
+      "start": 224123,
+      "end": 224139,
+      "before": "ART.bakeOrePan()",
+      "after": "paletteFixedBake(ART.bakeOrePan,\"bakeOrePan\",[])"
+    },
+    {
+      "start": 224089,
+      "end": 224112,
+      "before": "ART.bakeTimberFrame(48)",
+      "after": "paletteFixedBake(ART.bakeTimberFrame,\"bakeTimberFrame\",[48])"
+    },
+    {
+      "start": 224063,
+      "end": 224087,
+      "before": "ART.bakeTimberFrame(144)",
+      "after": "paletteFixedBake(ART.bakeTimberFrame,\"bakeTimberFrame\",[144])"
+    },
+    {
+      "start": 224037,
+      "end": 224061,
+      "before": "ART.bakeTimberFrame(160)",
+      "after": "paletteFixedBake(ART.bakeTimberFrame,\"bakeTimberFrame\",[160])"
+    },
+    {
+      "start": 223942,
+      "end": 223965,
+      "before": "ART.bakeMinerLamp(true)",
+      "after": "paletteFixedBake(ART.bakeMinerLamp,\"bakeMinerLamp\",[true])"
+    },
+    {
+      "start": 223916,
+      "end": 223940,
+      "before": "ART.bakeMinerLamp(false)",
+      "after": "paletteFixedBake(ART.bakeMinerLamp,\"bakeMinerLamp\",[false])"
+    },
+    {
+      "start": 223885,
+      "end": 223902,
+      "before": "ART.bakeGasSeam()",
+      "after": "paletteFixedBake(ART.bakeGasSeam,\"bakeGasSeam\",[])"
+    },
+    {
+      "start": 223858,
+      "end": 223874,
+      "before": "ART.bakeCanary()",
+      "after": "paletteFixedBake(ART.bakeCanary,\"bakeCanary\",[])"
+    },
+    {
+      "start": 223830,
+      "end": 223848,
+      "before": "ART.bakeMineCart()",
+      "after": "paletteFixedBake(ART.bakeMineCart,\"bakeMineCart\",[])"
+    },
+    {
+      "start": 223801,
+      "end": 223817,
+      "before": "ART.bakeStrut(1)",
+      "after": "paletteFixedBake(ART.bakeStrut,\"bakeStrut\",[1])"
+    },
+    {
+      "start": 223783,
+      "end": 223799,
+      "before": "ART.bakeStrut(0)",
+      "after": "paletteFixedBake(ART.bakeStrut,\"bakeStrut\",[0])"
+    },
+    {
+      "start": 223745,
+      "end": 223772,
+      "before": "ART.bakeRockPillar(910 + i)",
+      "after": "paletteFixedBake(ART.bakeRockPillar,\"bakeRockPillar\",[910 + i])"
+    },
+    {
+      "start": 223702,
+      "end": 223716,
+      "before": "ART.bakeAxle()",
+      "after": "paletteFixedBake(ART.bakeAxle,\"bakeAxle\",[])"
+    },
+    {
+      "start": 223675,
+      "end": 223693,
+      "before": "ART.bakeBracket(1)",
+      "after": "paletteFixedBake(ART.bakeBracket,\"bakeBracket\",[1])"
+    },
+    {
+      "start": 223655,
+      "end": 223673,
+      "before": "ART.bakeBracket(0)",
+      "after": "paletteFixedBake(ART.bakeBracket,\"bakeBracket\",[0])"
+    },
+    {
+      "start": 223620,
+      "end": 223642,
+      "before": "ART.bakeTrunk(900 + i)",
+      "after": "paletteFixedBake(ART.bakeTrunk,\"bakeTrunk\",[900 + i])"
+    },
+    {
+      "start": 223573,
+      "end": 223592,
+      "before": "ART.bakeSilverBig()",
+      "after": "paletteFixedBake(ART.bakeSilverBig,\"bakeSilverBig\",[])"
+    },
+    {
+      "start": 223544,
+      "end": 223560,
+      "before": "ART.bakeSilver()",
+      "after": "paletteFixedBake(ART.bakeSilver,\"bakeSilver\",[])"
+    },
+    {
+      "start": 223519,
+      "end": 223534,
+      "before": "ART.bakeGrate()",
+      "after": "paletteFixedBake(ART.bakeGrate,\"bakeGrate\",[])"
+    },
+    {
+      "start": 223464,
+      "end": 223478,
+      "before": "ART.bakeNest()",
+      "after": "paletteFixedBake(ART.bakeNest,\"bakeNest\",[])"
+    },
+    {
+      "start": 223384,
+      "end": 223404,
+      "before": "ART.bakeSluice(true)",
+      "after": "paletteFixedBake(ART.bakeSluice,\"bakeSluice\",[true])"
+    },
+    {
+      "start": 223361,
+      "end": 223382,
+      "before": "ART.bakeSluice(false)",
+      "after": "paletteFixedBake(ART.bakeSluice,\"bakeSluice\",[false])"
+    },
+    {
+      "start": 223328,
+      "end": 223350,
+      "before": "ART.bakeFallenPine(14)",
+      "after": "paletteFixedBake(ART.bakeFallenPine,\"bakeFallenPine\",[14])"
+    },
+    {
+      "start": 223300,
+      "end": 223314,
+      "before": "ART.bakePine()",
+      "after": "paletteFixedBake(ART.bakePine,\"bakePine\",[])"
+    },
+    {
+      "start": 223249,
+      "end": 223268,
+      "before": "ART.bakeQuestIcon()",
+      "after": "paletteFixedBake(ART.bakeQuestIcon,\"bakeQuestIcon\",[])"
+    },
+    {
+      "start": 223217,
+      "end": 223236,
+      "before": "ART.bakeBrightCap()",
+      "after": "paletteFixedBake(ART.bakeBrightCap,\"bakeBrightCap\",[])"
+    },
+    {
+      "start": 223160,
+      "end": 223178,
+      "before": "ART.bakeHoneyPot()",
+      "after": "paletteFixedBake(ART.bakeHoneyPot,\"bakeHoneyPot\",[])"
+    },
+    {
+      "start": 223130,
+      "end": 223148,
+      "before": "ART.bakeLensIcon()",
+      "after": "paletteFixedBake(ART.bakeLensIcon,\"bakeLensIcon\",[])"
+    },
+    {
+      "start": 223101,
+      "end": 223118,
+      "before": "ART.bakeCupIcon()",
+      "after": "paletteFixedBake(ART.bakeCupIcon,\"bakeCupIcon\",[])"
+    },
+    {
+      "start": 223073,
+      "end": 223090,
+      "before": "ART.bakeDoorway()",
+      "after": "paletteFixedBake(ART.bakeDoorway,\"bakeDoorway\",[])"
+    },
+    {
+      "start": 223043,
+      "end": 223062,
+      "before": "ART.bakeLockPlate()",
+      "after": "paletteFixedBake(ART.bakeLockPlate,\"bakeLockPlate\",[])"
+    },
+    {
+      "start": 223005,
+      "end": 223028,
+      "before": "ART.bakeKeyIcon('bone')",
+      "after": "paletteFixedBake(ART.bakeKeyIcon,\"bakeKeyIcon\",['bone'])"
+    },
+    {
+      "start": 222974,
+      "end": 222997,
+      "before": "ART.bakeKeyIcon('iron')",
+      "after": "paletteFixedBake(ART.bakeKeyIcon,\"bakeKeyIcon\",['iron'])"
+    },
+    {
+      "start": 222942,
+      "end": 222966,
+      "before": "ART.bakeKeyIcon('brass')",
+      "after": "paletteFixedBake(ART.bakeKeyIcon,\"bakeKeyIcon\",['brass'])"
+    },
+    {
+      "start": 222904,
+      "end": 222922,
+      "before": "ART.bakePuffball()",
+      "after": "paletteFixedBake(ART.bakePuffball,\"bakePuffball\",[])"
+    },
+    {
+      "start": 222872,
+      "end": 222888,
+      "before": "ART.bakeCarpet()",
+      "after": "paletteFixedBake(ART.bakeCarpet,\"bakeCarpet\",[])"
+    },
+    {
+      "start": 222843,
+      "end": 222861,
+      "before": "ART.bakeDoor(true)",
+      "after": "paletteFixedBake(ART.bakeDoor,\"bakeDoor\",[true])"
+    },
+    {
+      "start": 222822,
+      "end": 222841,
+      "before": "ART.bakeDoor(false)",
+      "after": "paletteFixedBake(ART.bakeDoor,\"bakeDoor\",[false])"
+    },
+    {
+      "start": 222794,
+      "end": 222813,
+      "before": "ART.bakePalanquin()",
+      "after": "paletteFixedBake(ART.bakePalanquin,\"bakePalanquin\",[])"
+    },
+    {
+      "start": 222761,
+      "end": 222780,
+      "before": "ART.bakePlate(true)",
+      "after": "paletteFixedBake(ART.bakePlate,\"bakePlate\",[true])"
+    },
+    {
+      "start": 222739,
+      "end": 222759,
+      "before": "ART.bakePlate(false)",
+      "after": "paletteFixedBake(ART.bakePlate,\"bakePlate\",[false])"
+    },
+    {
+      "start": 222709,
+      "end": 222728,
+      "before": "ART.bakeLever(true)",
+      "after": "paletteFixedBake(ART.bakeLever,\"bakeLever\",[true])"
+    },
+    {
+      "start": 222687,
+      "end": 222707,
+      "before": "ART.bakeLever(false)",
+      "after": "paletteFixedBake(ART.bakeLever,\"bakeLever\",[false])"
+    },
+    {
+      "start": 222661,
+      "end": 222677,
+      "before": "ART.bakeRamLog()",
+      "after": "paletteFixedBake(ART.bakeRamLog,\"bakeRamLog\",[])"
+    },
+    {
+      "start": 222637,
+      "end": 222651,
+      "before": "ART.bakeBell()",
+      "after": "paletteFixedBake(ART.bakeBell,\"bakeBell\",[])"
+    },
+    {
+      "start": 222486,
+      "end": 222504,
+      "before": "ART.bakeFoldGate()",
+      "after": "paletteFixedBake(ART.bakeFoldGate,\"bakeFoldGate\",[])"
+    },
+    {
+      "start": 222460,
+      "end": 222474,
+      "before": "ART.bakeSail()",
+      "after": "paletteFixedBake(ART.bakeSail,\"bakeSail\",[])"
+    },
+    {
+      "start": 222438,
+      "end": 222452,
+      "before": "ART.bakeMill()",
+      "after": "paletteFixedBake(ART.bakeMill,\"bakeMill\",[])"
+    },
+    {
+      "start": 222415,
+      "end": 222430,
+      "before": "ART.bakeBothy()",
+      "after": "paletteFixedBake(ART.bakeBothy,\"bakeBothy\",[])"
+    },
+    {
+      "start": 222389,
+      "end": 222406,
+      "before": "ART.bakeBoulder()",
+      "after": "paletteFixedBake(ART.bakeBoulder,\"bakeBoulder\",[])"
+    },
+    {
+      "start": 222363,
+      "end": 222378,
+      "before": "ART.bakeCairn()",
+      "after": "paletteFixedBake(ART.bakeCairn,\"bakeCairn\",[])"
+    },
+    {
+      "start": 222317,
+      "end": 222353,
+      "before": "ART.bakeStandingStone(760 + i, true)",
+      "after": "paletteFixedBake(ART.bakeStandingStone,\"bakeStandingStone\",[760 + i,true])"
+    },
+    {
+      "start": 222245,
+      "end": 222275,
+      "before": "ART.bakeStandingStone(760 + i)",
+      "after": "paletteFixedBake(ART.bakeStandingStone,\"bakeStandingStone\",[760 + i])"
+    },
+    {
+      "start": 222184,
+      "end": 222208,
+      "before": "ART.bakeThistle(750 + i)",
+      "after": "paletteFixedBake(ART.bakeThistle,\"bakeThistle\",[750 + i])"
+    },
+    {
+      "start": 222134,
+      "end": 222156,
+      "before": "ART.bakeGorse(740 + i)",
+      "after": "paletteFixedBake(ART.bakeGorse,\"bakeGorse\",[740 + i])"
+    },
+    {
+      "start": 222084,
+      "end": 222108,
+      "before": "ART.bakeHeather(730 + i)",
+      "after": "paletteFixedBake(ART.bakeHeather,\"bakeHeather\",[730 + i])"
+    },
+    {
+      "start": 221880,
+      "end": 221902,
+      "before": "ART.bakeBones(810 + i)",
+      "after": "paletteFixedBake(ART.bakeBones,\"bakeBones\",[810 + i])"
+    },
+    {
+      "start": 221761,
+      "end": 221786,
+      "before": "ART.bakeFishTrap(800 + i)",
+      "after": "paletteFixedBake(ART.bakeFishTrap,\"bakeFishTrap\",[800 + i])"
+    },
+    {
+      "start": 221518,
+      "end": 221534,
+      "before": "ART.bakeCharms()",
+      "after": "paletteFixedBake(ART.bakeCharms,\"bakeCharms\",[])"
+    },
+    {
+      "start": 221494,
+      "end": 221509,
+      "before": "ART.bakeBough()",
+      "after": "paletteFixedBake(ART.bakeBough,\"bakeBough\",[])"
+    },
+    {
+      "start": 221468,
+      "end": 221485,
+      "before": "ART.bakeCompass()",
+      "after": "paletteFixedBake(ART.bakeCompass,\"bakeCompass\",[])"
+    },
+    {
+      "start": 221438,
+      "end": 221457,
+      "before": "ART.bakeSkullMini()",
+      "after": "paletteFixedBake(ART.bakeSkullMini,\"bakeSkullMini\",[])"
+    },
+    {
+      "start": 221386,
+      "end": 221397,
+      "before": "yield 'sub'",
+      "after": "yield paletteBaseLabel(baseLabels,\"sub\")"
+    },
+    {
+      "start": 221355,
+      "end": 221375,
+      "before": "ART.bakeYew(330 + i)",
+      "after": "paletteFixedBake(ART.bakeYew,\"bakeYew\",[330 + i])"
+    },
+    {
+      "start": 221285,
+      "end": 221301,
+      "before": "ART.bakeGrave(i)",
+      "after": "paletteFixedBake(ART.bakeGrave,\"bakeGrave\",[i])"
+    },
+    {
+      "start": 221235,
+      "end": 221253,
+      "before": "ART.bakeDovecote()",
+      "after": "paletteFixedBake(ART.bakeDovecote,\"bakeDovecote\",[])"
+    },
+    {
+      "start": 221178,
+      "end": 221197,
+      "before": "ART.bakeTrough(321)",
+      "after": "paletteFixedBake(ART.bakeTrough,\"bakeTrough\",[321])"
+    },
+    {
+      "start": 221151,
+      "end": 221168,
+      "before": "ART.bakeSkep(320)",
+      "after": "paletteFixedBake(ART.bakeSkep,\"bakeSkep\",[320])"
+    },
+    {
+      "start": 221112,
+      "end": 221138,
+      "before": "ART.bakeBeanpoles(310 + i)",
+      "after": "paletteFixedBake(ART.bakeBeanpoles,\"bakeBeanpoles\",[310 + i])"
+    },
+    {
+      "start": 221055,
+      "end": 221082,
+      "before": "ART.bakeGardenWall(300 + i)",
+      "after": "paletteFixedBake(ART.bakeGardenWall,\"bakeGardenWall\",[300 + i])"
+    },
+    {
+      "start": 220997,
+      "end": 221018,
+      "before": "ART.bakeGiantCap(495)",
+      "after": "paletteFixedBake(ART.bakeGiantCap,\"bakeGiantCap\",[495])"
+    },
+    {
+      "start": 220962,
+      "end": 220984,
+      "before": "ART.bakeTotem(490 + i)",
+      "after": "paletteFixedBake(ART.bakeTotem,\"bakeTotem\",[490 + i])"
+    },
+    {
+      "start": 220922,
+      "end": 220937,
+      "before": "ART.bakeHeron()",
+      "after": "paletteFixedBake(ART.bakeHeron,\"bakeHeron\",[])"
+    },
+    {
+      "start": 220896,
+      "end": 220913,
+      "before": "ART.bakeBoat(480)",
+      "after": "paletteFixedBake(ART.bakeBoat,\"bakeBoat\",[480])"
+    },
+    {
+      "start": 220799,
+      "end": 220810,
+      "before": "yield 'sub'",
+      "after": "yield paletteBaseLabel(baseLabels,\"sub\")"
+    },
+    {
+      "start": 220769,
+      "end": 220788,
+      "before": "ART.bakeWarnPost(v)",
+      "after": "paletteFixedBake(ART.bakeWarnPost,\"bakeWarnPost\",[v])"
+    },
+    {
+      "start": 220721,
+      "end": 220740,
+      "before": "ART.bakeHideRack(v)",
+      "after": "paletteFixedBake(ART.bakeHideRack,\"bakeHideRack\",[v])"
+    },
+    {
+      "start": 220672,
+      "end": 220692,
+      "before": "ART.bakeBoneChime(v)",
+      "after": "paletteFixedBake(ART.bakeBoneChime,\"bakeBoneChime\",[v])"
+    },
+    {
+      "start": 220625,
+      "end": 220643,
+      "before": "ART.bakeCauldron()",
+      "after": "paletteFixedBake(ART.bakeCauldron,\"bakeCauldron\",[])"
+    },
+    {
+      "start": 220595,
+      "end": 220613,
+      "before": "ART.bakeCookSpit()",
+      "after": "paletteFixedBake(ART.bakeCookSpit,\"bakeCookSpit\",[])"
+    },
+    {
+      "start": 220563,
+      "end": 220582,
+      "before": "ART.bakeLootHeap(v)",
+      "after": "paletteFixedBake(ART.bakeLootHeap,\"bakeLootHeap\",[v])"
+    },
+    {
+      "start": 220513,
+      "end": 220534,
+      "before": "ART.bakeStakeFence(v)",
+      "after": "paletteFixedBake(ART.bakeStakeFence,\"bakeStakeFence\",[v])"
+    },
+    {
+      "start": 220467,
+      "end": 220482,
+      "before": "ART.bakeIdol(v)",
+      "after": "paletteFixedBake(ART.bakeIdol,\"bakeIdol\",[v])"
+    },
+    {
+      "start": 220421,
+      "end": 220442,
+      "before": "ART.bakeTrophyRack(v)",
+      "after": "paletteFixedBake(ART.bakeTrophyRack,\"bakeTrophyRack\",[v])"
+    },
+    {
+      "start": 220369,
+      "end": 220390,
+      "before": "ART.bakeSkullTotem(v)",
+      "after": "paletteFixedBake(ART.bakeSkullTotem,\"bakeSkullTotem\",[v])"
+    },
+    {
+      "start": 220317,
+      "end": 220338,
+      "before": "ART.bakeHideBanner(v)",
+      "after": "paletteFixedBake(ART.bakeHideBanner,\"bakeHideBanner\",[v])"
+    },
+    {
+      "start": 220265,
+      "end": 220286,
+      "before": "ART.bakeClothStrip(v)",
+      "after": "paletteFixedBake(ART.bakeClothStrip,\"bakeClothStrip\",[v])"
+    },
+    {
+      "start": 220208,
+      "end": 220228,
+      "before": "ART.bakeRagBanner(v)",
+      "after": "paletteFixedBake(ART.bakeRagBanner,\"bakeRagBanner\",[v])"
+    },
+    {
+      "start": 220153,
+      "end": 220175,
+      "before": "ART.bakeWarStandard(v)",
+      "after": "paletteFixedBake(ART.bakeWarStandard,\"bakeWarStandard\",[v])"
+    },
+    {
+      "start": 220100,
+      "end": 220121,
+      "before": "ART.bakeGobPennant(v)",
+      "after": "paletteFixedBake(ART.bakeGobPennant,\"bakeGobPennant\",[v])"
+    },
+    {
+      "start": 219923,
+      "end": 219941,
+      "before": "ART.bakeSporePod()",
+      "after": "paletteFixedBake(ART.bakeSporePod,\"bakeSporePod\",[])"
+    },
+    {
+      "start": 219884,
+      "end": 219910,
+      "before": "ART.bakeRootDecor(540 + i)",
+      "after": "paletteFixedBake(ART.bakeRootDecor,\"bakeRootDecor\",[540 + i])"
+    },
+    {
+      "start": 219833,
+      "end": 219851,
+      "before": "ART.bakeHangCage()",
+      "after": "paletteFixedBake(ART.bakeHangCage,\"bakeHangCage\",[])"
+    },
+    {
+      "start": 219761,
+      "end": 219787,
+      "before": "ART.bakeSkullPile(530 + i)",
+      "after": "paletteFixedBake(ART.bakeSkullPile,\"bakeSkullPile\",[530 + i])"
+    },
+    {
+      "start": 219678,
+      "end": 219698,
+      "before": "ART.bakeBoneThrone()",
+      "after": "paletteFixedBake(ART.bakeBoneThrone,\"bakeBoneThrone\",[])"
+    },
+    {
+      "start": 219614,
+      "end": 219629,
+      "before": "ART.bakeSiege()",
+      "after": "paletteFixedBake(ART.bakeSiege,\"bakeSiege\",[])"
+    },
+    {
+      "start": 219560,
+      "end": 219575,
+      "before": "ART.bakeEyrie()",
+      "after": "paletteFixedBake(ART.bakeEyrie,\"bakeEyrie\",[])"
+    },
+    {
+      "start": 219505,
+      "end": 219521,
+      "before": "ART.bakeGibbet()",
+      "after": "paletteFixedBake(ART.bakeGibbet,\"bakeGibbet\",[])"
+    },
+    {
+      "start": 219431,
+      "end": 219463,
+      "before": "ART.bakeWarBanner(520 + i, true)",
+      "after": "paletteFixedBake(ART.bakeWarBanner,\"bakeWarBanner\",[520 + i,true])"
+    },
+    {
+      "start": 219339,
+      "end": 219365,
+      "before": "ART.bakeWarBanner(520 + i)",
+      "after": "paletteFixedBake(ART.bakeWarBanner,\"bakeWarBanner\",[520 + i])"
+    },
+    {
+      "start": 219262,
+      "end": 219283,
+      "before": "ART.bakeLilyLantern()",
+      "after": "paletteFixedBake(ART.bakeLilyLantern,\"bakeLilyLantern\",[])"
+    },
+    {
+      "start": 219219,
+      "end": 219246,
+      "before": "ART.bakeFrogStatue(510 + i)",
+      "after": "paletteFixedBake(ART.bakeFrogStatue,\"bakeFrogStatue\",[510 + i])"
+    },
+    {
+      "start": 219170,
+      "end": 219189,
+      "before": "ART.bakeHoneyDrip()",
+      "after": "paletteFixedBake(ART.bakeHoneyDrip,\"bakeHoneyDrip\",[])"
+    },
+    {
+      "start": 219137,
+      "end": 219155,
+      "before": "ART.bakeHiveBg(sd)",
+      "after": "paletteFixedBake(ART.bakeHiveBg,\"bakeHiveBg\",[sd])"
+    },
+    {
+      "start": 219049,
+      "end": 219068,
+      "before": "ART.bakeHiveBg(500)",
+      "after": "paletteFixedBake(ART.bakeHiveBg,\"bakeHiveBg\",[500])"
+    },
+    {
+      "start": 218991,
+      "end": 219005,
+      "before": "ART.bakeCrow()",
+      "after": "paletteFixedBake(ART.bakeCrow,\"bakeCrow\",[])"
+    },
+    {
+      "start": 218964,
+      "end": 218983,
+      "before": "ART.bakeDragonfly()",
+      "after": "paletteFixedBake(ART.bakeDragonfly,\"bakeDragonfly\",[])"
+    },
+    {
+      "start": 218922,
+      "end": 218950,
+      "before": "ART.bakeButterfly('#bfe6f5')",
+      "after": "paletteFixedBake(ART.bakeButterfly,\"bakeButterfly\",['#bfe6f5'])"
+    },
+    {
+      "start": 218892,
+      "end": 218920,
+      "before": "ART.bakeButterfly('#ff9ab0')",
+      "after": "paletteFixedBake(ART.bakeButterfly,\"bakeButterfly\",['#ff9ab0'])"
+    },
+    {
+      "start": 218862,
+      "end": 218890,
+      "before": "ART.bakeButterfly('#ffd36b')",
+      "after": "paletteFixedBake(ART.bakeButterfly,\"bakeButterfly\",['#ffd36b'])"
+    },
+    {
+      "start": 218826,
+      "end": 218847,
+      "before": "ART.bakeMoss(460 + i)",
+      "after": "paletteFixedBake(ART.bakeMoss,\"bakeMoss\",[460 + i])"
+    },
+    {
+      "start": 218767,
+      "end": 218798,
+      "before": "ART.bakeTinyCap('#4aa0b0', 453)",
+      "after": "paletteFixedBake(ART.bakeTinyCap,\"bakeTinyCap\",['#4aa0b0',453])"
+    },
+    {
+      "start": 218734,
+      "end": 218765,
+      "before": "ART.bakeTinyCap('#9a5aa8', 452)",
+      "after": "paletteFixedBake(ART.bakeTinyCap,\"bakeTinyCap\",['#9a5aa8',452])"
+    },
+    {
+      "start": 218701,
+      "end": 218732,
+      "before": "ART.bakeTinyCap('#ff7a9a', 451)",
+      "after": "paletteFixedBake(ART.bakeTinyCap,\"bakeTinyCap\",['#ff7a9a',451])"
+    },
+    {
+      "start": 218668,
+      "end": 218699,
+      "before": "ART.bakeTinyCap('#4aa0b0', 450)",
+      "after": "paletteFixedBake(ART.bakeTinyCap,\"bakeTinyCap\",['#4aa0b0',450])"
+    },
+    {
+      "start": 218638,
+      "end": 218656,
+      "before": "ART.bakeCampfire()",
+      "after": "paletteFixedBake(ART.bakeCampfire,\"bakeCampfire\",[])"
+    },
+    {
+      "start": 218604,
+      "end": 218625,
+      "before": "ART.bakeTent(440 + i)",
+      "after": "paletteFixedBake(ART.bakeTent,\"bakeTent\",[440 + i])"
+    },
+    {
+      "start": 218561,
+      "end": 218580,
+      "before": "ART.bakeSkullPost()",
+      "after": "paletteFixedBake(ART.bakeSkullPost,\"bakeSkullPost\",[])"
+    },
+    {
+      "start": 218528,
+      "end": 218548,
+      "before": "ART.bakeLilyFlower()",
+      "after": "paletteFixedBake(ART.bakeLilyFlower,\"bakeLilyFlower\",[])"
+    },
+    {
+      "start": 218489,
+      "end": 218513,
+      "before": "ART.bakeCattail(430 + i)",
+      "after": "paletteFixedBake(ART.bakeCattail,\"bakeCattail\",[430 + i])"
+    },
+    {
+      "start": 218387,
+      "end": 218409,
+      "before": "ART.bakeStump(410 + i)",
+      "after": "paletteFixedBake(ART.bakeStump,\"bakeStump\",[410 + i])"
+    },
+    {
+      "start": 218274,
+      "end": 218285,
+      "before": "yield 'sub'",
+      "after": "yield paletteBaseLabel(baseLabels,\"sub\")"
+    },
+    {
+      "start": 218239,
+      "end": 218264,
+      "before": "ART.bakeImpact('#ff6b6b')",
+      "after": "paletteFixedBake(ART.bakeImpact,\"bakeImpact\",['#ff6b6b'])"
+    },
+    {
+      "start": 218201,
+      "end": 218226,
+      "before": "ART.bakeImpact('#c9d1dc')",
+      "after": "paletteFixedBake(ART.bakeImpact,\"bakeImpact\",['#c9d1dc'])"
+    },
+    {
+      "start": 218170,
+      "end": 218186,
+      "before": "ART.bakeImpact()",
+      "after": "paletteFixedBake(ART.bakeImpact,\"bakeImpact\",[])"
+    },
+    {
+      "start": 218141,
+      "end": 218160,
+      "before": "ART.bakeMotherCap()",
+      "after": "paletteFixedBake(ART.bakeMotherCap,\"bakeMotherCap\",[])"
+    },
+    {
+      "start": 218110,
+      "end": 218124,
+      "before": "ART.bakeDrop()",
+      "after": "paletteFixedBake(ART.bakeDrop,\"bakeDrop\",[])"
+    },
+    {
+      "start": 218059,
+      "end": 218078,
+      "before": "ART.bakeThronePad()",
+      "after": "paletteFixedBake(ART.bakeThronePad,\"bakeThronePad\",[])"
+    },
+    {
+      "start": 218008,
+      "end": 218027,
+      "before": "ART.bakeSpringPad()",
+      "after": "paletteFixedBake(ART.bakeSpringPad,\"bakeSpringPad\",[])"
+    },
+    {
+      "start": 217972,
+      "end": 217995,
+      "before": "ART.bakeLilyFlowerBig()",
+      "after": "paletteFixedBake(ART.bakeLilyFlowerBig,\"bakeLilyFlowerBig\",[])"
+    },
+    {
+      "start": 217936,
+      "end": 217955,
+      "before": "ART.bakeLilyPad(32)",
+      "after": "paletteFixedBake(ART.bakeLilyPad,\"bakeLilyPad\",[32])"
+    },
+    {
+      "start": 217909,
+      "end": 217926,
+      "before": "ART.bakeLilyPad()",
+      "after": "paletteFixedBake(ART.bakeLilyPad,\"bakeLilyPad\",[])"
+    },
+    {
+      "start": 217882,
+      "end": 217902,
+      "before": "ART.bakeShadow(6, 2)",
+      "after": "paletteFixedBake(ART.bakeShadow,\"bakeShadow\",[6,2])"
+    },
+    {
+      "start": 217614,
+      "end": 217625,
+      "before": "yield 'sub'",
+      "after": "yield paletteBaseLabel(baseLabels,\"sub\")"
+    },
+    {
+      "start": 217309,
+      "end": 217323,
+      "before": "ART.bakeCoin()",
+      "after": "paletteFixedBake(ART.bakeCoin,\"bakeCoin\",[])"
+    },
+    {
+      "start": 217273,
+      "end": 217286,
+      "before": "yield 'tiles'",
+      "after": "yield paletteBaseLabel(baseLabels,\"tiles\")"
+    },
+    {
+      "start": 217254,
+      "end": 217265,
+      "before": "yield 'sub'",
+      "after": "yield paletteBaseLabel(baseLabels,\"sub\")"
+    },
+    {
+      "start": 216991,
+      "end": 217041,
+      "before": "ART.bakeMycTop(350 + i + eL * 7 + eR * 13, eL, eR)",
+      "after": "paletteFixedBake(ART.bakeMycTop,\"bakeMycTop\",[350 + i + eL * 7 + eR * 13,eL,eR])"
+    },
+    {
+      "start": 216853,
+      "end": 216877,
+      "before": "ART.bakeVineWall(95 + i)",
+      "after": "paletteFixedBake(ART.bakeVineWall,\"bakeVineWall\",[95 + i])"
+    },
+    {
+      "start": 216810,
+      "end": 216823,
+      "before": "ART.bakeNet()",
+      "after": "paletteFixedBake(ART.bakeNet,\"bakeNet\",[])"
+    },
+    {
+      "start": 216643,
+      "end": 216667,
+      "before": "ART.bakeMycDirt(340 + i)",
+      "after": "paletteFixedBake(ART.bakeMycDirt,\"bakeMycDirt\",[340 + i])"
+    },
+    {
+      "start": 216575,
+      "end": 216600,
+      "before": "ART.bakeHallWall(610 + i)",
+      "after": "paletteFixedBake(ART.bakeHallWall,\"bakeHallWall\",[610 + i])"
+    },
+    {
+      "start": 216521,
+      "end": 216546,
+      "before": "ART.bakeScreeTop(721, -1)",
+      "after": "paletteFixedBake(ART.bakeScreeTop,\"bakeScreeTop\",[721,-1])"
+    },
+    {
+      "start": 216489,
+      "end": 216513,
+      "before": "ART.bakeScreeTop(720, 1)",
+      "after": "paletteFixedBake(ART.bakeScreeTop,\"bakeScreeTop\",[720,1])"
+    },
+    {
+      "start": 216446,
+      "end": 216474,
+      "before": "ART.bakeDrystoneTop(710 + i)",
+      "after": "paletteFixedBake(ART.bakeDrystoneTop,\"bakeDrystoneTop\",[710 + i])"
+    },
+    {
+      "start": 216389,
+      "end": 216414,
+      "before": "ART.bakeDrystone(700 + i)",
+      "after": "paletteFixedBake(ART.bakeDrystone,\"bakeDrystone\",[700 + i])"
+    },
+    {
+      "start": 216277,
+      "end": 216304,
+      "before": "ART.bakePortcullis(600 + i)",
+      "after": "paletteFixedBake(ART.bakePortcullis,\"bakePortcullis\",[600 + i])"
+    },
+    {
+      "start": 216230,
+      "end": 216251,
+      "before": "ART.bakeSpire(v, !!l)",
+      "after": "paletteFixedBake(ART.bakeSpire,\"bakeSpire\",[v,!!l])"
+    },
+    {
+      "start": 216159,
+      "end": 216187,
+      "before": "ART.bakeCrystalTile(st, !!l)",
+      "after": "paletteFixedBake(ART.bakeCrystalTile,\"bakeCrystalTile\",[st,!!l])"
+    },
+    {
+      "start": 216087,
+      "end": 216113,
+      "before": "ART.bakeLooseRock(340 + i)",
+      "after": "paletteFixedBake(ART.bakeLooseRock,\"bakeLooseRock\",[340 + i])"
+    },
+    {
+      "start": 216029,
+      "end": 216057,
+      "before": "ART.bakeShelfFungus(332 + i)",
+      "after": "paletteFixedBake(ART.bakeShelfFungus,\"bakeShelfFungus\",[332 + i])"
+    },
+    {
+      "start": 215978,
+      "end": 216000,
+      "before": "ART.bakeShelf(330 + i)",
+      "after": "paletteFixedBake(ART.bakeShelf,\"bakeShelf\",[330 + i])"
+    },
+    {
+      "start": 215936,
+      "end": 215953,
+      "before": "ART.bakeBouncer()",
+      "after": "paletteFixedBake(ART.bakeBouncer,\"bakeBouncer\",[])"
+    },
+    {
+      "start": 215811,
+      "end": 215831,
+      "before": "ART.bakeSilt(85 + i)",
+      "after": "paletteFixedBake(ART.bakeSilt,\"bakeSilt\",[85 + i])"
+    },
+    {
+      "start": 215762,
+      "end": 215783,
+      "before": "ART.bakeReeds(90 + i)",
+      "after": "paletteFixedBake(ART.bakeReeds,\"bakeReeds\",[90 + i])"
+    },
+    {
+      "start": 215572,
+      "end": 215592,
+      "before": "ART.bakeClimbFace(1)",
+      "after": "paletteFixedBake(ART.bakeClimbFace,\"bakeClimbFace\",[1])"
+    },
+    {
+      "start": 215550,
+      "end": 215570,
+      "before": "ART.bakeClimbFace(0)",
+      "after": "paletteFixedBake(ART.bakeClimbFace,\"bakeClimbFace\",[0])"
+    },
+    {
+      "start": 215514,
+      "end": 215540,
+      "before": "ART.bakeCapLedge(594, 'R')",
+      "after": "paletteFixedBake(ART.bakeCapLedge,\"bakeCapLedge\",[594,'R'])"
+    },
+    {
+      "start": 215475,
+      "end": 215501,
+      "before": "ART.bakeCapLedge(593, 'L')",
+      "after": "paletteFixedBake(ART.bakeCapLedge,\"bakeCapLedge\",[593,'L'])"
+    },
+    {
+      "start": 215430,
+      "end": 215461,
+      "before": "ART.bakeCapLedge(590 + i, null)",
+      "after": "paletteFixedBake(ART.bakeCapLedge,\"bakeCapLedge\",[590 + i,null])"
+    },
+    {
+      "start": 215372,
+      "end": 215399,
+      "before": "ART.bakeDuckboard(584, 'R')",
+      "after": "paletteFixedBake(ART.bakeDuckboard,\"bakeDuckboard\",[584,'R'])"
+    },
+    {
+      "start": 215336,
+      "end": 215363,
+      "before": "ART.bakeDuckboard(583, 'L')",
+      "after": "paletteFixedBake(ART.bakeDuckboard,\"bakeDuckboard\",[583,'L'])"
+    },
+    {
+      "start": 215294,
+      "end": 215326,
+      "before": "ART.bakeDuckboard(580 + i, null)",
+      "after": "paletteFixedBake(ART.bakeDuckboard,\"bakeDuckboard\",[580 + i,null])"
+    },
+    {
+      "start": 215243,
+      "end": 215267,
+      "before": "ART.bakeLashed(724, 'R')",
+      "after": "paletteFixedBake(ART.bakeLashed,\"bakeLashed\",[724,'R'])"
+    },
+    {
+      "start": 215208,
+      "end": 215232,
+      "before": "ART.bakeLashed(723, 'L')",
+      "after": "paletteFixedBake(ART.bakeLashed,\"bakeLashed\",[723,'L'])"
+    },
+    {
+      "start": 215167,
+      "end": 215196,
+      "before": "ART.bakeLashed(720 + i, null)",
+      "after": "paletteFixedBake(ART.bakeLashed,\"bakeLashed\",[720 + i,null])"
+    },
+    {
+      "start": 215099,
+      "end": 215110,
+      "before": "yield 'sub'",
+      "after": "yield paletteBaseLabel(baseLabels,\"sub\")"
+    },
+    {
+      "start": 215064,
+      "end": 215089,
+      "before": "ART.bakeStaging(714, 'R')",
+      "after": "paletteFixedBake(ART.bakeStaging,\"bakeStaging\",[714,'R'])"
+    },
+    {
+      "start": 215027,
+      "end": 215052,
+      "before": "ART.bakeStaging(713, 'L')",
+      "after": "paletteFixedBake(ART.bakeStaging,\"bakeStaging\",[713,'L'])"
+    },
+    {
+      "start": 214984,
+      "end": 215014,
+      "before": "ART.bakeStaging(710 + i, null)",
+      "after": "paletteFixedBake(ART.bakeStaging,\"bakeStaging\",[710 + i,null])"
+    },
+    {
+      "start": 214928,
+      "end": 214950,
+      "before": "ART.bakeBeam(704, 'R')",
+      "after": "paletteFixedBake(ART.bakeBeam,\"bakeBeam\",[704,'R'])"
+    },
+    {
+      "start": 214897,
+      "end": 214919,
+      "before": "ART.bakeBeam(703, 'L')",
+      "after": "paletteFixedBake(ART.bakeBeam,\"bakeBeam\",[703,'L'])"
+    },
+    {
+      "start": 214860,
+      "end": 214887,
+      "before": "ART.bakeBeam(700 + i, null)",
+      "after": "paletteFixedBake(ART.bakeBeam,\"bakeBeam\",[700 + i,null])"
+    },
+    {
+      "start": 214794,
+      "end": 214805,
+      "before": "yield 'sub'",
+      "after": "yield paletteBaseLabel(baseLabels,\"sub\")"
+    },
+    {
+      "start": 214762,
+      "end": 214785,
+      "before": "ART.bakeLedge(574, 'R')",
+      "after": "paletteFixedBake(ART.bakeLedge,\"bakeLedge\",[574,'R'])"
+    },
+    {
+      "start": 214729,
+      "end": 214752,
+      "before": "ART.bakeLedge(573, 'L')",
+      "after": "paletteFixedBake(ART.bakeLedge,\"bakeLedge\",[573,'L'])"
+    },
+    {
+      "start": 214690,
+      "end": 214718,
+      "before": "ART.bakeLedge(570 + i, null)",
+      "after": "paletteFixedBake(ART.bakeLedge,\"bakeLedge\",[570 + i,null])"
+    },
+    {
+      "start": 214633,
+      "end": 214659,
+      "before": "ART.bakeRopeLadder(i, 'R')",
+      "after": "paletteFixedBake(ART.bakeRopeLadder,\"bakeRopeLadder\",[i,'R'])"
+    },
+    {
+      "start": 214585,
+      "end": 214611,
+      "before": "ART.bakeRopeLadder(i, 'L')",
+      "after": "paletteFixedBake(ART.bakeRopeLadder,\"bakeRopeLadder\",[i,'L'])"
+    },
+    {
+      "start": 214536,
+      "end": 214563,
+      "before": "ART.bakeRopeLadder(i, null)",
+      "after": "paletteFixedBake(ART.bakeRopeLadder,\"bakeRopeLadder\",[i,null])"
+    },
+    {
+      "start": 214479,
+      "end": 214504,
+      "before": "ART.bakeSoftRock(930 + i)",
+      "after": "paletteFixedBake(ART.bakeSoftRock,\"bakeSoftRock\",[930 + i])"
+    },
+    {
+      "start": 214436,
+      "end": 214451,
+      "before": "ART.bakeRail(i)",
+      "after": "paletteFixedBake(ART.bakeRail,\"bakeRail\",[i])"
+    },
+    {
+      "start": 214396,
+      "end": 214411,
+      "before": "ART.bakeVine(i)",
+      "after": "paletteFixedBake(ART.bakeVine,\"bakeVine\",[i])"
+    },
+    {
+      "start": 214348,
+      "end": 214366,
+      "before": "ART.bakeRopeNet(i)",
+      "after": "paletteFixedBake(ART.bakeRopeNet,\"bakeRopeNet\",[i])"
+    },
+    {
+      "start": 214295,
+      "end": 214321,
+      "before": "ART.bakeCombPlat(564, 'R')",
+      "after": "paletteFixedBake(ART.bakeCombPlat,\"bakeCombPlat\",[564,'R'])"
+    },
+    {
+      "start": 214260,
+      "end": 214286,
+      "before": "ART.bakeCombPlat(563, 'L')",
+      "after": "paletteFixedBake(ART.bakeCombPlat,\"bakeCombPlat\",[563,'L'])"
+    },
+    {
+      "start": 214225,
+      "end": 214250,
+      "before": "ART.bakeCombPlat(560 + i)",
+      "after": "paletteFixedBake(ART.bakeCombPlat,\"bakeCombPlat\",[560 + i])"
+    },
+    {
+      "start": 213781,
+      "end": 213781,
+      "before": "",
+      "after": " const baseKey=paletteBaseKey(pal);if(paletteBaseReady(baseKey)){const model=paletteBaseClone(PALETTE_BASE_CACHE.model);TILE=model.tile;PROP=model.prop;for(const label of PALETTE_BASE_CACHE.labels)yield label;CROWN = CROWN || CRT.bakeCrownTiles(); VILL = VILL || bakeVillageTiles(); SHORE = SHORE || LWT.bakeShoreTiles(); REEF = REEF || RFT.bakeReefTiles(); FLOT = FLOT || FLT.bakeFlotTiles(); CITY = CITY || CTT.bakeCityTiles(); RAINART = RAINART || RFT.bakeRain(64, 64); PROP.fallArt = PROP.fallArt || { make: h => LWT.bakeWaterfall(h) };bakeBackdrop(pal);yield 'sky';return;}paletteBaseRelease();const baseLabels=[];"
+    },
+    {
+      "start": 212313,
+      "end": 212348,
+      "before": "stack = [TILE, PROP, BG, LEDGE_SETS",
+      "after": "stack = [TILE, PROP, BG, PALETTE_BASE_CACHE, PALETTE_FIXED, LEDGE_SETS"
+    },
+    {
+      "start": 209923,
+      "end": 209923,
+      "before": "",
+      "after": "   const PALETTE_FIXED = {entries:[],pixels:0}; function paletteFixedRemove(index){const [e]=PALETTE_FIXED.entries.splice(index,1);PALETTE_FIXED.pixels-=e.pixels;for(const s of e.surfaces){s.canvas.removeEventListener('contextlost',e.invalidate);s.canvas.removeEventListener('contextrestored',e.invalidate);}const queued=new Set(BAKE_OLD);for(const c of paletteBaseCanvases(e.model))if(!queued.has(c)){queued.add(c);BAKE_OLD.push(c);}} function paletteFixedBake(factory,name,args){  const valid=args.every(a=>a===null||a===undefined||typeof a==='string'||typeof a==='boolean'||typeof a==='number'&&Number.isFinite(a));if(!valid)return factory.apply(ART,args);  const key=JSON.stringify([name,args.map(a=>a===undefined?['undefined']:[typeof a,a])]);const index=PALETTE_FIXED.entries.findIndex(e=>e.key===key);  if(index>=0){const e=PALETTE_FIXED.entries[index];if(e.valid&&e.surfaces.every(s=>s.canvas.width===s.w&&s.canvas.height===s.h)){PALETTE_FIXED.entries.splice(index,1);PALETTE_FIXED.entries.push(e);return paletteBaseClone(e.model);}paletteFixedRemove(index);}  const value=factory.apply(ART,args);let model;try{model=paletteBaseClone(value);}catch{return value;}const surfaces=paletteBaseCanvases(model).map(canvas=>({canvas,w:canvas.width,h:canvas.height})),pixels=surfaces.reduce((n,s)=>n+s.w*s.h,0);if(!surfaces.length||pixels>1048576)return value;  while(PALETTE_FIXED.entries.length>=512||PALETTE_FIXED.pixels+pixels>1048576)paletteFixedRemove(0);  const e={key,model,surfaces,pixels,valid:true};e.invalidate=()=>{e.valid=false;};for(const s of surfaces){s.canvas.addEventListener('contextlost',e.invalidate);s.canvas.addEventListener('contextrestored',e.invalidate);}PALETTE_FIXED.entries.push(e);PALETTE_FIXED.pixels+=pixels;return value; } let PALETTE_BASE_CACHE = null; const PALETTE_BASE_KEYS = [\"berry\",\"canopy\",\"dirt\",\"dirtD\",\"dirtL\",\"gold\",\"grass\",\"grassD\",\"grassL\",\"stone\",\"stoneD\",\"stoneL\",\"wood\",\"woodD\",\"woodL\"]; function paletteBaseKey(pal) {   const values=[];   for(const key of PALETTE_BASE_KEYS){const v=ART.C[key];if(v===undefined)values.push([key,'undefined']);else if(typeof v==='string')values.push([key,'string',v]);else if(Array.isArray(v)&&v.every(c=>typeof c==='string'))values.push([key,'array',...v]);else return null;}   let below=false;try{below=belowGround(L);}catch{}   return JSON.stringify([values,below,!!pal.boneSoil]); } function paletteBaseClone(value,seen=new Map()) {   if(!value||typeof value!=='object'||value instanceof HTMLCanvasElement||ArrayBuffer.isView(value))return value;   if(seen.has(value))return seen.get(value);   const proto=Object.getPrototypeOf(value);if(proto!==Object.prototype&&proto!==null&&!Array.isArray(value))throw new Error('unsupported art model prototype');   const out=Array.isArray(value)?[]:Object.create(proto);seen.set(value,out);   for(const key of Reflect.ownKeys(value)){const d=Object.getOwnPropertyDescriptor(value,key);if(!('value'in d))throw new Error('art model accessor');d.value=paletteBaseClone(d.value,seen);Object.defineProperty(out,key,d);}   if(!Object.isExtensible(value))Object.preventExtensions(out);return out; } function paletteBaseCanvases(model) {   const seen=new Set(),stack=[model],canvases=[];   while(stack.length){const v=stack.pop();if(!v||typeof v!=='object'||seen.has(v))continue;seen.add(v);if(v instanceof HTMLCanvasElement){canvases.push(v);for(const key of Object.keys(v)){const q=v[key];if(q&&typeof q==='object')stack.push(q);}continue;}if(ArrayBuffer.isView(v))continue;for(const key of Object.keys(v)){const d=Object.getOwnPropertyDescriptor(v,key);if(d&&'value'in d&&d.value&&typeof d.value==='object')stack.push(d.value);}}   return canvases; } function paletteBaseRelease() {   const old=PALETTE_BASE_CACHE;if(!old)return;PALETTE_BASE_CACHE=null;   for(const item of old.surfaces){item.canvas.removeEventListener('contextlost',old.invalidate);item.canvas.removeEventListener('contextrestored',old.invalidate);}   const queued=new Set(BAKE_OLD);for(const canvas of paletteBaseCanvases(old.model))if(!queued.has(canvas)){queued.add(canvas);BAKE_OLD.push(canvas);} } function paletteBaseReady(key) { const e=PALETTE_BASE_CACHE;return key!==null&&e&&e.key===key&&e.valid&&e.surfaces.every(s=>s.canvas.width===s.w&&s.canvas.height===s.h); } function paletteBaseRemember(key,model,labels) {   if(key===null)return;let copy;try{copy=paletteBaseClone(model);}catch{return;}delete copy.prop.fallArt;   const e={key,model:copy,labels:labels.slice(),valid:true,surfaces:paletteBaseCanvases(copy).map(canvas=>({canvas,w:canvas.width,h:canvas.height}))};e.invalidate=()=>{e.valid=false;};   for(const s of e.surfaces){s.canvas.addEventListener('contextlost',e.invalidate);s.canvas.addEventListener('contextrestored',e.invalidate);}PALETTE_BASE_CACHE=e; } function paletteBaseLabel(labels,label){labels.push(label);return label;} "
+    }
+  ],
+  "modulePatch": {
+    "file": "src/puppeteer-hands.js",
+    "before": "R(S.y0 + 26 - cy)",
+    "after": "Math.max(26, R(S.y0 + 26 - cy))",
+    "originalSha256": "6182574fc740afab14d0dfa4862b55f676d9c85df04f87b8fe2053648719ecce",
+    "candidateSha256": "def29ae7f0ea4c55ab29e3652a351d0d03c90a4c1c5f7f83ee39692c21c3061f",
+    "onlyVerticalTitleAnchorChanged": true,
+    "noTextAlphaTimerSceneMechanicsOrCameraChange": true
+  }
+}
