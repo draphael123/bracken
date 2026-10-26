@@ -1,5 +1,5 @@
 /* tools/palisadeart.mjs - THE ART PASS OF THE PALISADE WOOD + THE BATTERING BEAST (claude/palisadeart), in the page. Art only: it must leave the level's data alone and draw everything the greybox left flat.
-     THE LEVEL IS UNTOUCHED  its levelHash equals the greybox's stamp (6060af42a578): the reskins are a table (L.reskin) and the setter's skin is given at spawn (pw.pwSetter), never an ent flag; the tint / palette / ambient
+     THE LEVEL IS UNTOUCHED  its levelHash equals the greybox's stamp (be9812f93c6c): the reskins are a table (L.reskin) and the setter's skin is given at spawn (pw.pwSetter), never an ent flag; the tint / palette / ambient
                              data it adds are not hashed.
      THE KIT                 the TIMBER table (src/redraw/palisade_tiles.js) names only cells that ARE solid in the level; a tile of earth, of the palisade's logs, of the gatehouse's beams and of a scaffold deck are four pictures.
      ITS PEOPLE              the STAKE-SETTER (his own sheet, the sprig's 8 frames: the raise and the drive are not the walk), the LANTERN-HAND and the MAUL CREW (the rock goblin's and the brute's frames), each with a bestiary card;
@@ -16,7 +16,7 @@ const src = f => readFileSync(new URL('../' + f, import.meta.url), 'utf8');
 const pg = await openPage({ audio: false, fonts: false }); let bad = 0;
 const ok = (c, m) => { console.log((c ? '  ok   ' : '  FAIL ') + m); if (!c) bad++; };
 const lv = LEVELS.find(l => l.id === 'palisadewood');
-ok(levelHash(lv) === '6060af42a578', 'the level hash is the greybox\'s (art lanes never change the level data): ' + levelHash(lv));
+ok(levelHash(lv) === 'be9812f93c6c', 'the level hash is the greybox\'s (art lanes never change the level data): ' + levelHash(lv));
 const main = src('src/main.js');
 for (const t of ['stakesetter', 'lanternhand', 'maulcrew', 'batteringbeast']) ok(new RegExp("\\{ t: '" + t + "', name:").test(main), 'a bestiary row for ' + t);
 ok(AU.AMBIENT_NAMES.includes('palisade') && !!AU.AMBIENT_SOURCES.palisade && (lv.build().ambient || []).every(a => a.kind === 'palisade'), 'its own ambient bed (palisade: ' + AU.AMBIENT_SOURCES.palisade.join(', ') + ')');

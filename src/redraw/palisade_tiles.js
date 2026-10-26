@@ -8,10 +8,10 @@
 import { canvas, px, rect, mulberry } from '../px.js';
 import { PAL, WOOD, ROPE, IRON, zoneOf, hash, mix } from './palisade_pal.js';
 
-/* the SOLID cells that are timber, not earth (the level's own geometry: src/palisade-wood.js ground(222, 300, 13), block(272, 275, 8, 12), block(346, 356, 6, 20), block(129, 130, 30, 31), block(198, 199, 27, 28));
+/* the SOLID cells that are timber, not earth (the level's own geometry: src/palisade-wood.js ground(222, 300, 13), block(272, 275, 8, 12), block(406, 416, 6, 20), block(129, 130, 30, 31), block(198, 199, 27, 28));
    tools/palisadeart.mjs proves every one of these cells is SOLID in the level, so the table cannot drift from the level unseen */
 export const TIMBER = [
-  { k: 'wall', x0: 222, x1: 300, y0: 13, y1: 28 }, { k: 'beam', x0: 272, x1: 275, y0: 8, y1: 12 }, { k: 'gate', x0: 346, x1: 356, y0: 6, y1: 20 },
+  { k: 'wall', x0: 222, x1: 300, y0: 13, y1: 28 }, { k: 'beam', x0: 272, x1: 275, y0: 8, y1: 12 }, { k: 'gate', x0: 406, x1: 416, y0: 6, y1: 20 },
   { k: 'stump', x0: 129, x1: 130, y0: 30, y1: 31 }, { k: 'stump', x0: 198, x1: 199, y0: 27, y1: 28 },
 ];
 export const timberAt = (x, y) => { for (const r of TIMBER) if (x >= r.x0 && x <= r.x1 && y >= r.y0 && y <= r.y1) return r.k; return null; };
