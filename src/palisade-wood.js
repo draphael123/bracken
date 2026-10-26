@@ -232,7 +232,7 @@ export function buildPalisadeWood({ painter, T, TS }) {
     [112, 31, 'stakePile'], [128, 31, 'sawdust'], [136, 31, 'toolRack'], [165, 31, 'logStack'], [185, 28, 'ropeCoil'], [203, 28, 'stakePile'],
     [207, 28, 'logStack'], [218, 28, 'toolRack'], [226, 12, 'ropeCoil'], [263, 12, 'sawdust'], [285, 12, 'stakePile'], [383, 24, 'toolRack'], [398, 24, 'stakePile'], [445, 24, 'ropeCoil']);
   harvest.push([310, 24, 'brokenStakes'], [327, 31, 'brokenStakes'], [338, 31, 'scorch'], [352, 31, 'brokenStakes'], [363, 24, 'scorch']);
-  sign(367, 24, "THE HALF-BUILT GATEHOUSE. THE KING'S SIEGE ENGINES ARE READIED HERE.");
+  sign(370, 24, "THE HALF-BUILT GATEHOUSE. THE KING'S SIEGE ENGINES ARE READIED HERE.");
   deco(370, 24, 'siege', 0); deco(376, 24, 'cart', 1); deco(380, 24, 'batteringRam', 0); crop(373, 24, 'apples'); crop(378, 24, 'basket');
   plank(368, 374, 22); coins([369, 21], [373, 21]);
   foe('pike', 372, 24, 'yard2', { face: -1 }); foe('shield', 377, 24, 'yard2', { face: -1 }); foe('brute', 381, 24, 'yard2', { face: -1 }); foe('archer', 371, 21, 'yard2', { face: -1, perch: true }); foe('hornsman', 374, 24, 'yard2', { face: -1 });   /* (claude/palisadefoe) THE HORNSMAN, REMIXED: on the yard's floor under the archer's board, behind the pike and the shield */
