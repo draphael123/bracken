@@ -398,7 +398,7 @@ const done = w => { for (const m of w.modes) EVERY.add(m); };
 /* ---- NEVER A SEND AT THE MOUTH (it would start inside the rider: a blow with no answer), and SEND and THE HOOK take turns */
 { const w = world(); w.run(0.3); w.e.revCd = 99; w.e.leverCd = 99; w.ride = { h: 0, dist: WINCH.sendMin - 4 }; w.e.cd = 0; w.run(6);
   ok(!w.modes.has('sendTell'), `a rider inside ${Math.round(WINCH.sendMin)} px of the drum is never sent a bucket: it would be let go on top of them, and the bar is for the mouth`);
-  const w2 = world(); w2.run(0.3); w2.e.revCd = 99; w2.e.leverCd = 99; w2.ride = { h: 0, dist: 120 }; const seq = []; let last = null;
+  const w2 = world(); w2.run(0.3); w2.e.revCd = 99; w2.e.leverCd = 99; w2.ride = { h: 0, dist: Math.ceil(WINCH.sendMin) + 1 }; const seq = []; let last = null;
   for (let t = 0; t < 40 * 60; t++) { w2.step(); if (w2.e.mode !== last) { last = w2.e.mode; if (last === 'sendTell' || last === 'hookTell') seq.push(last[0]); }
     if (w2.e.mode === 'stalk') { w2.e.sendCd = w2.e.hookCd = 0; w2.e.runaway = null; w2.e.hk = null; } }   /* both ready every time: only the rotation decides */
   ok(seq.length >= 6 && !/ss|hh/.test(seq.join('')), 'a rider in reach of both gets SEND and THE HOOK in turn, never one starving the other: ' + seq.join('')); }
@@ -516,7 +516,7 @@ const done = w => { for (const m of w.modes) EVERY.add(m); };
   ok(rw.log.some(q => q[0] === 'say' && /HIS SKIPS RUST/.test(q[1])), 'and phase two SAYS it over him: HIS SKIPS RUST: THE RED ONES GIVE WAY');
   const Z = (L.darkZones || []).filter(z => z.x1 > AR.x0 * TS);
   ok(Z.length === 1 && Z[0].x0 === AR.x0 * TS && Z[0].x1 >= L.W * TS && Z[0].y0 <= 0 && Z[0].y1 >= L.H * TS && Z[0].dark <= L.dark * 0.6, `HIS ROOM IS LIT: inside the arena's columns the dark eases to ${Z[0] && Z[0].dark} (the cavern is ${L.dark})`);
-  ok((L.darkZones || []).every(z => z.x0 >= AR.x0 * TS), 'and only his room: no zone reaches back into the level before the arena');
+  ok((L.darkZones || []).every(z => z.ow || z.x0 >= AR.x0 * TS), 'and only his room: no arena zone reaches back into the level before the arena (the three ore-works stretches, z.ow, are the minor pass, not his room)');
   ok(AR.housings.every(Hs => L.ents.some(e => e.t === 'minerlamp' && e.lit && e.y === Hs.top && e.x >= Hs.x0 && e.x <= Hs.x1)), 'a lit lamp stands on every housing: ' + AR.housings.map(Hs => Hs.name).join(', ')); }
 /* ---- ROUND SIX (Daniel, 2026-09-29, decided; claude/winch4): 1. A CLEARER JAM - the fight's one rule made obvious */
 const recG = () => { const calls = []; let fs = ''; const g = { calls, set fillStyle(v) { fs = v; }, get fillStyle() { return fs; }, globalAlpha: 1, fillRect: (x, y, w, h) => calls.push([fs, x, y, w, h]), drawImage: () => calls.push(['img']), beginPath() {}, arc() {}, fill() {} }; return g; };

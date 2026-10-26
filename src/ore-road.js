@@ -159,6 +159,10 @@ export const OR = {
     /* and THE DRUM HOUSE's (round three): the recovery ledge under the Head Frame, and its ladder - the Head Frame's own - up past the deck */
     { id: 'drum', x0: 484, x1: 513, floor: 28, start: [483, 17], ledge: [484, 486, 23], ladder: [484, 18, 23] }],
   PIT_BITE: 0.2, PIT_LIFT: 150, PIT_DRAFT: 230, TURBINE_EVERY: 5,
+  OW: { dark: 0.84 },                                             // (claude/oreroadminor) how black a DARK STRETCH is until its lamp is struck (the lit stretch falls back to DARK)
+  /* THE COUNTERWEIGHT LIFTS (src/ore-works.js), in the sorting tower and standing on what is already there - no new rock, so the route is the route it was: THE FIRST (taught) carries you from the sorting floor up to the middle deck for ONE rock; THE SECOND (tested)
+     from the middle deck up to the top deck for TWO, and its bucket hangs out of a flat throw's reach: hold UP to lob. x is the pan's west edge (tile), from/to the TOWER decks, aTravel how far the bucket drops (px) while the pan rises the whole way (a 2:1 block) */
+  LIFTS: [{ id: 'teach', x: 160, from: 0, to: 1, aTravel: 64, need: 1, hold: 30 }, { id: 'test', x: 170, from: 1, to: 2, aTravel: 76, need: 2, hold: 16 }],
   DARK: 0.34,                                                    // how black the cavern is away from the lamps
   CEIL_GAP: 6,                                                   // how many rows the cavern's ceiling keeps above anything anyone uses
   WORK_FAR: 240, WORK_CHIPS: 6, WORK_CHIP: 0.4, WORK_WALK: 18,                   // a miner works a seam while no hero is within 240 px: six blows, then he carries it
@@ -288,6 +292,7 @@ export function buildOreRoad({ painter, T }) {
   ent('sign', 4, YARD, { text: 'THE ORE ROAD. THE BUCKETS ARE THE ONLY FLOOR OVER THE GORGE, AND THEY COME ON A CLOCK.' });
   ent('sign', 17, YARD, { text: 'HOLD DOWN ON A LOADED SKIP AND IT TIPS. EMPTY IT RIDES HIGH, LOADED IT RIDES LOW.' });
   ent('sign', 49, YARD, { text: 'HOLD THE SHIELD ON A BUCKET AND THE LINE STOPS. STOPPED IS WHERE YOU CAN FIGHT.' });
+  ent('sign', 46, YARD, { text: 'THE LOADING HOUSE IS DARK. A COLD LAMP HANGS IN IT: STRIKE THE LAMP AND THE HOUSE LIGHTS.' });   /* (claude/oreroadminor) DARK 1, taught safe: a blade, at chest height */
   ent('check', 5, YARD); ent('check', 41, YARD); ent('check', 64, YARD);   /* 41, not 34: column 34 is the crusher's east lip, and a checkpoint over the pit respawns you onto its teeth (audit FLOAT). not 37 either any more: the cart line's ramp at 36 needs that column clear */
   meet('THE PICK LINE', 14, 40, [['miner', 15, YARD], ['rockgoblin', 10, YARD - 2], ['sprig', 40, YARD]]);
   meet('THE LOADING HOUSE', 52, 67, [['miner', 58, YARD], ['rockgoblin', 66, YARD], ['sapper', 56, YARD]]);
@@ -335,6 +340,12 @@ export function buildOreRoad({ painter, T }) {
   /* SILVER ONE: a bucket that jammed on a spur cable off the tower's east face, over the drop. A jump out and a jump back */
   ent('mover', 206, TOWER[1] - 2, { len: 2, range: 0, speed: 0 }); ent('silver', 206, TOWER[1] - 3);
   coins([144, TOWER[1]], [148, TOWER[2]], [188, TOWER[2]], [200, TOWER[1]]);
+  /* (claude/oreroadminor) THE COUNTERWEIGHT LIFTS (src/ore-works.js): a stone pier on the sorting floor with a purse on it, the pan that rises to it, the bucket over the floor that takes the ore. The first wants ONE rock and a flat throw;
+     the second TWO and a lob. Both are shown their rock pile first. Optional, with a purse; the way on is the ropes it always was. */
+  coins([162, TOWER[1] - 1], [164, TOWER[1] - 1], [172, TOWER[2] - 1], [174, TOWER[2] - 1]);   /* the lifts' landings */
+  ent('sign', 154, TOWER[0], { text: 'E TAKES A ROCK FROM THE PILE. ATTACK THROWS IT. ORE IN THE HIGH BUCKET RAISES THE PAN YOU STAND ON.' });
+  ent('sign', 164, TOWER[1], { text: 'TWO ROCKS THIS TIME, AND THE BUCKET HANGS HIGHER: HOLD UP AND ATTACK TO LOB. THE ORE TIPS OUT AGAIN.' });
+  ent('sign', 145, TOWER[1], { text: 'THE DECK IS DARK. A COLD LAMP HANGS OVER IT. TAKE A ROCK FROM THE PILE AND THROW IT UP AT THE LAMP.' });
 
   // ---- THE ORE CHUTE (c 204-271) — down thirteen rows, steered, over the crusher run ----
   /* THE CRUSHER RUN under the chute: what misses the buckets goes down it, and so does anything that comes off one. It is the
@@ -380,6 +391,7 @@ export function buildOreRoad({ painter, T }) {
   plat(PILLAR_BX[0], PILLAR_B + 1, PILLAR_BX[1] - PILLAR_BX[0] + 1);            // the second pillar's saddle, out in the gorge
   ent('check', 350, PILLAR[1]); ent('check', 382, PILLAR_B);
   ent('sign', 342, PILLAR[0], { text: 'RUSTED BUCKETS GIVE WAY A SECOND AFTER YOU LAND. BE ON THE NEXT ONE.' });
+  ent('sign', 347, PILLAR[1], { text: 'THE LINE OVER THE GORGE IS DARK. THROW A ROCK AT THE COLD LAMP AND READ THE BUCKETS.' });   /* (claude/oreroadminor) DARK 3 */
   meet("THE BRAKEMAN'S HUT", PILLAR_X[0], PILLAR_X[1], [['heavy', 343, PILLAR[0]], ['sapper', 351, PILLAR[1]], ['rockgoblin', 348, PILLAR[1]]]);
   meet('THE SECOND PILLAR', PILLAR_BX[0], PILLAR_BX[1], [['gaffer', 378, PILLAR_B], ['javelin', 383, PILLAR_B], ['sheargob', 380, PILLAR_B]]);
   ent('tippler', 346, PILLAR[1], { face: -1 });                                 // on the brakeman's stage, tipping onto the pillar's lower step
@@ -508,15 +520,36 @@ export function buildOreRoad({ painter, T }) {
   /* AND THE GOBLINS AT WORK (section 2): goblins already in the level, found where they stand - no creature is added, so the
      INDEX does not move. The level's own three, the elite and the ambush crowd never work */
   for (const [t, x, y, w] of WORKS) { const e = L.ents.find(q => q.t === t && q.x === x && q.y === y && !q.elite); if (e) e.work = { ...w, key: w.k + '@' + x }; }
+  /* (claude/oreroadminor) THE DARK STRETCHES, THE LAMPS AND THE LIFTS (src/ore-works.js). Three stretches: THE LOADING HOUSE (a blade strikes its lamp: taught safe), THE SORTING TOWER's middle deck (the lamp is out of reach: a rock
+     from the pile, thrown up), THE STEEP LINE (the lamp hangs over the pillar's edge: light it to read the skips). Each lit lamp lights its stretch for good. A dark stretch glints on every standable edge, rope top and skip's ore. */
+  const OWL = [
+    { id: 'house', name: 'THE LOADING HOUSE', x0: 52 * TS, x1: 68 * TS, y0: (YARD - 7) * TS + 4, y1: (YARD + 2) * TS },
+    { id: 'deck', name: 'THE SORTING DECK', x0: 141 * TS, x1: 196 * TS, y0: (TOWER[2] + 2) * TS + 4, y1: (TOWER[1] + 2) * TS },
+    { id: 'steep', name: 'THE STEEP LINE', x0: 354 * TS, x1: 408 * TS, y0: 0, y1: H * TS }];
+  const owLamps = [
+    { id: 'house', zone: 'house', x: 59 * TS + 8, y: (YARD + 1) * TS - 22, top: (YARD - 2) * TS },
+    { id: 'deck', zone: 'deck', x: 154 * TS + 8, y: (TOWER[1] + 1) * TS - 74, top: (TOWER[2] + 2) * TS },
+    { id: 'steep', zone: 'steep', x: 352 * TS + 8, y: (PILLAR[1] + 1) * TS - 70, top: ceil[352] * TS }];
+  const owLifts = OR.LIFTS.map(lf => ({ id: lf.id, x: lf.x * TS, yLow: (TOWER[lf.from] + 1) * TS, yHigh: (TOWER[lf.to] + 1) * TS, aTravel: lf.aTravel, need: lf.need, hold: lf.hold }));
+  const owHeaps = owLifts.map(lf => ({ x: lf.x - 22 - 32, y: lf.yLow })).concat([{ x: 148 * TS + 8, y: (TOWER[1] + 1) * TS }, { x: 348 * TS + 8, y: (PILLAR[1] + 1) * TS }]);
+  const owGlints = [], isFoot = t => t === T.SOLID || t === T.PLANK || t === T.ONEWAY;
+  for (const z of OWL) { const c0 = Math.floor(z.x0 / TS), c1 = Math.floor(z.x1 / TS) - 1, r0 = Math.max(1, Math.floor(z.y0 / TS)), r1 = Math.min(H - 2, Math.floor(z.y1 / TS));
+    for (let y = r0; y <= r1; y++) { let run = -1;
+      for (let x = c0; x <= c1 + 1; x++) { const top = x <= c1 && isFoot(L.grid[y * W + x]) && L.grid[(y - 1) * W + x] === T.AIR;
+        if (top && run < 0) run = x; if (!top && run >= 0) { const end = x - 1; for (let q = run; q <= end; q++) if (q === run || q === end || (q - run) % 5 === 0) owGlints.push({ zone: z.id, x: q * TS + 8, y: y * TS });
+          run = -1; } }
+      for (let x = c0; x <= c1; x++) if (L.grid[y * W + x] === T.NET && L.grid[(y - 1) * W + x] !== T.NET) owGlints.push({ zone: z.id, x: x * TS + 8, y: y * TS + 2, rope: true }); } }
+  const owZones = OWL.map(z => ({ x0: z.x0, x1: z.x1, y0: z.y0, y1: z.y1, dark: OR.OW.dark, darkVal: OR.OW.dark, litDark: OR.DARK, name: z.name, ow: z.id }));
   return {
     seams, mine,
+    oreWorks: { lamps: owLamps, heaps: owHeaps, lifts: owLifts, glints: owGlints },
     W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: YARD }, pools: [], falls: [], moversExtra: [], interiors: [], gusts: [],
     music: 'oreroad',   /* its own track at last (Daniel 2026-09-23): 'mineworks' was a sparse synth that played as silence. audio/CREDITS.txt */ duskStart: -1, duskLen: 1,
     /* ONE VAST CAVERN (Daniel, 2026-09-25): no sky. The engine's dark (black, with a hole for every lamp and the light you carry)
        at OR.DARK, the night wash thin under it, and the lamps' warm pools; the far wall, the pillars and the veins are
        drawOreBackdrop, the ceiling and its stalactites drawOreStructures */
     dark: OR.DARK, edgeLit: 'rgba(255,226,176,0.9)',   /* the lit lip on every edge you stand on, brighter than the default (value pass, lane claude/orevalue) */ night: true, glowNight: true, nightA: 0.1, ceil, veins, glints,
-    darkZones: [{ x0: A.x0 * TS, x1: W * TS, y0: 0, y1: H * TS, dark: A.dark, name: 'THE DRUM HOUSE' }],   /* round four: his room, and only his room, lit (OR.ARENA.dark) */
+    darkZones: [...owZones, { x0: A.x0 * TS, x1: W * TS, y0: 0, y1: H * TS, dark: A.dark, name: 'THE DRUM HOUSE' }],   /* round four: his room, and only his room, lit (OR.ARENA.dark) */
     pits: OR.PITS.map(q => ({ ...q, turbines: [...Array(Math.floor((q.x1 - q.x0 - 4) / OR.TURBINE_EVERY) + 1).keys()].map(k => q.x0 + 4 + k * OR.TURBINE_EVERY).filter(x => x <= q.x1 - 1) })),
     cable, encounters, places: OR.PLACES, oreRoad: true, walls,
     /* THE AMBUSH ROOM (Q), returned by the builder rather than written into level.js's table, so its columns live beside the
