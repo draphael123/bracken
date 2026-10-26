@@ -26908,8 +26908,8 @@ function drawBkBlood(cx, cy) { const px = Math.round(P.x - cx), py = Math.round(
     g.globalAlpha = 0.7 * k; g.strokeStyle = pu > 0.8 ? '#ffd0d0' : '#ff4a5a'; g.lineWidth = 1; g.beginPath(); g.ellipse(px, py - 12, 11 + pu, 15 + pu, 0, 0, 7); g.stroke(); g.globalAlpha = 1; }
   if (P.atk >= BKIT.BLOOD.lash.from && P.atk < 0.27 && !P.heavy && !P.swingKind && !P.plunge && !P.dashCut && dkStep(P.combo) === 2) {   /* THE BLOOD LASH: a whip of blood thrown off the point past the steel, cracking out and falling back */
     const L2 = BKIT.BLOOD.lash, k = Math.min(1, (P.atk - L2.from) / 0.06), back = P.atk > 0.22 ? (P.atk - 0.22) / 0.05 : 0, x0 = px + f * 20, y0 = py - 10, len = (12 + L2.reach) * k * (1 - 0.6 * back);
-    for (let i = 0; i <= len; i += 1) { const t = i / Math.max(1, len), wy = Math.round(Math.sin(t * 9 - time * 30) * 2 * t - t * 3 + back * t * 6), x = x0 + f * i, w = t < 0.7 ? 2 : 1;
-      g.fillStyle = '#3a0a10'; g.fillRect(x, y0 + wy - 1, 1, w + 2); g.fillStyle = t > 0.92 ? '#ffd0d0' : i % 3 ? '#c0283a' : '#ff4a5a'; g.fillRect(x, y0 + wy, 1, w); }
+    for (let i = 0; i <= len; i += 1) { const t = i / Math.max(1, len), wy = Math.round(Math.sin(t * 9 - time * 30) * 2 * t - t * 3 + back * t * 6), x = x0 + f * i, w = t < 0.6 ? 3 : t < 0.9 ? 2 : 1;
+      g.fillStyle = '#2a0408'; g.fillRect(x, y0 + wy - 1, 1, w + 2); g.fillStyle = t > 0.9 ? '#ffffff' : i % 3 ? '#e0283c' : '#ff5a6a'; g.fillRect(x, y0 + wy, 1, w); if (w > 1) { g.fillStyle = '#ffb0b8'; g.fillRect(x, y0 + wy, 1, 1); } }
     if (k >= 1 && back < 0.3 && Math.random() < 0.6) parts.push({ x: P.x + f * (20 + len), y: P.y - 12, vx: f * 30, vy: -20, life: 0.3, max: 0.3, col: '#ff4a5a', size: 1, grav: 400 }); }
   for (const s of bkStreams) { const k = s.t / 0.45; for (let i = 0; i < s.n; i++) { const t = Math.min(1, Math.max(0, k * 1.6 - i * 0.05)); if (t <= 0 || t >= 1) continue;
     const ex = s.x - cx, ey = s.y - cy, hx = px, hy = py - 14, mx = (ex + hx) / 2, my = Math.min(ey, hy) - 16 - (i % 3) * 3;
@@ -26917,8 +26917,8 @@ function drawBkBlood(cx, cy) { const px = Math.round(P.x - cx), py = Math.round(
     g.fillStyle = i % 3 === 0 ? '#ffd0d0' : i % 2 ? '#c0283a' : '#ff4a5a'; g.fillRect(x, y, 2, 2); g.fillStyle = '#5a0a14'; g.fillRect(x - f, y + 1, 1, 1); } } }
 /* DRAWN (screen): THE RALLY's red edge - a pulse at the screen's edges with each heartbeat, stronger with the debt; off in REDUCE MOTION / flashes off */
 function drawBkEdge() { if (!isReaper() || P.dead || SET.reduceMotion || !SET.flashes || !(P.bkHeartK > 0) || !(P.bd > 0)) return;
-  const since = time - (P.bkBeatAt || -9), beat = Math.max(0, 1 - since / 0.35), a = BKIT.BLOOD.feel.edge * P.bkHeartK * (0.35 + 0.65 * beat); if (!(a > 0.01)) return;
-  const gr = g.createRadialGradient(VW / 2, VH / 2, VH * 0.42, VW / 2, VH / 2, VH * 0.95); gr.addColorStop(0, 'rgba(160,10,30,0)'); gr.addColorStop(1, 'rgba(190,16,40,' + a.toFixed(3) + ')'); g.fillStyle = gr; g.fillRect(0, 0, VW, VH); }
+  const since = time - (P.bkBeatAt || -9), beat = Math.max(0, 1 - since / 0.35), a = BKIT.BLOOD.feel.edge * P.bkHeartK * (0.5 + 0.5 * beat); if (!(a > 0.01)) return;
+  const gr = g.createRadialGradient(VW / 2, VH / 2, VH * 0.34, VW / 2, VH / 2, VH * 0.9); gr.addColorStop(0, 'rgba(160,10,30,0)'); gr.addColorStop(1, 'rgba(190,16,40,' + a.toFixed(3) + ')'); g.fillStyle = gr; g.fillRect(0, 0, VW, VH); }
 function bkReclaimAll(why) { if (!isReaper() || !(P.bd > 0)) return 0; const hp0 = P.hp, r = BKIT.debtReclaimAll(P); if (r > 0) { bkRecPulse(hp0); P.bkRecFx.all = true; } if (r > 0) { P.bkReclaimed = (P.bkReclaimed || 0) + r; P.bkAllBack = (P.bkAllBack || 0) + 1; number(P.x, P.y - 46, '+' + Math.round(r), '#ff6b6b'); void why; motes(P.x, P.y - 14, 8, 10, ['#ff6b6b', '#ffd0d0']); SFX.bloodDraw(); } return r; }
 /* (claude/bloodstep) THE PERFECT STEP: a blow that would have landed inside the BLOOD STEP's untouchable window bleeds off a little of his debt (BLOOD.step.debt of max hp, won back as any
    reclaim) and edges the blade a moment, free; one a second */
@@ -29317,7 +29317,7 @@ function startSwing() { P.dkFed = false; P.dkDrained = false; P.bkLashSaid = fal
   if (ripHeavy) { P.ripostes = (P.ripostes || 0) + 1; SFX.riposte(); number(P.x, P.y - 30, 'RIPOSTE', '#ffd36b'); ringAt(P.x + P.face * 12, P.y - 11, 22, '#fff6c8', 0.25); streaks(P.x + P.face * 12, P.y - 12, 7, ['#ffffff', '#ffd36b'], 190); zoomKick(1.03, 0.14); }
   if (P.heavySwing) { SFX.heavy(); streaks(P.x + P.face * 12, P.y - 12, 5, ['#fff6e0', '#c9d1dc'], 140);
     if ((PROG.thirdSeen || 0) < 2 && !lessonAt('third') && !ripHeavy) {   /* (not on a riposte: that heavy cut was the guard's, not the run's) */ PROG.thirdSeen = (PROG.thirdSeen || 0) + 1;   /* (not in the wood's third-cut stretch: the lesson there says it, once, as the first blow lands) */
-      hintSay('mechanic', 4, isBz() ? 'FOUR CHOPS THAT LAND END IN THE CROSS-CHOP: BOTH AXES, A HEAVY SHOVE.' : hero() === 'knight' ? 'THE THIRD SWING IN A RUN THROWS THEM: AT A WALL, THE SPIKES OR EACH OTHER.' : 'THE THIRD SWING IN A RUN IS A HEAVY SHOVE. STOP SWINGING AND IT STARTS OVER.'); } } }
+      hintSay('mechanic', 4, isBz() ? 'FOUR CHOPS THAT LAND END IN THE CROSS-CHOP: BOTH AXES, A HEAVY SHOVE.' : hero() === 'knight' ? 'THE THIRD SWING IN A RUN THROWS THEM: AT A WALL, THE SPIKES OR EACH OTHER.' : isReaper() ? 'THE THIRD CUT IN A RUN IS THE BLOOD LASH: ITS BLOOD WHIPS PAST THE BLADE AND BLEEDS.' : 'THE THIRD SWING IN A RUN IS A HEAVY SHOVE. STOP SWINGING AND IT STARTS OVER.'); } } }
 /* ==== THE TIP. The Warden's one rule, and the only thing a player has to learn about her: a blow pays by WHERE ALONG
    THE SPEAR it landed. The last third - 28 px out and beyond (it was 34, a quarter: claude/herokit), which is the leaf of the head and a little behind it -
    is the TIP and pays thirty percent more, with extra poise on it. The middle is a glancing blow at three quarters.
@@ -34841,7 +34841,8 @@ function render() {
     g.fillStyle = 'rgba(255,255,255,0.22)'; g.fillRect(15, 6, Math.round(45 * Math.max(0, P.hp / P.maxHp)), 1); for (let i = 1; i < 4; i++) { g.fillStyle = 'rgba(0,0,0,0.35)'; g.fillRect(15 + Math.round(45 * i / 4), 6, 1, 5); }
     if (isReaper() && (P.bd || 0) > 0.4) drawDebt(15, 6, 45, 5, P);   /* (claude/bloodknight) BLOOD DEBT: the red segment past his health, draining */
     if (isReaper()) drawDebtBack(15, 6, 45, 5, P);   /* (claude/bkfeel) and the part a reclaim filled flashes white-hot, the bar ringed crimson (a parry's ALL-BACK rings wider) */
-    text(String(Math.max(0, Math.ceil(P.hp))), 59, 5, '#fff6e0', 'right', 8, 'outline');   /* the number is ON the bar's end: one readout, no column beside it */
+    if (isReaper() && (P.bd || 0) > 0.4) text(String(Math.max(0, Math.ceil(P.hp))), 17, 5, '#fff6e0', 'left', 8, 'outline');   /* (claude/bkblood) while he owes, the number steps to the bar's head so the red segment at its end is SEEN (it sat under the number) */
+    else text(String(Math.max(0, Math.ceil(P.hp))), 59, 5, '#fff6e0', 'right', 8, 'outline');   /* the number is ON the bar's end: one readout, no column beside it */
     { const gw = g; g = gShown; RP.drawPips(g, P, 70, 6, !!SET.reduceMotion); g = gw; }   /* (claude/riposte) THE MIX-UP CHAIN: its gold pips beside the health bar, in both HUDs (steady with reduced motion) */
     hudShow(); flaskRowEnd = 4; flaskRowRect = null; if (flaskN) { const fm = SV.flaskMax(PROG), fn = P.flasks | 0, dt0 = 1 / 60;   /* THE FLASK ROW (claude/flasks2, Daniel 10-08: "the number of flasks isn't clear - the abilities cover it up"): its OWN row under the health and stamina bars (y 20-28, HUD-SLIM's slot), the skill slots never over it (x >= 70, y <= 20). A bottle a flask - full red, drunk an empty glass, OVER the max (a broken shrine's) gold - and the count beside them. It FLASHES when flasks come back (a shrine, a death, a buy) and SHAKES RED when one is spilled */
       if (flaskHud.last >= 0 && fn > flaskHud.last && state === 'play') flaskHud.flashT = Math.max(flaskHud.flashT, 0.8); flaskHud.last = fn;

@@ -42,7 +42,7 @@ export const BLOOD = {
   frenzy: { t: 5, reclaim: 1, steal: 0.12, stealCap: 0.1, swing: 1.2 },
   /* (claude/bkblood) THE RALLY, FELT: a heartbeat + a red pulse at the screen's edges while he owes - from heartMin of max health, faster and redder with the debt
      (bpm lo..hi at the cap); edge = the pulse's top alpha. The edge is off with REDUCE MOTION or flashes off */
-  feel: { heartMin: 0.03, bpmLo: 70, bpmHi: 140, edge: 0.32 },
+  feel: { heartMin: 0.03, bpmLo: 70, bpmHi: 140, edge: 0.45 },
   /* BLOOD PRICE: pct of max health, on the bar as debt; buffT s of BLOOD-EDGED blades at mul; cd s between prices */
   price: { pct: 0.10, buffT: 6, mul: 1.2, cd: 1.2 },
   /* THE TIERS: at = held s (from the press, as the knight's CUT_AT) for T1..T5; auto = held this long, the best tier he may have comes down by itself;
