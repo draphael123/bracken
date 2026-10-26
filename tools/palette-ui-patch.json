@@ -1,11 +1,11 @@
 {
   "proof": {
-    "time": "2026-10-26T00:17:51.885Z",
+    "time": "2026-10-26T00:44:53.981Z",
     "controller": "1a576c3f4511b6856df9fb4738df5aaae9987e81",
     "gameSource": "dc02ecc059959b795f76dee47665b54f349d4e2f",
     "gameTree": "9d8acbb7f3182c1d29ac71f4a3b0227224446718",
     "originalMainSha256": "1573d2d744b753e5611b021d97b70b013f7e2e6773640b707ae85d5ab5dae594",
-    "candidateMainSha256": "2480e86f7cd4a87ae177144016b6a034881ee7510650fc313824e43050d145c6",
+    "candidateMainSha256": "502c75279cecc9eedc70e7fc2201410c1a7c77e09956cf42aca5f5d1eb3e9968",
     "cacheEntries": 1,
     "colourKeys": [
       "berry",
@@ -154,8 +154,6 @@
     "artAndPxIdenticalAcrossTask3Task5": true,
     "noWholeGameEquivalenceClaim": true,
     "sourceSpecificFullProofStillRequired": true,
-    "parentCacheCandidateMainSha256": "502c75279cecc9eedc70e7fc2201410c1a7c77e09956cf42aca5f5d1eb3e9968",
-    "recorderOnlyCandidateMainSha256": "64f5a4198aaed14ed529f6c97359ecd00870680d2b88a9a39512c760adb8c6e1",
     "uiModule": {
       "file": "src/puppeteer-hands.js",
       "before": "R(S.y0 + 26 - cy)",
@@ -165,18 +163,22 @@
       "onlyVerticalTitleAnchorChanged": true,
       "noTextAlphaTimerSceneMechanicsOrCameraChange": true
     },
-    "originalRecorderFieldsAndCallerLinesRetained": true,
-    "componentCases": 672,
-    "componentGlobalRngCalls": 0,
-    "fullSourceProofPending": true
+    "recorderOptimizationIncluded": false,
+    "originalNativeRecorderCapturePreserved": true,
+    "unadoptedRecorderProposalExcluded": true,
+    "noCausalTimingClaimForItsRemoval": true,
+    "priorCombinedMainSha256": "2480e86f7cd4a87ae177144016b6a034881ee7510650fc313824e43050d145c6",
+    "priorCombinedLayout": {
+      "run": 40249185984,
+      "actualFailure": "TIMED OUT",
+      "ms": 600330,
+      "completedBatches": 60,
+      "originalDeadlineMs": 600000
+    },
+    "candidateFileSetSha256": "aaef4d11279f2f8599491d29e130af73840aff0f644d36fa329d88cc3484e081",
+    "sourceSpecificFullProofPending": true
   },
   "edits": [
-    {
-      "start": 4044445,
-      "end": 4044509,
-      "before": "const st = (new Error().stack || '').split('\\n').slice(3, 6).map",
-      "after": "const descriptor = Object.getOwnPropertyDescriptor(Error, 'stackTraceLimit'), trim = descriptor && descriptor.writable && typeof descriptor.value === 'number' && descriptor.value > 5 && !Object.getOwnPropertyDescriptor(Error, 'prepareStackTrace'); let stack; try { if (trim) Error.stackTraceLimit = 5; stack = new Error().stack || ''; } finally { if (trim) Error.stackTraceLimit = descriptor.value; } const st = stack.split('\\n').slice(3, 6).map"
-    },
     {
       "start": 233343,
       "end": 233343,
