@@ -11,6 +11,7 @@ let n = 0;
 const crop = (r = 7) => `(() => { BK.step(1); const v = BK.view, b = BK.boss; const c = document.createElement('canvas'); const W = 150, H = 110; c.width = W * ${r}; c.height = H * ${r}; const g = c.getContext('2d'); g.imageSmoothingEnabled = false;
   const sx = Math.max(0, Math.min(v.VW - W, Math.round(b.x - v.x - W / 2))), sy = Math.max(0, Math.min(v.VH - H, Math.round(b.y - v.y - H * 0.72))); g.drawImage(v.buf, sx, sy, W, H, 0, 0, c.width, c.height); return c.toDataURL('image/png'); })()`;
 const save = async (name, r) => { const png = await pg.evalp(crop(r)); const f = String(++n).padStart(2, '0') + '-' + name + '.png'; writeFileSync(join(out, f), Buffer.from(png.split(',')[1], 'base64')); console.log('shot', 'work/oreroadminor/' + tag + '/' + f); };
+const saveFull = async (name) => { const png = await pg.evalp(`(() => { BK.step(1); const v = BK.view, c = document.createElement('canvas'); c.width = v.VW * 3; c.height = v.VH * 3; const g = c.getContext('2d'); g.imageSmoothingEnabled = false; g.drawImage(v.buf, 0, 0, c.width, c.height); return c.toDataURL('image/png'); })()`); const f = String(++n).padStart(2, '0') + '-' + name + '.png'; writeFileSync(join(out, f), Buffer.from(png.split(',')[1], 'base64')); console.log('shot', 'work/oreroadminor/' + tag + '/' + f); };
 const frames = k => pg.evalp(`(async () => { for (let i = 0; i < ${k}; i++) { BK.P.hp = BK.P.maxHp; BK.P.inv = 9; BK.sim(1); } return true; })()`);
 try {
   await pg.evalp(`import('/src/level.js').then(M => { window.__i = M.LEVELS.findIndex(l => l.id === 'oreroad'); return true; })`);
@@ -23,6 +24,9 @@ try {
   await save('armoured');
   await pg.evalp(`(() => { const b = BK.boss; b.armour = false; b.mode = 'plating'; b.modeT = 0.55; return true; })()`); await pg.evalp(`(() => { BK.sim(2); return true; })()`);
   await save('plating-half');
+  await pg.evalp(`(() => { const b = BK.boss; b.mode = 'stalk'; b.armour = true; b.armHit = 0; b.cd = 99; return true; })()`); await frames(30);
+  /* THE SEND TELL, wide: the dashed line, the chevrons, the flaring mouth (master: the dashes only) */
+  await pg.evalp(`(() => { const b = BK.boss; b.armour = true; b.mode = 'sendTell'; b.modeT = 0.4; b.cd = 99; return true; })()`); await pg.evalp(`(() => { BK.sim(1); return true; })()`); await saveFull('send-tell-wide');
   await pg.evalp(`(() => { const b = BK.boss; b.mode = 'stalk'; b.armour = true; b.armHit = 0; b.cd = 99; return true; })()`); await frames(30);
   if (!before) {
     await pg.evalp(`(() => { BK.boss.armHit = 4; return true; })()`); await frames(20); await save('cracked-1');

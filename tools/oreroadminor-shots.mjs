@@ -31,8 +31,8 @@ try {
       return { took, lit: lp.lit, from: res, dark: BK.L.darkZones[1].dark, thrown: W.n.thrown }; })()`);
     console.log('deck rock throw', JSON.stringify(r)); await go(160, 28, 140); await save('deck-lit');
   } else { await save('deck-lit'); }
-  /* THE LIFTS (taught: floor -> mid deck) */
-  if (!before) {
+  /* THE LIFTS (taught: floor -> mid deck; tested: mid deck -> top deck) */
+  if (!before) { await go(157, 36, 30); await save('lift-teach-rest'); await go(167, 28, 4); await save('lift-test-rest'); await go(171, 21, 40); await save('lift-test-landing');
     const r = await pg.evalp(`(async () => { const W = BK.owk(), d = W.data(), P = BK.P, out = []; const lf = d.lifts[0], hp = d.heaps.find(h => Math.abs(h.x - (lf.x - 54)) < 4);
       for (let x = Math.round(lf.g.ax) - 120; x < Math.round(lf.g.ax) + 2 && lf.state === 'rest'; x += 3) { P.x = hp.x; P.y = hp.y; P.face = 1; BK.sim(2); if (!W.held()) { BK.press('talk'); BK.sim(6); } P.x = x; P.y = hp.y; P.vx = 0; BK.sim(2); BK.press('atk'); BK.sim(70); if (lf.state !== 'rest') out.push(x); }
       return { from: out, state: lf.state, load: lf.load, need: lf.need, rise: lf.g.rise }; })()`);
@@ -46,12 +46,12 @@ try {
   /* THE STEEP LINE */
   await pg.evalp(`(async () => { BK.setHero('knight'); BK.reset({ fresh: true }); BK.load(window.__i); BK.start(); BK.god = true; BK.sim(120); return true; })()`);
   await go(348, 20, 100); await save('steep-edge');
-  await go(375, 16, 100); await save('steep-dark');
+  await go(380, 16, 100); await save('steep-dark');
   if (!before) {
     const r = await pg.evalp(`(async () => { const W = BK.owk(), d = W.data(), P = BK.P; const lp = d.lamps[2]; const hp = d.heaps[d.heaps.length - 1]; const res = [];
       for (let x = Math.round(hp.x) - 4; x < Math.round(lp.x) + 4 && !lp.lit; x += 3) { P.x = hp.x; P.y = hp.y; P.face = 1; BK.sim(2); if (!W.held()) { BK.press('talk'); BK.sim(6); } P.x = x; P.y = hp.y; P.vx = 0; BK.sim(2); BK.press('atk'); BK.sim(80); if (lp.lit) res.push(x); }
       return { lit: lp.lit, from: res, n: W.n, held: W.held(), carry: !!P.carry, px: P.x, py: P.y, lamps: d.lamps.map(q => q.lit) }; })()`);
-    console.log('steep rock throw', JSON.stringify(r)); await go(375, 16, 120); await save('steep-lit');
+    console.log('steep rock throw', JSON.stringify(r)); await go(380, 16, 120); await save('steep-lit');
   } else { await save('steep-lit'); }
   console.log('errors', JSON.stringify(pg.errors.slice(0, 5)));
 } finally { pg.close(); }
