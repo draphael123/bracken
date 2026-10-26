@@ -206,7 +206,7 @@ export function buildRookery({ painter, T, TS }) {
   ent('shrieksisters', A0 + 21, FL - 1);
   block(W - 1, W - 1, 0, H - 1);                                                    /* the world's east edge */
 
-  const arena = { x0: A0 * TS, x1: (A1 + 1) * TS, floor: FL * TS, y0: (FL - 9) * TS, trigger: (A0 + 5) * TS, wallL: A0 - 1, wallR: A1 + 1, boss: 'shrieksisters', music: 'shrieksisters', tint: '#c8c0d8', tintA: 0.07,
+  const arena = { x0: A0 * TS, x1: (A1 + 1) * TS, floor: FL * TS, y0: (FL - 9) * TS, trigger: (A0 + 5) * TS, wallL: A0 - 1, wallR: A1 + 1, boss: 'shrieksisters', music: 'shrieksisters', camUp: 16, tint: '#c8c0d8', tintA: 0.07,
     /* THE CRACKED SLABS (src/shriek-sisters.js geom): tile columns of each slab's middle */
     slabs: [A0 + 8, A0 + 21, A1 - 8] };
   return {

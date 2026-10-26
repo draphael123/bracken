@@ -30658,6 +30658,8 @@ function updateCamera(dt) {
   /* NOTHING UNDER THE BRIDGE. An arena can say how many rows under its floor the camera may show (camBelow): the Grandmother's
      room is one bridge, and the camera sat low enough to show a band of garden and dark ground under it that was never part of the fight */
   if (L.arena && L.arena.camBelow !== undefined && P.x > L.arena.x0 - 64 && P.x < L.arena.x1 + 64) camY = Math.min(camY, L.arena.floor + L.arena.camBelow * TS - VH);
+  /* (claude/batch123 integ, sisters2 Q2) camUp: an arena can lift the camera some pixels - the Shriek Sisters hover 150 px over the floor and their scream-tell pose sat on the top edge */
+  if (L.arena && L.arena.camUp && P.x > L.arena.x0 - 64 && P.x < L.arena.x1 + 64) camY = Math.max(0, camY - L.arena.camUp);
   // THE BOSS INTRO. It takes the camera off you and puts it on the thing, and pushes in while its name lands.
   { const mi = miniIntroT > 0 ? miniOne() : null;
     const who = bossActive && boss && boss.alive && boss.mode === 'wake' ? boss : mi;
