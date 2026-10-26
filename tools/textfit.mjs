@@ -409,14 +409,14 @@ async function main() {
      time (default 5). The short ones stay together, in order, on one page (the hero pick before the menu, whose pause map stays up). */
   for (const o of only) if (!SCOPES.includes(o)) console.log('(unknown scope "' + o + '" ignored; scopes: ' + SCOPES.join(' ') + ')');
   const want = s => !only.length || only.includes(s);
-  const HEROES = ['knight', 'warden', 'pyro', 'paladin', 'pirate', 'reaper'], LONG = ['talk', 'plates', 'bossfix', 'boss'];
+  const HEROES = ['knight', 'warden', 'pyro', 'paladin', 'pirate', 'reaper'], LONG = ['talk', 'plates', 'bossfix', 'boss', 'levelcard'];   /* (redcleanup 10-26: levelcard loads EVERY campaign level and steps 40 frames - one page, one 480 s scope, and it outlived the limit on master (a 'textfit-levelcard' red since batch110): batched like boss/plates, a recycled page every 10 levels, its own job) */
   const units = [];   /* in report order */
   for (const sc of SCOPES) if (want(sc)) { if (sc === 'talk') for (const h of HEROES) units.push({ sc, heroes: [h], label: 'talk[' + h + ']' }); else units.push({ sc, label: sc }); }
   /* RECYCLE THE PAGE EVERY BATCH OF LOADS (10-16 leakfix): BK.load leaks ~40-65 MB of NATIVE memory per call (not the JS heap), so one page doing a whole
      scope's loads (talk: 37 per hero, boss/plates: ~48) grew past 3 GB (a boss level costs ~250 MB: 90 drawn frames each; a talk load ~60 MB). The long scopes now run in batches of
      levels - boss 4, plates 6, talk 12, or TEXTFIT_BATCH for all - which keeps a page near 2 GB, and the
      page is closed and reopened between batches. Same levels, same checks, same order in the report; each batch's issues and shots are merged below like any other part. */
-  const BATCH_OF = { boss: 4, plates: 6, talk: 12 }, BATCHED = Object.keys(BATCH_OF), batchOf = sc => Math.max(1, +process.env.TEXTFIT_BATCH || BATCH_OF[sc]);
+  const BATCH_OF = { boss: 4, plates: 6, talk: 12, levelcard: 10 }, BATCHED = Object.keys(BATCH_OF), batchOf = sc => Math.max(1, +process.env.TEXTFIT_BATCH || BATCH_OF[sc]);
   let allIds = await pg.evalp("import('/src/level.js').then(m => m.LEVELS.filter(l => (!l.hidden || l.secret) && l.id !== 'custom').map(l => l.id))", 60000);
   if (input.levels) allIds = allIds.filter(id => input.levels.includes(id));
   for (let k = units.length - 1; k >= 0; k--) { const u = units[k]; if (!BATCHED.includes(u.sc) || allIds.length <= batchOf(u.sc)) continue;
@@ -424,7 +424,7 @@ async function main() {
     for (let b = 0; b < n; b++) parts.push({ ...u, levels: allIds.slice(b * BATCH, (b + 1) * BATCH), recycle: true, label: u.label + ' ' + (b + 1) + '/' + n });
     units.splice(k, 1, ...parts); }
   const jobs = [];    /* a job is a run of units on one page */
-  for (const sc of ['boss', 'plates']) { const us = units.filter(u => u.sc === sc); if (us.length) jobs.push(us); }
+  for (const sc of ['boss', 'plates', 'levelcard']) { const us = units.filter(u => u.sc === sc); if (us.length) jobs.push(us); }
   for (const h of HEROES) { const us = units.filter(u => u.sc === 'talk' && u.heroes[0] === h); if (us.length) jobs.push(us); }
   units.filter(u => u.sc === 'bossfix').forEach(u => jobs.push([u]));
   const rest = units.filter(u => !LONG.includes(u.sc)); if (rest.length) jobs.unshift(rest);
