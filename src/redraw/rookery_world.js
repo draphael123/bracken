@@ -259,3 +259,37 @@ export function bakeSummitStone() {
     R(g, 11, 2, 1, 2, CRACK); R(g, 12, 4, 1, 2, CRACK); R(g, 11, 6, 1, 2, CRACK); R(g, 10, 8, 1, 2, CRACK); R(g, 12, 3, 2, 1, LIME[2]); R(g, 9, 7, 2, 1, LIME[2]);
     return c; });
 }
+/* (claude/sisters2) THE SISTERS' SIGNATURE MOVES' summit pieces, same rose stone / lime / guano / black fracture as the slabs:
+   bakeSummitEcho - a floor tile the Shrieker's CRACKING ECHO split: a star fracture from a pale bruise, raw stone flaked up at its edges, lime dust blown out
+   bakeBoulder    - the Snatcher's BOULDER (the BOULDER DROP): bigger than the stones she used to leave, strata, guano cap, a fracture, lit from the left
+   bakeSummitLip  - the summit's crumbling LIP at each end (where the SHOCK SHRIEK shoves you): the edge stone split into loose blocks, fissures, pebbles about to go */
+export function bakeSummitEcho(w) {
+  return once('se' + w, () => {
+    const [c, g] = canvas(w, 8), r = mulberry(w * 7 + 3), S = PAL[4].s, m = w >> 1;
+    R(g, 0, 1, w, 7, S[4]); R(g, 0, 1, w, 1, S[6]); R(g, 0, 7, w, 1, S[1]);
+    R(g, m - 4, 1, 9, 2, LIME[2]); R(g, m - 2, 1, 5, 1, LIME[3]); R(g, m - 3, 3, 7, 1, S[5]);   /* the bruise where the scream struck */
+    for (const [dx, dy, l] of [[-1, 0, 6], [1, 0, 7], [-1, 1, 4], [1, 1, 5], [0, 1, 5]]) { let x = m, y = 1; for (let k = 0; k < l; k++) { x += dx * (1 + (r() < 0.4 ? 1 : 0)); y = Math.min(7, y + (dy || (r() < 0.35 ? 1 : 0))); if (x < 0 || x >= w) break; R(g, x, y, 1, 1, CRACK); } }
+    for (const x of [1, w - 4]) { R(g, x, 0, 3, 2, S[5]); R(g, x, 0, 3, 1, S[6]); R(g, x + 1, 2, 2, 1, S[1]); }   /* raw flakes kicked up at the edges */
+    for (let i = 0; i < 4; i++) R(g, (r() * (w - 2)) | 0, 2 + ((r() * 3) | 0), 1, 1, LIME[1 + (i & 1)]);
+    return c; });
+}
+export function bakeBoulder() {
+  return once('bd', () => {
+    const [c, g] = canvas(26, 18), S = PAL[4].s;
+    const prof = [7, 4, 3, 2, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 2, 3, 4, 5, 8];
+    for (let x = 0; x < 26; x++) { const t = prof[x], h = 17 - t - (x < 2 || x > 23 ? 2 : 0); R(g, x, t, 1, h, x < 9 ? S[4] : x > 18 ? S[2] : S[3]); R(g, x, t, 1, 1, x < 14 ? S[6] : S[5]); R(g, x, t + h - 1, 1, 1, S[0]); R(g, x, t + h - 2, 1, 1, S[1]); }
+    R(g, 3, 8, 19, 1, S[2]); R(g, 4, 9, 6, 1, S[5]); R(g, 14, 5, 8, 1, S[2]); R(g, 6, 12, 14, 1, S[2]);   /* strata */
+    R(g, 5, 0, 13, 2, GUANO[2]); R(g, 7, 0, 8, 1, GUANO[3]); R(g, 10, 2, 2, 4, GUANO[1]); R(g, 15, 2, 1, 2, GUANO[1]);   /* the guano cap, two drips */
+    for (const [x, y] of [[15, 3], [16, 5], [15, 7], [14, 9], [15, 11], [16, 13]]) R(g, x, y, 1, 2, CRACK); R(g, 16, 4, 2, 1, LIME[2]); R(g, 12, 10, 2, 1, LIME[2]);
+    return c; });
+}
+export function bakeSummitLip(side) {
+  return once('lp' + side, () => {
+    const [c, g] = canvas(30, 14), r = mulberry(side > 0 ? 41 : 17), S = PAL[4].s;
+    for (let x = 0; x < 30; x++) { const k = side > 0 ? x : 29 - x, drop = k > 22 ? (k - 22) : 0, t = 1 + drop + (k > 14 && r() < 0.3 ? 1 : 0);   /* the stone slumps toward the edge */
+      R(g, x, t, 1, 13 - t, S[3 + (k < 10 ? 1 : 0)]); R(g, x, t, 1, 1, S[k < 18 ? 6 : 5]); }
+    for (let i = 0; i < 4; i++) { const k = 6 + i * 6, x = side > 0 ? k : 29 - k; for (let y = 1; y < 12; y++) R(g, x + (y % 3 === 0 ? (side > 0 ? 1 : -1) : 0), y, 1, 1, CRACK); }   /* fissures: the lip is splitting off in blocks */
+    for (let i = 0; i < 7; i++) { const k = 4 + ((r() * 24) | 0), x = side > 0 ? k : 29 - k; R(g, x, 0, 2, 1, i % 2 ? S[5] : GUANO[2]); }   /* loose pebbles on top */
+    for (let i = 0; i < 3; i++) R(g, (r() * 28) | 0, 3 + ((r() * 6) | 0), 2, 1, LIME[2]);
+    return c; });
+}
