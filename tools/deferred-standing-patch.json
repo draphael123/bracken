@@ -6,8 +6,8 @@
     "gameTree": "9d8acbb7f3182c1d29ac71f4a3b0227224446718",
     "originalMainSha256": "1573d2d744b753e5611b021d97b70b013f7e2e6773640b707ae85d5ab5dae594",
     "candidateMainSha256": "106e070279b09f6a15ecb3ee8ab57b1fb839dc3fe5c6697b56956df499e8d84b",
-    "originalPxSha256": "9d3feee0d3a14e186f3259e7b7a1279b579989a0461de55d594f676f525533ae",
-    "candidatePxSha256": "99c3ba33703354388c9341f1b0a651396fa9719e2e5191a10ec6a647ead3ea4a",
+    "originalPxSha256": "e9a358b9170944e0dfae6d1b8c82d7b664562e0b2b0ab7f2538236e34214db1d",
+    "candidatePxSha256": "4505176be109ce8887dece68df9ecb2fdea3175753824f1a766e9698562cf40b",
     "helperSha256": "c380f16cfb0238cd6f542e1f1cfedcdc18d5dbb516a627ba5e8df3ce092695cd",
     "targetCalls": 102,
     "targetModules": [
@@ -664,7 +664,16 @@
       "noTextAlphaTimerSceneMechanicsOrCameraChange": true
     },
     "noOtherCacheVignetteOrRecorderPrototypeCombined": true,
-    "sourceSpecificFullProofPending": true
+    "sourceSpecificFullProofPending": true,
+    "localWorkingOriginalPxSha256": "9d3feee0d3a14e186f3259e7b7a1279b579989a0461de55d594f676f525533ae",
+    "localWorkingCandidatePxSha256": "99c3ba33703354388c9341f1b0a651396fa9719e2e5191a10ec6a647ead3ea4a",
+    "crossPlatformDelivery": {
+      "originalWorkingPxCrLf": 125,
+      "canonicalOriginalEqualsGitBlob": true,
+      "onlyOriginalLineEndingsNormalizedBeforeOwnershipAppend": true,
+      "noPainterCodeOrAssertionChange": true,
+      "priorPreBrowserFailureRun": 40390599245
+    }
   },
   "files": [
     {
@@ -1306,16 +1315,17 @@
     },
     {
       "file": "src/px.js",
-      "originalSha256": "9d3feee0d3a14e186f3259e7b7a1279b579989a0461de55d594f676f525533ae",
-      "candidateSha256": "99c3ba33703354388c9341f1b0a651396fa9719e2e5191a10ec6a647ead3ea4a",
+      "originalSha256": "e9a358b9170944e0dfae6d1b8c82d7b664562e0b2b0ab7f2538236e34214db1d",
+      "candidateSha256": "4505176be109ce8887dece68df9ecb2fdea3175753824f1a766e9698562cf40b",
       "edits": [
         {
-          "start": 6561,
-          "end": 6561,
+          "start": 6436,
+          "end": 6436,
           "before": "",
           "after": "\n// Preserve the original startup-art ownership (outside all level bake scopes).\nexport function withStartupBakeOwnership(build){const previous=OWN;OWN=null;try{return build();}finally{OWN=previous;}}\n"
         }
-      ]
+      ],
+      "canonicalLineEndings": true
     },
     {
       "file": "src/deferred-pure-sprite-catalogue.js",
