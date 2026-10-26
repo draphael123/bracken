@@ -47,7 +47,8 @@ export function makeOreWorks(ctx) {
     for (const k of Object.keys(W.n)) W.n[k] = 0;
     if (!D) return;
     zones = (L.darkZones || []).filter(z => z.ow);
-    for (const z of zones) { z.lit = false; z.dark = z.darkVal; }
+    /* a DIM stretch puts its own pit lamps out until its lamp is struck (the light of a pit lamp reaches through a floor: they are part of the dark) */
+    for (const z of zones) { z.id = z.ow; z.lit = false; z.dark = z.darkVal; z.lamps = z.dim ? ctx.props().filter(pr => pr.t === 'minerlamp' && pr.x > z.x0 - 8 && pr.x < z.x1 + 8 && pr.y > z.y0 - 150 && pr.y < z.y1 + 16) : []; for (const pr of z.lamps) pr.lit = false; }
     lamps = D.lamps.map(d => ({ ...d, lit: false, swing: 0, hitCd: 0 }));
     heaps = D.heaps.map(d => ({ ...d }));
     glints = D.glints.map(d => ({ ...d }));
@@ -61,7 +62,7 @@ export function makeOreWorks(ctx) {
     if (lp.lit) return; lp.lit = true; lp.swing = quiet ? 0 : 1; W.n.lit++;
     const z = zoneOf(lp.zone); if (z) { z.lit = true; z.dark = z.litDark; }
     if (ctx.marks) ctx.marks.add('orelamp:' + lp.id);
-    for (const pr of ctx.props()) if (pr.t === 'minerlamp' && !pr.lit && z && inZone({ x0: z.x0 - 8, x1: z.x1 + 8, y0: z.y0 - 8, y1: z.y1 + 8 }, pr.x, pr.y)) { if (quiet) pr.lit = true; else ripple.push({ pr, at: t + Math.abs(pr.x - lp.x) / OW.ripple }); }
+    if (z) for (const pr of z.lamps) if (!pr.lit) { if (quiet) pr.lit = true; else ripple.push({ pr, at: t + Math.abs(pr.x - lp.x) / OW.ripple }); }
     if (!quiet) { ctx.burst(lp.x, lp.y, 12, ['#fff6c8', '#ffd36b', '#ff9a5c'], 70, 0.6); ctx.number(lp.x, lp.y - 22, 'LIT: THE STRETCH LIGHTS FOR GOOD', OW.col); if (ctx.sfx.spark) ctx.sfx.spark(); if (ctx.sfx.clank) ctx.sfx.clank(); }
   }
   W.light = light;
@@ -79,7 +80,7 @@ export function makeOreWorks(ctx) {
     lf.load = Math.min(lf.need, lf.load + 1); W.n.loaded++;
     ctx.burst(x, y, 8, ['#7a6a50', '#b09a5a', '#ffd36b'], 60, 0.5); if (ctx.sfx.clank) ctx.sfx.clank(); if (ctx.sfx.stone) ctx.sfx.stone();
     if (lf.load >= lf.need) { lf.state = 'rise'; ctx.number(lf.g.ax, lf.rim - 18, 'THE WEIGHT TAKES: THE PAN RISES', OW.col); if (ctx.sfx.heavy) ctx.sfx.heavy(); }
-    else ctx.number(lf.g.ax, lf.rim - 18, 'ORE ' + lf.load + ' OF ' + lf.need, OW.col);
+    else ctx.number(lf.g.ax, lf.rim - 18, 'ONE ROCK IN: ONE MORE', OW.col);
   }
   W.update = dt => {
     t += dt; const P = ctx.P(), keys = ctx.keys ? ctx.keys() : {};
@@ -114,6 +115,8 @@ export function makeOreWorks(ctx) {
       if (lf.state === 'rise') { lf.m.y = Math.max(lf.g.yHigh, lf.m.y - OW.rise * dt); if (lf.m.y <= lf.g.yHigh) { lf.state = 'top'; lf.holdT = lf.hold; W.n.rose++; } }
       else if (lf.state === 'top') { lf.holdT -= dt; if (lf.holdT <= 0) { lf.state = 'fall'; lf.load = 0; ctx.number(lf.g.ax, lf.g.rimLow - 6, 'THE ORE TIPS OUT: THE PAN COMES DOWN', '#ff9a5c'); ctx.burst(lf.g.ax, lf.g.rimLow, 10, ['#7a6a50', '#b09a5a', '#3a3440'], 70, 0.6); if (ctx.sfx.stone) ctx.sfx.stone(); } }
       else if (lf.state === 'fall') { lf.m.y = Math.min(lf.yLow, lf.m.y + OW.fall * dt); if (lf.m.y >= lf.yLow) lf.state = 'rest'; }
+      /* a hero standing on the pan where it rests is carried: the engine's mover landing only catches a hero who is FALLING onto one, and the floor already holds this one */
+      if (P && !P.dead && P.ground && !P.onMover && lf.state !== 'rest' && P.x + 4 > lf.m.x && P.x - 4 < lf.m.x + lf.m.w && Math.abs(P.y - oy) < 3) P.onMover = lf.m;
       lf.m.dy = lf.m.y - oy; lf.p = (lf.yLow - lf.m.y) / travel; lf.rim = lf.g.rimHigh + lf.p * lf.aTravel;
       if (lf.m.dy < 0 && Math.random() < dt * 10) ctx.burst(lf.m.x + Math.random() * lf.m.w, lf.m.y + 6, 1, ['#8a919c'], 20, 0.3); }
     near = null;

@@ -343,9 +343,9 @@ export function buildOreRoad({ painter, T }) {
   /* (claude/oreroadminor) THE COUNTERWEIGHT LIFTS (src/ore-works.js): a stone pier on the sorting floor with a purse on it, the pan that rises to it, the bucket over the floor that takes the ore. The first wants ONE rock and a flat throw;
      the second TWO and a lob. Both are shown their rock pile first. Optional, with a purse; the way on is the ropes it always was. */
   coins([162, TOWER[1] - 1], [164, TOWER[1] - 1], [172, TOWER[2] - 1], [174, TOWER[2] - 1]);   /* the lifts' landings */
-  ent('sign', 154, TOWER[0], { text: 'E TAKES A ROCK FROM THE PILE. ATTACK THROWS IT. ORE IN THE HIGH BUCKET RAISES THE PAN YOU STAND ON.' });
-  ent('sign', 164, TOWER[1], { text: 'TWO ROCKS THIS TIME, AND THE BUCKET HANGS HIGHER: HOLD UP AND ATTACK TO LOB. THE ORE TIPS OUT AGAIN.' });
-  ent('sign', 145, TOWER[1], { text: 'THE DECK IS DARK. A COLD LAMP HANGS OVER IT. TAKE A ROCK FROM THE PILE AND THROW IT UP AT THE LAMP.' });
+  ent('sign', 154, TOWER[0], { text: 'E TAKES A ROCK. THROW IT IN THE HIGH BUCKET AND THE PAN YOU STAND ON RISES.' });
+  ent('sign', 164, TOWER[1], { text: 'TWO ROCKS, AND THE BUCKET HANGS HIGHER: HOLD UP AND ATTACK TO LOB.' });
+  ent('sign', 145, TOWER[1], { text: 'THE DECK IS DARK. TAKE A ROCK AND THROW IT UP AT THE COLD LAMP.' });
 
   // ---- THE ORE CHUTE (c 204-271) — down thirteen rows, steered, over the crusher run ----
   /* THE CRUSHER RUN under the chute: what misses the buckets goes down it, and so does anything that comes off one. It is the
@@ -539,7 +539,7 @@ export function buildOreRoad({ painter, T }) {
         if (top && run < 0) run = x; if (!top && run >= 0) { const end = x - 1; for (let q = run; q <= end; q++) if (q === run || q === end || (q - run) % 5 === 0) owGlints.push({ zone: z.id, x: q * TS + 8, y: y * TS });
           run = -1; } }
       for (let x = c0; x <= c1; x++) if (L.grid[y * W + x] === T.NET && L.grid[(y - 1) * W + x] !== T.NET) owGlints.push({ zone: z.id, x: x * TS + 8, y: y * TS + 2, rope: true }); } }
-  const owZones = OWL.map(z => ({ x0: z.x0, x1: z.x1, y0: z.y0, y1: z.y1, dark: OR.OW.dark, darkVal: OR.OW.dark, litDark: OR.DARK, name: z.name, ow: z.id }));
+  const owZones = OWL.map(z => ({ x0: z.x0, x1: z.x1, y0: z.y0, y1: z.y1, dark: OR.OW.dark, darkVal: OR.OW.dark, litDark: OR.DARK, name: z.name, ow: z.id, dim: z.id !== 'steep' }));
   return {
     seams, mine,
     oreWorks: { lamps: owLamps, heaps: owHeaps, lifts: owLifts, glints: owGlints },
