@@ -54,7 +54,7 @@ try {
       if(!rc){out.gargoyle={noRune:true};break;}
       rc.cd=0;rc.flare=0;const m=BK.movers().filter(s=>s.arena&&s.slab&&!s.broken&&s.x<=rc.x&&s.x+s.w>=rc.x).sort((a,b)=>a.y-b.y)[0];
       q.mode='hover';q.cd=99;q.x=inIt?rc.x:rc.x+160;q.y=m.y-50;P.x=rc.x;P.y=m.y;P.vy=0;P.onMover=m;P.ground=true;BK.sim(1);P.x=rc.x;
-      let stun=0,crash=false;swing(1,20,()=>{if(q.mode==='hover'){q.x=inIt?rc.x:rc.x+160;q.y=m.y-50;q.cd=99;}});
+      let stun=0,crash=false;swing(1,20,()=>{if(q.mode==='crash')crash=true;if(q.mode==='hover'){q.x=inIt?rc.x:rc.x+160;q.y=m.y-50;q.cd=99;}});
       for(let i=0;i<180;i++){P.hp=P.maxHp;P.inv=9;BK.sim(1);if(q.mode==='crash')crash=true;if(q.mode==='stunned')stun=Math.max(stun,q.modeT);}
       out['garg'+(inIt?'In':'Out')]={crash,stunned:+stun.toFixed(2),cd:+(rc.cd||0).toFixed(2),lit:rc.lit||0,caught:rc.caught||0}; }
     /* ---- THE TIDE HERALD's mire, capped ---- */
@@ -62,8 +62,8 @@ try {
       out.herald={mode:q.mode,maxHp:q.maxHp}; }
     /* ---- POISE: taps fill nothing outside his opening; a held heavy does ---- */
     { const {q,P}=setup('stockade','knight','chief');q.mode='walk';hold(q);q.poise=0;q.poiseCd=0;q.broken=0;P.heavySwing=false;P.combo=1;P.atk=-1;
-      BKT.hurtEnemy(q,8,q.x-10,false);const tap=q.poise||0;q.poise=0;P.heavySwing=true;P.atk=0.05;BKT.hurtEnemy(q,8,q.x-10,false);const heavy=q.poise||0;P.heavySwing=false;P.atk=-1;
-      q.mode='planted';q.modeT=5;q.poise=0;BKT.hurtEnemy(q,8,q.x-10,false);const inOpen=q.poise||0;out.poise={tap,heavy,inOpen}; }
+      BKT.hurtAs('light',q,8,q.x-10,false);const tap=q.poise||0;q.poise=0;P.heavySwing=true;P.atk=0.05;BKT.hurtAs('heavy',q,8,q.x-10,false);const heavy=q.poise||0;P.heavySwing=false;P.atk=-1;
+      q.mode='planted';q.modeT=5;q.poise=0;BKT.hurtAs('light',q,8,q.x-10,false);const inOpen=q.poise||0;const AM=await import('/src/anti-mash.js');out.poise={tap,heavy,inOpen,heavyWant:AM.BREAK.fill.heavy*AM.BREAK.outside,openWant:AM.BREAK.fill.cut}; }
     return out;})()`, 300000);
   r.errors = pg.errors.slice(0, 3);
 } finally { pg.close(); }
@@ -77,7 +77,8 @@ ok(r.gqueenAway && r.gqueenAway.mode !== 'pinned', 'THE GOBLIN QUEEN: rung with 
 ok(r.gargIn && r.gargIn.crash && r.gargIn.stunned >= 3 && r.gargIn.caught === 1, 'THE GARGOYLE: the rune struck while he flies in it turns him onto the spikes, stunned 3 s+: ' + JSON.stringify(r.gargIn || r.gargoyle));
 ok(r.gargOut && !r.gargOut.crash && r.gargOut.lit === 1 && r.gargOut.caught === 0, 'THE GARGOYLE: struck while he is out of it, it flares on nothing and goes dark: ' + JSON.stringify(r.gargOut));
 ok(r.herald && r.herald.mode !== 'mired', 'THE HERALD: a third of him taken in one mire and he drags himself out: ' + JSON.stringify(r.herald));
-ok(r.poise && r.poise.tap === 0 && r.poise.heavy >= 30 && r.poise.inOpen > 0, 'POISE: a tap outside his opening fills none of a boss\'s bar, a held heavy does, and inside an opening any blow does: ' + JSON.stringify(r.poise));
+/* (redcleanup 10-26: STATED DESIGN CHANGE - claude/difficulty 97206a12, 10-16: the old per-boss poise bar (heavy 30 outside an opening) became the UNIVERSAL BREAK BAR in src/anti-mash.js: outside an opening a tap (cut) still fills NOTHING and a held heavy fills BREAK.fill.heavy x BREAK.outside (26 x 0.6); inside an opening any blow fills (a cut 3). The blows are told by their tag (hurtAs), not by P.heavySwing alone; the expected numbers are read from the table.) */
+ok(r.poise && r.poise.tap === 0 && r.poise.heavy >= r.poise.heavyWant - 0.01 && r.poise.inOpen >= r.poise.openWant - 0.01, 'POISE: a tap outside his opening fills none of a boss\'s bar, a held heavy does, and inside an opening any blow does: ' + JSON.stringify(r.poise));
 ok(!r.errors.length, 'page errors: ' + JSON.stringify(r.errors));
 if (fails.length) { for (const f of fails) console.error('FAIL ' + f); process.exit(1); }
 console.log('rule-openings: ok');
