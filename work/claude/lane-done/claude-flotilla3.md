@@ -210,4 +210,9 @@ Files:
    - Rec: keep both (built).
 4. **The plate hp floor.** Armoured, he can't be cut below 50% health, so the guns are needed.
    - Rec: keep (built).
-5. **The dry rate.** Dry is 14 0x0p+0gainst 68
+5. **The dry rate.** Dry is 14% against 68% with flasks, so this fight leans hard on flasks.
+   - Rec: accept it. The band is set with flasks.
+   - Alt: lower AD.dmg ~10% and raise hp, to narrow the gap.
+6. **Pyro wins 83%,** the high outlier; the overall rate is in band.
+   - Rec: accept it (built).
+   - Alt: drop his out multiplier to 0.75.
