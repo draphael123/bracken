@@ -6,6 +6,11 @@
 //                            heal (a flask, the nova) fills the segment first. Capped at debt.cap of his max health. No other passive heal: the
 //                            drag's drink, the crescent's drink-back and the crouch harvest are gone (this replaces generic lifesteal).
 //                            A WARD-RELEASE PARRY or a BLOOD SPIKE reclaims ALL of it. T4/T5 heavies SPEND it as power instead.
+//                            (claude/bkblood, Daniel 10-23, scratch/brief-bkblood-1023.md: LOUD + LONGER - ~5 s, more of the blow; each reclaim is a blood stream into him,
+//                            a drink, a '+N'; a heartbeat + a red screen edge while he owes; a bleeding foe gives more back and its bleed ticks feed it a little.)
+//   VITAE + CRIMSON FRENZY   (claude/bkblood) his meter fills ONLY from health he reclaims; full, HOLD F = CRIMSON FRENZY (frenzy.t s: every blow wins back all of itself,
+//                            a capped lifesteal past the debt, quicker cuts, the armour glowing; never invulnerable). It replaced BLOOD SURGE (kills/blocks filled that bar).
+//   THE BLOOD LASH           (claude/bkblood) the rhythm's third cut: the blade's blood whips out lash.reach px past the steel and bleeds what it lands on.
 //   BLOOD PRICE (DOWN+C)     on his knee he opens a vein: price.pct of his max health (never his last point) goes ON THE BAR AS DEBT, and for
 //                            price.buffT s his blade is BLOOD-EDGED (x price.mul). Pay, then hit to win it back - or spend it on a T4/T5 heavy.
 //   THE FIVE-TIER HEAVY      HOLD X; let go any time past T1 and that tier comes down. The blade glows deeper each tier, with a tick.
@@ -23,7 +28,7 @@ export const BLOOD = {
      reclaim: x the damage of his landed blow that comes back (min reclaimMin hp, never past the segment) */
   /* (claude/bkblood, Daniel 10-23 "better utilize the blood theme ... like Bloodborne, where you're hit you can restore health by attacking": a LOUD, LONGER RALLY - was
      share 0.5, cap 0.25, drainT 3, hold 0.45, reclaim 0.45, reclaimMin 1; now ~5 s to win it back, more of the blow recoverable, a quick cut wins a real piece back) */
-  debt: { share: 0.65, cap: 0.35, drainT: 5, hold: 0.8, reclaim: 0.6, reclaimMin: 2 },
+  debt: { share: 0.6, cap: 0.3, drainT: 5, hold: 0.8, reclaim: 0.5, reclaimMin: 2 },   /* (claude/bkblood rates: share 0.65 / cap 0.35 / reclaim 0.6 put him at unburied 12/12, waymeet 11/12 - trimmed, the feedback kept) */
   /* (claude/bkblood) BLEEDING FOES FEED THE RALLY: a blow of his on a bleeding foe reclaims x hitMul; each bleed tick of a foe wins `tick` hp of his debt back (a little) */
   bleed: { hitMul: 1.25, tick: 1 },
   /* (claude/bkblood) THE BLOOD LASH - the third cut of THE RED RHYTHM (the drag): the blood on the blade whips out past the steel for `reach` px more, at chest height
@@ -31,7 +36,7 @@ export const BLOOD = {
   lash: { reach: 24, top: 22, bot: 6, from: 0.15, bleed: 2 },
   /* (claude/bkblood) VITAE - his meter (it was BLOOD SURGE's harvest bar, filled by kills and blocks): it fills ONLY from the health he reclaims - aggression after being
      hit. `per` of his max health reclaimed fills it. FULL + HOLD F = CRIMSON FRENZY (it is his ULT 1 for the three-ultimates system, brief-herometers-1015 !! 10-23) */
-  vitae: { per: 0.5 },
+  vitae: { per: 0.6 },   /* (~1-2 frenzies a boss fight with the bot) */
   /* (claude/bkblood) CRIMSON FRENZY: t s; every landed blow reclaims x reclaim of itself (all of it), past the debt a small lifesteal (steal x the blow, at most stealCap of
      max health a frenzy); swing x the rhythm's clock; the debt holds (no drain) while it lasts. B15 never-invuln: no invulnerability, no damage resist */
   frenzy: { t: 5, reclaim: 1, steal: 0.12, stealCap: 0.1, swing: 1.2 },
