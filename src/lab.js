@@ -1705,7 +1705,7 @@ async function runbossLab(BK, opts) {
         /* LORD GRUBBAG THE GLUTTON (claude/kitchengate): src/grubbag.js gbPlan reads what a player sees - his tells a reaction late, the food's and the plates' rings, the belch's
            rings, the gravy's wave, the grab's arm - and works THE RULE: strike the pie oven's bellows when it is hot, be at his chair as the powder pie reaches him, cut him while he
            chokes. It rests inside its own branch */
-        k.left=k.right=k.up=k.down=k.jump=k.block=false;
+        k.left=k.right=k.up=k.down=k.jump=k.block=false;if(!(P.labRotHold>0))k.atk=false;   /* (claude/grubbagbig) the attack key let go too, unless the rotation holds it (a key left down wound heavies on the walk to the oven) */
         const GH=BK.grubbagHands(),S=GH&&GH.show();
         if(f===0||!P.labGbMem)P.labGbMem={};
         const pl=S?gbPlan({tip:h==='warden'?WARDEN_TIP:0,v2:!!LABP.v2,hero:h,rest:!!P.labRest,P:{x:P.x,y:P.y,vy:P.vy,face:P.face,ground:P.ground,atk:P.atk},e:boss,S,reach:LAB_REACH[h],shield:(SHIELDED(h)&&(h!=='geomancer'||P.st>=30))||h==='warden',dodge:!(h==='warden'&&!LABP.v2),t:f/60,rng:Math.random,mem:P.labGbMem}):{gx:null,face:P.face};

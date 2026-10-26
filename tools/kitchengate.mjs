@@ -125,7 +125,7 @@ ok(Object.values(KG_SAY).every(s => SAY_LINES.has(s)) && Object.values(GBM.GB_SA
     const wf = { ...w, hitArea: (b, d, n) => { if (Pf.x > b[0] && Pf.x < b[1]) hf.push(n); }, hitHero: (h, d, n) => hf.push(n), number: (x, y, t) => sf.push(t) };
     Sf.restT = 0; Sf.last = ['belch', 'throw']; const r0 = Math.random; Math.random = () => 0.01;
     GBM.stepGrubbag(ef, Sf, 1 / 60, [Pf], wf); Math.random = r0;
-    ok(ef.mode === 'flopTell' && Math.abs(ef.landX - Pf.x) < 1 && GBM.gbTelling(ef) && sf.includes(GBM.GB_SAY.flop), 'THE BELLY FLOP is told (flopTell, red !!) and his shadow marks where he lands - on the hero (' + Math.round(ef.landX - G.chairX) + ' px from his chair)');
+    ok(ef.mode === 'flopTell' && Math.abs(ef.landX - Pf.x - GBM.GB.flop.aim) < 1 && GBM.gbTelling(ef) && sf.includes(GBM.GB_SAY.flop), 'THE BELLY FLOP is told (flopTell, red !!) and his shadow marks where he lands - on the hero (' + Math.round(ef.landX - G.chairX) + ' px from his chair)');
     const runF = (s, f) => { for (let i = 0; i < Math.round(s * 60); i++) { GBM.stepGrubbag(ef, Sf, 1 / 60, [Pf], wf); if (f && f()) return true; } return false; };
     let peak = 0; runF(F.tell[0] + F.air + 0.1, () => { peak = Math.max(peak, ef.flopY || 0); return ef.mode === 'flopDown'; });
     ok(ef.mode === 'flopDown' && ef.x === ef.landX && peak > F.rise * 0.9 && hf.includes('flop') && Sf.waves.filter(q => q.kind === 'flop').length === 2, 'up out of the chair (' + Math.round(peak) + ' px), down on the shadow: the crush and a shockwave each way');

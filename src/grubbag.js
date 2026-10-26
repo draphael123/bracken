@@ -21,6 +21,10 @@
 //                   it or get up on a bench - and the floor it leaves is slow and slick for GB.flood.lie s
 //     P3 (30-0%)    6 THE GRAB (he leans out of the chair, his arm drawn back, red !!): his arm sweeps out along the floor to take you as food - jump it or roll; caught, he
 //                   bites (GB.grab.dmg) and throws you down the hall
+//                 7 THE BELLY FLOP (claude/grubbagbig, Daniel 10-25 18:00 - his ONE added move, from P1; it does not replace the choke): he grips the chair's arms and heaves up
+//                   out of it (red !!, his shadow and a red crush strip on the floor where he will land), rises over the table and comes down belly first; the crush under
+//                   him and a shockwave each way along the floor - out from under the shadow (west: his body is east), then jump the shock; he lies WINDED a moment (blades
+//                   land whole: a punish, not the choke's x2) and rolls back up into his chair
 //   NO ADDS (Daniel: no adds unless the brief says so - the serving line is the "servers"; see the lane report's questions).
 /* (claude/kitchengateart TUNE, BOT_PROFILE=human + flasks, campaign L19, n=12: knight 10, warden 11, pyro 3 = 67%; mash 0/6) THE CHOKE RUNS ITS WHOLE choke.t FOR EVERY HERO (the purse empties but the opening does not end early: the cycle was the knight 45 s / the pyro 95 s apart),
    boom 0.14 + cap 0.12 per choke, the giant fork 10 (a shield turns it, a pyro cannot: it was the pyro's worst hurt), dmgMul 1.5 on every blow he lands (src/grubbag-hands.js bzD) */
@@ -28,28 +32,32 @@
    and every reach is RE-DERIVED from where the art puts it (src/redraw/grubbag_art.js BIG / src/grubbag-hands.js POSE), not stretched: the fork's tip GB.w / 2 + reach = 205 px from his
    middle, its stab low along the floor; the grab's hand GB.grab.hand each side; the belch's rings out of his flanks (GB.w / 2); the gravy from the tureen on the table's end
    (flood.from); the plates up off a table 40 high; the bellows a box GB.oven.box each side of a bellows twice the size. */
+/* (claude/grubbagbig TUNE, BOT_PROFILE=human + flasks, campaign L19, n=12: knight 6, warden 7, pyro 12 = 69%) THE BOT FIX FIRST: src/lab.js's grubbag branch never let go of the attack key,
+   so a hero wound heavies the whole walk to the oven (the pyro crossed his hall at a third of the knight's pace) - the 10-25 kitchengateart rates were measured through it.
+   With it fixed every hero won (97%). His fight is ~5 chokes (each choke is boom + cap of his MAX hp, so hp does not set its length): boom 0.11 + cap 0.09 (20% a choke,
+   was 29%) makes it ~6 cycles, 122-158 s; dmgMul 2.45 on every blow he lands; rest 1.2/1.0/0.85; thrown food 11; the grab 20 (it was the knight's one-blow death at x2.45) */
 export const GB = {
-  hp: 3000, w: 150, h: 120, markH: 196,
+  hp: 3600, w: 150, h: 120, markH: 196,
   fed: 0.45, above: 0.7, wardMul: 0.4,
   p2: 0.62, p3: 0.3,
-  rest: [1.4, 1.2, 1.0],
+  rest: [1.2, 1.0, 0.85],
   belch: { tell: [0.95, 0.85, 0.8], sp: 155, life: 2.8, h: 14, w: 9, dmg: 13, rec: 0.7 },
-  food: { tell: [0.8, 0.72, 0.65], n: [2, 3, 3], flight: 1.05, r: 15, dmg: 8, spread: 64, rec: 0.6 },
+  food: { tell: [0.8, 0.72, 0.65], n: [2, 3, 3], flight: 1.05, r: 15, dmg: 11, spread: 64, rec: 0.6 },
   fork: { tell: [0.72, 0.64, 0.58], t: 0.34, reach: 130, h: 8, dmg: 10, chip: 0.7, rec: 0.75, range: 190 },
   slam: { tell: [1.0, 0.92, 0.85], n: 4, flight: 0.9, r: 16, dmg: 9, shock: 10, shockDmg: 12, rec: 0.8, top: 44 },
   flood: { tell: 1.0, sp: 120, h: 12, dmg: 13, lie: 4, slow: 0.55, rec: 0.9, from: 118 },
-  grab: { tell: 0.85, t: 0.55, reach: 210, h: 26, hand: 20, dmg: 28, rec: 0.9, throwV: 260 },
+  grab: { tell: 0.85, t: 0.55, reach: 210, h: 26, hand: 20, dmg: 20, rec: 0.9, throwV: 260 },
   /* THE BELLY FLOP (claude/grubbagbig, Daniel 10-25 18:00): he heaves out of the chair (tell), rises over the table (air, rise px at the top of the arc) and comes down belly first on
      the floor at the spot told by his shadow (crush px each side of it); the floor's shockwave runs out both ways from the crush's edges (shockSp, shockLife; jump it); then he lies
      there winded (down s, blades x mul - a punish, not the choke) and rolls back up into his chair (roll s). p: his chance at a pick; never twice in three picks. */
-  flop: { tell: [1.15, 1.05, 0.95], air: 0.62, rise: 44, crush: 84, h: 64, dmg: 22, shock: 12, shockSp: 190, shockLife: 1.3, shockW: 11, down: 1.5, roll: 0.75, mul: 1, lieW: 200, lieH: 72, p: 0.16, reach: 470 },
-  choke: { t: 9, mul: 2, cap: 0.13, boom: 0.16 },
+  flop: { tell: [1.15, 1.05, 0.95], air: 0.62, rise: 44, crush: 84, h: 64, dmg: 16, shock: 9, shockSp: 190, shockLife: 1.3, shockW: 11, down: 1.5, roll: 0.75, mul: 1, lieW: 200, lieH: 72, p: 0.2, reach: 470, aim: 36 },   /* aim: his shadow's middle this far behind you (toward his chair): out from under it is always west, the way you can run (his body is east) */
+  choke: { t: 9, mul: 2, cap: 0.09, boom: 0.11 },
   ward: 2.6, coughRest: 2.2,
   eat: 0.7,
   dish: { every: [9, 7.5, 6.5], v: 120, heal: 0.005, power: 1.3, hang: 64, box: 8 },
   hungry: { t: 6, mul: 0.7, cd: 0.8 },
   oven: { bake: 1.3, cool: 2.5, burst: 10, box: 16 },
-  bz: { hurt: 1.5 }, dmgMul: 1.6,
+  bz: { hurt: 1.5 }, dmgMul: 2.45,
 };
 export const GB_SAY = { wake: 'LORD GRUBBAG THE GLUTTON', rule: 'STOKE THE OVEN: IT BAKES A POWDER PIE, AND HE EATS WHATEVER THE LINE BRINGS HIM.', p2: 'MORE! FASTER!', p3: 'HE REACHES FOR YOU',
   bake: 'THE OVEN BAKES A POWDER PIE', pie: 'THE POWDER PIE GOES OUT ON THE LINE', choke: 'HE CHOKES ON IT', ward: 'HE COUGHS IT UP', eats: 'HE EATS: HEALED', powered: 'FED: HIS NEXT BLOW IS HEAVIER',
@@ -183,7 +191,7 @@ function pick(e, S, ad, w) {
   last.unshift(k); last.length = Math.min(last.length, 3); S.act++; S.n[k]++;
   const T = { belch: ['belchTell', GB.belch.tell[i], '!!', 'belchTell'], throw: ['throwTell', GB.food.tell[i], '!', 'throwTell'], fork: ['forkTell', GB.fork.tell[i], '!', 'forkTell'],
     slam: ['slamTell', GB.slam.tell[i], '!!', 'slamTell'], flood: ['floodTell', GB.flood.tell, '!', 'floodTell'], grab: ['grabTell', GB.grab.tell, '!!', 'grabTell'], flop: ['flopTell', GB.flop.tell[i], '!!', 'flopTell'] }[k];
-  if (k === 'flop') { const G = S.G, F = GB.flop, lo = G.x0 + F.crush + 10, hi = G.chairX - GB.w / 2 - F.crush + 50; e.landX = Math.max(lo, Math.min(hi, S.P0 ? S.P0.x : hi)); e.chairFace = e.face; e.face = -1; }
+  if (k === 'flop') { const G = S.G, F = GB.flop, lo = G.x0 + F.crush + 40, hi = G.chairX - GB.w / 2 + 30; e.landX = Math.max(lo, Math.min(hi, S.P0 ? S.P0.x + F.aim : hi)); e.chairFace = e.face; e.face = -1; }
   e.mode = T[0]; e.modeT = T[1]; w.mark(T[2]); w.sound(T[3]);
   const sayK = { belch: 'belch', fork: 'fork', slam: 'slam', flop: 'flop' }[k]; if (sayK && !S.told[sayK]) { S.told[sayK] = 1; w.number(S.G.mid, S.G.floorY - 120, GB_SAY[sayK], T[2] === '!!' ? '#ff6b6b' : '#ffd36b'); }
 }
@@ -278,7 +286,7 @@ function gbPlan0(s) {
         out.gx = safeX(kx - (half + GB.fork.reach + 34)); out.why = 'back off the fork'; return out; }
       if (e.mode === 'slamTell' && P.x > G.table[0] - GB.slam.shock - 30) { out.gx = safeX(G.table[0] - GB.slam.shock - 46); out.why = 'off the table end'; return out; }
       if ((e.mode === 'flopTell' || e.mode === 'flop') && e.landX != null) { const F = GB.flop, edge = F.crush + 16;
-        if (Math.abs(P.x - e.landX) < edge) { const w0 = clamp(e.landX - edge - 6), e1 = Math.min(hi, e.landX + edge + 6), goW = Math.abs(P.x - w0) <= Math.abs(P.x - e1) || e1 - e.landX < edge;
+        if (Math.abs(P.x - e.landX) < edge) { const w0 = clamp(e.landX - edge - 6), e1 = Math.min(hi, e.landX + edge + 6), goW = P.x < kx || e1 - e.landX < edge;   /* (west, away from his body: east of the shadow is under him) */
           if (s.dodge && e.mode === 'flop' && e.modeT < 0.22 && roll(key + 'fd', 0.5)) { out.dodge = true; out.gx = goW ? w0 : e1; out.why = 'roll out from under the flop'; return out; }
           out.gx = goW ? w0 : e1; out.why = 'out from under his shadow'; return out; }
         out.gx = P.x; out.why = 'the flop: ready to jump the shock'; return out; }
