@@ -36,7 +36,7 @@
 //     the LAST SISTER is frantic: every cooldown x SS.last
 //   NO ADDS (the three are the fight). Every move TOLD with its own windup and release pose (B16, src/shriek-sisters-hands.js POSE) and its own sound.
 export const SS = {
-  hp: { diver: 920, shrieker: 690, snatcher: 800 },
+  hp: { diver: 760, shrieker: 570, snatcher: 660 },   /* (claude/sisters2 tune, n=24/hero BOT_PROFILE=human L14: 920/690/800 -> 760/570/660, grab dmg 12 -> 10, grab cd 8/5.5/4.5 -> 10/7/5.5 first 7 -> 9: 47% -> 69%) */
   wing: 0.4, downK: 1.5, wardMul: 0.4, last: 0.8,
   hover: { diver: 112, shrieker: 150, snatcher: 104 },
   dive: { tell: [0.85, 0.75, 0.7], lock: 0.24, markTell: 0.62, v: 430, dmg: 22, land: 0.7, rise: 0.8, cd: [2.4, 2.1, 1.8], second: 0.55, downed: 1.3 },
@@ -54,7 +54,7 @@ export const SS = {
   rake: { tell: 0.5, v: 250, T: 0.62, h: 16, dmg: 18, chance: [0.6, 1, 1], end: 0.6, pre: 0.25 },
   shock: { tell: 0.85, range: 150, h: 64, dmg: 8, vx: 300, vy: -160, low: 30, gap: 64, edge: 30, teeter: 0.7, T: 0.45 },
   echo: { tell: 0.75, ahead: 56, w: 22, dmg: 14, life: 8, T: 0.4 },
-  grab: { tell: 0.75, v: 290, T: 0.8, h: 14, dmg: 12, lift: 0.8, hold: 1.8, strikes: 3, gap: 0.22, liftH: 56, drop: 14, free: 1.6, cd: [8, 5.5, 4.5], first: 7, hang: 24 },
+  grab: { tell: 0.75, v: 290, T: 0.8, h: 14, dmg: 10, lift: 0.8, hold: 1.8, strikes: 3, gap: 0.22, liftH: 56, drop: 14, free: 1.6, cd: [10, 7, 5.5], first: 9, hang: 24 },
 };
 export const ROLES = ['diver', 'shrieker', 'snatcher'];
 export const NAME = { diver: 'THE DIVER', shrieker: 'THE SHRIEKER', snatcher: 'THE SNATCHER' };
