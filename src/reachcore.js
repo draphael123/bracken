@@ -123,6 +123,8 @@ export function floodReach(L, T, opts = {}) { const L0 = L;   /* (the level as b
     for (let x = F.foot[0]; x <= F.head[0]; x++) { const i = Math.round(ry(x * 16 + 8) / 16) * W + x; if (g[i] === T.AIR) g[i] = T.ONEWAY; } }
   /* A LEVEL'S OWN DOORS (claude/litchurch): L.reachDoors [{ x0, x1, y0, y1 }] are barred as laid (T.PORT) and opened by the level's rule - a lit lamp, a snuffed
      seal - which every hero can do: the full fill has them open (the plain fill is legs and nothing else, so they stay shut there) */
+  /* (claude/hurricane3) A CASK THAT FETCHES UP: a freed cask runs on her heel to its stop and stands there - a step (L.caskSteps [x, y], src/hurricane3.js). Every hero can part a lashing: done, as the full fill counts a door its rule opens */
+  if (!plain) for (const [x, y] of (L.caskSteps || [])) g[y * W + x] = T.SOLID;
   if (!plain) for (const d of (L.reachDoors || [])) for (let y = d.y0; y <= d.y1; y++) for (let x = d.x0; x <= d.x1; x++) { const i = y * W + x; if (g[i] === T.PORT) g[i] = T.AIR; }
   /* A LEVEL'S OWN SPANS (claude/fenroad2): L.reachSpans [[x0, x1, row]] are road the player LAYS - THE FEN ROAD's peat holes, a crew's plank from the bundle on the bank before
      each (every hero carries one: tools/fen-road.mjs proves each bundle stands before its hole and each hole is a lock) - so the full fill has them laid (the plain fill: legs only) */
@@ -211,6 +213,8 @@ export function floodReach(L, T, opts = {}) { const L0 = L;   /* (the level as b
   /* THE DEEP RAILS (src/minecart.js, claude/minecart): a BOOST GAP is crossed on a boosted cart (9 tiles: wider than the model's jump - tools/minecart-route.mjs --probe measures it), so a jump off its lip
      carries five tiles further, the way a gust does (rides only: the plain fill is legs). The points are read SET, as the grid is built (every line reachable) */
   if (opts.rides && !plain && L.minecart) for (const g of (L.mcBoost || [])) carries.push({ x0: g.x0 - 3, x1: g.x0, y0: g.row - 2, y1: g.row, n: g.ramp ? g.x1 - g.x0 + 1 : 5, dir: 1, alt: false });   /* (claude/deeprails2) a LAUNCH RAMP's pit is flown off its lip on a pumped cart (src/minecart.js rampFlight; tools/minecart-route.mjs --probe): its whole width */
+  /* THE HURRICANE 3 (claude/hurricane3): HER ROLL carries a jump taken in her heel (src/main.js updateRoll roll.air) - L.rollGaps is read as a carry both ways (she heels both ways in turn) */
+  if (opts.rides && !plain) for (const z of (L.rollGaps || [])) carries.push({ x0: Math.floor(z.x0 / TSZ) - 1, x1: Math.ceil(z.x1 / TSZ), y0: Math.floor(z.y0 / TSZ), y1: Math.ceil(z.y1 / TSZ), n: z.carry, dir: z.dir, alt: !!z.alt });
   const carryAt = (x, y) => { let l = 0, r = 0; for (const c of carries) if (x >= c.x0 && x <= c.x1 && y >= c.y0 && y <= c.y1) { if (c.dir > 0 || c.alt) r = Math.max(r, c.n); if (c.dir < 0 || c.alt) l = Math.max(l, c.n); } return [l, r]; };
   const assisted = !L.reachExact && (!!(L.moversExtra && L.moversExtra.some(m => m.kind !== 'lift' && m.kind !== 'swing' && m.kind !== 'growcap' && m.kind !== 'hexvine')) || (L.ents || []).some(e => ['mover', 'cart'].includes(e.t)) || !!(L.gusts && L.gusts.length)
     || !!L.sanctum);   /* A PORTAL IS A RIDE THE FILL CANNOT FOLLOW: the Falling Tower's gate stands past the sanctum's second door, on purpose (tools/tower-ascent.mjs). The tower read ASSISTED only because the bell loft had lifts in it; when the lifts became the Sexton's deck (2026-09-25) the bot called its gate UNREACHABLE */
@@ -228,10 +232,13 @@ export function floodReach(L, T, opts = {}) { const L0 = L;   /* (the level as b
     const r0 = Math.floor((lk ? Math.max(p.y, lk.lo * TSZ + 4) : p.y) / TSZ), r1 = Math.floor(((p.bottom ?? p.y + 64) - 1) / TSZ);
     const onRide = (x, y) => (L.rigBands || []).some(([a, b, y0, y1]) => x >= a && x <= b && y >= y0 - 1 && y <= y1);   /* (claude/canalfix) her deck at any level her water can stand at stays footing: a lock that starts FULL must not drown its own low stop */
     for (let x = Math.floor(p.x0 / TSZ); x < Math.ceil(p.x1 / TSZ); x++) for (let y = r0; y <= r1; y++) if (!onRide(x, y)) footing.delete(key(x, y)); }
+  /* THE SEA THAT KILLS (claude/hurricane3, p.seaKill: the Hurricane's open sea, the quiet drain at ~9% a second): no road, under her keel or anywhere - neither water to swim nor a bed to walk */
+  const seaKill = (L.pools || []).filter(p => p.seaKill);
+  for (const p of seaKill) { const r0 = Math.floor(p.y / TSZ), r1 = Math.floor(((p.bottom ?? p.y + 64) - 1) / TSZ); for (let x = Math.floor(p.x0 / TSZ); x < Math.ceil(p.x1 / TSZ); x++) for (let y = r0; y <= r1; y++) footing.delete(key(x, y)); }
   // SWIM WATER (the Long Water): every open cell of a swimmable pool is somewhere you can be - you swim to any
   // neighbour, and at the surface you can leap out. A tide pool counts at its high water; a boss's tide does not.
   const water = new Set(), surfRow = new Map();
-  for (const p of (L.pools || [])) { if (!p.swim || p.arenaTide) continue; const topPx = p.streetTide ? p.base + p.tideHi : p.y; const r0 = Math.floor(topPx / TSZ), r1 = Math.floor(((p.bottom ?? topPx + 64) - 1) / TSZ);
+  for (const p of (L.pools || [])) { if (!p.swim || p.arenaTide || p.seaKill) continue; const topPx = p.streetTide ? p.base + p.tideHi : p.y; const r0 = Math.floor(topPx / TSZ), r1 = Math.floor(((p.bottom ?? topPx + 64) - 1) / TSZ);
     for (let x = Math.floor(p.x0 / TSZ); x < Math.ceil(p.x1 / TSZ); x++) for (let y = r0; y <= r1; y++) if (!solid(at(x, y))) { water.add(key(x, y)); footing.add(key(x, y)); surfRow.set(key(x, y), r0); } }
 
   /* A ZIP LINE (src/zipline.js, claude/zipline): take hold anywhere along its run - UP with the rope in your reach, or a touch from a jump - ride it downhill, and let go at its low end onto the floor under its foot. A frayed one

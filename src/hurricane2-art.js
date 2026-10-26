@@ -115,6 +115,9 @@ export function makeHurricane2Art(ctx) {
 
   /* what the tile pass asks: a sprite for this cell, or null (the stock tile stands) */
   A.tile = (t, x, y, tileAt, T) => {
+    if (ctx.h3 && ctx.h3()) {   /* (claude/hurricane3) THE HURRICANE 3 keeps only the generic rigging: every line a shroud or a lift; her yards, houses and breaches are its own (src/hurricane3.js, the art pass) */
+      if (t !== T.NET) return null; const n = (dx, dy) => tileAt(x + dx, y + dy) === T.NET, l = n(-1, 0), r = n(1, 0), up = !n(0, -1), dn = !n(0, 1);
+      const bt = dn ? (tileAt(x, y + 1) === T.RAIL || tileAt(x, y + 1) === T.SOLID ? 2 : 1) : 0; if (!l && !r) return lift(up ? 1 : 0, dn ? 1 : 0); return shroud(r ? 'L' : 'R', up ? 1 : 0, bt); }
     if (t === T.NET) {
       const n = (dx, dy) => tileAt(x + dx, y + dy) === T.NET, l = n(-1, 0), r = n(1, 0), up = !n(0, -1), dn = !n(0, 1);
       const bt = dn ? (tileAt(x, y + 1) === T.RAIL || tileAt(x, y + 1) === T.SOLID ? 2 : 1) : 0;
@@ -462,6 +465,7 @@ export function makeHurricane2Art(ctx) {
 
   /* ============ THE WHOLE OF IT, behind the bodies ============ */
   A.drawBack = (g, cx, cy, time) => {
+    if (ctx.h3 && ctx.h3()) return;   /* (claude/hurricane3) keyed to the HURRICANE 2's columns: the new ship draws her own (src/hurricane3.js drawBack) */
     const vw = ctx.VW(), fd = ctx.felled, glow = ctx.glow();
     masts(g, cx, cy, vw, fd);
     /* the yards: a sail clewed up and a footrope under each, and the parrel where it meets its mast */
