@@ -1,11 +1,11 @@
 {
   "proof": {
-    "time": "2026-10-26T00:44:53.981Z",
+    "time": "2026-10-26T01:34:18.920Z",
     "controller": "1a576c3f4511b6856df9fb4738df5aaae9987e81",
     "gameSource": "dc02ecc059959b795f76dee47665b54f349d4e2f",
     "gameTree": "9d8acbb7f3182c1d29ac71f4a3b0227224446718",
     "originalMainSha256": "1573d2d744b753e5611b021d97b70b013f7e2e6773640b707ae85d5ab5dae594",
-    "candidateMainSha256": "502c75279cecc9eedc70e7fc2201410c1a7c77e09956cf42aca5f5d1eb3e9968",
+    "candidateMainSha256": "888a3558859afbeabb9fca7435aaca26c0ea5d4cfda1e6f40b131082e921dad8",
     "cacheEntries": 1,
     "colourKeys": [
       "berry",
@@ -175,10 +175,46 @@
       "completedBatches": 60,
       "originalDeadlineMs": 600000
     },
-    "candidateFileSetSha256": "aaef4d11279f2f8599491d29e130af73840aff0f644d36fa329d88cc3484e081",
-    "sourceSpecificFullProofPending": true
+    "candidateFileSetSha256": "a78c83af2a4d8b344db53f2d44e8a5d1cc81c3721ed01cd0e576e75a1dcf2eb1",
+    "sourceSpecificFullProofPending": true,
+    "parentMinimalMainSha256": "502c75279cecc9eedc70e7fc2201410c1a7c77e09956cf42aca5f5d1eb3e9968",
+    "incrementalNearProof": {
+      "time": "2026-10-26T01:34:17.926Z",
+      "baseGameSource": "dc02ecc059959b795f76dee47665b54f349d4e2f",
+      "controller": "1a576c3f4511b6856df9fb4738df5aaae9987e81",
+      "baselineMainSha256": "502c75279cecc9eedc70e7fc2201410c1a7c77e09956cf42aca5f5d1eb3e9968",
+      "candidateMainSha256": "888a3558859afbeabb9fca7435aaca26c0ea5d4cfda1e6f40b131082e921dad8",
+      "uiSha256": "def29ae7f0ea4c55ab29e3652a351d0d03c90a4c1c5f7f83ee39692c21c3061f",
+      "artSha256": "99f0ead9e02c17eec93e3945720c8206465e3ecd7aac42c00fbbb22cce46bb35",
+      "onlyTwoLoadCallSitesAndPureMemoWrapper": true,
+      "originalNearPainterUnchanged": true,
+      "existingFixedCacheRetirementAndInvalidationReused": true,
+      "combinedFixedPixelLimit": 1048576,
+      "combinedFixedEntryLimit": 512,
+      "nearEntryLimit": 4,
+      "lineCountPreserved": true,
+      "originalRecorderPreserved": true,
+      "incrementalBaselineAlreadyContainsPaletteFixedCacheAndTitleRepair": true,
+      "noGameFixtureClockRngAudioBalanceOrLimitChanges": true,
+      "adopted": false
+    },
+    "componentCases": 144,
+    "incrementalExactReadbacks": 126,
+    "incrementalLoadingSummary": "Repeat medians improve30-42percent in wood/marsh/stockade/spore beyond cached baseline; other levels mixed including6-7percent slower sampled medians. This is not a universal gain, causal regression proof, full-layout fix or40FPS pass."
   },
   "edits": [
+    {
+      "start": 237256,
+      "end": 237268,
+      "before": "ART.bakeNear",
+      "after": "paletteNearBake"
+    },
+    {
+      "start": 237180,
+      "end": 237192,
+      "before": "ART.bakeNear",
+      "after": "paletteNearBake"
+    },
     {
       "start": 233343,
       "end": 233343,
@@ -1521,7 +1557,7 @@
       "start": 209923,
       "end": 209923,
       "before": "",
-      "after": "   const PALETTE_FIXED = {entries:[],pixels:0}; function paletteFixedRemove(index){const [e]=PALETTE_FIXED.entries.splice(index,1);PALETTE_FIXED.pixels-=e.pixels;for(const s of e.surfaces){s.canvas.removeEventListener('contextlost',e.invalidate);s.canvas.removeEventListener('contextrestored',e.invalidate);}const queued=new Set(BAKE_OLD);for(const c of paletteBaseCanvases(e.model))if(!queued.has(c)){queued.add(c);BAKE_OLD.push(c);}} function paletteFixedBake(factory,name,args){  const valid=args.every(a=>a===null||a===undefined||typeof a==='string'||typeof a==='boolean'||typeof a==='number'&&Number.isFinite(a));if(!valid)return factory.apply(ART,args);  const key=JSON.stringify([name,args.map(a=>a===undefined?['undefined']:[typeof a,a])]);const index=PALETTE_FIXED.entries.findIndex(e=>e.key===key);  if(index>=0){const e=PALETTE_FIXED.entries[index];if(e.valid&&e.surfaces.every(s=>s.canvas.width===s.w&&s.canvas.height===s.h)){PALETTE_FIXED.entries.splice(index,1);PALETTE_FIXED.entries.push(e);return paletteBaseClone(e.model);}paletteFixedRemove(index);}  const value=factory.apply(ART,args);let model;try{model=paletteBaseClone(value);}catch{return value;}const surfaces=paletteBaseCanvases(model).map(canvas=>({canvas,w:canvas.width,h:canvas.height})),pixels=surfaces.reduce((n,s)=>n+s.w*s.h,0);if(!surfaces.length||pixels>1048576)return value;  while(PALETTE_FIXED.entries.length>=512||PALETTE_FIXED.pixels+pixels>1048576)paletteFixedRemove(0);  const e={key,model,surfaces,pixels,valid:true};e.invalidate=()=>{e.valid=false;};for(const s of surfaces){s.canvas.addEventListener('contextlost',e.invalidate);s.canvas.addEventListener('contextrestored',e.invalidate);}PALETTE_FIXED.entries.push(e);PALETTE_FIXED.pixels+=pixels;return value; } let PALETTE_BASE_CACHE = null; const PALETTE_BASE_KEYS = [\"berry\",\"canopy\",\"dirt\",\"dirtD\",\"dirtL\",\"gold\",\"grass\",\"grassD\",\"grassL\",\"stone\",\"stoneD\",\"stoneL\",\"wood\",\"woodD\",\"woodL\"]; function paletteBaseKey(pal) {   const values=[];   for(const key of PALETTE_BASE_KEYS){const v=ART.C[key];if(v===undefined)values.push([key,'undefined']);else if(typeof v==='string')values.push([key,'string',v]);else if(Array.isArray(v)&&v.every(c=>typeof c==='string'))values.push([key,'array',...v]);else return null;}   let below=false;try{below=belowGround(L);}catch{}   return JSON.stringify([values,below,!!pal.boneSoil]); } function paletteBaseClone(value,seen=new Map()) {   if(!value||typeof value!=='object'||value instanceof HTMLCanvasElement||ArrayBuffer.isView(value))return value;   if(seen.has(value))return seen.get(value);   const proto=Object.getPrototypeOf(value);if(proto!==Object.prototype&&proto!==null&&!Array.isArray(value))throw new Error('unsupported art model prototype');   const out=Array.isArray(value)?[]:Object.create(proto);seen.set(value,out);   for(const key of Reflect.ownKeys(value)){const d=Object.getOwnPropertyDescriptor(value,key);if(!('value'in d))throw new Error('art model accessor');d.value=paletteBaseClone(d.value,seen);Object.defineProperty(out,key,d);}   if(!Object.isExtensible(value))Object.preventExtensions(out);return out; } function paletteBaseCanvases(model) {   const seen=new Set(),stack=[model],canvases=[];   while(stack.length){const v=stack.pop();if(!v||typeof v!=='object'||seen.has(v))continue;seen.add(v);if(v instanceof HTMLCanvasElement){canvases.push(v);for(const key of Object.keys(v)){const q=v[key];if(q&&typeof q==='object')stack.push(q);}continue;}if(ArrayBuffer.isView(v))continue;for(const key of Object.keys(v)){const d=Object.getOwnPropertyDescriptor(v,key);if(d&&'value'in d&&d.value&&typeof d.value==='object')stack.push(d.value);}}   return canvases; } function paletteBaseRelease() {   const old=PALETTE_BASE_CACHE;if(!old)return;PALETTE_BASE_CACHE=null;   for(const item of old.surfaces){item.canvas.removeEventListener('contextlost',old.invalidate);item.canvas.removeEventListener('contextrestored',old.invalidate);}   const queued=new Set(BAKE_OLD);for(const canvas of paletteBaseCanvases(old.model))if(!queued.has(canvas)){queued.add(canvas);BAKE_OLD.push(canvas);} } function paletteBaseReady(key) { const e=PALETTE_BASE_CACHE;return key!==null&&e&&e.key===key&&e.valid&&e.surfaces.every(s=>s.canvas.width===s.w&&s.canvas.height===s.h); } function paletteBaseRemember(key,model,labels) {   if(key===null)return;let copy;try{copy=paletteBaseClone(model);}catch{return;}delete copy.prop.fallArt;   const e={key,model:copy,labels:labels.slice(),valid:true,surfaces:paletteBaseCanvases(copy).map(canvas=>({canvas,w:canvas.width,h:canvas.height}))};e.invalidate=()=>{e.valid=false;};   for(const s of e.surfaces){s.canvas.addEventListener('contextlost',e.invalidate);s.canvas.addEventListener('contextrestored',e.invalidate);}PALETTE_BASE_CACHE=e; } function paletteBaseLabel(labels,label){labels.push(label);return label;} "
+      "after": "   function paletteNearBake(w,h,seed,canopy=undefined){ const safe=Number.isInteger(w)&&Number.isInteger(h)&&w>0&&h>0&&w*h<=262144&&Number.isFinite(seed)&&(canopy===undefined||Array.isArray(canopy)&&canopy.length===4&&[0,1,2,3].every(i=>{const d=Object.getOwnPropertyDescriptor(canopy,String(i));return d&&'value'in d&&typeof d.value==='string'&&/^#[0-9a-f]{6}$/i.test(d.value);}));if(!safe)return ART.bakeNear(w,h,seed,canopy);const args=canopy===undefined?[w,h,seed,'default']:[w,h,seed,'canopy',...canopy],key=JSON.stringify(['$near',args.map(a=>[typeof a,a])]),near=e=>e.key.startsWith('[\"$near\",');if(!PALETTE_FIXED.entries.some(e=>e.key===key))while(PALETTE_FIXED.entries.filter(near).length>=4)paletteFixedRemove(PALETTE_FIXED.entries.findIndex(near));return paletteFixedBake(()=>ART.bakeNear(w,h,seed,canopy),'$near',args); } const PALETTE_FIXED = {entries:[],pixels:0}; function paletteFixedRemove(index){const [e]=PALETTE_FIXED.entries.splice(index,1);PALETTE_FIXED.pixels-=e.pixels;for(const s of e.surfaces){s.canvas.removeEventListener('contextlost',e.invalidate);s.canvas.removeEventListener('contextrestored',e.invalidate);}const queued=new Set(BAKE_OLD);for(const c of paletteBaseCanvases(e.model))if(!queued.has(c)){queued.add(c);BAKE_OLD.push(c);}} function paletteFixedBake(factory,name,args){  const valid=args.every(a=>a===null||a===undefined||typeof a==='string'||typeof a==='boolean'||typeof a==='number'&&Number.isFinite(a));if(!valid)return factory.apply(ART,args);  const key=JSON.stringify([name,args.map(a=>a===undefined?['undefined']:[typeof a,a])]);const index=PALETTE_FIXED.entries.findIndex(e=>e.key===key);  if(index>=0){const e=PALETTE_FIXED.entries[index];if(e.valid&&e.surfaces.every(s=>s.canvas.width===s.w&&s.canvas.height===s.h)){PALETTE_FIXED.entries.splice(index,1);PALETTE_FIXED.entries.push(e);return paletteBaseClone(e.model);}paletteFixedRemove(index);}  const value=factory.apply(ART,args);let model;try{model=paletteBaseClone(value);}catch{return value;}const surfaces=paletteBaseCanvases(model).map(canvas=>({canvas,w:canvas.width,h:canvas.height})),pixels=surfaces.reduce((n,s)=>n+s.w*s.h,0);if(!surfaces.length||pixels>1048576)return value;  while(PALETTE_FIXED.entries.length>=512||PALETTE_FIXED.pixels+pixels>1048576)paletteFixedRemove(0);  const e={key,model,surfaces,pixels,valid:true};e.invalidate=()=>{e.valid=false;};for(const s of surfaces){s.canvas.addEventListener('contextlost',e.invalidate);s.canvas.addEventListener('contextrestored',e.invalidate);}PALETTE_FIXED.entries.push(e);PALETTE_FIXED.pixels+=pixels;return value; } let PALETTE_BASE_CACHE = null; const PALETTE_BASE_KEYS = [\"berry\",\"canopy\",\"dirt\",\"dirtD\",\"dirtL\",\"gold\",\"grass\",\"grassD\",\"grassL\",\"stone\",\"stoneD\",\"stoneL\",\"wood\",\"woodD\",\"woodL\"]; function paletteBaseKey(pal) {   const values=[];   for(const key of PALETTE_BASE_KEYS){const v=ART.C[key];if(v===undefined)values.push([key,'undefined']);else if(typeof v==='string')values.push([key,'string',v]);else if(Array.isArray(v)&&v.every(c=>typeof c==='string'))values.push([key,'array',...v]);else return null;}   let below=false;try{below=belowGround(L);}catch{}   return JSON.stringify([values,below,!!pal.boneSoil]); } function paletteBaseClone(value,seen=new Map()) {   if(!value||typeof value!=='object'||value instanceof HTMLCanvasElement||ArrayBuffer.isView(value))return value;   if(seen.has(value))return seen.get(value);   const proto=Object.getPrototypeOf(value);if(proto!==Object.prototype&&proto!==null&&!Array.isArray(value))throw new Error('unsupported art model prototype');   const out=Array.isArray(value)?[]:Object.create(proto);seen.set(value,out);   for(const key of Reflect.ownKeys(value)){const d=Object.getOwnPropertyDescriptor(value,key);if(!('value'in d))throw new Error('art model accessor');d.value=paletteBaseClone(d.value,seen);Object.defineProperty(out,key,d);}   if(!Object.isExtensible(value))Object.preventExtensions(out);return out; } function paletteBaseCanvases(model) {   const seen=new Set(),stack=[model],canvases=[];   while(stack.length){const v=stack.pop();if(!v||typeof v!=='object'||seen.has(v))continue;seen.add(v);if(v instanceof HTMLCanvasElement){canvases.push(v);for(const key of Object.keys(v)){const q=v[key];if(q&&typeof q==='object')stack.push(q);}continue;}if(ArrayBuffer.isView(v))continue;for(const key of Object.keys(v)){const d=Object.getOwnPropertyDescriptor(v,key);if(d&&'value'in d&&d.value&&typeof d.value==='object')stack.push(d.value);}}   return canvases; } function paletteBaseRelease() {   const old=PALETTE_BASE_CACHE;if(!old)return;PALETTE_BASE_CACHE=null;   for(const item of old.surfaces){item.canvas.removeEventListener('contextlost',old.invalidate);item.canvas.removeEventListener('contextrestored',old.invalidate);}   const queued=new Set(BAKE_OLD);for(const canvas of paletteBaseCanvases(old.model))if(!queued.has(canvas)){queued.add(canvas);BAKE_OLD.push(canvas);} } function paletteBaseReady(key) { const e=PALETTE_BASE_CACHE;return key!==null&&e&&e.key===key&&e.valid&&e.surfaces.every(s=>s.canvas.width===s.w&&s.canvas.height===s.h); } function paletteBaseRemember(key,model,labels) {   if(key===null)return;let copy;try{copy=paletteBaseClone(model);}catch{return;}delete copy.prop.fallArt;   const e={key,model:copy,labels:labels.slice(),valid:true,surfaces:paletteBaseCanvases(copy).map(canvas=>({canvas,w:canvas.width,h:canvas.height}))};e.invalidate=()=>{e.valid=false;};   for(const s of e.surfaces){s.canvas.addEventListener('contextlost',e.invalidate);s.canvas.addEventListener('contextrestored',e.invalidate);}PALETTE_BASE_CACHE=e; } function paletteBaseLabel(labels,label){labels.push(label);return label;} "
     }
   ],
   "modulePatch": {
