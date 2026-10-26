@@ -47,6 +47,7 @@
                        out of it opens nothing, and a minute of him with the floods running (gate open) opens nothing (claude/redgorge)
      THE GREAT DRILL   (claude/deeprails3) throw its chute's points lever (the level's verb): its own ore jams its gears, open; left alone it opens nothing
      THE FOREMAN       (claude/deeprails3, a mini) jump onto his cart as he drops back: a stomp, open while you stand on it; left alone nothing
+     THE FORGEMASTER   (claude/forgemaster, the Deep Rails' second mini) a junction thrown with him past its points: the cart drops and rolls into him - OPEN; a brace after; left alone nothing
      THE BARROW RIDER  strike him as he rides through and he is out of the saddle, open; a ride left alone opens nothing - and in
                        his second phase, the bones crawling back struck twice scatter, and he is open on foot; left alone he remounts */
 import assert from 'node:assert/strict';
@@ -300,6 +301,19 @@ try {
    let open=0,hold=0,h1=b.hp,stomp=0;for(let i=0;i<60*60&&!(open>0&&!FMG.foremanOpen(F().S));i++){P.hp=P.maxHp;const S=F().S,dx=S.G.x0+S.R-P.x,dv=S.dv||72;
      if(!open&&S.mode==='drift'&&S.ward<=0&&P.ground&&dx>dv*0.55-10&&dx<dv*0.55+4){BK.press('jump');hold=26;}BK.keys.jump=hold-->0;BK.sim(1);if(FMG.foremanOpen(F().S)){if(!open)stomp=h1-b.hp;open+=1/60;}}
    BK.keys.jump=false;out.foreman={alone:+alone.toFixed(1),lostAlone:Math.round(lostAlone),open:+open.toFixed(1),stomp:Math.round(stomp),max:Math.round(F().e.maxHp0),ward:+F().S.ward.toFixed(1),lurch:F().S.n.lurch};}
+  /* THE FORGEMASTER (claude/forgemaster, THE DEEP RAILS' SECOND MINI - B1, the level's verb): a minute of him with no junction thrown takes nothing off him and never opens him;
+     staged east of a junction's points with the hero at its lever, E: the next cart drops, rolls on and into him - OPEN (still) for 2.5 s or more, then a told brace; a cart in the
+     brace clangs off (B3); outside an opening a blade takes x0.5 (B15) */
+  {BK.setHero('knight');BK.reset({fresh:true});BKT.PROG.minecart=Object.assign(BKT.PROG.minecart||{},{mini:true,mini2:false});BK.load(LEVELS.findIndex(l=>l.id==='minecart'));BK.state='play';BK.god=true;const M=BK.L.mini,FR=BK.forgeRails();
+   BK.tp(Math.round(M.trigger/16)+1,Math.round(M.floor/16)-1);BK.sim(150);const P=BK.P,b=BK.enemies().find(e=>e.t==='forgemaster'&&e.alive);let alone=0,lost=0;
+   for(let i=0;i<60*60;i++){P.hp=P.maxHp;const h0=b.hp;BK.sim(1);if(b.mode==='stun')alone+=1/60;lost+=Math.max(0,h0-b.hp);b.hp=b.maxHp;}
+   const still=()=>{for(const k of ['dragT','ladleT','tongsT','sprayT','slamT','breathT'])b[k]=99;};const pt=FR.read().points.find(p=>p.id==='jForgeB'),bx=(pt.x1+8)*16;
+   still();b.mode='pace';b.modeT=0.2;b.ward=0;b.x=bx;BK.tp(pt.x,Math.round(M.floor/16)-1);BK.sim(2);let open=0,maxOpen=0,moved=0,thrown=0,ward=0,clang=0,blade=null;
+   for(let i=0;i<60*20&&!(open>0&&b.mode!=='stun');i++){P.hp=P.maxHp;b.hp=b.maxHp;still();if(b.mode!=='stun'){b.x=bx;b.vx=0;}else moved=Math.max(moved,Math.abs(b.x-bx));if(!thrown&&FR.read().points.find(p=>p.id==='jForgeB').state==='set'){BK.press('talk');thrown=1;}BK.sim(1);if(b.mode==='stun'){open+=1/60;maxOpen=Math.max(maxOpen,b.modeT);}}
+   ward=+(b.ward||0).toFixed(1);const s0=FR.read().n.drops;let t2=0;
+   for(let i=0;i<60*4&&b.ward>0;i++){P.hp=P.maxHp;b.hp=b.maxHp;still();b.x=bx;b.vx=0;if(FR.read().points.find(p=>p.id==='jForgeB').state==='set'&&!t2){BK.press('talk');t2=1;}BK.sim(1);if(b.mode==='stun')clang=-99;}
+   clang=clang<0?-1:(b.braceSaid>0?1:0);{const h0=b.hp;b.mode='pace';b.ward=0;BKT.hurtEnemy(b,20,b.x-20,false);blade=h0-b.hp;}
+   out.forgemaster={alone:+alone.toFixed(1),lostAlone:Math.round(lost),open:+open.toFixed(1),moved:Math.round(moved),ward,clang,drops:FR.read().n.drops,blade};}
   /* THE SCARAB MOTHER (claude/sealedpyramid): a minute of her with the hero at the door (no plate trodden) opens nothing; staged in each trap's reach (a skid, as her charge leaves her) and the hero
      walked onto its plate: the block PINS her, the darts STICK her, the stone (its plate up on the ledge) FLIPS her - each open 3 s or more; a trap in her ward after an opening glances off */
   {const SMG=await import('/src/scarab-mother.js');BK.setHero('knight');BK.reset({fresh:true});BK.load(LEVELS.findIndex(l=>l.id==='sealedpyramid'));BK.state='play';BK.god=true;const A=BK.L.mini;   /* (claude/pyramidboss: she is the level's MINI now - her room is L.mini) */
@@ -434,6 +448,9 @@ try {
   assert.ok(r.greatdrill.open >= 3 && r.greatdrill.thrown >= 1, 'its chute points lever thrown did not jam it open for 3 s or more (the boss rule): ' + JSON.stringify(r.greatdrill));
   assert.ok(r.foreman.alone === 0 && r.foreman.lostAlone === 0, 'THE FOREMAN: a minute of him with nobody jumping on his cart opened him or took something off him: ' + JSON.stringify(r.foreman));
   assert.ok(r.foreman.stomp >= r.foreman.max * 0.25 && r.foreman.open >= 1.2 && r.foreman.lurch >= 1 && r.foreman.ward > 0, 'a jump onto his cart did not stomp a share of him, open him for the boarding, then lurch you off into a told brace: ' + JSON.stringify(r.foreman));
+  assert.ok(r.forgemaster.alone === 0, 'THE FORGEMASTER: a minute of him with no junction thrown opened him: ' + JSON.stringify(r.forgemaster));
+  assert.ok(r.forgemaster.open >= 2.5 && r.forgemaster.moved <= 2 && r.forgemaster.ward >= 2 && r.forgemaster.clang === 1, 'a junction thrown with him past its points did not drop a cart into him, OPEN (still) 2.5 s or more, then a brace a second cart clangs off: ' + JSON.stringify(r.forgemaster));
+  assert.ok(r.forgemaster.blade >= 8 && r.forgemaster.blade <= 12, 'a blade outside his opening is not x0.5 (B15: never under 0.4): ' + JSON.stringify(r.forgemaster));
   assert.ok(r.scarabmother.alone === 0, 'THE SCARAB MOTHER: a minute of her with no plate trodden opened her: ' + JSON.stringify(r.scarabmother));
   for (const k of ['block', 'darts', 'stone']) assert.ok(r.scarabmother[k].kind === k && r.scarabmother[k].open >= 3 && r.scarabmother[k].ward > 0, 'THE SCARAB MOTHER: her in the ' + k + '\'s reach and its plate trodden did not open her (' + k + ') for 3 s or more, then ward her: ' + JSON.stringify(r.scarabmother));
   assert.ok(r.tombking.alone === 0, 'THE COFFIN KING: a minute of him with no switch struck and no plate trodden opened him: ' + JSON.stringify(r.tombking));

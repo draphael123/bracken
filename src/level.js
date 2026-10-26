@@ -3513,7 +3513,7 @@ function highcrownWhole() {
     /* (claude/forgemaster, Daniel 10-15/10-26) THE FORGEMASTER LEFT: he is THE DEEP RAILS' second mini now (src/minecart.js THE FORGE, src/forge-rails.js) - no
        boss in two levels. His crown:mini row, his ent, his room's mini and his gate onto the bakehouse yard went with him; the room itself stays as it was
        for the Highcrown 2 lane, which CUTS the armoury (scratch/brief-highcrown2.md item 1 - no castle mini replaces him). */
-    ent('check', X + 1, 63); ent('sign', X + 2, 63, { text: 'THE ARMOURY. THE SMITH IS GONE DOWN TO THE DEEP RAILS: HIS FORGE IS COLD.' });
+    ent('check', X + 1, 63); ent('sign', X + 2, 63, { text: 'THE ARMOURY. ITS SMITH WENT DOWN TO THE DEEP RAILS AND NEVER CAME BACK.' });
     ent('torch', X + 82, 63);
     F.R.interiors = F.R.interiors.concat([[X + 6, X + 79, 50, 65, 'forge']]);
     F.R.masonry = F.R.masonry.concat([[X + 4, X + 81, 46, 49], [X + 4, X + 5, 50, 57], [X + 80, X + 81, 50, 57], [X + 54, X + 57, 40, 45]]);
