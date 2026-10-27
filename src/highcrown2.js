@@ -87,7 +87,7 @@ export function highcrownTwo(R, { T, TS }) {
   R.alarms = R.alarms.map(a => a.id !== 'ward' ? a : { ...a, garrison: [{ t: 'soldier', x: 85, y: 63 }, { t: 'javelin', x: 87, y: 63 }, { t: 'soldier', x: 83, y: 63 }], opens: [[HC2.BARRACKS_DOOR, 60, 63]] });
   R.masonry = R.masonry.concat([[23, 27, 54, 57], [72, 76, 54, 57], [79, 89, 54, 59]]);
   R.facades = R.facades.concat([[23, 27, 46, 63, 'tower', { arch: [58, 63], lit: false }], [72, 76, 48, 63, 'tower', { arch: [58, 63], lit: false }]]);
-  R.interiors = R.interiors.concat([[80, 89, 56, 63, 'guard']]);
+  R.interiors = R.interiors.concat([[80, 89, 56, 63, 'hcguard']]);
 
   // ============ THE CRAG WALK (93-162): the rule on the wall (the review: no bell or gate between the ward and the keep) ============
   /* its WATCH: a sentry on the wall walk and his bell - seen as you come up the second tower, he runs for it, and the grate at 138 drops between the
@@ -121,7 +121,7 @@ export function highcrownTwo(R, { T, TS }) {
   air(K0, K1, 26, 63);                                                       // the three floors and their stairs go: one hall, thirty-eight rows high
   air(423, 428, 20, 25);                                                     // the chapel stair's shaft through the thick floor, cleared for its ladder
   clearEnts(K0, K1, 20, 64);
-  R.interiors = R.interiors.filter(b => !(b[0] === K0 && b[1] === K1 && b[2] >= 26)).concat([[K0, K1, 26, 63, 'gallery']]);
+  R.interiors = R.interiors.filter(b => !(b[0] === K0 && b[1] === K1 && b[2] >= 26)).concat([[K0, K1, 26, 63, 'hchall']]);
   R.alarms = R.alarms.filter(a => a.id !== 'hall');
   // the floor: the door at its west foot (the winch at 339), the hall's watch under two chandeliers
   ent('sign', 349, 63, { text: 'THE KEEP. ONE HALL, CLIMBED. CUT A CHANDELIER DOWN ON WHOEVER STANDS UNDER IT.' });
@@ -179,5 +179,31 @@ export function highcrownTwo(R, { T, TS }) {
      so one is laid for it here, after the pit's (#0) and the barracks' (#1); vaultSilver moves it onto the loft */
   ent('silver', 364, 13);
   R.tints = (R.tints || []).concat([[233, 256, [200, 170, 140], 0.05]]);
+  /* ART (claude/highcrown2art): DRAWING ONLY - nothing below touches the grid, the ents or the movers (the level hash is the greybox's). src/redraw/highcrown2_art.js
+     reads L.hc2Kit and L.hcDeco; the supports are routeSupports kinds the route-art draws; the hall and the barracks are interior styles. */
+  R.hc2Kit = true; R.hcDoors = [[HC2.BARRACKS_DOOR, 60, 63]];   // (the barracks door: oak)
+  R.hcDeco = (R.hcDeco || []).concat([
+    { k: 'arch', x0: 23, x1: 27, top: 58, bot: 63, gate: HC2.WINCH_GATE },       // the bailey gate: the ring of voussoirs, the keystone, the portcullis grooves and its hoist slot
+    { k: 'arch', x0: 72, x1: 76, top: 58, bot: 63, gate: HC2.GRATE },           // the ward grate arch
+    { k: 'arch', x0: 232, x1: 236, top: 58, bot: 63, gate: HC2.VEST_GRATE },    // the vestibule's two gate towers
+    { k: 'arch', x0: 252, x1: 256, top: 58, bot: 63, gate: HC2.VEST_GATE },
+    { k: 'stairdoor', x0: 0, x1: 4, y: 63 },                                      // the kitchen stair's door behind the shut port
+    { k: 'murder', x: 33, y: 53 },                                                // the murder hole in the wall walk's soffit
+    { k: 'winchframe', x: 150, y: 41 },                                           // the crag gate's hoist over the tower arch
+    { k: 'corbel', x: 78, y: 55 + 7 / 16, n: 1 },                                  // the barracks' eave beam, carried
+  ]);
+  /* the west balcony (a stone slab on the wall) and the high gallery (wall to wall) stand on corbels; every other one-way run of the castle with no pier or chain gets one:
+     piers where the drop is short, corbels along it where it is backed by a wall */
+  for (const x of [349, 353, 357, 361, 365]) R.hcDeco.push({ k: 'corbel', x, y: 40, n: 1 });
+  for (const x of [350, 362, 388, 406, 424]) R.hcDeco.push({ k: 'corbel', x, y: 32 + 7 / 16, n: 1 });
+  for (const p of R.routeSupports || []) { if (p.kind === 'pier') p.kind = 'hcpier'; else if (p.kind === 'chain') p.kind = 'hcchain'; }
+  for (let y = 1; y < H - 1; y++) for (let x = 0; x < 530; x++) {
+    if (at(x, y) !== T.ONEWAY || at(x - 1, y) === T.ONEWAY) continue;
+    let x1 = x; while (at(x1 + 1, y) === T.ONEWAY) x1++;
+    if ((R.routeSupports || []).some(p => p.x >= x && p.x <= x1 && p.y === y)) continue;
+    let b = y + 1; while (b < H && at(x, b) !== T.SOLID && at(x, b) !== T.ONEWAY) b++;
+    if (at(x - 1, y) === T.SOLID || at(x1 + 1, y) === T.SOLID) { for (let c = x; c <= x1; c += (x1 - x > 8 ? 6 : 4)) R.hcDeco.push({ k: 'corbel', x: c, y: y + 7 / 16, n: 1 }); if (x1 - x > 2) R.hcDeco.push({ k: 'corbel', x: x1, y: y + 7 / 16, n: 1 }); }
+    else if (b - y <= 14) { for (const c of x1 > x ? [x, x1] : [x]) (R.routeSupports || (R.routeSupports = [])).push({ x: c, y, bottom: b, kind: 'hcpier' }); }
+  }
   return R;
 }

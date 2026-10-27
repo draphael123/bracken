@@ -3,7 +3,8 @@ import {drawForestSupport} from './forest-supports-art.js';
 import {lpSupportDraw} from './redraw/lamplit3_tiles.js';   /* (claude/lamplit3art) stone piers and iron columns under the Lamplit Street's ledges */
 import {drawSupport as drawStockadeSupport,STK_KINDS} from './redraw/stockade2_art.js';   /* (claude/stockade2art) THE STOCKADE 2's lashed poles, trestles, legs, props, mast and hand-lines */
 import {drawPile as drawFenPile} from './redraw/fen_road_art.js';   /* (claude/fenroadart) THE FEN ROAD's driven piles */
-import {drawChurchSupport,CHURCH_SUPPORT} from './church-supports.js';   /* (claude/church2) LIT CHURCH 2: pew legs, piers, stalls, chains, bone columns, organ pipes */
+import {drawChurchSupport,CHURCH_SUPPORT} from './church-supports.js';
+import {drawSupport as drawHcSupport} from './redraw/highcrown2_art.js';   /* (claude/highcrown2art) HIGHCROWN's castle piers and chains */   /* (claude/church2) LIT CHURCH 2: pew legs, piers, stalls, chains, bone columns, organ pipes */
 export function bakeRouteLedges(){
  const out={};for(const kind of ['cargo','awning','arcane']){const a=[];for(let v=0;v<3;v++){const[c,g]=canvas(16,16);g.fillStyle='#251e1a';g.fillRect(0,0,16,7);g.fillStyle=kind==='arcane'?'#a8a0c1':kind==='cargo'?'#ae8552':'#a57b56';g.fillRect(0,0,16,3);g.fillStyle='#e2c59a';g.fillRect(0,0,16,1);g.fillStyle=kind==='arcane'?'#514568':kind==='cargo'?'#67482f':'#813b47';g.fillRect(0,3,16,3);if(kind==='awning'){g.fillStyle='#c6a575';g.fillRect(v*4,3,4,3);}else{g.fillStyle='#526367';g.fillRect(3+v*4,1,2,5);g.fillStyle='#afc5c4';g.fillRect(3+v*4,1,1,1);}a.push(c);}out[kind]={ledge:a,ledgeL:a[0],ledgeR:a[2]};}return out;
 }
@@ -12,6 +13,7 @@ export function drawRouteSupports(g,L,cx,cy){
  if(p.kind==='lpiron'){lpSupportDraw(g,p,L,cx,cy);continue;}
  if(p.kind==='fenpile'){drawFenPile(g,p,cx,cy);continue;}
  if(STK_KINDS.has(p.kind)){drawStockadeSupport(g,p,cx,cy,L);continue;}
+ if(p.kind==='hcpier'||p.kind==='hcchain'){drawHcSupport(g,p,cx,cy);continue;}
  if(p.kind){if(CHURCH_SUPPORT.has(p.kind))drawChurchSupport(g,p,cx,cy);else drawForestSupport(g,p,cx,cy);continue;}
  g.fillStyle='#46382c';g.fillRect(x,y,4,bottom-y);g.fillStyle='#806746';g.fillRect(x,y,1,bottom-y);g.fillStyle='#b2a186';g.fillRect(x-1,y+5,6,2);
  }
