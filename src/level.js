@@ -5162,216 +5162,289 @@ function theFlotilla() {
 }
 
 
-// ================= 14. THE HURRICANE DECK 2 (claude/hurricane2, Daniel 10-08 brief, all recs) =================
-// ONE RULE: THE SEA AND THE SKY TAKE TURNS - THE WAVE KNOCKS YOU FLAT, THE LIGHTNING SHOWS YOU THE WAY.
-// Three systems and no chores: THE WAVE (L.wash: told, it shoves everyone on the open deck down her length - no stun, a drain of
-// health - and a line catches you), HER ROLL (L.roll: the deck goes over, a line, a bitt or the sand holds you) and THE LIGHTNING
-// (L.storm2: a marked strike near you; it fells her FOREMAST into a bridge, lights her dark powder store, and opens the Captain).
-// ONE SHIP read bow to stern: THE BOW (the wave, taught) -> THE FOREMAST (the sky fells it across the breach: crossing 1) -> THE
-// MAINMAST (her main yard across the second breach, her hands coming the other way: crossing 2; then the weather deck's ambush) ->
-// THE EYE (dead calm, a shrine) -> THE STERN, the storm back twice as hard (her hatch covers riding the swell: crossing 3; the aft
-// gun breaks loose and smashes the cargo; a rope swing onto the mizzen and her topmast breaking behind you: crossing 4; or the dark
-// powder store under her, lit only by the sky) -> THE CAPTAIN on his quarterdeck. Every platform is a ship part: spars on their
-// lifts, yards on their masts, hatch covers on their lashings (art list: scratch/hurricane2 report).
+// ================= 14. THE HURRICANE DECK 3 (claude/hurricane3, Daniel 10-18 brief scratch/brief-hurricane3-1018.md + the APPROVED review
+// scratch/review-hurricane-1018.md, all recs; Daniel 10-26 07:35 'push on the ship levels') =================
+// ONE RULE: THE STORM TELLS YOU WHEN - JUMP WITH HER ROLL AND THE WIND, SWIM WHEN SHE FLOODS, AND CLIMB: SHE IS GOING DOWN.
+// The storm CHANGES the level instead of only hurting you on it (review: "every storm beat was a hazard you avoid, not a state you use"):
+//   THE ROLL     (L.roll) she heels one way, then the other, on a told rhythm. In the air on her open deck the heel carries you: a jump DOWNHILL goes long, UPHILL
+//                falls short (src/main.js updateRoll, L.rollGaps: the fore hatch is only jumped downhill). Her loose CASKS (src/hurricane3.js) slide on the heel - a
+//                hazard while they run, a STEP when one fetches up against a bitt or a house. STRIKE A LASHING to free one.
+//   THE FLOOD    (L.h3.floods) the sea breaks over her WAIST on a told cycle (a bell, the foam line, the gauge): it fills to her deck for a few seconds and drains.
+//                Flooded you SWIM it and float up to the galley roof; drained you walk its floor down to her hold. The waist water is swimmable (review Q1).
+//   SHE IS SINKING (L.h3.sink) the sea outside her is DEADLY (the drain, A13: no knock) and it climbs her in told STEPS, area by area (a hull groan, the bell, the
+//                waterline gauge) - her hold, her gun deck, her stern - and then it CHASES you up her rigging (the rising sea) to the main top. Your earlier road
+//                drowns below you. A respawn puts back the step for the shrine you woke at.
+//   THE WIND     (L.gusts, told: the sails snap and the rain slants) gusts in her rigging carry you in the air: jump WITH one over the big gaps of the stays,
+//                against it you fall short into a net.
+//   THE LIGHTNING still shows the way - the dark gun deck is lit by it, it fells her foremast across the breach - and her LIGHTNING RODS draw it: a rod CHARGES
+//                (its chain glows and crackles), and a chain STRUCK onto the iron sends the bolt where you want it (rod 1 burns the tarred net off the main hatch,
+//                rod 2 fells the mizzen topmast into a bridge). It is the Captain's key.
+// ONE SHIP, bow to stern on deck while she settles, then BACK FORWARD THROUGH HER RIGGING (over the deck you walked, drowning) to THE MAINMAST TOP:
+//   1 THE FORECASTLE (16-100)  the roll taught: a cask, the fore hatch jumped downhill, a lashed cask freed into a step up the fore house; tideguard exam; shrine.
+//   2 THE WAIST (100-205)      the flood taught: swim up to the galley roof (required); her hold under the waist floor (drained: silver); the foremast felled across
+//                              the breach by the sky; boarder exam on the galley roof; shrine.
+//   3 THE MAIN DECK + GUN DECK (205-328)  the ambush on the main deck; rod 1 (strike the chain onto the hatch's iron: the bolt burns the tarred net); down into the
+//                              dark gun deck (lit by the sky), the loose gun on the roll smashes the cargo; up into the eye.
+//   4 THE EYE (328-400)        dead calm, stars, a shrine; his cabin: HE WENT UP.
+//   5 THE QUARTERDECK + MIZZEN (400-470) she goes down by the stern; the wind taught over her skylight; the stern exam; up the mizzen to the shrine at its top.
+//   5b THE STAYS (470 -> 284, rows 25-30) rod 2 fells the mizzen topmast; gust gaps over hammock nets; her topmast run breaking behind you; the boarder elite
+//                              on the main yard; up the shrouds to the main top shrine - the sea climbing after you all the way.
+//   6 THE MAINMAST TOP         THE CAPTAIN on his yards: topsail (T1), topgallant (T2), royal (T3) under the masthead rod.
+// Every platform is a ship part (yards, tops, spars, a felled topmast, hatch covers, nets): solid-islands 0. GREYBOX: the art list is in the lane report.
 function theHurricane() {
-  const W = 640, H = 44; const L = painter(W, H);
+  const W = 540, H = 60; const L = painter(W, H);
   const { block, plat, ent, coins, set } = L;
   const air = (x0, x1, y0, y1) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) set(x, y, T.AIR); };
   const net = (x0, x1, y0, y1) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) set(x, y, T.NET); };
-  const rail = (x0, x1, y) => { for (let x = x0; x <= x1; x++) set(x, y, T.RAIL); };
-  const shroud = (x, y0 = 13) => net(x, x + 1, y0, 19);   // a hand on any of these and the wave only soaks you - and a falling hero is caught by it
-  const pools = [], movers = [], hullZones = [], darkZones = [], airRooms = [], deckBreaks = [];
-  const D = { vents: [], clams: [], bulbs: [], wrecks: [], pockets: [] };
-  const pocket = (x0, x1, y0, y1) => { airRooms.push([x0, x1, y0, y1]); D.pockets.push([x0, x1, y0, y1]); };
-  const vent = (x, y, h) => D.vents.push({ x, y, h });
-  const clam = (x, y) => D.clams.push({ x, y });
-  const wreck = (x, y) => D.wrecks.push({ x, y });
-  /* A BREACH: her deck and hull stove in to the sea. Nets down both broken edges into the water, so a swim is never a room with no door */
-  const breach = (x0, x1, near = 20) => { air(x0, x1, 19, 41); net(x0 - 2, x0 - 1, near, 33); net(x1 + 1, x1 + 2, 20, 33); };   /* near: where the near side's net starts (a breach you are meant to go INTO has its net below the lip, not a rope you stand on at the edge) */   /* (her rail goes with her side: nothing spans a breach but what the level puts over it) */
+  const yard = (x0, x1, y) => { for (let x = x0; x <= x1; x++) set(x, y, T.ONEWAY); };
+  const DK = 36, FC = 34, GD = 42, HD = 48;   // her main deck, her forecastle, her gun deck floor, her hold floor (tile rows: a hero stands ON the row, ents one above)
+  const pools = [], movers = [], hullZones = [], darkZones = [], deckBreaks = [], casks = [], rods = [], sails = [], gusts = [], rollGaps = [], caskSteps = [];
+  /* A CASK (src/hurricane3.js): a mover she rolls about. lashed: it stays until a blow parts its lashing. rest: the tile it comes to rest on against its stop (the reach model's step) */
+  const cask = (x, row, o = {}) => { casks.push({ x, row, lashed: !!o.lashed, kind: o.kind || 'cask', id: o.id || 'c' + x }); movers.push({ kind: 'cask', h3: true, x: x * TS, y: row * TS, w: TS, h: TS, x0: x * TS, y0: row * TS, lashed: !!o.lashed, id: o.id || 'c' + x, vx: 0, vy: 0, dx: 0, dy: 0 }); if (o.rest) caskSteps.push(o.rest); };
+  /* A SAIL (drawn: it fills and SNAPS in a gust's tell - the wind told where you stand) */
+  const sail = (x, y0, y1, gust) => sails.push({ x, y0, y1, gust });
 
-  // THE SEA. Swimmable, and the worst place to be in a storm: the lightning runs along it.
-  pools.push({ x0: 0, x1: W * TS, y: 28 * TS, bottom: 42 * TS, shallow: false, swim: true, clear: true, sea: true });
-  block(0, W - 1, 42, H - 1);
+  // ---------------- THE SEA, AND HER HULL ----------------
+  /* THE SEA OUTSIDE HER IS DEADLY (Daniel 10-18 + the Flotilla 3 A rule: the quiet drain, no knock): she is going down, and it is the cold open Atlantic. Swimmable
+     (a hero who falls in can climb out by a net) but it drains ~9% a second. Its surface rises in told steps (L.h3.sink): S0 under her keel here. */
+  const SEA = { x0: 0, x1: W * TS, y: 49 * TS + 4, bottom: 58 * TS, shallow: false, swim: true, clear: true, sea: true, harm: true, h3sea: true, seaKill: true,
+    foulCol: '#1e4a5a', foulColL: '#5a8a9a', foulColD: '#0c2430' };
+  block(0, W - 1, 58, H - 1);   // the sea bed
+  block(16, 512, DK, 49); hullZones.push([16, 512, DK, 49]);   // HER HULL: timber from her deck to her keel (her rooms are cut out of it below)
+  net(14, 15, 37, 52); net(513, 514, 37, 52);   // her LIFELINES over the bow and the stern: a swimmer climbs out
 
-  // ---- HER HULL, the length of her: solid timber under her deck, with a hold only where the level goes below ----
-  block(16, 606, 20, 27); hullZones.push([16, 606, 20, 27]);
-  /* SHE IS AGROUND: the storm has driven her onto the bar, and the sand comes up to her keel the length of her - so the sea under her is not a road from
-     bow to stern (it was: a swim under her keel walked round every crossing). Her breaches are open to the sea down to the bar; past her bow and her stern the sea is open */
-  block(16, 606, 28, 41);
-  net(14, 15, 19, 30); net(607, 608, 19, 30);   // HER LIFELINES over the bow and the stern
-  rail(53, 546, 19);
+  // ================= 1. THE FORECASTLE: the roll, taught where it is cheap =================
+  block(16, 44, FC, DK - 1);   // her forecastle, raised two rows over the main deck
+  ent('deco', 15, FC - 1, { kind: 'figurehead', hang: true }); ent('deco', 20, FC - 1, { kind: 'shipBell' }); ent('deco', 42, FC - 1, { kind: 'anchor' });
+  ent('sign', 26, FC - 1, { text: 'SHE ROLLS. IN THE AIR HER HEEL CARRIES YOU: JUMP DOWNHILL AND YOU GO LONG.' });
+  cask(34, FC - 1);   /* a loose cask on her forecastle: watch it run when she heels (the teach: a moving cask hurts, a stopped one is a step) */
+  set(39, FC - 1, T.SOLID);   // a bitt: it stops the cask, and you
+  coins([30, FC - 2], [36, FC - 3], [44, FC - 2]);
+  // HER FOREPEAK under the forecastle (a hatch down at 46): her stores, a silver at the head of her, a marine on watch
+  air(18, 45, DK + 1, GD - 1); air(46, 47, DK, DK); net(46, 47, DK + 1, GD - 1);
+  ent('deco', 40, GD - 1, { kind: 'coiledCable', v: 0 }); ent('deco', 32, GD - 1, { kind: 'kegStack' }); ent('deco', 26, GD - 1, { kind: 'rumBarrels', v: 1 }); ent('torch', 36, GD - 1);
+  ent('marine', 23, GD - 1, { face: 1 }); ent('silver', 20, GD - 1);   /* on watch over her head stores */
+  coins([42, GD - 2], [36, GD - 2], [24, GD - 2]);
+  // THE FORE HATCH: open to her hold, five boards wide (no hero jumps five on the level). Downhill (she heels to the stern) you jump it; uphill you fall short into the hatch (a cheap fall: the ladder
+  // brings you back to the near side)
+  ent('sign', 50, DK - 1, { text: 'THE FORE HATCH: WAIT FOR HER TO HEEL TOWARD THE STERN, THEN JUMP. DOWNHILL GOES LONG.' });
+  air(56, 61, DK, DK + 4); net(56, 56, DK, DK + 4);   /* the hatch's well (57-61), four rows: its ladder is on the near side */
+  rollGaps.push({ x0: 50 * TS, x1: 66 * TS, y0: (DK - 6) * TS, y1: DK * TS, carry: 2, dir: 1, alt: true, roll: true, hole: [57, 61] });   /* (src/reachcore.js reads it as a carry: a jump taken in the heel goes two columns further) */
+  // THE FORE HOUSE: four rows of deckhouse across her deck. A cask lashed by the bitt: strike its lashing and the next heel to the stern runs it to the house - a step
+  set(67, DK - 1, T.SOLID);   // a bitt (it holds the cask when she heels to the bow)
+  cask(70, DK - 1, { lashed: true, id: 'step1', rest: [78, DK - 1] });
+  ent('cutlass', 75, DK - 1, { face: -1 });   /* a hand by the house: fight him with the cask still lashed, or free it and let the heel run it into him */
+  ent('sign', 64, DK - 1, { text: 'STRIKE THE LASHING. WHEN SHE HEELS TO THE STERN THE CASK RUNS TO THE HOUSE: A STEP.' });
+  block(79, 88, DK - 4, DK - 1);   // the fore house (its roof is four rows up: too high to jump)
+  ent('deco', 84, DK - 5, { kind: 'lanternDeck', v: 0 }); ent('scout', 86, DK - 5, { face: -1 });   /* on the house roof: he shoots down at the cask work */
+  coins([72, DK - 2], [80, DK - 6], [86, DK - 6]);
+  // THE FORECASTLE'S EXAM: a tideguard on the open deck with a loose cask up the deck from him - let her heel run it into him
+  cask(92, DK - 1);
+  ent('tideguard', 97, DK - 1, { face: -1 });   /* ELITES hurricane[0] */
+  coins([90, DK - 2], [95, DK - 2]);
+  ent('check', 102, DK - 1);   /* SHRINE 1: the end of the forecastle's exam (the loose cask runs on past him to the waist bulwark) */
 
-  // ================= 1. THE BOW: the wave, taught where it is cheap =================
-  block(16, 52, 16, 19); air(22, 50, 17, 19); air(51, 52, 17, 19);   // her forecastle, and you come up out of it
-  plat(53, 16, 4); net(53, 54, 15, 19);
-  ent('deco', 15, 17, { kind: 'figurehead', hang: true }); ent('deco', 20, 15, { kind: 'shipBell' }); ent('deco', 46, 15, { kind: 'anchor' });
-  ent('deco', 40, 19, { kind: 'kegStack' }); ent('deco', 24, 19, { kind: 'hammock', v: 0 }); ent('deco', 32, 19, { kind: 'rumBarrels', v: 1 });
-  ent('sign', 28, 19, { text: 'THE SEA AND THE SKY TAKE TURNS. THE WAVE KNOCKS YOU FLAT: HOLD A LINE.' });
-  coins([30, 18], [36, 18], [44, 18]);
-  for (const x of [62, 80, 98]) shroud(x);
-  ent('sign', 58, 19, { text: 'A LINE CATCHES YOU. ON THE OPEN DECK, THE SEA TAKES YOU DOWN HER LENGTH.' });
-  movers.push({ kind: 'swing', px: 57 * TS + 8, py: 8 * TS, arm: 80, x: 56 * TS, y: 16 * TS, w: 32, h: 8, period: 3.2, phase: 0.5, deck: 16 });   /* off the forecastle head: let go over the shroud and it catches you */
-  ent('cargo', 72, 18, { kind: 'barrel' }); ent('cargo', 90, 18, { kind: 'crate' });   /* loose on her deck: the wave and the roll both take them */
-  ent('sailor', 76, 19, { rise: true, face: -1 }); ent('cutlass', 92, 19, { face: -1 });   /* the wave takes them too: let it */
-  // HER FOREPEAK, under the bow: a hatch down, her stores, a silver at the head of her (a dead end that pays)
-  air(20, 64, 21, 26); air(66, 67, 19, 20); net(66, 67, 20, 26);
-  ent('deco', 56, 26, { kind: 'coiledCable', v: 0 }); ent('deco', 48, 26, { kind: 'kegStack' }); ent('deco', 40, 26, { kind: 'rumBarrels', v: 1 });
-  ent('deco', 30, 26, { kind: 'plunder', v: 2 }); ent('deco', 24, 26, { kind: 'chartTable' }); ent('torch', 38, 26);
-  ent('marine', 34, 26, { face: 1 }); ent('silver', 22, 26);
-  coins([58, 25], [50, 25], [42, 25], [28, 25]);
-  // THE BOW'S EXAM: one weighty foe on the open deck with the sea behind him, and the shrine after
-  ent('tideguard', 106, 18, { face: -1 });
-  ent('check', 114, 19);
-  coins([64, 18], [70, 18], [84, 18], [96, 18], [104, 18], [110, 18]);
-  ent('deco', 112, 19, { kind: 'boardingNet' });
+  // ================= 2. THE WAIST: the flood, taught - swim when she floods =================
+  /* THE WAIST is a well eight rows deep between her bulwarks. On the sea's cycle (L.h3.floods) it fills to over her deck for a few seconds and drains again. Flooded,
+     swim up and climb out onto THE GALLEY roof (the only way on: its wall is eleven rows from the waist floor). Drained, its floor and the hold under it are walked. */
+  block(105, 106, DK - 2, DK - 1);   // the waist's near bulwark (it holds the flood: two rows, jump it)
+  air(107, 150, DK, 43);   // the waist well
+  net(107, 108, DK, 43);   /* the ladder back up to the shrine side (no room without a door) */
+  block(151, 168, DK - 3, 43);   // THE GALLEY HOUSE: its roof three rows over her deck
+  /* (the galley is a solid house: the flood is the only way onto its roof) */
 
-  // ================= 2. THE FOREMAST: the sky marks her, and fells her across the breach (CROSSING 1) =================
-  net(124, 125, 5, 19); ent('deco', 124, 19, { kind: 'mastTall', v: 0 }); ent('deco', 124, 4, { kind: 'pennant', v: 1 });
-  for (let x = 117; x <= 133; x++) set(x, 10, T.ONEWAY);   // her fore yard, across the mast
-  ent('deco', 118, 11, { kind: 'sailRag', v: 0 });
-  ent('sign', 119, 19, { text: 'THE SKY MARKS WHERE IT STRIKES. WATCH WHERE IT POINTS.' });
-  breach(138, 170);   // THE BREACH: her fore waist stove in to the sea
-  ent('sign', 129, 19, { text: 'SHE IS OPEN TO THE SEA. THE SKY WILL SHOW YOU THE WAY OVER.' });
-  // her galley house on the far side: the foremast's head lands on its roof
-  block(173, 196, 17, 19); air(175, 194, 18, 19); air(173, 174, 18, 19);
-  ent('torch', 184, 19); ent('deco', 188, 19, { kind: 'kegStack' }); ent('deco', 180, 19, { kind: 'chickenCoop' });
-  ent('seawitch', 190, 16, { caller: true, face: -1 });   /* on the galley roof: she calls the sky down on the crossing */
-  coins([142, 17], [150, 16], [158, 15], [166, 15], [178, 16], [186, 16]);
-  ent('petrel', 156, 11, { gull: true, face: -1 });   /* a gull off the galley roof, coming at you down the mast */
-  // the waist past the galley: the wave AND the sky now, taken in turns
-  for (const x of [206, 222]) shroud(x);
-  ent('sailor', 204, 19, { rise: true, face: -1 }); ent('scout', 216, 19, { face: -1 }); ent('cutlass', 228, 19, { face: -1 });
-  ent('cargo', 212, 18, { kind: 'barrel' });
-  coins([200, 18], [210, 18], [220, 18], [230, 18]);
-  ent('deco', 226, 19, { kind: 'washing' });
-  ent('check', 233, 19);   /* the end of the foremast's waist: the shrine at the mainmast's foot */
+  ent('deco', 156, DK - 4, { kind: 'chickenCoop' }); ent('deco', 166, DK - 4, { kind: 'kegStack' });
+  pools.push({ x0: 107 * TS, x1: 151 * TS, y: (DK - 3) * TS - 6, base: 44 * TS, loY: 44 * TS, hiY: (DK - 3) * TS - 6,   /* (high water stands just over the galley roof: a swimmer at its wall steps out - a swim leap is barely a row) */ swim: true, clear: true, shallow: false, bottom: 44 * TS, h3flood: 'waist', sea: true });   /* (built at HIGH water: the reach fill swims it full; src/hurricane3.js drains it on load) */
+  ent('sign', 102, DK - 1, { text: 'HER WAIST FLOODS WHEN THE SEA BREAKS. SWIM UP WITH IT: THE GALLEY ROOF IS THE WAY ON.' });
+  ent('sailor', 118, 43, { rise: true, face: 1 }); ent('sailor', 140, 43, { rise: true, face: -1 });   /* drowned hands: they come up out of her flooded waist */
+  /* her boat skids over the waist: only a swimmer on the flood reaches them */
+  yard(118, 124, DK - 3); ent('mast', 121, DK - 3, { h3: 'davits' }); coins([119, DK - 4], [123, DK - 4]);   /* (her boat's davits hold the skids: drawn by src/hurricane3.js; tools/solid-islands.mjs reads the marker) */ ent('petrel', 130, DK - 7, { gull: true, face: -1 });
+  // HER HOLD under the waist floor: a hatch down, her bread room, a silver (drained, a pocket that pays; at the first sinking step it is the sea's)
+  air(110, 148, 45, HD - 1); air(128, 129, 44, 44); net(128, 129, 44, HD - 1);
+  ent('deco', 116, HD - 1, { kind: 'plunder', v: 1 }); ent('silver', 112, HD - 1); ent('deco', 140, HD - 1, { kind: 'rumBarrels', v: 0 });
+  coins([120, HD - 2], [134, HD - 2], [144, HD - 2]);
+  // THE GALLEY ROOF: the exam - a boarder on it as you come up out of the flood
+  ent('boarder', 162, DK - 4, { face: -1 });   /* ELITES hurricane[1] */
+  gusts.push({ x0: 150 * TS, x1: 170 * TS, y0: 26 * TS, y1: (DK - 3) * TS, dir: -1, period: 7, on: 2, phase: 2.5, told: true, shove: 120, alt: true, h3: 'roof' });   /* THE WIND ON THE GALLEY ROOF: it walks you to the edge unless you BRACE (block or down) - fight him in it */
+  sail(159, 24, 31, 3);
+  coins([154, DK - 5], [158, DK - 5], [166, DK - 5]);
+  // THE BREACH: her fore waist stove in to the sea. THE SKY FELLS HER FOREMAST ACROSS IT (L.felled[0]).
+  air(176, 196, DK, 49); net(174, 175, DK, 50); net(197, 198, DK, 50);   /* nets down both broken edges into the sea */
+  ent('deco', 172, DK - 1, { kind: 'mastTall', v: 0 }); ent('deco', 172, 14, { kind: 'pennant', v: 1 });
+  ent('petrel', 186, 28, { gull: true, face: -1 });   /* over the breach as she comes down */
+  ent('sign', 170, DK - 1, { text: 'SHE IS OPEN TO THE SEA. STAND BY HER FOREMAST: THE SKY WILL LAY IT OVER.' });
+  ent('scout', 202, DK - 3, { face: -1 });   /* on her boats: he shoots along the fallen mast */
+  block(199, 204, DK - 2, DK - 1);   // her boats on their chocks, past the breach: the foremast's head lands on them
+  coins([180, DK - 3], [186, DK - 4], [192, DK - 4]);
+  ent('check', 206, DK - 1);   /* SHRINE 2: past the breach, before the main deck's ambush (the door shrine) */
 
-  // ================= 3. THE MAINMAST: her main yard across the second breach, and her hands coming the other way (CROSSING 2) =================
-  net(240, 241, 4, 19); ent('deco', 240, 19, { kind: 'mastTall', v: 1 }); ent('deco', 240, 3, { kind: 'pennant', v: 2 }); ent('deco', 240, 3, { kind: 'crowNest' });
-  breach(252, 290);
-  /* THE MAIN YARD, still aloft on her lifts: a spar from the mainmast out over the breach to the main stay. Every lift is a line
-     down from her top - a hand to catch, and what holds the yard up */
-  for (let x = 242; x <= 296; x++) set(x, 12, T.ONEWAY);
-  for (const x of [254, 268, 282]) net(x, x, 5, 11);   // her lifts
-  for (const [x, ph] of [[256, 0.1], [266, 0.45], [276, 0.8]]) ent('mover', x, 21, { len: 4, vert: true, rise: 1.5, period: 3.6, ph, hatch: true });   /* her main hatch covers, still on their lashings: the low road under the yard */
-  net(297, 298, 12, 19);                                // the main stay, from the yard's end down to the deck past the breach
-  ent('sign', 236, 19, { text: 'UP THE RATLINES AND OUT ALONG THE YARD. THEY ARE COMING THE OTHER WAY.' });
-  ent('boarder', 274, 11, { face: -1 }); ent('tideguard', 290, 11, { face: -1 });   /* on the yard, coming at you: knock them into the sea */
-  ent('silver', 241, 3);   /* in her main top, over the crow's nest: up the ratlines past the yard */
-  ent('petrel', 262, 7, { gull: true, face: -1 }); ent('petrel', 286, 6, { gull: true, face: -1 });
-  coins([246, 11], [252, 11], [258, 11], [264, 11], [276, 11], [288, 11], [294, 11]);
-  // ---- THE WEATHER DECK (the level's one ambush room, src/level.js AMBUSH below): out in her own storm, the rail and the sea to throw them over ----
-  shroud(316);
-  ent('sign', 300, 19, { text: 'SHE ROLLS. WHEN SHE HEELS, HOLD A LINE, PUT A BITT AT YOUR BACK, OR STAND ON THE SAND.' });
-  ent('cargo', 312, 18, { kind: 'crate' });
-  coins([302, 18], [310, 18], [318, 18], [326, 18]);
+  // ================= 3. THE MAIN DECK, THE ROD, AND THE GUN DECK =================
+  // THE MAIN DECK ambush (src/level.js AMBUSH.hurricane): her hands come up out of the hatches, the wave across it
+  ent('sign', 210, DK - 1, { text: 'THE MAIN DECK. HER HANDS ARE STILL ABOARD.' });
+  coins([214, DK - 2], [224, DK - 2], [236, DK - 2], [248, DK - 2], [258, DK - 2]);
+  cask(244, DK - 1); set(252, DK - 1, T.SOLID); set(232, DK - 1, T.SOLID);   // a cask between two bitts: a step to the shroud? no - a hazard that rolls in the fight
+  // THE AFTER SCUTTLE: a second hatch open on her main deck, five boards - jumped DOWNHILL (two rows deep: a cheap fall; a crate stack in the gun deck under it)
+  air(266, 270, DK, DK + 1);   /* (its floor is a crate stack laid after the gun deck is cut, below) */
+  rollGaps.push({ x0: 260 * TS, x1: 276 * TS, y0: (DK - 6) * TS, y1: DK * TS, carry: 2, dir: 1, alt: true, roll: true, hole: [266, 270] });
+  ent('cutlass', 276, DK - 1, { face: -1 });
+  // THE MAINMAST stands at 300 (drawn, and nothing to climb from the deck: her shrouds start at the main yard). ROD 1: the masthead rod's CHAIN runs down her mast and
+  // hangs loose by the main hatch. Strike it onto the hatch's iron coaming and the next bolt comes down it: the TARRED NET over the main hatch burns.
+  ent('lightrod', 296, DK - 1, { id: 'r1', burn: [286, 291, DK, DK + 1], top: [300, 4] });
+  for (let x = 286; x <= 291; x++) { set(x, DK, T.PORT); set(x, DK + 1, T.PORT); }   /* THE TARRED NET over the main hatch (burnt by rod 1: src/hurricane3.js; the reach fill has it open - L.reachDoors) */
+  air(286, 291, DK + 2, DK + 5);   // the hatch shaft down to the gun deck
+  ent('sign', 282, DK - 1, { text: 'THE ROD AT HER MASTHEAD DRAWS THE SKY. STRIKE ITS CHAIN ONTO THE HATCH IRON, THEN STAND CLEAR.' });
+  ent('seawitch', 302, 35, { caller: true, face: -1 });   /* at the mast's foot by the chain: she calls the sky down on it */
+  block(304, 327, 30, DK - 1);   // THE MAIN DECKHOUSE across her deck: six rows (the way on is under it, through the gun deck); her main yard lies along its roof
+  // THE GUN DECK, under her main deck: dark (lit only when the sky goes off - the seams), her loose gun on the roll, the cargo it smashes
+  air(232, 333, DK + 2, GD - 1); block(266, 270, DK + 2, DK + 2);   /* the gun deck; and the crates under the after scuttle (its floor: no way down but the main hatch) */
+  darkZones.push({ x0: 232 * TS, x1: 334 * TS, y0: (DK + 1) * TS, y1: (GD + 1) * TS, dark: 0.9, storm: true });
+  ent('sign', 292, GD - 1, { text: 'HER GUN DECK IS DARK. WAIT FOR THE SKY, AND WALK WHILE IT IS WHITE.' });
+  ent('loosegun', 300, GD - 2, { trigger: 294 }); ent('cargowall', 312, GD - 2, { span: [312, 313, DK + 2, GD - 1] }); for (let y = DK + 2; y <= GD - 1; y++) { set(312, y, T.PORT); set(313, y, T.PORT); }   /* (T.PORT: L.reachDoors has it open - the gun breaks it, and every hero can loose the gun) */   /* only the gun goes through the cargo */
+  ent('sign', 304, GD - 1, { text: 'HER GUN IS WORKING LOOSE. WHEN SHE HEELS AFT IT RUNS: LET IT SMASH THE CARGO.' });
+  ent('marine', 322, GD - 1, { face: -1 }); ent('cutlass', 328, GD - 1, { face: -1 });
+  ent('deco', 240, GD - 1, { kind: 'kegStack' }); ent('deco', 250, GD - 1, { kind: 'kegStack' }); ent('deco', 262, GD - 1, { kind: 'bones', v: 1 });
+  ent('vault', 236, GD - 1);   /* the former relic cache (src/relics.js VAULT_SILVER): her powder room, west along the dark gun deck */
+  coins([270, GD - 2], [280, GD - 2], [318, GD - 2], [326, GD - 2]);
+  air(330, 331, DK, DK + 1); net(330, 331, DK, GD - 1);   // the after hatch: her ladder up into the eye
 
-  // ================= 4. THE EYE: the wind drops, and there are stars (a breather, and a shrine) =================
-  ent('deco', 340, 19, { kind: 'waterButt' }); ent('deco', 352, 19, { kind: 'coiledCable', v: 0 }); ent('deco', 364, 19, { kind: 'bones', v: 0 });
-  ent('sign', 344, 19, { text: 'THE EYE OF THE STORM. PAST IT, SHE COMES BACK TWICE AS HARD.' });
-  ent('check', 356, 19);
-  coins([340, 17], [346, 16], [352, 17], [362, 17], [368, 16], [374, 17]);
-  // a hatch down to her bread room: a pocket that pays
-  air(358, 376, 21, 26); air(372, 373, 19, 20); net(372, 373, 20, 26); ent('deco', 362, 26, { kind: 'plunder', v: 1 }); ent('silver', 360, 26); ent('torch', 366, 26);
+  // ================= 4. THE EYE: the wind drops, there are stars (a breather, a shrine, his cabin) =================
+  ent('sign', 336, DK - 1, { text: 'THE EYE OF THE STORM. PAST IT SHE GOES DOWN BY THE STERN.' });
+  ent('check', 352, DK - 1);   /* SHRINE 3: the eye */
+  ent('deco', 344, DK - 1, { kind: 'waterButt' }); ent('deco', 362, DK - 1, { kind: 'coiledCable', v: 0 }); ent('deco', 372, DK - 1, { kind: 'bones', v: 0 });
+  coins([342, DK - 3], [348, DK - 4], [358, DK - 3], [368, DK - 4], [378, DK - 3]);
+  // HIS CABIN: a house across her deck at the eye's end, a door forward and a door aft. His log on the table: HE WENT UP.
+  block(384, 398, 31, DK - 1); air(386, 397, 32, DK - 1); air(384, 385, DK - 2, DK - 1); air(397, 398, DK - 2, DK - 1);   /* through it, door to door: her quarterdeck is aft of it */
+  ent('deco', 392, DK - 1, { kind: 'chartTable' }); ent('deco', 396, DK - 1, { kind: 'sternWindows' }); ent('torch', 388, DK - 1);
+  ent('sign', 390, DK - 1, { text: 'HIS LOG: SHE IS GOING DOWN. I AM GOING UP HER MAIN. THE SKY ANSWERS THE ROD AT THE MASTHEAD.' });
+  ent('silver', 395, DK - 1);
 
-  // ================= 5. THE STERN: the storm back, twice as hard =================
-  // CROSSING 3, THE SWELL: her after hatch is stove in, and its covers are still lashed to the coamings, riding the sea in her
-  breach(386, 410, 24);
-  for (const [x, ph] of [[388, 0], [395, 0.33], [402, 0.66]]) ent('mover', x, 20, { len: 5, vert: true, rise: 1.6, period: 3.6, ph, hatch: true });
-  ent('sign', 381, 19, { text: 'HER HATCH COVERS RIDE THE SWELL. STEP ON AS ONE COMES UP.' });
-  coins([390, 17], [397, 16], [404, 17]);
-  ent('petrel', 398, 13, { gull: true, face: -1 });   /* and over the covers, while you time them */
-  // THE AFT GUN: as she heels it parts its breechings, and every roll after runs it down her deck into the cargo lashed across it
-  ent('loosegun', 420, 18, { trigger: 414 }); ent('cargowall', 438, 18, { span: [438, 439, 16, 19] }); block(438, 439, 16, 19);   /* the cargo lashed across her waist: only the gun goes through it */
-  ent('sign', 416, 19, { text: 'HER AFT GUN IS WORKING LOOSE. WHEN SHE HEELS IT RUNS: LET IT SMASH THE CARGO.' });
-  shroud(434, 12); for (let x = 434; x <= 440; x++) set(x, 12, T.ONEWAY);   // or over it: the crossjack yard, on its shroud and the mizzen's
-  ent('boarder', 428, 19, { face: -1 }); ent('sailor', 446, 19, { rise: true, face: -1 });
-  coins([424, 18], [430, 18], [442, 18], [446, 18]);
-  // HER POOP BREAK: a house across her waist. Over it on the yards (the swing onto the mizzen), or under it through her powder store.
-  block(452, 474, 15, 19); net(448, 449, 9, 19); plat(448, 9, 4);   // the mizzen shroud and its top
-  ent('deco', 462, 14, { kind: 'lanternDeck', v: 0 });
-  // THE DARK POWDER STORE: no lamp of hers burns back here; the only light is what comes down her seams when the sky goes off
-  air(440, 474, 21, 26); air(441, 442, 19, 20);   // the hatch down, clear of the shroud: an open hatch you drop through (the store's way out is forward, to the sea)
-  darkZones.push({ x0: 440 * TS, x1: 476 * TS, y0: 20 * TS, y1: 28 * TS, dark: 0.92, storm: true });
-  ent('check', 445, 19);   /* past the gun, before the poop break: over it or under it from here */
-  ent('sign', 446, 19, { text: 'HER POWDER STORE IS DARK. WAIT FOR THE SKY, AND WALK WHILE IT IS WHITE.' });
-  ent('deco', 456, 26, { kind: 'kegStack' }); ent('deco', 468, 26, { kind: 'kegStack' }); ent('deco', 444, 26, { kind: 'bones', v: 1 });
-  ent('marine', 458, 26, { face: -1 }); ent('cutlass', 470, 26, { face: -1 });
-  ent('vault', 448, 26);   /* the former relic cache (src/relics.js VAULT_SILVER) */
-  coins([452, 25], [460, 25], [466, 25]);
-  // her after hold is stove in at 475: the store opens on the sea, and the stern's last breach is swum or flown
-  breach(475, 500); air(475, 475, 21, 26);
-  // CROSSING 4: A ROPE SWING ONTO HER MIZZEN, and her topmast breaking behind you
-  net(484, 485, 5, 33);   /* (ART: her mizzen itself, from the bar to its top, is the art lane's: no stock mastTall reaches the bar) */
-  for (const [x, ph] of [[478, 0.2], [490, 0.6]]) ent('mover', x, 21, { len: 4, vert: true, rise: 1.5, period: 3.6, ph, hatch: true });   /* her after hatch covers: out of the store and onto her mizzen without a swim */   /* her mizzen stands out of the stove-in stern, ratlines to the water */
-  movers.push({ kind: 'swing', px: 477 * TS + 8, py: 3 * TS, arm: 112, x: 476 * TS, y: 14 * TS, w: 32, h: 8, period: 3.4, phase: 0.2, deck: 16 });
-  ent('sign', 471, 14, { text: 'TAKE THE SWING. HER MIZZEN CATCHES YOU. RUN HER TOPMAST AND DO NOT STOP.' });
-  for (let x = 486; x <= 503; x++) set(x, 7, T.ONEWAY);   // her topmast, broken and lying aft from the mizzen top to the stern stay
-  for (const x0 of [486, 489, 492, 495, 498]) deckBreaks.push({ x0, x1: x0 + 2, row: 7, t: -1, down: false, onTop: true, fuse: 0.8, reset: true });
-  net(504, 505, 6, 19);   // the stern stay, down to her after deck
-  coins([488, 6], [492, 6], [496, 6], [500, 6]);
-  ent('petrel', 498, 2, { gull: true, face: -1 });   /* one over her topmast: no stopping for it */
-  // THE STERN'S EXAM: her last hands on the after deck with the storm at its worst, and the shrine before his deck
-  for (const x of [516, 532]) shroud(x);
-  ent('boarder', 524, 18, { face: -1 }); ent('sailor', 514, 19, { rise: true, face: -1 }); ent('seawitch', 530, 19, { caller: true, face: -1 });
-  ent('cargo', 520, 18, { kind: 'barrel' });
-  coins([510, 18], [518, 18], [528, 18], [536, 18]);
-  ent('check', 542, 19);
+  // ================= 5. THE QUARTERDECK AND THE MIZZEN: she goes down by the stern; the wind, taught =================
+  ent('sign', 404, DK - 1, { text: 'THE WIND COMES IN GUSTS. THE SAILS SNAP FIRST: JUMP WITH IT AND IT CARRIES YOU.' });
+  // HER SKYLIGHT, stove in: a five-board gap three rows deep. The gust over it blows aft: jump with it (falling in costs nothing but the climb)
+  air(420, 425, DK, DK + 2); net(420, 420, DK, DK + 2);   /* the skylight well (421-425): its ladder on the near side */
+  gusts.push({ x0: 410 * TS, x1: 432 * TS, y0: (DK - 7) * TS, y1: DK * TS, dir: 1, period: 5, on: 2, phase: 0, told: true, air: true, shove: 230, carry: 3, h3: 'teach' });
+  sail(416, DK - 9, DK - 3, 0); sail(428, DK - 9, DK - 3, 0);
+  coins([418, DK - 3], [427, DK - 3]);
+  // THE STERN'S EXAM: her last hands on the quarterdeck, the sea coming over her stern
+  ent('boarder', 438, DK - 1, { face: -1 }); ent('seawitch', 456, DK - 1, { caller: true, face: -1 }); ent('sailor', 432, DK - 1, { rise: true, face: -1 });
+  cask(429, DK - 1); set(427, DK - 1, T.SOLID);
+  coins([434, DK - 2], [440, DK - 2], [455, DK - 2]);
+  // HER AFTER COMPANIONWAY: open, five boards, three rows deep - jumped downhill (its ladder on the near side)
+  air(446, 451, DK, DK + 2); net(446, 446, DK, DK + 2);
+  rollGaps.push({ x0: 440 * TS, x1: 456 * TS, y0: (DK - 6) * TS, y1: DK * TS, carry: 2, dir: 1, alt: true, roll: true, hole: [447, 451] });
+  // HER STERN, going under: her after deck two rows lower than the quarterdeck (the sea takes it at the third step: deadly)
+  air(471, 510, DK, DK + 1); block(511, 512, DK - 2, DK + 1);
+  ent('deco', 490, DK + 1, { kind: 'wheel' }); ent('deco', 505, DK + 1, { kind: 'sternWindows' });
+  // THE MIZZEN at 466: her shrouds up from the quarterdeck to her top (row 30)
+  net(464, 465, 30, DK - 1);
+  ent('sign', 460, DK - 1, { text: 'SHE IS GOING DOWN BY THE STERN. UP HER MIZZEN.' });
+  yard(456, 463, 30); yard(466, 470, 30);   // THE MIZZEN TOP (the shroud's head, 464-465, is the middle of it)
+  ent('check', 459, 29);   /* SHRINE 4: the mizzen top */
+  // ROD 2: the mizzen rod's chain at her top. Struck onto the iron, the next bolt FELLS HER MIZZEN TOPMAST forward - a bridge to the stays (L.felled[1], rod: 'r2')
+  ent('lightrod', 469, 29, { id: 'r2', fell: 1, top: [466, 14] });
+  ent('sign', 462, 29, { text: 'HER MIZZEN ROD. STRIKE THE CHAIN ONTO THE IRON: THE BOLT FELLS HER TOPMAST FORWARD.' });
 
-  // ================= 6. HIS QUARTERDECK: THE CAPTAIN, who has not left her =================
-  block(548, 606, 16, 19); air(550, 604, 17, 19);
-  plat(545, 17, 3); net(546, 547, 15, 19);
-  ent('sign', 544, 19, { text: 'THE CAPTAIN. WHEN THE SEA COMES, HE MAKES FOR A LINE: TAKE IT FROM HIM.' });
-  net(566, 567, 10, 15); net(584, 585, 6, 15); net(600, 601, 10, 15);   // THE ARENA'S LINES: his and yours
-  ent('deco', 584, 15, { kind: 'mastTall', v: 1 }); ent('deco', 584, 5, { kind: 'pennant', v: 1 });
-  for (let x = 576; x <= 592; x++) set(x, 9, T.ONEWAY);   // the spanker gaff across his mizzen
-  movers.push({ kind: 'swing', px: 590 * TS + 8, py: 9 * TS, arm: 72, x: 589 * TS, y: 13 * TS, w: 32, h: 8, period: 3.4, phase: 1.2, deck: 16 });   /* a line off the gaff: over him is past his wall */
-  ent('deco', 574, 15, { kind: 'wheel' }); ent('deco', 594, 15, { kind: 'chartTable' }); ent('deco', 556, 15, { kind: 'lanternDeck', v: 0 }); ent('deco', 604, 15, { kind: 'sternWindows' });
-  ent('torch', 552, 19); ent('deco', 590, 19, { kind: 'plunder', v: 1 });
-  coins([562, 14], [572, 14], [580, 8], [588, 8], [596, 14]);
-  ent('captain', 596, 15);
+  // ================= 5b. THE STAYS: back forward through her rigging, over her drowning deck, to the main =================
+  /* (rows 22-24: a hero on the quarterdeck below cannot jump to a hammock's underside - five rows clear - so the stays are entered only from the mizzen top, by rod 2) */
+  // P1: the stay's crosstree, where the felled topmast's head lands
+  yard(432, 441, 24); net(440, 441, 24, 29); ent('mast', 436, 24, { h3: 'stay' });   /* (every stays platform hangs on its lifts from the mizzen-main stay over it: drawn by src/hurricane3.js) */   /* its after end hangs a net down to the hammock under the first gust gap */
+  // GUST GAP 1 (six boards, 426-431): the gust blows forward here. Jump WITH it; against it you fall short into the hammock and climb back up
+  net(426, 439, 28, 29);   // the hammock
+  gusts.push({ x0: 420 * TS, x1: 444 * TS, y0: 17 * TS, y1: 25 * TS, dir: -1, period: 5, on: 2, phase: 1.5, told: true, air: true, shove: 240, carry: 4, h3: 'g1' });
+  sail(436, 15, 23, 1);
+  // P2: the mizzen stay's sling
+  yard(414, 425, 24); ent('mast', 419, 24, { h3: 'stay' });
+  ent('petrel', 418, 19, { gull: true, face: 1 });   /* a gull riding the gusts */
+  coins([431, 23], [436, 23]);
+  // GUST GAP 2 (six boards, 408-413, and up two): the gust comes the OTHER way on the off beat - wait for the forward one
+  net(408, 415, 28, 29); net(414, 415, 24, 29);   /* its hammock, and P2's net down to it */
+  gusts.push({ x0: 400 * TS, x1: 418 * TS, y0: 15 * TS, y1: 25 * TS, dir: -1, period: 6, on: 2.2, phase: 3.2, told: true, air: true, shove: 250, carry: 4, alt: true, h3: 'g2' });
+  sail(410, 13, 21, 2);
+  // P3: the main topmast stay's block, and HER MAIN TOPMAST lying along the stay: run it - it breaks span by span behind you
+  yard(396, 407, 22); ent('mast', 401, 22, { h3: 'stay' });
+  coins([408, 20], [398, 21]);
+  yard(338, 393, 23);   // the topmast run
+  for (const x0 of [384, 374, 364, 354, 344]) deckBreaks.push({ x0, x1: x0 + 3, row: 23, t: -1, down: false, onTop: true, fuse: 0.9, reset: true });
+  net(336, 337, 23, 29);   // its forward end: down to the main yard
+  ent('petrel', 366, 17, { gull: true, face: 1 });
+  coins([386, 22], [376, 22], [364, 22], [352, 22], [344, 22]);
+  ent('mast', 300, DK - 1, { h3: 'main' });   /* THE MAINMAST: everything aloft from the main yard to the royal is hers (drawn by src/hurricane3.js) */
+  // THE MAIN YARD (row 29): THE STAYS' EXAM - a boarder elite on it, the sea coming
+  yard(280, 335, 29);
+  ent('boarder', 318, 28, { face: 1 });   /* ELITES hurricane[2]: he holds the boarding net across the yard behind him (gate 310: the game lays it, src/level.js eliteGate) */
+  coins([330, 28], [324, 28], [310, 28], [304, 28]);
+  // THE MAIN SHROUDS: from the main yard up to the main top
+  net(292, 293, 24, 28); net(308, 309, 24, 28);
+  yard(294, 307, 24);   // THE MAIN TOP
+  ent('check', 300, 23);   /* SHRINE 5: the main top, under his yards (A10c: one before the boss) */
+  ent('sign', 304, 23, { text: 'THE CAPTAIN IS ON HIS YARDS. WHEN THE ROD AT THE MASTHEAD BURNS BLUE, LEAD HIM UNDER IT.' });
 
-  // HER BITTS (iron posts to put your back to when she heels), and sand strewn where the roll is taught
-  const BITTS = [[86, 18], [210, 18], [308, 18], [324, 18], [412, 18], [526, 18]];
-  for (const [x, y] of BITTS) set(x, y, T.SOLID);
+  // ================= 6. THE MAINMAST TOP: THE CAPTAIN =================
+  // T1 the topsail yard (row 19), T2 the topgallant (14), T3 the royal (9). The mast (300-301) and the shrouds at the yards' ends join them; every one is also a LINE to brace on.
+  yard(286, 315, 19); yard(290, 311, 14); yard(293, 308, 9);
+  net(300, 301, 9, 23);   // the mast's ratlines, the main top to the royal yard
+  net(294, 295, 19, 23);   // the top's own shroud up to the topsail yard
+  net(288, 289, 14, 18); net(312, 313, 14, 18);   // T1 -> T2 at both ends
+  net(291, 292, 9, 13); net(309, 310, 9, 13);   // T2 -> T3 at both ends
+  /* (no cleats: the camera holds you over the topsail yard, and his throws stop short of every yard's end - src/main.js capThrow) */
+  ent('captain', 306, 18);
+  ent('lightrod', 300, 8, { id: 'mast', boss: true, top: [300, 3] });   /* THE MASTHEAD ROD: his fight's key (src/main.js updateCaptain reads L.h3.rods) */
 
-  // ================= THE AIR UNDER HER (nothing is dug after this: it reads the finished grid) =================
-  { const gat = (x, y) => L.grid[y * W + x];
-    const held = (x, n) => { for (let q = 0; q < n; q++) if (!(gat(x + q, 27) === T.SOLID && gat(x + q, 28) === T.AIR && gat(x + q, 29) === T.AIR)) return false; return true; };
-    const bed = x => gat(x, 40) === T.AIR && gat(x, 41) === T.AIR && gat(x, 42) === T.SOLID;
-    for (let x = 20; x <= 600; x += 20) if (held(x, 6)) pocket(x, x + 5, 28, 29);
-    for (let x = 30; x <= 600; x += 20) if (bed(x)) vent(x, 41, 7);
-    for (const x of [150, 270, 398, 488]) if (bed(x)) wreck(x, 41);
-    for (const x of [96, 330, 560]) if (bed(x)) clam(x, 41);
-  }
+  // HER BITTS (iron posts to put your back to when she heels) - and the casks' stops
+  const BITTS = [];
+  for (const [x, y] of [[39, FC - 1], [67, DK - 1], [232, DK - 1], [252, DK - 1], [427, DK - 1]]) BITTS.push([x, y]);
 
   return {
-    W, H, grid: L.grid, ents: L.ents, START: { x: 24, y: 19 }, pools, falls: [], moversExtra: movers,
+    W, H, grid: L.grid, ents: L.ents, START: { x: 22, y: FC - 1 }, pools: [pools[0], SEA], falls: [], moversExtra: movers,
     duskStart: 99999, duskLen: 1, music: 'hurricane', night: false, dark: 0.06,
     swell: { amp: 3, period: 3.8 }, stormClouds: true,
-    // THE WAVE: it builds to windward, it tells you, and it shoves the open deck down her length (no stun: a drain, src/main.js updateWash)
-    wash: { y0: 17 * TS, y1: 20 * TS, x0: 16 * TS, x1: 606 * TS, every: 9, tell: 3, speed: 210, dmg: 14, push: true },
-    // THE LIGHTNING: it picks somewhere near you, says so, and hits it. Over water it runs along the surface. (Not over the bow: the wave is taught alone.)
-    storm2: { every: 8, tell: 1.2, y: 20 * TS, bossEvery: 6.5, zones: [[116 * TS, 334 * TS], [380 * TS, 606 * TS]] },
-    hullZones, darkZones, airRooms, deep: D, deckBreaks,
-    interiors: [[20, 64, 21, 26, 'ship'], [175, 194, 18, 19, 'ship'], [358, 376, 21, 26, 'ship'], [440, 474, 21, 26, 'ship'], [550, 604, 17, 19, 'ship']],
-    cabins: [[22, 64, 21, 27, 'galley'], [175, 194, 18, 20, 'chart'], [440, 474, 21, 27, 'magazine'], [550, 604, 17, 20, 'cabin']],
+    // THE WAVE: told, it shoves the open deck down her length (no stun: a drain, src/main.js updateWash). Her deck only: the forecastle, the main deck, the quarterdeck.
+    wash: { y0: (DK - 4) * TS, y1: DK * TS, x0: 16 * TS, x1: 470 * TS, every: 10, tell: 3, speed: 210, dmg: 14, push: true },
+    // THE LIGHTNING: somewhere near you, told, and over water it runs along the surface. Not on the forecastle (the roll is taught alone) and not in the eye.
+    storm2: { every: 8, tell: 1.2, y: DK * TS, bossEvery: 99, zones: [[104 * TS, 334 * TS], [400 * TS, 512 * TS]] },
+    hullZones, darkZones, deep: { vents: [], clams: [], bulbs: [], wrecks: [], pockets: [] }, airRooms: [], deckBreaks,
+    interiors: [[18, 45, DK + 1, GD - 1, 'ship'], [110, 148, 45, HD - 1, 'ship'], [153, 166, DK - 2, DK - 1, 'ship'], [232, 333, DK + 2, GD - 1, 'ship'], [386, 397, 32, DK - 1, 'ship']],
+    cabins: [[18, 45, DK + 1, GD, 'galley'], [153, 166, DK - 2, DK, 'galley'], [232, 333, DK + 2, GD, 'magazine'], [386, 397, 32, DK, 'cabin']],
     palette: { set: 'ship', sky: 'storm', far: 'stormsea', mid: 'swells', near: 'none', fg: 'rig', dress: 'ship', haze: 'rgba(150,170,180,0.16)',
       grass: '#5f6a68', grassL: '#88928f', grassD: '#40484a', dirt: '#4a5058', dirtL: '#666e78', dirtD: '#32363e', canopy: ['#1e2a3a', '#2c3a4a', '#3a4a5a', '#54687a'] },
-    weather: [{ x0: 0, x1: 335 * TS, kind: 'rain' }, { x0: 377 * TS, x1: 99999, kind: 'rain' }],   /* and none in the eye */
-    ambient: [{ x0: 0, x1: 335 * TS, kind: 'ship' }, { x0: 335 * TS, x1: 377 * TS, kind: 'shore' }, { x0: 377 * TS, x1: 99999, kind: 'ship' }],
-    arena: { x0: 556 * TS, x1: 606 * TS, floor: 16 * TS, y0: 4 * TS, trigger: 562 * TS, wallL: 555, wallR: 606, boss: 'captain', music: 'captain', tint: '#2a5a6a', tintA: 0.12, fx: 'motes',
-      lines: [566, 584, 600] },   /* THE CAPTAIN'S LINES (src/main.js updateCaptain): where he braces when the sea comes */
-    // THE FOREMAST COMES DOWN (L.felled, a list): walk up to the breach and the sky marks her foremast and the far deck; a breath later she is down,
-    // lying from the deck at 127 across the breach onto the galley's roof - the sky's road over. Before her trigger, the breach is a swim.
-    felled: [{ x: 124, zone: [127, 135], band: [136, 176], foot: [126, 20], head: [173, 17], tell: 1.8, clear: [[117, 133, 10, 10]],
-      say: 'LIGHTNING ON HER FOREMAST: STAND CLEAR', down: 'THE SKY FELLS HER FOREMAST: THERE IS YOUR ROAD' }],
-    eye: { x0: 336, x1: 378, hard: { wash: 0.55, speed: 1.25, dmg: 1.4, storm: 0.5, roll: 0.7, push: 1.15 } },   /* "twice as hard": waves and strikes come about twice as often past the eye */
-    calm: [[336, 378, 10, 20]],
-    // SHE ROLLS: every ~15 s (x0.7 past the eye) a 2.4 s counted tell, then 3.4 s heeled over. Her open deck, rows 19-20.
-    roll: { every: 15, tell: 2.4, hold: 3.4, heel: 0.05, push: 92, x0: 53, x1: 548, y0: 19, y1: 20, not: [[336, 378]], grip: [[300, 303], [516, 519]], bitts: BITTS },
-    autoGrab: true,   /* THE RIGGING CATCHES YOU (src/main.js): a hero falling into a line with no sideways key held takes hold of it; the wave's shove is caught the same way */
-    routeVia: [[130, 19], [176, 16], [241, 10], [296, 11], [356, 19], [420, 19], [446, 26], [484, 20], [484, 6], [504, 6], [542, 19]],   /* the designed road: the foremast's foot, the galley roof, up the main and out the yard, the eye, the gun, down through the dark store, out onto her mizzen, up it and along the topmast (the swing over the poop is the other way) */
+    weather: [{ x0: 0, x1: 334 * TS, kind: 'rain' }, { x0: 334 * TS, x1: 400 * TS, kind: 'rain', yMax: 29 * TS }, { x0: 400 * TS, x1: 99999, kind: 'rain' }],   /* and none in the eye - but her stays over it are in the storm (yMax: the view's middle above her deck) */
+    ambient: [{ x0: 0, x1: 334 * TS, kind: 'ship' }, { x0: 334 * TS, x1: 400 * TS, kind: 'shore' }, { x0: 400 * TS, x1: 99999, kind: 'ship' }],
+    arena: { x0: 286 * TS - 4, x1: 316 * TS + 4, floor: 19 * TS, y0: 3 * TS, trigger: 285 * TS,   /* (x0..x1: the camera holds you over his topsail yard - nobody is thrown off its ends into the sea) */ wallL: 284, wallR: 317, boss: 'captain', music: 'captain', tint: '#2a5a6a', tintA: 0.12, fx: 'motes',
+      tiers: [{ row: 19, x0: 286, x1: 315 }, { row: 14, x0: 290, x1: 311 }, { row: 9, x0: 293, x1: 308 }],   /* THE CAPTAIN 3's yards (src/captain3.js): T1 topsail, T2 topgallant, T3 royal */
+      nets: [[300, 301, 9, 23], [294, 295, 19, 23], [288, 289, 14, 18], [312, 313, 14, 18], [291, 292, 9, 13], [309, 310, 9, 13]],   /* every line that joins them: also his BRACE lines */
+      plats: [{ row: 24, x0: 294, x1: 307 }],   /* the main top under his yards: a leap out of the sea onto it */
+      rod: [300, 301], noWall: true },
+    // THE FOREMAST COMES DOWN (L.felled[0]): walk up to the breach and the sky marks her foremast; a breath later she lies across it onto her boats.
+    // HER MIZZEN TOPMAST (L.felled[1], rod: 'r2'): nothing fells it but the bolt down rod 2's chain - then it lies forward from her top to the stay's crosstree.
+    felled: [{ x: 172, zone: [166, 175], band: [176, 204], foot: [171, DK], head: [199, DK - 2], tell: 1.8, clear: [], noNets: true, topY: 13, landY: DK - 1, stumpY: DK - 1,
+      say: 'LIGHTNING ON HER FOREMAST: STAND CLEAR', down: 'THE SKY FELLS HER FOREMAST ACROSS THE BREACH: THERE IS YOUR ROAD' },
+      { x: 466, rod: 'r2', zone: [-9, -9], band: [440, 470], foot: [440, 24], head: [455, 30], tell: 0.6, clear: [], noNets: true, topY: 14, landY: 29, stumpY: 29,
+      say: 'THE BOLT COMES DOWN THE CHAIN', down: 'HER MIZZEN TOPMAST GOES OVER: A BRIDGE TO THE STAYS' }],
+    eye: { x0: 336, x1: 400, y0: 30, y1: 42, hard: { wash: 0.7, speed: 1.15, dmg: 1.25, storm: 0.7, roll: 0.8, push: 1.1 } },
+    calm: [[336, 400, 10, 40]],
+    // SHE ROLLS: every ~12 s a 2.4 s counted tell, then 3.4 s heeled. On her decks (and her gun deck): on the ground the heel walks you downhill (a line, a bitt or the sand
+    // holds you); IN THE AIR it carries you (air: px/s) - downhill long, uphill short.
+    roll: { every: 12, tell: 2.4, hold: 3.4, heel: 0.05, push: 92, air: 70, x0: 16, x1: 470, y0: FC - 1, y1: DK, bands: [[16, 470, FC - 1, DK], [232, 333, GD - 1, GD]], not: [[336, 400]], grip: [], bitts: BITTS },
+    rollGaps, gusts: gusts.concat([{ x0: 284 * TS, x1: 318 * TS, y0: 3 * TS, y1: 20 * TS, dir: 1, period: 7, on: 2, phase: 0, told: true, air: true, shove: 190, alt: true, arena: true, h3: 'mast' }]),   /* (the masthead's wind: only in his fight - it carries a jump and his keg) */
+    autoGrab: true,   /* THE RIGGING CATCHES YOU (src/main.js): a hero falling into a line with no sideways key held takes hold of it */
+    reachDoors: [{ x0: 286, x1: 291, y0: DK, y1: DK + 1 }, { x0: 312, x1: 313, y0: DK + 2, y1: GD - 1 }],   /* the tarred net: rod 1 burns it (src/hurricane3.js); the full reach fill has it open */
+    caskSteps,   /* (src/reachcore.js) where a freed cask fetches up: a step the full fill stands on */
+    h3: {
+      casks, rods: L.ents.filter(e => e.t === 'lightrod').map(e => ({ ...e })), sails,
+      /* THE WAIST'S FLOOD: low -> warn (the bell, the foam line, 'A SEA TO WINDWARD') -> rise -> high -> fall, seconds */
+      floods: [{ id: 'waist', x0: 107, x1: 150, low: 6, warn: 2.4, rise: 2, high: 5, fall: 2.5, first: 3 }],
+      /* SHE IS SINKING: the outside sea's surface (px) by step; each step is told where it is crossed (x0..x1, y0..y1 tiles: the hero's feet), and a respawn wakes to the
+         step its shrine was lit at. Step 4 is THE RISING SEA (chase): from the mizzen top it climbs after you to `cap`, rubber-banded on your feet. */
+      sink: { steps: [49 * TS + 4, 45 * TS + 8, 41 * TS + 4, DK * TS + 6], at: [[208, 300, 30, 40], [336, 400, 30, 40], [456, 466, 30, 40]],
+        say: ['SHE SETTLES: HER HOLD IS THE SEA\'S NOW', 'SHE SETTLES AGAIN: HER GUN DECK IS AWASH', 'SHE IS GOING DOWN BY THE STERN. CLIMB.'],
+        rise: { at: [454, 471, 25, 30], cap: 29 * TS + 6, slow: 2, base: 6, fast: 16, near: 70, far: 150, say: 'THE SEA IS COMING UP HER: CLIMB, AND DO NOT STOP' },
+        fight: [24 * TS + 6, 19 * TS - 20, 14 * TS - 20] },
+      checkSteps: [[22, 33, 0], [102, 35, 0], [206, 35, 0], [352, 35, 2], [459, 29, 3], [300, 23, 4]],   /* the sea step each shrine wakes to (a boss jump wakes at the main top) */
+      sections: [[0, 101, 0, 59, 'THE FORECASTLE'], [101, 207, 0, 59, 'THE WAIST'], [207, 334, 30, 59, 'THE MAIN DECK'], [334, 400, 30, 59, 'THE EYE'], [400, 471, 30, 59, 'THE QUARTERDECK'],
+        [330, 471, 0, 29, 'THE STAYS'], [284, 330, 20, 30, 'THE MAIN YARD'], [284, 318, 0, 19, 'THE MAINMAST TOP']].map(([x0, x1, y0, y1, name]) => ({ id: name.toLowerCase().replace(/[^a-z]+/g, '-'), name, x0, x1, y0, y1 })),
+    },
+    sections: [[0, 101, 'THE FORECASTLE'], [101, 207, 'THE WAIST'], [207, 334, 'THE MAIN DECK'], [334, 400, 'THE EYE'], [400, 471, 'THE QUARTERDECK'], [471, 540, 'THE STAYS']].map(([x0, x1, name]) => ({ id: name.toLowerCase().replace(/[^a-z]+/g, '-'), name, x0, x1 })),
+    routeVia: [[102, 35], [118, 35], [158, 32], [190, 34], [206, 35], [284, 35], [289, 41], [330, 41], [352, 35], [427, 35], [459, 29], [436, 23], [418, 23], [398, 21], [360, 22], [318, 28], [300, 23]],   /* the designed road: over the fore house, swim the waist to the galley roof, the felled foremast, the main deck, down the burnt hatch, the gun deck, the eye, the skylight, the mizzen top, the stays, the topmast run, the main yard, the main top */
     risers: true, callers: true, gulls: true,
   };
 }
@@ -7864,7 +7937,7 @@ export const LEVELS = [
   { id: 'longwater', arc: 'the sea', name: 'THE LONG WATER', sub: 'the river to the sea', rule: 'THE TIDE DECIDES WHERE THE FLOOR IS.', build: longWater, needs: 'crown' },
   { id: 'reef', name: 'THE SHIPWRECK REEF', sub: 'the road out to sea', rule: 'BREATH IS THE CLOCK. THE AIR IS IN BELLS, A SWIM APART.', build: shipwreckReef, needs: 'longwater' },
   { id: 'flotilla', name: 'THE FLOTILLA', sub: 'the town of ships', rule: 'STRIKE A BREECH AND THE GUN CLEARS ITS LINE. WHEN HIS FLAG RUNS RED, HIS GUNS CLEAR YOURS.', build: theFlotilla, needs: 'reef' },
-  { id: 'hurricane', name: 'THE HURRICANE DECK', sub: 'one ship, one storm', rule: 'THE SEA AND THE SKY TAKE TURNS: THE WAVE KNOCKS YOU FLAT, THE LIGHTNING SHOWS YOU THE WAY.', build: theHurricane, needs: 'flotilla' },
+  { id: 'hurricane', name: 'THE HURRICANE DECK', sub: 'one ship, one storm', rule: 'THE STORM TELLS YOU WHEN: JUMP WITH HER ROLL AND THE WIND, SWIM WHEN SHE FLOODS - AND CLIMB, SHE IS GOING DOWN.', build: theHurricane, needs: 'flotilla' },
   { id: 'lamplit', name: 'THE LAMPLIT STREET', sub: 'the city under it', rule: 'THE LAMPS ARE AIR.', build: theLamplitStreet, needs: 'hurricane' },
   { id: 'underleaf', name: 'UNDERLEAF', sub: "the potion master's leaf village", rule: UL3_RULE, build: () => buildUnderleaf3({ painter, T, TS, knightRow }), needs: 'rootway' },   /* (claude/underleaf4, Daniel 10-25 08:00: ROAD MOVE - Sporewood -> Rootway -> UNDERLEAF -> Palisade Wood (act I); Kingswood -> Scree -> Hanging. Was needs 'scree' (claude/underorder 10-24); old saves keep it open: PROG.underleaf4Mig in src/main.js) */   /* (claude/underleaf3, Daniel 10-15: UNDERLEAF 3 - THE GRANDMOTHER'S VILLAGE + HER POTIONS, src/underleaf3.js + src/potion-hands.js; the hush is retired from it. The old builder underleaf() stays below, unused, for the art lane's reference) */   /* (claude/underleafroad, Daniel 10-08: a MAIN-ROAD level now - Kingswood -> UNDERLEAF -> THE SCREE PATH. It was `hidden: true, secret: true, needsTime: { id: 'kings', t: 180 }`: only on level select, after Gorm in under three minutes. ARRAY position unchanged (saves count levels by index); the road is the `needs` chain) */
   { id: 'shop', name: 'THE STORE', sub: 'ask the keeper', build: theShop, hidden: true },
@@ -8115,7 +8188,7 @@ const GARRISON = {
   longwater: [['scout', 5], ['tideguard', 6], ['crab', 6], ['siren', 4], ['eel', 3], ['netter', 2], ['angler', 3], ['turtle', 4], ['heronfoe', 3], ['lamprey', 2], ['puffer', 1], ['jelly', 1], ['merrowspear', 2], ['merrowbrute', 1]],   // replacing weight, not piling on: three of the eel/angler/siren's slots go to the new wildlife
   reef: [['angler', 9], ['crab', 7], ['sailor', 4], ['netter', 4], ['petrel', 5], ['scout', 5], ['tideguard', 4], ['turtle', 5], ['eel', 5], ['siren', 4], ['urchin', 2], ['lookout', 1], ['puffer', 2], ['lamprey', 2], ['jelly', 1], ['merrowspear', 3], ['merrowcaller', 2]],
   quarry: [['rockgoblin', 7], ['goat', 5], ['miner', 5], ['archer', 3], ['harpy', 3], ['horn', 2], ['sapper', 3], ['brute', 2], ['shield', 3], ['hound', 3]],   // a few points over the Hunt in tools/curve.mjs
-  hurricane: [['cutlass', 3], ['scout', 4], ['tideguard', 3], ['marine', 2], ['boarder', 2], ['sailor', 4], ['petrel', 3], ['seawitch', 2]],   /* one ship in one storm: half her garrison is the storm's now, drowned hands, gulls and her own sea witch, not another cutlass */
+  hurricane: [],   /* (claude/hurricane3) every hand aboard is placed by the level, on the storm systems (review fix 7): the sprinkler takes each column's HIGHEST floor, which on a ship is her rigging, the stays and his yards */   /* one ship in one storm: half her garrison is the storm's now, drowned hands, gulls and her own sea witch, not another cutlass */
   mage: [['broom', 8], ['imp', 7], ['armour', 6], ['topiary', 5], ['turret', 4], ['bat', 4], ['haunt', 3], ['apprentice', 5], ['zombie', 3]],   /* AND THE FOLLY KEEPS ITS OWN DEAD: the apprentices who did not get out are in the tower before it falls, so the undead of the sequel are not a surprise it invents */   /* the tower's own: what he made, what he animated and what he left switched on. No goblins up here */
   fields: [['scarecrow', 10], ['wight', 10], ['pumpkin', 7], ['rook', 6], ['swornsword', 6], ['hedgeknight', 6], ['farmhand', 4], ['haunt', 3], ['crow', 4]],   /* the fields' own: scarecrows and the bog's dead, what floats, and a patrol of the road's knights come out to the farms. The goats and hounds were beasts from other levels, not the farm's ghosts; the knights take their two slots at the same counts, so the shuffle puts everyone else where it did */
   hunt: [['hound', 6], ['crow', 4], ['goat', 3], ['archer', 3], ['soldier', 4], ['hare', 3], ['brute', 2], ['pike', 2], ['shield', 2], ['javelin', 2]],   // the park's own: dogs off the leash, the lord's riders, and what they are hunting
@@ -8473,10 +8546,8 @@ const AMBUSH = {
      lamp with the river under it; THE STORM DRAIN was a dark tunnel, a corridor where the tells are hardest to read). THE
      MARKET HALL (a hall with a gallery over it; THE HORSE FAIR sent a mounted lancer in a hundred tiles before the level's own
      mini, THE LANCER). The cut rooms are ground again: the creatures the level placed in them stand where they were put. */
-  hurricane: [{ name: 'THE WEATHER DECK', row: 19, wallL: 299, wallR: 331, check: false,   /* (claude/hurricane2) past the main yard's crossing, her deck in the storm and the roll taught on it */
-    /* ambush-listed: 7 distinct foes listed (no duplicates to trade) for a 4-foe room; cutlass/sailor/scout/boarder is already the built
-       room's own pick and the most this budget can hold - marine/bosun/lookout are cut here (say so) rather than left to vanish silently. */
-    waves: [[['cutlass', 326], ['sailor', 306], ['scout', 316], ['boarder', 322]]] }],
+  hurricane: [{ name: 'THE MAIN DECK', row: 35, wallL: 210, wallR: 262, check: false,   /* (claude/hurricane3) her hands come up out of the hatches onto her main deck, the wave and the roll across it (a cask runs between two bitts) */
+    waves: [[['cutlass', 248], ['sailor', 222], ['scout', 256], ['boarder', 240]]] }],
   lamplit: [{ name: 'THE LAMP ISLAND', row: 21, wallL: 481, wallR: 519, check: false,
     /* ambush-listed: crab was listed but never spawned (budget spent on a duplicate scout). Restored; the duplicate scout, tideguard and
        snuffer are cut (say so) to stay inside the four-foe rule. (wight here is renamed to lanternshade/bonecorsair at runtime by
@@ -8566,7 +8637,7 @@ const ELITES = {
   longwater: [['tideguard', 507, 26, { gate: 515 }]],   /* +88 (the river grew, 2026-09-25) */
   reef: [['tideguard', 435, 25, { gate: 441 }]],   /* (final columns: the bell-pool and the hulk grew the reef by 80 before the keel) */   /* on the dry ledge out of the last of the water, holding the climb to the wreck */
   flotilla: [['boarder', 277, 21, { gate: 285, affix: 'SWIFT' }], ['boarder', 528, 24, { affix: 'UNSTOPPABLE', cnSkin: 'platedbosun' }]],   /* (claude/flotilla3) THE PRIZE's exam on the hulk's after-deck; THE PLATED BOSUN, the powder ship's exam in his broadside lane - no blade throws him, a round shot does (the Admiral's armour, taught) */   /* (claude/flotilla2) the hulk's doorway boarder (moved 112 east with her) and THE POWDER SHIP's exam: the Admiral's heavy on his lashing - no blade throws him, a round shot down the deck does (B14: the boss's key, taught on an elite first) */
-  hurricane: [['tideguard', 106, 18, { face: -1 }], ['boarder', 524, 18, { face: -1, gate: 538 }]],   /* (claude/hurricane2: the stern's boarding net is down until he falls) the two exams: the bow's, with the sea behind him, and the stern's with the storm at its worst */
+  hurricane: [['tideguard', 97, 35, { face: -1 }], ['boarder', 162, 32, { face: -1 }], ['boarder', 318, 28, { face: 1, gate: 310 }]],   /* (claude/hurricane3) the three exams: the forecastle's (a loose cask up the deck from him), the galley roof as you come up out of the flood, and the main yard at the end of the stays with the sea coming */   /* (claude/hurricane2: the stern's boarding net is down until he falls) the two exams: the bow's, with the sea behind him, and the stern's with the storm at its worst */
   lamplit: [['watch', 595, 21]],
   deep: [['watch', 30, 27, { gate: 41 }]],
   causeway: [['tideguard', 66, 23, { gate: 79, affix: 'SUMMONER' }], ['tideguard', 530, 23, { gate: 538, affix: 'UNSTOPPABLE' }]],   /* (claude/levelpilot: the second holds THE LAST MILE, the road's exam, in the breakers; two of a kind key by column, so each names its own affix) */

@@ -40,7 +40,7 @@ for (const lv of LEVELS) {
   if (PENDING.has(lv.id) && !els.length) { console.log(' --  ' + lv.id.padEnd(11) + 'pending (being rebuilt)'); continue; }
   const at = (x, y) => (x < 0 || y < 0 || x >= L.W || y >= L.H) ? T.SOLID : L.grid[y * L.W + x];
   const A = L.arena, tx = A ? Math.floor(A.trigger / TS) : L.W - 3;
-  const arenaIn = R => [...R.seen].some(k => { const [x, y] = k.split(',').map(Number); return x >= tx && (!A || Math.abs(y - (A.floor / TS - 1)) <= 3); });
+  const arenaIn = R => [...R.seen].some(k => { const [x, y] = k.split(',').map(Number); return x >= tx && (!A || (x <= A.x1 / TS + 1 && Math.abs(y - (A.floor / TS - 1)) <= 3)); });   /* (claude/hurricane3: IN the arena - its own columns, not everything east of its trigger: the Hurricane 3's stays run at his yards' height east of his mast) */
   const near = (R, x, y) => { for (let dy = -2; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) if (R.seen.has((x + dx) + ',' + (y + dy))) return true; return false; };
   const rooms = [A, L.mini].filter(Boolean).map(Q => [Q.x0 / TS - 1, Q.x1 / TS + 1, Q.y0 !== undefined ? Q.y0 / TS - 1 : Q.floor / TS - 16, Q.floor / TS + 2])
     .concat((L.ambushes || []).map(Q => [Q.wallL - 1, Q.wallR + 1, (Q.y0 !== undefined ? Q.y0 : Q.row - 9) - 1, Q.row + 2]));

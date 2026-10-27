@@ -1,28 +1,36 @@
-(async()=>{const{LEVELS}=await import('./src/level.js'),shots=[],rows=[];BK.setHero('knight');BK.load(LEVELS.findIndex(l=>l.id==='hurricane'));BK.state='play';BK.start();BK.god=false;BK.reset();BK.sim(30);
-/* (claude/hurricane2) THE HURRICANE DECK 2, in the page, rule for rule with what it replaced (the three splitting waists, the three bulkhead guns):
-   1 the sky fells her foremast across the breach and its length is walked onto the galley roof; 2 the wave knocks a hero on the open deck flat - a drain,
-   no flinch; 3 a hand on a line rides it out; 4 her topmast breaks span by span BEHIND a runner, who reaches the stern stay; 5 the Captain caught off a
-   line by the sea is KNOCKED FLAT and open, then warded; 6 his fight's sky marks the deck and he can be STRUCK by it */
-const fresh=()=>{BK.load(LEVELS.findIndex(l=>l.id==='hurricane'));BK.state='play';BK.start();BK.god=false;BK.reset();BK.sim(30);};
-const P=()=>BK.P,L=()=>BK.L,clear=x0=>{for(const e of BK.enemies())if(!e.maxHp&&Math.abs(e.x-x0*16)<900)e.alive=false;for(const p of BK.props())if(p.t==='cargo')p.gone=true,p.back=999;};
+(async()=>{const{LEVELS}=await import('./src/level.js'),shots=[],rows=[];const LI=LEVELS.findIndex(l=>l.id==='hurricane');BK.setHero('knight');BK.load(LI);BK.state='play';BK.start();BK.god=false;BK.reset();BK.sim(30);
+/* (claude/hurricane3) THE HURRICANE DECK 3, in the page - the storm CHANGES the level (scratch/brief-hurricane3-1018.md + the approved review):
+   1 the sky fells her foremast across the breach and its length is walked onto her boats; 2 her waist FLOODS on its cycle and a swimmer leaps onto the galley roof;
+   3 a struck LASHING frees a cask and her heel runs it to the fore house: a step; 4 ROD 1: the chain struck onto the iron, the next bolt burns the tarred net off the
+   main hatch; 5 SHE SINKS: crossing a told step raises the sea, and a respawn wakes to its shrine's step; 6 THE CAPTAIN on his yards: caught off a line by his own
+   BRACE! sweep he is KNOCKED FLAT (then warded), the masthead rod's bolt STRIKES him in its column, and at 62% the sea takes the topsail yard */
+const fresh=()=>{BK.load(LI);BK.state='play';BK.start();BK.god=false;BK.reset();BK.sim(30);};
+const P=()=>BK.P,L=()=>BK.L,H=()=>BK.h3(),clear=(x0,r=900)=>{for(const e of BK.enemies())if(!e.maxHp&&Math.abs(e.x-x0*16)<r)e.alive=false;};
 // 1. THE FOREMAST
-clear(150);BK.tp(129,19);BK.sim(2);const F=L().felled[0];let n=0;while(F.state!=='down'&&n<900){BK.sim(1);n++;}if(F.state!=='down')throw Error('the foremast did not come down');
-BK.tp(127,19);BK.sim(3);BK.keys.right=true;let k=0;while(P().x<175*16&&k<900){BK.sim(1);k++;}BK.keys.right=false;BK.sim(5);
-if(P().x<175*16||P().swim||Math.abs(P().y-17*16)>2)throw Error('the foremast was not walked onto the galley roof: '+P().x/16+','+P().y/16);
-BK.look(150,18);BK.step(0);shots.push({name:'foremast-down',png:BK.view.buf.toDataURL()});rows.push({foremast:F.state,frames:n,roofAt:Math.round(P().x/16)});
-// 2. THE WAVE ON THE OPEN DECK (the bow: no lines within reach of 70, the cargo gone)
-fresh();clear(70);BK.tp(71,19);BK.sim(2);let hp=P().hp,hurt=0,shoved=0,t=0;while(!shoved&&t<1600){BK.sim(1);t++;if(P().washV)shoved=Math.abs(P().washV);if(P().hurt>0)hurt++;}
-if(!shoved||hurt||P().hp>=hp)throw Error('the wave did not knock the hero flat as a drain: shove '+shoved+' hurt '+hurt+' hp '+hp+'->'+P().hp);rows.push({wave:'flat',drain:hp-P().hp,shove:Math.round(shoved)});
-// 3. A HAND ON A LINE
-fresh();clear(98);BK.tp(98,19);BK.sim(2);BK.keys.up=true;BK.sim(12);BK.keys.up=false;if(!P().climb)throw Error('no hold on the shroud');hp=P().hp;t=0;let held=0;while(t<1600){BK.sim(1);t++;if(P().washed>0&&P().climb){held=1;break;}}
-if(!held||P().hp<hp||P().washV)throw Error('the line did not hold through the wave');rows.push({line:'held'});
-// 4. THE TOPMAST, BREAKING BEHIND
-fresh();clear(495);BK.tp(486,6);BK.sim(3);BK.keys.right=true;k=0;while(P().x<504*16&&k<600&&P().y<8*16){BK.sim(1);k++;}BK.keys.right=false;
-const downs=L().deckBreaks.filter(z=>z.down||z.t>0).length;if(P().x<503*16||P().y>8*16)throw Error('the runner did not reach the stern stay: '+P().x/16+','+P().y/16);if(downs<4)throw Error('the topmast did not break behind the runner: '+downs);
-rows.push({topmast:'run',breaking:downs});
-// 5 + 6. THE CAPTAIN: no lines to brace on, so the sea takes him; and the sky marks the deck between you
-fresh();clear(580);BK.tp(565,15);let b=null;for(let i=0;i<300&&!(b&&b.mode!=='sleep'&&b.mode!=='wake');i++){BK.sim(1);b=BK.enemies().find(e=>e.t==='captain');}
-if(!b)throw Error('no captain');BK.god=true;L().arena.lines=[];let flat=0,struck=0,ward=0;for(let i=0;i<60*40&&!(flat&&ward);i++){BK.sim(1);if(b.mode==='beach')flat=1;if(b.struck)struck=1;if(flat&&b.ward>0)ward=1;}
-if(!flat)throw Error('the sea never knocked the Captain flat off a line');if(!ward)throw Error('no ward after his opening');rows.push({captain:'flat',ward:!!ward});
-let tries=0;for(let i=0;i<60*60&&!struck;i++){BK.sim(1);if(b.struck)struck=1;tries++;}rows.push({captain:'sky',struck:!!struck});
+clear(185);BK.tp(170,35);BK.sim(2);const F=L().felled[0];let n=0;while(F.state!=='down'&&n<900){BK.sim(1);n++;}if(F.state!=='down')throw Error('the foremast did not come down');
+BK.tp(172,35);BK.sim(3);BK.keys.right=true;let k=0;while(P().x<199*16&&k<900){BK.sim(1);k++;}BK.keys.right=false;BK.sim(5);
+if(P().x<199*16||P().swim||Math.abs(P().y-34*16)>3)throw Error('the foremast was not walked onto her boats: '+P().x/16+','+P().y/16);rows.push({foremast:F.state,frames:n,boatsAt:Math.round(P().x/16)});
+// 2. THE WAIST FLOODS: drained it is a well; flooded a swimmer at the galley wall leaps onto the roof
+fresh();clear(130);BK.god=true;BK.tp(146,43);BK.sim(5);const fl=()=>BK.h3read().floods[0];let ph0=fl().ph,sawLow=false,sawHigh=false;for(let i=0;i<60*30&&!sawHigh;i++){BK.sim(1);if(fl().ph==='low')sawLow=true;if(sawLow&&fl().ph==='high')sawHigh=true;}
+if(!sawHigh)throw Error('the waist never flooded: '+JSON.stringify(fl()));if(!P().swim)throw Error('a hero on the waist floor is not swimming in the flood');
+BK.keys.right=true;for(let i=0;i<60*40&&!(P().ground&&P().y<=33*16+2&&P().x>151*16);i++){if(P().swim&&P().x>149.6*16&&i%10===0)BK.press('jump');BK.sim(1);}BK.keys.right=false;BK.sim(20);
+if(!(P().y<=33*16+2&&P().x>151*16))throw Error('the swimmer did not climb out onto the galley roof: '+P().x/16+','+P().y/16);rows.push({waist:'flooded',roof:Math.round(P().x/16)});
+// 3. THE LASHING: struck, the next heel to the stern runs the cask to the fore house - a step
+fresh();clear(75);BK.god=true;const c=BK.movers().find(m=>m.id==='step1');if(!c||!c.lashed)throw Error('no lashed cask by the fore house');BK.tp(68,35);BK.P.face=1;BK.sim(2);BK.press('atk');BK.sim(20);
+if(c.lashed)throw Error('the blow did not part the lashing');let rest=false;for(let i=0;i<60*50&&!rest;i++){BK.sim(1);if(Math.abs(c.x-78*16)<3&&Math.abs(c.vx)<1&&!(BK.h3read()&&0))rest=true;}
+if(!rest)throw Error('her heel never ran the cask to the house: '+c.x/16);rows.push({cask:'step',at:Math.round(c.x/16)});
+// 4. ROD 1: strike the chain onto the iron, stand clear: the bolt burns the tarred net
+fresh();clear(290);BK.god=true;const r1=()=>BK.h3read().rods.find(r=>r.id==='r1');BK.tp(294,35);BK.P.face=1;BK.sim(3);BK.press('atk');BK.sim(10);if(!r1().connected)throw Error('the chain was not struck onto the iron');
+BK.tp(280,35);let burnt=false;for(let i=0;i<60*14&&!burnt;i++){BK.sim(1);if(r1().done)burnt=true;}const g=L().grid,W=L().W;
+if(!burnt||g[36*W+288]!==0)throw Error('the bolt did not burn the net off the hatch: '+JSON.stringify(r1())+' cell '+g[36*W+288]);rows.push({rod1:'burnt'});
+// 5. SHE SINKS: a told step raises the sea; a death wakes to the step of the shrine it woke at
+fresh();clear(260);BK.god=false;const s0=BK.h3read().seaY;BK.tp(214,35);for(let i=0;i<60*4;i++)BK.sim(1);const s1=BK.h3read();if(!(s1.step>=1&&s1.seaY<s0))throw Error('crossing the step did not raise the sea: '+JSON.stringify(s1));
+BK.P.hp=0;BK.P.dead=0.01;for(let i=0;i<60*6&&BK.P.dead;i++)BK.sim(1);const s2=BK.h3read();rows.push({sink:{step:s1.step,from:s0,to:Math.round(s1.seaY),afterDeath:s2.step}});
+// 6. THE CAPTAIN: his own BRACE! sweep takes him off a line; the rod strikes him in its column; the sea takes the topsail yard at 62%
+fresh();clear(300,2000);BK.god=true;BK.tp(311,18);let b=null;for(let i=0;i<300&&!(b&&b.mode!=='sleep'&&b.mode!=='wake');i++){BK.sim(1);b=BK.enemies().find(e=>e.t==='captain');}
+if(!b)throw Error('no captain');L().arena.nets=[];let flat=0,ward=0;for(let i=0;i<60*90&&!(flat&&ward);i++){BK.sim(1);if(b.mode==='beach')flat=1;if(flat&&b.ward>0)ward=1;}
+if(!flat)throw Error('his BRACE! sweep never knocked the Captain flat off a line');if(!ward)throw Error('no ward after his opening');
+let struck=0;b.x=300.5*16;for(let i=0;i<60*20&&!struck;i++){b.x=300.5*16;BK.sim(1);if(b.struck)struck=1;}if(!struck)throw Error('the masthead rod never struck him in its column');
+b.hp=Math.round(b.maxHp*0.6);let p2=0,sea=0;for(let i=0;i<60*12&&!sea;i++){BK.sim(1);if(b.phase>=2)p2=1;if(BK.h3read().seaY<19*16)sea=1;}if(!p2||!sea)throw Error('at 62% the sea did not take the topsail yard: '+JSON.stringify(BK.h3read()));
+rows.push({captain:{flat:!!flat,ward:!!ward,struck:!!struck,phase2sea:!!sea}});
 return{shots,rows};})()

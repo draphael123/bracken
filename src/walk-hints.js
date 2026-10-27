@@ -191,4 +191,25 @@ function burning(BK, P) {
   const tr = BK.props().find(q => q.t === 'vtrough' && Math.abs(q.x - (381 * TS + 8)) < 8 && q.water >= 1); if (!tr) return null;
   return { x: 379 * TS + 8, y: 10 * TS, key: 'atk', face: 1, r: 14 };
 }
-export const WALK_HINTS = { burning,  hornetsnest: hornetsNest, spore: sporewood, stockade, glasssea: glassSea, underleaf, spire, undercrown: slabHint, flotilla, wood: lumberTrail, marsh: marshBoom, fenroad: fenRoad };
+/* THE HURRICANE DECK 3 (claude/hurricane3, src/hurricane3.js): the storm tells you WHEN, and a player waits for it. Ahead on his floor: a lashed cask is struck free;
+   a rod's chain is struck onto the iron, then he stands clear while the bolt comes; at a roll gap's lip he waits for her heel to the stern (downhill); in her waist he
+   waits for the flood and leaps out at the galley wall; at the stays' gust gaps he waits for the told gust that blows his way; by the foremast he waits for the sky;
+   by the loose gun he waits for her heel to run it through the cargo. */
+function hurricane(BK, P, mem) {
+  const H3 = BK.h3 ? BK.h3() : null; if (!H3 || !P || P.dead || !BK.L) return null; const L = BK.L, R = H3.read(), px = P.x / TS, py = P.y / TS, floor = y => Math.abs(y - P.y) < 3 * TS;
+  if (!R) return null;
+  const c = (BK.movers() || []).find(m => m.kind === 'cask' && m.lashed && !m.gone && m.x > P.x - 2 * TS && m.x < P.x + 10 * TS && floor(m.y + 16));
+  if (c) return { x: c.x - 6, y: c.y + 16, key: 'atk', face: 1, r: 12 };
+  for (const r of R.rods) { const rr = H3.rodInfo(r.id); if (!rr || rr.boss || rr.done) continue; const cx = rr.x * TS + 8, cy = (rr.y + 1) * TS; if (cx < P.x - 6 * TS || cx > P.x + 16 * TS || !floor(cy)) continue;
+    if (!rr.connected) return { x: cx - 12, y: cy, key: 'atk', face: 1, r: 18 };
+    return { x: cx - 3 * TS - 8, y: cy, key: null, hold: true, r: 18 }; }
+  if (px > 107 && px < 151 && py > 33 && py <= 45) { const f = R.floods[0]; if (!f || (f.ph !== 'high' && f.ph !== 'rise')) return { x: P.x, y: P.y, key: null, hold: true, r: 99 }; return { x: 150 * TS, y: 34 * TS, key: 'jump', face: 1, r: 99 }; }
+  const F = (L.felled || [])[0]; if (F && F.state !== 'down' && px > F.zone[0] - 4 && px <= F.zone[1] + 1 && py > 33 && py < 37) return { x: (F.zone[0] + 3) * TS, y: P.y, key: null, hold: true, r: 99 };
+  const wall = (BK.props() || []).find(q => q.t === 'cargowall' && !q.open); if (wall && px > 296 && px < wall.span[0] && py > 39 && py < 43) return { x: (wall.span[0] - 6) * TS, y: P.y, key: null, hold: true, r: 99 };
+  const hl = H3.heel();
+  for (const z of (L.rollGaps || [])) { if (!z.hole) continue; const [h0] = z.hole; if (px < h0 - 6 || px > h0 || !floor(36 * TS)) continue; if (hl.on && hl.dir > 0 && hl.k > 0.6 && hl.t > 2.4) return { x: h0 * TS - 3, y: P.y, hop: 1, hold: 40, at: true, r: 99 }; /* (she heels downhill with time to spare: run to the lip and jump from its very edge, as a player does) */ return { x: (h0 - 2) * TS, y: P.y, key: null, hold: true, r: 99 }; }
+  for (const z of (L.gusts || [])) { if (z.arena || !z.carry) continue; const G = H3.gustNow(z), x0 = z.x0 / TS, x1 = z.x1 / TS; if (px < x0 || px > x1 || P.y < z.y0 || P.y > z.y1 + 4) continue;
+    const go = G.on ? G.dir === z.dir || z.alt && G.dir < 0 : G.tell > 0.4 && G.dir === (z.alt ? -1 : z.dir); if (go) return null; return { x: P.x, y: P.y, key: null, hold: true, r: 99 }; }
+  return null;
+}
+export const WALK_HINTS = { hurricane, burning,  hornetsnest: hornetsNest, spore: sporewood, stockade, glasssea: glassSea, underleaf, spire, undercrown: slabHint, flotilla, wood: lumberTrail, marsh: marshBoom, fenroad: fenRoad };

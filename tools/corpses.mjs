@@ -14,7 +14,7 @@ import { join } from 'path';
 const shots = process.argv[2] === 'shots' ? (process.argv[3] || 'after') : null;
 /* (redcleanup 10-26) one level per call, a fresh page every 5 levels, a hard limit per level that names it (was: all 30 levels in one page under one 600 s limit - ~7 min when it worked, a silent
    hang when the PC was short of RAM). Every check is kept; CORPSES_ONLY=a,b still narrows the list. tools/sweep-pages.mjs. */
-const ALL_IDS = ['sealedpyramid', 'buriedcity', 'wood', 'marsh', 'oreroad', 'minecart', 'canal', 'fair', 'theatre', 'welltown', 'redgorge', 'skyroad', 'rootway', 'palisadewood', 'rookery', 'undercrown', 'lamplit', 'witchlight', 'fallingtower', 'burial', 'unburied', 'flotilla', 'keep', 'deep', 'longwater', 'causeway', 'underwell', 'ksar', 'hornetsnest', 'spore', 'underleaf'];
+const ALL_IDS = ['sealedpyramid', 'buriedcity', 'wood', 'marsh', 'oreroad', 'minecart', 'canal', 'fair', 'theatre', 'welltown', 'redgorge', 'skyroad', 'rootway', 'palisadewood', 'rookery', 'undercrown', 'lamplit', 'witchlight', 'fallingtower', 'burial', 'unburied', 'flotilla', 'hurricane', 'keep', 'deep', 'longwater', 'causeway', 'underwell', 'ksar', 'hornetsnest', 'spore', 'underleaf'];
 const ONLY = (process.env.CORPSES_ONLY || '').split(',').filter(Boolean), IDS = ALL_IDS.filter(id => !ONLY.length || ONLY.includes(id));
 let bad = 0;
 const pageErrs = new Set();

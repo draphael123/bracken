@@ -43,7 +43,7 @@ export const THREAT = { crackfloor: 0, crackpillar: 0, cracknest: 0, crackslab: 
   // THE UNDERCROWN. The propman is worth more than he hits for, because what he costs you is TIME on a set
   // you already paid for; the clinger is worth almost nothing on its own and everything over a drop.
   propman: 2.5, clinger: 2, prince: 6, courtier: 0, minerlamp: 0, timber: 0, gas: 0,
-  prise: 3, holdfast: 2.5, bellcrab: 6, bellguard: 3, drownedking: 6, ballast: 0, cargo: 0,   /* (claude/hurricane2) the Hurricane's loose casks and crates: a prop you strike into her crew, not a foe */
+  prise: 3, holdfast: 2.5, bellcrab: 6, bellguard: 3, drownedking: 6, ballast: 0, cargo: 0, lightrod: 0,   /* (claude/hurricane2) the Hurricane's loose casks and crates: a prop you strike into her crew, not a foe */
   /* THE ROAD PEOPLE, weighed against the men already in the table: a soldier is 34 health and a 14 point
      swing and he is a 3, so a sworn sword at 44 and 18 is more than that; a heavy knight is 120 and an
      unblockable overhead at 4, and a hedge knight is 92 with an unblockable leap. And the runner is
