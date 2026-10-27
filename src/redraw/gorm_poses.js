@@ -63,6 +63,7 @@ export function drawGorm(g, e, cx, cy, time, api) {
     if (tell) api.drawSet(set, null, fr, x + jig, yy, face, true, 1.05, 1.05, 0.3 + 0.25 * Math.sin(time * 22), 0);   /* the tell's rim */
     api.drawSet(set, null, fr, x + jig, yy, face, white, 1, 1, 1, 0);
   }
+  if (e.mode === 'rise' && e.stage !== 'glade') scatter(g, x, y, e);   /* (claude/gormfinish) the litter breaks: the four bearers drop the poles and bolt */
   overProp(g, e, prop, x, y, face, time, fr0);
   /* B10: the read over him - gold motes while the crown turns blades, a green ring and a timer bar while he is open */
   if (api.bossActive && e.alive && e.mode !== 'sleep') { const hx = R(x), hy = R(y - (e.h || 45)) - 8, op = e.mode === 'held' || e.mode === 'downed' || e.mode === 'stung' || e.open > 0;
@@ -80,6 +81,14 @@ function bearers(g, x, y, e, face, back, st) {
     const ph = Math.floor(st.d / (run ? 12 : 6)) + (k & 1) * (run ? 1 : 2);
     const fr = tellM ? (Math.floor(e.anim * 5 + k) % 2 ? 5 : 0) : run ? 3 + (ph & 1) : walk ? [1, 0, 2, 0][ph & 3] : 0, c = set[face < 0 ? 'L' : 'R'][fr], ax = face < 0 ? c.width - set.ax : set.ax;
     g.drawImage(c, R(x + dx) - ax, R(y + 9) - set.ay + (run || walk ? -((ph & 1) === (run ? 0 : 1) ? 0 : 1) : 0)); }
+}
+/* (claude/gormfinish) THE LITTER BREAKS (phase 2 'rise', 1.3 s): the bearers keep their places for a beat, then run off outward and fade; timed by the ground they have run (12 px a frame), draw-side only */
+function scatter(g, x, y, e) {
+  const t = Math.max(0, 1.3 - e.modeT), set = BEARER, go = Math.max(0, t - 0.15);
+  for (const [dx, k] of [[-40, 0], [-18, 1], [18, 2], [40, 3]]) {
+    const dir = dx < 0 ? -1 : 1, run = go * (110 + (k === 0 || k === 3 ? 25 : 0)), ph = Math.floor(run / 12), fr = go <= 0 ? 5 : 3 + ((ph + k) & 1), a = Math.max(0, Math.min(1, (1.3 - t) / 0.45));
+    const c = set[dir < 0 ? 'L' : 'R'][fr], ax = dir < 0 ? c.width - set.ax : set.ax;
+    g.save(); g.globalAlpha = a; g.drawImage(c, R(x + dx + dir * run) - ax, R(y + 9) - set.ay - (go > 0 && (ph + k) & 1 ? 1 : 0)); g.restore(); }
 }
 function arc(g, x, y, face, r, y0, y1, col) {
   g.save(); g.strokeStyle = col;
