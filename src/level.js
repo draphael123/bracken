@@ -5289,7 +5289,7 @@ function theHurricane() {
   ent('lightrod', 296, DK - 1, { id: 'r1', burn: [286, 291, DK, DK + 1], top: [300, 4] });
   for (let x = 286; x <= 291; x++) { set(x, DK, T.PORT); set(x, DK + 1, T.PORT); }   /* THE TARRED NET over the main hatch (burnt by rod 1: src/hurricane3.js; the reach fill has it open - L.reachDoors) */
   air(286, 291, DK + 2, DK + 5);   // the hatch shaft down to the gun deck
-  ent('sign', 282, DK - 1, { text: 'THE ROD AT HER MASTHEAD DRAWS THE SKY. STRIKE ITS CHAIN ONTO THE HATCH IRON, THEN STAND CLEAR.' });
+  ent('sign', 282, DK - 1, { text: 'THE ROD AT HER MASTHEAD DRAWS THE SKY. STRIKE ITS CHAIN ONTO THE HATCH IRON.' });
   ent('seawitch', 302, 35, { caller: true, face: -1 });   /* at the mast's foot by the chain: she calls the sky down on it */
   block(304, 327, 30, DK - 1);   // THE MAIN DECKHOUSE across her deck: six rows (the way on is under it, through the gun deck); her main yard lies along its roof
   // THE GUN DECK, under her main deck: dark (lit only when the sky goes off - the seams), her loose gun on the roll, the cargo it smashes
