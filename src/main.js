@@ -541,7 +541,7 @@ Object.assign(EHP, {
 Object.assign(EHP, { burieddead: 950 });   /* (claude/retune2) THE REFIT RETUNE's health, after sweep2's block so it wins (merge care: its own line) - before -> after in work/claude/lane-done/claude-retune2.md */
 EHP.king = GORM.hp1;   /* (claude/gorm2: P1 of three acts - was 1170 for the whole fight, claude/curvec4a; P2 is GORM.hp2 / hp1 of it) */
 EHP.mother = MC2K.hp;   /* (claude/sporewood2) THE MOTHER CAP 2: her bar is her own now (the heart node is gone) */
-EHP.gqueen = 1450;   /* (claude/curvec4a) */
+EHP.gqueen = 2600;   /* (claude/curvec4a; claude/highcrown2: 1450 -> 2600 - B15 lets 0.4 of a blade through her plate, so she is a longer fight: 90-150 s with flasks) */
 EHP.lance = 3000;   /* (claude/stormhold3: 2800 -> 3000, the rework in band) */   /* (claude/curvec4a) */
 EHP.windcaller = 1300;   /* (claude/moorpyro) 1400 -> 1150: the pyromancer can open him now (fire sends his bolt home); the knight still loses most fights to his thorns. (claude/moorpass) 1150 -> 1300: the summit room pass (stone under the east ledge, his fall clear of the strip, the Last Charge pulls up at thorns) and every hero his own way to send the bolt home */
 
@@ -6008,7 +6008,7 @@ const BEASTS = [
   { t: 'gobpriest', name: 'GOBLIN PRIEST', sub: "in the monks' robe", desc: 'Its rite mends the goblins near it and blesses them: half of every blow. Any blow breaks the rite. Far off it lobs its censer at you, close in it rings you back with its bell. Kill it first.' },
   { t: 'gobmage', name: 'GOBLIN MAGE', sub: 'it found the library', desc: 'It keeps its distance. Its bolt is slow: strike it or take it on a shield and it goes back. When it lifts the book it is writing a rune under your feet, and no shield turns that. Move.' },
   { t: 'sentry', name: 'CASTLE SENTRY', sub: 'the Queen\'s watch', desc: 'A goblin in a kettle helm whose whole job is a bell. See him before he sees you: once he has you he runs for it, and a rung bell drops the gates of that hall and turns out the garrison. Catch him on the way, or break the bell.' },
-  { t: 'gqueen', name: 'THE GOBLIN QUEEN', sub: 'the last of the goblin line', desc: 'Old, huge and clever, and she does not charge: she holds court. She leaps about her hall and lands in a quake that runs the floor - jump it. When she lands beside one of her cracked pillars she turns her back and points, and her gallery looses where she points: break that pillar, three blows, and it comes down on her. In her second round the pillars stay down and her plate wears its own bar - drop a chandelier on her, or strike her back while she points, and when it breaks she is fought like any foe, and fights like a duelist. At the last her crown burns.' },
+  { t: 'gqueen', name: 'THE GOBLIN QUEEN', sub: 'the last of the goblin line', desc: 'Old, huge and clever, and she does not charge: she holds court. She leaps about her hall and lands in a quake that runs the floor - jump it. When she lands beside one of her cracked pillars she turns her back and points, and her gallery looses where she points: break that pillar, three blows, and it comes down on her. Her plate turns most of a blade; a pillar, a chandelier cut down on her, or her hall bell rung while she stands under its grate pins her, and then every blow lands. A chandelier spent stays down until her round turns. In her second round the pillars stay down, her plate wears its own bar - drop a chandelier on her, or strike her back while she points - and she rings the bell herself when you stand by its grate: the grate comes down on you. At the last her crown burns.' },
   { t: 'suncatcher', name: 'THE RIMEWRIGHT', sub: 'it works the ice', desc: 'Frost down the floor: jump it. Spires under you: move. Cold light and claws: block. The rime turns part of every blade. Burn the rime off it at a firebox, or break its own spire on it.' },
   { t: 'roc', name: 'THE ROC', sub: 'mother of harpies', desc: 'She drove the monks off their mountain and nests on their roof. In the air she is quick and hard to hurt. She comes down for two reasons: to take you, and because something knocked her down. A shadow marks where she will dive, and if she dives onto the old roof boards her talons go through and she is stuck. She beats her wings to throw you on the thorns, and hurt, she sheds. A brazier throws its coals up when it breathes, and the nest bell goes through her if she is over it.' },
   { t: 'grandmother', name: 'THE POTION MASTER', sub: 'three jars, three guards', desc: 'The old witch-matriarch of Underleaf, master of her own jars, and every guard she keeps breaks on one of them. First she stands in a THORN HEDGE: a RED jar burns it off her. Then she rises on her BUBBLES out of reach, dropping fire and bubbles that lift you helpless: a GREEN jar under her grows a vine that drags her down. Last she stands in a RING OF CAULDRON FIRE: a BLUE jar lifts her out of it. Her shelves brew the jar each guard needs. Cut her while she is open; outside it a blade only scratches.' },
@@ -8811,7 +8811,7 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow, tag = blow) { const raw0 = dmg,
       number(e.x, e.y - 52, 'WARDED', '#c9a0ff');
       PROG.gqTold = (PROG.gqTold || 0) + 1;
       if (PROG.gqTold <= 3 || (e.phase === 2 && !e.plateHinted)) { if (e.phase === 2) e.plateHinted = true; hintSay('tip', 4.5, e.phase === 2 ? 'CRACK HER PLATE: DROP A CHANDELIER ON HER, OR STRIKE HER BACK WHILE SHE POINTS.' : 'BREAK HER PILLAR: THREE BLOWS DROP IT ON HER. OR CUT A CHANDELIER DOWN.'); } }
-    return; } } // her court's plate turns every blade: a pin gets through (a pillar or a chandelier on her), and in round two her plate off
+    } } // (claude/highcrown2, B15) her plate turns PART of a blade - 0.4 lands (GREED.chipBy.gqueen, src/boss-greed.js), told WARDED; a pin, or her plate off, lands whole. (Was: it turned every blade) (a pillar or a chandelier on her), and in round two her plate off
   if (e.t === 'roc' && ROCE && ROCE.on() && (pl || P.plunge) && !rocOpen(e)) ROCE.plungeHit(e, tag);   /* THE SKY ROAD: a plunge that lands on her back in the air knocks her down (src/roc-eyrie.js) */
   if (e.t === 'roc' && !(ROCE && ROCE.on())) { if (rocOpen(e)) dmg = Math.round(dmg * 1.5); else { dmg = Math.max(1, Math.round(dmg * 0.1)); if (Math.random() < 0.5) { sparks(e.x, e.y - 14, Math.sign(e.x - fromX) || 1, 3); } } } // in the air she is quick and hard to hurt; down, she is not (a tenth, not a half: the quick blades were killing her off her rakes and her rises, and the openings stopped being the fight) - the belfry's Roc only: on her EYRIE she takes her blows in ROCE.take (claude/roc2, wardedDamage)
   if (e.t === 'kite' && e.mode !== 'fall') { e.mode = 'fall'; e.vy = -40; e.vx = (Math.sign(e.x - fromX) || 1) * 60; number(e.x, e.y - 40, 'THE STRING', '#ffd36b'); SFX.crack(); }
@@ -21811,10 +21811,11 @@ function updateGobMage(e, dt) {
    and gone for the rest of that round once it breaks. */
 const gqOpen = e => e.mode === 'pinned' || (e.phase === 2 && !!e.plateOff);
 const GQC = { hold: 3.5, holdOff: 2.6, volley: 1.15, totter: 1.7, blows: 3, plate: 6, chandChip: 2, backChip: 1, beside: 100, reach: 150,
+  ringTell: 0.9, ringHold: 3.5, ringCd: 8, ringNear: 64,   /* (claude/highcrown2) SHE RINGS HER OWN BELL: the tell, how long the grate stays down, her cooldown, how near the grate you must be */
   leapCd: 4.5, leapCdOff: 2.2, courtCd: 6, courtCdOff: 3.6, air: 0.75, airOff: 0.6, quakeR: 70 };
 let sceptres = []; // her sceptre in flight: out along the floor, back at head height
 const GQ_FRAME = { crownTell: 2, crownRain: 8, pinned: 10, gLeapTell: 6, gLeap: 11, gPerch: 3, gDropTell: 6, gDrop: 11, shadowTell: 2, shadow: 2, sleep: 0, wake: 0, court: 0, point: 1, throw: 2, topple: 10, rise: 3, stand: e => Math.abs(e.vx) > 6 ? 4 + Math.floor(e.anim * 5) % 2 : 3, slamTell: 6, slam: 7, slamRec: 7, sweepTell: 3, sweep: 8, rec: 8,
-  hallLeapTell: 6, hallLeap: 11, quake: 7, chandTell: 2, decreeTell: 6, decree: 7, sceptreTell: 2, sceptreWait: 3, ceilTell: 6, ceil: 11, roofWait: 3, roof: e => Math.abs(e.vx) > 6 ? 4 + Math.floor(e.anim * 5) % 2 : 3, slateTell: 12, slate: 12, leapTell: 6, leap: 11, land: 7, struck: 13 };
+  hallLeapTell: 6, hallLeap: 11, quake: 7, chandTell: 2, ringTell: 6, decreeTell: 6, decree: 7, sceptreTell: 2, sceptreWait: 3, ceilTell: 6, ceil: 11, roofWait: 3, roof: e => Math.abs(e.vx) > 6 ? 4 + Math.floor(e.anim * 5) % 2 : 3, slateTell: 12, slate: 12, leapTell: 6, leap: 11, land: 7, struck: 13 };
 /* A CRACKED, LOAD-BEARING PILLAR (docs/briefs/queen-pillars.md). Drums of grey stone, a capital pressed up into the ceiling, a dark split zig-zagging
    down the shaft and chips out of it; the crack opens at each of a hero's blows, and after the third it rocks on its base (docs/briefs/goblin-queen-court.md).
    Broken: the shaft topples toward her if she is near (away from the hero if not), and a stump and a heap of broken drums lie over the three rubble tiles (their tops are the heap's top, so you stand on what you see). */
@@ -21883,6 +21884,16 @@ function gqPillarFall(p) { const q = boss && boss.t === 'gqueen' && boss.alive ?
 function gqPillarLands(p) { p.hitQ = true; const q = boss && boss.t === 'gqueen' && boss.alive ? boss : null, A = L.arena;
   if (q && (q.x - p.x) * p.fallDir > -q.w / 2 && Math.abs(q.x - p.x) < GQC.reach + q.w / 2 && q.y > A.floor - 20) gqPin(q, p.x, 'pillar', 'THE PILLAR COMES DOWN ON HER');
   SFX.heavy(); shakeCam(6); dust(p.x + p.fallDir * 60, A ? A.floor : p.y, 14); }
+/* (claude/highcrown2) HER CHANDELIERS ARE SPENT FOR THE ROUND: one cut on her stays down until her round turns (fewer, earned openings - the brief's B15 retune) */
+function gqChandsHang() { for (const pr of props) if (pr.t === 'weight' && pr.gq && pr.lamp && pr.state === 'down') { pr.state = 'hang'; pr.hitE = null; pr.hitP = false; pr.vy = 0; pr.downT = 0; burst(pr.x, pr.y + pr.len - 8, 8, ['#ffd36b'], 40, 0.4); } }
+/* (claude/highcrown2) SHE RINGS HER OWN BELL (round two on; brief item 3): her hall's bell drops its grate - the one you ring on her - on YOU. Told: '!!', the bell
+   swinging, the grate's column lit red for GQC.ringTell s; then it comes down for GQC.ringHold s (crush under it) and winds itself back up. Rung while it is already down, or
+   with you nowhere near it, she does not bother. */
+const gqBell = () => props.find(p => p.t === 'winch' && p.bell && p.bossGate);
+function gqRing(e) { const b = gqBell(); if (!b || b.open > 0) return; const gx = b.gate * TS + 8;
+  b.open = GQC.ringHold; b.rungBy = 'queen'; closeGate(b.gate, b.gy0, b.gy1); if (SFX.seaBell) SFX.seaBell(); SFX.gateDrop(); shakeCam(6); flash = Math.max(flash, 0.12);
+  burst(gx, b.gy1 * TS, 14, ['#8a8a9c', '#c9c9d6', '#ff6b6b'], 90, 0.5); gqSay(e, 'SHE RINGS HER BELL', '#ff6b6b');
+  if (!P.dead && Math.abs(P.x - gx) < 14 && P.y > b.gy0 * TS && P.y - 14 < (b.gy1 + 1) * TS) { damagePlayer(gx, DMG.gqSlam, { up: true, unblockable: true }); P.x = gx + (P.x < gx ? -16 : 16); } }
 function gqPillarsStand() { let any = false; const A = L.arena;
   for (const p of gqPillars()) { p.blows = 0; p.totter = 0; if (p.broken) { any = true; p.broken = false; p.fallT = 0; p.shake = 0.4; p.laid = [];
     for (let k = 0; k < 12; k++) parts.push({ x: p.x + (Math.random() - 0.5) * 16, y: p.y - 4, vx: (Math.random() - 0.5) * 40, vy: -20 - Math.random() * 30, life: 0.7, max: 0.7, col: '#8a8a98', size: 2, grav: 120 }); } }
@@ -21983,8 +21994,8 @@ function updateGQueen(e, dt) {
   // (she no longer runs for the roof: the whole fight is in her hall, and it turns on her health)
   /* ROUND TWO (66%): the storm, and HER PLATE gets its own bar (drawGqPlate); the pillars stay down - her court leaps now land anywhere.
      ROUND THREE (33%): her masons prop the hall again and her plate is whole, as the round always was (docs/briefs/goblin-queen-court.md) */
-  if (e.phase === 1 && e.hp <= e.maxHp * 0.66) { e.phase = 2; e.plate = GQC.plate; e.plateOff = false; L.windowsOut = true; SFX.bellow(); shakeCam(6); flash = Math.max(flash, 0.2); if (bossActive && L.arena && L.arena.music === 'gqueen') music.play('gqjudge');   /* (claude/musicgq: the court rises to JUDGEMENT; phase 3 keeps it) */ gqSay(e, 'THE STORM COMES IN', '#dfe8ff'); }
-  if (e.phase === 2 && e.hp <= e.maxHp * 0.33) { e.phase = 3; e.plateOff = false; SFX.bellow(); shakeCam(6); gqSay(e, 'SHE STEPS THROUGH SHADOW', '#c9a0ff'); gqPillarsStand(); }
+  if (e.phase === 1 && e.hp <= e.maxHp * 0.66) { e.phase = 2; e.plate = GQC.plate; e.plateOff = false; L.windowsOut = true; gqChandsHang(); SFX.bellow(); shakeCam(6); flash = Math.max(flash, 0.2); if (bossActive && L.arena && L.arena.music === 'gqueen') music.play('gqjudge');   /* (claude/musicgq: the court rises to JUDGEMENT; phase 3 keeps it) */ gqSay(e, 'THE STORM COMES IN', '#dfe8ff'); }
+  if (e.phase === 2 && e.hp <= e.maxHp * 0.33) { e.phase = 3; e.plateOff = false; SFX.bellow(); shakeCam(6); gqSay(e, 'SHE STEPS THROUGH SHADOW', '#c9a0ff'); gqPillarsStand(); gqChandsHang(); }
   // THE STORM through the windows, once they are out: a gust down the hall on a beat
   if (e.phase >= 2 && L.windowsOut && e.mode !== 'pinned') { e.gustT -= dt; if (e.gustT <= 0) { e.gustT = 7.5; e.gustDir = Math.random() < 0.5 ? -1 : 1; e.gusting = 2; SFX.thunder(); flash = Math.max(flash, 0.12); }
     if (e.gusting > 0) { e.gusting -= dt; if (!P.dead) P.vx += e.gustDir * (P.ground ? 150 : 200) * dt; if (Math.random() < dt * 40) parts.push({ x: camX + (e.gustDir > 0 ? 0 : VW), y: camY + Math.random() * VH, vx: e.gustDir * 280, vy: 20, life: 1.2, max: 1.2, col: '#dfe8ff', size: 1, grav: 0 }); } }
@@ -22035,7 +22046,7 @@ function updateGQueen(e, dt) {
     case 'topple': e.x = e.throneX; e.y = e.throneY; if (Math.random() < dt * 10) parts.push({ x: e.x + (Math.random() - 0.5) * 30, y: e.y - 60, vx: 0, vy: -20, life: 0.5, max: 0.5, col: '#ffd36b', size: 2, grav: 0 }); if (e.modeT <= 0) { e.phase = 2; e.mode = 'rise'; e.modeT = 1.0; SFX.bellow(); gqSay(e, 'THE QUEEN RISES', '#ff6b6b'); } break;
     case 'rise': want = 0; if (e.modeT <= 0) { e.mode = 'stand'; e.modeT = 0.6; } break;
     // ---- phase two: the sceptre ----
-    case 'stand': { if (e.y < hall - TS && e.onGround) e.dropT = 0.3; /* never left up on the gallery */ e.face = Math.sign(d) || e.face; want = ad > 56 ? e.face * 55 : 0; e.slamT -= dt; e.sweepT -= dt; e.courtT = (e.courtT ?? 2.5) - dt; e.hLeapT = (e.hLeapT ?? 3.5) - dt; e.chandT = (e.chandT ?? 3) - dt; e.decreeT = (e.decreeT ?? 4) - dt; e.throwT2 = (e.throwT2 ?? 2.5) - dt; e.gLeapT = (e.gLeapT ?? 4) - dt; e.shadowT = (e.shadowT ?? 3) - dt; want = ad > 56 ? e.face * (e.phase >= 3 ? 70 : 55) : 0;
+    case 'stand': { if (e.y < hall - TS && e.onGround) e.dropT = 0.3; /* never left up on the gallery */ e.face = Math.sign(d) || e.face; want = ad > 56 ? e.face * 55 : 0; e.slamT -= dt; e.sweepT -= dt; e.courtT = (e.courtT ?? 2.5) - dt; e.hLeapT = (e.hLeapT ?? 3.5) - dt; e.chandT = (e.chandT ?? 3) - dt; e.decreeT = (e.decreeT ?? 4) - dt; e.throwT2 = (e.throwT2 ?? 2.5) - dt; e.gLeapT = (e.gLeapT ?? 4) - dt; e.shadowT = (e.shadowT ?? 3) - dt; e.ringT = (e.ringT ?? 4) - dt; want = ad > 56 ? e.face * (e.phase >= 3 ? 70 : 55) : 0;
       if (e.modeT <= 0 && !P.dead) {
         const ch = (e.chandT = (e.chandT ?? 3) - 0) <= 0 && props.find(pr => pr.t === 'weight' && pr.gq && pr.state === 'hang' && Math.abs(pr.x - P.x) < 34 && Math.abs(pr.x - e.x) > 30);
         const perch = e.phase >= 2 && (e.gLeapT = (e.gLeapT ?? 4) - 0) <= 0 && props.find(pr => pr.t === 'support' && !pr.broken && pr.sx0 !== undefined && Math.abs((pr.sx0 + pr.sx1 + 1) * TS / 2 - e.x) < 150);
@@ -22044,7 +22055,9 @@ function updateGQueen(e, dt) {
            down, she leaps to the floor near you and points there, her back to you. And she leaps about her hall between (rounds one and two):
            every landing is the quake. Plate off, she fights like a duelist: quicker leaps, AT you, and the gallery called more often. */
         const off = e.phase === 2 && e.plateOff, court = e.courtT <= 0 ? gqCourtSpot(e) : null, hop = e.phase <= 2 && e.hLeapT <= 0 && ad > (off ? 30 : 70);
-        if (e.phase >= 3 && (e.shadowT ?? 3) <= 0 && ad > 50) { e.shadowT = 7; e.mode = 'shadowTell'; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); e.modeT = 0.5; SFX.callerChant(); }
+        const bell = e.phase >= 2 && (e.ringT ?? 4) <= 0 ? gqBell() : null, bgx = bell ? bell.gate * TS + 8 : 0;
+        if (bell && !(bell.open > 0) && Math.abs(P.x - bgx) < GQC.ringNear && Math.abs(e.x - bgx) > 50) { e.ringT = GQC.ringCd; e.mode = 'ringTell'; e.modeT = GQC.ringTell; e.ringX = bgx; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); SFX.callerChant(); bell.swingT = GQC.ringTell; }
+        else if (e.phase >= 3 && (e.shadowT ?? 3) <= 0 && ad > 50) { e.shadowT = 7; e.mode = 'shadowTell'; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); e.modeT = 0.5; SFX.callerChant(); }
         else if (court) { e.courtT = off ? GQC.courtCdOff : GQC.courtCd; e.hLeapT = Math.max(e.hLeapT, 1.5); gqAim(e, court.x, court.p, true); e.mode = 'hallLeapTell'; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); e.modeT = off ? 0.5 : 0.6; SFX.charge(); }
         else if (hop) { e.hLeapT = off ? GQC.leapCdOff : GQC.leapCd; gqAim(e, gqHopX(e, off), null, false); e.mode = 'hallLeapTell'; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); e.modeT = off ? 0.5 : 0.6; SFX.charge(); }
         else if (perch) { e.gLeapT = 9; e.perch = perch; e.mode = 'gLeapTell'; e.modeT = 0.5; SFX.bellow(); }
@@ -22081,6 +22094,9 @@ function updateGQueen(e, dt) {
     case 'slam': if (e.modeT <= 0) { e.mode = 'slamRec'; e.modeT = 0.9; } break;
     case 'sweepTell': e.face = Math.sign(d) || e.face; if (e.modeT <= 0) { e.mode = 'sweep'; e.modeT = 0.25; SFX.slash(); shakeCam(3); if (!P.dead && P.ground && ad < 72 && Math.abs(P.y - e.y) < 22) { const res = damagePlayer(e.x, DMG.gqSweep, { unblockable: true }); if (res === 'hit') { P.vx = Math.sign(d || 1) * 240; P.vy = -120; } } } break;
     case 'sweep': if (e.modeT <= 0) { e.mode = 'rec'; e.modeT = 0.5; } break;
+    case 'ringTell': { want = 0; e.vx = 0; const b = gqBell(); e.face = Math.sign((e.ringX || P.x) - e.x) || e.face;   /* her sceptre up to her bell-rope: the grate's column glows red */
+      if (b && Math.random() < dt * 40) parts.push({ x: b.gate * TS + 8 + (Math.random() - 0.5) * 16, y: b.gy0 * TS + Math.random() * (b.gy1 - b.gy0 + 1) * TS, vx: 0, vy: -20, life: 0.35, max: 0.35, col: '#ff6b6b', size: 2, grav: 0, glow: true });
+      if (e.modeT <= 0) { gqRing(e); e.mode = 'rec'; e.modeT = 0.8; } break; }
     case 'crownTell': want = 0; ringAt(e.crownX, e.y - 6, 36, '#e0b040', 0.08);
       if (e.modeT <= 0) { e.mode = 'crownRain'; e.modeT = 0.8; SFX.callerBlast();
         for (const dx of [-40, 0, 40]) seeds.push({x: Math.max(A.x0+12,Math.min(A.x1-12,e.crownX+dx)), y: e.y-64, vx: 0, vy: 80, g: 480, life: 2, slate: true}); } break;
@@ -26075,7 +26091,7 @@ function updateCastleProps(dt, hb) {
     }
     /* A CRANE WINDS ITS STONE BACK UP, a while after it dropped it or the troll tore it off - never onto a troll still under it */
     if (pr.t === 'weight' && pr.crane && (pr.state === 'down' || pr.state === 'gone')) { pr.downT = (pr.downT || 0) + dt; if (pr.downT > (pr.state === 'gone' ? 8 : 6) && Math.abs(P.x - pr.x) > 24 && !enemies.some(q => q.alive && q.hill && q.mode === 'pinned' && Math.abs(q.x - pr.x) < 30)) { pr.state = 'hang'; pr.hitE = null; pr.hitP = false; pr.vy = 0; pr.downT = 0; SFX.clank(); } }
-    if (pr.t === 'weight' && pr.lamp && pr.state === 'down') { pr.downT += dt; if (pr.downT > (pr.gq ? 5 : 7) && Math.abs(P.x - pr.x) > 30) { pr.state = 'hang'; pr.hitE = null; pr.hitP = false; pr.vy = 0; burst(pr.x, pr.y + pr.len - 8, 8, ['#ffd36b'], 40, 0.4); } }
+    if (pr.t === 'weight' && pr.lamp && pr.state === 'down') { pr.downT += dt; if (pr.downT > (pr.gq ? 5 : 7) && !(pr.gq && bossActive && boss && boss.t === 'gqueen' && boss.alive) && Math.abs(P.x - pr.x) > 30) { pr.state = 'hang'; pr.hitE = null; pr.hitP = false; pr.vy = 0; burst(pr.x, pr.y + pr.len - 8, 8, ['#ffd36b'], 40, 0.4); } }
     if (pr.t === 'weight') {
       if (pr.unstable && pr.state === 'hang' && Math.abs(P.x-pr.x)<100 && Math.abs(P.y-(pr.y+pr.len))<100 && Math.random()<dt*0.35) { pr.state='tell';pr.tellT=1;pr.fy=pr.y+pr.len;pr.floorY=20*TS;pr.hitE=null;pr.hitP=false;SFX.forgeChain();number(pr.x,pr.fy-18,'!!','#ff6b6b'); }
       if (pr.state === 'hang') { const by = pr.y + pr.len; if (hb && overlap(hb, { l: pr.x - 8, r: pr.x + 8, t: by - 10, b: by + 2 }) && !P.hitSet.has(pr)) { P.hitSet.add(pr); pr.state = 'fall'; pr.fy = by; pr.vy = 0; SFX.clank(); SFX.crack(); } }

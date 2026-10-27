@@ -362,6 +362,7 @@ export const STUCK = {
       { at: [66, 63], done: ['bell', 66, 63, 'rung'], line: 'THE BARRACKS DOOR OPENS TO THE WARD BELL' },
       { at: [88, 63], done: ['key', 88, 63, 'got'], line: 'THE WARD KEY HANGS IN THE BARRACKS' },
       { at: [91, 63], done: ['lockgate', 91, 63, 'open'], line: 'THE WARD GATE WANTS THE BRASS KEY YOU CARRY' } ] },
+    { id: 'cr-crag-winch', zone: [146, 40, 152, 48], at: [149, 47], glint: 'stall', line: 'THE TOWER GATE HANGS FROM ITS WINCH' },
     { id: 'cr-pit-bucket', zone: [165, 36, 199, 68], at: [181, 41], glint: 'stall', line: 'THE BUCKET ON ITS CHAIN CROSSES THE PIT' },
     { id: 'cr-pit-hoist', zone: [201, 36, 227, 68], at: [219, 62], glint: 'stall', line: 'THE PIT HOIST CARRIES YOU UP OUT OF THE PIT' },
     { id: 'cr-bake-swing', zone: [286, 44, 306, 62], at: [298, 46], glint: 'stall', line: 'THE HOIST CHAIN SWINGS YOU OVER THE FIRE' },

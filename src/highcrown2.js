@@ -89,6 +89,15 @@ export function highcrownTwo(R, { T, TS }) {
   R.facades = R.facades.concat([[23, 27, 46, 63, 'tower', { arch: [58, 63], lit: false }], [72, 76, 48, 63, 'tower', { arch: [58, 63], lit: false }]]);
   R.interiors = R.interiors.concat([[80, 89, 56, 63, 'guard']]);
 
+  // ============ THE CRAG WALK (93-162): the rule on the wall (the review: no bell or gate between the ward and the keep) ============
+  /* its WATCH: a sentry on the wall walk and his bell - seen as you come up the second tower, he runs for it, and the grate at 138 drops between the
+     tower and the walk with a soldier on your side of it. Catch him first, or break his bell. Past the breach, the THIRD TOWER's gate hangs from a winch
+     on the three-tile stub of wall over the drop: the bailey's lesson again, with the bottom of the world behind you (A4 remix) */
+  ent('sentry', 141, 47, { section: 'crag', range: 3, face: -1 }); ent('bell', 144, 47, { section: 'crag' });
+  R.alarms = R.alarms.concat([{ id: 'crag', gates: [[138, 42, 47]], garrison: [{ t: 'soldier', x: 136, y: 47 }, { t: 'javelin', x: 150, y: 47 }] }]);
+  port(151, 42, 47); ent('winch', 149, 47, { gate: 151, gy0: 42, gy1: 47, hold: 5 });
+  ent('sign', 143, 47, { text: 'THE TOWER GATE PAST THE BREACH HANGS FROM A WINCH. STRIKE IT, THEN GO.' });
+
   // ============ THE VESTIBULE (233-256): the armoury's old ground, the section exam ============
   air(237, 258, 46, 57);                                                     // the forge-house's roof stub and west wall go: open ward
   clearEnts(233, 256, 40, 64);
@@ -158,8 +167,15 @@ export function highcrownTwo(R, { T, TS }) {
   for (const [x, y] of [[374, 10], [376, 10], [351, 12], [354, 12], [372, 12], [374, 12], [354, 14], [355, 14], [363, 14], [378, 14], [357, 16], [359, 16]]) if (at(x, y) === T.ONEWAY) sup(x, y, 'chain');
   sup(535, 14, 'pier', 26); sup(537, 14, 'pier', 26);
 
+  // ============ HER HALL (B15 retune, brief item 3): two of her six chandeliers go (fewer openings; a cut one is spent for the round - src/main.js gqChandsHang), the sign says what her plate does now
+  R.ents = R.ents.filter(e => !(e.t === 'weight' && e.gq && (e.x === 565 || e.x === 596)));
+  for (const e of R.ents) if (e.t === 'sign' && /HER PLATE TURNS BLADES/.test(e.text || '')) e.text = 'HER PLATE TURNS MOST OF A BLADE. BREAK THE PILLAR SHE HOLDS COURT BESIDE: IT COMES DOWN ON HER.';
+
   // ============ THE SHRINES (A10c: the end of each area's exam, and one before her door) ============
   for (const [x, y] of HC2.SHRINES) ent('check', x, y);
+  /* THE THIRD SILVER: the choir loft's vault marker (src/relics.js VAULT_SILVER.crown, idx 2) pays silver #2 - the armoury gantry's silver held that place and went with the armoury,
+     so one is laid for it here, after the pit's (#0) and the barracks' (#1); vaultSilver moves it onto the loft */
+  ent('silver', 364, 13);
   R.tints = (R.tints || []).concat([[233, 256, [200, 170, 140], 0.05]]);
   return R;
 }
