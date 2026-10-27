@@ -1,0 +1,5 @@
+node shots 27816
+node bossshots 6904
+node bossshots2 22428
+node lancesheet 30884
+node lancesheet2 29212
