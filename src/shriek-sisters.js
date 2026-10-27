@@ -62,7 +62,7 @@ export const SS = {
   /* (claude/rookery2) PHASE 2 = TWO SISTERS DEAD: the survivor GROWS (SS.p2.scale, no HP) and takes a reduced set of the dead sisters' moves (P2KIT), one at a time, each its own tell;
      and THE SNATCH: she seizes you (her red !! talon line) and carries you over the summit - STRIKE HER SS.p2.strikes times mid-carry and you both fall: she lands STUNNED (the
      big opening, SS.p2.stun s up to SS.p2.cap of her) */
-  p2: { grow: 1.5, scale: 1.3, hover: 110, cd: 1.5, strikes: 2, stun: 3.2, cap: 0.3, liftH: 70, drift: 46, grabCd: 7.5, grabFirst: 3 },
+  p2: { grow: 1.5, scale: 1.3, hover: 96, cd: 1.5, strikes: 2, stun: 3.2, cap: 0.3, liftH: 70, drift: 46, grabCd: 7.5, grabFirst: 3 },
 };
 /* (claude/rookery2) THE SURVIVOR'S KIT (P2): her own moves + one or two of each dead sister's, in this order, one at a time */
 export const P2KIT = { diver: ['dive', 'shock', 'chain', 'boulder', 'grab'], shrieker: ['mark', 'dive', 'echo', 'boulder', 'grab', 'shock'], snatcher: ['boulder', 'dive', 'grab', 'shock'] };

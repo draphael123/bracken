@@ -175,13 +175,13 @@ export function makeShriekSistersHands(ctx) {
     if (!S.held) P.ssHeld = null; return !!S.held; };
   /* (claude/rookery2) THREE BARS (brief B1): one per sister, side by side under the plate, each in her colour with her pip and her name; a fallen sister's bar is crossed out;
      the survivor's bar glows in phase 2. main.js draws the plate and calls this instead of the one bar */
-  H.drawBars = (g, VW, VH, y, h, time) => { if (!S) return false; const w = 38, gap = 3, x0 = Math.round(VW / 2 - (w * 3 + gap * 2) / 2);
+  H.drawBars = (g, VW, VH, y, h, time) => { if (!S) return false; const w = 42, gap = 5, x0 = Math.round(VW / 2 - (w * 3 + gap * 2) / 2);
     ROLES.forEach((r, i) => { const s = S.sis[r], bx = x0 + i * (w + gap), k = s.alive ? Math.max(0, s.hp) / s.maxHp : 0, open = SSM.sisOpen(s);
       g.fillStyle = '#14101e'; g.fillRect(bx - 1, y - 1, w + 2, h + 2); g.fillStyle = '#2a2236'; g.fillRect(bx, y, w, h);
       g.fillStyle = open ? (Math.floor(time * 8) % 2 ? '#ffd36b' : '#fff6c8') : S.p2 === r ? '#ff8a6b' : COL[r].crest; g.fillRect(bx, y, Math.round(w * k), h);
       g.fillStyle = COL[r].body; g.fillRect(bx - 4, y, 3, h);   /* her pip */
       if (!s.alive) { g.fillStyle = '#8a8098'; for (let q = 0; q < w; q += 2) g.fillRect(bx + q, y + Math.round((q / w) * (h - 1)), 1, 1); }
-      ctx.text(r === 'diver' ? 'DIVER' : r === 'shrieker' ? 'SHRIEKER' : 'SNATCHER', bx + w / 2, y + h + 1, s.alive ? COL[r].light : '#5a5468', 'center', 5); });
+      ctx.text(r === 'diver' ? 'DIVER' : r === 'shrieker' ? 'SHRIEKER' : 'SNATCHER', bx + w / 2, y - 7, s.alive ? COL[r].light : '#5a5468', 'center', 5); });   /* (her name over her bar: main.js lifts the plate 7 px for it) */
     return true; };
   H.barName = () => { if (!S) return 'THE SHRIEK SISTERS'; const left = ROLES.filter(r => S.sis[r].alive), open = left.find(r => SSM.sisOpen(S.sis[r]));
     return 'THE SHRIEK SISTERS' + (open ? '  ' + SSM.NAME[open] + ' ' + SSM.OPEN_NAME[S.sis[open].mode] : left.length < 3 ? '  ' + left.length + ' LEFT' : ''); };
