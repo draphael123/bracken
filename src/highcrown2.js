@@ -106,8 +106,10 @@ export function highcrownTwo(R, { T, TS }) {
   /* two gate towers, a grate in each arch: the WEST one is the alarm's (it drops behind you as you step in), the EAST one the elite's (src/level.js
      ELITES: down until he dies). The court between is the ward's own ground. */
   block(232, 236, 48, 57); block(252, 256, 48, 57);
-  R.alarms = R.alarms.concat([{ id: 'vestibule', gates: [[234, 58, 63]], trip: [237, 251, 56, 63], wake: [236, 252, 56, 63], elites: true }]);
-  ent('bell', 250, 63, { section: 'vestibule' });                // rung by the trip: the court's own bell, by the far gate
+  /* its WATCH: a sentry by the court's bell at the far gate. He sees you as you come in through the west arch - nine tiles off, too far to catch - and rings,
+     and the grate drops BEHIND you: the elite is marked into the alarm (elites: src/main.js raiseAlarm's wake), so it lifts when he is down, or after twenty seconds */
+  R.alarms = R.alarms.concat([{ id: 'vestibule', gates: [[234, 58, 63]], wake: [236, 252, 56, 63], elites: true }]);
+  ent('bell', 250, 63, { section: 'vestibule' }); ent('sentry', 248, 63, { section: 'vestibule', range: 1, face: -1 });
   ent('sign', 231, 63, { text: 'THE VESTIBULE. STEP IN AND THE GRATE DROPS BEHIND YOU. HER CHAMPION HOLDS THE FAR GATE.' });
   ent('torch', 238, 63); ent('torch', 251, 63); ent('deco', 242, 63, { kind: 'barrels' });
   coins([239, 62], [243, 62], [247, 62]);

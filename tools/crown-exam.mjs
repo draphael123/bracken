@@ -6,8 +6,8 @@
    2. a) HOLD THE WINCH GATE: the first rule teach, in the bailey's first thirty columns - a winch, its portcullis, a hound behind it, a sign before it.
    3. c) RING THE BELL YOURSELF: the ward bell is a LURE (a blow rings it); its alarm OPENS the barracks door, the ward key hangs inside the barracks (so
       the bell is a required use), and a GRATE BELL (a drop winch with a bell rope) hangs over the arch the barracks comes through, between the two.
-   4. b) THE VESTIBULE EXAM: an alarm TRIPPED by stepping in (its grate behind you), with the elite marked into it; the heavy elite holds the far gate; the
-      shrine is just past it.
+   4. b) THE VESTIBULE EXAM: its sentry by the far gate rings as you come in (the grate drops behind you), with the elite marked into the alarm; the
+      heavy elite holds the far gate; the shrine is just past it.
    5. d) ONE TALL HALL: no floor across the keep between the chapel's thick floor and the ground (rows 26-63); the hall bell at the stair head is a lure
       and its alarm's watch turns out on the stair side of its grate; the kitchen floor is gone (no hearthgob, folk or 'kitchen' interior in the keep).
    6. THE GOBLIN QUEEN (B15): her plate turns part of a blade (GREED.chipBy.gqueen >= 0.4), never all of it; she rings her own bell (gqRing); four chandeliers. */
@@ -51,11 +51,11 @@ assert(grate, 'no grate bell between the ward bell and the barracks door: the ga
 assert(ward.garrison.every(g => g.x > door[0]), 'a ward garrison spawns outside the barracks');
 
 /* ---- 4. b) THE VESTIBULE EXAM ---- */
-const vest = (L.alarms || []).find(a => a.trip);
-assert(vest && vest.elites, 'no alarm the player trips by stepping in, with the elite marked into it (the vestibule)');
-const elite = L.ents.find(e => e.elite && e.t === 'heavy' && e.x >= vest.trip[0] && e.x <= vest.trip[1]);
+const vest = (L.alarms || []).find(a => a.elites && a.wake), vsentry = vest && L.ents.find(e => e.t === 'sentry' && e.section === vest.id);
+assert(vest && vsentry, 'no alarm with the elite marked into it (the vestibule), and its sentry');
+const elite = L.ents.find(e => e.elite && e.t === 'heavy' && e.x >= vest.wake[0] && e.x <= vest.wake[1]);
 assert(elite && typeof elite.gate === 'number' && elite.gate > elite.x, 'no heavy elite holding the vestibule\'s far gate');
-assert(vest.gates.every(([c]) => c < vest.trip[0]), 'the vestibule\'s alarm grate is not behind the player');
+assert(vest.gates.every(([c]) => c < vsentry.x - 8),'the vestibule\'s alarm grate is not behind the player');
 assert(L.ents.some(e => e.t === 'check' && e.x > elite.gate && e.x - elite.gate <= 6), 'no shrine just past the vestibule\'s elite gate (' + elite.gate + ')');
 
 /* ---- 5. d) ONE TALL HALL ---- */
