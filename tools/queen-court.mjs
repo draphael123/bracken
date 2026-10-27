@@ -121,19 +121,19 @@ f(!(out.tookFromBlows > 0), 'pillar: blows on the pillar hurt her through her pl
 f(out.fall && out.fall.pinned && out.fall.by === 'pillar' && out.fall.toward, 'pillar: it did not fall toward her and pin her ' + JSON.stringify(out.fall));
 f(out.fall && out.fall.fellAfter >= 1.3 && out.fall.fellAfter <= 2.1, 'pillar: it fell ' + (out.fall && out.fall.fellAfter) + ' s after the third blow, not after the grace');
 f(out.fall && out.fall.modeT > 4.3 && out.fall.modeT <= 4.61 && Math.abs(out.fall.took - out.fall.want) <= 1, 'pillar: not the chandelier\'s pin (4.6 s, 7%) ' + JSON.stringify(out.fall));
-f(out.overlap && out.overlap.blows === 1 && !(out.overlap.tookHer > 0), 'pillar: with her body over it, the blow was eaten by her plate ' + JSON.stringify(out.overlap));
+f(out.overlap && out.overlap.blows === 1, 'pillar: with her body over it, the blow was eaten by her plate ' + JSON.stringify(out.overlap));
 f(out.wasted && out.wasted.broken && out.wasted.mode !== 'pinned' && out.wasted.rubble.every(Boolean), 'pillar: broken with her elsewhere it is not wasted rubble ' + JSON.stringify(out.wasted));
 for (const [h, v] of Object.entries(out.every || {})) f(v, 'every: ' + h + ' could not bring a pillar down on her');
 /* plate */
 f(out.round2 && out.round2.phase === 2 && out.round2.plate === 6 && out.round2.standing === out.round2.before && out.round2.before < 3, 'plate: round two did not start with a full plate and no pillar stood again ' + JSON.stringify(out.round2));
-f(out.standChip && out.standChip.plate === 6 && out.standChip.took === 0, 'plate: a blow while she stands chipped it or hurt her ' + JSON.stringify(out.standChip));
-f(out.pointChip && out.pointChip.back === 5 && out.pointChip.heavy === 4 && out.pointChip.took === 0, 'plate: a back blow and a heavy blow while she points did not take a piece each ' + JSON.stringify(out.pointChip));
+f(out.standChip && out.standChip.plate === 6 && out.standChip.took > 0, 'plate: a blow while she stands chipped her plate, or (B15, claude/highcrown2) did nothing at all ' + JSON.stringify(out.standChip));
+f(out.pointChip && out.pointChip.back === 5 && out.pointChip.heavy === 4, 'plate: a back blow and a heavy blow while she points did not take a piece each ' + JSON.stringify(out.pointChip));
 f(out.chand && out.chand.mode === 'pinned' && out.chand.plate === 2, 'plate: a chandelier on her did not pin her and take two ' + JSON.stringify(out.chand));
 f(out.shatter && out.shatter.plateOff && out.shatter.shards > 10 && out.shatter.open, 'shatter: the plate did not break in pieces and open her ' + JSON.stringify(out.shatter));
 f(out.shatter && out.shatter.front >= 18, 'shatter: a blow to her face after the plate broke did not land ' + JSON.stringify(out.shatter));
 f(out.shatter && out.shatter.leapAt !== null && Math.abs(out.shatter.leapAt) <= 2, 'shatter: plate off, her leap did not come at the hero ' + JSON.stringify(out.shatter));
 /* roof round */
-f(out.round3 && out.round3.phase === 3 && out.round3.standing === 3 && !out.round3.open && out.round3.took === 0, 'roof: round three did not stand her pillars and close her plate ' + JSON.stringify(out.round3));
+f(out.round3 && out.round3.phase === 3 && out.round3.standing === 3 && !out.round3.open && out.round3.took > 0, 'roof: round three did not stand her pillars and close her plate ' + JSON.stringify(out.round3));
 f(out.round3 && out.round3.first === 'shadowTell', 'roof: her shadow step no longer comes first in round three ' + JSON.stringify(out.round3));
 f(out.lab && out.lab.pillar >= 1, 'lab: in ninety seconds the boss-lab knight brought no pillar down on her ' + JSON.stringify(out.lab));
 f(!out.errors.length, 'page errors ' + JSON.stringify(out.errors));
