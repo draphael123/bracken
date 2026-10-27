@@ -34,7 +34,7 @@ export const STK_SAY = {
   took: 'HIS HORN IS YOURS: E BLOWS IT', blow: 'THE CAMP RUNS TO ITS HORN', gate: 'THE GATE OPENS TO THEIR HORN', crushed: 'CRUSHED UNDER THE LOGS',
   exam: 'THREE HORNS WIND: CROSS', tower: 'TO THE WAR TOWER', taut: 'CUT THE LASHINGS', lash: 'A LASHING GOES', falls: 'THE TOWER FALLS', wreck: 'IN THE WRECK: CUT HIM',
   woke: 'HE WAKES', noticed: 'THEY SEE YOU', comes: 'HE COMES DOWN',
-  chiefHorn: 'HIS WAR HORN: SILENCE IT', silenced: 'SILENCED: CUT HIM', sounded: 'HIS CREW COMES', answered: 'HORN ANSWERS HORN',
+  chiefHorn: 'HIS WAR HORN: SILENCE IT', silenced: 'SILENCED: CUT HIM', sounded: 'HIS CREW COMES', answered: 'HORN ANSWERS HORN', pulled: 'YOUR HORN PULLS HIS CREW AWAY',
   keg: 'POWDER: STRIKE IT BACK', kicked: 'IT ROLLS', blasted: 'BLASTED: CUT HIM', powderTower: 'THE POWDER TAKES THE LASHINGS', lookout: 'THE LOOKOUT COMES DOWN',
   dropped: 'HE DROPS THE HORN', hornOut: 'THE HORN SOUNDS',
 };
@@ -88,6 +88,12 @@ export function makeStockadeHands(ctx) {
       e.lureT = LURE.t; e.lureX = at + (((n++ % 3) - 1) * LURE.spread); e.cook = false; e.gateGuard = e.gateGuard && !gateOpen ? 'out' : false; e.emote = 'shock'; e.emoteT = 0.6; e.seenP = true;
     }
     if (S && S.gate && !gateOpen && Math.abs(S.gate.x * TS + 8 - P.x) < GATE.r) gateT = GATE.delay;
+    /* (claude/hookpolish) YOUR HORN PULLS HIS CREW AWAY: the war horn has already called them in - your captured horn is the louder call. Every crew goblin
+       in the hall runs to the FAR end from the Chieftain and stands looking up for LURE.t (it notices you if you come near, or if struck). He stands alone. */
+    { const cb = ctx.boss(), A = ctx.L.arena; let pulled = 0;
+      if (cb && cb.alive && cb.t === 'chief' && A) { const far = cb.x < (A.x0 + A.x1) / 2 ? A.x1 - 40 : A.x0 + 40;
+        for (const e of ctx.enemies()) { if (!e.alive || e.dying > 0 || !e.chiefCrew) continue; e.lureT = LURE.t; e.lureX = far + (((pulled++ % 3) - 1) * LURE.spread); e.emote = 'shock'; e.emoteT = 0.6; e.seenP = true; }
+        if (pulled) say(far, A.floor - 40, 'pulled', '#8fd160'); } }
     /* (claude/chief3) HORN ANSWERS HORN: blown while the Chieftain winds his, his crew do not know which call to answer - nobody comes */
     const ch = ctx.boss(); if (ch && (ch.mode === 'horn' || ch.mode === 'towerHorn') && Math.abs(ch.x - P.x) < LURE.r && !ch.hornAnswered) { ch.hornAnswered = true; say(ch.x, ch.y - ch.h - 22, 'answered', '#8fd160'); }
     say(P.x, P.y - 30, 'blow');
