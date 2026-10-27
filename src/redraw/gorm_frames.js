@@ -6,46 +6,83 @@
 // the sprite's anchor: x from the centre line, y up from the feet, facing right) so the pose code can set fire to it without a hand-measured number. Everything bakes once, on first use.
 import { canvas, rect, line, circle, outline, flipX, whiten } from '../px.js';
 
+const SKM = '#559038', SKDD = '#2a4f1e', RBM = '#ab3a34', RBDD = '#5a1c1c', FURL = '#fffbe8', FURD = '#c8bca0', GLDL = '#fff0a8', GLD3 = '#6a4e10', TOOTHD = '#d8c8a0';
 const SK = '#6faa4a', SKD = '#3f6e2c', SKL = '#8fd160', RB = '#c9463d', RBD = '#8f2f28', RBL = '#e07060', FUR = '#e8dcc0', GLD = '#ffd36b', GLD2 = '#a07a1c', EYE = '#f3f0d2', BELT = '#3a2e22', TOOTH = '#fff6e0', WOOD = '#5c3a1d', OUT = '#1b1626';
 const px = (g, x, y, c) => { g.fillStyle = c; g.fillRect(x | 0, y | 0, 1, 1); };
 export const TIPS = {};
 const memo = new Map(); const once = (k, fn) => { if (!memo.has(k)) memo.set(k, fn()); return memo.get(k); };
 
 /* ---------- the body, as bakeKingBig draws it, with the parts a pose moves ---------- */
+/* (claude/gormanim) THE MODEL UPGRADE: the same shapes and the same look (green jowls, tusks, crown, fur-trimmed red robe, belt) with the shading the newer bosses have: a lit left / shaded right on every form,
+   a heavy brow, nostrils, an ear ring, tusks with an ivory shade, a crown of real spikes with lit gems, the robe's folds, braid and ermine collar, a belt with studs, boots with a toe cap and a strap, sleeves with a dark contour. */
 function head(g, x, y, mouth, eyes) {   /* 30 wide, 22 tall; mouth 0 shut / 1 shout / 2 gritted / 3 horn-pout; eyes 0 open / 'shut' / 'x' / 'wide' */
   rect(g, x + 3, y, 24, 6, SK); rect(g, x, y + 4, 30, 14, SK); rect(g, x - 4, y + 8, 38, 11, SK); rect(g, x - 2, y + 18, 34, 4, SKD); rect(g, x + 1, y + 21, 28, 3, SK); rect(g, x + 3, y + 23, 24, 1, SKD);
-  rect(g, x + 1, y + 5, 3, 5, SKD); rect(g, x + 26, y + 5, 3, 5, SKD); rect(g, x - 3, y + 3, 5, 7, SK); rect(g, x + 28, y + 3, 5, 7, SK);
-  rect(g, x + 3, y + 2, 10, 1, SKL); rect(g, x - 2, y + 4, 2, 3, SKL);   /* the light on the brow */
+  /* form shadow: the light is upper left, so the right of the skull, cheek and jowl falls into mid-green, the underside into dark */
+  rect(g, x + 22, y + 1, 5, 3, SKM); rect(g, x + 25, y + 4, 5, 14, SKM); rect(g, x + 30, y + 8, 4, 11, SKM); rect(g, x + 22, y + 19, 8, 2, SKM); rect(g, x + 3, y + 21, 24, 2, SKM); rect(g, x + 1, y + 23, 28, 1, SKDD); rect(g, x - 2, y + 18, 34, 1, SKM);
+  rect(g, x + 1, y + 5, 3, 5, SKD); rect(g, x + 26, y + 5, 3, 5, SKDD); rect(g, x - 3, y + 3, 5, 7, SK); rect(g, x + 28, y + 3, 5, 7, SKM);
+  /* ears: a point, an inner shade, a gold ring in the near one */
+  rect(g, x - 4, y + 2, 2, 2, SK); rect(g, x + 32, y + 2, 2, 2, SKM); rect(g, x - 2, y + 5, 2, 3, SKM); rect(g, x + 28, y + 5, 2, 3, SKDD); rect(g, x - 4, y + 10, 2, 4, GLD2); px(g, x - 4, y + 10, GLDL); px(g, x - 3, y + 12, SKD);
+  rect(g, x + 3, y + 2, 10, 1, SKL); rect(g, x - 2, y + 4, 2, 3, SKL); rect(g, x + 14, y + 1, 4, 1, SKL); rect(g, x - 2, y + 10, 3, 2, SKL); rect(g, x + 4, y + 12, 3, 1, SKL);   /* the light on the brow, the near ear, the cheek */
+  px(g, x + 21, y + 4, SKD); px(g, x + 22, y + 4, SKM); px(g, x + 6, y + 14, SKM);   /* a wart or two */
   if (eyes === 'shut') { rect(g, x + 6, y + 9, 6, 1, OUT); rect(g, x + 18, y + 9, 6, 1, OUT); rect(g, x + 6, y + 10, 6, 1, SKD); rect(g, x + 18, y + 10, 6, 1, SKD); }
   else if (eyes === 'x') { for (const ex of [x + 7, x + 19]) { line(g, ex, y + 7, ex + 4, y + 11, OUT, 1); line(g, ex + 4, y + 7, ex, y + 11, OUT, 1); } }
-  else { rect(g, x + 6, y + 7, 6, eyes === 'wide' ? 6 : 5, EYE); rect(g, x + 18, y + 7, 6, eyes === 'wide' ? 6 : 5, EYE); rect(g, x + 9, y + 8, 2, 3, OUT); rect(g, x + 21, y + 8, 2, 3, OUT); }
-  rect(g, x + 5, y + (eyes === 'wide' ? 4 : 6), 8, 1, SKD); rect(g, x + 17, y + (eyes === 'wide' ? 4 : 6), 8, 1, SKD);
-  rect(g, x + 13, y + 11, 4, 3, SKD);
-  if (mouth === 1) { rect(g, x + 8, y + 15, 14, 6, RBD); rect(g, x + 9, y + 15, 2, 2, TOOTH); rect(g, x + 19, y + 15, 2, 2, TOOTH); rect(g, x + 13, y + 19, 4, 2, RBL); }
-  else if (mouth === 3) { rect(g, x + 11, y + 14, 8, 6, RBD); rect(g, x + 12, y + 15, 6, 4, '#2a0e0a'); rect(g, x + 7, y + 15, 2, 3, TOOTH); rect(g, x + 21, y + 15, 2, 3, TOOTH); rect(g, x - 1, y + 12, 5, 6, SKL); rect(g, x + 26, y + 12, 5, 6, SKL); }   /* cheeks blown out */
-  else { rect(g, x + 8, y + 16, 14, 1, SKD); rect(g, x + 7, y + 15, 2, 3, TOOTH); rect(g, x + 21, y + 15, 2, 3, TOOTH); if (mouth === 2) rect(g, x + 10, y + 16, 10, 2, TOOTH); }
+  else { const eh = eyes === 'wide' ? 6 : 5;
+    rect(g, x + 6, y + 7, 6, eh, EYE); rect(g, x + 18, y + 7, 6, eh, EYE); rect(g, x + 6, y + 6 + eh, 6, 1, '#b9b896'); rect(g, x + 18, y + 6 + eh, 6, 1, '#b9b896');   /* the lower lid in shade */
+    rect(g, x + 9, y + 8, 2, 3, OUT); rect(g, x + 21, y + 8, 2, 3, OUT); px(g, x + 9, y + 8, '#a03020'); px(g, x + 21, y + 8, '#a03020'); px(g, x + 6, y + 7, '#ffffff'); px(g, x + 18, y + 7, '#ffffff'); }
+  /* the heavy brow: a dark ridge, slanting down to the nose */
+  rect(g, x + 4, y + (eyes === 'wide' ? 4 : 5), 10, 2, SKDD); rect(g, x + 16, y + (eyes === 'wide' ? 4 : 5), 10, 2, SKDD); rect(g, x + 12, y + (eyes === 'wide' ? 5 : 6), 2, 1, SKDD); rect(g, x + 16, y + (eyes === 'wide' ? 5 : 6), 2, 1, SKDD);
+  rect(g, x + 12, y + 10, 6, 4, SKM); rect(g, x + 13, y + 10, 2, 1, SKL); px(g, x + 13, y + 13, SKDD); px(g, x + 16, y + 13, SKDD); rect(g, x + 12, y + 14, 6, 1, SKD);   /* the nose, nostrils */
+  rect(g, x + 2, y + 13, 3, 1, SKD); rect(g, x + 25, y + 13, 3, 1, SKDD);   /* the jowl creases */
+  const tusk = tx => { rect(g, tx, y + 12, 3, 7, TOOTH); rect(g, tx + 2, y + 13, 1, 6, TOOTHD); rect(g, tx, y + 18, 3, 1, TOOTHD); px(g, tx, y + 12, '#ffffff'); px(g, tx + 1, y + 12, TOOTH); px(g, tx + 2, y + 12, SKM); };   /* the tusks up from the underbite: ivory, a shaded flank, a lit tip */
+  if (mouth === 1) { rect(g, x + 8, y + 15, 14, 6, RBD); rect(g, x + 9, y + 15, 12, 1, TOOTH); rect(g, x + 10, y + 16, 10, 2, '#4a1612'); rect(g, x + 13, y + 19, 4, 2, RBL); rect(g, x + 8, y + 21, 14, 1, SKDD); tusk(x + 6); tusk(x + 21); }
+  else if (mouth === 3) { rect(g, x + 11, y + 14, 8, 6, RBD); rect(g, x + 12, y + 15, 6, 4, '#2a0e0a'); rect(g, x + 7, y + 15, 2, 3, TOOTH); rect(g, x + 21, y + 15, 2, 3, TOOTH); rect(g, x - 1, y + 12, 5, 6, SKL); rect(g, x + 26, y + 12, 5, 6, SK); rect(g, x + 26, y + 16, 5, 2, SKM); }   /* cheeks blown out */
+  else { rect(g, x + 8, y + 16, 14, 1, SKDD); rect(g, x + 9, y + 17, 12, 1, SKM); tusk(x + 6); tusk(x + 21); if (mouth === 2) { rect(g, x + 10, y + 16, 10, 2, TOOTH); for (let k = 0; k < 4; k++) px(g, x + 12 + k * 2, y + 16, SKDD); rect(g, x + 10, y + 17, 10, 1, TOOTHD); } }
 }
 function crown(g, x, y, askew) {
   if (askew) { x += askew; y += 2; }
-  rect(g, x, y + 3, 26, 5, GLD); rect(g, x, y + 7, 26, 1, GLD2); for (let i = 0; i < 5; i++) { rect(g, x + 1 + i * 6, y, 2, 4, GLD); px(g, x + 1 + i * 6, y, '#fff6e0'); }
-  rect(g, x + 4, y + 4, 2, 2, RB); rect(g, x + 12, y + 4, 2, 2, '#5aa0e0'); rect(g, x + 20, y + 4, 2, 2, RB);
+  rect(g, x, y + 3, 26, 5, GLD); rect(g, x, y + 3, 26, 1, GLDL); rect(g, x, y + 6, 26, 1, GLD2); rect(g, x, y + 7, 26, 1, GLD3); rect(g, x + 21, y + 4, 5, 3, GLD2);   /* the band: lit top, shaded right and foot */
+  for (let i = 0; i < 5; i++) { const cx = Math.round(x + 2 + i * 5.5); rect(g, cx - 1, y + 1, 3, 2, GLD); rect(g, cx - 1, y + 1, 1, 2, GLDL); rect(g, cx + 1, y + 1, 1, 2, GLD2); px(g, cx, y, '#fff6e0'); }   /* five real spikes */
+  for (const [gx, gc, gl] of [[4, RB, '#ff9a8a'], [12, '#4a90e0', '#bfe0ff'], [20, RB, '#ff9a8a']]) { rect(g, x + gx - 1, y + 3, 4, 4, GLD3); rect(g, x + gx, y + 4, 2, 2, gc); px(g, x + gx, y + 4, gl); }   /* the gems, set in dark gold, one lit pixel each */
 }
-/* an arm from the shoulder (x, y) by (dx, dy): a red sleeve with a dark seam and a gold cuff, and a hand: 'fist' | 'grip' (a bigger fist) | 'open' | 'claw' (fingers spread) | 'flat' */
+/* an arm from the shoulder (x, y) by (dx, dy): a red sleeve with a dark contour and seam, a fur-and-gold cuff, and a hand: 'fist' | 'grip' (a bigger fist) | 'open' | 'claw' (fingers spread) | 'flat' */
 function arm(g, x, y, dx, dy, hand) {
-  line(g, x, y, x + dx, y + dy, RB, 7); line(g, x, y, x + dx, y + dy, RBD, 2); line(g, x + 1, y - 1, x + dx + 1, y + dy - 1, RBL, 1);
-  const fx = x + dx, fy = y + dy; rect(g, fx - 4, fy - 4, 9, 9, GLD2); rect(g, fx - 4, fy - 4, 9, 2, GLD);   /* the gold cuff */
-  const s = hand === 'grip' ? 6 : 5;
-  if (hand === 'claw') { rect(g, fx - 5, fy - 5, 12, 11, SK); rect(g, fx - 5, fy + 4, 12, 2, SKD); for (let k = 0; k < 4; k++) { rect(g, fx + 7, fy - 5 + k * 3, 4, 2, SK); rect(g, fx + 10, fy - 5 + k * 3, 1, 2, TOOTH); } }
-  else if (hand === 'open') { rect(g, fx - 4, fy - 4, 9, 9, SK); rect(g, fx - 4, fy + 3, 9, 2, SKD); rect(g, fx + 4, fy - 5, 4, 2, SK); rect(g, fx + 4, fy - 1, 4, 2, SK); rect(g, fx + 4, fy + 3, 4, 2, SK); }
-  else { rect(g, fx - s + 1, fy - s + 1, s * 2 - 1, s * 2 - 1, SK); rect(g, fx - s + 1, fy + s - 2, s * 2 - 1, 2, SKD); for (let k = 0; k < 3; k++) rect(g, fx - s + 2 + k * 3, fy - 1, 1, 3, SKD); rect(g, fx - s + 1, fy - s + 1, s * 2 - 1, 1, SKL); }
+  line(g, x, y - 1, x + dx, y + dy - 1, RBDD, 9); line(g, x, y, x + dx, y + dy, RB, 7); line(g, x, y, x + dx, y + dy, RBD, 2); line(g, x + 1, y - 1, x + dx + 1, y + dy - 1, RBL, 1);
+  const fx = x + dx, fy = y + dy, s = hand === 'grip' ? 6 : 5;
+  if (hand === 'claw') { rect(g, fx - 5, fy - 5, 12, 11, SK); rect(g, fx - 5, fy + 4, 12, 2, SKD); rect(g, fx + 3, fy - 5, 4, 11, SKM); rect(g, fx - 5, fy - 5, 12, 1, SKL); for (let k = 0; k < 4; k++) { rect(g, fx + 7, fy - 5 + k * 3, 4, 2, SK); rect(g, fx + 10, fy - 5 + k * 3, 1, 2, TOOTH); rect(g, fx + 7, fy - 4 + k * 3, 4, 1, SKD); } }
+  else if (hand === 'open') { rect(g, fx - 4, fy - 4, 9, 9, SK); rect(g, fx - 4, fy + 3, 9, 2, SKD); rect(g, fx + 3, fy - 4, 2, 7, SKM); rect(g, fx - 4, fy - 4, 9, 1, SKL); rect(g, fx + 4, fy - 5, 4, 2, SK); rect(g, fx + 4, fy - 1, 4, 2, SK); rect(g, fx + 4, fy + 3, 4, 2, SK); rect(g, fx + 4, fy - 3, 4, 1, SKD); rect(g, fx + 4, fy + 1, 4, 1, SKD); }
+  else if (hand === 'flat') { rect(g, fx - s + 1, fy - s + 1, s * 2 - 1, s * 2 - 1, SK); rect(g, fx - s + 1, fy + s - 2, s * 2 - 1, 2, SKD); rect(g, fx - s + 1, fy - s + 1, s * 2 - 1, 1, SKL); rect(g, fx + s - 2, fy - s + 2, 2, s * 2 - 3, SKM); }
+  else { rect(g, fx - s + 1, fy - s + 1, s * 2 - 1, s * 2 - 1, SK); rect(g, fx - s + 1, fy + s - 2, s * 2 - 1, 2, SKD); rect(g, fx + s - 2, fy - s + 2, 2, s * 2 - 3, SKM); for (let k = 0; k < 3; k++) { rect(g, fx - s + 2 + k * 3, fy - 1, 1, 3, SKD); px(g, fx - s + 2 + k * 3, fy - 2, SKL); } rect(g, fx - s + 1, fy - s + 1, s * 2 - 1, 1, SKL); }
+  /* the cuff on the wrist (the hand once hid it): ermine over a gold band, set toward the shoulder */
+  const n = Math.hypot(dx, dy) || 1, ux = dx / n, uy = dy / n, cx = Math.round(fx - ux * (s + 1)), cy = Math.round(fy - uy * (s + 1));
+  if (Math.abs(dx) > Math.abs(dy)) { rect(g, cx - 2, cy - 4, 3, 9, FUR); rect(g, cx + 1, cy - 4, 1, 9, GLD2); rect(g, cx - 2, cy - 4, 1, 9, FURL); px(g, cx - 1, cy - 1, OUT); px(g, cx - 1, cy + 2, OUT); }
+  else { rect(g, cx - 4, cy - 2, 9, 3, FUR); rect(g, cx - 4, cy + 1, 9, 1, GLD2); rect(g, cx - 4, cy - 2, 9, 1, FURL); px(g, cx - 1, cy - 1, OUT); px(g, cx + 2, cy - 1, OUT); }
 }
-function boots(g, x, y, apart, liftL = 0, liftR = 0) { rect(g, x, y - liftL, 14, 8, SKD); rect(g, x, y + 6 - liftL, 15, 2, OUT); rect(g, x + 1, y - liftL, 12, 1, SK); rect(g, x + apart, y - liftR, 14, 8, SKD); rect(g, x + apart, y + 6 - liftR, 15, 2, OUT); rect(g, x + apart + 1, y - liftR, 12, 1, SK); }
-function robe(g, x, y, w, h) {
+function boot(g, x, y) {   /* one boot, 14 wide, 8 tall, planted on y + 8: green hide, a lit toe cap, a strap and a gold buckle, a thick dark sole */
+  rect(g, x, y, 14, 8, SKD); rect(g, x + 1, y, 12, 1, SK); rect(g, x + 1, y + 1, 5, 2, SKM); rect(g, x + 9, y + 1, 4, 6, SKDD); rect(g, x, y + 3, 14, 1, SKDD); rect(g, x + 3, y + 3, 8, 1, BELT); rect(g, x + 6, y + 2, 3, 3, GLD2); px(g, x + 7, y + 3, GLDL); rect(g, x, y + 6, 15, 2, OUT); rect(g, x + 1, y + 5, 3, 1, SK);
+}
+function boots(g, x, y, apart, liftL = 0, liftR = 0) { boot(g, x, y - liftL); boot(g, x + apart, y - liftR); }
+function robe(g, x, y, w, h, sway = 0) {
+  const m = Math.floor(h / 2), cx = x + Math.floor(w / 2);
   rect(g, x, y, w, h, RB); rect(g, x - 4, y + 8, w + 8, h - 14, RB); rect(g, x - 2, y + 9, 6, h - 18, RBL); rect(g, x - 4, y + h - 8, w + 8, 2, RBD); rect(g, x + 2, y + 2, w - 4, 3, RBL); rect(g, x, y + h - 4, w, 4, RBD);
-  rect(g, x - 2, y, w + 4, 4, FUR); for (let i = 0; i < w; i += 5) px(g, x + i, y + 1, '#c8bca0');
-  rect(g, x + 6, y + Math.floor(h / 2), w - 12, 4, BELT); rect(g, x + Math.floor(w / 2) - 3, y + Math.floor(h / 2) - 1, 6, 6, GLD); rect(g, x + Math.floor(w / 2) - 1, y + Math.floor(h / 2) + 1, 2, 2, GLD2);
+  /* the light is upper left: the right flank and belly fall into shade, with the underside of the belly darkest */
+  rect(g, x + w - 10, y + 4, 10, h - 12, RBM); rect(g, x + w, y + 8, 4, h - 16, RBM); rect(g, x + w + 2, y + 10, 2, h - 20, RBD); rect(g, x - 4, y + h - 10, w + 8, 2, RBM);
+  /* the folds: dark creases with a lit edge, running from the belt to the hem, and a few shorter over the chest */
+  for (const i of [12, 22, 36, 48, 58]) { rect(g, x + i, y + m + 4, 1, h - m - 10, RBD); rect(g, x + i - 1, y + m + 4, 1, h - m - 10, RBL); px(g, x + i + 1, y + m + 4, RBM); }
+  for (const i of [10, 26, 44]) { rect(g, x + i, y + 6, 1, m - 9, RBD); rect(g, x + i - 1, y + 6, 1, m - 9, RBL); }
+  hem(g, x, y, w, h, 0);
+  if (sway) hem(g, x + sway, y, w, h, 1);
+  /* the ermine collar: lit on top, shaded under, a ragged lower edge, tails in black */
+  rect(g, x - 2, y, w + 4, 4, FUR); rect(g, x - 2, y, w + 4, 1, FURL); rect(g, x - 2, y + 3, w + 4, 1, FURD); for (let i = 0; i < w + 4; i += 3) px(g, x - 2 + i, y + 4, FURD); for (let i = 1; i < w; i += 5) { px(g, x + i, y + 1, FURD); px(g, x + i + 1, y + 2, FURD); }
+  for (let i = 6; i < w; i += 11) { rect(g, x + i, y + 1, 1, 2, OUT); px(g, x + i, y + 3, OUT); }
+  rect(g, x + 2, y + 4, w - 4, 1, RBDD);
+  /* the belt: leather with a lit edge, gold studs, a bevelled buckle with a gem */
+  rect(g, x + 6, y + m, w - 12, 4, BELT); rect(g, x + 6, y + m, w - 12, 1, '#5a4a38'); rect(g, x + 6, y + m + 3, w - 12, 1, OUT); for (let i = 9; i < w - 8; i += 7) if (Math.abs(x + i - cx) > 6) px(g, x + i, y + m + 1, GLD2);
+  rect(g, cx - 4, y + m - 2, 8, 8, GLD3); rect(g, cx - 3, y + m - 1, 6, 6, GLD); rect(g, cx - 3, y + m - 1, 6, 1, GLDL); rect(g, cx - 3, y + m + 4, 6, 1, GLD2); rect(g, cx - 1, y + m + 1, 2, 2, RB); px(g, cx - 1, y + m + 1, '#ff9a8a');
 }
-
+function hem(g, x, y, w, h, over) {   /* the hem band: the robe's last rows with a gold braid; over = drawn again, shifted, to let the hem swing */
+  if (over) { rect(g, x - 4, y + h - 8, w + 8, 2, RBD); rect(g, x, y + h - 6, w, 2, RB); rect(g, x, y + h - 4, w, 4, RBD); }
+  rect(g, x - 4, y + h - 8, w + 8, 1, RBM); rect(g, x, y + h - 6, w, 1, GLD2); for (let i = 0; i < w; i += 4) px(g, x + i, y + h - 6, GLD); rect(g, x, y + h - 1, w, 1, RBDD);
+}
 /* ---------- what he holds ---------- */
 function sceptre(g, x0, y0, x1, y1, big) {   /* the royal sceptre: a gilded shaft with a collar and an orb */
   line(g, x0, y0, x1, y1, WOOD, 3); line(g, x0, y0 - 1, x1, y1 - 1, '#8a5a32', 1);
@@ -87,19 +124,23 @@ const AXS = 64, AYS = 64, W_SE = 128, H_SE = 64, SOX = 22, SOY = 16;
 const standing = (name, fn) => { const [c, g] = canvas(W_UP, H_UP); g.translate(OX, OY); fn(g, 20); const k = outline(c, OUT); if (TIPS[name]) TIPS[name] = TIPS[name].map(([x, y]) => [x + OX - AX, y + OY - AYU]); return k; };
 const seated = (name, fn) => { const [c, g] = canvas(W_SE, H_SE); g.translate(SOX, SOY); fn(g); const k = outline(c, OUT); if (TIPS[name]) TIPS[name] = TIPS[name].map(([x, y]) => [x + SOX - AXS, y + SOY - AYS]); return k; };
 const stand = (g, by, o = {}) => {   /* the standing body with its parts */
-  const h = o.robeH || 36, kneel = o.kneel;
+  const h = o.robeH || 36, kneel = o.kneel, lean = o.lean || 0;
   if (o.behind) o.behind(g);
-  if (kneel) { rect(g, 6, 52, 18, 10, SKD); rect(g, 40, 52, 18, 10, SKD); rect(g, 6, 60, 52, 2, OUT); rect(g, 7, 52, 16, 1, SK); rect(g, 41, 52, 16, 1, SK); }
+  /* o.feet = [[centre, lift] left, [centre, lift] right] (the walk cycle): planted boots go under the hem, a lifted one is drawn in front of it */
+  const late = [];
+  if (kneel) { rect(g, 6, 52, 18, 10, SKD); rect(g, 40, 52, 18, 10, SKD); rect(g, 6, 60, 52, 2, OUT); rect(g, 7, 52, 16, 1, SK); rect(g, 41, 52, 16, 1, SK); rect(g, 8, 53, 6, 2, SKM); rect(g, 42, 53, 6, 2, SKM); rect(g, 18, 53, 5, 7, SKDD); rect(g, 52, 53, 5, 7, SKDD); }
+  else if (o.feet) { for (const [c, lift] of o.feet) { if (lift > 1) late.push([c, lift]); else boot(g, Math.round(c - 7), by + 36 - lift + (o.footY || 0)); } }
   else if (o.boots) boots(g, o.boots[0], o.boots[1], o.boots[2], o.boots[3] || 0, o.boots[4] || 0); else boots(g, 9, by + 36, o.apart || 32);
-  robe(g, -2 + (o.lean || 0), by, 68, h);
-  if (o.armL) arm(g, 2 + (o.lean || 0), by + 6, ...o.armL);
-  if (o.armR) arm(g, 62 + (o.lean || 0), by + 6, ...o.armR);
+  robe(g, -2 + lean, by, 68, h, o.sway || 0);
+  for (const [c, lift] of late) boot(g, Math.round(c - 7), by + 36 - lift + (o.footY || 0));
+  if (o.armL) arm(g, 2 + lean, by + 6, ...o.armL);
+  if (o.armR) arm(g, 62 + lean, by + 6, ...o.armR);
   if (o.mid) o.mid(g);
   const hx = 17 + (o.hx || 0), hy = by - 20 + (o.hy || 0);
+  rect(g, hx + 1, hy + 19, 28, 6, RBDD);   /* the shadow his chins throw on the collar */
   head(g, hx, hy, o.mouth || 0, o.eyes || 0); crown(g, hx + 2, hy - 4, o.askew);
   if (o.front) o.front(g);
 };
-
 function bakeUp() {
   const A = [], put = (name, fn) => { A.push([name, standing(name, fn)]); };
   /* THE SCEPTRE SWEEP: tell - the sceptre raised high and back, his weight on his heels; release - the arm out level, the sceptre flat, his mouth open */
@@ -134,6 +175,17 @@ function bakeUp() {
   put('grabUp', (g, by) => stand(g, by, { lean: 4, hx: 5, mouth: 1, armL: [-10, 8, 'fist'], armR: [34, 6, 'claw'] }));
   /* WALKING with the burning club on his shoulder (the glade) */
   put('walkClub', (g, by) => stand(g, by, { apart: 36, armL: [-4, 16, 'fist'], armR: [-2, -6, 'grip'], front: g => club(g, 60, by - 4, 36, by - 56, 'walkClub') }));
+  /* (claude/gormanim) HIS STEP CYCLE, six frames a double step: planted feet and lifted feet (a lifted boot swings in front of the hem), the body low as a boot lands and high as it passes, the hem swinging, the arms swinging against the legs.
+     The pose code (src/redraw/gorm_poses.js) picks the frame by the DISTANCE he has covered, so the feet do not skate at walkV, at walkV2 or at the toOak jog. walk0-5: the sceptre in hand (the hall afoot); wc0-5: the burning club on his shoulder (the glade). */
+  { const R6 = [[47, 0], [39, 0], [32, 0], [24, 4], [34, 9], [44, 4]], L6 = [[24, 4], [34, 9], [44, 4], [47, 0], [39, 0], [32, 0]], BY = [21, 20, 18, 21, 20, 18], SW = [1, 2, 1, -1, -2, -1], SA = [2, 1, -1, -2, -1, 1], TX = [0, 1, 2, 0, -1, -2];
+    for (let i = 0; i < 6; i++) {
+      put('walk' + i, (g, by0) => { const by = BY[i], sa = SA[i]; stand(g, by, { robeH: 56 - by, footY: 20 - by, feet: [L6[i], R6[i]], sway: SW[i], hx: SW[i] > 0 ? 1 : -1, armL: [-4, 16 + sa, 'fist'], armR: [4, 16 - sa, 'fist'], front: g => sceptre(g, 66, by + 26 - sa, 74, by - 6 - sa) }); });
+      put('wc' + i, (g, by0) => { const by = BY[i], sa = SA[i]; stand(g, by, { robeH: 56 - by, footY: 20 - by, feet: [L6[i], R6[i]], sway: SW[i], hx: SW[i] > 0 ? 1 : -1, armL: [-4, 16 + sa, 'fist'], armR: [-2, -6, 'grip'], front: g => club(g, 60, by - 4, 36 + TX[i], by - 56, 'wc' + i) }); });
+    } }
+  /* his stand on the hall floor (sceptre planted at his side), the rise from his knees as the litter breaks, and the held-in-the-cage kneel */
+  put('stand', (g, by) => stand(g, by, { armL: [-4, 16, 'fist'], armR: [4, 16, 'fist'], front: g => sceptre(g, 66, by + 26, 74, by - 6) }));
+  put('rise', (g, by) => stand(g, by + 10, { kneel: true, robeH: 26, hy: 5, mouth: 2, armL: [-14, 16, 'fist'], armR: [18, 16, 'fist'] }));
+  put('heldUp', (g, by) => stand(g, by + 10, { kneel: true, robeH: 26, hy: 7, hx: 1, eyes: 'wide', mouth: 2, askew: 4, armL: [-14, 14, 'fist'], armR: [18, 14, 'fist'] }));
   /* ON HIS STUMP: asleep (slumped, the crown slipped) and waking (head up, a fist at his eye) */
   put('throneSleep', (g, by) => stand(g, by + 4, { kneel: true, robeH: 28, hy: 8, hx: 1, eyes: 'shut', mouth: 0, askew: 4, armL: [-4, 14, 'fist'], armR: [4, 14, 'fist'], front: g => sceptre(g, 8, by + 36, 60, by + 40) }));
   put('throneWake', (g, by) => stand(g, by + 4, { kneel: true, robeH: 28, hy: 0, mouth: 1, armL: [-4, 14, 'fist'], armR: [-12, -18, 'fist'], front: g => sceptre(g, 8, by + 36, 60, by + 40) }));
@@ -150,6 +202,10 @@ function bakeSeat() {
   put('horn', g => body(g, { mouth: 3, hx: -1, armL: [-6, 10, 'fist'], armR: [-8, -16, 'fist'], front: g => horn(g, 52, 14, 96, -2) }));
   put('fleeTell', g => body(g, { hy: -1, eyes: 'wide', mouth: 1, askew: -4, armL: [-10, -16, 'open'], armR: [10, -18, 'open'] }));
   put('fleeCarried', g => body(g, { hx: -2, hy: 1, eyes: 'wide', mouth: 2, askew: 5, armL: [4, 12, 'fist'], armR: [6, 8, 'grip'], front: g => { sceptre(g, 70, 36, 84, 12); rect(g, 15, 4, 1, 3, '#9fd0ff'); rect(g, 52, 3, 1, 3, '#9fd0ff'); } }));
+  /* the litter's idle, the shout as he wakes, and held (the cage): the new model's, so the whole fight is one king */
+  put('idle', g => body(g, { armL: [-6, 12, 'fist'], armR: [6, 12, 'fist'], front: g => sceptre(g, 74, 36, 82, 10) }));
+  put('wake', g => body(g, { mouth: 1, armL: [-6, 12, 'fist'], armR: [6, 12, 'fist'], front: g => sceptre(g, 74, 36, 82, 10) }));
+  put('held', g => body(g, { hy: 6, hx: 1, eyes: 'wide', mouth: 2, askew: 3, armL: [-6, 12, 'fist'], armR: [6, 12, 'fist'] }));
   return A;
 }
 function toSet(frames, ax, ay, w, h) {
@@ -162,13 +218,13 @@ export const upFrame = n => UP.idx[n], seatFrame = n => SEAT.idx[n];
 
 /* ---------- THE BEARERS: four goblins of the court, a pole on the shoulder: 0 stand, 1-2 walk, 3-4 run, 5 crouch-lift ---------- */
 export const BEARER = once('bearer', () => {
-  const fr = [], mk = (leg, lean, crouch) => { const [c, g] = canvas(18, 26); g.translate(2, 2 + (crouch ? 3 : 0));
+  const fr = [], mk = (leg, lean, crouch, lf = [0, 0]) => { const [c, g] = canvas(18, 26); g.translate(2, 2 + (crouch ? 3 : 0));
     const gbody = '#3f6e2c', gl = '#6faa4a', tun = '#3f6e2c', tunL = '#5a9a3a', hel = '#7a7a86', helL = '#b8bcc8';
-    /* legs */ rect(g, 4 + leg[0], 16, 3, 7 - (crouch ? 3 : 0), '#2a1a10'); rect(g, 8 + leg[1], 16, 3, 7 - (crouch ? 3 : 0), '#2a1a10'); rect(g, 3 + leg[0], 22 - (crouch ? 3 : 0), 5, 2, '#1e1208'); rect(g, 7 + leg[1], 22 - (crouch ? 3 : 0), 5, 2, '#1e1208');
+    /* legs */ rect(g, 4 + leg[0], 16, 3, 7 - (crouch ? 3 : 0) - lf[0], '#2a1a10'); rect(g, 8 + leg[1], 16, 3, 7 - (crouch ? 3 : 0) - lf[1], '#2a1a10'); rect(g, 3 + leg[0], 22 - (crouch ? 3 : 0) - lf[0], 5, 2, '#1e1208'); rect(g, 7 + leg[1], 22 - (crouch ? 3 : 0) - lf[1], 5, 2, '#1e1208'); rect(g, 4 + leg[0], 16, 1, 5 - lf[0], '#4a3020'); rect(g, 8 + leg[1], 16, 1, 5 - lf[1], '#4a3020');   /* (claude/gormanim) legs that LIFT: a stride the eye can see */
     /* tunic with the court's crest */ rect(g, 3 + lean, 8, 10, 9, tun); rect(g, 3 + lean, 8, 3, 9, tunL); rect(g, 3 + lean, 14, 10, 1, '#c9b27c'); rect(g, 7 + lean, 10, 2, 3, '#e0b040');
     /* head: a goblin under a kettle helm */ rect(g, 4 + lean, 1, 8, 7, gl); rect(g, 3 + lean, 3, 2, 3, gl); rect(g, 11 + lean, 3, 2, 3, gl); rect(g, 4 + lean, 0, 8, 3, hel); rect(g, 4 + lean, 0, 8, 1, helL); rect(g, 6 + lean, 4, 1, 2, '#1a0e08'); rect(g, 10 + lean, 4, 1, 2, '#1a0e08'); rect(g, 6 + lean, 6, 4, 1, gbody);
     /* the pole across his shoulder: a worn staff, a hand up on it */ rect(g, -2, 6, 22, 3, '#2a1a10'); rect(g, -2, 6, 22, 1, '#8a5a32'); rect(g, 11 + lean, 6, 3, 4, gl);
     return outline(c, OUT); };
-  fr.push(mk([0, 0], 0, false), mk([-1, 1], 0, false), mk([1, -1], 0, false), mk([-2, 2], 1, false), mk([2, -2], 1, false), mk([0, 0], 0, true));
+  fr.push(mk([0, 0], 0, false), mk([-2, 2], 0, false, [0, 2]), mk([2, -2], 0, false, [2, 0]), mk([-3, 3], 1, false, [0, 3]), mk([3, -3], 1, false, [3, 0]), mk([0, 0], 0, true));
   return toSet(fr, 9, 26, 12, 24);
 });

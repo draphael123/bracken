@@ -5331,6 +5331,7 @@ function mapFooter(open, on) { return [{ t: touchOn ? (open ? 'TAP A ROAD TO JUM
    block-vote downsample (src/map-pixel.js), outlined, and drawn 1:1. A cleared place's critter goes grey (never see-through). */
 const MAP_PORT = new WeakMap(); let MAP_CASTLE = null;
 const MAP_PORT_BOX = {};   /* what each critter covered the last time it was drawn, in map pixels (tools/map-scale.mjs checks the plates keep clear of it) */
+const kingCard = () => SPR.kingCard || (SPR.kingCard = GPZ.cardSet(PROP));   /* (claude/gormfinish) King Gorm's portrait (map + bestiary), src/redraw/gorm_poses.js */
 function drawMapPortrait(id, set, frame, x, y, face, tall, cleared) {
   let per = MAP_PORT.get(set); if (!per) MAP_PORT.set(set, per = new Map());
   const key = frame + '|' + face + '|' + (cleared ? 1 : 0); let e = per.get(key);
@@ -5379,7 +5380,7 @@ function drawMap() {
     if (nm) drawMapPortrait('marsh', SPR.frog, Math.floor(time * 1.5) % 2, nm.x - 26, nm.y + 4, 1, 12, cl('marsh'));
     if (ns) drawMapPortrait('stockade', SPR.chief, Math.floor(time * 4) % 2, ns.x - 22, ns.y + 6, 1, 16, cl('stockade'));
     if (np) drawMapPortrait('spore', SPR.mother, 0, np.x + 26, np.y + 8, 1, 14, cl('spore'));
-    if (nk) drawMapPortrait('kings', SPR.king, 0, nk.x - 24, nk.y + 6, 1, 18, cl('kings'));
+    if (nk) drawMapPortrait('kings', kingCard(), 0, nk.x - 24, nk.y + 6, 1, 18, cl('kings'));
     /* SMOKE OFF EVERY TOWN AND STORE, not just the first one (map-life-and-select §2). Cheap: a store's own hut
        chimney and Waymeet's rooftops are the only fires on the map worth a wisp, so this is three or four
        particle spawns a frame at most, using the same drifting-puff particle the store already had. */
@@ -6343,7 +6344,7 @@ function drawBestiary() {
   const b = list[bestI], r = PROG.beasts && PROG.beasts[b.t], seen = !!(r && r.seen);
   const px = 112, pw = VW - px - 6, py = 18, ph = VH - 32;
   board(px, py, pw, ph, '#8fd160', undefined, false, 'parchment');   /* the beast's page */
-  const set = SPR[b.t + 'Card'] || SPR[b.t] || (b.t === 'bandit' ? SPR.banditArcher : THF.foeSet({ t: b.t === 'flyman' ? 'archer' : 'gobpriest', flyman: b.t === 'flyman', prompter: b.t === 'prompter' })); const c = set.R[0]; const sc = c.width > 26 ? 1 : c.width > 18 ? 2 : 3; const cxp = px + 30, cyp = py + 26;
+  if (b.t === 'king') kingCard();   /* (claude/gormfinish) the bestiary card is the new model */ const set = SPR[b.t + 'Card'] || SPR[b.t] || (b.t === 'bandit' ? SPR.banditArcher : THF.foeSet({ t: b.t === 'flyman' ? 'archer' : 'gobpriest', flyman: b.t === 'flyman', prompter: b.t === 'prompter' })); const c = set.R[0]; const sc = c.width > 26 ? 1 : c.width > 18 ? 2 : 3; const cxp = px + 30, cyp = py + 26;
   if (!seen) g.globalAlpha = 0.25;
   { const nF = set.R.length, fr = seen ? Math.floor(time * (nF > 6 ? 4 : 7)) % nF : 0; const pace = seen ? Math.sin(time * 1.1) * 8 : 0, face = !seen ? 1 : (Math.cos(time * 1.1) >= 0 ? 1 : -1); const bob = seen && (b.t === 'wasp' || b.t === 'drone' || b.t === 'harpy' || b.t === 'queen') ? Math.round(Math.sin(time * 5) * 2) : 0; drawSet(set, null, fr, cxp + pace - (c.width / 2 - set.ax) * sc, cyp + bob + (set.ay - c.height / 2) * sc, face, !seen, sc, sc); }
   g.globalAlpha = 1;
@@ -8111,7 +8112,7 @@ function spawnCorpse(e, dir) {
     case 'pike': Object.assign(c, { vx: dir * 40, vy: -70, spin: 0, life: 1.1, max: 1.1, tip: true }); SFX.gobDie(); SFX.clank(); break;
     case 'folk': Object.assign(c, { vx: dir * 40, vy: -110, spin: dir * 6, life: 0.8, max: 0.8 }); break;
     case 'master': c.t = e.mounted ? 'master' : 'masterFoot'; Object.assign(c, { vx: -dir * 20, vy: -140, spin: dir * 3, life: 1.5, max: 1.5, grav: 600 }); SFX.gobDieLow(); SFX.yelp(); break;
-    case 'king': c.t = 'kingUp'; Object.assign(c, { vx: -dir * 10, vy: -110, spin: dir * 0.7, life: 1.8, max: 1.8, grav: 600, royal: true }); SFX.gobDieLow(); SFX.roar(); break;
+    case 'king': c.t = 'kingUp'; { const ds = GPZ.deadSet(); c.set = ds.set; c.frame = ds.frame; }   /* (claude/gormfinish) he falls in the new model */ Object.assign(c, { vx: -dir * 10, vy: -110, spin: dir * 0.7, life: 1.8, max: 1.8, grav: 600, royal: true }); SFX.gobDieLow(); SFX.roar(); break;
     case 'hound': Object.assign(c, { vx: dir * 60, vy: -120, spin: dir * 6, life: 0.9, max: 0.9 }); SFX.yelp(); break;
     case 'brute': case 'butcher': case 'heavy': Object.assign(c, { vx: dir * 30, vy: -80, spin: 0, life: 1.2, max: 1.2, tip: true }); SFX.gobDieLow(); break;
     case 'chief': Object.assign(c, { vx: -dir * 10, vy: -100, spin: dir * 0.6, life: 1.8, max: 1.8, grav: 600, royal: true }); SFX.gobDieLow(); SFX.roar(); break;

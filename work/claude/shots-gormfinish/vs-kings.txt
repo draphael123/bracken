@@ -1,0 +1,4 @@
+  [visible-supports 1/1] kings ok 2 s, 3700 MB free
+kings: 1 overhang(s) without a verified visible support out of 33, 0 keyed
+  SOLID @124-130,35: no declared foreground structure beneath the overhang
+visible-supports REPORT-ONLY: 1 overhang findings in 1 level(s)
