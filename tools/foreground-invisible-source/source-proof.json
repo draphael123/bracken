@@ -1,0 +1,32 @@
+{
+  "time": "2026-10-27T17:50:11.434Z",
+  "gameSource": "62d9c02c102decc69ceaef4e1ec593a23170f1ff",
+  "originalMainSha256": "81866b69fec64de5fdd00da316fb0d1e8e997ae9912f73f280981f0a70cb36d8",
+  "candidateMainSha256": "41dd26abccdd2c6c5e5ecc4866956b3e33213adc78336b7dd739a8882960c5e3",
+  "helperSha256": "f42e9d2a9e296412b6a7d48d2a65712b215033bf3f798b0e5b71449e924b85a3",
+  "originalDrawFg": "function drawFg(cx, cy) {\n  if (!FGC || FGC.width !== VW || FGC.height !== VH) { FGC = document.createElement('canvas'); FGC.width = VW; FGC.height = VH; }\n  const f = FGC.getContext('2d'), c = BG.fg, w = c.width, dY = bgDY(cy);\n  f.globalCompositeOperation = 'source-over'; f.clearRect(0, 0, VW, VH);\n  let x = ((-cx * 1.25) % w + w) % w; if (x > 0) x -= w; const y = Math.round(dY * 1.25);\n  for (; x < VW; x += w) f.drawImage(c, Math.round(x), y);\n  /* Behind the actors now: no coverage test can make this strip flash. */\n  g.globalAlpha = 0.3; g.drawImage(FGC, 0, 0); g.globalAlpha = 1;\n}",
+  "candidateDrawFg": "function drawFg(cx, cy) { checkInvisibleForegroundPipeline(g);\n  if (!FGC || FGC.width !== VW || FGC.height !== VH) { FGC = document.createElement('canvas'); FGC.width = VW; FGC.height = VH; }\n  const f = FGC.getContext('2d'), c = BG.fg, w = c.width, dY = bgDY(cy);\n  f.globalCompositeOperation = 'source-over'; f.clearRect(0, 0, VW, VH);\n  let x = ((-cx * 1.25) % w + w) % w; if (x > 0) x -= w; const y = Math.round(dY * 1.25);\n  if (foregroundWhollyInvisible(g, c, y, VH)) { g.globalAlpha = 1; return; } for (; x < VW; x += w) f.drawImage(c, Math.round(x), y);\n  /* Behind the actors now: no coverage test can make this strip flash. */\n  g.globalAlpha = 0.3; g.drawImage(FGC, 0, 0); g.globalAlpha = 1;\n}",
+  "exactUndo": true,
+  "lineCountPreserved": true,
+  "edits": [
+    [
+      "ART.bakeFG(640, VH, 4) };",
+      "freshInvisibleForeground(() => ART.bakeFG(640, VH, 4)) };"
+    ],
+    [
+      "function drawFg(cx, cy) {",
+      "function drawFg(cx, cy) { checkInvisibleForegroundPipeline(g);"
+    ],
+    [
+      "  for (; x < VW; x += w) f.drawImage(c, Math.round(x), y);",
+      "  if (foregroundWhollyInvisible(g, c, y, VH)) { g.globalAlpha = 1; return; } for (; x < VW; x += w) f.drawImage(c, Math.round(x), y);"
+    ]
+  ],
+  "notCropClipCacheReuseOrUpload": true,
+  "originalFullRenderingWhenAnySourcePixelCouldBeVisible": true,
+  "originalFgcCreationResizeClearAndReturnedAlphaPreserved": true,
+  "sourcePixelsClassifiedOnceOnPrivateFreshOriginalArtOnly": true,
+  "zeroExtraCanvasesOrStrongSourceRoots": true,
+  "resizeRetireAndContextLossFallback": true,
+  "notPixelStateRngMemoryTimingLayoutOrFpsProof": true
+}
