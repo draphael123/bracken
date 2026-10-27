@@ -28,7 +28,7 @@ export const CHECK_DROP = {
   spire: [[8,195],[13,117],[21,217],[22,55],[30,99],[72,151]],
   moor: [[25,21],[52,21],[204,21],[296,13],[399,13],[406,13],[494,13]],
   storm: [],   /* (claude/stormhold3) THE OUTER WORKS places one shrine at the end of each named area's exam + one before the boss (A10c) by hand - nothing to drop */
-  crown: [[12,95],[196,63],[282,63],[326,63],[395,63],[660,63],[750,51]],
+  crown: [],   /* (claude/highcrown2) HIGHCROWN 2 places one shrine at the end of each area's exam + one before the Queen (A10c) by hand (src/highcrown2.js HC2.SHRINES) - nothing to drop */
   longwater: [[4,7],[165,27],[319,25],[442,26]],
   reef: [[9,27],[152,17],[272,11],[414,29]],
   flotilla: [],   /* (claude/flotilla2) the rebuilt flotilla places one shrine at the end of each named area's exam + one before the boss (A10c) by hand - nothing to drop */

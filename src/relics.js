@@ -17,7 +17,7 @@
 export const VAULT_SILVER = {
   wood: { x: 199, y: 9, idx: 2, add: true },   /* (claude/lumbertrail) THE LUMBER TRAIL: the ford's vine pocket pays the third silver (the old crown cache went with the old wood) */ marsh: { x: 125, y: 10, idx: 2 },
   spire: { x: 38, y: 29, idx: 2 }, moor: { x: 200, y: 15, idx: 1, add: true, extra: [{ x: 416, y: 22 }] }, storm: { x: 130, y: 7, idx: 0 },
-  crown: { x: 695, y: 13, idx: 2 }, longwater: { x: 512, y: 26, idx: 2 }, reef: { x: 472, y: 20, idx: 1 }, flotilla: { x: 82, y: 29, idx: 2, add: true },   /* (batch100 integ: flotilla2 builds two silvers; the galley vault pays the third) */
+  crown: { x: 364, y: 13, idx: 2 }, longwater: { x: 512, y: 26, idx: 2 }, reef: { x: 472, y: 20, idx: 1 }, flotilla: { x: 82, y: 29, idx: 2, add: true },   /* (batch100 integ: flotilla2 builds two silvers; the galley vault pays the third) */
   hurricane: { x: 236, y: 41, idx: 2 }, lamplit: { x: 386, y: 21, idx: 1 }, underleaf: { x: 77, y: 19, idx: 0 },   /* (claude/underleaf3: the high leaf over the herb garden) */ deep: { x: 20, y: 145, idx: 2 },
   waymeet: { x: 626, y: 29, idx: 0 }, undercrown: { x: 80, y: 55, idx: 1 }, fields: { x: 418, y: 13, idx: 2 }, mage: { x: 562, y: 8, idx: 1 },
   caravan: { x: 359, y: 26, idx: 2 },
