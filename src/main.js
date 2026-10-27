@@ -231,6 +231,7 @@ import * as GHD from './great-hound.js';   /* THE GREAT HOUND's own rules (claud
 import { bakeHoundMaster } from './redraw/hunt.js';
 import { bakeBuriedPrince, bakeCourtier, bakeSarcophagus, bakeCrownSpin, PRINCE_F } from './redraw/prince.js';
 import * as LNA from './lance-art.js';
+import * as SHA from './stormhold-art.js';
 import { bakePaladinBoss, bakeLancer, bakeLancerHorse, bakeGuests, bakeBarkeep, bakeDrunk, bakeTownSpikes } from './redraw/waymeet.js';
 import { LEVELS, T, TS, CUSTOM, eliteGate, FRESH_TWIN, LOST_BANNERS, ROAD_OPEN } from './level.js';
 import { floodReach } from './reachcore.js';
@@ -24726,8 +24727,11 @@ function drawLanceBridge(cx, cy) { const e = boss, Z = e && e.lz, A = L.arena; i
     if (!O.on) { const k = 1 - O.t / LANCE3.oil.tell; g.globalAlpha = 0.3 + 0.5 * k; g.strokeStyle = '#ff9a5c'; g.lineWidth = 1; g.strokeRect(x0 + 0.5, oy - 6.5, w - 1, 6); g.fillStyle = '#c9a040'; g.fillRect(x0 + w / 2 - 2, oy - 120, 4, Math.round(114 * k)); g.globalAlpha = 1; }
     else { g.globalAlpha = 0.55; g.fillStyle = '#3a2410'; g.fillRect(x0, oy - 2, w, 2); g.globalAlpha = 1; } }
   if (A.mainGate) { const gx = A.mainGate * TS - cx, top = 26 * TS - cy, full = 4 * TS, down = Math.round(full * (e.alive ? Z.gateK : 1)); if (gx > -40 && gx < VW + 40 && down > 0) {
+    g.fillStyle = '#1e222c'; g.fillRect(gx - 4, top - 8, 2 * TS + 8, 5); g.fillStyle = '#4a5262'; g.fillRect(gx - 4, top - 8, 2 * TS + 8, 1);   /* the lintel's iron shoe */
+    for (const ch of [gx + 3, gx + 2 * TS - 4]) { g.fillStyle = '#8590a0'; for (let yy = top - 24; yy < top - 8; yy += 3) g.fillRect(ch, yy, 2, 2); }   /* the winch chains up into the gatehouse */
     g.fillStyle = '#2a2a34'; g.fillRect(gx - 1, top - 4, 2 * TS + 2, 3); for (let k = 0; k <= 2 * TS; k += 5) { g.fillStyle = '#4a4a58'; g.fillRect(gx + k, top - 4, 2, down + 4); g.fillStyle = '#8a8a9c'; g.fillRect(gx + k, top - 4, 1, down + 4); }
-    g.fillStyle = '#2a2a34'; g.fillRect(gx, top + down - 3, 2 * TS, 2); g.fillStyle = '#c9c9d6'; for (let k = 0; k <= 2 * TS; k += 5) g.fillRect(gx + k, top + down - 1, 2, 2); } }
+    for (let yy = top + 8; yy < top + down - 4; yy += 10) { g.fillStyle = '#2a2a34'; g.fillRect(gx - 1, yy, 2 * TS + 2, 2); g.fillStyle = '#6a6a7c'; g.fillRect(gx - 1, yy, 2 * TS + 2, 1); }   /* the cross-bars */
+    g.fillStyle = '#2a2a34'; g.fillRect(gx, top + down - 3, 2 * TS, 2); g.fillStyle = '#e0e4ee'; for (let k = 0; k <= 2 * TS; k += 5) { g.fillRect(gx + k, top + down - 1, 2, 3); g.fillRect(gx + k, top + down + 1, 1, 1); } } }
 }
 /* THE CHARGER, under him while he rides (the Serjeant's barded horse, scaled up: the art lane redraws it with the Queen's barding) */
 function drawLanceHorse(e, cx, cy) { const S = SPR.lanceHorse; if (!S) return;   /* (claude/stormhold3art) his barded charger (src/lance-art.js): a pose for the gallop, the rear and the wheel */
@@ -31859,6 +31863,12 @@ function drawCastleBack(cx, cy) {
   // every slope; smoothed, the far range softens into the haze the way distance should
   g.imageSmoothingEnabled = true; g.imageSmoothingQuality = 'high'; g.globalAlpha = 0.72 + k * 0.2; g.drawImage(art, bx, by, w, h); g.globalAlpha = 1; g.imageSmoothingEnabled = false;
 }
+/* (claude/stormhold3art) THE QUEEN'S CASTLE, NEAR: at the Long Bridge her walls and towers stand across the gorge (src/stormhold-art.js), growing as you cross, over the far castle's mountain and under the near hills */
+function drawCitadel(cx, cy) {
+  if (!(L.castle && L.arena && L.arena.boss === 'lance')) return; const t = (cx / TS - 395) / 70; if (t <= 0) return; const a = Math.min(1, t), art = PROP.citadel || (PROP.citadel = SHA.bakeCitadel()), kk = Math.max(0, Math.min(1, (cx / TS - 395) / 230));
+  const sc = (0.46 + kk * 0.34) * (VH / 180), w = Math.round(art.width * sc), h = Math.round(art.height * sc), bx = Math.round(VW * 0.58 - w / 2 - cx * 0.03 + (1 - kk) * 40), by = Math.round(VH * 0.78 - h + bgDY(cy) * 0.05);
+  g.imageSmoothingEnabled = true; g.imageSmoothingQuality = 'high'; g.globalAlpha = 0.8 * a; g.drawImage(art, bx, by, w, h); g.globalAlpha = 1; g.imageSmoothingEnabled = false;
+}
 // a goblin house front: timber boards between posts, a stone footing, lit windows with green shutters, horns
 // over the door, and a barred door where there is no way in. Baked once per house.
 function bakeHouseFront(h) {
@@ -32139,8 +32149,8 @@ function drawWorld(cx, cy, showPlayer) {
   else if (FAIR) { FCR.drawSky(g, cx, cy, VW, VH, L, time, dusk(), bgDY(cy)); FB.drawBackdrop(g, cx, cy, VW, VH, L, time, dusk(), bgDY(cy), SET.parallax === 'full'); FCR.drawMid(g, cx, cy, VW, VH, L, time, dusk(), bgDY(cy), { hx: P.x - cx, calm: fairCalm() }); }   /* + the night sky, moon and Wicker Queen before the far hills, and the scarecrows, ghost rides and vanishing townsfolk after the mid layer (claude/faircreepy) */   /* THE HARVEST FAIR's own far fields, steeple, tents and wheel (src/redraw/fair_backdrop.js), not Waymeet's town */
   else { if (SET.parallax === 'full') drawLayer(BG.far, 0.15, VH - 90, cx, cy);
   if (L.unburied && SET.parallax !== 'off') UW.drawFort(g, cx, cy, VW, VH, time);   /* THE CHAPEL-FORT, on its hill: small and far from the first screen, growing as you come (src/redraw/unburied_chapel.js) */
-  drawCastleBack(cx, cy); drawLayer(BG.mid, 0.3, VH - 140, cx, cy); } }
-  else drawCastleBack(cx, cy);
+  drawCastleBack(cx, cy); drawCitadel(cx, cy); drawLayer(BG.mid, 0.3, VH - 140, cx, cy); } }
+  else { drawCastleBack(cx, cy); drawCitadel(cx, cy); }
   if (L.ksar && KSH && KSH.on()) KSH.drawKeep(g, cx, cy, VW, VH, time, bgDY(cy));   /* (claude/ksar2 part B) THE KEEP over the souq, in front of the far dunes */
   if (GDH && GDH.on()) GDH.drawBack(g, cx, cy, time);   /* THE GREAT DRILL: its bore running past (it was an if/else ahead of the backdrop chain: with the boss asleep it skipped every backdrop in the level - claude/minecartart) */
   SEA.seaFar(g, cx, cy, VW, VH, time);   /* a sea level's far water: under the haze and the depth, so they sink into it */
@@ -32495,7 +32505,8 @@ function drawWorld(cx, cy, showPlayer) {
     else if (pr.t === 'winch') { if (pr.bossGate) drawLanceGate(g, pr, cx, cy, TS, time);   /* (claude/bosswave2) THE BRIDGE GATE, hanging or down on him */ const x = Math.round(pr.x - cx), y = Math.round(pr.y - cy); g.fillStyle = '#3a2214'; g.fillRect(x - 1, y - 16, 3, 16); g.fillStyle = '#5a3a24'; g.beginPath(); g.arc(x, y - 12, 6, 0, 7); g.fill(); g.strokeStyle = '#8a5a32'; g.lineWidth = 1; for (let k = 0; k < 4; k++) { const a = pr.spin + k * Math.PI / 2; g.beginPath(); g.moveTo(x, y - 12); g.lineTo(x + Math.cos(a) * 8, y - 12 + Math.sin(a) * 8); g.stroke(); } g.fillStyle = '#5a6270'; g.fillRect(x - 1, y - 13, 3, 3);
       g.strokeStyle = 'rgba(90,98,112,0.8)'; g.beginPath(); g.moveTo(x, y - 18); g.lineTo(pr.gate * TS + 8 - cx, pr.gy0 * TS - cy); g.stroke(); if (pr.open > 0) { g.fillStyle = '#ffd36b'; g.fillRect(x - 6, y - 24, Math.round(12 * pr.open / pr.hold), 2); } }
     else if (pr.t === 'weight' && pr.lamp) { const x = Math.round(pr.x - cx), top = Math.round(pr.y - cy), by = Math.round((pr.state === 'hang' ? pr.y + pr.len : pr.fy) - cy), sx = x - 22, deck = Math.round(pr.y + pr.len + 3 * TS - cy);
-      if (!pr.hang) { g.fillStyle = '#3a2618'; g.fillRect(sx - 1, top - 2, 3, deck - top + 2); g.fillRect(sx - 1, top - 3, 26, 3); g.fillStyle = '#5a3a24'; g.fillRect(sx, top - 2, 1, deck - top); g.fillRect(sx + 18, top, 3, 5); } // the standard and its arm (a hung one has the ceiling instead)
+      if (!pr.hang && L.arena && L.arena.boss === 'lance') { g.fillStyle = '#1e222c'; g.fillRect(sx - 1, top - 2, 3, deck - top + 2); g.fillRect(sx - 1, top - 4, 27, 4); g.fillStyle = '#4a5262'; g.fillRect(sx, top - 2, 1, deck - top); g.fillRect(sx, top - 4, 26, 1); for (let k = 0; k < 5; k++) g.fillRect(sx + 4 + k * 4, top - 2 - k, 1, 1 + k); g.fillStyle = '#8590a0'; g.fillRect(sx + 24, top - 3, 2, 2); g.fillRect(sx + 18, top, 3, 5); g.fillStyle = '#1e222c'; g.fillRect(sx - 3, deck - 2, 7, 3); g.fillStyle = '#c9463d'; g.fillRect(sx, top - 6, 1, 2); }   /* (claude/stormhold3art) the Lance's cages hang from a cast-iron crane bolted to the lookout, not a timber post */
+      else if (!pr.hang) { g.fillStyle = '#3a2618'; g.fillRect(sx - 1, top - 2, 3, deck - top + 2); g.fillRect(sx - 1, top - 3, 26, 3); g.fillStyle = '#5a3a24'; g.fillRect(sx, top - 2, 1, deck - top); g.fillRect(sx + 18, top, 3, 5); } // the standard and its arm (a hung one has the ceiling instead)
       if (pr.state === 'tell' || pr.state === 'fall') { const fl = Math.round((pr.floorY || pr.y + pr.len + 5 * TS) - cy), k = pr.state === 'tell' ? 0.5 : Math.min(1, 0.5 + (pr.fy - pr.y - pr.len) / 120); g.fillStyle = `rgba(20,10,30,${0.25 + 0.35 * k})`; g.beginPath(); g.ellipse(x, fl, 8 + 10 * k, 3, 0, 0, 7); g.fill(); }
       if (pr.state === 'hang' || pr.state === 'tell') { g.strokeStyle = '#5a6270'; g.lineWidth = 1; for (let yy = top; yy < by - 12; yy += 3) { g.beginPath(); g.moveTo(x + 0.5, yy); g.lineTo(x + 0.5, yy + 2); g.stroke(); } }
       if (pr.hang && (pr.state !== 'down' || pr.downT < 1.2)) { const sh = pr.state === 'tell' ? Math.round(Math.sin(time * 70) * 2) : 0; g.drawImage(SPR.chandelier, x + sh - Math.round(SPR.chandelier.width / 2), by - SPR.chandelier.height); }
