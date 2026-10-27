@@ -1,0 +1,37 @@
+# ROOKERY ART + TUNE lane (sonnet) - PARTIAL (art, music, tune done; 3 checks could not finish on this loaded PC)
+HEAD 73325d42 on claude/rookeryart (pushed). Worktree bracken-rookeryart, off claude/rookery 2782bb1f, with master 1dacbb8d (BATCH121) merged first (541ae587). Not merged to master, not deployed.
+**Level hash unchanged: ee598da83779** (tools/rookeryart.mjs asserts it). Nothing in the level's grid or ents was touched; art is in src/redraw/rookery_*.js + hooks.
+
+## Merge with master (BATCH121)
+16 conflicted files: main.js (21 hunks), lab.js, boss-greed, boss-read, foe-react, hint-lines, level.js, marks.js (regenerated with `tells --write`), playtest, boss-rows, check.mjs, level-quality, map-plate-spots, docs/level1-curve, level1-pilot, mash-bot (JSON merged key by key). Both sides kept everywhere: palisadewood + rookery in LEVELS order/GATE/BOSS_ROWS/TIER/EHP/BOSS_T/POISE_SKIP/BOSS_FELL/draw+update chains; Kingswood -> Scree -> Underleaf -> Hanging road untouched. Checked after: rookery, under-order, map-grammar, map-forks, map-spacing, map-scale, tells, level-quality, one-new-foe, boss-read, boss-openings, solid-islands, comments, homepaths, audio-assets, boss-music all green.
+
+## ART (before/after: scratch/lane-reports/rookeryart-before-*.png vs rookeryart-*.png)
+- **Palette** (rookery_pal.js): five stones by area - pearl limestone (Guano Ledges), weathered grey (Nest Terraces), wet slate (Updraft Chimneys), ossuary ivory (Bone Stair), wind-polished rose (Sisters' Crag); cold pearl sky that goes lilac then rose with the climb. Guano white, bone, twig, egg-cream.
+- **Tiles** (rookery_tiles.js): lit lips with guano caps + drips, dry tufts bent east, lichen, feathers/bones lying; faces with world-row strata, wind flutes and guano streaks; overhang ceilings with drips; mass; ONEWAY = wind-cut stone shelf (bone-paved on the Bone Stair); zone seams crossfade over 8 tiles. Piers under the shelves are the rookery's own grey guano-streaked hoodoos (rk flag in forest-supports.js; the Scree's brown ones are gone here).
+- **Backdrop** (rookery_backdrop.js): own sky + pale sun by area; far crag spires (strata, guano, nests on ledges, a bone-arch rib pair on the Bone Stair); two cloud-sea banks that fall away as you climb; THE ROC'S PEAK with her eyrie, masts, torn red banners and the Roc circling, baked at 3 sizes, growing as you climb; THE MONASTERY (roof, cloister, bell tower, lit windows, smoke) far below and behind, sinking into cloud; birds; near wisps, wind streaks, feathers; own foreground strip. (The level is dusk the whole way, which paints over anything drawn before the backdrop chain, so the sky now draws from the chain.)
+- **Rule machines** (rookery_world.js): cracked floor (limed, fractured, painted glint ring), cracked pillar (wind-worn hoodoo, guano cap, black fracture; topples and lies as a round-ended bridge), bone nest (woven bowl, bones in the rim, eggs, hung on a rock arm by three lashings; drops and lies as a platform), cracked slab, roosts, egg caches, dashed gold result ghosts, the area plate. **Updraft**: a stone flue with a bone and feathers on its lip, spiral streams + lifted feathers while it blows, a whistle of lines and a shiver of feathers before.
+- **Foes** (rookery_foes.js, foes1.js bakeHarpy now takes a palette and a shrieker head): crag harpies wear their own pale guano-white skin (L.reskin harpy -> cragharpy; same 6 frames, same AI); HARPY SHRIEKER has her own sheet (rose-brown, 7-feather red crest, throat sac, a scream frame).
+- **THE SHRIEK SISTERS** (shriek_sisters_art.js): three different birds baked per pose from the existing POSE table, every told move its own windup/release picture (B16): DIVER slate-blue with a white wing bar and forked tail; SHRIEKER rose with a red crest fan and a throat sac that swells on the scream; SNATCHER brown, barred, bigger, scarred beak, big talons, the rock in them. Live: rings, cone, stars.
+- **Ambient**: own synth bed 'rookery' (gale, rock whistle, wing beats, far harpy cries, pebbles, feathers); nothing downloaded.
+- Not redrawn: the boss summit's cracked slabs / stones / rocks / marks in shriek-sisters-hands.js drawBack/drawOver are still the greybox shapes (readable, not pretty); the sisters' bestiary card still uses the greybox layout with the new sprites.
+
+## MUSIC (all credited in audio/CREDITS.txt, credits.js, MUSIC_CREDITS, Sound Test row)
+- Level: **"Icy Heights" (theme-loop) by Ecrivain, CC0** - opengameart.org/content/icy-heights. 42.0 s author loop, normalised to -13 LUFS, OGG q4. Replaces Gale Moor's placeholder.
+- Boss: **"The Battle Of Darkness" by Fato Shadow, CC-BY 3.0** - opengameart.org/content/the-battle-of-darkness. 246.1 s, trimmed, -12 LUFS, OGG q4. Replaces shared boss2. The author asks to be messaged on use: not done.
+- Why these: OpenGameArt downloads crawled at ~1 KB/s here; my first pick for the level ("Harmony in the Mists", CC-BY 4.0, 23 MB flac) stalled and was dropped for the small CC0 one.
+
+## TUNE
+- campaign-xp row added (tools/rookeryart-xp.mjs adds only the rookery row): run 824. **The rookery is now L14 (was L13 in the greybox lane) and the Sky Road L15**, from the longer road.
+- **Boss at L14, BOT_PROFILE=human + flasks, practiced, n=6/hero**: before any change k 6/6 w 2/6 p 3/6 = **61%** (warden fights 146-157 s). Changed SS hp 880/660/760 -> 920/690/800 and dive/rock/snatch dmg 26/24/26 -> 22/21/22: **k 5/6 w 3/6 p 4/6 = 67% in band**, spread closer (knight 100% -> 83%, warden 33% -> 50%). n=6 only (credit); dry and a n=12 re-run not done. Mash boss 0/6 (boss left 86-87%); mash level rows restamped (lowest hp knight 0%, warden 2%, pyro 6%). Never invulnerable: tools/rookery.mjs (B15 floor 0.4x every mode) green.
+- **Level-1 curve: NOT fixed.** Baseline 223%; dive dmg 11 -> 8 (kept) and a shrieker nerf (cd 5.6 -> 7.5, call 3 -> 2, reverted) gave 284, 185, 245, 229, 280, 231: noise 185-284, no real drop. Stamped 231% / 3 deaths (act II band 70-400 passes; neighbours 113-146%). The bot's loss is the long route plus lifts, not one foe.
+- k/w spread: see above. Pilot, curve, mash stamped on the unchanged hash.
+
+## CHECKS
+Green: tools/rookery.mjs, rookeryart.mjs (new, registered), level-quality rookery (curve ok, route ok, ruleFight ok; blocking WARN is the greybox's report-only), tells, boss-read, boss-openings, boss-music, audio-assets, solid-islands, one-new-foe, map-*, textfit bestiary (328 screens, all 0), **mobile-perf at 4x CPU: rookery 60.1 fps (p95 16.8 ms), budget 40**.
+Not green / not finished: **textfit levelcard** (all-levels scope times out at 480 s on this loaded PC, same as the greybox lane; a 1750 s run also timed out, rc 124: re-run it at integ on a quiet PC), **corpses** (times out at 600 s, same as master's BATCH121 report; rookery added to its list), rookery-probe page smoke and reach-heroes not re-run after art. Full suite not run.
+
+## QUESTIONS FOR DANIEL (rec first)
+1. Level music is a 42 s CC0 loop (Icy Heights). Rec: ship it; later swap in a longer cold/menacing track if one is picked (the lane can pull "Harmony in the Mists", CC-BY 4.0, on a faster connection).
+2. Level-1 curve stays ~230%. Rec: accept (in the act band); to lower it for real, cut one harpy squad or one fledgling per area (changes the hash: needs re-stamp + reach re-run).
+3. Boss summit slabs/stones are still greybox shapes. Rec: a short polish lane (30 lines) before it ships; art-before-live says wait for it.
+4. The Battle of Darkness author asks to be told of a use. Rec: you send the one message.

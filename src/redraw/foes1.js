@@ -138,8 +138,8 @@ export function bakeHopper(color = 'green') {
 }
 
 // ---------- HARPY ----------
-export function bakeHarpy() {
-  const P = Object.assign({}, EP, { h: '#8a8478', H: '#5a5448', z: '#3a2e22', F: '#b8b0a0', c: '#40344a', C: '#6e5e78', k: '#dcbc9c', K: '#a8805e', r: '#ff4a3a', R: '#8f2f28', m: '#c9a83a', M: '#8a6a1a', t: '#f0e8d8', Y: '#fff1a0' });
+export function bakeHarpy(over = {}, shriek = false) {   /* (claude/rookeryart) over = a palette swap (THE ROOKERY's pale crag harpy); shriek = the HARPY SHRIEKER: a crest fan and a throat sac on the same frames */
+  const P = Object.assign({}, EP, { h: '#8a8478', H: '#5a5448', z: '#3a2e22', F: '#b8b0a0', c: '#40344a', C: '#6e5e78', k: '#dcbc9c', K: '#a8805e', r: '#ff4a3a', R: '#8f2f28', m: '#c9a83a', M: '#8a6a1a', t: '#f0e8d8', Y: '#fff1a0' }, over);
   const f = spr(P);
   // hovering she faces you, turned a touch to her right (the flip handles the other side)
   const body = [
@@ -157,6 +157,7 @@ export function bakeHarpy() {
     '.......m..m.......',
     '......tt..tt......',
   ];
+  if (shriek) { body[0] = '..R.r.r.rr.r.r.R...'.slice(0, 18); body[1] = '...RrrRCrrCRrr.....'.slice(0, 18); body[2] = '....rcCkkkkcr.....'; body[5] = '....c.ckqqkc.c....'; body[6] = '.....ccqqqqcc.....'; body[7] = '.....ckkqqkKc.....'; }
   const mirror = rows => rows.map(r => r.split('').reverse().join(''));
   const wUpL = [
     'z.z...............',
@@ -231,6 +232,7 @@ export function bakeHarpy() {
   /* THE STOOP (4): wings thrown right up and the talons out in front of her - the beat before she drops on you. And HURT (5):
      knocked down a row, eyes screwed shut, wings dropped. (The game draws these by index: 4 while she aims, the last when struck.) */
   const aimBody = body.slice(0, 10).concat(['........mm........', '.........mm.......', '..........ttt.....']);
+  if (shriek) { aimBody[3] = '....c.ckrkrcYc...'.slice(0, 18); aimBody[4] = '.....cckqqkcc.....'; aimBody[5] = '....c.cqqqqqc.c...'.slice(0, 18); aimBody[6] = '.....ccqqqqcc.....'; }   /* the scream: the mouth wide, the sac full */
   const hurtBody = ['..................', ...body.slice(0, 12)].map((r, i) => i === 4 ? '....c.czkzkc.c....' : r);
   const aim = f(lay(wUpL, mirror(wUpL), aimBody)), hurt = f(lay(wDnL, mirror(wDnL), hurtBody));
   return pack([up, dn, dive, down, aim, hurt], 10, 13, 14, 7);

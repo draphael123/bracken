@@ -300,6 +300,18 @@
    "foeXp": 532,
    "bossXp": 234,
    "clear": 319
+  },
+  "kitchengate": {
+   "run": 643,
+   "foeXp": 202,
+   "bossXp": 360,
+   "clear": 121
+  },
+  "rookery": {
+   "run": 824,
+   "foeXp": 362,
+   "bossXp": 317,
+   "clear": 217
   }
  }
 }

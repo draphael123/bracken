@@ -262,6 +262,17 @@ export const STUCK = {
     { id: 'kg-court-gate', zone: [396, 0, 409, 13], at: [405, 11], done: ['plate', 405, 11, 'down'], line: 'THE COURT GATE IS SHUT: STAND ON THE PLATE ON THE STEP' },
   ],
   /* THE PALISADE WOOD (claude/palisadewood): every prop the route needs until it is knocked out (the two ramps, the two watchtowers, the gatehouse ditch's scaffold) */
+  /* THE KITCHEN GATE (claude/kitchengate): every bellows the route needs (strike it: its fire roars and works its copper, its great spit or its trail) */
+  kitchengate: [
+    { id: 'kg-scullery', zone: [50, 28, 72, 39], at: [60, 39], done: ['kgbellows', 60, 39, 'on'], line: 'UP THE WELL: STRIKE THE BELLOWS, STAND IN THE STEAM' },
+    { id: 'kg-brewhouse', zone: [74, 17, 89, 26], at: [85, 26], done: ['kgbellows', 85, 26, 'on'], line: 'THE FACE IS TOO HIGH: STRIKE THE BELLOWS, STAND IN THE STEAM' },
+    { id: 'kg-spit1', zone: [105, 19, 118, 25], at: [108, 25], done: ['kgbellows', 108, 25, 'on'], line: 'THE LEDGE IS TOO HIGH: STRIKE THE BELLOWS, RIDE A SPIT UP' },
+    { id: 'kg-spit2', zone: [120, 14, 146, 19], at: [135, 19], done: ['kgbellows', 135, 19, 'on'], line: 'THE LEDGE IS TOO HIGH: STRIKE THE BELLOWS, RIDE A SPIT UP' },
+    { id: 'kg-trench', zone: [147, 4, 166, 13], at: [161, 13], done: ['kgbellows', 161, 13, 'on'], line: 'STRIKE THE BELLOWS: RISE ON THE STEAM, CATCH A HOOK' },
+    { id: 'kg-door1', zone: [221, 14, 237, 23], at: [223, 23], done: ['kgbellows', 223, 23, 'on'], line: 'A TALLOW DOOR: STRIKE THE BELLOWS, LET THE GREASE BURN' },
+    { id: 'kg-spit3', zone: [300, 8, 315, 21], at: [304, 21], done: ['kgbellows', 304, 21, 'on'], line: 'THE GALLERY IS TOO HIGH: STRIKE THE BELLOWS, RIDE A SPIT UP' },
+    { id: 'kg-door2', zone: [341, 13, 354, 21], at: [343, 21], done: ['kgbellows', 343, 21, 'on'], line: 'THE BUTTERY DOOR: STRIKE THE BELLOWS, LET IT BURN' },
+  ],
   palisadewood: [
     { id: 'pw-edge-ramp', zone: [12, 33, 24, 37], at: [19, 37], done: ['scaffoldprop', 19, 37, 'on'], line: 'THE LEDGE IS TOO HIGH: KNOCK OUT THE SCAFFOLD PROP' },
     { id: 'pw-yard-tower', zone: [136, 27, 146, 31], at: [142, 31], done: ['towerprop', 142, 31, 'on'], line: "NO JUMP CROSSES: KNOCK OUT THE WATCHTOWER'S PROP" },
@@ -433,6 +444,18 @@ export const STUCK = {
     { id: 'mr-frame', zone: [608, 4, 639, 12], at: [629, 12], done: ['gustframe', 633, 12, 'fallen'], line: 'THE HALF-BUILT FRAME LEANS OVER THE GAP ON ONE ROPE' },
   ],
   /* THE SKY ROAD (claude/skyroad): every thermal the route rides, the cloak, every sun-stone the route needs until it is turned, the reel's cage, the sun-disc */
+  /* THE ROOKERY (claude/rookery): every cracked rock the route needs until a dive breaks it (stand on the mark) */
+  rookery: [
+    { id: 'rk-first-floor', zone: [40, 34, 51, 39], at: [49, 39], done: ['crackfloor', 49, 39, 'on'], line: 'THE FLOOR IS CRACKED: STAND ON THE MARK, STEP OFF AS SHE DIVES' },
+    { id: 'rk-roost-slab', zone: [86, 37, 97, 42], at: [95, 42], done: ['crackslab', 95, 42, 'on'], line: 'THE CLIFF IS TOO HIGH: BAIT HER ONTO THE MARK UNDER THE SLAB' },
+    { id: 'rk-first-nest', zone: [106, 32, 117, 37], at: [115, 37], done: ['cracknest', 115, 37, 'on'], line: 'NO JUMP CROSSES: BAIT HER ONTO THE MARK UNDER THE NEST' },
+    { id: 'rk-first-pillar', zone: [140, 32, 151, 37], at: [149, 37], done: ['crackpillar', 149, 37, 'on'], line: 'NO JUMP CROSSES: BAIT HER ONTO THE FOOT OF THE PILLAR' },
+    { id: 'rk-egg-nest', zone: [175, 29, 186, 34], at: [184, 34], done: ['cracknest', 184, 34, 'on'], line: 'NO JUMP CROSSES: BAIT HER ONTO THE MARK UNDER THE NEST' },
+    { id: 'rk-ledge-slab', zone: [217, 20, 228, 25], at: [226, 25], done: ['crackslab', 226, 25, 'on'], line: 'THE FACE IS TOO HIGH: BAIT HER ONTO THE MARK UNDER THE SLAB' },
+    { id: 'rk-span-pillar', zone: [283, 10, 294, 15], at: [292, 15], done: ['crackpillar', 292, 15, 'on'], line: 'NO JUMP CROSSES: STAND ON THE PILLAR FOOT, LET THEM DIVE' },
+    { id: 'rk-last-nest', zone: [313, 10, 324, 15], at: [322, 15], done: ['cracknest', 322, 15, 'on'], line: 'NO JUMP CROSSES: BAIT HER ONTO THE MARK UNDER THE NEST' },
+    { id: 'rk-top-slab', zone: [339, 10, 350, 15], at: [348, 15], done: ['crackslab', 348, 15, 'on'], line: 'THE FACE IS TOO HIGH: BAIT HER ONTO THE MARK UNDER THE SLAB' },
+  ],
   skyroad: [
     { id: 'sk-thermal-1', zone: [27, 41, 36, 52], at: [34, 51], line: 'THE HOT AIR OVER THE ROCK IS THE WAY UP' },
     { id: 'sk-thermal-2', zone: [53, 35, 69, 50], at: [67, 49], line: 'THE RISING AIR AT THE FOOT OF THE MESA' },

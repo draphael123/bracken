@@ -432,14 +432,14 @@
   "bare": true
  },
  "flotilla": {
-  "hash": "9d1f537faa2b",
+  "hash": "8936dd5d2b1b",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 79,
-  "deaths": 9,
-  "kills": 9,
-  "lifts": 115,
+  "hits": 19,
+  "deaths": 5,
+  "kills": 15,
+  "lifts": 107,
   "walked": 100,
   "bare": true
  },
@@ -512,6 +512,30 @@
   "deaths": 0,
   "kills": 72,
   "lifts": 92,
+  "walked": 100,
+  "bare": true
+ },
+ "kitchengate": {
+  "hash": "271f666dee38",
+  "hero": "knight",
+  "steps": 30000,
+  "runs": 3,
+  "hits": 32,
+  "deaths": 2,
+  "kills": 24,
+  "lifts": 62,
+  "walked": 100,
+  "bare": true
+ },
+ "rookery": {
+  "hash": "ee598da83779",
+  "hero": "knight",
+  "steps": 30000,
+  "runs": 3,
+  "hits": 43,
+  "deaths": 3,
+  "kills": 42,
+  "lifts": 71,
   "walked": 100,
   "bare": true
  }

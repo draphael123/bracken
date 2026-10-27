@@ -142,7 +142,7 @@ for (const lv of LEVELS) {
   // 11. AN ARENA WIDER THAN THE SCREEN PUTS THE BOSS OFF IT
   // (the Captain's first arena was 84 tiles and he froze 32 tiles away behind the range cull; the Quartermaster's
   // is 116 and she can still be off screen when she rides a deck)
-  { const OWNS_ROOM = new Set(['roc', 'lance', 'owl', 'champion', 'forgemaster', 'king', 'spider']);   /* (claude/flotilla2: THE ADMIRAL'S CHAMPION leaps the whole lashing; the Quartermaster is benched) */ // these were built to range the whole of it
+  { const OWNS_ROOM = new Set(['roc', 'lance', 'owl', 'champion', 'admiral', 'forgemaster', 'king', 'spider']);   /* (claude/flotilla2: THE ADMIRAL'S CHAMPION leaps the whole lashing; the Quartermaster is benched) */ // these were built to range the whole of it
     for (const k of ['arena', 'mini']) { const A = L[k]; if (!A || !A.boss) continue;
       const w = Math.round((A.x1 - A.x0) / TS);
       if (w > 46 && !OWNS_ROOM.has(A.boss)) note(id, `${k} '${A.boss}' is ${w} tiles wide: over about 44 a boss can be off the screen, so clamp whatever carries it`);

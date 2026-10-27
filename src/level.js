@@ -11,7 +11,9 @@ import { buildHarvestFair } from './harvest-fair.js';   /* THE HARVEST FAIR (doc
 import { buildFogCanal } from './fog-canal.js';   /* THE FOG CANAL (docs/briefs/fog-canal.md): the main road out of WAYMEET, by night barge; its machinery is src/canal-rig.js */
 import { buildWellTown } from './well-town.js';   /* THE WELL TOWN (claude/welltown, the greybox; docs/concepts/the-well-town.md): desert arc level 2, after THE SUNKEN CARAVAN; its mini is THE GANG LEADER (src/gang-leader.js) and its boss THE CISTERN QUEEN (src/cistern-queen.js, claude/welltown3) */
 import { buildRedGorge } from './red-gorge.js'; import { buildSkyRoad } from './sky-road.js'; import { buildGlassSea } from './glass-sea.js'; import { buildKsar } from './ksar.js'; import { buildTowpath } from './towpath.js';   /* THE TOWPATH (claude/towpath, the greybox): the bridge level WAYMEET -> THE TOWPATH -> THE FOG CANAL; its boss is THE FOG KNIGHT (src/fog-knight.js) */ import { buildLitChurch, RULE as CHURCH_RULE } from './lit-church.js';   /* THE BANDIT KSAR (claude/ksar, the greybox): the main road past THE GLASS SEA; its boss is THE HAWK-MISTRESS */   /* THE GLASS SEA (claude/glasssea, the greybox): desert arc level 4, past THE RED GORGE; its boss is THE GLASS COLOSSUS */   /* THE SKY ROAD (claude/skyroad, the greybox; docs/concepts/sky-road.md): after GALE MOOR on the main road; its boss is THE ROC (src/roc-eyrie.js) */   /* THE RED GORGE (claude/redgorge, the greybox; docs/concepts/red-gorge.md): desert arc level 3, after THE WELL TOWN; its boss is THE RAPTOR MATRIARCH (src/raptor-matriarch.js, claude/redgorge2 - THE GREAT RED CRAB, src/gorge-crab.js, is benched) */ import { buildBuriedCity } from './buried-city.js'; import { buildSealedPyramid, RULE as PYRAMID_RULE } from './sealed-pyramid.js';   /* THE SEALED PYRAMID (claude/sealedpyramid, the greybox): the main road past THE BURIED CITY; its boss is THE SCARAB MOTHER */   /* THE BURIED CITY (claude/buriedcity, the greybox): the main road past THE BANDIT KSAR; its boss is THE HOURGLASS KING */
+import { buildRookery, RK_RULE } from './rookery.js';   /* THE ROOKERY (claude/rookery, the OPUS GREYBOX): between GALE MOOR and THE SKY ROAD - src/rookery-hands.js its rule, src/shriek-sisters.js its boss */
 import { buildLumberTrail } from './lumber-trail.js';   /* THE LUMBER TRAIL (claude/lumbertrail, the OPUS greybox; scratch/brief-first2.md sec.1): BRACKEN WOOD reworked - level id 'wood', its boss THE HORNET QUEEN */
+import { buildKitchenGate, KG_RULE } from './kitchen-gate.js';   /* THE KITCHEN GATE (claude/kitchengate, the OPUS GREYBOX): between THE UNDERCROWN and HIGHCROWN - src/kitchen-hands.js its rule, src/grubbag.js its boss */
 import { buildPalisadeWood, PW_RULE } from './palisade-wood.js';   /* THE PALISADE WOOD (claude/palisadewood, the greybox): between THE ROOTWAY and KINGSWOOD - src/palisade-hands.js its rule, src/battering-beast.js its boss */
 import { buildUnderleaf3, UL3_RULE } from './underleaf3.js'; import { buildRootway } from './rootway.js'; import { buildKingswood } from './kingswood.js'; import { buildSporewood } from './sporewood.js';   /* SPOREWOOD 2, THE MOTHER'S KNOT (claude/sporewood2): the level laid by hand, src/sporewood-hands.js its rule, src/mother-cap2.js its boss */   /* KINGSWOOD 2, THE KING'S HUNTING WOOD (claude/kingswood2): the level laid by hand, src/kingswood-hands.js its rule */   /* THE ROOTWAY (claude/rootway, the greybox; .claude/briefs/brief-rootway.md): the bridge between SPOREWOOD and KINGSWOOD; its boss is THE GOBLIN HUNTMASTER (src/huntmaster.js) */
 import { buildMinecart } from './minecart.js';   /* THE DEEP RAILS (claude/minecart, the greybox): the side road off the Ore Road; its boss is THE GREAT DRILL (src/great-drill.js) */
@@ -4842,6 +4844,16 @@ function shipwreckReef() {
 // the Quartermaster is benched). What moves is the water between the hulls: ropes to swing, planks to drop, nets to
 // climb, and a long way down into the sea if you misjudge it.
 function theFlotilla() {
+  /* THE FLOTILLA 3 (claude/flotilla3, 2026-10-25; scratch/brief-flotilla3-1018.md C + D folded with the APPROVED review scratch/review-flotilla-1018.md): ONE RULE -
+     STRIKE A BREECH AND THE GUN CLEARS ITS LINE. WHEN HIS FLAG RUNS RED, HIS GUNS CLEAR YOURS. Your guns are the verb (a deck gun's round shot: doors, the press gang, a
+     keg, his plates; a swivel laid down on a rotten deck; a top gun laid up at a yard's lift); HIS guns are the told hazard (src/flotilla3.js: his signal hoist runs
+     up red, the row is marked, the shot crosses it - get behind something solid or off the row), and his broadside blows a copper door for you. Sections, each
+     taught -> tested -> remixed -> examined, a shrine closing it: THE ROCK 0-30 (the flag taught: his shot falls short) | THE GALLEY 31-96 (her bow chaser down the
+     press gang's line; the first real broadside) | THE GALLEY HULL 97-208 (the benches; the broadside crosses her wells - stop a bench under it) | THE PRIZE
+     209-288 (a pirate sloop boarding the hulk: cut boarders off their lines, fight on their deck, fire her swivel down through the hulk's deck) | THE RIGGING RUN
+     289-385 (the top gun drops a yard; chain shot on his flag - be on a mast) | THE POWDER SHIP 386-539 (copper doors, the powder line, the crate hatch, one gun two
+     doors and HIS shot for the far one; the PLATED BOSUN's exam) | THE LASHINGS 540-603: THE ADMIRAL (src/admiral.js). Light steps golden hour -> night (L.tints).
+     Kept from the Flotilla 2 below: */
   /* THE FLOTILLA 2 (claude/flotilla2, the OPUS greybox, 2026-10-17; scratch/brief-flotilla2.md): x2 LENGTH ('way too short'). The rule is kept: FOUR HULLS LASHED
      TOGETHER, THE WAY PAST IS OVER THEM, NOT THROUGH. Six NAMED AREAS, each one verb taught -> tested -> remixed -> examined, a shrine closing the big ones:
        THE ROCK 0-30 | 1. THE GALLEY 31-96 (the press gang) | THE GALLEY HULL 97-208 (her rowing benches pump up and down over the bilge: free a pressed
@@ -4882,6 +4894,7 @@ function theFlotilla() {
   ent('sign', 2, 25, { text: 'THE FLOTILLA: FOUR SHIPS LASHED INTO A TOWN. PRESSED FISHERFOLK WORK THE OARS.' });
   ent('deco', 17, 25, { kind: 'rowboat' });
   ent('sign', 14, 25, { text: 'CLIMB THE NETS ON THE HULLS TO GET OUT OF THE WATER. YOU WILL BE SEEN.' });
+  ent('sign', 8, 25, { text: 'THE ADMIRAL\'S FLAGSHIP LIES OFF THE TOWN. WHEN HER FLAG RUNS RED, HER GUNS SPEAK.' }); ent('signalhoist', 21, 25, { zone: 'rock' });   /* (claude/flotilla3) THE ROCK: the tell taught safe - his shot falls short and throws spray */
   coins([6, 25], [12, 25], [18, 25]);
   // FROM THE ROCK TO THE GALLEY: a spar lashed off the rock, then up onto the galley's BOWSPRIT (no crates in the air: brief item 2)
   plat(23, 26, 4); net(29, 30, 26, 37);   /* the spar lashed to the rock's lip, and the net up the galley's bow out of the water */
@@ -4895,14 +4908,17 @@ function theFlotilla() {
   rail(31, 34, 23);
   net(50, 51, 12, 23); plat(47, 11, 7); // her shrouds and the crow's nest
   ent('lookout', 50, 10, { face: 1 });
-  ent('sign', 36, 23, { text: 'THE GALLEY. STOP THE LOOKOUT BEFORE HIS WHISTLE WAKES THE TOWN.' });
+  ent('sign', 40, 23, { text: 'THE GALLEY. STOP THE LOOKOUT BEFORE HIS WHISTLE WAKES THE TOWN.' });
+  ent('cannon', 37, 23, { deck: true, aim: 1 }); ent('sign', 36, 23, { text: 'HER BOW CHASER IS LAID DOWN HER DECK. STRIKE THE BREECH: THE SHOT CLEARS ITS LINE.' });   /* (claude/flotilla3) TEACH the verb: a miss costs nothing */
+  block(70, 70, 22, 23); block(87, 87, 22, 23);   /* her MANTLETS: shot-plank screens on the deck - behind one, his broadside does not reach you */
+  ent('signalhoist', 95, 23, { zone: 'galley' });
   ent('vault', 82, 29);
   for (const x of [38, 60, 80]) ent('deco', x, 29, { kind: 'oarBench' });
   ent('deco', 44, 29, { kind: 'oar' }); ent('deco', 70, 29, { kind: 'oar' });
   // THE PRESS GANG: a crowd in the open with a bosun whistling them onto you - the crowd is the problem to solve
-  ent('sailor', 44, 23, { face: -1 }); ent('netter', 50, 23, { face: -1 }); ent('crab', 56, 23, { face: 1 });
+  ent('cutlass', 44, 23, { face: -1 }); ent('netter', 50, 23, { face: -1 }); ent('sapper', 56, 23, { face: 1, cnSkin: 'kegroller' });   /* (claude/flotilla3: no crabs - a KEG ROLLER) */
   ent('cutlass', 61, 23, { face: 1 }); ent('cutlass', 68, 23, { face: -1 }); ent('cutlass', 74, 23, { face: -1 });
-  ent('sailor', 84, 23, { face: 1 }); ent('cutlass', 90, 23, { face: -1 });
+  ent('marine', 84, 23, { face: 1, cnSkin: 'pistoleer' }); ent('cutlass', 90, 23, { face: -1 });   /* (claude/flotilla3) a PISTOLEER: two shots, then the reload */
   ent('bosun', 78, 23, { face: -1 }); ent('bosun', 66, 29, { face: -1 }); ent('lookout', 51, 10, { face: -1 });
   ent('sign', 42, 23, { text: 'THE PRESS GANG: BACK TO THE MAST AND SWING WIDE, OR KILL THE BOSUN FIRST.' });
   ent('sign', 56, 23, { text: 'THEIR GALLEY FIRE IS STILL LIT. WHOEVER WAS COOKING LEFT IN A HURRY.' });
@@ -4918,7 +4934,8 @@ function theFlotilla() {
   coins([36, 29], [48, 29], [56, 29], [74, 29], [88, 29]);
   coins([50, 17], [50, 14], [49, 10], [52, 10]);
   /* THE CHAMPION, FORESHADOWED (B8): told on the first deck, and again at every hull */
-  ent('sign', 92, 23, { text: "THE ADMIRAL'S CHAMPION HOLDS HIS LASHING. ONLY HIS OWN GUNS PUT HIM DOWN." });
+  ent('sign', 92, 23, { text: 'THE ADMIRAL WEARS SALVAGED HULL IRON. A BLADE ONLY CHIPS IT: HIS OWN GUNS BLOW IT OFF.' });
+  /* (claude/flotilla3) review fix 6 wanted THE GALLEY's shrine moved after the waist (~95); tools/checkpoint-gaps.mjs wants one BEFORE every ambush room (NO DOOR) - the waist's door shrine at 57 stays (QUESTIONS in the lane report) */
 
   // ================= THE GALLEY HULL: her stern, where they keep the oars =================
   // Her stern deck burned off in some old fight and they never planked it again: you look straight down into her rowing well, and the benches are WORKING -
@@ -4934,7 +4951,9 @@ function theFlotilla() {
   ent('sign', 113, 23, { text: 'STRIKE A ROWER\'S CHAIN AND HE LETS GO: HIS BENCH STOPS WHERE IT IS.' });
   coins([106, 22], [114, 23]);
   // the deck between: an overseer and a hand
-  ent('bosun', 115, 23, { face: -1 }); ent('sailor', 116, 23, { face: -1 });
+  ent('bosun', 115, 23, { face: -1 }); ent('cutlass', 116, 23, { face: -1 });
+  block(113, 113, 22, 23); block(146, 146, 22, 23);   /* (claude/flotilla3) her mantlets between the wells */
+  ent('sign', 110, 23, { text: 'ON HIS RED FLAG HIS SHOT SWEEPS HER WELLS. DUCK A BENCH LOW, OR GET BEHIND A MANTLET.' }); ent('signalhoist', 204, 23, { zone: 'hull' });
   ent('deco', 112, 23, { kind: 'coiledCable', v: 1 });
   // TEST: three benches out of step across a wide well, a netter on the far side
   bench(121, 29, 4, 3.6, 0.0); bench(127, 28, 4, 3.2, 0.45); bench(133, 29, 5, 4.0, 0.2);
@@ -4960,62 +4979,63 @@ function theFlotilla() {
   ent('check', 207, 23);   /* THE GALLEY HULL's shrine: on her stern, after its exam (A10c) */
   ent('coin', 140, 33); ent('coin', 139, 33);   /* down in the bilge at the far end of the wide well, for a swimmer who climbs back out by the rib */
 
-  // ================= THE LONG GAP: the galley's stern boom, two lines out of the tops, the hulk's bow boom =================
+  // ================= THE LONG GAP: the galley's stern boom, two lines out of the tops, the sloop's bowsprit =================
   plat(209, 22, 4); ent('deco', 210, 22, { kind: 'rigging', v: 1 });   /* the galley's stern boom (a spar off her taffrail, stayed to her mizzen) */
   movers.push({ kind: 'swing', px: 214 * TS, py: 9 * TS, arm: 112, x: 0, y: 0, w: 32, h: 8, period: 3.4, phase: 1.2, deck: 24 });
   movers.push({ kind: 'swing', px: 220 * TS, py: 8 * TS, arm: 120, x: 0, y: 0, w: 32, h: 8, period: 3.0, phase: 0.2, deck: 23 });
-  net(222, 223, 18, 37); plat(220, 21, 3);   /* the hulk's bow boom and the net up her side */
-  coins([210, 21], [214, 19], [221, 20]);
-  ent('manta', 216, 29);   /* skims the harbour under the swinging ropes and dives at whoever lands on the Galley or the Hulk */
+  plat(221, 22, 4); ent('deco', 222, 22, { kind: 'rigging', v: 0 });   /* the SLOOP's bowsprit, stayed to her foremast: off the line onto it, then down to her deck */
+  net(224, 224, 26, 33);   /* the net up her bow out of the harbour */
+  coins([210, 21], [214, 19], [222, 21]);
+  ent('manta', 216, 29);   /* skims the harbour under the swinging ropes */
 
-  // ================= 2. THE HULK: a prize they never finished stripping (the old hulk, moved 112 east) =================
-  const K = 112;   /* the hulk's old columns + K */
-  block(113 + K, 176 + K, 22, 37); hullZones.push([113 + K, 176 + K, 22, 37]);
-  rot(120 + K, 130 + K, 22); rot(146 + K, 156 + K, 22); // her planking is rotten through here
-  air(116 + K, 173 + K, 24, 29); air(134 + K, 138 + K, 22, 23); // the hold, and the hole down into it
-  pools.push({ x0: (116 + K) * TS, x1: (174 + K) * TS, y: 26 * TS, bottom: 30 * TS, shallow: false, swim: true, clear: true });
-  net(170 + K, 171 + K, 22, 29); net(120 + K, 121 + K, 22, 29); // her ladders: up out of the flooded hold at either end
-  ent('silver', 150 + K, 29);
-  ent('sign', 116 + K, 21, { text: 'THE HULK. GREY PLANKS WILL NOT HOLD YOU: STAND ON ONE AND YOU GO THROUGH.' });
-  ent('boarder', 128 + K, 21, { face: -1 }); ent('boarder', 162 + K, 21, { face: -1 });
-  ent('boarder', 152 + K, 21, { face: -1 }); ent('boarder', 156 + K, 21, { face: -1 }); ent('bosun', 160 + K, 21, { face: -1 });
-  ent('sapper', 168 + K, 21, { face: -1, cnSkin: 'powderboy' }); ent('netter', 130 + K, 29, { face: 1 });
-  ent('sign', 148 + K, 21, { text: 'NO ROOM TO SWING IN THE NET DOORWAY: GO THROUGH HEAVY, OR ROUND BY THE HOLD.' });
-  ent('marine', 146 + K, 9, { face: -1 });
-  ent('sign', 144 + K, 21, { text: 'THE HOLD IS FLOODED. THERE IS A LADDER AT EITHER END.' });
-  ent('deco', 140 + K, 21, { kind: 'plunder', v: 1 }); ent('deco', 168 + K, 21, { kind: 'rumBarrels', v: 0 });
-  ent('coin', 172 + K, 28);
-  ent('deco', 124 + K, 29, { kind: 'hammock', v: 1 }); ent('deco', 145 + K, 9, { kind: 'crowNest' });
-  net(145 + K, 146 + K, 10, 20); plat(144 + K, 10, 3);
-  ent('deco', 145 + K, 21, { kind: 'mastTall', v: 1 }); ent('deco', 152 + K, 14, { kind: 'sailRag', v: 1 });
-  ent('deco', 122 + K, 19, { kind: 'rigging', v: 1 }); ent('deco', 166 + K, 19, { kind: 'rigging', v: 0 });
-  ent('deco', 145 + K, 8, { kind: 'pennant', v: 1 });
-  for (const x of [120, 136, 150, 164]) ent('deco', x + K, 24, { kind: 'gunport', v: (x / 2) % 2 });
-  ent('deco', 114 + K, 21, { kind: 'boardingNet' });
-  coins([118 + K, 21], [134 + K, 21], [142 + K, 21], [160 + K, 21], [172 + K, 21]);
-  coins([120 + K, 28], [126 + K, 28], [154 + K, 28], [166 + K, 28]);
-  coins([145 + K, 16], [146 + K, 12]);
-  // HER GUN, AND WHERE YOU FIRST SEE ONE: one blow on the breech and it fires down the deck - the deck clears, and you know what the Powder Ship's are for
-  ent('cannon', 118 + K, 21, { deck: true, aim: 1 });
-  ent('sign', 114 + K, 21, { text: 'STRIKE THE BREECH AND THE GUN FIRES DOWN THE DECK. THEN IT IS TOO HOT A WHILE.' });
-  { const gat = (x, y) => L.grid[y * W + x];   /* THE AIR IN THE HULK: up under her deck beams, leaking off the bed of her, and in the clams (the old hulk's, moved with her) */
+  // ================= 2. THE PRIZE: a pirate SLOOP moored off the old HULK, her crew boarding the hulk on grapnel lines (claude/flotilla3, review fix 4) =================
+  // THE BOARDING BEAT (replaces the hulk's grey rot planks - a hazard, not a verb). TEACH: her boarders swing down off the hulk at you on their lines - CUT A BOARDER
+  // OFF HIS LINE (over the harbour he drops into it). TEST: FIGHT ON THEIR DECK - the sloop's deck is low and short, the harbour both ends. REMIX: her SWIVEL on the poop
+  // is laid DOWN at the hulk's rotten deck (the gun rule aimed down - its target drawn first): fire it and the deck is blown open into the hulk's flooded hold - the
+  // only way past her DECKHOUSE (too high to climb). Swim under it, up her after ladder. EXAM: a grapnel boarder off her mizzen, a pistoleer and her SWIFT boarder on
+  // the after-deck - and THE PRIZE's shrine.
+  block(225, 250, 26, 37); hullZones.push([225, 250, 26, 37]);   /* the sloop: a low black hull, her deck four rows under the hulk's */
+  block(242, 250, 19, 25); net(241, 241, 19, 25);   /* her raised poop, and the net up its face */
+  mast(232, 13, 25, 3); ent('deco', 233, 12, { kind: 'pennant', v: 2 });   /* her mast */
+  ent('sign', 227, 25, { text: 'A PIRATE SLOOP, BOARDING THE OLD HULK. STRIKE A BOARDER ON HIS LINE AND HE DROPS.' });
+  ent('marine', 237, 25, { face: -1, cnSkin: 'pistoleer' }); ent('cutlass', 240, 25, { face: -1 });   /* TEST: their deck, short, the harbour at both ends */
+  ent('deco', 229, 25, { kind: 'coiledCable', v: 1 }); ent('deco', 238, 25, { kind: 'rumBarrels', v: 1 });
+  coins([228, 25], [234, 24], [239, 25], [246, 18]);
+  /* REMIX: HER SWIVEL, laid DOWN at the hulk's rotten deck: one blow on the breech, and the shot blows it open into her hold */
+  ent('aimgun', 248, 18, { id: 'swivel', tx: 258, ty: 22, hole: [257, 260, 22, 23] });
+  ent('sign', 244, 18, { text: 'HER SWIVEL IS LAID ON THE HULK\'S ROTTEN DECK. STRIKE THE BREECH: IT BLOWS THE DECK OPEN.' });
+  // THE OLD HULK: a prize they never finished stripping. Her DECKHOUSE walls her deck in two; her hold is flooded, and it runs under it
+  block(254, 288, 22, 37); hullZones.push([254, 288, 22, 37]);
+  air(256, 285, 24, 29); pools.push({ x0: 256 * TS, x1: 286 * TS, y: 26 * TS, bottom: 30 * TS, shallow: false, swim: true, clear: true });   /* the hold, and the water in it */
+  block(263, 266, 3, 21);   /* HER DECKHOUSE: built up off her deck to the mizzen yard's height - nothing goes over it */
+  net(282, 283, 22, 29);   /* her after ladder: up out of the flooded hold through her deck */
+  ent('grapnel', 256, 21, { face: -1, px: 252, py: 13, land: [227, 240] }); ent('grapnel', 261, 21, { face: -1, px: 253, py: 12, land: [229, 241] });   /* TEACH: her boarders, swinging down onto the sloop at you */
+  ent('sign', 255, 21, { text: 'HER DECKHOUSE WALLS THE HULK. THE WAY ON IS DOWN THROUGH HER DECK, AND UNDER IT.' });
+  ent('deco', 264, 2, { kind: 'pennant', v: 1 }); ent('deco', 258, 21, { kind: 'boardingNet' });
+  ent('silver', 270, 29);   /* down in her hold, under the deckhouse (off the route: a secret) */
+  coins([256, 21], [261, 21], [258, 28], [266, 28], [274, 28], [279, 28], [283, 20]);
+  /* EXAM: the after-deck - a grapnel boarder off her mizzen top, a pistoleer, and her SWIFT boarder at the mizzen (ELITES) */
+  ent('grapnel', 287, 8, { face: -1, px: 282, py: 4, land: [270, 281] }); ent('marine', 272, 21, { face: 1, cnSkin: 'pistoleer' });
+  ent('deco', 268, 21, { kind: 'plunder', v: 1 }); ent('deco', 279, 21, { kind: 'rumBarrels', v: 0 });
+  ent('check', 304, 8);   /* THE PRIZE's shrine: up on the next mast's top, past the top gun's yard (the hulk's after-deck was 78 route tiles from the galley hull's - tools/checkpoint-gaps MIN 80): on the hulk's after-deck, after its exam (A10c) */
+  { const gat = (x, y) => L.grid[y * W + x];   /* THE AIR IN THE HULK: up under her deck beams and in the clams */
     const hold = x => gat(x, 28) === T.AIR && gat(x, 29) === T.AIR && gat(x, 30) === T.SOLID;
     const roofed = (x, n) => { for (let q = 0; q < n; q++) if (!(gat(x + q, 23) === T.SOLID && gat(x + q, 24) === T.AIR && gat(x + q, 26) === T.AIR)) return false; return true; };
-    for (const x of [122 + K, 150 + K]) if (roofed(x, 6)) pocket(x, x + 5, 24, 26);
-    for (const x of [126 + K, 140 + K, 154 + K, 166 + K]) if (hold(x)) vent(x, 29, 4);
-    for (const x of [132 + K, 160 + K]) if (hold(x)) clam(x, 29);
-    for (const x of [130 + K, 162 + K]) if (hold(x)) ent('deco', x, 29, { kind: 'airBell' }); }
+    for (const x of [263, 274]) if (roofed(x, 6)) pocket(x, x + 5, 24, 26);
+    for (const x of [262, 272, 278]) if (hold(x)) vent(x, 29, 4);
+    for (const x of [268, 276]) if (hold(x)) clam(x, 29);
+    for (const x of [266]) if (hold(x)) ent('deco', x, 29, { kind: 'airBell' }); }
 
   // ================= THE RIGGING RUN: over the harbour on her yards and lashings =================
-  // Between the Hulk and the Powder Ship there is no deck at all: the two are lashed at the tops. You go UP the hulk's last mast and across on what the riggers
-  // left - YARDS ON THEIR STAYS that ride out and back as the two hulls rock apart and together (src/flotilla2.js), a LASHING you walk, a line to swing. The
-  // harbour is under all of it, and a fall is the foul water and a climb back up a hull's net. TEACH (one slow yard, a net under it) -> TEST (two yards out of
-  // step) -> REMIX (a yard under a marine's fire) -> EXAM (three yards and a swing, petrels diving) -> down the Powder Ship's foremast to her deck.
+  // Between the Hulk and the Powder Ship there is no deck at all: the two are lashed at the tops. You go UP the hulk's mizzen and across on what the riggers left.
+  // TEACH (the trebuchet test, review fix 5): THE GUN IN HER FIGHTING TOP is laid UP at a yard's LIFT (the dotted line shows it first): fire it, the lift parts, and the
+  // yard drops LEVEL across to the next mast - a bridge, and it stays. TEST: two yards out of step. REMIX: a yard under a marine's fire. EXAM: three yards and a swing,
+  // petrels diving - and over all of it, on HIS red flag, CHAIN SHOT rakes the yards at their height: be on a mast (down the shrouds), not a yard.
   mast(286, 9, 21, 5);   /* the hulk's mizzen: up her shrouds to the top at row 9 */
-  ent('sign', 282, 21, { text: 'THE RIGGING RUN: NO DECK BETWEEN THESE TWO. UP THE MAST, AND ACROSS ON HER YARDS.' });
-  // TEACH: one yard, slow, over a net strung between the hulls (a fall here is cheap)
-  yard(289, 10, 7, 5.0, 0.0);
-  for (let x = 288; x <= 301; x++) set(x, 20, T.NET);   /* the boarding net strung under the first yard: a fall is a climb, not the water */
+  ent('sign', 281, 21, { text: 'THE RIGGING RUN: NO DECK BETWEEN THESE TWO. UP THE MAST, AND ACROSS ON HER YARDS.' });
+  ent('aimgun', 285, 8, { id: 'topgun', tx: 295, ty: 3, bridge: [289, 300, 10] });   /* her fighting-top gun, laid UP at the yard's lift */
+  for (let x = 288; x <= 301; x++) set(x, 20, T.NET);   /* the boarding net strung under the yard: a fall is a climb, not the water */
+  ent('sign', 284, 8, { text: 'HER TOP GUN IS LAID ON THE YARD\'S LIFT. STRIKE THE BREECH AND THE YARD DROPS ACROSS.' });
   mast(302, 9, 29, 5); block(301, 304, 30, 37);   /* a mast stepped on a sunken wreck's bones (the wreck is under the water: it stands on something) */
   ent('sign', 300, 8, { text: 'HER YARDS RIDE OUT AND BACK AS THE HULLS ROCK. STEP ON WHEN ONE COMES TO YOU.' });
   coins([292, 9], [296, 9], [302, 8]);
@@ -5037,6 +5057,7 @@ function theFlotilla() {
   // EXAM: three yards in a chain over the open harbour, petrels diving, the Powder Ship's foremast at the end
   yard(361, 9, 5, 3.4, 0.0); yard(368, 10, 6, 3.0, 0.4); yard(376, 9, 5, 3.6, 0.75);
   ent('petrel', 368, 3, { face: -1 }); ent('petrel', 378, 4, { face: -1 }); ent('manta', 370, 29);
+  ent('signalhoist', 388, 8, { zone: 'chain' });   /* (claude/flotilla3) his flag for the chain shot, on the powder ship's foremast top */
   ent('sign', 359, 6, { text: 'THE LAST OF HER RIGGING. THE YARDS RIDE FASTER WHERE THE SWELL RUNS UNDER THEM.' });
   coins([364, 8], [371, 9], [379, 8]);
 
@@ -5059,8 +5080,8 @@ function theFlotilla() {
   // TEST: THE POWDER LINE - a long deck, a gun at its end, and her crew coming down it toward you in a line
   ent('cannon', 410, 24, { deck: true, aim: 1 });
   ent('sign', 409, 24, { text: 'THEY COME DOWN THE DECK IN A LINE. LET THEM LINE UP, THEN FIRE.' });
-  ent('cutlass', 424, 24, { face: -1 }); ent('sailor', 430, 24, { face: -1 }); ent('cutlass', 436, 24, { face: -1 }); ent('boarder', 442, 24, { face: -1 });
-  ent('keg', 428, 24); ent('sapper', 446, 24, { face: -1, cnSkin: 'powderboy' });
+  ent('cutlass', 424, 24, { face: -1 }); ent('cutlass', 430, 24, { face: -1 }); ent('cutlass', 436, 24, { face: -1 }); ent('boarder', 442, 24, { face: -1 });
+  ent('keg', 428, 24); ent('sapper', 446, 24, { face: -1, cnSkin: 'kegroller' });
   ent('marine', 432, 16, { face: -1 }); plat(428, 17, 9); net(436, 436, 18, 24);   /* a fighting top over the waist, its shrouds to the deck */
   ent('deco', 418, 24, { kind: 'kegStack' }); ent('deco', 438, 24, { kind: 'chickenCoop' });
   coins([416, 24], [426, 24], [434, 16], [440, 24]);
@@ -5071,25 +5092,25 @@ function theFlotilla() {
   ent('cannon', 448, 24, { deck: true, aim: 1 });
   ent('sign', 449, 23, { text: 'THE HATCH IS POWDER CRATES: BLOW THE KEG ON IT. STRIKE IT, OR SHOOT IT.' });
   air(452, 478, 26, 29);   /* her 'tween deck, under the mainmast wall */
-  ent('sapper', 466, 28, { face: -1, cnSkin: 'powderboy' }); ent('netter', 472, 28, { face: -1 });
+  ent('sapper', 466, 28, { face: -1, cnSkin: 'kegroller' }); ent('netter', 472, 28, { face: -1 });
   ent('deco', 462, 28, { kind: 'kegStack' }); ent('deco', 468, 28, { kind: 'lanternDeck', v: 1 });
   net(477, 478, 25, 29); air(477, 478, 25, 25);   /* the ladder up through her hatch beyond the wall */
   coins([456, 28], [462, 27], [470, 28]);
   // REMIX 2: ONE GUN, TWO DOORS - fire, and the first door goes; the gun is hot; her men come through it; fire again and the second goes
   ent('cannon', 482, 24, { deck: true, aim: 1 }); door(490); door(500);
-  ent('cutlass', 495, 24, { face: -1 }); ent('marine', 497, 24, { face: -1 });
-  ent('sign', 480, 24, { text: 'ONE GUN, TWO DOORS. THE FIRST SHOT TAKES THE FIRST. LET IT COOL, AND KEEP THEM OFF IT.' });
+  ent('cutlass', 495, 24, { face: -1 }); ent('marine', 497, 24, { face: -1, cnSkin: 'pistoleer' }); ent('signalhoist', 503, 24, { zone: 'doors' });
+  ent('sign', 480, 24, { text: 'ONE GUN, TWO DOORS. YOUR SHOT TAKES THE NEAR ONE; ON HIS RED FLAG, HIS TAKES THE FAR.' });
   coins([486, 24], [494, 24], [497, 24]);
   // EXAM: THE ADMIRAL'S MEN, on the deck before his lashing: a gun behind you, a heavy elite coming at you down its line, a marine in the mizzen
   ent('cannon', 504, 24, { deck: true, aim: 1 });
   ent('cutlass', 520, 24, { face: -1 }); ent('cutlass', 526, 24, { face: -1 }); ent('keg', 516, 24);
   mast(522, 8, 24, 5); ent('marine', 522, 7, { face: -1 });
-  ent('sign', 506, 24, { text: 'THE ADMIRAL\'S MEN GUARD HIS LASHING. A ROUND SHOT PUTS DOWN WHAT NO BLADE WILL.' });
+  ent('sign', 506, 24, { text: 'HIS PLATED BOSUN WEARS HULL IRON LIKE HIS ADMIRAL. ROUND SHOT DOWNS WHAT NO BLADE WILL.' }); ent('signalhoist', 534, 24, { zone: 'exam' });
   ent('deco', 512, 24, { kind: 'kegStack' }); ent('deco', 530, 24, { kind: 'plunder', v: 0 });
   coins([510, 24], [518, 24], [524, 24], [532, 24]);
   for (const x of [394, 414, 434, 466, 488, 512, 530]) ent('deco', x, 27, { kind: 'gunport', v: x % 2 });
   ent('check', 535, 24);   /* the shrine before the boss's lashing (A10c: +1 before the boss) */
-  ent('sign', 537, 24, { text: 'THE LASHINGS. HE WAITS ON THE FLAGSHIP\'S SIDE. HIS GUNS ARE AT EITHER END.' });
+  ent('sign', 537, 24, { text: "THE ADMIRAL WAITS ON THE LASHINGS. IN A GUN'S LINE, ONE SHOT BLOWS HIS IRON OFF." });
 
   // ================= THE LASHINGS: the Powder Ship's stern lashed to the Flagship's waist (src/admirals-champion.js CH_STAGE: 52 columns, a duel's room) =================
   const AS = 540, AR = 25, S = { W: 52, gap: [24, 26], guns: [3, 48], him: 40 };
@@ -5098,7 +5119,7 @@ function theFlotilla() {
   net(AS + S.gap[0], AS + S.gap[0], AR + 1, 33); net(AS + S.gap[1], AS + S.gap[1], AR + 1, 33);   /* a net down each hull's side, out of the water */
   /* (no coamings on his decks: a round shot runs the length of them, and the champion stands on the planking - the art lane dresses the decks, nothing solid) */
   ent('cannon', AS + S.guns[0], AR - 1, { deck: true, aim: 1 }); ent('cannon', AS + S.guns[1], AR - 1, { deck: true, aim: -1 });
-  ent('champion', AS + S.him, AR - 1, { face: -1 });
+  ent('admiral', AS + S.him, AR - 1, { face: -1 });   /* (claude/flotilla3) THE ADMIRAL (src/admiral.js). THE CHAMPION waits, registered, for the Keep's mini slot (brief part B) */
   for (const [x, v] of [[AS + 12, 0], [AS + 36, 1]]) ent('deco', x, AR - 1, { kind: 'mastTall', v });
   ent('deco', AS + 18, AR - 1, { kind: 'kegStack' }); ent('deco', AS + 44, AR - 1, { kind: 'coiledCable', v: 1 }); ent('deco', AS + 31, AR - 1, { kind: 'wheel' });
   // THE FLAGSHIP's tail, and the way out
@@ -5118,14 +5139,23 @@ function theFlotilla() {
   const ret = {
     W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: 25 }, pools, falls: [], moversExtra: movers, hullZones, airRooms, deep: D,
     duskStart: 99999, duskLen: 1, music: 'flotilla', night: false, swell: { amp: 2, period: 4.6 },
-    flot2: { rowers, benches, yards, ballKegs: true }, checkRun: 190,   /* (fewer checkpoints, Daniel 10-07: one shrine closes each named area's exam - the filler never puts one back between them) */   /* src/flotilla2.js: the pressed fisherfolk at the oars, the benches, the yards */
-    interiors: [[34, 93, 26, 30, 'ship'], [116 + K, 173 + K, 24, 30, 'ship'], [452, 478, 26, 30, 'ship']],
-    cabins: [[36, 70, 26, 30, 'galley'], [118 + K, 172 + K, 26, 30, 'brig'], [460, 476, 26, 30, 'magazine']],
+    flot2: { rowers, benches, yards, ballKegs: true }, checkRun: 190,
+    /* (claude/flotilla3) HIS BROADSIDE: x0-x1 / y0-y1 the tiles of the row it crosses, from the flagship's side (east); src/flotilla3.js */
+    flot3: { flagX: 560, zones: [
+      { id: 'rock', x0: 4, x1: 22, y0: 23, y1: 24, from: 1, harmless: true, short: 23, splashY: 24, every: 8, first: 3 },
+      { id: 'galley', x0: 31, x1: 96, y0: 22, y1: 23, from: 1, every: 11, first: 5 },
+      { id: 'hull', x0: 99, x1: 203, y0: 22, y1: 23, from: 1, every: 10, first: 6 },
+      { id: 'chain', x0: 303, x1: 384, y0: 6, y1: 9, from: 1, every: 12, first: 7 },
+      { id: 'doors', x0: 484, x1: 503, y0: 22, y1: 24, from: 1, every: 9, first: 3 },
+      { id: 'exam', x0: 505, x1: 533, y0: 22, y1: 24, from: 1, every: 11, first: 6, exam: true }] },   /* (fewer checkpoints, Daniel 10-07: one shrine closes each named area's exam - the filler never puts one back between them) */   /* src/flotilla2.js: the pressed fisherfolk at the oars, the benches, the yards */
+    interiors: [[34, 93, 26, 30, 'ship'], [256, 285, 24, 30, 'ship'], [452, 478, 26, 30, 'ship']],
+    cabins: [[36, 70, 26, 30, 'galley'], [258, 284, 26, 30, 'brig'], [460, 476, 26, 30, 'magazine']],
     palette: { set: 'ship', sky: 'harbour', far: 'harbour', mid: 'harbour', near: 'harbour', fg: 'rig', dress: 'ship', haze: 'rgba(255,196,140,0.08)',
       grass: '#8a9a5a', grassL: '#b4c47a', grassD: '#5a6a3a', dirt: '#6a5a44', dirtL: '#9a8464', dirtD: '#43382a', canopy: ['#2a4a44', '#3a5e54', '#4a7264', '#6a8a70'] },
     ambient: [{ x0: 0, x1: 99999, kind: 'ship' }],
-    sections: [[0, 30, 'THE ROCK'], [31, 96, 'THE GALLEY'], [97, 208, 'THE GALLEY HULL'], [209, 288, 'THE HULK'], [289, 385, 'THE RIGGING RUN'], [386, 539, 'THE POWDER SHIP'], [540, 603, 'THE LASHINGS']].map(([x0, x1, name]) => ({ id: name.toLowerCase().replace(/[^a-z]+/g, '-'), name, x0, x1 })),
-    arena: { x0: AS * TS, x1: (AS + S.W) * TS, floor: AR * TS, y0: (AR - 18) * TS, trigger: (AS + 3) * TS, wallL: AS - 1, wallR: AS + S.W, boss: 'champion', music: 'admiral', tint: '#c9b27c', tintA: 0.06, fx: 'motes',
+    tints: [[0, 96, [255, 196, 120], 0.10], [97, 208, [244, 170, 96], 0.12], [209, 288, [214, 124, 84], 0.15], [289, 385, [120, 90, 176], 0.17], [386, 539, [206, 70, 48], 0.15], [540, 640, [24, 28, 80], 0.30]],   /* (claude/flotilla3, review Q8) golden hour at the rock and the galley, amber dusk on the prize, violet over the rigging, red powder light, NIGHT on the lashings */
+    sections: [[0, 30, 'THE ROCK'], [31, 96, 'THE GALLEY'], [97, 208, 'THE GALLEY HULL'], [209, 288, 'THE PRIZE'], [289, 385, 'THE RIGGING RUN'], [386, 539, 'THE POWDER SHIP'], [540, 603, 'THE LASHINGS']].map(([x0, x1, name]) => ({ id: name.toLowerCase().replace(/[^a-z]+/g, '-'), name, x0, x1 })),
+    arena: { x0: AS * TS, x1: (AS + S.W) * TS, floor: AR * TS, y0: (AR - 18) * TS, trigger: (AS + 3) * TS, wallL: AS - 1, wallR: AS + S.W, boss: 'admiral', music: 'admiral', tint: '#3a3a6a', tintA: 0.08, fx: 'motes',
       start: [AS + 8, AR - 1], ac: { sx: AS, R: AR } },
   };
   return ret;
@@ -7830,10 +7860,10 @@ export const LEVELS = [
   { id: 'spire', name: 'THE MONASTERY', sub: 'and the goblin in its chair', rule: 'WHAT THE MONKS BUILT STILL ANSWERS A BLOW. CLIMB.', build: theMonastery, needs: 'hanging' },
   { id: 'moor', name: 'GALE MOOR', sub: 'the high moor', rule: 'THE WIND COMES IN GUSTS, AND YOU CAN HEAR EACH ONE COMING.', build: galeMoor, needs: 'spire' },
   { id: 'storm', name: 'STORMHOLD', sub: 'the last hold', rule: 'THREE GATES. EVERY KEY HANGS IN A WATCHTOWER.', build: () => stormholdTown({ painter, T, TS }), needs: 'minecart' },   /* (claude/deeprails2, Daniel 10-09: THE DEEP RAILS is on the main road - Ore Road -> Deep Rails -> Stormhold) */
-  { id: 'crown', name: 'HIGHCROWN', sub: 'the goblin queen\'s castle', rule: 'EVERY HALL HAS A BELL, AND A GATE THAT DROPS WITH IT.', build: highcrownWhole, needs: ROAD_OPEN.undercrown ? 'undercrown' : 'storm' },   /* (claude/undercrown2: through THE UNDERCROWN once its road is open) */   /* (2026-09-23: the Ore Road is the way to her gate now) */
+  { id: 'crown', name: 'HIGHCROWN', sub: 'the goblin queen\'s castle', rule: 'EVERY HALL HAS A BELL, AND A GATE THAT DROPS WITH IT.', build: highcrownWhole, needs: ROAD_OPEN.undercrown ? 'kitchengate' : 'storm' },   /* (claude/kitchengate, Daniel 10-24: THE KITCHEN GATE comes between THE UNDERCROWN and here - the first time inside the castle; a save that had Highcrown open keeps it: src/main.js progDefaults kitchenRoadMig, PROG.crownOpen) */   /* (claude/undercrown2: through THE UNDERCROWN once its road is open) */   /* (2026-09-23: the Ore Road is the way to her gate now) */
   { id: 'longwater', arc: 'the sea', name: 'THE LONG WATER', sub: 'the river to the sea', rule: 'THE TIDE DECIDES WHERE THE FLOOR IS.', build: longWater, needs: 'crown' },
   { id: 'reef', name: 'THE SHIPWRECK REEF', sub: 'the road out to sea', rule: 'BREATH IS THE CLOCK. THE AIR IS IN BELLS, A SWIM APART.', build: shipwreckReef, needs: 'longwater' },
-  { id: 'flotilla', name: 'THE FLOTILLA', sub: 'the town of ships', rule: 'FOUR HULLS LASHED TOGETHER: THE WAY PAST IS OVER THEM, NOT THROUGH.', build: theFlotilla, needs: 'reef' },
+  { id: 'flotilla', name: 'THE FLOTILLA', sub: 'the town of ships', rule: 'STRIKE A BREECH AND THE GUN CLEARS ITS LINE. WHEN HIS FLAG RUNS RED, HIS GUNS CLEAR YOURS.', build: theFlotilla, needs: 'reef' },
   { id: 'hurricane', name: 'THE HURRICANE DECK', sub: 'one ship, one storm', rule: 'THE SEA AND THE SKY TAKE TURNS: THE WAVE KNOCKS YOU FLAT, THE LIGHTNING SHOWS YOU THE WAY.', build: theHurricane, needs: 'flotilla' },
   { id: 'lamplit', name: 'THE LAMPLIT STREET', sub: 'the city under it', rule: 'THE LAMPS ARE AIR.', build: theLamplitStreet, needs: 'hurricane' },
   { id: 'underleaf', name: 'UNDERLEAF', sub: "the potion master's leaf village", rule: UL3_RULE, build: () => buildUnderleaf3({ painter, T, TS, knightRow }), needs: 'rootway' },   /* (claude/underleaf4, Daniel 10-25 08:00: ROAD MOVE - Sporewood -> Rootway -> UNDERLEAF -> Palisade Wood (act I); Kingswood -> Scree -> Hanging. Was needs 'scree' (claude/underorder 10-24); old saves keep it open: PROG.underleaf4Mig in src/main.js) */   /* (claude/underleaf3, Daniel 10-15: UNDERLEAF 3 - THE GRANDMOTHER'S VILLAGE + HER POTIONS, src/underleaf3.js + src/potion-hands.js; the hush is retired from it. The old builder underleaf() stays below, unused, for the art lane's reference) */   /* (claude/underleafroad, Daniel 10-08: a MAIN-ROAD level now - Kingswood -> UNDERLEAF -> THE SCREE PATH. It was `hidden: true, secret: true, needsTime: { id: 'kings', t: 180 }`: only on level select, after Gorm in under three minutes. ARRAY position unchanged (saves count levels by index); the road is the `needs` chain) */
@@ -7855,7 +7885,7 @@ export const LEVELS = [
   { id: 'harbor', name: 'STORMWRECK HARBOR', sub: 'from broken quay to lighthouse', rule: 'CROSS THE MARKET, DRYDOCK AND STORM WALL. THE WARDEN HOLDS THE SEA GATE.', build: ()=>stormwreckHarbor({painter,T,TS}), needs: 'causeway' },
   { id: 'waymeet', name: 'WAYMEET', sub: 'where the roads meet, and everyone stops', arc: 'the road inland',
     rule: 'THE SHIELD IS NOT A WALL HERE. IT IS A BEAT.', build: waymeet, needs: 'causeway' },   /* the causeway again: Stormwreck Harbor is out of the campaign (Daniel, 2026-09-20: 'it offers nothing new') */
-  { id: 'undercrown', name: 'THE UNDERCROWN', sub: 'the hole the castle stands on', rule: 'NOTHING DOWN HERE IS HOLDING ITSELF UP.', build: undercrown, ...(ROAD_OPEN.undercrown ? { needs: 'storm', leadsTo: 'crown' } : { hidden: true, secret: true, needsKills: { id: 'crown', pct: 0.8 } }) },   /* (claude/undercrown2: the main road between STORMHOLD and HIGHCROWN once ROAD_OPEN says so; until then the old secret fork) */
+  { id: 'undercrown', name: 'THE UNDERCROWN', sub: 'the hole the castle stands on', rule: 'NOTHING DOWN HERE IS HOLDING ITSELF UP.', build: undercrown, ...(ROAD_OPEN.undercrown ? { needs: 'storm', leadsTo: 'kitchengate' } : { hidden: true, secret: true, needsKills: { id: 'crown', pct: 0.8 } }) },   /* (claude/undercrown2: the main road between STORMHOLD and HIGHCROWN once ROAD_OPEN says so; until then the old secret fork) */
   /* THE HEXED FIELDS: the road inland leaves the coast through the farms under the Archmage's hill, and the Hunt waits past them */
   { id: 'fields', name: 'THE HEXED FIELDS', sub: "the farms under the archmage's hill", rule: 'IF IT GLOWS GREEN, YOU CAN USE IT. THE MOON DECIDES THE REST.', build: withBanner(theHexedFields, 'fields', ...LOST_BANNERS.fields), needs: 'fair' },
   /* THE MAGE'S FOLLY: the tower on the hill the runoff came down from. The room is what changes, never the hero */
@@ -7913,7 +7943,7 @@ export const LEVELS = [
   { id: 'underwell', arc: 'the desert', name: 'THE UNDERWELL', sub: 'the dry cisterns under the well town', rule: "STRIKE A TORCH AND THE OIL BURNS - THE BROOD WON'T CROSS FIRE. POUR WATER WHERE THE FIRE MUST NOT GO.", build: () => buildUnderwell({ painter, T, TS }), needs: 'welltown' },
   /* THE SKY ROAD (claude/skyroad, the GREYBOX, 2026-10-05): the main road's climb off the high moor's crags to THE ROC's eyrie - after GALE MOOR, before THE ORE ROAD
      (Daniel 10-03: "right after Gale Moor"; the moor keeps sideways gusts, this level owns the vertical air). APPENDED, so no index and no save moves */
-  { id: 'skyroad', name: 'THE SKY ROAD', sub: 'up the hot air to the eyrie', rule: 'THE SUN WARMS THE ROCK AND THE AIR RISES. STRIKE A SUN-STONE TO WAKE ITS AIR; RIDE IT, GLIDE INTO IT. A CLOUD ON IT KILLS IT.', build: () => buildSkyRoad({ painter, T, TS }), needs: 'moor' },
+  { id: 'skyroad', name: 'THE SKY ROAD', sub: 'up the hot air to the eyrie', rule: 'THE SUN WARMS THE ROCK AND THE AIR RISES. STRIKE A SUN-STONE TO WAKE ITS AIR; RIDE IT, GLIDE INTO IT. A CLOUD ON IT KILLS IT.', build: () => buildSkyRoad({ painter, T, TS }), needs: 'rookery' },   /* (claude/rookery, Daniel 10-24: THE ROOKERY comes between it and Gale Moor - the Roc's lead-in; a save that had the Sky Road open keeps it: src/main.js progDefaults rookeryRoadMig, PROG.skyOpen) */
   /* THE GLASS SEA (claude/glasssea, the OPUS GREYBOX, 2026-10-06): lightning-fused glass dunes past THE RED GORGE - the sun is a beam you aim with mirrors; shade by day,
      fire by night. APPENDED, so no index and no save moves; its place on the road is its needs and its map node. THE GLASS COLOSSUS (src/glass-colossus.js) is its boss */
   { id: 'glasssea', arc: 'the desert', name: 'THE GLASS SEA', sub: 'the sun is a beam you aim', rule: 'TURN THE MIRRORS TO AIM THE SUN; SHADE BY DAY, FIRE BY NIGHT.', build: () => buildGlassSea({ painter, T, TS }), needs: 'redgorge' },
@@ -7947,9 +7977,15 @@ export const LEVELS = [
      up out of the felling clearing into the old pines, up the paper nest, and down the great pine's trunk to the marsh's edge */
   { id: 'hornetsnest', name: "THE HORNET'S NEST", sub: 'up the great pine, through the paper nest, down to the marsh', rule: NEST_RULE, build: () => buildHornetsNest({ painter, T, TS }), needs: 'wood' },
 ];
+/* THE ROOKERY (claude/rookery, the OPUS GREYBOX; scratch/brief-rookery-1024.md, Daniel 10-24): APPENDED (saves count levels by index) - pushed under the array on its own
+   line so a branch that edits the array's last row merges clean. On the road between GALE MOOR and THE SKY ROAD by its needs (the Sky Road needs it). Its boss: THE SHRIEK SISTERS */
+LEVELS.push({ id: 'rookery', name: 'THE ROOKERY', sub: "the harpies' crags under the Roc's peak", rule: RK_RULE, build: () => buildRookery({ painter, T, TS }), needs: 'moor' });
 /* THE PALISADE WOOD (claude/palisadewood, the OPUS GREYBOX; scratch/brief-palisadewood-1015.md, Daniel 10-15 + the 10-18 autumn note): APPENDED (saves count levels by index) -
    pushed here, under the array, so a branch that edits the array's last row merges clean. On the road by its needs: THE ROOTWAY -> HERE -> KINGSWOOD (kings needs it) */
 LEVELS.push({ id: 'palisadewood', name: 'THE PALISADE WOOD', sub: 'an autumn wood, and the goblins walling it off for their king', rule: PW_RULE, build: () => buildPalisadeWood({ painter, T, TS }), needs: 'underleaf' });   /* (claude/underleaf4, Daniel 10-25: UNDERLEAF now stands between the Rootway and here; was needs 'rootway') */
+/* THE KITCHEN GATE (claude/kitchengate, the OPUS GREYBOX; scratch/concept-kitchengate.md, Daniel 10-01/10-08/10-24): APPENDED (saves count levels by index) - pushed under the
+   array on its own line. On the road between THE UNDERCROWN and HIGHCROWN by its needs (Highcrown needs it). Its boss: LORD GRUBBAG THE GLUTTON */
+LEVELS.push({ id: 'kitchengate', name: 'THE KITCHEN GATE', sub: "up through the castle's kitchens, the back way in", rule: KG_RULE, build: () => buildKitchenGate({ painter, T, TS }), needs: 'undercrown' });
 
 /* THE MIX. A level that is one creature is one question asked forty times. Some of each crowd is swapped for a
    creature from elsewhere, standing on the same spot, so the second half of a level asks something the first did
@@ -8425,7 +8461,7 @@ const AMBUSH = {
   flotilla: [{ name: 'THE WAIST', row: 23, wallL: 62, wallR: 92, check: [57, 23],
     /* ambush-listed: crab was listed but never spawned (budget spent on a duplicate cutlass). Restored; the duplicate cutlass and marine/bosun
        are cut (say so) to stay inside the four-foe rule. */
-    waves: [[['boarder', 84], ['cutlass', 66], ['scout', 76], ['crab', 83]]] }],
+    waves: [[['boarder', 84], ['cutlass', 66], ['marine', 76, null, { cnSkin: 'pistoleer' }], ['sapper', 83, null, { cnSkin: 'kegroller' }]]] }],   /* (claude/flotilla3) a pistoleer and a keg roller, no crab, no scout: the Admiral's crew */
   /* THE DROWNED CHAPEL: the doors are the gates (the door columns under the two walls), its floor is over the high water */
   causeway: [{ name: 'THE DROWNED CHAPEL', row: 19, wallL: 265, wallR: 297, check: false,
     /* ambush-listed: netter was listed but never spawned (budget spent on a duplicate sailor+crab). Restored; the duplicate sailor/crab and
@@ -8529,7 +8565,7 @@ const ELITES = {
   crown: [['heavy', 208, 63], ['hearthgob', 710, 51]],
   longwater: [['tideguard', 507, 26, { gate: 515 }]],   /* +88 (the river grew, 2026-09-25) */
   reef: [['tideguard', 435, 25, { gate: 441 }]],   /* (final columns: the bell-pool and the hulk grew the reef by 80 before the keel) */   /* on the dry ledge out of the last of the water, holding the climb to the wreck */
-  flotilla: [['boarder', 274, 21, { gate: 285, affix: 'SWIFT' }], ['boarder', 528, 24, { affix: 'UNSTOPPABLE' }]],   /* (claude/flotilla2) the hulk's doorway boarder (moved 112 east with her) and THE POWDER SHIP's exam: the Admiral's heavy on his lashing - no blade throws him, a round shot down the deck does (B14: the boss's key, taught on an elite first) */
+  flotilla: [['boarder', 277, 21, { gate: 285, affix: 'SWIFT' }], ['boarder', 528, 24, { affix: 'UNSTOPPABLE', cnSkin: 'platedbosun' }]],   /* (claude/flotilla3) THE PRIZE's exam on the hulk's after-deck; THE PLATED BOSUN, the powder ship's exam in his broadside lane - no blade throws him, a round shot does (the Admiral's armour, taught) */   /* (claude/flotilla2) the hulk's doorway boarder (moved 112 east with her) and THE POWDER SHIP's exam: the Admiral's heavy on his lashing - no blade throws him, a round shot down the deck does (B14: the boss's key, taught on an elite first) */
   hurricane: [['tideguard', 106, 18, { face: -1 }], ['boarder', 524, 18, { face: -1, gate: 538 }]],   /* (claude/hurricane2: the stern's boarding net is down until he falls) the two exams: the bow's, with the sea behind him, and the stern's with the storm at its worst */
   lamplit: [['watch', 595, 21]],
   deep: [['watch', 30, 27, { gate: 41 }]],

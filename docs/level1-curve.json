@@ -169,17 +169,17 @@
   "lostPct": 225
  },
  "flotilla": {
-  "hash": "9d1f537faa2b",
+  "hash": "8936dd5d2b1b",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 37,
-  "deaths": 7,
-  "kills": 7,
-  "lifts": 103,
+  "hits": 29,
+  "deaths": 6,
+  "kills": 15,
+  "lifts": 104,
   "walked": 100,
   "bare": true,
-  "lostPct": 345
+  "lostPct": 314
  },
  "hurricane": {
   "hash": "31e107d77e05",
@@ -648,5 +648,31 @@
   "walked": 100,
   "bare": true,
   "lostPct": 171
+ },
+ "kitchengate": {
+  "hash": "271f666dee38",
+  "hero": "knight",
+  "steps": 30000,
+  "runs": 3,
+  "hits": 26,
+  "deaths": 1,
+  "kills": 21,
+  "lifts": 63,
+  "walked": 100,
+  "bare": true,
+  "lostPct": 119
+ },
+ "rookery": {
+  "hash": "ee598da83779",
+  "hero": "knight",
+  "steps": 30000,
+  "runs": 3,
+  "hits": 41,
+  "deaths": 2,
+  "kills": 43,
+  "lifts": 71,
+  "walked": 100,
+  "bare": true,
+  "lostPct": 231
  }
 }

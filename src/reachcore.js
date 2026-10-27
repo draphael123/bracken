@@ -8,6 +8,7 @@
 // its misses may be a ride away. A level can say L.reachExact when its movers are only boss props.
 import { slopeReachGrid } from './reach-slopes.js'; import { reachStair } from './undercrown-slabs.js';   /* THE SLOPES REACH RULE, one line inside floodReach below */
 import { heroJumps, slideSpeeds, hillSpeeds } from './reach-hero.js';
+import { WHEEL as KG_WHEEL } from './kitchen-gate.js';   /* (claude/kitchengate) THE GREAT SPIT's turn, for the fill below */
 import { MOVE } from './hero-move.js'; import { fellCells } from './felling.js';   /* (claude/lumbertrail) a felled pine: a bridge, a lean-to or a drop */   /* PER HERO (opts.hero, claude/reachcore): each hero's own jump, the run-up, the slide, the clearance over a gap */
 const RUN = 92, JUMPV = -320, G = 1000, TSZ = 16;        // the knight's numbers from main.js
 const JUMP_UP = Math.floor((JUMPV * JUMPV) / (2 * G) / TSZ);  // 3 tiles of rise (ceil made it 4: a jump nobody can make)
@@ -70,6 +71,12 @@ export function floodReach(L, T, opts = {}) { const L0 = L;   /* (the level as b
     /* THE ROOTWAY (src/rootway.js, claude/rootway): a HOIST is one blow on its cleat (or one arrow struck back through its rope) and what it drops STAYS - a span
        across its gap, a cage as a 2x2 step where it lands - so both count as done; THE TROPHY LOFT opens on the four tags the level lays down (tools/rootway.mjs proves
        each required hoist is a lock). A boss cage is winched back up: not footing. The plain fill: legs only */
+    /* THE ROOKERY (src/rookery.js, claude/rookery): a CRACKED ROCK breaks under a harpy's dive - every hero baits one by standing on its mark (its roost sends another
+       harpy if hers is dead) - and what it breaks STAYS: a hole, a fallen pillar's bridge, a dropped nest's platform, a slab's steps. So each counts as done
+       (tools/rookery.mjs proves each required one is a lock). The plain fill: legs only */
+    if (L.rookery) for (const h of (L.hoists || [])) { if (h.span) for (let x = h.span[0]; x <= h.span[1]; x++) { const i = h.span[2] * W + x; if (g[i] === T.AIR) g[i] = T.ONEWAY; }
+      if (h.clear) for (let y = h.clear[2]; y <= h.clear[3]; y++) for (let x = h.clear[0]; x <= h.clear[1]; x++) g[y * W + x] = T.AIR;
+      if (h.steps) for (const [x0, x1, row, k] of h.steps) for (let x = x0; x <= x1; x++) { if (k === 'O') { const i = row * W + x; if (g[i] === T.AIR) g[i] = T.ONEWAY; continue; } for (let y = row, n = 0; n < 8 && g[y * W + x] !== T.SOLID; y++, n++) g[y * W + x] = T.SOLID; } }
     if (L.rootway || L.kwood) { for (const m of (L.vaultDoors || [])) for (let y = m.y0; y <= m.y1; y++) for (let x = m.x0; x <= m.x1; x++) g[y * W + x] = T.AIR;   /* (claude/kingswood2) KINGSWOOD 2's royal ropes are the same shape: a step or a bridge a rope drops stays (src/kingswood-hands.js) */
       for (const h of (L.hoists || [])) { if (h.boss) continue; if (h.span) for (let x = h.span[0]; x <= h.span[1]; x++) { const i = h.span[2] * W + x; if (g[i] === T.AIR) g[i] = T.ONEWAY; }
         if (h.land) for (let y = h.land[1]; y <= h.land[1] + 1; y++) for (let x = h.land[0]; x <= h.land[0] + 1; x++) g[y * W + x] = T.SOLID; } }
@@ -77,6 +84,15 @@ export function floodReach(L, T, opts = {}) { const L0 = L;   /* (the level as b
        bridge - counts as done (tools/palisadewood.mjs proves each required one is a lock). A crew's walkway or a stake stack is not footing that stays. The plain fill: legs only */
     if (L.pwood) for (const h of (L.hoists || [])) { if (h.span) for (let x = h.span[0]; x <= h.span[1]; x++) { const i = h.span[2] * W + x; if (g[i] === T.AIR) g[i] = T.ONEWAY; }
       if (h.steps) for (const [x0, x1, row, k] of h.steps) for (let x = x0; x <= x1; x++) { if (k === 'O') { const i = row * W + x; if (g[i] === T.AIR) g[i] = T.ONEWAY; continue; } for (let y = row, n = 0; n < 8 && g[y * W + x] !== T.SOLID; y++, n++) g[y * W + x] = T.SOLID; } }
+    /* THE KITCHEN GATE (src/kitchen-gate.js, claude/kitchengate): a BELLOWS is one blow, and its fire works its machine - so each counts as done: a TALLOW DOOR melts (its cells
+       open), THE SPICE VAULT's grate opens (the three pages lie on the road), and THE GREAT SPIT's turn is laid as eight stations round its hub (one-way footing: the ride up).  The
+       coppers' steam is a vent (L.reachVents). tools/kitchengate.mjs proves each required machine is a lock and that a cold spit is no stair. The plain fill: legs only */
+    if (L.kitchen) { for (const d of [...(L.kgDoors || []), ...(L.kgVault ? [L.kgVault] : [])]) for (let y = d.y0; y <= d.y1; y++) for (let x = d.x0; x <= d.x1; x++) g[y * W + x] = T.AIR;
+      for (const w of (L.kgWheels || [])) for (let k = 0; k < 8; k++) { const a = k * Math.PI / 4, cx = w.x + Math.cos(a) * KG_WHEEL.R, cy = w.y + Math.sin(a) * KG_WHEEL.R, row = Math.floor(cy / 16);
+        for (let x = Math.floor((cx - KG_WHEEL.w / 2) / 16); x <= Math.floor((cx + KG_WHEEL.w / 2 - 1) / 16); x++) { const i = row * W + x; if (g[i] === T.AIR) g[i] = T.ONEWAY; } }
+      /* a copper's steam that rises through a HOOK RAIL: riding it, you catch a hook (a touch in the air) - a perch in the column a reach under the rail stands for that */
+      for (const p of (L.kgPots || [])) for (const z of (L.zipLines || [])) { const px = p.x * 16 + 8; if (px < Math.min(z.x0, z.x1) || px > Math.max(z.x0, z.x1)) continue; const ly = z.y0 + (z.y1 - z.y0) * (px - z.x0) / ((z.x1 - z.x0) || 1);
+        if (ly > p.top * 16 - 8 && ly < p.f * 16 - 40) { const i = Math.floor((ly + 30) / 16) * W + p.x; if (g[i] === T.AIR) g[i] = T.ONEWAY; } } }
     /* THE TOWPATH (src/towpath.js, claude/towpath fix): the mill race drained stands its WHEEL still - its paddles a stair - and a SWING BRIDGE struck across is a deck: each one blow of a paddle or a capstan on the bank before it, so done (the locks themselves are rides: L.rigBands) */
     if (L.towpath) { for (const w of (L.towpath.wheels || [])) for (const [x0, x1, y] of w.steps) for (let x = x0; x <= x1; x++) if (g[y * W + x] === T.AIR) g[y * W + x] = T.ONEWAY;
       for (const b of (L.towpath.bridges || [])) if (b.x0 !== undefined && b.row !== undefined) for (let x = b.x0; x <= b.x1; x++) if (g[b.row * W + x] === T.AIR) g[b.row * W + x] = T.ONEWAY; }
@@ -90,6 +106,8 @@ export function floodReach(L, T, opts = {}) { const L0 = L;   /* (the level as b
   // a gun laid on a hull opens the hull, and a stowed boarding plank becomes a bridge: both are one blow, so the
   // model treats them as already done rather than calling the far side unreachable
   for (const e of (L.ents || [])) {
+    /* THE FLOTILLA 3's LAID GUNS (claude/flotilla3, src/flotilla3.js): one blow on the breech - the hole is open, the yard is down across its gap: done, like the gun's hole */
+    if (e.t === 'aimgun') { if (e.hole) { const [x0, x1, y0, y1] = e.hole; for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) g[y * W + x] = T.AIR; } if (e.bridge) { const [x0, x1, row] = e.bridge; for (let x = x0; x <= x1; x++) { const i = row * W + x; if (g[i] === T.AIR) g[i] = T.ONEWAY; } } }
     if (e.t === 'cannon' && e.hole) { const [x0, x1, y0, y1] = e.hole; for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) g[y * W + x] = T.AIR; }
     /* THE LUMBER TRAIL's MARKED PINES (src/felling.js, claude/lumbertrail): four strokes every hero has, and the trunk STAYS where it fell - a bridge, a lean-to up a cliff, a drop into a hollow - so the fill has it down (the plain fill: legs only). tools/lumber-trail.mjs proves the required ones are locks */
     if (!plain && e.t === 'felltree') for (const [x, y, t] of fellCells(e, g, W, T)) g[y * W + x] = t;

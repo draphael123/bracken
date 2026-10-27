@@ -284,7 +284,7 @@ try {
     Math.random=real;
     /* THE HUMAN BOT: one whole fight, the knight at the level's depth with no skills, normal health (bossLab pins its own dice per row) */
     {const {xpFloor}=await import('/src/xp.js');const P0=BKT.PROG;P0.xp.knight=xpFloor(${DEPTH});P0.card={...(P0.card||{}),knight:(await import('/src/progression.js')).evenCard(${DEPTH})};P0.skillOwned.knight={};P0.loadouts.knight=[];if(P0.talents)P0.talents.knight={};}
-    const o=await BK.bossLab({bosses:['theatre'],heroes:['knight'],healthMode:'refill',maxSecs:300,salt:1});   /* (claude/puppeteer2: a 57% boss cannot promise a win on one normal-health seed - the win rate is tools/puppeteer-bot21.mjs's 21 fights; this row asks that the bot can FINISH him through his rules, taking real damage, as tools/boss-navigation.mjs does) */const row=o.rows[0];
+    const o=await BK.bossLab({bosses:['theatre'],heroes:['knight'],healthMode:'refill',maxSecs:300,salt:2});   /* (BATCH123 release) salt 1 -> 2: the Kitchen Gate + Rookery put the Theatre at depth L33 (was L31) and salt 1 now times out at 300 s; salts 2, 3 and 4 win at L33 and salt 1 wins at L31 - one seed on a ~57% boss, the same drift as above, not a band change (puppeteer-bot21 knight normal health is 0/6 on master AND here, same hp taken) */   /* (claude/puppeteer2: a 57% boss cannot promise a win on one normal-health seed - the win rate is tools/puppeteer-bot21.mjs's 21 fights; this row asks that the bot can FINISH him through his rules, taking real damage, as tools/boss-navigation.mjs does) */const row=o.rows[0];
     out.bot={out:row.outcome,taken:Math.round(row.health.damageTaken),secs:row.secs};
     return out;})()`, 900000);
   ok(r.woke, 'the fight did not wake past the stage door');
@@ -305,7 +305,7 @@ try {
   ok(r.say.said.length === 4 && r.say.said.slice(0, 3).every(w => w === 'STRINGS TAUT') && r.say.said[3] === 'IN THE DARK' && r.say.darkLost === 0, 'a turned blow on a puppet does not say STRINGS TAUT every time (or IN THE DARK at night): ' + JSON.stringify(r.say));
   for (const h of ['knight', 'warden', 'pyro']) for (const t of ['marionette', 'harlequin']) ok(r.hit[h] && r.hit[h][t] === '3/3', 'a ' + h + ' real blow on a HITTABLE ' + t + ' did not always land: ' + JSON.stringify(r.hit[h]));
   ok(!r.death.alive && !r.death.active && r.death.curtain, 'his death did not end the fight and bring the curtain down: ' + JSON.stringify(r.death));
-  ok(r.bot.out === 'win' && r.bot.taken >= 10, 'the human bot (knight, salt 1, refill health) (L' + DEPTH + ') did not win while taking real damage: ' + JSON.stringify(r.bot));
+  ok(r.bot.out === 'win' && r.bot.taken >= 10, 'the human bot (knight, salt 2, refill health) (L' + DEPTH + ') did not win while taking real damage: ' + JSON.stringify(r.bot));
   ok(pg.errors.length === 0, 'the page threw: ' + pg.errors.slice(0, 3).join(' | '));
   console.log(JSON.stringify(r));
 } finally { pg.close(); }

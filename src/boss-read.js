@@ -72,6 +72,8 @@ export const TURN_WORD = {
   homunculus: e => e.hidden ? TURN.NOT_THERE : TURN.WARDED,  // in the smoke there is nothing there
   bogtroll: e => (e.ward > 0 ? TURN.WARDED : 'PEAT HIDE'),   // (claude/fenroad) his peat hide takes most of a blow (B15: x0.4); stuck in a rotten section he takes it double
   hornetqueen: e => (e.ward > 0 ? TURN.WARDED : e.cloak > 0 ? 'CLOAKED' : 'HARD SHELL'),   // (claude/hornetsnest) her shell turns half a cut (B15 x0.5), her swarm cloak more (x0.4); a plunge from above lands whole; her openings x1.5-x2
+  grubbag: e => (e.ward > 0 ? TURN.WARDED : 'WELL FED'),   // (claude/kitchengate) well fed he takes a blade at x0.45 (B15); choking on the powder pie x2; hungry x0.7
+  shrieksisters: e => (e.ward > 0 ? TURN.WARDED : 'ON THE WING'),   // (claude/rookery) on the wing a sister takes most of a cut (B15: x0.4); low, whole; stunned in the rubble x2
   batteringbeast: e => (e.ward > 0 ? TURN.WARDED : 'ARMOURED'),   // (claude/palisadewood) his plates take most of a cut (B15: x0.4); a plunge on his back, a scaffold's wreck, a wall, his harness cut open him
   oldtusker: e => (e.ward > 0 ? TURN.WARDED : 'THICK HIDE'),   // (claude/oldtusker) his hide takes most of a cut (B15: x0.4); a plunge on his back, a ram, a felled pine open him
   tombking: e => (e.ward > 0 ? TURN.WARDED : 'SEALED'),   // (claude/pyramidboss) his lid takes most of a blow until a switch or a trap tips him (B15: x0.4, never nothing)
@@ -80,6 +82,7 @@ export const TURN_WORD = {
   hawkmistress: e => (e.ward > 0 ? TURN.WARDED : 'THE HAWK GUARDS'),   /* (claude/ksarhawk) her hawk over her is her guard: fire brings it down (src/hawk-mistress.js) */
   deacon: e => (e.ward > 0 ? TURN.WARDED : 'GUARDS HIGH: HIT LOW'),   // (claude/church2) THE DEACON's pole held crosswise high: a low blow or his back
   paladinboss: e => (e.ward > 0 ? TURN.WARDED : 'HIS LIGHT-WARD'),   // (claude/church3) his light-ward turns every side while he guards (and feeds him): light a brazier beside him, or hit him committed   // (claude/ksar) her falconer's gauntlet turns the front while she is on guard: go round, or come down on her
+  admiral: e => (e.ward > 0 ? TURN.WARDED : e.plates > 0 ? 'IRON PLATE' : TURN.WARDED),   // (claude/flotilla3) THE ADMIRAL: his salvaged iron chips a blade (Daniel's 0.15x) until a deck gun blows it off; his own take names it
   champion: e => (e.ward > 0 ? TURN.WARDED : 'HIS PLATE'),   // (claude/flotilla2) THE ADMIRAL'S CHAMPION: his plate takes most of a blow (B15: x0.5, never nothing) until his blade sticks or a deck gun knocks him flat
   fogknight: e => (e.ward > 0 ? TURN.WARDED : e.mode === 'dissolve' ? TURN.NOT_THERE : 'HIS STANCE'),   // (claude/towpath) his stance turns the wrong angle: his own take names it (GUARDS HIGH / GUARDS LOW / FULL GUARD)
   lanterneater: e => (e.mode === 'open' ? TURN.WARDED : ['gulpTell', 'huntTell'].includes(e.mode) && e.part === 'lure' ? 'TOO LOW' : ['jaws', 'snapTell'].includes(e.mode) ? 'TOO HIGH' : TURN.WARDED),   // (claude/lanterneater) B14 keys: its lure HIGH, its gums LOW - the word names the wrong height (src/lantern-eater.js KEY_WORD)

@@ -19,7 +19,7 @@ try {
     const lvm = await import('/src/level.js');
     const lab = await import('/src/lab.js');
     const heroes = ${JSON.stringify(HEROES)}, bosses = ${JSON.stringify(BOSSES)};
-    const SPECIAL = new Set(['drownedking', 'bellcrab', 'champion']);   /* (claude/flotilla2: the benched Quartermaster's walker branch is gone; THE ADMIRAL'S CHAMPION has his own branch) */   /* their own movement branches in runbossLab, not the generic "desired" stand */
+    const SPECIAL = new Set(['drownedking', 'bellcrab', 'champion', 'admiral']);   /* (claude/flotilla2: the benched Quartermaster's walker branch is gone; THE ADMIRAL'S CHAMPION has his own branch) */   /* their own movement branches in runbossLab, not the generic "desired" stand */
     const out = [];
     for (const lvId of bosses) for (const h of heroes) {
       BK.setHero(h); BK.reset({ fresh: true }); BK.load(lvm.LEVELS.findIndex(l => l.id === lvId)); BK.start(); BK.sim(10);

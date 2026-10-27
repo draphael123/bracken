@@ -57,3 +57,5 @@ function addIslandPostsBase(L, id, T) {
 }
 /* (claude/palisadewood) THE PALISADE WOOD: its scaffold tiers, walkways, decks and the half-built gatehouse stand on timber posts (greybox; the art lane draws them) */
 POST_LEVELS.add('palisadewood');
+/* (claude/kitchengate) THE KITCHEN GATE: its pot racks, dressers and benches stand on posts (greybox; the art lane draws them as iron brackets and dresser legs) */
+POST_LEVELS.add('kitchengate');

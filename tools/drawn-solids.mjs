@@ -15,15 +15,17 @@
 // art lanes without changing that gate. `--selftest-red` removes one live tile picture in the page and proves this audit sees it.
 // PORT comes from the environment. PROVED RED FIRST on master 4099648d (see the lane report).
 import assert from 'node:assert/strict';
-import { openPage } from './cdp.mjs';
+import { LEVELS } from '../src/level.js';
+import { sweepLevels } from './sweep-pages.mjs';
 const want = process.argv.slice(2).filter(a => !a.startsWith('-'));
 const all = process.argv.includes('--all'), reportOnly = process.argv.includes('--report-only'), json = process.argv.includes('--json');
 const selftest = process.argv.includes('--selftest-red');
-const ids = want.length ? want : all ? null : ['buriedcity'];
-const pg = await openPage({ audio: false, fonts: false });
-let out;
-try {
-  out = await pg.evalp(`(async()=>{const {LEVELS,T}=await import('/src/level.js');const res=[];
+const ids = want.length ? want : all ? LEVELS.map(l => l.id) : ['buriedcity'];
+/* (redcleanup 10-26) ONE LEVEL PER CALL, a fresh page every 11 levels, a hard limit per level that NAMES the level (a hang is a red, never a 40-minute silence): see tools/sweep-pages.mjs.
+   The 66-level sweep used to be one evalp in one page (1800 s limit) and hung at SEALEDPYRAMID on an accumulated page. */
+const PER_LEVEL_MS = +(process.env.SWEEP_LEVEL_MS || 150000);
+const pageErrors = new Set();
+const code = id => `(async()=>{const {LEVELS,T}=await import('/src/level.js');const res=[];
     const DRAWN=new Set([T.SOLID,T.ONEWAY,T.SPIKE,T.PLANK,T.CRATE,T.PORT,T.SHELF,T.RAIL,T.PALISADE,T.CLIMB,T.SOFT,T.ICE,T.WEB,T.REED,T.BOUNCER,T.CRYST].filter(v=>v!==undefined));
     const ink=new Map();const hasInk=c=>{if(!c||!c.width)return false;if(ink.has(c))return ink.get(c);const d=c.getContext('2d').getImageData(0,0,c.width,c.height).data;let a=0;for(let i=3;i<d.length;i+=4)a+=d[i]>8?1:0;const v=a>=8;ink.set(c,v);return v;};
     const top=new Map();const topInk=(c,start=0)=>{if(!c||!c.width)return false;let memo=top.get(c);if(memo&&start in memo)return memo[start];
@@ -48,7 +50,7 @@ try {
            land on the cell's top instead of mistaking its high fronds for a missing footing. */
         if(!(${all}?topInk(S[k],t===T.REED?8:0):hasInk(S[k]))){const why=${all}?custom(L,x,y,t):null;if(why)other[why]=(other[why]||0)+1;else bad.push([x,y,t]);}}
       return {phase,bad:bad.length,cells:bad,custom:other};};
-    for(const id of (${JSON.stringify(ids)}||LEVELS.map(l=>l.id))){const i=LEVELS.findIndex(l=>l.id===id);if(i<0){res.push({id,err:'no such level'});continue;}
+    for(const id of ${JSON.stringify([id])}){const i=LEVELS.findIndex(l=>l.id===id);if(i<0){res.push({id,err:'no such level'});continue;}
       BK.load(i);BK.start();BK.god=true;BK.sim(${all?60:30});const ph=[scan('as loaded')],move=[];
       if(${all}){BK.hideHero=true;const W=BK.view.VW,H=BK.view.VH;
         for(const m of BK.movers()){if(!Number.isFinite(m.x)||!Number.isFinite(m.y)||!m.w||m.x+m.w<0||m.x>BK.L.W*16||m.y+m.h<0||m.y>BK.L.H*16)continue;
@@ -80,9 +82,9 @@ try {
       /* a death: the respawn puts every small room back as built. The long settle is needed only for the City's moving sand. */
       BK.respawn();BK.sim(60);ph.push(scan('after a respawn'));if(K&&K.L===BK.L){BK.sim(600);ph.push(scan('after a respawn, settled'));}
       res.push({id,ph,movers:move});}
-    return res;})()`, 1800000);
-  out = { rows: out, errors: pg.errors.slice(0, 3) };
-} finally { pg.close(); }
+    return res;})()`;
+const got = await sweepLevels(ids, async (pg, id, ms) => { const r = await pg.evalp(code(id), ms); for (const e of pg.errors.slice(0, 3)) pageErrors.add(e); return r; }, { label: 'drawn-solids', chunk: 11, perLevelMs: PER_LEVEL_MS });
+const out = { rows: got.flatMap(g => g.error ? [{ id: g.id, err: g.error }] : g.result), errors: [...pageErrors].slice(0, 3) };
 const fails = [];
 for (const r of out.rows) {
   if (r.err) { fails.push(r.id + ': ' + r.err); continue; }
@@ -91,6 +93,6 @@ for (const r of out.rows) {
 }
 if (out.errors.length) fails.push('page errors ' + JSON.stringify(out.errors));
 if (json) console.log(JSON.stringify(out));
-if (reportOnly) { console.log('drawn-solids REPORT-ONLY: ' + fails.length + ' phase(s) with undrawn cells in ' + out.rows.length + ' level(s)'); process.exit(0); }
+if (reportOnly) { const hung = fails.filter(f => /TIMEOUT|LOST PAGE|no such level/.test(f)); console.log('drawn-solids REPORT-ONLY: ' + fails.length + ' phase(s) with undrawn cells in ' + out.rows.length + ' level(s)'); if (hung.length) { console.log('drawn-solids: ' + hung.length + ' level(s) did NOT finish (a hang is a red even in a report): ' + hung.join(' | ')); process.exit(1); } process.exit(0); }
 assert.deepEqual(fails, [], 'solid cells with no picture (an invisible platform)');
 console.log('drawn-solids: every solid, ledge and stake cell has a picture, as built and after the rule moved it, in ' + out.rows.length + ' level(s)');
