@@ -518,7 +518,7 @@ Object.assign(EHP, {
   champion: ACG.CH.hp,   /* THE ADMIRAL'S CHAMPION (claude/flotilla2): src/admirals-champion.js */ /* (the benched QUARTERMASTER's row was: quarter 1150 - claude/keyscore, B13: always hittable now - round her or over her on guard, any side in her slash and pistol; 920 measured 9/18 dry) */ /* THE QUARTERMASTER: 560 (92-100%: 27-57 s) */
   harbormaster: 2350,   /* THE BREAKWATER WARDEN: 1400 (83%) */
   captain: 1700,     /* (claude/keyscore, B13: his wave no longer hides him - round or over; 860 measured 12/18 dry) */ /* THE CAPTAIN (hurricane): 620 (83-100%: 39-54 s) */
-  forgemaster: 520,  /* THE FORGEMASTER (crown mini): 480 (83-92%) */
+  forgemaster: 1800,  /* THE FORGEMASTER (claude/forgemaster: the Deep Rails' second mini, L16, with flasks): 520 -> 1800 (520 = 100%, ~14 s; 1500 + hit 2.2 = 92%, ~33 s; 1900 + 2.6 = 56%; 1800 + 2.3 = 72%) */   /* (crown mini): 480 (83-92%) */
   reefmaw: 700,   /* (claude/underwater: 830 -> 700 with the committed bite and his blows x0.85) */
   herald: 370,
   drownedking: 500,  /* THE DROWNED KING (keep): 560 (33-42%, warden 0) */
@@ -7547,7 +7547,7 @@ BOSS_HIT.bloodknight = 0.9;   /* (claude/dk2tune) THE DEATH KNIGHT: how hard his
 BOSS_HIT.captain = 1.07;
 BOSS_HIT.gqueen = 2.15;   /* (claude/curvec4a) THE GOBLIN QUEEN (Highcrown finale, act-II band 60-65): how hard her own blows land - 92% k/w/p with flasks at 1.0; on its own line (merge care) */
 BOSS_HIT.spider = 0.85;   /* (claude/curvec4a) */
-BOSS_HIT.forgemaster = 1.55;   /* (claude/curvec4a) */
+BOSS_HIT.forgemaster = 2.1;   /* (claude/forgemaster: 1.55 -> 2.1 on the rails, L16) */   /* (claude/curvec4a) */
 BOSS_HIT.mother = 1.5;   /* (claude/curvec4a) */
 const DUEL_HERO = { closedhelm: { knight: 0.5, reaper: 0.7, warden: 2.8, pyro: 2.2 /* (claude/bkbot, Daniel 10-23: THE BLOOD KNIGHT took 1.0 = twice the knight; 0.7) */ /* (claude/waymeetpal, act-IV band 57-63: hp 3600 -> 3900, knight 0.62 -> 0.5, warden 2.2 -> 2.8, pyro 1.7 -> 2.2; 78% -> 60% n=24, human+flasks) */ }, lance: { knight: 1, warden: 2.4, pyro: 2.6 } };   /* (claude/wardgap) THE WAYMEET PALADIN and THE LANCE, PER HERO (as CAP_HERO; the lance hit the kiters for 0-30 a fight): the warden out-ranges him and won 12/12 while the knight stood in his sword at 3/10 - his blows on the hero, the wall untouched */
 const CAP_HERO = { knight: 0.77, paladin: 0.88, warden: 1.45, pyro: 1.05 }, CAP_OPEN = { knight: 1.5, paladin: 1.1, warden: 0.65 };   /* (claude/hurricane2tune) THE CAPTAIN, PER HERO: after the guard fixes the warden still won 12/12 and the knight 5/12 - she out-ranges his sabre and deflects the cuts she does draw (each deflect is an opening), the knight stands in the sabre and blocks few; the cause is the heroes' kits, so the Captain's blows land a little lighter on the two who stand in them and heavier on her (measured at 24 seeds a hero, tools/boss-rates.mjs --profile=human) */   /* (claude/hurricane2) THE CAPTAIN 2: tied to the storm, his openings earned off the sea and the sky - tuned WITH flasks (tools/boss-rates.mjs --profile=human); on its own line (merge care) */   /* (claude/dk2tune) THE DEATH KNIGHT: how hard his own blows land - the knight went 0/N (3 flasks and all) at 1.0; on its own line (merge care) */
