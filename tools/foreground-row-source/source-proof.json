@@ -1,0 +1,31 @@
+{
+  "time": "2026-10-27T17:21:06.715Z",
+  "gameSource": "62d9c02c102decc69ceaef4e1ec593a23170f1ff",
+  "originalMainSha256": "81866b69fec64de5fdd00da316fb0d1e8e997ae9912f73f280981f0a70cb36d8",
+  "candidateMainSha256": "9cc5fab2ab5fc006785ad2457756eb58c0f6825f08492b4a39d58f7efee3afa2",
+  "helperSha256": "00d35203e0b2b14938bb7464a442f1c75fa2ae7b2622e308da5a2d194365aa45",
+  "originalDrawFg": "function drawFg(cx, cy) {\n  if (!FGC || FGC.width !== VW || FGC.height !== VH) { FGC = document.createElement('canvas'); FGC.width = VW; FGC.height = VH; }\n  const f = FGC.getContext('2d'), c = BG.fg, w = c.width, dY = bgDY(cy);\n  f.globalCompositeOperation = 'source-over'; f.clearRect(0, 0, VW, VH);\n  let x = ((-cx * 1.25) % w + w) % w; if (x > 0) x -= w; const y = Math.round(dY * 1.25);\n  for (; x < VW; x += w) f.drawImage(c, Math.round(x), y);\n  /* Behind the actors now: no coverage test can make this strip flash. */\n  g.globalAlpha = 0.3; g.drawImage(FGC, 0, 0); g.globalAlpha = 1;\n}",
+  "candidateDrawFg": "function drawFg(cx, cy) { checkForegroundRows(g);\n  if (!FGC || FGC.width !== VW || FGC.height !== VH) { FGC = document.createElement('canvas'); FGC.width = VW; FGC.height = VH; }\n  const f = FGC.getContext('2d'), c = BG.fg, w = c.width, dY = bgDY(cy);\n  f.globalCompositeOperation = 'source-over'; f.clearRect(0, 0, VW, VH);\n  let x = ((-cx * 1.25) % w + w) % w; if (x > 0) x -= w; const y = Math.round(dY * 1.25);\n  for (; x < VW; x += w) f.drawImage(c, Math.round(x), y);\n  /* Behind the actors now: no coverage test can make this strip flash. */\n  g.globalAlpha = 0.3; drawForegroundRows(g, FGC, c, y, VW, VH); g.globalAlpha = 1;\n}",
+  "exactUndo": true,
+  "lineCountPreserved": true,
+  "edits": [
+    [
+      "ART.bakeFG(640, VH, 4) };",
+      "freshForegroundRows(() => ART.bakeFG(640, VH, 4)) };"
+    ],
+    [
+      "function drawFg(cx, cy) {",
+      "function drawFg(cx, cy) { checkForegroundRows(g);"
+    ],
+    [
+      "g.globalAlpha = 0.3; g.drawImage(FGC, 0, 0); g.globalAlpha = 1;",
+      "g.globalAlpha = 0.3; drawForegroundRows(g, FGC, c, y, VW, VH); g.globalAlpha = 1;"
+    ]
+  ],
+  "privateFreshOriginalBakeFgOnly": true,
+  "originalFrameClearTilingAndOpacityRetained": true,
+  "zeroAddedCanvasOrSourceReferencesRetained": true,
+  "weakPerSourceAlphaBandsNotRenderedFrameCache": true,
+  "unsupportedModesFallbackToWholeOriginalComposite": true,
+  "noPreviousSourceProofInherited": true
+}

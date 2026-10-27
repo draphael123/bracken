@@ -4,7 +4,7 @@ on:
     inputs:
       mode:
         type: choice
-        options: [opaque-art-fused-cold, opaque-art-fused-component, private-foreground-component, layout-work-queue, opaque-sprite-diagnostic, opaque-sprite-union, opaque-tile-standing, deferred-standing, palette-ui, palette-standing, palette-base, layout-candidate, foreground-reuse, foreground-direct, fixed-ornaments, region-props, border-present, tile-warm, captain-boot, cpu-profile, tile-cache, paladin-boot, hero-reuse, profile, sfx, compare, mobile, calls, present, campaign, variant, pixel-debug]
+        options: [foreground-row-component, opaque-art-fused-cold, opaque-art-fused-component, private-foreground-component, layout-work-queue, opaque-sprite-diagnostic, opaque-sprite-union, opaque-tile-standing, deferred-standing, palette-ui, palette-standing, palette-base, layout-candidate, foreground-reuse, foreground-direct, fixed-ornaments, region-props, border-present, tile-warm, captain-boot, cpu-profile, tile-cache, paladin-boot, hero-reuse, profile, sfx, compare, mobile, calls, present, campaign, variant, pixel-debug]
         default: profile
       baseline:
         type: string
@@ -28,6 +28,27 @@ env:
 permissions:
   contents: read
 jobs:
+  foreground-row-component:
+    if: inputs.mode == 'foreground-row-component'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.11.1'
+      - name: Private row metadata with original full foreground compositor controls
+        run: node tools/foreground-row-component.mjs
+        env:
+          FG_ROWS_OUT: ${{ runner.temp }}/foreground-row-component
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: foreground-row-component
+          path: ${{ runner.temp }}/foreground-row-component/
+          if-no-files-found: error
   opaque-art-fused-cold:
     if: inputs.mode == 'opaque-art-fused-cold'
     runs-on: ubuntu-latest
