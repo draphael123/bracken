@@ -518,7 +518,7 @@ Object.assign(EHP, {
   champion: ACG.CH.hp,   /* THE ADMIRAL'S CHAMPION (claude/flotilla2): src/admirals-champion.js */ /* (the benched QUARTERMASTER's row was: quarter 1150 - claude/keyscore, B13: always hittable now - round her or over her on guard, any side in her slash and pistol; 920 measured 9/18 dry) */ /* THE QUARTERMASTER: 560 (92-100%: 27-57 s) */
   harbormaster: 2350,   /* THE BREAKWATER WARDEN: 1400 (83%) */
   captain: 1700,     /* (claude/keyscore, B13: his wave no longer hides him - round or over; 860 measured 12/18 dry) */ /* THE CAPTAIN (hurricane): 620 (83-100%: 39-54 s) */
-  forgemaster: 1800,  /* THE FORGEMASTER (claude/forgemaster: the Deep Rails' second mini, L16, with flasks): 520 -> 1800 (520 = 100%, ~14 s; 1500 + hit 2.2 = 92%, ~33 s; 1900 + 2.6 = 56%; 1800 + 2.3 = 72%) */   /* (crown mini): 480 (83-92%) */
+  forgemaster: 1800,  /* THE FORGEMASTER (claude/forgemaster: the Deep Rails' second mini, L16, with flasks): 520 -> 1800 (520 = 100%, ~14 s; 1500 + hit 2.2 = 92%, ~33 s; 1900 + 2.6 = 56%; 1800 + 2.3 = 72%; 1800 + 2.1 = 78% k7/w12/p9 of 12, in the mini band) */   /* (crown mini): 480 (83-92%) */
   reefmaw: 700,   /* (claude/underwater: 830 -> 700 with the committed bite and his blows x0.85) */
   herald: 370,
   drownedking: 500,  /* THE DROWNED KING (keep): 560 (33-42%, warden 0) */
