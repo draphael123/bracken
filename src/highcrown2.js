@@ -171,7 +171,7 @@ export function highcrownTwo(R, { T, TS }) {
 
   // ============ HER HALL (B15 retune, brief item 3): two of her six chandeliers go (fewer openings; a cut one is spent for the round - src/main.js gqChandsHang), the sign says what her plate does now
   R.ents = R.ents.filter(e => !(e.t === 'weight' && e.gq && (e.x === 565 || e.x === 596)));
-  for (const e of R.ents) if (e.t === 'sign' && /HER PLATE TURNS BLADES/.test(e.text || '')) e.text = 'HER PLATE TURNS MOST OF A BLADE. BREAK THE PILLAR SHE HOLDS COURT BESIDE: IT COMES DOWN ON HER.';
+  for (const e of R.ents) if (e.t === 'sign' && /HER PLATE TURNS BLADES/.test(e.text || '')) e.text = 'HER PLATE TURNS MOST OF A BLADE. BREAK THE PILLAR SHE STANDS BY: IT FALLS ON HER.';
 
   // ============ THE SHRINES (A10c: the end of each area's exam, and one before her door) ============
   for (const [x, y] of HC2.SHRINES) ent('check', x, y);
