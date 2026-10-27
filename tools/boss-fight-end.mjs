@@ -12,7 +12,7 @@ for(const [i,lv] of LEVELS.entries()){let b;try{b=lv.build();}catch{continue;}
  for(const kind of ['boss','mini','mini2']){const A0=kind==='boss'?b.arena:kind==='mini2'?b.mini2:b.mini;if(!A0)continue;/* (claude/forgemaster) mini2: a level's second mini - the first counts as down */
   if(kind==='mini2'){BKT.PROG[lv.id]=BKT.PROG[lv.id]||{};BKT.PROG[lv.id].mini=true;BKT.PROG[lv.id].mini2=false;}else if(kind==='mini'&&BKT.PROG[lv.id]){BKT.PROG[lv.id].mini=false;BKT.PROG[lv.id].mini2=false;}
   BK.setHero('knight');BK.reset({fresh:true});BK.load(i);BK.start();BK.god=true;BK.sim(10);BK.reset();
-  const L=BK.L,A=kind==='boss'?L.arena:L.mini,live=()=>kind==='boss'?BK.bossActive:BK.miniActive;if(kind==='mini2'&&L.mini!==L.mini2){rows.push({lv:lv.id,kind,t:A0.boss,res:'NOT THE ROAD\'S MINI'});continue;}
+  const L=BK.L,A=kind==='boss'?L.arena:L.mini,live=()=>kind==='boss'?BK.bossActive:BK.miniActive;if(kind==='mini2'&&L.mini!==L.mini2){rows.push({lv:lv.id,kind,t:A0.boss,res:'NOT THE ROADS MINI'});continue;}
   const e=BK.enemies().find(q=>q.t===A.boss&&q.alive&&(kind==='boss'||q.mini||q.t==='greathound'));if(!e){rows.push({lv:lv.id,kind,t:A.boss,res:'NO BOSS'});continue;}
   for(const q of BK.enemies())if(q!==e&&!q.maxHp)q.alive=false;
   if(A.carpet){BK.board();BK.sim(30);}else{BK.tp(Math.round(A.trigger/16)+(A.reverse?-1:1),Math.round(A.floor/16)-1);BK.sim(200);}
