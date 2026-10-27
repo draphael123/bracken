@@ -29,7 +29,7 @@ const FIGHT = `(kind,t)=>{const A=kind==='mini'?BK.L.mini:BK.L.arena;const e=BK.
 const KILL = `async(kind,t)=>{BK.manualSimulation=true;const live=()=>kind==='mini'?BK.miniActive:BK.bossActive;
   const e=BK.enemies().find(q=>q.t===t&&q.alive&&(kind==='boss'||q.mini||q.t==='greathound'));const o={};
   let f=0;for(;f<600&&!live();f++)BK.sim(1);o.woke=live();o.wokeAt=f;
-  if(e){let n=0;for(;n<1000&&e.alive;n++){BK.P.inv=99;BK.P.hp=BK.P.maxHp;e.hp=Math.min(e.hp,1);e.inv=0;BKT.hurtEnemy(e,999,e.x-10,false);BK.sim(2);}o.killed=!e.alive;o.blows=n;}
+  if(e){let n=0;for(;n<1000&&e.alive;n++){BK.P.inv=99;BK.P.hp=BK.P.maxHp;e.hp=Math.min(e.hp,1);e.inv=0;if(e.t==='admiral'&&BK.admiralHands){const S=BK.admiralHands().show();if(S){S.plates=0;S.ph=2;S.ward=0;}e.mode='stagger';}/* (BATCH123 release, as tools/boss-fight-end.mjs: the Admiral's plate holds him above half health, so a script blow cannot kill him armoured) */BKT.hurtEnemy(e,999,e.x-10,false);BK.sim(2);}o.killed=!e.alive;o.blows=n;}
   for(let i=0;i<500;i++){BK.P.inv=99;BK.sim(1);}
   return o;}`;
 const judge = (id, p, k) => {
