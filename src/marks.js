@@ -442,7 +442,7 @@ export const ANSWER = {
   'wickerman|throwTell': 'jump', 'wickerman|swingTell': 'block',   // (claude/fairfix6) THE WICKER MAN: its fire rolls along the ground - jump it (or strike it back); its arms the shield takes
   'willowisp|flareTell': 'block',   // THE FOG CANAL: the false lantern flares (a yellow !) - the shield turns the burst, as every yellow ! does
   'hare|run': 'block',
-  'harpy|aim': 'block', 'shrieker|aim': 'block', 'galeharpy|galeTell': 'block', 'shrieksister|diveTell': 'dodge', 'shrieksister|screamTell': 'dodge', 'shrieksister|dropTell': 'dodge', 'shrieksister|snatchTell': 'jump', 'shrieksister|waveTell': 'block',   /* (claude/rookery) her scream marks your spot: get off it */
+  'harpy|aim': 'block', 'shrieker|aim': 'block', 'galeharpy|galeTell': 'block', 'galeharpy|aim': 'block', 'shrieksister|diveTell': 'dodge', 'shrieksister|screamTell': 'dodge', 'shrieksister|dropTell': 'dodge', 'shrieksister|snatchTell': 'jump', 'shrieksister|waveTell': 'block',   /* (claude/rookery) her scream marks your spot: get off it */
   'shrieksister|chainTell': 'dodge', 'shrieksister|rakeTell': 'block', 'shrieksister|shockTell': 'block', 'shrieksister|echoTell': 'dodge', 'shrieksister|grabTell': 'dodge',   /* (claude/sisters2) the rake: block it (or jump it); the shock: brace (or roll); off the echo's tile; roll through the grab (or jump it) */
   'haunt|throwTell': 'block',
   'hearthgob|raise': 'block',
@@ -713,7 +713,7 @@ export const HEIGHT = {
   'grindylow|deckTell': 'low', 'grindylow|boardTell': 'low',
   'grindylow|rippleTell': 'low',
   'hare|run': 'low',
-  'harpy|aim': 'low', 'shrieker|aim': 'low', 'galeharpy|galeTell': 'low', 'shrieksister|diveTell': 'low', 'shrieksister|screamTell': 'low', 'shrieksister|dropTell': 'low', 'shrieksister|snatchTell': 'low', 'shrieksister|waveTell': 'low',
+  'harpy|aim': 'low', 'shrieker|aim': 'low', 'galeharpy|galeTell': 'low', 'galeharpy|aim': 'low', 'shrieksister|diveTell': 'low', 'shrieksister|screamTell': 'low', 'shrieksister|dropTell': 'low', 'shrieksister|snatchTell': 'low', 'shrieksister|waveTell': 'low',
   'shrieksister|chainTell': 'low', 'shrieksister|rakeTell': 'low', 'shrieksister|shockTell': 'low', 'shrieksister|echoTell': 'low', 'shrieksister|grabTell': 'low',   /* (claude/sisters2) */
   'haunt|throwTell': 'low',
   'hearthgob|raise': 'low',
