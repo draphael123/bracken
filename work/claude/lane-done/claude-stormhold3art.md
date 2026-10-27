@@ -40,3 +40,4 @@ boss-sheet.png + boss-*.png (in-game, mode forced; the dim/"unarmed enraged" HUD
 2. The near citadel only shows on the Long Bridge; the road/bailey keep the far castle range. Rec: accept; a per-section castle layer is a later polish pass.
 3. n=12 = 58% (band 60-70, noise). Rec: ship; re-measure after integ at BATCH125 and nudge only if still < 60 at n=18.
 4. tools/curtain-wall.mjs is dead (greybox note 8): delete in a cleanup lane.
+HEAD: d23b8d1f (claude/stormhold3art)
