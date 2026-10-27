@@ -36,7 +36,9 @@ export const tuneOf = h => TUNE[h] || { in: 1, out: 1 };
 export const AD = {
   hp: 3250, w: 22, h: 40, markH: 64,
   plates: 3, chip: [1, 0.35, 0.25, 0.15], floor: 0.5, openMul: 1.6, flatCap: 0.06, wardT: 3.0, gunHot: 13,
-  staggerT: 1.9, reloadT: 1.8, soakedT: 2.1, axeT: 1.5, flatT: 2.0,
+  /* (claude/flotilla4, Daniel 10-27: "too short" - both the cannonball opening and the interrupt-his-shot opening) HIS OPENINGS ~DOUBLED: were 1.9 / 1.8 / 2.1 / 1.5 / 2.0 s. If he gets
+     too easy his health goes up a little - the windows are not shortened again (brief-flotilla4-1027 item 2) */
+  staggerT: 3.8, reloadT: 3.6, soakedT: 4.0, axeT: 3.0, flatT: 3.6,
   walk: 46, keep: 44, turn: 0.45, gap: [0.6, 0.48],
   /* THE CUTLASS: told cutTell s, then cutNext s; each cut cutT s at cutReach px; a step cutStep px between; cutRec s after */
   cutTell: 0.58, cutNext: 0.4, cutT: 0.15, cutReach: 52, cutStep: 14, cutRec: 0.7,
