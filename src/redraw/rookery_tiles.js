@@ -39,6 +39,10 @@ function capBand(g, x, y, eL, eR, S) {
     for (let q = 0; q < d; q++) px2(g, k, q, q === 0 ? (patch ? GUANO[3] : S[6]) : q === d - 1 ? (patch ? GUANO[0] : S[2]) : patch ? GUANO[q % 2 ? 2 : 1] : S[5]);
     if (hv % 11 === 0) px2(g, k, 1, S[1]); if (hv % 13 === 5) px2(g, k, 0, S[3]); }                                                                               /* grit */
   for (let i = 0; i < 2; i++) { const hv = hash(x * 3 + i * 17, y * 5 + 1); if (hv % 3 === 2 && i) continue; const dx = 2 + (hv % 12), L = 3 + (hv % 4); for (let q = 3; q < 3 + L; q++) px2(g, dx, q, q === 2 + L ? GUANO[0] : GUANO[q % 2 ? 1 : 2]); }   /* drips */
+  { const h1 = hash(x * 5 + 3, y * 3 + 1);   /* (claude/rookery2art) PEBBLES and a hairline CRACK, so a long walk is never a flat strip: a scatter of grit stones on the crust, a crack through it now and then, a guano blob */
+    if (h1 % 3 === 0) { const k = 1 + (h1 >> 3) % 11; px2(g, k, 1, S[3]); px2(g, k + 1, 1, S[4]); px2(g, k + 1, 0, S[6]); px2(g, k, 2, S[1]); }
+    if (h1 % 7 === 2) { const k = 2 + (h1 >> 4) % 11; px2(g, k, 2, S[0]); px2(g, k, 3, S[0]); px2(g, k + 1, 4, S[0]); px2(g, k + 1, 5, S[1]); px2(g, k, 1, S[1]); }
+    if (h1 % 5 === 1) { const k = 1 + (h1 >> 5) % 10; px2(g, k, 0, GUANO[3]); px2(g, k + 1, 0, GUANO[3]); px2(g, k + 2, 0, GUANO[2]); px2(g, k, 1, GUANO[2]); px2(g, k + 1, 1, GUANO[3]); px2(g, k + 2, 1, GUANO[1]); } }
   if (eL) { px2(g, 0, 0, S[2]); for (let q = 1; q < 5; q++) px2(g, 0, q, GUANO[q % 2 ? 1 : 0]); }                                                                   /* rolled over a free end */
   if (eR) { px2(g, 15, 0, S[2]); for (let q = 1; q < 5; q++) px2(g, 15, q, GUANO[q % 2 ? 0 : 1]); }
 }

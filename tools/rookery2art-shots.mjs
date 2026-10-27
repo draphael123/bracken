@@ -26,6 +26,12 @@ const SHOTS = [
   ['boss-survivor-shrieker', `{boss(0);const S=SH.show();for(const r of ['diver','snatcher']){S.sis[r].hp=0;BK.sim(2);}for(let i=0;i<150;i++)BK.step(1);window.__s=S.sis.shrieker;}`, `[__s.x-50,__s.y-55,110,80]`],
   ['boss-survivor-snatcher', `{boss(0);const S=SH.show();for(const r of ['diver','shrieker']){S.sis[r].hp=0;BK.sim(2);}for(let i=0;i<150;i++)BK.step(1);window.__s=S.sis.snatcher;}`, `[__s.x-50,__s.y-55,110,80]`],
   ['boss-death', `{boss(0);const S=SH.show();window.__s=S.sis.shrieker;S.sis.shrieker.hp=0;for(let i=0;i<22;i++)BK.step(1);}`, `[__s.x-50,__s.y-70,110,80]`],
+  ['boss-p2-snatch', `{boss(0);const S=SH.show();for(const r of ['shrieker','diver']){S.sis[r].hp=0;BK.sim(2);}BK.sim(100);const s=S.sis.snatcher;s.mode='hold';s.modeT=0.9;s.x=P.x;s.y=S.G.floorY-90;S.held={pp:P,t:0.5,strikes:1,last:-9,by:'snatcher',p2:true};P.ssHeld=true;for(let i=0;i<4;i++)BK.step(1);}`, `[P.x-70,P.y-120,140,100]`],
+  ['boss-ferry', `{boss(0);const S=SH.show(),dv=S.sis.diver;dv.x=S.G.mid-60;dv.y=S.G.floorY-20;dv.mode='ferryWait';dv.modeT=1;P.x=dv.x;P.y=S.G.floorY;BK.sim(1);SH.tryRide(P);for(let i=0;i<40;i++){BK.step(1);}}`, `[P.x-50,P.y-70,100,70]`],
+  ['boss-ferrywait', `{boss(0);const S=SH.show(),dv=S.sis.diver;dv.x=S.G.mid-60;dv.y=S.G.floorY-20;dv.mode='ferryWait';dv.modeT=1;BK.step(3);window.__s=dv;}`, `[__s.x-45,__s.y-50,90,70]`],
+  ['hung-nest', `{const h=BK.L.hoists.find(q=>q.id==='hungNest');window.__h=h;for(let i=0;i<150;i++){BK.tp(h.x-2,h.top+3);P.vx=0;P.vy=0;BK.step(1);}}`, `[__h.x*16-70,__h.top*16-30,150,100]`],
+  ['last-nest', `{const h=BK.L.hoists.find(q=>q.id==='lastNest');window.__h=h;for(let i=0;i<150;i++){BK.tp(h.x-2,h.top+3);P.vx=0;P.vy=0;BK.step(1);}}`, `[__h.x*16-70,__h.top*16-30,150,100]`],
+  ['boss-death-last', `{boss(0);const S=SH.show();for(const r of ['diver','shrieker']){S.sis[r].hp=0;BK.sim(2);}BK.sim(120);window.__s=S.sis.snatcher;window.__x=__s.x;window.__y=__s.y;S.sis.snatcher.hp=0;for(let i=0;i<30;i++)BK.step(1);}`, `[__x-60,__y-70,130,100]`],
 ].filter(s => !only || only.has(s[0]));
 const pg = await openPage({ audio: false, fonts: false });
 try {
