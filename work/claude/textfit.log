@@ -1,0 +1,20 @@
+95 hint messages read out of src/main.js
+  scope hints             95 screens  1.7s
+  scope boss 1/13        120 screens  8.2s
+  scope bestiary         327 screens  8.7s
+  scope boss 2/13        180 screens  13.5s
+  scope boss 3/13        150 screens  8.9s
+  scope boss 4/13        150 screens  12.4s
+  scope boss 5/13        120 screens  10.9s
+  scope boss 6/13        210 screens  14.0s
+  scope boss 7/13        210 screens  12.9s
+  scope boss 8/13        180 screens  9.8s
+  scope boss 9/13        150 screens  8.7s
+  scope boss 10/13       120 screens  11.9s
+  scope boss 11/13       180 screens  14.8s
+  scope boss 12/13       150 screens  13.5s
+  scope boss 13/13        60 screens  5.3s
+
+2402 screens drawn, 24353 strings measured, 256s. OFFCENTRE 0  OVERFLOW 0  OFFSCREEN 0  CLIPPED 0  TRUNCATED 0  COVERS 0  COLLIDE 0  OVERDRAWN 0  LONGHINT 0  SMUDGE 0  ERROR 0
+0 pictures in C:\Users\Daniel Raphael\.claude\bracken-lanes\bracken-stormhold3art\audits\readability\textfit
+rc=0

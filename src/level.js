@@ -8180,7 +8180,7 @@ const GARRISON = {
      is the mountain's own (the birds, the bats, the rock) and the goblins who took the monastery, who are the False
      Abbot's congregation now and so belong here twice over. The weights still total 67: the density does not move. */
   spire: [['fledgling', 14], ['harpy', 11], ['bat', 9], ['sentry', 9], ['rockgoblin', 9], ['troll', 5], ['gobpriest', 5], ['gobmage', 5]],   // 47 sat THIRTY-ONE under the Hanging Village: the thinnest level in the game for its place
-  storm: [['hearthgob', 8], ['cutter', 7], ['sentry', 3], ['pike', 2], ['sprig', 6], ['archer', 3], ['shield', 3], ['brute', 2], ['hound', 3]],   /* the castle town is half again as long as the war camp was */
+  storm: [['sprig', 6], ['shield', 3], ['archer', 3], ['hound', 3], ['brute', 2], ['pike', 2], ['hearthgob', 2]],   /* (claude/stormhold3: THE OUTER WORKS - no houses, so no sleeping hearth goblins; no sprinkled cutters (a cutter with no rope is the audit's gap) or sentries (a sentry with no bell)) */
   crown: [['soldier', 5], ['javelin', 4], ['heavy', 3], ['pike', 2]],   // the peak of act two, and it was reading under Stormhold before it. Her HEAVY KNIGHTS live here and nowhere earlier.
   longwater: [['scout', 5], ['tideguard', 6], ['crab', 6], ['siren', 4], ['eel', 3], ['netter', 2], ['angler', 3], ['turtle', 4], ['heronfoe', 3], ['lamprey', 2], ['puffer', 1], ['jelly', 1], ['merrowspear', 2], ['merrowbrute', 1]],   // replacing weight, not piling on: three of the eel/angler/siren's slots go to the new wildlife
   reef: [['angler', 9], ['crab', 7], ['sailor', 4], ['netter', 4], ['petrel', 5], ['scout', 5], ['tideguard', 4], ['turtle', 5], ['eel', 5], ['siren', 4], ['urchin', 2], ['lookout', 1], ['puffer', 2], ['lamprey', 2], ['jelly', 1], ['merrowspear', 3], ['merrowcaller', 2]],
@@ -8402,7 +8402,7 @@ function garrison(L, id) {
 const GOBLIN_CAMP = {
   stockade: [['warnPost', 22, 19, 0], ['stakeFence', 56, 19, 1], ['hideBanner', 90, 19, 0], ['trophyRack', 130, 19, 0], ['hideRack', 243, 13, 1], ['cookSpit', 260, 13], ['lootHeap', 364, 13, 0], ['skullTotem', 386, 11, 1], ['warStandard', 441, 11, 0]],
   /* (claude/kingswood2) kings: the old camp props (by the old columns) went with the old wood - KINGSWOOD 2 places its own court props */
-  storm: [['warnPost', 66, 35, 0], ['hideRack', 119, 15, 0], ['lootHeap', 133, 15, 1], ['gobPennant', 178, 31, 1], ['cookSpit', 266, 31], ['cauldron', 420, 29]],
+  storm: [['warnPost', 58, 35, 0], ['gobPennant', 155, 33, 1], ['cookSpit', 203, 33], ['lootHeap', 249, 33, 0], ['skullTotem', 449, 29, 1]],   /* (claude/stormhold3) the outer works: a warning on the road, a pennant at the stables, a spit in the bailey, the takings by the inner gate, a totem at the Lance's gatehouse */
   crown: [['warnPost', 22, 71, 1], ['hideBanner', 33, 71, 1],['gobPennant', 684, 7, 3], ['ragBanner', 716, 7, 2], ['cauldron', 706, 63], ['boneChime', 712, 54, 0, true], ['trophyRack', 710, 51, 1], ['skullTotem', 745, 51, 0], ['clothStrip', 724, 10, 3, true], ['warStandard', 738, 19, 1]],   /* the keep's own moved 220 right with the siege lines, the crag walk and the bakehouse yard grown in front of it, and 84 more with the armoury */
   underleaf: [['boneChime', 30, 21, 0], ['idol', 59, 29, 1], ['cookSpit', 106, 21], ['boneChime', 174, 21, 1], ['idol', 296, 22, 0], ['cauldron', 342, 15], ['boneChime', 398 + 86, 23, 1]],   /* (claude/underleaf3) her village's own: bone charms, the household gods, her old hearth's pot - by UNDERLEAF 3's columns */
   undercrown: [['stakeFence', 80, 28, 0], ['skullTotem', 42, 111, 1], ['boneChime', 26, 88, 0, true], ['ragBanner', 58, 122, 0], ['clothStrip', 20, 88, 2, true], ['warnPost', 26, 140, 0], ['lootHeap', 52, 140, 1], ['cauldron', 68, 140]],
@@ -8520,10 +8520,8 @@ const AMBUSH = {
        one, staying inside the four-foe rule. */
     waves: [[['troll', 48], ['bat', 52, 94], ['harpy', 56, 93], ['fledgling', 46]]] }],
   /* moor: THE CAIRN RIDGE is built in galeMoor() in its final columns (docs/briefs/gale-moor-rework.md) */
-  storm: [{ name: 'THE MARKET SQUARE', row: 31, wallL: 98, wallR: 138, check: false,   /* the square among the stalls (facades.push([98,138,...]) in src/stormhold-town.js); this rework's real bounds, replacing the pre-merge placeholder */
-    /* ambush-listed: cutter was listed but never spawned (budget spent on a duplicate sprig). Restored; the duplicate sprig and shield/archer
-       are cut (say so) to stay inside the four-foe rule. */
-    waves: [[['pike', 114, null, { elite: true }], ['sprig', 104], ['hearthgob', 118], ['cutter', 110]]] }],
+  storm: [{ name: 'THE STABLE YARD', row: 33, wallL: 155, wallR: 192, check: false,   /* (claude/stormhold3) the bailey's stables (src/stormhold-town.js): the garrison's horse lines, held - a hound loose, a brute in the stalls, the shield captain at the forge end, a bowman up on the hay loft */
+    waves: [[['shield', 182, null, { elite: true }], ['hound', 170], ['brute', 160], ['archer', 171, 26]]] }],
   longwater: [{ name: 'THE SLUICE BRIDGE', row: 26, wallL: 381, wallR: 427, check: false,   /* +88: the Linn and the Bore Reach grew in upstream (2026-09-25) */
     /* ambush-listed: netter was listed but never spawned (budget spent on a duplicate scout+crab). Restored; the duplicate scout/crab and
        heronfoe are cut (say so) - heronfoe is the one type the four-foe rule still can't fit (5 distinct types listed). */
@@ -8627,7 +8625,7 @@ const ELITES = {
      shrines' ledge above the cloud, clear of the way up at 31-37, the cellar at 81-89 and the bellows at 14 */
   spire: [knightRow('spire'), ['goat', 62, 79]],   /* (claude/wardens12) THE GONG MAUL of the Scree Chapter REPLACES the scriptorium's crag troll (61, 171); the herd billy on the shrines' ledge stays */   /* was ['troll', 61, 171] */
   /* moor: the Kite Field's herd billy and the Gallery's crag troll are built in galeMoor() in their final columns */
-  storm: [['shield', 33, 35, { face: -1, gate: 38 }], ['brute', 162, 31, { face: -1 }], ['brute', 214, 31, { face: -1 }], ['shield', 343, 31, { face: -1 }], knightRow('storm'), ['shield', 470, 43, { face: -1, gate: 475 }]],   /* (claude/wardens12) THE STORM LANCE of the Storm Chapter REPLACES the Pike Serjeant at 373 and holds the Halls' gate (378) */   /* was ['pike', 373, 29, { gate: 378 }] */   /* (claude/stormtough: one weighty elite a section, the exams of the Road, the Square, Smoke Row, the Close's far bank and the gorge; the Pike Serjeant keeps the Halls) */   /* THE PIKE SERJEANT, THE HALLS: he holds the gap the Longhouse's second roof frames at 378 (this rework, docs/briefs/stormhold-town.md) */
+  storm: [['shield', 80, 35, { face: -1 }], ['brute', 134, 35, { face: -1 }], ['shield', 305, 43, { face: -1 }], ['pike', 367, 28, { face: -1 }], knightRow('storm')],   /* (claude/stormhold3) one weighty elite a section's exam: the Road In's gate guard, the Barbican's brute under a murder hole, the ditch's shield, the wall-walk's pike between the breaches; THE STORM LANCE (src/order-chapters.js) holds the gatehouse yard */
   /* (claude/forgemaster: the Forgemaster has gone to the Deep Rails; his armoury is the Highcrown 2 lane's to cut, and its gate-keeper question goes with it - tools/elites.mjs NO_KEEPER)
      HIGHCROWN has the Forgemaster's armoury, so neither holds a gate: the King's Champion alone in the siege yard (clear of
      its winch), and the Hearth Boss rallying his cooks in the keep's kitchen. The Leads' alarm gate at 880 is left alone */

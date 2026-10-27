@@ -16,9 +16,9 @@ const uwSpot = s => ({ ...s, ...(s.zone ? { zone: [uwX(s.zone[0]), s.zone[1], uw
 export const STUCK = {
   /* STORMHOLD's THREE TOWER ROPES (claude/zipline; src/zipline.js): after ten seconds on the deck, the rope's handle glints and the guide names it */
   storm: [
-    { id: 'sh-rope-1', zone: [40, 20, 47, 23], at: [47, 22], dy: 6, glint: 'stall', line: "THE GATE WATCH'S ROPE IS THE WAY DOWN TO THE BARBICAN" },
-    { id: 'sh-rope-2', zone: [300, 19, 303, 21], at: [302, 20], dy: 6, glint: 'stall', line: "THE BELL WATCH'S ROPE IS THE WAY DOWN TO THE INNER GATE" },
-    { id: 'sh-rope-3', zone: [529, 20, 530, 22], at: [530, 21], dy: 6, glint: 'stall', line: "THE WALL WATCH'S ROPE IS THE WAY DOWN TO THE BRIDGE GATE" },
+    { id: 'sh-rope-1', zone: [48, 18, 52, 21], at: [52, 20], dy: 6, glint: 'stall', line: "THE GATE WATCH'S ROPE IS THE WAY DOWN TO THE BARBICAN" },
+    { id: 'sh-rope-2', zone: [222, 15, 226, 18], at: [226, 17], dy: 6, glint: 'stall', line: "THE BELL WATCH'S ROPE IS THE WAY OVER THE MOAT" },
+    { id: 'sh-rope-3', zone: [391, 17, 395, 20], at: [395, 19], dy: 6, glint: 'stall', line: "THE WALL WATCH'S ROPE IS THE WAY DOWN TO THE GATEHOUSE" },
   ],
   /* THE FALLING TOWER'S ORRERY LOFT (claude/archmage3; src/spiral-chase.js): the next world round on each wheel glints (m.next, kept by updateStairFx) from
      the gallery's landing and the board step (wheel A), and from the pier (wheel B) - never while you ride that wheel */

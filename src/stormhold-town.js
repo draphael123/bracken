@@ -1,48 +1,41 @@
 import { lanceLookouts } from './lance-support.js';
 // ============================================================================================
-// LEVEL 10 - STORMHOLD, THE CASTLE TOWN (docs/briefs/stormhold-town.md; rebuilt again this lane,
-// claude/stormhold2, off Daniel's note that the held branch "still didn't seem appropriate" - see
-// the "## 11. STORMHOLD" section of the design audit on claude/designaudit for the audit this answers).
-// What is left of the goblins after Kingswood, the Stockade and the crags has fallen back up the
-// mountain and taken a town that is not theirs: stone houses, a market square, a wall with towers on
-// it, and the Queen's castle over all of it in the snow.
+// LEVEL 10 - STORMHOLD 3, THE OUTER WORKS (claude/stormhold3; scratch/brief-stormhold3-1024.md, Daniel 10-24 live:
+// "not sure the enterable buildings make sense ... other ideas to make it look like a castle approach?").
+// RULE OF THE ROAD: STORMHOLD = OUTSIDE THE WALLS; THE KITCHEN GATE = FIRST TIME INSIDE THE CASTLE; HIGHCROWN = HER COURT.
+// So there are NO INTERIORS here any more: the indoor band (rows 0-18), the houses, the doorways and the market town are
+// gone. What is left is a switchback road climbing UNDER the castle's walls, the castle growing on the skyline as you go.
 //
-// THE ONE SENTENCE: STORMHOLD IS LOCKED FROM ABOVE. Every gate's key hangs at the top of a watchtower,
-// and the tower's rope is the way back down to its gate. Three towers, three keys, three gates:
-//   THE GATE WATCH  (timber, outside the barbican)  the brass key  -> the barbican gate      @ 84
-//   THE BELL WATCH  (stone, over the close)         the iron key   -> the inner gate        @ 346
-//   THE WALL WATCH  (timber, on the curtain wall)   the bone key   -> the bridge gate       @ 570
-// Every tower is LEFT of its gate (a rope runs east: updateTowerSlides), every gate column is sealed from
-// the indoor band to the street, and every tower has a ladder back down (the reach model does not ride a
-// rope, so nothing depends on one).
+// THE ONE SENTENCE (kept): THREE GATES. EVERY KEY HANGS IN A WATCHTOWER. The towers are climbed from OUTSIDE now - the
+// masons' scaffolds still stand against their faces - the key is at the top, and the tower's rope rides you back down to
+// its gate. Three towers, three keys, three gates:
+//   THE GATE WATCH  (the road)        the brass key -> THE BARBICAN gate     @ GATES.brass
+//   THE BELL WATCH  (the bailey)      the iron key  -> THE INNER GATE        @ GATES.iron   (its rope goes over the dry moat)
+//   THE WALL WATCH  (the curtain)     the bone key  -> THE BRIDGE GATE       @ GATES.bone   (the gatehouse's far end)
+// Every tower is LEFT of its gate (a rope runs east: updateTowerSlides), and every tower has ladders back down (the reach
+// model does not ride a rope down, so nothing depends on one - except the moat, which the reach model's rope crosses).
 //
-// THIS REWORK adds, on top of the held branch's town and towers:
-//   - TWO ALARMS (L.alarms), teaching Highcrown's bell before Highcrown: a sentry in Smoke Row (the first
-//     one in the game) and a second standing the Bell Watch's own ladder route - catch him, break his bell,
-//     or a grate drops and his watch turns out. The roof route past the tower's west window skips him.
-//   - A ROPE WALKWAY from the Bell Watch's west window across to the close's own roof, with a cutter at the
-//     far end who saws through it if you dawdle on it (the audit's gap: Stormhold's cutters had no rope).
-//   - THE BRIDGEHEAD EXAM (S3): the yard past the Wall Watch is longer now, and ends in a pike line under a
-//     fire-cage weight - the Lance's own verb (cut the cage down on what stands under it), rehearsed at his
-//     door. One checkpoint before it, none inside, and the existing one outside the arena closes it.
-//   - THE LONG BRIDGE's lookouts and archers are exactly master's (src/lance-support.js): two end lookouts
-//     his bowmen drop onto, and the one rock goblin. NO FIRE ARCHERS stand on his bridge.
-// Everything else - the market ambush, the chimneys, the winch gate, the houses - is the held branch's,
-// unchanged.
-//
-// Seven sections (F1): THE ROAD IN 0-89, THE MARKET SQUARE 90-179, SMOKE ROW 180-269, THE BELL CLOSE
-// 270-349, THE HALLS 350-429, THE CURTAIN WALL 430-571, THE LONG BRIDGE 572-699.
-// Rows 0-18 are the indoor band (house interiors). The street steps up the mountain: the road stands on
-// row 35, the town on 31, the Halls on 29, the wall-walk on 28, the bridge on 29; the gorge floor on 43.
+// SIX SECTIONS (each ends at its exam's shrine, A10c - the Rootway recipe):
+//   1. THE ROAD IN      0-91     the failed siege's camp debris, the Gate Watch, the gate dogs   (no shrine: the road is short)
+//   2. THE BARBICAN     92-150   the outer gate's passage, MURDER HOLES overhead (told drops: strike one
+//                                loose on whoever is under it - the Lance's own verb, taught small)    -> shrine @ 152
+//   3. THE OUTER BAILEY 151-267  stables, carts, the smithy yard (open air), the rope walkway and its
+//                                cutter, the first ALARM, the Bell Watch, the dry moat                 -> shrine @ 254
+//   4. THE CURTAIN WALL 268-395  the sally stair into the ditch, the wall face on the masons' scaffold,
+//                                THE WALL-WALK (A14's platforming exam: breached hoardings, arrow-slit
+//                                towers, a pike on the walk), the Wall Watch                         -> shrine @ 400
+//   5. THE GATEHOUSE    396-489  the portcullis on its winch, the pikes it lets through, THE STORM LANCE
+//                                (the Storm Chapter's knight), the bridgehead exam under a fire cage
+//   6. THE LONG BRIDGE  490-617  THE QUEEN'S LANCE, and the MAIN GATE that shuts when he falls (-> the Kitchen Gate)
+// The road climbs: the camp on row 37, the road 36, the bailey 34, the ditch 44, the wall-walk 29, the bridge 30.
 // ============================================================================================
-const BRIDGE_SHIFT = 28;   // the bridgehead yard grew by this much for the EXAM (S3); everything from the Long Bridge on shifts with it
+const P0 = 490;   // the Long Bridge's first pier
 export const STORM_TOWN = {
-  W: 672 + BRIDGE_SHIFT, H: 46,
-  GATES: { brass: 84, iron: 346, bone: 542 + BRIDGE_SHIFT },
-  BRIDGE: 544 + BRIDGE_SHIFT,   // P0, the first pier; the bone gate is two columns west of it
-  SECTIONS: [{ name: 'THE ROAD IN', x0: 0, x1: 89 }, { name: 'THE MARKET SQUARE', x0: 90, x1: 179 }, { name: 'SMOKE ROW', x0: 180, x1: 269 },
-    { name: 'THE BELL CLOSE', x0: 270, x1: 349 }, { name: 'THE HALLS', x0: 350, x1: 429 }, { name: 'THE CURTAIN WALL', x0: 430, x1: 543 + BRIDGE_SHIFT },
-    { name: 'THE LONG BRIDGE', x0: 544 + BRIDGE_SHIFT, x1: 671 + BRIDGE_SHIFT }],
+  W: P0 + 128, H: 46,
+  GATES: { brass: 94, iron: 262, bone: P0 - 2 },
+  BRIDGE: P0,
+  SECTIONS: [{ name: 'THE ROAD IN', x0: 0, x1: 91 }, { name: 'THE BARBICAN', x0: 92, x1: 150 }, { name: 'THE OUTER BAILEY', x0: 151, x1: 267 },
+    { name: 'THE CURTAIN WALL', x0: 268, x1: 395 }, { name: 'THE GATEHOUSE', x0: 396, x1: P0 - 1 }, { name: 'THE LONG BRIDGE', x0: P0, x1: P0 + 127 }],
 };
 
 export function stormholdTown({ painter, T, TS }) {
@@ -50,340 +43,256 @@ export function stormholdTown({ painter, T, TS }) {
   const L = painter(W, H);
   const { block, floor, plat, ent, coins, set } = L;
   const air = (x0, x1, y0, y1) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) set(x, y, T.AIR); };
-  const interiors = [], bridges = [], roofs = [], masonry = [], facades = [], ladders = [];
+  const bridges = [], masonry = [], facades = [], ladders = [], scaffolds = [];
   const gateCol = (x, y0, y1) => { for (let y = y0; y <= y1; y++) set(x, y, T.PORT); };
-  const room = (x0, x1, y0, y1, st = 'stone') => { air(x0, x1, y0, y1); interiors.push([x0, x1, y0, y1, st]); };
-  const roof = (x0, x1, y) => { block(x0, x1, y - 2, y); roofs.push([x0, x1, y]); };   // three courses of slate, a house under it, and a road on top
-  const ladder = (x, y0, y1) => ladders.push([x, y0, y1]);                              // hung LAST (RULES I): nothing is dug after them
+  const laid = (x0, x1, y0, y1) => { block(x0, x1, y0, y1); masonry.push([x0, x1, y0, y1]); };   // what the masons built: coursed ashlar, not crag
+  const ladder = (x, y0, y1) => ladders.push([x, y0, y1]);                                      // hung LAST (RULES I): nothing is dug after them
   const span = (x0, x1, y, o) => { const opt = o || {};
     for (let x = x0; x <= x1; x++) set(x, y, opt.give ? T.SHELF : T.PLANK);
     bridges.push({ x: x0, x1, y, sway: opt.sway || 0, cut: !!opt.cut });
     ent('deco', x0, y - 1, { kind: 'bridgepost' }); ent('deco', x1, y - 1, { kind: 'bridgepost' }); };
-  block(0, W - 1, 0, 18);   // the indoor band is solid rock; every room is cut out of it
+  const spikesAt = (x0, x1, y) => { for (let x = x0; x <= x1; x++) set(x, y, T.SPIKE); };
 
-  // ---- THE HOUSES' INSIDES (the band). The keys are not in them any more: the hill folk and the loot are. ----
-  room(6, 30, 6, 13, 'hall');   // THE HEARTH HOUSE, open on the latch: the doorway teaches itself
-  ent('doorway', 9, 13, { id: 'hearth-in', to: 'hearth-out', lock: [6, 30], label: 'THE HEARTH HOUSE' });
-  ent('torch', 12, 13); ent('brazier', 20, 13); ent('deco', 26, 13, { kind: 'barrels' });
-  ent('hearthgob', 18, 13, { face: -1 });
-  ent('doorway', 29, 13, { id: 'hearth-back', to: 'hearth-far', lock: [6, 30], label: 'OUT THE BACK' });
-  coins([12, 12], [16, 12], [20, 12], [23, 12], [24, 12], [25, 12], [26, 11], [27, 12]);
-  ent('sign', 7, 13, { text: 'HEARTH GOBLINS SLEEP BY THE FIRE UNTIL YOU COME CLOSE.' });
-  room(38, 66, 6, 14, 'stone');   // THE SMITHY: the forge breathes up to the shelf
-  ent('doorway', 41, 14, { id: 'smithy-in', to: 'smithy-out', lock: [38, 66], label: 'THE SMITHY' });
-  ent('brazier', 46, 14); ent('deco', 52, 14, { kind: 'anvil' }); ent('torch', 60, 14);
-  ent('hearthgob', 50, 14, { face: -1 }); ent('hearthgob', 58, 14, { face: -1 }); ent('miner', 62, 14, { face: -1 });
-  plat(47, 13, 3); plat(50, 11, 3); plat(54, 10, 4);
-  coins([44, 13], [48, 13], [52, 13], [56, 9], [58, 9], [60, 13], [63, 13], [64, 13]);
-  ent('vent', 52, 14, { heat: true, h: 90, period: 3.4, on: 1.5, lift: 240, w: 12 });
-  ent('doorway', 65, 14, { id: 'smithy-back', to: 'smithy-far', lock: [38, 66], label: 'OUT THE SLACK-TUB DOOR' });
-  ent('sign', 39, 14, { text: 'THE SMITHY. THE BACK DOOR IS PAST THE SHELF.' });
-  room(74, 98, 6, 13, 'earth');   // THE TANNERY: hides on racks you climb
-  ent('doorway', 77, 13, { id: 'tan-in', to: 'tan-out', lock: [74, 98], label: 'THE TANNERY' });
-  ent('torch', 82, 13); ent('hearthgob', 88, 13, { face: -1 }); ent('spider', 92, 7, { drop: 90 });
-  coins([80, 12], [84, 12], [88, 12], [90, 12], [92, 12], [93, 12]);
-  plat(80, 11, 3); plat(85, 9, 3); plat(90, 11, 3); coins([81, 10], [86, 8], [91, 10]);
-  for (const x of [79, 84, 89, 94]) ent('deco', x, 6, { kind: 'banner', v: x % 2, hang: true });
-  ent('sprig', 82, 13, { face: 1 }); ent('sprig', 88, 13, { face: -1 });
-  ent('doorway', 97, 13, { id: 'tan-back', to: 'tan-far', lock: [74, 98], label: 'OUT PAST THE PITS' });
-  room(106, 160, 4, 15, 'hall');   // THE LONGHOUSE: the officers' feast, three chandeliers to cut down, a silver in the rafters
-  ent('doorway', 109, 15, { id: 'long-in', to: 'long-out', lock: [106, 160], label: 'THE LONGHOUSE' });
-  ent('torch', 114, 15); ent('brazier', 124, 15); ent('brazier', 142, 15); ent('torch', 154, 15);
-  ent('hearthgob', 120, 15, { face: -1 }); ent('hearthgob', 134, 15, { face: 1 }); ent('brute', 146, 15, { face: -1 });
-  plat(112, 14, 3); plat(115, 12, 3); plat(118, 11, 4); plat(123, 10, 3); plat(128, 8, 5); plat(136, 10, 4); ent('archer', 129, 7, { face: -1 });   // a real way into the rafters
-  ent('vault', 130, 7);   /* the Longhouse's cache (it held the iron shoes: relics are cut, it pays a silver, src/relics.js) */
-  ent('doorway', 159, 15, { id: 'long-back', to: 'long-far', lock: [106, 160], label: 'OUT THE GABLE END' });
-  coins([116, 10], [120, 10], [126, 7], [130, 7], [137, 9], [139, 9], [150, 14], [154, 14], [155, 14], [156, 14], [157, 14]);
-  for (const x of [121, 138, 152]) ent('weight', x, 4, { len: 4, lamp: true, hang: true });
-  plat(124, 14, 5); plat(142, 14, 5); ent('sapper', 146, 15, { face: -1 }); ent('hearthgob', 128, 15, { face: 1 });
-  ent('sign', 107, 15, { text: 'THE LONGHOUSE. CUT A CHANDELIER DOWN ON WHOEVER IS UNDER IT.' });
+  // ============================ 1. THE ROAD IN (0-91): the failed siege's camp, THE GATE WATCH ============================
+  floor(0, 37, 37);
+  ent('sign', 3, 36, { text: 'STORMHOLD. THE GATES ARE LOCKED, AND EVERY KEY HANGS IN A WATCHTOWER.' });
+  // the camp the last siege left in the snow: torn tents, a cold fire, a cart with a wheel off, the stakes they never finished
+  ent('deco', 9, 36, { kind: 'tent', v: 1 }); ent('deco', 14, 36, { kind: 'campfire' }); ent('deco', 20, 36, { kind: 'cart', v: 1 });
+  ent('deco', 25, 36, { kind: 'spearRack' }); ent('deco', 34, 36, { kind: 'stakeFence', v: 1 });
+  laid(28, 31, 35, 36);   // a fallen merlon off the outer wall, the first thing to stand on
+  plat(5, 34, 5); plat(16, 33, 5);   // the siege's broken mantlets, propped on their stakes: a higher way through the camp
+  ent('sprig', 17, 36, { face: -1 }); ent('archer', 29, 34, { face: -1 }); ent('sprig', 23, 36, { face: -1 });
+  coins([6, 35], [12, 35], [19, 34], [29, 33], [33, 35]);
+  floor(38, 91, 36);
+  // THE GATE WATCH: a stone tower outside the outer wall, climbed by the masons' scaffold on its west face - two rope ladders
+  // in a switchback, a board between them, the hoarding deck on top. A Scalder over the top ladder: when the pot tips, get off it.
+  const T1 = { x0: 43, x1: 52, top: 21, floor: 36, kind: 'stone', key: 'brass', gate: STORM_TOWN.GATES.brass, name: 'THE GATE WATCH' };
+  laid(46, 52, 22, 35);
+  plat(41, 31, 5); plat(41, 26, 5); plat(43, 21, 10);   // the scaffold's two boards, and the hoarding deck on the tower's top
+  ladder(45, 31, 35); ladder(41, 26, 31); ladder(45, 21, 26);
+  scaffolds.push({ x0: 40, x1: 45, top: 21, floor: 36, kind: 'timber', scaffold: true });
+  ent('shield', 43, 30, { face: 1 });                     // a guard on the first board, between the ladders
+  ent('scalder', 45, 20, { face: 1, post: [45, 45] });   // over the top ladder
+  ent('key', 49, 20, { kind: 'brass' }); ent('brazier', 51, 20);
+  ent('sign', 40, 35, { text: 'THE GATE WATCH HOLDS THE BRASS KEY. WHEN THE POT TIPS, GET OFF THE LADDER.' });
+  ent('sign', 52, 20, { text: 'A ROPE RUNS DOWN TO THE GATE. UP TAKES THE HANDLE, JUMP LETS GO, DOWN DROPS.' });   /* THE ZIP LINE's one lesson (src/zipline.js) */
+  coins([43, 29], [44, 25], [47, 20], [50, 20]);
+  // the road to the barbican: the gate's dogs loose on it, a flyer through the rope's arc, rubble off the wall to hop
+  laid(62, 64, 35, 35); laid(75, 76, 34, 35);
+  plat(56, 33, 5); plat(63, 30, 4); plat(70, 33, 3);   // the siege's toppled belfry, its two decks still in the snow
+  ent('hound', 60, 35, { face: -1 }); ent('hound', 68, 35, { face: -1 }); ent('harpy', 72, 29); ent('shield', 80, 35, { face: -1 });
+  ent('deco', 57, 35, { kind: 'lanternPost' }); ent('deco', 84, 35, { kind: 'warStandard', v: 0 });
+  coins([58, 34], [63, 33], [70, 34], [76, 32], [82, 34]);
+  ent('sign', 89, 35, { text: 'THE BARBICAN. ITS KEY IS UP THE GATE WATCH: FOLLOW THE ROPE.' });
 
-  // ============================ 1. THE ROAD IN (0-89): the road under the wall, and THE GATE WATCH ============================
-  floor(0, 89, 36);
-  ent('sign', 4, 35, { text: 'STORMHOLD. THE GATES ARE LOCKED, AND EVERY KEY HANGS IN A WATCHTOWER.' });
-  roof(14, 26, 31);   // the Hearth House
-  ent('doorway', 17, 35, { id: 'hearth-out', to: 'hearth-in', kind: 'goblin' });
-  ent('doorway', 23, 35, { id: 'hearth-far', to: 'hearth-back', kind: 'goblin' });
-  ent('sign', 12, 35, { text: 'THIS DOOR IS ON THE LATCH. STAND IN A DOORWAY AND PRESS E.' });
-  ent('torch', 11, 35); ent('check', 29, 35);
-  ent('sprig', 31, 35, { face: -1 }); ent('shield', 33, 35, { face: -1 });
-  coins([6, 34], [10, 34], [28, 34], [33, 33], [37, 34]);
-  // THE GATE WATCH: two rope ladders in a switchback, a landing between them, and a Scalder over the upper one.
-  // The landing is out of his reach: that is the lesson (step off the ladder when the pot tips).
-  const T1 = { x0: 40, x1: 47, top: 23, floor: 36, kind: 'timber', key: 'brass', gate: STORM_TOWN.GATES.brass, name: 'THE GATE WATCH' };
-  plat(T1.x0, T1.top, T1.x1 - T1.x0 + 1);   // the top deck
-  plat(41, 30, 5);                          // the landing
-  ladder(46, 30, 35); ladder(41, 23, 30);   // up the east side to the landing, up the west side to the deck: the rope leaves from the east edge, clear of the ladder's top
-  ent('shield', 44, 29, { face: -1 });   /* STORMTOUGH: a guard on the five-wide landing between the ladders - the pot over one, his shield on the other */
-  ent('scalder', 41, 22, { face: 1, post: [41, 41] });
-  ent('key', 44, 22, { kind: 'brass' }); ent('brazier', 40, 22);
-  ent('sign', 41, 35, { text: 'THE GATE WATCH HOLDS THE BRASS KEY. WHEN THE POT TIPS, GET OFF THE LADDER.' });
-  coins([43, 29], [45, 29], [46, 26], [45, 22]);
-  ent('sign', 46, 22, { text: 'A ROPE RUNS DOWN TO THE GATE. UP TAKES THE HANDLE, JUMP LETS GO, DOWN DROPS.' });   /* THE ZIP LINE's one lesson (src/zipline.js): the verb, at the first rope, where a miss is a drop to the road */
-  roof(56, 60, 31);   // a shut cottage beside the tower's rope (it ends on the road now, so the rope runs clear over the cottage's west end)
-  ent('deco', 52, 35, { kind: 'lanternPost' }); ent('archer', 58, 28, { face: -1 });
-  ent('harpy', 68, 30);   /* STORMTOUGH: a flyer through the rope's arc */
-  ent('sprig', 72, 35, { face: -1 }); ent('hound', 60, 35, { face: -1 }); ent('hound', 66, 35, { face: -1 }); ent('check', 76, 35);   /* the gate's dogs, loose on the road */
-  coins([54, 34], [58, 34], [64, 34], [70, 34], [74, 34]);
-  // THE BARBICAN: the wall's gatehouse, sealed from the band to the arch; the brass gate in its passage
-  block(82, 88, 19, 29); masonry.push([82, 88, 19, 29]);
-  ent('lockgate', 84, 35, { needs: 'brass', h: 6 }); gateCol(84, 30, 35);
-  block(87, 89, 34, 35);   // the step up into the town
-  facades.push([77, 81, 20, 35, 'tower', { town: true, roof: true }], [90, 94, 20, 31, 'tower', { town: true, roof: true }]);
-  ent('sign', 79, 35, { text: 'THE BARBICAN. ITS KEY IS UP THE GATE WATCH: FOLLOW THE ROPE.' });
+  // ============================ 2. THE BARBICAN (92-150): the outer gate's passage and its MURDER HOLES ============================
+  floor(92, 146, 36); laid(90, 97, 22, 29);
+  ent('lockgate', STORM_TOWN.GATES.brass, 35, { needs: 'brass', h: 6 }); gateCol(STORM_TOWN.GATES.brass, 30, 35);
+  facades.push([87, 89, 20, 35, 'tower', { town: true, roof: true }]);
+  // the passage: a vault of laid stone over the road, five rows of headroom, and a hole in it every eight columns. A stone hangs
+  // in each: when one SPARKS (!!) it is coming down - step out from under. Strike one loose yourself and it comes down on
+  // whoever is under it: the Lance's verb (a weight over his lane), taught in miniature.
+  laid(98, 146, 26, 30);
+  const holes = [104, 112, 120, 128, 136, 142];
+  for (const hx of holes) { air(hx, hx, 27, 30); ent('weight', hx, 27, { len: 4, unstable: true, crane: true }); }
+  ent('sign', 99, 35, { text: 'MURDER HOLES OVERHEAD. WHEN A STONE SPARKS, STEP OUT FROM UNDER IT.' });
+  ent('sign', 109, 35, { text: 'STRIKE A STONE LOOSE AND IT FALLS ON WHOEVER STANDS UNDER IT.' });
+  ent('shield', 111, 35, { face: -1 }); ent('pike', 119, 35, { face: -1 }); ent('sapper', 125, 35, { face: -1 });
+  ent('brute', 134, 35, { face: -1 }); ent('hearthgob', 140, 35, { face: -1 });   /* the passage's exam: the brute stands under a hole */
+  ent('torch', 101, 33); ent('torch', 117, 33); ent('torch', 132, 33);
+  coins([103, 34], [113, 34], [121, 34], [129, 34], [137, 34], [144, 34]);
+  laid(147, 150, 35, 35);   // the step up out of the passage into the bailey
+  facades.push([144, 146, 18, 25, 'tower', { town: true, roof: true }]);
+  ent('check', 152, 33);
 
-  // ============================ 2. THE MARKET SQUARE (90-179): stalls, a well, the ambush, the roof road ============================
-  floor(90, 179, 32);
-  roof(91, 97, 27);   // the chandler's, against the wall
-  ent('check', 95, 31);
-  // the square itself (the ambush room, 98-138: AMBUSH.storm in level.js) - a town's furniture with a goblin army camped in it
-  for (const [k, x, v] of [['counter', 103, 0], ['wares', 108, 0], ['kegStack', 113, 0], ['well', 119, 0], ['counter', 125, 0], ['wares', 129, 1], ['hayBale', 133, 0], ['cart', 136, 0]]) ent('deco', x, 31, { kind: k, v });   /* the traders' counters and shelves, a well, a cart come in with hay */
-  ent('deco', 101, 31, { kind: 'lanternPost' }); ent('deco', 137, 31, { kind: 'lanternPost' });
-  for (const x of [104, 118, 132]) ent('deco', x, 22, { kind: 'bunting', hang: true });
-  coins([102, 30], [106, 30], [110, 29], [116, 30], [122, 29], [128, 30], [134, 30]);
-  ent('sign', 99, 31, { text: 'THE MARKET SQUARE. THE GOBLINS KEEP THEIR SERJEANT HERE.' });
-  facades.push([98, 138, 24, 31, 'townrow']);   /* the houses round the square, behind it */
-  // the rows beyond it, and the ROOF ROAD over them: up the lean-to at the Smithy's east end, back west along the slates
-  roof(139, 151, 27); roof(154, 170, 27);   // the cooper's and the Smithy
-  ent('doorway', 157, 31, { id: 'smithy-out', to: 'smithy-in', kind: 'goblin' });
-  ent('doorway', 168, 31, { id: 'smithy-far', to: 'smithy-back', kind: 'goblin' });
-  plat(171, 29, 3); plat(172, 27, 2);
-  ent('archer', 146, 24, { face: 1 }); ent('stormshaman', 162, 24, { face: -1 });
-  /* STORMTOUGH: the Square's squad - a shield wall on the street, a hound loose behind it, a second bowman on the roof road */
-  ent('shield', 121, 31, { face: -1 }); ent('hound', 140, 31, { face: -1 }); ent('archer', 156, 24, { face: -1 });
-  ent('silver', 140, 23); coins([142, 24], [148, 24], [152, 23], [156, 24], [160, 24], [166, 24], [170, 24]);
-  ent('shield', 146, 31, { face: -1 }); ent('hearthgob', 151, 31, { face: -1 }); ent('brute', 162, 31, { face: -1 }); ent('sapper', 176, 31, { face: -1 }); ent('check', 173, 31);
-  ent('sign', 170, 31, { text: 'THE ROOFS ARE A ROAD. UP THE LEAN-TO.' });
+  // ============================ 3. THE OUTER BAILEY (151-267): stables, the smithy yard, THE BELL WATCH, the dry moat ============================
+  floor(151, 235, 34);
+  // THE STABLES: open stalls under a lean-to (a hay loft you can stand on), a higher loft at the end, carts and hay in the yard
+  plat(157, 31, 10); plat(169, 28, 6);
+  for (const [k, x, v] of [['hayBale', 158, 0], ['trough', 163, 0], ['hayBale', 166, 1], ['cart', 172, 0], ['waterButt', 177, 0]]) ent('deco', x, 33, { kind: k, v });
+  ent('deco', 155, 33, { kind: 'lanternPost' }); ent('deco', 189, 33, { kind: 'lanternPost' });
+  coins([158, 30], [162, 30], [166, 30], [170, 27], [174, 27]);
+  ent('sign', 154, 33, { text: 'THE OUTER BAILEY. THE STABLE YARD IS HELD.' });
+  // THE SMITHY YARD: the forge out in the open, its lean-to roof, and THE ROPE WALKWAY off the roof - a span across the yard to a
+  // hoarding stub, a cutter working it from the far end (S7, a hard road that pays): the yard below is the safe way past.
+  ent('deco', 184, 33, { kind: 'forge' }); ent('deco', 188, 33, { kind: 'anvil' }); ent('brazier', 191, 33); ent('deco', 195, 33, { kind: 'barrels' });
+  plat(180, 31, 3); plat(182, 28, 7);   // up the slack-tub stand onto the smithy's lean-to
+  span(189, 193, 28, { give: true });
+  plat(194, 28, 3); ent('cutter', 195, 27, { face: -1, bridge: 189 });
+  ent('silver', 196, 27);
+  ent('sign', 181, 33, { text: 'THE ROPE FRAYS WHERE HE STANDS ON IT. DO NOT LINGER, OR TAKE THE YARD.' });
+  ent('sapper', 186, 33, { face: -1 }); ent('shield', 199, 33, { face: -1 });
+  coins([183, 27], [186, 27], [190, 27], [192, 27]);
+  // THE FIRST BELL (the level teaches Highcrown's alarm before Highcrown does): a sentry who runs for it if he sees you, and a grate
+  // across the yard if he rings it - catch him, break the bell, or fight the garrison through the grate.
+  plat(200, 30, 5); plat(228, 31, 5);   // the bailey wall's fighting steps: over the bell, and over the moat's bowman
+  ent('sentry', 205, 33, { section: 'bailey', range: 6, face: -1 });
+  ent('bell', 208, 33, { section: 'bailey' });
+  ent('sign', 201, 33, { text: 'SENTRIES RUN FOR THEIR BELLS. CATCH HIM, OR BREAK IT FIRST.' });
+  // THE BELL WATCH: stone, climbed on the masons' scaffold against its west face - three ladders, two boards, the deck on top.
+  // A sentry stands the second board, on the ladder route: ring him and a grate shuts the key off on the deck above, and his watch turns out there.
+  const T2 = { x0: 216, x1: 226, top: 18, floor: 34, kind: 'stone', key: 'iron', gate: STORM_TOWN.GATES.iron, name: 'THE BELL WATCH' };
+  laid(219, 226, 19, 33);
+  plat(214, 29, 5); plat(214, 24, 5); plat(216, 18, 11);
+  ladder(218, 29, 33); ladder(214, 24, 29); ladder(218, 18, 24);
+  ladder(227, 18, 33);   // the garrison's own ladder down its east face to the moat side (a hero who drops off the deck there climbs back)
+  scaffolds.push({ x0: 213, x1: 218, top: 18, floor: 34, kind: 'timber', scaffold: true });
+  ent('scalder', 214, 23, { face: 1, post: [214, 214] });   // over the second ladder
+  ent('scalder', 218, 17, { face: 1, post: [218, 218] });   // over the third
+  ent('sentry', 216, 23, { section: 'bellwatch', range: 3, face: -1 });
+  ent('bell', 217, 23, { section: 'bellwatch' });
+  ent('hearthgob', 215, 28, { face: 1 });
+  ent('key', 222, 17, { kind: 'iron' }); ent('brazier', 225, 17);
+  ent('sign', 213, 33, { text: 'THE BELL WATCH HOLDS THE IRON KEY. UP THE SCAFFOLD ON ITS FACE.' });
+  ent('sign', 226, 17, { text: 'THE ROPE RUNS OVER THE MOAT TO THE INNER GATE. HOLD UP AT ITS HANDLE.' });
+  coins([216, 28], [217, 22], [220, 17], [223, 17]);
+  // THE DRY MOAT: twelve columns of the bailey are a spiked ditch, too wide for any jump. The Bell Watch's rope is the way over
+  // (src/zipline.js; the reach model knows the rope - src/reachcore.js). A fall is the spikes' bite and back to safe ground.
+  ent('archer', 230, 33, { face: -1 });
+  floor(236, 269, 34); air(236, 247, 34, 36); spikesAt(236, 247, 37);
+  ent('sign', 232, 33, { text: "THE DRY MOAT. THE BELL WATCH'S ROPE GOES OVER IT." });
+  ent('check', 254, 33);   /* THE BAILEY's exam (the tower, the bell, the moat) ends here */
+  laid(259, 265, 22, 29);
+  ent('lockgate', STORM_TOWN.GATES.iron, 33, { needs: 'iron', h: 5 }); gateCol(STORM_TOWN.GATES.iron, 29, 33);
+  ent('sign', 257, 33, { text: 'THE INNER GATE. ITS KEY IS IN THE BELL WATCH.' }); plat(266, 31, 3);   // the sally port's step
+  facades.push([255, 258, 20, 33, 'tower', { town: true, roof: true }], [266, 269, 20, 33, 'tower', { town: true, roof: true }]);
+  coins([250, 33], [256, 33]);
 
-  // ============================ 3. SMOKE ROW (180-269): forges, the tannery, THE CHIMNEYS ============================
-  floor(180, 269, 32);
-  ent('sign', 181, 31, { text: 'SMOKE ROW. THEY WORK IRON FOR THE CASTLE HERE.' });
-  ent('deco', 185, 31, { kind: 'forge' }); ent('brazier', 189, 31);
-  roof(192, 206, 27);   // the tannery
-  ent('doorway', 195, 31, { id: 'tan-out', to: 'tan-in', kind: 'goblin' });
-  ent('doorway', 204, 31, { id: 'tan-far', to: 'tan-back', kind: 'goblin' });
-  ent('hearthgob', 199, 31, { face: -1 });
-  roof(210, 222, 27);   // a forge house
-  ent('shield', 196, 31, { face: -1 }); ent('hound', 206, 31, { face: -1 });   /* STORMTOUGH: the forge's guard and its dog */
-  ent('brute', 214, 31, { face: -1 }); ent('sapper', 220, 31, { face: -1 }); ent('brazier', 208, 31);
-  ent('check', 190, 31);
-  coins([184, 30], [194, 30], [202, 30], [212, 30], [218, 30], [224, 30]);
-  // THE ROOFTOP ROPE (S7, a hard road that pays): up the lean-to onto the tannery's roof, a rope span the width of the
-  // gap to the forge roof, a cutter working it from the far end, then down again. The street below is the safe way past
-  // the same stretch - the rope saves nothing but pride and a silver (the audit's gap: Stormhold's cutters had no rope).
-  plat(188, 29, 3); plat(190, 26, 2);
-  span(207, 209, 24, { give: true });
-  ent('cutter', 210, 23, { face: -1, bridge: 207 });
-  ent('silver', 200, 23);
-  ent('sign', 189, 26, { text: 'THE ROPE FRAYS WHERE HE STANDS ON IT. DO NOT LINGER, OR TAKE THE STREET.' });
-  plat(222, 26, 2); plat(222, 29, 2);
-  // THE FIRST BELL (the level teaches Highcrown's alarm before Highcrown does): a sentry who runs for it if he sees you,
-  // and a grate over the way to the chimneys if he rings it - catch him, break the bell, or fight through the grate.
-  ent('sentry', 224, 31, { section: 'smokerow', range: 6, face: 1 });
-  ent('bell', 226, 31, { section: 'smokerow' });
-  ent('sign', 219, 31, { text: 'SENTRIES RUN FOR THEIR BELLS. CATCH HIM, OR BREAK IT FIRST.' });
-  // THE CHIMNEYS: the old sootworks gorge. The span is down; the stacks stand a hop apart and the sweeps live in them.
-  air(228, 252, 32, 43);
-  for (const [x0, top] of [[230, 31], [234, 29], [239, 30], [243, 29], [248, 30]]) { block(x0, x0 + 1, top, 43); ent('chimpot', x0 + 1, top - 1); }   // up-hops are two tiles, drops three
-  ladder(228, 32, 43); for (const [lx, top] of [[232, 31], [236, 29], [241, 30], [245, 29], [252, 32]]) ladder(lx, top, 43);   // a rope ladder down every shaft
-  ent('sweep', 234, 28, { face: -1 }); ent('sweep', 243, 28, { face: -1 });
-  ent('harpy', 238, 25); ent('harpy', 249, 25);   /* STORMTOUGH: flyers through the chimney hops - the up-hop is the moment they strike */
-  ent('deco', 227, 31, { kind: 'lanternPost' }); ent('deco', 254, 31, { kind: 'lanternPost' });
-  ent('sign', 225, 31, { text: 'THE SPAN IS DOWN: CLIMB THE STACKS. EVERY SHAFT HAS A LADDER.' }); ent('check', 223, 31);
-  coins([232, 28], [235, 27], [240, 28], [244, 27], [246, 27], [251, 29], [237, 40], [246, 40]);
-  ent('rockgoblin', 262, 31, { face: -1 }); ent('check', 258, 31);
-  coins([257, 30], [264, 30], [268, 30]);
+  // ============================ 4. THE CURTAIN WALL (268-395): the ditch, the wall face, THE WALL-WALK, THE WALL WATCH ============================
+  block(270, 271, 34, 45);   // the sally pier
+  block(272, 333, 44, 45);   // the ditch floor, under the wall
+  for (const [x, y] of [[272, 36], [274, 38], [276, 40], [278, 42]]) plat(x, y, 2);   // THE SALLY STAIR, two rows a step
+  laid(288, 290, 42, 43); laid(299, 300, 43, 43);   // stone fallen off the wall
+  ent('sign', 268, 33, { text: 'THE WAY ON IS OVER THE CURTAIN WALL. DOWN INTO THE DITCH, THEN UP ITS FACE.' });
+  ent('sprig', 285, 43, { face: -1 }); ent('sapper', 294, 43, { face: -1 }); ent('shield', 305, 43, { face: -1 }); ent('sprig', 312, 43, { face: -1 });
+  ent('harpy', 282, 38); ent('archer', 318, 43, { face: -1 });
+  plat(292, 40, 4); plat(306, 41, 5); plat(314, 40, 3);   // the ditch's fallen hoarding, leant on the rubble
+  coins([281, 42], [289, 40], [296, 42], [304, 42], [312, 42], [318, 42]);
+  // the face: the masons' scaffold still stands against the wall, so the climb zig-zags between its boards and the wall's own
+  // sills, two rows a step. A Scalder on the hoarding over the sills: the wall side is poured on, the scaffold side is not.
+  for (const y of [40, 36, 32, 30]) plat(325, y, 3);   // the scaffold's boards
+  for (const y of [42, 38, 34]) plat(330, y, 4);       // wall sills
+  plat(330, 29, 4);                                    // the hoarding at the wall top
+  scaffolds.push({ x0: 324, x1: 328, top: 30, floor: 44, kind: 'timber', scaffold: true });
+  ent('scalder', 332, 28, { face: -1, post: [330, 333] });
+  ent('sign', 320, 43, { text: 'THE WALL. HE POURS DOWN THE WALL SIDE ONLY: WAIT ON THE SCAFFOLD.' });
+  ent('harpy', 328, 33);
+  coins([326, 39], [331, 37], [326, 35], [331, 33], [326, 31], [331, 28]);
+  // THE WALL-WALK (A14: the level's real platforming section, with its own exam): the hoardings are breached in three places,
+  // spiked where the walk fell in; arrow-slit towers with a bowman on each cover the jumps, a beam of the old hoarding still
+  // stands over the widest breach, and a pike holds the walk between the second and third.
+  laid(334, 387, 29, 45);
+  facades.push([334, 384, 22, 28, 'curtain', { town: true }]);
+  laid(340, 342, 27, 28); laid(371, 373, 27, 28);   // the arrow-slit towers
+  ent('archer', 341, 26, { face: -1 }); ent('archer', 372, 26, { face: -1 });
+  const breach = (x0, x1) => { air(x0, x1, 29, 34); spikesAt(x0, x1, 35); };
+  breach(350, 352); breach(360, 363); breach(378, 380);
+  plat(361, 26, 2);   // the hoarding's last beam over the wide breach
+  ent('shield', 356, 28, { face: -1 }); ent('pike', 367, 28, { face: -1 }); ent('harpy', 376, 23);
+  ent('sign', 336, 28, { text: 'THE WALL-WALK IS BREACHED. JUMP THE GAPS - THE OLD HOARDING BEAM STILL HOLDS.' });
+  coins([345, 27], [351, 25], [357, 27], [362, 24], [368, 27], [379, 25], [383, 27]);
+  // THE WALL WATCH: stone, on the wall's east end, climbed outside like the others: a ladder off the walk, a board, the deck
+  const T3 = { x0: 384, x1: 395, top: 20, floor: 29, kind: 'stone', key: 'bone', gate: STORM_TOWN.GATES.bone, name: 'THE WALL WATCH' };
+  laid(388, 395, 21, 45);
+  plat(384, 25, 4); plat(384, 20, 12);
+  ladder(387, 25, 28); ladder(384, 20, 25);
+  scaffolds.push({ x0: 384, x1: 387, top: 20, floor: 29, kind: 'timber', scaffold: true });
+  ent('scalder', 384, 19, { face: 1, post: [384, 384] });
+  ent('archer', 386, 24, { face: -1 });
+  ent('key', 391, 19, { kind: 'bone' }); ent('brazier', 394, 19);
+  ent('sign', 382, 28, { text: 'THE WALL WATCH HOLDS THE BONE KEY. THE ROPE GOES DOWN TO THE GATEHOUSE.' });
+  ent('sign', 395, 19, { text: 'THE GATEHOUSE ROPE. HOLD UP AT ITS HANDLE, JUMP TO LET GO.' });
+  coins([385, 24], [389, 19], [392, 19]);
 
-  // ============================ 4. THE BELL CLOSE (270-349): THE BELL WATCH ============================
-  floor(270, 349, 32);
-  // the roof way: a lean-to, two roofs stepping up, and a window halfway up the tower (skips the first Scalder)
-  plat(267, 30, 2); plat(269, 28, 2); roof(272, 281, 29); roof(284, 292, 27);
-  // THE BELL WATCH: stone, over the street (you walk through its arch), three ladders inside with the floors alternating
-  const T2 = { x0: 296, x1: 303, top: 21, floor: 32, kind: 'stone', key: 'iron', gate: STORM_TOWN.GATES.iron, name: 'THE BELL WATCH' };
-  block(296, 296, 19, 27); block(303, 303, 22, 27); masonry.push([296, 303, 19, 27]);
-  air(296, 296, 22, 24);            // the west window, off the second roof
-  air(303, 303, 23, 24);            // the east window, where the archer across the close can see in
-  plat(297, 28, 6); plat(297, 25, 6); plat(297, 21, 7);   // the first floor, the second floor, the belfry deck (out through the east arch)
-  ladder(297, 28, 31); ladder(302, 25, 27); ladder(297, 21, 24);
-  ent('scalder', 298, 27, { face: -1, post: [298, 298] });   // over the first ladder
-  ent('scalder', 301, 20, { face: -1, post: [301, 302] });   // over the second
-  ent('key', 299, 20, { kind: 'iron' }); ent('brazier', 298, 20);
-  ent('sign', 303, 20, { text: 'THE ROPE RUNS DOWN TO THE INNER GATE. HOLD UP AT ITS HANDLE.' });
-  ent('silver', 297, 24);
-  // COMBINE THE BELL WITH THE TOWER (the audit's plan item 3): a sentry stands the second floor, square on the ladder
-  // route between the first and second Scalder. He never sees the west window's shortcut, two rows above him - only the
-  // ladder gives you away. Ring him and a grate drops on the east arch and two hearthgobs come up to the belfry with you.
-  ent('sentry', 300, 25, { section: 'bellwatch', range: 3, face: -1 });
-  ent('bell', 302, 25, { section: 'bellwatch' });
-  facades.push([297, 302, 19, 31, 'tower', { town: true, lit: false }]);
-  ent('sign', 294, 31, { text: 'THE BELL WATCH HOLDS THE IRON KEY. IN BY THE ARCH, OR OVER THE ROOFS.' });
-  ent('check', 274, 31); coins([270, 28], [275, 26], [279, 26], [286, 24], [290, 24], [299, 27], [300, 24], [298, 20]);
-  // the close: a churchyard under the tower, the east house and its archer, and the inner wall
-  facades.push([315, 321, 24, 31, 'townrow'], [332, 337, 24, 31, 'townrow']);   /* (STORMTOUGH: not over the breach at 322-331 - the zipline commit left 16 cells of housefront standing on nothing at 326-327, tools/architecture.mjs) */
-  for (const [x, v] of [[312, 0], [318, 1], [334, 2]]) ent('deco', x, 31, { kind: 'grave', v });
-  ent('deco', 336, 31, { kind: 'yew', v: 1 });
-  roof(306, 314, 27); ent('archer', 311, 24, { face: -1 });
-  ent('hound', 278, 31, { face: -1 }); ent('archer', 288, 24, { face: -1 });   /* STORMTOUGH: a dog on the street and a bowman on the second roof, the tower's approach */
-  ent('check', 306, 31); ent('shield', 320, 31, { face: -1 }); ent('sprig', 336, 31, { face: -1 }); ent('pike', 316, 31, { face: -1 }); ent('rockgoblin', 334, 31, { face: -1 });
-  coins([316, 30], [338, 30]);
-  ent('shield', 343, 31, { face: -1 });   /* STORMTOUGH (ELITES.storm): the inner gate's captain, stood on the far bank of the breach where the rope sets you down */
-  /* THE BREACH IN THE CLOSE (claude/zipline, Daniel 10-08: a zip line ON THE ROUTE): ten columns of the street are gone - a spiked cut too wide for any jump (6). Taken the way the Gate Watch taught
-     (a rope off a tower deck, where a miss was a drop to the road), the Bell Watch's rope is the way over: key in hand, UP at its handle on the belfry deck, and the line carries you across and sets you down
-     by the inner gate. A fall is the street's spikes (a bite, and back to the last safe ground: the hazard rule); a hero who misses the rope part-way and drops has the same. The reach model knows the rope (src/reachcore.js). */
-  for (let x = 322; x <= 331; x++) { set(x, 32, T.AIR); set(x, 33, T.SPIKE); }
-  ent('sign', 319, 31, { text: "THE STREET IS BREACHED. THE BELL WATCH'S ROPE GOES OVER IT." });
-  block(344, 348, 19, 26); masonry.push([344, 348, 19, 26]);
-  ent('lockgate', 346, 31, { needs: 'iron', h: 5 }); gateCol(346, 27, 31);
-  ent('check', 340, 31);
-  ent('sign', 342, 31, { text: 'THE INNER GATE. ITS KEY IS IN THE BELL WATCH.' });
-  facades.push([338, 343, 20, 31, 'tower', { town: true, roof: true }], [349, 353, 20, 29, 'tower', { town: true, roof: true }]);
-
-  // ============================ 5. THE HALLS (350-429): the officers' houses, the Longhouse, THE KEEP GATE ============================
-  floor(347, 429, 30);
-  ent('check', 351, 29);
-  ent('sign', 353, 29, { text: 'THE HALLS. THE OFFICERS FEAST IN THE LONGHOUSE.' });
-  roof(355, 370, 25);   // the Longhouse
-  ent('doorway', 358, 29, { id: 'long-out', to: 'long-in', kind: 'cottage' });
-  ent('doorway', 368, 29, { id: 'long-far', to: 'long-back', kind: 'cottage' });
-  roof(374, 384, 25);
-  ent('deco', 372, 29, { kind: 'banner', v: 0 }); ent('deco', 386, 29, { kind: 'banner', v: 1 }); ent('torch', 356, 29); ent('torch', 385, 29);
-  ent('brute', 376, 29, { face: -1 }); ent('archer', 382, 29, { face: -1 });
-  ent('pike', 373, 29, { face: 1 });   /* THE PIKE SERJEANT (ELITES.storm, src/level.js): holds the gate the Longhouse's own roof frames at 378 */
-  coins([356, 28], [362, 27], [366, 28], [372, 27], [378, 28], [384, 27]);
-  // THE KEEP GATE (F5): a portcullis held up on a winch. Strike the winch and it drops on whatever is under it; it winds
-  // itself back up. The pikes come through that passage.
-  block(396, 402, 19, 25); masonry.push([396, 402, 19, 25]);
-  ent('winch', 393, 29, { gate: 399, gy0: 26, gy1: 29, drop: true, hold: 6 });
-  ent('sign', 390, 29, { text: 'THE KEEP GATE. STRIKE THE WINCH AND IT DROPS ON WHAT IS UNDER IT.' });
-  ent('check', 388, 29);
-  ent('pike', 405, 29, { face: -1 }); ent('pike', 411, 29, { face: -1 }); ent('shield', 417, 29, { face: -1 }); ent('stormshaman', 421, 29, { face: -1 });   /* STORMTOUGH: a shaman behind the pike wall */
-  ent('shield', 363, 29, { face: -1 });
-  ent('torch', 404, 29); ent('deco', 422, 29, { kind: 'banner', v: 0 });
-  // THE ARCH IS A LINTEL, NOT A PIER: nothing stands under it (the pikes and the winch's drop both need the yard clear),
-  // so it carries on the two town fronts either side, in reach at every row it occupies (tools/architecture.mjs SPAN).
-  facades.push([391, 395, 19, 29, 'townrow'], [403, 429, 19, 29, 'townrow'], [0, 12, 28, 35, 'townrow'], [27, 38, 28, 35, 'townrow']);
-  ent('check', 425, 29); coins([392, 28], [399, 28], [408, 28], [414, 28], [420, 28], [426, 28]);
-
-  // ============================ 6. THE CURTAIN WALL (430-543): the gorge, the wall face, the walk, THE WALL WATCH ============================
-  // (the agreed greybox, src/draft/curtain-wall.js, rebuilt in place: no hoist, no rods, no Gate Serjeant - see the brief §12)
-  block(430, 431, 30, 45);   // the sally pier
-  block(432, 499, 44, 45);   // the gorge floor, under the wall
-  for (const [x, y] of [[433, 32], [435, 34], [437, 36], [439, 38], [441, 40], [443, 42]]) plat(x, y, 2);   // THE SALLY STAIR, two rows a step
-  block(452, 454, 42, 43); block(463, 464, 43, 43);   // rubble off the wall
-  ent('sign', 431, 29, { text: 'THE WAY ON IS OVER THE CURTAIN WALL. DOWN, THEN UP ITS FACE.' });
-  ent('check', 446, 43);
-  ent('sprig', 450, 43, { face: -1 }); ent('sapper', 458, 43, { face: -1 }); ent('shield', 470, 43, { face: -1 }); ent('sprig', 478, 43, { face: -1 });
-  ent('harpy', 447, 38); ent('archer', 484, 43, { face: -1 });   /* STORMTOUGH: a flyer over the rubble and a bowman behind the gate's captain */
-  coins([445, 42], [453, 40], [460, 42], [468, 42], [476, 42], [484, 42]);
-  // the face: the masons' scaffold still stands against the wall, so the climb zig-zags between its boards and the
-  // wall's own sills, two rows a step. A Scalder on the hoarding over the wall's sills: the wall side is poured on, the
-  // scaffold side is not.
-  const scaffold = { x0: 490, x1: 494, top: 30, floor: 44, kind: 'timber', scaffold: true };
-  for (const y of [40, 36, 32, 30]) plat(491, y, 3);   // the scaffold's boards
-  for (const y of [42, 38, 34]) plat(496, y, 4);       // wall sills
-  plat(496, 29, 4);                                    // the hoarding at the wall top
-  block(500, 530, 29, 45); masonry.push([500, 530, 29, 45]);
-  ent('scalder', 498, 28, { face: -1, post: [496, 499] });
-  ent('sign', 486, 43, { text: 'THE WALL. HE POURS DOWN THE WALL SIDE ONLY: WAIT ON THE SCAFFOLD.' });
-  ent('harpy', 494, 33);
-  coins([492, 39], [497, 37], [492, 35], [497, 33], [492, 31], [497, 28]);
-  facades.push([500, 522, 20, 28, 'curtain', { town: true }]);
-  // the wall-walk: two wall towers with a bowman on each, and the shield-wall on the walk (ELITES.storm holds its gate at 523)
-  block(508, 510, 27, 28); block(517, 519, 27, 28); masonry.push([508, 510, 27, 28], [517, 519, 27, 28]);
-  ent('archer', 509, 26, { face: -1 }); ent('archer', 518, 26, { face: -1 });
-  ent('archer', 528, 24, { face: -1 });   /* STORMTOUGH: on the Wall Watch's landing, covering the upper ladder */
-  ent('shield', 513, 28, { face: -1 }); ent('hearthgob', 522, 28, { face: -1 });   /* STORMTOUGH: the wall-walk's shield and a hand on the way to the Watch */
-  ent('check', 503, 28);
-  coins([505, 27], [512, 27], [515, 27], [521, 27]);
-  // THE WALL WATCH: timber, on the wall's east end; a switchback like the Gate Watch, a Scalder over the upper ladder
-  const T3 = { x0: 524, x1: 530, top: 22, floor: 29, kind: 'timber', key: 'bone', gate: STORM_TOWN.GATES.bone, name: 'THE WALL WATCH' };
-  plat(T3.x0, T3.top, T3.x1 - T3.x0 + 1); plat(525, 25, 4);
-  ladder(529, 25, 28); ladder(525, 22, 25);
-  ent('scalder', 525, 21, { face: 1, post: [525, 525] });
-  ent('key', 528, 21, { kind: 'bone' }); ent('brazier', 524, 21);
-  ent('sign', 521, 28, { text: 'THE WALL WATCH HOLDS THE BONE KEY. THE ROPE GOES DOWN TO THE BRIDGE GATE.' });
-  coins([527, 24], [528, 24], [527, 21]);
-  ent('sign', 530, 21, { text: 'THE BRIDGE GATE ROPE. HOLD UP AT ITS HANDLE, JUMP TO LET GO.' });
-  // THE BRIDGEHEAD YARD, and THE EXAM (RULES S3): the last stretch before the boss door combines the level's own
-  // mechanics under pressure. A checkpoint opens it, a pike line stands under a fire-cage weight - the Lance's own
-  // verb, cut the cage down on what stands under it - and there is nothing between here and the checkpoint outside
-  // his arena (below, at the first pier): none of S3's "no checkpoint inside it" and no free heart (S5) either.
-  floor(531, STORM_TOWN.BRIDGE - 1, 30);
-  ent('check', 533, 29);
-  ent('sign', 536, 29, { text: 'A CAGE COMES DOWN ON WHATEVER STANDS UNDER IT. CUT IT LOOSE ON HIM.' });
-  ent('pike', 546, 29, { face: 1 }); ent('pike', 557, 29, { face: 1 });
-  ent('weight', 551, 21, { len: 6, lamp: true });   // over the pikes' ground, the same fire cage the bridge itself hangs seven of
-  coins([540, 28], [551, 28], [561, 28]);
-  block(STORM_TOWN.BRIDGE - 4, STORM_TOWN.BRIDGE - 1, 19, 24); masonry.push([STORM_TOWN.BRIDGE - 4, STORM_TOWN.BRIDGE - 1, 19, 24]);
+  // ============================ 5. THE GATEHOUSE (396-489): the portcullis winch, THE STORM LANCE, the bridgehead exam ============================
+  floor(396, P0 - 1, 30);
+  ent('check', 400, 29);   /* THE CURTAIN WALL's exam (the breached walk, the Wall Watch) ends here */
+  // THE GATEHOUSE PORTCULLIS: held up on a winch. Strike the winch and it drops on whatever is under it; it winds itself back
+  // up. The pikes come through that passage - and the same winch hangs the Lance's own two gates on his bridge.
+  laid(414, 420, 19, 25);
+  ent('winch', 410, 29, { gate: 417, gy0: 26, gy1: 29, drop: true, hold: 6 });
+  ent('sign', 406, 29, { text: 'THE GATEHOUSE. STRIKE THE WINCH AND THE PORTCULLIS DROPS ON WHAT IS UNDER IT.' });
+  ent('pike', 424, 29, { face: -1 }); ent('pike', 430, 29, { face: -1 }); ent('shield', 436, 29, { face: -1 }); ent('stormshaman', 441, 29, { face: -1 });
+  plat(424, 27, 5); plat(436, 27, 5); plat(445, 27, 4); plat(458, 27, 5); plat(465, 25, 4); plat(480, 27, 4);   // the gatehouse's fighting galleries along the yard wall
+  ent('torch', 412, 29); ent('deco', 422, 29, { kind: 'banner', v: 0 }); ent('deco', 445, 29, { kind: 'banner', v: 1 });
+  facades.push([403, 413, 19, 29, 'curtain', { town: true }], [421, 448, 19, 29, 'curtain', { town: true }]);
+  coins([404, 28], [417, 28], [427, 28], [433, 28], [439, 28], [446, 28]);
+  // (THE STORM LANCE, the Storm Chapter's knight, holds 452: src/order-chapters.js ORDER_AT.storm / level.js ELITES.storm)
+  // THE BRIDGEHEAD EXAM (RULES S3): the last stretch before his door, under the same fire cage his bridge hangs six of - cut it
+  // loose on the pikes under it. No checkpoint inside it; the one at the first pier closes it.
+  ent('sign', 462, 29, { text: 'A CAGE COMES DOWN ON WHATEVER STANDS UNDER IT. CUT IT LOOSE ON HIM.' });
+  ent('pike', 466, 29, { face: -1 }); ent('pike', 476, 29, { face: -1 });
+  ent('weight', 471, 21, { len: 6, lamp: true });
+  coins([458, 28], [471, 28], [481, 28]);
+  laid(P0 - 4, P0 - 1, 19, 24);
   ent('lockgate', STORM_TOWN.GATES.bone, 29, { needs: 'bone', h: 5 }); gateCol(STORM_TOWN.GATES.bone, 25, 29);
-  ent('deco', STORM_TOWN.BRIDGE - 7, 29, { kind: 'lanternPost' });
-  facades.push([STORM_TOWN.BRIDGE - 9, STORM_TOWN.BRIDGE - 5, 20, 29, 'tower', { town: true, roof: true }]);
+  ent('deco', P0 - 7, 29, { kind: 'lanternPost' });
+  facades.push([P0 - 9, P0 - 5, 20, 29, 'tower', { town: true, roof: true }]);
 
-  // ============================ 7. THE LONG BRIDGE (544-671): seven spans, six piers, and the Queen's Lance ============================
-  // one height the whole way, so his charge has one line to run and the piers are the rhythm (unchanged, shifted right)
-  const BY = 30, P0 = STORM_TOWN.BRIDGE;
+  // ============================ 6. THE LONG BRIDGE (490-617): seven piers, the Queen's Lance, THE MAIN GATE ============================
+  // one height the whole way, so his charge has one line to run and the piers are the rhythm. Under the spans, far down, the
+  // gorge's teeth: a plank he splinters out from under you is a fall onto rock (the spikes' bite and back to the last footing -
+  // the hazard rule, never an untold death), and every gap he tears is three planks: a jump for every hero.
+  const BY = 30;
   ent('check', P0 - 1, BY - 1);
-  ent('sign', P0, BY - 1, { text: 'THE QUEEN\'S LANCE CANNOT TURN MID-CHARGE. STAND ON A LOOKOUT AND LET HIM PASS.' });
-  for (let k = 0; k < 7; k++) { const px0 = P0 + k * 18, px1 = px0 + 4;
+  ent('sign', P0, BY - 1, { text: "THE QUEEN'S LANCE RIDES THE BRIDGE. GET UP ON A LOOKOUT AND LET HIM PASS." });
+  const piers = [], spans = [], cages = [];
+  for (let k = 0; k < 7; k++) { const px0 = P0 + k * 18, px1 = px0 + 4; piers.push([px0, px1]);
     block(px0, px1, BY, 45);
-    if (k > 0) { const s0 = px0 - 13, s1 = px0 - 1; span(s0, s1, BY, { sway: k >= 3 ? 2 : 1 }); }
+    if (k > 0) { const s0 = px0 - 13, s1 = px0 - 1; span(s0, s1, BY, { sway: k >= 3 ? 2 : 1 }); spans.push([s0, s1]); }
     if (k >= 1 && k <= 5) { ent('deco', px0 + 2, BY - 1, { kind: 'bridgetower' }); plat(px0, BY - 3, 5); ent('brazier', px0 + 4, BY - 4); }   // a lookout on every tower pier
-    if (k > 0) ent('weight', px0 - 7, BY - 9, { len: 6, lamp: true });   // a fire cage over every span: cut its chain as he goes under it
+    if (k > 0) { ent('weight', px0 - 1, BY - 9, { len: 6, lamp: true }); cages.push(px0 - 1); }   // a fire cage off the west end of every lookout, hung from its tower's arm: from the lookout (where his charge cannot reach you) cut it as he rides under
   }
-  span(P0 + 113, P0 + 121, BY, { sway: 2 });   // the last span, to the gatehouse
-  /* HIS LOOKOUTS AND ARCHERS STAY AS ON MASTER (src/lance-support.js): two end lookouts his bowmen come to (never a
-     third, never onto the one you stand on), and the one rock goblin. NO FIRE ARCHERS stand on his bridge - three of
-     them made up to five bows at once, and Daniel took them off master on 2026-09-25. */
-  const lanceBows = lanceLookouts({ plat, ent }, P0, BY);
-  /* THE BRIDGE GATE (claude/bosswave2: the level's rule in his fight - THREE GATES; src/lance-support.js LANCE_GATE). A portcullis hangs under the
-     first tower lookout (where his fight begins) on its own winch, as the Keep Gate does. Up on the lookout his charge cannot reach you: strike the winch as he runs under it
-     and the bars come down on HIM. Early or late, it is only a gate across his lane. */
+  span(P0 + 113, P0 + 121, BY, { sway: 2 }); spans.push([P0 + 113, P0 + 121]);   // the last span, to the main gate
+  block(P0, W - 1, 44, 45); for (const [s0, s1] of spans) spikesAt(s0, s1, 43);   // the gorge floor: rock teeth under every span
+  /* THE END LOOKOUTS (src/lance-support.js lanceLookouts): on the first pier and the last, built like the five between. With them
+     every pier carries one - the seven his LANCE VAULT goes up onto and the ballista's bolt flies under. */
+  const ends = lanceLookouts({ plat, ent }, P0, BY);
+  const lookouts = [ends[0], ...piers.slice(1, 6).map(([px0]) => [px0, px0 + 4, BY - 3]), ends[1]];
+  /* THE BRIDGE GATE (claude/bosswave2: the level's rule in his fight - THREE GATES; src/lance-support.js LANCE_GATE). A portcullis hangs
+     under the first tower lookout on its own winch, as the Gatehouse's does. Up on the lookout his charge cannot reach you: strike the
+     winch as he runs under it and the bars come down on HIM. Early or late, it is only a gate across his lane. */
   { const gp = P0 + 18; ent('winch', gp + 1, BY - 4, { gate: gp + 2, gy0: BY - 2, gy1: BY - 1, drop: true, hold: 7, bossGate: true });
     ent('sign', gp - 4, BY - 1, { text: 'THE BRIDGE GATE. FROM THE LOOKOUT, STRIKE ITS WINCH AS HE RUNS UNDER.' }); }
-  ent('rockgoblin', P0 + 92, BY - 1, { face: -1 });
   for (const x of [8, 26, 44, 62, 80, 98]) { ent('deco', P0 + x, BY - 1, { kind: 'lanternPost' }); coins([P0 + x + 4, BY - 2]); }
   ent('silver', P0 + 71, BY - 2);
+  // THE MAIN GATE: the castle's own, at the bridge's end. Its portcullis is up while he holds the bridge; in his last stand he falls
+  // back under it as it comes down, and when he falls it SLAMS shut - the way on is round with the supply carts (THE KITCHEN GATE).
   block(W - 2, W - 1, 20, 45); floor(P0 + 122, W - 1, BY);
-  ent('deco', W - 4, BY - 1, { kind: 'gatehouse' }); ent('gate', W - 3, BY - 1);
+  laid(W - 7, W - 3, 20, 25);
+  ent('deco', W - 5, BY - 1, { kind: 'gatehouse' }); ent('gate', W - 3, BY - 1);
   ent('lance', P0 + 18, BY - 1);
 
   // ---- THE TOWERS' ROPES: from each top deck's east edge down to the foot of its own gate. UP grabs, JUMP lets go. ----
   const rope = (x0, top, x1, endRow, groundRow) => ({ x0: x0 * TS + 8, y0: top * TS - 12, x1: x1 * TS + 8, y1: endRow * TS - 12,
     posts: [[x0 * TS + 8, top * TS - 12, top * TS], [x1 * TS + 8, endRow * TS - 12, groundRow * TS]] });
-  const zipLines = [rope(47, T1.top, 80, 36, 36), rope(302, T2.top, 338, 32, 32), rope(530, T3.top, 541, 30, 30)];   /* each rope ends ON its landing's floor (the hero's feet = the rope + 12): a ride that sets you down, and a rope you can reach from the ground at its foot (src/zipline.js) */
+  const zipLines = [rope(52, T1.top, 88, 36, 36), rope(226, T2.top, 252, 34, 34), rope(395, T3.top, 405, 30, 30)];   /* each rope ends ON its landing's floor (the hero's feet = the rope + 12) */
   const watchtowers = [T1, T2, T3];
 
   // THE LADDERS, LAST: nothing is dug after this line
   for (const [x, y0, y1] of ladders) for (let y = y0; y <= y1; y++) set(x, y, T.NET);
 
-  // THE HOUSES. Every roof has a house under it, walls down to the street: stone below, a timber jetty under the eaves.
-  const houses = roofs.map(([x0, x1, y]) => { const mx = (x0 + x1) >> 1; let fy = y + 1; while (fy < H && L.grid[fy * W + mx] === T.AIR) fy++;
-    const drs = L.ents.filter(e => e.t === 'doorway' && !e.lock && e.y === fy - 1 && e.x > x0 && e.x < x1).map(e => e.x);
-    return { x0: x0 + 1, x1: x1 - 1, y0: y + 1, y1: fy - 1, door: drs.length ? drs[0] : null, door2: drs.length > 1 ? drs[1] : null, seed: x0, stone: true }; }).filter(h => h.y1 >= h.y0 + 1);
-
   return {
-    watchtowers, structures: [...watchtowers.filter(t => t.kind === 'timber'), scaffold], zipLines, ropes: zipLines, noDoorKeys: true,   /* STORMTOUGH: every key hangs in a tower - the play bot's stall answer 'go and find a door' (src/playtest.js) walked the level walker back to the hearth house, 3000 frames a lap */
-   
-    W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: 35 }, pools: [], falls: [], moversExtra: [], interiors, bridges, houses, masonry, facades, masonryKit: 'limestone', climbLook: true,
-    calm: [[39, 48, 21, 35], [295, 304, 18, 31], [487, 500, 27, 43], [523, 531, 20, 28]],   /* the climbs carry their own authored encounters: the garrison stays off them (F4: a climb, then a fight) */
+    watchtowers, structures: scaffolds, zipLines, ropes: zipLines, noDoorKeys: true,   /* every key hangs on a tower: the play bot's stall answer 'go and find a door' (src/playtest.js) has nothing to find */
+    W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: 36 }, pools: [], falls: [], moversExtra: [], interiors: [[98, 146, 31, 35, 'stone']],   /* THE BARBICAN's passage: not a house, the gate's own vault - drawn as laid stone overhead, and the snow stays out */ bridges, houses: [], masonry, facades, masonryKit: 'limestone', climbLook: true,
+    calm: [[39, 53, 19, 35], [212, 227, 16, 33], [322, 334, 27, 43], [383, 396, 18, 28]],   /* the climbs carry their own authored encounters: the garrison stays off them (F4: a climb, then a fight) */
     playtestSections: STORM_TOWN.SECTIONS,
-    indoorRow: 18,   // rows 0-18 are the insides of the houses: the camera never shows them from the street, nor the street from inside
+    checkRun: 160,   /* one shrine a named area (A10c): the road in and the barbican share the first (152), so the filler must not put one back at 76 */
     duskStart: -1, duskLen: 1, music: 'stormhold', night: true, glowNight: true, nightA: 0.26,
-    /* the HILL FOLK quest (an npc + 3 strays, turned in to a squire) is gone with the rest of the decorative cast
-       (tools/npc-removal.mjs, Daniel 2026-09-26); its reward was a relic in the Longhouse; that cache pays a silver now
-       (src/relics.js, Daniel 10-02). */
     palette: { set: 'village', sky: 'crag', far: 'crag', mid: 'crag', near: 'crag', dress: 'crag', haze: 'rgba(150,160,200,0.16)',
       grass: '#cfd8e2', grassL: '#eef4ff', grassD: '#9aa8bc', dirt: '#4a4a58', dirtL: '#62626e', dirtD: '#32323c',
       canopy: ['#3a3a48', '#4a4a5a', '#5a5a6c', '#6a6a80'] },
     weather: [{ x0: 0, x1: 99999, kind: 'snow' }], ambient: [{ x0: 0, x1: 99999, kind: 'wind' }],
-    castle: true,   // the castle grows over the whole level: drawn behind everything
-    /* THE ALARM (the audit's plan item 2: TEACH Highcrown's bell here - its first sign says sentries run for
-       theirs, and no level before this one taught it). Catch the sentry, break his bell, or the grate drops and
-       his watch turns out; the gate lifts again once the garrison is down (or after 20 s regardless). */
+    castle: true, castleGrow: 1.6,   // the castle on the skyline, drawn behind everything - and it comes CLOSER every section (drawCastleBack)
+    /* THE ALARMS (Highcrown's bell, taught before Highcrown): catch the sentry, break his bell, or his watch turns out (and in the
+       bailey a grate drops across the yard; it lifts once the garrison is down, or after 20 s regardless). */
     alarms: [
-      { id: 'smokerow', gates: [[227, 28, 31]], garrison: [{ t: 'sprig', x: 226, y: 31 }, { t: 'sprig', x: 224, y: 31 }] },
-      { id: 'bellwatch', gates: [[305, 28, 31]], garrison: [{ t: 'hearthgob', x: 300, y: 31 }, { t: 'hearthgob', x: 302, y: 31 }] },
+      { id: 'bailey', gates: [[211, 30, 33]], garrison: [{ t: 'sprig', x: 210, y: 33 }, { t: 'sprig', x: 213, y: 33 }] },
+      { id: 'bellwatch', gates: [[221, 13, 17]], garrison: [{ t: 'hearthgob', x: 217, y: 17 }, { t: 'hearthgob', x: 219, y: 17 }] },   /* rung, a grate drops across the deck between the ladder and the key, and his watch turns out on your side of it */
     ],
-    arena: { x0: P0 * TS, x1: (W - 1) * TS, floor: BY * TS, trigger: (P0 + 6) * TS, wallL: P0 - 1, wallR: W - 1, boss: 'lance', music: 'lance', tint: '#6a7a9a', tintA: 0.10, fx: 'dust', bows: lanceBows },   /* "Boss Battle #3 [8-bit re-upload]" V3 by nene, CC0, converted WAV -> OGG - THE QUEEN'S LANCE's own boss track (audio/CREDITS.txt), benching musCastle - master's own change (git show abcd773:src/level.js, its now-deleted stormhold()), missed by this lane's held branch since it predates the audio addition */
+    /* THE LONG BRIDGE, for THE QUEEN'S LANCE (src/main.js updateLance; src/lance-support.js): his lookouts (all seven: the vault's
+       perches), the spans his charge tears up, the cages, and the main gate he falls back under in his last stand. */
+    arena: { x0: P0 * TS, x1: (W - 1) * TS, floor: BY * TS, trigger: (P0 + 6) * TS, wallL: P0 - 1, wallR: W - 1, boss: 'lance', music: 'lance', tint: '#6a7a9a', tintA: 0.10, fx: 'dust',
+      lookouts, spans, piers, cages, mainGate: W - 5, fallPct: 0.12 },   /* fallPct: a fall through a gap he tore bites 12% (a walked-into pit, 27%: survival.js HAZARD) */   /* "Boss Battle #3 [8-bit re-upload]" V3 by nene, CC0 - THE QUEEN'S LANCE's own boss track (audio/CREDITS.txt) */
   };
 }

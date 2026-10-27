@@ -1,29 +1,40 @@
-// src/lance-support.js - THE QUEEN'S BOWS, and the two lookouts they come to (docs/briefs/lance-support.md).
+// src/lance-support.js - THE QUEEN'S LANCE's numbers, his bridge's lookouts and its gate (claude/stormhold3; the fight is updateLance
+// in src/main.js; scratch/brief-stormhold3-1024.md, Daniel's 10-25 appendix).
 //
-// Daniel, 2026-09-25: "have occasional archer support since he lacks ranged moves. I'd like some platforms to be available
-// to jump on as well." The bridge had five lookouts over its middle piers and none at its ends, where a charge pins you.
-// Now the first pier and the last carry one each, built like the others; and every fifteen seconds while he lives, a horn
-// goes on a tower and a plain goblin archer drops onto the end lookout nearer you (never the one you are standing on;
-// two of his at most). NEARER, not farther: a foe more than 420 px from you is not updated at all (updateEnemies), and a
-// bowman at the far end of a 127-tile bridge would stand there frozen, which is no support.
-//
-// Both halves read the bridge's own first pier, so the held Stormhold rebuild (claude/stormhold, bridge at 544) takes them
-// with one call each: lanceLookouts() in the level builder, lanceSupport() from updateLance.
+// THE REWORK (Daniel 10-25 live): MOUNTED phase one on a barded charger whose CHARGE splinters the bridge into gaps; the FIRE CAGE
+// unhorses him (phase two, on foot with lance and tower shield: the LANCE VAULT and the SHIELD WALL are his own); a SPEAR VOLLEY on
+// marked spots; the PENNANT calls the gatehouse's BALLISTA or BOILING OIL (the horn and its archers are the Palisade Wood
+// Hornsman's trick now, so they are gone from here); and THE LAST STAND under the main gate's portcullis, which slams when he falls.
 
-export const LANCE_SUPPORT = {
-  first: 12,     // seconds after he wakes before the first call
-  every: 15,     // between calls
-  retry: 3,      // a call that found both lookouts held (or you on the only free one) tries again this much later
-  max: 2,        // of his bowmen up at once
-  tell: 1.2,     // the horn and the sparks on the lookout, before the bowman lands (C1)
-  quiet: 1.4,    // he looses nothing for this long after he lands (the archer's own draw, 0.55 s told, follows)
-  drop: 40,      // px over the lookout he drops from: off the tower roof
+/* EVERY NUMBER OF HIS, in one place (tools/lance3.mjs reads them). Seconds, px, px/s, fractions of his health. */
+export const LANCE3 = {
+  founder: 0.68,      // mounted and never caged: at this much of his health the charger founders and throws him anyway (B13: no waiting room)
+  lastStand: 0.33,    // on foot: at this he falls back to the main gate (phase three)
+  saddle: 20,         // px the rider sits over the charger's hooves (greybox draw)
+  riderScale: 1.2, footScale: 1.35, horseScale: 1.45,   // BIGGER (Daniel 10-25: "a proper Queen's champion"): he was 1.15
+  ride: 70, gallop: 236, walk: 46,
+  couch: 1.0,         // HE LEVELS IT (!!) before the charge
+  chargeEvery: 6.5,
+  wheel: 1.5,         // open after a charge, turning the charger at its end (x1.5)
+  thrown: 3.0,        // open when a cage (or a gate) puts him on the boards (x1.5)
+  founderThrown: 2.0, // ...and when the charger founders under him
+  rise: 0.9,
+  rearTell: 0.6, rearReach: 44,   // HE REARS (!!): the charger's forehooves, close in
+  volley: { tell: 0.75, fall: 1.1, n: [3, 3, 5], spread: 38, hit: 13, stick: 1.4, every: [7, 8, 6] },   // SPEARS (!): a shadow under each, 1.1 s to land
+  crack: { tell: 0.75, w: 2, max: 4 },   // a span's middle two planks crack (told) then go - a hop for every hero, standing; at most four gaps on the bridge
+  pennant: { tell: 0.8, every: 13, first: 9 },
+  ballista: { tell: 1.1, sp: 560, y: 14 },   // its line down the deck at chest height (14 px over the boards): jump it, duck it, or be on a lookout
+  oil: { tell: 1.2, burn: 2.4, w: 4 },       // a strip four tiles wide under you: the pour, then it burns
+  vault: { tell: 0.6, up: 0.55, perch: 0.55, planted: 1.7, every: 9 },
+  wall: { tell: 0.6, t: 3.0, sp: 38, push: 46, every: 10, turned: 1.4 },
+  gateClose: 40,      // s the main gate's portcullis takes to come down (it stops at 85% until he falls, then SLAMS)
 };
 
-/* THE END LOOKOUTS. The bridge's piers are 5 tiles wide and 18 apart from P0; the five in the middle have had a lookout
-   since the bridge was built (a five-tile one-way deck three rows over the boards, a bridgetower on the pier under it, a
-   brazier on it), and every hero's held jump is 3.17 tiles - the same height reaches these. Returns the lookouts as
-   [x0, x1, row] in tiles, which the arena carries as `bows`: where his bowmen come to. */
+/* THE END LOOKOUTS. The bridge's piers are 5 tiles wide and 18 apart from P0; the five in the middle have had a lookout since the
+   bridge was built (a five-tile one-way deck three rows over the boards, a bridgetower on the pier under it, a brazier on it), and
+   every hero's held jump is 3.17 tiles - the same height reaches these. The first pier and the last carry one each, built like the
+   others: with them every pier has one - the perches his LANCE VAULT goes up onto, and where the ballista's bolt cannot reach you.
+   Returns the two as [x0, x1, row] in tiles. */
 export function lanceLookouts({ plat, ent }, P0, BY, piers = 7) {
   const out = [];
   for (const k of [0, piers - 1]) { const px0 = P0 + k * 18;
@@ -31,26 +42,6 @@ export function lanceLookouts({ plat, ent }, P0, BY, piers = 7) {
     plat(px0, BY - 3, 5); ent('brazier', px0 + 4, BY - 4);
     out.push([px0, px0 + 4, BY - 3]); }
   return out;
-}
-
-/* THE CALL, once a frame from updateLance while he is up. io: { P, TS, lookouts, bows() (his live bowmen), announce(call),
-   tellFx(call, dt), arrive(call) }. A call is { x, y (the lookout's top, px), tx, row, t }. */
-export function lanceSupport(e, dt, io) {
-  const S = LANCE_SUPPORT, TS = io.TS;
-  if (!io.lookouts || !io.lookouts.length) return;
-  if (e.supportT === undefined) e.supportT = S.first;
-  if (e.bowCall) { const c = e.bowCall; c.t -= dt; e.supportT -= dt;   /* the next call's clock runs through the tell: one every 15 s, not every 16.2 */ io.tellFx(c, dt); if (c.t <= 0) { e.bowCall = null; io.arrive(c); } return; }
-  e.supportT -= dt; if (e.supportT > 0) return;
-  const bows = io.bows(), P = io.P;
-  if (bows.length >= S.max) { e.supportT = S.retry; return; }
-  const on = ([x0, x1, row]) => P.x > x0 * TS - 10 && P.x < (x1 + 1) * TS + 10 && P.y > row * TS - 48 && P.y <= row * TS + 6;
-  const held = ([x0, x1, row]) => bows.some(b => b.x > x0 * TS - 8 && b.x < (x1 + 1) * TS + 8 && Math.abs(b.y - row * TS) < 20);
-  const mid = ([x0, x1]) => (x0 + x1 + 1) * TS / 2;
-  const free = io.lookouts.filter(lk => !on(lk) && !held(lk)).sort((a, b) => Math.abs(mid(a) - P.x) - Math.abs(mid(b) - P.x));
-  if (!free.length) { e.supportT = S.retry; return; }
-  const lk = free[0]; e.supportT = S.every;
-  e.bowCall = { x: mid(lk), y: lk[2] * TS, tx: (lk[0] + lk[1]) >> 1, row: lk[2], t: S.tell };
-  io.announce(e.bowCall);
 }
 
 /* THE BRIDGE GATE (claude/bosswave2, Daniel 10-03 from scratch/audit-rules.md: "the Lance ignores his level's rule" - STORMHOLD is
