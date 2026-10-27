@@ -12,7 +12,7 @@ import { floodReach } from '../src/reachcore.js';
 import { readFileSync } from 'node:fs';
 let bad = 0; const ok = (c, m) => { console.log((c ? '  ok   ' : '  FAIL ') + m); if (!c) bad++; };
 const lv = LEVELS.find(l => l.id === 'skyroad'), L0 = lv && lv.build();
-ok(!!lv && lv.needs === 'moor' && LEVELS.find(l => l.id === 'oreroad').needs === 'skyroad', 'THE SKY ROAD follows GALE MOOR and THE ORE ROAD follows it');
+ok(!!lv && lv.needs === 'rookery' && LEVELS.find(l => l.id === 'rookery').needs === 'moor' && LEVELS.find(l => l.id === 'oreroad').needs === 'skyroad', 'THE SKY ROAD follows THE ROOKERY (claude/rookery, Daniel 10-24), which follows GALE MOOR, and THE ORE ROAD follows it');
 const main = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
 ok(/id: 'skyroad', kind: 'level'/.test(main), 'a map node on the crag sheet');
 const lq = readFileSync(new URL('./level-quality.mjs', import.meta.url), 'utf8'), onf = readFileSync(new URL('./one-new-foe.mjs', import.meta.url), 'utf8');

@@ -166,7 +166,7 @@ export function buildKitchenGate({ painter, T, TS }) {
   const race = { x0: 246, x1: 283, f: 24, trig: 249, pot: [247, 23], v: 66, behind: 2.6 };
   sign(245, 23, 'THE GREAT GREASE POT.');
   foe('sprig', 248, 23, 'pot', { face: -1 }); foe('sprig', 269, 23, 'race', { face: -1 });
-  shelf(274, 278, 20); foe('rockgoblin', 276, 19, 'race', { face: -1 });
+  shelf(274, 278, 20); foe('rockgoblin', 276, 19, 'race', { face: -1, perch: true });
   coins([250, 23], [256, 23], [260, 23], [267, 23], [272, 23], [279, 23]);
   /* THE BUTCHER (the area's EXAM; the level's ONE new foe): on the stove's trail. Stoke it as he stands on it: he burns */
   const stove2 = fire('stove2', 284, 23, 286, 24);
@@ -197,7 +197,7 @@ export function buildKitchenGate({ painter, T, TS }) {
   const stove3 = fire('stove3', 343, 21, 345, 22);
   const door2 = tallow('door2', 355, 356, 13, 21);
   trail(stove3, 'trail3', 346, 354, 22, door2);
-  foe('butcher', 350, 21, 'buttery', { face: -1 }); shelf(346, 349, 18); foe('rockgoblin', 347, 17, 'buttery', { face: 1 }); foe('sprig', 352, 21, 'buttery', { face: -1 });
+  foe('butcher', 350, 21, 'buttery', { face: -1 }); shelf(346, 349, 18); foe('rockgoblin', 347, 17, 'buttery', { face: 1, perch: true }); foe('sprig', 352, 21, 'buttery', { face: -1 });
   sign(342, 21, 'THE BUTTERY DOOR.');
   coins([344, 21], [358, 21], [361, 21]);
   /* THE SPICE VAULT: a cellar under the floor behind an iron grate; the head cook's three recipe pages open it (silver) */
@@ -233,7 +233,7 @@ export function buildKitchenGate({ painter, T, TS }) {
     calm: [[0, W - 1, 0, H - 1]],   /* placed wholly by hand: nothing sprinkled */
     checkRun: 260,                  /* four shrines, one closing each area's exam (A10c): src/level.js checkpoints() must not fill between them */
     sections: SECTIONS.map(([name, x0, x1]) => ({ id: name.toLowerCase().replace(/[^a-z]+/g, '-'), name, x0, x1 })),
-    squadBands: [{ lo: A0, hi: W - 1, spots: 0, why: "GRUBBAG'S TABLE: the boss's hall - no squad stands in a boss arena" }],
+    squadBands: [{ lo: A0, hi: W - 1, spots: 0, why: "GRUBBAG'S TABLE: the boss's hall - no squad stands in a boss arena" }, { lo: 400, hi: W - 1, spots: 0, why: "GRUBBAG'S TABLE, section 3 (sprinkle-cap keys a band on its section start, 400): the same hall" }],
     unlocks: [
       { kind: 'hoists', opens: 'a lift (the copper\'s steam), a ride up (the great spit), a door (the grease burns to the tallow door and melts it)', hud: 'THE FIRE ROARS' },
       { kind: 'kgpage', opens: 'secret', hud: 'RECIPE PAGES n/3: THE SPICE VAULT' },
