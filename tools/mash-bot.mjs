@@ -53,8 +53,9 @@ const pageSrc = `(() => {
     const done = await prep(o);
     try {
       if (BKT.PROG[o.id]) BKT.PROG[o.id].mini = false;   /* a mini beaten in an earlier row is not spawned again (the boss lab does the same) */
+      if (o.mini === 2) { BKT.PROG[o.id] = BKT.PROG[o.id] || {}; BKT.PROG[o.id].mini = true; BKT.PROG[o.id].mini2 = false; }   /* (claude/forgemaster) a level's SECOND mini (THE DEEP RAILS' Forgemaster): the first counts as down */
       BK.setHero(o.hero); BK.reset({ fresh: true }); BK.load(LEVELS.findIndex(l => l.id === o.id)); BK.start(); BK.god = false; BK.sim(10); BK.reset();
-      const L = BK.L, A = o.mini ? L.mini : L.arena; if (!A) return { skipped: o.mini ? 'no mini' : 'no arena' };
+      const L = BK.L, A = o.mini === 2 ? (L.mini2 && L.mini === L.mini2 ? L.mini : null) : o.mini ? L.mini : L.arena; if (!A) return { skipped: o.mini ? 'no mini' : 'no arena' };
       const boss = BK.enemies().find(e => e.t === A.boss && e.alive && (!o.mini || e.mini)); if (!boss) return { skipped: 'no boss' };
       for (const e of BK.enemies()) if (e !== boss && !e.maxHp) e.alive = false;
       if (A.carpet) { BK.board(); BK.sim(30); } else { if (A.start) BK.tp(A.start[0], A.start[1]); else BK.tp(Math.round(A.trigger / 16) + (A.reverse ? -1 : 1), Math.round(A.floor / 16) - 1); BK.sim(30); }
@@ -166,15 +167,15 @@ try {
   for (const id of wantLevels) {
     const lv = LEVELS.find(l => l.id === id); if (!lv) { console.log(id + ': no such level'); continue; }
     const entry = (cache[id] = carryRows(cache[id], levelHash(lv), { boss: modeBoss, level: modeLevel }, m => console.log(id + ': ' + m)));   /* (claude/mashmachines) a changed level hash used to DROP the other mode's rows: boss/mini rows are carried through a level-only write now */
-    if (modeBoss) for (const mini of [false, true].filter(m => m ? !has('arena-only') : !has('mini-only'))) {
+    if (modeBoss) for (const mini of [false, true, 2].filter(m => m ? !has('arena-only') : !has('mini-only'))) {   /* (claude/forgemaster: 2 = a level's second mini) */
       const variants = [{ lvl: lvOf(id), n: seeds, tag: 'expected' }].concat(has('l1') ? [{ lvl: 0, n: 1, tag: 'l1' }] : []), res = [];
       for (const v of variants) for (const hero of heroes) for (let seed = 1; seed <= v.n; seed++) {
         let r; try { r = await pg.evalp(`__mashBoss(${JSON.stringify({ id, hero, seed, mini, lvl: v.lvl, secs, probe: has('probe') && hero === 'knight' && seed === 1 && v.tag === 'expected' })})`, 1200000); }
         catch (e) { console.log(id + ' ' + hero + ' ERR ' + e.message.slice(0, 120)); pg.close(); pg = await openPage({ audio: false, fonts: false }); await pg.evalp(pageSrc); await pg.evalp(diffJs()); continue; }
         if (r.skipped) { if (!res.length && !(mini && r.skipped === 'no mini')) console.log(id + (mini ? ' mini' : ' boss') + ': ' + r.skipped); break; }
         const row = { id, mini, hero, seed, tag: v.tag, ...r }; res.push(row); rows.push(row);
-        console.log(id + (mini ? ' MINI' : ' BOSS') + ' ' + v.tag + ' L' + v.lvl + ' ' + hero + '#' + seed + ': ' + r.out.toUpperCase() + ' ' + r.secs + 's, hero lost ' + r.hpLostPct + '%, boss left ' + r.bossLeftPct + '%, ' + r.landed + '/' + r.swings + ' blows' + (r.chip && r.chip.length ? ', chip ' + r.chip.map(c => 'x' + c.mul + (c.open ? '(open)' : '')).join(' ') : '')); }
-      if (res.length) { const exp = res.filter(r => r.tag === 'expected'); entry[mini ? 'mini' : 'boss'] = { boss: exp[0] && exp[0].bossT, wins: exp.filter(r => r.out === 'win').length, fights: exp.length, byHero: Object.fromEntries(heroes.map(h => [h, exp.filter(r => r.hero === h).map(r => r.out + ':' + r.hpLostPct + '/' + r.bossLeftPct)])), rows: res.map(r => ({ hero: r.hero, seed: r.seed, tag: r.tag, out: r.out, secs: r.secs, hpLostPct: r.hpLostPct, bossLeftPct: r.bossLeftPct, landed: r.landed, swings: r.swings, reprisalPct: r.reprisalPct, chip: r.chip })) }; }
+        console.log(id + (mini === 2 ? ' MINI2' : mini ? ' MINI' : ' BOSS') + ' ' + v.tag + ' L' + v.lvl + ' ' + hero + '#' + seed + ': ' + r.out.toUpperCase() + ' ' + r.secs + 's, hero lost ' + r.hpLostPct + '%, boss left ' + r.bossLeftPct + '%, ' + r.landed + '/' + r.swings + ' blows' + (r.chip && r.chip.length ? ', chip ' + r.chip.map(c => 'x' + c.mul + (c.open ? '(open)' : '')).join(' ') : '')); }
+      if (res.length) { const exp = res.filter(r => r.tag === 'expected'); entry[mini === 2 ? 'mini2' : mini ? 'mini' : 'boss'] = { boss: exp[0] && exp[0].bossT, wins: exp.filter(r => r.out === 'win').length, fights: exp.length, byHero: Object.fromEntries(heroes.map(h => [h, exp.filter(r => r.hero === h).map(r => r.out + ':' + r.hpLostPct + '/' + r.bossLeftPct)])), rows: res.map(r => ({ hero: r.hero, seed: r.seed, tag: r.tag, out: r.out, secs: r.secs, hpLostPct: r.hpLostPct, bossLeftPct: r.bossLeftPct, landed: r.landed, swings: r.swings, reprisalPct: r.reprisalPct, chip: r.chip })) }; }
     }
     if (modeLevel) {
       const P = pacing(lv), way = []; for (const [x, y] of P.route) { const l = way[way.length - 1]; if (!l || Math.abs(x - l[0]) >= 8 || Math.abs(y - l[1]) >= 6) way.push([x, y]); }

@@ -612,6 +612,31 @@ function princeTarget(BK, boss, A, P) {
    own gate now says a DASH ATTACK into his guard puts him off balance. The hands for it are the dash branch of strike()
    with the family table taken out of it, because a boss is in no family: double-tap toward him from a dash's length out,
    swing while it carries, and leave the cutting to the OPEN branch above. */
+/* (claude/forgemaster) THE FORGEMASTER ON THE RAILS (THE DEEP RAILS' second mini), played as his room teaches it: a hurled cart coming along the floor is JUMPED (its lane is red
+   from the moment he chains it); off HOT INGOTS' marks; and while he is neither open nor braced, a JUNCTION LEVER west of him is thrown (E) when a cart is coming over its points -
+   the cart drops and rolls on into him: OPEN. Everything read is drawn on the screen (the carts on the line, the levers, his marks); nothing is thrown for the bot.
+   Returns null when the room has nothing to say (the generic hands answer his tells, strike him open, close on him). */
+function forgeHands(BK, boss, A, P, h, f, open) {
+  const FR = BK.forgeRails && BK.forgeRails(); if (!FR || !FR.on()) return null; const rd = FR.read(); if (!rd) return null;
+  const fl = A.floor;
+  /* THE CHAIN: a thrown cart rolling at me along the floor - jump it */
+  const hc = rd.carts.find(c => c.hurled && Math.abs(c.y - fl) < 4 && (P.x - c.x) * c.vx > 0 && Math.abs(P.x - c.x) < 64);
+  if ((hc || P.labForgeJump > 0) && !P.dead) { if (hc && P.ground && !(P.labForgeJump > 0) && Math.abs(P.x - hc.x) < 52) { BK.press('jump'); P.labForgeJump = 18; }
+    if (P.labForgeJump > 0) { P.labForgeJump--; return { goal: null, strike: false, jump: true }; } if (hc) return { goal: null, strike: false }; }
+  if (open) return null;
+  /* HOT INGOTS: off the marks */
+  const marks = boss.mode === 'ladleTell' ? (boss.ingots || []) : boss.mode === 'ladle' ? (boss.blobs || []).filter(b => b.t > 0).map(b => b.x) : [];
+  if (marks.some(x => Math.abs(x - P.x) < 24)) { let gx = P.x; for (let dd = 8; dd < 200; dd += 8) { for (const sg of [1, -1]) { const x = P.x + sg * dd; if (x > A.x0 + 20 && x < A.x1 - 20 && !marks.some(m => Math.abs(m - x) < 26)) { gx = x; break; } } if (gx !== P.x) break; } return { goal: gx, strike: false }; }
+  if (boss.ward > 0 || boss.mode === 'stun' || boss.mode === 'wake') return null;
+  if (/Tell$/.test(boss.mode || '') && Math.abs(boss.x - P.x) < 110) return null;   /* his blow first: the generic hands answer it */
+  /* A JUNCTION west of him: the cart drops there and rolls on east, into him */
+  const pts = rd.points.filter(p => (p.x1 + 1) * 16 + 10 < boss.x - (boss.w || 40) / 2 && p.lrow * 16 === fl).sort((a, b) => Math.abs(a.x * 16 + 8 - P.x) - Math.abs(b.x * 16 + 8 - P.x));
+  const p = pts[0]; if (!p) return null;
+  const lx = p.x * 16 + 8, eta = FR.etaAt ? FR.etaAt(p.id) : Infinity;
+  if (Math.abs(lx - P.x) > 150) return null;
+  if (Math.abs(lx - P.x) > 16) return { goal: lx - 8, strike: false };
+  if (p.state === 'set' && eta < 2.6 && P.ground && (P.labTalkF === undefined || f - P.labTalkF > 12)) { BK.press('talk'); P.labTalkF = f; }
+  return { goal: lx - 8, strike: Math.abs(boss.x - P.x) < 46 }; }
 const DASH_IN = new Set(['lance']);
 /* a stable hash of the row's own key (level + hero + health mode), not the array index: renaming or reordering bosses[]/heroes[] must not reseed anything */
 const seedOf = s => { let h = 2166136261 >>> 0; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619) >>> 0; } return h >>> 0; };
@@ -745,9 +770,10 @@ export async function bossLab(BK, opts = {}) {
   BK.sim = n => { if (PERC || (OBS && ROWBOSS)) return stepEyes(sim0, n); rotHold(BK); if (BK.labHuman !== false && HUMAN_H) rollWhenDue(BK, press0); return sim0.call(BK, n); };
   BK.step = n => { if (PERC || (OBS && ROWBOSS)) return stepEyes(step0, n); rotHold(BK); if (BK.labHuman !== false && HUMAN_H) rollWhenDue(BK, press0); return step0.call(BK, n); };
   const miniBefore=opts.mini?Object.fromEntries(Object.entries(BK.PROG).filter(([,v])=>v&&typeof v==='object').map(([k,v])=>[k,v.mini])):null;
+  const mini2Before=opts.mini?Object.fromEntries(Object.entries(BK.PROG).filter(([,v])=>v&&typeof v==='object').map(([k,v])=>[k,v.mini2])):null;   /* (claude/forgemaster) */
   BK.manualSimulation = true;
   try { return await runbossLab(BK, opts); }
-  finally { for (const [o, v] of clocks0) { if ('base' in o) o.base = v; else o.react = v; } if (PERC) PERC.restore(); PERC = null; SKH = null; ROWBOSS = null; LABP = profileOf(null); BK.press = press0; BK.sim = sim0; BK.step = step0; BK.manualSimulation = previous; if(miniBefore)for(const[k,v]of Object.entries(miniBefore)){if(v===undefined)delete BK.PROG[k].mini;else BK.PROG[k].mini=v;} }
+  finally { for (const [o, v] of clocks0) { if ('base' in o) o.base = v; else o.react = v; } if (PERC) PERC.restore(); PERC = null; SKH = null; ROWBOSS = null; LABP = profileOf(null); BK.press = press0; BK.sim = sim0; BK.step = step0; BK.manualSimulation = previous; if(miniBefore)for(const[k,v]of Object.entries(miniBefore)){if(v===undefined)delete BK.PROG[k].mini;else BK.PROG[k].mini=v;} if(mini2Before)for(const[k,v]of Object.entries(mini2Before)){if(!BK.PROG[k])continue;if(v===undefined)delete BK.PROG[k].mini2;else BK.PROG[k].mini2=v;} }
 }
 async function runbossLab(BK, opts) {
   const healthMode=opts.healthMode||'refill';
@@ -769,6 +795,7 @@ async function runbossLab(BK, opts) {
     const progRow = JSON.stringify(BK.PROG);   /* (claude/harness) A ROW LEAVES THE SAVE AS IT FOUND IT: the lessons told, the beasts seen, the XP of a kill and the fog are put back in the finally below, so the next row in this page starts where this one did (tools/lab-order.mjs) */
     try {
     if(opts.mini && BK.PROG[lvId]) BK.PROG[lvId].mini=false;
+    if(opts.mini === 2){BK.PROG[lvId]=BK.PROG[lvId]||{};BK.PROG[lvId].mini=true;BK.PROG[lvId].mini2=false;}   /* (claude/forgemaster) a level's SECOND mini: the first counts as down, the load puts the road at the second */
     BK.setHero(h); BK.reset({ fresh: true }); if (BK.clearTellClock) BK.clearTellClock(); BK.load(lvm.LEVELS.findIndex(l => l.id === lvId)); BK.start(); BK.god = false; BK.sim(10);
     /* A FRESH HERO EACH ROW. The last swing of the row before used to arrive with him - a heavy swing still going roots the
        paladin for a second on whatever he is dropped on, and at the Roc's door that is the glass over the shaft */
@@ -2126,7 +2153,7 @@ async function runbossLab(BK, opts) {
       if (h === 'reaper' && f < dkHold) k.block = true;
       if (h === 'reaper') { k.throw = false;   /* with a full bar and the boss close, HOLD F for the surge (claude/bkkit2: SUMMON THRALL is gone - his RED HOST spells are cast by the skill hands, src/lab-perceive.js, like every hero's) */
         if (P.harvest >= 100 && ad < 110 && !(boss.mode && /Tell$/.test(boss.mode))) { k.throw = true; if (!(P.fHeld > 0)) BK.press('throw'); } }
-      let goal = null, strike = false, princeT = null, lampT = null; P.labSwimY = undefined;
+      let goal = null, strike = false, princeT = null, lampT = null, fgA = null; P.labSwimY = undefined;
       /* HER DRONES, while two of them are up: the nearest one, and the queen's own openings come first */
       const swarm = boss.t === 'queen' ? BK.enemies().filter(q => q.alive && q.t === 'wasp' && q.drone) : [];
       const swarmT = swarm.length >= 2 && boss.mode !== 'winded' && boss.mode !== 'stuck' ? swarm.sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0] : null;
@@ -2374,6 +2401,7 @@ async function runbossLab(BK, opts) {
         else if (pool) { goal = pool.x + side * (S.boilR + 20); strike = false; }
         else { goal = boss.x; strike = !(P.labRest); }
         if (goal !== null) goal = Math.max(A.x0 + 18, Math.min(A.x1 - 18, goal)); }
+      else if (boss.t === 'forgemaster' && boss.rails && (fgA = forgeHands(BK, boss, A, P, h, f, open))) { goal = fgA.goal; strike = fgA.strike; if (fgA.jump) k.jump = true; }   /* (claude/forgemaster) his room's carts and levers */
       else if (hbell) { goal = null; strike = false; k.left = k.right = false; if (P.atk < 0) { P.face = Math.sign(hbell.x - P.x) || P.face; BK.press('atk'); swings++; } }
       else if (gateDuty) { const wx = gateDuty.x, gx = gateDuty.gate * 16 + 8, onTop = P.ground && P.y <= gateDuty.y + 2; strike = false; k.block = false;
         if (!onTop) { goal = wx - 6; if (P.ground && Math.abs(wx - P.x) < 36) { BK.press('jump'); P.labJump = 20; } if (P.labJump > 0) { P.labJump--; k.jump = true; } }

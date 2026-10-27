@@ -155,7 +155,7 @@ export function mashVerdict(lv) {
   if (!row) return { ok: false, state: 'missing', msg: 'no mash-bot row in docs/mash-bot.json (' + (gated ? 'gated' : 'not gated') + '): run ' + cmd };
   if (row.hash !== levelHash(lv)) return { ok: false, state: 'stale', msg: 'the level changed since the mash bot ran: re-run ' + cmd };
   const why = [], parts = [];
-  for (const key of ['boss', 'mini']) { const b = row[key]; if (!b) continue; const wonBy = Object.entries(b.byHero).filter(([, v]) => v.some(x => x.startsWith('win'))).map(([h]) => h);
+  for (const key of ['boss', 'mini', 'mini2']) { const b = row[key]; if (!b) continue;   /* (claude/forgemaster: mini2) */ const wonBy = Object.entries(b.byHero).filter(([, v]) => v.some(x => x.startsWith('win'))).map(([h]) => h);
     parts.push(key + ' ' + (wonBy.length ? 'BEATEN by mashing (' + wonBy.join(',') + '; ' + b.wins + '/' + b.fights + ' fights won)' : 'holds (0/' + b.fights + ' mash wins)')); if (wonBy.length) why.push(key); }
   if (row.level) { const worst = Object.entries(row.level).sort((a, b) => (clearsAt(b[1], MASH_HP) - clearsAt(a[1], MASH_HP)) || (b[1].minHpPct - a[1].minHpPct))[0], r = worst[1], cleared = clearsAt(r, MASH_HP);   /* (claude/combat2: a run HELD in a room it could not finish is not a clear - tools/mash-rows.mjs MASH_HELD) */
     const have = ['knight', 'warden', 'pyro'].filter(h => row.level[h]);
@@ -180,7 +180,7 @@ export function measure(lv) {
   const near = (list, x, y, rx, ry) => list.some(e => Math.abs(e.x - x) <= rx && Math.abs(e.y - y) <= ry);
   const hazardAt = (x, y) => { for (let dx = -1; dx <= 1; dx++) for (let dy = -1; dy <= 2; dy++) if (at(x + dx, y + dy) === T.SPIKE) return true; return false; };
   const gadgetXY = [...gadgetEnts.map(e => ({ x: e.x, y: e.y })), ...(L.moversExtra || []).filter(m => !MOVER_KINDS_SKIP.has(m.kind)).map(m => ({ x: Math.round(m.x / TS), y: Math.round(m.y / TS) }))];
-  const regions = []; if (A) regions.push([A.x0 / TS, A.x1 / TS]); for (const q of L.ambushes || []) regions.push([q.wallL, q.wallR]); if (L.mini) regions.push([L.mini.x0 / TS, L.mini.x1 / TS]);
+  const regions = []; if (A) regions.push([A.x0 / TS, A.x1 / TS]); for (const q of L.ambushes || []) regions.push([q.wallL, q.wallR]); if (L.mini) regions.push([L.mini.x0 / TS, L.mini.x1 / TS]); if (L.mini2) regions.push([L.mini2.x0 / TS, L.mini2.x1 / TS]);
   const inRoom = x => regions.some(([a, b]) => x >= a && x <= b);
   const scan = (breakOnFoes) => { let best = { n: 0, at: 0, long: 0 }, lo = null, minY = 0, maxY = 0, start = 0, prevX = null, prevY = null;
     const cut = x => { if (lo !== null) { const n = x - start; best.long += n >= LIM.longRun ? n : 0; if (n > best.n) best = { n, at: start, long: best.long }; } lo = null; };
@@ -237,7 +237,7 @@ export function measure(lv) {
   const sectionsN = Math.ceil(end / LIM.section), holes = [];
   for (let s = 0; s < sectionsN; s++) { const x0 = s * LIM.section, x1 = Math.min(end, x0 + LIM.section);
     const inSec = e => e.x >= x0 && e.x < x1;
-    let n = ents.filter(e => inSec(e) && (designed(e))).length + (L.ambushes || []).filter(q => q.wallL >= x0 && q.wallL < x1).length + (L.mini && L.mini.x0 / TS >= x0 && L.mini.x0 / TS < x1 ? 1 : 0);
+    let n = ents.filter(e => inSec(e) && (designed(e))).length + (L.ambushes || []).filter(q => q.wallL >= x0 && q.wallL < x1).length + (L.mini && L.mini.x0 / TS >= x0 && L.mini.x0 / TS < x1 ? 1 : 0) + (L.mini2 && L.mini2.x0 / TS >= x0 && L.mini2.x0 / TS < x1 ? 1 : 0);
     const f = foes.filter(inSec).sort((a, b) => a.x - b.x);   /* or a knot of three foes within ten columns: authored by hand */
     for (let i = 0; i + 2 < f.length && !n; i++) if (f[i + 2].x - f[i].x <= 10) n++;
     if (x1 - x0 >= 60 && !n) holes.push(x0 + '-' + x1); }
@@ -249,7 +249,7 @@ export function measure(lv) {
   for (const e of foes) { if (e.squad) { if (!bySquad.has(e.squad)) bySquad.set(e.squad, []); bySquad.get(e.squad).push(e.x); } else if (e.elite) enc.push({ x: e.x, k: 'elite' }); else loose.push(e.x); }
   for (const [k, xs] of bySquad) enc.push({ x: (Math.min(...xs) + Math.max(...xs)) / 2, k: 'squad ' + k });
   for (const q of L.ambushes || []) enc.push({ x: (q.wallL + q.wallR) / 2, k: 'ambush' });
-  if (L.mini) enc.push({ x: (L.mini.x0 + L.mini.x1) / 2 / TS, k: 'mini' });
+  if (L.mini) enc.push({ x: (L.mini.x0 + L.mini.x1) / 2 / TS, k: 'mini' }); if (L.mini2) enc.push({ x: (L.mini2.x0 + L.mini2.x1) / 2 / TS, k: 'mini' });   /* (claude/forgemaster) */
   loose.sort((a, b) => a - b); for (let i = 0; i < loose.length;) { let j = i; while (j + 1 < loose.length && loose[j + 1] - loose[j] <= LIM.clump) j++; enc.push({ x: (loose[i] + loose[j]) / 2, k: 'clump' }); i = j + 1; }
   const per = []; for (let x = 0; x + 24 <= end; x += 24) per.push(enc.filter(e => e.x >= x && e.x < x + 24).length);
   const routeB = routeBlock(L, route, foes);   /* (claude/foepass, tools/route-block.mjs) */

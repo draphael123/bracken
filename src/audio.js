@@ -785,7 +785,7 @@ function loopNoise(freq, q, gain, type = 'bandpass') {
   return { f, g };
 }
 function lfoOn(param, hz, depth) { const o = ac.createOscillator(); o.frequency.value = hz; const d = ac.createGain(); d.gain.value = depth; o.connect(d); d.connect(param); o.start(); ambNodes.push(o); }
-let ambTick = null, ambTickMs = 500;
+let ambTick = null, ambTickMs = 500, forgeNear = 0;   /* (claude/forgemasterart) 0..1: how close the hero is to THE SMELTER FLOOR (the Deep Rails' mine bed grows a forge layer) */
 /* THE FAIR GOES WRONG (claude/faircreepy): composed here, no files, heard through ambGain (so the ambient volume rules them) and a lowpass, so they stay far off. The far laugh slows and
    sinks with the depth, a children's rhyme (a falling sing-song that goes flatter with every line) drifts over the stalls, and crows call from the corn. creepNow(): the depth, 0 if main.js
    has stopped telling us (a stale value is no value). */
@@ -814,7 +814,12 @@ const SYNTH_BEDS = {
       if (Math.random() < 0.05) tone('sawtooth', 90 + Math.random() * 50, 70, 0.6, 0.01);                                                                    /* a prop creaks */
       if (Math.random() < 0.05) { const n = 2 + ((Math.random() * 2) | 0), f0 = 2100 + Math.random() * 500; for (let i = 0; i < n; i++) tone('square', f0, f0 * 0.8, 0.025, 0.012, i * 0.42); }   /* a far hammer on iron */
       if (Math.random() < 0.025) for (let i = 0; i < 6; i++) noise(0.03, 0.04, 3200 + Math.random() * 900, 1.2, i * 0.05);                                    /* a chain runs on a winch */
-      if (Math.random() < 0.02) { tone('sine', 62, 38, 0.3, 0.06); noise(0.2, 0.05, 300, 0.8, 0.02); } };                                                    /* far off, a crusher comes down */
+      if (Math.random() < 0.02) { tone('sine', 62, 38, 0.3, 0.06); noise(0.2, 0.05, 300, 0.8, 0.02); }
+      if (forgeNear > 0.05) { const n = forgeNear;   /* THE FORGE LAYER: a furnace's low roar breathing, the bellows (a long soft draw), slag hissing, a hammer ringing on the anvil - never on a beat, never loud enough to cover a tell */
+        if (Math.random() < 0.35 * n) noise(0.5, 0.04 * n, 150, 0.7);
+        if (Math.random() < 0.07 * n) { noise(0.9, 0.05 * n, 700, 0.6); noise(0.5, 0.03 * n, 2400, 0.8, 0.6); }
+        if (Math.random() < 0.12 * n) noise(0.35, 0.03 * n, 5200, 0.9);
+        if (Math.random() < 0.06 * n) { const f0 = 1300 + Math.random() * 260; tone('square', f0, f0 * 0.8, 0.07, 0.035 * n); tone('sine', f0 * 1.5, f0 * 1.2, 0.2, 0.02 * n, 0.04); tone('square', f0 * 1.01, f0 * 0.8, 0.07, 0.03 * n, 0.5); } } };                                                    /* far off, a crusher comes down */
     ambTickMs = 300;
   },
   /* (claude/scree2) THE SCREE PATH's own air - the foothills at dusk, all synth: the wind over the crags in GUSTS (it swells and drops away), SHEEP BELLS from the
@@ -1244,6 +1249,7 @@ Object.assign(SFX, {
   callerBlast() { noise(0.6, 0.5, 300, 0.4); tone('sawtooth', 160, 40, 0.5, 0.25); tone('sine', 1200, 300, 0.4, 0.1); },
   forgeHammer() { file('slam', 0.6, 0.8) || tone('sine', 90, 40, 0.25, 0.4); tone('square', 1900, 1200, 0.08, 0.12, 0.02); noise(0.12, 0.3, 3000, 1.1, 0.02); },
   forgeSteam() { noise(0.5, 0.28, 2200, 0.5); noise(0.3, 0.18, 900, 0.5, 0.1); },
+  forgeAir(k) { forgeNear = k; },   /* (claude/forgemasterart) how near the smelter floor the hero is (0..1) - the mine bed's forge layer */
   forgeChain() { for (let i = 0; i < 5; i++) { noise(0.04, 0.16, 2600, 1.2, i * 0.07); tone('square', 700 - i * 40, 500, 0.04, 0.06, i * 0.07); } },
   kingLaugh() { file('laugh', 0.5, 0.62) || (tone('sawtooth', 150, 130, 0.12, 0.2), tone('sawtooth', 170, 140, 0.12, 0.2, 0.14), tone('sawtooth', 190, 150, 0.16, 0.2, 0.28)); },
   chiefBark() { file('roar', 0.4, 1.55) || tone('sawtooth', 300, 140, 0.18, 0.22); tone('square', 420, 200, 0.1, 0.12, 0.02); noise(0.1, 0.18, 1200, 0.7); }, // a bark: short, high, clipped

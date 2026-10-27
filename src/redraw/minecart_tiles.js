@@ -9,6 +9,7 @@
 import { canvas, px, rect, mulberry } from '../px.js';
 import { isSlope, heightAt, slopeRise } from '../slopes.js';
 import { MP, hash, zoneOf } from './minecart_backdrop.js';
+import { inForge } from './forge_art.js';
 
 /* the ground's warm ramp: it must read IN FRONT of the slate wall behind it */
 export const GP = { g0: '#150e0d', g1: '#221612', g2: '#33231b', g3: '#4a3427', g4: '#634836', g5: '#80604a', ballast: '#2a1d18', ballastL: '#5a4434', lip: '#a77c52', lipL: '#dca868', cinder: '#1a1210', slag: '#e0701c', slag2: '#ffb04c' };
@@ -163,9 +164,61 @@ function pierTile(x, y, kind, eL, K) {   /* kind: 'cap' (open above), 'face' (op
     else { const x0 = eL ? 0 : 12; rect(g, x0, 0, 4, 16, MP.t2); rect(g, x0, 0, 1, 16, MP.t4); rect(g, x0 + 3, 0, 1, 16, MP.t0); if ((y & 3) === 1) { rect(g, x0, 6, 4, 2, MP.i2); rect(g, x0, 6, 4, 1, MP.i4); } }   /* the shoring post on the pit side */
     return c; });
 }
+/* ============ THE SMELTER FLOOR + THE FORGE's OWN KIT (claude/forgemasterart; x 1062-1239, rows 28+ on foot): IRON PLATE and SLAG - never timber ============
+   THE FLOOR   riveted iron plates with a lit edge, slag stains, a seam of old fire between some plates; charred rock under
+   THE WALL    the same rock, an iron strap post up the open side (rivets, a lit edge)
+   THE CEILING ragged rock under an iron girder every fourth tile
+   THE DECK    the ore line: a riveted iron box girder under the rails
+   THE GUTTER  (SPIKE) molten slag, the tile under the pit's animated surface */
+export const forgeAt = (x, y) => x >= 1062 && x <= 1239 && y >= 28;
+const IR = ['#14141a', '#24242c', '#3a3a46', '#585866', '#80808e', '#b0b0be'];
+function forgeFloorTile(x, y, eL, eR) {
+  return once('ff_' + (x & 3) + '_' + eL + eR + '_' + (y & 1), () => { const [c, g] = canvas(16, 16), r = mulberry(hash(x & 3, y & 1) + 83), K = KIT[6];
+    rockBlock(g, r, 0, 0, K.R[0]);
+    rect(g, 0, 0, 16, 5, IR[1]); rect(g, 0, 0, 16, 1, IR[4]); rect(g, 0, 1, 16, 1, IR[2]); rect(g, 0, 4, 16, 1, IR[0]);   /* the plate: a lit edge, a shadow under */
+    const seam = (x & 1) ? 0 : 8; rect(g, seam, 1, 1, 4, IR[0]); px2(g, seam + 1, 1, IR[3]);   /* the plate joint */
+    px2(g, 2, 2, IR[5]); px2(g, 13, 2, IR[5]); px2(g, 2, 3, IR[0]); px2(g, 13, 3, IR[0]);   /* rivets */
+    for (let i = 0; i < 3; i++) { const sx = (r() * 14) | 0; px2(g, sx, 1 + ((r() * 3) | 0), '#1a1210'); px2(g, sx + 1, 2, '#2b1d17'); }   /* slag stains */
+    if ((x & 3) === 2) { for (let i = 2; i < 14; i++) px2(g, i, 5, i % 4 === 0 ? '#ffc060' : '#c8420e'); px2(g, seam, 4, '#ff7a22'); }   /* a seam of old fire under the plate */
+    for (let i = 0; i < 4; i++) { const sx = (r() * 15) | 0, sy = 7 + ((r() * 8) | 0); px2(g, sx, sy, GP.slag); if (r() < 0.5) px2(g, sx + 1, sy, GP.slag2); }
+    if (eL) { g.clearRect(0, 0, 1, 1); px2(g, 0, 1, IR[3]); rect(g, 0, 2, 1, 14, K.g0); }
+    if (eR) { g.clearRect(15, 0, 1, 1); px2(g, 15, 1, IR[3]); rect(g, 15, 2, 1, 14, K.g0); }
+    return c; });
+}
+function forgeWallTile(x, y, eL) {
+  return once('fw_' + (hash(x, y) % 5) + '_' + eL + '_' + (y & 3), () => { const [c, g] = canvas(16, 16), r = mulberry(hash(x, y) + 91), K = KIT[6];
+    rockBlock(g, r, 0, 0, K.R[0]);
+    const x0 = eL ? 0 : 12; rect(g, x0, 0, 4, 16, IR[1]); rect(g, x0, 0, 1, 16, IR[4]); rect(g, x0 + 3, 0, 1, 16, IR[0]); rect(g, x0 + 1, 0, 1, 16, IR[2]);
+    if ((y & 1) === 0) { px2(g, x0 + 1, 3, IR[5]); px2(g, x0 + 2, 11, IR[5]); } rect(g, x0, 7, 4, 2, IR[2]); rect(g, x0, 7, 4, 1, IR[4]);
+    if (hash(x, y) % 4 === 0) { px2(g, eL ? 5 : 10, 5 + (hash(x, y) % 6), GP.slag); }
+    return c; });
+}
+function forgeCeilTile(x, y) {
+  return once('fc_' + (hash(x, y) % 5) + '_' + (x & 3), () => { const [c, g] = canvas(16, 16), r = mulberry(hash(x, y) + 97), K = KIT[6];
+    rockBlock(g, r, 0, 0, K.R[0]);
+    for (let i = 0; i < 16; i++) { const d = r() < 0.3 ? 3 : r() < 0.6 ? 2 : 1; g.clearRect(i, 16 - d, 1, d); }
+    if ((x & 3) === 0) { rect(g, 0, 8, 16, 6, IR[2]); rect(g, 0, 8, 16, 1, IR[4]); rect(g, 0, 13, 16, 1, IR[0]); px2(g, 3, 10, IR[5]); px2(g, 12, 10, IR[5]); rect(g, 7, 8, 2, 6, IR[1]); }   /* an iron girder across the roof */
+    return c; });
+}
+function forgeDeckTile(x, y) {
+  return once('fd_' + (x & 3) + '_' + (y & 1), () => { const [c, g] = canvas(16, 16);
+    rect(g, 0, 0, 16, 7, IR[2]); rect(g, 0, 0, 16, 1, IR[5]); rect(g, 0, 1, 16, 1, IR[4]); rect(g, 0, 6, 16, 1, IR[0]); rect(g, 0, 7, 16, 1, '#0a0604');
+    for (const rx of [2, 7, 13]) { px2(g, rx, 3, IR[5]); px2(g, rx + 1, 3, IR[0]); }   /* rivets */
+    rect(g, 7, 1, 1, 5, IR[0]);   /* the plate joint */
+    for (let k = 0; k < 6; k++) { px2(g, 1 + k * 2 + 1, 8 + k, IR[1]); px2(g, 14 - k * 2 - 1, 8 + k, IR[1]); }   /* lattice braces under it */
+    return c; });
+}
+function slagTile(x, y) {
+  return once('fs_' + (x & 3) + '_' + (y & 1), () => { const [c, g] = canvas(16, 16), r = mulberry(hash(x & 3, 7) + 101);
+    rect(g, 0, 0, 16, 16, '#7a2208'); rect(g, 0, 0, 16, 5, '#c8420e'); rect(g, 0, 0, 16, 2, '#ff7a22'); rect(g, 0, 0, 16, 1, '#ffd070');
+    for (let i = 0; i < 9; i++) px2(g, (r() * 15) | 0, 4 + ((r() * 11) | 0), r() < 0.5 ? '#5a1606' : '#ffa040');
+    return c; });
+}
 // ================================ THE HOOK ================================
 export function mineTile(t, x, y, at, T, L) {
   const zone = zoneOf(x), op = open(at, T);
+  if (inForge(x) && ((t === T.RAIL) || (t === T.ONEWAY && x > 1069))) return forgeDeckTile(x, y);   /* (claude/forgemasterart) the smelter floor's ore line is iron, not timber */
+  if (t === T.SPIKE && inForge(x) && x >= 1100) return slagTile(x, y);   /* the slag gutter's molten body */
   if (t === T.ONEWAY && inPits(x)) return plankTile(x);   /* (deeprails5 art) THE SPOIL PITS' catwalk: its own plank deck */
   if (t === T.RAIL || t === T.ONEWAY) return deckTile(x, y);
   if (t === T.SPIKE) return y >= 33 ? pitFloorTile(x, y) : heapTile(x);   /* (deeprails5 art) a pit floor (row 34) / a spoil heap on a line (rows 25, 29) */
@@ -174,6 +227,7 @@ export function mineTile(t, x, y, at, T, L) {
   const up = op(0, -1, x, y), down = op(0, 1, x, y), eL = op(-1, 0, x, y), eR = op(1, 0, x, y);
   const upSlope = isSlope(at(x, y - 1));
   if (upSlope) return massTile(x, y, 2, zone);
+  if (forgeAt(x, y) && x >= 1062 && !(isSlope(at(x, y))) ) { if (up) return forgeFloorTile(x, y, eL ? 1 : 0, eR ? 1 : 0); if (down) return forgeCeilTile(x, y); if (eL || eR) return forgeWallTile(x, y, eL ? 1 : 0); }   /* (claude/forgemasterart) the smelter floor + the forge's iron plate */
   if (up && inPits(x) && y < 33) return pierTile(x, y, 'cap', 0, KIT[zone] || KIT[0]);   /* (deeprails5 art) the rock piers' coursed cap */
   if (up) return floorTile(x, y, eL ? 1 : 0, eR ? 1 : 0, zone);
   if (down) return ceilTile(x, y, zone);

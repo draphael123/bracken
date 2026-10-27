@@ -214,6 +214,8 @@ export const CALL_LINES = new Set([
   "EIGHT ORE: THE SMELTER'S POINTS WILL OPEN", 'LOCKED: THE SMELTER WANTS 8 ORE', 'CRASHED: BACK BEFORE THE POINTS', 'CRASH!', 'POINTS SET: STAY HIGH', 'POINTS OPEN: DOWN TO THE LOW LINE', 'A GOBLIN CASTER ON A CART', 'A GOBLIN ARCHER ON A CART',
   'THROWN OUT: THE CART IS YOURS', 'INTO THE CART', 'A FALL COSTS YOU: PUMP BEFORE A LONG GAP', 'CRUSHED: BRAKE, AND GO WHEN IT LIFTS',
   'THE GATE IS SHUT: WATCH ITS GAUGE', 'KNOCKED OFF',
+  /* claude/forgemaster: THE SMELTER FLOOR's junction levers and slag plugs (src/forge-rails.js) and THE FORGEMASTER on the rails (src/main.js updateForgemaster, e.rails) */
+  'POINTS OPEN: THE NEXT CART DROPS', 'POINTS SET: THE CARTS RIDE ON', 'IT DROPS', 'THE PLUG BREAKS', 'HE BRACES', 'HE BRACES: IT CLANGS OFF', 'HE IS DOWN ALREADY', 'HE HURLS IT: JUMP', 'HOT INGOTS',
   /* claude/caravan2 (batch83 merge: routed - hint-shown): THE DUNE WORM's ledges and hide, and the wagon bed sinking in the quicksand */
   'A LEDGE RISES', 'THE LEDGE CRACKS', 'HIS HEAD HITS THE LEDGE', 'STUNNED: CUT HIM', 'WARDED: NOT YET', 'MAKE HIM HIT A LEDGE', 'THE BED GOES UNDER',
   /* claude/deeprails2: DEEP RAILS 2 - the ram, the bump, the thrower, the foreman, the ramp, the on-foot stretches; GREAT DRILL 2 */

@@ -18,7 +18,30 @@ function makeCartPilot(BK, plan) {
   const pilot = {};
   pilot.why = () => why;
   /* ON FOOT: walk on, hop what is in the way, strike what stands in front, ride the lift up (wait for the cage at the bottom, stand on it, step off at the top) */
+  /* (claude/forgemaster) THE SMELTER FLOOR and THE FORGE (src/forge-rails.js), on foot: a cart rolling at me along my floor - jump it; a slag plug shut ahead - to its
+     junction lever, E, and wait for the cart; THE FORGEMASTER - off his ingots' marks, back from a blow he winds up close, at a lever west of him when a cart comes over its
+     points (it drops and rolls into him: OPEN), at him when he is open, else close and strike. Everything read is drawn (the carts, the levers, his marks) */
+  function forgeStep(p) { const FR = BK.forgeRails && BK.forgeRails(); if (!FR || !FR.on()) return false; const rd = FR.read(); if (!rd) return false;
+    const go = gx => { if (gx > p.x + 6) k.right = true; else if (gx < p.x - 6) k.left = true; };
+    const inc = rd.carts.find(c => (c.hurled || c.loader) && Math.abs(c.y - p.y) < 6 && (p.x - c.x) * c.vx > 0 && Math.abs(p.x - c.x) < 54);
+    if (inc && p.ground && jumpHold <= 0) { BK.press('jump'); jumpHold = 20; why = 'smelter: jump the cart'; return true; }
+    if (jumpHold > 0 && !p.ground && inc) return true;
+    const e = BK.enemies().find(q => q.t === 'forgemaster' && q.alive && q.rails);
+    if (e && BK.miniActive) { const open = e.mode === 'stun' || e.mode === 'scald', dx = e.x - p.x;
+      const marks = e.mode === 'ladleTell' ? (e.ingots || []) : e.mode === 'ladle' ? (e.blobs || []).filter(b => b.t > 0).map(b => b.x) : [];
+      if (marks.some(x => Math.abs(x - p.x) < 24)) { const m0 = marks.find(x => Math.abs(x - p.x) < 24); go(p.x + (m0 > p.x ? -44 : 44)); why = 'smith: off the ingots'; return true; }
+      if (open) { go(e.x - 26); if (Math.abs(dx) < 42 && atkCd <= 0) { p.face = Math.sign(dx) || 1; BK.press('atk'); atkCd = 12; } why = 'smith: open - strike'; return true; }
+      if (/Tell$/.test(e.mode || '') && Math.abs(dx) < 110 && e.mode !== 'dragTell' && e.mode !== 'ladleTell') { go(e.x - 124); why = 'smith: back off his blow'; return true; }
+      if (!(e.ward > 0)) { const pt = rd.points.filter(q => (q.x1 + 1) * TS + 10 < e.x - 20).sort((a, b) => Math.abs(a.x * TS - p.x) - Math.abs(b.x * TS - p.x))[0];
+        if (pt && Math.abs(pt.x * TS + 8 - p.x) < 170) { const lx = pt.x * TS + 8; go(lx - 8); if (Math.abs(lx - p.x) < 18 && pt.state === 'set' && FR.etaAt(pt.id) < 2.6 && talkCd <= 0) { BK.press('talk'); talkCd = 20; } why = 'smith: the lever'; return true; } }
+      go(e.x - 34); if (Math.abs(dx) < 42 && atkCd <= 0) { p.face = Math.sign(dx) || 1; BK.press('atk'); atkCd = 14; } why = 'smith: close'; return true; }
+    const pl = rd.plugs.find(q => !q.broken && q.x0 * TS - p.x > -8 && q.x0 * TS - p.x < 340)   /* (from its lever: the teach plug stands 19 cols past it - at 260 the pilot walked off the lever, lost the plug, and came back, forever) */;
+    if (pl) { const pt = rd.points.filter(q => q.x1 + 1 < pl.x0).sort((a, b) => b.x - a.x)[0];
+      if (pt) { const lx = pt.x * TS + 8; if (Math.abs(lx - p.x) > 10) { if (lx < p.x - 10 || !BK.enemies().some(q => q.alive && !q.boss && Math.abs(q.y - p.y) < 30 && q.x - p.x > -10 && q.x - p.x < 34)) { go(lx); why = 'smelter: to the lever'; return true; } return false; }
+        if (pt.state === 'set' && talkCd <= 0) { BK.press('talk'); talkCd = 30; why = 'smelter: throw the points'; } else why = 'smelter: wait for the cart'; return true; } }
+    return false; }
   function onFoot(p, f) {
+    if (forgeStep(p)) { if (jumpHold > 0) { jumpHold--; k.jump = true; } return; }   /* (claude/forgemaster) */
     const col = Math.floor(p.x / TS), row = Math.round(p.y / TS); let go = true, jump = false;
     const mv = (typeof BK.movers === 'function' ? BK.movers() : (BK.movers || [])).find(m => m.vert && m.x > f.x0 * TS && m.x < f.board * TS);
     if (mv) { const onIt = p.onMover === mv, x0 = mv.x, x1 = mv.x + mv.w;
