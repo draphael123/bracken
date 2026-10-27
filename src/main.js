@@ -23391,7 +23391,7 @@ await LS.step('misc3');
 const inHollowStorm = x => !!(CV && CV.storm && L.arena && x > L.arena.x0 && x < L.arena.x1);   /* THE SUN GOES IN under the worm's storm, and only in his hollow */
 function cvShaded(x, y, h, probe) {   /* (probe: the drawn shimmer asks per floor top - no vulture's moving shadow) */
   if (inShade(CV.zones, x, y - 1)) return true;
-  if (inHollowStorm(x)) return true;
+  /* (claude/hookpolish) THE SUN STAYS ON IN PHASE TWO: the storm blows sand but no longer hides the sun - the standing stones (three) and the rim's overhang are the shade, as in phase one */
   if (GSH && GSH.noSun(x)) return true;
   if (BCH && BCH.noSun(x)) return true;   if (PYH && PYH.on()) return true;   /* (claude/sealedpyramid) THE SEALED PYRAMID: inside the tomb there is no sun, and on the face the storm hides it */   /* (claude/buriedcity) THE BURIED CITY: the throne room is roofed */
   if (KSH && KSH.noSun(x)) return true;   /* (claude/ksar) THE BANDIT KSAR: the Hawk-Mistress's courtyard is shade (the sun is the desert's backdrop on the way) */   /* (claude/glasssea) THE GLASS SEA: past the obelisk the sun is down (the cold is src/glass-sea-hands.js's) */
@@ -23565,7 +23565,7 @@ function drawCaravanHud() {
   if (WTH && WTH.on()) hudEnvR = Math.max(hudEnvR, WTH.drawHud(g, P) || 0);
   if (RGH && RGH.on()) hudEnvR = Math.max(hudEnvR, RGH.drawHud(g, P) || 0);   /* THE RED GORGE: the flood's clock, under the sun */   /* THE WELL TOWN: the skin's sips, under the sun */
   { /* THE STATUS, AS AN ICON by the meter (a parasol in the shade, a bolt in the storm, a flame as the sun builds, a pip a stage, faster and redder as it climbs); the words only come as a toast when it CHANGES */
-    const st = UIH.sunStatus({ shaded: CV.shaded, storm: CV.shaded && inHollowStorm(P.x), stg }), note = UIH.statusChange(sunPrev, st); sunPrev = st; if (note) UIH.toastPush(toastQ, note, 2.2);
+    const st = UIH.sunStatus({ shaded: CV.shaded, storm: false, stg }), note = UIH.statusChange(sunPrev, st); sunPrev = st; if (note) UIH.toastPush(toastQ, note, 2.2);
     if (st) { const on = Math.floor(time * (3 + 3 * stg)) % 2 === 0;
       UIH.drawIcon(g, st.icon, x + 48, y - 1, st.stage && !on ? '#fff1c8' : st.col);
       if (st.stage) for (let i = 0; i < 3; i++) { g.fillStyle = i < stg ? (on || i < stg - 1 ? st.col : '#fff1c8') : 'rgba(40,20,10,0.5)'; g.fillRect(x + 60 + i * 5, y + 1, 3, 5); } } }
@@ -23646,7 +23646,7 @@ function updateDuneWormBoss(e, dt) {
     if (v.t === 'ward') { SFX.clank(); number(e.x, e.y - 84, 'WARDED', '#c9b0e0'); ringAt(e.x, e.y - 40, 30, '#c9b0e0', 0.5); continue; }   /* B3: THE WARD after every opening, told */
     if (v.t === 'warded') { SFX.clank(); number(v.x, fy - 64, 'WARDED: NOT YET', '#c9b0e0'); continue; }   /* a breach under a ledge in the ward: he shoulders up past it */
     if (v.t === 'wardEnd') continue;
-    if (v.t === 'stormOn') { CV.storm = newStorm([1, -1, -1, 1]); CV.stormNow = null; CV.gustAcc = 0; number(e.x, e.y - 76, 'HE CALLS THE STORM', '#ff9a5c'); cvS('gust'); continue; }
+    if (v.t === 'stormOn') { CV.storm = newStorm([1, -1, -1, 1]); CV.stormNow = null; CV.gustAcc = 0; number(e.x, e.y - 76, 'HE CALLS THE STORM', '#ff9a5c'); number(e.x, e.y - 64, 'THE SUN STAYS: STONES ARE SHADE', '#ffd36b'); cvS('gust'); continue; }
     if (v.t === 'pull') { if (!onSand) continue;   /* THE SWALLOW: the sand runs to his mouth - off your feet (a jump) it has nothing to pull */
       e.pullAcc += Math.sign(v.toX - P.x) * v.v * dt; const st = Math.trunc(e.pullAcc); if (st) { e.pullAcc -= st; moveBody(P, st, 0, false); }
       if (!e.pullSaid) { e.pullSaid = true; number(P.x, P.y - 26, 'JUMP! AND KEEP JUMPING', '#ffd36b'); } if (Math.random() < dt * 20) dust(P.x, fy, 1); continue; }

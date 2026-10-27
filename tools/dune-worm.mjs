@@ -111,7 +111,7 @@ try {
   assert.ok(Math.abs(r.storm.inHollow) > 20, 'a gust moves a hero in his hollow: ' + JSON.stringify(r.storm));
   assert.ok(!r.storm.retry.storm && !r.storm.retry.active && r.storm.retry.outside && r.storm.retry.mode === 'sleep' && r.storm.retry.ledgeCellsBefore === 3 && r.storm.retry.ledgeCellsAfter === 0,
     'a death wakes you outside his hollow with no storm, no ledge left standing and the fight put back: ' + JSON.stringify(r.storm));
-  assert.equal(r.storm.sunInStorm, 0, 'the sun goes in under his storm: ' + JSON.stringify(r.storm));
+  assert.ok(r.storm.sunInStorm > 0.3, '(claude/hookpolish) the sun STAYS ON under his storm - shade is only the stones and the overhang: ' + JSON.stringify(r.storm));
   assert.equal(r.gate.alive, 'play', 'the gate across the hollow does not end the level while he lives: ' + JSON.stringify(r.gate));
   assert.ok(!r.gate.dead && r.gate.open && !r.gate.stormAfter, 'he dies, the gate opens and his storm goes with him: ' + JSON.stringify(r.gate));
   assert.notEqual(r.gate.after, 'play', 'and the gate ends the level: ' + JSON.stringify(r.gate));

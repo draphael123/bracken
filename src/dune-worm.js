@@ -30,7 +30,7 @@
 //   TAIL SWEEP         !!  surfaced in front of you, he rears, and his TAIL breaks the sand BEHIND you; then it scythes along the
 //                          floor through you to his head, and back. Low: jump it (or be past the tail when it starts).
 // PHASE 2 (under half, A10): THE STORM, in his hollow only (no storm in the level: Daniel). The world starts it on 'stormOn' (the
-// sun goes in, gusts on src/desert-rules.js's clock shove you along the sand, told); here, every ripple brings a DECOY that never
+// sun STAYS ON (claude/hookpolish: the storm no longer shades the hollow - the stones and the rim's overhang are the only shade), gusts on src/desert-rules.js's clock shove you along the sand, told); here, every ripple brings a DECOY that never
 // rises at the commit (only the real one bulges: readable, late), and a THIRD stone stands in the hollow (the arena changes, B5).
 
 export const WORM = {
