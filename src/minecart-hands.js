@@ -17,6 +17,7 @@
 import { MC, cartSpeed, runeAt, gateX } from './minecart.js';
 import * as FMG from './foreman.js';   /* (deeprails3) THE FOREMAN, the mini: his fight is pure (src/foreman.js); these hands bind it - the loop, the pin on his cart, the draw */
 import * as MCA from './redraw/minecart_art.js';
+import * as FA from './redraw/forge_art.js';   /* (claude/forgemasterart) the smelter floor's iron: trestle bents, the buffers */
 import { heightAt } from './slopes.js';
 import { STUCK_HANDS } from './stuck-spots.js';
 import { resolve, newStall, stallTick, drawGlint } from './stuck-guide.js';
@@ -469,7 +470,7 @@ export function makeMinecartHands(ctx) {
     if (fmLoop) { const G = M.fm.S.G; MCA.tunnel(g, 0, vw, R((FMG.FOREMAN.high - 9) * ts - cy), R(G.lowY - cy), vh, M.fm.scroll, [R(G.lowY - cy)], false, time, true); }
     /* trestle bents under the elevated lines */
     if (!fmLoop) for (const [a, b, row] of M.L.mcTrestles) for (let x = Math.max(a, x0c); x <= Math.min(b, x1c); x += 3) { if (ctx.cellGet(x, row) !== ctx.T.RAIL) continue; let yb = row + 1; while (yb < row + 40 && ctx.cellGet(x, yb) === ctx.T.AIR) yb++;
-      if (yb > row + 1) MCA.bent(g, R(x * ts + 6 - cx), R((row + 1) * ts - cy), R(yb * ts - cy), x + 3 <= b && ctx.cellGet(x + 3, row) === ctx.T.RAIL, x); }
+      if (yb > row + 1) (FA.inForge(x) ? FA.bent : MCA.bent)(g, R(x * ts + 6 - cx), R((row + 1) * ts - cy), R(yb * ts - cy), x + 3 <= b && ctx.cellGet(x + 3, row) === ctx.T.RAIL, x); }
     /* the rail along every line, on whatever stands there (sleepers and iron; laid up the ramps too) - a rail that breaks shows its cracks ahead of the break */
     if (!fmLoop) for (const [a, b, row] of M.L.mcTrack) for (let x = Math.max(a, x0c); x <= Math.min(b, x1c); x++) { const t = ctx.cellGet(x, row); if (!(t === ctx.T.SOLID || t === ctx.T.RAIL || t === ctx.T.ONEWAY || (t >= 20 && t <= 25))) continue;
       const sx = R(x * ts - cx), sy = R(row * ts - cy); if (t >= 20 && t <= 25) { MCA.slopeRail(g, sx, sy, t, heightAt); continue; } MCA.rail(g, sx, sy, x); }
@@ -488,7 +489,7 @@ export function makeMinecartHands(ctx) {
       else if (d.kind === 'spoil') { MCA.spoil(g, R(d.x0 * ts - cx), R(d.row * ts - cy), (d.x1 - d.x0) * ts); }
       else if (d.kind === 'headlight') { MCA.headlight(g, R(d.x * ts - cx), R(d.row * ts - cy), time); }
       else if (d.kind === 'ledge') { const x = R(d.x0 * ts - cx); if (x < -100 || x > vw + 40) continue; MCA.ledge(g, x, (d.x1 - d.x0 + 1) * ts, R(d.row * ts - cy), d.x0); }
-      else if (d.kind === 'buffer') { const x = R(d.x * ts - cx); if (x < -40 || x > vw + 40) continue; MCA.buffer(g, x, R(d.row * ts - cy), !!d.soft, time); }
+      else if (d.kind === 'buffer') { const x = R(d.x * ts - cx); if (x < -40 || x > vw + 40) continue; if (FA.inForge(d.x)) FA.buffer(g, x, R(d.row * ts - cy), time); else MCA.buffer(g, x, R(d.row * ts - cy), !!d.soft, time); }
       else if (d.kind === 'lift') { const x = R(d.x0 * ts - cx); if (x < -60 || x > vw + 60) continue; const mv = ctx.movers ? ctx.movers().find(m => m.vert && Math.abs(m.x - d.x0 * ts) < 4) : null; MCA.liftShaft(g, x, (d.x1 - d.x0 + 1) * ts, R(d.y0 * ts - cy), R(d.y1 * ts - cy), mv ? R(mv.y - cy) : null, time); }
       else if (d.kind === 'lowroof') { const x0 = R(d.x0 * ts - cx), x1 = R((d.x1 + 1) * ts - cx); if (x1 < -20 || x0 > vw + 20 || fmLoop) continue; MCA.lowRoof(g, x0, x1, R((d.row - 2) * ts - cy), time, d.x0); }
       else if (d.kind === 'perch') { const x0 = R(d.x0 * ts - cx), x1 = R((d.x1 + 1) * ts - cx); if (x1 < -20 || x0 > vw + 20) continue; MCA.perchBeam(g, x0, x1, R(d.row * ts - cy)); }

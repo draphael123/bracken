@@ -17,6 +17,7 @@
 // brute (TEST), back at the loader who kicks carts at you (REMIX), past an elite and through the last plug (EXAM), and into THE FORGEMASTER (the mini:
 // a cart into him staggers him OPEN, every blow doubled - B1, the boss is the level's rule personified). He answers with the same carts: he chains one
 // down off the loop and HURLS it along the floor at you (told: B16 windup, its lane drawn red - jump it).
+import * as FA from './redraw/forge_art.js';
 export const FORGE = {
   cartW: 28, cartH: 10,
   leverReach: 30,      /* px: E throws a junction lever this close (a blow on its box from anywhere) */
@@ -85,6 +86,7 @@ export function makeForgeRails(ctx) {
   H.update = dt => {
     if (!H.on()) return;
     const ts = TSz(), P0 = ctx.hero(), now = ctx.time();
+    if (ctx.sfx.forgeAir) ctx.sfx.forgeAir(P0 ? Math.max(0, Math.min(1, 1 - Math.max(FA.FX0 * ts - 100 - P0.x, P0.x - (FA.FX1 + 4) * ts, 0) / 360)) : 0);   /* the forge's air (audio bed) swells as you near it */
     /* a blow on a lever throws it */
     const hb = ctx.attackBox(); if (hb && P0) for (const p of M.points) if (!P0.hitSet.has(p) && ctx.overlap(hb, leverBox(p, ts))) { P0.hitSet.add(p); throwLever(p, 'blow'); }
     /* THE LINE IS NO PERCH: the ore line over the floor will not hold a body (a trace found the bot on it over the smith, out of his reach and he of
@@ -147,34 +149,44 @@ export function makeForgeRails(ctx) {
   H.points = () => (M ? M.points : []);
   H.throwAt = (id) => { const p = M && M.points.find(q => q.id === id); return p ? throwLever(p, 'tool') : false; };
 
-  /* ---------- DRAWING (greybox: the art lane dresses it - src/redraw/minecart_art.js) ---------- */
+  /* ---------- DRAWING (claude/forgemasterart: src/redraw/forge_art.js dresses every read the greybox laid down) ---------- */
+  const smith = () => (ctx.enemies() || []).find(f => f.t === 'forgemaster');
+  /* how hot the furnace burns: dull while he sleeps, brighter in phase two and while he BRACES, a flare on his furnace breath, banked when he is down (THE FORGE COOLS) */
+  const heat = () => { const e = smith(); let k = 0.4; if (e) { if (!e.alive) k = 0.08; else { if ((e.phase || 1) >= 2) k += 0.45; if (e.ward > 0) k += 0.45; if (e.mode === 'breath' || e.mode === 'breathTell') k += 0.5; } }
+    M.hk = M.hk === undefined ? k : M.hk + (k - M.hk) * 0.08; return M.hk; };
+  H.heat = () => (M ? M.hk : 0);
+  H.drawBack = (g, cx, cy, vw, vh, time) => {
+    if (!H.on()) return; const L = Lv(), ts = TSz(), sf = (L.decor || []).find(d => d.kind === 'smelterfloor'); if (!sf) return; const fn = (L.decor || []).find(d => d.kind === 'furnace');
+    if (cx > (sf.x1 + 6) * ts || cx + vw < (sf.x0 - 6) * ts) return;
+    FA.drawBack(g, cx, cy, vw, vh, time, { x0: sf.x0, x1: sf.x1, D: sf.row, furn: fn ? { x: fn.x * ts + 8, bright: heat() } : null }); };
+  /* the forge's carts: iron, a heap of ore; hot when SENT down the floor or kicked or hurled; chained while he hauls one */
+  H.drawCart = (g, m, cx, cy, time) => { if (!m.forge) return false; if (m.gone) return true;
+    const hot = !!(m.sent || m.dragged || m.hurled > 0 || (m.kicked && Math.abs(m.vx) > 60));
+    FA.cart(g, R(m.x) - cx, R(m.y) - cy, hot, !!m.dragged, m.vx, time, ((m.x0 | 0) >> 4) + (m.loop ? m.loop.length : 3)); return true; };
   H.drawWorld = (g, cx, cy, time) => {
-    if (!H.on()) return; const ts = TSz(), vw = ctx.VW();
+    if (!H.on()) return; const ts = TSz(), vw = ctx.VW(), L = Lv(); heat();
     const vis = x => x > cx - 80 && x < cx + vw + 80;
-    /* THE MOUTHS: the loop's two dark arches, west (where the carts come out) and east (where they go) */
-    for (const lp of M.loops) for (const [mx, west] of [[lp.x0 * ts, true], [(lp.x1 + 1) * ts, false]]) { if (!vis(mx)) continue; const y = lp.row * ts;
-      g.fillStyle = '#120c0a'; g.fillRect(R(mx - cx) - (west ? 10 : 0), R(y - cy) - 22, 10, 22); g.fillStyle = '#5a3a24'; g.fillRect(R(mx - cx) - (west ? 12 : -10), R(y - cy) - 24, 2, 24); g.fillRect(R(mx - cx) - (west ? 12 : 0), R(y - cy) - 24, 12, 2);
-      g.fillStyle = '#ff9a5c'; g.globalAlpha = 0.25 + 0.15 * Math.sin(time * 3 + mx); g.fillRect(R(mx - cx) - (west ? 9 : -1), R(y - cy) - 20, 8, 18); g.globalAlpha = 1; }
+    /* THE SLAG GUTTERS (decor): molten, told */
+    for (const d of L.decor || []) { if (d.kind !== 'slaggutter') continue; const x0 = R(d.x0 * ts - cx), x1 = R((d.x1 + 1) * ts - cx); if (x1 < -60 || x0 > vw + 60) continue; FA.gutter(g, x0, x1, R((d.row - 4) * ts - cy), 64, time, d.x0); }
+    /* THE MOUTHS: the loop's two brick furnace arches, west (where the carts come out) and east (where they go) */
+    for (const lp of M.loops) for (const [mx, west] of [[lp.x0 * ts, true], [(lp.x1 + 1) * ts, false]]) { if (!vis(mx)) continue; FA.mouth(g, R(mx - cx), R(lp.row * ts - cy), west, time, lp.x0 + (west ? 0 : 7)); }
     /* THE JUNCTION LEVERS and their points */
-    for (const p of M.points) { const lx = p.x * ts + 8; if (!vis(lx)) continue; const x = R(lx - cx), y = R(p.lrow * ts - cy), open = p.state === 'open', fl = p.flash > 0 && Math.floor(time * 20) % 2;
-      g.fillStyle = '#3a2a22'; g.fillRect(x - 6, y - 4, 12, 4); g.fillStyle = '#6a6a74'; g.fillRect(x - 1, y - 26, 3, 22);
-      g.fillStyle = fl ? '#fff6c8' : open ? '#ffd36b' : '#8a919c'; g.beginPath(); g.arc(x + 1, y - 28, 6, 0, Math.PI * 2); g.fill();
-      g.fillStyle = '#1b1626'; g.beginPath(); if (open) { g.moveTo(x - 2, y - 31); g.lineTo(x + 4, y - 31); g.lineTo(x + 1, y - 24); } else { g.moveTo(x - 2, y - 25); g.lineTo(x + 4, y - 25); g.lineTo(x + 1, y - 32); } g.fill();
-      g.strokeStyle = '#ffd36b'; g.globalAlpha = 0.5; g.lineWidth = 1; g.beginPath(); g.moveTo(x + 1, y - 34); g.lineTo(x + 1, R(p.row * ts - cy) + 4); g.stroke(); g.globalAlpha = 1;   /* the pull-wire up to the points it throws */
+    for (const p of M.points) { const lx = p.x * ts + 8; if (!vis(lx)) continue; const x = R(lx - cx), y = R(p.lrow * ts - cy), open = p.state === 'open';
       const px0 = R(p.x0 * ts - cx), px1 = R((p.x1 + 1) * ts - cx), py = R(p.row * ts - cy);
-      if (open) { const k = 0.5 + 0.5 * Math.sin(time * 12); g.globalAlpha = 0.35 + 0.35 * k; g.fillStyle = '#ffd36b'; g.fillRect(px0, py - 2, px1 - px0, 3);
-        g.strokeStyle = '#ffd36b'; g.setLineDash([3, 3]); g.beginPath(); g.moveTo((px0 + px1) / 2, py + 2); g.lineTo((px0 + px1) / 2, y - 2); g.stroke(); g.setLineDash([]);
+      FA.pullChain(g, x + (open ? 5 : -5) + 1, py + 7, y - 36, open, time);   /* the pull-chain up to the points */
+      FA.points(g, px0, px1, py, open, time);
+      FA.junction(g, x, y, open, p.flash, time);
+      if (open) { const k = 0.5 + 0.5 * Math.sin(time * 12);
+        g.strokeStyle = '#ffd36b'; g.globalAlpha = 0.5; g.setLineDash([3, 3]); g.beginPath(); g.moveTo((px0 + px1) / 2, py + 12); g.lineTo((px0 + px1) / 2, y - 40); g.stroke(); g.setLineDash([]);
         /* and the way it will roll, along the floor */ g.globalAlpha = 0.3 + 0.3 * k; g.fillStyle = '#ffd36b'; for (let i = 0; i < 4; i++) { const ax = (px0 + px1) / 2 + 14 + i * 14 + (time * 30) % 14; g.beginPath(); g.moveTo(ax, y - 6); g.lineTo(ax + 5, y - 3); g.lineTo(ax, y); g.fill(); } g.globalAlpha = 1; }
-      else { g.fillStyle = '#8a6a3a'; g.fillRect(px0, py + 1, px1 - px0, 2); }
       /* the next cart's ETA, a pip that fills as it comes (what a player reads off the line) */
-      const eta = H.etaAt(p.id); if (eta < 4) { g.fillStyle = '#1b1626'; g.fillRect(x - 8, y - 42, 18, 3); g.fillStyle = eta < 1 ? '#8fd160' : '#c9a24a'; g.fillRect(x - 8, y - 42, R(18 * Math.max(0, 1 - eta / 4)), 3); } }
-    /* THE SLAG PLUGS: a heap of black slag with a hot core, shut across the floor */
-    for (const q of M.plugs) { if (q.broken) continue; const x0 = q.x0 * ts; if (!vis(x0)) continue; const x = R(x0 - cx), y = R(q.y0 * ts - cy), w = (q.x1 - q.x0 + 1) * ts, h = (q.y1 - q.y0 + 1) * ts;
-      g.fillStyle = '#241812'; g.fillRect(x, y, w, h); g.fillStyle = '#3a2a22'; for (let i = 0; i < h; i += 7) g.fillRect(x + ((i * 5) % 6), y + i, w - 6, 3);
-      g.fillStyle = '#ff6b2c'; g.globalAlpha = 0.45 + 0.25 * Math.sin(time * 2 + x0); for (let i = 6; i < h - 4; i += 11) g.fillRect(x + 4 + ((i * 7) % (w - 10)), y + i, 4, 2); g.globalAlpha = 1; }
-    /* A LOADER's lane while he winds up */
+      const eta = H.etaAt(p.id); if (eta < 4) FA.etaPip(g, x, y - 44, eta); }
+    /* THE SLAG PLUGS: a black heap with hot cracks, shut across the floor */
+    for (const q of M.plugs) { if (q.broken) continue; const x0 = q.x0 * ts; if (!vis(x0)) continue; FA.plug(g, R(x0 - cx), R(q.y0 * ts - cy), (q.x1 - q.x0 + 1) * ts, (q.y1 - q.y0 + 1) * ts, time, q.x0); }
+    /* A LOADER's lane while he winds up - and the boot he kicks with */
     for (const q of M.loaders) { if (!(q.tell > 0) || !q.e || !q.e.alive) continue; const k = 0.5 + 0.5 * Math.sin(time * 18), y = R(q.row * ts - cy), xa = R(q.e.x - cx), xb = R(q.zone[0] * ts - cx);
-      g.globalAlpha = 0.18 + 0.22 * k; g.fillStyle = '#ff6b6b'; g.fillRect(Math.min(xa, xb), y - 12, Math.abs(xa - xb), 12); g.globalAlpha = 1; }
+      g.globalAlpha = 0.18 + 0.22 * k; g.fillStyle = '#ff6b6b'; g.fillRect(Math.min(xa, xb), y - 12, Math.abs(xa - xb), 12); g.globalAlpha = 1;
+      FA.loaderKick(g, xa, y, -1, 1 - q.tell / FORGE.loaderTell, time); }
   };
   return H;
 }

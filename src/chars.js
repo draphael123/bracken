@@ -3853,7 +3853,15 @@ export function bakeForgemasterBig() {
   const tongsWind = f(hot(hammerUp(body()))), tongsFlat = f(hammerFlat(body('ey', 'GGG', 1)));
   const whirlTell = f(coil(body('yy', 'GGG'))), whirlLow = f(chainLow(body('ey', 'ggg', 1))), whirlHigh = f(chainHigh(body('ey', 'ggg', -1)));
   const ladleTell = f(crucibleUp(body('rr', 'GGG'))), ladle = f(crucibleOut(body('ey', 'GGG', 1)));
-  return pack([idle, raise, slam, drag, hurl, tongsWind, breath, walkA, walkB, tongsFlat, whirlTell, whirlLow, whirlHigh, ladleTell, ladle, stun], 25, 33, 40, 32);
+  /* (claude/forgemasterart) THE RAILS KIT, each blow its own windup and release (B16): the CHAIN-GRAB (his arm up to the loop line, a fist on a hanging hook), the HAUL (his boots set, the chain taut down to the cart),
+     the HURL's wind-up (the arm wrenched back over his head, the chain whipping) and its THROW (the arm snapped out, the chain slack), and the BRACE (a plate of iron up in front of his furnace belly). Stun stays LAST. */
+  const grab = R => { put(R, 30, 9, 'iii'); put(R, 31, 7, 'Iii'); put(R, 32, 5, 'Iii'); put(R, 33, 3, 'Iii'); put(R, 33, 1, 'ccc'); put(R, 33, 2, 'ccc'); put(R, 34, 0, 'y'); put(R, 36, 0, 'y'); put(R, 36, 1, 'y'); return R; };
+  const haul = R => { put(R, 30, 11, 'iii'); put(R, 32, 12, 'Iii'); put(R, 34, 13, 'IIi'); put(R, 36, 14, 'cc'); put(R, 38, 15, 'y'); put(R, 40, 17, 'y'); put(R, 42, 19, 'y'); put(R, 44, 21, 'y'); put(R, 45, 23, 'y'); put(R, 45, 25, 'KK'); return R; };
+  const wind = R => { put(R, 30, 9, 'iii'); put(R, 31, 8, 'Iii'); put(R, 32, 7, 'Iii'); put(R, 33, 6, 'cc'); put(R, 35, 5, 'y'); put(R, 37, 4, 'y'); put(R, 39, 4, 'y'); put(R, 41, 5, 'y'); put(R, 42, 7, 'y'); put(R, 42, 9, 'y'); put(R, 41, 11, 'y'); put(R, 40, 12, 'KK'); return R; };
+  const throwArm = R => { put(R, 30, 11, 'iii'); put(R, 33, 11, 'iiiiiiiiii'); put(R, 33, 12, 'IIIIIIIIII'); put(R, 43, 10, 'cc'); put(R, 43, 11, 'cc'); put(R, 44, 13, 'y'); put(R, 45, 15, 'y'); put(R, 45, 17, 'y'); put(R, 44, 19, 'y'); put(R, 42, 21, 'KK'); put(R, 44, 7, 's'); put(R, 46, 8, 's'); put(R, 45, 6, 's'); return R; };
+  const shield = R => { put(R, 28, 12, 'iii'); put(R, 30, 6, 'iiiiiii'); for (let y = 7; y <= 20; y++) put(R, 30, y, y % 4 === 2 ? 'IiyiiyI' : 'IiiiiiI'); put(R, 30, 21, 'IIIIIII'); put(R, 31, 22, 'KKKKK'); return R; };
+  const chainGrab = f(grab(body('ey', 'GGG'))), haulF = f(haul(body('ey', 'GGG', 1))), hurlWind = f(wind(body('rr', 'GGG'))), hurlThrow = f(throwArm(body('ey', 'ggg', 1))), brace = f(shield(body('ey', 'GGG')));
+  return pack([idle, raise, slam, drag, hurl, tongsWind, breath, walkA, walkB, tongsFlat, whirlTell, whirlLow, whirlHigh, ladleTell, ladle, chainGrab, haulF, hurlWind, hurlThrow, brace, stun], 25, 33, 40, 32);
 }
 // The Forgemaster — a goblin engineer strapped into a steam rig: piston arm, boiler pack, goggles. 32×26. Frames: idle, lunge, spray, kick, scalded.
 export function bakeForgemaster() {
