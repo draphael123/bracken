@@ -33,7 +33,7 @@ import { wormOpen } from './dune-worm.js';
 import { mageOpen, mageSoft } from './undead-mage.js';
 import { pupOpen } from './puppeteer.js';
 import { wqOpen } from './wicker-queen.js';
-import { leOpen } from './lantern-eater.js'; import { chOpen } from './admirals-champion.js'; import { adOpen } from './admiral.js';   /* THE ADMIRAL (claude/flotilla3) */   /* THE ADMIRAL'S CHAMPION (claude/flotilla2) */   /* THE LANTERN-EATER (claude/lanterneater) */
+import { leOpen } from './lantern-eater.js'; import { chOpen } from './admirals-champion.js'; import { adOpen } from './flotilla-boss.js';   /* THE ADMIRAL (claude/flotilla3) */   /* THE ADMIRAL'S CHAMPION (claude/flotilla2) */   /* THE LANTERN-EATER (claude/lanterneater) */
 import { qOpen } from './cistern-queen.js';
 import { matOpen } from './raptor-matriarch.js';
 import { colOpen } from './glass-colossus.js';

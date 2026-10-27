@@ -7,7 +7,7 @@
 // THE SHARED READ (B10): OPEN = a gold ring and a timer bar (STAGGERED / RELOADING / SOAKED / THE AXE IN THE DECK / KNOCKED FLAT); WARDED = a grey ring and the word;
 // a blow on his iron CLANKS, throws sparks and says IRON PLATE through src/boss-read.js - and still lands (never silent, never nothing).
 // main.js calls: spawnBoss, owns, on, update, take, onBall, strike, drawBoss, drawOver, drawDead, barName, end, read, show, clear.
-import * as ADM from './admiral.js';
+import * as ADM from './flotilla-boss.js';
 import { canvas } from './px.js';
 import * as ART from './redraw/admiral_art.js';
 const { AD } = ADM;

@@ -8,7 +8,7 @@ import { STUCK_HANDS } from './stuck-spots.js';
 import { TELL_LINES } from './minecart.js';
 import { FOREMAN_LINES } from './foreman.js';
 import { BK_LINES } from './unburied-foes.js';
-import { HK_SAY } from './hourglass-king.js'; import { AD_SAY } from './admiral.js'; import { F3_SAY } from './flotilla3.js';   /* (claude/flotilla3) THE ADMIRAL's lines, said as variables */
+import { HK_SAY } from './hourglass-king.js'; import { AD_SAY } from './flotilla-boss.js'; import { F3_SAY } from './flotilla3.js';   /* (claude/flotilla3) THE ADMIRAL's lines, said as variables */
 import { KG_SAY } from './kitchen-hands.js'; import { GB_SAY } from './grubbag.js';   /* (claude/kitchengate) THE KITCHEN GATE's and LORD GRUBBAG's lines, said as variables */
 import { RK_SAY } from './rookery-hands.js'; import { SS_SAY } from './shriek-sisters.js';   /* (claude/rookery) THE ROOKERY's lines, said as variables */
 import { SAY as RM_SAY } from './raptor-matriarch.js';   /* (claude/redgorgerework) THE RAPTOR MATRIARCH's sluice-stun lines, said as variables */   /* (claude/buriedcity3) THE HOURGLASS KING's new moves' words and the great glass's line, said as variables */
