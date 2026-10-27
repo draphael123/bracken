@@ -10,7 +10,7 @@ const SPOTS = [['start', 8, 63, 'the gatehouse passage: the start, the kitchen p
   ['ward-bell', 64, 63, 'c) the ward bell, the grate arch, the barracks door'], ['barracks', 84, 63, 'the barracks: the watch, the ward key, the bunk silver'],
   ['crag-walk', 143, 47, 'the crag walk: its sentry and bell; the tower gate past the breach'], ['vestibule', 242, 63, 'b) the vestibule: two gate towers, the champion, the bell'],
   ['hall-floor', 372, 63, 'd) the tall hall: the floor and its chandeliers'], ['hall-gallery', 404, 45, 'the east gallery, the ladder, the hung landings'],
-  ['hall-landings', 380, 41, 'the hung landings to the west balcony'], ['stair-head', 358, 30, 'the stair head: the hall bell and its grate']];
+  ['hall-landings', 380, 41, 'the hung landings to the west balcony'], ['stair-head', 358, 31, 'the stair head: the hall bell and its grate']];
 const pg = await openPage();
 try {
   const d = await pg.evalp(`(async () => { const { LEVELS } = await import('/src/level.js'); const shots = {};

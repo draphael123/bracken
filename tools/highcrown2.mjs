@@ -44,7 +44,7 @@ try {
       r.eliteMarked=BK.enemies().some(e=>e.elite&&e.alive&&e.garrison==='vestibule'); res.vest=r; }
     /* d) the hall bell */
     load(); { const sec=BK.L.alarms.find(a=>a.id==='hall'); for(const e of BK.enemies())if(e.t==='sentry'&&e.section==='hall')e.alive=false; const r={};
-      strike(H.HALL_BELL-1,30,1); r.rung=!!sec.on; r.grate=gate(H.HALL_GRATE,26,30,PORT); r.watchWest=BK.enemies().filter(e=>e.alive&&e.garrison==='hall').every(e=>e.x<H.HALL_GRATE*16); res.hall=r; }
+      strike(H.HALL_BELL-1,31,1); r.rung=!!sec.on; r.grate=gate(H.HALL_GRATE,26,31,PORT); r.watchWest=BK.enemies().filter(e=>e.alive&&e.garrison==='hall').every(e=>e.x<H.HALL_GRATE*16); res.hall=r; }
     /* THE GOBLIN QUEEN: her bell, and B15 */
     load(); { const A=BK.L.arena; BK.god=true; BK.tp(Math.round(A.trigger/16)+1,Math.round(A.floor/16)-1); for(let k=0;k<300;k++){hold();BK.sim(1);}
       const q=BK.boss, b=BK.props().find(p=>p.t==='winch'&&p.bell&&p.bossGate), gx=b.gate*16+8, r={};

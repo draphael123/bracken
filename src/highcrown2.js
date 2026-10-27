@@ -146,18 +146,18 @@ export function highcrownTwo(R, { T, TS }) {
   ent('pike', 356, 37, { face: 1 });
   coins([375, 39], [381, 41], [387, 43]);
   block(350, 352, 36, 37); block(K0, 349, 34, 37);                           // the stair head: two steps up the west wall
-  plat(K0, 31, 83);                                                          // THE HIGH GALLERY (347-428) under the chapel floor, wall to wall
-  for (const x of [380, 396, 416]) sup(x, 31, 'chain');
-  rungs(428, 20, 30); set(428, 20, T.NET); for (let x = 423; x <= 427; x++) set(x, 20, T.ONEWAY);   // the ladder up through the shaft to the chapel
+  plat(K0, 32, 83);                                                          // THE HIGH GALLERY (347-428) under the chapel floor, wall to wall
+  for (const x of [380, 396, 416]) sup(x, 32, 'chain');
+  rungs(428, 20, 31); set(428, 20, T.NET); for (let x = 423; x <= 427; x++) set(x, 20, T.ONEWAY);   // the ladder up through the shaft to the chapel
   /* d) THE HALL BELL, at the stair head. Rung by its sentry while you are still on the stair, the grate at 356 drops in front of you and the
      hall's watch turns out on your side of it; ring it yourself once you are past, and it drops BEHIND you - they turn out on the stair side,
      shut out. Up for twenty seconds, or until they are down. */
-  ent('sentry', 370, 30, { section: 'hall', range: 6, face: -1 });
-  ent('bell', HC2.HALL_BELL, 30, { section: 'hall', lure: true });
-  ent('sign', 358, 30, { text: 'THE HALL BELL DROPS THE GRATE ON THE STAIR HEAD. BE PAST IT WHEN IT RINGS.' });
-  R.alarms = R.alarms.concat([{ id: 'hall', gates: [[HC2.HALL_GRATE, 26, 30]], garrison: [{ t: 'soldier', x: 350, y: 30 }, { t: 'javelin', x: 352, y: 30 }] }]);
-  ent('heavy', 398, 30, { face: -1 });
-  ent('deco', 384, 30, { kind: 'banner', v: 0 }); ent('torch', 410, 30); coins([380, 30], [390, 30], [420, 30]);
+  ent('sentry', 370, 31, { section: 'hall', range: 6, face: -1 });
+  ent('bell', HC2.HALL_BELL, 31, { section: 'hall', lure: true });
+  ent('sign', 358, 31, { text: 'THE HALL BELL DROPS THE GRATE ON THE STAIR HEAD. BE PAST IT WHEN IT RINGS.' });
+  R.alarms = R.alarms.concat([{ id: 'hall', gates: [[HC2.HALL_GRATE, 26, 31]], garrison: [{ t: 'soldier', x: 350, y: 31 }, { t: 'javelin', x: 352, y: 31 }] }]);
+  ent('heavy', 398, 31, { face: -1 });
+  ent('deco', 384, 31, { kind: 'banner', v: 0 }); ent('torch', 410, 31); coins([380, 31], [390, 31], [420, 31]);
   R.masonry = R.masonry.concat([[409, 429, 54, 63], [K0, 371, 38, 39], [K0, 352, 34, 37]]);
 
   /* NOBODY ON A ROOF NOBODY CAN CLIMB (the garrison sprinkler takes the highest floor in a column): the gate towers, the arch, the barracks roof */
