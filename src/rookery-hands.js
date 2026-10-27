@@ -20,7 +20,7 @@
 // Every capital line it says goes through ctx.number with a line listed here (RK_SAY) and in src/hint-lines.js.
 import { canvas, flipX, whiten } from './px.js';
 import * as RKW from './redraw/rookery_world.js';
-import { drawHang } from './redraw/rookery_hang.js';
+import { drawHang, drawLegs } from './redraw/rookery_hang.js';
 import * as RKA from './redraw/rookery_anchor_art.js';
 import { GALE, GALE_SAY, galeStep, drawGust } from './gale-harpy.js';   /* (claude/rookery2) THE GALE HARPY: a shared foe module (Windcaller 4 and the Roc reuse it) */   /* (claude/rookeryart) the cracked rocks, nests, roosts, the area plate: drawn there */
 /* THE SHRIEKER's skin (greybox): the crag harpy's frames, darkened to a blood-red (her crest is drawn over her: harpyOver) - main.js SPR.shrieker */
@@ -290,11 +290,14 @@ export function makeRookeryHands(ctx) {
     /* (claude/rookery2) THE RIDES: her path drawn FIRST (a dotted feather trail from the mount to where she shakes you off), the mount's talon marks, GRAB over her while
        she lifts, her talons on the rider. GREYBOX: the sonnet art lane draws the trail, the mount, the lift and the carry poses */
     for (const c of S.rides.values()) { const d = c.d, e = c.e, mx = mountX(d), my = mountY(d); if (mx - cx < -200 || mx - cx > VW + 200) continue;
-      if (!c.rider) { const pts = ridePts(d, mx, my - RIDE.hang - 10, TS); g.fillStyle = 'rgba(255,233,160,0.45)';
-        for (let k = 0.04; k < 1; k += 0.05) { const [x, y] = alongPts(pts, k), ph = Math.floor(time * 4 + k * 20) % 4; if (ph) g.fillRect(R(x - cx), R(y + RIDE.hang - cy), 2, ph === 2 ? 2 : 1); }
-        const [lx, ly] = pts[pts.length - 1]; g.strokeStyle = 'rgba(255,233,160,0.6)'; g.strokeRect(R(lx - cx) - 6.5, R(ly + RIDE.hang + 6 - cy) - 2.5, 13, 3); }
-      g.fillStyle = '#e6dcc0'; for (const dx of [-9, -3, 3, 9]) { g.fillRect(R(mx + dx - cx), R(my - 2 - cy), 1, 2); g.fillRect(R(mx + dx - 1 - cx), R(my - 3 - cy), 1, 1); }   /* her talon scratches on the mount */
-      if (e && e.alive && e.mode === 'lift') { const x = R(e.x - cx), y = R(e.y - cy), a = 0.55 + 0.4 * Math.sin(time * 12); g.globalAlpha = a; g.strokeStyle = '#ffd36b'; g.lineWidth = 2; g.strokeRect(x - 13, y - 9, 26, 22); g.lineWidth = 1; g.globalAlpha = 1;
+      if (!c.rider) { const pts = ridePts(d, mx, my - RIDE.hang - 10, TS);   /* (claude/rookery2art) HER PATH: a trail of drifting FEATHERS (quill and two barbs, twinkling), ending at a landing ring with a chevron */
+        for (let k = 0.04; k < 1; k += 0.045) { const [x, y] = alongPts(pts, k), [x2, y2] = alongPts(pts, Math.min(1, k + 0.012)), ph = Math.floor(time * 4 + k * 20) % 4; if (!ph) continue; const dl = Math.hypot(x2 - x, y2 - y) || 1, ux = (x2 - x) / dl, uy = (y2 - y) / dl, bx = R(x - cx), by = R(y + RIDE.hang - cy);
+          for (let i = 0; i < 4; i++) { g.fillStyle = i < 3 ? '#f4f0e8' : '#c8c4d4'; g.fillRect(R(bx + ux * i), R(by + uy * i), 1, 1); } g.fillStyle = ph === 2 ? '#c8c4d4' : '#e6e4ec'; g.fillRect(R(bx + ux * 1 - uy * 1), R(by + uy * 1 + ux * 1), 1, 1); g.fillRect(R(bx + ux * 2 + uy * 1), R(by + uy * 2 - ux * 1), 1, 1); }
+        const [lx, ly] = pts[pts.length - 1], rx = R(lx - cx), ry = R(ly + RIDE.hang + 6 - cy), pu = 0.5 + 0.35 * Math.sin(time * 5); g.strokeStyle = 'rgba(255,233,160,' + (0.45 + 0.3 * pu).toFixed(2) + ')'; g.strokeRect(rx - 6.5, ry - 2.5, 13, 3);
+        g.fillStyle = 'rgba(255,233,160,' + (0.5 + 0.3 * pu).toFixed(2) + ')'; g.fillRect(rx - 2, ry - 8, 5, 1); g.fillRect(rx - 1, ry - 7, 3, 1); g.fillRect(rx, ry - 6, 1, 1); }
+      { const gouge = (x, y) => { g.fillStyle = '#32283a'; g.fillRect(x, y, 1, 3); g.fillRect(x + 2, y, 1, 3); g.fillRect(x + 4, y, 1, 3); g.fillStyle = '#ece8e0'; g.fillRect(x, y - 1, 1, 1); g.fillRect(x + 2, y - 1, 1, 1); g.fillRect(x + 4, y - 1, 1, 1); };
+        gouge(R(mx - 11 - cx), R(my - 3 - cy)); gouge(R(mx + 6 - cx), R(my - 3 - cy)); g.fillStyle = '#e6e4ec'; g.fillRect(R(mx - 2 - cx), R(my - 2 - cy), 3, 1); g.fillRect(R(mx + 2 - cx), R(my - 1 - cy), 2, 1); }   /* her mount: claw gouges in the stone, a feather and a splash of guano */
+      if (e && e.alive && e.mode === 'lift') { const x = R(e.x - cx), y = R(e.y - cy), a = 0.55 + 0.4 * Math.sin(time * 12); g.globalAlpha = a; g.fillStyle = '#ffd36b'; for (const [sx2, sy2] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) { const bx = x + sx2 * 14, by = y + 2 + sy2 * 14; g.fillRect(sx2 > 0 ? bx - 4 : bx, sy2 > 0 ? by - 1 : by, 5, 2); g.fillRect(sx2 > 0 ? bx - 1 : bx, sy2 > 0 ? by - 4 : by, 2, 5); } g.globalAlpha = 1;   /* (claude/rookery2art) four gold corner brackets round her, not a box */
         if (ctx.text) ctx.text(RK_SAY.grab, x, y - 22, Math.floor(time * 8) % 2 ? '#ffd36b' : '#fff6e0', 'center', 6); }
       if (e && e.alive && e.mode === 'ride' && c.rider) drawHang(g, R(e.x - cx), R(e.y - cy) + 2, R(c.rider.y - cy), time, { lean: (e.rdOff ? Math.max(-6, Math.min(6, e.rdOff[0] * 0.25)) : 0) }); }
     /* THE AREA PLATE */
@@ -302,7 +305,8 @@ export function makeRookeryHands(ctx) {
   };
   /* a harpy's overlay: the shrieker's crest and her scream rings */
   H.harpyOver = (g, e, cx, cy, time) => { if (!S || !e.alive) return; const x = R(e.x - cx), y = R(e.y - cy);
-    if (e.t === 'galeharpy') { drawGust(g, e, cx, cy, time); return; }   /* (claude/rookery2) her cone: told dashed in the tell, streaks in the beat */
+    if (e.t === 'galeharpy') { drawGust(g, e, cx, cy, time); return; }
+    if (e.rkRide && e.mode === 'lift') drawLegs(g, x, y + 3, time);   /* (claude/rookery2art) her legs hang open, claws spread: GRAB them */   /* (claude/rookery2) her cone: told dashed in the tell, streaks in the beat */
     if (e.rkShriek) { rect(g, x - 3, y - 12, 2, 5, '#c0302a'); rect(g, x, y - 13, 2, 6, '#e04a3a'); rect(g, x + 3, y - 12, 2, 5, '#c0302a');
       if (e.rkSm === 'tell') { const k = (time * 3) % 1; g.strokeStyle = 'rgba(255,90,74,' + (1 - k).toFixed(2) + ')'; g.beginPath(); g.arc(x + e.face * 6, y - 4, 6 + k * 22, 0, Math.PI * 2); g.stroke(); } } };
   /* THE SKY AND THE LANDMARKS (parallax): the cold pearl sky and its sun, THE ROC'S PEAK ahead (growing as you climb), THE MONASTERY far below and behind (sinking) - drawn by src/redraw/rookery_backdrop.js (claude/rookeryart; the greybox's flat silhouettes are gone) */

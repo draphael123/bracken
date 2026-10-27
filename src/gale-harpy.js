@@ -53,12 +53,19 @@ export function galeStep(e, dt, w) {
   }
 }
 export const galeFrame = e => e.mode === 'galeTell' ? 4 : e.mode === 'gust' ? 2 : e.mode === 'downed' ? 3 : Math.floor((e.anim || 0) * 6) % 2;
-/* THE TOLD CONE (placeholder art): faint and dashed while she tells (where it will blow), white streaks racing out while she beats */
+/* THE TOLD CONE (claude/rookery2art): in the TELL the cone is two dashed gold edges with a few pale ribbons GATHERING along it (the wind she is about to throw), each brighter as the tell
+   runs out; in the BEAT nine S-curved wind ribbons race out of her wings, tapering, with sparkle heads, and grit and feathers torn along the cone */
 export function drawGust(g, e, cx, cy, time) {
   if (e.mode !== 'galeTell' && e.mode !== 'gust') return; const c = coneOf(e), x0 = Math.round(c.x0 - cx), y0 = Math.round(c.y0 - cy), d = c.dir;
-  if (e.mode === 'galeTell') { const k = 1 - Math.max(0, e.galeT) / GALE.tell; g.globalAlpha = 0.18 + 0.3 * k; g.strokeStyle = '#ffe9a0'; g.setLineDash && g.setLineDash([3, 3]);
-    g.beginPath(); g.moveTo(x0, y0 - 8); g.lineTo(x0 + d * c.len, y0 - c.half); g.moveTo(x0, y0 + 8); g.lineTo(x0 + d * c.len, y0 + c.half); g.stroke(); g.setLineDash && g.setLineDash([]); g.globalAlpha = 1; return; }
-  g.strokeStyle = '#f4f8ff'; for (let i = 0; i < 7; i++) { const k = ((time * 3 + i / 7) % 1), off = ((i * 37) % 13 - 6) / 6, len = 12 + (i % 3) * 6, xx = x0 + d * c.len * k, w = 8 + (c.half - 8) * k;
-    g.globalAlpha = 0.75 * (1 - k); g.beginPath(); g.moveTo(Math.round(xx), Math.round(y0 + off * w)); g.lineTo(Math.round(xx - d * len), Math.round(y0 + off * w)); g.stroke(); }
+  const ribbon = (off, ph, k, a, col, head) => { const n = 14; g.fillStyle = col;
+    for (let i = 0; i < n; i++) { const t = i / n, kk = (k - t * 0.35 + 1) % 1, xx = x0 + d * c.len * Math.min(1, kk + 0.02), wd = 8 + (c.half - 8) * kk, yy = y0 + off * wd + Math.sin(kk * 9 + ph + time * 6) * 3 * kk; g.globalAlpha = a * (1 - t); g.fillRect(Math.round(xx), Math.round(yy), 2, 1); }
+    if (head) { const xx = x0 + d * c.len * k, wd = 8 + (c.half - 8) * k, yy = y0 + off * wd + Math.sin(k * 9 + ph + time * 6) * 3 * k; g.globalAlpha = a; g.fillStyle = '#ffffff'; g.fillRect(Math.round(xx), Math.round(yy) - 1, 2, 3); } };
+  if (e.mode === 'galeTell') { const k = 1 - Math.max(0, e.galeT) / GALE.tell; g.globalAlpha = 0.2 + 0.4 * k; g.strokeStyle = '#ffe9a0'; g.setLineDash && g.setLineDash([3, 3]);
+    g.beginPath(); g.moveTo(x0, y0 - 8); g.lineTo(x0 + d * c.len, y0 - c.half); g.moveTo(x0, y0 + 8); g.lineTo(x0 + d * c.len, y0 + c.half); g.stroke(); g.setLineDash && g.setLineDash([]);
+    for (let i = 0; i < 4; i++) ribbon((i - 1.5) / 1.6, i * 1.7, ((time * 1.2 + i * 0.25) % 1) * (0.35 + 0.65 * k), 0.25 + 0.4 * k, '#e8f0ff', false);
+    g.globalAlpha = 1; return; }
+  for (let i = 0; i < 9; i++) ribbon((i - 4) / 4.6, i * 0.9, (time * 2.6 + i / 9) % 1, 0.85, i % 3 === 0 ? '#ffffff' : '#d4e4f4', true);
+  for (let i = 0; i < 12; i++) { const k = (time * 2 + i * 0.083) % 1, xx = x0 + d * c.len * k, wd = 8 + (c.half - 8) * k, yy = y0 + (((i * 37) % 13) - 6) / 6.5 * wd + Math.sin(time * 9 + i) * 2;   /* grit and torn feathers */
+    g.globalAlpha = 0.9 * (1 - k * 0.6); if (i % 4 === 0) { g.fillStyle = '#e6e4ec'; g.fillRect(Math.round(xx), Math.round(yy), 3, 1); g.fillStyle = '#c0bece'; g.fillRect(Math.round(xx) + 1, Math.round(yy) + 1, 2, 1); } else { g.fillStyle = i % 2 ? '#9a96a4' : '#c8c4d0'; g.fillRect(Math.round(xx), Math.round(yy), 1, 1); } }
   g.globalAlpha = 1;
 }

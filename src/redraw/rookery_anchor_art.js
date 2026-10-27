@@ -71,9 +71,10 @@ export function drawAnchor(g, q, cx, cy, TS, time, z) {
   const a = q.a; if (!a || a.kind === 'stand') return;
   const x = Math.round(q.x * TS + 8 - cx), y = Math.round((q.y + 1) * TS - cy), seed = (q.x * 31 + q.y * 17) & 255;
   if (a.kind === 'spire') {
-    const fy = Math.round(a.foot * TS - cy), top = y + 7, h = Math.max(12, fy - top);
+    const arm = q.what === 'arm', fy = Math.round(a.foot * TS - cy), top = arm ? Math.round(q.y * TS - cy) + 6 : y + 7, h = Math.max(12, fy - top);   /* (an ARM's spire rises right to the arm's root: the arm grows OUT of it, it does not float beside it) */
     const sp = bakeSpire(h, z, seed); g.drawImage(sp, x - 20, top);
-    lashing(g, x, top + 1, 8, seed);
+    lashing(g, x, top + (arm ? 5 : 1), 8, seed);
+    if (arm) { const S = PAL[z].s; R(g, x - 10, top - 1, 20, 4, S[4]); R(g, x - 10, top - 1, 20, 1, S[6]); R(g, x - 10, top + 2, 20, 1, S[1]); R(g, x - 7, top - 2, 9, 1, GUANO[3]); px(g, x + 6, top + 3, GUANO[1]); }   /* the capital the arm springs from */
   } else if (a.kind === 'bracket') {
     const side = a.side, wx = Math.round((side > 0 ? a.wall * TS : (a.wall + 1) * TS) - cx), span = Math.max(8, Math.abs(x - wx) + 12), cb = bakeCorbel(span, z, seed);
     g.save(); g.translate(wx, y + 6); if (side > 0) g.scale(-1, 1); g.drawImage(cb, 0, 0); g.restore();

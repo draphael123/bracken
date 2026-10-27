@@ -21,3 +21,10 @@ export function drawHang(g, x, ty, hy, time, o = {}) {
   /* a few feathers shed in the wind */
   for (let k = 0; k < 3; k++) { const t = (time * 0.9 + k * 0.33) % 1, fx = Math.round(x + (k - 1) * 9 + Math.sin(time * 3 + k * 2) * 4), fy = Math.round(ty + t * 36); R(g, fx, fy, 3, 1, FEATH); R(g, fx + 1, fy - 1, 1, 1, '#c0bece'); }
 }
+/* THE LIFT: the ride harpy climbing off the rock, her legs hanging open below her, claws spread and reaching - the sign that she can be GRABBED. (claude/rookery2art) */
+export function drawLegs(g, x, y, time) {
+  const sw = Math.round(Math.sin(time * 9) * 1);
+  for (const s of [-1, 1]) { const lx = x + s * 3, ex = lx + s * 1 + sw;
+    for (let i = 0; i < 9; i++) R(g, lx + Math.round((ex - lx) * i / 9), y + i, 2, 1, i % 3 === 2 ? LEGD : LEG);
+    R(g, ex - 1, y + 9, 4, 1, LEG); R(g, ex - 2 * s - (s > 0 ? 0 : 1), y + 10, 1, 3, CLAW); R(g, ex + 1, y + 10, 1, 3, CLAW); R(g, ex + 3 * s, y + 9, 1, 2, CLAW); R(g, ex, y + 10, 1, 3, CLAW); }
+}

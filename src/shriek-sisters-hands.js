@@ -213,13 +213,28 @@ export function makeShriekSistersHands(ctx) {
     if (!S.held) P.ssHeld = null; return !!S.held; };
   /* (claude/rookery2) THREE BARS (brief B1): one per sister, side by side under the plate, each in her colour with her pip and her name; a fallen sister's bar is crossed out;
      the survivor's bar glows in phase 2. main.js draws the plate and calls this instead of the one bar */
-  H.drawBars = (g, VW, VH, y, h, time) => { if (!S) return false; const w = 42, gap = 5, x0 = Math.round(VW / 2 - (w * 3 + gap * 2) / 2);
-    ROLES.forEach((r, i) => { const s = S.sis[r], bx = x0 + i * (w + gap), k = s.alive ? Math.max(0, s.hp) / s.maxHp : 0, open = SSM.sisOpen(s);
-      g.fillStyle = '#14101e'; g.fillRect(bx - 1, y - 1, w + 2, h + 2); g.fillStyle = '#2a2236'; g.fillRect(bx, y, w, h);
-      g.fillStyle = open ? (Math.floor(time * 8) % 2 ? '#ffd36b' : '#fff6c8') : S.p2 === r ? '#ff8a6b' : COL[r].crest; g.fillRect(bx, y, Math.round(w * k), h);
-      g.fillStyle = COL[r].body; g.fillRect(bx - 4, y, 3, h);   /* her pip */
-      if (!s.alive) { g.fillStyle = '#8a8098'; for (let q = 0; q < w; q += 2) g.fillRect(bx + q, y + Math.round((q / w) * (h - 1)), 1, 1); }
-      ctx.text(r === 'diver' ? 'DIVER' : r === 'shrieker' ? 'SHRIEKER' : 'SNATCHER', bx + w / 2, y - 7, s.alive ? COL[r].light : '#5a5468', 'center', 5); });   /* (her name over her bar: main.js lifts the plate 7 px for it) */
+  /* (claude/rookery2art) THE THREE-BAR STYLE: each sister a carved bone-and-stone plate - her BIRD-HEAD ICON in her colours (the diver's pale crest, the shrieker's red fan, the snatcher's scarred
+     brow) in a notched socket, then her bar: a bone frame, a two-tone fill with quarter ticks, her colour at its head; OPEN = a gold blink and a bright socket; the survivor of phase 2 glows ember;
+     a fallen sister's plate is CRACKED - the icon greyed with a black fracture, the bar empty with a crack through it and a feather laid on it */
+  const ICON = { diver: { a: '#6a7890', b: '#dce6f4', c: '#c8d4e8' }, shrieker: { a: '#8a4a5a', b: '#e04a3a', c: '#c0302a' }, snatcher: { a: '#8a7048', b: '#d8b070', c: '#8a2a2a' } };
+  const bird = (g, x, y, r, dead, lit) => { const I = ICON[r], sk = dead ? '#6a6478' : '#e8e0d4', ac = dead ? '#4a4658' : I.a, hi = dead ? '#8a8498' : I.b;
+    const R2 = (dx, dy, w, h, c) => { g.fillStyle = c; g.fillRect(x + dx, y + dy, w, h); };
+    R2(0, 0, 9, 9, lit ? '#6a5a3a' : '#24202e'); R2(1, 1, 7, 7, lit ? '#3a3020' : '#1a1624');   /* the socket */
+    if (r === 'shrieker') { R2(2, 1, 1, 2, hi); R2(4, 0, 1, 3, I.c); R2(6, 1, 1, 2, hi); } else if (r === 'diver') { R2(1, 1, 3, 2, hi); R2(2, 0, 2, 1, I.c); } else { R2(2, 1, 5, 2, ac); R2(1, 2, 1, 2, ac); }   /* the crest / mane */
+    R2(2, 3, 4, 4, sk); R2(2, 3, 4, 1, ac); R2(3, 4, 1, 1, dead ? '#14101e' : '#ff4a2a'); if (dead) { R2(4, 4, 1, 1, '#14101e'); }   /* the face and its eye (an X when she is down) */
+    R2(6, 5, 2, 1, dead ? '#8a8498' : '#e8c870'); R2(6, 6, 1, 1, dead ? '#6a6478' : '#a88838');   /* the beak */
+    if (r === 'snatcher' && !dead) R2(4, 2, 1, 3, '#8a2a2a');   /* the scar */
+    if (dead) { g.fillStyle = '#0a0810'; for (let q = 0; q < 9; q++) g.fillRect(x + q, y + Math.round(q * 0.9), 1, 1); } };
+  H.drawBars = (g, VW, VH, y, h, time) => { if (!S) return false; const w = 42, gap = 5, x0 = Math.round(VW / 2 - (w * 3 + gap * 2) / 2), ih = Math.max(9, h + 2);
+    ROLES.forEach((r, i) => { const s = S.sis[r], bx = x0 + i * (w + gap), k = s.alive ? Math.max(0, s.hp) / s.maxHp : 0, open = SSM.sisOpen(s), p2 = S.p2 === r, dead = !s.alive, fx = bx + 10, fw = w - 10;
+      bird(g, bx, y + Math.round((h - 9) / 2), r, dead, open || p2);
+      g.fillStyle = '#14101e'; g.fillRect(fx - 1, y - 1, fw + 2, h + 2); g.fillStyle = dead ? '#3a3646' : '#2a2236'; g.fillRect(fx, y, fw, h);
+      const col = open ? (Math.floor(time * 8) % 2 ? '#ffd36b' : '#fff6c8') : p2 ? (Math.floor(time * 5) % 2 ? '#ff8a4a' : '#ff6b3a') : COL[r].crest, fl = Math.round(fw * k);
+      if (!dead && fl > 0) { g.fillStyle = col; g.fillRect(fx, y, fl, h); g.fillStyle = 'rgba(255,255,255,0.28)'; g.fillRect(fx, y, fl, 1); g.fillStyle = 'rgba(0,0,0,0.28)'; g.fillRect(fx, y + h - 1, fl, 1); }
+      g.fillStyle = 'rgba(20,16,30,0.7)'; for (let q = 1; q < 4; q++) g.fillRect(fx + Math.round(fw * q / 4), y, 1, h);   /* quarter ticks */
+      g.fillStyle = p2 ? '#ff8a4a' : open ? '#ffd36b' : '#8a8098'; g.fillRect(fx - 1, y - 1, fw + 2, 1); g.fillRect(fx - 1, y + h, fw + 2, 1);   /* the frame's lit edges */
+      if (dead) { g.fillStyle = '#0a0810'; let cy2 = y; for (let q = 0; q < fw; q++) { if (q % 5 === 2) cy2 = y + ((q * 7) % h); g.fillRect(fx + q, Math.max(y, Math.min(y + h - 1, cy2)), 1, 1); } g.fillStyle = '#e6e4ec'; g.fillRect(fx + fw - 12, y + 1, 8, 1); g.fillStyle = '#c0bece'; g.fillRect(fx + fw - 10, y + 2, 5, 1); }   /* cracked, a feather laid on it */
+      ctx.text(r === 'diver' ? 'DIVER' : r === 'shrieker' ? 'SHRIEKER' : 'SNATCHER', bx + w / 2, y - 7, dead ? '#5a5468' : COL[r].light, 'center', 5); });   /* (her name over her bar: main.js lifts the plate 7 px for it) */
     return true; };
   H.barName = () => { if (!S) return 'THE SHRIEK SISTERS'; const left = ROLES.filter(r => S.sis[r].alive), open = left.find(r => SSM.sisOpen(S.sis[r]));
     return 'THE SHRIEK SISTERS' + (open ? '  ' + SSM.NAME[open] + ' ' + SSM.OPEN_NAME[S.sis[open].mode] : left.length < 3 ? '  ' + left.length + ' LEFT' : ''); };
