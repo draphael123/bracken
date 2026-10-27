@@ -20,6 +20,7 @@
 // Every capital line it says goes through ctx.number with a line listed here (RK_SAY) and in src/hint-lines.js.
 import { canvas, flipX, whiten } from './px.js';
 import * as RKW from './redraw/rookery_world.js';
+import { drawHang } from './redraw/rookery_hang.js';
 import { GALE, GALE_SAY, galeStep, drawGust } from './gale-harpy.js';   /* (claude/rookery2) THE GALE HARPY: a shared foe module (Windcaller 4 and the Roc reuse it) */   /* (claude/rookeryart) the cracked rocks, nests, roosts, the area plate: drawn there */
 /* THE SHRIEKER's skin (greybox): the crag harpy's frames, darkened to a blood-red (her crest is drawn over her: harpyOver) - main.js SPR.shrieker */
 export function bakeShriekerSet(Hs) {
@@ -301,7 +302,7 @@ export function makeRookeryHands(ctx) {
       g.fillStyle = '#e6dcc0'; for (const dx of [-9, -3, 3, 9]) { g.fillRect(R(mx + dx - cx), R(my - 2 - cy), 1, 2); g.fillRect(R(mx + dx - 1 - cx), R(my - 3 - cy), 1, 1); }   /* her talon scratches on the mount */
       if (e && e.alive && e.mode === 'lift') { const x = R(e.x - cx), y = R(e.y - cy), a = 0.55 + 0.4 * Math.sin(time * 12); g.globalAlpha = a; g.strokeStyle = '#ffd36b'; g.lineWidth = 2; g.strokeRect(x - 13, y - 9, 26, 22); g.lineWidth = 1; g.globalAlpha = 1;
         if (ctx.text) ctx.text(RK_SAY.grab, x, y - 22, Math.floor(time * 8) % 2 ? '#ffd36b' : '#fff6e0', 'center', 6); }
-      if (e && e.alive && e.mode === 'ride' && c.rider) { const x = R(e.x - cx), y = R(e.y - cy), py = R(c.rider.y - cy) - 18; g.fillStyle = '#c6a553'; g.fillRect(x - 4, y + 4, 1, py - y - 4); g.fillRect(x + 3, y + 4, 1, py - y - 4); g.fillRect(x - 5, py, 3, 2); g.fillRect(x + 2, py, 3, 2); } }
+      if (e && e.alive && e.mode === 'ride' && c.rider) drawHang(g, R(e.x - cx), R(e.y - cy) + 2, R(c.rider.y - cy), time, { lean: (e.rdOff ? Math.max(-6, Math.min(6, e.rdOff[0] * 0.25)) : 0) }); }
     /* THE AREA PLATE */
     if (S.banner) { const a = Math.max(0, Math.min(1, S.banner.t / 0.6, (3.4 - S.banner.t) / 0.4)); RKW.drawPlate(g, S.banner.name, VW, a, ctx.text); }
   };
