@@ -11,13 +11,21 @@ mkdirSync(OUT, { recursive: true });
 const bossSetup = `{boss(0);}`;
 const SHOTS = [
   /* DANIEL'S TWO PHOTO SPOTS: the ledges that ended in mid-air + the lantern gibbet (photo 1), the pillars + the grey path top (photo 2) */
-  ['photo1-ledges', `tp(160,37);BK.sim(60);`, null],
-  ['photo2-pillars', `tp(100,37);BK.sim(40);`, null],
+  ['photo1-ledges', `tp(160,37);BK.sim(120);`, `[P.x-110,P.y-90,213,120]`],
+  ['photo2-pillars', `tp(100,37);BK.sim(120);`, `[P.x-110,P.y-90,213,120]`],
   ['gale-tell', `{tp(222,25);BK.sim(150);const ge=BK.enemies().find(e=>e.alive&&e.t==='galeharpy'&&e.squad==='galeLedge');ge.galeCd=0;for(let i=0;i<300&&ge.mode!=='galeTell';i++){BK.sim(1);P.hp=P.maxHp;}BK.sim(10);window.__ge=ge;}`, `[__ge.x-60,__ge.y-45,160,90]`],
   ['gale-beat', `{tp(222,25);BK.sim(150);const ge=BK.enemies().find(e=>e.alive&&e.t==='galeharpy'&&e.squad==='galeLedge');ge.galeCd=0;for(let i=0;i<400&&ge.mode!=='gust';i++){BK.sim(1);P.hp=P.maxHp;}BK.sim(6);window.__ge=ge;}`, `[__ge.x-70,__ge.y-45,160,90]`],
   ['ride-hang', `{const k='gapRide',d=BK.L.rkRides.find(q=>q.id===k),s=1;tp(d.mount[0],d.mount[1]);let aimed=0;
     for(let i=0;i<900;i++){const r=RK.rideOf(k);P.hp=P.maxHp;if(r.aim&&!aimed){aimed=1;P.x=r.aim.x-s*44;P.vx=0;}if(!P.rkRide&&(r.mode==='downed'||r.mode==='rise')){P.x=r.x;P.vx=0;}
       if(r.mode==='lift')BK.press('grab');if(P.rkRide){const e=P.rkRide;if(e.rdT>e.rdTT*0.45)break;}BK.sim(1);}}`, `[P.x-45,P.y-60,100,70]`],
+  /* THE BOSS ROOM and the sisters in the fight (crop null = the whole screen) */
+  ['boss-room', `{boss(0);BK.sim(40);}`, null],
+  ['boss-room-left', `{boss(0);BK.sim(40);}`, `[BK.cam[0],BK.cam[1],160,90]`],
+  ['boss-perch', `{boss(0);const S=SH.show(),sh=S.sis.shrieker,P0=S.G.perchS;sh.mode='perched';sh.ward=0;sh.cd=99;BK.tp(Math.floor((P0.x-P0.w/2+8)/16),Math.floor(P0.y/16)-1);P.vx=0;for(let i=0;i<30;i++)BK.step(1);window.__P0=P0;}`, `[__P0.x-70,__P0.y-60,140,80]`],
+  ['boss-survivor-diver', `{boss(0);const S=SH.show();for(const r of ['shrieker','snatcher']){S.sis[r].hp=0;BK.sim(2);}for(let i=0;i<150;i++)BK.step(1);window.__s=S.sis.diver;}`, `[__s.x-50,__s.y-55,110,80]`],
+  ['boss-survivor-shrieker', `{boss(0);const S=SH.show();for(const r of ['diver','snatcher']){S.sis[r].hp=0;BK.sim(2);}for(let i=0;i<150;i++)BK.step(1);window.__s=S.sis.shrieker;}`, `[__s.x-50,__s.y-55,110,80]`],
+  ['boss-survivor-snatcher', `{boss(0);const S=SH.show();for(const r of ['diver','shrieker']){S.sis[r].hp=0;BK.sim(2);}for(let i=0;i<150;i++)BK.step(1);window.__s=S.sis.snatcher;}`, `[__s.x-50,__s.y-55,110,80]`],
+  ['boss-death', `{boss(0);const S=SH.show();window.__s=S.sis.shrieker;S.sis.shrieker.hp=0;for(let i=0;i<22;i++)BK.step(1);}`, `[__s.x-50,__s.y-70,110,80]`],
 ].filter(s => !only || only.has(s[0]));
 const pg = await openPage({ audio: false, fonts: false });
 try {

@@ -17,6 +17,7 @@ import { BOSS_PHASE } from './boss-music.js';
 import { canvas, flipX, whiten } from './px.js';
 import { drawSister } from './redraw/shriek_sisters_art.js';
 import { drawHang } from './redraw/rookery_hang.js';
+import { drawArena, drawWind } from './redraw/rookery_arena_art.js';
 import { bakeSummitSlab, bakeSummitRubble, bakeSummitStone, bakeSummitEcho, bakeBoulder, bakeSummitLip } from './redraw/rookery_world.js';   /* (claude/rookerypolish) the summit's slabs, rubble and stones in the Sisters' Crag stone */
 const { SS, ROLES } = SSM;
 
@@ -228,6 +229,7 @@ export function makeShriekSistersHands(ctx) {
   const X = cx => v => R(v - cx), Y = cy => v => R(v - cy);
   /* THE SUMMIT: the slabs (cracked, or rubble growing back), the stones the snatcher left, the shelves' guano, the Roc's peak beyond */
   H.drawBack = (g, cx, cy, time) => { if (!S) return; const x = X(cx), y = Y(cy), G = S.G, fy = y(G.floorY);
+    drawArena(g, cx, cy, g.canvas.width, g.canvas.height, time, A(), G);   /* (claude/rookery2art) the perch's nest, the shelves' eggs, the monastery on the far crag */
     for (const sl of G.slabs) { const sx = x(sl.x) - SS.slab.w / 2;
       if (sl.st === 'crack') { g.drawImage(bakeSummitSlab(SS.slab.w), sx, fy - 1);
         g.strokeStyle = Math.floor(time * 3) % 2 ? '#ffd36b' : 'rgba(255,211,107,0.5)'; g.strokeRect(sx + 0.5, fy - 2.5, SS.slab.w - 1, 5); }
@@ -253,7 +255,8 @@ export function makeShriekSistersHands(ctx) {
     g.save(); g.translate(sx + gx, sy); g.scale(d.face * d.sc, d.sc); g.translate(0, -15); g.rotate(rot); g.translate(0, 15); drawSister(g, r, POSE[pn], false, time, r === 'snatcher' ? undefined : false, d.g); g.restore();
     g.fillStyle = COL[r].light; for (let k = 0; k < 7; k++) { const t2 = (age * 0.9 + k * 0.17) % 1.3, fx = sx + gx + Math.round(Math.sin(age * 4 + k * 1.9) * (10 + k * 2)), fy2 = Math.round(sy - 30 + t2 * 44 + k * 2); if (fy2 < fl) { g.fillRect(fx, fy2, 3, 1); g.fillRect(fx + 1, fy2 - 1, 1, 1); } }
     g.globalAlpha = 1; } };
-  H.drawOver = (g, cx, cy, time) => { const Ar = A(); if (!S || !Ar || !ctx.bossActive) return; const G = S.G, x = X(cx), y = Y(cy), fy = y(G.floorY);
+  H.drawOver = (g, cx, cy, time) => { const Ar = A(); if (!S || !Ar) return; drawWind(g, g.canvas.width, g.canvas.height, time);   /* (claude/rookery2art) the summit's wind */
+    if (!ctx.bossActive) return; const G = S.G, x = X(cx), y = Y(cy), fy = y(G.floorY);
     const blink = Math.floor(time * 12) % 2 ? '#ff6b6b' : '#fff6e0';
     drawDeaths(g, x, y, fy, time);
     /* the rocks falling, and the red ring where each will land */

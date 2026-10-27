@@ -293,3 +293,6 @@ export function bakeSummitLip(side) {
     for (let i = 0; i < 3; i++) R(g, (r() * 28) | 0, 3 + ((r() * 6) | 0), 2, 1, LIME[2]);
     return c; });
 }
+/* (claude/rookery2art) a bone nest sitting ON a shelf whose top is at sy, w wide (the boss room's perch and shelves) */
+export function drawNest(g, sx, sy, w, z) { g.drawImage(bakeNest(w, z, false), Math.round(sx - (w >> 1)), Math.round(sy - 9)); }
+
