@@ -181,12 +181,30 @@ export function makeHurricane3Art(ctx, K) {
     }
   };
 
+  /* ============ THE WAIST'S SHIP BELL (the integ add of hurricane3art question 1): on a bracket bolted to the galley house's fore wall (x 151, rows 33-35, solid), so it is supported by
+     real wall and no floater; it tolls with the flood's warning strokes (S.floods[].toll) and hangs still the rest of the time. DRAWING ONLY: no tile, entity or number. ============ */
+  const BELL = { wx: 151 * TS, wy: 34 * TS - 2 };   /* the wall face, and the bracket's height */
+  const bell = (g, cx, cy, time, S) => {
+    const x = BELL.wx - cx, y = BELL.wy - cy; if (x < -40 || x > ctx.VW() + 40) return;
+    const f = S && S.floods && S.floods.find(q => q.id === 'waist'); const tolling = !!f && f.ph === 'warn';
+    const sw = tolling ? Math.sin(time * 15) * (0.45 + 0.25 * (f.toll || 0) / 3) : Math.sin(time * 1.3) * 0.05;   /* swing, radians */
+    rc(g, x - 13, y - 1, 13, 2, IRON[1]); rc(g, x - 13, y - 1, 13, 1, IRON[0]); rc(g, x - 3, y + 1, 2, 4, IRON[1]); rc(g, x - 1, y - 4, 2, 2, IRON[2]); rc(g, x - 1, y + 3, 2, 2, IRON[2]);   /* the iron bracket, braced under, two bolts into the wall */
+    rc(g, x - 14, y - 1, 2, 5, IRON[1]);   /* the yoke's cheek */
+    const px = x - 13, py = y + 1, ox = R(Math.sin(sw) * 5), oy = R((1 - Math.cos(sw)) * 2);   /* the bell hangs from the bracket's end and swings out and in */
+    rc(g, px - 1 + ox, py + 2 + oy, 2, 2, IRON[2]);   /* the crown */
+    const rows = [[3, 6], [4, 8], [6, 10], [7, 12], [8, 13]];   /* [row, width] of the bell's waist, flaring to the lip */
+    for (let i = 0; i < rows.length; i++) { const [r, w] = rows[i], bx = px + ox - R(w / 2), by = py + 3 + oy + r; rc(g, bx, by, w, 1, i < 2 ? '#c9a44c' : '#a8832f'); rc(g, bx, by, 1, 1, '#f0d27a'); rc(g, bx + w - 1, by, 1, 1, '#6a4f1c'); }
+    rc(g, px + ox - 6, py + 3 + oy + 9, 13, 1, '#6a4f1c');   /* the lip's shade */
+    if (tolling) { const cl = R(Math.sin(sw + 0.9) * 5); rc(g, px + ox + cl - 1, py + 3 + oy + 10, 2, 2, IRON[2]); }   /* the clapper strikes the lip */
+  };
+
   /* ============ THE DRAW BACK ============ */
   A.drawBack = (g, cx, cy, time, S) => {
     const vw = ctx.VW();
     masts(g, cx, cy, vw, time, S);
     yards(g, cx, cy, vw, time);
     boat(g, cx, cy, time); boats(g, cx, cy);
+    bell(g, cx, cy, time, S);   /* (integ) the waist's ship bell on the galley's wall */
     /* HER STAYS: the mizzen-main stay from her mizzen masthead to the main top, and the lifts every stays platform hangs on */
     const r2 = S && S.rods.find(r => r.id === 'r2');
     const sx0 = 467 * TS, sy0 = (r2 && r2.done ? 26 : 14) * TS, sx1 = 302 * TS, sy1 = 24 * TS, stayY = x => sy0 + (sy1 - sy0) * (x - sx0) / (sx1 - sx0);
