@@ -83,7 +83,7 @@ export function makePowderMonkeys(ctx) {
       q.kicked = true; q.vx = dir * PM.kickV; q.vy = PM.kickVy; q.ground = false; q.fuse = Math.max(q.fuse, PM.kickFuse); q.max = Math.max(q.max, q.fuse);
       ctx.sound('clank'); ctx.number(q.x, q.y - 20, PM_SAY.back, '#8fd160'); } };
   /* ---------- DRAWING (GREYBOX) ---------- */
-  H.drawFoe = (g, e, cx, cy, time) => { const pose = e.stagger > 0 || (e.hurtT || 0) > 0 ? 'hurt' : e.mode === 'lightTell' ? 'lightTell' : e.mode === 'lob' ? 'lob' : e.mode === 'flee' ? 'flee' : e.mode === 'scurry' && Math.abs(e.vx) > 5 ? 'scurry' : 'idle';
+  H.drawFoe = (g, e, cx, cy, time) => { const pose = e.stagger > 0 || (e.hurtT || 0) > 0 ? 'hurt' : e.mode === 'lightTell' ? (e.modeT > PM.lightTell * 0.5 ? 'holdLit' : 'lightTell') : e.mode === 'lob' ? 'lob' : e.mode === 'flee' ? 'flee' : e.mode === 'scurry' && Math.abs(e.vx) > 5 ? 'scurry' : 'idle';
     PMA.drawMonkey(g, Math.round(e.x - cx), Math.round(e.y - cy), e.face || 1, pose, time, (e.flash || 0) > 0); e.pmPose = pose; };
   H.drawOver = (g, cx, cy, time) => { for (const q of G) PMA.drawGrenade(g, q.x - cx, q.y - cy, q.fuse, q.max, time, q.kicked); };
   return H;

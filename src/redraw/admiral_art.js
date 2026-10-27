@@ -61,7 +61,7 @@ function pose(mode, p, time) {
   const k = ease(clamp(p));
   switch (mode) {
     case 'walk': q.bob = Math.abs(Math.sin(time * 7)) * 1.2; q.stride = Math.sin(time * 7) * 3.5; q.hR = [10, 22]; q.bladeA = -0.2; q.hL = [-5 + Math.sin(time * 7) * 2, 22]; break;
-    case 'recover': q.hR = [10, 22]; q.bladeA = -0.1; break;
+    case 'recover': q.hR = [10, 22]; q.bladeA = -0.1; q.bob = Math.sin(time * 3) * 0.5; break;
     case 'sleep': q.cardLean = true; q.closed = true; q.bow = 4; q.hR = [11, 22]; q.hL = [11, 20]; q.bladeA = 1.571; q.lean = 1; break;
     case 'card': q.cardLean = true; q.hR = [11, 23]; q.hL = [11, 21]; q.bladeA = 1.571; q.bow = 1; break;
     case 'wake': q.cardLean = k < 0.6; q.closed = k < 0.35; q.bow = lerp(4, 0, k); q.hR = [lerp(11, 12, k), lerp(22, 30, k)]; q.hL = [lerp(11, -4, k), lerp(20, 22, k)]; q.bladeA = lerp(1.571, -1.1, k); break;
@@ -79,8 +79,8 @@ function pose(mode, p, time) {
     case 'fall': q.hR = [8, 50]; q.hL = [-8, 48]; q.knee = 4; q.tuck = true; q.bladeA = -1.6; q.lean = -3; break;
     case 'climb': q.hR = [6, lerp(30, 42, (Math.sin(time * 8) + 1) / 2)]; q.hL = [-2, lerp(42, 30, (Math.sin(time * 8) + 1) / 2)]; q.drip = true; q.bladeA = 1.4; q.bow = 2; q.knee = 3; break;
     case 'landRec': q.crouch = lerp(9, 0, k); q.knee = lerp(7, 0, k); q.hR = [16, 12]; q.bladeA = 0.8; q.hL = [-6, 14]; break;
-    case 'stagger': q.lean = -4; q.back = 3; q.hR = [16, 30]; q.hL = [-14, 28]; q.bladeA = -2.2; q.sparks = true; q.bow = -1; q.feet = -3; break;
-    case 'soaked': q.crouch = 6; q.lean = 5; q.hR = [14, 10]; q.hL = [8, 12]; q.drip = true; q.bladeA = 1.2; q.bow = 6; break;
+    case 'stagger': q.lean = -4 + Math.sin(time * 5) * 1.6; q.bob = Math.sin(time * 9) * 0.5; q.back = 3; q.hR = [16, 30]; q.hL = [-14, 28]; q.bladeA = -2.2; q.sparks = true; q.bow = -1; q.feet = -3; break;
+    case 'soaked': q.crouch = 6 + Math.sin(time * 3) * 0.8; q.bob = Math.sin(time * 26) * 0.5; q.lean = 5 + Math.sin(time * 4) * 0.8; q.hR = [14, 10]; q.hL = [8, 12]; q.drip = true; q.bladeA = 1.2; q.bow = 6; break;
     case 'flat': q.flat = true; break;
     case 'listTell': q.hR = [lerp(10, 22, k), lerp(24, 36, k)]; q.hL = [lerp(-6, -18, k), lerp(22, 36, k)]; q.bladeA = -0.6; q.lean = -2; q.feet = 2; break;
     case 'flurryTell': q.axe = true; q.hR = [10, 30]; q.hL = [12, 30]; q.bladeA = -2.0; q.lean = -1; break;
@@ -99,13 +99,14 @@ function pose(mode, p, time) {
 function iron(u, v, w, h, o = {}) {
   const rd = o.rd ?? 2;
   for (let j = 0; j < h; j++) { const e = j < rd ? rd - j : j >= h - rd ? rd - (h - 1 - j) : 0; fr(u + e, v + j, w - 2 * e, 1, C.i0); }
-  for (let j = 1; j < h - 1; j++) { const e = j < rd ? rd - j : j >= h - rd ? rd - (h - 1 - j) : 0; fr(u + 1 + e, v + j, w - 2 - 2 * e, 1, j > h * 0.62 ? C.i1 : j > h * 0.3 ? C.i2 : C.i1); }
+  for (let j = 1; j < h - 1; j++) { const e = j < rd ? rd - j : j >= h - rd ? rd - (h - 1 - j) : 0; fr(u + 1 + e, v + j, w - 2 - 2 * e, 1, j > h * 0.62 ? C.i3 : j > h * 0.3 ? C.i2 : C.i1); }
   fr(u + 2, v + h - 2, Math.max(2, w - 5), 1, C.i3); fr(u + 1, v + h - 3, 1, Math.max(1, h - 5), C.i3);   /* the light on the top and the left (lit from the front-above) */
   fr(u + 2, v + 1, Math.max(2, w - 4), 1, C.i0);   /* the shade along the bottom */
   if (o.seam !== false) fr(u + 1, v + R(h * 0.45), w - 2, 1, C.i0);   /* a strake seam */
   for (let i = 0; i < w - 3; i += 3) { pix(u + 2 + i, v + h - 3, C.i4); pix(u + 2 + i, v + 2, C.i3); }   /* rivets */
   const n = o.seed || 1;
   for (let i = 0; i < 2; i++) { const ru = u + 2 + R(noise(n + i) * (w - 6)); fr(ru, v + 2, 1, 2 + R(noise(n + 9 + i) * 3), C.rust); pix(ru, v + 2, C.rust2); }   /* rust running down */
+  { const gl = ((T_ * 0.55 + (o.seed || 1) * 0.37) % 1.6) - 0.3, gx = Math.floor(gl * (w + h)); if (gx >= 1 && gx < w + h - 2 && C === NORM) for (let j = 2; j < h - 2; j++) { const gu = gx - j; if (gu >= 2 && gu < w - 2) pix(u + gu, v + j, C.i4); } }   /* a glint sweeping the steel */
   if (o.barn !== false) { const bu = u + 1 + R(noise(n + 5) * (w - 5)); fr(bu, v + 4, 2, 1, C.barn); pix(bu + 1, v + 5, C.barn2); pix(bu - 1, v + 4, C.barn2); if (w > 9) { fr(u + w - 4, v + 3, 2, 1, C.barn); pix(u + w - 3, v + 4, C.weed); } }
 }
 /* the torn strap and the cloth that was under a plate: paler than the coat round it, four bolt holes, a strap hanging */
@@ -213,15 +214,15 @@ export function drawAdmiral(g, x, y, f, o, time) {
   /* ---- the brace of pistols on the baldric (phase one, holstered) ---- */
   if (!q.pistol || q.ram) { pl(su - 7, shV - 2, su + 7, hipV + 4, 2, C.l0); pl(su - 7, shV - 3, su + 7, hipV + 3, 1, C.l2); pix(su, shV - 8, C.brass); pix(su + 1, shV - 8, C.g3); }
   if (!q.pistol) { for (let i = 0; i < 2; i++) { const pu = su - 3 + i * 5, pv = shV - 9 - i * 2; fr(pu, pv, 3, 4, C.l2); fr(pu, pv + 3, 3, 1, C.l3); fr(pu - 1, pv + 4, 5, 1, C.brass2); } }
-  /* ---- the CHEST plate ---- */
-  if (!bare(0)) { iron(su - 4, shV - 15, 15, 14, { seed: 11, rd: 3 }); const cu = su + 3, cv = shV - 9; disc(cu, cv, 3, C.rust); disc(cu, cv, 2, C.i0); pix(cu - 2, cv + 2, C.rust2); pix(cu + 2, cv - 2, C.brass2); pix(cu, cv + 3, C.i4); pix(cu - 1, cv, C.i2); }   /* the gunport rim still on it */
-  else scar(su - 3, shV - 14, 12, 12, T_, 5);
   /* ---- the head ---- */
   head(su + 2, shV + 1, { bow: q.bow, closed: q.closed });
   /* ---- the near arm: shoulder -> elbow -> hand, in the coat's gold-cuffed sleeve ---- */
   const sh = [su + 4, shV - 2], hnd = [q.hR[0], q.hR[1] - cr], el = bend(sh[0], sh[1], hnd[0], hnd[1], 8, 9, -1);
   limb(sh[0], sh[1], el[0], el[1], 4, C.c0, C.c3, C.c4); limb(el[0], el[1], hnd[0], hnd[1], 4, C.c0, C.c2, C.c3); fr(hnd[0] - 2, hnd[1] - 2, 5, 2, C.g1); fr(hnd[0] - 2, hnd[1] - 2, 5, 1, C.g2);
   fr(hnd[0] - 1, hnd[1], 3, 3, C.s2); pix(hnd[0] + 1, hnd[1] + 2, C.s3);
+  /* ---- the CHEST plate (over the sleeve: the breastplate must read, and its loss must show) ---- */
+  if (!bare(0)) { iron(su - 4, shV - 15, 14, 14, { seed: 11, rd: 3 }); const cu = su + 3, cv = shV - 9; disc(cu, cv, 3, C.rust); disc(cu, cv, 2, C.i0); pix(cu - 2, cv + 2, C.rust2); pix(cu + 2, cv - 2, C.brass2); pix(cu, cv + 3, C.i4); pix(cu - 1, cv, C.i2); }   /* the gunport rim still on it */
+  else scar(su - 3, shV - 14, 12, 12, T_, 5);
   /* ---- the PAULDRONS: a dome on each shoulder ---- */
   if (!bare(2)) { iron(su - 8, shV - 3, 7, 7, { seed: 21, rd: 2, seam: false }); iron(su + 1, shV - 4, 9, 9, { seed: 27, rd: 3 }); }
   else { fr(su - 7, shV - 2, 5, 3, C.c3); fr(su + 2, shV - 3, 6, 4, C.c3); fr(su + 2, shV - 3, 6, 1, C.g1); pix(su + 3, shV - 2, C.c0); pix(su + 7, shV - 2, C.c0); }
