@@ -233,8 +233,7 @@ export function makeRookeryHands(ctx) {
   H.ride = (p, jump) => { const e = p.rkRide; if (!S || !e) { p.rkRide = null; return false; }
     if (!e.alive || e.mode !== 'ride') { dropRider(p, 'shook'); return false; }
     if (jump) { dropRider(p, 'jump'); return false; }
-    if (p.hp < (p.rkRideHp ?? p.hp)) { dropRider(p, 'knocked'); return false; }   /* (any blow that finds him knocks him off her talons) */
-    p.rkRideHp = p.hp; p.x = e.x; p.y = e.y + RIDE.hang; p.vx = 0; p.vy = 0; p.ground = false; p.onMover = null; return true; };
+    p.x = e.x;   /* (only a HARPY'S DIVE that finds him knocks him off her talons - diveStep; a crow's peck just hurts) */ p.y = e.y + RIDE.hang; p.vx = 0; p.vy = 0; p.ground = false; p.onMover = null; return true; };
   /* THE GALE HARPY's world (src/gale-harpy.js) */
   const galeW = () => ({ time: () => ctx.time(), lastDive: () => S.lastDive, gusted: t => { S.lastGust = t; S.n.gusts++; },
     heroes: () => ctx.players().filter(p => p && !p.dead).map(p => ({ x: p.x, y: p.y, ground: !!p.ground, alive: true, blocking: !!(p.block || p.blocking), p,

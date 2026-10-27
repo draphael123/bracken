@@ -243,6 +243,26 @@ export function makeBot(BK, opts = {}) {   /* opts.fightThrough (claude/foepass)
     // sand it taps, about five a second, and walks the way on while it does - what the sign tells a player to do.
     if (P.qsDepth > 0) { keys.jump = false; tick.jumping = 0; hold = 0; if ((tick.qsT = (tick.qsT || 0) + 1) % 7 === 0) BK.press('jump'); return null; }
 
+    // ---- (claude/rookery2) THE ROOKERY'S RIDES: a ride is the way on where no jump goes. Stand on her mount; step off her dive (she hits the rock); stand under her as she
+    // climbs and GRAB her talons; riding, let her carry you (no keys) - she shakes you off on the far ledge. Twenty-five seconds at one and he gives it up for twenty.
+    { const RK = L.rookery && BK.rookery ? BK.rookery() : null;
+      if (RK && RK.rideOf && (L.rkRides || []).length && !P.swim && !(P.dead > 0)) {
+        if (P.rkRide) { keys.left = keys.right = false; keys.jump = false; hold = 0; still = 0; tick.jumping = 0; return null; }
+        tick.rdNo = tick.rdNo || new Map(); tick.frameR = (tick.frameR || 0) + 1; let job = null;
+        for (const d of L.rkRides) { const r = RK.rideOf(d.id); if (!r || (tick.rdNo.get(d.id) || 0) > tick.frameR) continue;
+          const mx = d.mount[0] * TS + 8, my = (d.mount[1] + 1) * TS, lx = d.land[0] * TS + 8, s = Math.sign(lx - mx) || 1;
+          if (Math.abs(P.x - mx) > 5 * TS || Math.abs(P.y - my) > 2 * TS || (goalX - mx) * s <= 0) continue;
+          job = { d, r, mx, s }; break; }
+        if (job) { const { d, r, mx, s } = job;
+          if (tick.rdJob !== d.id) { tick.rdJob = d.id; tick.rdT = 0; } else if (++tick.rdT > 1500) { tick.rdNo.set(d.id, tick.frameR + 1200); tick.rdJob = null; }
+          const go = (x, tol = 4) => { keys.left = x < P.x - tol; keys.right = x > P.x + tol; keys.jump = false; hold = 0; still = 0; tick.jumping = 0; return null; };
+          if (r.mode === 'lift') { if (Math.abs(r.x - P.x) < 14 && P.ground) { keys.left = keys.right = false; if (tick.rdT % 6 === 0) BK.press('grab'); keys.up = true; return null; } return go(r.x, 3); }
+          keys.up = false;
+          if (r.aim) { const ax = r.aim.x; if (Math.abs(P.x - ax) < 34) return go(ax - s * 44, 2); keys.left = keys.right = false; return null; }   /* off her line, back the way he came */
+          if (r.mode === 'dive') { keys.left = keys.right = false; return null; }
+          if (r.mode === 'downed' || r.mode === 'rise') return go(r.x, 6);   /* under her: she climbs from where she fell */
+          return go(mx, 4); }   /* on her mount: wait for her dive */
+        tick.rdJob = null; keys.up = false; } }
     // ---- THE ROOTWAY'S HOISTS (claude/rootway fix pass): a hoist is a machine on the way on, and the two things a player does at one. ----
     //   CUT THE CLEAT: an uncut hoist's cleat up to six tiles ahead (and no more than eight rows over his feet): walk to the tile before it, face it and
     //   swing - a JUMP and a swing when it is over his head (THE HIGH CLEAT, from its grown cap). STRIKE THE ARROW BACK: at an `arrow` hoist (THE LOOKOUT)
