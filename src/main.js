@@ -32022,7 +32022,26 @@ function drawCaravanBack(cx, cy) {
       const k = l.state === 'rise' ? 1 - Math.max(0, l.t) / LG.rise : l.state === 'sink' ? Math.max(0, l.t) / LG.sink : 1, top = fy - Math.round(h * k);
       g.save(); g.beginPath(); g.rect(x0 - 2, 0, w + 4, fy); g.clip(); C2A.drawLedgePiers(g, x0, w, top, fy, TS); g.restore(); } }
 }
+/* (claude/stormhold3art) THE OUTER BAILEY'S BUILDINGS, behind the play: the stables' back wall with its stall posts, half doors and a slate lean-to roof over the hay lofts; the smithy's soot-black wall,
+   its great chimney (smoke) and the lean-to the rope walkway starts from. Art only: every plank you stand on is the level's own. Tiles in, pixels out. */
+function drawStormworks(cx, cy) {
+  if (!(L.arena && L.arena.boss === 'lance')) return; if (cx > 205 * TS || cx + VW < 150 * TS) return;
+  const B = (tx, ty, w, h, c) => { g.fillStyle = c; g.fillRect(Math.round(tx * TS - cx), Math.round(ty * TS - cy), w, h); };
+  const wall = (x0, x1, y0, base, dk) => { const w = (x1 - x0 + 1) * TS; B(x0, y0, w, (34 - y0) * TS, base); for (let x = 0; x < w; x += 5) B(x0 + x / TS, y0, 1, (34 - y0) * TS, dk); B(x0, 33.5, w, 8, '#33334a'); for (let x = 0; x < w; x += 9) B(x0 + x / TS, 33.5, 1, 8, '#22222e'); };
+  // THE STABLES (156-176): a plank back wall, a post at every stall, half doors with iron straps, straw, a slate lean-to over the lofts
+  wall(156, 176, 29, '#2a2332', '#1c1824');
+  for (let x = 156; x <= 176; x += 4) { B(x, 28.5, 4, 5.5 * TS, '#4a3a30'); B(x, 28.5, 1, 5.5 * TS, '#6a5444'); }
+  for (let x = 157; x < 176; x += 4) { B(x, 31.5, 3 * TS - 4, 2.5 * TS, '#3a2c28'); B(x, 31.5, 3 * TS - 4, 2, '#5a4a40'); B(x, 32.2, 3 * TS - 4, 1, '#7a8494'); B(x + 0.2, 33.6, 8, 2, '#c9a85a'); B(x + 1.6, 33.7, 5, 1, '#e8c878'); }
+  for (let x = 156; x <= 176.5; x += 1) { const k = Math.floor(x) % 2; B(x, 27, TS, 4, k ? '#2c3248' : '#363e58'); B(x, 27, TS, 1, '#5a6488'); B(x + 0.25, 27.5, 2, 2, '#1c2030'); B(x, 28, TS, 1, '#161824'); }
+  B(155.5, 27.4, 22 * TS, 3, '#161824');
+  // THE SMITHY (179-197): sooty ashlar behind the forge, a chimney that smokes, the lean-to's slate roof, a hanging row of tongs
+  wall(179, 197, 27, '#26262e', '#1a1a22'); B(182, 22, 2 * TS + 6, 6 * TS, '#2e2e3a'); B(182, 22, 4, 6 * TS, '#4a4a5c'); B(182, 21.4, 2 * TS + 10, 6, '#161824');
+  for (let x = 180; x <= 190; x += 1) { B(x, 24.4, TS, 4, Math.floor(x) % 2 ? '#2c3248' : '#363e58'); B(x, 24.4, TS, 1, '#5a6488'); } B(179.5, 25.4, 11 * TS, 3, '#161824');
+  for (let k = 0; k < 6; k++) { const ph = (time * 0.5 + k * 0.17) % 1; g.globalAlpha = 0.35 * (1 - ph); g.fillStyle = '#7a7a8a'; const sx = Math.round(183 * TS + 12 - cx + Math.sin(ph * 5 + k) * 6 + ph * 14), sy = Math.round(21 * TS - cy - ph * 40); g.fillRect(sx, sy, 3 + Math.round(ph * 3), 3 + Math.round(ph * 3)); } g.globalAlpha = 1;
+  for (const x of [191.2, 192.4, 193.6]) { B(x, 29.2, 1, 9, '#6a7080'); B(x - 0.1, 29.9 + 0.4, 3, 1, '#8590a0'); }
+}
 function drawFacades(cx, cy) {
+  drawStormworks(cx, cy);
   if (L.caravan) drawCaravanBack(cx, cy);
   if (HIDE.facades === true) return;
   for (const f of (L.facades || [])) { const [x0, x1, y0, y1, kind, o] = f; if (HIDE.facades && HIDE.facades.includes(kind)) continue;   /* (claude/unburied4: a list of kinds hides just those) */
