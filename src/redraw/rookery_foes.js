@@ -10,3 +10,6 @@ export const bakeCragHarpy = () => bakeHarpy(CRAG, false);
 export const bakeShrieker = () => bakeHarpy(SHRIEK, true);
 /* the frames, for the contact sheet (tools/rookeryart-sheet.mjs) */
 export const SHEET = () => { const out = {}, A = bakeHarpy({}, false), B = bakeCragHarpy(), C = bakeShrieker(); A.R.forEach((c, i) => out['moor-harpy-' + i] = c); B.R.forEach((c, i) => out['crag-harpy-' + i] = c); C.R.forEach((c, i) => out['shrieker-' + i] = c); return out; };
+/* (claude/rookery2) THE GALE HARPY (SPR.galeharpy, src/gale-harpy.js) - GREYBOX: the crag harpy's six frames in storm teal-grey (frame 4, wings back, is her tell; 2 her beat). The sonnet art lane gives her own sheet. */
+export const GALEP = { h: '#7f9aa6', H: '#3e5662', z: '#1c2a32', F: '#c4d6dc', c: '#20323c', C: '#46606c', k: '#e0d8cc', K: '#a8968a' };
+export const bakeGaleHarpy = () => bakeHarpy(GALEP, false);

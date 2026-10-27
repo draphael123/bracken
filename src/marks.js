@@ -76,6 +76,7 @@ export const BY_HAND = {
   'royalboar|tell':'!',   /* THE ROYAL BOAR (src/royal-boar.js): its charge a shield turns (it stands dazed) */
   'thief|swipeTell':'!!','spitcap|spitTell':'!','sapper|shoveTell':'!','drone|burstTell':'!!','drone|puffTell':'!',   /* (claude/sporewood2) THE DRONE swells, then bursts where it hangs: no shield turns a burst */   /* (claude/sweepact12: the new told attacks of the inline families - updateEnemies, not an update* function) */
   'shrieksister|diveTell':'!!','shrieksister|screamTell':'!!','shrieksister|dropTell':'!!','shrieksister|snatchTell':'!!','shrieksister|waveTell':'!',   /* THE SHRIEK SISTERS (claude/rookery, src/shriek-sisters.js, by hand): the dive a shield turns (she is knocked down) is still a red !! - off the line is the read; the wave a yellow ! */
+  'galeharpy|galeTell':'!',   /* (claude/rookery2) THE GALE HARPY (src/gale-harpy.js, by hand: a module foe): her gust a shield BRACES (half the shove, no lift) - yellow */
   'shrieksister|chainTell':'!!','shrieksister|rakeTell':'!','shrieksister|shockTell':'!','shrieksister|echoTell':'!!','shrieksister|grabTell':'!!',   /* (claude/sisters2) THE SIGNATURE MOVES: the chain stoop's dives (red, as the dive); the rake and the shock a shield turns (yellow: the rake knocks her down, the shock is braced); the echo's shards and the grab nothing turns */
   'bellman|swingTell':'!','bellman|ringTell':'','grandmother|lureTell':'!', 'grandmother|staffTell':'!','grandmother|fireballTell':'!!','grandmother|jarTell':'!!','grandmother|stirTell':'!!','grandmother|broodTell':'','grandmother|lashTell':'!','grandmother|trapTell':'!!',   /* (claude/grandpolish, b120 integ) THE GRANDMOTHER 3's five new windups */   /* (her lash at a lure is entered from src/hush-hands.js granLure: a yellow ! - a shield turns the lash, and it goes at the sound) */   /* (claude/underleaf2) THE BELLMAN (src/hush-hands.js, by hand: a module-file foe): his handbell swung at you a shield turns; raising it to RING throws no blow (rule H) - it wakes the street, and says so in words (HE HEARS YOU) */
   'deacon|sweepTell':'!','deacon|hookTell':'!','deacon|jabTell':'!','deacon|arcTell':'!!','deacon|kindleTell':'','deacon|douseTell':'',   /* THE DEACON (deacon.js, by hand; claude/church2): the pole's sweep, hook and jab a shield turns; the flame arc's fire nothing does; his kindling throws no blow */
@@ -440,7 +441,7 @@ export const ANSWER = {
   'wickerman|throwTell': 'jump', 'wickerman|swingTell': 'block',   // (claude/fairfix6) THE WICKER MAN: its fire rolls along the ground - jump it (or strike it back); its arms the shield takes
   'willowisp|flareTell': 'block',   // THE FOG CANAL: the false lantern flares (a yellow !) - the shield turns the burst, as every yellow ! does
   'hare|run': 'block',
-  'harpy|aim': 'block', 'shrieker|aim': 'block', 'shrieksister|diveTell': 'dodge', 'shrieksister|screamTell': 'dodge', 'shrieksister|dropTell': 'dodge', 'shrieksister|snatchTell': 'jump', 'shrieksister|waveTell': 'block',   /* (claude/rookery) her scream marks your spot: get off it */
+  'harpy|aim': 'block', 'shrieker|aim': 'block', 'galeharpy|galeTell': 'block', 'shrieksister|diveTell': 'dodge', 'shrieksister|screamTell': 'dodge', 'shrieksister|dropTell': 'dodge', 'shrieksister|snatchTell': 'jump', 'shrieksister|waveTell': 'block',   /* (claude/rookery) her scream marks your spot: get off it */
   'shrieksister|chainTell': 'dodge', 'shrieksister|rakeTell': 'block', 'shrieksister|shockTell': 'block', 'shrieksister|echoTell': 'dodge', 'shrieksister|grabTell': 'dodge',   /* (claude/sisters2) the rake: block it (or jump it); the shock: brace (or roll); off the echo's tile; roll through the grab (or jump it) */
   'haunt|throwTell': 'block',
   'hearthgob|raise': 'block',
@@ -711,7 +712,7 @@ export const HEIGHT = {
   'grindylow|deckTell': 'low', 'grindylow|boardTell': 'low',
   'grindylow|rippleTell': 'low',
   'hare|run': 'low',
-  'harpy|aim': 'low', 'shrieker|aim': 'low', 'shrieksister|diveTell': 'low', 'shrieksister|screamTell': 'low', 'shrieksister|dropTell': 'low', 'shrieksister|snatchTell': 'low', 'shrieksister|waveTell': 'low',
+  'harpy|aim': 'low', 'shrieker|aim': 'low', 'galeharpy|galeTell': 'low', 'shrieksister|diveTell': 'low', 'shrieksister|screamTell': 'low', 'shrieksister|dropTell': 'low', 'shrieksister|snatchTell': 'low', 'shrieksister|waveTell': 'low',
   'shrieksister|chainTell': 'low', 'shrieksister|rakeTell': 'low', 'shrieksister|shockTell': 'low', 'shrieksister|echoTell': 'low', 'shrieksister|grabTell': 'low',   /* (claude/sisters2) */
   'haunt|throwTell': 'low',
   'hearthgob|raise': 'low',
