@@ -35,7 +35,7 @@ function makeCartPilot(BK, plan) {
       if (!(e.ward > 0)) { const pt = rd.points.filter(q => (q.x1 + 1) * TS + 10 < e.x - 20).sort((a, b) => Math.abs(a.x * TS - p.x) - Math.abs(b.x * TS - p.x))[0];
         if (pt && Math.abs(pt.x * TS + 8 - p.x) < 170) { const lx = pt.x * TS + 8; go(lx - 8); if (Math.abs(lx - p.x) < 18 && pt.state === 'set' && FR.etaAt(pt.id) < 2.6 && talkCd <= 0) { BK.press('talk'); talkCd = 20; } why = 'smith: the lever'; return true; } }
       go(e.x - 34); if (Math.abs(dx) < 42 && atkCd <= 0) { p.face = Math.sign(dx) || 1; BK.press('atk'); atkCd = 14; } why = 'smith: close'; return true; }
-    const pl = rd.plugs.find(q => !q.broken && q.x0 * TS - p.x > -8 && q.x0 * TS - p.x < 260);
+    const pl = rd.plugs.find(q => !q.broken && q.x0 * TS - p.x > -8 && q.x0 * TS - p.x < 340)   /* (from its lever: the teach plug stands 19 cols past it - at 260 the pilot walked off the lever, lost the plug, and came back, forever) */;
     if (pl) { const pt = rd.points.filter(q => q.x1 + 1 < pl.x0).sort((a, b) => b.x - a.x)[0];
       if (pt) { const lx = pt.x * TS + 8; if (Math.abs(lx - p.x) > 10) { if (lx < p.x - 10 || !BK.enemies().some(q => q.alive && !q.boss && Math.abs(q.y - p.y) < 30 && q.x - p.x > -10 && q.x - p.x < 34)) { go(lx); why = 'smelter: to the lever'; return true; } return false; }
         if (pt.state === 'set' && talkCd <= 0) { BK.press('talk'); talkCd = 30; why = 'smelter: throw the points'; } else why = 'smelter: wait for the cart'; return true; } }
