@@ -257,5 +257,39 @@ ok(Object.values(RK_SAY).every(s => SAY_LINES.has(s)), 'every capital line the r
   { const S4 = SSM.newFight(SSM.geom(A, TS)); for (const r of SSM.ROLES) { S4.sis[r].mode = 'hover'; S4.sis[r].cd = 99; } hero.x = S4.G.slabs[0].x; S4.sis.diver.mode = 'diveTell'; S4.sis.diver.act = 7; S4.sis.diver.aim = { x: hero.x, lock: true }; const a = why(S4);
     S4.sis.diver.mode = 'stuck'; S4.sis.diver.x = hero.x + 30; const b = why(S4); ok(/step off/.test(a) && /strike her/.test(b), 'the bot reads the LOCK and steps off (' + a + '), then strikes her stunned (' + b + ')'); } }
 
+// ---- (claude/rookery2) THE SISTERS: THE RIDE TO THE PERCH (P1), PHASE 2 (two dead: the survivor grows and takes their gifts - any order), THE SNATCH (pure) ----
+{ const A = L.arena, said = [], pp = { id: 'hero' }, hero = { x: 0, y: A.floor, ground: true, alive: true, block: false, face: 1, pp };
+  const w = { number: (x, y, t) => said.push(t), sound() {}, shake() {}, music() {}, mark() {}, dust() {}, fx() {}, rubble() {}, tip: () => { hero.tipped = 1; }, unride() {}, letGo() {},
+    hit: (s, bx, d, name, o) => (hero.x > bx[0] && hero.x < bx[1] && hero.y > bx[2] && hero.y - 20 < bx[3]) ? (hero.block && o && o.blockable ? 'blocked' : 'hit') : null,
+    hitArea() {}, hitHero() {}, shove: () => null, grab: (s, bx) => (hero.x > bx[0] && hero.x < bx[1]) ? pp : null };
+  const mk = () => { const S = SSM.newFight(SSM.geom(A, TS)); for (const r of SSM.ROLES) { S.sis[r].mode = r === 'snatcher' ? 'fly' : 'hover'; S.sis[r].cd = 99; } S.grabCd = 99; S.snatchCd = 99; return S; };
+  const step = (S, s, f) => { for (let i = 0; i < Math.round(s * 60); i++) { SSM.stepSisters(S, 1 / 60, [hero], w); if (f && f(i)) return true; } return false; };
+  const S = mk(), P0 = S.G.perchS, shelfTop = (A.floor / TS) - 3;
+  ok(P0 && (A.floor - P0.y) / TS >= 6 && shelfTop - P0.y / TS >= 4, 'THE SHRIEKER\'S PERCH: a nest ' + (A.floor - P0.y) / TS + ' rows over the summit, ' + (shelfTop - P0.y / TS) + ' over the shelves - out of any jump (a ride gets you there)');
+  const sh = S.sis.shrieker; step(S, 1.5); ok(sh.mode === 'perched' && Math.abs(sh.y - (P0.y - 2)) < 4, 'between her moves the shrieker SITS ON HER PERCH (P1)');
+  const dv = S.sis.diver; dv.x = S.G.mid - 40; dv.y = A.floor - 112; dv.cd = 0; dv.nAtk = 0; hero.x = S.G.slabs[0].x + 200 > S.G.x1 ? S.G.mid - 40 : S.G.mid - 40; hero.block = true;
+  step(S, 2.5, () => dv.mode === 'downed'); hero.block = false; ok(dv.mode === 'downed', 'her dive taken on the shield: KNOCKED DOWN');
+  step(S, 2.0, () => dv.mode === 'ferryWait'); ok(dv.mode === 'ferryWait' && said.includes(SSM.SS_SAY.ride), 'then she CLIMBS OFF THE ROCK slowly: UP: GRAB HER TALONS (' + SSM.SS.ride.window + ' s)');
+  hero.x = dv.x; hero.y = dv.y + 20; const got = SSM.tryRide(S, hero); ok(got && dv.mode === 'ferry' && S.ride && S.ride.by === 'diver', 'grabbed: she FERRIES the hero up toward the shrieker\'s perch');
+  step(S, 3, () => { if (S.ride) { hero.x = dv.x; hero.y = dv.y + SSM.SS.ride.hang; } return !!(S.ride && S.ride.done); });
+  ok(S.ride && S.ride.done && Math.abs(hero.x - P0.x) < P0.w / 2 + 4 && Math.abs(hero.y - P0.y) < 12, 'the ride ends over her nest (' + Math.round(hero.x) + ',' + Math.round(hero.y) + ' vs ' + P0.x + ',' + P0.y + ')');
+  S.ride = null; hero.y = P0.y; hero.ground = true; sh.mode = 'perched'; sh.ward = 0; step(S, 0.1);
+  ok(sh.mode === 'startled' && SSM.sisOpen(sh) && SSM.takeBlow(sh, 20, false)[0] === 30 && said.includes(SSM.SS_SAY.cornered), 'landed beside her: the shrieker is CORNERED ON HER PERCH - OPEN, x' + SSM.SS.ride.mul + ' up to ' + SSM.SS.ride.cap + ' of her');
+  step(S, SSM.SS.ride.tip); ok(hero.tipped && S.n.tips >= 1, 'stay on the nest and it TIPS you off (' + SSM.SS.ride.tip + ' s: no camping on the perch)');
+  /* PHASE 2, every order of deaths: the survivor grows (no HP), uses her own moves and the dead sisters' (one at a time), and THE SNATCH drops you both when struck */
+  for (const surv of SSM.ROLES) { const Z = mk(), q = Z.sis[surv], hp0 = q.maxHp; hero.x = Z.G.mid; hero.y = A.floor; hero.ground = true; hero.tipped = 0;
+    for (const r of SSM.ROLES) if (r !== surv) { Z.sis[r].alive = false; Z.sis[r].hp = 0; SSM.fell(Z, r, w); }
+    ok(Z.p2 === surv && q.mode === 'grow' && q.maxHp === hp0 && said.includes(SSM.SS_SAY.grow), surv + ' survives: PHASE 2 - she GROWS (' + SSM.SS.p2.scale + 'x, no HP added) and takes their gifts');
+    q.cd = 0; const modes = new Set(); let two = 0; Z.grabCd = 99;
+    step(Z, 40, () => { modes.add(q.mode); const tells = SSM.ROLES.filter(r => Z.sis[r].alive && /Tell$/.test(Z.sis[r].mode)).length; if (tells > 1) two++; if (!q.alive || hero.x < 0) return true; q.hp = hp0; return false; });
+    const borrowed = { diver: ['shockTell', 'dropTell'], shrieker: ['diveTell', 'dropTell'], snatcher: ['diveTell', 'shockTell'] }[surv], own = { diver: ['diveTell'], shrieker: ['screamTell'], snatcher: ['dropTell'] }[surv];
+    ok(borrowed.every(m => modes.has(m)) && own.every(m => modes.has(m)) && !two, surv + ' (P2): her own (' + own + ') and the dead sisters\' moves (' + borrowed.join(', ') + '), never two tells at once: ' + [...modes].filter(m => /Tell$/.test(m)).join(','));
+    /* THE SNATCH: grabbed, two strikes in the air - you fall together, she lands STUNNED */
+    for (const r of SSM.ROLES) Z.sis[r].ward = 0; q.mode = 'hover'; q.cd = 0; q.p2i = SSM.P2KIT[surv].indexOf('grab'); Z.grabCd = 0; Z.held = null; hero.x = Z.G.mid; hero.y = A.floor; hero.ground = true;
+    step(Z, 4, () => !!Z.held); ok(Z.held && Z.held.p2 && Z.held.by === surv, surv + ' (P2): THE SNATCH seizes the hero (her red !! talon line first)');
+    if (Z.held) { Z.clock += 1; SSM.strikeHeld(Z, w); Z.clock += 1; const r2 = SSM.strikeHeld(Z, w);
+      ok(r2 === 'fall' && q.mode === 'stuck' && SSM.sisOpen(q) && q.purse > 0, surv + ' (P2): ' + SSM.SS.p2.strikes + ' strikes mid-carry - YOU FALL TOGETHER, she lands STUNNED (the big opening, ' + SSM.SS.p2.stun + ' s, up to ' + SSM.SS.p2.cap + ' of her)'); } }
+}
+
 console.log(bad ? '\nrookery: ' + bad + ' FAILED' : '\nok  rookery: the road, the old-save rule, the locks, the hands, the sisters');
 process.exit(bad ? 1 : 0);

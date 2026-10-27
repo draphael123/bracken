@@ -232,13 +232,16 @@ export function buildRookery({ painter, T, TS }) {
      src/shriek-sisters.js), two rock shelves three rows up at its ends, THE ROC'S PEAK beyond it */
   const [A0, A1] = ROOKERY.arena, FL = r(ROOKERY.floor - 6);
   plank(A0 + 3, A0 + 7, ROOKERY.floor - 9); plank(A1 - 7, A1 - 3, ROOKERY.floor - 9);   /* (plank() lays in the level's own rows: r(floor - 9) is three rows over the summit) */
+  /* (claude/rookery2) THE SHRIEKER'S PERCH: a bone nest high on a rock spire (its pier: src/forest-supports.js), seven rows over the summit - out of any jump (the shelves are
+     three up, the perch four over them). Only a RIDE gets you there: knock a sister down, grab her talons as she climbs, and she carries you up beside the shrieker (src/shriek-sisters.js) */
+  plank(A0 + 27, A0 + 29, ROOKERY.floor - 13);
   ent('torch', A0 + 1, FL - 1); ent('torch', A1 - 1, FL - 1);
   ent('shrieksisters', A0 + 21, FL - 1);
   block(W - 1, W - 1, 0, H - 1);                                                    /* the world's east edge */
 
   const arena = { x0: A0 * TS, x1: (A1 + 1) * TS, floor: FL * TS, y0: (FL - 9) * TS, trigger: (A0 + 5) * TS, wallL: A0 - 1, wallR: A1 + 1, boss: 'shrieksisters', music: 'shrieksisters', camUp: 16, tint: '#c8c0d8', tintA: 0.07,
     /* THE CRACKED SLABS (src/shriek-sisters.js geom): tile columns of each slab's middle */
-    slabs: [A0 + 8, A0 + 21, A1 - 8] };
+    slabs: [A0 + 8, A0 + 21, A1 - 8], perchS: [A0 + 27, A0 + 29, r(ROOKERY.floor - 13)] };
   const out = {
     W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: r(37) }, pools: [], falls: [],
     arena, rookery: true, hoists, rkNests: nests, rkRides: rides,
