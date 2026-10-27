@@ -37,6 +37,7 @@ export const ARCS = {
   updraft: { teach: [208, 216], develop: [258, 268] },
 };
 export const RK_RULE = "A HARPY'S DIVE BREAKS WHAT IT HITS.";
+import { rookeryAnchors } from './rookery-anchors.js';
 
 export function buildRookery({ painter, T, TS }) {
   const { W, H } = ROOKERY, r = y => y + 6;
@@ -69,7 +70,7 @@ export function buildRookery({ painter, T, TS }) {
   /* (claude/rookery2) A RIDE (CATCH A RIDE, src/rookery-hands.js): mount [x, y] (the cell a hero stands in), roost [x, y] (her home: a bone nest lashed to a spire / bracketed to the
      face - src/rookery-anchors.js), path [[x, y], ...] (the cells his FEET pass), land [x, y] (the cell he is shaken off into, over footing). Her harpy is placed at the roost, bound to it */
   const rides = [];
-  const ride = (id, o) => { const d = { id, mount: [o.mount[0], r(o.mount[1])], roost: [o.roost[0], r(o.roost[1])], path: o.path.map(([x, y]) => [x, r(y)]), land: [o.land[0], r(o.land[1])], breaks: o.breaks || null };
+  const ride = (id, o) => { const d = { id, x: o.mount[0], mount: [o.mount[0], r(o.mount[1])], roost: [o.roost[0], r(o.roost[1])], path: o.path.map(([x, y]) => [x, r(y)]), land: [o.land[0], r(o.land[1])], breaks: o.breaks || null };
     rides.push(d); ent('harpy', d.roost[0], d.roost[1] - 1, { squad: 'ride-' + id, rk: { rkRide: id } }); return d; };
   const gale = (x, y, squad) => ent('galeharpy', x, r(y), { squad, perch: true });   /* (claude/rookery2) THE GALE HARPY (src/gale-harpy.js): her perch is anchored too */   /* a bone nest on a ledge (greybox, drawn by the hands): an egg cache - silver or coins sit in it */
 
@@ -171,7 +172,7 @@ export function buildRookery({ painter, T, TS }) {
      up the gully's west side) */
   sign(250, 13, 'THE WIND GAP. A FALL IS A LONG CLIMB.');
   ground(251, 278, 26);                                                             /* the gully floor below */
-  plank(251, 253, 23); plank(252, 254, 20); plank(251, 253, 17);                   /* the climb back up */
+  plank(251, 252, 23); plank(252, 254, 20); plank(251, 252, 17);                   /* the climb back up (claude/rookery2: the boards off the wall two wide - a lip, tools/anchor-lint.mjs) */
   /* the stepping shelves: wind-cut rock ledges jutting off the pillars behind (one-way: the gully floor under them is one floor, walked back to the climb) */
   plank(255, 256, 16);                                                              /* shelf one (down two) */
   plank(260, 261, 15);                                                              /* shelf two (up one) */
@@ -238,7 +239,7 @@ export function buildRookery({ painter, T, TS }) {
   const arena = { x0: A0 * TS, x1: (A1 + 1) * TS, floor: FL * TS, y0: (FL - 9) * TS, trigger: (A0 + 5) * TS, wallL: A0 - 1, wallR: A1 + 1, boss: 'shrieksisters', music: 'shrieksisters', camUp: 16, tint: '#c8c0d8', tintA: 0.07,
     /* THE CRACKED SLABS (src/shriek-sisters.js geom): tile columns of each slab's middle */
     slabs: [A0 + 8, A0 + 21, A1 - 8] };
-  return {
+  const out = {
     W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: r(37) }, pools: [], falls: [],
     arena, rookery: true, hoists, rkNests: nests, rkRides: rides,
     calm: [[0, W - 1, 0, H - 1]],   /* placed wholly by hand: nothing sprinkled */
@@ -257,4 +258,6 @@ export function buildRookery({ painter, T, TS }) {
     tints: [[-24, 106, [210, 205, 225], 0.06], [106, 206, [205, 200, 220], 0.07], [206, 316, [200, 200, 225], 0.07], [316, 368, [215, 195, 210], 0.08], [368, W + 24, [220, 190, 205], 0.09]],
     reachExact: false,
   };
+  out.rkAnchors = rookeryAnchors(out, T);   /* (claude/rookery2) every roost, gale perch and hung nest's arm hangs on something (src/rookery-anchors.js; tools/anchor-lint.mjs) */
+  return out;
 }

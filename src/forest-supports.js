@@ -6,10 +6,11 @@
    NO tile changes: route, walker and mash rows are untouched. tools/solid-islands.mjs counts these as drawn supports. */
 export const FOREST_KIT = { wood: 'crib', scree: 'rock', rookery: 'rock', hanging: 'vine', moor: 'pile', skyroad: 'cloud', rootway: 'root', spore: 'stalk',   /* (claude/sporewood2: SPOREWOOD 2's shelves hang on the Mother's roots - the art lane may give them cap stalks) */ glasssea: 'ice', witchlight: 'rune', marsh: 'stilt' };   /* (claude/marsh2) MARSH WOOD: a bog-oak stilt under a board, a bundle of reed stalks under a tuft - driven into the bed under the water */
 export const FREE_LEN = { crib: 4, rock: 5, vine: 6, pile: 3, cloud: 6, root: 6, stalk: 6, ice: 5, rune: 6, stilt: 4, reed: 4 };
-const GROUND = 16, STEP = 10;
+const GROUND0 = 16, STEP = 10;
 
 export function addForestSupports(L, id, T, islandsOf) {
   const kind = FOREST_KIT[id]; if (!kind || !L || !L.grid) return L;
+  const GROUND = id === 'rookery' ? L.H : GROUND0;   /* (claude/rookery2) THE ROOKERY: no pier ends in the air - it goes down to whatever footing is under it, however deep (tools/anchor-lint.mjs) */
   const W = L.W, H = L.H, g = L.grid; if (!L.routeSupports) L.routeSupports = [];
   const have = new Set(L.routeSupports.map(p => p.x + ',' + p.y));
   for (const s of islandsOf(L, T)) {
@@ -24,7 +25,7 @@ export function addForestSupports(L, id, T, islandsOf) {
       if (kind === 'rock') {   /* THE SCREE PATH (claude/screefix): a hoodoo of the hill's rock under the slab, as wide as the slab lets it - one for a short ledge, a pier set in a tile from each end of a long one */
         const n = r.length, grounded = x => { let b = low.get(x) + 1; while (b < H - 1 && b - low.get(x) <= GROUND && g[b * W + x] === T.AIR) b++; return g[b * W + x] !== T.AIR && b - low.get(x) <= GROUND; },   /* the pier stands where there is ground to stand on: the nearest column to its ideal spot that has some */
           near = (x, d) => { for (const dx of [0, -1, 1, -2, 2]) { const q = x + dx; if (low.has(q) && q >= r[0] && q <= r[n - 1] && Math.abs(q - x) <= d && grounded(q)) return q; } return x; };
-        if (n <= 5) { const x = near(r[(n - 1) >> 1], 2); picks.push(x); widths.set(x, n <= 2 ? 12 : Math.min(24, 10 + n * 3)); }
+        if (n <= (id === 'rookery' ? 3 : 5)) { const x = near(r[(n - 1) >> 1], 2);   /* (claude/rookery2: in THE ROOKERY a ledge of four or more stands on two piers - no end hangs past its pier, tools/anchor-lint.mjs) */ picks.push(x); widths.set(x, n <= 2 ? 12 : Math.min(24, 10 + n * 3)); }
         else { const a = near(r[1], 2), b = near(r[n - 2], 2); picks.push(a, b); widths.set(a, 18); widths.set(b, 18); for (let k = a + 9; k < b - 4; k += 9) { const q = near(k, 2); picks.push(q); widths.set(q, 16); } }
         continue; }
       if (r.length <= 3) picks.push(r[(r.length - 1) >> 1]);
