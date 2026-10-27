@@ -130,7 +130,7 @@ export function stormholdTown({ painter, T, TS }) {
   ent('bell', 208, 33, { section: 'bailey' });
   ent('sign', 201, 33, { text: 'SENTRIES RUN FOR THEIR BELLS. CATCH HIM, OR BREAK IT FIRST.' });
   // THE BELL WATCH: stone, climbed on the masons' scaffold against its west face - three ladders, two boards, the deck on top.
-  // A sentry stands the second board, on the ladder route: ring him and his watch turns out on the deck above you.
+  // A sentry stands the second board, on the ladder route: ring him and a grate shuts the key off on the deck above, and his watch turns out there.
   const T2 = { x0: 216, x1: 226, top: 18, floor: 34, kind: 'stone', key: 'iron', gate: STORM_TOWN.GATES.iron, name: 'THE BELL WATCH' };
   laid(219, 226, 19, 33);
   plat(214, 29, 5); plat(214, 24, 5); plat(216, 18, 11);
@@ -288,7 +288,7 @@ export function stormholdTown({ painter, T, TS }) {
        bailey a grate drops across the yard; it lifts once the garrison is down, or after 20 s regardless). */
     alarms: [
       { id: 'bailey', gates: [[211, 30, 33]], garrison: [{ t: 'sprig', x: 210, y: 33 }, { t: 'sprig', x: 213, y: 33 }] },
-      { id: 'bellwatch', gates: [], garrison: [{ t: 'hearthgob', x: 222, y: 17 }, { t: 'hearthgob', x: 224, y: 17 }] },
+      { id: 'bellwatch', gates: [[221, 13, 17]], garrison: [{ t: 'hearthgob', x: 217, y: 17 }, { t: 'hearthgob', x: 219, y: 17 }] },   /* rung, a grate drops across the deck between the ladder and the key, and his watch turns out on your side of it */
     ],
     /* THE LONG BRIDGE, for THE QUEEN'S LANCE (src/main.js updateLance; src/lance-support.js): his lookouts (all seven: the vault's
        perches), the spans his charge tears up, the cages, and the main gate he falls back under in his last stand. */
