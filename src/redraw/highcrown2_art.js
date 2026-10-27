@@ -187,17 +187,18 @@ export function drawWinch(g, pr, cx, cy, TS, time) {                            
   if (pr.open > 0) { R(g, x - 6, y - 26, Math.round(12 * pr.open / pr.hold), 2, '#ffd36b'); }
 }
 export function drawGrate(g, pr, cx, cy, TS, time, e) {                                                                  // the grate over an arch: square iron bars, strap bands, pointed tines at the foot
-  const x = Math.round(pr.gate * TS + 8 - cx), top = Math.round(pr.gy0 * TS - cy);
+  const tk = pr.tellUntil > time ? Math.max(0, Math.min(1, pr.tellK || 0)) : 0;                                           // (claude/highcrown2bell) told: it SHUDDERS in its slot, rattling harder and sinking in jerks as the Queen hauls
+  const x = Math.round(pr.gate * TS + 8 - cx) + (tk ? Math.round(Math.sin(time * 70) * (0.5 + tk * 1.1)) : 0), top = Math.round(pr.gy0 * TS - cy) + (tk ? Math.floor(tk * 4) + (Math.sin(time * 53) > 0.2 ? 1 : 0) : 0);
   const bars = (y0, y1) => { R(g, x - 9, y0, 18, 3, '#16161e'); R(g, x - 9, y0, 18, 1, '#6a6a80'); R(g, x - 9, y1 - 4, 18, 2, '#16161e'); R(g, x - 9, y0 + 12, 18, 2, '#16161e');
     for (let k = -8; k <= 8; k += 4) { R(g, x + k - 1, y0, 3, y1 - y0, '#34343f'); R(g, x + k - 1, y0, 1, y1 - y0, '#8a8aa0'); R(g, x + k + 1, y0, 1, y1 - y0, '#16161e'); }
     for (let k = -8; k <= 8; k += 4) { R(g, x + k - 1, y1, 3, 3, '#c9c9d6'); R(g, x + k, y1 + 3, 1, 2, '#c9c9d6'); } };
   if (e) { const hy = Math.round(e.y - (e.h || 30) - cy); bars(top - 6, Math.max(top, hy)); return; }
   if (pr.open > 0) return;
   bars(top - 12, top - 2);
-  const k = 0.5 + 0.5 * Math.sin(time * 5); g.globalAlpha = 0.35 + 0.35 * k; R(g, x - 9, top - 1, 18, 1, '#ffd36b'); g.globalAlpha = 1;
+  const k = 0.5 + 0.5 * Math.sin(time * 5); g.globalAlpha = 0.35 + 0.35 * k; R(g, x - 9, top - 1, 18, 1, tk ? '#ff8a5c' : '#ffd36b'); g.globalAlpha = 1;
 }
 export function drawBell(g, pr, cx, cy, time) {                                                                          // a cast-bronze bell on a yoke, hung from an iron bracket pinned to the stone: swings while its grate is down
-  const bx = Math.round(pr.x - cx), by = Math.round(pr.y - cy), sw = pr.open > 0 ? Math.sin(time * 9) * 3 * Math.min(1, pr.open / 3) : 0, s = Math.round(sw);
+  const bx = Math.round(pr.x - cx), by = Math.round(pr.y - cy), sw = pr.open > 0 ? Math.sin(time * 9) * 3 * Math.min(1, pr.open / 3) : pr.tellUntil > time ? Math.sin(time * 15) * 1.6 * Math.min(1, pr.tellK || 0) : 0, s = Math.round(sw);   // (claude/highcrown2bell) a bell tugged on its rope sways before it tolls
   R(g, bx - 9, by - 44, 20, 3, S.dk); R(g, bx - 9, by - 44, 20, 1, S.f); R(g, bx - 11, by - 43, 3, 8, S.c); R(g, bx + 9, by - 43, 3, 8, S.c);          // the bracket: a stone corbel pair and an iron beam
   R(g, bx, by - 41, 1, 26, '#5a5a6c'); R(g, bx - 1, by - 41, 1, 26, '#2a2a34');
   R(g, bx - 5 + s, by - 17, 11, 3, '#5a3a14'); R(g, bx - 4 + s, by - 15, 9, 7, '#8a6a2a'); R(g, bx - 3 + s, by - 15, 3, 8, '#c9a040'); R(g, bx - 6 + s, by - 8, 13, 3, '#a07828'); R(g, bx - 7 + s, by - 6, 15, 2, '#c9a040'); R(g, bx - 7 + s, by - 4, 15, 1, '#4a3010'); R(g, bx + 1 + s, by - 4, 2, 4, '#3a2a1a');
@@ -207,3 +208,28 @@ export function drawChandelierAnchor(g, x, top, by, time) {                     
   R(g, x - 5, top - 4, 11, 4, S.d); R(g, x - 5, top - 4, 11, 1, S.f); R(g, x - 3, top, 7, 2, S.dk); R(g, x - 1, top + 1, 3, 3, '#c9a040');
   for (let y = top + 3, i = 0; y < by - 16; y += 4, i++) { if (i & 1) { R(g, x, y, 1, 4, '#8a8aa0'); R(g, x - 1, y, 1, 4, '#3a3a48'); } else { R(g, x - 2, y, 4, 4, '#3a3a48'); R(g, x - 1, y + 1, 2, 2, '#0e0e14'); R(g, x - 2, y, 4, 1, '#a0a0b8'); } }
 }
+
+// ---------------- THE QUEEN RINGS HER BELL (claude/highcrown2bell): the warning on the grate's column, and the pull-rope run from the bell to her fists ----------------
+// drawGrateFx: told for 0.9 s (k = 0 -> 1) the grate's whole column is lit - a faint warm wash, two lit edges, a hazard bar where the tines will land - and breathes faster as it goes.
+export function drawGrateFx(g, pr, cx, cy, TS, time, k) {
+  const x = Math.round(pr.gate * TS + 8 - cx), top = Math.round(pr.gy0 * TS - cy), bot = Math.round((pr.gy1 + 1) * TS - cy), pulse = 0.5 + 0.5 * Math.sin(time * (10 + k * 22));
+  g.globalAlpha = 0.1 + 0.2 * k + 0.06 * pulse; R(g, x - 9, top, 18, bot - top, '#ff9a5c'); g.globalAlpha = 1;                    // the wash over the column
+  g.globalAlpha = 0.25 + 0.4 * k; R(g, x - 10, top, 1, bot - top, '#ff8a5c'); R(g, x + 9, top, 1, bot - top, '#ff8a5c'); g.globalAlpha = 1;   // its edges
+  for (let y = top + ((time * 40) | 0) % 8; y < bot - 4; y += 8) { g.globalAlpha = 0.1 + 0.25 * k; R(g, x - 1, y, 2, 3, '#ffd0a0'); }           // light running down it, toward the floor
+  g.globalAlpha = 0.55 + 0.4 * pulse; for (let i = -9; i < 9; i += 4) { R(g, x + i, bot - 4, 2, 4, '#ffb04a'); R(g, x + i + 2, bot - 4, 2, 4, '#1a0f14'); } g.globalAlpha = 1;   // the tines' landing, striped
+}
+// drawQueenRope: a hemp rope from the bell's bracket to her fists; she hauls it taut across the tell (k 0 -> 1), it snaps taut at the toll (k = 1) and goes slack and swinging after (slack 0 -> 1).
+export function drawQueenRope(g, bell, cx, cy, hx, hy, k, slack, time) {
+  const ax = Math.round(bell.x - cx) + 11, ay = Math.round(bell.y - cy) - 42, bx = Math.round(hx - cx), by = Math.round(hy - cy), len = Math.hypot(bx - ax, by - ay);
+  const sag = (1 - k) * 0.12 * len * (1 - slack) + slack * 0.14 * len * (0.5 + 0.5 * Math.cos(time * 9)) + 1.5, n = Math.min(200, Math.ceil(len / 1.5));
+  for (let pass = 0; pass < 2; pass++) for (let i = 0; i <= n; i++) { const t = i / n, px = ax + (bx - ax) * t, py = ay + (by - ay) * t + sag * 4 * t * (1 - t) + 1 - pass;
+    R(g, Math.round(px), Math.round(py), 2, 2 - (1 - pass), pass ? ((i >> 1) & 1 ? '#c9b27c' : '#a0885a') : '#2a1c0c'); }                                // twisted hemp, its shadow a pixel under
+  R(g, ax - 1, ay - 1, 3, 3, '#3a3a48'); R(g, ax, ay, 1, 1, '#c9a040');                                                                       // the ring it runs through at the bracket
+}
+// grateTiles(n): the dropped grate, n tiles tall, for the portcullis slide and the tiles it lands as (main.js gqRing): square iron bars, strap bands top and middle, tines on the last tile
+export function grateTiles(n) { return once('grate' + n, () => Array.from({ length: n }, (_, i) => { const [c, g] = canvas(16, 16), last = i === n - 1;
+  for (const x of [1, 5, 9, 13]) { const y1 = last ? 12 : 16; R(g, x, 0, 3, y1, '#34343f'); R(g, x, 0, 1, y1, '#8a8aa0'); R(g, x + 2, 0, 1, y1, '#16161e');
+    if (last) { R(g, x, y1, 3, 2, '#c9c9d6'); R(g, x + 1, y1 + 2, 1, 2, '#c9c9d6'); } }
+  if (i === 0) { R(g, 0, 0, 16, 3, '#16161e'); R(g, 0, 0, 16, 1, '#6a6a80'); for (const x of [3, 11]) R(g, x, 1, 1, 1, '#c9a040'); }
+  R(g, 0, 7, 16, 2, '#16161e'); R(g, 0, 7, 16, 1, '#55556a');
+  return c; })); }

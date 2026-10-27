@@ -190,6 +190,7 @@ export function highcrownTwo(R, { T, TS }) {
     { k: 'stairdoor', x0: 0, x1: 4, y: 63 },                                      // the kitchen stair's door behind the shut port
     { k: 'murder', x: 33, y: 53 },                                                // the murder hole in the wall walk's soffit
     { k: 'winchframe', x: 150, y: 41 },                                           // the crag gate's hoist over the tower arch
+    { k: 'bellrope', x: HC2.WARD_BELL + 1, y: 60 },                                  // (claude/highcrown2bell) the ward bell's pull-rope on its iron bracket, beside the bell                                           // the crag gate's hoist over the tower arch
     { k: 'corbel', x: 78, y: 55 + 7 / 16, n: 1 },                                  // the barracks' eave beam, carried
   ]);
   /* the west balcony (a stone slab on the wall) and the high gallery (wall to wall) stand on corbels; every other one-way run of the castle with no pier or chain gets one:

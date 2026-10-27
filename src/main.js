@@ -21816,8 +21816,8 @@ const GQC = { hold: 3.5, holdOff: 2.6, volley: 1.15, totter: 1.7, blows: 3, plat
   ringTell: 0.9, ringHold: 3.5, ringCd: 8, ringNear: 64,   /* (claude/highcrown2) SHE RINGS HER OWN BELL: the tell, how long the grate stays down, her cooldown, how near the grate you must be */
   leapCd: 4.5, leapCdOff: 2.2, courtCd: 6, courtCdOff: 3.6, air: 0.75, airOff: 0.6, quakeR: 70 };
 let sceptres = []; // her sceptre in flight: out along the floor, back at head height
-const GQ_FRAME = { crownTell: 2, crownRain: 8, pinned: 10, gLeapTell: 6, gLeap: 11, gPerch: 3, gDropTell: 6, gDrop: 11, shadowTell: 2, shadow: 2, sleep: 0, wake: 0, court: 0, point: 1, throw: 2, topple: 10, rise: 3, stand: e => Math.abs(e.vx) > 6 ? 4 + Math.floor(e.anim * 5) % 2 : 3, slamTell: 6, slam: 7, slamRec: 7, sweepTell: 3, sweep: 8, rec: 8,
-  hallLeapTell: 6, hallLeap: 11, quake: 7, chandTell: 2, ringTell: 6, decreeTell: 6, decree: 7, sceptreTell: 2, sceptreWait: 3, ceilTell: 6, ceil: 11, roofWait: 3, roof: e => Math.abs(e.vx) > 6 ? 4 + Math.floor(e.anim * 5) % 2 : 3, slateTell: 12, slate: 12, leapTell: 6, leap: 11, land: 7, struck: 13 };
+const GQ_FRAME = { crownTell: 2, crownRain: 8, pinned: 10, gLeapTell: 6, gLeap: 11, gPerch: 3, gDropTell: 6, gDrop: 11, shadowTell: 2, shadow: 2, sleep: 0, wake: 0, court: 0, point: 1, throw: 2, topple: 10, rise: 3, stand: e => Math.abs(e.vx) > 6 ? 4 + Math.floor(e.anim * 5) % 2 : 3, slamTell: 6, slam: 7, slamRec: 7, sweepTell: 3, sweep: 8, rec: e => (e.ringRelT || 0) > time ? 16 : 8,   /* (claude/highcrown2bell) the 0.8 s after she rings: the release pose */
+  hallLeapTell: 6, hallLeap: 11, quake: 7, chandTell: 2, ringTell: 15, decreeTell: 6, decree: 7, sceptreTell: 2, sceptreWait: 3, ceilTell: 6, ceil: 11, roofWait: 3, roof: e => Math.abs(e.vx) > 6 ? 4 + Math.floor(e.anim * 5) % 2 : 3, slateTell: 12, slate: 12, leapTell: 6, leap: 11, land: 7, struck: 13 };
 /* A CRACKED, LOAD-BEARING PILLAR (docs/briefs/queen-pillars.md). Drums of grey stone, a capital pressed up into the ceiling, a dark split zig-zagging
    down the shaft and chips out of it; the crack opens at each of a hero's blows, and after the third it rocks on its base (docs/briefs/goblin-queen-court.md).
    Broken: the shaft topples toward her if she is near (away from the hero if not), and a stump and a heap of broken drums lie over the three rubble tiles (their tops are the heap's top, so you stand on what you see). */
@@ -21893,9 +21893,21 @@ function gqChandsHang() { for (const pr of props) if (pr.t === 'weight' && pr.gq
    with you nowhere near it, she does not bother. */
 const gqBell = () => props.find(p => p.t === 'winch' && p.bell && p.bossGate);
 function gqRing(e) { const b = gqBell(); if (!b || b.open > 0) return; const gx = b.gate * TS + 8;
-  b.open = GQC.ringHold; b.rungBy = 'queen'; closeGate(b.gate, b.gy0, b.gy1); if (SFX.seaBell) SFX.seaBell(); SFX.gateDrop(); shakeCam(6); flash = Math.max(flash, 0.12);
-  burst(gx, b.gy1 * TS, 14, ['#8a8a9c', '#c9c9d6', '#ff6b6b'], 90, 0.5); gqSay(e, 'SHE RINGS HER BELL', '#ff6b6b');
+  b.open = GQC.ringHold; b.rungBy = 'queen'; closeGate(b.gate, b.gy0, b.gy1); { const fx = gateFx[gateFx.length - 1]; if (L.hc2Kit && fx && fx.col === b.gate && fx.closing && fx.t === 0 && !fx.spr) fx.spr = HC2A.grateTiles(fx.ys.length); }   /* (claude/highcrown2bell) it falls as the art lane's iron grate, and lands as it */ if (SFX.seaBell) SFX.seaBell(); SFX.gateDrop(); shakeCam(6); flash = Math.max(flash, 0.12);
+  b.tellUntil = 0; b.slamT = 0.28; e.ringRelT = time + 0.8;   /* (claude/highcrown2bell) the release pose, and the slam's dust once the grate lands (gqBellFx) */
+  burst(gx, b.gy0 * TS, 10, ['#8a8a9c', '#c9c9d6', '#e8dcc0'], 60, 0.5); gqSay(e, 'SHE RINGS HER BELL', '#ff6b6b');
   if (!P.dead && Math.abs(P.x - gx) < 14 && P.y > b.gy0 * TS && P.y - 14 < (b.gy1 + 1) * TS) { damagePlayer(gx, DMG.gqSlam, { up: true, unblockable: true }); P.x = gx + (P.x < gx ? -16 : 16); } }
+/* (claude/highcrown2bell) THE GRATE'S FX: dust trickling off the lintel and iron grit while it is told; when it lands, a ring of dust along the floor, sparks off the tines and grit down the column. Art only: nothing here touches the grid or a number. */
+const GQ_HAND = { 15: [35, -72], 16: [37, -35] };   /* where her fists' rope ends in the sprite (frames 15 and 16): dx facing right, dy from her feet */
+function gqBellFx(e, dt) { const b = gqBell(); if (!b) return; const gx = b.gate * TS + 8;
+  if (e.mode === 'ringTell') { const k = 1 - Math.max(0, e.modeT) / GQC.ringTell; b.tellUntil = time + 0.12; b.tellK = k;
+    if (Math.random() < dt * (10 + 70 * k)) parts.push({ x: gx + (Math.random() - 0.5) * 14, y: b.gy0 * TS - 2, vx: (Math.random() - 0.5) * 8, vy: 6 + Math.random() * 20, life: 0.45, max: 0.45, col: Math.random() < 0.5 ? '#9a8f7a' : '#c9b27c', size: Math.random() < 0.3 ? 2 : 1, grav: 220 });
+    if (k > 0.4 && Math.random() < dt * 14 * k) parts.push({ x: gx + (Math.random() - 0.5) * 16, y: (b.gy0 + 1) * TS, vx: 0, vy: 30, life: 0.3, max: 0.3, col: '#c9c9d6', size: 1, grav: 260 });
+    }
+  if (b.slamT > 0) { b.slamT -= dt; if (b.slamT <= 0) { const fy = (b.gy1 + 1) * TS; dustRing(gx, fy, 26); dustRing(gx, fy, 16); dustRing(gx + 6, fy, 8); dustRing(gx - 6, fy, 8);
+    for (let i = 0; i < 8; i++) parts.push({ x: gx + (Math.random() - 0.5) * 18, y: fy - 3, vx: (i % 2 ? 1 : -1) * (20 + Math.random() * 40), vy: -18 - Math.random() * 26, life: 0.7, max: 0.7, col: i % 2 ? '#9a8f7a' : '#c9b27c', size: 3, grav: 20 });
+    for (let i = 0; i < 12; i++) parts.push({ x: gx + (Math.random() - 0.5) * 14, y: fy - 2, vx: (Math.random() - 0.5) * 120, vy: -50 - Math.random() * 70, life: 0.35, max: 0.35, col: i % 2 ? '#fff0c0' : '#c9c9d6', size: 1, grav: 380 });
+    for (let i = 0; i < 14; i++) parts.push({ x: gx + (Math.random() - 0.5) * 16, y: b.gy0 * TS + Math.random() * 12, vx: (Math.random() - 0.5) * 14, vy: 20 + Math.random() * 40, life: 0.6, max: 0.6, col: '#9a8f7a', size: 2, grav: 120 }); } } }
 function gqPillarsStand() { let any = false; const A = L.arena;
   for (const p of gqPillars()) { p.blows = 0; p.totter = 0; if (p.broken) { any = true; p.broken = false; p.fallT = 0; p.shake = 0.4; p.laid = [];
     for (let k = 0; k < 12; k++) parts.push({ x: p.x + (Math.random() - 0.5) * 16, y: p.y - 4, vx: (Math.random() - 0.5) * 40, vy: -20 - Math.random() * 30, life: 0.7, max: 0.7, col: '#8a8a98', size: 2, grav: 120 }); } }
@@ -21980,7 +21992,7 @@ function updateSceptres(dt) { const A = L.arena; if (!A) { sceptres = []; gqShar
     if (s.back && Math.abs(s.x - s.owner.x) < 18) s.done = true; }
   sceptres = sceptres.filter(s => !s.done && s.t < 4 && s.owner.alive); }
 function updateGQueen(e, dt) {
-  const A = L.arena, hall = A.floor, roof = A.roof;
+  const A = L.arena, hall = A.floor, roof = A.roof; gqBellFx(e, dt);
   if (e.phase > 1 && e.hp < e.maxHp * 0.15) { if (!e.enraged) { e.enraged = true; SFX.bellow(); shakeCam(8); flash = Math.max(flash, 0.25); } dt *= 1.3; if (Math.random() < dt * 30) parts.push({ x: e.x + (Math.random() - 0.5) * 30, y: e.y - 56 - Math.random() * 10, vx: 0, vy: -40, life: 0.4, max: 0.4, col: '#ff6b2c', size: 2, grav: 0, fire: true }); } // THE CROWN BURNS
   e.modeT -= dt; e.anim += dt; e.hitT = Math.max(0, e.hitT - dt);
   e.chipCd = Math.max(0, (e.chipCd || 0) - dt); e.plateHit = Math.max(0, (e.plateHit || 0) - dt); e.shatterT = Math.max(0, (e.shatterT || 0) - dt);
@@ -22097,7 +22109,6 @@ function updateGQueen(e, dt) {
     case 'sweepTell': e.face = Math.sign(d) || e.face; if (e.modeT <= 0) { e.mode = 'sweep'; e.modeT = 0.25; SFX.slash(); shakeCam(3); if (!P.dead && P.ground && ad < 72 && Math.abs(P.y - e.y) < 22) { const res = damagePlayer(e.x, DMG.gqSweep, { unblockable: true }); if (res === 'hit') { P.vx = Math.sign(d || 1) * 240; P.vy = -120; } } } break;
     case 'sweep': if (e.modeT <= 0) { e.mode = 'rec'; e.modeT = 0.5; } break;
     case 'ringTell': { want = 0; e.vx = 0; const b = gqBell(); e.face = Math.sign((e.ringX || P.x) - e.x) || e.face;   /* her sceptre up to her bell-rope: the grate's column glows red */
-      if (b && Math.random() < dt * 40) parts.push({ x: b.gate * TS + 8 + (Math.random() - 0.5) * 16, y: b.gy0 * TS + Math.random() * (b.gy1 - b.gy0 + 1) * TS, vx: 0, vy: -20, life: 0.35, max: 0.35, col: '#ff6b6b', size: 2, grav: 0, glow: true });
       if (e.modeT <= 0) { gqRing(e); e.mode = 'rec'; e.modeT = 0.8; } break; }
     case 'crownTell': want = 0; ringAt(e.crownX, e.y - 6, 36, '#e0b040', 0.08);
       if (e.modeT <= 0) { e.mode = 'crownRain'; e.modeT = 0.8; SFX.callerBlast();
@@ -32811,7 +32822,7 @@ function drawWorld(cx, cy, showPlayer) {
       g.fillStyle = open ? '#8fd160' : '#c9463d'; g.fillRect(x - 4, y - 15 + (open ? 6 : 0), 8, 6);
       g.strokeStyle = '#8a6a3a'; g.lineWidth = 2; g.beginPath(); const a = pr.spin > 0 ? time * 18 : 0; g.moveTo(x - 6 * Math.cos(a), y - 20 - 6 * Math.sin(a)); g.lineTo(x + 6 * Math.cos(a), y - 20 + 6 * Math.sin(a)); g.stroke(); }
     else if (pr.t === 'firebox') drawFirebox(pr, cx, cy);
-    else if (pr.t === 'winch' && pr.bell) { if (L.hc2Kit) { HC2A.drawBell(g, pr, cx, cy, time); HC2A.drawGrate(g, pr, cx, cy, TS, time, pr.pinned); } else drawLanceGate(g, pr, cx, cy, TS, time); }
+    else if (pr.t === 'winch' && pr.bell) { if (L.hc2Kit) { HC2A.drawBell(g, pr, cx, cy, time); HC2A.drawGrate(g, pr, cx, cy, TS, time, pr.pinned); if (pr.tellUntil > time && !pr.pinned) HC2A.drawGrateFx(g, pr, cx, cy, TS, time, pr.tellK || 0); } else drawLanceGate(g, pr, cx, cy, TS, time); }
     else if (pr.t === 'winch' && L.hc2Kit && !pr.bossGate) HC2A.drawWinch(g, pr, cx, cy, TS, time);   /* (claude/bosswave2) HIGHCROWN's hall bell and its grate (src/lance-support.js) */
     else if (pr.t === 'winch') { if (pr.bossGate) drawLanceGate(g, pr, cx, cy, TS, time);   /* (claude/bosswave2) THE BRIDGE GATE, hanging or down on him */ const x = Math.round(pr.x - cx), y = Math.round(pr.y - cy); g.fillStyle = '#3a2214'; g.fillRect(x - 1, y - 16, 3, 16); g.fillStyle = '#5a3a24'; g.beginPath(); g.arc(x, y - 12, 6, 0, 7); g.fill(); g.strokeStyle = '#8a5a32'; g.lineWidth = 1; for (let k = 0; k < 4; k++) { const a = pr.spin + k * Math.PI / 2; g.beginPath(); g.moveTo(x, y - 12); g.lineTo(x + Math.cos(a) * 8, y - 12 + Math.sin(a) * 8); g.stroke(); } g.fillStyle = '#5a6270'; g.fillRect(x - 1, y - 13, 3, 3);
       g.strokeStyle = 'rgba(90,98,112,0.8)'; g.beginPath(); g.moveTo(x, y - 18); g.lineTo(pr.gate * TS + 8 - cx, pr.gy0 * TS - cy); g.stroke(); if (pr.open > 0) { g.fillStyle = '#ffd36b'; g.fillRect(x - 6, y - 24, Math.round(12 * pr.open / pr.hold), 2); } }
@@ -33435,6 +33446,7 @@ function drawWorld(cx, cy, showPlayer) {
       if (e.torch && GMH) GMH.drawFoe(g, e, cx, cy, time);   /* (claude/gorm2) a torch goblin's torch */   /* (claude/kingswood2art) THE COURT'S banner bearers and drummer, over the marcher */
       if (OKD.isKnightT(e.t) && e.alive) OK.drawOver(g, e, dx0, dy0, frame, ps);   /* (claude/orderart) the parry glint on the blade, the ore plates on the pauldrons: over the sprite */
       if (wind) { drawTellFlash(e, sprSet, frame, dx0, dy0, ps, pSX, pSY, pRot); drawTellGlint(e, dx0, dy0, bigF, ps); }   /* (claude/tellposes) the white frame and the glint on the weapon hand */
+      if (e.t === 'gqueen' && e.alive && L.hc2Kit && (e.mode === 'ringTell' || (e.mode === 'rec' && (e.ringRelT || 0) > time))) { const bl = gqBell(), tell = e.mode === 'ringTell', hh = GQ_HAND[tell ? 15 : 16]; if (bl) { const rt = (e.ringRelT || 0) - time, f = e.face < 0 ? -1 : 1; HC2A.drawQueenRope(g, bl, cx, cy, e.x + f * hh[0], e.y + hh[1], tell ? 1 - Math.max(0, e.modeT) / GQC.ringTell : 1, tell ? 0 : Math.min(1, Math.max(0, (0.65 - rt) / 0.5)), time); } }   /* (claude/highcrown2bell) HER ROPE, bell to fists: over her, so a fist near the bell is not hidden by her own sleeve */
       if (pupQ) PUPH.over(e, pupQ);   /* ...and grey steel when it cannot */
       if (!(e.flash > 0)) drawWarm('tint', sprSet, null, frame, dx0, dy0, ps.face, pSX, pSY, pRot, e.x, e.y - e.h / 2);
       if (e.fa && e.alive && !(e.flash > 0)) FOA.tint(e, time, (c, a) => drawTinted(sprSet, null, frame, dx0, dy0, ps.face, pSX, pSY, pRot, c, a));   /* (claude/foepass) THE AFFIX'S TINT over the body (src/foe-affix.js) */
