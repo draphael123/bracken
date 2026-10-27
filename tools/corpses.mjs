@@ -7,18 +7,23 @@
 //   (3) kills it and draws the body for a few frames: the set the CORPSE drew (c.shown) must be the reskin, never SPR[e.t], and its frame must exist.
 // usage: node tools/corpses.mjs            (assert)
 //        node tools/corpses.mjs shots TAG  (also writes work/claude/corpses/TAG/<level>-<skin>.png: the body, 8x, mid-tumble)
-import { openPage, ROOT } from './cdp.mjs';
+import { ROOT } from './cdp.mjs';
+import { sweepLevels } from './sweep-pages.mjs';
 import { mkdirSync, writeFileSync } from 'fs';
 import { join } from 'path';
 const shots = process.argv[2] === 'shots' ? (process.argv[3] || 'after') : null;
-const pg = await openPage({ audio: true });
+/* (redcleanup 10-26) one level per call, a fresh page every 5 levels, a hard limit per level that names it (was: all 30 levels in one page under one 600 s limit - ~7 min when it worked, a silent
+   hang when the PC was short of RAM). Every check is kept; CORPSES_ONLY=a,b still narrows the list. tools/sweep-pages.mjs. */
+const ALL_IDS = ['sealedpyramid', 'buriedcity', 'wood', 'marsh', 'oreroad', 'minecart', 'canal', 'fair', 'theatre', 'welltown', 'redgorge', 'skyroad', 'rootway', 'palisadewood', 'rookery', 'undercrown', 'lamplit', 'witchlight', 'fallingtower', 'burial', 'unburied', 'flotilla', 'keep', 'deep', 'longwater', 'causeway', 'underwell', 'ksar', 'hornetsnest', 'spore', 'underleaf'];
+const ONLY = (process.env.CORPSES_ONLY || '').split(',').filter(Boolean), IDS = ALL_IDS.filter(id => !ONLY.length || ONLY.includes(id));
 let bad = 0;
+const pageErrs = new Set();
 try {
-  const r = await pg.evalp(`(async()=>{ const { LEVELS } = await import('/src/level.js'); const res = [], seen = new Set();
+  const code = id => `(async()=>{ const { LEVELS } = await import('/src/level.js'); const res = [], seen = new Set();
     BK.manualSimulation = true; BK.SET.hud = 'minimal'; BK.setHero('knight'); BK.reset({ fresh: true });
     const foes = () => typeof BK.enemies === 'function' ? BK.enemies() : BK.enemies, corp = () => typeof BK.corpses === 'function' ? BK.corpses() : BK.corpses;
     const flag = e => e.cnSkin ? 'cn:' + e.cnSkin : e.lamplighter ? 'lamplighter' : e.shy ? 'shy' : e.juggler ? 'juggler' : e.flyman ? 'flyman' : e.prompter ? 'prompter' : e.bandit ? 'bandit' : e.usher ? 'usher' : e.patron ? 'patron' : e.footlights ? 'footlights' : (e.bone && e.t === 'archer') ? 'bonearcher' : null;
-    for (const id of ['sealedpyramid', 'buriedcity', 'wood', 'marsh', 'oreroad', 'minecart', 'canal', 'fair', 'theatre', 'welltown', 'redgorge', 'skyroad', 'rootway', 'palisadewood', 'rookery', 'undercrown', 'lamplit', 'witchlight', 'fallingtower', 'burial', 'unburied', 'flotilla', 'keep', 'deep', 'longwater', 'causeway', 'underwell', 'ksar', 'hornetsnest', 'spore', 'underleaf'].filter(id => !${JSON.stringify(process.env.CORPSES_ONLY || '')} || ${JSON.stringify(process.env.CORPSES_ONLY || '')}.split(',').includes(id))) { const li = LEVELS.findIndex(l => l.id === id); if (li < 0) continue;
+    for (const id of ${JSON.stringify([id])}) { const li = LEVELS.findIndex(l => l.id === id); if (li < 0) continue;
       const kinds = []; BK.load(li); BK.state = 'play'; BK.god = true; BK.sim(4);
       for (const e0 of foes()) { const f = flag(e0); if (f && !kinds.some(k => k.f === f)) kinds.push({ f, t: e0.t, x: e0.x, y: e0.y, i: foes().indexOf(e0) }); }
       for (const k of kinds) { const row = { level: id, flag: k.f, t: k.t, errs: [] };
@@ -40,15 +45,16 @@ try {
         if (c.shown && !(c.shown.R && c.shown.R[c.frame])) row.errs.push('the corpse frame ' + c.frame + ' is not in the set it drew');
         if (${shots ? 'true' : 'false'}) { const V = BK.view, sx = Math.max(0, Math.round(c.x - V.x) - 40), sy = Math.max(0, Math.round(c.y - V.y) - 36), cv = document.createElement('canvas'); cv.width = 640; cv.height = 360; const g = cv.getContext('2d'); g.imageSmoothingEnabled = false; g.drawImage(BK.buf, sx, sy, 80, 45, 0, 0, 640, 360); row.png = cv.toDataURL('image/png'); }
         res.push(row); } }
-    return res; })()`, 600000);
-  const rows = r || [];
+    return res; })()`;
+  const got = await sweepLevels(IDS, async (pg, id, ms) => { const x = await pg.evalp(code(id), ms); for (const e of pg.errors.slice(0, 3)) pageErrs.add(e); return x; }, { label: 'corpses', chunk: 5, perLevelMs: +(process.env.SWEEP_LEVEL_MS || 150000), openOpts: { audio: true } });
+  const rows = got.flatMap(g => g.error ? [{ level: g.id, flag: '-', t: '-', errs: [g.error] }] : (g.result || []));
   for (const row of rows) {
     const ok = !row.errs.length; if (!ok) bad++;
     console.log((ok ? '  ok   ' : '  FAIL ') + (row.level + ' ' + row.flag + ' (' + row.t + ')').padEnd(34) + ' corpse: ' + (row.shown || '-') + (row.errs.length ? '  <- ' + row.errs.join('; ') : ''));
     if (shots && row.png) { const dir = join(ROOT, 'work/claude/corpses', shots); mkdirSync(dir, { recursive: true }); writeFileSync(join(dir, row.level + '-' + row.flag.replace(/[^a-z0-9]+/gi, '-') + '.png'), Buffer.from(row.png.split(',')[1], 'base64')); }
   }
   if (!rows.length) { console.log('  FAIL no reskinned foe was found in canal / fair / theatre'); bad++; }
-  if (pg.errors.length) console.log('page errors: ' + pg.errors.slice(0, 3).join(' | '));
-} finally { pg.close(); }
+  if (pageErrs.size) console.log('page errors: ' + [...pageErrs].slice(0, 3).join(' | '));
+} finally { /* each sweepLevels page is closed by the helper */ }
 console.log(bad ? bad + ' FAILED' : 'ok  corpses  every reskinned foe\'s hurt frame and body are drawn in its own skin');
 process.exit(bad ? 1 : 0);

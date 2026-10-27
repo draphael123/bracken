@@ -59,6 +59,7 @@ try {
      under the ledge: stunned, the gold read on, and a blow lands x1.5 */
   {BK.god=false;P.hp=P.maxHp;P.sun={v:0};noLedges();const x0=A.x0+20*TS;W.ledges=[{id:902,x0,x1:x0+48,state:'up',t:30,life:30}];W.ward=0;W.mode='under';W.t=0;W.i=0;W.ripples=[];
    let left=false,stun=false,openRead=false,took=0;for(let f=0;f<60*4&&!stun;f++){P.inv=0;if(!left){P.x=x0+10;P.y=A.floor;P.vx=0;}if(!left&&W.ripples.some(q=>q.real&&q.commit)){left=true;P.x=x0-34;}const h0=P.hp;BK.sim(1);took+=Math.max(0,h0-P.hp);if(b.mode==='stunned'){stun=true;openRead=!!BK.bossOpen&&BK.bossOpen(b);}}
+   for(let q=0;q<120&&!b.stOpenWas;q++)BK.sim(1);   /* (redcleanup 10-26: let the opening be SEEN before the blow - the game's frame that sees a boss open (src/anti-mash.js openTick, once a frame) starts the stale count clean; the hide case's blow on the PREVIOUS stun had counted, so this one paid the 2nd landing, x0.85 = 26, not 30. a hero cannot land a blow before the frame that shows him the opening) */
    b.greedLog=[];b.greedT=0;const h0=b.hp;BKT.hurtAs('light',b,20,b.x-14,false);const dealt=h0-b.hp;b.hp=h0;
    out.stun={stun,openRead,dealt,took,mode:b.mode};BK.god=true;W.mode='under';W.t=0;W.ward=0;}
   /* C1: one step off the locked spot and the breach does not touch you */

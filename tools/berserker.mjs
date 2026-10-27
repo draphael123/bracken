@@ -45,7 +45,7 @@ try {
     out.flurry={combos,heavy,reach,spinL,spinR};
     /* the double chop on a mini's bar (70) */
     const poiseOf=h=>{__bz();
-      const b=__foe(20,'brute');b.maxHp=b.hp;b.mini=true;BK.sim(2);P().st=P().maxSt;K.atk=true;for(let i=0;i<28;i++){BK.sim(1);b.x=P().x+20;}K.atk=false;let most=0,heavy=false;   /* (claude/chargetiers: the double chop is T1 now and no longer goes by itself at the full wind - let go where it used to go, 0.5 s) */for(let i=0;i<40;i++){BK.sim(1);b.x=P().x+20;heavy=heavy||P().heavy;most=Math.max(most,b.poise||0,b.broken>0?100:0);}return {most,heavy,hit:b.hp0-b.hp};};
+      const b=__foe(20,'brute');b.maxHp=b.hp;b.mini=true;b.biteCd=99;BK.sim(2);P().st=P().maxSt;K.atk=true;BK.press('atk');for(let i=0;i<36;i++){P().inv=0.5;BK.sim(1);b.x=P().x+20;}K.atk=false;let most=0,heavy=false;   /* (claude/chargetiers: the double chop is T1 now and no longer goes by itself at the full wind - let go PAST T1 - the old 28 frames (0.47 s) let go just BEFORE the tier-1 wind (0.14 + 0.36 s, x his quickness) so the blow was a part-wind 57.6; redcleanup 10-26: the tier wind counts from a real PRESS (BK.press, as the tiers case does) - K.atk alone let go a part-wind blow of 57.6 - so press, hold 36 frames inside T1, foe kept off the bite; floor still 60, now measures 61.06) */for(let i=0;i<40;i++){BK.sim(1);b.x=P().x+20;heavy=heavy||P().heavy;most=Math.max(most,b.poise||0,b.broken>0?100:0);}return {most,heavy,hit:b.hp0-b.hp};};
     out.cross={bz:poiseOf('berserker')};
     /* (claude/chargetiers) THE RAGE WIND-UP: the climb and its poses, each blow, rage quickens it, the auto-loose */
     { const T={}, hold=n=>{P().st=P().maxSt;K.atk=true;BK.press('atk');for(let i=0;i<n;i++)BK.step(1);}, rel=()=>{K.atk=false;BK.step(2);};

@@ -4,11 +4,14 @@
 // shut, the boss music up, the loadout locked and a level-up's heal owed forever (THE FALSE ABBOT did, 2026-09-24: he was missing
 // from a hand-written list in hurtEnemy0, and that list is now a rule - any boss of the fight ends it). A boss this cannot put down
 // with a thousand scripted blows is reported as UNKILLABLE BY SCRIPT, which is a hole in this check, not a pass.
-import { openPage } from './cdp.mjs';
-const pg = await openPage({ audio: false, fonts: false }); let r;
-try {
-  r = await pg.evalp(`(async()=>{const {LEVELS}=await import('/src/level.js');BK.manualSimulation=true;const rows=[];
-for(const [i,lv] of LEVELS.entries()){let b;try{b=lv.build();}catch{continue;}
+import { LEVELS } from '../src/level.js';
+import { sweepLevels } from './sweep-pages.mjs';
+/* (redcleanup 10-26) one level per call (a fresh page every 5), a hard limit per level that names it and one line per boss as it goes (was: every fight in ONE page under a 1 h limit and
+   no output until the end - 'boss-fight-end printed nothing for 40 min'). A level that does not finish is a LOST fight row, which is red. tools/sweep-pages.mjs. */
+const ids = [];
+for (const lv of LEVELS) { let b; try { b = lv.build(); } catch { continue; } if (b.arena || b.mini) ids.push(lv.id); }
+const code = id => `(async()=>{const {LEVELS}=await import('/src/level.js');BK.manualSimulation=true;const rows=[];
+for(const [i,lv] of LEVELS.entries()){if(lv.id!==${JSON.stringify(id)})continue;let b;try{b=lv.build();}catch{continue;}
  for(const kind of ['boss','mini']){const A0=kind==='boss'?b.arena:b.mini;if(!A0)continue;
   BK.setHero('knight');BK.reset({fresh:true});BK.load(i);BK.start();BK.god=true;BK.sim(10);BK.reset();
   const L=BK.L,A=kind==='boss'?L.arena:L.mini,live=()=>kind==='boss'?BK.bossActive:BK.miniActive;
@@ -22,8 +25,9 @@ for(const [i,lv] of LEVELS.entries()){let b;try{b=lv.build();}catch{continue;}
   let f=0;for(;f<300&&live();f++){BK.P.inv=99;BK.sim(1);}
   rows.push({lv:lv.id,kind,t:e.t,started,blows:n,res:live()?'FIGHT RUNS ON':'ended',frames:f});
   await new Promise(r=>setTimeout(r,0));}}
-return rows;})()`, 3600000);
-} finally { pg.close(); }
+return rows;})()`;
+const got = await sweepLevels(ids, async (pg, id, ms) => { const x = await pg.evalp(code(id), ms); for (const q of x) console.log('    ' + q.lv.padEnd(13) + q.kind.padEnd(5) + String(q.t).padEnd(16) + q.res + (q.started === false ? ' (the fight never started)' : '')); return x; }, { label: 'boss-fight-end', chunk: 5, perLevelMs: +(process.env.SWEEP_LEVEL_MS || 240000) });
+const r = got.flatMap(g => g.error ? [{ lv: g.id, kind: 'boss', t: '-', res: g.error }] : g.result);
 const bad = r.filter(x => x.res !== 'ended'), notStarted = r.filter(x => x.res === 'ended' && !x.started);
 for (const x of r) if (x.res !== 'ended' || !x.started) console.log('  ' + x.lv.padEnd(13) + x.kind.padEnd(5) + x.t.padEnd(16) + x.res + (x.started ? '' : ' (the fight never started)'));
 if (bad.length || notStarted.length) { console.log('BOSS-FIGHT-END: ' + (bad.length + notStarted.length) + ' of ' + r.length + ' fights do not end on the boss\'s death'); process.exit(1); }
