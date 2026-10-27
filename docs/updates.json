@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-10-27",
+    "batch": 124,
+    "lines": [
+      "Fixed: the game no longer stalls at 14% loading when an ad blocker is on",
+      "The Admiral's fight is unchanged - only a file was renamed",
+      "If it still stalls, reload once to drop the old copy"
+    ]
+  },
+  {
+    "date": "2026-10-27",
     "batch": 123,
     "lines": [
       "New level: the Kitchen Gate, and Lord Grubbag the Glutton with his belly flop",
