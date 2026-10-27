@@ -14,7 +14,7 @@
    node tools/admiral.mjs [--pure]   (PORT for the page) */
 import assert from 'node:assert/strict';
 import { fileURLToPath } from 'node:url';
-import * as AD0 from '../src/admiral.js';
+import * as AD0 from '../src/flotilla-boss.js';
 import { BY_HAND, ANSWER, HEIGHT } from '../src/marks.js';
 import { LEVELS, T } from '../src/level.js';
 const { AD } = AD0;
