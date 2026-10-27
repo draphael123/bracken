@@ -22,7 +22,7 @@ const box = (V, x, y, w, h, c) => { V.g.fillStyle = c; V.g.fillRect(R(x - V.cx),
 const put = (V, spr, wx, wy) => V.g.drawImage(spr, R(wx - V.cx), R(wy - V.cy));
 const alpha = (V, a, fn) => { V.g.globalAlpha = a; fn(); V.g.globalAlpha = 1; };
 const vis = (V, x0, x1, m = 40) => x1 > V.cx - m && x0 < V.cx + V.vw + m;
-const glow = (V, x, y, r, a, warm = true) => { const g = V.g; if (V.noGlow || typeof g.createRadialGradient !== 'function') return; const sx = R(x - V.cx), sy = R(y - V.cy);
+const glow = (V, x, y, r, a, warm = true) => { const g = V.g; if (V.noGlow || typeof g.createRadialGradient !== 'function') return; const sx = R(x - V.cx), sy = R(y - V.cy); if (!Number.isFinite(sx + sy + r)) return;   /* non-finite position or radius (seen at the Ksar zip line 1 head): skip the glow, never throw */
   const gr = g.createRadialGradient(sx, sy, 1, sx, sy, r); gr.addColorStop(0, (warm ? 'rgba(255,170,70,' : 'rgba(255,230,160,') + a + ')'); gr.addColorStop(1, 'rgba(255,120,40,0)');
   const o = g.globalCompositeOperation; g.globalCompositeOperation = 'lighter'; g.fillStyle = gr; g.fillRect(sx - r, sy - r, r * 2, r * 2); g.globalCompositeOperation = o; };
 const memo = new Map(); const once = (k, fn) => { if (!memo.has(k)) memo.set(k, fn()); return memo.get(k); };
