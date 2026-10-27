@@ -95,7 +95,7 @@ export const WINCH = {
   hp: 480, pace: 22,   /* (claude/sweep1: 600 - the standard bot won 0/12 at L10) */
   /* ROUND THREE: drawn 1.3x (main.js bigF; his box grows with it) - hand is where the hook leaves him, at that size */
   scale: 1.3, hand: 34,
-  tell: { reverse: 0.45, send: 0.8, hook: 0.7, lever: 0.55, letgo: 0.7, leap: 0.9 },
+  tell: { reverse: 0.45, send: 1.1, hook: 0.7, lever: 0.55, letgo: 0.7, leap: 0.9 },
   /* THE LEAP (phase two only): told leapTell s with a crouch and a red ring on the housing he will land on, in the air leapT s,
      and whoever is within leapHit of where he lands is hurt and thrown off */
   leapEvery: 5.5, leapT: 0.8, leapHit: 30,
@@ -105,12 +105,13 @@ export const WINCH = {
      opening has to be there for a player who baits it (the old fight's lab measured the alternative: reversed a tile short of
      the drum, forever). Low line: 440 px at 60 px/s, 7.3 s; the reverse leaves you at most ~425 px out, 9.5 s of cooldown left. */
   revT: 2.5, revMul: 1.5, revCd: 12.0, revCdP2: 10.0, revRange: 200,
+  /* (claude/oreroadminor, Daniel 10-26) THE LAUNCHED PLATFORM RUSH, the SEND, ~30% SLOWER (sendV 300 -> 210) with a longer, clearer tell (0.8 s -> 1.1 s: the line pulses red out from the drum, chevrons march down it, the mouth flares) */
   /* SEND: sendR IS HALF A BUCKET - a thing that hurts is the size it looks (C1) */
-  sendV: 300, sendCd: 5.0, sendCdP2: 3.6, sendR: OR.BUCKET.w / 2, sendH: 14,
+  sendV: 210, sendCd: 5.0, sendCdP2: 3.6, sendR: OR.BUCKET.w / 2, sendH: 14,
   /* AND NEVER AT A RIDER WHO WILL BE AT THE MOUTH WHEN IT IS LET GO: begun at 80 px, a 0.8 s tell brought a rider to 32 px and the
      bucket started on top of them - a blow with no answer (the lab took it every jam). So a rider must be sendMin px out when
      it is begun: two bucket-widths, and the tell's worth of the fastest line in phase two */
-  sendMin: OR.BUCKET.w + 0.8 * 60 * 1.25,
+  sendMin: OR.BUCKET.w + 1.1 * 60 * 1.25,
   /* THE HOOK: thrown at where you will be hookLead s from now, it flies hookV px/s to hookR and comes back; hookHit is the
      radius of the iron. It is thrown at anyone inside hookR - which the room has at every housing (A12, tools/ore-road.mjs) */
   hookV: 300, hookR: 250, hookLead: 0.35, hookHit: 11, hookCd: 4.5, hookCdP2: 3.4,
@@ -170,6 +171,8 @@ export const winchJammed = e => (e.mode === 'thrown' && e.why !== 'ore') || e.mo
 /* OFF HIS HOUSING: thrown, downed or staggered on its ledge (nothing jams a drum he is not on) */
 const offDrum = e => e.mode === 'thrown' || e.mode === 'downed' || e.mode === 'stagger';
 /* ROUND SEVEN: HIS ORE ARMOUR - on, or forming (a rock thrown while he packs it shatters what is there) - in phases one and two */
+/* (claude/oreroadminor) a blade on his ore: it CRACKS (drawn: the more blows, the more seams), art only - no number moves */
+export const winchChip = e => { if (e && winchArmoured(e)) e.armHit = Math.min(12, (e.armHit || 0) + 1); };
 export const winchArmoured = e => !!e && e.phase !== 3 && (!!e.armour || e.mode === 'plating');
 /* WHAT A BLOW ON HIM IS WORTH: x2 downed or staggered; whole while he is thrown, on foot (phase three) or BARE; his ORE ARMOUR, or his
    ward after a stagger, takes it at armourMul (B15's floor - never nothing) */
@@ -232,11 +235,11 @@ function arrive(e, c, at, how) {
   if (how !== 'back') e.qMark = e.hp;   /* the quarter he retreats on is counted from here */
   e.leapCd = WINCH.leapEvery;
   driveAll(e, c, mulOf(e));
-  if (how === 'wake') { e.armour = true; e.bareT = 0; c.say('HIS ORE ARMOUR: TAKE A ROCK FROM A SKIP AND THROW IT', false); }
+  if (how === 'wake') { e.armour = true; e.bareT = 0; e.armHit = 0; c.say('HIS ORE ARMOUR: TAKE A ROCK FROM A SKIP AND THROW IT', false); }
   else if (how === 'circuit' && !e.armour) plate(e, c);
 }
 /* ROUND SEVEN: HE PACKS ORE ROUND HIMSELF - told (the haul pose, the plates forming over WINCH.plateT, said), never an attack */
-function plate(e, c) { e.mode = 'plating'; e.modeT = WINCH.plateT; e.vx = 0; e.bareT = 0; c.say('HE PACKS ORE ROUND HIMSELF: THROW A ROCK', false); c.sound('heavy'); }
+function plate(e, c) { e.armHit = 0; e.shatT = undefined; e.mode = 'plating'; e.modeT = WINCH.plateT; e.vx = 0; e.bareT = 0; c.say('HE PACKS ORE ROUND HIMSELF: THROW A ROCK', false); c.sound('heavy'); }
 /* ROUND SEVEN, THE ROCK: main.js (src/winch-rocks.js) calls this the frame a thrown rock reaches him. Returns 'shatter' (his ore broke:
    he is knocked off onto his ledge, to be STAGGERED there), 'warded' (his ward after a stagger turns it), 'hit' (bare, on foot, or
    already down: a rock, whole) or 'miss' (asleep) */
@@ -246,7 +249,7 @@ export function winchRock(e, c) {
   if (e.phase === 3 || ['thrown', 'downed', 'stagger', 'letgo', 'swing', 'leap', 'descendTell', 'descend'].includes(e.mode)) return 'hit';
   if (!winchArmoured(e)) return 'hit';
   const H = c.H[e.at];
-  e.armour = false; e.bareT = 0; e.hk = null; e.toss = null; e.rockN = (e.rockN || 0) + 1;
+  e.armour = false; e.bareT = 0; e.hk = null; e.toss = null; e.rockN = (e.rockN || 0) + 1; e.shatT = 0; e.shatF = e.face || 1; e.armHit = 0;   /* (claude/oreroadminor) the plates fall away: drawn for ~1.2 s */
   for (let r = e.runaway, prev = null; r; r = r.next) { if (r.delay > 0) { if (prev) prev.next = null; else e.runaway = null; break; } prev = r; }
   e.mode = 'thrown'; e.why = 'ore'; e.modeT = WINCH.thrownT; e.fromY = e.y; e.fromX = e.x; e.toX = H.ledgeX; e.toY = H.ledgeY; e.vx = 0;
   c.say('THE ORE SHATTERS: HE IS KNOCKED OFF', false, true); c.sound('crash'); c.shake(6); if (c.stall) c.stall(0.08);
@@ -268,7 +271,7 @@ export function winchJam(e, c) {
   if (!e || !e.alive || e.phase === 3 || e.mode === 'thrown' || e.mode === 'downed' || e.mode === 'stagger' || e.mode === 'letgo' || e.mode === 'swing' || e.mode === 'leap' || e.mode === 'sleep' || e.mode === 'wake') return false;   /* (phase three: he has come down off his drums - there is nothing to jam) */
   const H = c.H[e.at];
   e.mode = 'thrown'; e.why = 'jam'; e.modeT = WINCH.thrownT; e.fromY = e.y; e.fromX = e.x; e.toX = H.ledgeX; e.toY = H.ledgeY; e.vx = 0; e.revT = 0; e.hk = null; e.toss = null;
-  e.armour = false;   /* (round seven: the crash shakes his ore off too - he packs it again on the housing he swings to) */
+  e.armour = false; e.shatT = 0; e.shatF = e.face || 1; e.armHit = 0;   /* (round seven: the crash shakes his ore off too - he packs it again on the housing he swings to) */
   /* a jammed drum lets nothing go: a bucket still waiting to be sent is not sent (one already on the line goes on) */
   for (let r = e.runaway, prev = null; r; r = r.next) { if (r.delay > 0) { if (prev) prev.next = null; else e.runaway = null; break; } prev = r; }
   /* ROUND SIX: THE CRASH AND THE STALL, so the jam READS: the world stops a beat (the hitstop), the drum crashes, the cable snaps
@@ -383,7 +386,7 @@ export function updateWinchmaster(e, dt, c) {
   const { P } = c;
   if (!e.alive || e.mode === 'sleep') return;
   if (e.at === undefined) e.at = 0;
-  e.anim = (e.anim || 0) + dt; e.modeT -= dt; e.cd = (e.cd ?? 1) - dt;
+  e.anim = (e.anim || 0) + dt; e.modeT -= dt; e.cd = (e.cd ?? 1) - dt; if (e.shatT !== undefined && e.shatT < 3) e.shatT += dt;
   for (const k of ['revCd', 'sendCd', 'hookCd', 'leverCd', 'leapCd', 'tossCd', 'spillCd', 'ward']) e[k] = Math.max(0, (e[k] ?? 0) - dt);
   const H = c.H[e.at];
   if (e.hp <= e.maxHp * 0.5 && (e.phase || 1) < 2) { e.phase = 2; e.rockT = Math.min(e.rockT ?? 0, 1.5);
@@ -537,17 +540,45 @@ export function updateWinchmaster(e, dt, c) {
    round him on his ledge and a clock that empties over him), HIS WARD (a pale shell), and the three new told attacks: ORE TOSS (the chunk
    in his raised hand, then in the air, and a red ring where it lands), SPILL (a red strip down from the skip he tips, and on what is
    under it) and THE CHAIN SWEEP (a red line along his floor to its reach, then the hook dragged along it) */
-const PLATES = [[-9, -40, 8, 6], [2, -42, 8, 6], [-12, -31, 6, 9], [7, -31, 6, 8], [-8, -23, 16, 6], [-9, -14, 6, 8], [4, -14, 6, 8], [-3, -33, 6, 5]];
 const ring = (g, x, y, rx, ry, n) => { for (let i = 0; i < n; i++) { const a = i / n * Math.PI * 2; g.fillRect(Math.round(x + Math.cos(a) * rx), Math.round(y + Math.sin(a) * ry), 2, 2); } };
+/* (claude/oreroadminor, Daniel 10-26: the ore armour looks awkward - make it real armour) THE ORE ARMOUR, strapped on over his rig: a breastplate, two pauldrons, a backplate, a belly slab and thigh guards, each a riveted slab of ore with a lit edge and a gold seam,
+   held by a hauling harness (a leather cross-strap over the chest, a belt with a brass buckle, a band round each thigh). Packing it slides the slabs on one by one; blades CRACK it (armHit: more seams the more you chip); a rock SHATTERS it and the plates fall away
+   (shatT, ~1.2 s). Coordinates: dx from his centre facing right, dy from his feet (up is negative), in unscaled pixels (x S / 1.3 at draw). ART ONLY. */
+const SLABS = [[-8, -35, 16, 12], [-15, -40, 8, 7], [7, -40, 8, 7], [-7, -22, 14, 6], [-10, -16, 7, 9], [3, -16, 7, 9], [-14, -33, 4, 14], [11, -34, 4, 9]];
+const CRACKS = [[[1, 0], [0, 3], [2, 5], [1, 8], [3, 11]], [[2, 0], [1, 2], [3, 4], [2, 6]], [[0, 1], [2, 3], [1, 5]], [[3, 0], [2, 2], [4, 4], [3, 5]], [[1, 0], [2, 3], [1, 6], [2, 8]], [[1, 0], [0, 4], [2, 8]], [[1, 1], [2, 5], [1, 9], [2, 13]], [[1, 0], [2, 4], [1, 8]]];
+function slab(g, x, y, w, h, i, crack, time) {
+  g.fillStyle = '#1b1622'; g.fillRect(x - 1, y - 1, w + 2, h + 2);
+  g.fillStyle = '#4e4234'; g.fillRect(x, y, w, h); g.fillStyle = '#7a6a50'; g.fillRect(x, y, w - 1, h - 1);
+  g.fillStyle = '#a8925a'; g.fillRect(x, y, w - 1, 1); g.fillRect(x, y, 1, h - 1);
+  g.fillStyle = '#35291f'; g.fillRect(x + 1, y + h - 1, w - 1, 1); g.fillRect(x + w - 1, y + 1, 1, h - 1);
+  g.fillStyle = '#c8a24a'; for (let k = 0; k < Math.max(1, (w >> 2)); k++) g.fillRect(x + 1 + ((k * 3 + i) % Math.max(1, w - 3)), y + 1 + ((k * 2 + i * 2) % Math.max(1, h - 3)), 1, 1);   /* the gold seam */
+  if ((i + Math.floor(time * 2.4)) % 5 === 0) { g.fillStyle = '#ffe9a0'; g.fillRect(x + (w >> 1), y + (h >> 1), 1, 1); }
+  if (w >= 7 && h >= 6) { g.fillStyle = '#e6dba8'; g.fillRect(x + 1, y + 1, 1, 1); g.fillRect(x + w - 3, y + 1, 1, 1); g.fillRect(x + 1, y + h - 3, 1, 1); g.fillRect(x + w - 3, y + h - 3, 1, 1); }   /* rivets */
+  if (crack > 0 && (crack >= 3 || i % 3 < crack)) { g.fillStyle = '#120e16'; for (const [cx2, cy2] of CRACKS[i]) if (cx2 < w && cy2 < h) g.fillRect(x + cx2, y + cy2, 1, 1); if (crack >= 2) g.fillRect(x + (w >> 1), y + h - 3, 2, 1); }
+}
+function strapLine(g, x0, y0, x1, y1, col) { const n = Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0), 1); g.fillStyle = col; for (let k = 0; k <= n; k++) g.fillRect(Math.round(x0 + (x1 - x0) * k / n), Math.round(y0 + (y1 - y0) * k / n), 2, 2); }
+function harness(g, X, Y, f, u, n) {
+  const px = dx => X + Math.round((f > 0 ? dx : -dx) * u), py = dy => Y + Math.round(dy * u);
+  if (n >= 4) { strapLine(g, px(-13), py(-38), px(9), py(-18), '#2a1c16'); strapLine(g, px(-13), py(-39), px(9), py(-19), '#5a4030'); strapLine(g, px(12), py(-38), px(-7), py(-24), '#2a1c16'); }   /* the cross-straps over the breastplate */
+  if (n >= 4) { g.fillStyle = '#2a1c16'; g.fillRect(Math.min(px(-8), px(8)) - 1, py(-22), 18, 3); g.fillStyle = '#6a4a34'; g.fillRect(Math.min(px(-8), px(8)), py(-22), 16, 1); g.fillStyle = '#d8b04a'; g.fillRect(px(0) - 2, py(-23), 4, 4); g.fillStyle = '#3a2a1a'; g.fillRect(px(0) - 1, py(-22), 2, 2); }   /* the belt and its brass buckle */
+  if (n >= 6) { for (const dx of [-10, 3]) { g.fillStyle = '#2a1c16'; g.fillRect(Math.min(px(dx), px(dx + 7)) - 1, py(-12), 9, 2); g.fillStyle = '#5a4030'; g.fillRect(Math.min(px(dx), px(dx + 7)), py(-12), 7, 1); } }   /* the thigh bands */
+}
 function drawOreRead(g, e, c, cx, cy, time) {
-  const X = Math.round(e.x - cx), Y = Math.round(e.y - cy), f = e.face || 1, S = WINCH.scale;
+  const X = Math.round(e.x - cx), Y = Math.round(e.y - cy), f = e.face || 1, S = WINCH.scale, u = S / 1.3;
   if (e.phase !== 3 && (e.armour || e.mode === 'plating')) {
-    const n = e.mode === 'plating' ? Math.min(PLATES.length, Math.floor(PLATES.length * (1 - Math.max(0, e.modeT) / WINCH.plateT)) + 1) : PLATES.length;
-    for (let i = 0; i < n; i++) { const [dx, dy, w, h] = PLATES[i], x = X + Math.round((f > 0 ? dx : -dx - w) * S / 1.3), y = Y + Math.round(dy * S / 1.3);
-      g.globalAlpha = 1; g.fillStyle = '#2a2430'; g.fillRect(x - 1, y - 1, w + 2, h + 2); g.fillStyle = '#7a6a50'; g.fillRect(x, y, w, h);
-      g.fillStyle = '#b09a5a'; g.fillRect(x, y, w, 1); g.fillRect(x, y, 1, h - 1);
-      if ((i + Math.floor(time * 3)) % 4 === 0) { g.fillStyle = '#ffd36b'; g.fillRect(x + (w >> 1), y + (h >> 1), 1, 1); } }
-    if (e.mode === 'plating') { g.fillStyle = '#b09a5a'; for (let j = 0; j < 5; j++) { const ph = (time * 2.2 + j * 0.2) % 1; g.globalAlpha = 1 - ph; g.fillRect(X - 14 + j * 7, Y - Math.round(ph * 40), 3, 3); } g.globalAlpha = 1; } }
+    const total = SLABS.length, forming = e.mode === 'plating', k = forming ? 1 - Math.max(0, e.modeT) / WINCH.plateT : 1, n = forming ? Math.min(total, Math.floor(total * k) + 1) : total, crack = forming ? 0 : Math.min(3, Math.floor((e.armHit || 0) / 2));
+    for (let i = 0; i < n; i++) { const [dx, dy, w, h] = SLABS[i], slide = forming && i === n - 1 ? Math.round((1 - ((k * total) % 1)) * 9) : 0, bx = (f > 0 ? dx : -dx - w), x = X + Math.round(bx * u) + (f > 0 ? slide : -slide), y = Y + Math.round(dy * u) - slide;
+      g.globalAlpha = forming && i === n - 1 ? 0.55 + 0.45 * (1 - slide / 9) : 1; slab(g, x, y, Math.round(w * u), Math.round(h * u), i, crack, time); }
+    g.globalAlpha = 1; harness(g, X, Y, f, u, n);
+    if (forming) { g.fillStyle = '#b09a5a'; for (let j = 0; j < 5; j++) { const ph = (time * 2.2 + j * 0.2) % 1; g.globalAlpha = 1 - ph; g.fillRect(X - 14 + j * 7, Y - Math.round(ph * 40), 3, 3); } g.globalAlpha = 1; }
+    else if (crack >= 2 && Math.floor(time * 7) % 3 === 0) { g.fillStyle = '#b09a5a'; g.globalAlpha = 0.7; g.fillRect(X + ((Math.floor(time * 11) % 9) - 4) * 2, Y - 18 - (Math.floor(time * 13) % 14), 1, 2); g.globalAlpha = 1; } }
+  /* THE PLATES FALLING AWAY (a rock, or a jam, shattered the ore): every slab breaks off and drops, turning, and fades */
+  if (e.shatT !== undefined && e.shatT < 1.25 && e.phase !== 3) { const t = e.shatT, F = e.shatF || f;
+    for (let i = 0; i < SLABS.length; i++) { const [dx, dy, w, h] = SLABS[i], dir = (i % 2 ? 1 : -1) * (0.5 + (i % 3) * 0.35), bx = (F > 0 ? dx : -dx - w), x = X + Math.round(bx * u + dir * 38 * t), y = Y + Math.round(dy * u - 42 * t + 330 * t * t);
+      g.globalAlpha = Math.max(0, 1 - t / 1.25); const sw = Math.round(w * u), sh = Math.round(h * u), half = (Math.floor(t * 14 + i) % 2) === 0;
+      g.fillStyle = '#1b1622'; g.fillRect(x - 1, y - 1, (half ? sw : sh) + 2, (half ? sh : sw) + 2); g.fillStyle = '#7a6a50'; g.fillRect(x, y, half ? sw : sh, half ? sh : sw); g.fillStyle = '#a8925a'; g.fillRect(x, y, half ? sw : sh, 1); }
+    g.globalAlpha = Math.max(0, 0.9 - t * 1.5); g.fillStyle = '#c9bc98'; for (let j = 0; j < 9; j++) g.fillRect(X + ((j * 7) % 21) - 10 + Math.round(((j % 2) ? 1 : -1) * t * 30), Y - 36 + ((j * 5) % 28) + Math.round(t * 20), 2, 2);
+    g.globalAlpha = 1; }
   if (e.mode === 'stagger') { const k = Math.max(0, e.modeT) / WINCH.staggerT, p = 0.5 + 0.5 * Math.sin(time * 10);
     g.globalAlpha = 0.55 + 0.35 * p; g.fillStyle = '#ffd36b'; ring(g, X, Y - 22, 22 + p * 2, 30 + p * 2, 40); g.globalAlpha = 1;
     g.fillStyle = '#2a2430'; g.fillRect(X - 16, Y - 60, 32, 4); g.fillStyle = '#ffd36b'; g.fillRect(X - 15, Y - 59, Math.round(30 * k), 2); }
@@ -582,8 +613,14 @@ export function drawWinchFx(g, e, c, cx, cy, time) {
     g.fillStyle = '#2a2a30'; g.fillRect(x - 1, y - 30, 2, 29);
     g.globalAlpha = 0.5; g.fillStyle = '#fff0d0'; for (let k = 1; k < 5; k++) g.fillRect(x - R.away * (hw + k * 6) - 2, y + 2 + k, 4, 1); g.globalAlpha = 1; }
   const H = c.H[e.at];
-  if (e.mode === 'sendTell' && H) { const k = 1 - Math.max(0, e.modeT) / WINCH.tell.send; g.globalAlpha = 0.25 + 0.5 * k; g.fillStyle = '#ff6b6b';
-    for (let s = 0; s < 600; s += 6) { const x = H.drumX + H.away * s, ly = c.lineY(e.at, x); if (ly === null) break; g.fillRect(Math.round(x - cx), Math.round(ly - cy) - 2, 3, 2); } g.globalAlpha = 1; }
+  if (e.mode === 'sendTell' && H) { const k = 1 - Math.max(0, e.modeT) / WINCH.tell.send, pu = 0.5 + 0.5 * Math.sin(time * (8 + k * 22));   /* (claude/oreroadminor) a LONGER, CLEARER tell: the dashed line fills out from the drum as the tell runs, chevrons march down it the way the bucket will go, and the mouth flares faster and faster */
+    g.fillStyle = '#ff6b6b'; const reach = 120 + k * 480;
+    for (let s = 0; s < 600; s += 6) { const x = H.drumX + H.away * s, ly = c.lineY(e.at, x); if (ly === null) break; g.globalAlpha = (s < reach ? 0.3 + 0.45 * k : 0.1); g.fillRect(Math.round(x - cx), Math.round(ly - cy) - 2, 3, 2); }
+    g.globalAlpha = 0.35 + 0.5 * k; const ph = (time * 70) % 30;
+    for (let s = ph; s < reach; s += 30) { const x = H.drumX + H.away * s, ly = c.lineY(e.at, x); if (ly === null) break; const X = Math.round(x - cx), Y = Math.round(ly - cy) - 7;
+      for (let q = 0; q < 3; q++) { g.fillRect(X - H.away * q, Y - 3 + q, 2, 1); g.fillRect(X - H.away * q, Y + 3 - q, 2, 1); } }
+    g.globalAlpha = 0.3 + 0.55 * pu * (0.4 + k); g.fillStyle = '#ffd36b'; const mx = Math.round(H.drumX - cx), my = Math.round(H.mouthY - cy);
+    g.fillRect(mx - 7, my - 14, 14, 2); g.fillRect(mx - 7, my + 12, 14, 2); g.fillRect(mx - 8, my - 14, 2, 28); g.fillRect(mx + 6, my - 14, 2, 28); g.globalAlpha = 1; }
   if (e.mode === 'hookTell') { const k = 1 - Math.max(0, e.modeT) / WINCH.tell.hook, a = e.anim * 18, hx = e.x - e.face * 6 + Math.cos(a) * 9, hy = e.y - 34 + Math.sin(a) * 5;
     g.fillStyle = '#6a6a74'; for (let t = 0; t <= 1; t += 0.2) g.fillRect(Math.round(e.x - cx + (hx - e.x) * t), Math.round(e.y - WINCH.hand - cy + (hy - (e.y - WINCH.hand)) * t), 2, 2);
     drawHook(g, hx, hy, 0, e.face, cx, cy);   /* COILED: still on the chain, winding up (bakes HOOK, so its size is known below) */
