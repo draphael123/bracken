@@ -241,7 +241,7 @@ export function stormholdTown({ painter, T, TS }) {
     block(px0, px1, BY, 45);
     if (k > 0) { const s0 = px0 - 13, s1 = px0 - 1; span(s0, s1, BY, { sway: k >= 3 ? 2 : 1 }); spans.push([s0, s1]); }
     if (k >= 1 && k <= 5) { ent('deco', px0 + 2, BY - 1, { kind: 'bridgetower' }); plat(px0, BY - 3, 5); ent('brazier', px0 + 4, BY - 4); }   // a lookout on every tower pier
-    if (k > 0) { ent('weight', px0 - 7, BY - 9, { len: 6, lamp: true }); cages.push(px0 - 7); }   // a fire cage over every span: cut its chain as he goes under it
+    if (k > 0) { ent('weight', px0 - 1, BY - 9, { len: 6, lamp: true }); cages.push(px0 - 1); }   // a fire cage off the west end of every lookout, hung from its tower's arm: from the lookout (where his charge cannot reach you) cut it as he rides under
   }
   span(P0 + 113, P0 + 121, BY, { sway: 2 }); spans.push([P0 + 113, P0 + 121]);   // the last span, to the main gate
   block(P0, W - 1, 44, 45); for (const [s0, s1] of spans) spikesAt(s0, s1, 43);   // the gorge floor: rock teeth under every span
@@ -293,6 +293,6 @@ export function stormholdTown({ painter, T, TS }) {
     /* THE LONG BRIDGE, for THE QUEEN'S LANCE (src/main.js updateLance; src/lance-support.js): his lookouts (all seven: the vault's
        perches), the spans his charge tears up, the cages, and the main gate he falls back under in his last stand. */
     arena: { x0: P0 * TS, x1: (W - 1) * TS, floor: BY * TS, trigger: (P0 + 6) * TS, wallL: P0 - 1, wallR: W - 1, boss: 'lance', music: 'lance', tint: '#6a7a9a', tintA: 0.10, fx: 'dust',
-      lookouts, spans, piers, cages, mainGate: W - 5, bows: lookouts },   /* "Boss Battle #3 [8-bit re-upload]" V3 by nene, CC0 - THE QUEEN'S LANCE's own boss track (audio/CREDITS.txt) */
+      lookouts, spans, piers, cages, mainGate: W - 5, fallPct: 0.12 },   /* fallPct: a fall through a gap he tore bites 12% (a walked-into pit, 27%: survival.js HAZARD) */   /* "Boss Battle #3 [8-bit re-upload]" V3 by nene, CC0 - THE QUEEN'S LANCE's own boss track (audio/CREDITS.txt) */
   };
 }

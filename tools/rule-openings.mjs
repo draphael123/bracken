@@ -36,12 +36,12 @@ try {
       const A=BK.L.arena;if(A.start)BK.tp(A.start[0],A.start[1]);else BK.tp(Math.round(A.trigger/16)+1,Math.round(A.floor/16)-1);for(let i=0;i<200;i++){BK.P.hp=BK.P.maxHp;BK.P.inv=9;BK.sim(1);}
       const q=BK.enemies().find(e=>e.t===t&&e.alive);for(const e of BK.enemies())if(e!==q&&!e.maxHp)e.alive=false;return {A,q,P:BK.P};};
     const swing=(face,n=40,each)=>{const P=BK.P;P.face=face;P.atk=-1;BK.press('atk');for(let i=0;i<n;i++){P.hp=P.maxHp;P.inv=9;if(each)each();BK.sim(1);}};
-    const hold=q=>{q.vx=0;q.modeT=99;for(const k of ['chargeT','thrustT','sweepT','bashT','vaultT','javT','galeT','rushT','whirlT','slamT','chargeT','decreeT','throwT2','chandT','gLeapT','shadowT','leapT','courtT','cd'])if(q[k]!==undefined||k==='cd')q[k]=99;};
+    const hold=q=>{q.vx=0;q.modeT=99;for(const k of ['chargeT','thrustT','sweepT','bashT','vaultT','javT','galeT','rushT','whirlT','slamT','chargeT','decreeT','throwT2','chandT','gLeapT','shadowT','leapT','courtT','cd'])if(q[k]!==undefined||k==='cd')q[k]=99;q.rearT=q.volleyT=q.wallT=q.penT=99;};
     /* ---- THE LANCE and the BRIDGE GATE ---- */
     for (const under of [true,false]) { const {q,P}=setup('storm','knight','lance');const w=BK.props().find(p=>p.t==='winch'&&p.bossGate);
       if(!w){out.lance={noGate:true};break;}
-      const gx=w.gate*16+8;q.mode='pace';hold(q);q.x=under?gx:gx+140;q.y=(w.gy1+1)*16;P.x=w.x-6;P.y=w.y;P.vy=0;P.vx=0;BK.sim(1);P.x=w.x-6;P.y=w.y;
-      let best=0;swing(1,30,()=>{if(q.mode==='planted')best=Math.max(best,q.modeT);if(q.mode!=='planted'){q.x=under?gx:gx+140;q.vx=0;}});
+      const gx=w.gate*16+8;q.mode=q.mounted===false?'guard':'ride';hold(q);q.penT=99;q.x=under?gx:gx+140;q.y=(w.gy1+1)*16;P.x=w.x-6;P.y=w.y;P.vy=0;P.vx=0;BK.sim(1);P.x=w.x-6;P.y=w.y;
+      let best=0;swing(1,30,()=>{if(q.mode==='planted'||q.mode==='thrown')best=Math.max(best,q.modeT);if(q.mode!=='planted'&&q.mode!=='thrown'){q.x=under?gx:gx+140;q.vx=0;}});   /* (claude/stormhold3) mounted, the bars take him out of the saddle: THROWN, open, as long */
       out['lance'+(under?'Under':'Away')]={mode:q.mode,planted:+best.toFixed(2),open:BK.bossOpen(q),gated:q.gated||0,tiles:BK.L.grid[w.gy1*BK.L.W+w.gate]!==0,pinned:!!w.pinned}; }
     /* ---- THE GOBLIN QUEEN and her HALL BELL ---- */
     for (const under of [true,false]) { const {q,P}=setup('crown','knight','gqueen');const b=BK.props().find(p=>p.t==='winch'&&p.bell);
