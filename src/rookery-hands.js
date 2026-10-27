@@ -21,6 +21,7 @@
 import { canvas, flipX, whiten } from './px.js';
 import * as RKW from './redraw/rookery_world.js';
 import { drawHang } from './redraw/rookery_hang.js';
+import * as RKA from './redraw/rookery_anchor_art.js';
 import { GALE, GALE_SAY, galeStep, drawGust } from './gale-harpy.js';   /* (claude/rookery2) THE GALE HARPY: a shared foe module (Windcaller 4 and the Roc reuse it) */   /* (claude/rookeryart) the cracked rocks, nests, roosts, the area plate: drawn there */
 /* THE SHRIEKER's skin (greybox): the crag harpy's frames, darkened to a blood-red (her crest is drawn over her: harpyOver) - main.js SPR.shrieker */
 export function bakeShriekerSet(Hs) {
@@ -268,15 +269,8 @@ export function makeRookeryHands(ctx) {
     for (const [nx0, ny0] of (lv.rkNests || [])) { const x = R(nx0 * TS + 8 - cx), y = R((ny0 + 1) * TS - cy); if (x < -30 || x > VW + 30) continue; RKW.drawEggs(g, x, y, RKW.zoneIdx(nx0), nx0 & 3); }
     /* (claude/rookery2) THE ANCHORS (L.rkAnchors, src/rookery-anchors.js) - GREYBOX shapes the art lane redraws: a ROCK SPIRE from the footing under a roost / perch / arm
        with the nest LASHED to its tip, a stone BRACKET (corbel) from the crag face, CHAINS from the rock over it. The ride roosts and gale perches get their nest drawn here */
-    for (const q of (lv.rkAnchors || [])) { const a = q.a; if (!a) continue; const x = R(q.x * TS + 8 - cx), y = R((q.y + 1) * TS - cy); if (x < -60 || x > VW + 60) continue;
-      if (a.kind === 'spire') { const fy = R(a.foot * TS - cy), top = y - 4; for (let yy = top; yy < fy; yy += 2) { const k = (yy - top) / Math.max(1, fy - top), w = R(4 + k * 6);
-          rect(g, x - w, yy, w * 2, 2, C.rockD); rect(g, x - w + 1, yy, w * 2 - 3, 2, C.rock); if (((yy - top) >> 1) % 7 === 3) rect(g, x - w + 2, yy, 3, 1, C.lime); }
-        rect(g, x - 5, top - 1, 10, 2, C.rockL); }
-      else if (a.kind === 'bracket') { const wx = R((a.side > 0 ? a.wall * TS : (a.wall + 1) * TS) - cx), x0 = Math.min(wx, x), x1 = Math.max(wx, x);
-        for (let xx = x0; xx < x1; xx++) { const k = Math.abs(xx - wx) / Math.max(1, x1 - x0), h = R(9 - k * 6); rect(g, xx, y - 1, 1, h, C.rockD); rect(g, xx, y - 1, 1, Math.max(1, h - 2), C.rock); }
-        rect(g, x0, y - 2, x1 - x0, 1, C.rockL); }
-      else if (a.kind === 'chain') { const ty = R((a.top + 1) * TS - cy); g.fillStyle = '#4a4650'; for (const dx of [-6, 6]) for (let yy = ty; yy < y - 8; yy += 3) g.fillRect(x + dx, yy, 1, 2); }
-      if (a.kind !== 'stand') { g.fillStyle = C.twig; for (const dx of [-4, 0, 4]) g.fillRect(x + dx, y - 9, 1, 6); rect(g, x - 5, y - 6, 2, 1, C.bone); rect(g, x + 3, y - 7, 2, 1, C.bone); }   /* the lashings (rope, sinew, a bone in them) */
+    for (const q of (lv.rkAnchors || [])) { const a = q.a; if (!a) continue; const x = R(q.x * TS + 8 - cx), y = R((q.y + 1) * TS - cy); if (x < -60 || x > VW + 60) continue;   /* (claude/rookery2art) spires, corbels and chains: src/redraw/rookery_anchor_art.js */
+      RKA.drawAnchor(g, q, cx, cy, TS, time, RKW.zoneIdx(q.x));
       if (q.what === 'roost' && (lv.rkRides || []).some(d => d.id === q.id) || q.what === 'perch') RKW.drawRoost(g, x, y, RKW.zoneIdx(q.x)); }
     for (const c of S.cs.values()) { const d = c.d; if (!d.roost) continue; const x = R(d.roost[0] * TS + 8 - cx), y = R((d.roost[1] + 1) * TS - cy); if (x < -40 || x > VW + 40) continue; RKW.drawRoost(g, x, y, RKW.zoneIdx(d.roost[0])); }
     for (const c of S.cs.values()) { const d = c.d, mx = markX(d, TS), my = markY(d, TS), sx = R(mx - cx), sy = R(my - cy);

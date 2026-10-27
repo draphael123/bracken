@@ -21,6 +21,7 @@ try {
     const SV=[['diver','SN'],['shrieker','DN'],['snatcher','DS']];const cells=[];
     for(const [role,gf] of SV)for(const n of ['hover','grow','diveTell','hold','stuck'])cells.push({label:role+' P2 '+n+' ('+gf+')',draw:g=>{g.scale(1.3,1.3);SA.drawSister(g,role,POSE[n],false,0.4,undefined,gf);}});
     out['sheet-survivors']=sheet([{cells}],2,150,160,5);
+    {const FO=await import('/src/redraw/rookery_foes.js'),S=FO.bakeGaleHarpy(),names=['hover up','hover down','BEAT','BROKEN','TELL','hurt'];out['sheet-gale']=sheet([{cells:S.R.map((c,i)=>({label:'gale '+names[i],draw:g=>{g.imageSmoothingEnabled=false;g.drawImage(c,-S.ax,-S.ay);}}))},{cells:S.L.map((c,i)=>({label:'(left)',draw:g=>{g.drawImage(c,-S.ax,-S.ay);}}))}],3,150,150,6);}
     return out;})()`, 120000);
   for (const [k, v] of Object.entries(r)) { writeFileSync(join(OUT, k + '.png'), Buffer.from(v.split(',')[1], 'base64')); console.log(k + '.png'); }
   if (pg.errors.length) console.log('page errors', pg.errors.slice(0, 3));
