@@ -5,7 +5,7 @@ let closed = true, cropped = 0, fallbacks = 0;
 const native = f => typeof f === 'function' && /\[native code\]/.test(Function.prototype.toString.call(f));
 export function checkForegroundRows(g) {
   const p = HTMLCanvasElement.prototype, w = Object.getOwnPropertyDescriptor(p, 'width'), h = Object.getOwnPropertyDescriptor(p, 'height');
-  if (![document.createElement, p.getContext, w.get, w.set, h.get, h.set, CanvasRenderingContext2D.prototype.drawImage, CanvasRenderingContext2D.prototype.getImageData, ...(g ? [g.drawImage, g.getTransform] : [])].every(native)) closed = false;
+  if (![document.createElement, p.getContext, w.get, w.set, h.get, h.set, CanvasRenderingContext2D.prototype.drawImage, CanvasRenderingContext2D.prototype.getImageData, Path2D, Path2D.prototype.rect, CanvasRenderingContext2D.prototype.clip, CanvasRenderingContext2D.prototype.save, CanvasRenderingContext2D.prototype.restore, ...(g ? [g.drawImage, g.getTransform, g.clip, g.save, g.restore] : [])].every(native)) closed = false;
   return closed;
 }
 export function freshForegroundRows(build) {
@@ -31,10 +31,13 @@ export function drawForegroundRows(g, frame, c, y, width, height) {
       g.filter !== 'none' || g.shadowBlur !== 0 || g.shadowOffsetX !== 0 || g.shadowOffsetY !== 0 ||
       g.shadowColor !== 'rgba(0, 0, 0, 0)' || t.a !== 1 || t.b !== 0 || t.c !== 0 || t.d !== 1 ||
       !Number.isInteger(t.e) || !Number.isInteger(t.f)) { fallbacks++; g.drawImage(frame, 0, 0); return; }
-  cropped++;
+  const clip = new Path2D();
   for (const [start, end] of b.rows) {
     const top = Math.max(0, start + y), bottom = Math.min(height, end + y);
-    if (bottom > top) g.drawImage(frame, 0, top, width, bottom - top, 0, top, width, bottom - top);
+    if (bottom > top) clip.rect(0, top, width, bottom - top);
   }
+  cropped++;
+  g.save();
+  try { g.clip(clip); g.drawImage(frame, 0, 0); } finally { g.restore(); }
 }
 export function foregroundRowsInfo() { return {closed,cropped,fallbacks}; }
