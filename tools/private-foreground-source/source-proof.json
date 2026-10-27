@@ -1,0 +1,49 @@
+{
+  "time": "2026-10-27T16:28:17.208Z",
+  "status": "Distinct source-only private fresh foreground upload; no component or Game/FPS pass yet",
+  "gameSource": "62d9c02c102decc69ceaef4e1ec593a23170f1ff",
+  "originalMainSha256": "81866b69fec64de5fdd00da316fb0d1e8e997ae9912f73f280981f0a70cb36d8",
+  "candidateMainSha256": "bc09c5a4036981d75a8cc1898b75772c3b3eea2f01cad7e396001d110877dbf7",
+  "helperSha256": "d0431b0014694e3d025a31161491d72706006353116fffd8bc1aa19e615bb197",
+  "originalArtSha256": "adccb195a8baf3b30e89b2a3c582885ea7a8d1f304b1efc2806dcd8ac2de4cf7",
+  "originalFreshFgFunctionSha256": "fd691bf70efe7b96d4b8afe773ecd643b1c04e7a7ee1b214d1f13663f82765e2",
+  "exactUndo": true,
+  "lineCountPreserved": true,
+  "edits": [
+    {
+      "before": "function drawFg(cx, cy) {",
+      "after": "function drawFg(cx, cy) { checkForegroundPipeline(g);"
+    },
+    {
+      "before": "function bakeBackdrop(pal) {",
+      "after": "function bakeBackdrop(pal) { clearForegroundUpload();"
+    },
+    {
+      "before": "ART.bakeFG(640, VH, 4) };",
+      "after": "freshForeground(() => ART.bakeFG(640, VH, 4)) };"
+    },
+    {
+      "before": "const f = FGC.getContext('2d'), c = BG.fg, w = c.width, dY = bgDY(cy);",
+      "after": "const f = FGC.getContext('2d'), originalFg = BG.fg, c = privateForegroundFor(f, originalFg), w = c.width, dY = bgDY(cy); BG.fgUpload = c === originalFg ? null : c;"
+    }
+  ],
+  "originalForegroundCompositionClearTilingOpacityAndRenderOrderByteUnchanged": true,
+  "notPreviouslyRejectedForegroundDirectOrCompositionReuse": true,
+  "onlyFreshArtBakeFgSourceEligibleOtherModulePaintersFallback": true,
+  "publicBkApiHasNoBackdropReference": true,
+  "originalCanvasOwnershipUsedAndGpuCopyRetainedInBgRetirementRoot": true,
+  "clearBeforeEveryBackdropReplacementAndViewRebake": true,
+  "oneCopyBoundedTo1048576Pixels": true,
+  "noSourcePaletteGeometryRngClockAudioOrOriginalFixtureChanged": true,
+  "adopted": false,
+  "remaining": "Exact private source/lifecycle/fallback components, active full-frame/state/RNG comparisons and controlled original-five-arena timing are required. No previous pass inherited.",
+  "originalDrawFg": "function drawFg(cx, cy) {\n  if (!FGC || FGC.width !== VW || FGC.height !== VH) { FGC = document.createElement('canvas'); FGC.width = VW; FGC.height = VH; }\n  const f = FGC.getContext('2d'), c = BG.fg, w = c.width, dY = bgDY(cy);\n  f.globalCompositeOperation = 'source-over'; f.clearRect(0, 0, VW, VH);\n  let x = ((-cx * 1.25) % w + w) % w; if (x > 0) x -= w; const y = Math.round(dY * 1.25);\n  for (; x < VW; x += w) f.drawImage(c, Math.round(x), y);\n  /* Behind the actors now: no coverage test can make this strip flash. */\n  g.globalAlpha = 0.3; g.drawImage(FGC, 0, 0); g.globalAlpha = 1;\n}",
+  "candidateDrawFg": "function drawFg(cx, cy) { checkForegroundPipeline(g);\n  if (!FGC || FGC.width !== VW || FGC.height !== VH) { FGC = document.createElement('canvas'); FGC.width = VW; FGC.height = VH; }\n  const f = FGC.getContext('2d'), originalFg = BG.fg, c = privateForegroundFor(f, originalFg), w = c.width, dY = bgDY(cy); BG.fgUpload = c === originalFg ? null : c;\n  f.globalCompositeOperation = 'source-over'; f.clearRect(0, 0, VW, VH);\n  let x = ((-cx * 1.25) % w + w) % w; if (x > 0) x -= w; const y = Math.round(dY * 1.25);\n  for (; x < VW; x += w) f.drawImage(c, Math.round(x), y);\n  /* Behind the actors now: no coverage test can make this strip flash. */\n  g.globalAlpha = 0.3; g.drawImage(FGC, 0, 0); g.globalAlpha = 1;\n}",
+  "originalDrawFgSha256": "1909d9962ced42a7da4719bd815a32c7bcef4f888f5cf6febbb245264fa7f70e",
+  "candidateDrawFgSha256": "2abf73fb8929a94eb3b946d5998648c9120c75b63ecd616bacfe6ddaa0a1413b",
+  "originalAdmissionSha256": "98fb8e4ca22a4318171afd94d83057d2bb6ef0aab5a8ac7afb6e8eecb094655b",
+  "originalArtCanonicalSha256": "99f0ead9e02c17eec93e3945720c8206465e3ecd7aac42c00fbbb22cce46bb35",
+  "originalPxCanonicalSha256": "e9a358b9170944e0dfae6d1b8c82d7b664562e0b2b0ab7f2538236e34214db1d",
+  "originalPxWorkingSha256": "9d3feee0d3a14e186f3259e7b7a1279b579989a0461de55d594f676f525533ae",
+  "originalArtPxWorkingDifferencesOnlyCrLf": true
+}

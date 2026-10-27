@@ -4,7 +4,7 @@ on:
     inputs:
       mode:
         type: choice
-        options: [layout-work-queue, opaque-sprite-diagnostic, opaque-sprite-union, opaque-tile-standing, deferred-standing, palette-ui, palette-standing, palette-base, layout-candidate, foreground-reuse, foreground-direct, fixed-ornaments, region-props, border-present, tile-warm, captain-boot, cpu-profile, tile-cache, paladin-boot, hero-reuse, profile, sfx, compare, mobile, calls, present, campaign, variant, pixel-debug]
+        options: [private-foreground-component, layout-work-queue, opaque-sprite-diagnostic, opaque-sprite-union, opaque-tile-standing, deferred-standing, palette-ui, palette-standing, palette-base, layout-candidate, foreground-reuse, foreground-direct, fixed-ornaments, region-props, border-present, tile-warm, captain-boot, cpu-profile, tile-cache, paladin-boot, hero-reuse, profile, sfx, compare, mobile, calls, present, campaign, variant, pixel-debug]
         default: profile
       baseline:
         type: string
@@ -28,6 +28,27 @@ env:
 permissions:
   contents: read
 jobs:
+  private-foreground-component:
+    if: inputs.mode == 'private-foreground-component'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.11.1'
+      - name: Unchanged private foreground component on clean original Game62
+        run: node tools/private-foreground-component.mjs
+        env:
+          PRIVATE_FG_OUT: ${{ runner.temp }}/private-foreground-component
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: private-foreground-component
+          path: ${{ runner.temp }}/private-foreground-component/
+          if-no-files-found: error
   layout-work-queue:
     if: inputs.mode == 'layout-work-queue'
     runs-on: ubuntu-latest

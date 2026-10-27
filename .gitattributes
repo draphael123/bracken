@@ -1,0 +1,2 @@
+tools/private-foreground-component.mjs -text
+tools/private-foreground-source/browser-admission.mjs -text
