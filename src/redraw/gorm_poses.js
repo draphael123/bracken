@@ -6,6 +6,7 @@
 import { UP, SEAT, BEARER, TIPS, upFrame, seatFrame } from './gorm_frames.js';
 import * as FX from './gorm_fx.js';
 import * as KP from './kingswood_props.js';
+import { canvas, flipX, whiten } from '../px.js';
 const R = Math.round;
 const f = (g, c, x, y, w, h) => { g.fillStyle = c; g.fillRect(R(x), R(y), R(w), R(h)); };
 /* the move -> [sheet, frame, prop]: 'seat' / 'up' are his baked sheets; 'seat2' / 'up2' are the poses of this pass (frames by name) */
@@ -115,5 +116,16 @@ function overProp(g, e, prop, x, y, face, time, fr0) {
     case 'stung': for (let k = 0; k < 10; k++) { const a = time * (4 + k % 3) + k; f(g, k % 3 ? '#e0b040' : '#1a0e08', x + R(Math.cos(a) * 30), top + 10 + R(Math.sin(a * 1.3) * 22), 2, 1); } break;
   }
 }
+/* (claude/gormfinish) HIS PORTRAIT AND HIS CORPSE in the new model. cardSet(PROP): the bestiary card and the map's portrait - the seated king on his litter, cropped to the same 100 x 48 window the old baked sprite filled (anchor 50, 48), frames idle / wake / idle / idle
+   (src/main.js SPR.kingCard: bestiary reads SPR[t + 'Card'], the map reads it as the set). deadSet(): the sprite his death-debris spins (the standing king, the 'downed' frame, anchored like every up2 frame). */
+let CARD = null;
+export function cardSet(PROP) {
+  if (CARD) return CARD;
+  const mk = name => { const [c, g] = canvas(128, 78); g.drawImage(PROP.palanquin, 16, 32, 96, 45); g.drawImage(SEAT.set.R[seatFrame(name)], 64 - SEAT.set.ax, 62 - SEAT.set.ay);
+    const [o, og] = canvas(100, 48); og.drawImage(c, 14, 9, 100, 48, 0, 0, 100, 48); return o; };
+  const R = ['idle', 'wake', 'idle', 'idle'].map(mk), wh = R.map(c => whiten(c));
+  return (CARD = { R, L: R.map(flipX), white: { R: wh, L: wh.map(flipX) }, ax: 50, ay: 48, w: 40, h: 40 });
+}
+export const deadSet = () => ({ set: UP.set, frame: upFrame('downed') });
 /* bake everything now (the level's load) */
 export function warm() { void UP.set; void SEAT.set; void BEARER.R; }
