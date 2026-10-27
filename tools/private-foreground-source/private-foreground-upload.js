@@ -11,8 +11,10 @@ export function checkForegroundPipeline(g) {
 export function freshForeground(build) { const eligible = checkForegroundPipeline(), c = build(); if (eligible) fresh.add(c); return c; }
 export function clearForegroundUpload() { if (uploaded) uploaded.width = uploaded.height = 0; source = uploaded = null; }
 export function foregroundUploadInfo() { return {pipelineClosed,requests,uses,builds,pixels:uploaded ? uploaded.width * uploaded.height : 0}; }
-export function privateForegroundFor(g, c) {
+export function privateForegroundFor(g, c, frame) {
   requests++;
+  const frameAttributes = frame?.getContextAttributes();
+  if (!frameAttributes || frameAttributes.willReadFrequently || !frameAttributes.alpha || frameAttributes.colorSpace !== 'srgb' || (frameAttributes.colorType && frameAttributes.colorType !== 'unorm8') || frame.isContextLost()) return c;
   const a = g.getContextAttributes();
   if (!pipelineClosed || !fresh.has(c) || !c.width || !c.height || c.width * c.height > 1048576 ||
       !native(document.createElement) || !native(g.drawImage) || !native(HTMLCanvasElement.prototype.getContext) ||

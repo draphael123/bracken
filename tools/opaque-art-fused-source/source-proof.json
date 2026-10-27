@@ -1,0 +1,5194 @@
+{
+  "time": "2026-10-27T16:45:01.550Z",
+  "status": "Prepared larger distinct source scope for the exact opaque painter; runtime proof pending",
+  "sourceGame": "62d9c02c102decc69ceaef4e1ec593a23170f1ff",
+  "originalArtSha256": "adccb195a8baf3b30e89b2a3c582885ea7a8d1f304b1efc2806dcd8ac2de4cf7",
+  "candidateArtSha256": "5c7d1f8419db8454de716259e7f49eb1992a73db7c3a915102c8ec8f36736ac0",
+  "helperSha256": "29391ec421691f4da05ff6a18320bc6acc002c37070da05109848634484afadd",
+  "targets": [
+    {
+      "name": "bakeDirtDeep",
+      "originalFunctionSha256": "ec59ad01184eea4f92047d9c47ed36d6c46ec6b8e0d9b1e8e72cf3d51a9d74fe",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 0
+    },
+    {
+      "name": "bakeLog",
+      "originalFunctionSha256": "b8c0f7105f00ad4c36ea9579ec8253b6690fe5ea3624ab7fc4caeffd000928cf",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 0
+    },
+    {
+      "name": "bakeThorns",
+      "originalFunctionSha256": "4c24f07d73df821472d0ac53effaf656fb1e0d64585655f5d1350c64ec3d59fe",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 0
+    },
+    {
+      "name": "bakeCrate",
+      "originalFunctionSha256": "edd7dd8c93e9e8bea2482d868f97589896122869646ebc0c86864a9f64b5d190",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 1
+    },
+    {
+      "name": "bakeShrine",
+      "originalFunctionSha256": "c6b5ca63773e29e6c6b2772ff49538725efbaf7255dc61b72b03efce70d3991f",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 1
+    },
+    {
+      "name": "bakeFarVillage",
+      "originalFunctionSha256": "4c1cb74fad3ca608da4af3020bae1ef2d7f3d6af7534b749e2b4d1a825043c4b",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 0
+    },
+    {
+      "name": "bakeMidVillage",
+      "originalFunctionSha256": "93fead102e9f746642f1e8198378d0f343de36c85df56476da0dc937c5dd295e",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 0
+    },
+    {
+      "name": "bakeNearVillage",
+      "originalFunctionSha256": "57418e49e25a098c497168b910d3f568ccba1f1c094fb0828b4d52ea5c9825bf",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 0
+    },
+    {
+      "name": "bakeGardenWall",
+      "originalFunctionSha256": "51ff6351bd7bd98e95281208ea0f08d4cbdc733a675787e8e3356e5c9609c4b2",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 1
+    },
+    {
+      "name": "bakeBeanpoles",
+      "originalFunctionSha256": "4d27bec0797bb81162512ec4096f528cd4c127284b576f893d828e37ef61faba",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 1
+    },
+    {
+      "name": "bakeSkep",
+      "originalFunctionSha256": "f43fa9cb8c759017b0f073fdcf8e3a595f19e17455898213806358ad2135aa96",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 1
+    },
+    {
+      "name": "bakeTrough",
+      "originalFunctionSha256": "179956d85a10ad6f3d533d4d90a1a88a7f587e871b6cc27e4c5c6b185c7675bd",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 1
+    },
+    {
+      "name": "bakeStocks",
+      "originalFunctionSha256": "aee84be71d6ca8ae10768328dfcdd2a6671ddb020be2b00b2d368fae61f6ce73",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 1
+    },
+    {
+      "name": "bakeDovecote",
+      "originalFunctionSha256": "c29a900c4e223f577557be54ced303bf5b112c572dbcb9c4ea924c95a7cf8c29",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 1
+    },
+    {
+      "name": "bakeGrave",
+      "originalFunctionSha256": "66f4279858ace0d7cf18b1fb3e9e5c2737f797b4191fb701aab1d41aeb2c1f5a",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 1
+    },
+    {
+      "name": "bakeLychgate",
+      "originalFunctionSha256": "9e13f55e02a5c611fa84983259e5e72c93e7adae0d7cc878b6321416bb11abe9",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 1
+    },
+    {
+      "name": "bakeYew",
+      "originalFunctionSha256": "a50d472ec51934cc6b9639c64fe04fd745d2be19784caba919191726e5ca9619",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 1
+    },
+    {
+      "name": "bakeGate",
+      "originalFunctionSha256": "000049adf10087b8f6bc0fe0ca67260470f3d8923f4328fbed2fb4b284fd790c",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 1
+    },
+    {
+      "name": "bakeSign",
+      "originalFunctionSha256": "d4c9fcde57a849ac855b55a48569b0004492ecc410e35d52ca6fb692e39c46c4",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 1
+    },
+    {
+      "name": "bakeTuft",
+      "originalFunctionSha256": "cb2fbc6e5b4f4bd90903824953ad076658aa8094d558ec1185665a2666e5d667",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 0
+    },
+    {
+      "name": "bakeFlower",
+      "originalFunctionSha256": "f86eed5b9c0f9aa2cb5854a63bfcc6bd8c2585cfb3f0fe25dec7eb4a7872767f",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 0
+    },
+    {
+      "name": "bakeMushroom",
+      "originalFunctionSha256": "8cd69ba89967b86e5e99d9ed54594e6b1584bd462cdeb113184dd9ffc927377f",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 1
+    },
+    {
+      "name": "bakeBush",
+      "originalFunctionSha256": "2fbfc685b3ce6ec0c6e37416dccb0a9cfa1d5d3ddf9a4e44e7626e09fa89f76a",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 1
+    },
+    {
+      "name": "bakeShadow",
+      "originalFunctionSha256": "a3cd0ff9761203a0401c1adf8942556883ef75338092e490a95fabbfbf408ff7",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 0
+    },
+    {
+      "name": "bakeFar",
+      "originalFunctionSha256": "5cba373f36390677ad96979031e28e8ff62b3462cd784be59f09e8d5a755b487",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 0
+    },
+    {
+      "name": "bakeMid",
+      "originalFunctionSha256": "9fb1f04f6621e19b8caf8b9e42ef0875b89c2b11e4620c8c93c7dfbed4ba85ba",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 0
+    },
+    {
+      "name": "bakeNear",
+      "originalFunctionSha256": "544a46cb43d9c42dad5603b78b7f036a37ea532c0a05238f32d8f544c48ee3fe",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 0
+    },
+    {
+      "name": "bakeSun",
+      "originalFunctionSha256": "a5e8f130895478d7bafa75ad6b5bfb4da0b6b5a532a91c134e185ccfe05b45fd",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 0
+    },
+    {
+      "name": "bakeLilyFlowerBig",
+      "originalFunctionSha256": "6b13010ed1046ca6ba6bc0c4ac18497bfe780a8d6c16023b5cc76af7d72b0849",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 1
+    },
+    {
+      "name": "bakeReeds",
+      "originalFunctionSha256": "25d9cdcc32d2893bb45d3f4969282b18b6c532fc69c8209c70740f91666fce8b",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 0
+    },
+    {
+      "name": "bakeRaft",
+      "originalFunctionSha256": "1bb163cd1821ecaa7a56e18646d9c712a2bf02d15ee18cce350669558b63315e",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 1
+    },
+    {
+      "name": "bakeThronePad",
+      "originalFunctionSha256": "67dbf39817ceaa2b911b94e6f9c98ea4e67400e71004c05224823bff45caa459",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 1
+    },
+    {
+      "name": "bakePlank",
+      "originalFunctionSha256": "7c5a6e54c0206b307b12c9ac061e5f4f4dacc860d62255a53e17944afc56a3da",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 1
+    },
+    {
+      "name": "bakeDrop",
+      "originalFunctionSha256": "6e3db4ef4de456d54d79ff148efaa957958e2f239fc2c05a6b0c80905450d9e0",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 0
+    },
+    {
+      "name": "bakeMapSign",
+      "originalFunctionSha256": "e6ba62b7a731d604c0e01ebe6737b1fd136f3995cdbf19a5e55a46c09f25d5d9",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 1
+    },
+    {
+      "name": "bakeFish",
+      "originalFunctionSha256": "804054ffbbe059599fefeac4ad1f72872ab8550784786e8ffafe81ba0be48aa9",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 0
+    },
+    {
+      "name": "bakeHut",
+      "originalFunctionSha256": "25617b9023039079c697b523ab6762c372230bf2d390e9909da7df7ac9ab94a4",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 1
+    },
+    {
+      "name": "bakeFlag",
+      "originalFunctionSha256": "b568245dffe3e1c18b0c67e092e2c4662a293dcb67891323db5170fd45849316",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 1
+    },
+    {
+      "name": "bakeVineWall",
+      "originalFunctionSha256": "4a5ff2b1dcc4bb0f5e63ccbb4888a462601b902aa8317ed835e1b2eb4dbf0fca",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 0
+    },
+    {
+      "name": "bakeSilt",
+      "originalFunctionSha256": "9e30ecce686dd8638841530e4fea34a7bfb5708c7bc9a3e0beae88f28895f8cf",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 0
+    },
+    {
+      "name": "bakePalisade",
+      "originalFunctionSha256": "859f5511f2dec800de897e960ed3b16ac60943137437100b53e962ac515a14d0",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 0
+    },
+    {
+      "name": "bakePalisadeTop",
+      "originalFunctionSha256": "83c225172433b697cbabd7596a4307404e3947c9847b06284322d95df7df17ae",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 0
+    },
+    {
+      "name": "bakeBridgePlank",
+      "originalFunctionSha256": "68855526d78d31c7d8ca35e4fe33c4177a11a5d37d3882b1f09cd888e3696cc8",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 0
+    },
+    {
+      "name": "bakeBridgePlankEnd",
+      "originalFunctionSha256": "5aa71f6d46a56179a157eed5a62cf574297db2e0d7487093169f1457bb7052f6",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 0
+    },
+    {
+      "name": "bakeNet",
+      "originalFunctionSha256": "b8ba3f09fcb6fd859feaf939d945711f2a8cd0cc792570c6b482d7ff1db94d24",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 0
+    },
+    {
+      "name": "bakeTowerTop",
+      "originalFunctionSha256": "2f3bee999224d716aa0f793a3cb25aff2f6629b510b7208ef32cb031e0c49efe",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 1
+    },
+    {
+      "name": "bakeTreehouse",
+      "originalFunctionSha256": "2d6f1e49bd1d9d5b85f4644ffd6eecdf66cd56633be76ae5d2274291a26b4b9b",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 1
+    },
+    {
+      "name": "bakeTorch",
+      "originalFunctionSha256": "93d19d6809d3053e6ceac0d49c5c74f97ceacefa1b124fed8c55feb5d4da6b01",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 1
+    },
+    {
+      "name": "bakeCage",
+      "originalFunctionSha256": "bcf890b1eff47c3267d50ef91a6e0658988a19a1f38adbc3fe6929a374a24d51",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 1
+    },
+    {
+      "name": "bakeBarrel",
+      "originalFunctionSha256": "5e11c31b896a17c1cc8b2910e56145dc1d2c98cb0151c63a8c52475581077526",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 1
+    },
+    {
+      "name": "bakeBrazier",
+      "originalFunctionSha256": "7fd5d252fc3e1c3d3c0af55c5386bed70f7dff72d4818d690ebf7ea5b390496e",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 1
+    },
+    {
+      "name": "bakeCrank",
+      "originalFunctionSha256": "e8ed8010042b9922e16111b40339daa443facfe75ad039a74b8317febe556408",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 1
+    },
+    {
+      "name": "bakeLift",
+      "originalFunctionSha256": "57bbb291d603222aba8d388f28ea229ca2fa5157699170a99f86ae58e5d80df2",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 1
+    },
+    {
+      "name": "bakeHorn",
+      "originalFunctionSha256": "d702fc1f06cdde153f15a646e59d9d5de4442e8cb48e7bad44e4fb71eb1e998a",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 1
+    },
+    {
+      "name": "bakeNearMushrooms",
+      "originalFunctionSha256": "eb70cb8069492e5405150fb7a20abf8bc0f9883fb8ad16bd770c92be994e86ec",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 0
+    },
+    {
+      "name": "bakeMycDirt",
+      "originalFunctionSha256": "be8bede4dcc2316e1ba16ab5d6da5209809a0b9af71aefdcac7f5cec11a31766",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 0
+    },
+    {
+      "name": "bakeShelfFungus",
+      "originalFunctionSha256": "e3e7fed7d7eadcc19bdd3a71ba7b9a69b3bcea693ea25b59d2b346c4ae266e0d",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 0
+    },
+    {
+      "name": "bakeShelf",
+      "originalFunctionSha256": "a1332dbb36e8f9b3778802d78c5240829cbbe1e140de07ab4db4ff73b603d17c",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 0
+    },
+    {
+      "name": "bakePuffball",
+      "originalFunctionSha256": "037168c10de8e2c5396b5e81203423cfdf18287167196d3c40540bfc8ec81d1b",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 1
+    },
+    {
+      "name": "bakeGlowShroom",
+      "originalFunctionSha256": "f0666927ac44b80cbcc612f17a3faab56d4488e565fe991363774bf264a0b887",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 1
+    },
+    {
+      "name": "bakeMote",
+      "originalFunctionSha256": "7d8b373519ea4e8d39b618043109854fa1d529ba5e1c57fc8bcb15c36c747de9",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 0
+    },
+    {
+      "name": "bakeFern",
+      "originalFunctionSha256": "98ae7c3d3136f2fb8ebf7b5a8e07923c03684c24863a2822b4e33a6e3c9ea67f",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 0
+    },
+    {
+      "name": "bakeStump",
+      "originalFunctionSha256": "75f4c4e4ad87af5127cd98f4e779e202f416559e1b34f0525b55eecff26f1284",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 1
+    },
+    {
+      "name": "bakeRock",
+      "originalFunctionSha256": "3af50d08a45ba94a473d15daf479b9468d3828f77e723a76d62fd672a17227d2",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 1
+    },
+    {
+      "name": "bakeCattail",
+      "originalFunctionSha256": "0762c6c438a94acaeee50a9fea8fad06f33670822eb768e0aeef2d1b2b74c31d",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 0
+    },
+    {
+      "name": "bakeLilyFlower",
+      "originalFunctionSha256": "e25a33f0f9d3a518b14ee9e71bd721e4ac56d52eec77440d6a70cb4a493f7e4c",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 0
+    },
+    {
+      "name": "bakeSkullPost",
+      "originalFunctionSha256": "5da3c5e11b44dbc3c7a5a6a9deb8388b4971d8a945b8a2026f238d48a85b3ce5",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 1
+    },
+    {
+      "name": "bakeTent",
+      "originalFunctionSha256": "11041552452f3867886fbe0be7035af0b7eb3389a098c658eaf1e1d61d0fe2cd",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 1
+    },
+    {
+      "name": "bakeTinyCap",
+      "originalFunctionSha256": "39410d94865e9c74ca5a73c8f398383b899c7ed30eea7ace70653074dbeb1178",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 0
+    },
+    {
+      "name": "bakeMoss",
+      "originalFunctionSha256": "5ff4a5ddf703ce34d2ab790e2e6c94b3f5718eb5cd29a9602de50ee65b155e42",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 0
+    },
+    {
+      "name": "bakeOldOak",
+      "originalFunctionSha256": "6184a3da9ab88b4ced3926f14ffa17716a537ef4042350af417092c883346f01",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 1
+    },
+    {
+      "name": "bakeBoat",
+      "originalFunctionSha256": "fe5a099853cac2fd5283230a1c1e17792bca82e45fb84418a6cf322719ccdaa0",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 1
+    },
+    {
+      "name": "bakeTotem",
+      "originalFunctionSha256": "2d75bfbffda869c00ca9b69c0a5e4a52e6b1c4ee45a831534991ebe74db4b994",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 1
+    },
+    {
+      "name": "bakeGiantCap",
+      "originalFunctionSha256": "61d392b5a8299ccdb713e65f499fa2d94f813a1255462ca41657eac7f5d1658f",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 1
+    },
+    {
+      "name": "bakeHiveBg",
+      "originalFunctionSha256": "8fd7c5fb79a3a48f8a60de092b85e0129f1315abced39f07ab603fdfc2b7cd30",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 1
+    },
+    {
+      "name": "bakeFrogStatue",
+      "originalFunctionSha256": "e10e5dd622e1be80853517cbc83cec1c3267e10fe329511b4ea307b405c8662c",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 1
+    },
+    {
+      "name": "bakeWarBanner",
+      "originalFunctionSha256": "7dfe7eeb6dca9cf029dcd559a6591256a881bc000bca523dc9292ce7b4d818e1",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 1
+    },
+    {
+      "name": "bakeBoneThrone",
+      "originalFunctionSha256": "531df3a90711c6343dbec6e7b02fed63e1f31c13f3ca6b6319d09f46e2a5140a",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 1
+    },
+    {
+      "name": "bakeSkullPile",
+      "originalFunctionSha256": "71445daaa5c500000e25ed9f405d96f8382b39d51f0411e35ae339b48b676f39",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 1
+    },
+    {
+      "name": "bakeBough",
+      "originalFunctionSha256": "3cc7ac2343099d0193d7356d7d6f8299b14e60a019da30e2e184678750eba9e1",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 1
+    },
+    {
+      "name": "bakeGibbet",
+      "originalFunctionSha256": "c22576d7ed919d17ca22de004a69ed18712d06a499a94a865721f8391825bbed",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 1
+    },
+    {
+      "name": "bakeEyrie",
+      "originalFunctionSha256": "f94e3d077548e7810264cd2055d8ddb7ffba8d800622a3a45e34e0edc27ad5fb",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 1
+    },
+    {
+      "name": "bakeSiege",
+      "originalFunctionSha256": "8a0eea7c44814be67697e2a7ff439ef8945e7461d65055b1a4b16200ab950839",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 1
+    },
+    {
+      "name": "bakeHangCage",
+      "originalFunctionSha256": "9602376bcd3bb7fc94bf69e69627a40bf6ffe39b0d9ba9662df36357127265a8",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 1
+    },
+    {
+      "name": "bakeIdol",
+      "originalFunctionSha256": "d538c5c0f3337a4065e92cd89b987f9c5d8d3744ad7e6d8df216ee7ae4cc6fd2",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 1
+    },
+    {
+      "name": "bakeLootHeap",
+      "originalFunctionSha256": "afe8ce5dfe3960235a8e174f2b8aee21646e2c69575e48b3e646966342da458a",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 1
+    },
+    {
+      "name": "bakeHideRack",
+      "originalFunctionSha256": "267ebc9e1ac0820d0a01b2b43032f1cface85fe36d5e9353e97b774932c4a9fa",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 1
+    },
+    {
+      "name": "bakeRootDecor",
+      "originalFunctionSha256": "89ed153eb188be76caaed6f8d4d33b9bee51c2b47a15971c4633297be024cbdf",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 0
+    },
+    {
+      "name": "bakeSkullMini",
+      "originalFunctionSha256": "3e37a91fdd230fbb7b6278af2dd5265df83698b83c1fcbc730d814b8116ee209",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 1
+    },
+    {
+      "name": "bakeCompass",
+      "originalFunctionSha256": "93a46e45d63a25be9611ebd6fb8f1329d67f77060bfdb4df217a96a815023e18",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 1
+    },
+    {
+      "name": "bakeCombPlat",
+      "originalFunctionSha256": "c631deab6ec9345cd952fde6d62a41205aa10119ba8a82bb28f0d419c14995f2",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 1
+    },
+    {
+      "name": "bakePortcullis",
+      "originalFunctionSha256": "a20ca225bfdf43839d2316fc7c6240c1b2bc66a73f539018fd0c57e380945174",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 0
+    },
+    {
+      "name": "bakeRamLog",
+      "originalFunctionSha256": "fc25d8e8a098475fa27b55842025cc1da2bc7ea3122c8add209b79cdb9a58c29",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 1
+    },
+    {
+      "name": "bakeLever",
+      "originalFunctionSha256": "8bfcb54c2cd2a86984e544862b711c2dd7de4a598f2e64255e4a21b1a2a0d79c",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 1
+    },
+    {
+      "name": "bakePlate",
+      "originalFunctionSha256": "00b35be05a70f5a766f2b482af8ef52ffd02aeb6e6fcd958fbf73fac87b9bcd4",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 0
+    },
+    {
+      "name": "bakePalanquin",
+      "originalFunctionSha256": "9840dc65b2ebd822e440159100cb3da36535e9c7b2e523b1529f892a3bc55057",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 1
+    },
+    {
+      "name": "bakeNearAutumn",
+      "originalFunctionSha256": "f56081b54974b641ac5bbc64efc67973d4d78b4500850df8e4466513e8db496c",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 0
+    },
+    {
+      "name": "bakeHallWall",
+      "originalFunctionSha256": "456eaa67733881bdd908177473d262ae7781aa84f5834f41afca87eee6880103",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 0
+    },
+    {
+      "name": "bakeDoor",
+      "originalFunctionSha256": "bb7d8dcb92211a10b7a53157aa5fcf9551850b674fa983f3d841148535148f1f",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 1
+    },
+    {
+      "name": "bakeCarpet",
+      "originalFunctionSha256": "e5d319acca24ea7485efa16dda1995be3e59d23b9fd511e766c2cad55e68d934",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 0
+    },
+    {
+      "name": "bakeFarCrags",
+      "originalFunctionSha256": "1d41212482a60e1ac105d360eb887929a6fae87d4573d2d03b0444e7b26fbc51",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 0
+    },
+    {
+      "name": "bakeMidCrags",
+      "originalFunctionSha256": "b171d8e5a92d8fb72f29ea852ed5ee3f7b02287f6da3b0185a40ee3bfd4cbb62",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 0
+    },
+    {
+      "name": "bakeNearCrag",
+      "originalFunctionSha256": "0319a17e4b8a5a765adfe206222eb6c4a8586bc238934584059211a258a0a042",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 0
+    },
+    {
+      "name": "bakeHeather",
+      "originalFunctionSha256": "0b4cf3cf7fcefb3c37ae9fd5a3a269a3966a9300b7a53acf61b3af755aa140da",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 0
+    },
+    {
+      "name": "bakeGorse",
+      "originalFunctionSha256": "84cd3334621e99534512f49ea00572b6937924fb5d0e6e8797e00cf8940f4275",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 1
+    },
+    {
+      "name": "bakeThistle",
+      "originalFunctionSha256": "4d1084eb4031803a2544761b75577f0d180b184b7d0342bba41a143c98f1b721",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 1
+    },
+    {
+      "name": "bakeStandingStone",
+      "originalFunctionSha256": "1d2b1cace704c797702811b531cc40f7d8bfba1e44e432f5197163daa11ede86",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 1
+    },
+    {
+      "name": "bakeDrystone",
+      "originalFunctionSha256": "b4a5108f494cbb90de61f90f2c51e098460691cfc8565b5a32fc2f69e539100a",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 0
+    },
+    {
+      "name": "bakeDrystoneTop",
+      "originalFunctionSha256": "cf00e82c5438f67067c1b740b84fe5ecdc82dde5fd43158002a5d5a09254306c",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 0
+    },
+    {
+      "name": "bakeBoulder",
+      "originalFunctionSha256": "3cd7c7334002083aa75051133025fe57923bb6e5c2113f2bf9940d7faf7835ae",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 1
+    },
+    {
+      "name": "bakeBothy",
+      "originalFunctionSha256": "b29e902d9272211252769064644d029b961f2468d7575bd1223829b962ec3f06",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 1
+    },
+    {
+      "name": "bakeMill",
+      "originalFunctionSha256": "62e630269d0a8254bda1031b7e5cc5b065196c53c12b4897048a5eb3b28f9aa1",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 1
+    },
+    {
+      "name": "bakeSail",
+      "originalFunctionSha256": "55f4ce4c690d42864cadb681a2cb8f7869c2c5774d14dc3bfa60bb60e270e9fc",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 0
+    },
+    {
+      "name": "bakeFoldGate",
+      "originalFunctionSha256": "fefd5ae1562d9dd78bbf11c031c15659cfcefab74df1349a438bf3b72dd73e45",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 1
+    },
+    {
+      "name": "bakeFallenLog",
+      "originalFunctionSha256": "b59251aca167c6cd27534c34ef686137f9a752efdde4e56176992f336aa47378",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 1
+    },
+    {
+      "name": "bakeFence",
+      "originalFunctionSha256": "761957d0c54b77511a3fa91741b9efcab7db77f247cee8fbca4125d738e088ee",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 1
+    },
+    {
+      "name": "bakeCart",
+      "originalFunctionSha256": "813071fecb1446f94070ad9b98f2277b1d647d9efeac5f67a43c2c17e3db8050",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 1
+    },
+    {
+      "name": "bakeWell",
+      "originalFunctionSha256": "c52807b2a8bd4fe4f8b4e23231e03cf4b68dd74ea15498c1c86ed03c93b9552f",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 1
+    },
+    {
+      "name": "bakeCounter",
+      "originalFunctionSha256": "e7eaab0015bf09694fb4d55c20b27e584caa67c99726df5b61e3accb93c12fc3",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 1
+    },
+    {
+      "name": "bakeWares",
+      "originalFunctionSha256": "7e7d2f859ff2f606e89bdb8eaba15ea11fedeb74f7e925b16b6c8b94b9b79f7c",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 1
+    },
+    {
+      "name": "bakeShopDoor",
+      "originalFunctionSha256": "fc54c4e747f8528c33930bc2fb4ce7c20edd1445c32ba4bf307668609307b284",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 1
+    },
+    {
+      "name": "bakeLanternPost",
+      "originalFunctionSha256": "fa15e32ff7c08f93774d15214d78f97777d41d63b6cb860286dc82ef0ab8c961",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 1
+    },
+    {
+      "name": "bakeBeehive",
+      "originalFunctionSha256": "fedc8011a66249ba23940bdc9f0a7e0a268a1de0a1dc9aa605052cfeaa5f5dcb",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 1
+    },
+    {
+      "name": "bakeBirdhouse",
+      "originalFunctionSha256": "747333a73ddc77550087c29ddec2c317bde6a6dab11dd3ebb267de34837aa306",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 1
+    },
+    {
+      "name": "bakeFishTrap",
+      "originalFunctionSha256": "106c67870bf11533707ebcbfe21b4bd4da7741dd4d0d0ffcd560892852ae5a7a",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 1
+    },
+    {
+      "name": "bakeSpearRack",
+      "originalFunctionSha256": "244d5daaf676e501ab35660d7b7a1926c4c516e7ebc643d462a804f052460be0",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 1
+    },
+    {
+      "name": "bakeBarrelStack",
+      "originalFunctionSha256": "d625b4f1eb5e81a2d5abdd701c5db266f99ccf3907896706c6e445f0ccb894f2",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 1
+    },
+    {
+      "name": "bakeBones",
+      "originalFunctionSha256": "aafb9ff5b1f7210fa994ec4d92060c70ae1b07b1fed6f7eab9025f0f0a7db925",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 1
+    },
+    {
+      "name": "bakeQuestIcon",
+      "originalFunctionSha256": "4c2d24fe2802a929ac37c273b57eb1d958411e59978e17a5348d1783d3546855",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 0
+    },
+    {
+      "name": "bakeCabin",
+      "originalFunctionSha256": "419b3af72800dcd414b252e34f10ffb9c5c0e4326115fd9320ec88b33fc1708f",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 0
+    },
+    {
+      "name": "bakeGrate",
+      "originalFunctionSha256": "f5055d79cfc779d1e4f2812c99166ec2bf311a34a0f58bd0f24637f87f4012f3",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 0
+    },
+    {
+      "name": "bakeCottage",
+      "originalFunctionSha256": "93700fae621dcb9cb1e61233b0f8d9196e2a5f131b194ba3da7db645da32f599",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 0
+    },
+    {
+      "name": "bakeDeadTree",
+      "originalFunctionSha256": "bba1823e63657a182bc4cc009d2a5d2d80e98a9057fda05741c740fcdddb5082",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 0
+    },
+    {
+      "name": "bakeKeyIcon",
+      "originalFunctionSha256": "54b2980928dc6bba39851ed26cfd4d5d1b5665914530901982ea0b1c73b04a00",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 1
+    },
+    {
+      "name": "bakeLockPlate",
+      "originalFunctionSha256": "6f6009f3815bc18f13d304c8640883cbeb8d9e3d34fcc589445939b3d1d3a5c9",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 1
+    },
+    {
+      "name": "bakeOrbWeb",
+      "originalFunctionSha256": "f13f3c7c764e1452cf6c09ca2c6578fe984c941d05f9fc51925a940de436ec57",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 0
+    },
+    {
+      "name": "bakeGroundWeb",
+      "originalFunctionSha256": "d005c92889f9172c19451dd3c23c4939e74d4f9051cf143b8d97a7197455644c",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 0
+    },
+    {
+      "name": "bakeStilt",
+      "originalFunctionSha256": "deb252245a79c6995199eec39cab362dc218d4c6d4fbdacc124d982130173b62",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 1
+    },
+    {
+      "name": "bakeFrost",
+      "originalFunctionSha256": "3631a5ef0c5d40e6a3b8ddff16aa1197432e8bf2b31d7fb3455edbedd8ab473e",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 0
+    },
+    {
+      "name": "bakeBridgePost",
+      "originalFunctionSha256": "368ba89041e54c68147800106649c24f5565554bc5445de65f93651e866a0baf",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 1
+    },
+    {
+      "name": "bakeBridgeTower",
+      "originalFunctionSha256": "1e25bd92af26906a7becac0794542d172545af2be40249013531cbb6520d84ad",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 1
+    },
+    {
+      "name": "bakeGatehouse",
+      "originalFunctionSha256": "4ff79df4355b104ce899b0c604211bb9562ebf08f5c8bf56d6d41739f18acabf",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 1
+    },
+    {
+      "name": "bakeForge",
+      "originalFunctionSha256": "c5d7db0a1e7b5738b2a3c36b88e359724fa3ad93150870a5511e7a9d82c6b66e",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 1
+    },
+    {
+      "name": "bakeAnvil",
+      "originalFunctionSha256": "391f24ff0a39bdf93b0e95efd7f8b3c2574fd83c186671fecd34a6c8dc21d210",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 1
+    },
+    {
+      "name": "bakeFolkIcon",
+      "originalFunctionSha256": "43b8aeaa18194dc862f3ae3e236eff34fabe5bc3375e1aabd306c15e0d9ab5b6",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 1
+    },
+    {
+      "name": "bakeCastle",
+      "originalFunctionSha256": "be4107774d0ecffd5c6ded3edfe733ea9b19d8d0fdedad2788fea57f041f8458",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 1
+    },
+    {
+      "name": "bakeCrystalTile",
+      "originalFunctionSha256": "8c8d1580174167ba0dfb8252b522692b8ecd0c6b80e3fde8b319bb4cd1c9c09a",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 0
+    },
+    {
+      "name": "bakeSpire",
+      "originalFunctionSha256": "0c9406901a40d4102a27c2404712bc11c6f8587dbb40ab6e7ea97b9cfabdfe00",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 1
+    },
+    {
+      "name": "bakeSunshardIcon",
+      "originalFunctionSha256": "4de1f2709c0d65d4fe19a51f08ffe3ba9002e59f68d1874c551143523ce2b91d",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 1
+    },
+    {
+      "name": "bakeTrunk",
+      "originalFunctionSha256": "7e38c6abc17a79a6e76c409d4f4e61218b086eca8834be2803853f259c043818",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 0
+    },
+    {
+      "name": "bakeClimbFace",
+      "originalFunctionSha256": "11c9dfaad20e6d638e3982910b57210e9d11f09559da5da57041b8fc96a45c10",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 0
+    },
+    {
+      "name": "bakeVine",
+      "originalFunctionSha256": "3e1944084cf0e6d57123b37c96113f36bc1d0ddeb7d5c05f204ee43f129fdc33",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 0
+    },
+    {
+      "name": "bakeLedge",
+      "originalFunctionSha256": "c5a9ce0b1c2d944e2429f09e6612975eb0c67f6d78b4e3ce55e65375cfc07997",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 0
+    },
+    {
+      "name": "bakeBeam",
+      "originalFunctionSha256": "c97fed85847ea2c7b4d75390a57986948d306b53e0c6b8f89db01734257f6465",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 0
+    },
+    {
+      "name": "bakeStaging",
+      "originalFunctionSha256": "f75e4aa5e8aa40ec164cd6acca9377e9939430dbbefb09f462b333907f490871",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 0
+    },
+    {
+      "name": "bakeLashed",
+      "originalFunctionSha256": "93b46108f4bbb969dae563b290feb01945c92b25516c88e85075892a5fa409d0",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 0
+    },
+    {
+      "name": "bakeDuckboard",
+      "originalFunctionSha256": "7750a2ff66a688a3eea21c61d7073742186ba75294c7909fb58f598606a574c6",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 0
+    },
+    {
+      "name": "bakeCapLedge",
+      "originalFunctionSha256": "56d5113b7adbabf72dd015ac2ec7536a88d7544ec0c85f4ce35328d906f191be",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 0
+    },
+    {
+      "name": "bakeRopeLadder",
+      "originalFunctionSha256": "798c5fd92801a7ebc4747e7d099da16b7a60303802101328a9f981f358f6d9aa",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 0
+    },
+    {
+      "name": "bakeRopeNet",
+      "originalFunctionSha256": "4090937e2761889dda7f9a8104974234bba10fac86dec607970ec4f425e19481",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 0
+    },
+    {
+      "name": "bakeBracket",
+      "originalFunctionSha256": "59f5cc3a1d1b3e74816769e7a6cc7ad53e80422240e62ce726c90226a72810ee",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 0
+    },
+    {
+      "name": "bakeAxle",
+      "originalFunctionSha256": "357dd197242af0dd326a3a61f2c4922b81ed77587905d82f979bb5d9cf5e1e23",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 0
+    },
+    {
+      "name": "bakeRockPillar",
+      "originalFunctionSha256": "078b4e479675f0d3fdb5a217d60668ec52a7c657668251651204f8782d1bde9e",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 0
+    },
+    {
+      "name": "bakeStrut",
+      "originalFunctionSha256": "499f2ca3196aaafda7f53494984d45808a7076b0a55d4ed264221f5c3bd97548",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 0
+    },
+    {
+      "name": "bakeRail",
+      "originalFunctionSha256": "b2691d2f96ce59b40c211d01676fb7be4935759fd2b39a4d3d1eff5c7c3cba63",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 0
+    },
+    {
+      "name": "bakeSoftRock",
+      "originalFunctionSha256": "17bd118ba3f56bcc08df9082ec73751a326e35b5a3aab6133142c4733f4313b6",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 0
+    },
+    {
+      "name": "bakeGasSeam",
+      "originalFunctionSha256": "98217385a46138779fd7dd868bda058a5aa68d115030c269cc646155a3b05f7e",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 0
+    },
+    {
+      "name": "bakeTimberFrame",
+      "originalFunctionSha256": "ed7093a9ecbc11da44e9c16b72387b30e39f9099198ceaaca06e71cc122c1082",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 0
+    },
+    {
+      "name": "bakeOrePan",
+      "originalFunctionSha256": "45f43c2d58cce9f6261527c0be46e027c8ffb7bd9bfddf7ea7c77f64cf5a4d18",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 0
+    },
+    {
+      "name": "bakeInnSign",
+      "originalFunctionSha256": "7552c2a10653d71b44a4d0bb76eef704ec36dea39b11042056ad3a73aff8429e",
+      "contextMembers": [],
+      "onlyKnownPixelHelperContextCalls": true,
+      "canvasOnlyReturnedOrFlushedBeforeOutline": true,
+      "returnedContextNeverEscapes": true,
+      "outlineReads": 1
+    }
+  ],
+  "skipped": [],
+  "edits": [
+    {
+      "start": 235742,
+      "end": 235742,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 235724,
+      "end": 235739,
+      "before": "outline(c, OUT)",
+      "after": "__opaqueBakePaint.outline(c, OUT, outline)"
+    },
+    {
+      "start": 234885,
+      "end": 234885,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 234861,
+      "end": 234867,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 225992,
+      "end": 225992,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 225753,
+      "end": 225753,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 225729,
+      "end": 225735,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 225349,
+      "end": 225349,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 224859,
+      "end": 224859,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 224836,
+      "end": 224842,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 224638,
+      "end": 224638,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 224474,
+      "end": 224474,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 224452,
+      "end": 224458,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 223864,
+      "end": 223864,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 223568,
+      "end": 223568,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 223546,
+      "end": 223552,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 222785,
+      "end": 222785,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 222489,
+      "end": 222489,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 222467,
+      "end": 222473,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 219643,
+      "end": 219643,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 219340,
+      "end": 219340,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 219316,
+      "end": 219322,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 219192,
+      "end": 219192,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 218643,
+      "end": 218643,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 218618,
+      "end": 218624,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 218395,
+      "end": 218395,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 218006,
+      "end": 218006,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 217982,
+      "end": 217988,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 217814,
+      "end": 217814,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 217518,
+      "end": 217518,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 217494,
+      "end": 217500,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 217331,
+      "end": 217331,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 216962,
+      "end": 216962,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 216940,
+      "end": 216946,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 216835,
+      "end": 216835,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 216157,
+      "end": 216157,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 216135,
+      "end": 216141,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 215905,
+      "end": 215905,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 215077,
+      "end": 215077,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 215055,
+      "end": 215061,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 214780,
+      "end": 214780,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 213548,
+      "end": 213548,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 213526,
+      "end": 213532,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 213157,
+      "end": 213157,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 212428,
+      "end": 212428,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 212406,
+      "end": 212412,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 212232,
+      "end": 212232,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 211490,
+      "end": 211490,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 211468,
+      "end": 211474,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 211244,
+      "end": 211244,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 210519,
+      "end": 210519,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 210497,
+      "end": 210503,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 210023,
+      "end": 210023,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 209541,
+      "end": 209541,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 209519,
+      "end": 209525,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 209338,
+      "end": 209338,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 208861,
+      "end": 208861,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 208839,
+      "end": 208845,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 208705,
+      "end": 208705,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 208159,
+      "end": 208159,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 208137,
+      "end": 208143,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 207834,
+      "end": 207834,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 207198,
+      "end": 207198,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 207173,
+      "end": 207179,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 206258,
+      "end": 206258,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 206241,
+      "end": 206256,
+      "before": "outline(c, OUT)",
+      "after": "__opaqueBakePaint.outline(c, OUT, outline)"
+    },
+    {
+      "start": 206044,
+      "end": 206044,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 206020,
+      "end": 206026,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 205915,
+      "end": 205915,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 205897,
+      "end": 205912,
+      "before": "outline(c, OUT)",
+      "after": "__opaqueBakePaint.outline(c, OUT, outline)"
+    },
+    {
+      "start": 205486,
+      "end": 205486,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 205462,
+      "end": 205468,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 205316,
+      "end": 205316,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 204290,
+      "end": 204290,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 204266,
+      "end": 204272,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 201197,
+      "end": 201197,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 201180,
+      "end": 201195,
+      "before": "outline(c, OUT)",
+      "after": "__opaqueBakePaint.outline(c, OUT, outline)"
+    },
+    {
+      "start": 199995,
+      "end": 199995,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 199969,
+      "end": 199975,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 199787,
+      "end": 199787,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 199770,
+      "end": 199785,
+      "before": "outline(c, OUT)",
+      "after": "__opaqueBakePaint.outline(c, OUT, outline)"
+    },
+    {
+      "start": 199561,
+      "end": 199561,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 199537,
+      "end": 199543,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 199411,
+      "end": 199411,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 199394,
+      "end": 199409,
+      "before": "outline(c, OUT)",
+      "after": "__opaqueBakePaint.outline(c, OUT, outline)"
+    },
+    {
+      "start": 199202,
+      "end": 199202,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 199178,
+      "end": 199184,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 199139,
+      "end": 199139,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 199122,
+      "end": 199137,
+      "before": "outline(c, OUT)",
+      "after": "__opaqueBakePaint.outline(c, OUT, outline)"
+    },
+    {
+      "start": 198804,
+      "end": 198804,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 198780,
+      "end": 198786,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 198676,
+      "end": 198676,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 198659,
+      "end": 198674,
+      "before": "outline(c, OUT)",
+      "after": "__opaqueBakePaint.outline(c, OUT, outline)"
+    },
+    {
+      "start": 198096,
+      "end": 198096,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 198072,
+      "end": 198078,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 197932,
+      "end": 197932,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 197915,
+      "end": 197930,
+      "before": "outline(c, OUT)",
+      "after": "__opaqueBakePaint.outline(c, OUT, outline)"
+    },
+    {
+      "start": 196537,
+      "end": 196537,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 196451,
+      "end": 196457,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 196196,
+      "end": 196196,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 196179,
+      "end": 196194,
+      "before": "outline(c, OUT)",
+      "after": "__opaqueBakePaint.outline(c, OUT, outline)"
+    },
+    {
+      "start": 195936,
+      "end": 195936,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 195912,
+      "end": 195918,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 194466,
+      "end": 194466,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 194076,
+      "end": 194076,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 194053,
+      "end": 194059,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 193372,
+      "end": 193372,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 193354,
+      "end": 193369,
+      "before": "outline(c, OUT)",
+      "after": "__opaqueBakePaint.outline(c, OUT, outline)"
+    },
+    {
+      "start": 193027,
+      "end": 193027,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 193004,
+      "end": 193010,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 192836,
+      "end": 192836,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 192511,
+      "end": 192511,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 192458,
+      "end": 192464,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 192292,
+      "end": 192292,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 191754,
+      "end": 191754,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 191700,
+      "end": 191706,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 189927,
+      "end": 189927,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 189909,
+      "end": 189924,
+      "before": "outline(c, OUT)",
+      "after": "__opaqueBakePaint.outline(c, OUT, outline)"
+    },
+    {
+      "start": 189613,
+      "end": 189613,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 189589,
+      "end": 189595,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 189471,
+      "end": 189471,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 189453,
+      "end": 189468,
+      "before": "outline(c, OUT)",
+      "after": "__opaqueBakePaint.outline(c, OUT, outline)"
+    },
+    {
+      "start": 189237,
+      "end": 189237,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 189214,
+      "end": 189220,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 188175,
+      "end": 188175,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 187644,
+      "end": 187644,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 187620,
+      "end": 187626,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 187425,
+      "end": 187425,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 186756,
+      "end": 186756,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 186732,
+      "end": 186738,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 185150,
+      "end": 185150,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 185009,
+      "end": 185009,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 184986,
+      "end": 184992,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 181413,
+      "end": 181413,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 180897,
+      "end": 180897,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 180873,
+      "end": 180879,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 180785,
+      "end": 180785,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 180619,
+      "end": 180619,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 180595,
+      "end": 180601,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 178581,
+      "end": 178581,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 178564,
+      "end": 178579,
+      "before": "outline(c, OUT)",
+      "after": "__opaqueBakePaint.outline(c, OUT, outline)"
+    },
+    {
+      "start": 178343,
+      "end": 178343,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 178320,
+      "end": 178326,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 178222,
+      "end": 178222,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 178205,
+      "end": 178220,
+      "before": "outline(c, OUT)",
+      "after": "__opaqueBakePaint.outline(c, OUT, outline)"
+    },
+    {
+      "start": 177971,
+      "end": 177971,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 177947,
+      "end": 177953,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 177868,
+      "end": 177868,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 177851,
+      "end": 177866,
+      "before": "outline(c, OUT)",
+      "after": "__opaqueBakePaint.outline(c, OUT, outline)"
+    },
+    {
+      "start": 177635,
+      "end": 177635,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 177611,
+      "end": 177617,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 177532,
+      "end": 177532,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 177515,
+      "end": 177530,
+      "before": "outline(c, OUT)",
+      "after": "__opaqueBakePaint.outline(c, OUT, outline)"
+    },
+    {
+      "start": 177257,
+      "end": 177257,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 177233,
+      "end": 177239,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 177116,
+      "end": 177116,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 177099,
+      "end": 177114,
+      "before": "outline(c, OUT)",
+      "after": "__opaqueBakePaint.outline(c, OUT, outline)"
+    },
+    {
+      "start": 176814,
+      "end": 176814,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 176790,
+      "end": 176796,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 176688,
+      "end": 176688,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 176671,
+      "end": 176686,
+      "before": "outline(c, OUT)",
+      "after": "__opaqueBakePaint.outline(c, OUT, outline)"
+    },
+    {
+      "start": 176439,
+      "end": 176439,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 176415,
+      "end": 176421,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 176330,
+      "end": 176330,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 176313,
+      "end": 176328,
+      "before": "outline(c, OUT)",
+      "after": "__opaqueBakePaint.outline(c, OUT, outline)"
+    },
+    {
+      "start": 176120,
+      "end": 176120,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 176097,
+      "end": 176103,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 176016,
+      "end": 176016,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 175999,
+      "end": 176014,
+      "before": "outline(c, OUT)",
+      "after": "__opaqueBakePaint.outline(c, OUT, outline)"
+    },
+    {
+      "start": 175759,
+      "end": 175759,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 175735,
+      "end": 175741,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 175627,
+      "end": 175627,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 175610,
+      "end": 175625,
+      "before": "outline(c, OUT)",
+      "after": "__opaqueBakePaint.outline(c, OUT, outline)"
+    },
+    {
+      "start": 174667,
+      "end": 174667,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 174643,
+      "end": 174649,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 174522,
+      "end": 174522,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 174505,
+      "end": 174520,
+      "before": "outline(c, OUT)",
+      "after": "__opaqueBakePaint.outline(c, OUT, outline)"
+    },
+    {
+      "start": 174155,
+      "end": 174155,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 174131,
+      "end": 174137,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 173932,
+      "end": 173932,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 173915,
+      "end": 173930,
+      "before": "outline(c, OUT)",
+      "after": "__opaqueBakePaint.outline(c, OUT, outline)"
+    },
+    {
+      "start": 173492,
+      "end": 173492,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 173468,
+      "end": 173474,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 173393,
+      "end": 173393,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 173376,
+      "end": 173391,
+      "before": "outline(c, OUT)",
+      "after": "__opaqueBakePaint.outline(c, OUT, outline)"
+    },
+    {
+      "start": 173025,
+      "end": 173025,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 173001,
+      "end": 173007,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 172895,
+      "end": 172895,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 172878,
+      "end": 172893,
+      "before": "outline(c, OUT)",
+      "after": "__opaqueBakePaint.outline(c, OUT, outline)"
+    },
+    {
+      "start": 172639,
+      "end": 172639,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 172615,
+      "end": 172621,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 172506,
+      "end": 172506,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 172489,
+      "end": 172504,
+      "before": "outline(c, OUT)",
+      "after": "__opaqueBakePaint.outline(c, OUT, outline)"
+    },
+    {
+      "start": 172105,
+      "end": 172105,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 172081,
+      "end": 172087,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 171913,
+      "end": 171913,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 171896,
+      "end": 171911,
+      "before": "outline(c, OUT)",
+      "after": "__opaqueBakePaint.outline(c, OUT, outline)"
+    },
+    {
+      "start": 171594,
+      "end": 171594,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 171570,
+      "end": 171576,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 171441,
+      "end": 171441,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 171236,
+      "end": 171236,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 171212,
+      "end": 171218,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 171089,
+      "end": 171089,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 171071,
+      "end": 171086,
+      "before": "outline(c, OUT)",
+      "after": "__opaqueBakePaint.outline(c, OUT, outline)"
+    },
+    {
+      "start": 170403,
+      "end": 170403,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 170379,
+      "end": 170385,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 170242,
+      "end": 170242,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 170224,
+      "end": 170239,
+      "before": "outline(c, OUT)",
+      "after": "__opaqueBakePaint.outline(c, OUT, outline)"
+    },
+    {
+      "start": 169514,
+      "end": 169514,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 169490,
+      "end": 169496,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 169357,
+      "end": 169357,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 169340,
+      "end": 169355,
+      "before": "outline(c, OUT)",
+      "after": "__opaqueBakePaint.outline(c, OUT, outline)"
+    },
+    {
+      "start": 169199,
+      "end": 169199,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 169175,
+      "end": 169181,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 167213,
+      "end": 167213,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 166853,
+      "end": 166853,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 166831,
+      "end": 166837,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 166754,
+      "end": 166754,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 166485,
+      "end": 166485,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 166463,
+      "end": 166469,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 163891,
+      "end": 163891,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 163874,
+      "end": 163889,
+      "before": "outline(c, OUT)",
+      "after": "__opaqueBakePaint.outline(c, OUT, outline)"
+    },
+    {
+      "start": 163417,
+      "end": 163417,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 163393,
+      "end": 163399,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 163300,
+      "end": 163300,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 163283,
+      "end": 163298,
+      "before": "outline(c, OUT)",
+      "after": "__opaqueBakePaint.outline(c, OUT, outline)"
+    },
+    {
+      "start": 163048,
+      "end": 163048,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 163025,
+      "end": 163031,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 162952,
+      "end": 162952,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 162935,
+      "end": 162950,
+      "before": "outline(c, OUT)",
+      "after": "__opaqueBakePaint.outline(c, OUT, outline)"
+    },
+    {
+      "start": 162727,
+      "end": 162727,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 162703,
+      "end": 162709,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 162632,
+      "end": 162632,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 162430,
+      "end": 162430,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 162407,
+      "end": 162413,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 162255,
+      "end": 162255,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 160474,
+      "end": 160474,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 160452,
+      "end": 160458,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 160259,
+      "end": 160259,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 159541,
+      "end": 159541,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 159519,
+      "end": 159525,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 159340,
+      "end": 159340,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 158759,
+      "end": 158759,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 158737,
+      "end": 158743,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 157824,
+      "end": 157824,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 157662,
+      "end": 157662,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 157640,
+      "end": 157646,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 157531,
+      "end": 157531,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 157513,
+      "end": 157528,
+      "before": "outline(c, OUT)",
+      "after": "__opaqueBakePaint.outline(c, OUT, outline)"
+    },
+    {
+      "start": 156576,
+      "end": 156576,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 156552,
+      "end": 156558,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 156312,
+      "end": 156312,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 156060,
+      "end": 156060,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 156038,
+      "end": 156044,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 155885,
+      "end": 155885,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 154763,
+      "end": 154763,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 154741,
+      "end": 154747,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 154570,
+      "end": 154570,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 154552,
+      "end": 154567,
+      "before": "outline(c, OUT)",
+      "after": "__opaqueBakePaint.outline(c, OUT, outline)"
+    },
+    {
+      "start": 154094,
+      "end": 154094,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 154070,
+      "end": 154076,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 153831,
+      "end": 153831,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 153715,
+      "end": 153715,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 153693,
+      "end": 153699,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 153630,
+      "end": 153630,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 153613,
+      "end": 153628,
+      "before": "outline(c, OUT)",
+      "after": "__opaqueBakePaint.outline(c, OUT, outline)"
+    },
+    {
+      "start": 153464,
+      "end": 153464,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 153440,
+      "end": 153446,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 153369,
+      "end": 153369,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 153352,
+      "end": 153367,
+      "before": "outline(c, OUT)",
+      "after": "__opaqueBakePaint.outline(c, OUT, outline)"
+    },
+    {
+      "start": 153042,
+      "end": 153042,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 153018,
+      "end": 153024,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 152909,
+      "end": 152909,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 152692,
+      "end": 152692,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 152670,
+      "end": 152676,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 151753,
+      "end": 151753,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 151735,
+      "end": 151750,
+      "before": "outline(c, OUT)",
+      "after": "__opaqueBakePaint.outline(c, OUT, outline)"
+    },
+    {
+      "start": 151170,
+      "end": 151170,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 151148,
+      "end": 151154,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 150950,
+      "end": 150950,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 150933,
+      "end": 150948,
+      "before": "outline(c, OUT)",
+      "after": "__opaqueBakePaint.outline(c, OUT, outline)"
+    },
+    {
+      "start": 150619,
+      "end": 150619,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 150595,
+      "end": 150601,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 150554,
+      "end": 150554,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 150537,
+      "end": 150552,
+      "before": "outline(c, OUT)",
+      "after": "__opaqueBakePaint.outline(c, OUT, outline)"
+    },
+    {
+      "start": 150359,
+      "end": 150359,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 150337,
+      "end": 150343,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 149999,
+      "end": 149999,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 149686,
+      "end": 149686,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 149662,
+      "end": 149668,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 148294,
+      "end": 148294,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 148276,
+      "end": 148291,
+      "before": "outline(c, OUT)",
+      "after": "__opaqueBakePaint.outline(c, OUT, outline)"
+    },
+    {
+      "start": 147343,
+      "end": 147343,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 147319,
+      "end": 147325,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 144257,
+      "end": 144257,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 144239,
+      "end": 144254,
+      "before": "outline(c, OUT)",
+      "after": "__opaqueBakePaint.outline(c, OUT, outline)"
+    },
+    {
+      "start": 143032,
+      "end": 143032,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 143008,
+      "end": 143014,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 141860,
+      "end": 141860,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 141842,
+      "end": 141857,
+      "before": "outline(c, OUT)",
+      "after": "__opaqueBakePaint.outline(c, OUT, outline)"
+    },
+    {
+      "start": 140770,
+      "end": 140770,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 140746,
+      "end": 140752,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 130844,
+      "end": 130844,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 130826,
+      "end": 130841,
+      "before": "outline(c, OUT)",
+      "after": "__opaqueBakePaint.outline(c, OUT, outline)"
+    },
+    {
+      "start": 130398,
+      "end": 130398,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 130374,
+      "end": 130380,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 130329,
+      "end": 130329,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 130311,
+      "end": 130326,
+      "before": "outline(c, OUT)",
+      "after": "__opaqueBakePaint.outline(c, OUT, outline)"
+    },
+    {
+      "start": 129620,
+      "end": 129620,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 129596,
+      "end": 129602,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 129459,
+      "end": 129459,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 129441,
+      "end": 129456,
+      "before": "outline(c, OUT)",
+      "after": "__opaqueBakePaint.outline(c, OUT, outline)"
+    },
+    {
+      "start": 128935,
+      "end": 128935,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 128911,
+      "end": 128917,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 128780,
+      "end": 128780,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 128762,
+      "end": 128777,
+      "before": "outline(c, OUT)",
+      "after": "__opaqueBakePaint.outline(c, OUT, outline)"
+    },
+    {
+      "start": 128052,
+      "end": 128052,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 128028,
+      "end": 128034,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 127889,
+      "end": 127889,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 127871,
+      "end": 127886,
+      "before": "outline(c, OUT)",
+      "after": "__opaqueBakePaint.outline(c, OUT, outline)"
+    },
+    {
+      "start": 127177,
+      "end": 127177,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 127152,
+      "end": 127158,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 127017,
+      "end": 127017,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 126999,
+      "end": 127014,
+      "before": "outline(c, OUT)",
+      "after": "__opaqueBakePaint.outline(c, OUT, outline)"
+    },
+    {
+      "start": 126763,
+      "end": 126763,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 126739,
+      "end": 126745,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 126661,
+      "end": 126661,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 126643,
+      "end": 126658,
+      "before": "outline(c, OUT)",
+      "after": "__opaqueBakePaint.outline(c, OUT, outline)"
+    },
+    {
+      "start": 126126,
+      "end": 126126,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 126102,
+      "end": 126108,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 126055,
+      "end": 126055,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 126037,
+      "end": 126052,
+      "before": "outline(c, OUT)",
+      "after": "__opaqueBakePaint.outline(c, OUT, outline)"
+    },
+    {
+      "start": 125100,
+      "end": 125100,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 125076,
+      "end": 125082,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 124520,
+      "end": 124520,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 124502,
+      "end": 124517,
+      "before": "outline(c, OUT)",
+      "after": "__opaqueBakePaint.outline(c, OUT, outline)"
+    },
+    {
+      "start": 124056,
+      "end": 124056,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 124032,
+      "end": 124038,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 123632,
+      "end": 123632,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 123614,
+      "end": 123629,
+      "before": "outline(c, OUT)",
+      "after": "__opaqueBakePaint.outline(c, OUT, outline)"
+    },
+    {
+      "start": 122797,
+      "end": 122797,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 122772,
+      "end": 122778,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 122575,
+      "end": 122575,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 122557,
+      "end": 122572,
+      "before": "outline(c, OUT)",
+      "after": "__opaqueBakePaint.outline(c, OUT, outline)"
+    },
+    {
+      "start": 121769,
+      "end": 121769,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 121745,
+      "end": 121751,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 121668,
+      "end": 121668,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 121650,
+      "end": 121665,
+      "before": "outline(c, OUT)",
+      "after": "__opaqueBakePaint.outline(c, OUT, outline)"
+    },
+    {
+      "start": 121139,
+      "end": 121139,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 121115,
+      "end": 121121,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 120430,
+      "end": 120430,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 120412,
+      "end": 120427,
+      "before": "outline(c, OUT)",
+      "after": "__opaqueBakePaint.outline(c, OUT, outline)"
+    },
+    {
+      "start": 120034,
+      "end": 120034,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 120010,
+      "end": 120016,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 119937,
+      "end": 119937,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 119919,
+      "end": 119934,
+      "before": "outline(c, OUT)",
+      "after": "__opaqueBakePaint.outline(c, OUT, outline)"
+    },
+    {
+      "start": 118780,
+      "end": 118780,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 118756,
+      "end": 118762,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 117543,
+      "end": 117543,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 117316,
+      "end": 117316,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 117292,
+      "end": 117298,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 117219,
+      "end": 117219,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 117075,
+      "end": 117075,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 117053,
+      "end": 117059,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 116499,
+      "end": 116499,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 116481,
+      "end": 116496,
+      "before": "outline(c, OUT)",
+      "after": "__opaqueBakePaint.outline(c, OUT, outline)"
+    },
+    {
+      "start": 115993,
+      "end": 115993,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 115969,
+      "end": 115975,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 115896,
+      "end": 115896,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 115878,
+      "end": 115893,
+      "before": "outline(c, OUT)",
+      "after": "__opaqueBakePaint.outline(c, OUT, outline)"
+    },
+    {
+      "start": 115562,
+      "end": 115562,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 115538,
+      "end": 115544,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 115492,
+      "end": 115492,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 115337,
+      "end": 115337,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 115315,
+      "end": 115321,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 115271,
+      "end": 115271,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 114998,
+      "end": 114998,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 114974,
+      "end": 114980,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 114898,
+      "end": 114898,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 114880,
+      "end": 114895,
+      "before": "outline(c, OUT)",
+      "after": "__opaqueBakePaint.outline(c, OUT, outline)"
+    },
+    {
+      "start": 114628,
+      "end": 114628,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 114605,
+      "end": 114611,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 114532,
+      "end": 114532,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 114514,
+      "end": 114529,
+      "before": "outline(c, OUT)",
+      "after": "__opaqueBakePaint.outline(c, OUT, outline)"
+    },
+    {
+      "start": 114172,
+      "end": 114172,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 114148,
+      "end": 114154,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 114074,
+      "end": 114074,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 113687,
+      "end": 113687,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 113663,
+      "end": 113669,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 107559,
+      "end": 107559,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 107452,
+      "end": 107452,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 107430,
+      "end": 107436,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 107045,
+      "end": 107045,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 107028,
+      "end": 107043,
+      "before": "outline(c, OUT)",
+      "after": "__opaqueBakePaint.outline(c, OUT, outline)"
+    },
+    {
+      "start": 106812,
+      "end": 106812,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 106788,
+      "end": 106794,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 106694,
+      "end": 106694,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 106677,
+      "end": 106692,
+      "before": "outline(c, OUT)",
+      "after": "__opaqueBakePaint.outline(c, OUT, outline)"
+    },
+    {
+      "start": 106529,
+      "end": 106529,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 106505,
+      "end": 106511,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 104641,
+      "end": 104641,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 104411,
+      "end": 104411,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 104389,
+      "end": 104395,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 104318,
+      "end": 104318,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 103975,
+      "end": 103975,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 103953,
+      "end": 103959,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 102909,
+      "end": 102909,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 102572,
+      "end": 102572,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 102550,
+      "end": 102556,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 101526,
+      "end": 101526,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 99979,
+      "end": 99979,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 99957,
+      "end": 99963,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 98658,
+      "end": 98658,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 98641,
+      "end": 98656,
+      "before": "outline(c, OUT)",
+      "after": "__opaqueBakePaint.outline(c, OUT, outline)"
+    },
+    {
+      "start": 98543,
+      "end": 98543,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 98520,
+      "end": 98526,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 98482,
+      "end": 98482,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 98465,
+      "end": 98480,
+      "before": "outline(c, OUT)",
+      "after": "__opaqueBakePaint.outline(c, OUT, outline)"
+    },
+    {
+      "start": 98270,
+      "end": 98270,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 98247,
+      "end": 98253,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 98209,
+      "end": 98209,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 98192,
+      "end": 98207,
+      "before": "outline(c, OUT)",
+      "after": "__opaqueBakePaint.outline(c, OUT, outline)"
+    },
+    {
+      "start": 98029,
+      "end": 98029,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 98005,
+      "end": 98011,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 97966,
+      "end": 97966,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 97949,
+      "end": 97964,
+      "before": "outline(c, OUT)",
+      "after": "__opaqueBakePaint.outline(c, OUT, outline)"
+    },
+    {
+      "start": 97695,
+      "end": 97695,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 97671,
+      "end": 97677,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 97627,
+      "end": 97627,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 97610,
+      "end": 97625,
+      "before": "outline(c, OUT)",
+      "after": "__opaqueBakePaint.outline(c, OUT, outline)"
+    },
+    {
+      "start": 97386,
+      "end": 97386,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 97362,
+      "end": 97368,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 97322,
+      "end": 97322,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 97305,
+      "end": 97320,
+      "before": "outline(c, OUT)",
+      "after": "__opaqueBakePaint.outline(c, OUT, outline)"
+    },
+    {
+      "start": 97088,
+      "end": 97088,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 97064,
+      "end": 97070,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 97026,
+      "end": 97026,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 97009,
+      "end": 97024,
+      "before": "outline(c, OUT)",
+      "after": "__opaqueBakePaint.outline(c, OUT, outline)"
+    },
+    {
+      "start": 96882,
+      "end": 96882,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 96859,
+      "end": 96865,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 96820,
+      "end": 96820,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 96802,
+      "end": 96817,
+      "before": "outline(c, OUT)",
+      "after": "__opaqueBakePaint.outline(c, OUT, outline)"
+    },
+    {
+      "start": 96379,
+      "end": 96379,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 96355,
+      "end": 96361,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 96223,
+      "end": 96223,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 96205,
+      "end": 96220,
+      "before": "outline(c, OUT)",
+      "after": "__opaqueBakePaint.outline(c, OUT, outline)"
+    },
+    {
+      "start": 95962,
+      "end": 95962,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 95938,
+      "end": 95944,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 95847,
+      "end": 95847,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 95704,
+      "end": 95704,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 95682,
+      "end": 95688,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 95645,
+      "end": 95645,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 95053,
+      "end": 95053,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 95031,
+      "end": 95037,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 94943,
+      "end": 94943,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 94718,
+      "end": 94718,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 94696,
+      "end": 94702,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 94550,
+      "end": 94550,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 94443,
+      "end": 94443,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 94421,
+      "end": 94427,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 94376,
+      "end": 94376,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 94071,
+      "end": 94071,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 94049,
+      "end": 94055,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 93849,
+      "end": 93849,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 93430,
+      "end": 93430,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 93408,
+      "end": 93414,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 93245,
+      "end": 93245,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 92737,
+      "end": 92737,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 92715,
+      "end": 92721,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 92538,
+      "end": 92538,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 92521,
+      "end": 92536,
+      "before": "outline(c, OUT)",
+      "after": "__opaqueBakePaint.outline(c, OUT, outline)"
+    },
+    {
+      "start": 92430,
+      "end": 92430,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 92407,
+      "end": 92413,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 92334,
+      "end": 92334,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 92316,
+      "end": 92331,
+      "before": "outline(c, OUT)",
+      "after": "__opaqueBakePaint.outline(c, OUT, outline)"
+    },
+    {
+      "start": 92010,
+      "end": 92010,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 91986,
+      "end": 91992,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 91909,
+      "end": 91909,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 91770,
+      "end": 91770,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 91748,
+      "end": 91754,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 85604,
+      "end": 85604,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 85587,
+      "end": 85602,
+      "before": "outline(c, OUT)",
+      "after": "__opaqueBakePaint.outline(c, OUT, outline)"
+    },
+    {
+      "start": 85458,
+      "end": 85458,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 85434,
+      "end": 85440,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 48389,
+      "end": 48389,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 48328,
+      "end": 48328,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 48306,
+      "end": 48312,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 48229,
+      "end": 48229,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 48211,
+      "end": 48226,
+      "before": "outline(c, OUT)",
+      "after": "__opaqueBakePaint.outline(c, OUT, outline)"
+    },
+    {
+      "start": 47842,
+      "end": 47842,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 47817,
+      "end": 47823,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 47730,
+      "end": 47730,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 47712,
+      "end": 47727,
+      "before": "outline(c, OUT)",
+      "after": "__opaqueBakePaint.outline(c, OUT, outline)"
+    },
+    {
+      "start": 47567,
+      "end": 47567,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 47543,
+      "end": 47549,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 47453,
+      "end": 47453,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 47435,
+      "end": 47450,
+      "before": "outline(c, OUT)",
+      "after": "__opaqueBakePaint.outline(c, OUT, outline)"
+    },
+    {
+      "start": 47160,
+      "end": 47160,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 47137,
+      "end": 47143,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 47065,
+      "end": 47065,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 46520,
+      "end": 46520,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 46498,
+      "end": 46504,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 46313,
+      "end": 46313,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 46295,
+      "end": 46310,
+      "before": "outline(c, OUT)",
+      "after": "__opaqueBakePaint.outline(c, OUT, outline)"
+    },
+    {
+      "start": 46023,
+      "end": 46023,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 46000,
+      "end": 46006,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 42575,
+      "end": 42575,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 42415,
+      "end": 42415,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 42391,
+      "end": 42397,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 40642,
+      "end": 40642,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 38543,
+      "end": 38543,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 38521,
+      "end": 38527,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 38275,
+      "end": 38275,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 37692,
+      "end": 37692,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 37670,
+      "end": 37676,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 37549,
+      "end": 37549,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 36985,
+      "end": 36985,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 36963,
+      "end": 36969,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 36330,
+      "end": 36330,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 36272,
+      "end": 36272,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 36242,
+      "end": 36248,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 36198,
+      "end": 36198,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 36180,
+      "end": 36195,
+      "before": "outline(c, OUT)",
+      "after": "__opaqueBakePaint.outline(c, OUT, outline)"
+    },
+    {
+      "start": 35904,
+      "end": 35904,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 35880,
+      "end": 35886,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 35807,
+      "end": 35807,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 35789,
+      "end": 35804,
+      "before": "outline(c, OUT)",
+      "after": "__opaqueBakePaint.outline(c, OUT, outline)"
+    },
+    {
+      "start": 35593,
+      "end": 35593,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 35571,
+      "end": 35577,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 35494,
+      "end": 35494,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 35316,
+      "end": 35316,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 35294,
+      "end": 35300,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 35141,
+      "end": 35141,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 34950,
+      "end": 34950,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 34928,
+      "end": 34934,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 34855,
+      "end": 34855,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 34837,
+      "end": 34852,
+      "before": "outline(c, OUT)",
+      "after": "__opaqueBakePaint.outline(c, OUT, outline)"
+    },
+    {
+      "start": 34633,
+      "end": 34633,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 34609,
+      "end": 34615,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 34568,
+      "end": 34568,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 34550,
+      "end": 34565,
+      "before": "outline(c, OUT)",
+      "after": "__opaqueBakePaint.outline(c, OUT, outline)"
+    },
+    {
+      "start": 33737,
+      "end": 33737,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 33713,
+      "end": 33719,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 33670,
+      "end": 33670,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 33652,
+      "end": 33667,
+      "before": "outline(c, OUT)",
+      "after": "__opaqueBakePaint.outline(c, OUT, outline)"
+    },
+    {
+      "start": 33157,
+      "end": 33157,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 33133,
+      "end": 33139,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 32985,
+      "end": 32985,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 32967,
+      "end": 32982,
+      "before": "outline(c, OUT)",
+      "after": "__opaqueBakePaint.outline(c, OUT, outline)"
+    },
+    {
+      "start": 32538,
+      "end": 32538,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 32514,
+      "end": 32520,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 32361,
+      "end": 32361,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 32343,
+      "end": 32358,
+      "before": "outline(c, OUT)",
+      "after": "__opaqueBakePaint.outline(c, OUT, outline)"
+    },
+    {
+      "start": 31562,
+      "end": 31562,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 31538,
+      "end": 31544,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 31357,
+      "end": 31357,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 31339,
+      "end": 31354,
+      "before": "outline(c, OUT)",
+      "after": "__opaqueBakePaint.outline(c, OUT, outline)"
+    },
+    {
+      "start": 30946,
+      "end": 30946,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 30922,
+      "end": 30928,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 30792,
+      "end": 30792,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 30774,
+      "end": 30789,
+      "before": "outline(c, OUT)",
+      "after": "__opaqueBakePaint.outline(c, OUT, outline)"
+    },
+    {
+      "start": 30402,
+      "end": 30402,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 30378,
+      "end": 30384,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 30227,
+      "end": 30227,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 30209,
+      "end": 30224,
+      "before": "outline(c, OUT)",
+      "after": "__opaqueBakePaint.outline(c, OUT, outline)"
+    },
+    {
+      "start": 29965,
+      "end": 29965,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 29941,
+      "end": 29947,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 29804,
+      "end": 29804,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 29786,
+      "end": 29801,
+      "before": "outline(c, OUT)",
+      "after": "__opaqueBakePaint.outline(c, OUT, outline)"
+    },
+    {
+      "start": 29416,
+      "end": 29416,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 29392,
+      "end": 29398,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 29208,
+      "end": 29208,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 29190,
+      "end": 29205,
+      "before": "outline(c, OUT)",
+      "after": "__opaqueBakePaint.outline(c, OUT, outline)"
+    },
+    {
+      "start": 28709,
+      "end": 28709,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 28685,
+      "end": 28691,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 28504,
+      "end": 28504,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 28486,
+      "end": 28501,
+      "before": "outline(c, OUT)",
+      "after": "__opaqueBakePaint.outline(c, OUT, outline)"
+    },
+    {
+      "start": 28082,
+      "end": 28082,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 28058,
+      "end": 28064,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 27873,
+      "end": 27873,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 26708,
+      "end": 26708,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 26686,
+      "end": 26692,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 26498,
+      "end": 26498,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 24497,
+      "end": 24497,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 24475,
+      "end": 24481,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 24289,
+      "end": 24289,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 22778,
+      "end": 22778,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 22756,
+      "end": 22762,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 16116,
+      "end": 16116,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 16098,
+      "end": 16113,
+      "before": "outline(c, OUT)",
+      "after": "__opaqueBakePaint.outline(c, OUT, outline)"
+    },
+    {
+      "start": 15583,
+      "end": 15583,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 15559,
+      "end": 15565,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 15254,
+      "end": 15254,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 15236,
+      "end": 15251,
+      "before": "outline(c, OUT)",
+      "after": "__opaqueBakePaint.outline(c, OUT, outline)"
+    },
+    {
+      "start": 14888,
+      "end": 14888,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 14866,
+      "end": 14872,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 14822,
+      "end": 14822,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 14066,
+      "end": 14066,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 14044,
+      "end": 14050,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 12374,
+      "end": 12374,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 11188,
+      "end": 11188,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 11166,
+      "end": 11172,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 5499,
+      "end": 5499,
+      "before": "",
+      "after": " } finally { __opaqueBakePaint.finish(); } "
+    },
+    {
+      "start": 2277,
+      "end": 2277,
+      "before": "",
+      "after": " const __opaqueBakePaint = beginOpaqueBake(__opaqueBakeNativeContext), g = __opaqueBakePaint.g; try {"
+    },
+    {
+      "start": 2255,
+      "end": 2261,
+      "before": "[c, g]",
+      "after": "[c, __opaqueBakeNativeContext]"
+    },
+    {
+      "start": 199,
+      "end": 199,
+      "before": "",
+      "after": " import {beginOpaqueBake} from './opaque-bake-buffer.js';"
+    }
+  ],
+  "exactUndo": true,
+  "lineCountPreserved": true,
+  "noOriginalGeometryPaletteInputRandomCallCanvasCountOrOwnershipAlgorithmChanged": true,
+  "noCachingOrDifferentCanvasBackend": true,
+  "fusesOriginalFourNeighborOutlineIntoSamePendingOpaqueBuffer": true,
+  "noExtraScratchCanvasOrNativeReadbackForEligibleOutline": true,
+  "originalOutlineFallbackForUnsupportedColorsStateOrNativePipeline": true,
+  "unsupportedCssAndCoordinateFallbackRetained": true,
+  "noContextOrCanvasEscapeBeforeFlushBySelectedSourceGrammar": true,
+  "previousTwoCanopyColdOccurrenceNotRepeated": "work/opaque-canopies-oct27/cold/receipt.json",
+  "twoCanopyWholeStartupWasMixedNotAdoptionProof": true,
+  "adopted": false,
+  "originalArtCanonicalSha256": "99f0ead9e02c17eec93e3945720c8206465e3ecd7aac42c00fbbb22cce46bb35",
+  "originalMainCanonicalSha256": "81866b69fec64de5fdd00da316fb0d1e8e997ae9912f73f280981f0a70cb36d8",
+  "originalPxCanonicalSha256": "e9a358b9170944e0dfae6d1b8c82d7b664562e0b2b0ab7f2538236e34214db1d"
+}

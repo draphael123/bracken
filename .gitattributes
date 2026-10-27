@@ -1,2 +1,4 @@
 tools/private-foreground-component.mjs -text
 tools/private-foreground-source/browser-admission.mjs -text
+tools/opaque-art-fused-source/candidate-art.js -text
+tools/opaque-art-fused-component.mjs -text

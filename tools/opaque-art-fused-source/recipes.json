@@ -1,0 +1,2652 @@
+{
+  "time": "2026-10-27T16:09:25.943Z",
+  "source": "Actual unchanged Game62 main.js literal and literal-map calls only; not invented API defaults",
+  "recipes": [
+    {
+      "name": "bakeDirtDeep",
+      "args": [
+        140,
+        0
+      ],
+      "at": 1121
+    },
+    {
+      "name": "bakeDirtDeep",
+      "args": [
+        141,
+        0
+      ],
+      "at": 1121
+    },
+    {
+      "name": "bakeDirtDeep",
+      "args": [
+        142,
+        0
+      ],
+      "at": 1121
+    },
+    {
+      "name": "bakeDirtDeep",
+      "args": [
+        143,
+        0
+      ],
+      "at": 1121
+    },
+    {
+      "name": "bakeDirtDeep",
+      "args": [
+        144,
+        0
+      ],
+      "at": 1121
+    },
+    {
+      "name": "bakeDirtDeep",
+      "args": [
+        145,
+        0
+      ],
+      "at": 1121
+    },
+    {
+      "name": "bakeDirtDeep",
+      "args": [
+        146,
+        0
+      ],
+      "at": 1121
+    },
+    {
+      "name": "bakeDirtDeep",
+      "args": [
+        147,
+        0
+      ],
+      "at": 1121
+    },
+    {
+      "name": "bakeDirtDeep",
+      "args": [
+        157,
+        1
+      ],
+      "at": 1121
+    },
+    {
+      "name": "bakeDirtDeep",
+      "args": [
+        158,
+        1
+      ],
+      "at": 1121
+    },
+    {
+      "name": "bakeDirtDeep",
+      "args": [
+        159,
+        1
+      ],
+      "at": 1121
+    },
+    {
+      "name": "bakeDirtDeep",
+      "args": [
+        160,
+        1
+      ],
+      "at": 1121
+    },
+    {
+      "name": "bakeDirtDeep",
+      "args": [
+        161,
+        1
+      ],
+      "at": 1121
+    },
+    {
+      "name": "bakeDirtDeep",
+      "args": [
+        162,
+        1
+      ],
+      "at": 1121
+    },
+    {
+      "name": "bakeDirtDeep",
+      "args": [
+        163,
+        1
+      ],
+      "at": 1121
+    },
+    {
+      "name": "bakeDirtDeep",
+      "args": [
+        164,
+        1
+      ],
+      "at": 1121
+    },
+    {
+      "name": "bakeDirtDeep",
+      "args": [
+        174,
+        2
+      ],
+      "at": 1121
+    },
+    {
+      "name": "bakeDirtDeep",
+      "args": [
+        175,
+        2
+      ],
+      "at": 1121
+    },
+    {
+      "name": "bakeDirtDeep",
+      "args": [
+        176,
+        2
+      ],
+      "at": 1121
+    },
+    {
+      "name": "bakeDirtDeep",
+      "args": [
+        177,
+        2
+      ],
+      "at": 1121
+    },
+    {
+      "name": "bakeDirtDeep",
+      "args": [
+        178,
+        2
+      ],
+      "at": 1121
+    },
+    {
+      "name": "bakeDirtDeep",
+      "args": [
+        179,
+        2
+      ],
+      "at": 1121
+    },
+    {
+      "name": "bakeDirtDeep",
+      "args": [
+        180,
+        2
+      ],
+      "at": 1121
+    },
+    {
+      "name": "bakeDirtDeep",
+      "args": [
+        181,
+        2
+      ],
+      "at": 1121
+    },
+    {
+      "name": "bakeLog",
+      "args": [
+        50
+      ],
+      "at": 1122
+    },
+    {
+      "name": "bakeLog",
+      "args": [
+        51
+      ],
+      "at": 1122
+    },
+    {
+      "name": "bakeLog",
+      "args": [
+        52
+      ],
+      "at": 1122
+    },
+    {
+      "name": "bakeLog",
+      "args": [
+        53
+      ],
+      "at": 1122
+    },
+    {
+      "name": "bakeLog",
+      "args": [
+        54
+      ],
+      "at": 1122
+    },
+    {
+      "name": "bakeCombPlat",
+      "args": [
+        560
+      ],
+      "at": 1122
+    },
+    {
+      "name": "bakeCombPlat",
+      "args": [
+        561
+      ],
+      "at": 1122
+    },
+    {
+      "name": "bakeCombPlat",
+      "args": [
+        562
+      ],
+      "at": 1122
+    },
+    {
+      "name": "bakeCombPlat",
+      "args": [
+        563,
+        "L"
+      ],
+      "at": 1122
+    },
+    {
+      "name": "bakeCombPlat",
+      "args": [
+        564,
+        "R"
+      ],
+      "at": 1122
+    },
+    {
+      "name": "bakeRopeNet",
+      "args": [
+        0
+      ],
+      "at": 1122
+    },
+    {
+      "name": "bakeRopeNet",
+      "args": [
+        1
+      ],
+      "at": 1122
+    },
+    {
+      "name": "bakeVine",
+      "args": [
+        0
+      ],
+      "at": 1122
+    },
+    {
+      "name": "bakeVine",
+      "args": [
+        1
+      ],
+      "at": 1122
+    },
+    {
+      "name": "bakeRail",
+      "args": [
+        0
+      ],
+      "at": 1122
+    },
+    {
+      "name": "bakeRail",
+      "args": [
+        1
+      ],
+      "at": 1122
+    },
+    {
+      "name": "bakeSoftRock",
+      "args": [
+        930
+      ],
+      "at": 1122
+    },
+    {
+      "name": "bakeSoftRock",
+      "args": [
+        931
+      ],
+      "at": 1122
+    },
+    {
+      "name": "bakeSoftRock",
+      "args": [
+        932
+      ],
+      "at": 1122
+    },
+    {
+      "name": "bakeRopeLadder",
+      "args": [
+        0,
+        null
+      ],
+      "at": 1122
+    },
+    {
+      "name": "bakeRopeLadder",
+      "args": [
+        1,
+        null
+      ],
+      "at": 1122
+    },
+    {
+      "name": "bakeRopeLadder",
+      "args": [
+        0,
+        "L"
+      ],
+      "at": 1122
+    },
+    {
+      "name": "bakeRopeLadder",
+      "args": [
+        1,
+        "L"
+      ],
+      "at": 1122
+    },
+    {
+      "name": "bakeRopeLadder",
+      "args": [
+        0,
+        "R"
+      ],
+      "at": 1122
+    },
+    {
+      "name": "bakeRopeLadder",
+      "args": [
+        1,
+        "R"
+      ],
+      "at": 1122
+    },
+    {
+      "name": "bakeLedge",
+      "args": [
+        570,
+        null
+      ],
+      "at": 1122
+    },
+    {
+      "name": "bakeLedge",
+      "args": [
+        571,
+        null
+      ],
+      "at": 1122
+    },
+    {
+      "name": "bakeLedge",
+      "args": [
+        572,
+        null
+      ],
+      "at": 1122
+    },
+    {
+      "name": "bakeLedge",
+      "args": [
+        573,
+        "L"
+      ],
+      "at": 1122
+    },
+    {
+      "name": "bakeLedge",
+      "args": [
+        574,
+        "R"
+      ],
+      "at": 1122
+    },
+    {
+      "name": "bakeBeam",
+      "args": [
+        700,
+        null
+      ],
+      "at": 1126
+    },
+    {
+      "name": "bakeBeam",
+      "args": [
+        701,
+        null
+      ],
+      "at": 1126
+    },
+    {
+      "name": "bakeBeam",
+      "args": [
+        702,
+        null
+      ],
+      "at": 1126
+    },
+    {
+      "name": "bakeBeam",
+      "args": [
+        703,
+        "L"
+      ],
+      "at": 1126
+    },
+    {
+      "name": "bakeBeam",
+      "args": [
+        704,
+        "R"
+      ],
+      "at": 1126
+    },
+    {
+      "name": "bakeStaging",
+      "args": [
+        710,
+        null
+      ],
+      "at": 1127
+    },
+    {
+      "name": "bakeStaging",
+      "args": [
+        711,
+        null
+      ],
+      "at": 1127
+    },
+    {
+      "name": "bakeStaging",
+      "args": [
+        712,
+        null
+      ],
+      "at": 1127
+    },
+    {
+      "name": "bakeStaging",
+      "args": [
+        713,
+        "L"
+      ],
+      "at": 1127
+    },
+    {
+      "name": "bakeStaging",
+      "args": [
+        714,
+        "R"
+      ],
+      "at": 1127
+    },
+    {
+      "name": "bakeLashed",
+      "args": [
+        720,
+        null
+      ],
+      "at": 1131
+    },
+    {
+      "name": "bakeLashed",
+      "args": [
+        721,
+        null
+      ],
+      "at": 1131
+    },
+    {
+      "name": "bakeLashed",
+      "args": [
+        722,
+        null
+      ],
+      "at": 1131
+    },
+    {
+      "name": "bakeLashed",
+      "args": [
+        723,
+        "L"
+      ],
+      "at": 1131
+    },
+    {
+      "name": "bakeLashed",
+      "args": [
+        724,
+        "R"
+      ],
+      "at": 1131
+    },
+    {
+      "name": "bakeDuckboard",
+      "args": [
+        580,
+        null
+      ],
+      "at": 1131
+    },
+    {
+      "name": "bakeDuckboard",
+      "args": [
+        581,
+        null
+      ],
+      "at": 1131
+    },
+    {
+      "name": "bakeDuckboard",
+      "args": [
+        582,
+        null
+      ],
+      "at": 1131
+    },
+    {
+      "name": "bakeDuckboard",
+      "args": [
+        583,
+        "L"
+      ],
+      "at": 1131
+    },
+    {
+      "name": "bakeDuckboard",
+      "args": [
+        584,
+        "R"
+      ],
+      "at": 1131
+    },
+    {
+      "name": "bakeCapLedge",
+      "args": [
+        590,
+        null
+      ],
+      "at": 1131
+    },
+    {
+      "name": "bakeCapLedge",
+      "args": [
+        591,
+        null
+      ],
+      "at": 1131
+    },
+    {
+      "name": "bakeCapLedge",
+      "args": [
+        592,
+        null
+      ],
+      "at": 1131
+    },
+    {
+      "name": "bakeCapLedge",
+      "args": [
+        593,
+        "L"
+      ],
+      "at": 1131
+    },
+    {
+      "name": "bakeCapLedge",
+      "args": [
+        594,
+        "R"
+      ],
+      "at": 1131
+    },
+    {
+      "name": "bakeClimbFace",
+      "args": [
+        0
+      ],
+      "at": 1131
+    },
+    {
+      "name": "bakeClimbFace",
+      "args": [
+        1
+      ],
+      "at": 1131
+    },
+    {
+      "name": "bakeThorns",
+      "args": [
+        70
+      ],
+      "at": 1132
+    },
+    {
+      "name": "bakeThorns",
+      "args": [
+        71
+      ],
+      "at": 1132
+    },
+    {
+      "name": "bakeThorns",
+      "args": [
+        72
+      ],
+      "at": 1132
+    },
+    {
+      "name": "bakeThorns",
+      "args": [
+        73
+      ],
+      "at": 1132
+    },
+    {
+      "name": "bakeCrate",
+      "args": [],
+      "at": 1132
+    },
+    {
+      "name": "bakeReeds",
+      "args": [
+        90
+      ],
+      "at": 1133
+    },
+    {
+      "name": "bakeReeds",
+      "args": [
+        91
+      ],
+      "at": 1133
+    },
+    {
+      "name": "bakeReeds",
+      "args": [
+        92
+      ],
+      "at": 1133
+    },
+    {
+      "name": "bakeSilt",
+      "args": [
+        85
+      ],
+      "at": 1133
+    },
+    {
+      "name": "bakeSilt",
+      "args": [
+        86
+      ],
+      "at": 1133
+    },
+    {
+      "name": "bakeSilt",
+      "args": [
+        87
+      ],
+      "at": 1133
+    },
+    {
+      "name": "bakePalisade",
+      "args": [
+        300
+      ],
+      "at": 1133
+    },
+    {
+      "name": "bakePalisade",
+      "args": [
+        301
+      ],
+      "at": 1133
+    },
+    {
+      "name": "bakePalisade",
+      "args": [
+        302
+      ],
+      "at": 1133
+    },
+    {
+      "name": "bakePalisadeTop",
+      "args": [],
+      "at": 1133
+    },
+    {
+      "name": "bakeShelf",
+      "args": [
+        330
+      ],
+      "at": 1133
+    },
+    {
+      "name": "bakeShelf",
+      "args": [
+        331
+      ],
+      "at": 1133
+    },
+    {
+      "name": "bakeShelfFungus",
+      "args": [
+        332
+      ],
+      "at": 1133
+    },
+    {
+      "name": "bakeShelfFungus",
+      "args": [
+        333
+      ],
+      "at": 1133
+    },
+    {
+      "name": "bakeCrystalTile",
+      "args": [
+        0,
+        false
+      ],
+      "at": 1133
+    },
+    {
+      "name": "bakeCrystalTile",
+      "args": [
+        1,
+        false
+      ],
+      "at": 1133
+    },
+    {
+      "name": "bakeCrystalTile",
+      "args": [
+        2,
+        false
+      ],
+      "at": 1133
+    },
+    {
+      "name": "bakeCrystalTile",
+      "args": [
+        0,
+        true
+      ],
+      "at": 1133
+    },
+    {
+      "name": "bakeCrystalTile",
+      "args": [
+        1,
+        true
+      ],
+      "at": 1133
+    },
+    {
+      "name": "bakeCrystalTile",
+      "args": [
+        2,
+        true
+      ],
+      "at": 1133
+    },
+    {
+      "name": "bakeSpire",
+      "args": [
+        0,
+        false
+      ],
+      "at": 1133
+    },
+    {
+      "name": "bakeSpire",
+      "args": [
+        1,
+        false
+      ],
+      "at": 1133
+    },
+    {
+      "name": "bakeSpire",
+      "args": [
+        0,
+        true
+      ],
+      "at": 1133
+    },
+    {
+      "name": "bakeSpire",
+      "args": [
+        1,
+        true
+      ],
+      "at": 1133
+    },
+    {
+      "name": "bakePortcullis",
+      "args": [
+        600
+      ],
+      "at": 1133
+    },
+    {
+      "name": "bakePortcullis",
+      "args": [
+        601
+      ],
+      "at": 1133
+    },
+    {
+      "name": "bakeDrystone",
+      "args": [
+        700
+      ],
+      "at": 1133
+    },
+    {
+      "name": "bakeDrystone",
+      "args": [
+        701
+      ],
+      "at": 1133
+    },
+    {
+      "name": "bakeDrystone",
+      "args": [
+        702
+      ],
+      "at": 1133
+    },
+    {
+      "name": "bakeDrystoneTop",
+      "args": [
+        710
+      ],
+      "at": 1133
+    },
+    {
+      "name": "bakeDrystoneTop",
+      "args": [
+        711
+      ],
+      "at": 1133
+    },
+    {
+      "name": "bakeHallWall",
+      "args": [
+        610
+      ],
+      "at": 1133
+    },
+    {
+      "name": "bakeHallWall",
+      "args": [
+        611
+      ],
+      "at": 1133
+    },
+    {
+      "name": "bakeHallWall",
+      "args": [
+        612
+      ],
+      "at": 1133
+    },
+    {
+      "name": "bakeMycDirt",
+      "args": [
+        340
+      ],
+      "at": 1133
+    },
+    {
+      "name": "bakeMycDirt",
+      "args": [
+        341
+      ],
+      "at": 1133
+    },
+    {
+      "name": "bakeMycDirt",
+      "args": [
+        342
+      ],
+      "at": 1133
+    },
+    {
+      "name": "bakeBridgePlank",
+      "args": [
+        310
+      ],
+      "at": 1133
+    },
+    {
+      "name": "bakeBridgePlank",
+      "args": [
+        311
+      ],
+      "at": 1133
+    },
+    {
+      "name": "bakeBridgePlankEnd",
+      "args": [
+        312,
+        -1
+      ],
+      "at": 1133
+    },
+    {
+      "name": "bakeBridgePlankEnd",
+      "args": [
+        313,
+        1
+      ],
+      "at": 1133
+    },
+    {
+      "name": "bakeNet",
+      "args": [],
+      "at": 1133
+    },
+    {
+      "name": "bakeVineWall",
+      "args": [
+        95
+      ],
+      "at": 1133
+    },
+    {
+      "name": "bakeVineWall",
+      "args": [
+        96
+      ],
+      "at": 1133
+    },
+    {
+      "name": "bakeVineWall",
+      "args": [
+        97
+      ],
+      "at": 1133
+    },
+    {
+      "name": "bakeVineWall",
+      "args": [
+        98
+      ],
+      "at": 1133
+    },
+    {
+      "name": "bakeShrine",
+      "args": [
+        false
+      ],
+      "at": 1143
+    },
+    {
+      "name": "bakeShrine",
+      "args": [
+        true
+      ],
+      "at": 1143
+    },
+    {
+      "name": "bakeGate",
+      "args": [],
+      "at": 1144
+    },
+    {
+      "name": "bakeSign",
+      "args": [],
+      "at": 1144
+    },
+    {
+      "name": "bakeTuft",
+      "args": [
+        200
+      ],
+      "at": 1148
+    },
+    {
+      "name": "bakeTuft",
+      "args": [
+        201
+      ],
+      "at": 1148
+    },
+    {
+      "name": "bakeTuft",
+      "args": [
+        202
+      ],
+      "at": 1148
+    },
+    {
+      "name": "bakeTuft",
+      "args": [
+        203
+      ],
+      "at": 1148
+    },
+    {
+      "name": "bakeFlower",
+      "args": [
+        210
+      ],
+      "at": 1148
+    },
+    {
+      "name": "bakeFlower",
+      "args": [
+        211
+      ],
+      "at": 1148
+    },
+    {
+      "name": "bakeFlower",
+      "args": [
+        212
+      ],
+      "at": 1148
+    },
+    {
+      "name": "bakeFlower",
+      "args": [
+        213
+      ],
+      "at": 1148
+    },
+    {
+      "name": "bakeMushroom",
+      "args": [
+        220
+      ],
+      "at": 1149
+    },
+    {
+      "name": "bakeMushroom",
+      "args": [
+        221
+      ],
+      "at": 1149
+    },
+    {
+      "name": "bakeBush",
+      "args": [
+        230
+      ],
+      "at": 1149
+    },
+    {
+      "name": "bakeBush",
+      "args": [
+        231
+      ],
+      "at": 1149
+    },
+    {
+      "name": "bakeBush",
+      "args": [
+        232
+      ],
+      "at": 1149
+    },
+    {
+      "name": "bakeShadow",
+      "args": [
+        6,
+        2
+      ],
+      "at": 1150
+    },
+    {
+      "name": "bakeLilyFlowerBig",
+      "args": [],
+      "at": 1150
+    },
+    {
+      "name": "bakeRaft",
+      "args": [],
+      "at": 1150
+    },
+    {
+      "name": "bakeThronePad",
+      "args": [],
+      "at": 1150
+    },
+    {
+      "name": "bakePlank",
+      "args": [],
+      "at": 1150
+    },
+    {
+      "name": "bakeDrop",
+      "args": [],
+      "at": 1150
+    },
+    {
+      "name": "bakeFern",
+      "args": [
+        400
+      ],
+      "at": 1155
+    },
+    {
+      "name": "bakeFern",
+      "args": [
+        401
+      ],
+      "at": 1155
+    },
+    {
+      "name": "bakeFern",
+      "args": [
+        402
+      ],
+      "at": 1155
+    },
+    {
+      "name": "bakeStump",
+      "args": [
+        410
+      ],
+      "at": 1155
+    },
+    {
+      "name": "bakeStump",
+      "args": [
+        411
+      ],
+      "at": 1155
+    },
+    {
+      "name": "bakeRock",
+      "args": [
+        420
+      ],
+      "at": 1155
+    },
+    {
+      "name": "bakeRock",
+      "args": [
+        421
+      ],
+      "at": 1155
+    },
+    {
+      "name": "bakeRock",
+      "args": [
+        422
+      ],
+      "at": 1155
+    },
+    {
+      "name": "bakeCattail",
+      "args": [
+        430
+      ],
+      "at": 1155
+    },
+    {
+      "name": "bakeCattail",
+      "args": [
+        431
+      ],
+      "at": 1155
+    },
+    {
+      "name": "bakeCattail",
+      "args": [
+        432
+      ],
+      "at": 1155
+    },
+    {
+      "name": "bakeLilyFlower",
+      "args": [],
+      "at": 1155
+    },
+    {
+      "name": "bakeSkullPost",
+      "args": [],
+      "at": 1155
+    },
+    {
+      "name": "bakeTent",
+      "args": [
+        440
+      ],
+      "at": 1155
+    },
+    {
+      "name": "bakeTent",
+      "args": [
+        441
+      ],
+      "at": 1155
+    },
+    {
+      "name": "bakeTinyCap",
+      "args": [
+        "#4aa0b0",
+        450
+      ],
+      "at": 1155
+    },
+    {
+      "name": "bakeTinyCap",
+      "args": [
+        "#ff7a9a",
+        451
+      ],
+      "at": 1155
+    },
+    {
+      "name": "bakeTinyCap",
+      "args": [
+        "#9a5aa8",
+        452
+      ],
+      "at": 1155
+    },
+    {
+      "name": "bakeTinyCap",
+      "args": [
+        "#4aa0b0",
+        453
+      ],
+      "at": 1155
+    },
+    {
+      "name": "bakeMoss",
+      "args": [
+        460
+      ],
+      "at": 1155
+    },
+    {
+      "name": "bakeMoss",
+      "args": [
+        461
+      ],
+      "at": 1155
+    },
+    {
+      "name": "bakeMoss",
+      "args": [
+        462
+      ],
+      "at": 1155
+    },
+    {
+      "name": "bakeHiveBg",
+      "args": [
+        500
+      ],
+      "at": 1156
+    },
+    {
+      "name": "bakeHiveBg",
+      "args": [
+        503
+      ],
+      "at": 1156
+    },
+    {
+      "name": "bakeHiveBg",
+      "args": [
+        506
+      ],
+      "at": 1156
+    },
+    {
+      "name": "bakeFrogStatue",
+      "args": [
+        510
+      ],
+      "at": 1156
+    },
+    {
+      "name": "bakeFrogStatue",
+      "args": [
+        511
+      ],
+      "at": 1156
+    },
+    {
+      "name": "bakeWarBanner",
+      "args": [
+        520
+      ],
+      "at": 1156
+    },
+    {
+      "name": "bakeWarBanner",
+      "args": [
+        521
+      ],
+      "at": 1156
+    },
+    {
+      "name": "bakeWarBanner",
+      "args": [
+        520,
+        true
+      ],
+      "at": 1156
+    },
+    {
+      "name": "bakeWarBanner",
+      "args": [
+        521,
+        true
+      ],
+      "at": 1156
+    },
+    {
+      "name": "bakeGibbet",
+      "args": [],
+      "at": 1156
+    },
+    {
+      "name": "bakeEyrie",
+      "args": [],
+      "at": 1156
+    },
+    {
+      "name": "bakeSiege",
+      "args": [],
+      "at": 1156
+    },
+    {
+      "name": "bakeBoneThrone",
+      "args": [],
+      "at": 1156
+    },
+    {
+      "name": "bakeSkullPile",
+      "args": [
+        530
+      ],
+      "at": 1156
+    },
+    {
+      "name": "bakeSkullPile",
+      "args": [
+        531
+      ],
+      "at": 1156
+    },
+    {
+      "name": "bakeHangCage",
+      "args": [],
+      "at": 1156
+    },
+    {
+      "name": "bakeRootDecor",
+      "args": [
+        540
+      ],
+      "at": 1156
+    },
+    {
+      "name": "bakeRootDecor",
+      "args": [
+        541
+      ],
+      "at": 1156
+    },
+    {
+      "name": "bakeRootDecor",
+      "args": [
+        542
+      ],
+      "at": 1156
+    },
+    {
+      "name": "bakeIdol",
+      "args": [
+        0
+      ],
+      "at": 1158
+    },
+    {
+      "name": "bakeIdol",
+      "args": [
+        1
+      ],
+      "at": 1158
+    },
+    {
+      "name": "bakeLootHeap",
+      "args": [
+        0
+      ],
+      "at": 1158
+    },
+    {
+      "name": "bakeLootHeap",
+      "args": [
+        1
+      ],
+      "at": 1158
+    },
+    {
+      "name": "bakeHideRack",
+      "args": [
+        0
+      ],
+      "at": 1158
+    },
+    {
+      "name": "bakeHideRack",
+      "args": [
+        1
+      ],
+      "at": 1158
+    },
+    {
+      "name": "bakeOldOak",
+      "args": [
+        470
+      ],
+      "at": 1162
+    },
+    {
+      "name": "bakeOldOak",
+      "args": [
+        471
+      ],
+      "at": 1162
+    },
+    {
+      "name": "bakeBoat",
+      "args": [
+        480
+      ],
+      "at": 1162
+    },
+    {
+      "name": "bakeTotem",
+      "args": [
+        490
+      ],
+      "at": 1162
+    },
+    {
+      "name": "bakeTotem",
+      "args": [
+        491
+      ],
+      "at": 1162
+    },
+    {
+      "name": "bakeGiantCap",
+      "args": [
+        495
+      ],
+      "at": 1162
+    },
+    {
+      "name": "bakeGardenWall",
+      "args": [
+        300
+      ],
+      "at": 1163
+    },
+    {
+      "name": "bakeGardenWall",
+      "args": [
+        301
+      ],
+      "at": 1163
+    },
+    {
+      "name": "bakeGardenWall",
+      "args": [
+        302
+      ],
+      "at": 1163
+    },
+    {
+      "name": "bakeBeanpoles",
+      "args": [
+        310
+      ],
+      "at": 1163
+    },
+    {
+      "name": "bakeBeanpoles",
+      "args": [
+        311
+      ],
+      "at": 1163
+    },
+    {
+      "name": "bakeSkep",
+      "args": [
+        320
+      ],
+      "at": 1164
+    },
+    {
+      "name": "bakeTrough",
+      "args": [
+        321
+      ],
+      "at": 1164
+    },
+    {
+      "name": "bakeStocks",
+      "args": [],
+      "at": 1164
+    },
+    {
+      "name": "bakeDovecote",
+      "args": [],
+      "at": 1164
+    },
+    {
+      "name": "bakeGrave",
+      "args": [
+        0
+      ],
+      "at": 1165
+    },
+    {
+      "name": "bakeGrave",
+      "args": [
+        1
+      ],
+      "at": 1165
+    },
+    {
+      "name": "bakeGrave",
+      "args": [
+        2
+      ],
+      "at": 1165
+    },
+    {
+      "name": "bakeLychgate",
+      "args": [],
+      "at": 1165
+    },
+    {
+      "name": "bakeYew",
+      "args": [
+        330
+      ],
+      "at": 1165
+    },
+    {
+      "name": "bakeYew",
+      "args": [
+        331
+      ],
+      "at": 1165
+    },
+    {
+      "name": "bakeSkullMini",
+      "args": [],
+      "at": 1169
+    },
+    {
+      "name": "bakeCompass",
+      "args": [],
+      "at": 1169
+    },
+    {
+      "name": "bakeBough",
+      "args": [],
+      "at": 1169
+    },
+    {
+      "name": "bakeCounter",
+      "args": [],
+      "at": 1169
+    },
+    {
+      "name": "bakeWares",
+      "args": [
+        0
+      ],
+      "at": 1169
+    },
+    {
+      "name": "bakeWares",
+      "args": [
+        1
+      ],
+      "at": 1169
+    },
+    {
+      "name": "bakeShopDoor",
+      "args": [],
+      "at": 1169
+    },
+    {
+      "name": "bakeLanternPost",
+      "args": [],
+      "at": 1169
+    },
+    {
+      "name": "bakeBeehive",
+      "args": [],
+      "at": 1169
+    },
+    {
+      "name": "bakeBirdhouse",
+      "args": [],
+      "at": 1169
+    },
+    {
+      "name": "bakeFishTrap",
+      "args": [
+        800
+      ],
+      "at": 1169
+    },
+    {
+      "name": "bakeFishTrap",
+      "args": [
+        801
+      ],
+      "at": 1169
+    },
+    {
+      "name": "bakeSpearRack",
+      "args": [],
+      "at": 1169
+    },
+    {
+      "name": "bakeBarrelStack",
+      "args": [],
+      "at": 1169
+    },
+    {
+      "name": "bakeBones",
+      "args": [
+        810
+      ],
+      "at": 1169
+    },
+    {
+      "name": "bakeBones",
+      "args": [
+        811
+      ],
+      "at": 1169
+    },
+    {
+      "name": "bakeFallenLog",
+      "args": [
+        770
+      ],
+      "at": 1169
+    },
+    {
+      "name": "bakeFallenLog",
+      "args": [
+        771
+      ],
+      "at": 1169
+    },
+    {
+      "name": "bakeFence",
+      "args": [
+        780
+      ],
+      "at": 1169
+    },
+    {
+      "name": "bakeFence",
+      "args": [
+        781
+      ],
+      "at": 1169
+    },
+    {
+      "name": "bakeCart",
+      "args": [
+        790
+      ],
+      "at": 1169
+    },
+    {
+      "name": "bakeWell",
+      "args": [],
+      "at": 1169
+    },
+    {
+      "name": "bakeHeather",
+      "args": [
+        730
+      ],
+      "at": 1169
+    },
+    {
+      "name": "bakeHeather",
+      "args": [
+        731
+      ],
+      "at": 1169
+    },
+    {
+      "name": "bakeHeather",
+      "args": [
+        732
+      ],
+      "at": 1169
+    },
+    {
+      "name": "bakeGorse",
+      "args": [
+        740
+      ],
+      "at": 1169
+    },
+    {
+      "name": "bakeGorse",
+      "args": [
+        741
+      ],
+      "at": 1169
+    },
+    {
+      "name": "bakeThistle",
+      "args": [
+        750
+      ],
+      "at": 1169
+    },
+    {
+      "name": "bakeThistle",
+      "args": [
+        751
+      ],
+      "at": 1169
+    },
+    {
+      "name": "bakeStandingStone",
+      "args": [
+        760
+      ],
+      "at": 1169
+    },
+    {
+      "name": "bakeStandingStone",
+      "args": [
+        761
+      ],
+      "at": 1169
+    },
+    {
+      "name": "bakeStandingStone",
+      "args": [
+        762
+      ],
+      "at": 1169
+    },
+    {
+      "name": "bakeStandingStone",
+      "args": [
+        760,
+        true
+      ],
+      "at": 1169
+    },
+    {
+      "name": "bakeStandingStone",
+      "args": [
+        761,
+        true
+      ],
+      "at": 1169
+    },
+    {
+      "name": "bakeStandingStone",
+      "args": [
+        762,
+        true
+      ],
+      "at": 1169
+    },
+    {
+      "name": "bakeBoulder",
+      "args": [],
+      "at": 1169
+    },
+    {
+      "name": "bakeBothy",
+      "args": [],
+      "at": 1169
+    },
+    {
+      "name": "bakeMill",
+      "args": [],
+      "at": 1169
+    },
+    {
+      "name": "bakeSail",
+      "args": [],
+      "at": 1169
+    },
+    {
+      "name": "bakeFoldGate",
+      "args": [],
+      "at": 1169
+    },
+    {
+      "name": "bakeRamLog",
+      "args": [],
+      "at": 1170
+    },
+    {
+      "name": "bakeLever",
+      "args": [
+        false
+      ],
+      "at": 1170
+    },
+    {
+      "name": "bakeLever",
+      "args": [
+        true
+      ],
+      "at": 1170
+    },
+    {
+      "name": "bakePlate",
+      "args": [
+        false
+      ],
+      "at": 1170
+    },
+    {
+      "name": "bakePlate",
+      "args": [
+        true
+      ],
+      "at": 1170
+    },
+    {
+      "name": "bakePalanquin",
+      "args": [],
+      "at": 1170
+    },
+    {
+      "name": "bakeDoor",
+      "args": [
+        false
+      ],
+      "at": 1170
+    },
+    {
+      "name": "bakeDoor",
+      "args": [
+        true
+      ],
+      "at": 1170
+    },
+    {
+      "name": "bakeCarpet",
+      "args": [],
+      "at": 1170
+    },
+    {
+      "name": "bakePuffball",
+      "args": [],
+      "at": 1171
+    },
+    {
+      "name": "bakeKeyIcon",
+      "args": [
+        "brass"
+      ],
+      "at": 1171
+    },
+    {
+      "name": "bakeKeyIcon",
+      "args": [
+        "iron"
+      ],
+      "at": 1171
+    },
+    {
+      "name": "bakeKeyIcon",
+      "args": [
+        "bone"
+      ],
+      "at": 1171
+    },
+    {
+      "name": "bakeLockPlate",
+      "args": [],
+      "at": 1171
+    },
+    {
+      "name": "bakeQuestIcon",
+      "args": [],
+      "at": 1171
+    },
+    {
+      "name": "bakeCabin",
+      "args": [],
+      "at": 1171
+    },
+    {
+      "name": "bakeGrate",
+      "args": [],
+      "at": 1171
+    },
+    {
+      "name": "bakeTrunk",
+      "args": [
+        900
+      ],
+      "at": 1171
+    },
+    {
+      "name": "bakeTrunk",
+      "args": [
+        901
+      ],
+      "at": 1171
+    },
+    {
+      "name": "bakeTrunk",
+      "args": [
+        902
+      ],
+      "at": 1171
+    },
+    {
+      "name": "bakeBracket",
+      "args": [
+        0
+      ],
+      "at": 1171
+    },
+    {
+      "name": "bakeBracket",
+      "args": [
+        1
+      ],
+      "at": 1171
+    },
+    {
+      "name": "bakeAxle",
+      "args": [],
+      "at": 1171
+    },
+    {
+      "name": "bakeRockPillar",
+      "args": [
+        910
+      ],
+      "at": 1171
+    },
+    {
+      "name": "bakeRockPillar",
+      "args": [
+        911
+      ],
+      "at": 1171
+    },
+    {
+      "name": "bakeRockPillar",
+      "args": [
+        912
+      ],
+      "at": 1171
+    },
+    {
+      "name": "bakeStrut",
+      "args": [
+        0
+      ],
+      "at": 1171
+    },
+    {
+      "name": "bakeStrut",
+      "args": [
+        1
+      ],
+      "at": 1171
+    },
+    {
+      "name": "bakeGasSeam",
+      "args": [],
+      "at": 1171
+    },
+    {
+      "name": "bakeTimberFrame",
+      "args": [
+        160
+      ],
+      "at": 1171
+    },
+    {
+      "name": "bakeTimberFrame",
+      "args": [
+        144
+      ],
+      "at": 1171
+    },
+    {
+      "name": "bakeTimberFrame",
+      "args": [
+        48
+      ],
+      "at": 1171
+    },
+    {
+      "name": "bakeOrePan",
+      "args": [],
+      "at": 1171
+    },
+    {
+      "name": "bakeCottage",
+      "args": [
+        false
+      ],
+      "at": 1171
+    },
+    {
+      "name": "bakeCottage",
+      "args": [
+        true
+      ],
+      "at": 1171
+    },
+    {
+      "name": "bakeDeadTree",
+      "args": [
+        880
+      ],
+      "at": 1171
+    },
+    {
+      "name": "bakeDeadTree",
+      "args": [
+        881
+      ],
+      "at": 1171
+    },
+    {
+      "name": "bakeGlowShroom",
+      "args": [
+        true
+      ],
+      "at": 1171
+    },
+    {
+      "name": "bakeGlowShroom",
+      "args": [
+        false
+      ],
+      "at": 1171
+    },
+    {
+      "name": "bakeMote",
+      "args": [
+        "#9a5aa8"
+      ],
+      "at": 1171
+    },
+    {
+      "name": "bakeMote",
+      "args": [
+        "#4aa0b0"
+      ],
+      "at": 1171
+    },
+    {
+      "name": "bakeInnSign",
+      "args": [],
+      "at": 1175
+    },
+    {
+      "name": "bakeSunshardIcon",
+      "args": [],
+      "at": 1175
+    },
+    {
+      "name": "bakeOrbWeb",
+      "args": [],
+      "at": 1175
+    },
+    {
+      "name": "bakeFrost",
+      "args": [
+        0
+      ],
+      "at": 1175
+    },
+    {
+      "name": "bakeFrost",
+      "args": [
+        1
+      ],
+      "at": 1175
+    },
+    {
+      "name": "bakeStilt",
+      "args": [],
+      "at": 1175
+    },
+    {
+      "name": "bakeGroundWeb",
+      "args": [],
+      "at": 1175
+    },
+    {
+      "name": "bakeBridgePost",
+      "args": [],
+      "at": 1175
+    },
+    {
+      "name": "bakeBridgeTower",
+      "args": [],
+      "at": 1175
+    },
+    {
+      "name": "bakeGatehouse",
+      "args": [],
+      "at": 1175
+    },
+    {
+      "name": "bakeForge",
+      "args": [],
+      "at": 1175
+    },
+    {
+      "name": "bakeAnvil",
+      "args": [],
+      "at": 1175
+    },
+    {
+      "name": "bakeFolkIcon",
+      "args": [],
+      "at": 1175
+    },
+    {
+      "name": "bakeCastle",
+      "args": [
+        5
+      ],
+      "at": 1175
+    },
+    {
+      "name": "bakeTowerTop",
+      "args": [],
+      "at": 1175
+    },
+    {
+      "name": "bakeTreehouse",
+      "args": [
+        320
+      ],
+      "at": 1175
+    },
+    {
+      "name": "bakeTreehouse",
+      "args": [
+        321
+      ],
+      "at": 1175
+    },
+    {
+      "name": "bakeTorch",
+      "args": [],
+      "at": 1175
+    },
+    {
+      "name": "bakeCage",
+      "args": [],
+      "at": 1175
+    },
+    {
+      "name": "bakeBarrel",
+      "args": [],
+      "at": 1175
+    },
+    {
+      "name": "bakeBrazier",
+      "args": [
+        false
+      ],
+      "at": 1175
+    },
+    {
+      "name": "bakeBrazier",
+      "args": [
+        true
+      ],
+      "at": 1175
+    },
+    {
+      "name": "bakeCrank",
+      "args": [],
+      "at": 1175
+    },
+    {
+      "name": "bakeLift",
+      "args": [],
+      "at": 1175
+    },
+    {
+      "name": "bakeHorn",
+      "args": [],
+      "at": 1175
+    },
+    {
+      "name": "bakeSun",
+      "args": [],
+      "at": 1209
+    },
+    {
+      "name": "bakeFarVillage",
+      "args": [
+        320,
+        90,
+        1
+      ],
+      "at": 1209
+    },
+    {
+      "name": "bakeFarCrags",
+      "args": [
+        320,
+        90,
+        1
+      ],
+      "at": 34014
+    },
+    {
+      "name": "bakeFar",
+      "args": [
+        320,
+        90,
+        1
+      ],
+      "at": 34014
+    },
+    {
+      "name": "bakeMidVillage",
+      "args": [
+        480,
+        140,
+        2
+      ],
+      "at": 1209
+    },
+    {
+      "name": "bakeMidCrags",
+      "args": [
+        480,
+        140,
+        2
+      ],
+      "at": 1209
+    },
+    {
+      "name": "bakeMid",
+      "args": [
+        480,
+        140,
+        2
+      ],
+      "at": 1209
+    },
+    {
+      "name": "bakeNearVillage",
+      "args": [
+        640,
+        300,
+        3
+      ],
+      "at": 1209
+    },
+    {
+      "name": "bakeNearCrag",
+      "args": [
+        640,
+        300,
+        3
+      ],
+      "at": 34015
+    },
+    {
+      "name": "bakeNearMushrooms",
+      "args": [
+        640,
+        300,
+        3
+      ],
+      "at": 34015
+    },
+    {
+      "name": "bakeNearAutumn",
+      "args": [
+        640,
+        300,
+        3
+      ],
+      "at": 1209
+    },
+    {
+      "name": "bakeMapSign",
+      "args": [],
+      "at": 2052
+    },
+    {
+      "name": "bakeFish",
+      "args": [],
+      "at": 2052
+    },
+    {
+      "name": "bakeHut",
+      "args": [],
+      "at": 4886
+    },
+    {
+      "name": "bakeFlag",
+      "args": [],
+      "at": 4886
+    },
+    {
+      "name": "bakeNear",
+      "args": [
+        640,
+        300,
+        3
+      ],
+      "at": 34015
+    },
+    {
+      "name": "bakeNear",
+      "args": [
+        640,
+        300,
+        3,
+        [
+          "#1f4a3a",
+          "#2a5e46",
+          "#3a7a55",
+          "#4f9a68"
+        ]
+      ],
+      "at": 34015
+    }
+  ],
+  "names": [
+    "bakeDirtDeep",
+    "bakeLog",
+    "bakeCombPlat",
+    "bakeRopeNet",
+    "bakeVine",
+    "bakeRail",
+    "bakeSoftRock",
+    "bakeRopeLadder",
+    "bakeLedge",
+    "bakeBeam",
+    "bakeStaging",
+    "bakeLashed",
+    "bakeDuckboard",
+    "bakeCapLedge",
+    "bakeClimbFace",
+    "bakeThorns",
+    "bakeCrate",
+    "bakeReeds",
+    "bakeSilt",
+    "bakePalisade",
+    "bakePalisadeTop",
+    "bakeShelf",
+    "bakeShelfFungus",
+    "bakeCrystalTile",
+    "bakeSpire",
+    "bakePortcullis",
+    "bakeDrystone",
+    "bakeDrystoneTop",
+    "bakeHallWall",
+    "bakeMycDirt",
+    "bakeBridgePlank",
+    "bakeBridgePlankEnd",
+    "bakeNet",
+    "bakeVineWall",
+    "bakeShrine",
+    "bakeGate",
+    "bakeSign",
+    "bakeTuft",
+    "bakeFlower",
+    "bakeMushroom",
+    "bakeBush",
+    "bakeShadow",
+    "bakeLilyFlowerBig",
+    "bakeRaft",
+    "bakeThronePad",
+    "bakePlank",
+    "bakeDrop",
+    "bakeFern",
+    "bakeStump",
+    "bakeRock",
+    "bakeCattail",
+    "bakeLilyFlower",
+    "bakeSkullPost",
+    "bakeTent",
+    "bakeTinyCap",
+    "bakeMoss",
+    "bakeHiveBg",
+    "bakeFrogStatue",
+    "bakeWarBanner",
+    "bakeGibbet",
+    "bakeEyrie",
+    "bakeSiege",
+    "bakeBoneThrone",
+    "bakeSkullPile",
+    "bakeHangCage",
+    "bakeRootDecor",
+    "bakeIdol",
+    "bakeLootHeap",
+    "bakeHideRack",
+    "bakeOldOak",
+    "bakeBoat",
+    "bakeTotem",
+    "bakeGiantCap",
+    "bakeGardenWall",
+    "bakeBeanpoles",
+    "bakeSkep",
+    "bakeTrough",
+    "bakeStocks",
+    "bakeDovecote",
+    "bakeGrave",
+    "bakeLychgate",
+    "bakeYew",
+    "bakeSkullMini",
+    "bakeCompass",
+    "bakeBough",
+    "bakeCounter",
+    "bakeWares",
+    "bakeShopDoor",
+    "bakeLanternPost",
+    "bakeBeehive",
+    "bakeBirdhouse",
+    "bakeFishTrap",
+    "bakeSpearRack",
+    "bakeBarrelStack",
+    "bakeBones",
+    "bakeFallenLog",
+    "bakeFence",
+    "bakeCart",
+    "bakeWell",
+    "bakeHeather",
+    "bakeGorse",
+    "bakeThistle",
+    "bakeStandingStone",
+    "bakeBoulder",
+    "bakeBothy",
+    "bakeMill",
+    "bakeSail",
+    "bakeFoldGate",
+    "bakeRamLog",
+    "bakeLever",
+    "bakePlate",
+    "bakePalanquin",
+    "bakeDoor",
+    "bakeCarpet",
+    "bakePuffball",
+    "bakeKeyIcon",
+    "bakeLockPlate",
+    "bakeQuestIcon",
+    "bakeCabin",
+    "bakeGrate",
+    "bakeTrunk",
+    "bakeBracket",
+    "bakeAxle",
+    "bakeRockPillar",
+    "bakeStrut",
+    "bakeGasSeam",
+    "bakeTimberFrame",
+    "bakeOrePan",
+    "bakeCottage",
+    "bakeDeadTree",
+    "bakeGlowShroom",
+    "bakeMote",
+    "bakeInnSign",
+    "bakeSunshardIcon",
+    "bakeOrbWeb",
+    "bakeFrost",
+    "bakeStilt",
+    "bakeGroundWeb",
+    "bakeBridgePost",
+    "bakeBridgeTower",
+    "bakeGatehouse",
+    "bakeForge",
+    "bakeAnvil",
+    "bakeFolkIcon",
+    "bakeCastle",
+    "bakeTowerTop",
+    "bakeTreehouse",
+    "bakeTorch",
+    "bakeCage",
+    "bakeBarrel",
+    "bakeBrazier",
+    "bakeCrank",
+    "bakeLift",
+    "bakeHorn",
+    "bakeSun",
+    "bakeFarVillage",
+    "bakeFarCrags",
+    "bakeFar",
+    "bakeMidVillage",
+    "bakeMidCrags",
+    "bakeMid",
+    "bakeNearVillage",
+    "bakeNearCrag",
+    "bakeNearMushrooms",
+    "bakeNearAutumn",
+    "bakeMapSign",
+    "bakeFish",
+    "bakeHut",
+    "bakeFlag",
+    "bakeNear"
+  ],
+  "unresolved": [
+    {
+      "name": "bakeMycTop",
+      "at": 1136,
+      "expression": "ART.bakeMycTop(350 + i + eL * 7 + eR * 13, eL, eR)"
+    },
+    {
+      "name": "bakeSky",
+      "at": 1209,
+      "expression": "ART.bakeSky(VH, sky[0], sky[1])"
+    },
+    {
+      "name": "bakeSkyTeal",
+      "at": 1209,
+      "expression": "ART.bakeSkyTeal(VH)"
+    },
+    {
+      "name": "bakeSkyAutumn",
+      "at": 1209,
+      "expression": "ART.bakeSkyAutumn(VH)"
+    },
+    {
+      "name": "bakeSkyCrag",
+      "at": 1209,
+      "expression": "ART.bakeSkyCrag(VH)"
+    },
+    {
+      "name": "bakeSkyNight",
+      "at": 1209,
+      "expression": "ART.bakeSkyNight(VH)"
+    },
+    {
+      "name": "bakeSkyDusk",
+      "at": 1209,
+      "expression": "ART.bakeSkyDusk(VH)"
+    },
+    {
+      "name": "bakeNear",
+      "at": 1209,
+      "expression": "ART.bakeNear(640, 300, 3, pal.canopy)"
+    },
+    {
+      "name": "bakeNear",
+      "at": 1209,
+      "expression": "ART.bakeNear(640, 300, 5, pal.canopy)"
+    },
+    {
+      "name": "bakeFG",
+      "at": 1209,
+      "expression": "ART.bakeFG(640, VH, 4)"
+    },
+    {
+      "name": "bakeSkyCrag",
+      "at": 34013,
+      "expression": "ART.bakeSkyCrag(VH)"
+    },
+    {
+      "name": "bakeSkyNight",
+      "at": 34013,
+      "expression": "ART.bakeSkyNight(VH)"
+    },
+    {
+      "name": "bakeSkyTeal",
+      "at": 34013,
+      "expression": "ART.bakeSkyTeal(VH)"
+    }
+  ],
+  "unprovedTargets": [
+    "bakeSky",
+    "bakeFG",
+    "bakeSkyDusk",
+    "bakeSkyNight",
+    "bakeMycTop",
+    "bakeSkyTeal",
+    "bakeSkyAutumn",
+    "bakeSkyCrag"
+  ],
+  "noExecutionOrActualInvocationCountClaim": true
+}
