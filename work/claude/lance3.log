@@ -1,0 +1,4 @@
+  the bridge: 7 lookouts, 6 cages off their ends, 7 spans over teeth, the main gate at 613; tells >= 0.6 s; gaps of 2
+{"active":true,"mounted":true,"barding":40,"charge":{"cracked":146,"gaps":4,"wheel":{"open":true,"t":1.5}},"gapTiles":[2,2,2,2],"cage":{"mounted":false,"phase":2,"thrown":3,"open":true},"afterCage":"guard","volley":{"n":3,"t0":1.1,"hurt":21},"ballista":{"called":true,"tell":1.1,"hurt":30},"oil":{"called":true,"onLookout":true,"bolt":false,"hurt":6},"vault":{"up":{"row":27},"planted":1.7,"open":true,"stabY":30},"wall":{"shoved":34,"mode":"shieldwall","turned":"wallTurned","open":true},"last":{"phase":3,"mode":"fallback","moved":257,"gateK":0.122},"dead":true,"slam":1,"activeAfter":false}
+THE QUEEN'S LANCE (rework): mounted, the charge tears the bridge (told), the cage unhorses him, the volley, the ballista and the oil, the vault, the shield wall, the last stand and the slam - all hold.
+rc=0

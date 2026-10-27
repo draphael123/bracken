@@ -1,0 +1,27 @@
+boot: BK up at 33.1 s (title 33.1 s) under 4x CPU throttle
+boot main-thread busy: 31845 ms
+boot steps (ms): modules 444, hero 1130, art1 1430, art2 1979, art3 490, art4 413, art5 415, art6 162, art7 614, art8 505, art9 224, sub 3061, sub 146, sub 40, sub 31, sub 4, sub 6, tiles 0, sub 22, sub 72, sub 245, sub 84, sub 169, props 458, sky 890, misc1 1691, misc2 2837, misc3 8425, l_build 1061, sub 26, sub 1, sub 28, sub 5, sub 47, sub 2, l_bake 0, sub 20, sub 95, sub 383, sub 57, sub 106, l_bake 325, l_bake 763, l_deep 715, l_rest 1842, final 345
+page: {"coarse":true,"dpr":2.625,"cv":"1201x541","set":{"parallax":"near","touchInit":1}}
+structure: {"mp":0.649741,"tl":true,"tlw":2402,"pre":632,"desync":true}
+  storm     {"scene":"storm","fps":50.1,"p95":18.4,"worst":476.5,"busyMsPerFrame":13.5,"scriptMs":12.8}
+  storm@120 {"scene":"storm@120","fps":49.7,"p95":35.6,"worst":52.5,"busyMsPerFrame":17.7,"scriptMs":17.2}
+  storm@230 {"scene":"storm@230","fps":53.8,"p95":34.6,"worst":36.2,"busyMsPerFrame":15.6,"scriptMs":15}
+  storm@545 {"scene":"storm@545","fps":55.2,"p95":18.8,"worst":36,"busyMsPerFrame":13,"scriptMs":12.3}
+input: {"firstMs":119.9,"stickMs":1.1}
+FAIL the page threw: TypeError: Failed to execute 'createRadialGradient' on 'CanvasRenderingContext2D': The provided double value is non-finite.
+    at drawFront (http://localhost:6612/src/main.js:31277:21)
+    at drawWorld (http://localhost:6612/src/main.js:33426:3)
+    at render (http://localhost:6612/src/main.js:34830:5)
+    at tick (http://localhost:6612/src/main.js:35313:103)
+    at frame (http://localhost:6612/src/main.js:35318:157) | TypeError: Failed to execute 'createRadialGradient' on 'CanvasRenderingContext2D': The provided double value is non-finite.
+    at drawFront (http://localhost:6612/src/main.js:31277:21)
+    at drawWorld (http://localhost:6612/src/main.js:33426:3)
+    at render (http://localhost:6612/src/main.js:34830:5)
+    at tick (http://localhost:6612/src/main.js:35313:103)
+    at http://localhost:6612/src/main.js:35319:61 | TypeError: Failed to execute 'createLinearGradient' on 'CanvasRenderingContext2D': The provided double value is non-finite.
+    at drawLightCones (http://localhost:6612/src/main.js:31651:18)
+    at drawWorld (http://localhost:6612/src/main.js:33425:28)
+    at render (http://localhost:6612/src/main.js:34830:5)
+    at tick (http://localhost:6612/src/main.js:35313:103)
+    at frame (http://localhost:6612/src/main.js:35318:157)
+rc=1
