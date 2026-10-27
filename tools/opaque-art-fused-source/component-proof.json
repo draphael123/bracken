@@ -1,0 +1,21 @@
+{
+  "time": "2026-10-27T16:59:52.625Z",
+  "sourceController": "fb08843c791ba42927a97809bb0d3fb3760da1e4",
+  "run": 40545321300,
+  "candidateArtSha256": "5c7d1f8419db8454de716259e7f49eb1992a73db7c3a915102c8ec8f36736ac0",
+  "helperSha256": "29391ec421691f4da05ff6a18320bc6acc002c37070da05109848634484afadd",
+  "componentSha256": "5d1f2bea0c05d1df8adb32d4af408252c265766f1d6189d3704c63fa758a1797",
+  "originalRecipes": 346,
+  "additionalCases": 24,
+  "allExact": true,
+  "rng": 0,
+  "processes": {
+    "launches": 1,
+    "closures": 1,
+    "allClosed": true,
+    "profilesAbsent": true,
+    "rawInterruptions": [],
+    "maxRendererMb": 1077
+  },
+  "notWholeGameProof": true
+}

@@ -1,0 +1,6 @@
+{
+  "body": "async function snapshot(){const root=BK.SPR,seen=new Map(),geometry=[],digest=async b=>[...new Uint8Array(await crypto.subtle.digest('SHA-256',b))].map(x=>x.toString(16).padStart(2,'0')).join('');const walk=async(v,path)=>{if(!v||typeof v!=='object')return v;if(seen.has(v))return{ref:seen.get(v)};const id=seen.size;seen.set(v,id);if(v instanceof HTMLCanvasElement){const d=v.getContext('2d').getImageData(0,0,v.width,v.height).data;geometry.push([path,v.width,v.height]);const meta={};for(const k of Object.keys(v).sort())meta[k]=await walk(v[k],path+'.'+k);return{id,canvas:[v.width,v.height],pixels:await digest(d),meta};}if(Array.isArray(v))return{id,array:await Promise.all(v.map((a,i)=>walk(a,path+'.'+i)))};const object={};for(const k of Object.keys(v).sort())object[k]=await walk(v[k],path+'.'+k);return{id,object};};const tree=await walk(root,'sprite');return{treeDigest:await digest(new TextEncoder().encode(JSON.stringify(tree))),geometry,view:{VW:BK.view.VW,VH:BK.view.VH,display:[document.getElementById('c').width,document.getElementById('c').height],DPR:devicePixelRatio},state:BK.state,stats:BK.stats()};}",
+  "sha256": "89e31693c6ae1ef5740fbb64a65c20ba5df927fa3d173955e3ad37b7810ee14a",
+  "originalFunctionBytePreserved": true,
+  "noSnapshotAssertionRelaxed": true
+}
