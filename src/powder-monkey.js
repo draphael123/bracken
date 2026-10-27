@@ -17,7 +17,7 @@ export const PM = {
   hp: 24, w: 8, h: 13, sightX: 250, sightY: 90, near: 70, far: 170, lobMin: 48, lobMax: 210, lobDy: 72, speed: 96, fleeSpeed: 118,
   lightTell: 0.8, lobT: 0.7, lobRec: 0.35, fleeT: 0.9, lobCd: 3.4, firstCd: 1.2, grav: 900,
   /* the grenade: its fuse from the throw, the teach fuse (the first of a level), the blast; it rolls (decel px/s^2, a wall bounce), struck back kickV / kickVy, fuse held at kickFuse */
-  fuse: 2.5, teachFuse: 3.6, dropFuse: 1.0, blastR: 32, rollDecel: 80, bounce: 0.4, kickV: 260, kickVy: -120, kickFuse: 1.4, kickBonus: 30, contactR: 10,
+  fuse: 2.5, teachFuse: 3.6, dropFuse: 1.0, blastR: 32, rollDecel: 80, landKeep: 0.35, bounce: 0.4, kickV: 260, kickVy: -120, kickFuse: 1.4, kickBonus: 30, contactR: 10,
 };
 export const PM_SAY = { teach: 'HIS GRENADE: STRIKE IT BACK AT HIM', back: 'STRUCK BACK', dropped: 'DROPPED IT', out: 'IT GOES OUT', hint: 'A POWDER MONKEY LOBS LIT GRENADES. STRIKE ONE AND IT GOES BACK - AT HIM, HIS MATES, A DECK GUN OR A KEG.' };
 export const PM_MOVES = { lightTell: { mark: '!!', answer: 'dodge' } };
@@ -28,6 +28,7 @@ export function makePowderMonkeys(ctx) {
   H.on = () => G.length > 0 || ctx.enemies().some(e => e.t === 'powdermonkey' && e.alive);
   H.clear = () => { G = []; told = false; };
   H.grenades = () => G;
+  H.add = q => { G.push({ vx: 0, vy: 0, kicked: false, from: null, ground: false, t: 0, max: q.fuse || PM.fuse, ...q }); return G[G.length - 1]; };   /* (tools/powder-monkey.mjs) */
   H.read = () => ({ grenades: G.map(q => ({ x: Math.round(q.x), y: Math.round(q.y), fuse: +q.fuse.toFixed(2), kicked: q.kicked, rolling: q.ground })), told });
   H.spawn = (base, ent) => ({ ...base, t: 'powdermonkey', w: PM.w, h: PM.h, hp: (ctx.EHP && ctx.EHP.powdermonkey) || PM.hp, maxHp: 0, face: ent.face || -1, mode: 'idle', modeT: 0,
     cd: PM.firstCd, vx: 0, vy: 0, speed: PM.speed, pmFlee: 0 });
@@ -41,31 +42,34 @@ export function makePowderMonkeys(ctx) {
     G.push({ x: x0, y: y0, vx: (tx - x0) / T0, vy: (ty - y0) / T0 - 0.5 * PM.grav * T0, fuse: (first ? PM.teachFuse : PM.fuse) + T0, max: (first ? PM.teachFuse : PM.fuse) + T0, kicked: false, from: e, ground: false, teach: first, t: 0 });
     ctx.sound('throw'); if (first) { ctx.number(P.x, P.y - 40, PM_SAY.teach, '#ffd36b'); if (ctx.hint) ctx.hint(PM_SAY.hint); } }
   H.updateFoe = (e, dt) => { const P = ctx.hero(); if (!e.alive) return; e.anim = (e.anim || 0) + dt; fall(e, dt);
-    if (e.stagger > 0) { if (e.mode === 'lightTell') dropIt(e); e.mode = 'idle'; return; }
+    if (checkDrop(e) || e.stagger > 0) { if (e.mode !== 'flee') e.mode = 'idle'; return; }
     e.cd = Math.max(0, (e.cd || 0) - dt); e.modeT -= dt; if (!P) return;
     const d = P.x - e.x, ad = Math.abs(d), sees = !P.dead && ad < PM.sightX && Math.abs(P.y - e.y) < PM.sightY;
     switch (e.mode) {
       case 'idle': if (sees) { e.mode = 'scurry'; e.face = Math.sign(d) || e.face; } return;
       case 'scurry': { if (!sees) { e.mode = 'idle'; return; } e.face = Math.sign(d) || e.face;
         const want = ad < PM.near ? -Math.sign(d) : ad > PM.far ? Math.sign(d) : 0; e.vx = want * PM.speed; if (want) scurry(e, e.vx, dt);
-        if (e.cd <= 0 && !e.tokWait && ad > PM.lobMin && ad < PM.lobMax && Math.abs(P.y - e.y) < PM.lobDy) { e.mode = 'lightTell'; e.modeT = PM.lightTell; e.vx = 0; ctx.number(e.x, e.y - e.h - 8, '!!', '#ff6b6b'); ctx.sound('fuse'); }
+        if (e.cd <= 0 && !e.tokWait && ad > PM.lobMin && ad < PM.lobMax && Math.abs(P.y - e.y) < PM.lobDy) { e.pmDrop = false; e.mode = 'lightTell'; e.modeT = PM.lightTell; e.vx = 0; ctx.number(e.x, e.y - e.h - 8, '!!', '#ff6b6b'); ctx.sound('fuse'); }
         return; }
       case 'lightTell': e.vx = 0; e.face = Math.sign(d) || e.face; if (e.modeT <= 0) { lob(e, P); e.mode = 'lob'; e.modeT = PM.lobRec; e.cd = PM.lobCd; } return;
       case 'lob': if (e.modeT <= 0) { e.mode = 'flee'; e.modeT = PM.fleeT; } return;
       case 'flee': e.face = -Math.sign(d) || e.face; e.vx = e.face * PM.fleeSpeed; scurry(e, e.vx, dt); if (e.modeT <= 0) { e.mode = 'scurry'; e.face = Math.sign(d) || e.face; } return;
       default: e.mode = 'idle'; } };
   /* struck while he holds it lit: it falls at his feet, and he runs */
+  function checkDrop(e) { if (e.mode !== 'lightTell' || e.pmDrop || !(!e.alive || e.stagger > 0 || e.broken > 0 || e.knock > 0)) return false; e.pmDrop = true; dropIt(e); if (e.alive) { e.mode = 'flee'; e.modeT = PM.fleeT; } return true; }
   function dropIt(e) { G.push({ x: e.x, y: e.y - 2, vx: 0, vy: -30, fuse: PM.dropFuse, max: PM.dropFuse, kicked: false, from: e, ground: false, t: 0, dropped: true }); ctx.number(e.x, e.y - 22, PM_SAY.dropped, '#8fd160'); e.cd = PM.lobCd; }
   /* ---------- HIS GRENADES ---------- */
   function boom(q) { q.dead = true; ctx.blast(q.x, q.y - 4, PM.blastR, { kicked: q.kicked, from: q.from, grenade: true }); }
   H.update = dt => { const TS = T();
+    /* HIT (or KILLED) WHILE HE HOLDS IT LIT: it falls at his feet. Asked here, every frame, not in his own update - a parried, broken, knocked or token-held foe's AI waits, the fuse does not */
+    for (const e of ctx.enemies()) if (e.t === 'powdermonkey') checkDrop(e);
     for (const q of G) { if (q.dead) continue; q.t += dt; q.fuse -= dt;
       q.vy = Math.min(420, q.vy + PM.grav * dt);
       if (q.ground && !q.kicked) { const heel = ctx.heel ? ctx.heel(q.x, q.y) || 0 : 0; q.vx += heel * dt; const s = Math.sign(q.vx), m = Math.max(0, Math.abs(q.vx) - PM.rollDecel * dt); q.vx = s * m; }
       const nx = q.x + q.vx * dt, ny = q.y + q.vy * dt, tx = Math.floor(nx / TS);
       if (ctx.isSolid(tx, Math.floor((q.y - 3) / TS))) { if (q.kicked) { q.x = nx - Math.sign(q.vx) * 4; boom(q); continue; } q.vx = -q.vx * PM.bounce; } else q.x = nx;   /* a wall: struck back it blows on it (a barricade too); rolling it bounces */
       const fty = Math.floor(ny / TS), floor = ctx.isSolid(Math.floor(q.x / TS), fty) || (ctx.oneWay(Math.floor(q.x / TS), fty) && q.vy > 0 && Math.floor(q.y / TS) < fty);
-      if (floor && q.vy > 0) { q.y = fty * TS; q.vy = q.ground ? 0 : -q.vy * 0.25; if (Math.abs(q.vy) < 40) q.vy = 0; q.ground = true; } else { q.y = ny; if (q.vy !== 0) q.ground = false; }
+      if (floor && q.vy > 0) { q.y = fty * TS; if (!q.ground && !q.kicked) q.vx *= PM.landKeep; q.vy = q.ground ? 0 : -q.vy * 0.25; if (Math.abs(q.vy) < 40) q.vy = 0; q.ground = true; } else { q.y = ny; if (q.vy !== 0) q.ground = false; }
       if (ctx.wet(q.x, q.y - 2)) { q.dead = true; ctx.number(q.x, q.y - 16, PM_SAY.out, '#bfe6f5'); ctx.sound('fizz'); continue; }
       if (q.kicked) { for (const e of ctx.enemies()) { if (!e.alive || e.harmless || e === ctx.boss()) continue;
           if (Math.abs(e.x - q.x) < (e.w || 10) / 2 + PM.contactR && q.y > e.y - (e.h || 14) - 6 && q.y < e.y + 6) { boom(q); break; } } if (q.dead) continue; }

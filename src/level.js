@@ -5324,7 +5324,7 @@ function theHurricane() {
   sail(416, DK - 9, DK - 3, 0); sail(428, DK - 9, DK - 3, 0);
   coins([418, DK - 3], [427, DK - 3]);
   // THE STERN'S EXAM: her last hands on the quarterdeck, the sea coming over her stern
-  ent('boarder', 438, DK - 1, { face: -1 }); ent('seawitch', 456, DK - 1, { caller: true, face: -1 }); ent('powdermonkey', 447, DK - 1, { face: -1 });   /* (claude/flotilla4) the quarterdeck: his grenade against the gusts */ ent('sailor', 432, DK - 1, { rise: true, face: -1 });
+  ent('boarder', 438, DK - 1, { face: -1 }); ent('seawitch', 456, DK - 1, { caller: true, face: -1 }); ent('powdermonkey', 445, DK - 1, { face: -1 });   /* (claude/flotilla4) the quarterdeck: his grenade against the gusts */ ent('sailor', 432, DK - 1, { rise: true, face: -1 });
   cask(429, DK - 1); set(427, DK - 1, T.SOLID);
   coins([434, DK - 2], [440, DK - 2], [455, DK - 2]);
   // HER AFTER COMPANIONWAY: open, five boards, three rows deep - jumped downhill (its ladder on the near side)
