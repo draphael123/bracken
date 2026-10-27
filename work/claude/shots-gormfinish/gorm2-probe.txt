@@ -1,0 +1,19 @@
+  ok   THE HALL: he wakes on his litter (carried)
+  ok   the court files two rafter archers onto the live rope's deck
+  ok   they loose told arrows
+  ok   E at a heap takes a rock
+  ok   the told arc goes gold on a bowman from the floor (-88 px off)
+  ok   the rock thrown UP knocks him off his deck
+  ok   both down: the rope is free
+  ok   a real blow on its peg drops the cage on him: HELD (held)
+  ok   outside an opening a blade lands at 0.4 (20 -> 8)
+  ok   his P1 bar empties: no death - THE FLEE, the hero FULLY HEALED, the fire lit: {"stage":"flee","alive":true,"hp":140,"max":140,"active":false,"run":true,"arena":true}
+  ok   his bearers set him down in his glade
+  ok   the fire comes after a hero standing still: a drain (119 hp)
+  ok   a death keeps P1 beaten: he waits in his glade, the hall stays quiet
+  ok   THE GLADE: he wakes on his stump and tears a burning limb (walk)
+  ok   his P2 moves run: walk clubLoTell clubLo logTell log quakeTell quakeAir quake clubHiTell clubHi toOak shakeTell shake
+  ok   a real blow on the log trap's peg rolls the log into him: KNOCKED DOWN
+  ok   his death ends the fight
+  ok   0 page errors
+gorm2-probe: all green

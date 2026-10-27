@@ -1,0 +1,4 @@
+  [drawn-solids 1/1] kings ok 3 s, 3592 MB free
+kings - as loaded: every solid cell drawn
+kings - after a respawn: every solid cell drawn
+drawn-solids REPORT-ONLY: 0 phase(s) with undrawn cells in 1 level(s)
