@@ -338,10 +338,19 @@ try {
      if(s.phase==='done')out.done='done';
      if(m.alive&&/Tell$/.test(m.mode)&&m.mode!==last){const on=m.x>v.x&&m.x<v.x+v.VW&&m.y-46>v.y&&m.y<v.y+v.VH;out.casts.push(m.mode+(BK.telling(m)?BK.markOf(m):'?'));if(!on)out.offCast++;}last=m.alive?m.mode:'gone';}});
    out.secs=Math.round(res.t/60);out.spec={look:DS().look,contact:DS().contact,autoscroll:DS().autoscroll};
-   BK.sim(30);const A=BK.L.arena;out.fight=!!BK.bossActive;out.carpet=!!BK.carpet();out.inHall=BK.P.x>A.x0&&BK.P.x<A.x1&&BK.P.y>A.y0&&BK.P.y<A.floor;out.chaseGone=!m.alive;out.darkAfter=D().phase;
+   /* (claude/fallingtower3) THE TOP IS HIS RING NOW: the stair bot hands back as it comes out in THE CHASE's first room; a few steps on and the fight starts there */
+   BK.sim(30);out.inChase=BK.P.y>${L.chase3.rooms[0].top * TS}&&BK.P.y<=${L.chase3.rooms[0].floor * TS}+2;for(let i=0;i<180&&!BK.bossActive;i++){BK.keys.right=true;BK.sim(1);}BK.keys.right=false;BK.sim(10);
+   {const A=BK.L.arena,b=BK.enemies().find(e=>e.t==='undeadmage');out.fight=!!BK.bossActive;out.chaseArena=!!A.chase;out.inArena=BK.P.x>A.x0&&BK.P.x<A.x1&&BK.P.y>A.y0&&BK.P.y<=A.floor+2;out.bossIn=b&&b.y>A.y0&&b.y<A.floor;out.chaseGone=!m.alive;out.darkAfter=D().phase;
+     /* HE FALLS when his own spell staggers him, lies open on the floor, and sinks through it; its pillar lights, a blow brings the floor down, and he wakes in the room under */
+     for(let i=0;i<240&&b.mode==='wake';i++)BK.sim(1);b.mode='reflected';b.modeT=2;BK.sim(2);out.fell=b.mode;for(let i=0;i<180&&b.mode!=='down';i++)BK.sim(1);out.down=b.mode;out.downOpen=b.open>0;
+     const h0=b.hp;b.flash=0;BKT.hurtEnemy(b,20,b.x-10,false);out.downDmg=h0-b.hp;
+     for(let i=0;i<600&&b.mode!=='below';i++)BK.sim(1);const s=BK.L.ftSupports.find(q=>q.room===0);out.armed=!!(s&&s.armed);
+     BK.tp(Math.floor(s.x/16)-1,Math.round(s.y/16)-1);BK.sim(5);BK.P.face=1;BK.press('atk');for(let i=0;i<120;i++)BK.sim(1);out.pillar=s.st;for(let i=0;i<240&&b.mode!=='wake';i++)BK.sim(1);out.room1=[b.mode,b.room,Math.round(BK.P.y/16)];}
    out.tuneFight=AU.music.want;out.musicGap=BK.bossMusicT;
    /* 2. EVERY HERO GETS UP IT UNDER THE SCROLL: no god mode, health held up (his spells counted, not fatal) - the dark must never catch it */
-   for(const h of ${JSON.stringify(HEROES)}){boot(h,false);through();const q=LB.chaseClimb(BK,chase(),{secs:150,refill:true});out.heroes[h]={carpet:!!BK.carpet(),secs:Math.round(q.t/60),taken:Math.round(q.taken),died:q.died,dark:D().hits};}
+   for(const h of ${JSON.stringify(HEROES)}){boot(h,false);through();const q=LB.chaseClimb(BK,chase(),{secs:150,refill:true});out.heroes[h]={ring:BK.P.y>${L.chase3.rooms[0].top * TS},secs:Math.round(q.t/60),taken:Math.round(q.taken),died:q.died,dark:D().hits};}   /* (fallingtower3: up to his ring into the chase - it was the carpet) */
+   /* (claude/fallingtower3) THE LAB PLAYS THE CHASE: the bossLab's chase hands (health held up) go down all four rooms, onto his carpet and on into his hall */
+   {const seen=new Set(),legs=new Set();const o=await BK.bossLab({bosses:['fallingtower'],heroes:['warden'],healthMode:'refill',maxSecs:240,onFrame:({boss})=>{seen.add(boss.room);legs.add(boss.leg);}});out.lab={rooms:[...seen].sort(),legs:[...legs],outcome:o.rows[0]&&(o.rows[0].outcome||o.rows[0].skipped)};}
    /* 3. STAND ON THE STAIR AND THE DARK HURTS YOU AND THROWS YOU UP - again and again, until it has killed you: you wake at the foot, the dark back under the floor, him over the first landing (archmage2) */
    boot('knight',false);through();for(let i=0;i<90&&BK.P.x<${checks[0].x * TS + 16};i++){BK.keys.right=true;BK.sim(1);}BK.keys.right=false;out.lit=BK.P.x>=${checks[0].x * TS + 8};   /* (out of the ring and past the foot's shrine, as the way to the first step goes: to the RIGHT since archmage3) */
    BK.tp(${FLIGHTS[0].steps[1][0] + 1},${FLIGHTS[0].steps[1][2] - 1});BK.P.maxHp=BK.P.hp=200;/* (batch71) a stander with a bigger bar: archmage3/4 made his death mark 38, and three marks plus one dark contact were a whole 100-hp bar, so a mark landing before the second contact killed him on it and the test passed or failed on the cast clock. Twice the health, and it is the dark that has to go on hurting and throwing until it kills */ let died=-1,h0=D().hits;out.thrown=[];for(let i=0;i<60*90&&died<0;i++){const y0=BK.P.y;BK.sim(1);if(D().hits>h0){h0=D().hits;if(!(BK.P.dead>0))out.thrown.push([Math.round(y0),Math.round(BK.P.y),i]);}if(BK.P.dead>0)died=i;}
@@ -362,13 +371,16 @@ assert.ok(r.started && r.cam.frames > 60 && r.cam.bad === null, 'AUTOSCROLL: the
 assert.ok(r.cam.rose > 400, 'the camera does not rise with the climb: ' + r.cam.rose);
 assert.ok(r.told.length >= 1 && Object.keys(r.up).length >= 1 && Object.entries(r.up).every(([i, n]) => n >= +i), 'the dark quickens with no warning told first: ' + JSON.stringify({ told: r.told, up: r.up }));
 assert.ok(r.spec.look === 'dark' && r.spec.contact === 'hurt' && r.spec.autoscroll, 'the page\'s chase is not the dark that kills and scrolls: ' + JSON.stringify(r.spec));
-assert.ok(r.fight && r.carpet && r.inHall && r.chaseGone, 'the climb with the game\'s own jump does not reach the carpet, or the carpet does not start his fight: ' + JSON.stringify(r));
-assert.ok(r.done === 'done' && r.darkAfter === 'idle', 'the dark does not stop at the top floor, or follows you into his hall: ' + [r.done, r.darkAfter]);
+assert.ok(r.inChase && r.fight && r.chaseArena && r.inArena && r.bossIn && r.chaseGone, '(fallingtower3) the climb with the game\'s own jump does not come through his ring into the chase, or the fight does not start in its first room: ' + JSON.stringify(r));
+assert.ok(r.fell === 'fall' && r.down === 'down' && r.downOpen && r.downDmg >= 30, '(fallingtower3) staggered, he does not fall to the floor open (x2): ' + JSON.stringify([r.fell, r.down, r.downOpen, r.downDmg]));
+assert.ok(r.armed && r.pillar === 'down' && r.room1[0] === 'wake' && r.room1[1] === 1, '(fallingtower3) through the floor, its pillar is not lit, or a blow does not bring the floor down and him awake in the room under: ' + JSON.stringify([r.armed, r.pillar, r.room1]));
+assert.ok(r.lab && [0, 1, 2, 3].every(k => r.lab.rooms.includes(k)) && r.lab.legs.includes('hall'), '(fallingtower3) the lab\'s chase hands do not play him down the four rooms and into his hall (a fresh page-level hero, health held up: how the fight ends is boss-rates\' to measure): ' + JSON.stringify(r.lab));
+assert.ok(r.done === 'done' && ['idle', 'done'].includes(r.darkAfter), 'the dark does not stop at the top floor, or follows you through his ring into the chase: '   /* (fallingtower3: it stays stopped - 'done' - through his ring; the carpet's board used to reset it to 'idle') */ + [r.done, r.darkAfter]);
 assert.ok(r.casts.length >= 6 && r.casts.some(c => c.startsWith('fireTell')) && r.casts.some(c => c.startsWith('markTell')), 'he hardly casts on the way up: ' + r.casts);
 assert.ok(r.casts.every(c => c.startsWith('markTell') ? c.endsWith('!!') : c.endsWith('!') && !c.endsWith('!!')), 'a spell told with the wrong mark (or none): ' + r.casts);
 assert.equal(r.offCast, 0, 'a spell begun with him off the screen');
 const riseRows = (sp.from - sp.end);   /* px from where the dark starts to where it stops */
-for (const h of HEROES) { const q = r.heroes[h]; assert.ok(q && q.carpet && q.died === 0, h + ' does not get up the stair under the scroll without the dark catching it: ' + JSON.stringify(q)); }
+for (const h of HEROES) { const q = r.heroes[h]; assert.ok(q && q.ring && q.died === 0, h + ' does not get up the stair under the scroll without the dark catching it: ' + JSON.stringify(q)); }
 const slowest = Math.max(...HEROES.map(h => r.heroes[h].secs)), FAIR = (sp.trigger - sp.end) / slowest;
 /* (archmage2) the old "its fastest is under the slowest hero's average climb" is gone: the dark is MEANT to be faster than a hero who stops
    (30 px/s and surging, Daniel's "it doesn't do anything"). Its fairness is measured where it bites: a climbing hero is caught a few times at
