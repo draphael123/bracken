@@ -22,7 +22,7 @@ const crossings = (cut, x0, y0) => { const out = [];
     for (let ty = c0; ty <= c1; ty++) for (let tx = a0; tx <= a1; tx++) if (blocked(tx, ty)) { out.push([tx, ty, L.grid[ty * W + tx]]); break; } }
   return out; };
 const rooms = L.interiors.filter(([, , , , k]) => ['library', 'reading', 'orrery', 'clock', 'lab', 'flip', 'dome', 'spiral'].includes(k));   /* (and THE SPIRAL STAIR's, 2026-09-29: its moon hole is held clear of its steps like any other) */
-assert.equal(rooms.length, 8, 'seven rooms in the tower and the spiral stair: ' + rooms.length);
+assert.equal(rooms.length, 8 + (L.chase3 ? L.chase3.rooms.length + 1 : 0), 'seven rooms in the tower and the spiral stair (and THE CHASE\'s four rooms and its core, claude/fallingtower3 - painted as the tower\'s own kinds until the art lane): ' + rooms.length);
 let blind = 0, n = 0; const bad = [], per = {};
 for (const [x0, x1, y0, y1, kind] of rooms) {
   const w = (x1 - x0 + 1) * TS, h = (y1 - y0 + 1) * TS;
