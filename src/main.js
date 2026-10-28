@@ -544,7 +544,7 @@ EHP.king = GORM.hp1;   /* (claude/gorm2: P1 of three acts - was 1170 for the who
 EHP.mother = MC2K.hp;   /* (claude/sporewood2) THE MOTHER CAP 2: her bar is her own now (the heart node is gone) */
 EHP.gqueen = 1450;   /* (claude/curvec4a) */
 EHP.lance = 3000;   /* (claude/stormhold3: 2800 -> 3000, the rework in band) */   /* (claude/curvec4a) */
-EHP.windcaller = 1300;   /* (claude/moorpyro) 1400 -> 1150: the pyromancer can open him now (fire sends his bolt home); the knight still loses most fights to his thorns. (claude/moorpass) 1150 -> 1300: the summit room pass (stone under the east ledge, his fall clear of the strip, the Last Charge pulls up at thorns) and every hero his own way to send the bolt home */
+EHP.windcaller = 1000;   /* (claude/windcaller4, Daniel 10-26: "lower his health a little") 1300 -> 1000 (-23%): the loop (three blows, he falls) and the still-only attacks set the fight's length now. */ /* (claude/moorpyro) 1400 -> 1150: the pyromancer can open him now (fire sends his bolt home); the knight still loses most fights to his thorns. (claude/moorpass) 1150 -> 1300: the summit room pass (stone under the east ledge, his fall clear of the strip, the Last Charge pulls up at thorns) and every hero his own way to send the bolt home */
 
 /* THE FODDER STANDS UP LONGER (docs/combat-tuning.md, measured 2026-09-22). Three in four common fights ended in ONE swing. Scaling
    every foe balloons the tough ones (the hedge knight, sworn sword and tide guard go to 15-20 swings), so it is the fodder alone:
@@ -18448,8 +18448,8 @@ function owlDropStep(dt) { const A = L.arena; if (!A || !A.drops) return; P.drop
   damagePlayer(P.x, 1, { unblockable: true, pct: SV.HAZARD.pct, name: 'THE DROP' }); if (P.dead || P.hp <= 0) return;
   P.x = dr[0] * TS < mid ? (dr[1] + 1) * TS + 56 : dr[0] * TS - 56; P.y = A.floor; P.vx = 0; P.vy = 0; P.ground = true; P.onMover = null; P.climb = false; P.inv = Math.max(P.inv || 0, 1); P.dropT = 1.2;
   number(P.x, P.y - 30, 'THE DROP', '#ff9a5c'); dust(P.x, P.y, 8); hazardSay(); }
-function updateMoorWind(dt) {
-  for (const z of (L.gusts || [])) if (z.shove && !P.dead && !P.fly && P.x > z.x0 && P.x < z.x1 && P.y > z.y0 && P.y <= z.y1 + 4) { if (z.arena && (!bossActive || (!z.galeArena && callerCalm()))) continue; if (z.air && (P.galeRide || inGaleVent() || (P.ground && !callerOnLedge()))) continue; const G = gustNow(z); if (G.on) gustShove(G.dir, z.air && P.ground ? CALLER_LEDGE_SHOVE : z.shove, dt); }   /* (z.air, the summit's gust - claude/windcaller3: it carries you off an updraft's top, and up on his ledges it walks you off unless you BRACE, as on the Bracing Stones; on the floors it leaves you be) */
+function updateMoorWind(dt) { P.galeLiftT = Math.max(0, (P.galeLiftT || 0) - dt); if (inGaleVent()) P.galeLiftT = 1.4;   /* (claude/windcaller4) THE SUMMIT'S GUST CARRIES A RIDER: in the air it takes only a hero its updraft lifted (1.4 s) - one stepping off a ledge just falls */
+  for (const z of (L.gusts || [])) if (z.shove && !P.dead && !P.fly && P.x > z.x0 && P.x < z.x1 && P.y > z.y0 && P.y <= z.y1 + 4) { if (z.arena && (!bossActive || (!z.galeArena && callerCalm()))) continue; if (z.air && (P.galeRide || inGaleVent() || (P.ground && !callerOnLedge()) || (z.galeArena && !P.ground && !(P.galeLiftT > 0)))) continue; const G = gustNow(z); if (G.on) gustShove(G.dir, z.air && P.ground ? CALLER_LEDGE_SHOVE : z.shove, dt); }   /* (z.air, the summit's gust - claude/windcaller3: it carries you off an updraft's top, and up on his ledges it walks you off unless you BRACE, as on the Bracing Stones; on the floors it leaves you be) */
   /* THE WINDCALLER'S HOWL is the same shove, applied here for the same reason: from his own update it came after the ground's
      friction had already had the frame, and 200 px/s became seventeen. Every second a brace holds against it is counted on him. */
   if (boss && boss.t === 'windcaller' && boss.alive && boss.mode === 'howl' && !P.dead && L.arena && P.x > L.arena.x0 && P.x < L.arena.x1 && !gustShove(boss.howlDir, CALLER_SHOVE, dt)) boss.braceT = (boss.braceT || 0) + dt;
@@ -18513,7 +18513,7 @@ function updateWindcaller(e, dt) {
   if (e.phase < 3 && e.hp < e.maxHp * CALLER_P3) { e.phase = 3; e.crumbleT = CALLER_CRUMBLE; number(e.x, e.y - 30, 'THE STORM: THE EAST LEDGE GIVES', '#c9a0ff'); SFX.callerChant(); SFX.gasp(); shakeCam(4); }
   callerWind(e); callerCrumble(e, dt); callerAttacksStep(e, dt);
   const ph = e.phase || 1, castLen = ph >= 3 ? 3.6 : ph === 2 ? 4.2 : 5, W = e.wc;
-  for (const k in W.cd) W.cd[k] = Math.max(0, W.cd[k] - (callerStill(0) ? dt : 0));   /* (his clocks run only in the still: the gust is never "saved up" into a burst after it) */
+  for (const k in W.cd) W.cd[k] = Math.max(0, W.cd[k] - dt);   /* (his clocks run all the time; a move only STARTS in the still - one at a time, so the gust is never saved up into a burst after it) */
   if (e.mode !== 'fallen' && e.mode !== 'step') e.face = Math.sign(d) || e.face;
   /* THE LOOP: the third blow beside him on his ledge puts him on the floor (any of his casts or tells; never warded, never mid-blink) */
   if ((e.hits || 0) >= CALLER_HITS && !['fallen', 'blink', 'appear', 'rise', 'wake', 'galeTell', 'gale'].includes(e.mode)) { if (e.ward > 0) e.hits = 0; else { W.n.fall3++; e.hits = 0; knockCaller(e, false, 'three'); return; } }
@@ -18599,7 +18599,7 @@ function callerCorners() { const A = L.arena; if (!A || !A.cornerRise || L.corne
 function callerPitStep(dt) { const A = L.arena; if (!A || !A.pit || P.dead) return; P.pitT = Math.max(0, (P.pitT || 0) - dt);
   const x0 = A.pit[0] * TS, x1 = (A.pit[1] + 1) * TS; if (!(P.x > x0 + 1 && P.x < x1 - 1 && P.y > A.floor + 6 && P.y < A.floor + 64)) return;
   if (!(P.pitT > 0)) { damagePlayer(P.x, 1, { unblockable: true, pct: CALLER_PIT_PCT, name: 'THE PIT', noKnock: true }); if (P.dead || P.hp <= 0) return; number(P.x, P.y - 30, 'THE PIT WIND THROWS YOU OUT', '#bfe6f5'); SFX.gust(); P.pitT = 1.2; if (boss && boss.wc) boss.wc.n.pit = (boss.wc.n.pit || 0) + 1; }
-  const side = P.x < (x0 + x1) / 2 ? -1 : 1; P.vy = Math.min(P.vy, -CALLER_PIT_LIFT); P.vx = side * 150; P.ground = false; P.onMover = null; P.climb = false;
+  const side = Math.sign((A.x0 + A.x1) / 2 - P.x) || -1; P.vy = Math.min(P.vy, -CALLER_PIT_LIFT); P.vx = side * 110;   /* (always toward the middle of the summit: never on into a corner's thorns) */ P.ground = false; P.onMover = null; P.climb = false;
   for (let i = 0; i < 6; i++) parts.push({ x: x0 + Math.random() * (x1 - x0), y: A.floor + 40, vx: 0, vy: -240 - Math.random() * 120, life: 0.4, max: 0.4, col: '#e8f0f8', size: 1, grav: 0 }); }
 /* HIS ROLLING AND FALLING WIND (the hurl's wall, the devils, the downdrafts' rings, the blades): moved and struck here; the gust scatters what rolls */
 function callerAttacksStep(e, dt) { const W = e.wc, A = L.arena; if (!W) return; const G = callerGustNow(), blowing = !!(G && G.on);
@@ -18638,18 +18638,18 @@ function callerAttacksDraw(e, cx, cy) { const W = e.wc, A = L.arena; if (!W) ret
     else { g.globalAlpha = 0.6; g.fillStyle = '#eef6f8'; for (let k = 0; k < 10; k++) g.fillRect(Math.round(x - CALLER_DRAFT_R + (k * 37) % (2 * CALLER_DRAFT_R)), Math.round(y - 90 + (k * 23 + time * 400) % 90), 1, 10); g.globalAlpha = 1; } }
   for (const b of W.blades) { if (b.delay > 0) continue; const x = Math.round(b.x - cx), y = Math.round((b.kind === 'high' ? b.gy - 20 : b.gy - 5) - cy); g.strokeStyle = '#f4faff'; g.lineWidth = 2; g.beginPath(); g.arc(x - b.dir * 4, y, 7, -Math.PI / 2.4, Math.PI / 2.4, b.dir < 0); g.stroke(); g.lineWidth = 1; }
   if (e.mode === 'bladeTell' && e.bladeSeq) e.bladeSeq.forEach((s, i) => { const x = Math.round(e.x - cx) - 10 + i * 10, y = Math.round(e.y - cy) - e.h - 40; g.fillStyle = s === 'high' ? '#ffd36b' : '#8fd160'; if (s === 'high') { g.fillRect(x - 3, y, 7, 2); g.fillRect(x - 1, y + 2, 3, 3); } else { g.fillRect(x - 1, y, 3, 3); g.fillRect(x - 3, y + 3, 7, 2); } }); }
-const HOWL_LEN = 1.6, HOWL_BRACE = 1.2, HOWL_TELL = 0.9, CALLER_SHOVE = 200;   /* his howl: how long it blows, how much of it a brace must hold, its tell, its shove (claude/windcaller4: it must fit between two gusts) */
+const HOWL_LEN = 1.4, HOWL_BRACE = 1.05, HOWL_TELL = 0.8, CALLER_SHOVE = 200;   /* his howl: how long it blows, how much of it a brace must hold, its tell, its shove (claude/windcaller4: it must fit between two gusts) */
 const CALLER_RISE = 150;   /* px/s he rises on the wind (phase three, off the ledge that falls) */
 /* THE WINDCALLER 4's numbers (claude/windcaller4): phases at a share of his blood; a bolt every CALLER_CAST s a phase (counted only in the still); the ward after
    an opening (B3, s); the storm's crumble; his guard while warded (B15: never below 0.4); x CALLER_OPEN_MUL in an opening; a bolt sent back counts as UP CLOSE
    within CALLER_NEAR px. THE LOOP: CALLER_HITS blows beside him on his ledge and he falls. CALLER_AFTER: s of still after a gust before he moves again */
-const CALLER_P2 = 0.66, CALLER_P3 = 0.33, CALLER_CAST = [2.6, 2.3, 2.0], CALLER_STEP_V = 150, CALLER_WARD = 3, CALLER_GALE_TELL = 1.3, CALLER_CRUMBLE = 2.2,
-  CALLER_GUARD = 0.4, CALLER_OPEN_MUL = 2, CALLER_NEAR = 120, CALLER_BOLT_DMG = 20, CALLER_STONE_DMG = 28, CALLER_LEDGE_SHOVE = 170, CALLER_HITS = 3, CALLER_AFTER = 0.3,
-  CALLER_BLAST_R = 46, CALLER_BLAST_WAIT = [1.4, 1.1, 0.9], CALLER_BLAST_TELL = 1.0, CALLER_BLAST_CD = [5, 4, 3.5], CALLER_BLAST_DMG = 20,   /* HIS BLAST: how near, how long you stand there before he gathers it, its tell, its rest a phase, what it costs */
-  CALLER_HURL_TELL = 0.8, CALLER_HURL_CD = [6, 5, 4.5], CALLER_HURL_V = 230, CALLER_HURL_H = 20, CALLER_HURL_DMG = 8, CALLER_HURL_SHOVE = 330,   /* THE GUST HURL: tell, rest a phase, speed, how high the wall stands (jump it), its blow and its shove */
-  CALLER_DEVIL_TELL = 0.8, CALLER_DEVIL_CD = [7, 6, 5.5], CALLER_DEVIL_V = 85, CALLER_DEVIL_LIFE = 4.5, CALLER_DEVIL_DMG = 6, CALLER_DEVIL_RIDE = 0.42, CALLER_DEVIL_LIFT = 290,   /* THE DUST DEVIL: tell, rest, roll speed, life, blow on foot, ride (s at lift px/s: ~120 px, over a ledge) */
-  CALLER_DRAFT_TELL = 1.1, CALLER_DRAFT_CD = [0, 6.5, 5.5], CALLER_DRAFT_R = 22, CALLER_DRAFT_DMG = 14, CALLER_DRAFT_PIN = 0.6,   /* THE DOWNDRAFT (phase two on): the ring's tell, rest, radius, blow, pin */
-  CALLER_BLADE_TELL = 0.9, CALLER_BLADE_CD = 6, CALLER_BLADE_GAP = 0.35, CALLER_BLADE_V = 210, CALLER_BLADE_DMG = 10,   /* THE GALE BLADES (phase three): tell, rest, gap between the three, speed, each blade's blow */
+const CALLER_P2 = 0.66, CALLER_P3 = 0.33, CALLER_CAST = [2.0, 1.8, 1.6], CALLER_STEP_V = 150, CALLER_WARD = 3, CALLER_GALE_TELL = 1.3, CALLER_CRUMBLE = 2.2,
+  CALLER_GUARD = 0.4, CALLER_OPEN_MUL = 2, CALLER_NEAR = 120, CALLER_BOLT_DMG = 20, CALLER_STONE_DMG = 28, CALLER_LEDGE_SHOVE = 170, CALLER_HITS = 3, CALLER_AFTER = 0.2,
+  CALLER_BLAST_R = 46, CALLER_BLAST_WAIT = [0.8, 0.7, 0.6], CALLER_BLAST_TELL = 1.0, CALLER_BLAST_CD = [5, 4, 3.5], CALLER_BLAST_DMG = 20,   /* HIS BLAST: how near, how long you stand there before he gathers it, its tell, its rest a phase, what it costs */
+  CALLER_HURL_TELL = 0.8, CALLER_HURL_CD = [5, 4.5, 4], CALLER_HURL_V = 230, CALLER_HURL_H = 20, CALLER_HURL_DMG = 12, CALLER_HURL_SHOVE = 330,   /* THE GUST HURL: tell, rest a phase, speed, how high the wall stands (jump it), its blow and its shove */
+  CALLER_DEVIL_TELL = 0.8, CALLER_DEVIL_CD = [6, 5.5, 5], CALLER_DEVIL_V = 85, CALLER_DEVIL_LIFE = 4.5, CALLER_DEVIL_DMG = 10, CALLER_DEVIL_RIDE = 0.42, CALLER_DEVIL_LIFT = 290,   /* THE DUST DEVIL: tell, rest, roll speed, life, blow on foot, ride (s at lift px/s: ~120 px, over a ledge) */
+  CALLER_DRAFT_TELL = 1.1, CALLER_DRAFT_CD = [0, 5.5, 5], CALLER_DRAFT_R = 22, CALLER_DRAFT_DMG = 18, CALLER_DRAFT_PIN = 0.6,   /* THE DOWNDRAFT (phase two on): the ring's tell, rest, radius, blow, pin */
+  CALLER_BLADE_TELL = 0.9, CALLER_BLADE_CD = 5, CALLER_BLADE_GAP = 0.35, CALLER_BLADE_V = 210, CALLER_BLADE_DMG = 14,   /* THE GALE BLADES (phase three): tell, rest, gap between the three, speed, each blade's blow */
   CALLER_PIT_PCT = 0.05, CALLER_PIT_LIFT = 430;   /* THE PIT: its chip (a share of max health) and the throw out */
 /* HIS OPENING IS THE FALL (claude/bosswave1; claude/windcaller3): open only when he is DOWN - knocked off his ledge by his own bolt sent back up close
    or by his own howl braced through - both the big fall (the one a mash never earns). On his ledge he is a duelist (callerTake): whole, but he steps away. */
@@ -18657,7 +18657,7 @@ const CALLER_P2 = 0.66, CALLER_P3 = 0.33, CALLER_CAST = [2.6, 2.3, 2.0], CALLER_
    no TOO FAR for a burning bolt (the pyromancer has no guard to take it on up close). It lands as the SMALL fall (CALLER_FALL), not the big one: the
    bolt blocked or struck back beside him on his ledge stays the bigger prize. Warded, he still turns it. */
 const CALLER_BURN_BIG = false, CALLER_BURN_DMG = 60;   /* ...and it lands as a blow of fire (x CALLER_OPEN_MUL, he is down as it lands): the pyromancer is far off when it does, so the bolt is most of what she gets for it */
-const CALLER_FALL = 3.4, CALLER_FALL_TAKE = 0.16, CALLER_FALL_BIG = 4.6, CALLER_FALL_TAKE_BIG = 0.10;   /* s he lies on the safe floor (>= 3 s open: boss-openings), or until that share of his blood has gone in it; the BOLT's fall is the big one */
+const CALLER_FALL = 3.4, CALLER_FALL_TAKE = 0.12, CALLER_FALL_BIG = 4.6, CALLER_FALL_TAKE_BIG = 0.15;   /* (claude/windcaller4) the three-blow fall 12%, the big fall (his bolt sent back up close, his howl braced) 15% - the harder way pays more */   /* s he lies on the safe floor (>= 3 s open: boss-openings), or until that share of his blood has gone in it; the BOLT's fall is the big one */
 const callerOpen = e => e.mode === 'fallen';
 const callerThere = e => e.mode !== 'blink' && e.mode !== 'appear' && e.mode !== 'sleep';
 // the wind in his arena drops while he is casting or down: the pushing is what the howl is for (the summit's own gust, galeArena, blows on its clock all fight)
@@ -18699,7 +18699,7 @@ function callerCrumble(e, dt) { if (!(e.crumbleT > 0) || L.galeFell) return; con
   if (P.safe && on(P.safe.x, P.safe.y)) P.safe = { x: A.home, y: A.floor, L };
   if (on(e.x, e.y) && e.mode !== 'fallen') { const r = callerRoosts()[0]; if (r) { e.mode = 'rise'; e.riseX = r[0] * TS + 8; e.riseY = (r[1] + 1) * TS; e.modeT = 4; } } }
 /* B11 + B15, HIS OWN DEFENCE (wardedDamage): whole on his ledge; x CALLER_OPEN_MUL down; CALLER_GUARD (a told clank) while he steps away or is warded */
-function callerTake(e, dmg, tag) { if (callerOpen(e)) return dmg * CALLER_OPEN_MUL;
+function callerTake(e, dmg, tag) { if (callerOpen(e)) { const floor = (e.fallHp || e.hp) - e.maxHp * (e.fallBig ? CALLER_FALL_TAKE_BIG : CALLER_FALL_TAKE); return Math.max(1, Math.min(dmg * CALLER_OPEN_MUL, Math.ceil(e.hp - floor))); }   /* (claude/windcaller4) A FALL PAYS ITS SHARE AND NO MORE: the blow that crosses the share is cut to it (x2 blows overshot it by half again) */
   if (e.ward > 0 || e.mode === 'step') { BR.turned(e, P.x, e.ward > 0 ? 'WARDED' : 'HE STEPS AWAY', { stop: false }); return Math.max(1, Math.round(dmg * CALLER_GUARD)); }
   return dmg; }
 // his bolts come back at him: struck, blocked, or caught in the Aegis - and UP CLOSE (on his ledge, beside him) one knocks him down

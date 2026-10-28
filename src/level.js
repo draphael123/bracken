@@ -4195,14 +4195,14 @@ function galeMoor() {
 
   /* ==== THE SUMMIT (701-748), THE WINDCALLER 4 (claude/windcaller4, scratch/brief-windcaller4-1026.md, Daniel 10-26: "he's really a nightmare to beat").
      The thorn strip and the thorn field are GONE. Thorns only in the two FAR CORNERS (the west ones rise out of the heather as the fight begins - you
-     walk in over that ground) and a PIT in the middle of the floor whose wind THROWS YOU BACK OUT onto the floor (a small chip, never a hazard's 27%:
+     walk in over that ground) and a PIT east of the east ledge whose wind THROWS YOU BACK OUT onto the floor (a small chip, never a hazard's 27%:
      main.js callerPitStep). Over it the two WIDE ledges he stands on, six rows up, reached only on the summit's TOLD GUST - its two updrafts blow
      while it blows and carry you off their tops downwind onto a ledge (the west updraft east to the west ledge; the middle one either way).
      THE LOOP: strike him three times on his ledge and he FALLS to the floor - the opening - then rises back up to a ledge. HE ATTACKS ONLY BETWEEN
      GUSTS: while the gust blows (or is about to) he holds. Phase one the gust blows east, phase two it alternates, phase three it comes faster and the
      east ledge falls (fair now: there are no thorns under it). You walk in off the landing, from the west (RULES I). ==== */
   o = 701; section('summit', 'THE SUMMIT', o, o + 47, null);
-  block(o, o + 16, 13, 29); block(o + 20, o + 47, 13, 29); block(o + 17, o + 19, 16, 29);   /* THE PIT (o+17..19): three rows deep, its wind throws you out */
+  block(o, o + 35, 13, 29); block(o + 39, o + 47, 13, 29); block(o + 36, o + 38, 16, 29);   /* THE PIT (o+36..38), east of the east ledge: three rows deep, its wind throws you out */
   spikes(o + 43, o + 45, 12);                                          /* THE EAST CORNER's thorns (the west corner's, o+1..2, rise as the fight begins: arena.cornerRise) */
   plat(o + 9, 7, 8); plat(o + 26, 7, 8);                               /* THE WEST LEDGE and THE EAST LEDGE: six rows over the floor, both over safe floor end to end */
   const gale = { gale: true, wind: true, w: 12, h: 104, lift: 270 };   /* (gale: it blows with the summit's gust and only then - main.js callerGustNow) */
@@ -4215,8 +4215,8 @@ function galeMoor() {
   ent('gate', o + 26, 12);   /* (the level ends when he dies; the gate stands on the floor the fight is fought on) */
   const roosts = [[o + 12, 6], [o + 29, 6]];   /* where he stands: the middle of each ledge (the east one falls in phase three) */
   const arena = { x0: (o + 1) * TS, x1: (o + 45) * TS, floor: 13 * TS, trigger: (o + 6) * TS, wallL: o, wallR: o + 46, boss: 'windcaller', music: 'windcaller', tint: '#bfe6f5', tintA: 0.06, fx: 'dust',
-    home: (o + 6) * TS + 8, safe: [[o + 3, o + 16], [o + 20, o + 42]], ledges: [[o + 9, o + 16, 7], [o + 26, o + 33, 7]], crumble: 1,
-    pit: [o + 17, o + 19], cornerRise: [[o + 1, o + 2, 12]],
+    home: (o + 6) * TS + 8, safe: [[o + 3, o + 35], [o + 39, o + 42]], ledges: [[o + 9, o + 16, 7], [o + 26, o + 33, 7]], crumble: 1,
+    pit: [o + 36, o + 38], cornerRise: [[o + 1, o + 2, 12]],
     ledgePosts: [[o + 10, 7], [o + 13, 7], [o + 15, 7], [o + 27, 7], [o + 30, 7], [o + 32, 7]] };   /* (home: where you stand back on the floor; safe: the floors in tiles; pit: its columns; cornerRise: thorns grown at the fight's start; crumble: the ledge that falls in phase three) */
   /* (claude/windcaller4) NOTHING FLOATS (tools/anchor-lint.mjs): the stair's rock is rock to the bottom; the summit's two ledges stand on wind-carved stone pillars (drawn, never solid: you pass in front of them) */
   L.routeSupports = (L.routeSupports || []).concat(arena.ledgePosts.map(([x, y]) => ({ x, y, bottom: 13, kind: 'pile', caller: true })));
