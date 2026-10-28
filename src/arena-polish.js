@@ -80,7 +80,7 @@ function drawFields(g, o) {
    hall is dry; the flood puts them out; her fire makes them flare; soot dims them. Drawn by the hall's drawBack with its own state S. */
 export function drawWallLamps(g, G, S, cx, cy, time) {
   if (!G || !S) return; const w = G.x1 - G.x0, flood = !!S.flood, hot = (S.scorch || 0) > 0, sooty = (S.charT || 0) > 0;
-  const spots = [[0.05, 150], [0.3, 100], [0.7, 100], [0.95, 150]];
+  const spots = [[0.06, 88], [0.3, 68], [0.7, 68], [0.94, 88]];   /* (the view is 320 x 180: ~110 px above the floor is seen from it) */
   for (let i = 0; i < spots.length; i++) { const [f, up] = spots[i], x = R(G.x0 + w * f - cx), y = R(G.floor - up - cy); if (x < -30 || x > 700) continue;
     /* the niche and the cage: a dark arch in the wall, an iron frame, a brass bowl */
     fr(g, '#1a1612', x - 6, y - 8, 12, 14); fr(g, '#2a2420', x - 5, y - 7, 10, 12); fr(g, '#3a3028', x - 7, y - 9, 14, 1); fr(g, '#3a3028', x - 7, y + 5, 14, 2);
@@ -110,7 +110,7 @@ function drawRootway(g, o) {
   const { A, cx, cy, time } = o; const x0 = A.x0, x1 = A.x1, fl = A.floor, TS = o.TS; if (x1 - cx < -20 || x0 - cx > o.VW + 20) return;
   const boss = o.boss, bx = boss && boss.alive ? boss.x : -9999;
   /* THE TROPHY STRINGS: three cords from wall to wall, sagging, a trophy hung at intervals */
-  const rows = [[fl - 11 * TS, 14, 0], [fl - 9.2 * TS, 10, 3], [fl - 12.6 * TS, 8, 6]];
+  const rows = [[fl - 6.8 * TS, 9, 0], [fl - 5.4 * TS, 7, 3], [fl - 8.2 * TS, 8, 6]];   /* above the perches (4 tiles up), inside the 320 x 180 view */
   rows.forEach(([ya, sag, seed], ri) => {
     const xa = x0 + 2, xb = x1 - 2, n = 7; let last = null;
     for (let px = xa; px <= xb; px += 2) { const t = (px - xa) / (xb - xa), y = ya + Math.sin(t * Math.PI) * sag; if (px < cx - 4 || px > cx + o.VW + 4) continue; fr(g, ri === 1 ? '#3a2a18' : '#2a1c10', px - cx, y - cy, 2, 1); if (px % 8 === 0) fr(g, '#5a4228', px - cx, y - cy + 1, 1, 1); }
@@ -135,8 +135,10 @@ function drawHarbor(g, o) {
   const surge = m === 'highTell' ? 1 : m === 'lowTell' ? 0.5 : 0; const rise = (ph === 2 ? 1 : 0) * 14 + surge * 10;
   /* the sea past the gate: a slab of water, a foam line that heaves, drawn over the gate's bars at low alpha so they still read */
   const gx = A.x1 - cx, top = A.floor - cy - 8 - rise + Math.sin(time * 1.4) * 3;
-  g.globalAlpha = 0.5; fr(g, '#1d5a66', gx + 1, top, 150, A.floor - cy - top + 2); g.globalAlpha = 0.35; fr(g, '#4aa8b0', gx + 1, top + 3, 150, 2); g.globalAlpha = 1;
-  for (let x = 0; x < 150; x += 6) { const wy = top + Math.sin(time * 2.2 + x * 0.35) * 1.6; fr(g, '#d8f4f0', gx + 2 + x, wy, 3, 1); }
+  g.globalAlpha = 0.55; fr(g, '#1d5a66', gx, top, 18, A.floor - cy - top + 2); g.globalAlpha = 0.4; fr(g, '#4aa8b0', gx, top + 3, 18, 2); g.globalAlpha = 1;   /* seen through the bars: the camera stops at the gate */
+  for (let x = 0; x < 18; x += 6) { const wy = top + Math.sin(time * 2.2 + x * 0.35) * 1.6; fr(g, '#d8f4f0', gx + x, wy, 3, 1); }
+  /* the wet quay: a sheen of sea on the boards, thicker in HIGH TIDE and flashing on a surge's tell */
+  { const wet = (ph === 2 ? 0.14 : 0.07) + surge * 0.12 * (0.6 + 0.4 * Math.sin(time * 14)); g.globalAlpha = wet; fr(g, '#7ad0d4', A.x0 - cx, A.floor - cy - 2, A.x1 - A.x0, 2); g.globalAlpha = wet * 0.6; fr(g, '#bff0ee', A.x0 - cx, A.floor - cy - 4, A.x1 - A.x0, 1); g.globalAlpha = 1; }
   /* the spray off the quay: pale puffs lifting and falling at the foot of each wall */
   const wall = [A.x0 + 6, A.x1 - 6], n = 5 + ph * 3 + (surge ? 4 : 0);
   for (const wx of wall) for (let i = 0; i < n; i++) { const k = (time * (0.5 + 0.08 * i) + i * 0.37) % 1, dir = wx < (A.x0 + A.x1) / 2 ? 1 : -1, px = wx + dir * (k * 22 + (i % 3) * 3), py = A.floor - 4 - Math.sin(k * Math.PI) * (10 + ph * 5 + surge * 8);
@@ -149,9 +151,9 @@ function drawWaymeet(g, o) {
   const { A, cx, cy, time, TS } = o; if (A.x1 - cx < -20 || A.x0 - cx > o.VW + 20) return; const b = o.boss, B = mem.bell;
   const gl = b && b.alive && b.glint ? 1 : 0; if (gl && !B.glint) { B.ring = 1; B.at = time; } B.glint = gl; B.ring = Math.max(0, B.ring - (1 / 60) * 1.1);
   /* the bell: yoke between two posts high on the stand's left, a bronze bell swinging from it */
-  const bxw = A.x0 + 7 * TS, byw = A.floor - 8.5 * TS, bx = R(bxw - cx), by = R(byw - cy);
+  const bxw = A.x1 - 2, byw = A.floor - 100, bx = R(bxw - cx), by = R(byw - cy);   /* hung from an iron arm out of the stand's right wall (its face is at x1 + 16) */
   if (onScreen(bxw, o, 40)) {
-    fr(g, '#3a2a1a', bx - 14, by - 3, 28, 3); fr(g, '#5a4228', bx - 14, by - 3, 28, 1); fr(g, '#3a2a1a', bx - 15, by - 3, 3, 20); fr(g, '#3a2a1a', bx + 12, by - 3, 3, 20); fr(g, '#2a1c10', bx - 15, by + 17, 3, 3); fr(g, '#2a1c10', bx + 12, by + 17, 3, 3);
+    fr(g, '#2a2a30', bx - 2, by - 3, 18, 3); fr(g, '#3a3a44', bx - 2, by - 3, 18, 1); fr(g, '#2a2a30', bx + 12, by - 3, 4, 14); fr(g, '#3a3a44', bx + 8, by + 6, 6, 2); fr(g, '#1a1a20', bx + 13, by - 1, 2, 2);
     const ang = Math.sin((time - B.at) * 11) * 0.5 * B.ring, ox = bx, oy = by; g.save(); g.translate(ox, oy); g.rotate(ang);
     fr(g, '#2a1c10', -1, 0, 2, 4); fr(g, '#8a6a2a', -4, 4, 8, 2); fr(g, '#a8842e', -5, 6, 10, 4); fr(g, '#c8a040', -6, 10, 12, 4); fr(g, '#8a6a2a', -7, 14, 14, 2); fr(g, '#e8c860', -4, 7, 1, 6); fr(g, '#4a3a14', -1, 16, 2, 3);
     if (B.ring > 0.3) fr(g, '#fff3b0', -6, 11, 2, 3);
@@ -159,7 +161,7 @@ function drawWaymeet(g, o) {
     for (let r = 0; r < 3; r++) { const k = clamp((time - B.at) * 1.6 - r * 0.28, 0, 1); if (B.ring <= 0.02 || k <= 0 || k >= 1) continue; g.globalAlpha = (1 - k) * 0.6 * B.ring; g.strokeStyle = '#fff3b0'; g.lineWidth = 1; g.beginPath(); g.arc(bx, by + 12, 8 + k * 26, 0, 7); g.stroke(); }
     g.globalAlpha = 1; }
   /* the lamp: a lychgate lamp on an iron post at the right of the stand; lit for the brand */
-  const lxw = A.x1 - 5 * TS, lx = R(lxw - cx), fy = R(A.floor - cy); if (onScreen(lxw, o, 60)) {
+  const lxw = A.x0 + 24, lx = R(lxw - cx), fy = R(A.floor - cy); if (onScreen(lxw, o, 60)) {
     const lit = b && b.alive && ((b.phase || 1) >= 3 || b.mode === 'brandTell'); mem.lamp += ((lit ? 1 : 0) - mem.lamp) * 0.06; const k = mem.lamp;
     fr(g, '#2a2a30', lx - 1, fy - 44, 2, 44); fr(g, '#2a2a30', lx - 4, fy - 3, 8, 3); fr(g, '#3a3a44', lx - 5, fy - 46, 10, 2); fr(g, '#2a2a30', lx - 4, fy - 56, 8, 1);
     fr(g, '#1a1a20', lx - 4, fy - 55, 1, 9); fr(g, '#1a1a20', lx + 3, fy - 55, 1, 9);

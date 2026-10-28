@@ -33,7 +33,7 @@ export const EYRIE = {
   cloud: 5, cloudTell: 0.78, perch: 2.4, boltTell: 1.13, boltEvery: 5.0, boltReach: 22, rest: [1.2, 1.05, 0.95],
   /* HOW A BLOW LANDS (B11/B13): openK in an opening; airK from the air the level gives (a thermal, the cloak, above a plain jump: airH px over the floor);
      hopK from a plain hop; lowK from the floor (GUARDS LOW) */
-  openK: 1.5, airK: 1.15, hopK: 0.6, lowK: 0.25, airH: 60,
+  openK: 1.5, airK: 1.15, hopK: 0.6, lowK: 0.4, airH: 60,
   phase: [2 / 3, 1 / 3],
   /* THE DEAD AIR (phase II): the told gathering, how long its underside bites, how long the thermal stays dead, the box under it, the bite */
   deadTell: 0.95, deadLive: 1.5, deadShade: 4.5, deadW: 34, deadDown: 64, deadUp: 14, deadDmg: 18,
