@@ -128,7 +128,6 @@ jobs:
     env:
       FIXED_ART_VARIANT: selfcontained
       FIXED_ART_GAME: fixed-art-game
-      FIXED_ART_LOADER_OUT: ${{ runner.temp }}/fixed-level-art-selfcontained-loader
     steps:
       - uses: actions/checkout@v4
         with:
@@ -143,8 +142,12 @@ jobs:
           node-version: '24.11.1'
       - name: Unchanged original standalone cleanup selftest
         run: node tools/fixed-level-art-selfcontained-preflight.mjs
+        env:
+          FIXED_ART_LOADER_OUT: ${{ runner.temp }}/fixed-level-art-selfcontained-loader
       - name: Original Task3 controlled loader before candidate return with all exact controls
         run: node tools/fixed-level-art-main-loader-runner.mjs
+        env:
+          FIXED_ART_LOADER_OUT: ${{ runner.temp }}/fixed-level-art-selfcontained-loader
       - uses: actions/upload-artifact@v4
         if: always()
         with:
