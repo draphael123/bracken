@@ -2334,7 +2334,7 @@ function theMonastery() {
   // and a bell struck under her goes through her like a blow - so the answer to her scream is here
   ent('tbell', 56, 29, { abbot: true });
   ent('sign', 22, 29, { text: 'HIS BRIDGES HANG FROM BELLS. STRIKE ONE WITH HIM ON IT: IT DROPS WITH HIM.' });
-  ent('abbot', 72, 29);   /* THE FALSE ABBOT, at the far end of the ringing floor: the great bell is at 56, and getting him under it is the fight */
+  ent('abbot', 72, 29);   /* THE FALSE ABBOT, at the far end of the ringing floor. (claude/abbot3) THE HOUSE ANSWERS THE BLOW: his bridges' bells, his chair's basket, his wheel - and the great bell at 56 is the last blow (arena.house below; src/false-abbot.js) */
   // the last hop to the gate is over the thorns on two stones set on a pillar
   plat(79, 29, 5); block(85, 87, 27, 27); block(89, 91, 27, 27); block(87, 87, 28, 29); block(91, 91, 28, 29);
   masonry.push([85, 91, 27, 29]);   // (claude/monastery2, review M3: the two stones are LAID - a pier under each, not grass slabs in the sky)
