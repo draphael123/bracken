@@ -18,7 +18,7 @@
 //                   | 18 FALSE LIGHT TELL (the pot held high, flaring a sickly gold) | 19 FALSE LIGHT (thrown, arm out)
 //                   | 20 RITE SPOILED (knocked off his knees, hands flung up). 13 is now THE PRAYER: kneeling, hands joined,
 //                   the pot set down smoking beside him (claude/abbot2: the procession's frames became the rope's, B16)
-//                   | 17 hurt
+//                   | 17 hurt | 21 FALL (tumbling, off the bridge or out of the chair) | 22 BEATEN (flat on his face before the great bell)
 import { canvas, px, rect, fillPoly, line, ellipse, circle, outline, flipX, whiten } from '../px.js';
 import { OUT } from '../art.js';
 
@@ -94,8 +94,35 @@ export function bakeFalseAbbot() {
   };
   const smoke = (g, x, y, n = 3) => { for (let k = 0; k < n; k++) px(g, x + (k % 2 ? 1 : -1) * (1 + k), y - 3 - k * 3, k > 1 ? A.smoke : A.coalL); };
 
-  const F = Array.from({ length: 21 }, (_, f) => {
+  const F = Array.from({ length: 23 }, (_, f) => {
     const [c, g] = canvas(W, H); const floor = H - 2, hip = floor - 26, sh = hip - 6, hd = sh - 12;
+    if (f === 21) {   // THE FALL (claude/abbot3art, B16): the bridge went out from under him / the chair spilled him. TUMBLING in the air - the cope a flung tent, the boots kicking up, the arms thrown wide, the mitre flying off, the pot out on its chain
+      fillPoly(g, [[cx - 14, 30], [cx + 6, 14], [cx + 22, 30], [cx + 14, 50], [cx - 6, 52]], A.M);
+      fillPoly(g, [[cx - 11, 30], [cx + 6, 17], [cx + 19, 30], [cx + 12, 47], [cx - 5, 49]], A.m);
+      fillPoly(g, [[cx + 6, 17], [cx + 19, 30], [cx + 12, 47], [cx + 4, 33]], A.h);
+      thick(g, cx - 8, 40, cx + 14, 24, A.y, 2); thick(g, cx - 5, 45, cx + 16, 29, A.Yl, 1);          // the orphrey, slewed across the mass
+      for (let k = 0; k < 5; k++) px(g, cx - 10 + k * 5, 51 - k * 5 + (k & 1), A.y);                  // the hem, torn up
+      rect(g, cx + 6, 52, 7, 3, A.G); rect(g, cx - 2, 55, 6, 3, A.G); px(g, cx + 6, 52, A.g); px(g, cx - 2, 55, A.g);   // the boots, kicked up behind
+      head(g, cx - 11, 22, { wide: 1 });                                                               // staring, mouth open, head back
+      arm(g, cx + 4, 28, cx + 25, 10); hand(g, cx + 25, 10, 1); arm(g, cx - 8, 36, cx - 24, 26); hand(g, cx - 24, 26, 1);
+      mitre(g, cx - 26, 8, -9);                                                                        // flung off
+      chainTo(g, cx + 25, 11, cx + 33, 20); censer(g, cx + 36, 21, 1, 1);
+      for (let k = 0; k < 3; k++) { px(g, cx + 38 + k * 3, 27 + k * 3, k & 1 ? A.coal : A.coalL); }    // coals spat out of it
+      for (const [dx, w, dy] of [[-18, 6, 42], [-20, 4, 47], [-14, 5, 56], [18, 5, 58], [22, 4, 52]]) rect(g, cx + dx, dy, w, 1, A.smoke);   // the speed lines, rising: he is falling
+      for (const [dx, dy] of [[0, 6], [12, 4], [-12, 12]]) { px(g, cx + dx, dy, A.Yl); px(g, cx + dx - 1, dy, A.y); px(g, cx + dx + 1, dy, A.y); px(g, cx + dx, dy - 1, A.y); px(g, cx + dx, dy + 1, A.y); }   // stars
+      outline(c, OUT); return c;
+    }
+    if (f === 22) {   // BEATEN DOWN (the finale, B16): not the opening's one knee and stars - he is FLAT on his face before the great bell, forehead on the boards, both hands out in front, the mitre rolled away, the pot upended and cold, the cope spread like a fallen tent. Only a thin gold hum over him: the bell is the last blow
+      const len = 17, s2 = floor - len;
+      rect(g, cx - 22, floor - 3, 7, 3, A.G); rect(g, cx - 14, floor - 2, 6, 2, A.G); px(g, cx - 22, floor - 3, A.g);   // the boots, trailing
+      cope(g, cx - 2, s2, -1, len, 7);
+      head(g, cx + 22, floor - 8, { shut: 1 });
+      arm(g, cx + 8, s2 + 6, cx + 26, floor - 3); arm(g, cx + 4, s2 + 8, cx + 24, floor - 1); hand(g, cx + 27, floor - 3, 1); hand(g, cx + 26, floor - 1, 1);
+      fillPoly(g, [[cx - 36, floor - 1], [cx - 28, floor - 12], [cx - 24, floor - 1]], A.mit); fillPoly(g, [[cx - 29, floor - 9], [cx - 24, floor - 1], [cx - 28, floor - 1]], A.mitD); rect(g, cx - 36, floor - 3, 12, 2, A.y);   // the mitre, lying on its side
+      censer(g, cx + 40, floor - 6, 0, 1); for (const [dx, dy] of [[34, -1], [44, -1], [47, -2]]) px(g, cx + dx, floor + dy, A.br[0]);   // cold, upended, the ash spilled
+      for (let k = 0; k < 3; k++) { rect(g, cx - 12 + k * 14, 4 + (k & 1) * 3, 8, 1, A.Yl); rect(g, cx - 8 + k * 14, 7 + (k & 1) * 3, 4, 1, A.y); }   // the hum of the bell, in gold lines over him
+      outline(c, OUT); return settle(c);
+    }
     if (f === 16) {   // DOWNED - THE OPENING: the bell's note went through the rite. On one knee, mitre off, the pot spilled
       rect(g, cx - 14, floor - 4, 10, 4, A.G);
       cope(g, cx, sh + 12, 6); head(g, cx + 8, hd + 18);

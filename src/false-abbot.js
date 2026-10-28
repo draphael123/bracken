@@ -79,8 +79,8 @@ export const abbotSanctus = () => null;
 export function abbotSpoil(e, why) { if (!abbotPraying(e) || e.spoilBy) return false; e.spoilBy = why || 'plunge'; return true; }
 /* the frames of bakeFalseAbbot: 0 idle | 1,2 walk | 3 censer tell | 4 censer | 5 cast tell | 6 cast | 7 haul
    8 rope tell | 9 swinging | 10 slam (landed) | 11 coals tell | 12 coals | 13 kneeling prayer | 14 rite flare | 15 knell
-   16 downed | 17 hurt | 18 false light tell | 19 false light thrown | 20 rite spoiled */
-export const ABBOT_FRAMES = 21;
+   16 downed | 17 hurt | 18 false light tell | 19 false light thrown | 20 rite spoiled | 21 fall | 22 beaten */
+export const ABBOT_FRAMES = 23;
 export function abbotFrame(e) {
   switch (e.mode) {
     case 'censerTell': return 3; case 'censer': return 4;
@@ -90,7 +90,7 @@ export function abbotFrame(e) {
     case 'riteTell': return 13; case 'rite': return 14; case 'spoiled': return 20;
     case 'knellTell': case 'knell': return 15;
     case 'gleamTell': return 18; case 'gleam': return 19;
-    case 'downed': case 'beaten': return 16; case 'fall': return 17;
+    case 'downed': return 16; case 'beaten': return 22; case 'fall': return 21;
     case 'sleep': case 'wake': return 0;
   }
   if (e.hurtT > 0) return 17;
@@ -495,56 +495,149 @@ export function drawFalseAbbot(g, e, cx, cy, time, floorY) {
       g.globalAlpha = (0.2 + 0.5 * k) * (1 - i * 0.12); g.fillStyle = '#ff9a3c'; g.fillRect(bx - 4, fy - 2, 8, 2); } g.globalAlpha = 1; }
   if (abbotBlessed(e)) { const k = 0.5 + 0.5 * Math.sin(time * 5), y = Math.round(e.y - cy); g.globalAlpha = 0.20 + 0.18 * k; g.strokeStyle = '#e8a83a'; g.lineWidth = 2;
     g.beginPath(); g.ellipse(x, y - 20, 20, 26, 0, 0, Math.PI * 2); g.stroke(); g.lineWidth = 1; g.globalAlpha = 1; }
+  if (e.mode === 'fall') { g.fillStyle = '#d8d0c0'; g.globalAlpha = 0.6;   /* THE FALL (claude/abbot3art): speed streaks above him, and a dust of the boards he came off */
+    for (let i = 0; i < 6; i++) g.fillRect(Math.round(x - 15 + i * 6), Math.round(fy - 66 + (time * 150 + i * 23) % 30), 1, 7);
+    g.fillStyle = '#a49c8c'; for (let i = 0; i < 4; i++) g.fillRect(Math.round(x - 9 + i * 6 + Math.sin(time * 20 + i) * 2), Math.round(fy - 58 + (time * 60 + i * 11) % 16), 2, 1); g.globalAlpha = 1; }
   if (e.mode === 'downed') { const k = 0.5 + 0.5 * Math.sin(time * 10); g.globalAlpha = 0.35 + 0.35 * k; g.strokeStyle = '#8fd160'; g.lineWidth = 2;
     g.beginPath(); g.ellipse(x, fy - 2, 28 + k * 3, 6, 0, 0, Math.PI * 2); g.stroke(); g.lineWidth = 1; g.globalAlpha = 1; }
 }
-/* THE HOUSE THAT BLESSES HIM (claude/abbot3), drawn under him: the bridges' bells under their towers (glowing while he prays on
-   their bridge or is warded on it), a dropped bridge hanging off its tower and hauled back (told), his CHAIR on its rope with the
-   beam to the basket's pulley, the WHEEL glowing while it blesses him, his CENSER set down smoking (the column that lifts you),
-   and the GREAT BELL glowing once he is beaten down. Greybox canvas: the sonnet art lane owns the look. H in pixels. */
+/* THE HOUSE THAT BLESSES HIM (claude/abbot3 build, claude/abbot3art art), drawn under him. H in pixels. In order:
+   the belfry's own dressing (maroon banners and bronze lamps hung off the decks - cloth and bronze, no timber but what is already the frame);
+   the bridges' BELLS (a stone corbel and iron strap off the deck, a yoke, the bronze bell, the bridge's hauling rope with its iron ring; the bell that blesses him
+   rings its gold ripples), a DROPPED bridge (iron-strapped, hung off its hinge, swaying, then hauled back up told by the dust and the shuddering rope);
+   his CHAIR (red velvet, gilt, mitre finial, four cords to a bronze ring) hung over the beam, and the WINDLASS CATCH on that beam (a ratchet wheel turning
+   with the basket and the pawl that holds the chair up until the basket is ridden down) - the mechanism that makes 'the basket down is the chair down' readable;
+   the PRAYER WHEEL's halo (spinning bronze ring, prayer strips); his CENSER set down on its brazier with the SMOKE COLUMN that lifts you (billows and rising chevrons);
+   the GREAT BELL once he is beaten (a pillar of light, tolling rings, a drift of motes from him to it). Canvas primitives on the 320x180 buffer. */
+const STONE = ['#4a463e', '#6a645a', '#8a8478', '#a49c8c', '#c8c0aa'], BRZ = ['#3a2a12', '#6a4a1e', '#9a7634', '#c9a44a', '#f0dc8a'], IRON = ['#26262e', '#3c3c44', '#5a5a64', '#8a8a96'];
+const CLOTH = ['#3a1216', '#5a1e1e', '#8e3a32', '#b8584a'], SAFF = ['#a8681c', '#e8a83a', '#ffe08a'], ROPE = ['#4a3418', '#8a6a3e', '#c8b088'];
 export function drawAbbotHouse(g, e, H, cx, cy, time, floorY, basketK) {
   if (!H) return;
-  const fy = Math.round(floorY - cy), dy = Math.round(H.deckY - cy), p = 0.5 + 0.5 * Math.sin(time * 9), alive = !!(e && e.alive && e.mode !== 'sleep');
-  const GOLD = '#ffe08a', gl = (x, y, r, a0) => { const gr = g.createRadialGradient(x, y, 0, x, y, r); gr.addColorStop(0, GOLD); gr.addColorStop(1, 'rgba(255,224,138,0)'); g.globalAlpha = a0; g.fillStyle = gr; g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fill(); g.globalAlpha = 1; };
-  const ph = alive ? (e.phase || 1) : 1, praying = alive && e.mode === 'riteTell', warded = alive && (e.blessT || 0) > 0;
-  /* THE BRIDGES' BELLS: hung from the tower deck's underside, mouth at your head - a rope from each runs up to its bridge's hanger */
+  const W = g.canvas.width, fy = Math.round(floorY - cy), dy = Math.round(H.deckY - cy), p = 0.5 + 0.5 * Math.sin(time * 9), alive = !!(e && e.alive && e.mode !== 'sleep');
+  const R = (c, x, y, w, h) => { g.fillStyle = c; g.fillRect(Math.round(x), Math.round(y), w, h); };
+  const GOLD = '#ffe08a', glow = (x, y, r, a0, col = GOLD) => { const gr = g.createRadialGradient(x, y, 0, x, y, r); gr.addColorStop(0, col); gr.addColorStop(1, 'rgba(255,224,138,0)'); g.globalAlpha = a0; g.fillStyle = gr; g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fill(); g.globalAlpha = 1; };
+  const rope = (x0, y0, x1, y1, w = 2) => { const n = Math.max(1, Math.ceil(Math.hypot(x1 - x0, y1 - y0))); for (let i = 0; i <= n; i++) { const x = Math.round(x0 + (x1 - x0) * i / n), y = Math.round(y0 + (y1 - y0) * i / n); R(ROPE[(i >> 1) & 1 ? 1 : 2], x, y, w, 1); if (w > 1) R(ROPE[0], x + w, y, 1, 1); } };
+  const ph = alive ? (e.phase || 1) : 1, praying = alive && e.mode === 'riteTell', warded = alive && (e.blessT || 0) > 0, onX = x => x > -140 && x < W + 140;
+  /* ---- THE BELFRY'S DRESSING: banners and lamps off the underside of the decks ---- */
+  (H.spans || []).forEach(([a, b], si) => {
+    const n = Math.max(0, Math.floor((b - a) / 70));
+    for (let k = 0; k < n; k++) { const bx = Math.round(a + (k + 0.5) * (b - a) / n - cx); if (!onX(bx)) continue;
+      const sw = Math.round(Math.sin(time * 1.2 + si * 2 + k * 1.7) * 1), top = dy + 5, len = 21 + ((si + k) % 2) * 4;
+      R(BRZ[1], bx - 6, top - 1, 13, 2); R(BRZ[3], bx - 6, top - 1, 13, 1); R(BRZ[3], bx - 7, top - 2, 2, 4); R(BRZ[3], bx + 6, top - 2, 2, 4);   /* the bronze rod and its finials */
+      for (let r = 0; r < len; r++) { const x0 = bx - 4 + (r > 8 ? sw : 0), y = top + 1 + r, full = r <= len - 6, ws = full ? 9 : Math.max(0, 5 - (r - (len - 6)));   /* the swallow-tail: two strips that narrow away from the middle */
+        if (full) R(CLOTH[1], x0, y, 9, 1); else { R(CLOTH[1], x0, y, ws, 1); R(CLOTH[1], x0 + 9 - ws, y, ws, 1); }
+        R(CLOTH[2], x0, y, Math.min(2, ws), 1); R(CLOTH[0], x0 + 9 - Math.min(2, ws), y, Math.min(2, ws), 1); }
+      for (let r = 2; r < len - 4; r++) { const x0 = bx - 1 + (r > 8 ? sw : 0); R(SAFF[1], x0, top + 1 + r, 3, 1); if (r % 5 === 2) R(SAFF[2], x0 - 1, top + 1 + r, 5, 1); }   /* the orphrey, with its crosspieces */
+      R(SAFF[1], bx - 1 + sw, top + len - 3, 3, 3); R(SAFF[2], bx + sw, top + len - 3, 1, 3); }   /* a gilt tassel at the tail */
+    for (const lx of [a + 10, b - 10]) { const bx = Math.round(lx - cx); if (!onX(bx) || b - a < 80) continue;
+      const fl = Math.sin(time * 17 + lx) > 0 ? 1 : 0;
+      for (let r = 0; r < 7; r++) R(r & 1 ? IRON[2] : IRON[1], bx, dy + 5 + r, 1, 1);   /* the chain */
+      R(BRZ[1], bx - 4, dy + 12, 9, 1); R(BRZ[2], bx - 3, dy + 13, 7, 3); R(BRZ[3], bx - 2, dy + 13, 2, 3); R(BRZ[0], bx - 2, dy + 16, 5, 1);   /* the lamp's bronze cup */
+      R('#ff9a3c', bx - 1, dy + 10 - fl, 3, 2); R(GOLD, bx, dy + 9 - fl, 1, 2);
+      glow(bx, dy + 11, 12 + fl, 0.18); }
+  });
+  /* ---- THE BRIDGES' BELLS ---- */
   (H.bridges || []).forEach((b, i) => b.bells.forEach((bellX, j) => {
     const up = !alive || bridgeUp(e, i), bx = Math.round(bellX - cx), near = bellX < (b.x0 + b.x1) / 2 ? b.x0 : b.x1, nx = Math.round(near - cx);
-    if (bx < -100 || bx > g.canvas.width + 100) return;
-    const mine = alive && up && e.deck === 'high' && e.x >= b.x0 - 6 && e.x <= b.x1 + 6, glow = mine && (praying || warded), by = fy - 50;
-    g.fillStyle = '#2a1c0c'; g.fillRect(bx - 1, dy + 16, 3, by - dy - 16 + 2); g.fillStyle = '#8a6a3e'; g.fillRect(bx, dy + 16, 1, by - dy - 16);   /* its hanger, off the deck */
-    if (!(alive && e.brGone)) { g.strokeStyle = '#c8b088'; g.lineWidth = 1; g.beginPath(); g.moveTo(bx + 0.5, by + 2); g.lineTo(nx + 0.5, dy + 2); g.stroke(); }   /* the rope that holds the bridge up */
-    if (glow) { gl(bx, by + 8, 18 + 4 * p, 0.35 + 0.35 * p); for (let k = 0; k < 3; k++) if (Math.sin(time * 6 + k * 2.2) > 0.2) glint(g, Math.round(bx + Math.cos(time * 3 + k * 2.1) * 12), Math.round(by + 8 + Math.sin(time * 3 + k * 2.1) * 9), '#fffbe0', 1); }
-    const sw = !up && alive && !e.brGone && e.brT && e.brT[i] <= ABBOT.rehangTell ? Math.round(Math.sin(time * 18) * 2) : Math.round(Math.sin(time * 1.3 + i) * 1);
+    if (!onX(bx)) return;
+    const mine = alive && up && e.deck === 'high' && e.x >= b.x0 - 6 && e.x <= b.x1 + 6, ring = mine && (praying || warded), by = fy - 50;
+    const hauling = !up && alive && !e.brGone && e.brT && e.brT[i] <= ABBOT.rehangTell, shud = hauling ? Math.round(Math.sin(time * 38) * 1) : 0;
+    /* the bracket: a stone corbel under the deck, an iron strap down it to the yoke the bell hangs from */
+    R(STONE[1], bx - 5, dy + 5, 11, 3); R(STONE[3], bx - 5, dy + 5, 11, 1); R(STONE[2], bx - 3, dy + 8, 7, 3); R(STONE[0], bx - 3, dy + 10, 7, 1); R(STONE[3], bx - 3, dy + 8, 2, 2);
+    for (let r = dy + 11; r < by - 2; r++) R(IRON[(r >> 1) & 1 ? 1 : 2], bx, r, 2, 1);
+    R(IRON[0], bx + 2, dy + 11, 1, by - dy - 13);
+    R(IRON[1], bx - 4, by - 3, 9, 2); R(IRON[3], bx - 4, by - 3, 9, 1); R(BRZ[3], bx - 5, by - 4, 2, 4); R(BRZ[3], bx + 4, by - 4, 2, 4);   /* the yoke and its bronze gudgeons */
+    if (!(alive && e.brGone)) { rope(bx + 3 + shud, by - 2, nx, dy + 3, 1); R(IRON[2], nx - 2, dy, 5, 2); R(IRON[3], nx - 1, dy + 1, 3, 1); R(IRON[0], nx - 1, dy + 3, 3, 1); }   /* the hauling rope to the iron ring in its bridge end */
+    if (ring) { for (let k = 0; k < 3; k++) { const ph2 = ((time * 1.4 + k / 3) % 1); g.globalAlpha = (1 - ph2) * 0.75; g.strokeStyle = GOLD; g.lineWidth = 1; g.beginPath(); g.ellipse(bx, by + 8, 7 + ph2 * 16, 5 + ph2 * 12, 0, 0, Math.PI * 2); g.stroke(); } g.globalAlpha = 1;
+      glow(bx, by + 8, 18 + 4 * p, 0.35 + 0.3 * p); for (let k = 0; k < 4; k++) if (Math.sin(time * 6 + k * 2.2) > 0.1) glint(g, Math.round(bx + Math.cos(time * 3 + k * 1.6) * 13), Math.round(by + 8 + Math.sin(time * 3 + k * 1.6) * 10), '#fffbe0', 1); }
+    const sw = hauling ? Math.round(Math.sin(time * 18) * 2) : Math.round(Math.sin(time * 1.3 + i) * 1);
     bronzeBell(g, bx, by, sw, true);
-    /* DOWN: the bridge hangs off its far tower, straight down - and hauled back, it swings up to lie flat again */
+    if (ring) { g.globalAlpha = 0.55 * (0.5 + 0.5 * p); R('#fffbe0', bx - 4 + sw, by + 6, 1, 7); g.globalAlpha = 1; }   /* the lip kindles */
+    /* DOWN: the bridge hangs off its hinge on the far tower - iron-strapped, swaying - and hauled back it swings up again; the haul is told by dust off the deck and the shuddering rope */
     if (!up && j === 0) { const far = b.x1 - b.x0 > 120 ? (near === b.x0 ? b.x1 : b.x0) : b.x1, fx = Math.round(far - cx), len = Math.min(88, Math.abs(b.x1 - b.x0)), dir = Math.sign(near - far) || 1;
-      const rise = alive && !e.brGone && e.brT ? Math.max(0, Math.min(1, 1 - e.brT[i] / ABBOT.rehangTell)) : 0, an = (Math.PI / 2) * (1 - rise);
-      for (let s = 0; s < len; s += 4) { const px = Math.round(fx + dir * Math.cos(an) * s), py = Math.round(dy + Math.sin(an) * s);
-        g.fillStyle = '#3a2614'; g.fillRect(px - 3, py, 7, 4); g.fillStyle = s % 8 ? '#7a5232' : '#8e6440'; g.fillRect(px - 2, py, 5, 3); }
-      if (rise > 0) { g.strokeStyle = '#c8b088'; g.beginPath(); g.moveTo(bx + 0.5, by); g.lineTo(Math.round(fx + dir * Math.cos(an) * len) + 0.5, Math.round(dy + Math.sin(an) * len) + 0.5); g.stroke(); } }
+      const rise = alive && !e.brGone && e.brT ? Math.max(0, Math.min(1, 1 - e.brT[i] / ABBOT.rehangTell)) : 0, an = (Math.PI / 2) * (1 - rise) + (rise ? 0 : Math.sin(time * 2.1 + i) * 0.05);
+      for (let s = 0; s < len; s += 4) { const px_ = Math.round(fx + dir * Math.cos(an) * s), py = Math.round(dy + Math.sin(an) * s);
+        R('#2a1c0c', px_ - 5, py, 11, 4); R(s % 8 ? '#7a5232' : '#8e6440', px_ - 4, py, 9, 3); R('#a8805a', px_ - 4, py, 9, 1); R(ROPE[2], px_ - 5, py, 1, 4); R(ROPE[2], px_ + 5, py, 1, 4);
+        if (s % 16 === 0) { R(IRON[1], px_ - 4, py + 1, 9, 1); R(BRZ[3], px_ - 4, py + 1, 1, 1); R(BRZ[3], px_ + 4, py + 1, 1, 1); } }   /* an iron strap and its bronze studs every fourth plank */
+      R(IRON[1], fx - 3, dy - 1, 7, 3); R(BRZ[3], fx - 2, dy - 1, 5, 1); R(IRON[0], fx - 1, dy + 1, 3, 1);   /* the hinge pin on the tower */
+      if (rise > 0) { rope(bx + 3, by - 2, Math.round(fx + dir * Math.cos(an) * len), Math.round(dy + Math.sin(an) * len), 1);
+        g.fillStyle = '#d8d0c0'; g.globalAlpha = 0.5; for (let k = 0; k < 6; k++) g.fillRect(Math.round(fx + dir * (4 + k * 9) + Math.sin(time * 9 + k) * 2), Math.round(dy + 3 + ((time * 40 + k * 13) % 22)), 2, 1); g.globalAlpha = 1; } }
   }));
-  /* HIS CHAIR: an abbot's high seat in red and gilt on a rope from the roof beam; the beam runs to the basket's pulley */
+  /* ---- THE CHAIR, ITS BEAM AND THE WINDLASS CATCH ---- */
   if (H.chairX !== undefined) {
-    const cxp = Math.round(H.chairX - cx), cyp = Math.round(abbotChairY(H, floorY, basketK) - cy), py = Math.round(H.pulleyY - cy), bxp = Math.round(H.basketX + 16 - cx);
-    if (cxp > -80 && cxp < g.canvas.width + 120) {
-      g.fillStyle = '#2a1c0c'; g.fillRect(Math.min(cxp, bxp) - 4, py - 4, Math.abs(bxp - cxp) + 9, 5); g.fillStyle = '#6a4a2c'; g.fillRect(Math.min(cxp, bxp) - 3, py - 3, Math.abs(bxp - cxp) + 7, 2);   /* the beam */
-      for (const qx of [cxp, bxp]) { g.fillStyle = '#4a4a52'; g.beginPath(); g.arc(qx, py, 4, 0, Math.PI * 2); g.fill(); g.fillStyle = '#8a8a96'; g.fillRect(qx - 1, py - 1, 2, 2); }   /* the pulleys */
-      g.strokeStyle = '#c8b088'; g.lineWidth = 1; g.beginPath(); g.moveTo(cxp - 6.5, py + 3); g.lineTo(cxp - 8.5, cyp - 30); g.moveTo(cxp + 6.5, py + 3); g.lineTo(cxp + 8.5, cyp - 30); g.stroke();
-      const inIt = alive && e.deck === 'chair', glow = inIt && (praying || warded);
-      if (glow) gl(cxp, cyp - 16, 26 + 4 * p, 0.3 + 0.3 * p);
-      g.fillStyle = '#2a1018'; g.fillRect(cxp - 11, cyp - 32, 23, 33); g.fillStyle = '#7a1e24'; g.fillRect(cxp - 10, cyp - 31, 21, 24); g.fillStyle = '#9a2e30'; g.fillRect(cxp - 8, cyp - 29, 5, 20);   /* the back, velvet */
-      g.fillStyle = '#c9a44a'; g.fillRect(cxp - 11, cyp - 33, 23, 2); g.fillRect(cxp - 2, cyp - 37, 5, 4); g.fillRect(cxp - 11, cyp - 7, 23, 2);   /* gilt rail and crest */
-      g.fillStyle = '#5a1418'; g.fillRect(cxp - 12, cyp - 6, 25, 6); g.fillStyle = '#c9a44a'; g.fillRect(cxp - 12, cyp - 1, 3, 2); g.fillRect(cxp + 10, cyp - 1, 3, 2);   /* the seat and its feet */
+    const cxp = Math.round(H.chairX - cx), cyp = Math.round(abbotChairY(H, floorY, basketK) - cy), py = Math.round(H.pulleyY - cy), bxp = Math.round(H.basketX + 16 - cx), mx = Math.round((cxp + bxp) / 2);
+    if (cxp > -90 && cxp < W + 130) {
+      const k = Math.max(0, Math.min(1, basketK || 0)), inIt = alive && e.deck === 'chair', ring = inIt && (praying || warded), spilled = k >= ABBOT.spillAt, lo = Math.min(cxp, bxp) - 11, wd = Math.abs(bxp - cxp) + 23;
+      /* the beam: an iron-bound gantry hung from the belfry roof on two chains, end plates riveted, a bronze cap on each */
+      for (const qx of [lo + 3, lo + wd - 4]) { for (let r = py - 70; r < py - 4; r += 3) { R(IRON[2], qx, r, 2, 2); R(IRON[0], qx + 1, r + 1, 1, 2); } }
+      R(IRON[0], lo, py - 5, wd, 7); R(IRON[1], lo, py - 4, wd, 4); R(IRON[3], lo, py - 4, wd, 1);
+      R(BRZ[2], lo - 1, py - 6, 4, 9); R(BRZ[3], lo - 1, py - 6, 1, 9); R(BRZ[2], lo + wd - 3, py - 6, 4, 9); R(BRZ[3], lo + wd - 3, py - 6, 1, 9);
+      for (let r = 0; r < wd - 8; r += 6) R(IRON[3], lo + 5 + r, py - 3, 1, 1);   /* rivets */
+      /* THE WINDLASS CATCH: a ratchet wheel on the beam turning with the basket (two turns over the ride), and the PAWL that holds the chair up till the basket moves */
+      const wy = py - 13, rot = k * Math.PI * 4, held = k < 0.04;
+      R(IRON[1], mx - 1, py - 7, 3, 3);   /* its pillow block */
+      for (let t = 0; t < 8; t++) { const an = rot + t * Math.PI / 4; R(BRZ[3], mx + Math.cos(an) * 7 - 1, wy + Math.sin(an) * 7 - 1, 2, 2); }   /* the teeth */
+      g.fillStyle = BRZ[1]; g.beginPath(); g.arc(mx, wy, 6, 0, Math.PI * 2); g.fill(); g.fillStyle = BRZ[2]; g.beginPath(); g.arc(mx, wy, 4.5, 0, Math.PI * 2); g.fill();
+      g.strokeStyle = BRZ[0]; g.lineWidth = 1; g.beginPath(); for (let t = 0; t < 4; t++) { const an = rot + t * Math.PI / 2; g.moveTo(mx, wy); g.lineTo(mx + Math.cos(an) * 5, wy + Math.sin(an) * 5); } g.stroke();
+      R(BRZ[4], mx - 1, wy - 1, 3, 3); R(BRZ[0], mx, wy, 1, 1);
+      const tipY = held ? wy - 5 : wy - 10 - Math.round(Math.abs(Math.sin(rot * 4)));   /* the pawl rides up on the teeth while the wheel runs */
+      R(IRON[1], mx - 15, py - 16, 2, 11); R(IRON[3], mx - 15, py - 16, 1, 11);   /* the pawl's post */
+      g.strokeStyle = IRON[3]; g.beginPath(); g.moveTo(mx - 14, py - 15); g.lineTo(mx - 8, tipY); g.stroke(); g.strokeStyle = IRON[0]; g.beginPath(); g.moveTo(mx - 14, py - 14); g.lineTo(mx - 8, tipY + 1); g.stroke();
+      R(BRZ[4], mx - 9, tipY - 1, 3, 2);   /* the catch's tip */
+      rope(mx - 15, py - 16, mx - 15, py - 10, 1); R(STONE[2], mx - 18, py - 10, 6, 5); R(STONE[3], mx - 18, py - 10, 6, 1); R(STONE[0], mx - 18, py - 6, 6, 1);   /* the stone that weights the pawl */
+      if (!held && Math.sin(time * 30) > 0.3) glint(g, mx - 8, tipY - 3, '#fffbe0', 1);   /* the click of it */
+      /* the pulleys: bronze sheaves in iron stirrups, the chair's rope over the left one */
+      for (const qx of [cxp, bxp]) { R(IRON[1], qx - 4, py, 9, 3); R(IRON[3], qx - 4, py, 9, 1); g.fillStyle = BRZ[0]; g.beginPath(); g.arc(qx, py + 6, 5, 0, Math.PI * 2); g.fill(); g.fillStyle = BRZ[2]; g.beginPath(); g.arc(qx, py + 6, 3.5, 0, Math.PI * 2); g.fill(); R(BRZ[4], qx - 1, py + 5, 2, 2); }
+      /* the chair's cord: one rope up to the sheave, a bronze ring, four cords down to the arms - swaying once he is thrown out of it */
+      const tilt = spilled ? Math.round(Math.sin(time * 7) * 3) : 0, ringY = cyp - 47;
+      rope(cxp - 1, py + 11, cxp - 1, ringY - 2, 2);
+      g.strokeStyle = BRZ[3]; g.lineWidth = 1; g.beginPath(); g.arc(cxp, ringY, 3, 0, Math.PI * 2); g.stroke(); R(BRZ[1], cxp - 1, ringY + 2, 3, 2);
+      g.strokeStyle = ROPE[2]; g.beginPath(); g.moveTo(cxp - 2, ringY + 2); g.lineTo(cxp - 11 + tilt, cyp - 30); g.moveTo(cxp + 2, ringY + 2); g.lineTo(cxp + 11 + tilt, cyp - 30); g.moveTo(cxp - 1, ringY + 2); g.lineTo(cxp - 6 + tilt, cyp - 34); g.moveTo(cxp + 1, ringY + 2); g.lineTo(cxp + 6 + tilt, cyp - 34); g.stroke();
+      if (ring) { glow(cxp, cyp - 18, 28 + 4 * p, 0.3 + 0.3 * p); for (let q = 0; q < 3; q++) { const ph2 = ((time * 1.2 + q / 3) % 1); g.globalAlpha = (1 - ph2) * 0.5; g.strokeStyle = GOLD; g.beginPath(); g.ellipse(cxp, cyp - 18, 14 + ph2 * 14, 20 + ph2 * 10, 0, 0, Math.PI * 2); g.stroke(); } g.globalAlpha = 1; }
+      /* THE CHAIR: a tall gabled back of bronze-gilt framing with the red velvet let into it, a mitre finial, gilt arms with bronze knobs, a cushion with its tassel, a footboard */
+      const X = cxp + Math.round(tilt * 0.5);
+      R('#1b0a10', X - 11, cyp - 33, 23, 34);
+      R(BRZ[1], X - 11, cyp - 31, 23, 3); R(BRZ[3], X - 11, cyp - 31, 23, 1); R(BRZ[1], X - 8, cyp - 34, 17, 3); R(BRZ[3], X - 8, cyp - 34, 17, 1); R(BRZ[1], X - 4, cyp - 37, 9, 3); R(BRZ[3], X - 4, cyp - 37, 9, 1);   /* the gable, stepped */
+      R(BRZ[4], X - 1, cyp - 41, 3, 5); R(BRZ[3], X - 3, cyp - 39, 7, 1);   /* the finial: a little cross-and-mitre */
+      R(CLOTH[1], X - 9, cyp - 28, 19, 19); R(CLOTH[2], X - 8, cyp - 27, 6, 17); R(CLOTH[0], X + 5, cyp - 27, 4, 17);   /* the velvet, lit on the left */
+      for (let r = 0; r < 4; r++) { R(BRZ[2], X - 6 + r * 4, cyp - 25, 1, 1); R(BRZ[2], X - 6 + r * 4, cyp - 17, 1, 1); R(BRZ[2], X - 6 + r * 4, cyp - 12, 1, 1); }   /* the buttons of the quilting */
+      R(SAFF[1], X - 1, cyp - 28, 3, 19); R(SAFF[2], X, cyp - 28, 1, 19);   /* the orphrey up the back */
+      R(BRZ[2], X - 12, cyp - 12, 3, 12); R(BRZ[3], X - 12, cyp - 12, 1, 12); R(BRZ[2], X + 10, cyp - 12, 3, 12); R(BRZ[3], X + 10, cyp - 12, 1, 12);   /* the arms */
+      R(BRZ[4], X - 13, cyp - 14, 4, 3); R(BRZ[4], X + 10, cyp - 14, 4, 3);   /* with knobs */
+      R(CLOTH[0], X - 11, cyp - 7, 23, 7); R(CLOTH[2], X - 11, cyp - 8, 23, 2); R(CLOTH[1], X - 10, cyp - 6, 21, 5); R(SAFF[1], X - 11, cyp - 8, 23, 1);   /* the seat's cushion */
+      R(SAFF[1], X + 10, cyp - 3, 2, 6); R(SAFF[2], X + 10, cyp - 3, 1, 6); R(SAFF[1], X + 9, cyp + 3, 4, 2);   /* the tassel */
+      R(BRZ[1], X - 9, cyp + 1, 19, 2); R(BRZ[3], X - 9, cyp + 1, 19, 1); R(BRZ[0], X - 9, cyp + 3, 19, 1);   /* the footboard */
     } }
-  /* THE WHEEL (phase three): it spins and glows gold while it blesses him */
-  if (alive && ph === 3 && H.wheels && (praying && e.riteAt === 3 || warded)) { const wx = Math.round(H.wheels[e.riteWheel || 0].x - cx); gl(wx, fy - 14, 22 + 4 * p, 0.3 + 0.35 * p);
-    g.strokeStyle = GOLD; g.globalAlpha = 0.5 + 0.4 * p; g.lineWidth = 1; g.beginPath(); g.arc(wx, fy - 14, 13, time * 6, time * 6 + 4.2); g.stroke(); g.globalAlpha = 1; }
-  /* HIS CENSER, SET DOWN AND SMOKING (phase three's rite): the column that lifts you over him */
-  if (alive && e.smoke) { const sx = Math.round(e.smoke.x - cx), top = fy - ABBOT.smokeH;
-    for (let k = 0; k < 5; k++) { const wob = Math.sin(time * 5 + k * 1.9) * 3; g.globalAlpha = 0.14 + 0.06 * Math.sin(time * 7 + k); g.fillStyle = k % 2 ? '#f6eee0' : '#e8d8a8'; g.fillRect(Math.round(sx - 10 + k * 4 + wob), top, 4, ABBOT.smokeH - 8); }
-    g.globalAlpha = 1; g.fillStyle = '#2a1c0c'; g.fillRect(sx - 6, fy - 9, 13, 9); g.fillStyle = '#9a7634'; g.fillRect(sx - 5, fy - 8, 11, 7); g.fillStyle = '#c9a44a'; g.fillRect(sx - 3, fy - 8, 7, 2); g.fillStyle = '#ff9a3c'; g.fillRect(sx - 2, fy - 10, 5, 2); }
-  /* THE GREAT BELL, once he is beaten down: it glows - ring it */
-  if (alive && e.mode === 'beaten' && H.bellX !== undefined) { const gx = Math.round(H.bellX - cx); gl(gx, fy - 30, 30 + 6 * p, 0.35 + 0.4 * p);
-    for (let k = 0; k < 4; k++) glint(g, Math.round(gx + Math.cos(time * 3 + k * 1.6) * 20), Math.round(fy - 30 + Math.sin(time * 3 + k * 1.6) * 16), '#fffbe0', 1); }
+  /* ---- THE PRAYER WHEEL'S HALO (phase three): a spinning bronze ring with its prayer strips, over the wheel that blesses him ---- */
+  if (alive && ph === 3 && H.wheels && (praying && e.riteAt === 3 || warded)) { const wx = Math.round(H.wheels[e.riteWheel || 0].x - cx), wy = fy - 14;
+    glow(wx, wy, 22 + 4 * p, 0.3 + 0.3 * p);
+    for (let t = 0; t < 12; t++) { const an = time * 5 + t * Math.PI / 6; g.globalAlpha = 0.55 + 0.35 * p; R(t % 3 ? BRZ[3] : BRZ[4], wx + Math.cos(an) * 14 - 1, wy + Math.sin(an) * 14 - 1, t % 3 ? 2 : 3, t % 3 ? 2 : 3); }   /* the ring: studs counting round */
+    for (let t = 0; t < 5; t++) { const an = -time * 3.4 + t * 1.26, rr = 19 + (t & 1) * 3; g.globalAlpha = 0.75; R(t & 1 ? CLOTH[3] : '#efe6d2', wx + Math.cos(an) * rr, wy + Math.sin(an) * rr * 0.8, 2, 4); }   /* prayer strips in the draught of it */
+    g.globalAlpha = 1; g.lineWidth = 1; for (let t = 0; t < 3; t++) { const ph2 = (time * 0.9 + t / 3) % 1; g.globalAlpha = (1 - ph2) * 0.55; g.strokeStyle = GOLD; g.beginPath(); g.arc(wx, wy, 11 + ph2 * 12, 0, Math.PI * 2); g.stroke(); } g.globalAlpha = 1; }
+  /* ---- HIS CENSER, SET DOWN ON ITS BRAZIER, AND THE SMOKE THAT LIFTS YOU ---- */
+  if (alive && e.smoke) { const sx = Math.round(e.smoke.x - cx), N = 15;
+    /* the column: puffs of incense billowing up and widening, warm at the foot, pale and thin at the head */
+    for (let k = 0; k < N; k++) { const u = ((time * 0.45 + k / N) % 1), y = fy - 10 - u * (ABBOT.smokeH - 6), wob = Math.sin(time * 3 + k * 1.9 + u * 5) * (3 + u * 4), r = 5 + u * 6;
+      g.globalAlpha = 0.5 * (1 - u * 0.75) * Math.min(1, u * 8 + 0.3); g.fillStyle = u < 0.2 ? '#e8c880' : u < 0.55 ? '#f0e4c8' : '#f6eee0';
+      g.beginPath(); g.ellipse(sx + wob, y, r, r * 0.8, 0, 0, Math.PI * 2); g.fill(); g.globalAlpha *= 0.7; g.fillStyle = '#fffaf0'; g.beginPath(); g.ellipse(sx + wob - r * 0.3, y - r * 0.2, r * 0.45, r * 0.35, 0, 0, Math.PI * 2); g.fill(); }
+    g.globalAlpha = 1;
+    /* the lift: gold chevrons riding up it, so it reads as a thing to stand in */
+    for (let k = 0; k < 5; k++) { const u = ((time * 0.55 + k / 5) % 1), y = Math.round(fy - 14 - u * (ABBOT.smokeH - 26)), wb = Math.round(Math.sin(time * 3 + k * 1.9 + u * 5) * (3 + u * 4)); g.globalAlpha = 0.85 * Math.sin(Math.PI * u);
+      R(GOLD, sx + wb, y - 2, 1, 1); R(GOLD, sx + wb - 1, y - 1, 1, 1); R(GOLD, sx + wb + 1, y - 1, 1, 1); R(GOLD, sx + wb - 2, y, 1, 1); R(GOLD, sx + wb + 2, y, 1, 1); }
+    g.globalAlpha = 1;
+    /* the brazier: three bronze feet, a bowl pierced for the coals, the lid propped open - the censer he set down */
+    R(BRZ[0], sx - 7, fy - 2, 3, 2); R(BRZ[0], sx + 5, fy - 2, 3, 2); R(BRZ[0], sx - 1, fy - 2, 3, 2);
+    R(BRZ[1], sx - 7, fy - 11, 15, 2); R(BRZ[3], sx - 7, fy - 11, 15, 1); R(BRZ[2], sx - 6, fy - 9, 13, 7); R(BRZ[3], sx + 2, fy - 9, 5, 7); R(BRZ[0], sx - 6, fy - 3, 13, 1);
+    for (const dx of [-4, -1, 2, 5]) R(dx & 1 ? '#ff9a3c' : GOLD, sx + dx, fy - 7 + (dx & 1), 1, 2);   /* the coals through the piercing */
+    R(BRZ[1], sx - 6, fy - 14, 13, 3); R(BRZ[3], sx - 6, fy - 14, 13, 1); R(BRZ[4], sx, fy - 16, 1, 2);
+    glow(sx, fy - 10, 14 + 2 * p, 0.28); }
+  /* ---- THE GREAT BELL, once he is beaten down: a pillar of light from the roof, rings of its note, and the way there from him ---- */
+  if (alive && e.mode === 'beaten' && H.bellX !== undefined) { const gx = Math.round(H.bellX - cx), by = fy - 30;
+    g.globalAlpha = 0.14 + 0.1 * p; R(GOLD, gx - 9, 0, 18, by); g.globalAlpha = 0.22 + 0.12 * p; R('#fffbe0', gx - 4, 0, 8, by); g.globalAlpha = 1;
+    glow(gx, by, 30 + 6 * p, 0.38 + 0.4 * p);
+    for (let q = 0; q < 3; q++) { const ph2 = (time * 0.85 + q / 3) % 1; g.globalAlpha = (1 - ph2) * 0.8; g.strokeStyle = q ? GOLD : '#fffbe0'; g.lineWidth = 2; g.beginPath(); g.ellipse(gx, by, 10 + ph2 * 36, 12 + ph2 * 30, 0, 0, Math.PI * 2); g.stroke(); } g.lineWidth = 1; g.globalAlpha = 1;
+    for (let k = 0; k < 6; k++) glint(g, Math.round(gx + Math.cos(time * 2.6 + k * 1.05) * 22), Math.round(by + Math.sin(time * 2.6 + k * 1.05) * 18), '#fffbe0', 1 + (k & 1));
+    for (let k = 0; k < 3; k++) { const bob = Math.round(Math.abs(Math.sin(time * 5 + k)) * 3); R(GOLD, gx - 4 + k * 3, by - 24 - bob + k % 2, 1, 1); }   /* three bright specks bobbing over the crown: strike here */
+    const ex = Math.round(e.x - cx), dxs = gx - ex, steps = Math.min(14, Math.floor(Math.abs(dxs) / 14));
+    for (let k = 0; k < steps; k++) { const u = ((time * 0.6 + k / steps) % 1); g.globalAlpha = Math.sin(Math.PI * u) * 0.7; R(GOLD, ex + dxs * u, fy - 14 - Math.sin(u * Math.PI) * 18, 2, 2); } g.globalAlpha = 1; }
 }
