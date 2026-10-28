@@ -34,17 +34,17 @@
 // PURE: no DOM, no main.js. Everything the world does is a call on `c`; the house's layout is c.A.house (pixels, built by
 // main.js from the level's arena.house). Proved by tools/false-abbot.mjs.
 export const ABBOT = {
-  hp: 3900, walk: 30, keep: 44, cd: 1.5, cdP2: 1.15,
+  hp: 4200, walk: 30, keep: 44, cd: 1.5, cdP2: 1.15,
   tell: { censer: 0.7, cast: 0.7, swing: 0.8, gleam: 0.8, coals: 0.75, rite: 2.6, knell: 1.0 },
   riteT: [3.2, 3.2, 5.0, 3.4],   /* the rite's windup by phase: on the bridge 3.2 s, in the chair 5 s (the basket is by the great bell), at the wheel 3.4 s - a hero walks ~56 px/s, and the house is a room wide */
-  dmg: { censer: 20, cast: 16, reel: 10, slam: 24, light: 16, knell: 22 },
+  dmg: { censer: 15, cast: 12, reel: 10, slam: 24, light: 16, knell: 22 },   /* (claude/abbot3: censer 20, cast 16 - the short blades fight inside his chain's reach and wore every swing of it) */
   censerR: 46,            // the chain's reach past his body
   castRange: 210,         // how far the censer is thrown
   castPull: 34,           // and how far the chain hauls HIM when it is guarded
   reelTo: 26,             // taken, it reels you to here beside him
   farAt: 150, swingMin: 90, swingMax: 380, swingT: 0.8, swingH: 56, slamR: 30, landT: 0.7,   // THE BELL ROPE: how far he swings, how long in the air, how high, the slam's ring, and his recovery
   lightT: 0.8, lightR: 26, lightUp: 70,   // FALSE LIGHT: the lob's flight, the burst's ring, how high the arc
-  coals: 5, coalStep: 22, coalLife: 3.4,
+  coals: 5, coalStep: 22, coalLife: 3.4, coalFrom: 34,   /* (claude/abbot3) the line starts a stride out: it punishes standing off him, not the blade at his elbow */
   bless: 6, mend: 0.3, blessR: 130, wardTake: 0.4, heal: 0.08,   // the rite: how long it holds, what it mends in his own, B15's floor while warded, and what it heals HIM
   spoilT: 1.2, riteCd: 9, downCd: 4,   // a spoiled rite: the stagger, and how long before he can kneel again (and after an opening, how long he fights before he kneels)
   downT: 4.2, downMul: 2,             // THE OPENING (the house turned on him), and what a blow is worth in it
@@ -288,7 +288,7 @@ export function updateFalseAbbot(e, dt, c) {
       return; }
     if (e.mode === 'coalsTell') { e.mode = 'coals'; e.modeT = 0.5; c.sound('puff');
       const sp = H && e.deck === 'high' ? spanAt(e, H, e.x) : null;
-      for (let i = 0; i < ABBOT.coals; i++) { const fx = e.x + e.face * (14 + i * ABBOT.coalStep); if (sp && (fx < sp[0] || fx > sp[1])) continue; c.fire(fx, ABBOT.coalLife, i * 0.06, e.y); }
+      for (let i = 0; i < ABBOT.coals; i++) { const fx = e.x + e.face * (ABBOT.coalFrom + i * ABBOT.coalStep); if (sp && (fx < sp[0] || fx > sp[1])) continue; c.fire(fx, ABBOT.coalLife, i * 0.06, e.y); }
       return; }
     if (e.mode === 'riteTell') { e.mode = 'rite'; e.modeT = 0.5; c.sound('bless'); e.smoke = null;
       /* HE BLESSES HIMSELF TOO, and the prayer HEALS him: that is the whole difference between him and the priest downstairs */
@@ -491,7 +491,7 @@ export function drawFalseAbbot(g, e, cx, cy, time, floorY) {
     const k = e.mode === 'censerTell' ? 0.35 : 1; g.globalAlpha = 0.25 * k; g.strokeStyle = '#ffd36b';
     g.lineWidth = 2; g.beginPath(); g.ellipse(x, fy - 16, ABBOT.censerR, 12, 0, 0, Math.PI * 2); g.stroke(); g.lineWidth = 1; g.globalAlpha = 1; }
   if (e.mode === 'coalsTell') { const k = 1 - Math.max(0, e.modeT) / ABBOT.tell.coals;
-    for (let i = 0; i < ABBOT.coals; i++) { const bx = Math.round(x + e.face * (14 + i * ABBOT.coalStep));
+    for (let i = 0; i < ABBOT.coals; i++) { const bx = Math.round(x + e.face * (ABBOT.coalFrom + i * ABBOT.coalStep));
       g.globalAlpha = (0.2 + 0.5 * k) * (1 - i * 0.12); g.fillStyle = '#ff9a3c'; g.fillRect(bx - 4, fy - 2, 8, 2); } g.globalAlpha = 1; }
   if (abbotBlessed(e)) { const k = 0.5 + 0.5 * Math.sin(time * 5), y = Math.round(e.y - cy); g.globalAlpha = 0.20 + 0.18 * k; g.strokeStyle = '#e8a83a'; g.lineWidth = 2;
     g.beginPath(); g.ellipse(x, y - 20, 20, 26, 0, 0, Math.PI * 2); g.stroke(); g.lineWidth = 1; g.globalAlpha = 1; }
