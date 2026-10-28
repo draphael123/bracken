@@ -1,0 +1,707 @@
+[
+  {
+    "module": "redraw/matriarch_young.js",
+    "name": "bakeYoung",
+    "start": 3032148,
+    "end": 3032159,
+    "before": "bakeYoung()",
+    "after": "deferredPureSpriteCall(bakeYoung,void 0,[])",
+    "args": []
+  },
+  {
+    "module": "redraw/desert_foes2.js",
+    "name": "bakeDynamiter",
+    "start": 3028603,
+    "end": 3028623,
+    "before": "DF2A.bakeDynamiter()",
+    "after": "deferredPureSpriteCall(DF2A.bakeDynamiter,DF2A,[])",
+    "args": []
+  },
+  {
+    "module": "redraw/desert_foes2.js",
+    "name": "bakeShieldGuard",
+    "start": 3028563,
+    "end": 3028585,
+    "before": "DF2A.bakeShieldGuard()",
+    "after": "deferredPureSpriteCall(DF2A.bakeShieldGuard,DF2A,[])",
+    "args": []
+  },
+  {
+    "module": "redraw/desert_foes2.js",
+    "name": "bakeSandworm",
+    "start": 3028524,
+    "end": 3028543,
+    "before": "DF2A.bakeSandworm()",
+    "after": "deferredPureSpriteCall(DF2A.bakeSandworm,DF2A,[])",
+    "args": []
+  },
+  {
+    "module": "redraw/rootway_art.js",
+    "name": "bakeHuntmasterCard",
+    "start": 3027846,
+    "end": 3027870,
+    "before": "RWA.bakeHuntmasterCard()",
+    "after": "deferredPureSpriteCall(RWA.bakeHuntmasterCard,RWA,[])",
+    "args": []
+  },
+  {
+    "module": "redraw/rootway_art.js",
+    "name": "bakeTrophyHunter",
+    "start": 3027558,
+    "end": 3027580,
+    "before": "RWA.bakeTrophyHunter()",
+    "after": "deferredPureSpriteCall(RWA.bakeTrophyHunter,RWA,[])",
+    "args": []
+  },
+  {
+    "module": "redraw/welltown_art.js",
+    "name": "bakeBanditBowman",
+    "start": 3026804,
+    "end": 3026826,
+    "before": "WTA.bakeBanditBowman()",
+    "after": "deferredPureSpriteCall(WTA.bakeBanditBowman,WTA,[])",
+    "args": []
+  },
+  {
+    "module": "redraw/fair_folk.js",
+    "name": "bakeStrongman",
+    "start": 3022610,
+    "end": 3022629,
+    "before": "FFK.bakeStrongman()",
+    "after": "deferredPureSpriteCall(FFK.bakeStrongman,FFK,[])",
+    "args": []
+  },
+  {
+    "module": "redraw/waymeet.js",
+    "name": "bakeDrunk",
+    "start": 3022543,
+    "end": 3022559,
+    "before": "bakeDrunk('shy')",
+    "after": "deferredPureSpriteCall(bakeDrunk,void 0,['shy'])",
+    "args": [
+      "shy"
+    ]
+  },
+  {
+    "module": "redraw/hunt.js",
+    "name": "bakeHoundMaster",
+    "start": 207106,
+    "end": 207123,
+    "before": "bakeHoundMaster()",
+    "after": "deferredPureSpriteCall(bakeHoundMaster,void 0,[])",
+    "args": []
+  },
+  {
+    "module": "redraw/queue_bosses.js",
+    "name": "bakeGateGargoyle",
+    "start": 206123,
+    "end": 206141,
+    "before": "bakeGateGargoyle()",
+    "after": "deferredPureSpriteCall(bakeGateGargoyle,void 0,[])",
+    "args": []
+  },
+  {
+    "module": "redraw/queue_bosses.js",
+    "name": "bakeHedgeWarden",
+    "start": 206062,
+    "end": 206079,
+    "before": "bakeHedgeWarden()",
+    "after": "deferredPureSpriteCall(bakeHedgeWarden,void 0,[])",
+    "args": []
+  },
+  {
+    "module": "redraw/winchmaster.js",
+    "name": "bakeWinchmaster",
+    "start": 206025,
+    "end": 206042,
+    "before": "bakeWinchmaster()",
+    "after": "deferredPureSpriteCall(bakeWinchmaster,void 0,[])",
+    "args": []
+  },
+  {
+    "module": "redraw/false_abbot.js",
+    "name": "bakeFalseAbbot",
+    "start": 205989,
+    "end": 206005,
+    "before": "bakeFalseAbbot()",
+    "after": "deferredPureSpriteCall(bakeFalseAbbot,void 0,[])",
+    "args": []
+  },
+  {
+    "module": "redraw/queue_bosses.js",
+    "name": "bakeGraveWarden",
+    "start": 205958,
+    "end": 205975,
+    "before": "bakeGraveWarden()",
+    "after": "deferredPureSpriteCall(bakeGraveWarden,void 0,[])",
+    "args": []
+  },
+  {
+    "module": "redraw/kraken.js",
+    "name": "bakeFeeler",
+    "start": 205829,
+    "end": 205845,
+    "before": "KRA.bakeFeeler()",
+    "after": "deferredPureSpriteCall(KRA.bakeFeeler,KRA,[])",
+    "args": []
+  },
+  {
+    "module": "redraw/kraken.js",
+    "name": "bakeKraken",
+    "start": 205798,
+    "end": 205814,
+    "before": "KRA.bakeKraken()",
+    "after": "deferredPureSpriteCall(KRA.bakeKraken,KRA,[])",
+    "args": []
+  },
+  {
+    "module": "redraw/masthead.js",
+    "name": "bakeMasthead",
+    "start": 205769,
+    "end": 205783,
+    "before": "bakeMasthead()",
+    "after": "deferredPureSpriteCall(bakeMasthead,void 0,[])",
+    "args": []
+  },
+  {
+    "module": "redraw/sea_wildlife.js",
+    "name": "bakeManta",
+    "start": 204760,
+    "end": 204771,
+    "before": "bakeManta()",
+    "after": "deferredPureSpriteCall(bakeManta,void 0,[])",
+    "args": []
+  },
+  {
+    "module": "redraw/sea_wildlife.js",
+    "name": "bakeLamprey",
+    "start": 204733,
+    "end": 204746,
+    "before": "bakeLamprey()",
+    "after": "deferredPureSpriteCall(bakeLamprey,void 0,[])",
+    "args": []
+  },
+  {
+    "module": "redraw/sea_wildlife.js",
+    "name": "bakeJellyfish",
+    "start": 204702,
+    "end": 204717,
+    "before": "bakeJellyfish()",
+    "after": "deferredPureSpriteCall(bakeJellyfish,void 0,[])",
+    "args": []
+  },
+  {
+    "module": "redraw/sea_wildlife.js",
+    "name": "bakePuffer",
+    "start": 204676,
+    "end": 204688,
+    "before": "bakePuffer()",
+    "after": "deferredPureSpriteCall(bakePuffer,void 0,[])",
+    "args": []
+  },
+  {
+    "module": "redraw/city.js",
+    "name": "bakeTollmaster",
+    "start": 204645,
+    "end": 204661,
+    "before": "bakeTollmaster()",
+    "after": "deferredPureSpriteCall(bakeTollmaster,void 0,[])",
+    "args": []
+  },
+  {
+    "module": "redraw/city.js",
+    "name": "bakeLampreeve",
+    "start": 204611,
+    "end": 204626,
+    "before": "bakeLampreeve()",
+    "after": "deferredPureSpriteCall(bakeLampreeve,void 0,[])",
+    "args": []
+  },
+  {
+    "module": "redraw/city.js",
+    "name": "bakeWatch",
+    "start": 204582,
+    "end": 204593,
+    "before": "bakeWatch()",
+    "after": "deferredPureSpriteCall(bakeWatch,void 0,[])",
+    "args": []
+  },
+  {
+    "module": "redraw/reef.js",
+    "name": "bakeMerrowSpear",
+    "start": 203883,
+    "end": 203900,
+    "before": "bakeMerrowSpear()",
+    "after": "deferredPureSpriteCall(bakeMerrowSpear,void 0,[])",
+    "args": []
+  },
+  {
+    "module": "redraw/soldiers.js",
+    "name": "bakeHeavyKnight",
+    "start": 203617,
+    "end": 203634,
+    "before": "bakeHeavyKnight()",
+    "after": "deferredPureSpriteCall(bakeHeavyKnight,void 0,[])",
+    "args": []
+  },
+  {
+    "module": "redraw/soldiers.js",
+    "name": "bakeJavelineer",
+    "start": 203587,
+    "end": 203603,
+    "before": "bakeJavelineer()",
+    "after": "deferredPureSpriteCall(bakeJavelineer,void 0,[])",
+    "args": []
+  },
+  {
+    "module": "redraw/soldiers.js",
+    "name": "bakeSoldier",
+    "start": 203535,
+    "end": 203548,
+    "before": "bakeSoldier()",
+    "after": "deferredPureSpriteCall(bakeSoldier,void 0,[])",
+    "args": []
+  },
+  {
+    "module": "redraw/tidebound.js",
+    "name": "bakeFisherIcon",
+    "start": 203503,
+    "end": 203519,
+    "before": "bakeFisherIcon()",
+    "after": "deferredPureSpriteCall(bakeFisherIcon,void 0,[])",
+    "args": []
+  },
+  {
+    "module": "redraw/tidebound.js",
+    "name": "bakeHerald",
+    "start": 203427,
+    "end": 203439,
+    "before": "bakeHerald()",
+    "after": "deferredPureSpriteCall(bakeHerald,void 0,[])",
+    "args": []
+  },
+  {
+    "module": "redraw/tidebound.js",
+    "name": "bakeTideguard",
+    "start": 203397,
+    "end": 203412,
+    "before": "bakeTideguard()",
+    "after": "deferredPureSpriteCall(bakeTideguard,void 0,[])",
+    "args": []
+  },
+  {
+    "module": "redraw/tidebound.js",
+    "name": "bakeSiren",
+    "start": 203368,
+    "end": 203379,
+    "before": "bakeSiren()",
+    "after": "deferredPureSpriteCall(bakeSiren,void 0,[])",
+    "args": []
+  },
+  {
+    "module": "redraw/tidebound.js",
+    "name": "bakeScout",
+    "start": 203343,
+    "end": 203354,
+    "before": "bakeScout()",
+    "after": "deferredPureSpriteCall(bakeScout,void 0,[])",
+    "args": []
+  },
+  {
+    "module": "redraw/shore.js",
+    "name": "bakeCrab",
+    "start": 203319,
+    "end": 203329,
+    "before": "bakeCrab()",
+    "after": "deferredPureSpriteCall(bakeCrab,void 0,[])",
+    "args": []
+  },
+  {
+    "module": "redraw/wildwood.js",
+    "name": "bakeGar",
+    "start": 203297,
+    "end": 203306,
+    "before": "bakeGar()",
+    "after": "deferredPureSpriteCall(bakeGar,void 0,[])",
+    "args": []
+  },
+  {
+    "module": "redraw/wildwood.js",
+    "name": "bakePineMoth",
+    "start": 203116,
+    "end": 203130,
+    "before": "bakePineMoth()",
+    "after": "deferredPureSpriteCall(bakePineMoth,void 0,[])",
+    "args": []
+  },
+  {
+    "module": "redraw/wildwood.js",
+    "name": "bakeBoar",
+    "start": 203089,
+    "end": 203099,
+    "before": "bakeBoar()",
+    "after": "deferredPureSpriteCall(bakeBoar,void 0,[])",
+    "args": []
+  },
+  {
+    "module": "redraw/wildwood.js",
+    "name": "bakeBadger",
+    "start": 203064,
+    "end": 203076,
+    "before": "bakeBadger()",
+    "after": "deferredPureSpriteCall(bakeBadger,void 0,[])",
+    "args": []
+  },
+  {
+    "module": "redraw/shore.js",
+    "name": "bakeHeronFoe",
+    "start": 203035,
+    "end": 203049,
+    "before": "bakeHeronFoe()",
+    "after": "deferredPureSpriteCall(bakeHeronFoe,void 0,[])",
+    "args": []
+  },
+  {
+    "module": "redraw/shore.js",
+    "name": "bakeEel",
+    "start": 203009,
+    "end": 203018,
+    "before": "bakeEel()",
+    "after": "deferredPureSpriteCall(bakeEel,void 0,[])",
+    "args": []
+  },
+  {
+    "module": "redraw/shore.js",
+    "name": "bakeTurtle",
+    "start": 202962,
+    "end": 202974,
+    "before": "bakeTurtle()",
+    "after": "deferredPureSpriteCall(bakeTurtle,void 0,[])",
+    "args": []
+  },
+  {
+    "module": "redraw/reef.js",
+    "name": "bakeReefmaw",
+    "start": 202934,
+    "end": 202947,
+    "before": "bakeReefmaw()",
+    "after": "deferredPureSpriteCall(bakeReefmaw,void 0,[])",
+    "args": []
+  },
+  {
+    "module": "redraw/reef.js",
+    "name": "bakePetrel",
+    "start": 202906,
+    "end": 202918,
+    "before": "bakePetrel()",
+    "after": "deferredPureSpriteCall(bakePetrel,void 0,[])",
+    "args": []
+  },
+  {
+    "module": "redraw/reef.js",
+    "name": "bakeAngler",
+    "start": 202879,
+    "end": 202891,
+    "before": "bakeAngler()",
+    "after": "deferredPureSpriteCall(bakeAngler,void 0,[])",
+    "args": []
+  },
+  {
+    "module": "redraw/reef.js",
+    "name": "bakeUrchin",
+    "start": 202852,
+    "end": 202864,
+    "before": "bakeUrchin()",
+    "after": "deferredPureSpriteCall(bakeUrchin,void 0,[])",
+    "args": []
+  },
+  {
+    "module": "redraw/reef.js",
+    "name": "bakeNet",
+    "start": 202828,
+    "end": 202837,
+    "before": "bakeNet()",
+    "after": "deferredPureSpriteCall(bakeNet,void 0,[])",
+    "args": []
+  },
+  {
+    "module": "redraw/reef.js",
+    "name": "bakeNetter",
+    "start": 202801,
+    "end": 202813,
+    "before": "bakeNetter()",
+    "after": "deferredPureSpriteCall(bakeNetter,void 0,[])",
+    "args": []
+  },
+  {
+    "module": "redraw/reef.js",
+    "name": "bakeSailor",
+    "start": 202774,
+    "end": 202786,
+    "before": "bakeSailor()",
+    "after": "deferredPureSpriteCall(bakeSailor,void 0,[])",
+    "args": []
+  },
+  {
+    "module": "redraw/pirates.js",
+    "name": "bakeQuarter",
+    "start": 202746,
+    "end": 202759,
+    "before": "bakeQuarter()",
+    "after": "deferredPureSpriteCall(bakeQuarter,void 0,[])",
+    "args": []
+  },
+  {
+    "module": "redraw/pirates.js",
+    "name": "bakeCaptain",
+    "start": 202717,
+    "end": 202730,
+    "before": "bakeCaptain()",
+    "after": "deferredPureSpriteCall(bakeCaptain,void 0,[])",
+    "args": []
+  },
+  {
+    "module": "redraw/pirates.js",
+    "name": "bakeLookout",
+    "start": 202659,
+    "end": 202672,
+    "before": "bakeLookout()",
+    "after": "deferredPureSpriteCall(bakeLookout,void 0,[])",
+    "args": []
+  },
+  {
+    "module": "redraw/pirates.js",
+    "name": "bakeBosun",
+    "start": 202609,
+    "end": 202620,
+    "before": "bakeBosun()",
+    "after": "deferredPureSpriteCall(bakeBosun,void 0,[])",
+    "args": []
+  },
+  {
+    "module": "redraw/pirates.js",
+    "name": "bakeMarine",
+    "start": 202583,
+    "end": 202595,
+    "before": "bakeMarine()",
+    "after": "deferredPureSpriteCall(bakeMarine,void 0,[])",
+    "args": []
+  },
+  {
+    "module": "redraw/pirates.js",
+    "name": "bakeBoarder",
+    "start": 202555,
+    "end": 202568,
+    "before": "bakeBoarder()",
+    "after": "deferredPureSpriteCall(bakeBoarder,void 0,[])",
+    "args": []
+  },
+  {
+    "module": "redraw/pirates.js",
+    "name": "bakeCutlass",
+    "start": 202526,
+    "end": 202539,
+    "before": "bakeCutlass()",
+    "after": "deferredPureSpriteCall(bakeCutlass,void 0,[])",
+    "args": []
+  },
+  {
+    "module": "redraw/foes2.js",
+    "name": "bakeGrub",
+    "start": 202227,
+    "end": 202237,
+    "before": "bakeGrub()",
+    "after": "deferredPureSpriteCall(bakeGrub,void 0,[])",
+    "args": []
+  },
+  {
+    "module": "redraw/waymeet.js",
+    "name": "bakeDrunk",
+    "start": 202044,
+    "end": 202055,
+    "before": "bakeDrunk()",
+    "after": "deferredPureSpriteCall(bakeDrunk,void 0,[])",
+    "args": []
+  },
+  {
+    "module": "redraw/waymeet.js",
+    "name": "bakeBarkeep",
+    "start": 202017,
+    "end": 202030,
+    "before": "bakeBarkeep()",
+    "after": "deferredPureSpriteCall(bakeBarkeep,void 0,[])",
+    "args": []
+  },
+  {
+    "module": "redraw/waymeet.js",
+    "name": "bakeGuests",
+    "start": 201989,
+    "end": 202001,
+    "before": "bakeGuests()",
+    "after": "deferredPureSpriteCall(bakeGuests,void 0,[])",
+    "args": []
+  },
+  {
+    "module": "redraw/waymeet.js",
+    "name": "bakeLancerHorse",
+    "start": 201957,
+    "end": 201974,
+    "before": "bakeLancerHorse()",
+    "after": "deferredPureSpriteCall(bakeLancerHorse,void 0,[])",
+    "args": []
+  },
+  {
+    "module": "redraw/waymeet.js",
+    "name": "bakeLancer",
+    "start": 201921,
+    "end": 201937,
+    "before": "bakeLancer(true)",
+    "after": "deferredPureSpriteCall(bakeLancer,void 0,[true])",
+    "args": [
+      true
+    ]
+  },
+  {
+    "module": "redraw/waymeet.js",
+    "name": "bakeLancer",
+    "start": 201886,
+    "end": 201903,
+    "before": "bakeLancer(false)",
+    "after": "deferredPureSpriteCall(bakeLancer,void 0,[false])",
+    "args": [
+      false
+    ]
+  },
+  {
+    "module": "redraw/waymeet.js",
+    "name": "bakePaladinBoss",
+    "start": 201854,
+    "end": 201871,
+    "before": "bakePaladinBoss()",
+    "after": "deferredPureSpriteCall(bakePaladinBoss,void 0,[])",
+    "args": []
+  },
+  {
+    "module": "redraw/foes2.js",
+    "name": "bakeGreatHound",
+    "start": 200444,
+    "end": 200460,
+    "before": "bakeGreatHound()",
+    "after": "deferredPureSpriteCall(bakeGreatHound,void 0,[])",
+    "args": []
+  },
+  {
+    "module": "redraw/foes2.js",
+    "name": "bakeTroll",
+    "start": 200414,
+    "end": 200425,
+    "before": "bakeTroll()",
+    "after": "deferredPureSpriteCall(bakeTroll,void 0,[])",
+    "args": []
+  },
+  {
+    "module": "redraw/foes1.js",
+    "name": "bakeHarpy",
+    "start": 200288,
+    "end": 200299,
+    "before": "bakeHarpy()",
+    "after": "deferredPureSpriteCall(bakeHarpy,void 0,[])",
+    "args": []
+  },
+  {
+    "module": "redraw/tome.js",
+    "name": "bakeTome",
+    "start": 200121,
+    "end": 200131,
+    "before": "bakeTome()",
+    "after": "deferredPureSpriteCall(bakeTome,void 0,[])",
+    "args": []
+  },
+  {
+    "module": "redraw/foes2.js",
+    "name": "bakeDrone",
+    "start": 198747,
+    "end": 198758,
+    "before": "bakeDrone()",
+    "after": "deferredPureSpriteCall(bakeDrone,void 0,[])",
+    "args": []
+  },
+  {
+    "module": "redraw/queenchief.js",
+    "name": "bakeChief",
+    "start": 198677,
+    "end": 198688,
+    "before": "bakeChief()",
+    "after": "deferredPureSpriteCall(bakeChief,void 0,[])",
+    "args": []
+  },
+  {
+    "module": "redraw/foes1.js",
+    "name": "bakeHound",
+    "start": 198579,
+    "end": 198590,
+    "before": "bakeHound()",
+    "after": "deferredPureSpriteCall(bakeHound,void 0,[])",
+    "args": []
+  },
+  {
+    "module": "redraw/foes1.js",
+    "name": "bakeHopper",
+    "start": 198492,
+    "end": 198510,
+    "before": "bakeHopper('blue')",
+    "after": "deferredPureSpriteCall(bakeHopper,void 0,['blue'])",
+    "args": [
+      "blue"
+    ]
+  },
+  {
+    "module": "redraw/foes1.js",
+    "name": "bakeHopper",
+    "start": 198457,
+    "end": 198477,
+    "before": "bakeHopper('yellow')",
+    "after": "deferredPureSpriteCall(bakeHopper,void 0,['yellow'])",
+    "args": [
+      "yellow"
+    ]
+  },
+  {
+    "module": "redraw/foes1.js",
+    "name": "bakeHopper",
+    "start": 198421,
+    "end": 198440,
+    "before": "bakeHopper('green')",
+    "after": "deferredPureSpriteCall(bakeHopper,void 0,['green'])",
+    "args": [
+      "green"
+    ]
+  },
+  {
+    "module": "redraw/frogking.js",
+    "name": "bakeFrog",
+    "start": 198401,
+    "end": 198411,
+    "before": "bakeFrog()",
+    "after": "deferredPureSpriteCall(bakeFrog,void 0,[])",
+    "args": []
+  },
+  {
+    "module": "redraw/queenchief.js",
+    "name": "bakeQueen",
+    "start": 198360,
+    "end": 198371,
+    "before": "bakeQueen()",
+    "after": "deferredPureSpriteCall(bakeQueen,void 0,[])",
+    "args": []
+  },
+  {
+    "module": "redraw/foes1.js",
+    "name": "bakeThornback",
+    "start": 198336,
+    "end": 198351,
+    "before": "bakeThornback()",
+    "after": "deferredPureSpriteCall(bakeThornback,void 0,[])",
+    "args": []
+  }
+]

@@ -1,0 +1,315 @@
+{
+  "time": "2026-10-28T21:49:29.068Z",
+  "status": "Prepared new private77sprite plus captured210art/opaque/UI source; native interactions and fresh complete-source controls pending",
+  "gameSource": "dc02ecc059959b795f76dee47665b54f349d4e2f",
+  "gameController": "1a576c3f4511b6856df9fb4738df5aaae9987e81",
+  "gameTree": "9d8acbb7f3182c1d29ac71f4a3b0227224446718",
+  "originalMainSha256": "1573d2d744b753e5611b021d97b70b013f7e2e6773640b707ae85d5ab5dae594",
+  "candidateMainSha256": "8b5146c254129aac81cf4063e10a54cae2d1baeb2b89df14125a94bf68b86b36",
+  "candidatePxSha256": "7c04f38246b0fbf8ad6667ec2045d7be4130b271722636fa15464fd118fcd582",
+  "helperSha256": "e20c3de91c60b01467dfffb31eff01894836ee1976d14dce453dba277f4b8b6e",
+  "originalArtSha256": "99f0ead9e02c17eec93e3945720c8206465e3ecd7aac42c00fbbb22cce46bb35",
+  "originalUiSha256": "6182574fc740afab14d0dfa4862b55f676d9c85df04f87b8fe2053648719ecce",
+  "candidateUiSha256": "def29ae7f0ea4c55ab29e3652a351d0d03c90a4c1c5f7f83ee39692c21c3061f",
+  "baseline": "Original Task3dc02 Game plus SAME necessary UI title-anchor correction only; no opaque/art/ownership changes in either control",
+  "candidate": "Fresh private77sprite/210fixed-and-captured-level-art/opaque-tile/UI source; public or escaping data modules remain eager",
+  "baselineFiles": [
+    {
+      "file": "src/puppeteer-hands.js",
+      "sha256": "def29ae7f0ea4c55ab29e3652a351d0d03c90a4c1c5f7f83ee39692c21c3061f",
+      "originalSha256": "6182574fc740afab14d0dfa4862b55f676d9c85df04f87b8fe2053648719ecce"
+    },
+    {
+      "file": "src/main.js",
+      "sha256": "1573d2d744b753e5611b021d97b70b013f7e2e6773640b707ae85d5ab5dae594",
+      "originalSha256": "1573d2d744b753e5611b021d97b70b013f7e2e6773640b707ae85d5ab5dae594"
+    }
+  ],
+  "candidateFiles": [
+    {
+      "file": "src/redraw/buried_city_tiles.js",
+      "sha256": "d94728b629c6be0296a70701960400cf659d5a5ebfffa92f594baefb2cd2c926",
+      "originalSha256": "2d612741597acb8b4c0291fc34e1f71823b39e296b40d9882391f51f3a00eae4"
+    },
+    {
+      "file": "src/redraw/skyroad_tiles.js",
+      "sha256": "a55e0f09bf9633b7ad02552c814f6906072b91f92d8b2f77fabd7e7d2c21b114",
+      "originalSha256": "da71fbb10dbae92735a882adc166e3715d02eaa1573521da609d290a09029001"
+    },
+    {
+      "file": "src/redraw/rootway_tiles.js",
+      "sha256": "68c4f077885ba23d882819f5769e869bb214b1333ea35966c3c0c158060e7ae9",
+      "originalSha256": "03de4a8bba39e1cd1b7c306ed404f17f5c61deda9f99db243dbdea9a60a3c649"
+    },
+    {
+      "file": "src/redraw/sealed_pyramid_tiles.js",
+      "sha256": "837e06435b36f18b0194a9ef945a96001703fb345248b3493fa46b4786169216",
+      "originalSha256": "0406e5dbaffbe713d2c8349f352b2843712eeab63c186f3cbc89efe893bcd95c"
+    },
+    {
+      "file": "src/opaque-tile-fill.js",
+      "sha256": "535e583d652177597a6ca3faf85507b135026f816829bbcb649fcf72cc675c95",
+      "originalSha256": null
+    },
+    {
+      "file": "src/puppeteer-hands.js",
+      "sha256": "def29ae7f0ea4c55ab29e3652a351d0d03c90a4c1c5f7f83ee39692c21c3061f",
+      "originalSha256": "6182574fc740afab14d0dfa4862b55f676d9c85df04f87b8fe2053648719ecce"
+    },
+    {
+      "file": "src/deferred-fixed-level-art.js",
+      "sha256": "e20c3de91c60b01467dfffb31eff01894836ee1976d14dce453dba277f4b8b6e",
+      "originalSha256": null
+    },
+    {
+      "file": "src/captured-palette-art.js",
+      "sha256": "8d84b2d69626ab53e0876c782a4afb98dd6988fe65380dfa956d87115da2de71",
+      "originalSha256": null
+    },
+    {
+      "file": "src/main.js",
+      "sha256": "8b5146c254129aac81cf4063e10a54cae2d1baeb2b89df14125a94bf68b86b36",
+      "originalSha256": "1573d2d744b753e5611b021d97b70b013f7e2e6773640b707ae85d5ab5dae594"
+    },
+    {
+      "file": "src/px.js",
+      "sha256": "7c04f38246b0fbf8ad6667ec2045d7be4130b271722636fa15464fd118fcd582",
+      "originalSha256": "e9a358b9170944e0dfae6d1b8c82d7b664562e0b2b0ab7f2538236e34214db1d"
+    },
+    {
+      "file": "src/deferred-private-sprite-catalogue.js",
+      "sha256": "dfa8d7094f86c78dae8f469b4bfc33e24d36acbc680b0603d8b2c042acfe0376",
+      "originalSha256": null
+    }
+  ],
+  "authorization": "Human approved a fresh combined-source tile-fill/startup-art test, with original tests/limits and failures retained; latest request continues finish work",
+  "notPreviouslyTestedOpaqueSpriteCombination": true,
+  "allOtherGameBytesUnchanged": true,
+  "knownOpaqueOnlyLayoutFailure": {
+    "run": 40516300943,
+    "ms": 600447,
+    "batches": 78,
+    "expected": 80
+  },
+  "required": [
+    "Fresh canonical77sprite native graph, original23catalogue and mixed original ownership contracts",
+    "Fresh canonical77sprite native graph, original23catalogue and mixed original ownership contracts",
+    "Fresh exact complete-union before/candidate/return126loader readbacks including first-frame timing",
+    "Unchanged original standalone cleanup fixture",
+    "Fresh source-specific original loading/memory64,48campaign5760 and80layout600000ms",
+    "Necessary actual-source425full gates and original40FPS proof remain separate"
+  ],
+  "allThreeMismatchesRetained": true,
+  "noIndependentPassingEvidenceCombinedIntoGate": true,
+  "noLocalBrowserOrGameExecuted": true,
+  "adopted": false,
+  "overallWorkComplete": false,
+  "capturedArtSha256": "8d84b2d69626ab53e0876c782a4afb98dd6988fe65380dfa956d87115da2de71",
+  "sourceChangesAreFreshWholeUnionNotIndependentPassBackfill": true,
+  "priorFixedOnlyCriterionNotMet": true,
+  "noThresholdChangedOrSameSourceTimingRerun": true,
+  "newCapturedGroups": 50,
+  "fixedGroups": 160,
+  "originalPaletteModuleAndLiveBindingUnchanged": true,
+  "explicitImmutablePaletteClosure": true,
+  "exactOriginalMainUndo": true,
+  "noLocalGameOrBrowserExecuted": true,
+  "privateSpriteHelperSha256": "dfa8d7094f86c78dae8f469b4bfc33e24d36acbc680b0603d8b2c042acfe0376",
+  "priorCombinedSourceLayout": {
+    "run": 40758339443,
+    "ms": 600252,
+    "batches": 74,
+    "expected": 80,
+    "failed": true,
+    "notRerun": true
+  },
+  "privateSpriteCalls": 77,
+  "publicOrEscapingDataCallsLeftEager": 25,
+  "modules": [
+    {
+      "file": "redraw/matriarch_young.js",
+      "canonicalSha256": "26b82413336363da989e6dddbdf63469d7c691c868aa4cac4baf6551b7e8b91d",
+      "priorWorkingSha256": "f632fa16df373e9d8ce5e67e10842dab12ae424c2630b4d1b6d689249f165d57",
+      "priorWorkingHashDiffers": true,
+      "publicOrEscapedData": []
+    },
+    {
+      "file": "redraw/desert_foes2.js",
+      "canonicalSha256": "359cab1261c523523412a2524951aa6e9804bce6d1807c4f76dd2df8d3694300",
+      "priorWorkingSha256": "fde606a4f8a84b564bddfcee09920ff91687369b34b0a35b784c164a3aef414f",
+      "priorWorkingHashDiffers": true,
+      "publicOrEscapedData": []
+    },
+    {
+      "file": "redraw/rootway_art.js",
+      "canonicalSha256": "bc8b46907f9466bb7ea4ec52de5a34c633ffb42b9b66e8ffe3da6a66e5a43ca6",
+      "priorWorkingSha256": "229778d288db1be4c25a42d2c8d171f2901fabcf87e2b6b314d28fb9f3694d18",
+      "priorWorkingHashDiffers": true,
+      "publicOrEscapedData": []
+    },
+    {
+      "file": "redraw/welltown_art.js",
+      "canonicalSha256": "db1a31eb03f881383d5fe9f93b7cbbd11606244d0ab91e8a351f5f2efac77985",
+      "priorWorkingSha256": "ebc271ae08f0aa556ad10cabd4151ade80b99d78b2d721e597495c56d4fae28d",
+      "priorWorkingHashDiffers": true,
+      "publicOrEscapedData": []
+    },
+    {
+      "file": "redraw/fair_folk.js",
+      "canonicalSha256": "7351fb04a3c95934305981ba31bff291edf33bbe03da49c3cb6b4f36b5d62f5b",
+      "priorWorkingSha256": "deceb0c1d18c7fa03906f9c1d80216ae8d7f54c58da3a50f97f6e6050f18eb8b",
+      "priorWorkingHashDiffers": true,
+      "publicOrEscapedData": []
+    },
+    {
+      "file": "redraw/waymeet.js",
+      "canonicalSha256": "6149cd2e975b6da1f6e1781a5dc2b946d180a08891a469f7a980998f5751e258",
+      "priorWorkingSha256": "a8df7755630025a897761be5a795258203139d6078ed586a73696bf8b1e021d6",
+      "priorWorkingHashDiffers": true,
+      "publicOrEscapedData": []
+    },
+    {
+      "file": "redraw/hunt.js",
+      "canonicalSha256": "ca7bc571405513c77130a48e16e8fe29782076079ec4d4bb4d19be479234e787",
+      "priorWorkingSha256": "f91fc6516357d033bd6fef5a133afa9c77bda8a74221ad870b27226e60547323",
+      "priorWorkingHashDiffers": true,
+      "publicOrEscapedData": []
+    },
+    {
+      "file": "redraw/queue_bosses.js",
+      "canonicalSha256": "c8ae403bc66a204e0bc33b33a89bea198b22a88d8664165f3fb568d1c8809431",
+      "priorWorkingSha256": "e22c1c5cd0474f15a1aa2c8a9bf878723cd6f73f4b6a8a3b58fec3b23d8a281e",
+      "priorWorkingHashDiffers": true,
+      "publicOrEscapedData": []
+    },
+    {
+      "file": "redraw/winchmaster.js",
+      "canonicalSha256": "fab6e9e9451da8de5fb53a7541d810afff49791bff6eb6658817b2193d925420",
+      "priorWorkingSha256": "bb919c3bc3af5db1dc3245d04b4ef84107428790016c47fec5a098fcd599e22c",
+      "priorWorkingHashDiffers": true,
+      "publicOrEscapedData": []
+    },
+    {
+      "file": "redraw/false_abbot.js",
+      "canonicalSha256": "20ce650949ea21bc50d25c9db174876e414321c75031c9db2c70bfa466ec80e6",
+      "priorWorkingSha256": "350daf3baf0375b973ae1b994ea25fc7a04c57f58e284af8a442707639c94274",
+      "priorWorkingHashDiffers": true,
+      "publicOrEscapedData": []
+    },
+    {
+      "file": "redraw/kraken.js",
+      "canonicalSha256": "5cbe5e18c091f918f547b3971890fa863477e5062c127a25b9ccd399cecee0c7",
+      "priorWorkingSha256": "abf3a6c7796751a4c472b00460f73d7236f673f01b1ca77e36c0941f8f6d04e4",
+      "priorWorkingHashDiffers": true,
+      "publicOrEscapedData": []
+    },
+    {
+      "file": "redraw/masthead.js",
+      "canonicalSha256": "f9d72fc6816b88ae65c96a589dfcbfddcfabbe5ac8a672c5c60602fba80dbfd9",
+      "priorWorkingSha256": "41156f124cf1270be0e316c7da3ba84bb885f7cfc91a03680230eb404c1b018b",
+      "priorWorkingHashDiffers": true,
+      "publicOrEscapedData": []
+    },
+    {
+      "file": "redraw/sea_wildlife.js",
+      "canonicalSha256": "d601d15baf2924c8a23cc353e05a24d4466b9b64ca2cbf0aa8c8ad1a41685f8c",
+      "priorWorkingSha256": "b5591225f7bee8a38b273f54fb94c077a976147b698ca9634614c7a7c1961d92",
+      "priorWorkingHashDiffers": true,
+      "publicOrEscapedData": []
+    },
+    {
+      "file": "redraw/city.js",
+      "canonicalSha256": "402e804a6c331899b7829913ab8f550565797fb0fa4d01c2103a5166e2649c40",
+      "priorWorkingSha256": "77799a19c7388efa16e1706d87f231fdaf4857b22bc3b2ca8e9b6d02d2666a01",
+      "priorWorkingHashDiffers": true,
+      "publicOrEscapedData": []
+    },
+    {
+      "file": "redraw/reef.js",
+      "canonicalSha256": "aa82fedb5df9e1814494a5fcfeb908059135d126ce9d94a39b28f736c91399d8",
+      "priorWorkingSha256": "6ba1de63f3ea09735cc7c924c7a5f0faf9b1152acc895e296a192a1e4beedc33",
+      "priorWorkingHashDiffers": true,
+      "publicOrEscapedData": []
+    },
+    {
+      "file": "redraw/soldiers.js",
+      "canonicalSha256": "29f0da4a627ae45952dd5e25e8f9c1e4b322dedbb5411fc4d8baf9490f52c883",
+      "priorWorkingSha256": "8bff24188b99e8f17ac0b720fe0e5ff3ce5d3b8ee011bd63316c49207194727b",
+      "priorWorkingHashDiffers": true,
+      "publicOrEscapedData": []
+    },
+    {
+      "file": "redraw/tidebound.js",
+      "canonicalSha256": "658b0345634c4e065f711c7b9203606f9a3ed45b723570c831abeb381c362335",
+      "priorWorkingSha256": "43d6fd36e51beef70ce39c25aee0719f8faba0aab67fd112b75effbc30899bd0",
+      "priorWorkingHashDiffers": true,
+      "publicOrEscapedData": []
+    },
+    {
+      "file": "redraw/shore.js",
+      "canonicalSha256": "afaacbe4c43d53080f4099b97850223f9cb8ed8e6cfc336390a73c37902f198d",
+      "priorWorkingSha256": "2c92d0d625094b1a46ffc042a7a338eaccc67a1b5606ce93f67c2e453e07fea1",
+      "priorWorkingHashDiffers": true,
+      "publicOrEscapedData": []
+    },
+    {
+      "file": "redraw/wildwood.js",
+      "canonicalSha256": "014e8b22830e939c49da9405b6979bc37696875394e5b39747378feb3e32a217",
+      "priorWorkingSha256": "bab14bac56e48deb515c1c4ce2cd2847c174c9a659c7ddc91bda93d806abff1c",
+      "priorWorkingHashDiffers": true,
+      "publicOrEscapedData": []
+    },
+    {
+      "file": "redraw/pirates.js",
+      "canonicalSha256": "6e91fae5cfa74c1a9af28711444c9a4cedbd89874e21fd0db61ba4b72cb246f5",
+      "priorWorkingSha256": "59d6e78e1a147726ac34425f77f170af1ca2fb846c607bd9bbf010a3eb4688a8",
+      "priorWorkingHashDiffers": true,
+      "publicOrEscapedData": []
+    },
+    {
+      "file": "redraw/foes2.js",
+      "canonicalSha256": "0011e8e8c640ce08d432c3b4faa9e70d06d73f5060456b99375ae923f0daf885",
+      "priorWorkingSha256": "327809ea4b19c2ebde14a69a1976d9d5208ecaf7bdcbbcd70d7eb62f49b11c6f",
+      "priorWorkingHashDiffers": true,
+      "publicOrEscapedData": []
+    },
+    {
+      "file": "redraw/foes1.js",
+      "canonicalSha256": "b2e21825757f8e8f170b86259268b4f966ead8974b32e2f25c2a5460d9b393b9",
+      "priorWorkingSha256": "a9460dfcb865838979d601e93900af30e679c198d1f54ac4ce92f32b6b6a0fd9",
+      "priorWorkingHashDiffers": true,
+      "publicOrEscapedData": []
+    },
+    {
+      "file": "redraw/tome.js",
+      "canonicalSha256": "6057b766a7baa7756517da9b90fd9f4d69d9465bb6d54ed2d22f15dea51611cc",
+      "priorWorkingSha256": "9b7200e9b1aaaac2344d780f0c3e7b57a059c942c9a0f903f0e24ec2bd60c6a8",
+      "priorWorkingHashDiffers": true,
+      "publicOrEscapedData": []
+    },
+    {
+      "file": "redraw/queenchief.js",
+      "canonicalSha256": "f3bdf68c886ec5128bd44fdf5d643db0692d5a7b2461808c69c3638aad1c6dec",
+      "priorWorkingSha256": "2f22bc3e71570ae4cbcb372be68946bbc7be83e828c789c0a5375c8e5799ef37",
+      "priorWorkingHashDiffers": true,
+      "publicOrEscapedData": []
+    },
+    {
+      "file": "redraw/frogking.js",
+      "canonicalSha256": "0f2f9809a4ed4687b2aece2549cd876d51f368331f2cbca4430d8adc2ba82414",
+      "priorWorkingSha256": "bbc22d1e8f757bf6f3564f075483171c8b2638917b977853414e92ad0333f035",
+      "priorWorkingHashDiffers": true,
+      "publicOrEscapedData": []
+    }
+  ],
+  "sourceModuleBytesUnchanged": true,
+  "bothOwnershipExportsExactPriorFunctionBytes": true,
+  "commonPxPrior37PrefixUnchanged": true,
+  "noMutablePaletteGearWeaponOrPublicDataDeferral": true,
+  "original26PaletteSpriteSourceNotRepeated": true,
+  "sourceFunctionsPaletteOriginalLiveBindingUnchanged": true,
+  "publicAccessorTokenMaterializationAndTokenAliasMemoizationRepaired": true,
+  "newCombinationRequiresFreshNativeAndWholeGameEvidence": true,
+  "noLocalBrowserOrGameFactoryExecuted": true,
+  "noHeroCacheForegroundSchedulerRecorderOrRendererExperimentIncluded": true
+}
