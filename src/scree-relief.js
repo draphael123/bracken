@@ -12,6 +12,13 @@ export const OVERHANGS = [   // [prop column, feet row, side (the way its line r
   [134, 15, 1],   // TEST: the terraces' troll (140)
   [499, 18, 1],   // REMIX: the gorge bank's elite troll (505) - the section's exam
   [543, 8, 1],    // the quarry exam: the chute's goat and thrower
+  [85, 19, 1],    // OPTIONAL (claude/polish1028): the hamlet green's shield-man (90) - a shield turns a blow from the front, the cliff does not
+  [491, 18, 1],   // THE BANK'S FIRST SHELF (claude/polish1028): the bank is rotten over BOTH trolls - this one buries the troll at 492, the shelf at 499 the troll at 501 and the Maul's door
+];
+/* [column, row, text]: the verb is met FIRST on the terraces (the test shelf at 134 comes before the cairn field's teach at 250), so the terraces and the bank say it too */
+export const ROAD_SIGNS = [
+  [131, 15, 'THE CLIFF IS LOOSE. STRIKE THE PROP UNDER AN OVERHANG WHILE A FOE STANDS BELOW IT.'],
+  [489, 18, 'TWO TROLLS AND A MAUL. THE BANK IS ROTTEN OVER THEM: KNOCK THE PROPS OUT.'],
 ];
 export const TEACH_SIGN = [259, 13, 'A DRY-STONE PROP HOLDS THAT OVERHANG UP. KNOCK IT OUT WHEN SOMETHING STANDS UNDER IT.'];
 /* [x0, x1, top row] solid relief: knolls of two rows (the route climbs two and comes down two) */
@@ -43,6 +50,7 @@ export function reliefScree(R, T) {
   /* (batch81 integ, curve-gate: a level-1 knight died 7-11 times in 3 pilot runs; the death positions of every run named the same few foes) THE HARPY hovering over the gully's perch dived at a hero on the ground 8 tiles off, and the chase's harpy over the 396-397 pit dived at the jumper: both gone (the density test keeps its count with the sprigs below) */
   R.ents = R.ents.filter(e => !(e.t === 'harpy' && ((e.x === 210 && e.y === 3) || (e.x === 402 && e.y === 13))));
   for (const [x, y] of [[204, 13], [404, 19]]) R.ents.push({ t: 'sprig', x, y, face: -1 });
+  for (const [x, y, text] of ROAD_SIGNS) R.ents.push({ t: 'sign', x, y, text });
   R.ents.push({ t: 'sign', x: TEACH_SIGN[0], y: TEACH_SIGN[1], text: TEACH_SIGN[2] });
   /* THE LOOSE ROCK, by place (the rule's state: tools/rule-state.mjs reads L.looseRock as places, main.js only asks that it is there) */
   const loose = []; for (let y = 0; y < R.H; y++) for (let x = 0; x < W; x++) if (at(x, y) === T.SHELF) { const g = loose.find(q => q.y === y && x - q.x1 <= 2); if (g) g.x1 = x; else loose.push({ x0: x, x1: x, y }); }
