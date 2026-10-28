@@ -36,15 +36,15 @@ export const GB = {
   grease: { tell: 1.1, sp: 170, burn: 1.8, beat: 0.45, dmg: 9, front: 12, rec: 0.9, cd: 13 },
   bell: { tell: 0.9, rush: 7, mul: 2.2, adds: 2, maxAdds: 2, rec: 0.8, cd: 20 },
   grab: { tell: 0.85, t: 0.55, reach: 240, h: 42, hand: 20, dmg: 18, rec: 0.9, throwV: 260 },
-  stun: { t: 7, mul: 2, cap: 0.1, boom: 0.06 },
-  hot: { t: 5, mul: 2, cap: 0.07 },
+  stun: { t: 7, mul: 2, cap: 0.08, boom: 0.05 },
+  hot: { t: 5, mul: 2, cap: 0.06 },
   ward: 2.6, coughRest: 2.0,
   eat: 0.7, gulp: 0.5,
   dish: { heal: 0.05, cap: 0.1, box: 9 },
   line: { v: 34, every: [5.6, 5.0, 4.5], bombEvery: 4, first: 2.2, fuse: 5.6, batV: 250, blast: 34, blastDmg: 12, knockV: 120 },
   hungry: { t: 6, mul: 0.7, cd: 0.8 },
   stove: { cool: 12, box: 16 },
-  bz: { hurt: 1.5 }, dmgMul: 2.7,
+  bz: { hurt: 1.5 }, dmgMul: 2.9,
 };
 export const GB_SAY = { wake: 'LORD GRUBBAG THE GLUTTON', rule: 'THE SERVING LINE FEEDS HIM: KNOCK THE DISHES OFF. LET THE BOMBS AND THE CHILLIES REACH HIM.', p2: 'MORE! FASTER!', p3: 'HE REACHES FOR YOU',
   eats: 'HE EATS: HEALED', full: 'HE EATS: TOO FULL TO HEAL', smash: 'KNOCKED OFF: HE GOES HUNGRY', hungry: 'HUNGRY', bomb: 'A BOMB ON THE LINE: LET IT REACH HIM, OR BAT IT ALONG',
@@ -237,7 +237,7 @@ function stepThrows(S, dt, w) {
 function stepFlings(S, dt, heroes, w) {
   for (const f of S.flings) { f.x -= GB.fling.v * dt; if (f.x < S.G.x0) { f.done = true; continue; }
     const k = Math.min(1, (f.x0 - f.x) / GB.fling.settle); f.y = f.y0 + (f.ty - f.y0) * k;   /* out of his hand, down (or up) to your height in its first stretch, then flat */
-    for (const h of heroes) if (h.alive && Math.abs(h.x - f.x) < GB.fling.hw + 5 && f.y > h.y - 22 - GB.fling.hh && f.y < h.y + GB.fling.hh) { w.hitHero(h, f.dmg, 'fling', f.key); f.done = true; } }
+    for (const h of heroes) if (h.alive && Math.abs(h.x - f.x) < GB.fling.hw + 5 && f.y > h.y - 22 - GB.fling.hh && f.y < h.y + GB.fling.hh) { w.hitHero(h, f.dmg, 'fling', f.key, { blockable: true }); f.done = true;   /* (a shield turns a plate) */ } }
   S.flings = S.flings.filter(f => !f.done);
 }
 function stepWaves(S, dt, heroes, w) {
@@ -315,7 +315,7 @@ function gbPlan0(s) {
   const sw = S.sweeps.find(q => q.x > P.x && q.x - P.x < 40);
   if (sw && onB && seenFor('sw' + sw.key, 0.06) && !roll('swm' + sw.key, s.v2 ? 0 : PLAN.miss)) return jump('jump the sweep');
   const fg = S.flings.find(f => f.x > P.x && f.x - P.x < 70 && Math.abs(f.y - (P.y - 10)) < 16);
-  if (fg && P.ground && seenFor('fg' + fg.key, 0.05) && !roll('fgm' + fg.key, s.v2 ? 0 : PLAN.miss)) return jump('jump the fling');
+  if (fg && P.ground && seenFor('fg' + fg.key, 0.05) && !roll('fgm' + fg.key, s.v2 ? 0 : PLAN.miss)) { if (s.shield && !roll('fgb' + fg.key, 0.5)) { out.block = true; out.face = 1; out.gx = P.x; out.why = 'block the fling'; return out; } return jump('jump the fling'); }
   /* 4. THE BURNING FLOOR: up on the line (west end) */
   if (burn.length && (onF || !P.ground) && burnAt(P.x)) return toBelt(Math.min(P.x, B.x1 - 30), 'off the burning floor');
   /* 5. HIS TELLS */

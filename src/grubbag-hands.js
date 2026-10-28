@@ -86,7 +86,7 @@ export function makeGrubbagHands(ctx) {
           if (res === 'hit' && o.throwV) { P.vx = o.throwV; P.vy = Math.min(P.vy || 0, -220); } });
         return out; },
       hitArea: (bx, d, name, key) => { for (const pp of ctx.players) ctx.asPlayer(pp, () => { const P = ctx.hero(); if (!ctx.upright(pp) || P.dead) return; if (!ctx.overlap({ l: bx[0], r: bx[1], t: bx[2], b: bx[3] }, ctx.box(P)) || keyed(pp, key)) return; hurt(name, () => ctx.damagePlayer((bx[0] + bx[1]) / 2, bzD(d), { who: e, name, unblockable: true })); }); },
-      hitHero: (h, d, name, key) => { const pp = h.pp; ctx.asPlayer(pp, () => { const P = ctx.hero(); if (!ctx.upright(pp) || P.dead) return; if (key && keyed(pp, key)) return; hurt(name, () => ctx.damagePlayer(e.x, bzD(d), { who: e, name, unblockable: true, fire: name === 'grease' })); }); },
+      hitHero: (h, d, name, key, o = {}) => { const pp = h.pp; ctx.asPlayer(pp, () => { const P = ctx.hero(); if (!ctx.upright(pp) || P.dead) return; if (key && keyed(pp, key)) return; hurt(name, () => ctx.damagePlayer(e.x, bzD(d), { who: e, name, unblockable: !o.blockable, fire: name === 'grease' })); }); },
     };
   }
   H.update = (e, dt) => {
