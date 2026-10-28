@@ -2386,7 +2386,7 @@ function theMonastery() {
   for (const [x, v] of [[27, 0], [66, 1]]) ent('deco', x, 29, { kind: 'bookshelf', v });      /* the psalters, still on their shelf */
   ent('deco', 34, 29, { kind: 'statue' }); ent('deco', 69, 29, { kind: 'monkChores', v: 0 });   /* 69: at 80 it stood inside the board at 79-83 */
   for (const [x, v] of [[2, 0], [93, 1]]) ent('deco', x, 29, { kind: 'prayerFlags', v });   /* past the thorn beds, against the walls */
-  ent('sign', 30, 29, { text: 'HIS CHAIR HANGS ON THE BASKET ROPE. RIDE THE BASKET DOWN: DOWN COMES HIS CHAIR.' });
+  ent('sign', 50, 29, { text: 'HIS CHAIR HANGS ON THE BASKET ROPE. RIDE THE BASKET DOWN: DOWN COMES HIS CHAIR.' });
   // THE FLOORS THE MONKS LAID: flagstones where there was a building, crag where there was only the mountain; and the stacks,
   // dug into the cliff under the bell yards, have their shelves behind them (the look pass saw open sky inside the rock)
   masonry.push([1, 40, 218, 221], [1, 94, 172, 174], [1, 94, 152, 154], [1, 94, 132, 134], [40, 74, 100, 102], [29, 51, 56, 58]);
@@ -2404,7 +2404,7 @@ function theMonastery() {
   boards(74, 24, 6); boards(70, 27, 4);                              /* THE EAST TOWER: its deck, and the step up to it */
   boards(23, 24, 20); boards(68, 24, 6);                             /* THE BRIDGES, hung from the towers' bells */
   hangers.push([17, 25, 29], [22, 25, 29], [74, 25, 29], [79, 25, 29]);   /* the towers' posts, down to the ringing floor */
-  movers.push({ kind: 'lift', abbotBasket: true, x: 27 * TS, y: 27 * TS, y0: 27 * TS, y1: 30 * TS - 8, w: 32, h: 8, speed: 40, top: 14 * TS });   /* HIS CHAIR'S BASKET: stand in it and it sinks to the floor, and his chair comes down */
+  movers.push({ kind: 'lift', abbotBasket: true, x: 53 * TS, y: 27 * TS, y0: 27 * TS, y1: 30 * TS - 8, w: 32, h: 8, speed: 40, top: 14 * TS });   /* HIS CHAIR'S BASKET: stand in it and it sinks to the floor, and his chair comes down */
   // ---- WHAT HOLDS IT ALL UP (Daniel, 2026-09-25: "a lot of the Monastery's architecture floats ... ground all of it") ----
   // Every floor on this mountain is a floor the monks LAID, so every one is laid stone and tools/architecture.mjs judges it. And
   // every storey has something behind the play that carries the floor over it, standing on the floor under it: each storey's
@@ -2438,7 +2438,8 @@ function theMonastery() {
       dirt: '#726255', dirtL: '#8f7d68', dirtD: '#4f4034', canopy: ['#5f584a', '#746b58', '#8f8265', '#b0a17a'] },
     weather: [{ x0: 0, x1: 99999, kind: 'mist' }], ambient: [{ x0: 0, x1: 99999, kind: 'wind' }],
     arena: { x0: 2 * TS, x1: 94 * TS, floor: 30 * TS, y0: 24 * TS, trigger: 40 * TS, wallL: 1, wallR: 94, boss: 'abbot', music: 'roc',
-      house: { deck: 24, spans: [[17, 22], [43, 51], [59, 67], [74, 79]], bridges: [{ x0: 23, x1: 42, bell: 18.5 }, { x0: 68, x1: 73, bell: 77.5 }], chair: { x: 33.5, row: 23 }, pulleyRow: 14, basket: { x: 27, row: 27 }, wheel: { pivot: [34, 27], n: 2 }, spot: 41.5, smoke: 39.6 },   /* (claude/abbot3) THE HOUSE THAT BLESSES HIM, in tiles: main.js abbotHouse() */ tint: '#e8c88a', tintA: 0.10, fx: 'motes' },   /* it used to wake a quarter of the way across the summit, before you had seen the nest. THE FALSE ABBOT has it now (2026-09-22): the Roc was a giant bird in a bell tower, and this level's own rule is that what the monks built answers a blow. Her code is untouched and she is placed nowhere - restorable, as the Harbor was. (The track is still hers: he has not got one of his own yet.) */
+      house: { deck: 24, spans: [[17, 22], [43, 51], [59, 67], [74, 79]], bridges: [{ x0: 23, x1: 42, bells: [18.5, 43.5] }, { x0: 68, x1: 73, bells: [67.5, 77.5] }], chair: { x: 33.5, row: 23 }, pulleyRow: 14, basket: { x: 53, row: 27 },
+        wheels: [{ pivot: [34, 27], n: 2, toward: 0, spot: 41.5, smoke: 39.6 }, { pivot: [72, 27], n: 2, toward: 1, spot: 67.5, smoke: 69.4 }] },   /* a bell under each end of each bridge (strike either); a wheel under each end of the gallery (toward: which of its two stairs climbs to the gallery) */   /* (claude/abbot3) THE HOUSE THAT BLESSES HIM, in tiles: main.js abbotHouse() */ tint: '#e8c88a', tintA: 0.10, fx: 'motes' },   /* it used to wake a quarter of the way across the summit, before you had seen the nest. THE FALSE ABBOT has it now (2026-09-22): the Roc was a giant bird in a bell tower, and this level's own rule is that what the monks built answers a blow. Her code is untouched and she is placed nowhere - restorable, as the Harbor was. (The track is still hers: he has not got one of his own yet.) */
     mini: { x0: 30 * TS, x1: 57 * TS, floor: 56 * TS, trigger: 34 * TS, wallL: 29, gate: 57, boss: 'golem', y0: 44 * TS, y1: 57 * TS, music: 'monasterygolem' },   /* "Boss Battle #6 [8-bit]" V1 by nene, CC0, converted WAV -> OGG - the Monastery's Golem mini's own track (audio/CREDITS.txt) */
   };
 }

@@ -36,7 +36,7 @@
 export const ABBOT = {
   hp: 3000, walk: 30, keep: 44, cd: 1.5, cdP2: 1.15,
   tell: { censer: 0.55, cast: 0.7, swing: 0.8, gleam: 0.8, coals: 0.75, rite: 2.6, knell: 1.0 },
-  riteT: [2.6, 2.6, 3.6, 3.0],   /* the rite's windup by phase: on the bridge 2.6 s, in the chair 3.6 s (you have a basket to reach), at the wheel 3.0 s */
+  riteT: [3.2, 3.2, 5.0, 3.4],   /* the rite's windup by phase: on the bridge 3.2 s, in the chair 5 s (the basket is by the great bell), at the wheel 3.4 s - a hero walks ~56 px/s, and the house is a room wide */
   dmg: { censer: 20, cast: 16, reel: 10, slam: 24, light: 16, knell: 22 },
   censerR: 46,            // the chain's reach past his body
   castRange: 210,         // how far the censer is thrown
@@ -100,7 +100,7 @@ const clampX = (A, x, pad = 20) => Math.max((A.landLo ?? A.x0 + pad), Math.min((
 
 /* ---------- THE HOUSE: where he can stand ----------
    H = c.A.house (pixels): { deckY, spans: [[x0,x1]..] the tower decks and the great bell's gallery (always there),
-   bridges: [{x0,x1,bellX}], chairX, chairY, basketX, wheelX, spotX, smokeX, bellX }. Without a house (old rigs) he is
+   bridges: [{x0,x1,bells:[x..]}], chairX, chairY, basketX, wheels: [{x, spotX, smokeX}], bellX }. Without a house (old rigs) he is
    the old floor-only Abbot. e.br[i]: bridge i is hung; e.brGone: phase two cut them for good. */
 const house = c => c.A && c.A.house;
 export function abbotHighSpans(e, H) {
@@ -161,7 +161,7 @@ function begin(e, what, c) {
     c.sound('rope');   /* the rope jerks and its bell clangs FIRST: that is the tell, heard and drawn (drawFalseAbbot) */
   }
   if (what === 'gleam') { e.lightAim = clampX(A, P.x); e.lightY = P.ground === false ? A.floor : P.y; }
-  if (what === 'rite') { e.riteAt = e.phase || 1; if (e.riteAt === 3 && house(c)) e.smoke = { x: house(c).smokeX }; }
+  if (what === 'rite') { e.riteAt = e.phase || 1; if (e.riteAt === 3 && house(c)) { const w = house(c).wheels[e.riteWheel || 0]; e.smoke = { x: w.smokeX }; } }
   c.say(what === 'rite' ? RITE_SAY[e.riteAt] || 'HE PRAYS' : SAY[e.mode], RED.has(e.mode), what === 'rite');   /* the rite throws no blow, so it wears no mark: it says what to do instead */
 }
 /* THE GREAT BELL, RUNG BY THE PLAYER. It is the LAST BLOW now (Daniel 10-26: "rung once he is beaten down - not the whole
@@ -184,7 +184,7 @@ export function abbotBridgeBell(e, i, c) {
   return 'empty';
 }
 /* P3: THE WHEEL, STRUCT while he prays at it: the rite is spoiled (and the world turns its stair up over him) */
-export function abbotWheelStruck(e) { if (abbotPraying(e) && e.riteAt === 3) return abbotSpoil(e, 'wheel'); return false; }
+export function abbotWheelStruck(e, i) { if (abbotPraying(e) && e.riteAt === 3 && (i === undefined || i === (e.riteWheel || 0))) return abbotSpoil(e, 'wheel'); return false; }
 /* P3: COME DOWN ON HIM. A plunge on him praying, or warded, in phase three is THE OPENING - the smoke and the wheel's stair
    were the way up to it. (In phases one and two a plunge on him praying spoils the rite, as it always did.) */
 export function abbotPlunge(e, c) {
@@ -349,8 +349,10 @@ export function updateFalseAbbot(e, dt, c) {
   if ((e.blessT || 0) <= 0 && e.riteCd <= 0) {
     if (!H) { begin(e, 'rite', c); return; }
     const ph = e.phase || 1;
+    /* he prays at the device NEAREST YOU - he flaunts it: the bridge with a bell by you, the wheel by you (the chair is the one chair) */
+    const near = xs => Math.min(...xs.map(x => Math.abs(x - P.x)));
     if (ph === 1) { const ups = H.bridges.map((b, i) => ({ b, i })).filter(q => bridgeUp(e, q.i));
-      if (ups.length) { const q = ups.reduce((a, b) => Math.abs((a.b.x0 + a.b.x1) / 2 - e.x) <= Math.abs((b.b.x0 + b.b.x1) / 2 - e.x) ? a : b);
+      if (ups.length) { const q = ups.reduce((a, b) => near(a.b.bells) <= near(b.b.bells) ? a : b);
         const mid = (q.b.x0 + q.b.x1) / 2; e.riteBr = q.i;
         if (e.deck === 'high' && Math.abs(e.x - mid) < 24) { begin(e, 'rite', c); return; }
         goTo(e, c, { x: mid, y: H.deckY, deck: 'high' }, true); return; }
@@ -358,8 +360,9 @@ export function updateFalseAbbot(e, dt, c) {
     else if (ph === 2) { const k = c.basketK ? c.basketK() : 0;
       if (k < 0.3) { goTo(e, c, { x: H.chairX, y: abbotChairY(H, floor, k), deck: 'chair' }, true); return; }
       e.riteCd = 1.5; }   /* his chair is down (someone is in the basket): he fights until it is hauled back up */
-    else { if (e.deck === 'floor' && Math.abs(e.x - H.spotX) < 20) { begin(e, 'rite', c); return; }
-      goTo(e, c, { x: H.spotX, y: floor, deck: 'floor' }, true); return; }
+    else { const wi = H.wheels.reduce((b, w, i) => Math.abs(w.spotX - P.x) < Math.abs(H.wheels[b].spotX - P.x) ? i : b, 0), w = H.wheels[wi]; e.riteWheel = wi;
+      if (e.deck === 'floor' && Math.abs(e.x - w.spotX) < 20) { begin(e, 'rite', c); return; }
+      goTo(e, c, { x: w.spotX, y: floor, deck: 'floor' }, true); return; }
   }
   let what;
   if (!same) what = (e.far = !e.far) ? 'gleam' : 'swing';   /* YOU ARE ABOVE HIM OR BELOW HIM: the false light reaches, or he takes a rope to you */
@@ -505,9 +508,9 @@ export function drawAbbotHouse(g, e, H, cx, cy, time, floorY, basketK) {
   const GOLD = '#ffe08a', gl = (x, y, r, a0) => { const gr = g.createRadialGradient(x, y, 0, x, y, r); gr.addColorStop(0, GOLD); gr.addColorStop(1, 'rgba(255,224,138,0)'); g.globalAlpha = a0; g.fillStyle = gr; g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fill(); g.globalAlpha = 1; };
   const ph = alive ? (e.phase || 1) : 1, praying = alive && e.mode === 'riteTell', warded = alive && (e.blessT || 0) > 0;
   /* THE BRIDGES' BELLS: hung from the tower deck's underside, mouth at your head - a rope from each runs up to its bridge's hanger */
-  (H.bridges || []).forEach((b, i) => {
-    const up = !alive || bridgeUp(e, i), bx = Math.round(b.bellX - cx), near = b.bellX < (b.x0 + b.x1) / 2 ? b.x0 : b.x1, nx = Math.round(near - cx);
-    if (bx < -60 || bx > g.canvas.width + 60) return;
+  (H.bridges || []).forEach((b, i) => b.bells.forEach((bellX, j) => {
+    const up = !alive || bridgeUp(e, i), bx = Math.round(bellX - cx), near = bellX < (b.x0 + b.x1) / 2 ? b.x0 : b.x1, nx = Math.round(near - cx);
+    if (bx < -100 || bx > g.canvas.width + 100) return;
     const mine = alive && up && e.deck === 'high' && e.x >= b.x0 - 6 && e.x <= b.x1 + 6, glow = mine && (praying || warded), by = fy - 50;
     g.fillStyle = '#2a1c0c'; g.fillRect(bx - 1, dy + 16, 3, by - dy - 16 + 2); g.fillStyle = '#8a6a3e'; g.fillRect(bx, dy + 16, 1, by - dy - 16);   /* its hanger, off the deck */
     if (!(alive && e.brGone)) { g.strokeStyle = '#c8b088'; g.lineWidth = 1; g.beginPath(); g.moveTo(bx + 0.5, by + 2); g.lineTo(nx + 0.5, dy + 2); g.stroke(); }   /* the rope that holds the bridge up */
@@ -515,12 +518,12 @@ export function drawAbbotHouse(g, e, H, cx, cy, time, floorY, basketK) {
     const sw = !up && alive && !e.brGone && e.brT && e.brT[i] <= ABBOT.rehangTell ? Math.round(Math.sin(time * 18) * 2) : Math.round(Math.sin(time * 1.3 + i) * 1);
     bronzeBell(g, bx, by, sw, true);
     /* DOWN: the bridge hangs off its far tower, straight down - and hauled back, it swings up to lie flat again */
-    if (!up) { const far = near === b.x0 ? b.x1 : b.x0, fx = Math.round(far - cx), len = Math.min(88, Math.abs(b.x1 - b.x0)), dir = Math.sign(near - far) || 1;
+    if (!up && j === 0) { const far = b.x1 - b.x0 > 120 ? (near === b.x0 ? b.x1 : b.x0) : b.x1, fx = Math.round(far - cx), len = Math.min(88, Math.abs(b.x1 - b.x0)), dir = Math.sign(near - far) || 1;
       const rise = alive && !e.brGone && e.brT ? Math.max(0, Math.min(1, 1 - e.brT[i] / ABBOT.rehangTell)) : 0, an = (Math.PI / 2) * (1 - rise);
       for (let s = 0; s < len; s += 4) { const px = Math.round(fx + dir * Math.cos(an) * s), py = Math.round(dy + Math.sin(an) * s);
         g.fillStyle = '#3a2614'; g.fillRect(px - 3, py, 7, 4); g.fillStyle = s % 8 ? '#7a5232' : '#8e6440'; g.fillRect(px - 2, py, 5, 3); }
       if (rise > 0) { g.strokeStyle = '#c8b088'; g.beginPath(); g.moveTo(bx + 0.5, by); g.lineTo(Math.round(fx + dir * Math.cos(an) * len) + 0.5, Math.round(dy + Math.sin(an) * len) + 0.5); g.stroke(); } }
-  });
+  }));
   /* HIS CHAIR: an abbot's high seat in red and gilt on a rope from the roof beam; the beam runs to the basket's pulley */
   if (H.chairX !== undefined) {
     const cxp = Math.round(H.chairX - cx), cyp = Math.round(abbotChairY(H, floorY, basketK) - cy), py = Math.round(H.pulleyY - cy), bxp = Math.round(H.basketX + 16 - cx);
@@ -535,7 +538,7 @@ export function drawAbbotHouse(g, e, H, cx, cy, time, floorY, basketK) {
       g.fillStyle = '#5a1418'; g.fillRect(cxp - 12, cyp - 6, 25, 6); g.fillStyle = '#c9a44a'; g.fillRect(cxp - 12, cyp - 1, 3, 2); g.fillRect(cxp + 10, cyp - 1, 3, 2);   /* the seat and its feet */
     } }
   /* THE WHEEL (phase three): it spins and glows gold while it blesses him */
-  if (alive && ph === 3 && H.wheelX !== undefined && (praying && e.riteAt === 3 || warded)) { const wx = Math.round(H.wheelX - cx); gl(wx, fy - 14, 22 + 4 * p, 0.3 + 0.35 * p);
+  if (alive && ph === 3 && H.wheels && (praying && e.riteAt === 3 || warded)) { const wx = Math.round(H.wheels[e.riteWheel || 0].x - cx); gl(wx, fy - 14, 22 + 4 * p, 0.3 + 0.35 * p);
     g.strokeStyle = GOLD; g.globalAlpha = 0.5 + 0.4 * p; g.lineWidth = 1; g.beginPath(); g.arc(wx, fy - 14, 13, time * 6, time * 6 + 4.2); g.stroke(); g.globalAlpha = 1; }
   /* HIS CENSER, SET DOWN AND SMOKING (phase three's rite): the column that lifts you over him */
   if (alive && e.smoke) { const sx = Math.round(e.smoke.x - cx), top = fy - ABBOT.smokeH;

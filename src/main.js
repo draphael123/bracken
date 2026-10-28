@@ -20290,8 +20290,8 @@ function abbotHouse() {
   const h = L.arena && L.arena.house; if (!h) return null;
   if (abbotHouseOf === h && abbotHouseP) { if (abbotHouseP.bellX === undefined) { const b0 = abbotBell(); if (b0) abbotHouseP.bellX = b0.x; } return abbotHouseP; }
   const bell = abbotBell();
-  abbotHouseOf = h; abbotHouseP = { deckY: h.deck * TS, spans: h.spans.map(([a, b]) => [a * TS, (b + 1) * TS]), bridges: h.bridges.map(b => ({ x0: b.x0 * TS, x1: (b.x1 + 1) * TS, bellX: b.bell * TS, tiles: [b.x0, b.x1, h.deck] })),
-    chairX: h.chair.x * TS, chairY: h.chair.row * TS, pulleyY: h.pulleyRow * TS, basketX: h.basket.x * TS, wheelX: (h.wheel.pivot[0] + 1) * TS + 8, spotX: h.spot * TS, smokeX: h.smoke * TS, bellX: bell ? bell.x : undefined };
+  abbotHouseOf = h; abbotHouseP = { deckY: h.deck * TS, spans: h.spans.map(([a, b]) => [a * TS, (b + 1) * TS]), bridges: h.bridges.map(b => ({ x0: b.x0 * TS, x1: (b.x1 + 1) * TS, bells: b.bells.map(x => x * TS), tiles: [b.x0, b.x1, h.deck] })),
+    chairX: h.chair.x * TS, chairY: h.chair.row * TS, pulleyY: h.pulleyRow * TS, basketX: h.basket.x * TS, wheels: h.wheels.map(w => ({ x: (w.pivot[0] + 1) * TS + 8, spotX: w.spot * TS, smokeX: w.smoke * TS })), bellX: bell ? bell.x : undefined };
   return abbotHouseP;
 }
 const abbotBasket = () => movers.find(m => m.abbotBasket) || null;
@@ -20303,31 +20303,34 @@ function abbotBridgeTiles(i, up) { const H = abbotHouse(); if (!H || !H.bridges[
   if (!up) { shakeCam(4); SFX.gateDrop(); burst((x0 + x1 + 1) * TS / 2, row * TS, 14, ['#7a5232', '#c8b088', '#3a2614'], 80, 0.5); } else SFX.thud(); }
 /* PHASE THREE: his prayer wheel is set up under the gallery's west end (a real pwheel prop - updateMonkProps turns its stair) */
 function abbotPhase3() { const h = L.arena && L.arena.house; if (!h || props.some(p => p.t === 'pwheel' && p.abbot)) return;
-  const [px, py] = h.wheel.pivot, n = h.wheel.n, arm = s => { const out = []; for (let k = 1; k <= n; k++) out.push([px + s * 2 * k, py - 2 * k, 3]); return out; };
-  const pr = { t: 'pwheel', abbot: true, x: (px + 1) * TS + 8, y: L.arena.floor, a: arm(1), b: arm(-1), st: 1, from: 1, turnT: 0, cool: 0, spin: 0.9, pivot: [px, py] };
-  for (let x = px; x < px + 3; x++) { const k = py * LW + x; if (L.grid[k] === T.AIR) { L.grid[k] = T.ONEWAY; tileSpr[k] = null; } }
-  wheelLay(pr, pr.st, T.ONEWAY); props.push(pr); resolveTiles(); SFX.stone(); dust(pr.x, L.arena.floor, 8); }
+  h.wheels.forEach((w, i) => { const [px, py] = w.pivot, n = w.n, arm = s => { const out = []; for (let k = 1; k <= n; k++) out.push([px + s * 2 * k, py - 2 * k, 3]); return out; };
+    const away = 1 - w.toward, pr = { t: 'pwheel', abbot: true, abbotI: i, x: (px + 1) * TS + 8, y: L.arena.floor, a: arm(1), b: arm(-1), st: away, from: away, turnT: 0, cool: 0, spin: 0.9, pivot: [px, py] };   /* set up with its stair turned AWAY from the gallery: strike it to turn it up */
+    for (let x = px; x < px + 3; x++) { const k = py * LW + x; if (L.grid[k] === T.AIR) { L.grid[k] = T.ONEWAY; tileSpr[k] = null; } }
+    wheelLay(pr, pr.st, T.ONEWAY); props.push(pr); dust(pr.x, L.arena.floor, 8); });
+  resolveTiles(); SFX.stone(); }
 /* THE HOUSE LAID FRESH (his spawn - every try): the bridges hung, his wheel and its boards taken away, the basket back up */
 function abbotHouseReset() { const h = L.arena && L.arena.house; if (!h) return;
   abbotHouseP = null; abbotHouseOf = null; abbotCtxE = null; const H = abbotHouse(); if (!H) return;
   for (let i = 0; i < H.bridges.length; i++) { const [x0, x1, row] = H.bridges[i].tiles; for (let x = x0; x <= x1; x++) { const k = row * LW + x; if (L.grid[k] === T.AIR) { L.grid[k] = T.ONEWAY; tileSpr[k] = null; } } }
   for (let i = props.length - 1; i >= 0; i--) if (props[i].t === 'pwheel' && props[i].abbot) props.splice(i, 1);
-  { const [px, py] = h.wheel.pivot, n = h.wheel.n, cells = [];   /* its boards by the layout, not by the prop: a death rebuilds the props and the old wheel's boards would stay */
-    for (let x = px; x < px + 3; x++) cells.push([x, py]);
-    for (const s of [1, -1]) for (let k = 1; k <= n; k++) for (let x = px + s * 2 * k; x < px + s * 2 * k + 3; x++) cells.push([x, py - 2 * k]);
-    for (const [x, y] of cells) { const k = y * LW + x; if (L.grid[k] === T.ONEWAY) { L.grid[k] = T.AIR; tileSpr[k] = null; } } }
+  const cellsOf = w => { const [px, py] = w.pivot, out = []; for (let x = px; x < px + 3; x++) out.push([x, py]); for (let k = 1; k <= w.n; k++) for (const s of [1, -1]) for (let x = px + s * 2 * k; x < px + s * 2 * k + 3; x++) out.push([x, py - 2 * k]); return out; };
+  if (!L.abbotBase) { L.abbotBase = new Set(); for (const w of h.wheels) for (const [x, y] of cellsOf(w)) if (L.grid[y * LW + x] === T.ONEWAY) L.abbotBase.add(y * LW + x); }   /* the level's own boards under a wheel's cells (the east tower's step), kept */
+  for (const w of h.wheels) { const [px, py] = w.pivot, n = w.n, cells = [];   /* their boards by the layout, not by the prop: a death rebuilds the props and the old wheels' boards would stay */
+    for (let k = 1; k <= n; k++) for (const s of [1, -1]) for (let x = px + s * 2 * k; x < px + s * 2 * k + 3; x++) cells.push([x, py - 2 * k]);
+    for (const [x, y] of cells) { const k = y * LW + x; if (L.grid[k] === T.ONEWAY && !L.abbotBase.has(k)) { L.grid[k] = T.AIR; tileSpr[k] = null; } }
+    for (let x = px; x < px + 3; x++) { const k = py * LW + x; if (L.grid[k] === T.ONEWAY && !L.abbotBase.has(k)) { L.grid[k] = T.AIR; tileSpr[k] = null; } } }
   const m = abbotBasket(); if (m) m.y = m.y0;
   resolveTiles(); }
 /* THE BRIDGES' BELLS, struck from the floor under their towers; and his censer's SMOKE, which lifts you (phase three) */
 function abbotHouseStep(dt, hb) {
   const H = L.arena && L.arena.house ? abbotHouse() : null, b = boss && boss.t === 'abbot' && boss.alive && bossActive ? boss : null; if (!H) return;
   const fl = L.arena.floor;
-  if (hb && b) H.bridges.forEach((br, i) => { const key = 'abbr' + i; if (P.hitSet.has(key) || !overlap(hb, { l: br.bellX - 12, r: br.bellX + 12, t: fl - 58, b: fl - 4 })) return;
-    P.hitSet.add(key); sparks(br.bellX, fl - 44, P.face, 4); (SFX.seaBell || SFX.clank)(); ringAt(br.bellX, fl - 44, 30, '#e8c88a', 0.5);
+  if (hb && b) H.bridges.forEach((br, i) => { const key = 'abbr' + i, bx = br.bells.find(x => overlap(hb, { l: x - 12, r: x + 12, t: fl - 58, b: fl - 4 })); if (P.hitSet.has(key) || bx === undefined) return;
+    P.hitSet.add(key); sparks(bx, fl - 44, P.face, 4); (SFX.seaBell || SFX.clank)(); ringAt(bx, fl - 44, 30, '#e8c88a', 0.5);
     const res = abbotBridgeBell(b, i, abbotCtx(b));
     if (res === 'him') { SFX.sting(); zoomKick(1.08, 0.25); rumble(160, 0.6); number(b.x, b.y - 58, 'THE BRIDGE DROPS WITH HIM', '#8fd160'); }
     else if (res === 'empty') number((br.x0 + br.x1) / 2, H.deckY - 12, 'THE BRIDGE DROPS', '#e8c88a');
-    else number(br.bellX, fl - 64, res === 'gone' ? 'HE CUT IT DOWN' : 'IT IS DOWN', '#9aa39a');
+    else number(bx, fl - 64, res === 'gone' ? 'HE CUT IT DOWN' : 'IT IS DOWN', '#9aa39a');
     if (!(PROG.abbotBridgeTold > 1)) { PROG.abbotBridgeTold = (PROG.abbotBridgeTold || 0) + 1; hintSay('mechanic', 4, 'A BELL DROPS THE BRIDGE IT HOLDS. STRIKE IT WITH HIM ON THE BRIDGE.'); } });
   if (b && b.smoke && !P.dead && Math.abs(P.x - b.smoke.x) < ABBOT.smokeW && P.y <= fl + 2 && P.y > fl - ABBOT.smokeH) { P.vy = Math.min(P.vy, -ABBOT.smokeLift); P.ground = false; P.plunge = false; if (Math.random() < dt * 30) parts.push({ x: b.smoke.x + (Math.random() - 0.5) * 16, y: P.y, vx: 0, vy: -120, life: 0.4, max: 0.4, col: '#ece4d8', size: 1, grav: 0 }); }
 }
@@ -25826,7 +25829,7 @@ function updateMonkProps(dt, hb) {
           for (const [x0, y, w] of (pr.st ? pr.b : pr.a)) for (const e of enemies) if (e.alive && !e.fly && Math.abs(e.y - y * TS) < 3 && e.x > x0 * TS - 4 && e.x < (x0 + w) * TS + 4) {
             e.stagger = Math.max(e.stagger || 0, 1.4); e.vy = 0; hurtEnemy(e, Math.max(8, Math.round((e.maxHp || fullHp(e)) * 0.3)), pr.x, false); e.wheelDrops = (e.wheelDrops || 0) + 1; number(e.x, e.y - (e.h || 16) - 10, 'THE STAIR GOES OUT FROM UNDER HIM', '#8fd160'); }
           wheelLay(pr, pr.st, T.AIR); pr.from = pr.st; pr.st = 1 - pr.st; pr.turnT = 0.7; resolveTiles(); SFX.clank(); SFX.stone(); number(pr.x, pr.y - 32, 'THE STAIR TURNS', '#e8c88a');
-          if (pr.abbot && boss && boss.t === 'abbot' && bossActive) abbotWheelStruck(boss);   /* (claude/abbot3) HIS WHEEL, struck while he prays at it: the rite is spoiled */
+          if (pr.abbot && boss && boss.t === 'abbot' && bossActive) abbotWheelStruck(boss, pr.abbotI);   /* (claude/abbot3) HIS WHEEL, struck while he prays at it: the rite is spoiled */
           if (!(PROG.wheelTold > 1)) { PROG.wheelTold = (PROG.wheelTold || 0) + 1; hintSay('mechanic', 4, 'A PRAYER WHEEL TURNS ITS STAIR. LEFT ON THE WRONG SIDE? STRIKE IT AGAIN.'); } } }
       continue; }
     if (pr.t !== 'tbell') continue;

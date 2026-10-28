@@ -11,8 +11,8 @@ import { ABBOT, ABBOT_FRAMES, updateFalseAbbot, abbotBellRung, abbotOpen, abbotB
 let fails = 0; const ok = (c, m) => { console.log((c ? '  ok   ' : '  FAIL ') + m); if (!c) fails++; };
 const DT = 1 / 60, FLOOR = 480, DECK = 384, BELL = 904;
 /* the belfry as the level lays it (level.js arena.house, in pixels as main.js abbotHouse() makes it) */
-const HOUSE = { deckY: DECK, spans: [[272, 368], [688, 832], [944, 1088], [1184, 1280]], bridges: [{ x0: 368, x1: 688, bellX: 296 }, { x0: 1088, x1: 1184, bellX: 1240 }],
-  chairX: 536, chairY: 368, pulleyY: 224, basketX: 432, wheelX: 568, spotX: 664, smokeX: 634, bellX: BELL };
+const HOUSE = { deckY: DECK, spans: [[272, 368], [688, 832], [944, 1088], [1184, 1280]], bridges: [{ x0: 368, x1: 688, bells: [296, 696] }, { x0: 1088, x1: 1184, bells: [1080, 1240] }],
+  chairX: 536, chairY: 368, pulleyY: 224, basketX: 848, wheels: [{ x: 568, spotX: 664, smokeX: 634 }, { x: 1176, spotX: 1080, smokeX: 1110 }], bellX: BELL };
 const A = { x0: 32, x1: 1504, floor: FLOOR, landLo: 224, landHi: 1264, ropes: [424, 680, 1128], house: HOUSE };
 
 /* a fight rig. `block` decides what the player's guard does with a blow: true = it is turned. o.flat: the old floor-only arena */
@@ -156,8 +156,10 @@ console.log('THE FALSE ABBOT 3: THE HOUSE ANSWERS THE BLOW');
 // ---- P3 THE WHEEL: he prays at the wheel, his censer smoking; the wheel spoils it, a plunge breaks him ----
 { const r = until('riteTell', { px: 900, x: 1000, hp: ABBOT.hp * 0.25 }, 30);
   ok(!!r && r.e.phase === 3 && r.log.phase3 === 1 && r.log.said.some(s => /WHEEL TURNS FOR HIM/.test(s.m)), 'PHASE THREE: his wheel is set up (told)');
-  ok(Math.abs(r.e.x - HOUSE.spotX) < 1 && r.e.deck === 'floor', `he prays at the wheel (${Math.round(r.e.x)})`);
-  ok(r.e.smoke && Math.abs(r.e.smoke.x - HOUSE.smokeX) < 1, 'his censer is set down beside him and SMOKES: the column that lifts you over him');
+  const wh = HOUSE.wheels[r.e.riteWheel];
+  ok(!!wh && Math.abs(r.e.x - wh.spotX) < 1 && r.e.deck === 'floor', `he prays at the wheel nearest you (wheel ${r.e.riteWheel}, at ${Math.round(r.e.x)})`);
+  ok(r.e.smoke && Math.abs(r.e.smoke.x - wh.smokeX) < 1, 'his censer is set down beside him and SMOKES: the column that lifts you over him');
+  const far = until('riteTell', { px: 600, x: 1300, hp: ABBOT.hp * 0.25 }, 30); ok(far && far.e.riteWheel === 0, 'with you at the west end he takes the west wheel: the device is always near you');
   ok(abbotPlunge(r.e, r.c) && r.e.mode === 'downed' && !r.e.smoke, 'COME DOWN ON HIM: a plunge is THE OPENING');
   const w = until('riteTell', { px: 900, x: 1000, hp: ABBOT.hp * 0.25 }, 30); ok(abbotWheelStruck(w.e), 'a blow on the wheel he prays at takes'); w.run(DT * 2);
   ok(w.e.mode === 'spoiled' && !abbotBlessed(w.e) && w.log.said.some(s => /WHEEL TURNS AGAINST HIM/.test(s.m)), 'STRIKE THE WHEEL: the rite is spoiled, no heal, no ward');

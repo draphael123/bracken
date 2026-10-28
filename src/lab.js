@@ -2553,7 +2553,7 @@ async function runbossLab(BK, opts) {
           const side = Math.sign(P.x - x) || 1, at = x + side * Math.max(6, Math.min(reachB - 4, half + reachB - 10));
           if (Math.abs(P.x - at) < 8 && P.ground && P.atk < 0) { goal = null; P.face = -side; k.block = false; BK.press('atk'); swings++; } else goal = at; };
         strike = false;
-        if (H && onHigh && !(praying && ph === 3)) { goal = P.x; k.down = true; }   /* off the boards: the fight is on the floor (down drops through a board) */
+        if (H && onHigh && !boss.smoke) { goal = P.x; k.down = true; }   /* off the boards: the fight is on the floor (down drops through a board) */
         else if (boss.mode === 'beaten' && bl) hitAt(bl.x, 12);                       /* THE LAST BLOW: the great bell */
         else if (boss.open > 0 && bossLow) { goal = boss.x; strike = true; }         /* the house answered: get on him, the window is worth three blows */
         else if (chain) { goal = null; P.face = Math.sign(boss.x - P.x) || P.face;
@@ -2562,12 +2562,12 @@ async function runbossLab(BK, opts) {
           else if (boss.mode === 'castTell' && boss.modeT < 0.12 && P.ground) { BK.press('jump'); P.labJump = 14; } }
         else if (slam) { const away = Math.sign(boss.swTo - (boss.sw0 ?? boss.x)) || 1; goal = boss.swTo + away * (ABBOT_K.slamR + 18); }
         else if (orb) { if (SHIELDED(h)) { goal = null; P.face = Math.sign(boss.orb.x0 - P.x) || P.face; k.block = true; } else goal = boss.orb.tx + (Math.sign(P.x - boss.orb.tx) || 1) * (ABBOT_K.lightR + 14); }
-        else if (H && onBr >= 0) hitAt(H.bridges[onBr].bellX, 12);                     /* P1: HE IS ON A BRIDGE - strike its bell under the tower */
-        else if (H && praying && ph === 2 && boss.basketM) { const m = boss.basketM, mx = m.x + m.w / 2;   /* P2: RIDE THE BASKET DOWN */
+        else if (H && onBr >= 0) hitAt(H.bridges[onBr].bells.reduce((a, b) => Math.abs(a - P.x) <= Math.abs(b - P.x) ? a : b), 12);                     /* P1: HE IS ON A BRIDGE - strike its bell under the tower */
+        else if (H && boss.deck === 'chair' && boss.basketM) { const m = boss.basketM, mx = m.x + m.w / 2;   /* P2: HE IS UP IN HIS CHAIR (seen by where he is, not by his pose): RIDE THE BASKET DOWN */
           if (P.onMover === m || (Math.abs(P.x - mx) < 12 && Math.abs(P.y - m.y) < 3)) { goal = null; k.left = k.right = false; }
           else if (Math.abs(P.x - mx) < 7 && P.ground && P.y > m.y + 4 && !(P.labJump > 0)) { goal = null; BK.press('jump'); P.labJump = 16; }
           else goal = mx; }
-        else if (H && praying && ph === 3 && boss.smoke) { const sx = boss.smoke.x;   /* P3: RIDE HIS SMOKE UP, then COME DOWN ON HIM */
+        else if (H && boss.smoke) { const sx = boss.smoke.x;   /* P3: his censer set down SMOKING (he prays at the wheel): RIDE HIS SMOKE UP, then COME DOWN ON HIM */
           if (!P.ground && P.y < fl - 60) { goal = boss.x; if (Math.abs(P.x - boss.x) < 9 && P.vy > -60 && !P.plunge && P.atk < 0) { k.down = true; BK.press('atk'); swings++; } }
           else if (P.ground && P.y < fl - 20) { goal = boss.x; if (Math.abs(P.x - boss.x) < 30) { BK.press('jump'); P.labJump = 4; } }   /* on a board over him: step off toward him */
           else goal = sx; }
