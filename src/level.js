@@ -4171,20 +4171,20 @@ function galeMoor() {
   for (let x = o + 16; x <= o + 22; x++) for (let y = 11; y <= 12; y++) set(x, y, T.AIR);   /* THE WIND HOLE: a low cave under the crag off the gap floor, where the gusts leave what they carry (a pocket off the route, paid) */
   coins([o + 17, 12], [o + 18, 12], [o + 19, 12], [o + 20, 12], [o + 18, 11]);
   ent('vent', o + 27, 12, Object.assign({}, galeVent));                /* ...and its own updraft: a fall in is a ride back up, on to the far rock (five tiles) */
-  block(o + 32, o + 38, 8, 29);                                        /* THE FAR ROCK, a row under the crag top: nine tiles of gap, carried in the gust (seven wide: a ride out of the gap comes down on it, never over the gully) */
+  block(o + 32, o + 38, 7, 29);                                        /* THE FAR ROCK, level with the crag top: nine tiles of gap, carried in the gust (seven wide: a ride out of the gap comes down on it, never over the gully) */
   gust(o + 3, o + 31, 0, 13, { period: 5, on: 1.8, phase: 1, dir: 1, shove: 240, air: true, stair: true });   /* (it ends at the far rock's lip: what it carries comes down on the rock, never on over the gully. No `carry`: the reach model rides the two updrafts, tools/gale-stair.mjs proves the tailwind jump with real keys) */   /* the stair's gust, east: in the AIR only (as the summit's), and it carries a jump (the reach model's carry) */
   block(o + 39, o + 45, 16, 29); spikes(o + 39, o + 45, 15);           /* THE GULLY: thorns two rows down (A10: a fall is a wound and a jump back to the stones, never a trap) */
-  pillar(o + 40, 8, 15); pillar(o + 43, 8, 15);                        /* two bracing stones, two tiles apart: a short hop each */
-  block(o + 46, o + 48, 8, 29);                                        /* the far rock of the gully, level with the stones (a drop to the Landing) */
+  pillar(o + 40, 7, 15); pillar(o + 43, 7, 15);                        /* two bracing stones, two tiles apart: a short hop each */
+  block(o + 46, o + 48, 7, 29);                                        /* the far rock of the gully, level with the stones (a drop to the Landing) */
   gust(o + 39, o + 46, 0, 16, { period: 5, on: 1.8, phase: 1, dir: -1, shove: 220 });   /* THE BACKWIND: the same gust, turned back off the summit's wall - it blows WEST over the stones as the stair's blows east (one rhythm), so a ride over the gap comes down on the far rock and the stones are crossed: brace on one, hop in the still */
-  ent('galeharpy', o + 21, 4, { face: -1, perch: true, squad: 'stairCrag' });   /* on the crag's far end: her beat pushes you back toward the face you rode up */
-  ent('galeharpy', o + 47, 5, { face: -1, perch: true, squad: 'stairGully' });  /* over the far rock: her beat on the stones, in the turning wind */
-  ent('flagpost', o + 4, 12); ent('flagpost', o + 15, 6); ent('flagpost', o + 33, 7); ent('flagpost', o + 47, 7);
+  ent('galeharpy', o + 18, 3, { face: -1, perch: true, squad: 'stairCrag' });   /* over the middle of the crag top: her beat pushes you back toward the face you rode up (clear of the jump off its end) */
+  ent('galeharpy', o + 47, 4, { face: -1, perch: true, squad: 'stairGully' });  /* over the far rock: her beat on the stones, in the turning wind */
+  ent('flagpost', o + 4, 12); ent('flagpost', o + 15, 6); ent('flagpost', o + 33, 6); ent('flagpost', o + 47, 6);
   ent('deco', o + 18, 6, { kind: 'cairn' });
   ent('sign', o + 2, 12, { text: 'THE GALE STAIR. THIS UPDRAFT BLOWS ONLY IN THE GUST: RIDE IT UP AND OVER.' });
   ent('sign', o + 13, 6, { text: 'A GALE HARPY BEATS HER WINGS AT YOU: HIT HER AS SHE DRAWS THEM BACK, OR HOLD C AND BRACE.' });
-  ent('sign', o + 37, 7, { text: 'THE GUST BLOWS BACK OVER THE STONES. BRACE ON ONE, HOP IN THE STILL.' });
-  coins([o + 7, 9], [o + 9, 5], [o + 16, 5], [o + 25, 4], [o + 28, 4], [o + 27, 11], [o + 41, 6], [o + 44, 6], [o + 47, 6]);
+  ent('sign', o + 37, 6, { text: 'THE GUST BLOWS BACK OVER THE STONES. BRACE ON ONE, HOP IN THE STILL.' });
+  coins([o + 7, 9], [o + 9, 5], [o + 16, 5], [o + 25, 4], [o + 28, 4], [o + 27, 11], [o + 41, 5], [o + 44, 5], [o + 47, 5]);
 
   /* ==== THE LANDING (696-703): an eight-tile shelf of the summit rock west of the Windcaller's wall. Its checkpoint is the one B6 asks for OUTSIDE the
      arena walls (docs/briefs/gale-moor-rework.md §5). A death in the fight wakes you here, at the door; the stair is not asked again. ==== */
