@@ -1,0 +1,89 @@
+{
+  "time": "2026-10-28T18:53:58.000Z",
+  "status": "Prepared getter-aware existing-only view and production expression adapter; native/main proof pending",
+  "gameSource": "62d9c02c102decc69ceaef4e1ec593a23170f1ff",
+  "helperSha256": "d8ae35015ad9e60a7fbacb5bf1960126f0ed62d6a23a70c76266f79cc41fa0b3",
+  "originalPxSha256": "e9a358b9170944e0dfae6d1b8c82d7b664562e0b2b0ab7f2538236e34214db1d",
+  "candidatePxSha256": "37cbde8af8557a27bf8d5e14a0fc68371b908e0c43b6101e52fa1db7bb4eff13",
+  "ownershipExtension": "\nexport function withBakeOwnership(build,record){const previous=OWN,scope=[];OWN=scope;try{return build();}finally{OWN=previous;record(scope);}}\n",
+  "originalPxBytesPreserved": true,
+  "sourceReview": "outputs/receipts/fixed-art-families-source-review-oct28.json",
+  "hardContracts": [
+    "Only160source-qualified palette-independent fixed-input groups; no mutable palette/gear/weapon late binding",
+    "Nested ownership restores outer scope in finally and records every new intermediate/output",
+    "Queued late allocations join exact pending retirement list; retired-owner late allocations immediately zero backing stores",
+    "Public reflection/alias/descriptor semantics preserved; internal keep traversal observes existing built leaves without forcing pending recipes",
+    "Native full pixels/context/metadata/aliases/ownership and retirement proof before any served source/controlled timing"
+  ],
+  "noLocalBrowserOrGameExecuted": true,
+  "adopted": false,
+  "originalArtSha256": "99f0ead9e02c17eec93e3945720c8206465e3ecd7aac42c00fbbb22cce46bb35",
+  "componentSha256": "0dfbb353cb00ae90ca374ca80657bd3269a1a0ac31e65f9cfdaf3f17e7651523",
+  "expectedNativeGroups": 160,
+  "expectedOwnershipReflectionCases": 10,
+  "originalExpressionsCapturedAtOriginalArgumentEvaluationTime": true,
+  "earlierPreparedCore": {
+    "directory": "work/deferred-fixed-level-art-oct28",
+    "neverDispatchedOrBrowserExecuted": true,
+    "reason": "Pre-browser source review added a private WeakSet of fully resolved internal containers to avoid repeated recursive traversal; no original assertion or fixture changed"
+  },
+  "priorHelperSha256": "061cb563021e811a46eed0ee36ccd6d3df6f2c1dbf6702a727c4909e1cf3da53",
+  "priorNativeReceipt": "outputs/receipts/fixed-level-art-component-oct28.json",
+  "ownershipChanges": [
+    {
+      "before": "return{owned,queue:null,retired:false};",
+      "after": "return typeof WeakRef==='function'?{owned:new WeakRef(owned),queue:null,retired:false}:null;"
+    },
+    {
+      "before": "else(r.owner.queue||r.owner.owned).push(...canvases);",
+      "after": "else{const target=r.owner.queue||r.owner.owned?.deref();if(target)target.push(...canvases);}"
+    },
+    {
+      "before": "return Reflect.set(t,k,value,receiver);",
+      "after": "let object=t,descriptor;while(object&&!(descriptor=Reflect.getOwnPropertyDescriptor(object,k)))object=Reflect.getPrototypeOf(object);if(descriptor&&!('value'in descriptor))value=materialize(value);return Reflect.set(t,k,value,receiver);"
+    }
+  ],
+  "sourceCause": "Public BK.loadG may be abandoned before BAKE_CUR registers its owned array. Pending recipes may not add a strong reference to that array. Active arrays remain held by original iterator/BAKE_CUR, queued sheets append to original BAKE_OLD, and retired late outputs still zero. Accessor setters must receive original native art values rather than private pending tokens.",
+  "expectedOwnershipReflectionCasesBeforeGc": 14,
+  "expectedGcContracts": 3,
+  "noMainAdapterOrGameSourceAdopted": true,
+  "componentChanges": [
+    {
+      "before": "'./fixed-level-art-weak-source/'",
+      "after": "'./fixed-level-art-view-source/'"
+    },
+    {
+      "before": "FIXED_LEVEL_ART_WEAK_OUT",
+      "after": "FIXED_LEVEL_ART_VIEW_OUT"
+    },
+    {
+      "before": "'fixed-level-art-weak-component'",
+      "after": "'fixed-level-art-view-component'"
+    },
+    {
+      "before": "pending=new Function('ART','return ('+group.source+')')(wrap(owner))",
+      "after": "pending=m.deferredFixedArtExpression(owner,C.api,new Function('ART','return ('+group.source+')'))"
+    },
+    {
+      "before": "  const drawProbe=px=>",
+      "after": "  {const owned=[],owner=m.createLevelArtOwner(owned),p=m.makeDeferredLevelArtCatalogue({pending:m.deferredLevelArtCall(owner,build,null,[])}),receivers=[];Object.defineProperty(p,'ownGetter',{enumerable:true,configurable:true,get(){receivers.push(this===p);return 23;}});Object.setPrototypeOf(p,Object.defineProperty({},'inheritedGetter',{enumerable:true,get(){receivers.push(this===p);return 29;}}));const view=m.existingLevelArtValue(p),values=[];for(const k in view)values.push([k,m.existingLevelArtValue(view[k])]);check(owned.length===0&&values.some(([k,v])=>k==='pending'&&v===null)&&values.some(([k,v])=>k==='ownGetter'&&v===23)&&values.some(([k,v])=>k==='inheritedGetter'&&v===29)&&receivers.length===2&&receivers.every(Boolean),'existing-only view changed receiver or forced pending art');check(p.pending instanceof HTMLCanvasElement&&owned.length===1,'public view stopped native materialization');zero(owned);m.retireLevelArtOwner(owner);contracts.push({case:'existing-only keep view preserves own and inherited getter receiver without forcing pending',exact:true});}\n  const drawProbe=px=>"
+    },
+    {
+      "before": "assert.equal(r.contracts.length,13);",
+      "after": "assert.equal(r.contracts.length,14);"
+    },
+    {
+      "before": "Complete160native graphs,13ownership/reflection cases and3native-GC owner-liveness contracts; no main/loader/layout/FPS proof",
+      "after": "Complete160native graphs via production expression adapter,14ownership/reflection cases and3native-GC contracts; no main/loader/layout/FPS proof"
+    }
+  ],
+  "nativeGcProtocol": "After first runtime job completes: native HeapProfiler.collectGarbage, separate empty evaluation job, native HeapProfiler.collectGarbage, then compare original/new abandoned and active owner arrays and late native outputs. Fixed two collections; no retry loop or clock/RNG reset.",
+  "existingOnlyViewChange": {
+    "before": "targets.set(proxy,target);return proxy;",
+    "after": "targets.set(proxy,new Proxy(target,{get(t,k){return Reflect.get(t,k,proxy);}}));return proxy;",
+    "contract": "Private keep-walker reads raw data without forcing pending recipes; accessor getters receive the same public catalogue as this, including inherited accessors."
+  },
+  "expressionAdapter": "\nexport function deferredFixedArtExpression(owner,ART,expression){if(!owner)return expression(ART);const namespace=new Proxy(ART,{get(target,key){const fn=Reflect.get(target,key);return typeof fn==='function'?(...args)=>deferredLevelArtCall(owner,fn,target,args):fn;}});return expression(namespace);}\n",
+  "originalArtCallSourceAndArgumentEvaluationOrderPreserved": true,
+  "noMainOrGameAdopted": true
+}
