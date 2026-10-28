@@ -1,0 +1,19 @@
+{
+  "time": "2026-10-28T13:56:00.605Z",
+  "status": "Distinct served-only source preparation and pure row/phase proof; no native pixels or timing yet",
+  "gameSource": "62d9c02c102decc69ceaef4e1ec593a23170f1ff",
+  "path": "src/redraw/undercrown_art.js",
+  "originalSha256": "805b796d91067b1dcfb460c652124ae13eadfe81601f39085372b4273f84d941",
+  "candidateSha256": "240f799beae1dbdbde4747b6fab669545d554f749195a7980bea0b05ddf94950",
+  "exactUndo": true,
+  "originalPainterTexturePaletteSeededCallsAndAllNonWholeBranchesUnchanged": true,
+  "noNewCacheCanvasOrOwnershipRoots": true,
+  "unsupportedNativeStateFallsBackToOriginalLoop": true,
+  "pureCases": 858,
+  "originalRectangleCalls": 10296,
+  "candidateRectangleCalls": 1204,
+  "noBrowserLaunched": true,
+  "noTimingMemoryCampaignLayoutOrFpsClaim": true,
+  "allThreeMismatchesRetained": true,
+  "adopted": false
+}
