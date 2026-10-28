@@ -190,6 +190,6 @@ export function areaLights(L, T) {
   /* the trunk's foot: pale caps in the dark, teal and rose */
   for (let x = 113; x < 150; x += 5) { for (let y = 30; y < 36; y++) if (standTop(x, y)) { out.push({ x: x * TS + 8, y: y * TS - 5, r: 38, a: 0.26, c: (x / 5 | 0) % 2 ? '120,230,215' : '230,130,210', fl: 0.5, hole: 44 }); break; } }
   /* the lodge: the horn mount's lamp, the lanterns on its posts */
-  out.push({ x: HORN_X, y: 196, r: 100, a: 0.2, c: '255,190,100', fl: 0.4 }); for (const x of [392, 442]) out.push({ x: x * TS, y: 160, r: 64, a: 0.18, c: '255,190,100', fl: 0.7 });
+  out.push({ x: HORN_X, y: 196, r: 100, a: 0.2, c: '255,190,100', fl: 0.4, hole: 90 }); for (const x of [392, 442]) out.push({ x: x * TS, y: 160, r: 64, a: 0.18, c: '255,190,100', fl: 0.7, hole: 78 });   /* (claude/arenapolish) a hole in the lair's dark */
   return out;
 }

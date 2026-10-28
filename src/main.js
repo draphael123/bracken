@@ -59,6 +59,7 @@ import {breathCapacity} from './deepair.js';
 import { makeDrains } from './drain.js';   /* (claude/underwater) OUT OF BREATH is a source on the shared environment drain (A13): no stagger, no knock */
 import {drawHarborLandmarks} from './harbor-landmarks.js';
 import {updateWarden,wardenFrame,bakeHarbormaster,drawWarden} from './harbor-boss.js';
+import * as APL from './arena-polish.js'; const aplTint = APL.makeTint();   /* (claude/arenapolish) THE ARENA POLISH PACK: the phase-tint helper (arena.tintFn / arena.phaseTints) and the Hexed Fields / Rootway / Harbor / Waymeet dressing (src/arena-polish.js) */
 import { attackPose } from './attack-animation.js'; import * as CM from './commit.js';   /* WEIGHT (Daniel 10-02): COMMITMENT + STAMINA - the commit, the held buffer, the bar's rules (src/commit.js) */
 import { AMBUSH_HEALTH } from './ambush.js';
 import {drawTowerBackdrop,gateOccupied,updateTowerAscent,towerAscentReset} from './tower-ascent.js';
@@ -32933,7 +32934,8 @@ function drawWorld(cx, cy, showPlayer) {
   for (const c of clouds2) { if (L.sporewood2) { SW2W.drawCloud(g, c, cx, cy, time); continue; }   /* (claude/sporewood2art) SPOREWOOD 2's clouds are DRAWN: lobes, a ring of spores at the reach, motes (src/redraw/sporewood2_world.js) */ g.globalAlpha = Math.min(0.55, c.life * 0.3); g.fillStyle = c.sleep ? '#9a5aa8' : '#c8bcb0'; g.beginPath(); g.ellipse(Math.round(c.x - cx), Math.round(c.y - cy), c.r, c.r * 0.7, 0, 0, 7); g.fill(); g.globalAlpha = 1; }
   for (const lt of lights) if (lt.torch && !lt.bare && lt.x > cx - 20 && lt.x < cx + VW + 20) g.drawImage(PROP.torch, Math.round(lt.x) - 3 - cx, Math.round(lt.y) - 4 - cy);
   if (L.arena && L.arena.boss === 'queen') { for (let ty = 0; ty < LH; ty++) for (let tx = Math.floor(L.arena.x0 / TS); tx < Math.floor(L.arena.x1 / TS); tx++) if (L.grid[ty * LW + tx] === T.ONEWAY && L.grid[ty * LW + tx - 1] !== T.ONEWAY) { let n = 1; while (L.grid[ty * LW + tx + n] === T.ONEWAY) n++; const gx = tx * TS - cx, gy = ty * TS + 6 - cy; const gr = g.createRadialGradient(gx + n * 8, gy, 4, gx + n * 8, gy, n * 10 + 8); gr.addColorStop(0, 'rgba(255,220,120,0.35)'); gr.addColorStop(1, 'rgba(255,200,80,0)'); g.fillStyle = gr; g.fillRect(gx - 12, gy - 14, n * TS + 24, 28); } }
-  if (bossActive && L.arena && L.arena.tint && SET.tint !== 'off') { g.globalAlpha = (L.arena.tintA || 0.14) * (SET.tint === 'half' ? 0.5 : 1); g.fillStyle = L.arena.tint; g.fillRect(0, 0, VW, VH); g.globalAlpha = 1; }
+  if (L.arena && L.arena.flavour) APL.drawFlavour(g, { A: L.arena, L, boss, bossActive, cx, cy, VW, VH, time, TS, fld: FLD });   /* (claude/arenapolish) the arena's own dressing, under the veil */
+  if (bossActive && L.arena && L.arena.tint && SET.tint !== 'off') { const tn = APL.tintNow(aplTint, L.arena, boss, time, { moon: FLD && FLD.moon, cq: CQH && CQH.show ? CQH.show() : null }); g.globalAlpha = tn.a * (SET.tint === 'half' ? 0.5 : 1); g.fillStyle = tn.c; g.fillRect(0, 0, VW, VH); g.globalAlpha = 1; }   /* (claude/arenapolish) the veil follows the phase (src/arena-polish.js tintNow); an arena with no tintFn / phaseTints draws its fixed tint exactly as before */
   drawEscape(cx, cy);
   if (GMH && GMH.on()) GMH.drawWorld(g, cx, cy, time);   /* (claude/gorm2) KING GORM 2: the hall's ropes, pegs, heaps and told arrows; the burning wood; the glade's hangings */
   drawVillage(cx, cy);   /* THE BURNING VILLAGE's straw, char, doors, troughs and beams, under the flames */

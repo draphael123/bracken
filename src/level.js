@@ -6199,7 +6199,7 @@ function waymeet() {
     weather: [{ x0: 0, x1: 99999, kind: 'pollen' }],
     ambient: [{ x0: 0, x1: 99999, kind: 'town' }],
     arena: { x0: 706 * TS, x1: 750 * TS, floor: R * TS, trigger: 712 * TS, wallL: 705, wallR: 751, boss: 'closedhelm',
-      music: 'closedhelm', tint: '#3a2a20', tintA: 0.1, fx: 'dust' },
+      music: 'closedhelm', tint: '#3a2a20', tintA: 0.1, fx: 'dust', tintFn: 'waymeet', flavour: 'waymeet' },
     mini: { x0: 303 * TS, x1: 347 * TS, floor: R * TS, y0: (R - 10) * TS, y1: (R + 1) * TS, trigger: 309 * TS, wallL: 302, gate: 348, boss: 'lancer', name: 'THE SERJEANT OF THE LISTS' },
     /* WHAT THE MASONS LAID is drawn as coursed stone, not the street's earth: the close wall and the King's Bridge with its piers */
     masonry: [[671, 672, R - 1, R + 3], [675, 676, R - 1, R + 3], [679, 680, R - 1, R + 3],   /* the chest tombs in the new grave */ [600, 612, R - 6, R + 2], [618, 628, R - 6, R + 2], [632, 641, R - 6, R + 2], [471, 541, R, R + 1], [486, 487, R + 2, R + 9], [500, 501, R + 2, R + 9], [514, 515, R + 2, R + 9], [528, 529, R + 2, R + 9]],
@@ -7480,7 +7480,7 @@ function theHexedFields() {
       baits: [[303, 'trough'], [320, 'fence']] },   /* THE BAIT (claude/weakboss): a stone trough and a rail fence standing in his field - his plough sticks in them, and nowhere else. Drawn and run in main.js (plBaits) */
     ambushes: [{ name: 'THE PICKERS\' SUPPER', row: O - 1, wallL: 152, wallR: 178, check: [151, O - 1], waves: [[['scarecrow', 158], ['scarecrow', 174], ['pumpkin', 163], ['pumpkin', 170]], [['farmhand', 160, O - 3], ['swornsword', 167], ['pumpkin', 176], ['hedgeknight', 171]]] }],   /* wave two, the road's patrol walking in on the supper: a sworn sword that plants, a hedge knight to BREAK (poise-heavy, where the hounds were), a pumpkin light enough to throw into the brambles, and the ghost through the wall */
     calm: [[0, 22, 0, 43], [52, 68, 24, 43], [104, 156, 12, 33], [186, 198, 26, 43], [206, 285, 26, 43], [336, 404, 0, 43], [410, 460, 0, 43], [462, 540, 0, 33], [539, 634, 18, 43], [636, 668, 20, 43]],   /* no garrison on the lane's first steps, the planks, the roofs, the ride, or the graves */
-    arena: { x0: 670 * TS, x1: 710 * TS, floor: G * TS, y0: 8 * TS, trigger: 675 * TS, wallL: 669, wallR: 710, boss: 'strawking', music: 'scarecrowking', tint: '#3a1a10', tintA: 0.1, fx: 'embers', poles: [675, 686, 707] },
+    arena: { x0: 670 * TS, x1: 710 * TS, floor: G * TS, y0: 8 * TS, trigger: 675 * TS, wallL: 669, wallR: 710, boss: 'strawking', music: 'scarecrowking', tint: '#3a1a10', tintA: 0.1, fx: 'embers', poles: [675, 686, 707], tintFn: 'fields', flavour: 'fields' },
   };
 }
 

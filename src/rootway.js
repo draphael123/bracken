@@ -241,7 +241,7 @@ export function buildRootway({ painter, T, TS }) {
   hoist('hmM', { x: Math.floor((A0 + A1) / 2), top: 0, hang: FL - 7, cleat: [Math.floor((A0 + A1) / 2) - 3, FL - 4], load: 'cage', boss: true });
   hoist('hmR', { x: A1 - 6, top: 0, hang: FL - 9, cleat: [A1 - 12, FL - 4], load: 'cage', boss: true });
   ent('huntmaster', A1 - 14, FL - 1, { face: -1 });
-  const arena = { x0: A0 * TS, x1: (A1 + 1) * TS, floor: FL * TS, trigger: (A0 + 4) * TS, wallL: A0 - 1, wallR: A1 + 1, boss: 'huntmaster', music: 'huntmaster', tint: '#c89040', tintA: 0.06,
+  const arena = { x0: A0 * TS, x1: (A1 + 1) * TS, floor: FL * TS, trigger: (A0 + 4) * TS, wallL: A0 - 1, wallR: A1 + 1, boss: 'huntmaster', music: 'huntmaster', tint: '#c89040', tintA: 0.06, tintFn: 'rootway', flavour: 'rootway',
     start: [A0 + 6, FL - 1], huntmaster: true, perches: [[A0 + 4, A0 + 10, FL - 4], [A1 - 10, A1 - 4, FL - 4]] };
   ent('gate', 456, FL - 1);
   /* (claude/rootway2) THE STAND's POD CAPS: a ripe spore pod at each wall (E takes it, ATTACK throws it - src/hunt-pods.js): on him, his long stagger; on a jaw trap he set, it springs it */
@@ -251,7 +251,7 @@ export function buildRootway({ painter, T, TS }) {
   return {
     W, H, grid: L.grid, ents: L.ents, START, pools: [], falls: [], moversExtra: caps,
     arena, gateAfterBoss: true, rootway: true, podCaps, jaws, nets, hoists,
-    darkLocal: true, darkZones: [{ x0: 0, x1: 102 * TS, y0: 0, y1: H * TS, dark: 0.55, name: 'THE ROOT CELLAR' }, { x0: 103 * TS, x1: 157 * TS, y0: 21 * TS, y1: H * TS, dark: 0.35, name: 'THE HOLLOW TRUNK' }],   /* (claude/rootway2) the cellar under the fungus line is DARK - its spore glow is its light; the trunk's foot is dim. darkLocal: main.js's dark pass runs in these zones only (L.dark stays 0: the level keeps its own sky, its steps, its reverb) */ decor, vaultDoors, zipLines: zips, ropes: zips,
+    darkLocal: true, darkZones: [{ x0: 0, x1: 102 * TS, y0: 0, y1: H * TS, dark: 0.55, name: 'THE ROOT CELLAR' }, { x0: 103 * TS, x1: 157 * TS, y0: 21 * TS, y1: H * TS, dark: 0.35, name: 'THE HOLLOW TRUNK' }, { x0: (ROOTWAY.arena[0] - 2) * TS, x1: ROOTWAY.arena[1] * TS + 1, y0: 0, y1: H * TS, dark: 0.28 }],   /* (claude/arenapolish, audit #9) THE HUNTMASTER'S LAIR is dim too - his lanterns are holes in it (src/redraw/rootway_areas.js), no name banner */   /* (claude/rootway2) the cellar under the fungus line is DARK - its spore glow is its light; the trunk's foot is dim. darkLocal: main.js's dark pass runs in these zones only (L.dark stays 0: the level keeps its own sky, its steps, its reverb) */ decor, vaultDoors, zipLines: zips, ropes: zips,
     squadBands: [{ lo: 400, hi: 459, spots: 0, why: "THE HUNTMASTER'S STAND: columns 386-459 are his arena and the road out - no squad stands in a boss arena (as the sky road)" }],
     calm: [[0, W - 1, 0, H - 1]],   /* placed wholly by hand: nothing sprinkled */
     checkRun: 200,                  /* four checkpoints (Daniel: fewer); src/level.js checkpoints() must not fill between them */

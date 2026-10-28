@@ -46,7 +46,7 @@ export function extendHarbor({L,T,TS,pools,interiors,structures,moversExtra}){
  for(const a of [1025,1051]){for(let x=a;x<a+5;x++)set(x,27,T.ONEWAY);structures.push({x0:a,x1:a+4,top:27,floor:30,kind:'timber'});}
  for(let y=0;y<30;y++)set(1062,y,T.PORT);
  ent('harbormaster',1043,29);deco('anchor',1022);deco('capstan',1059);
- const arena={x0:1020*TS,x1:1062*TS,floor:30*TS,y0:18*TS,trigger:1022*TS,wallL:1019,wallR:1062,boss:'harbormaster',music:'boss2',tint:'#256f78',tintA:.12};
+ const arena={x0:1020*TS,x1:1062*TS,floor:30*TS,y0:18*TS,trigger:1022*TS,wallL:1019,wallR:1062,boss:'harbormaster',music:'boss2',tint:'#256f78',tintA:.12,tintFn:'harbor',flavour:'harbor'};
  const gusts=[{x0:802*TS,x1:913*TS,y0:18*TS,y1:30*TS,dir:-1,period:8,on:3,phase:0}];
  const harborSections=[['Broken quays',0,95],['Customs hold',96,173],['Salvage cranes',174,251],['Salvage Captain',252,359],['Storm market',360,459],['Pump basin',460,556],['Drydock ship',557,674],['Cargo warehouse',675,793],['Breakwater',794,914],['Lighthouse road',915,1018],['Breakwater Warden',1019,1079]];
  return {arena,gusts,harborSections};

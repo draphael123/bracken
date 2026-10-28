@@ -201,7 +201,7 @@ export function planRoot(L, T) {
     for (const [jx, row] of (L.jaws || [])) post(jx - 4, row, jx & 1); for (const n of (L.nets || [])) post(n.x0 - 4, n.row, n.x0 & 1); }
   for (const x of [390, 445]) { for (let y = 16; y <= 19; y++) if (standTop(x, y)) { items.push({ k: 'skinrack', x: x * TS + 8, y: y * TS, v: 0, z: 4 }); break; } }   /* (two racks at the hall's ends: nothing in the stand itself - the cleat posts are the hoists')*/
   items.sort((a, b) => a.x - b.x);
-  for (const it of items) if (it.k === 'lantern') lights.push({ x: it.x + 0, y: it.y - 20, r: 40, a: 0.3, c: '255,200,110', fl: 0.5 });
+  for (const it of items) if (it.k === 'lantern') lights.push({ x: it.x + 0, y: it.y - 20, r: 40, a: 0.3, c: '255,200,110', fl: 0.5, hole: it.x > 386 * TS && it.x < 447 * TS ? 56 : undefined });   /* (claude/arenapolish) the lair's own lanterns cut its dark */
   lights.push(...areaLights(L, T));   /* the areas' own lights: the cellar's spore glows, the trunk's foot, the lodge's lamps (src/redraw/rootway_areas.js) */
   for (const d of (L.decor || [])) if (d.kind === 'larder') { for (const lx of [d.x0 * TS + 12, (d.x1 + 1) * TS - 12]) lights.push({ x: lx, y: d.y * TS + 24, r: 56, a: 0.34, c: '255,190,100', fl: 0.7 }); }
   return (L.__rwPlan = { chasms, supports, items, lights, drops, cleats, pulleys, solid });

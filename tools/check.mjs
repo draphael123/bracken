@@ -289,6 +289,8 @@ if (take('lab-order')) results.push(run('lab-order', process.execPath, ['tools/l
 /* THE ROOKERY and THE SHRIEK SISTERS (claude/rookery, Node): the road and the old-save unlock, the five areas, every required cracked rock a LOCK, the hands in a fake world
    (bait, aim, dive, break; a dead roost sends another; the shrieker's mark), the sisters pure (B15 floors, the stun off a dive into cracked rock, the team changing) */
 if (take('rookery')) results.push(run('rookery', process.execPath, ['tools/rookery.mjs']));
+/* THE ARENA POLISH PACK (claude/arenapolish, Node): the phase-tint helper (an arena with no tintFn draws its fixed tint untouched; a tintFn eases), the five arenas' opt-ins, the level hash independent of them, every drawing function run in every state */
+if (take('arena-polish')) results.push(run('arena-polish', process.execPath, ['tools/arena-polish.mjs']));
 if (take('pixels')) results.push(run('pixels', process.execPath, ['tools/headless.mjs', 'floats'], { PORT: String(portFor(3)) }));
 /* PLATFORM FEEL (claude/feelplatform, Daniel 10-12): the Game speed range + sub-steps + migration (feel-speed), and the camera lookahead, landings by height and the world's small reactions (feel-platform) */
 /* THE PALISADE WOOD and THE BATTERING BEAST (claude/palisadewood, Node): the road and the old-save unlock, the five areas, every required prop a LOCK, the stake rolls, the shrines,
