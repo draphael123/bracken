@@ -19,19 +19,27 @@
 //   and let her mark you, and they break it for you. After a scream she swoops low (open) and climbs back.
 // Every capital line it says goes through ctx.number with a line listed here (RK_SAY) and in src/hint-lines.js.
 import { canvas, flipX, whiten } from './px.js';
-import * as RKW from './redraw/rookery_world.js';   /* (claude/rookeryart) the cracked rocks, nests, roosts, the area plate: drawn there */
+import * as RKW from './redraw/rookery_world.js';
+import { drawHang, drawLegs } from './redraw/rookery_hang.js';
+import * as RKA from './redraw/rookery_anchor_art.js';
+import { GALE, GALE_SAY, galeStep, drawGust } from './gale-harpy.js';   /* (claude/rookery2) THE GALE HARPY: a shared foe module (Windcaller 4 and the Roc reuse it) */   /* (claude/rookeryart) the cracked rocks, nests, roosts, the area plate: drawn there */
 /* THE SHRIEKER's skin (greybox): the crag harpy's frames, darkened to a blood-red (her crest is drawn over her: harpyOver) - main.js SPR.shrieker */
 export function bakeShriekerSet(Hs) {
   const R = Hs.R.map(c => { const [o, g] = canvas(c.width, c.height); g.drawImage(c, 0, 0); g.globalCompositeOperation = 'source-atop'; g.fillStyle = 'rgba(130,28,36,0.5)'; g.fillRect(0, 0, c.width, c.height); g.globalCompositeOperation = 'source-over'; return o; });
   const white = R.map(c => whiten(c));
   return { R, L: R.map(flipX), white: { R: white, L: white.map(flipX) }, ax: Hs.ax, ay: Hs.ay, w: Hs.w, h: Hs.h };
 }
+/* (claude/rookery2) CATCH A RIDE (K.ride): a ride harpy dives at a hero on her MOUNT; blocked (or dodged into the rock) she is knocked down, then she LIFTS (K.ride.lift s, slowly,
+   gold UP: GRAB): grab her talons (UP or GRAB near her) and she carries you along her fixed path (her dotted feather trail, drawn first) and shakes you off at its end.
+   JUMP lets go (normal air control). A carried hero cannot attack. A gust shoves her off line (it springs back); a dive that finds the rider knocks him off. */
+export const RIDE = { zone: 3.5, aim: 0.8, cd: 1.6, lift: 1.6, liftV: 26, reach: 26, v: 118, minT: 1.6, maxT: 3.2, hang: 24, shake: 0.25, hop: 150, hp: 30, spring: 3 };
 export const K = { aim: 0.75, diveV: 300, diveDmg: 8, stun: 2.2, respawn: 4.5, markW: 18, fold: 0.5,
   shriek: { reach: 15, tell: 0.9, mark: 1.3, cd: 5.6, swoop: 1.7, call: 18, gap: 0.32, low: 40, hi: 78 } };
 export const KIND = { drop: 'crackfloor', span: 'crackpillar', nest: 'cracknest', steps: 'crackslab' };   /* the ent kind at a mark (src/rookery.js) - the guide's done names it */
 export const RK_SAY = {
   scream: 'SHE SCREAMS: OFF THE MARK', breaks: 'HER DIVE BREAKS THE ROCK', drop: 'THE FLOOR GIVES WAY', span: 'THE PILLAR FALLS ACROSS', nest: 'THE NEST COMES DOWN',
-  steps: 'THE SLAB SLIDES DOWN', stunned: 'STUNNED IN THE RUBBLE', roost: 'THE ROOST SENDS ANOTHER', marked: 'THE SHRIEKER MARKS YOU',
+  steps: 'THE SLAB SLIDES DOWN', ride: 'BLOCK HER DIVE, THEN GRAB HER TALONS: UP', grab: 'UP: GRAB', riding: 'SHE CARRIES YOU: JUMP LETS GO', shook: 'SHE SHAKES YOU OFF', letGo: 'YOU LET GO',
+  knocked: 'KNOCKED OFF HER TALONS', through: 'SHE FLIES THROUGH IT', gust: GALE_SAY.gust, broken: GALE_SAY.broken, braced: GALE_SAY.braced, shoved: GALE_SAY.shoved, stunned: 'STUNNED IN THE RUBBLE', roost: 'THE ROOST SENDS ANOTHER', marked: 'THE SHRIEKER MARKS YOU',
 };
 /* the cells a cracked rock lays (or opens) when it breaks: [x, y, 'S'|'O'|'A'] - also read by src/reachcore.js and tools/rookery.mjs */
 export function crackCells(d, solidAt) {
@@ -42,6 +50,12 @@ export function crackCells(d, solidAt) {
     for (let y = row, n = 0; n < 8 && !(solidAt && solidAt(x, y)); y++, n++) out.push([x, y, 'S']); }
   return out;
 }
+/* (claude/rookery2) A RIDE (L.rkRides): { id, mount [x, y] (the cell a hero stands in), roost [x, y], path [[x, y] ...] (cells her talons pass), land [x, y] (the cell he is shaken off
+   into, over footing) } - its points in px, from (fx, fy) */
+export function ridePts(d, fx, fy, TS = 16) { return [[fx, fy], ...d.path.map(([x, y]) => [x * TS + 8, y * TS + 8 - RIDE.hang]), [d.land[0] * TS + 8, (d.land[1] + 1) * TS - 6 - RIDE.hang]]; }
+export function alongPts(pts, k) { const L = []; let tot = 0; for (let i = 1; i < pts.length; i++) { const l = Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]); L.push(l); tot += l; }
+  let t = k * tot; for (let i = 1; i < pts.length; i++) { if (t <= L[i - 1] || i === pts.length - 1) { const q = L[i - 1] ? Math.min(1, t / L[i - 1]) : 1; return [pts[i - 1][0] + (pts[i][0] - pts[i - 1][0]) * q, pts[i - 1][1] + (pts[i][1] - pts[i - 1][1]) * q, tot]; } t -= L[i - 1]; }
+  return [pts[pts.length - 1][0], pts[pts.length - 1][1], tot]; }
 export const markX = (d, TS = 16) => d.cleat[0] * TS + 8;
 export const markY = (d, TS = 16) => (d.cleat[1] + 1) * TS;   /* the floor's top under the mark */
 
@@ -63,11 +77,14 @@ export function makeRookeryHands(ctx) {
     for (const d of (lv.hoists || [])) { const was = keep && keep.cs.get(d.id), stay = was && was.state === 'broken';
       cs.set(d.id, stay ? Object.assign(was, { e: null, respawnT: 0 }) : { d, id: d.id, state: 'whole', t: 0, e: null, respawnT: 0, fold: 0 });
       if (stay) lay(d); }
-    S = { L: lv, cs, said: keep ? keep.said : new Set(), sec: -1, banner: null, marks: [], dives: new Set(),
-      n: keep ? keep.n : { baits: 0, breaks: 0, byKind: { drop: 0, span: 0, nest: 0, steps: 0 }, stunned: 0, screams: 0, called: 0, respawns: 0, diveHits: 0, diveBlocks: 0 } };
+    const rides = new Map(); for (const d of (lv.rkRides || [])) rides.set(d.id, { d, id: d.id, e: null, respawnT: 0, n: 0 });
+    S = { L: lv, cs, rides, lastDive: -9, lastGust: -9, said: keep ? keep.said : new Set(), sec: -1, banner: null, marks: [], dives: new Set(),
+      n: keep ? keep.n : { rides: 0, grabs: 0, shook: 0, letGo: 0, knocked: 0, rideDives: 0, gusts: 0, galeBroken: 0, baits: 0, breaks: 0, byKind: { drop: 0, span: 0, nest: 0, steps: 0 }, stunned: 0, screams: 0, called: 0, respawns: 0, diveHits: 0, diveBlocks: 0 } };
     for (const e of ctx.enemies()) if (e.alive && (e.t === 'harpy' || e.t === 'shrieker')) { e.rkDive = null; e.rkAim = null;
       if (e.rkRoost) { const c = S.cs.get(e.rkRoost); if (c && !c.e) c.e = e; }
-      if (e.rkShriek) { e.rkCd = 1.5; e.rkSm = 'hover'; } }
+      if (e.rkShriek) { e.rkCd = 1.5; e.rkSm = 'hover'; }
+      if (e.rkRide) { const c = S.rides.get(e.rkRide); if (c && !c.e) c.e = e; e.rdCd = 0.6; e.rdLift = true; e.hp = Math.max(e.hp, RIDE.hp); } }
+    for (const p of ctx.players()) if (p) p.rkRide = null;
   };
 
   /* ---------- A DIVE AT A SPOT (a bait, a shrieker's call): straight at it; what it meets breaks ---------- */
@@ -77,7 +94,7 @@ export function makeRookeryHands(ctx) {
   }
   function startDive(e) {
     const a = e.rkAim; e.rkAim = null; const d = Math.hypot(a.tx - e.x, a.ty - 6 - e.y) || 1;
-    e.rkDive = { fx: e.x, fy: e.y, tx: a.tx, ty: a.ty - 6, t: 0, T: Math.max(0.18, d / K.diveV), hit: false, why: a.why }; e.mode = 'dive'; S.dives.add(e);
+    e.rkDive = { fx: e.x, fy: e.y, tx: a.tx, ty: a.ty - 6, t: 0, T: Math.max(0.18, d / K.diveV), hit: false, why: a.why }; e.mode = 'dive'; S.dives.add(e); S.lastDive = ctx.time(); if (e.rkRide) { S.n.rideDives++; e.rdLift = false; }
   }
   /* the cracked rock under a spot (x px, floor y px), if any */
   const crackAt = (x, y) => { for (const c of S.cs.values()) if (c.state === 'whole' && Math.abs(x - markX(c.d, TS)) < K.markW + 4 && Math.abs(y - markY(c.d, TS)) < 14) return c; return null; };
@@ -102,7 +119,7 @@ export function makeRookeryHands(ctx) {
     if (!v.hit) for (const p of ctx.players()) { if (!p || p.dead) continue; if (Math.abs(p.x - e.x) < 11 && Math.abs((p.y - 8) - e.y) < 13) { v.hit = true;
       let res = null; ctx.asPlayer(p, () => { res = ctx.damage(e.x, K.diveDmg, { who: e, name: 'THE DIVE' }); });
       if (res === 'blocked') { S.n.diveBlocks++; ctx.number(e.x, e.y - 12, 'KNOCKED DOWN', '#8fd160'); impact(e, e.x, Math.min(v.ty + 6, p.y)); return; }
-      if (res === 'hit') S.n.diveHits++; } }
+      if (res === 'hit') { S.n.diveHits++; if (p.rkRide) dropRider(p, 'knocked'); } } }
     if (k >= 1) impact(e, v.tx, v.ty + 6);
   }
 
@@ -129,6 +146,10 @@ export function makeRookeryHands(ctx) {
       if (on && e && e.alive && !e.rkDive && !e.rkAim && !(e.stagger > 0) && e.mode !== 'downed') {
         S.n.baits++; startAim(e, mx, my, K.aim, c.id); if (once('scream')) say(mx, my - 40, 'scream', '#ff9a5c'); }
     }
+    /* (claude/rookery2) THE RIDE ROOSTS: a ride harpy cut down, another is sent */
+    for (const c of S.rides.values()) { const d = c.d; if (c.e && c.e.alive) continue; if (c.e && !c.e.alive) { c.e = null; c.respawnT = K.respawn; }
+      if ((c.respawnT -= dt) <= 0 && P && Math.abs(P.x - mountX(d)) < 26 * TS) { const e = ctx.spawn('harpy', d.roost[0], d.roost[1]); if (e) { e.rkRide = d.id; e.hp = Math.max(e.hp, RIDE.hp); e.rdCd = 1; e.rdLift = true; c.e = e; S.n.respawns++; } c.respawnT = K.respawn; } }
+    for (const p of ps) if (p && p.rkRide && (!p.rkRide.alive || p.dead)) dropRider(p, 'shook');
     /* THE SHRIEKER'S MARKS fade */
     for (const m of S.marks) m.t -= dt; S.marks = S.marks.filter(m => m.t > 0);
     /* THE NAMED AREAS: the banner when you come into one */
@@ -140,11 +161,13 @@ export function makeRookeryHands(ctx) {
   H.harpy = (e, dt) => {
     if (!S || !e.alive) return false;
     if (e.rkShriek) return shriekerStep(e, dt);
+    if (e.t === 'galeharpy') { galeStep(e, dt, galeW()); if (e.stagger > 0) e.stagger = Math.max(0, e.stagger - dt); return true; }   /* (claude/rookery2) THE GALE HARPY (src/gale-harpy.js) */
     if (e.rkDive) { diveStep(e, dt); return true; }
     if (e.rkAim) { e.rkAim.t -= dt; e.face = Math.sign(e.rkAim.tx - e.x) || e.face; e.mode = 'aim';
       e.x += (Math.sin((e.anim || 0) * 9) * 6) * dt;   /* (she shivers on the air, wings back) */
       if (e.stagger > 0) { e.rkAim = null; e.mode = 'rise'; e.modeT = 1; return true; }
-      if (e.rkAim.t <= 0) startDive(e); return true; }
+      if (e.rkAim.t <= 0) { if (ctx.time() - S.lastGust < GALE.noStack) e.rkAim.t = 0.05; else startDive(e); } return true; }   /* (claude/rookery2: never a dive in a gust's window) */
+    if (e.rkRide && rideStep(e, dt)) return true;   /* (claude/rookery2) A RIDE HARPY: her mount, her lift, her path */
     /* her OWN dive (the plain crag-harpy AI) that comes down on a mark breaks it */
     if (e.mode === 'dive') { const c = crackAt(e.x, e.y + 10); if (c && e.y + 10 > markY(c.d, TS) - 10) { smash(c, e); e.mode = 'downed'; e.modeT = K.stun; e.stagger = K.stun; e.vy = -40; S.n.stunned++; return true; } }
     return false;
@@ -157,10 +180,10 @@ export function makeRookeryHands(ctx) {
     const m = e.rkSm || 'hover';
     if (m === 'tell') { e.mode = 'aim'; e.face = Math.sign(P.x - e.x) || e.face; e.rkT -= dt;
       if (e.rkT <= 0) { e.rkSm = 'swoop'; e.rkT = Q.swoop; S.n.screams++;
-        const tx = P.x, ty = P.ground ? P.y : (() => { const t = Math.floor(P.x / TS); for (let y = Math.floor(P.y / TS); y < (L().H || 60); y++) if (ctx.solidAt(t, y) || ctx.tileAt(t, y) === ctx.T.ONEWAY) return y * TS; return P.y; })();
+        const tx = P.x, ty = P.rkRide ? P.y - 4 : P.ground ? P.y : (() => { const t = Math.floor(P.x / TS); for (let y = Math.floor(P.y / TS); y < (L().H || 60); y++) if (ctx.solidAt(t, y) || ctx.tileAt(t, y) === ctx.T.ONEWAY) return y * TS; return P.y; })();
         S.marks.push({ x: tx, y: ty, t: Q.mark, T: Q.mark }); if (once('marked')) say(tx, ty - 40, 'marked', '#ff6b6b'); sfx('screech'); sfx('queenShriek');
         /* every harpy in earshot dives AT THE MARK, one after another */
-        const callers = ctx.enemies().filter(q => q.alive && q !== e && q.t === 'harpy' && !q.rkShriek && !q.rkDive && !q.rkAim && !(q.stagger > 0) && q.mode !== 'downed' && Math.abs(q.x - tx) < Q.call * TS && Math.abs(q.y - ty) < 14 * TS)
+        const callers = ctx.enemies().filter(q => q.alive && q !== e && q.t === 'harpy' && !q.rkShriek && !q.rkDive && !q.rkAim && !(q.stagger > 0) && q.mode !== 'downed' && q.mode !== 'ride' && q.mode !== 'lift' && Math.abs(q.x - tx) < Q.call * TS && Math.abs(q.y - ty) < 14 * TS)
           .sort((a, b) => Math.abs(a.x - tx) - Math.abs(b.x - tx)).slice(0, 3);
         callers.forEach((q, i) => { startAim(q, tx, ty, 0.45 + i * Q.gap, 'call'); S.n.called++; }); }
       return true; }
@@ -173,13 +196,63 @@ export function makeRookeryHands(ctx) {
     return true;
   }
 
+  /* ---------- (claude/rookery2) CATCH A RIDE ---------- */
+  const mountX = d => d.mount[0] * TS + 8, mountY = d => (d.mount[1] + 1) * TS;
+  function dropRider(p, why) { const e = p.rkRide; p.rkRide = null; if (!e) return; const c = S.rides.get(e.rkRide); if (c) c.rider = null;
+    if (why === 'jump') { p.vy = -RIDE.hop; S.n.letGo++; if (once('letGo')) say(p.x, p.y - 30, 'letGo', '#c8d8e8'); }
+    else { p.vy = 20; if (why === 'knocked') { S.n.knocked++; say(p.x, p.y - 30, 'knocked', '#ff6b6b'); } else { S.n.shook++; if (once('shook')) say(p.x, p.y - 30, 'shook', '#c8d8e8'); } }
+    p.ground = false; p.vx = 0; e.mode = 'rise'; e.modeT = 1.2; e.rdCd = RIDE.cd + 1; e.rdLift = true; e.rdOff = null; }
+  function rideStep(e, dt) {
+    const c = S.rides.get(e.rkRide); if (!c) return false; const d = c.d, ps = ctx.players().filter(p => p && !p.dead);
+    if (e.mode === 'ride') { const p = c.rider;
+      if (!p || p.rkRide !== e || p.dead) { if (p && p.rkRide === e) p.rkRide = null; c.rider = null; e.mode = 'rise'; e.modeT = 1.2; e.rdCd = RIDE.cd; return true; }
+      e.rdT += dt; const k = Math.min(1, e.rdT / e.rdTT), [x, y] = alongPts(e.rdPts, k), o = e.rdOff || (e.rdOff = [0, 0]);
+      o[0] -= o[0] * Math.min(1, dt * RIDE.spring); o[1] -= o[1] * Math.min(1, dt * RIDE.spring);
+      e.face = Math.sign(x - e.x) || e.face; e.x = x + o[0]; e.y = y + o[1];
+      /* A HARPY'S FLIGHT BREAKS WHAT IT HITS: a cracked arm on her path (a hung nest) goes as she passes */
+      for (const q of S.cs.values()) if (q.state === 'whole' && q.d.load === 'nest' && q.d.x !== undefined && Math.hypot(e.x - (q.d.x * TS + 8), e.y + 8 - (q.d.top * TS + 8)) < 22) { smash(q, e); if (once('through')) say(e.x, e.y - 30, 'through', '#8fd160'); }
+      if (k >= 1) dropRider(p, 'shook');
+      return true; }
+    if (e.mode === 'lift') { e.modeT -= dt; e.y -= RIDE.liftV * dt;
+      if (e.modeT <= 0) { e.mode = 'rise'; e.modeT = 1.2; e.rdCd = RIDE.cd; e.rdLift = true; } return true; }
+    if (e.mode === 'rise' && !e.rdLift) { e.mode = 'lift'; e.modeT = RIDE.lift; e.rdLift = true; e.stagger = 0; if (once('grab')) say(e.x, e.y - 26, 'grab', '#ffd36b'); return true; }   /* knocked down, she climbs: GRAB HER */
+    if (e.mode === 'downed' || e.mode === 'rise' || e.mode === 'dive' || e.mode === 'aim') return false;   /* (the plain AI drops her and lifts her home; a bait dive is handled above) */
+    /* hover at her roost: she dives only at a hero on her MOUNT (on his feet) */
+    e.rdCd = (e.rdCd || 0) - dt; e.mode = 'hover'; e.y += (e.hy + Math.sin((e.anim || 0) * 2.1) * 4 - e.y) * Math.min(1, dt * 3); e.x += (e.hx + Math.sin((e.anim || 0) * 1.1) * 6 - e.x) * Math.min(1, dt * 3);
+    const P = ps.find(p => p.ground && Math.abs(p.x - mountX(d)) < RIDE.zone * TS && Math.abs(p.y - mountY(d)) < 10);
+    if (P) e.face = Math.sign(P.x - e.x) || e.face;
+    if (P && e.rdCd <= 0 && !(e.stagger > 0) && ctx.time() - S.lastGust > GALE.noStack) { startAim(e, P.x, P.y, RIDE.aim, 'ride'); e.rdLift = false; if (once('ride')) say(mountX(d), mountY(d) - 44, 'ride', '#ffd36b'); }
+    return true;
+  }
+  /* GRAB HER TALONS (main.js updatePlayer, for the hero it is moving: UP held or GRAB pressed) - true = he has her */
+  H.tryGrab = p => { if (!S || !p || p.dead || p.rkRide) return false;
+    for (const c of S.rides.values()) { const e = c.e; if (!e || !e.alive || e.mode !== 'lift' || c.rider) continue;
+      if (Math.abs(p.x - e.x) < RIDE.reach && p.y - e.y > -12 && p.y - e.y < 52) { c.rider = p; p.rkRide = e; p.rkRideHp = p.hp; e.mode = 'ride'; e.rdT = 0; e.rdOff = [0, 0];
+        e.rdPts = ridePts(c.d, e.x, e.y, TS); const tot = alongPts(e.rdPts, 1)[2]; e.rdTT = Math.max(RIDE.minT, Math.min(RIDE.maxT, tot / RIDE.v));
+        S.n.rides++; S.n.grabs++; c.n++; sfx('screech'); if (once('riding')) say(p.x, p.y - 40, 'riding', '#ffd36b'); return true; } }
+    return false; };
+  /* THE RIDE (main.js updatePlayer hands a carried hero here instead of moving him): he hangs from her talons; JUMP lets go. false = not riding (any more) */
+  H.ride = (p, jump) => { const e = p.rkRide; if (!S || !e) { p.rkRide = null; return false; }
+    if (!e.alive || e.mode !== 'ride') { dropRider(p, 'shook'); return false; }
+    if (jump) { dropRider(p, 'jump'); return false; }
+    p.x = e.x;   /* (only a HARPY'S DIVE that finds him knocks him off her talons - diveStep; a crow's peck just hurts) */ p.y = e.y + RIDE.hang; p.vx = 0; p.vy = 0; p.ground = false; p.onMover = null; return true; };
+  /* THE GALE HARPY's world (src/gale-harpy.js) */
+  const galeW = () => ({ time: () => ctx.time(), lastDive: () => S.lastDive, gusted: t => { S.lastGust = t; S.n.gusts++; },
+    heroes: () => ctx.players().filter(p => p && !p.dead).map(p => ({ x: p.x, y: p.y, ground: !!p.ground, alive: true, blocking: !!(p.block || p.blocking), p,
+      push: (vx, vy) => { if (p.rkRide) { const e = p.rkRide; if (e.rdOff) { e.rdOff[0] += vx * 0.12; e.rdOff[1] += vy * 0.05; } return; } p.vx = vx; if (vy) { p.vy = Math.min(p.vy || 0, vy); p.ground = false; } } })),
+    riders: () => [...S.rides.values()].filter(c => c.rider && c.e && c.e.rdOff).map(c => ({ x: c.e.x, y: c.e.y + RIDE.hang, shove: (dx, dy) => { c.e.rdOff[0] += dx; c.e.rdOff[1] += dy; } })),
+    say: (x, y, t, col) => ctx.number(x, y, t, col), sound: k => k === 'gust' ? sfx('whoosh', 'throwWhoosh', 'tell') : k === 'broken' ? sfx('clank', 'thud') : sfx('tell', 'screech'),
+    mark: (e, m) => ctx.number(e.x, e.y - 14, m, '#ffd36b'), seen: () => ctx.seen && ctx.seen('galeharpy'), firstTell: e => { if (once('gust')) say(e.x, e.y - 30, 'gust', '#ffd36b'); } });
+  H.galeW = () => S ? galeW() : null;
+
   /* ---------- THE GUIDE's props (src/stuck-spots.js reads `on`), the tools, the pilot bot ---------- */
   H.props = () => { if (!S) return []; const out = [];
     for (const c of S.cs.values()) { const d = c.d; out.push({ t: KIND[d.load], id: c.id, x: markX(d, TS), y: markY(d, TS), on: c.state !== 'whole' }); }
     return out; };
+  H.rideOf = id => { const c = S && S.rides.get(id); return c ? { d: c.d, mode: c.e && c.e.alive ? c.e.mode : 'gone', x: c.e ? c.e.x : 0, y: c.e ? c.e.y : 0, aim: c.e && c.e.rkAim ? { x: c.e.rkAim.tx, t: c.e.rkAim.t } : null, rider: c.rider || null } : null; };
   H.hoist = id => { const c = S && S.cs.get(id); return c ? { state: c.state === 'whole' ? 'hang' : 'cut', d: c.d } : null; };
   H.breakCrack = id => { const c = S && S.cs.get(id); return c ? smash(c, null) : false; };
-  H.read = () => S ? { cracks: [...S.cs.values()].map(c => ({ id: c.id, load: c.d.load, state: c.state, harpy: !!(c.e && c.e.alive) })), marks: S.marks.length, banner: S.banner ? S.banner.name : null, sec: S.sec, n: JSON.parse(JSON.stringify(S.n)) } : null;
+  H.read = () => S ? { cracks: [...S.cs.values()].map(c => ({ id: c.id, load: c.d.load, state: c.state, harpy: !!(c.e && c.e.alive) })), rides: [...S.rides.values()].map(c => ({ id: c.id, n: c.n, mode: c.e && c.e.alive ? c.e.mode : 'gone', x: c.e ? c.e.x : 0, y: c.e ? c.e.y : 0, rider: !!c.rider })), marks: S.marks.length, banner: S.banner ? S.banner.name : null, sec: S.sec, n: JSON.parse(JSON.stringify(S.n)) } : null;
 
   /* ---------- DRAWING (GREYBOX: readable shapes; the sonnet art lane redraws every one - see the lane report's ART NOTES) ---------- */
   const R = Math.round;
@@ -194,6 +267,11 @@ export function makeRookeryHands(ctx) {
     if (!S) return; const lv = L();
     /* THE EGG NESTS on the ledges (twigs, bones, cream eggs) and THE ROOSTS: a bone nest on a knob of crag where a harpy lives (src/redraw/rookery_world.js) */
     for (const [nx0, ny0] of (lv.rkNests || [])) { const x = R(nx0 * TS + 8 - cx), y = R((ny0 + 1) * TS - cy); if (x < -30 || x > VW + 30) continue; RKW.drawEggs(g, x, y, RKW.zoneIdx(nx0), nx0 & 3); }
+    /* (claude/rookery2) THE ANCHORS (L.rkAnchors, src/rookery-anchors.js) - GREYBOX shapes the art lane redraws: a ROCK SPIRE from the footing under a roost / perch / arm
+       with the nest LASHED to its tip, a stone BRACKET (corbel) from the crag face, CHAINS from the rock over it. The ride roosts and gale perches get their nest drawn here */
+    for (const q of (lv.rkAnchors || [])) { const a = q.a; if (!a) continue; const x = R(q.x * TS + 8 - cx), y = R((q.y + 1) * TS - cy); if (x < -60 || x > VW + 60) continue;   /* (claude/rookery2art) spires, corbels and chains: src/redraw/rookery_anchor_art.js */
+      RKA.drawAnchor(g, q, cx, cy, TS, time, RKW.zoneIdx(q.x));
+      if (q.what === 'roost' && (lv.rkRides || []).some(d => d.id === q.id) || q.what === 'perch') RKW.drawRoost(g, x, y, RKW.zoneIdx(q.x)); }
     for (const c of S.cs.values()) { const d = c.d; if (!d.roost) continue; const x = R(d.roost[0] * TS + 8 - cx), y = R((d.roost[1] + 1) * TS - cy); if (x < -40 || x > VW + 40) continue; RKW.drawRoost(g, x, y, RKW.zoneIdx(d.roost[0])); }
     for (const c of S.cs.values()) { const d = c.d, mx = markX(d, TS), my = markY(d, TS), sx = R(mx - cx), sy = R(my - cy);
       if (sx < -160 || sx > VW + 160) continue;
@@ -209,11 +287,26 @@ export function makeRookeryHands(ctx) {
     /* THE SHRIEKER'S MARK: a red ring and a crossed claw-cut, the scream's rings widening off it */
     for (const m of S.marks) { const x = R(m.x - cx), y = R(m.y - cy), k = m.t / m.T; g.globalAlpha = 0.5 + 0.5 * k; g.strokeStyle = C.red; g.lineWidth = 2; g.beginPath(); g.ellipse ? g.ellipse(x, y - 1, 14, 4, 0, 0, Math.PI * 2) : g.rect(x - 14, y - 4, 28, 6); g.stroke();
       g.lineWidth = 1; rect(g, x - 5, y - 6, 10, 2, C.red); rect(g, x - 1, y - 10, 2, 10, C.red); g.globalAlpha = 0.5 * k; g.beginPath(); g.ellipse ? g.ellipse(x, y - 1, 14 + (1 - k) * 18, 4 + (1 - k) * 5, 0, 0, Math.PI * 2) : g.rect(x - 20, y - 5, 40, 8); g.stroke(); g.globalAlpha = 1; }
+    /* (claude/rookery2) THE RIDES: her path drawn FIRST (a dotted feather trail from the mount to where she shakes you off), the mount's talon marks, GRAB over her while
+       she lifts, her talons on the rider. GREYBOX: the sonnet art lane draws the trail, the mount, the lift and the carry poses */
+    for (const c of S.rides.values()) { const d = c.d, e = c.e, mx = mountX(d), my = mountY(d); if (mx - cx < -200 || mx - cx > VW + 200) continue;
+      if (!c.rider) { const pts = ridePts(d, mx, my - RIDE.hang - 10, TS);   /* (claude/rookery2art) HER PATH: a trail of drifting FEATHERS (quill and two barbs, twinkling), ending at a landing ring with a chevron */
+        for (let k = 0.04; k < 1; k += 0.045) { const [x, y] = alongPts(pts, k), [x2, y2] = alongPts(pts, Math.min(1, k + 0.012)), ph = Math.floor(time * 4 + k * 20) % 4; if (!ph) continue; const dl = Math.hypot(x2 - x, y2 - y) || 1, ux = (x2 - x) / dl, uy = (y2 - y) / dl, bx = R(x - cx), by = R(y + RIDE.hang - cy);
+          for (let i = 0; i < 4; i++) { g.fillStyle = i < 3 ? '#f4f0e8' : '#c8c4d4'; g.fillRect(R(bx + ux * i), R(by + uy * i), 1, 1); } g.fillStyle = ph === 2 ? '#c8c4d4' : '#e6e4ec'; g.fillRect(R(bx + ux * 1 - uy * 1), R(by + uy * 1 + ux * 1), 1, 1); g.fillRect(R(bx + ux * 2 + uy * 1), R(by + uy * 2 - ux * 1), 1, 1); }
+        const [lx, ly] = pts[pts.length - 1], rx = R(lx - cx), ry = R(ly + RIDE.hang + 6 - cy), pu = 0.5 + 0.35 * Math.sin(time * 5); g.strokeStyle = 'rgba(255,233,160,' + (0.45 + 0.3 * pu).toFixed(2) + ')'; g.strokeRect(rx - 6.5, ry - 2.5, 13, 3);
+        g.fillStyle = 'rgba(255,233,160,' + (0.5 + 0.3 * pu).toFixed(2) + ')'; g.fillRect(rx - 2, ry - 8, 5, 1); g.fillRect(rx - 1, ry - 7, 3, 1); g.fillRect(rx, ry - 6, 1, 1); }
+      { const gouge = (x, y) => { g.fillStyle = '#32283a'; g.fillRect(x, y, 1, 3); g.fillRect(x + 2, y, 1, 3); g.fillRect(x + 4, y, 1, 3); g.fillStyle = '#ece8e0'; g.fillRect(x, y - 1, 1, 1); g.fillRect(x + 2, y - 1, 1, 1); g.fillRect(x + 4, y - 1, 1, 1); };
+        gouge(R(mx - 11 - cx), R(my - 3 - cy)); gouge(R(mx + 6 - cx), R(my - 3 - cy)); g.fillStyle = '#e6e4ec'; g.fillRect(R(mx - 2 - cx), R(my - 2 - cy), 3, 1); g.fillRect(R(mx + 2 - cx), R(my - 1 - cy), 2, 1); }   /* her mount: claw gouges in the stone, a feather and a splash of guano */
+      if (e && e.alive && e.mode === 'lift') { const x = R(e.x - cx), y = R(e.y - cy), a = 0.55 + 0.4 * Math.sin(time * 12); g.globalAlpha = a; g.fillStyle = '#ffd36b'; for (const [sx2, sy2] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) { const bx = x + sx2 * 14, by = y + 2 + sy2 * 14; g.fillRect(sx2 > 0 ? bx - 4 : bx, sy2 > 0 ? by - 1 : by, 5, 2); g.fillRect(sx2 > 0 ? bx - 1 : bx, sy2 > 0 ? by - 4 : by, 2, 5); } g.globalAlpha = 1;   /* (claude/rookery2art) four gold corner brackets round her, not a box */
+        if (ctx.text) ctx.text(RK_SAY.grab, x, y - 22, Math.floor(time * 8) % 2 ? '#ffd36b' : '#fff6e0', 'center', 6); }
+      if (e && e.alive && e.mode === 'ride' && c.rider) drawHang(g, R(e.x - cx), R(e.y - cy) + 2, R(c.rider.y - cy), time, { lean: (e.rdOff ? Math.max(-6, Math.min(6, e.rdOff[0] * 0.25)) : 0) }); }
     /* THE AREA PLATE */
     if (S.banner) { const a = Math.max(0, Math.min(1, S.banner.t / 0.6, (3.4 - S.banner.t) / 0.4)); RKW.drawPlate(g, S.banner.name, VW, a, ctx.text); }
   };
   /* a harpy's overlay: the shrieker's crest and her scream rings */
   H.harpyOver = (g, e, cx, cy, time) => { if (!S || !e.alive) return; const x = R(e.x - cx), y = R(e.y - cy);
+    if (e.t === 'galeharpy') { drawGust(g, e, cx, cy, time); return; }
+    if (e.rkRide && e.mode === 'lift') drawLegs(g, x, y + 3, time);   /* (claude/rookery2art) her legs hang open, claws spread: GRAB them */   /* (claude/rookery2) her cone: told dashed in the tell, streaks in the beat */
     if (e.rkShriek) { rect(g, x - 3, y - 12, 2, 5, '#c0302a'); rect(g, x, y - 13, 2, 6, '#e04a3a'); rect(g, x + 3, y - 12, 2, 5, '#c0302a');
       if (e.rkSm === 'tell') { const k = (time * 3) % 1; g.strokeStyle = 'rgba(255,90,74,' + (1 - k).toFixed(2) + ')'; g.beginPath(); g.arc(x + e.face * 6, y - 4, 6 + k * 22, 0, Math.PI * 2); g.stroke(); } } };
   /* THE SKY AND THE LANDMARKS (parallax): the cold pearl sky and its sun, THE ROC'S PEAK ahead (growing as you climb), THE MONASTERY far below and behind (sinking) - drawn by src/redraw/rookery_backdrop.js (claude/rookeryart; the greybox's flat silhouettes are gone) */

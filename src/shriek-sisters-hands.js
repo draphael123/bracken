@@ -16,6 +16,8 @@ import * as SSM from './shriek-sisters.js';
 import { BOSS_PHASE } from './boss-music.js';
 import { canvas, flipX, whiten } from './px.js';
 import { drawSister } from './redraw/shriek_sisters_art.js';
+import { drawHang } from './redraw/rookery_hang.js';
+import { drawArena, drawWind } from './redraw/rookery_arena_art.js';
 import { bakeSummitSlab, bakeSummitRubble, bakeSummitStone, bakeSummitEcho, bakeBoulder, bakeSummitLip } from './redraw/rookery_world.js';   /* (claude/rookerypolish) the summit's slabs, rubble and stones in the Sisters' Crag stone */
 const { SS, ROLES } = SSM;
 
@@ -32,7 +34,7 @@ const R = Math.round;
 const rect = (g, x, y, w, h, col) => { g.fillStyle = col; g.fillRect(R(x), R(y), R(w), R(h)); };
 /* THE POSE A MODE WEARS (local px, facing right, her talons at 0,0): wing angle (rad, up is negative), body pitch, head [dx, dy], beak (open), talons (spread / fwd), rock */
 export const POSE = {
-  sleep: { wing: 0.9, pitch: 0, head: [6, 2], fold: true }, wake: { wing: -0.6, pitch: 0, head: [8, -6], beak: true },
+  sleep: { wing: 0.9, pitch: 0, head: [6, 2], fold: true, tuck: true }, wake: { wing: -0.6, pitch: 0, head: [8, -6], beak: true },
   hover: { wing: -0.4, flap: true, pitch: 0, head: [8, -2] }, rise: { wing: -0.7, flap: true, pitch: -0.2, head: [8, -4] }, fly: { wing: -0.3, flap: true, pitch: 0.1, head: [9, -1] },
   diveTell: { wing: -1.2, pitch: 0.35, head: [9, 4], talon: 'fwd', eye: 'red' }, dive: { wing: 0.15, pitch: 0.9, head: [11, 2], fold: true, talon: 'fwd', eye: 'red' },
   land: { wing: -0.2, pitch: 0.1, head: [8, 0], talon: 'spread' }, downed: { wing: 0.6, pitch: 0.12, head: [7, 4], sprawl: true, stars: true },
@@ -54,7 +56,55 @@ export const POSE = {
   echoTell: { wing: -1.25, pitch: 0.75, head: [10, 8], beak: true, eye: 'red' }, echo: { wing: -0.55, pitch: 0.95, head: [12, 9], beak: true, down: true },
   grabTell: { wing: -1.35, pitch: 0.2, head: [10, -1], talon: 'reach', eye: 'red' }, grab: { wing: -0.15, pitch: 0.25, head: [12, 1], talon: 'reach' },
   lift: { wing: -1.0, flap: true, pitch: -0.15, head: [8, -4], talon: 'clutch', beak: true }, hold: { wing: -0.7, flap: true, pitch: 0, head: [8, -1], talon: 'clutch' },
+  /* (claude/rookery2) PLACEHOLDER POSES with their real timings (the sonnet art lane draws them): THE CLIMB OFF THE ROCK a downed sister makes (ferryWait, SS.ride.window: wings
+     beating low and hard, talons hanging - GRAB HER), THE FERRY (beating up with the hero in her talons, SS.ride.v), THE SHRIEKER PERCHED on her nest (wings folded, head up),
+     CORNERED (reared back on the nest, wings flung, beak open: SS.ride.startle), THE GROWTH into phase 2 (wings flung wide, head thrown back, SS.p2.grow) */
+  ferryWait: { wing: 0.2, flap: true, pitch: 0.15, head: [8, 2], talon: 'spread', beak: true }, ferry: { wing: -1.1, flap: true, pitch: -0.25, head: [9, -4], talon: 'clutch' },
+  perched: { wing: 0.85, pitch: 0, head: [6, -5], fold: true, tuck: true }, startled: { wing: -1.5, pitch: -0.4, head: [3, -8], beak: true, eye: 'red' },
+  grow: { wing: -1.55, pitch: -0.5, head: [3, -10], beak: true, chest: true, eye: 'red' },
+  /* (claude/rookery2art) THE FAR-MORE-FRAMES PASS (Daniel 10-27: "far more Sisters animations"). poseOf() below picks among these by how long she has been in her mode: the dive's WIND-UP
+     (a crouch, then wings rising), the RECOVER after a dive (wings dragging up), the shriek's INHALE (chest swelling) and its fading TAIL, HURT (a wince), the STUN's nodding head,
+     the PERCH's preening head, the CORNERED flail, the GROWTH in three beats, the FALL (a downed bird still in the air), the SNATCH's carry (wings beating) and the DEATH in three */
+  diveWind: { wing: 0.3, pitch: 0.15, head: [8, 5], talon: 'fwd', eye: 'red' }, diveWind2: { wing: -0.7, pitch: 0.28, head: [9, 5], talon: 'fwd', eye: 'red' },
+  recover: { wing: 0.35, pitch: 0.2, head: [8, 3], talon: 'spread', beak: true }, recover2: { wing: -0.1, flap: true, pitch: 0.05, head: [8, 0], talon: 'hang' },
+  inhale: { wing: -0.9, pitch: -0.2, head: [6, -6], chest: true, sac: true, eye: 'red' }, inhale2: { wing: -1.2, pitch: -0.3, head: [5, -8], chest: true, sac: true, beak: true, eye: 'red' }, screamTail: { wing: -0.7, pitch: 0.05, head: [11, -3], beak: true },
+  hurt: { wing: -0.9, pitch: -0.28, head: [4, 3], hurt: true, beak: true, talon: 'spread' },
+  stuckB: { wing: 0.8, pitch: 0.14, head: [7, 3], sprawl: true, stars: true, rubble: true }, stuckC: { wing: 0.7, pitch: 0.1, head: [6, 8], sprawl: true, stars: true, rubble: true },
+  perchedB: { wing: 0.85, pitch: 0, head: [9, -3], fold: true, tuck: true }, perchedC: { wing: 0.8, pitch: 0.05, head: [3, -4], fold: true, beak: true, tuck: true },
+  startledB: { wing: -0.9, pitch: -0.25, head: [5, -6], beak: true, eye: 'red', flap: true, flapOff: 2 },
+  grow1: { wing: 0.5, pitch: 0.2, head: [6, 5], chest: true, eye: 'red' }, grow3: { wing: -1.7, pitch: -0.6, head: [2, -11], beak: true, chest: true, sac: true, eye: 'red', rings: true },
+  fall: { wing: -1.3, pitch: -0.35, head: [4, -6], beak: true, hurt: true, talon: 'spread', feathers: true },
+  carryB: { wing: -1.1, flap: true, flapOff: 3, pitch: -0.05, head: [8, -3], rock: true, talon: 'grip' },
+  dead1: { wing: -1.2, pitch: -0.5, head: [3, -9], beak: true, dead: true, talon: 'spread', feathers: true }, dead2: { wing: 0.15, pitch: 0.9, head: [6, 5], fold: true, dead: true, talon: 'spread', feathers: true },
+  dead3: { wing: 0.6, pitch: 0.05, head: [6, 8], sprawl: true, dead: true, rubble: true },
 };
+/* HOW LONG she has been in this mode (s). The hands note the mode change as it happens; poseOf reads it */
+const modeAge = (b, s, time) => { if (b.__m !== s.mode) { b.__m = s.mode; b.__t0 = time; } return time - b.__t0; };
+/* (claude/rookery2art) the pose a sister wears NOW: her mode, how long she has been in it, a blow just landed (hurt), her height (a downed bird in the air falls) */
+export function poseOf(s, b, time, flash, G) {
+  const m = s.mode, age = modeAge(b, s, time); if (flash) b.__hurt = time + 0.24;
+  const hurting = (b.__hurt || 0) > time;
+  switch (m) {
+    case 'hover': case 'fly': case 'rise': return hurting ? POSE.hurt : POSE[m];
+    case 'swoop': return hurting ? POSE.hurt : POSE.swoop;
+    case 'diveTell': return age < 0.28 ? POSE.diveWind : age < 0.5 ? POSE.diveWind2 : POSE.diveTell;
+    case 'land': return age < 0.22 ? POSE.land : age < 0.5 ? POSE.recover : POSE.recover2;
+    case 'screamTell': return age < 0.35 ? POSE.inhale : age < 0.65 ? POSE.inhale2 : POSE.screamTell;
+    case 'scream': return age < 0.8 ? POSE.scream : POSE.screamTail;
+    case 'stuck': return hurting ? POSE.hurt : (Math.floor(age * 1.6) % 3 === 0 ? POSE.stuck : Math.floor(age * 1.6) % 3 === 1 ? POSE.stuckB : POSE.stuckC);
+    case 'downed': return G && s.y < G.floorY - 9 ? POSE.fall : POSE.downed;
+    case 'perched': return Math.floor(age * 0.7) % 4 === 1 ? POSE.perchedB : Math.floor(age * 0.7) % 4 === 3 ? POSE.perchedC : POSE.perched;
+    case 'startled': return Math.floor(age * 5) % 2 ? POSE.startledB : POSE.startled;
+    case 'grow': { const k = Math.min(1, age / SS.p2.grow); return k < 0.3 ? POSE.grow1 : k < 0.75 ? POSE.grow : POSE.grow3; }
+    case 'carry': return Math.floor(time * 3.1) % 2 ? POSE.carryB : POSE.carry;
+    case 'ferryWait': case 'ferry': return hurting ? POSE.hurt : POSE[m];
+    default: return POSE[m] || POSE.hover;
+  }
+}
+/* A SISTER FALLS (3 beats, 1.5 s): struck up and back (dead1), tumbling down (dead2, spinning, feathers loose), and lying in the rubble (dead3) - then she fades. drawDeaths paints them over the summit */
+const DEATH = { T: 1.9, struck: 0.28, fall: 0.8 };
+/* her gifts, by who is dead (S.dead) - painted into HER sheet now (the diver's crest and wing bar, the shrieker's crest fan and throat sac, the snatcher's satchel and talons) */
+const giftsOf = dead => (dead.diver ? 'D' : '') + (dead.shrieker ? 'S' : '') + (dead.snatcher ? 'N' : '');
 /* A SISTER is drawn by src/redraw/shriek_sisters_art.js (claude/rookeryart: three different birds, baked per pose; the greybox's rectangles are gone) */
 
 export function makeShriekSistersHands(ctx) {
@@ -63,7 +113,7 @@ export function makeShriekSistersHands(ctx) {
   H.show = () => S;
   H.on = () => !!(S && A());
   H.owns = e => e.t === 'shrieksisters' || e.t === 'shrieksister';
-  const unhold = () => { for (const pp of ctx.players || []) { pp.ssHeld = null; pp.ssShove = null; } };
+  const unhold = () => { for (const pp of ctx.players || []) { pp.ssHeld = null; pp.ssShove = null; pp.ssRide = null; } };
   H.clear = () => { S = null; A0 = null; BOSS_PHASE.shrieksisters = 1; unhold(); };
   const anchor = () => { const e = ctx.boss; return e && e.t === 'shrieksisters' ? e : null; };
   const hurt = (name, fn) => { const P = ctx.hero(), h0 = P.hp; fn(); if (S) { S.hurt = S.hurt || {}; S.hurt[name] = (S.hurt[name] || 0) + Math.max(0, h0 - Math.max(0, P.hp)); } };
@@ -75,7 +125,7 @@ export function makeShriekSistersHands(ctx) {
     e.x = S.G.mid; e.y = S.G.floorY - 15 * ctx.TS; A0 = e;
     for (const r of ROLES) { const s = S.sis[r]; const b = { t: 'shrieksister', role: r, x: s.x, y: s.y, w: SS.sister.w, h: SS.sister.h, hp: s.hp, maxHp: s.maxHp, alive: true, dying: 0, noGrav: true, face: -1, anim: 0, flash: 0, stagger: 0, vx: 0, vy: 0, mode: 'sleep', boss: false };
       bodies[r] = b; ctx.addEnemy(b); }
-    for (const pp of ctx.players) { pp.ssKeys = null; pp.ssHeld = null; pp.ssShove = null; } return e; };
+    for (const pp of ctx.players) { pp.ssKeys = null; pp.ssHeld = null; pp.ssShove = null; pp.ssRide = null; } return e; };
   const heroes = () => ctx.players.map(pp => ({ x: pp.x, y: pp.y, ground: !!pp.ground, alive: ctx.upright(pp) && !pp.dead, face: pp.face || 1, pp }));
   function world() {
     return {
@@ -104,6 +154,9 @@ export function makeShriekSistersHands(ctx) {
           if (res === 'hit' && !P.dead && P.hp > 0 && ctx.upright(pp)) { pp.ssHeld = true; caught = pp; P.vx = 0; P.vy = 0; } });
         return caught; },
       /* she lets go: you drop to the summit floor (she only ever holds you over it) - the drop hurts, unless she fell with you */
+      /* (claude/rookery2) the nest tips a hero off the perch (toward the summit's middle); a ride ended by a fall */
+      tip: (h, P0) => { const pp = h.pp; if (!pp) return; ctx.asPlayer(pp, () => { const P = ctx.hero(); P.vx = (P.x < S.G.mid ? 1 : -1) * 150; P.vy = -90; P.ground = false; }); ctx.dust(P0.x, P0.y, 8); SOUND.teeter(ctx.sfx); },
+      unride: pp => { if (pp) { pp.ssRide = null; } },
       letGo: (s, pp, d) => { if (!pp) return; ctx.asPlayer(pp, () => { const P = ctx.hero(); pp.ssHeld = null; P.vx = 0; P.vy = 0; P.ground = false;
           if (d > 0 && ctx.upright(pp) && !P.dead) { hurt('drop', () => ctx.damagePlayer(P.x, d, { who: A0, name: 'drop', unblockable: true, noKnock: true })); ctx.number(P.x, P.y - 30, SSM.SS_SAY.letGo, '#ff6b6b'); SOUND.letGo(ctx.sfx); } }); },
     };
@@ -118,7 +171,8 @@ export function makeShriekSistersHands(ctx) {
     if (S.woke && !S.told.rule && e.modeT <= 0.2) { S.told.rule = 1; ctx.number(S.G.mid, S.G.floorY - 104, SSM.SS_SAY.rule, '#ffd36b'); ctx.hint && ctx.hint(SSM.SS_SAY.rule); }
     if (!S.woke) return;
     /* (claude/sisters2) a held hero who went down: she drops him; a shoved hero who reaches the summit's lip TEETERS (a told stagger) */
-    if (S.held && (!ctx.upright(S.held.pp) || S.held.pp.dead || !(S.held.pp.hp > 0))) { S.held.pp.ssHeld = null; S.held = null; const sn = S.sis.snatcher; if (sn.alive && (sn.mode === 'lift' || sn.mode === 'hold')) { sn.mode = 'rise'; sn.modeT = SS.dive.rise; } }
+    if (S.held && (!ctx.upright(S.held.pp) || S.held.pp.dead || !(S.held.pp.hp > 0))) { S.held.pp.ssHeld = null; const sn = S.sis[S.held.by || 'snatcher']; S.held = null; if (sn.alive && (sn.mode === 'lift' || sn.mode === 'hold')) { sn.mode = 'rise'; sn.modeT = SS.dive.rise; } }
+    if (S.ride && (!ctx.upright(S.ride.pp) || S.ride.pp.dead)) { S.ride.pp.ssRide = null; S.ride = null; }
     for (const pp of ctx.players) { const q = pp.ssShove; if (!q) continue; q.t -= dt; const edge = SS.shock.edge, atL = pp.x < S.G.x0 + edge, atR = pp.x > S.G.x1 - edge;
       if ((atL && q.dir < 0) || (atR && q.dir > 0)) { pp.ssShove = null; S.n.teeters++; ctx.asPlayer(pp, () => { const P = ctx.hero(); P.hurt = Math.max(P.hurt || 0, SS.shock.teeter); P.vx = 0; });
         ctx.number(pp.x, pp.y - 34, SSM.SS_SAY.teeter, '#ff6b6b'); SOUND.teeter(ctx.sfx); ctx.burst(pp.x + q.dir * 6, S.G.floorY - 2, 8, ['#bf9fa0', '#725a62', '#e4c8c4'], 70, 0.7); ctx.shake(2); }
@@ -127,8 +181,9 @@ export function makeShriekSistersHands(ctx) {
     /* the bodies follow the sisters; a sister at 0 falls */
     let sum = 0;
     for (const r of ROLES) { const s = S.sis[r], b = bodies[r]; if (!b) continue;
-      if (s.alive && s.hp <= 0) { s.alive = false; b.alive = false; b.dying = 0; ctx.burst(s.x, s.y - 10, 26, [COL[r].body, COL[r].light, '#e6dcc0'], 140, 0.9); SSM.fell(S, r, w); }
-      if (s.alive) { b.x = s.x; b.y = s.y; b.face = s.face || b.face; b.mode = s.mode; b.hp = s.hp; b.ward = s.ward; b.open = SSM.sisOpen(s) ? Math.max(0, s.modeT) : 0; sum += s.hp; } }
+      if (s.alive && s.hp <= 0) { s.alive = false; b.alive = false; b.dying = 0; b.__death = { t0: ctx.time(), x: s.x, y: s.y, face: s.face || -1, sc: scaleOf(s), g: giftsOf(S.dead) }; ctx.burst(s.x, s.y - 10, 26, [COL[r].body, COL[r].light, '#e6dcc0'], 140, 0.9); SSM.fell(S, r, w); }
+      if (s.alive) { b.x = s.x; b.y = s.y; b.face = s.face || b.face; b.mode = s.mode; b.hp = s.hp; b.ward = s.ward; b.open = SSM.sisOpen(s) ? Math.max(0, s.modeT) : 0; sum += s.hp;
+        const sc = scaleOf(s); b.w = Math.round(SS.sister.w * sc); b.h = Math.round(SS.sister.h * sc); } }   /* (claude/rookery2) the survivor's body grows with her */
     e.hp = Math.max(sum, ROLES.some(r => S.sis[r].alive) ? 1 : 0); e.phase = S.ph; e.mode = SSM.ssOpen(S) ? 'open' : e.mode === 'wake' && e.modeT > 0 ? 'wake' : 'fight';
     e.open = SSM.ssOpen(S) ? 1 : 0; e.ward = ROLES.some(r => S.sis[r].alive && S.sis[r].ward > 0) ? 1 : 0;
     if (!ROLES.some(r => S.sis[r].alive) && e.alive) { e.hp = 1; e.ssPass = true; ctx.killBoss(e); }
@@ -143,20 +198,53 @@ export function makeShriekSistersHands(ctx) {
     const e = anchor(); if (e) e.hp = Math.max(1, ROLES.reduce((n, r) => n + (S.sis[r].alive ? S.sis[r].hp : 0), 0)); };
   /* (claude/sisters2) THE HOLD: main.js updatePlayer hands a held hero here every frame instead of moving him - he hangs from her talons; a swing is a STRIKE on her (a real blow,
      whole: her hands are full) and SS.grab.strikes of them break her grip (she falls, KNOCKED DOWN). false = not held (any more) */
-  H.held = (P, swing) => { if (!S || !S.held || S.held.pp !== P) { P.ssHeld = null; return false; } const s = S.sis.snatcher, b = bodies.snatcher;
+  const scaleOf = s => S && S.p2 === s.role ? (s.mode === 'grow' ? 1 + (SS.p2.scale - 1) * (1 - Math.max(0, s.modeT) / SS.p2.grow) : SS.p2.scale) : 1;
+  /* (claude/rookery2) THE RIDE TO THE PERCH: UP / GRAB by a sister climbing off the rock (main.js updatePlayer, the hero it moves) - true = she has him */
+  H.tryRide = P => { if (!S || !A() || P.dead || P.ssRide || P.ssHeld) return false; const ok = SSM.tryRide(S, { x: P.x, y: P.y, pp: P }); if (ok) { P.ssRide = true; ctx.number(P.x, P.y - 40, SSM.SS_SAY.ferry, '#ffd36b'); SOUND.caught(ctx.sfx); } return ok; };
+  /* riding: he hangs from her talons (no swing); JUMP lets go; at the perch she lets him down onto it. false = not riding (any more) */
+  H.ride = (P, jump) => { const R = S && S.ride; if (!R || R.pp !== P) { P.ssRide = null; return false; } const s = S.sis[R.by];
+    if (!s.alive || R.done || jump) { S.ride = null; P.ssRide = null; P.vx = 0; P.vy = jump && !R.done ? -150 : 0; P.ground = false; if (s.alive && s.mode === 'ferry') { s.mode = 'rise'; s.modeT = SS.dive.rise; } return false; }
+    P.x = s.x; P.y = s.y + SS.ride.hang; P.vx = 0; P.vy = 0; P.ground = false; return true; };
+  H.held = (P, swing) => { if (!S || !S.held || S.held.pp !== P) { P.ssHeld = null; return false; } const s = S.sis[S.held.by || 'snatcher'], b = bodies[S.held.by || 'snatcher'];
     if (!s.alive || !(s.mode === 'lift' || s.mode === 'hold')) { S.held = null; P.ssHeld = null; return false; }
     P.x = s.x; P.y = s.y + SS.grab.hang; P.vx = 0; P.vy = 0; P.ground = false;
     if (swing) { const r = SSM.strikeHeld(S, world()); if (r) { if (ctx.strike && b) ctx.strike(b); ctx.sparks(s.x, s.y + 4, P.face || 1, 5); ctx.hitstop && ctx.hitstop(0.03); }
-      if (r === 'free') { P.vy = -40; P.ssHeld = null; return false; } }
+      if (r === 'free' || r === 'fall') { P.vy = r === 'fall' ? 20 : -40; P.ssHeld = null; return false; } }
     if (!S.held) P.ssHeld = null; return !!S.held; };
+  /* (claude/rookery2) THREE BARS (brief B1): one per sister, side by side under the plate, each in her colour with her pip and her name; a fallen sister's bar is crossed out;
+     the survivor's bar glows in phase 2. main.js draws the plate and calls this instead of the one bar */
+  /* (claude/rookery2art) THE THREE-BAR STYLE: each sister a carved bone-and-stone plate - her BIRD-HEAD ICON in her colours (the diver's pale crest, the shrieker's red fan, the snatcher's scarred
+     brow) in a notched socket, then her bar: a bone frame, a two-tone fill with quarter ticks, her colour at its head; OPEN = a gold blink and a bright socket; the survivor of phase 2 glows ember;
+     a fallen sister's plate is CRACKED - the icon greyed with a black fracture, the bar empty with a crack through it and a feather laid on it */
+  const ICON = { diver: { a: '#6a7890', b: '#dce6f4', c: '#c8d4e8' }, shrieker: { a: '#8a4a5a', b: '#e04a3a', c: '#c0302a' }, snatcher: { a: '#8a7048', b: '#d8b070', c: '#8a2a2a' } };
+  const bird = (g, x, y, r, dead, lit) => { const I = ICON[r], sk = dead ? '#6a6478' : '#e8e0d4', ac = dead ? '#4a4658' : I.a, hi = dead ? '#8a8498' : I.b;
+    const R2 = (dx, dy, w, h, c) => { g.fillStyle = c; g.fillRect(x + dx, y + dy, w, h); };
+    R2(0, 0, 9, 9, lit ? '#6a5a3a' : '#24202e'); R2(1, 1, 7, 7, lit ? '#3a3020' : '#1a1624');   /* the socket */
+    if (r === 'shrieker') { R2(2, 1, 1, 2, hi); R2(4, 0, 1, 3, I.c); R2(6, 1, 1, 2, hi); } else if (r === 'diver') { R2(1, 1, 3, 2, hi); R2(2, 0, 2, 1, I.c); } else { R2(2, 1, 5, 2, ac); R2(1, 2, 1, 2, ac); }   /* the crest / mane */
+    R2(2, 3, 4, 4, sk); R2(2, 3, 4, 1, ac); R2(3, 4, 1, 1, dead ? '#14101e' : '#ff4a2a'); if (dead) { R2(4, 4, 1, 1, '#14101e'); }   /* the face and its eye (an X when she is down) */
+    R2(6, 5, 2, 1, dead ? '#8a8498' : '#e8c870'); R2(6, 6, 1, 1, dead ? '#6a6478' : '#a88838');   /* the beak */
+    if (r === 'snatcher' && !dead) R2(4, 2, 1, 3, '#8a2a2a');   /* the scar */
+    if (dead) { g.fillStyle = '#0a0810'; for (let q = 0; q < 9; q++) g.fillRect(x + q, y + Math.round(q * 0.9), 1, 1); } };
+  H.drawBars = (g, VW, VH, y, h, time) => { if (!S) return false; const w = 42, gap = 5, x0 = Math.round(VW / 2 - (w * 3 + gap * 2) / 2), ih = Math.max(9, h + 2);
+    ROLES.forEach((r, i) => { const s = S.sis[r], bx = x0 + i * (w + gap), k = s.alive ? Math.max(0, s.hp) / s.maxHp : 0, open = SSM.sisOpen(s), p2 = S.p2 === r, dead = !s.alive, fx = bx + 10, fw = w - 10;
+      bird(g, bx, y + Math.round((h - 9) / 2), r, dead, open || p2);
+      g.fillStyle = '#14101e'; g.fillRect(fx - 1, y - 1, fw + 2, h + 2); g.fillStyle = dead ? '#3a3646' : '#2a2236'; g.fillRect(fx, y, fw, h);
+      const col = open ? (Math.floor(time * 8) % 2 ? '#ffd36b' : '#fff6c8') : p2 ? (Math.floor(time * 5) % 2 ? '#ff8a4a' : '#ff6b3a') : COL[r].crest, fl = Math.round(fw * k);
+      if (!dead && fl > 0) { g.fillStyle = col; g.fillRect(fx, y, fl, h); g.fillStyle = 'rgba(255,255,255,0.28)'; g.fillRect(fx, y, fl, 1); g.fillStyle = 'rgba(0,0,0,0.28)'; g.fillRect(fx, y + h - 1, fl, 1); }
+      g.fillStyle = 'rgba(20,16,30,0.7)'; for (let q = 1; q < 4; q++) g.fillRect(fx + Math.round(fw * q / 4), y, 1, h);   /* quarter ticks */
+      g.fillStyle = p2 ? '#ff8a4a' : open ? '#ffd36b' : '#8a8098'; g.fillRect(fx - 1, y - 1, fw + 2, 1); g.fillRect(fx - 1, y + h, fw + 2, 1);   /* the frame's lit edges */
+      if (dead) { g.fillStyle = '#0a0810'; let cy2 = y; for (let q = 0; q < fw; q++) { if (q % 5 === 2) cy2 = y + ((q * 7) % h); g.fillRect(fx + q, Math.max(y, Math.min(y + h - 1, cy2)), 1, 1); } g.fillStyle = '#e6e4ec'; g.fillRect(fx + fw - 12, y + 1, 8, 1); g.fillStyle = '#c0bece'; g.fillRect(fx + fw - 10, y + 2, 5, 1); }   /* cracked, a feather laid on it */
+      ctx.text(r === 'diver' ? 'DIVER' : r === 'shrieker' ? 'SHRIEKER' : 'SNATCHER', bx + w / 2, y - 7, dead ? '#5a5468' : COL[r].light, 'center', 5); });   /* (her name over her bar: main.js lifts the plate 7 px for it) */
+    return true; };
   H.barName = () => { if (!S) return 'THE SHRIEK SISTERS'; const left = ROLES.filter(r => S.sis[r].alive), open = left.find(r => SSM.sisOpen(S.sis[r]));
     return 'THE SHRIEK SISTERS' + (open ? '  ' + SSM.NAME[open] + ' ' + SSM.OPEN_NAME[S.sis[open].mode] : left.length < 3 ? '  ' + left.length + ' LEFT' : ''); };
-  H.end = () => { if (S) { S.rocks = []; S.waves = []; S.marks = []; S.echoes = []; S.held = null; } unhold(); BOSS_PHASE.shrieksisters = 1; for (const r of ROLES) if (bodies[r]) bodies[r].alive = false; };
-  H.read = () => S && { ph: S.ph, dead: { ...S.dead }, sis: Object.fromEntries(ROLES.map(r => [r, { mode: S.sis[r].mode, hp: S.sis[r].hp, alive: S.sis[r].alive, ward: S.sis[r].ward, x: S.sis[r].x, y: S.sis[r].y }])),
+  H.end = () => { if (S) { S.rocks = []; S.waves = []; S.marks = []; S.echoes = []; S.held = null; S.ride = null; } unhold(); BOSS_PHASE.shrieksisters = 1; for (const r of ROLES) if (bodies[r]) bodies[r].alive = false; };
+  H.read = () => S && { ph: S.ph, p2: S.p2, ride: S.ride ? S.ride.by : null, dead: { ...S.dead }, sis: Object.fromEntries(ROLES.map(r => [r, { mode: S.sis[r].mode, hp: S.sis[r].hp, alive: S.sis[r].alive, ward: S.sis[r].ward, x: S.sis[r].x, y: S.sis[r].y }])),
     slabs: S.G.slabs.map(s => ({ x: s.x, st: s.st })), stones: S.stones.length, echoes: S.echoes.length, held: !!S.held, n: JSON.parse(JSON.stringify(S.n)), hurt: { ...(S.hurt || {}) } };
   const X = cx => v => R(v - cx), Y = cy => v => R(v - cy);
   /* THE SUMMIT: the slabs (cracked, or rubble growing back), the stones the snatcher left, the shelves' guano, the Roc's peak beyond */
   H.drawBack = (g, cx, cy, time) => { if (!S) return; const x = X(cx), y = Y(cy), G = S.G, fy = y(G.floorY);
+    drawArena(g, cx, cy, g.canvas.width, g.canvas.height, time, A(), G);   /* (claude/rookery2art) the perch's nest, the shelves' eggs, the monastery on the far crag */
     for (const sl of G.slabs) { const sx = x(sl.x) - SS.slab.w / 2;
       if (sl.st === 'crack') { g.drawImage(bakeSummitSlab(SS.slab.w), sx, fy - 1);
         g.strokeStyle = Math.floor(time * 3) % 2 ? '#ffd36b' : 'rgba(255,211,107,0.5)'; g.strokeRect(sx + 0.5, fy - 2.5, SS.slab.w - 1, 5); }
@@ -168,11 +256,24 @@ export function makeShriekSistersHands(ctx) {
     for (const [ex, side] of [[x(G.x0), -1], [x(G.x1) - E, 1]]) { g.drawImage(bakeSummitLip(side), ex, fy - 1);
       if (shocking) { g.globalAlpha = 0.45 + 0.35 * Math.sin(time * 12); g.strokeStyle = '#ff6b6b'; g.strokeRect(ex + 0.5, fy - 3.5, E - 1, 5); g.globalAlpha = 1; } } };
   H.drawBoss = (g, b, cx, cy, time) => { if (!S || !b || b.t !== 'shrieksister') return; const s = S.sis[b.role]; if (!s) return; b.guardFx = Math.max(0, (b.guardFx || 0) - 1 / 60);
-    const p = POSE[s.mode] || POSE.hover, flash = (b.hurtT || 0) > 0 || (b.flash || 0) > 0.06; b.hurtT = Math.max(0, (b.hurtT || 0) - 1 / 60);
+    const flash = (b.hurtT || 0) > 0 || (b.flash || 0) > 0.06; b.hurtT = Math.max(0, (b.hurtT || 0) - 1 / 60); const p = poseOf(s, b, time, flash, S.G);
     g.globalAlpha = 0.25; g.fillStyle = '#10060a'; g.fillRect(R(s.x - 12 - cx), R(S.G.floorY - 2 - cy), 24, 2); g.globalAlpha = 1;
-    g.save(); g.translate(R(s.x - cx), R(s.y - cy)); g.scale(s.face || -1, 1); drawSister(g, b.role, p, flash, time, b.role === 'snatcher' ? undefined : false); g.restore(); };
-  H.drawOver = (g, cx, cy, time) => { const Ar = A(); if (!S || !Ar || !ctx.bossActive) return; const G = S.G, x = X(cx), y = Y(cy), fy = y(G.floorY);
+    const sc = scaleOf(s); g.save(); g.translate(R(s.x - cx), R(s.y - cy)); g.scale((s.face || -1) * sc, sc); drawSister(g, b.role, p, flash, time, b.role === 'snatcher' ? undefined : false, S.p2 === b.role ? giftsOf(S.dead) : ''); g.restore(); };
+  /* (claude/rookery2art) A SISTER'S DEATH: struck up and back, a tumbling fall with loose feathers, lying in the rubble, fading (the body is not in the foe list once she is dead) */
+  const drawDeaths = (g, x, y, fy, time) => { for (const r of ROLES) { const d = bodies[r] && bodies[r].__death; if (!d) continue; const age = ctx.time() - d.t0; if (age < 0 || age > DEATH.T) continue;
+    const sx = x(d.x), fl = fy; let sy = y(d.y), rot = 0, pn = 'dead1', gx = 0; const fall = age - DEATH.struck;
+    if (age < DEATH.struck) { sy -= Math.round(Math.sin(age / DEATH.struck * Math.PI) * 7); rot = -0.25 * (age / DEATH.struck); }
+    else if (fall < DEATH.fall) { pn = 'dead2'; const t = fall; sy = Math.min(fl, sy + Math.round(60 * t + 340 * t * t * 0.5)); rot = -d.face * 0 + 2.6 * (t / DEATH.fall); gx = -d.face * Math.round(22 * t); if (sy >= fl && t > 0.3) { pn = 'dead3'; rot = 0; } }
+    else { pn = 'dead3'; sy = fl; gx = -d.face * 18; }
+    const a = age > DEATH.T - 0.55 ? Math.max(0, (DEATH.T - age) / 0.55) : 1; g.globalAlpha = a;
+    if (pn === 'dead3') { g.globalAlpha = a * 0.28; g.fillStyle = '#10060a'; g.fillRect(sx + gx - 14, fl - 2, 28, 2); g.globalAlpha = a; }
+    g.save(); g.translate(sx + gx, sy); g.scale(d.face * d.sc, d.sc); g.translate(0, -15); g.rotate(rot); g.translate(0, 15); drawSister(g, r, POSE[pn], false, time, r === 'snatcher' ? undefined : false, d.g); g.restore();
+    g.fillStyle = COL[r].light; for (let k = 0; k < 7; k++) { const t2 = (age * 0.9 + k * 0.17) % 1.3, fx = sx + gx + Math.round(Math.sin(age * 4 + k * 1.9) * (10 + k * 2)), fy2 = Math.round(sy - 30 + t2 * 44 + k * 2); if (fy2 < fl) { g.fillRect(fx, fy2, 3, 1); g.fillRect(fx + 1, fy2 - 1, 1, 1); } }
+    g.globalAlpha = 1; } };
+  H.drawOver = (g, cx, cy, time) => { const Ar = A(); if (!S || !Ar) return; drawWind(g, g.canvas.width, g.canvas.height, time);   /* (claude/rookery2art) the summit's wind */
+    if (!ctx.bossActive) return; const G = S.G, x = X(cx), y = Y(cy), fy = y(G.floorY);
     const blink = Math.floor(time * 12) % 2 ? '#ff6b6b' : '#fff6e0';
+    drawDeaths(g, x, y, fy, time);
     /* the rocks falling, and the red ring where each will land */
     /* (claude/sisters2) THE BOULDER DROP: its SHADOW on the floor - soft while she carries it over you, dark and red-rimmed once it is fixed, growing as the boulder comes down */
     const shadow = (sx, k, fixed) => { const rw = Math.round(SS.rock.r * (0.55 + 0.45 * k)); g.globalAlpha = 0.25 + 0.4 * k; g.fillStyle = '#10060a'; g.beginPath(); g.ellipse(sx, fy - 1, rw, 3 + 2 * k, 0, 0, Math.PI * 2); g.fill(); g.globalAlpha = 1;
@@ -208,10 +309,17 @@ export function makeShriekSistersHands(ctx) {
       /* her name over her the first seconds, and a pip of her health */
       if (S.woke && (ctx.time() < (S.nameT || (S.nameT = ctx.time() + 6)))) ctx.text(SSM.NAME[r], sx, sy - 48, '#ece8dc', 'center', 5);
       g.fillStyle = '#1b1626'; g.fillRect(sx - 12, sy + 14, 24, 2); g.fillStyle = COL[r].crest; g.fillRect(sx - 12, sy + 14, R(24 * s.hp / s.maxHp), 2); }
+    /* (claude/rookery2) THE RIDE: GRAB over a sister climbing off the rock; her talons on a ferried hero; THE PERCH's nest drawn (greybox: a bone nest lashed to its spire) */
+    for (const r of ROLES) { const s = S.sis[r]; if (!s.alive) continue; const sx = x(s.x), sy = y(s.y);
+      if (s.mode === 'ferryWait') { g.globalAlpha = 0.55 + 0.4 * Math.sin(time * 12); g.strokeStyle = '#ffd36b'; g.lineWidth = 2; g.strokeRect(sx - 16, sy - 12, 32, 26); g.lineWidth = 1; g.globalAlpha = 1; ctx.text(SSM.SS_SAY.ride, sx, sy - 40, Math.floor(time * 8) % 2 ? '#ffd36b' : '#fff6e0', 'center', 5); }
+      if (s.mode === 'ferry' && S.ride && S.ride.pp) drawHang(g, sx, sy + 2, y(S.ride.pp.y), time, { lean: -(s.face || 1) * 1 });
+      if ((s.mode === 'lift' || s.mode === 'hold') && S.held && S.held.pp) drawHang(g, sx, sy + 2, y(S.held.pp.y), time, { lean: 0 }); }
+    if (G.perchS && !S.p2 && S.sis.shrieker.alive && ROLES.some(r => S.sis[r].alive && (S.sis[r].mode === 'ferryWait' || S.sis[r].mode === 'downed'))) { const P0 = G.perchS, px = x(P0.x), py = y(P0.y);   /* where a ride goes: a dotted line up to her nest */
+      g.fillStyle = 'rgba(255,233,160,0.5)'; for (let k = 0; k < 10; k++) g.fillRect(px - 30 + k * 3, py - 4 - Math.round(Math.sin(k / 9 * Math.PI) * 6), 1, 1); }
     /* (claude/sisters2) HELD: the escape read over the held hero - STRIKE HER, a pip a strike, the time left before she lets go */
     if (S.held && S.held.pp) { const pp = S.held.pp, hx = x(pp.x), hy = y(pp.y) - 44, k = Math.max(0, 1 - S.held.t / SS.grab.hold);
-      ctx.text('STRIKE HER', hx, hy - 8, Math.floor(time * 8) % 2 ? '#ffd36b' : '#fff6e0', 'center', 6);
-      for (let i = 0; i < SS.grab.strikes; i++) { g.fillStyle = '#1b1626'; g.fillRect(hx - 13 + i * 9, hy, 7, 4); g.fillStyle = i < S.held.strikes ? '#8fd160' : '#4a4060'; g.fillRect(hx - 12 + i * 9, hy + 1, 5, 2); }
+      ctx.text(S.held.p2 ? 'STRIKE HER: FALL TOGETHER' : 'STRIKE HER', hx, hy - 8, Math.floor(time * 8) % 2 ? '#ffd36b' : '#fff6e0', 'center', 6);
+      for (let i = 0; i < (S.held.p2 ? SS.p2.strikes : SS.grab.strikes); i++) { g.fillStyle = '#1b1626'; g.fillRect(hx - 13 + i * 9, hy, 7, 4); g.fillStyle = i < S.held.strikes ? '#8fd160' : '#4a4060'; g.fillRect(hx - 12 + i * 9, hy + 1, 5, 2); }
       g.fillStyle = '#1b1626'; g.fillRect(hx - 14, hy + 6, 28, 3); g.fillStyle = '#ff6b6b'; g.fillRect(hx - 13, hy + 7, R(26 * k), 1); }
   };
   return H;

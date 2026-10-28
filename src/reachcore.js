@@ -156,6 +156,9 @@ export function floodReach(L, T, opts = {}) { const L0 = L;   /* (the level as b
   const at = (x, y) => (x < 0 || y < 0 || x >= W || y >= H) ? T.SOLID : g[y * W + x];
   const doors = (L.ents || []).filter(e => (e.t === 'doorway' || e.t === 'ringdoor') && e.id);   /* (a RINGDOOR is the Undead Archmage's ring as a door - the Falling Tower's parapet to his spiral stair, src/spiral-chase.js: walked into, not pressed, and the same pair to the fill) */
   const doorTo = new Map(doors.map(d => [d.id, d]));
+  /* (claude/rookery2) THE ROOKERY's RIDES (L.rkRides, src/rookery-hands.js): stand on her MOUNT, knock her down, grab her talons - she carries you along her fixed path and
+     shakes you off at its LAND. A ride, so not the plain fill (legs only): tools/rookery.mjs proves each required one is a lock */
+  const rkRides = plain ? [] : (L.rkRides || []);
   const vents = (L.ents || []).filter(e => e.t === 'vent').concat(plain ? [] : (L.reachVents || []));   /* (claude/litchurch) L.reachVents: a column of air the level's own hands raise - THE LIT CHURCH's bellows, struck - ridden like a vent */
   // the rides the model CAN follow, from L.moversExtra: a pulley lift (stand on it anywhere along its run and step
   // off anywhere along it) and a swinging bucket (board it near any point of its arc, get off near any other)
@@ -415,6 +418,7 @@ export function floodReach(L, T, opts = {}) { const L0 = L;   /* (the level as b
     for (const grp of groups) if (grp.set.has(key(x, y))) for (const [gx, gy] of grp.cells) push(gx, gy);   /* a wheel carries you round to any of its paddles */
     /* the great kite: take hold of it and the Sky Road lets you down anywhere along it */
     if (flight && Math.abs(x - flight.x) <= 3 && Math.abs(y - flight.y) <= 3) for (let cx = flight.x; cx <= flight.x1; cx++) { let cy = 0; while (cy < H - 1 && !footing.has(key(cx, cy))) cy++; if (footing.has(key(cx, cy))) push(cx, cy); }
+    for (const rd of rkRides) if (Math.abs(rd.mount[0] - x) <= 2 && Math.abs(rd.mount[1] - y) <= 0) { let ty = rd.land[1]; while (ty < H - 1 && !footing.has(key(rd.land[0], ty))) ty++; push(rd.land[0], ty); }
     // stand in a doorway and press talk: you come out at the other one
     for (const dr of doors) if (Math.abs(dr.x - x) <= 1 && dr.y === y) { const to = doorTo.get(dr.to); if (to) { let ty = to.y; while (ty < H - 1 && !footing.has(key(to.x, ty))) ty++; push(to.x, ty); } }
     // swim: any way through the water, and a leap out at the surface (a jump from the top row of the pool)

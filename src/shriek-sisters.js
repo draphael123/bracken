@@ -36,10 +36,10 @@
 //     the LAST SISTER is frantic: every cooldown x SS.last
 //   NO ADDS (the three are the fight). Every move TOLD with its own windup and release pose (B16, src/shriek-sisters-hands.js POSE) and its own sound.
 export const SS = {
-  hp: { diver: 770, shrieker: 580, snatcher: 670 },   /* (claude/sisters2 tune, BOT_PROFILE=human L14 n=36/hero: 920/690/800 -> 770/580/670, grab dmg 12 -> 10, grab cd 8/5.5/4.5 -> 10/7/5.5 first 7 -> 9: 47% -> 68%) */
+  hp: { diver: 830, shrieker: 625, snatcher: 720 },   /* (claude/rookery2 tune: 770/580/670 -> 830/625/720 with the ride and phase 2, n=12/hero 74% -> see the lane report) */   /* (claude/sisters2 tune, BOT_PROFILE=human L14 n=36/hero: 920/690/800 -> 770/580/670, grab dmg 12 -> 10, grab cd 8/5.5/4.5 -> 10/7/5.5 first 7 -> 9: 47% -> 68%) */
   wing: 0.4, downK: 1.5, wardMul: 0.4, last: 0.8,
   hover: { diver: 112, shrieker: 150, snatcher: 104 },   /* (claude/sisters2: the boulder's carry 150 -> 118 so the dropTell pose and its mark are on the arena's screen; the shrieker stays at 150 - at 124 her own dives after the diver falls came too fast: 54%) */
-  dive: { tell: [0.85, 0.75, 0.7], lock: 0.24, markTell: 0.62, v: 430, dmg: 22, land: 0.7, rise: 0.8, cd: [2.4, 2.1, 1.8], second: 0.55, downed: 1.3 },
+  dive: { tell: [0.85, 0.75, 0.7], lock: 0.24, markTell: 0.62, v: 430, dmg: 22, land: 0.7, rise: 0.8, cd: [2.4, 2.1, 1.8], second: 0.55, downed: 1.1 },
   stun: { t: 2.6, mul: 2, cap: 0.24 },
   ward: 2.5,
   slab: { w: 48, regrow: [9, 9, 6.5] },
@@ -55,7 +55,17 @@ export const SS = {
   shock: { tell: 0.85, range: 150, h: 64, dmg: 8, vx: 300, vy: -160, low: 30, gap: 64, edge: 30, teeter: 0.7, T: 0.45 },
   echo: { tell: 0.75, ahead: 56, w: 22, dmg: 14, life: 8, T: 0.4 },
   grab: { tell: 0.75, v: 290, T: 0.8, h: 14, dmg: 10, lift: 0.8, hold: 1.8, strikes: 3, gap: 0.22, liftH: 56, drop: 14, free: 1.6, cd: [10, 7, 5.5], first: 9, hang: 24 },
+  /* (claude/rookery2) THE LEVEL'S VERB IN THE FIGHT - P1: a sister KNOCKED DOWN (her dive or rake on a shield, a grab struck loose) climbs off the rock (ferryWait, SS.ride.window s:
+     UP: GRAB): grab her talons and she FERRIES you up to the SHRIEKER'S PERCH (a bone nest lashed to a spire); land beside the shrieker and she is CORNERED (open x SS.ride.mul,
+     up to SS.ride.cap of her) for SS.ride.startle s, then flees behind her ward. The nest tips you off after SS.ride.tip s (no camping on it) */
+  ride: { window: 1.1, reach: 24, v: 170, minT: 0.9, hang: 22, startle: 2.6, mul: 1.5, cap: 0.24, tip: 3.4, rise: 30 },
+  /* (claude/rookery2) PHASE 2 = TWO SISTERS DEAD: the survivor GROWS (SS.p2.scale, no HP) and takes a reduced set of the dead sisters' moves (P2KIT), one at a time, each its own tell;
+     and THE SNATCH: she seizes you (her red !! talon line) and carries you over the summit - STRIKE HER SS.p2.strikes times mid-carry and you both fall: she lands STUNNED (the
+     big opening, SS.p2.stun s up to SS.p2.cap of her) */
+  p2: { grow: 1.5, scale: 1.3, hover: 96, cd: 1.5, strikes: 2, stun: 3.2, cap: 0.3, liftH: 70, drift: 46, grabCd: 7.5, grabFirst: 3 },
 };
+/* (claude/rookery2) THE SURVIVOR'S KIT (P2): her own moves + one or two of each dead sister's, in this order, one at a time */
+export const P2KIT = { diver: ['dive', 'shock', 'chain', 'boulder', 'grab'], shrieker: ['mark', 'dive', 'echo', 'boulder', 'grab', 'shock'], snatcher: ['boulder', 'dive', 'grab', 'shock'] };
 export const ROLES = ['diver', 'shrieker', 'snatcher'];
 export const NAME = { diver: 'THE DIVER', shrieker: 'THE SHRIEKER', snatcher: 'THE SNATCHER' };
 export const SS_SAY = { wake: 'THE SHRIEK SISTERS', rule: 'STAND ON A CRACK. WHEN HER LINE LOCKS, STEP OFF: SHE BREAKS IT AND LIES STUNNED.', stunned: 'STUNNED IN THE RUBBLE', ward: 'SHE TEARS FREE',
@@ -65,11 +75,14 @@ export const SS_SAY = { wake: 'THE SHRIEK SISTERS', rule: 'STAND ON A CRACK. WHE
   /* (claude/sisters2) the signature moves */
   chain: 'CHAIN STOOP: A CRACK FOR EVERY DIVE', burst: 'SHE BURSTS FROM THE RUBBLE', exhausted: 'EXHAUSTED IN THE RUBBLE', rake: 'TALON RAKE: JUMP IT OR BLOCK',
   shock: 'SHOCK SHRIEK: BRACE OR ROLL', teeter: 'TEETERING ON THE EDGE', braced: 'BRACED', echo: 'CRACKING ECHO: OFF THE SHIVERING ROCK', echoCrack: 'A NEW CRACK',
-  grab: 'THE GRAB: ROLL OR JUMP IT', grabbed: 'GRABBED: STRIKE HER', free: 'BROKE FREE', letGo: 'SHE LETS YOU FALL' };
-export const OPEN_NAME = { stuck: 'STUNNED', downed: 'DOWN' };
-const WING_MODES = new Set(['hover', 'diveTell', 'rise', 'screamTell', 'scream', 'carry', 'dropTell', 'drop', 'fly', 'snatchTell', 'wake', 'sleep', 'chainTell', 'echoTell', 'echo']);
-const LOW_MODES = new Set(['land', 'swoop', 'pick', 'waveTell', 'wave', 'snatch', 'jar', 'rakeTell', 'rake', 'shockTell', 'shock', 'grabTell', 'grab', 'lift', 'hold']);
-export const sisOpen = s => !!s && s.alive && (s.mode === 'stuck' || s.mode === 'downed');
+  grab: 'THE GRAB: ROLL OR JUMP IT', grabbed: 'GRABBED: STRIKE HER', free: 'BROKE FREE', letGo: 'SHE LETS YOU FALL',
+  /* (claude/rookery2) the ride, the perch, phase 2 */
+  ride: 'UP: GRAB HER TALONS', ferry: 'SHE CARRIES YOU UP', cornered: 'CORNERED ON HER PERCH', tips: 'THE NEST TIPS', grow: 'THE LAST SISTER TAKES THEIR GIFTS',
+  snatchP2: 'THE SNATCH: STRIKE HER IN THE AIR', fellBoth: 'YOU FALL TOGETHER: SHE IS STUNNED' };
+export const OPEN_NAME = { stuck: 'STUNNED', downed: 'DOWN', startled: 'CORNERED' };
+const WING_MODES = new Set(['grow', 'ferry', 'perched', 'hover', 'diveTell', 'rise', 'screamTell', 'scream', 'carry', 'dropTell', 'drop', 'fly', 'snatchTell', 'wake', 'sleep', 'chainTell', 'echoTell', 'echo']);
+const LOW_MODES = new Set(['ferryWait', 'land', 'swoop', 'pick', 'waveTell', 'wave', 'snatch', 'jar', 'rakeTell', 'rake', 'shockTell', 'shock', 'grabTell', 'grab', 'lift', 'hold']);
+export const sisOpen = s => !!s && s.alive && (s.mode === 'stuck' || s.mode === 'downed' || s.mode === 'startled');
 export const ssOpen = S => !!S && ROLES.some(r => sisOpen(S.sis[r]));
 const TELLS = new Set(['diveTell', 'screamTell', 'dropTell', 'snatchTell', 'waveTell', 'chainTell', 'rakeTell', 'shockTell', 'echoTell', 'grabTell']);
 export const sisTelling = s => !!s && TELLS.has(s.mode);
@@ -78,12 +91,15 @@ export const ROT = [['mark', 'echo', 'mark', 'shock'], ['shock', 'echo', 'mark',
 /* THE SUMMIT (px): x0/x1 inside the walls, floorY, the three slabs (tile columns of their middles), the two shelves (the snatcher's perches) */
 export function geom(A, TS = 16) {
   const fl = A.floor, slabs = (A.slabs || []).map((c, i) => ({ id: i, x: c * TS + 8, st: 'crack', t: 0 }));
-  return { x0: A.x0, x1: A.x1, floorY: fl, mid: (A.x0 + A.x1) / 2, slabs, perch: [A.x0 + 5 * TS, A.x1 - 5 * TS], perchY: fl - 3 * TS, TS };
+  const pr = A.perchS || null;   /* (claude/rookery2) [x0, x1, row] tiles: the shrieker's nest, high on its spire */
+  const perchS = pr ? { x: (pr[0] + pr[1] + 1) * TS / 2, w: (pr[1] - pr[0] + 1) * TS, y: pr[2] * TS } : null;
+  return { x0: A.x0, x1: A.x1, floorY: fl, mid: (A.x0 + A.x1) / 2, slabs, perch: [A.x0 + 5 * TS, A.x1 - 5 * TS], perchY: fl - 3 * TS, perchS, TS };
 }
 export function newFight(G) {
   const sis = {}; for (const r of ROLES) sis[r] = { role: r, hp: SS.hp[r], maxHp: SS.hp[r], alive: true, x: G.mid + (r === 'diver' ? -60 : r === 'snatcher' ? 70 : 0), y: G.floorY - SS.hover[r], face: -1, mode: 'sleep', modeT: 0, ward: 0, cd: r === 'diver' ? 1.2 : r === 'shrieker' ? 2.6 : 0.6, purse: 0, rocks: 0, side: r === 'snatcher' ? 1 : -1, act: 0, nAtk: 0, rot: 0 };
-  return { G, sis, ph: 1, dead: {}, marks: [], rocks: [], stones: [], waves: [], echoes: [], told: {}, act: 0, snatchCd: SS.snatch.cd, grabCd: SS.grab.first, held: null, clock: 0, rnd: Math.random,
+  return { G, sis, ph: 1, dead: {}, ride: null, p2: null, perchT: 0, marks: [], rocks: [], stones: [], waves: [], echoes: [], told: {}, act: 0, snatchCd: SS.snatch.cd, grabCd: SS.grab.first, held: null, clock: 0, rnd: Math.random,
     n: { dives: 0, stuns: 0, skids: 0, downs: 0, screams: 0, marksStruck: 0, drops: 0, stones: 0, snatches: 0, waves: 0, wardHits: 0, wingHits: 0, lowHits: 0, openHits: 0, fell: [],
+      rides: 0, ferries: 0, cornered: 0, tips: 0, p2Grabs: 0, p2Falls: 0, p2Moves: {},
       chains: 0, chainDives: 0, bursts: 0, exhausted: 0, rakes: 0, rakeDowns: 0, shocks: 0, shoved: 0, braced: 0, teeters: 0, echoes: 0, echoStruck: 0, grabs: 0, grabbed: 0, freed: 0, letGo: 0 } };
 }
 const alive = S => ROLES.filter(r => S.sis[r].alive);
@@ -108,8 +124,10 @@ export function stepSisters(S, dt, heroes, w) {
   for (const q of S.echoes) q.t -= dt; S.echoes = S.echoes.filter(q => { if (q.t > 0) return true; w.dust(q.x, G.floorY, 4); return false; });
   for (const m of S.marks) m.t -= dt; S.marks = S.marks.filter(m => m.t > 0);
   stepRocks(S, dt, heroes, w); stepWaves(S, dt, heroes, w);
+  stepPerch(S, dt, heroes, w);
   for (const r of ROLES) { const s = S.sis[r]; if (!s.alive) continue; s.ward = Math.max(0, s.ward - dt); if (s.mode === 'sleep') continue; s.modeT -= dt; s.cd -= dt;
-    if (r === 'diver') stepDiver(S, s, dt, P, w); else if (r === 'shrieker') stepShrieker(S, s, dt, P, w); else stepSnatcher(S, s, dt, P, w, heroes); }
+    if (stepFerry(S, s, dt, P, w)) continue;
+    if (S.p2 === r) stepSurvivor(S, s, dt, P, w, heroes); else if (r === 'diver') stepDiver(S, s, dt, P, w); else if (r === 'shrieker') stepShrieker(S, s, dt, P, w); else stepSnatcher(S, s, dt, P, w, heroes); }
   S.snatchCd -= dt; if (!S.held) S.grabCd -= dt;
 }
 const fly = (s, tx, ty, dt, k = 3) => { s.x += (tx - s.x) * Math.min(1, dt * k); s.y += (ty - s.y) * Math.min(1, dt * k); };
@@ -167,8 +185,62 @@ function stepDive(S, s, dt, P, w) {
         w.mark(s, '!'); w.sound('rakeTell'); if (!S.told.rake) { S.told.rake = 1; w.number(s.x, s.y - 34, SS_SAY.rake, '#ffd36b'); } return true; }
       s.rakeNext = false;
       if (s.role === 'diver' && S.dead.shrieker && !s.second && P) { s.second = true; aimAt(S, s, P, w); s.modeT = SS.dive.second; s.openT0 = s.modeT; return true; }   /* THE PAIR (the shrieker gone) */
-      s.second = false; s.raked = false; s.mode = 'rise'; s.modeT = SS.dive.rise; s.cd = SS.dive.cd[ph(S)] * cdK(S); } return true; }
+      s.second = false; s.raked = false;
+      if (s.mode === 'downed' && canFerry(S, s)) { s.mode = 'ferryWait'; s.modeT = SS.ride.window; s.openT0 = s.modeT; if (!S.told.ride) { S.told.ride = 1; w.number(s.x, s.y - 40, SS_SAY.ride, '#ffd36b'); } return true; }
+      s.mode = 'rise'; s.modeT = SS.dive.rise; s.cd = SS.dive.cd[ph(S)] * cdK(S); } return true; }
   return false;
+}
+/* ---------- (claude/rookery2) THE RIDE TO THE PERCH (P1) ---------- */
+const canFerry = (S, s) => !!S.G.perchS && !S.p2 && s.role !== 'shrieker' && S.sis.shrieker.alive && !S.held && !S.ride;
+/* a hero asks to grab (UP / GRAB): a sister in her ferry window within reach takes him - true when she has him */
+export function tryRide(S, h) {
+  if (!S || S.ride || S.held || !h) return false;
+  for (const r of ROLES) { const s = S.sis[r]; if (!s.alive || s.mode !== 'ferryWait' || !canFerry(S, s)) continue;
+    if (Math.abs(h.x - s.x) < SS.ride.reach && h.y - s.y > -16 && h.y - s.y < 44) { const G = S.G, P0 = G.perchS, tx = P0.x - P0.w / 2 + 10, ty = P0.y - 6 - SS.ride.hang;
+      const pts = [[s.x, s.y], [s.x + (tx - s.x) * 0.35, Math.min(s.y, ty) - 18], [tx, ty]], len = Math.hypot(pts[1][0] - pts[0][0], pts[1][1] - pts[0][1]) + Math.hypot(pts[2][0] - pts[1][0], pts[2][1] - pts[1][1]);
+      S.ride = { pp: h.pp, by: r, t: 0, T: Math.max(SS.ride.minT, len / SS.ride.v), pts }; s.mode = 'ferry'; s.modeT = S.ride.T + 0.2; S.n.rides++; return true; } }
+  return false;
+}
+const along = (pts, k) => { const a = Math.hypot(pts[1][0] - pts[0][0], pts[1][1] - pts[0][1]), b = Math.hypot(pts[2][0] - pts[1][0], pts[2][1] - pts[1][1]), t = k * (a + b);
+  if (t <= a) { const q = a ? t / a : 1; return [pts[0][0] + (pts[1][0] - pts[0][0]) * q, pts[0][1] + (pts[1][1] - pts[0][1]) * q]; } const q = b ? (t - a) / b : 1; return [pts[1][0] + (pts[2][0] - pts[1][0]) * q, pts[1][1] + (pts[2][1] - pts[1][1]) * q]; };
+function stepFerry(S, s, dt, P, w) {
+  if (s.mode === 'ferryWait') { s.y -= SS.ride.rise * dt; s.face = P ? Math.sign(P.x - s.x) || s.face : s.face; if (s.modeT <= 0) { s.mode = 'rise'; s.modeT = SS.dive.rise; s.cd = (SS.dive.cd[ph(S)] || 2) * cdK(S); } return true; }
+  if (s.mode !== 'ferry') return false;
+  const R = S.ride; if (!R || R.by !== s.role) { s.mode = 'rise'; s.modeT = SS.dive.rise; return true; }
+  R.t += dt; const k = Math.min(1, R.t / R.T), [x, y] = along(R.pts, k); s.face = Math.sign(x - s.x) || s.face; s.x = x; s.y = y;
+  if (k >= 1) { R.done = true; S.n.ferries++; s.mode = 'rise'; s.modeT = SS.dive.rise; s.cd = 1.2; w.number(s.x, s.y - 24, SS_SAY.ferry, '#c8d8e8'); }
+  return true;
+}
+/* THE PERCH: a hero who lands on it beside the perched shrieker CORNERS her (the opening); the nest tips him off after SS.ride.tip s */
+function stepPerch(S, dt, heroes, w) {
+  const P0 = S.G.perchS; if (!P0) return; const on = heroes.find(h => h.alive && h.ground && Math.abs(h.x - P0.x) < P0.w / 2 + 6 && Math.abs(h.y - P0.y) < 8);
+  if (!on) { S.perchT = 0; return; } S.perchT += dt; const sh = S.sis.shrieker;
+  if (sh.alive && !S.p2 && sh.mode === 'perched' && sh.ward <= 0) { sh.mode = 'startled'; sh.modeT = SS.ride.startle; sh.openT0 = sh.modeT; sh.purse = sh.maxHp * SS.ride.cap; S.n.cornered++;
+    w.shake(4); w.sound('screech'); w.fx('open', sh.x, sh.y); w.number(sh.x, sh.y - 34, SS_SAY.cornered, '#ffd36b'); }
+  if (S.perchT >= SS.ride.tip) { S.perchT = -9; S.n.tips++; if (w.tip) w.tip(on, P0); w.number(P0.x, P0.y - 30, SS_SAY.tips, '#c8d8e8'); }
+}
+/* ---------- (claude/rookery2) PHASE 2: THE SURVIVOR ---------- */
+function stepSurvivor(S, s, dt, P, w, heroes) {
+  const G = S.G;
+  if (s.mode === 'grow') { fly(s, clampX(S, G.mid), G.floorY - SS.p2.hover, dt, 2); if (s.modeT <= 0) { s.mode = 'hover'; s.cd = 1.0; } return; }
+  if (stepDive(S, s, dt, P, w)) return;
+  if (stepGrab(S, s, dt, P, w, heroes)) return;
+  if (shriekMoves(S, s, dt, P, w)) return;
+  if (rockMoves(S, s, dt, P, w)) return;
+  if (s.mode === 'rise') { fly(s, clampX(S, P ? P.x - s.side * 60 : G.mid), G.floorY - SS.p2.hover, dt, 2.5); if (s.modeT <= 0) s.mode = 'hover'; return; }
+  s.mode = 'hover'; fly(s, clampX(S, (P ? P.x : G.mid) - s.side * 50 + Math.sin(S.act * 1.3) * 24), G.floorY - SS.p2.hover + Math.sin(s.cd * 3) * 4, dt, 1.6);
+  if (!ready(S, s, P)) return;
+  const kit = P2KIT[s.role]; let mv = kit[(s.p2i || 0) % kit.length]; s.p2i = (s.p2i || 0) + 1;
+  if (mv === 'grab' && (S.grabCd > 0 || !P.ground)) { mv = kit[s.p2i % kit.length]; s.p2i++; }
+  S.n.p2Moves[mv] = (S.n.p2Moves[mv] || 0) + 1;
+  if (mv === 'dive') aimAt(S, s, P, w);
+  else if (mv === 'chain') startChain(S, s, P, w);
+  else if (mv === 'shock') startShock(S, s, P, w);
+  else if (mv === 'echo') startEcho(S, s, P, w);
+  else if (mv === 'mark') { s.mode = 'screamTell'; s.modeT = SS.scream.tell; s.openT0 = s.modeT; s.act = ++S.act; w.mark(s, '!!'); w.sound('screamTell'); }
+  else if (mv === 'boulder') { s.mode = 'fly'; s.rockGo = true; s.perchI = P && P.x > G.mid ? 0 : 1; }
+  else if (mv === 'grab') { if (!tryGrab(S, s, P, w)) aimAt(S, s, P, w); else { S.n.p2Grabs++; if (!S.told.snatchP2) { S.told.snatchP2 = 1; w.number(P.x, G.floorY - 80, SS_SAY.snatchP2, '#ff6b6b'); } } }
+  s.cd = Math.max(s.cd, 0);
 }
 function stepDiver(S, s, dt, P, w) {
   if (s.mode === 'wake') { if (s.modeT <= 0) { s.mode = 'hover'; } return; }
@@ -183,32 +255,44 @@ function stepDiver(S, s, dt, P, w) {
 function stepShrieker(S, s, dt, P, w) {
   if (s.mode === 'wake') { if (s.modeT <= 0) s.mode = 'hover'; return; }
   if (stepDive(S, s, dt, P, w)) return;   /* (the diver gone: she dives at her own mark) */
-  if (s.mode === 'screamTell') { s.face = P ? Math.sign(P.x - s.x) || s.face : s.face; if (s.modeT <= 0) scream(S, s, P, w); return; }
+  if (s.mode === 'startled') { const P0 = S.G.perchS; if (P0) { s.x += (P0.x + P0.w / 2 - 6 - s.x) * Math.min(1, dt * 6); s.y = P0.y - 2; }
+    if (s.modeT <= 0) { s.big = false; s.ward = SS.ward; s.mode = 'rise'; s.modeT = 1.0; s.cd = 1.4; w.fx('ward', s.x, s.y); w.number(s.x, s.y - 34, SS_SAY.ward, '#c8d8e8'); } return; }
+  if (shriekMoves(S, s, dt, P, w)) return;
+  if (s.mode === 'rise') { const home = perchHome(S); fly(s, home ? home[0] : clampX(S, S.G.mid - s.side * 90), home ? home[1] : S.G.floorY - SS.hover.shrieker, dt, 2.2); if (s.modeT <= 0) s.mode = home ? 'perched' : 'hover'; return; }
+  if (trySnatch(S, s, P, w)) return;
+  if (s.mode === 'snatchTell' || s.mode === 'snatch') return stepSnatch(S, s, dt, P, w);
+  /* (claude/rookery2) PERCHED: between her moves she sits on her nest (P1) - a hero who rides up beside her corners her. With a hero on it she hangs off it instead */
+  const home = perchHome(S);
+  if (home) { s.mode = 'perched'; fly(s, home[0], home[1], dt, 3); s.face = P ? Math.sign(P.x - s.x) || s.face : s.face; }
+  else { s.mode = 'hover'; fly(s, clampX(S, S.G.mid + Math.sin(S.act * 0.9 + s.cd) * 120), S.G.floorY - SS.hover.shrieker + Math.sin(s.cd * 2) * 6, dt, 1.2); }
+  if (ready(S, s, P)) { const rot = ROT[ph(S)], mv = S.dead.diver && s.rot % 2 === 0 ? 'mark' : rot[s.rot % rot.length]; s.rot++;
+    if (mv === 'shock') startShock(S, s, P, w); else if (mv === 'echo') startEcho(S, s, P, w);
+    else { s.mode = 'screamTell'; s.modeT = SS.scream.tell; s.openT0 = s.modeT; s.act = ++S.act; w.mark(s, '!!'); w.sound('screamTell'); } }
+}
+/* her nest is home while nobody stands on it (P1; a ride lands a hero there) */
+const perchHome = S => { const P0 = S.G.perchS; if (!P0 || S.p2 || S.perchT > 0) return null; return [P0.x + P0.w / 2 - 6, P0.y - 2]; };
+/* THE SHRIEKER'S MOVES (her scream and its swoop, the wave, SHOCK SHRIEK, CRACKING ECHO) - true = handled; a P2 survivor who took them runs them here too */
+function shriekMoves(S, s, dt, P, w) {
+  if (s.mode === 'screamTell') { s.face = P ? Math.sign(P.x - s.x) || s.face : s.face; if (s.modeT <= 0) scream(S, s, P, w); return true; }
   if (s.mode === 'swoop') { const tx = clampX(S, (P ? P.x : S.G.mid) + s.side * 46); fly(s, tx, S.G.floorY - SS.scream.low, dt, 3);
-    if (S.dead.snatcher && !s.waved && s.modeT < SS.scream.swoop - 0.5 && P) { s.waved = true; s.mode = 'waveTell'; s.modeT = SS.wave.tell; s.face = Math.sign(P.x - s.x) || 1; s.act = ++S.act; w.mark(s, '!'); w.sound('inhale'); w.number(s.x, s.y - 30, SS_SAY.wave, '#ffd36b'); return; }
-    if (s.modeT <= 0) { s.mode = 'rise'; s.modeT = 1.0; s.cd = SS.scream.cd[ph(S)] * cdK(S); } return; }
-  if (s.mode === 'waveTell') { if (s.modeT <= 0) { s.mode = 'wave'; s.modeT = 0.4; S.waves.push({ x: s.x + s.face * 14, dir: s.face, life: SS.wave.life, key: 'wv' + s.act }); S.n.waves++; w.sound('shriek'); } return; }
-  if (s.mode === 'wave') { if (s.modeT <= 0) { s.mode = 'rise'; s.modeT = 1.0; s.cd = SS.scream.cd[ph(S)] * cdK(S); } return; }
+    if (S.dead.snatcher && !S.p2 && !s.waved && s.modeT < SS.scream.swoop - 0.5 && P) { s.waved = true; s.mode = 'waveTell'; s.modeT = SS.wave.tell; s.face = Math.sign(P.x - s.x) || 1; s.act = ++S.act; w.mark(s, '!'); w.sound('inhale'); w.number(s.x, s.y - 30, SS_SAY.wave, '#ffd36b'); return true; }
+    if (s.modeT <= 0) { s.mode = 'rise'; s.modeT = 1.0; s.cd = SS.scream.cd[ph(S)] * cdK(S); } return true; }
+  if (s.mode === 'waveTell') { if (s.modeT <= 0) { s.mode = 'wave'; s.modeT = 0.4; S.waves.push({ x: s.x + s.face * 14, dir: s.face, life: SS.wave.life, key: 'wv' + s.act }); S.n.waves++; w.sound('shriek'); } return true; }
+  if (s.mode === 'wave') { if (s.modeT <= 0) { s.mode = 'rise'; s.modeT = 1.0; s.cd = SS.scream.cd[ph(S)] * cdK(S); } return true; }
   /* SHOCK SHRIEK (her own): low on the middle side of you, the cone along the floor, then the shove toward the edge */
   if (s.mode === 'shockTell') { if (P) { s.shX = clampX(S, P.x + s.shSide * SS.shock.gap, 20); s.face = Math.sign(P.x - s.x) || s.face; } fly(s, s.shX, S.G.floorY - SS.shock.low, dt, 4);
     if (s.modeT <= 0) { s.mode = 'shock'; s.modeT = SS.shock.T; S.n.shocks++; w.sound('shock'); w.shake(3);
       for (const h of S._heroes || []) { if (!h.alive) continue; const dx = (h.x - s.x) * s.face; if (dx > -6 && dx < SS.shock.range && S.G.floorY - h.y < SS.shock.h) { const r = w.shove ? w.shove(s, h, s.face, 'sh' + s.act) : null; if (r === 'hit') S.n.shoved++; else if (r === 'blocked') S.n.braced++; } } }
-    return; }
-  if (s.mode === 'shock') { if (s.modeT <= 0) { s.mode = 'rise'; s.modeT = 1.0; s.cd = SS.scream.cd[ph(S)] * sigK(S); } return; }
+    return true; }
+  if (s.mode === 'shock') { if (s.modeT <= 0) { s.mode = 'rise'; s.modeT = 1.0; s.cd = SS.scream.cd[ph(S)] * sigK(S); } return true; }
   /* CRACKING ECHO (her own): a scream at the floor ahead of you - the tile shivers, then cracks (shards off it) and lies as cracked rock */
   if (s.mode === 'echoTell') { fly(s, clampX(S, s.echoX - s.face * 34), S.G.floorY - SS.hover.shrieker + 40, dt, 3); s.face = Math.sign(s.echoX - s.x) || s.face;
     if (s.modeT <= 0) { s.mode = 'echo'; s.modeT = SS.echo.T; const x = s.echoX, fy = S.G.floorY; S.n.echoes++; w.sound('echo'); w.shake(2); w.rubble(x);
       w.hitArea([x - SS.echo.w / 2 - 2, x + SS.echo.w / 2 + 2, fy - 24, fy + 2], SS.echo.dmg, 'echo', 'ec' + s.act);
       if (!crackAt(S, x)) S.echoes.push({ x, t: SS.echo.life }); if (!S.told.echoCrack) { S.told.echoCrack = 1; w.number(x, fy - 40, SS_SAY.echoCrack, '#ffd36b'); } }
-    return; }
-  if (s.mode === 'echo') { if (s.modeT <= 0) { s.echoX = null; s.mode = 'rise'; s.modeT = 0.8; s.cd = SS.scream.cd[ph(S)] * sigK(S) * 0.8; } return; }
-  if (s.mode === 'rise') { fly(s, clampX(S, S.G.mid - s.side * 90), S.G.floorY - SS.hover.shrieker, dt, 2); if (s.modeT <= 0) s.mode = 'hover'; return; }
-  if (trySnatch(S, s, P, w)) return;
-  if (s.mode === 'snatchTell' || s.mode === 'snatch') return stepSnatch(S, s, dt, P, w);
-  s.mode = 'hover'; fly(s, clampX(S, S.G.mid + Math.sin(S.act * 0.9 + s.cd) * 120), S.G.floorY - SS.hover.shrieker + Math.sin(s.cd * 2) * 6, dt, 1.2);
-  if (ready(S, s, P)) { const rot = ROT[ph(S)], mv = S.dead.diver && s.rot % 2 === 0 ? 'mark' : rot[s.rot % rot.length]; s.rot++;
-    if (mv === 'shock') startShock(S, s, P, w); else if (mv === 'echo') startEcho(S, s, P, w);
-    else { s.mode = 'screamTell'; s.modeT = SS.scream.tell; s.openT0 = s.modeT; s.act = ++S.act; w.mark(s, '!!'); w.sound('screamTell'); } }
+    return true; }
+  if (s.mode === 'echo') { if (s.modeT <= 0) { s.echoX = null; s.mode = 'rise'; s.modeT = 0.8; s.cd = SS.scream.cd[ph(S)] * sigK(S) * 0.8; } return true; }
+  return false;
 }
 function startShock(S, s, P, w) {
   s.shSide = P.x < S.G.mid ? 1 : -1; s.shX = clampX(S, P.x + s.shSide * SS.shock.gap, 20); s.mode = 'shockTell'; s.modeT = SS.shock.tell; s.openT0 = s.modeT; s.act = ++S.act; s.face = -s.shSide;
@@ -227,7 +311,7 @@ function scream(S, s, P, w) {
   if (!S.told.mark) { S.told.mark = 1; w.number(m.x, S.G.floorY - 60, SS_SAY.mark, '#ff6b6b'); }
   const d = S.sis.diver; if (d.alive && d.ward <= 0 && !S.held && (d.mode === 'hover' || d.mode === 'rise')) aimAt(S, d, P, w, m);
   const n = S.sis.snatcher; if (n.alive && (n.mode === 'carry' || n.mode === 'fly')) { n.target = m.x; n.mode = 'carry'; n.modeT = Math.min(n.modeT, 0.9); }
-  if (S.dead.diver) { aimAt(S, s, P, w, m); s.side = -s.side; return; }   /* the diver gone: she dives at her own mark */
+  if (S.dead.diver || S.p2 === s.role) { aimAt(S, s, P, w, m); s.side = -s.side; return; }   /* the diver gone (or a survivor's own mark): she dives at her own mark */
   s.mode = 'swoop'; s.modeT = SS.scream.swoop; s.waved = false; s.side = Math.random() < 0.5 ? -1 : 1;
 }
 function stepSnatcher(S, s, dt, P, w, heroes) {
@@ -238,23 +322,31 @@ function stepSnatcher(S, s, dt, P, w, heroes) {
   if (s.mode === 'rise') { fly(s, s.x, G.floorY - SS.hover.snatcher, dt, 2.5); if (s.modeT <= 0) { s.mode = 'fly'; s.perchI = P && P.x > G.mid ? 0 : 1; } return; }
   if (trySnatch(S, s, P, w)) return;
   if (s.mode === 'snatchTell' || s.mode === 'snatch') return stepSnatch(S, s, dt, P, w);
-  if (s.mode === 'fly') { if (tryGrab(S, s, P, w)) return; const px = G.perch[s.perchI || 0], py = G.perchY; fly(s, px, py, dt, 2.6); if (Math.abs(s.x - px) < 6 && Math.abs(s.y - py) < 6) { s.mode = 'pick'; s.modeT = SS.rock.pick; s.x = px; s.y = py; w.sound('pick'); } return; }
-  if (s.mode === 'pick') { if (s.modeT <= 0) { s.rocks = S.dead.shrieker ? 2 : 1; s.mode = 'carry'; s.modeT = SS.rock.carry * cdK(S); s.target = null; } return; }
+  if (s.mode === 'fly' && tryGrab(S, s, P, w)) return;
+  if (rockMoves(S, s, dt, P, w)) return;
+  s.mode = 'fly';
+}
+/* THE BOULDER DROP's legs (fly to a shelf, pick, carry, the drop's tell, the drop) - true = handled; a P2 survivor who took it runs it here too (s.rockGo) */
+function rockMoves(S, s, dt, P, w) {
+  const G = S.G; if (s.mode === 'fly' && s.role !== 'snatcher' && !s.rockGo) return false;
+  if (s.mode === 'fly') { const px = G.perch[s.perchI || 0], py = G.perchY; fly(s, px, py, dt, 2.6); if (Math.abs(s.x - px) < 6 && Math.abs(s.y - py) < 6) { s.mode = 'pick'; s.modeT = SS.rock.pick; s.x = px; s.y = py; w.sound('pick'); } return true; }
+  if (s.mode === 'pick') { if (s.modeT <= 0) { s.rocks = S.dead.shrieker && !S.p2 ? 2 : 1; s.mode = 'carry'; s.modeT = SS.rock.carry * cdK(S); s.target = null; } return true; }
   /* THE BOULDER DROP (her own): carried HIGH; its shadow follows you on the floor, then fixes (dropTell) and it falls */
   if (s.mode === 'carry') { const tx = clampX(S, s.target != null ? s.target : P ? P.x : G.mid), hy = G.floorY - SS.rock.high; fly(s, tx, hy, dt, 2.4);
-    if ((Math.abs(s.x - tx) < 10 && s.y < hy + 12) || s.modeT <= 0) { if (S.held) { s.modeT = 0.2; return; } s.mode = 'dropTell'; s.modeT = SS.rock.tell; s.openT0 = s.modeT; s.dropX = clampX(S, s.x); s.act = ++S.act; w.mark(s, '!!'); w.sound('rockTell'); if (!S.told.rock) { S.told.rock = 1; w.number(s.dropX, G.floorY - 50, SS_SAY.rock, '#ff6b6b'); } } return; }
-  if (s.mode === 'dropTell') { s.x += (s.dropX - s.x) * Math.min(1, dt * 6); if (s.modeT <= 0) { s.mode = 'drop'; s.modeT = 0.35; S.rocks.push({ x: s.dropX, y0: s.y + 6, t: 0, T: SS.rock.fall, key: 'rk' + s.act }); s.rocks--; S.n.drops++; w.sound('drop'); } return; }
+    if ((Math.abs(s.x - tx) < 10 && s.y < hy + 12) || s.modeT <= 0) { if (S.held) { s.modeT = 0.2; return true; } s.mode = 'dropTell'; s.modeT = SS.rock.tell; s.openT0 = s.modeT; s.dropX = clampX(S, s.x); s.act = ++S.act; w.mark(s, '!!'); w.sound('rockTell'); if (!S.told.rock) { S.told.rock = 1; w.number(s.dropX, G.floorY - 50, SS_SAY.rock, '#ff6b6b'); } } return true; }
+  if (s.mode === 'dropTell') { s.x += (s.dropX - s.x) * Math.min(1, dt * 6); if (s.modeT <= 0) { s.mode = 'drop'; s.modeT = 0.35; S.rocks.push({ x: s.dropX, y0: s.y + 6, t: 0, T: SS.rock.fall, key: 'rk' + s.act }); s.rocks--; S.n.drops++; w.sound('drop'); } return true; }
   if (s.mode === 'drop') { if (s.modeT <= 0) {
-      if (s.rocks > 0) { s.mode = 'carry'; s.modeT = 1.2; s.target = P ? P.x : G.mid; return; }   /* (the shrieker gone: two a carry) */
-      if (S.dead.diver && P && P.alive && s.ward <= 0 && !S.held) { aimAt(S, s, P, w); return; }   /* (the diver gone: she dives after the drop) */
-      s.mode = 'fly'; s.perchI = (s.perchI || 0) ^ 1; } return; }
-  s.mode = 'fly';
+      if (s.rocks > 0) { s.mode = 'carry'; s.modeT = 1.2; s.target = P ? P.x : G.mid; return true; }   /* (the shrieker gone: two a carry) */
+      if (S.p2) { s.rockGo = false; s.mode = 'rise'; s.modeT = 0.8; s.cd = SS.p2.cd * cdK(S); return true; }   /* (claude/rookery2) a survivor goes back to her own hover */
+      if (S.dead.diver && P && P.alive && s.ward <= 0 && !S.held) { aimAt(S, s, P, w); return true; }   /* (the diver gone: she dives after the drop) */
+      s.mode = 'fly'; s.perchI = (s.perchI || 0) ^ 1; } return true; }
+  return false;
 }
 /* THE GRAB (the snatcher's own): from the side at your height; caught, lifted over the floor; strike her loose or she lets you fall */
 function tryGrab(S, s, P, w) {
-  if (!P || !P.alive || !P.ground || S.grabCd > 0 || S.held || s.ward > 0 || s.role !== 'snatcher') return false;
+  if (!P || !P.alive || !P.ground || S.grabCd > 0 || S.held || S.ride || s.ward > 0 || (s.role !== 'snatcher' && S.p2 !== s.role)) return false;
   if (ROLES.some(r => r !== 'snatcher' && S.sis[r].alive && ['dive', 'rake', 'shock', 'echo'].includes(S.sis[r].mode))) return false;   /* (one blow at a time: never into another sister's release) */
-  const G = S.G; S.grabCd = SS.grab.cd[ph(S)] * cdK(S); s.gDir = P.x - G.x0 > 140 ? 1 : -1; s.gX = clampX(S, P.x - s.gDir * 120, 14);
+  const G = S.G; S.grabCd = S.p2 ? SS.p2.grabCd : SS.grab.cd[ph(S)] * cdK(S); s.gDir = P.x - G.x0 > 140 ? 1 : -1; s.gX = clampX(S, P.x - s.gDir * 120, 14);
   s.mode = 'grabTell'; s.modeT = SS.grab.tell; s.openT0 = s.modeT; s.face = s.gDir; s.act = ++S.act; S.n.grabs++;
   w.mark(s, '!!'); w.sound('grabTell'); if (!S.told.grab) { S.told.grab = 1; w.number(P.x, G.floorY - 64, SS_SAY.grab, '#ff6b6b'); }
   return true;
@@ -264,12 +356,13 @@ function stepGrab(S, s, dt, P, w, heroes) {
   if (s.mode === 'grabTell') { fly(s, s.gX, G.floorY - SS.grab.h - 22, dt, 5); s.face = s.gDir; if (s.modeT <= 0) { s.mode = 'grab'; s.modeT = SS.grab.T; s.hitKey = 'gb' + s.act; w.sound('grab'); } return true; }
   if (s.mode === 'grab') { s.x += s.gDir * SS.grab.v * dt; s.y += (G.floorY - SS.grab.h + 10 - s.y) * Math.min(1, dt * 8);
     const pp = w.grab ? w.grab(s, [s.x - 12, s.x + 12, s.y - 22, s.y + 2], SS.grab.dmg, s.hitKey) : null;
-    if (pp) { S.held = { pp, t: 0, strikes: 0, last: -9 }; s.mode = 'lift'; s.modeT = SS.grab.lift; S.n.grabbed++; w.sound('caught'); w.number(s.x, G.floorY - 70, SS_SAY.grabbed, '#ff6b6b'); return true; }
+    if (pp) { S.held = { pp, t: 0, strikes: 0, last: -9, by: s.role, p2: !!S.p2 }; s.mode = 'lift'; s.modeT = SS.grab.lift; S.n.grabbed++; w.sound('caught'); w.number(s.x, G.floorY - 70, SS_SAY.grabbed, '#ff6b6b'); return true; }
     if (s.modeT <= 0 || s.x < G.x0 + 14 || s.x > G.x1 - 14) { s.x = clampX(S, s.x, 14); s.mode = 'land'; s.modeT = 0.55; s.y = G.floorY; }   /* missed: she overshoots and lands - low */
     return true; }
   if (s.mode === 'lift' || s.mode === 'hold') { const H = S.held;
     if (!H) { s.mode = 'rise'; s.modeT = SS.dive.rise; return true; }
-    H.t += dt; const lip = SS.shock.edge + 30; fly(s, Math.max(G.x0 + lip, Math.min(G.x1 - lip, s.x)), G.floorY - SS.grab.liftH - SS.grab.hang, dt, s.mode === 'lift' ? 2.2 : 1.2);   /* over the summit floor, never over the lip */
+    H.t += dt; const lip = SS.shock.edge + 30, hx = H.p2 ? s.x + (s.x < G.mid ? 1 : -1) * SS.p2.drift * dt : s.x;   /* (claude/rookery2: P2's SNATCH carries you across, higher) */
+    fly(s, Math.max(G.x0 + lip, Math.min(G.x1 - lip, hx)), G.floorY - (H.p2 ? SS.p2.liftH : SS.grab.liftH) - SS.grab.hang, dt, s.mode === 'lift' ? 2.2 : 1.2);   /* over the summit floor, never over the lip */
     if (s.mode === 'lift' && s.modeT <= 0) { s.mode = 'hold'; s.modeT = SS.grab.hold - SS.grab.lift; }
     if (s.mode === 'hold' && s.modeT <= 0) { S.held = null; S.n.letGo++; if (w.letGo) w.letGo(s, H.pp, SS.grab.drop); s.mode = 'rise'; s.modeT = SS.dive.rise; }
     return true; }
@@ -278,8 +371,10 @@ function stepGrab(S, s, dt, P, w, heroes) {
 /* A STRIKE on the sister who holds you (the hands call it on each swing while held): enough of them and she lets go, KNOCKED DOWN */
 export function strikeHeld(S, w) {
   const H = S.held; if (!H || S.clock - H.last < SS.grab.gap) return false; H.last = S.clock; H.strikes++;
-  if (H.strikes < SS.grab.strikes) return 'strike';
-  const s = S.sis.snatcher; S.held = null; S.n.freed++; s.mode = 'downed'; s.modeT = SS.grab.free; s.openT0 = s.modeT; s.y = S.G.floorY; S.n.downs++; if (w) { w.number(s.x, s.y - 30, SS_SAY.free, '#8fd160'); w.sound('free'); }
+  if (H.strikes < (H.p2 ? SS.p2.strikes : SS.grab.strikes)) return 'strike';
+  const s = S.sis[H.by || 'snatcher']; S.held = null; S.n.freed++; s.y = S.G.floorY;
+  if (H.p2) { S.n.p2Falls++; s.chain = null; s.mode = 'stuck'; s.modeT = SS.p2.stun; s.openT0 = s.modeT; s.purse = s.maxHp * SS.p2.cap; s.big = true; S.n.stuns++; if (w) { w.shake(8); w.sound('smash'); w.fx('open', s.x, s.y); w.number(s.x, s.y - 34, SS_SAY.fellBoth, '#ffd36b'); } return 'fall'; }   /* (claude/rookery2) P2: you fall together - she lands STUNNED */
+  s.mode = 'downed'; s.modeT = SS.grab.free; s.openT0 = s.modeT; S.n.downs++; if (w) { w.number(s.x, s.y - 30, SS_SAY.free, '#8fd160'); w.sound('free'); }
   return 'free';
 }
 /* THE SNATCH (the first fall gives it to whoever has talons for it - the snatcher, else the diver): a low told sweep across the summit at your height */
@@ -314,18 +409,23 @@ export function takeBlow(s, dmg, plunge) {
   if (s.mode === 'stuck' && !(s.purse > 0)) return [Math.max(1, Math.round(dmg * SS.wardMul)), 'WARDED'];   /* (the stun paid in full: she is tearing free - B15's floor, never nothing) */
   if (s.mode === 'stuck') { const d = Math.round(dmg * SS.stun.mul), left = s.purse ?? Infinity; if (d >= left) { s.purse = 0; s.modeT = Math.min(s.modeT, 0.01); return [Math.max(1, Math.round(left)), null]; } s.purse = left - d; return [d, null]; }
   if (s.mode === 'downed') return [Math.round(dmg * SS.downK), null];
+  if (s.mode === 'startled' && !(s.purse > 0)) return [Math.max(1, Math.round(dmg * SS.wardMul)), 'WARDED'];   /* (the corner paid in full: B15's floor) */
+  if (s.mode === 'startled') { const d = Math.round(dmg * SS.ride.mul), left = s.purse ?? Infinity; if (d >= left) { s.purse = 0; s.modeT = Math.min(s.modeT, 0.01); return [Math.max(1, Math.round(left)), null]; } s.purse = left - d; return [d, null]; }   /* (claude/rookery2) CORNERED on her perch */
   if (LOW_MODES.has(s.mode) || plunge) return [Math.round(dmg), null];
   return [Math.max(1, Math.round(dmg * SS.wing)), 'ON THE WING'];
 }
 /* a sister falls: the team changes */
 export function fell(S, r, w) {
   S.dead[r] = true; S.n.fell.push(r); S.ph = 1 + Object.keys(S.dead).length; S.marks = []; const left = alive(S);
-  if (S.held && r === 'snatcher') { const H = S.held; S.held = null; if (w.letGo) w.letGo(S.sis.snatcher, H.pp, 0); }   /* (she falls with you in her talons: you drop, unhurt) */
+  if (S.held && r === (S.held.by || 'snatcher')) { const H = S.held; S.held = null; if (w.letGo) w.letGo(S.sis[r], H.pp, 0); }   /* (she falls with you in her talons: you drop, unhurt) */
+  if (S.ride) { const R = S.ride; S.ride = null; if (w.unride) w.unride(R.pp); }   /* (claude/rookery2: a fall ends a ride) */
+  if (left.length === 1) { const q = S.sis[left[0]]; S.p2 = left[0]; q.chain = null; q.rockGo = false; q.p2i = 0; q.mode = 'grow'; q.modeT = SS.p2.grow; q.openT0 = q.modeT; q.ward = 0; q.cd = 0;
+    S.grabCd = SS.p2.grabFirst; w.number(S.G.mid, S.G.floorY - 104, SS_SAY.grow, '#ffd36b'); w.shake(6); }   /* (claude/rookery2) PHASE 2: the survivor grows and takes their gifts */
   const FELL = { diver: SS_SAY.diverFell, shrieker: SS_SAY.shriekerFell, snatcher: SS_SAY.snatcherFell };
   w.number(S.G.mid, S.G.floorY - 90, left.length === 1 ? SS_SAY.last : FELL[r], '#ff6b6b'); w.sound('fall'); w.music(S.ph);
-  for (const q of left) { const s = S.sis[q]; if (s.mode === 'hover' || s.mode === 'fly') s.cd = Math.min(s.cd, 1.2); }
+  for (const q of left) { const s = S.sis[q]; if (s.mode === 'hover' || s.mode === 'fly' || s.mode === 'perched') s.cd = Math.min(s.cd, 1.2); }
   if (r === 'snatcher') for (const sl of S.G.slabs) if (sl.st === 'rubble') sl.t = Math.min(sl.t, SS.slab.regrow[2]);
-  S.snatchCd = Math.min(S.snatchCd, 3); S.grabCd = Math.min(S.grabCd, 3);
+  S.snatchCd = Math.min(S.snatchCd, 3); if (!S.p2) S.grabCd = Math.min(S.grabCd, 3);
 }
 
 /* ---------- THE BOT (src/lab.js): what a player reads - the red lines a reaction late (and whether they have LOCKED), the boulder's shadow, the mark, the wave, the snatch,
@@ -347,6 +447,7 @@ function ssPlan0(s) {
   const sis = ROLES.map(r => S.sis[r]).filter(q => q.alive);
   /* 0. HELD: strike her loose (a reaction late, then every swing) */
   if (s.held) { out.gx = P.x; out.why = 'held: strike her'; if (seenFor('held' + (S.n.grabbed || 0))) out.atk = P.atk < 0; return out; }
+  if (s.ride) { out.gx = P.x; out.why = 'riding to the perch'; return out; }   /* (claude/rookery2) */
   const dropping = sis.filter(q => q.mode === 'dropTell');
   const inHaz = x => S.rocks.some(c => Math.abs(x - c.x) < SS.rock.r + 10) || dropping.some(q => Math.abs(x - q.dropX) < SS.rock.r + 8) || sis.some(q => q.mode === 'echoTell' && q.echoX != null && Math.abs(x - q.echoX) < SS.echo.w / 2 + 8);
   const swing = fx => { out.face = Math.sign(fx - P.x) || out.face; out.atk = P.atk < 0; };
@@ -394,6 +495,9 @@ function ssPlan0(s) {
   /* 4b. A CHAIN STOOP coming: get onto the nearest crack */
   const chainer = sis.find(q => q.mode === 'chainTell' || (q.chain && q.mode === 'jar'));
   if (chainer && cr[0] && seenFor('ch' + chainer.act)) { out.gx = cr[0].x; out.why = 'a chain stoop: onto a crack'; return out; }
+  /* 4c. (claude/rookery2) THE RIDE: a sister climbing off the rock (a dive or a rake taken on the shield, a grab struck loose) with the shrieker on her perch - most players take it */
+  const fw = sis.find(q => q.mode === 'ferryWait'), shr = S.sis.shrieker;
+  if (fw && shr.alive && (shr.mode === 'perched' || shr.mode === 'rise') && !roll('fw' + fw.act, 0.3) && seenFor('fw' + fw.act)) { out.gx = clamp(fw.x); if (Math.abs(fw.x - P.x) < 16) out.grab = true; out.why = 'grab her talons: ride to the perch'; return out; }
   /* 5. A SISTER OPEN (stunned / down) or LOW: strike her */
   const open = sis.filter(q => sisOpen(q) && q.ward <= 0).sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0];
   if (open) { const sx = open.x + (P.x < open.x ? -1 : 1) * (s.tip ? 22 : 12); out.gx = clamp(sx); if (Math.abs(open.x - P.x) < reach + 14) swing(open.x); out.why = 'strike her: ' + (OPEN_NAME[open.mode] || 'open').toLowerCase(); return out; }

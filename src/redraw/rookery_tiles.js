@@ -31,6 +31,21 @@ function lichen(g, z, x, y, r) { const L = CUR.lichen, c = L[(r() * L.length) | 
 /* a feather lying: a pale quill and two barbs */
 function feather(g, x, y, dark) { const c = dark ? '#4a4658' : '#e6e4ec', c2 = dark ? '#6e6a80' : '#c0bece'; px2(g, x, y, c); px2(g, x + 1, y, c); px2(g, x + 2, y, c); px2(g, x + 3, y, c2); px2(g, x + 1, y - 1, c2); px2(g, x + 2, y + 1, c2); }
 /* GUANO: a white crust on a lit top, with a dripped edge */
+/* (claude/rookery2, brief A4 - Daniel 10-27: "flat grey untextured path tops") THE ROCK-AND-GUANO CAP: every walkable top gets it, the whole width - a crust of guano patches and
+   scoured rock grit with a ragged under-edge (3-5 px), grit specks on it, one or two guano drips hanging off it, and at a run's free end the cap rolls over the edge. GREYBOX
+   shapes in the level's own colours: the sonnet art lane finishes it */
+function capBand(g, x, y, eL, eR, S) {
+  for (let k = 0; k < 16; k++) { const hv = hash(x * 16 + k, y * 7 + 3), d = 3 + (hv % 3), patch = (((x * 16 + k) >> 2) + y) % 3 !== 0;
+    for (let q = 0; q < d; q++) px2(g, k, q, q === 0 ? (patch ? GUANO[3] : S[6]) : q === d - 1 ? (patch ? GUANO[0] : S[2]) : patch ? GUANO[q % 2 ? 2 : 1] : S[5]);
+    if (hv % 11 === 0) px2(g, k, 1, S[1]); if (hv % 13 === 5) px2(g, k, 0, S[3]); }                                                                               /* grit */
+  for (let i = 0; i < 2; i++) { const hv = hash(x * 3 + i * 17, y * 5 + 1); if (hv % 3 === 2 && i) continue; const dx = 2 + (hv % 12), L = 3 + (hv % 4); for (let q = 3; q < 3 + L; q++) px2(g, dx, q, q === 2 + L ? GUANO[0] : GUANO[q % 2 ? 1 : 2]); }   /* drips */
+  { const h1 = hash(x * 5 + 3, y * 3 + 1);   /* (claude/rookery2art) PEBBLES and a hairline CRACK, so a long walk is never a flat strip: a scatter of grit stones on the crust, a crack through it now and then, a guano blob */
+    if (h1 % 3 === 0) { const k = 1 + (h1 >> 3) % 11; px2(g, k, 1, S[3]); px2(g, k + 1, 1, S[4]); px2(g, k + 1, 0, S[6]); px2(g, k, 2, S[1]); }
+    if (h1 % 7 === 2) { const k = 2 + (h1 >> 4) % 11; px2(g, k, 2, S[0]); px2(g, k, 3, S[0]); px2(g, k + 1, 4, S[0]); px2(g, k + 1, 5, S[1]); px2(g, k, 1, S[1]); }
+    if (h1 % 5 === 1) { const k = 1 + (h1 >> 5) % 10; px2(g, k, 0, GUANO[3]); px2(g, k + 1, 0, GUANO[3]); px2(g, k + 2, 0, GUANO[2]); px2(g, k, 1, GUANO[2]); px2(g, k + 1, 1, GUANO[3]); px2(g, k + 2, 1, GUANO[1]); } }
+  if (eL) { px2(g, 0, 0, S[2]); for (let q = 1; q < 5; q++) px2(g, 0, q, GUANO[q % 2 ? 1 : 0]); }                                                                   /* rolled over a free end */
+  if (eR) { px2(g, 15, 0, S[2]); for (let q = 1; q < 5; q++) px2(g, 15, q, GUANO[q % 2 ? 0 : 1]); }
+}
 function guanoCap(g, r, x0, w, depth) { for (let k = 0; k < w; k++) { const d = depth + (((r() * 2) | 0) - (k === 0 || k === w - 1 ? 1 : 0)); for (let q = 0; q < d; q++) px2(g, x0 + k, q, q === d - 1 ? GUANO[1] : q === 0 ? GUANO[3] : GUANO[2]); } }
 const depthOf = (open, d0 = 6) => { let d = d0; for (let k = 1; k <= 5 && d === d0; k++) for (let dy = -k; dy <= k && d === d0; dy++) for (let dx = -k; dx <= k; dx++) { if (Math.max(Math.abs(dx), Math.abs(dy)) === k && open(dx, dy)) { d = k - 1; break; } } return d; };
 const deepA = y => y < 40 ? 0 : Math.min(0.45, (y - 40) * 0.05);
@@ -42,7 +57,7 @@ function topTile(z, x, y, eL, eR) {
     const [c, g] = canvas(16, 16), r = mulberry(hash(x & 7, y & 3) + z * 31), P = CUR, S = P.s;
     stoneFill(g, z, x, y, 3);
     rect(g, 0, 0, 16, 3, S[5]); rect(g, 0, 0, 16, 1, S[6]); rect(g, 0, 3, 16, 1, S[4]); rect(g, 0, 4, 16, 1, S[2]); rect(g, 0, 5, 16, 1, S[1]);        /* the lit lip and the shadow under it */
-    for (let k = 0; k < 16; k++) { const h = hash(x * 16 + k, y) % 7; if (h === 0) px2(g, k, 0, S[4]); if (h === 1) px2(g, k, 1, S[6]); }                       /* scoured grain on the lip */
+    rect(g, 0, 6, 16, 1, S[1]); capBand(g, x, y, eL, eR, S);                                                                                       /* (claude/rookery2) THE ROCK-AND-GUANO CAP over the whole lip */
     /* dry tufts, bent east */
     for (let i = 0; i < 3; i++) if (r() < 0.55) { const tx = (r() * 13) | 0, T = P.tuft; px2(g, tx, 0, T[1]); px2(g, tx + 1, -1 + 0, T[1]); px2(g, tx + 1, 0, T[0]); px2(g, tx + 2, 0, T[1]); px2(g, tx, 1, T[0]); }
     /* GUANO: a crust splashed on the lip, a drip over its edge (more where the roosts are: zones 0, 1, 3, 4) */
@@ -103,6 +118,7 @@ function shelf(z, l, rr, v, bone) {
     rect(g, 0, 0, 16, 6, S[4]); rect(g, 0, 0, 16, 1, S[6]); rect(g, 0, 1, 16, 1, S[5]); rect(g, 0, 5, 16, 1, S[2]);                                          /* the slab: lit edge, body, shadow */
     rect(g, 0, 6, 16, 2, S[2]); rect(g, 0, 6, 16, 1, S[3]); rect(g, 0, 7, 16, 1, S[0]);                                                                    /* the scoured underside */
     for (let i = 0; i < 6; i++) px2(g, (r() * 16) | 0, 1 + ((r() * 4) | 0), r() < 0.5 ? S[3] : S[5]);
+    if (!bone) capBand(g, v * 5 + z, 3, false, false, S);   /* (claude/rookery2) the cap on a shelf's walking face too */
     if (r() < 0.55) { const gx = (r() * 9) | 0, gw = 3 + ((r() * 4) | 0); guanoCap(g, r, gx, gw, 2); if (r() < 0.6) { const dx = gx + ((r() * gw) | 0); for (let q = 2; q < 8; q++) px2(g, dx, q, GUANO[q % 2 ? 1 : 2]); } }
     if (bone) { for (let k = 0; k < 3; k++) { const bx = 1 + k * 5; rect(g, bx, 0, 4, 2, BONE[2]); px2(g, bx, 0, BONE[3]); px2(g, bx + 3, 1, BONE[1]); } rect(g, 0, 6, 16, 1, BONE[1]); }               /* the Bone Stair's shelves are paved with bones */
     else if (r() < 0.3) { const fx = 1 + ((r() * 10) | 0); px2(g, fx, 0, '#e6e4ec'); px2(g, fx + 1, 0, '#e6e4ec'); px2(g, fx + 2, 0, '#c0bece'); }

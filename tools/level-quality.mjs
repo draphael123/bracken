@@ -19,7 +19,8 @@ import { pacing } from './pacing.mjs';
 import { BOSS_SYNTH_BASE, splitTrack } from '../src/boss-music.js';
 import { clearsAt, MASH_HELD } from './mash-rows.mjs';
 import { ruleFights, curveVerdict, CURVE_REPORT_ONLY } from './rule-state.mjs';
-import { routeBlock, BLOCK } from './route-block.mjs';   /* (claude/foepass) do the encounters stand ON the route? */
+import { routeBlock, BLOCK } from './route-block.mjs';
+import { anchorFaults, GATE as ANCHOR_GATE } from './anchor-lint.mjs';   /* (claude/rookery2) NOTHING FLOATS: every ledge, prop and perch hangs on something (the rookery's row) */   /* (claude/foepass) do the encounters stand ON the route? */
 /* (claude/combat2) REPORT-ONLY FOR EVERY LEVEL: the combat pass part 2's level-side rows - fights during the rule, and the level-1 curve by act
    (tools/rule-fights.mjs). Printed (WARN) and listed by node tools/rule-fights.mjs; never failing the gate until Daniel lifts them. */
 export const REPORT_ALL = ['ruleFight', 'blocking'];   /* (claude/foepass) the ROUTE-BLOCKING row (tools/route-block.mjs) is report-only on every level until the act sweeps lift it act by act */   /* (the curve row is per level: tools/rule-state.mjs CURVE_REPORT_ONLY, the list the level sweep shrinks) */
@@ -90,7 +91,7 @@ const GENERIC = new Set(['coin', 'deco', 'sign', 'check', 'silver', 'relic', 'st
 /* A GADGET is something the hero works or rides, not something that hits him: non-foe, non-generic ent kinds that are level-specific (used by <= 3 levels), the set-piece and
    platform kinds pacing.mjs recognises everywhere, moving platforms (moversExtra kinds), and the level's own machine arrays. */
 const ALWAYS_GADGET = new Set(['mover', 'pad', 'vent', 'balloon', 'lever', 'crank', 'winch', 'sluice', 'capstan', 'pump', 'firebox', 'sheet', 'cannon', 'bell', 'seabell', 'lockgate', 'key', 'felltree', 'deadfall', 'ram', 'cart', 'plank', 'keg', 'loosegun', 'cargowall', 'bulkhead', 'davit', 'stormkite', 'resonance', 'mirror', 'weight', 'support', 'rod', 'boiler', 'roller', 'cage', 'plate', 'timber', 'sail', 'bridge', 'gas', 'tbell', 'pwheel']);
-const SYSTEM_ARRAYS = ['gusts', 'hoists', 'crumbles', 'bridges', 'vines', 'perches', 'flips', 'glyphBridges', 'zipLines', 'ropes', 'cableBridges', 'thermals', 'airRails', 'roosts', 'winds', 'siphons', 'whirlpools', 'gasVents', 'locks', 'carousels', 'masts', 'risers', 'callers', 'pegs', 'seams', 'pits', 'cable', 'veins', 'quicksand', 'looseRock', 'heaps', 'emberPits', 'stillFires', 'beams', 'spiral', 'chases', 'rollGaps', 'felled', 'rot', 'graves', 'candles', 'duneSlides'];   /* (claude/caravan2) THE SUNKEN CARAVAN's dune slides: a slope the slide-jump is built round (L.duneSlides) */
+const SYSTEM_ARRAYS = ['rkRides', 'gusts', 'hoists', 'crumbles', 'bridges', 'vines', 'perches', 'flips', 'glyphBridges', 'zipLines', 'ropes', 'cableBridges', 'thermals', 'airRails', 'roosts', 'winds', 'siphons', 'whirlpools', 'gasVents', 'locks', 'carousels', 'masts', 'risers', 'callers', 'pegs', 'seams', 'pits', 'cable', 'veins', 'quicksand', 'looseRock', 'heaps', 'emberPits', 'stillFires', 'beams', 'spiral', 'chases', 'rollGaps', 'felled', 'rot', 'graves', 'candles', 'duneSlides'];   /* (claude/caravan2) THE SUNKEN CARAVAN's dune slides: a slope the slide-jump is built round (L.duneSlides) */
 const MOVER_KINDS_SKIP = new Set(['lane']);   /* a lane is the track a platform runs on, not a second gadget */
 
 /* a kind is a gadget when it is a known machine kind, reads like one (rune, lock, plate, glyph, lever...), or the threat table says it is worth ZERO (a thing that is not a foe) and few levels use it. A kind the table does not know is a foe. */
@@ -314,6 +315,7 @@ export function measure(lv) {
     ['ruleFight', ruleFight.ok, ruleFight.msg],
     ['blocking', routeB.share >= BLOCK.share, routeB.blocking + ' of ' + routeB.n + ' encounters stand on the route (' + Math.round(routeB.share * 100) + '%, >=' + Math.round(BLOCK.share * 100) + '%)' + (routeB.off.length ? '; off it: ' + routeB.off.slice(0, 6).join(', ') + (routeB.off.length > 6 ? ' ...' : '') : '')],
     ['curve', !!curveV.soft || (!CURVE_REPORT_ONLY[lv.id] && curveV.ok), curveV.msg + (CURVE_REPORT_ONLY[lv.id] ? (curveV.ok && !curveV.soft ? ' - BACK IN ITS BAND: take it out of CURVE_REPORT_ONLY (tools/rule-state.mjs)' : ' [report-only: CURVE_REPORT_ONLY]') : '')],
+    ...(ANCHOR_GATE.includes(lv.id) ? [(() => { const f = anchorFaults(L); return ['anchors', !f.length, f.length ? f.length + ' thing(s) hang on nothing (node tools/anchor-lint.mjs ' + lv.id + '): ' + f.slice(0, 4).map(q => q.kind + '@' + q.x + ',' + q.y).join(' ') : 'every ledge, prop, roost and perch hangs on something (tools/anchor-lint.mjs)']; })()] : []),
     ['route', (m.span >= LIM.routeSpan || m.back >= LIM.routeSpan) && m.pockets >= LIM.branches, 'route spans ' + m.span + ' rows, ' + m.back + ' tiles back, ' + m.pockets + ' branches/pockets (>=' + LIM.branches + ')'],
   ];
   m.ruleFight = ruleFight; m.curve = curveV; m.routeBlock = routeB;

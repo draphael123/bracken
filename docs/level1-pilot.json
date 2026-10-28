@@ -528,14 +528,14 @@
   "bare": true
  },
  "rookery": {
-  "hash": "ee598da83779",
+  "hash": "1090cc32a3c3",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
   "hits": 43,
-  "deaths": 3,
-  "kills": 42,
-  "lifts": 71,
+  "deaths": 6,
+  "kills": 32,
+  "lifts": 67,
   "walked": 100,
   "bare": true
  }

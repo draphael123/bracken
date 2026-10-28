@@ -37,6 +37,7 @@ export const ARCS = {
   updraft: { teach: [208, 216], develop: [258, 268] },
 };
 export const RK_RULE = "A HARPY'S DIVE BREAKS WHAT IT HITS.";
+import { rookeryAnchors } from './rookery-anchors.js';
 
 export function buildRookery({ painter, T, TS }) {
   const { W, H } = ROOKERY, r = y => y + 6;
@@ -65,7 +66,13 @@ export function buildRookery({ painter, T, TS }) {
     return d;
   };
   const shrieker = (x, y, squad) => ent('shrieker', x, r(y), { squad, perch: true });   /* THE HARPY SHRIEKER (src/rookery-hands.js; main.js spawns her with rkShriek) */
-  const egg = (x, y) => nests.push([x, r(y)]);   /* a bone nest on a ledge (greybox, drawn by the hands): an egg cache - silver or coins sit in it */
+  const egg = (x, y) => nests.push([x, r(y)]);
+  /* (claude/rookery2) A RIDE (CATCH A RIDE, src/rookery-hands.js): mount [x, y] (the cell a hero stands in), roost [x, y] (her home: a bone nest lashed to a spire / bracketed to the
+     face - src/rookery-anchors.js), path [[x, y], ...] (the cells his FEET pass), land [x, y] (the cell he is shaken off into, over footing). Her harpy is placed at the roost, bound to it */
+  const rides = [];
+  const ride = (id, o) => { const d = { id, x: o.mount[0], mount: [o.mount[0], r(o.mount[1])], roost: [o.roost[0], r(o.roost[1])], path: o.path.map(([x, y]) => [x, r(y)]), land: [o.land[0], r(o.land[1])], breaks: o.breaks || null };
+    rides.push(d); ent('harpy', d.roost[0], d.roost[1] - 1, { squad: 'ride-' + id, rk: { rkRide: id } }); return d; };
+  const gale = (x, y, squad) => ent('galeharpy', x, r(y), { squad, perch: true });   /* (claude/rookery2) THE GALE HARPY (src/gale-harpy.js): her perch is anchored too */   /* a bone nest on a ledge (greybox, drawn by the hands): an egg cache - silver or coins sit in it */
 
   block(0, 0, 0, H - 1);                                                            /* the world's west edge */
 
@@ -91,11 +98,15 @@ export function buildRookery({ painter, T, TS }) {
   crack('firstFloor', { load: 'drop', cleat: [49, 33], clear: [48, 50, 34, 37], roost: [53, 26] });
   coins([45, 39], [52, 39], [59, 39], [64, 39]);
   foe('bat', 61, 38, 'under');
-  ground(67, 80, 41);                                                               /* THE GULLY: out from under the buttress */
-  foe('fledgling', 72, 40, 'gully', { face: -1 }); foe('crow', 79, 36, 'gully');
-  coins([69, 40], [75, 40]); deco(70, 40, 'bones', 1); egg(77, 40);
-  plank(70, 75, 37); coins([71, 36], [74, 36]);
-  ground(81, 84, 39); ground(85, 98, 37);                                           /* up out of the gully (two, two) */
+  ground(67, 84, 42);                                                               /* THE GULLY: out from under the buttress (a step down) */
+  foe('fledgling', 71, 41, 'gully', { face: -1 });
+  coins([69, 41], [74, 41]); deco(70, 41, 'bones', 1); egg(76, 41);
+  plank(69, 72, 39); coins([70, 38], [72, 38]);
+  /* (claude/rookery2) THE FIRST RIDE (TEACH, REQUIRED - safe: the gully floor is under the whole ride): the way out of the gully is a face five high, no jump climbs it.
+     Stand on her mount; block her dive (or step off it: she hits the rock), and as she climbs, GRAB HER TALONS (UP) - she carries you up and shakes you off on the ledge */
+  sign(74, 41, 'A HARPY CAN CARRY YOU. BLOCK HER DIVE OR STEP OFF IT, THEN GRAB HER TALONS (UP) AS SHE CLIMBS.');
+  ride('firstRide', { mount: [81, 41], roost: [78, 33], path: [[82, 37], [84, 35]], land: [87, 36] });
+  ground(85, 98, 37);                                                               /* the ledge over the gully (five up) */
   /* THE FIRST ROOST (the area's exam, REQUIRED): a cliff five rows high (no jump); a cracked slab over it. Bait her onto the mark at its foot: the slab slides
      down as two steps. A harpy over the ledge, a fledgling on it, a crow down the wind */
   ground(99, 116, 32);
@@ -124,17 +135,22 @@ export function buildRookery({ painter, T, TS }) {
   sign(146, 31, 'THE PILLAR IS CRACKED AT ITS FOOT. LET THEM DIVE AT YOU THERE.');
   crack('firstPillar', { load: 'span', x: 150, top: 23, cleat: [149, 31], span: [151, 160, 32], roost: [154, 25] });
   ground(151, 160, 43); plank(156, 158, 40); plank(152, 154, 37); plank(151, 152, 34);
-  ground(161, 174, 32);
-  foe('fledgling', 165, 31, 'terraceB', { face: -1 }); foe('fledgling', 169, 31, 'terraceB', { face: -1 }); foe('crow', 172, 27, 'terraceB');
-  plank(163, 168, 29); coins([164, 28], [167, 28]); deco(171, 31, 'bones');
-  ground(175, 185, 29);                                                             /* up three */
+  ground(161, 168, 32);
+  foe('fledgling', 163, 31, 'terraceB', { face: -1 }); foe('crow', 165, 26, 'terraceB');
+  plank(162, 165, 29); coins([163, 28]); deco(161, 31, 'bones');
+  /* (claude/rookery2) THE HARPY'S GAP (TEST, REQUIRED): a chasm ten wide - no jump crosses it and nothing hangs over it. Ride her across; a miss is a fall and a climb back
+     (the boards up the near wall) */
+  sign(162, 31, "THE HARPY'S GAP. NO JUMP CROSSES IT: RIDE HER OVER.");
+  ride('gapRide', { mount: [167, 31], roost: [165, 24], path: [[171, 28], [176, 26], [179, 26]], land: [181, 28] });
+  ground(169, 178, 43); plank(174, 176, 40); plank(170, 172, 37); plank(169, 170, 34);   /* the chasm's floor and the boards back up to the near lip */
+  ground(179, 185, 29);                                                             /* the far side (up three) */
   /* THE EGG LEDGES (the area's exam, REQUIRED): a nest over the third chasm, a shrieker over it, crows down the wind */
-  sign(176, 28, 'THE EGG LEDGES.');
+  sign(180, 28, 'THE EGG LEDGES.');
   crack('eggNest', { load: 'nest', x: 186, top: 22, cleat: [184, 28], span: [188, 193, 30], roost: [182, 21] });
   ground(186, 195, 41); plank(191, 193, 38); plank(187, 189, 35); plank(186, 187, 32);
   shrieker(191, 19, 'eggLedges'); foe('crow', 196, 24, 'eggLedges'); foe('crow', 200, 26, 'eggLedges'); foe('goat', 200, 28, 'eggLedges', { face: -1 });
   ground(196, 214, 29);
-  coins([178, 28], [181, 28], [190, 29], [198, 28]); egg(199, 28);
+  coins([182, 28], [183, 28], [190, 29], [198, 28]); egg(199, 28);
   ent('check', 203, r(28));                                                         /* SHRINE TWO: the egg ledges are behind you */
 
   // ================= 3. THE UPDRAFT CHIMNEYS (206-316): REMIX + A14 (the real platforming) =================
@@ -142,6 +158,10 @@ export function buildRookery({ painter, T, TS }) {
   ent('vent', 213, r(28), { wind: true, period: 4, on: 2.4, h: 13 * TS, w: 20, lift: 270 });   /* THE FIRST CHIMNEY: up a face no jump climbs */
   ground(215, 230, 20);                                                             /* the narrow ledge (nine up) */
   foe('crow', 222, 15, 'chimney'); coins([212, 24], [212, 20], [217, 19]);
+  /* (claude/rookery2) THE GALE HARPY (the level's new foe, TAUGHT here): she holds a perch bracketed to the next face and beats her gust west along the narrow ledge - off its
+     lip is a fall down the chimney (a climb back on the updraft). Hit her in the tell (wings back, the dashed cone), or brace on a shield */
+  sign(216, 19, 'A GALE HARPY BEATS A GUST. HIT HER WHILE HER WINGS GO BACK, OR BRACE.');
+  gale(229, 17, 'galeLedge');
   /* THE SLAB ON THE NARROW LEDGE (REMIX, REQUIRED): the next face is six high; its cracked slab comes down as steps - baited on a ledge with nowhere to step but back */
   sign(218, 19, 'THE NEXT FACE HAS A CRACKED SLAB. BAIT HER HERE.');
   crack('ledgeSlab', { load: 'steps', x: 229, top: 9, cleat: [226, 19], steps: [[228, 229, 18, 'S'], [230, 230, 16, 'S']], roost: [224, 11] });
@@ -152,7 +172,7 @@ export function buildRookery({ painter, T, TS }) {
      up the gully's west side) */
   sign(250, 13, 'THE WIND GAP. A FALL IS A LONG CLIMB.');
   ground(251, 278, 26);                                                             /* the gully floor below */
-  plank(251, 253, 23); plank(252, 254, 20); plank(251, 253, 17);                   /* the climb back up */
+  plank(251, 252, 23); plank(252, 254, 20); plank(251, 252, 17);                   /* the climb back up (claude/rookery2: the boards off the wall two wide - a lip, tools/anchor-lint.mjs) */
   /* the stepping shelves: wind-cut rock ledges jutting off the pillars behind (one-way: the gully floor under them is one floor, walked back to the climb) */
   plank(255, 256, 16);                                                              /* shelf one (down two) */
   plank(260, 261, 15);                                                              /* shelf two (up one) */
@@ -168,12 +188,19 @@ export function buildRookery({ painter, T, TS }) {
   shrieker(296, 1, 'brokenSpan'); foe('fledgling', 285, 9, 'brokenSpan', { face: -1 });
   ground(295, 302, 18); plank(297, 299, 15); plank(295, 296, 13);                   /* under the span: a shelf, ledges back up to the NEAR lip (a fall is a climb back) */
   /* THE CRACKED FLOOR on the span's far side (REMIX: optional): it drops you into the swallows' cave - coins, and the way back out up its chimney */
-  ground(303, 322, 10);
-  crack('caveFloor', { load: 'drop', cleat: [306, 9], clear: [305, 307, 10, 12], roost: [309, 3] });
-  air(304, 309, 13, 15); coins([305, 15], [308, 15]); egg(304, 15); block(308, 309, r(14), r(15));   /* the swallows' cave (a step up out of it) */
-  air(310, 311, 10, 12); plank(310, 311, 12);                                       /* its chimney out (a ledge in it) */
-  coins([284, 9], [289, 9], [299, 9], [313, 9]);
-  ent('check', 315, r(9));                                                          /* SHRINE THREE: the chimneys are behind you */
+  /* (claude/rookery2) THE HUNG NEST (REMIX, REQUIRED): past the span a chasm eleven wide; a bone nest hangs over it on a cracked arm (lashed to a spire from the chasm floor),
+     too high and too far to jump to. Ride her THROUGH THE ARM: A HARPY'S FLIGHT BREAKS WHAT IT HITS - the nest drops a row and she shakes you off onto it; the far lip is a hop.
+     A gale harpy on the far side beats at the rider (her path is shoved, it springs back) and at whoever stands on the nest */
+  ground(303, 304, 10);
+  sign(303, 9, 'THE HUNG NEST. RIDE HER THROUGH ITS CRACKED ARM.');
+  ride('nestRide', { mount: [303, 9], roost: [300, 3], path: [[311, 5], [314, 6]], land: [312, 8], breaks: 'hungNest' });
+  crack('hungNest', { load: 'nest', x: 311, top: 4, cleat: [318, 9], span: [310, 313, 9] });
+  ground(305, 314, 20); plank(310, 312, 17); plank(306, 308, 14); plank(305, 305, 11);   /* the chasm floor and the climb back to the near lip */
+  coins([307, 19], [313, 19]); egg(311, 19);
+  ground(315, 322, 10);
+  gale(320, 5, 'hungNest');
+  coins([284, 9], [289, 9], [299, 9], [317, 9]);
+  ent('check', 316, r(9));                                                          /* SHRINE THREE: the chimneys are behind you */
 
   // ================= 4. THE BONE STAIR (316-368): THE EXAM - every use at once, under the landmark =================
   sign(316, 9, "THE BONE STAIR. THE SISTERS' CRAG IS AT ITS TOP.");
@@ -185,33 +212,39 @@ export function buildRookery({ painter, T, TS }) {
   ground(333, 352, 10);
   foe('goat', 337, 9, 'stairB', { face: -1 }); foe('crow', 342, 4, 'stairB'); foe('fledgling', 345, 9, 'stairB', { face: -1 });
   coins([335, 9], [339, 9], [343, 9]); deco(340, 9, 'bones', 1); egg(334, 9);
-  /* THE TOP SLAB (REQUIRED): the last face, six high, its cracked slab over it */
-  crack('topSlab', { load: 'steps', x: 351, top: -3, cleat: [348, 9], steps: [[349, 350, 8, 'S'], [351, 352, 6, 'S']], roost: [345, 0] });
-  sign(346, 9, 'THE TOP SLAB.');
+  /* (claude/rookery2) THE LAST RIDE (EXAM, REQUIRED): the last face, five high, no slab now - ride her up it while a shrieker calls dives at you (a dive that finds the rider
+     knocks him off) and a gale harpy on the summit lip beats down at the ride */
+  sign(346, 9, 'THE LAST RIDE.');
+  ride('lastRide', { mount: [349, 9], roost: [346, 1], path: [[351, 5], [353, 3]], land: [356, 4] });
+  shrieker(341, -1, 'lastRide');
   ground(353, W - 1, 5);
+  gale(359, 0, 'lastRide');
   foe('harpy', 357, -1, 'summitDoor');
   coins([355, 4], [359, 4]);
   ent('check', 362, r(4));                                                          /* SHRINE FOUR: the summit's door */
   sign(366, 4, "THE SHRIEK SISTERS: BAIT A DIVE ONTO THE CRACKED ROCK. SHE LIES STUNNED IN IT.");
 
   /* THE WIND-CUT SHELVES: rock ledges jutting over the road (a second height, coins on them) - never where one would climb a cliff a crack is for */
-  for (const [a, b, y] of [[3, 7, 33], [18, 23, 34], [29, 33, 32], [43, 47, 30], [77, 80, 34], [102, 107, 28], [110, 114, 28], [170, 173, 28], [177, 181, 25], [198, 202, 25], [205, 209, 25], [217, 221, 16], [236, 241, 10], [244, 248, 10], [281, 285, 6], [287, 290, 6], [305, 309, 6], [335, 340, 6], [356, 360, 1]]) { plank(a, b, y); ent('coin', Math.round((a + b) / 2), r(y - 1)); }
+  for (const [a, b, y] of [[3, 7, 33], [18, 23, 34], [29, 33, 32], [43, 47, 30], [77, 80, 34], [102, 107, 28], [110, 114, 28], [177, 181, 25], [198, 202, 25], [205, 209, 25], [217, 221, 16], [236, 241, 10], [244, 248, 10], [281, 285, 6], [287, 290, 6], [335, 340, 6], [356, 360, 1]]) { plank(a, b, y); ent('coin', Math.round((a + b) / 2), r(y - 1)); }
 
   // ================= 5. THE SISTERS' CRAG (370-411): THE SHRIEK SISTERS =================
   /* The summit: a flat crag top, guano-white, three CRACKED SLABS in its floor (the opening: a dive baited onto one stuns the diving sister in the rubble -
      src/shriek-sisters.js), two rock shelves three rows up at its ends, THE ROC'S PEAK beyond it */
   const [A0, A1] = ROOKERY.arena, FL = r(ROOKERY.floor - 6);
   plank(A0 + 3, A0 + 7, ROOKERY.floor - 9); plank(A1 - 7, A1 - 3, ROOKERY.floor - 9);   /* (plank() lays in the level's own rows: r(floor - 9) is three rows over the summit) */
+  /* (claude/rookery2) THE SHRIEKER'S PERCH: a bone nest high on a rock spire (its pier: src/forest-supports.js), seven rows over the summit - out of any jump (the shelves are
+     three up, the perch four over them). Only a RIDE gets you there: knock a sister down, grab her talons as she climbs, and she carries you up beside the shrieker (src/shriek-sisters.js) */
+  plank(A0 + 27, A0 + 29, ROOKERY.floor - 13);
   ent('torch', A0 + 1, FL - 1); ent('torch', A1 - 1, FL - 1);
   ent('shrieksisters', A0 + 21, FL - 1);
   block(W - 1, W - 1, 0, H - 1);                                                    /* the world's east edge */
 
   const arena = { x0: A0 * TS, x1: (A1 + 1) * TS, floor: FL * TS, y0: (FL - 9) * TS, trigger: (A0 + 5) * TS, wallL: A0 - 1, wallR: A1 + 1, boss: 'shrieksisters', music: 'shrieksisters', camUp: 16, tint: '#c8c0d8', tintA: 0.07,
     /* THE CRACKED SLABS (src/shriek-sisters.js geom): tile columns of each slab's middle */
-    slabs: [A0 + 8, A0 + 21, A1 - 8] };
-  return {
+    slabs: [A0 + 8, A0 + 21, A1 - 8], perchS: [A0 + 27, A0 + 29, r(ROOKERY.floor - 13)] };
+  const out = {
     W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: r(37) }, pools: [], falls: [],
-    arena, rookery: true, hoists, rkNests: nests,
+    arena, rookery: true, hoists, rkNests: nests, rkRides: rides,
     calm: [[0, W - 1, 0, H - 1]],   /* placed wholly by hand: nothing sprinkled */
     checkRun: 240,                  /* four shrines, one closing each area's exam (A10c): src/level.js checkpoints() must not fill between them */
     sections: SECTIONS.map(([name, x0, x1]) => ({ id: name.toLowerCase().replace(/[^a-z]+/g, '-'), name, x0, x1 })),
@@ -228,4 +261,6 @@ export function buildRookery({ painter, T, TS }) {
     tints: [[-24, 106, [210, 205, 225], 0.06], [106, 206, [205, 200, 220], 0.07], [206, 316, [200, 200, 225], 0.07], [316, 368, [215, 195, 210], 0.08], [368, W + 24, [220, 190, 205], 0.09]],
     reachExact: false,
   };
+  out.rkAnchors = rookeryAnchors(out, T);   /* (claude/rookery2) every roost, gale perch and hung nest's arm hangs on something (src/rookery-anchors.js; tools/anchor-lint.mjs) */
+  return out;
 }

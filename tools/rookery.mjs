@@ -49,7 +49,7 @@ const checks = L.ents.filter(e => e.t === 'check').sort((a, b) => a.x - b.x), bo
 ok(checks.length === 4 && SECTIONS.slice(0, 4).every(s => checks.some(c => c.x > s[2] - 10 && c.x <= s[2])), 'a shrine closes each area (A10c): ' + checks.map(c => c.x).join(' '));
 const noCrack = id => floodReach({ ...L, hoists: L.hoists.filter(h => h.id !== id) }, T);
 const nextAfter = h => checks.find(c => c.x > h.cleat[0]) || boss;
-const REQUIRED = ['firstFloor', 'roostSlab', 'firstNest', 'firstPillar', 'eggNest', 'ledgeSlab', 'spanPillar', 'lastNest', 'topSlab'];
+const REQUIRED = ['firstFloor', 'roostSlab', 'firstNest', 'firstPillar', 'eggNest', 'ledgeSlab', 'spanPillar', 'hungNest', 'lastNest'];   /* (claude/rookery2: the top slab is THE LAST RIDE now; the hung nest is broken by a ride) */
 for (const id of REQUIRED) { const h = L.hoists.find(q => q.id === id); const n = nextAfter(h); ok(h && !at(n, noCrack(id)), 'REQUIRED: ' + id + ' (' + h.load + ') is a LOCK - without it ' + n.t + '@' + n.x + ' is out of reach'); }
 for (const h of L.hoists.filter(q => !REQUIRED.includes(q.id))) ok(at(boss, noCrack(h.id)), 'the ' + h.load + ' crack ' + h.id + ' is optional (a pocket), not a lock');
 { const kinds = new Set(L.hoists.map(h => h.load)); ok(kinds.size === 4 && L.hoists.length >= 9, 'A HARPY\'S DIVE BREAKS WHAT IT HITS, four ways (' + [...kinds].join(', ') + '), ' + L.hoists.length + ' cracked rocks'); }
@@ -60,6 +60,19 @@ for (const h of L.hoists) { const foot = L.grid[(h.cleat[1] + 1) * L.W + h.cleat
   else ok(cells.length && cells.every(([x, y]) => L.grid[y * L.W + x] === T.AIR), h.id + ': what it lays lands in open air (' + cells.length + ' cells)');
   if (h.roost) ok(L.ents.some(e => e.t === 'harpy' && e.rk && e.rk.rkRoost === h.id), h.id + ': its roost\'s harpy is placed (bound to it)'); }
 { const sh = L.ents.filter(e => e.t === 'shrieker'); ok(sh.length >= 3 && sh.every(e => e.x > ARCS.shrieker.teach[0] - 10), 'THE HARPY SHRIEKER (the one new foe): ' + sh.length + ' placed, taught at ' + ARCS.shrieker.teach[0] + ' then developed, remixed, examined'); }
+/* (claude/rookery2) CATCH A RIDE: the way to reach places - taught safe (the gully floor under it), tested (a chasm), remixed (through a hung nest's arm, a gale on the rider),
+   examined (the last face, a shrieker calling and a gale beating); every one a LOCK; every mount and land on footing; her harpy placed, bound to her ride */
+const RIDES = { firstRide: 'teach', gapRide: 'test', nestRide: 'remix', lastRide: 'exam' };
+ok((L.rkRides || []).length >= 4 && Object.keys(RIDES).every(id => L.rkRides.some(d => d.id === id)), 'CATCH A RIDE: ' + (L.rkRides || []).map(d => d.id + ' (' + RIDES[d.id] + ')').join(', '));
+const noRide = id => floodReach({ ...L, rkRides: L.rkRides.filter(d => d.id !== id) }, T);
+for (const d of L.rkRides || []) { const n = checks.find(c => c.x > d.mount[0]) || boss; ok(!at(n, noRide(d.id)), 'REQUIRED RIDE: ' + d.id + ' is a LOCK - without it ' + n.t + '@' + n.x + ' is out of reach');
+  const foot = (x, y) => [T.SOLID, T.ONEWAY].includes(L.grid[(y + 1) * L.W + x]) && L.grid[y * L.W + x] === T.AIR;
+  ok(foot(d.mount[0], d.mount[1]), d.id + ': its mount stands on footing at ' + d.mount);
+  const sp = (L.hoists || []).find(h => h.id === d.breaks), landFoot = foot(d.land[0], d.land[1]) || (sp && sp.span && d.land[1] === sp.span[2] - 1 && d.land[0] >= sp.span[0] && d.land[0] <= sp.span[1]);
+  ok(landFoot, d.id + ': she shakes you off over footing at ' + d.land + (sp ? ' (the nest her flight breaks drops under it)' : ''));
+  ok(L.ents.some(e => e.t === 'harpy' && e.rk && e.rk.rkRide === d.id), d.id + ': her harpy is placed at her roost, bound to her ride'); }
+ok(!at(boss, floodReach(L, T, { noAssist: true })), 'legs alone (the plain fill) do not reach the summit: the rides are the way');
+{ const g = L.ents.filter(e => e.t === 'galeharpy'); ok(g.length >= 3, 'THE GALE HARPY (the level\'s one new foe, src/gale-harpy.js): ' + g.length + ' placed (taught on the narrow ledge, at the hung nest, at the last ride)'); }
 ok(L.ents.filter(e => e.t === 'vent' && e.wind).length >= 2, 'A14: the updraft chimneys (' + L.ents.filter(e => e.t === 'vent').length + ' timed updrafts) and the wind gap');
 ok(Object.values(RK_SAY).every(s => SAY_LINES.has(s)), 'every capital line the rule says is in src/hint-lines.js');
 
@@ -73,7 +86,7 @@ ok(Object.values(RK_SAY).every(s => SAY_LINES.has(s)), 'every capital line the r
   W.L = L; const H = makeRookeryHands(W);
   for (const e of L.ents) if (e.t === 'harpy' || e.t === 'shrieker') foes.push({ t: e.t, x: e.x * TS + 8, y: (e.y + 1) * TS, hx: e.x * TS + 8, hy: (e.y + 1) * TS, alive: true, mode: 'hover', anim: 0, stagger: 0, ...(e.rk || {}), ...(e.t === 'shrieker' ? { rkShriek: true } : {}) });
   H.reset();
-  const step = (s, f) => { for (let i = 0; i < Math.round(s * 60); i++) { H.update(1 / 60); for (const e of foes) if (e.alive) { if (!H.harpy(e, 1 / 60) && e.mode === 'downed') { e.modeT -= 1 / 60; if (e.modeT <= 0) { e.mode = 'hover'; e.stagger = 0; e.x = e.hx; e.y = e.hy; } } if (e.stagger > 0) e.stagger -= 1 / 60; } if (f) f(i); } };
+  const step = (s, f) => { for (let i = 0; i < Math.round(s * 60); i++) { H.update(1 / 60); for (const e of foes) if (e.alive) { if (!H.harpy(e, 1 / 60) && e.mode === 'downed') { e.modeT -= 1 / 60; if (e.modeT <= 0) { e.mode = e.rkRide ? 'rise' : 'hover'; e.stagger = 0; e.x = e.hx; e.y = e.hy; } } if (e.stagger > 0) e.stagger -= 1 / 60; } if (f) f(i); } };
   const stand = d => { P.x = markX(d, TS); P.y = markY(d, TS); P.ground = true; };
   /* 1. THE FIRST CRACK (a floor): stand on the mark, scream + aim, step off, her dive breaks the floor and she lies stunned */
   const d1 = L.hoists.find(h => h.id === 'firstFloor'); stand(d1); step(0.1);
@@ -101,6 +114,20 @@ ok(Object.values(RK_SAY).every(s => SAY_LINES.has(s)), 'every capital line the r
   ok(H.read().n.screams >= 1 && said.includes(RK_SAY.marked) && H.read().marks >= 1, 'THE SHRIEKER screams and MARKS the hero\'s spot (a red ring)');
   ok(H.read().n.called > n0 && foes.some(e => e.alive && e.rkAim && e.t === 'harpy'), 'every harpy near dives AT THE MARK (' + (H.read().n.called - n0) + ' called)');
   ok(foes.filter(e => e.rkAim).every(e => Math.abs(e.rkAim.tx - P.x) < 1), 'they aim at the MARK, not at the hero (off it, they hit the rock)');
+  /* 6. (claude/rookery2) CATCH A RIDE: on her mount she dives; stepped off, she hits the rock and lies a beat; she LIFTS - grab her - she carries the hero along her path and shakes
+     him off over the land; JUMP lets go mid-ride */
+  for (const e of foes) if (!e.rkRide) e.alive = false; for (const e of foes) if (e.rkAim) e.rkAim = null;
+  const rd = L.rkRides.find(d => d.id === 'firstRide'), rh = foes.find(e => e.rkRide === 'firstRide'); Object.assign(rh, { alive: true, mode: 'hover', x: rh.hx, y: rh.hy, rkAim: null, rkDive: null }); H.reset(); rh.rdCd = 0;
+  P.x = rd.mount[0] * TS + 8; P.y = (rd.mount[1] + 1) * TS; P.ground = true; P.dead = false; P.hp = 100; step(0.1);
+  ok(rh.rkAim && said.includes(RK_SAY.ride), 'a hero on her MOUNT: she aims her dive at him (BLOCK HER DIVE, THEN GRAB HER TALONS)');
+  P.x -= 30; let lifted = false; step(3, () => { if (rh.mode === 'lift') lifted = true; return false; }); ok(lifted || rh.mode === 'lift', 'stepped off: she hits the rock, lies a beat, then LIFTS (UP: GRAB)');
+  rh.mode = 'lift'; rh.modeT = 1; rh.x = P.x + 8; rh.y = P.y - 30; const got = H.tryGrab(P);
+  ok(got && P.rkRide === rh && rh.mode === 'ride', 'UP near her as she lifts: he has her talons (she carries him)');
+  let ticks = 0; step(4, () => { ticks++; if (P.rkRide) H.ride(P, false); return false; });
+  ok(!P.rkRide && Math.abs(P.x - (rd.land[0] * TS + 8)) < 10 && P.y < (rd.land[1] + 1) * TS, 'she flies her path and SHAKES HIM OFF over the land (' + Math.round(P.x / TS) + ',' + Math.round(P.y / TS) + ')');
+  rh.mode = 'lift'; rh.modeT = 1; rh.x = P.x; rh.y = P.y - 30; H.tryGrab(P); step(0.3, () => { if (P.rkRide) H.ride(P, false); }); const ok1 = H.ride(P, true);
+  ok(!ok1 && !P.rkRide && P.vy < 0, 'JUMP lets go mid-ride (normal air control: a hop)');
+  ok(H.read().n.rides >= 2 && H.read().n.shook >= 1 && H.read().n.letGo >= 1, 'the ride counters: ' + JSON.stringify({ rides: H.read().n.rides, shook: H.read().n.shook, letGo: H.read().n.letGo }));
 }
 
 // ---- THE SHRIEK SISTERS (pure) ----
@@ -229,6 +256,40 @@ ok(Object.values(RK_SAY).every(s => SAY_LINES.has(s)), 'every capital line the r
   const why = m => SSM.ssPlan({ P: { x: hero.x, y: A.floor, vy: 0, face: 1, ground: true, atk: -1 }, S: m, reach: 22, t: 5, v2: true, mem: {}, rng: () => 0.9, shield: false, dodge: true }).why;
   { const S4 = SSM.newFight(SSM.geom(A, TS)); for (const r of SSM.ROLES) { S4.sis[r].mode = 'hover'; S4.sis[r].cd = 99; } hero.x = S4.G.slabs[0].x; S4.sis.diver.mode = 'diveTell'; S4.sis.diver.act = 7; S4.sis.diver.aim = { x: hero.x, lock: true }; const a = why(S4);
     S4.sis.diver.mode = 'stuck'; S4.sis.diver.x = hero.x + 30; const b = why(S4); ok(/step off/.test(a) && /strike her/.test(b), 'the bot reads the LOCK and steps off (' + a + '), then strikes her stunned (' + b + ')'); } }
+
+// ---- (claude/rookery2) THE SISTERS: THE RIDE TO THE PERCH (P1), PHASE 2 (two dead: the survivor grows and takes their gifts - any order), THE SNATCH (pure) ----
+{ const A = L.arena, said = [], pp = { id: 'hero' }, hero = { x: 0, y: A.floor, ground: true, alive: true, block: false, face: 1, pp };
+  const w = { number: (x, y, t) => said.push(t), sound() {}, shake() {}, music() {}, mark() {}, dust() {}, fx() {}, rubble() {}, tip: () => { hero.tipped = 1; }, unride() {}, letGo() {},
+    hit: (s, bx, d, name, o) => (hero.x > bx[0] && hero.x < bx[1] && hero.y > bx[2] && hero.y - 20 < bx[3]) ? (hero.block && o && o.blockable ? 'blocked' : 'hit') : null,
+    hitArea() {}, hitHero() {}, shove: () => null, grab: (s, bx) => (hero.x > bx[0] && hero.x < bx[1]) ? pp : null };
+  const mk = () => { const S = SSM.newFight(SSM.geom(A, TS)); for (const r of SSM.ROLES) { S.sis[r].mode = r === 'snatcher' ? 'fly' : 'hover'; S.sis[r].cd = 99; } S.grabCd = 99; S.snatchCd = 99; return S; };
+  const step = (S, s, f) => { for (let i = 0; i < Math.round(s * 60); i++) { SSM.stepSisters(S, 1 / 60, [hero], w); if (f && f(i)) return true; } return false; };
+  const S = mk(), P0 = S.G.perchS, shelfTop = (A.floor / TS) - 3;
+  ok(P0 && (A.floor - P0.y) / TS >= 6 && shelfTop - P0.y / TS >= 4, 'THE SHRIEKER\'S PERCH: a nest ' + (A.floor - P0.y) / TS + ' rows over the summit, ' + (shelfTop - P0.y / TS) + ' over the shelves - out of any jump (a ride gets you there)');
+  const sh = S.sis.shrieker; step(S, 1.5); ok(sh.mode === 'perched' && Math.abs(sh.y - (P0.y - 2)) < 4, 'between her moves the shrieker SITS ON HER PERCH (P1)');
+  const dv = S.sis.diver; dv.x = S.G.mid - 40; dv.y = A.floor - 112; dv.cd = 0; dv.nAtk = 0; hero.x = S.G.slabs[0].x + 200 > S.G.x1 ? S.G.mid - 40 : S.G.mid - 40; hero.block = true;
+  step(S, 2.5, () => dv.mode === 'downed'); hero.block = false; ok(dv.mode === 'downed', 'her dive taken on the shield: KNOCKED DOWN');
+  step(S, 2.0, () => dv.mode === 'ferryWait'); ok(dv.mode === 'ferryWait' && said.includes(SSM.SS_SAY.ride), 'then she CLIMBS OFF THE ROCK slowly: UP: GRAB HER TALONS (' + SSM.SS.ride.window + ' s)');
+  hero.x = dv.x; hero.y = dv.y + 20; const got = SSM.tryRide(S, hero); ok(got && dv.mode === 'ferry' && S.ride && S.ride.by === 'diver', 'grabbed: she FERRIES the hero up toward the shrieker\'s perch');
+  step(S, 3, () => { if (S.ride) { hero.x = dv.x; hero.y = dv.y + SSM.SS.ride.hang; } return !!(S.ride && S.ride.done); });
+  ok(S.ride && S.ride.done && Math.abs(hero.x - P0.x) < P0.w / 2 + 4 && Math.abs(hero.y - P0.y) < 12, 'the ride ends over her nest (' + Math.round(hero.x) + ',' + Math.round(hero.y) + ' vs ' + P0.x + ',' + P0.y + ')');
+  S.ride = null; hero.y = P0.y; hero.ground = true; sh.mode = 'perched'; sh.ward = 0; step(S, 0.1);
+  ok(sh.mode === 'startled' && SSM.sisOpen(sh) && SSM.takeBlow(sh, 20, false)[0] === 30 && said.includes(SSM.SS_SAY.cornered), 'landed beside her: the shrieker is CORNERED ON HER PERCH - OPEN, x' + SSM.SS.ride.mul + ' up to ' + SSM.SS.ride.cap + ' of her');
+  step(S, SSM.SS.ride.tip); ok(hero.tipped && S.n.tips >= 1, 'stay on the nest and it TIPS you off (' + SSM.SS.ride.tip + ' s: no camping on the perch)');
+  /* PHASE 2, every order of deaths: the survivor grows (no HP), uses her own moves and the dead sisters' (one at a time), and THE SNATCH drops you both when struck */
+  for (const surv of SSM.ROLES) { const Z = mk(), q = Z.sis[surv], hp0 = q.maxHp; hero.x = Z.G.mid; hero.y = A.floor; hero.ground = true; hero.tipped = 0;
+    for (const r of SSM.ROLES) if (r !== surv) { Z.sis[r].alive = false; Z.sis[r].hp = 0; SSM.fell(Z, r, w); }
+    ok(Z.p2 === surv && q.mode === 'grow' && q.maxHp === hp0 && said.includes(SSM.SS_SAY.grow), surv + ' survives: PHASE 2 - she GROWS (' + SSM.SS.p2.scale + 'x, no HP added) and takes their gifts');
+    q.cd = 0; const modes = new Set(); let two = 0; Z.grabCd = 99;
+    step(Z, 40, () => { modes.add(q.mode); const tells = SSM.ROLES.filter(r => Z.sis[r].alive && /Tell$/.test(Z.sis[r].mode)).length; if (tells > 1) two++; if (!q.alive || hero.x < 0) return true; q.hp = hp0; return false; });
+    const borrowed = { diver: ['shockTell', 'dropTell'], shrieker: ['diveTell', 'dropTell'], snatcher: ['diveTell', 'shockTell'] }[surv], own = { diver: ['diveTell'], shrieker: ['screamTell'], snatcher: ['dropTell'] }[surv];
+    ok(borrowed.every(m => modes.has(m)) && own.every(m => modes.has(m)) && !two, surv + ' (P2): her own (' + own + ') and the dead sisters\' moves (' + borrowed.join(', ') + '), never two tells at once: ' + [...modes].filter(m => /Tell$/.test(m)).join(','));
+    /* THE SNATCH: grabbed, two strikes in the air - you fall together, she lands STUNNED */
+    for (const r of SSM.ROLES) Z.sis[r].ward = 0; q.mode = 'hover'; q.cd = 0; q.p2i = SSM.P2KIT[surv].indexOf('grab'); Z.grabCd = 0; Z.held = null; hero.x = Z.G.mid; hero.y = A.floor; hero.ground = true;
+    step(Z, 4, () => !!Z.held); ok(Z.held && Z.held.p2 && Z.held.by === surv, surv + ' (P2): THE SNATCH seizes the hero (her red !! talon line first)');
+    if (Z.held) { Z.clock += 1; SSM.strikeHeld(Z, w); Z.clock += 1; const r2 = SSM.strikeHeld(Z, w);
+      ok(r2 === 'fall' && q.mode === 'stuck' && SSM.sisOpen(q) && q.purse > 0, surv + ' (P2): ' + SSM.SS.p2.strikes + ' strikes mid-carry - YOU FALL TOGETHER, she lands STUNNED (the big opening, ' + SSM.SS.p2.stun + ' s, up to ' + SSM.SS.p2.cap + ' of her)'); } }
+}
 
 console.log(bad ? '\nrookery: ' + bad + ' FAILED' : '\nok  rookery: the road, the old-save rule, the locks, the hands, the sisters');
 process.exit(bad ? 1 : 0);
