@@ -356,22 +356,27 @@ export const STUCK = {
     { id: 'bn-fallen-house', zone: [200, 22, 232, 30], ats: [[227, 25], [208, 23]], line: 'TOO HIGH TO JUMP: WATER, OR THE ROOFS' },
     { id: 'bn-trench', zone: [240, 18, 252, 30], at: [252, 23], line: 'THE STREET IS GONE: GO OVER THE ROOFS' },
   ],
-  crown: [
-    { id: 'cr-chapel', zone: [672, 10, 768, 28], steps: [
-      { at: [728, 19], done: ['key', 728, 19, 'got'], line: 'THE BONE KEY LIES IN THE EAST HALF' },
-      { at: [714, 19], done: ['lockgate', 714, 19, 'open'], line: 'THE BONE GATE WANTS THE KEY YOU CARRY' },
-      { at: [682, 19], done: ['key', 682, 19, 'got'], line: 'THE BRASS KEY IS ON THE ALTAR, BEYOND THE BONE GATE' },
-      { at: [760, 19], done: ['lockgate', 760, 19, 'open'], line: 'THE BRASS GATE WANTS THE KEY YOU CARRY' } ] },
-    { id: 'cr-gate-winch', zone: [210, 55, 236, 68], at: [228, 63], glint: 'stall', line: 'THE PORTCULLIS WINCH HOLDS THE GATE UP A FEW BREATHS' },
-    { id: 'cr-ward', zone: [286, 55, 322, 68], steps: [
-      { at: [308, 63], done: ['key', 308, 63, 'got'], line: 'THE WARD GATE WANTS A KEY: A WATCHMAN CARRIES IT' },
-      { at: [322, 63], done: ['lockgate', 322, 63, 'open'], line: 'THE WARD GATE WANTS THE BRASS KEY YOU CARRY' } ] },
-    { id: 'cr-pit-bucket', zone: [396, 36, 430, 68], at: [412, 41], glint: 'stall', line: 'THE BUCKET ON ITS CHAIN CROSSES THE PIT' },
-    { id: 'cr-pit-hoist', zone: [432, 36, 458, 68], at: [450, 62], glint: 'stall', line: 'THE PIT HOIST CARRIES YOU UP OUT OF THE PIT' },
-    { id: 'cr-keep-winch', zone: [652, 55, 675, 68], at: [670, 63], glint: 'stall', line: 'THE KEEP GATE HANGS FROM ITS WINCH' },
-    { id: 'cr-hall', zone: [700, 55, 736, 68], steps: [
-      { at: [724, 63], done: ['key', 724, 63, 'got'], line: 'THE HALL GATE WANTS THE IRON KEY: THE HALL HOLDS IT' },
-      { at: [736, 63], done: ['lockgate', 736, 63, 'open'], line: 'THE HALL GATE WANTS THE IRON KEY YOU CARRY' } ] },
+  crown: [   /* (claude/highcrown2) HIGHCROWN 2, in the cut level's columns (src/highcrown2.js HC2): every gate, bell, bucket, hoist, swing and ladder the route needs */
+    { id: 'cr-gate-winch', zone: [6, 55, 24, 68], at: [20, 63], glint: 'stall', line: 'THE BAILEY GATE HANGS FROM ITS WINCH' },
+    { id: 'cr-ward', zone: [56, 55, 92, 68], steps: [
+      { at: [66, 63], done: ['bell', 66, 63, 'rung'], line: 'THE BARRACKS DOOR OPENS TO THE WARD BELL' },
+      { at: [88, 63], done: ['key', 88, 63, 'got'], line: 'THE WARD KEY HANGS IN THE BARRACKS' },
+      { at: [91, 63], done: ['lockgate', 91, 63, 'open'], line: 'THE WARD GATE WANTS THE BRASS KEY YOU CARRY' } ] },
+    { id: 'cr-crag-winch', zone: [146, 40, 152, 48], at: [149, 47], glint: 'stall', line: 'THE TOWER GATE HANGS FROM ITS WINCH' },
+    { id: 'cr-pit-bucket', zone: [165, 36, 199, 68], at: [181, 41], glint: 'stall', line: 'THE BUCKET ON ITS CHAIN CROSSES THE PIT' },
+    { id: 'cr-pit-hoist', zone: [201, 36, 227, 68], at: [219, 62], glint: 'stall', line: 'THE PIT HOIST CARRIES YOU UP OUT OF THE PIT' },
+    { id: 'cr-bake-swing', zone: [286, 44, 306, 62], at: [298, 46], glint: 'stall', line: 'THE HOIST CHAIN SWINGS YOU OVER THE FIRE' },
+    { id: 'cr-keep-winch', zone: [321, 55, 344, 68], at: [339, 63], glint: 'stall', line: 'THE KEEP GATE HANGS FROM ITS WINCH' },
+    { id: 'cr-hall-ladder', zone: [409, 47, 429, 63], at: [429, 50], glint: 'stall', line: 'A LADDER CLIMBS THE EAST WALL TO THE GALLERY' },
+    { id: 'cr-hall-landings', zone: [380, 40, 429, 46], at: [385, 44], glint: 'stall', line: 'THE HUNG LANDINGS CROSS THE HALL TO THE WEST BALCONY' },
+    { id: 'cr-hall-stair', zone: [347, 32, 366, 38], at: [348, 33], glint: 'stall', line: 'THE STAIR HEAD CLIMBS THE WEST WALL' },
+    { id: 'cr-hall-shaft', zone: [400, 26, 429, 31], at: [428, 25], glint: 'stall', line: 'A LADDER IN THE EAST CORNER CLIMBS TO THE CHAPEL' },
+    { id: 'cr-chapel', zone: [341, 10, 437, 19], steps: [
+      { at: [397, 19], done: ['key', 397, 19, 'got'], line: 'THE BONE KEY LIES IN THE EAST HALF' },
+      { at: [383, 19], done: ['lockgate', 383, 19, 'open'], line: 'THE BONE GATE WANTS THE KEY YOU CARRY' },
+      { at: [351, 19], done: ['key', 351, 19, 'got'], line: 'THE BRASS KEY IS ON THE ALTAR, BEYOND THE BONE GATE' },
+      { at: [429, 19], done: ['lockgate', 429, 19, 'open'], line: 'THE BRASS GATE WANTS THE KEY YOU CARRY' } ] },
+    { id: 'cr-leads-ladder', zone: [522, 14, 540, 26], at: [529, 20], glint: 'stall', line: 'THE CHIMNEY STACK HAS A LADDER UP ITS FACE' },
   ],
   oreroad: [
     { id: 'or-wall', zone: [446, 3, 467, 16], at: [468, 9], line: 'THE CRACKED WALL BARS THE LANDING' },

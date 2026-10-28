@@ -2642,7 +2642,9 @@ async function runbossLab(BK, opts) {
         const tp = court || aimP || ps.filter(p => !(p.totter > 0)).sort((a, b) => ((b.blows || 0) - (a.blows || 0)) || (Math.abs(a.x - P.x) - Math.abs(b.x - P.x)))[0] || null;
         const strikeP = p => { const side = Math.sign(p.x - P.x) || 1, at = Math.max(AX0, Math.min(AX1, p.x - side * 15)); goal = at; strike = false;
           if (Math.abs(P.x - at) < 7 && P.ground && P.atk < 0 && !(p.totter > 0)) { P.face = side; k.left = false; k.right = false; goal = null; BK.press('atk'); swings++; } };
+        const rb = boss.mode === 'ringTell' ? BK.props().find(p => p.t === 'winch' && p.bell && p.bossGate) : null, rgx = rb ? rb.gate * 16 + 8 : 0;   /* (claude/highcrown2) SHE RINGS HER BELL: off the grate's column while it glows */
         if (wave && P.ground) { BK.press('jump'); P.labJump = 12; goal = null; strike = false; }
+        else if (rb && Math.abs(P.x - rgx) < 40) { goal = Math.max(AX0, Math.min(AX1, rgx + (P.x < rgx ? -52 : 52))); strike = false; }
         else if (P.labCut > 0) { P.labCut--; k.jump = true; if (P.labCut === 6 && P.atk < 0) { BK.press('atk'); swings++; } goal = null; }
         else if (court) strikeP(court);                                                      /* SHE HOLDS COURT BESIDE IT: bring it down */
         else if (tp && tp.totter > 0) { goal = Math.max(AX0, Math.min(AX1, tp.x - (Math.sign(boss.x - tp.x) || 1) * 40)); strike = false; }   /* it goes: stand off its fall */

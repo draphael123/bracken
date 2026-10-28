@@ -276,14 +276,14 @@
   "bare": true
  },
  "crown": {
-  "hash": "2eecb57b32ac",
+  "hash": "9c42eb2a437a",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 52,
-  "deaths": 5,
-  "kills": 82,
-  "lifts": 220,
+  "hits": 31,
+  "deaths": 4,
+  "kills": 46,
+  "lifts": 166,
   "walked": 100,
   "bare": true
  },

@@ -46,6 +46,7 @@ import { applyMarsh2 } from './marsh2.js';   /* (claude/marsh2) MARSH WOOD's tar
 import { applyMarsh3 } from './marsh3.js'; import { applyFrogCourt } from './frog-court.js';
 import { buildFenRoad, FEN_RULE } from './fen-road.js'; import { buildHornetsNest, NEST_RULE } from './hornets-nest.js';   /* (claude/hornetsnest) THE HORNET'S NEST: a spur off THE LUMBER TRAIL - up the paper nest in the great pine, THE HORNET QUEEN 2 at its top and at the pine's foot */   /* (claude/fenroad) THE FEN ROAD: the goblins' half-built boardwalk between MARSH WOOD and THE STOCKADE, and THE BOG TROLL under it */   /* (claude/marsh3) MARSH WOOD 3: the reed run, the boom, the night pads (+226 columns before the mud flats) */
 import { lanceLookouts } from './lance-support.js';   /* THE QUEEN'S LANCE: the two end lookouts his bowmen come to (docs/briefs/lance-support.md) */   /* THE SUNKEN CARAVAN: the desert's first level (src/draft/sunken-caravan.js is its geometry) */
+import { highcrownTwo } from './highcrown2.js';   /* (claude/highcrown2) HIGHCROWN 2: the pieces laid after the cuts, in the cut level's columns */
 /* THE LUMBER TRAIL's rule (claude/lumbertrail): src/order-chapters.js TWISTS.timber quotes it */
 export const RULE_WOOD = 'FOUR STROKES FELL A MARKED PINE, AND IT FALLS THE WAY IT LEANS: ACROSS A GAP, UP A CLIFF, OR ON WHOEVER STANDS UNDER IT.';
 // level.js — the level registry. Each level paints a tile grid with a tiny DSL and returns it.
@@ -3226,6 +3227,38 @@ function shiftCrown(R, col, n) { // what grow() does not know about in the castl
   if (R.tints) R.tints = R.tints.map(([x0, x1, c, a]) => [sh(x0), sh(x1), c, a]);
   return R;
 }
+/* CUT COLUMNS (claude/highcrown2, scratch/brief-highcrown2.md item 1): the inverse of grow() + shiftCrown(). Columns c0..c1 go, and
+   everything to the right of them slides left by their width: the grid, the ents (an ent IN the cut goes with it), the movers, pools,
+   zones, alarms, winds, the arena and every tile box the castle keeps. A range that straddles the cut is clipped to what is left of it;
+   one wholly inside it is dropped. Applied LAST in highcrownWhole(), after every grow, so no literal written above it has to change. */
+export function cutColumns(R, c0, c1) {
+  const n = c1 - c0 + 1, W2 = R.W - n, H = R.H, g = new Uint8Array(W2 * H);
+  for (let y = 0; y < H; y++) for (let x = 0; x < R.W; x++) if (x < c0 || x > c1) g[y * W2 + (x < c0 ? x : x - n)] = R.grid[y * R.W + x];
+  const gone = x => x >= c0 && x <= c1, cx = x => x < c0 ? x : x > c1 ? x - n : null;
+  const lo = x => x < c0 ? x : x > c1 ? x - n : c0, hi = x => x < c0 ? x : x > c1 ? x - n : c0 - 1;   /* a range's two ends, clipped to what is left */
+  const P0 = c0 * TS, P1 = (c1 + 1) * TS, NP = n * TS;
+  const plo = p => p < P0 ? p : p >= P1 ? p - NP : P0, phi = p => p <= P0 ? p : p > P1 ? p - NP : P0;   /* pixels: an end on the cut stays on it */
+  const tbox = a => { const x0 = lo(a[0]), x1 = hi(a[1]); return x1 < x0 ? null : [x0, x1, ...a.slice(2)]; };
+  const pz = z => { const x0 = plo(z.x0), x1 = z.x1 >= 99999 ? z.x1 : phi(z.x1); return x1 <= x0 ? null : { ...z, x0, x1 }; };
+  const REF = ['ram', 'cage', 'gate', 'door', 'bell', 'at', 'wall', 'x0', 'x1', 'pool', 'ifDrained'];
+  R.ents = R.ents.filter(e => !gone(e.x)).map(e => { const o = { ...e, x: cx(e.x) }; for (const k of REF) if (typeof o[k] === 'number') o[k] = k === 'x1' ? hi(o[k]) : k === 'x0' ? lo(o[k]) : (cx(o[k]) ?? lo(o[k])); return o; });
+  if (R.pools) R.pools = R.pools.map(pz).filter(Boolean);
+  if (R.moversExtra) R.moversExtra = R.moversExtra.filter(m => !(m.px !== undefined ? gone(Math.floor(m.px / TS)) : gone(Math.floor(m.x / TS)))).map(m => { const o = { ...m }; for (const k of ['x', 'x0', 'x1', 'px']) if (typeof o[k] === 'number' && o[k] > 0) o[k] = plo(o[k]); return o; });
+  for (const k of ['weather', 'ambient', 'gusts', 'fog', 'sleeps']) if (R[k]) R[k] = R[k].map(pz).filter(Boolean);
+  for (const k of ['interiors', 'masonry', 'facades', 'tints', 'calm', 'stone']) if (R[k]) R[k] = R[k].map(tbox).filter(Boolean);
+  if (R.structures) R.structures = R.structures.map(z => { const b = tbox([z.x0, z.x1]); return b && { ...z, x0: b[0], x1: b[1] }; }).filter(Boolean);
+  if (R.alarms) R.alarms = R.alarms.map(a => ({ ...a, gates: a.gates.filter(([c]) => !gone(c)).map(([c, y0, y1]) => [cx(c), y0, y1]), garrison: (a.garrison || []).filter(gd => !gone(gd.x)).map(gd => ({ ...gd, x: cx(gd.x) })),
+    ...(a.wake ? { wake: tbox(a.wake) } : {}), ...(a.trip ? { trip: tbox(a.trip) } : {}) })).filter(a => a.gates.length);
+  if (R.winds) R.winds = R.winds.map(w => { const b = tbox([w.x0, w.x1]); return b && { ...w, x0: b[0], x1: b[1], wells: (w.wells || []).filter(x => !gone(x)).map(cx), exits: (w.exits || []).filter(([x]) => !gone(x)).map(([x, y]) => [cx(x), y]) }; }).filter(Boolean);
+  if (R.arena) { const A = { ...R.arena };
+    for (const f of ['x0', 'x1', 'trigger']) if (typeof A[f] === 'number') A[f] = f === 'x1' ? phi(A[f]) : plo(A[f]);
+    for (const f of ['wallL', 'wallR', 'gate']) if (typeof A[f] === 'number') A[f] = cx(A[f]) ?? lo(A[f]);
+    if (A.hole) A.hole = { ...A.hole, x0: lo(A.hole.x0), x1: hi(A.hole.x1) };
+    if (A.rubble) A.rubble = A.rubble.map(([x, y, w]) => [lo(x), y, w]);
+    R.arena = A; }
+  if (R.START) R.START = { ...R.START, x: cx(R.START.x) ?? lo(R.START.x) };
+  R.grid = g; R.W = W2; return R;
+}
 function highcrownWhole() {
   const L0 = highcrown(); crownReview(L0); growDown(L0, 30);
 
@@ -3591,7 +3624,12 @@ function highcrownWhole() {
   // on after the armoury, the furnace line and the Captains Hall all grew in ahead of it: 864-870, row 26 (checked against
   // the built level - see tools/crown-exam.mjs). The exit sits back on the chimney stack, at or behind wherever the fall was. */
   R.winds = (R.winds || []).concat([{ x0: 864, x1: 870, row: 26, wells: [867], exits: [[860, 15]] }]);
-  return R;
+  /* HIGHCROWN 2 (claude/highcrown2, scratch/brief-highcrown2.md): THE CUTS, last, through one helper - the ARMOURY (488-587: the Forgemaster went to
+     THE DEEP RAILS; 464-487 stays as the vestibule) and the whole ROAD UP (0-230: the road, the siege lines, the castle rock and the drawbridge -
+     the Kitchen Gate brings you in under the walls). 940 -> 609 columns. Then the new pieces, written in the CUT level's own columns
+     (src/highcrown2.js): the winch gate at the bailey, the ward bell as a lure, the vestibule exam, the one tall keep hall. */
+  cutColumns(R, 488, 587); cutColumns(R, 0, 230);
+  return highcrownTwo(R, { T, TS, painter });
 }
 
 function openYard() {
@@ -8403,7 +8441,7 @@ const GOBLIN_CAMP = {
   stockade: [['warnPost', 22, 19, 0], ['stakeFence', 56, 19, 1], ['hideBanner', 90, 19, 0], ['trophyRack', 130, 19, 0], ['hideRack', 243, 13, 1], ['cookSpit', 260, 13], ['lootHeap', 364, 13, 0], ['skullTotem', 386, 11, 1], ['warStandard', 441, 11, 0]],
   /* (claude/kingswood2) kings: the old camp props (by the old columns) went with the old wood - KINGSWOOD 2 places its own court props */
   storm: [['warnPost', 58, 35, 0], ['gobPennant', 155, 33, 1], ['cookSpit', 203, 33], ['lootHeap', 249, 33, 0], ['skullTotem', 449, 29, 1]],   /* (claude/stormhold3) the outer works: a warning on the road, a pennant at the stables, a spit in the bailey, the takings by the inner gate, a totem at the Lance's gatehouse */
-  crown: [['warnPost', 22, 71, 1], ['hideBanner', 33, 71, 1],['gobPennant', 684, 7, 3], ['ragBanner', 716, 7, 2], ['cauldron', 706, 63], ['boneChime', 712, 54, 0, true], ['trophyRack', 710, 51, 1], ['skullTotem', 745, 51, 0], ['clothStrip', 724, 10, 3, true], ['warStandard', 738, 19, 1]],   /* the keep's own moved 220 right with the siege lines, the crag walk and the bakehouse yard grown in front of it, and 84 more with the armoury */
+  crown: [['gobPennant', 353, 7, 3], ['ragBanner', 385, 7, 2], ['cauldron', 375, 63], ['trophyRack', 388, 31, 1], ['clothStrip', 393, 10, 3, true], ['warStandard', 407, 19, 1]],   /* (claude/highcrown2: the cut level's columns - the road's two went with the road, the kitchen floor's with the floor; the trophies hang on the high gallery now) */   /* the keep's own moved 220 right with the siege lines, the crag walk and the bakehouse yard grown in front of it, and 84 more with the armoury */
   underleaf: [['boneChime', 30, 21, 0], ['idol', 59, 29, 1], ['cookSpit', 106, 21], ['boneChime', 174, 21, 1], ['idol', 296, 22, 0], ['cauldron', 342, 15], ['boneChime', 398 + 86, 23, 1]],   /* (claude/underleaf3) her village's own: bone charms, the household gods, her old hearth's pot - by UNDERLEAF 3's columns */
   undercrown: [['stakeFence', 80, 28, 0], ['skullTotem', 42, 111, 1], ['boneChime', 26, 88, 0, true], ['ragBanner', 58, 122, 0], ['clothStrip', 20, 88, 2, true], ['warnPost', 26, 140, 0], ['lootHeap', 52, 140, 1], ['cauldron', 68, 140]],
 };
@@ -8572,8 +8610,8 @@ const AMBUSH = {
      checkpoint is the barn's own at 341, outside the screen. */
   burning: [{ name: 'THE BARN', row: 25, wallL: 358, wallR: 398, check: false,
     waves: [[['brute', 388, null, { elite: true }], ['burngob', 368], ['sprig', 378], ['archer', 370, 19]]] }],
-  crown: [{ name: 'THE BANQUET HALL', row: 25, wallL: 816, wallR: 852, check: [809, 19],
-    waves: [[['brute', 838, null, { elite: true }], ['soldier', 826], ['hearthgob', 830], ['javelin', 846, 23]]] }],
+  crown: [{ name: 'THE BANQUET HALL', row: 25, wallL: 485, wallR: 521, check: [478, 19],   /* (claude/highcrown2: the cut level's columns, 331 to the left) */
+    waves: [[['brute', 507, null, { elite: true }], ['soldier', 495], ['hearthgob', 499], ['javelin', 515, 23]]] }],
   /* THE LIT CHURCH (claude/litchurch): THE SEALED VAULT in the crypt - the one ambush. The crypt's dead under their grave captain (the caverns' husk: he calls up the dead);
      a wight, a haunt over the shelves and a bone archer. No door checkpoint of its own (CHECKPOINT TWO is in the gallery; THREE stands at the altar past it) */
   church: [{ name: 'THE SEALED VAULT', row: 53, wallL: 108, wallR: 141, check: false,   /* (the crypt's floor is row 54: its walls drop under the vault's lintels) */
@@ -8629,7 +8667,7 @@ const ELITES = {
   /* (claude/forgemaster: the Forgemaster has gone to the Deep Rails; his armoury is the Highcrown 2 lane's to cut, and its gate-keeper question goes with it - tools/elites.mjs NO_KEEPER)
      HIGHCROWN has the Forgemaster's armoury, so neither holds a gate: the King's Champion alone in the siege yard (clear of
      its winch), and the Hearth Boss rallying his cooks in the keep's kitchen. The Leads' alarm gate at 880 is left alone */
-  crown: [['heavy', 208, 63], ['hearthgob', 710, 51]],
+  crown: [['heavy', 246, 63, { face: -1, gate: 254 }]],   /* (claude/highcrown2) THE VESTIBULE's exam: the heavy holds the far gate (src/highcrown2.js); the road's heavy went with the road, the kitchen's hearthgob with the floor */
   longwater: [['tideguard', 507, 26, { gate: 515 }]],   /* +88 (the river grew, 2026-09-25) */
   reef: [['tideguard', 435, 25, { gate: 441 }]],   /* (final columns: the bell-pool and the hulk grew the reef by 80 before the keel) */   /* on the dry ledge out of the last of the water, holding the climb to the wreck */
   flotilla: [['boarder', 277, 21, { gate: 285, affix: 'SWIFT' }], ['boarder', 528, 24, { affix: 'UNSTOPPABLE', cnSkin: 'platedbosun' }]],   /* (claude/flotilla3) THE PRIZE's exam on the hulk's after-deck; THE PLATED BOSUN, the powder ship's exam in his broadside lane - no blade throws him, a round shot does (the Admiral's armour, taught) */   /* (claude/flotilla2) the hulk's doorway boarder (moved 112 east with her) and THE POWDER SHIP's exam: the Admiral's heavy on his lashing - no blade throws him, a round shot down the deck does (B14: the boss's key, taught on an elite first) */

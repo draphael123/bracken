@@ -35,12 +35,12 @@ console.log(JSON.stringify(out));
 const fails = [];
 if (out.gallery.supports) fails.push('gallery: ' + out.gallery.supports + ' pillar props still stand');
 if (out.gallery.rowSolid) fails.push('gallery: ' + out.gallery.rowSolid + ' cells of the old gallery row are still floor');
-if (out.chandeliers !== 6) fails.push('chandeliers: ' + out.chandeliers + ', not 6');
+if (out.chandeliers !== 4) fails.push('chandeliers: ' + out.chandeliers + ', not 4');   /* (claude/highcrown2: six -> four, fewer and earned openings - scratch/brief-highcrown2.md item 3) */
 if (!out.fell) fails.push('cut: a jump and a swing from the floor did not cut the chain');
 if (out.mode !== 'pinned') fails.push('pinned: the chandelier left her ' + out.mode + ', not pinned');
 if (out.modeT < 4.4 || out.modeT > 4.61) fails.push('pinned: for ' + out.modeT + ' s, not the gallery\'s 4.6');
-if (Math.abs(out.took - out.want) > 1) fails.push('pinned: it took ' + out.took + ', the gallery took ' + out.want);
-if (out.standTook > 0) fails.push('open: her plate let ' + out.standTook + ' through while she stood');
+if (out.took < out.want - 1 || out.took > out.want + 8) fails.push(   /* (claude/highcrown2: + up to a B15 chip of the cutting swing, which can graze her) */'pinned: it took ' + out.took + ', the gallery took ' + out.want);
+if (!(out.standTook > 0)) fails.push('open: her plate turned every blade while she stood - B15 (claude/highcrown2): never nothing; the 0.4 that the hero keeps is GREED.chipBy.gqueen (tools/crown-exam.mjs), measured with real swings in tools/highcrown2.mjs');
 if (!(out.pinnedTook > 0)) fails.push('open: a blade did nothing while she was pinned');
 for (const [k, v] of Object.entries(out.every)) if (!v) fails.push('every: ' + k + ' could not cut a chandelier down on her');
 if (out.errors.length) fails.push('page errors ' + JSON.stringify(out.errors));

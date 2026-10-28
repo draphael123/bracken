@@ -4187,15 +4187,15 @@ export function bakeSentry() {
 // numbers; WIDE() maps each of them out, doubling a distance near her middle (that is body) and only adding the
 // extra body to a distance far out (that is reach), so a hand is still a hand's length off the fat.
 // Frames: 0 seated, 1 seated pointing, 2 seated throwing, 3 stand, 4 walk1, 5 walk2, 6 slam raised,
-// 7 slam down, 8 sweep, 9 charge, 10 dazed, 11 leap, 12 throw slate, 13 struck (the storm in her crown), 14 down.
+// 7 slam down, 8 sweep, 9 charge, 10 dazed, 11 leap, 12 throw slate, 13 struck (the storm in her crown), 14 down, 15 bell-pull windup, 16 bell-pull release.
 export function bakeGoblinQueen() {
   const C = { g: '#6faa4a', G: '#3f6e2c', d: '#2c4a1e', p: '#5a2a7a', P: '#3a1850', q: '#7a3a9a', y: '#e0b040', Y: '#a0781c', w: '#f2ece0', k: '#1b1626', r: '#7a1c24', R: '#4a0e14',
-    i: '#5a6270', I: '#3a3e48', j: '#8a919c', m: '#c9463d', e: '#ffd36b', t: '#f3f0d2', n: '#9a5aa8' };
+    i: '#5a6270', I: '#3a3e48', j: '#8a919c', m: '#c9463d', e: '#ffd36b', t: '#f3f0d2', n: '#9a5aa8', u: '#c9b27c', U: '#6a4a28' };
   const W = 128, H = 78, CX = 64, SX = 1.32; /* SX: every body shape is drawn on the old grid and spread this much across about her middle */ /* spare rows under her boots: the outline of a planted foot (or a slam that sinks her) must not sit on the canvas edge */
   const WIDE = x => { const d = x - 28, a = Math.abs(d); return CX + (a <= 12 ? d * 2.6 : Math.sign(d) * (19 + a)); };
   const mapXs = a => a && a.map((v, i) => i % 2 === 0 && typeof v === 'number' ? WIDE(v) : v);
   const frame = (o) => {
-    const { sit = 0, lean = 0, dy = 0, flare = 0, head = 'grin', tilt = 0, stars = 0, rot = 0 } = o;
+    const { sit = 0, lean = 0, dy = 0, flare = 0, head = 'grin', tilt = 0, stars = 0, rot = 0, rope = null } = o;
     const arm = mapXs(o.arm || [34, 26, 42, 30]), arm2 = mapXs(o.arm2 || null), rod = mapXs(o.rod || null), feet = (o.feet || [[24, 58], [31, 58]]).map(([x, y]) => [WIDE(x), y]);
     /* the shoulder is out at the edge of the fat, not in the middle of her chest */
     arm[0] += 12 * Math.sign(arm[0] - CX); if (arm2) arm2[0] += 12 * Math.sign(arm2[0] - CX);
@@ -4264,6 +4264,11 @@ export function bakeGoblinQueen() {
     // the near arm and the sceptre in it: a sleeve of the gown to the wrist, and a great deal of arm in the sleeve
     if (!rod || rod[4] !== 'back') rodDraw();
     { const [x0, y0, x1, y1] = arm, wx = x0 + (x1 - x0) * 0.55, wy = y0 + (y1 - y0) * 0.55; circle(g, x0, y0, 8, C.q); line(g, x0, y0, x1, y1, C.q, 17); line(g, wx, wy, x1, y1, C.g, 11); circle(g, wx, wy, 6.5, C.n); circle(g, x1, y1, 6, C.g); } /* the sleeve past the elbow, a puffed cuff, then the green forearm and the fist: all-green from the shoulder read as a leaf */
+    if (rope) { /* (claude/highcrown2bell) THE BELL-PULL: a hemp rope run up from the fists toward the bell (rope = its far end, relative to the fist), the tail hanging below them with a knot and a tassel */
+      const [rx, ry] = [arm[2], arm[3]];
+      line(g, rx, ry - 2, rx + rope[0], ry + rope[1], C.U, 3); line(g, rx, ry - 2, rx + rope[0], ry + rope[1], C.u, 1); line(g, rx + 1, ry + 3, rx + 2, ry + 11, C.U, 3); line(g, rx + 1, ry + 3, rx + 1, ry + 11, C.u, 1);
+      circle(g, rx + 2, ry + 12, 2.2, C.U); px(g, rx + 1, ry + 11, C.u); for (const o2 of [-2, 0, 2]) line(g, rx + 2 + o2, ry + 14, rx + 2 + o2, ry + 17, C.u, 1);
+      circle(g, rx, ry, 6, C.g); line(g, rx - 4, ry - 1, rx + 4, ry - 1, C.G, 1); line(g, rx - 3, ry + 2, rx + 3, ry + 2, C.G, 1); /* the fist over the rope, knuckled */ }
     g.restore();
     outline(c, OUT);
     return c;
@@ -4284,6 +4289,8 @@ export function bakeGoblinQueen() {
     frame({ arm: [34, 24, 46, 8], arm2: [22, 25, 18, 34], rod: [18, 50, 14, 16, 'back'], head: 'shout' }),                                     /* 12 throw slate */
     frame({ arm: [34, 24, 46, 10], arm2: [22, 24, 10, 10], rod: [14, 52, 50, 48, 'back'], head: 'daze', tilt: -0.3, flare: 5, stars: 2 }),      /* 13 struck */
     frame({ arm: [34, 26, 46, 45], rod: [10, 50, 52, 48, 'back'], head: 'daze', tilt: 0.9, rot: 0.1, dy: 1, flare: 5 }),                        /* 14 down (the fist kept off the canvas's last row: the tip of her sleeve sat on it) */
+    frame({ arm: [34, 24, 40, 4], arm2: [22, 25, 37, 7], rod: [12, 52, 9, 18, 'back'], lean: -3, feet: [[19, 58], [37, 58]], rope: [4, -18] }),   /* 15 BELL-PULL WINDUP (claude/highcrown2bell): both fists up on the rope, hauling back, her sceptre planted behind her */
+    frame({ arm: [34, 27, 41, 41], arm2: [22, 27, 37, 39], rod: [12, 52, 9, 18, 'back'], head: 'shout', lean: 4, dy: 2, flare: 2, feet: [[19, 58], [37, 58]], rope: [5, -20] }),   /* 16 BELL-PULL RELEASE: the rope hauled to her belt, her weight thrown on it, the shout */
   ];
   return pack(F, CX, 70, 68, 50);
 }

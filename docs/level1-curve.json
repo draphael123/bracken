@@ -130,17 +130,17 @@
   "lostPct": 238
  },
  "crown": {
-  "hash": "2eecb57b32ac",
+  "hash": "9c42eb2a437a",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 59,
-  "deaths": 4,
-  "kills": 90,
-  "lifts": 224,
+  "hits": 33,
+  "deaths": 3,
+  "kills": 44,
+  "lifts": 167,
   "walked": 100,
   "bare": true,
-  "lostPct": 356
+  "lostPct": 267
  },
  "longwater": {
   "hash": "8ce17bb1e629",
