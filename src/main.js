@@ -20308,6 +20308,10 @@ function abbotPhase3() { const h = L.arena && L.arena.house; if (!h || props.som
     for (let x = px; x < px + 3; x++) { const k = py * LW + x; if (L.grid[k] === T.AIR) { L.grid[k] = T.ONEWAY; tileSpr[k] = null; } }
     wheelLay(pr, pr.st, T.ONEWAY); props.push(pr); dust(pr.x, L.arena.floor, 8); });
   resolveTiles(); SFX.stone(); }
+/* the trapdoor up from the well (house.trap: x0, x1, row): open (boards) between fights, barred (stone) while he fights */
+function abbotTrap(open) { const t = L.arena && L.arena.house && L.arena.house.trap; if (!t) return; const [x0, x1, row] = t;
+  for (let x = x0; x <= x1; x++) { const k = row * LW + x; const want = open ? T.ONEWAY : T.SOLID; if (L.grid[k] !== want && (L.grid[k] === T.ONEWAY || L.grid[k] === T.SOLID)) { L.grid[k] = want; tileSpr[k] = null; } }
+  resolveTiles(); }
 /* THE HOUSE LAID FRESH (his spawn - every try): the bridges hung, his wheel and its boards taken away, the basket back up */
 function abbotHouseReset() { const h = L.arena && L.arena.house; if (!h) return;
   abbotHouseP = null; abbotHouseOf = null; abbotCtxE = null; const H = abbotHouse(); if (!H) return;
@@ -20320,6 +20324,7 @@ function abbotHouseReset() { const h = L.arena && L.arena.house; if (!h) return;
     for (const [x, y] of cells) { const k = y * LW + x; if (L.grid[k] === T.ONEWAY && !L.abbotBase.has(k)) { L.grid[k] = T.AIR; tileSpr[k] = null; } }
     for (let x = px; x < px + 3; x++) { const k = py * LW + x; if (L.grid[k] === T.ONEWAY && !L.abbotBase.has(k)) { L.grid[k] = T.AIR; tileSpr[k] = null; } } }
   const m = abbotBasket(); if (m) m.y = m.y0;
+  abbotTrap(true);
   resolveTiles(); }
 /* THE BRIDGES' BELLS, struck from the floor under their towers; and his censer's SMOKE, which lifts you (phase three) */
 function abbotHouseStep(dt, hb) {
@@ -20338,6 +20343,7 @@ let abbotCtxE = null, abbotCtxC = null;
 function abbotCtx(e) { if (abbotCtxE === e && abbotCtxC) return abbotCtxC; abbotCtxE = e; return (abbotCtxC = abbotMakeCtx(e)); }
 function updateFalseAbbotBoss(e, dt) {
   const A = L.arena; if (!A) return;
+  if (!e.trapShut && A.house && A.house.trap) { e.trapShut = true; abbotTrap(false); }   /* the ringing floor's trapdoor is BARRED once he is up: a plunge or a crouch on it does not drop you into the well mid-fight */
   stepFalseAbbot(e, dt, abbotCtx(e));
   e.x = Math.max(A.x0 + 16, Math.min(A.x1 - 16, e.x));
   e.H = abbotHouse(); e.basketM = abbotBasket();   /* (the lab's hands read the house off him: src/lab.js) */
@@ -20363,7 +20369,7 @@ function abbotMakeCtx(e) {
        comes up the ladder onto the boards, so a summon that would land in a bed steps out of it toward the Abbot. */
     summon: () => { const side = Math.random() < 0.5 ? -1 : 1, fl = Math.floor(A.floor / TS) - 1; let gx = Math.max(4, Math.min(L.W - 5, Math.floor((e.x + side * 110) / TS)));
       for (let k = 0; k < 20 && (tileAt(gx, fl) === T.SPIKE || tileAt(gx - 1, fl) === T.SPIKE || tileAt(gx + 1, fl) === T.SPIKE); k++) gx -= side;
-      const n0 = enemies.length; spawnEnt({ t: Math.random() < 0.25 /* (claude/abbot2: 0.4 - his own kit is the threat now; the knight died to the bows) */ ? 'archer' : 'sprig', x: Math.max(4, Math.min(L.W - 5, gx)), y: Math.floor(A.floor / TS) - 1, face: -side });
+      const n0 = enemies.length; spawnEnt({ t: Math.random() < 0.12 /* (claude/abbot3: 0.25 - the house is the fight; the knight died to the bows while he walked to a bell) */ /* (claude/abbot2: 0.4 - his own kit is the threat now; the knight died to the bows) */ ? 'archer' : 'sprig', x: Math.max(4, Math.min(L.W - 5, gx)), y: Math.floor(A.floor / TS) - 1, face: -side });
       for (let i = n0; i < enemies.length; i++) { enemies[i].fromAbbot = true; enemies[i].seenP = true; }
       burst(gx * TS, A.floor - 8, 8, ['#6faa4a', '#e8a83a'], 50, 0.4); },
     /* THE RITE reaches his congregation with the priest's own numbers, on the game's own blessT */

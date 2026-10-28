@@ -2547,7 +2547,7 @@ async function runbossLab(BK, opts) {
         const slam = (boss.mode === 'swingTell' || boss.mode === 'swing') && boss.swTo !== undefined && !boss.swRite && Math.abs(P.x - boss.swTo) < ABBOT_K.slamR + 10 && Math.abs((boss.swY ?? fl) - P.y) < 30;
         const orb = boss.orb && Math.abs(P.x - boss.orb.tx) < ABBOT_K.lightR + 8 && boss.orb.t > boss.orb.T * 0.35 && Math.abs((boss.orb.ty ?? fl) - P.y) < 30;
         const praying = boss.mode === 'riteTell', ph = boss.riteAt || boss.phase || 1;
-        const burn = (BK.fires() || []).find(q => !(q.delay > 0) && q.life > 0.3 && Math.abs(q.x - P.x) < 16 && Math.abs(q.y - P.y) < 12);
+        const burn = (BK.fires() || []).find(q => !(q.delay > 0) && q.life > 0.3 && Math.abs(q.x - P.x) < 20 && Math.abs(q.y - P.y) < 12);
         /* a bridge he is standing on now (praying or not): its bell drops him */
         const onBr = H && boss.deck === 'high' && boss.mode !== 'swing' && boss.mode !== 'swingTell' && !boss.brGone ? H.bridges.findIndex((b, i) => boss.br && boss.br[i] !== false && boss.x > b.x0 + 2 && boss.x < b.x1 - 2 && !H.spans.some(s => boss.x >= s[0] - 2 && boss.x <= s[1] + 2)) : -1;
         const hitAt = (x, half) => { /* walk to strike a thing on the floor at x (a bell): stand off by the reach, face it, swing */
@@ -2564,6 +2564,7 @@ async function runbossLab(BK, opts) {
           else if (boss.mode === 'castTell' && boss.modeT < 0.12 && P.ground) { BK.press('jump'); P.labJump = 14; } }
         else if (slam) { const away = Math.sign(boss.swTo - (boss.sw0 ?? boss.x)) || 1; goal = boss.swTo + away * (ABBOT_K.slamR + 18); }
         else if (orb) { if (SHIELDED(h)) { goal = null; P.face = Math.sign(boss.orb.x0 - P.x) || P.face; k.block = true; } else goal = boss.orb.tx + (Math.sign(P.x - boss.orb.tx) || 1) * (ABBOT_K.lightR + 14); }
+        else if (arrow) { goal = null; P.face = Math.sign(arrow.x - P.x) || P.face; if (SHIELDED(h)) k.block = true; else if (DEFLECTS(h)) k.block = DEFLECT_TAP(f); else if (P.ground) { BK.press('jump'); P.labJump = 10; } }   /* a shaft in the air is answered before a walk to the house */
         else if (H && onBr >= 0) hitAt(H.bridges[onBr].bells.reduce((a, b) => Math.abs(a - P.x) <= Math.abs(b - P.x) ? a : b), 12);                     /* P1: HE IS ON A BRIDGE - strike its bell under the tower */
         else if (H && boss.deck === 'chair' && boss.basketM) { const m = boss.basketM, mx = m.x + m.w / 2;   /* P2: HE IS UP IN HIS CHAIR (seen by where he is, not by his pose): RIDE THE BASKET DOWN */
           if (P.onMover === m || (Math.abs(P.x - mx) < 12 && Math.abs(P.y - m.y) < 3)) { goal = null; k.left = k.right = false; }
