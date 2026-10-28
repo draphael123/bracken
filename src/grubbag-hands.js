@@ -31,7 +31,7 @@ export const POSE = {
   sit: { head: [0, 0], belly: 1, hand: [58, -70], far: [-62, -66], eyes: 'open', mouth: 'chew' },
   eat: { head: [0, -4], belly: 1.05, hand: [40, -118], far: [-62, -66], eyes: 'shut', mouth: 'chew', item: 'dish' },
   gulp: { head: [-4, -10], belly: 1.06, hand: [34, -124], far: [-62, -66], eyes: 'bulge', mouth: 'wide', item: 'dish', tilt: -0.2 },
-  lobTell: { head: [-4, -6], belly: 1, hand: [12, -192], far: [-62, -66], eyes: 'red', mouth: 'open', item: 'ham', lean: -6 },
+  lobTell: { head: [-4, -6], belly: 1, hand: [12, -174], far: [-62, -66], eyes: 'red', mouth: 'open', item: 'ham', lean: -6 },
   lob: { head: [6, -2], belly: 1, hand: [96, -166], far: [-62, -66], eyes: 'open', mouth: 'open', lean: 8 },
   flingTell: { head: [-2, 0], belly: 1, hand: [-26, -128], far: [-62, -66], eyes: 'red', mouth: 'shut', item: 'plate', lean: -8 },
   fling: { head: [8, 2], belly: 1, hand: [116, -62], far: [-62, -66], eyes: 'red', mouth: 'open', lean: 12 },

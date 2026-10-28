@@ -44,7 +44,7 @@ export const GB = {
   line: { v: 34, every: [5.6, 5.0, 4.5], bombEvery: 4, first: 2.2, fuse: 5.6, batV: 250, blast: 34, blastDmg: 12, knockV: 120 },
   hungry: { t: 6, mul: 0.7, cd: 0.8 },
   stove: { cool: 12, box: 16 },
-  bz: { hurt: 1.5 }, dmgMul: 2.2,
+  bz: { hurt: 1.5 }, dmgMul: 2.7,
 };
 export const GB_SAY = { wake: 'LORD GRUBBAG THE GLUTTON', rule: 'THE SERVING LINE FEEDS HIM: KNOCK THE DISHES OFF. LET THE BOMBS AND THE CHILLIES REACH HIM.', p2: 'MORE! FASTER!', p3: 'HE REACHES FOR YOU',
   eats: 'HE EATS: HEALED', full: 'HE EATS: TOO FULL TO HEAL', smash: 'KNOCKED OFF: HE GOES HUNGRY', hungry: 'HUNGRY', bomb: 'A BOMB ON THE LINE: LET IT REACH HIM, OR BAT IT ALONG',
