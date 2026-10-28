@@ -1,5 +1,5 @@
 // tools/stormhold3.mjs - STORMHOLD 3, THE OUTER WORKS (claude/stormhold3, scratch/brief-stormhold3-1024.md). Node only.
-// Replaces tools/stormhold2.mjs (the castle town it asserted is gone). tools/watchtowers.mjs proves the towers, keys and ropes in
+// Replaced the old stormhold2 check (the castle town it asserted is gone). tools/watchtowers.mjs proves the towers, keys and ropes in
 // full and tools/bells.mjs the alarm machinery; tools/lance3.mjs proves the Lance's bridge and fight. This file asserts what the
 // brief asked of the LEVEL that nothing else checks:
 //   1. OUTSIDE THE WALLS: no house interiors, no doorways, no indoor band (RULE OF THE ROAD: Stormhold is outside the walls) -

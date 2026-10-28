@@ -95,7 +95,7 @@ export function makeForgeRails(ctx) {
       for (const lp of M.loops) { const top = lp.row * ts; if (P0.x < lp.x0 * ts - 8 || P0.x > (lp.x1 + 1) * ts + 8) continue;
         if ((P0.ground && Math.abs(P0.y - top) < 3 && !ride) || (ride && ride.loop === lp.id && !ride.sent)) {
           P0.onMover = null; P0.ground = false; P0.y = top + 8; P0.vy = Math.max(P0.vy || 0, 60);   /* past the one-way catch (src/slopes.js: a hero lands on a one-way from 6 px under its top) */
-          if (!(M.slipSaid > now)) { M.slipSaid = now + 1.5; ctx.number(P0.x, top - 14, 'THE LINE WON\'T HOLD YOU', '#c9d1dc'); ctx.sparks(P0.x, top, 1, 4); ctx.sfx.clank && ctx.sfx.clank(); }
+          if (!(M.slipSaid > now)) { M.slipSaid = now + 1.5; ctx.number(P0.x, top - 14, "THE LINE WON'T HOLD YOU", '#c9d1dc'); ctx.sparks(P0.x, top, 1, 4); ctx.sfx.clank && ctx.sfx.clank(); }
           break; } } }
     for (const p of M.points) { p.flash = Math.max(0, p.flash - dt); if (p.dropT > 0) { p.dropT -= dt; if (p.dropT <= 0 && p.state === 'open') { p.state = 'set'; layPoints(p); } } }
     /* THE LOOP: a cart from the west mouth every `every` s while the hero is near; a cart that reaches the east mouth goes into it */

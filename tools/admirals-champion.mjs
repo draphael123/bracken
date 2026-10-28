@@ -57,7 +57,7 @@ const nul = () => {}, W0 = { number: nul, sound: nul, shake: nul, fx: nul, mark:
   ok(S.ph === 2 && S.anchor, 'at half he tears the anchor off the rail (phase two)');
   ok(gaps.includes(true) && gaps.includes(false) && gaps.lastIndexOf(false) > gaps.indexOf(true), 'the anchor slam rocks the hulls apart and they come together again'); }
 
-/* (claude/flotilla3) THE CHAMPION LEFT THE FLOTILLA: THE ADMIRAL holds it (src/admiral.js) and its level and page checks moved to tools/admiral.mjs. The Champion stays
+/* (claude/flotilla3) THE CHAMPION LEFT THE FLOTILLA: THE ADMIRAL holds it (src/flotilla-boss.js) and its level and page checks moved to tools/admiral.mjs. The Champion stays
    registered (his fight, hands, art, music) for THE UNDERWATER KEEP's mini slot (scratch/brief-flotilla3-1018.md part B, with KEEP 2): his pure table and stub fight are checked
    here; his level and page rows below come back when the Keep places him (re-point idx and the arena). */
 if (!LEVELS.some(l => { try { const B = l.build(); return B.arena && B.arena.boss === 'champion' || B.mini && B.mini.boss === 'champion'; } catch { return false; } })) { console.log(fails ? fails + ' FAILED' : 'admirals-champion (pure): ok - no level places him yet (the Keep, KEEP 2); the flotilla is tools/admiral.mjs'); process.exit(fails ? 1 : 0); }

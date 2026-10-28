@@ -1,4 +1,4 @@
-// src/flotilla-boss.js (was src/admiral.js: ad blockers block any /admiral.js) - THE ADMIRAL, THE FLOTILLA's boss (claude/flotilla3, the OPUS greybox, 2026-10-25; scratch/brief-flotilla3-1018.md part C, folded with the
+// src/flotilla-boss.js (was admiral.js: ad blockers block that filename) - THE ADMIRAL, THE FLOTILLA's boss (claude/flotilla3, the OPUS greybox, 2026-10-25; scratch/brief-flotilla3-1018.md part C, folded with the
 // APPROVED review scratch/review-flotilla-1018.md - Daniel 10-18 10:18 'all recs'). He replaces THE ADMIRAL'S CHAMPION in the Flotilla's boss slot; the Champion
 // stays registered (src/admirals-champion.js) for THE UNDERWATER KEEP's mini slot (brief part B, with KEEP 2).
 //

@@ -42,7 +42,7 @@ for (const id of Object.keys(TRAVERSAL)) {
 
 /* ---------------- C. every former spot pays silver or is gone ---------------- */
 const SAME_CACHE = { stockade: [126, 24], scree: [335, 15], hanging: [68, 43] };     /* a silver already lies in the same cache */
-const GONE = ['fair', 'theatre', 'kings', 'spore'];                                              /* (integ115: kings - the rebuilt Hunting Wood has no vault, silver three lies on the King's takings; claude/sporewood2: SPOREWOOD's grove cache went with the old wood, SPOREWOOD 2 lays its three silvers by hand) the glass (a silver beside it) and two boss drops */
+const GONE = ['fair', 'theatre', 'kings', 'spore', 'storm'];                                              /* (batch125: storm - STORMHOLD 3 (the outer works) has no vault, its two silvers lie on the road; integ115: kings - the rebuilt Hunting Wood has no vault, silver three lies on the King's takings; claude/sporewood2: SPOREWOOD's grove cache went with the old wood, SPOREWOOD 2 lays its three silvers by hand) the glass (a silver beside it) and two boss drops */
 const FORMER = [...Object.keys(VAULT_SILVER), ...Object.keys(SAME_CACHE), ...GONE];
 ok(FORMER.length === 25 && new Set(FORMER).size === 25, 'the former-relic roster is ' + FORMER.length + ' levels, not 25');
 const secrets = new Set(LEVELS.filter(l => l.secret).map(l => l.id));

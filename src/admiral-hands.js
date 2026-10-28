@@ -1,4 +1,4 @@
-// src/admiral-hands.js - THE ADMIRAL's HANDS (claude/flotilla3, the greybox). src/admiral.js is the fight (pure: his plates, his two phases, his cycles, his blows,
+// src/admiral-hands.js - THE ADMIRAL's HANDS (claude/flotilla3, the greybox). src/flotilla-boss.js is the fight (pure: his plates, his two phases, his cycles, his blows,
 // the pistol shots, the keg, the broadside's cells, the grapnel line, the list, the bot's reading); this binds it to the world: his told blows on the heroes (keyed once
 // a blow; a shield turns only the yellow cutlass and flurry), THE LIST's slide, THE LASHING's harbour (a hero who goes in is HAULED OUT, the Champion's rule kept),
 // THE DECK GUNS' round shot on him (src/main.js updateBalls calls onBall: A PLATE BLOWN), a blow on his KEG (struck back at him) or on his GRAPNEL LINE (cut: he drops),

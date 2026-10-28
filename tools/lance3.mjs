@@ -1,5 +1,5 @@
 // tools/lance3.mjs - THE QUEEN'S LANCE, REWORKED (claude/stormhold3; scratch/brief-stormhold3-1024.md, Daniel's 10-25 appendix). Replaces
-// tools/lance-support.mjs (his horn and its archers are gone: the Hornsman's trick now). Node for the bridge he fights on and his numbers;
+// the old lance-support check (now tools/lance3.mjs) (his horn and its archers are gone: the Hornsman's trick now). Node for the bridge he fights on and his numbers;
 // the page for the fight itself, every move forced and its effect read back:
 //   1. THE BRIDGE: a lookout on every one of the seven piers (3 rows up, one-way, towered); a fire cage hung off the west end of six of them,
 //      its foot at the lookout's height (cut from the lookout as he rides under, where his charge cannot reach you); spans to tear; the gorge
