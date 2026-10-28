@@ -2753,6 +2753,17 @@ async function runbossLab(BK, opts) {
       if (boss.t === 'windcaller' && (boss.mode === 'howlTell' || boss.mode === 'howl') && P.ground) { strike = false; goal = null; k.left = k.right = false; k.down = true; }
       /* (claude/windcaller3) HIS BLAST (red, HE GATHERS THE WIND): no guard and no brace holds it - read late as a player reads it (the profile's reaction), the hands step back out of it */
       if (boss.t === 'windcaller' && boss.mode === 'blastTell' && Math.abs(P.x - boss.x) < 96 && Math.abs(P.y - boss.y) < 34 && (boss.blastLen || 0.75) - boss.modeT >= (LABP.rtMode || 410) / 1000) { strike = false; goal = null; const away = Math.sign(P.x - boss.x) || boss.blastDir || 1; k.left = away < 0; k.right = away > 0; k.block = false; k.down = false; }
+      /* (claude/windcaller4) HIS NEW WIND, read as a player reads it (the profile's reaction): out of a downdraft's ring; the hurl's wall jumped as it arrives (a shield
+         braces it); a dust devil JUMPED INTO as it comes (a ride, no harm) and the ride steered for his ledge; a high gale blade ducked, a low one jumped */
+      if (boss.t === 'windcaller' && boss.wc && !P.galeRide) { const Wc = boss.wc, rt = (LABP.rtMode || 410) / 1000, fl = A.floor;
+        for (const q of Wc.drafts) if (!q.hit && Math.abs(P.x - q.x) < 32 && Math.abs(P.y - q.y) < 8 && (q.t0 || 1.1) - q.t >= rt * 0.8) { strike = false; goal = null; const away = Math.sign(P.x - q.x) || (P.x < (A.x0 + A.x1) / 2 ? 1 : -1); k.left = away < 0; k.right = away > 0; k.block = false; k.down = false; }
+        const hu = Wc.hurls.find(q => !q.hit && (P.x - q.x) * q.dir > -4 && Math.abs(P.x - q.x) < 44 && Math.abs(P.y - fl) < 6);
+        if (hu && P.ground) { strike = false; if (SHIELDED(h) && Math.abs(P.x - hu.x) < 40) { k.block = true; k.left = k.right = false; goal = null; P.face = -hu.dir || P.face; } else if (!(P.labJump > 0) && Math.abs(P.x - hu.x) < 30) { BK.press('jump'); P.labJump = 14; } }
+        const dv = Wc.devils.find(v => !v.caught && (P.x - v.x) * v.dir > -4 && Math.abs(P.x - v.x) < 40 && Math.abs(P.y - fl) < 6);
+        if (dv && P.ground) { strike = false; if (!(P.labJump > 0) && Math.abs(P.x - dv.x) < 22) { BK.press('jump'); P.labJump = 14; } }
+        if (P.devilRide) P.labDevilF = f; if (P.labDevilF !== undefined && f - P.labDevilF < 40 && !P.ground && boss.y < fl - 40) { goal = null; strike = false; k.left = boss.x < P.x - 6; k.right = boss.x > P.x + 6; }
+        const bl = Wc.blades.find(b => b.delay <= 0 && !b.hit && (P.x - b.x) * b.dir > -4 && Math.abs(P.x - b.x) < 40);
+        if (bl) { strike = false; if (bl.kind === 'high') { if (P.ground) { k.down = true; k.left = k.right = false; k.block = false; goal = null; } } else if (P.ground && !(P.labJump > 0) && Math.abs(P.x - bl.x) < 26) { BK.press('jump'); P.labJump = 12; } } }
       /* THE RAM'S CHARGE (claude/bosswave1: a charge that finds you stops on you and dazes nothing): rolled through as it arrives, so it runs on into the wall */
       /* (claude/scree2) A SHIELD BRACES HIS CHARGE (the slope's sign: BLOCK TO BRACE): shoved, not hurt - and no wall for him either */
       else if (boss.t === 'ram' && SHIELDED(h) && (boss.mode === 'charge' || toldRun(['lower', 'rear'])) && Math.abs(boss.x - P.x) < 90 && (boss.x - P.x) * (boss.vx || 0) < 0) { strike = false; goal = null; k.left = k.right = false; P.face = Math.sign(boss.x - P.x) || P.face; k.block = true; }

@@ -4181,7 +4181,7 @@ function galeMoor() {
   ent('galeharpy', o + 44, 7, { face: -1, perch: true, squad: 'stairGully' });  /* over the far rock: her beat on the stones, in the turning wind */
   ent('flagpost', o + 4, 12); ent('flagpost', o + 15, 6); ent('flagpost', o + 33, 7); ent('flagpost', o + 44, 9);
   ent('deco', o + 18, 6, { kind: 'cairn' });
-  ent('sign', o + 2, 12, { text: 'THE GALE STAIR. THIS UPDRAFT BLOWS ONLY IN THE GUST: STEP IN AS IT BLOWS AND IT CARRIES YOU UP AND OVER.' });
+  ent('sign', o + 2, 12, { text: 'THE GALE STAIR. THIS UPDRAFT BLOWS ONLY IN THE GUST: RIDE IT UP AND OVER.' });
   ent('sign', o + 13, 6, { text: 'A GALE HARPY BEATS HER WINGS AT YOU: HIT HER AS SHE DRAWS THEM BACK, OR HOLD C AND BRACE.' });
   ent('sign', o + 34, 7, { text: 'THE WIND TURNS EVERY GUST HERE. READ THE FLAGS: BRACE ON A STONE, HOP IN THE STILL.' });
   coins([o + 7, 9], [o + 9, 5], [o + 16, 5], [o + 25, 4], [o + 28, 4], [o + 27, 11], [o + 38, 7], [o + 41, 7], [o + 44, 8]);
@@ -4210,7 +4210,7 @@ function galeMoor() {
   gust(o + 1, o + 45, 0, 13, { period: 5, on: 2.2, dir: 1, shove: 240, air: true, arena: true, galeArena: true });   /* in the AIR only: on a ledge it walks you off unless you brace */
   ent('flagpost', o + 7, 12); ent('flagpost', o + 24, 12); ent('flagpost', o + 15, 6); ent('flagpost', o + 32, 6);
   ent('windcaller', o + 12, 6);
-  ent('sign', o + 6, 12, { text: 'THE UPDRAFTS BLOW ONLY IN THE GUST: RIDE ONE UP. STRIKE HIM THREE TIMES ON HIS LEDGE AND HE FALLS.', pyro: 'THE UPDRAFTS BLOW ONLY IN THE GUST: RIDE ONE UP. OR BURN HIS BOLT: FIRE SENDS IT HOME.', paladin: 'THE UPDRAFTS BLOW ONLY IN THE GUST: RIDE ONE UP. OR AEGIS HIS BOLT: IT GOES HOME.',
+  ent('sign', o + 6, 12, { text: 'THE UPDRAFTS BLOW ONLY IN THE GUST: RIDE ONE UP. THREE BLOWS ON HIS LEDGE AND HE FALLS.', pyro: 'THE UPDRAFTS BLOW ONLY IN THE GUST: RIDE ONE UP. OR BURN HIS BOLT: FIRE SENDS IT HOME.', paladin: 'THE UPDRAFTS BLOW ONLY IN THE GUST: RIDE ONE UP. OR AEGIS HIS BOLT: IT GOES HOME.',
     ranger: 'THE UPDRAFTS BLOW ONLY IN THE GUST: RIDE ONE UP. OR SNATCH HIS BOLT: IT FLIES HOME.', reaper: 'THE UPDRAFTS BLOW ONLY IN THE GUST: RIDE ONE UP. OR LET THE WARD GO AS HIS BOLT LANDS.' });   /* (claude/moorpass) the heroes who send his bolt home from anywhere (main.js sendBoltHome) read their own way */
   ent('gate', o + 26, 12);   /* (the level ends when he dies; the gate stands on the floor the fight is fought on) */
   const roosts = [[o + 12, 6], [o + 29, 6]];   /* where he stands: the middle of each ledge (the east one falls in phase three) */
