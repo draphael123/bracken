@@ -39,7 +39,7 @@ export function anchorFaults(L) {
       if (th > THIN) continue;
       const held = posts.some(p => p.x >= x0 - 1 && p.x <= x1 + 1 && Math.abs(p.y - y) <= 1 && Math.abs(tip - p.x) <= postReach(p) + LIP);
       if (!held) out.push({ kind: 'cantilever', x: x0, x1, y, why: n + ' tiles over air from one end, ' + th + ' thick' }); } }
-  for (const e of L.ents || []) if (STAND_PROPS.has(e.t) && air(at(e.x, e.y + 1)) && !(e.t === 'deco' && e.hang)) out.push({ kind: 'prop', x: e.x, x1: e.x, y: e.y, why: e.t + (e.kind ? ':' + e.kind : '') + ' stands on air' });
+  for (const e of L.ents || []) if (STAND_PROPS.has(e.t) && air(at(e.x, e.y + 1)) && !(e.t === 'deco' && (e.hang || e.kind === 'hallWindow'))) out.push({ kind: 'prop', x: e.x, x1: e.x, y: e.y, why: e.t + (e.kind ? ':' + e.kind : '') + ' stands on air' });
   for (const [x, y] of L.rkNests || []) if (air(at(x, y + 1))) out.push({ kind: 'prop', x, x1: x, y, why: 'an egg nest on air' });
   if (L.rookery) for (const n of anchorNeeds(L)) if (!anchorAt(L, T, n.x, n.y)) out.push({ kind: n.what, x: n.x, x1: n.x, y: n.y, why: n.id + ': nothing holds it (no footing under, no face beside, no rock over)' });
   return out;

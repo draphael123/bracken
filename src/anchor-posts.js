@@ -1,8 +1,8 @@
 /* src/anchor-posts.js - THE RED GORGE AND HIGHCROWN HANG EVERY LEDGE ON SOMETHING (claude/polish1028, anchor-lint polish, Daniel 10-28 'Recs are fine').
    tools/anchor-lint.mjs listed overhangs (a long board with posts at its ends and nothing under its middle), cantilevers (a thin run joined to rock at one end,
    its tip in the air), islands with no drawn support and wall windows set on air. This pass adds the missing drawn supports: an extra post under the loose
-   columns of each board, a post under the free tip of each cantilever, and the hung-in-the-wall flag on a hall window that stands on air.
-   routeSupports and one deco flag only: NO TILE CHANGES (the route, the walker and the mash rows are untouched; the level hash is unchanged).
+   columns of each board, a post under the free tip of each cantilever.
+   routeSupports only: NO TILE CHANGES (the route, the walker and the mash rows are untouched; the level hash is unchanged).
    Same geometry the lint reads (OVER 1.25: a post holds the columns within 1.75 of it). A post runs down to the first tile under it; with no tile within
    MAX rows it is a short stub (a corbel into the wall), which the lint counts but which does not draw a mile of pole. */
 import { islandsOf } from './island-posts.js';
@@ -41,7 +41,5 @@ export function addAnchorPosts(L, id, T) {
       if (held()) continue;
       const step = lA ? -1 : 1; let q = tip + step * 1;   /* one in from the tip, so the post is under the board */
       if (q < x0 || q > x1) q = tip; add(q, y); } }
-  /* 3. a hall window set into a wall (it stands on the wall's face, not on the floor) */
-  for (const e of L.ents || []) if (e.t === 'deco' && e.kind === 'hallWindow' && air(at(e.x, e.y + 1))) e.hang = true;
   return L;
 }
