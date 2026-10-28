@@ -1,0 +1,81 @@
+{
+  "time": "2026-10-28T18:03:25.470Z",
+  "status": "Prepared weak original-array owner and accessor-safe source; native GC and new source proof pending",
+  "gameSource": "62d9c02c102decc69ceaef4e1ec593a23170f1ff",
+  "helperSha256": "061cb563021e811a46eed0ee36ccd6d3df6f2c1dbf6702a727c4909e1cf3da53",
+  "originalPxSha256": "e9a358b9170944e0dfae6d1b8c82d7b664562e0b2b0ab7f2538236e34214db1d",
+  "candidatePxSha256": "37cbde8af8557a27bf8d5e14a0fc68371b908e0c43b6101e52fa1db7bb4eff13",
+  "ownershipExtension": "\nexport function withBakeOwnership(build,record){const previous=OWN,scope=[];OWN=scope;try{return build();}finally{OWN=previous;record(scope);}}\n",
+  "originalPxBytesPreserved": true,
+  "sourceReview": "outputs/receipts/fixed-art-families-source-review-oct28.json",
+  "hardContracts": [
+    "Only160source-qualified palette-independent fixed-input groups; no mutable palette/gear/weapon late binding",
+    "Nested ownership restores outer scope in finally and records every new intermediate/output",
+    "Queued late allocations join exact pending retirement list; retired-owner late allocations immediately zero backing stores",
+    "Public reflection/alias/descriptor semantics preserved; internal keep traversal observes existing built leaves without forcing pending recipes",
+    "Native full pixels/context/metadata/aliases/ownership and retirement proof before any served source/controlled timing"
+  ],
+  "noLocalBrowserOrGameExecuted": true,
+  "adopted": false,
+  "originalArtSha256": "99f0ead9e02c17eec93e3945720c8206465e3ecd7aac42c00fbbb22cce46bb35",
+  "componentSha256": "9885b5123f50b0af02b661b467031f464c337f998e83249783788a83361a0236",
+  "expectedNativeGroups": 160,
+  "expectedOwnershipReflectionCases": 10,
+  "originalExpressionsCapturedAtOriginalArgumentEvaluationTime": true,
+  "earlierPreparedCore": {
+    "directory": "work/deferred-fixed-level-art-oct28",
+    "neverDispatchedOrBrowserExecuted": true,
+    "reason": "Pre-browser source review added a private WeakSet of fully resolved internal containers to avoid repeated recursive traversal; no original assertion or fixture changed"
+  },
+  "priorHelperSha256": "60f90bdb114aef64d74cb56e035e33c801ea2e46625c74489bb6e76bb134cc77",
+  "priorNativeReceipt": "outputs/receipts/fixed-level-art-component-oct28.json",
+  "ownershipChanges": [
+    {
+      "before": "return{owned,queue:null,retired:false};",
+      "after": "return typeof WeakRef==='function'?{owned:new WeakRef(owned),queue:null,retired:false}:null;"
+    },
+    {
+      "before": "else(r.owner.queue||r.owner.owned).push(...canvases);",
+      "after": "else{const target=r.owner.queue||r.owner.owned?.deref();if(target)target.push(...canvases);}"
+    },
+    {
+      "before": "return Reflect.set(t,k,value,receiver);",
+      "after": "let object=t,descriptor;while(object&&!(descriptor=Reflect.getOwnPropertyDescriptor(object,k)))object=Reflect.getPrototypeOf(object);if(descriptor&&!('value'in descriptor))value=materialize(value);return Reflect.set(t,k,value,receiver);"
+    }
+  ],
+  "sourceCause": "Public BK.loadG may be abandoned before BAKE_CUR registers its owned array. Pending recipes may not add a strong reference to that array. Active arrays remain held by original iterator/BAKE_CUR, queued sheets append to original BAKE_OLD, and retired late outputs still zero. Accessor setters must receive original native art values rather than private pending tokens.",
+  "expectedOwnershipReflectionCasesBeforeGc": 13,
+  "expectedGcContracts": 3,
+  "noMainAdapterOrGameSourceAdopted": true,
+  "componentChanges": [
+    {
+      "before": "'./fixed-level-art-source/'",
+      "after": "'./fixed-level-art-weak-source/'"
+    },
+    {
+      "before": "FIXED_LEVEL_ART_OUT",
+      "after": "FIXED_LEVEL_ART_WEAK_OUT"
+    },
+    {
+      "before": "'fixed-level-art-component'",
+      "after": "'fixed-level-art-weak-component'"
+    },
+    {
+      "before": "assert.equal(r.contracts.length,10);",
+      "after": "assert.equal(r.contracts.length,13);"
+    },
+    {
+      "before": "  return{rows,contracts,rng,allExact:true,",
+      "after": "  for(const mode of['own-accessor','inherited-accessor','throwing-accessor']){const owned=[],owner=m.createLevelArtOwner(owned),p=m.makeDeferredLevelArtCatalogue({}),box={value:null,thisExact:false},setter={configurable:true,set(value){box.value=value;box.thisExact=this===p;if(mode==='throwing-accessor')throw Error('injected accessor failure');}};if(mode==='inherited-accessor')Object.setPrototypeOf(p,Object.defineProperty({},'a',setter));else Object.defineProperty(p,'a',setter);let error;try{p.a=m.deferredLevelArtCall(owner,build,null,[]);}catch(e){error=e.message;}check(box.value instanceof HTMLCanvasElement&&box.value.width===7&&box.value.height===9&&box.thisExact&&owned.length===1,'accessor received pending token or wrong ownership');check(mode==='throwing-accessor'?error==='injected accessor failure':!error,'accessor failure semantics');zero(owned);m.retireLevelArtOwner(owner);contracts.push({case:mode,exact:true});}\n  const drawProbe=px=>{const[c,g]=px.canvas(7,9);g.fillStyle='#32a56f';g.fillRect(0,0,7,9);return c;};\n  function gcProbe(keep){Opx.api.bakeScope();const expected=drawProbe(Opx.api),controlList=Opx.api.bakeScopeEnd(),owned=[],owner=m.createLevelArtOwner(owned),root=m.makeDeferredLevelArtCatalogue({a:m.deferredLevelArtCall(owner,()=>drawProbe(Cpx.api),null,[])});return{expected,owner,root,controlWeak:new WeakRef(controlList),ownerWeak:new WeakRef(owned),actual:null,...(keep?{list:owned,controlList}:{})};}\n  window.__fixedOwnerGc={abandoned:gcProbe(false),active:gcProbe(true)};\n  window.__fixedOwnerAfterGc=()=>{const{abandoned:a,active:b}=window.__fixedOwnerGc;check(a.controlWeak.deref()===undefined&&a.ownerWeak.deref()===undefined,'abandoned original/new owned arrays remain strongly retained after native GC');const result=[{case:'original and weak-owner abandoned lists both collected',exact:true}];a.actual=a.root.a;compare(a.expected,a.actual,'late abandoned native output');check(a.actual.width===7&&a.actual.height===9,'abandoned live output was incorrectly retired');result.push({case:'post-abandonment late native pixels/context remain original',exact:true});check(b.ownerWeak.deref()===b.list&&b.controlWeak.deref()===b.controlList,'original/new active owner list lost');b.actual=b.root.a;compare(b.expected,b.actual,'active late native output');check(b.list.length===1&&b.list[0]===b.actual,'active late output missing from original live owner');result.push({case:'original and weak-owner active lists retained with late owned output',exact:true});return result;};\n  window.__fixedOwnerGcCleanup=()=>{for(const p of Object.values(window.__fixedOwnerGc)){for(const c of[p.expected,p.actual])if(c)c.width=c.height=0;m.retireLevelArtOwner(p.owner);if(p.list)p.list.length=0;if(p.controlList)p.controlList.length=0;}delete window.__fixedOwnerGc;delete window.__fixedOwnerAfterGc;delete window.__fixedOwnerGcCleanup;};\n  return{rows,contracts,rng,allExact:true,"
+    },
+    {
+      "before": "assert.deepEqual(pg.errors,[]);r.complete=true;",
+      "after": "assert.deepEqual(pg.errors,[]);await pg.send('HeapProfiler.collectGarbage');await pg.evalp('0');await pg.send('HeapProfiler.collectGarbage');r.nativeGcContracts=await pg.evalp('window.__fixedOwnerAfterGc()');assert.equal(r.nativeGcContracts.length,3);assert(r.nativeGcContracts.every(x=>x.exact));await pg.evalp('window.__fixedOwnerGcCleanup()');r.complete=true;"
+    },
+    {
+      "before": "'Complete160native art graph and10ownership/reflection cases only; main integration/real loader proof still required'",
+      "after": "'Complete160native graphs,13ownership/reflection cases and3native-GC owner-liveness contracts; no main/loader/layout/FPS proof'"
+    }
+  ],
+  "nativeGcProtocol": "After first runtime job completes: native HeapProfiler.collectGarbage, separate empty evaluation job, native HeapProfiler.collectGarbage, then compare original/new abandoned and active owner arrays and late native outputs. Fixed two collections; no retry loop or clock/RNG reset."
+}
