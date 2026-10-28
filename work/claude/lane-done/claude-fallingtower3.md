@@ -1,7 +1,7 @@
 # claude/fallingtower3 - FALLING TOWER 3: YOU MAKE IT FALL + THE ARCHMAGE CHASE (Opus, PORT 6500)
 
 Base: claude/batch126 1038c8a4. Brief: scratch/brief-fallingtower3.md (section 1 + the 10-27 BOSS CHANGE). Not merged, not deployed.
-Head: see the last commit on claude/fallingtower3 (pushed).
+Head: ef150feb (claude/fallingtower3, pushed; the report commit itself is the next one).
 
 ## What was built
 
