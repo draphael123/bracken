@@ -2554,7 +2554,9 @@ async function runbossLab(BK, opts) {
           const side = Math.sign(P.x - x) || 1, at = x + side * Math.max(6, Math.min(reachB - 4, half + reachB - 10));
           if (Math.abs(P.x - at) < 8 && P.ground && P.atk < 0) { goal = null; P.face = -side; k.block = false; BK.press('atk'); swings++; } else goal = at; };
         strike = false;
-        if (H && onHigh && !boss.smoke) { goal = P.x; k.down = true; }   /* off the boards: the fight is on the floor (down drops through a board) */
+        if (H && onHigh && !boss.smoke) { const row = Math.floor((P.y + 1) / 16), isB = x => { const t = L.grid[row * L.W + x]; return t === T.ONEWAY || t === T.PLANK; };   /* off the boards: the fight is on the floor - walk off the nearer end of the run you stand on */
+          let xl = Math.floor(P.x / 16), xr = xl; while (xl > 1 && isB(xl - 1)) xl--; while (xr < L.W - 2 && isB(xr + 1)) xr++;
+          goal = P.x - xl * 16 < (xr + 1) * 16 - P.x ? xl * 16 - 12 : (xr + 1) * 16 + 12; }
         else if (burn) goal = burn.x + (Math.sign(P.x - burn.x) || 1) * 26;           /* HIS COALS: off the floor fire first (it turns on no shield) */
         else if (boss.mode === 'beaten' && bl) hitAt(bl.x, 12);                       /* THE LAST BLOW: the great bell */
         else if (boss.open > 0 && bossLow) { goal = boss.x; strike = true; }         /* the house answered: get on him, the window is worth three blows */
