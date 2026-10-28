@@ -1,0 +1,2983 @@
+[
+  {
+    "id": 0,
+    "key": "dirt",
+    "factories": [
+      "bakeDirt"
+    ],
+    "closure": [
+      "bakeDirt",
+      "dirtBase",
+      "C",
+      "T"
+    ],
+    "paletteFields": [
+      "dirt",
+      "dirtD",
+      "dirtL",
+      "stone",
+      "stoneL",
+      "stoneD"
+    ],
+    "kind": "captured",
+    "source": "[0, 1, 2, 3, 4, 5].map(i => ART.bakeDirt(10 + i))"
+  },
+  {
+    "id": 2,
+    "key": "log",
+    "factories": [
+      "bakeLog"
+    ],
+    "closure": [
+      "bakeLog",
+      "T",
+      "C"
+    ],
+    "paletteFields": [
+      "wood",
+      "woodD",
+      "woodL",
+      "grassD",
+      "grass"
+    ],
+    "kind": "captured",
+    "source": "[0, 1, 2, 3, 4].map(i => ART.bakeLog(50 + i))"
+  },
+  {
+    "id": 3,
+    "key": "logL",
+    "factories": [
+      "bakeLogEnd"
+    ],
+    "closure": [
+      "bakeLogEnd",
+      "T",
+      "bakeLog",
+      "C"
+    ],
+    "paletteFields": [
+      "wood",
+      "woodD",
+      "woodL",
+      "grassD",
+      "grass"
+    ],
+    "kind": "captured",
+    "source": "ART.bakeLogEnd(60, false)"
+  },
+  {
+    "id": 4,
+    "key": "logR",
+    "factories": [
+      "bakeLogEnd"
+    ],
+    "closure": [
+      "bakeLogEnd",
+      "T",
+      "bakeLog",
+      "C"
+    ],
+    "paletteFields": [
+      "wood",
+      "woodD",
+      "woodL",
+      "grassD",
+      "grass"
+    ],
+    "kind": "captured",
+    "source": "ART.bakeLogEnd(61, true)"
+  },
+  {
+    "id": 5,
+    "key": "comb",
+    "factories": [
+      "bakeCombPlat"
+    ],
+    "closure": [
+      "bakeCombPlat",
+      "OUT",
+      "T"
+    ],
+    "kind": "fixed",
+    "source": "[0, 1, 2].map(i => ART.bakeCombPlat(560 + i))"
+  },
+  {
+    "id": 6,
+    "key": "combL",
+    "factories": [
+      "bakeCombPlat"
+    ],
+    "closure": [
+      "bakeCombPlat",
+      "OUT",
+      "T"
+    ],
+    "kind": "fixed",
+    "source": "ART.bakeCombPlat(563, 'L')"
+  },
+  {
+    "id": 7,
+    "key": "combR",
+    "factories": [
+      "bakeCombPlat"
+    ],
+    "closure": [
+      "bakeCombPlat",
+      "OUT",
+      "T"
+    ],
+    "kind": "fixed",
+    "source": "ART.bakeCombPlat(564, 'R')"
+  },
+  {
+    "id": 8,
+    "key": "ropeNet",
+    "factories": [
+      "bakeRopeNet"
+    ],
+    "closure": [
+      "bakeRopeNet",
+      "T"
+    ],
+    "kind": "fixed",
+    "source": "[0, 1].map(i => ART.bakeRopeNet(i))"
+  },
+  {
+    "id": 9,
+    "key": "climbVine",
+    "factories": [
+      "bakeVine"
+    ],
+    "closure": [
+      "bakeVine",
+      "T"
+    ],
+    "kind": "fixed",
+    "source": "[0, 1].map(i => ART.bakeVine(i))"
+  },
+  {
+    "id": 10,
+    "key": "rail",
+    "factories": [
+      "bakeRail"
+    ],
+    "closure": [
+      "bakeRail",
+      "T"
+    ],
+    "kind": "fixed",
+    "source": "[0, 1].map(i => ART.bakeRail(i))"
+  },
+  {
+    "id": 11,
+    "key": "soft",
+    "factories": [
+      "bakeSoftRock"
+    ],
+    "closure": [
+      "bakeSoftRock",
+      "T"
+    ],
+    "kind": "fixed",
+    "source": "[0, 1, 2].map(i => ART.bakeSoftRock(930 + i))"
+  },
+  {
+    "id": 12,
+    "key": "ladder",
+    "factories": [
+      "bakeRopeLadder"
+    ],
+    "closure": [
+      "bakeRopeLadder",
+      "T"
+    ],
+    "kind": "fixed",
+    "source": "{ S: [0, 1].map(i => ART.bakeRopeLadder(i, null)), L: [0, 1].map(i => ART.bakeRopeLadder(i, 'L')), R: [0, 1].map(i => ART.bakeRopeLadder(i, 'R')) }"
+  },
+  {
+    "id": 13,
+    "key": "ledge",
+    "factories": [
+      "bakeLedge"
+    ],
+    "closure": [
+      "bakeLedge",
+      "T"
+    ],
+    "kind": "fixed",
+    "source": "[0, 1, 2].map(i => ART.bakeLedge(570 + i, null))"
+  },
+  {
+    "id": 14,
+    "key": "ledgeL",
+    "factories": [
+      "bakeLedge"
+    ],
+    "closure": [
+      "bakeLedge",
+      "T"
+    ],
+    "kind": "fixed",
+    "source": "ART.bakeLedge(573, 'L')"
+  },
+  {
+    "id": 15,
+    "key": "ledgeR",
+    "factories": [
+      "bakeLedge"
+    ],
+    "closure": [
+      "bakeLedge",
+      "T"
+    ],
+    "kind": "fixed",
+    "source": "ART.bakeLedge(574, 'R')"
+  },
+  {
+    "id": 16,
+    "key": "beam",
+    "factories": [
+      "bakeBeam"
+    ],
+    "closure": [
+      "bakeBeam",
+      "T"
+    ],
+    "kind": "fixed",
+    "source": "[0, 1, 2].map(i => ART.bakeBeam(700 + i, null))"
+  },
+  {
+    "id": 17,
+    "key": "beamL",
+    "factories": [
+      "bakeBeam"
+    ],
+    "closure": [
+      "bakeBeam",
+      "T"
+    ],
+    "kind": "fixed",
+    "source": "ART.bakeBeam(703, 'L')"
+  },
+  {
+    "id": 18,
+    "key": "beamR",
+    "factories": [
+      "bakeBeam"
+    ],
+    "closure": [
+      "bakeBeam",
+      "T"
+    ],
+    "kind": "fixed",
+    "source": "ART.bakeBeam(704, 'R')"
+  },
+  {
+    "id": 19,
+    "key": "staging",
+    "factories": [
+      "bakeStaging"
+    ],
+    "closure": [
+      "bakeStaging",
+      "T"
+    ],
+    "kind": "fixed",
+    "source": "[0, 1, 2].map(i => ART.bakeStaging(710 + i, null))"
+  },
+  {
+    "id": 20,
+    "key": "stagingL",
+    "factories": [
+      "bakeStaging"
+    ],
+    "closure": [
+      "bakeStaging",
+      "T"
+    ],
+    "kind": "fixed",
+    "source": "ART.bakeStaging(713, 'L')"
+  },
+  {
+    "id": 21,
+    "key": "stagingR",
+    "factories": [
+      "bakeStaging"
+    ],
+    "closure": [
+      "bakeStaging",
+      "T"
+    ],
+    "kind": "fixed",
+    "source": "ART.bakeStaging(714, 'R')"
+  },
+  {
+    "id": 22,
+    "key": "lashed",
+    "factories": [
+      "bakeLashed"
+    ],
+    "closure": [
+      "bakeLashed",
+      "T"
+    ],
+    "kind": "fixed",
+    "source": "[0, 1, 2].map(i => ART.bakeLashed(720 + i, null))"
+  },
+  {
+    "id": 23,
+    "key": "lashedL",
+    "factories": [
+      "bakeLashed"
+    ],
+    "closure": [
+      "bakeLashed",
+      "T"
+    ],
+    "kind": "fixed",
+    "source": "ART.bakeLashed(723, 'L')"
+  },
+  {
+    "id": 24,
+    "key": "lashedR",
+    "factories": [
+      "bakeLashed"
+    ],
+    "closure": [
+      "bakeLashed",
+      "T"
+    ],
+    "kind": "fixed",
+    "source": "ART.bakeLashed(724, 'R')"
+  },
+  {
+    "id": 25,
+    "key": "duck",
+    "factories": [
+      "bakeDuckboard"
+    ],
+    "closure": [
+      "bakeDuckboard",
+      "T"
+    ],
+    "kind": "fixed",
+    "source": "[0, 1, 2].map(i => ART.bakeDuckboard(580 + i, null))"
+  },
+  {
+    "id": 26,
+    "key": "duckL",
+    "factories": [
+      "bakeDuckboard"
+    ],
+    "closure": [
+      "bakeDuckboard",
+      "T"
+    ],
+    "kind": "fixed",
+    "source": "ART.bakeDuckboard(583, 'L')"
+  },
+  {
+    "id": 27,
+    "key": "duckR",
+    "factories": [
+      "bakeDuckboard"
+    ],
+    "closure": [
+      "bakeDuckboard",
+      "T"
+    ],
+    "kind": "fixed",
+    "source": "ART.bakeDuckboard(584, 'R')"
+  },
+  {
+    "id": 28,
+    "key": "capLedge",
+    "factories": [
+      "bakeCapLedge"
+    ],
+    "closure": [
+      "bakeCapLedge",
+      "T"
+    ],
+    "kind": "fixed",
+    "source": "[0, 1, 2].map(i => ART.bakeCapLedge(590 + i, null))"
+  },
+  {
+    "id": 29,
+    "key": "capLedgeL",
+    "factories": [
+      "bakeCapLedge"
+    ],
+    "closure": [
+      "bakeCapLedge",
+      "T"
+    ],
+    "kind": "fixed",
+    "source": "ART.bakeCapLedge(593, 'L')"
+  },
+  {
+    "id": 30,
+    "key": "capLedgeR",
+    "factories": [
+      "bakeCapLedge"
+    ],
+    "closure": [
+      "bakeCapLedge",
+      "T"
+    ],
+    "kind": "fixed",
+    "source": "ART.bakeCapLedge(594, 'R')"
+  },
+  {
+    "id": 31,
+    "key": "climb",
+    "factories": [
+      "bakeClimbFace"
+    ],
+    "closure": [
+      "bakeClimbFace",
+      "T"
+    ],
+    "kind": "fixed",
+    "source": "[ART.bakeClimbFace(0), ART.bakeClimbFace(1)]"
+  },
+  {
+    "id": 32,
+    "key": "thorns",
+    "factories": [
+      "bakeThorns"
+    ],
+    "closure": [
+      "bakeThorns",
+      "C",
+      "T"
+    ],
+    "paletteFields": [
+      "berry"
+    ],
+    "kind": "captured",
+    "source": "[0, 1, 2, 3].map(i => ART.bakeThorns(70 + i))"
+  },
+  {
+    "id": 33,
+    "key": "crate",
+    "factories": [
+      "bakeCrate"
+    ],
+    "closure": [
+      "bakeCrate",
+      "OUT",
+      "C",
+      "T"
+    ],
+    "paletteFields": [
+      "wood",
+      "woodD",
+      "woodL",
+      "stoneD"
+    ],
+    "kind": "captured",
+    "source": "ART.bakeCrate()"
+  },
+  {
+    "id": 34,
+    "key": "roots",
+    "factories": [
+      "bakeDirtRoots"
+    ],
+    "closure": [
+      "bakeDirtRoots",
+      "C",
+      "T",
+      "dirtBase"
+    ],
+    "paletteFields": [
+      "woodD",
+      "wood",
+      "stone",
+      "stoneL",
+      "dirt",
+      "dirtD",
+      "dirtL",
+      "stoneD"
+    ],
+    "kind": "captured",
+    "source": "[0, 1, 2].map(i => ART.bakeDirtRoots(80 + i))"
+  },
+  {
+    "id": 35,
+    "key": "reeds",
+    "factories": [
+      "bakeReeds"
+    ],
+    "closure": [
+      "bakeReeds",
+      "T"
+    ],
+    "kind": "fixed",
+    "source": "[0, 1, 2].map(i => ART.bakeReeds(90 + i))"
+  },
+  {
+    "id": 36,
+    "key": "silt",
+    "factories": [
+      "bakeSilt"
+    ],
+    "closure": [
+      "bakeSilt",
+      "T"
+    ],
+    "kind": "fixed",
+    "source": "[0, 1, 2].map(i => ART.bakeSilt(85 + i))"
+  },
+  {
+    "id": 37,
+    "key": "palisade",
+    "factories": [
+      "bakePalisade"
+    ],
+    "closure": [
+      "bakePalisade",
+      "T",
+      "C"
+    ],
+    "paletteFields": [
+      "wood",
+      "woodL",
+      "woodD"
+    ],
+    "kind": "captured",
+    "source": "[0, 1, 2].map(i => ART.bakePalisade(300 + i))"
+  },
+  {
+    "id": 38,
+    "key": "palisadeTop",
+    "factories": [
+      "bakePalisadeTop"
+    ],
+    "closure": [
+      "bakePalisadeTop",
+      "C",
+      "T"
+    ],
+    "paletteFields": [
+      "woodL"
+    ],
+    "kind": "captured",
+    "source": "ART.bakePalisadeTop()"
+  },
+  {
+    "id": 39,
+    "key": "bouncer",
+    "factories": [
+      "bakeBouncer"
+    ],
+    "closure": [
+      "bakeBouncer",
+      "OUT",
+      "T"
+    ],
+    "kind": "fixed",
+    "source": "ART.bakeBouncer()"
+  },
+  {
+    "id": 40,
+    "key": "shelf",
+    "factories": [
+      "bakeShelf"
+    ],
+    "closure": [
+      "bakeShelf",
+      "T"
+    ],
+    "kind": "fixed",
+    "source": "[0, 1].map(i => ART.bakeShelf(330 + i))"
+  },
+  {
+    "id": 41,
+    "key": "shelfMyc",
+    "factories": [
+      "bakeShelfFungus"
+    ],
+    "closure": [
+      "bakeShelfFungus",
+      "T"
+    ],
+    "kind": "fixed",
+    "source": "[0, 1].map(i => ART.bakeShelfFungus(332 + i))"
+  },
+  {
+    "id": 42,
+    "key": "looseRock",
+    "factories": [
+      "bakeLooseRock"
+    ],
+    "closure": [
+      "bakeLooseRock",
+      "T"
+    ],
+    "kind": "fixed",
+    "source": "[0, 1].map(i => ART.bakeLooseRock(340 + i))"
+  },
+  {
+    "id": 43,
+    "key": "cryst",
+    "factories": [
+      "bakeCrystalTile"
+    ],
+    "closure": [
+      "bakeCrystalTile"
+    ],
+    "kind": "fixed",
+    "source": "[0, 1].map(l => [0, 1, 2].map(st => ART.bakeCrystalTile(st, !!l)))"
+  },
+  {
+    "id": 44,
+    "key": "spire",
+    "factories": [
+      "bakeSpire"
+    ],
+    "closure": [
+      "bakeSpire",
+      "OUT"
+    ],
+    "kind": "fixed",
+    "source": "[0, 1].map(l => [0, 1].map(v => ART.bakeSpire(v, !!l)))"
+  },
+  {
+    "id": 45,
+    "key": "port",
+    "factories": [
+      "bakePortcullis"
+    ],
+    "closure": [
+      "bakePortcullis",
+      "T"
+    ],
+    "kind": "fixed",
+    "source": "[0, 1].map(i => ART.bakePortcullis(600 + i))"
+  },
+  {
+    "id": 46,
+    "key": "drystone",
+    "factories": [
+      "bakeDrystone"
+    ],
+    "closure": [
+      "bakeDrystone",
+      "T"
+    ],
+    "kind": "fixed",
+    "source": "[0, 1, 2].map(i => ART.bakeDrystone(700 + i))"
+  },
+  {
+    "id": 47,
+    "key": "drystoneTop",
+    "factories": [
+      "bakeDrystoneTop"
+    ],
+    "closure": [
+      "bakeDrystoneTop",
+      "T"
+    ],
+    "kind": "fixed",
+    "source": "[0, 1].map(i => ART.bakeDrystoneTop(710 + i))"
+  },
+  {
+    "id": 48,
+    "key": "scree",
+    "factories": [
+      "bakeScreeTop"
+    ],
+    "closure": [
+      "bakeScreeTop",
+      "T"
+    ],
+    "kind": "fixed",
+    "source": "{ 1: ART.bakeScreeTop(720, 1), '-1': ART.bakeScreeTop(721, -1) }"
+  },
+  {
+    "id": 49,
+    "key": "hall",
+    "factories": [
+      "bakeHallWall"
+    ],
+    "closure": [
+      "bakeHallWall",
+      "T"
+    ],
+    "kind": "fixed",
+    "source": "[0, 1, 2].map(i => ART.bakeHallWall(610 + i))"
+  },
+  {
+    "id": 50,
+    "key": "mycDirt",
+    "factories": [
+      "bakeMycDirt"
+    ],
+    "closure": [
+      "bakeMycDirt",
+      "T"
+    ],
+    "kind": "fixed",
+    "source": "[0, 1, 2].map(i => ART.bakeMycDirt(340 + i))"
+  },
+  {
+    "id": 51,
+    "key": "plank",
+    "factories": [
+      "bakeBridgePlank"
+    ],
+    "closure": [
+      "bakeBridgePlank",
+      "C",
+      "T"
+    ],
+    "paletteFields": [
+      "wood",
+      "woodL",
+      "woodD"
+    ],
+    "kind": "captured",
+    "source": "[0, 1].map(i => ART.bakeBridgePlank(310 + i))"
+  },
+  {
+    "id": 52,
+    "key": "plankL",
+    "factories": [
+      "bakeBridgePlankEnd"
+    ],
+    "closure": [
+      "bakeBridgePlankEnd",
+      "C",
+      "T"
+    ],
+    "paletteFields": [
+      "wood",
+      "woodL",
+      "woodD"
+    ],
+    "kind": "captured",
+    "source": "ART.bakeBridgePlankEnd(312, -1)"
+  },
+  {
+    "id": 53,
+    "key": "plankR",
+    "factories": [
+      "bakeBridgePlankEnd"
+    ],
+    "closure": [
+      "bakeBridgePlankEnd",
+      "C",
+      "T"
+    ],
+    "paletteFields": [
+      "wood",
+      "woodL",
+      "woodD"
+    ],
+    "kind": "captured",
+    "source": "ART.bakeBridgePlankEnd(313, 1)"
+  },
+  {
+    "id": 54,
+    "key": "net",
+    "factories": [
+      "bakeNet"
+    ],
+    "closure": [
+      "bakeNet",
+      "T"
+    ],
+    "kind": "fixed",
+    "source": "ART.bakeNet()"
+  },
+  {
+    "id": 55,
+    "key": "vine",
+    "factories": [
+      "bakeVineWall"
+    ],
+    "closure": [
+      "bakeVineWall",
+      "T"
+    ],
+    "kind": "fixed",
+    "source": "[0, 1, 2, 3].map(i => ART.bakeVineWall(95 + i))"
+  },
+  {
+    "id": 56,
+    "key": "coin",
+    "factories": [
+      "bakeCoin"
+    ],
+    "closure": [
+      "bakeCoin",
+      "OUT"
+    ],
+    "kind": "fixed",
+    "source": "ART.bakeCoin()"
+  },
+  {
+    "id": 57,
+    "key": "shrine",
+    "factories": [
+      "bakeShrine"
+    ],
+    "closure": [
+      "bakeShrine",
+      "OUT",
+      "C"
+    ],
+    "paletteFields": [
+      "stone",
+      "stoneL",
+      "stoneD",
+      "gold",
+      "grassD",
+      "grass"
+    ],
+    "kind": "captured",
+    "source": "[ART.bakeShrine(false), ART.bakeShrine(true)]"
+  },
+  {
+    "id": 58,
+    "key": "gate",
+    "factories": [
+      "bakeGate"
+    ],
+    "closure": [
+      "bakeGate",
+      "OUT",
+      "C"
+    ],
+    "paletteFields": [
+      "stone",
+      "stoneL",
+      "stoneD",
+      "grass",
+      "grassD",
+      "gold"
+    ],
+    "kind": "captured",
+    "source": "ART.bakeGate()"
+  },
+  {
+    "id": 59,
+    "key": "sign",
+    "factories": [
+      "bakeSign"
+    ],
+    "closure": [
+      "bakeSign",
+      "OUT",
+      "C"
+    ],
+    "paletteFields": [
+      "woodD",
+      "wood",
+      "woodL"
+    ],
+    "kind": "captured",
+    "source": "ART.bakeSign()"
+  },
+  {
+    "id": 60,
+    "key": "tuft",
+    "factories": [
+      "bakeTuft"
+    ],
+    "closure": [
+      "bakeTuft",
+      "C"
+    ],
+    "paletteFields": [
+      "grass",
+      "grassL"
+    ],
+    "kind": "captured",
+    "source": "[0, 1, 2, 3].map(i => ART.bakeTuft(200 + i))"
+  },
+  {
+    "id": 61,
+    "key": "flower",
+    "factories": [
+      "bakeFlower"
+    ],
+    "closure": [
+      "bakeFlower",
+      "C"
+    ],
+    "paletteFields": [
+      "grassD",
+      "grass"
+    ],
+    "kind": "captured",
+    "source": "[0, 1, 2, 3].map(i => ART.bakeFlower(210 + i))"
+  },
+  {
+    "id": 62,
+    "key": "mushroom",
+    "factories": [
+      "bakeMushroom"
+    ],
+    "closure": [
+      "bakeMushroom",
+      "OUT",
+      "C"
+    ],
+    "paletteFields": [
+      "berry"
+    ],
+    "kind": "captured",
+    "source": "[0, 1].map(i => ART.bakeMushroom(220 + i))"
+  },
+  {
+    "id": 63,
+    "key": "bush",
+    "factories": [
+      "bakeBush"
+    ],
+    "closure": [
+      "bakeBush",
+      "OUT",
+      "C"
+    ],
+    "paletteFields": [
+      "grassD",
+      "grass",
+      "grassL",
+      "berry"
+    ],
+    "kind": "captured",
+    "source": "[0, 1, 2].map(i => ART.bakeBush(230 + i))"
+  },
+  {
+    "id": 64,
+    "key": "shadow",
+    "factories": [
+      "bakeShadow"
+    ],
+    "closure": [
+      "bakeShadow"
+    ],
+    "kind": "fixed",
+    "source": "ART.bakeShadow(6, 2)"
+  },
+  {
+    "id": 65,
+    "key": "pad",
+    "factories": [
+      "bakeLilyPad"
+    ],
+    "closure": [
+      "bakeLilyPad",
+      "OUT"
+    ],
+    "kind": "fixed",
+    "source": "ART.bakeLilyPad()"
+  },
+  {
+    "id": 66,
+    "key": "padBig",
+    "factories": [
+      "bakeLilyPad"
+    ],
+    "closure": [
+      "bakeLilyPad",
+      "OUT"
+    ],
+    "kind": "fixed",
+    "source": "ART.bakeLilyPad(32)"
+  },
+  {
+    "id": 67,
+    "key": "lilyFlowerBig",
+    "factories": [
+      "bakeLilyFlowerBig"
+    ],
+    "closure": [
+      "bakeLilyFlowerBig",
+      "OUT"
+    ],
+    "kind": "fixed",
+    "source": "ART.bakeLilyFlowerBig()"
+  },
+  {
+    "id": 68,
+    "key": "padSpring",
+    "factories": [
+      "bakeSpringPad"
+    ],
+    "closure": [
+      "bakeSpringPad",
+      "OUT"
+    ],
+    "kind": "fixed",
+    "source": "ART.bakeSpringPad()"
+  },
+  {
+    "id": 69,
+    "key": "raft",
+    "factories": [
+      "bakeRaft"
+    ],
+    "closure": [
+      "bakeRaft",
+      "OUT",
+      "C"
+    ],
+    "paletteFields": [
+      "wood",
+      "woodL",
+      "woodD"
+    ],
+    "kind": "captured",
+    "source": "ART.bakeRaft()"
+  },
+  {
+    "id": 70,
+    "key": "throne",
+    "factories": [
+      "bakeThronePad"
+    ],
+    "closure": [
+      "bakeThronePad",
+      "OUT"
+    ],
+    "kind": "fixed",
+    "source": "ART.bakeThronePad()"
+  },
+  {
+    "id": 71,
+    "key": "plank",
+    "factories": [
+      "bakePlank"
+    ],
+    "closure": [
+      "bakePlank",
+      "OUT",
+      "C"
+    ],
+    "paletteFields": [
+      "wood",
+      "woodL",
+      "woodD",
+      "stoneD"
+    ],
+    "kind": "captured",
+    "source": "ART.bakePlank()"
+  },
+  {
+    "id": 72,
+    "key": "drop",
+    "factories": [
+      "bakeDrop"
+    ],
+    "closure": [
+      "bakeDrop"
+    ],
+    "kind": "fixed",
+    "source": "ART.bakeDrop()"
+  },
+  {
+    "id": 73,
+    "key": "motherCap",
+    "factories": [
+      "bakeMotherCap"
+    ],
+    "closure": [
+      "bakeMotherCap",
+      "OUT"
+    ],
+    "kind": "fixed",
+    "source": "ART.bakeMotherCap()"
+  },
+  {
+    "id": 74,
+    "key": "impact",
+    "factories": [
+      "bakeImpact"
+    ],
+    "closure": [
+      "bakeImpact"
+    ],
+    "kind": "fixed",
+    "source": "ART.bakeImpact()"
+  },
+  {
+    "id": 75,
+    "key": "impactSteel",
+    "factories": [
+      "bakeImpact"
+    ],
+    "closure": [
+      "bakeImpact"
+    ],
+    "kind": "fixed",
+    "source": "ART.bakeImpact('#c9d1dc')"
+  },
+  {
+    "id": 76,
+    "key": "impactRed",
+    "factories": [
+      "bakeImpact"
+    ],
+    "closure": [
+      "bakeImpact"
+    ],
+    "kind": "fixed",
+    "source": "ART.bakeImpact('#ff6b6b')"
+  },
+  {
+    "id": 77,
+    "key": "fern",
+    "factories": [
+      "bakeFern"
+    ],
+    "closure": [
+      "bakeFern",
+      "C"
+    ],
+    "paletteFields": [
+      "grassD",
+      "grass",
+      "grassL"
+    ],
+    "kind": "captured",
+    "source": "[0, 1, 2].map(i => ART.bakeFern(400 + i))"
+  },
+  {
+    "id": 78,
+    "key": "stump",
+    "factories": [
+      "bakeStump"
+    ],
+    "closure": [
+      "bakeStump",
+      "OUT"
+    ],
+    "kind": "fixed",
+    "source": "[0, 1].map(i => ART.bakeStump(410 + i))"
+  },
+  {
+    "id": 79,
+    "key": "rock",
+    "factories": [
+      "bakeRock"
+    ],
+    "closure": [
+      "bakeRock",
+      "OUT",
+      "C"
+    ],
+    "paletteFields": [
+      "grass"
+    ],
+    "kind": "captured",
+    "source": "[0, 1, 2].map(i => ART.bakeRock(420 + i))"
+  },
+  {
+    "id": 80,
+    "key": "cattail",
+    "factories": [
+      "bakeCattail"
+    ],
+    "closure": [
+      "bakeCattail"
+    ],
+    "kind": "fixed",
+    "source": "[0, 1, 2].map(i => ART.bakeCattail(430 + i))"
+  },
+  {
+    "id": 81,
+    "key": "lilyFlower",
+    "factories": [
+      "bakeLilyFlower"
+    ],
+    "closure": [
+      "bakeLilyFlower"
+    ],
+    "kind": "fixed",
+    "source": "ART.bakeLilyFlower()"
+  },
+  {
+    "id": 82,
+    "key": "skullPost",
+    "factories": [
+      "bakeSkullPost"
+    ],
+    "closure": [
+      "bakeSkullPost",
+      "OUT"
+    ],
+    "kind": "fixed",
+    "source": "ART.bakeSkullPost()"
+  },
+  {
+    "id": 83,
+    "key": "tent",
+    "factories": [
+      "bakeTent"
+    ],
+    "closure": [
+      "bakeTent",
+      "OUT"
+    ],
+    "kind": "fixed",
+    "source": "[0, 1].map(i => ART.bakeTent(440 + i))"
+  },
+  {
+    "id": 84,
+    "key": "campfire",
+    "factories": [
+      "bakeCampfire"
+    ],
+    "closure": [
+      "bakeCampfire",
+      "OUT"
+    ],
+    "kind": "fixed",
+    "source": "ART.bakeCampfire()"
+  },
+  {
+    "id": 85,
+    "key": "tinyCap",
+    "factories": [
+      "bakeTinyCap"
+    ],
+    "closure": [
+      "bakeTinyCap"
+    ],
+    "kind": "fixed",
+    "source": "[ART.bakeTinyCap('#4aa0b0', 450), ART.bakeTinyCap('#ff7a9a', 451), ART.bakeTinyCap('#9a5aa8', 452), ART.bakeTinyCap('#4aa0b0', 453)]"
+  },
+  {
+    "id": 86,
+    "key": "moss",
+    "factories": [
+      "bakeMoss"
+    ],
+    "closure": [
+      "bakeMoss"
+    ],
+    "kind": "fixed",
+    "source": "[0, 1, 2].map(i => ART.bakeMoss(460 + i))"
+  },
+  {
+    "id": 87,
+    "key": "butterfly",
+    "factories": [
+      "bakeButterfly"
+    ],
+    "closure": [
+      "bakeButterfly",
+      "OUT"
+    ],
+    "kind": "fixed",
+    "source": "[ART.bakeButterfly('#ffd36b'), ART.bakeButterfly('#ff9ab0'), ART.bakeButterfly('#bfe6f5')]"
+  },
+  {
+    "id": 88,
+    "key": "dragonfly",
+    "factories": [
+      "bakeDragonfly"
+    ],
+    "closure": [
+      "bakeDragonfly"
+    ],
+    "kind": "fixed",
+    "source": "ART.bakeDragonfly()"
+  },
+  {
+    "id": 89,
+    "key": "crow",
+    "factories": [
+      "bakeCrow"
+    ],
+    "closure": [
+      "bakeCrow"
+    ],
+    "kind": "fixed",
+    "source": "ART.bakeCrow()"
+  },
+  {
+    "id": 90,
+    "key": "honeyDrip",
+    "factories": [
+      "bakeHoneyDrip"
+    ],
+    "closure": [
+      "bakeHoneyDrip"
+    ],
+    "kind": "fixed",
+    "source": "ART.bakeHoneyDrip()"
+  },
+  {
+    "id": 91,
+    "key": "frogStatue",
+    "factories": [
+      "bakeFrogStatue"
+    ],
+    "closure": [
+      "bakeFrogStatue",
+      "OUT"
+    ],
+    "kind": "fixed",
+    "source": "[0, 1].map(i => ART.bakeFrogStatue(510 + i))"
+  },
+  {
+    "id": 92,
+    "key": "lilyLantern",
+    "factories": [
+      "bakeLilyLantern"
+    ],
+    "closure": [
+      "bakeLilyLantern",
+      "OUT"
+    ],
+    "kind": "fixed",
+    "source": "ART.bakeLilyLantern()"
+  },
+  {
+    "id": 93,
+    "key": "rootDecor",
+    "factories": [
+      "bakeRootDecor"
+    ],
+    "closure": [
+      "bakeRootDecor"
+    ],
+    "kind": "fixed",
+    "source": "[0, 1, 2].map(i => ART.bakeRootDecor(540 + i))"
+  },
+  {
+    "id": 94,
+    "key": "sporePod",
+    "factories": [
+      "bakeSporePod"
+    ],
+    "closure": [
+      "bakeSporePod",
+      "OUT"
+    ],
+    "kind": "fixed",
+    "source": "ART.bakeSporePod()"
+  },
+  {
+    "id": 110,
+    "key": "oldOak",
+    "factories": [
+      "bakeOldOak"
+    ],
+    "closure": [
+      "bakeOldOak",
+      "OUT",
+      "C"
+    ],
+    "paletteFields": [
+      "canopy"
+    ],
+    "kind": "captured",
+    "source": "[0, 1].map(i => ART.bakeOldOak(470 + i))"
+  },
+  {
+    "id": 111,
+    "key": "boat",
+    "factories": [
+      "bakeBoat"
+    ],
+    "closure": [
+      "bakeBoat",
+      "OUT"
+    ],
+    "kind": "fixed",
+    "source": "ART.bakeBoat(480)"
+  },
+  {
+    "id": 112,
+    "key": "heron",
+    "factories": [
+      "bakeHeron"
+    ],
+    "closure": [
+      "bakeHeron",
+      "OUT"
+    ],
+    "kind": "fixed",
+    "source": "ART.bakeHeron()"
+  },
+  {
+    "id": 113,
+    "key": "totem",
+    "factories": [
+      "bakeTotem"
+    ],
+    "closure": [
+      "bakeTotem",
+      "OUT"
+    ],
+    "kind": "fixed",
+    "source": "[0, 1].map(i => ART.bakeTotem(490 + i))"
+  },
+  {
+    "id": 114,
+    "key": "giantCap",
+    "factories": [
+      "bakeGiantCap"
+    ],
+    "closure": [
+      "bakeGiantCap",
+      "OUT"
+    ],
+    "kind": "fixed",
+    "source": "ART.bakeGiantCap(495)"
+  },
+  {
+    "id": 115,
+    "key": "gardenWall",
+    "factories": [
+      "bakeGardenWall"
+    ],
+    "closure": [
+      "bakeGardenWall",
+      "OUT"
+    ],
+    "kind": "fixed",
+    "source": "[0, 1, 2].map(i => ART.bakeGardenWall(300 + i))"
+  },
+  {
+    "id": 116,
+    "key": "beanpoles",
+    "factories": [
+      "bakeBeanpoles"
+    ],
+    "closure": [
+      "bakeBeanpoles",
+      "OUT"
+    ],
+    "kind": "fixed",
+    "source": "[0, 1].map(i => ART.bakeBeanpoles(310 + i))"
+  },
+  {
+    "id": 117,
+    "key": "skep",
+    "factories": [
+      "bakeSkep"
+    ],
+    "closure": [
+      "bakeSkep",
+      "OUT"
+    ],
+    "kind": "fixed",
+    "source": "ART.bakeSkep(320)"
+  },
+  {
+    "id": 118,
+    "key": "trough",
+    "factories": [
+      "bakeTrough"
+    ],
+    "closure": [
+      "bakeTrough",
+      "OUT"
+    ],
+    "kind": "fixed",
+    "source": "ART.bakeTrough(321)"
+  },
+  {
+    "id": 119,
+    "key": "stocks",
+    "factories": [
+      "bakeStocks"
+    ],
+    "closure": [
+      "bakeStocks",
+      "OUT",
+      "C"
+    ],
+    "paletteFields": [
+      "wood",
+      "woodL",
+      "woodD"
+    ],
+    "kind": "captured",
+    "source": "ART.bakeStocks()"
+  },
+  {
+    "id": 120,
+    "key": "dovecote",
+    "factories": [
+      "bakeDovecote"
+    ],
+    "closure": [
+      "bakeDovecote",
+      "OUT"
+    ],
+    "kind": "fixed",
+    "source": "ART.bakeDovecote()"
+  },
+  {
+    "id": 121,
+    "key": "grave",
+    "factories": [
+      "bakeGrave"
+    ],
+    "closure": [
+      "bakeGrave",
+      "OUT"
+    ],
+    "kind": "fixed",
+    "source": "[0, 1, 2].map(i => ART.bakeGrave(i))"
+  },
+  {
+    "id": 122,
+    "key": "lychgate",
+    "factories": [
+      "bakeLychgate"
+    ],
+    "closure": [
+      "bakeLychgate",
+      "OUT",
+      "C"
+    ],
+    "paletteFields": [
+      "wood",
+      "woodL",
+      "woodD"
+    ],
+    "kind": "captured",
+    "source": "ART.bakeLychgate()"
+  },
+  {
+    "id": 123,
+    "key": "yew",
+    "factories": [
+      "bakeYew"
+    ],
+    "closure": [
+      "bakeYew",
+      "OUT"
+    ],
+    "kind": "fixed",
+    "source": "[0, 1].map(i => ART.bakeYew(330 + i))"
+  },
+  {
+    "id": 124,
+    "key": "skullMini",
+    "factories": [
+      "bakeSkullMini"
+    ],
+    "closure": [
+      "bakeSkullMini",
+      "OUT"
+    ],
+    "kind": "fixed",
+    "source": "ART.bakeSkullMini()"
+  },
+  {
+    "id": 125,
+    "key": "compass",
+    "factories": [
+      "bakeCompass"
+    ],
+    "closure": [
+      "bakeCompass",
+      "OUT"
+    ],
+    "kind": "fixed",
+    "source": "ART.bakeCompass()"
+  },
+  {
+    "id": 126,
+    "key": "bough",
+    "factories": [
+      "bakeBough"
+    ],
+    "closure": [
+      "bakeBough",
+      "OUT"
+    ],
+    "kind": "fixed",
+    "source": "ART.bakeBough()"
+  },
+  {
+    "id": 127,
+    "key": "charm",
+    "factories": [
+      "bakeCharms"
+    ],
+    "closure": [
+      "bakeCharms",
+      "OUT"
+    ],
+    "kind": "fixed",
+    "source": "ART.bakeCharms()"
+  },
+  {
+    "id": 128,
+    "key": "counter",
+    "factories": [
+      "bakeCounter"
+    ],
+    "closure": [
+      "bakeCounter",
+      "OUT",
+      "C"
+    ],
+    "paletteFields": [
+      "wood",
+      "woodL",
+      "woodD"
+    ],
+    "kind": "captured",
+    "source": "ART.bakeCounter()"
+  },
+  {
+    "id": 129,
+    "key": "wares",
+    "factories": [
+      "bakeWares"
+    ],
+    "closure": [
+      "bakeWares",
+      "OUT",
+      "C"
+    ],
+    "paletteFields": [
+      "wood",
+      "woodL"
+    ],
+    "kind": "captured",
+    "source": "[ART.bakeWares(0), ART.bakeWares(1)]"
+  },
+  {
+    "id": 130,
+    "key": "shopDoor",
+    "factories": [
+      "bakeShopDoor"
+    ],
+    "closure": [
+      "bakeShopDoor",
+      "OUT",
+      "C"
+    ],
+    "paletteFields": [
+      "wood",
+      "woodD"
+    ],
+    "kind": "captured",
+    "source": "ART.bakeShopDoor()"
+  },
+  {
+    "id": 131,
+    "key": "lanternPost",
+    "factories": [
+      "bakeLanternPost"
+    ],
+    "closure": [
+      "bakeLanternPost",
+      "OUT",
+      "C"
+    ],
+    "paletteFields": [
+      "wood",
+      "woodD"
+    ],
+    "kind": "captured",
+    "source": "ART.bakeLanternPost()"
+  },
+  {
+    "id": 132,
+    "key": "beehive",
+    "factories": [
+      "bakeBeehive"
+    ],
+    "closure": [
+      "bakeBeehive",
+      "OUT",
+      "C"
+    ],
+    "paletteFields": [
+      "woodD"
+    ],
+    "kind": "captured",
+    "source": "ART.bakeBeehive()"
+  },
+  {
+    "id": 133,
+    "key": "birdhouse",
+    "factories": [
+      "bakeBirdhouse"
+    ],
+    "closure": [
+      "bakeBirdhouse",
+      "OUT",
+      "C"
+    ],
+    "paletteFields": [
+      "wood",
+      "woodL",
+      "woodD"
+    ],
+    "kind": "captured",
+    "source": "ART.bakeBirdhouse()"
+  },
+  {
+    "id": 134,
+    "key": "fishTrap",
+    "factories": [
+      "bakeFishTrap"
+    ],
+    "closure": [
+      "bakeFishTrap",
+      "OUT"
+    ],
+    "kind": "fixed",
+    "source": "[0, 1].map(i => ART.bakeFishTrap(800 + i))"
+  },
+  {
+    "id": 135,
+    "key": "spearRack",
+    "factories": [
+      "bakeSpearRack"
+    ],
+    "closure": [
+      "bakeSpearRack",
+      "OUT",
+      "C"
+    ],
+    "paletteFields": [
+      "woodD",
+      "wood"
+    ],
+    "kind": "captured",
+    "source": "ART.bakeSpearRack()"
+  },
+  {
+    "id": 136,
+    "key": "barrelStack",
+    "factories": [
+      "bakeBarrelStack"
+    ],
+    "closure": [
+      "bakeBarrelStack",
+      "OUT",
+      "C"
+    ],
+    "paletteFields": [
+      "wood",
+      "woodD",
+      "woodL"
+    ],
+    "kind": "captured",
+    "source": "ART.bakeBarrelStack()"
+  },
+  {
+    "id": 137,
+    "key": "bones",
+    "factories": [
+      "bakeBones"
+    ],
+    "closure": [
+      "bakeBones",
+      "OUT"
+    ],
+    "kind": "fixed",
+    "source": "[0, 1].map(i => ART.bakeBones(810 + i))"
+  },
+  {
+    "id": 138,
+    "key": "fallenLog",
+    "factories": [
+      "bakeFallenLog"
+    ],
+    "closure": [
+      "bakeFallenLog",
+      "OUT",
+      "C"
+    ],
+    "paletteFields": [
+      "wood",
+      "woodL",
+      "woodD"
+    ],
+    "kind": "captured",
+    "source": "[0, 1].map(i => ART.bakeFallenLog(770 + i))"
+  },
+  {
+    "id": 139,
+    "key": "fence",
+    "factories": [
+      "bakeFence"
+    ],
+    "closure": [
+      "bakeFence",
+      "OUT",
+      "C"
+    ],
+    "paletteFields": [
+      "wood",
+      "woodL",
+      "woodD"
+    ],
+    "kind": "captured",
+    "source": "[0, 1].map(i => ART.bakeFence(780 + i))"
+  },
+  {
+    "id": 140,
+    "key": "cart",
+    "factories": [
+      "bakeCart"
+    ],
+    "closure": [
+      "bakeCart",
+      "OUT",
+      "C"
+    ],
+    "paletteFields": [
+      "wood",
+      "woodL",
+      "woodD"
+    ],
+    "kind": "captured",
+    "source": "ART.bakeCart(790)"
+  },
+  {
+    "id": 141,
+    "key": "well",
+    "factories": [
+      "bakeWell"
+    ],
+    "closure": [
+      "bakeWell",
+      "OUT",
+      "C"
+    ],
+    "paletteFields": [
+      "wood",
+      "woodD"
+    ],
+    "kind": "captured",
+    "source": "ART.bakeWell()"
+  },
+  {
+    "id": 142,
+    "key": "heather",
+    "factories": [
+      "bakeHeather"
+    ],
+    "closure": [
+      "bakeHeather"
+    ],
+    "kind": "fixed",
+    "source": "[0, 1, 2].map(i => ART.bakeHeather(730 + i))"
+  },
+  {
+    "id": 143,
+    "key": "gorse",
+    "factories": [
+      "bakeGorse"
+    ],
+    "closure": [
+      "bakeGorse",
+      "OUT"
+    ],
+    "kind": "fixed",
+    "source": "[0, 1].map(i => ART.bakeGorse(740 + i))"
+  },
+  {
+    "id": 144,
+    "key": "thistle",
+    "factories": [
+      "bakeThistle"
+    ],
+    "closure": [
+      "bakeThistle",
+      "OUT"
+    ],
+    "kind": "fixed",
+    "source": "[0, 1].map(i => ART.bakeThistle(750 + i))"
+  },
+  {
+    "id": 145,
+    "key": "standingStone",
+    "factories": [
+      "bakeStandingStone"
+    ],
+    "closure": [
+      "bakeStandingStone",
+      "OUT"
+    ],
+    "kind": "fixed",
+    "source": "[0, 1, 2].map(i => ART.bakeStandingStone(760 + i))"
+  },
+  {
+    "id": 146,
+    "key": "standingStoneOchre",
+    "factories": [
+      "bakeStandingStone"
+    ],
+    "closure": [
+      "bakeStandingStone",
+      "OUT"
+    ],
+    "kind": "fixed",
+    "source": "[0, 1, 2].map(i => ART.bakeStandingStone(760 + i, true))"
+  },
+  {
+    "id": 147,
+    "key": "cairn",
+    "factories": [
+      "bakeCairn"
+    ],
+    "closure": [
+      "bakeCairn",
+      "cairnStones"
+    ],
+    "kind": "fixed",
+    "source": "ART.bakeCairn()"
+  },
+  {
+    "id": 148,
+    "key": "boulder",
+    "factories": [
+      "bakeBoulder"
+    ],
+    "closure": [
+      "bakeBoulder",
+      "OUT"
+    ],
+    "kind": "fixed",
+    "source": "ART.bakeBoulder()"
+  },
+  {
+    "id": 149,
+    "key": "bothy",
+    "factories": [
+      "bakeBothy"
+    ],
+    "closure": [
+      "bakeBothy",
+      "OUT"
+    ],
+    "kind": "fixed",
+    "source": "ART.bakeBothy()"
+  },
+  {
+    "id": 150,
+    "key": "mill",
+    "factories": [
+      "bakeMill"
+    ],
+    "closure": [
+      "bakeMill",
+      "OUT"
+    ],
+    "kind": "fixed",
+    "source": "ART.bakeMill()"
+  },
+  {
+    "id": 151,
+    "key": "sail",
+    "factories": [
+      "bakeSail"
+    ],
+    "closure": [
+      "bakeSail"
+    ],
+    "kind": "fixed",
+    "source": "ART.bakeSail()"
+  },
+  {
+    "id": 152,
+    "key": "foldGate",
+    "factories": [
+      "bakeFoldGate"
+    ],
+    "closure": [
+      "bakeFoldGate",
+      "OUT"
+    ],
+    "kind": "fixed",
+    "source": "ART.bakeFoldGate()"
+  },
+  {
+    "id": 153,
+    "key": "bell",
+    "factories": [
+      "bakeBell"
+    ],
+    "closure": [
+      "bakeBell",
+      "OUT"
+    ],
+    "kind": "fixed",
+    "source": "ART.bakeBell()"
+  },
+  {
+    "id": 154,
+    "key": "ramLog",
+    "factories": [
+      "bakeRamLog"
+    ],
+    "closure": [
+      "bakeRamLog",
+      "OUT"
+    ],
+    "kind": "fixed",
+    "source": "ART.bakeRamLog()"
+  },
+  {
+    "id": 155,
+    "key": "lever",
+    "factories": [
+      "bakeLever"
+    ],
+    "closure": [
+      "bakeLever",
+      "OUT"
+    ],
+    "kind": "fixed",
+    "source": "[ART.bakeLever(false), ART.bakeLever(true)]"
+  },
+  {
+    "id": 156,
+    "key": "plate",
+    "factories": [
+      "bakePlate"
+    ],
+    "closure": [
+      "bakePlate",
+      "T"
+    ],
+    "kind": "fixed",
+    "source": "[ART.bakePlate(false), ART.bakePlate(true)]"
+  },
+  {
+    "id": 157,
+    "key": "palanquin",
+    "factories": [
+      "bakePalanquin"
+    ],
+    "closure": [
+      "bakePalanquin",
+      "OUT"
+    ],
+    "kind": "fixed",
+    "source": "ART.bakePalanquin()"
+  },
+  {
+    "id": 158,
+    "key": "door",
+    "factories": [
+      "bakeDoor"
+    ],
+    "closure": [
+      "bakeDoor",
+      "OUT"
+    ],
+    "kind": "fixed",
+    "source": "[ART.bakeDoor(false), ART.bakeDoor(true)]"
+  },
+  {
+    "id": 159,
+    "key": "carpet",
+    "factories": [
+      "bakeCarpet"
+    ],
+    "closure": [
+      "bakeCarpet",
+      "T"
+    ],
+    "kind": "fixed",
+    "source": "ART.bakeCarpet()"
+  },
+  {
+    "id": 160,
+    "key": "puffball",
+    "factories": [
+      "bakePuffball"
+    ],
+    "closure": [
+      "bakePuffball",
+      "OUT"
+    ],
+    "kind": "fixed",
+    "source": "ART.bakePuffball()"
+  },
+  {
+    "id": 161,
+    "key": "keyIcon",
+    "factories": [
+      "bakeKeyIcon"
+    ],
+    "closure": [
+      "bakeKeyIcon",
+      "OUT"
+    ],
+    "kind": "fixed",
+    "source": "{ brass: ART.bakeKeyIcon('brass'), iron: ART.bakeKeyIcon('iron'), bone: ART.bakeKeyIcon('bone') }"
+  },
+  {
+    "id": 162,
+    "key": "lockPlate",
+    "factories": [
+      "bakeLockPlate"
+    ],
+    "closure": [
+      "bakeLockPlate",
+      "OUT"
+    ],
+    "kind": "fixed",
+    "source": "ART.bakeLockPlate()"
+  },
+  {
+    "id": 163,
+    "key": "doorway",
+    "factories": [
+      "bakeDoorway"
+    ],
+    "closure": [
+      "bakeDoorway",
+      "OUT"
+    ],
+    "kind": "fixed",
+    "source": "ART.bakeDoorway()"
+  },
+  {
+    "id": 164,
+    "key": "cupIcon",
+    "factories": [
+      "bakeCupIcon"
+    ],
+    "closure": [
+      "bakeCupIcon"
+    ],
+    "kind": "fixed",
+    "source": "ART.bakeCupIcon()"
+  },
+  {
+    "id": 165,
+    "key": "lensIcon",
+    "factories": [
+      "bakeLensIcon"
+    ],
+    "closure": [
+      "bakeLensIcon"
+    ],
+    "kind": "fixed",
+    "source": "ART.bakeLensIcon()"
+  },
+  {
+    "id": 166,
+    "key": "honeyPot",
+    "factories": [
+      "bakeHoneyPot"
+    ],
+    "closure": [
+      "bakeHoneyPot"
+    ],
+    "kind": "fixed",
+    "source": "ART.bakeHoneyPot()"
+  },
+  {
+    "id": 167,
+    "key": "coffer",
+    "factories": [
+      "bakeCoffer"
+    ],
+    "closure": [
+      "bakeCoffer",
+      "C"
+    ],
+    "paletteFields": [
+      "wood",
+      "woodL",
+      "woodD"
+    ],
+    "kind": "captured",
+    "source": "ART.bakeCoffer()"
+  },
+  {
+    "id": 168,
+    "key": "brightCap",
+    "factories": [
+      "bakeBrightCap"
+    ],
+    "closure": [
+      "bakeBrightCap"
+    ],
+    "kind": "fixed",
+    "source": "ART.bakeBrightCap()"
+  },
+  {
+    "id": 169,
+    "key": "questIcon",
+    "factories": [
+      "bakeQuestIcon"
+    ],
+    "closure": [
+      "bakeQuestIcon"
+    ],
+    "kind": "fixed",
+    "source": "ART.bakeQuestIcon()"
+  },
+  {
+    "id": 170,
+    "key": "cabin",
+    "factories": [
+      "bakeCabin"
+    ],
+    "closure": [
+      "bakeCabin",
+      "C"
+    ],
+    "paletteFields": [
+      "wood",
+      "woodD",
+      "woodL"
+    ],
+    "kind": "captured",
+    "source": "ART.bakeCabin()"
+  },
+  {
+    "id": 171,
+    "key": "pine",
+    "factories": [
+      "bakePine"
+    ],
+    "closure": [
+      "bakePine"
+    ],
+    "kind": "fixed",
+    "source": "ART.bakePine()"
+  },
+  {
+    "id": 172,
+    "key": "fallenPine",
+    "factories": [
+      "bakeFallenPine"
+    ],
+    "closure": [
+      "bakeFallenPine"
+    ],
+    "kind": "fixed",
+    "source": "ART.bakeFallenPine(14)"
+  },
+  {
+    "id": 173,
+    "key": "sluice",
+    "factories": [
+      "bakeSluice"
+    ],
+    "closure": [
+      "bakeSluice",
+      "OUT"
+    ],
+    "kind": "fixed",
+    "source": "[ART.bakeSluice(false), ART.bakeSluice(true)]"
+  },
+  {
+    "id": 174,
+    "key": "catapult",
+    "factories": [
+      "bakeCatapult"
+    ],
+    "closure": [
+      "bakeCatapult",
+      "C"
+    ],
+    "paletteFields": [
+      "wood",
+      "woodL",
+      "woodD"
+    ],
+    "kind": "captured",
+    "source": "[0, 1, 2].map(i => ART.bakeCatapult(i))"
+  },
+  {
+    "id": 175,
+    "key": "nest",
+    "factories": [
+      "bakeNest"
+    ],
+    "closure": [
+      "bakeNest"
+    ],
+    "kind": "fixed",
+    "source": "ART.bakeNest()"
+  },
+  {
+    "id": 176,
+    "key": "chainPost",
+    "factories": [
+      "bakeChainPost"
+    ],
+    "closure": [
+      "bakeChainPost",
+      "C"
+    ],
+    "paletteFields": [
+      "woodD",
+      "wood"
+    ],
+    "kind": "captured",
+    "source": "ART.bakeChainPost()"
+  },
+  {
+    "id": 177,
+    "key": "grate",
+    "factories": [
+      "bakeGrate"
+    ],
+    "closure": [
+      "bakeGrate"
+    ],
+    "kind": "fixed",
+    "source": "ART.bakeGrate()"
+  },
+  {
+    "id": 178,
+    "key": "silver",
+    "factories": [
+      "bakeSilver"
+    ],
+    "closure": [
+      "bakeSilver",
+      "OUT"
+    ],
+    "kind": "fixed",
+    "source": "ART.bakeSilver()"
+  },
+  {
+    "id": 179,
+    "key": "silverBig",
+    "factories": [
+      "bakeSilverBig"
+    ],
+    "closure": [
+      "bakeSilverBig",
+      "OUT"
+    ],
+    "kind": "fixed",
+    "source": "ART.bakeSilverBig()"
+  },
+  {
+    "id": 180,
+    "key": "trunk",
+    "factories": [
+      "bakeTrunk"
+    ],
+    "closure": [
+      "bakeTrunk"
+    ],
+    "kind": "fixed",
+    "source": "[0, 1, 2].map(i => ART.bakeTrunk(900 + i))"
+  },
+  {
+    "id": 181,
+    "key": "bracket",
+    "factories": [
+      "bakeBracket"
+    ],
+    "closure": [
+      "bakeBracket"
+    ],
+    "kind": "fixed",
+    "source": "[ART.bakeBracket(0), ART.bakeBracket(1)]"
+  },
+  {
+    "id": 182,
+    "key": "axle",
+    "factories": [
+      "bakeAxle"
+    ],
+    "closure": [
+      "bakeAxle"
+    ],
+    "kind": "fixed",
+    "source": "ART.bakeAxle()"
+  },
+  {
+    "id": 183,
+    "key": "pillar",
+    "factories": [
+      "bakeRockPillar"
+    ],
+    "closure": [
+      "bakeRockPillar"
+    ],
+    "kind": "fixed",
+    "source": "[0, 1, 2].map(i => ART.bakeRockPillar(910 + i))"
+  },
+  {
+    "id": 184,
+    "key": "strut",
+    "factories": [
+      "bakeStrut"
+    ],
+    "closure": [
+      "bakeStrut"
+    ],
+    "kind": "fixed",
+    "source": "[ART.bakeStrut(0), ART.bakeStrut(1)]"
+  },
+  {
+    "id": 185,
+    "key": "mineCart",
+    "factories": [
+      "bakeMineCart"
+    ],
+    "closure": [
+      "bakeMineCart"
+    ],
+    "kind": "fixed",
+    "source": "ART.bakeMineCart()"
+  },
+  {
+    "id": 186,
+    "key": "canary",
+    "factories": [
+      "bakeCanary"
+    ],
+    "closure": [
+      "bakeCanary",
+      "OUT"
+    ],
+    "kind": "fixed",
+    "source": "ART.bakeCanary()"
+  },
+  {
+    "id": 187,
+    "key": "gasSeam",
+    "factories": [
+      "bakeGasSeam"
+    ],
+    "closure": [
+      "bakeGasSeam",
+      "T"
+    ],
+    "kind": "fixed",
+    "source": "ART.bakeGasSeam()"
+  },
+  {
+    "id": 188,
+    "key": "minerLamp",
+    "factories": [
+      "bakeMinerLamp"
+    ],
+    "closure": [
+      "bakeMinerLamp"
+    ],
+    "kind": "fixed",
+    "source": "[ART.bakeMinerLamp(false), ART.bakeMinerLamp(true)]"
+  },
+  {
+    "id": 189,
+    "key": "timber",
+    "factories": [
+      "bakeTimberFrame"
+    ],
+    "closure": [
+      "bakeTimberFrame"
+    ],
+    "kind": "fixed",
+    "source": "[ART.bakeTimberFrame(160), ART.bakeTimberFrame(144), ART.bakeTimberFrame(48)]"
+  },
+  {
+    "id": 190,
+    "key": "orePan",
+    "factories": [
+      "bakeOrePan"
+    ],
+    "closure": [
+      "bakeOrePan"
+    ],
+    "kind": "fixed",
+    "source": "ART.bakeOrePan()"
+  },
+  {
+    "id": 191,
+    "key": "hammer",
+    "factories": [
+      "bakeHammer"
+    ],
+    "closure": [
+      "bakeHammer"
+    ],
+    "kind": "fixed",
+    "source": "ART.bakeHammer()"
+  },
+  {
+    "id": 192,
+    "key": "boiler",
+    "factories": [
+      "bakeBoiler"
+    ],
+    "closure": [
+      "bakeBoiler"
+    ],
+    "kind": "fixed",
+    "source": "[ART.bakeBoiler(false), ART.bakeBoiler(true)]"
+  },
+  {
+    "id": 193,
+    "key": "lampIcon",
+    "factories": [
+      "bakeLampIcon"
+    ],
+    "closure": [
+      "bakeLampIcon"
+    ],
+    "kind": "fixed",
+    "source": "ART.bakeLampIcon()"
+  },
+  {
+    "id": 194,
+    "key": "crownLantern",
+    "factories": [
+      "bakeCrownLantern"
+    ],
+    "closure": [
+      "bakeCrownLantern",
+      "C"
+    ],
+    "paletteFields": [
+      "woodD",
+      "wood"
+    ],
+    "kind": "captured",
+    "source": "[ART.bakeCrownLantern(false), ART.bakeCrownLantern(true)]"
+  },
+  {
+    "id": 195,
+    "key": "cottage",
+    "factories": [
+      "bakeCottage"
+    ],
+    "closure": [
+      "bakeCottage",
+      "C"
+    ],
+    "paletteFields": [
+      "wood",
+      "woodL"
+    ],
+    "kind": "captured",
+    "source": "[ART.bakeCottage(false), ART.bakeCottage(true)]"
+  },
+  {
+    "id": 196,
+    "key": "deadTree",
+    "factories": [
+      "bakeDeadTree"
+    ],
+    "closure": [
+      "bakeDeadTree"
+    ],
+    "kind": "fixed",
+    "source": "[0, 1].map(i => ART.bakeDeadTree(880 + i))"
+  },
+  {
+    "id": 197,
+    "key": "glow",
+    "factories": [
+      "bakeGlowShroom"
+    ],
+    "closure": [
+      "bakeGlowShroom",
+      "OUT"
+    ],
+    "kind": "fixed",
+    "source": "[ART.bakeGlowShroom(true), ART.bakeGlowShroom(false)]"
+  },
+  {
+    "id": 198,
+    "key": "gillpod",
+    "factories": [
+      "bakeGillPod"
+    ],
+    "closure": [
+      "bakeGillPod",
+      "OUT"
+    ],
+    "kind": "fixed",
+    "source": "ART.bakeGillPod()"
+  },
+  {
+    "id": 199,
+    "key": "moteV",
+    "factories": [
+      "bakeMote"
+    ],
+    "closure": [
+      "bakeMote"
+    ],
+    "kind": "fixed",
+    "source": "ART.bakeMote('#9a5aa8')"
+  },
+  {
+    "id": 200,
+    "key": "moteT",
+    "factories": [
+      "bakeMote"
+    ],
+    "closure": [
+      "bakeMote"
+    ],
+    "kind": "fixed",
+    "source": "ART.bakeMote('#4aa0b0')"
+  },
+  {
+    "id": 201,
+    "key": "innSign",
+    "factories": [
+      "bakeInnSign"
+    ],
+    "closure": [
+      "bakeInnSign",
+      "OUT"
+    ],
+    "kind": "fixed",
+    "source": "ART.bakeInnSign()"
+  },
+  {
+    "id": 202,
+    "key": "sunshardIcon",
+    "factories": [
+      "bakeSunshardIcon"
+    ],
+    "closure": [
+      "bakeSunshardIcon",
+      "OUT"
+    ],
+    "kind": "fixed",
+    "source": "ART.bakeSunshardIcon()"
+  },
+  {
+    "id": 203,
+    "key": "cobweb",
+    "factories": [
+      "bakeCobweb"
+    ],
+    "closure": [
+      "bakeCobweb"
+    ],
+    "kind": "fixed",
+    "source": "[0, 1, 2].map(v => ART.bakeCobweb(v))"
+  },
+  {
+    "id": 204,
+    "key": "orbWeb",
+    "factories": [
+      "bakeOrbWeb"
+    ],
+    "closure": [
+      "bakeOrbWeb"
+    ],
+    "kind": "fixed",
+    "source": "ART.bakeOrbWeb()"
+  },
+  {
+    "id": 205,
+    "key": "icicle",
+    "factories": [
+      "bakeIcicle"
+    ],
+    "closure": [
+      "bakeIcicle"
+    ],
+    "kind": "fixed",
+    "source": "[0, 1, 2].map(v => ART.bakeIcicle(v))"
+  },
+  {
+    "id": 206,
+    "key": "frost",
+    "factories": [
+      "bakeFrost"
+    ],
+    "closure": [
+      "bakeFrost"
+    ],
+    "kind": "fixed",
+    "source": "[0, 1].map(v => ART.bakeFrost(v))"
+  },
+  {
+    "id": 207,
+    "key": "frozen",
+    "factories": [
+      "bakeFrozen"
+    ],
+    "closure": [
+      "bakeFrozen",
+      "OUT"
+    ],
+    "kind": "fixed",
+    "source": "[0, 1].map(v => ART.bakeFrozen(v))"
+  },
+  {
+    "id": 208,
+    "key": "stilt",
+    "factories": [
+      "bakeStilt"
+    ],
+    "closure": [
+      "bakeStilt",
+      "OUT"
+    ],
+    "kind": "fixed",
+    "source": "ART.bakeStilt()"
+  },
+  {
+    "id": 209,
+    "key": "groundWeb",
+    "factories": [
+      "bakeGroundWeb"
+    ],
+    "closure": [
+      "bakeGroundWeb"
+    ],
+    "kind": "fixed",
+    "source": "ART.bakeGroundWeb()"
+  },
+  {
+    "id": 210,
+    "key": "bridgePost",
+    "factories": [
+      "bakeBridgePost"
+    ],
+    "closure": [
+      "bakeBridgePost",
+      "OUT"
+    ],
+    "kind": "fixed",
+    "source": "ART.bakeBridgePost()"
+  },
+  {
+    "id": 211,
+    "key": "bridgeTower",
+    "factories": [
+      "bakeBridgeTower"
+    ],
+    "closure": [
+      "bakeBridgeTower",
+      "OUT"
+    ],
+    "kind": "fixed",
+    "source": "ART.bakeBridgeTower()"
+  },
+  {
+    "id": 212,
+    "key": "gatehouse",
+    "factories": [
+      "bakeGatehouse"
+    ],
+    "closure": [
+      "bakeGatehouse",
+      "OUT"
+    ],
+    "kind": "fixed",
+    "source": "ART.bakeGatehouse()"
+  },
+  {
+    "id": 213,
+    "key": "forge",
+    "factories": [
+      "bakeForge"
+    ],
+    "closure": [
+      "bakeForge",
+      "OUT"
+    ],
+    "kind": "fixed",
+    "source": "ART.bakeForge()"
+  },
+  {
+    "id": 214,
+    "key": "anvil",
+    "factories": [
+      "bakeAnvil"
+    ],
+    "closure": [
+      "bakeAnvil",
+      "OUT"
+    ],
+    "kind": "fixed",
+    "source": "ART.bakeAnvil()"
+  },
+  {
+    "id": 215,
+    "key": "folkIcon",
+    "factories": [
+      "bakeFolkIcon"
+    ],
+    "closure": [
+      "bakeFolkIcon",
+      "OUT"
+    ],
+    "kind": "fixed",
+    "source": "ART.bakeFolkIcon()"
+  },
+  {
+    "id": 216,
+    "key": "towertop",
+    "factories": [
+      "bakeTowerTop"
+    ],
+    "closure": [
+      "bakeTowerTop",
+      "OUT",
+      "C"
+    ],
+    "paletteFields": [
+      "wood",
+      "woodL"
+    ],
+    "kind": "captured",
+    "source": "ART.bakeTowerTop()"
+  },
+  {
+    "id": 217,
+    "key": "treehouse",
+    "factories": [
+      "bakeTreehouse"
+    ],
+    "closure": [
+      "bakeTreehouse",
+      "OUT",
+      "C"
+    ],
+    "paletteFields": [
+      "wood",
+      "woodL",
+      "woodD"
+    ],
+    "kind": "captured",
+    "source": "[0, 1].map(i => ART.bakeTreehouse(320 + i))"
+  },
+  {
+    "id": 218,
+    "key": "torch",
+    "factories": [
+      "bakeTorch"
+    ],
+    "closure": [
+      "bakeTorch",
+      "OUT",
+      "C"
+    ],
+    "paletteFields": [
+      "woodD"
+    ],
+    "kind": "captured",
+    "source": "ART.bakeTorch()"
+  },
+  {
+    "id": 219,
+    "key": "cage",
+    "factories": [
+      "bakeCage"
+    ],
+    "closure": [
+      "bakeCage",
+      "OUT"
+    ],
+    "kind": "fixed",
+    "source": "ART.bakeCage()"
+  },
+  {
+    "id": 220,
+    "key": "barrel",
+    "factories": [
+      "bakeBarrel"
+    ],
+    "closure": [
+      "bakeBarrel",
+      "OUT",
+      "C"
+    ],
+    "paletteFields": [
+      "wood",
+      "woodL",
+      "woodD"
+    ],
+    "kind": "captured",
+    "source": "ART.bakeBarrel()"
+  },
+  {
+    "id": 221,
+    "key": "brazier",
+    "factories": [
+      "bakeBrazier"
+    ],
+    "closure": [
+      "bakeBrazier",
+      "OUT"
+    ],
+    "kind": "fixed",
+    "source": "[ART.bakeBrazier(false), ART.bakeBrazier(true)]"
+  },
+  {
+    "id": 222,
+    "key": "crank",
+    "factories": [
+      "bakeCrank"
+    ],
+    "closure": [
+      "bakeCrank",
+      "OUT",
+      "C"
+    ],
+    "paletteFields": [
+      "woodD"
+    ],
+    "kind": "captured",
+    "source": "ART.bakeCrank()"
+  },
+  {
+    "id": 223,
+    "key": "lift",
+    "factories": [
+      "bakeLift"
+    ],
+    "closure": [
+      "bakeLift",
+      "OUT",
+      "C"
+    ],
+    "paletteFields": [
+      "wood",
+      "woodL",
+      "woodD"
+    ],
+    "kind": "captured",
+    "source": "ART.bakeLift()"
+  },
+  {
+    "id": 224,
+    "key": "horn",
+    "factories": [
+      "bakeHorn"
+    ],
+    "closure": [
+      "bakeHorn",
+      "OUT"
+    ],
+    "kind": "fixed",
+    "source": "ART.bakeHorn()"
+  },
+  {
+    "id": 225,
+    "key": "fire",
+    "factories": [
+      "bakeFire"
+    ],
+    "closure": [
+      "bakeFire",
+      "T"
+    ],
+    "kind": "fixed",
+    "source": "ART.bakeFire()"
+  }
+]

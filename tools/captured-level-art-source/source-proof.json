@@ -1,0 +1,577 @@
+{
+  "time": "2026-10-28T19:37:40.560Z",
+  "status": "Prepared new210group immutable captured-palette source; no native/context/RNG/lifetime/timing verdict yet",
+  "gameSource": "dc02ecc059959b795f76dee47665b54f349d4e2f",
+  "originalArtSha256": "99f0ead9e02c17eec93e3945720c8206465e3ecd7aac42c00fbbb22cce46bb35",
+  "capturedArtSha256": "8d84b2d69626ab53e0876c782a4afb98dd6988fe65380dfa956d87115da2de71",
+  "helperSha256": "e20c3de91c60b01467dfffb31eff01894836ee1976d14dce453dba277f4b8b6e",
+  "candidatePxSha256": "37cbde8af8557a27bf8d5e14a0fc68371b908e0c43b6101e52fa1db7bb4eff13",
+  "originalPxSha256": "e9a358b9170944e0dfae6d1b8c82d7b664562e0b2b0ab7f2538236e34214db1d",
+  "nativeGroups": 210,
+  "fixedGroups": 160,
+  "newCapturedGroups": 50,
+  "copiedDeclarations": [
+    {
+      "name": "OUT",
+      "sha256": "9fa834e9f093135efccb9580ef4aa3d3990d5c70ae6bcb62f23ce491b4d7a6e1",
+      "kind": "const"
+    },
+    {
+      "name": "T",
+      "sha256": "a92589ddb19418b0f0177bfec4e7f010526e4ba4f544a4565453dbe6f65c3f3c",
+      "kind": "const"
+    },
+    {
+      "name": "dirtBase",
+      "sha256": "2e17132260d9eeb2aa64ad3b3579b2b464e5d7a4f1ba675659afecd6b77505a6",
+      "kind": "function"
+    },
+    {
+      "name": "bakeDirt",
+      "sha256": "092298df0a64f705c3565c711a660f24f7ac40b7950515a4b061324675062fec",
+      "kind": "function"
+    },
+    {
+      "name": "bakeDirtRoots",
+      "sha256": "6016fde47c56d0b18e0d8756f6b757f51cd9fd2bb8137977d67fae4a2e62e36d",
+      "kind": "function"
+    },
+    {
+      "name": "bakeLog",
+      "sha256": "667f591d67e67697534f88bfcdc126a75a0ebc5752ba9fcb0ff37a355a58f190",
+      "kind": "function"
+    },
+    {
+      "name": "bakeLogEnd",
+      "sha256": "9f458fa38483de44655ef136765a29132cd2b931b171759dc84c0830f7309bce",
+      "kind": "function"
+    },
+    {
+      "name": "bakeThorns",
+      "sha256": "9b5a84e7a44494371a95df7c2731bc4334299bd66c24d67510b9229120e39488",
+      "kind": "function"
+    },
+    {
+      "name": "bakeCrate",
+      "sha256": "f84da2f2d998fc774dd12988b1ced9c9cc2eec6ba078261cc9b64dfd61074dcb",
+      "kind": "function"
+    },
+    {
+      "name": "bakeShrine",
+      "sha256": "6a924950688a213b773ab14624aeef17ad0606260a5f1e9ffe4530964ec31d4d",
+      "kind": "function"
+    },
+    {
+      "name": "bakeStocks",
+      "sha256": "625374b8617ffe3bedcda8f6f03f18b1e7e3cfa7b1f54d9d7c1b3429de15c27e",
+      "kind": "function"
+    },
+    {
+      "name": "bakeLychgate",
+      "sha256": "04206bafaf2fb36123aa4a318e50bce86cfa378910593b54a312150c00986ed2",
+      "kind": "function"
+    },
+    {
+      "name": "bakeGate",
+      "sha256": "a2d1c5e321a75e620c1f26de8d3aa9f278c00f2652083df5c2954c0550c13b81",
+      "kind": "function"
+    },
+    {
+      "name": "bakeSign",
+      "sha256": "f158239d3388c7a7d32eab6e9f89b4a9a9591dea49a66a2344436593dc9fc7d2",
+      "kind": "function"
+    },
+    {
+      "name": "bakeTuft",
+      "sha256": "0a06b39e937b8c2e92f3bd0568e213e46d836b48e28a7ca129445054ceecca2c",
+      "kind": "function"
+    },
+    {
+      "name": "bakeFlower",
+      "sha256": "d2fa0202966eb7a0018985490a926bccb764781eeb0e80db3eea2f0977931a45",
+      "kind": "function"
+    },
+    {
+      "name": "bakeMushroom",
+      "sha256": "0017da78ee5a44bd65533d27d4cdd23fa851f67dee74b4aa822c0f661e812987",
+      "kind": "function"
+    },
+    {
+      "name": "bakeBush",
+      "sha256": "35e33e02de6a4fd4e2cfe0a3faee722b4e63b396cc72e12c6e0a04819b01dda7",
+      "kind": "function"
+    },
+    {
+      "name": "bakeRaft",
+      "sha256": "a8f2a60efa5caa0770116706522f34c285e569f33e46f789bf6fe352b09c7930",
+      "kind": "function"
+    },
+    {
+      "name": "bakePlank",
+      "sha256": "de0d1925ff859d4f0c40e57723362dd9762da767bc095c11e48391b0860cb25c",
+      "kind": "function"
+    },
+    {
+      "name": "bakePalisade",
+      "sha256": "b995a3d62ae7b3cd548d0fa55eb3a3435b7fb4a8cd9309eafccd363a1fc311c0",
+      "kind": "function"
+    },
+    {
+      "name": "bakePalisadeTop",
+      "sha256": "83c225172433b697cbabd7596a4307404e3947c9847b06284322d95df7df17ae",
+      "kind": "function"
+    },
+    {
+      "name": "bakeBridgePlank",
+      "sha256": "614c13772104e0aa7f43f14c2801d8fb9602392276656a7b8b0a490944d4c82b",
+      "kind": "function"
+    },
+    {
+      "name": "bakeBridgePlankEnd",
+      "sha256": "518354851cd5fd7e1a32efedc7f858b2fbaa536a8032a34f9f88ad9316edcad4",
+      "kind": "function"
+    },
+    {
+      "name": "bakeTowerTop",
+      "sha256": "0a0038d68fb97bf6a68af6b7a37fb466e487cbbf36ae317f6ec736026aeed142",
+      "kind": "function"
+    },
+    {
+      "name": "bakeTreehouse",
+      "sha256": "b559c7c4f974e1e0d808d11ffc6290e129caea2d4f69cda831b91f40b8e26b6e",
+      "kind": "function"
+    },
+    {
+      "name": "bakeTorch",
+      "sha256": "93d19d6809d3053e6ceac0d49c5c74f97ceacefa1b124fed8c55feb5d4da6b01",
+      "kind": "function"
+    },
+    {
+      "name": "bakeBarrel",
+      "sha256": "5e11c31b896a17c1cc8b2910e56145dc1d2c98cb0151c63a8c52475581077526",
+      "kind": "function"
+    },
+    {
+      "name": "bakeCrank",
+      "sha256": "e8ed8010042b9922e16111b40339daa443facfe75ad039a74b8317febe556408",
+      "kind": "function"
+    },
+    {
+      "name": "bakeLift",
+      "sha256": "57bbb291d603222aba8d388f28ea229ca2fa5157699170a99f86ae58e5d80df2",
+      "kind": "function"
+    },
+    {
+      "name": "bakeFern",
+      "sha256": "e0570f0dc082083c5c2fde0043af25693bac5f4377643d25bed4410039369bfd",
+      "kind": "function"
+    },
+    {
+      "name": "bakeRock",
+      "sha256": "8cc6febb76ebdc3d818a7d2cc7bdad67667df97f0f5df872d011bae3e2c5ff7f",
+      "kind": "function"
+    },
+    {
+      "name": "bakeOldOak",
+      "sha256": "7a47ecbf24d3d00b809874a36837294e57eb447cb8e7fee1bc0fb99efffa818b",
+      "kind": "function"
+    },
+    {
+      "name": "bakeFallenLog",
+      "sha256": "b59251aca167c6cd27534c34ef686137f9a752efdde4e56176992f336aa47378",
+      "kind": "function"
+    },
+    {
+      "name": "bakeFence",
+      "sha256": "761957d0c54b77511a3fa91741b9efcab7db77f247cee8fbca4125d738e088ee",
+      "kind": "function"
+    },
+    {
+      "name": "bakeCart",
+      "sha256": "813071fecb1446f94070ad9b98f2277b1d647d9efeac5f67a43c2c17e3db8050",
+      "kind": "function"
+    },
+    {
+      "name": "bakeWell",
+      "sha256": "c52807b2a8bd4fe4f8b4e23231e03cf4b68dd74ea15498c1c86ed03c93b9552f",
+      "kind": "function"
+    },
+    {
+      "name": "bakeCounter",
+      "sha256": "e7eaab0015bf09694fb4d55c20b27e584caa67c99726df5b61e3accb93c12fc3",
+      "kind": "function"
+    },
+    {
+      "name": "bakeWares",
+      "sha256": "9c459acb8bde787f5d4ffdd744e818d858d40ad07a6a02046af6dfd0c43b63ae",
+      "kind": "function"
+    },
+    {
+      "name": "bakeShopDoor",
+      "sha256": "fc54c4e747f8528c33930bc2fb4ce7c20edd1445c32ba4bf307668609307b284",
+      "kind": "function"
+    },
+    {
+      "name": "bakeLanternPost",
+      "sha256": "fa15e32ff7c08f93774d15214d78f97777d41d63b6cb860286dc82ef0ab8c961",
+      "kind": "function"
+    },
+    {
+      "name": "bakeBeehive",
+      "sha256": "fedc8011a66249ba23940bdc9f0a7e0a268a1de0a1dc9aa605052cfeaa5f5dcb",
+      "kind": "function"
+    },
+    {
+      "name": "bakeBirdhouse",
+      "sha256": "747333a73ddc77550087c29ddec2c317bde6a6dab11dd3ebb267de34837aa306",
+      "kind": "function"
+    },
+    {
+      "name": "bakeSpearRack",
+      "sha256": "244d5daaf676e501ab35660d7b7a1926c4c516e7ebc643d462a804f052460be0",
+      "kind": "function"
+    },
+    {
+      "name": "bakeBarrelStack",
+      "sha256": "d625b4f1eb5e81a2d5abdd701c5db266f99ccf3907896706c6e445f0ccb894f2",
+      "kind": "function"
+    },
+    {
+      "name": "bakeCoffer",
+      "sha256": "f68eefc123f5a733c76f08c4e2f2ef3c980747fa05f85f4d674c628836ce3a3e",
+      "kind": "function"
+    },
+    {
+      "name": "bakeCabin",
+      "sha256": "419b3af72800dcd414b252e34f10ffb9c5c0e4326115fd9320ec88b33fc1708f",
+      "kind": "function"
+    },
+    {
+      "name": "bakeCatapult",
+      "sha256": "a8f818694b2dc34b891f66ff78e646ece24495e57064fb44a8dcbbeaeb245c78",
+      "kind": "function"
+    },
+    {
+      "name": "bakeChainPost",
+      "sha256": "bb5f643164b9a548216c76fc6a91c025c43b573b0fe66d77e7c4c42cf98035c9",
+      "kind": "function"
+    },
+    {
+      "name": "bakeCottage",
+      "sha256": "93700fae621dcb9cb1e61233b0f8d9196e2a5f131b194ba3da7db645da32f599",
+      "kind": "function"
+    },
+    {
+      "name": "bakeCrownLantern",
+      "sha256": "745f49766dff45900fcef4cf48554d609b0986d52d6a89982bc222a0afd1f53b",
+      "kind": "function"
+    }
+  ],
+  "factoryNames": [
+    "bakeDirt",
+    "bakeLog",
+    "bakeLogEnd",
+    "bakeThorns",
+    "bakeCrate",
+    "bakeDirtRoots",
+    "bakePalisade",
+    "bakePalisadeTop",
+    "bakeBridgePlank",
+    "bakeBridgePlankEnd",
+    "bakeShrine",
+    "bakeGate",
+    "bakeSign",
+    "bakeTuft",
+    "bakeFlower",
+    "bakeMushroom",
+    "bakeBush",
+    "bakeRaft",
+    "bakePlank",
+    "bakeFern",
+    "bakeRock",
+    "bakeOldOak",
+    "bakeStocks",
+    "bakeLychgate",
+    "bakeCounter",
+    "bakeWares",
+    "bakeShopDoor",
+    "bakeLanternPost",
+    "bakeBeehive",
+    "bakeBirdhouse",
+    "bakeSpearRack",
+    "bakeBarrelStack",
+    "bakeFallenLog",
+    "bakeFence",
+    "bakeCart",
+    "bakeWell",
+    "bakeCoffer",
+    "bakeCabin",
+    "bakeCatapult",
+    "bakeChainPost",
+    "bakeCrownLantern",
+    "bakeCottage",
+    "bakeTowerTop",
+    "bakeTreehouse",
+    "bakeTorch",
+    "bakeBarrel",
+    "bakeCrank",
+    "bakeLift"
+  ],
+  "paletteFields": [
+    "dirt",
+    "dirtD",
+    "dirtL",
+    "stone",
+    "stoneL",
+    "stoneD",
+    "wood",
+    "woodD",
+    "woodL",
+    "grassD",
+    "grass",
+    "berry",
+    "gold",
+    "grassL",
+    "canopy"
+  ],
+  "sourceFunctionsAndPrimitiveConstantsByteCopied": true,
+  "originalArtModuleUnchanged": true,
+  "originalOwnershipExtensionUnchanged": true,
+  "originalFixedCoreAndGetterAwareViewBytesUnchanged": true,
+  "noGlobalPaletteReplacementOrTemporaryMutation": true,
+  "capturesPerOriginalExpressionWithOwnDataGuardAndEagerFallback": true,
+  "existingCoverageOfAdditionalGroups": [
+    {
+      "id": "wood",
+      "load": "first",
+      "additionalGroupsWithNoNonretirementRead": 24
+    },
+    {
+      "id": "wood",
+      "load": "repeat",
+      "additionalGroupsWithNoNonretirementRead": 24
+    },
+    {
+      "id": "marsh",
+      "load": "first",
+      "additionalGroupsWithNoNonretirementRead": 20
+    },
+    {
+      "id": "marsh",
+      "load": "repeat",
+      "additionalGroupsWithNoNonretirementRead": 20
+    },
+    {
+      "id": "stockade",
+      "load": "first",
+      "additionalGroupsWithNoNonretirementRead": 20
+    },
+    {
+      "id": "stockade",
+      "load": "repeat",
+      "additionalGroupsWithNoNonretirementRead": 20
+    },
+    {
+      "id": "spore",
+      "load": "first",
+      "additionalGroupsWithNoNonretirementRead": 28
+    },
+    {
+      "id": "spore",
+      "load": "repeat",
+      "additionalGroupsWithNoNonretirementRead": 28
+    },
+    {
+      "id": "kings",
+      "load": "first",
+      "additionalGroupsWithNoNonretirementRead": 19
+    },
+    {
+      "id": "kings",
+      "load": "repeat",
+      "additionalGroupsWithNoNonretirementRead": 19
+    },
+    {
+      "id": "scree",
+      "load": "first",
+      "additionalGroupsWithNoNonretirementRead": 25
+    },
+    {
+      "id": "scree",
+      "load": "repeat",
+      "additionalGroupsWithNoNonretirementRead": 25
+    },
+    {
+      "id": "undercrown",
+      "load": "first",
+      "additionalGroupsWithNoNonretirementRead": 26
+    },
+    {
+      "id": "undercrown",
+      "load": "repeat",
+      "additionalGroupsWithNoNonretirementRead": 26
+    }
+  ],
+  "oldProfileUpperSampledCostOnly": [
+    {
+      "file": "work/layout-load-cpu-dc02ecc0-corrected-recorder/profile.cpuprofile",
+      "additionalFactorySampleMs": 83.04,
+      "totalMs": 8444.505,
+      "percent": 0.9833613693164963,
+      "notMeasuredSavingsOrAllocationCounts": true
+    },
+    {
+      "file": "work/layout-talk-profile-oct27/profile.cpuprofile",
+      "additionalFactorySampleMs": 128.723,
+      "totalMs": 13871.686,
+      "percent": 0.9279549724525195,
+      "notMeasuredSavingsOrAllocationCounts": true
+    }
+  ],
+  "required": [
+    "Native original210graph pixels/context/metadata/aliases under default and contrasting capture palettes",
+    "Change real public palette after capture: outputs retain original construction-time colors",
+    "Original eager getter/object/nonordinary-prototype fallbacks retain calls and side effects",
+    "Original14ownership/reflection and abandoned/active native-GC controls, plus captured namespace owner-liveness",
+    "First actual new-source controlled loader before any broader actual-source original proofs"
+  ],
+  "notARepeatOfFixedOnlySource": true,
+  "priorFixedOnlyAdvanceCriterionFailed": true,
+  "noThresholdChangedOrCleanerRetiming": true,
+  "allThreeMismatchesRetained": true,
+  "noLocalGameBrowserOrFactoryExecuted": true,
+  "adopted": false,
+  "priorUnexecutedHelperSha256": "52650bc275f85b5d2f035e8c2b487d7fca7d212bdcd7224cd923597681971b2f",
+  "perExpressionPaletteFieldGuard": true,
+  "sourceReview": "outputs/receipts/captured-palette-art-source-review-oct28.json",
+  "preBrowserRefinement": "An unrelated object-valued or getter-backed palette field need not disable safe factories that never read it. Only the statically qualified fields for each expression are captured; any invalid actually-read field still takes the unchanged original eager path.",
+  "sourceRefinementChanges": [
+    [
+      "function capturedArt(owner,ART){",
+      "function capturedArt(owner,ART,fields){"
+    ],
+    [
+      "for(const key of CAPTURED_PALETTE_FIELDS){",
+      "for(const key of fields){"
+    ],
+    [
+      "const cached=capturedNamespaces.get(owner);",
+      "let cache=capturedNamespaces.get(owner);if(!cache)capturedNamespaces.set(owner,cache=new Map());const key=fields.join('|'),cached=cache.get(key);"
+    ],
+    [
+      "Object.fromEntries(CAPTURED_PALETTE_FIELDS.map((key,i)=>[key,values[i]]))",
+      "Object.fromEntries(fields.map((key,i)=>[key,values[i]]))"
+    ],
+    [
+      "capturedNamespaces.set(owner,{values,namespace});",
+      "cache.set(key,{values,namespace});"
+    ],
+    [
+      "deferredCapturedArtExpression(owner,ART,expression){",
+      "deferredCapturedArtExpression(owner,ART,fields,expression){"
+    ],
+    [
+      "const namespace=capturedArt(owner,ART);",
+      "const namespace=capturedArt(owner,ART,fields);"
+    ]
+  ],
+  "priorPreparationNeverDispatched": true,
+  "componentSha256": "093363870be75d8cd04046b4c82da07124288372b4128e76537dfe82c4ab6ab2",
+  "nativeGraphsPerJob": 105,
+  "shards": 2,
+  "capturePalettes": [
+    "default",
+    "contrast"
+  ],
+  "expectedGraphRowsAcrossAllJobs": 420,
+  "contractsPerJob": 18,
+  "nativeGcContractsPerJob": 6,
+  "componentChanges": [
+    {
+      "before": "'./fixed-level-art-view-source/'",
+      "after": "'./captured-level-art-source/'"
+    },
+    {
+      "before": "FIXED_LEVEL_ART_VIEW_OUT",
+      "after": "CAPTURED_ART_OUT"
+    },
+    {
+      "before": "'fixed-level-art-view-component'",
+      "after": "'captured-level-art-component'"
+    },
+    {
+      "before": "groups=JSON.parse(read(new URL('groups.json',data)))",
+      "after": "allGroups=JSON.parse(read(new URL('groups.json',data))),shard=+(process.env.CAPTURED_ART_SHARD||0),paletteName=process.env.CAPTURED_ART_PALETTE||'default',groups=allGroups.filter((_,i)=>i%2===shard),captured=read(new URL('captured-palette-art.js',data))"
+    },
+    {
+      "before": "assert.equal(sha(art),proof.originalArtSha256);",
+      "after": "assert.equal(sha(art),proof.originalArtSha256);assert.equal(sha(captured),proof.capturedArtSha256);assert([0,1].includes(shard));assert(['default','contrast'].includes(paletteName));assert.equal(allGroups.length,210);"
+    },
+    {
+      "before": "async function component(originalPx,candidatePx,helper,art,groups){",
+      "after": "async function component(originalPx,candidatePx,helper,art,captured,groups,paletteName){"
+    },
+    {
+      "before": "H=await module(helper.replace(\"'./px.js'\",JSON.stringify(Cpx.url))),m=H.api",
+      "after": "CAP=await module(captured.replace(\"'./px.js'\",JSON.stringify(Cpx.url))),H=await module(helper.replace(\"'./px.js'\",JSON.stringify(Cpx.url)).replace(\"'./captured-palette-art.js'\",JSON.stringify(CAP.url))),m=H.api"
+    },
+    {
+      "before": " const wrap=(owner)=>",
+      "after": " const basePalette={...O.api.C},palette=paletteName==='default'?basePalette:Object.fromEntries([...new Set([...Object.keys(basePalette),...CAP.api.CAPTURED_PALETTE_FIELDS])].map((k,i)=>[k,'#'+((0x257193+i*0x132547)&0xffffff).toString(16).padStart(6,'0')])),otherPalette=Object.fromEntries(Object.keys(palette).map((k,i)=>[k,'#'+((0xd17435+i*0x271341)&0xffffff).toString(16).padStart(6,'0')])),restore=(api,p)=>{Object.setPrototypeOf(api.C,Object.prototype);for(const k of Reflect.ownKeys(api.C))delete api.C[k];Object.defineProperties(api.C,Object.fromEntries(Object.entries(p).map(([k,v])=>[k,{value:v,writable:true,enumerable:true,configurable:true}])));};\n const wrap=(owner)=>"
+    },
+    {
+      "before": "  for(const group of groups){let original,",
+      "after": "  for(const group of groups){restore(O.api,palette);restore(C.api,palette);let original,"
+    },
+    {
+      "before": "pending=m.deferredFixedArtExpression(owner,C.api,new Function('ART','return ('+group.source+')'))",
+      "after": "pending=(group.kind==='captured'?m.deferredCapturedArtExpression(owner,C.api,group.paletteFields,new Function('ART','return ('+group.source+')')):m.deferredFixedArtExpression(owner,C.api,new Function('ART','return ('+group.source+')')))"
+    },
+    {
+      "before": "Object.assign(C.api.C,{wood:'#ff00ff',woodL:'#00ffff',grass:'#010203',stone:'#abcdef'});",
+      "after": "restore(C.api,otherPalette);"
+    },
+    {
+      "before": "rows.push({id:group.id,key:group.key,",
+      "after": "rows.push({id:group.id,key:group.key,kind:group.kind,paletteName,"
+    },
+    {
+      "before": "  const drawProbe=px=>",
+      "after": "  const dirtFields=['dirt','dirtD','dirtL','stone','stoneL','stoneD'];\n  for(const mode of['own-getter','object-color','custom-prototype']){restore(O.api,palette);restore(C.api,palette);const traces=[[],[]];for(const[api,trace]of[[O.api,traces[0]],[C.api,traces[1]]]){if(mode==='own-getter')Object.defineProperty(api.C,'dirt',{enumerable:true,configurable:true,get(){trace.push('get dirt');return '#714a3d';}});if(mode==='object-color')api.C.dirt={toString(){trace.push('coerce dirt');return '#714a3d';}};if(mode==='custom-prototype')Object.setPrototypeOf(api.C,{diagnostic:true});}let a,b,listA,listB;const ownerList=[],owner=m.createLevelArtOwner(ownerList);Opx.api.bakeScope();try{a=O.api.bakeDirt(314);}finally{listA=Opx.api.bakeScopeEnd();}Cpx.api.bakeScope();try{b=m.deferredCapturedArtExpression(owner,C.api,dirtFields,ART=>ART.bakeDirt(314));}finally{listB=Cpx.api.bakeScopeEnd();}check(b instanceof HTMLCanvasElement&&ownerList.length===0&&listA.length===listB.length,'fallback did not retain original eager ownership '+mode);compare(a,b,'original eager palette fallback '+mode);check(JSON.stringify(traces[0])===JSON.stringify(traces[1]),'palette getter/coercion calls differ '+mode);zero(listA);zero(listB);m.retireLevelArtOwner(owner);contracts.push({case:'original eager palette '+mode+' fallback with exact side effects',exact:true});}\n  {restore(O.api,palette);restore(C.api,palette);const owned=[],owner=m.createLevelArtOwner(owned),expected=[],actual=[],old=[];for(const colors of[palette,otherPalette]){restore(O.api,colors);restore(C.api,colors);Opx.api.bakeScope();expected.push(O.api.bakeDirt(97));old.push(...Opx.api.bakeScopeEnd());actual.push(m.deferredCapturedArtExpression(owner,C.api,dirtFields,ART=>ART.bakeDirt(97)));}restore(C.api,palette);const root=m.makeDeferredLevelArtCatalogue({a:actual[0],b:actual[1]});compare(expected[0],root.a,'first captured palette expression');compare(expected[1],root.b,'second captured palette expression');check(owned.length===2,'captured palette cache ownership');zero(old);zero(owned);m.retireLevelArtOwner(owner);contracts.push({case:'each original expression captures its own colors across later palette changes',exact:true});}\n  const drawProbe=px=>"
+    },
+    {
+      "before": "  window.__fixedOwnerGc={abandoned:gcProbe(false),active:gcProbe(true)};",
+      "after": "  function capturedGcProbe(keep){restore(O.api,palette);restore(C.api,palette);Opx.api.bakeScope();const expected=O.api.bakeDirt(18),controlList=Opx.api.bakeScopeEnd(),owned=[],owner=m.createLevelArtOwner(owned),root=m.makeDeferredLevelArtCatalogue({a:m.deferredCapturedArtExpression(owner,C.api,dirtFields,ART=>ART.bakeDirt(18))});restore(C.api,otherPalette);return{expected,owner,root,controlWeak:new WeakRef(controlList),ownerWeak:new WeakRef(owned),actual:null,...(keep?{list:owned,controlList}:{})};}\n  window.__fixedOwnerGc={abandoned:gcProbe(false),active:gcProbe(true),capturedAbandoned:capturedGcProbe(false),capturedActive:capturedGcProbe(true)};"
+    },
+    {
+      "before": "result.push({case:'original and weak-owner active lists retained with late owned output',exact:true});return result;",
+      "after": "result.push({case:'original and weak-owner active lists retained with late owned output',exact:true});const c=window.__fixedOwnerGc.capturedAbandoned,d=window.__fixedOwnerGc.capturedActive;check(c.controlWeak.deref()===undefined&&c.ownerWeak.deref()===undefined,'captured namespace retained abandoned original/new owned list');result.push({case:'captured namespace original and deferred abandoned lists both collected',exact:true});c.actual=c.root.a;compare(c.expected,c.actual,'late captured palette abandoned output');check(c.actual.width===16&&c.actual.height===16,'late captured abandoned output retired');result.push({case:'late captured abandoned native pixels/context retain construction-time colors',exact:true});check(d.controlWeak.deref()===d.controlList&&d.ownerWeak.deref()===d.list,'captured active original/new list lost');d.actual=d.root.a;compare(d.expected,d.actual,'late captured active output');check(d.list.length===1&&d.list[0]===d.actual,'captured active late output ownership');result.push({case:'captured namespace active original/deferred lists retained with exact late output',exact:true});return result;"
+    },
+    {
+      "before": "[originalPx,candidatePx,helper,art,groups]",
+      "after": "[originalPx,candidatePx,helper,art,captured,groups,paletteName]"
+    },
+    {
+      "before": "assert.equal(r.rows.length,160);",
+      "after": "assert.equal(r.rows.length,105);"
+    },
+    {
+      "before": "assert.equal(r.contracts.length,14);",
+      "after": "assert.equal(r.contracts.length,18);"
+    },
+    {
+      "before": "assert.equal(r.nativeGcContracts.length,3);",
+      "after": "assert.equal(r.nativeGcContracts.length,6);"
+    },
+    {
+      "before": "source:proof,status:",
+      "after": "source:proof,shard,paletteName,status:"
+    },
+    {
+      "before": "Complete160native graphs via production expression adapter,14ownership/reflection cases and3native-GC contracts; no main/loader/layout/FPS proof",
+      "after": "Complete105of210native graphs for one capture palette,18ownership/reflection/fallback cases and6native-GC contracts; aggregate requires both shards and palettes, no main/timing proof"
+    }
+  ],
+  "hostUnchangedGameSource": "62d9c02c102decc69ceaef4e1ec593a23170f1ff",
+  "scope": "Original ART/PX assets are byte-identical between Task3dc02 and hostGame62; this is native module-only proof, no whole Game source backfill."
+}
