@@ -36,9 +36,9 @@ try {
     /* NOT A JUMP */
     boot();place(o+3,12);run(1,(o+11)*16+4,2);step(30);const jump={ok:!onTop(o+12,o+22,7),...at()};
     /* THE GAP */
-    boot();place(o+19,6);waitGust(0.25);run(1,(o+22)*16+12,4,(o+33)*16);   /* (steered: the stick let go once over the far rock, as a player does) */step(30);const gap={ok:onTop(o+32,o+38,8)||onTop(o+40,o+41,9),...at()};   /* (the far rock, or the gully's first stone - in the exam, never past it) */
+    boot();place(o+19,6);waitGust(0.25);run(1,(o+22)*16+12,4,(o+33)*16);   /* (steered: the stick let go once over the far rock, as a player does) */step(30);const gap={ok:onTop(o+32,o+38,8)||onTop(o+40,o+41,8),...at()};   /* (the far rock, or the gully's first stone - in the exam, never past it) */
     /* THE GAP UP */
-    boot();place(o+24,12,v2-40);waitGust(0.3);run(1,undefined,4,(o+33)*16);step(160);const up={ok:onTop(o+32,o+38,8)||onTop(o+40,o+41,9)||onTop(o+12,o+22,7),...at()};
+    boot();place(o+24,12,v2-40);waitGust(0.3);run(1,undefined,4,(o+33)*16);step(160);const up={ok:onTop(o+32,o+38,8)||onTop(o+40,o+41,8)||onTop(o+12,o+22,7),...at()};
     out.push({hero,ride,still,jump,gap,up});
   }
   BK.manualSimulation=false;return out;})()`, 900000);
