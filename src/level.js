@@ -5110,13 +5110,14 @@ function theFlotilla() {
   const door = (x, top = 14) => { block(x, x + 1, top, 20); for (let y = 21; y <= 24; y++) { set(x, y, T.SOLID); set(x + 1, y, T.SOLID); } ent('bulkhead', x, 24, { span: [x, x + 1, 21, 24] }); };
   // TEACH: the gun right in front of the door, nobody about
   ent('cannon', 398, 24, { deck: true, aim: 1 }); door(406);
+  ent('powdermonkey', 403, 24, { face: -1 }); ent('sign', 394, 24, { text: 'HER POWDER MONKEY LOBS LIT GRENADES. STRIKE ONE AND IT GOES BACK AT HIM.' });   /* (claude/flotilla4) THE POWDER MONKEY, TAUGHT SAFE: alone, a shrine behind you, his first grenade on a long fuse; struck back it meets him (the door behind him stops it) */
   ent('sign', 396, 24, { text: 'STAND BEHIND THE GUN, FACE THE DOOR AND STRIKE THE BREECH.' });
   coins([400, 24], [403, 24]);
   // TEST: THE POWDER LINE - a long deck, a gun at its end, and her crew coming down it toward you in a line
   ent('cannon', 410, 24, { deck: true, aim: 1 });
   ent('sign', 409, 24, { text: 'THEY COME DOWN THE DECK IN A LINE. LET THEM LINE UP, THEN FIRE.' });
   ent('cutlass', 424, 24, { face: -1 }); ent('cutlass', 430, 24, { face: -1 }); ent('cutlass', 436, 24, { face: -1 }); ent('boarder', 442, 24, { face: -1 });
-  ent('keg', 428, 24); ent('sapper', 446, 24, { face: -1, cnSkin: 'kegroller' });
+  ent('keg', 428, 24); ent('sapper', 446, 24, { face: -1, cnSkin: 'kegroller' }); ent('powdermonkey', 444, 24, { face: -1 });   /* (claude/flotilla4) TEST: a powder monkey behind the line - strike his grenade back down it, into them and their keg */
   ent('marine', 432, 16, { face: -1 }); plat(428, 17, 9); net(436, 436, 18, 24);   /* a fighting top over the waist, its shrouds to the deck */
   ent('deco', 418, 24, { kind: 'kegStack' }); ent('deco', 438, 24, { kind: 'chickenCoop' });
   coins([416, 24], [426, 24], [434, 16], [440, 24]);
@@ -5138,7 +5139,7 @@ function theFlotilla() {
   coins([486, 24], [494, 24], [497, 24]);
   // EXAM: THE ADMIRAL'S MEN, on the deck before his lashing: a gun behind you, a heavy elite coming at you down its line, a marine in the mizzen
   ent('cannon', 504, 24, { deck: true, aim: 1 });
-  ent('cutlass', 520, 24, { face: -1 }); ent('cutlass', 526, 24, { face: -1 }); ent('keg', 516, 24);
+  ent('cutlass', 520, 24, { face: -1 }); ent('cutlass', 526, 24, { face: -1 }); ent('keg', 516, 24); ent('powdermonkey', 532, 24, { face: -1 });   /* (claude/flotilla4) EXAM: his grenade struck back takes his mates, the keg, or the gun behind you */
   mast(522, 8, 24, 5); ent('marine', 522, 7, { face: -1 });
   ent('sign', 506, 24, { text: 'HIS PLATED BOSUN WEARS HULL IRON LIKE HIS ADMIRAL. ROUND SHOT DOWNS WHAT NO BLADE WILL.' }); ent('signalhoist', 534, 24, { zone: 'exam' });
   ent('deco', 512, 24, { kind: 'kegStack' }); ent('deco', 530, 24, { kind: 'plunder', v: 0 });
@@ -5321,7 +5322,7 @@ function theHurricane() {
   // THE AFTER SCUTTLE: a second hatch open on her main deck, five boards - jumped DOWNHILL (two rows deep: a cheap fall; a crate stack in the gun deck under it)
   air(266, 270, DK, DK + 1);   /* (its floor is a crate stack laid after the gun deck is cut, below) */
   rollGaps.push({ x0: 260 * TS, x1: 276 * TS, y0: (DK - 6) * TS, y1: DK * TS, carry: 2, dir: 1, alt: true, roll: true, hole: [266, 270] });
-  ent('cutlass', 276, DK - 1, { face: -1 });
+  ent('cutlass', 276, DK - 1, { face: -1 }); ent('powdermonkey', 280, DK - 1, { face: -1 });   /* (claude/flotilla4) THE POWDER MONKEY aboard her: on the roll his grenade runs downhill - strike it back uphill */
   // THE MAINMAST stands at 300 (drawn, and nothing to climb from the deck: her shrouds start at the main yard). ROD 1: the masthead rod's CHAIN runs down her mast and
   // hangs loose by the main hatch. Strike it onto the hatch's iron coaming and the next bolt comes down it: the TARRED NET over the main hatch burns.
   ent('lightrod', 296, DK - 1, { id: 'r1', burn: [286, 291, DK, DK + 1], top: [300, 4] });
@@ -5361,7 +5362,7 @@ function theHurricane() {
   sail(416, DK - 9, DK - 3, 0); sail(428, DK - 9, DK - 3, 0);
   coins([418, DK - 3], [427, DK - 3]);
   // THE STERN'S EXAM: her last hands on the quarterdeck, the sea coming over her stern
-  ent('boarder', 438, DK - 1, { face: -1 }); ent('seawitch', 456, DK - 1, { caller: true, face: -1 }); ent('sailor', 432, DK - 1, { rise: true, face: -1 });
+  ent('boarder', 438, DK - 1, { face: -1 }); ent('seawitch', 456, DK - 1, { caller: true, face: -1 }); ent('powdermonkey', 445, DK - 1, { face: -1 });   /* (claude/flotilla4) the quarterdeck: his grenade against the gusts */ ent('sailor', 432, DK - 1, { rise: true, face: -1 });
   cask(429, DK - 1); set(427, DK - 1, T.SOLID);
   coins([434, DK - 2], [440, DK - 2], [455, DK - 2]);
   // HER AFTER COMPANIONWAY: open, five boards, three rows deep - jumped downhill (its ladder on the near side)

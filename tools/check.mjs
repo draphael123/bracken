@@ -289,6 +289,10 @@ if (take('lab-order')) results.push(run('lab-order', process.execPath, ['tools/l
 /* THE ROOKERY and THE SHRIEK SISTERS (claude/rookery, Node): the road and the old-save unlock, the five areas, every required cracked rock a LOCK, the hands in a fake world
    (bait, aim, dive, break; a dead roost sends another; the shrieker's mark), the sisters pure (B15 floors, the stun off a dive into cracked rock, the team changing) */
 if (take('rookery')) results.push(run('rookery', process.execPath, ['tools/rookery.mjs']));
+/* A FOE THE ROOM KILLS GOES DOWN (claude/flotilla4, Daniel 10-27 'dead foes stand there'): every common foe on the build killed by an untagged hurt, a blast and a round shot - dead, never alive at hp <= 0, and its body says how it goes down (c.fall; the common fall tips it onto its back) */
+if (take('room-kills')) results.push(run('room-kills', process.execPath, ['tools/room-kills.mjs']));
+/* THE POWDER MONKEY (claude/flotilla4, a shared foe: src/powder-monkey.js): small and quick, his told lob, the teach placed alone, struck back he goes down, a struck blast fires a deck gun and a keg */
+if (take('powder-monkey')) results.push(run('powder-monkey', process.execPath, ['tools/powder-monkey.mjs']));
 if (take('pixels')) results.push(run('pixels', process.execPath, ['tools/headless.mjs', 'floats'], { PORT: String(portFor(3)) }));
 /* PLATFORM FEEL (claude/feelplatform, Daniel 10-12): the Game speed range + sub-steps + migration (feel-speed), and the camera lookahead, landings by height and the world's small reactions (feel-platform) */
 /* THE PALISADE WOOD and THE BATTERING BEAST (claude/palisadewood, Node): the road and the old-save unlock, the five areas, every required prop a LOCK, the stake rolls, the shrines,

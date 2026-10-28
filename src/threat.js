@@ -24,7 +24,7 @@ export const THREAT = { crackfloor: 0, crackpillar: 0, cracknest: 0, crackslab: 
   heronfoe: 2, badger: 2.5, royalboar: 3.5, gar: 2, ramlord: 6, dog: 1.5, skybolt: 2.5, rockfall: 2, catapult: 2.5, towertop: 2, logpile: 0,
   dropcage: 2, firepit: 1.5, firevent: 2, hotplate: 1.5, hammer: 3,
   frog: 5, chief: 5, queen: 4, oldtusker: 5, bogtroll: 5, stiltwalker: 2.2, swarm: 1.6, honeyhornet: 2.2, hornetqueen: 5, comb: 0, smoker: 0, wax: 0, broodcell: 0, sag: 0, rotten: 0, lashing: 0, crewgap: 0, undertow: 0, leech: 1.8, broken: 0,   /* (claude/fenroad2) THE BOG LEECH (a latch and a drain, weak out of the water); a peat hole is a plank's slot */ boar: 2, pinemoth: 1, mother: 5, greathound: 4, forgemaster: 5, gqueen: 6, herald: 6,
-  reefmaw: 6, champion: 6, admiral: 6, grapnel: 3, aimgun: 0, signalhoist: 0, captain: 6, masthead: 6, lampreeve: 5, tollmaster: 6, wickling: 2, oilcask: 0, oilvalve: 0, tarnet: 0,   /* (claude/lamplit3) THE WICKLING: a touch that steals your fire and a burst you set off; the oil casks, the valves and the tar nets are the street's machines */
+  reefmaw: 6, champion: 6, admiral: 6, grapnel: 3, powdermonkey: 2, aimgun: 0, signalhoist: 0, captain: 6, masthead: 6, lampreeve: 5, tollmaster: 6, wickling: 2, oilcask: 0, oilvalve: 0, tarnet: 0,   /* (claude/lamplit3) THE WICKLING: a touch that steals your fire and a burst you set off; the oil casks, the valves and the tar nets are the street's machines */
   dummy: 0, bale: 0.5, fisher: 0,
   sailor: 2.5, netter: 2, gill: 2, heart: 1, bearer: 1, master: 5, kite: 1.5, hare: 0, grub: 1.5,
   miner: 2, horn: 2, sweep: 1.5, drone: 1, stormshaman: 3, seawitch: 3,
