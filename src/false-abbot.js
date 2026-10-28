@@ -34,7 +34,7 @@
 // PURE: no DOM, no main.js. Everything the world does is a call on `c`; the house's layout is c.A.house (pixels, built by
 // main.js from the level's arena.house). Proved by tools/false-abbot.mjs.
 export const ABBOT = {
-  hp: 3000, walk: 30, keep: 44, cd: 1.5, cdP2: 1.15,
+  hp: 4500, walk: 30, keep: 44, cd: 1.5, cdP2: 1.15,
   tell: { censer: 0.55, cast: 0.7, swing: 0.8, gleam: 0.8, coals: 0.75, rite: 2.6, knell: 1.0 },
   riteT: [3.2, 3.2, 5.0, 3.4],   /* the rite's windup by phase: on the bridge 3.2 s, in the chair 5 s (the basket is by the great bell), at the wheel 3.4 s - a hero walks ~56 px/s, and the house is a room wide */
   dmg: { censer: 20, cast: 16, reel: 10, slam: 24, light: 16, knell: 22 },
@@ -353,7 +353,7 @@ export function updateFalseAbbot(e, dt, c) {
     const near = xs => Math.min(...xs.map(x => Math.abs(x - P.x)));
     if (ph === 1) { const ups = H.bridges.map((b, i) => ({ b, i })).filter(q => bridgeUp(e, q.i));
       if (ups.length) { const q = ups.reduce((a, b) => near(a.b.bells) <= near(b.b.bells) ? a : b);
-        const mid = (q.b.x0 + q.b.x1) / 2; e.riteBr = q.i;
+        const bx = q.b.bells.reduce((a, b) => Math.abs(a - P.x) <= Math.abs(b - P.x) ? a : b), mid = Math.max(q.b.x0 + 24, Math.min(q.b.x1 - 24, bx < (q.b.x0 + q.b.x1) / 2 ? q.b.x0 + 56 : q.b.x1 - 56)); e.riteBr = q.i;   /* he kneels near the bell by you: on the bridge, a few steps out from its tower */
         if (e.deck === 'high' && Math.abs(e.x - mid) < 24) { begin(e, 'rite', c); return; }
         goTo(e, c, { x: mid, y: H.deckY, deck: 'high' }, true); return; }
       e.riteCd = 1.5; }   /* both bridges are down: he fights until one is hauled back */
