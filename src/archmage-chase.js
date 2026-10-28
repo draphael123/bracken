@@ -14,7 +14,7 @@
 //   He goes no lower than CH.hpFloor of his health in the rooms (a blow past it is only his stagger): the hall always has its realms.
 //   A death anywhere in the fight brings you back to the ring you came out of, the rooms whole again (chaseReset) - a boss is fought whole.
 // Numbers are tiles unless named px or s.
-export const CH = { x0: 80, x1: 105, top: 152, pitch: 15, open: 13, downT: 3.0, riseT: 0.5, sinkT: 0.9, tearT: 1.3, wakeT: 1.2, fallG: 1100, hpFloor: 0.45, hover: 4 };
+export const CH = { x0: 80, x1: 105, top: 152, pitch: 15, open: 13, downT: 3.0, riseT: 0.5, sinkT: 0.9, tearT: 1.3, wakeT: 1.2, fallG: 1100, hpFloor: 0.55, hover: 4 };
 export const ROOMS = [
   { name: 'THE SCRIPTORIUM', kind: 'library', order: ['fire', 'ice', 'fire', 'mark'], follow: 'strike', pillar: 93,
     ledges: [[83, 5, 3], [98, 5, 3], [88, 4, 6]] },
@@ -78,19 +78,20 @@ export function chaseLeg(e, dt, c) {
     else { e.mode = 'tear'; e.modeT = CH.tearT; e.tear = { k: R.k, t: 0 }; c.say('HE BREAKS THE FLOOR UNDER YOU', true); c.sound('rumble'); c.shake(3); }
     return true; }
   if (e.mode === 'sink') { e.y += 60 * dt; if (e.modeT > 0) return true;   /* through the stone, as his kind do: and its pillar lights */
-    toBelow(e, R.k + 1); c.arm(R.k); c.callout('STRIKE THE CRACKED PILLAR: THE FLOOR GOES, AND YOU AFTER HIM'); return true; }
+    toBelow(e, R.k + 1, P); c.arm(R.k); c.callout('STRIKE THE CRACKED PILLAR: THE FLOOR GOES, AND YOU AFTER HIM'); return true; }
   if (e.mode === 'tear') { e.tear.t += dt; if (Math.random() < dt * 20) c.dust(CH.x0 * 16 + Math.random() * (CH.x1 - CH.x0 + 1) * 16, floorY, 1);
     if (e.modeT > 0) return true; e.tear = null; c.clearRoom(R.k); c.sound('stone'); c.shake(8);
-    if (R.last) { e.mode = 'away'; e.modeT = 99; c.away(); } else toBelow(e, R.k + 1);
+    if (R.last) { e.mode = 'away'; e.modeT = 99; c.away(); } else toBelow(e, R.k + 1, P);
     return true; }
   if (e.mode === 'below') { const N = roomOf(e.waitIn), here = roomAt(P.x, P.y);   /* he waits in the room under; when you are down in it, it is the fight's room */
     e.y = (N.floor - CH.hover - 2) * 16 + Math.sin((e.anim || 0) * 2.3) * 3;
-    if (here === N.k && (P.ground || P.y > (N.floor - 2) * 16)) { e.room = N.k; e.mode = 'wake'; e.modeT = CH.wakeT; e.turn = 0; e.order = N.order; e.wardHold = 0; c.setRoom(N.k); c.say(N.name, false); }
+    if (here === N.k && (P.ground || P.y > (N.top + 3) * 16)) {   /* (down in it: not only once you stand - a hero who lands on him stood on nothing) */ e.room = N.k; e.mode = 'wake'; e.modeT = CH.wakeT; e.turn = 0; e.order = N.order; e.wardHold = 0; c.setRoom(N.k); c.say(N.name, false); }
     return true; }
   if (e.mode === 'away') return true;
   return false;
 }
-function toBelow(e, k) { const N = roomOf(k); e.waitIn = k; e.mode = 'below'; e.modeT = 99; e.x = (CH.x1 - 5) * 16; e.y = (N.floor - CH.hover - 2) * 16; e.shots = []; e.clouds = []; e.rings = []; e.echoes = []; e.deathMark = null; }
+/* HE WAITS IN THE ROOM UNDER, on the far side from where you will come down (never under you: you would land on him) */
+function toBelow(e, k, P) { const N = roomOf(k), mid = (CH.x0 + CH.x1 + 1) * 8; e.waitIn = k; e.mode = 'below'; e.modeT = 99; e.x = (P && P.x > mid ? CH.x0 + 4 : CH.x1 - 4) * 16; e.y = (N.floor - CH.hover - 2) * 16; e.shots = []; e.clouds = []; e.rings = []; e.echoes = []; e.deathMark = null; }
 /* A FRESH FIGHT (a death, a load): him asleep in the first room, every room whole (the caller restores the tiles) */
 export function chaseFresh(e) { e.leg = 'chase'; e.room = 0; e.order = ROOMS[0].order; e.noRealm = true; e.realmAt = null; e.tear = null; }
 /* THE CRACK RUNNING ACROSS A FLOOR HE BREAKS (greybox: the art lane paints it) */
