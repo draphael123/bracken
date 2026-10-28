@@ -389,6 +389,7 @@ export function buildTowerAscent({ painter, T, TS }) {
   { const [lx, ll, lr] = spiral.flights[4].land, dir = spiral.flights[5].dir, px = dir > 0 ? lx + 1 : lx + ll - 2;
     supports.push({ t: 'ftsupport', id: 'stair-dark', kind: 'dark', col: px, row: lr - 1, h: 3, dark: true, say: 'THE RUBBLE PLUGS THE WELL: HIS DARK HOLDS' });
     ent('sign', dir > 0 ? lx + ll - 2 : lx + 1, lr - 1, { text: 'STRIKE THE CRACKED PILLAR: ITS RUBBLE HOLDS HIS DARK A WHILE.' }); }
+  for (const s of supports) { s.x ??= s.col * TS + 8; s.y ??= (s.row + 1) * TS; }   /* (fallingtower3) every pillar in px too: where it stands, its foot on its footing */
   // ---- THE DIVIDERS AND THEIR ROPES. Each floor's rope hangs from its last tier, through the divider over it, to its top. ----
   for (let k = 0; k < floors.length - 1; k++) {
     const F = floors[k], [x0, len, row] = F.tiers[F.tiers.length - 1], rx = x0 + (len >> 1);

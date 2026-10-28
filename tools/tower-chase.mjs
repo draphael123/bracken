@@ -39,6 +39,17 @@
 //            landing nor the carpet; its voids are wider than any jump (the only gaps over 2 tiles on the stair, and only there); a world comes round to
 //            each boarding ledge every few seconds; the turning is TOLD (its sign, its line, the next world marked and the pawl's click as it comes
 //            level); the dark is capped under its landing like every other. You come out of his ring on the LEFT now (ten flights: the first runs right)
+//   FALLING TOWER 3 (claude/fallingtower3, Daniel 10-27: "the Undead Archmage fight becomes a CHASE THROUGH THE TOWER"; extended here, not forked):
+//            the stair's top holds HIS RING where his carpet lay - through it, THE CHASE (src/archmage-chase.js): four rooms stacked under the stair, each
+//            its own ledges, and THE CORE under them where his carpet waits. In Node: the rooms and the core are built and walled, the ring pair joins
+//            the top to the first room, the fill goes DOWN through every floor (L.reachOpens) to the carpet and not without the ring, the first room
+//            holds him and its sign; HIS SPELLS ARE HIS FIGHT'S (every room casts only spells of MAGE.order, at their fight tells); a struck-back
+//            shot (and a mark that finds no one) makes him FALL to the room's floor, open x2 for CH.downT s, then he FLEES - in a 'strike' room he
+//            sinks through the floor and its cracked pillar is ARMED (struck before, it rings off and holds), in a 'pour' room the floor breaks
+//            under you, told CH.tearT s first; he waits in the room under and wakes there only once you are down in it; the last floor pours you
+//            into the core; he is never taken under CH.hpFloor in the rooms (main.js); his hall's realms come at marks cut from what is left
+//            (e.realmAt). In the page: through the ring at the stair's top the fight starts in the first room; a struck-back bolt drops him;
+//            the lab's chase hands play it down the four rooms onto his carpet and the fight goes on in his hall
 // usage: node tools/tower-chase.mjs
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
@@ -56,14 +67,17 @@ const L = LEVELS.find(l => l.id === 'fallingtower').build(), W = L.W, TS = 16, a
 const S = L.spiral, inS = e => e.x >= S.x0 && e.x <= S.x1 && e.y >= S.top && e.y < S.floor;
 const std = (x, y) => [T.SOLID, T.ONEWAY, T.PLANK].includes(at(x, y + 1)) && at(x, y) === T.AIR;   /* somewhere to stand: floor under, air in */
 // ---- PORTAL ----
-const rings = L.ents.filter(e => e.t === 'ringdoor'), way = rings.find(e => e.to), foot = rings.find(e => e.id === (way && way.to));
-assert.ok(way && foot && rings.length === 2, 'his ring on the parapet and the one it lets you out of: ' + JSON.stringify(rings));
+const rings = L.ents.filter(e => e.t === 'ringdoor'), way = rings.find(e => e.id === 'crown-ring'), foot = rings.find(e => e.id === (way && way.to));
+/* (claude/fallingtower3) FOUR rings now: the parapet's and the stair's foot, and the stair's top and THE CHASE's first room */
+assert.ok(way && foot && rings.length === 4 && rings.some(e => e.id === 'chase-in' && e.to === 'chase-top') && rings.some(e => e.id === 'chase-top'), 'his ring on the parapet and the one it lets you out of, and his ring at the stair\'s top into the chase: ' + JSON.stringify(rings));
 assert.ok(way.x === 36 && way.y === TOWER.SKY && at(way.x, way.y + 1) === T.SOLID, 'his ring stands on the parapet where the door into his hall stood: ' + way.x + ',' + way.y);
 assert.ok(inS(foot) && std(foot.x, foot.y) && foot.y === S.floor - 1, 'it lets you out on the spiral stair\'s floor: ' + foot.x + ',' + foot.y);
 assert.ok(W > TOWER.W && S.x0 > TOWER.W + 4, 'the stair tower stands east of the tower\'s own wall, solid rock between: ' + S.x0);
 for (let y = S.top; y < S.floor; y++) for (let x = TOWER.X1 + 1; x < S.x0; x++) assert.equal(at(x, y), T.SOLID, 'rock between the tower and the stair at ' + x + ',' + y);
 assert.ok(L.sanctum.rug && L.carpetAt.x === L.sanctum.in.x && L.carpetAt.y === L.sanctum.in.y, 'the carpet lies at the door into his hall');
-assert.ok(L.carpetAt.x >= S.x0 * TS && L.carpetAt.x <= S.x1 * TS && L.carpetAt.y === TOP.row * TS, 'and both are at the top of the spiral stair, not on the parapet: ' + JSON.stringify(L.carpetAt));
+/* (claude/fallingtower3) and both are in THE CORE under the chase's last room now (they were at the stair's top, where his ring stands) */
+assert.ok(L.chase3 && L.carpetAt.x >= S.x0 * TS && L.carpetAt.x <= S.x1 * TS && L.carpetAt.y > L.chase3.core.top * TS && L.carpetAt.y < L.chase3.core.bot * TS, 'and both are in the core under the chase, not on the parapet or the stair: ' + JSON.stringify(L.carpetAt));
+{ const top = rings.find(e => e.id === 'chase-in'); assert.ok(top && top.y === TOP.row && top.x === TOP.carpet && std(top.x, top.y), 'his ring into the chase does not stand on the stair\'s top floor where the carpet lay: ' + JSON.stringify(top)); }
 const R = floodReach(L, T, { rides: true, across: 5 });
 assert.ok(R.seen.has(foot.x + ',' + foot.y), 'the fill (a real jump) does not come through his ring to the stair\'s foot');
 assert.ok(R.jumpNear(L.carpetAt.x / TS, L.carpetAt.y / TS), 'the fill does not climb the stair to the carpet');
@@ -111,7 +125,7 @@ assert.ok(gaps.some(([, g]) => g === 2), 'no gap on the stair is a jump at all')
 const checks = L.ents.filter(e => e.t === 'check' && inS(e));
 assert.equal(checks.length, 1, 'ONE checkpoint on the stair: ' + checks.map(e => e.x + ',' + e.y));
 assert.ok(checks[0].y === S.floor - 1 && std(checks[0].x, checks[0].y) && up.seen.has(checks[0].x + ',' + checks[0].y), 'the stair\'s checkpoint is not at its FOOT (towerscroll: a death restarts the short climb): ' + checks.map(e => e.x + ',' + e.y));
-assert.ok(std(L.carpetAt.x / TS - 5, TOP.row), 'the carpet\'s retry spot (five tiles back from it) is not on the top floor');
+assert.ok(L.chase3 && std(Math.floor(L.chase3.check.x / TS), Math.round(L.chase3.check.y / TS) - 1) && Math.round(L.chase3.check.y / TS) - 1 === TOP.row, 'the fight\'s retry spot (main.js bossStart sets it) is not on the stair\'s top floor: ' + JSON.stringify(L.chase3 && L.chase3.check));   /* (claude/fallingtower3: it was the carpet's, five tiles back from it) */
 assert.ok(L.crumbles.filter(c => c.kind === 'spiral').length >= 3, 'the tower\'s failing stone is on the stair (its last use)');
 const foes = L.ents.filter(e => inS(e) && !['check', 'sign', 'coin', 'silver', 'ringdoor', 'mend', 'deco'].includes(e.t));
 assert.deepEqual(foes.map(e => e.t), ['magechase'], 'the stair is his chase and nothing else\'s: ' + foes.map(e => e.t));
@@ -250,6 +264,59 @@ assert.ok(CHASE.gap <= 0.6 && CHASE.settle <= 0.35 && CHASE.pairFrom <= 2, 'his 
     for (let i = 0; i < 60 * 6; i++) updateStairFx(H2, 1 / 60, { P: P2, on: true, hit: (x, y, d, hard, blow) => h2.push(blow), say: () => {}, sound: () => {} });
     assert.ok(!H2.books.length && !h2.includes('book'), 'his books fly on a flight that is not the gauntlet'); }
   assert.ok(L.ents.filter(e => e.t === 'sign' && inS(e) && /WEIGHTS|FROST FREEZES|BOOKS FLY/.test(e.text)).length === 3, 'the three new flights are not each signed where they begin'); }
+// ---- THE CHASE (claude/fallingtower3) ----
+{ const CC = await import('../src/archmage-chase.js'), UM = await import('../src/undead-mage.js'), { CH, ROOMS, CORE, roomOf, roomAt, chaseLeg, chaseBox, CHASE_MODES } = CC, C3 = L.chase3;
+  assert.ok(C3 && C3.rooms.length === 4 && ROOMS.filter(R => R.follow === 'strike').length === 2 && ROOMS.filter(R => R.follow === 'pour').length === 2 && ROOMS[ROOMS.length - 1].follow === 'pour', 'the chase is not four rooms, two you break after him and two he breaks under you, the last pouring you into the core');
+  for (const R of C3.rooms) { for (let y = R.top; y < R.floor; y++) for (const x of [CH.x0 - 1, CH.x1 + 1]) assert.equal(at(x, y), T.SOLID, R.name + ' is not walled at ' + x + ',' + y);
+    for (let x = CH.x0; x <= CH.x1; x++) { assert.equal(at(x, R.floor), T.SOLID, R.name + '\'s floor has a hole at ' + x); assert.equal(at(x, R.top - 1), T.SOLID, R.name + ' is open to the room over it at ' + x); }
+    assert.ok(R.ledges.length >= 3 && R.ledges.every(([x0, len, up]) => up >= 3 && up <= 6 && at(x0, R.floor - up) === T.ONEWAY), R.name + ' has not its own ledges, a real jump up');
+    assert.ok(L.interiors.some(i => i[0] === CH.x0 && i[2] === R.top), R.name + ' is not a room (interiors)'); }
+  assert.equal(new Set(ROOMS.map(R => JSON.stringify(R.ledges.map(l => [l[1], l[2]])))).size, 4, 'two rooms of the chase are the same shape');
+  for (let y = CORE.top; y < CORE.bot; y++) assert.equal(at(CH.x0 + 3, y), T.AIR, 'the core is not open at row ' + y);
+  assert.ok(C3.rooms[0].top > S.floor + 1, 'the chase is not under the stair (rock between)');
+  /* THE WAY: the ring at the stair's top, and down through every floor to the carpet - and not without the ring */
+  const Rf = floodReach(L, T, { rides: true, across: 5 }); for (const R of C3.rooms) assert.ok(Rf.seen.has(((CH.x0 + CH.x1) >> 1) + ',' + (R.floor - 1)) || [...Array(CH.x1 - CH.x0)].some((_, i) => Rf.seen.has((CH.x0 + i) + ',' + (R.floor - 1))), 'the fill does not stand in ' + R.name);
+  assert.ok(Rf.jumpNear(L.carpetAt.x / TS, L.carpetAt.y / TS), 'the fill does not come down the chase to the carpet');
+  { const noRing = { ...L, ents: L.ents.map(e => e.id === 'chase-in' ? { ...e, to: null } : e) }; assert.ok(!floodReach(noRing, T, { rides: true, across: 5 }).jumpNear(L.carpetAt.x / TS, L.carpetAt.y / TS), 'the carpet is reached without his ring at the stair\'s top: the ring is not the way in'); }
+  { const noOpen = { ...L, reachOpens: [] }; assert.ok(!floodReach(noOpen, T, { rides: true, across: 5 }).jumpNear(L.carpetAt.x / TS, L.carpetAt.y / TS), 'the carpet is reached with every floor of the chase whole: the floors are not the way down'); }
+  const him = L.ents.find(e => e.t === 'undeadmage'); assert.ok(him && roomAt(him.x * TS, him.y * TS) === 0, 'he is not in the first room of the chase');
+  assert.ok(L.ents.some(e => e.t === 'sign' && roomAt(e.x * TS, e.y * TS) === 0 && /STRIKE HIS SPELLS BACK/.test(e.text)) && L.ents.some(e => e.t === 'sign' && roomAt(e.x * TS, e.y * TS) === 0 && /CRACKED PILLAR/.test(e.text)), 'the first room does not sign the opening and the pillar');
+  for (const R of ROOMS) assert.ok(R.order.every(s => UM.MAGE.order.includes(s) && UM.MAGE.tell[s] > 0), R.name + ' casts a spell that is not his fight\'s: ' + R.order);
+  assert.ok(L.arena.chase && L.arena.trigger > CH.x0 * TS && L.arena.y0 === C3.rooms[0].top * TS && L.arena.hallArena && L.arena.hallArena.carpet, 'the arena is not the chase\'s first room with his hall laid by for the carpet');
+  /* THE STATE OF HIM, in Node: a rig on updateUndeadMage with THE CHASE's leg */
+  const rig = (k = 0) => { const R = roomOf(k), P = { x: (CH.x0 + 6) * TS, y: R.floor * TS, ground: true, dead: 0, dodge: 0 }, log = { says: [], hits: [], armed: [], cleared: [], rooms: [], away: 0 };
+    const e = { t: 'undeadmage', alive: true, hp: 2800, hp0: 2800, maxHp: 2800, mode: 'hover', modeT: 0.4, x: (CH.x1 - 5) * TS, y: (R.floor - CH.hover - 2) * TS, face: -1, anim: 0, turn: 0, blinkT: 99, leg: 'chase', room: k };
+    const cc = { P, say: m => log.says.push(m), callout: m => log.says.push(m), sound: () => {}, shake: () => {}, dust: () => {}, arm: k => log.armed.push(k), clearRoom: k => log.cleared.push(k), setRoom: k => log.rooms.push(k), away: () => log.away++ };
+    let strike = null; const c = () => ({ P, A: L.arena, box: chaseBox(e.room || 0), rnd: () => 0.5, hit: (x, y, d, hard, blow) => log.hits.push(blow), venom: () => {}, say: m => log.says.push(m), sound: () => {}, dodging: () => false, carry: () => {}, strike: () => strike, chase: (m, d) => chaseLeg(m, d, cc) });
+    const step = () => UM.updateUndeadMage(e, 1 / 60, c()); const run = (s, each) => { for (let i = 0; i < Math.round(s * 60); i++) { step(); if (each && each()) return true; } return false; };
+    return { P, e, log, run, step, setStrike: b => { strike = b; } }; };
+  { const r = rig(0), tells = new Set(); r.run(12, () => { if (/Tell$/.test(r.e.mode)) tells.add(r.e.mode.replace('Tell', '')); });
+    assert.ok([...tells].every(s => ROOMS[0].order.includes(s)) && tells.size >= 2, 'the first room casts a spell not its own, or not two of its own: ' + [...tells]); }
+  { const r = rig(0); r.run(3, () => r.e.shots && r.e.shots.some(q => UM.reflectable(q)));
+    const q = r.e.shots.find(q => UM.reflectable(q)); assert.ok(q, 'in 3 s of the first room he casts nothing to strike back');
+    r.setStrike({ l: q.x - 20, r: q.x + 20, t: q.y - 20, b: q.y + 20 }); r.step(); r.setStrike(null); assert.ok(q.reflected, 'a blow that meets his bolt does not strike it back');
+    assert.ok(r.run(4, () => r.e.mode === 'fall'), 'his bolt struck home does not make him FALL: ' + r.e.mode);
+    assert.ok(r.run(3, () => r.e.mode === 'down'), 'he does not come down on the floor: ' + r.e.mode + ' y ' + r.e.y);
+    assert.ok(Math.abs(r.e.y - roomOf(0).floor * TS) < 1 && UM.mageOpen(r.e) && r.e.open > CH.downT - 0.2, 'down, he is not on the floor or not open: ' + [r.e.y, r.e.open]);
+    const t0 = r.log.says.length; r.run(CH.downT + 0.05); assert.ok(r.e.mode === 'rise' || r.e.mode === 'sink', 'after ' + CH.downT + ' s he does not flee: ' + r.e.mode);
+    r.run(CH.riseT + CH.sinkT + 0.2); assert.ok(r.e.mode === 'below' && r.log.armed.includes(0) && !r.log.cleared.length, 'in a strike room he does not sink through and light its pillar (the floor is yours to break): ' + JSON.stringify({ m: r.e.mode, a: r.log.armed, c: r.log.cleared }));
+    assert.ok(r.log.says.slice(t0).some(m => /PILLAR/.test(m)), 'the lit pillar is not told');
+    r.run(2); assert.equal(r.e.mode, 'below', 'he wakes under you before you are down in his room');
+    r.P.y = roomOf(1).floor * TS; r.P.ground = true; r.run(0.1); assert.ok(r.e.mode === 'wake' && r.e.room === 1 && r.log.rooms.includes(1), 'down in the room under, he does not wake there: ' + r.e.mode); }
+  { const r = rig(1); r.e.mode = 'gather'; r.e.modeT = 2; r.run(4, () => r.e.mode === 'down'); r.run(CH.downT + CH.riseT + 0.1); assert.equal(r.e.mode, 'tear', 'in a pour room he does not break the floor (his mark come back on him drops him too)');
+    assert.ok(r.log.says.some(m => /BREAKS THE FLOOR/.test(m)) && !r.log.cleared.length, 'the floor breaks untold'); r.run(CH.tearT + 0.05); assert.deepEqual(r.log.cleared, [1], 'his tear does not take the floor'); assert.equal(r.e.mode, 'below'); }
+  { const r = rig(3); r.e.mode = 'reflected'; r.run(4, () => r.e.mode === 'down'); r.run(CH.downT + CH.riseT + CH.tearT + 0.2); assert.ok(r.e.mode === 'away' && r.log.away === 1 && r.log.cleared[0] === 3, 'the last floor does not pour you into the core with him gone up: ' + r.e.mode); }
+  { const src = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
+    assert.ok(/e\.leg==='chase'\)\{const f=Math\.ceil\(\(e\.hp0\|\|e\.maxHp\)\*CH3\.hpFloor\)/.test(src) && CH.hpFloor >= 0.3 && CH.hpFloor <= 0.6, 'the chase can take him lower than its floor (his hall would have nothing left)');
+    assert.ok(/e\.realmAt=\[r\*0\.9,r\*0\.6,r\*0\.3\]/.test(src), 'his realms do not come at marks cut from what the chase left of him');
+    const MR = await import('../src/mage-realms.js'); assert.equal(MR.realmDue({ hp: 1200, hp0: 2800, realmN: 0, realmAt: [0.45, 0.3, 0.15] }), 0, 'his first realm does not come at its cut mark'); assert.equal(MR.realmDue({ hp: 1300, hp0: 2800, realmN: 0, realmAt: [0.45, 0.3, 0.15] }), -1, 'his first realm comes before its cut mark'); }
+  /* the floor's pillar: armed only once he is through (src/tower-supports.js) */
+  { const SU = await import('../src/tower-supports.js'), L3 = { ftSupports: L.ftSupports.filter(s => s.kind === 'floor').map(s => ({ ...s })) }; SU.supportsReset(L3);
+    const s = L3.ftSupports[0], P = { x: s.x - 10, y: s.y, dead: 0 }, set = [], says = []; let hb = { l: s.x - 8, r: s.x + 8, t: s.y - 20, b: s.y };
+    const c = { T, strike: () => hb, set: (x, y, t) => set.push([x, y, t]), resolve: () => {}, foes: () => [], hurt: () => {}, say: (x, y, m) => says.push(m), callout: m => says.push(m), sound: () => {}, shake: () => {}, dust: () => {}, burst: () => {} };
+    SU.supportsUpdate(L3, P, 1 / 60, c); hb = null; SU.supportsUpdate(L3, P, 1 / 60, c); assert.ok(s.st === 'whole' && !set.length && says.some(m => /HOLDS/.test(m)), 'the chase\'s pillar breaks before he is through it');
+    s.armed = true; hb = { l: s.x - 8, r: s.x + 8, t: s.y - 20, b: s.y }; SU.supportsUpdate(L3, P, 1 / 60, c); assert.equal(s.st, 'tell', 'struck once he is through, the pillar does not give');
+    hb = null; for (let i = 0; i < 60 * 1.3; i++) SU.supportsUpdate(L3, P, 1 / 60, c); assert.ok(s.st === 'down' && set.some(([x, y, t]) => y === roomOf(s.room).floor && t === T.AIR), 'the pillar does not take its floor with it'); } }
 // ---- PAGE ----
 const HEROES = ['knight', 'warden', 'pyro', 'paladin', 'pirate', 'reaper', 'geomancer'];
 const pg = await openPage({ audio: false, fonts: false }); let r;
