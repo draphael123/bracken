@@ -4,7 +4,7 @@ on:
     inputs:
       mode:
         type: choice
-        options: [private-sprite-cold-profile, private-sprite-native, private-sprite-union-qualified, captured-art-union-qualified, captured-level-art-component, fixed-level-art-selfcontained-loader, fixed-level-art-main-loader, fixed-level-art-view-component, fixed-level-art-weak-component, frame-tile-typed-arenas, fixed-level-art-component, frame-tile-lips-arenas, frame-tile-pattern-component, art-use-coverage, fresh-canvas-clone-component, wall-phase-pattern-component, wall-pattern-runs-component, opaque-invisible-standing, foreground-invisible-arenas, foreground-invisible-component, foreground-row-component, opaque-art-fused-cold, opaque-art-fused-component, private-foreground-component, layout-work-queue, opaque-sprite-diagnostic, opaque-sprite-union, opaque-tile-standing, deferred-standing, palette-ui, palette-standing, palette-base, layout-candidate, foreground-reuse, foreground-direct, fixed-ornaments, region-props, border-present, tile-warm, captain-boot, cpu-profile, tile-cache, paladin-boot, hero-reuse, profile, sfx, compare, mobile, calls, present, campaign, variant, pixel-debug]
+        options: [pure-sprite-context-native, private-sprite-cold-profile, private-sprite-native, private-sprite-union-qualified, captured-art-union-qualified, captured-level-art-component, fixed-level-art-selfcontained-loader, fixed-level-art-main-loader, fixed-level-art-view-component, fixed-level-art-weak-component, frame-tile-typed-arenas, fixed-level-art-component, frame-tile-lips-arenas, frame-tile-pattern-component, art-use-coverage, fresh-canvas-clone-component, wall-phase-pattern-component, wall-pattern-runs-component, opaque-invisible-standing, foreground-invisible-arenas, foreground-invisible-component, foreground-row-component, opaque-art-fused-cold, opaque-art-fused-component, private-foreground-component, layout-work-queue, opaque-sprite-diagnostic, opaque-sprite-union, opaque-tile-standing, deferred-standing, palette-ui, palette-standing, palette-base, layout-candidate, foreground-reuse, foreground-direct, fixed-ornaments, region-props, border-present, tile-warm, captain-boot, cpu-profile, tile-cache, paladin-boot, hero-reuse, profile, sfx, compare, mobile, calls, present, campaign, variant, pixel-debug]
         default: profile
       baseline:
         type: string
@@ -28,6 +28,32 @@ env:
 permissions:
   contents: read
 jobs:
+  pure-sprite-context-native:
+    if: inputs.mode == 'pure-sprite-context-native'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0,1]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.11.1'
+      - name: Original native factory graphs in a later changed gear and weapon context
+        run: node tools/pure-sprite-context-native.mjs
+        env:
+          PURE_SPRITE_SHARD: ${{ matrix.shard }}
+          PRIVATE_SPRITE_OUT: ${{ runner.temp }}/pure-sprite-context-${{ matrix.shard }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pure-sprite-context-${{ matrix.shard }}
+          path: ${{ runner.temp }}/pure-sprite-context-${{ matrix.shard }}/
+          if-no-files-found: error
   private-sprite-cold-profile:
     if: inputs.mode == 'private-sprite-cold-profile'
     runs-on: ubuntu-latest
