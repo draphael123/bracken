@@ -18597,10 +18597,10 @@ function callerCorners() { const A = L.arena; if (!A || !A.cornerRise || L.corne
   for (const [x0, x1, row] of A.cornerRise) for (let x = x0; x <= x1; x++) { const i = row * LW + x; if (L.grid[i] === T.AIR) { L.grid[i] = T.SPIKE; tileSpr[i] = null; } burst(x * TS + 8, (row + 1) * TS, 6, ['#7a8a3a', '#9aa39a'], 50, 0.5, 200, 1); }
   resolveTiles(); SFX.crack(); }
 /* THE PIT (o+17..19): fall in and its wind throws you back out onto the floor - a small chip (CALLER_PIT_PCT of max health), never a hazard's 27% */
-function callerPitStep(dt) { const A = L.arena; if (!A || !A.pit || P.dead) return; P.pitT = Math.max(0, (P.pitT || 0) - dt);
+function callerPitStep(dt) { const A = L.arena; if (!A || !A.pit || P.dead) return; P.pitT = Math.max(0, (P.pitT || 0) - dt); if (P.pitThrowT > 0) { P.pitThrowT -= dt; if (!P.ground) P.vx = P.pitSide * 120; }
   const x0 = A.pit[0] * TS, x1 = (A.pit[1] + 1) * TS; if (!(P.x > x0 + 1 && P.x < x1 - 1 && P.y > A.floor + 6 && P.y < A.floor + 64)) return;
   if (!(P.pitT > 0)) { damagePlayer(P.x, 1, { unblockable: true, pct: CALLER_PIT_PCT, name: 'THE PIT', noKnock: true }); if (P.dead || P.hp <= 0) return; number(P.x, P.y - 30, 'THE PIT WIND THROWS YOU OUT', '#bfe6f5'); SFX.gust(); P.pitT = 1.2; if (boss && boss.wc) boss.wc.n.pit = (boss.wc.n.pit || 0) + 1; }
-  const side = Math.sign((A.x0 + A.x1) / 2 - P.x) || -1; P.vy = Math.min(P.vy, -CALLER_PIT_LIFT); P.vx = side * 110;   /* (always toward the middle of the summit: never on into a corner's thorns) */ P.ground = false; P.onMover = null; P.climb = false;
+  const side = Math.sign((A.x0 + A.x1) / 2 - P.x) || -1; P.vy = Math.min(P.vy, -CALLER_PIT_LIFT); P.vx = side * 120; P.pitThrowT = 0.45; P.pitSide = side;   /* (always toward the middle of the summit, held a moment against the stick: never on into a corner's thorns) */ P.ground = false; P.onMover = null; P.climb = false;
   for (let i = 0; i < 6; i++) parts.push({ x: x0 + Math.random() * (x1 - x0), y: A.floor + 40, vx: 0, vy: -240 - Math.random() * 120, life: 0.4, max: 0.4, col: '#e8f0f8', size: 1, grav: 0 }); }
 /* HIS ROLLING AND FALLING WIND (the hurl's wall, the devils, the downdrafts' rings, the blades): moved and struck here; the gust scatters what rolls */
 function callerAttacksStep(e, dt) { const W = e.wc, A = L.arena; if (!W) return; const G = callerGustNow(), blowing = !!(G && G.on);

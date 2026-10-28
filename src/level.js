@@ -4194,30 +4194,30 @@ function galeMoor() {
   ent('sign', o + 3, 12, { text: 'HE ATTACKS ONLY IN THE STILL. RIDE THE GUST UP TO HIM, STRIKE HIM THREE TIMES, AND HE FALLS.' });
 
   /* ==== THE SUMMIT (704-751), THE WINDCALLER 4 (claude/windcaller4, scratch/brief-windcaller4-1026.md, Daniel 10-26: "he's really a nightmare to beat").
-     The thorn strip and the thorn field are GONE. Thorns only in the two FAR CORNERS (the west ones rise out of the heather as the fight begins - you
-     walk in over that ground) and a PIT east of the east ledge whose wind THROWS YOU BACK OUT onto the floor (a small chip, never a hazard's 27%:
+     The thorn strip and the thorn field are GONE. Thorns only in the FAR EAST CORNER (none in the west: the west updraft stands by that wall, and its west gust
+     would blow a rider onto them) and a PIT east of the east ledge whose wind THROWS YOU BACK OUT onto the floor (a small chip, never a hazard's 27%:
      main.js callerPitStep). Over it the two WIDE ledges he stands on, six rows up, reached only on the summit's TOLD GUST - its two updrafts blow
      while it blows and carry you off their tops downwind onto a ledge (the west updraft east to the west ledge; the middle one either way).
      THE LOOP: strike him three times on his ledge and he FALLS to the floor - the opening - then rises back up to a ledge. HE ATTACKS ONLY BETWEEN
      GUSTS: while the gust blows (or is about to) he holds. Phase one the gust blows east, phase two it alternates, phase three it comes faster and the
      east ledge falls (fair now: there are no thorns under it). You walk in off the landing, from the west (RULES I). ==== */
   o = 704; section('summit', 'THE SUMMIT', o, o + 47, null);
-  block(o, o + 35, 13, 29); block(o + 39, o + 47, 13, 29); block(o + 36, o + 38, 16, 29);   /* THE PIT (o+36..38), east of the east ledge: three rows deep, its wind throws you out */
-  spikes(o + 43, o + 45, 12);                                          /* THE EAST CORNER's thorns (the west corner's, o+1..2, rise as the fight begins: arena.cornerRise) */
-  plat(o + 9, 7, 8); plat(o + 26, 7, 8);                               /* THE WEST LEDGE and THE EAST LEDGE: six rows over the floor, both over safe floor end to end */
+  block(o, o + 34, 13, 29); block(o + 38, o + 47, 13, 29); block(o + 35, o + 37, 16, 29);   /* THE PIT (o+35..37), east of the east ledge: three rows deep, its wind throws you out */
+  spikes(o + 43, o + 45, 12);                                          /* THE EAST CORNER's thorns (no thorns in the west corner: the west updraft stands by that wall) */
+  plat(o + 10, 7, 8); plat(o + 26, 7, 8);                               /* THE WEST LEDGE and THE EAST LEDGE: six rows over the floor, both over safe floor end to end */
   const gale = { gale: true, wind: true, w: 12, h: 104, lift: 270 };   /* (gale: it blows with the summit's gust and only then - main.js callerGustNow) */
-  ent('vent', o + 4, 12, gale); ent('vent', o + 21, 12, Object.assign({}, gale));
+  ent('vent', o + 5, 12, gale); ent('vent', o + 21, 12, Object.assign({}, gale));   /* (the west one five tiles short of the west ledge, room west of it to step in from, clear of the corner) */
   gust(o + 1, o + 45, 0, 13, { period: 5, on: 2.2, dir: 1, shove: 240, air: true, arena: true, galeArena: true });   /* in the AIR only: on a ledge it walks you off unless you brace */
   ent('flagpost', o + 7, 12); ent('flagpost', o + 24, 12); ent('flagpost', o + 15, 6); ent('flagpost', o + 32, 6);
-  ent('windcaller', o + 12, 6);
+  ent('windcaller', o + 13, 6);
   ent('sign', o + 6, 12, { text: 'THE UPDRAFTS BLOW ONLY IN THE GUST: RIDE ONE UP. THREE BLOWS ON HIS LEDGE AND HE FALLS.', pyro: 'THE UPDRAFTS BLOW ONLY IN THE GUST: RIDE ONE UP. OR BURN HIS BOLT: FIRE SENDS IT HOME.', paladin: 'THE UPDRAFTS BLOW ONLY IN THE GUST: RIDE ONE UP. OR AEGIS HIS BOLT: IT GOES HOME.',
     ranger: 'THE UPDRAFTS BLOW ONLY IN THE GUST: RIDE ONE UP. OR SNATCH HIS BOLT: IT FLIES HOME.', reaper: 'THE UPDRAFTS BLOW ONLY IN THE GUST: RIDE ONE UP. OR LET THE WARD GO AS HIS BOLT LANDS.' });   /* (claude/moorpass) the heroes who send his bolt home from anywhere (main.js sendBoltHome) read their own way */
   ent('gate', o + 26, 12);   /* (the level ends when he dies; the gate stands on the floor the fight is fought on) */
-  const roosts = [[o + 12, 6], [o + 29, 6]];   /* where he stands: the middle of each ledge (the east one falls in phase three) */
+  const roosts = [[o + 13, 6], [o + 29, 6]];   /* where he stands: the middle of each ledge (the east one falls in phase three) */
   const arena = { x0: (o + 1) * TS, x1: (o + 45) * TS, floor: 13 * TS, trigger: (o + 6) * TS, wallL: o, wallR: o + 46, boss: 'windcaller', music: 'windcaller', tint: '#bfe6f5', tintA: 0.06, fx: 'dust',
-    home: (o + 6) * TS + 8, safe: [[o + 3, o + 35], [o + 39, o + 42]], ledges: [[o + 9, o + 16, 7], [o + 26, o + 33, 7]], crumble: 1,
-    pit: [o + 36, o + 38], cornerRise: [[o + 1, o + 2, 12]],
-    ledgePosts: [[o + 10, 7], [o + 13, 7], [o + 15, 7], [o + 27, 7], [o + 30, 7], [o + 32, 7]] };   /* (home: where you stand back on the floor; safe: the floors in tiles; pit: its columns; cornerRise: thorns grown at the fight's start; crumble: the ledge that falls in phase three) */
+    home: (o + 6) * TS + 8, safe: [[o + 2, o + 34], [o + 38, o + 42]], ledges: [[o + 10, o + 17, 7], [o + 26, o + 33, 7]], crumble: 1,
+    pit: [o + 35, o + 37],   /* (no west-corner thorns: the west updraft stands by that wall, and a rider its west gust blows back there would land on them - the east corner and the pit are the summit's only hazards; main.js callerCorners still grows arena.cornerRise thorns if a later pass wants them) */
+    ledgePosts: [[o + 11, 7], [o + 14, 7], [o + 16, 7], [o + 27, 7], [o + 30, 7], [o + 32, 7]] };   /* (home: where you stand back on the floor; safe: the floors in tiles; pit: its columns; cornerRise: thorns grown at the fight's start; crumble: the ledge that falls in phase three) */
   /* (claude/windcaller4) NOTHING FLOATS (tools/anchor-lint.mjs): the stair's rock is rock to the bottom; the summit's two ledges stand on wind-carved stone pillars (drawn, never solid: you pass in front of them) */
   L.routeSupports = (L.routeSupports || []).concat(arena.ledgePosts.map(([x, y]) => ({ x, y, bottom: 13, kind: 'pile', caller: true })));
 

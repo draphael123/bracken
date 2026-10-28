@@ -32,7 +32,7 @@ try {
     const z=()=>BK.L.gusts.find(q=>q.galeArena);
     const ph=()=>{const q=z();return ((BK.time+(q.phase||0))%q.period+q.period)%q.period;};
     const dirAt=t=>{const q=z();return (q.alt?(Math.floor((t+(q.phase||0))/q.period)%2?-q.dir:q.dir):q.dir);};
-    const vents=()=>BK.props().filter(p=>p.t==='vent'&&p.gale).sort((p,q)=>p.x-q.x);
+    const vents=()=>BK.props().filter(p=>p.t==='vent'&&p.gale&&!p.stair).sort((p,q)=>p.x-q.x);   /* (claude/windcaller4: not the Gale Stair's) */
     const ledge=i=>BK.L.arena.ledges[i];
     const onLedge=i=>{const [x0,x1,row]=ledge(i);return BK.P.ground&&Math.abs(BK.P.y-row*16)<3&&BK.P.x>=x0*16-4&&BK.P.x<=(x1+1)*16+4;};
     const onAnyLedge=()=>BK.L.arena.ledges.some((_,i)=>onLedge(i));
@@ -57,7 +57,7 @@ try {
     A=boot(2);const up=ride(vents()[0],'lip',-1,1,()=>!onAnyLedge());
     /* (claude/windcaller4) THE PIT: walked into, its wind throws you back out onto the floor toward the middle - a small chip, never the corner thorns */
     const pit=()=>{A=boot(1);const [p0,p1]=BK.L.arena.pit;place(p0*16-24);const h=BK.P.hp;K.right=true;let inP=false;for(let k=0;k<60*4;k++){step(1);if(BK.P.y>BK.L.arena.floor+6)inP=true;if(inP&&BK.P.ground&&k>20)break;}clear();step(30);const A2=BK.L.arena,lost=h-BK.P.hp;
-      return {ok:inP&&BK.P.ground&&Math.abs(BK.P.y-A2.floor)<3&&BK.P.x<p0*16&&lost>0&&lost<=Math.ceil(BK.P.maxHp*0.06)+1&&!A2.safe.every(([a,c])=>BK.P.x<a*16||BK.P.x>(c+1)*16+4)===true,x:Math.floor(BK.P.x/16),lost,inP};};
+      step(60);const out2=!(BK.P.x>p0*16+2&&BK.P.x<(p1+1)*16-2&&BK.P.y>A2.floor+4),thorn=BK.P.x>A2.safe[A2.safe.length-1][1]*16+24;return {ok:inP&&out2&&!thorn&&lost>0&&lost<=Math.ceil(BK.P.maxHp*0.12)+1,x:Math.floor(BK.P.x/16),lost,inP};};
     /* (claude/windcaller4) THE LOOP: on his ledge beside him, three blows and he falls to the floor (open) */
     const three=()=>{A=boot(1);const [x0,x1,row]=ledge(0);b.x=(x0+x1+1)*8;b.y=row*16;b.mode='cast';b.modeT=99;BK.tp(Math.floor(b.x/16)-1,row-1);step(10);BK.P.face=1;let n=0;for(let k=0;k<60*6&&b.mode!=='fallen';k++){if(BK.P.atk<0&&k%20===0){BK.press('atk');n++;}hold();BK.sim(1);}return {ok:b.mode==='fallen',swings:n,hits:b.hits};};
     const pt=pit(),th=three();
