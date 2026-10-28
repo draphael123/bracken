@@ -447,6 +447,9 @@ export const STUCK = {
     { id: 'mr-shaft-1', zone: [585, 18, 598, 20], at: [596, 20], line: 'A GUST SHAFT UNDER THE SCAFFOLD' },
     { id: 'mr-shaft-2', zone: [594, 14, 629, 16], at: [611, 16], line: 'A GUST SHAFT UNDER THE TOP DECK' },
     { id: 'mr-frame', zone: [608, 4, 639, 12], at: [629, 12], done: ['gustframe', 633, 12, 'fallen'], line: 'THE HALF-BUILT FRAME LEANS OVER THE GAP ON ONE ROPE' },
+    /* (claude/windcaller4) THE GALE STAIR: the shelf's updraft (the one way up the crag) and the gap floor's (the way out of it) - each blows only in the stair's gust */
+    { id: 'mr-stair-crag', zone: [647, 8, 658, 12], at: [654, 12], glint: 'stall', line: 'THE UPDRAFT BLOWS ONLY IN THE GUST: STEP IN AS THE FLAGS LIFT' },
+    { id: 'mr-stair-gap', zone: [670, 9, 678, 12], at: [674, 12], glint: 'stall', line: 'THE GAP FLOOR UPDRAFT CARRIES YOU OUT IN THE GUST' },
   ],
   /* THE SKY ROAD (claude/skyroad): every thermal the route rides, the cloak, every sun-stone the route needs until it is turned, the reel's cage, the sun-disc */
   /* THE ROOKERY (claude/rookery): every cracked rock the route needs until a dive breaks it (stand on the mark) */

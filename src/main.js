@@ -18529,7 +18529,8 @@ function updateWindcaller(e, dt) {
       if (e.castT <= 0 && close) e.castT = 0.3;
       /* HIS BLAST: stood beside him on his ledge he gathers the wind (red: no shield holds it, no brace) and blows you off it - step back. Only in the still */
       e.blastCd = Math.max(0, (e.blastCd ?? 2) - dt); e.closeT = Math.abs(P.x - e.x) < CALLER_BLAST_R && Math.abs(P.y - e.y) < 30 && !P.galeRide && still ? (e.closeT || 0) + dt : 0;
-      if (e.closeT >= CALLER_BLAST_WAIT[ph - 1] && e.blastCd <= 0 && !P.dead && callerStill(CALLER_BLAST_TELL + 0.4)) { e.closeT = 0; W.n.blast++; tell('blastTell', CALLER_BLAST_TELL, 'HE GATHERS THE WIND: STEP BACK', '#bfe6f5', '!!'); e.blastLen = CALLER_BLAST_TELL; e.blastDir = Math.sign(P.x - e.x) || e.face || 1; SFX.gustRise(); break; }
+      const reeled = (e.hits || 0) === CALLER_HITS - 1 && e.reelT > 0 && Math.abs(P.x - e.x) < CALLER_BLAST_R + 16 && Math.abs(P.y - e.y) < 30;   /* (claude/windcaller4) HIS DEFENCE: the blow before the last makes him gather the wind at once (told: step back, then finish him) */
+      if ((e.closeT >= CALLER_BLAST_WAIT[ph - 1] || reeled) && e.blastCd <= 0 && !P.dead && callerStill(CALLER_BLAST_TELL + 0.4)) { e.closeT = 0; W.n.blast++; tell('blastTell', CALLER_BLAST_TELL, 'HE GATHERS THE WIND: STEP BACK', '#bfe6f5', '!!'); e.blastLen = CALLER_BLAST_TELL; e.blastDir = Math.sign(P.x - e.x) || e.face || 1; SFX.gustRise(); break; }
       if (e.castT <= 0 && !P.dead && !P.galeRide && still) { e.castT = CALLER_CAST[ph - 1]; W.n.bolt++; const a = Math.atan2((P.y - 8) - (e.y - 14), P.x - e.x);
         seeds.push({ x: e.x + Math.cos(a) * 12, y: e.y - 14 + Math.sin(a) * 12, vx: Math.cos(a) * 150, vy: Math.sin(a) * 150, dead: false, life: 3.4, bolt: true, owner: e, dmg: CALLER_BOLT_DMG });   /* (owner: his bolts are his blows, BOSS_HIT) */
         e.castFlash = 0.25; SFX.callerBlast(); }
@@ -18555,13 +18556,13 @@ function updateWindcaller(e, dt) {
     /* THE GUST HURL: his staff sweeps low, his robes billow and dust streaks toward you - then a wall of wind runs along the floor (callerAttacksStep) */
     case 'hurlTell': if (Math.random() < dt * 40) parts.push({ x: e.x + (Math.random() - 0.5) * 30, y: A.floor - Math.random() * 6, vx: (Math.sign(P.x - e.x) || 1) * 160, vy: 0, life: 0.35, max: 0.35, col: '#d8cfb8', size: 1, grav: 0 });
       if (e.modeT <= 0) { const dir = Math.sign(P.x - e.x) || e.face || 1; W.hurls.push({ x: e.x - dir * 8, dir, life: 3.2, hit: false }); e.mode = 'hurl'; e.modeT = 0.4; SFX.gust(); SFX.throwWhoosh(); shakeCam(2); } break;
-    case 'hurl': if (e.modeT <= 0) toCast(castLen * 0.6); break;
+    case 'hurl': if (e.modeT <= 0) { toCast(castLen * 0.6); e.castT = Math.min(e.castT, CALLER_FOLLOW); } break;   /* (a bolt follows a move in the same still: CALLER_FOLLOW) */
     /* THE DUST DEVIL: he spins his staff over his head and flings a whirlwind down; it rolls along the floor at you */
     case 'devilTell': if (Math.random() < dt * 40) { const a = e.anim * 14 + Math.random(); parts.push({ x: e.x + Math.cos(a) * 12, y: e.y - 34 + Math.sin(a) * 4, vx: -Math.sin(a) * 40, vy: -10, life: 0.3, max: 0.3, col: '#e8dcc0', size: 1, grav: 0 }); }
       if (e.modeT <= 0) { const dir = Math.sign(P.x - e.x) || e.face || 1; W.devils.push({ x: e.x + dir * 10, dir, life: CALLER_DEVIL_LIFE, caught: false }); e.mode = 'devil'; e.modeT = 0.4; SFX.puff(); SFX.throwWhoosh(); } break;
-    case 'devil': if (e.modeT <= 0) toCast(castLen * 0.6); break;
+    case 'devil': if (e.modeT <= 0) { toCast(castLen * 0.6); e.castT = Math.min(e.castT, CALLER_FOLLOW); } break;
     /* THE DOWNDRAFT (phase two): he points his staff down at you - the ring of dust is drawn round where you stood (callerAttacksStep slams it) */
-    case 'draftTell': if (e.modeT <= 0) toCast(castLen * 0.6); break;
+    case 'draftTell': if (e.modeT <= 0) { toCast(castLen * 0.6); e.castT = Math.min(e.castT, CALLER_FOLLOW); } break;
     /* THE GALE BLADES (phase three): he draws the staff back across his body, and the blades he will throw are shown - HIGH (duck) or LOW (jump) - then a fan of three */
     case 'bladeTell': if (e.modeT <= 0) { const dir = Math.sign(P.x - e.x) || e.face || 1, gy = callerGroundY(); (e.bladeSeq || ['low']).forEach((s, i) => W.blades.push({ x: e.x + dir * 10, dir, kind: s, gy, delay: i * CALLER_BLADE_GAP, life: 2.6, hit: false })); e.mode = 'blades'; e.modeT = 0.3 + 2 * CALLER_BLADE_GAP; SFX.throwWhoosh(); } break;
     case 'blades': if (e.modeT <= 0) toCast(castLen * 0.6); break;
@@ -18590,7 +18591,7 @@ function callerStill(need) { const z = callerZone(); if (!z || !bossActive) retu
 /* where a hero stands for a downdraft or a blade: his ledge's top if he is on one, else the floor */
 function callerGroundY() { const A = L.arena; if (P.ground) return P.y; for (const [x0, x1, row] of (A.ledges || [])) if (P.x >= x0 * TS && P.x <= (x1 + 1) * TS && P.y <= row * TS + 2 && P.y > row * TS - 64) return row * TS; return A.floor; }
 /* the third blow counts only from beside him, level with him on his ledge (a hero below cannot knock him off with a thrown ember), never in his ward or a fall */
-const callerHitCounts = e => e.ward <= 0 && !['fallen', 'blink', 'appear', 'rise', 'sleep', 'wake'].includes(e.mode) && Math.abs(P.y - e.y) < 30 && Math.abs(P.x - e.x) < 80 && !!callerLedge(e);
+const callerHitCounts = e => e.ward <= 0 && !['fallen', 'blink', 'appear', 'rise', 'sleep', 'wake', 'blastTell', 'blast'].includes(e.mode) && Math.abs(P.y - e.y) < 30 && Math.abs(P.x - e.x) < 80 && !!callerLedge(e);
 /* THE WEST CORNER's thorns rise as the fight begins (you walked in over that ground; the east corner's are there from the start) */
 function callerCorners() { const A = L.arena; if (!A || !A.cornerRise || L.cornerUp) return; if (P.x < (A.cornerRise[0][1] + 2) * TS) return; L.cornerUp = true;
   for (const [x0, x1, row] of A.cornerRise) for (let x = x0; x <= x1; x++) { const i = row * LW + x; if (L.grid[i] === T.AIR) { L.grid[i] = T.SPIKE; tileSpr[i] = null; } burst(x * TS + 8, (row + 1) * TS, 6, ['#7a8a3a', '#9aa39a'], 50, 0.5, 200, 1); }
@@ -18605,13 +18606,13 @@ function callerPitStep(dt) { const A = L.arena; if (!A || !A.pit || P.dead) retu
 function callerAttacksStep(e, dt) { const W = e.wc, A = L.arena; if (!W) return; const G = callerGustNow(), blowing = !!(G && G.on);
   if (blowing && (W.hurls.length || W.devils.length)) { for (const h of W.hurls.concat(W.devils)) burst(h.x, A.floor - 10, 6, ['#e8f0f8', '#d8cfb8'], 60, 0.4, 0, 1); W.hurls.length = 0; W.devils.length = 0; }   /* the gust scatters them */
   const inPit = x => A.pit && x > A.pit[0] * TS && x < (A.pit[1] + 1) * TS;
-  for (const h of W.hurls) { h.x += h.dir * CALLER_HURL_V * dt; h.life -= dt;
+  for (const h of W.hurls) { h.x += h.dir * CALLER_HURL_V * dt; h.life -= dt; h.age = (h.age || 0) + dt;
     if (!h.hit && !P.dead && !P.galeRide && Math.abs(P.x - h.x) < 12 && P.y > A.floor - CALLER_HURL_H && P.y <= A.floor + 4) { h.hit = true;
       if (braced()) { P.vx = h.dir * 60; number(P.x, P.y - 30, 'BRACED', '#8fd160'); dust(P.x - h.dir * 4, P.y, 4); }
       else { const r = damagePlayer(h.x, CALLER_HURL_DMG, { who: e, name: 'GUST HURL', noKnock: true }); if (r !== 'blocked') { P.vx = h.dir * CALLER_HURL_SHOVE; P.vy = -140; P.ground = false; P.onMover = null; P.hurlT = 0.35; P.hurlDir = h.dir; } else { P.vx = h.dir * 90; } } } }
   W.hurls = W.hurls.filter(h => h.life > 0 && h.x > A.x0 - 8 && h.x < A.x1 + 8);
   if (P.hurlT > 0) { P.hurlT -= dt; if (!P.ground) P.vx = P.hurlDir * Math.max(Math.abs(P.vx), CALLER_HURL_SHOVE * 0.8); }   /* (the wall carries you a moment: a big shove, toward a corner or the pit) */
-  for (const v of W.devils) { v.x += v.dir * CALLER_DEVIL_V * dt; v.life -= dt;
+  for (const v of W.devils) { v.x += v.dir * CALLER_DEVIL_V * dt; v.life -= dt; v.age = (v.age || 0) + dt;
     if (inPit(v.x)) v.life = 0;
     if (!v.caught && !P.dead && !P.galeRide && !(P.devilRide) && Math.abs(P.x - v.x) < 12 && P.y > A.floor - 44 && P.y <= A.floor + 4) { v.caught = true; v.life = 0;
       const air = !P.ground && P.y < A.floor - 6;   /* JUMPED INTO IT: a ride, no harm. Caught on foot: lifted, spun, a small blow, dropped */
@@ -18625,7 +18626,7 @@ function callerAttacksStep(e, dt) { const W = e.wc, A = L.arena; if (!W) return;
     if (q.hit) q.life -= dt; }
   W.drafts = W.drafts.filter(q => !q.hit || q.life > 0);
   if (P.pinT > 0) { P.pinT -= dt; P.vx = 0; if (P.vy < 0) P.vy = 0; }
-  for (const b of W.blades) { if (b.delay > 0) { b.delay -= dt; continue; } b.x += b.dir * CALLER_BLADE_V * dt; b.life -= dt; const by = b.kind === 'high' ? b.gy - 20 : b.gy - 5;
+  for (const b of W.blades) { if (b.delay > 0) { b.delay -= dt; continue; } b.x += b.dir * CALLER_BLADE_V * dt; b.life -= dt; b.age = (b.age || 0) + dt; const by = b.kind === 'high' ? b.gy - 20 : b.gy - 5;
     if (!b.hit && !P.dead && !P.galeRide && Math.abs(P.x - b.x) < 9 && Math.abs(P.y - b.gy) < 40) { const ducked = P.ground && keys.down, high = P.y < b.gy - 14;
       if (b.kind === 'high' ? !ducked && P.y > by - 4 && P.y - 28 < by : !high) { b.hit = true; damagePlayer(b.x, CALLER_BLADE_DMG, { who: e, name: 'A GALE BLADE', low: b.kind === 'low' }); } } }
   W.blades = W.blades.filter(b => b.life > 0 && !b.hit && b.x > A.x0 - 8 && b.x < A.x1 + 8); }
@@ -18644,11 +18645,11 @@ const CALLER_RISE = 150;   /* px/s he rises on the wind (phase three, off the le
    an opening (B3, s); the storm's crumble; his guard while warded (B15: never below 0.4); x CALLER_OPEN_MUL in an opening; a bolt sent back counts as UP CLOSE
    within CALLER_NEAR px. THE LOOP: CALLER_HITS blows beside him on his ledge and he falls. CALLER_AFTER: s of still after a gust before he moves again */
 const CALLER_P2 = 0.66, CALLER_P3 = 0.33, CALLER_CAST = [2.0, 1.8, 1.6], CALLER_STEP_V = 150, CALLER_WARD = 3, CALLER_GALE_TELL = 1.3, CALLER_CRUMBLE = 2.2,
-  CALLER_GUARD = 0.4, CALLER_OPEN_MUL = 2, CALLER_NEAR = 120, CALLER_BOLT_DMG = 20, CALLER_STONE_DMG = 28, CALLER_LEDGE_SHOVE = 170, CALLER_HITS = 3, CALLER_AFTER = 0.2,
-  CALLER_BLAST_R = 46, CALLER_BLAST_WAIT = [0.8, 0.7, 0.6], CALLER_BLAST_TELL = 1.0, CALLER_BLAST_CD = [5, 4, 3.5], CALLER_BLAST_DMG = 20,   /* HIS BLAST: how near, how long you stand there before he gathers it, its tell, its rest a phase, what it costs */
-  CALLER_HURL_TELL = 0.8, CALLER_HURL_CD = [5, 4.5, 4], CALLER_HURL_V = 230, CALLER_HURL_H = 20, CALLER_HURL_DMG = 12, CALLER_HURL_SHOVE = 330,   /* THE GUST HURL: tell, rest a phase, speed, how high the wall stands (jump it), its blow and its shove */
-  CALLER_DEVIL_TELL = 0.8, CALLER_DEVIL_CD = [6, 5.5, 5], CALLER_DEVIL_V = 85, CALLER_DEVIL_LIFE = 4.5, CALLER_DEVIL_DMG = 10, CALLER_DEVIL_RIDE = 0.42, CALLER_DEVIL_LIFT = 290,   /* THE DUST DEVIL: tell, rest, roll speed, life, blow on foot, ride (s at lift px/s: ~120 px, over a ledge) */
-  CALLER_DRAFT_TELL = 1.1, CALLER_DRAFT_CD = [0, 5.5, 5], CALLER_DRAFT_R = 22, CALLER_DRAFT_DMG = 18, CALLER_DRAFT_PIN = 0.6,   /* THE DOWNDRAFT (phase two on): the ring's tell, rest, radius, blow, pin */
+  CALLER_GUARD = 0.4, CALLER_OPEN_MUL = 2, CALLER_NEAR = 120, CALLER_BOLT_DMG = 22, CALLER_STONE_DMG = 28, CALLER_LEDGE_SHOVE = 170, CALLER_HITS = 3, CALLER_AFTER = 0.2, CALLER_FOLLOW = 0.5,
+  CALLER_BLAST_R = 46, CALLER_BLAST_WAIT = [0.8, 0.7, 0.6], CALLER_BLAST_TELL = 1.0, CALLER_BLAST_CD = [5, 4, 3.5], CALLER_BLAST_DMG = 26,   /* HIS BLAST: how near, how long you stand there before he gathers it, its tell, its rest a phase, what it costs */
+  CALLER_HURL_TELL = 0.8, CALLER_HURL_CD = [5, 4.5, 4], CALLER_HURL_V = 300, CALLER_HURL_H = 20, CALLER_HURL_DMG = 14, CALLER_HURL_SHOVE = 330,   /* THE GUST HURL: tell, rest a phase, speed, how high the wall stands (jump it), its blow and its shove */
+  CALLER_DEVIL_TELL = 0.8, CALLER_DEVIL_CD = [6, 5.5, 5], CALLER_DEVIL_V = 110, CALLER_DEVIL_LIFE = 4.5, CALLER_DEVIL_DMG = 10, CALLER_DEVIL_RIDE = 0.42, CALLER_DEVIL_LIFT = 290,   /* THE DUST DEVIL: tell, rest, roll speed, life, blow on foot, ride (s at lift px/s: ~120 px, over a ledge) */
+  CALLER_DRAFT_TELL = 1.0, CALLER_DRAFT_CD = [0, 5.5, 5], CALLER_DRAFT_R = 22, CALLER_DRAFT_DMG = 18, CALLER_DRAFT_PIN = 0.6,   /* THE DOWNDRAFT (phase two on): the ring's tell, rest, radius, blow, pin */
   CALLER_BLADE_TELL = 0.9, CALLER_BLADE_CD = 5, CALLER_BLADE_GAP = 0.35, CALLER_BLADE_V = 210, CALLER_BLADE_DMG = 14,   /* THE GALE BLADES (phase three): tell, rest, gap between the three, speed, each blade's blow */
   CALLER_PIT_PCT = 0.05, CALLER_PIT_LIFT = 430;   /* THE PIT: its chip (a share of max health) and the throw out */
 /* HIS OPENING IS THE FALL (claude/bosswave1; claude/windcaller3): open only when he is DOWN - knocked off his ledge by his own bolt sent back up close
@@ -18700,7 +18701,7 @@ function callerCrumble(e, dt) { if (!(e.crumbleT > 0) || L.galeFell) return; con
   if (on(e.x, e.y) && e.mode !== 'fallen') { const r = callerRoosts()[0]; if (r) { e.mode = 'rise'; e.riseX = r[0] * TS + 8; e.riseY = (r[1] + 1) * TS; e.modeT = 4; } } }
 /* B11 + B15, HIS OWN DEFENCE (wardedDamage): whole on his ledge; x CALLER_OPEN_MUL down; CALLER_GUARD (a told clank) while he steps away or is warded */
 function callerTake(e, dmg, tag) { if (callerOpen(e)) { const floor = (e.fallHp || e.hp) - e.maxHp * (e.fallBig ? CALLER_FALL_TAKE_BIG : CALLER_FALL_TAKE); return Math.max(1, Math.min(dmg * CALLER_OPEN_MUL, Math.ceil(e.hp - floor))); }   /* (claude/windcaller4) A FALL PAYS ITS SHARE AND NO MORE: the blow that crosses the share is cut to it (x2 blows overshot it by half again) */
-  if (e.ward > 0 || e.mode === 'step') { BR.turned(e, P.x, e.ward > 0 ? 'WARDED' : 'HE STEPS AWAY', { stop: false }); return Math.max(1, Math.round(dmg * CALLER_GUARD)); }
+  if (e.ward > 0 || e.mode === 'step' || e.mode === 'blastTell') { BR.turned(e, P.x, e.ward > 0 ? 'WARDED' : e.mode === 'blastTell' ? 'STEP BACK' : 'HE STEPS AWAY', { stop: false }); return Math.max(1, Math.round(dmg * CALLER_GUARD)); }   /* (claude/windcaller4) while he GATHERS THE WIND the wind guards him (0.4, B15): step back out of the blast, then finish him */
   return dmg; }
 // his bolts come back at him: struck, blocked, or caught in the Aegis - and UP CLOSE (on his ledge, beside him) one knocks him down
 function returnBolt(s) { const wc = (s.owner && s.owner.alive) ? s.owner : enemies.find(e => e.t === 'windcaller' && e.alive); if (!wc) return false; const dx = wc.x - s.x, dy = (wc.y - 14) - s.y, d = Math.hypot(dx, dy) || 1; s.near = d <= CALLER_NEAR && Math.abs(dy) < 40; s.dead = false; s.vx = dx / d * 270; s.vy = dy / d * 270; s.g = 0; s.reflected = true; s.life = 2.5; SFX.parry(); return true; }

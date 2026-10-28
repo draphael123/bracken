@@ -55,7 +55,7 @@ export const TURN_WORD = {
   ram: (e, fromX) => e.ward > 0 || behind(e, fromX) ? TURN.WARDED : TURN.ROUND,   /* (claude/scree2: his ward after an opening) */
   chief: (e, fromX) => behind(e, fromX) ? TURN.WARDED : TURN.ROUND,
   frog: 'IN THE AIR',   /* (claude/frogking2) no hide on his pad: only his leap turns a blow (0.4x, B15) */
-  windcaller: e => e.mode === 'blink' || e.mode === 'appear' || e.mode === 'gone' ? TURN.NOT_THERE : e.mode === 'step' && !(e.ward > 0) ? 'HE STEPS AWAY' : TURN.WARDED,   // (claude/windcaller3) a duelist on his ledge: his ward after a fall, his step away
+  windcaller: e => e.mode === 'blink' || e.mode === 'appear' || e.mode === 'gone' ? TURN.NOT_THERE : e.mode === 'blastTell' && !(e.ward > 0) ? 'STEP BACK' : e.mode === 'step' && !(e.ward > 0) ? 'HE STEPS AWAY' : TURN.WARDED,   /* (claude/windcaller4) gathering the wind: STEP BACK */   // (claude/windcaller3) a duelist on his ledge: his ward after a fall, his step away
   grandmother: e => (e.gm3 || e.ward > 0 ? TURN.WARDED : 'SHE HEARD YOU'),   /* (claude/underleaf3: the Grandmother 3 is warded by her brood or her ward after an opening) */           // (claude/underleaf2) B14 FROM BEHIND: her front hears the blade and turns it; her ward after an opening
   winchmaster: e => (e.ward > 0 && !e.armour ? TURN.WARDED : 'ORE: THROW IT'),   // (claude/winch5) his ORE ARMOUR: a rock off his skip breaks it; his ward after a stagger
   greathound: TURN.ROUND,                                   // (claude/hound) his jaws turn part of a blow into his face: go round, or come down on him
