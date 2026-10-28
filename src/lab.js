@@ -2547,6 +2547,7 @@ async function runbossLab(BK, opts) {
         const slam = (boss.mode === 'swingTell' || boss.mode === 'swing') && boss.swTo !== undefined && !boss.swRite && Math.abs(P.x - boss.swTo) < ABBOT_K.slamR + 10 && Math.abs((boss.swY ?? fl) - P.y) < 30;
         const orb = boss.orb && Math.abs(P.x - boss.orb.tx) < ABBOT_K.lightR + 8 && boss.orb.t > boss.orb.T * 0.35 && Math.abs((boss.orb.ty ?? fl) - P.y) < 30;
         const praying = boss.mode === 'riteTell', ph = boss.riteAt || boss.phase || 1;
+        const burn = (BK.fires() || []).find(q => !(q.delay > 0) && q.life > 0.3 && Math.abs(q.x - P.x) < 16 && Math.abs(q.y - P.y) < 12);
         /* a bridge he is standing on now (praying or not): its bell drops him */
         const onBr = H && boss.deck === 'high' && boss.mode !== 'swing' && boss.mode !== 'swingTell' && !boss.brGone ? H.bridges.findIndex((b, i) => boss.br && boss.br[i] !== false && boss.x > b.x0 + 2 && boss.x < b.x1 - 2 && !H.spans.some(s => boss.x >= s[0] - 2 && boss.x <= s[1] + 2)) : -1;
         const hitAt = (x, half) => { /* walk to strike a thing on the floor at x (a bell): stand off by the reach, face it, swing */
@@ -2554,6 +2555,7 @@ async function runbossLab(BK, opts) {
           if (Math.abs(P.x - at) < 8 && P.ground && P.atk < 0) { goal = null; P.face = -side; k.block = false; BK.press('atk'); swings++; } else goal = at; };
         strike = false;
         if (H && onHigh && !boss.smoke) { goal = P.x; k.down = true; }   /* off the boards: the fight is on the floor (down drops through a board) */
+        else if (burn) goal = burn.x + (Math.sign(P.x - burn.x) || 1) * 26;           /* HIS COALS: off the floor fire first (it turns on no shield) */
         else if (boss.mode === 'beaten' && bl) hitAt(bl.x, 12);                       /* THE LAST BLOW: the great bell */
         else if (boss.open > 0 && bossLow) { goal = boss.x; strike = true; }         /* the house answered: get on him, the window is worth three blows */
         else if (chain) { goal = null; P.face = Math.sign(boss.x - P.x) || P.face;
