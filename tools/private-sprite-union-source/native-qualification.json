@@ -1,0 +1,194 @@
+{
+  "run": 40775881700,
+  "controller": "b279b6fb10691ba71a2ccbdee9c58d999e40e9ef",
+  "manifestSha256": "9b2549a5e42337c283252d77101433449283879e01a4014155ad00204e4ba19b",
+  "native": {
+    "complete": true,
+    "graphs": 77,
+    "originalCatalogueContracts": 23,
+    "mixedNativeContracts": 7,
+    "globalRngCalls": 0,
+    "manifestSha256": "9b2549a5e42337c283252d77101433449283879e01a4014155ad00204e4ba19b",
+    "allPixelsContextsMetadataDescriptorsAliasesExact": true,
+    "original23AssertionsExactUndo": true,
+    "canonicalAssetModules": 25,
+    "processes": {
+      "launches": 1,
+      "closures": 1,
+      "rawInterruptions": [],
+      "profiles": [
+        {
+          "profile": "/tmp/bracken-look-3c0eFS",
+          "absent": true
+        }
+      ],
+      "events": [
+        {
+          "type": "launch",
+          "pid": 2176,
+          "profile": "/tmp/bracken-look-3c0eFS",
+          "time": 1793224560175
+        },
+        {
+          "type": "browser-stderr",
+          "pid": 2176,
+          "profile": "/tmp/bracken-look-3c0eFS",
+          "time": 1793224563160,
+          "text": "[2176:2202:1028/215603.151921:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are \"tcp\" and on UNIX \"unix\")\n"
+        },
+        {
+          "type": "browser-stderr",
+          "pid": 2176,
+          "profile": "/tmp/bracken-look-3c0eFS",
+          "time": 1793224563772,
+          "text": "[2176:2202:1028/215603.772369:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are \"tcp\" and on UNIX \"unix\")\n[2176:2202:1028/215603.772388:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are \"tcp\" and on UNIX \"unix\")\n"
+        },
+        {
+          "type": "browser-stderr",
+          "pid": 2176,
+          "profile": "/tmp/bracken-look-3c0eFS",
+          "time": 1793224563979,
+          "text": "[2176:2202:1028/215603.979599:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are \"tcp\" and on UNIX \"unix\")\n"
+        },
+        {
+          "type": "browser-stderr",
+          "pid": 2176,
+          "profile": "/tmp/bracken-look-3c0eFS",
+          "time": 1793224564335,
+          "text": "[2176:2202:1028/215604.334951:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are \"tcp\" and on UNIX \"unix\")\n"
+        },
+        {
+          "type": "browser-stderr",
+          "pid": 2176,
+          "profile": "/tmp/bracken-look-3c0eFS",
+          "time": 1793224565139,
+          "text": "\nDevTools listening on ws://127.0.0.1:42457/devtools/browser/86167956-4f5a-430c-9cc9-7b0d7b7397eb\n"
+        },
+        {
+          "type": "browser-stderr",
+          "pid": 2176,
+          "profile": "/tmp/bracken-look-3c0eFS",
+          "time": 1793224566334,
+          "text": "[2176:2176:1028/215606.333993:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: \n"
+        },
+        {
+          "type": "browser-stderr",
+          "pid": 2176,
+          "profile": "/tmp/bracken-look-3c0eFS",
+          "time": 1793224566334,
+          "text": "[2176:2202:1028/215606.334064:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are \"tcp\" and on UNIX \"unix\")\n[2176:2176:1028/215606.334131:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: \n[2176:2202:1028/215606.334158:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are \"tcp\" and on UNIX \"unix\")\n[2176:2176:1028/215606.334269:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: \n"
+        },
+        {
+          "type": "browser-stderr",
+          "pid": 2176,
+          "profile": "/tmp/bracken-look-3c0eFS",
+          "time": 1793224566376,
+          "text": "[2176:2176:1028/215606.376630:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: \n"
+        },
+        {
+          "type": "browser-stderr",
+          "pid": 2176,
+          "profile": "/tmp/bracken-look-3c0eFS",
+          "time": 1793224566380,
+          "text": "[2176:2202:1028/215606.380627:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are \"tcp\" and on UNIX \"unix\")\n"
+        },
+        {
+          "type": "browser-stderr",
+          "pid": 2176,
+          "profile": "/tmp/bracken-look-3c0eFS",
+          "time": 1793224566678,
+          "text": "[2176:2176:1028/215606.678371:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: \n"
+        },
+        {
+          "type": "browser-stderr",
+          "pid": 2176,
+          "profile": "/tmp/bracken-look-3c0eFS",
+          "time": 1793224566688,
+          "text": "[2176:2176:1028/215606.687564:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: \n"
+        },
+        {
+          "type": "browser-stderr",
+          "pid": 2176,
+          "profile": "/tmp/bracken-look-3c0eFS",
+          "time": 1793224566688,
+          "text": "[2176:2202:1028/215606.688064:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are \"tcp\" and on UNIX \"unix\")\n"
+        },
+        {
+          "type": "browser-stderr",
+          "pid": 2176,
+          "profile": "/tmp/bracken-look-3c0eFS",
+          "time": 1793224566693,
+          "text": "[2176:2176:1028/215606.693283:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: \n"
+        },
+        {
+          "type": "browser-stderr",
+          "pid": 2176,
+          "profile": "/tmp/bracken-look-3c0eFS",
+          "time": 1793224566883,
+          "text": "[2176:2176:1028/215606.882901:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: \n"
+        },
+        {
+          "type": "browser-stderr",
+          "pid": 2176,
+          "profile": "/tmp/bracken-look-3c0eFS",
+          "time": 1793224566883,
+          "text": "[2176:2202:1028/215606.882974:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are \"tcp\" and on UNIX \"unix\")\n"
+        },
+        {
+          "type": "browser-stderr",
+          "pid": 2176,
+          "profile": "/tmp/bracken-look-3c0eFS",
+          "time": 1793224566890,
+          "text": "[2176:2176:1028/215606.889953:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.Properties.GetAll: object_path= /org/freedesktop/UPower/devices/DisplayDevice: org.freedesktop.DBus.Error.ServiceUnknown: The name org.freedesktop.UPower was not provided by any .service files\n"
+        },
+        {
+          "type": "browser-stderr",
+          "pid": 2176,
+          "profile": "/tmp/bracken-look-3c0eFS",
+          "time": 1793224567118,
+          "text": "[2176:2176:1028/215607.118415:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: \n"
+        },
+        {
+          "type": "browser-stderr",
+          "pid": 2176,
+          "profile": "/tmp/bracken-look-3c0eFS",
+          "time": 1793224567118,
+          "text": "[2176:2202:1028/215607.118487:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are \"tcp\" and on UNIX \"unix\")\n"
+        },
+        {
+          "type": "browser-stderr",
+          "pid": 2176,
+          "profile": "/tmp/bracken-look-3c0eFS",
+          "time": 1793224567238,
+          "text": "[2176:2176:1028/215607.238311:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: \n"
+        },
+        {
+          "type": "browser-stderr",
+          "pid": 2176,
+          "profile": "/tmp/bracken-look-3c0eFS",
+          "time": 1793224576986,
+          "text": "Created TensorFlow Lite XNNPACK delegate for CPU.\n"
+        },
+        {
+          "type": "closed",
+          "pid": 2176,
+          "profile": "/tmp/bracken-look-3c0eFS",
+          "time": 1793224604436,
+          "peak": {
+            "totalMb": 2388,
+            "rendererMb": 1089
+          },
+          "reason": null
+        }
+      ]
+    },
+    "admission": {
+      "available": 14416,
+      "required": 4352,
+      "waited": false
+    },
+    "artifactSha256": "ce94a9d1ac2d47394520ba0e4175c62a14679417c3dbe1258fea2c0143fa665a",
+    "nodeContractSha256": "547666793ae316f89890f9e694186def2eb25274f35f534465177e6fe678fa7b"
+  },
+  "noWholeGameOrTimingProofInherited": true
+}

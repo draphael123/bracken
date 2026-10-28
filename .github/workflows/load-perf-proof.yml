@@ -4,7 +4,7 @@ on:
     inputs:
       mode:
         type: choice
-        options: [private-sprite-native, captured-art-union-qualified, captured-level-art-component, fixed-level-art-selfcontained-loader, fixed-level-art-main-loader, fixed-level-art-view-component, fixed-level-art-weak-component, frame-tile-typed-arenas, fixed-level-art-component, frame-tile-lips-arenas, frame-tile-pattern-component, art-use-coverage, fresh-canvas-clone-component, wall-phase-pattern-component, wall-pattern-runs-component, opaque-invisible-standing, foreground-invisible-arenas, foreground-invisible-component, foreground-row-component, opaque-art-fused-cold, opaque-art-fused-component, private-foreground-component, layout-work-queue, opaque-sprite-diagnostic, opaque-sprite-union, opaque-tile-standing, deferred-standing, palette-ui, palette-standing, palette-base, layout-candidate, foreground-reuse, foreground-direct, fixed-ornaments, region-props, border-present, tile-warm, captain-boot, cpu-profile, tile-cache, paladin-boot, hero-reuse, profile, sfx, compare, mobile, calls, present, campaign, variant, pixel-debug]
+        options: [private-sprite-native, private-sprite-union-qualified, captured-art-union-qualified, captured-level-art-component, fixed-level-art-selfcontained-loader, fixed-level-art-main-loader, fixed-level-art-view-component, fixed-level-art-weak-component, frame-tile-typed-arenas, fixed-level-art-component, frame-tile-lips-arenas, frame-tile-pattern-component, art-use-coverage, fresh-canvas-clone-component, wall-phase-pattern-component, wall-pattern-runs-component, opaque-invisible-standing, foreground-invisible-arenas, foreground-invisible-component, foreground-row-component, opaque-art-fused-cold, opaque-art-fused-component, private-foreground-component, layout-work-queue, opaque-sprite-diagnostic, opaque-sprite-union, opaque-tile-standing, deferred-standing, palette-ui, palette-standing, palette-base, layout-candidate, foreground-reuse, foreground-direct, fixed-ornaments, region-props, border-present, tile-warm, captain-boot, cpu-profile, tile-cache, paladin-boot, hero-reuse, profile, sfx, compare, mobile, calls, present, campaign, variant, pixel-debug]
         default: profile
       baseline:
         type: string
@@ -117,6 +117,89 @@ jobs:
         with:
           name: foreground-invisible-${{ matrix.level }}
           path: ${{ runner.temp }}/bracken-foreground-invisible/
+          if-no-files-found: error
+  private-sprite-union-loader:
+    if: inputs.mode == 'private-sprite-union-qualified'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    outputs:
+      qualified: ${{ steps.qualification.outputs.qualified }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/checkout@v4
+        with:
+          ref: 1a576c3f4511b6856df9fb4738df5aaae9987e81
+          path: private-sprite-union-game
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.11.1'
+      - name: Unchanged original standalone cleanup fixture on exact combined main
+        run: node tools/private-sprite-union-preflight.mjs
+        env:
+          FIXED_ART_GAME: private-sprite-union-game
+          FIXED_ART_LOADER_OUT: ${{ runner.temp }}/private-sprite-union-loader
+      - name: Original126loading readbacks and84exact frame display state RNG return controls
+        run: node tools/private-sprite-union-loader-runner.mjs
+        env:
+          FIXED_ART_GAME: private-sprite-union-game
+          FIXED_ART_LOADER_OUT: ${{ runner.temp }}/private-sprite-union-loader
+      - name: Same unchanged material gain and return stability criterion
+        id: qualification
+        run: node tools/private-sprite-union-qualify.mjs
+        env:
+          FIXED_ART_LOADER_OUT: ${{ runner.temp }}/private-sprite-union-loader
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: private-sprite-union-loader
+          path: ${{ runner.temp }}/private-sprite-union-loader/
+          if-no-files-found: error
+  private-sprite-union-standing:
+    needs: private-sprite-union-loader
+    if: inputs.mode == 'private-sprite-union-qualified' && needs.private-sprite-union-loader.outputs.qualified == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        scope: [memory,layout,campaign-1,campaign-2,campaign-3,campaign-4,campaign-5,campaign-6,campaign-7,campaign-8]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/checkout@v4
+        with:
+          ref: 1a576c3f4511b6856df9fb4738df5aaae9987e81
+          path: private-sprite-union-game
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.11.1'
+      - uses: actions/download-artifact@v4
+        with:
+          name: private-sprite-union-loader
+          path: ${{ runner.temp }}/private-sprite-union-qualification
+      - name: Verify exact combined source and921original tool hashes
+        run: node tools/private-sprite-union-standing-proof.mjs verify --game=private-sprite-union-game
+      - name: Original source-specific scopes without assertion or limit overrides
+        run: |
+          if [[ "$SCOPE" == campaign-* ]]; then
+            node tools/private-sprite-union-standing-proof.mjs campaign --shard="${SCOPE#campaign-}" --game=private-sprite-union-game
+          else
+            node tools/private-sprite-union-standing-proof.mjs "$SCOPE" --game=private-sprite-union-game
+          fi
+        env:
+          SCOPE: ${{ matrix.scope }}
+          QUALIFIED_ART_EVIDENCE: ${{ runner.temp }}/private-sprite-union-qualification
+          FIXED_ART_UNION_OUT: ${{ runner.temp }}/private-sprite-union-${{ matrix.scope }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: private-sprite-union-${{ matrix.scope }}
+          path: ${{ runner.temp }}/private-sprite-union-${{ matrix.scope }}/
           if-no-files-found: error
   captured-art-union-loader:
     if: inputs.mode == 'captured-art-union-qualified'
