@@ -19,6 +19,8 @@ import { VH_SAY } from './village-hands.js'; import { SPW_SAY } from './sporewoo
 import { GORM_SAY } from './gorm.js'; import { RB_SAY } from './royal-boar.js';   /* (claude/gorm2) KING GORM 2's and THE ROYAL BOAR's lines, said as variables */ import { STK_SAY } from './stockade-hands.js'; import { KW_SAY } from './kingswood-hands.js';   /* (claude/kingswood2) KINGSWOOD 2's ropes, logs and procession lines, said as variables */   /* (claude/stockade2) THE STOCKADE 2's horn, piles, gate, exam and war-tower lines, said as variables */ import { PO_SAY } from './potion-hands.js'; 
 import { LP3_SAY } from './lamplit-fire.js'; import { WK_SAY } from './wickling.js';   /* (claude/lamplit3) THE LAMPLIT STREET 3's fire lines and THE WICKLING's, said as variables */   /* (claude/pyramidboss) THE COFFIN KING's lines, said as variables */
 export const CALL_LINES = new Set([
+  /* batch126 pre-gate 10-28: lines main.js says that the hint box now shows (the Hurricane's storm call, the sea bell rung), routed as hint-shown requires */
+  'THE SUN STAYS: STONES ARE SHADE', 'YOU RING IT',
   /* (claude/oreroadminor) THE ORE ROAD's minor pass (src/ore-works.js): the lamps you strike and the counterweight lifts - routed as hint-shown requires */
   'LIT: THE STRETCH LIGHTS FOR GOOD', 'ONE ROCK IN: ONE MORE', 'THE WEIGHT TAKES: THE PAN RISES', 'THE ORE TIPS OUT: THE PAN COMES DOWN', 'THE ROCK STAYS OUTSIDE',
   /* (claude/oreroadminor) THE LAUNCHED CARTS (src/ore-works.js, src/ore-carts.js): a shove, a ram, the barricade breaking, a bump too slow, the trip chain */
@@ -38,7 +40,7 @@ export const CALL_LINES = new Set([
   /* batch101 integ 10-18: THE BELL HOUSINGS (claude/airpockets) - the housing is spent / fills again, routed as hint-shown requires */
   'THE HOUSING IS SPENT', 'THE HOUSING FILLS AGAIN',
   /* batch100 integ 10-18: THE CAPTAIN 2 (claude/hurricane2) - the wave, the lightning, his line and ward, routed as hint-shown requires */
-  'KNOCKED FLAT: GRAB A LINE', 'KNOCKED FLAT: CUT HIM', 'STRUCK: CUT HIM', 'HE MAKES FOR A LINE', 'HE CALLS THE SEA', 'YOU HAVE HIS LINE', 'HIS WHISTLE', 'HE IS UP: WARDED', 'HE SHAKES IT OFF: WARDED', 'TURNED: CUT HIM',
+  'KNOCKED FLAT: GRAB A LINE', 'KNOCKED FLAT: CUT HIM', 'STRUCK: CUT HIM', 'YOU HAVE HIS LINE', 'HE IS UP: WARDED', 'HE SHAKES IT OFF: WARDED', 'TURNED: CUT HIM',
   /* (claude/lamplit3) claude/airpockets' bell-housing lines (THE TOLLMASTER's square), routed as hint-shown requires */
   'THE HOUSING FILLS AGAIN', 'THE HOUSING IS SPENT',
   /* batch99 integ 10-18: THE LAMPREEVE and THE TOLLMASTER (claude/lamplit2) - toll, oil, wax and air lines, routed as hint-shown requires */
@@ -101,7 +103,7 @@ export const CALL_LINES = new Set([
   'THE BURIED PRINCE  BAREHEADED', 'THE BURIED PRINCE  IN THE LIGHT', 'THE FORGEMASTER  STUNNED', 'THE FORGEMASTER  SCALDED', 'THE WINDCALLER  HOLD ON',
   /* the openings that say what to do */
   'CUT HIM', 'HIT IT', 'HIT THE TALON', 
-  'IN THE MUD: CUT HIM', 'DOWN: CUT HER', 'THE LANCE STICKS: CUT HIM', 'THE POINT STICKS: CUT HIM', 'INTO THE STONE: CUT HER', 'THE RIME RUNS OFF IT: CUT IT',
+  'IN THE MUD: CUT HIM', 'DOWN: CUT HER', 'THE POINT STICKS: CUT HIM', 'INTO THE STONE: CUT HER', 'THE RIME RUNS OFF IT: CUT IT',
   'IT FALLS - FINISH IT', 'IT SKIDS: HIT IT', 'IT LANDS: HIT IT', 'IT WHINES: HIT IT', 'INTO THE LANTERN: HIT IT', 'PINNED: HIT IT', 'ON THE GROUND: HIT IT',
   'DAZED: HIT HIM', 'SCALDED: HIT HIM', 'STUCK: JUMP ON IT', 'STRIKE ITS LEVER', 'STRIKE IT AGAIN', 'KILL THE PUPS FAST', 'THE BOUGHS: GET CLEAR', 'HIS WARD: HE SHAKES IT OFF',
   /* claude/bosswave1: the boss wave's earned openings, told (src/main.js, src/boss-greed.js OPEN_RULE) */
@@ -318,6 +320,8 @@ export const CALL_LINES = new Set([
   'CONVICTION', 'SUNFALL', 'NO CONVICTION', 'RADIANCE', 'VERDICT', 'VERDICT x', 'THROW: 3 CONVICTION', 'FOCUS ', '%: SWEET-SPOT HITS FILL IT', 'KNIFE', 'BOW',
   /* claude/paladin4: the empowered tiers, the prayer, the Light-ward's break and pierce, VERDICT judged, the spear lost to a hit */
   'TWIN SMITE', 'RADIANCE+', 'PRAY', 'JUDGED', 'WARD BROKEN', 'THROUGH THE WARD', 'SPEAR LOST',
+  /* batch125 integ 10-28: THE HURRICANE 3 (claude/hurricane3), THE FORGEMASTER (claude/forgemaster) and THE QUEEN'S LANCE 3 (claude/stormhold3) mid-fight calls - teaching lines, routed as hint-shown requires */
+  "THE LINE WON'T HOLD YOU", 'HE FALLS BACK TO THE GATE', 'THE PORTCULLIS IS COMING DOWN', 'ROUND BY THE SUPPLY CARTS', 'HOLD ON', 'STRUCK', 'KNOCKED FLAT: TAKE A LINE', 'SHE IS GOING DOWN UNDER US', 'I WILL GO DOWN WITH HER', 'YOU HAVE HIS LINE: HE HAS NONE', 'BRACE!', 'HE DIVES', 'HE IS BACK ON GUARD: WARDED', 'THE PLANKS GO', 'BALLISTA', 'BOILING OIL', 'UNHORSED: CUT HIM', 'THE CHARGER FOUNDERS', 'THE PENNANT', 'HE REARS', 'SPEARS', 'HE WHEELS: CUT HIM', 'HE VAULTS', 'SHIELD WALL', 'THE WALL IS TURNED: CUT HIM', 'HE CLIMBS BACK', 'THE CAGE COMES DOWN ON HIM',
 ]);
 /* ...and the ones with a count in them (the count is the teaching: how many more) */
 /* claude/canalfix3: THE FOG CANAL's NUDGES (Daniel 10-02: "not always clear what you need to do; you get stuck"). When the barge has been held ~10 s and the

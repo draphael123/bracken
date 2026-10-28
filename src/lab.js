@@ -1663,7 +1663,7 @@ async function runbossLab(BK, opts) {
         const was=P.hp,m0=boss.mode;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(m0,Math.max(0,was-P.hp));if(opts.onFrame)await opts.onFrame({boss,P,f,h,lvl:lvId,open:cpOpen(boss),why:pl.why});if(f%600===599)await yieldNow();continue;
       }
       if(boss.t==='admiral'){
-        /* THE ADMIRAL (claude/flotilla3): src/admiral.js adPlan reads what a player sees - his tells a reaction late, the pistol's aim, the keg, the red cells, the grapnel's
+        /* THE ADMIRAL (claude/flotilla3): src/flotilla-boss.js adPlan reads what a player sees - his tells a reaction late, the pistol's aim, the keg, the red cells, the grapnel's
            mark - and works THE RULE: a cool deck gun with him in its line, it goes to the breech and strikes it (a plate blown). It strikes his keg back, cuts his line
            at the lashing's edge, climbs out of the harbour by the hull's net. It rests inside its own branch (off him) */
         k.left=k.right=k.up=k.down=k.jump=k.block=false;

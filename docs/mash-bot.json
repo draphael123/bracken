@@ -1987,7 +1987,7 @@
   }
  },
  "crown": {
-  "hash": "9c42eb2a437a",
+  "hash": "9c53bcf3e6ff",
   "boss": {
    "boss": "gqueen",
    "wins": 0,
@@ -2187,7 +2187,7 @@
    ]
   },
   "carried": {
-   "from": "3d26c058899e",
+   "from": "2eecb57b32ac",
    "parts": [
     "boss",
     "mini"
@@ -2195,65 +2195,68 @@
   },
   "level": {
    "knight": {
-    "deaths": 3,
+    "deaths": 8,
     "minHpPct": 0,
-    "hpLostPct": 387,
-    "hits": 26,
+    "hpLostPct": 876,
+    "hits": 45,
     "walked": 100,
-    "lifts": 67,
-    "held": 9,
-    "duels": 1,
-    "boardLifts": 2,
-    "rides": 1,
-    "pulls": 13,
+    "lifts": 101,
+    "held": 6,
+    "duels": 0,
+    "boardLifts": 5,
+    "rides": 5,
+    "pulls": 9,
     "ridden": {
-     "lift": 1
-    },
-    "machines": true,
-    "frames": 27607,
-    "kills": 10,
-    "heroLevel": 21
-   },
-   "warden": {
-    "deaths": 5,
-    "minHpPct": 0,
-    "hpLostPct": 508,
-    "hits": 22,
-    "walked": 100,
-    "lifts": 67,
-    "held": 14,
-    "duels": 4,
-    "boardLifts": 2,
-    "rides": 2,
-    "pulls": 14,
-    "ridden": {
+     "swing": 2,
      "lift": 1,
      "swing": 1
     },
     "machines": true,
-    "frames": 36143,
-    "kills": 13,
+    "frames": 32147,
+    "kills": 29,
+    "heroLevel": 21
+   },
+   "warden": {
+    "deaths": 7,
+    "minHpPct": 0,
+    "hpLostPct": 737,
+    "hits": 30,
+    "walked": 100,
+    "lifts": 97,
+    "held": 6,
+    "duels": 0,
+    "boardLifts": 6,
+    "rides": 7,
+    "pulls": 11,
+    "ridden": {
+     "swing": 3,
+     "lift": 2,
+     "cart": 2
+    },
+    "machines": true,
+    "frames": 33834,
+    "kills": 32,
     "heroLevel": 21
    },
    "pyro": {
-    "deaths": 4,
+    "deaths": 7,
     "minHpPct": 0,
-    "hpLostPct": 463,
-    "hits": 27,
+    "hpLostPct": 778,
+    "hits": 30,
     "walked": 100,
-    "lifts": 66,
-    "held": 15,
-    "duels": 3,
-    "boardLifts": 3,
-    "rides": 2,
-    "pulls": 14,
+    "lifts": 103,
+    "held": 6,
+    "duels": 0,
+    "boardLifts": 5,
+    "rides": 5,
+    "pulls": 12,
     "ridden": {
-     "swing": 1,
-     "lift": 1
+     "lift": 2,
+     "cart": 3
     },
     "machines": true,
-    "frames": 32283,
-    "kills": 11,
+    "frames": 33542,
+    "kills": 39,
     "heroLevel": 21
    }
   }
@@ -8553,7 +8556,7 @@
   }
  },
  "minecart": {
-  "hash": "097cf6b01f09",
+  "hash": "77133a439e3a",
   "boss": {
    "boss": "greatdrill",
    "wins": 0,

@@ -524,7 +524,7 @@ export function buildMinecart({ painter, T, TS }) {
     forge.mini = { x0: (S + 119) * TS, x1: (S + 177) * TS, floor: D * TS, trigger: (S + 124) * TS, wallL: S + 118, gate: S + 177, boss: 'forgemaster', name: 'THE FORGEMASTER',
       y0: (D - 12) * TS, y1: (D + 1) * TS, forge: 'rails', loopRow: U };
     /* past his gate: THE PARKED CART (FOOT[2].board) - jump into it and its gate opens (taught at THE WRECK; its sign here, its glint after a stall - no tell in his room) */
-    sign(S + 176, D - 1, 'A CART WAITS: JUMP INTO IT AND THE GATE OPENS.');
+    sign(S + 175, D - 1, 'A CART WAITS: JUMP INTO IT AND THE GATE OPENS.');
     ent('mccart', FOOT[2].board, D - 1, {}); }
   // ================= 9. THE SMELTER (1248-1307), row 30: 8 ore open its points (silver three); THE BORE =================
   ground(1248, 1262, B); ground(1286, 1307, B);

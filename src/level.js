@@ -4887,7 +4887,7 @@ function theFlotilla() {
      press gang's line; the first real broadside) | THE GALLEY HULL 97-208 (the benches; the broadside crosses her wells - stop a bench under it) | THE PRIZE
      209-288 (a pirate sloop boarding the hulk: cut boarders off their lines, fight on their deck, fire her swivel down through the hulk's deck) | THE RIGGING RUN
      289-385 (the top gun drops a yard; chain shot on his flag - be on a mast) | THE POWDER SHIP 386-539 (copper doors, the powder line, the crate hatch, one gun two
-     doors and HIS shot for the far one; the PLATED BOSUN's exam) | THE LASHINGS 540-603: THE ADMIRAL (src/admiral.js). Light steps golden hour -> night (L.tints).
+     doors and HIS shot for the far one; the PLATED BOSUN's exam) | THE LASHINGS 540-603: THE ADMIRAL (src/flotilla-boss.js). Light steps golden hour -> night (L.tints).
      Kept from the Flotilla 2 below: */
   /* THE FLOTILLA 2 (claude/flotilla2, the OPUS greybox, 2026-10-17; scratch/brief-flotilla2.md): x2 LENGTH ('way too short'). The rule is kept: FOUR HULLS LASHED
      TOGETHER, THE WAY PAST IS OVER THEM, NOT THROUGH. Six NAMED AREAS, each one verb taught -> tested -> remixed -> examined, a shrine closing the big ones:
@@ -5446,7 +5446,7 @@ function theHurricane() {
     weather: [{ x0: 0, x1: 334 * TS, kind: 'rain' }, { x0: 334 * TS, x1: 400 * TS, kind: 'rain', yMax: 29 * TS }, { x0: 400 * TS, x1: 99999, kind: 'rain' }],   /* and none in the eye - but her stays over it are in the storm (yMax: the view's middle above her deck) */
     ambient: [{ x0: 0, x1: 334 * TS, kind: 'ship' }, { x0: 334 * TS, x1: 400 * TS, kind: 'shore' }, { x0: 400 * TS, x1: 99999, kind: 'ship' }],
     arena: { x0: 286 * TS - 4, x1: 316 * TS + 4, floor: 19 * TS, y0: 3 * TS, trigger: 285 * TS,   /* (x0..x1: the camera holds you over his topsail yard - nobody is thrown off its ends into the sea) */ wallL: 284, wallR: 317, boss: 'captain', music: 'captain', tint: '#2a5a6a', tintA: 0.12, fx: 'motes',
-      tiers: [{ row: 19, x0: 286, x1: 315 }, { row: 14, x0: 290, x1: 311 }, { row: 9, x0: 293, x1: 308 }],   /* THE CAPTAIN 3's yards (src/captain3.js): T1 topsail, T2 topgallant, T3 royal */
+      tiers: [{ row: 19, x0: 286, x1: 315 }, { row: 14, x0: 290, x1: 311 }, { row: 9, x0: 293, x1: 308 }],   /* THE CAPTAIN 3's yards (src/captain3-plan.js): T1 topsail, T2 topgallant, T3 royal */
       nets: [[300, 301, 9, 23], [294, 295, 19, 23], [288, 289, 14, 18], [312, 313, 14, 18], [291, 292, 9, 13], [309, 310, 9, 13]],   /* every line that joins them: also his BRACE lines */
       plats: [{ row: 24, x0: 294, x1: 307 }],   /* the main top under his yards: a leap out of the sea onto it */
       rod: [300, 301], noWall: true },

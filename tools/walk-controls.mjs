@@ -22,20 +22,25 @@ for (const g of L.ents.filter(e => e.t === 'lockgate')) {
   const k = L.ents.find(e => e.t === 'key' && e.kind === g.needs); if (!k) { ok(false, 'no key for the ' + g.needs + ' lockgate'); continue; }
   const kc = G.settle(k.x, k.y); ok(kc >= 0, g.needs + ' key has no footing');
   const gi = R.findIndex((n, i) => Math.abs(n[0] - g.x) <= 3 && Math.abs(n[1] - g.y) <= 3); ok(gi > 0, g.needs + ' gate is on the route');
-  let best = null; for (let a = Math.max(0, gi - 12); a < gi; a++) { const p = G.path(G.cell(R[a][0], R[a][1]), v => v === kc); if (p && (!best || p.length < best.length)) best = p; }
+  /* (batch125 integ, STORMHOLD 3) a key is no longer always beside its gate (the Wall Watch's bone key stands ~100 columns before its gate): the trip starts from the route nodes NEAR THE KEY when it lies before the gate, else from the 12 before the gate */
+  let ki = -1, kd = 1e9; R.forEach((n, i) => { const d = Math.abs(n[0] - k.x); if (i < gi && d < kd) { kd = d; ki = i; } });
+  const near = ki >= 0 && Math.abs(R[ki][0] - k.x) <= 12 && ki < gi - 12, lo = near ? Math.max(0, ki - 6) : Math.max(0, gi - 12), hi = near ? Math.min(gi, ki + 7) : gi;
+  let best = null; for (let a = lo; a < hi; a++) { const p = G.path(G.cell(R[a][0], R[a][1]), v => v === kc); if (p && (!best || p.length < best.length)) best = p; }
   ok(best, g.needs + ' key (' + k.x + ',' + k.y + '): no way from the route');
-  const back = kc >= 0 ? G.path(kc, v => cellIdx.has(v) && cellIdx.get(v) > Math.max(0, gi - 12)) : null; ok(back, g.needs + ' key: no way back onto the route');
+  const back = kc >= 0 ? G.path(kc, v => cellIdx.has(v) && cellIdx.get(v) > lo) : null; ok(back, g.needs + ' key: no way back onto the route');
   if (best) console.log('  ' + g.needs + ' key trip: ' + best.length + ' cells there, ' + (back ? back.length : '?') + ' back');
 }
-const foot = G.settle(486, 43), top = G.settle(493, 28); ok(foot >= 0 && top >= 0 && G.path(foot, v => v === top), 'the zigzag stair: no way from its foot to its top in the graph');
-/* B: short page walks */
+//(batch125 integ) the zigzag one-way stair went with the old Stormhold (STORMHOLD 3 has no houses); the stair check is retired with it
+/* B: short page walks (batch125 integ: retargeted to STORMHOLD 3 - the iron key up THE BELL WATCH (222,17), the bone key up THE WALL WATCH (391,19), and the winch at 410,29 left alone;
+   the old zigzag stair, chimney slots and kennel went with the old castle town; the thresholds are read off the route, not hard-coded) */
+const pct = col => { const i = R.findIndex(n => n[0] >= col); return Math.floor(100 * (i < 0 ? R.length : i) / R.length); };
 const W = (o, id = 'storm', hero = 'knight') => walkCfg(id, hero, 1, { stuck: 1500, ...o });
-const rows = await runWalks([W({ from: 285, frames: 3000 }), W({ from: 481, frames: 3000, nofoes: [470, 520] }), W({ from: 219, frames: 3000 }, 'storm', 'pyro'), W({ from: 376, frames: 2600 })], { jobs: 1 });
-const [kr, sr, pr, wr] = rows;
+const rows = await runWalks([W({ from: 200, frames: 4800 }), W({ from: 366, frames: 3000 }), W({ from: 396, frames: 2600 })], { jobs: 1 });
+const [kr, br, wr] = rows;
 for (const r of rows) if (!r || r.err) fails.push('a walk failed: ' + (r && r.err));
-if (kr && !kr.err) { const t = (kr.subs || []).find(s => s.kind === 'key' && s.got); ok(t, '1 the iron key was not fetched (subs ' + JSON.stringify((kr.subs || []).map(s => [s.kind, s.key, s.ok, s.got, s.secs])) + ')'); console.log('  1 key: ' + (t ? 'got in ' + t.secs + ' s' : 'NO')); }
-if (sr && !sr.err) { ok(sr.walked >= 78, '2 the zigzag stair was not climbed (walked ' + sr.walked + '%, the top is node 93 of 120 = 78%)'); console.log('  2 stair: walked ' + sr.walked + '%'); }
-if (pr && !pr.err) { ok(pr.walked >= 38, '3 out of the chimney slots: the walk stalled (walked ' + pr.walked + '%; col 258 is node 46 of 120 = 38%)'); console.log('  3 slots: walked ' + pr.walked + '%'); }
-if (wr && !wr.err) { ok(wr.walked >= 60, '4 the kennel winch: the walk did not pass col 410 (walked ' + wr.walked + '%; node 72 of 120 = 60%)'); console.log('  4 winch: walked ' + wr.walked + '%'); }
+/* the key is fetched when the walk gets PAST its lock gate (the route climbs the tower itself, keyFirst takes the key - no side trip: subs stay empty) */
+const pastGate = (r, name, col, n) => { if (r && !r.err) { const need = pct(col + 6); ok(r.walked >= need, n + ' the ' + name + ' key was not fetched: the walk did not get past its gate at col ' + col + ' (walked ' + r.walked + '%, needs ' + need + '%)'); console.log('  ' + n + ' ' + name + ' key: walked ' + r.walked + '% (past the gate at ' + col + ' = ' + need + '%)'); } };
+pastGate(kr, 'iron', 262, 1); pastGate(br, 'bone', 488, 2);
+if (wr && !wr.err) { const need = pct(420); ok(wr.walked >= need, '3 the winch: the walk did not pass col 420 (walked ' + wr.walked + '%; col 420 is ' + need + '% of the route)'); console.log('  3 winch: walked ' + wr.walked + '% (col 420 = ' + need + '%)'); }
 if (fails.length) { console.log('walk-controls: FAIL\n  ' + fails.join('\n  ')); process.exit(1); }
 console.log('walk-controls: ok');

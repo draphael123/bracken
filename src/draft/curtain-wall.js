@@ -1,6 +1,6 @@
 // src/draft/curtain-wall.js — THE CURTAIN WALL, a DRAFT section for Stormhold (brief .claude/briefs/stormhold-extension.md,
 // agreed with Daniel 2026-09-22). NOT WIRED: a build session splices it into stormhold() in level.js with grow() at SEAM.
-// tools/curtain-wall.mjs splices it into the real Stormhold build and measures it (reach, density, checkpoints, the climb).
+// the (deleted) curtain-wall tool splices it into the real Stormhold build and measures it (reach, density, checkpoints, the climb).
 //
 // Stormhold's rows fix the shape: rows 0-18 are the houses' insides (L.indoorRow 18: the camera never shows them from the
 // street), the street stands on row 30 (you stand in 29), and the gorge under the Long Bridge runs down to row 45. So the
