@@ -23,26 +23,29 @@ const want = process.argv.slice(2).filter(a => !a.startsWith('-'));
 const pg = await openPage({ audio: false, fonts: false });
 let out;
 try {
-  out = await pg.evalp(`(async()=>{const {LEVELS,T}=await import('/src/level.js');const res=[];
+  /* (batch125 release) one long Runtime.evaluate over every level stalled for the full 1800 s (the gate hung on it, nothing else wrong: the same code run a few levels per call passes in ~65 s), so the sweep goes a chunk of levels per call */
+  const nLevels = await pg.evalp('(async()=>{const {LEVELS}=await import("/src/level.js");return LEVELS.length})()', 60000), rows = [];
+  for (let lo = 0; lo < nLevels; lo += 6) rows.push(...await pg.evalp(`(async()=>{const {LEVELS,T}=await import('/src/level.js');const res=[];
     const want=${JSON.stringify(want)};
     const SOLID=new Set([T.SOLID,T.CRATE,T.PALISADE,T.PORT,T.CLIMB,T.SOFT,T.ICE,T.WEB]),LEDGE=new Set([T.ONEWAY,T.REED,T.PLANK,T.BOUNCER,T.SHELF,T.RAIL,T.CRYST]);
     const FLY=new Set(['bat','crow','wasp','harpy','kite','petrel','vulture','boo','haunt','imp','tome','broom','emberwisp','fledgling','gull','jelly','lanternshade','familiar','owl']);
-    for(let i=0;i<LEVELS.length;i++){const lv=LEVELS[i];if((lv.hidden&&!lv.secret)||lv.id==='custom'||(want.length&&!want.includes(lv.id)))continue;
+    for(let i=${lo};i<Math.min(${lo}+6,LEVELS.length);i++){const lv=LEVELS[i];if((lv.hidden&&!lv.secret)||lv.id==='custom'||(want.length&&!want.includes(lv.id)))continue;
       try{BK.load(i);}catch(err){res.push({id:lv.id,err:String(err.message||err)});continue;}
       const L=BK.L,W=L.W,H=L.H,G=L.grid,S=BK.tileSpr();
       if(L.caravan||L.fields||L.mage||L.sanctum){res.push({id:lv.id,skip:L.caravan?'caravan':L.fields?'fields':L.mage?'mage':'sanctum'});continue;}
       const sag=new Set((L.sagCells||[]).map(([sx,sy])=>sy*W+sx));   /* THE FEN ROAD's rotten boards (claude/fenroad) are drawn bending by FRH.drawWorld, not tiled */
       const inStone=(x,y)=>(L.stone||[]).some(z=>x>=z[0]&&x<=z[1]&&y>=z[2]&&y<=z[3]);
+      const inPlug=(x,y)=>(L.forgePlugs||[]).some(q=>x>=q.x0&&x<=q.x1&&y>=q.y0&&y<=q.y1);   /* (claude/forgemaster) a SLAG PLUG is drawn by FGR.drawWorld (src/redraw/forge_art.js plug), not tiled */
       const floor=t=>SOLID.has(t)||LEDGE.has(t),open=t=>!SOLID.has(t);
-      const bare=new Set();for(let y=1;y<H;y++)for(let x=0;x<W;x++){const k=y*W+x,t=G[k];if(!floor(t)||!open(G[k-W])||S[k]||inStone(x,y)||sag.has(k))continue;bare.add(k);}
+      const bare=new Set();for(let y=1;y<H;y++)for(let x=0;x<W;x++){const k=y*W+x,t=G[k];if(!floor(t)||!open(G[k-W])||S[k]||inStone(x,y)||inPlug(x,y)||sag.has(k))continue;bare.add(k);}
       /* the creatures on them: the level's own, its ambush waves and its alarm garrisons, as placed (feet on row y, floor on y+1) */
       const on=[];const look=(t,x,y,from)=>{if(FLY.has(t))return;const k=(y+1)*W+x;if(bare.has(k))on.push(t+'@'+x+','+y+(from||''));};
       for(const e of L.ents)if(e.t!=='coin'&&e.t!=='deco')look(e.t,e.x,e.y);
       for(const a of (L.ambushes||[]))for(const w of a.waves)for(const [t,x,y] of w)look(t,x,y==null?a.row:y,' (ambush '+a.name+')');
       for(const a of (L.alarms||[]))for(const g of (a.garrison||[]))look(g.t,g.x,g.y,' (alarm '+a.id+')');
       const cells=[...bare].map(k=>(k%W)+','+Math.floor(k/W));res.push({id:lv.id,bare:cells.length,on,cells:cells.slice(0,12)});}
-    return res;})()`, 1800000);
-  out = { rows: out, errors: pg.errors.slice(0, 3) };
+    return res;})()`, 120000));
+  out = { rows, errors: pg.errors.slice(0, 3) };
 } finally { pg.close(); }
 const fails = [];
 for (const r of out.rows) {
