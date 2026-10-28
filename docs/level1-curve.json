@@ -338,17 +338,17 @@
   "lostPct": 236
  },
  "fallingtower": {
-  "hash": "3238f24f505f",
+  "hash": "5849541d6d56",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 59,
-  "deaths": 13,
-  "kills": 21,
-  "lifts": 168,
+  "hits": 58,
+  "deaths": 20,
+  "kills": 13,
+  "lifts": 148,
   "walked": 100,
   "bare": true,
-  "lostPct": 583
+  "lostPct": 809
  },
  "burning": {
   "hash": "342eb49d3ea1",
