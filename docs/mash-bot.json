@@ -1987,7 +1987,7 @@
   }
  },
  "crown": {
-  "hash": "2eecb57b32ac",
+  "hash": "9c53bcf3e6ff",
   "boss": {
    "boss": "gqueen",
    "wins": 0,
@@ -2187,7 +2187,7 @@
    ]
   },
   "carried": {
-   "from": "72b39b51eba5",
+   "from": "2eecb57b32ac",
    "parts": [
     "boss",
     "mini"
@@ -2195,69 +2195,69 @@
   },
   "level": {
    "knight": {
-    "deaths": 9,
+    "deaths": 8,
     "minHpPct": 0,
-    "hpLostPct": 972,
-    "hits": 44,
+    "hpLostPct": 876,
+    "hits": 45,
     "walked": 100,
-    "lifts": 109,
-    "held": 9,
-    "duels": 0,
-    "boardLifts": 8,
-    "rides": 3,
-    "pulls": 7,
-    "ridden": {
-     "lift": 2,
-     "cart": 1
-    },
-    "machines": true,
-    "frames": 34204,
-    "kills": 27,
-    "heroLevel": 16
-   },
-   "warden": {
-    "deaths": 9,
-    "minHpPct": 0,
-    "hpLostPct": 992,
-    "hits": 44,
-    "walked": 100,
-    "lifts": 104,
+    "lifts": 101,
     "held": 6,
     "duels": 0,
-    "boardLifts": 7,
-    "rides": 4,
+    "boardLifts": 5,
+    "rides": 5,
     "pulls": 9,
     "ridden": {
-     "swing": 1,
+     "swing": 2,
      "lift": 1,
      "cart": 2
     },
     "machines": true,
-    "frames": 33630,
+    "frames": 32147,
     "kills": 29,
-    "heroLevel": 16
+    "heroLevel": 21
+   },
+   "warden": {
+    "deaths": 7,
+    "minHpPct": 0,
+    "hpLostPct": 737,
+    "hits": 30,
+    "walked": 100,
+    "lifts": 97,
+    "held": 6,
+    "duels": 0,
+    "boardLifts": 6,
+    "rides": 7,
+    "pulls": 11,
+    "ridden": {
+     "swing": 3,
+     "lift": 2,
+     "cart": 2
+    },
+    "machines": true,
+    "frames": 33834,
+    "kills": 32,
+    "heroLevel": 21
    },
    "pyro": {
-    "deaths": 9,
+    "deaths": 7,
     "minHpPct": 0,
-    "hpLostPct": 927,
-    "hits": 34,
+    "hpLostPct": 778,
+    "hits": 30,
     "walked": 100,
-    "lifts": 104,
-    "held": 8,
+    "lifts": 103,
+    "held": 6,
     "duels": 0,
-    "boardLifts": 10,
-    "rides": 7,
+    "boardLifts": 5,
+    "rides": 5,
     "pulls": 12,
     "ridden": {
-     "swing": 2,
      "lift": 2,
      "cart": 3
     },
     "machines": true,
-    "frames": 36478,
-    "kills": 24,
-    "heroLevel": 16
+    "frames": 33542,
+    "kills": 39,
+    "heroLevel": 21
    }
   }
  },
