@@ -20,6 +20,7 @@
 //                               off and carries you across to the parapet where his ring stands.
 // Pure: no DOM, no main.js globals. main.js calls ftUpdate (updateAscent), ftMover (updateMovers) and ftDraw (drawMageTiles); the level's
 // data is laid by tower-ascent.js (L.ft2). tools/fallingtower2.mjs is its check.
+import { paintLadder } from './redraw/tower_chase.js';   /* (claude/fallingtower3art) the rolling ladder's painting */
 export const FT2 = {
   debris: { first: 2.2, every: 4.4, tell: 1.1, fallV: 380, dmg: 12, hitW: 13, ahead: [28, 92], drop: 200 },
   flare: { period: 4.4, smoulder: 1.1, burn: 1.0, dmg: 10, h: 26 },
@@ -257,10 +258,7 @@ export function ftDraw(g, L, P, cx, cy, time, T, movers) {
       R_(g, C.brass[0], x, y, m.w, 6); R_(g, C.brass[2], x, y, m.w, 2); R_(g, C.brass[3], x + 1, y, m.w - 2, 1);   /* the eyepiece platform */
       for (let i = 4; i < m.w; i += 10) R_(g, C.brass[1], x + i, y - 5, 1, 5); R_(g, C.brass[2], x + 4, y - 5, m.w - 8, 1);   /* its rail */
       R_(g, '#e8f0ff', Math.round(ex) - 1, y + 3, 2, 2); if ((((time * 3) | 0) % 4) === 0) { R_(g, '#ffffff', Math.round(ex) - 3, y + 4, 6, 1); R_(g, '#ffffff', Math.round(ex), y + 1, 1, 6); } }   /* the lens, with its glint */
-    if (m.role === 'ladder') { const rx0 = Math.round(Math.min(m.ax, m.bx) - cx), rx1 = Math.round(Math.max(m.ax, m.bx) + m.w - cx), ry = Math.round(m.ay - cy) - 46;   /* (greybox, claude/fallingtower3) its rail high on the shelves, the ladder hung from it, its step */
-      R_(g, C.iron, rx0, ry, rx1 - rx0, 2); R_(g, C.brass[2], rx0, ry, rx1 - rx0, 1);
-      for (const lx of [x + 6, x + m.w - 8]) R_(g, C.wood[2], lx, ry + 2, 2, 46); for (let yy = ry + 8; yy < y; yy += 8) R_(g, C.wood[3], x + 6, yy, m.w - 12, 1);
-      R_(g, C.wood[1], x, y, m.w, 6); R_(g, C.wood[3], x, y, m.w, 2); R_(g, C.brass[2], x + 2, ry - 2, 4, 4); R_(g, C.brass[2], x + m.w - 6, ry - 2, 4, 4); }
+    if (m.role === 'ladder') paintLadder(g, x, y, m.w, Math.round(Math.min(m.ax, m.bx) - cx), Math.round(Math.max(m.ax, m.bx) + m.w - cx), Math.round(m.ay - cy) - 46, time, Math.sign(m.bx - m.ax) || 1);   /* (claude/fallingtower3art) src/redraw/tower_chase.js */
     if (m.role === 'chunk') { const S = R.snap, tip = Math.round(m.tip || 0), w = m.w, top = y + tip;
       R_(g, '#2a2638', x, top, w, 22); R_(g, '#3a3448', x + 1, top + 1, w - 2, 20);   /* THE CHUNK: courses of ashlar... */
       for (let c = 0; c < 3; c++) { const yy = top + 3 + c * 7; R_(g, '#252b3a', x + 1, yy, w - 2, 1); for (let b = 0; b < w; b += 16) R_(g, '#252b3a', x + b + (c % 2 ? 8 : 0), yy + 1, 1, 6); }

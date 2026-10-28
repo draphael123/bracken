@@ -14,6 +14,7 @@
 //   He goes no lower than CH.hpFloor of his health in the rooms (a blow past it is only his stagger): the hall always has its realms.
 //   A death anywhere in the fight brings you back to the ring you came out of, the rooms whole again (chaseReset) - a boss is fought whole.
 // Numbers are tiles unless named px or s.
+import { paintFloorCrack, paintSink, paintLanding } from './redraw/tower_chase.js';
 export const CH = { x0: 80, x1: 105, top: 152, pitch: 15, open: 13, downT: 3.0, riseT: 0.5, sinkT: 0.9, tearT: 1.3, wakeT: 1.2, fallG: 1100, hpFloor: 0.55, hover: 4 };
 export const ROOMS = [
   { name: 'THE SCRIPTORIUM', kind: 'library', order: ['fire', 'ice', 'fire', 'mark'], follow: 'strike', pillar: 93,
@@ -94,11 +95,13 @@ export function chaseLeg(e, dt, c) {
 function toBelow(e, k, P) { const N = roomOf(k), mid = (CH.x0 + CH.x1 + 1) * 8; e.waitIn = k; e.mode = 'below'; e.modeT = 99; e.x = (P && P.x > mid ? CH.x0 + 4 : CH.x1 - 4) * 16; e.y = (N.floor - CH.hover - 2) * 16; e.shots = []; e.clouds = []; e.rings = []; e.echoes = []; e.deathMark = null; }
 /* A FRESH FIGHT (a death, a load): him asleep in the first room, every room whole (the caller restores the tiles) */
 export function chaseFresh(e) { e.leg = 'chase'; e.room = 0; e.order = ROOMS[0].order; e.noRealm = true; e.realmAt = null; e.tear = null; }
-/* THE CRACK RUNNING ACROSS A FLOOR HE BREAKS (greybox: the art lane paints it) */
+/* THE FLOOR FX of the chase (claude/fallingtower3art, src/redraw/tower_chase.js): the crack he runs across a floor he breaks, grit pouring; the smoke and green sparks he sinks through
+   the stone in; the ring of grit where he lands; the gold halo under him while he lies open */
 export function drawChase3(g, e, cx, cy, time, VW) {
-  if (!e || !e.alive || !e.tear) return; const R = roomOf(e.tear.k), k = Math.min(1, e.tear.t / CH.tearT), y = Math.round(R.floor * 16 - cy), x0 = Math.round(CH.x0 * 16 - cx), w = (CH.x1 - CH.x0 + 1) * 16;
-  const mid = (e.x - cx), reach = w * k;
-  g.fillStyle = Math.floor(time * 14) % 2 ? '#ff6b6b' : '#ffd36b';
-  for (let x = 0; x < w; x += 3) { const px = x0 + x; if (Math.abs(px - mid) > reach) continue; g.fillRect(px, y + ((x * 5) % 3), 3, 1); }
-  g.globalAlpha = 0.25 * k; g.fillStyle = '#ff9a5c'; g.fillRect(x0, y - 2, w, 3); g.globalAlpha = 1; void VW;
+  if (!e || !e.alive) return; void VW;
+  if (e.tear) { const R = roomOf(e.tear.k), k = Math.min(1, e.tear.t / CH.tearT); paintFloorCrack(g, Math.round(CH.x0 * 16 - cx), (CH.x1 - CH.x0 + 1) * 16, Math.round(R.floor * 16 - cy), Math.round(e.x - cx), k, time); }
+  if (e.mode === 'sink') paintSink(g, Math.round(e.x - cx), Math.round(roomOf(e.room || 0).floor * 16 - cy), 1 - Math.max(0, e.modeT) / CH.sinkT, time);
+  if (e.mode === 'down') { const x = Math.round(e.x - cx), y = Math.round(roomOf(e.room || 0).floor * 16 - cy);
+    paintLanding(g, x, y, CH.downT - e.modeT);
+    g.globalAlpha = 0.18 + 0.12 * Math.abs(Math.sin(time * 5)); g.fillStyle = '#ffd36b'; g.fillRect(x - 16, y - 2, 32, 2); g.fillRect(x - 10, y - 4, 20, 2); g.globalAlpha = 1; }
 }

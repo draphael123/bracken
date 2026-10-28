@@ -23,6 +23,8 @@ function room(k, time = 0) {
   return c;
 }
 if (on('rooms')) { for (let k = 0; k <= CH.ROOMS.length; k++) savePNG(big(room(k), 2), join(out, 'room-' + (k < CH.ROOMS.length ? CH.ROOMS[k].name.replace(/THE /, '').toLowerCase() : 'core') + '.png')); }
-if (on('pillars')) { const m = await import('../src/redraw/tower_chase.js').catch(() => null); if (m && m.pillarSheet) savePNG(m.pillarSheet(newCanvas, SUPm.SUP), join(out, 'pillars.png')); }
+if (on('pillars')) { const m = await import('../src/redraw/tower_chase.js').catch(() => null); if (m && m.pillarSheet) { const sh = m.pillarSheet(newCanvas, SUPm.SUP), rowH = sh.height / 5;
+  const part = (r0, r1, name, sc) => { const c = newCanvas(sh.width, rowH * (r1 - r0)); c.getContext('2d').drawImage(sh, 0, rowH * r0, sh.width, rowH * (r1 - r0), 0, 0, sh.width, rowH * (r1 - r0)); savePNG(big(c, sc), join(out, name)); };
+  part(0, 3, 'pillars-states.png', 3); part(3, 5, 'pillars-fall.png', 3); } }
 if (on('mage')) { const m = await import('../src/redraw/lich.js'); const B = m.bakeUndeadMage(), F = m.UNDEADMAGE_F; savePNG(big(sheet([F.recoil, F.fall, F.crash, F.open, F.sunk].filter(v => v !== undefined).map(i => B.R[i]), { maxW: 600, bg: '#3a3a4a' }), 3), join(out, 'mage.png')); }
 console.log('work/ft3art written');

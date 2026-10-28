@@ -214,7 +214,7 @@ export function paintPillar(g, x, y, h, o) {
     if (burning) A(g, 0.35, () => { g.fillStyle = '#ff9a5c'; g.fillRect(x + ox - 2 + sh, yy - 4, 5, 5); });
     if (!burning && o.st === 'whole' && i % 3 === 0) rect(g, x + ox + sh + (ox > 0 ? 1 : -2), yy - 2, 1, 1, '#7a88a6'); }   /* (a lit edge on the dead crack) */
   if (o.st === 'tell') { for (let i = 0; i < 5; i++) { const gy = top + 6 + (((t * 90 + i * 27) % Math.max(10, h - 8)) | 0); rect(g, x - 5 + ((i * 5) % 11) + sh, gy, 1, 2, '#b8b4a8'); } rect(g, x - 7, y - 2, 14, 2, '#8a8478'); A(g, 0.4, () => { g.fillStyle = '#b8b4a8'; g.fillRect(x - 9, y - 4, 18, 4); }); }   /* grit sifting off it, dust at its foot */
-  if (o.ring > 0) { g.strokeStyle = 'rgba(188,232,250,' + (o.ring / 0.4).toFixed(2) + ')'; g.strokeRect(x - 11, top - 3, 22, h + 3); for (let i = 0; i < 4; i++) rect(g, x - 8 + i * 5, top + 12 + i * 8, 3, 1, 'rgba(188,232,250,' + (o.ring / 0.4).toFixed(2) + ')'); }   /* it rings off: pale runes flash on it */
+  if (o.ring > 0) { const rc = 'rgba(188,232,250,' + (o.ring / 0.4).toFixed(2) + ')'; rect(g, x - 11, top - 3, 22, 1, rc); rect(g, x - 11, y, 22, 1, rc); rect(g, x - 11, top - 3, 1, h + 3, rc); rect(g, x + 10, top - 3, 1, h + 3, rc); for (let i = 0; i < 4; i++) rect(g, x - 8 + i * 5, top + 12 + i * 8, 3, 1, rc); }   /* it rings off: pale runes flash on it */
 }
 /* the stump a fallen pillar leaves: a broken column foot, rubble, chips, dust still hanging (fx: seconds since it went, or null) */
 export function paintStump(g, x, y, fx) {
@@ -302,4 +302,20 @@ export function paintLadder(g, x, y, w, rx0, rx1, ry, t, dir) {
   for (let yy = ry + 16; yy < y - 4; yy += 8) { rect(g, x + 9, yy, w - 18, 2, WOOD[1]); rect(g, x + 9, yy, w - 18, 1, '#6a5038'); }   /* the rungs */
   rect(g, x, y, w, 6, WOOD[1]); rect(g, x, y, w, 2, '#6a5038'); rect(g, x, y + 4, w, 2, WOOD[0]); rect(g, x, y, 3, 6, BRASS[1]); rect(g, x + w - 3, y, 3, 6, BRASS[1]); rect(g, x, y, w, 1, BRASS[2]);   /* the step: a wide board, brass-shod */
   for (let i = 0; i < 3; i++) rect(g, x + 7 + i * 12, y + 2, 1, 1, BRASS[3]);
+}
+
+/* a contact sheet for tools/ft3art-shots.mjs: every pillar state and what each kind drops, on a wall colour (Node only; newCanvas from tools/node-canvas.mjs) */
+export function pillarSheet(newCanvas, SUP) {
+  const kinds = ['ramp', 'bridge', 'crush', 'dark', 'floor'], W = 160, H = 130, out = newCanvas(W * kinds.length, H * 5), g = out.getContext('2d'); g.fillStyle = '#2a3044'; g.fillRect(0, 0, out.width, out.height);
+  kinds.forEach((kind, i) => { const ox = i * W, h = kind === 'ramp' || kind === 'crush' ? 64 : 48;
+    const base = { x: 80, y: 110, h: h / 16, kind, near: 0, arm: kind === 'floor', armed: false, ring: 0, st: 'whole', t: 0 };
+    const spans = kind === 'ramp' ? [[1, 3, 4], [4, 6, 2]] : kind === 'bridge' ? [[1, 8, 7]] : null, crush = kind === 'crush' ? [1, 8, 3, 6] : null, clear = kind === 'floor' ? [[1, 8, 7, 8]] : null;
+    Object.assign(base, { spans, crush, clear, x: 80 });
+    const row = (r, fn) => { g.save(); g.translate(ox, H * r); fn(); g.restore(); };
+    row(0, () => paintPillar(g, 80, 110, h, { st: 'whole', k: 0, time: 0.3, near: 0, arm: false, armed: false, ring: 0, kind }));
+    row(1, () => { paintPillar(g, 80, 110, h, { st: 'whole', k: 0, time: 0.3, near: 1, arm: kind === 'floor', armed: kind === 'floor', ring: 0, kind }); });
+    row(2, () => paintPillar(g, 80, 110, h, { st: 'tell', k: 0.55, time: 0.3, near: 0, arm: false, armed: false, ring: 0, kind }));
+    row(3, () => paintFall(g, Object.assign({}, base, { spans: spans && spans.map(a => a.slice()), crush, clear }), 0, 0, 0.2, 0.45));
+    row(4, () => { paintResting(g, Object.assign({}, base, { spans: spans && spans.map(a => a.slice()), crush, clear }), 0, 0, 0); if (kind !== 'floor') paintStump(g, 80, 110, null); });
+  }); return out;
 }

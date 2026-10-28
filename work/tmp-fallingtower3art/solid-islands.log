@@ -1,0 +1,16 @@
+level            bare  allowed  LEFT   islands (kinds x tiles @ x,y)
+hanging             3       3     0   
+crown               1       1     0   
+undercrown          1       1     0   
+mage                8       8     0   
+witchlight         12      12     0   
+oreroad            11      11     0   
+canal               2       2     0   
+welltown            3       3     0   
+redgorge            1       1     0   
+skyroad             5       5     0   
+glasssea            1       1     0   
+ksar               32      32     0   
+minecart            1       1     0   
+towpath             2       2     0   
+ok  solid-islands  every island of every level has a drawn support or a reasoned allowance

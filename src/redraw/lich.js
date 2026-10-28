@@ -13,13 +13,15 @@
 //   13 RECOIL (his own bolt came home: head thrown back, the staff flung wide, sparks)   14 PLANT (the staff driven into the floor, bone dust)
 //   15-23 WIND-UPS, one a spell (fire, ice, storm, poison, death, bone, orbit, rune, void): the STAFF HOISTED overhead in both hands, its head in the spell's colour
 //   24 ORRERY release (pointed, the head brass)  25 RUNE release (pointed, a rune hanging off the head)  26 VOID release (hauling back on the staff)
-//   27 hurt (LAST)   (claude/ft2art: every cast is a STAFF cast - wind-up (hoisted) -> release (pointed, a hard glint at the head) -> held follow-through; no empty-hand pose)
+//   28 FALL (claude/fallingtower3art: his own spell came home in the chase and he drops: tumbling, hem flung up, staff spinning off, jaw swinging)
+//   29 CRASH (he is down on the floor in the chase: slumped back on his hem, one arm propped, the staff leant to hold him up, the eyes dim, dust)
+//   27 hurt (the old LAST; 28 and 29 follow it)   (claude/ft2art: every cast is a STAFF cast - wind-up (hoisted) -> release (pointed, a hard glint at the head) -> held follow-through; no empty-hand pose)
 //   canvas 60x68   anchor ax 30, ay 66   pack w/h 16x40
 import { canvas, rect, fillPoly, line, circle, outline, flipX, whiten } from '../px.js';
 import { OUT } from '../art.js';
 
 export const UNDEADMAGE_F = { idle: [0, 1], fire: 2, ice: 3, storm: 4, poison: 5, death: 6, blinkOut: 7, blinkIn: 8, open: 9, enraged: [10, 11], dead: 12, recoil: 13, plant: 14,
-  wind: { fire: 15, ice: 16, storm: 17, poison: 18, death: 19, bone: 20, orbit: 21, rune: 22, void: 23 }, orbit: 24, rune: 25, void: 26, hurt: 27 };
+  wind: { fire: 15, ice: 16, storm: 17, poison: 18, death: 19, bone: 20, orbit: 21, rune: 22, void: 23 }, orbit: 24, rune: 25, void: 26, hurt: 27, fall: 28, crash: 29 };
 const ROBE = ['#1e1a2a', '#2e2840', '#463c5c', '#5e5278'], ROT = '#3e4a30', BONE = ['#6e6a58', '#a8a48c', '#d9d6c0', '#f0eedc'];
 const GREEN = ['#1f6a3a', '#3fe08a', '#8fffb0', '#e0ffe8'], WOOD = ['#2a2019', '#4a3a2c', '#6a5540'];
 const SPELL = { fire: ['#c9463d', '#ff9b49', '#ffe0a0'], ice: ['#3a7aa0', '#9be2ff', '#ffffff'], storm: ['#6a60c0', '#c8c4ff', '#ffffff'], poison: ['#3a6a1a', '#8fd160', '#d8ffb0'], death: ['#0a100a', '#2a4a2a', '#8fffb0'], orbit: ['#6a4a1c', '#b08a3a', '#f4dc8a'], bone: ['#6e6a58', '#d9d6c0', '#ffffff'], rune: ['#1f6a3a', '#8fffb0', '#e0ffe8'], void: ['#2a1250', '#7a4ad8', '#d8c8ff'] };
@@ -85,6 +87,35 @@ function mage(o) {
   if (o.flame) for (let i = 0; i < 5; i++) flame(g, hx - 6 + i * 3, hy - 10 - (i === 2 ? 2 : i % 2), 5 + (i === 2 ? 2 : 0), ph + i, GREEN);   /* THE FLAME CROWN */
   return c;
 }
+function mageFall() {   // tumbling: shoulders down and to the left, the hem and tails flung up and right, the staff flung wide, jaw hanging
+  const [c, g] = canvas(60, 68), ax = 30;
+  for (let i = 0; i < 5; i++) { const x = ax + 4 + i * 4, y = 4 + i * 3; fillPoly(g, [[x, y + 14], [x + 4, y + 14], [x + 6 + (i % 2) * 3, y - 2], [x + 3, y - 2]], i % 2 ? ROBE[1] : ROBE[0]); }
+  fillPoly(g, [[ax - 10, 34], [ax - 2, 26], [ax + 14, 26], [ax + 10, 46], [ax - 4, 50]], ROBE[1]); fillPoly(g, [[ax - 8, 36], [ax, 29], [ax + 4, 31], [ax - 2, 46]], ROBE[2]);
+  fillPoly(g, [[ax - 4, 34], [ax + 3, 33], [ax + 3, 41], [ax - 2, 43]], '#120e18'); for (let r = 0; r < 3; r++) line(g, ax - 3, 35 + r * 3, ax + 3, 34 + r * 3, BONE[2]);
+  line(g, ax - 14, 56, ax + 22, 8, WOOD[1], 2); line(g, ax - 13, 56, ax + 23, 8, WOOD[2]); rect(g, ax + 20, 4, 6, 4, BONE[1]); rect(g, ax + 22, -1 + 3, 2, 3, GREEN[1]); rect(g, ax + 24, 1, 2, 2, GREEN[2]);
+  line(g, ax - 8, 36, ax - 20, 22, ROBE[1], 3); line(g, ax - 20, 22, ax - 24, 14, BONE[1]); rect(g, ax - 26, 12, 3, 3, BONE[2]);
+  line(g, ax + 2, 44, ax + 14, 56, ROBE[1], 3); line(g, ax + 14, 56, ax + 18, 60, BONE[1]);
+  const hx = ax - 14, hy = 40; fillPoly(g, [[hx - 7, hy + 4], [hx - 5, hy - 9], [hx + 2, hy - 11], [hx + 8, hy - 4], [hx + 7, hy + 5], [hx - 2, hy + 7]], ROBE[0]);
+  fillPoly(g, [[hx - 4, hy - 6], [hx + 3, hy - 7], [hx + 6, hy - 3], [hx + 5, hy + 2], [hx - 3, hy + 2]], BONE[2]); rect(g, hx - 2, hy - 4, 2, 2, '#0a100c'); rect(g, hx + 2, hy - 4, 2, 2, '#0a100c'); rect(g, hx - 1, hy - 4, 1, 1, GREEN[2]); rect(g, hx + 3, hy - 4, 1, 1, GREEN[2]);
+  fillPoly(g, [[hx - 2, hy + 3], [hx + 4, hy + 3], [hx + 7, hy + 10], [hx + 2, hy + 11]], BONE[1]);
+  for (const [x, y] of [[ax + 22, 22], [ax - 24, 48], [ax + 8, 62], [ax - 2, 8]]) { rect(g, x, y, 2, 2, '#e8fff0'); rect(g, x + 1, y - 2, 1, 1, GREEN[1]); }
+  return c;
+}
+function mageCrash() {   // down in the chase: slumped on his hem, one arm propped on the floor, the staff leant up to hold him, eyes dim
+  const [c, g] = canvas(60, 68), ax = 30, ay = 66;
+  fillPoly(g, [[ax - 20, ay], [ax + 18, ay], [ax + 14, ay - 9], [ax - 14, ay - 10]], ROBE[1]); fillPoly(g, [[ax - 16, ay - 1], [ax + 2, ay - 1], [ax - 2, ay - 9], [ax - 12, ay - 9]], ROBE[2]);
+  for (let i = 0; i < 6; i++) fillPoly(g, [[ax + 12 + i * 3, ay], [ax + 15 + i * 3, ay], [ax + 17 + i * 3, ay - 1 + (i % 2)]], ROBE[0]);
+  fillPoly(g, [[ax - 10, ay - 8], [ax + 4, ay - 8], [ax + 6, ay - 26], [ax - 6, ay - 28]], ROBE[1]); fillPoly(g, [[ax - 8, ay - 9], [ax - 2, ay - 9], [ax - 3, ay - 26], [ax - 6, ay - 27]], ROBE[2]);
+  rect(g, ax - 3, ay - 22, 5, 7, '#120e18'); for (let r = 0; r < 2; r++) rect(g, ax - 3, ay - 21 + r * 3, 5, 1, BONE[1]);
+  line(g, ax + 14, ay - 4, ax + 22, ay - 44, WOOD[1], 2); line(g, ax + 15, ay - 4, ax + 23, ay - 44, WOOD[2]); rect(g, ax + 19, ay - 48, 7, 4, BONE[1]); rect(g, ax + 21, ay - 52, 3, 4, GREEN[0]); rect(g, ax + 22, ay - 51, 1, 2, GREEN[1]);
+  line(g, ax + 4, ay - 22, ax + 14, ay - 8, ROBE[1], 3); rect(g, ax + 14, ay - 9, 4, 3, BONE[2]); line(g, ax - 6, ay - 18, ax - 16, ay - 3, ROBE[1], 3); line(g, ax - 16, ay - 3, ax - 19, ay - 1, BONE[1]); rect(g, ax - 22, ay - 2, 4, 2, BONE[2]);
+  const hx = ax - 2, hy = ay - 31; fillPoly(g, [[hx - 8, hy + 2], [hx - 6, hy - 11], [hx + 1, hy - 14], [hx + 7, hy - 9], [hx + 8, hy + 2], [hx + 4, hy + 4], [hx - 5, hy + 4]], ROBE[0]);
+  fillPoly(g, [[hx - 4, hy - 9], [hx + 2, hy - 10], [hx + 5, hy - 7], [hx + 5, hy - 2], [hx + 2, hy], [hx - 4, hy - 1]], BONE[2]); rect(g, hx - 4, hy - 9, 2, 8, BONE[1]);
+  rect(g, hx - 2, hy - 7, 2, 2, '#0a100c'); rect(g, hx + 2, hy - 7, 2, 2, '#0a100c'); rect(g, hx - 1, hy - 7, 1, 1, GREEN[0]); rect(g, hx + 3, hy - 7, 1, 1, GREEN[0]);
+  fillPoly(g, [[hx - 3, hy], [hx + 4, hy - 1], [hx + 4, hy + 6], [hx - 1, hy + 7]], BONE[1]); rect(g, hx - 2, hy + 1, 1, 1, BONE[3]);
+  for (const [x, y] of [[ax - 24, ay - 5], [ax + 26, ay - 3], [ax - 28, ay - 9], [ax + 30, ay - 8]]) { rect(g, x, y, 3, 2, '#a89a84'); }
+  return c;
+}
 function fade(c, keep) {   /* the blink: he comes apart in bands (or gathers out of them) */
   const g = c.getContext('2d'); for (let y = 0; y < c.height; y++) if ((y % 4) >= keep) g.clearRect(0, y, c.width, 1);
   return c;
@@ -125,6 +156,7 @@ export function bakeUndeadMage() {
     mage({ ph: 2, pose: 'cast', spell: 'rune', headX: 2, glint: true, rune: true }),
     mage({ ph: 0, pose: 'cast', spell: 'void', headX: -1, sink: 1, lean: -1, glint: true }),
     mage({ ph: 1, headX: -2, headY: -1, jaw: 3, lean: -1 }),
+    mageFall(), mageCrash(),
   ].map(c => outline(c, OUT));
   const W = F.map(c => whiten(c));
   return { R: F, L: F.map(flipX), white: { R: W, L: W.map(flipX) }, ax: 30, ay: 66, w: 16, h: 40 };
