@@ -104,7 +104,7 @@ export function buildRookery({ painter, T, TS }) {
   plank(69, 72, 39); coins([70, 38], [72, 38]);
   /* (claude/rookery2) THE FIRST RIDE (TEACH, REQUIRED - safe: the gully floor is under the whole ride): the way out of the gully is a face five high, no jump climbs it.
      Stand on her mount; block her dive (or step off it: she hits the rock), and as she climbs, GRAB HER TALONS (UP) - she carries you up and shakes you off on the ledge */
-  sign(74, 41, 'A HARPY CAN CARRY YOU. BLOCK HER DIVE OR STEP OFF IT, THEN GRAB HER TALONS (UP) AS SHE CLIMBS.');
+  sign(74, 41, 'BLOCK HER DIVE, THEN GRAB HER TALONS (UP) AS SHE CLIMBS.');
   ride('firstRide', { mount: [81, 41], roost: [78, 33], path: [[82, 37], [84, 35]], land: [87, 36] });
   ground(85, 98, 37);                                                               /* the ledge over the gully (five up) */
   /* THE FIRST ROOST (the area's exam, REQUIRED): a cliff five rows high (no jump); a cracked slab over it. Bait her onto the mark at its foot: the slab slides
