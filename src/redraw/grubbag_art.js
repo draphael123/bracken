@@ -105,7 +105,7 @@ export function warmOne(poses) { for (const p of Object.values(poses)) { let m =
 /* THE CHAIR LEFT EMPTY (the belly flop: he is out of it) - the chair, the tureen on the table's end and the fork stuck upright in it, baked once, drawn at his chair's place */
 let CHAIR_C = null;
 export function drawChairArt(g) {
-  if (!CHAIR_C) { const [c, cg] = canvas(BW, BH); cg.translate(OX, OY); chair(cg); fork(cg, 130, -40, -1.42, 76); tureen(cg, 0); CHAIR_C = c; }
+  if (!CHAIR_C) { const [c, cg] = canvas(BW, BH); cg.translate(OX, OY); chair(cg); CHAIR_C = c; }   /* (claude/kitchengate2: no fork, no tureen) */
   g.drawImage(CHAIR_C, -OX, -OY);
 }
 function tureen(g, tip) { g.save(); g.translate(BIG.tureen[0], BIG.tureen[1]); g.rotate(tip || 0); g.imageSmoothingEnabled = false; g.drawImage(tureenFlat((tip || 0) > 0.6), -60, -64); g.restore(); }
@@ -170,11 +170,13 @@ function drawBody(g, p, j) {
   const sx = BIG.shoulder[0], sy = BIG.shoulder[1];
   if (p.arm) { arm(g, sx, sy, p.hand[0] - lean, p.hand[1], true, false); }
   else { arm(g, sx, sy, p.hand[0] - lean, p.hand[1], true, false); hand(g, p.hand[0] - lean, p.hand[1], !!p.fingers, Math.atan2(p.hand[1] - sy, p.hand[0] - lean - sx)); }
+  if (p.item === 'ham') { const [dx, dy] = [p.hand[0] - lean, p.hand[1]]; k.e(dx, dy - 16, 17, 13, SK.out); k.e(dx, dy - 16, 16, 12, SK.food); k.e(dx - 5, dy - 21, 8, 5, SK.foodL); k.r(dx + 12, dy - 22, 14, 6, SK.out); k.r(dx + 13, dy - 21, 12, 4, SK.tooth); k.e(dx + 27, dy - 23, 4, 4, SK.tooth); k.e(dx + 27, dy - 17, 4, 4, SK.tooth); }   /* (claude/kitchengate2) THE HIGH LOB's ham, hoisted */
+  if (p.item === 'plate') { const [dx, dy] = [p.hand[0] - lean, p.hand[1]]; k.e(dx + 2, dy - 14, 15, 5, SK.out); k.e(dx + 2, dy - 14, 14, 4, SK.dish); k.e(dx, dy - 15, 8, 2, '#ffffff'); k.e(dx + 2, dy - 13, 9, 2, SK.dishD); }   /* THE FLING's plate, drawn back */
+  if (p.item === 'bell') { const [dx, dy] = [p.hand[0] - lean, p.hand[1]]; k.r(dx - 2, dy - 22, 5, 12, SK.out); k.r(dx - 1, dy - 21, 3, 10, SK.oakL); k.p([[dx - 12, dy - 8], [dx + 13, dy - 8], [dx + 8, dy - 24], [dx - 7, dy - 24]].map(q => [q[0], q[1] - 6]), SK.out); k.p([[dx - 11, dy - 15], [dx + 12, dy - 15], [dx + 7, dy - 29], [dx - 6, dy - 29]], SK.trim); k.r(dx - 9, dy - 17, 19, 2, SK.trimD); k.e(dx, dy - 12, 3, 3, SK.trimD); }   /* THE SERVICE BELL */
   if (p.item === 'drumstick') { const [dx, dy] = [p.hand[0] - lean, p.hand[1]]; k.e(dx - 2, dy - 18, 13, 11, SK.out); k.e(dx - 2, dy - 18, 12, 10, SK.food); k.e(dx - 5, dy - 22, 6, 4, SK.foodL); k.r(dx + 8, dy - 20, 12, 5, SK.out); k.r(dx + 9, dy - 19, 10, 3, SK.tooth); k.e(dx + 21, dy - 22, 3, 3, SK.tooth); k.e(dx + 21, dy - 16, 3, 3, SK.tooth); }
   g.restore();
   g.restore();
-  /* the gravy tureen on the table's end in front of him: copper, banded, a ladle in it (with the chair when he is out of it) */
-  if (!p.noChair) tureen(g, p.cauldron);
+  /* (claude/kitchengate2, Daniel 10-27: the tureen in front of him clipped his flank - it is gone; the grease cauldron hangs on its own chain over the line, drawCauldron) */
 }
 const TUREENS = {};
 function tureenFlat(pour) {
@@ -219,6 +221,8 @@ function drawLive(g, p, flash, time, holding) {
   if (p.rings) for (let n = 0; n < 2; n++) { const q = (time * 3 + n * 0.5) % 1; g.strokeStyle = 'rgba(160,200,90,' + (1 - q).toFixed(2) + ')'; g.lineWidth = 2; g.beginPath(); g.arc(mx + 4, my, 8 + q * 46, -0.8, 0.8); g.stroke(); g.lineWidth = 1; }
   if (p.smoke) for (let q = 0; q < 7; q++) { const a = time * 3 + q * 1.3, s = (time * 22 + q * 8) % 40, yy = -158 - s; g.globalAlpha = 0.7 * (1 - s / 40); rect(g, R(20 + Math.cos(a) * 14), R(yy), 8, 6, '#46403c'); g.globalAlpha = 1; }
   if (p.zzz) { const q = (time * 0.8) % 1; g.globalAlpha = 1 - q; const zx = 30, zy = R(-160 - q * 18); rect(g, zx, zy, 7, 1, '#e8e0d0'); line(g, zx + 6, zy + 1, zx, zy + 6, '#e8e0d0'); rect(g, zx, zy + 6, 7, 1, '#e8e0d0'); g.globalAlpha = 1; }
+  if (p.steam) for (let q = 0; q < 6; q++) { const s = (time * 40 + q * 9) % 36, sd = q % 2 ? 1 : -1; g.globalAlpha = 0.8 * (1 - s / 36); rect(g, R(12 + sd * (16 + s * 0.4)), R(-150 - s), 5, 5, '#f0f0f0'); g.globalAlpha = 1; }   /* TOO HOT: steam out of his ears */
+  if (p.ring) for (let n = 0; n < 2; n++) { const q = (time * 4 + n * 0.5) % 1, hx = p.hand[0] - lean, hy = p.hand[1] - 20; g.strokeStyle = 'rgba(255,211,107,' + (1 - q).toFixed(2) + ')'; g.beginPath(); g.arc(hx, hy, 10 + q * 22, -2.4, -0.7); g.stroke(); }   /* the bell ringing */
   if (p.cough) for (let q = 0; q < 4; q++) rect(g, R(mx + 6 + q * 8), R(my - 4 - (time * 30 + q * 7) % 14), 4, 4, 'rgba(200,190,170,0.7)');
 }
 /* THE GRAB's forearm, flung out along the floor from his elbow to his hand (world px, already facing) - src/grubbag-hands.js drawBoss */
@@ -232,6 +236,14 @@ export function drawGrabArm(g, x0, y0, x1, y1, flash) {
 export function dish(g, flash, dx, dy, kind, time) {
   const k = mk(g, flash);
   k.r(dx - 11, dy - 1, 22, 5, SK.out); k.r(dx - 10, dy, 20, 3, SK.dish); k.r(dx - 10, dy, 20, 1, '#ffffff'); k.r(dx - 8, dy + 3, 16, 1, SK.dishD);
+  if (kind === 'bomb') {   /* (claude/kitchengate2) THE BOMB: a black pudding-bomb, banded, its fuse burning */
+    k.e(dx, dy - 7, 9, 9, SK.out); k.e(dx, dy - 7, 8, 8, '#2a2428'); k.e(dx - 3, dy - 10, 3, 3, '#6a6068'); k.r(dx - 8, dy - 8, 16, 2, SK.copperD); k.r(dx - 2, dy - 18, 4, 4, SK.out); k.r(dx - 1, dy - 17, 2, 3, '#6a5a3a');
+    if (Math.floor(time * 12) % 2) { k.r(dx - 2, dy - 23, 5, 5, '#ffd36b'); k.r(dx - 1, dy - 22, 3, 3, '#ffffff'); } else { k.r(dx - 1, dy - 22, 3, 3, '#ff9a3c'); }
+    return; }
+  if (kind === 'chilli') {   /* A RED-HOT CHILLI on its plate, glowing, steaming */
+    k.p([[dx - 9, dy - 4], [dx + 6, dy - 8], [dx + 10, dy - 6], [dx + 4, dy - 2], [dx - 8, dy - 1]], SK.out); k.p([[dx - 8, dy - 4], [dx + 6, dy - 7], [dx + 9, dy - 6], [dx + 4, dy - 3], [dx - 7, dy - 2]], '#e0201a'); k.r(dx - 4, dy - 6, 6, 1, '#ff8a6a'); k.r(dx + 8, dy - 9, 3, 3, '#3a8a2a');
+    g.globalAlpha = 0.35 + 0.15 * Math.sin(time * 12); rect(g, dx - 11, dy - 12, 22, 12, '#ff3a1a'); g.globalAlpha = 1; for (let q = 0; q < 2; q++) rect(g, R(dx - 3 + q * 6), R(dy - 14 - (time * 20 + q * 5) % 8), 2, 2, 'rgba(240,240,240,0.7)');
+    return; }
   if (kind === 'pie') {
     k.e(dx, dy - 4, 9, 6, SK.out); k.e(dx, dy - 4, 8, 5, SK.pie); k.e(dx - 2, dy - 6, 4, 2, SK.pieL); k.r(dx - 7, dy - 3, 15, 2, SK.pieD);
     for (const x of [-5, -1, 3, 6]) k.r(dx + x, dy - 3, 1, 3, SK.pieD);   /* the crimped crust */
@@ -260,8 +272,8 @@ function once2(fn) { let v = null; return () => (v || (v = fn())); }
 export function drawOven(g, ox, fy, st, time, hatchY = 176) {
   const k = mk(g, false), hot = st === 'bake' || st === 'out';
   /* the hatch, high in the wall: a dark opening with a counter; the serving line comes out of it */
-  const hy = fy - hatchY; k.r(ox - 26, hy - 26, 52, 40, SK.out); k.r(ox - 24, hy - 24, 48, 36, '#1a1010'); k.r(ox - 26, hy + 12, 52, 5, SK.oakL); k.r(ox - 26, hy + 12, 52, 1, SK.oakLL);
-  k.r(ox - 26, hy - 30, 52, 5, SK.oak); k.r(ox - 26, hy - 30, 52, 1, SK.oakL); for (let i = 0; i < 4; i++) { k.r(ox - 16 + i * 10, hy - 18, 3, 16, '#2a2020'); k.r(ox - 16 + i * 10, hy - 18, 3, 2, '#c8c8d0'); }   /* ladles and cleavers hung in the dark */
+  const hy = fy - hatchY; if (hatchY) { k.r(ox - 26, hy - 26, 52, 40, SK.out); k.r(ox - 24, hy - 24, 48, 36, '#1a1010'); k.r(ox - 26, hy + 12, 52, 5, SK.oakL); k.r(ox - 26, hy + 12, 52, 1, SK.oakLL);
+  k.r(ox - 26, hy - 30, 52, 5, SK.oak); k.r(ox - 26, hy - 30, 52, 1, SK.oakL); for (let i = 0; i < 4; i++) { k.r(ox - 16 + i * 10, hy - 18, 3, 16, '#2a2020'); k.r(ox - 16 + i * 10, hy - 18, 3, 2, '#c8c8d0'); } }   /* ladles and cleavers hung in the dark (claude/kitchengate2: hatchY 0 = the stove alone, the hatch is drawHatch) */
   g.drawImage(OVEN(), R(ox - 50), R(fy - 112));
   if (hot) { const q = 0.7 + 0.3 * Math.sin(time * 14); k.e(ox, fy - 22, 18, R(16 * q), '#c0401a'); k.e(ox, fy - 19, 13, R(12 * q), '#ff9a3c'); k.e(ox, fy - 17, 7, R(6 * q), '#ffe9a0');
     g.globalAlpha = 0.18; rect(g, ox - 60, fy - 90, 120, 90, '#ff8a3a'); g.globalAlpha = 1;
@@ -304,3 +316,39 @@ export function drawHooked(g, dx, hy, dy, kind, time) {
   const k = mk(g, false); k.r(dx - 1, hy, 3, dy - hy - 4, SK.out); k.r(dx, hy, 1, dy - hy - 4, SK.ironL); k.r(dx - 4, dy - 8, 9, 3, SK.out); k.r(dx - 3, dy - 7, 7, 1, SK.ironLL);   /* the hook and its chain */
   dish(g, false, dx, dy, kind, time);
 }
+
+/* ---------------------------------------------------------------- (claude/kitchengate2) THE SERVING LINE and its hall: GREYBOX shapes with clean hooks for the art lane ---------------------------------------------------------------- */
+/* THE KITCHEN HATCH in the west wall at the line's start (x0, the line's top y): a dark mouth the items come out of, a short iron chute down onto the belt */
+export function drawHatch(g, x0, by, time) { const k = mk(g, false); k.r(x0 - 30, by - 54, 34, 40, SK.out); k.r(x0 - 28, by - 52, 30, 36, '#1a1010'); k.r(x0 - 32, by - 58, 38, 6, SK.ironD); k.r(x0 - 32, by - 58, 38, 1, SK.ironL);
+  k.p([[x0 - 26, by - 16], [x0 + 4, by - 16], [x0 + 14, by - 2], [x0 - 16, by - 2]], SK.out); k.p([[x0 - 25, by - 15], [x0 + 3, by - 15], [x0 + 12, by - 3], [x0 - 15, by - 3]], SK.iron); k.r(x0 - 25, by - 15, 28, 1, SK.ironLL);
+  const f = 0.5 + 0.5 * Math.sin(time * 3); g.globalAlpha = 0.25 * f; rect(g, x0 - 28, by - 40, 30, 20, '#ff9a3c'); g.globalAlpha = 1; }
+/* THE CONVEYOR (the serving line): a stone counter on iron legs, a leather belt over rollers on its top whose slats run east (scroll: px the belt has run) */
+export function drawBelt(g, x0, x1, by, fy, scroll, time) { const k = mk(g, false), w = x1 - x0;
+  for (let x = x0 + 10; x < x1 - 6; x += 40) { k.r(x - 1, by + 10, 6, fy - by - 10, SK.out); k.r(x, by + 10, 4, fy - by - 10, SK.ironD); k.r(x, by + 10, 1, fy - by - 10, SK.ironL); }   /* legs */
+  k.r(x0 - 2, by - 3, w + 4, 15, SK.out); k.r(x0, by + 4, w, 7, '#6a5a4c'); k.r(x0, by + 4, w, 1, '#9a8a78');   /* the counter */
+  k.r(x0, by - 2, w, 6, '#3a2a20'); const off = ((scroll % 12) + 12) % 12; for (let x = x0 + off; x < x1; x += 12) k.r(R(x), by - 2, 2, 6, '#5a4232');   /* the belt's slats, running */
+  for (const xx of [x0 + 2, x1 - 6]) { k.e(xx + 2, by + 1, 5, 5, SK.out); k.e(xx + 2, by + 1, 4, 4, SK.ironL); k.r(xx + 1 + R(Math.cos(scroll / 4) * 2), by, 2, 2, SK.ironD); }   /* the end rollers */
+  for (let x = x0 + 18; x < x1 - 10; x += 36) { k.r(x, by + 5, 2, 2, '#ffd36b'); }   /* brass studs */
+  for (let x = x0 + 30; x < x1 - 30; x += 60) { k.p([[x, by + 6], [x + 6, by + 8], [x, by + 10]], 'rgba(255,211,107,0.7)'); } }   /* arrows: it runs to him */
+/* HIS PLATTER at the line's end: a silver charger on the high table's corner (the counter's end, two rows up) */
+export function drawPlatter(g, t0, t1, by, fy, time) { const k = mk(g, false), w = t1 - t0;
+  k.r(t0, by + 10, w, fy - by - 10, SK.out); k.r(t0 + 1, by + 11, w - 2, fy - by - 11, SK.robe); for (let x = t0; x < t1; x += 16) { k.p([[x, by + 11], [x + 16, by + 11], [x + 8, by + 20]], SK.trimD); } k.r(t0, fy - 6, w, 6, SK.trimD);
+  k.e(t1 - 18, by - 2, 20, 4, SK.out); k.e(t1 - 18, by - 2, 19, 3, SK.dish); k.e(t1 - 22, by - 3, 10, 1, '#ffffff'); }
+/* THE GREASE CAULDRON hung on a chain from the roof over the line's end (x, y its bottom; roofY the roof), tipped tip 0..1 (pouring) */
+export function drawCauldron(g, x, y, roofY, tip, time) { const k = mk(g, false);
+  for (let yy = roofY; yy < y - 28; yy += 6) { k.r(x - 2, yy, 4, 4, SK.out); k.r(x - 1, yy + 1, 2, 2, SK.ironL); }   /* its chain */
+  g.save(); g.translate(R(x), R(y - 16)); g.rotate(-tip * 1.3);
+  k.e(0, 0, 20, 16, SK.out); k.e(0, 0, 19, 15, SK.ironD); k.e(-6, -5, 8, 5, SK.iron); k.r(-21, -16, 42, 6, SK.out); k.r(-20, -15, 40, 4, SK.iron); k.r(-17, -14, 34, 2, C2.grease); k.r(-20, -15, 40, 1, SK.ironLL);
+  k.r(-3, -26, 6, 10, SK.out); k.r(-2, -25, 4, 9, SK.ironL);
+  if (tip > 0.3) { k.p([[-20, -14], [-30, -6], [-34, 14], [-26, 18], [-22, -2]], C2.grease); k.p([[-22, -12], [-28, -4], [-30, 10], [-26, 12]], C2.greaseL); }
+  g.restore();
+  k.r(x + 12, y - 12, 6, 3, SK.out); k.r(x + 13, y - 11, 4, 1, SK.ironL); }   /* the yank-ring for his chain */
+const C2 = { grease: '#c88a2a', greaseL: '#f0c060' };
+/* the chain from the cauldron's ring down to his fist */
+export function drawChain(g, x0, y0, x1, y1) { const k = mk(g, false), n = Math.max(2, R(Math.hypot(x1 - x0, y1 - y0) / 6)); for (let i = 0; i <= n; i++) { const t = i / n, x = x0 + (x1 - x0) * t, y = y0 + (y1 - y0) * t + Math.sin(t * Math.PI) * 6; k.r(x - 2, y - 2, 4, 4, SK.out); k.r(x - 1, y - 1, 2, 2, SK.ironL); } }
+/* THE BURNING FLOOR (the grease spill): flames along the floor from x0 to x1 */
+export function drawBurn(g, x0, x1, fy, time) { if (x1 <= x0) return; rect(g, x0, fy - 3, x1 - x0, 3, '#7a3a10');
+  for (let x = x0; x < x1; x += 6) { const h = 6 + 5 * Math.abs(Math.sin(time * 9 + x * 0.37)); rect(g, R(x), R(fy - h), 5, R(h), '#c0401a'); rect(g, R(x + 1), R(fy - h * 0.7), 3, R(h * 0.7), '#ff9a3c'); rect(g, R(x + 2), R(fy - h * 0.35), 1, R(h * 0.35), '#ffe9a0'); } }
+/* THE HIGH LOB's ham in flight; THE FLING's plate, flat */
+export function drawHam(g, x, y, rot) { g.save(); g.translate(R(x), R(y)); g.rotate(rot); const k = mk(g, false); k.e(0, 0, 8, 6, SK.out); k.e(0, 0, 7, 5, SK.food); k.e(-2, -2, 3, 2, SK.foodL); k.r(6, -2, 6, 3, SK.out); k.r(7, -1, 4, 1, SK.tooth); g.restore(); }
+export function drawPlateFlat(g, x, y, time) { const k = mk(g, false); k.e(x, y, 8, 3, SK.out); k.e(x, y, 7, 2, SK.dish); k.r(x - 4, y - 1, 5, 1, '#ffffff'); for (let q = 1; q < 3; q++) rect(g, R(x + q * 9), R(y), 5, 1, 'rgba(232,224,208,' + (0.6 - q * 0.2).toFixed(2) + ')'); }

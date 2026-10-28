@@ -207,7 +207,7 @@ export function buildKitchenGate({ painter, T, TS }) {
   sign(361, 21, "THE SPICE VAULT. THE HEAD COOK'S THREE RECIPE PAGES OPEN ITS GRATE.");
   foe('hearthgob', 364, 21, 'vaultDoor', { face: -1 });
   ent('check', 368, 21);                                                                 /* SHRINE FOUR: his door */
-  sign(370, 21, 'HE NEVER LEAVES HIS CHAIR; EVERY DISH HEALS HIM. STOKE THE OVEN: IT BAKES A POWDER PIE.');
+  sign(370, 21, 'HE NEVER LEAVES HIS CHAIR. EVERY DISH THAT REACHES HIM HEALS HIM: KNOCK THEM OFF THE LINE. LET THE BOMBS REACH HIM.');
 
   /* THE KITCHEN SHELVES: pot racks and dressers along the walls (a second height, coins on them) - never where one would climb a face a machine is for */
   for (const [a, b, y] of [[24, 27, 34], [58, 61, 23], [84, 86, 22], [93, 97, 15], [150, 153, 7], [157, 161, 10], [196, 199, 10], [212, 216, 20], [226, 230, 20], [241, 244, 19], [259, 262, 19], [266, 270, 19], [292, 296, 20], [362, 366, 18]]) { shelf(a, b, y); racks.push([a, b, y]); ent('coin', Math.round((a + b) / 2), y - 1); }
@@ -216,16 +216,21 @@ export function buildKitchenGate({ painter, T, TS }) {
   /* The high table's hall: the floor (row 22), his reinforced chair at the east end hard against the wall (claude/grubbagbig: he is ~225 px across now and fills it), the high table
      under his belly, the KITCHEN HATCH high in the west wall over its PIE OVEN, the oven's bellows, and THE SERVING LINE - a hook rail under the roof from the hatch to his table (the
      dishes ride it). Two benches along the hall, and THE GALLERY (a shelf two benches up, west of his table): from it a hero can come down on his belly (a plunge, GB.above). */
+  /* (claude/kitchengate2, Daniel 10-27) HE SITS AT THE HEAD OF THE SERVING LINE: a conveyor counter two rows up (one-way: you jump up onto it, it carries you toward him) from the
+     kitchen hatch to his platter; two shelves over it (the lob lands on whatever you stand on); the pepper stove and its bellows by the hatch; the grease cauldron hung on a chain
+     over the line's end. The table is the line's own end (his platter). */
   const [A0, A1] = KITCHEN.arena, FL = KITCHEN.floor, RF = KITCHEN.roof;
   air(373, A0 - 2, 12, FL - 1);                                                          /* the passage from the feast hall to his table */
   air(A0 - 1, A1 + 1, RF, FL - 1);
-  shelf(A0 + 6, A0 + 9, FL - 3); shelf(A0 + 12, A0 + 15, FL - 3); shelf(A1 - 21, A1 - 19, FL - 6);
-  ent('torch', A0 + 11, FL - 1); ent('torch', A1 - 23, FL - 1);
+  const BELT = [A0 + 7, A1 - 16, FL - 2], PLATS = [[A0 + 9, A0 + 12, FL - 5], [A0 + 16, A0 + 19, FL - 5]];
+  shelf(BELT[0], BELT[1], BELT[2]); for (const [a, b, y] of PLATS) shelf(a, b, y);
+  ent('torch', A0 + 14, FL - 1); ent('torch', A1 - 23, FL - 1);
   ent('grubbag', A1 - 7, FL - 1);
 
   const arena = { x0: A0 * TS, x1: (A1 + 1) * TS, floor: FL * TS, y0: RF * TS, trigger: (A0 + 6) * TS, wallL: A0 - 1, wallR: A1 + 1, boss: 'grubbag', music: 'grubbag', tint: '#f0c890', tintA: 0.06,
-    /* THE TABLE (src/grubbag.js geom): his chair's column, the high table's span, the hatch / oven and its bellows, the serving line's two ends (columns, rows) */
-    chair: A1 - 7, table: [A1 - 17, A1 - 12], oven: A0 + 2, bellows: A0 + 5, line: [A0 + 2, 11, A1 - 10, 13] };
+    /* THE TABLE (src/grubbag.js geom): his chair's column, his platter (the line's end), the pepper stove and its bellows, THE SERVING LINE (the conveyor: first and last column,
+       its top row), the shelves, the grease cauldron's hook (column, row) */
+    chair: A1 - 7, table: [A1 - 18, A1 - 15], oven: A0 + 2, bellows: A0 + 5, belt: BELT, plats: PLATS, cauldron: [A1 - 17, 13] };
   return {
     W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: 39 }, pools: [], falls: [],
     arena, kitchen: true, kgKit: true, hoists, kgFires: fires, kgPots: pots, kgWheels: wheels, kgTrails: trails, kgDoors: doors, kgRace: race, kgPages: pages, kgVault: vault, kgRacks: racks,

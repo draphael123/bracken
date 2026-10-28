@@ -169,7 +169,7 @@ function cleaver(g, hx, hy, a, big) {
 function butcherFrame(pose) {
   const [c, g] = canvas(BW, BH), x0 = BAX, y0 = BAY, walk = pose === 'walk0' ? 1 : pose === 'walk1' ? -1 : 0;
   const lean = pose === 'raise' ? -2 : pose === 'slam' ? 5 : pose === 'wind' ? -3 : pose === 'sweep' ? 4 : 0, dip = pose === 'slam' ? 3 : pose === 'sweep' ? 1 : 0;
-  const SK = ['#1a2410', '#3a4a26', '#5a7036', '#7a9048', '#9ab05e'];
+  const SK = ['#3a2018', '#7a4a34', '#b07a5a', '#d09a78', '#e8b898'];   /* (claude/kitchengate2: a HUMAN butcher now - no goblins after the Goblin Queen) */
   /* boots and legs */
   for (const [dx, off] of [[-6, walk], [3, -walk]]) { rect(g, x0 + dx - 1, y0 - 12 + dip, 8, 12 - dip + (off > 0 ? -1 : 0), OUT); rect(g, x0 + dx, y0 - 11 + dip, 6, 9, '#4a3a2c'); rect(g, x0 + dx - 1 + (off > 0 ? 1 : 0), y0 - 4, 8, 4, OUT); rect(g, x0 + dx + (off > 0 ? 1 : 0), y0 - 3, 6, 3, '#2a1c14'); rect(g, x0 + dx, y0 - 11 + dip, 1, 8, '#6a5444'); }
   /* the torso: a vest of soot-grey, the great belly */
@@ -189,7 +189,7 @@ function butcherFrame(pose) {
   ellipse(g, hx, hy, 9, 8, OUT); ellipse(g, hx, hy, 8, 7, SK[2]); ellipse(g, hx - 2, hy - 3, 4, 3, SK[3]); rect(g, hx - 7, hy + 3, 15, 4, SK[1]);
   rect(g, hx + 1, hy - 2, 8, 2, SK[0]); rect(g, hx + 3, hy - 1, 3, 3, '#ffe9a0'); rect(g, hx + 4, hy, 2, 2, '#1a1010'); rect(g, hx - 4, hy - 1, 3, 3, '#ffe9a0'); rect(g, hx - 3, hy, 2, 2, '#1a1010');   /* the eyes */
   if (pose === 'raise' || pose === 'slam') { rect(g, hx - 3, hy + 3, 12, 5, OUT); rect(g, hx - 2, hy + 4, 10, 3, '#3a0e0e'); rect(g, hx - 1, hy + 4, 2, 2, '#efe6cf'); rect(g, hx + 5, hy + 4, 2, 2, '#efe6cf'); } else { rect(g, hx - 2, hy + 4, 10, 1, SK[0]); }
-  rect(g, hx + 5, hy + 1, 2, 4, '#efe6cf'); px(g, hx + 5, hy + 5, '#b8ac90');   /* the tusk */
+  rect(g, hx - 6, hy + 5, 13, 3, '#4a2a1a'); rect(g, hx - 5, hy + 7, 11, 1, '#2a1810');   /* (claude/kitchengate2) a black butcher's beard, no tusk */
   rect(g, hx + 6, hy - 1, 5, 4, SK[2]); rect(g, hx + 6, hy - 1, 5, 1, SK[3]);   /* the nose */
   /* the toque: a tall crooked cook's hat with a bloody smear */
   rect(g, hx - 7, hy - 14 + 1, 15, 8, OUT); rect(g, hx - 6, hy - 13 + 1, 13, 7, '#f0ece0'); rect(g, hx - 6, hy - 13 + 1, 3, 7, '#ffffff'); rect(g, hx + 4, hy - 13 + 1, 3, 7, '#c8c2b0');
@@ -366,3 +366,37 @@ export function drawAmbient(g, cx, cy, VW, VH, time, at, T) {
   }
   g.restore();
 }
+
+/* ------------------------------------------------------------------ (claude/kitchengate2) THE ATTENDANT: the thief's AI turned serving man - the queen's livery (plum, gold), a white apron,
+   white gloves, a silver tray (his shield: raised, it turns a blow from the front) and plates to throw. GREYBOX frames, the art lane redraws: idle, walk x2, aim (a plate cocked over his
+   shoulder), throw (arm out), guard (the tray up before him), bash (the tray swung). ------------------------------------------------------------------ */
+const AW = 26, AH = 28, AAX = 12, AAY = 27;
+function trayAt(g, x, y, up) { if (up) { rect(g, x - 2, y - 9, 5, 18, OUT); rect(g, x - 1, y - 8, 3, 16, '#c8ccd4'); rect(g, x - 1, y - 8, 1, 16, '#ffffff'); rect(g, x + 1, y - 6, 1, 12, '#8a8e96'); }
+  else { ellipse(g, x, y, 8, 3, OUT); ellipse(g, x, y, 7, 2, '#c8ccd4'); rect(g, x - 4, y - 1, 5, 1, '#ffffff'); } }
+function attendantFrame(pose) {
+  const [c, g] = canvas(AW, AH), x0 = AAX, y0 = AAY, walk = pose === 'walk0' ? 1 : pose === 'walk1' ? -1 : 0, lean = pose === 'throw' ? 2 : pose === 'aim' ? -1 : pose === 'bash' ? 2 : 0;
+  const SKN = ['#3a2018', '#b07a5a', '#e0aa88'], LIV = ['#1e0c16', '#4a1a2e', '#6a2a3a', '#8e3c50'], GOLD = '#ffd36b';
+  for (const [dx, off] of [[-4, walk], [1, -walk]]) { rect(g, x0 + dx - 1 + off, y0 - 8, 5, 8, OUT); rect(g, x0 + dx + off, y0 - 7, 3, 6, '#22202a'); rect(g, x0 + dx - 1 + off, y0 - 2, 5, 2, '#121016'); }   /* breeches, shoes */
+  const tx = x0 + lean, ty = y0 - 15;
+  rect(g, tx - 5, ty - 6, 11, 14, OUT); rect(g, tx - 4, ty - 5, 9, 12, LIV[2]); rect(g, tx - 4, ty - 5, 2, 12, LIV[3]); rect(g, tx + 3, ty - 5, 2, 12, LIV[1]); rect(g, tx - 4, ty - 5, 9, 1, GOLD);   /* the livery coat */
+  rect(g, tx - 3, ty - 1, 7, 9, OUT); rect(g, tx - 2, ty, 5, 8, '#efe8da'); rect(g, tx - 2, ty, 1, 8, '#ffffff'); rect(g, tx - 4, ty + 1, 9, 1, '#c8c0ae');   /* the apron */
+  for (const yy of [-3, 0, 3]) rect(g, tx + 4, ty + yy, 1, 1, GOLD);   /* buttons */
+  const hx = x0 + lean + (pose === 'throw' ? 1 : 0), hy = y0 - 25;
+  ellipse(g, hx, hy, 4, 4, OUT); ellipse(g, hx, hy, 3, 3, SKN[2]); rect(g, hx - 3, hy + 1, 6, 2, SKN[1]); rect(g, hx + 1, hy - 1, 1, 1, '#1a1010'); rect(g, hx - 2, hy - 1, 1, 1, '#1a1010');   /* the face */
+  rect(g, hx - 4, hy - 5, 8, 3, OUT); rect(g, hx - 3, hy - 4, 6, 2, '#2a1810'); rect(g, hx - 4, hy - 6, 8, 2, OUT); rect(g, hx - 3, hy - 6, 6, 1, LIV[2]); rect(g, hx - 3, hy - 6, 6, 1, LIV[3]);   /* the hair, the livery cap */
+  if (pose === 'aim' || pose === 'guard') { rect(g, hx - 1, hy + 2, 3, 1, OUT); }
+  const arm = (sx, sy, ex, ey) => { line(g, sx, sy, ex, ey, OUT, 4); line(g, sx, sy, ex, ey, LIV[2], 2); ellipse(g, ex, ey, 2, 2, OUT); rect(g, ex - 1, ey - 1, 2, 2, '#f4f0e8'); };
+  const H = { idle: [tx + 6, ty + 2], walk0: [tx + 6, ty + 3], walk1: [tx + 6, ty + 1], aim: [tx - 4, ty - 10], throw: [tx + 10, ty - 4], guard: [tx + 8, ty - 2], bash: [tx + 10, ty + 1] }[pose];
+  const F = { idle: [tx - 5, ty + 3], walk0: [tx - 5, ty + 2], walk1: [tx - 5, ty + 4], aim: [tx - 5, ty + 2], throw: [tx - 5, ty + 1], guard: [tx + 7, ty + 2], bash: [tx - 5, ty + 2] }[pose];
+  arm(tx - 3, ty - 4, F[0], F[1]); arm(tx + 3, ty - 4, H[0], H[1]);
+  if (pose === 'guard' || pose === 'bash') trayAt(g, H[0] + 2, H[1], pose === 'guard'); else trayAt(g, F[0] - 1, F[1] - 2, false);
+  if (pose === 'aim') { ellipse(g, H[0], H[1] - 3, 5, 2, OUT); ellipse(g, H[0], H[1] - 3, 4, 1, '#e8e0d0'); }   /* the plate cocked */
+  return c;
+}
+export function bakeAttendant() {
+  return once('attendant', () => { const names = ['idle', 'walk0', 'walk1', 'aim', 'throw', 'guard', 'bash']; const Rr = names.map(attendantFrame), white = Rr.map(c => whiten(c));
+    return { R: Rr, L: Rr.map(flipX), white: { R: white, L: white.map(flipX) }, ax: AAX, ay: AAY, w: AW, h: AH }; });
+}
+export const attendantFrameOf = e => { const m = e.mode; return m === 'aim' ? 3 : m === 'throw' ? 4 : m === 'guard' || m === 'bashTell' ? 5 : m === 'bash' ? 6 : (Math.abs(e.vx || 0) > 4 ? 1 + (Math.floor((e.anim || 0) * 7) % 2) : 0); };
+/* a thrown plate in the air (the attendant's) */
+export function drawPlate(g, x, y, rot) { g.save(); g.translate(Math.round(x), Math.round(y)); g.rotate(rot); ellipse(g, 0, 0, 5, 2, OUT); ellipse(g, 0, 0, 4, 1, '#e8e0d0'); g.restore(); }

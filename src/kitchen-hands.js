@@ -21,17 +21,22 @@
 import { WHEEL } from './kitchen-gate.js';
 import * as KA from './redraw/kitchen_art.js';   /* (claude/kitchengateart) the machines, the butcher's sheet, the halls */
 export const K = { roar: 8, restoke: 0.6, lift: 240, colW: 13, trailV: 150, burnFor: 2.6, burnDmg: 9, burnEvery: 0.5, foeBurn: 14, melt: 0.9, regrease: 5, pageR: 14,
-  butcher: { hp: 64, speed: 24, near: 210, reach: 34, chopTell: 0.85, chop: 24, chopRest: 1.15, hackTell: 0.55, hack: 15, hackRest: 0.6, slide: 130, burn: 2.6, burnMul: 2 } };
+  butcher: { hp: 64, speed: 24, near: 210, reach: 34, chopTell: 0.85, chop: 24, chopRest: 1.15, hackTell: 0.55, hack: 15, hackRest: 0.6, slide: 130, burn: 2.6, burnMul: 2 },
+  /* (claude/kitchengate2) THE ATTENDANT: the thief turned serving man. He keeps his distance and THROWS PLATES (a told arc onto the ring where you stand); close in and he raises his TRAY (a blow
+     from the front is turned: go round him, or come down on him); then he swings it */
+  attendant: { hp: 30, speed: 44, near: 230, min: 54, max: 190, aimT: 0.6, throwT: 0.25, rest: 1.0, cd: 1.6, plate: { flight: 0.8, r: 11, dmg: 9, apex: 46 }, guardAt: 40, guardT: 0.9, bashTell: 0.32, bashT: 0.3, bash: 8, bashRest: 0.9, guardCd: 2.2 } };
 export const KG_SAY = {
   roar: 'THE FIRE ROARS', steam: 'THE COPPER STEAMS: STAND IN IT', turns: 'THE GREAT SPIT TURNS', dies: 'THE FIRE DIES DOWN', catches: 'THE GREASE CATCHES: OFF THE TRAIL',
   melts: 'THE TALLOW DOOR MELTS', race: 'THE GREASE POT GOES OVER: RUN!', page: 'A RECIPE PAGE', vault: 'THE SPICE VAULT OPENS', burns: 'HE BURNS', slides: 'HE SLIDES ON THE GREASE',
-  bellows: 'STRIKE THE BELLOWS', regrease: 'THE GREASE RUNS BACK', cleaver: 'THE CLEAVER: STEP BACK',
+  bellows: 'STRIKE THE BELLOWS', regrease: 'THE GREASE RUNS BACK', cleaver: 'THE CLEAVER: STEP BACK', tray: 'THE TRAY: GO ROUND HIM', plates: 'HE THROWS PLATES: OFF THE RING',
 };
 /* a spit's place on its wheel at angle a: { x (its middle), y (its top) } */
 export const spitAt = (w, a) => ({ x: w.x + Math.cos(a) * WHEEL.R, y: w.y + Math.sin(a) * WHEEL.R });
 export const spitAngle = (w, ang, k) => ang + k * Math.PI * 2 / WHEEL.n;
 /* THE BUTCHER's skin (greybox): the club goblin's frames, gone a meaty red-brown (his apron and cleaver are drawn over him: butcherOver) - main.js SPR.butcher */
-export function bakeButcherSet() { return KA.bakeButcher(); }   /* (claude/kitchengateart) his own seven frames: idle, walk x2, raise, slam, wind, sweep */
+export function bakeButcherSet() { return KA.bakeButcher(); }
+export function bakeAttendantSet() { return KA.bakeAttendant(); }   /* (claude/kitchengate2) THE ATTENDANT's frames: idle, walk x2, aim, throw, guard, bash */
+export const attendantFrameOf = KA.attendantFrameOf;   /* (claude/kitchengateart) his own seven frames: idle, walk x2, raise, slam, wind, sweep */
 export const butcherFrameOf = KA.butcherFrameOf;
 
 export function makeKitchenHands(ctx) {
@@ -152,8 +157,47 @@ export function makeKitchenHands(ctx) {
     e.anim = (e.anim || 0) + dt;
     return true;
   };
-  /* a blow on THE BUTCHER: double while he burns */
-  H.takeFoe = (e, dmg) => (e.t === 'butcher' && e.kgBurn > 0 ? Math.round(dmg * K.butcher.burnMul) : dmg);
+  /* ---------- THE ATTENDANT (claude/kitchengate2; main.js updateEnemies: his own machine) ---------- */
+  const surfaceUnder = (x, y) => { const T = ctx.T, tx = Math.floor(x / TS); for (let ty = Math.floor((y - 2) / TS); ty < (L().H || 99); ty++) { const t = ctx.tileAt ? ctx.tileAt(tx, ty) : null; if (t === T.SOLID || t === T.ONEWAY || (ctx.solidAt && ctx.solidAt(tx, ty))) return ty * TS; } return y; };
+  H.attendant = (e, dt) => { if (!S) return false;
+    const A = K.attendant, ps = ctx.players().filter(p => p && !p.dead), P = ps.sort((a, b) => Math.abs(a.x - e.x) - Math.abs(b.x - e.x))[0];
+    e.vy = Math.min(270, (e.vy || 0) + 1000 * dt); e.modeT -= dt; e.kgCd = Math.max(0, (e.kgCd || 0) - dt); e.kgGcd = Math.max(0, (e.kgGcd || 0) - dt); e.plates = e.plates || [];
+    const d = P ? P.x - e.x : 0, ad = Math.abs(d), near = P && ad < A.near && Math.abs(P.y - e.y) < 90;
+    if (ctx.seen && near) ctx.seen('attendant');
+    let want = 0;
+    if (e.delayT > 0) { e.delayT -= dt; e.mode = 'walk'; }
+    else if (e.stagger > 0 && (e.mode === 'aim' || e.mode === 'guard' || e.mode === 'bashTell')) { e.mode = 'rest'; e.modeT = 0.6; }
+    else if (e.mode === 'walk' || !e.mode) { e.mode = 'walk'; if (near) { e.face = Math.sign(d) || e.face;
+        const facingMe = P.face === -Math.sign(d) || P.atk >= 0;
+        if (ad < A.guardAt && e.kgGcd <= 0 && facingMe) { e.mode = 'guard'; e.modeT = A.guardT; e.kgGcd = A.guardCd; if (once('tray')) say(e.x, e.y - 34, 'tray', '#c8d8e8'); }
+        else if (ad >= A.min && ad <= A.max && e.kgCd <= 0) { e.mode = 'aim'; e.modeT = A.aimT; ctx.number(e.x, e.y - e.h - 12, '!', '#ffd36b'); sfx('charge', 'tell'); }
+        else want = ad > A.max ? e.face * A.speed : ad < A.min ? -e.face * A.speed * 0.8 : 0; } }
+    else if (e.mode === 'aim' && e.modeT <= 0) { e.mode = 'throw'; e.modeT = A.throwT; e.kgCd = A.cd; sfx('throwWhoosh', 'whoosh');
+      const tx = P ? P.x : e.x + e.face * 80, ty = P ? (P.ground ? P.y : surfaceUnder(P.x, P.y)) : e.y;
+      e.plates.push({ x0: e.x + e.face * 6, y0: e.y - 22, tx, ty, t: 0, T: A.plate.flight, key: 'ap' + (e.kgAct = (e.kgAct || 0) + 1) });
+      if (once('plates')) say(e.x, e.y - 40, 'plates'); }
+    else if (e.mode === 'throw' && e.modeT <= 0) { e.mode = 'rest'; e.modeT = A.rest; }
+    else if (e.mode === 'guard' && e.modeT <= 0) { e.mode = 'bashTell'; e.modeT = A.bashTell; ctx.number(e.x, e.y - e.h - 12, '!', '#ffd36b'); sfx('charge', 'tell'); }
+    else if (e.mode === 'bashTell' && e.modeT <= 0) { e.mode = 'bash'; e.modeT = A.bashT; sfx('slash', 'tell');
+      if (P && Math.sign(P.x - e.x) === e.face && ad < 26 && Math.abs(P.y - e.y) < 20) ctx.asPlayer(P, () => ctx.damage(e.x, A.bash, { who: e, name: 'THE TRAY' })); }
+    else if (e.mode === 'bash' && e.modeT <= 0) { e.mode = 'rest'; e.modeT = A.bashRest; }
+    else if (e.mode === 'rest' && e.modeT <= 0) e.mode = 'walk';
+    e.vx += (want - e.vx) * Math.min(1, dt * 6);
+    const r = ctx.moveBody(e, e.vx * dt, e.vy * dt); if (r && r.ground) e.vy = 0;
+    e.anim = (e.anim || 0) + dt;
+    stepPlates(e, dt);
+    return true;
+  };
+  /* his plates: a told arc onto the ring where you stood (the ring blinks on that surface) */
+  function stepPlates(e, dt) { const A = K.attendant;
+    for (const q of e.plates) { q.t += dt; if (q.t < q.T || q.done) continue; q.done = true; ctx.dust(q.tx, q.ty, 4); sfx('crack', 'thud');
+      for (const p of ctx.players()) { if (!p || p.dead) continue; if (Math.abs(p.x - q.tx) < A.plate.r + 5 && p.y > q.ty - 24 && p.y < q.ty + 3) ctx.asPlayer(p, () => ctx.damage(q.tx, A.plate.dmg, { who: e, name: 'A PLATE' })); } }
+    e.plates = e.plates.filter(q => !q.done); }
+  H.plateAt = q => { const k = Math.max(0, Math.min(1, q.t / q.T)), H2 = K.attendant.plate.apex + Math.abs(q.ty - q.y0) / 2; return { x: q.x0 + (q.tx - q.x0) * k, y: q.y0 + (q.ty - q.y0) * k - H2 * 4 * k * (1 - k), k }; };
+  /* a blow on THE BUTCHER: double while he burns; on THE ATTENDANT behind his raised tray: turned (from the front, and not from above) */
+  H.takeFoe = (e, dmg) => { if (e.t === 'butcher' && e.kgBurn > 0) return Math.round(dmg * K.butcher.burnMul);
+    if (e.t === 'attendant' && e.mode === 'guard') { const P = ctx.players()[0]; if (P && Math.sign(P.x - e.x) === e.face && P.y > e.y - e.h) { ctx.number(e.x, e.y - e.h - 8, 'TRAY', '#c8d8e8'); sfx('clank', 'thud'); return 0; } }
+    return dmg; };
 
   /* ---------- THE GUIDE's props (src/stuck-spots.js reads `on`), the tools, the pilot bot ---------- */
   const fireDone = f => roaring(f) || f.d.trails.some(id => { const t = S.trails.get(id); const dr = t && t.d.door ? S.doors.get(t.d.door) : null; return dr && dr.state !== 'whole'; });
@@ -193,6 +237,8 @@ export function makeKitchenHands(ctx) {
     (lv.kgPages || []).forEach(([px, py], i) => { if (S.pages.has(i)) return; const x = R(px * TS + 8 - cx), y = R((py + 1) * TS - cy) - 8 + Math.sin(time * 2 + i) * 2; if (x < -20 || x > VW + 20) return; KA.drawPage(g, x, R(y), i, time); });
     if (lv.kgVault && !S.vaultOpen) { const v = lv.kgVault, x = R(v.x0 * TS - cx), y = R(v.y0 * TS - cy); KA.drawVault(g, x, y, (v.x1 - v.x0 + 1) * TS, S.pages.size);
       ctx.text && ctx.text(S.pages.size + '/3', x + TS, y - 8, '#e8dcb0', 'center', 5); }
+    /* THE ATTENDANTS' PLATES in the air, and the ring each will land on */
+    { const blink = Math.floor(time * 12) % 2 ? '#ff6b6b' : '#fff6e0'; for (const e of ctx.enemies()) { if (e.t !== 'attendant' || !e.plates) continue; for (const q of e.plates) { const p = H.plateAt(q); KA.drawPlate(g, p.x - cx, p.y - cy, p.k * 9); g.strokeStyle = blink; g.strokeRect(R(q.tx - cx) - 11, R(q.ty - cy) - 3, 22, 3); } } }
     /* THE AREA BANNER */
     if (S.banner && ctx.text) { const a = Math.min(1, S.banner.t / 0.6, (3.4 - S.banner.t) / 0.4); g.globalAlpha = Math.max(0, a); ctx.text(S.banner.name, R(VW / 2), 34, '#ffe0b0', 'center', 8); g.globalAlpha = 1; }
   };
