@@ -59,8 +59,10 @@ assert.ok(F.flares.length >= 2 && F.flares.every(q => L.towerFloors[0].top <= q.
   assert.ok(at(Math.floor((lo.x + m.w + 4) / TS), roof - 6) === T.ONEWAY && at(Math.floor((hi.x + m.w + 4) / TS), roof - 15) === T.ONEWAY, 'its stops are not beside the steps');
   for (let t = 0; t < FT2.scope.period; t += 0.05) { const q = { ...sc }; ftMover(L, q, 0, t); for (let x = Math.floor(q.x / TS); x <= Math.floor((q.x + q.w - 1) / TS); x++) assert.notEqual(at(x, Math.floor((q.y - 1) / TS)), T.SOLID, 'the telescope carries you into rock at t=' + t.toFixed(2)); } }
 { const lab = L.towerFloors[4], surf = lab.bot - 4, row = surf - 2, tops = []; for (let x = TOWER.X0 + 9; x < TOWER.X1 - 2; x++) if (at(x, row) === T.SOLID && at(x - 1, row) !== T.SOLID) tops.push(x);
-  const gaps = []; for (let x = TOWER.X0 + 9; x < TOWER.X1 - 2; x++) if (at(x, row) !== T.SOLID && at(x, row) !== T.BOUNCER) { let x1 = x; while (at(x1 + 1, row) !== T.SOLID && x1 < TOWER.X1) x1++; gaps.push(x1 - x + 1); x = x1; }
-  assert.ok(gaps.length >= 5 && gaps[0] <= 3 && gaps.slice(1).every(g => g <= 2), 'THE ALCHEMY LAB\'s poison gaps are wider than two (reachcore\'s frame-perfect crossings): ' + gaps);
+  /* (claude/fallingtower3: a deliberate design change - the gap the CRACKED PILLAR's bridge spans, YOU MAKE IT FALL's required use, is no jump by design; every other gap is still two) */
+  const spanned = (x0, x1) => (L.reachSpans || []).some(([a, b, r]) => r === row && a <= x0 && b >= x1);
+  const gaps = []; for (let x = TOWER.X0 + 9; x < TOWER.X1 - 2; x++) if (at(x, row) !== T.SOLID && at(x, row) !== T.BOUNCER) { let x1 = x; while (at(x1 + 1, row) !== T.SOLID && x1 < TOWER.X1) x1++; if (!spanned(x, x1)) gaps.push(x1 - x + 1); x = x1; }
+  assert.ok(gaps.length >= 3 && gaps[0] <= 3 && gaps.slice(1).every(g => g <= 2), 'THE ALCHEMY LAB\'s poison gaps are wider than two (reachcore\'s frame-perfect crossings): ' + gaps);
   assert.ok(F.syrup.length >= 2 && F.fizz.length >= 1 && at(F.fizz[0][0], F.fizz[0][1]) === T.BOUNCER, 'the lab has no spills');
   const z = F.syrup[0], r = rig({ x: (z.x0 + 1) * TS, y: z.row * TS }); r.step(); assert.ok(r.P.syrupT > 0, 'the syrup does not hold the feet'); }
 { const Z = F.tilt; assert.ok(Z && (L.scree || []).some(q => q.ft2), 'THE TREASURY has no tilting floor');

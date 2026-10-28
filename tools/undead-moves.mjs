@@ -20,7 +20,7 @@ import { readFileSync } from 'node:fs';
 import { carpetBox } from '../src/carpet.js';
 import { MARK, ANSWER } from '../src/marks.js';
 
-const L = LEVELS.find(l => l.id === 'fallingtower').build(), A = L.arena, HP = 600;
+const L = LEVELS.find(l => l.id === 'fallingtower').build(), A = (L.arena.hallArena ? { ...L.arena, ...L.arena.hallArena } : L.arena), HP = 600;   /* (claude/fallingtower3) the fight starts in THE CHASE now; his HALL - the sky this checks - is arena.hallArena, laid over the arena when his carpet carries you up */
 function rig(o = {}) {
   const P = { x: (A.x0 + A.x1) / 2 - 120, y: (A.y0 + A.floor) / 2, dead: 0, carpet: { hitT: 0 }, dodge: 0, vx: 0, vy: 0 };
   const e = { t: 'undeadmage', alive: true, hp: o.hp ?? HP, hp0: HP, maxHp: HP, mode: 'hover', modeT: 0.3, x: (A.x0 + A.x1) / 2 + 100, y: (A.y0 + A.floor) / 2, face: -1, anim: 0, turn: 0, blinkT: 99, realmN: 3, ...o.e };
@@ -146,7 +146,7 @@ assert.ok(MAGE.tell.orbit >= 1 && MAGE.tell.script >= 1, 'a new move is told for
     r.log.strike = { l: r.P.x - 4, r: r.P.x + 30, t: r.P.y - 30, b: r.P.y + 2 }; r.step(); r.log.strike = null; assert.ok(r.e.shots[0] && r.e.shots[0].reflected, kind + ': a blow that meets it does not strike it back');
     r.run(3, () => mageOpen(r.e)); assert.ok(r.e.mode === 'reflected', kind + ' struck back does not stagger him: ' + r.e.mode); assert.ok(!r.log.hits.length, kind + ': the struck-back shot hurt you'); }
   assert.ok(!reflectable({ kind: 'feed' }) && !reflectable({ kind: 'fire', reflected: true }), 'a ring feed, or a shot already struck, can be struck back');
-  assert.equal(GREED.chipBy.undeadmage, 0, 'outside his openings he is not invulnerable (Daniel 10-08: SEND IT BACK is the answer)');
+  assert.equal(GREED.chipBy.undeadmage, 0.4, 'outside his openings he does not take the 0.4x floor (Daniel 10-27, the chase brief: "0.4x floor" - his 10-08 B15 exception is retired)');
   for (const m of ['stepTell', 'decoyTell', 'boneTell', 'boneWait', 'orbitTell', 'orbitWait']) assert.ok(mageSoft({ alive: true, mode: m }) && OPEN_RULE.undeadmage({ alive: true, mode: m }) && !mageOpen({ alive: true, mode: m }), m + ' is not one of his soft windows (x1)');
   for (const m of ['hover', 'fireTell', 'iceTell', 'markWait', 'scriptTell', 'bendTell', 'blinkOut', 'realmTell']) assert.ok(!mageSoft({ alive: true, mode: m }) && !OPEN_RULE.undeadmage({ alive: true, mode: m, hp: 1, hp0: 2 }), m + ' lets a blade through');
   assert.ok(mageSoft({ alive: true, mode: 'blinkOut', ringBlink: true }), 'his ring-to-ring blink (into a portal) is not soft');

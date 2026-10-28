@@ -53,8 +53,10 @@ const foes = L.ents.filter(e => !non.has(e.t)), climb = L.START.y - TOWER.SKY;
 /* (round 3, Daniel 2026-09-27: 'too many flying foes') the forty flyers taken off the stairs came back as walkers where a ledge could hold one
    and as nothing where it could not (over the cistern's water, the gear pit's spikes, a crowd): 4.2 a screen went to 3.3, so the floor is 3.2 */
 const density = foes.length / (climb / 12); assert.ok(density >= 3.2 && density <= 4.6, 'foes per screen of climb: ' + density.toFixed(2));
-assert.ok(L.arena.carpet && L.arena.boss === 'undeadmage' && L.arena.trigger > L.W * 16, 'the fight is started by the carpet, not by walking');
-assert.ok(L.ents.some(e => e.t === 'undeadmage' && e.y < TOWER.SKY), 'he waits in the sky');
+/* (claude/fallingtower3, Daniel 10-27: THE CHASE - a deliberate design change) the fight is started by walking into THE CHASE's first room out of his ring; his HALL
+   (the sky fight, arena.hallArena) is still never walked into - his carpet carries you up to it - and he waits for you in the chase's first room, not in the sky */
+assert.ok(L.arena.chase && L.arena.boss === 'undeadmage' && L.arena.hallArena && L.arena.hallArena.carpet && L.arena.hallArena.trigger > L.W * 16, 'the fight is not THE CHASE, carried up into his hall by the carpet');
+assert.ok(L.ents.some(e => e.t === 'undeadmage' && e.y > L.chase3.rooms[0].top && e.y < L.chase3.rooms[0].floor), 'he does not wait in the first room of the chase');
 // ---- REACH ----
 const R = floodReach(L, T, { rides: true });
 assert.ok(R.jumpNear(Math.round(L.carpetAt.x / 16), Math.round(L.carpetAt.y / 16)), 'the fill climbs to the carpet (at the top of the spiral stair since 2026-09-29, through his ring)');
@@ -120,9 +122,9 @@ assert.ok(checks[0] > TOWER.SKY + 1 && checks[0] <= TOWER.SKY + 8, "the last che
   P.x = 500; P.y = 690; for (let i = 0; i < 300; i++) stepCarpet(P, { ax: 0, ay: 1 }, 1 / 60, box); assert.ok(P.y <= box.y1, 'no falling out of the sky');
   P.x = 500; P.y = 400; P.vx = P.vy = 0; const x0 = P.x; for (let i = 0; i < 120; i++) stepCarpet(P, {}, 1 / 60, box); assert.ok(Math.abs(P.x - x0) > 1 && Math.abs(P.x - x0) < 40, 'held still, it drifts - a little');
   P.vx = P.vy = 0; knockCarpet(P, P.x - 30, P.y - 8); assert.ok(P.vx > 150, 'a blow from the left knocks it right'); const kx = P.x; stepCarpet(P, {}, 0.1, box); assert.ok(P.x > kx + 10);
-  const A = L.arena, b0 = carpetBox(A, 0), b1 = carpetBox(A, 1); assert.ok(b1.x1 - b1.x0 < (b0.x1 - b0.x0) * 0.7, 'the storm walls close the sky'); assert.ok(b0.y1 < A.floor, 'the sky ends over the crown'); }
+  const A = (L.arena.hallArena ? { ...L.arena, ...L.arena.hallArena } : L.arena), b0 = carpetBox(A, 0), b1 = carpetBox(A, 1); assert.ok(b1.x1 - b1.x0 < (b0.x1 - b0.x0) * 0.7, 'the storm walls close the sky'); assert.ok(b0.y1 < A.floor, 'the sky ends over the crown'); }
 // ---- MAGE ----
-{ const A = L.arena, box = carpetBox(A, 0);
+{ const A = (L.arena.hallArena ? { ...L.arena, ...L.arena.hallArena } : L.arena), box = carpetBox(A, 0);
   const rig = (o = {}) => { const P = { x: 500, y: 500, dead: 0 }, hits = [], said = [], e = { alive: true, hp: 1000, hp0: 1000, x: 700, y: 480, mode: 'hover', modeT: 0, anim: 0, turn: 0, face: -1, blinkT: 99, ...o };
     const c = { P, box, hit: (x, y, d, hard, blow) => hits.push({ d, hard, blow }), say: m => said.push(m), sound: () => {}, venom: () => { P.venomT = 2.4; }, rnd: () => 0.5 }; return { P, e, c, hits, said }; };
   const run = (r, s, dt = 1 / 60) => { for (let i = 0; i < s / dt; i++) updateUndeadMage(r.e, dt, r.c); };

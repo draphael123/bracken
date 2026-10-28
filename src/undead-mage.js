@@ -70,7 +70,8 @@
 //   SEND IT BACK     EVERY projectile he fires can be STRUCK BACK with any blow - his fire, frost, poison orbs, the death hand, bent and trapped
 //                    bolts, his echo's - EXCEPT THE SKULLS (bone storm) and THE ORRERY's worlds (nothing turns those). Home, it STAGGERS him: his
 //                    opening (mode 'reflected', the gold ring + timer, x2) and then the told ward that holds (MAGE.reflect.hold).
-//   HIS WARD         !! B15 EXCEPTION, DANIEL'S EXPLICIT CALL (10-08), FOR HIM ONLY: outside an opening he is INVULNERABLE (GREED.chipBy.undeadmage = 0),
+//   HIS WARD         (claude/fallingtower3, Daniel 10-27: "0.4x floor" - the 10-08 exception below is retired: GREED.chipBy.undeadmage = 0.4 now)
+//                    !! B15 EXCEPTION, DANIEL'S EXPLICIT CALL (10-08), FOR HIM ONLY: outside an opening he is INVULNERABLE (GREED.chipBy.undeadmage = 0),
 //                    not the ~0.4x floor every other boss keeps. A turned blow clanks and says the answer: SEND IT BACK (src/archmage-acts.js).
 //                    EXCEPT (mageSoft, full x1 blows): while he GOES INTO A PORTAL (his step / decoy into his entry ring,
 //                    his ring-to-ring blink) and while he CHANNELS THE SKULLS or THE ORRERY (their tells and while he holds them).
@@ -130,9 +131,9 @@ export const CALLED = new Set(['HIS OWN SPELL STAGGERS HIM', SAY.orbitTell, SAY.
 /* the ring moves - the ones that open a ring, and so never come straight out of one (a step comes out casting a spell, not a ring) */
 const RINGED = new Set(['step', 'bend', 'decoy', 'trap']);
 export const RING_COL = { rim: '#6fe08a', rimL: '#c8ffd8', fire: '#ff9b49', flare: '#ffffff' };
-export const mageOpen = e => e.mode === 'gather' || e.mode === 'breached' || e.mode === 'reflected' || REALM_OPEN.has(e.mode);   /* (Daniel 10-05: 'reflected' - his own bolt struck back broke his ward) */
+export const mageOpen = e => e.mode === 'gather' || e.mode === 'breached' || e.mode === 'reflected' || e.mode === 'down' || REALM_OPEN.has(e.mode);   /* (claude/fallingtower3: 'down' - THE CHASE, he fell to the floor of his room, src/archmage-chase.js) */   /* (Daniel 10-05: 'reflected' - his own bolt struck back broke his ward) */
 /* HIS WARD CAN BE BROKEN NOW: not open, not holding after an opening, not in a realm, not between two places */
-export const wardBreakable = e => !!(e && e.alive && !mageOpen(e) && !(e.wardHold > 0) && !e.realm && !['sleep', 'wake', 'blinkOut', 'blinkIn', 'realmTell'].includes(e.mode));
+export const wardBreakable = e => !!(e && e.alive && !mageOpen(e) && !(e.wardHold > 0) && !e.realm && !['sleep', 'wake', 'blinkOut', 'blinkIn', 'realmTell', 'fall', 'down', 'rise', 'sink', 'tear', 'below', 'away'].includes(e.mode));   /* (claude/fallingtower3: and none of THE CHASE's own beats - falling, down, fleeing, waiting below) */
 /* THE BOLT THAT CAN BE STRUCK BACK: his own firebolt (not his echo's, not one already struck) */
 export const RETURNABLE = new Set(['fire', 'ice', 'orb', 'hand', 'bent', 'trap']);   /* (fallingtower2: every shot of his; the skulls and the orrery's worlds are not shots, and nothing turns them) */
 export const reflectable = q => !!q && RETURNABLE.has(q.kind) && !q.reflected;
@@ -200,7 +201,7 @@ function breach(e, r, c) {
   c.say('THROUGH HIS OWN RING: HE IS OPEN', true); c.sound('crack');
 }
 /* HIS NEXT SPELL in his order: the GRAVE PULL is his third stage's, and passed over before it (archmage2) */
-function nextSpell(e) { let s = MAGE.order[e.turn++ % MAGE.order.length]; if (s === 'pull' && mageStage(e) < 3) s = MAGE.order[e.turn++ % MAGE.order.length]; return s; }
+function nextSpell(e) { const O = e.order || MAGE.order; let s = O[e.turn++ % O.length]; if (s === 'pull' && mageStage(e) < 3) s = O[e.turn++ % O.length]; return s; }   /* (claude/fallingtower3) e.order: THE CHASE's room casts its own few of his spells, in its own order (src/archmage-chase.js ROOMS) - the same spells */
 /* THE BONE STORM'S SKULLS at its moment k (0..1): [x, y] each, the gaps left out */
 export function boneSkulls(B, k = 0) { const M = MAGE.bone, r = M.r0 + (M.r1 - M.r0) * Math.max(0, Math.min(1, k)), off = B.spin * M.turn * Math.PI * 2 * Math.max(0, k), out = [];
   for (let i = 0; i < M.n; i++) { if (B.slots.has(i)) continue; const a = B.a0 + off + (i / M.n) * Math.PI * 2; out.push([B.cx + Math.cos(a) * r, B.cy + Math.sin(a) * r]); }
@@ -299,6 +300,7 @@ export function updateUndeadMage(e, dt, c) {
   for (const cl of e.clouds) { cl.t -= dt; if (!P.dead && Math.hypot(P.x - cl.x, py - cl.y) < cl.r) c.venom(); }
   e.clouds = e.clouds.filter(cl => cl.t > 0);
   stepNew(e, dt, c, py);
+  if (c.chase && c.chase(e, dt)) return;   /* (claude/fallingtower3) THE CHASE takes the frame for its own beats: he falls, lies open, flees down through his tower (src/archmage-chase.js) */
   /* IN ONE OF HIS REALMS (src/mage-realms.js): the realm runs the fight until its opening has been had, and then it tears */
   e.realmRest = Math.max(0, (e.realmRest || 0) - dt);
   if (e.realm) { updateRealm(e, dt, c); return; }
@@ -318,7 +320,7 @@ export function updateUndeadMage(e, dt, c) {
   if (e.mode === 'gather' || e.mode === 'breached' || e.mode === 'reflected') { e.y += Math.sin(e.anim * 2) * 4 * dt; if (e.modeT <= 0) { e.mode = 'hover'; e.modeT = 0.4; e.blinkT = MAGE.afterOpen; e.noBlink = MAGE.afterOpen; } return; }   /* (claude/sweep3, B12: the window closed on a blink half a second later - now he hovers where you can follow him for afterOpen s first) */
   if (e.mode === 'markWait') { return; }
   /* HE TEARS A PORTAL at 75, 50 and 25%: the tear is told (realmTell - his ring of the realm, flaring), then it takes you */
-  if (e.mode === 'hover' && e.modeT <= 0.2 && realmDue(e) >= 0) { const kind = REALM.kinds[e.realmN || 0], T = MAGE.trans[kind]; e.mode = 'realmTell'; e.modeT = T.secs; e.spell = 'realm'; e.face = Math.sign(P.x - e.x) || 1; e.deathMark = null;
+  if (e.mode === 'hover' && e.modeT <= 0.2 && !e.noRealm && realmDue(e) >= 0) { const kind = REALM.kinds[e.realmN || 0], T = MAGE.trans[kind]; e.mode = 'realmTell'; e.modeT = T.secs; e.spell = 'realm'; e.face = Math.sign(P.x - e.x) || 1; e.deathMark = null;
     /* (archmage3) A PHASE CHANGE IS A SET PIECE AND A BREATHER: everything of his in the sky goes out, and its own picture plays (src/archmage-acts.js) */
     e.shots = []; e.clouds = []; e.rings = []; e.bones = null; e.void = null; e.echoes = []; e.orbit = null; e.script = null; e.fireRing = null; e.chained = false; e.trans = { kind, t: 0 };
     say(T.say, true); sound(T.sounds[0]); return; }
@@ -397,7 +399,7 @@ export function undeadFrame(e, F) {
   if (w) return e.modeT > STRIKE_S ? F.wind[w] : rel[w];
   if (e.mode === 'markWait') return F.death; if (e.mode === 'boneWait') return F.plant; if (e.mode === 'orbitWait') return F.orbit;
   if (e.mode === 'hover' && e.spell && WIND_OF[TELL[e.spell]] && MAGE.hover / mageSpeed(e) - e.modeT < FOLLOW_S && e.modeT > 0) return rel[WIND_OF[TELL[e.spell]]];   /* the follow-through: the release held a beat */
-  return ({ stepTell: F.blinkOut, decoyTell: F.blinkOut, blinkOut: F.blinkOut, blinkIn: F.blinkIn, gather: F.open, breached: F.open, reflected: F.recoil, scorched: F.open, shattered: F.open, vented: F.open, realmTell: F.blinkOut, wake: F.idle[Math.floor(e.anim * 2.5) % 2] })[e.mode]
+  return ({ fall: F.recoil, down: F.open, rise: F.blinkOut, sink: F.blinkOut, below: F.idle[Math.floor(e.anim * 2.5) % 2], tear: F.wind.storm, stepTell: F.blinkOut, decoyTell: F.blinkOut, blinkOut: F.blinkOut, blinkIn: F.blinkIn, gather: F.open, breached: F.open, reflected: F.recoil, scorched: F.open, shattered: F.open, vented: F.open, realmTell: F.blinkOut, wake: F.idle[Math.floor(e.anim * 2.5) % 2] })[e.mode]
     ?? (e.enraged ? F.enraged[Math.floor(e.anim * 4) % 2] : F.idle[Math.floor(e.anim * 2.5) % 2]);
 }
 /* ONE RING: the desert inside it, and a rim of sparks in his green - the bolt's colour when a bolt is coming through it, and bright and
