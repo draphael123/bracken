@@ -1,0 +1,11 @@
+{
+  "time": "2026-10-28T14:51:36.329Z",
+  "operation": "Text generation and Acorn parsing only; no browser launched",
+  "nativePixelCases": 144,
+  "lifecycleCases": 21,
+  "originalPixelContextRngAndThreeRoundTimingAssertionsPreserved": true,
+  "absoluteHttpBlobImportsValidated": true,
+  "serializedBrowserExpressionParses": true,
+  "candidateSha256": "6378a81a01eb0eca29e6cae888ca9296ce9c31b72068dde3631e3b47ff36836f",
+  "notRuntimeProof": true
+}

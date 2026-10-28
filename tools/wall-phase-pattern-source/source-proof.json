@@ -1,0 +1,29 @@
+{
+  "time": "2026-10-28T14:48:31.152Z",
+  "status": "Distinct phase-preserving pattern source and corrected pure coordinate proof; native pixels/lifetime/timing pending",
+  "gameSource": "62d9c02c102decc69ceaef4e1ec593a23170f1ff",
+  "path": "src/redraw/undercrown_art.js",
+  "originalSha256": "805b796d91067b1dcfb460c652124ae13eadfe81601f39085372b4273f84d941",
+  "candidateSha256": "6378a81a01eb0eca29e6cae888ca9296ce9c31b72068dde3631e3b47ff36836f",
+  "exactUndo": true,
+  "correctedPhaseCases": 858,
+  "originalPatternCoordinatesPreservedIncludingRejectedCounterexample": true,
+  "originalPatOfInitializationRetained": true,
+  "maxMappedTiles": 20,
+  "tileSize": [
+    64,
+    32
+  ],
+  "maxAdditionalTilePixels": 40960,
+  "maxAdditionalRgbaBytes": 163840,
+  "privateSourceOnly": true,
+  "originalPainterPaletteSeededCallsNonWholeBranchesUnchanged": true,
+  "existingCanvasOwnershipTrackingRetained": true,
+  "zeroSizeRetirementResizeContextLossAndUnsupportedStateFallback": true,
+  "noLiveConsumerAliasingIntroduced": true,
+  "notWholeRoomCacheOrRejectedStripCoalescing": true,
+  "noBrowserLaunched": true,
+  "noTimingMemoryCampaignLayoutOrFpsProof": true,
+  "allThreeMismatchesRetained": true,
+  "adopted": false
+}
