@@ -1,0 +1,112 @@
+{
+  "time": "2026-10-28T19:45:03.391Z",
+  "status": "Prepared new210group captured-art/opaque/UI Task3 union; no native aggregate or complete-source verdict yet",
+  "gameSource": "dc02ecc059959b795f76dee47665b54f349d4e2f",
+  "gameController": "1a576c3f4511b6856df9fb4738df5aaae9987e81",
+  "gameTree": "9d8acbb7f3182c1d29ac71f4a3b0227224446718",
+  "originalMainSha256": "1573d2d744b753e5611b021d97b70b013f7e2e6773640b707ae85d5ab5dae594",
+  "candidateMainSha256": "6b926bb9fd39a0eb2e16f81c5f082d94eb4b3e4f3589bdb2a2c94cccf4f36eec",
+  "candidatePxSha256": "37cbde8af8557a27bf8d5e14a0fc68371b908e0c43b6101e52fa1db7bb4eff13",
+  "helperSha256": "e20c3de91c60b01467dfffb31eff01894836ee1976d14dce453dba277f4b8b6e",
+  "originalArtSha256": "99f0ead9e02c17eec93e3945720c8206465e3ecd7aac42c00fbbb22cce46bb35",
+  "originalUiSha256": "6182574fc740afab14d0dfa4862b55f676d9c85df04f87b8fe2053648719ecce",
+  "candidateUiSha256": "def29ae7f0ea4c55ab29e3652a351d0d03c90a4c1c5f7f83ee39692c21c3061f",
+  "baseline": "Original Task3dc02 Game plus SAME necessary UI title-anchor correction only; no opaque/art/ownership changes in either control",
+  "candidate": "New210group fixed/captured level art with original ownership and standalone cleanup compatibility, opaque tile fill and same UI anchor repair",
+  "baselineFiles": [
+    {
+      "file": "src/puppeteer-hands.js",
+      "sha256": "def29ae7f0ea4c55ab29e3652a351d0d03c90a4c1c5f7f83ee39692c21c3061f",
+      "originalSha256": "6182574fc740afab14d0dfa4862b55f676d9c85df04f87b8fe2053648719ecce"
+    },
+    {
+      "file": "src/main.js",
+      "sha256": "1573d2d744b753e5611b021d97b70b013f7e2e6773640b707ae85d5ab5dae594",
+      "originalSha256": "1573d2d744b753e5611b021d97b70b013f7e2e6773640b707ae85d5ab5dae594"
+    }
+  ],
+  "candidateFiles": [
+    {
+      "file": "src/redraw/buried_city_tiles.js",
+      "sha256": "d94728b629c6be0296a70701960400cf659d5a5ebfffa92f594baefb2cd2c926",
+      "originalSha256": "2d612741597acb8b4c0291fc34e1f71823b39e296b40d9882391f51f3a00eae4"
+    },
+    {
+      "file": "src/redraw/skyroad_tiles.js",
+      "sha256": "a55e0f09bf9633b7ad02552c814f6906072b91f92d8b2f77fabd7e7d2c21b114",
+      "originalSha256": "da71fbb10dbae92735a882adc166e3715d02eaa1573521da609d290a09029001"
+    },
+    {
+      "file": "src/redraw/rootway_tiles.js",
+      "sha256": "68c4f077885ba23d882819f5769e869bb214b1333ea35966c3c0c158060e7ae9",
+      "originalSha256": "03de4a8bba39e1cd1b7c306ed404f17f5c61deda9f99db243dbdea9a60a3c649"
+    },
+    {
+      "file": "src/redraw/sealed_pyramid_tiles.js",
+      "sha256": "837e06435b36f18b0194a9ef945a96001703fb345248b3493fa46b4786169216",
+      "originalSha256": "0406e5dbaffbe713d2c8349f352b2843712eeab63c186f3cbc89efe893bcd95c"
+    },
+    {
+      "file": "src/opaque-tile-fill.js",
+      "sha256": "535e583d652177597a6ca3faf85507b135026f816829bbcb649fcf72cc675c95",
+      "originalSha256": null
+    },
+    {
+      "file": "src/puppeteer-hands.js",
+      "sha256": "def29ae7f0ea4c55ab29e3652a351d0d03c90a4c1c5f7f83ee39692c21c3061f",
+      "originalSha256": "6182574fc740afab14d0dfa4862b55f676d9c85df04f87b8fe2053648719ecce"
+    },
+    {
+      "file": "src/px.js",
+      "sha256": "37cbde8af8557a27bf8d5e14a0fc68371b908e0c43b6101e52fa1db7bb4eff13",
+      "originalSha256": "e9a358b9170944e0dfae6d1b8c82d7b664562e0b2b0ab7f2538236e34214db1d"
+    },
+    {
+      "file": "src/main.js",
+      "sha256": "6b926bb9fd39a0eb2e16f81c5f082d94eb4b3e4f3589bdb2a2c94cccf4f36eec",
+      "originalSha256": "1573d2d744b753e5611b021d97b70b013f7e2e6773640b707ae85d5ab5dae594"
+    },
+    {
+      "file": "src/deferred-fixed-level-art.js",
+      "sha256": "e20c3de91c60b01467dfffb31eff01894836ee1976d14dce453dba277f4b8b6e",
+      "originalSha256": null
+    },
+    {
+      "file": "src/captured-palette-art.js",
+      "sha256": "8d84b2d69626ab53e0876c782a4afb98dd6988fe65380dfa956d87115da2de71",
+      "originalSha256": null
+    }
+  ],
+  "authorization": "Human approved a fresh combined-source tile-fill/startup-art test, with original tests/limits and failures retained; latest request continues finish work",
+  "notPreviouslyTestedOpaqueSpriteCombination": true,
+  "noSpriteCatalogHeroCacheForegroundSchedulerRecorderOrRendererExperimentIncluded": true,
+  "allOtherGameBytesUnchanged": true,
+  "knownOpaqueOnlyLayoutFailure": {
+    "run": 40516300943,
+    "ms": 600447,
+    "batches": 78,
+    "expected": 80
+  },
+  "required": [
+    "Fresh exact complete-union before/candidate/return126loader readbacks including first-frame timing",
+    "Unchanged original standalone cleanup fixture",
+    "Fresh source-specific original loading/memory64,48campaign5760 and80layout600000ms",
+    "Necessary actual-source425full gates and original40FPS proof remain separate"
+  ],
+  "allThreeMismatchesRetained": true,
+  "noIndependentPassingEvidenceCombinedIntoGate": true,
+  "noLocalBrowserOrGameExecuted": true,
+  "adopted": false,
+  "overallWorkComplete": false,
+  "capturedArtSha256": "8d84b2d69626ab53e0876c782a4afb98dd6988fe65380dfa956d87115da2de71",
+  "sourceChangesAreFreshWholeUnionNotIndependentPassBackfill": true,
+  "priorFixedOnlyCriterionNotMet": true,
+  "noThresholdChangedOrSameSourceTimingRerun": true,
+  "newCapturedGroups": 50,
+  "fixedGroups": 160,
+  "originalPaletteModuleAndLiveBindingUnchanged": true,
+  "explicitImmutablePaletteClosure": true,
+  "exactOriginalMainUndo": true,
+  "noOtherSpriteCacheForegroundSchedulerRecorderRendererExperimentIncluded": true,
+  "noLocalGameOrBrowserExecuted": true
+}
