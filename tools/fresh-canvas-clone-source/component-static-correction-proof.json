@@ -1,0 +1,11 @@
+{
+  "time": "2026-10-28T15:48:59.368Z",
+  "beforeSha256": "2d79104f3f638c3ca6b26b4997bbeddd6547bdff3ddb972a774a3df26c7dfdd6",
+  "afterSha256": "dd8c2d0ddfee32b69e6baef857271b7a526631bcaa1fc5a14e20c6f9e8b5b8ca",
+  "onlyRedundantReadbackEvaluationChanged": true,
+  "allPixelContextIdentityOwnershipAssertionsAndTimingBodyPreserved": true,
+  "originalProcessJsonLinesAndReceiptNewlineStaticallyValidated": true,
+  "noBrowserLaunched": true,
+  "noVerdictOrTimingOccurrence": true,
+  "earlierStaticRepairAssumptionRejectedBeforeAnyWrite": true
+}

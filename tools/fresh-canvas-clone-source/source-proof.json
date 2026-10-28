@@ -1,0 +1,34 @@
+{
+  "time": "2026-10-28T15:42:04.892Z",
+  "status": "Distinct fresh-element cloning source prepared; no browser or timing proof yet",
+  "gameSource": "62d9c02c102decc69ceaef4e1ec593a23170f1ff",
+  "path": "src/px.js",
+  "originalSha256": "e9a358b9170944e0dfae6d1b8c82d7b664562e0b2b0ab7f2538236e34214db1d",
+  "candidateSha256": "718701bfb9437c1185526356e4f7a5e8127a9c3a4bab2b9e097ccec044c84a14",
+  "exactUndo": true,
+  "originalContextCreationCpuGpuPolicySmoothingAndBakeOwnershipBytesUnchanged": true,
+  "everyOutputNewNativeCanvasAndContext": true,
+  "noOutputCanvasOrContextReuse": true,
+  "noPixelContentMemoization": true,
+  "maxPrivateContextFreeTemplates": 64,
+  "maxLogicalTemplatePixels": 1048576,
+  "maxLogicalTemplateRgbaBytes": 4194304,
+  "templateEvictionZerosOnlyPrivateBlankElements": true,
+  "unsupportedEnvironmentOrInputFallsBackToOriginalAllocation": true,
+  "existingProfile": {
+    "path": "work/task5-cold-boot-profile-oct26/profile.cpuprofile",
+    "sha256": "effa3fc5a6dae9c346dd577171f051c174d586b252016e2c38a8e4bcad304cc7",
+    "inclusiveCanvasMs": 566.333,
+    "totalMs": 4925.766,
+    "percent": 11.497358989444484,
+    "notMeasuredSavingsOrAllocationCounts": true
+  },
+  "primarySources": [
+    "https://dom.spec.whatwg.org/#concept-node-clone",
+    "https://html.spec.whatwg.org/multipage/canvas.html#the-canvas-element"
+  ],
+  "specInterpretation": "DOM cloning creates a new element and copies attributes; a new canvas starts with no rendering context and transparent black bitmap. Actual browser identity/state/ownership and controlled timing still require proof.",
+  "allThreeMismatchesRetained": true,
+  "noGameSourceAdopted": true,
+  "noMemoryCampaignLayoutOrFpsProof": true
+}

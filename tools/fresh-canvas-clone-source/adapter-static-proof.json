@@ -1,0 +1,16 @@
+{
+  "time": "2026-10-28T15:45:26.448Z",
+  "noLocalBrowserOrTestExecuted": true,
+  "sourceTestFunctionOnlySerialized": true,
+  "syntheticAllocationDimensions": 11309,
+  "dimensionsArePublishedSpritePathsNotOriginalAllocationCountsOrOrder": true,
+  "dimensionsSource": "work/opaque-art-fused-cold-cloud-d4ec30a2/opaque-art-fused-cold/receipt.json",
+  "dimensionsSha256": "3d43f17f12b68a08407e390b45895ea56de89ba443e35bc60444e11430259be1",
+  "originalGeometryUnchanged": true,
+  "nativeCasesExpected": 86,
+  "onceOnlyOriginalSettingsThreeRoundBeforeCandidateReturn": true,
+  "originalEvalDeadlineMs": 240000,
+  "rendererMb": 1536,
+  "admissionMb": 4352,
+  "notOriginalGameFixtureOrTimingProof": true
+}
