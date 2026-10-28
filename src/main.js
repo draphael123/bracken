@@ -18665,7 +18665,7 @@ const CALLER_P2 = 0.66, CALLER_P3 = 0.33, CALLER_CAST = [2.0, 1.8, 1.6], CALLER_
    no TOO FAR for a burning bolt (the pyromancer has no guard to take it on up close). It lands as the SMALL fall (CALLER_FALL), not the big one: the
    bolt blocked or struck back beside him on his ledge stays the bigger prize. Warded, he still turns it. */
 const CALLER_BURN_BIG = false, CALLER_BURN_DMG = 60;   /* ...and it lands as a blow of fire (x CALLER_OPEN_MUL, he is down as it lands): the pyromancer is far off when it does, so the bolt is most of what she gets for it */
-const CALLER_FALL = 3.4, CALLER_FALL_TAKE = 0.12, CALLER_FALL_BIG = 4.6, CALLER_FALL_TAKE_BIG = 0.15;   /* (claude/windcaller4) the three-blow fall 12%, the big fall (his bolt sent back up close, his howl braced) 15% - the harder way pays more */   /* s he lies on the safe floor (>= 3 s open: boss-openings), or until that share of his blood has gone in it; the BOLT's fall is the big one */
+const CALLER_FALL = 3.4, CALLER_FALL_TAKE = 0.10, CALLER_FALL_BIG = 4.6, CALLER_FALL_TAKE_BIG = 0.15;   /* (claude/windcaller4) the three-blow fall 10%, the big fall (his bolt sent back up close, his howl braced) 15% - the harder way pays more */   /* s he lies on the safe floor (>= 3 s open: boss-openings), or until that share of his blood has gone in it; the BOLT's fall is the big one */
 const callerOpen = e => e.mode === 'fallen';
 const callerThere = e => e.mode !== 'blink' && e.mode !== 'appear' && e.mode !== 'sleep';
 // the wind in his arena drops while he is casting or down: the pushing is what the howl is for (the summit's own gust, galeArena, blows on its clock all fight)
