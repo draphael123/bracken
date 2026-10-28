@@ -18,7 +18,7 @@ const SETUP = idx => `BK.manualSimulation=true;BK.setHero('knight');BK.reset({fr
   for(const p of pools){for(const f of [0.5,0.3,0.7,0.2,0.85,0.1]){at=p;P.x=p.x0+(p.x1-p.x0)*f;P.y=p.y+30;P.vx=0;P.vy=0;P.hp=P.maxHp;P.inv=0;P.hurt=0;P.dead=0;P.breath=99;const h=P.hp;P.drains&&P.drains.clear();hold(20);if(P.hp>=h&&!P.dead&&P.swim&&P.breath>=90)break;at=null;}if(at)break;}`;
 try {
   await nav('');
-  const WATER = ['deep', 'keep', 'reef', 'lamplit', 'longwater', 'causeway', 'flotilla', 'hurricane', 'harbor'].filter(id => LEVELS.some(l => l.id === id));
+  const WATER = ['deep', 'keep', 'reef', 'lamplit', 'longwater', 'causeway', 'flotilla', 'harbor'].filter(id => LEVELS.some(l => l.id === id));   /* (batch125 integ) hurricane left the list: THE HURRICANE 3 has no standing pool - her sea is the H3H flood, driven by its own checks */
   const rows = [];
   for (const id of WATER) {
     const idx = LEVELS.findIndex(l => l.id === id);
