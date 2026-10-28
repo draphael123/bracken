@@ -20337,6 +20337,7 @@ function updateFalseAbbotBoss(e, dt) {
   const A = L.arena; if (!A) return;
   stepFalseAbbot(e, dt, abbotCtx(e));
   e.x = Math.max(A.x0 + 16, Math.min(A.x1 - 16, e.x));
+  e.H = abbotHouse(); e.basketM = abbotBasket();   /* (the lab's hands read the house off him: src/lab.js) */
 }
 function abbotMakeCtx(e) {
   const A = L.arena;

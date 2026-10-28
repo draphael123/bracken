@@ -2533,42 +2533,50 @@ async function runbossLab(BK, opts) {
       else if (boss.t === 'closedhelm') goal = boss.x - Math.sign(d || 1) * 42;                       // close enough to be swung at
       /* THE SHRIEK is answered from the room: to the nest bell, struck as she comes over it; with no bell near, off the boards */
       else if (boss.t === 'roc') {const fk=BK.props().find(p=>p.t==='tbell'&&p.roc);if(fk){goal=fk.x-14;if(Math.abs(fk.x-P.x)<24&&fk.cool<=0&&fk.over&&P.atk<0){k.block=false;P.face=Math.sign(fk.x-P.x)||1;BK.press('atk');swings++;}}if(boss.mode==='carry'){strike=true;goal=boss.x;}}
-      /* THE FALSE ABBOT is a BELL FIGHT, and the bot was fighting him with the sword alone: it had a branch for the
-         Roc's nest bell and none for his, so the first pilot measured brute force against a five-times ward and came
-         back 7/24. A sim cannot measure a strategy the bot cannot play. It plays it now: keep station by the bell,
-         ring it the moment he is under it, and swing at him the rest of the time - the ward makes that poor, which is
-         the point of the bell. */
-      else if (boss.t === 'abbot') { const bl = BK.props().find(p => p.t === 'tbell' && p.abbot);
-        /* AND THE REST OF THE STRATEGY (2026-09-23). The first version of this branch only waited by the bell, so it stood
-           still while his chain reeled it in from across the floor and his congregation hit it from behind: 3/24, every
-           death a cast TAKEN and an add's blow. A player does two more things, and both are his design, not an assist:
-           GUARD THE CHAIN at any range (guarded, it hauls HIM a step toward you - it is how he is walked under the bell;
-           a hero with no shield hops it), and CUT THE CONGREGATION that reaches you while you wait. */
-        const far = !bl || Math.abs(boss.x - bl.x) > 70;   /* he is nowhere near the bell: time to thin his congregation, as a player would */
+      /* THE FALSE ABBOT 3 (claude/abbot3): THE HOUSE ANSWERS THE BLOW. A player keeps off his marks and guards his chain as before,
+         cuts his congregation, and fights him on the floor - and every time he prays, turns the house on him with the phase's
+         verb: the bridge's bell under its tower (P1), the basket ridden down (P2), his censer's smoke ridden up and a plunge (P3).
+         Beaten down at the end, the great bell. Every device is struck, ridden or plunged by the bot's own keys: nothing is
+         done for it. The house's layout is on him (boss.H, the basket mover boss.basketM), as main.js hands it to src/false-abbot.js. */
+      else if (boss.t === 'abbot') { const H = boss.H, fl = A.floor, bl = BK.props().find(p => p.t === 'tbell' && p.abbot);
+        const reachB = LAB_REACH[h] || 22, onHigh = P.ground && P.y < fl - 20, bossLow = Math.abs(boss.y - fl) < 20;
+        const far = Math.abs(boss.x - P.x) > 70 || !bossLow;
         const add = BK.enemies().filter(q => q.alive && q !== boss && !q.boss && Math.abs(q.y - P.y) < 26 && Math.abs(q.x - P.x) < (far ? 150 : LAB_REACH[h] + 18)).sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0];
-        const arrow = BK.seeds().find(s => s.arrow && !s.dead && !s.reflected && Math.abs(s.x - P.x) < 60 && Math.abs(s.y - (P.y - 8)) < 40 && (s.x - P.x) * (s.vx || 0) < 0);   /* HIS ARCHERS: 18 a shaft, and the old guard only watched for rubble and shot */
-        const chain = boss.mode === 'castTell' || (boss.mode === 'cast' && !boss.castHit);
-        /* (claude/abbot2) THE BELL ROPE: off the red mark he will come down on - on the far side of it from where he leapt, so a bait past the bell stays a bait */
-        const slam = (boss.mode === 'swingTell' || boss.mode === 'swing') && boss.swTo !== undefined && Math.abs(P.x - boss.swTo) < ABBOT_K.slamR + 10;
-        const orb = boss.orb && Math.abs(P.x - boss.orb.tx) < ABBOT_K.lightR + 8 && boss.orb.t > boss.orb.T * 0.35;   /* FALSE LIGHT: off its mark, or the guard up */
-        const sanct = boss.mode === 'riteTell' && boss.sanctX !== undefined && boss.modeT > 0.25;   /* THE RITE: go round him and strike the sanctus bell */
-        if (bl) { const under = Math.abs(boss.x - bl.x) < 40 && boss.mode !== 'swing';
-          if (under && bl.cool <= 0 && Math.abs(bl.x - P.x) < 26 && P.atk < 0 && !chain) { k.block = false; P.face = Math.sign(bl.x - P.x) || 1; BK.press('atk'); swings++; }
-          else if (boss.open > 0) { goal = boss.x; strike = true; }              /* downed: get on him, the window is worth three blows */
-          else if (chain) { goal = null; P.face = Math.sign(boss.x - P.x) || P.face;
-            if (SHIELDED(h)) { k.block = true; if (h === 'paladin') holdC = f + 20; }
-            else if (DEFLECTS(h)) k.block = DEFLECT_TAP(f);
-            else if (boss.mode === 'castTell' && boss.modeT < 0.12 && P.ground) { BK.press('jump'); P.labJump = 14; } }   /* the chain is judged the frame it flies: be off the boards by then */
-          else if (slam) { const away = Math.sign(boss.swTo - (boss.sw0 ?? boss.x)) || 1; goal = boss.swTo + away * (ABBOT_K.slamR + 18); }
-          else if (orb) { if (SHIELDED(h)) { goal = null; P.face = Math.sign(boss.orb.x0 - P.x) || P.face; k.block = true; } else goal = boss.orb.tx + (Math.sign(P.x - boss.orb.tx) || 1) * (ABBOT_K.lightR + 14); }
-          else if (sanct) { const side = Math.sign(boss.sanctX - boss.x) || 1, at = boss.sanctX + side * Math.max(8, LAB_REACH[h] - 8);
-            if (Math.abs(P.x - at) < 10 && P.atk < 0) { goal = null; P.face = -side; k.block = false; BK.press('atk'); swings++; } else goal = at; }
-          else if (arrow) { goal = null; P.face = Math.sign(arrow.x - P.x) || P.face; if (SHIELDED(h)) k.block = true; else if (DEFLECTS(h)) k.block = DEFLECT_TAP(f); else if (P.ground) { BK.press('jump'); P.labJump = 10; } }
-          else if (add && Math.abs(add.x - P.x) < 6 && P.atk < 0) { goal = add.x + (Math.sign(P.x - add.x) || -P.face) * 16; }   /* (claude/abbot2) one standing ON you is stepped off first: a cut at nothing but its own feet met air (the pirate, 3 of his 4 misses at the far end of the floor) */
-          else if (add) { P.face = Math.sign(add.x - P.x) || P.face; goal = Math.abs(add.x - P.x) > LAB_REACH[h] ? add.x - P.face * (LAB_REACH[h] - 4) : null; if (Math.abs(add.x - P.x) <= LAB_REACH[h] + 6 && P.atk < 0) { if (keyVerb(BK, h, add) === 'sweep') k.down = true; BK.press('atk'); swings++; } }   /* HIS CONGREGATION IS SMALL (family 'small'): the low sweep, same as the Mother's sporelings (see the ledger's own comment) - this is the spire/abbot pilot's own add-branch, and the plain cut it threw before missed the knight 6 of 16 (tools/small-adds.mjs) */
-          else goal = bl.x + (boss.x > bl.x ? -20 : 20);                          /* wait on the far side, so his chain hauls him under it */
-          if (P.labJump > 0) { P.labJump--; k.jump = true; }
-        } else { goal = boss.x; strike = true; } }
+        const arrow = BK.seeds().find(s => s.arrow && !s.dead && !s.reflected && Math.abs(s.x - P.x) < 60 && Math.abs(s.y - (P.y - 8)) < 40 && (s.x - P.x) * (s.vx || 0) < 0);
+        const chain = (boss.mode === 'castTell' || (boss.mode === 'cast' && !boss.castHit)) && Math.abs(boss.y - P.y) < 30;
+        const slam = (boss.mode === 'swingTell' || boss.mode === 'swing') && boss.swTo !== undefined && !boss.swRite && Math.abs(P.x - boss.swTo) < ABBOT_K.slamR + 10 && Math.abs((boss.swY ?? fl) - P.y) < 30;
+        const orb = boss.orb && Math.abs(P.x - boss.orb.tx) < ABBOT_K.lightR + 8 && boss.orb.t > boss.orb.T * 0.35 && Math.abs((boss.orb.ty ?? fl) - P.y) < 30;
+        const praying = boss.mode === 'riteTell', ph = boss.riteAt || boss.phase || 1;
+        /* a bridge he is standing on now (praying or not): its bell drops him */
+        const onBr = H && boss.deck === 'high' && boss.mode !== 'swing' && boss.mode !== 'swingTell' && !boss.brGone ? H.bridges.findIndex((b, i) => boss.br && boss.br[i] !== false && boss.x > b.x0 + 2 && boss.x < b.x1 - 2 && !H.spans.some(s => boss.x >= s[0] - 2 && boss.x <= s[1] + 2)) : -1;
+        const hitAt = (x, half) => { /* walk to strike a thing on the floor at x (a bell): stand off by the reach, face it, swing */
+          const side = Math.sign(P.x - x) || 1, at = x + side * Math.max(6, Math.min(reachB - 4, half + reachB - 10));
+          if (Math.abs(P.x - at) < 8 && P.ground && P.atk < 0) { goal = null; P.face = -side; k.block = false; BK.press('atk'); swings++; } else goal = at; };
+        strike = false;
+        if (H && onHigh && !(praying && ph === 3)) { goal = P.x; k.down = true; }   /* off the boards: the fight is on the floor (down drops through a board) */
+        else if (boss.mode === 'beaten' && bl) hitAt(bl.x, 12);                       /* THE LAST BLOW: the great bell */
+        else if (boss.open > 0 && bossLow) { goal = boss.x; strike = true; }         /* the house answered: get on him, the window is worth three blows */
+        else if (chain) { goal = null; P.face = Math.sign(boss.x - P.x) || P.face;
+          if (SHIELDED(h)) { k.block = true; if (h === 'paladin') holdC = f + 20; }
+          else if (DEFLECTS(h)) k.block = DEFLECT_TAP(f);
+          else if (boss.mode === 'castTell' && boss.modeT < 0.12 && P.ground) { BK.press('jump'); P.labJump = 14; } }
+        else if (slam) { const away = Math.sign(boss.swTo - (boss.sw0 ?? boss.x)) || 1; goal = boss.swTo + away * (ABBOT_K.slamR + 18); }
+        else if (orb) { if (SHIELDED(h)) { goal = null; P.face = Math.sign(boss.orb.x0 - P.x) || P.face; k.block = true; } else goal = boss.orb.tx + (Math.sign(P.x - boss.orb.tx) || 1) * (ABBOT_K.lightR + 14); }
+        else if (H && onBr >= 0) hitAt(H.bridges[onBr].bellX, 12);                     /* P1: HE IS ON A BRIDGE - strike its bell under the tower */
+        else if (H && praying && ph === 2 && boss.basketM) { const m = boss.basketM, mx = m.x + m.w / 2;   /* P2: RIDE THE BASKET DOWN */
+          if (P.onMover === m || (Math.abs(P.x - mx) < 12 && Math.abs(P.y - m.y) < 3)) { goal = null; k.left = k.right = false; }
+          else if (Math.abs(P.x - mx) < 7 && P.ground && P.y > m.y + 4 && !(P.labJump > 0)) { goal = null; BK.press('jump'); P.labJump = 16; }
+          else goal = mx; }
+        else if (H && praying && ph === 3 && boss.smoke) { const sx = boss.smoke.x;   /* P3: RIDE HIS SMOKE UP, then COME DOWN ON HIM */
+          if (!P.ground && P.y < fl - 60) { goal = boss.x; if (Math.abs(P.x - boss.x) < 9 && P.vy > -60 && !P.plunge && P.atk < 0) { k.down = true; BK.press('atk'); swings++; } }
+          else if (P.ground && P.y < fl - 20) { goal = boss.x; if (Math.abs(P.x - boss.x) < 30) { BK.press('jump'); P.labJump = 4; } }   /* on a board over him: step off toward him */
+          else goal = sx; }
+        else if (arrow) { goal = null; P.face = Math.sign(arrow.x - P.x) || P.face; if (SHIELDED(h)) k.block = true; else if (DEFLECTS(h)) k.block = DEFLECT_TAP(f); else if (P.ground) { BK.press('jump'); P.labJump = 10; } }
+        else if (add && Math.abs(add.x - P.x) < 6 && P.atk < 0) { goal = add.x + (Math.sign(P.x - add.x) || -P.face) * 16; }
+        else if (add) { P.face = Math.sign(add.x - P.x) || P.face; goal = Math.abs(add.x - P.x) > LAB_REACH[h] ? add.x - P.face * (LAB_REACH[h] - 4) : null; if (Math.abs(add.x - P.x) <= LAB_REACH[h] + 6 && P.atk < 0) { if (keyVerb(BK, h, add) === 'sweep') k.down = true; BK.press('atk'); swings++; } }   /* HIS CONGREGATION IS SMALL (family 'small'): the low sweep */
+        else if (bossLow && Math.abs(boss.y - P.y) < 30) { goal = boss.x; strike = true; }   /* on the floor with you: fight him (warded, a blow is still 0.4 - B15) */
+        else goal = boss.x + (Math.sign(P.x - boss.x) || 1) * 40;                              /* up on his boards or his chair, not praying: wait under him, off his mark */
+        if (P.labJump > 0) { P.labJump--; k.jump = true; } }
       /* THE GRANDMOTHER (claude/underleaf2, B14 keyed FROM BEHIND): her front turns a blade, so a player MAKES her back - he strikes a bell-pull whose
          chime rings on her far side (or lobs a pot over her), and cuts her back while she lashes at the sound; in her told ward he stands off; when she
          listens he stands still (the branch below). Nothing is rung or thrown for the bot: a real swing at the cord, a real pot taken and thrown. */
@@ -2780,7 +2788,7 @@ async function runbossLab(BK, opts) {
       // step in close before swinging: from the very edge of reach, a boss standing a little above the floor (the roc in her glass) is missed by a pixel
       // THE DECK MUST BE UNDER HER FEET: sword reach is not the top of the ladder.
       const shipAscending=lvId==='flotilla'&&(boss.y<P.y-30||!P.ground&&boss.y<P.y+8);
-      if (walker && boss.t !== 'owl' && (Math.abs(boss.y - P.y) > 30 || shipAscending) && !k.block) {
+      if (walker && boss.t !== 'owl' && boss.t !== 'abbot' && (Math.abs(boss.y - P.y) > 30 || shipAscending) && !k.block) {
         /* she is on another deck. Walking at HER x from under her deck only jumps on the spot: go to the nearest way UP -
            a rope or a ledge over the deck the bot stands on - and let the walker climb it */
         let goalUp = boss.x;
