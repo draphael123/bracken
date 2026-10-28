@@ -25,7 +25,7 @@ try {
     const ph=()=>((BK.time+(z.phase||0))%z.period+z.period)%z.period;
     const place=(tx,ty,x)=>{BK.tp(tx,ty);if(x!==undefined)BK.P.x=x;BK.P.vx=0;BK.P.vy=0;step(8);BK.P.hp=BK.P.maxHp;BK.P.inv=0;};
     const waitGust=(lead)=>{for(let i=0;i<60*12;i++){const p=ph();if(lead===0){if(p>z.on+0.3&&p<z.on+0.36)return true;}else if(p>=z.period-lead&&p<z.period-lead+0.03)return true;step(1);}return false;};
-    const run=(dir,jumpAtX,secs)=>{K[dir>0?'right':'left']=true;let air=false,landed=false,j=false;for(let i=0;i<60*secs;i++){if(jumpAtX!==undefined&&!j&&(BK.P.x-jumpAtX)*dir>=0){BK.press('jump');K.jump=true;j=true;}step(1);if(!BK.P.ground)air=true;if(air&&BK.P.ground&&i>4){landed=true;break;}}clear();step(4);return landed;};
+    const run=(dir,jumpAtX,secs,stopX)=>{K[dir>0?'right':'left']=true;let air=false,landed=false,j=false;for(let i=0;i<60*secs;i++){if(stopX!==undefined&&(BK.P.x-stopX)*dir>0){K.right=K.left=false;}if(jumpAtX!==undefined&&!j&&(BK.P.x-jumpAtX)*dir>=0){BK.press('jump');K.jump=true;j=true;}step(1);if(!BK.P.ground)air=true;if(air&&BK.P.ground&&i>4){landed=true;break;}}clear();step(4);return landed;};
     const at=()=>({x:+(BK.P.x/16).toFixed(1),y:+(BK.P.y/16).toFixed(1),hp:BK.P.hp|0});
     const onTop=(x0,x1,row)=>BK.P.ground&&Math.abs(BK.P.y-row*16)<3&&BK.P.x>=x0*16-2&&BK.P.x<=(x1+1)*16+2;
     const v1=(o+7)*16+8,v2=(o+27)*16+8;
@@ -36,14 +36,14 @@ try {
     /* NOT A JUMP */
     boot();place(o+3,12);run(1,(o+11)*16+4,2);step(30);const jump={ok:!onTop(o+12,o+22,7),...at()};
     /* THE GAP */
-    boot();place(o+19,6);waitGust(0.25);run(1,(o+22)*16+12,4);step(30);const gap={ok:onTop(o+32,o+35,8),...at()};
+    boot();place(o+19,6);waitGust(0.25);run(1,(o+22)*16+12,4,(o+33)*16);   /* (steered: the stick let go once over the far rock, as a player does) */step(30);const gap={ok:onTop(o+32,o+38,8)||onTop(o+40,o+41,9),...at()};   /* (the far rock, or the gully's first stone - in the exam, never past it) */
     /* THE GAP UP */
-    boot();place(o+24,12,v2-40);waitGust(0.3);run(1,undefined,4);step(160);const up={ok:onTop(o+32,o+35,8)||onTop(o+12,o+22,7),...at()};
+    boot();place(o+24,12,v2-40);waitGust(0.3);run(1,undefined,4,(o+33)*16);step(160);const up={ok:onTop(o+32,o+38,8)||onTop(o+40,o+41,9)||onTop(o+12,o+22,7),...at()};
     out.push({hero,ride,still,jump,gap,up});
   }
   BK.manualSimulation=false;return out;})()`, 900000);
   for (const r of rows) {
-    const checks = [['ride: the shelf updraft in the gust -> THE CRAG TOP', r.ride], ['not without the gust', r.still], ['not by a jump', r.jump], ['the gap: a tailwind jump -> THE FAR ROCK', r.gap], ['the gap floor updraft in the gust -> up and out', r.up]];
+    const checks = [['ride: the shelf updraft in the gust -> THE CRAG TOP', r.ride], ['not without the gust', r.still], ['not by a jump', r.jump], ['the gap: a tailwind jump -> THE FAR ROCK (or stone 1)', r.gap], ['the gap floor updraft in the gust -> up and out', r.up]];
     for (const [name, d] of checks) { if (!d.ok) bad++; console.log((d.ok ? 'ok   ' : 'FAIL ') + r.hero.padEnd(10) + name.padEnd(52) + JSON.stringify(d)); }
   }
   console.log(bad ? 'GALE-STAIR: ' + bad + ' failure(s)' : 'GALE-STAIR OK: every hero rides the stair on its told gust with real keys, and none climbs it without');
