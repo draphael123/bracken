@@ -78,6 +78,7 @@ Head: ef150feb (claude/fallingtower3, pushed; the report commit itself is the ne
     batch126 1038c8a4. Every FT3 assertion before it passes.
   - `stuck` (static) has 1 failure, rk-top-slab (Rookery). It is also on the base.
   - `textfit` in full timed out on the 'card' scope under load; the scoped run was clean.
+- **mark-integrity** hit my 25 min timeout (inconclusive, not a red; it is a long check).
 - **Not run:** the full suite. Also level-walk: its row is stale and report-only; FT2 found the walker cannot measure this tower.
 - **Process slip:** while the gate flag was up I briefly ran two Node tools that open a headless page (`tower-ascent.mjs` and
   `undead-realms.mjs`; each about 15 s) before checking them for `openPage`. After that I ran only Node parts until the flag cleared.
