@@ -1,0 +1,2294 @@
+{
+  "time": "2026-10-28T16:29:19.535Z",
+  "purpose": "Read coverage only: all original eager expressions execute in original order; no deferral or timing proposal",
+  "gameSource": "62d9c02c102decc69ceaef4e1ec593a23170f1ff",
+  "mainSha256": "81866b69fec64de5fdd00da316fb0d1e8e997ae9912f73f280981f0a70cb36d8",
+  "instrumentedSha256": "5a9106b4235891ef42229ad2bf32b10b277fe084dcd7edee963fcb6289f8c8f7",
+  "groups": 226,
+  "rootAssignments": 2,
+  "insertions": [
+    {
+      "at": 229504,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 229490,
+      "text": "globalThis.__artUse.value(225,",
+      "order": 0
+    },
+    {
+      "at": 229482,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 229468,
+      "text": "globalThis.__artUse.value(224,",
+      "order": 0
+    },
+    {
+      "at": 229460,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 229446,
+      "text": "globalThis.__artUse.value(223,",
+      "order": 0
+    },
+    {
+      "at": 229438,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 229423,
+      "text": "globalThis.__artUse.value(222,",
+      "order": 0
+    },
+    {
+      "at": 229414,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 229367,
+      "text": "globalThis.__artUse.value(221,",
+      "order": 0
+    },
+    {
+      "at": 229356,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 229340,
+      "text": "globalThis.__artUse.value(220,",
+      "order": 0
+    },
+    {
+      "at": 229330,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 229316,
+      "text": "globalThis.__artUse.value(219,",
+      "order": 0
+    },
+    {
+      "at": 229308,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 229293,
+      "text": "globalThis.__artUse.value(218,",
+      "order": 0
+    },
+    {
+      "at": 229284,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 229241,
+      "text": "globalThis.__artUse.value(217,",
+      "order": 0
+    },
+    {
+      "at": 229228,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 229210,
+      "text": "globalThis.__artUse.value(216,",
+      "order": 0
+    },
+    {
+      "at": 229140,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 229122,
+      "text": "globalThis.__artUse.value(215,",
+      "order": 0
+    },
+    {
+      "at": 229110,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 229095,
+      "text": "globalThis.__artUse.value(214,",
+      "order": 0
+    },
+    {
+      "at": 229086,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 229071,
+      "text": "globalThis.__artUse.value(213,",
+      "order": 0
+    },
+    {
+      "at": 229062,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 229043,
+      "text": "globalThis.__artUse.value(212,",
+      "order": 0
+    },
+    {
+      "at": 229030,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 229009,
+      "text": "globalThis.__artUse.value(211,",
+      "order": 0
+    },
+    {
+      "at": 228994,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 228974,
+      "text": "globalThis.__artUse.value(210,",
+      "order": 0
+    },
+    {
+      "at": 228960,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 228941,
+      "text": "globalThis.__artUse.value(209,",
+      "order": 0
+    },
+    {
+      "at": 228928,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 228913,
+      "text": "globalThis.__artUse.value(208,",
+      "order": 0
+    },
+    {
+      "at": 228904,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 228870,
+      "text": "globalThis.__artUse.value(207,",
+      "order": 0
+    },
+    {
+      "at": 228860,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 228827,
+      "text": "globalThis.__artUse.value(206,",
+      "order": 0
+    },
+    {
+      "at": 228818,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 228781,
+      "text": "globalThis.__artUse.value(205,",
+      "order": 0
+    },
+    {
+      "at": 225063,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 225047,
+      "text": "globalThis.__artUse.value(204,",
+      "order": 0
+    },
+    {
+      "at": 225037,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 225000,
+      "text": "globalThis.__artUse.value(203,",
+      "order": 0
+    },
+    {
+      "at": 224990,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 224968,
+      "text": "globalThis.__artUse.value(202,",
+      "order": 0
+    },
+    {
+      "at": 224952,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 224935,
+      "text": "globalThis.__artUse.value(201,",
+      "order": 0
+    },
+    {
+      "at": 224875,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 224852,
+      "text": "globalThis.__artUse.value(200,",
+      "order": 0
+    },
+    {
+      "at": 224843,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 224820,
+      "text": "globalThis.__artUse.value(199,",
+      "order": 0
+    },
+    {
+      "at": 224811,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 224794,
+      "text": "globalThis.__artUse.value(198,",
+      "order": 0
+    },
+    {
+      "at": 224783,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 224730,
+      "text": "globalThis.__artUse.value(197,",
+      "order": 0
+    },
+    {
+      "at": 224722,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 224680,
+      "text": "globalThis.__artUse.value(196,",
+      "order": 0
+    },
+    {
+      "at": 224668,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 224621,
+      "text": "globalThis.__artUse.value(195,",
+      "order": 0
+    },
+    {
+      "at": 224610,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 224553,
+      "text": "globalThis.__artUse.value(194,",
+      "order": 0
+    },
+    {
+      "at": 224537,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 224519,
+      "text": "globalThis.__artUse.value(193,",
+      "order": 0
+    },
+    {
+      "at": 224319,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 224274,
+      "text": "globalThis.__artUse.value(192,",
+      "order": 0
+    },
+    {
+      "at": 224264,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 224248,
+      "text": "globalThis.__artUse.value(191,",
+      "order": 0
+    },
+    {
+      "at": 224238,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 224222,
+      "text": "globalThis.__artUse.value(190,",
+      "order": 0
+    },
+    {
+      "at": 224212,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 224135,
+      "text": "globalThis.__artUse.value(189,",
+      "order": 0
+    },
+    {
+      "at": 224065,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 224014,
+      "text": "globalThis.__artUse.value(188,",
+      "order": 0
+    },
+    {
+      "at": 224001,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 223984,
+      "text": "globalThis.__artUse.value(187,",
+      "order": 0
+    },
+    {
+      "at": 223973,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 223957,
+      "text": "globalThis.__artUse.value(186,",
+      "order": 0
+    },
+    {
+      "at": 223947,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 223929,
+      "text": "globalThis.__artUse.value(185,",
+      "order": 0
+    },
+    {
+      "at": 223917,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 223881,
+      "text": "globalThis.__artUse.value(184,",
+      "order": 0
+    },
+    {
+      "at": 223872,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 223825,
+      "text": "globalThis.__artUse.value(183,",
+      "order": 0
+    },
+    {
+      "at": 223815,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 223801,
+      "text": "globalThis.__artUse.value(182,",
+      "order": 0
+    },
+    {
+      "at": 223793,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 223753,
+      "text": "globalThis.__artUse.value(181,",
+      "order": 0
+    },
+    {
+      "at": 223742,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 223700,
+      "text": "globalThis.__artUse.value(180,",
+      "order": 0
+    },
+    {
+      "at": 223691,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 223672,
+      "text": "globalThis.__artUse.value(179,",
+      "order": 0
+    },
+    {
+      "at": 223659,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 223643,
+      "text": "globalThis.__artUse.value(178,",
+      "order": 0
+    },
+    {
+      "at": 223633,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 223618,
+      "text": "globalThis.__artUse.value(177,",
+      "order": 0
+    },
+    {
+      "at": 223609,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 223590,
+      "text": "globalThis.__artUse.value(176,",
+      "order": 0
+    },
+    {
+      "at": 223577,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 223563,
+      "text": "globalThis.__artUse.value(175,",
+      "order": 0
+    },
+    {
+      "at": 223555,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 223516,
+      "text": "globalThis.__artUse.value(174,",
+      "order": 0
+    },
+    {
+      "at": 223504,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 223459,
+      "text": "globalThis.__artUse.value(173,",
+      "order": 0
+    },
+    {
+      "at": 223449,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 223427,
+      "text": "globalThis.__artUse.value(172,",
+      "order": 0
+    },
+    {
+      "at": 223413,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 223399,
+      "text": "globalThis.__artUse.value(171,",
+      "order": 0
+    },
+    {
+      "at": 223391,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 223376,
+      "text": "globalThis.__artUse.value(170,",
+      "order": 0
+    },
+    {
+      "at": 223367,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 223348,
+      "text": "globalThis.__artUse.value(169,",
+      "order": 0
+    },
+    {
+      "at": 223335,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 223316,
+      "text": "globalThis.__artUse.value(168,",
+      "order": 0
+    },
+    {
+      "at": 223303,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 223287,
+      "text": "globalThis.__artUse.value(167,",
+      "order": 0
+    },
+    {
+      "at": 223277,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 223259,
+      "text": "globalThis.__artUse.value(166,",
+      "order": 0
+    },
+    {
+      "at": 223247,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 223229,
+      "text": "globalThis.__artUse.value(165,",
+      "order": 0
+    },
+    {
+      "at": 223217,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 223200,
+      "text": "globalThis.__artUse.value(164,",
+      "order": 0
+    },
+    {
+      "at": 223189,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 223172,
+      "text": "globalThis.__artUse.value(163,",
+      "order": 0
+    },
+    {
+      "at": 223161,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 223142,
+      "text": "globalThis.__artUse.value(162,",
+      "order": 0
+    },
+    {
+      "at": 223129,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 223032,
+      "text": "globalThis.__artUse.value(161,",
+      "order": 0
+    },
+    {
+      "at": 223021,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 223003,
+      "text": "globalThis.__artUse.value(160,",
+      "order": 0
+    },
+    {
+      "at": 222987,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 222971,
+      "text": "globalThis.__artUse.value(159,",
+      "order": 0
+    },
+    {
+      "at": 222961,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 222920,
+      "text": "globalThis.__artUse.value(158,",
+      "order": 0
+    },
+    {
+      "at": 222912,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 222893,
+      "text": "globalThis.__artUse.value(157,",
+      "order": 0
+    },
+    {
+      "at": 222880,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 222837,
+      "text": "globalThis.__artUse.value(156,",
+      "order": 0
+    },
+    {
+      "at": 222828,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 222785,
+      "text": "globalThis.__artUse.value(155,",
+      "order": 0
+    },
+    {
+      "at": 222776,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 222760,
+      "text": "globalThis.__artUse.value(154,",
+      "order": 0
+    },
+    {
+      "at": 222750,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 222736,
+      "text": "globalThis.__artUse.value(153,",
+      "order": 0
+    },
+    {
+      "at": 222603,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 222585,
+      "text": "globalThis.__artUse.value(152,",
+      "order": 0
+    },
+    {
+      "at": 222573,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 222559,
+      "text": "globalThis.__artUse.value(151,",
+      "order": 0
+    },
+    {
+      "at": 222551,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 222537,
+      "text": "globalThis.__artUse.value(150,",
+      "order": 0
+    },
+    {
+      "at": 222529,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 222514,
+      "text": "globalThis.__artUse.value(149,",
+      "order": 0
+    },
+    {
+      "at": 222505,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 222488,
+      "text": "globalThis.__artUse.value(148,",
+      "order": 0
+    },
+    {
+      "at": 222477,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 222462,
+      "text": "globalThis.__artUse.value(147,",
+      "order": 0
+    },
+    {
+      "at": 222453,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 222397,
+      "text": "globalThis.__artUse.value(146,",
+      "order": 0
+    },
+    {
+      "at": 222375,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 222325,
+      "text": "globalThis.__artUse.value(145,",
+      "order": 0
+    },
+    {
+      "at": 222308,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 222267,
+      "text": "globalThis.__artUse.value(144,",
+      "order": 0
+    },
+    {
+      "at": 222256,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 222217,
+      "text": "globalThis.__artUse.value(143,",
+      "order": 0
+    },
+    {
+      "at": 222208,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 222164,
+      "text": "globalThis.__artUse.value(142,",
+      "order": 0
+    },
+    {
+      "at": 222153,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 222139,
+      "text": "globalThis.__artUse.value(141,",
+      "order": 0
+    },
+    {
+      "at": 222131,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 222114,
+      "text": "globalThis.__artUse.value(140,",
+      "order": 0
+    },
+    {
+      "at": 222106,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 222067,
+      "text": "globalThis.__artUse.value(139,",
+      "order": 0
+    },
+    {
+      "at": 222058,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 222015,
+      "text": "globalThis.__artUse.value(138,",
+      "order": 0
+    },
+    {
+      "at": 222002,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 221963,
+      "text": "globalThis.__artUse.value(137,",
+      "order": 0
+    },
+    {
+      "at": 221954,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 221933,
+      "text": "globalThis.__artUse.value(136,",
+      "order": 0
+    },
+    {
+      "at": 221918,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 221899,
+      "text": "globalThis.__artUse.value(135,",
+      "order": 0
+    },
+    {
+      "at": 221886,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 221844,
+      "text": "globalThis.__artUse.value(134,",
+      "order": 0
+    },
+    {
+      "at": 221832,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 221813,
+      "text": "globalThis.__artUse.value(133,",
+      "order": 0
+    },
+    {
+      "at": 221800,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 221783,
+      "text": "globalThis.__artUse.value(132,",
+      "order": 0
+    },
+    {
+      "at": 221772,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 221751,
+      "text": "globalThis.__artUse.value(131,",
+      "order": 0
+    },
+    {
+      "at": 221736,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 221718,
+      "text": "globalThis.__artUse.value(130,",
+      "order": 0
+    },
+    {
+      "at": 221706,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 221670,
+      "text": "globalThis.__artUse.value(129,",
+      "order": 0
+    },
+    {
+      "at": 221661,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 221644,
+      "text": "globalThis.__artUse.value(128,",
+      "order": 0
+    },
+    {
+      "at": 221633,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 221617,
+      "text": "globalThis.__artUse.value(127,",
+      "order": 0
+    },
+    {
+      "at": 221608,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 221593,
+      "text": "globalThis.__artUse.value(126,",
+      "order": 0
+    },
+    {
+      "at": 221584,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 221567,
+      "text": "globalThis.__artUse.value(125,",
+      "order": 0
+    },
+    {
+      "at": 221556,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 221537,
+      "text": "globalThis.__artUse.value(124,",
+      "order": 0
+    },
+    {
+      "at": 221475,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 221438,
+      "text": "globalThis.__artUse.value(123,",
+      "order": 0
+    },
+    {
+      "at": 221431,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 221413,
+      "text": "globalThis.__artUse.value(122,",
+      "order": 0
+    },
+    {
+      "at": 221401,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 221365,
+      "text": "globalThis.__artUse.value(121,",
+      "order": 0
+    },
+    {
+      "at": 221352,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 221334,
+      "text": "globalThis.__artUse.value(120,",
+      "order": 0
+    },
+    {
+      "at": 221322,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 221306,
+      "text": "globalThis.__artUse.value(119,",
+      "order": 0
+    },
+    {
+      "at": 221296,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 221277,
+      "text": "globalThis.__artUse.value(118,",
+      "order": 0
+    },
+    {
+      "at": 221267,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 221250,
+      "text": "globalThis.__artUse.value(117,",
+      "order": 0
+    },
+    {
+      "at": 221238,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 221195,
+      "text": "globalThis.__artUse.value(116,",
+      "order": 0
+    },
+    {
+      "at": 221182,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 221135,
+      "text": "globalThis.__artUse.value(115,",
+      "order": 0
+    },
+    {
+      "at": 221117,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 221096,
+      "text": "globalThis.__artUse.value(114,",
+      "order": 0
+    },
+    {
+      "at": 221084,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 221045,
+      "text": "globalThis.__artUse.value(113,",
+      "order": 0
+    },
+    {
+      "at": 221036,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 221021,
+      "text": "globalThis.__artUse.value(112,",
+      "order": 0
+    },
+    {
+      "at": 221012,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 220995,
+      "text": "globalThis.__artUse.value(111,",
+      "order": 0
+    },
+    {
+      "at": 220987,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 220947,
+      "text": "globalThis.__artUse.value(110,",
+      "order": 0
+    },
+    {
+      "at": 220888,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 220852,
+      "text": "globalThis.__artUse.value(109,",
+      "order": 0
+    },
+    {
+      "at": 220840,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 220804,
+      "text": "globalThis.__artUse.value(108,",
+      "order": 0
+    },
+    {
+      "at": 220792,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 220755,
+      "text": "globalThis.__artUse.value(107,",
+      "order": 0
+    },
+    {
+      "at": 220742,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 220724,
+      "text": "globalThis.__artUse.value(106,",
+      "order": 0
+    },
+    {
+      "at": 220712,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 220694,
+      "text": "globalThis.__artUse.value(105,",
+      "order": 0
+    },
+    {
+      "at": 220682,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 220646,
+      "text": "globalThis.__artUse.value(104,",
+      "order": 0
+    },
+    {
+      "at": 220634,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 220596,
+      "text": "globalThis.__artUse.value(103,",
+      "order": 0
+    },
+    {
+      "at": 220582,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 220550,
+      "text": "globalThis.__artUse.value(102,",
+      "order": 0
+    },
+    {
+      "at": 220542,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 220504,
+      "text": "globalThis.__artUse.value(101,",
+      "order": 0
+    },
+    {
+      "at": 220490,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 220452,
+      "text": "globalThis.__artUse.value(100,",
+      "order": 0
+    },
+    {
+      "at": 220438,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 220400,
+      "text": "globalThis.__artUse.value(99,",
+      "order": 0
+    },
+    {
+      "at": 220386,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 220342,
+      "text": "globalThis.__artUse.value(98,",
+      "order": 0
+    },
+    {
+      "at": 220328,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 220288,
+      "text": "globalThis.__artUse.value(97,",
+      "order": 0
+    },
+    {
+      "at": 220275,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 220236,
+      "text": "globalThis.__artUse.value(96,",
+      "order": 0
+    },
+    {
+      "at": 220221,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 220177,
+      "text": "globalThis.__artUse.value(95,",
+      "order": 0
+    },
+    {
+      "at": 220040,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 220022,
+      "text": "globalThis.__artUse.value(94,",
+      "order": 0
+    },
+    {
+      "at": 220010,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 219964,
+      "text": "globalThis.__artUse.value(93,",
+      "order": 0
+    },
+    {
+      "at": 219382,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 219361,
+      "text": "globalThis.__artUse.value(92,",
+      "order": 0
+    },
+    {
+      "at": 219346,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 219302,
+      "text": "globalThis.__artUse.value(91,",
+      "order": 0
+    },
+    {
+      "at": 219288,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 219269,
+      "text": "globalThis.__artUse.value(90,",
+      "order": 0
+    },
+    {
+      "at": 219104,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 219090,
+      "text": "globalThis.__artUse.value(89,",
+      "order": 0
+    },
+    {
+      "at": 219082,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 219063,
+      "text": "globalThis.__artUse.value(88,",
+      "order": 0
+    },
+    {
+      "at": 219050,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 218960,
+      "text": "globalThis.__artUse.value(87,",
+      "order": 0
+    },
+    {
+      "at": 218947,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 218906,
+      "text": "globalThis.__artUse.value(86,",
+      "order": 0
+    },
+    {
+      "at": 218898,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 218766,
+      "text": "globalThis.__artUse.value(85,",
+      "order": 0
+    },
+    {
+      "at": 218755,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 218737,
+      "text": "globalThis.__artUse.value(84,",
+      "order": 0
+    },
+    {
+      "at": 218725,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 218687,
+      "text": "globalThis.__artUse.value(83,",
+      "order": 0
+    },
+    {
+      "at": 218679,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 218660,
+      "text": "globalThis.__artUse.value(82,",
+      "order": 0
+    },
+    {
+      "at": 218647,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 218627,
+      "text": "globalThis.__artUse.value(81,",
+      "order": 0
+    },
+    {
+      "at": 218613,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 218569,
+      "text": "globalThis.__artUse.value(80,",
+      "order": 0
+    },
+    {
+      "at": 218558,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 218517,
+      "text": "globalThis.__artUse.value(79,",
+      "order": 0
+    },
+    {
+      "at": 218509,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 218470,
+      "text": "globalThis.__artUse.value(78,",
+      "order": 0
+    },
+    {
+      "at": 218461,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 218420,
+      "text": "globalThis.__artUse.value(77,",
+      "order": 0
+    },
+    {
+      "at": 218363,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 218338,
+      "text": "globalThis.__artUse.value(76,",
+      "order": 0
+    },
+    {
+      "at": 218325,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 218300,
+      "text": "globalThis.__artUse.value(75,",
+      "order": 0
+    },
+    {
+      "at": 218285,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 218269,
+      "text": "globalThis.__artUse.value(74,",
+      "order": 0
+    },
+    {
+      "at": 218259,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 218240,
+      "text": "globalThis.__artUse.value(73,",
+      "order": 0
+    },
+    {
+      "at": 218223,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 218209,
+      "text": "globalThis.__artUse.value(72,",
+      "order": 0
+    },
+    {
+      "at": 218201,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 218186,
+      "text": "globalThis.__artUse.value(71,",
+      "order": 0
+    },
+    {
+      "at": 218177,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 218158,
+      "text": "globalThis.__artUse.value(70,",
+      "order": 0
+    },
+    {
+      "at": 218148,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 218134,
+      "text": "globalThis.__artUse.value(69,",
+      "order": 0
+    },
+    {
+      "at": 218126,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 218107,
+      "text": "globalThis.__artUse.value(68,",
+      "order": 0
+    },
+    {
+      "at": 218094,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 218071,
+      "text": "globalThis.__artUse.value(67,",
+      "order": 0
+    },
+    {
+      "at": 218054,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 218035,
+      "text": "globalThis.__artUse.value(66,",
+      "order": 0
+    },
+    {
+      "at": 218025,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 218008,
+      "text": "globalThis.__artUse.value(65,",
+      "order": 0
+    },
+    {
+      "at": 218001,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 217981,
+      "text": "globalThis.__artUse.value(64,",
+      "order": 0
+    },
+    {
+      "at": 217967,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 217926,
+      "text": "globalThis.__artUse.value(63,",
+      "order": 0
+    },
+    {
+      "at": 217918,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 217876,
+      "text": "globalThis.__artUse.value(62,",
+      "order": 0
+    },
+    {
+      "at": 217860,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 217814,
+      "text": "globalThis.__artUse.value(61,",
+      "order": 0
+    },
+    {
+      "at": 217804,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 217760,
+      "text": "globalThis.__artUse.value(60,",
+      "order": 0
+    },
+    {
+      "at": 217709,
+      "text": ")",
+      "order": 1
+    },
+    {
+      "at": 217704,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 217690,
+      "text": "globalThis.__artUse.value(59,",
+      "order": 0
+    },
+    {
+      "at": 217682,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 217668,
+      "text": "globalThis.__artUse.value(58,",
+      "order": 0
+    },
+    {
+      "at": 217477,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 217432,
+      "text": "globalThis.__artUse.value(57,",
+      "order": 0
+    },
+    {
+      "at": 217422,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 217408,
+      "text": "globalThis.__artUse.value(56,",
+      "order": 0
+    },
+    {
+      "at": 217396,
+      "text": "globalThis.__artUse.root(\"PROP\",",
+      "order": -1
+    },
+    {
+      "at": 216977,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 216930,
+      "text": "globalThis.__artUse.value(55,",
+      "order": 0
+    },
+    {
+      "at": 216922,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 216909,
+      "text": "globalThis.__artUse.value(54,",
+      "order": 0
+    },
+    {
+      "at": 216902,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 216872,
+      "text": "globalThis.__artUse.value(53,",
+      "order": 0
+    },
+    {
+      "at": 216862,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 216831,
+      "text": "globalThis.__artUse.value(52,",
+      "order": 0
+    },
+    {
+      "at": 216821,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 216776,
+      "text": "globalThis.__artUse.value(51,",
+      "order": 0
+    },
+    {
+      "at": 216767,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 216723,
+      "text": "globalThis.__artUse.value(50,",
+      "order": 0
+    },
+    {
+      "at": 216700,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 216655,
+      "text": "globalThis.__artUse.value(49,",
+      "order": 0
+    },
+    {
+      "at": 216647,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 216583,
+      "text": "globalThis.__artUse.value(48,",
+      "order": 0
+    },
+    {
+      "at": 216574,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 216529,
+      "text": "globalThis.__artUse.value(47,",
+      "order": 0
+    },
+    {
+      "at": 216514,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 216469,
+      "text": "globalThis.__artUse.value(46,",
+      "order": 0
+    },
+    {
+      "at": 216404,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 216360,
+      "text": "globalThis.__artUse.value(45,",
+      "order": 0
+    },
+    {
+      "at": 216352,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 216297,
+      "text": "globalThis.__artUse.value(44,",
+      "order": 0
+    },
+    {
+      "at": 216288,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 216222,
+      "text": "globalThis.__artUse.value(43,",
+      "order": 0
+    },
+    {
+      "at": 216213,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 216170,
+      "text": "globalThis.__artUse.value(42,",
+      "order": 0
+    },
+    {
+      "at": 216157,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 216112,
+      "text": "globalThis.__artUse.value(41,",
+      "order": 0
+    },
+    {
+      "at": 216100,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 216061,
+      "text": "globalThis.__artUse.value(40,",
+      "order": 0
+    },
+    {
+      "at": 216052,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 216035,
+      "text": "globalThis.__artUse.value(39,",
+      "order": 0
+    },
+    {
+      "at": 216024,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 216003,
+      "text": "globalThis.__artUse.value(38,",
+      "order": 0
+    },
+    {
+      "at": 215988,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 215943,
+      "text": "globalThis.__artUse.value(37,",
+      "order": 0
+    },
+    {
+      "at": 215931,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 215891,
+      "text": "globalThis.__artUse.value(36,",
+      "order": 0
+    },
+    {
+      "at": 215883,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 215842,
+      "text": "globalThis.__artUse.value(35,",
+      "order": 0
+    },
+    {
+      "at": 215829,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 215784,
+      "text": "globalThis.__artUse.value(34,",
+      "order": 0
+    },
+    {
+      "at": 215775,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 215760,
+      "text": "globalThis.__artUse.value(33,",
+      "order": 0
+    },
+    {
+      "at": 215751,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 215706,
+      "text": "globalThis.__artUse.value(32,",
+      "order": 0
+    },
+    {
+      "at": 215692,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 215648,
+      "text": "globalThis.__artUse.value(31,",
+      "order": 0
+    },
+    {
+      "at": 215639,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 215613,
+      "text": "globalThis.__artUse.value(30,",
+      "order": 0
+    },
+    {
+      "at": 215600,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 215574,
+      "text": "globalThis.__artUse.value(29,",
+      "order": 0
+    },
+    {
+      "at": 215561,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 215510,
+      "text": "globalThis.__artUse.value(28,",
+      "order": 0
+    },
+    {
+      "at": 215498,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 215471,
+      "text": "globalThis.__artUse.value(27,",
+      "order": 0
+    },
+    {
+      "at": 215462,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 215435,
+      "text": "globalThis.__artUse.value(26,",
+      "order": 0
+    },
+    {
+      "at": 215426,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 215374,
+      "text": "globalThis.__artUse.value(25,",
+      "order": 0
+    },
+    {
+      "at": 215366,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 215342,
+      "text": "globalThis.__artUse.value(24,",
+      "order": 0
+    },
+    {
+      "at": 215331,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 215307,
+      "text": "globalThis.__artUse.value(23,",
+      "order": 0
+    },
+    {
+      "at": 215296,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 215247,
+      "text": "globalThis.__artUse.value(22,",
+      "order": 0
+    },
+    {
+      "at": 215188,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 215163,
+      "text": "globalThis.__artUse.value(21,",
+      "order": 0
+    },
+    {
+      "at": 215151,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 215126,
+      "text": "globalThis.__artUse.value(20,",
+      "order": 0
+    },
+    {
+      "at": 215114,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 215064,
+      "text": "globalThis.__artUse.value(19,",
+      "order": 0
+    },
+    {
+      "at": 215049,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 215027,
+      "text": "globalThis.__artUse.value(18,",
+      "order": 0
+    },
+    {
+      "at": 215018,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 214996,
+      "text": "globalThis.__artUse.value(17,",
+      "order": 0
+    },
+    {
+      "at": 214987,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 214940,
+      "text": "globalThis.__artUse.value(16,",
+      "order": 0
+    },
+    {
+      "at": 214889,
+      "text": ")",
+      "order": 1
+    },
+    {
+      "at": 214884,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 214861,
+      "text": "globalThis.__artUse.value(15,",
+      "order": 0
+    },
+    {
+      "at": 214851,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 214828,
+      "text": "globalThis.__artUse.value(14,",
+      "order": 0
+    },
+    {
+      "at": 214818,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 214770,
+      "text": "globalThis.__artUse.value(13,",
+      "order": 0
+    },
+    {
+      "at": 214761,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 214614,
+      "text": "globalThis.__artUse.value(12,",
+      "order": 0
+    },
+    {
+      "at": 214604,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 214559,
+      "text": "globalThis.__artUse.value(11,",
+      "order": 0
+    },
+    {
+      "at": 214551,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 214519,
+      "text": "globalThis.__artUse.value(10,",
+      "order": 0
+    },
+    {
+      "at": 214511,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 214479,
+      "text": "globalThis.__artUse.value(9,",
+      "order": 0
+    },
+    {
+      "at": 214466,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 214431,
+      "text": "globalThis.__artUse.value(8,",
+      "order": 0
+    },
+    {
+      "at": 214420,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 214394,
+      "text": "globalThis.__artUse.value(7,",
+      "order": 0
+    },
+    {
+      "at": 214385,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 214359,
+      "text": "globalThis.__artUse.value(6,",
+      "order": 0
+    },
+    {
+      "at": 214350,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 214305,
+      "text": "globalThis.__artUse.value(5,",
+      "order": 0
+    },
+    {
+      "at": 214297,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 214273,
+      "text": "globalThis.__artUse.value(4,",
+      "order": 0
+    },
+    {
+      "at": 214265,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 214240,
+      "text": "globalThis.__artUse.value(3,",
+      "order": 0
+    },
+    {
+      "at": 214232,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 214187,
+      "text": "globalThis.__artUse.value(2,",
+      "order": 0
+    },
+    {
+      "at": 214051,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 213959,
+      "text": "globalThis.__artUse.value(1,",
+      "order": 0
+    },
+    {
+      "at": 213951,
+      "text": ")",
+      "order": 0
+    },
+    {
+      "at": 213902,
+      "text": "globalThis.__artUse.value(0,",
+      "order": 0
+    },
+    {
+      "at": 213890,
+      "text": "globalThis.__artUse.root(\"TILE\",",
+      "order": -1
+    }
+  ],
+  "originalBytesAndLineCountPreservedOutsideDiagnosticInsertions": true,
+  "noLocalBrowserExecuted": true,
+  "adopted": false
+}
