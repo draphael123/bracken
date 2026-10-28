@@ -34,7 +34,7 @@
 // PURE: no DOM, no main.js. Everything the world does is a call on `c`; the house's layout is c.A.house (pixels, built by
 // main.js from the level's arena.house). Proved by tools/false-abbot.mjs.
 export const ABBOT = {
-  hp: 4300, walk: 30, keep: 44, cd: 1.5, cdP2: 1.15,
+  hp: 3600, walk: 30, keep: 44, cd: 1.5, cdP2: 1.15,
   tell: { censer: 0.55, cast: 0.7, swing: 0.8, gleam: 0.8, coals: 0.75, rite: 2.6, knell: 1.0 },
   riteT: [3.2, 3.2, 5.0, 3.4],   /* the rite's windup by phase: on the bridge 3.2 s, in the chair 5 s (the basket is by the great bell), at the wheel 3.4 s - a hero walks ~56 px/s, and the house is a room wide */
   dmg: { censer: 20, cast: 16, reel: 10, slam: 24, light: 16, knell: 22 },
@@ -53,7 +53,7 @@ export const ABBOT = {
   spillAt: 0.85,                      // how far the basket has to come down before his chair spills him
   smokeW: 12, smokeH: 150, smokeLift: 200,   // P3: his censer's smoke column, set down beside him at the wheel - it LIFTS you
   beatAt: 0.05, beatT: 8, beatCd: 10, beatTake: 0.4,   // THE FINALE: beaten down at 5% he kneels 8 s; blades are worth B15's floor, the great bell ends him
-  adds: 2, addsP2: 3, addEvery: 7.5, addEveryP2: 4.2, daze: 2.2,
+  adds: 2, addsP2: 2, addEvery: 8, addEveryP2: 6, daze: 2.2,   /* (claude/abbot3: P2 3 every 4.2 s - the knight died to sprigs while he walked to the basket: the house is the fight, not his congregation) */
   order: ['censer', 'cast', 'swing', 'gleam', 'censer', 'coals', 'cast', 'swing', 'gleam', 'knell'],   /* the rite is NOT in here: it is his heartbeat, taken the moment the ward lapses */
 };
 /* EVERY MODE IS ITS KEY PLUS 'Tell' - no exceptions, because the one exception there was (coals -> coalTell) cost two
