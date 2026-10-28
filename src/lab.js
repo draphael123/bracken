@@ -2560,6 +2560,7 @@ async function runbossLab(BK, opts) {
         else if (burn) { const line = (BK.fires() || []).filter(q => !(q.delay > 0) && q.life > 0.3 && Math.abs(q.y - P.y) < 12 && Math.abs(q.x - burn.x) < 130), lo = Math.min(...line.map(q => q.x)), hi = Math.max(...line.map(q => q.x));
           goal = P.x - lo < hi - P.x ? lo - 26 : hi + 26; }   /* HIS COALS: off the whole line of floor fire, not into the next coal (it turns on no shield) */
         else if (boss.mode === 'beaten' && bl) hitAt(bl.x, 12);                       /* THE LAST BLOW: the great bell */
+        else if (H && boss.deck === 'chair' && boss.basketM && P.onMover === boss.basketM) { const mx0 = boss.basketM.x + boss.basketM.w / 2; goal = null; k.left = P.x > mx0 + 3; k.right = P.x < mx0 - 3; k.down = false; k.block = false; P.labJump = 0; P.labInBasket = f; }   /* IN THE BASKET with him in his chair: ride it all the way down - an arrow or a bite is worth his chair */
         else if (boss.open > 0 && bossLow) { goal = boss.x; strike = true; }         /* the house answered: get on him, the window is worth three blows */
         else if (chain) { goal = null; P.face = Math.sign(boss.x - P.x) || P.face;
           if (SHIELDED(h)) { k.block = true; if (h === 'paladin') holdC = f + 20; }
@@ -2572,8 +2573,9 @@ async function runbossLab(BK, opts) {
         else if (arrow) { goal = null; P.face = Math.sign(arrow.x - P.x) || P.face; if (SHIELDED(h)) k.block = true; else if (DEFLECTS(h)) k.block = DEFLECT_TAP(f); else if (P.ground) { BK.press('jump'); P.labJump = 10; } }   /* a shaft in the air is answered before a walk to the house */
         else if (H && onBr >= 0) hitAt(H.bridges[onBr].bells.reduce((a, b) => Math.abs(a - P.x) <= Math.abs(b - P.x) ? a : b), 12);                     /* P1: HE IS ON A BRIDGE - strike its bell under the tower */
         else if (H && boss.deck === 'chair' && boss.basketM) { const m = boss.basketM, mx = m.x + m.w / 2;   /* P2: HE IS UP IN HIS CHAIR (seen by where he is, not by his pose): RIDE THE BASKET DOWN */
-          if (P.onMover === m || (Math.abs(P.x - mx) < 12 && Math.abs(P.y - m.y) < 3)) { goal = null; k.left = k.right = false; }
+          if (P.onMover === m || (Math.abs(P.x - mx) < 12 && Math.abs(P.y - m.y) < 3)) { goal = null; k.left = P.x > mx + 3; k.right = P.x < mx - 3; k.down = false; P.labJump = 0; P.labInBasket = f; }   /* in it: stand still and let it sink (no hop, no crouch) */
           else if (Math.abs(P.x - mx) < 7 && P.ground && P.y > m.y + 4 && !(P.labJump > 0)) { goal = null; BK.press('jump'); P.labJump = 24; }   /* held: a full jump, and down into it */
+          else if (!P.ground && Math.abs(P.x - mx) < 24) { goal = null; k.left = P.x > mx + 2; k.right = P.x < mx - 2; }   /* in the air over it: steer onto its middle */
           else goal = mx; }
         else if (H && boss.smoke) { const sx = boss.smoke.x;   /* P3: his censer set down SMOKING (he prays at the wheel): RIDE HIS SMOKE UP, then COME DOWN ON HIM */
           if (!P.ground && P.y < fl - 60) { goal = boss.x; if (Math.abs(P.x - boss.x) < 9 && P.vy > -60 && !P.plunge && P.atk < 0) { k.down = true; BK.press('atk'); swings++; } }
@@ -2584,7 +2586,8 @@ async function runbossLab(BK, opts) {
         else if (add) { P.face = Math.sign(add.x - P.x) || P.face; goal = Math.abs(add.x - P.x) > LAB_REACH[h] ? add.x - P.face * (LAB_REACH[h] - 4) : null; if (Math.abs(add.x - P.x) <= LAB_REACH[h] + 6 && P.atk < 0) { if (keyVerb(BK, h, add) === 'sweep') k.down = true; BK.press('atk'); swings++; } }   /* HIS CONGREGATION IS SMALL (family 'small'): the low sweep */
         else if (bossLow && Math.abs(boss.y - P.y) < 30) { goal = boss.x; strike = true; }   /* on the floor with you: fight him (warded, a blow is still 0.4 - B15) */
         else goal = boss.x + (Math.sign(P.x - boss.x) || 1) * 40;                              /* up on his boards or his chair, not praying: wait under him, off his mark */
-        if (P.labJump > 0) { P.labJump--; k.jump = true; } }
+        if (P.labJump > 0) { P.labJump--; k.jump = true; }
+        if (P.labInBasket === f) { k.jump = false; k.atk = false; } }
       /* THE GRANDMOTHER (claude/underleaf2, B14 keyed FROM BEHIND): her front turns a blade, so a player MAKES her back - he strikes a bell-pull whose
          chime rings on her far side (or lobs a pot over her), and cuts her back while she lashes at the sound; in her told ward he stands off; when she
          listens he stands still (the branch below). Nothing is rung or thrown for the bot: a real swing at the cord, a real pot taken and thrown. */
