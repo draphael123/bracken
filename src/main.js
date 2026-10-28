@@ -18530,7 +18530,7 @@ function updateWindcaller(e, dt) {
       /* HIS BLAST: stood beside him on his ledge he gathers the wind (red: no shield holds it, no brace) and blows you off it - step back. Only in the still */
       e.blastCd = Math.max(0, (e.blastCd ?? 2) - dt); e.closeT = Math.abs(P.x - e.x) < CALLER_BLAST_R && Math.abs(P.y - e.y) < 30 && !P.galeRide && still ? (e.closeT || 0) + dt : 0;
       const reeled = (e.hits || 0) === CALLER_HITS - 1 && e.reelT > 0 && Math.abs(P.x - e.x) < CALLER_BLAST_R + 16 && Math.abs(P.y - e.y) < 30;   /* (claude/windcaller4) HIS DEFENCE: the blow before the last makes him gather the wind at once (told: step back, then finish him) */
-      if ((e.closeT >= CALLER_BLAST_WAIT[ph - 1] || reeled) && e.blastCd <= 0 && !P.dead && callerStill(CALLER_BLAST_TELL + 0.4)) { e.closeT = 0; W.n.blast++; tell('blastTell', CALLER_BLAST_TELL, 'HE GATHERS THE WIND: STEP BACK', '#bfe6f5', '!!'); e.blastLen = CALLER_BLAST_TELL; e.blastDir = Math.sign(P.x - e.x) || e.face || 1; SFX.gustRise(); break; }
+      if ((e.closeT >= CALLER_BLAST_WAIT[ph - 1] || reeled) && e.blastCd <= 0 && !P.dead && callerStill(CALLER_BLAST_TELL + 0.4)) { e.closeT = 0; W.n.blast++; tell('blastTell', CALLER_BLAST_TELL, null, null, '!!'); number(e.x, e.y - 34, 'HE GATHERS THE WIND: STEP BACK', '#bfe6f5'); e.blastLen = CALLER_BLAST_TELL; e.blastDir = Math.sign(P.x - e.x) || e.face || 1; SFX.gustRise(); break; }
       if (e.castT <= 0 && !P.dead && !P.galeRide && still) { e.castT = CALLER_CAST[ph - 1]; W.n.bolt++; const a = Math.atan2((P.y - 8) - (e.y - 14), P.x - e.x);
         seeds.push({ x: e.x + Math.cos(a) * 12, y: e.y - 14 + Math.sin(a) * 12, vx: Math.cos(a) * 150, vy: Math.sin(a) * 150, dead: false, life: 3.4, bolt: true, owner: e, dmg: CALLER_BOLT_DMG });   /* (owner: his bolts are his blows, BOSS_HIT) */
         e.castFlash = 0.25; SFX.callerBlast(); }
@@ -18544,11 +18544,11 @@ function updateWindcaller(e, dt) {
         if (onFloor && W.cd.devil <= 0 && callerStill(CALLER_DEVIL_TELL + 0.6)) can.push('devil');
         if (onFloor && W.cd.hurl <= 0 && callerStill(CALLER_HURL_TELL + 0.5)) can.push('hurl');
         const pick = ph < 3 && e.howlT <= 0 && callerStill(HOWL_TELL + HOWL_LEN + 0.1) ? 'howl' : can[Math.floor(Math.random() * can.length)];
-        if (pick === 'howl') { e.howlT = ph >= 2 ? 10 : 12; W.n.howl++; tell('howlTell', HOWL_TELL, 'HE CALLS THE WIND: BRACE', '#bfe6f5', null); SFX.gasp(); }
-        else if (pick === 'blades') { W.cd.blades = CALLER_BLADE_CD; W.n.blades++; e.bladeSeq = [0, 1, 2].map(i => (Math.random() < 0.5) ? 'high' : 'low'); tell('bladeTell', CALLER_BLADE_TELL, 'GALE BLADES: ' + e.bladeSeq.map(s => s === 'high' ? 'DUCK' : 'JUMP').join(' '), '#e8f0f8', '!'); SFX.gustRise(); }
-        else if (pick === 'draft') { W.cd.draft = CALLER_DRAFT_CD[ph - 1]; W.n.draft++; const gy = callerGroundY(); e.draftAt = { x: P.x, y: gy }; W.drafts.push({ x: P.x, y: gy, t: CALLER_DRAFT_TELL, t0: CALLER_DRAFT_TELL, hit: false }); tell('draftTell', 0.5, 'A DOWNDRAFT: STEP OUT OF THE RING', '#e8f0f8', '!!'); SFX.gustRise(); }
-        else if (pick === 'devil') { W.cd.devil = CALLER_DEVIL_CD[ph - 1]; W.n.devil++; tell('devilTell', CALLER_DEVIL_TELL, 'A DUST DEVIL: JUMP INTO IT TO RIDE', '#e8dcc0', '!!'); }
-        else if (pick === 'hurl') { W.cd.hurl = CALLER_HURL_CD[ph - 1]; W.n.hurl++; tell('hurlTell', CALLER_HURL_TELL, 'GUST HURL: JUMP IT OR BRACE', '#e8f0f8', '!'); SFX.gustRise(); }
+        if (pick === 'howl') { e.howlT = ph >= 2 ? 10 : 12; W.n.howl++; tell('howlTell', HOWL_TELL, null, null, null); number(e.x, e.y - 34, 'HE CALLS THE WIND: BRACE', '#bfe6f5'); SFX.gasp(); }
+        else if (pick === 'blades') { W.cd.blades = CALLER_BLADE_CD; W.n.blades++; e.bladeSeq = [0, 1, 2].map(i => (Math.random() < 0.5) ? 'high' : 'low'); tell('bladeTell', CALLER_BLADE_TELL, null, null, '!'); number(e.x, e.y - 34, 'GALE BLADES: DUCK THE HIGH, JUMP THE LOW', '#e8f0f8');   /* (each blade's HIGH/LOW is drawn over his head in the tell: callerAttacksDraw) */ SFX.gustRise(); }
+        else if (pick === 'draft') { W.cd.draft = CALLER_DRAFT_CD[ph - 1]; W.n.draft++; const gy = callerGroundY(); e.draftAt = { x: P.x, y: gy }; W.drafts.push({ x: P.x, y: gy, t: CALLER_DRAFT_TELL, t0: CALLER_DRAFT_TELL, hit: false }); tell('draftTell', 0.5, null, null, '!!'); number(e.x, e.y - 34, 'A DOWNDRAFT: STEP OUT OF THE RING', '#e8f0f8'); SFX.gustRise(); }
+        else if (pick === 'devil') { W.cd.devil = CALLER_DEVIL_CD[ph - 1]; W.n.devil++; tell('devilTell', CALLER_DEVIL_TELL, null, null, '!!'); number(e.x, e.y - 34, 'A DUST DEVIL: JUMP INTO IT TO RIDE', '#e8dcc0'); }
+        else if (pick === 'hurl') { W.cd.hurl = CALLER_HURL_CD[ph - 1]; W.n.hurl++; tell('hurlTell', CALLER_HURL_TELL, null, null, '!'); number(e.x, e.y - 34, 'GUST HURL: JUMP IT OR BRACE', '#e8f0f8'); SFX.gustRise(); }
       }
       break; }
     case 'howlTell': if (!e.rose) { e.rose = true; SFX.gustRise(); } if (e.modeT <= 0) { e.rose = false; e.mode = 'howl'; e.modeT = HOWL_LEN; e.braceT = 0; e.howlDir = Math.sign(P.x - e.x) || 1; SFX.buzz(); shakeCam(3); } break;   /* the howl blows AWAY from him */
