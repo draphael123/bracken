@@ -2566,6 +2566,8 @@ async function runbossLab(BK, opts) {
           else if (boss.mode === 'castTell' && boss.modeT < 0.12 && P.ground) { BK.press('jump'); P.labJump = 14; } }
         else if (slam) { const away = Math.sign(boss.swTo - (boss.sw0 ?? boss.x)) || 1; goal = boss.swTo + away * (ABBOT_K.slamR + 18); }
         else if (orb) { if (SHIELDED(h)) { goal = null; P.face = Math.sign(boss.orb.x0 - P.x) || P.face; k.block = true; } else goal = boss.orb.tx + (Math.sign(P.x - boss.orb.tx) || 1) * (ABBOT_K.lightR + 14); }
+        else if (boss.mode === 'censerTell' && Math.abs(boss.x - P.x) < ABBOT_K.censerR + 16 && Math.abs(boss.y - P.y) < 30) { P.face = Math.sign(boss.x - P.x) || P.face;   /* THE CENSER (yellow, told): a shield turns it; without one, out of the chain's reach */
+          if (SHIELDED(h)) { goal = null; k.block = true; } else goal = boss.x + (Math.sign(P.x - boss.x) || 1) * (ABBOT_K.censerR + 20); }
         else if (arrow) { goal = null; P.face = Math.sign(arrow.x - P.x) || P.face; if (SHIELDED(h)) k.block = true; else if (DEFLECTS(h)) k.block = DEFLECT_TAP(f); else if (P.ground) { BK.press('jump'); P.labJump = 10; } }   /* a shaft in the air is answered before a walk to the house */
         else if (H && onBr >= 0) hitAt(H.bridges[onBr].bells.reduce((a, b) => Math.abs(a - P.x) <= Math.abs(b - P.x) ? a : b), 12);                     /* P1: HE IS ON A BRIDGE - strike its bell under the tower */
         else if (H && boss.deck === 'chair' && boss.basketM) { const m = boss.basketM, mx = m.x + m.w / 2;   /* P2: HE IS UP IN HIS CHAIR (seen by where he is, not by his pose): RIDE THE BASKET DOWN */
