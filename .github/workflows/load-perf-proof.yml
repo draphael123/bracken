@@ -4,7 +4,7 @@ on:
     inputs:
       mode:
         type: choice
-        options: [art-use-coverage, fresh-canvas-clone-component, wall-phase-pattern-component, wall-pattern-runs-component, opaque-invisible-standing, foreground-invisible-arenas, foreground-invisible-component, foreground-row-component, opaque-art-fused-cold, opaque-art-fused-component, private-foreground-component, layout-work-queue, opaque-sprite-diagnostic, opaque-sprite-union, opaque-tile-standing, deferred-standing, palette-ui, palette-standing, palette-base, layout-candidate, foreground-reuse, foreground-direct, fixed-ornaments, region-props, border-present, tile-warm, captain-boot, cpu-profile, tile-cache, paladin-boot, hero-reuse, profile, sfx, compare, mobile, calls, present, campaign, variant, pixel-debug]
+        options: [frame-tile-pattern-component, art-use-coverage, fresh-canvas-clone-component, wall-phase-pattern-component, wall-pattern-runs-component, opaque-invisible-standing, foreground-invisible-arenas, foreground-invisible-component, foreground-row-component, opaque-art-fused-cold, opaque-art-fused-component, private-foreground-component, layout-work-queue, opaque-sprite-diagnostic, opaque-sprite-union, opaque-tile-standing, deferred-standing, palette-ui, palette-standing, palette-base, layout-candidate, foreground-reuse, foreground-direct, fixed-ornaments, region-props, border-present, tile-warm, captain-boot, cpu-profile, tile-cache, paladin-boot, hero-reuse, profile, sfx, compare, mobile, calls, present, campaign, variant, pixel-debug]
         default: profile
       baseline:
         type: string
@@ -92,6 +92,27 @@ jobs:
         with:
           name: foreground-invisible-${{ matrix.level }}
           path: ${{ runner.temp }}/bracken-foreground-invisible/
+          if-no-files-found: error
+  frame-tile-pattern-component:
+    if: inputs.mode == 'frame-tile-pattern-component'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.11.1'
+      - name: Native frame-local tile pixels contexts mutation fallback and original-loop controls
+        run: node tools/frame-tile-pattern-component.mjs
+        env:
+          FRAME_TILE_OUT: ${{ runner.temp }}/frame-tile-pattern-component
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: frame-tile-pattern-component
+          path: ${{ runner.temp }}/frame-tile-pattern-component/
           if-no-files-found: error
   art-use-coverage:
     if: inputs.mode == 'art-use-coverage'

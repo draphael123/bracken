@@ -1,0 +1,21 @@
+{
+  "time": "2026-10-28T16:42:56.116Z",
+  "gameSource": "62d9c02c102decc69ceaef4e1ec593a23170f1ff",
+  "originalMainSha256": "81866b69fec64de5fdd00da316fb0d1e8e997ae9912f73f280981f0a70cb36d8",
+  "helperSha256": "dee0f155b3fbb7292b991c32b93b32ae6344ac11ea12d27892662075d12ebcca",
+  "originalLoopAndLip": "const lip = L.edgeLit ? (typeof L.edgeLit === 'string' ? L.edgeLit : 'rgba(236,214,168,0.5)') : null, lip2 = lip && lip.replace(/[\\d.]+\\)$/, '0.18)');\n  for (let ty = ty0; ty <= ty0 + Math.ceil(VH / TS) + 1; ty++) for (let tx = tx0; tx <= tx0 + Math.ceil(VW / TS) + 1; tx++) {\n    if (tx < 0 || ty < 0 || tx >= LW || ty >= LH) continue;\n    const s = tileSpr[ty * LW + tx]; if (s) g.drawImage(s, tx * TS - cx, ty * TS - cy - (L.grid[ty * LW + tx] === T.REED ? 8 : 0) + (WRD.size ? WR.dipOf(WRD, ty * LW + tx) : 0));\n    if (lip && s) { const t0 = L.grid[ty * LW + tx]; if ((t0 === T.SOLID || t0 === T.ONEWAY || t0 === T.PLANK || t0 === T.SHELF || t0 === T.RAIL || t0 === T.CRATE) && ty > 0 && L.grid[(ty - 1) * LW + tx] === T.AIR) { g.fillStyle = lip; g.fillRect(tx * TS - cx, ty * TS - cy, TS, 1); g.fillStyle = lip2; g.fillRect(tx * TS - cx, ty * TS - cy + 1, TS, 1); } }\n  }",
+  "originalLoopSha256": "5eb703eb561c7f92c5d9463418e6490c7598de7870ffe771a41bfa2927edb91b",
+  "componentToolSha256": "2915c2f057741bcfce082468d0cb9cc0c80ef15e790b370a974570b50446df7f",
+  "sourceContract": {
+    "distinct": "Frame-local CanvasPattern/Path2D tile pass; no cross-frame output, source-content or CanvasPattern cache",
+    "bounded": "Original visible grid plus original margin; maximum4096cells otherwise original fallback",
+    "eligibility": "16x16 native canvas cells; integer camera and transform, original source-over/full alpha/no effects; no reed overhang, WRD dips or edge lips",
+    "mutation": "Patterns rebuilt from actual source every call; no reference/dimension cache that can miss in-place repaint",
+    "ownership": "No new canvas backing stores, no retained sources/patterns/path across calls; original current path and fill style preserved",
+    "fallback": "Entire original byte-preserved tile loop remains for all unsupported sources/state, no partial paint before eligibility completes"
+  },
+  "qualification": "Original tile loop has up to visible-grid native image calls and prior source/alias review blocked cached output without content revisions. This distinct no-cache approach avoids that blocker. Actual eligible coverage, native equivalence and useful timing remain unproved; parent drawWorld samples are upper bounds including other work.",
+  "noLocalBrowserOrTestExecuted": true,
+  "noFullGameLayoutCampaignOrFpsProof": true,
+  "adopted": false
+}
