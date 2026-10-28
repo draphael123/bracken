@@ -1,0 +1,15 @@
+{
+  "time": "2026-10-28T14:02:52.910Z",
+  "reason": "Prior owned browser startup yielded no DevToolsActivePort before any native component verdict; capture bounded stderr once",
+  "originalBrowserProfileSha256": "9d38b09c585f0054e40125c63b2435e61e8cd6f5cc53e6011edf62178c8c2184",
+  "originalCdpSha256": "dc82406f264c74e0f0eb282449e7e851e17bcc63a41149a109378907b8dfef09",
+  "diagnosticBrowserSha256": "2036ff81e2c4d02ecc3af25a1428f300cff054378a23c8d4ff7fbaa8e1850e01",
+  "diagnosticCdpSha256": "556f650aebb1c974b153bbaa6e0a3273aaab49462acbf48134848afc6c37d4cd",
+  "onlyBoundedStderrCaptureAndImportsChanged": true,
+  "exactUndo": true,
+  "originalLaunchArgsMemoryHeapAdmissionGcCleanupAndDeadlinesUnchanged": true,
+  "originalComponentBodyAssertionsSourceCasesAndTimingUnchanged": true,
+  "maxStderrBytes": 16384,
+  "maxFurtherDiagnosticAttempts": 1,
+  "noPixelAssertionRerun": true
+}
