@@ -4151,7 +4151,7 @@ function galeMoor() {
   ent('sign', o + 2, 20, { text: 'THE GOBLINS RAISE A WINDMILL. STRIKE ONE AS A GUST BLOWS, AND THE WIND TAKES HIM.' });
   ent('sign', o + 38, 12, { text: 'THE FRAME LEANS ON ONE ROPE. CUT IT AS THE GUST BLOWS, AND THE WIND LAYS IT DOWN.' });
   coins([o + 11, 16], [o + 11, 13], [o + 20, 15], [o + 26, 12], [o + 26, 9], [o + 47, 10], [o + 58, 11]);
-  const moorRocks = { x0: 535, x1: 703, decks: [[o + 9, o + 44, 17, 23], [o + 23, o + 54, 13, 23]] };   /* (x0..x1: the columns that wear the tor-country tile kit, the landing included, src/redraw/moor_tiles.js) */
+  const moorRocks = { x0: 535, x1: 751, decks: [[o + 9, o + 44, 17, 23], [o + 23, o + 54, 13, 23]] };   /* (x0..x1: the columns that wear the tor-country tile kit, the landing included, src/redraw/moor_tiles.js) */
 
   /* ==== THE GALE STAIR (647-695), WINDCALLER 4 (claude/windcaller4, scratch/brief-windcaller4-1026.md, Daniel 10-26: "a little longer: one stretch of
      WIND PLATFORMING before the Landing"). The summit's own updrafts, met first where a miss is cheap: a GALE UPDRAFT blows only while the told gust
@@ -4219,7 +4219,7 @@ function galeMoor() {
     pit: [o + 35, o + 37],   /* (no west-corner thorns: the west updraft stands by that wall, and a rider its west gust blows back there would land on them - the east corner and the pit are the summit's only hazards; main.js callerCorners still grows arena.cornerRise thorns if a later pass wants them) */
     ledgePosts: [[o + 11, 7], [o + 14, 7], [o + 16, 7], [o + 27, 7], [o + 30, 7], [o + 32, 7]] };   /* (home: where you stand back on the floor; safe: the floors in tiles; pit: its columns; cornerRise: thorns grown at the fight's start; crumble: the ledge that falls in phase three) */
   /* (claude/windcaller4) NOTHING FLOATS (tools/anchor-lint.mjs): the stair's rock is rock to the bottom; the summit's two ledges stand on wind-carved stone pillars (drawn, never solid: you pass in front of them) */
-  L.routeSupports = (L.routeSupports || []).concat(arena.ledgePosts.map(([x, y]) => ({ x, y, bottom: 13, kind: 'pile', caller: true })));
+  L.routeSupports = (L.routeSupports || []).concat(arena.ledgePosts.map(([x, y]) => ({ x, y, bottom: 13, kind: 'torpost', caller: true, east: x >= o + 26 })));
 
   for (const e of L.ents) if (e.t === 'vent' && e.wind && !e.crevice && !e.gale) { e.h = Math.round((e.h || 112) * 1.5); e.lift = 270; }   /* the moor's wind lifts you well clear of whatever it is meant to lift you onto (a crevice keeps its own throw; the summit's gale updrafts are measured to their ledges) */
   return {
