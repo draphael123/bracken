@@ -515,7 +515,7 @@ export function drawAbbotHouse(g, e, H, cx, cy, time, floorY, basketK) {
   if (!H) return;
   const W = g.canvas.width, fy = Math.round(floorY - cy), dy = Math.round(H.deckY - cy), p = 0.5 + 0.5 * Math.sin(time * 9), alive = !!(e && e.alive && e.mode !== 'sleep');
   const R = (c, x, y, w, h) => { g.fillStyle = c; g.fillRect(Math.round(x), Math.round(y), w, h); };
-  const GOLD = '#ffe08a', glow = (x, y, r, a0, col = GOLD) => { const gr = g.createRadialGradient(x, y, 0, x, y, r); gr.addColorStop(0, col); gr.addColorStop(1, 'rgba(255,224,138,0)'); g.globalAlpha = a0; g.fillStyle = gr; g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fill(); g.globalAlpha = 1; };
+  const GOLD = '#ffe08a', glow = (x, y, r, a0) => { g.fillStyle = GOLD; for (let k = 3; k >= 1; k--) { g.globalAlpha = a0 * 0.34 * (4 - k) / 3 * 0.9; g.beginPath(); g.arc(x, y, r * k / 3, 0, Math.PI * 2); g.fill(); } g.globalAlpha = 1; };   /* (three stacked discs: the radial gradient this used to be cost a gradient object per glow per frame) */
   const rope = (x0, y0, x1, y1, w = 2) => { const n = Math.max(1, Math.ceil(Math.hypot(x1 - x0, y1 - y0))); for (let i = 0; i <= n; i++) { const x = Math.round(x0 + (x1 - x0) * i / n), y = Math.round(y0 + (y1 - y0) * i / n); R(ROPE[(i >> 1) & 1 ? 1 : 2], x, y, w, 1); if (w > 1) R(ROPE[0], x + w, y, 1, 1); } };
   const ph = alive ? (e.phase || 1) : 1, praying = alive && e.mode === 'riteTell', warded = alive && (e.blessT || 0) > 0, onX = x => x > -140 && x < W + 140;
   /* ---- THE BELFRY'S DRESSING: banners and lamps off the underside of the decks ---- */
