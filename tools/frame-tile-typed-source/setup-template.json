@@ -1,0 +1,7 @@
+{
+  "before": "(async()=>{const{LEVELS}=await import('/src/level.js');BK.manualSimulation=true;BK.setHero('knight');BK.reset({fresh:true});let seed=1919,draws=0;Math.random=()=>{draws++;seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};window.__rngCount=()=>draws;BK.load(LEVELS.findIndex(l=>l.id===",
+  "after": "));BK.start();BK.state='play';BK.god=true;BK.P.inv=999;const a=BK.L.arena;if(a){BK.P.x=a.start?a.start[0]*16+8:(a.x0+a.x1)/2;BK.P.y=a.start?(a.start[1]+1)*16:a.floor;}BK.sim(120);BK.step(0);})()",
+  "originalComparisonSha256": "d57265d838dee17dab9f1eb10aab2c42120d36ec53c81434af8cac5e659162e0",
+  "originalSetupTemplate": "`(async()=>{const{LEVELS}=await import('/src/level.js');BK.manualSimulation=true;BK.setHero('knight');BK.reset({fresh:true});let seed=1919,draws=0;Math.random=()=>{draws++;seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};window.__rngCount=()=>draws;BK.load(LEVELS.findIndex(l=>l.id===${JSON.stringify(id)}));BK.start();BK.state='play';BK.god=true;BK.P.inv=999;const a=BK.L.arena;if(a){BK.P.x=a.start?a.start[0]*16+8:(a.x0+a.x1)/2;BK.P.y=a.start?(a.start[1]+1)*16:a.floor;}BK.sim(120);BK.step(0);})()`",
+  "scope": "Exact original setup expression and original120manual step/per12frame GC cadence; observations only, no original pixel/state/FPS verdict"
+}

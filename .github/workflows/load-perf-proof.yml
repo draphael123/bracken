@@ -4,7 +4,7 @@ on:
     inputs:
       mode:
         type: choice
-        options: [fixed-level-art-component, frame-tile-lips-arenas, frame-tile-pattern-component, art-use-coverage, fresh-canvas-clone-component, wall-phase-pattern-component, wall-pattern-runs-component, opaque-invisible-standing, foreground-invisible-arenas, foreground-invisible-component, foreground-row-component, opaque-art-fused-cold, opaque-art-fused-component, private-foreground-component, layout-work-queue, opaque-sprite-diagnostic, opaque-sprite-union, opaque-tile-standing, deferred-standing, palette-ui, palette-standing, palette-base, layout-candidate, foreground-reuse, foreground-direct, fixed-ornaments, region-props, border-present, tile-warm, captain-boot, cpu-profile, tile-cache, paladin-boot, hero-reuse, profile, sfx, compare, mobile, calls, present, campaign, variant, pixel-debug]
+        options: [frame-tile-typed-arenas, fixed-level-art-component, frame-tile-lips-arenas, frame-tile-pattern-component, art-use-coverage, fresh-canvas-clone-component, wall-phase-pattern-component, wall-pattern-runs-component, opaque-invisible-standing, foreground-invisible-arenas, foreground-invisible-component, foreground-row-component, opaque-art-fused-cold, opaque-art-fused-component, private-foreground-component, layout-work-queue, opaque-sprite-diagnostic, opaque-sprite-union, opaque-tile-standing, deferred-standing, palette-ui, palette-standing, palette-base, layout-candidate, foreground-reuse, foreground-direct, fixed-ornaments, region-props, border-present, tile-warm, captain-boot, cpu-profile, tile-cache, paladin-boot, hero-reuse, profile, sfx, compare, mobile, calls, present, campaign, variant, pixel-debug]
         default: profile
       baseline:
         type: string
@@ -92,6 +92,77 @@ jobs:
         with:
           name: foreground-invisible-${{ matrix.level }}
           path: ${{ runner.temp }}/bracken-foreground-invisible/
+          if-no-files-found: error
+  frame-tile-typed-component:
+    if: inputs.mode == 'frame-tile-typed-arenas'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.11.1'
+      - name: Require202native Array and Uint8Array pixel/context/mutation cases and material controls
+        run: node tools/frame-tile-typed-component.mjs
+        env:
+          FRAME_TILE_TYPED_OUT: ${{ runner.temp }}/frame-tile-typed-component
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: frame-tile-typed-component
+          path: ${{ runner.temp }}/frame-tile-typed-component/
+          if-no-files-found: error
+  frame-tile-typed-inputs:
+    needs: frame-tile-typed-component
+    if: inputs.mode == 'frame-tile-typed-arenas' && needs.frame-tile-typed-component.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.11.1'
+      - name: Qualify real input activation before long original timing cycle
+        run: node tools/frame-tile-typed-inputs.mjs
+        env:
+          FRAME_TILE_TYPED_OUT: ${{ runner.temp }}/frame-tile-typed-inputs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: frame-tile-typed-inputs
+          path: ${{ runner.temp }}/frame-tile-typed-inputs/
+          if-no-files-found: error
+  frame-tile-typed-arenas:
+    needs: frame-tile-typed-inputs
+    if: inputs.mode == 'frame-tile-typed-arenas' && needs.frame-tile-typed-inputs.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        level: [undercrown, lamplit, hanging, hurricane, minecart]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.11.1'
+      - run: node tools/frame-tile-typed-proof.mjs --verify-only
+      - name: Original full five-arena A/B/A and120frame/display/state/RNG samples
+        run: node tools/frame-tile-typed-proof.mjs "$LEVEL" --baseline=62d9c02c102decc69ceaef4e1ec593a23170f1ff --control
+        env:
+          LEVEL: ${{ matrix.level }}
+          FRAME_TILE_TYPED_OUT: ${{ runner.temp }}/frame-tile-typed-arenas
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: frame-tile-typed-${{ matrix.level }}
+          path: ${{ runner.temp }}/frame-tile-typed-arenas/
           if-no-files-found: error
   fixed-level-art-component:
     if: inputs.mode == 'fixed-level-art-component'

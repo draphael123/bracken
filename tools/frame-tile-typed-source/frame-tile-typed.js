@@ -1,0 +1,34 @@
+let lastReason=null;const fail=reason=>{lastReason=reason;return false;};
+// No retained tile/canvas/pattern cache. Every pattern and path belongs to this call.
+const native = f => typeof f === 'function' && /\[native code\]/.test(Function.prototype.toString.call(f));
+export function drawFrameTilePatterns(g,L,tileSpr,LW,LH,TS,cx,cy,VW,VH,WRD,T,lip=null,lip2=null) {
+  if(TS!==16||WRD.size||!Number.isInteger(cx)||!Number.isInteger(cy)||
+     !Array.isArray(tileSpr)||!(Array.isArray(L.grid)||(L.grid instanceof Uint8Array&&ArrayBuffer.isView(L.grid)))||Object.getPrototypeOf(tileSpr)!==Array.prototype||(Object.getPrototypeOf(L.grid)!==Array.prototype&&Object.getPrototypeOf(L.grid)!==Uint8Array.prototype)||
+     g.globalAlpha!==1||g.globalCompositeOperation!=='source-over'||g.filter!=='none'||g.imageSmoothingEnabled||
+     g.shadowBlur||g.shadowOffsetX||g.shadowOffsetY||g.shadowColor!=='rgba(0, 0, 0, 0)'||g.isContextLost())return fail("guard-1");
+  const proto=CanvasRenderingContext2D.prototype,cp=HTMLCanvasElement.prototype,pp=CanvasPattern.prototype,w=Object.getOwnPropertyDescriptor(cp,'width'),h=Object.getOwnPropertyDescriptor(cp,'height');
+  if(Object.getOwnPropertyDescriptor(g,'fillStyle')||![g.drawImage,g.createPattern,g.fill,g.fillRect,g.getTransform,g.isContextLost,cp.getContext,w?.get,w?.set,h?.get,h?.set,proto.getImageData,proto.isContextLost,pp.setTransform,Path2D,Path2D.prototype.rect].every(native))return fail("guard-2");
+  const tr=g.getTransform();if(tr.a!==1||tr.b||tr.c||tr.d!==1||!Number.isInteger(tr.e)||!Number.isInteger(tr.f))return fail("guard-3");
+  const tx0=Math.floor(cx/TS),ty0=Math.floor(cy/TS),x1=tx0+Math.ceil(VW/TS)+1,y1=ty0+Math.ceil(VH/TS)+1;
+  if((x1-tx0+1)*(y1-ty0+1)>4096)return fail("guard-4");
+  const groups=new Map(),lips=[];
+  // Complete eligibility scan before painting. In-place source repainting is observed anew each frame.
+  for(let ty=ty0;ty<=y1;ty++)for(let tx=tx0;tx<=x1;tx++){
+    if(tx<0||ty<0||tx>=LW||ty>=LH)continue;
+    const i=ty*LW+tx,sd=Object.getOwnPropertyDescriptor(tileSpr,String(i));
+    if(!sd){if(i in tileSpr)return fail("guard-5");continue;}if(!('value'in sd))return fail("guard-6");
+    const s=sd.value;if(!s)continue;
+    const td=Object.getOwnPropertyDescriptor(L.grid,String(i));if(!td||!('value'in td)||td.value===T.REED)return fail("guard-7");
+    if(!(s instanceof HTMLCanvasElement)||s===g.canvas||Object.getPrototypeOf(s)!==cp||Object.getOwnPropertyDescriptor(s,'width')||Object.getOwnPropertyDescriptor(s,'height')||s.width!==TS||s.height!==TS||s.getContext!==cp.getContext)return fail("guard-8");
+    let group=groups.get(s);if(!group){const context=s.getContext('2d');if(!context||context.isContextLost!==proto.isContextLost||context.isContextLost())return fail("guard-9");group={path:new Path2D(),pattern:null};groups.set(s,group);}
+    group.path.rect(tx*TS-cx,ty*TS-cy,TS,TS);
+    if(lip&&[T.SOLID,T.ONEWAY,T.PLANK,T.SHELF,T.RAIL,T.CRATE].includes(td.value)&&ty>0){const above=Object.getOwnPropertyDescriptor(L.grid,String((ty-1)*LW+tx));if(above&&!('value'in above))return fail("guard-10");if(!above&&((ty-1)*LW+tx in L.grid))return fail("guard-11");if(above?.value===T.AIR)lips.push([tx*TS-cx,ty*TS-cy]);}
+  }
+  // Pattern creation cannot draw. An unsupported source falls back before any destination pixels change.
+  try{for(const[s,group]of groups){group.pattern=g.createPattern(s,'repeat');if(!group.pattern)return fail("guard-12");group.pattern.setTransform({a:1,b:0,c:0,d:1,e:-cx,f:-cy});}}catch{return fail("guard-13");}
+  const style=g.fillStyle;try{for(const group of groups.values()){g.fillStyle=group.pattern;g.fill(group.path);}}finally{g.fillStyle=style;}
+  for(const[x,y]of lips){g.fillStyle=lip;g.fillRect(x,y,TS,1);g.fillStyle=lip2;g.fillRect(x,y+1,TS,1);}
+  lastReason=null;return true;
+}
+
+export function frameTilePatternContractInfo(){return{lastReason};}
