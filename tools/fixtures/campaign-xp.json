@@ -56,16 +56,16 @@
    "clear": 341
   },
   "storm": {
-   "run": 2161,
-   "foeXp": 1308,
+   "run": 1539,
+   "foeXp": 864,
    "bossXp": 330,
-   "clear": 785
+   "clear": 518
   },
   "crown": {
-   "run": 2390,
-   "foeXp": 1362,
-   "bossXp": 483,
-   "clear": 817
+   "run": 2263,
+   "foeXp": 1370,
+   "bossXp": 345,
+   "clear": 822
   },
   "longwater": {
    "run": 1371,
@@ -80,16 +80,16 @@
    "clear": 300
   },
   "flotilla": {
-   "run": 1278,
-   "foeXp": 618,
+   "run": 1281,
+   "foeXp": 620,
    "bossXp": 413,
-   "clear": 371
+   "clear": 372
   },
   "hurricane": {
-   "run": 1202,
-   "foeXp": 548,
+   "run": 1098,
+   "foeXp": 474,
    "bossXp": 435,
-   "clear": 329
+   "clear": 284
   },
   "lamplit": {
    "run": 1901,
@@ -254,10 +254,10 @@
    "clear": 362
   },
   "minecart": {
-   "run": 1069,
-   "foeXp": 434,
+   "run": 1227,
+   "foeXp": 546,
    "bossXp": 462,
-   "clear": 260
+   "clear": 328
   },
   "church": {
    "run": 1389,
@@ -295,6 +295,12 @@
    "bossXp": 165,
    "clear": 134
   },
+  "rookery": {
+   "run": 824,
+   "foeXp": 362,
+   "bossXp": 317,
+   "clear": 217
+  },
   "palisadewood": {
    "run": 979,
    "foeXp": 532,
@@ -306,12 +312,6 @@
    "foeXp": 202,
    "bossXp": 360,
    "clear": 121
-  },
-  "rookery": {
-   "run": 824,
-   "foeXp": 362,
-   "bossXp": 317,
-   "clear": 217
   }
  }
 }
