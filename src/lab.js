@@ -2565,7 +2565,7 @@ async function runbossLab(BK, opts) {
         else if (H && onBr >= 0) hitAt(H.bridges[onBr].bells.reduce((a, b) => Math.abs(a - P.x) <= Math.abs(b - P.x) ? a : b), 12);                     /* P1: HE IS ON A BRIDGE - strike its bell under the tower */
         else if (H && boss.deck === 'chair' && boss.basketM) { const m = boss.basketM, mx = m.x + m.w / 2;   /* P2: HE IS UP IN HIS CHAIR (seen by where he is, not by his pose): RIDE THE BASKET DOWN */
           if (P.onMover === m || (Math.abs(P.x - mx) < 12 && Math.abs(P.y - m.y) < 3)) { goal = null; k.left = k.right = false; }
-          else if (Math.abs(P.x - mx) < 7 && P.ground && P.y > m.y + 4 && !(P.labJump > 0)) { goal = null; BK.press('jump'); P.labJump = 16; }
+          else if (Math.abs(P.x - mx) < 7 && P.ground && P.y > m.y + 4 && !(P.labJump > 0)) { goal = null; BK.press('jump'); P.labJump = 24; }   /* held: a full jump, and down into it */
           else goal = mx; }
         else if (H && boss.smoke) { const sx = boss.smoke.x;   /* P3: his censer set down SMOKING (he prays at the wheel): RIDE HIS SMOKE UP, then COME DOWN ON HIM */
           if (!P.ground && P.y < fl - 60) { goal = boss.x; if (Math.abs(P.x - boss.x) < 9 && P.vy > -60 && !P.plunge && P.atk < 0) { k.down = true; BK.press('atk'); swings++; } }
