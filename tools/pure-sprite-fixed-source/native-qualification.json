@@ -1,0 +1,14 @@
+{
+  "run": 40785427262,
+  "controller": "db43306cc0a6ac267baf925778fc1eb3427d469e",
+  "native": {
+    "complete": true,
+    "graphs": 154,
+    "changedContextNativePixelMetadataAliasesAndFreshnessExact": true
+  },
+  "candidatePxSha256": "7c04f38246b0fbf8ad6667ec2045d7be4130b271722636fa15464fd118fcd582",
+  "privateSpriteHelperSha256": "dfa8d7094f86c78dae8f469b4bfc33e24d36acbc680b0603d8b2c042acfe0376",
+  "sameHelper23OriginalCatalogueAnd7NativeMixedContracts": "outputs/receipts/private-sprite-owner-union-oct28.json",
+  "sameFixedLevelCoreNativeReceipt": "outputs/receipts/captured-palette-art-oct28.json",
+  "noWholeGameProofInherited": true
+}
