@@ -46,6 +46,8 @@ try { p = await pg.evalp(`(async()=>{const {LEVELS}=await import('/src/level.js'
   ch.inv=0;let h=ch.hp;BKT.hurtAs('light',ch,20,ch.x-10,false);o.silTake=(h-ch.hp)/20;
   ch=fight();P().x=ch.x-140;horn(ch);const c0=crewN();k=0;while(ch.mode==='horn'&&k++<400)BK.sim(1);BK.sim(5);o.crew=crewN()-c0;ch.hp=1;ch.inv=0;ch.mode='walk';BKT.hurtEnemy(ch,20,ch.x-10,false);BK.sim(30);BKT.stk().update(1/60);o.crewGone=crewN();o.chiefAlive=ch.alive;o.chiefHp=ch.hp;
   ch=fight();P().x=ch.x-140;BKT.stk().give();horn(ch);BK.sim(10);BKT.stk().blow();k=0;while(ch.mode==='horn'&&k++<400)BK.sim(1);BK.sim(5);o.answered=crewN();
+  /* (claude/hookpolish) YOUR HORN PULLS HIS CREW AWAY: his horn has sounded and the crew are in; your captured horn sends every one of them to the far end from him */
+  ch=fight();P().x=ch.x-140;horn(ch);k=0;while(ch.mode==='horn'&&k++<400)BK.sim(1);BK.sim(8);{const cw=E().filter(e=>e.alive&&e.chiefCrew);o.pullN=cw.length;BKT.stk().give();const A=BK.L.arena;P().x=(A.x0+A.x1)/2;P().y=A.floor;BKT.stk().blow();BK.sim(30);o.pulledLure0=cw.map(e=>[Math.round(e.x),e.lureT]);BK.sim(150);o.pullEnd=cw.map(e=>Math.round(e.x));o.pulledLure=cw.every(e=>e.lureT>0||!e.alive);o.pulledFar=cw.every(e=>!e.alive||Math.abs(e.x-(A.x0+40))<80||Math.abs(e.x-(A.x1-40))<80);}
   ch=fight();P().x=ch.x-150;P().y=BK.L.arena.floor;ch.stance='club';ch.hornCd=99;ch.kegCd=0;ch.mode='walk';ch.modeT=0;k=0;while(ch.mode!=='kegTell'&&k++<200)BK.sim(1);o.kegTell=ch.mode==='kegTell';
   k=0;while(!S().kegs.length&&k++<120)BK.sim(1);o.thrown=S().kegs.length;k=0;while(S().kegs.length&&S().kegs[0].st==='fly'&&k++<120)BK.sim(1);const kg=S().kegs[0];o.landed=!!kg&&kg.st==='roll'&&kg.fuse>0.8;
   if(kg){ch.x=kg.x+90;ch.mode='walk';ch.hornCd=99;ch.kegCd=99;P().x=kg.x-10;P().y=kg.y;P().face=1;BK.sim(2);BK.press('atk');BK.sim(10);const k2=S().kegs[0];o.kicked=!!k2&&k2.kicked&&k2.x>kg.x;}
@@ -62,6 +64,7 @@ ok(p.horn && p.drawn, 'horn: he did not wind his war horn from a walk when it ca
 ok(p.silenced && p.hits === HORN.hits && p.silTake >= 1.5, 'horn: HORN.hits blows did not silence it and open him (' + p.silenced + ' after ' + p.hits + ', a blow then at ' + p.silTake + 'x)');
 ok(p.crew === HORN.crewMax, 'horn: left to sound it brought ' + p.crew + ' crew (want ' + HORN.crewMax + ')');
 ok(p.answered === 0, 'horn: your horn blown while he winds his - ' + p.answered + ' crew still came (want none)');
+ok(p.pullN === HORN.crewMax && p.pulledLure && p.pulledFar, 'horn: your horn did not pull his called crew to the far end (' + JSON.stringify({ n: p.pullN, lured: p.pulledLure, far: p.pulledFar }) + ')');
 ok(p.kegTell && p.thrown === 1 && p.landed, 'powder: in his club at range he did not heave a keg that lands lit (' + JSON.stringify({ tell: p.kegTell, thrown: p.thrown, landed: p.landed }) + ')');
 ok(p.kicked, 'powder: a keg struck did not roll away from the hero');
 ok(p.blasted, 'powder: a blast on him on the ground did not knock him down open');

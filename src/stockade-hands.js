@@ -34,11 +34,11 @@ export const STK_SAY = {
   took: 'HIS HORN IS YOURS: E BLOWS IT', blow: 'THE CAMP RUNS TO ITS HORN', gate: 'THE GATE OPENS TO THEIR HORN', crushed: 'CRUSHED UNDER THE LOGS',
   exam: 'THREE HORNS WIND: CROSS', tower: 'TO THE WAR TOWER', taut: 'CUT THE LASHINGS', lash: 'A LASHING GOES', falls: 'THE TOWER FALLS', wreck: 'IN THE WRECK: CUT HIM',
   woke: 'HE WAKES', noticed: 'THEY SEE YOU', comes: 'HE COMES DOWN',
-  chiefHorn: 'HIS WAR HORN: SILENCE IT', silenced: 'SILENCED: CUT HIM', sounded: 'HIS CREW COMES', answered: 'HORN ANSWERS HORN',
+  chiefHorn: 'HIS WAR HORN: SILENCE IT', silenced: 'SILENCED: CUT HIM', sounded: 'HIS CREW COMES', answered: 'HORN ANSWERS HORN', pulled: 'YOUR HORN SENDS HIS CREW HOME',
   keg: 'POWDER: STRIKE IT BACK', kicked: 'IT ROLLS', blasted: 'BLASTED: CUT HIM', powderTower: 'THE POWDER TAKES THE LASHINGS', lookout: 'THE LOOKOUT COMES DOWN',
   dropped: 'HE DROPS THE HORN', hornOut: 'THE HORN SOUNDS',
 };
-export const LURE = { r: 15 * 16, ry: 11 * 16, t: 6, cd: 2.4, near: 40, spread: 9, speed: 70 };
+export const LURE = { r: 15 * 16, ry: 11 * 16, t: 6, cd: 2.4, near: 40, spread: 9, speed: 70, crewSpeed: 125 };
 export const PILE = { creak: 0.35, half: 26, dmgHero: 14, shake: 4 };
 export const GATE = { r: 16 * 16, delay: 0.5 };
 /* (claude/chief3) HIS WAR HORN and HIS POWDER (see the header). draw: the ground wind (s), draw2 at his second wind; hits: blows that silence it;
@@ -88,6 +88,13 @@ export function makeStockadeHands(ctx) {
       e.lureT = LURE.t; e.lureX = at + (((n++ % 3) - 1) * LURE.spread); e.cook = false; e.gateGuard = e.gateGuard && !gateOpen ? 'out' : false; e.emote = 'shock'; e.emoteT = 0.6; e.seenP = true;
     }
     if (S && S.gate && !gateOpen && Math.abs(S.gate.x * TS + 8 - P.x) < GATE.r) gateT = GATE.delay;
+    /* (claude/hookpolish) YOUR HORN PULLS HIS CREW AWAY: the war horn has already called them in - your captured horn is the louder call. Every crew goblin
+       in the hall turns and runs BACK TO THE DOOR IT CAME IN BY (a hall's crates can't stop a runner going home) and stands there looking up for LURE.t (it notices you
+       if you come near, or if struck). He stands alone. */
+    { const cb = ctx.boss(), A = ctx.L.arena; let pulled = 0;
+      if (cb && cb.alive && cb.t === 'chief' && A) { let fx = 0;
+        for (const e of ctx.enemies()) { if (!e.alive || e.dying > 0 || !e.chiefCrew) continue; fx = e.x < (A.x0 + A.x1) / 2 ? A.x0 + 40 : A.x1 - 40; e.lureT = LURE.t; e.lureSp = LURE.crewSpeed; e.lureX = fx; e.emote = 'shock'; e.emoteT = 0.6; e.seenP = true; pulled++; }
+        if (pulled) say(cb.x, cb.y - cb.h - 24, 'pulled', '#8fd160'); } }
     /* (claude/chief3) HORN ANSWERS HORN: blown while the Chieftain winds his, his crew do not know which call to answer - nobody comes */
     const ch = ctx.boss(); if (ch && (ch.mode === 'horn' || ch.mode === 'towerHorn') && Math.abs(ch.x - P.x) < LURE.r && !ch.hornAnswered) { ch.hornAnswered = true; say(ch.x, ch.y - ch.h - 22, 'answered', '#8fd160'); }
     say(P.x, P.y - 30, 'blow');
@@ -108,7 +115,7 @@ export function makeStockadeHands(ctx) {
     if (e.lureT > 0) {
       e.lureT -= dt;
       if (struck || (P && !P.dead && Math.abs(dx) < LURE.near && Math.abs(dy) < 24)) { e.lureT = 0; say(e.x, e.y - 20, 'noticed', '#ff9a5c'); return false; }
-      const gx = e.lureX - e.x, sp = Math.max(LURE.speed, (e.speed || 30) * 1.5);
+      const gx = e.lureX - e.x, sp = Math.max(e.lureSp || LURE.speed, (e.speed || 30) * 1.5);
       e.vx = Math.abs(gx) > 4 ? Math.sign(gx) * sp : 0; if (e.vx) e.face = Math.sign(e.vx);
       e.vy = Math.min(300, (e.vy || 0) + 1000 * dt); const r = ctx.moveBody(e, e.vx * dt, e.vy * dt); if (r && r.ground) e.vy = 0;
       e.anim = (e.anim || 0) + dt; if (!e.vx && P) e.face = Math.sign(dx) || e.face;

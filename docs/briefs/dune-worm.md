@@ -65,8 +65,7 @@ health and nowhere else, and goes when he dies.
 **The one sentence a player can say:** *at half he calls the storm into his hollow - the sun goes in, the wind shoves you off your
 spot on a counted warning, and every ripple brings a false one.*
 
-- **THE SUN GOES IN.** No sunstroke under the storm. The room changes what it asks: in phase one the shade is life AND the trap; in
-  phase two it is only the trap.
+- **THE SUN STAYS ON** (claude/hookpolish, Daniel 10-27: was 'the sun goes in'). The storm blows sand but does not hide the sun: sunstroke keeps building in the hollow, the three standing stones and the rim's overhang are the only shade, and a gust can shove you out of it. Shade stays life AND the trap in phase two.
 - **THE GUSTS**, on the storm's own clock (`src/desert-rules.js` `STORM`: calm 3.2 s, WARN 1.4 s, GUST 1.6 s), concurrent with his
   attacks (DESIGN.md: layers, not a sequence). TOLD: the hollow browns, the sand hisses, a big arrow at the edge of the screen and
   "THE WIND" say which way and when. A gust shoves you along the sand at 100 px/s (the pyramid's storm is 150: this is a hollow, not
