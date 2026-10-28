@@ -48,8 +48,7 @@ export function buildChase3(k, T, TS = 16) {
       clear: roomClear(i), hold: 'IT HOLDS - HE IS NOT THROUGH IT YET', tellSay: 'THE FLOOR GOES', say: 'THE FLOOR GOES: AFTER HIM' }); });
   rect(CH.x0, CH.x1, CORE.top, CORE.bot - 1, T.AIR); interiors.push([CH.x0, CH.x1, CORE.top, CORE.bot - 1, 'dome']);
   const R0 = roomOf(0);
-  ent('ringdoor', CH.x0 + 2, R0.floor - 1, { id: 'chase-top' });
-  ent('check', CH.x0 + 4, R0.floor - 1);
+  ent('ringdoor', CH.x0 + 2, R0.floor - 1, { id: 'chase-top' });   /* (its checkpoint is on the far side of the ring, at the stair's top - tower-ascent.js: never inside his arena, tools/checkpoints.mjs) */
   ent('sign', CH.x0 + 6, R0.floor - 1, { text: 'STRIKE HIS SPELLS BACK AT HIM AND HE FALLS. HIT HIM WHERE HE LIES.' });
   ent('sign', ROOMS[0].pillar - 2, R0.floor - 1, { text: 'A CRACKED PILLAR HOLDS THIS FLOOR. WHEN HE IS THROUGH IT, STRIKE IT.' });
   ent('undeadmage', CH.x1 - 5, R0.floor - CH.hover - 2, { face: -1 });

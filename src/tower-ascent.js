@@ -155,6 +155,10 @@ export function buildTowerAscent({ painter, T, TS }) {
     F.tiers.forEach(([x0, len, row], j) => { put(who[j % who.length], x0, len, row); if (j % 3 === 1) deco('bookpile', x0 + 1, row - 1); });
     foe('mimic', 14, F.bot - 7);                                   /* (claude/variety) a chest by the stacks */
     ent('silver', X0 + 1, F.bot - 23);                                    /* on top of the tall stack: a jump off the third tier */
+    /* ACROSS (claude/fallingtower3, brief section 2): THE ROLLING LADDER - a library ladder on a rail high on the shelves, riding the fifth tier's height ACROSS the
+       room from the tier's west end to a reading nook over the second, and back (it holds at each end). Off the route: the nook pays */
+    { const row = F.bot - 15, ax = 44 * TS, bx = 27 * TS; ft.movers.push({ kind: 'ft2', ft2: true, role: 'ladder', ax, bx, ay: row * TS, phase: 0, x: ax, y: row * TS, w: 40, h: 6 });
+      ft.rigBands.push([27, 46, row, row]); ledge(23, 3, row); coins([23, row - 1], [24, row - 1], [25, row - 1]); deco('bookpile', 24, row - 1); }
   }
   // ---- 2. THE READING ROOM. The tiers climb halfway, to a glyph, and the room turns over. ----
   //      LOAD-BEARING: without the flip the gallery and everything over it is out of reach.
@@ -217,6 +221,7 @@ export function buildTowerAscent({ painter, T, TS }) {
     for (const [t, x, y, o] of [['zombie', 42, roof - 1], ['tome', 24, G.top + 4], ['imp', 56, roof - 10, { cnSkin: 'venomimp' }], ['broom', 38, roof - 16], ['tome', 52, roof - 19], ['broom', 40, roof - 3]]) foe(t, x, y, o);   /* (fallingtower2: the broom that was on the removed step flies where the telescope swings) */
     hung.push([37, F.top], [56, F.top]);                                  /* turrets under the divider, hung by mageReset */
     pocket(F.tiers[4]);                                                   /* a pocket off the fifth tier, against the stair's own wall */
+    coins([35, roof - 1], [36, roof - 1], [37, roof - 1], [38, roof - 1], [39, roof - 1]);                /* (claude/fallingtower3) the corner of the pit's roof by the gallery's wall pays (tools/deadends.mjs: the sprinkler's draw moved with the tower's new things) */
   }
   // ---- 4. THE PENDULUM GALLERY. The clock still keeps time, but what rides its arms are the Folly's own loose books,
   //      not weights: three tomes drift the gear pit on a faint arcane tether. EASED 2026-09-23 (Daniel's playtest,
@@ -377,7 +382,7 @@ export function buildTowerAscent({ painter, T, TS }) {
   const spiral = buildSpiral({ rect, ledge, ent, crumbles, interiors, moversExtra }, T);   /* (moversExtra: THE ORRERY LOFT's worlds, claude/archmage3) */
   ent('sign', SPIRAL_TOP.check + 2, SPIRAL_TOP.row, { text: 'HE WENT THROUGH HIS RING. STRIKE HIS SPELLS BACK AT HIM: HE FALLS.' });
   /* THE CHASE (claude/fallingtower3, Daniel 10-27): where his carpet lay at the stair's top, HIS RING - through it, the rooms under his stair */
-  ent('ringdoor', SPIRAL_TOP.carpet, SPIRAL_TOP.row, { id: 'chase-in', to: 'chase-top' });
+  ent('ringdoor', SPIRAL_TOP.carpet, SPIRAL_TOP.row, { id: 'chase-in', to: 'chase-top' });   /* (THE FIGHT'S CHECKPOINT is set as the fight starts - main.js bossStart, L.chase3.check: the stair's top beside his ring - as the carpet's board set it before; no shrine stands there) */
   const chase3 = buildChase3({ rect, ledge, ent, interiors }, T, TS); supports.push(...chase3.supports);
   /* YOU MAKE IT FALL, REMIXED (use 4 - pressure): a CRACKED PILLAR over the stairwell on THE ICE STAIR's landing. STRIKE IT and its rubble plugs the well under
      you: HIS RISING DARK HOLDS (SUP.dark s) */
@@ -461,7 +466,7 @@ export function buildTowerAscent({ painter, T, TS }) {
     flatFlyers: { below: SKY }, calm: [[SAND.x0, SAND.x1, 0, SAND.deep + 1], [SPIRAL.x0 - 1, SPIRAL.x1 + 1, SPIRAL.top, SPIRAL.floor], [CHASE3.x0 - 1, CHASE3.x1 + 1, CHASE3.top - 1, CHASE3_CORE.bot]],   /* (fallingtower3: and THE CHASE's rooms) */   /* (round 3) the sprinkler's flyers keep to flat ground under the parapet (his door's), and nothing of the tower's is sprinkled on the desert past the second door (a calm over the sky rows only: the tower itself has none) */
     ftSupports: supports, reachSpans: supports.flatMap(s => s.kind === 'bridge' || s.kind === 'ramp' ? s.spans : []),   /* (fallingtower3) THE CRACKED PILLARS, and what a blow lays for the reach model's full fill */
     reachOpens: chase3.rooms.map(R => [CHASE3.x0, CHASE3.x1, R.floor, R.floor + 1]),   /* (fallingtower3) THE CHASE's floors go under you: down, never up (src/reachcore.js) */
-    chase3: { ...chase3, check: { x: chase3.start[0] * TS + 8, y: (chase3.start[1] + 1) * TS } },
+    chase3: { ...chase3, check: { x: SPIRAL_TOP.check * TS + 8, y: (SPIRAL_TOP.row + 1) * TS } },
     towerAscent: true, carpetAt: { ...CHASE3_CORE.carpet },   /* (fallingtower3) his carpet waits in THE CORE under the chase's last room: you are poured onto it */ spiral, chases: [{ ...SPIRAL_RISE }],   /* (claude/towerscroll) THE RISING DARK up the spiral stair: src/chase.js's chaser, the climb an upward auto-scroller */   /* (2026-09-29) the carpet lies at the top of THE SPIRAL STAIR now, before the door into his hall */ fallingTower: true, stackedFloors: true, skyRow: SKY,
     /* THE ARCHMAGE'S SANCTUM (src/sanctum.js). `in` is the door on the parapet and stands exactly where the carpet used
        to lie, so the carpet's own board check opens it; `spawn` is where you come out, inside his hall and well over the

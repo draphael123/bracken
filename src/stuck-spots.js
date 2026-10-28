@@ -29,6 +29,11 @@ export const STUCK = {
     { id: 'ft-scope', zone: [36, 205, 48, 213], mover: { role: 'scope' }, off: { role: 'scope' }, glint: 'stall', line: 'THE TELESCOPE SWINGS UP TO THE NEXT LANDING' },
     { id: 'ft-breach', zone: [12, 76, 40, 83], at: [10, 81], glint: 'stall', line: 'THE STAIR IS GONE: THE BREACH IN THE WALL IS THE WAY' },
     { id: 'ft-chunk', zone: [1, 52, 9, 57], mover: { role: 'chunk' }, off: { role: 'chunk' }, line: 'THE LOOSE CHUNK OF THE CROWN IS THE WAY ACROSS' },
+    /* (claude/fallingtower3) THE CRACKED PILLARS the route needs (src/tower-supports.js): the lab's - its bridge over the poison - and THE CHASE's two floors, each lit
+       once he has sunk through it (when: armed); none once it is down. Its glint is on the pillar's middle */
+    { id: 'ft-pillar-lab', zone: [12, 145, 33, 150], at: [33, 147], done: ['ftsupport', 33, 149, 'down'], glint: 'stall', line: 'THE CRACKED PILLAR IS THE WAY OVER THE POISON' },
+    { id: 'ft-pillar-chase-0', zone: [80, 152, 105, 164], at: [93, 162], when: ['ftsupport', 93, 164, 'armed'], done: ['ftsupport', 93, 164, 'down'], line: 'THE CRACKED PILLAR: STRIKE IT, AND FOLLOW HIM DOWN' },
+    { id: 'ft-pillar-chase-2', zone: [80, 182, 105, 194], at: [86, 192], when: ['ftsupport', 86, 194, 'armed'], done: ['ftsupport', 86, 194, 'down'], line: 'THE CRACKED PILLAR: STRIKE IT, AND FOLLOW HIM DOWN' },
   ],
   welltown: [   /* (claude/djinn2) THE BINDING WORKS: down the old well, down the sluice to the conduit, and the sealed door to his hall (claude/djinn3: the bellows vent between, and 40 columns on) */
     { id: 'wt-old-well', zone: [498, 18, 522, 27], at: [520, 29], glint: 'stall', line: 'THE OLD WELL IS THE WAY ON: DOWN ITS ROPE' },
