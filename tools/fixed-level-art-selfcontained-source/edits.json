@@ -1,0 +1,1178 @@
+[
+  {
+    "start": 229391,
+    "end": 229405,
+    "before": "ART.bakeFire()",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>(ART.bakeFire()))",
+    "purpose": "Fixed-input palette-independent whole expression 225:fire"
+  },
+  {
+    "start": 229369,
+    "end": 229383,
+    "before": "ART.bakeHorn()",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>(ART.bakeHorn()))",
+    "purpose": "Fixed-input palette-independent whole expression 224:horn"
+  },
+  {
+    "start": 229268,
+    "end": 229315,
+    "before": "[ART.bakeBrazier(false), ART.bakeBrazier(true)]",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>([ART.bakeBrazier(false), ART.bakeBrazier(true)]))",
+    "purpose": "Fixed-input palette-independent whole expression 221:brazier"
+  },
+  {
+    "start": 229217,
+    "end": 229231,
+    "before": "ART.bakeCage()",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>(ART.bakeCage()))",
+    "purpose": "Fixed-input palette-independent whole expression 219:cage"
+  },
+  {
+    "start": 229023,
+    "end": 229041,
+    "before": "ART.bakeFolkIcon()",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>(ART.bakeFolkIcon()))",
+    "purpose": "Fixed-input palette-independent whole expression 215:folkIcon"
+  },
+  {
+    "start": 228996,
+    "end": 229011,
+    "before": "ART.bakeAnvil()",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>(ART.bakeAnvil()))",
+    "purpose": "Fixed-input palette-independent whole expression 214:anvil"
+  },
+  {
+    "start": 228972,
+    "end": 228987,
+    "before": "ART.bakeForge()",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>(ART.bakeForge()))",
+    "purpose": "Fixed-input palette-independent whole expression 213:forge"
+  },
+  {
+    "start": 228944,
+    "end": 228963,
+    "before": "ART.bakeGatehouse()",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>(ART.bakeGatehouse()))",
+    "purpose": "Fixed-input palette-independent whole expression 212:gatehouse"
+  },
+  {
+    "start": 228910,
+    "end": 228931,
+    "before": "ART.bakeBridgeTower()",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>(ART.bakeBridgeTower()))",
+    "purpose": "Fixed-input palette-independent whole expression 211:bridgeTower"
+  },
+  {
+    "start": 228875,
+    "end": 228895,
+    "before": "ART.bakeBridgePost()",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>(ART.bakeBridgePost()))",
+    "purpose": "Fixed-input palette-independent whole expression 210:bridgePost"
+  },
+  {
+    "start": 228842,
+    "end": 228861,
+    "before": "ART.bakeGroundWeb()",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>(ART.bakeGroundWeb()))",
+    "purpose": "Fixed-input palette-independent whole expression 209:groundWeb"
+  },
+  {
+    "start": 228814,
+    "end": 228829,
+    "before": "ART.bakeStilt()",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>(ART.bakeStilt()))",
+    "purpose": "Fixed-input palette-independent whole expression 208:stilt"
+  },
+  {
+    "start": 228771,
+    "end": 228805,
+    "before": "[0, 1].map(v => ART.bakeFrozen(v))",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>([0, 1].map(v => ART.bakeFrozen(v))))",
+    "purpose": "Fixed-input palette-independent whole expression 207:frozen"
+  },
+  {
+    "start": 228728,
+    "end": 228761,
+    "before": "[0, 1].map(v => ART.bakeFrost(v))",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>([0, 1].map(v => ART.bakeFrost(v))))",
+    "purpose": "Fixed-input palette-independent whole expression 206:frost"
+  },
+  {
+    "start": 228682,
+    "end": 228719,
+    "before": "[0, 1, 2].map(v => ART.bakeIcicle(v))",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>([0, 1, 2].map(v => ART.bakeIcicle(v))))",
+    "purpose": "Fixed-input palette-independent whole expression 205:icicle"
+  },
+  {
+    "start": 224948,
+    "end": 224964,
+    "before": "ART.bakeOrbWeb()",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>(ART.bakeOrbWeb()))",
+    "purpose": "Fixed-input palette-independent whole expression 204:orbWeb"
+  },
+  {
+    "start": 224901,
+    "end": 224938,
+    "before": "[0, 1, 2].map(v => ART.bakeCobweb(v))",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>([0, 1, 2].map(v => ART.bakeCobweb(v))))",
+    "purpose": "Fixed-input palette-independent whole expression 203:cobweb"
+  },
+  {
+    "start": 224869,
+    "end": 224891,
+    "before": "ART.bakeSunshardIcon()",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>(ART.bakeSunshardIcon()))",
+    "purpose": "Fixed-input palette-independent whole expression 202:sunshardIcon"
+  },
+  {
+    "start": 224836,
+    "end": 224853,
+    "before": "ART.bakeInnSign()",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>(ART.bakeInnSign()))",
+    "purpose": "Fixed-input palette-independent whole expression 201:innSign"
+  },
+  {
+    "start": 224753,
+    "end": 224776,
+    "before": "ART.bakeMote('#4aa0b0')",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>(ART.bakeMote('#4aa0b0')))",
+    "purpose": "Fixed-input palette-independent whole expression 200:moteT"
+  },
+  {
+    "start": 224721,
+    "end": 224744,
+    "before": "ART.bakeMote('#9a5aa8')",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>(ART.bakeMote('#9a5aa8')))",
+    "purpose": "Fixed-input palette-independent whole expression 199:moteV"
+  },
+  {
+    "start": 224695,
+    "end": 224712,
+    "before": "ART.bakeGillPod()",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>(ART.bakeGillPod()))",
+    "purpose": "Fixed-input palette-independent whole expression 198:gillpod"
+  },
+  {
+    "start": 224631,
+    "end": 224684,
+    "before": "[ART.bakeGlowShroom(true), ART.bakeGlowShroom(false)]",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>([ART.bakeGlowShroom(true), ART.bakeGlowShroom(false)]))",
+    "purpose": "Fixed-input palette-independent whole expression 197:glow"
+  },
+  {
+    "start": 224581,
+    "end": 224623,
+    "before": "[0, 1].map(i => ART.bakeDeadTree(880 + i))",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>([0, 1].map(i => ART.bakeDeadTree(880 + i))))",
+    "purpose": "Fixed-input palette-independent whole expression 196:deadTree"
+  },
+  {
+    "start": 224420,
+    "end": 224438,
+    "before": "ART.bakeLampIcon()",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>(ART.bakeLampIcon()))",
+    "purpose": "Fixed-input palette-independent whole expression 193:lampIcon"
+  },
+  {
+    "start": 224175,
+    "end": 224220,
+    "before": "[ART.bakeBoiler(false), ART.bakeBoiler(true)]",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>([ART.bakeBoiler(false), ART.bakeBoiler(true)]))",
+    "purpose": "Fixed-input palette-independent whole expression 192:boiler"
+  },
+  {
+    "start": 224149,
+    "end": 224165,
+    "before": "ART.bakeHammer()",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>(ART.bakeHammer()))",
+    "purpose": "Fixed-input palette-independent whole expression 191:hammer"
+  },
+  {
+    "start": 224123,
+    "end": 224139,
+    "before": "ART.bakeOrePan()",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>(ART.bakeOrePan()))",
+    "purpose": "Fixed-input palette-independent whole expression 190:orePan"
+  },
+  {
+    "start": 224036,
+    "end": 224113,
+    "before": "[ART.bakeTimberFrame(160), ART.bakeTimberFrame(144), ART.bakeTimberFrame(48)]",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>([ART.bakeTimberFrame(160), ART.bakeTimberFrame(144), ART.bakeTimberFrame(48)]))",
+    "purpose": "Fixed-input palette-independent whole expression 189:timber"
+  },
+  {
+    "start": 223915,
+    "end": 223966,
+    "before": "[ART.bakeMinerLamp(false), ART.bakeMinerLamp(true)]",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>([ART.bakeMinerLamp(false), ART.bakeMinerLamp(true)]))",
+    "purpose": "Fixed-input palette-independent whole expression 188:minerLamp"
+  },
+  {
+    "start": 223885,
+    "end": 223902,
+    "before": "ART.bakeGasSeam()",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>(ART.bakeGasSeam()))",
+    "purpose": "Fixed-input palette-independent whole expression 187:gasSeam"
+  },
+  {
+    "start": 223858,
+    "end": 223874,
+    "before": "ART.bakeCanary()",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>(ART.bakeCanary()))",
+    "purpose": "Fixed-input palette-independent whole expression 186:canary"
+  },
+  {
+    "start": 223830,
+    "end": 223848,
+    "before": "ART.bakeMineCart()",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>(ART.bakeMineCart()))",
+    "purpose": "Fixed-input palette-independent whole expression 185:mineCart"
+  },
+  {
+    "start": 223782,
+    "end": 223818,
+    "before": "[ART.bakeStrut(0), ART.bakeStrut(1)]",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>([ART.bakeStrut(0), ART.bakeStrut(1)]))",
+    "purpose": "Fixed-input palette-independent whole expression 184:strut"
+  },
+  {
+    "start": 223726,
+    "end": 223773,
+    "before": "[0, 1, 2].map(i => ART.bakeRockPillar(910 + i))",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>([0, 1, 2].map(i => ART.bakeRockPillar(910 + i))))",
+    "purpose": "Fixed-input palette-independent whole expression 183:pillar"
+  },
+  {
+    "start": 223702,
+    "end": 223716,
+    "before": "ART.bakeAxle()",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>(ART.bakeAxle()))",
+    "purpose": "Fixed-input palette-independent whole expression 182:axle"
+  },
+  {
+    "start": 223654,
+    "end": 223694,
+    "before": "[ART.bakeBracket(0), ART.bakeBracket(1)]",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>([ART.bakeBracket(0), ART.bakeBracket(1)]))",
+    "purpose": "Fixed-input palette-independent whole expression 181:bracket"
+  },
+  {
+    "start": 223601,
+    "end": 223643,
+    "before": "[0, 1, 2].map(i => ART.bakeTrunk(900 + i))",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>([0, 1, 2].map(i => ART.bakeTrunk(900 + i))))",
+    "purpose": "Fixed-input palette-independent whole expression 180:trunk"
+  },
+  {
+    "start": 223573,
+    "end": 223592,
+    "before": "ART.bakeSilverBig()",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>(ART.bakeSilverBig()))",
+    "purpose": "Fixed-input palette-independent whole expression 179:silverBig"
+  },
+  {
+    "start": 223544,
+    "end": 223560,
+    "before": "ART.bakeSilver()",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>(ART.bakeSilver()))",
+    "purpose": "Fixed-input palette-independent whole expression 178:silver"
+  },
+  {
+    "start": 223519,
+    "end": 223534,
+    "before": "ART.bakeGrate()",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>(ART.bakeGrate()))",
+    "purpose": "Fixed-input palette-independent whole expression 177:grate"
+  },
+  {
+    "start": 223464,
+    "end": 223478,
+    "before": "ART.bakeNest()",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>(ART.bakeNest()))",
+    "purpose": "Fixed-input palette-independent whole expression 175:nest"
+  },
+  {
+    "start": 223360,
+    "end": 223405,
+    "before": "[ART.bakeSluice(false), ART.bakeSluice(true)]",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>([ART.bakeSluice(false), ART.bakeSluice(true)]))",
+    "purpose": "Fixed-input palette-independent whole expression 173:sluice"
+  },
+  {
+    "start": 223328,
+    "end": 223350,
+    "before": "ART.bakeFallenPine(14)",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>(ART.bakeFallenPine(14)))",
+    "purpose": "Fixed-input palette-independent whole expression 172:fallenPine"
+  },
+  {
+    "start": 223300,
+    "end": 223314,
+    "before": "ART.bakePine()",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>(ART.bakePine()))",
+    "purpose": "Fixed-input palette-independent whole expression 171:pine"
+  },
+  {
+    "start": 223249,
+    "end": 223268,
+    "before": "ART.bakeQuestIcon()",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>(ART.bakeQuestIcon()))",
+    "purpose": "Fixed-input palette-independent whole expression 169:questIcon"
+  },
+  {
+    "start": 223217,
+    "end": 223236,
+    "before": "ART.bakeBrightCap()",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>(ART.bakeBrightCap()))",
+    "purpose": "Fixed-input palette-independent whole expression 168:brightCap"
+  },
+  {
+    "start": 223160,
+    "end": 223178,
+    "before": "ART.bakeHoneyPot()",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>(ART.bakeHoneyPot()))",
+    "purpose": "Fixed-input palette-independent whole expression 166:honeyPot"
+  },
+  {
+    "start": 223130,
+    "end": 223148,
+    "before": "ART.bakeLensIcon()",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>(ART.bakeLensIcon()))",
+    "purpose": "Fixed-input palette-independent whole expression 165:lensIcon"
+  },
+  {
+    "start": 223101,
+    "end": 223118,
+    "before": "ART.bakeCupIcon()",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>(ART.bakeCupIcon()))",
+    "purpose": "Fixed-input palette-independent whole expression 164:cupIcon"
+  },
+  {
+    "start": 223073,
+    "end": 223090,
+    "before": "ART.bakeDoorway()",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>(ART.bakeDoorway()))",
+    "purpose": "Fixed-input palette-independent whole expression 163:doorway"
+  },
+  {
+    "start": 223043,
+    "end": 223062,
+    "before": "ART.bakeLockPlate()",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>(ART.bakeLockPlate()))",
+    "purpose": "Fixed-input palette-independent whole expression 162:lockPlate"
+  },
+  {
+    "start": 222933,
+    "end": 223030,
+    "before": "{ brass: ART.bakeKeyIcon('brass'), iron: ART.bakeKeyIcon('iron'), bone: ART.bakeKeyIcon('bone') }",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>({ brass: ART.bakeKeyIcon('brass'), iron: ART.bakeKeyIcon('iron'), bone: ART.bakeKeyIcon('bone') }))",
+    "purpose": "Fixed-input palette-independent whole expression 161:keyIcon"
+  },
+  {
+    "start": 222904,
+    "end": 222922,
+    "before": "ART.bakePuffball()",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>(ART.bakePuffball()))",
+    "purpose": "Fixed-input palette-independent whole expression 160:puffball"
+  },
+  {
+    "start": 222872,
+    "end": 222888,
+    "before": "ART.bakeCarpet()",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>(ART.bakeCarpet()))",
+    "purpose": "Fixed-input palette-independent whole expression 159:carpet"
+  },
+  {
+    "start": 222821,
+    "end": 222862,
+    "before": "[ART.bakeDoor(false), ART.bakeDoor(true)]",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>([ART.bakeDoor(false), ART.bakeDoor(true)]))",
+    "purpose": "Fixed-input palette-independent whole expression 158:door"
+  },
+  {
+    "start": 222794,
+    "end": 222813,
+    "before": "ART.bakePalanquin()",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>(ART.bakePalanquin()))",
+    "purpose": "Fixed-input palette-independent whole expression 157:palanquin"
+  },
+  {
+    "start": 222738,
+    "end": 222781,
+    "before": "[ART.bakePlate(false), ART.bakePlate(true)]",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>([ART.bakePlate(false), ART.bakePlate(true)]))",
+    "purpose": "Fixed-input palette-independent whole expression 156:plate"
+  },
+  {
+    "start": 222686,
+    "end": 222729,
+    "before": "[ART.bakeLever(false), ART.bakeLever(true)]",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>([ART.bakeLever(false), ART.bakeLever(true)]))",
+    "purpose": "Fixed-input palette-independent whole expression 155:lever"
+  },
+  {
+    "start": 222661,
+    "end": 222677,
+    "before": "ART.bakeRamLog()",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>(ART.bakeRamLog()))",
+    "purpose": "Fixed-input palette-independent whole expression 154:ramLog"
+  },
+  {
+    "start": 222637,
+    "end": 222651,
+    "before": "ART.bakeBell()",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>(ART.bakeBell()))",
+    "purpose": "Fixed-input palette-independent whole expression 153:bell"
+  },
+  {
+    "start": 222486,
+    "end": 222504,
+    "before": "ART.bakeFoldGate()",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>(ART.bakeFoldGate()))",
+    "purpose": "Fixed-input palette-independent whole expression 152:foldGate"
+  },
+  {
+    "start": 222460,
+    "end": 222474,
+    "before": "ART.bakeSail()",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>(ART.bakeSail()))",
+    "purpose": "Fixed-input palette-independent whole expression 151:sail"
+  },
+  {
+    "start": 222438,
+    "end": 222452,
+    "before": "ART.bakeMill()",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>(ART.bakeMill()))",
+    "purpose": "Fixed-input palette-independent whole expression 150:mill"
+  },
+  {
+    "start": 222415,
+    "end": 222430,
+    "before": "ART.bakeBothy()",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>(ART.bakeBothy()))",
+    "purpose": "Fixed-input palette-independent whole expression 149:bothy"
+  },
+  {
+    "start": 222389,
+    "end": 222406,
+    "before": "ART.bakeBoulder()",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>(ART.bakeBoulder()))",
+    "purpose": "Fixed-input palette-independent whole expression 148:boulder"
+  },
+  {
+    "start": 222363,
+    "end": 222378,
+    "before": "ART.bakeCairn()",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>(ART.bakeCairn()))",
+    "purpose": "Fixed-input palette-independent whole expression 147:cairn"
+  },
+  {
+    "start": 222298,
+    "end": 222354,
+    "before": "[0, 1, 2].map(i => ART.bakeStandingStone(760 + i, true))",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>([0, 1, 2].map(i => ART.bakeStandingStone(760 + i, true))))",
+    "purpose": "Fixed-input palette-independent whole expression 146:standingStoneOchre"
+  },
+  {
+    "start": 222226,
+    "end": 222276,
+    "before": "[0, 1, 2].map(i => ART.bakeStandingStone(760 + i))",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>([0, 1, 2].map(i => ART.bakeStandingStone(760 + i))))",
+    "purpose": "Fixed-input palette-independent whole expression 145:standingStone"
+  },
+  {
+    "start": 222168,
+    "end": 222209,
+    "before": "[0, 1].map(i => ART.bakeThistle(750 + i))",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>([0, 1].map(i => ART.bakeThistle(750 + i))))",
+    "purpose": "Fixed-input palette-independent whole expression 144:thistle"
+  },
+  {
+    "start": 222118,
+    "end": 222157,
+    "before": "[0, 1].map(i => ART.bakeGorse(740 + i))",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>([0, 1].map(i => ART.bakeGorse(740 + i))))",
+    "purpose": "Fixed-input palette-independent whole expression 143:gorse"
+  },
+  {
+    "start": 222065,
+    "end": 222109,
+    "before": "[0, 1, 2].map(i => ART.bakeHeather(730 + i))",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>([0, 1, 2].map(i => ART.bakeHeather(730 + i))))",
+    "purpose": "Fixed-input palette-independent whole expression 142:heather"
+  },
+  {
+    "start": 221864,
+    "end": 221903,
+    "before": "[0, 1].map(i => ART.bakeBones(810 + i))",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>([0, 1].map(i => ART.bakeBones(810 + i))))",
+    "purpose": "Fixed-input palette-independent whole expression 137:bones"
+  },
+  {
+    "start": 221745,
+    "end": 221787,
+    "before": "[0, 1].map(i => ART.bakeFishTrap(800 + i))",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>([0, 1].map(i => ART.bakeFishTrap(800 + i))))",
+    "purpose": "Fixed-input palette-independent whole expression 134:fishTrap"
+  },
+  {
+    "start": 221518,
+    "end": 221534,
+    "before": "ART.bakeCharms()",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>(ART.bakeCharms()))",
+    "purpose": "Fixed-input palette-independent whole expression 127:charm"
+  },
+  {
+    "start": 221494,
+    "end": 221509,
+    "before": "ART.bakeBough()",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>(ART.bakeBough()))",
+    "purpose": "Fixed-input palette-independent whole expression 126:bough"
+  },
+  {
+    "start": 221468,
+    "end": 221485,
+    "before": "ART.bakeCompass()",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>(ART.bakeCompass()))",
+    "purpose": "Fixed-input palette-independent whole expression 125:compass"
+  },
+  {
+    "start": 221438,
+    "end": 221457,
+    "before": "ART.bakeSkullMini()",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>(ART.bakeSkullMini()))",
+    "purpose": "Fixed-input palette-independent whole expression 124:skullMini"
+  },
+  {
+    "start": 221339,
+    "end": 221376,
+    "before": "[0, 1].map(i => ART.bakeYew(330 + i))",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>([0, 1].map(i => ART.bakeYew(330 + i))))",
+    "purpose": "Fixed-input palette-independent whole expression 123:yew"
+  },
+  {
+    "start": 221266,
+    "end": 221302,
+    "before": "[0, 1, 2].map(i => ART.bakeGrave(i))",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>([0, 1, 2].map(i => ART.bakeGrave(i))))",
+    "purpose": "Fixed-input palette-independent whole expression 121:grave"
+  },
+  {
+    "start": 221235,
+    "end": 221253,
+    "before": "ART.bakeDovecote()",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>(ART.bakeDovecote()))",
+    "purpose": "Fixed-input palette-independent whole expression 120:dovecote"
+  },
+  {
+    "start": 221178,
+    "end": 221197,
+    "before": "ART.bakeTrough(321)",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>(ART.bakeTrough(321)))",
+    "purpose": "Fixed-input palette-independent whole expression 118:trough"
+  },
+  {
+    "start": 221151,
+    "end": 221168,
+    "before": "ART.bakeSkep(320)",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>(ART.bakeSkep(320)))",
+    "purpose": "Fixed-input palette-independent whole expression 117:skep"
+  },
+  {
+    "start": 221096,
+    "end": 221139,
+    "before": "[0, 1].map(i => ART.bakeBeanpoles(310 + i))",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>([0, 1].map(i => ART.bakeBeanpoles(310 + i))))",
+    "purpose": "Fixed-input palette-independent whole expression 116:beanpoles"
+  },
+  {
+    "start": 221036,
+    "end": 221083,
+    "before": "[0, 1, 2].map(i => ART.bakeGardenWall(300 + i))",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>([0, 1, 2].map(i => ART.bakeGardenWall(300 + i))))",
+    "purpose": "Fixed-input palette-independent whole expression 115:gardenWall"
+  },
+  {
+    "start": 220997,
+    "end": 221018,
+    "before": "ART.bakeGiantCap(495)",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>(ART.bakeGiantCap(495)))",
+    "purpose": "Fixed-input palette-independent whole expression 114:giantCap"
+  },
+  {
+    "start": 220946,
+    "end": 220985,
+    "before": "[0, 1].map(i => ART.bakeTotem(490 + i))",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>([0, 1].map(i => ART.bakeTotem(490 + i))))",
+    "purpose": "Fixed-input palette-independent whole expression 113:totem"
+  },
+  {
+    "start": 220922,
+    "end": 220937,
+    "before": "ART.bakeHeron()",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>(ART.bakeHeron()))",
+    "purpose": "Fixed-input palette-independent whole expression 112:heron"
+  },
+  {
+    "start": 220896,
+    "end": 220913,
+    "before": "ART.bakeBoat(480)",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>(ART.bakeBoat(480)))",
+    "purpose": "Fixed-input palette-independent whole expression 111:boat"
+  },
+  {
+    "start": 219923,
+    "end": 219941,
+    "before": "ART.bakeSporePod()",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>(ART.bakeSporePod()))",
+    "purpose": "Fixed-input palette-independent whole expression 94:sporePod"
+  },
+  {
+    "start": 219865,
+    "end": 219911,
+    "before": "[0, 1, 2].map(i => ART.bakeRootDecor(540 + i))",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>([0, 1, 2].map(i => ART.bakeRootDecor(540 + i))))",
+    "purpose": "Fixed-input palette-independent whole expression 93:rootDecor"
+  },
+  {
+    "start": 219262,
+    "end": 219283,
+    "before": "ART.bakeLilyLantern()",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>(ART.bakeLilyLantern()))",
+    "purpose": "Fixed-input palette-independent whole expression 92:lilyLantern"
+  },
+  {
+    "start": 219203,
+    "end": 219247,
+    "before": "[0, 1].map(i => ART.bakeFrogStatue(510 + i))",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>([0, 1].map(i => ART.bakeFrogStatue(510 + i))))",
+    "purpose": "Fixed-input palette-independent whole expression 91:frogStatue"
+  },
+  {
+    "start": 219170,
+    "end": 219189,
+    "before": "ART.bakeHoneyDrip()",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>(ART.bakeHoneyDrip()))",
+    "purpose": "Fixed-input palette-independent whole expression 90:honeyDrip"
+  },
+  {
+    "start": 218991,
+    "end": 219005,
+    "before": "ART.bakeCrow()",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>(ART.bakeCrow()))",
+    "purpose": "Fixed-input palette-independent whole expression 89:crow"
+  },
+  {
+    "start": 218964,
+    "end": 218983,
+    "before": "ART.bakeDragonfly()",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>(ART.bakeDragonfly()))",
+    "purpose": "Fixed-input palette-independent whole expression 88:dragonfly"
+  },
+  {
+    "start": 218861,
+    "end": 218951,
+    "before": "[ART.bakeButterfly('#ffd36b'), ART.bakeButterfly('#ff9ab0'), ART.bakeButterfly('#bfe6f5')]",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>([ART.bakeButterfly('#ffd36b'), ART.bakeButterfly('#ff9ab0'), ART.bakeButterfly('#bfe6f5')]))",
+    "purpose": "Fixed-input palette-independent whole expression 87:butterfly"
+  },
+  {
+    "start": 218807,
+    "end": 218848,
+    "before": "[0, 1, 2].map(i => ART.bakeMoss(460 + i))",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>([0, 1, 2].map(i => ART.bakeMoss(460 + i))))",
+    "purpose": "Fixed-input palette-independent whole expression 86:moss"
+  },
+  {
+    "start": 218667,
+    "end": 218799,
+    "before": "[ART.bakeTinyCap('#4aa0b0', 450), ART.bakeTinyCap('#ff7a9a', 451), ART.bakeTinyCap('#9a5aa8', 452), ART.bakeTinyCap('#4aa0b0', 453)]",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>([ART.bakeTinyCap('#4aa0b0', 450), ART.bakeTinyCap('#ff7a9a', 451), ART.bakeTinyCap('#9a5aa8', 452), ART.bakeTinyCap('#4aa0b0', 453)]))",
+    "purpose": "Fixed-input palette-independent whole expression 85:tinyCap"
+  },
+  {
+    "start": 218638,
+    "end": 218656,
+    "before": "ART.bakeCampfire()",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>(ART.bakeCampfire()))",
+    "purpose": "Fixed-input palette-independent whole expression 84:campfire"
+  },
+  {
+    "start": 218588,
+    "end": 218626,
+    "before": "[0, 1].map(i => ART.bakeTent(440 + i))",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>([0, 1].map(i => ART.bakeTent(440 + i))))",
+    "purpose": "Fixed-input palette-independent whole expression 83:tent"
+  },
+  {
+    "start": 218561,
+    "end": 218580,
+    "before": "ART.bakeSkullPost()",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>(ART.bakeSkullPost()))",
+    "purpose": "Fixed-input palette-independent whole expression 82:skullPost"
+  },
+  {
+    "start": 218528,
+    "end": 218548,
+    "before": "ART.bakeLilyFlower()",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>(ART.bakeLilyFlower()))",
+    "purpose": "Fixed-input palette-independent whole expression 81:lilyFlower"
+  },
+  {
+    "start": 218470,
+    "end": 218514,
+    "before": "[0, 1, 2].map(i => ART.bakeCattail(430 + i))",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>([0, 1, 2].map(i => ART.bakeCattail(430 + i))))",
+    "purpose": "Fixed-input palette-independent whole expression 80:cattail"
+  },
+  {
+    "start": 218371,
+    "end": 218410,
+    "before": "[0, 1].map(i => ART.bakeStump(410 + i))",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>([0, 1].map(i => ART.bakeStump(410 + i))))",
+    "purpose": "Fixed-input palette-independent whole expression 78:stump"
+  },
+  {
+    "start": 218239,
+    "end": 218264,
+    "before": "ART.bakeImpact('#ff6b6b')",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>(ART.bakeImpact('#ff6b6b')))",
+    "purpose": "Fixed-input palette-independent whole expression 76:impactRed"
+  },
+  {
+    "start": 218201,
+    "end": 218226,
+    "before": "ART.bakeImpact('#c9d1dc')",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>(ART.bakeImpact('#c9d1dc')))",
+    "purpose": "Fixed-input palette-independent whole expression 75:impactSteel"
+  },
+  {
+    "start": 218170,
+    "end": 218186,
+    "before": "ART.bakeImpact()",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>(ART.bakeImpact()))",
+    "purpose": "Fixed-input palette-independent whole expression 74:impact"
+  },
+  {
+    "start": 218141,
+    "end": 218160,
+    "before": "ART.bakeMotherCap()",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>(ART.bakeMotherCap()))",
+    "purpose": "Fixed-input palette-independent whole expression 73:motherCap"
+  },
+  {
+    "start": 218110,
+    "end": 218124,
+    "before": "ART.bakeDrop()",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>(ART.bakeDrop()))",
+    "purpose": "Fixed-input palette-independent whole expression 72:drop"
+  },
+  {
+    "start": 218059,
+    "end": 218078,
+    "before": "ART.bakeThronePad()",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>(ART.bakeThronePad()))",
+    "purpose": "Fixed-input palette-independent whole expression 70:throne"
+  },
+  {
+    "start": 218008,
+    "end": 218027,
+    "before": "ART.bakeSpringPad()",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>(ART.bakeSpringPad()))",
+    "purpose": "Fixed-input palette-independent whole expression 68:padSpring"
+  },
+  {
+    "start": 217972,
+    "end": 217995,
+    "before": "ART.bakeLilyFlowerBig()",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>(ART.bakeLilyFlowerBig()))",
+    "purpose": "Fixed-input palette-independent whole expression 67:lilyFlowerBig"
+  },
+  {
+    "start": 217936,
+    "end": 217955,
+    "before": "ART.bakeLilyPad(32)",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>(ART.bakeLilyPad(32)))",
+    "purpose": "Fixed-input palette-independent whole expression 66:padBig"
+  },
+  {
+    "start": 217909,
+    "end": 217926,
+    "before": "ART.bakeLilyPad()",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>(ART.bakeLilyPad()))",
+    "purpose": "Fixed-input palette-independent whole expression 65:pad"
+  },
+  {
+    "start": 217882,
+    "end": 217902,
+    "before": "ART.bakeShadow(6, 2)",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>(ART.bakeShadow(6, 2)))",
+    "purpose": "Fixed-input palette-independent whole expression 64:shadow"
+  },
+  {
+    "start": 217610,
+    "end": 217610,
+    "before": "",
+    "after": ")",
+    "purpose": "End catalogue boundary"
+  },
+  {
+    "start": 217309,
+    "end": 217323,
+    "before": "ART.bakeCoin()",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>(ART.bakeCoin()))",
+    "purpose": "Fixed-input palette-independent whole expression 56:coin"
+  },
+  {
+    "start": 217297,
+    "end": 217297,
+    "before": "",
+    "after": "makeDeferredLevelArtCatalogue(",
+    "purpose": "Private native catalogue boundary PROP"
+  },
+  {
+    "start": 216831,
+    "end": 216878,
+    "before": "[0, 1, 2, 3].map(i => ART.bakeVineWall(95 + i))",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>([0, 1, 2, 3].map(i => ART.bakeVineWall(95 + i))))",
+    "purpose": "Fixed-input palette-independent whole expression 55:vine"
+  },
+  {
+    "start": 216810,
+    "end": 216823,
+    "before": "ART.bakeNet()",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>(ART.bakeNet()))",
+    "purpose": "Fixed-input palette-independent whole expression 54:net"
+  },
+  {
+    "start": 216624,
+    "end": 216668,
+    "before": "[0, 1, 2].map(i => ART.bakeMycDirt(340 + i))",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>([0, 1, 2].map(i => ART.bakeMycDirt(340 + i))))",
+    "purpose": "Fixed-input palette-independent whole expression 50:mycDirt"
+  },
+  {
+    "start": 216556,
+    "end": 216601,
+    "before": "[0, 1, 2].map(i => ART.bakeHallWall(610 + i))",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>([0, 1, 2].map(i => ART.bakeHallWall(610 + i))))",
+    "purpose": "Fixed-input palette-independent whole expression 49:hall"
+  },
+  {
+    "start": 216484,
+    "end": 216548,
+    "before": "{ 1: ART.bakeScreeTop(720, 1), '-1': ART.bakeScreeTop(721, -1) }",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>({ 1: ART.bakeScreeTop(720, 1), '-1': ART.bakeScreeTop(721, -1) }))",
+    "purpose": "Fixed-input palette-independent whole expression 48:scree"
+  },
+  {
+    "start": 216430,
+    "end": 216475,
+    "before": "[0, 1].map(i => ART.bakeDrystoneTop(710 + i))",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>([0, 1].map(i => ART.bakeDrystoneTop(710 + i))))",
+    "purpose": "Fixed-input palette-independent whole expression 47:drystoneTop"
+  },
+  {
+    "start": 216370,
+    "end": 216415,
+    "before": "[0, 1, 2].map(i => ART.bakeDrystone(700 + i))",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>([0, 1, 2].map(i => ART.bakeDrystone(700 + i))))",
+    "purpose": "Fixed-input palette-independent whole expression 46:drystone"
+  },
+  {
+    "start": 216261,
+    "end": 216305,
+    "before": "[0, 1].map(i => ART.bakePortcullis(600 + i))",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>([0, 1].map(i => ART.bakePortcullis(600 + i))))",
+    "purpose": "Fixed-input palette-independent whole expression 45:port"
+  },
+  {
+    "start": 216198,
+    "end": 216253,
+    "before": "[0, 1].map(l => [0, 1].map(v => ART.bakeSpire(v, !!l)))",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>([0, 1].map(l => [0, 1].map(v => ART.bakeSpire(v, !!l)))))",
+    "purpose": "Fixed-input palette-independent whole expression 44:spire"
+  },
+  {
+    "start": 216123,
+    "end": 216189,
+    "before": "[0, 1].map(l => [0, 1, 2].map(st => ART.bakeCrystalTile(st, !!l)))",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>([0, 1].map(l => [0, 1, 2].map(st => ART.bakeCrystalTile(st, !!l)))))",
+    "purpose": "Fixed-input palette-independent whole expression 43:cryst"
+  },
+  {
+    "start": 216071,
+    "end": 216114,
+    "before": "[0, 1].map(i => ART.bakeLooseRock(340 + i))",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>([0, 1].map(i => ART.bakeLooseRock(340 + i))))",
+    "purpose": "Fixed-input palette-independent whole expression 42:looseRock"
+  },
+  {
+    "start": 216013,
+    "end": 216058,
+    "before": "[0, 1].map(i => ART.bakeShelfFungus(332 + i))",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>([0, 1].map(i => ART.bakeShelfFungus(332 + i))))",
+    "purpose": "Fixed-input palette-independent whole expression 41:shelfMyc"
+  },
+  {
+    "start": 215962,
+    "end": 216001,
+    "before": "[0, 1].map(i => ART.bakeShelf(330 + i))",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>([0, 1].map(i => ART.bakeShelf(330 + i))))",
+    "purpose": "Fixed-input palette-independent whole expression 40:shelf"
+  },
+  {
+    "start": 215936,
+    "end": 215953,
+    "before": "ART.bakeBouncer()",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>(ART.bakeBouncer()))",
+    "purpose": "Fixed-input palette-independent whole expression 39:bouncer"
+  },
+  {
+    "start": 215792,
+    "end": 215832,
+    "before": "[0, 1, 2].map(i => ART.bakeSilt(85 + i))",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>([0, 1, 2].map(i => ART.bakeSilt(85 + i))))",
+    "purpose": "Fixed-input palette-independent whole expression 36:silt"
+  },
+  {
+    "start": 215743,
+    "end": 215784,
+    "before": "[0, 1, 2].map(i => ART.bakeReeds(90 + i))",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>([0, 1, 2].map(i => ART.bakeReeds(90 + i))))",
+    "purpose": "Fixed-input palette-independent whole expression 35:reeds"
+  },
+  {
+    "start": 215549,
+    "end": 215593,
+    "before": "[ART.bakeClimbFace(0), ART.bakeClimbFace(1)]",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>([ART.bakeClimbFace(0), ART.bakeClimbFace(1)]))",
+    "purpose": "Fixed-input palette-independent whole expression 31:climb"
+  },
+  {
+    "start": 215514,
+    "end": 215540,
+    "before": "ART.bakeCapLedge(594, 'R')",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>(ART.bakeCapLedge(594, 'R')))",
+    "purpose": "Fixed-input palette-independent whole expression 30:capLedgeR"
+  },
+  {
+    "start": 215475,
+    "end": 215501,
+    "before": "ART.bakeCapLedge(593, 'L')",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>(ART.bakeCapLedge(593, 'L')))",
+    "purpose": "Fixed-input palette-independent whole expression 29:capLedgeL"
+  },
+  {
+    "start": 215411,
+    "end": 215462,
+    "before": "[0, 1, 2].map(i => ART.bakeCapLedge(590 + i, null))",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>([0, 1, 2].map(i => ART.bakeCapLedge(590 + i, null))))",
+    "purpose": "Fixed-input palette-independent whole expression 28:capLedge"
+  },
+  {
+    "start": 215372,
+    "end": 215399,
+    "before": "ART.bakeDuckboard(584, 'R')",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>(ART.bakeDuckboard(584, 'R')))",
+    "purpose": "Fixed-input palette-independent whole expression 27:duckR"
+  },
+  {
+    "start": 215336,
+    "end": 215363,
+    "before": "ART.bakeDuckboard(583, 'L')",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>(ART.bakeDuckboard(583, 'L')))",
+    "purpose": "Fixed-input palette-independent whole expression 26:duckL"
+  },
+  {
+    "start": 215275,
+    "end": 215327,
+    "before": "[0, 1, 2].map(i => ART.bakeDuckboard(580 + i, null))",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>([0, 1, 2].map(i => ART.bakeDuckboard(580 + i, null))))",
+    "purpose": "Fixed-input palette-independent whole expression 25:duck"
+  },
+  {
+    "start": 215243,
+    "end": 215267,
+    "before": "ART.bakeLashed(724, 'R')",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>(ART.bakeLashed(724, 'R')))",
+    "purpose": "Fixed-input palette-independent whole expression 24:lashedR"
+  },
+  {
+    "start": 215208,
+    "end": 215232,
+    "before": "ART.bakeLashed(723, 'L')",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>(ART.bakeLashed(723, 'L')))",
+    "purpose": "Fixed-input palette-independent whole expression 23:lashedL"
+  },
+  {
+    "start": 215148,
+    "end": 215197,
+    "before": "[0, 1, 2].map(i => ART.bakeLashed(720 + i, null))",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>([0, 1, 2].map(i => ART.bakeLashed(720 + i, null))))",
+    "purpose": "Fixed-input palette-independent whole expression 22:lashed"
+  },
+  {
+    "start": 215064,
+    "end": 215089,
+    "before": "ART.bakeStaging(714, 'R')",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>(ART.bakeStaging(714, 'R')))",
+    "purpose": "Fixed-input palette-independent whole expression 21:stagingR"
+  },
+  {
+    "start": 215027,
+    "end": 215052,
+    "before": "ART.bakeStaging(713, 'L')",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>(ART.bakeStaging(713, 'L')))",
+    "purpose": "Fixed-input palette-independent whole expression 20:stagingL"
+  },
+  {
+    "start": 214965,
+    "end": 215015,
+    "before": "[0, 1, 2].map(i => ART.bakeStaging(710 + i, null))",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>([0, 1, 2].map(i => ART.bakeStaging(710 + i, null))))",
+    "purpose": "Fixed-input palette-independent whole expression 19:staging"
+  },
+  {
+    "start": 214928,
+    "end": 214950,
+    "before": "ART.bakeBeam(704, 'R')",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>(ART.bakeBeam(704, 'R')))",
+    "purpose": "Fixed-input palette-independent whole expression 18:beamR"
+  },
+  {
+    "start": 214897,
+    "end": 214919,
+    "before": "ART.bakeBeam(703, 'L')",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>(ART.bakeBeam(703, 'L')))",
+    "purpose": "Fixed-input palette-independent whole expression 17:beamL"
+  },
+  {
+    "start": 214841,
+    "end": 214888,
+    "before": "[0, 1, 2].map(i => ART.bakeBeam(700 + i, null))",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>([0, 1, 2].map(i => ART.bakeBeam(700 + i, null))))",
+    "purpose": "Fixed-input palette-independent whole expression 16:beam"
+  },
+  {
+    "start": 214790,
+    "end": 214790,
+    "before": "",
+    "after": ")",
+    "purpose": "End catalogue boundary"
+  },
+  {
+    "start": 214762,
+    "end": 214785,
+    "before": "ART.bakeLedge(574, 'R')",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>(ART.bakeLedge(574, 'R')))",
+    "purpose": "Fixed-input palette-independent whole expression 15:ledgeR"
+  },
+  {
+    "start": 214729,
+    "end": 214752,
+    "before": "ART.bakeLedge(573, 'L')",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>(ART.bakeLedge(573, 'L')))",
+    "purpose": "Fixed-input palette-independent whole expression 14:ledgeL"
+  },
+  {
+    "start": 214671,
+    "end": 214719,
+    "before": "[0, 1, 2].map(i => ART.bakeLedge(570 + i, null))",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>([0, 1, 2].map(i => ART.bakeLedge(570 + i, null))))",
+    "purpose": "Fixed-input palette-independent whole expression 13:ledge"
+  },
+  {
+    "start": 214515,
+    "end": 214662,
+    "before": "{ S: [0, 1].map(i => ART.bakeRopeLadder(i, null)), L: [0, 1].map(i => ART.bakeRopeLadder(i, 'L')), R: [0, 1].map(i => ART.bakeRopeLadder(i, 'R')) }",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>({ S: [0, 1].map(i => ART.bakeRopeLadder(i, null)), L: [0, 1].map(i => ART.bakeRopeLadder(i, 'L')), R: [0, 1].map(i => ART.bakeRopeLadder(i, 'R')) }))",
+    "purpose": "Fixed-input palette-independent whole expression 12:ladder"
+  },
+  {
+    "start": 214460,
+    "end": 214505,
+    "before": "[0, 1, 2].map(i => ART.bakeSoftRock(930 + i))",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>([0, 1, 2].map(i => ART.bakeSoftRock(930 + i))))",
+    "purpose": "Fixed-input palette-independent whole expression 11:soft"
+  },
+  {
+    "start": 214420,
+    "end": 214452,
+    "before": "[0, 1].map(i => ART.bakeRail(i))",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>([0, 1].map(i => ART.bakeRail(i))))",
+    "purpose": "Fixed-input palette-independent whole expression 10:rail"
+  },
+  {
+    "start": 214380,
+    "end": 214412,
+    "before": "[0, 1].map(i => ART.bakeVine(i))",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>([0, 1].map(i => ART.bakeVine(i))))",
+    "purpose": "Fixed-input palette-independent whole expression 9:climbVine"
+  },
+  {
+    "start": 214332,
+    "end": 214367,
+    "before": "[0, 1].map(i => ART.bakeRopeNet(i))",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>([0, 1].map(i => ART.bakeRopeNet(i))))",
+    "purpose": "Fixed-input palette-independent whole expression 8:ropeNet"
+  },
+  {
+    "start": 214295,
+    "end": 214321,
+    "before": "ART.bakeCombPlat(564, 'R')",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>(ART.bakeCombPlat(564, 'R')))",
+    "purpose": "Fixed-input palette-independent whole expression 7:combR"
+  },
+  {
+    "start": 214260,
+    "end": 214286,
+    "before": "ART.bakeCombPlat(563, 'L')",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>(ART.bakeCombPlat(563, 'L')))",
+    "purpose": "Fixed-input palette-independent whole expression 6:combL"
+  },
+  {
+    "start": 214206,
+    "end": 214251,
+    "before": "[0, 1, 2].map(i => ART.bakeCombPlat(560 + i))",
+    "after": "deferredFixedArtExpression(LEVEL_ART_BUILD_OWNER,ART,ART=>([0, 1, 2].map(i => ART.bakeCombPlat(560 + i))))",
+    "purpose": "Fixed-input palette-independent whole expression 5:comb"
+  },
+  {
+    "start": 213791,
+    "end": 213791,
+    "before": "",
+    "after": "makeDeferredLevelArtCatalogue(",
+    "purpose": "Private native catalogue boundary TILE"
+  },
+  {
+    "start": 212214,
+    "end": 213586,
+    "before": "function retireBakes() { if (!BAKE_OLD.length) return;\n  const keep = new Set(), seen = new Set(), stack = [TILE, PROP, BG, LEDGE_SETS, REDRESS_GROUND, REDRESS_PROPS, CROWN, VILL, SHORE, REEF, FLOT, CITY, MONK, RAINART, typeof KRKP === 'undefined' ? null : KRKP];\n  while (stack.length) { const o = stack.pop(); if (!o || typeof o !== 'object' || seen.has(o)) continue; seen.add(o);\n    if (o instanceof HTMLCanvasElement) { keep.add(o); for (const k of Object.keys(o)) { const v = o[k]; if (v && typeof v === 'object') stack.push(v); } continue; } if (ArrayBuffer.isView(o)) continue;\n    for (const k in o) { const v = o[k]; if (v && typeof v === 'object') stack.push(v); } }\n  const old = new Set(BAKE_OLD); for (const k in TITLE_LAYERS) { const T = TITLE_LAYERS[k]; if ([T.sky, T.far, T.near].some(c => c && old.has(c) && !keep.has(c))) delete TITLE_LAYERS[k]; }   /* (batch98 integ: a title layer that borrows a retired sheet - BG.skyDusk - was drawn empty on the way back to the title; it is rebuilt on its next draw) */\n  const audit = window.__bakeAudit;   /* tools/load-leak.mjs: a weak note of every sheet given back, to prove after a collection that nothing kept one */\n  for (const c of BAKE_OLD) if (!keep.has(c)) { c.width = 0; c.height = 0; if (audit) audit.push({ w: new WeakRef(c), at: BAKE_PATH.get(c) || 'not under TILE/PROP/BG' }); }\n  BAKE_OLD = []; }",
+    "after": "function retireBakes() { const levelArtOwners=typeof LEVEL_ART_OLD_OWNERS==='undefined'?null:LEVEL_ART_OLD_OWNERS; if (!BAKE_OLD.length && !levelArtOwners?.length) return;\n  const keep = new Set(), seen = new Set(), stack = [TILE, PROP, BG, LEDGE_SETS, REDRESS_GROUND, REDRESS_PROPS, CROWN, VILL, SHORE, REEF, FLOT, CITY, MONK, RAINART, typeof KRKP === 'undefined' ? null : KRKP];\n  while (stack.length) { const o = typeof existingLevelArtValue==='function'?existingLevelArtValue(stack.pop()):stack.pop(); if (!o || typeof o !== 'object' || seen.has(o)) continue; seen.add(o);\n    if (o instanceof HTMLCanvasElement) { keep.add(o); for (const k of Object.keys(o)) { const v = o[k]; if (v && typeof v === 'object') stack.push(v); } continue; } if (ArrayBuffer.isView(o)) continue;\n    for (const k in o) { const v = o[k]; if (v && typeof v === 'object') stack.push(v); } }\n  const old = new Set(BAKE_OLD); for (const k in TITLE_LAYERS) { const T = TITLE_LAYERS[k]; if ([T.sky, T.far, T.near].some(c => c && old.has(c) && !keep.has(c))) delete TITLE_LAYERS[k]; }   /* (batch98 integ: a title layer that borrows a retired sheet - BG.skyDusk - was drawn empty on the way back to the title; it is rebuilt on its next draw) */\n  const audit = window.__bakeAudit;   /* tools/load-leak.mjs: a weak note of every sheet given back, to prove after a collection that nothing kept one */\n  for (const c of BAKE_OLD) if (!keep.has(c)) { c.width = 0; c.height = 0; if (audit) audit.push({ w: new WeakRef(c), at: BAKE_PATH.get(c) || 'not under TILE/PROP/BG' }); }\n  BAKE_OLD = []; if(levelArtOwners){for(const owner of levelArtOwners)retireLevelArtOwner(owner); LEVEL_ART_OLD_OWNERS=[];} }",
+    "purpose": "Original keep traversal uses receiver-preserving existing-only view; original zeroing and audit untouched"
+  },
+  {
+    "start": 211378,
+    "end": 212213,
+    "before": "function* bakeAllG(pal = {}) { const it = bakeAllG0(pal), own = [];\n  for (;;) { let r; bakeScope(); try { r = it.next(); } finally { own.push(...bakeScopeEnd()); } if (r.done) break; yield r.value; }   /* a sheet made between the steps (the loading screen's frames) is not the bake's */\n  if (BAKE_CUR) BAKE_OLD.push(...BAKE_CUR); BAKE_CUR = own;\n  if (window.__bakeAudit) { const st = [[TILE, 'TILE'], [PROP, 'PROP'], [BG, 'BG']], seen = new Set(); while (st.length) { const [o, p] = st.pop(); if (!o || typeof o !== 'object' || seen.has(o)) continue; seen.add(o);   /* (the audit only: where each sheet sat, so a sheet still held is named) */\n    if (o instanceof HTMLCanvasElement) { BAKE_PATH.set(o, p + ' (' + curId() + ')'); continue; } if (ArrayBuffer.isView(o)) continue; for (const k in o) st.push([o[k], p + '.' + k]); } } }",
+    "after": "function* bakeAllG(pal = {}) { const it = bakeAllG0(pal), own = [], levelArtOwner=createLevelArtOwner(own);\n  for (;;) { let r; const previousLevelArtOwner=LEVEL_ART_BUILD_OWNER; LEVEL_ART_BUILD_OWNER=levelArtOwner; bakeScope(); try { r = it.next(); } finally { LEVEL_ART_BUILD_OWNER=previousLevelArtOwner; own.push(...bakeScopeEnd()); } if (r.done) break; yield r.value; }   /* a sheet made between the steps (the loading screen's frames) is not the bake's */\n  if (BAKE_CUR) { BAKE_OLD.push(...BAKE_CUR); queueLevelArtOwner(LEVEL_ART_CUR_OWNER,BAKE_OLD); LEVEL_ART_OLD_OWNERS.push(LEVEL_ART_CUR_OWNER); } BAKE_CUR = own; LEVEL_ART_CUR_OWNER=levelArtOwner;\n  if (window.__bakeAudit) { const st = [[TILE, 'TILE'], [PROP, 'PROP'], [BG, 'BG']], seen = new Set(); while (st.length) { const [o, p] = st.pop(); if (!o || typeof o !== 'object' || seen.has(o)) continue; seen.add(o);   /* (the audit only: where each sheet sat, so a sheet still held is named) */\n    if (o instanceof HTMLCanvasElement) { BAKE_PATH.set(o, p + ' (' + curId() + ')'); continue; } if (ArrayBuffer.isView(o)) continue; for (const k in o) st.push([o[k], p + '.' + k]); } } }",
+    "purpose": "Original nested generator ownership and queued live sheets"
+  },
+  {
+    "start": 211378,
+    "end": 211378,
+    "before": "",
+    "after": "let LEVEL_ART_BUILD_OWNER=null,LEVEL_ART_CUR_OWNER=null,LEVEL_ART_OLD_OWNERS=[]; ",
+    "purpose": "Private per-level owner state"
+  },
+  {
+    "start": 0,
+    "end": 0,
+    "before": "",
+    "after": "import {createLevelArtOwner,queueLevelArtOwner,retireLevelArtOwner,makeDeferredLevelArtCatalogue,existingLevelArtValue,deferredFixedArtExpression} from './deferred-fixed-level-art.js'; ",
+    "purpose": "Private helper import"
+  }
+]

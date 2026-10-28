@@ -1,0 +1,45 @@
+{
+  "time": "2026-10-28T19:07:25.453Z",
+  "status": "Prepared source-derived original standalone cleanup compatibility repair; native helper unchanged, original cleanup test and new-source controls pending",
+  "gameSource": "dc02ecc059959b795f76dee47665b54f349d4e2f",
+  "gameController": "1a576c3f4511b6856df9fb4738df5aaae9987e81",
+  "gameTree": "9d8acbb7f3182c1d29ac71f4a3b0227224446718",
+  "originalMainSha256": "1573d2d744b753e5611b021d97b70b013f7e2e6773640b707ae85d5ab5dae594",
+  "candidateMainSha256": "f576265348b01d11efb17651fd58ec1bc710c447fe8fb25e9519ea7c347cac7f",
+  "originalPxSha256": "e9a358b9170944e0dfae6d1b8c82d7b664562e0b2b0ab7f2538236e34214db1d",
+  "candidatePxSha256": "37cbde8af8557a27bf8d5e14a0fc68371b908e0c43b6101e52fa1db7bb4eff13",
+  "helperSha256": "d8ae35015ad9e60a7fbacb5bf1960126f0ed62d6a23a70c76266f79cc41fa0b3",
+  "originalArtSha256": "99f0ead9e02c17eec93e3945720c8206465e3ecd7aac42c00fbbb22cce46bb35",
+  "originalUiSha256": "6182574fc740afab14d0dfa4862b55f676d9c85df04f87b8fe2053648719ecce",
+  "fixedGroups": 160,
+  "wholeGeneratorByteSeamIdenticalAcrossSources": true,
+  "originalExpressionsUnchanged": true,
+  "allOtherGameBytesUnchanged": true,
+  "exactSourceUndo": true,
+  "lineCountPreserved": true,
+  "crlfPairsPreserved": true,
+  "noOtherPrototypeCombined": true,
+  "noOriginalFixtureToolChanged": true,
+  "allThreeMismatchesRetained": true,
+  "adopted": false,
+  "noLocalBrowserOrGameExecuted": true,
+  "priorCandidateMainSha256": "d88d8e111c6ccc9d6bb6f16ce3611b4557f7e3c6b27222ac640d554ede671ca4",
+  "sourceCause": "tools/canvas-retirement-selftest.mjs extracts retireBakes alone into its original VM context, which has no imported helper or private owner globals. Keep its exact original assertions; undefined extension falls back to original traversal and zeroing.",
+  "sourceDerivedCounterexampleNotObservedTestFailure": true,
+  "retirementCompatibilityChanges": [
+    [
+      "if (!BAKE_OLD.length && !LEVEL_ART_OLD_OWNERS.length) return;",
+      "const levelArtOwners=typeof LEVEL_ART_OLD_OWNERS==='undefined'?null:LEVEL_ART_OLD_OWNERS; if (!BAKE_OLD.length && !levelArtOwners?.length) return;"
+    ],
+    [
+      "const o = existingLevelArtValue(stack.pop());",
+      "const o = typeof existingLevelArtValue==='function'?existingLevelArtValue(stack.pop()):stack.pop();"
+    ],
+    [
+      "for(const owner of LEVEL_ART_OLD_OWNERS)retireLevelArtOwner(owner); LEVEL_ART_OLD_OWNERS=[];",
+      "if(levelArtOwners){for(const owner of levelArtOwners)retireLevelArtOwner(owner); LEVEL_ART_OLD_OWNERS=[];}"
+    ]
+  ],
+  "originalStandaloneTestUnchanged": true,
+  "exactUndoToPriorCandidate": true
+}
