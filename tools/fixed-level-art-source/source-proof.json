@@ -1,0 +1,30 @@
+{
+  "time": "2026-10-28T17:03:05.230Z",
+  "status": "Core preparation only; no main adapter, native proof or source adoption",
+  "gameSource": "62d9c02c102decc69ceaef4e1ec593a23170f1ff",
+  "helperSha256": "60f90bdb114aef64d74cb56e035e33c801ea2e46625c74489bb6e76bb134cc77",
+  "originalPxSha256": "e9a358b9170944e0dfae6d1b8c82d7b664562e0b2b0ab7f2538236e34214db1d",
+  "candidatePxSha256": "37cbde8af8557a27bf8d5e14a0fc68371b908e0c43b6101e52fa1db7bb4eff13",
+  "ownershipExtension": "\nexport function withBakeOwnership(build,record){const previous=OWN,scope=[];OWN=scope;try{return build();}finally{OWN=previous;record(scope);}}\n",
+  "originalPxBytesPreserved": true,
+  "sourceReview": "outputs/receipts/fixed-art-families-source-review-oct28.json",
+  "hardContracts": [
+    "Only160source-qualified palette-independent fixed-input groups; no mutable palette/gear/weapon late binding",
+    "Nested ownership restores outer scope in finally and records every new intermediate/output",
+    "Queued late allocations join exact pending retirement list; retired-owner late allocations immediately zero backing stores",
+    "Public reflection/alias/descriptor semantics preserved; internal keep traversal observes existing built leaves without forcing pending recipes",
+    "Native full pixels/context/metadata/aliases/ownership and retirement proof before any served source/controlled timing"
+  ],
+  "noLocalBrowserOrGameExecuted": true,
+  "adopted": false,
+  "originalArtSha256": "99f0ead9e02c17eec93e3945720c8206465e3ecd7aac42c00fbbb22cce46bb35",
+  "componentSha256": "b33a0a606c7c3967210da8a86079540856f64860e1308330b1073aecd352061b",
+  "expectedNativeGroups": 160,
+  "expectedOwnershipReflectionCases": 10,
+  "originalExpressionsCapturedAtOriginalArgumentEvaluationTime": true,
+  "earlierPreparedCore": {
+    "directory": "work/deferred-fixed-level-art-oct28",
+    "neverDispatchedOrBrowserExecuted": true,
+    "reason": "Pre-browser source review added a private WeakSet of fully resolved internal containers to avoid repeated recursive traversal; no original assertion or fixture changed"
+  }
+}
