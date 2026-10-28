@@ -400,3 +400,40 @@ export function bakeAttendant() {
 export const attendantFrameOf = e => { const m = e.mode; return m === 'aim' ? 3 : m === 'throw' ? 4 : m === 'guard' || m === 'bashTell' ? 5 : m === 'bash' ? 6 : (Math.abs(e.vx || 0) > 4 ? 1 + (Math.floor((e.anim || 0) * 7) % 2) : 0); };
 /* a thrown plate in the air (the attendant's) */
 export function drawPlate(g, x, y, rot) { g.save(); g.translate(Math.round(x), Math.round(y)); g.rotate(rot); ellipse(g, 0, 0, 5, 2, OUT); ellipse(g, 0, 0, 4, 1, '#e8e0d0'); g.restore(); }
+
+/* ------------------------------------------------------------------ (claude/kitchengate2) THE KITCHEN MECHANICS, GREYBOX (readable shapes; the art lane redraws through these hooks) ------------------------------------------------------------------
+   drawLine(g, x0, x1, y, scroll, dir, counter, time)  a serving line: a leather belt over rollers on the floor's top (or a stone counter on iron legs, counter=true), slats running, arrows the way it runs
+   drawFlare(g, x0, x1, y, state, k, h, time)          a griddle in the floor: cold iron, a growing red glow (the tell, k 0..1), then a sheet of flame h px tall
+   drawMeatRail(g, z, cx, cy, clock)                   a chain-driven meat-hook rail: the chain running its way, hooks and a carcass on every few
+   drawProp(g, kind, x, y, time, seed)                 the kitchen's dressing (x = the prop's middle, y = the floor's top): oven, spices, flour, block, vent, basin, hatch, pans */
+export function drawLine(g, x0, x1, y, scroll, dir, counter, time) {
+  const w = x1 - x0;
+  if (counter) { for (let x = x0 + 8; x < x1 - 4; x += 32) { rect(g, x - 1, y + 4, 5, 26, OUT); rect(g, x, y + 4, 3, 26, IRON[2]); rect(g, x, y + 4, 1, 26, IRON[4]); } rect(g, x0 - 2, y - 2, w + 4, 8, OUT); rect(g, x0, y + 1, w, 4, '#6a5a4c'); }
+  rect(g, x0, y - 3, w, 5, OUT); rect(g, x0 + 1, y - 2, w - 2, 3, '#3a2a20'); const off = ((scroll % 10) + 10) % 10; for (let x = x0 + off; x < x1 - 1; x += 10) rect(g, R(x), y - 2, 2, 3, '#6a4e38');
+  for (const xx of [x0 + 3, x1 - 4]) { ellipse(g, xx, y, 3, 3, OUT); ellipse(g, xx, y, 2, 2, IRON[4]); }
+  for (let x = x0 + 20; x < x1 - 16; x += 48) { const a = dir > 0 ? [[x, y + 3], [x + 5, y + 5], [x, y + 7]] : [[x + 5, y + 3], [x, y + 5], [x + 5, y + 7]]; fillPoly(g, a, 'rgba(255,211,107,0.75)'); }
+}
+export function drawFlare(g, x0, x1, y, state, k, h, time) {
+  const w = x1 - x0; rect(g, x0, y - 2, w, 4, OUT); rect(g, x0 + 1, y - 1, w - 2, 2, IRON[2]); for (let x = x0 + 3; x < x1 - 2; x += 5) rect(g, x, y - 1, 2, 2, IRON[0]);
+  if (state === 'glow') { g.globalAlpha = 0.25 + 0.6 * k; rect(g, x0 + 1, y - 1, w - 2, 2, '#ff4a1a'); g.globalAlpha = 0.18 * k; rect(g, x0, y - 10, w, 8, '#ff6a2a'); g.globalAlpha = 1;
+    if (Math.floor(time * 14) % 2 && k > 0.5) for (let x = x0 + 4; x < x1 - 2; x += 9) rect(g, x, y - 4 - R(k * 3), 2, 2, '#ffd36b'); }
+  else if (state === 'flame') { const f = Math.min(1, k * 4, (1 - k) * 4 + 0.3); flame(g, x0, y, w, h * f, time, x0 * 0.13); }
+}
+export function drawMeatRail(g, z, cx, cy, clock) {
+  const x0 = z.x0 - cx, y0 = z.y0 - cy, x1 = z.x1 - cx, y1 = z.y1 - cy, L = Math.hypot(x1 - x0, y1 - y0) || 1, ux = (x1 - x0) / L, uy = (y1 - y0) / L, dir = Math.sign(x1 - x0) === (z.dir || 1) ? 1 : -1;
+  const run = ((clock * 60 * dir) % 36 + 36) % 36;
+  for (let s = run; s < L; s += 36) { const hx = R(x0 + ux * s), hy = R(y0 + uy * s) - 6; rect(g, hx - 1, hy - 4, 3, 4, IRON[3]); rect(g, hx - 1, hy, 2, 7, OUT); rect(g, hx, hy + 1, 1, 5, IRON[4]); rect(g, hx - 2, hy + 6, 4, 2, IRON[4]);
+    if (Math.round((s - run) / 36) % 3 === 1) { ellipse(g, hx, hy + 14, 4, 7, OUT); ellipse(g, hx, hy + 14, 3, 6, '#8a2a2a'); rect(g, hx - 2, hy + 10, 2, 6, '#e8d8c0'); } }   /* a carcass on every third hook */
+}
+export function drawProp(g, kind, x, y, time, seed) {
+  if (kind === 'oven') { rect(g, x - 22, y - 40, 44, 40, OUT); rect(g, x - 21, y - 39, 42, 39, '#7a4a3a'); for (let yy = y - 36; yy < y; yy += 6) rect(g, x - 21, yy, 42, 1, '#5a3428'); ellipse(g, x, y - 14, 11, 10, OUT); rect(g, x - 11, y - 14, 22, 12, OUT); ellipse(g, x, y - 14, 9, 8, '#1a0c08'); rect(g, x - 9, y - 14, 18, 11, '#1a0c08');
+    const q = 0.6 + 0.4 * Math.sin(time * 6 + seed); ellipse(g, x, y - 6, 7, R(4 * q) + 1, '#ff7a2a'); rect(g, x - 24, y - 44, 48, 5, OUT); rect(g, x - 23, y - 43, 46, 3, '#9a6a52'); rect(g, x + 10, y - 56, 8, 12, OUT); rect(g, x + 11, y - 55, 6, 11, '#5a3a2a'); return; }
+  if (kind === 'spices') { for (const yy of [y - 30, y - 18]) { rect(g, x - 18, yy, 36, 3, OUT); rect(g, x - 17, yy, 34, 2, WOOD[3]); for (let i = 0; i < 5; i++) { const c = ['#c0302a', '#d8a020', '#5a8a2a', '#a05a2a', '#e8d8b0'][(i + seed) % 5]; rect(g, x - 16 + i * 7, yy - 7, 5, 7, OUT); rect(g, x - 15 + i * 7, yy - 6, 3, 5, c); } } rect(g, x - 18, y - 33, 2, 33, WOOD[2]); rect(g, x + 16, y - 33, 2, 33, WOOD[2]); return; }
+  if (kind === 'flour') { for (const [dx, dy, r] of [[-9, -8, 8], [7, -7, 7], [-1, -19, 7]]) { ellipse(g, x + dx, y + dy, r + 1, r + 1, OUT); ellipse(g, x + dx, y + dy, r, r, '#e8dcc0'); ellipse(g, x + dx - 2, y + dy - 2, r * 0.4, r * 0.3, '#ffffff'); rect(g, x + dx - 3, y + dy - r + 1, 6, 2, '#a89a7c'); } return; }
+  if (kind === 'block') { rect(g, x - 12, y - 18, 24, 18, OUT); rect(g, x - 11, y - 17, 22, 17, WOOD[2]); rect(g, x - 11, y - 17, 22, 3, WOOD[4]); for (let i = 0; i < 3; i++) rect(g, x - 8 + i * 7, y - 12, 1, 10, WOOD[1]); rect(g, x - 4, y - 26, 2, 9, OUT); rect(g, x - 9, y - 30, 12, 6, OUT); rect(g, x - 8, y - 29, 10, 4, IRON[4]); rect(g, x + 4, y - 16, 4, 2, '#8a1a1a'); return; }
+  if (kind === 'vent') { rect(g, x - 10, y - 4, 20, 4, OUT); for (let xx = x - 9; xx < x + 9; xx += 3) rect(g, xx, y - 3, 2, 3, IRON[3]); for (let i = 0; i < 3; i++) { const t = (time * 0.6 + i / 3 + seed * 0.1) % 1; g.globalAlpha = 0.45 * (1 - t); ellipse(g, R(x + Math.sin(time * 2 + i) * 4), R(y - 8 - t * 40), 5 + t * 6, 4 + t * 4, '#e8e8e8'); g.globalAlpha = 1; } return; }
+  if (kind === 'basin') { rect(g, x - 16, y - 14, 32, 14, OUT); rect(g, x - 15, y - 13, 30, 13, '#8a8a92'); rect(g, x - 13, y - 13, 26, 4, '#3a5a6a'); rect(g, x - 12, y - 12, 10, 1, '#8ab8c8'); rect(g, x + 8, y - 26, 3, 13, OUT); rect(g, x + 4, y - 26, 10, 3, OUT); rect(g, x + 5, y - 25, 8, 1, IRON[4]); for (let i = 0; i < 2; i++) { ellipse(g, x - 6 + i * 6, y - 15, 5, 2, OUT); ellipse(g, x - 6 + i * 6, y - 15, 4, 1, '#e8e0d0'); } return; }
+  if (kind === 'hatch') { rect(g, x - 16, y - 52, 32, 26, OUT); rect(g, x - 14, y - 50, 28, 22, '#140a08'); rect(g, x - 18, y - 28, 36, 4, WOOD[3]); rect(g, x - 18, y - 28, 36, 1, WOOD[4]); rect(g, x - 18, y - 56, 36, 4, WOOD[2]); g.globalAlpha = 0.25 + 0.1 * Math.sin(time * 3 + seed); rect(g, x - 14, y - 44, 28, 14, '#ff9a3c'); g.globalAlpha = 1;
+    ellipse(g, x - 6, y - 31, 5, 2, OUT); ellipse(g, x - 6, y - 31, 4, 1, '#e8e0d0'); return; }
+  if (kind === 'pans') { rect(g, x - 20, y, 40, 3, OUT); rect(g, x - 19, y, 38, 2, IRON[3]); for (let i = 0; i < 4; i++) { const px2 = x - 15 + i * 10, sw = Math.sin(time * 1.5 + i + seed) * 1.2; rect(g, px2, y + 2, 1, 6, IRON[4]); ellipse(g, R(px2 + sw), y + 13, 4, 4, OUT); ellipse(g, R(px2 + sw), y + 13, 3, 3, i % 2 ? COP[2] : IRON[3]); rect(g, R(px2 + sw) - 1, y + 7, 2, 3, i % 2 ? COP[1] : IRON[2]); } return; }
+}

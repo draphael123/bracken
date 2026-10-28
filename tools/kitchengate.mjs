@@ -69,7 +69,7 @@ for (const w of L.kgWheels) { const g = Uint8Array.from(L.grid);
   ok(kinds.size === 3 && L.kgFires.length >= 8, 'STRIKE A BELLOWS, three ways (' + [...kinds].join(', ') + '), ' + L.kgFires.length + ' fires'); }
 { const firstOf = k => Math.min(...Object.values(ARCS[k]).map(a => a[0])); const ord = k => { const v = ARCS[k], seq = ['teach', 'test', 'develop', 'remix', 'exam'].filter(s => v[s]).map(s => v[s][0]); return seq.every((x, i) => i === 0 || x > seq[i - 1]); };
   ok(['copper', 'spit', 'trail', 'hooks', 'grease'].every(ord) && firstOf('copper') < firstOf('spit') && firstOf('spit') < firstOf('trail'), 'the rule is TAUGHT, TESTED, REMIXED and EXAMINED in that order (copper, then spit, then trail)'); }
-ok(L.kgHooks === undefined && L.zipLines.length === 4 && L.slick.length >= 3, 'the kitchens\' ground: ' + L.zipLines.length + ' meat-hook rails, ' + L.slick.length + ' grease floors');
+ok(L.kgHooks === undefined && L.zipLines.length >= 4 && L.slick.length >= 3, 'the kitchens\' ground: ' + L.zipLines.length + ' meat-hook rails, ' + L.slick.length + ' grease floors');
 { const b = L.ents.filter(e => e.t === 'butcher'); ok(b.length === 2 && b.every(e => L.kgTrails.some(t => e.x >= t.x0 && e.x <= t.x1 && e.y === t.f - 1)), 'THE BUTCHER (the one new foe): ' + b.length + ' placed, each on a grease trail (burn him)'); }
 ok(Object.values(KG_SAY).every(s => SAY_LINES.has(s)) && Object.values(GBM.GB_SAY).every(s => SAY_LINES.has(s)), 'every capital line the rule and the boss say is in src/hint-lines.js');
 
@@ -106,7 +106,32 @@ ok(Object.values(KG_SAY).every(s => SAY_LINES.has(s)) && Object.values(GBM.GB_SA
   ok(rd().pages === 3 && rd().vault && grid[22 * L.W + 362] === T.AIR, 'the three recipe pages open THE SPICE VAULT');
   /* a reset (a death): the grid laid again - what melted stays melted, the pages stay picked up, the race is armed again */
   grid.set(L.grid); H.reset(); ok(grid[20 * L.W + 238] === T.AIR && rd().pages === 3 && rd().vault && rd().race.state === 'armed', 'a death keeps the melted door and the open vault; the grease pot stands again');
-  ok(H.hoist('stove1').state === 'cut' && H.hoist('spit1').state === 'hang', 'the pilot reads a bellows as a cleat: done once its door is gone, waiting while its fire is banked'); }
+  ok(H.hoist('stove1').state === 'cut' && H.hoist('spit1').state === 'hang', 'the pilot reads a bellows as a cleat: done once its door is gone, waiting while its fire is banked');
+  /* (claude/kitchengate2) THE SERVING LINES, THE STOVE FLARES, THE ATTENDANT */
+  { const B = id => L.kgBelts.find(b => b.id === id), rb = id => rd().belts.find(b => b.id === id);
+    const cl = B('cellarLine'); P.x = (cl.x0 + 2) * TS; P.y = cl.f * TS; P.ground = true; P.vy = 0; const xa = P.x; step(1); ok(P.x - xa > cl.v * 0.8, 'a serving line carries a hero standing on it (' + Math.round(P.x - xa) + ' px in 1 s, east)');
+    const fl = B('farLine'); P.x = (fl.x0 + 6) * TS; P.y = fl.f * TS; const xb = P.x; step(1); ok(xb - P.x > fl.v * 0.8, 'the spit hall\'s far line runs WEST, back toward the trench (' + Math.round(xb - P.x) + ' px)');
+    P.x = 0; P.y = 0; step(4); ok(rb('cellarLine').items.length >= 1 && rb('cellarLine').items.every(q => q.kind === 'dish'), 'dishes ride the cellar line (TEACH: dishes only, nothing to hurt you)');
+    const it = rb('cellarLine').items.find(q => q.state === 'ride'); P.x = it.x - 20; P.y = cl.f * TS; const n0 = rd().n.knocked; H.strike({ l: it.x - 6, r: it.x + 6, t: cl.f * TS - 14, b: cl.f * TS });
+    ok(rd().n.knocked === n0 + 1 && rb('cellarLine').items.some(q => q.state === 'fall'), 'a blow knocks a dish off the line');
+    P.x = 0; P.y = 0; const tc = B('trailCounter'); let bomb = null; for (let i = 0; i < 60 * 14 && !bomb; i++) { H.update(1 / 60); bomb = rb('trailCounter').items.find(q => q.kind === 'bomb' && q.state === 'ride'); }
+    ok(!!bomb, 'bombs ride the trail counter (the remix: every ' + tc.bomb + 'rd item)');
+    H.strike({ l: bomb.x - 6, r: bomb.x + 6, t: tc.f * TS - 14, b: tc.f * TS }); ok(rb('trailCounter').items.some(q => q.kind === 'bomb' && q.state === 'bat'), 'a blow BATS a bomb along the line');
+    const nf = rd().n.fizz; for (let i = 0; i < 60 * 16 && rd().n.fizz === nf; i++) H.update(1 / 60); ok(rd().n.fizz > nf, 'a bomb left alone goes off ON the line (its fuse ' + K.line.fuse + ' s, the counter ' + ((tc.x1 - tc.x0 + 1) * TS / tc.v).toFixed(1) + ' s long)');
+    const seenSt = new Set(); for (let i = 0; i < 60 * 3; i++) { H.update(1 / 60); seenSt.add(H.flareState('vaultGriddle')); } ok(['glow', 'flame', 'out'].every(q => seenSt.has(q)), 'a stove flare runs its rhythm: glow (the tell), flame, out');
+    const vg = L.kgFlares.find(f => f.id === 'vaultGriddle'); P.x = (vg.x0 + 1) * TS + 8; P.y = vg.f * TS; P.ground = true; const d0 = dmg.length; let flamed = false; for (let i = 0; i < 60 * 3; i++) { H.update(1 / 60); if (H.flareState('vaultGriddle') === 'flame') flamed = true; }
+    ok(flamed && dmg.length > d0, 'standing in it as it flares burns'); P.x = (vg.x0 - 3) * TS; const d1 = dmg.length; step(3); ok(dmg.length === d1, 'off the griddle, nothing');
+    ok(L.kgBelts.length >= 4 && L.kgFlares.length >= 4 && ['teach', 'test', 'remix', 'exam'].every(k => ARCS.belt[k]) && ['teach', 'test', 'exam'].every(k => ARCS.flare[k]), 'THE SERVING LINES taught, tested, remixed, examined (' + L.kgBelts.map(b => b.id).join(', ') + '); THE STOVE FLARES taught, tested, examined (' + L.kgFlares.length + ')');
+    ok(L.zipLines.every(z => z.meat && (z.dir === 1 || z.dir === -1)), 'every hook rail is a chain-driven MEAT-HOOK RAIL: it runs one way (hold on to ride, jump to let go)');
+    ok(L.kgProps.length >= 20 && new Set(L.kgProps.map(p => p.kind)).size >= 8, 'the kitchen\'s dressing: ' + L.kgProps.length + ' props of ' + new Set(L.kgProps.map(p => p.kind)).size + ' kinds (ovens, spice racks, flour, blocks, vents, basins, hatches, pans)');
+    /* THE ATTENDANT: a plate thrown in an arc onto where you stand; his tray turns a blow from the front */
+    const at = { t: 'attendant', alive: true, x: 240 * TS, y: 24 * TS, w: 10, h: 18, hp: 30, mode: 'walk', modeT: 0, face: -1, vx: 0, vy: 0 }; foes.push(at);
+    P.x = 240 * TS - 120; P.y = 24 * TS; P.ground = true; P.face = 1; P.atk = -1; const d2 = dmg.length; let aimed = false; for (let i = 0; i < 60 * 3; i++) { H.attendant(at, 1 / 60); if (at.mode === 'aim') aimed = true; }
+    ok(aimed, 'THE ATTENDANT aims a plate (a yellow !) at range'); ok(dmg.length > d2, 'the plate lands on the ring where you stood');
+    P.x = at.x - 24; P.atk = 0.1; at.mode = 'walk'; at.kgGcd = 0; H.attendant(at, 1 / 60); ok(at.mode === 'guard' && H.takeFoe(at, 10) === 0, 'close in and he raises his TRAY: a blow from the front is turned');
+    P.x = at.x + 20; ok(H.takeFoe(at, 10) === 10, 'from behind it lands');
+    P.x = at.x - 24; at.modeT = 0.001; H.attendant(at, 1 / 60); ok(at.mode === 'bashTell', 'then he swings it (told)'); foes.length = 0; }
+}
 
 // ---- LORD GRUBBAG, PURE (claude/kitchengate2: REWORKED - seated, the serving line, bombs and chillies, the lob and the fling, P2 grease + bell, P3 grab) ----
 { const A = L.arena;

@@ -28764,7 +28764,8 @@ KGH = makeKitchenHands({ get L() { return L; }, TS, T, sfx: SFX, players: () => 
   number: (x, y, t, c) => number(x, y, t, c), burst: (...a) => burst(...a), dust: (x, y, n) => dust(x, y, n), shake: n => shakeCam(n), seen: k => beastSeen(k),
   asPlayer: (p, fn) => asPlayer(p, fn), damage: (x, d, o) => damagePlayer(x, d, o), cellSet: (x, y, t) => { if (x >= 0 && y >= 0 && x < LW && y < LH) cellSet(x, y, t); },
   solidAt: (tx, ty) => isSolid(tx, ty), tileAt: (tx, ty) => tileAt(tx, ty), text: (s, x, y, c, a, z) => text(s, x, y, c, a, z), moveBody: (e, dx, dy) => moveBody(e, dx, dy, false),
-  hurtFoe: (e, d, fromX) => hurtEnemy(e, d, fromX, false), hitOnce: o => { if (!P || !P.hitSet || P.hitSet.has(o)) return false; P.hitSet.add(o); return true; } });
+  hurtFoe: (e, d, fromX) => hurtEnemy(e, d, fromX, false), hitOnce: o => { if (!P || !P.hitSet || P.hitSet.has(o)) return false; P.hitSet.add(o); return true; },
+  coin: (x, y) => dropCoinAt(x, y) });   /* (claude/kitchengate2) a dish knocked off a serving line drops a coin */
 OTH = makeOldTuskerHands({ geoFaults: () => (GEO && GEO.faults ? GEO.faults() : []), get L() { return L; }, get players() { return players; }, get boss() { return boss; }, get bossActive() { return bossActive; }, TS, EHP, sfx: SFX, hero: () => P, heroId: () => hero(), time: () => time, VW: () => VW, VH: () => VH,
   number: (x, y, t, c) => number(x, y, t, c), text: (...a) => text(...a), burst: (...a) => burst(...a), sparks: (...a) => sparks(...a), shake: n => shakeCam(n), ring: (x, y, r, c) => ringAt(x, y, r, c, 0.5), dust: (x, y, n) => dust(x, y, n),
   damagePlayer: (...a) => damagePlayer(...a), asPlayer: (p, fn) => asPlayer(p, fn), upright: p => upright(p), overlap: (a, b) => overlap(a, b), box: b => box(b), hint: m => hintSay('tip', 5, m),

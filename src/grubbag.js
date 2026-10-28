@@ -35,12 +35,12 @@ export const GB = {
   sweep: { tell: [0.8, 0.74, 0.7], sp: 210, w: 10, dmg: 11, rec: 0.6 },
   grease: { tell: 1.1, sp: 170, burn: 1.8, beat: 0.45, dmg: 9, front: 12, rec: 0.9, cd: 13 },
   bell: { tell: 0.9, rush: 7, mul: 2.2, adds: 2, maxAdds: 2, rec: 0.8, cd: 20 },
-  grab: { tell: 0.85, t: 0.55, reach: 240, h: 50, hand: 20, dmg: 18, rec: 0.9, throwV: 260 },
+  grab: { tell: 0.85, t: 0.55, reach: 240, h: 42, hand: 20, dmg: 18, rec: 0.9, throwV: 260 },
   stun: { t: 7, mul: 2, cap: 0.1, boom: 0.06 },
   hot: { t: 5, mul: 2, cap: 0.07 },
   ward: 2.6, coughRest: 2.0,
   eat: 0.7, gulp: 0.5,
-  dish: { heal: 0.05, cap: 0.15, box: 9 },
+  dish: { heal: 0.05, cap: 0.1, box: 9 },
   line: { v: 34, every: [5.6, 5.0, 4.5], bombEvery: 4, first: 2.2, fuse: 5.6, batV: 250, blast: 34, blastDmg: 12, knockV: 120 },
   hungry: { t: 6, mul: 0.7, cd: 0.8 },
   stove: { cool: 12, box: 16 },
@@ -326,6 +326,7 @@ function gbPlan0(s) {
       if (e.mode === 'grabTell' || e.mode === 'grab') { if (dx < GB.grab.reach + half + 24 && P.y > G.floorY - GB.grab.h - 4) {
           const hand = e.handX; if (e.mode === 'grab' && hand != null && Math.abs(hand - P.x) < 50 && P.ground) { if (s.dodge && roll(key + 'd', 0.4)) { out.dodge = true; out.gx = clamp(P.x - 30); out.why = 'roll the grab'; return out; }
             return jump('jump the grab'); }
+          if (e.mode === 'grabTell' && e.modeT < 0.14 && P.ground) return jump('jump the grab (on the beat)');
           out.gx = P.x; out.why = 'the grab: ready to jump'; return out; } }
       if (e.mode === 'sweepTell' && onB) { out.gx = P.x; out.why = 'the sweep: ready to jump'; return out; }
       if (e.mode === 'flingTell') { out.gx = P.x; out.why = 'the fling: ready to jump'; return out; }
