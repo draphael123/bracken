@@ -29,6 +29,7 @@ export const POSE_OF = { parry: 'draw', jump: 'low', duck: 'high' };
 /* THE SIGNATURES, acts I-II (the first application; the act sweeps add acts III-V). mode = the MARK row's mode (type|mode). */
 export const SIG = {
   /* act I - the greenwood */
+  attendant: { mode: 'bashTell', answer: 'parry' },   /* (batch127 integ: kitchengate2's Grubbag attendant - the shield bash is told and parried) */
   archer: { mode: 'draw', answer: 'duck' },        sprig: { mode: 'biteTell', answer: 'parry' },     wasp: { mode: 'stingTell', answer: 'parry' },
   shield: { mode: 'shoveTell', answer: 'parry' },  sporeling: { mode: 'biteTell', answer: 'parry' }, lurker: { mode: 'springTell', answer: 'parry' },
   thorn: { mode: 'wind', answer: 'parry' },        hopper: { mode: 'hopTell', answer: 'parry' },     brute: { mode: 'wind', answer: 'parry' },
