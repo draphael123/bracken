@@ -26,7 +26,7 @@
 /* (claude/flasklever) the base of every lag she draws (0.2 s + 0..0.15): a human profile raises it to its own reaction (src/lab.js bossLab) */
 export const ROC_LAG = { base: 0.2 };
 export const EYRIE = {
-  hp: 1200, hitK: 1.9, dropK: 2.0,   /* (FIX PASS: dropK 1.3 -> 2.0 - her snatch drop is unblockable, so it reaches the shield) */
+  hp: 1600, hitK: 3.0, dropK: 3.1,   /* (FIX PASS: dropK 1.3 -> 2.0 - her snatch drop is unblockable, so it reaches the shield) */
   spd: 1.15,   /* (claude/roc2) she moves ~15% faster than the greybox: her flight, her dive, her rests and her tells (never under 0.5 s) */
   flyY: 128, circleR: 150, stuck: 3.4, downed: 3.2, ward: 3.0,
   diveTell: 0.87, diveV: 483, gustTell: 0.7, gust: 2.2, gustPush: 230, shedTell: 0.61, grabTell: 0.74, grab: 0.52, carry: 1.6, mash: 0.3,

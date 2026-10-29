@@ -16,8 +16,8 @@ const ARENAS = {
     ['dark', 'const f = BKT.fieldsState && BKT.fieldsState(); if (f) { f.moon.ph = "dark"; f.moon.t = 5; }', 90, 12]] },
   underwell: { id: 'underwell', moments: [
     ['p1-dry', 'if (b) b.phase = 1;', 60, 8],
-    ['p2-burning', 'if (b) { b.phase = 2; } const s = BKT.cqState && BKT.cqState(); if (s) s.scorch = 3;', 60, 8],
-    ['p3-flood', 'if (b) b.phase = 3; const s = BKT.cqState && BKT.cqState(); if (s) { s.scorch = 0; s.flood = 4; }', 80, 8],
+    ['p2-burning', 'const s = BKT.cqState && BKT.cqState(); if (s) { s.ph = 2; s.scorch = 3; }', 60, 8],
+    ['p3-flood', 'const s = BKT.cqState && BKT.cqState(); if (s) { s.ph = 3; s.scorch = 0; s.flood = 4; }', 80, 8],
     ['lamp-wall-west', 'if (b) b.phase = 1; const s = BKT.cqState && BKT.cqState(); if (s) { s.scorch = 0; s.flood = 0; }', 60, 3]] },
   rootway: { id: 'rootway', moments: [
     ['p1-stand', 'if (b) b.phase = 1;', 40, 26],
@@ -49,9 +49,9 @@ try {
       const shots = [];
       for (const [name, js, frames, dx] of ${JSON.stringify(A0.moments)}) {
         const b = BK.boss; BK.P.hp = BK.P.maxHp; BK.P.inv = 9999;
-        BK.tp(Math.round(A.x0 / 16) + dx, floorT); BK.P.vx = 0;
+        BK.tp(Math.round(A.x0 / 16) + dx, floorT); BK.P.vx = 0; for (let k = 0; k < 45; k++) { BK.P.hp = BK.P.maxHp; BK.P.inv = 9999; BK.sim(1); if (k % 3 === 0) BK.step(1); }
         try { eval(js); } catch (e) { shots.push({ name, err: String(e) }); continue; }
-        for (let k = 0; k < frames; k++) { BK.P.hp = BK.P.maxHp; BK.P.inv = 9999; if (BK.boss) { BK.boss.hp = BK.boss.maxHp; } ${key === 'fields' ? 'const f = BKT.fieldsState && BKT.fieldsState(); const keep = f && f.moon.ph;' : ''} BK.sim(1); }
+        for (let k = 0; k < frames; k++) { BK.P.hp = BK.P.maxHp; BK.P.inv = 9999; if (BK.boss) { BK.boss.hp = BK.boss.maxHp; } ${key === 'fields' ? 'const f = BKT.fieldsState && BKT.fieldsState(); const keep = f && f.moon.ph;' : ''} BK.sim(1); if (k % 3 === 0) BK.step(1); }
         BK.step(1);
         const v = BK.view, c = document.createElement('canvas'); c.width = v.VW * 2; c.height = v.VH * 2; const g = c.getContext('2d'); g.imageSmoothingEnabled = false; g.drawImage(v.buf, 0, 0, v.VW, v.VH, 0, 0, v.VW * 2, v.VH * 2);
         shots.push({ name, png: c.toDataURL('image/png'), bossMode: BK.boss && BK.boss.mode, phase: BK.boss && BK.boss.phase });
