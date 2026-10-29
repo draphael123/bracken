@@ -3262,7 +3262,8 @@ export function chaseClimb(BK, m, o = {}) {
        struck (about two in three, decided once a shot, as in the fight); not while he reels, his ward holds, or he has been stunned on this flight */
     if (m && m.alive && m.mode !== 'reel' && !(m.stunWard > 0) && m.stunFlight !== (m.reached ?? -1) + 1 && P.atk < 0 && !(o.noReturn)) { const h = (BK.PROG && BK.PROG.hero) || 'knight', reach = LAB_REACH[h] || 22, py = P.y - 8;
       for (const q of m.shots || []) { if (!mageReflectable(q)) continue; q.botTry ??= Math.random() < 0.65; const rx = P.x - q.x, ry = py - q.y;
-        if (q.botTry && Math.abs(rx) < reach * 0.85 && Math.abs(ry) < 18 && rx * q.vx + ry * q.vy > 0) { P.face = Math.sign(q.x - P.x) || P.face; BK.press('atk'); break; } } }
+        const sp = Math.hypot(q.vx, q.vy) || 1, lead = sp * (h === 'paladin' ? 0.22 : 0.12);   /* (the swing takes a moment to come round: meet the shot where it will be) */
+        if (q.botTry && Math.abs(rx) < reach * 0.85 + lead && Math.abs(ry) < 22 && rx * q.vx + ry * q.vy > 0) { P.face = Math.sign(q.x - P.x) || P.face; BK.press('atk'); break; } } }
 
     const was = P.hp; BK.sim(1); if (o.each) o.each(t);
     if (BK.P.dead > 0) died++;

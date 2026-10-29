@@ -159,7 +159,7 @@ const pg = await openPage({ audio: false, fonts: false }); let r;
 try {
   r = await pg.evalp(`(async()=>{const{LEVELS}=await import('/src/level.js');const MR=await import('/src/mage-realms.js');BK.manualSimulation=true;const out={realms:[],marks:[]};const rec=()=>{window.__textRec=[];BK.step(0);const t=window.__textRec||[];window.__textRec=null;return t;};
    BK.setHero('knight');BK.reset({fresh:true});BK.load(LEVELS.findIndex(l=>l.id==='fallingtower'));BK.state='play';BK.god=true;BK.sim(10);
-   BK.board();BK.sim(30);const b=BK.boss;for(let i=0;i<300&&b.mode==='wake';i++)BK.sim(1);out.fight=BK.bossActive;out.view=BK.view.VW;
+   BK.board();BK.sim(30);for(let i=0;i<3600&&BK.boss&&BK.boss.leg==='ascent';i++)BK.sim(1);const b=BK.boss;   /* (claude/ft4a: THE ASCENT first) */for(let i=0;i<300&&b.mode==='wake';i++)BK.sim(1);out.fight=BK.bossActive;out.view=BK.view.VW;
    const A=BK.L.arena;
    for(let k=0;k<3;k++){const row={};
      b.hp=Math.floor(b.hp0*MR.REALM.at[k]);b.realmRest=0;let told=false;

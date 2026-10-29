@@ -184,7 +184,7 @@ try {
    // a floor you went back under waits for you
    BK.tp(16,F[1].top-9);BK.sim(20);BK.tp(24,F[1].bot-1);BK.sim(200);out.waited=!F[1].done&&F[1].front===null;
    // the carpet, boarded at the top, starts the fight; the crown goes under it
-   BK.tp(30,${TOWER.SKY});BK.sim(5);BK.board();BK.sim(5);out.carpet=!!BK.carpet();out.active=BK.bossActive;BK.sim(120);out.crownGone=F[6].done||F[6].front!==null;
+   BK.tp(30,${TOWER.SKY});BK.sim(5);BK.board();BK.sim(5);out.carpet=!!BK.carpet();out.active=BK.bossActive;for(let i=0;i<3600&&BK.boss&&BK.boss.leg==='ascent';i++)BK.sim(1);BK.sim(120);   /* (claude/ft4a: boarded in the core, THE ASCENT carries you up into his hall first) */out.crownGone=F[6].done||F[6].front!==null;
    const y0=BK.P.y;for(let i=0;i<120;i++){BK.keys.down=true;BK.sim(1);}BK.keys.down=false;out.floorHeld=BK.P.y<=BK.L.arena.floor;out.fellNot=!!BK.carpet();
    /* THE RISE IS MEASURED FROM THE BOTTOM OF THE DIVE, NOT FROM WHERE HE BOARDED. y0 used to be both: the carpet put
       him on the parapet, which was the lowest point in the arena, so y0-P.y happened to be the climb. Boarding now
@@ -204,7 +204,7 @@ try {
      through it you stand on the sand under the Caravan's sky and WALK to the level's end - the level is won at the gate, not on the kill */
   const e2 = await pg.evalp(`(async()=>{const{LEVELS}=await import('/src/level.js');BK.manualSimulation=true;const SS=n=>{for(let i=0;i<n;i++){if(BK.state==='card')BK.cardClose();BK.sim(1);}};const out={};
     BK.setHero('knight');BK.reset({fresh:true});BK.load(LEVELS.findIndex(l=>l.id==='fallingtower'));BK.state='play';BK.god=true;SS(10);
-    BK.tp(${SPIRAL_TOP.check},${SPIRAL_TOP.row});SS(5);BK.board();SS(30);const b=BK.boss||BK.enemies().find(e=>e.t==='undeadmage'&&e.alive);out.fought=!!BK.bossActive;for(let i=0;i<300&&b.mode==='wake';i++)SS(1);b.hp=1;BKT.hurtEnemy(b,99,b.x-10,false);
+    BK.tp(${SPIRAL_TOP.check},${SPIRAL_TOP.row});SS(5);BK.board();SS(30);for(let i=0;i<3600&&BK.boss&&BK.boss.leg==='ascent';i++)SS(1);   /* (claude/ft4a: THE ASCENT first - he cannot die in it, its floor holds) */const b=BK.boss||BK.enemies().find(e=>e.t==='undeadmage'&&e.alive);out.fought=!!BK.bossActive;for(let i=0;i<300&&b.mode==='wake';i++)SS(1);b.hp=1;BKT.hurtEnemy(b,99,b.x-10,false);
     const S=BK.L.sanctum;for(let i=0;i<600&&!(S.open&&S.outOpen>=1);i++)SS(1);out.open=!!S.open;out.stillPlaying=BK.state==='play';
     for(let i=0;i<120&&!BK.L.sandWalk;i++){BK.P.x=S.out.x;BK.P.y=S.out.y;SS(1);}out.sand=!!BK.L.sandWalk;out.onFoot=!BK.carpet();out.row=Math.round(BK.P.y/16);out.night=BK.L.nightA;
     for(let i=0;i<900&&BK.state==='play';i++){BK.keys.right=true;SS(1);}BK.keys.right=false;out.won=BK.state;return out;})()`, 240000);
