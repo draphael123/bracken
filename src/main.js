@@ -6365,7 +6365,7 @@ function drawBestiary() {
   const LW2 = 96; // the width the names have before the card starts: anything longer is drawn small, and then loses its THE
   list.forEach((b, i) => { if (i < off || i >= off + ROWS) return; const r = PROG.beasts && PROG.beasts[b.t]; const sel = i === bestI; const yy = ly + (i - off) * 12;
     if (sel) text('>', lx - 2, yy, '#8fd160');
-    const nm = r && r.seen ? (BEAST_SHORT[b.t] || b.name) : '? ? ?';
+    const nm = r && r.seen ? (b.t === 'bzchief' ? 'BERSERKER CHIEF' : (BEAST_SHORT[b.t] || b.name)) : '? ? ?';   /* (batch129 textfit: the list column is too narrow for BERSERKER CHIEFTAIN; the card and the nameplate keep the full name) */
     const sz = inkW(nm, 8) <= LW2 ? 8 : 6, fit = fitName(nm, LW2, sz);
     text(fit, lx + 8, yy + (sz === 6 ? 1 : 0), sel ? '#fff6e0' : (r && r.seen ? '#c9d1dc' : '#8a8a8a'), 'left', sz); });
   if (off > 0) text('^', 104, ly - 7, UI.dim, 'center', 6); if (off + ROWS < list.length) text('v', 104, ly + ROWS * 12, UI.dim, 'center', 6);   /* clear of the FOES and BOSSES tabs */
