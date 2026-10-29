@@ -127,13 +127,14 @@ export function bakeClanThrower(base) {
 
 /* ================= THE CROSSED-AXE GUARD ================= */
 export function bakeClanGuard(base) {
-  const W = base.R[0].width, H = base.R[0].height, ay = base.ay, gy = ay - 1, cx = base.ax - 1, n = base.R.length;
+  /* (10-29) the guard's canvas is 8 px wider and 4 taller than the base shield goblin's (anchor moved with it; the hit box and the logical w/h are the base's): his crossed axes were cramped in 16x16 */
+  const PADX = 8, PADY = 4, W = base.R[0].width + PADX, H = base.R[0].height + PADY, ax2 = base.ax + PADX / 2, ay = base.ay + PADY, gy = ay - 1, cx = ax2 - 1, n = base.R.length;
   const walkFeet = [[[-2, 0], [2, 0]], [[0, 0], [0, 2]], [[2, 0], [-2, 0]], [[0, 2], [0, 0]]];
   /* the cloak: a bear's hide round the shoulders, falling behind, its head-hole a snarl of fur on the shoulder */
   const cloak = (g2, K) => { fillPoly(g2, [[K.shX - K.sw - 1, K.shY - 1], [K.shX + K.sw - 1, K.shY - 1], [K.x + K.sw - 3, K.hipY], [K.x - K.sw - 3, K.hipY + 1]], C.bear);
     rect(g2, K.shX - K.sw - 1, K.shY - 1, K.sw * 2 + 1, 2, C.bearL); line(g2, K.shX - K.sw, K.shY + 2, K.x - K.sw - 2, K.hipY, C.bearD); };
   const cross = (g2, K, spread, up, hs) => { hs = 2.2; const bx = K.shX + 3, by = K.shY + 4 - up;                                                             // TWO CROSSED AXES: two hafts in an X, a bit at the top of each
-    axe(g2, bx - 1, by, -90 + spread, 6, hs, 1); axe(g2, bx + 1, by, -90 - spread, 6, hs, -1); rect(g2, bx - 1, by - 1, 3, 2, C.skin); };
+    axe(g2, bx - 1, by, -90 + spread, 9, hs, 1); axe(g2, bx + 1, by, -90 - spread, 9, hs, -1); rect(g2, bx - 1, by - 1, 3, 2, C.skin); };
   const F = frames(W, H, ay, n, (g, f) => {
     const o = { x: cx, gy, legH: 3, torsoH: 4, hr: 2.2, sw: 2.8, head: (g2, K, hX, hY) => { rect(g2, hX - 3, hY - 3, 7, 2, C.hairW); rect(g2, hX - 3, hY - 2, 2, 5, C.hairW); rect(g2, hX - 2, hY - 0.5, 5, 1, C.paint); rect(g2, hX, hY + 1, 3, 3, C.hairW); },   // white hair, a white beard, a red band
       jerkin: C.hideD, wrap: C.rope, pre: cloak, trunk: (g2, K) => { rect(g2, K.shX - 1, K.shY + 2, 3, 1, C.bone); px(g2, K.shX, K.shY + 3, C.bone); } };
@@ -144,7 +145,7 @@ export function bakeClanGuard(base) {
     else { o.lean = -2; o.headDx = 0; o.feet = [[-2, 0], [2, 0]]; o.post = (g2, K) => { axe(g2, K.shX + 1, K.shY - 2, -112, 8, 3, 1); axe(g2, K.shX + 5, K.shY - 1, -70, 8, 3, -1); }; }   // hurt: knocked up and back
     man(g, o);
   });
-  return pack(F, base.ax, ay, base.w, base.h);
+  return pack(F, ax2, ay, base.w, base.h);
 }
 
 /* ================= THE CLAN CHAMPION ================= */
