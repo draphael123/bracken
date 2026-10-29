@@ -198,7 +198,7 @@ export function buildKitchenGate({ painter, T, TS }) {
   /* the larder hall: its lip (the spit hall's far floor runs on, row 14), the teach pit (a safe floor, row 23), the first landing (row 19), THE SALTING PIT (coals, row 26), the attendant's
      ledge (row 16), and the step down to the grease kitchens' floor (row 24) */
   air(a, a + 77, 6, 13); air(a + 4, a + 24, 14, 22); air(a + 25, a + 33, 14, 18); air(a + 34, a + 66, 14, 25); spike(a + 34, a + 66, 26); air(a + 67, a + 74, 14, 15); air(a + 75, a + 77, 14, 23);
-  sign(a + 1, 13, "THE HANGING LARDER. THE HOOK RAILS RUN ON CHAINS: AT A RAIL'S END IT DROPS YOU.");
+  sign(a + 0, 13, "THE HANGING LARDER. THE HOOK RAILS RUN ON CHAINS: AT A RAIL'S END IT DROPS YOU.");
   /* TEACH (safe): two rails, the second lower and under the first's end. JUMP in the red stretch (the hand-off) and you carry your height to the next hook; ride to the end and you
      drop into the larder pit - a floor, and the salting racks back up to the lip */
   const t2 = hookRail(a + 15, 16, a + 28, 18); hookRail(a + 3, 13, a + 14, 15, { hop: [a + 10.6, a + 13.2], hand: t2 });
@@ -207,14 +207,14 @@ export function buildKitchenGate({ painter, T, TS }) {
   /* the larder's shelving (a second height; none of it a way past a rail): a spice shelf over the lip, a salting rack in the pit (it reaches the first rail again - a retry, not a way round), a salt-box
      shelf over the first landing, a ham shelf over the attendant's ledge */
   for (const [x0, x1, y] of [[a + 0, a + 3, 10], [a + 8, a + 11, 19], [a + 26, a + 29, 16], [a + 30, a + 33, 13], [a + 69, a + 72, 12]]) { shelf(x0, x1, y); racks.push([x0, x1, y]); ent('coin', Math.round((x0 + x1) / 2), y - 1); }
-  deco(a + 9, 22, 'barrel'); deco(a + 12, 22, 'barrel', 1); deco(a + 20, 22, 'barrel'); coins([a + 14, 22], [a + 17, 22], [a + 8, 12], [a + 20, 13]);
+  deco(a + 9, 22, 'barrel'); deco(a + 12, 22, 'barrel', 1); deco(a + 20, 22, 'barrel'); coins([a + 14, 22], [a + 17, 22], [a + 14, 13], [a + 15, 13]);   /* (the two in the air ride the hop's arc: a trail to follow) */
   prop('pans', a + 10, 10); prop('flour', a + 22, 23); prop('block', a + 30, 19); prop('spices', a + 70, 16);
   /* the first landing: two cooks at their blocks */
   foe('sprig', a + 29, 18, 'larderA', { face: -1 }); foe('hearthgob', a + 32, 18, 'larderA', { face: -1 }); coins([a + 26, 18], [a + 31, 18]);
   /* TEST, TWICE, OVER THE SALTING PIT's COALS: a hop to a lower rail, and a hop from that onto THE HAUL LINE - a chain that runs UPHILL - to the attendant's ledge */
   const s3 = haulLine(a + 56, 386, a + 68, 244), s2 = hookRail(a + 45, 21, a + 55, 23, { hop: [a + 51.4, a + 53.3], hand: s3 }); hookRail(a + 33, 18, a + 44, 20, { hop: [a + 40.6, a + 43.2], hand: s2 });
   sign(a + 30, 18, 'THE SALTING PIT. TWO HAND-OFFS OVER THE COALS. THE LAST CHAIN HAULS YOU UP.');
-  coins([a + 38, 13], [a + 49, 16], [a + 60, 18]);
+  coins([a + 44, 18], [a + 45, 18], [a + 54, 20], [a + 55, 20], [a + 60, 21], [a + 64, 18]);   /* on the hops' arcs and up the haul line */
   /* the attendant's ledge: he throws plates as you come up the haul line, and holds the ledge */
   foe('attendant', a + 72, 15, 'larderB', { face: -1 }); coins([a + 68, 15], [a + 71, 15]);
   shelf(a + 76, a + 77, 19); racks.push([a + 76, a + 77, 19]);   /* a dresser on the step down */
@@ -280,7 +280,7 @@ export function buildKitchenGate({ painter, T, TS }) {
   const fl = flare('flue', b + 53, b + 55, 27, { period: 2.4, tell: 0.8, on: 0.8, phase: 0, h: 156, bed: 'coals' });
   const c2 = hookRail(b + 47, 16, b + 62, 21); hookRail(b + 35, 13, b + 46, 15, { hop: [b + 42.6, b + 45.2], hand: c2, flue: { id: fl.id, tIn: 1.6, tOut: 2.05 } });
   sign(b + 34, 13, 'THE FLUE FLARES UP THROUGH THE HOOKS. TAKE A HOOK AS IT GLOWS: YOU PASS AS IT DIES.');
-  coins([b + 41, 11], [b + 50, 14], [b + 57, 17]);
+  coins([b + 46, 13], [b + 47, 13]);   /* on the hop's arc */
   /* THE CARVERY DOOR (the trail, again): the carvers' stove, its grease trail, a cook on it, and a tallow door at its end */
   block(b + 73, b + 80, 6, 12);
   const stove4 = fire('stove4', b + 64, 21, b + 66, 22);
@@ -304,7 +304,7 @@ export function buildKitchenGate({ painter, T, TS }) {
   coins([317, 15], [321, 15]);
   /* THE HEARTH TRENCH on the hooks (REQUIRED) - (claude/kitchengate3) the hop's EXAM: two rails now, a hand-off over the coals */
   air(323, 340, 22, 25); spike(323, 340, 26);
-  { const h2 = hookRail(332, 18, 342, 21); hookRail(322, 15, 331, 17, { hop: [327.6, 330.2], hand: h2 }); }
+  { const h2 = hookRail(332, 18, 342, 21); hookRail(322, 15, 331, 17, { hop: [327.6, 330.2], hand: h2 }); coins([331, 15], [332, 15]); }   /* (the coins ride the hop's arc) */
   sign(316, 15, 'THE HEARTH TRENCH. TAKE A HOOK OFF THE GALLERY, AND HAND OFF IN THE RED.');
   /* THE BUTTERY DOOR (REQUIRED): grease, a butcher on the trail, a thrower on the dresser, a cook - and the door at the trail's end */
   slk(341, 354, 22);
