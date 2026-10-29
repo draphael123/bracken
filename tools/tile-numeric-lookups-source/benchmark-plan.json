@@ -1,0 +1,91 @@
+{
+  "time": "2026-10-29T16:07:47.566Z",
+  "sourceManifestSha256": "a7f8ef4e4f0877d325097af08c9a01906c79091071a555bcd6ae2343eb32464a",
+  "cohorts": [
+    [
+      "wood",
+      "marsh",
+      "stockade",
+      "spore",
+      "kings",
+      "scree",
+      "undercrown"
+    ],
+    [
+      "redgorge",
+      "underwell",
+      "skyroad",
+      "glasssea",
+      "ksar",
+      "rootway"
+    ],
+    [
+      "minecart",
+      "church",
+      "towpath",
+      "buriedcity",
+      "sealedpyramid",
+      "fenroad"
+    ]
+  ],
+  "sourceComponent": {
+    "mode": "tile-numeric-lookups-component-oct29",
+    "status": "completed",
+    "outerTimeoutMinutes": 15,
+    "audited": true,
+    "controller": "6488ea416461717482717a4d2cb84ad05c7e3647",
+    "directory": "work/tile-numeric-component-cloud-6488ea41",
+    "run": 40906410022,
+    "url": "https://github.com/draphael123/bracken/actions/runs/40906410022",
+    "dispatchedAt": "2026-10-29T15:55:54.029Z",
+    "conclusion": "success"
+  },
+  "protocol": "One first controlled document per browser, with the original pre-navigation seed/GC hooks, CPU4/915x412/DPR2.625 and the same manual-at-boot/render clock. No uncontrolled initial Game boot or second navigation.",
+  "originalCdpUndoRequired": true,
+  "noOriginalGcOrMemoryOrReadinessChanges": true,
+  "allOriginal19Levels342Readbacks228PairsRetained": true,
+  "browsers": 27,
+  "rounds": 3,
+  "controlVariants": [
+    "before",
+    "after",
+    "return"
+  ],
+  "qualification": {
+    "sameCoverageReadbacks": 342,
+    "sameExactPairs": 228,
+    "originalThreeBeforeCandidateReturnRounds": true,
+    "strongTargetGainPercent": 10,
+    "minimumStrongTargetFraction": 0.5,
+    "strongRangesBelowBothControls": true,
+    "maximumControlDriftPercent": 15,
+    "aggregateWholePhaseMinimumGainPercent": 5,
+    "aggregateCandidateFasterThanBothControlsEveryRound": true,
+    "peakRendererMb": 1536,
+    "admissionMb": 4352,
+    "maximumUntargetedReadyRegressionVersusSlowerControlPercent": 15
+  },
+  "aggregateWholePhase": "For each round and variant, sum cohort elapsed times. Label as aggregate independent-cohort elapsed time, never one continuous session or prior-source cold-start evidence.",
+  "earlyStopOnSamePeakCeiling": true,
+  "priorRejectedSourceNeverRerun": true,
+  "noGameOrBrowserExecutedLocally": true,
+  "firstDocumentSourceProof": {
+    "time": "2026-10-29T16:14:38.674Z",
+    "sourceOnly": true,
+    "originalCdpSha256": "fab8ba4b74dba288049a314f65f4c0cc5f54ad543d6daec43791f43afda51a75",
+    "exactUndo": true,
+    "allowedEditsOnly": [
+      "import",
+      "import",
+      "import",
+      "import",
+      "import",
+      "import",
+      "root",
+      "preNavHook"
+    ],
+    "allNativeGcAdmissionMemoryReadinessAndCloseBodiesUnchanged": true,
+    "firstDocumentClockAndViewportAssertionsAdded": true,
+    "noGameOrBrowserOrFactoryExecution": true
+  }
+}

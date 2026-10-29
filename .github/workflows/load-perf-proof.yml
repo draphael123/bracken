@@ -4,7 +4,7 @@ on:
     inputs:
       mode:
         type: choice
-        options: [tile-numeric-lookups-component-oct29, tile-memo-fast-access-oct29, tile-memo-allocation-oct29, default-boss-incremental-oct29, default-boss-native-oct29, layout-phase-diagnostic-oct29, pure-sprite-fixed-qualified, pure-sprite-context-native, private-sprite-cold-profile, private-sprite-native, private-sprite-union-qualified, captured-art-union-qualified, captured-level-art-component, fixed-level-art-selfcontained-loader, fixed-level-art-main-loader, fixed-level-art-view-component, fixed-level-art-weak-component, frame-tile-typed-arenas, fixed-level-art-component, frame-tile-lips-arenas, frame-tile-pattern-component, art-use-coverage, fresh-canvas-clone-component, wall-phase-pattern-component, wall-pattern-runs-component, opaque-invisible-standing, foreground-invisible-arenas, foreground-invisible-component, foreground-row-component, opaque-art-fused-cold, opaque-art-fused-component, private-foreground-component, layout-work-queue, opaque-sprite-diagnostic, opaque-sprite-union, opaque-tile-standing, deferred-standing, palette-ui, palette-standing, palette-base, layout-candidate, foreground-reuse, foreground-direct, fixed-ornaments, region-props, border-present, tile-warm, captain-boot, cpu-profile, tile-cache, paladin-boot, hero-reuse, profile, sfx, compare, mobile, calls, present, campaign, variant, pixel-debug]
+        options: [tile-numeric-lookups-loader-oct29, tile-numeric-lookups-component-oct29, tile-memo-fast-access-oct29, tile-memo-allocation-oct29, default-boss-incremental-oct29, default-boss-native-oct29, layout-phase-diagnostic-oct29, pure-sprite-fixed-qualified, pure-sprite-context-native, private-sprite-cold-profile, private-sprite-native, private-sprite-union-qualified, captured-art-union-qualified, captured-level-art-component, fixed-level-art-selfcontained-loader, fixed-level-art-main-loader, fixed-level-art-view-component, fixed-level-art-weak-component, frame-tile-typed-arenas, fixed-level-art-component, frame-tile-lips-arenas, frame-tile-pattern-component, art-use-coverage, fresh-canvas-clone-component, wall-phase-pattern-component, wall-pattern-runs-component, opaque-invisible-standing, foreground-invisible-arenas, foreground-invisible-component, foreground-row-component, opaque-art-fused-cold, opaque-art-fused-component, private-foreground-component, layout-work-queue, opaque-sprite-diagnostic, opaque-sprite-union, opaque-tile-standing, deferred-standing, palette-ui, palette-standing, palette-base, layout-candidate, foreground-reuse, foreground-direct, fixed-ornaments, region-props, border-present, tile-warm, captain-boot, cpu-profile, tile-cache, paladin-boot, hero-reuse, profile, sfx, compare, mobile, calls, present, campaign, variant, pixel-debug]
         default: profile
       baseline:
         type: string
@@ -110,6 +110,68 @@ jobs:
         with:
           name: default-boss-native-oct29
           path: ${{ runner.temp }}/default-boss-native-oct29/
+          if-no-files-found: error
+  tile-numeric-lookups-loader-oct29:
+    if: inputs.mode == 'tile-numeric-lookups-loader-oct29'
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        cohort: [1,2,3]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/checkout@v4
+        with:
+          ref: 1a576c3f4511b6856df9fb4738df5aaae9987e81
+          path: tile-numeric-loader-game
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.11.1'
+      - name: Original standalone cleanup on exact new source with restoration
+        run: node tools/tile-numeric-lookups-preflight.mjs
+        env:
+          FIXED_ART_GAME: tile-numeric-loader-game
+          FIXED_ART_LOADER_OUT: ${{ runner.temp }}/tile-numeric-loader-${{ matrix.cohort }}
+      - name: All original controls on a fresh controlled document with unchanged limits and native GC
+        run: node tools/tile-numeric-lookups-loader-runner.mjs
+        env:
+          FIXED_ART_GAME: tile-numeric-loader-game
+          FIXED_ART_LOADER_OUT: ${{ runner.temp }}/tile-numeric-loader-${{ matrix.cohort }}
+          TILE_NUMERIC_COHORT: ${{ matrix.cohort }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: tile-numeric-loader-${{ matrix.cohort }}
+          path: ${{ runner.temp }}/tile-numeric-loader-${{ matrix.cohort }}/
+          if-no-files-found: error
+  tile-numeric-lookups-qualification-oct29:
+    if: always() && inputs.mode == 'tile-numeric-lookups-loader-oct29'
+    needs: tile-numeric-lookups-loader-oct29
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.11.1'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: tile-numeric-loader-*
+          path: ${{ runner.temp }}/numeric-cohorts
+      - name: Original19level coverage342readbacks228exact pairs and predeclared material controls
+        run: node tools/tile-numeric-lookups-qualify.mjs
+        env:
+          TILE_NUMERIC_ARTIFACTS: ${{ runner.temp }}/numeric-cohorts
+          TILE_NUMERIC_QUAL_OUT: ${{ runner.temp }}/tile-numeric-qualification
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: tile-numeric-qualification
+          path: ${{ runner.temp }}/tile-numeric-qualification/
           if-no-files-found: error
   tile-numeric-lookups-component-oct29:
     if: inputs.mode == 'tile-numeric-lookups-component-oct29'
