@@ -17,7 +17,7 @@ export const OVERHANGS = [   // [prop column, feet row, side (the way its line r
 ];
 /* [column, row, text]: the verb is met FIRST on the terraces (the test shelf at 134 comes before the cairn field's teach at 250), so the terraces and the bank say it too */
 export const ROAD_SIGNS = [
-  [131, 15, 'THE CLIFF IS LOOSE. STRIKE THE PROP UNDER AN OVERHANG WHILE A FOE STANDS BELOW IT.'],
+  [132, 15, 'THE CLIFF IS LOOSE. STRIKE THE PROP UNDER AN OVERHANG WHILE A FOE STANDS BELOW IT.'],
   [489, 18, 'TWO TROLLS AND A MAUL. THE BANK IS ROTTEN OVER THEM: KNOCK THE PROPS OUT.'],
 ];
 export const TEACH_SIGN = [259, 13, 'A DRY-STONE PROP HOLDS THAT OVERHANG UP. KNOCK IT OUT WHEN SOMETHING STANDS UNDER IT.'];
