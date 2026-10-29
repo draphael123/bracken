@@ -20,7 +20,7 @@ const LIGHT = {
 export function attackPose(hero, p, frames) {
   const directional = p.swingKind === 'rise' || p.swingKind === 'sweep' || p.swingKind === 'airUp';   /* (claude/combat3: the air up-slash) */
   const combo = (p.combo || 1) % 3;
-  let desired = directional ? p.swingKind : !p.ground && frames.air ? 'air' : combo === 2 ? 'atkB' : combo === 0 ? 'atkC' : 'atk';
+  let desired = directional ? p.swingKind : !p.ground && frames.air ? 'air' : combo === 2 ? 'atkB' : combo === 0 ? (hero === 'reaper' && frames.bloodLash && !p.heavy ? 'bloodLash' : 'atkC') : 'atk';   /* (claude/bkblood) the Blood Knight's third cut is THE BLOOD LASH */
   /* (claude/berserker2) THE BERSERKER'S FLURRY: left axe, right axe, and the run's fifth the CROSS-CHOP; in the air both axes spin. Each of his keys falls back to the
      frame list it borrows until the barbarian lane draws it (chars.js) */
   if (hero === 'berserker' && !directional) { const want = !p.ground ? 'bzAirSpin' : p.heavySwing ? 'bzCross' : (p.combo || 1) % 2 ? 'bzFlurryL' : 'bzFlurryR';

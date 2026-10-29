@@ -319,6 +319,12 @@ export const SFX = {
   kneelRise() { if (!gate('kneelRise', 0.2)) return; tone('sine', 262, 392, 0.14, 0.05); tone('triangle', 784, 760, 0.2, 0.02, 0.06); },   /* up off his knee: the chant let go, a short lift */
   earthListen() { if (!gate('earthListen', 0.3)) return; tone('sine', 90, 55, 0.25, 0.18); noise(0.12, 0.08, 300, 0.6); pad('sine', 70, 64, 0.5, 0.05, 0.05, 400, 0.08); },
   earthSense() { if (!gate('earthSense', 0.25)) return; tone('sine', 120, 70, 0.2, 0.22); noise(0.08, 0.12, 500, 0.8); bell(392, 0.7, 0.05, 0.08); tone('triangle', 784, 760, 0.35, 0.03, 0.12); },
+  /* (claude/bkblood) THE BLOOD KNIGHT'S RALLY, HEARD: a wet DRINK each blow that wins blood back (a gulp: a wet slap + a falling throat tone, deeper for more, k 0..1); the HEARTBEAT
+     while he owes (lub-dub, louder with the debt); CRIMSON FRENZY's roar of blood; THE BLOOD LASH's crack */
+  bkDrink(k = 0.5) { if (!gate('bkDrink', 0.06)) return; noise(0.07, 0.18 + 0.1 * k, 650, 0.6); tone('sine', 260 - 60 * k, 110, 0.13, 0.16 + 0.08 * k, 0.02); tone('sine', 150, 70, 0.11, 0.12, 0.09); noise(0.05, 0.08, 1800, 2, 0.1); },
+  bkHeart(k = 0.5) { if (!gate('bkHeart', 0.25)) return; tone('sine', 68, 44, 0.11, 0.16 + 0.22 * k); noise(0.05, 0.04 + 0.05 * k, 120, 0.7); tone('sine', 60, 40, 0.1, 0.12 + 0.18 * k, 0.15); },
+  bkFrenzy() { if (!gate('bkFrenzy', 0.3)) return; noise(0.5, 0.26, 300, 0.5); tone('sawtooth', 90, 45, 0.5, 0.14); tone('sine', 55, 32, 0.7, 0.3, 0.02); noise(0.3, 0.12, 1300, 1.2, 0.15); tone('sine', 68, 44, 0.12, 0.3, 0.35); tone('sine', 60, 40, 0.1, 0.24, 0.5); },
+  bkLash() { if (!gate('bkLash', 0.1)) return; noise(0.06, 0.2, 2600, 1.5); noise(0.12, 0.14, 700, 0.6, 0.03); tone('square', 900, 300, 0.05, 0.05); },
   bloodDraw() { if (!gate('bloodDraw', 0.15)) return; noise(0.35, 0.16, 420, 0.5); tone('sine', 180, 90, 0.35, 0.1); noise(0.2, 0.08, 1400, 1.5, 0.12); },
   bloodHarvest() { if (!gate('bloodHarvest', 0.15)) return; noise(0.16, 0.24, 380, 0.5); tone('sine', 240, 60, 0.22, 0.18); tone('sine', 62, 40, 0.18, 0.26, 0.14); tone('sine', 62, 40, 0.16, 0.2, 0.34); },
   /* THE CROUCH TWISTS, PART A (src/crouch-a.js). The knight's LOW GUARD: oak on the turf and a short dull knock, no ring (the ring is

@@ -3689,7 +3689,7 @@ function trialYard(hero) {
      of his yard that speak of it, so the rework changes his words (and what counts) here and nowhere else. */
   const REAPER_C = {
     ward: ['ward', 3, 'THE BLOOD WARD: HOLD C TO WARD, RELEASE TO NOVA. TAKE THREE OF THE ARCHER\'S ARROWS ON IT.', [['archer', 22]], 'HOLD LB, THEN LET GO'],
-    meter: ['meter', 1, 'BLOOD SURGE: HIS BAR FILLS WITH WHAT HE TAKES. FULL, HOLD F. IT IS FILLED FOR YOU HERE.', [['dummy', 14], ['sprig', 20]], 'HOLD Y WITH A FULL BAR'],
+    meter: ['meter', 1, 'CRIMSON FRENZY: VITAE FILLS WITH BLOOD WON BACK. FULL, HOLD F. IT IS FILLED FOR YOU HERE.', [['dummy', 14], ['sprig', 20]], 'HOLD Y WITH A FULL BAR'],
   };
   /* (claude/bkkit2) HIS TREE STEP IS THE RED HOST: his blood magic (BLOODWORMS is lent on F when he has none of it), paid in blood - shown, not taken, in a yard - and what
      lands wins it back. Any of the four counts (one kind 'host'): a worm's bite, a bolt that lands, a drain's pull, the pool's bite. (Held on a full bar, F is still the surge.) */

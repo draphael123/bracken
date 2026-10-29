@@ -2940,6 +2940,16 @@ function reaperBloodPoses(F, sh) {
   F.bloodMoon = [K({ dy: -2, legs: 'wide', sho: 1, hy: -1, ...gs2(X, Y - 9, X - 4, Y - 26), plume: 2, bits: [...lights(HOT), ...moon(8, HOT, PINK).map(([x, y, c]) => [x - 4, y + 1, c]), a(X - 4, Y - 27, WHT)] }),
     K({ wide: 6, dx: 2, dy: 2, legs: 'wide', ...gs2(X + 4, Y - 1, X + 9, Y + 9), plume: 1, bits: [a(X + 9, Y + 9, WHT), a(X + 9, Y + 6, HOT), a(X + 8, Y + 3, PINK), a(X + 6, Y + 1, RED)] }),
     K({ wide: 14, dx: 2, dy: 2, legs: 'wide', ...gs2(X + 5, Y + 2, X + 9, Y + 9), plume: 0, bits: [...lights(HOT), ...geyser(11, DRED), a(X + 9, Y + GROUND, WHT), a(X + 8, Y + GROUND - 1, HOT), a(X + 10, Y + GROUND - 1, HOT), a(X + 13, Y + GROUND - 10, RED), a(X + 3, Y + GROUND - 11, PINK)] })];
+  /* (claude/bkblood) THE BLOOD LASH - the third cut of the rhythm (B16: its own pose, not the knight's third cut and not the old drag): the greatsword hauled back high over
+     the shoulder in both fists, blood running down the fuller to the hands; the blade SNAPPED forward level at the chest, the arms thrown out straight like a whip-hand, the
+     blood leaving the point (the whip itself is main.js drawBkBlood); held out at the full stretch, the body leaning after it; then the blade let drop, still dripping. Greybox:
+     the art lane redraws it (scratch/lane-reports/bkblood.md art list). */
+  const rest0 = F.atk && F.atk[4];
+  F.bloodLash = [K({ dx: -2, legs: 'wide', sho: 1, ...gs2(X - 2, Y - 6, X - 10, Y - 21), plume: 1, bits: [...lights(PINK), ...along(X - 2, Y - 6, X - 10, Y - 21, 3, DRED, RED), a(X - 11, Y - 22, PINK)] }),
+    K({ wide: 10, dx: 2, legs: 'runC', ...gs2(X + 5, Y - 3, X + 19, Y - 7), plume: 2, bits: [...lights(HOT), a(X + 19, Y - 7, WHT), a(X + 16, Y - 6, HOT), a(X + 12, Y - 5, PINK), a(X + 8, Y - 4, RED), a(X + 21, Y - 8, RED), a(X + 23, Y - 8, DRED)] }),
+    K({ wide: 14, dx: 4, dy: 1, legs: 'runC', ...gs2(X + 7, Y - 2, X + 24, Y - 3), plume: 2, bits: [...lights(HOT), a(X + 24, Y - 3, WHT), a(X + 20, Y - 3, HOT), a(X + 15, Y - 2, PINK), a(X + 10, Y - 2, RED), a(X + 26, Y - 4, RED), a(X + 28, Y - 3, PINK), a(X + 30, Y - 4, DRED)] }),
+    K({ wide: 6, dx: 2, dy: 2, legs: 'wide', ...gs2(X + 4, Y + 2, X + 16, Y + 8), plume: 0, bits: [...lights(PINK), a(X + 16, Y + 9, RED), a(X + 15, Y + 11, DRED), a(X + 12, Y + 7, PINK), a(X + 8, Y + 5, RED)] })];
+  if (rest0) F.bloodLash.push(rest0);
   /* (claude/bkpolish) THE FLICK (tap C, bkfeel): the blade snapped up off the low guard in both fists with the edge turned out - a flat blood-bright streak where it cut the air - then left up and quivering a beat */
   F.bkFlick = [K({ dx: -1, dy: 1, legs: 'wide', sho: 1, ...gs2(X + 2, Y + 2, X + 14, Y + 8), plume: 2, bits: [a(X + 12, Y + 7, PINK), a(X + 8, Y + 5, DRED)] }),
     K({ wide: 6, dx: 0, legs: 'wide', ...gs2(X + 3, Y - 2, X + 12, Y - 17), plume: 1, bits: [...lights(PINK), a(X + 12, Y - 17, WHT), a(X + 11, Y - 14, HOT), a(X + 9, Y - 10, PINK), a(X + 6, Y - 5, RED), a(X + 15, Y - 12, DRED), a(X + 14, Y - 8, RED)] })];
