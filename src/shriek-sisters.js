@@ -37,24 +37,24 @@
 //   NO ADDS (the three are the fight). Every move TOLD with its own windup and release pose (B16, src/shriek-sisters-hands.js POSE) and its own sound.
 import { tempoOf } from './marks.js';   /* (claude/rookery3) THE TEMPO CLASSES: src/marks.js TEMPO_CLASS */
 export const SS = {
-  hp: { diver: 920, shrieker: 690, snatcher: 800 },   /* (claude/rookery3: +11% with the stagger, 830/625/720 -> 920/690/800 - the sisters2 numbers; the fights had fallen to ~95 s) */   /* (claude/rookery2 tune: 770/580/670 -> 830/625/720 with the ride and phase 2, n=12/hero 74% -> see the lane report) */   /* (claude/sisters2 tune, BOT_PROFILE=human L14 n=36/hero: 920/690/800 -> 770/580/670, grab dmg 12 -> 10, grab cd 8/5.5/4.5 -> 10/7/5.5 first 7 -> 9: 47% -> 68%) */
+  hp: { diver: 860, shrieker: 650, snatcher: 750 },   /* (claude/rookery3: +4% with the stagger, 830/625/720 -> 860/650/750: n=24/hero read 62% at +11%, 60% at +7%; the fights had fallen to ~95 s at +0%) */   /* (claude/rookery2 tune: 770/580/670 -> 830/625/720 with the ride and phase 2, n=12/hero 74% -> see the lane report) */   /* (claude/sisters2 tune, BOT_PROFILE=human L14 n=36/hero: 920/690/800 -> 770/580/670, grab dmg 12 -> 10, grab cd 8/5.5/4.5 -> 10/7/5.5 first 7 -> 9: 47% -> 68%) */
   wing: 0.4, downK: 1.5, wardMul: 0.4, last: 0.8,
   hover: { diver: 112, shrieker: 150, snatcher: 104 },   /* (claude/sisters2: the boulder's carry 150 -> 118 so the dropTell pose and its mark are on the arena's screen; the shrieker stays at 150 - at 124 her own dives after the diver falls came too fast: 54%) */
-  dive: { tell: [0.75, 0.75, 0.72], lock: 0.26, markTell: 0.62, v: 430, dmg: 22, land: 0.7, rise: 0.8, cd: [1.8, 1.6, 1.4], second: 0.42, pairDmg: 16, downed: 0.9 },   /* (claude/rookery3: the shield's knock-down 1.1 -> 0.9 - the knight blocks every medium dive now that they come one at a time: 24/24) */   /* (claude/rookery3) MEDIUM: 0.75 in every phase (was 0.85/0.75/0.7); the pair's second dive is LIGHT (0.42, 12) */
+  dive: { tell: [0.75, 0.75, 0.72], lock: 0.26, markTell: 0.62, v: 430, dmg: 21, land: 0.7, rise: 0.8, cd: [1.8, 1.6, 1.4], second: 0.42, pairDmg: 15, downed: 0.9 },   /* (claude/rookery3: the shield's knock-down 1.1 -> 0.9 - the knight blocks every medium dive now that they come one at a time: 24/24) */   /* (claude/rookery3) MEDIUM: 0.75 in every phase (was 0.85/0.75/0.7); the pair's second dive is LIGHT (0.42, 12) */
   stun: { t: 2.6, mul: 2, cap: 0.24 },
   ward: 2.5,
   slab: { w: 48, regrow: [9, 9, 6.5] },
   scream: { tell: 1.15, cd: [3.8, 3.3, 2.8], mark: 1.6, swoop: 1.9, low: 34 },   /* (claude/rookery3) HEAVY: 0.95 -> 1.15 (head thrown back, a deep cue); the swoop after it is the punish */
   wave: { tell: 0.7, v: 230, h: 26, dmg: 18, life: 1.8 },   /* (claude/rookery3) MEDIUM */
-  rock: { tell: 1.1, fall: 0.62, r: 22, dmg: 30, life: 11, pick: 1.0, carry: 2.2, high: 118, spent: 0.9, low: 40 },   /* (claude/rookery3) HEAVY: 0.8 -> 1.1, 21 -> 24; then SPENT: she sinks low and empty-handed for SS.rock.spent s (whole: the punish) */   /* THE BOULDER DROP (claude/sisters2: carried high, a shadow marker) */
-  snatch: { tell: 0.42, v: 320, h: 16, dmg: 16, cd: 6.5 },   /* (claude/rookery3) LIGHT: 0.8 -> 0.42, 22 -> 12 (she sweeps in from the far wall: the crossing is the read) */
+  rock: { tell: 1.1, fall: 0.62, r: 22, dmg: 28, life: 11, pick: 1.0, carry: 2.2, high: 118, spent: 0.9, low: 40 },   /* (claude/rookery3) HEAVY: 0.8 -> 1.1, 21 -> 24; then SPENT: she sinks low and empty-handed for SS.rock.spent s (whole: the punish) */   /* THE BOULDER DROP (claude/sisters2: carried high, a shadow marker) */
+  snatch: { tell: 0.42, v: 320, h: 16, dmg: 15, cd: 6.5 },   /* (claude/rookery3) LIGHT: 0.8 -> 0.42, 22 -> 12 (she sweeps in from the far wall: the crossing is the read) */
   sister: { w: 26, h: 18 },
   /* (claude/sisters2) THE SIGNATURE MOVES. sig: each survivor's own cooldown x this by phase (0 = all three, 1 = one fallen, 2 = the last) */
   sig: [1, 0.72, 0.6],
-  chain: { tell: 1.15, n: [2, 3, 3], every: [3, 2, 2], aim: 0.66, jar: 0.42, stun: 4.0, cap: 0.34, rise: 12, dmg: 30, spent: 1.0 },   /* (rise 40 -> 12: the heavy climb, grown, stayed under the screen's top edge) */   /* (claude/rookery3) HEAVY: 0.9 -> 1.15, each dive 24; a chain that ends in no rock leaves her SPENT on the floor (whole) */
-  rake: { tell: 0.4, v: 250, T: 0.5, h: 16, dmg: 15, chance: [0.6, 1, 1], end: 0.6, pre: 0.25 },   /* (claude/rookery3) LIGHT: 0.5 -> 0.4, 18 -> 11, a shorter slide */
+  chain: { tell: 1.15, n: [2, 3, 3], every: [3, 2, 2], aim: 0.66, jar: 0.42, stun: 4.0, cap: 0.34, rise: 12, dmg: 28, spent: 1.0 },   /* (rise 40 -> 12: the heavy climb, grown, stayed under the screen's top edge) */   /* (claude/rookery3) HEAVY: 0.9 -> 1.15, each dive 24; a chain that ends in no rock leaves her SPENT on the floor (whole) */
+  rake: { tell: 0.4, v: 250, T: 0.5, h: 16, dmg: 14, chance: [0.6, 1, 1], end: 0.6, pre: 0.25 },   /* (claude/rookery3) LIGHT: 0.5 -> 0.4, 18 -> 11, a shorter slide */
   shock: { tell: 0.7, range: 150, h: 64, dmg: 8, vx: 300, vy: -160, low: 30, gap: 64, edge: 30, teeter: 0.7, T: 0.45 },
-  echo: { tell: 0.42, ahead: 56, w: 22, dmg: 12, life: 8, T: 0.3 },   /* (claude/rookery3) LIGHT: 0.75 -> 0.42, 14 -> 8 (the tile is AHEAD of you: a quick flash) */
+  echo: { tell: 0.42, ahead: 56, w: 22, dmg: 11, life: 8, T: 0.3 },   /* (claude/rookery3) LIGHT: 0.75 -> 0.42, 14 -> 8 (the tile is AHEAD of you: a quick flash) */
   grab: { tell: 0.7, v: 290, T: 0.8, h: 14, dmg: 10, lift: 0.8, hold: 1.8, strikes: 3, gap: 0.22, liftH: 56, drop: 14, free: 1.6, cd: [8, 6, 4.5], first: 8, hang: 24 },
   /* (claude/rookery2) THE LEVEL'S VERB IN THE FIGHT - P1: a sister KNOCKED DOWN (her dive or rake on a shield, a grab struck loose) climbs off the rock (ferryWait, SS.ride.window s:
      UP: GRAB): grab her talons and she FERRIES you up to the SHRIEKER'S PERCH (a bone nest lashed to a spire); land beside the shrieker and she is CORNERED (open x SS.ride.mul,
