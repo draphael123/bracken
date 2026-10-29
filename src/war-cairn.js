@@ -89,7 +89,7 @@ export function buildWarCairn({ painter, T, TS }) {
   block(3, 36, 68, 70);                                    /* T5: a spur back over the gully (a cairn of the clan's dead, and a silver) */
   ent('sign', 14, 95, { text: WC_SAY_SIGNS.lore });
   sign(20, 95, WC_RULE);
-  foe('goat', 30, 88, 'gully', { face: -1 }); foe('soldier', 20, 81, 'gully', { face: 1 }); foe('goat', 26, 75, 'gully', { face: -1 });
+  foe('goat', 30, 88, 'gullyT2', { face: -1 }); foe('soldier', 20, 81, 'gullyT3', { face: 1 }); foe('goat', 26, 75, 'gullyT4', { face: -1 });
   deco(23, 95, 'cairn'); deco(12, 81, 'stone', 1); deco(20, 88, 'bones'); deco(30, 75, 'cairn', 1); deco(10, 67, 'cairn', 2);
   ent('silver', 5, 67);                                    /* SILVER ONE: the spur's end, over the gully */
   coins([6, 93], [4, 91], [4, 89], [38, 86], [39, 84], [40, 82], [5, 79], [4, 77], [37, 73], [39, 71], [14, 67], [18, 67], [22, 67]);
@@ -226,7 +226,7 @@ export function buildWarCairn({ painter, T, TS }) {
     calm: [[0, W - 1, 0, H - 1]],   /* placed wholly by hand: nothing sprinkled */
     checkRun: 260,                  /* start + two shrines (Daniel: fewer): src/level.js checkpoints() must not fill between them */
     sections: SECTIONS.map(([name, x0, x1]) => ({ id: name.toLowerCase().replace(/[^a-z]+/g, '-'), name, x0, x1 })),
-    squadBands: [{ lo: sx - 2, hi: W - 1, spots: 0, why: 'THE WAR CAIRN RING: the boss\'s arena - no squad stands in it' }],
+    squadBands: [{ lo: sx - 2, hi: W - 1, spots: 0, why: 'THE WAR CAIRN RING: the boss\'s arena - no squad stands in it' }, { lo: 400, hi: W - 1, spots: 0, why: 'THE SUMMIT, section 3 of the sprinkle-cap (it keys a band on its section start, 400): the stair and the ring - no squad' }],
     unlocks: [
       { kind: 'hoists', opens: 'a gate (the drum gates and the chimney hatches), a bridge (the chained slabs swing level)', hud: 'THE BEAT IS YOURS' },
       { kind: 'wcdrum', opens: 'gate', hud: 'THE DRUM GATE SWINGS OPEN' },
