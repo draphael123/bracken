@@ -37,10 +37,10 @@
 //   NO ADDS (the three are the fight). Every move TOLD with its own windup and release pose (B16, src/shriek-sisters-hands.js POSE) and its own sound.
 import { tempoOf } from './marks.js';   /* (claude/rookery3) THE TEMPO CLASSES: src/marks.js TEMPO_CLASS */
 export const SS = {
-  hp: { diver: 880, shrieker: 660, snatcher: 760 },   /* (claude/rookery3: +6% with the stagger, 830/625/720 -> 880/660/760) */   /* (claude/rookery2 tune: 770/580/670 -> 830/625/720 with the ride and phase 2, n=12/hero 74% -> see the lane report) */   /* (claude/sisters2 tune, BOT_PROFILE=human L14 n=36/hero: 920/690/800 -> 770/580/670, grab dmg 12 -> 10, grab cd 8/5.5/4.5 -> 10/7/5.5 first 7 -> 9: 47% -> 68%) */
+  hp: { diver: 920, shrieker: 690, snatcher: 800 },   /* (claude/rookery3: +11% with the stagger, 830/625/720 -> 920/690/800 - the sisters2 numbers; the fights had fallen to ~95 s) */   /* (claude/rookery2 tune: 770/580/670 -> 830/625/720 with the ride and phase 2, n=12/hero 74% -> see the lane report) */   /* (claude/sisters2 tune, BOT_PROFILE=human L14 n=36/hero: 920/690/800 -> 770/580/670, grab dmg 12 -> 10, grab cd 8/5.5/4.5 -> 10/7/5.5 first 7 -> 9: 47% -> 68%) */
   wing: 0.4, downK: 1.5, wardMul: 0.4, last: 0.8,
   hover: { diver: 112, shrieker: 150, snatcher: 104 },   /* (claude/sisters2: the boulder's carry 150 -> 118 so the dropTell pose and its mark are on the arena's screen; the shrieker stays at 150 - at 124 her own dives after the diver falls came too fast: 54%) */
-  dive: { tell: [0.75, 0.75, 0.72], lock: 0.26, markTell: 0.62, v: 430, dmg: 22, land: 0.7, rise: 0.8, cd: [1.8, 1.6, 1.4], second: 0.42, pairDmg: 16, downed: 1.1 },   /* (claude/rookery3) MEDIUM: 0.75 in every phase (was 0.85/0.75/0.7); the pair's second dive is LIGHT (0.42, 12) */
+  dive: { tell: [0.75, 0.75, 0.72], lock: 0.26, markTell: 0.62, v: 430, dmg: 22, land: 0.7, rise: 0.8, cd: [1.8, 1.6, 1.4], second: 0.42, pairDmg: 16, downed: 0.9 },   /* (claude/rookery3: the shield's knock-down 1.1 -> 0.9 - the knight blocks every medium dive now that they come one at a time: 24/24) */   /* (claude/rookery3) MEDIUM: 0.75 in every phase (was 0.85/0.75/0.7); the pair's second dive is LIGHT (0.42, 12) */
   stun: { t: 2.6, mul: 2, cap: 0.24 },
   ward: 2.5,
   slab: { w: 48, regrow: [9, 9, 6.5] },
@@ -63,12 +63,13 @@ export const SS = {
   /* (claude/rookery2) PHASE 2 = TWO SISTERS DEAD: the survivor GROWS (SS.p2.scale, no HP) and takes a reduced set of the dead sisters' moves (P2KIT), one at a time, each its own tell;
      and THE SNATCH: she seizes you (her red !! talon line) and carries you over the summit - STRIKE HER SS.p2.strikes times mid-carry and you both fall: she lands STUNNED (the
      big opening, SS.p2.stun s up to SS.p2.cap of her) */
-  p2: { grow: 1.5, scale: 1.3, hover: 96, cd: 1.5, strikes: 2, stun: 3.2, cap: 0.3, liftH: 70, drift: 46, grabCd: 7.5, grabFirst: 3 },
+  p2: { grow: 1.5, scale: 1.3, hover: 96, cd: 1.3, strikes: 2, stun: 3.2, cap: 0.3, liftH: 70, drift: 46, grabCd: 7.5, grabFirst: 3 },
   /* (claude/rookery3) THE TEMPO (Daniel 10-29 live: "they attack way too quickly and at the same speed ... a heavy, a light, and a medium one"). Every told move has a CLASS (TEMPO below):
      HEAVY a long readable windup (1.1-1.15 s), her biggest pose, a deep cue, hits hard, then a long recovery (the punish); MEDIUM 0.7-0.75 s; LIGHT 0.4-0.42 s, low damage, short.
-     THE STAGGER: no sister STARTS a move while another is winding up or striking, nor sooner than gap[class of the last start] s after it (so two never wind up in lock-step);
+     THE STAGGER: no sister STARTS a move sooner than gap[class of the last start] s after the last one, nor while another is striking; she may wind up while another
+     winds up only if their two blows land at least sep s apart (a light snaps out before a heavy lands) - so two never wind up in lock-step;
      a move kept waiting holds its pose (the boulder stays carried, the rake stays planted) for at most `hold` s */
-  tempo: { gap: { heavy: 1.2, medium: 0.85, light: 0.6 }, hold: 2.0 },
+  tempo: { gap: { heavy: 1.1, medium: 0.7, light: 0.5 }, hold: 2.0, sep: 0.5 },
 };
 /* (claude/rookery2) THE SURVIVOR'S KIT (P2): her own moves + one or two of each dead sister's, in this order, one at a time */
 export const P2KIT = { diver: ['dive', 'shock', 'chain', 'boulder', 'grab'], shrieker: ['mark', 'dive', 'echo', 'boulder', 'grab', 'shock'], snatcher: ['boulder', 'dive', 'grab', 'shock'] };
@@ -101,7 +102,11 @@ function told(S, s, cls, w, own) { s.tempo = cls; s.tempoT = Math.max(0.01, s.mo
   if (own !== false) { if (S.tLast > -50) S.n.minGap = Math.min(S.n.minGap, S.clock - S.tLast); S.tLast = S.clock; S.tCls = cls; }
   if (w && w.tempo) w.tempo(s, cls); }
 /* THE STAGGER: may sister s start a move now? (no other sister winding up or striking, and the last start's gap gone by) */
-export function teamClear(S, s) { if (S.clock - S.tLast < SS.tempo.gap[S.tCls || 'light']) return false; return !ROLES.some(r => r !== s.role && S.sis[r].alive && BUSY.has(S.sis[r].mode)); }
+/* len: the windup she would start. Another sister STRIKING blocks it; another WINDING UP allows it only if their two blows land at least SS.tempo.sep s apart (a quick light
+   snaps out well before a slow heavy lands, or after it) - and never with two others winding up. len omitted: no overlap at all */
+export function teamClear(S, s, len) { if (S.clock - S.tLast < SS.tempo.gap[S.tCls || 'light']) return false; if (S.clock + (len || 0) - (S.lastRel ?? -99) < SS.tempo.sep) return false; let tells = 0;   /* (and not landing just after a blow that just landed) */
+  for (const r of ROLES) { const q = S.sis[r]; if (r === s.role || !q.alive || !BUSY.has(q.mode)) continue; if (!TELLS.has(q.mode) || len == null || ++tells > 1) return false; if (Math.abs(Math.max(0, q.modeT) - len) < SS.tempo.sep) return false; }
+  return true; }
 /* THE SHRIEKER's turn: what her next scream is, by phase (the survivors lean on their own: SHOCK and ECHO) */
 export const ROT = [['mark', 'echo', 'mark', 'shock'], ['shock', 'echo', 'mark', 'shock', 'echo'], ['shock', 'echo', 'shock', 'echo', 'mark']];
 /* THE SUMMIT (px): x0/x1 inside the walls, floorY, the three slabs (tile columns of their middles), the two shelves (the snatcher's perches) */
@@ -145,11 +150,12 @@ export function stepSisters(S, dt, heroes, w) {
   for (const r of ROLES) { const s = S.sis[r]; if (!s.alive) continue; s.ward = Math.max(0, s.ward - dt); if (s.mode === 'sleep') continue; s.modeT -= dt; s.cd -= dt;
     if (stepFerry(S, s, dt, P, w)) continue;
     if (S.p2 === r) stepSurvivor(S, s, dt, P, w, heroes); else if (r === 'diver') stepDiver(S, s, dt, P, w); else if (r === 'shrieker') stepShrieker(S, s, dt, P, w); else stepSnatcher(S, s, dt, P, w, heroes); }
+  for (const r of ROLES) { const s = S.sis[r], t = s.alive && TELLS.has(s.mode); if (s.wasTell && !t) S.lastRel = S.clock; s.wasTell = t; }   /* (claude/rookery3) when the last blow landed: the stagger keeps the next one sep s off it */
   S.snatchCd -= dt; if (!S.held) S.grabCd -= dt;
 }
 const fly = (s, tx, ty, dt, k = 3) => { s.x += (tx - s.x) * Math.min(1, dt * k); s.y += (ty - s.y) * Math.min(1, dt * k); };
 const clampX = (S, x, m = 16) => Math.max(S.G.x0 + m, Math.min(S.G.x1 - m, x));
-const ready = (S, s, P) => s.cd <= 0 && P && P.alive && s.ward <= 0 && !S.held && teamClear(S, s);   /* (claude/rookery3: and the stagger) */
+const ready = (S, s, P) => s.cd <= 0 && P && P.alive && s.ward <= 0 && !S.held;   /* (claude/rookery3: the stagger is asked with the move chosen - teamClear(S, s, its windup)) */
 /* A DIVE: aim (the red line follows you, then LOCKS), then straight down the line; what it meets breaks */
 function aimAt(S, s, P, w, mark, pair) {
   s.mode = 'diveTell'; s.modeT = mark ? SS.dive.markTell : s.chain ? SS.chain.aim : pair ? SS.dive.second : SS.dive.tell[ph(S)]; s.pair = !!pair; s.openT0 = s.modeT; s.aim = mark ? { x: mark.x, y: S.G.floorY, lock: true, mark: true } : { x: P ? P.x : s.x, y: S.G.floorY, lock: false };
@@ -199,8 +205,8 @@ function stepDive(S, s, dt, P, w) {
     if (res === 'blocked') { s.mode = 'downed'; s.modeT = SS.dive.downed; s.openT0 = s.modeT; S.n.downs++; S.n.rakeDowns++; w.number(s.x, s.y - 30, SS_SAY.downed, '#8fd160'); return true; }
     if (s.modeT <= 0 || s.x <= S.G.x0 + 18.5 || s.x >= S.G.x1 - 18.5) { s.mode = 'land'; s.modeT = SS.rake.end; } return true; }
   if (s.mode === 'land' || s.mode === 'downed') { if (s.modeT <= 0) {
-      if (s.mode === 'land' && s.rakeNext && P && P.alive && !teamClear(S, s) && (s.rakeWait = (s.rakeWait || 0) + 0.05) < 0.6) { s.modeT = 0.05; S.n.held++; return true; }   /* (claude/rookery3) the stagger: planted, she waits her turn (then gives the rake up) */
-      if (s.mode === 'land' && s.rakeNext && P && P.alive && teamClear(S, s)) { s.rakeWait = 0; s.rakeNext = false; s.raked = true; s.mode = 'rakeTell'; s.modeT = SS.rake.tell; s.openT0 = s.modeT; s.rDir = Math.sign(P.x - s.x) || s.face; s.face = s.rDir; s.act = ++S.act;
+      if (s.mode === 'land' && s.rakeNext && P && P.alive && !teamClear(S, s, SS.rake.tell) && (s.rakeWait = (s.rakeWait || 0) + 0.05) < 0.6) { s.modeT = 0.05; S.n.held++; return true; }   /* (claude/rookery3) the stagger: planted, she waits her turn (then gives the rake up) */
+      if (s.mode === 'land' && s.rakeNext && P && P.alive && teamClear(S, s, SS.rake.tell)) { s.rakeWait = 0; s.rakeNext = false; s.raked = true; s.mode = 'rakeTell'; s.modeT = SS.rake.tell; s.openT0 = s.modeT; s.rDir = Math.sign(P.x - s.x) || s.face; s.face = s.rDir; s.act = ++S.act;
         w.mark(s, '!'); w.sound('rakeTell'); told(S, s, 'light', w); if (!S.told.rake) { S.told.rake = 1; w.number(s.x, s.y - 34, SS_SAY.rake, '#ffd36b'); } return true; }
       s.rakeNext = false; s.rakeWait = 0;
       if (s.role === 'diver' && S.dead.shrieker && !s.second && P) { s.second = true; aimAt(S, s, P, w, null, true); s.openT0 = s.modeT; return true; }   /* (claude/rookery3: LIGHT) */   /* THE PAIR (the shrieker gone) */
@@ -248,7 +254,7 @@ function stepSurvivor(S, s, dt, P, w, heroes) {
   if (rockMoves(S, s, dt, P, w)) return;
   if (s.mode === 'rise') { fly(s, clampX(S, P ? P.x - s.side * 60 : G.mid), G.floorY - SS.p2.hover, dt, 2.5); if (s.modeT <= 0) s.mode = 'hover'; return; }
   s.mode = 'hover'; fly(s, clampX(S, (P ? P.x : G.mid) - s.side * 50 + Math.sin(S.act * 1.3) * 24), G.floorY - SS.p2.hover + Math.sin(s.cd * 3) * 4, dt, 1.6);
-  if (!ready(S, s, P)) return;
+  if (!ready(S, s, P) || !teamClear(S, s)) return;
   const kit = P2KIT[s.role]; let mv = kit[(s.p2i || 0) % kit.length]; s.p2i = (s.p2i || 0) + 1;
   if (mv === 'grab' && (S.grabCd > 0 || !P.ground)) { mv = kit[s.p2i % kit.length]; s.p2i++; }
   S.n.p2Moves[mv] = (S.n.p2Moves[mv] || 0) + 1;
@@ -269,7 +275,7 @@ function stepDiver(S, s, dt, P, w) {
   if (s.mode === 'snatchTell' || s.mode === 'snatch') return stepSnatch(S, s, dt, P, w);
   /* hover: over you and a little to one side; dive when ready - every SS.chain.every-th time (every other, once a sister has fallen) a CHAIN STOOP */
   s.mode = 'hover'; fly(s, clampX(S, (P ? P.x : S.G.mid) - s.side * 50 + Math.sin(S.act * 1.7) * 20), S.G.floorY - SS.hover.diver + Math.sin(s.cd * 3) * 4, dt, 1.6);
-  if (ready(S, s, P)) { s.nAtk++; if (s.nAtk % SS.chain.every[ph(S)] === 0) startChain(S, s, P, w); else aimAt(S, s, P, w); }
+  if (ready(S, s, P)) { const ch = (s.nAtk + 1) % SS.chain.every[ph(S)] === 0; if (!teamClear(S, s, ch ? SS.chain.tell : SS.dive.tell[ph(S)])) return; s.nAtk++; if (ch) startChain(S, s, P, w); else aimAt(S, s, P, w); }
 }
 function stepShrieker(S, s, dt, P, w) {
   if (s.mode === 'wake') { if (s.modeT <= 0) s.mode = 'hover'; return; }
@@ -284,7 +290,7 @@ function stepShrieker(S, s, dt, P, w) {
   const home = perchHome(S);
   if (home) { s.mode = 'perched'; fly(s, home[0], home[1], dt, 3); s.face = P ? Math.sign(P.x - s.x) || s.face : s.face; }
   else { s.mode = 'hover'; fly(s, clampX(S, S.G.mid + Math.sin(S.act * 0.9 + s.cd) * 120), S.G.floorY - SS.hover.shrieker + Math.sin(s.cd * 2) * 6, dt, 1.2); }
-  if (ready(S, s, P)) { const rot = ROT[ph(S)], mv = S.dead.diver && s.rot % 2 === 0 ? 'mark' : rot[s.rot % rot.length]; s.rot++;
+  if (ready(S, s, P)) { const rot = ROT[ph(S)], mv = S.dead.diver && s.rot % 2 === 0 ? 'mark' : rot[s.rot % rot.length]; if (!teamClear(S, s, mv === 'shock' ? SS.shock.tell : mv === 'echo' ? SS.echo.tell : SS.scream.tell)) return; s.rot++;
     if (mv === 'shock') startShock(S, s, P, w); else if (mv === 'echo') startEcho(S, s, P, w);
     else { s.mode = 'screamTell'; s.modeT = SS.scream.tell; s.openT0 = s.modeT; s.act = ++S.act; w.mark(s, '!!'); w.sound('screamTell'); told(S, s, 'heavy', w); } }
 }
@@ -353,7 +359,7 @@ function rockMoves(S, s, dt, P, w) {
   /* THE BOULDER DROP (her own): carried HIGH; its shadow follows you on the floor, then fixes (dropTell) and it falls */
   if (s.mode === 'carry') { const tx = clampX(S, s.target != null ? s.target : P ? P.x : G.mid), hy = G.floorY - SS.rock.high; fly(s, tx, hy, dt, 2.4);
     if ((Math.abs(s.x - tx) < 10 && s.y < hy + 12) || s.modeT <= 0) { if (S.held) { s.modeT = 0.2; return true; }
-      if ((!teamClear(S, s) && (s.dropWait = (s.dropWait || 0) + dt) < SS.tempo.hold) || ROLES.some(r => r !== s.role && S.sis[r].alive && TELLS.has(S.sis[r].mode))) {   /* (never into another's windup: the cap is on the gap only) */ s.modeT = Math.max(s.modeT, 0.05); S.n.held++; return true; }   /* (claude/rookery3) the stagger: she keeps it over you a beat longer */
+      if (!teamClear(S, s, SS.rock.tell) && ((s.dropWait = (s.dropWait || 0) + dt) < SS.tempo.hold || ROLES.some(r => r !== s.role && S.sis[r].alive && BUSY.has(S.sis[r].mode)))) {   /* (the cap is on the gap only: never into a blow landing with hers) */ s.modeT = Math.max(s.modeT, 0.05); S.n.held++; return true; }   /* (claude/rookery3) the stagger: she keeps it over you a beat longer */
       s.dropWait = 0; s.mode = 'dropTell'; s.modeT = SS.rock.tell; s.openT0 = s.modeT; s.dropX = clampX(S, s.x); s.act = ++S.act; w.mark(s, '!!'); w.sound('rockTell'); told(S, s, 'heavy', w); if (!S.told.rock) { S.told.rock = 1; w.number(s.dropX, G.floorY - 50, SS_SAY.rock, '#ff6b6b'); } } return true; }
   if (s.mode === 'dropTell') { s.x += (s.dropX - s.x) * Math.min(1, dt * 6); if (s.modeT <= 0) { s.mode = 'drop'; s.modeT = 0.35; S.rocks.push({ x: s.dropX, y0: s.y + 6, t: 0, T: SS.rock.fall, key: 'rk' + s.act }); s.rocks--; S.n.drops++; w.sound('drop'); } return true; }
   if (s.mode === 'drop') { if (s.modeT <= 0) {
@@ -362,13 +368,13 @@ function rockMoves(S, s, dt, P, w) {
   /* (claude/rookery3) SPENT: the heavy drop's recovery - empty-handed she sinks low over the stone for SS.rock.spent s (a LOW mode: whole), then goes on */
   if (s.mode === 'spent') { fly(s, s.x, G.floorY - SS.rock.low, dt, 3); if (s.modeT <= 0) {
       if (S.p2) { s.rockGo = false; s.mode = 'rise'; s.modeT = 0.8; s.cd = SS.p2.cd * cdK(S); return true; }   /* (claude/rookery2) a survivor goes back to her own hover */
-      if (S.dead.diver && P && P.alive && s.ward <= 0 && !S.held && teamClear(S, s)) { aimAt(S, s, P, w); return true; }   /* (the diver gone: she dives after the drop) */
+      if (S.dead.diver && P && P.alive && s.ward <= 0 && !S.held && teamClear(S, s, SS.dive.tell[ph(S)])) { aimAt(S, s, P, w); return true; }   /* (the diver gone: she dives after the drop) */
       s.mode = 'fly'; s.perchI = (s.perchI || 0) ^ 1; } return true; }
   return false;
 }
 /* THE GRAB (the snatcher's own): from the side at your height; caught, lifted over the floor; strike her loose or she lets you fall */
 function tryGrab(S, s, P, w) {
-  if (!P || !P.alive || !P.ground || S.grabCd > 0 || S.held || S.ride || s.ward > 0 || (s.role !== 'snatcher' && S.p2 !== s.role) || !teamClear(S, s)) return false;   /* (claude/rookery3: the stagger) */
+  if (!P || !P.alive || !P.ground || S.grabCd > 0 || S.held || S.ride || s.ward > 0 || (s.role !== 'snatcher' && S.p2 !== s.role) || !teamClear(S, s, SS.grab.tell)) return false;   /* (claude/rookery3: the stagger) */
   if (ROLES.some(r => r !== 'snatcher' && S.sis[r].alive && ['dive', 'rake', 'shock', 'echo'].includes(S.sis[r].mode))) return false;   /* (one blow at a time: never into another sister's release) */
   const G = S.G; S.grabCd = S.p2 ? SS.p2.grabCd : SS.grab.cd[ph(S)] * cdK(S); s.gDir = P.x - G.x0 > 140 ? 1 : -1; s.gX = clampX(S, P.x - s.gDir * 120, 14);
   s.mode = 'grabTell'; s.modeT = SS.grab.tell; s.openT0 = s.modeT; s.face = s.gDir; s.act = ++S.act; S.n.grabs++;
@@ -403,7 +409,7 @@ export function strikeHeld(S, w) {
 }
 /* THE SNATCH (the first fall gives it to whoever has talons for it - the snatcher, else the diver): a low told sweep across the summit at your height */
 function trySnatch(S, s, P, w) {
-  if (!P || !P.alive || S.snatchCd > 0 || alive(S).length > 2 || s.ward > 0 || S.held || !teamClear(S, s)) return false;   /* (claude/rookery3: the stagger) */
+  if (!P || !P.alive || S.snatchCd > 0 || alive(S).length > 2 || s.ward > 0 || S.held || !teamClear(S, s, SS.snatch.tell)) return false;   /* (claude/rookery3: the stagger) */
   const who = S.sis.snatcher.alive ? 'snatcher' : 'diver'; if (s.role !== who || !(s.mode === 'hover' || s.mode === 'fly')) return false;
   S.snatchCd = SS.snatch.cd * cdK(S); s.mode = 'snatchTell'; s.modeT = SS.snatch.tell; s.openT0 = s.modeT; s.act = ++S.act; s.sDir = P.x < S.G.mid ? -1 : 1;
   s.x = s.sDir < 0 ? S.G.x1 - 20 : S.G.x0 + 20; s.y = S.G.floorY - SS.snatch.h - 30; s.face = -s.sDir; w.mark(s, '!!'); w.sound('snatchTell'); told(S, s, 'light', w); if (!S.told.snatch) { S.told.snatch = 1; w.number(S.G.mid, S.G.floorY - 70, SS_SAY.snatch, '#ff6b6b'); }
