@@ -1,0 +1,137 @@
+{
+  "time": "2026-10-29T20:24:47.488Z",
+  "manifestSha256": "3330b7e757c12e98103b3f9579aee7a863221f301ebd1c33a53dddf7e81afa21",
+  "helperSha256": "71cad61cf13117a8e6c9431e40527c41545100682ed18b9f64f1a927a6ed469b",
+  "componentCloud": {
+    "workflow": "load-perf-proof.yml",
+    "mode": "pending-tile-context-component-oct29",
+    "status": "completed",
+    "outerTimeoutMinutes": 15,
+    "evaluationDeadlineMs": 240000,
+    "audited": true,
+    "controller": "34d0dc3b724d4177e7e3dea4a4232b4fe5fb0def",
+    "directory": "work/pending-tile-context-cloud-34d0dc3b",
+    "run": 40945863587,
+    "url": "https://github.com/draphael123/bracken/actions/runs/40945863587",
+    "createdAt": "2026-10-29T20:05:14Z",
+    "conclusion": "success"
+  },
+  "component": {
+    "time": "2026-10-29T20:12:28.242Z",
+    "run": 40945863587,
+    "controller": "34d0dc3b724d4177e7e3dea4a4232b4fe5fb0def",
+    "complete": true,
+    "qualifiedForGameIntegration": true,
+    "adopted": false,
+    "notGameMemoryCampaignLayoutOr40FpsProof": true,
+    "rawReceipt": "work\\pending-tile-context-cloud-34d0dc3b\\pending-tile-context-component\\receipt.json",
+    "rawSha256": "e607b0174415dc70c7a8a8e30359fbe7c6eb66874dc49d0e54351dfa8eefb821",
+    "processes": {
+      "launches": 1,
+      "closures": 1,
+      "allClosed": true,
+      "profileAbsences": [
+        {
+          "profile": "/tmp/bracken-look-vLCBtV",
+          "absent": true
+        }
+      ],
+      "interruptions": [],
+      "maxRendererMb": 1048,
+      "events": [
+        {
+          "type": "launch",
+          "pid": 2564,
+          "profile": "/tmp/bracken-look-vLCBtV",
+          "time": 1793304408515
+        },
+        {
+          "type": "native-lab-collection",
+          "time": 1793304490851,
+          "requests": 0,
+          "completed": 0,
+          "failed": 0,
+          "postEvaluations": 2
+        },
+        {
+          "type": "closed",
+          "pid": 2564,
+          "profile": "/tmp/bracken-look-vLCBtV",
+          "time": 1793304491024,
+          "peak": {
+            "totalMb": 2440,
+            "rendererMb": 1048
+          },
+          "reason": null
+        }
+      ]
+    },
+    "sourceExact": true,
+    "originalGuardsAndNativeGcVerified": true,
+    "closed": true,
+    "status": "PASS isolated native safety/compatibility core only; source-specific main integration/loader and original proofs still required",
+    "familyCases": 4928,
+    "publicCases": 672,
+    "coreCases": 80,
+    "functionMetadata": [
+      {
+        "file": "src/redraw/buried_city_tiles.js",
+        "name": "bcTile",
+        "lengthExact": true,
+        "nameExact": true,
+        "prototypePresenceExact": true
+      },
+      {
+        "file": "src/redraw/skyroad_tiles.js",
+        "name": "skyTile",
+        "lengthExact": true,
+        "nameExact": true,
+        "prototypePresenceExact": true
+      },
+      {
+        "file": "src/redraw/rootway_tiles.js",
+        "name": "timberTile",
+        "lengthExact": true,
+        "nameExact": true,
+        "prototypePresenceExact": true
+      },
+      {
+        "file": "src/redraw/rootway_tiles.js",
+        "name": "springCap",
+        "lengthExact": true,
+        "nameExact": true,
+        "prototypePresenceExact": true
+      },
+      {
+        "file": "src/redraw/rootway_tiles.js",
+        "name": "rootTile",
+        "lengthExact": true,
+        "nameExact": true,
+        "prototypePresenceExact": true
+      },
+      {
+        "file": "src/redraw/sealed_pyramid_tiles.js",
+        "name": "spTile",
+        "lengthExact": true,
+        "nameExact": true,
+        "prototypePresenceExact": true
+      }
+    ],
+    "pendingObserved": 3782,
+    "rng": 0,
+    "stats": {
+      "created": 3827,
+      "replayed": 3818,
+      "exposed": 3736,
+      "recordedCommands": 547421,
+      "boundFlushes": 75,
+      "sourceFlushes": 5,
+      "nativeFallbacks": 26319,
+      "probes": 0,
+      "maxCommandsPerCanvas": 512,
+      "maxSnapshotBytesPerCanvas": 65536
+    }
+  },
+  "scope": "Native tile unit core prerequisite only; no actual Game loading/timing/full-source claim",
+  "originalAll19ControlsAndComparisonsRequired": true
+}
