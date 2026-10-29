@@ -16,7 +16,7 @@
 // Numbers are tiles unless named px or s.
 import { paintFloorCrack, paintSink, paintLanding } from './redraw/tower_chase.js';
 import { SPIRAL } from './spiral-chase.js';   /* (claude/ft4a) THE ASCENT rises through his spiral stair's well, over the rooms */
-export const CH = { x0: 80, x1: 105, top: 152, pitch: 15, open: 13, downT: 3.0, riseT: 0.5, sinkT: 0.9, tearT: 1.3, wakeT: 1.2, fallG: 1100, hpFloor: 0.55, hover: 4 };
+export const CH = { x0: 80, x1: 105, top: 152, pitch: 15, open: 13, downT: 3.0, riseT: 0.5, sinkT: 0.9, tearT: 1.3, wakeT: 1.2, fallG: 1100, hpFloor: 0.65, hover: 4 };
 /* FALLING TOWER 4 (claude/ft4a, Daniel 10-29 15:33 "the boss CHASE ROOMS should also feel like they are collapsing around you", brief-fallingtower4-1029.md #3).
    His attacks and numbers do not change; the ROOM comes apart round the fight:
    1. HIS MISSES SHAKE THE TOWER: a firebolt or ice lance that hits stone stops on it (stone stops his shots, as on his stair) and knocks masonry loose
@@ -30,7 +30,7 @@ export const CH = { x0: 80, x1: 105, top: 152, pitch: 15, open: 13, downT: 3.0, 
    A floor at his rooms' hpFloor: HE HOLDS ON - his 'down' is cut short (heldDown s), so no gold window does nothing. */
 /* (ft4a) each room's vault pillar sign, its own words (tools/signs.mjs: no two signs the same) */
 const VAULT_SIGNS = ['A CRACKED PILLAR HOLDS THE VAULT. STRIKE IT WITH HIM OVER IT AND IT COMES DOWN ON HIM.', 'ANOTHER CRACKED PILLAR UNDER THE VAULT: BRING IT DOWN ON HIM.', 'THE VAULT HANGS ON A CRACKED PILLAR: WAIT FOR HIM TO HOVER OVER IT.', 'THE LAST CRACKED PILLAR UNDER HIS VAULT: BRING IT DOWN ON HIM.'];
-export const FALL4 = { stage2: 5, dropEvery: 4, dropTell: 1.5, debEvery: 1.2, debMax: 2, vaultH: 12, coverW: 3, coverZone: 6, heldDown: 0.35 };
+export const FALL4 = { stage2: 5, dropEvery: 4, dropTell: 1.5, debEvery: 1.2, debMax: 2, vaultH: 12, coverW: 3, coverZone: 6, nearMiss: 90, heldDown: 0.35 };
 export const ROOMS = [
   { name: 'THE SCRIPTORIUM', kind: 'library', order: ['fire', 'ice', 'fire', 'mark'], follow: 'strike', pillar: 93, vault: 104, crush: [92, 105],
     ledges: [[83, 5, 3], [98, 5, 3], [88, 4, 6]] },
@@ -93,7 +93,7 @@ export function chaseLeg(e, dt, c) {
     c.say('HE FALLS: STRIKE HIM WHERE HE LIES', true); c.sound('crack'); return true; }
   if (!CHASE_MODES.has(e.mode)) return false;
   const floorY = R.floor * 16;
-  if (e.mode === 'fall') { e.vy = (e.vy || 0) + CH.fallG * dt; e.y += e.vy * dt;
+  if (e.mode === 'fall') { if (c.clearOf) e.x = c.clearOf(e.x); e.vy = (e.vy || 0) + CH.fallG * dt; e.y += e.vy * dt;   /* (ft4a: never down INSIDE a fallen column - he lands beside it, where a blade reaches him) */
     if (e.y >= floorY) { e.y = floorY; e.vy = 0; e.mode = 'down'; e.modeT = atFloor(e) ? FALL4.heldDown : CH.downT; e.open = e.modeT; if (atFloor(e)) c.say('HE HOLDS ON - AFTER HIM', true); e.face = Math.sign(P.x - e.x) || 1; c.sound('heavy'); c.shake(5); c.dust(e.x, floorY, 12); }
     return true; }
   if (e.mode === 'down') { e.y = floorY; if (e.modeT <= 0) { e.mode = 'rise'; e.modeT = CH.riseT; c.say(R.last ? 'HE FLEES DOWN - INTO THE CORE OF HIS TOWER' : 'HE FLEES DOWN THROUGH HIS TOWER', true); c.sound('mageBolt'); } return true; }
@@ -135,7 +135,7 @@ export function chaseRoomStep(e, dt, c) {
     if (!c.solid(q.x, q.y)) { q.free = true; continue; } if (!q.free) continue;   /* (a shot born in the vault's stone - his staff high under the ceiling - is not stopped by it: only stone it flies INTO stops it. Without this every shot from his top station died at birth and the rooms hit no one) */
     if (q.kind === 'orb') { q.vx = q.vy = 0; q.t = Math.min(q.t, 0.001); continue; }   /* (a poison orb bursts on the stone it meets) */
     q.t = 0; q.gone = true; q.hit = true; c.dust(q.x, q.y, 4);
-    if ((q.kind === 'fire' || q.kind === 'ice') && X.debT <= 0 && X.mine.filter(d => d.st !== 'land').length < FALL4.debMax) { const sp = debrisSpot(R, q.x, c);
+    if ((q.kind === 'fire' || q.kind === 'ice') && X.debT <= 0 && X.mine.filter(d => d.st !== 'land').length < FALL4.debMax) { const sp = debrisSpot(R, Math.abs(q.x - P.x) < FALL4.nearMiss ? P.x + Math.sign(q.x - P.x) * 6 : q.x, c);   /* (a miss NEAR you shakes the stone over YOU: told, step off it) */
       if (sp) { const d = c.debris(sp.x, sp.y, R.top * 16); if (d) { X.mine.push(d); X.debT = FALL4.debEvery; } } } }
   /* ...and stone that comes down ON HIM drops him */
   for (const d of X.mine) if (d.st === 'fall' && !d.him && Math.abs(d.x - e.x) < 14 && d.ry > e.y - 44 && d.ry < e.y + 4 && CASTING(e)) { d.him = true; e.mode = 'crushed'; c.say('HIS OWN STONE COMES DOWN ON HIM', true); c.sound('stone'); c.shake(4); }
@@ -185,8 +185,8 @@ export function drawChase3(g, e, cx, cy, time, VW) {
               well's 26 tiles to his hall's box (tower-ascent.js hallArena, moved over the spiral tower: no sideways jump), and the hall's sky and moon
               come up round you. He settles to his hover spot and his hall's kit starts ASC.firstCast s later - no 'wake' freeze.
    A death anywhere in it is the stair's top, as the rest of the fight (one boss). */
-export const ASC = { win: 13, well: 110, breath: 0.9, spiral: 320, sky: 280, plugTell: 1.0, tween: 0.8, firstCast: 1.0, hpFloor: 0.5, hang: 6, fade: 0.7, crownTop: 50,
-  order: ['fire', 'ice', 'fire', 'hand'], rock: { first: 2.0, every: 2.6, tell: 1.1, v: 420, dmg: 12, hitW: 13 } };
+export const ASC = { win: 13, well: 110, breath: 0.5, spiral: 320, sky: 280, plugTell: 1.0, tween: 0.8, firstCast: 1.0, hpFloor: 0.6, hang: 6, fade: 0.7, crownTop: 50,
+  order: ['fire', 'ice', 'fire', 'hand'], rock: { first: 2.0, every: 1.8, tell: 1.1, v: 420, dmg: 12, hitW: 13 } };
 export const PLUG = () => [CH.x0, CH.x1, SPIRAL.floor, CH.top - 1];   /* the stone between the spiral stair's floor and the first room (rows) */
 export const CROWN = () => [CH.x0, CH.x1, ASC.crownTop, SPIRAL.top - 1];   /* the spiral tower's roof, up to the sky rows (tower-ascent.js TOWER.SKY) */
 export const ascentClear = () => [PLUG(), CROWN()];   /* (functions: spiral-chase.js and this file can load in either order) */

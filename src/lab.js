@@ -997,6 +997,7 @@ async function runbossLab(BK, opts) {
         if(m==='stormTell')danger.push([boss.markX-30,boss.markX+30]);
         for(const q of boss.echoes||[])if(q.markX!==null&&q.markX!==undefined)danger.push([q.markX-30,q.markX+30]);
         for(const c of boss.clouds||[])if(Math.abs(c.y-py)<c.r+24)danger.push([c.x-c.r-14,c.x+c.r+14]);
+        for(const d of (BK.L.ft2&&BK.L.ft2.rt&&BK.L.ft2.rt.debris)||[])if(d.st==='tell'&&Math.abs(d.y-P.y)<40)danger.push([d.x-22,d.x+22]);   /* (claude/ft4a) the told stone his misses shake loose: off its shadow */
         const rest=P.st<14||(P.labRest&&P.st<40);P.labRest=rest;
         if(m==='down')gx=boss.x+(P.x<boss.x?-1:1)*Math.max(8,LAB_REACH[h]*0.5);
         else if(sup)gx=sup.x+(P.x<sup.x?-1:1)*Math.max(8,Math.min(16,LAB_REACH[h]*0.5));
