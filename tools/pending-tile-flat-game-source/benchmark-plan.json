@@ -47,7 +47,23 @@
           "reason": null
         }
       ]
-    }
+    },
+    "time": "2026-10-29T23:14:46.938Z",
+    "run": 40971314848,
+    "controller": "6cfba463447f67be6bb16802add13bd817624405",
+    "qualifiedForGameIntegration": true,
+    "rawReceipt": "work/pending-tile-flat-cloud-6cfba463/pending-tile-flat-component/receipt.json",
+    "rawSha256": "49597f9c153ce7d24c4f3e924968e08ea1bd7e49e58ec654c0610fcdfad38a81",
+    "nativePolicyAndMainFallbackPrerequisitesVerified": true,
+    "arrayWriteControl": {
+      "priorHelperSha256": "72af32eedb3c2e3c2d64d9eea7d650fa1d16ca69bc621d032637869fb9b6164f",
+      "replaysBefore": 0,
+      "replaysAfter": 1,
+      "pendingAfter": false,
+      "sourceDerivedCauseObserved": true
+    },
+    "originalGuardsAndNativeGcVerified": true,
+    "closed": true
   },
   "node": {
     "complete": true,
@@ -69,5 +85,12 @@
     "createdAt": "2026-10-29T23:10:46Z",
     "conclusion": "success"
   },
-  "scope": "All original19levels/342readbacks/228pairs and original timing,allocation,mode,deferral,return and untargeted controls. Additional15percent whole-source phase gain before any new broader cycle."
+  "scope": "All original19levels/342readbacks/228pairs and original timing,allocation,mode,deferral,return and untargeted controls. Additional15percent whole-source phase gain before any new broader cycle.",
+  "nativeProofEnvelopeCorrection": {
+    "priorActualSchema": "native and node audit fields",
+    "newMappedEnvelope": "All older gate facts derived from audited raw120case/64Node evidence; no fabricated or skipped condition",
+    "allOriginalPageEvidenceGuardsRetained": true,
+    "onlyCoreCountStrengthened114to120": true,
+    "priorLoaderBrowsers": 0
+  }
 }
