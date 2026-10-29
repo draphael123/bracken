@@ -70,7 +70,7 @@ try {
   ok(t.active, 'THE ROC wakes on her eyrie');
   ok(t.plunge.opened && t.openFor >= 3, 'a thermal plunge on her back knocks her down, open 3 s or more ' + JSON.stringify([t.plunge, t.openFor]));
   /* (claude/roc2, Daniel 10-06: 'she DOESN'T NEED TO BE INVULNERABLE BY DEFAULT' - the old assertion was 'outside an opening it is a scratch'; she is always hittable now, guarding by height) */
-  ok(t.openHit >= 40 * 1.4 && t.lowHit >= 40 * 0.15 && t.lowHit <= 40 * 0.35 && t.airHit >= 40 * 1.1, 'a blow on her down lands x1.5; out of an opening a floor blow is turned to a quarter (GUARDS LOW) and one from the air lands whole and more: ' + [t.openHit, t.lowHit, t.airHit]);
+  ok(t.openHit >= 40 * 1.4 && t.lowHit >= 40 * 0.35 && t.lowHit <= 40 * 0.45 && t.airHit >= 40 * 1.1, 'a blow on her down lands x1.5; out of an opening a floor blow is turned to the 0.4 boss resist floor (GUARDS LOW; arenapolish raised lowK 0.25 -> 0.4) and one from the air lands whole and more: ' + [t.openHit, t.lowHit, t.airHit]);
   ok(t.ward > 1 && t.warded !== 'downed', 'after the opening her feathers are up: a second plunge does not open her ' + JSON.stringify([t.ward, t.warded]));
   console.log('errors', JSON.stringify(pg.errors.slice(0, 3)));
   if (pg.errors.length) bad++;
