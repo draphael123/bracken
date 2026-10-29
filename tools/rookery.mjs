@@ -150,16 +150,16 @@ ok(Object.values(RK_SAY).every(s => SAY_LINES.has(s)), 'every capital line the r
   { let total = 40, n = 0; while (dv.purse > 0 && n < 99) { total += SSM.takeBlow(dv, 20, false)[0]; n++; } ok(dv.mode === 'stuck' && dv.modeT <= 0.02 && total <= Math.ceil(dv.maxHp * SSM.SS.stun.cap) + 1, 'the stun pays at most ' + SSM.SS.stun.cap + ' of her (' + total + ' of ' + dv.maxHp + '), then she tears free'); }
   step(0.6); ok(dv.ward > 0 && SSM.takeBlow(dv, 20, false)[1] === 'WARDED' && SSM.takeBlow(dv, 20, false)[0] === 8, 'she tears free behind a told WARD (B3): 0.4x, WARDED');
   /* off a crack her dive skids; on the shield she is knocked down */
-  dv.ward = 0; dv.mode = 'hover'; dv.cd = 0; hero.x = S.G.x0 + 40; step(SSM.SS.dive.tell[0] + 0.05); hero.x += 70; step(1.0, () => dv.mode === 'land');
+  dv.ward = 0; dv.mode = 'hover'; dv.cd = 0; S.tLast = -99; hero.x = S.G.x0 + 40; step(SSM.SS.dive.tell[0] + 0.05); hero.x += 70; step(1.0, () => dv.mode === 'land');
   ok(dv.mode === 'land' && S.n.skids >= 1, 'off any crack her dive SKIDS (no opening) - she lands low: whole (' + SSM.takeBlow(dv, 20, false)[0] + ')');
-  dv.mode = 'hover'; dv.cd = 0; dv.ward = 0; dv.nAtk = 0; hero.x = S.G.x0 + 40; hero.block = true; step(SSM.SS.dive.tell[0] + 0.6, () => dv.mode === 'downed'); hero.block = false;
+  dv.mode = 'hover'; dv.cd = 0; dv.ward = 0; dv.nAtk = 0; S.tLast = -99; hero.x = S.G.x0 + 40; hero.block = true; step(SSM.SS.dive.tell[0] + 0.6 + SSM.SS.tempo.hold + SSM.SS.rock.spent, () => dv.mode === 'downed');   /* (claude/rookery3: she may wait out the snatcher's drop - the stagger) */ hero.block = false;
   ok(dv.mode === 'downed' && SSM.takeBlow(dv, 20, false)[0] === 30, 'her dive taken on the shield: KNOCKED DOWN, x' + SSM.SS.downK);
   /* B15: NEVER INVULNERABLE - every mode of every sister takes at least 0.4x */
   { const low = []; for (const r of SSM.ROLES) for (const m of Object.keys(POSE_SS)) { const s = { ...S.sis[r], mode: m, ward: 0 }; const [d] = SSM.takeBlow(s, 20, false); if (d < 8) low.push(r + ':' + m + '=' + d); }
     ok(!low.length, 'B15: no sister is ever invulnerable - every mode takes >= 0.4x ' + low.join(' ')); }
   ok(SSM.takeBlow({ ...S.sis.shrieker, mode: 'hover', ward: 0 }, 20, false).join() === '8,ON THE WING' && SSM.takeBlow({ ...S.sis.shrieker, mode: 'swoop', ward: 0 }, 20, false)[0] === 20 && SSM.takeBlow({ ...S.sis.snatcher, mode: 'pick', ward: 0 }, 20, false)[0] === 20, 'ON THE WING 0.4x (told); low - the swoop, the pick on the shelf - whole');
   /* THE SCREAM: the mark, and the diver strikes it */
-  for (const r of SSM.ROLES) { const s = S.sis[r]; s.mode = 'hover'; s.ward = 0; s.cd = 99; } hero.x = S.G.slabs[0].x; const sh = S.sis.shrieker; sh.cd = 0; step(SSM.SS.scream.tell + 0.05);
+  for (const r of SSM.ROLES) { const s = S.sis[r]; s.mode = 'hover'; s.ward = 0; s.cd = 99; } S.tLast = -99; hero.x = S.G.slabs[0].x; const sh = S.sis.shrieker; sh.cd = 0; step(SSM.SS.scream.tell + 0.05);
   ok(S.marks.length >= 1 && dv.mode === 'diveTell' && dv.aim.mark && Math.abs(dv.aim.x - hero.x) < 2 && sh.mode === 'swoop', 'THE SHRIEKER screams: the MARK snaps onto the hero\'s spot, the diver aims AT THE MARK, the shrieker swoops low');
   hero.x += 70; step(1.2, () => dv.mode === 'stuck'); ok(dv.mode === 'stuck' && S.n.marksStruck >= 1, 'off the mark on a crack: the marked dive breaks it - stunned');
   /* THE SNATCHER: pick, carry, the red ring, the rock lies as a CRACKED STONE */
@@ -189,8 +189,8 @@ ok(Object.values(RK_SAY).every(s => SAY_LINES.has(s)), 'every capital line the r
       ok(d.mode === 'stuck' && d.big && Z.n.exhausted === 1 && Math.abs(d.modeT - SSM.SS.chain.stun) < 0.05 && log.includes(SSM.SS_SAY.exhausted), 'every dive baited into cracked rock: EXHAUSTED IN THE RUBBLE - the big opening (' + SSM.SS.chain.stun + ' s)');
       { let total = 0, n = 0; while (d.purse > 0 && n < 99) { total += SSM.takeBlow(d, 20, false)[0]; n++; } ok(total <= Math.ceil(d.maxHp * SSM.SS.chain.cap) + 1 && total > d.maxHp * SSM.SS.stun.cap, 'the big opening pays more than a stun (up to ' + SSM.SS.chain.cap + ' of her: ' + total + ') - still capped, then she tears free'); } }
     { const Z = fresh(), d = Z.sis.diver, sl = Z.G.slabs[1]; d.nAtk = SSM.SS.chain.every[0] - 1; d.cd = 0; me.x = sl.x; let lk = 0; Z.rnd = () => 0;
-      run(Z, 6, () => { if (d.mode === 'diveTell' && d.aim.lock && d.act !== lk) { lk = d.act; me.x += 60; } return d.mode === 'rakeTell'; });
-      ok(Z.n.bursts === 1 && Z.n.exhausted === 0 && d.mode === 'rakeTell', 'a chain with one dive into open floor: no opening - the last skids, and she plants her talons: TALON RAKE (a yellow !)'); }
+      run(Z, 6, () => { if (d.mode === 'diveTell' && d.aim.lock && d.act !== lk) { lk = d.act; me.x += 60; } return d.mode === 'land' && !d.chain; });
+      ok(Z.n.bursts === 1 && Z.n.exhausted === 0 && d.mode === 'land' && !d.rakeNext && Math.abs(d.modeT - SSM.SS.chain.spent) < 0.05 && SSM.takeBlow({ ...d }, 20, false)[0] === 20, 'a chain with one dive into open floor: no opening - the last skids and she is SPENT on the floor (' + SSM.SS.chain.spent + ' s, whole: the heavy move\'s punish; no rake after a chain)'); }
     /* THE DIVER - TALON RAKE: jump it (it runs along the floor) or block it (she is knocked down, open) */
     { const Z = fresh(), d = Z.sis.diver; Z.rnd = () => 0; d.cd = 0; me.x = Z.G.mid - 100; me.block = false; hits.length = 0; let lk = 0;
       run(Z, 3, () => { if (d.mode === 'diveTell' && d.aim.lock && d.act !== lk) { lk = d.act; me.x += 70; } return d.mode === 'rake'; });
@@ -290,6 +290,27 @@ ok(Object.values(RK_SAY).every(s => SAY_LINES.has(s)), 'every capital line the r
     if (Z.held) { Z.clock += 1; SSM.strikeHeld(Z, w); Z.clock += 1; const r2 = SSM.strikeHeld(Z, w);
       ok(r2 === 'fall' && q.mode === 'stuck' && SSM.sisOpen(q) && q.purse > 0, surv + ' (P2): ' + SSM.SS.p2.strikes + ' strikes mid-carry - YOU FALL TOGETHER, she lands STUNNED (the big opening, ' + SSM.SS.p2.stun + ' s, up to ' + SSM.SS.p2.cap + ' of her)'); } }
 }
+
+// ---- (claude/rookery3) THE TEMPO: HEAVY / MEDIUM / LIGHT (Daniel 10-29 live: "they attack way too quickly and at the same speed"), and THE STAGGER ----
+{ const A = L.arena, pp = { id: 'hero' }, hero = { x: 0, y: A.floor, ground: true, alive: true, block: false, face: 1, pp };
+  const w = { number() {}, sound() {}, shake() {}, music() {}, mark() {}, dust() {}, fx() {}, rubble() {}, tip() {}, unride() {}, letGo() {}, tempo: (s, c) => { (w.seen[c] = w.seen[c] || []).push(s.role + ':' + s.mode); }, seen: {},
+    hit: () => null, hitArea() {}, hitHero() {}, shove: () => null, grab: () => null };
+  const T0 = SSM.TEMPO, ph0 = m => m === 'diveTell' ? SSM.SS.dive.tell[0] : m === 'chainTell' ? SSM.SS.chain.tell : m === 'screamTell' ? SSM.SS.scream.tell : m === 'dropTell' ? SSM.SS.rock.tell : m === 'shockTell' ? SSM.SS.shock.tell : m === 'grabTell' ? SSM.SS.grab.tell : m === 'waveTell' ? SSM.SS.wave.tell : m === 'rakeTell' ? SSM.SS.rake.tell : m === 'echoTell' ? SSM.SS.echo.tell : SSM.SS.snatch.tell;
+  const BAND = { heavy: [1.0, 1.25], medium: [0.6, 0.76], light: [0.35, 0.45] }, off = Object.keys(T0).filter(m => { const t = ph0(m), [a, b] = BAND[T0[m]]; return t < a || t > b; });
+  ok(!off.length && SSM.SS.dive.tell.every(t => t >= 0.6 && t <= 0.76) && SSM.SS.dive.second >= 0.35 && SSM.SS.dive.second <= 0.45, 'every told move has a TEMPO CLASS, its windup in band (heavy 1.0-1.25 / medium 0.6-0.76 / light 0.35-0.45 s): ' + Object.keys(T0).map(m => m.replace('Tell', '') + ' ' + T0[m][0].toUpperCase() + ' ' + ph0(m)).join(', ') + (off.length ? ' OFF: ' + off : ''));
+  const own = { diver: ['chainTell', 'diveTell', 'rakeTell'], shrieker: ['screamTell', 'shockTell', 'echoTell'], snatcher: ['dropTell', 'grabTell', 'snatchTell'] };
+  ok(Object.values(own).every(ms => new Set(ms.map(m => T0[m])).size === 3), 'each sister has one of each (heavy / medium / light): ' + Object.entries(own).map(([r, ms]) => r + ' ' + ms.map(m => m.replace('Tell', '') + '=' + T0[m][0].toUpperCase()).join('/')).join('; '));
+  ok(SSM.SS.rock.dmg > SSM.SS.dive.dmg && SSM.SS.chain.dmg > SSM.SS.dive.dmg && SSM.SS.dive.dmg > SSM.SS.rake.dmg && SSM.SS.dive.dmg > SSM.SS.echo.dmg && SSM.SS.dive.dmg > SSM.SS.snatch.dmg && SSM.SS.dive.pairDmg < SSM.SS.dive.dmg, 'heavy hits hardest, light least (boulder ' + SSM.SS.rock.dmg + ', chain dive ' + SSM.SS.chain.dmg + ' > dive ' + SSM.SS.dive.dmg + ' > rake ' + SSM.SS.rake.dmg + ', snatch ' + SSM.SS.snatch.dmg + ', echo ' + SSM.SS.echo.dmg + ', pair ' + SSM.SS.dive.pairDmg + ')');
+  ok(SSM.SS.rock.spent >= 1 && SSM.SS.chain.spent >= 1 && SSM.SS.scream.swoop >= 1.5 && SSM.takeBlow({ mode: 'spent', ward: 0 }, 20, false)[0] === 20, 'a heavy move leaves a long recovery, whole (the punish): the boulder SPENT ' + SSM.SS.rock.spent + ' s, the chain spent ' + SSM.SS.chain.spent + ' s, the scream\'s swoop ' + SSM.SS.scream.swoop + ' s');
+  /* THE STAGGER over a long P1 fight with all three up: never two windups at once (a heavy move's own strikes aside), never two starts closer than the gap */
+  const S = SSM.newFight(SSM.geom(A, TS)); for (const r of SSM.ROLES) { S.sis[r].mode = r === 'snatcher' ? 'fly' : 'hover'; S.sis[r].cd = 0.3 * (1 + SSM.ROLES.indexOf(r)); } S.grabCd = 4; S.snatchCd = 99; S.G.perchS = null;
+  let rng = 7; S.rnd = () => { rng = (rng * 16807) % 2147483647; return rng / 2147483647; };
+  let two = 0, frames = 0, gx = A.x0 + 60; const pairs = new Set();
+  for (let i = 0; i < 90 * 60; i++) { if (i % 90 === 0) gx = A.x0 + 30 + S.rnd() * (A.x1 - A.x0 - 60); hero.x += Math.sign(gx - hero.x) * Math.min(Math.abs(gx - hero.x), 1.5); SSM.stepSisters(S, 1 / 60, [hero], w);
+    const t = SSM.ROLES.filter(r => S.sis[r].alive && SSM.sisTelling(S.sis[r])); if (t.length > 1) { const combo = t.some(r => S.sis[r].aim && S.sis[r].aim.mark) || t.some(r => S.sis[r].chain); if (!combo) { two++; pairs.add(t.map(r => r + ':' + S.sis[r].mode).join('+')); } } frames++; }
+  const n = S.n.tempo; ok(n.heavy > 0 && n.medium > 0 && n.light > 0, 'in a 90 s fight all three tempos come (' + n.heavy + ' heavy, ' + n.medium + ' medium, ' + n.light + ' light)');
+  ok(!two, 'THE STAGGER: never two sisters winding up at once (a heavy move\'s own strikes aside) - ' + (two ? two + ' frames: ' + [...pairs].slice(0, 4).join(' ') : '0 frames in 90 s'));
+  ok(S.n.minGap >= SSM.SS.tempo.gap.light - 0.02, 'two independent starts are never closer than ' + SSM.SS.tempo.gap.light + ' s (the closest: ' + S.n.minGap.toFixed(2) + ' s); after a heavy start ' + SSM.SS.tempo.gap.heavy + ' s, a medium ' + SSM.SS.tempo.gap.medium + ' s (' + S.n.held + ' moves held a beat)'); }
 
 console.log(bad ? '\nrookery: ' + bad + ' FAILED' : '\nok  rookery: the road, the old-save rule, the locks, the hands, the sisters');
 process.exit(bad ? 1 : 0);

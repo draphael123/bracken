@@ -28,7 +28,10 @@ const SOUND = { screech: s => (s.screech || s.tell)(), lock: s => (s.tell || s.c
   /* (claude/sisters2) the signature moves */
   chainTell: s => { (s.screech || s.tell)(); (s.whoosh || s.tell)(); }, rakeTell: s => (s.clank || s.tell)(), rake: s => (s.skid || s.stone || s.thud)(), shockTell: s => (s.tell)(), shock: s => { (s.queenShriek || s.screech)(); (s.heavy || s.thud)(); },
   echoTell: s => (s.screech || s.tell)(), echo: s => { (s.crack || s.stone)(); (s.stone || s.thud)(); }, grabTell: s => (s.screech || s.tell)(), grab: s => (s.whoosh || s.throwWhoosh || s.tell)(), caught: s => (s.thud || s.heavy)(),
-  free: s => (s.clank || s.thud)(), letGo: s => (s.whoosh || s.tell)(), teeter: s => (s.stone || s.thud)() };
+  free: s => (s.clank || s.thud)(), letGo: s => (s.whoosh || s.tell)(), teeter: s => (s.stone || s.thud)(),
+  /* (claude/rookery3) THE TEMPO CUES, over each windup's own sound: HEAVY a deep throat and a wingbeat that lands (slow: you have time), LIGHT a small bright tick (quick: move now);
+     MEDIUM is the windup's own sound alone */
+  tempoHeavy: s => { (s.bellow || s.heavy || s.thud)(); (s.thud || s.heavy)(); }, tempoLight: s => (s.tink || s.strikeTell || s.tell)() };
 const COL = { diver: { body: '#6a7890', dark: '#3e4a5e', light: '#9aaac4', crest: '#c8d4e8' }, shrieker: { body: '#7a4a5a', dark: '#4a2634', light: '#b0707e', crest: '#e04a3a' }, snatcher: { body: '#7a6448', dark: '#4a3a26', light: '#a88c64', crest: '#d8b070' } };
 const R = Math.round;
 const rect = (g, x, y, w, h, col) => { g.fillStyle = col; g.fillRect(R(x), R(y), R(w), R(h)); };
@@ -77,6 +80,8 @@ export const POSE = {
   carryB: { wing: -1.1, flap: true, flapOff: 3, pitch: -0.05, head: [8, -3], rock: true, talon: 'grip' },
   dead1: { wing: -1.2, pitch: -0.5, head: [3, -9], beak: true, dead: true, talon: 'spread', feathers: true }, dead2: { wing: 0.15, pitch: 0.9, head: [6, 5], fold: true, dead: true, talon: 'spread', feathers: true },
   dead3: { wing: 0.6, pitch: 0.05, head: [6, 8], sprawl: true, dead: true, rubble: true },
+  /* (claude/rookery3) SPENT - the heavy boulder drop's recovery: empty talons hanging, wings dragging low, beak open (she sinks to your height: the punish) */
+  spent: { wing: 0.35, pitch: 0.2, head: [8, 3], talon: 'spread', beak: true }, spentB: { wing: -0.1, flap: true, pitch: 0.05, head: [8, 1], talon: 'hang', beak: true },
 };
 /* HOW LONG she has been in this mode (s). The hands note the mode change as it happens; poseOf reads it */
 const modeAge = (b, s, time) => { if (b.__m !== s.mode) { b.__m = s.mode; b.__t0 = time; } return time - b.__t0; };
@@ -87,6 +92,7 @@ export function poseOf(s, b, time, flash, G) {
   switch (m) {
     case 'hover': case 'fly': case 'rise': return hurting ? POSE.hurt : POSE[m];
     case 'swoop': return hurting ? POSE.hurt : POSE.swoop;
+    case 'spent': return hurting ? POSE.hurt : Math.floor(age * 4) % 2 ? POSE.spentB : POSE.spent;   /* (claude/rookery3) */
     case 'diveTell': return age < 0.28 ? POSE.diveWind : age < 0.5 ? POSE.diveWind2 : POSE.diveTell;
     case 'land': return age < 0.22 ? POSE.land : age < 0.5 ? POSE.recover : POSE.recover2;
     case 'screamTell': return age < 0.35 ? POSE.inhale : age < 0.65 ? POSE.inhale2 : POSE.screamTell;
@@ -130,7 +136,7 @@ export function makeShriekSistersHands(ctx) {
   function world() {
     return {
       number: (x, y, t, col) => ctx.number(x, y, t, col), sound: k => { const f = SOUND[k]; if (f) try { f(ctx.sfx); } catch {} }, shake: n => ctx.shake(n),
-      music: ph => { BOSS_PHASE.shrieksisters = Math.min(3, ph); },
+      music: ph => { BOSS_PHASE.shrieksisters = Math.min(3, ph); },   tempo: (s, cls) => { s.tempoAt = ctx.time(); if (cls === 'heavy') SOUND.tempoHeavy(ctx.sfx); else if (cls === 'light') SOUND.tempoLight(ctx.sfx); },   /* (claude/rookery3) */
       mark: (s, m) => ctx.number(s.x, s.y - 34, m, m === '!' ? '#ffd36b' : '#ff6b6b'),
       dust: (x, y, n) => ctx.dust(x, y, n),
       fx: (k, x, y) => { if (k === 'open') { ctx.ring(x, y - 10, 34, '#ffd36b'); } else if (k === 'ward') ctx.ring(x, y - 10, 36, '#c8d8e8'); },
@@ -258,7 +264,17 @@ export function makeShriekSistersHands(ctx) {
   H.drawBoss = (g, b, cx, cy, time) => { if (!S || !b || b.t !== 'shrieksister') return; const s = S.sis[b.role]; if (!s) return; b.guardFx = Math.max(0, (b.guardFx || 0) - 1 / 60);
     const flash = (b.hurtT || 0) > 0 || (b.flash || 0) > 0.06; b.hurtT = Math.max(0, (b.hurtT || 0) - 1 / 60); const p = poseOf(s, b, time, flash, S.G);
     g.globalAlpha = 0.25; g.fillStyle = '#10060a'; g.fillRect(R(s.x - 12 - cx), R(S.G.floorY - 2 - cy), 24, 2); g.globalAlpha = 1;
-    const sc = scaleOf(s); g.save(); g.translate(R(s.x - cx), R(s.y - cy)); g.scale((s.face || -1) * sc, sc); drawSister(g, b.role, p, flash, time, b.role === 'snatcher' ? undefined : false, S.p2 === b.role ? giftsOf(S.dead) : ''); g.restore(); };
+    /* (claude/rookery3) THE TEMPO, SEEN: HEAVY - she swells into her biggest pose (up to +16%) over a dark blood pool that spreads under her, slow crimson rings; MEDIUM - one amber
+       ring tightening on her; LIGHT - a white flash of her whole body and a glint at her head, gone in a blink */
+    const tc = SSM.sisTelling(s) ? s.tempo : null, tk = tc ? Math.min(1, 1 - Math.max(0, s.modeT) / (s.tempoT || 1)) : 0, tAge = ctx.time() - (s.tempoAt || -9), bx = R(s.x - cx), by = R(s.y - cy);
+    let sc = scaleOf(s); if (tc === 'heavy') sc *= 1 + 0.16 * Math.sin(Math.min(1, tk * 1.4) * Math.PI / 2);
+    if (tc === 'heavy') { const fy = R(S.G.floorY - cy), rw = 10 + 16 * tk; g.globalAlpha = 0.16 + 0.24 * tk; g.fillStyle = '#4a0610'; g.beginPath(); g.ellipse(bx, fy - 1, rw, 2.5 + 2 * tk, 0, 0, Math.PI * 2); g.fill();
+      g.lineWidth = 2; for (let q = 0; q < 2; q++) { const ph = ((time * 1.6 + q * 0.5) % 1); g.globalAlpha = (1 - ph) * (0.35 + 0.4 * tk); g.strokeStyle = '#b8202c'; g.beginPath(); g.arc(bx, by - 10, 14 + ph * 20 * sc, 0, Math.PI * 2); g.stroke(); } g.lineWidth = 1; g.globalAlpha = 1; }
+    if (tc === 'medium') { g.globalAlpha = 0.35 + 0.45 * tk; g.strokeStyle = '#ffb04a'; g.beginPath(); g.arc(bx, by - 10, 28 - 12 * tk, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1; }
+    const lit = tc === 'light' && tAge < 0.14;
+    g.save(); g.translate(bx, by); g.scale((s.face || -1) * sc, sc); drawSister(g, b.role, p, flash || lit, time, b.role === 'snatcher' ? undefined : false, S.p2 === b.role ? giftsOf(S.dead) : ''); g.restore();
+    if (tc === 'light' && tAge < 0.3) { const k = 1 - tAge / 0.3, L = Math.round(3 + 7 * k), hx = bx + (s.face || -1) * 8, hy = by - 24; g.globalAlpha = 0.5 + 0.5 * k; g.fillStyle = '#ffffff';
+      g.fillRect(hx - L, hy, L * 2 + 1, 1); g.fillRect(hx, hy - L, 1, L * 2 + 1); g.fillRect(hx - 1, hy - 1, 3, 3); g.globalAlpha = 1; } };
   /* (claude/rookery2art) A SISTER'S DEATH: struck up and back, a tumbling fall with loose feathers, lying in the rubble, fading (the body is not in the foe list once she is dead) */
   const drawDeaths = (g, x, y, fy, time) => { for (const r of ROLES) { const d = bodies[r] && bodies[r].__death; if (!d) continue; const age = ctx.time() - d.t0; if (age < 0 || age > DEATH.T) continue;
     const sx = x(d.x), fl = fy; let sy = y(d.y), rot = 0, pn = 'dead1', gx = 0; const fall = age - DEATH.struck;

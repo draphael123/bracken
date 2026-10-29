@@ -10,7 +10,7 @@
 // every windup ('...Tell') entered with NO mark at all.
 // Run it after touching any creature: node tools/tells.mjs      (--json prints the findings for a fixer script)
 import { readFileSync, writeFileSync } from 'fs';
-import { THROWN as THROWS_SOMETHING_ELSE, QUIET as NOT_A_BLOW, BY_HAND, MARK } from '../src/marks.js';   // THE HONESTY LIST, THE QUIET WINDUPS and the table the screen reads: src/marks.js
+import { THROWN as THROWS_SOMETHING_ELSE, QUIET as NOT_A_BLOW, BY_HAND, MARK, TEMPO_CLASS } from '../src/marks.js';   // THE HONESTY LIST, THE QUIET WINDUPS and the table the screen reads: src/marks.js
 
 const src = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
 const JSON_OUT = process.argv.includes('--json');
@@ -175,6 +175,8 @@ if (process.argv.includes('--write')) {
   const out = text.replace(/\/\* MARK:BEGIN \*\/[\s\S]*?\/\* MARK:END \*\//, '/* MARK:BEGIN */\nexport const MARK = {\n' + body.join('\n') + '\n};\n/* MARK:END */');
   writeFileSync(url, out); console.log('src/marks.js: ' + rows.length + ' rows written');
 } else if (stale) tableProblems.push('src/marks.js MARK is not the table this audit writes: run node tools/tells.mjs --write');
+/* (claude/rookery3) THE TEMPO CLASSES (src/marks.js TEMPO_CLASS): every row a told windup in the table, its class heavy / medium / light */
+for (const [k, v] of Object.entries(TEMPO_CLASS || {})) { if (!(k in sorted) || !['!', '!!'].includes(sorted[k])) tableProblems.push('TEMPO_CLASS ' + k + ' is no told windup in MARK'); if (!['heavy', 'medium', 'light'].includes(v)) tableProblems.push('TEMPO_CLASS ' + k + ' = ' + JSON.stringify(v) + ': heavy, medium or light'); }
 
 if (JSON_OUT) { console.log(JSON.stringify({ bad, unmarked, marks, table: sorted, tableProblems })); process.exit(0); }
 console.log('== the mark audit ==');
