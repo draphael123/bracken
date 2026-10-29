@@ -99,10 +99,10 @@ export function makeWarCairnHands(ctx) {
       else if (c.state === 'gone' && c.t <= 0) { const bx0 = c.d.x0 * TS, bx1 = (c.d.x1 + 1) * TS, by = c.d.y * TS;
         if (ps.some(p => p && !p.dead && p.x > bx0 - 4 && p.x < bx1 + 4 && p.y > by - 4 && p.y < by + 20)) { c.t = 0.1; continue; }   /* (not into a body) */
         c.state = 'whole'; row(c.d.x0, c.d.x1, c.d.y, ctx.T.ONEWAY); } }
-    /* A RANGER'S ARROW or A THROWN AXE in flight through a drum is a beat (any blow that lands - the brief: every hero can use it) */
+    /* A RANGER'S ARROW or A THROWN AXE in flight through a drum - or an arrow that sticks at its foot (a floor-skimming shot drops short) - is a beat (any blow that lands - the brief: every hero can use it) */
     for (const p of ps) { if (!p || p.dead) continue;
-      for (const a of p.rgArrows || []) { if (a.state !== 'fly') continue; for (const dr of S.drums.values()) { if (dr.spentT > 0) continue; const x = drumX(dr.d), y = drumY(dr.d);
-        if (Math.abs(a.x - x) < WC.beat.box && a.y > y - 22 && a.y < y + 2 && !(a.wcHit && a.wcHit.has(dr))) { (a.wcHit || (a.wcHit = new Set())).add(dr); if (beat(dr, 'hero', p)) S.n.arrows++; } } }
+      for (const a of p.rgArrows || []) { if (a.state !== 'fly' && a.state !== 'stuck' && a.state !== 'drop') continue; for (const dr of S.drums.values()) { if (dr.spentT > 0) continue; const x = drumX(dr.d), y = drumY(dr.d);
+        if (Math.abs(a.x - x) < WC.beat.box + (a.state === 'fly' ? 0 : 14) && a.y > y - 24 && a.y < y + 4 && !(a.wcHit && a.wcHit.has(dr))) { (a.wcHit || (a.wcHit = new Set())).add(dr); if (beat(dr, 'hero', p)) S.n.arrows++; } } }
       const ax = p.bzAxe; if (ax && ax.state === 'fly') for (const dr of S.drums.values()) { if (dr.spentT > 0) continue; const x = drumX(dr.d), y = drumY(dr.d);
         if (Math.abs(ax.x - x) < WC.beat.box + 2 && ax.y > y - 24 && ax.y < y + 4 && !(ax.wcHit && ax.wcHit.has(dr))) { (ax.wcHit || (ax.wcHit = new Set())).add(dr); if (beat(dr, 'hero', p)) S.n.axes++; } } }
     /* THE CLAN's SURGE: quicker on foot while it lasts */

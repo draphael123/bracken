@@ -19,7 +19,7 @@ try {
   /* 1. A REAL BLOW on the far bank's drum: the tunnel gate opens; war-rage */
   const d1=BK.L.wcDrums.find(d=>d.id==='gully'),g1=BK.L.wcGates.find(g=>g.id==='tunnel');tp(d1.x-1,d1.f);P.face=1;out.gateShut=cell(g1.x0,g1.y0);
   for(let i=0;i<40&&cell(g1.x0,g1.y0)!==0;i++){if(P.atk<0)BK.press('atk');BK.sim(1);}out.gateOpen=cell(g1.x0,g1.y0);out.rage=WH.raging(P);out.beats=rd().n.heroBeats;
-  for(let i=0;i<60*7;i++)BK.sim(1);out.gateAgain=cell(g1.x0,g1.y0);
+  for(let i=0;i<60*11;i++)BK.sim(1);out.gateAgain=cell(g1.x0,g1.y0);
   /* 2. THE GATE RUN: one beat opens all three hatches */
   const d2=BK.L.wcDrums.find(d=>d.id==='gaterun');tp(d2.x-1,d2.f);P.face=1;for(let i=0;i<40&&rd().gates.find(g=>g.id==='hatch1').open!==true;i++){if(P.atk<0)BK.press('atk');BK.sim(1);P.hp=P.maxHp;}
   out.hatches=rd().gates.filter(g=>g.id.startsWith('hatch')).map(g=>g.open);
@@ -35,7 +35,7 @@ try {
   const BH=BK.bzchiefHands(),S=BH&&BH.show();
   if(b&&S){P.x=b.x-30;b.face=-1;b.mode='walk';b.modeT=9;S.ward=0;S.frenzy=0;out.walk=BH.take(b,20,'light','light');
     b.mode='take';b.modeT=0.5;out.take=BH.take(b,20,'light','light');b.mode='take';b.modeT=0.5;out.heavy=BH.take(b,20,'heavy','heavy');out.afterHeavy=b.mode;
-    b.mode='walk';b.modeT=9;S.frenzy=3;S.ward=0;WH.beat('arena0','hero');out.broken=b.mode;out.open=BH.take(b,20,'light','light');out.bar=BH.barName(b);
+    b.mode='walk';b.modeT=9;S.frenzy=3;S.ward=0;out.sp=rd().drums.filter(d=>d.id.startsWith("arena")).map(d=>d.id+":"+d.spent).join(",");const ad=rd().drums.find(d=>d.id.startsWith("arena")&&!d.spent);out.bt=WH.beat(ad&&ad.id,"hero");out.broken=b.mode;out.open=BH.take(b,20,'light','light');out.bar=BH.barName(b);
     /* he yields: beaten in his own level */
     for(let i=0;i<240;i++){BK.sim(1);P.hp=P.maxHp;}b.hp=1;b.open=0;b.mode='flurry';S.ward=0;S.frenzy=0;BK.env().hurt(b,50,P.x);for(let i=0;i<180;i++){BK.sim(1);P.hp=P.maxHp;}
     out.down={alive:b.alive,bossDown:!!(BK.PROG.bossDown&&BK.PROG.bossDown.warcairn),axes:!!(BK.PROG.swords&&BK.PROG.swords.chiefaxes)};out.n=JSON.parse(JSON.stringify(S.n));}
