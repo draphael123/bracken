@@ -336,7 +336,7 @@ assert.ok(CHASE.gap <= 0.6 && CHASE.settle <= 0.35 && CHASE.pairFrom <= 2, 'his 
     assert.ok(r.log.says.some(m => /BREAKS THE FLOOR/.test(m)) && !r.log.cleared.length, 'the floor breaks untold'); r.run(CH.tearT + 0.05); assert.deepEqual(r.log.cleared, [1], 'his tear does not take the floor'); assert.equal(r.e.mode, 'below'); }
   { const r = rig(3); r.e.mode = 'reflected'; r.run(4, () => r.e.mode === 'down'); r.run(CH.downT + CH.riseT + CH.tearT + 0.2); assert.ok(r.e.mode === 'away' && r.log.away === 1 && r.log.cleared[0] === 3, 'the last floor does not pour you into the core with him gone up: ' + r.e.mode); }
   { const src = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
-    assert.ok(/e\.leg==='chase'\)\{const f=Math\.ceil\(\(e\.hp0\|\|e\.maxHp\)\*CH3\.hpFloor\)/.test(src) && CH.hpFloor >= 0.3 && CH.hpFloor <= 0.6, 'the chase can take him lower than its floor (his hall would have nothing left)');
+    assert.ok(src.includes("e.leg==='chase'){const f=chase3FloorHp(e);dmg=Math.max(0,Math.min(dmg,e.hp-f));") && CC.floorHp({ hp: 100, maxHp: 1000, hp0: 5000 }) === Math.ceil(1000 * CH.hpFloor) && CH.hpFloor >= 0.3 && CH.hpFloor <= 0.6, 'the chase can take him lower than its floor, or reads it off anything but the bar (his hall would have nothing left)');   /* (ft4a: maxHp - the bar - not hp0) */
     assert.ok(/e\.realmAt=\[r\*0\.9,r\*0\.6,r\*0\.3\]/.test(src), 'his realms do not come at marks cut from what the chase left of him');
     const MR = await import('../src/mage-realms.js'); assert.equal(MR.realmDue({ hp: 1200, hp0: 2800, realmN: 0, realmAt: [0.45, 0.3, 0.15] }), 0, 'his first realm does not come at its cut mark'); assert.equal(MR.realmDue({ hp: 1300, hp0: 2800, realmN: 0, realmAt: [0.45, 0.3, 0.15] }), -1, 'his first realm comes before its cut mark'); }
   /* the floor's pillar: armed only once he is through (src/tower-supports.js) */
@@ -346,6 +346,47 @@ assert.ok(CHASE.gap <= 0.6 && CHASE.settle <= 0.35 && CHASE.pairFrom <= 2, 'his 
     SU.supportsUpdate(L3, P, 1 / 60, c); hb = null; SU.supportsUpdate(L3, P, 1 / 60, c); assert.ok(s.st === 'whole' && !set.length && says.some(m => /HOLDS/.test(m)), 'the chase\'s pillar breaks before he is through it');
     s.armed = true; hb = { l: s.x - 8, r: s.x + 8, t: s.y - 20, b: s.y }; SU.supportsUpdate(L3, P, 1 / 60, c); assert.equal(s.st, 'tell', 'struck once he is through, the pillar does not give');
     hb = null; for (let i = 0; i < 60 * 1.3; i++) SU.supportsUpdate(L3, P, 1 / 60, c); assert.ok(s.st === 'down' && set.some(([x, y, t]) => y === roomOf(s.room).floor && t === T.AIR), 'the pillar does not take its floor with it'); } }
+/* FALLING TOWER 4 (claude/ft4a, Daniel 10-29 #4): THE CHASE ROOMS COLLAPSE AROUND YOU - in Node (src/archmage-chase.js chaseRoomStep, FALL4) */
+{ const CC = await import('../src/archmage-chase.js'), UM = await import('../src/undead-mage.js'), { CH, ROOMS, roomOf, FALL4, chaseRoomStep, chaseLeg, coverOf, roomClear } = CC;
+  /* every room: a VAULT PILLAR inside it, floor to vault, with a crush box in the room and a cover spot on its floor clear of every sign, ringdoor and the floor pillar */
+  for (let k = 0; k < ROOMS.length; k++) { const R = roomOf(k), v = L.ftSupports.find(s => s.vault && s.room === k), cv = coverOf(k);
+    assert.ok(v && v.kind === 'crush' && v.col > CH.x0 && v.col < CH.x1 + 1 && v.h >= 8 && v.crush[0] >= CH.x0 && v.crush[1] <= CH.x1 && v.crush[2] === R.top && v.crush[3] === R.floor - 1, R.name + ' has no vault pillar over its own room: ' + JSON.stringify(v && [v.col, v.crush]));
+    assert.ok(cv[0] >= CH.x0 && cv[1] <= CH.x1 && cv[3] === R.floor - 1 && !(R.pillar >= cv[0] && R.pillar <= cv[1]) && !L.ents.some(e => (e.t === 'sign' || e.t === 'ringdoor') && e.y === R.floor - 1 && e.x >= cv[0] && e.x <= cv[1]), R.name + '\'s fallen column would lie on its pillar or a sign');
+    assert.ok(roomClear(k).some(([a, b, c, d]) => a === cv[0] && b === cv[1] && c === cv[2] && d === cv[3]), R.name + '\'s cover does not go with its floor (or come back on a retry)');
+    for (let x = cv[0]; x <= cv[1]; x++) for (let y = cv[2]; y <= cv[3]; y++) assert.equal(at(x, y), T.AIR, R.name + ': the cover spot is not open before the column falls'); }
+  assert.ok(L.ents.some(e => e.t === 'sign' && /HOLDS THE VAULT/.test(e.text) && e.y === roomOf(0).floor - 1), 'the first room does not sign the vault pillar');
+  const rig = (k = 0) => { const R = roomOf(k), P = { x: (CH.x0 + 6) * TS, y: R.floor * TS, ground: true, dead: 0 }, log = { debris: [], cleared: [], says: [] };
+    const e = { t: 'undeadmage', alive: true, hp: 2800, hp0: 2800, maxHp: 2800, mode: 'hover', modeT: 0.4, x: (CH.x1 - 5) * TS, y: (R.floor - CH.hover - 2) * TS, face: -1, anim: 0, turn: 0, blinkT: 99, leg: 'chase', room: k, shots: [] };
+    const c = { P, solid: (x, y) => at(Math.floor(x / TS), Math.floor(y / TS)) === T.SOLID, standable: (tx, ty) => at(tx, ty) === T.SOLID || at(tx, ty) === T.ONEWAY,
+      debris: (x, y, top) => { const d = { x, y, top, st: 'tell', t: 1.1, ry: top }; log.debris.push(d); return d; }, clearLedge: (x0, x1, row) => log.cleared.push([x0, x1, row]), say: m => log.says.push(m), sound: () => {}, shake: () => {}, dust: () => {} };
+    return { R, P, e, c, log, run: (sec, each) => { for (let i = 0; i < Math.round(sec * 60); i++) { chaseRoomStep(e, 1 / 60, c); if (each && each()) return true; } return false; } }; };
+  /* 1. a missed firebolt stops on the floor's stone and shakes masonry loose over it - told, on the footing; never more than debMax at once */
+  { const r = rig(0), x = (CH.x0 + 15) * TS + 4; r.e.shots.push({ x, y: r.R.floor * TS + 4, vx: 0, vy: 150, kind: 'fire', r: 5, t: 2 }); r.run(1 / 60);
+    assert.ok(r.e.shots[0].gone && r.log.debris.length === 1, 'his bolt that hits the stone does not stop or shake nothing loose');
+    const d = r.log.debris[0]; assert.ok(Math.abs(d.x - (CH.x0 + 15) * TS - 8) < 1 && d.y === r.R.floor * TS && d.top === r.R.top * TS && d.st === 'tell', 'the stone does not come down told, over where it struck: ' + JSON.stringify(d));
+    for (let i = 0; i < 6; i++) { r.e.shots.push({ x: x + i * 20, y: r.R.floor * TS + 4, vx: 0, vy: 150, kind: 'ice', r: 4, t: 2 }); r.run(0.05); }
+    assert.ok(r.log.debris.filter(q => q.st !== 'land').length <= FALL4.debMax, 'more stone than debMax hangs at once'); }
+  { const r = rig(0); r.e.shots.push({ x: (CH.x0 + 10) * TS, y: (r.R.floor - 5) * TS, vx: 0, vy: 150, kind: 'fire', r: 5, t: 2, reflected: true }); r.run(1 / 60); assert.ok(!r.log.debris.length && !r.e.shots[0].gone, 'his struck-back bolt breaks on stone (it must fly home)'); }
+  /* ...and stone that falls on him drops him (his own spell's opening) */
+  { const r = rig(0); r.e.rfx = { k: 0, t: 0, debT: 0, mine: [{ x: r.e.x, y: r.R.floor * TS, ry: r.e.y - 20, st: 'fall' }], next: 99, drop: null, gone: [] }; r.run(1 / 60);
+    assert.equal(r.e.mode, 'crushed', 'his own stone coming down on him does not drop him');
+    const c2 = { P: r.P, say: () => {}, callout: () => {}, sound: () => {}, shake: () => {}, dust: () => {}, arm: () => {}, clearRoom: () => {}, setRoom: () => {}, away: () => {} };
+    chaseLeg(r.e, 1 / 60, c2); assert.equal(r.e.mode, 'fall', 'crushed, he does not FALL (an opening like his struck-back spell)'); }
+  /* 2. stage two: from stage2 s the ledges go, one at a time, each told dropTell s - never the one you stand on */
+  { const r = rig(0); r.run(FALL4.stage2 - 0.5); assert.ok(!r.e.rfx.drop && !r.log.cleared.length, 'a ledge goes before stage two');
+    const [x0, len, up] = r.R.ledges[0]; r.P.x = (x0 + 1) * TS; r.P.y = (r.R.floor - up) * TS; r.P.ground = true;
+    r.run(1); const d = r.e.rfx.drop; assert.ok(d && !(d.row === r.R.floor - up && d.x0 === x0), 'stage two does not start, or picks the ledge you stand on: ' + JSON.stringify(d));
+    assert.ok(!r.log.cleared.length && r.log.says.some(m => /LEDGE GIVES/.test(m)), 'the ledge goes untold'); r.run(FALL4.dropTell); assert.equal(r.log.cleared.length, 1, 'the told ledge does not go');
+    r.run(FALL4.dropEvery + FALL4.dropTell + 0.2); assert.equal(r.log.cleared.length, 2, 'the ledges do not go one at a time, dropEvery apart'); }
+  /* the vault: tower-supports' fall hands it to main.js (c.vault) */
+  { const SU = await import('../src/tower-supports.js'), L3 = { ftSupports: L.ftSupports.filter(s => s.vault && s.room === 0).map(s => ({ ...s })) }; SU.supportsReset(L3); const s = L3.ftSupports[0]; let got = null;
+    const c = { T, strike: () => ({ l: s.x - 8, r: s.x + 8, t: s.y - 20, b: s.y }), set: () => {}, resolve: () => {}, foes: () => [], hurt: () => {}, say: () => {}, callout: () => {}, sound: () => {}, shake: () => {}, dust: () => {}, burst: () => {}, vault: q => { got = q; } };
+    SU.supportsUpdate(L3, { x: s.x - 10, y: s.y, dead: 0 }, 1 / 60, c); c.strike = () => null; for (let i = 0; i < 80; i++) SU.supportsUpdate(L3, { x: s.x - 10, y: s.y, dead: 0 }, 1 / 60, c);
+    assert.ok(s.st === 'down' && got === s, 'the vault pillar struck does not come down, told, and hand its vault to the fight'); }
+  { const src = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8'); assert.ok(src.includes("function chase3Vault(s){") && src.includes("e.mode='crushed';e.modeT=1;number(e.x,e.y-52,'THE VAULT COMES DOWN ON HIM'") && src.includes('vault:s=>chase3Vault(s)'), 'the vault does not come down on him in the game'); }
+  /* the floor: at it, HE HOLDS ON - his 'down' is cut short */
+  { const r = rig(1); r.e.hp = CC.floorHp(r.e); r.e.mode = 'reflected'; const says = []; const c2 = { P: r.P, say: m => says.push(m), callout: () => {}, sound: () => {}, shake: () => {}, dust: () => {}, arm: () => {}, clearRoom: () => {}, setRoom: () => {}, away: () => {} };
+    for (let i = 0; i < 240 && r.e.mode !== 'down'; i++) chaseLeg(r.e, 1 / 60, c2); assert.ok(r.e.mode === 'down' && r.e.modeT <= FALL4.heldDown + 0.01 && says.some(m => /HOLDS ON/.test(m)), 'at the rooms\' floor he still lies open the full time, a gold window that does nothing: ' + r.e.modeT); } }
 // ---- PAGE ----
 if (process.env.TOWER_CHASE_NODE) { console.log('tower-chase: node part OK (TOWER_CHASE_NODE: page part skipped)'); process.exit(0); }
 const HEROES = ['knight', 'warden', 'pyro', 'paladin', 'pirate', 'reaper', 'geomancer'];
@@ -374,7 +415,7 @@ try {
      /* HE FALLS when his own spell staggers him, lies open on the floor, and sinks through it; its pillar lights, a blow brings the floor down, and he wakes in the room under */
      for(let i=0;i<240&&b.mode==='wake';i++)BK.sim(1);b.mode='reflected';b.modeT=2;BK.sim(2);out.fell=b.mode;for(let i=0;i<180&&b.mode!=='down';i++)BK.sim(1);out.down=b.mode;out.downOpen=b.open>0;
      const h0=b.hp;b.flash=0;BKT.hurtEnemy(b,20,b.x-10,false);out.downDmg=h0-b.hp;
-     for(let i=0;i<600&&b.mode!=='below';i++)BK.sim(1);const s=BK.L.ftSupports.find(q=>q.room===0);out.armed=!!(s&&s.armed);
+     for(let i=0;i<600&&b.mode!=='below';i++)BK.sim(1);const s=BK.L.ftSupports.find(q=>q.room===0&&q.kind==='floor');out.armed=!!(s&&s.armed);
      BK.tp(Math.floor(s.x/16)-1,Math.round(s.y/16)-1);BK.sim(5);BK.P.face=1;BK.press('atk');for(let i=0;i<120;i++)BK.sim(1);out.pillar=s.st;for(let i=0;i<240&&b.mode!=='wake';i++)BK.sim(1);out.room1=[b.mode,b.room,Math.round(BK.P.y/16)];}
    out.tuneFight=AU.music.want;out.musicGap=BK.bossMusicT;
    /* 2. EVERY HERO GETS UP IT UNDER THE SCROLL: no god mode, health held up (his spells counted, not fatal) - the dark must never catch it */

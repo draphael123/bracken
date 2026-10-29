@@ -51,6 +51,7 @@ function fall(L, s, c) {
     for (const e of c.foes()) if (e.x > x0 * 16 && e.x < (x1 + 1) * 16 && e.y > y0 * 16 && e.y <= (y1 + 1) * 16 + 2) { c.hurt(e, SUP.crushDmg); n++; }
     for (let x = x0; x <= x1; x += 2) c.burst(x * 16 + 8, (y1 + 1) * 16 - 4, 3, ['#8a8e9c', '#5c6070', '#b8b4a8']); s.crushed = n; }
   if (s.dark && c.holdDark) c.holdDark(SUP.dark);
+  if (s.vault && c.vault) c.vault(s);   /* (claude/ft4a) THE CHASE's vault pillar: the vault comes down on HIM if he is over its crush box, and its column lies as cover (main.js) */
   if (s.say) c.callout(s.say);
 }
 const overlaps = (a, b) => a.l < b.r && a.r > b.l && a.t < b.b && a.b > b.t;

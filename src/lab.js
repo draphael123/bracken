@@ -991,6 +991,8 @@ async function runbossLab(BK, opts) {
         if(boss.open>0&&!wasOpen)opened++;wasOpen=boss.open>0;
         const m=boss.mode,py=P.y-8,R=BK.L.chase3.rooms[Math.min(BK.L.chase3.rooms.length-1,boss.room||0)],xL=A.x0+20,xR=A.x1-20,clampX=x=>Math.max(xL,Math.min(xR,x));
         const sup=(BK.L.ftSupports||[]).find(s=>s.kind==='floor'&&s.armed&&s.st==='whole'),danger=[];let gx=null,block=false;
+        /* (claude/ft4a) THE VAULT PILLAR: he hangs over its crush box, casting - go and strike it (one use a room) */
+        const vlt=(BK.L.ftSupports||[]).find(s=>s.vault&&s.room===(boss.room||0)&&s.st==='whole'),vgo=!!vlt&&boss.x>vlt.crush[0]*16+8&&boss.x<(vlt.crush[1]+1)*16-8&&!['fall','down','rise','sink','tear','below','away','wake','crushed','reflected','gather','breached'].includes(m)&&!(boss.open>0);
         if(boss.deathMark&&Math.abs(boss.deathMark.y-py)<boss.deathMark.r+20)danger.push([boss.deathMark.x-boss.deathMark.r-12,boss.deathMark.x+boss.deathMark.r+12]);
         if(m==='stormTell')danger.push([boss.markX-30,boss.markX+30]);
         for(const q of boss.echoes||[])if(q.markX!==null&&q.markX!==undefined)danger.push([q.markX-30,q.markX+30]);
@@ -998,6 +1000,7 @@ async function runbossLab(BK, opts) {
         const rest=P.st<14||(P.labRest&&P.st<40);P.labRest=rest;
         if(m==='down')gx=boss.x+(P.x<boss.x?-1:1)*Math.max(8,LAB_REACH[h]*0.5);
         else if(sup)gx=sup.x+(P.x<sup.x?-1:1)*Math.max(8,Math.min(16,LAB_REACH[h]*0.5));
+        else if(vgo&&!rest)gx=vlt.x+(P.x<vlt.x?-1:1)*Math.max(8,Math.min(16,LAB_REACH[h]*0.5));
         else if(['fall','rise','sink','tear','below','away','wake'].includes(m))gx=null;
         else gx=boss.x+(P.x<boss.x?-1:1)*(rest?140:72);
         for(const q of boss.shots||[]){if(q.reflected||q.kind==='feed')continue;const rx=P.x-q.x,ry=py-q.y,d=Math.hypot(rx,ry);if(d>150)continue;
@@ -1008,12 +1011,14 @@ async function runbossLab(BK, opts) {
           if(d<30&&P.st>20&&!(P.dodge>0))BK.press('dodge');}
         const bad=x=>danger.some(([a,b])=>x>a&&x<b);
         if(bad(P.x)||(gx!==null&&bad(gx))){let best=null;const from=bad(P.x)?P.x:gx;for(let s=8;s<360&&best===null;s+=8){if(!bad(from-s)&&from-s>xL)best=from-s;else if(!bad(from+s)&&from+s<xR)best=from+s;}if(best!==null)gx=best;}
-        if(gx!==null){gx=clampX(gx);if(Math.abs(gx-P.x)>5)k[gx>P.x?'right':'left']=true;}
+        if(gx!==null){gx=clampX(gx);if(Math.abs(gx-P.x)>5){const dr=gx>P.x?1:-1;k[dr>0?'right':'left']=true;   /* (ft4a) a fallen column across the floor: over it */
+          if(P.ground){const tx=Math.floor((P.x+dr*12)/16),ty=Math.floor((P.y-6)/16);if(BK.L.grid[ty*BK.L.W+tx]===T.SOLID&&ty>=Math.floor(R.top))BK.press('jump');}}}
         /* off a ledge: the fight is on the floor (down through the one-way) */
         if(P.ground&&P.y<R.floor*16-8&&!['tear','away'].includes(m)&&(m==='down'||sup||f%30===0)){k.down=true;BK.press('jump');}
         if(block){k.block=true;k.left=k.right=false;}
         else if(m==='down'&&!rest&&Math.abs(boss.x-P.x)<LAB_REACH[h]+12&&Math.abs(boss.y-P.y)<30&&P.atk<0){P.face=Math.sign(boss.x-P.x)||1;BK.press('atk');swings++;}
         else if(sup&&Math.abs(sup.x-P.x)<LAB_REACH[h]+6&&Math.abs(sup.y-P.y)<20&&P.atk<0){P.face=Math.sign(sup.x-P.x)||1;BK.press('atk');swings++;}
+        else if(vgo&&!rest&&Math.abs(vlt.x-P.x)<LAB_REACH[h]+6&&Math.abs(vlt.y-P.y)<20&&P.atk<0){P.face=Math.sign(vlt.x-P.x)||1;BK.press('atk');swings++;}
         if(boss.deathMark&&Math.hypot(P.x-boss.deathMark.x,py-boss.deathMark.y)<boss.deathMark.r&&boss.deathMark.t<0.5&&P.st>20&&!(P.dodge>0))BK.press('dodge');
         const was=P.hp;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(m,Math.max(0,was-P.hp));if(P.dead)falls++;
         if(opts.onFrame)await opts.onFrame({boss,P,f,h,lvl:lvId,open:boss.open>0});
