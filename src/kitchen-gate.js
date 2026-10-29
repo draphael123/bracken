@@ -276,7 +276,7 @@ export function buildKitchenGate({ painter, T, TS }) {
   haulLine(b + 21, 380, b + 42, 170);   /* (its rope clears the perch's face by a body: it lets you off over the perch, never into its wall) */
   foe('sprig', b + 16, 23, 'carvery', { face: -1 }); prop('hatch', b + 5, 24); prop('block', b + 2, 24);
   /* the carvers' perch: a cook at his block */
-  foe('hearthgob', b + 43, 13, 'perch', { face: -1 }); prop('pans', b + 42, 10);
+  prop('pans', b + 42, 10);   /* the carvers' perch stands EMPTY: it is where the flue is read (its cook waits on the landing) */
   /* the carvery's dressers: one height over the carving line (one only: the line's floor is no way up), over the perch, over the landing and the door's trail */
   /* the carving counters (low, row 22) and a dresser beside each (row 19, up off a counter), the ham rack over the line's end (high, out of reach) */
   for (const [x0, x1, y] of [[b + 5, b + 8, 22], [b + 15, b + 18, 22]]) { shelf(x0, x1, y); racks.push([x0, x1, y]); }
@@ -295,7 +295,7 @@ export function buildKitchenGate({ painter, T, TS }) {
   const door3 = tallow('door3', b + 85, b + 86, 13, 21);
   trail(stove4, 'trail4', b + 77, b + 84, 22, door3);
   sign(b + 73, 21, 'THE CARVERY DOOR. STOKE THE STOVE: THE TRAIL BURNS TO THE TALLOW.');
-  foe('sprig', b + 81, 21, 'carveDoor', { face: -1 }); coins([b + 71, 21], [b + 88, 21], [b + 90, 21]); prop('oven', b + 71, 22);
+  foe('sprig', b + 81, 21, 'carveDoor', { face: -1 }); foe('hearthgob', b + 72, 21, 'carveDoor', { face: -1 }); coins([b + 71, 21], [b + 88, 21], [b + 90, 21]); prop('oven', b + 71, 22);
   }
   M = oldCol;
 
@@ -365,7 +365,7 @@ export function buildKitchenGate({ painter, T, TS }) {
     calm: [[0, W - 1, 0, H - 1]],   /* placed wholly by hand: nothing sprinkled */
     checkRun: 330,                  /* (claude/kitchengate3: 330 - the larder and the carvery widened two spans) four shrines, one closing each area's exam (A10c): src/level.js checkpoints() must not fill between them */
     sections: SECTIONS.map(([name, x0, x1]) => ({ id: name.toLowerCase().replace(/[^a-z]+/g, '-'), name, x0, x1 })),
-    squadBands: [{ lo: A0, hi: W - 1, spots: 0, why: "GRUBBAG'S TABLE: the boss's hall - no squad stands in a boss arena" }]   /* (claude/kitchengate3: the 400-column band went - section 3 now holds the carvery and the feast hall, both with squads) */,
+    squadBands: [{ lo: KITCHEN.arena[0], hi: W - 1, spots: 0, why: "GRUBBAG'S TABLE: the boss's hall - no squad stands in a boss arena" }, ...[600].filter(lo => lo > KITCHEN.arena[0] && lo < W).map(lo => ({ lo, hi: W - 1, spots: 0, why: "GRUBBAG'S TABLE, the sprinkle section that starts at " + lo + " (tools/sprinkle-cap.mjs keys a band on its section start): his hall's east wall" }))]   /* (claude/kitchengate3: the 400-column band went - section 3 now holds the carvery and the feast hall, both with squads) */,
     unlocks: [
       { kind: 'hoists', opens: 'a lift (the copper\'s steam), a ride up (the great spit), a door (the grease burns to the tallow door and melts it)', hud: 'THE FIRE ROARS' },
       { kind: 'kgpage', opens: 'secret', hud: 'RECIPE PAGES n/3: THE SPICE VAULT' },
