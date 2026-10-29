@@ -1,0 +1,73 @@
+{
+  "time": "2026-10-29T23:16:09.275Z",
+  "manifestSha256": "3fc429ffeae976a6dc2eaaaaa1f7c6e47c45675e9b0999122fe6891ea98ca095",
+  "helperSha256": "670a601f1dc89583112a81f3a1b9e918692172c7a591656e9ce12ff3a53b709f",
+  "component": {
+    "complete": true,
+    "familyCases": 4928,
+    "publicCases": 672,
+    "coreCases": 120,
+    "rng": 0,
+    "processes": {
+      "launches": 1,
+      "closures": 1,
+      "allClosed": true,
+      "profileAbsences": [
+        {
+          "profile": "/tmp/bracken-look-7LqJ1s",
+          "absent": true
+        }
+      ],
+      "interruptions": [],
+      "maxRendererMb": 1064,
+      "events": [
+        {
+          "type": "launch",
+          "pid": 2628,
+          "profile": "/tmp/bracken-look-7LqJ1s",
+          "time": 1793315539052
+        },
+        {
+          "type": "native-lab-collection",
+          "time": 1793315596992,
+          "requests": 0,
+          "completed": 0,
+          "failed": 0,
+          "postEvaluations": 2
+        },
+        {
+          "type": "closed",
+          "pid": 2628,
+          "profile": "/tmp/bracken-look-7LqJ1s",
+          "time": 1793315597120,
+          "peak": {
+            "totalMb": 2450,
+            "rendererMb": 1064
+          },
+          "reason": null
+        }
+      ]
+    }
+  },
+  "node": {
+    "complete": true,
+    "levels": 64,
+    "browsers": 0,
+    "priorFailureReproduced": true
+  },
+  "componentCloud": {
+    "workflow": "load-perf-proof.yml",
+    "mode": "pending-tile-flat-component-oct29",
+    "status": "completed",
+    "outerTimeoutMinutes": 15,
+    "evaluationDeadlineMs": 240000,
+    "audited": true,
+    "controller": "6cfba463447f67be6bb16802add13bd817624405",
+    "directory": "work/pending-tile-flat-cloud-6cfba463",
+    "run": 40971314848,
+    "url": "https://github.com/draphael123/bracken/actions/runs/40971314848",
+    "createdAt": "2026-10-29T23:10:46Z",
+    "conclusion": "success"
+  },
+  "scope": "All original19levels/342readbacks/228pairs and original timing,allocation,mode,deferral,return and untargeted controls. Additional15percent whole-source phase gain before any new broader cycle."
+}
