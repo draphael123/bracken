@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-10-29",
+    "batch": 130,
+    "lines": [
+      "The Archmage's rooms fall around you: his misses bring stone down, and a vault on him",
+      "No more cut: ride his carpet back up the broken tower and burst out into his sky",
+      "On his stair, strike his fire back and he reels: no spells for a while"
+    ]
+  },
+  {
+    "date": "2026-10-29",
     "batch": 128,
     "lines": [
       "The Archmage falls: the Falling Tower is a chase down four rooms and back up",

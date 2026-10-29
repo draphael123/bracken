@@ -21071,7 +21071,7 @@ function chaseToHall(){if(!L.chase3||!L.arena||!L.arena.hallArena)return;Object.
    only from a landing and only while he and you are both on the screen; a stone wall stops a bolt. The stair is seen ZOOMED OUT - its
    whole width and the landing he waits over (chaseView, asked by desiredView) - so nothing he throws comes from off the screen. */
 function chaseMage(e,dt){
- if(P.carpet){e.alive=false;return;}   /* the carpet is boarded: he is through his door ahead of you, and the fight is his hall's */
+ if(P.carpet||(L.chase3&&inChase3(L,P.x,P.y))){e.alive=false;return;}   /* (claude/ft4a: and once you are through his ring into THE CHASE - a stun on the last flight left him reeling on the stair) */   /* the carpet is boarded: he is through his door ahead of you, and the fight is his hall's */
  updateMageChase(e,dt,{P,
   hit:(x,y,d,hard,blow)=>damagePlayer(x,d,{unblockable:hard,who:e,blow:({fire:'FIREBOLT',ice:'ICE LANCE',mark:'THE DEATH MARK'})[blow]}),
   say:(m,h)=>number(e.x,e.y-52,m,h?'#ff6b6b':'#bce8fa'),sound:k=>(SFX[k]||SFX.charge)(),

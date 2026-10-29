@@ -139,7 +139,7 @@ export const BY_HAND = {
   'undeadmage|orbitTell':'!!','undeadmage|scriptTell':'!!',   /* (claude/archmage3, by hand) HIS ORRERY: no shield turns a world - keep between its orbits; THE GRAVE SCRIPT: nothing turns the lines - fly to the dark one */
   'undeadmage|boneTell':'!!','undeadmage|pullTell':'!!',   /* (claude/archmage2b, by hand) THE BONE STORM: no shield turns a skull - fly out through a gap; THE GRAVE PULL: the void it drags you to hurts, and nothing turns it */
   'undeadmage|realmTell':'','undeadmage|wallTell':'!!','undeadmage|sporeTell':'!!',   /* HIS SPELL REALMS (mage-realms.js, by hand, claude/undead3): the tear throws no blow - the realm it opens tells its own; the fire wall is a sheet of flame and the spores a cloud, and no shield turns either */
-  'magechase|fireTell':'!','magechase|iceTell':'!','magechase|markTell':'!!',   /* THE SPIRAL STAIR's chase (spiral-chase.js, by hand): his fight's firebolt and ice a shield turns; his death mark nothing does - step out of the ring */
+  'magechase|fireTell':'!','magechase|iceTell':'!','magechase|markTell':'!!','magechase|pairTell':'!',   /* THE SPIRAL STAIR's chase (spiral-chase.js, by hand): his fight's firebolt and ice a shield turns; his death mark nothing does - step out of the ring */
  'burieddead|clawTell':'!!','burieddead|slamTell':'!!','burieddead|cleaveTell':'!','burieddead|callTell':'','burieddead|sinkTell':'','burieddead|eruptTell':'!!','burieddead|skullTell':'!','burieddead|handsTell':'!!','burieddead|breathTell':'!','burieddead|novaTell':'!!','burieddead|throwTell':'!','burieddead|bodyTell':'!!','zombie|riseTell':'','zombie|grabTell':'!',
   'harbormaster|anchorTell': '!', 'harbormaster|harpoonTell': '!', 'harbormaster|lowTell': '!!', 'harbormaster|highTell': '!!', 'harbormaster|pressureTell': '!!', 'harbormaster|twinTell': '!!',
   'bosun|salvagePinTell':'!', 'bosun|salvageHookTell':'!', 'bosun|salvageCargoTell':'!!', 'bosun|salvageBroadsideTell':'!!', 'bosun|salvageCrossfireTell':'!!',
@@ -281,7 +281,7 @@ export const MARK = {
   'lance|pennantTell': '', 'lance|rearTell': '!!', 'lance|sweepTell': '!!', 'lance|thrustTell': '!', 'lance|vaultTell': '!!', 'lance|volleyTell': '!!',
   'lance|wallTell': '!', 'lanterneater|gulpTell': '!!', 'lanterneater|huntTell': '!!', 'lanterneater|snapTell': '!!', 'lanterneater|swellTell': '!!', 'lanternshade|flareTell': '!',
   'leech|rear': '!!', 'lookout|shootTell': '!', 'lookout|slashTell': '!', 'lookout|swingTell': '!', 'lookout|throwTell': '!', 'lurker|springTell': '!',
-  'magechase|fireTell': '!', 'magechase|iceTell': '!', 'magechase|markTell': '!!', 'manta|diveTell': '!', 'marine|shootTell': '!', 'marine|slashTell': '!',
+  'magechase|fireTell': '!', 'magechase|iceTell': '!', 'magechase|markTell': '!!', 'magechase|pairTell': '!', 'manta|diveTell': '!', 'marine|shootTell': '!', 'marine|slashTell': '!',
   'marine|swingTell': '!', 'marine|throwTell': '!', 'marionette|chopTell': '!!', 'marionette|grabTell': '!!', 'marionette|slamTell': '!!', 'marshlight|flareTell': '!',
   'masterpiece|reachTell': '!!', 'masterpiece|stompTell': '!!', 'masterpiece|swatTell': '!', 'master|chargeTell': '!', 'master|crackTell': '!', 'master|lashTell': '!',
   'master|leapTell': '!!', 'master|whistleTell': '', 'masthead|boomTell': '!!', 'masthead|dropTell': '!!', 'masthead|sailTell': '!', 'masthead|slashTell': '!',
@@ -522,7 +522,7 @@ export const ANSWER = {
   'tideguard|lungeTell': 'block', 'tideguard|pinchTell': 'block', 'tideguard|snapTell': 'block', 'tideguard|strikeTell': 'block', 'tideguard|thrustTell': 'block', 'tideguard|shockTell': 'dodge',
   'tidemarauder|harpoonTell': 'block', 'tidemarauder|rakeTell': 'jump',
   'tippler|barTell': 'block', 'tippler|heaveTell': 'dodge',
-  'magechase|fireTell': 'block', 'magechase|iceTell': 'block', 'magechase|markTell': 'dodge',   /* THE SPIRAL STAIR's chase: guard the fire and the frost, step out of the mark */
+  'magechase|fireTell': 'block', 'magechase|iceTell': 'block', 'magechase|markTell': 'dodge', 'magechase|pairTell': 'block',   /* (claude/ft4a) his answer after a stun: fire and frost, guarded */   /* THE SPIRAL STAIR's chase: guard the fire and the frost, step out of the mark */
   'tome|tell': 'block',
   'topiary|swipeTell': 'block',
   'troll|hurlTell': 'block', 'troll|ripTell': 'jump', 'troll|slamTell': 'dodge', 'troll|swatTell': 'block', 'troll|throwTell': 'block',
@@ -746,7 +746,7 @@ export const HEIGHT = {
   'lanternshade|flareTell': 'low',
   'lookout|shootTell': 'high', 'lookout|slashTell': 'low', 'lookout|swingTell': 'low', 'lookout|throwTell': 'high',
   'lurker|springTell': 'low',
-  'magechase|fireTell': 'low', 'magechase|iceTell': 'low', 'magechase|markTell': 'low',
+  'magechase|fireTell': 'low', 'magechase|iceTell': 'low', 'magechase|markTell': 'low', 'magechase|pairTell': 'low',
   'manta|diveTell': 'low',
   'marine|shootTell': 'high', 'marine|slashTell': 'low', 'marine|swingTell': 'low', 'marine|throwTell': 'high',
   'marshlight|flareTell': 'low',
