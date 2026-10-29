@@ -1,0 +1,1137 @@
+{
+  "time": "2026-10-29T17:02:10.840Z",
+  "manifestSha256": "63fc13a1baabefb5ad8aae9ac3259548fc8fd9d9377c2a477fdc0104306633a1",
+  "componentCloud": {
+    "mode": "tile-recipe-bindings-component-oct29",
+    "status": "completed",
+    "audited": true,
+    "outerTimeoutMinutes": 15,
+    "controller": "c57d5814ff7fa2183aa444b186ca2fb2fc0a18a6",
+    "run": 40916799353,
+    "url": "https://github.com/draphael123/bracken/actions/runs/40916799353",
+    "directory": "work/tile-recipe-component-cloud-c57d5814",
+    "dispatchedAt": "2026-10-29T16:59:08.855Z",
+    "conclusion": "success",
+    "qualified": true
+  },
+  "component": {
+    "time": "2026-10-29T17:00:11.969Z",
+    "complete": true,
+    "manifestSha256": "63fc13a1baabefb5ad8aae9ac3259548fc8fd9d9377c2a477fdc0104306633a1",
+    "originalApiBytePreserved": true,
+    "referenceOperations": 24576,
+    "reentrantResetCases": 2,
+    "sourceEntries": 51,
+    "bytecode": {
+      "originalContexts": 51,
+      "candidateContexts": 0,
+      "rows": [
+        {
+          "i": 0,
+          "file": "src/redraw/buried_city_tiles.js",
+          "entry": "sandTile",
+          "captured": [
+            "x",
+            "y",
+            "o",
+            "dp"
+          ],
+          "originalContextInstructions": 1,
+          "candidateContextInstructions": 0
+        },
+        {
+          "i": 1,
+          "file": "src/redraw/buried_city_tiles.js",
+          "entry": "roofTile",
+          "captured": [
+            "x",
+            "y",
+            "o"
+          ],
+          "originalContextInstructions": 1,
+          "candidateContextInstructions": 0
+        },
+        {
+          "i": 2,
+          "file": "src/redraw/buried_city_tiles.js",
+          "entry": "masonryTile",
+          "captured": [
+            "dk",
+            "x",
+            "y",
+            "o",
+            "d"
+          ],
+          "originalContextInstructions": 1,
+          "candidateContextInstructions": 0
+        },
+        {
+          "i": 3,
+          "file": "src/redraw/buried_city_tiles.js",
+          "entry": "balconyTile",
+          "captured": [
+            "i",
+            "n",
+            "x"
+          ],
+          "originalContextInstructions": 1,
+          "candidateContextInstructions": 0
+        },
+        {
+          "i": 4,
+          "file": "src/redraw/buried_city_tiles.js",
+          "entry": "awningTile",
+          "captured": [
+            "i",
+            "n",
+            "x"
+          ],
+          "originalContextInstructions": 1,
+          "candidateContextInstructions": 0
+        },
+        {
+          "i": 5,
+          "file": "src/redraw/buried_city_tiles.js",
+          "entry": "pipeTile",
+          "captured": [
+            "i",
+            "n",
+            "x"
+          ],
+          "originalContextInstructions": 1,
+          "candidateContextInstructions": 0
+        },
+        {
+          "i": 6,
+          "file": "src/redraw/buried_city_tiles.js",
+          "entry": "beamTile",
+          "captured": [
+            "i",
+            "n",
+            "x"
+          ],
+          "originalContextInstructions": 1,
+          "candidateContextInstructions": 0
+        },
+        {
+          "i": 7,
+          "file": "src/redraw/buried_city_tiles.js",
+          "entry": "lintelTile",
+          "captured": [
+            "i",
+            "n",
+            "x"
+          ],
+          "originalContextInstructions": 1,
+          "candidateContextInstructions": 0
+        },
+        {
+          "i": 8,
+          "file": "src/redraw/buried_city_tiles.js",
+          "entry": "drumTile",
+          "captured": [
+            "i",
+            "n",
+            "x"
+          ],
+          "originalContextInstructions": 1,
+          "candidateContextInstructions": 0
+        },
+        {
+          "i": 9,
+          "file": "src/redraw/buried_city_tiles.js",
+          "entry": "rottenTile",
+          "captured": [
+            "i",
+            "n",
+            "x"
+          ],
+          "originalContextInstructions": 1,
+          "candidateContextInstructions": 0
+        },
+        {
+          "i": 10,
+          "file": "src/redraw/buried_city_tiles.js",
+          "entry": "domeTile",
+          "captured": [
+            "i",
+            "n",
+            "x",
+            "y",
+            "top"
+          ],
+          "originalContextInstructions": 1,
+          "candidateContextInstructions": 0
+        },
+        {
+          "i": 11,
+          "file": "src/redraw/buried_city_tiles.js",
+          "entry": "minaretTile",
+          "captured": [
+            "i",
+            "n",
+            "x",
+            "y",
+            "top"
+          ],
+          "originalContextInstructions": 1,
+          "candidateContextInstructions": 0
+        },
+        {
+          "i": 12,
+          "file": "src/redraw/buried_city_tiles.js",
+          "entry": "houseTile",
+          "captured": [
+            "dk",
+            "i",
+            "n",
+            "x",
+            "y",
+            "o"
+          ],
+          "originalContextInstructions": 1,
+          "candidateContextInstructions": 0
+        },
+        {
+          "i": 13,
+          "file": "src/redraw/buried_city_tiles.js",
+          "entry": "stakeTile",
+          "captured": [
+            "x"
+          ],
+          "originalContextInstructions": 1,
+          "candidateContextInstructions": 0
+        },
+        {
+          "i": 14,
+          "file": "src/redraw/redgorge_tiles.js",
+          "entry": "face",
+          "captured": [
+            "tx",
+            "ty",
+            "e",
+            "deep",
+            "pale"
+          ],
+          "originalContextInstructions": 1,
+          "candidateContextInstructions": 0
+        },
+        {
+          "i": 15,
+          "file": "src/redraw/redgorge_tiles.js",
+          "entry": "top",
+          "captured": [
+            "tx",
+            "ty",
+            "e",
+            "pale"
+          ],
+          "originalContextInstructions": 1,
+          "candidateContextInstructions": 0
+        },
+        {
+          "i": 16,
+          "file": "src/redraw/redgorge_tiles.js",
+          "entry": "ashlar",
+          "captured": [
+            "tx",
+            "ty",
+            "isTop",
+            "e"
+          ],
+          "originalContextInstructions": 1,
+          "candidateContextInstructions": 0
+        },
+        {
+          "i": 17,
+          "file": "src/redraw/redgorge_tiles.js",
+          "entry": "shelf",
+          "captured": [
+            "l",
+            "r",
+            "v"
+          ],
+          "originalContextInstructions": 1,
+          "candidateContextInstructions": 0
+        },
+        {
+          "i": 18,
+          "file": "src/redraw/redgorge_tiles.js",
+          "entry": "deck",
+          "captured": [
+            "l",
+            "r",
+            "v",
+            "mid"
+          ],
+          "originalContextInstructions": 1,
+          "candidateContextInstructions": 0
+        },
+        {
+          "i": 19,
+          "file": "src/redraw/redgorge_tiles.js",
+          "entry": "ropeTile",
+          "captured": [
+            "y",
+            "endTop",
+            "endBot"
+          ],
+          "originalContextInstructions": 1,
+          "candidateContextInstructions": 0
+        },
+        {
+          "i": 20,
+          "file": "src/redraw/rootway_tiles.js",
+          "entry": "grain",
+          "captured": [
+            "zone"
+          ],
+          "originalContextInstructions": 1,
+          "candidateContextInstructions": 0
+        },
+        {
+          "i": 21,
+          "file": "src/redraw/rootway_tiles.js",
+          "entry": "topTile",
+          "captured": [
+            "zone",
+            "x",
+            "y",
+            "eL",
+            "eR"
+          ],
+          "originalContextInstructions": 1,
+          "candidateContextInstructions": 0
+        },
+        {
+          "i": 22,
+          "file": "src/redraw/rootway_tiles.js",
+          "entry": "faceTile",
+          "captured": [
+            "zone",
+            "x",
+            "y",
+            "eL",
+            "eR"
+          ],
+          "originalContextInstructions": 1,
+          "candidateContextInstructions": 0
+        },
+        {
+          "i": 23,
+          "file": "src/redraw/rootway_tiles.js",
+          "entry": "ceilTile",
+          "captured": [
+            "zone",
+            "x",
+            "y",
+            "eL",
+            "eR"
+          ],
+          "originalContextInstructions": 1,
+          "candidateContextInstructions": 0
+        },
+        {
+          "i": 24,
+          "file": "src/redraw/rootway_tiles.js",
+          "entry": "massTile",
+          "captured": [
+            "zone",
+            "x",
+            "y",
+            "d"
+          ],
+          "originalContextInstructions": 1,
+          "candidateContextInstructions": 0
+        },
+        {
+          "i": 25,
+          "file": "src/redraw/rootway_tiles.js",
+          "entry": "timber",
+          "captured": [
+            "zone",
+            "l",
+            "rr",
+            "v"
+          ],
+          "originalContextInstructions": 1,
+          "candidateContextInstructions": 0
+        },
+        {
+          "i": 26,
+          "file": "src/redraw/rootway_tiles.js",
+          "entry": "springCap",
+          "captured": [
+            "squash",
+            "fl"
+          ],
+          "originalContextInstructions": 1,
+          "candidateContextInstructions": 0
+        },
+        {
+          "i": 27,
+          "file": "src/redraw/sealed_pyramid_tiles.js",
+          "entry": "massTile",
+          "captured": [
+            "sk",
+            "x",
+            "y",
+            "o",
+            "S"
+          ],
+          "originalContextInstructions": 1,
+          "candidateContextInstructions": 0
+        },
+        {
+          "i": 28,
+          "file": "src/redraw/sealed_pyramid_tiles.js",
+          "entry": "slabTile",
+          "captured": [
+            "kind",
+            "i",
+            "n",
+            "x",
+            "S"
+          ],
+          "originalContextInstructions": 1,
+          "candidateContextInstructions": 0
+        },
+        {
+          "i": 29,
+          "file": "src/redraw/sealed_pyramid_tiles.js",
+          "entry": "pitTile",
+          "captured": [
+            "x"
+          ],
+          "originalContextInstructions": 1,
+          "candidateContextInstructions": 0
+        },
+        {
+          "i": 30,
+          "file": "src/redraw/skyroad_tiles.js",
+          "entry": "beds",
+          "captured": [
+            "zone"
+          ],
+          "originalContextInstructions": 1,
+          "candidateContextInstructions": 0
+        },
+        {
+          "i": 31,
+          "file": "src/redraw/skyroad_tiles.js",
+          "entry": "topTile",
+          "captured": [
+            "zone",
+            "x",
+            "y",
+            "eL",
+            "eR",
+            "crack"
+          ],
+          "originalContextInstructions": 1,
+          "candidateContextInstructions": 0
+        },
+        {
+          "i": 32,
+          "file": "src/redraw/skyroad_tiles.js",
+          "entry": "faceTile",
+          "captured": [
+            "zone",
+            "x",
+            "y",
+            "eL",
+            "eR"
+          ],
+          "originalContextInstructions": 1,
+          "candidateContextInstructions": 0
+        },
+        {
+          "i": 33,
+          "file": "src/redraw/skyroad_tiles.js",
+          "entry": "ceilTile",
+          "captured": [
+            "zone",
+            "x",
+            "y",
+            "eL",
+            "eR"
+          ],
+          "originalContextInstructions": 1,
+          "candidateContextInstructions": 0
+        },
+        {
+          "i": 34,
+          "file": "src/redraw/skyroad_tiles.js",
+          "entry": "massTile",
+          "captured": [
+            "zone",
+            "x",
+            "y",
+            "d"
+          ],
+          "originalContextInstructions": 1,
+          "candidateContextInstructions": 0
+        },
+        {
+          "i": 35,
+          "file": "src/redraw/skyroad_tiles.js",
+          "entry": "slab",
+          "captured": [
+            "zone",
+            "l",
+            "rr",
+            "v"
+          ],
+          "originalContextInstructions": 1,
+          "candidateContextInstructions": 0
+        },
+        {
+          "i": 36,
+          "file": "src/redraw/skyroad_tiles.js",
+          "entry": "clothDeck",
+          "captured": [
+            "l",
+            "rr",
+            "v"
+          ],
+          "originalContextInstructions": 1,
+          "candidateContextInstructions": 0
+        },
+        {
+          "i": 37,
+          "file": "src/redraw/skyroad_tiles.js",
+          "entry": "woven",
+          "captured": [
+            "l",
+            "rr",
+            "v"
+          ],
+          "originalContextInstructions": 1,
+          "candidateContextInstructions": 0
+        },
+        {
+          "i": 38,
+          "file": "src/redraw/undercrown_tiles.js",
+          "entry": "topTile",
+          "captured": [
+            "zone",
+            "x",
+            "y",
+            "eL",
+            "eR"
+          ],
+          "originalContextInstructions": 1,
+          "candidateContextInstructions": 0
+        },
+        {
+          "i": 39,
+          "file": "src/redraw/undercrown_tiles.js",
+          "entry": "faceTile",
+          "captured": [
+            "zone",
+            "x",
+            "y",
+            "eL",
+            "eR"
+          ],
+          "originalContextInstructions": 1,
+          "candidateContextInstructions": 0
+        },
+        {
+          "i": 40,
+          "file": "src/redraw/undercrown_tiles.js",
+          "entry": "ceilTile",
+          "captured": [
+            "zone",
+            "x",
+            "y",
+            "eL",
+            "eR"
+          ],
+          "originalContextInstructions": 1,
+          "candidateContextInstructions": 0
+        },
+        {
+          "i": 41,
+          "file": "src/redraw/undercrown_tiles.js",
+          "entry": "massTile",
+          "captured": [
+            "zone",
+            "x",
+            "y",
+            "d"
+          ],
+          "originalContextInstructions": 1,
+          "candidateContextInstructions": 0
+        },
+        {
+          "i": 42,
+          "file": "src/redraw/undercrown_tiles.js",
+          "entry": "slabTile",
+          "captured": [
+            "zone",
+            "u",
+            "bottom",
+            "nU",
+            "last"
+          ],
+          "originalContextInstructions": 1,
+          "candidateContextInstructions": 0
+        },
+        {
+          "i": 43,
+          "file": "src/redraw/undercrown_tiles.js",
+          "entry": "boards",
+          "captured": [
+            "zone",
+            "l",
+            "rr",
+            "v"
+          ],
+          "originalContextInstructions": 1,
+          "candidateContextInstructions": 0
+        },
+        {
+          "i": 44,
+          "file": "src/redraw/underwell_tiles.js",
+          "entry": "floorTile",
+          "captured": [
+            "x",
+            "y",
+            "zone",
+            "oil",
+            "silt",
+            "leftOpen",
+            "rightOpen"
+          ],
+          "originalContextInstructions": 1,
+          "candidateContextInstructions": 0
+        },
+        {
+          "i": 45,
+          "file": "src/redraw/underwell_tiles.js",
+          "entry": "ceilTile",
+          "captured": [
+            "x",
+            "y",
+            "zone",
+            "edgeL",
+            "edgeR"
+          ],
+          "originalContextInstructions": 1,
+          "candidateContextInstructions": 0
+        },
+        {
+          "i": 46,
+          "file": "src/redraw/underwell_tiles.js",
+          "entry": "wallTile",
+          "captured": [
+            "x",
+            "y",
+            "zone",
+            "eL",
+            "eR",
+            "iron",
+            "dim"
+          ],
+          "originalContextInstructions": 1,
+          "candidateContextInstructions": 0
+        },
+        {
+          "i": 47,
+          "file": "src/redraw/underwell_tiles.js",
+          "entry": "massTile",
+          "captured": [
+            "x",
+            "y",
+            "d"
+          ],
+          "originalContextInstructions": 1,
+          "candidateContextInstructions": 0
+        },
+        {
+          "i": 48,
+          "file": "src/redraw/underwell_tiles.js",
+          "entry": "slab",
+          "captured": [
+            "l",
+            "rr",
+            "v"
+          ],
+          "originalContextInstructions": 1,
+          "candidateContextInstructions": 0
+        },
+        {
+          "i": 49,
+          "file": "src/redraw/underwell_tiles.js",
+          "entry": "grate",
+          "captured": [
+            "l",
+            "rr",
+            "v"
+          ],
+          "originalContextInstructions": 1,
+          "candidateContextInstructions": 0
+        },
+        {
+          "i": 50,
+          "file": "src/redraw/underwell_tiles.js",
+          "entry": "ropeTile",
+          "captured": [
+            "y",
+            "endTop",
+            "endBot"
+          ],
+          "originalContextInstructions": 1,
+          "candidateContextInstructions": 0
+        }
+      ],
+      "scope": "Node V8 source-derived memo-hit entry fixtures; not actual Game/browser allocation or timing"
+    },
+    "rows": [
+      {
+        "scenario": 0,
+        "operations": 384,
+        "firstSuccessfulBindingsResetIdentityMutationAndFailuresExact": true
+      },
+      {
+        "scenario": 1,
+        "operations": 384,
+        "firstSuccessfulBindingsResetIdentityMutationAndFailuresExact": true
+      },
+      {
+        "scenario": 2,
+        "operations": 384,
+        "firstSuccessfulBindingsResetIdentityMutationAndFailuresExact": true
+      },
+      {
+        "scenario": 3,
+        "operations": 384,
+        "firstSuccessfulBindingsResetIdentityMutationAndFailuresExact": true
+      },
+      {
+        "scenario": 4,
+        "operations": 384,
+        "firstSuccessfulBindingsResetIdentityMutationAndFailuresExact": true
+      },
+      {
+        "scenario": 5,
+        "operations": 384,
+        "firstSuccessfulBindingsResetIdentityMutationAndFailuresExact": true
+      },
+      {
+        "scenario": 6,
+        "operations": 384,
+        "firstSuccessfulBindingsResetIdentityMutationAndFailuresExact": true
+      },
+      {
+        "scenario": 7,
+        "operations": 384,
+        "firstSuccessfulBindingsResetIdentityMutationAndFailuresExact": true
+      },
+      {
+        "scenario": 8,
+        "operations": 384,
+        "firstSuccessfulBindingsResetIdentityMutationAndFailuresExact": true
+      },
+      {
+        "scenario": 9,
+        "operations": 384,
+        "firstSuccessfulBindingsResetIdentityMutationAndFailuresExact": true
+      },
+      {
+        "scenario": 10,
+        "operations": 384,
+        "firstSuccessfulBindingsResetIdentityMutationAndFailuresExact": true
+      },
+      {
+        "scenario": 11,
+        "operations": 384,
+        "firstSuccessfulBindingsResetIdentityMutationAndFailuresExact": true
+      },
+      {
+        "scenario": 12,
+        "operations": 384,
+        "firstSuccessfulBindingsResetIdentityMutationAndFailuresExact": true
+      },
+      {
+        "scenario": 13,
+        "operations": 384,
+        "firstSuccessfulBindingsResetIdentityMutationAndFailuresExact": true
+      },
+      {
+        "scenario": 14,
+        "operations": 384,
+        "firstSuccessfulBindingsResetIdentityMutationAndFailuresExact": true
+      },
+      {
+        "scenario": 15,
+        "operations": 384,
+        "firstSuccessfulBindingsResetIdentityMutationAndFailuresExact": true
+      },
+      {
+        "scenario": 16,
+        "operations": 384,
+        "firstSuccessfulBindingsResetIdentityMutationAndFailuresExact": true
+      },
+      {
+        "scenario": 17,
+        "operations": 384,
+        "firstSuccessfulBindingsResetIdentityMutationAndFailuresExact": true
+      },
+      {
+        "scenario": 18,
+        "operations": 384,
+        "firstSuccessfulBindingsResetIdentityMutationAndFailuresExact": true
+      },
+      {
+        "scenario": 19,
+        "operations": 384,
+        "firstSuccessfulBindingsResetIdentityMutationAndFailuresExact": true
+      },
+      {
+        "scenario": 20,
+        "operations": 384,
+        "firstSuccessfulBindingsResetIdentityMutationAndFailuresExact": true
+      },
+      {
+        "scenario": 21,
+        "operations": 384,
+        "firstSuccessfulBindingsResetIdentityMutationAndFailuresExact": true
+      },
+      {
+        "scenario": 22,
+        "operations": 384,
+        "firstSuccessfulBindingsResetIdentityMutationAndFailuresExact": true
+      },
+      {
+        "scenario": 23,
+        "operations": 384,
+        "firstSuccessfulBindingsResetIdentityMutationAndFailuresExact": true
+      },
+      {
+        "scenario": 24,
+        "operations": 384,
+        "firstSuccessfulBindingsResetIdentityMutationAndFailuresExact": true
+      },
+      {
+        "scenario": 25,
+        "operations": 384,
+        "firstSuccessfulBindingsResetIdentityMutationAndFailuresExact": true
+      },
+      {
+        "scenario": 26,
+        "operations": 384,
+        "firstSuccessfulBindingsResetIdentityMutationAndFailuresExact": true
+      },
+      {
+        "scenario": 27,
+        "operations": 384,
+        "firstSuccessfulBindingsResetIdentityMutationAndFailuresExact": true
+      },
+      {
+        "scenario": 28,
+        "operations": 384,
+        "firstSuccessfulBindingsResetIdentityMutationAndFailuresExact": true
+      },
+      {
+        "scenario": 29,
+        "operations": 384,
+        "firstSuccessfulBindingsResetIdentityMutationAndFailuresExact": true
+      },
+      {
+        "scenario": 30,
+        "operations": 384,
+        "firstSuccessfulBindingsResetIdentityMutationAndFailuresExact": true
+      },
+      {
+        "scenario": 31,
+        "operations": 384,
+        "firstSuccessfulBindingsResetIdentityMutationAndFailuresExact": true
+      },
+      {
+        "scenario": 32,
+        "operations": 384,
+        "firstSuccessfulBindingsResetIdentityMutationAndFailuresExact": true
+      },
+      {
+        "scenario": 33,
+        "operations": 384,
+        "firstSuccessfulBindingsResetIdentityMutationAndFailuresExact": true
+      },
+      {
+        "scenario": 34,
+        "operations": 384,
+        "firstSuccessfulBindingsResetIdentityMutationAndFailuresExact": true
+      },
+      {
+        "scenario": 35,
+        "operations": 384,
+        "firstSuccessfulBindingsResetIdentityMutationAndFailuresExact": true
+      },
+      {
+        "scenario": 36,
+        "operations": 384,
+        "firstSuccessfulBindingsResetIdentityMutationAndFailuresExact": true
+      },
+      {
+        "scenario": 37,
+        "operations": 384,
+        "firstSuccessfulBindingsResetIdentityMutationAndFailuresExact": true
+      },
+      {
+        "scenario": 38,
+        "operations": 384,
+        "firstSuccessfulBindingsResetIdentityMutationAndFailuresExact": true
+      },
+      {
+        "scenario": 39,
+        "operations": 384,
+        "firstSuccessfulBindingsResetIdentityMutationAndFailuresExact": true
+      },
+      {
+        "scenario": 40,
+        "operations": 384,
+        "firstSuccessfulBindingsResetIdentityMutationAndFailuresExact": true
+      },
+      {
+        "scenario": 41,
+        "operations": 384,
+        "firstSuccessfulBindingsResetIdentityMutationAndFailuresExact": true
+      },
+      {
+        "scenario": 42,
+        "operations": 384,
+        "firstSuccessfulBindingsResetIdentityMutationAndFailuresExact": true
+      },
+      {
+        "scenario": 43,
+        "operations": 384,
+        "firstSuccessfulBindingsResetIdentityMutationAndFailuresExact": true
+      },
+      {
+        "scenario": 44,
+        "operations": 384,
+        "firstSuccessfulBindingsResetIdentityMutationAndFailuresExact": true
+      },
+      {
+        "scenario": 45,
+        "operations": 384,
+        "firstSuccessfulBindingsResetIdentityMutationAndFailuresExact": true
+      },
+      {
+        "scenario": 46,
+        "operations": 384,
+        "firstSuccessfulBindingsResetIdentityMutationAndFailuresExact": true
+      },
+      {
+        "scenario": 47,
+        "operations": 384,
+        "firstSuccessfulBindingsResetIdentityMutationAndFailuresExact": true
+      },
+      {
+        "scenario": 48,
+        "operations": 384,
+        "firstSuccessfulBindingsResetIdentityMutationAndFailuresExact": true
+      },
+      {
+        "scenario": 49,
+        "operations": 384,
+        "firstSuccessfulBindingsResetIdentityMutationAndFailuresExact": true
+      },
+      {
+        "scenario": 50,
+        "operations": 384,
+        "firstSuccessfulBindingsResetIdentityMutationAndFailuresExact": true
+      },
+      {
+        "scenario": 51,
+        "operations": 384,
+        "firstSuccessfulBindingsResetIdentityMutationAndFailuresExact": true
+      },
+      {
+        "scenario": 52,
+        "operations": 384,
+        "firstSuccessfulBindingsResetIdentityMutationAndFailuresExact": true
+      },
+      {
+        "scenario": 53,
+        "operations": 384,
+        "firstSuccessfulBindingsResetIdentityMutationAndFailuresExact": true
+      },
+      {
+        "scenario": 54,
+        "operations": 384,
+        "firstSuccessfulBindingsResetIdentityMutationAndFailuresExact": true
+      },
+      {
+        "scenario": 55,
+        "operations": 384,
+        "firstSuccessfulBindingsResetIdentityMutationAndFailuresExact": true
+      },
+      {
+        "scenario": 56,
+        "operations": 384,
+        "firstSuccessfulBindingsResetIdentityMutationAndFailuresExact": true
+      },
+      {
+        "scenario": 57,
+        "operations": 384,
+        "firstSuccessfulBindingsResetIdentityMutationAndFailuresExact": true
+      },
+      {
+        "scenario": 58,
+        "operations": 384,
+        "firstSuccessfulBindingsResetIdentityMutationAndFailuresExact": true
+      },
+      {
+        "scenario": 59,
+        "operations": 384,
+        "firstSuccessfulBindingsResetIdentityMutationAndFailuresExact": true
+      },
+      {
+        "scenario": 60,
+        "operations": 384,
+        "firstSuccessfulBindingsResetIdentityMutationAndFailuresExact": true
+      },
+      {
+        "scenario": 61,
+        "operations": 384,
+        "firstSuccessfulBindingsResetIdentityMutationAndFailuresExact": true
+      },
+      {
+        "scenario": 62,
+        "operations": 384,
+        "firstSuccessfulBindingsResetIdentityMutationAndFailuresExact": true
+      },
+      {
+        "scenario": 63,
+        "operations": 384,
+        "firstSuccessfulBindingsResetIdentityMutationAndFailuresExact": true
+      },
+      {
+        "reentrantAndResetInside": false,
+        "exact": true
+      },
+      {
+        "reentrantAndResetInside": true,
+        "exact": true
+      }
+    ],
+    "noNativePixelFullStateMemoryLayoutOrFpsClaim": true
+  },
+  "controls": [
+    {
+      "file": "page",
+      "originalSha256": "2537e662b87f86bca6feefbf2171690d06cd880e8e423c0962dcbe9ec42ab4fd",
+      "candidateSha256": "dfdd8740545ca39061fbc11367f7d352dedf9f4c0018f50298205091dae1f805",
+      "onlyPathsEnvironmentAndAdditionalComponentSourceGate": true,
+      "original342Readbacks228ExactPairsAdmissionMemoryGcCanvasAndPerformanceAssertionsUnchanged": true
+    },
+    {
+      "file": "loader",
+      "originalSha256": "c0b87c3c92a31b0e879b362dddda1ce6f3114bcc3a8d2966d9c6750f14b3b5d7",
+      "candidateSha256": "bada96e9b4321bb27b81b736941ec9fd3d5b973725199d6a63acbb994db59bcd",
+      "onlyPathsEnvironmentAndAdditionalComponentSourceGate": true,
+      "original342Readbacks228ExactPairsAdmissionMemoryGcCanvasAndPerformanceAssertionsUnchanged": true
+    },
+    {
+      "file": "loader-runner",
+      "originalSha256": "ad000d09b7464ff8fd58630234957b52c7022d94955fd5736fc2da03132753a0",
+      "candidateSha256": "c0ecdc2621d0f39bece4e8545a8a63483c894bfc98ca1098eb5f7ebee47ddfd8",
+      "onlyPathsEnvironmentAndAdditionalComponentSourceGate": true,
+      "original342Readbacks228ExactPairsAdmissionMemoryGcCanvasAndPerformanceAssertionsUnchanged": true
+    },
+    {
+      "file": "preflight",
+      "originalSha256": "c187b0840bbb89920b45ffbb0d8bfd23f348339e0af36c38c050f12565e52405",
+      "candidateSha256": "8262a02d07fb525780078ed0b1505a013146ba835bd3297f93b47808ee1db962",
+      "onlyPathsEnvironmentAndAdditionalComponentSourceGate": true,
+      "original342Readbacks228ExactPairsAdmissionMemoryGcCanvasAndPerformanceAssertionsUnchanged": true
+    },
+    {
+      "file": "qualify",
+      "originalSha256": "97baed4b0515f91a686f1181281a98121e04f133abcd664e266c1661f807dde5",
+      "candidateSha256": "298b872bc7cf4ee1f5009f66a741a6de94dd5f88af25b65aad80dfee9c872296",
+      "onlyPathsEnvironmentAndAdditionalComponentSourceGate": true,
+      "original342Readbacks228ExactPairsAdmissionMemoryGcCanvasAndPerformanceAssertionsUnchanged": true
+    }
+  ],
+  "levels": [
+    "wood",
+    "marsh",
+    "stockade",
+    "spore",
+    "kings",
+    "scree",
+    "undercrown",
+    "redgorge",
+    "underwell",
+    "skyroad",
+    "glasssea",
+    "ksar",
+    "rootway",
+    "minecart",
+    "church",
+    "towpath",
+    "buriedcity",
+    "sealedpyramid",
+    "fenroad"
+  ],
+  "cohorts": [
+    [
+      "wood",
+      "marsh",
+      "stockade",
+      "spore",
+      "kings",
+      "scree",
+      "undercrown"
+    ],
+    [
+      "redgorge",
+      "underwell",
+      "skyroad",
+      "glasssea",
+      "ksar",
+      "rootway"
+    ],
+    [
+      "minecart",
+      "church",
+      "towpath",
+      "buriedcity",
+      "sealedpyramid",
+      "fenroad"
+    ]
+  ],
+  "performanceTargets": [
+    "redgorge",
+    "underwell",
+    "skyroad",
+    "glasssea",
+    "ksar",
+    "rootway",
+    "minecart",
+    "church",
+    "towpath",
+    "buriedcity",
+    "sealedpyramid",
+    "fenroad"
+  ],
+  "criterion": {
+    "purpose": "New targeted allocation optimization, separate from rejected D6startup sources",
+    "minimumTargetStrongFraction": 0.5,
+    "strongTargetReadyGainVsFasterControlPercent": 10,
+    "strongAllSamplesBelowBothControlRanges": true,
+    "maxBeforeReturnMedianDriftPercent": 15,
+    "wholePhaseGainVsFasterControlPercent": 5,
+    "wholePhaseFasterThanBothEveryRound": true,
+    "originalSevenReadbacksAllExact": true,
+    "originalMemoryCampaign80batch600000msAnd425GatesStillRequired": true,
+    "no40FpsClaim": true
+  },
+  "protocol": "One fresh controlled document per browser, original19levels/342readbacks/228exact comparisons in7/6/6cohorts; nativeGC,4352admission,1536peak,original normal320x180/915x412/DPR2.625/display2402x1082. Original five-arena zoom640x360 unaffected. All prior failed sources separate.",
+  "noPriorSourceTimingOrPixelPassInherited": true,
+  "noFullLayoutMemoryCampaign425OrFpsClaim": true
+}
