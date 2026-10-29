@@ -220,7 +220,7 @@ export function buildWarCairn({ painter, T, TS }) {
   const ents = L.ents;
   return {
     W, H, grid: L.grid, ents, START: { x: 11, y: 95 }, pools: [], falls: [],
-    arena, warcairn: true, rule: WC_RULE,
+    arena, warcairn: true, wcKit: true, rule: WC_RULE,
     wcDrums: drums, wcGates: gates, wcSlabs: slabs, wcCornices: cornices, wcHolds: holds, hoists, reachDoors, reachSpans, structures,
     reskin: WC_RESKIN, foeHit: {},
     calm: [[0, W - 1, 0, H - 1]],   /* placed wholly by hand: nothing sprinkled */

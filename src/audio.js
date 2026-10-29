@@ -1202,6 +1202,11 @@ Object.assign(SFX, {
   skullThrow() { noise(0.2, 0.2, 1400, 0.5); tone('triangle', 320, 140, 0.18, 0.08); tone('square', 900, 300, 0.05, 0.05, 0.04); },   /* THE BURIED DEAD'S SKULL leaves his hand: a hollow rattle going away */
   ribbit() { file('croak', 0.45, 1.5) || (tone('sawtooth', 200, 300, 0.09, 0.14), tone('sawtooth', 280, 170, 0.1, 0.12, 0.09)); },
   thump() { tone('sine', 110, 40, 0.16, 0.3); noise(0.08, 0.25, 250, 0.7); },
+  /* (claude/warcairnart) THE WAR DRUM (THE WAR CAIRN): a hide drum struck with a stick - the slap on the skin, the body of the barrel dropping from 96 to 44 Hz, a long low boom under it and the granite round it ringing a little; warDrumSpent is the slack skin (a dull flap, nothing under it) */
+  warDrum() { noise(0.05, 0.34, 2400, 0.9); tone('sine', 150, 90, 0.1, 0.22); tone('sine', 98, 44, 0.42, 0.46); tone('triangle', 64, 38, 0.6, 0.26, 0.012); noise(0.4, 0.12, 150, 0.5, 0.02); tone('sine', 330, 300, 0.25, 0.03, 0.03); },
+  warDrumSpent() { noise(0.07, 0.16, 900, 0.8); tone('sine', 120, 80, 0.1, 0.12); },
+  /* THE CLAN'S WAR CRY (a man's shout over the beat: the clan's own surge) */
+  warCry() { const o = ['vo_m2_attack', 'vo_m3_attack', 'vo_m2_alert'].filter(n => clips[n] && clips[n].some(Boolean)); if (!o.length) { tone('sawtooth', 150, 210, 0.3, 0.1); noise(0.25, 0.08, 900, 0.8); return; } voice(o[(Math.random() * o.length) | 0], 0.6, 0.85, 3000); },
   gobDieLow() { file('gobDie', 0.7, 0.72) || (tone('sawtooth', 220, 60, 0.3, 0.22), noise(0.2, 0.2, 500, 0.6)); },
   gobHurtLow() { file('gobHurt', 0.6, 0.75) || tone('sawtooth', 260, 120, 0.12, 0.18); },
 });
@@ -1946,6 +1951,8 @@ for (const [t, b] of Object.entries({ stakesetter: 'rockgoblin', lanternhand: 'r
 CAST.batteringbeast = { kit: 'ogre', rate: 0.55, lp: 1300, boss: true };
 /* (BATCH123 integ, voices-check) the new Flotilla pirates speak as the cutthroat/slinger people do, the bosun and keg roller as heavies; THE KITCHEN GATE grunts low as the Boar King does; the Rookery harpy people scream */
 Object.assign(CAST, { grapnel: { kit: 'm2', rate: 1, mat: 'cloth', human: true }, pistoleer: { kit: 'm6', rate: 1.1, mat: 'cloth', human: true }, kegroller: { kit: 'ogre', rate: 0.95, mat: 'cloth' }, platedbosun: { kit: 'm4', rate: 0.8, lp: 2200, mat: 'plate', human: true }, grubbag: { kit: 'ogre', rate: 0.5, lp: 1300, boss: true }, butcher: { kit: 'ogre', rate: 0.8, mat: 'cloth' }, shrieksisters: { kit: 'scream', rate: 0.85, boss: true }, shrieker: { kit: 'scream', rate: 1.15 }, galeharpy: { kit: 'scream', rate: 1.0 }, powdermonkey: { kit: 'm2', rate: 1.3, mat: 'cloth', human: true } });
+/* (claude/warcairnart) THE CLAN SPEAKS AS MEN (they were speaking as goblins: voiceOf read e.t): war-cry voices, a hide-and-fur clansman, never a goblin shriek; the thrower sharp, the guard gruff, the champion deep, the runner a berserker's shriek */
+Object.assign(CAST, { clanaxe: { kit: 'm2', rate: 0.95, mat: 'cloth', human: true }, clanthrower: { kit: 'm6', rate: 1.05, mat: 'cloth', human: true }, clanguard: { kit: 'm5', rate: 0.85, mat: 'cloth', human: true }, clanchamp: { kit: 'm3', rate: 0.78, lp: 2600, mat: 'cloth', human: true }, clanrunner: { kit: 'm2', rate: 1.2, mat: 'cloth', human: true } });
 SFX.dieOf = t => { const c = CAST[t], d = DIE[t]; if (!c) return d || null;
   return () => { const roll = Math.random(), pool = c.human && c.kit !== 'hd' && roll < 0.25 && clips.vo_dp_die ? 'vo_dp_die' : c.human && c.kit !== 'hd' && roll < 0.45 && clips.vo_ex_die ? 'vo_ex_die' : VOK(c.kit, 'die');
     const ok = voice(pool, c.human ? 0.6 : 0.48, (pool === 'vo_dp_die' || pool === 'vo_ex_die') ? c.rate * 0.97 : c.rate * (c.human ? 1 : 0.92), c.lp || 0);

@@ -59,7 +59,7 @@ export function makeWarCairnHands(ctx) {
     if (!dr || dr.spentT > 0) return false;
     const d = dr.d, x = drumX(d), y = drumY(d), arena = !!d.arena;
     dr.spentT = arena ? WC.beat.arenaSpent : WC.beat.spent; dr.beatT = 0.5; dr.by = by; S.n.beats++;
-    sfx('drum', 'thud', 'heavy'); ctx.ring(x, y - 10, WC.beat.r * TS, by === 'hero' ? '#ffd36b' : '#ff4a3a'); ctx.shake(2);
+    sfx('warDrum', 'drum', 'thud', 'heavy'); ctx.ring(x, y - 10, WC.beat.r * TS, by === 'hero' ? '#ffd36b' : '#ff4a3a'); ctx.shake(2); if (by !== 'hero') sfx('warCry');
     if (by === 'hero') { S.n.heroBeats++;
       /* a) THEY STUMBLE: every clansman in earshot (his surge and his guard broken) */
       let n = 0; for (const e of ctx.enemies()) { if (!e.alive || e.boss || !CLAN.has(e.t) || Math.hypot(e.x - x, (e.y - y) * 1.5) > WC.beat.r * TS) continue;
@@ -150,7 +150,7 @@ export function makeWarCairnHands(ctx) {
 
   /* ---------- THE ARENA'S DRUMS (src/bzchief-hands.js) ---------- */
   H.arenaDrums = () => S ? [...S.drums.values()].filter(dr => dr.d.arena).map(dr => ({ id: dr.d.id, x: drumX(dr.d), spent: dr.spentT > 0 })) : [];
-  H.takeDrum = id => { if (!S) return; for (const dr of S.drums.values()) if (dr.d.arena) dr.his = dr.d.id === id; const dr = S.drums.get(id); if (dr) { dr.beatT = 0.5; sfx('drum', 'thud', 'heavy'); ctx.ring(drumX(dr.d), drumY(dr.d) - 10, 40, '#ff4a3a'); } };
+  H.takeDrum = id => { if (!S) return; for (const dr of S.drums.values()) if (dr.d.arena) dr.his = dr.d.id === id; const dr = S.drums.get(id); if (dr) { dr.beatT = 0.5; sfx('warDrum', 'drum', 'thud', 'heavy'); ctx.ring(drumX(dr.d), drumY(dr.d) - 10, 40, '#ff4a3a'); } };
   H.drumsAnswer = k => { if (S) S.answer = 2.5; };
   H.clearArena = () => { if (S) for (const dr of S.drums.values()) if (dr.d.arena) { dr.his = false; dr.spentT = 0; } };
 
