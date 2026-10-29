@@ -10,7 +10,7 @@
 //   THE BOSS, PURE: the B15 floor on every mode (>= 0.4 outside an opening, the ward and his parry included), TAKE IT broken by a heavy and by a beat, BREAK THE BEAT
 //   (a beat in his frenzy: open x2, capped at 15%, then the ward), the stuck cross-chop (x1.5), P3's own drum (only the other breaks him), the phases each add one move,
 //   every told move its own windup + release pose (B16) off the hero's own sheet, the bot strikes a drum in his frenzy.
-//   THE UNLOCK: WARCAIRN_SHIPS is false (he is sold as now); flipped, the store lock is the Blood Knight's (beat him, then 10 silver) and the HOW line fits; owners keep him;
+//   THE UNLOCK: WARCAIRN_SHIPS is true (BATCH129); the store lock is the Blood Knight's (beat him, then 10 silver) and the HOW line fits; owners keep him;
 //   the Chieftain's Axes skin is the berserker's, earned by the feat.
 //     node tools/warcairn.mjs
 import { readFileSync } from 'node:fs';
@@ -163,7 +163,7 @@ ok(!L.ents.some(e => e.t === 'deco' && /tree|log|timber|plank|crate|barrel|ice/i
   ok(Object.values(BZ.BZC.heroHp).every(k => k > 0) && BZ.BZC.hp >= 1900 && BZ.BZC.hp <= 2200, 'his health in the Paladin / Blood Knight class at crown tier: ' + BZ.BZC.hp); }
 
 // ---- THE UNLOCK ----
-{ ok(HR.WARCAIRN_SHIPS === false && HR.howTo('berserker') === 'BUY IN THE STORE - 10 SILVER', 'until it ships THE BERSERKER is sold as now (WARCAIRN_SHIPS false)');
+{ ok(HR.WARCAIRN_SHIPS === true && HR.howTo('berserker') === 'BEAT HIM AT THE WAR CAIRN, THEN BUY: 10 SILVER', 'shipped (BATCH129): THE BERSERKER is locked behind the Chieftain, then 10 silver');
   const hr = src('src/hero-roster.js'), how = /berserker: '([^']+)'/.exec(hr); ok(how && how[1].length <= 46, 'the flipped HOW line fits (heropick, 46 chars): ' + (how && how[1]));
   ok(/const BZ_WIN = \{ coinPrice: 800, coinNeeds: 'warcairn', coinBoss: true, feat: 'boss:warcairn'/.test(main) && /id: 'berserker'[^\n]*\.\.\.\(HR\.WARCAIRN_SHIPS \? BZ_WIN : \{\}\)/.test(main), 'flipped, his row takes the Blood Knight\'s fields (beat him, then 10 silver)');
   const row = { id: 'berserker', price: 10, silver: true, coinPrice: 800, coinNeeds: 'warcairn', coinBoss: true, feat: 'boss:warcairn', featName: 'beat the Berserker Chieftain at the War Cairn' };

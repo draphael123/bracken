@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-10-29",
+    "batch": 129,
+    "lines": [
+      "The War Cairn: climb to the clan, beat the Berserker Chieftain, win the Berserker",
+      "Strike war drums to open gates; the Berserker is bought after beating him",
+      "The Blood Knight lashes, drinks and frenzies: new blood art and a Vitae drop"
+    ]
+  },
+  {
+    "date": "2026-10-29",
     "batch": 128,
     "lines": [
       "The Archmage falls: the Falling Tower is a chase down four rooms and back up",
