@@ -51,7 +51,7 @@ export const SS = {
   sister: { w: 26, h: 18 },
   /* (claude/sisters2) THE SIGNATURE MOVES. sig: each survivor's own cooldown x this by phase (0 = all three, 1 = one fallen, 2 = the last) */
   sig: [1, 0.72, 0.6],
-  chain: { tell: 1.15, n: [2, 3, 3], every: [3, 2, 2], aim: 0.66, jar: 0.42, stun: 4.0, cap: 0.34, rise: 40, dmg: 24, spent: 1.2 },   /* (claude/rookery3) HEAVY: 0.9 -> 1.15, each dive 24; a chain that ends in no rock leaves her SPENT on the floor (whole) */
+  chain: { tell: 1.15, n: [2, 3, 3], every: [3, 2, 2], aim: 0.66, jar: 0.42, stun: 4.0, cap: 0.34, rise: 12, dmg: 24, spent: 1.2 },   /* (rise 40 -> 12: the heavy climb, grown, stayed under the screen's top edge) */   /* (claude/rookery3) HEAVY: 0.9 -> 1.15, each dive 24; a chain that ends in no rock leaves her SPENT on the floor (whole) */
   rake: { tell: 0.4, v: 250, T: 0.5, h: 16, dmg: 11, chance: [0.6, 1, 1], end: 0.6, pre: 0.25 },   /* (claude/rookery3) LIGHT: 0.5 -> 0.4, 18 -> 11, a shorter slide */
   shock: { tell: 0.7, range: 150, h: 64, dmg: 8, vx: 300, vy: -160, low: 30, gap: 64, edge: 30, teeter: 0.7, T: 0.45 },
   echo: { tell: 0.42, ahead: 56, w: 22, dmg: 8, life: 8, T: 0.3 },   /* (claude/rookery3) LIGHT: 0.75 -> 0.42, 14 -> 8 (the tile is AHEAD of you: a quick flash) */

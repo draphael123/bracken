@@ -30,11 +30,12 @@ const SHOTS = [
 const pg = await openPage({ audio: false, fonts: false });
 try {
   const r = await pg.evalp(`(async()=>{const LV=(await import('/src/level.js')).LEVELS;const SSM=await import('/src/shriek-sisters.js');const idx=LV.findIndex(l=>l.id==='rookery');BK.manualSimulation=true;
-    const snap=()=>{const c=document.createElement('canvas');c.width=640;c.height=360;const g=c.getContext('2d');g.imageSmoothingEnabled=false;g.drawImage(BK.buf,0,0,640,360);return c.toDataURL('image/png');};
+    const snap=(foc)=>{const c=document.createElement('canvas');c.width=640;c.height=360;const g=c.getContext('2d');g.imageSmoothingEnabled=false;if(!foc){g.drawImage(BK.buf,0,0,640,360);return c.toDataURL('image/png');}
+      const [cx,cy]=BK.cam,k=BK.buf.width/640,sx=Math.max(0,Math.min(BK.buf.width-320*k,(foc.x-cx)*k-160*k)),sy=Math.max(0,Math.min(BK.buf.height-180*k,(foc.y-cy)*k-110*k));g.drawImage(BK.buf,sx,sy,320*k,180*k,0,0,640,360);return c.toDataURL('image/png');};   /* a tell: 2x on the sister */
     let P,RK,SH;const tp=(x,y)=>{BK.tp(x,y);P.vx=0;P.vy=0;BK.sim(4);};
     const load=()=>{BK.setHero('knight');BK.reset({fresh:true});BK.load(idx);BK.start();BK.god=true;BK.sim(420);P=BK.P;RK=BK.rookery();SH=BK.shriekSistersHands();};
     const boss=()=>{BK.tp(Math.round(BK.L.arena.x0/16)+10,10);BK.sim(300);P.x=SH.show().G.mid-60;BK.sim(2);};
-    const out=[];for(const [tag,code] of ${JSON.stringify(SHOTS)}){load();try{eval(code);BK.step(1);const S=SH&&SH.show();out.push({tag,png:snap(),info:S?Object.fromEntries(['diver','shrieker','snatcher'].map(r=>[r,S.sis[r].mode+' '+(S.sis[r].tempo||'')+' '+(+S.sis[r].modeT||0).toFixed(2)])):null});}catch(e){out.push({tag,err:String(e)});}}
+    const out=[];for(const [tag,code] of ${JSON.stringify(SHOTS)}){load();try{eval(code);BK.step(1);const S=SH&&SH.show();const foc=tag.startsWith('tell')&&S?S.sis[tag==='tell-light'?'shrieker':'diver']:null;out.push({tag,png:snap(foc),info:S?Object.fromEntries(['diver','shrieker','snatcher'].map(r=>[r,S.sis[r].mode+' '+(S.sis[r].tempo||'')+' '+(+S.sis[r].modeT||0).toFixed(2)])):null});}catch(e){out.push({tag,err:String(e)});}}
     BK.manualSimulation=false;return out;})()`, 900000);
   for (const s of r) { if (s.err) { console.log(s.tag + ' ERROR ' + s.err); continue; } writeFileSync(join(OUT, 'rookery3-' + s.tag + '.png'), Buffer.from(s.png.split(',')[1], 'base64')); console.log('rookery3-' + s.tag + '.png ' + (s.info ? JSON.stringify(s.info) : '')); }
   if (pg.errors.length) console.log('page errors', pg.errors.slice(0, 5));
