@@ -14,6 +14,7 @@ try {
   let jump = null; for (let i = 0; i < 200 && !jump; i++) { await new Promise(r => setTimeout(r, 150)); jump = await pg.evalp('typeof BK==="object"&&BK.L&&BK.L.kitchen&&location.search.includes("kitchengate")?{state:BK.state,at:[Math.floor(BK.P.x/16),Math.floor(BK.P.y/16)],start:[BK.L.START.x,BK.L.START.y],god:!!BK.god}:null', 4000).catch(() => null); }
   ok(jump && jump.state === 'play' && Math.abs(jump.at[0] - jump.start[0]) <= 1 && !jump.god, '?level=kitchengate lands in play in the undercellars, no god mode: ' + JSON.stringify(jump));
   const r = await pg.evalp(`(async()=>{const {LEVELS}=await import('/src/level.js');BK.manualSimulation=true;const out={};
+  const {oldCol:O}=await import('/src/kitchen-gate.js');   /* (claude/kitchengate3) old-grid columns: two rooms were let in */
   const id=LEVELS.findIndex(l=>l.id==='kitchengate');BK.setHero('knight');BK.reset({fresh:true});BK.load(id);BK.state='play';BK.god=true;BK.sim(20);
   const KG=BK.kitchen(),P=BK.P,tp=(x,y)=>{BK.tp(x,y);P.vx=0;P.vy=0;BK.sim(4);},cell=(x,y)=>BK.L.grid[y*BK.L.W+x],rd=()=>BK.kitchenRead();
   const fire=k=>rd().fires.find(f=>f.id===k).roar;
@@ -29,21 +30,21 @@ try {
   if(low){P.x=low.x+low.w/2;P.y=low.y;P.vx=0;P.vy=0;const sy=P.y;let ride=0,top=P.y;for(let i=0;i<330;i++){BK.sim(1);if(P.onMover===low)ride++;top=Math.min(top,P.y);}out.ride={frames:ride,rose:Math.round((sy-top)/16)};}
   for(let i=0;i<600&&fire('spit1')>0;i++)BK.sim(1);const w1=rd().wheels.find(w=>w.id==='wheel1').ang;BK.sim(60);out.stops=rd().wheels.find(w=>w.id==='wheel1').ang===w1;
   /* 3. THE TALLOW DOOR: the stove's trail burns to it and it melts; the cooks on the trail burn */
-  tp(221,23);BK.sim(30);const n0=rd().n;out.doorBefore=cell(238,20);KG.stoke('stove1');for(let i=0;i<400&&rd().doors.find(d=>d.id==='door1').state!=='gone';i++)BK.sim(1);
-  out.door=rd().doors.find(d=>d.id==='door1').state;out.doorCell=cell(238,20);out.foeBurns=rd().n.foeBurns-n0.foeBurns;out.trail=rd().trails.find(t=>t.id==='trail1').state;
+  tp(O(221),23);BK.sim(30);const n0=rd().n;out.doorBefore=cell(O(238),20);KG.stoke('stove1');for(let i=0;i<400&&rd().doors.find(d=>d.id==='door1').state!=='gone';i++)BK.sim(1);
+  out.door=rd().doors.find(d=>d.id==='door1').state;out.doorCell=cell(O(238),20);out.foeBurns=rd().n.foeBurns-n0.foeBurns;out.trail=rd().trails.find(t=>t.id==='trail1').state;
   /* a death keeps the door melted */
-  tp(230,23);BK.god=false;BK.damagePlayer(P.x+20,9999,{unblockable:true});let back=false;for(let i=0;i<600&&!back;i++){BK.sim(1);back=i>30&&!(P.dead>0)&&P.hp>0;}BK.sim(10);BK.god=true;
-  out.afterDeath={door:rd().doors.find(d=>d.id==='door1').state,cell:cell(238,20)};
+  tp(O(230),23);BK.god=false;BK.damagePlayer(P.x+20,9999,{unblockable:true});let back=false;for(let i=0;i<600&&!back;i++){BK.sim(1);back=i>30&&!(P.dead>0)&&P.hp>0;}BK.sim(10);BK.god=true;
+  out.afterDeath={door:rd().doors.find(d=>d.id==='door1').state,cell:cell(O(238),20)};
   /* 4. THE OVERTURNED POT */
-  tp(248,23);for(let i=0;i<60;i++){P.vx=80;BK.sim(1);}const rc=rd().race;BK.sim(60);out.race={state:rc.state,front:rd().race.front,from:246*16};
+  tp(O(248),23);for(let i=0;i<60;i++){P.vx=80;BK.sim(1);}const rc=rd().race;BK.sim(60);out.race={state:rc.state,front:rd().race.front,from:O(246)*16};
   /* 5. THE BUTCHER on the stove's trail burns */
-  tp(287,23);BK.sim(5);const bu=BK.enemies().find(e=>e.alive&&e.t==='butcher'&&e.x<300*16);if(bu){bu.x=292*16;bu.y=24*16;bu.vx=0;}KG.stoke('stove2');let burnt=false;for(let i=0;i<240&&!burnt;i++){BK.sim(1);P.hp=P.maxHp;if(bu){bu.x=292*16;burnt=bu.kgBurn>0;}}
+  tp(O(287),23);BK.sim(5);const bu=BK.enemies().find(e=>e.alive&&e.t==='butcher'&&e.x<O(300)*16);if(bu){bu.x=O(292)*16;bu.y=24*16;bu.vx=0;}KG.stoke('stove2');let burnt=false;for(let i=0;i<240&&!burnt;i++){BK.sim(1);P.hp=P.maxHp;if(bu){bu.x=292*16;burnt=bu.kgBurn>0;}}
   out.butcher={found:!!bu,burnt,take:bu?KG.takeFoe(bu,10):0};
   /* 6. THE RECIPE PAGES open the spice vault */
-  for(const [x,y] of BK.L.kgPages){tp(x,y);BK.sim(6);}out.pages=rd().pages;out.vault=rd().vault;out.vaultCell=cell(362,22);
-  tp(304,21);BK.sim(10);out.banner3=rd().banner;
+  for(const [x,y] of BK.L.kgPages){tp(x,y);BK.sim(6);}out.pages=rd().pages;out.vault=rd().vault;out.vaultCell=cell(O(362),22);
+  tp(O(304),21);BK.sim(10);out.banner3=rd().banner;
   /* 7. LORD GRUBBAG */
-  tp(398,21);for(let i=0;i<260;i++){BK.sim(1);P.hp=P.maxHp;}const b=BK.boss;out.boss=b?{t:b.t,mode:b.mode,hp:b.hp,max:b.maxHp,active:!!BK.bossActive}:null;
+  tp(O(398),21);for(let i=0;i<260;i++){BK.sim(1);P.hp=P.maxHp;}const b=BK.boss;out.boss=b?{t:b.t,mode:b.mode,hp:b.hp,max:b.maxHp,active:!!BK.bossActive}:null;
   const GH=BK.grubbagHands(),S=GH&&GH.show();
   if(b&&S){b.mode='sit';S.restT=99;S.ward=0;S.hungry=0;out.fed=GH.take(b,20,P.x,false);
     /* (claude/kitchengate2) a REAL blow on the pepper stove's bellows: the next item out is a chilli */
