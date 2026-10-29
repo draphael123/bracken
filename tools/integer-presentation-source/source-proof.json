@@ -1,0 +1,73 @@
+{
+  "time": "2026-10-29T18:11:44.579Z",
+  "status": "Prepared distinct source, no candidate/native execution locally",
+  "gameSource": "62d9c02c102decc69ceaef4e1ec593a23170f1ff",
+  "gameTree": "d6f20846727ec42b3cca651d1b061136d9c6d2f1",
+  "mainSha256": "81866b69fec64de5fdd00da316fb0d1e8e997ae9912f73f280981f0a70cb36d8",
+  "helperSha256": "9a3e64c1afec8ad84492daacbdfcee45723c728bf9609d3176ff0816a433b956",
+  "toolSha256": "65b367f919040d040a855adcc019be1c947158a8d68451231404a82f5c558b23",
+  "frames": [
+    {
+      "id": "undercrown",
+      "name": "undercrown.png",
+      "sha256": "06aecb6d0e050eac08e4c929164fe7864e7b9b8431a8ae5c647fc7d852748e62"
+    },
+    {
+      "id": "lamplit",
+      "name": "lamplit.png",
+      "sha256": "662dba7d53257ffb224eb2c085b2e74d40b7e4f2a9ce92e60fb760071db1bdb3"
+    },
+    {
+      "id": "hanging",
+      "name": "hanging.png",
+      "sha256": "3e224ca243e2317c436563b3aca3cc7acf04f0ee98c70d481746c487bfe46d10"
+    },
+    {
+      "id": "hurricane",
+      "name": "hurricane.png",
+      "sha256": "7370739d5407dfc5738cdfe61a430d5fb2aa3695f7e813a0520d637a6fbc820b"
+    },
+    {
+      "id": "minecart",
+      "name": "minecart.png",
+      "sha256": "1deef5f398339425870956e18ba52fdaf27a6cadaa7ab9ac449fd1382c3cb98a"
+    }
+  ],
+  "targetReceipt": "outputs/receipts/integer-presentation-target-oct29.json",
+  "originalMainUnchanged": true,
+  "noLocalBrowserOrGameOrComponentExecution": true,
+  "required": {
+    "nativePixelsAndContextExact": true,
+    "optimizedActivationMustBeObserved": true,
+    "fallbacksUnchanged": true,
+    "lifecycleAndBoundedBacking": true,
+    "globalRngCalls": 0,
+    "admissionMb": 4352,
+    "rendererMb": 1536,
+    "evalDeadlineMs": 240000,
+    "cpu": 4,
+    "viewport": [
+      915,
+      412
+    ],
+    "dpr": 2.625,
+    "display": [
+      2402,
+      1082
+    ],
+    "gameFrame": [
+      640,
+      360
+    ]
+  },
+  "qualification": {
+    "timing": "One occurrence, three before/candidate/return rounds,60fresh-source presentations each; separate fresh source/destination per variant; original drawImage reference. Candidate must be at least20percent faster than the faster control in EVERY round and all native exactness/lifetime/closure/guard checks pass. Otherwise reject without cleaner retiming or broader cycle.",
+    "minimumGainEveryRoundPercent": 20,
+    "fullOriginalFiveArenaAndGameProofStillMandatory": true
+  },
+  "limitations": [
+    "Component tests and one saved frame per arena do not establish full live Game coverage, whole Game state/RNG, renderer lifetime or a40FPS/layout/full425pass.",
+    "Synthetic context-loss event is not a hardware/context-loss occurrence.",
+    "Original display already opaque/desynchronized; this tests exact integer pixel pre-expansion, not prior rejected display backend modes."
+  ]
+}
