@@ -250,10 +250,10 @@ export function buildRookery({ painter, T, TS }) {
   /* THE RELAY (REQUIRED x2): from the upper face's top a gorge fourteen wide to a lone spire, and from the spire a face six high to the summit's door. Ride her down across onto
      the spire, and from there the next one up - she dives at you as you land on her mount */
   sign(404, -1, 'THE RELAY. RIDE HER ACROSS, THEN THE NEXT ONE UP.');
-  ride('relayRide', { mount: [406, -1], roost: [410, -4], path: [[412, -3], [417, 2], [421, 7]], land: [422, 10] });
-  ground(422, 424, 11);                                                            /* THE LONE SPIRE */
-  ground(425, 427, 30);                                                            /* the gorge floor under the summit's face */
-  ride('doorRide', { mount: [424, 10], roost: [426, 8], path: [[426, 6], [428, 2], [430, 2]], land: [432, 4] });
+  ride('relayRide', { mount: [406, -1], roost: [410, -4], path: [[412, -3], [418, 2], [423, 7]], land: [424, 10] });
+  ground(420, 425, 11);                                                            /* THE LONE SPIRE (five wide: room to step off the second one's dive) */
+  ground(426, 427, 30);                                                            /* the gorge floor under the summit's face */
+  ride('doorRide', { mount: [423, 10], roost: [418, 4], path: [[425, 6], [427, 2], [430, 2]], land: [432, 4] });
   coins([423, 10], [430, 4]);
   ground(428, W - 1, 5);                                                           /* THE SUMMIT'S DOOR */
   ent('check', 362 + EXT, r(4));                                                    /* SHRINE FOUR: the summit's door */
