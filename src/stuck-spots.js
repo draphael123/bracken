@@ -464,7 +464,6 @@ export const STUCK = {
     { id: 'rk-ledge-slab', zone: [217, 20, 228, 25], at: [226, 25], done: ['crackslab', 226, 25, 'on'], line: 'THE FACE IS TOO HIGH: BAIT HER ONTO THE MARK UNDER THE SLAB' },
     { id: 'rk-span-pillar', zone: [283, 10, 294, 15], at: [292, 15], done: ['crackpillar', 292, 15, 'on'], line: 'NO JUMP CROSSES: STAND ON THE PILLAR FOOT, LET THEM DIVE' },
     { id: 'rk-last-nest', zone: [313, 10, 324, 15], at: [322, 15], done: ['cracknest', 322, 15, 'on'], line: 'NO JUMP CROSSES: BAIT HER ONTO THE MARK UNDER THE NEST' },
-    { id: 'rk-top-slab', zone: [339, 10, 350, 15], at: [348, 15], done: ['crackslab', 348, 15, 'on'], line: 'THE FACE IS TOO HIGH: BAIT HER ONTO THE MARK UNDER THE SLAB' },
   ],
   skyroad: [
     { id: 'sk-thermal-1', zone: [27, 41, 36, 52], at: [34, 51], line: 'THE HOT AIR OVER THE ROCK IS THE WAY UP' },

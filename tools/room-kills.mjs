@@ -44,7 +44,7 @@ const code = id => `(async()=>{ const { LEVELS } = await import('/src/level.js')
           row.res = c ? 'corpse:' + (c.fall || 'NONE') : 'gone';
           if (c) { if (!c.fall) row.errs.push('its body has no c.fall: it would stand upright where it died (frame ' + c.frame + ', rot ' + c.rot.toFixed(2) + ')');
             if (c.fall === 'tip') { go(90); if (BK.corpses().includes(c) && Math.abs(c.rot) < 1.0) row.errs.push('a tipped body still upright at 1.5 s (rot ' + c.rot.toFixed(2) + ')'); } } }
-      } catch (x) { row.errs.push('THREW ' + String(x).slice(0, 140)); }
+      } catch (x) { row.errs.push('THREW ' + String(x.stack || x).split('\\n').slice(0, 3).join(' | ').slice(0, 300)); }
       rows.push(row); }
     go(60); for (const e of BK.enemies()) if (e.alive && !(e.hp > 0) && !e.maxHp && e !== BK.boss && !e.trainer && e.t !== 'dummy') errs.push(src + ': ' + kindOf(e) + ' left alive at hp ' + e.hp);
   }

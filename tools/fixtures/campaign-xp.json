@@ -62,10 +62,10 @@
    "clear": 518
   },
   "crown": {
-   "run": 2263,
-   "foeXp": 1370,
+   "run": 1462,
+   "foeXp": 798,
    "bossXp": 345,
-   "clear": 822
+   "clear": 479
   },
   "longwater": {
    "run": 1371,
@@ -80,16 +80,16 @@
    "clear": 300
   },
   "flotilla": {
-   "run": 1281,
-   "foeXp": 620,
+   "run": 1314,
+   "foeXp": 644,
    "bossXp": 413,
-   "clear": 372
+   "clear": 386
   },
   "hurricane": {
-   "run": 1098,
-   "foeXp": 474,
+   "run": 1121,
+   "foeXp": 490,
    "bossXp": 435,
-   "clear": 284
+   "clear": 294
   },
   "lamplit": {
    "run": 1901,

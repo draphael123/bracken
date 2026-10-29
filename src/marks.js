@@ -714,7 +714,7 @@ export const HEIGHT = {
   'goat|charge': 'low',
   'gobmage|boltTell': 'high', 'gobmage|runeTell': 'low',
   'gobpriest|bellTell': 'low', 'gobpriest|censerTell': 'low',
-  'gqueen|hallLeapTell': 'low',
+  'gqueen|hallLeapTell': 'low', 'gqueen|ringTell': 'low',   /* (release 10-29) the bell's grate crush is on the floor: a ground blow, like her quake */
   'lampreeve|lungeTell': 'low',   /* (claude/weakboss: the pole comes level at your middle - a duck is still in it) */
   'lampreeve|flaskTell': 'low', 'tollmaster|scalesLowTell': 'low', 'tollmaster|scalesHighTell': 'high', 'tollmaster|sealTell': 'low',   /* (claude/lamplit2) the flask and the seal break on the boards; the scales swung LOW skim them, swung HIGH pass at a standing head */
   'ploughman|chargeTell': 'low', 'ploughman|furrowTell': 'low', 'ploughman|headTell': 'low', 'ploughman|goadTell': 'low',

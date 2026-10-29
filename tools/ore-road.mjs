@@ -138,7 +138,7 @@ for (const l of C.lines) {
    every one of its checkpoints, which is what Daniel saw. */
 { const { install } = await import('./node-canvas.mjs'); install();
   const ARTM = await import('../src/art.js'), MAINS = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
-  const kind = /function shrineKind\(\) \{[^\n]*\n\s*if \(L\.oreRoad\) return '(\w+)'/.exec(MAINS)?.[1] || 'crag';
+  const kind = /function shrineKind\(\) \{[\s\S]*?\n\s*if \(L\.oreRoad\) return '(\w+)'/.exec(MAINS)?.[1] || 'crag';
   const cv = ARTM.bakeShrineKind(kind, false), d = cv.getContext('2d').getImageData(0, 0, cv.width, cv.height).data;
   let run = 0, best = 0; for (let x = 0; x < cv.width; x++) { if (d[((cv.height - 1) * cv.width + x) * 4 + 3] > 0) { run++; best = Math.max(best, run); } else run = 0; }
   const bad = [];
