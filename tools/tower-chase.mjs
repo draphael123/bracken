@@ -361,11 +361,12 @@ assert.ok(CHASE.gap <= 0.6 && CHASE.settle <= 0.35 && CHASE.pairFrom <= 2, 'his 
       debris: (x, y, top) => { const d = { x, y, top, st: 'tell', t: 1.1, ry: top }; log.debris.push(d); return d; }, clearLedge: (x0, x1, row) => log.cleared.push([x0, x1, row]), say: m => log.says.push(m), sound: () => {}, shake: () => {}, dust: () => {} };
     return { R, P, e, c, log, run: (sec, each) => { for (let i = 0; i < Math.round(sec * 60); i++) { chaseRoomStep(e, 1 / 60, c); if (each && each()) return true; } return false; } }; };
   /* 1. a missed firebolt stops on the floor's stone and shakes masonry loose over it - told, on the footing; never more than debMax at once */
-  { const r = rig(0), x = (CH.x0 + 15) * TS + 4; r.e.shots.push({ x, y: r.R.floor * TS + 4, vx: 0, vy: 150, kind: 'fire', r: 5, t: 2 }); r.run(1 / 60);
+  { const r = rig(0), x = (CH.x0 + 15) * TS + 4; r.e.shots.push({ x, y: r.R.floor * TS + 4, vx: 0, vy: 150, kind: 'fire', r: 5, t: 2, free: true }); r.run(1 / 60);
     assert.ok(r.e.shots[0].gone && r.log.debris.length === 1, 'his bolt that hits the stone does not stop or shake nothing loose');
     const d = r.log.debris[0]; assert.ok(Math.abs(d.x - (CH.x0 + 15) * TS - 8) < 1 && d.y === r.R.floor * TS && d.top === r.R.top * TS && d.st === 'tell', 'the stone does not come down told, over where it struck: ' + JSON.stringify(d));
-    for (let i = 0; i < 6; i++) { r.e.shots.push({ x: x + i * 20, y: r.R.floor * TS + 4, vx: 0, vy: 150, kind: 'ice', r: 4, t: 2 }); r.run(0.05); }
+    for (let i = 0; i < 6; i++) { r.e.shots.push({ x: x + i * 20, y: r.R.floor * TS + 4, vx: 0, vy: 150, kind: 'ice', r: 4, t: 2, free: true }); r.run(0.05); }
     assert.ok(r.log.debris.filter(q => q.st !== 'land').length <= FALL4.debMax, 'more stone than debMax hangs at once'); }
+  { const r = rig(0), q = { x: (CH.x0 + 15) * TS, y: (r.R.top - 1) * TS, vx: 0, vy: 150, kind: 'fire', r: 5, t: 2 }; r.e.shots.push(q); r.run(1 / 60); assert.ok(!q.gone, 'a bolt born in the vault stone (his staff high under the ceiling) dies at birth'); q.y = r.R.floor * TS - 20; r.run(1 / 60); q.y = r.R.floor * TS + 4; r.run(1 / 60); assert.ok(q.gone, 'out of the stone it was born in, his bolt does not stop on the floor'); }
   { const r = rig(0); r.e.shots.push({ x: (CH.x0 + 10) * TS, y: (r.R.floor - 5) * TS, vx: 0, vy: 150, kind: 'fire', r: 5, t: 2, reflected: true }); r.run(1 / 60); assert.ok(!r.log.debris.length && !r.e.shots[0].gone, 'his struck-back bolt breaks on stone (it must fly home)'); }
   /* ...and stone that falls on him drops him (his own spell's opening) */
   { const r = rig(0); r.e.rfx = { k: 0, t: 0, debT: 0, mine: [{ x: r.e.x, y: r.R.floor * TS, ry: r.e.y - 20, st: 'fall' }], next: 99, drop: null, gone: [] }; r.run(1 / 60);

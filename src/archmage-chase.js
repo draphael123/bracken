@@ -131,7 +131,8 @@ export function chaseRoomStep(e, dt, c) {
   const R = roomOf(e.room || 0), P = c.P, X = e.rfx && e.rfx.k === R.k ? e.rfx : (e.rfx = { k: R.k, t: 0, debT: 0, mine: [], next: FALL4.stage2, drop: null, gone: [] });
   X.t += dt; X.debT = Math.max(0, X.debT - dt);
   /* 1. HIS MISSES: stone stops them, and shakes masonry loose over where they struck */
-  for (const q of e.shots || []) { if (q.reflected || q.gone || !STOPS.has(q.kind) || !c.solid(q.x, q.y)) continue;
+  for (const q of e.shots || []) { if (q.reflected || q.gone || !STOPS.has(q.kind)) continue;
+    if (!c.solid(q.x, q.y)) { q.free = true; continue; } if (!q.free) continue;   /* (a shot born in the vault's stone - his staff high under the ceiling - is not stopped by it: only stone it flies INTO stops it. Without this every shot from his top station died at birth and the rooms hit no one) */
     if (q.kind === 'orb') { q.vx = q.vy = 0; q.t = Math.min(q.t, 0.001); continue; }   /* (a poison orb bursts on the stone it meets) */
     q.t = 0; q.gone = true; q.hit = true; c.dust(q.x, q.y, 4);
     if ((q.kind === 'fire' || q.kind === 'ice') && X.debT <= 0 && X.mine.filter(d => d.st !== 'land').length < FALL4.debMax) { const sp = debrisSpot(R, q.x, c);
@@ -184,7 +185,7 @@ export function drawChase3(g, e, cx, cy, time, VW) {
               well's 26 tiles to his hall's box (tower-ascent.js hallArena, moved over the spiral tower: no sideways jump), and the hall's sky and moon
               come up round you. He settles to his hover spot and his hall's kit starts ASC.firstCast s later - no 'wake' freeze.
    A death anywhere in it is the stair's top, as the rest of the fight (one boss). */
-export const ASC = { win: 13, well: 95, spiral: 320, sky: 280, plugTell: 1.0, tween: 0.8, firstCast: 1.0, hpFloor: 0.5, hang: 6, fade: 0.7, crownTop: 50,
+export const ASC = { win: 13, well: 110, breath: 0.9, spiral: 320, sky: 280, plugTell: 1.0, tween: 0.8, firstCast: 1.0, hpFloor: 0.5, hang: 6, fade: 0.7, crownTop: 50,
   order: ['fire', 'ice', 'fire', 'hand'], rock: { first: 2.0, every: 2.6, tell: 1.1, v: 420, dmg: 12, hitW: 13 } };
 export const PLUG = () => [CH.x0, CH.x1, SPIRAL.floor, CH.top - 1];   /* the stone between the spiral stair's floor and the first room (rows) */
 export const CROWN = () => [CH.x0, CH.x1, ASC.crownTop, SPIRAL.top - 1];   /* the spiral tower's roof, up to the sky rows (tower-ascent.js TOWER.SKY) */
@@ -223,7 +224,9 @@ const ASC_OPEN = new Set(['reflected', 'gather', 'breached']);
 export function ascentLeg(e, dt, c) {
   if (e.leg !== 'ascent') return false; const S = e.asc, P = c.P, A = c.A; e.order = ASC.order; e.noRealm = true;
   if (!S || S.ph === 'well') {
-    if (e.mode === 'away' || e.mode === 'flee') { e.mode = 'hover'; e.modeT = 0.6; }   /* (the board: his first cast greets you) */
+    if (e.mode === 'away' || e.mode === 'flee') { e.mode = 'hover'; e.modeT = 0.6; e.ascBreath = true; }   /* (the board: his first cast greets you) */
+    /* A BREATH BETWEEN HIS SPELLS in the well (ASC.breath s more hover): his tells and numbers are his fight's, but you are flying a rising shaft with stone coming down - measured: the knight died in it at full cadence */
+    if (e.mode === 'hover') { if (!e.ascBreath) { e.modeT += ASC.breath; e.ascBreath = true; } } else e.ascBreath = false;
     if (ASC_OPEN.has(e.mode)) { const tx = P.x + (Math.sign(e.x - P.x) || 1) * 26, ty = P.y - 30, dx = tx - e.x, dy = ty - e.y, d = Math.hypot(dx, dy); if (d > 3) { const sp = Math.min(d, 150 * dt); e.x += dx / d * sp; e.y += dy / d * sp; } }
     return false; }
   /* fleeing ahead: up the middle of the well, at the top of the box */
