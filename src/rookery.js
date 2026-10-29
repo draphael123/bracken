@@ -233,9 +233,9 @@ export function buildRookery({ painter, T, TS }) {
   /* THE GALE SPIRES (A14): down across the gorge spire to spire - each top a guano cap two wide - while a gale harpy on a spire ahead beats you BACK toward the drop. Hit her in her
      tell (wings back) or brace on a shield; past her, her gust is at your back */
   sign(360, 4, 'THE GALE SPIRES. A GALE HARPY HOLDS THE GORGE: BRACE, OR STRIKE HER WINGS.');
-  ground(367, 368, 8); ground(372, 373, 9); ground(377, 378, 13); ground(381, 382, 11); ground(386, 387, 15); ground(391, 392, 19);
-  coins([367, 7], [372, 8], [377, 12], [381, 10], [386, 14], [391, 18]);
-  gale(384, 6, 'galeSpires');
+  ground(367, 368, 8); ground(370, 371, 10); ground(374, 375, 9); ground(377, 378, 12); ground(381, 382, 11); ground(384, 385, 15); ground(388, 389, 14); ground(391, 392, 18);   /* down a step, up a hop, down a step: the gale is the hard part */
+  coins([367, 7], [370, 9], [374, 8], [377, 11], [381, 10], [384, 14], [388, 13], [391, 17]);
+  gale(386, 7, 'galeSpires');
   foe('crow', 375, 3, 'galeSpires');
   /* THE NEST FACE: two stepped crag faces, climbed on bone shelves lashed to each (two wide, three rows apart); a second gale harpy on the upper face's top beats down the climb -
      her gust peels you off a shelf onto the one below (or the gorge) */
