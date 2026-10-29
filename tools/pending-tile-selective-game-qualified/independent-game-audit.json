@@ -1,0 +1,2394 @@
+{
+  "time": "2026-10-29T22:34:32.151Z",
+  "status": "PASS scoped Game loading compatibility and material controlled gain; original memory/campaign/layout425/FPS proof remains required",
+  "gameSource": "dc02ecc059959b795f76dee47665b54f349d4e2f",
+  "gameController": "1a576c3f4511b6856df9fb4738df5aaae9987e81",
+  "gameTree": "9d8acbb7f3182c1d29ac71f4a3b0227224446718",
+  "nativeCoreReceipt": "outputs/receipts/pending-tile-selective-oct29.json",
+  "nativeCoreRun": 40962256744,
+  "nativeCoreHelperSha256": "248d18e74b5d38322faad4eb3be15662d3475262090a4365107b13005a16a54d",
+  "baselineMainSha256": "d6c5027b1ec2ae5b51d7c9b24e6b9ba7e1d8f4b6215d2d2049a487ceb565e48d",
+  "candidateMainSha256": "979e63397c36fd4066ac02aacc9b1b2fd7a889a74d0299af29abdde43c3ed5ab",
+  "baselineManifestSha256": "757b5f213e142a40ac2471941b2082176fe2eae1747927dda05ea47d8c13ae5d",
+  "candidateUiSha256": "def29ae7f0ea4c55ab29e3652a351d0d03c90a4c1c5f7f83ee39692c21c3061f",
+  "mainEdits": [
+    {
+      "start": 267463,
+      "end": 267469,
+      "before": "spTile",
+      "after": "spTilePending",
+      "kind": "private resolveTiles entry",
+      "module": "sealed_pyramid_tiles.js",
+      "adjustedStart": 267463
+    },
+    {
+      "start": 267747,
+      "end": 267753,
+      "before": "bcTile",
+      "after": "bcTilePending",
+      "kind": "private resolveTiles entry",
+      "module": "buried_city_tiles.js",
+      "adjustedStart": 267754
+    },
+    {
+      "start": 286038,
+      "end": 286045,
+      "before": "skyTile",
+      "after": "skyTilePending",
+      "kind": "private resolveTiles entry",
+      "module": "skyroad_tiles.js",
+      "adjustedStart": 286052
+    },
+    {
+      "start": 286260,
+      "end": 286268,
+      "before": "rootTile",
+      "after": "rootTilePending",
+      "kind": "private resolveTiles entry",
+      "module": "rootway_tiles.js",
+      "adjustedStart": 286281
+    },
+    {
+      "start": 402185,
+      "end": 402214,
+      "before": "new Array(LW * LH).fill(null)",
+      "after": "pendingTileArray(new Array(LW * LH).fill(null))",
+      "kind": "all array exposure seams",
+      "adjustedStart": 402213
+    },
+    {
+      "start": 658895,
+      "end": 658924,
+      "before": "new Array(LW * LH).fill(null)",
+      "after": "pendingTileArray(new Array(LW * LH).fill(null))",
+      "kind": "all array exposure seams",
+      "adjustedStart": 658941
+    },
+    {
+      "start": 4566779,
+      "end": 4566808,
+      "before": "new Array(LW * LH).fill(null)",
+      "after": "pendingTileArray(new Array(LW * LH).fill(null))",
+      "kind": "all array exposure seams",
+      "adjustedStart": 4566843
+    }
+  ],
+  "mainExactUndo": true,
+  "originalMainExceptSevenNarrowSeamsAndImportBytePreserved": true,
+  "crlfPairsPreserved": true,
+  "allOriginalCodeOutsideSourceBodiesPreserved": true,
+  "qualification": {
+    "purpose": "Additional private-context loading gain versus identical D6 source; all19original controls retained",
+    "minimumTargetStrongFraction": 0.5,
+    "strongTargetReadyGainVsFasterControlPercent": 10,
+    "strongAllSamplesBelowBothControlRanges": true,
+    "maxBeforeReturnMedianDriftPercent": 15,
+    "wholePhaseGainVsFasterControlPercent": 5,
+    "wholePhaseFasterThanBothEveryRound": true,
+    "originalSevenReadbacksAllExact": true,
+    "originalMemoryCampaign80batch600000msAnd425GatesStillRequired": true,
+    "no40FpsClaim": true,
+    "noObservedCounterAvoidanceClaim": true,
+    "completePrivatePlusObservedAllocationEqualityRequired": true,
+    "actualPendingActivationRequiredForEveryTarget": true,
+    "allTargetRowsMustObserveActualArrayFastWrites": true,
+    "minimumDeferredTargetCaseFraction": 0.5,
+    "targetMedianContextReplayFractionMaximum": 0.75,
+    "actualArrayProtectionMustMatchOriginalTargetIds": true
+  },
+  "noLocalGameOrBrowserExecuted": true,
+  "noGameBranchAdoption": true,
+  "allThreeMismatchesRetained": true,
+  "full80Layout425And40FpsStillRequired": true,
+  "levels": [
+    "wood",
+    "marsh",
+    "stockade",
+    "spore",
+    "kings",
+    "scree",
+    "undercrown",
+    "redgorge",
+    "underwell",
+    "skyroad",
+    "glasssea",
+    "ksar",
+    "rootway",
+    "minecart",
+    "church",
+    "towpath",
+    "buriedcity",
+    "sealedpyramid",
+    "fenroad"
+  ],
+  "cohorts": [
+    [
+      "wood",
+      "marsh",
+      "stockade",
+      "spore",
+      "kings",
+      "scree",
+      "undercrown"
+    ],
+    [
+      "redgorge",
+      "underwell",
+      "skyroad",
+      "glasssea",
+      "ksar",
+      "rootway"
+    ],
+    [
+      "minecart",
+      "church",
+      "towpath",
+      "buriedcity",
+      "sealedpyramid",
+      "fenroad"
+    ]
+  ],
+  "performanceTargets": [
+    "skyroad",
+    "rootway",
+    "buriedcity",
+    "sealedpyramid"
+  ],
+  "nativeCoreCases": 114,
+  "mainIdenticalToEarlierSourceHelperDifferent": false,
+  "priorHelperSha256": "71cad61cf13117a8e6c9431e40527c41545100682ed18b9f64f1a927a6ed469b",
+  "arrayWriteCausalControl": {
+    "priorHelperSha256": "72af32eedb3c2e3c2d64d9eea7d650fa1d16ca69bc621d032637869fb9b6164f",
+    "replaysBefore": 0,
+    "replaysAfter": 1,
+    "pendingAfter": false,
+    "sourceDerivedCauseObserved": true
+  },
+  "selectiveMainEdits": [
+    {
+      "before": "import {pendingTileArray} from './pending-tile-context.js';",
+      "after": "import {pendingTileArray,pendingTileArrayBacked,pendingTileLevelIndex} from './pending-tile-context.js';",
+      "occurrences": 1
+    },
+    {
+      "before": "pendingTileArray(new Array(LW * LH).fill(null))",
+      "after": "pendingTileArray(new Array(LW * LH).fill(null),pendingTileLevelIndex(levelIndex))",
+      "occurrences": 3
+    },
+    {
+      "before": "SPT.spTilePending(",
+      "after": "SPT[pendingTileArrayBacked(tileSpr)?'spTilePending':'spTile'](",
+      "occurrences": 1
+    },
+    {
+      "before": "BCT.bcTilePending(",
+      "after": "BCT[pendingTileArrayBacked(tileSpr)?'bcTilePending':'bcTile'](",
+      "occurrences": 1
+    },
+    {
+      "before": "SKT.skyTilePending(",
+      "after": "SKT[pendingTileArrayBacked(tileSpr)?'skyTilePending':'skyTile'](",
+      "occurrences": 1
+    },
+    {
+      "before": "RWT.rootTilePending(",
+      "after": "RWT[pendingTileArrayBacked(tileSpr)?'rootTilePending':'rootTile'](",
+      "occurrences": 1
+    }
+  ],
+  "selectiveExactUndoToParentMain": true,
+  "parentMainSha256": "24360a8b6a1afa79090b2b390f86d9bd1840395178ab9dfe015ef1f03ba29a59",
+  "eligibleIndices": [
+    {
+      "id": "skyroad",
+      "index": 53
+    },
+    {
+      "id": "rootway",
+      "index": 56
+    },
+    {
+      "id": "buriedcity",
+      "index": 60
+    },
+    {
+      "id": "sealedpyramid",
+      "index": 61
+    }
+  ],
+  "originalLevelSourceSha256": "f6808fde8060e19a671df88d5b0fa730546ce9d96152ddcd3403939ffb5fc423",
+  "allPrivateEntriesGuardedByActualArrayCapability": true,
+  "noAdditionalLevelFlagOrBuildReads": true,
+  "unsupportedDynamicLevelsUseOriginalNativeFactories": true,
+  "manifest": "work/pending-tile-selective-game-oct29/manifest.json",
+  "manifestSha256": "5fd9ed1d4cafd5ea59f67788721e177e14446402a2666ff13578b5d26bbdd0b3",
+  "launchPlanSha256": "6f79914d44b54af2c87ae7dcf699b29f8cd0bfa0975bf114b8ccc9e236cb9efb",
+  "loaderAdapters": [
+    {
+      "original": "tools/tile-recipe-bindings-loader.mjs",
+      "originalController": "4ec4b45011394abe1feb4ba4dc83853b502d89bc",
+      "originalSha256": "bada96e9b4321bb27b81b736941ec9fd3d5b973725199d6a63acbb994db59bcd",
+      "adapted": "tools/pending-tile-selective-game-loader.mjs",
+      "adaptedSha256": "270b1b857f4e0bd839d09948c0e3ba87c94035b8673911bb83ce27d491c949d8",
+      "edits": [
+        {
+          "before": "tile-recipe-bindings",
+          "after": "pending-tile-selective-game",
+          "occurrences": 1
+        },
+        {
+          "before": "TILE_BINDINGS_",
+          "after": "PENDING_TILE_SELECTIVE_",
+          "occurrences": 1
+        },
+        {
+          "before": "let made=0;const create=",
+          "after": "const privateStats=${variant==='after'?'true':'false'}?(await import('/src/pending-tile-context.js')).pendingTileStats:()=>({created:0,replayed:0,recordedCommands:0});const privateBefore=privateStats();let privateAfterLoad;let made=0;const create=",
+          "occurrences": 1
+        },
+        {
+          "before": "BK.load(index);ms=performance.now()-start;",
+          "after": "BK.load(index);ms=performance.now()-start;privateAfterLoad=privateStats();",
+          "occurrences": 1
+        },
+        {
+          "before": "canvases:made,exact:",
+          "after": "canvases:made,originalObservedCanvases:made,privateElementAllocations:privateAfterLoad.created-privateBefore.created,allCanvases:made+privateAfterLoad.created-privateBefore.created,privateContextReplays:privateAfterLoad.replayed-privateBefore.replayed,privateRecordedCommands:privateAfterLoad.recordedCommands-privateBefore.recordedCommands,exact:",
+          "occurrences": 1
+        },
+        {
+          "before": "assert(b.canvases<=a.canvases);assert.equal(c.canvases,a.canvases);",
+          "after": "assert(b.canvases<=a.canvases);assert.equal(c.canvases,a.canvases);assert.equal(a.allCanvases,a.canvases);assert.equal(c.allCanvases,c.canvases);assert.equal(b.allCanvases,a.allCanvases,'Complete observed+private native element equality');assert(b.privateElementAllocations>=0);if(r.proof.performanceTargets.includes(id))assert(b.privateElementAllocations>0&&b.privateRecordedCommands>0,'Actual source activation under original observer');",
+          "occurrences": 1
+        },
+        {
+          "before": "recordedCommands:0});const privateBefore",
+          "after": "recordedCommands:0,arrayWrites:0,arrayFastWrites:0,arrayFallbackWrites:0});const privateBefore",
+          "occurrences": 1,
+          "reason": "Additional readonly activation counts; original frame/display/state/RNG/allocation/return assertions preserved"
+        },
+        {
+          "before": "privateRecordedCommands:privateAfterLoad.recordedCommands-privateBefore.recordedCommands,exact:",
+          "after": "privateRecordedCommands:privateAfterLoad.recordedCommands-privateBefore.recordedCommands,privateArrayWrites:privateAfterLoad.arrayWrites-privateBefore.arrayWrites,privateArrayFastWrites:privateAfterLoad.arrayFastWrites-privateBefore.arrayFastWrites,privateArrayFallbackWrites:privateAfterLoad.arrayFallbackWrites-privateBefore.arrayFallbackWrites,exact:",
+          "occurrences": 1,
+          "reason": "Additional readonly activation counts; original frame/display/state/RNG/allocation/return assertions preserved"
+        },
+        {
+          "before": "if(r.proof.performanceTargets.includes(id))assert(b.privateElementAllocations>0&&b.privateRecordedCommands>0,'Actual source activation under original observer');",
+          "after": "if(r.proof.performanceTargets.includes(id)){assert(b.privateElementAllocations>0&&b.privateRecordedCommands>0,'Actual source activation under original observer');assert(b.privateArrayFastWrites>0,'Actual ordinary writable slot optimization');}",
+          "occurrences": 1,
+          "reason": "Additional readonly activation counts; original frame/display/state/RNG/allocation/return assertions preserved"
+        },
+        {
+          "before": "const privateStats=${variant==='after'?'true':'false'}?(await import('/src/pending-tile-context.js')).pendingTileStats:",
+          "after": "const privateModule=${variant==='after'?'true':'false'}?await import('/src/pending-tile-context.js'):null;const privateStats=privateModule?privateModule.pendingTileStats:",
+          "occurrences": 1,
+          "reason": "Readonly actual array protection check within the existing evaluation; original comparison/clock/GC/assertion boundaries retained"
+        },
+        {
+          "before": "let privateAfterLoad;",
+          "after": "let privateAfterLoad,protectedArray;",
+          "occurrences": 1,
+          "reason": "Readonly actual array protection check within the existing evaluation; original comparison/clock/GC/assertion boundaries retained"
+        },
+        {
+          "before": "privateAfterLoad=privateStats();",
+          "after": "privateAfterLoad=privateStats();protectedArray=privateModule?privateModule.pendingTileArrayBacked(BK.tileSpr()):false;",
+          "occurrences": 1,
+          "reason": "Readonly actual array protection check within the existing evaluation; original comparison/clock/GC/assertion boundaries retained"
+        },
+        {
+          "before": "originalObservedCanvases:made,",
+          "after": "arrayProtectedAfterLoad:protectedArray,originalObservedCanvases:made,",
+          "occurrences": 1,
+          "reason": "Readonly actual array protection check within the existing evaluation; original comparison/clock/GC/assertion boundaries retained"
+        },
+        {
+          "before": "assert(b.privateArrayFastWrites>0,'Actual ordinary writable slot optimization');}",
+          "after": "assert(b.privateArrayFastWrites>0,'Actual ordinary writable slot optimization');}assert.equal(b.arrayProtectedAfterLoad,r.proof.performanceTargets.includes(id),'Actual per-level protection/native fallback');",
+          "occurrences": 1,
+          "reason": "Readonly actual array protection check within the existing evaluation; original comparison/clock/GC/assertion boundaries retained"
+        }
+      ],
+      "exactUndo": true,
+      "originalFixtureAssertionsAndViewGcMemoryDeadlinesPreserved": true
+    },
+    {
+      "original": "tools/tile-recipe-bindings-loader-runner.mjs",
+      "originalController": "4ec4b45011394abe1feb4ba4dc83853b502d89bc",
+      "originalSha256": "c0ecdc2621d0f39bece4e8545a8a63483c894bfc98ca1098eb5f7ebee47ddfd8",
+      "adapted": "tools/pending-tile-selective-game-loader-runner.mjs",
+      "adaptedSha256": "e176f0996b92d2675e78d92ddc0fcfb085ac031c0418d210f9eae0643edc5f0b",
+      "edits": [
+        {
+          "before": "tile-recipe-bindings",
+          "after": "pending-tile-selective-game",
+          "occurrences": 3
+        }
+      ],
+      "exactUndo": true,
+      "originalFixtureAssertionsAndViewGcMemoryDeadlinesPreserved": true
+    },
+    {
+      "original": "tools/tile-recipe-bindings-page.mjs",
+      "originalController": "4ec4b45011394abe1feb4ba4dc83853b502d89bc",
+      "originalSha256": "dfdd8740545ca39061fbc11367f7d352dedf9f4c0018f50298205091dae1f805",
+      "adapted": "tools/pending-tile-selective-game-page.mjs",
+      "adaptedSha256": "53d0a3fa421ea71627e364348a2aaa82f254a96b23ac7d42ac118965564ccf8f",
+      "edits": [
+        {
+          "before": "tile-recipe-bindings",
+          "after": "pending-tile-selective-game",
+          "occurrences": 2
+        },
+        {
+          "before": "const componentPlan=JSON.parse(fs.readFileSync(new URL('./pending-tile-selective-game-source/benchmark-plan.json',import.meta.url)));assert.equal(componentPlan.manifestSha256,sha(fs.readFileSync(mfile)));assert(componentPlan.component.complete&&componentPlan.component.referenceOperations===24576&&componentPlan.component.bytecode.originalContexts===51&&componentPlan.component.bytecode.candidateContexts===0);",
+          "after": "const componentPlan=JSON.parse(fs.readFileSync(new URL('./pending-tile-selective-game-source/benchmark-plan.json',import.meta.url)));assert.equal(componentPlan.manifestSha256,sha(fs.readFileSync(mfile)));assert.equal(componentPlan.helperSha256,m.proof.nativeCoreHelperSha256);assert.equal(componentPlan.component.run,m.proof.nativeCoreRun);assert(componentPlan.component.complete&&componentPlan.component.qualifiedForGameIntegration&&componentPlan.component.familyCases===4928&&componentPlan.component.publicCases===672&&componentPlan.component.coreCases===114&&componentPlan.component.nativePolicyAndMainFallbackPrerequisitesVerified&&componentPlan.component.arrayWriteControl.sourceDerivedCauseObserved&&componentPlan.component.rng===0&&componentPlan.component.originalGuardsAndNativeGcVerified&&componentPlan.component.closed);",
+          "occurrences": 1,
+          "reason": "Replace an unrelated historical recipe-bytecode guard with the exact native tile compatibility prerequisite; no comparison assertion or source changed."
+        }
+      ],
+      "exactUndo": true,
+      "originalFixtureAssertionsAndViewGcMemoryDeadlinesPreserved": true
+    },
+    {
+      "original": "tools/tile-recipe-bindings-preflight.mjs",
+      "originalController": "4ec4b45011394abe1feb4ba4dc83853b502d89bc",
+      "originalSha256": "8262a02d07fb525780078ed0b1505a013146ba835bd3297f93b47808ee1db962",
+      "adapted": "tools/pending-tile-selective-game-preflight.mjs",
+      "adaptedSha256": "40e55f12872e3ac3520ae700991f26ad0b1c8e9e12a567c57c521e050e169906",
+      "edits": [
+        {
+          "before": "tile-recipe-bindings",
+          "after": "pending-tile-selective-game",
+          "occurrences": 1
+        }
+      ],
+      "exactUndo": true,
+      "originalFixtureAssertionsAndViewGcMemoryDeadlinesPreserved": true
+    },
+    {
+      "original": "tools/tile-recipe-bindings-qualify.mjs",
+      "originalController": "4ec4b45011394abe1feb4ba4dc83853b502d89bc",
+      "originalSha256": "298b872bc7cf4ee1f5009f66a741a6de94dd5f88af25b65aad80dfee9c872296",
+      "adapted": "tools/pending-tile-selective-game-qualify.mjs",
+      "adaptedSha256": "31de5fbabc5274959b6d0f6f401c49237ef8c4ef3f78033dab340fc07b588925",
+      "edits": [
+        {
+          "before": "tile-recipe-bindings",
+          "after": "pending-tile-selective-game",
+          "occurrences": 1
+        },
+        {
+          "before": "TILE_BINDINGS_",
+          "after": "PENDING_TILE_SELECTIVE_",
+          "occurrences": 2
+        },
+        {
+          "before": "tile-bindings-loader-",
+          "after": "pending-tile-selective-loader-",
+          "occurrences": 1
+        },
+        {
+          "before": "assert.equal(b.canvases,a.canvases);",
+          "after": "assert.equal(b.allCanvases,a.allCanvases,'Complete observed+private element equality');assert.equal(a.allCanvases,a.canvases);assert.equal(c.allCanvases,c.canvases);if(m.proof.performanceTargets.includes(id))assert(b.privateElementAllocations>0&&b.privateRecordedCommands>0,'Actual source activation');",
+          "occurrences": 1
+        },
+        {
+          "before": "const timings=[];",
+          "after": "const timings=[];let deferredTargetCases=0;",
+          "occurrences": 1,
+          "reason": "Additional predeclared actual-deferral qualification; all existing timing,range,drift and regression gates retained"
+        },
+        {
+          "before": "for(const id of raw.levels)for(const load of ['first','repeat'])timings.push({cohort,id,load,...summarize(raw.rows.filter(x=>x.id===id&&x.load===load),'readyMs')});",
+          "after": "for(const id of raw.levels)for(const load of ['first','repeat']){const rr=raw.rows.filter(x=>x.id===id&&x.load===load),aa=rr.filter(x=>x.variant==='after');if(m.proof.performanceTargets.includes(id)){assert(aa.every(x=>x.privateArrayFastWrites>0));if(median(aa.map(x=>x.privateContextReplays))/median(aa.map(x=>x.privateElementAllocations))<=0.75)deferredTargetCases++;}timings.push({cohort,id,load,...summarize(rr,'readyMs')});}",
+          "occurrences": 1,
+          "reason": "Additional predeclared actual-deferral qualification; all existing timing,range,drift and regression gates retained"
+        },
+        {
+          "before": "const qualified=strong>=targets.length/2",
+          "after": "const qualified=deferredTargetCases>=targets.length/2&&strong>=targets.length/2",
+          "occurrences": 1,
+          "reason": "Additional predeclared actual-deferral qualification; all existing timing,range,drift and regression gates retained"
+        },
+        {
+          "before": "strongTargetCases:strong,targetCases:targets.length",
+          "after": "strongTargetCases:strong,targetCases:targets.length,deferredTargetCases",
+          "occurrences": 1,
+          "reason": "Additional predeclared actual-deferral qualification; all existing timing,range,drift and regression gates retained"
+        },
+        {
+          "before": "assert.equal(c.canvases,a.canvases);exactPairs+=2;",
+          "after": "assert.equal(c.canvases,a.canvases);assert.equal(b.arrayProtectedAfterLoad,m.proof.performanceTargets.includes(id),'Actual per-level protection/native fallback');exactPairs+=2;",
+          "occurrences": 1,
+          "reason": "Additional actual fallback coverage; every previous qualification criterion retained"
+        }
+      ],
+      "exactUndo": true,
+      "originalFixtureAssertionsAndViewGcMemoryDeadlinesPreserved": true
+    }
+  ],
+  "nativeProof": {
+    "receipt": "outputs/receipts/pending-tile-selective-oct29.json",
+    "run": 40962256744,
+    "helperSha256": "248d18e74b5d38322faad4eb3be15662d3475262090a4365107b13005a16a54d",
+    "familyCases": 4928,
+    "publicCases": 672,
+    "coreCases": 114
+  },
+  "priorRejectedSource": {
+    "receipt": "outputs/receipts/pending-tile-array-game-oct29.json",
+    "run": 40957722790,
+    "mainSha256": "24360a8b6a1afa79090b2b390f86d9bd1840395178ab9dfe015ef1f03ba29a59",
+    "helperSha256": "e475efbbf37ceb0f29ec9a7cb4341c30eb0028e9b0a9949e70e10ceacba3bbb2",
+    "readbacks": 342,
+    "exactPairs": 228,
+    "qualified": false,
+    "wholePhaseGainVsFasterControlPercent": 2.745279890184149,
+    "severeUntargetedCases": 16
+  },
+  "allThreeMismatches": [
+    "mummer6SUCCESSFUL hits versus2..5",
+    "tower-collapse/Tome rebound at original200frames",
+    "offscreen mage sampling"
+  ],
+  "cloud": {
+    "workflow": "load-perf-proof.yml",
+    "mode": "pending-tile-selective-game-loader-oct29",
+    "status": "completed",
+    "cohortTimeoutMinutes": 40,
+    "expectedReadbacks": 342,
+    "expectedExactPairs": 228,
+    "expectedBrowsers": 27,
+    "audited": true,
+    "controller": "29641119b3c0412a24abb8217e95a3330cd6b041",
+    "directory": "work/pending-tile-selective-game-cloud-29641119",
+    "run": 40964127621,
+    "url": "https://github.com/draphael123/bracken/actions/runs/40964127621",
+    "createdAt": "2026-10-29T22:13:02Z",
+    "conclusion": "success",
+    "qualified": true
+  },
+  "adopted": false,
+  "overallWorkComplete": false,
+  "committedSourceHashesAndMainAstVerified": true,
+  "gameArtifactsCollectedOnce": true,
+  "gameLoading": {
+    "complete": true,
+    "rawReadbacks": 342,
+    "verifiedReadbacks": 342,
+    "expectedReadbacks": 342,
+    "missingOrUnverifiedReadbacks": 0,
+    "exactPairs": 228,
+    "expectedExactPairs": 228,
+    "cohorts": [
+      {
+        "cohort": 1,
+        "raw": "work/pending-tile-selective-game-cloud-29641119/pending-tile-selective-loader-1",
+        "complete": true,
+        "rawReadbacks": 126,
+        "verifiedReadbacks": 126,
+        "exactPairs": 84,
+        "blockers": [],
+        "processes": {
+          "launches": 9,
+          "closures": 9,
+          "allClosed": true,
+          "rawInterruptions": [],
+          "maxRendererMb": 1045
+        },
+        "rawError": null,
+        "runnerError": null,
+        "cleanup": "PASS",
+        "servedDocuments": 9,
+        "profilesAbsent": true,
+        "levels": [
+          "wood",
+          "marsh",
+          "stockade",
+          "spore",
+          "kings",
+          "scree",
+          "undercrown"
+        ],
+        "allSourceDeliveriesAndOneDocumentProfilesVerified": true,
+        "originalCdpUndoVerified": true,
+        "originalToolsVerified": 921,
+        "freshStartup": {
+          "values": {
+            "before": [
+              36881.941706,
+              28394.661513,
+              27802.516514999967
+            ],
+            "after": [
+              27726.22270099999,
+              26988.485993999988,
+              27131.84564200003
+            ],
+            "return": [
+              27722.10481399999,
+              27244.50919699995,
+              28024.935895000002
+            ]
+          },
+          "medians": {
+            "before": 28394.661513,
+            "after": 27131.84564200003,
+            "return": 27722.10481399999
+          },
+          "gainVsFasterControlPercent": 2.129200419521804,
+          "rangeBelowBothControls": false,
+          "fasterThanBothAllRounds": false,
+          "beforeReturnMedianDriftPercent": 2.368602628674019
+        }
+      },
+      {
+        "cohort": 2,
+        "raw": "work/pending-tile-selective-game-cloud-29641119/pending-tile-selective-loader-2",
+        "complete": true,
+        "rawReadbacks": 108,
+        "verifiedReadbacks": 108,
+        "exactPairs": 72,
+        "blockers": [],
+        "processes": {
+          "launches": 9,
+          "closures": 9,
+          "allClosed": true,
+          "rawInterruptions": [],
+          "maxRendererMb": 1237
+        },
+        "rawError": null,
+        "runnerError": null,
+        "cleanup": "PASS",
+        "servedDocuments": 9,
+        "profilesAbsent": true,
+        "levels": [
+          "redgorge",
+          "underwell",
+          "skyroad",
+          "glasssea",
+          "ksar",
+          "rootway"
+        ],
+        "allSourceDeliveriesAndOneDocumentProfilesVerified": true,
+        "originalCdpUndoVerified": true,
+        "originalToolsVerified": 921,
+        "freshStartup": {
+          "values": {
+            "before": [
+              27406.341778,
+              25578.384992999985,
+              25647.85889599996
+            ],
+            "after": [
+              26062.697029999996,
+              25742.87331200001,
+              25897.791992999963
+            ],
+            "return": [
+              25755.467682999995,
+              25633.776519000006,
+              25939.131616000086
+            ]
+          },
+          "medians": {
+            "before": 25647.85889599996,
+            "after": 25897.791992999963,
+            "return": 25755.467682999995
+          },
+          "gainVsFasterControlPercent": -0.974479382522575,
+          "rangeBelowBothControls": false,
+          "fasterThanBothAllRounds": false,
+          "beforeReturnMedianDriftPercent": 0.4178094854439836
+        }
+      },
+      {
+        "cohort": 3,
+        "raw": "work/pending-tile-selective-game-cloud-29641119/pending-tile-selective-loader-3",
+        "complete": true,
+        "rawReadbacks": 108,
+        "verifiedReadbacks": 108,
+        "exactPairs": 72,
+        "blockers": [],
+        "processes": {
+          "launches": 9,
+          "closures": 9,
+          "allClosed": true,
+          "rawInterruptions": [],
+          "maxRendererMb": 1205
+        },
+        "rawError": null,
+        "runnerError": null,
+        "cleanup": "PASS",
+        "servedDocuments": 9,
+        "profilesAbsent": true,
+        "levels": [
+          "minecart",
+          "church",
+          "towpath",
+          "buriedcity",
+          "sealedpyramid",
+          "fenroad"
+        ],
+        "allSourceDeliveriesAndOneDocumentProfilesVerified": true,
+        "originalCdpUndoVerified": true,
+        "originalToolsVerified": 921,
+        "freshStartup": {
+          "values": {
+            "before": [
+              37259.601197,
+              29021.77668900002,
+              27985.13633499999
+            ],
+            "after": [
+              28781.939190000005,
+              29970.454330000037,
+              28262.317842000048
+            ],
+            "return": [
+              28432.865139,
+              28747.518457999977,
+              27488.82314200001
+            ]
+          },
+          "medians": {
+            "before": 29021.77668900002,
+            "after": 28781.939190000005,
+            "return": 28432.865139
+          },
+          "gainVsFasterControlPercent": -1.2277132441401273,
+          "rangeBelowBothControls": false,
+          "fasterThanBothAllRounds": false,
+          "beforeReturnMedianDriftPercent": 2.0292057109764445
+        }
+      }
+    ],
+    "timings": [
+      {
+        "cohort": 1,
+        "id": "wood",
+        "load": "first",
+        "values": {
+          "before": [
+            2037.8999999999942,
+            2131.5,
+            2141.8000000000466
+          ],
+          "after": [
+            2148.2000000000116,
+            2090.0999999999767,
+            2087.9000000000233
+          ],
+          "return": [
+            2040.2999999999884,
+            2081.7999999999884,
+            2219.399999999907
+          ]
+        },
+        "medians": {
+          "before": 2131.5,
+          "after": 2090.0999999999767,
+          "return": 2081.7999999999884
+        },
+        "gainVsFasterControlPercent": -0.3986934383700902,
+        "rangeBelowBothControls": false,
+        "fasterThanBothAllRounds": false,
+        "beforeReturnMedianDriftPercent": 2.3316912972090846
+      },
+      {
+        "cohort": 1,
+        "id": "wood",
+        "load": "repeat",
+        "values": {
+          "before": [
+            1704.8000000000175,
+            1694.600000000035,
+            1719.9000000000233
+          ],
+          "after": [
+            1697.4000000000233,
+            1716.5999999999767,
+            1751.3999999999069
+          ],
+          "return": [
+            1687.2000000000116,
+            1647.7000000000116,
+            1739.9000000000233
+          ]
+        },
+        "medians": {
+          "before": 1704.8000000000175,
+          "after": 1716.5999999999767,
+          "return": 1687.2000000000116
+        },
+        "gainVsFasterControlPercent": -1.7425320056878135,
+        "rangeBelowBothControls": false,
+        "fasterThanBothAllRounds": false,
+        "beforeReturnMedianDriftPercent": 1.032379164711734
+      },
+      {
+        "cohort": 1,
+        "id": "marsh",
+        "load": "first",
+        "values": {
+          "before": [
+            2201.399999999994,
+            2259,
+            2326.8000000000466
+          ],
+          "after": [
+            2139.899999999994,
+            2134.2999999999884,
+            2191.9000000000233
+          ],
+          "return": [
+            2166.399999999965,
+            2337.0999999999767,
+            2336.8000000000466
+          ]
+        },
+        "medians": {
+          "before": 2259,
+          "after": 2139.899999999994,
+          "return": 2336.8000000000466
+        },
+        "gainVsFasterControlPercent": 5.272244355909949,
+        "rangeBelowBothControls": false,
+        "fasterThanBothAllRounds": true,
+        "beforeReturnMedianDriftPercent": 3.3293392673761133
+      },
+      {
+        "cohort": 1,
+        "id": "marsh",
+        "load": "repeat",
+        "values": {
+          "before": [
+            1651.6000000000058,
+            1614.6999999999534,
+            1644.3000000000466
+          ],
+          "after": [
+            1553.7999999999884,
+            1688.2999999999884,
+            1652.2000000000698
+          ],
+          "return": [
+            1589,
+            1655.9000000000233,
+            1686.5
+          ]
+        },
+        "medians": {
+          "before": 1644.3000000000466,
+          "after": 1652.2000000000698,
+          "return": 1655.9000000000233
+        },
+        "gainVsFasterControlPercent": -0.48044760688579213,
+        "rangeBelowBothControls": false,
+        "fasterThanBothAllRounds": false,
+        "beforeReturnMedianDriftPercent": 0.7005253940441183
+      },
+      {
+        "cohort": 1,
+        "id": "stockade",
+        "load": "first",
+        "values": {
+          "before": [
+            2085.7000000000116,
+            2091.399999999965,
+            2124.0999999999767
+          ],
+          "after": [
+            2004.2000000000116,
+            1981.6999999999534,
+            2053.1999999999534
+          ],
+          "return": [
+            1971.2999999999884,
+            2126.4000000000233,
+            2045.5999999999767
+          ]
+        },
+        "medians": {
+          "before": 2091.399999999965,
+          "after": 2004.2000000000116,
+          "return": 2045.5999999999767
+        },
+        "gainVsFasterControlPercent": 2.0238560813436446,
+        "rangeBelowBothControls": false,
+        "fasterThanBothAllRounds": false,
+        "beforeReturnMedianDriftPercent": 2.1899206273304546
+      },
+      {
+        "cohort": 1,
+        "id": "stockade",
+        "load": "repeat",
+        "values": {
+          "before": [
+            1652,
+            1768.3000000000466,
+            1638.4000000000233
+          ],
+          "after": [
+            1632.6000000000058,
+            1605,
+            1617.5999999999767
+          ],
+          "return": [
+            1602.4000000000233,
+            1754.5,
+            1628
+          ]
+        },
+        "medians": {
+          "before": 1652,
+          "after": 1617.5999999999767,
+          "return": 1628
+        },
+        "gainVsFasterControlPercent": 0.6388206388220685,
+        "rangeBelowBothControls": false,
+        "fasterThanBothAllRounds": false,
+        "beforeReturnMedianDriftPercent": 1.4527845036319613
+      },
+      {
+        "cohort": 1,
+        "id": "spore",
+        "load": "first",
+        "values": {
+          "before": [
+            2213.6999999999825,
+            2182.5,
+            2199.3000000000466
+          ],
+          "after": [
+            2074.5,
+            2126,
+            2105.29999999993
+          ],
+          "return": [
+            2150.7999999999884,
+            2140.5,
+            2186.0999999999767
+          ]
+        },
+        "medians": {
+          "before": 2199.3000000000466,
+          "after": 2105.29999999993,
+          "return": 2150.7999999999884
+        },
+        "gainVsFasterControlPercent": 2.1154919099896974,
+        "rangeBelowBothControls": true,
+        "fasterThanBothAllRounds": true,
+        "beforeReturnMedianDriftPercent": 2.205247124087536
+      },
+      {
+        "cohort": 1,
+        "id": "spore",
+        "load": "repeat",
+        "values": {
+          "before": [
+            1797.2999999999884,
+            1822.5,
+            1833.1999999999534
+          ],
+          "after": [
+            1912.8999999999942,
+            1771.4000000000233,
+            1932.1999999999534
+          ],
+          "return": [
+            1856,
+            1829.5,
+            1853.3000000000466
+          ]
+        },
+        "medians": {
+          "before": 1822.5,
+          "after": 1912.8999999999942,
+          "return": 1853.3000000000466
+        },
+        "gainVsFasterControlPercent": -4.960219478737682,
+        "rangeBelowBothControls": false,
+        "fasterThanBothAllRounds": false,
+        "beforeReturnMedianDriftPercent": 1.6619003938944472
+      },
+      {
+        "cohort": 1,
+        "id": "kings",
+        "load": "first",
+        "values": {
+          "before": [
+            1860.5,
+            1905.7999999999884,
+            1938.9000000000233
+          ],
+          "after": [
+            1925.7000000000116,
+            1838.3000000000466,
+            1976.9000000000233
+          ],
+          "return": [
+            1856,
+            1882.7000000000116,
+            1774.7999999999302
+          ]
+        },
+        "medians": {
+          "before": 1905.7999999999884,
+          "after": 1925.7000000000116,
+          "return": 1856
+        },
+        "gainVsFasterControlPercent": -3.7553879310351146,
+        "rangeBelowBothControls": false,
+        "fasterThanBothAllRounds": false,
+        "beforeReturnMedianDriftPercent": 2.6130758736482664
+      },
+      {
+        "cohort": 1,
+        "id": "kings",
+        "load": "repeat",
+        "values": {
+          "before": [
+            1621.7999999999884,
+            1622.5999999999767,
+            1593.1999999999534
+          ],
+          "after": [
+            1626.9000000000233,
+            1584.600000000035,
+            1609.4000000000233
+          ],
+          "return": [
+            1617.5,
+            1587.2000000000116,
+            1688.4000000000233
+          ]
+        },
+        "medians": {
+          "before": 1621.7999999999884,
+          "after": 1609.4000000000233,
+          "return": 1617.5
+        },
+        "gainVsFasterControlPercent": 0.500772797525606,
+        "rangeBelowBothControls": false,
+        "fasterThanBothAllRounds": false,
+        "beforeReturnMedianDriftPercent": 0.2651375015407812
+      },
+      {
+        "cohort": 1,
+        "id": "scree",
+        "load": "first",
+        "values": {
+          "before": [
+            1866.3999999999942,
+            1906.2999999999884,
+            1927.5
+          ],
+          "after": [
+            1964,
+            1880.3000000000466,
+            1840.6999999999534
+          ],
+          "return": [
+            1920.7000000000116,
+            2025.7000000000116,
+            1939.0999999999767
+          ]
+        },
+        "medians": {
+          "before": 1906.2999999999884,
+          "after": 1880.3000000000466,
+          "return": 1939.0999999999767
+        },
+        "gainVsFasterControlPercent": 1.3638986518355933,
+        "rangeBelowBothControls": false,
+        "fasterThanBothAllRounds": false,
+        "beforeReturnMedianDriftPercent": 1.6915063689334615
+      },
+      {
+        "cohort": 1,
+        "id": "scree",
+        "load": "repeat",
+        "values": {
+          "before": [
+            1487.5,
+            1488.0999999999767,
+            1409.5
+          ],
+          "after": [
+            1400.9000000000233,
+            1393.4000000000233,
+            1421.5999999999767
+          ],
+          "return": [
+            1393.5,
+            1488.100000000035,
+            1462
+          ]
+        },
+        "medians": {
+          "before": 1487.5,
+          "after": 1400.9000000000233,
+          "return": 1462
+        },
+        "gainVsFasterControlPercent": 4.179206566345872,
+        "rangeBelowBothControls": false,
+        "fasterThanBothAllRounds": false,
+        "beforeReturnMedianDriftPercent": 1.7142857142857142
+      },
+      {
+        "cohort": 1,
+        "id": "undercrown",
+        "load": "first",
+        "values": {
+          "before": [
+            3564.899999999994,
+            3413.5,
+            3329.1999999999534
+          ],
+          "after": [
+            3419.7000000000116,
+            3290.2000000000116,
+            3396.5
+          ],
+          "return": [
+            3333.600000000035,
+            3461.399999999965,
+            3296.4000000000233
+          ]
+        },
+        "medians": {
+          "before": 3413.5,
+          "after": 3396.5,
+          "return": 3333.600000000035
+        },
+        "gainVsFasterControlPercent": -1.8868490520747683,
+        "rangeBelowBothControls": false,
+        "fasterThanBothAllRounds": false,
+        "beforeReturnMedianDriftPercent": 2.3407060202128336
+      },
+      {
+        "cohort": 1,
+        "id": "undercrown",
+        "load": "repeat",
+        "values": {
+          "before": [
+            3610.899999999994,
+            3640.600000000035,
+            3765
+          ],
+          "after": [
+            3603.1999999999534,
+            3564.100000000035,
+            3689.1999999999534
+          ],
+          "return": [
+            3763.5999999999767,
+            3704.8000000000466,
+            3671.0999999999767
+          ]
+        },
+        "medians": {
+          "before": 3640.600000000035,
+          "after": 3603.1999999999534,
+          "return": 3704.8000000000466
+        },
+        "gainVsFasterControlPercent": 1.0273031917838016,
+        "rangeBelowBothControls": false,
+        "fasterThanBothAllRounds": false,
+        "beforeReturnMedianDriftPercent": 1.7328870654289257
+      },
+      {
+        "cohort": 2,
+        "id": "redgorge",
+        "load": "first",
+        "values": {
+          "before": [
+            6699.899999999994,
+            6738.5,
+            6722.400000000023
+          ],
+          "after": [
+            6769.899999999994,
+            6674.799999999988,
+            6868.399999999907
+          ],
+          "return": [
+            6628.299999999988,
+            6731.29999999993,
+            6738.100000000093
+          ]
+        },
+        "medians": {
+          "before": 6722.400000000023,
+          "after": 6769.899999999994,
+          "return": 6731.29999999993
+        },
+        "gainVsFasterControlPercent": -0.7065928834935509,
+        "rangeBelowBothControls": false,
+        "fasterThanBothAllRounds": false,
+        "beforeReturnMedianDriftPercent": 0.13221814508203408
+      },
+      {
+        "cohort": 2,
+        "id": "redgorge",
+        "load": "repeat",
+        "values": {
+          "before": [
+            4942.399999999994,
+            4861.5,
+            4879.199999999953
+          ],
+          "after": [
+            4823.399999999994,
+            4870.300000000047,
+            4853.199999999953
+          ],
+          "return": [
+            4855.599999999977,
+            4827.300000000047,
+            4859.5
+          ]
+        },
+        "medians": {
+          "before": 4879.199999999953,
+          "after": 4853.199999999953,
+          "return": 4855.599999999977
+        },
+        "gainVsFasterControlPercent": 0.049427465195306386,
+        "rangeBelowBothControls": false,
+        "fasterThanBothAllRounds": false,
+        "beforeReturnMedianDriftPercent": 0.48368585013889454
+      },
+      {
+        "cohort": 2,
+        "id": "underwell",
+        "load": "first",
+        "values": {
+          "before": [
+            4010.600000000006,
+            4101,
+            4099.20000000007
+          ],
+          "after": [
+            4086.5,
+            4119.599999999977,
+            4150.599999999977
+          ],
+          "return": [
+            4155.299999999988,
+            4110.199999999953,
+            4081
+          ]
+        },
+        "medians": {
+          "before": 4099.20000000007,
+          "after": 4119.599999999977,
+          "return": 4110.199999999953
+        },
+        "gainVsFasterControlPercent": -0.497658079623009,
+        "rangeBelowBothControls": false,
+        "fasterThanBothAllRounds": false,
+        "beforeReturnMedianDriftPercent": 0.26762687946775604
+      },
+      {
+        "cohort": 2,
+        "id": "underwell",
+        "load": "repeat",
+        "values": {
+          "before": [
+            2958.399999999994,
+            2979,
+            2970.5
+          ],
+          "after": [
+            2988.100000000006,
+            2969,
+            3014.9000000000233
+          ],
+          "return": [
+            3006.1999999999534,
+            2991.8000000000466,
+            2938.4000000000233
+          ]
+        },
+        "medians": {
+          "before": 2970.5,
+          "after": 2988.100000000006,
+          "return": 2991.8000000000466
+        },
+        "gainVsFasterControlPercent": -0.5924928463223678,
+        "rangeBelowBothControls": false,
+        "fasterThanBothAllRounds": false,
+        "beforeReturnMedianDriftPercent": 0.7119459856957763
+      },
+      {
+        "cohort": 2,
+        "id": "skyroad",
+        "load": "first",
+        "values": {
+          "before": [
+            5063.5,
+            5050.200000000012,
+            4989.20000000007
+          ],
+          "after": [
+            3789,
+            3776.2000000000116,
+            3833.0999999999767
+          ],
+          "return": [
+            5191.400000000023,
+            5090,
+            5032.900000000023
+          ]
+        },
+        "medians": {
+          "before": 5050.200000000012,
+          "after": 3789,
+          "return": 5090
+        },
+        "gainVsFasterControlPercent": 24.973268385410652,
+        "rangeBelowBothControls": true,
+        "fasterThanBothAllRounds": true,
+        "beforeReturnMedianDriftPercent": 0.7819253438111662
+      },
+      {
+        "cohort": 2,
+        "id": "skyroad",
+        "load": "repeat",
+        "values": {
+          "before": [
+            5380.299999999988,
+            5459,
+            5378.899999999907
+          ],
+          "after": [
+            2958,
+            2826.5999999999767,
+            2902.29999999993
+          ],
+          "return": [
+            5530,
+            5345,
+            5504
+          ]
+        },
+        "medians": {
+          "before": 5380.299999999988,
+          "after": 2902.29999999993,
+          "return": 5504
+        },
+        "gainVsFasterControlPercent": 46.05691132464851,
+        "rangeBelowBothControls": true,
+        "fasterThanBothAllRounds": true,
+        "beforeReturnMedianDriftPercent": 2.2474563953490487
+      },
+      {
+        "cohort": 2,
+        "id": "glasssea",
+        "load": "first",
+        "values": {
+          "before": [
+            3718.2000000000116,
+            3653.6999999999534,
+            3703.9000000000233
+          ],
+          "after": [
+            2685.2000000000116,
+            2688.600000000035,
+            2673.8000000000466
+          ],
+          "return": [
+            3913.7999999999884,
+            3744.9000000000233,
+            3775
+          ]
+        },
+        "medians": {
+          "before": 3703.9000000000233,
+          "after": 2685.2000000000116,
+          "return": 3775
+        },
+        "gainVsFasterControlPercent": 27.503442317557315,
+        "rangeBelowBothControls": true,
+        "fasterThanBothAllRounds": true,
+        "beforeReturnMedianDriftPercent": 1.8834437086086548
+      },
+      {
+        "cohort": 2,
+        "id": "glasssea",
+        "load": "repeat",
+        "values": {
+          "before": [
+            1368.2000000000116,
+            1289.5999999999767,
+            1317.4000000000233
+          ],
+          "after": [
+            1281.3999999999942,
+            1265.5999999999767,
+            1331.8000000000466
+          ],
+          "return": [
+            1258.4000000000233,
+            1268.7999999999302,
+            1354.5999999999767
+          ]
+        },
+        "medians": {
+          "before": 1317.4000000000233,
+          "after": 1281.3999999999942,
+          "return": 1268.7999999999302
+        },
+        "gainVsFasterControlPercent": -0.9930643127415539,
+        "rangeBelowBothControls": false,
+        "fasterThanBothAllRounds": false,
+        "beforeReturnMedianDriftPercent": 3.6890845605049547
+      },
+      {
+        "cohort": 2,
+        "id": "ksar",
+        "load": "first",
+        "values": {
+          "before": [
+            2463.6999999999825,
+            2464.2999999999884,
+            2440.0999999999767
+          ],
+          "after": [
+            2537.7000000000116,
+            2587.8000000000466,
+            2538.0999999999767
+          ],
+          "return": [
+            2383.2999999999884,
+            2458.8000000000466,
+            2478
+          ]
+        },
+        "medians": {
+          "before": 2463.6999999999825,
+          "after": 2538.0999999999767,
+          "return": 2458.8000000000466
+        },
+        "gainVsFasterControlPercent": -3.2251504799059916,
+        "rangeBelowBothControls": false,
+        "fasterThanBothAllRounds": false,
+        "beforeReturnMedianDriftPercent": 0.19888785160271163
+      },
+      {
+        "cohort": 2,
+        "id": "ksar",
+        "load": "repeat",
+        "values": {
+          "before": [
+            1372.0999999999767,
+            1369,
+            1376.5999999999767
+          ],
+          "after": [
+            1471.3999999999942,
+            1390.0999999999767,
+            1469
+          ],
+          "return": [
+            1377.7000000000116,
+            1356.7000000000698,
+            1372.2999999999302
+          ]
+        },
+        "medians": {
+          "before": 1372.0999999999767,
+          "after": 1469,
+          "return": 1372.2999999999302
+        },
+        "gainVsFasterControlPercent": -7.062167480506143,
+        "rangeBelowBothControls": false,
+        "fasterThanBothAllRounds": false,
+        "beforeReturnMedianDriftPercent": 0.014574072721230347
+      },
+      {
+        "cohort": 2,
+        "id": "rootway",
+        "load": "first",
+        "values": {
+          "before": [
+            4945.399999999994,
+            5018.299999999988,
+            4954.900000000023
+          ],
+          "after": [
+            3900,
+            3995.100000000035,
+            4008.29999999993
+          ],
+          "return": [
+            4881.700000000012,
+            4949.20000000007,
+            4953.099999999977
+          ]
+        },
+        "medians": {
+          "before": 4954.900000000023,
+          "after": 3995.100000000035,
+          "return": 4949.20000000007
+        },
+        "gainVsFasterControlPercent": 19.277863088984514,
+        "rangeBelowBothControls": true,
+        "fasterThanBothAllRounds": true,
+        "beforeReturnMedianDriftPercent": 0.11503763950742511
+      },
+      {
+        "cohort": 2,
+        "id": "rootway",
+        "load": "repeat",
+        "values": {
+          "before": [
+            5430.899999999994,
+            5320.299999999988,
+            5455.099999999977
+          ],
+          "after": [
+            3161.100000000006,
+            3242.5,
+            3350.1999999999534
+          ],
+          "return": [
+            5444.5,
+            5313.599999999977,
+            5420
+          ]
+        },
+        "medians": {
+          "before": 5430.899999999994,
+          "after": 3242.5,
+          "return": 5420
+        },
+        "gainVsFasterControlPercent": 40.17527675276753,
+        "rangeBelowBothControls": true,
+        "fasterThanBothAllRounds": true,
+        "beforeReturnMedianDriftPercent": 0.2007033824963485
+      },
+      {
+        "cohort": 3,
+        "id": "minecart",
+        "load": "first",
+        "values": {
+          "before": [
+            2571.399999999994,
+            2599.9000000000233,
+            2494.5
+          ],
+          "after": [
+            2650,
+            2640.6999999999534,
+            2500
+          ],
+          "return": [
+            2561.7000000000116,
+            2517.6999999999534,
+            2458.600000000093
+          ]
+        },
+        "medians": {
+          "before": 2571.399999999994,
+          "after": 2640.6999999999534,
+          "return": 2517.6999999999534
+        },
+        "gainVsFasterControlPercent": -4.885411288080488,
+        "rangeBelowBothControls": false,
+        "fasterThanBothAllRounds": false,
+        "beforeReturnMedianDriftPercent": 2.0883565372964483
+      },
+      {
+        "cohort": 3,
+        "id": "minecart",
+        "load": "repeat",
+        "values": {
+          "before": [
+            1235.9000000000233,
+            1172.2000000000116,
+            1178.0999999999767
+          ],
+          "after": [
+            1218.4000000000233,
+            1220.4000000000233,
+            1251.9000000000233
+          ],
+          "return": [
+            1209.899999999965,
+            1217,
+            1151.6999999999534
+          ]
+        },
+        "medians": {
+          "before": 1178.0999999999767,
+          "after": 1220.4000000000233,
+          "return": 1209.899999999965
+        },
+        "gainVsFasterControlPercent": -3.590527119942899,
+        "rangeBelowBothControls": false,
+        "fasterThanBothAllRounds": false,
+        "beforeReturnMedianDriftPercent": 2.6283163897833934
+      },
+      {
+        "cohort": 3,
+        "id": "church",
+        "load": "first",
+        "values": {
+          "before": [
+            1729.899999999965,
+            1741.9000000000233,
+            1697.2999999999302
+          ],
+          "after": [
+            1784.5,
+            1781.5,
+            1661.5999999999767
+          ],
+          "return": [
+            1745.0999999999767,
+            1717.6999999999534,
+            1721.0999999999767
+          ]
+        },
+        "medians": {
+          "before": 1729.899999999965,
+          "after": 1781.5,
+          "return": 1721.0999999999767
+        },
+        "gainVsFasterControlPercent": -3.5093835337879353,
+        "rangeBelowBothControls": false,
+        "fasterThanBothAllRounds": false,
+        "beforeReturnMedianDriftPercent": 0.5086999248504848
+      },
+      {
+        "cohort": 3,
+        "id": "church",
+        "load": "repeat",
+        "values": {
+          "before": [
+            1042.7999999999884,
+            999,
+            1053.7000000000698
+          ],
+          "after": [
+            1045.0999999999767,
+            1060.3999999999069,
+            986.1999999999534
+          ],
+          "return": [
+            986.2000000000116,
+            1001.2000000000698,
+            1002.1999999999534
+          ]
+        },
+        "medians": {
+          "before": 1042.7999999999884,
+          "after": 1045.0999999999767,
+          "return": 1001.2000000000698
+        },
+        "gainVsFasterControlPercent": -4.384738314013559,
+        "rangeBelowBothControls": false,
+        "fasterThanBothAllRounds": false,
+        "beforeReturnMedianDriftPercent": 3.989259685454447
+      },
+      {
+        "cohort": 3,
+        "id": "towpath",
+        "load": "first",
+        "values": {
+          "before": [
+            1476.899999999965,
+            1440.7999999999884,
+            1403.3000000000466
+          ],
+          "after": [
+            1457,
+            1493.2999999999302,
+            1444.5
+          ],
+          "return": [
+            1424.2999999999884,
+            1450,
+            1455.8000000000466
+          ]
+        },
+        "medians": {
+          "before": 1440.7999999999884,
+          "after": 1457,
+          "return": 1450
+        },
+        "gainVsFasterControlPercent": -1.1243753470302487,
+        "rangeBelowBothControls": false,
+        "fasterThanBothAllRounds": false,
+        "beforeReturnMedianDriftPercent": 0.6344827586214925
+      },
+      {
+        "cohort": 3,
+        "id": "towpath",
+        "load": "repeat",
+        "values": {
+          "before": [
+            1200.399999999965,
+            1217.899999999965,
+            1216.7999999999302
+          ],
+          "after": [
+            1213.9000000000233,
+            1262.0999999999767,
+            1200.2999999999302
+          ],
+          "return": [
+            1216.9000000000233,
+            1226.5,
+            1215.6000000000931
+          ]
+        },
+        "medians": {
+          "before": 1216.7999999999302,
+          "after": 1213.9000000000233,
+          "return": 1216.9000000000233
+        },
+        "gainVsFasterControlPercent": 0.23833004601471197,
+        "rangeBelowBothControls": false,
+        "fasterThanBothAllRounds": false,
+        "beforeReturnMedianDriftPercent": 0.00821760211135922
+      },
+      {
+        "cohort": 3,
+        "id": "buriedcity",
+        "load": "first",
+        "values": {
+          "before": [
+            8277,
+            8451.5,
+            8709.400000000023
+          ],
+          "after": [
+            6542.199999999953,
+            6648.100000000093,
+            6187.099999999977
+          ],
+          "return": [
+            8569.700000000012,
+            8562.400000000023,
+            8368.599999999977
+          ]
+        },
+        "medians": {
+          "before": 8451.5,
+          "after": 6542.199999999953,
+          "return": 8562.400000000023
+        },
+        "gainVsFasterControlPercent": 22.591255990061487,
+        "rangeBelowBothControls": true,
+        "fasterThanBothAllRounds": true,
+        "beforeReturnMedianDriftPercent": 1.295197608147517
+      },
+      {
+        "cohort": 3,
+        "id": "buriedcity",
+        "load": "repeat",
+        "values": {
+          "before": [
+            10547.600000000035,
+            10790.300000000047,
+            10703
+          ],
+          "after": [
+            6053.399999999965,
+            6208,
+            5777.5
+          ],
+          "return": [
+            10979.399999999965,
+            10674,
+            10848.099999999977
+          ]
+        },
+        "medians": {
+          "before": 10703,
+          "after": 6053.399999999965,
+          "return": 10848.099999999977
+        },
+        "gainVsFasterControlPercent": 43.4420256002993,
+        "rangeBelowBothControls": true,
+        "fasterThanBothAllRounds": true,
+        "beforeReturnMedianDriftPercent": 1.3375614162846676
+      },
+      {
+        "cohort": 3,
+        "id": "sealedpyramid",
+        "load": "first",
+        "values": {
+          "before": [
+            8039.399999999965,
+            8461,
+            7775.699999999953
+          ],
+          "after": [
+            4634.100000000035,
+            4927.800000000047,
+            4626.400000000023
+          ],
+          "return": [
+            7885.700000000012,
+            8138.199999999953,
+            8066.400000000023
+          ]
+        },
+        "medians": {
+          "before": 8039.399999999965,
+          "after": 4634.100000000035,
+          "return": 8066.400000000023
+        },
+        "gainVsFasterControlPercent": 42.357638629747804,
+        "rangeBelowBothControls": true,
+        "fasterThanBothAllRounds": true,
+        "beforeReturnMedianDriftPercent": 0.3347218089861416
+      },
+      {
+        "cohort": 3,
+        "id": "sealedpyramid",
+        "load": "repeat",
+        "values": {
+          "before": [
+            5563.400000000023,
+            5814.199999999953,
+            5433.600000000093
+          ],
+          "after": [
+            4007.2000000000116,
+            3933.8000000000466,
+            3955.399999999907
+          ],
+          "return": [
+            5856.700000000012,
+            5460.79999999993,
+            5421
+          ]
+        },
+        "medians": {
+          "before": 5563.400000000023,
+          "after": 3955.399999999907,
+          "return": 5460.79999999993
+        },
+        "gainVsFasterControlPercent": 27.567389393496235,
+        "rangeBelowBothControls": true,
+        "fasterThanBothAllRounds": true,
+        "beforeReturnMedianDriftPercent": 1.8441959952563667
+      },
+      {
+        "cohort": 3,
+        "id": "fenroad",
+        "load": "first",
+        "values": {
+          "before": [
+            2907.5,
+            2941.8000000000466,
+            2860.1999999999534
+          ],
+          "after": [
+            2013.5999999999767,
+            2007.7000000000698,
+            1962.0999999999767
+          ],
+          "return": [
+            2882.899999999965,
+            2776.29999999993,
+            2781.79999999993
+          ]
+        },
+        "medians": {
+          "before": 2907.5,
+          "after": 2007.7000000000698,
+          "return": 2781.79999999993
+        },
+        "gainVsFasterControlPercent": 27.827306060819602,
+        "rangeBelowBothControls": true,
+        "fasterThanBothAllRounds": true,
+        "beforeReturnMedianDriftPercent": 4.323301805677381
+      },
+      {
+        "cohort": 3,
+        "id": "fenroad",
+        "load": "repeat",
+        "values": {
+          "before": [
+            1584.5999999999767,
+            1564.5999999999767,
+            1494.6999999999534
+          ],
+          "after": [
+            1602.5,
+            1621.1999999999534,
+            1559.7000000000698
+          ],
+          "return": [
+            1536.600000000035,
+            1531.5999999999767,
+            1520.5
+          ]
+        },
+        "medians": {
+          "before": 1564.5999999999767,
+          "after": 1602.5,
+          "return": 1531.5999999999767
+        },
+        "gainVsFasterControlPercent": -4.629145991121986,
+        "rangeBelowBothControls": false,
+        "fasterThanBothAllRounds": false,
+        "beforeReturnMedianDriftPercent": 2.10916528186121
+      }
+    ],
+    "aggregatePhaseRows": [
+      {
+        "round": 1,
+        "variant": "before",
+        "ms": 249691.826734
+      },
+      {
+        "round": 1,
+        "variant": "after",
+        "ms": 209358.55359300005
+      },
+      {
+        "round": 1,
+        "variant": "return",
+        "ms": 230135.02429600002
+      },
+      {
+        "round": 2,
+        "variant": "before",
+        "ms": 232180.88505100002
+      },
+      {
+        "round": 2,
+        "variant": "after",
+        "ms": 209755.585388
+      },
+      {
+        "round": 2,
+        "variant": "return",
+        "ms": 229563.22561499994
+      },
+      {
+        "round": 3,
+        "variant": "before",
+        "ms": 229256.4776959999
+      },
+      {
+        "round": 3,
+        "variant": "after",
+        "ms": 207883.12234499992
+      },
+      {
+        "round": 3,
+        "variant": "return",
+        "ms": 229456.11134300008
+      }
+    ],
+    "aggregateIndependentCohortElapsed": {
+      "values": {
+        "before": [
+          249691.826734,
+          232180.88505100002,
+          229256.4776959999
+        ],
+        "after": [
+          209358.55359300005,
+          209755.585388,
+          207883.12234499992
+        ],
+        "return": [
+          230135.02429600002,
+          229563.22561499994,
+          229456.11134300008
+        ]
+      },
+      "medians": {
+        "before": 232180.88505100002,
+        "after": 209358.55359300005,
+        "return": 229563.22561499994
+      },
+      "gainVsFasterControlPercent": 8.801353948513125,
+      "rangeBelowBothControls": true,
+      "fasterThanBothAllRounds": true,
+      "beforeReturnMedianDriftPercent": 1.1274224557396655
+    },
+    "strongTargetCases": 8,
+    "targetCases": 8,
+    "deferredTargetCases": 8,
+    "arrayMetrics": [
+      {
+        "cohort": 2,
+        "id": "skyroad",
+        "load": "first",
+        "medianReplayFraction": 0,
+        "created": [
+          3767,
+          3767,
+          3767
+        ],
+        "replayed": [
+          0,
+          0,
+          0
+        ],
+        "fastWrites": [
+          55210,
+          55210,
+          55210
+        ]
+      },
+      {
+        "cohort": 2,
+        "id": "skyroad",
+        "load": "repeat",
+        "medianReplayFraction": 0,
+        "created": [
+          3767,
+          3767,
+          3767
+        ],
+        "replayed": [
+          0,
+          0,
+          0
+        ],
+        "fastWrites": [
+          55210,
+          55210,
+          55210
+        ]
+      },
+      {
+        "cohort": 2,
+        "id": "rootway",
+        "load": "first",
+        "medianReplayFraction": 0,
+        "created": [
+          3154,
+          3154,
+          3154
+        ],
+        "replayed": [
+          0,
+          0,
+          0
+        ],
+        "fastWrites": [
+          44170,
+          44170,
+          44170
+        ]
+      },
+      {
+        "cohort": 2,
+        "id": "rootway",
+        "load": "repeat",
+        "medianReplayFraction": 0,
+        "created": [
+          3154,
+          3154,
+          3154
+        ],
+        "replayed": [
+          0,
+          0,
+          0
+        ],
+        "fastWrites": [
+          44170,
+          44170,
+          44170
+        ]
+      },
+      {
+        "cohort": 3,
+        "id": "buriedcity",
+        "load": "first",
+        "medianReplayFraction": 0.2106217616580311,
+        "created": [
+          7720,
+          7720,
+          7720
+        ],
+        "replayed": [
+          1626,
+          1626,
+          1626
+        ],
+        "fastWrites": [
+          103697,
+          103697,
+          103697
+        ]
+      },
+      {
+        "cohort": 3,
+        "id": "buriedcity",
+        "load": "repeat",
+        "medianReplayFraction": 0.2106217616580311,
+        "created": [
+          7720,
+          7720,
+          7720
+        ],
+        "replayed": [
+          1626,
+          1626,
+          1626
+        ],
+        "fastWrites": [
+          103697,
+          103697,
+          103697
+        ]
+      },
+      {
+        "cohort": 3,
+        "id": "sealedpyramid",
+        "load": "first",
+        "medianReplayFraction": 0,
+        "created": [
+          3090,
+          3090,
+          3090
+        ],
+        "replayed": [
+          0,
+          0,
+          0
+        ],
+        "fastWrites": [
+          126263,
+          126263,
+          126263
+        ]
+      },
+      {
+        "cohort": 3,
+        "id": "sealedpyramid",
+        "load": "repeat",
+        "medianReplayFraction": 0,
+        "created": [
+          3090,
+          3090,
+          3090
+        ],
+        "replayed": [
+          0,
+          0,
+          0
+        ],
+        "fastWrites": [
+          126263,
+          126263,
+          126263
+        ]
+      }
+    ],
+    "controlDriftCases": 0,
+    "severeUntargetedRegressionCases": [],
+    "processes": {
+      "launches": 27,
+      "closures": 27,
+      "allClosed": true,
+      "rawInterruptions": [],
+      "maxRendererMb": 1237,
+      "profilesAbsent": true
+    },
+    "blockers": [],
+    "qualified": true
+  },
+  "rawEvidenceHashes": [
+    {
+      "path": "work/pending-tile-selective-game-cloud-29641119/pending-tile-selective-loader-1/loader/1-after.processes.jsonl",
+      "sha256": "1a2137a0cd2f8a96d3780c1e598520327ff1c00a55c12b746fbe9561176a5bf9"
+    },
+    {
+      "path": "work/pending-tile-selective-game-cloud-29641119/pending-tile-selective-loader-1/loader/1-before.processes.jsonl",
+      "sha256": "6bfb3b5e5fa1dcdd932efb4e14c48590e550679b589db3714d51efc344a57bff"
+    },
+    {
+      "path": "work/pending-tile-selective-game-cloud-29641119/pending-tile-selective-loader-1/loader/1-return.processes.jsonl",
+      "sha256": "8b6d7b1edfa8c41dc45eedaf870b445bb47712eadeb543f9ca58cbe16c85e910"
+    },
+    {
+      "path": "work/pending-tile-selective-game-cloud-29641119/pending-tile-selective-loader-1/loader/2-after.processes.jsonl",
+      "sha256": "9407b1abc7b5afa917750999e56e6ba5253a78bf6b6eaa7c28feabbf3f2ca5f7"
+    },
+    {
+      "path": "work/pending-tile-selective-game-cloud-29641119/pending-tile-selective-loader-1/loader/2-before.processes.jsonl",
+      "sha256": "620fb790d3f4a5900632f21778081969b2204e0c09b89324c4c417de7f877f28"
+    },
+    {
+      "path": "work/pending-tile-selective-game-cloud-29641119/pending-tile-selective-loader-1/loader/2-return.processes.jsonl",
+      "sha256": "7b5a32f77d0c13cb6f151e58fb71ab5fe22e3f8233f048f2430af009ff4d33b4"
+    },
+    {
+      "path": "work/pending-tile-selective-game-cloud-29641119/pending-tile-selective-loader-1/loader/3-after.processes.jsonl",
+      "sha256": "c2adf93cd033d35c24cf98feba3a3901c47592f7461ad3df344875d3fec0cba9"
+    },
+    {
+      "path": "work/pending-tile-selective-game-cloud-29641119/pending-tile-selective-loader-1/loader/3-before.processes.jsonl",
+      "sha256": "b589d4c9fdba34761217f12df9e5809f502a3508860164bfde29e3f02d7495a8"
+    },
+    {
+      "path": "work/pending-tile-selective-game-cloud-29641119/pending-tile-selective-loader-1/loader/3-return.processes.jsonl",
+      "sha256": "d26ca7cb5bc3364d0708982fe5dc8fbee84deb57cf87483a559fd4542060500e"
+    },
+    {
+      "path": "work/pending-tile-selective-game-cloud-29641119/pending-tile-selective-loader-1/loader/receipt.json",
+      "sha256": "511941eb309fdffd085100f960dd5fff889e0911a6a76e6b6a6f045485dc1299"
+    },
+    {
+      "path": "work/pending-tile-selective-game-cloud-29641119/pending-tile-selective-loader-1/runner.json",
+      "sha256": "230e4f951c731f79827c65b80db6a3fbb08e91a88162403d613a278e00985162"
+    },
+    {
+      "path": "work/pending-tile-selective-game-cloud-29641119/pending-tile-selective-loader-1/original-tool-hashes.json",
+      "sha256": "5af9386d72926f8deb1659133957a6d2893e07ee1502a03561f40da2e0d7416b"
+    },
+    {
+      "path": "work/pending-tile-selective-game-cloud-29641119/pending-tile-selective-loader-1/original-cleanup.json",
+      "sha256": "36115d1572d9227bddb8c2a89cf0ef93cf31bf0e35dc9816125c9be7b00b84c5"
+    },
+    {
+      "path": "work/pending-tile-selective-game-cloud-29641119/pending-tile-selective-loader-1/adapter.json",
+      "sha256": "1c59db0e29f9d05dc410de9bfe016edafd9ac1dedbb870bb977543b3c24780d5"
+    },
+    {
+      "path": "work/pending-tile-selective-game-cloud-29641119/pending-tile-selective-loader-1/loader/1-after.served.json",
+      "sha256": "bfd5906300cc81db31d8f2579bde4ca7fb6d74e0e716145fdb0e91da230e8934"
+    },
+    {
+      "path": "work/pending-tile-selective-game-cloud-29641119/pending-tile-selective-loader-1/loader/1-before.served.json",
+      "sha256": "eec64c15995a568a513ac66a93bc3cb9169ea1669e68859f139d580b7a5d643d"
+    },
+    {
+      "path": "work/pending-tile-selective-game-cloud-29641119/pending-tile-selective-loader-1/loader/1-return.served.json",
+      "sha256": "9243753f117488a979326bb39ac9ee1270d08170e1d7d7e89325ccd4bafbb83b"
+    },
+    {
+      "path": "work/pending-tile-selective-game-cloud-29641119/pending-tile-selective-loader-1/loader/2-after.served.json",
+      "sha256": "e8bb3aa519f94db88b6ad94ed15a53823299bcdc7b55d06ddedd3053f69c0540"
+    },
+    {
+      "path": "work/pending-tile-selective-game-cloud-29641119/pending-tile-selective-loader-1/loader/2-before.served.json",
+      "sha256": "0686d42787fd0218030e309c6ad30bed3078f8ff6aa87caca930f3c131f0cd43"
+    },
+    {
+      "path": "work/pending-tile-selective-game-cloud-29641119/pending-tile-selective-loader-1/loader/2-return.served.json",
+      "sha256": "5acf1e4ed1a58e7583951ddfba661d250d75844cad32471b866701fb7040075d"
+    },
+    {
+      "path": "work/pending-tile-selective-game-cloud-29641119/pending-tile-selective-loader-1/loader/3-after.served.json",
+      "sha256": "d6646d71732b2e9cd8d3f483502bb7d3c48e9d75fe8350be9ae3cdb4409700dc"
+    },
+    {
+      "path": "work/pending-tile-selective-game-cloud-29641119/pending-tile-selective-loader-1/loader/3-before.served.json",
+      "sha256": "1d0d8ffc8548dc1772200639bf46856d7052d83bb9bb2b0ab1e4bd5b3566efc8"
+    },
+    {
+      "path": "work/pending-tile-selective-game-cloud-29641119/pending-tile-selective-loader-1/loader/3-return.served.json",
+      "sha256": "2cd4191f06b03b6e6d10513e69192a80ce53b8024ed53012f460fcbf3a29fc26"
+    },
+    {
+      "path": "work/pending-tile-selective-game-cloud-29641119/pending-tile-selective-loader-2/loader/1-after.processes.jsonl",
+      "sha256": "d3fd6b354f70f71b3e0600aa6d45ead8bb5dc69a507100784c810dcb510a25b8"
+    },
+    {
+      "path": "work/pending-tile-selective-game-cloud-29641119/pending-tile-selective-loader-2/loader/1-before.processes.jsonl",
+      "sha256": "95823341aec17a4041aec591715e9e70c2869804eba6be51ee71e57337b05367"
+    },
+    {
+      "path": "work/pending-tile-selective-game-cloud-29641119/pending-tile-selective-loader-2/loader/1-return.processes.jsonl",
+      "sha256": "f26888cf1719dfcf0d3a8986b1893a8e63d152c9ed89548b11ffe2696c94a6b4"
+    },
+    {
+      "path": "work/pending-tile-selective-game-cloud-29641119/pending-tile-selective-loader-2/loader/2-after.processes.jsonl",
+      "sha256": "d42da78a4cdb8161ad9a0b744293ed94e571fabd7b389d9f6a9b94bafe2fc62d"
+    },
+    {
+      "path": "work/pending-tile-selective-game-cloud-29641119/pending-tile-selective-loader-2/loader/2-before.processes.jsonl",
+      "sha256": "18e750f1a83869bf0889f2b2de1f9db661dde09cc4a405b382b664cb2199f735"
+    },
+    {
+      "path": "work/pending-tile-selective-game-cloud-29641119/pending-tile-selective-loader-2/loader/2-return.processes.jsonl",
+      "sha256": "3cd1576719c2136b584c6a64e6bbbe104c51fcaeec7ccd2c4e4f63f29d0f0e6c"
+    },
+    {
+      "path": "work/pending-tile-selective-game-cloud-29641119/pending-tile-selective-loader-2/loader/3-after.processes.jsonl",
+      "sha256": "0d970f188cca2197472919530f6ab7c7251427b281cdf7578652dde930be8c3c"
+    },
+    {
+      "path": "work/pending-tile-selective-game-cloud-29641119/pending-tile-selective-loader-2/loader/3-before.processes.jsonl",
+      "sha256": "161b98d63591e130a9de6fa3f57b5e9c5e5eefa9fd902b5b0ab602a8a04a3887"
+    },
+    {
+      "path": "work/pending-tile-selective-game-cloud-29641119/pending-tile-selective-loader-2/loader/3-return.processes.jsonl",
+      "sha256": "694f59b761f108642a5c09cfb412e00e44b2585da0da5677faebaebbe2d8b816"
+    },
+    {
+      "path": "work/pending-tile-selective-game-cloud-29641119/pending-tile-selective-loader-2/loader/receipt.json",
+      "sha256": "70d14eb06f6ba61d74d8dd589e0e78ce7e7a06669cefbca57843b7a195822393"
+    },
+    {
+      "path": "work/pending-tile-selective-game-cloud-29641119/pending-tile-selective-loader-2/runner.json",
+      "sha256": "48a2c2fd502712248128eebd47e649c10453b35d5090bf73a91d99a7cd84c757"
+    },
+    {
+      "path": "work/pending-tile-selective-game-cloud-29641119/pending-tile-selective-loader-2/original-tool-hashes.json",
+      "sha256": "5af9386d72926f8deb1659133957a6d2893e07ee1502a03561f40da2e0d7416b"
+    },
+    {
+      "path": "work/pending-tile-selective-game-cloud-29641119/pending-tile-selective-loader-2/original-cleanup.json",
+      "sha256": "e838b5352080e6f88b8667d21e98182ec23824c8726d47876f81696d13a1c817"
+    },
+    {
+      "path": "work/pending-tile-selective-game-cloud-29641119/pending-tile-selective-loader-2/adapter.json",
+      "sha256": "1c59db0e29f9d05dc410de9bfe016edafd9ac1dedbb870bb977543b3c24780d5"
+    },
+    {
+      "path": "work/pending-tile-selective-game-cloud-29641119/pending-tile-selective-loader-2/loader/1-after.served.json",
+      "sha256": "636ddc11e65ddc8e2cf89657512ff840b93966c6c515d48153a5f2b6e67e79bb"
+    },
+    {
+      "path": "work/pending-tile-selective-game-cloud-29641119/pending-tile-selective-loader-2/loader/1-before.served.json",
+      "sha256": "b3d87fe0bd61449f5934a0442bd8cac44404f5b676e23eade879c84bc1fc81c0"
+    },
+    {
+      "path": "work/pending-tile-selective-game-cloud-29641119/pending-tile-selective-loader-2/loader/1-return.served.json",
+      "sha256": "9d6f9b9c4c8636e1c08ab5f9cfad164573ecb5a23a7e241db3e9a0480f03ffa0"
+    },
+    {
+      "path": "work/pending-tile-selective-game-cloud-29641119/pending-tile-selective-loader-2/loader/2-after.served.json",
+      "sha256": "38f2cba6cb6aef74b2a0eb2123ed361c00cef9e7f9f28243507999660fdfaf81"
+    },
+    {
+      "path": "work/pending-tile-selective-game-cloud-29641119/pending-tile-selective-loader-2/loader/2-before.served.json",
+      "sha256": "41e83dac82799fa37a4eaccc661951bffddf102d9611cb244730894f78b5e307"
+    },
+    {
+      "path": "work/pending-tile-selective-game-cloud-29641119/pending-tile-selective-loader-2/loader/2-return.served.json",
+      "sha256": "cd5986120a5e26327000999db79eef60c946aa4d0fd8f42c07d7dd832e438244"
+    },
+    {
+      "path": "work/pending-tile-selective-game-cloud-29641119/pending-tile-selective-loader-2/loader/3-after.served.json",
+      "sha256": "1810140befdb322aac068abbc59c4853ea8c1b90676997ce3bbb87eb8bededea"
+    },
+    {
+      "path": "work/pending-tile-selective-game-cloud-29641119/pending-tile-selective-loader-2/loader/3-before.served.json",
+      "sha256": "c8f4383fa5b32e9638300687068edc383b073e7cc81b281fffb39c355acb513f"
+    },
+    {
+      "path": "work/pending-tile-selective-game-cloud-29641119/pending-tile-selective-loader-2/loader/3-return.served.json",
+      "sha256": "532fff4f2b7b3b993286f6d19aa1d39faeb9b547514d03ceef3d6bf2e0e6cbe8"
+    },
+    {
+      "path": "work/pending-tile-selective-game-cloud-29641119/pending-tile-selective-loader-3/loader/1-after.processes.jsonl",
+      "sha256": "e2c74d7084fbe82bf710d58a5c9e872986ccda1c894c2d3ab9c0fabc5943c547"
+    },
+    {
+      "path": "work/pending-tile-selective-game-cloud-29641119/pending-tile-selective-loader-3/loader/1-before.processes.jsonl",
+      "sha256": "516e4926bd962ff223c6a3d167a377dae53a8bd41e5d0ff1334be42e5e530d11"
+    },
+    {
+      "path": "work/pending-tile-selective-game-cloud-29641119/pending-tile-selective-loader-3/loader/1-return.processes.jsonl",
+      "sha256": "827e50c8efa47d9c74652a0d508aafe42a75ecce9afc9571d8bf6ccae1fab979"
+    },
+    {
+      "path": "work/pending-tile-selective-game-cloud-29641119/pending-tile-selective-loader-3/loader/2-after.processes.jsonl",
+      "sha256": "63170b2e5f7028b7a37cf784ba6724dc52f9bf42cd4b6ac828339099ca9fc439"
+    },
+    {
+      "path": "work/pending-tile-selective-game-cloud-29641119/pending-tile-selective-loader-3/loader/2-before.processes.jsonl",
+      "sha256": "e2abde7a2039779c3ccc97b389c97e6a94c13de590390ac5f2e9629031340c11"
+    },
+    {
+      "path": "work/pending-tile-selective-game-cloud-29641119/pending-tile-selective-loader-3/loader/2-return.processes.jsonl",
+      "sha256": "0a8bd3c89efb94668fe0e366bedbe182070444a4e7facb01c6f39c71f33b4fe8"
+    },
+    {
+      "path": "work/pending-tile-selective-game-cloud-29641119/pending-tile-selective-loader-3/loader/3-after.processes.jsonl",
+      "sha256": "3baeeaf636b57379acd4c47f04bb3d7902627e0d8ac1d060028b87bd9ce4ac68"
+    },
+    {
+      "path": "work/pending-tile-selective-game-cloud-29641119/pending-tile-selective-loader-3/loader/3-before.processes.jsonl",
+      "sha256": "196d2134fffdcb23ac7b0fb12729fbacbd3adea6c7f1c9b729cfcca19d425410"
+    },
+    {
+      "path": "work/pending-tile-selective-game-cloud-29641119/pending-tile-selective-loader-3/loader/3-return.processes.jsonl",
+      "sha256": "277d66fdba84a0d76e8641a01bc55e5128cf013d8188e4ca6eaa8044f9f3eab7"
+    },
+    {
+      "path": "work/pending-tile-selective-game-cloud-29641119/pending-tile-selective-loader-3/loader/receipt.json",
+      "sha256": "29a4d979a45aa1945bc0ce6d517d78c8c2b6f7ceba02f5eaeb04e1209f1a7e8e"
+    },
+    {
+      "path": "work/pending-tile-selective-game-cloud-29641119/pending-tile-selective-loader-3/runner.json",
+      "sha256": "a1f80c192b7d8d0250d85e92e249cd7f0f5ab3c377854d70efd0fe5eb6a848d2"
+    },
+    {
+      "path": "work/pending-tile-selective-game-cloud-29641119/pending-tile-selective-loader-3/original-tool-hashes.json",
+      "sha256": "5af9386d72926f8deb1659133957a6d2893e07ee1502a03561f40da2e0d7416b"
+    },
+    {
+      "path": "work/pending-tile-selective-game-cloud-29641119/pending-tile-selective-loader-3/original-cleanup.json",
+      "sha256": "87a67dae7e1a0daa9d10f2257862fc587eded8cd5ce4c8152066e7303a4cc1a2"
+    },
+    {
+      "path": "work/pending-tile-selective-game-cloud-29641119/pending-tile-selective-loader-3/adapter.json",
+      "sha256": "1c59db0e29f9d05dc410de9bfe016edafd9ac1dedbb870bb977543b3c24780d5"
+    },
+    {
+      "path": "work/pending-tile-selective-game-cloud-29641119/pending-tile-selective-loader-3/loader/1-after.served.json",
+      "sha256": "08fb1ab6818d82f53f5a0170ce0273f23b7d34e4230480078156e7eb02981df6"
+    },
+    {
+      "path": "work/pending-tile-selective-game-cloud-29641119/pending-tile-selective-loader-3/loader/1-before.served.json",
+      "sha256": "57519be81e1e85ce4434f44c733526af9d3fec815c5789b515bd0f6b5459fb71"
+    },
+    {
+      "path": "work/pending-tile-selective-game-cloud-29641119/pending-tile-selective-loader-3/loader/1-return.served.json",
+      "sha256": "f48b3d0e02cd7956fce59a454460ad17fa8d6465623276ca830823fe7734d579"
+    },
+    {
+      "path": "work/pending-tile-selective-game-cloud-29641119/pending-tile-selective-loader-3/loader/2-after.served.json",
+      "sha256": "28457c9183a54561ff447ad6522d55cc4b650b6b2be2851f87c4016da552f7fc"
+    },
+    {
+      "path": "work/pending-tile-selective-game-cloud-29641119/pending-tile-selective-loader-3/loader/2-before.served.json",
+      "sha256": "d47ea0d2a39f43dd19b0993e6e4aedb4f64dbbccfba2173458a9befd8424e639"
+    },
+    {
+      "path": "work/pending-tile-selective-game-cloud-29641119/pending-tile-selective-loader-3/loader/2-return.served.json",
+      "sha256": "196262c270661f40d20f133be207f2ba4357a4e16fd06d56519a2b36f822cba4"
+    },
+    {
+      "path": "work/pending-tile-selective-game-cloud-29641119/pending-tile-selective-loader-3/loader/3-after.served.json",
+      "sha256": "15aab2825d91a72aab92cdd277cd0e13426c4e96ef763ffb80395726535497a4"
+    },
+    {
+      "path": "work/pending-tile-selective-game-cloud-29641119/pending-tile-selective-loader-3/loader/3-before.served.json",
+      "sha256": "993cd5a54e19cbad6150e42c31a1dbac5113a37a32d6d2d2d389d9255026ddc3"
+    },
+    {
+      "path": "work/pending-tile-selective-game-cloud-29641119/pending-tile-selective-loader-3/loader/3-return.served.json",
+      "sha256": "73e8a36fd61d945817231c11024bde7fa1d2439b73cd5935ebfd627622868615"
+    },
+    {
+      "path": "work/pending-tile-selective-game-cloud-29641119/pending-tile-qualification/qualification.json",
+      "sha256": "8251075228cc17fbf7c34ddf5d761f64054464a118b8d71c8d6a128921ce61f7"
+    }
+  ],
+  "noPhysicalAllocationReductionClaim": true,
+  "noSingleContinuousSessionOrPriorSourceComparisonClaim": true,
+  "noFullMemoryCampaign80batchLayout425OrFpsPass": true
+}
