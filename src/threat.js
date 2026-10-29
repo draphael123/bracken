@@ -183,6 +183,9 @@ export const THREAT = { crackfloor: 0, crackpillar: 0, cracknest: 0, crackslab: 
   /* UNDERLEAF 2 (claude/underleaf2, src/hush-hands.js): THE BELLMAN rings the street awake more than he fights (a weak handbell swing): a 1.5. The pots, the
      streets' gates, alarms and caches, the toll bell, the key's nail and the Grandmother's bell-pulls and candles are things you work, not foes */
   bellman: 1.5, jarshelf: 0, brewpot: 0, vinebed: 0, thornhedge: 0, floatwell: 0, npot: 0, streetgate: 0, alarm: 0, darkcache: 0, tollbell: 0, keynail: 0, granpull: 0, grancandle: 0,
+  /* THE WAR CAIRN (claude/warcairn): THE BERSERKER CHIEFTAIN is a boss: a 6. THE DRUMMER beats more than he fights (a shove): a 1.5. The drums, the drum gates, the chained slabs,
+     the snow cornices and the driven hatchets are things you work, not foes */
+  bzchief: 6, drummer: 1.5, wcdrum: 0, wcgate: 0, wcslab: 0, wccornice: 0, wchold: 0,
 };
 
 // THE INDEX, also in one place: what a level CONTAINS, not how a player does. Deliberately crude and
