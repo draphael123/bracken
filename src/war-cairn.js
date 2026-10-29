@@ -94,7 +94,7 @@ export function buildWarCairn({ painter, T, TS }) {
   ent('silver', 5, 67);                                    /* SILVER ONE: the spur's end, over the gully */
   coins([6, 93], [4, 91], [4, 89], [38, 86], [39, 84], [40, 82], [5, 79], [4, 77], [37, 73], [39, 71], [14, 67], [18, 67], [22, 67]);
   /* THE SHOULDER: an eyrie on the rocks (two crag harpies - the Rookery keeps the rest), a stone watchtower with a rope ladder up its face (a silver on top) */
-  deco(46, 68, 'eyrie'); foe('harpy', 47, 58, 'eyrie'); foe('harpy', 58, 56, 'eyrie');
+  deco(46, 68, 'eyrie'); foe('harpy', 47, 56, 'eyrie'); foe('harpy', 58, 56, 'eyrie');
   block(51, 55, 58, 68); for (const x of [51, 53, 55]) set(x, 57, T.SOLID); fill(50, 50, 58, 68, T.NET);
   ent('silver', 54, 57);                                   /* SILVER TWO: the watchtower's top */
   coins([44, 68], [48, 68], [60, 68]);
@@ -198,7 +198,7 @@ export function buildWarCairn({ painter, T, TS }) {
   const d10 = drum('ring1', 348, 27), d11 = drum('ring2', 378, 27);
   foe('drummer', 351, 27, 'ring', { drum: 'ring1', drums: ['ring1', 'ring2'] });
   foe('heavy', 363, 27, 'ring', { elite: true, gate: 386 });   /* THE CLAN CHAMPION: crossed axes (his guard) and the flurry - he holds the way out of the ring to the summit (an elite's gate) */
-  foe('soldier', 374, 27, 'ring'); foe('soldier', 356, 24, 'ring');
+  foe('soldier', 374, 27, 'ring'); foe('soldier', 356, 24, 'ringSeat');
   sign(344, 27, 'THE CLAN RING. TAKE THEIR DRUMS AND THE CHAMPION STUMBLES WITH THE REST.');
   deco(357, 24, 'bones'); coins([350, 27], [366, 27], [370, 24], [380, 27]);
   ent('check', 389, 27);                                   /* SHRINE TWO: the boss's retry point, at the stair's foot */
@@ -231,7 +231,7 @@ export function buildWarCairn({ painter, T, TS }) {
       { kind: 'hoists', opens: 'a gate (the drum gates and the chimney hatches), a bridge (the chained slabs swing level)', hud: 'THE BEAT IS YOURS' },
       { kind: 'wcdrum', opens: 'gate', hud: 'THE DRUM GATE SWINGS OPEN' },
     ],
-    duskStart: -1, duskLen: 1, music: 'mountain', night: false, glowNight: false,
+    duskStart: -1, duskLen: 1, music: 'musMountain', night: false, glowNight: false,
     palette: { sky: 'day', dress: 'none', ledges: 'rock', haze: 'rgba(200,215,235,0.10)', dirt: '#6e6a66', dirtL: '#8e8a84', dirtD: '#4a4744', grass: '#7a8a6a', grassL: '#9aa88a', grassD: '#56604a' },
     ambient: [{ x0: 0, x1: 99999, kind: 'wind' }],
     tints: [[-24, W + 24, [215, 225, 240], 0.05]],

@@ -24,7 +24,7 @@ const lv = LEVELS.find(l => l.id === 'sealedpyramid'), L = lv.build(), W = L.W, 
 const stand = t => t === T.SOLID || t === T.ONEWAY;
 
 console.log('== A. the road');
-ok(LEVELS.slice(LEVELS.findIndex(l => l.id === 'sealedpyramid') + 1).every(l => ['tavern', 'fenroad', 'hornetsnest', 'palisadewood', 'rookery', 'kitchengate'].includes(l.id)), 'appended last in LEVELS (no index and no save moves; only the hidden Tavern, claude/tavern, the Fen Road and the Hornets Nest spur (claude/hornetsnest) and the Palisade Wood (claude/palisadewood), the Rookery and the Kitchen Gate (claude/rookery, claude/kitchengate) were appended after it)');
+ok(LEVELS.slice(LEVELS.findIndex(l => l.id === 'sealedpyramid') + 1).every(l => ['tavern', 'fenroad', 'hornetsnest', 'palisadewood', 'rookery', 'kitchengate', 'warcairn'].includes(l.id)), 'appended last in LEVELS (no index and no save moves; only the hidden Tavern, claude/tavern, the Fen Road and the Hornets Nest spur (claude/hornetsnest) and the Palisade Wood (claude/palisadewood), the Rookery and the Kitchen Gate (claude/rookery, claude/kitchengate) were appended after it)');
 ok(lv.needs === 'buriedcity', 'it needs THE BURIED CITY');
 ok(lv.rule === SPY.RULE && /PLATE/.test(SPY.RULE) && /REACH/.test(SPY.RULE), 'its rule line is the one the level and the hands play: ' + SPY.RULE);
 

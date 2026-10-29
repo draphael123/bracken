@@ -33,7 +33,7 @@ export const GATE = ['warcairn', 'rookery', 'kitchengate', 'palisadewood', 'wood
 /* A MEASURE THAT IS REPORT-ONLY FOR ONE LEVEL: { levelId: ['measure', ..] }. It is still printed (WARN) and counted in --all, but does not fail the gate.
    Daniel decides when it is lifted; each row carries the TODO and the reason. */
 export const REPORT_ONLY = {
-  warcairn: ['music'],   /* (claude/warcairn, the greybox) TODO: THE WAR CAIRN borrows Scree's 'mountain' and the boss pool's 'boss3' until the art lane brings its own two CC0/CC-BY tracks (drums welcome; Daniel picks, the Palisade precedent) */
+  warcairn: ['music'],   /* (claude/warcairn, the greybox) TODO: THE WAR CAIRN plays the unused stock 'musMountain' and the boss pool's 'boss3' until the art lane brings its own two CC0/CC-BY tracks (drums welcome; Daniel picks, the Palisade precedent) */
   /* (claude/theatre3: the theatre's roles row is lifted - THE PROMPTER, the goblin priest reskinned, is its support; THE FLYMAN, the archer reskinned, throws) */
   skyroad: ['music'],
   fenroad: ['music'],
