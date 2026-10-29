@@ -88,7 +88,7 @@ if (want.length) {
             const q=ringBy(sec,s,420);r.quiet=!sec.on&&!q.ran;
             /* clock: rung, and the watch left standing */
             load(id);sec=BK.L.alarms.find(a=>a.id===sid);s=BK.enemies().filter(e=>e.t==='sentry'&&e.section===sid)[k];
-            ringBy(sec,s,900);BK.god=true;let t=0;for(;t<60*24&&!sec.done;t++){BK.P.x=s.x;BK.sim(1);}BK.god=false;r.clockS=+(t/60).toFixed(1);r.clockLifted=sec.done&&gateIs(sec,AIR);
+            ringBy(sec,s,900);BK.god=true;let t=0;for(;t<60*24&&!sec.done;t++){if(BK.state==='card')BK.cardClose();BK.P.x=s.x;BK.sim(1);}   /* (claude/smallfix4) a card opening in the stood-at-the-sentry loop (every other loop here calls hold()) freezes the sim, so the 20 s alarm clock never ran down: close it like the others do */BK.god=false;r.clockS=+(t/60).toFixed(1);r.clockLifted=sec.done&&gateIs(sec,AIR);
             /* reset: a death with the hall shut */
             load(id);sec=BK.L.alarms.find(a=>a.id===sid);s=BK.enemies().filter(e=>e.t==='sentry'&&e.section===sid)[k];
             ringBy(sec,s,900);const was=sec.on;BKT.respawn();BK.sim(2);r.reset=was&&!sec.on&&gateIs(sec,AIR);
