@@ -1,6 +1,17 @@
 [
   {
     "date": "2026-10-29",
+    "batch": 127,
+    "lines": [
+      "The False Abbot is a new fight: make the house answer the blow - bells, a chair and a prayer wheel",
+      "Lord Grubbag sits and the Kitchen Gate is reworked: knock the dishes off the serving line, let the bombs reach him",
+      "The Windcaller is a harder duel: ride the gale updraft up to his ledge, and climb the new Gale Stair",
+      "Arena polish: new lights and weather in the Hexed Fields, Underwell, Rootway, Harbor and Waymeet",
+      "The Scree has loose cliffs to knock down on the road"
+    ]
+  },
+  {
+    "date": "2026-10-29",
     "batch": 126,
     "lines": [
       "The Rookery is rebuilt: ride the harpies up the crag, and meet the Gale Harpy",
