@@ -448,6 +448,15 @@ function drawFlue(g, x0, x1, y, state, k, h, time) {
   rect(g, x0 - 3, y - 3, w + 6, 5, OUT); rect(g, x0 - 2, y - 2, w + 4, 3, '#5a2a1a'); rect(g, x0 - 2, y - 2, w + 4, 1, '#8a4a2a');   /* the firebrick lip */
   for (let x = x0 + 1; x < x1 - 1; x += 4) { rect(g, x, y - 2, 2, 3, IRON[0]); rect(g, x, y - 2, 2, 1, IRON[2]); }   /* the grate's bars */
   const hot = state === 'glow' ? k : state === 'flame' ? 1 : 0;
+  /* THE FLUE's HOOD: a sooty iron cowl in the back wall at the hooks' height, over the column the flame rises in - it is where you look from the perch (the coal bed is far below):
+     dark when the flue is out, its mouth reddening through the glow, white-hot and spitting sparks in the flame */
+  { const hy = R(y - h - 18), hw = w + 10, hx = x0 - 5;
+    fillPoly(g, [[hx - 2, hy + 14], [hx + 6, hy], [hx + hw - 6, hy], [hx + hw + 2, hy + 14]], OUT); fillPoly(g, [[hx, hy + 13], [hx + 7, hy + 1], [hx + hw - 7, hy + 1], [hx + hw, hy + 13]], IRON[1]);
+    rect(g, hx + 7, hy + 1, hw - 14, 1, IRON[3]); for (let x = hx + 3; x < hx + hw - 2; x += 6) rect(g, x, hy + 10, 1, 1, IRON[4]);   /* its rim and rivets */
+    rect(g, hx + 4, hy - 26, hw - 8, 26, OUT); rect(g, hx + 5, hy - 26, hw - 10, 26, IRON[0]); rect(g, hx + 5, hy - 26, 1, 26, IRON[2]);   /* the flue pipe up into the vault */
+    const mouth = hot > 0 ? (hot > 0.75 ? '#fff0b0' : hot > 0.35 ? '#ff8a2c' : '#a8281e') : '#2a1410';
+    rect(g, hx + 1, hy + 12, hw - 2, 3, mouth); if (hot > 0) { g.save(); g.globalCompositeOperation = 'lighter'; g.globalAlpha = 0.25 + 0.5 * hot; rect(g, hx - 2, hy + 14, hw + 4, 6, '#ff6a2a'); g.restore(); }
+    if (state === 'flame') for (let i = 0; i < 4; i++) { const t = (time * 2.2 + i / 4) % 1; rect(g, R(hx + 4 + ((i * 11 + Math.floor(time * 7)) % Math.max(4, hw - 8))), R(hy + 10 - t * 34), 1, 2, i % 2 ? '#ffd36b' : '#fff6c8'); } }
   for (let x = x0 + 3; x < x1 - 1; x += 4) rect(g, x, y - 1, 1, 2, hot > 0 ? (hot > 0.6 ? '#ffd36b' : '#ff6a2a') : '#3a1a10');   /* the coals between the bars */
   if (state === 'out') { for (let i = 0; i < 3; i++) { const t = (time * 0.7 + i / 3) % 1; g.globalAlpha = 0.35 * (1 - t); rect(g, R(x0 + w / 2 + Math.sin(time * 2 + i) * 3), R(y - 6 - t * 30), 2, 2, '#8a8078'); } g.globalAlpha = 1; return; }
   if (state === 'glow') {   /* the tell: the shimmer climbs as far as the flame will */
