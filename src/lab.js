@@ -13,7 +13,7 @@ import { PLAN as RT_QUEEN } from './cistern-queen.js'; import { DJ_PLAN as RT_DJ
 import { COL_PLAN as RT_COL } from './glass-colossus.js'; import { PLAN as RT_FOG } from './fog-knight.js'; import { PLAN as RT_GANG } from './gang-leader.js'; import { PLAN as RT_CRAB } from './gorge-crab.js';
 import { PLAN as RT_HAWK } from './hawk-mistress.js'; import { PLAN as RT_HOUR } from './hourglass-king.js'; import { PLAN as RT_HUNT } from './huntmaster.js'; import { PLAN as RT_LANT } from './lantern-eater.js';
 import { PLAN as RT_PAL } from './paladin-boss.js'; import { PLAN as RT_PUP } from './puppeteer.js'; import { PLAN as RT_MAT } from './raptor-matriarch.js'; import { PLAN as RT_SCARAB } from './scarab-mother.js'; import { ROC_LAG as RT_ROC } from './roc-eyrie.js';
-import { gbPlan, gbOpen, PLAN as RT_GB } from './grubbag.js';   /* LORD GRUBBAG THE GLUTTON (claude/kitchengate): the bot reads his tells, the rings, the belch's waves, the gravy, the grab - and works the pie oven - off his own module */
+import { gbPlan, gbOpen, PLAN as RT_GB } from './grubbag.js'; import { bzcPlan, bzcOpen } from './bzchief.js';   /* THE BERSERKER CHIEFTAIN (claude/warcairn): the bot reads his tells, the hatchet, the split - and works the drums in his frenzy - off his own module */   /* LORD GRUBBAG THE GLUTTON (claude/kitchengate): the bot reads his tells, the rings, the belch's waves, the gravy, the grab - and works the pie oven - off his own module */
 import { bbPlan, bbOpen, PLAN as RT_BB } from './battering-beast.js';   /* THE BATTERING BEAST (claude/palisadewood): the bot reads his tells, the stakes' rings, the waves and the clearing's scaffolds off his own module */
 import { hqPlan } from './hornet-queen-plan.js'; import { hqOpen } from './hornet-queen.js';   /* THE HORNET QUEEN 2 (claude/hornetsnest): the bot reads her tells, the rings, the stingers, her loop and works her rules */ import { otPlan, otOpen, PLAN as RT_OT, OT as OT_K, underLine as OT_UNDER } from './old-tusker.js'; import { btPlan, btOpen } from './bog-troll.js'; const OT_W = OT_K.w; const GEO_FELL = false;   /* THE BOG TROLL (claude/fenroad): the bot reads the bubbles, the bulge, his tells and the rings off his own module, and works the lure */   /* OLD TUSKER (claude/oldtusker): the bot reads his tells, the clods, the waves and the clearing's pines off his own module */
 import { ssPlan, ssOpen, PLAN as RT_SS } from './shriek-sisters.js';   /* THE SHRIEK SISTERS (claude/rookery): the bot reads the red lines (and their lock), the rocks' rings, the marks, the wave, the snatch off their own module */
@@ -1617,6 +1617,23 @@ async function runbossLab(BK, opts) {
         if(pl.atk&&P.atk<0){P.face=pl.face||P.face;BK.press('atk');swings++;}
         if(pbOpen(boss)&&!wasOpen)opened++;wasOpen=pbOpen(boss);
         const was=P.hp,m0=boss.mode;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(m0,Math.max(0,was-P.hp));if(opts.onFrame)await opts.onFrame({boss,P,f,h,lvl:lvId,open:pbOpen(boss),why:pl.why});if(f%600===599)await yieldNow();continue;
+      }
+      if(boss.t==='bzchief'){
+        /* THE BERSERKER CHIEFTAIN, THE HERO AS THE BOSS (claude/warcairn): src/bzchief.js bzcPlan reads what a player sees - his tells a reaction late, the hatchet, the split on the
+           floor - and works THE RULE: in his FRENZY it runs to a drum that is not his and strikes it (any blow on a drum is a beat), then hits him hard while he has lost the beat;
+           it never swings into TAKE IT (a light blow feeds him); it hits him committed. It rests inside its own branch (off him) */
+        k.left=k.right=k.up=k.down=k.jump=k.block=false;if(!(P.labRotHold>0))k.atk=false;
+        const BH=BK.bzchiefHands(),S=BH&&BH.show();
+        if(f===0||!P.labBzMem)P.labBzMem={};
+        const pl=S?bzcPlan({tip:h==='warden'?WARDEN_TIP:0,noRoll:h==='warden'&&!LABP.v2,v2:!!LABP.v2,hero:h,rest:!!P.labRest,P:{x:P.x,y:P.y,face:P.face,ground:P.ground,atk:P.atk},e:boss,S,drums:BH.drums(),reach:LAB_REACH[h],shield:SHIELDED(h),t:f/60,rng:Math.random,mem:P.labBzMem}):{gx:null,face:P.face};
+        if(pl.dodge&&P.ground&&(P.labDodgeF===undefined||f-P.labDodgeF>30)){if(pl.gx!=null)k[pl.gx>P.x?'right':'left']=true;if(h==='warden'&&LABP.v2&&pl.gx!=null)P.face=pl.gx>P.x?-1:1;BK.press('dodge');P.labDodgeF=f;}
+        if(pl.jump&&P.ground){if(P.labJumpF===undefined||f-P.labJumpF>14){BK.press('jump');P.labJumpF=f;P.labJump=16;}}
+        if(P.labJump>0){P.labJump--;k.jump=true;}
+        if(pl.block)k.block=h==='warden'?(LABP.v2?f%2===0:DEFLECT_TAP(f)):DEFLECTS(h)?DEFLECT_TAP(f):true;
+        if(!pl.block&&pl.gx!=null&&Math.abs(pl.gx-P.x)>3)k[pl.gx>P.x?'right':'left']=true;else if(!k.left&&!k.right)P.face=pl.face||P.face;
+        if(pl.atk&&P.atk<0){P.face=pl.face||P.face;BK.press('atk');swings++;}
+        if(bzcOpen(boss)&&!wasOpen)opened++;wasOpen=bzcOpen(boss);
+        const was=P.hp,m0=boss.mode;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(m0,Math.max(0,was-P.hp));if(opts.onFrame)await opts.onFrame({boss,P,f,h,lvl:lvId,open:bzcOpen(boss),why:pl.why});if(f%600===599)await yieldNow();continue;
       }
       if(boss.t==='deacon'){
         /* THE DEACON (claude/church2): src/deacon.js dcPlan reads his tells and the fire on the floor, snuffs his lamps (a jump at a chandelier), hits him LOW

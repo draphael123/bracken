@@ -85,14 +85,14 @@ export function buildWarCairn({ painter, T, TS }) {
   block(3, 36, 68, 70);                                    /* T5: a spur back over the gully (a cairn of the clan's dead, and a silver) */
   ent('sign', 14, 95, { text: WC_SAY_SIGNS.lore });
   sign(20, 95, WC_RULE);
-  foe('goat', 30, 88, 'gully', { face: -1 }); foe('soldier', 20, 81, 'gully', { face: 1 }); foe('goat', 26, 74, 'gully', { face: -1 });
-  deco(23, 95, 'cairn'); deco(12, 81, 'stone', 1); deco(20, 88, 'bones'); deco(30, 74, 'cairn', 1); deco(10, 67, 'cairn', 2);
+  foe('goat', 30, 88, 'gully', { face: -1 }); foe('soldier', 20, 81, 'gully', { face: 1 }); foe('goat', 26, 75, 'gully', { face: -1 });
+  deco(23, 95, 'cairn'); deco(12, 81, 'stone', 1); deco(20, 88, 'bones'); deco(30, 75, 'cairn', 1); deco(10, 67, 'cairn', 2);
   ent('silver', 5, 67);                                    /* SILVER ONE: the spur's end, over the gully */
-  coins([8, 93], [5, 91], [38, 86], [40, 84], [5, 79], [4, 77], [37, 72], [39, 70], [14, 67], [18, 67], [22, 67]);
+  coins([6, 93], [4, 91], [4, 89], [38, 86], [39, 84], [40, 82], [5, 79], [4, 77], [37, 73], [39, 71], [14, 67], [18, 67], [22, 67]);
   /* THE SHOULDER: an eyrie on the rocks (two crag harpies - the Rookery keeps the rest), a stone watchtower with a rope ladder up its face (a silver on top) */
   deco(46, 68, 'eyrie'); foe('harpy', 47, 58, 'eyrie'); foe('harpy', 58, 56, 'eyrie');
   block(51, 55, 58, 68); for (const x of [51, 53, 55]) set(x, 57, T.SOLID); fill(50, 50, 58, 68, T.NET);
-  ent('silver', 54, 56);                                   /* SILVER TWO: the watchtower's top */
+  ent('silver', 54, 57);                                   /* SILVER TWO: the watchtower's top */
   coins([44, 68], [48, 68], [60, 68]);
   /* THE GORGE: a fall of water down its near side, and the rope-and-slate bridge (slate treads lashed on two ropes, both ends on the rock). The far bank stands six rows
      higher than the bridge: ONE DRIVEN HATCHET in its face is the step up (the clan's - and a hatchet-thrower's miss stands in rock the same way, a while) */
@@ -104,8 +104,8 @@ export function buildWarCairn({ painter, T, TS }) {
   foe('javelin', 89, 62, 'farBank', { face: -1 });         /* THE HATCHET-THROWER: his misses stick in the rock (a while) - a foothold too */
   /* THE FIRST DRUM (TEACH, safe: nothing on the beat): its gate is the cairn wall's tunnel mouth. The wall is twenty rows high - only the beat opens the way */
   const d1 = drum('gully', 83, 62);
-  block(93, 100, 40, 62); rock(93, 100, 63); air(93, 100, 59, 62);   /* THE CAIRN WALL, and the tunnel through it (floor row 63) */
-  gate(d1, 'tunnel', 93, 93, 59, 62);
+  block(93, 98, 40, 62); rock(93, 100, 63); air(93, 98, 60, 62);   /* THE CAIRN WALL, and the tunnel through it (floor row 63) */
+  gate(d1, 'tunnel', 97, 98, 60, 62);   /* (at the tunnel's FAR mouth: hung on the wall's stone, the hide swings outward) */
   sign(81, 62, 'A WAR DRUM. STRIKE IT: THE BEAT SWINGS THE DRUM GATE OPEN. THEN GO.');
   coins([85, 62], [87, 62], [96, 62], [98, 62]);
   /* THE BROKEN PIERS: three stone stacks up to the gate run's ground, each on its own column of rock (a fall is the gorge's) */
@@ -160,7 +160,7 @@ export function buildWarCairn({ painter, T, TS }) {
   rock(293, 300, 34); rock(301, 303, 31);
   const d7 = drum('high', 285, 27);
   slab(d7, 'high1', 287, 295, 28); slab(d7, 'high2', 296, 303, 28);   /* THE HIGH LINE: two slabs under the high drum - the shortcut */
-  ent('silver', 285, 26);                                  /* SILVER THREE: on the cairn-stack, beside the high drum (a hatchet foothold up) */
+  ent('silver', 286, 27);                                  /* SILVER THREE: on the cairn-stack, beside the high drum (a hatchet foothold up) */
   coins([290, 33], [297, 33], [299, 27], [302, 30]);
   sign(262, 33, 'THE LOW LINE IS SAFE. THE HIGH DRUM ON THE CAIRN-STACK SWINGS TWO SLABS: THE SHORT WAY.');
   rock(304, 310, 28);
@@ -182,7 +182,7 @@ export function buildWarCairn({ painter, T, TS }) {
   const d10 = drum('ring1', 348, 27), d11 = drum('ring2', 378, 27);
   foe('drummer', 351, 27, 'ring', { drum: 'ring1', drums: ['ring1', 'ring2'] });
   foe('heavy', 363, 27, 'ring', { elite: true });           /* THE CLAN CHAMPION: crossed axes (his guard) and the flurry */
-  foe('soldier', 374, 27, 'ring'); foe('soldier', 360, 24, 'ring');
+  foe('soldier', 374, 27, 'ring'); foe('soldier', 356, 24, 'ring');
   sign(344, 27, 'THE CLAN RING. TAKE THEIR DRUMS AND THE CHAMPION STUMBLES WITH THE REST.');
   deco(357, 24, 'bones'); coins([350, 27], [366, 27], [370, 24], [380, 27]);
   ent('check', 389, 27);                                   /* SHRINE TWO: the boss's retry point, at the stair's foot */

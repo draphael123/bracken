@@ -143,7 +143,7 @@ export function blowOn(e, S, c, dmg, heavy, fromX) {
   if (S.ward > 0) { S.n.warded++; return { dmg: Math.max(1, Math.round(dmg * BZC.ward.take)), read: 'ward' }; }
   if (e.mode === 'take') { const front = Math.sign(fromX - e.x) === (e.face || 1);
     if (heavy) { reel(e, S, c, 'heavy'); return { dmg: Math.round(dmg * fz), read: 'reel' }; }
-    if (front && e.modeT > BZC.take.t - BZC.take.beat) { S.n.parries++; S.nextCross = true; setMode(e, 'recover', 0.3); c.number(e.x, e.y - 74, BZC_SAY.parry, '#ffd36b'); c.sound('clank'); return { dmg: 0, read: 'parry' }; }
+    if (front && e.modeT > BZC.take.t - BZC.take.beat) { S.n.parries++; S.nextCross = true; setMode(e, 'recover', 0.3); c.number(e.x, e.y - 74, BZC_SAY.parry, '#ffd36b'); c.sound('clank'); return { dmg: Math.max(1, Math.round(dmg * BZC.mul.take)), read: 'parry' }; }   /* (B15: even his parry lets x0.4 through - nothing is ever wholly turned) */
     if (front) { S.n.takenOn++; addRage(e, S, c, BZC.rage.taken); e.takeHitT = 0.2; if (!S.told.taken || S.n.takenOn % 6 === 0) { S.told.taken = 1; c.number(e.x, e.y - 70, BZC_SAY.taken, '#ff9a5c'); }
       return { dmg: Math.max(1, Math.round(dmg * BZC.mul.take)), read: 'take' }; }
     return { dmg: Math.round(dmg * fz), read: 'landed' }; }

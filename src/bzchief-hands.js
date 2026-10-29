@@ -79,7 +79,7 @@ export function makeBzChiefHands(ctx) {
   H.take = (e, dmg, blow, tag) => { if (!S) return dmg; const P = ctx.hero(), t = ctx.time();
     const heavy = !!(ctx.blowHas && (ctx.blowHas(tag, 'heavy') || ctx.blowHas(tag, 'plunge'))) || !!(P && P.heavy);
     const r = BZM.blowOn(e, S, world(e), dmg, heavy, P ? P.x : e.x);
-    if (r.read === 'parry') { if (P && ctx.shove) ctx.shove(P, Math.sign(P.x - e.x) || 1); e.guardFx = 0.25; e.guardWord = 'PARRIED'; return 0; }
+    if (r.read === 'parry') { if (P && ctx.shove) ctx.shove(P, Math.sign(P.x - e.x) || 1); e.guardFx = 0.25; e.guardWord = 'PARRIED'; return r.dmg; }
     if (r.read === 'take') { e.guardFx = 0.25; e.guardWord = S.n.takenOn < 6 ? ['HE TAKES IT', 'A HEAVY BLOW BREAKS IT'][S.n.takenOn % 2] : 'HE TAKES IT'; ctx.sfx.clank && ctx.sfx.clank();
       ctx.sparks(e.x + (Math.sign((P ? P.x : e.x) - e.x) || 1) * 12, e.y - 22, Math.sign((P ? P.x : e.x) - e.x) || 1, 5); return r.dmg; }
     if (r.read === 'ward') { e.guardFx = 0.2; e.guardWord = 'WARDED'; return r.dmg; }
