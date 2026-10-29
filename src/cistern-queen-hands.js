@@ -6,6 +6,7 @@
 // with a line listed in src/hint-lines.js.
 import * as CQG from './cistern-queen.js';
 import * as CQA from './redraw/cistern_queen_art.js';
+import * as APL from './arena-polish.js';   /* (claude/arenapolish) the hall's wall lamps */
 import * as CT from './carry-throw.js';   /* (claude/cisternqueen3) HER WATER JARS fly the jug's told arc (THROW_KIND.jug, the Burning Village's light water) */
 const { CQ } = CQG;
 
@@ -216,6 +217,7 @@ const onLedgeOf = (pp, G) => { if (!G || !(pp.ground || pp.climb) || pp.y > G.le
   /* the hall's machines, behind her: the windlass, the bucket's rope down the shaft, the tunnels, the springs' glint is the wells' own */
   H.drawBack = (g, cx, cy, time) => { const Ar = A(); if (!S || !Ar) return; const G = S.G;
     if (wl) CQA.drawWindlass(g, R(wl.x * ctx.TS + 8 - cx), R((wl.y + 1) * ctx.TS - cy), S.bucket, time);
+    APL.drawWallLamps(g, G, S, cx, cy, time);   /* (claude/arenapolish, audit #6) lit oil lamps in the niches: out in the flood, flaring when she burns */
     CQA.drawWellhead(g, G, cx, cy, S.bucket, CQ, time);   /* (claude/cqart) THE WELLHEAD: the stone lintel, the curb and the sheave's frame, and the bucket tipping its water on them */
     CQA.drawBucket(g, R(G.mid - cx), R(G.vault - cy), S.bucket, CQ, time, R(G.beamY - cy));
     CQA.drawTunnels(g, R(G.x0 - cx), R(G.x1 - cx), R(G.floor - cy), S, time); };

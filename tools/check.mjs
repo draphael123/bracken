@@ -293,6 +293,8 @@ if (take('rookery')) results.push(run('rookery', process.execPath, ['tools/rooke
 if (take('room-kills')) results.push(run('room-kills', process.execPath, ['tools/room-kills.mjs']));
 /* THE POWDER MONKEY (claude/flotilla4, a shared foe: src/powder-monkey.js): small and quick, his told lob, the teach placed alone, struck back he goes down, a struck blast fires a deck gun and a keg */
 if (take('powder-monkey')) results.push(run('powder-monkey', process.execPath, ['tools/powder-monkey.mjs']));
+/* THE ARENA POLISH PACK (claude/arenapolish, Node): the phase-tint helper (an arena with no tintFn draws its fixed tint untouched; a tintFn eases), the five arenas' opt-ins, the level hash independent of them, every drawing function run in every state */
+if (take('arena-polish')) results.push(run('arena-polish', process.execPath, ['tools/arena-polish.mjs']));
 if (take('pixels')) results.push(run('pixels', process.execPath, ['tools/headless.mjs', 'floats'], { PORT: String(portFor(3)) }));
 /* PLATFORM FEEL (claude/feelplatform, Daniel 10-12): the Game speed range + sub-steps + migration (feel-speed), and the camera lookahead, landings by height and the world's small reactions (feel-platform) */
 /* THE PALISADE WOOD and THE BATTERING BEAST (claude/palisadewood, Node): the road and the old-save unlock, the five areas, every required prop a LOCK, the stake rolls, the shrines,

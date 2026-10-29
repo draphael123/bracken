@@ -200,7 +200,7 @@ export function stageCisternQueen(W, T, TS, sx, F, top) {
   ent('qwindlass', sx + STAGE.windlass, F - 1, {});
   ent('cisternqueen', sx + 28, F - 1, { face: -1 });
   const arena = { x0: sx * TS, x1: ex * TS, floor: F * TS, trigger: (sx + 4) * TS, wallL: sx - 1, wallR: ex, boss: 'cisternqueen', music: 'cisternqueen',
-    tint: '#9ab0c0', tintA: 0.08, start: [sx + 9, F - 1], y0: (vault - 2) * TS, y1: (F + 2) * TS, queen: { sx, F, vault, top, lr } };
+    tint: '#c8842a', tintA: 0.075, tintFn: 'underwell', start: [sx + 9, F - 1], y0: (vault - 2) * TS, y1: (F + 2) * TS, queen: { sx, F, vault, top, lr } };   /* (claude/arenapolish) lamp-oil amber, black as the oil is spent (src/arena-polish.js); was the Well Town hall's cold #9ab0c0 */
   return { arena, ladders };
 }
 /* the hall in world px, from the arena */
