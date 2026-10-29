@@ -4,8 +4,12 @@ on:
     inputs:
       mode:
         type: choice
-        options: [tile-recipe-bindings-loader-oct29, tile-recipe-bindings-component-oct29, tile-numeric-lookups-loader-oct29, tile-numeric-lookups-component-oct29, tile-memo-fast-access-oct29, tile-memo-allocation-oct29, default-boss-incremental-oct29, default-boss-native-oct29, layout-phase-diagnostic-oct29, pure-sprite-fixed-qualified, pure-sprite-context-native, private-sprite-cold-profile, private-sprite-native, private-sprite-union-qualified, captured-art-union-qualified, captured-level-art-component, fixed-level-art-selfcontained-loader, fixed-level-art-main-loader, fixed-level-art-view-component, fixed-level-art-weak-component, frame-tile-typed-arenas, fixed-level-art-component, frame-tile-lips-arenas, frame-tile-pattern-component, art-use-coverage, fresh-canvas-clone-component, wall-phase-pattern-component, wall-pattern-runs-component, opaque-invisible-standing, foreground-invisible-arenas, foreground-invisible-component, foreground-row-component, opaque-art-fused-cold, opaque-art-fused-component, private-foreground-component, layout-work-queue, opaque-sprite-diagnostic, opaque-sprite-union, opaque-tile-standing, deferred-standing, palette-ui, palette-standing, palette-base, layout-candidate, foreground-reuse, foreground-direct, fixed-ornaments, region-props, border-present, tile-warm, captain-boot, cpu-profile, tile-cache, paladin-boot, hero-reuse, profile, sfx, compare, mobile, calls, present, campaign, variant, pixel-debug]
+        options: [native-raster-trace-oct29, tile-recipe-bindings-loader-oct29, tile-recipe-bindings-component-oct29, tile-numeric-lookups-loader-oct29, tile-numeric-lookups-component-oct29, tile-memo-fast-access-oct29, tile-memo-allocation-oct29, default-boss-incremental-oct29, default-boss-native-oct29, layout-phase-diagnostic-oct29, pure-sprite-fixed-qualified, pure-sprite-context-native, private-sprite-cold-profile, private-sprite-native, private-sprite-union-qualified, captured-art-union-qualified, captured-level-art-component, fixed-level-art-selfcontained-loader, fixed-level-art-main-loader, fixed-level-art-view-component, fixed-level-art-weak-component, frame-tile-typed-arenas, fixed-level-art-component, frame-tile-lips-arenas, frame-tile-pattern-component, art-use-coverage, fresh-canvas-clone-component, wall-phase-pattern-component, wall-pattern-runs-component, opaque-invisible-standing, foreground-invisible-arenas, foreground-invisible-component, foreground-row-component, opaque-art-fused-cold, opaque-art-fused-component, private-foreground-component, layout-work-queue, opaque-sprite-diagnostic, opaque-sprite-union, opaque-tile-standing, deferred-standing, palette-ui, palette-standing, palette-base, layout-candidate, foreground-reuse, foreground-direct, fixed-ornaments, region-props, border-present, tile-warm, captain-boot, cpu-profile, tile-cache, paladin-boot, hero-reuse, profile, sfx, compare, mobile, calls, present, campaign, variant, pixel-debug]
         default: profile
+      raster_arena:
+        type: choice
+        options: [hurricane,undercrown,lamplit,hanging,minecart]
+        default: hurricane
       baseline:
         type: string
         default: '5e44cddd'
@@ -110,6 +114,34 @@ jobs:
         with:
           name: default-boss-native-oct29
           path: ${{ runner.temp }}/default-boss-native-oct29/
+          if-no-files-found: error
+  native-raster-trace-oct29:
+    if: inputs.mode == 'native-raster-trace-oct29'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/checkout@v4
+        with:
+          ref: 1a576c3f4511b6856df9fb4738df5aaae9987e81
+          path: native-raster-tool-reference
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.11.1'
+      - name: Native raster/compositor trace on unchanged Game62 with original arena settings and guards
+        run: node tools/native-raster-trace-oct29.mjs
+        env:
+          RASTER_ARENA: ${{ inputs.raster_arena }}
+          RASTER_TOOL_REFERENCE: native-raster-tool-reference
+          RASTER_TRACE_OUT: ${{ runner.temp }}/native-raster-trace-${{ inputs.raster_arena }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: native-raster-trace-${{ inputs.raster_arena }}
+          path: ${{ runner.temp }}/native-raster-trace-${{ inputs.raster_arena }}/
           if-no-files-found: error
   tile-recipe-bindings-loader-oct29:
     if: inputs.mode == 'tile-recipe-bindings-loader-oct29'
