@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-10-29",
+    "batch": 128,
+    "lines": [
+      "The Archmage falls: the Falling Tower is a chase down four rooms and back up",
+      "Break the pillars and ride the collapse: new tower rooms, bookcases, columns and a rug",
+      "His fall, landing and floor-tear are drawn; the tower rooms are painted"
+    ]
+  },
+  {
+    "date": "2026-10-29",
     "batch": 127,
     "lines": [
       "The False Abbot is a new fight: make the house answer the blow",
