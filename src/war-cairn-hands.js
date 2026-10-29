@@ -162,7 +162,7 @@ export function makeWarCairnHands(ctx) {
     slabs: [...S.slabs.values()].map(s => ({ id: s.d.id, level: s.level })), cornices: [...S.cornices.values()].map(c => ({ id: c.d.id, state: c.state })), banner: S.banner ? S.banner.name : null, sec: S.sec,
     n: JSON.parse(JSON.stringify(S.n)) } : null;
 
-  /* ---------- DRAWING (GREYBOX: flat granite and war-paint red; ART TODO - src/redraw/warcairn_art.js) ---------- */
+  /* ---------- DRAWING (flat granite and war-paint red; the art is src/redraw/warcairn_*.js) ---------- */
   const rect = (g, x, y, w, h, c) => { g.fillStyle = c; g.fillRect(R(x), R(y), R(w), R(h)); };
   H.drawWorld = (g, cx, cy, VW, VH, time) => {
     if (!S) return; const lv = L(), inX = (x, m = 80) => x - cx > -m && x - cx < VW + m;

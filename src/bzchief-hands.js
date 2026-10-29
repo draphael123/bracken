@@ -94,7 +94,7 @@ export function makeBzChiefHands(ctx) {
   H.read = () => S && { mode: ctx.boss && ctx.boss.mode, ph: S.ph, cycle: S.cycle, rage: R(S.rage), frenzy: +S.frenzy.toFixed(2), ward: +S.ward.toFixed(2), oneHand: S.oneHand, hisDrum: S.hisDrum,
     cracked: S.cracked.slice(), n: JSON.parse(JSON.stringify(S.n)), hurt: { ...(S.hurt || {}) } };
 
-  /* ---------- DRAWING (GREYBOX: flat shapes over the hero's own sheet - ART TODO: src/redraw/bzchief_art.js) ---------- */
+  /* ---------- DRAWING (flat shapes over the hero's own sheet; the clan art is src/redraw/warcairn_clan_art.js) ---------- */
   H.drawOver = (g, cx, cy, time) => { const Ar = A(); if (!S || !Ar || !ctx.bossActive) return; const e = ctx.boss; if (!e || e.t !== 'bzchief') return; const G = S.G;
     const blink = Math.floor(time * 12) % 2 ? '#ff6b6b' : '#fff6e0', fy = R(G.floorY - cy), x = R(e.x - cx), y = R(e.y - cy), m = e.mode, f = e.face || 1;
     /* THE CRACKED SLABS: a dark seam across each cracked one (a broken one is rubble: the tiles) */

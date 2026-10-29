@@ -286,7 +286,7 @@ export const STUCK = {
   /* THE WAR CAIRN (claude/warcairn): the two drum gates the route needs (strike the drum: its gate swings open a few seconds) */
   warcairn: [
     { id: 'wc-tunnel', zone: [79, 56, 92, 62], at: [83, 62], done: ['wcdrum', 83, 62, 'on'], line: 'THE DRUM GATE IS SHUT: STRIKE THE DRUM, THEN GO' },
-    { id: 'wc-chimney', zone: [110, 50, 137, 57], at: [121, 57], done: ['wcdrum', 121, 57, 'on'], line: 'THE HATCHES ARE SHUT: STRIKE THE DRUM, CLIMB BEFORE THEY SWING BACK' },
+    { id: 'wc-chimney', zone: [110, 50, 137, 57], at: [121, 57], done: ['wcdrum', 121, 57, 'on'], line: 'STRIKE THE DRUM AND CLIMB BEFORE THE HATCHES SWING BACK' },
   ],
   palisadewood: [
     { id: 'pw-edge-ramp', zone: [12, 33, 24, 37], at: [19, 37], done: ['scaffoldprop', 19, 37, 'on'], line: 'THE LEDGE IS TOO HIGH: KNOCK OUT THE SCAFFOLD PROP' },
