@@ -399,7 +399,7 @@ export function undeadFrame(e, F) {
   if (w) return e.modeT > STRIKE_S ? F.wind[w] : rel[w];
   if (e.mode === 'markWait') return F.death; if (e.mode === 'boneWait') return F.plant; if (e.mode === 'orbitWait') return F.orbit;
   if (e.mode === 'hover' && e.spell && WIND_OF[TELL[e.spell]] && MAGE.hover / mageSpeed(e) - e.modeT < FOLLOW_S && e.modeT > 0) return rel[WIND_OF[TELL[e.spell]]];   /* the follow-through: the release held a beat */
-  return ({ fall: F.recoil, down: F.open, rise: F.blinkOut, sink: F.blinkOut, below: F.idle[Math.floor(e.anim * 2.5) % 2], tear: F.wind.storm, stepTell: F.blinkOut, decoyTell: F.blinkOut, blinkOut: F.blinkOut, blinkIn: F.blinkIn, gather: F.open, breached: F.open, reflected: F.recoil, scorched: F.open, shattered: F.open, vented: F.open, realmTell: F.blinkOut, wake: F.idle[Math.floor(e.anim * 2.5) % 2] })[e.mode]
+  return ({ fall: F.fall, down: F.crash, rise: F.blinkOut, sink: F.blinkOut, below: F.idle[Math.floor(e.anim * 2.5) % 2], tear: F.wind.storm, stepTell: F.blinkOut, decoyTell: F.blinkOut, blinkOut: F.blinkOut, blinkIn: F.blinkIn, gather: F.open, breached: F.open, reflected: F.recoil, scorched: F.open, shattered: F.open, vented: F.open, realmTell: F.blinkOut, wake: F.idle[Math.floor(e.anim * 2.5) % 2] })[e.mode]
     ?? (e.enraged ? F.enraged[Math.floor(e.anim * 4) % 2] : F.idle[Math.floor(e.anim * 2.5) % 2]);
 }
 /* ONE RING: the desert inside it, and a rim of sparks in his green - the bolt's colour when a bolt is coming through it, and bright and

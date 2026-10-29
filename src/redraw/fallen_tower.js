@@ -10,6 +10,7 @@
 //   bakeSlateLedge()    { ledge: [3], ledgeL, ledgeR } a cut slate slab for the one-way ledges (L.palette.ledges 'slate')
 //   paintFallenRoom(g, st, sx, sy, w, h, tx0, ty0, time)   a room's back wall, baked once per room and then lit and moved live
 import { canvas, px, rect, fillPoly, line, mulberry } from '../px.js';
+import { isChaseRoom, paintChaseRoom } from './tower_chase.js';   /* (claude/fallingtower3art) the Archmage's chase rooms are inside the tower: their own walls */
 
 export const FT = { stone: '#46506a', stoneL: '#56627e', stoneLL: '#6a7896', stoneD: '#343c52', mortar: '#252b3a', crack: '#12151e', crackL: '#7a88a6',
   dust: '#8e7e5e', dustL: '#b09c74', sky0: '#070a16', sky1: '#141c36', sky2: '#22305a', star: '#c8d4f0', wood: '#3e2e24', woodL: '#5a4434', woodD: '#261c16',
@@ -131,6 +132,7 @@ function bakeRoom(st, w, h, tx0, ty0, blocked = null) {
 /* THE CUT-OUTS OF ONE ROOM, as boxes in room pixels (holes, windows, the clock's face): what tools/tower-cutouts.mjs holds clear of the tiles */
 export const fallenCutouts = (st, w, h, tx0, ty0, blocked) => bakeRoom(st, w, h, tx0, ty0, blocked).cut;
 export function paintFallenRoom(g, st, sx, sy, w, h, tx0, ty0, time = 0, blocked = null) {
+  if (isChaseRoom(st, tx0, ty0, w, h)) return paintChaseRoom(g, st, sx, sy, w, h, tx0, ty0, time);   /* (claude/fallingtower3art) THE CHASE ROOMS under his stair and the core: no holes to the night */
   const key = st + ':' + tx0 + ':' + ty0 + ':' + w + 'x' + h + (blocked ? ':fit' : ''); let R = cache.get(key); if (!R) { R = bakeRoom(st, w, h, tx0, ty0, blocked); cache.set(key, R); }
   g.drawImage(R.canvas, sx, sy);
   /* THE WIND through the holes: pale streaks crossing each hole, left to right */

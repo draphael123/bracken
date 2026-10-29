@@ -12,6 +12,7 @@
 // before he is through it) rings off - nothing it holds is ready to go. Every pillar GLOWS FAINTLY as you come near (SUP.glowR, A6) and its
 // glint + stall nudge are src/stuck-spots.js rows (done: ['ftsupport', col, row, 'down']); its sign stands at the point of use.
 // THE REACH MODEL is told the same (tower-ascent.js L.reachSpans): a span a blow lays is footing to the full fill, never to the plain one.
+import { paintPillar, paintStump, paintResting, paintFall } from './redraw/tower_chase.js';
 export const SUP = { tell: 1.1, glowR: 96, w: 12, crushDmg: 140, dark: 8, fallT: 0.45 };
 export const supportBox = s => ({ l: s.x - SUP.w / 2 - 2, r: s.x + SUP.w / 2 + 2, t: s.y - s.h * 16, b: s.y });
 /* every pillar whole again, nothing it held laid (the caller puts the tiles back from the built grid) */
@@ -53,26 +54,32 @@ function fall(L, s, c) {
   if (s.say) c.callout(s.say);
 }
 const overlaps = (a, b) => a.l < b.r && a.r > b.l && a.t < b.b && a.b > b.t;
-/* ---- drawing (greybox: the Sonnet art lane paints these) ----
-   A cracked stone pillar: its courses, a jagged crack up its face; GLOWING faintly gold as you come near (whole); in its tell the crack runs
-   red and it shakes; down, a stump and rubble. What it drops: a block falling the first SUP.fallT s (the toppling column / the masonry). */
+/* ---- drawing: src/redraw/tower_chase.js paints it (claude/fallingtower3art) ----
+   A cracked stone pillar: courses, flutes, an iron strap, a skull cut in the shaft, a crack up its face; GLOWING faintly gold as you come near (whole) and, when it is the one
+   to strike, burning with a chevron over it; in its tell the crack runs red from the foot and it shakes; down, a broken stump and rubble. What it dropped stays where it fell:
+   the bookcase's shelves, the column across the poison, the crown's masonry, the stairwell's plug. */
+const spanBox = s => { let x0 = s.x - 12, x1 = s.x + 12, y0 = s.y - s.h * 16 - 20, y1 = s.y + 4;
+  for (const [a, b, r] of s.spans || []) { x0 = Math.min(x0, a * 16); x1 = Math.max(x1, (b + 1) * 16); y0 = Math.min(y0, r * 16 - 90); y1 = Math.max(y1, r * 16 + 20); }
+  if (s.crush) { x0 = Math.min(x0, s.crush[0] * 16); x1 = Math.max(x1, (s.crush[1] + 1) * 16); y0 = Math.min(y0, s.crush[2] * 16 - 40); y1 = Math.max(y1, (s.crush[3] + 1) * 16); }
+  for (const [a, b, c, d] of s.clear || []) { x0 = Math.min(x0, a * 16); x1 = Math.max(x1, (b + 1) * 16); y0 = Math.min(y0, c * 16); y1 = Math.max(y1, (d + 1) * 16 + 300); }
+  return [x0, x1, y0, y1]; };
 export function drawSupports(g, L, cx, cy, time, VW, VH) {
   for (const s of L.ftSupports || []) {
-    const x = Math.round(s.x - cx), y = Math.round(s.y - cy), h = s.h * 16; if (x < -60 || x > VW + 60 || y < -40 || y - h > VH + 40) continue;
-    if (s.st === 'down') { g.fillStyle = '#3e3a4c'; g.fillRect(x - 6, y - 6, 12, 6); g.fillStyle = '#5c586e'; g.fillRect(x - 8, y - 3, 4, 3); g.fillRect(x + 3, y - 4, 5, 4); g.fillStyle = '#7a7690'; g.fillRect(x - 6, y - 6, 12, 1); }
+    const x = Math.round(s.x - cx), y = Math.round(s.y - cy), h = s.h * 16, [bx0, bx1, by0, by1] = spanBox(s);
+    if (bx1 - cx < -20 || bx0 - cx > VW + 20 || by1 - cy < -20 || by0 - cy > VH + 20) continue;
+    if (s.st === 'down') { paintResting(g, s, cx, cy, time); if (s.kind !== 'floor') paintStump(g, x, y, s.fx ? s.fx.t : null); }   /* (a chase floor's pillar went down WITH its floor) */
     else {
-      const sh = s.st === 'tell' ? Math.round(Math.sin(time * 60) * 1.2) : 0, k = s.st === 'tell' ? 1 - s.t / SUP.tell : 0;
-      if (s.near > 0 && s.st === 'whole') { g.globalAlpha = (0.18 + 0.22 * Math.abs(Math.sin(time * 3))) * Math.min(1, s.near * 2); g.fillStyle = s.arm && !s.armed ? '#9ab0d0' : '#ffe6a0'; g.fillRect(x - 9 + sh, y - h - 3, 18, h + 3); g.globalAlpha = 1; }
-      g.fillStyle = '#4a4660'; g.fillRect(x - 6 + sh, y - h, 12, h); g.fillStyle = '#5e5a78'; g.fillRect(x - 6 + sh, y - h, 3, h);
-      g.fillStyle = '#34304a'; for (let yy = y - h + 7; yy < y; yy += 8) g.fillRect(x - 6 + sh, yy, 12, 1);   /* its courses */
-      g.fillStyle = '#6e6a88'; g.fillRect(x - 8 + sh, y - h, 16, 3); g.fillRect(x - 8 + sh, y - 3, 16, 3);   /* its head and its foot */
-      /* THE CRACK: up its face, dark - red and climbing through its tell */
-      const top = y - h + 3, run = s.st === 'tell' ? top + (y - 3 - top) * (1 - k) : top;
-      for (let yy = y - 3; yy > top; yy -= 3) { const ox = ((yy * 7) % 5) - 2; g.fillStyle = s.st === 'tell' && yy >= run ? (Math.floor(time * 16) % 2 ? '#ff6b6b' : '#ffd36b') : '#15121e'; g.fillRect(x + ox + sh, yy - 3, 1, 3); g.fillRect(x + ox + sh + (ox > 0 ? -1 : 1), yy - 1, 1, 1); }
-      if (s.ring > 0) { g.strokeStyle = 'rgba(188,232,250,' + (s.ring / 0.4).toFixed(2) + ')'; g.strokeRect(x - 9, y - h - 3, 18, h + 3); }
+      if (s.st === 'whole' && s.near > 0) ghost(g, s, cx, cy, s.near);   /* what it will become, dotted in, as you come near (A6) */
+      paintPillar(g, x, y, h, { st: s.st, k: s.st === 'tell' ? 1 - s.t / SUP.tell : 0, time, near: s.near, arm: s.arm, armed: s.armed, ring: s.ring, kind: s.kind });
     }
-    /* WHAT IT DROPS, falling: a slab from over the span (or the crush box) down onto it */
-    if (s.fx && s.fx.t < SUP.fallT) { const k = s.fx.t / SUP.fallT, box = s.spans && s.spans[0] ? [s.spans[0][0], s.spans[0][1], s.spans[0][2]] : s.crush ? [s.crush[0], s.crush[1], s.crush[3] + 1] : null;
-      if (box) { const bx = box[0] * 16 - cx, bw = (box[1] - box[0] + 1) * 16, by = (box[2] - 6 + 6 * k * k) * 16 - cy; g.fillStyle = '#4a4660'; g.fillRect(Math.round(bx), Math.round(by), bw, 12); g.fillStyle = '#6e6a88'; g.fillRect(Math.round(bx), Math.round(by), bw, 2); } }
+    if (s.fx && s.fx.t < SUP.fallT + 0.9) paintFall(g, s, cx, cy, s.fx.t, SUP.fallT);
   }
 }
+/* the shape of what a blow would lay, dotted: the spans' boards, the crush box's floor line (a pale gold the stone would not wear) */
+function ghost(g, s, cx, cy, near) {
+  g.fillStyle = '#ffe6a0'; g.globalAlpha = 0.45 * Math.min(1, near * 2) * (0.6 + 0.4 * Math.abs(Math.sin(performanceTime() * 3)));
+  for (const [x0, x1, row] of s.spans || []) { const px0 = Math.round(x0 * 16 - cx), w = (x1 - x0 + 1) * 16, py = Math.round(row * 16 - cy); for (let i = 0; i < w; i += 4) { g.fillRect(px0 + i, py, 2, 1); g.fillRect(px0 + i + 2, py + 15, 2, 1); } g.fillRect(px0, py, 1, 16); g.fillRect(px0 + w - 1, py, 1, 16); }
+  if (s.crush) { const [x0, x1, , y1] = s.crush, py = Math.round((y1 + 1) * 16 - cy); for (let i = x0 * 16; i < (x1 + 1) * 16; i += 6) g.fillRect(Math.round(i - cx), py - 1, 3, 1); }
+  g.globalAlpha = 1;
+}
+const performanceTime = () => (typeof performance !== 'undefined' ? performance.now() : Date.now()) / 1000;
