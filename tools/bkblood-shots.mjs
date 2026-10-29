@@ -25,13 +25,15 @@ try {
     place(Math.round(P().maxHp * 0.9)); let e = foe(22); e.x0 = e.x; P().face = -1; P().inv = 0; D().hit(P().x - 20, 24, {}); BK.sim(30); P().face = 1; P().x = e.x0 - 22; P().vx = 0; e.x = e.x0; BK.sim(1); BK.step(2); snap('rally-debt', 150, 72, 4, 20);
     { const b0 = P().bkBeats || 0; for (let k = 0; k < 90 && (P().bkBeats || 0) === b0; k++) BK.step(1); BK.step(2); } snap('rally-screen-owing', 0, 0, 2, 0, true);   /* (on a heartbeat: the edge at its pulse) */
     { const c = document.createElement('canvas'); c.width = 80 * 6; c.height = 24 * 6; const g = c.getContext('2d'); g.imageSmoothingEnabled = false; g.drawImage(BK.buf, 0, 0, 80, 24, 0, 0, 480, 144); shots.push(['rally-hud', c.toDataURL('image/png')]); }
-    BK.keys.atk = true; BK.press('atk'); BK.step(1); BK.keys.atk = false; for (let k = 0; k < 30; k++) { BK.step(1); freeze(e); if (k === 18 || k === 22 || k === 26) snap('rally-drink' + k); if (k === 22) snap('rally-screen-drink', 0, 0, 2, 0, true); }
+    BK.keys.atk = true; BK.press('atk'); BK.step(1); BK.keys.atk = false; for (let k = 0; k < 30; k++) { BK.step(1); freeze(e); if (k === 18 || k === 22 || k === 26) snap('rally-drink' + k); if (k === 22) snap('rally-screen-drink', 0, 0, 2, 0, true); if (k === 28) snap('rally-decals', 110, 48, 6, 14); }
     e.alive = false; BK.sim(60);
     /* 2. THE THIRD CUT (THE BLOOD LASH; before: the drag) against a goblin past the steel */
     place(); P().combo = 0; e = foe(46); e.x0 = e.x; swing(null, ''); freeze(e); swing(null, ''); freeze(e); swing([14, 17, 20, 23, 26], 'lash', e); e.alive = false; BK.sim(60);
     /* 3. CRIMSON FRENZY (before: BLOOD SURGE): full bar, HOLD F; then cutting a foe while owing */
-    place(Math.round(P().maxHp * 0.7)); P().bd = Math.round(P().maxHp * 0.2); P().bdLast = P().hp; e = foe(22); e.x0 = e.x; P().harvest = 100; BK.keys.throw = true; BK.press('throw'); for (let k = 0; k < 30; k++) { BK.step(1); freeze(e); if (k === 22) snap('frenzy-start'); } BK.keys.throw = false;
+    place(Math.round(P().maxHp * 0.7)); P().bd = Math.round(P().maxHp * 0.2); P().bdLast = P().hp; e = foe(22); e.x0 = e.x; P().harvest = 100; BK.keys.throw = true; BK.press('throw'); for (let k = 0; k < 30; k++) { BK.step(1); freeze(e); if (k === 22) { snap('frenzy-start'); snap('frenzy-helm', 50, 40, 10, 2); } } BK.keys.throw = false;
     BK.step(10); freeze(e); snap('frenzy-hud', 0, 0, 2, 0, true); P().combo = 0; swing([20], 'frenzy-cut'); freeze(e); swing([20], 'frenzy-cut-b');
+    /* 4. THE DRIPPING BLADE: idle, then walking - the point and the drops, close */
+    place(); BK.sim(30); for (const k of [0, 1, 2, 3]) { BK.sim(14); snap('idle-drip' + k, 50, 40, 10, 6); }
     return { res: shots, frenzyT: P().bkFrenzyT || 0 }; })()`);
   if (r.err) throw new Error(r.err);
   for (const [n, d] of r.res) writeFileSync(join(out, pre + n + '.png'), Buffer.from(d.split(',')[1], 'base64'));
