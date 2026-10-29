@@ -1,0 +1,171 @@
+{
+  "time": "2026-10-29T21:23:59.341Z",
+  "manifestSha256": "3ece51318edeca1b9b7bafe2a3a6833a4ffd3cdc759f681e63d1b2d3ed3c9f78",
+  "helperSha256": "e475efbbf37ceb0f29ec9a7cb4341c30eb0028e9b0a9949e70e10ceacba3bbb2",
+  "component": {
+    "time": "2026-10-29T21:23:50.258Z",
+    "run": 40956870881,
+    "controller": "89a1fbaad8f540dfb08e0849a489394e68d98d5b",
+    "complete": true,
+    "qualifiedForGameIntegration": true,
+    "adopted": false,
+    "notGameMemoryCampaignLayoutOr40FpsProof": true,
+    "rawReceipt": "work\\pending-tile-array-writes-cloud-89a1fbaa\\pending-tile-array-writes-component\\receipt.json",
+    "rawSha256": "fe44a7bf7991d66a6f9bc155dd2fe8de7e9a50aed87140d679cbd1eb7f3d6188",
+    "processes": {
+      "launches": 1,
+      "closures": 1,
+      "allClosed": true,
+      "profileAbsences": [
+        {
+          "profile": "/tmp/bracken-look-7AMtzm",
+          "absent": true
+        }
+      ],
+      "interruptions": [],
+      "maxRendererMb": 1047,
+      "events": [
+        {
+          "type": "launch",
+          "pid": 2589,
+          "profile": "/tmp/bracken-look-7AMtzm",
+          "time": 1793308914139
+        },
+        {
+          "type": "native-lab-collection",
+          "time": 1793308986137,
+          "requests": 0,
+          "completed": 0,
+          "failed": 0,
+          "postEvaluations": 2
+        },
+        {
+          "type": "closed",
+          "pid": 2589,
+          "profile": "/tmp/bracken-look-7AMtzm",
+          "time": 1793308986347,
+          "peak": {
+            "totalMb": 2440,
+            "rendererMb": 1047
+          },
+          "reason": null
+        }
+      ]
+    },
+    "sourceExact": true,
+    "originalGuardsAndNativeGcVerified": true,
+    "closed": true,
+    "arrayWriteControl": {
+      "priorHelperSha256": "72af32eedb3c2e3c2d64d9eea7d650fa1d16ca69bc621d032637869fb9b6164f",
+      "replaysBefore": 0,
+      "replaysAfter": 1,
+      "pendingAfter": false,
+      "sourceDerivedCauseObserved": true
+    },
+    "allOriginal99CasesPreserved": true,
+    "legacyNegativeControls": [
+      {
+        "label": "Rejected71 captured method lookup",
+        "different": 768,
+        "originalCalls": 0,
+        "legacyCalls": 1,
+        "rejectedHelperSha256": "71cad61cf13117a8e6c9431e40527c41545100682ed18b9f64f1a927a6ed469b"
+      },
+      {
+        "label": "Rejected71 native destination queued source",
+        "different": 1024,
+        "rejectedHelperSha256": "71cad61cf13117a8e6c9431e40527c41545100682ed18b9f64f1a927a6ed469b"
+      }
+    ],
+    "allOriginal80CasesAndOriginalFamilyFixturesPreserved": true,
+    "status": "PASS isolated native safety/compatibility core only; source-specific main integration/loader and original proofs still required",
+    "familyCases": 4928,
+    "publicCases": 672,
+    "coreCases": 109,
+    "functionMetadata": [
+      {
+        "file": "src/redraw/buried_city_tiles.js",
+        "name": "bcTile",
+        "lengthExact": true,
+        "nameExact": true,
+        "prototypePresenceExact": true
+      },
+      {
+        "file": "src/redraw/skyroad_tiles.js",
+        "name": "skyTile",
+        "lengthExact": true,
+        "nameExact": true,
+        "prototypePresenceExact": true
+      },
+      {
+        "file": "src/redraw/rootway_tiles.js",
+        "name": "timberTile",
+        "lengthExact": true,
+        "nameExact": true,
+        "prototypePresenceExact": true
+      },
+      {
+        "file": "src/redraw/rootway_tiles.js",
+        "name": "springCap",
+        "lengthExact": true,
+        "nameExact": true,
+        "prototypePresenceExact": true
+      },
+      {
+        "file": "src/redraw/rootway_tiles.js",
+        "name": "rootTile",
+        "lengthExact": true,
+        "nameExact": true,
+        "prototypePresenceExact": true
+      },
+      {
+        "file": "src/redraw/sealed_pyramid_tiles.js",
+        "name": "spTile",
+        "lengthExact": true,
+        "nameExact": true,
+        "prototypePresenceExact": true
+      }
+    ],
+    "pendingObserved": 3814,
+    "rng": 0,
+    "stats": {
+      "created": 3859,
+      "replayed": 3847,
+      "exposed": 3765,
+      "recordedCommands": 547461,
+      "boundFlushes": 75,
+      "sourceFlushes": 5,
+      "nativeFallbacks": 26332,
+      "probes": 0,
+      "entryChecks": 3861,
+      "methodChecks": 295317,
+      "propertyChecks": 294428,
+      "arrayWrites": 12,
+      "arrayFastWrites": 4,
+      "arrayFallbackWrites": 8,
+      "maxCommandsPerCanvas": 512,
+      "maxSnapshotBytesPerCanvas": 65536
+    }
+  },
+  "componentCloud": {
+    "workflow": "load-perf-proof.yml",
+    "mode": "pending-tile-array-writes-component-oct29",
+    "status": "completed",
+    "outerTimeoutMinutes": 15,
+    "evaluationDeadlineMs": 240000,
+    "audited": true,
+    "controller": "89a1fbaad8f540dfb08e0849a489394e68d98d5b",
+    "directory": "work/pending-tile-array-writes-cloud-89a1fbaa",
+    "run": 40956870881,
+    "url": "https://github.com/draphael123/bracken/actions/runs/40956870881",
+    "createdAt": "2026-10-29T21:19:55Z",
+    "conclusion": "success"
+  },
+  "requiredOriginalLimits": {
+    "admissionMb": 4352,
+    "rendererMb": 1536,
+    "loadEvaluationMs": 180000,
+    "cohortOuterMinutes": 40
+  },
+  "scope": "New main2436+helpere475source, identical D6baseline; all original19levels/342readbacks/228pairs and material timing/control gates retained."
+}
