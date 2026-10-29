@@ -198,7 +198,7 @@
       ],
       "preparationFailure": "The first source preparer expected timberTile to be a function declaration; original is an arrow export. Preserved arrow/function kind, original arity/name/prototype shape, and repaired only static wrapper generation before any browser execution."
     },
-    "nativeCaseFunctionSha256": "fedbcfcfbd45975a756e4ee1a93e274703a8ba5589937033746681f14a5e5ae8",
+    "nativeCaseFunctionSha256": "4f54dc0f7bde771d491a8a65b34941347029bfaa89cae5c121c4a1ad22c32401",
     "fixturesSha256": "e6a8d60e18e34c9fdd874412ac5c005efb12c148fff12f06098a655e3cd24c32",
     "expectedFamilyCases": 4928,
     "expectedPublicCases": 672,
@@ -288,7 +288,13 @@
       "statsBefore": "entryChecks:0,methodChecks:0,propertyChecks:0",
       "statsAfter": "entryChecks:0,methodChecks:0,propertyChecks:0,arrayWrites:0,arrayFastWrites:0,arrayFallbackWrites:0"
     },
-    "notGarbageCollectionElision": true
+    "notGarbageCollectionElision": true,
+    "adapterDeclarationRepair": {
+      "oldCaseSha256": "fedbcfcfbd45975a756e4ee1a93e274703a8ba5589937033746681f14a5e5ae8",
+      "newCaseSha256": "4f54dc0f7bde771d491a8a65b34941347029bfaa89cae5c121c4a1ad22c32401",
+      "everyAssertionBytePreserved": true,
+      "candidateHelperUnchanged": true
+    }
   },
   "baseline": [
     {
