@@ -62,7 +62,7 @@ for (const s of L.wcSlabs) { const LL = clone({ reachSpans: L.reachSpans.filter(
 { const LL = clone({}); for (const d of L.wcDrums) for (const id of d.gates) { const g = L.wcGates.find(q => q.id === id); for (let y = g.y0; y <= g.y1; y++) for (let x = g.x0; x <= g.x1; x++) LL.grid[y * L.W + x] = T.AIR; }
   ok(reaches(LL, goal[0], goal[1]), 'with its gates open (the beat) the way is whole'); }
 for (const [k, a] of Object.entries(ARCS)) { const steps = Object.keys(a); ok(steps.length >= 2, 'the ' + k + ' arc: ' + steps.join(' -> ')); }
-ok(L.wcDrums.filter(d => !d.arena).length >= 9 && L.wcGates.length === 4 && L.wcSlabs.length === 6 && L.wcCornices.length === 3, 'the machines: ' + L.wcDrums.length + ' drums, ' + L.wcGates.length + ' gates, ' + L.wcSlabs.length + ' slabs, ' + L.wcCornices.length + ' cornices, ' + L.wcHolds.length + ' driven hatchets');
+ok(L.wcDrums.filter(d => !d.arena).length >= 9 && L.wcGates.length === 4 && L.wcSlabs.length === 6 && L.wcCornices.length === 4 && L.wcHolds.length === 3, 'the machines: ' + L.wcDrums.length + ' drums, ' + L.wcGates.length + ' gates, ' + L.wcSlabs.length + ' slabs, ' + L.wcCornices.length + ' cornices, ' + L.wcHolds.length + ' driven hatchets');
 ok(L.ents.filter(e => e.t === 'drummer').length === 2 && L.ents.filter(e => e.t === 'drummer').every(e => e.drum && L.wcDrums.some(d => d.id === e.drum)), 'two DRUMMERS (the one new foe), each with his drum');
 ok(L.ents.filter(e => e.t === 'silver').length === 3, 'three silvers');
 ok(anchorFaults(L).length === 0, 'NOTHING FLOATS: anchor-lint finds no fault (' + anchorFaults(L).map(f => f.kind + '@' + f.x + ',' + f.y).join(' ') + ')');

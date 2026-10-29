@@ -174,6 +174,11 @@ export function makeWarCairnHands(ctx) {
       g.strokeStyle = '#4a4744'; g.beginPath(); g.moveTo(x + 2, y - 40); g.lineTo(x + 2, y); g.moveTo(x + w - 2, y - 40); g.lineTo(x + w - 2, s.level ? y : y + 24); g.stroke();
       if (s.level) { rect(g, x, y, w, 6, '#7a8494'); rect(g, x, y, w, 1, '#c8d0dc'); }
       else { g.fillStyle = '#5a6270'; g.beginPath(); g.moveTo(x, y); g.lineTo(x + w, y + 24); g.lineTo(x + w, y + 30); g.lineTo(x, y + 6); g.closePath(); g.fill(); } }
+    /* THE SLATE SPANS' CARVED POSTS (L.structures 'cairnArch': the second heights stand on them - greybox: flat granite posts at each end and every few tiles) */
+    for (const z of lv.structures || []) { if (z.kind !== 'cairnArch' || !inX(z.x0 * TS, 260)) continue; const y0 = z.top * TS - cy, y1 = z.floor * TS - cy, n = z.x1 - z.x0 + 1, step = Math.max(2, Math.ceil(n / 3));
+      const xs = []; for (let x = z.x0; x <= z.x1; x += step) xs.push(x); if (xs[xs.length - 1] !== z.x1) xs.push(z.x1);
+      for (const x of xs) { rect(g, x * TS - cx + 5, y0 + 2, 6, y1 - y0 - 2, '#6e6a62'); rect(g, x * TS - cx + 5, y0 + 2, 1, y1 - y0 - 2, '#8e8a84'); }
+      rect(g, z.x0 * TS - cx, y0, n * TS, 3, '#8e98a8'); }
     /* THE CORNICES: old snow (whole, cracking - a seam and a puff - or gone) */
     for (const c of S.cornices.values()) { if (c.state === 'gone') continue; const d = c.d, x = d.x0 * TS - cx, y = d.y * TS - cy, w = (d.x1 - d.x0 + 1) * TS; if (!inX(d.x0 * TS, 120)) continue;
       rect(g, x, y, w, 5, '#e8eef4'); rect(g, x + 2, y + 5, w - 4, 3, '#c8d4e0');

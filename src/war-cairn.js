@@ -68,6 +68,10 @@ export function buildWarCairn({ painter, T, TS }) {
   const cornice = (dr, id, x0, x1, y) => { const c = { id, drum: dr.id, x0, x1, y }; cornices.push(c); dr.cornices.push(id); fill(x0, x1, y, y, T.ONEWAY); ent('wccornice', x0, y, { id, x1 }); return c; };
   /* A DRIVEN HATCHET: an old clan hatchet standing out of the rock face - a one-tile foothold (the face it is driven into is at x + dir) */
   const hold = (x, y, dir) => { set(x, y, T.ONEWAY); holds.push({ x, y, dir }); ent('wchold', x, y, { dir }); };
+  /* A SLATE SPAN ON CARVED POSTS (the second heights): one-way slate laid across stone posts that stand on the floor below - the walkway runs between the posts (drawn, not
+     solid). L.structures carries each for the art lane and anchor-lint ('cairnArch'); src/war-cairn-hands.js draws the greybox posts */
+  const structures = [];
+  const span = (x0, x1, y, floor) => { fill(x0, x1, y, y, T.ONEWAY); structures.push({ x0, x1, top: y, floor, kind: 'cairnArch' }); };
 
   // ================= 1. THE GULLY ROAD (0-110): TEACH - the reused crag climb =================
   /* THE GULLY: a rock wall on the left, the mountain on the right, five terraces between that the road zig-zags up - each shelf THREE rows of rock (natural crag over
@@ -96,14 +100,19 @@ export function buildWarCairn({ painter, T, TS }) {
   coins([44, 68], [48, 68], [60, 68]);
   /* THE GORGE: a fall of water down its near side, and the rope-and-slate bridge (slate treads lashed on two ropes, both ends on the rock). The far bank stands six rows
      higher than the bridge: ONE DRIVEN HATCHET in its face is the step up (the clan's - and a hatchet-thrower's miss stands in rock the same way, a while) */
-  for (let x = 65; x <= 78; x++) set(x, 69, T.PLANK);
+  for (let x = 65; x <= 80; x++) set(x, 69, T.PLANK);
   ent('cascade', 64, 70, { y1: BOT }); deco(64, 68, 'bridgepost'); foe('harpy', 72, 60, 'gorge');
-  rock(79, 92, 63);                                        /* the far bank (feet 62) */
-  hold(78, 66, 1);                                         /* THE HATCHET IN THE FACE: the bridge's feet 68 -> it (65) -> the bank (62) */
-  sign(75, 68, 'A HATCHET STANDS IN THE ROCK. STAND ON IT.');
+  rock(81, 92, 63);                                        /* the far bank (feet 62); its lip, cols 79-80, is old snow (the cornice, below) */
+  hold(80, 66, 1);                                         /* THE HATCHET IN THE FACE: the bridge's feet 68 -> it (65) -> the bank (62) */
+  sign(76, 68, 'A HATCHET STANDS IN THE ROCK. STAND ON IT.');
   foe('javelin', 89, 62, 'farBank', { face: -1 });         /* THE HATCHET-THROWER: his misses stick in the rock (a while) - a foothold too */
   /* THE FIRST DRUM (TEACH, safe: nothing on the beat): its gate is the cairn wall's tunnel mouth. The wall is twenty rows high - only the beat opens the way */
   const d1 = drum('gully', 83, 62);
+  cornice(d1, 'lip', 79, 80, 63);                          /* THE CORNICE TAUGHT: the bank's lip of old snow - the first beat shakes it loose behind you (a fall onto the bridge, never the gorge) */
+  span(84, 91, 60, 63);                                    /* a slate span on posts over the far bank (a second height: coins) */
+  coins([86, 59], [89, 59]);
+  span(43, 49, 66, 69);                                    /* the eyrie's slate perch on the shoulder */
+  coins([45, 65], [47, 65]);
   block(93, 98, 40, 62); rock(93, 100, 63); air(93, 98, 60, 62);   /* THE CAIRN WALL, and the tunnel through it (floor row 63) */
   gate(d1, 'tunnel', 97, 98, 60, 62);   /* (at the tunnel's FAR mouth: hung on the wall's stone, the hide swings outward) */
   sign(81, 62, 'A WAR DRUM. STRIKE IT: THE BEAT SWINGS THE DRUM GATE OPEN. THEN GO.');
@@ -116,6 +125,8 @@ export function buildWarCairn({ painter, T, TS }) {
   rock(110, 140, 58);                                      /* the gate run's ground (feet 57) */
   const d2 = drum('gaterun', 121, 57);
   foe('soldier', 114, 57, 'gateFoot', { face: 1 }); foe('soldier', 118, 57, 'gateFoot', { face: 1 });
+  block(122, 123, 55, 57); hold(124, 53, 1);               /* a step and a DRIVEN HATCHET in the chimney's face: up to the slate span (coins) */
+  span(118, 123, 50, 58); coins([119, 49], [121, 49]); ent('silver', 123, 49);   /* SILVER THREE: on the span the chimney's hatchet leads up to */
   sign(111, 57, 'ONE BEAT OPENS ALL THREE HATCHES OF THE CHIMNEY. CLIMB BEFORE THEY SWING SHUT.');
   /* THE SLAB CHIMNEY: interior cols 128-137, three floors three rows apart; each floor a slate stub on one side and a HIDE HATCH (T.PORT) on the other - hatches
      alternate sides, so the climb is up through each. The roof of the chimney and its walls are the rock; the way out is east at the top */
@@ -127,6 +138,8 @@ export function buildWarCairn({ painter, T, TS }) {
   /* REMIX: THE DRUMMER'S LEDGE (feet 48). His drum surges the axemen; his beat also shakes the CORNICE over the pit loose */
   rock(141, 166, 49); rock(172, 176, 49);
   const d3 = drum('drummer1', 150, 48);
+  span(144, 157, 46, 49);                                  /* the drummer's ledge has a slate span over it: up out of the axemen's reach */
+  coins([146, 45], [155, 45]);
   foe('drummer', 153, 48, 'drumLedge', { drum: 'drummer1', drums: ['drummer1', 'exam'] });
   foe('soldier', 158, 48, 'drumLedge'); foe('soldier', 163, 48, 'drumLedge');
   cornice(d3, 'pit', 167, 171, 49);                        /* THE CORNICE OVER THE PIT: footing until a beat shakes it loose */
@@ -137,7 +150,9 @@ export function buildWarCairn({ painter, T, TS }) {
   /* EXAM at the chimney head: two axemen and a runner round one drum */
   rock(185, 238, 40);
   const d4 = drum('exam', 205, 39);
-  foe('soldier', 196, 39, 'examYard'); foe('soldier', 213, 39, 'examYard'); foe('berserker', 222, 39, 'examYard', { awake: false });
+  span(189, 198, 36, 40); span(202, 212, 36, 40); block(196, 197, 38, 39); block(208, 209, 38, 39);   /* two slate spans on posts over the yard, a rock step under each */
+  coins([191, 35], [210, 35]);
+  foe('soldier', 193, 39, 'examYard'); foe('soldier', 215, 39, 'examYard'); foe('berserker', 222, 39, 'examYard', { awake: false });
   block(199, 201, 37, 39);                                 /* a cairn in the yard (a second height) */
   deco(200, 36, 'cairn'); coins([188, 39], [200, 36], [217, 39]);
   ent('check', 229, 39);                                   /* SHRINE ONE: the gate run behind you */
@@ -146,7 +161,7 @@ export function buildWarCairn({ painter, T, TS }) {
   const d5 = drum('face1', 236, 39);
   slab(d5, 'face1a', 239, 246, 40);                        /* TEACH: one slab over the drop */
   sign(232, 39, 'THE BEAT SWINGS THE CHAINED SLABS LEVEL. THEY HOLD A FEW SECONDS.');
-  rock(247, 256, 40);
+  rock(247, 256, 40); span(248, 255, 36, 40);              /* a span off the cairn-stack step */
   foe('shield', 252, 39, 'faceGuard1');                    /* THE CROSSED-AXE GUARD: his axes turn a blow from the front - a heavy blow, or a beat, breaks it */
   sign(248, 39, 'CROSSED AXES TURN A BLOW. A HEAVY BLOW OR A DRUM BEAT BREAKS THE GUARD.');
   rock(257, 260, 37); rock(261, 268, 34);
@@ -157,10 +172,10 @@ export function buildWarCairn({ painter, T, TS }) {
   rock(284, 286, 28);                                      /* THE CAIRN-STACK: the high drum stands on it */
   hold(283, 31, 1);                                        /* ...up its face off a driven hatchet */
   cornice(d6, 'face', 287, 292, 34);                       /* the low line's cornice (the beat that swung the slab shakes it loose: wait for the snow) */
-  rock(293, 300, 34); rock(301, 303, 31);
+  rock(293, 300, 34); rock(301, 303, 31); span(294, 299, 30, 34);
   const d7 = drum('high', 285, 27);
   slab(d7, 'high1', 287, 295, 28); slab(d7, 'high2', 296, 303, 28);   /* THE HIGH LINE: two slabs under the high drum - the shortcut */
-  ent('silver', 286, 27);                                  /* SILVER THREE: on the cairn-stack, beside the high drum (a hatchet foothold up) */
+  coins([286, 27]);
   coins([290, 33], [297, 33], [299, 27], [302, 30]);
   sign(262, 33, 'THE LOW LINE IS SAFE. THE HIGH DRUM ON THE CAIRN-STACK SWINGS TWO SLABS: THE SHORT WAY.');
   rock(304, 310, 28);
@@ -179,6 +194,7 @@ export function buildWarCairn({ painter, T, TS }) {
   rock(341, 391, 28);                                      /* the ring's floor (feet 27) */
   block(341, 342, 25, 27); block(383, 384, 25, 27);        /* its low stone wall (three rows: over it with a jump) */
   block(355, 358, 25, 27); block(368, 371, 25, 27);        /* two tiers of seats */
+  span(343, 354, 23, 28); span(359, 367, 23, 28); span(372, 382, 23, 28);   /* the rim's slate walk on its posts: the clan watches from up here */
   const d10 = drum('ring1', 348, 27), d11 = drum('ring2', 378, 27);
   foe('drummer', 351, 27, 'ring', { drum: 'ring1', drums: ['ring1', 'ring2'] });
   foe('heavy', 363, 27, 'ring', { elite: true });           /* THE CLAN CHAMPION: crossed axes (his guard) and the flurry */
@@ -205,7 +221,7 @@ export function buildWarCairn({ painter, T, TS }) {
   return {
     W, H, grid: L.grid, ents, START: { x: 11, y: 95 }, pools: [], falls: [],
     arena, warcairn: true, rule: WC_RULE,
-    wcDrums: drums, wcGates: gates, wcSlabs: slabs, wcCornices: cornices, wcHolds: holds, hoists, reachDoors, reachSpans,
+    wcDrums: drums, wcGates: gates, wcSlabs: slabs, wcCornices: cornices, wcHolds: holds, hoists, reachDoors, reachSpans, structures,
     reskin: WC_RESKIN, foeHit: {},
     calm: [[0, W - 1, 0, H - 1]],   /* placed wholly by hand: nothing sprinkled */
     checkRun: 260,                  /* start + two shrines (Daniel: fewer): src/level.js checkpoints() must not fill between them */
