@@ -22,7 +22,7 @@ export const THROWN = new Set(['updateCaptain|braceTell',   /* (claude/hurricane
   'updateFrog|flopTell',   /* (claude/marsh2) THE BULLFROG KING's BELLY-FLOP: the shockwave runs the court on its own (waves, w.flop) - unblockable, jump it */
   'updateFrog|rippleTell',   /* (claude/marsh2) THE CROAK RIPPLE: the ring runs out along the bank on its own (src/frog-king.js) - unblockable, jump it (over the pond it tips the pads) */
   'updateFrog|poundTell',    /* (claude/marsh2) THE SLAP: the court's pads go under - the water takes you, not his hand: get off them */
-  'updateWindcaller|stoneTell', 'updateForgemaster|hurlTell', 'updateForgemaster|dragTell',
+  'updateForgemaster|hurlTell', 'updateForgemaster|dragTell',
   'updateGrandmother|knellTell',    /* (claude/underleaf2) THE GRANDMOTHER's KNELL: the handbell throws a ring along the boards both ways (src/hush-hands.js granKnell) - no shield turns it, jump it */
   'updatePrince|heaveTell',         /* (claude/undercrown2art) THE PRINCE HEAVES THE SLAB OFF ITS HINGE (slabSmash): the roof he breaks is the blow - rock thrown by nobody, no shield turns it; the hero up the slab is dropped, not struck */
   'updateTippler|heaveTell',        /* THE TIPPLER heaves the bar and a SKIP OF ORE goes over: falling rock, thrown by nobody, and no shield turns it */
@@ -79,6 +79,7 @@ export const BY_HAND = {
   'king|chargeTell':'!!','king|grabTell':'!!','king|sweepTell':'!','king|hornTell':'','king|limbTell':'','king|clubHiTell':'!','king|clubLoTell':'!!','king|logTell':'!!','king|quakeTell':'!!','king|shakeTell':'!!',   /* (claude/gorm2) KING GORM 2 (src/gorm-king.js, by hand: a module-file boss the audit cannot follow): the litter's charge and the hand nothing turns; the sceptre's sweep and the HIGH branch a shield turns; the LOW branch, the rolled log, the quake's crest and the cones off the oak no shield is in; the horn and the torn limb throw nothing themselves (the boar is its own creature) */
   'royalboar|tell':'!',   /* THE ROYAL BOAR (src/royal-boar.js): its charge a shield turns (it stands dazed) */
   'thief|swipeTell':'!!','spitcap|spitTell':'!','sapper|shoveTell':'!','drone|burstTell':'!!','drone|puffTell':'!',   /* (claude/sporewood2) THE DRONE swells, then bursts where it hangs: no shield turns a burst */   /* (claude/sweepact12: the new told attacks of the inline families - updateEnemies, not an update* function) */
+  'galeharpy|galeTell':'!',   /* (claude/rookery2) THE GALE HARPY (src/gale-harpy.js, by hand: a module foe): her gust a shield BRACES (half the shove, no lift) - yellow */
   'shrieksister|diveTell':'!!','shrieksister|screamTell':'!!','shrieksister|dropTell':'!!','shrieksister|snatchTell':'!!','shrieksister|waveTell':'!',   /* THE SHRIEK SISTERS (claude/rookery, src/shriek-sisters.js, by hand): the dive a shield turns (she is knocked down) is still a red !! - off the line is the read; the wave a yellow ! */
   'galeharpy|galeTell':'!',   /* (claude/rookery2) THE GALE HARPY (src/gale-harpy.js, by hand: a module foe): her gust a shield BRACES (half the shove, no lift) - yellow */
   'shrieksister|chainTell':'!!','shrieksister|rakeTell':'!','shrieksister|shockTell':'!','shrieksister|echoTell':'!!','shrieksister|grabTell':'!!',   /* (claude/sisters2) THE SIGNATURE MOVES: the chain stoop's dives (red, as the dive); the rake and the shock a shield turns (yellow: the rake knocks her down, the shock is braced); the echo's shards and the grab nothing turns */
@@ -363,8 +364,7 @@ export const MARK = {
   'wickerqueen|sweepLowTell': '!!', 'wickerqueen|thrustHighTell': '!!', 'wickerqueen|thrustLowTell': '!!', 'wickerqueen|tossTell': '!!', 'wickling|burstTell': '!!', 'wickling|stealTell': '!!',
   'wight|graspTell': '!!', 'willowisp|flareTell': '!', 'winchmaster|descendTell': '!!', 'winchmaster|hookTell': '!!', 'winchmaster|leapTell': '!!', 'winchmaster|leverTell': '!',
   'winchmaster|reverseTell': '', 'winchmaster|rideTell': '!!', 'winchmaster|sendTell': '!!', 'winchmaster|spillTell': '!!', 'winchmaster|sweepTell': '!!', 'winchmaster|tossTell': '!!',
-  'winchmaster|whirlTell': '!!', 'winchmaster|wrenchTell': '!', 'windcaller|blastTell': '!!', 'windcaller|galeTell': '!', 'windcaller|howlTell': '', 'windcaller|stoneTell': '!!',
-  'windcaller|wallTell': '!!', 'zombie|grabTell': '!', 'zombie|riseTell': '',
+  'winchmaster|whirlTell': '!!', 'winchmaster|wrenchTell': '!', 'zombie|grabTell': '!', 'zombie|riseTell': '',
 };
 /* MARK:END */
 

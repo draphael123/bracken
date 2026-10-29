@@ -8,7 +8,7 @@
 import { canvas, px, rect, mulberry } from '../px.js';
 
 export const GR = { g0: '#1a1d26', g1: '#2e333f', g2: '#555c6b', g3: '#6e7686', g4: '#8d96a7', g5: '#a3abb9', q: '#d4dae4',
-  lichen: '#9aa44a', lichenD: '#6e7a34', ochre: '#b49a58', moss: '#4a6a3a', mossL: '#7a9a46',
+  lichen: '#9aa44a', lichenD: '#6e7a34', boneD: '#a89c80', ochre: '#b49a58', moss: '#4a6a3a', mossL: '#7a9a46',
   grass: '#7a8a3a', grassL: '#a8b84a', grassD: '#3e4c26', peat: '#4a3e30', peatD: '#2e261e', heather: '#8a5a96', heatherL: '#b684c0',
   bed0: '#0a1218', bed1: '#122029', bed2: '#1c3038', slime: '#3e6a46', slimeL: '#6a9a58', wet: '#16303a',
   w0: '#2a2420', w1: '#4a4036', w2: '#6e6252', w3: '#8e8068', w4: '#b0a284', cord: '#c0a878', cordD: '#7a6438', paint: '#a3322a', paintD: '#6a1e1a', iron: '#3a3a42', bone: '#d8d2bc' };
@@ -112,9 +112,30 @@ function deck(l, r2, x) {
     return c; });
 }
 
+/* (claude/windcaller4art) THE SUMMIT LEDGES: a slab of the granite with a lit lip, a dark underside, a bracket stub under each end, chipped ends where the run stops, moss and heather in the seam */
+function ledge(l, r2, x) {
+  return once('l' + l + r2 + (x & 3), () => { const [c, g] = canvas(16, 16), rr = mulberry(hash(x & 3, 77) + 5);
+    rect(g, 0, 0, 16, 1, GR.g5); rect(g, 0, 1, 16, 1, GR.g4); rect(g, 0, 2, 16, 3, GR.g3); rect(g, 0, 4, 16, 1, GR.g2); rect(g, 0, 5, 16, 1, GR.g0); g.globalAlpha = 0.3; rect(g, 0, 6, 16, 2, '#000'); g.globalAlpha = 1;
+    rect(g, (3 + (x & 3) * 3) % 14 + 1, 1, 1, 4, GR.g1); for (let i = 0; i < 3; i++) px2(g, (rr() * 16) | 0, 1 + ((rr() * 3) | 0), i % 2 ? GR.q : GR.g5);
+    if (rr() < 0.7) { const sx = 1 + ((rr() * 11) | 0); rect(g, sx, 1, 3, 1, GR.moss); px2(g, sx + 1, 0, GR.mossL); } if (rr() < 0.5) { const sx = 2 + ((rr() * 10) | 0); px2(g, sx, 0, GR.heatherL); px2(g, sx + 1, 0, GR.heather); }
+    if (l) { g.clearRect(0, 0, 2, 1); g.clearRect(0, 1, 1, 1); rect(g, 0, 5, 2, 1, GR.g0); rect(g, 1, 6, 3, 2, GR.g2); rect(g, 1, 6, 3, 1, GR.g3); rect(g, 1, 8, 3, 1, GR.g0); }
+    if (r2) { g.clearRect(14, 0, 2, 1); g.clearRect(15, 1, 1, 1); rect(g, 14, 5, 2, 1, GR.g0); rect(g, 12, 6, 3, 2, GR.g2); rect(g, 12, 6, 3, 1, GR.g3); rect(g, 12, 8, 3, 1, GR.g0); }
+    return c; });
+}
+/* THE BLACKTHORN: the moor's own thorn (the east corner, the gully): a black tangle low down, long bone-pale barbs with blood on their points, a berry or two */
+function thorns(x, y) {
+  return once('h' + (x & 3) + (y & 1), () => { const [c, g] = canvas(16, 16), rr = mulberry(hash(x & 3, y & 1) + 9);
+    rect(g, 0, 12, 16, 4, '#1c1612'); rect(g, 0, 11, 16, 1, '#2a2018'); for (let i = 0; i < 6; i++) rect(g, (rr() * 14) | 0, 12 + ((rr() * 3) | 0), 3, 1, '#3a2c20');
+    for (let k = 0; k < 5; k++) { const bx = 1 + k * 3 + ((rr() * 2) | 0), h = 7 + ((rr() * 4) | 0), lean = k % 2 ? 1 : -1;
+      for (let j = 0; j < h; j++) { const xx = bx + (j > h * 0.55 ? lean : 0); px2(g, xx, 11 - j, j < 3 ? '#2a2018' : j < h - 3 ? GR.bone : '#f0e8d4'); }
+      px2(g, bx - lean, 11 - ((h * 0.5) | 0), '#2a2018'); const tipx = bx + lean; px2(g, tipx, 11 - h, GR.red || '#c9463d'); px2(g, tipx, 12 - h, '#c9463d'); px2(g, bx, 13 - h, GR.boneD); }
+    px2(g, 3, 10, '#3a2a5a'); px2(g, 10, 11, '#3a2a5a'); return c; });
+}
 export function moorTile(t, x, y, at, T, L) {
   const M = L && L.moorRocks; if (!M || x < M.x0 || x > M.x1) return null;
   const air = (dx, dy) => at(x + dx, y + dy) === T.AIR;
+  if (t === T.ONEWAY) return x >= 704 ? ledge(at(x - 1, y) !== T.ONEWAY, at(x + 1, y) !== T.ONEWAY, x) : null;
+  if (t === T.SPIKE) return x >= 647 ? thorns(x, y) : null;
   if (t === T.PLANK) return deck(at(x - 1, y) !== T.PLANK, at(x + 1, y) !== T.PLANK, x);
   if (t !== T.SOLID) return null;
   /* is it in the tarn: under a deep pool's surface, in its columns (the bed) or beside them (a wet wall) */

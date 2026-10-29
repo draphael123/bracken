@@ -7,20 +7,20 @@ const L=LEVELS.find(l=>l.id==='moor').build(),s=readFileSync(new URL('../src/mai
    left every one of them pointing at the wrong place. Everything below is read off the built level. */
 const TS=16,col=px=>Math.floor(px/TS),at=(x,y)=>L.grid[y*L.W+x];
 /* THE CUT HOLDS: about seven hundred columns (F1), and the builder's sections tile the level with no gap and no overlap */
-assert(L.W>=650&&L.W<=720,'Gale Moor is '+L.W+' columns: the rework cut it to about 700');
+assert(L.W>=650&&L.W<=760,'Gale Moor is '+L.W+' columns: the rework cut it to about 700 (claude/windcaller4: +49 for the Gale Stair)');
 {const S=L.sections;assert(S&&S.length>=7,'the builder names its sections');assert.equal(S[0].x0,0);assert.equal(S[S.length-1].x1,L.W-1,'the last section ends at the level edge');
  for(let i=1;i<S.length;i++)assert.equal(S[i].x0,S[i-1].x1+1,'section '+S[i].id+' starts where '+S[i-1].id+' ends');}
 /* THE LANDING (claude/moor2: the kite ride is gone - flight is the Sky Road's - and the half-built frame on the goblin scaffold is the bridge onto it).
    The shelf west of the Windcaller's wall is ground, the frame's span lands on it, and a checkpoint stands on it (B6: one OUTSIDE the arena walls) */
 {const S=L.sections.find(s=>s.id==='landing'),fr=L.ents.find(e=>e.t==='gustframe');assert(S&&fr,'the landing and the frame are built');
  assert(!L.flight&&!L.ents.some(e=>e.t==='stormkite'),'no kite ride: the moor is a ground level (scratch/brief-moor2.md)');
- assert.equal(fr.span[1]+1,S.x0,'the frame\'s span ends at the landing ('+fr.span[1]+' then '+S.x0+')');
+ {const G=L.sections.find(s=>s.id==='gale-stair');assert.equal(fr.span[1]+1,G?G.x0:S.x0,'the frame\'s span ends at the Gale Stair\'s shelf (claude/windcaller4; the landing before it) ('+fr.span[1]+' then '+(G?G.x0:S.x0)+')');if(G)for(let x=G.x0;x<G.x0+6;x++)assert(at(x,fr.row)===T.SOLID&&at(x,fr.row-1)!==T.SOLID,'the stair shelf is a shelf at the frame\'s row: '+x);}
  for(let x=S.x0;x<=S.x1;x++)assert(at(x,fr.row)===T.SOLID&&at(x,fr.row-1)!==T.SOLID,'the landing is a shelf at the frame\'s row: '+x);
  assert(L.ents.some(e=>e.t==='check'&&e.x>=S.x0&&e.x<=S.x1&&e.x<L.arena.wallL),'a checkpoint on the landing ('+S.x0+'-'+S.x1+'), west of the arena wall ('+L.arena.wallL+')');}
 assert(L.roosts.every(([x])=>x*16>L.arena.x0&&x*16<L.arena.x1));assert(L.ambushes.every(a=>a.waves.flat().every(e=>e[1]>a.wallL&&e[1]<a.wallR)));
 /* THE WIND RIVERS' BANK LADDER: a rope stands at the rail's far end, down to the river bed, for anyone who misses the exit */
 const R=L.airRails[0];{const x1=col(R.x1);assert([0,1,2].some(d=>at(x1+d,col(R.y)+6)===T.NET),'a bank ladder at the rail\'s exit, '+x1);}
-const noop=()=>{},P={x:Math.round((R.x0+R.x1)/2),y:R.y+8,vx:0,vy:20,dead:false,ground:false};const c=vm.createContext({L,P,time:0,jumpPress:false,keys:{},bossActive:false,PUPH:null,callerCalm:()=>false,dust:noop,boss:null,SFX:new Proxy({},{get:()=>noop})});vm.runInContext(s.slice(s.indexOf('const GUST_TELL'),s.indexOf('function drawToldGust')),c);c.updateMoorWind(1/60);assert.equal(P.vx,R.speed);c.jumpPress=true;c.updateMoorWind(1/60);assert.equal(P.vy,-260);assert.equal(P.railRelease,.6);c.jumpPress=false;
+const noop=()=>{},P={x:Math.round((R.x0+R.x1)/2),y:R.y+8,vx:0,vy:20,dead:false,ground:false};const c=vm.createContext({L,P,time:0,jumpPress:false,keys:{},bossActive:false,PUPH:null,callerCalm:()=>false,inGaleVent:()=>false,callerPitStep:noop,dust:noop,boss:null,SFX:new Proxy({},{get:()=>noop})});vm.runInContext(s.slice(s.indexOf('const GUST_TELL'),s.indexOf('function drawToldGust')),c);c.updateMoorWind(1/60);assert.equal(P.vx,R.speed);c.jumpPress=true;c.updateMoorWind(1/60);assert.equal(P.vy,-260);assert.equal(P.railRelease,.6);c.jumpPress=false;
 /* THE DOWNDRAFT CLIFF: pushed down while it blows, free in the lull, and sheltered on a lip */
 const D=L.downCliffs[0],rope=(()=>{for(let x=col(D.x0);x<=col(D.x1);x++)if(at(x,col(D.y1)-2)===T.NET)return x;return null;})();assert(rope!==null,'the cliff has its rope');
 Object.assign(P,{x:rope*16+8,y:D.y1-16,vy:-74});c.updateMoorWind(1/60);assert.equal(P.vy,100);c.time=D.on+0.5;P.vy=-74;c.updateMoorWind(1/60);assert.equal(P.vy,-74);c.time=0;P.y=D.shelters[0][2];P.vy=-74;c.updateMoorWind(1/60);assert.equal(P.vy,-74);

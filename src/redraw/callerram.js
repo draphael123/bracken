@@ -141,10 +141,11 @@ export function bakeWindcaller() {
     for (const [x, y] of [[15, 22], [18, 21], [21, 22]]) P(g, x, y + dy, 'F');
     for (const [x, y] of [[18, 26], [20, 27], [22, 26]]) P(g, x, y + dy, 'b');
   };
-  const frame = ({ cl, st = null, near = null, far = null, open = false, fx = 15, fy = 12, wind = 1, legs = [15, 20], farOver = false, bob = 0, robeTop = 22, hem = 42, kneel = false, dim = false, mdy = 0, after = null }) => {
+  const frame = ({ cl, st = null, stf = null, pre = null, near = null, far = null, open = false, fx = 15, fy = 12, wind = 1, legs = [15, 20], farOver = false, bob = 0, robeTop = 22, hem = 42, kneel = false, dim = false, mdy = 0, after = null }) => {
     const [c, g] = canvas(W, H);
     g.save(); g.translate(XO, YO);
     if (legs) feet(g, ...legs);
+    if (pre) pre(g);
     g.translate(0, -bob);
     if (far && !farOver) arm(g, ...far);
     cloak(g, cl);
@@ -152,6 +153,7 @@ export function bakeWindcaller() {
     robe(g, robeTop, hem + bob, kneel);
     mantle(g, mdy);
     if (st) staff(g, ...st);
+    if (stf) stf(g);
     headdress(g, fx, fy, wind); face(g, fx, fy, open, wind, dim);
     if (near) arm(g, ...near);
     g.restore();
@@ -181,7 +183,48 @@ export function bakeWindcaller() {
     st: [31, 44, 31, 13], near: [22, 24, 26, 29, 30, 28], legs: [12, 23] });
   const walk2 = frame({ cl: [[21, 21], [14, 20], [8, 19], [3, 18], [0, 20], [4, 22], [1, 25], [5, 27], [2, 30], [6, 31], [3, 34], [8, 35], [6, 38], [10, 38], [10, 42], [14, 41], [16, 26]],
     st: [27, 43, 28, 12], near: [22, 24, 24, 29, 27, 27], legs: [16, 19], bob: 1 });
-  return pack([idle, cast, fallen, howl, walk1, walk2], 19, 48, 16, 32);
+  // ---- (claude/windcaller4art) HIS OWN POSES for every told move, the reel of a blow, the fall and the rise. Frames 6..14; main.js picks them by mode.
+  // the crook stamped in any of six attitudes: 'up' (as held), 'down' (planted head-down), 'right' / 'left' (laid along a row, the cage hanging below), 'rightUp' / 'leftUp' (laid along a row, the cage standing above)
+  const crookT = (g, ax, ay, mode) => WC_CROOK.forEach((r, j) => { for (let i = 0; i < r.length; i++) { const k = r[i]; if (k === '.') continue;
+    const [x, y] = mode === 'down' ? [ax + i, ay + 10 - j] : mode === 'right' ? [ax + 10 - j, ay + i] : mode === 'left' ? [ax + j, ay + i] : mode === 'rightUp' ? [ax + 10 - j, ay - i] : mode === 'leftUp' ? [ax + j, ay - i] : [ax + i, ay + j]; P(g, x, y, k); } });
+  const shaft = (g, x0, y0, x1, y1) => { line(g, x0, y0, x1, y1, C.N, 1); line(g, x0, y0 + 1, x1, y1 + 1, C.n, 1); };
+  const dots = (g, P2, pts) => pts.forEach(([x, y, c]) => P2(g, x, y, c));
+  const star = (g, P2, x, y) => { P2(g, x, y, 'm'); P2(g, x - 1, y, 'v'); P2(g, x + 1, y, 'v'); P2(g, x, y - 1, 'v'); P2(g, x, y + 1, 'v'); };
+  const BILLOW = [[21, 21], [14, 17], [8, 14], [3, 13], [0, 15], [3, 17], [0, 20], [4, 22], [0, 25], [5, 27], [1, 31], [6, 32], [2, 36], [8, 37], [5, 41], [11, 40], [11, 43], [15, 42], [16, 26]];
+  const SWEPT = [[21, 21], [14, 19], [7, 17], [2, 17], [0, 19], [3, 21], [0, 24], [4, 26], [0, 29], [5, 30], [1, 34], [6, 35], [3, 38], [9, 38], [8, 42], [13, 42], [16, 26]];
+  // 6 hurlTell: the crook swept low along the floor in front of him, the cloak thrown wide behind, dust lifting off the ground ahead
+  const hurlTell = frame({ cl: BILLOW, stf: g => { crookT(g, 25, 33, 'right'); shaft(g, 22, 33, 26, 33); }, near: [22, 24, 26, 29, 29, 33], far: [16, 24, 11, 27, 7, 30, true], wind: 3, legs: [12, 21],
+    after: (g, P2) => dots(g, P2, [[37, 41, 'b'], [39, 40, 'B'], [41, 42, 'b'], [38, 43, 'B'], [40, 38, 'b'], [35, 42, 'B'], [42, 40, 'B'], [36, 39, 'b']]) });
+  // 7 devilTell: the crook spun high overhead on a raised arm, a ring of dust turning round it
+  const devilTell = frame({ cl: SWEPT, stf: g => { crookT(g, 25, 4, 'right'); shaft(g, 22, 4, 26, 4); }, near: [22, 24, 27, 15, 30, 6], far: [16, 24, 11, 20, 8, 14, true], wind: 2, open: true,
+    after: (g, P2) => { for (let k = 0; k < 14; k++) { const a = k / 14 * 6.2832; P2(g, Math.round(30 + Math.cos(a) * 11), Math.round(5 + Math.sin(a) * 3), k % 3 ? 'b' : 'm'); } P2(g, 41, 4, 'B'); P2(g, 19, 6, 'B'); } });
+  // 8 draftTell: the crook turned and driven point-down, the free palm pressing the air flat over his head
+  const draftTell = frame({ cl: SWEPT, stf: g => { shaft(g, 31, 24, 31, 33); crookT(g, 31, 33, 'down'); }, near: [22, 24, 27, 27, 31, 24], far: [16, 24, 12, 17, 14, 10, true], open: true, wind: 0,
+    after: (g, P2) => { for (const x of [6, 10, 34, 38]) { P2(g, x, 6, 'w'); P2(g, x, 8, 'l'); P2(g, x, 10, 'w'); P2(g, x - 1, 12, 'l'); P2(g, x + 1, 12, 'l'); } } });
+  // 9 bladeTell: the crook drawn back along his side like a blade from a sheath, a crescent of light along the front of it
+  const bladeTell = frame({ cl: SWEPT, stf: g => { shaft(g, 10, 27, 34, 27); crookT(g, 1, 27, 'left'); }, near: [22, 24, 28, 28, 33, 27], far: [16, 24, 12, 26, 9, 27], wind: 2, open: true,
+    after: (g, P2) => dots(g, P2, [[38, 21, 'w'], [39, 23, 'w'], [40, 25, 'm'], [40, 27, 'm'], [40, 29, 'w'], [39, 31, 'w'], [38, 33, 'l'], [36, 22, 'l'], [37, 33, 'l']]) });
+  // 10 blastTell: planted wide, one palm shoved out and the storm gathered into a ball in front of it
+  const blastTell = frame({ cl: BILLOW, st: [4, 44, 4, 13], near: [22, 24, 27, 26, 31, 27, true], far: [16, 24, 11, 25, 6, 27, true], open: true, wind: 3, legs: [12, 21],
+    after: (g, P2) => dots(g, P2, [[36, 27, 'm'], [35, 27, 'v'], [37, 27, 'v'], [36, 26, 'v'], [36, 28, 'v'], [35, 25, 'm'], [37, 29, 'm'], [34, 29, 'V'], [38, 25, 'V'], [36, 23, 'v'], [36, 31, 'v'], [32, 27, 'V'], [40, 27, 'V']]) });
+  // 11 reel: a blow takes him in the chest - head thrown back, the crook slipping, a hand up, stars
+  const reel = frame({ cl: [[21, 21], [15, 20], [10, 20], [6, 21], [3, 23], [6, 25], [3, 28], [7, 30], [4, 33], [8, 34], [6, 38], [10, 38], [10, 43], [14, 42], [16, 26]],
+    st: [28, 44, 25, 14], near: [22, 24, 27, 19, 29, 13, true], fx: 13, fy: 14, wind: -2, open: true, legs: [12, 21], mdy: 1,
+    after: (g, P2) => { for (const [x, y] of [[6, 8], [11, 4], [28, 6], [33, 11], [3, 15]]) star(g, P2, x, y); } });
+  // 12 tumble: thrown off his ledge - the cloak streaming upward, arms flung wide, the crook spinning away, no footing under him
+  const tumble = frame({ cl: [[21, 17], [14, 13], [8, 9], [3, 6], [0, 8], [4, 12], [1, 15], [5, 18], [2, 22], [6, 24], [3, 28], [8, 29], [5, 32], [10, 32], [10, 35], [14, 34], [16, 22]],
+    st: [33, 36, 37, 14], near: [22, 24, 27, 17, 30, 11, true], far: [16, 24, 11, 17, 8, 11, true], open: true, wind: 3, legs: null, robeTop: 22, hem: 37, fy: 13, farOver: true,
+    pre: g => { rect(g, 14, 38, 3, 3, C.G); P(g, 13, 40, 'G'); rect(g, 20, 39, 3, 3, C.g); P(g, 23, 41, 'g'); } });
+  // 13 down: dropped on the floor, dazed - slumped over his knees, the crook lying beside him, stars circling his head
+  const down = frame({ cl: [[21, 30], [14, 29], [8, 30], [4, 33], [1, 37], [4, 38], [0, 41], [5, 42], [4, 44], [12, 44], [16, 34]],
+    stf: g => { shaft(g, 14, 43, 40, 43); crookT(g, 32, 43, 'rightUp'); }, near: [22, 33, 24, 39, 28, 40], legs: [11, 21], robeTop: 31, hem: 43, kneel: true, dim: true, mdy: 10, fx: 18, fy: 27, wind: -1,
+    after: (g, P2) => { for (let k = 0; k < 5; k++) { const a = k / 5 * 6.2832 + 0.5; star(g, P2, Math.round(24 + Math.cos(a) * 9), Math.round(21 + Math.sin(a) * 2.5)); } } });
+  // 14 rise: lifted back up the wind - feet hanging, arms out, the crook floating, streaks of air under him
+  const rise = frame({ cl: [[21, 21], [14, 22], [8, 24], [3, 26], [0, 28], [4, 30], [1, 33], [5, 35], [2, 38], [6, 39], [4, 42], [9, 42], [9, 46], [13, 45], [16, 28]],
+    st: [37, 38, 37, 12], near: [22, 24, 29, 23, 34, 21, true], far: [16, 24, 9, 22, 4, 20, true], legs: null, bob: 5, hem: 38, open: true, wind: 2,
+    pre: g => { rect(g, 15, 39, 3, 3, C.G); P(g, 14, 41, 'G'); rect(g, 20, 40, 3, 3, C.g); P(g, 23, 42, 'g'); },
+    after: (g, P2) => dots(g, P2, [[12, 47, 'w'], [12, 49, 'l'], [17, 46, 'w'], [17, 49, 'l'], [22, 47, 'w'], [22, 50, 'l'], [27, 46, 'l'], [27, 49, 'w'], [8, 49, 'l'], [31, 48, 'l']]) });
+  return pack([idle, cast, fallen, howl, walk1, walk2, hurlTell, devilTell, draftTell, bladeTell, blastTell, reel, tumble, down, rise], 19, 48, 16, 32);
 }
 
 // ---------------------------------------------------------------- THE RAM LORD
