@@ -10293,7 +10293,7 @@
   }
  },
  "kitchengate": {
-  "hash": "e19d2ea38c1a",
+  "hash": "b7c5cd59e596",
   "boss": {
    "boss": "grubbag",
    "wins": 0,
@@ -10394,7 +10394,7 @@
    ]
   },
   "carried": {
-   "from": "271f666dee38",
+   "from": "e19d2ea38c1a",
    "parts": [
     "boss"
    ]
