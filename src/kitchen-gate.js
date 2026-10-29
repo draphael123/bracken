@@ -44,6 +44,7 @@
 export const KG_INS = [[201, 78], [300, 82]];   /* (claude/kitchengate3) [the old column a room is let in before, its width]: THE HANGING LARDER, THE CARVERY */
 export const oldCol = c => c + KG_INS.reduce((s, [at, w]) => s + (c >= at ? w : 0), 0);   /* an OLD-grid column -> where it stands now */
 const LARDER = 201, CARVERY = oldCol(300) - 82;   /* the new rooms' first columns (real) */
+export const LARDER_COL = LARDER, CARVERY_COL = CARVERY;
 export const KITCHEN = { W: oldCol(432), H: 48, arena: [oldCol(390), oldCol(428)], floor: 22, roof: 6 };
 export const SECTIONS = [['THE UNDERCELLARS', 0, 104], ['THE SPIT HALL', 104, 201], ['THE HANGING LARDER', LARDER, LARDER + 78], ['THE GREASE KITCHENS', oldCol(201), CARVERY], ['THE CARVERY', CARVERY, oldCol(300)],
   ['THE FEAST HALL', oldCol(300), oldCol(372)], ["GRUBBAG'S TABLE", oldCol(372), oldCol(432)]];

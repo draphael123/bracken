@@ -4,6 +4,7 @@
 //   zone 2 THE GREASE KITCHENS x < 300   fat-glazed cream and ochre tile (a checker on the floors), copper-green trim, grease on every lip
 //   zone 3 THE FEAST HALL      x < 372   warm sandstone ashlar with a red banner-band and a gold line; flagstones
 //   zone 4 GRUBBAG'S TABLE     x >= 372  dark royal stone in the queen's colours: plum and gold
+//   (claude/kitchengate3) the columns are the OLD grid's: two rooms were let in - THE HANGING LARDER (zone 0, cold cellar brick) after the spit hall, THE CARVERY (zone 2, glazed tile) after the grease kitchens; src/kitchen-gate.js KG_ZONES holds the real columns
 //   SOLID  TOP a lit walked lip (flags / tile / grease-glazed)   FACE the wall, lit on the left   CEIL the vault's underside   MASS packed courses fading to rubble
 //   ONEWAY / PLANK  a DRESSER SHELF: a scrubbed board on iron brackets (not a log, not a plank walk)
 //   SPIKE  a bed of HOT COALS over an iron grate (the fire pits and the trench): the glow is drawn here, the flicker by KA.drawAmbient
