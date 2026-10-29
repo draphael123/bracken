@@ -75,7 +75,7 @@ ok(!at(boss, floodReach(L, T, { noAssist: true })), 'legs alone (the plain fill)
 { const g = L.ents.filter(e => e.t === 'galeharpy'); ok(g.length >= 3, 'THE GALE HARPY (the level\'s one new foe, src/gale-harpy.js): ' + g.length + ' placed (taught on the narrow ledge, at the hung nest, at the last ride)'); }
 /* (claude/rookery3) THE BONE STAIR GOES ON (Daniel 10-29: "a little bit longer ... a little bit more platforming"): THE GALE SPIRES (a descent spire to spire, a gale harpy beating you back), THE NEST
    FACE (two stepped faces on lashed shelves, a gale on the top), THE RELAY (two rides). The spires are the only way down to the face; a fall to the gorge floor is a climb back */
-{ const SP = [[367, 368], [370, 371], [374, 375], [377, 378], [381, 382], [384, 385], [388, 389], [391, 392]], rr = y => y + 6, basin = [395, rr(22)], door = [432, rr(4)];
+{ const SP = [[367, 368], [370, 371], [374, 375], [377, 378], [381, 382], [384, 385], [388, 389], [390, 391]], rr = y => y + 6, basin = [395, rr(22)], door = [432, rr(4)];
   ok(SP.every(([a, b]) => [a, b].every(x => L.grid[rr(5) * L.W + x] === T.AIR) && L.grid[(L.H - 1) * L.W + a] === T.SOLID), 'THE GALE SPIRES: eight spires two wide, each standing on the gorge floor (nothing floats)');
   const g = Uint8Array.from(L.grid); for (const [a, b] of SP) for (let x = a; x <= b; x++) for (let y = 0; y < rr(28); y++) g[y * L.W + x] = T.AIR;
   ok(!at({ x: basin[0], y: basin[1] }, floodReach({ ...L, grid: g }, T)), 'the spires are the way down to THE NEST FACE (without them its basin is out of reach)');
