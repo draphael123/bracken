@@ -274,15 +274,15 @@ export const STUCK = {
     { id: 'kg-spit1', zone: [105, 19, 118, 25], at: [108, 25], done: ['kgbellows', 108, 25, 'on'], line: 'THE LEDGE IS TOO HIGH: STRIKE THE BELLOWS, RIDE A SPIT UP' },
     { id: 'kg-spit2', zone: [120, 14, 146, 19], at: [135, 19], done: ['kgbellows', 135, 19, 'on'], line: 'THE LEDGE IS TOO HIGH: STRIKE THE BELLOWS, RIDE A SPIT UP' },
     { id: 'kg-trench', zone: [147, 4, 166, 13], at: [161, 13], done: ['kgbellows', 161, 13, 'on'], line: 'STRIKE THE BELLOWS: RISE ON THE STEAM, CATCH A HOOK' },
-    /* (claude/kitchengate3) THE HANGING LARDER (201-278) and THE CARVERY (378-459) were let in: the halls after them moved east 78 and 160 columns. The larder's teach pit and the
+    /* (claude/kitchengate3) THE HANGING LARDER (201-278) and THE CARVERY (378-469) were let in: the halls after them moved east 78 and 170 columns. The larder's teach pit and the
        carvery's line and perch have no prop to strike - the nudge says the hop, the haul line and the flue's read */
     { id: 'kg-larder-hop', zone: [201, 6, 225, 23], at: [204, 13], line: 'UP THE RACKS, TAKE A HOOK, JUMP IN THE RED STRETCH' },
     { id: 'kg-door1', zone: [299, 14, 315, 23], at: [301, 23], done: ['kgbellows', 301, 23, 'on'], line: 'A TALLOW DOOR: STRIKE THE BELLOWS, LET THE GREASE BURN' },
-    { id: 'kg-carvery-haul', zone: [378, 6, 407, 23], at: [384, 23], line: 'THE HAUL LINE: TAKE A HOOK LOW, AT THE LINE\'S FAR END' },
-    { id: 'kg-flue', zone: [408, 6, 413, 13], at: [413, 13], line: 'TAKE THE HOOK AS THE FLUE GLOWS: YOU PASS AS IT DIES' },
-    { id: 'kg-door3', zone: [438, 13, 452, 21], at: [442, 21], done: ['kgbellows', 442, 21, 'on'], line: 'THE CARVERY DOOR: STRIKE THE BELLOWS, LET THE GREASE BURN' },
-    { id: 'kg-spit3', zone: [460, 8, 475, 21], at: [464, 21], done: ['kgbellows', 464, 21, 'on'], line: 'THE GALLERY IS TOO HIGH: STRIKE THE BELLOWS, RIDE A SPIT UP' },
-    { id: 'kg-door2', zone: [501, 13, 514, 21], at: [503, 21], done: ['kgbellows', 503, 21, 'on'], line: 'THE BUTTERY DOOR: STRIKE THE BELLOWS, LET IT BURN' },
+    { id: 'kg-carvery-haul', zone: [378, 6, 406, 23], at: [399, 23], line: 'THE LINE CARRIES YOU: HOLD UP UNDER THE HAUL HOOK' },
+    { id: 'kg-flue', zone: [418, 6, 423, 13], at: [423, 13], line: 'TAKE THE HOOK AS THE FLUE GLOWS: YOU PASS AS IT DIES' },
+    { id: 'kg-door3', zone: [448, 13, 462, 21], at: [452, 21], done: ['kgbellows', 452, 21, 'on'], line: 'THE CARVERY DOOR: STRIKE THE BELLOWS, LET THE GREASE BURN' },
+    { id: 'kg-spit3', zone: [470, 8, 485, 21], at: [474, 21], done: ['kgbellows', 474, 21, 'on'], line: 'THE GALLERY IS TOO HIGH: STRIKE THE BELLOWS, RIDE A SPIT UP' },
+    { id: 'kg-door2', zone: [511, 13, 524, 21], at: [513, 21], done: ['kgbellows', 513, 21, 'on'], line: 'THE BUTTERY DOOR: STRIKE THE BELLOWS, LET IT BURN' },
   ],
   palisadewood: [
     { id: 'pw-edge-ramp', zone: [12, 33, 24, 37], at: [19, 37], done: ['scaffoldprop', 19, 37, 'on'], line: 'THE LEDGE IS TOO HIGH: KNOCK OUT THE SCAFFOLD PROP' },

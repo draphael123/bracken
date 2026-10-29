@@ -38,12 +38,13 @@
 //   between them") TWO NEW ROOMS, built of the level's own machines, are let in between the old halls - every old hall keeps its own layout, moved east whole (oldCol below):
 //    201-279  THE HANGING LARDER    the HOOK-TO-HOOK HOP: TAUGHT safe (a fall is a walk back up the salting racks), then TESTED twice over THE SALTING PIT's coals - the
 //                                   second hand-off is onto THE HAUL LINE, a chain that runs UPHILL (src/zipline.js dir) and hauls you up to the attendant's ledge
-//    378-460  THE CARVERY           the REMIX: THE HAUL LINE again, over a serving line that runs at you with dishes, bombs and a cook; then a hop over the carving pit onto a
-//                                   rail THE FLUE cuts (a flare out of the coal bed, up through the hooks: time your hook to its glow); THE CARVERY DOOR (a stove, its trail, tallow)
+//    378-470  THE CARVERY           the REMIX: THE CARVING LINE (a serving line) carries you, its dishes, bombs and a cook east to the coals - THE HAUL LINE hangs its foot over
+//                                   the line's end and hauls you up over the coals; then a hop over the carving pit onto a rail THE FLUE cuts (a flare out of the coal bed, up
+//                                   through the hooks: time your hook to its glow); THE CARVERY DOOR (a stove, its trail, tallow)
 //   and THE FEAST HALL's hearth trench (the hooks' exam) is a two-rail hop now. Old columns in the comments below are the OLD grid's: oldCol maps them.
-export const KG_INS = [[201, 78], [300, 82]];   /* (claude/kitchengate3) [the old column a room is let in before, its width]: THE HANGING LARDER, THE CARVERY */
+export const KG_INS = [[201, 78], [300, 92]];   /* (claude/kitchengate3) [the old column a room is let in before, its width]: THE HANGING LARDER, THE CARVERY */
 export const oldCol = c => c + KG_INS.reduce((s, [at, w]) => s + (c >= at ? w : 0), 0);   /* an OLD-grid column -> where it stands now */
-const LARDER = 201, CARVERY = oldCol(300) - 82;   /* the new rooms' first columns (real) */
+const LARDER = 201, CARVERY = oldCol(300) - 92;   /* the new rooms' first columns (real) */
 export const LARDER_COL = LARDER, CARVERY_COL = CARVERY;
 export const KITCHEN = { W: oldCol(432), H: 48, arena: [oldCol(390), oldCol(428)], floor: 22, roof: 6 };
 export const SECTIONS = [['THE UNDERCELLARS', 0, 104], ['THE SPIT HALL', 104, 201], ['THE HANGING LARDER', LARDER, LARDER + 78], ['THE GREASE KITCHENS', oldCol(201), CARVERY], ['THE CARVERY', CARVERY, oldCol(300)],
@@ -55,14 +56,14 @@ const arc = (a, b) => [oldCol(a), oldCol(b)];
 export const ARCS = {
   copper: { teach: [56, 70], test: [82, 98], remix: [160, 186] },
   spit: { teach: [106, 120], test: [134, 148], exam: arc(302, 316) },
-  trail: { teach: arc(221, 240), remix: arc(283, 297), reprise: [CARVERY + 64, CARVERY + 76], exam: arc(342, 357) },
+  trail: { teach: arc(221, 240), remix: arc(283, 297), reprise: [CARVERY + 77, CARVERY + 86], exam: arc(342, 357) },
   hooks: { teach: [30, 52], test: [164, 186], develop: arc(250, 282), exam: arc(320, 342) },
   grease: { teach: arc(202, 221), develop: arc(246, 282), exam: arc(342, 354) },
   butcher: { teach: arc(283, 298), exam: arc(342, 356) },
-  belt: { teach: [5, 17], test: [188, 197], remix: arc(226, 235), reprise: [CARVERY + 4, CARVERY + 29], exam: arc(374, 387) },   /* (claude/kitchengate2) THE SERVING LINES - and the boss's own */
-  flare: { teach: [69, 71], test: [128, 130], remix: [CARVERY + 53, CARVERY + 55], exam: arc(377, 384) },
+  belt: { teach: [5, 17], test: [188, 197], remix: arc(226, 235), reprise: [CARVERY + 4, CARVERY + 27], exam: arc(374, 387) },   /* (claude/kitchengate2) THE SERVING LINES - and the boss's own */
+  flare: { teach: [69, 71], test: [128, 130], remix: [CARVERY + 63, CARVERY + 65], exam: arc(377, 384) },
   /* (claude/kitchengate3) THE HOOK-TO-HOOK HOP: taught safe, tested twice over coals (the second onto the uphill haul line), remixed over a serving line and through the flue, examined over the hearth trench */
-  hop: { teach: [LARDER + 3, LARDER + 28], test: [LARDER + 33, LARDER + 68], remix: [CARVERY + 5, CARVERY + 62], exam: arc(322, 342) },
+  hop: { teach: [LARDER + 3, LARDER + 28], test: [LARDER + 33, LARDER + 68], remix: [CARVERY + 26, CARVERY + 72], exam: arc(322, 342) },
 };
 export const KG_RULE = 'STRIKE A BELLOWS AND ITS FIRE ROARS: THE SPIT OVER IT TURNS, THE COPPER ON IT STEAMS, THE GREASE BY IT BURNS.';
 export const WHEEL = { R: 64, n: 2, w: 36, h: 6, period: 7 };   /* THE GREAT SPIT: its radius (px, to a spit's top), its two spits (opposite: banked, one rests in the pit and one at the top - never a stair), a spit's size and one turn's time while it roars */
@@ -197,7 +198,7 @@ export function buildKitchenGate({ painter, T, TS }) {
   const a = LARDER;
   /* the larder hall: its lip (the spit hall's far floor runs on, row 14), the teach pit (a safe floor, row 23), the first landing (row 19), THE SALTING PIT (coals, row 26), the attendant's
      ledge (row 16), and the step down to the grease kitchens' floor (row 24) */
-  air(a, a + 77, 6, 13); air(a + 4, a + 24, 14, 22); air(a + 25, a + 33, 14, 18); air(a + 34, a + 66, 14, 25); spike(a + 34, a + 66, 26); air(a + 67, a + 74, 14, 15); air(a + 75, a + 77, 14, 23);
+  air(a, a + 77, 6, 13); air(a + 4, a + 24, 14, 22); air(a + 25, a + 33, 14, 18); air(a + 34, a + 68, 14, 25); spike(a + 34, a + 68, 26); air(a + 69, a + 74, 14, 15); air(a + 75, a + 77, 14, 23);
   sign(a + 0, 13, "THE HANGING LARDER. THE HOOK RAILS RUN ON CHAINS: AT A RAIL'S END IT DROPS YOU.");
   /* TEACH (safe): two rails, the second lower and under the first's end. JUMP in the red stretch (the hand-off) and you carry your height to the next hook; ride to the end and you
      drop into the larder pit - a floor, and the salting racks back up to the lip */
@@ -206,17 +207,19 @@ export function buildKitchenGate({ painter, T, TS }) {
   shelf(a + 5, a + 7, 20); shelf(a + 5, a + 7, 17); racks.push([a + 5, a + 7, 20], [a + 5, a + 7, 17]);   /* the salting racks: the way back up from the pit */
   /* the larder's shelving (a second height; none of it a way past a rail): a spice shelf over the lip, a salting rack in the pit (it reaches the first rail again - a retry, not a way round), a salt-box
      shelf over the first landing, a ham shelf over the attendant's ledge */
-  for (const [x0, x1, y] of [[a + 0, a + 3, 10], [a + 8, a + 11, 19], [a + 26, a + 29, 16], [a + 30, a + 33, 13], [a + 69, a + 72, 12]]) { shelf(x0, x1, y); racks.push([x0, x1, y]); ent('coin', Math.round((x0 + x1) / 2), y - 1); }
+  for (const [x0, x1, y] of [[a + 0, a + 3, 11], [a + 8, a + 11, 19], [a + 26, a + 29, 16], [a + 30, a + 33, 13]]) { shelf(x0, x1, y); racks.push([x0, x1, y]); ent('coin', Math.round((x0 + x1) / 2), y - 1); }
+  /* THE HAM RACKS: the larder's own - high under the vault over the teach pit and the attendant's ledge, the hams hung from them (out of reach: no coin on them, and no way past a rail) */
+  for (const [x0, x1, y] of [[a + 12, a + 15, 9], [a + 17, a + 20, 9], [a + 22, a + 24, 9], [a + 70, a + 73, 12]]) { shelf(x0, x1, y); racks.push([x0, x1, y]); prop('pans', x0 + 1, y); }
   deco(a + 9, 22, 'barrel'); deco(a + 12, 22, 'barrel', 1); deco(a + 20, 22, 'barrel'); coins([a + 14, 22], [a + 17, 22], [a + 14, 13], [a + 15, 13]);   /* (the two in the air ride the hop's arc: a trail to follow) */
   prop('pans', a + 10, 10); prop('flour', a + 22, 23); prop('block', a + 30, 19); prop('spices', a + 70, 16);
   /* the first landing: two cooks at their blocks */
   foe('sprig', a + 29, 18, 'larderA', { face: -1 }); foe('hearthgob', a + 32, 18, 'larderA', { face: -1 }); coins([a + 26, 18], [a + 31, 18]);
   /* TEST, TWICE, OVER THE SALTING PIT's COALS: a hop to a lower rail, and a hop from that onto THE HAUL LINE - a chain that runs UPHILL - to the attendant's ledge */
-  const s3 = haulLine(a + 56, 386, a + 68, 244), s2 = hookRail(a + 45, 21, a + 55, 23, { hop: [a + 51.4, a + 53.3], hand: s3 }); hookRail(a + 33, 18, a + 44, 20, { hop: [a + 40.6, a + 43.2], hand: s2 });
+  const s3 = haulLine(a + 56, 398, a + 71, 200), s2 = hookRail(a + 45, 21, a + 55, 23, { hop: [a + 51.4, a + 53.9], hand: s3 }); hookRail(a + 33, 18, a + 44, 20, { hop: [a + 40.6, a + 43.2], hand: s2 });
   sign(a + 30, 18, 'THE SALTING PIT. TWO HAND-OFFS OVER THE COALS. THE LAST CHAIN HAULS YOU UP.');
   coins([a + 44, 18], [a + 45, 18], [a + 54, 20], [a + 55, 20], [a + 60, 21], [a + 64, 18]);   /* on the hops' arcs and up the haul line */
   /* the attendant's ledge: he throws plates as you come up the haul line, and holds the ledge */
-  foe('attendant', a + 72, 15, 'larderB', { face: -1 }); coins([a + 68, 15], [a + 71, 15]);
+  foe('attendant', a + 72, 15, 'larderB', { face: -1 }); coins([a + 70, 15], [a + 73, 15]);
   shelf(a + 76, a + 77, 19); racks.push([a + 76, a + 77, 19]);   /* a dresser on the step down */
   }
   M = oldCol;
@@ -259,35 +262,40 @@ export function buildKitchenGate({ painter, T, TS }) {
   coins([288, 23], [297, 23]); shelf(288, 292, 20); coins([289, 19], [291, 19]);
   ent('check', 299, 23);                                                                 /* SHRINE THREE: the grease kitchens are behind you */
 
-  // ================= (claude/kitchengate3) THE CARVERY (378-460, new): THE REMIX - the haul line over a serving line, a hop, and the flue that cuts the hooks =================
+  // ================= (claude/kitchengate3) THE CARVERY (378-470, new): THE REMIX - a conveyor to the haul line's foot, a hop, and the flue that cuts the hooks =================
   M = c => c; {
   const b = CARVERY;
-  /* the carving floor (row 24: the grease kitchens' floor runs on), the carving pit (coals, row 27), the landing and THE CARVERY DOOR (row 22: the feast hall's floor) */
-  air(b, b + 29, 6, 23); air(b + 30, b + 35, 6, 13); air(b + 36, b + 59, 6, 26); spike(b + 36, b + 59, 27); air(b + 60, b + 81, 6, 21);
-  sign(b + 1, 23, 'THE CARVERY. THE HAUL LINE RUNS UP: TAKE A HOOK LOW, OFF THE SERVING LINE.');
-  /* REMIX 1: THE CARVING LINE - the floor is a serving line running AT you (west), dishes and bombs on it and a cook riding it; over it THE HAUL LINE takes you up the carvery wall
-     (its low end is in reach only at the line's far end, where the line carries you away from it) */
-  belt('carveLine', b + 4, b + 29, 24, -1, { v: 40, every: 2.4, bomb: 3, foes: true });
-  haulLine(b + 5, 366, b + 30, 208);
-  foe('sprig', b + 18, 23, 'carvery', { face: -1 }); prop('hatch', b + 27, 24); prop('block', b + 2, 24);
-  coins([b + 10, 20], [b + 16, 17], [b + 22, 15]);
-  /* the carvers' perch at the top of the wall */
-  foe('hearthgob', b + 33, 13, 'perch', { face: -1 }); prop('pans', b + 32, 10);
-  /* the carvery's dressers: one height over the carving line (one only - two would be a stair up the wall past the haul line), and over the landing and the door's trail */
-  for (const [x0, x1, y] of [[b + 0, b + 3, 20], [b + 6, b + 9, 20], [b + 12, b + 15, 20], [b + 18, b + 21, 20], [b + 24, b + 27, 20], [b + 31, b + 34, 10], [b + 61, b + 64, 18], [b + 66, b + 69, 18], [b + 70, b + 73, 15], [b + 78, b + 81, 18]]) { shelf(x0, x1, y); racks.push([x0, x1, y]); ent('coin', Math.round((x0 + x1) / 2), y - 1); }
+  /* the carving floor (row 24: the grease kitchens' floor runs on) and its line, the carving block at the line's end, the haul pit (coals, row 27), the carvers' perch (top row 14), the
+     carving pit (coals), the landing and THE CARVERY DOOR (row 22: the feast hall's floor) */
+  air(b, b + 28, 6, 23); air(b + 29, b + 39, 6, 26); spike(b + 29, b + 39, 27); air(b + 40, b + 45, 6, 13); air(b + 46, b + 69, 6, 26); spike(b + 46, b + 69, 27); air(b + 70, b + 91, 6, 21);
+  block(b + 28, b + 28, 23, 23);   /* THE CARVING BLOCK: the line stops you against it, at the coals' lip */
+  sign(b + 1, 23, 'THE CARVERY. THE LINE CARRIES YOU TO THE COALS: HOLD UP UNDER THE HAUL HOOK.');
+  /* REMIX 1: THE CARVING LINE - the floor is a serving line running EAST, to the coals: it carries you, its dishes, its BOMBS (bat them on: they go off in the pit) and a cook. THE HAUL
+     LINE's foot hangs over the line's end, by the carving block - hold UP as the line brings you under it and it hauls you up over the coals to the carvers' perch */
+  belt('carveLine', b + 4, b + 27, 24, 1, { v: 40, every: 2.4, bomb: 3, foes: true });
+  haulLine(b + 21, 380, b + 42, 170);   /* (its rope clears the perch's face by a body: it lets you off over the perch, never into its wall) */
+  foe('sprig', b + 16, 23, 'carvery', { face: -1 }); prop('hatch', b + 5, 24); prop('block', b + 2, 24);
+  /* the carvers' perch: a cook at his block */
+  foe('hearthgob', b + 43, 13, 'perch', { face: -1 }); prop('pans', b + 42, 10);
+  /* the carvery's dressers: one height over the carving line (one only: the line's floor is no way up), over the perch, over the landing and the door's trail */
+  /* the carving counters (low, row 22) and a dresser beside each (row 19, up off a counter), the ham rack over the line's end (high, out of reach) */
+  for (const [x0, x1, y] of [[b + 5, b + 8, 22], [b + 15, b + 18, 22]]) { shelf(x0, x1, y); racks.push([x0, x1, y]); }
+  shelf(b + 24, b + 27, 12); racks.push([b + 24, b + 27, 12]); prop('pans', b + 25, 12);
+  for (const [x0, x1, y] of [[b + 1, b + 4, 19], [b + 9, b + 12, 19], [b + 19, b + 22, 19], [b + 42, b + 45, 11], [b + 71, b + 74, 19], [b + 76, b + 79, 19], [b + 80, b + 83, 16], [b + 88, b + 91, 19]]) { shelf(x0, x1, y); racks.push([x0, x1, y]); ent('coin', Math.round((x0 + x1) / 2), y - 1); }
+  coins([b + 30, 21], [b + 34, 18], [b + 37, 16]);   /* up the haul line */
   /* REMIX 2: THE FLUE - a hop over the carving pit onto a rail that a flare out of the coal bed cuts: up through the hooks, on its rhythm. Take your hook from the perch while the flue
      glows or flares, and you pass over it as it dies (tools/kitchengate.mjs flies it: 1.65-2.0 s from the perch to the flue, for every hero) */
-  const fl = flare('flue', b + 53, b + 55, 27, { period: 2.4, tell: 0.8, on: 0.8, phase: 0, h: 156, bed: 'coals' });
-  const c2 = hookRail(b + 47, 16, b + 62, 21); hookRail(b + 35, 13, b + 46, 15, { hop: [b + 42.6, b + 45.2], hand: c2, flue: { id: fl.id, tIn: 1.6, tOut: 2.05 } });
-  sign(b + 34, 13, 'THE FLUE FLARES UP THROUGH THE HOOKS. TAKE A HOOK AS IT GLOWS: YOU PASS AS IT DIES.');
-  coins([b + 46, 13], [b + 47, 13]);   /* on the hop's arc */
+  const fl = flare('flue', b + 63, b + 65, 27, { period: 2.4, tell: 0.8, on: 0.8, phase: 0, h: 156, bed: 'coals' });
+  const c2 = hookRail(b + 57, 16, b + 72, 21); hookRail(b + 45, 13, b + 56, 15, { hop: [b + 52.6, b + 55.2], hand: c2, flue: { id: fl.id, tIn: 1.6, tOut: 2.05 } });
+  sign(b + 44, 13, 'THE FLUE FLARES UP THROUGH THE HOOKS. TAKE A HOOK AS IT GLOWS: YOU PASS AS IT DIES.');
+  coins([b + 56, 13], [b + 57, 13]);   /* on the hop's arc */
   /* THE CARVERY DOOR (the trail, again): the carvers' stove, its grease trail, a cook on it, and a tallow door at its end */
-  block(b + 73, b + 80, 6, 12);
-  const stove4 = fire('stove4', b + 64, 21, b + 66, 22);
-  const door3 = tallow('door3', b + 75, b + 76, 13, 21);
-  trail(stove4, 'trail4', b + 67, b + 74, 22, door3);
-  sign(b + 63, 21, 'THE CARVERY DOOR. STOKE THE STOVE: THE TRAIL BURNS TO THE TALLOW.');
-  foe('sprig', b + 71, 21, 'carveDoor', { face: -1 }); coins([b + 61, 21], [b + 78, 21], [b + 80, 21]); prop('oven', b + 61, 22);
+  block(b + 83, b + 90, 6, 12);
+  const stove4 = fire('stove4', b + 74, 21, b + 76, 22);
+  const door3 = tallow('door3', b + 85, b + 86, 13, 21);
+  trail(stove4, 'trail4', b + 77, b + 84, 22, door3);
+  sign(b + 73, 21, 'THE CARVERY DOOR. STOKE THE STOVE: THE TRAIL BURNS TO THE TALLOW.');
+  foe('sprig', b + 81, 21, 'carveDoor', { face: -1 }); coins([b + 71, 21], [b + 88, 21], [b + 90, 21]); prop('oven', b + 71, 22);
   }
   M = oldCol;
 

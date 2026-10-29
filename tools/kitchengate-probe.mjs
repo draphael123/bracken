@@ -38,7 +38,7 @@ try {
   /* 4. THE OVERTURNED POT */
   tp(O(248),23);for(let i=0;i<60;i++){P.vx=80;BK.sim(1);}const rc=rd().race;BK.sim(60);out.race={state:rc.state,front:rd().race.front,from:O(246)*16};
   /* 5. THE BUTCHER on the stove's trail burns */
-  tp(O(287),23);BK.sim(5);const bu=BK.enemies().find(e=>e.alive&&e.t==='butcher'&&e.x<O(300)*16);if(bu){bu.x=O(292)*16;bu.y=24*16;bu.vx=0;}KG.stoke('stove2');let burnt=false;for(let i=0;i<240&&!burnt;i++){BK.sim(1);P.hp=P.maxHp;if(bu){bu.x=292*16;burnt=bu.kgBurn>0;}}
+  tp(O(287),23);BK.sim(5);const bu=BK.enemies().find(e=>e.alive&&e.t==='butcher'&&e.x<O(300)*16);if(bu){bu.x=O(292)*16;bu.y=24*16;bu.vx=0;}KG.stoke('stove2');let burnt=false;for(let i=0;i<240&&!burnt;i++){BK.sim(1);P.hp=P.maxHp;if(bu){bu.x=O(292)*16;burnt=bu.kgBurn>0;}}
   out.butcher={found:!!bu,burnt,take:bu?KG.takeFoe(bu,10):0};
   /* 6. THE RECIPE PAGES open the spice vault */
   for(const [x,y] of BK.L.kgPages){tp(x,y);BK.sim(6);}out.pages=rd().pages;out.vault=rd().vault;out.vaultCell=cell(O(362),22);
