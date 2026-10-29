@@ -21043,7 +21043,8 @@ function chase3RoomCtx(e){return {P,solid:(x,y)=>tileAt(Math.floor(x/TS),Math.fl
 function chase3Vault(s){const e=boss&&boss.t==='undeadmage'?boss:null,[x0,x1,y0,y1]=s.crush;
  if(e&&chase3VaultReady(e)&&(e.room||0)===s.room&&e.x>x0*TS&&e.x<(x1+1)*TS&&e.y>y0*TS&&e.y<=(y1+1)*TS+2){e.mode='crushed';e.modeT=1;number(e.x,e.y-52,'THE VAULT COMES DOWN ON HIM','#ff6b6b');shakeCam(8);flash=Math.max(flash,.15);}
  else if(e&&e.alive&&e.leg==='chase')number(s.x,s.y-s.h*TS-8,'HE WAS NOT UNDER IT','#bce8fa');
- if(s.cover){const [a,b,r0,r1]=s.cover,pb=box(P);let put=false;for(let y=r0;y<=r1;y++)for(let x=a;x<=b;x++){if(tileAt(x,y)!==T.AIR||(pb.r>x*TS&&pb.l<(x+1)*TS&&pb.b>y*TS&&pb.t<(y+1)*TS))continue;cellSet(x,y,T.SOLID);put=true;}if(put){resolveTiles();for(let x=a;x<=b;x++)dust(x*TS+8,(r1+1)*TS,4);}}}
+ if(s.cover){const [z0,z1,r0,r1]=s.cover,d=s.coverDir||1,w=3,pb=box(P),near=(x0,x1)=>pb.r>x0*TS-TS&&pb.l<(x1+1)*TS+TS&&pb.b>r0*TS-TS;   /* (the column lies where you are not: the first coverW-wide place in its zone, from the pillar out, clear of you by a tile) */
+  for(let o=0;o<=z1-z0-(w-1);o++){const a=d>0?z0+o:z1-o-(w-1),b=a+w-1;if(near(a,b)||[...Array(w)].some((_,i)=>tileAt(a+i,r1)!==T.AIR))continue;for(let y=r0;y<=r1;y++)for(let x=a;x<=b;x++)cellSet(x,y,T.SOLID);resolveTiles();for(let x=a;x<=b;x++)dust(x*TS+8,(r1+1)*TS,4);break;}}}
 /* THE CHASE's hands (claude/fallingtower3, src/archmage-chase.js): what his beats do to the world */
 function chase3Ctx(e){return {P,say:(m,h)=>number(e.x,e.y-52,m,h?'#ff6b6b':'#bce8fa'),callout:m=>callout(m),sound:k=>(SFX[k]||SFX.charge)(),shake:n=>shakeCam(n),dust:(x,y,n)=>dust(x,y,n),
  arm:k=>{for(const s of L.ftSupports||[])if(s.room===k)s.armed=true;},

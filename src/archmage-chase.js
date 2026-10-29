@@ -30,7 +30,7 @@ export const CH = { x0: 80, x1: 105, top: 152, pitch: 15, open: 13, downT: 3.0, 
    A floor at his rooms' hpFloor: HE HOLDS ON - his 'down' is cut short (heldDown s), so no gold window does nothing. */
 /* (ft4a) each room's vault pillar sign, its own words (tools/signs.mjs: no two signs the same) */
 const VAULT_SIGNS = ['A CRACKED PILLAR HOLDS THE VAULT. STRIKE IT WITH HIM OVER IT AND IT COMES DOWN ON HIM.', 'ANOTHER CRACKED PILLAR UNDER THE VAULT: BRING IT DOWN ON HIM.', 'THE VAULT HANGS ON A CRACKED PILLAR: WAIT FOR HIM TO HOVER OVER IT.', 'THE LAST CRACKED PILLAR UNDER HIS VAULT: BRING IT DOWN ON HIM.'];
-export const FALL4 = { stage2: 9, dropEvery: 6, dropTell: 1.5, debEvery: 1.2, debMax: 2, vaultH: 12, coverW: 3, heldDown: 0.35 };
+export const FALL4 = { stage2: 5, dropEvery: 4, dropTell: 1.5, debEvery: 1.2, debMax: 2, vaultH: 12, coverW: 3, coverZone: 6, heldDown: 0.35 };
 export const ROOMS = [
   { name: 'THE SCRIPTORIUM', kind: 'library', order: ['fire', 'ice', 'fire', 'mark'], follow: 'strike', pillar: 93, vault: 104, crush: [92, 105],
     ledges: [[83, 5, 3], [98, 5, 3], [88, 4, 6]] },
@@ -54,8 +54,10 @@ export function roomAt(x, y) { if (x < CH.x0 * 16 - 8 || x > (CH.x1 + 1) * 16 + 
 export const inChase3 = (L, x, y) => !!(L && L.chase3) && roomAt(x, y) >= 0;
 /* WHAT EACH ROOM'S FLOOR TAKES WITH IT: its two floor rows wall to wall and every ledge of the room (the room breaks under you) */
 export function roomClear(k) { const R = roomOf(k); return [[CH.x0, CH.x1, R.floor, R.floor + 1], ...R.ledges.map(([x0, len, up]) => [x0, x0 + len - 1, R.floor - up, R.floor - up]), coverOf(k)]; }
-/* (ft4a) where the vault pillar's column lies when it falls: coverW tiles of stone, two rows high, beside its foot toward the room's middle */
-export function coverOf(k) { const R = roomOf(k), d = R.vault < (CH.x0 + CH.x1) / 2 ? 1 : -1, a = R.vault + d * 2, b = a + d * (FALL4.coverW - 1); return [Math.min(a, b), Math.max(a, b), R.floor - 2, R.floor - 1]; }
+/* (ft4a) WHERE THE VAULT PILLAR'S COLUMN MAY LIE when it falls: a zone of coverZone tiles beside its foot toward the room's middle, two rows high. The column is
+   coverW of it - laid at the first place in the zone clear of the hero (main.js chase3Vault: never round you - a knight entombed by it stood there to the timeout) */
+export const coverSide = k => roomOf(k).vault < (CH.x0 + CH.x1) / 2 ? 1 : -1;
+export function coverOf(k) { const R = roomOf(k), d = coverSide(k), a = R.vault + d * 2, b = R.vault + d * (1 + FALL4.coverZone); return [Math.min(a, b), Math.max(a, b), R.floor - 2, R.floor - 1]; }
 /* BUILD IT into the tower's grid (tower-ascent.js's toolkit: rect, ledge, ent, interiors) under the spiral stair, in its own columns */
 export function buildChase3(k, T, TS = 16) {
   const { rect, ledge, ent, interiors } = k, supports = [];
@@ -66,14 +68,14 @@ export function buildChase3(k, T, TS = 16) {
       clear: roomClear(i), hold: 'IT HOLDS - HE IS NOT THROUGH IT YET', tellSay: 'THE FLOOR GOES', say: 'THE FLOOR GOES: AFTER HIM' });
     /* (ft4a) THE VAULT PILLAR: strike it with him over its crush box and the vault comes down on him; its column lies as cover */
     supports.push({ t: 'ftsupport', id: 'vault-' + i, kind: 'crush', vault: true, optional: true, room: i, col: R.vault, row: R.floor - 1, h: FALL4.vaultH, x: R.vault * TS + 8, y: R.floor * TS,
-      crush: [R.crush[0], R.crush[1], R.top, R.floor - 1], cover: coverOf(i), tellSay: 'THE VAULT GIVES', say: 'THE VAULT COMES DOWN' }); });
+      crush: [R.crush[0], R.crush[1], R.top, R.floor - 1], cover: coverOf(i), coverDir: coverSide(i), tellSay: 'THE VAULT GIVES', say: 'THE VAULT COMES DOWN' }); });
   rect(CH.x0, CH.x1, CORE.top, CORE.bot - 1, T.AIR); interiors.push([CH.x0, CH.x1, CORE.top, CORE.bot - 1, 'dome']);
   const R0 = roomOf(0);
   ent('ringdoor', CH.x0 + 2, R0.floor - 1, { id: 'chase-top' });   /* (its checkpoint is on the far side of the ring, at the stair's top - tower-ascent.js: never inside his arena, tools/checkpoints.mjs) */
   ent('sign', CH.x0 + 6, R0.floor - 1, { text: 'STRIKE HIS SPELLS BACK AT HIM AND HE FALLS. HIT HIM WHERE HE LIES.' });
   ent('sign', ROOMS[0].pillar - 2, R0.floor - 1, { text: 'A CRACKED PILLAR HOLDS THIS FLOOR. WHEN HE IS THROUGH IT, STRIKE IT.' });
   ROOMS.forEach((R, i) => { if (i && R.follow === 'strike') ent('sign', R.pillar + 3, roomOf(i).floor - 1, { text: 'ANOTHER CRACKED PILLAR: STRIKE IT WHEN HE IS THROUGH.' }); });
-  ROOMS.forEach((R, i) => ent('sign', R.vault + (R.vault < (CH.x0 + CH.x1) / 2 ? 6 : -6), roomOf(i).floor - 1, { text: VAULT_SIGNS[i] }));   /* (ft4a) the vault pillars, signed at the point of use (beside the cover spot, not on it) */
+  ROOMS.forEach((R, i) => ent('sign', R.vault - coverSide(i), roomOf(i).floor - 1, { text: VAULT_SIGNS[i] }));   /* (ft4a) the vault pillars, signed at the point of use: at the foot on the wall's side (the column falls the other way) */
   ent('undeadmage', CH.x1 - 5, R0.floor - CH.hover - 2, { face: -1 });
   return { rooms: ROOMS.map((_, i) => roomOf(i)), core: CORE, supports, start: [CH.x0 + 4, R0.floor - 1], trigger: (CH.x0 + 6) * TS };
 }
@@ -140,7 +142,7 @@ export function chaseRoomStep(e, dt, c) {
   /* 2. STAGE TWO: the ledges go, one at a time, told */
   if (X.drop) { X.drop.t -= dt; if (Math.random() < dt * 18) c.dust((X.drop.x0 + Math.random() * (X.drop.x1 - X.drop.x0 + 1)) * 16, X.drop.row * 16 + 16, 1);
     if (X.drop.t <= 0) { c.clearLedge(X.drop.x0, X.drop.x1, X.drop.row); X.gone.push(X.drop.i); c.sound('stone'); c.shake(3); X.drop = null; X.next = X.t + FALL4.dropEvery; } }
-  else if (X.t >= X.next && !CHASE_MODES.has(e.mode)) { const on = l => P.ground && Math.abs(P.y - l[2] * 16) < 4 && P.x > l[0] * 16 - 6 && P.x < (l[1] + 1) * 16 + 6;
+  else if (X.t >= X.next && !['rise', 'sink', 'tear', 'below', 'away'].includes(e.mode)) {   /* (the room fails while he is down too - not while he flees through its floor) */ const on = l => P.ground && Math.abs(P.y - l[2] * 16) < 4 && P.x > l[0] * 16 - 6 && P.x < (l[1] + 1) * 16 + 6;
     const left = R.ledges.map(([x0, len, up], i) => [x0, x0 + len - 1, R.floor - up, i]).filter(l => !X.gone.includes(l[3]) && !on(l));
     if (left.length) { const l = left[Math.floor((X.t * 7.3) % left.length)]; X.drop = { x0: l[0], x1: l[1], row: l[2], i: l[3], t: FALL4.dropTell }; c.sound('crack'); c.say('A LEDGE GIVES', false); }
     else X.next = X.t + 1; }

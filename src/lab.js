@@ -1012,7 +1012,8 @@ async function runbossLab(BK, opts) {
         const bad=x=>danger.some(([a,b])=>x>a&&x<b);
         if(bad(P.x)||(gx!==null&&bad(gx))){let best=null;const from=bad(P.x)?P.x:gx;for(let s=8;s<360&&best===null;s+=8){if(!bad(from-s)&&from-s>xL)best=from-s;else if(!bad(from+s)&&from+s<xR)best=from+s;}if(best!==null)gx=best;}
         if(gx!==null){gx=clampX(gx);if(Math.abs(gx-P.x)>5){const dr=gx>P.x?1:-1;k[dr>0?'right':'left']=true;   /* (ft4a) a fallen column across the floor: over it */
-          if(P.ground){const tx=Math.floor((P.x+dr*12)/16),ty=Math.floor((P.y-6)/16);if(BK.L.grid[ty*BK.L.W+tx]===T.SOLID&&ty>=Math.floor(R.top))BK.press('jump');}}}
+          if(P.ground){const tx=Math.floor((P.x+dr*22)/16),ty=Math.floor((P.y-6)/16);P.labStill=Math.abs(P.x-(P.labLastX??P.x))<0.3?(P.labStill||0)+1:0;P.labLastX=P.x;if((BK.L.grid[ty*BK.L.W+tx]===T.SOLID&&ty>=Math.floor(R.top))||P.labStill>20){BK.press('jump');P.labStill=0;P.labJH=16;}}}}   /* (and anything else it walks into and stops at: a jump, HELD - a tap is a hop) */
+        if(P.labJH>0){k.jump=true;P.labJH--;}
         /* off a ledge: the fight is on the floor (down through the one-way) */
         if(P.ground&&P.y<R.floor*16-8&&!['tear','away'].includes(m)&&(m==='down'||sup||f%30===0)){k.down=true;BK.press('jump');}
         if(block){k.block=true;k.left=k.right=false;}
