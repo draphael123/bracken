@@ -28,7 +28,7 @@ export const KIND_OF = {
   spore: 'fungus', rootway: 'fungus', kings: 'fungus', underleaf: 'fungus',
   scree: 'crag', hanging: 'crag', spire: 'crag', moor: 'crag', rookery: 'crag', skyroad: 'crag',
   oreroad: 'mine', minecart: 'mine',
-  storm: 'storm', crown: 'storm', undercrown: 'storm', kitchengate: 'storm',
+  storm: 'storm', crown: 'storm', undercrown: 'storm', kitchengate: 'storm', warcairn: 'storm',
   longwater: 'coast', reef: 'coast', flotilla: 'coast', hurricane: 'coast', lamplit: 'coast', deep: 'coast', keep: 'coast', causeway: 'coast', harbor: 'coast',
   waymeet: 'canal', towpath: 'canal', canal: 'canal', theatre: 'canal', fair: 'canal',
   church: 'inland', fields: 'inland', burial: 'inland', witchlight: 'inland', mage: 'mage', fallingtower: 'inland', unburied: 'inland',

@@ -46,7 +46,8 @@ import { applyMarsh2 } from './marsh2.js';   /* (claude/marsh2) MARSH WOOD's tar
 import { applyMarsh3 } from './marsh3.js'; import { applyFrogCourt } from './frog-court.js';
 import { buildFenRoad, FEN_RULE } from './fen-road.js'; import { buildHornetsNest, NEST_RULE } from './hornets-nest.js';   /* (claude/hornetsnest) THE HORNET'S NEST: a spur off THE LUMBER TRAIL - up the paper nest in the great pine, THE HORNET QUEEN 2 at its top and at the pine's foot */   /* (claude/fenroad) THE FEN ROAD: the goblins' half-built boardwalk between MARSH WOOD and THE STOCKADE, and THE BOG TROLL under it */   /* (claude/marsh3) MARSH WOOD 3: the reed run, the boom, the night pads (+226 columns before the mud flats) */
 import { lanceLookouts } from './lance-support.js';   /* THE QUEEN'S LANCE: the two end lookouts his bowmen come to (docs/briefs/lance-support.md) */   /* THE SUNKEN CARAVAN: the desert's first level (src/draft/sunken-caravan.js is its geometry) */
-import { highcrownTwo } from './highcrown2.js';   /* (claude/highcrown2) HIGHCROWN 2: the pieces laid after the cuts, in the cut level's columns */
+import { highcrownTwo } from './highcrown2.js';
+import { buildWarCairn, WC_RULE } from './war-cairn.js';   /* (claude/warcairn) THE WAR CAIRN: the Berserker's told spur off HIGHCROWN (scratch/brief-crownpath-1028.md) */   /* (claude/highcrown2) HIGHCROWN 2: the pieces laid after the cuts, in the cut level's columns */
 /* THE LUMBER TRAIL's rule (claude/lumbertrail): src/order-chapters.js TWISTS.timber quotes it */
 export const RULE_WOOD = 'FOUR STROKES FELL A MARKED PINE, AND IT FALLS THE WAY IT LEANS: ACROSS A GAP, UP A CLIFF, OR ON WHOEVER STANDS UNDER IT.';
 // level.js — the level registry. Each level paints a tile grid with a tiny DSL and returns it.
@@ -8142,6 +8143,10 @@ LEVELS.push({ id: 'palisadewood', name: 'THE PALISADE WOOD', sub: 'an autumn woo
 /* THE KITCHEN GATE (claude/kitchengate, the OPUS GREYBOX; scratch/concept-kitchengate.md, Daniel 10-01/10-08/10-24): APPENDED (saves count levels by index) - pushed under the
    array on its own line. On the road between THE UNDERCROWN and HIGHCROWN by its needs (Highcrown needs it). Its boss: LORD GRUBBAG THE GLUTTON */
 LEVELS.push({ id: 'kitchengate', name: 'THE KITCHEN GATE', sub: "up through the castle's kitchens, the back way in", rule: KG_RULE, build: () => buildKitchenGate({ painter, T, TS }), needs: 'undercrown' });
+/* THE WAR CAIRN (claude/warcairn, the OPUS GREYBOX; scratch/brief-crownpath-1028.md, Daniel 10-28 all five recs): APPENDED (saves count levels by index) - pushed under the array on its
+   own line. A TOLD SPUR off HIGHCROWN (spurOf 'crown'): it opens when Highcrown opens (needs what Highcrown needs; src/main.js levelLocked also reads PROG.crownOpen). Nothing on
+   the main road needs it. Its boss: THE BERSERKER CHIEFTAIN (src/bzchief.js) - beating him sells THE BERSERKER (classFor) */
+LEVELS.push({ id: 'warcairn', name: 'THE WAR CAIRN', sub: 'the clan that holds the peak', rule: WC_RULE, build: () => buildWarCairn({ painter, T, TS }), needs: ROAD_OPEN.undercrown ? 'kitchengate' : 'storm', spurOf: 'crown', classFor: 'berserker' });
 
 /* THE MIX. A level that is one creature is one question asked forty times. Some of each crowd is swapped for a
    creature from elsewhere, standing on the same spot, so the second half of a level asks something the first did

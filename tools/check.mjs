@@ -305,6 +305,11 @@ if (take('palisadewood')) results.push(run('palisadewood', process.execPath, ['t
    the pie and the choke, the dishes, the phases, the poses (its own line: the big list is edited by every lane); and its page smoke */
 if (take('kitchengate')) results.push(run('kitchengate', process.execPath, ['tools/kitchengate.mjs']));
 if (take('kitchengate-probe')) results.push(run('kitchengate-probe', process.execPath, ['tools/kitchengate-probe.mjs'], { PORT: String(portFor(7)) }));
+/* THE WAR CAIRN and THE BERSERKER CHIEFTAIN (claude/warcairn, Node): the told spur off Highcrown, the five areas, start + two shrines, every drum gate / required slab / the gorge's
+   hatchet a LOCK, no goblins, the hands in a fake world (the beat, war-rage, the stumble, the surge, gates, slabs, cornices, an arrow is a beat), his B15 floors, BREAK THE BEAT,
+   the stuck cross-chop, P3's own drum, the poses, the bot, the WARCAIRN_SHIPS unlock (its own line: the big list is edited by every lane); and its page smoke */
+if (take('warcairn')) results.push(run('warcairn', process.execPath, ['tools/warcairn.mjs']));
+if (take('warcairn-probe')) results.push(run('warcairn-probe', process.execPath, ['tools/warcairn-probe.mjs'], { PORT: String(portFor(7)) }));
 /* (claude/palisadeart, headless) THE ART PASS: the level hash is the greybox's, the TIMBER table lies on solid blocks, the setter / lantern-hand / maul crew wear their own sheets, every windup and release of the beast is its own baked frame, his body and card, the palisade ambient bed (its own line) */
 if (take('palisadeart')) results.push(run('palisadeart', process.execPath, ['tools/palisadeart.mjs'], { PORT: String(portFor(6)) }));
 if (take('feel-speed')) results.push(run('feel-speed', process.execPath, ['tools/feel-speed.mjs'], { PORT: String(portFor(4)) }));

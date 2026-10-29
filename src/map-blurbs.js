@@ -3,6 +3,7 @@
 // listed here is said whole in less; the rest use their `sub` as written. tools/map-scale.mjs measures every one in the face the card is drawn in and fails when any does not fit.
 export const MAP_BLURB = {
   kitchengate: "the castle's kitchens",
+  warcairn: 'the clan that holds the peak',   /* (claude/warcairn) */
   rookery: "the harpies' crags",
   kings: "the goblins' court in the old wood",
   wood: 'a logging trail to the hive',

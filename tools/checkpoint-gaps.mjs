@@ -25,6 +25,7 @@ import { THIN, CHECK_DROP, CHECK_PIN } from '../src/checkpoint-thin.js';
 import { MAX, MIN, judgeLevel, A10B, judgeLevelA10b } from './checkpoint-rule.mjs';
 export { MAX, MIN };
 const KNOWN = new Map([
+  ['warcairn', 'THE WAR CAIRN is START + TWO SHRINES by its brief (scratch/brief-crownpath-1028.md "CHECKPOINTS: start + 2 shrines (Daniel: fewer)", approved 10-28): the gully and the gate run are one 333-tile run to shrine one. QUESTION FOR DANIEL in scratch/lane-reports/warcairn.md (rec: keep; alt: a third shrine at the gully\'s far bank). Delete this line if a shrine is added'],
   ['kings', 'THE BURNING WOOD ESCAPE runs 220 route tiles from the last shrine (route 415) with no shrine in it, on purpose: claude/kingsfix2 lengthened it 40 columns (Daniel 10-23 playtest; src/kingswood.js checkRun 240). Delete this line if a shrine is ever put in it.'],
 ]);
 const bad = [], stale = [], rows = [], a10b = []; let total = 0;

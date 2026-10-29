@@ -36,7 +36,7 @@ export const SIG = {
   pike: { mode: 'tell', answer: 'parry' },         hound: { mode: 'pounceTell', answer: 'jump' },    weaver: { mode: 'spitTell', answer: 'parry' },
   burngob: { mode: 'swingTell', answer: 'parry' }, spider: { mode: 'dropTell', answer: 'parry' },    assassin: { mode: 'stabTell', answer: 'parry' },
   stiltwalker: { mode: 'jabTell', answer: 'duck' },   leech: { mode: 'rear', answer: 'jump' },   /* (claude/fenroad2) THE BOG LEECH's lunge comes up out of the water at where you stand: be over it (a roll goes through it too) */   /* (claude/fenroad) THE GOBLIN STILT-WALKER's downward gaff jab: under it, or parry it */
-  trophyhunter: { mode: 'lungeTell', answer: 'parry' }, spit: { mode: 'spitTell', answer: 'parry' }, bellman: { mode: 'swingTell', answer: 'parry' },
+  trophyhunter: { mode: 'lungeTell', answer: 'parry' }, spit: { mode: 'spitTell', answer: 'parry' }, bellman: { mode: 'swingTell', answer: 'parry' }, drummer: { mode: 'shoveTell', answer: 'parry' },   /* (claude/warcairn) THE DRUMMER's shove (src/war-cairn-hands.js) */
   badger: { mode: 'chargeTell', answer: 'parry' }, crow: { mode: 'diveTell', answer: 'duck' },      heavy: { mode: 'slashTell', answer: 'parry' },
   soldier: { mode: 'slashTell', answer: 'parry' }, berserker: { mode: 'flailTell', answer: 'parry' }, cutter: { mode: 'raise', answer: 'parry' },
   swornsword: { mode: 'cutTell', answer: 'parry' }, hearthgob: { mode: 'raise', answer: 'parry' },

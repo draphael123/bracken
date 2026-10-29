@@ -538,5 +538,17 @@
   "lifts": 67,
   "walked": 100,
   "bare": true
+ },
+ "warcairn": {
+  "hash": "a74292574250",
+  "hero": "knight",
+  "steps": 30000,
+  "runs": 3,
+  "hits": 6,
+  "deaths": 0,
+  "kills": 8,
+  "lifts": 80,
+  "walked": 100,
+  "bare": true
  }
 }

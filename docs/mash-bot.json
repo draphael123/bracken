@@ -10625,5 +10625,64 @@
     "heroLevel": 14
    }
   }
+ },
+ "warcairn": {
+  "hash": "a74292574250",
+  "level": {
+   "knight": {
+    "deaths": 1,
+    "minHpPct": 0,
+    "hpLostPct": 121,
+    "hits": 9,
+    "walked": 100,
+    "lifts": 48,
+    "held": 3,
+    "duels": 1,
+    "boardLifts": 0,
+    "rides": 0,
+    "pulls": 0,
+    "ridden": {},
+    "machines": true,
+    "frames": 15336,
+    "kills": 3,
+    "heroLevel": 21
+   },
+   "warden": {
+    "deaths": 0,
+    "minHpPct": 29,
+    "hpLostPct": 71,
+    "hits": 5,
+    "walked": 100,
+    "lifts": 49,
+    "held": 3,
+    "duels": 1,
+    "boardLifts": 0,
+    "rides": 0,
+    "pulls": 0,
+    "ridden": {},
+    "machines": true,
+    "frames": 15360,
+    "kills": 4,
+    "heroLevel": 21
+   },
+   "pyro": {
+    "deaths": 0,
+    "minHpPct": 2,
+    "hpLostPct": 98,
+    "hits": 7,
+    "walked": 100,
+    "lifts": 47,
+    "held": 3,
+    "duels": 1,
+    "boardLifts": 0,
+    "rides": 0,
+    "pulls": 0,
+    "ridden": {},
+    "machines": true,
+    "frames": 15285,
+    "kills": 4,
+    "heroLevel": 21
+   }
+  }
  }
 }
