@@ -47,7 +47,9 @@ async function main() {
   try {
     if (mode === 'expr') { console.log(JSON.stringify(await evalp('(async () => JSON.parse(JSON.stringify(await (' + arg + '))))()'), null, 1)); }
     else if (mode === 'floats') {   /* src/floatlab.js: every sprite's pixels against the tiles, and every water creature against its water */
-      const r = await evalp('(async () => { const r = await BK.floatLab(' + (arg ? JSON.stringify({ levels: arg.split(',') }) : '') + '); return { levels: r.levels, sprites: r.sprites, hits: r.hits, water: r.water }; })()');
+      /* (release 10-29) six levels per Runtime.evaluate: one 68-level call stalled for an hour on batch126 (every level alone: 1-3 s) - the harness stall that also hit load-leak, textfit menu and footing-art */
+      const ids = arg ? arg.split(',') : await evalp('(async () => (await import("/src/level.js")).LEVELS.map(l => l.id))()'), r = { levels: 0, sprites: 0, hits: [], water: [] };
+      for (let i = 0; i < ids.length; i += 6) { const q = await evalp('(async () => { const r = await BK.floatLab(' + JSON.stringify({ levels: ids.slice(i, i + 6) }) + '); return { levels: r.levels, sprites: r.sprites, hits: r.hits, water: r.water }; })()'); r.levels += q.levels; r.sprites += q.sprites; r.hits.push(...q.hits); r.water.push(...q.water); }
       for (const h of r.hits) console.log('  ' + h); for (const h of r.water) console.log('  WATER ' + h);
       console.log(r.levels + ' levels, ' + r.sprites + ' sprites. ' + (r.hits.length + r.water.length ? (r.hits.length + r.water.length) + ' in the air, through the ground or out of the water.' : 'nothing in the air, through the ground or out of the water.'));
       if (r.hits.length + r.water.length) code = 1; }
