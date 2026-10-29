@@ -632,7 +632,7 @@ const SWORDS = [
   { id: 'thorn', name: 'THORN BLADE', price: 250, pal: { s: '#8fd160', S: '#3a6a2a' }, dmg: 10, cost: 15, desc: 'green steel grown like a briar. looks only: it cuts as steel does' },
   { id: 'silverleaf', name: 'SILVERLEAF', price: 8, silver: true, pal: { s: '#e8ecff', S: '#9aa8c8' }, dmg: 10, cost: 15, desc: 'found silver, not bought: a pale leaf-shaped blade. looks only' },
   { id: 'laurelBlade', name: 'LAUREL BLADE', price: 350, pal: { s: '#ffe27a', S: '#8a6a1a' }, dmg: 10, cost: 15, desc: 'won, not forged: the medal-winner\'s blade. looks only', feat: 'medals:30', featName: 'win 30 medals' },
-  { id: 'chiefaxes', name: "THE CHIEFTAIN'S AXES", price: 0, hero: 'berserker', pal: { s: '#d8d0c0', S: '#8a2a22' }, dmg: 10, cost: 15, desc: "the Berserker Chieftain's own bearded axe and hatchet, war-paint red on the hafts. won, not bought. looks only", feat: 'boss:warcairn', featName: 'beat the Berserker Chieftain at the War Cairn' },   /* (claude/warcairn, Q4) ART TODO: his own axe heads (withWeapon recolours only) */
+  { id: 'chiefaxes', name: "THE CHIEFTAIN'S AXES", price: 8, silver: true, hero: 'berserker', pal: { s: '#d8d0c0', S: '#8a2a22' }, dmg: 10, cost: 15, desc: "the Berserker Chieftain's own bearded axe and hatchet, war-paint red on the hafts. won, not bought: beating him puts them in your hands. looks only", feat: 'boss:warcairn', featName: 'beat the Berserker Chieftain at the War Cairn' },   /* (claude/warcairn, Q4) ART TODO: his own axe heads (withWeapon recolours only) */
   { id: 'moon', name: 'MOONSILVER', price: 400, pal: { s: '#e8ecff', S: '#8090c8' }, dmg: 10, cost: 15, desc: 'the finest blade the smith will sell. looks only: it cuts as steel does' },
 ];
 const UPGRADES = [

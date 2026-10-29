@@ -169,7 +169,7 @@ ok(!L.ents.some(e => e.t === 'deco' && /tree|log|timber|plank|crate|barrel|ice/i
   const row = { id: 'berserker', price: 10, silver: true, coinPrice: 800, coinNeeds: 'warcairn', coinBoss: true, feat: 'boss:warcairn', featName: 'beat the Berserker Chieftain at the War Cairn' };
   ok(lockOf(row, {}, () => false) === 'beat the Berserker Chieftain at the War Cairn to earn it' && lockOf(row, {}, () => true) === null, 'the store lock: beat him first, then he is for sale');
   ok(/function bzchiefBeaten\(e\)[^\n]*curId\(\) !== 'warcairn'/.test(main) && /PROG\.bossDown\.warcairn = true/.test(main) && /PROG\.swords\.chiefaxes = true/.test(main), 'beaten in his own level: boss:warcairn, and THE CHIEFTAIN\'S AXES for anyone who beats him (no refund)');
-  ok(/id: 'chiefaxes', name: "THE CHIEFTAIN'S AXES", price: 0, hero: 'berserker'[^\n]*feat: 'boss:warcairn'/.test(main), 'the Chieftain\'s Axes: the berserker\'s weapon skin, earned by the feat'); }
+  ok(/id: 'chiefaxes', name: "THE CHIEFTAIN'S AXES", price: 8, silver: true, hero: 'berserker'[^\n]*feat: 'boss:warcairn'/.test(main), 'the Chieftain\'s Axes: the berserker\'s weapon skin, earned by the feat'); }
 
 console.log(bad ? '\nwarcairn: ' + bad + ' FAILED' : '\nok  warcairn');
 process.exit(bad ? 1 : 0);

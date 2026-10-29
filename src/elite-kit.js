@@ -71,6 +71,7 @@ export const AFFIX_AT = {
   'spire|goat': 'SUMMONER', 'spire|troll#amb': 'SWIFT',   /* (claude/wardens12: the scriptorium troll is THE GONG MAUL now) */
   'moor|troll': 'UNSTOPPABLE', 'moor|goat#amb': 'WARDING',   /* (claude/wardens12: the Kite Field's herd billy is THE GALE LANCE now) */
   'storm|shield#amb': 'UNSTOPPABLE', 'storm|shield#1': 'SWIFT', 'storm|brute': 'THORNED', 'storm|shield#2': 'WARDING', 'storm|pike': 'SHIELDED',   /* (claude/stormhold3, THE OUTER WORKS: the Road In's gate guard, the Barbican's brute under a murder hole, the ditch's shield, the wall-walk's pike between the breaches, the stable yard's brute) */
+  'warcairn|heavy': 'UNSTOPPABLE',   /* (claude/warcairn) THE CLAN CHAMPION: the ring's exam - he swings through a blow (his crossed axes are already his guard) */
   'crown|heavy': 'UNSTOPPABLE', 'crown|hearthgob': 'BURNING', 'crown|brute#amb': 'WARDING',
   'longwater|tideguard': 'SHIELDED', 'longwater|tideguard#amb': 'SWIFT',
   'reef|tideguard': 'VENOMOUS',

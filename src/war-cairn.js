@@ -42,7 +42,7 @@ export const ARCS = {
 /* the clan's skins (src/main.js L.reskin): every clansman is a reskin of a proven foe - THE CLAN IS HUMAN (no goblin anywhere in it) */
 export const WC_RESKIN = { soldier: 'clanaxe', javelin: 'clanthrower', shield: 'clanguard', heavy: 'clanchamp', berserker: 'clanrunner', harpy: 'cragharpy' };
 export const WC_SAY_SIGNS = {
-  lore: 'THE GOBLINS TOOK THE CASTLE, NEVER THE PEAK. A MOUNTAIN CLAN KEEPS ITS WAR CAIRN UP THERE, AND ITS CHIEFTAIN FIGHTS ANYONE WHO CLIMBS TO IT.',
+  lore: "THE GOBLINS NEVER TOOK THE PEAK. ITS CLAN'S CHIEFTAIN FIGHTS ANYONE WHO CLIMBS TO HIM.",
 };
 
 export function buildWarCairn({ painter, T, TS }) {
@@ -197,7 +197,7 @@ export function buildWarCairn({ painter, T, TS }) {
   span(343, 354, 23, 28); span(359, 367, 23, 28); span(372, 382, 23, 28);   /* the rim's slate walk on its posts: the clan watches from up here */
   const d10 = drum('ring1', 348, 27), d11 = drum('ring2', 378, 27);
   foe('drummer', 351, 27, 'ring', { drum: 'ring1', drums: ['ring1', 'ring2'] });
-  foe('heavy', 363, 27, 'ring', { elite: true });           /* THE CLAN CHAMPION: crossed axes (his guard) and the flurry */
+  foe('heavy', 363, 27, 'ring', { elite: true, gate: 386 });   /* THE CLAN CHAMPION: crossed axes (his guard) and the flurry - he holds the way out of the ring to the summit (an elite's gate) */
   foe('soldier', 374, 27, 'ring'); foe('soldier', 356, 24, 'ring');
   sign(344, 27, 'THE CLAN RING. TAKE THEIR DRUMS AND THE CHAMPION STUMBLES WITH THE REST.');
   deco(357, 24, 'bones'); coins([350, 27], [366, 27], [370, 24], [380, 27]);
@@ -205,7 +205,7 @@ export function buildWarCairn({ painter, T, TS }) {
 
   // ================= 5. THE SUMMIT (386-452) =================
   rock(392, 395, 25); rock(396, 399, 22);
-  sign(391, 27, 'THE WAR CAIRN. THE CHIEFTAIN FIGHTS TO THE CLAN\'S DRUMS: STRIKE ONE IN HIS FRENZY AND HE LOSES THE BEAT.');
+  sign(391, 27, "THE WAR CAIRN. STRIKE A DRUM IN THE CHIEFTAIN'S FRENZY AND HE LOSES THE BEAT.");
   coins([393, 24], [397, 21]);
   const st = BZC_STAGE, sx = st.sx, R = st.floor;
   rock(400, W - 1, R);                                     /* the ring's slabs */
