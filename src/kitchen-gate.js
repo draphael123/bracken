@@ -235,7 +235,7 @@ export function buildKitchenGate({ painter, T, TS }) {
   foe('hearthgob', 364, 21, 'vaultDoor', { face: -1 });
   ent('check', 368, 21);                                                                 /* SHRINE FOUR: his door */
   prop('oven', 302, 22); prop('spices', 318, 16); prop('basin', 344, 22); prop('hatch', 366, 22); prop('flour', 358, 22);
-  sign(370, 21, 'HE NEVER LEAVES HIS CHAIR. EVERY DISH THAT REACHES HIM HEALS HIM: KNOCK THEM OFF THE LINE. LET THE BOMBS REACH HIM.');
+  sign(370, 21, 'HE NEVER LEAVES HIS CHAIR. KNOCK HIS DISHES OFF THE LINE: LET THE BOMBS REACH HIM.');
 
   /* THE KITCHEN SHELVES: pot racks and dressers along the walls (a second height, coins on them) - never where one would climb a face a machine is for */
   for (const [a, b, y] of [[24, 27, 34], [58, 61, 23], [84, 86, 22], [93, 97, 15], [150, 153, 7], [157, 161, 10], [196, 199, 10], [212, 216, 20], [241, 244, 19], [259, 262, 19], [266, 270, 19], [292, 296, 20], [362, 366, 18]]) { shelf(a, b, y); racks.push([a, b, y]); ent('coin', Math.round((a + b) / 2), y - 1); }

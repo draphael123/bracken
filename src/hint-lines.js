@@ -20,7 +20,7 @@ import { GORM_SAY } from './gorm.js'; import { RB_SAY } from './royal-boar.js'; 
 import { LP3_SAY } from './lamplit-fire.js'; import { WK_SAY } from './wickling.js';   /* (claude/lamplit3) THE LAMPLIT STREET 3's fire lines and THE WICKLING's, said as variables */   /* (claude/pyramidboss) THE COFFIN KING's lines, said as variables */
 export const CALL_LINES = new Set([
   /* batch126 pre-gate 10-28: lines main.js says that the hint box now shows (the Hurricane's storm call, the sea bell rung), routed as hint-shown requires */
-  'THE SUN STAYS: STONES ARE SHADE', 'YOU RING IT',
+  'THE SUN STAYS: STONES ARE SHADE', 'YOU RING IT', 'TRAY', 'THE BRIDGE DROPS WITH HIM', 'THE BRIDGE DROPS', 'HE CUT IT DOWN', 'IT IS DOWN', 'THE GREAT BELL: THE LAST BLOW', 'IT WAITS FOR THE LAST BLOW',   /* (batch127 integ) abbot3's bridge and bell lines, kitchengate2's attendant tray */
   /* (claude/oreroadminor) THE ORE ROAD's minor pass (src/ore-works.js): the lamps you strike and the counterweight lifts - routed as hint-shown requires */
   'LIT: THE STRETCH LIGHTS FOR GOOD', 'ONE ROCK IN: ONE MORE', 'THE WEIGHT TAKES: THE PAN RISES', 'THE ORE TIPS OUT: THE PAN COMES DOWN', 'THE ROCK STAYS OUTSIDE',
   /* (claude/oreroadminor) THE LAUNCHED CARTS (src/ore-works.js, src/ore-carts.js): a shove, a ram, the barricade breaking, a bump too slow, the trip chain */
