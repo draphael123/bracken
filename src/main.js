@@ -4676,8 +4676,8 @@ function woodXp() { const tier = xpTierOf(curId());   /* (LEVELING: the elite's 
   return enemies.reduce((s, e) => s + (e.xpKey && !e.harmless && !e.xpRole ? xpFoe(e.t, '', tier, e.elite) : 0), 0) + (L.ambushes || []).reduce((s, A) => s + A.waves.reduce((m, w) => m + w.reduce((k, q) => k + xpFoe(q[0], '', tier, q[3] && q[3].elite), 0), 0), 0); }
 const xpTierOf = id => xpTier(id, bossTierOf(id));   /* src/xp.js XP_TIER: canal, theatre and the fair are paid as the woods round them are, without a combat TIER */
 function xpStart() { levelXp = woodXp(); xpRun = 0; xpBoost = 0; lvAtStart = heroLevel(); lvUpT = 0; lvHealOwed = null;
-  if (catchingUp()) { hintT = 4.5; hintMsg = '+XP x' + XP_CATCHUP + ' CATCHING UP: THIS WOOD EXPECTS LEVEL ' + expectedLv() + '.'; }
-  else if (softCut() < 1) { hintT = 4.5; hintMsg = 'OVER-LEVELLED: THIS WOOD PAYS ' + (softCut() < 0.5 ? 'A FIFTH OF' : 'HALF') + ' THE XP.'; } }
+  if (catchingUp()) { hintT = 4.5; hintMsg = '+XP x' + XP_CATCHUP + ' CATCHING UP: THIS ROAD EXPECTS LEVEL ' + expectedLv() + '.'; }
+  else if (softCut() < 1) { hintT = 4.5; hintMsg = 'OVER-LEVELLED: THIS ROAD PAYS ' + (softCut() < 0.5 ? 'A FIFTH OF' : 'HALF') + ' THE XP.'; } }
 /* THE SOFT CAP's share for this hero in this wood (1 in full; src/xp.js softCapMul) - the start hint and the plate's 1/2 or 1/5 say it */
 const softCut = () => xpWood() && !catchingUp() ? softCapMul(heroLevel(), expectedLv()) : 1;
 function gainXp(n) { n = Math.round(n); if (!(n > 0)) return;
