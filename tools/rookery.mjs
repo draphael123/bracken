@@ -62,7 +62,7 @@ for (const h of L.hoists) { const foot = L.grid[(h.cleat[1] + 1) * L.W + h.cleat
 { const sh = L.ents.filter(e => e.t === 'shrieker'); ok(sh.length >= 3 && sh.every(e => e.x > ARCS.shrieker.teach[0] - 10), 'THE HARPY SHRIEKER (the one new foe): ' + sh.length + ' placed, taught at ' + ARCS.shrieker.teach[0] + ' then developed, remixed, examined'); }
 /* (claude/rookery2) CATCH A RIDE: the way to reach places - taught safe (the gully floor under it), tested (a chasm), remixed (through a hung nest's arm, a gale on the rider),
    examined (the last face, a shrieker calling and a gale beating); every one a LOCK; every mount and land on footing; her harpy placed, bound to her ride */
-const RIDES = { firstRide: 'teach', gapRide: 'test', nestRide: 'remix', lastRide: 'exam' };
+const RIDES = { firstRide: 'teach', gapRide: 'test', nestRide: 'remix', lastRide: 'exam', relayRide: 'the relay, across', doorRide: 'the relay, up' };   /* (claude/rookery3: THE RELAY, two rides back to back) */
 ok((L.rkRides || []).length >= 4 && Object.keys(RIDES).every(id => L.rkRides.some(d => d.id === id)), 'CATCH A RIDE: ' + (L.rkRides || []).map(d => d.id + ' (' + RIDES[d.id] + ')').join(', '));
 const noRide = id => floodReach({ ...L, rkRides: L.rkRides.filter(d => d.id !== id) }, T);
 for (const d of L.rkRides || []) { const n = checks.find(c => c.x > d.mount[0]) || boss; ok(!at(n, noRide(d.id)), 'REQUIRED RIDE: ' + d.id + ' is a LOCK - without it ' + n.t + '@' + n.x + ' is out of reach');
@@ -73,6 +73,15 @@ for (const d of L.rkRides || []) { const n = checks.find(c => c.x > d.mount[0]) 
   ok(L.ents.some(e => e.t === 'harpy' && e.rk && e.rk.rkRide === d.id), d.id + ': her harpy is placed at her roost, bound to her ride'); }
 ok(!at(boss, floodReach(L, T, { noAssist: true })), 'legs alone (the plain fill) do not reach the summit: the rides are the way');
 { const g = L.ents.filter(e => e.t === 'galeharpy'); ok(g.length >= 3, 'THE GALE HARPY (the level\'s one new foe, src/gale-harpy.js): ' + g.length + ' placed (taught on the narrow ledge, at the hung nest, at the last ride)'); }
+/* (claude/rookery3) THE BONE STAIR GOES ON (Daniel 10-29: "a little bit longer ... a little bit more platforming"): THE GALE SPIRES (a descent spire to spire, a gale harpy beating you back), THE NEST
+   FACE (two stepped faces on lashed shelves, a gale on the top), THE RELAY (two rides). The spires are the only way down to the face; a fall to the gorge floor is a climb back */
+{ const SP = [[367, 368], [372, 373], [377, 378], [381, 382], [386, 387], [391, 392]], rr = y => y + 6, basin = [395, rr(22)], door = [432, rr(4)];
+  ok(SP.every(([a, b]) => [a, b].every(x => L.grid[rr(5) * L.W + x] === T.AIR) && L.grid[(L.H - 1) * L.W + a] === T.SOLID), 'THE GALE SPIRES: six spires two wide, each standing on the gorge floor (nothing floats)');
+  const g = Uint8Array.from(L.grid); for (const [a, b] of SP) for (let x = a; x <= b; x++) for (let y = 0; y < rr(28); y++) g[y * L.W + x] = T.AIR;
+  ok(!at({ x: basin[0], y: basin[1] }, floodReach({ ...L, grid: g }, T)), 'the spires are the way down to THE NEST FACE (without them its basin is out of reach)');
+  const fl = floodReach(L, T, { seeds: [[400, rr(29)]] }); ok(at({ x: 360, y: rr(4) }, fl) && at({ x: door[0], y: door[1] }, fl), 'A FALL IS A CLIMB: from the gorge floor the boards up the face of the lip lead back to the spires (no pit, no softlock)');
+  ok(['galeSpires', 'nestFace'].every(q => L.ents.some(e => e.t === 'galeharpy' && e.squad === q)), 'a gale harpy holds the spires and another the nest face (her gust beats you back toward the drop)');
+  const W0 = 416; ok(L.W - W0 === 72 && L.arena.x0 === (370 + 72) * TS, 'the stair is 72 columns longer (' + W0 + ' -> ' + L.W + '); the summit door, its shrine and the arena moved with it'); }
 ok(L.ents.filter(e => e.t === 'vent' && e.wind).length >= 2, 'A14: the updraft chimneys (' + L.ents.filter(e => e.t === 'vent').length + ' timed updrafts) and the wind gap');
 ok(Object.values(RK_SAY).every(s => SAY_LINES.has(s)), 'every capital line the rule says is in src/hint-lines.js');
 

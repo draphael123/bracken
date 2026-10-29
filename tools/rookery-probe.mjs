@@ -30,7 +30,7 @@ try {
       if(P.rkRide)o.rode=1;else if(o.rode&&P.ground)o.land=[Math.floor(P.x/16),Math.floor((P.y-1)/16)];
       BK.sim(1);}
     return o;};
-  out.rides={};for(const k of ['firstRide','gapRide','nestRide','lastRide']){out.rides[k]=ride(k);out.rides[k].knocked=RK.read().n.knocked;}
+  out.rides={};for(const k of ['firstRide','gapRide','nestRide','lastRide','relayRide','doorRide']){out.rides[k]=ride(k);out.rides[k].knocked=RK.read().n.knocked;}
   out.hungNest=st('hungNest');
   /* THE GALE HARPY: on the narrow ledge, in her cone - her tell, her gust shoves the hero */
   { const ge=BK.enemies().find(e=>e.alive&&e.t==='galeharpy'&&e.squad==='galeLedge');tp(224,25);P.vx=0;let tell=0,gust=0,vx=0;
@@ -44,7 +44,7 @@ try {
   out.shriek={screams:RK.read().n.screams-n0.screams,called,mark};
   tp(98,42);BK.sim(10);tp(108,37);BK.sim(10);out.banner2=RK.read().banner;
   /* THE SHRIEK SISTERS */
-  tp(376,10);for(let i=0;i<240;i++)BK.sim(1);const b=BK.boss;out.boss=b?{t:b.t,mode:b.mode,hp:b.hp,max:b.maxHp,active:!!BK.bossActive}:null;
+  tp(Math.round(BK.L.arena.x0/16)+6,10);for(let i=0;i<240;i++)BK.sim(1);const b=BK.boss;   /* (claude/rookery3: the arena moved 72 east - read it off the level) */out.boss=b?{t:b.t,mode:b.mode,hp:b.hp,max:b.maxHp,active:!!BK.bossActive}:null;
   const SH=BK.shriekSistersHands(),S=SH&&SH.show();
   if(b&&S){out.bodies=BK.enemies().filter(e=>e.t==='shrieksister'&&e.alive).length;for(let i=0;i<240;i++)BK.sim(1);
     /* a plain cut on the wing: 0.4x */

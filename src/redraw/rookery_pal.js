@@ -6,8 +6,8 @@ export const ZONES = [
   { id: 'ledges', name: 'THE GUANO LEDGES', x0: 0, x1: 106 },
   { id: 'terraces', name: 'THE NEST TERRACES', x0: 106, x1: 206 },
   { id: 'chimneys', name: 'THE UPDRAFT CHIMNEYS', x0: 206, x1: 316 },
-  { id: 'stair', name: 'THE BONE STAIR', x0: 316, x1: 368 },
-  { id: 'crag', name: "THE SISTERS' CRAG", x0: 368, x1: 9999 },
+  { id: 'stair', name: 'THE BONE STAIR', x0: 316, x1: 440 },   /* (claude/rookery3: the stair goes on 72 columns - src/rookery.js EXT) */
+  { id: 'crag', name: "THE SISTERS' CRAG", x0: 440, x1: 9999 },
 ];
 export const zoneOf = x => { for (let i = 0; i < ZONES.length; i++) if (x < ZONES[i].x1) return i; return ZONES.length - 1; };
 /* GUANO: the white the birds leave (a lit crust, a body, a grey shadow side) and BONE: a nest's pale sticks, a skull, an egg */
