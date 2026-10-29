@@ -214,7 +214,7 @@ export function buildWarCairn({ painter, T, TS }) {
   const arenaDrums = st.drums.map((c, i) => { const d = drum('arena' + i, sx + c, R - 1, { arena: true }); return d; });
   ent('bzchief', sx + st.him, R - 1, { face: -1 });
   deco(sx + st.W - 4, R - 1, 'cairn', 3);
-  const arena = { x0: sx * TS, x1: (sx + st.W) * TS, floor: R * TS, y0: (R - st.roof) * TS, trigger: (sx + 3) * TS, wallL: sx - 1, wallR: sx + st.W, boss: 'bzchief', music: 'boss3',
+  const arena = { x0: sx * TS, x1: (sx + st.W) * TS, floor: R * TS, y0: (R - st.roof) * TS, trigger: (sx + 3) * TS, wallL: sx - 1, wallR: sx + st.W, boss: 'bzchief', music: 'clanchief',
     tint: '#e8d0c0', tintA: 0.04, start: [sx + 2, R - 1], bzc: { sx, R } };
 
   const ents = L.ents;
@@ -231,8 +231,8 @@ export function buildWarCairn({ painter, T, TS }) {
       { kind: 'hoists', opens: 'a gate (the drum gates and the chimney hatches), a bridge (the chained slabs swing level)', hud: 'THE BEAT IS YOURS' },
       { kind: 'wcdrum', opens: 'gate', hud: 'THE DRUM GATE SWINGS OPEN' },
     ],
-    duskStart: -1, duskLen: 1, music: 'musMountain', night: false, glowNight: false,
-    palette: { sky: 'day', dress: 'none', ledges: 'rock', haze: 'rgba(200,215,235,0.10)', dirt: '#6e6a66', dirtL: '#8e8a84', dirtD: '#4a4744', grass: '#7a8a6a', grassL: '#9aa88a', grassD: '#56604a' },
+    duskStart: 99999, duskLen: 1, music: 'warcairn', night: false, glowNight: false,
+    palette: { sky: [[104, 150, 204], [238, 230, 210]], far: 'crag', mid: 'crag', near: 'crag', dress: 'none', ledges: 'rock', haze: 'rgba(222,228,238,0.10)', dirt: '#74706a', dirtL: '#98948c', dirtD: '#4a4844', grass: '#8a9a58', grassL: '#d09a48', grassD: '#5a6a38' },   /* (claude/warcairnart) high bare bright morning: grey granite, orange and green lichen on its tops, a cold clear sky */
     ambient: [{ x0: 0, x1: 99999, kind: 'wind' }],
     tints: [[-24, W + 24, [215, 225, 240], 0.05]],
     reachExact: false,

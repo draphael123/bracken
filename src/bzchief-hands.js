@@ -6,6 +6,7 @@
 // THE SHARED READ (B10): OPEN = a gold ring and a timer bar (HE LOSES THE BEAT / HIS AXES ARE IN THE STONE); WARDED = a pale shell ring and the word; TAKE IT = the crossed
 // axes flare and the word names the answer - never silent.
 // main.js calls: spawnBoss, owns, on, update, take, frame, drawOver, barName, rageOf, end, read, show, clear, onBeat, drums.
+import * as WCW from './redraw/warcairn_world_art.js';   /* (claude/warcairnart) his hatchet and crossed axes, drawn */
 import * as BZM from './bzchief.js';
 import { BOSS_PHASE } from './boss-music.js';
 const { BZC } = BZM;
@@ -99,14 +100,13 @@ export function makeBzChiefHands(ctx) {
     /* THE CRACKED SLABS: a dark seam across each cracked one (a broken one is rubble: the tiles) */
     for (const sl of G.slabs) { const st = S.cracked[sl.i]; if (st !== 1) continue; g.fillStyle = '#2a2622'; for (let k = 0; k < 6; k++) g.fillRect(R(sl.x0 - cx) + 6 + k * 9, fy + ((k * 3) % 4), 6, 1); }
     /* THE HATCHET: in flight (spinning), or standing in the floor */
-    if (S.axe) { const ax = R(S.axe.x - cx), ay = R(S.axe.y - cy); g.fillStyle = '#6a4428'; if (S.axe.fly) { const a = time * 22; g.fillRect(ax + R(Math.cos(a) * 5) - 1, ay + R(Math.sin(a) * 5) - 1, 3, 3); g.fillStyle = '#c8ccd4'; g.fillRect(ax - R(Math.cos(a) * 5) - 2, ay - R(Math.sin(a) * 5) - 2, 4, 4); }
-      else { g.fillRect(ax, ay - 12, 2, 12); g.fillStyle = '#c8ccd4'; g.fillRect(ax - 3, ay - 13, 5, 4); if (S.oneHand) ctx.text('HIS HATCHET', ax, ay - 20, '#ffd36b', 'center', 5); } }
+    if (S.axe) { const ax = R(S.axe.x - cx), ay = R(S.axe.y - cy); WCW.chiefHatchet(g, ax, ay, time, !!S.axe.fly); if (!S.axe.fly && S.oneHand) ctx.text('HIS HATCHET', ax, ay - 20, '#ffd36b', 'center', 5); }
     /* THE SPLIT running the floor */
     for (const w of S.waves) { g.fillStyle = '#c8c0b0'; g.fillRect(R(w.x - cx) - 3, fy - 10, 6, 10); g.fillStyle = '#ff6b3c'; g.fillRect(R(w.x - cx) - 1, fy - 12, 2, 3); }
     /* THE POUNCE: where he will land (the coil) */
     if (m === 'coil' && S.leapX != null) { g.strokeStyle = blink; g.beginPath(); g.moveTo(R(S.leapX - cx) - 10, fy - 2); g.lineTo(R(S.leapX - cx) + 10, fy - 2); g.stroke(); }
     /* TAKE IT: the crossed axes flare over him */
-    if (m === 'take') { g.strokeStyle = e.takeHitT > 0 ? '#ffffff' : '#ff9a5c'; g.lineWidth = 2; g.beginPath(); g.moveTo(x + f * 6 - 8, y - 40); g.lineTo(x + f * 6 + 8, y - 24); g.moveTo(x + f * 6 + 8, y - 40); g.lineTo(x + f * 6 - 8, y - 24); g.stroke(); g.lineWidth = 1;
+    if (m === 'take') { WCW.crossedAxes(g, x + f * 6, y - 32, e.takeHitT > 0, time);
       ctx.text('TAKE IT', x, y - 78, '#ff9a5c', 'center', 6); }
     if (m === 'warcry') ctx.text('WAR CRY', x, y - 78, '#ff6b6b', 'center', 6);
     if (m === 'drumWalk') ctx.text('TO THE DRUM', x, y - 78, '#ff6b6b', 'center', 6);

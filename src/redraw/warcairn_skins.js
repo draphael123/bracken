@@ -4,6 +4,7 @@
 //   clanguard    the SHIELD's (the crossed-axe guard: TAKE IT, broken by a heavy or a beat) clanchamp  the HEAVY's (the clan champion, the ring's elite)
 //   clanrunner   the 'berserker' charger's (the clan runner - NOT the hero Berserker)       drummer   the ACOLYTE's runner sheet (THE DRUMMER, the one new foe)
 import { canvas, flipX, whiten, rgb } from '../px.js';
+import { bakeClanSheets } from './warcairn_clan_art.js';   /* (claude/warcairnart) the clan DRAWN: men of the clan, not recoloured goblins */
 
 const pack = (frames, ax, ay, w, h) => { const R = frames, L = frames.map(c => flipX(c)), white = frames.map(c => whiten(c)); return { R, L, white: { R: white, L: white.map(c => flipX(c)) }, ax, ay, w, h }; };
 const lerpC = (a, b, t) => { const A = rgb(a), B = rgb(b); return [A[0] + (B[0] - A[0]) * t, A[1] + (B[1] - A[1]) * t, A[2] + (B[2] - A[2]) * t]; };
@@ -19,6 +20,7 @@ const DRUM_PICK = (r, g, b) => (b > r + 10 && b >= g) ? HIDE : (r > g + 40 && r 
 const reskin = (set, pick) => { if (!set || !set.R) return null; const R = set.R.map(f => recolor(f, pick)); return pack(R, set.ax, set.ay, set.w, set.h); };
 export function bakeWarCairnSkins(SPR) {
   const out = {};
+  try { const A = bakeClanSheets(SPR); if (A.clanaxe && A.clanthrower && A.clanguard && A.clanchamp && A.clanrunner && A.drummer) return A; } catch (err) { console.warn('warcairn clan art', err); }   /* (the greybox recolours below stay as the fallback) */
   for (const [k, base] of [['clanaxe', 'soldier'], ['clanthrower', 'javelin'], ['clanguard', 'shield'], ['clanchamp', 'heavy'], ['clanrunner', 'berserker']]) { const s = reskin(SPR[base], CLAN_PICK); if (s) out[k] = s; }
   const d = reskin(SPR.acolyte || SPR.runner, DRUM_PICK); if (d) out.drummer = d;
   return out;

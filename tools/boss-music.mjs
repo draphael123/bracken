@@ -51,6 +51,9 @@ assert.ok(['palisadewood', 'batteringbeast'].every(n => A.MUSIC_NAMES.includes(n
 assert.equal(LEVELS.find(l => l.id === 'kitchengate').build().music, 'kitchengate', "THE KITCHEN GATE is not on 'kitchengate' (claude/kitchengateart: Fiddles McGinty)");
 assert.equal(arena('kitchengate').music, 'grubbag', "LORD GRUBBAG's arena is not on 'grubbag' (claude/kitchengateart: Boss 8)");
 assert.ok(['kitchengate', 'grubbag'].every(k => A.MUSIC_NAMES.includes(k) && A.MUSIC_CREDITS[k] && A.MUSIC_CREDITS_ROW[k]) && /MacLeod/.test(A.MUSIC_CREDITS.kitchengate) && /Spring Spring/.test(A.MUSIC_CREDITS.grubbag), "kitchen music credits missing");
+assert.equal(LEVELS.find(l => l.id === 'warcairn').build().music, 'warcairn', "THE WAR CAIRN is not on 'warcairn' (claude/warcairnart: war theme)");
+assert.equal(arena('warcairn').music, 'clanchief', "THE BERSERKER CHIEFTAIN's arena is not on 'clanchief' (claude/warcairnart: Battle RPG Theme Var)");
+assert.ok(['warcairn', 'clanchief'].every(k => A.MUSIC_NAMES.includes(k) && A.MUSIC_CREDITS[k] && A.MUSIC_CREDITS_ROW[k]) && /Spring Spring/.test(A.MUSIC_CREDITS.warcairn) && /Kauffman/.test(A.MUSIC_CREDITS.clanchief), "war cairn music credits missing");
 assert.equal(arena('stockade').music, 'chieftain', "THE STOCKADE CHIEFTAIN's arena is not on 'chieftain' (claude/musicmarsh: Bobjt's Raiders March)");
 assert.ok(['marsh', 'chieftain', 'bellcrab', 'chase'].every(n => A.MUSIC_NAMES.includes(n)) && /Tausdei/.test(A.MUSIC_CREDITS.marsh || '') && /Elyvilon/.test(A.MUSIC_CREDITS.frogking || '') && /Bobjt/.test(A.MUSIC_CREDITS.chieftain || '') && /Moreno/.test(A.MUSIC_CREDITS.bellcrab || '') && /Wolfgang/.test(A.MUSIC_CREDITS.chase || ''), 'the claude/musicmarsh tracks are not all in the Sound Test with a credit');
 assert.equal(arena('keep').music, 'drownedking', "the Drowned King's arena is not on his flooded-hall dirge");

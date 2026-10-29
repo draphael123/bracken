@@ -12,6 +12,7 @@
 // THE DRUMMER (e.t 'drummer', the level's ONE new foe): small, light, no weapon - he runs to his drum, beats it on a told two-count ('1' .. '2' over him), and when you come at
 //   him he shoves you off (a told '!', a small push) and runs for his other drum. Cut him down and that stretch is quiet.
 // Every capital line it says is a WC_SAY line (src/hint-lines.js lists them).
+import * as WCW from './redraw/warcairn_world_art.js';   /* (claude/warcairnart) the world, drawn */
 export const WC = {
   beat: { r: 8, stumble: 1.0, spent: 6, box: 12, arenaSpent: 6 },
   rage: { t: 5, dealt: 1.25, taken: 1.25 },
@@ -165,34 +166,16 @@ export function makeWarCairnHands(ctx) {
   const rect = (g, x, y, w, h, c) => { g.fillStyle = c; g.fillRect(R(x), R(y), R(w), R(h)); };
   H.drawWorld = (g, cx, cy, VW, VH, time) => {
     if (!S) return; const lv = L(), inX = (x, m = 80) => x - cx > -m && x - cx < VW + m;
-    /* THE DRUM GATES: hide on a bone frame (closed), swung open (a thin edge) */
-    for (const gt of S.gates.values()) { const d = gt.d, x = d.x0 * TS - cx, y = d.y0 * TS - cy, w = (d.x1 - d.x0 + 1) * TS, h = (d.y1 - d.y0 + 1) * TS; if (!inX(d.x0 * TS, 120)) continue;
-      if (!gt.open) { rect(g, x, y, w, h, '#a88a64'); rect(g, x, y, w, 2, '#e8dcc0'); rect(g, x, y + h - 2, w, 2, '#e8dcc0'); for (let k = 3; k < w - 2; k += 6) rect(g, x + k, y + 2, 1, h - 4, '#7a2420'); }
-      else { rect(g, x, y, 2, h, '#a88a64'); g.globalAlpha = Math.min(1, gt.openT / 1.2); rect(g, x, y - 3, w, 2, '#ffd36b'); g.globalAlpha = 1; } }
-    /* THE CHAINED SLABS: hanging on their chains (tilted), or swung level */
-    for (const s of S.slabs.values()) { const d = s.d, x = d.x0 * TS - cx, y = d.y * TS - cy, w = (d.x1 - d.x0 + 1) * TS; if (!inX(d.x0 * TS, 200)) continue;
-      g.strokeStyle = '#4a4744'; g.beginPath(); g.moveTo(x + 2, y - 40); g.lineTo(x + 2, y); g.moveTo(x + w - 2, y - 40); g.lineTo(x + w - 2, s.level ? y : y + 24); g.stroke();
-      if (s.level) { rect(g, x, y, w, 6, '#7a8494'); rect(g, x, y, w, 1, '#c8d0dc'); }
-      else { g.fillStyle = '#5a6270'; g.beginPath(); g.moveTo(x, y); g.lineTo(x + w, y + 24); g.lineTo(x + w, y + 30); g.lineTo(x, y + 6); g.closePath(); g.fill(); } }
-    /* THE SLATE SPANS' CARVED POSTS (L.structures 'cairnArch': the second heights stand on them - greybox: flat granite posts at each end and every few tiles) */
+    /* THE DRUM GATES, SLABS, SPANS' POSTS, CORNICES, DRIVEN HATCHETS and DRUMS: drawn (src/redraw/warcairn_world_art.js, claude/warcairnart) */
+    for (const gt of S.gates.values()) { const d = gt.d; if (!inX(d.x0 * TS, 120)) continue; WCW.gate(g, d.x0 * TS - cx, d.y0 * TS - cy, (d.x1 - d.x0 + 1) * TS, (d.y1 - d.y0 + 1) * TS, gt.open, gt.openT, d.id, time); }
+    for (const s of S.slabs.values()) { const d = s.d; if (!inX(d.x0 * TS, 200)) continue; WCW.slab(g, d.x0 * TS - cx, d.y * TS - cy, (d.x1 - d.x0 + 1) * TS, s.level, time); }
     for (const z of lv.structures || []) { if (z.kind !== 'cairnArch' || !inX(z.x0 * TS, 260)) continue; const y0 = z.top * TS - cy, y1 = z.floor * TS - cy, n = z.x1 - z.x0 + 1, step = Math.max(2, Math.ceil(n / 3));
       const xs = []; for (let x = z.x0; x <= z.x1; x += step) xs.push(x); if (xs[xs.length - 1] !== z.x1) xs.push(z.x1);
-      for (const x of xs) { rect(g, x * TS - cx + 5, y0 + 2, 6, y1 - y0 - 2, '#6e6a62'); rect(g, x * TS - cx + 5, y0 + 2, 1, y1 - y0 - 2, '#8e8a84'); }
-      rect(g, z.x0 * TS - cx, y0, n * TS, 3, '#8e98a8'); }
-    /* THE CORNICES: old snow (whole, cracking - a seam and a puff - or gone) */
-    for (const c of S.cornices.values()) { if (c.state === 'gone') continue; const d = c.d, x = d.x0 * TS - cx, y = d.y * TS - cy, w = (d.x1 - d.x0 + 1) * TS; if (!inX(d.x0 * TS, 120)) continue;
-      rect(g, x, y, w, 5, '#e8eef4'); rect(g, x + 2, y + 5, w - 4, 3, '#c8d4e0');
-      if (c.state === 'crack') { const sh = Math.sin(time * 60) * 1; for (let k = 4; k < w; k += 11) rect(g, x + k + sh, y + 1, 1, 4, '#4a5a6a'); } }
-    /* THE DRIVEN HATCHETS (footholds) */
-    for (const h of lv.wcHolds || []) { const x = h.x * TS - cx, y = h.y * TS - cy; if (!inX(h.x * TS)) continue; rect(g, x + (h.dir > 0 ? 6 : 0), y + 1, 10, 3, '#6a4428'); rect(g, x + (h.dir > 0 ? 12 : 0), y - 2, 4, 6, '#c8ccd4'); }
-    /* THE DRUMS: hide on a stone-and-antler frame, war-paint red; the earshot ring as it beats; slack (dim) while spent; HIS drum burns red */
-    for (const dr of S.drums.values()) { const d = dr.d, x = drumX(d) - cx, y = drumY(d) - cy; if (!inX(drumX(d))) continue;
-      rect(g, x - 8, y - 4, 2, 4, '#8a8478'); rect(g, x + 6, y - 4, 2, 4, '#8a8478');
-      rect(g, x - 9, y - 18, 18, 14, dr.his ? '#c8281e' : dr.spentT > 0 ? '#7a6a58' : '#b89a72'); rect(g, x - 9, y - 18, 18, 2, '#e8dcc0'); rect(g, x - 2, y - 15, 4, 8, '#9a2a24');
-      g.strokeStyle = '#d8d0c0'; g.beginPath(); g.moveTo(x - 9, y - 18); g.lineTo(x - 12, y - 25); g.moveTo(x + 9, y - 18); g.lineTo(x + 12, y - 25); g.stroke();   /* the antlers */
-      if (dr.spentT > 0 && dr.spentT < 1.2) { g.globalAlpha = 1 - dr.spentT / 1.2; rect(g, x - 9, y - 18, 18, 2, '#ffd36b'); g.globalAlpha = 1; }   /* (it tightens: a glow) */
-      if (dr.beatT > 0) { g.globalAlpha = dr.beatT * 2; g.strokeStyle = dr.by === 'drummer' ? '#ff4a3a' : '#ffd36b'; g.beginPath(); g.arc(R(x), R(y - 10), R((0.5 - dr.beatT) * 2 * WC.beat.r * TS) + 4, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1; }
-      if (d.arena && S.answer > 0) { g.globalAlpha = Math.min(1, S.answer); rect(g, x - 9, y - 20 - R(Math.abs(Math.sin(time * 9)) * 3), 18, 2, '#ff4a3a'); g.globalAlpha = 1; } }
+      for (const x of xs) WCW.post(g, x * TS - cx + 4, y0 + 2, y1, x);
+      rect(g, z.x0 * TS - cx, y0, n * TS, 3, '#8e98a8'); rect(g, z.x0 * TS - cx, y0, n * TS, 1, '#c8d4e0'); rect(g, z.x0 * TS - cx, y0 + 2, n * TS, 1, '#5a6676'); }
+    for (const c of S.cornices.values()) { if (c.state === 'gone') continue; const d = c.d; if (!inX(d.x0 * TS, 120)) continue; WCW.cornice(g, d.x0 * TS - cx, d.y * TS - cy, (d.x1 - d.x0 + 1) * TS, c.state, time); }
+    for (const h of lv.wcHolds || []) { if (!inX(h.x * TS)) continue; WCW.hold(g, h.x * TS - cx, h.y * TS - cy, h.dir); }
+    for (const dr of S.drums.values()) { const d = dr.d; if (!inX(drumX(d))) continue; WCW.drum(g, drumX(d) - cx, drumY(d) - cy, { spent: dr.spentT, his: dr.his, beat: dr.beatT, by: dr.by, arena: !!d.arena, answer: S.answer, beatR: dr.beatT > 0 ? R((0.5 - dr.beatT) * 2 * WC.beat.r * TS) + 4 : null }, time); }
     /* THE AREA BANNER */
     if (S.banner && ctx.text) { const a = Math.min(1, S.banner.t / 0.6, (3.4 - S.banner.t) / 0.4); g.globalAlpha = Math.max(0, a); ctx.text(S.banner.name, R(VW / 2), 34, '#ffe0c8', 'center', 8); g.globalAlpha = 1; }
   };
@@ -200,7 +183,6 @@ export function makeWarCairnHands(ctx) {
   H.drawOver = (g, cx, cy, time) => { if (!S) return; for (const p of ctx.players()) { if (!p || p.dead || !((p.wcRageT || 0) > now())) continue;
     g.globalAlpha = 0.35 + 0.2 * Math.sin(time * 12); g.strokeStyle = '#ff4a3a'; g.strokeRect(R(p.x - cx) - 7, R(p.y - cy) - 22, 14, 22); g.globalAlpha = 1; } };
   /* THE DRUMMER, greybox: a hide drum on his back, sticks (main.js draws his body: SPR.drummer) */
-  H.drummerOver = (g, e, cx, cy, time) => { if (!e.alive) return; const x = R(e.x - cx), y = R(e.y - cy), f = e.face || 1; rect(g, x - f * 6 - 3, y - 12, 6, 7, '#b89a72'); rect(g, x - f * 6 - 3, y - 12, 6, 1, '#e8dcc0');
-    if (e.mode === 'count') { const k = Math.floor(time * 8) % 2; rect(g, x + f * 3, y - 16 - k * 2, 1, 6, '#e8dcc0'); } };
+  H.drummerOver = (g, e, cx, cy, time) => { if (!e.alive) return; WCW.drummerDrum(g, e.x - cx, e.y - cy, e.face || 1, e.mode === 'count', time); };
   return H;
 }
