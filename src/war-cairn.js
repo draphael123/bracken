@@ -58,7 +58,7 @@ export function buildWarCairn({ painter, T, TS }) {
   const drums = [], gates = [], slabs = [], cornices = [], holds = [], reachDoors = [], reachSpans = [], hoists = [];
   /* A WAR DRUM at column x on feet row f (it stands on row f+1). r: its earshot in tiles. What its beat works: gates, slabs, cornices (ids) */
   const drum = (id, x, f, o) => { const d = Object.assign({ id, x, f, gates: [], slabs: [], cornices: [] }, o || {}); drums.push(d); ent('wcdrum', x, f, { id });
-    hoists.push({ id, load: 'beat', cleat: [x, f], x, drum: id }); return d; };
+    hoists.push({ id, load: 'beat', cleat: [x, f], x, drum: id, ...(d.arena ? { boss: true } : {}) }); return d; };
   /* A DRUM GATE: hide on a bone frame, hung on stone posts - T.PORT cells (x0..x1, y0..y1) until the beat swings it open */
   const gate = (dr, id, x0, x1, y0, y1) => { const g = { id, drum: dr.id, x0, x1, y0, y1 }; gates.push(g); dr.gates.push(id); fill(x0, x1, y0, y1, T.PORT); ent('wcgate', x0, y1, { id });
     reachDoors.push({ x0, x1, y0, y1 }); return g; };

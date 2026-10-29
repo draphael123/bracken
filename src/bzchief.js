@@ -61,8 +61,8 @@ export const PHASE_NAME = { 1: 'THE CHALLENGE', 2: 'THE DRUMS BEAT FOR HIM', 3: 
 export const BZC_SAY = {
   wake: 'THE BERSERKER CHIEFTAIN', rule: 'HE FIGHTS TO THE DRUMS: STRIKE ONE IN HIS FRENZY', take: 'HE TAKES IT: A HEAVY BLOW OR A BEAT BREAKS HIS GUARD', taken: 'ON HIS AXES: IT FEEDS HIS RAGE',
   reel: 'HIS GUARD BREAKS: HE REELS', parry: 'ON THE BEAT: HE PARRIES', frenzy: 'FRENZY: STRIKE A DRUM', broken: 'HE LOSES THE BEAT: STRIKE', ward: 'HE GATHERS HIMSELF: HE IS WARDED',
-  stuck: 'HIS AXES ARE IN THE STONE', oneHand: 'ONE AXE: HE GOES FOR THE OTHER', knocked: 'KNOCKED OFF HIS AXE', p2: 'THE DRUMS BEAT FOR HIM: HIS RAGE RUNS', p3: 'THE LAST RAGE: HE TAKES A DRUM',
-  hisDrum: 'HIS DRUM: STRIKE THE OTHER', ownTime: 'HE KEEPS HIS OWN TIME: WAIT FOR HIS FRENZY', yields: 'THE CHIEFTAIN YIELDS', cracked: 'THE SLAB CRACKS', breaks: 'THE SLAB BREAKS AWAY',
+  stuck: 'HIS AXES ARE IN THE STONE', frenzyShort: 'FRENZY', burnsOut: 'HIS FRENZY BURNS OUT', forDrum: 'HE GOES FOR A DRUM', whirl: 'THE WHIRL: STAY OFF HIS BACK', cross: 'THE CROSS-CHOP: DODGE IT - A MISS LEAVES HIS AXES IN THE STONE', double: 'THE DOUBLE CHOP: OUT OF REACH', throw: 'THE AXE THROW: JUMP IT', pounce: 'THE POUNCE: JUMP OVER IT', split: 'THE GROUND-SPLITTER: JUMP THE SPLIT', beatReel: 'ON THE BEAT: HE REELS', notYet: 'HE IS WARDED: NOT YET', oneHand: 'ONE AXE: HE GOES FOR THE OTHER', knocked: 'KNOCKED OFF HIS AXE', p2: 'THE DRUMS BEAT FOR HIM: HIS RAGE RUNS', p3: 'THE LAST RAGE: HE TAKES A DRUM',
+  hisDrum: 'HIS DRUM: STRIKE THE OTHER', ownTime: 'HE KEEPS HIS OWN TIME: WAIT FOR HIS FRENZY', yields: 'THE CHIEFTAIN YIELDS', winOwned: 'HIS AXES ARE YOURS', winNew: 'THE BERSERKER WILL FIGHT FOR YOU - 10 SILVER IN THE STORE', cracked: 'THE SLAB CRACKS', breaks: 'THE SLAB BREAKS AWAY',
 };
 const STRIKE = new Set(['flurry', 'cross', 'double', 'throw', 'whirl', 'pounce', 'split']);
 const GUARD_MODES = new Set(['walk', 'recover']);
@@ -129,7 +129,7 @@ const quick = S => (frenzied(S) ? BZC.frenzy.quick : 1) * (S.oneHand ? BZC.throw
 function tell(e, S, c, mode, t) { setMode(e, mode, t); S.act++; S.n.moves[mode] = (S.n.moves[mode] || 0) + 1; const mv = MOVES[mode]; if (mv && mv.mark) c.mark(mv.mark); c.sound(mv && mv.mark === '!!' ? 'tellHard' : mv && mv.mark ? 'tell' : 'growl'); }
 function addRage(e, S, c, n) { if (frenzied(S) || !(n > 0)) return; const k = S.ph >= 2 ? BZC.rage.p2 : 1; S.rage = Math.min(BZC.rage.max, S.rage + n * k); }
 function startFrenzy(e, S, c) { S.frenzy = BZC.frenzy.t; S.rage = 0; S.healed = 0; S.n.frenzies++; c.sound('roar'); c.shake(5); c.fx('frenzy', e.x, e.y); c.drums('answer');
-  c.number(e.x, e.y - 84, S.told.frenzy ? 'FRENZY' : BZC_SAY.frenzy, '#ff6b6b'); S.told.frenzy = 1; }
+  c.number(e.x, e.y - 84, S.told.frenzy ? BZC_SAY.frenzyShort : BZC_SAY.frenzy, '#ff6b6b'); S.told.frenzy = 1; }
 function endWard(e, S, c) { S.ward = BZC.wardT; S.openTaken = 0; c.fx('ward', e.x, e.y); c.sound('growl'); c.number(e.x, e.y - 80, BZC_SAY.ward, '#c8b8a8'); }
 
 /* ---------- THE RULE ON HIM (the hands call these) ---------- */
@@ -160,7 +160,7 @@ export function blowLanded(e, S, c, d) { addRage(e, S, c, BZC.rage.land);
   if (frenzied(S) && d > 0 && S.healed < e.maxHp * BZC.frenzy.healCap) { const h = Math.min(Math.round(e.maxHp * BZC.frenzy.heal), Math.round(e.maxHp * BZC.frenzy.healCap - S.healed)); if (h > 0) { S.healed += h; S.n.heal += h; c.mend(h); } } }
 /* HIS BLOW TURNED (a shield, a parry, a roll): the flurry STOPS (it goes on only while chops land); a turned cross-chop or a whiffed one leaves the axes in the stone */
 export function blowTurned(e, S, c, perfect) { if (!e || !e.alive) return; if (e.mode === 'flurry' || e.mode === 'flurryBeat') { S.chainLeft = 0; S.whiffed = true; }
-  if (perfect && (e.mode === 'flurry' || e.mode === 'flurryBeat')) { S.n.reels++; setMode(e, 'reel', BZC.reelT * 0.75); e.vx = 0; c.number(e.x, e.y - 70, 'ON THE BEAT: HE REELS', '#8fd160'); } }
+  if (perfect && (e.mode === 'flurry' || e.mode === 'flurryBeat')) { S.n.reels++; setMode(e, 'reel', BZC.reelT * 0.75); e.vx = 0; c.number(e.x, e.y - 70, BZC_SAY.beatReel, '#8fd160'); } }
 function reel(e, S, c, why) { S.n.reels++; setMode(e, 'reel', BZC.reelT); e.vx = 0; S.heat = 0; c.number(e.x, e.y - 74, BZC_SAY.reel, '#8fd160'); c.sound('crack'); c.shake(3); }
 function stuck(e, S, c) { if (S.ward > 0) { setMode(e, 'recover', 0.6); return; } S.n.stucks++; setMode(e, 'stuck', BZC.stuck.t); e.open = BZC.stuck.t; S.openTaken = 0; c.shake(4); c.sound('crack'); c.fx('stuck', e.x + (e.face || 1) * 20, S.G.floorY);
   c.number(e.x, e.y - 80, BZC_SAY.stuck, '#ffd36b'); }
@@ -169,7 +169,7 @@ export function beatOn(e, S, c, drumId, by) {
   if (!e || !e.alive || e.mode === 'sleep' || e.mode === 'wake' || e.mode === 'yield' || by !== 'hero') return 'idle';
   if (S.hisDrum && drumId === S.hisDrum) { S.n.beatsHis++; c.number(e.x, e.y - 80, BZC_SAY.hisDrum, '#ff6b6b'); return 'his'; }
   if (e.mode === 'take') { reel(e, S, c, 'beat'); return 'reel'; }
-  if (frenzied(S) && !bzcOpen(e)) { if (S.ward > 0) { c.number(e.x, e.y - 80, 'HE IS WARDED: NOT YET', '#c8b8a8'); return 'ward'; }
+  if (frenzied(S) && !bzcOpen(e)) { if (S.ward > 0) { c.number(e.x, e.y - 80, BZC_SAY.notYet, '#c8b8a8'); return 'ward'; }
     S.frenzy = 0; S.n.breaks++; S.chainLeft = 0; S.waves = []; e.lift = 0; S.openTaken = 0; setMode(e, 'broken', BZC.open.t + 0.05); e.open = BZC.open.t; e.vx = 0;
     c.fx('open', e.x, e.y); c.sound('crack'); c.shake(5); c.number(e.x, e.y - 84, BZC_SAY.broken, '#8fd160'); return 'break'; }
   S.n.beatsIdle++; if (!S.told.ownTime) { S.told.ownTime = 1; c.number(e.x, e.y - 80, BZC_SAY.ownTime, '#c8b8a8'); }
@@ -184,7 +184,7 @@ export function stepChief(e, S, dt, h, c) {
   for (const k of ['throwCd', 'whirlCd', 'pounceCd']) S[k] = Math.max(0, S[k] - dt);
   if (e.open > 0) e.open = Math.max(0, e.open - dt);
   if (S.ward > 0) S.ward = Math.max(0, S.ward - dt);
-  if (S.frenzy > 0) { S.frenzy = Math.max(0, S.frenzy - dt); if (S.frenzy === 0) { c.number(e.x, e.y - 80, 'HIS FRENZY BURNS OUT', '#c8b8a8'); } }
+  if (S.frenzy > 0) { S.frenzy = Math.max(0, S.frenzy - dt); if (S.frenzy === 0) { c.number(e.x, e.y - 80, BZC_SAY.burnsOut, '#c8b8a8'); } }
   e.ward = S.ward; e.bzRage = S.rage; e.frenzy = S.frenzy;
   stepWorld(e, S, dt, h, c);
   if (e.mode === 'sleep' || e.mode === 'yield') return;
@@ -199,11 +199,11 @@ export function stepChief(e, S, dt, h, c) {
     setMode(e, 'warcry', BZC.frenzy.cry); S.cryOnly = true; return; }
   /* FULL RAGE (P2+): the war cry - in P3 he walks to a drum first and takes it */
   if (S.ph >= 2 && S.rage >= BZC.rage.max && !frenzied(S) && S.ward <= 0 && (e.mode === 'walk' || e.mode === 'recover') && e.modeT <= 0.2) {
-    if (S.ph >= 3) { const d = pickDrum(e, S, c); if (d) { S.walkTo = d.id; S.n.drumWalks++; setMode(e, 'drumWalk', BZC.drumWalk.t); c.number(e.x, e.y - 74, 'HE GOES FOR A DRUM', '#ff6b6b'); return; } }
+    if (S.ph >= 3) { const d = pickDrum(e, S, c); if (d) { S.walkTo = d.id; S.n.drumWalks++; setMode(e, 'drumWalk', BZC.drumWalk.t); c.number(e.x, e.y - 74, BZC_SAY.forDrum, '#ff6b6b'); return; } }
     S.cryOnly = false; tell(e, S, c, 'warcry', BZC.frenzy.cry); return; }
   /* THE WHIRL: a hero at his back a while (on guard only: one windup at a time) */
   if (GUARD_MODES.has(e.mode) && S.whirlCd <= 0) { const back = h.find(q => q.alive && Math.sign(q.x - e.x) === -(e.face || 1) && Math.abs(q.x - e.x) < BZC.whirl.r && Math.abs(q.y - e.y) < 30);
-    if (back) { S.behindT += dt; if (S.behindT > BZC.whirl.behind) { S.behindT = 0; S.whirlCd = BZC.whirl.cd; S.n.whirls++; tell(e, S, c, 'whirlTell', BZC.whirl.tell * quick(S)); if (!S.told.whirl) { S.told.whirl = 1; c.number(e.x, e.y - 80, 'THE WHIRL: STAY OFF HIS BACK', '#ffd36b'); } return; } } }
+    if (back) { S.behindT += dt; if (S.behindT > BZC.whirl.behind) { S.behindT = 0; S.whirlCd = BZC.whirl.cd; S.n.whirls++; tell(e, S, c, 'whirlTell', BZC.whirl.tell * quick(S)); if (!S.told.whirl) { S.told.whirl = 1; c.number(e.x, e.y - 80, BZC_SAY.whirl, '#ffd36b'); } return; } } }
   switch (e.mode) {
     case 'broken': e.vx = 0; if (e.open <= 0) { endWard(e, S, c); setMode(e, 'recover', 0.4); } return;   /* B4: on his knees, still */
     case 'stuck': e.vx = 0; if (e.open <= 0) { endWard(e, S, c); setMode(e, 'recover', 0.35); } return;
@@ -247,11 +247,11 @@ function nextMove(e, S, P, h, c) {
   if ((m === 'flurry' || m === 'cross' || m === 'double') && ad > BZC.flurry.reach + 46) { if (S.throwCd <= 0 && ad >= BZC.throw.min && !S.oneHand) m = 'throw'; else if (S.ph >= 2 && S.pounceCd <= 0 && ad >= BZC.pounce.min) m = 'pounce'; else { setMode(e, 'walk', 0.45); S.step--; return; } }
   switch (m) {
     case 'flurry': S.chainLeft = BZC.flurry.n; S.whiffed = false; S.n.flurries++; e.left = true; tell(e, S, c, 'flurryTell', BZC.flurry.tell * quick(S)); return;
-    case 'cross': S.n.crosses++; tell(e, S, c, 'crossTell', BZC.cross.tell * quick(S)); if (!S.told.cross) { S.told.cross = 1; c.number(e.x, e.y - 74, 'THE CROSS-CHOP: DODGE IT - A MISS LEAVES HIS AXES IN THE STONE', '#ff6b6b'); } return;
-    case 'double': S.n.doubles++; tell(e, S, c, 'doubleTell', BZC.double.tell * (frenzied(S) ? BZC.frenzy.quick : 1)); if (!S.told.double) { S.told.double = 1; c.number(e.x, e.y - 74, 'THE DOUBLE CHOP: OUT OF REACH', '#ff6b6b'); } return;
-    case 'throw': S.n.throws++; S.throwCd = BZC.throw.cd; tell(e, S, c, 'throwTell', BZC.throw.tell); if (!S.told.throw) { S.told.throw = 1; c.number(e.x, e.y - 74, 'THE AXE THROW: JUMP IT', '#ffd36b'); } return;
-    case 'pounce': S.n.pounces++; S.pounceCd = BZC.pounce.cd; addRage(e, S, c, 4); tell(e, S, c, 'coil', BZC.pounce.tell); S.leapX = clampX(G, P.x); if (!S.told.pounce) { S.told.pounce = 1; c.number(e.x, e.y - 80, 'THE POUNCE: JUMP OVER IT', '#ff6b6b'); } return;
-    case 'split': S.n.splits++; tell(e, S, c, 'splitTell', BZC.split.tell); if (!S.told.split) { S.told.split = 1; c.number(e.x, e.y - 80, 'THE GROUND-SPLITTER: JUMP THE SPLIT', '#ff6b6b'); } return;
+    case 'cross': S.n.crosses++; tell(e, S, c, 'crossTell', BZC.cross.tell * quick(S)); if (!S.told.cross) { S.told.cross = 1; c.number(e.x, e.y - 74, BZC_SAY.cross, '#ff6b6b'); } return;
+    case 'double': S.n.doubles++; tell(e, S, c, 'doubleTell', BZC.double.tell * (frenzied(S) ? BZC.frenzy.quick : 1)); if (!S.told.double) { S.told.double = 1; c.number(e.x, e.y - 74, BZC_SAY.double, '#ff6b6b'); } return;
+    case 'throw': S.n.throws++; S.throwCd = BZC.throw.cd; tell(e, S, c, 'throwTell', BZC.throw.tell); if (!S.told.throw) { S.told.throw = 1; c.number(e.x, e.y - 74, BZC_SAY.throw, '#ffd36b'); } return;
+    case 'pounce': S.n.pounces++; S.pounceCd = BZC.pounce.cd; addRage(e, S, c, 4); tell(e, S, c, 'coil', BZC.pounce.tell); S.leapX = clampX(G, P.x); if (!S.told.pounce) { S.told.pounce = 1; c.number(e.x, e.y - 80, BZC_SAY.pounce, '#ff6b6b'); } return;
+    case 'split': S.n.splits++; tell(e, S, c, 'splitTell', BZC.split.tell); if (!S.told.split) { S.told.split = 1; c.number(e.x, e.y - 80, BZC_SAY.split, '#ff6b6b'); } return;
   }
   setMode(e, 'walk', 0.5);
 }

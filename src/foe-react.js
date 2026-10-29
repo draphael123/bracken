@@ -30,7 +30,7 @@
 export const ACTS = [
   /* act: the purse (TOKENS.cap), the damage tier on a common foe's blow, and the cut of a flurry that raises a mashed foe's guard */
   { act: 1, name: 'THE GREENWOOD', cap: 2, dmg: 1.0, hp: 1.0, mashAt: 3, levels: ['wood', 'hornetsnest', 'marsh', 'fenroad', 'stockade', 'spore', 'rootway', 'underleaf', 'palisadewood', 'burning', 'kings'] },   /* (claude/underleaf4, Daniel 10-25: UNDERLEAF back in act I, straight after the Rootway) */   /* (claude/underorder, Daniel 10-24: act I ends at KINGSWOOD; UNDERLEAF moved to act II, after the Scree Path) */   /* (claude/rootway: THE ROOTWAY, between Sporewood and Kingswood) */
-  { act: 2, name: 'THE CRAGS', cap: 2, dmg: 1.1, hp: 1.0, mashAt: 3, levels: ['scree', 'hanging', 'spire', 'moor', 'rookery', 'skyroad', 'oreroad', 'minecart', 'storm', 'crown', 'undercrown', 'kitchengate'] },
+  { act: 2, name: 'THE CRAGS', cap: 2, dmg: 1.1, hp: 1.0, mashAt: 3, levels: ['scree', 'hanging', 'spire', 'moor', 'rookery', 'skyroad', 'oreroad', 'minecart', 'storm', 'crown', 'undercrown', 'kitchengate', 'warcairn'] },
   { act: 3, name: 'THE SEA', cap: 2, dmg: 2.4, hp: 1.0, mashAt: 2, levels: ['longwater', 'reef', 'flotilla', 'hurricane', 'lamplit', 'deep', 'keep', 'causeway', 'harbor'] },
   { act: 4, name: 'THE OLD KINGDOM', cap: 3, dmg: 3.0, hp: 1.05, mashAt: 2, levels: ['waymeet', 'towpath', 'canal', 'theatre', 'fair', 'fields', 'burial', 'witchlight', 'mage', 'unburied', 'fallingtower', 'church'] },
   { act: 5, name: 'THE DESERT', cap: 3, dmg: 3.0, hp: 1.1, mashAt: 2, levels: ['caravan', 'welltown', 'underwell', 'redgorge', 'glasssea', 'ksar', 'buriedcity', 'sealedpyramid'] },

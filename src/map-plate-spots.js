@@ -2,6 +2,7 @@
 // re-run the solver when a node is added or moved (tools/map-scale.mjs says so).
 export const PLATE_SPOTS = {
   "kitchengate": [10, -4, 80, 10],
+  "warcairn": [8, -4, 74, 10],
   "wood": [-33, 8, 82, 10],
   "hornetsnest": [4, 22, 88, 10],
   "store": [-6, 10, 40, 10],

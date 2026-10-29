@@ -81,6 +81,7 @@ export const TURN_WORD = {
   hourglassking: e => (e.ward > 0 ? TURN.WARDED : 'HIS BRASS'),   // (claude/buriedcity) his brass takes most of a blow until a sand-gate stalls him (B15: x0.45, never nothing)
   hawkmistress: e => (e.ward > 0 ? TURN.WARDED : 'THE HAWK GUARDS'),   /* (claude/ksarhawk) her hawk over her is her guard: fire brings it down (src/hawk-mistress.js) */
   deacon: e => (e.ward > 0 ? TURN.WARDED : 'GUARDS HIGH: HIT LOW'),   // (claude/church2) THE DEACON's pole held crosswise high: a low blow or his back
+  bzchief: e => (e.ward > 0 ? TURN.WARDED : e.frenzy > 0 ? 'IN FRENZY' : 'TAKES IT'),   // (claude/warcairn) TAKES IT on his crossed axes (x0.4, feeds his rage) - a heavy or a beat breaks it; IN FRENZY: YOURS - STRIKE THE DRUM
   paladinboss: e => (e.ward > 0 ? TURN.WARDED : 'HIS LIGHT-WARD'),   // (claude/church3) his light-ward turns every side while he guards (and feeds him): light a brazier beside him, or hit him committed   // (claude/ksar) her falconer's gauntlet turns the front while she is on guard: go round, or come down on her
   admiral: e => (e.ward > 0 ? TURN.WARDED : e.plates > 0 ? 'IRON PLATE' : TURN.WARDED),   // (claude/flotilla3) THE ADMIRAL: his salvaged iron chips a blade (Daniel's 0.15x) until a deck gun blows it off; his own take names it
   champion: e => (e.ward > 0 ? TURN.WARDED : 'HIS PLATE'),   // (claude/flotilla2) THE ADMIRAL'S CHAMPION: his plate takes most of a blow (B15: x0.5, never nothing) until his blade sticks or a deck gun knocks him flat

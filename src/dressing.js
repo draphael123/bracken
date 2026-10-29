@@ -1098,7 +1098,8 @@ GROUND_KITS.redgorge={density:0,kinds:[]};   /* THE RED GORGE (claude/redgorge, 
 ALLOWED_DECORATIONS.redgorge=['scrub','oxSkull','oxRibs','deadTreeD'];
 GROUND_KITS.underwell={density:0,kinds:[]};   /* THE UNDERWELL (claude/underwell): flagstone and oil under a roof of rock - nothing grows, nothing is sprinkled; its dressing is src/redraw/underwell_dress.js (read off the grid) and the hands' own */
 ALLOWED_DECORATIONS.underwell=['husk'];   /* the Queen's cast shell by her door (the only placed decoration) */
-GROUND_KITS.kitchengate={density:0,kinds:[]}; ALLOWED_DECORATIONS.kitchengate=['barrel'];   /* THE KITCHEN GATE (claude/kitchengate): castle stone, nothing sprinkled; the cellar barrels are placed by hand */
+GROUND_KITS.kitchengate={density:0,kinds:[]}; ALLOWED_DECORATIONS.kitchengate=['barrel'];
+GROUND_KITS.warcairn={density:0,kinds:[]}; ALLOWED_DECORATIONS.warcairn=['cairn','stone','bones','eyrie','bridgepost','totem'];   /* THE WAR CAIRN (claude/warcairn): granite, nothing sprinkled - no timber, no logs (theme fit); cairns, standing stones and totems placed by hand (ART TODO: tents on antler poles, prayer cairns) */   /* THE KITCHEN GATE (claude/kitchengate): castle stone, nothing sprinkled; the cellar barrels are placed by hand */
 GROUND_KITS.skyroad={density:0,kinds:[]};   /* THE SKY ROAD (claude/skyroad): basalt and cloud, nothing sprinkled; its dressing is src/redraw/skyroad_dress.js and the level's own */
 ALLOWED_DECORATIONS.skyroad=['bones'];
 GROUND_KITS.rookery={density:0,kinds:[]}; ALLOWED_DECORATIONS.rookery=['bones'];   /* THE ROOKERY (claude/rookery): crag and guano, nothing sprinkled; the bones are placed by hand */   /* the bones in the Roc's nest (the only placed decoration) */

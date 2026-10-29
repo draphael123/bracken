@@ -278,6 +278,11 @@ export const STUCK = {
     { id: 'kg-spit3', zone: [300, 8, 315, 21], at: [304, 21], done: ['kgbellows', 304, 21, 'on'], line: 'THE GALLERY IS TOO HIGH: STRIKE THE BELLOWS, RIDE A SPIT UP' },
     { id: 'kg-door2', zone: [341, 13, 354, 21], at: [343, 21], done: ['kgbellows', 343, 21, 'on'], line: 'THE BUTTERY DOOR: STRIKE THE BELLOWS, LET IT BURN' },
   ],
+  /* THE WAR CAIRN (claude/warcairn): the two drum gates the route needs (strike the drum: its gate swings open a few seconds) */
+  warcairn: [
+    { id: 'wc-tunnel', zone: [79, 56, 92, 62], at: [83, 62], done: ['wcdrum', 83, 62, 'on'], line: 'THE DRUM GATE IS SHUT: STRIKE THE DRUM, THEN GO' },
+    { id: 'wc-chimney', zone: [110, 50, 137, 57], at: [121, 57], done: ['wcdrum', 121, 57, 'on'], line: 'THE HATCHES ARE SHUT: STRIKE THE DRUM, CLIMB BEFORE THEY SWING BACK' },
+  ],
   palisadewood: [
     { id: 'pw-edge-ramp', zone: [12, 33, 24, 37], at: [19, 37], done: ['scaffoldprop', 19, 37, 'on'], line: 'THE LEDGE IS TOO HIGH: KNOCK OUT THE SCAFFOLD PROP' },
     { id: 'pw-yard-tower', zone: [136, 27, 146, 31], at: [142, 31], done: ['towerprop', 142, 31, 'on'], line: "NO JUMP CROSSES: KNOCK OUT THE WATCHTOWER'S PROP" },
