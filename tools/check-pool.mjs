@@ -7,6 +7,7 @@ import { readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { launchBrowser } from './browser-profile.mjs';
 import { browserExecutable } from './cdp.mjs';
+import { budgetFor, killTree } from './check-guard.mjs';
 
 /* Alone after the pool: measured frame rate changes when another lab has the GPU; the online test opens TWO browsers;
    recovery tests protocol deadlines over twenty page reloads; textfit-full has its own ten-minute wall budget; and a leak or
@@ -69,12 +70,12 @@ function execute(job, root, port) {
     /* spawnSync's 1 MiB limit was part of the old verdict: a runaway tool failed instead of filling RAM. */
     child.stdout.on('data', b => { outBytes += b.length; if (outBytes > 1048576) { error = new Error('stdout maxBuffer length exceeded'); child.kill(); } else stdout.push(b); });
     child.stderr.on('data', b => { errBytes += b.length; if (errBytes > 1048576) { error = new Error('stderr maxBuffer length exceeded'); child.kill(); } else stderr.push(b); });
-    const timer = job.timeout ? setTimeout(() => { timedOut = true; child.kill(); }, job.timeout) : null;
+    const budget = job.timeout || budgetFor(job.name), timer = setTimeout(() => { timedOut = true; killTree(child.pid); child.kill(); }, budget);   /* (claude/smallfix4) every pooled check has a wall-clock budget; only its own PID tree dies */
     child.on('error', e => { error = e; });
-    child.on('close', code => { if (done) return; done = true; if (timer) clearTimeout(timer);
+    child.on('close', code => { if (done) return; done = true; clearTimeout(timer);
       const lines = (Buffer.concat(stdout).toString('utf8') + Buffer.concat(stderr).toString('utf8') + (error ? '\n' + error.stack : '')).trim().split(/\r?\n/);
       resolveResult({ name: job.name, ok: code === 0 && !timedOut && !error, ms: Date.now() - t0,
-        last: timedOut ? 'TIMED OUT after ' + Math.round(job.timeout / 60000) + ' min' : lines.at(-1) || '', out: lines }); });
+        last: timedOut ? 'FAIL ' + job.name + ' TIMEOUT after ' + Math.round(budget / 60000) + ' min' : lines.at(-1) || '', out: lines }); });
   });
 }
 

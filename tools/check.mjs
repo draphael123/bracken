@@ -248,7 +248,7 @@ const peakBetween = (t0, t1) => { let tot = 0, max = 0, any = false;
 const live = (name, ok, ms) => { const t1 = Date.now(), pk = peakBetween(t1 - ms, t1); PEAKS.set(name, pk);
   console.log('[live] ' + (ok ? 'ok  ' : 'FAIL') + ' ' + name + ' ' + (ms / 1000).toFixed(1) + 's' + (pk ? ' peak-rss total=' + pk.tot + 'MB biggest-process=' + pk.max + 'MB' : ' peak-rss n/a')); };
 const runSync = (name, cmd, args, env) => {
-  const t0 = Date.now(), r = spawnSync(cmd, args, { cwd: ROOT, encoding: 'utf8', env: env ? { ...process.env, ...env } : process.env });
+  const t0 = Date.now(), r = spawnSync(process.execPath, [join(ROOT, 'tools/check-guard.mjs'), name, cmd, ...args], { cwd: ROOT, encoding: 'utf8', env: env ? { ...process.env, ...env } : process.env });   /* (claude/smallfix4) every check runs under a wall-clock budget: tools/check-guard.mjs kills only its own process tree and prints 'FAIL <name> TIMEOUT' */
   const out = ((r.stdout || '') + (r.stderr || '')).trim().split('\n');
   const ms = Date.now() - t0; live(name, r.status === 0, ms);
   return { name, ok: r.status === 0, ms, last: out[out.length - 1] || '', out };
