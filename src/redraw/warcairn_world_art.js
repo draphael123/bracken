@@ -156,3 +156,38 @@ export function chiefHatchet(g, x, y, time, fly) { x = R(x); y = R(y); g.save();
 export function crossedAxes(g, x, y, hit, time) { g.save(); g.translate(R(x), R(y)); const pulse = hit ? 1 : 0.8 + 0.2 * Math.sin(time * 18);
   for (const s of [-1, 1]) { g.save(); g.rotate(s * 0.75); hatchetShape(g, 22, 7); g.restore(); } g.restore();
   g.globalAlpha = 0.5 * pulse; g.strokeStyle = hit ? '#ffffff' : '#ff9a5c'; g.beginPath(); g.arc(R(x), R(y), 15, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1; }
+
+/* ---------- THE CLAN ON THE RIM (deco only: no entity, no hitbox, no level data) ----------
+   crowd(g, x0, x1, y, time, st): clansmen standing along the arena's rim (feet at row y), x0..x1 in screen px. Dark slate silhouettes with a pale face dot, a hide cloak,
+   antlers on some; they bob to the drum and throw an axe up when `st.cheer` (a beat lately). Positions are a pure function of the column (stable, seeded). */
+export function crowd(g, x0, x1, y, time, st = {}) {
+  const base = Math.floor((x0 - 6) / 11); const cheer = st.cheer ? 1 : 0;
+  for (let i = base; i * 11 < x1 + 6; i++) {
+    const h = Math.imul(i * 2654435761 | 0, 1274126177) >>> 0, x = i * 11 + (h % 5) - 2; if (x < x0 - 8 || x > x1 + 8) continue;
+    if (h % 7 === 0) continue;                                                                    /* gaps in the line */
+    const ph = ((h >> 4) % 100) / 100 * 6.28, bob = Math.max(0, Math.sin(time * 5.5 + ph)) * (cheer ? 2 : 1) | 0, yy = R(y) - bob, xx = R(x - x0 + x0);
+    const tall = 9 + (h >> 9) % 3, cloak = (h >> 12) % 2 ? K.hideDD : K.slate0;
+    rect(g, xx - 2, yy - tall + 4, 5, tall - 4, cloak); rect(g, xx - 2, yy - 2, 2, 2, K.g0); rect(g, xx + 1, yy - 2, 2, 2, K.g0);       /* body, legs */
+    rect(g, xx - 1, yy - tall + 1, 3, 3, K.hideL); px(g, xx, yy - tall + 2, K.g0);                                                      /* head, an eye */
+    rect(g, xx - 2, yy - tall, 5, 1, (h >> 14) % 3 ? K.hideDD : K.g0);                                                                   /* hair */
+    if ((h >> 16) % 4 === 0) { px(g, xx - 2, yy - tall - 1, K.bone); px(g, xx + 2, yy - tall - 1, K.bone); px(g, xx - 2, yy - tall - 2, K.bone); px(g, xx + 2, yy - tall - 2, K.bone); }   /* antlers */
+    if (cheer || (h >> 18) % 3 === 0) { const ax = xx + 3; rect(g, ax, yy - tall - 3 + (cheer ? 0 : 2), 1, 6, K.haft); rect(g, ax + 1, yy - tall - 3 + (cheer ? 0 : 2), 2, 2, K.steel); }   /* an axe raised */
+  }
+}
+
+/* ---------- THE SKYLINE (claude/warcairnart): HIGHCROWN far below, the GREAT CAIRN far ahead; drawn over the far crag layers, under the near ones ---------- */
+export function skyline(g, cx, cy, VW, VH, cairnX, time) {
+  const dy = R(-cy * 0.06);
+  /* HIGHCROWN: a castle on its hill at the far horizon, slow (the road starts in sight of it, the summit leaves it behind); pale blue with haze, banner on the keep */
+  { const sx = R(60 - cx * 0.05), by = R(VH * 0.60) + dy; if (sx > -90 && sx < VW + 10) { g.globalAlpha = 0.62;
+    rect(g, sx - 6, by - 3, 84, 3, '#8c9cb8'); rect(g, sx, by - 6, 72, 3, '#8494b0');                                              /* the hill */
+    rect(g, sx + 6, by - 14, 60, 8, '#7888a6'); for (let x = sx + 6; x < sx + 66; x += 4) rect(g, x, by - 16, 2, 2, '#7888a6');       /* the curtain wall and its crenels */
+    for (const [tx, th] of [[sx + 2, 20], [sx + 30, 30], [sx + 60, 22]]) { rect(g, tx, by - th - 6, 10, th, '#6e7e9e'); for (let x = tx; x < tx + 10; x += 4) rect(g, x, by - th - 8, 2, 2, '#6e7e9e'); rect(g, tx + 4, by - th - 1, 2, 3, '#4a5876'); }   /* three towers */
+    rect(g, sx + 34, by - 46, 2, 16, '#6e7e9e'); rect(g, sx + 36, by - 46, 6 + R(Math.sin(time * 2) * 1), 3, '#b45a56');             /* the keep's banner */
+    g.globalAlpha = 1; } }
+  /* THE GREAT CAIRN: a stacked cone of dark slate with the clan's pole, antlers and a red rag at the top; it stands over the summit and comes into view as the road climbs */
+  { const sx = R(VW / 2 + (cairnX - (cx + VW / 2)) * 0.35), by = R(VH * 0.74) + dy; if (sx > -60 && sx < VW + 60) { g.globalAlpha = 0.8;
+    for (let i = 0; i < 9; i++) { const w = 44 - i * 4, y = by - i * 6; rect(g, sx - (w >> 1), y - 6, w, 6, i % 2 ? '#4e586a' : '#566074'); rect(g, sx - (w >> 1), y - 6, w, 1, '#7a869c'); rect(g, sx - (w >> 1) + ((i * 7) % Math.max(4, w - 6)), y - 5, 1, 4, '#3a4252'); }
+    rect(g, sx - 1, by - 54 - 24, 2, 26, '#3a2e24'); rect(g, sx - 6, by - 54 - 24, 12, 1, '#e8dcc0'); rect(g, sx - 6, by - 54 - 28, 1, 4, '#e8dcc0'); rect(g, sx + 5, by - 54 - 28, 1, 4, '#e8dcc0');
+    rect(g, sx + 1, by - 54 - 20, 8 + R(Math.sin(time * 3) * 1), 4, '#c0281c'); g.globalAlpha = 1; } }
+}

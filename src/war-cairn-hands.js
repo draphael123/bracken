@@ -179,6 +179,10 @@ export function makeWarCairnHands(ctx) {
     /* THE AREA BANNER */
     if (S.banner && ctx.text) { const a = Math.min(1, S.banner.t / 0.6, (3.4 - S.banner.t) / 0.4); g.globalAlpha = Math.max(0, a); ctx.text(S.banner.name, R(VW / 2), 34, '#ffe0c8', 'center', 8); g.globalAlpha = 1; }
   };
+  /* THE SKYLINE (src/redraw/warcairn_world_art.js skyline): main.js calls it behind the near layers */
+  H.drawFar = (g, cx, cy, VW, VH, time) => { const lv = L(); if (!lv || !lv.arena) return; WCW.skyline(g, cx, cy, VW, VH, (lv.arena.x0 + lv.arena.x1) / 2, time);
+    /* THE CLAN ON THE FAR RIDGE BEHIND THE RING (deco only, claude/warcairnart): onlookers; they throw their axes up on a beat. Drawn here, behind the drums and the fight */
+    if (S && lv.arena.x1 - cx > -40 && lv.arena.x0 - cx < VW + 40) { let cheer = false; for (const dr of S.drums.values()) if (dr.d.arena && dr.beatT > 0) cheer = true; g.globalAlpha = 0.6; WCW.crowd(g, lv.arena.x0 - cx - 24, lv.arena.x1 - cx + 24, lv.arena.floor - cy - 14, time, { cheer }); g.globalAlpha = 1; } };
   /* OVER a hero in WAR-RAGE: a red edge (main.js calls it after the heroes) */
   H.drawOver = (g, cx, cy, time) => { if (!S) return; for (const p of ctx.players()) { if (!p || p.dead || !((p.wcRageT || 0) > now())) continue;
     g.globalAlpha = 0.35 + 0.2 * Math.sin(time * 12); g.strokeStyle = '#ff4a3a'; g.strokeRect(R(p.x - cx) - 7, R(p.y - cy) - 22, 14, 22); g.globalAlpha = 1; } };

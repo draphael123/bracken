@@ -32566,6 +32566,7 @@ function drawWorld(cx, cy, showPlayer) {
   if (L.rot && !L.healed && !L.violet) { const k = Math.max(0, Math.min(1, (camX + VW / 2 - L.rot.x0) / (L.rot.x1 - L.rot.x0))); if (k > 0) { g.fillStyle = 'rgba(110,30,130,' + (0.26 * k).toFixed(3) + ')'; g.fillRect(0, 0, VW, VH); } }
   if (!L.hornetsNest) drawShafts(cx, cy);
   if (L.witch && SET.parallax !== 'off' && !L.colosseum) drawWitchBack(cx, cy);
+  if (WCH && WCH.on() && SET.parallax !== 'off') WCH.drawFar(g, cx, cy, VW, VH, time);   /* (claude/warcairnart) HIGHCROWN far below and THE GREAT CAIRN ahead on the skyline */
   if (MRH && MRH.on() && SET.parallax !== 'off') MRH.drawFar(g, cx, cy, VW, VH, time);   /* GALE MOOR: the goblins' windmill frame on the horizon */
   if (L.oreRoad && SET.parallax !== 'off') drawOreBackdrop(g, VW, VH, cx, time, cy);   /* THE ORE ROAD: her castle on its peak, and the far pylons marching to it */   /* THE WITCHLIGHT STAIR: its tower stands in front of the far hills, behind the near ones */
   if (BG.nearTrees && !L.colosseum && !L.rootway && !L.lumberKit && !L.fenroad && !L.hornetsNest && !L.pwood && !L.rookery && !(L.ul3 && SET.parallax !== 'off') && !(L.sporewood2 && SET.parallax !== 'off')) { g.globalAlpha = 0.85; drawLayer(BG.nearTrees, 0.45, VH - 300, cx, cy); g.globalAlpha = 1; }
