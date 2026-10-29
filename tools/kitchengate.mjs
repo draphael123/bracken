@@ -13,7 +13,9 @@ import { readFileSync } from 'node:fs';
 import { install } from './node-canvas.mjs'; install();
 const { LEVELS, T } = await import('../src/level.js');
 const { floodReach } = await import('../src/reachcore.js');
-const { KITCHEN, SECTIONS, KG_RULE, ARCS, WHEEL } = await import('../src/kitchen-gate.js');
+const { KITCHEN, SECTIONS, KG_RULE, ARCS, WHEEL, oldCol, KG_INS } = await import('../src/kitchen-gate.js');
+const { flyHop, hopWindow } = await import('./kg-hop.mjs');   /* (claude/kitchengate3) THE HOOK-TO-HOOK HOP, flown in Node */
+const { HERO_MOVE_IDS } = await import('../src/hero-move.js');
 const { makeKitchenHands, KG_SAY, K, spitAt, spitAngle } = await import('../src/kitchen-hands.js');
 const { SAY_LINES } = await import('../src/hint-lines.js');
 const GBM = await import('../src/grubbag.js');
@@ -32,7 +34,7 @@ ok(/id: 'kitchengate', kind: 'level', level: LEVELS\.findIndex/.test(main) && /\
 ok(lv.rule === KG_RULE && /STRIKE A BELLOWS/.test(lv.rule), 'the rule line: ' + lv.rule);
 ok(/GATE = \[[^\]]*'kitchengate'/.test(src('tools/level-quality.mjs')), 'gated by level-quality');
 ok(L.kitchen === true && L.W === KITCHEN.W, 'the level is src/kitchen-gate.js (L.kitchen)');
-ok(SECTIONS.every((s, i) => i === 0 || s[1] === SECTIONS[i - 1][2]) && SECTIONS[SECTIONS.length - 1][2] === L.W && SECTIONS.length === 5, 'five named areas tile the level: ' + SECTIONS.map(s => s[0]).join(', '));
+ok(SECTIONS.every((s, i) => i === 0 || s[1] === SECTIONS[i - 1][2]) && SECTIONS[SECTIONS.length - 1][2] === L.W && SECTIONS.length === 7, 'seven named areas tile the level (claude/kitchengate3: THE HANGING LARDER and THE CARVERY let in): ' + SECTIONS.map(s => s[0]).join(', '));
 /* THE OLD SAVES: the gate rule over a fake PROG (the levelLocked clause and the migration, lifted out of main.js) */
 { const mig = /if \(!PROG\.kitchenRoadMig\) \{[^\n]*\}/.exec(main), lock = /\(lv\.needs && !\(PROG\[lv\.needs\] && PROG\[lv\.needs\]\.cleared\)[^\n]*?&& !q\.get\('unlock'\)\)/.exec(main);
   ok(mig && lock && /lv\.id === 'crown' && PROG\.crownOpen/.test(lock[0]), 'the migration and the gate clause are in src/main.js');
@@ -50,7 +52,7 @@ const at = (e, r) => r.near(e.x, e.y) || r.jumpNear(e.x, e.y);
 const full = floodReach(L, T);
 { const miss = L.ents.filter(e => ['check', 'silver', 'grubbag', 'kgpage'].includes(e.t) && !at(e, full)).map(e => e.t + '@' + e.x + ',' + e.y); ok(!miss.length, 'the fill reaches every shrine, silver, page and his table ' + miss.join(' ')); }
 const checks = L.ents.filter(e => e.t === 'check').sort((a, b) => a.x - b.x), boss = L.ents.find(e => e.t === 'grubbag');
-ok(checks.length === 4 && SECTIONS.slice(0, 4).every(s => checks.some(c => c.x > s[2] - 10 && c.x <= s[2])), 'a shrine closes each area (A10c): ' + checks.map(c => c.x).join(' '));
+ok(checks.length === 4 && ['THE UNDERCELLARS', 'THE SPIT HALL', 'THE GREASE KITCHENS', 'THE FEAST HALL'].map(n => SECTIONS.find(s => s[0] === n)).every(s => checks.some(c => c.x > s[2] - 10 && c.x <= s[2])), 'a shrine closes each old area (A10c; the larder and the carvery share the spans either side - no new shrine): ' + checks.map(c => c.x).join(' '));
 const nextAfter = x => checks.find(c => c.x > x) || boss;
 const without = (what, o) => floodReach({ ...L, ...o }, T);
 const lockOf = (name, x, o) => { const n = nextAfter(x), r = without(name, o); ok(!at(n, r), 'REQUIRED: ' + name + ' is a LOCK - without it ' + n.t + '@' + n.x + ' is out of reach'); };
@@ -59,8 +61,8 @@ for (const id of ['sculleryCopper', 'brewCopper', 'trenchCopper']) lockOf('the c
 for (const w of L.kgWheels) lockOf('the great spit ' + w.id, w.hx, { kgWheels: L.kgWheels.filter(q => q !== w) });
 for (const d of L.kgDoors) lockOf('the tallow door ' + d.id, d.x0 - 2, { kgDoors: L.kgDoors.filter(q => q !== d) });
 const rails = L.zipLines.map((z, i) => ({ z, i, col: Math.floor(Math.min(z.x0, z.x1) / TS) }));
-for (const r of rails.filter(q => q.col !== 256)) lockOf('the hook rail at ' + r.col, r.col, { zipLines: L.zipLines.filter(z => z !== r.z) });
-{ const race = rails.find(q => q.col === 256); ok(race && at(boss, without('race rail', { zipLines: L.zipLines.filter(z => z !== race.z) })), 'the hook rail over THE OVERTURNED POT is the HIGH route: optional (the low route slides the grease)'); }
+for (const r of rails.filter(q => !q.z.race)) lockOf('the hook rail at ' + r.col + (r.z.haul ? ' (a HAUL LINE)' : r.z.hop ? ' (a hand-off)' : ''), r.col, { zipLines: L.zipLines.filter(z => z !== r.z) });
+{ const race = rails.find(q => q.z.race); ok(race && at(boss, without('race rail', { zipLines: L.zipLines.filter(z => z !== race.z) })), 'the hook rail over THE OVERTURNED POT is the HIGH route: optional (the low route slides the grease)'); }
 /* A COLD GREAT SPIT IS NO STAIR: its four spits at rest, laid as footing, do not reach what it is for */
 for (const w of L.kgWheels) { const g = Uint8Array.from(L.grid);
   for (let k = 0; k < WHEEL.n; k++) { const q = spitAt(w, spitAngle(w, w.rest, k)), row = Math.floor(q.y / TS); for (let x = Math.floor((q.x - WHEEL.w / 2) / TS); x <= Math.floor((q.x + WHEEL.w / 2 - 1) / TS); x++) if (g[row * L.W + x] === T.AIR) g[row * L.W + x] = T.ONEWAY; }
@@ -92,9 +94,10 @@ ok(Object.values(KG_SAY).every(s => SAY_LINES.has(s)) && Object.values(GBM.GB_SA
   H.stoke('spit1'); step(1); const a1 = rd().wheels.find(w => w.id === 'wheel1').ang; ok(Math.abs(a1 - a0 + 2 * Math.PI / WHEEL.period) < 0.05, 'stoked, the great spit turns (a turn in ' + WHEEL.period + ' s)');
   const m = { kg: 'spit', wheel: 'wheel1', k: 0, w: WHEEL.w, h: WHEEL.h, x: 0, y: 0 }; H.mover(m, 1 / 60); const q = spitAt(L.kgWheels[0], a1); ok(Math.abs(m.x + m.w / 2 - q.x) < 0.5 && Math.abs(m.y - q.y) < 0.5, 'its spits are where its wheel has them');
   /* the trail and the door */
-  const cook = { t: 'sprig', alive: true, x: 233 * TS + 8, y: 24 * TS, hp: 20 }, bu = { t: 'butcher', alive: true, x: 292 * TS, y: 24 * TS, hp: 64, mode: 'walk' }; foes.push(cook, bu);
-  ok(grid[20 * L.W + 238] === T.SOLID, 'the tallow door stands');
-  H.stoke('stove1'); step(3); ok(rd().doors.find(d => d.id === 'door1').state === 'gone' && grid[20 * L.W + 238] === T.AIR && said.includes(KG_SAY.melts), 'the stove trail burns to the tallow door and it MELTS (its cells open)');
+  const cook = { t: 'sprig', alive: true, x: oldCol(233) * TS + 8, y: 24 * TS, hp: 20 }, bu = { t: 'butcher', alive: true, x: oldCol(292) * TS, y: 24 * TS, hp: 64, mode: 'walk' }; foes.push(cook, bu);
+  const D1 = L.kgDoors.find(d => d.id === 'door1').x0;
+  ok(grid[20 * L.W + D1] === T.SOLID, 'the tallow door stands');
+  H.stoke('stove1'); step(3); ok(rd().doors.find(d => d.id === 'door1').state === 'gone' && grid[20 * L.W + D1] === T.AIR && said.includes(KG_SAY.melts), 'the stove trail burns to the tallow door and it MELTS (its cells open)');
   ok(cook.hp < 20, 'the cook on the trail burns (' + cook.hp + ' hp left)');
   H.stoke('stove2'); step(1); ok(bu.kgBurn > 0 && H.takeFoe(bu, 10) === 20, 'THE BUTCHER on a burning trail BURNS: a blade takes him double');
   step(K.regrease + K.burnFor + 2); ok(rd().trails.find(t => t.id === 'trail2').state === 'raw', 'a trail with no door greases back over (' + K.regrease + ' s)');
@@ -103,9 +106,9 @@ ok(Object.values(KG_SAY).every(s => SAY_LINES.has(s)) && Object.values(GBM.GB_SA
   const f0 = rd().race.front; step(1); ok(Math.abs(rd().race.front - f0 - L.kgRace.v) < 3, 'its front runs ' + L.kgRace.v + ' px/s');
   /* the pages and the vault */
   for (const [x, y] of L.kgPages) { P.x = x * TS + 8; P.y = (y + 1) * TS; step(0.05); }
-  ok(rd().pages === 3 && rd().vault && grid[22 * L.W + 362] === T.AIR, 'the three recipe pages open THE SPICE VAULT');
+  ok(rd().pages === 3 && rd().vault && grid[22 * L.W + L.kgVault.x0] === T.AIR, 'the three recipe pages open THE SPICE VAULT');
   /* a reset (a death): the grid laid again - what melted stays melted, the pages stay picked up, the race is armed again */
-  grid.set(L.grid); H.reset(); ok(grid[20 * L.W + 238] === T.AIR && rd().pages === 3 && rd().vault && rd().race.state === 'armed', 'a death keeps the melted door and the open vault; the grease pot stands again');
+  grid.set(L.grid); H.reset(); ok(grid[20 * L.W + D1] === T.AIR && rd().pages === 3 && rd().vault && rd().race.state === 'armed', 'a death keeps the melted door and the open vault; the grease pot stands again');
   ok(H.hoist('stove1').state === 'cut' && H.hoist('spit1').state === 'hang', 'the pilot reads a bellows as a cleat: done once its door is gone, waiting while its fire is banked');
   /* (claude/kitchengate2) THE SERVING LINES, THE STOVE FLARES, THE ATTENDANT */
   { const B = id => L.kgBelts.find(b => b.id === id), rb = id => rd().belts.find(b => b.id === id);
@@ -125,12 +128,50 @@ ok(Object.values(KG_SAY).every(s => SAY_LINES.has(s)) && Object.values(GBM.GB_SA
     ok(L.zipLines.every(z => z.meat && (z.dir === 1 || z.dir === -1)), 'every hook rail is a chain-driven MEAT-HOOK RAIL: it runs one way (hold on to ride, jump to let go)');
     ok(L.kgProps.length >= 20 && new Set(L.kgProps.map(p => p.kind)).size >= 8, 'the kitchen\'s dressing: ' + L.kgProps.length + ' props of ' + new Set(L.kgProps.map(p => p.kind)).size + ' kinds (ovens, spice racks, flour, blocks, vents, basins, hatches, pans)');
     /* THE ATTENDANT: a plate thrown in an arc onto where you stand; his tray turns a blow from the front */
-    const at = { t: 'attendant', alive: true, x: 240 * TS, y: 24 * TS, w: 10, h: 18, hp: 30, mode: 'walk', modeT: 0, face: -1, vx: 0, vy: 0 }; foes.push(at);
-    P.x = 240 * TS - 120; P.y = 24 * TS; P.ground = true; P.face = 1; P.atk = -1; const d2 = dmg.length; let aimed = false; for (let i = 0; i < 60 * 3; i++) { H.attendant(at, 1 / 60); if (at.mode === 'aim') aimed = true; }
+    const at = { t: 'attendant', alive: true, x: oldCol(240) * TS, y: 24 * TS, w: 10, h: 18, hp: 30, mode: 'walk', modeT: 0, face: -1, vx: 0, vy: 0 }; foes.push(at);
+    P.x = oldCol(240) * TS - 120; P.y = 24 * TS; P.ground = true; P.face = 1; P.atk = -1; const d2 = dmg.length; let aimed = false; for (let i = 0; i < 60 * 3; i++) { H.attendant(at, 1 / 60); if (at.mode === 'aim') aimed = true; }
     ok(aimed, 'THE ATTENDANT aims a plate (a yellow !) at range'); ok(dmg.length > d2, 'the plate lands on the ring where you stood');
     P.x = at.x - 24; P.atk = 0.1; at.mode = 'walk'; at.kgGcd = 0; H.attendant(at, 1 / 60); ok(at.mode === 'guard' && H.takeFoe(at, 10) === 0, 'close in and he raises his TRAY: a blow from the front is turned');
     P.x = at.x + 20; ok(H.takeFoe(at, 10) === 10, 'from behind it lands');
     P.x = at.x - 24; at.modeT = 0.001; H.attendant(at, 1 / 60); ok(at.mode === 'bashTell', 'then he swings it (told)'); foes.length = 0; }
+}
+
+// ---- (claude/kitchengate3, Daniel 10-29) THE LEVEL, LONGER: THE HANGING LARDER and THE CARVERY, THE HOOK-TO-HOOK HOP, THE HAUL LINE, THE FLUE ----
+{ ok(KG_INS.length === 2 && L.W === oldCol(432) && L.arena.x0 === oldCol(390) * TS && L.arena.x1 === (oldCol(428) + 1) * TS, 'two rooms let in (' + KG_INS.map(q => q[1] + ' columns before old ' + q[0]).join(', ') + '): the level is ' + L.W + ' wide; HIS HALL is the old one moved whole (' + L.arena.x0 / TS + '-' + (L.arena.x1 / TS - 1) + ')');
+  const hand = L.zipLines.filter(z => z.hop && z.hand), hauls = L.zipLines.filter(z => z.haul);
+  ok(hand.length >= 5 && hauls.length >= 2, hand.length + ' hand-off rails (the hop), ' + hauls.length + ' haul lines (a chain that runs uphill)');
+  ok(hauls.every(z => { const dy = z.y1 - z.y0, dx = z.x1 - z.x0, down = dy > 0 ? Math.sign(dx) : -Math.sign(dx); return z.dir === -down; }), 'every HAUL LINE runs UPHILL (src/zipline.js dir against its slope): it hauls you up');
+  /* THE HOP, FLOWN FOR EVERY HERO'S LEGS: from the middle of the red stretch he catches the rail it hands to (holding on the way it runs, or nothing); riding on to the END never does (the hop is the
+     only way), and every point of the red stretch catches */
+  for (const z of hand) { const col = Math.round((z.x0 - 8) / TS), lo = Math.min(...z.hop), hi = Math.max(...z.hop), mid = (lo + hi) / 2, bad = [];
+    for (const hero of HERO_MOVE_IDS) for (const hold of [z.dir, 0]) {
+      const r = flyHop(L.zipLines, z, z.dir > 0 ? Math.min(z.x0, z.x1) + 8 : Math.max(z.x0, z.x1) - 8, mid, { hero, hold }); if (r.caught !== z.hand) bad.push(hero + '/' + hold + ' mid:' + (r.fail || 'other rail'));
+      const e = flyHop(L.zipLines, z, z.dir > 0 ? Math.min(z.x0, z.x1) + 8 : Math.max(z.x0, z.x1) - 8, null, { hero, hold }); if (e.caught === z.hand) bad.push(hero + '/' + hold + ' end catches it');
+      for (const hx of [lo, hi]) { const q = flyHop(L.zipLines, z, z.dir > 0 ? Math.min(z.x0, z.x1) + 8 : Math.max(z.x0, z.x1) - 8, hx, { hero, hold }); if (q.caught !== z.hand) bad.push(hero + '/' + hold + ' at ' + ((hx - 8) / TS).toFixed(1)); } }
+    ok(!bad.length, 'THE HAND-OFF at column ' + col + ' (red ' + ((lo - 8) / TS).toFixed(1) + '-' + ((hi - 8) / TS).toFixed(1) + '): every hero, every point of the red stretch, takes the next rail; riding to the end drops him ' + bad.slice(0, 4).join(' ')); }
+  { const w = hopWindow(L.zipLines, hand[0], hand[0].hand, { hero: 'knight', hold: 1 }); ok(w.xs.length * 2 / 200 >= 0.18, 'the teach hand-off\'s window is a fair read: ' + (w.xs.length * 2 / 200).toFixed(2) + ' s at the rail\'s pace'); }
+  /* THE HAUL LINE OVER THE CARVERY's SERVING LINE: its low end is in reach from the line's floor, and nowhere else is the carvery wall climbed */
+  { const cb = L.kgBelts.find(b => b.id === 'carveLine'), hl = hauls.find(z => z.x0 / TS > cb.x0 && z.x0 / TS < cb.x1); ok(cb && cb.dir === -1 && cb.bomb && cb.foes && hl, 'THE CARVERY: the serving line runs AT you (west) with bombs and a cook, under THE HAUL LINE (the remix: a rail over a conveyor)'); }
+  /* THE FLUE: a flare out of the coal bed under a hand-off's next rail, tall enough to take a rider off his hook; from the perch it is reached tIn..tOut s after the hook is taken (flown) */
+  { const fl = L.kgFlares.find(f => f.bed === 'coals'), z = hand.find(q => q.flue), fx0 = fl.x0 * TS - 4, fx1 = (fl.x1 + 1) * TS + 4, worst = [];
+    for (const hero of HERO_MOVE_IDS) { const r = flyHop(L.zipLines, z, Math.min(z.x0, z.x1) + 8, (z.hop[0] + z.hop[1]) / 2, { hero, hold: 1 }); if (r.caught !== z.hand) { worst.push(hero + ' missed'); continue; }
+      const c2 = z.hand, sl = (c2.y1 - c2.y0) / (c2.x1 - c2.x0), feet = x => c2.y0 + sl * (x - c2.x0) + 12, tIn = r.t + Math.max(0, fx0 - r.at[0]) / c2.speed, tOut = r.t + (fx1 - r.at[0]) / c2.speed;
+      if (tIn < z.flue.tIn - 0.12 || tOut > z.flue.tOut + 0.12) worst.push(hero + ' ' + tIn.toFixed(2) + '-' + tOut.toFixed(2));
+      if (feet((fx0 + fx1) / 2) < fl.f * TS - fl.h) worst.push(hero + ' rides over the flame'); }
+    ok(fl && z && !worst.length, 'THE FLUE cuts the hooks: every hero reaches it ' + z.flue.tIn + '-' + z.flue.tOut + ' s after taking the perch\'s hook, low enough for its flame (' + fl.h + ' px) to take him off ' + worst.join(' '));
+    /* the read: a hook taken in the glow or the flame passes it as it dies; one taken as the flame ends meets the next */
+    const ph = t => { const q = ((t + fl.phase) % fl.period + fl.period) % fl.period; return q < fl.tell ? 'glow' : q < fl.tell + fl.on ? 'flame' : 'out'; }, pass = b => { for (let t = z.flue.tIn; t <= z.flue.tOut; t += 0.02) if (ph(b + t) === 'flame') return false; return true; };
+    const safe = []; for (let b = 0; b < fl.period; b += 0.05) if (pass(b)) safe.push(+b.toFixed(2));
+    ok(pass(0.05) && pass(fl.tell) && !pass(fl.tell + fl.on) && safe.length * 0.05 / fl.period > 0.35 && safe.length * 0.05 / fl.period < 0.7, 'the flue\'s read: take the hook as it glows or flares (' + fl.tell + ' s) and you pass; as its flame dies (' + (fl.tell + fl.on) + ' s) you meet the next - ' + Math.round(safe.length * 0.05 / fl.period * 100) + '% of its beat is safe');
+    /* the pilot's hands read it the same way (H.flueClear) - in a fake world */
+    const W2 = { TS, T, L, sfx: {}, players: () => [], enemies: () => [], number() {}, burst() {}, dust() {}, shake() {}, seen() {}, asPlayer: (p, f) => f(), damage: () => 'hit', cellSet() {}, solidAt: () => false, tileAt: () => T.AIR, text() {} };
+    const H2 = makeKitchenHands(W2); H2.reset(); const okAt = []; for (let i = 0; i < 60 * fl.period; i++) { H2.update(1 / 60); okAt.push(H2.flueClear(z)); }
+    ok(okAt.some(Boolean) && okAt.some(q => !q), 'the pilot waits on the perch for the flue (H.flueClear: clear ' + Math.round(okAt.filter(Boolean).length / okAt.length * 100) + '% of its beat, with a margin)'); }
+  /* the reach model takes the hand-off only from a rail that has one: without its red stretch the teach rail reaches no further than its own pit */
+  { const t1 = hand[0], r0 = floodReach(L, T), r1 = floodReach({ ...L, zipLines: L.zipLines.map(z => z === t1 ? { ...z, hand: null, hop: null } : z) }, T), n = nextAfter(Math.round(t1.x1 / TS));
+    ok(at(n, r0) && !at(n, r1), 'the reach model rides the hand-off (src/reachcore.js z.hand): with it ' + n.t + '@' + n.x + ' is reached, without it not'); }
+  { const ord = k => { const v = ARCS[k], seq = ['teach', 'test', 'remix', 'exam'].filter(q => v[q]).map(q => v[q][0]); return seq.length === 4 && seq.every((x, i) => i === 0 || x > seq[i - 1]); };
+    ok(ord('hop'), 'THE HOP is TAUGHT (safe), TESTED twice over coals, REMIXED (a haul line over a serving line, the flue) and EXAMINED (the hearth trench), in that order'); }
 }
 
 // ---- LORD GRUBBAG, PURE (claude/kitchengate2: REWORKED - seated, the serving line, bombs and chillies, the lob and the fling, P2 grease + bell, P3 grab) ----

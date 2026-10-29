@@ -9,6 +9,7 @@
 //   SPIKE  a bed of HOT COALS over an iron grate (the fire pits and the trench): the glow is drawn here, the flicker by KA.drawAmbient
 // Made from px.js primitives, 16x16, baked lazily and memoised.   kgTile(t, x, y, at, T, L) -> the canvas for one cell, or null (the game's own kit draws it)
 import { canvas, rect, mulberry } from '../px.js';
+import { KG_ZONES } from '../kitchen-gate.js';   /* (claude/kitchengate3) the zones by column come from the level: two rooms were let in (THE HANGING LARDER is cellar brick, THE CARVERY glazed tile) */
 
 const memo = new Map(); const once = (k, fn) => { if (!memo.has(k)) memo.set(k, fn()); return memo.get(k); };
 export const hash = (a, b) => { let h = (Math.imul(a | 0, 73856093) ^ Math.imul(b | 0, 19349663)) >>> 0; h = Math.imul(h ^ (h >>> 13), 1274126177) >>> 0; return h; };
@@ -27,7 +28,7 @@ export const ZONE = [
   { s: ['#0d0812', '#1a1020', '#2a1a34', '#40294d', '#5c3d6c', '#7e5a92', '#a584b8'], joint: '#080510', acc: '#e0b040', glaze: null }];
 export function zoneOf(x, y) {
   const xx = x + (hash(y >> 1, 11) % 5) - 2;
-  return xx >= 372 ? 4 : xx >= 300 ? 3 : xx >= 201 ? 2 : xx >= 104 ? 1 : 0;
+  let z = 0; for (const [x0, k] of KG_ZONES) if (xx >= x0) z = k; return z;
 }
 /* SOLIDS are pale only in the kitchens' glazed zone; the rest read as stone */
 function brickPx(zone, ax, ay, base, lit) {

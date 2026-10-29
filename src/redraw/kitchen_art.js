@@ -428,8 +428,10 @@ export function drawLine(g, x0, x1, y, scroll, dir, counter, time) {
   for (const [xx, s] of [[x0 + 4, 0], [x1 - 5, 1]]) { ellipse(g, xx, y, 4, 4, OUT); ellipse(g, xx, y, 3, 3, IRON[3]); ellipse(g, xx - 1, y - 1, 2, 1, IRON[5]); const a = scroll / 5 * dir; for (let q = 0; q < 3; q++) line(g, xx, y, R(xx + Math.cos(a + q * 2.09) * 3), R(y + Math.sin(a + q * 2.09) * 3), IRON[1], 1); }   /* end rollers, spoked, turning */
   for (let x = x0 + 20; x < x1 - 16; x += 48) { const a = dir > 0 ? [[x, y - 1], [x + 6, y + 1], [x, y + 3]] : [[x + 6, y - 1], [x, y + 1], [x + 6, y + 3]]; fillPoly(g, a, 'rgba(255,211,107,0.8)'); }
 }
-export function drawFlare(g, x0, x1, y, state, k, h, time) {
-  const w = x1 - x0; rect(g, x0 - 1, y - 3, w + 2, 6, OUT); rect(g, x0, y - 2, w, 4, IRON[2]); rect(g, x0, y - 2, w, 1, IRON[4]); rect(g, x0, y + 1, w, 1, IRON[1]);   /* the plate, a rolled lip */
+export function drawFlare(g, x0, x1, y, state, k, h, time, bed) {
+  const w = x1 - x0;
+  if (bed === 'coals') return drawFlue(g, x0, x1, y, state, k, h, time);   /* (claude/kitchengate3) THE FLUE: no griddle - the coal bed itself flares up through the hooks */
+  rect(g, x0 - 1, y - 3, w + 2, 6, OUT); rect(g, x0, y - 2, w, 4, IRON[2]); rect(g, x0, y - 2, w, 1, IRON[4]); rect(g, x0, y + 1, w, 1, IRON[1]);   /* the plate, a rolled lip */
   for (let x = x0 + 3; x < x1 - 3; x += 6) { rect(g, x, y - 1, 3, 2, IRON[0]); rect(g, x, y - 1, 3, 1, IRON[1]); }   /* grease grooves */
   for (let x = x0 + 5; x < x1 - 4; x += 12) rect(g, x, y - 3, 1, 1, IRON[5]);   /* rivet heads */
   rect(g, x0 - 2, y - 4, 2, 7, OUT); rect(g, x1, y - 4, 2, 7, OUT); rect(g, x0 - 1, y - 3, 1, 5, IRON[3]); rect(g, x1, y - 3, 1, 5, IRON[3]);   /* the end stops */
@@ -438,6 +440,26 @@ export function drawFlare(g, x0, x1, y, state, k, h, time) {
     if (k > 0.7 && Math.floor(time * 16) % 2) rect(g, x0 + (R(time * 30) % Math.max(4, w - 4)), y - 6, 2, 1, '#fff6c8'); }
   else if (state === 'flame') { const f = Math.min(1, k * 4, (1 - k) * 4 + 0.3); flame(g, x0, y - 1, w, h * f, time, x0 * 0.13);
     g.globalAlpha = 0.5; for (let x = x0 + 3; x < x1 - 3; x += 6) rect(g, x, y - 1, 3, 2, '#ffd36b'); g.globalAlpha = 1; }
+}
+/* (claude/kitchengate3) THE FLUE (THE CARVERY): a throat of firebrick sunk in the coal bed under the hooks, a grate over it. GLOW: the grate goes red and a heat shimmer climbs to the
+   rail; FLAME: a tall sheet of fire the height of the rail (h px), its tongues licking round the hooks; OUT: the grate dark, a thread of smoke */
+function drawFlue(g, x0, x1, y, state, k, h, time) {
+  const w = x1 - x0;
+  rect(g, x0 - 3, y - 3, w + 6, 5, OUT); rect(g, x0 - 2, y - 2, w + 4, 3, '#5a2a1a'); rect(g, x0 - 2, y - 2, w + 4, 1, '#8a4a2a');   /* the firebrick lip */
+  for (let x = x0 + 1; x < x1 - 1; x += 4) { rect(g, x, y - 2, 2, 3, IRON[0]); rect(g, x, y - 2, 2, 1, IRON[2]); }   /* the grate's bars */
+  const hot = state === 'glow' ? k : state === 'flame' ? 1 : 0;
+  for (let x = x0 + 3; x < x1 - 1; x += 4) rect(g, x, y - 1, 1, 2, hot > 0 ? (hot > 0.6 ? '#ffd36b' : '#ff6a2a') : '#3a1a10');   /* the coals between the bars */
+  if (state === 'out') { for (let i = 0; i < 3; i++) { const t = (time * 0.7 + i / 3) % 1; g.globalAlpha = 0.35 * (1 - t); rect(g, R(x0 + w / 2 + Math.sin(time * 2 + i) * 3), R(y - 6 - t * 30), 2, 2, '#8a8078'); } g.globalAlpha = 1; return; }
+  if (state === 'glow') {   /* the tell: the shimmer climbs as far as the flame will */
+    g.save(); g.globalCompositeOperation = 'lighter';
+    const gr = g.createLinearGradient(0, y, 0, y - h * k); gr.addColorStop(0, 'rgba(255,110,40,' + (0.35 * k).toFixed(3) + ')'); gr.addColorStop(1, 'rgba(255,110,40,0)'); g.fillStyle = gr; g.fillRect(x0, R(y - h * k), w, R(h * k));
+    g.restore();
+    for (let i = 0; i < 5; i++) { const t = (time * 1.6 + i / 5) % 1; if (t > k) continue; rect(g, R(x0 + 2 + ((i * 7 + Math.floor(time * 3)) % Math.max(3, w - 4))), R(y - 4 - t * h * 0.9), 1, 2, '#ffd36b'); }   /* sparks riding the draught */
+    return; }
+  const f = Math.min(1, k * 5, (1 - k) * 4 + 0.35);   /* FLAME: up fast, down slower */
+  flame(g, x0 - 2, y - 1, w + 4, h * f, time, x0 * 0.17);
+  flame(g, x0 + 2, y - 1, w - 4, h * f * 0.7, time * 1.3, x0 * 0.31, false);
+  g.globalAlpha = 0.6; rect(g, x0 - 2, R(y - h * f) - 2, w + 4, 2, '#fff6c8'); g.globalAlpha = 1;   /* the hot crown where it licks the rail */
 }
 export function drawMeatRail(g, z, cx, cy, clock) {
   const x0 = z.x0 - cx, y0 = z.y0 - cy, x1 = z.x1 - cx, y1 = z.y1 - cy, L = Math.hypot(x1 - x0, y1 - y0) || 1, ux = (x1 - x0) / L, uy = (y1 - y0) / L, dir = Math.sign(x1 - x0) === (z.dir || 1) ? 1 : -1;
@@ -452,6 +474,18 @@ export function drawMeatRail(g, z, cx, cy, clock) {
     else if (kind === 2) { for (let i = 0; i < 4; i++) { ellipse(g, bx - 3 + (i & 1) * 6, by + 3 + i * 3, 3, 2, OUT); ellipse(g, bx - 3 + (i & 1) * 6, by + 3 + i * 3, 2, 1, i % 2 ? '#b8402a' : '#d85a3a'); } rect(g, bx - 4, by + 2, 1, 9, '#e8d8c0'); }   /* a string of sausages */
     else { ellipse(g, bx, by + 6, 6, 7, OUT); ellipse(g, bx, by + 6, 5, 6, '#a0402a'); ellipse(g, bx - 1, by + 4, 3, 3, '#d87a5a'); rect(g, bx - 3, by + 11, 6, 2, '#e8d8c0'); rect(g, bx - 1, by + 1, 2, 2, '#e8d8c0'); }   /* a gammon */
   }
+  /* (claude/kitchengate3) THE HAND-OFF: the stretch of rail to jump from (z.hop, px) is painted butcher's red with white chalk ticks, and a red rag hangs at its start; the rail's END
+     STOP is a red iron buffer (ride into it and you drop) */
+  if (z.hop) { const at = x => { const t = (x - z.x0) / ((z.x1 - z.x0) || 1); return [x0 + (x1 - x0) * t, y0 + (y1 - y0) * t]; };
+    const [ha, hb] = z.hop[0] < z.hop[1] ? z.hop : [z.hop[1], z.hop[0]], [ax, ay] = at(ha), [bx2, by2] = at(hb), n = Math.max(2, Math.round(Math.abs(bx2 - ax) / 3));
+    for (let i = 0; i <= n; i++) { const q = i / n, hx = R(ax + (bx2 - ax) * q), hy = R(ay + (by2 - ay) * q) - 6; rect(g, hx, hy - 4, 2, 3, i % 4 === 0 ? '#f4ecd8' : '#c8302c'); }
+    const fl = Math.sin(clock * 6) * 1.5, rx = R(z.hop[0] === ha ? ax : bx2), ry = R(z.hop[0] === ha ? ay : by2) - 6;
+    rect(g, rx - 1, ry - 4, 3, 3, OUT); fillPoly(g, [[rx, ry - 2], [rx + 2, ry + 6 + R(fl)], [rx - 3, ry + 7 - R(fl)], [rx - 1, ry - 2]], '#c8302c'); rect(g, rx - 1, ry + 1, 1, 3, '#e85a4a');   /* the rag */
+    const [ex, ey] = (z.dir || 1) * (x1 - x0) > 0 ? [x1, y1] : [x0, y0]; rect(g, R(ex) - 3, R(ey) - 13, 6, 8, OUT); rect(g, R(ex) - 2, R(ey) - 12, 4, 6, '#a8281e'); rect(g, R(ex) - 2, R(ey) - 12, 4, 1, '#e85a4a'); }   /* the end stop */
+  /* THE HAUL LINE: the chain runs uphill - gilt chevrons along it point the way it hauls, and a drive wheel at its top */
+  if (z.haul) { const n = Math.floor(L / 40); for (let i = 1; i < n; i++) { const s0 = i * 40 + (((clock * 30 * dir) % 40) + 40) % 40, hx = R(x0 + ux * s0), hy = R(y0 + uy * s0) - 12, d = dir * Math.sign(x1 - x0 || 1); fillPoly(g, d > 0 ? [[hx, hy - 2], [hx + 3, hy], [hx, hy + 2]] : [[hx + 3, hy - 2], [hx, hy], [hx + 3, hy + 2]], 'rgba(255,211,107,0.85)'); }
+    const [tx, ty] = y1 < y0 ? [x1, y1] : [x0, y0], a = clock * 4; ellipse(g, R(tx), R(ty) - 7, 6, 6, OUT); ellipse(g, R(tx), R(ty) - 7, 5, 5, IRON[2]); ellipse(g, R(tx), R(ty) - 7, 2, 2, IRON[4]);
+    for (let q = 0; q < 4; q++) line(g, R(tx), R(ty) - 7, R(tx + Math.cos(a + q * 1.57) * 5), R(ty - 7 + Math.sin(a + q * 1.57) * 5), IRON[5], 1); }
 }
 export function drawProp(g, kind, x, y, time, seed) {
   if (kind === 'oven') {   /* a brick bread oven: domed, an iron door ajar on the fire, a peel and a flue */
