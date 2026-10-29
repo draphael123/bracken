@@ -87,5 +87,26 @@
     "allNativeGcAdmissionMemoryReadinessAndCloseBodiesUnchanged": true,
     "firstDocumentClockAndViewportAssertionsAdded": true,
     "noGameOrBrowserOrFactoryExecution": true
+  },
+  "normalLoaderViewScope": {
+    "time": "2026-10-29T16:25:13.996Z",
+    "status": "Correct only the new adapter expected value to the frozen original normal loading view",
+    "failedRun": 40909783381,
+    "failedDirectory": "work/tile-numeric-loader-cloud-9c01ffc9",
+    "actualFrameAndTimingSamples": 0,
+    "ownedBrowsersClosed": 3,
+    "rawInterruptions": 0,
+    "originalMainSha256": "1573d2d744b753e5611b021d97b70b013f7e2e6773640b707ae85d5ab5dae594",
+    "originalEvidence": [
+      "let VW = 320, VH = 180;",
+      "if (mode !== 'zoom') return [320, 180];",
+      "loadLevelG calls setView('normal')"
+    ],
+    "before": "{time:0,hypotNative:true,maxNative:true,game:[640,360],display:[2402,1082],dpr:2.625}",
+    "after": "{time:0,hypotNative:true,maxNative:true,game:[320,180],display:[2402,1082],dpr:2.625}",
+    "noDeviceViewportDprDisplayResolutionOrGameCodeChange": true,
+    "originalFiveArena640x360RequirementUnchanged": true,
+    "allOriginal19Level342ReadbackAndPerformanceAssertionsRetained": true,
+    "onlyOneBoundedCorrectedSetupOccurrence": true
   }
 }
