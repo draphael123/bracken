@@ -387,6 +387,40 @@ assert.ok(CHASE.gap <= 0.6 && CHASE.settle <= 0.35 && CHASE.pairFrom <= 2, 'his 
   /* the floor: at it, HE HOLDS ON - his 'down' is cut short */
   { const r = rig(1); r.e.hp = CC.floorHp(r.e); r.e.mode = 'reflected'; const says = []; const c2 = { P: r.P, say: m => says.push(m), callout: () => {}, sound: () => {}, shake: () => {}, dust: () => {}, arm: () => {}, clearRoom: () => {}, setRoom: () => {}, away: () => {} };
     for (let i = 0; i < 240 && r.e.mode !== 'down'; i++) chaseLeg(r.e, 1 / 60, c2); assert.ok(r.e.mode === 'down' && r.e.modeT <= FALL4.heldDown + 0.01 && says.some(m => /HOLDS ON/.test(m)), 'at the rooms\' floor he still lies open the full time, a gold window that does nothing: ' + r.e.modeT); } }
+/* FALLING TOWER 4 (claude/ft4a, Daniel 10-29 #1 A): THE ASCENT - no cut from the rooms to his sky. In Node: boarded in the core, the box you fly in rises up the
+   well, the four broken rooms, through the stair's floor (told) and his spiral stair, and out of its broken top into his hall's box (which stands over the spiral
+   tower now), never jumping: its bottom only ever rises, a frame at a time, and its sides only widen in the sky; he fights in the well with his fire, ice and hand
+   only and flees up ahead after; the stone off the walls is told before it falls; it takes 15-35 s */
+{ const CC = await import('../src/archmage-chase.js'), UM = await import('../src/undead-mage.js'), { CH, CORE, ASC, PLUG, CROWN, ascentStep, ascentLeg, ascentBand, coreHang, newAscent } = CC, H = L.arena.hallArena;
+  assert.equal(ASC.crownTop, TOWER.SKY, 'the spiral tower\'s roof is not cut up to the sky rows');
+  assert.ok(H.x0 <= CH.x0 * TS && H.x1 >= (CH.x1 + 1) * TS && H.floor < SPIRAL.top * TS, 'his hall does not stand over the spiral tower (the ascent would have to jump sideways into it)');
+  for (const [x0, x1, y0, y1] of [PLUG(), CROWN()]) { assert.ok(x0 === CH.x0 && x1 === CH.x1 && y1 >= y0, 'the ascent cuts outside the well'); for (let y = y0; y <= y1; y++) assert.equal(at(CH.x0 + 5, y), T.SOLID, 'the stone the ascent breaks is not there to break at row ' + y); }
+  const q = coreHang(); assert.ok(q.y > CORE.top * TS && q.y < CORE.bot * TS && q.x > CH.x0 * TS && q.x < (CH.x1 + 1) * TS, 'he does not wait IN the core');
+  const A = { ...L.arena }, P = { x: CORE.carpet.x, y: CORE.carpet.y, dead: 0 }, cleared = [], calls = [], locks = []; let hall = 0, hurt = 0;
+  const e = { t: 'undeadmage', alive: true, hp: 2000, hp0: 2800, maxHp: 2800, leg: 'ascent', mode: 'away', modeT: 99, x: q.x, y: q.y, face: -1, anim: 0, shots: [] };
+  const c = { P, rnd: () => 0.5, clear: r => cleared.push(r), say: () => {}, callout: m => calls.push(m), sound: () => {}, shake: () => {}, dust: () => {}, hurt: () => hurt++, lock: (a, b) => locks.push([a, b]), toHall: () => hall++ };
+  let t = 0, last = null, phases = [], tellsOk = true; const seenRocks = new Set();
+  for (; t < 60 && !hall; t += 1 / 60) { const ph = ascentStep(e, A, H, 1 / 60, c); if (phases[phases.length - 1] !== ph) phases.push(ph);
+    P.y = Math.max(A.y0 + 24, Math.min(A.floor - 4, P.y)); P.x = Math.max(A.x0 + 12, Math.min(A.x1 - 12, P.x));   /* the carpet held in its box, as carpetBox holds it */
+    if (last) { assert.ok(A.floor <= last.floor + 1e-6 && last.floor - A.floor <= ASC.spiral / 60 + 1e-6, 'the ascent\'s box jumps or goes back down at ' + t.toFixed(2) + ' s');
+      assert.ok(A.x0 <= last.x0 + 1e-6 && A.x1 >= last.x1 - 1e-6, 'the box narrows at ' + t.toFixed(2)); }
+    if (ph === 'well' || ph === 'plug' || ph === 'spiral') assert.ok(A.x0 === CH.x0 * TS && A.x1 === (CH.x1 + 1) * TS, 'out of the well before the sky');
+    for (const r of (e.asc && e.asc.rocks) || []) { if (r.st === 'tell') seenRocks.add(r); else if (r.st === 'fall' && !seenRocks.has(r)) tellsOk = false; }
+    if (e.asc && e.asc.ph === 'well' && e.mode === 'away') ascentLeg(e, 1 / 60, { P, A });
+    last = { ...A }; }
+  assert.ok(hall === 1, 'the ascent never reaches his hall');
+  assert.deepEqual(phases, ['well', 'plug', 'spiral', 'sky', 'hall'], 'the ascent is not well, the stair\'s floor, the spiral, the sky: ' + phases);
+  assert.ok(t >= 15 && t <= 35, 'the ascent takes ' + t.toFixed(1) + ' s (15-35)');
+  assert.ok(cleared.length === 2 && JSON.stringify(cleared) === JSON.stringify([PLUG(), CROWN()]), 'the stair\'s floor and the spiral\'s top are not broken through, in that order');
+  assert.ok(calls.some(m => /CRACKS/.test(m)), 'the stair\'s floor goes untold');
+  assert.ok(Math.abs(A.x0 - H.x0) < 1 && Math.abs(A.x1 - H.x1) < 1 && A.floor <= H.floor - 26, 'the ascent does not end in his hall\'s box, over its fire: ' + [A.x0, A.x1, A.floor]);
+  assert.ok(seenRocks.size >= 3 && tellsOk, 'the stone off the walls is not told before it falls (or never falls): ' + seenRocks.size);
+  /* him: in the well his fire, ice and hand at their fight tells; out of it he flees, casting nothing */
+  { const e2 = { ...e, leg: 'ascent', asc: newAscent(), mode: 'away', modeT: 99, anim: 0, shots: [], rings: [], clouds: [], turn: 0, blinkT: 99 }, A2 = { ...A }; Object.assign(A2, CC.ascentBox(e2.asc.y, H, 0)); const tells = new Set();
+    const cc = { P: { x: (CH.x0 + 6) * TS, y: A2.floor - 30, dead: 0 }, A: A2, box: ascentBand(A2), rnd: () => 0.5, hit: () => {}, venom: () => {}, say: () => {}, sound: () => {}, dodging: () => false, carry: () => {}, strike: () => null, chase: (m, d) => ascentLeg(m, d, { P: cc.P, A: A2 }) };
+    for (let i = 0; i < 60 * 14; i++) { UM.updateUndeadMage(e2, 1 / 60, cc); if (/Tell$/.test(e2.mode)) tells.add(e2.mode.replace('Tell', '')); }
+    assert.ok(tells.size >= 2 && [...tells].every(k => ASC.order.includes(k)), 'in the well he casts more than his fire, ice and hand (or nothing): ' + [...tells]);
+    e2.asc.ph = 'spiral'; e2.shots = []; for (let i = 0; i < 60 * 3; i++) UM.updateUndeadMage(e2, 1 / 60, cc); assert.ok(e2.mode === 'flee' && !e2.shots.length, 'up his stair he casts, rather than flee ahead: ' + e2.mode); } }
 // ---- PAGE ----
 if (process.env.TOWER_CHASE_NODE) { console.log('tower-chase: node part OK (TOWER_CHASE_NODE: page part skipped)'); process.exit(0); }
 const HEROES = ['knight', 'warden', 'pyro', 'paladin', 'pirate', 'reaper', 'geomancer'];

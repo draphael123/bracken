@@ -65,7 +65,7 @@ export const SAND = { x0: 0, row: 6, deep: 12, arrive: 20, gate: 34 };
    eight rows over the tower's merlons and thirteen over the parapet, more than twice the best jump any walker has - and the desert moved up with it (still ten rows over it).
    The door on the parapet puts you in it as before. tools/tower-hall.mjs holds the gap, and main.js keeps the crown's creatures out
    of the hall while the fight is on (a hall you reach through a door is not reached by what is outside it). */
-export const HALL = { y0: 22, floor: 38 };
+export const HALL = { y0: 22, floor: 38, x0: 44, x1: 108 };   /* (claude/ft4a, brief-fallingtower4-1029.md #1 A) x: OVER THE SPIRAL TOWER (columns 80-105) - THE ASCENT comes out of its broken top into this box, so the camera only widens (it was 4-68, over the main tower: a sideways jump) */
 // [name, interior kind], bottom (k 0) to top (k 6). Every floor's rows come off the pitch, so inserting one moves each
 // floor under it and nothing here is re-typed; what DOES have to move by hand is everything keyed to a row somewhere
 // else - the GARRISON row, level.js's ELITES coords, L.tall and START (docs/briefs/falling-tower-longer.md).
@@ -475,7 +475,7 @@ export function buildTowerAscent({ painter, T, TS }) {
        the way out opens WHERE HE FALLS. */
     bellDeck: bell,   /* THE SEXTON's deck: its row, the frame over it and the joists he climbs out onto (main.js) */
     mini: { x0: 12 * TS, x1: 52 * TS, floor: bell.deck * TS, y0: bell.frame * TS, y1: (bell.deck + 4) * TS, trigger: 14 * TS, wallL: 12, gate: 52, boss: 'sexton', name: 'THE SEXTON' },
-    sanctum: { in: { ...CHASE3_CORE.carpet }, rug: true, spawn: { x: 14 * TS, y: (HALL.floor - 10) * TS }, sand: { x: SAND.arrive * TS + 8, y: SAND.row * TS }, out: null, open: false, outOpen: 0, t: 0 },
+    sanctum: { in: { ...CHASE3_CORE.carpet }, rug: true, spawn: { x: (HALL.x0 + 10) * TS, y: (HALL.floor - 10) * TS }, sand: { x: SAND.arrive * TS + 8, y: SAND.row * TS }, out: null, open: false, outOpen: 0, t: 0 },
     tall: { top: SKY * TS, bottom: floors[0].bot * TS, col: '16,20,32', deepest: 0.16 },   /* the gloom is cold slate, not the Folly's violet */
     towerFloors: floors.map((F, k) => ({ name: F.name, top: F.top, bot: F.bot, hole: F.hole || null, last: k === N - 1 })),
     deckBreaks: breaks.map(([x0, x1, row]) => ({ x0, x1, row, t: -1, down: false, regrow: true })),   /* spine ledges: they come back (updateTowerAscent), or a fall into the water would be a soft-lock */
@@ -493,7 +493,7 @@ export function buildTowerAscent({ painter, T, TS }) {
        chaseToHall lays over this one for the end of the fight (chaseArena puts it back on a retry). (claude/archmage2b: music - his own recording) */
     arena: { ...chase3Arena(0), trigger: chase3.trigger, start: chase3.start, chase: true, noWall: true, wallL: CHASE3.x0 - 1, wallR: CHASE3.x1 + 1, boss: 'undeadmage', music: 'undeadmage', tint: '#30334e', tintA: 0.06,
       chaseArena: { ...chase3Arena(0), trigger: chase3.trigger, chase: true, noWall: true, carpet: false, hall: false, wallL: CHASE3.x0 - 1, wallR: CHASE3.x1 + 1 },
-      hallArena: { x0: 4 * TS, x1: 68 * TS, y0: HALL.y0 * TS, floor: HALL.floor * TS, hall: true,   /* three screens wide and a little over one tall: he is never off the top of it */ trigger: 1e9, wallL: 0, wallR: TOWER.W - 1, carpet: true, chase: false, noWall: false } },
+      hallArena: { x0: HALL.x0 * TS, x1: HALL.x1 * TS, y0: HALL.y0 * TS, floor: HALL.floor * TS, hall: true,   /* three screens wide and a little over one tall: he is never off the top of it */ trigger: 1e9, wallL: HALL.x0 - 1, wallR: HALL.x1 + 1, carpet: true, chase: false, noWall: false } },
   };
 }
 

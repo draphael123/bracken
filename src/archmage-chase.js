@@ -15,6 +15,7 @@
 //   A death anywhere in the fight brings you back to the ring you came out of, the rooms whole again (chaseReset) - a boss is fought whole.
 // Numbers are tiles unless named px or s.
 import { paintFloorCrack, paintSink, paintLanding } from './redraw/tower_chase.js';
+import { SPIRAL } from './spiral-chase.js';   /* (claude/ft4a) THE ASCENT rises through his spiral stair's well, over the rooms */
 export const CH = { x0: 80, x1: 105, top: 152, pitch: 15, open: 13, downT: 3.0, riseT: 0.5, sinkT: 0.9, tearT: 1.3, wakeT: 1.2, fallG: 1100, hpFloor: 0.55, hover: 4 };
 /* FALLING TOWER 4 (claude/ft4a, Daniel 10-29 15:33 "the boss CHASE ROOMS should also feel like they are collapsing around you", brief-fallingtower4-1029.md #3).
    His attacks and numbers do not change; the ROOM comes apart round the fight:
@@ -70,7 +71,7 @@ export function buildChase3(k, T, TS = 16) {
   ent('sign', CH.x0 + 6, R0.floor - 1, { text: 'STRIKE HIS SPELLS BACK AT HIM AND HE FALLS. HIT HIM WHERE HE LIES.' });
   ent('sign', ROOMS[0].pillar - 2, R0.floor - 1, { text: 'A CRACKED PILLAR HOLDS THIS FLOOR. WHEN HE IS THROUGH IT, STRIKE IT.' });
   ROOMS.forEach((R, i) => { if (i && R.follow === 'strike') ent('sign', R.pillar + 3, roomOf(i).floor - 1, { text: 'ANOTHER CRACKED PILLAR: STRIKE IT WHEN HE IS THROUGH.' }); });
-  ent('sign', ROOMS[0].vault - 6, R0.floor - 1, { text: 'THIS PILLAR HOLDS THE VAULT. STRIKE IT WITH HIM OVER IT AND IT COMES DOWN ON HIM.' });   /* (ft4a) the vault pillar, signed in the first room */
+  ROOMS.forEach((R, i) => ent('sign', R.vault + (R.vault < (CH.x0 + CH.x1) / 2 ? 6 : -6), roomOf(i).floor - 1, { text: i ? 'A CRACKED PILLAR HOLDS THE VAULT: BRING IT DOWN ON HIM.' : 'A CRACKED PILLAR HOLDS THE VAULT. STRIKE IT WITH HIM OVER IT AND IT COMES DOWN ON HIM.' }));   /* (ft4a) the vault pillars, signed at the point of use (beside the cover spot, not on it) */
   ent('undeadmage', CH.x1 - 5, R0.floor - CH.hover - 2, { face: -1 });
   return { rooms: ROOMS.map((_, i) => roomOf(i)), core: CORE, supports, start: [CH.x0 + 4, R0.floor - 1], trigger: (CH.x0 + 6) * TS };
 }
@@ -164,4 +165,78 @@ export function drawChase3(g, e, cx, cy, time, VW) {
   if (e.mode === 'down') { const x = Math.round(e.x - cx), y = Math.round(roomOf(e.room || 0).floor * 16 - cy);
     paintLanding(g, x, y, CH.downT - e.modeT);
     g.globalAlpha = 0.18 + 0.12 * Math.abs(Math.sin(time * 5)); g.fillStyle = '#ffd36b'; g.fillRect(x - 16, y - 2, 32, 2); g.fillRect(x - 10, y - 4, 20, 2); g.globalAlpha = 1; }
+}
+/* ===================== THE ASCENT (claude/ft4a, Daniel 10-29 16:00 "All four": brief-fallingtower4-1029.md #1 A) =====================================
+   THE CUT IS GONE. The last floor pours you into the core and he is IN it, hanging over the rug, not teleported to his hall. The rug rises to catch you
+   (main.js), you board where it is, and THE CARPET RIDES BACK UP THE HOLES YOU FELL THROUGH, still fighting - one camera, no snap:
+     'well'   an upward auto-scroller up the core and the four broken rooms (their wrecked floors, the fallen columns): the box you fly in is the well,
+              win rows tall, its bottom rising ASC.well px/s - the tower coming down behind you (it carries you up: it never kills). He flies at the
+              top of it, casting only his fire, ice and hand (ASC.order: his fight's own tells and numbers); strike one back and he is knocked down the
+              well toward you, open. Stone off the failing walls falls on TOLD columns (ASC.rock: a red mark at the top of the box and grit, then it falls).
+              The ascent takes him no lower than ASC.hpFloor of the bar.
+     'plug'   at the stair's floor the stone over the well cracks round (told, ASC.plugTell s) and his bolt blasts it: PLUG (runtime, put back on a retry)
+     'spiral' up his spiral stair's well past the flights you climbed, fast; he flees ahead, casting nothing
+     'crown'  -> 'sky' the spiral tower's top breaks open (CROWN, runtime) and you burst out into the night; the camera WIDENS over ASC.tween s from the
+              well's 26 tiles to his hall's box (tower-ascent.js hallArena, moved over the spiral tower: no sideways jump), and the hall's sky and moon
+              come up round you. He settles to his hover spot and his hall's kit starts ASC.firstCast s later - no 'wake' freeze.
+   A death anywhere in it is the stair's top, as the rest of the fight (one boss). */
+export const ASC = { win: 13, well: 95, spiral: 320, sky: 280, plugTell: 1.0, tween: 0.8, firstCast: 1.0, hpFloor: 0.5, hang: 6, fade: 0.7, crownTop: 50,
+  order: ['fire', 'ice', 'fire', 'hand'], rock: { first: 2.0, every: 2.6, tell: 1.1, v: 420, dmg: 12, hitW: 13 } };
+export const PLUG = () => [CH.x0, CH.x1, SPIRAL.floor, CH.top - 1];   /* the stone between the spiral stair's floor and the first room (rows) */
+export const CROWN = () => [CH.x0, CH.x1, ASC.crownTop, SPIRAL.top - 1];   /* the spiral tower's roof, up to the sky rows (tower-ascent.js TOWER.SKY) */
+export const ascentClear = () => [PLUG(), CROWN()];   /* (functions: spiral-chase.js and this file can load in either order) */
+/* where he hangs in the core when the last floor pours you in: over the rug, ASC.hang rows up the well, to one side */
+export const coreHang = () => ({ x: CORE.carpet.x + 5 * 16, y: (CORE.bot - 1 - ASC.hang) * 16 });
+/* THE BOX of the ascent at its bottom y (px): the well, win rows tall - in the sky its sides open toward the hall's (k: 0 well .. 1 hall) */
+export function ascentBox(y, H, k = 0) { const x0 = CH.x0 * 16, x1 = (CH.x1 + 1) * 16; return { x0: x0 + (H ? (H.x0 - x0) * k : 0), x1: x1 + (H ? (H.x1 - x1) * k : 0), y0: y - ASC.win * 16, floor: y }; }
+/* his band in it: the top of the box (station() keeps him to your side, over you) */
+export const ascentBand = A => ({ x0: A.x0 + 12, x1: A.x1 - 12, y0: A.y0, y1: A.y0 + 6 * 16 });
+export const newAscent = () => ({ ph: 'well', y: CORE.bot * 16, t: 0, k: 0, rocks: [], rockT: ASC.rock.first });
+/* ONE STEP of the scroll. A: the arena (its box is moved here), H: his hall's box. c: { P, clear(rect), say(m, hard), callout(m), sound(k), shake(n), dust(x, y, n),
+   hurt(x, dmg), lock(x0, x1), toHall(), rnd() }. */
+export function ascentStep(e, A, H, dt, c) {
+  const S = e.asc || (e.asc = newAscent()), P = c.P; S.t += dt;
+  if (S.ph === 'well') { S.y -= ASC.well * dt; if (S.y - ASC.win * 16 <= CH.top * 16) { S.y = Math.min(S.y, CH.top * 16 + ASC.win * 16); S.ph = 'plug'; S.pt = ASC.plugTell; c.callout('THE STAIR\'S FLOOR CRACKS OVER YOU'); c.sound('crack'); c.shake(3); } }
+  else if (S.ph === 'plug') { S.pt -= dt; if (Math.random() < dt * 30) c.dust((CH.x0 + Math.random() * (CH.x1 - CH.x0 + 1)) * 16, CH.top * 16, 1);
+    if (S.pt <= 0) { c.clear(PLUG()); c.sound('stone'); c.sound('mageBolt'); c.shake(9); S.ph = 'spiral'; c.callout('HE BLASTS THROUGH HIS STAIR: AFTER HIM'); } }
+  else if (S.ph === 'spiral') { S.y -= ASC.spiral * dt; if (S.y - ASC.win * 16 <= SPIRAL.top * 16) { c.clear(CROWN()); c.sound('stone'); c.sound('rumble'); c.shake(10); S.ph = 'sky'; S.k = 0; c.callout('OUT OF HIS TOWER: INTO HIS SKY'); } }
+  else if (S.ph === 'sky') { S.y -= ASC.sky * dt; S.k = Math.min(1, S.k + dt / ASC.tween); const end = H.floor - 34;
+    if (S.y <= end) { S.y = end; S.k = 1; S.ph = 'done'; } }
+  Object.assign(A, ascentBox(S.y, H, S.ph === 'sky' || S.ph === 'done' ? S.k : 0));
+  c.lock(A.x0, A.x1);
+  /* STONE OFF THE FAILING WALLS, on told columns (the well only - and never two at once over you) */
+  if (S.ph === 'well') { S.rockT -= dt; if (S.rockT <= 0) { S.rockT = ASC.rock.every; const x = Math.max(A.x0 + 20, Math.min(A.x1 - 20, P.x + (c.rnd() - 0.5) * 120)); S.rocks.push({ x, st: 'tell', t: ASC.rock.tell, ry: 0 }); c.sound('crack'); } }
+  for (const r of S.rocks) {
+    if (r.st === 'tell') { r.t -= dt; if (r.t <= 0) { r.st = 'fall'; r.ry = A.y0 - 8; } }
+    else if (r.st === 'fall') { r.ry += ASC.rock.v * dt; if (!r.hit && !P.dead && Math.abs(P.x - r.x) < ASC.rock.hitW && Math.abs((P.y - 8) - r.ry) < 14) { r.hit = true; c.hurt(r.x, ASC.rock.dmg); } if (r.ry > A.floor + 60) r.st = 'gone'; } }
+  S.rocks = S.rocks.filter(r => r.st !== 'gone');
+  if (S.ph === 'done') { e.asc = null; c.toHall(); return 'hall'; }
+  return S.ph;
+}
+/* HIM, in the ascent (stepUndeadMage's chase hook: true takes the frame). In the well he fights as in his hall - and his struck-back spell knocks him
+   DOWN the well toward you, open; in the plug, the spiral and the sky he flees up ahead, casting nothing */
+const ASC_OPEN = new Set(['reflected', 'gather', 'breached']);
+export function ascentLeg(e, dt, c) {
+  if (e.leg !== 'ascent') return false; const S = e.asc, P = c.P, A = c.A; e.order = ASC.order; e.noRealm = true;
+  if (!S || S.ph === 'well') {
+    if (e.mode === 'away' || e.mode === 'flee') { e.mode = 'hover'; e.modeT = 0.6; }   /* (the board: his first cast greets you) */
+    if (ASC_OPEN.has(e.mode)) { const tx = P.x + (Math.sign(e.x - P.x) || 1) * 26, ty = P.y - 30, dx = tx - e.x, dy = ty - e.y, d = Math.hypot(dx, dy); if (d > 3) { const sp = Math.min(d, 150 * dt); e.x += dx / d * sp; e.y += dy / d * sp; } }
+    return false; }
+  /* fleeing ahead: up the middle of the well, at the top of the box */
+  if (e.mode !== 'flee') { e.mode = 'flee'; e.modeT = 99; e.deathMark = null; e.rings = []; e.bones = null; e.orbit = null; e.script = null; e.void = null; e.fireRing = null; e.open = 0; }
+  const tx = (A.x0 + A.x1) / 2 + Math.sin(e.anim || 0) * 30, ty = A.y0 + 40, dx = tx - e.x, dy = ty - e.y, d = Math.hypot(dx, dy); if (d > 2) { const sp = Math.min(d, 520 * dt); e.x += dx / d * sp; e.y += dy / d * sp; }
+  e.face = Math.sign(P.x - e.x) || e.face; return true;
+}
+/* THE ASCENT, DRAWN (greybox - the art lane paints it): his told stone (a red mark at the top of the box, grit, then the block), the crack round the
+   stair's floor while it holds (the plug's tell) */
+export function drawAscent(g, e, A, cx, cy, time) {
+  const S = e && e.asc; if (!S || !A) return;
+  for (const r of S.rocks) { const x = Math.round(r.x - cx);
+    if (r.st === 'tell') { const k = 1 - r.t / ASC.rock.tell, y = Math.round(A.y0 - cy) + 6; if (Math.floor(time * 8) % 2) { g.fillStyle = '#ff6b6b'; g.fillRect(x - 1, y, 2, 5); g.fillRect(x - 1, y + 6, 2, 1); }
+      g.fillStyle = 'rgba(168,152,124,0.55)'; for (let i = 0; i < 4; i++) g.fillRect(x - 3 + (i * 3) % 7, y + 10 + Math.round(((time * 90 + i * 23) % 60) * k), 1, 2);
+      g.globalAlpha = 0.18 + 0.2 * k; g.fillStyle = '#ff6b6b'; g.fillRect(x - 7, y, 14, Math.round(A.floor - A.y0)); g.globalAlpha = 1; }
+    else if (r.st === 'fall') { const y = Math.round(r.ry - cy); g.fillStyle = '#5c6070'; g.fillRect(x - 7, y - 7, 14, 12); g.fillStyle = '#8a8e9c'; g.fillRect(x - 7, y - 7, 14, 2); g.fillStyle = '#2a2c38'; g.fillRect(x - 2, y - 5, 1, 9); } }
+  if (S.ph === 'plug') { const k = 1 - Math.max(0, S.pt) / ASC.plugTell, y = Math.round(CH.top * 16 - cy), x0 = Math.round(CH.x0 * 16 - cx), w = (CH.x1 - CH.x0 + 1) * 16;
+    g.fillStyle = Math.floor(time * 10) % 2 ? '#ff9a5c' : '#ffd36b'; for (let i = 0; i < w * k; i += 4) g.fillRect(x0 + i, y + ((i * 7) % 5) - 2, 3, 1);
+    g.globalAlpha = 0.3 * k; g.fillStyle = '#ffd36b'; g.fillRect(x0, y - 2, w, 3); g.globalAlpha = 1; }
 }

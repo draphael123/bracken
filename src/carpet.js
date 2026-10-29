@@ -49,7 +49,7 @@ export function updateCarpet(L, P, dt, ctx) {
      only WHERE IT PUTS YOU. Without a sanctum you rise off the parapet as before; with one you step through and come
      out inside his hall (src/sanctum.js), and the rug is under you when you get there. */
   if (!P.carpet && !L.carpetUp && !P.dead && Math.abs(P.x - L.carpetAt.x) < CARPET.board[0] && Math.abs(P.y - L.carpetAt.y) < CARPET.board[1]) {
-    mountCarpet(P, L.sanctum ? L.sanctum.spawn : L.carpetAt); L.carpetUp = true; ctx.board();
+    mountCarpet(P, L.chase3 || !L.sanctum ? L.carpetAt : L.sanctum.spawn); L.carpetUp = true; ctx.board();   /* (claude/ft4a) THE CHASE: you board where the rug is - it carries you UP, no door */
   }
   /* THE TOWER STILL COMING DOWN. In the open sky it fell past you from above the top of the arena; INSIDE HIS HALL that
      would be rubble dropping through a painted stone vault, so in the sanctum it is shaken loose FROM the vault instead,

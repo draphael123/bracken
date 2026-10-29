@@ -35,7 +35,7 @@ for (const e of L.ents) { if (NOT.has(e.t)) continue;
 /* (claude/fallingtower3, Daniel 10-27 - a deliberate design change) he is met in THE CHASE's first room now, and his carpet carries you both up: main.js chaseToHall
    puts him in his own hall (36 tiles in, 8 rows over its floor) when you come through his door */
 ok(L.chase3 && L.ents.some(e => e.t === 'undeadmage' && e.y > L.chase3.rooms[0].top && e.y < L.chase3.rooms[0].floor), 'he does not wait in the first room of the chase');
-{ const s = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8'); ok(s.includes("e.x=36*TS;e.y=L.arena.floor-8*TS;") && 36 >= c0 && 36 <= c1 && fr - 8 >= top, 'the chase does not bring him into his own hall'); }
+{ const s = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8'); ok(s.includes('function chaseToAscent(') && s.includes("e.mode='hover';e.modeT=CH3_ASC.firstCast") && c0 <= 80 && c1 >= 106, 'the chase does not carry him up into his own hall, over the spiral tower (claude/ft4a: THE ASCENT - he comes up the well with you and settles, no wake)'); }
 const box = carpetBox(A, 0), sp = L.sanctum.spawn; ok(sp.x > box.x0 && sp.x < box.x1 && sp.y > box.y0 && sp.y < box.y1, 'the door does not put you in the hall');
 
 // ---- SEALED ----
