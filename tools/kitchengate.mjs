@@ -6,8 +6,8 @@
 //   the optional ones are not; a COLD great spit (its four spits at rest) is no stair; the rule is taught, tested, remixed and examined, three ways (steam, spit, trail).
 //   THE HANDS IN A FAKE WORLD: a stoke -> the fire roars and dies back; the steam lifts; the great spit turns only while it roars; the trail burns to the tallow door and melts
 //   it, burning a cook on it; the butcher burns (x2); the grease pot goes over; the pages open the vault; what melted stays through a reset.
-//   THE BOSS, PURE: B15 floors on every mode; a powder pie eaten -> CHOKING (x2, capped) -> a told WARD; a dish eaten heals and powers his next blow; a dish knocked off -> HUNGRY;
-//   the phases each add one move; six told attacks, each its own windup and release pose (B16/B17); the bot stokes the oven when it is hot.
+//   THE BOSS, PURE (claude/kitchengate2 rework): seated (never moves); B15 floors; THE SERVING LINE - a dish heals (capped), knocked off -> HUNGRY; a bomb fizzes on the slow line, batted it reaches him -> STUNNED; a chilli -> TOO HOT;
+//   the lob lands on your platform, the fling at your height; P1 four moves, P2 grease + bell (attendants), P3 grab - seven told, each its own poses (B16/B17); the bot reads the line.
 //     node tools/kitchengate.mjs
 import { readFileSync } from 'node:fs';
 import { install } from './node-canvas.mjs'; install();
@@ -69,7 +69,7 @@ for (const w of L.kgWheels) { const g = Uint8Array.from(L.grid);
   ok(kinds.size === 3 && L.kgFires.length >= 8, 'STRIKE A BELLOWS, three ways (' + [...kinds].join(', ') + '), ' + L.kgFires.length + ' fires'); }
 { const firstOf = k => Math.min(...Object.values(ARCS[k]).map(a => a[0])); const ord = k => { const v = ARCS[k], seq = ['teach', 'test', 'develop', 'remix', 'exam'].filter(s => v[s]).map(s => v[s][0]); return seq.every((x, i) => i === 0 || x > seq[i - 1]); };
   ok(['copper', 'spit', 'trail', 'hooks', 'grease'].every(ord) && firstOf('copper') < firstOf('spit') && firstOf('spit') < firstOf('trail'), 'the rule is TAUGHT, TESTED, REMIXED and EXAMINED in that order (copper, then spit, then trail)'); }
-ok(L.kgHooks === undefined && L.zipLines.length === 4 && L.slick.length >= 3, 'the kitchens\' ground: ' + L.zipLines.length + ' meat-hook rails, ' + L.slick.length + ' grease floors');
+ok(L.kgHooks === undefined && L.zipLines.length >= 4 && L.slick.length >= 3, 'the kitchens\' ground: ' + L.zipLines.length + ' meat-hook rails, ' + L.slick.length + ' grease floors');
 { const b = L.ents.filter(e => e.t === 'butcher'); ok(b.length === 2 && b.every(e => L.kgTrails.some(t => e.x >= t.x0 && e.x <= t.x1 && e.y === t.f - 1)), 'THE BUTCHER (the one new foe): ' + b.length + ' placed, each on a grease trail (burn him)'); }
 ok(Object.values(KG_SAY).every(s => SAY_LINES.has(s)) && Object.values(GBM.GB_SAY).every(s => SAY_LINES.has(s)), 'every capital line the rule and the boss say is in src/hint-lines.js');
 
@@ -106,61 +106,112 @@ ok(Object.values(KG_SAY).every(s => SAY_LINES.has(s)) && Object.values(GBM.GB_SA
   ok(rd().pages === 3 && rd().vault && grid[22 * L.W + 362] === T.AIR, 'the three recipe pages open THE SPICE VAULT');
   /* a reset (a death): the grid laid again - what melted stays melted, the pages stay picked up, the race is armed again */
   grid.set(L.grid); H.reset(); ok(grid[20 * L.W + 238] === T.AIR && rd().pages === 3 && rd().vault && rd().race.state === 'armed', 'a death keeps the melted door and the open vault; the grease pot stands again');
-  ok(H.hoist('stove1').state === 'cut' && H.hoist('spit1').state === 'hang', 'the pilot reads a bellows as a cleat: done once its door is gone, waiting while its fire is banked'); }
+  ok(H.hoist('stove1').state === 'cut' && H.hoist('spit1').state === 'hang', 'the pilot reads a bellows as a cleat: done once its door is gone, waiting while its fire is banked');
+  /* (claude/kitchengate2) THE SERVING LINES, THE STOVE FLARES, THE ATTENDANT */
+  { const B = id => L.kgBelts.find(b => b.id === id), rb = id => rd().belts.find(b => b.id === id);
+    const cl = B('cellarLine'); P.x = (cl.x0 + 2) * TS; P.y = cl.f * TS; P.ground = true; P.vy = 0; const xa = P.x; step(1); ok(P.x - xa > cl.v * 0.8, 'a serving line carries a hero standing on it (' + Math.round(P.x - xa) + ' px in 1 s, east)');
+    const fl = B('farLine'); P.x = (fl.x0 + 6) * TS; P.y = fl.f * TS; const xb = P.x; step(1); ok(xb - P.x > fl.v * 0.8, 'the spit hall\'s far line runs WEST, back toward the trench (' + Math.round(xb - P.x) + ' px)');
+    P.x = 0; P.y = 0; step(4); ok(rb('cellarLine').items.length >= 1 && rb('cellarLine').items.every(q => q.kind === 'dish'), 'dishes ride the cellar line (TEACH: dishes only, nothing to hurt you)');
+    const it = rb('cellarLine').items.find(q => q.state === 'ride'); P.x = it.x - 20; P.y = cl.f * TS; const n0 = rd().n.knocked; H.strike({ l: it.x - 6, r: it.x + 6, t: cl.f * TS - 14, b: cl.f * TS });
+    ok(rd().n.knocked === n0 + 1 && rb('cellarLine').items.some(q => q.state === 'fall'), 'a blow knocks a dish off the line');
+    P.x = 0; P.y = 0; const tc = B('trailCounter'); let bomb = null; for (let i = 0; i < 60 * 14 && !bomb; i++) { H.update(1 / 60); bomb = rb('trailCounter').items.find(q => q.kind === 'bomb' && q.state === 'ride'); }
+    ok(!!bomb, 'bombs ride the trail counter (the remix: every ' + tc.bomb + 'rd item)');
+    H.strike({ l: bomb.x - 6, r: bomb.x + 6, t: tc.f * TS - 14, b: tc.f * TS }); ok(rb('trailCounter').items.some(q => q.kind === 'bomb' && q.state === 'bat'), 'a blow BATS a bomb along the line');
+    const nf = rd().n.fizz; for (let i = 0; i < 60 * 16 && rd().n.fizz === nf; i++) H.update(1 / 60); ok(rd().n.fizz > nf, 'a bomb left alone goes off ON the line (its fuse ' + K.line.fuse + ' s, the counter ' + ((tc.x1 - tc.x0 + 1) * TS / tc.v).toFixed(1) + ' s long)');
+    const seenSt = new Set(); for (let i = 0; i < 60 * 3; i++) { H.update(1 / 60); seenSt.add(H.flareState('vaultGriddle')); } ok(['glow', 'flame', 'out'].every(q => seenSt.has(q)), 'a stove flare runs its rhythm: glow (the tell), flame, out');
+    const vg = L.kgFlares.find(f => f.id === 'vaultGriddle'); P.x = (vg.x0 + 1) * TS + 8; P.y = vg.f * TS; P.ground = true; const d0 = dmg.length; let flamed = false; for (let i = 0; i < 60 * 3; i++) { H.update(1 / 60); if (H.flareState('vaultGriddle') === 'flame') flamed = true; }
+    ok(flamed && dmg.length > d0, 'standing in it as it flares burns'); P.x = (vg.x0 - 3) * TS; const d1 = dmg.length; step(3); ok(dmg.length === d1, 'off the griddle, nothing');
+    ok(L.kgBelts.length >= 4 && L.kgFlares.length >= 4 && ['teach', 'test', 'remix', 'exam'].every(k => ARCS.belt[k]) && ['teach', 'test', 'exam'].every(k => ARCS.flare[k]), 'THE SERVING LINES taught, tested, remixed, examined (' + L.kgBelts.map(b => b.id).join(', ') + '); THE STOVE FLARES taught, tested, examined (' + L.kgFlares.length + ')');
+    ok(L.zipLines.every(z => z.meat && (z.dir === 1 || z.dir === -1)), 'every hook rail is a chain-driven MEAT-HOOK RAIL: it runs one way (hold on to ride, jump to let go)');
+    ok(L.kgProps.length >= 20 && new Set(L.kgProps.map(p => p.kind)).size >= 8, 'the kitchen\'s dressing: ' + L.kgProps.length + ' props of ' + new Set(L.kgProps.map(p => p.kind)).size + ' kinds (ovens, spice racks, flour, blocks, vents, basins, hatches, pans)');
+    /* THE ATTENDANT: a plate thrown in an arc onto where you stand; his tray turns a blow from the front */
+    const at = { t: 'attendant', alive: true, x: 240 * TS, y: 24 * TS, w: 10, h: 18, hp: 30, mode: 'walk', modeT: 0, face: -1, vx: 0, vy: 0 }; foes.push(at);
+    P.x = 240 * TS - 120; P.y = 24 * TS; P.ground = true; P.face = 1; P.atk = -1; const d2 = dmg.length; let aimed = false; for (let i = 0; i < 60 * 3; i++) { H.attendant(at, 1 / 60); if (at.mode === 'aim') aimed = true; }
+    ok(aimed, 'THE ATTENDANT aims a plate (a yellow !) at range'); ok(dmg.length > d2, 'the plate lands on the ring where you stood');
+    P.x = at.x - 24; P.atk = 0.1; at.mode = 'walk'; at.kgGcd = 0; H.attendant(at, 1 / 60); ok(at.mode === 'guard' && H.takeFoe(at, 10) === 0, 'close in and he raises his TRAY: a blow from the front is turned');
+    P.x = at.x + 20; ok(H.takeFoe(at, 10) === 10, 'from behind it lands');
+    P.x = at.x - 24; at.modeT = 0.001; H.attendant(at, 1 / 60); ok(at.mode === 'bashTell', 'then he swings it (told)'); foes.length = 0; }
+}
 
-// ---- LORD GRUBBAG, PURE ----
-{ const A = { x0: 390 * TS, x1: 429 * TS, floor: 22 * TS, chair: 421, table: [411, 416], oven: 392, bellows: 395, line: [392, 11, 418, 13] };   /* (claude/grubbagbig: his hall at his new size) */
-  const G = GBM.geom(A, TS), S = GBM.newFight(G), said = [], hits = [];
-  const w = { number: (x, y, t) => said.push(t), sound() {}, shake() {}, music() {}, mark() {}, dust() {}, fx() {}, oven() {}, burst() {}, smash() {}, hit: (b, d, n) => { hits.push(n); return null; }, hitArea: (b, d, n) => hits.push(n), hitHero: (h, d, n) => hits.push(n) };
+// ---- LORD GRUBBAG, PURE (claude/kitchengate2: REWORKED - seated, the serving line, bombs and chillies, the lob and the fling, P2 grease + bell, P3 grab) ----
+{ const A = L.arena;
+  const G = GBM.geom(A, TS), S = GBM.newFight(G), said = [], hits = [], spawned = [];
+  const w = { number: (x, y, t) => said.push(t), sound() {}, shake() {}, music() {}, mark() {}, dust() {}, fx() {}, stove() {}, burst() {}, smash() {}, spawnAdd: (x, y) => { const a = { t: 'attendant', x, y, alive: true }; spawned.push(a); return a; },
+    hit: (b, d, n) => { hits.push(n); return null; }, hitArea: (b, d, n) => hits.push(n), hitHero: (h, d, n) => hits.push(n) };
   const e = { t: 'grubbag', x: G.chairX, y: G.floorY, w: GBM.GB.w, h: GBM.GB.h, hp: 1000, maxHp: 1000, mode: 'sit', modeT: 0, face: -1, alive: true };
   const P = { x: G.chairX - 100, y: G.floorY, ground: true, alive: true };
-  const floor = mode => { e.mode = mode; S.ward = 0; S.hungry = 0; return GBM.takeBlow(e, S, 100, false)[0]; };
-  const modes = ['sit', 'belchTell', 'belch', 'throwTell', 'throw', 'forkTell', 'fork', 'slamTell', 'slam', 'floodTell', 'flood', 'grabTell', 'grab', 'eat', 'recover', 'flopTell', 'flop', 'flopDown', 'flopRoll'];
+  ok(G.belt.x1 - G.belt.x0 >= 200 && G.belt.y === G.floorY - 2 * TS && L.grid[(A.belt[2]) * L.W + A.belt[0]] === T.ONEWAY, 'THE SERVING LINE: a conveyor ' + (G.belt.x1 - G.belt.x0) + ' px long, two rows up, one-way (jump up onto it)');
+  ok(G.belt.x1 < G.chairX - GBM.GB.w / 2 && G.chairX - GBM.GB.w / 2 - G.belt.x1 >= 40, 'room on the floor between the line\'s end and his belly to strike him (' + Math.round(G.chairX - GBM.GB.w / 2 - G.belt.x1) + ' px)');
+  const floor = mode => { e.mode = mode; S.ward = 0; S.hungry = 0; return GBM.takeBlow(e, S, 100)[0]; };
+  const modes = Object.keys(POSE_GB).filter(m => !GBM.gbOpen({ mode: m }));
   ok(modes.every(m => floor(m) >= 40), 'B15: no mode of his is ever under 0.4x outside his opening (' + modes.map(m => m + ' ' + floor(m)).join(', ') + ')');
-  e.mode = 'sit'; S.ward = 1; ok(GBM.takeBlow(e, S, 100, false)[1] === 'WARDED' && GBM.takeBlow(e, S, 100, false)[0] === 40, 'WARDED: x0.4 and told'); S.ward = 0;
-  ok(GBM.takeBlow(e, S, 100, false)[1] === 'WELL FED' && GBM.takeBlow(e, S, 100, false)[0] === 45, 'well fed: x0.45 and told (WELL FED)');
-  S.hungry = 2; ok(GBM.takeBlow(e, S, 100, false)[0] === 70, 'HUNGRY: x0.7'); S.hungry = 0;
-  /* THE BELLY FLOP (claude/grubbagbig, Daniel 10-25): told, out of the chair, down on the shadow (a crush and a shockwave each way), winded on the floor (blades land whole), rolled back up */
-  { const F = GBM.GB.flop, Sf = GBM.newFight(G), ef = { ...e, mode: 'sit', modeT: 0, x: G.chairX, w: GBM.GB.w, h: GBM.GB.h }, Pf = { x: G.chairX - 200, y: G.floorY, ground: true, alive: true }, hf = [], sf = [];
-    const wf = { ...w, hitArea: (b, d, n) => { if (Pf.x > b[0] && Pf.x < b[1]) hf.push(n); }, hitHero: (h, d, n) => hf.push(n), number: (x, y, t) => sf.push(t) };
-    Sf.restT = 0; Sf.last = ['belch', 'throw']; const r0 = Math.random; Math.random = () => 0.01;
-    GBM.stepGrubbag(ef, Sf, 1 / 60, [Pf], wf); Math.random = r0;
-    ok(ef.mode === 'flopTell' && Math.abs(ef.landX - Pf.x - GBM.GB.flop.aim) < 1 && GBM.gbTelling(ef) && sf.includes(GBM.GB_SAY.flop), 'THE BELLY FLOP is told (flopTell, red !!) and his shadow marks where he lands - on the hero (' + Math.round(ef.landX - G.chairX) + ' px from his chair)');
-    const runF = (s, f) => { for (let i = 0; i < Math.round(s * 60); i++) { GBM.stepGrubbag(ef, Sf, 1 / 60, [Pf], wf); if (f && f()) return true; } return false; };
-    let peak = 0; runF(F.tell[0] + F.air + 0.1, () => { peak = Math.max(peak, ef.flopY || 0); return ef.mode === 'flopDown'; });
-    ok(ef.mode === 'flopDown' && ef.x === ef.landX && peak > F.rise * 0.9 && hf.includes('flop') && Sf.waves.filter(q => q.kind === 'flop').length === 2, 'up out of the chair (' + Math.round(peak) + ' px), down on the shadow: the crush and a shockwave each way');
-    ok(GBM.takeBlow(ef, Sf, 100, false)[0] === Math.round(100 * F.mul) && GBM.takeBlow(ef, Sf, 100, false)[1] === null && ef.w === F.lieW, 'winded on the floor: blades land x' + F.mul + ' (a punish, not the choke), his box the lying belly (' + F.lieW + ' x ' + F.lieH + ')');
-    runF(F.down + F.roll + 0.1, () => ef.mode === 'recover'); ok(ef.mode === 'recover' && ef.x === G.chairX && ef.w === GBM.GB.w, 'he rolls back up into his chair (' + F.down + ' s down, ' + F.roll + ' s roll)');
-    const Pin = { x: ef.x, y: G.floorY, ground: true, alive: true }; Sf.waves = []; hf.length = 0; Pf.x = G.chairX - 300; Sf.last = []; ef.mode = 'flopTell'; ef.modeT = 0.01; ef.landX = Pf.x; Pf.x = ef.landX + F.crush + 30; runF(F.air + 0.05, () => ef.mode === 'flopDown');
-    ok(!hf.includes('flop'), 'out from under his shadow, the crush misses'); }
-  /* the oven, the pie, the choke */
-  ok(GBM.stokeOven(S, w) && S.oven.st === 'bake', 'a blow on the oven bellows: it bakes a powder pie');
-  const run = (s, f) => { for (let i = 0; i < Math.round(s * 60); i++) { GBM.stepGrubbag(e, S, 1 / 60, [P], w); if (f && f()) return true; } return false; };
-  e.mode = 'sit'; S.restT = 99;
-  ok(run(12, () => e.mode === 'choke') && S.n.pies === 1 && said.includes(GBM.GB_SAY.choke), 'the pie rides the serving line to him, he eats it and CHOKES');
-  S.purse = 1e6; const [d1] = GBM.takeBlow(e, S, 100, false); ok(d1 === 200, 'choking: x2'); S.purse = 50; const [d2] = GBM.takeBlow(e, S, 100, false); ok(d2 === 50 && S.purse === 0 && e.modeT > 1, 'the choke is capped (' + GBM.GB.choke.cap + ' of him): the purse empties but the choke runs its whole ' + GBM.GB.choke.t + ' s (every hero spends the same opening, claude/kitchengateart)');
-  ok(S.oven.st === 'cool' && !GBM.stokeOven(S, w), 'the oven cools before it bakes again');
-  run(GBM.GB.choke.t + 0.4); ok(S.ward > 0 && said.includes(GBM.GB_SAY.ward), 'he coughs it up behind a told WARD (' + GBM.GB.ward + ' s)');
-  /* a dish: eaten, it heals and powers; knocked off, he goes hungry */
-  S.items.push({ id: 900, kind: 'dish', x: G.line.x1, state: 'wait', k: 1 }); e.mode = 'sit'; S.ward = 0; e.hp = 900; run(0.05); ok(e.hp === 900 + Math.round(e.maxHp * GBM.GB.dish.heal) && S.powered, 'a dish that reaches him: he eats it, HEALED (' + GBM.GB.dish.heal + ' of him) and his next blow is heavier');
-  const dish = { id: 901, kind: 'dish', x: G.mid, state: 'ride', k: 0 }; S.items.push(dish); ok(GBM.smashItem(S, dish, w) && S.hungry > 0 && !S.powered, 'a dish knocked off the line: it smashes, he goes HUNGRY');
-  const pie = { id: 902, kind: 'pie', x: G.mid, state: 'ride', k: 0 }; S.items.push(pie); const nb = S.n.bursts; ok(GBM.smashItem(S, pie, w) && S.n.bursts === nb + 1 && S.oven.st === 'cool', 'the powder pie struck on the line bursts there (and the oven must cool again)');
-  /* the phases: one new move each */
+  e.mode = 'sit'; S.ward = 1; ok(GBM.takeBlow(e, S, 100)[1] === 'WARDED' && GBM.takeBlow(e, S, 100)[0] === 40, 'WARDED: x0.4 and told'); S.ward = 0;
+  ok(GBM.takeBlow(e, S, 100)[1] === 'WELL FED' && GBM.takeBlow(e, S, 100)[0] === 45, 'well fed: x0.45 and told (WELL FED)');
+  S.hungry = 2; ok(GBM.takeBlow(e, S, 100)[0] === 70, 'HUNGRY: x0.7'); S.hungry = 0;
+  const run = (s, f, ee = e, SS = S, PP = P) => { for (let i = 0; i < Math.round(s * 60); i++) { GBM.stepGrubbag(ee, SS, 1 / 60, [PP], w); if (f && f()) return true; } return false; };
+  /* SEATED: whatever he does, he never leaves his chair or turns */
+  { const S9 = GBM.newFight(G), e9 = { ...e, mode: 'sit', hp: 1000 }; S9.restT = 0; let moved = false; for (let i = 0; i < 60 * 90; i++) { GBM.stepGrubbag(e9, S9, 1 / 60, [P], w); if (e9.x !== G.chairX || e9.face !== -1) moved = true; if (i === 60 * 30) e9.hp = 600; if (i === 60 * 60) e9.hp = 250; if (GBM.gbOpen(e9)) e9.modeT = 0; }
+    ok(!moved, 'SEATED: through all three phases he never leaves his chair, never turns (no belly flop, no slam)'); }
+  ok(!POSE_GB.flopTell && !POSE_GB.forkTell && !POSE_GB.slamTell && !POSE_GB.floodTell && Object.values(POSE_GB).every(p => !p.fork && !p.cauldron && !p.noChair), 'no fork, no tureen, no pot in his hands, never out of the chair (Daniel 10-27: they clipped)');
+  ok(Object.values(POSE_GB).every(p => p.hand[1] < -20 && p.far[1] < -20), 'every hand stays up off the floor line (no arm through the boards)');
+  /* THE LINE: a dish heals (capped), a knocked-off dish -> HUNGRY; a bomb gulped -> STUNNED; a bomb's fuse on the slow line; a batted bomb; a chilli -> TOO HOT */
+  e.mode = 'sit'; S.restT = 99; S.lineT = 99; S.ceil = 1000; S.healLeft = 1000 * GBM.GB.dish.cap; e.hp = 800;
+  S.items.push({ id: 900, kind: 'dish', x: G.belt.x1 - 6, state: 'wait' }); run(0.05); ok(e.hp === 800 + Math.round(e.maxHp * GBM.GB.dish.heal) && said.some(s => s.includes(GBM.GB_SAY.eats)), 'a dish that reaches him: he eats it, HEALED ' + GBM.GB.dish.heal * 100 + '% (shown)');
+  run(1); e.hp = 990; S.items.push({ id: 903, kind: 'dish', x: G.belt.x1 - 6, state: 'wait' }); run(0.05); ok(e.hp === 1000, 'never healed over the top of his phase');
+  run(1); e.hp = 500; S.ceil = 600; S.healLeft = 0; S.items.push({ id: 904, kind: 'dish', x: G.belt.x1 - 6, state: 'wait' }); run(0.05); ok(e.hp === 500 && said.includes(GBM.GB_SAY.full), 'capped at ' + GBM.GB.dish.cap * 100 + '% a phase: past it a dish heals nothing (TOO FULL)');
+  run(1); e.mode = 'sit'; S.ward = 0;
+  const dish = { id: 901, kind: 'dish', x: G.belt.x0 + 60, state: 'ride' }; S.items.push(dish); ok(GBM.strikeItem(S, dish, w, dish.x - 20) && dish.state === 'fall' && S.hungry > 0, 'a dish struck on the line is KNOCKED OFF: he goes HUNGRY');
+  run(2); ok(!S.items.includes(dish), 'and it falls and smashes on the floor');
+  { const S4 = GBM.newFight(G), e4 = { ...e, mode: 'sit', hp: 1000 }; S4.restT = 99; S4.ceil = 1000; const bomb = { id: 1, kind: 'bomb', x: G.belt.x0 + 6, state: 'ride', fuse: GBM.GB.line.fuse }; S4.items.push(bomb); S4.lineT = 99;
+    const need = (G.belt.x1 - G.belt.x0) / GBM.GB.line.v; run(need + 1, () => bomb.state === 'gone', e4, S4); ok(bomb.state === 'gone' && S4.n.fizz === 1 && hits.includes('bomb') && e4.mode !== 'stun', 'a bomb left on the slow line goes off ON THE LINE (fuse ' + GBM.GB.line.fuse + ' s, the line ' + need.toFixed(1) + ' s long): it singes, and no opening');
+    const bomb2 = { id: 2, kind: 'bomb', x: G.belt.x0 + 6, state: 'ride', fuse: GBM.GB.line.fuse }; S4.items.push(bomb2); run(0.5, null, e4, S4); ok(GBM.strikeItem(S4, bomb2, w, bomb2.x - 20) && bomb2.state === 'bat', 'a blow on a bomb BATS it along the line');
+    run(3, () => e4.mode === 'gulp', e4, S4); ok(e4.mode === 'gulp', 'batted, it reaches him before its fuse: he GULPS it');
+    const hp0 = e4.hp; run(1, () => e4.mode === 'stun', e4, S4); ok(e4.mode === 'stun' && e4.hp < hp0 && said.includes('STUNNED') && GBM.gbOpen(e4), 'it goes off in him (-' + (hp0 - e4.hp) + ') and he is STUNNED: the opening (gold ring, timer)');
+    S4.purse = 1e6; ok(GBM.takeBlow(e4, S4, 100)[0] === 200, 'stunned: x2'); S4.purse = 30; ok(GBM.takeBlow(e4, S4, 100)[0] === 45 && S4.purse === 0, 'capped (' + GBM.GB.stun.cap * 100 + '% of him an opening): past the cap a blade still lands well fed (never under the floor)');
+    run(GBM.GB.stun.t + 0.6, null, e4, S4); ok(S4.ward > 0 && said.includes(GBM.GB_SAY.ward), 'he coughs it up behind a told WARD (' + GBM.GB.ward + ' s): no chain-lock (B3)');
+    const b3 = { id: 3, kind: 'bomb', x: G.belt.x1 - 6, state: 'ride', fuse: 3 }; S4.items.push(b3); run(0.1, null, e4, S4); ok(b3.state === 'wait' && e4.mode !== 'gulp', 'a bomb that arrives while he is warded waits on his platter');
+    run(GBM.GB.ward + GBM.GB.coughRest + 1, () => e4.mode === 'gulp', e4, S4); ok(e4.mode === 'gulp', 'and he gulps it when he is himself again'); }
+  { const S5 = GBM.newFight(G), e5 = { ...e, mode: 'sit', hp: 1000 }; S5.restT = 99; S5.lineT = 99;
+    ok(GBM.stokeStove(S5, w) && S5.stove.next, 'a blow on the pepper stove\'s bellows: the next item out is a RED-HOT CHILLI'); ok(!GBM.stokeStove(S5, w), 'and only once until it cools');
+    S5.lineT = 0.01; run(0.05, null, e5, S5); const ch = S5.items.find(q => q.kind === 'chilli'); ok(ch && ch.state === 'ride', 'the chilli comes out of the hatch onto the line');
+    run(12, () => e5.mode === 'hot', e5, S5); ok(e5.mode === 'hot' && GBM.gbOpen(e5) && said.includes(GBM.GB_SAY.hot), 'it reaches him: TOO HOT - an opening (' + GBM.GB.hot.t + ' s)');
+    const c2 = { id: 9, kind: 'chilli', x: G.belt.x0 + 50, state: 'ride' }; S5.items.push(c2); ok(GBM.strikeItem(S5, c2, w, c2.x - 10) && c2.state === 'fall' && S5.n.lost === 1, 'a chilli struck is KNOCKED OFF (lost): spare the chillies'); }
+  /* THE ITEMS: dishes, a bomb every few */
+  { const S6 = GBM.newFight(G), e6 = { ...e, mode: 'sit', hp: 1000 }; S6.restT = 99; S6.lineT = 0; for (let i = 0; i < 60 * 40; i++) { GBM.stepGrubbag(e6, S6, 1 / 60, [P], w); for (const q of S6.items) if (q.kind === 'bomb') q.state = 'gone'; e6.mode = 'sit'; S6.restT = 99; }
+    ok(S6.n.dishes >= 4 && S6.n.bombs >= 1 && S6.n.dishes > S6.n.bombs * 2, 'the line brings dishes, and a bomb every ' + GBM.GB.line.bombEvery + ' items (' + S6.n.dishes + ' dishes, ' + S6.n.bombs + ' bombs in 40 s)'); }
+  /* THE THROWS: the lob lands ON the platform you stand on; the fling flies at your height */
+  { const S7 = GBM.newFight(G), e7 = { ...e, mode: 'lobTell', modeT: 0.01 }, shelf = G.plats.find(p => !p.belt), Ps = { x: (shelf.x0 + shelf.x1) / 2, y: shelf.y, ground: true, alive: true };
+    GBM.stepGrubbag(e7, S7, 1 / 60, [Ps], w); const c = S7.throws[0]; ok(c && c.ty === shelf.y && Math.abs(c.tx - Ps.x) < 1, 'THE HIGH LOB lands ON the shelf the hero stands on (ring at y ' + (c && c.ty) + ', the shelf ' + shelf.y + ', the floor ' + G.floorY + ')');
+    let top = 1e9; for (let t = 0; t <= c.T; t += 0.02) top = Math.min(top, GBM.throwAt({ ...c, t }).y); ok(top < shelf.y - 60, 'it arcs high over the platforms (its top ' + Math.round(shelf.y - top) + ' px over the shelf)');
+    const Pb = { x: G.belt.x0 + 80, y: G.belt.y, ground: true, alive: true }, S8 = GBM.newFight(G), e8 = { ...e, mode: 'flingTell', modeT: 0.01 }; GBM.stepGrubbag(e8, S8, 1 / 60, [Pb], w); const f = S8.flings[0];
+    ok(f && f.ty === G.belt.y - GBM.GB.fling.lift, 'THE FLAT FLING flies at the height the hero stands at (on the line: y ' + (f && f.ty) + ')');
+    const hits0 = hits.length; for (let i = 0; i < 120 && S8.flings.length; i++) GBM.stepGrubbag(e8, S8, 1 / 60, [Pb], w); ok(hits.slice(hits0).includes('fling'), 'standing, it hits');
+    const S8b = GBM.newFight(G), e8b = { ...e, mode: 'flingTell', modeT: 0.01 }, Pj = { ...Pb }; GBM.stepGrubbag(e8b, S8b, 1 / 60, [Pj], w); Pj.y = G.belt.y - 30; Pj.ground = false; const hits1 = hits.length; for (let i = 0; i < 120 && S8b.flings.length; i++) GBM.stepGrubbag(e8b, S8b, 1 / 60, [Pj], w);
+    ok(!hits.slice(hits1).includes('fling'), 'jumped, it goes under'); }
+  /* THE PHASES: P1 lob/fling/belch/sweep; P2 + grease + bell; P3 + grab */
   const S2 = GBM.newFight(G), e2 = { ...e, hp: 1000, maxHp: 1000, mode: 'sit', modeT: 0 }; S2.restT = 0;
-  const seen = new Set(); const runP = (s) => { for (let i = 0; i < Math.round(s * 60); i++) { GBM.stepGrubbag(e2, S2, 1 / 60, [P], w); seen.add(e2.mode); if (e2.mode === 'choke') e2.mode = 'sit'; } };
-  P.x = G.chairX - 90; runP(60); const p1 = new Set(seen); P.x = G.chairX - 280; runP(60); const p1b = new Set(seen);
-  ok(['belchTell', 'throwTell', 'forkTell', 'slamTell', 'flopTell'].every(m => p1b.has(m)) && !p1b.has('floodTell') && !p1b.has('grabTell'), 'P1: THE BELCH, THROWN FOOD, THE GIANT FORK, THE TABLE SLAM, THE BELLY FLOP (no flood, no grab) ' + [...p1b].filter(m => /Tell$/.test(m)).join(' '));
-  e2.hp = 600; seen.clear(); runP(40); ok(S2.ph === 2 && seen.has('floodTell') && !seen.has('grabTell'), 'P2 (' + GBM.GB.p2 + '): THE GRAVY FLOOD joins');
-  e2.hp = 250; seen.clear(); P.x = G.chairX - 200; runP(40); ok(S2.ph === 3 && seen.has('grabTell'), 'P3 (' + GBM.GB.p3 + '): THE GRAB joins');
-  ok(S2.last.length <= 3, 'never the same move three times running');
-  /* B16 / B17: six told attacks, each its own windup and release pose */
-  const tells = ['belch', 'throw', 'fork', 'slam', 'flood', 'grab', 'flop'];
-  ok(tells.every(k => POSE_GB[k + 'Tell'] && POSE_GB[k] && JSON.stringify(POSE_GB[k + 'Tell']) !== JSON.stringify(POSE_GB[k])), 'B16: every attack its own windup and release pose (' + tells.join(', ') + ')');
-  ok(['eat', 'choke', 'recover', 'sleep', 'wake', 'sit', 'flopDown', 'flopRoll'].every(k => POSE_GB[k]), 'and his eating, choking, coughing, sleeping and waking each their own');
-  ok(tells.length >= 4 && /OWN_WARD = new Set\(\['grubbag'/.test(src('src/boss-greed.js')) && /grubbag: e => e\.mode === 'choke'/.test(src('src/boss-greed.js')), 'B17: seven told attacks (the belly flop the seventh, Daniel 10-25) and one central mechanic - the level\'s own verb (the oven\'s bellows) and its hooks (the serving line); boss-greed knows his opening and his own ward');
-  /* the bot stokes the oven when it is hot */
-  const S3 = GBM.newFight(G), e3 = { ...e, mode: 'sit' }; const pl = GBM.gbPlan({ P: { x: G.mid, y: G.floorY, vy: 0, face: 1, ground: true, atk: -1 }, e: e3, S: S3, reach: 30, t: 0, rng: () => 0.9, mem: {} });
-  ok(pl.why === 'to the oven' && pl.gx < G.mid, 'the bot goes to the oven when it is hot (' + pl.why + ')'); }
+  const seen = new Set(); const runP = (s, PP) => { for (let i = 0; i < Math.round(s * 60); i++) { GBM.stepGrubbag(e2, S2, 1 / 60, [PP], w); seen.add(e2.mode); if (GBM.gbOpen(e2)) e2.modeT = 0; S2.items = []; S2.adds = []; } };
+  runP(60, { x: G.belt.x0 + 60, y: G.belt.y, ground: true, alive: true }); runP(40, { x: G.x0 + 20, y: G.floorY, ground: true, alive: true });
+  ok(['lobTell', 'flingTell', 'belchTell', 'sweepTell'].every(m => seen.has(m)) && !seen.has('greaseTell') && !seen.has('bellTell') && !seen.has('grabTell'), 'P1: THE HIGH LOB, THE FLAT FLING, THE BELCH, THE SWEEP (only at a hero on the line) ' + [...seen].filter(m => /Tell$/.test(m)).join(' '));
+  e2.hp = 600; seen.clear(); runP(70, { x: G.x0 + 40, y: G.floorY, ground: true, alive: true }); ok(S2.ph === 2 && seen.has('greaseTell') && seen.has('bellTell') && !seen.has('grabTell'), 'P2 (' + GBM.GB.p2 + '): THE GREASE SPILL and THE SERVICE BELL join');
+  ok(spawned.length >= 1 && S2.n.adds >= 1, 'the bell sends attendants down the line (' + S2.n.adds + ' so far, never more than ' + GBM.GB.bell.maxAdds + ' at once)');
+  e2.hp = 250; seen.clear(); runP(40, { x: G.chairX - GBM.GB.w / 2 - 60, y: G.floorY, ground: true, alive: true }); ok(S2.ph === 3 && seen.has('grabTell'), 'P3 (' + GBM.GB.p3 + '): THE GRAB joins');
+  /* THE GREASE: the floor burns both ways from the cauldron; up on the line you are safe */
+  { const Sg = GBM.newFight(G), eg = { ...e, mode: 'greaseTell', modeT: 0.01, hp: 600 }, Pf = { x: G.x0 + 30, y: G.floorY, ground: true, alive: true }, Pl = { x: G.belt.x0 + 40, y: G.belt.y, ground: true, alive: true }, hg = [];
+    Sg.restT = 99; Sg.lineT = 99; const wg = { ...w, hitHero: (h, d, n) => hg.push(h.x === Pf.x ? 'floor' : 'line') }; for (let i = 0; i < 60 * 5; i++) { GBM.stepGrubbag(eg, Sg, 1 / 60, [Pf, Pl], wg); Sg.restT = 99; }
+    ok(hg.includes('floor') && !hg.includes('line'), 'THE GREASE SPILL: the burning wave reaches the far end of the floor; a hero up on the line is safe'); }
+  /* B16 / B17 */
+  const tells = GBM.MOVES;
+  ok(tells.length >= 7 && tells.every(k => POSE_GB[k + 'Tell'] && POSE_GB[k] && JSON.stringify(POSE_GB[k + 'Tell']) !== JSON.stringify(POSE_GB[k])), 'B16/B17: seven told attacks, each its own windup and release pose (' + tells.join(', ') + ')');
+  ok(['eat', 'gulp', 'stun', 'hot', 'recover', 'sleep', 'wake', 'sit'].every(k => POSE_GB[k]), 'and his eating, gulping, stunned, too hot, coughing, sleeping and waking each their own');
+  ok(/OWN_WARD = new Set\(\['grubbag'/.test(src('src/boss-greed.js')) && /grubbag: e => e\.mode === 'stun' \|\| e\.mode === 'hot'/.test(src('src/boss-greed.js')), 'boss-greed knows his openings and his own ward');
+  /* THE BOT reads the line: it goes for a dish, bats a bomb, spares a chilli, stokes the stove when it is hot */
+  { const pl = (S0, items, Pp) => { S0.items = items; return GBM.gbPlan({ P: { x: G.belt.x0 + 30, y: G.floorY, vy: 0, face: 1, ground: true, atk: -1, ...Pp }, e: { ...e, mode: 'sit' }, S: S0, reach: 30, t: 1, rng: () => 0.9, mem: {} }); };
+    const S3 = GBM.newFight(G); S3.stove.st = 'cool'; S3.stove.t = 9;
+    ok(/dish/.test(pl(S3, [{ id: 1, kind: 'dish', x: G.belt.x0 + 120, state: 'ride' }]).why), 'the bot goes for a dish on the line');
+    ok(/bomb/.test(pl(S3, [{ id: 2, kind: 'bomb', x: G.belt.x0 + 120, state: 'ride', fuse: 4 }]).why), 'the bot goes to bat a bomb');
+    const p3 = pl(S3, [{ id: 3, kind: 'chilli', x: G.belt.x0 + 50, state: 'ride' }], { x: G.belt.x0 + 30, y: G.belt.y }); ok(!p3.atk, 'the bot never swings at a chilli (' + p3.why + ')');
+    const S3b = GBM.newFight(G); ok(/stove/.test(pl(S3b, []).why), 'the bot stokes the pepper stove when it is hot'); } }
 
 console.log(bad ? '\nkitchengate: ' + bad + ' FAILED' : '\nok  kitchengate');
 process.exit(bad ? 1 : 0);

@@ -3,7 +3,8 @@
 // to the wine vaults; the great spit turns while its fire roars (and stops when it dies), and a hero stood on a spit at the bottom is carried up; the stove's grease trail burns to
 // the tallow door and melts it (the cooks on the trail burn); a death keeps the door melted; the great grease pot goes over and its fire runs east; THE BUTCHER on a burning trail
 // burns (a blade x2); the three recipe pages open the spice vault; the area banners; LORD GRUBBAG wakes at the high table, a blade lands WELL FED (x0.45), a blow on the pie oven's
-// bellows bakes a powder pie that rides the serving line to him - he eats it and CHOKES (x2), then coughs it up behind a WARD (x0.4). No page error.
+// (claude/kitchengate2) the pepper stove's bellows sends a chilli down THE SERVING LINE (a conveyor that carries you), a real blow knocks a dish off it, the chilli reaches him - TOO HOT (x2) -
+// then a WARD (x0.4); the service bell rushes the line and sends attendants down it. No page error.
 //   PORT=<your port> node tools/kitchengate-probe.mjs
 import { openPage } from './cdp.mjs';
 const pg = await openPage({ audio: false, fonts: false }); let bad = 0;
@@ -45,10 +46,18 @@ try {
   tp(398,21);for(let i=0;i<260;i++){BK.sim(1);P.hp=P.maxHp;}const b=BK.boss;out.boss=b?{t:b.t,mode:b.mode,hp:b.hp,max:b.maxHp,active:!!BK.bossActive}:null;
   const GH=BK.grubbagHands(),S=GH&&GH.show();
   if(b&&S){b.mode='sit';S.restT=99;S.ward=0;S.hungry=0;out.fed=GH.take(b,20,P.x,false);
-    /* a REAL blow on the pie oven's bellows */
-    tp(Math.floor(S.G.bellowsX/16)-1,21);P.face=1;for(let i=0;i<40&&S.oven.st==='cold';i++){if(P.atk<0)BK.press('atk');BK.sim(1);S.restT=99;}out.oven=S.oven.st;
-    tp(Math.floor(S.G.chairX/16)-9,21);let ch=false,modes=new Set();for(let i=0;i<900&&!ch;i++){BK.sim(1);P.hp=P.maxHp;if(b.mode==='sit')S.restT=99;modes.add(b.mode);ch=b.mode==='choke';}
-    out.choke={ch,modes:[...modes].join(','),items:S.n.pies,chokes:S.n.chokes};if(ch){out.open=GH.take(b,20,P.x,false);for(let i=0;i<1200&&b.mode==='choke';i++){BK.sim(1);P.hp=P.maxHp;}for(let i=0;i<40;i++)BK.sim(1);out.ward=S.ward>0;out.warded=GH.take(b,20,P.x,false);}
+    /* (claude/kitchengate2) a REAL blow on the pepper stove's bellows: the next item out is a chilli */
+    tp(Math.floor(S.G.bellowsX/16)-1,21);P.face=1;for(let i=0;i<40&&S.stove.st==='cold';i++){if(P.atk<0)BK.press('atk');BK.sim(1);S.restT=99;}out.stove=S.stove.st;
+    /* THE SERVING LINE carries a hero standing on it toward him */
+    const B=S.G.belt;P.x=B.x0+30;P.y=B.y;P.vx=0;P.vy=0;BK.sim(2);const cx0=P.x;for(let i=0;i<60;i++){BK.sim(1);P.hp=P.maxHp;if(b.mode==='sit')S.restT=99;}out.carry=Math.round(P.x-cx0);
+    /* a REAL blow knocks a dish off the line */
+    S.items.length=0;S.items.push({id:7001,kind:'dish',x:P.x+14,state:'ride',fuse:0});P.face=1;let off=false;for(let i=0;i<40&&!off;i++){if(P.atk<0)BK.press('atk');BK.sim(1);S.restT=99;off=S.items.every(q=>q.id!==7001||q.state==='fall');}out.knock={off,hungry:S.hungry>0};
+    /* the chilli rides the line to him: TOO HOT */
+    tp(Math.floor(S.G.chairX/16)-9,21);let ch=false,modes=new Set();S.lineT=0.1;for(let i=0;i<1400&&!ch;i++){BK.sim(1);P.hp=P.maxHp;if(b.mode==='sit')S.restT=99;modes.add(b.mode);ch=b.mode==='hot';}
+    out.hot={ch,modes:[...modes].join(','),chillies:S.n.chillies,hots:S.n.hots};if(ch){out.open=GH.take(b,20,P.x,false);for(let i=0;i<1200&&b.mode==='hot';i++){BK.sim(1);P.hp=P.maxHp;}for(let i=0;i<40;i++)BK.sim(1);out.ward=S.ward>0;out.warded=GH.take(b,20,P.x,false);}
+    /* THE SERVICE BELL: attendants come down the line (real foes) */
+    for(let i=0;i<200&&b.mode!=='sit';i++){BK.sim(1);P.hp=P.maxHp;}S.ph=2;S.ward=0;S.adds=[];b.mode='bellTell';b.modeT=0.05;for(let i=0;i<30;i++){BK.sim(1);P.hp=P.maxHp;if(b.mode==='sit')S.restT=99;}
+    const ad=BK.enemies().filter(q=>q.alive&&q.t==='attendant');out.adds={n:ad.length,inS:S.adds.length,onLine:ad.filter(q=>Math.abs(q.y-B.y)<20).length,rush:S.rush>0};
     out.bar=GH.barName(b);out.n=JSON.parse(JSON.stringify(S.n));}
   BK.manualSimulation=false;return out;})()`, 300000);
   console.log(JSON.stringify(r));
@@ -64,9 +73,12 @@ try {
   ok(r.banner0 === 'THE UNDERCELLARS' && r.banner3 === 'THE FEAST HALL', 'the area banners: ' + r.banner0 + ' / ' + r.banner3);
   ok(r.boss && r.boss.t === 'grubbag' && r.boss.active, 'LORD GRUBBAG wakes at the high table ' + JSON.stringify(r.boss));
   ok(r.fed === 9, 'well fed, a blade lands at x0.45 (20 -> ' + r.fed + ')');
-  ok(r.oven === 'bake' || r.oven === 'out', 'a real blow on the pie oven bellows bakes a powder pie (' + r.oven + ')');
-  ok(r.choke && r.choke.ch, 'the powder pie rides the serving line, he eats it and CHOKES ' + JSON.stringify(r.choke));
-  ok(r.open === 40, 'choking, a blade lands x2 (20 -> ' + r.open + ')');
+  ok(r.stove === 'roast', 'a real blow on the pepper stove bellows: a red-hot chilli comes out next (' + r.stove + ')');
+  ok(r.carry >= 18, 'THE SERVING LINE carries a hero standing on it toward him (' + r.carry + ' px in 1 s)');
+  ok(r.knock && r.knock.off && r.knock.hungry, 'a real blow knocks a dish off the line: he goes HUNGRY ' + JSON.stringify(r.knock));
+  ok(r.hot && r.hot.ch, 'the chilli rides the line to him: TOO HOT ' + JSON.stringify(r.hot));
+  ok(r.open === 40, 'open, a blade lands x2 (20 -> ' + r.open + ')');
+  ok(r.adds && r.adds.n >= 1 && r.adds.inS >= 1 && r.adds.rush, 'THE SERVICE BELL: the line rushes and attendants come down it (real foes) ' + JSON.stringify(r.adds));
   ok(r.ward && r.warded === 8, 'he coughs it up behind a WARD: x0.4 (20 -> ' + r.warded + ')');
   const errs = pg.errors; ok(!errs.length, 'no page error ' + errs.slice(0, 3).join(' | '));
 } catch (e) { console.log('  FAIL ' + e.message); bad++; }

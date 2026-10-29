@@ -169,7 +169,7 @@ function cleaver(g, hx, hy, a, big) {
 function butcherFrame(pose) {
   const [c, g] = canvas(BW, BH), x0 = BAX, y0 = BAY, walk = pose === 'walk0' ? 1 : pose === 'walk1' ? -1 : 0;
   const lean = pose === 'raise' ? -2 : pose === 'slam' ? 5 : pose === 'wind' ? -3 : pose === 'sweep' ? 4 : 0, dip = pose === 'slam' ? 3 : pose === 'sweep' ? 1 : 0;
-  const SK = ['#1a2410', '#3a4a26', '#5a7036', '#7a9048', '#9ab05e'];
+  const SK = ['#3a2018', '#7a4a34', '#b07a5a', '#d09a78', '#e8b898'];   /* (claude/kitchengate2: a HUMAN butcher now - no goblins after the Goblin Queen) */
   /* boots and legs */
   for (const [dx, off] of [[-6, walk], [3, -walk]]) { rect(g, x0 + dx - 1, y0 - 12 + dip, 8, 12 - dip + (off > 0 ? -1 : 0), OUT); rect(g, x0 + dx, y0 - 11 + dip, 6, 9, '#4a3a2c'); rect(g, x0 + dx - 1 + (off > 0 ? 1 : 0), y0 - 4, 8, 4, OUT); rect(g, x0 + dx + (off > 0 ? 1 : 0), y0 - 3, 6, 3, '#2a1c14'); rect(g, x0 + dx, y0 - 11 + dip, 1, 8, '#6a5444'); }
   /* the torso: a vest of soot-grey, the great belly */
@@ -189,7 +189,7 @@ function butcherFrame(pose) {
   ellipse(g, hx, hy, 9, 8, OUT); ellipse(g, hx, hy, 8, 7, SK[2]); ellipse(g, hx - 2, hy - 3, 4, 3, SK[3]); rect(g, hx - 7, hy + 3, 15, 4, SK[1]);
   rect(g, hx + 1, hy - 2, 8, 2, SK[0]); rect(g, hx + 3, hy - 1, 3, 3, '#ffe9a0'); rect(g, hx + 4, hy, 2, 2, '#1a1010'); rect(g, hx - 4, hy - 1, 3, 3, '#ffe9a0'); rect(g, hx - 3, hy, 2, 2, '#1a1010');   /* the eyes */
   if (pose === 'raise' || pose === 'slam') { rect(g, hx - 3, hy + 3, 12, 5, OUT); rect(g, hx - 2, hy + 4, 10, 3, '#3a0e0e'); rect(g, hx - 1, hy + 4, 2, 2, '#efe6cf'); rect(g, hx + 5, hy + 4, 2, 2, '#efe6cf'); } else { rect(g, hx - 2, hy + 4, 10, 1, SK[0]); }
-  rect(g, hx + 5, hy + 1, 2, 4, '#efe6cf'); px(g, hx + 5, hy + 5, '#b8ac90');   /* the tusk */
+  rect(g, hx - 6, hy + 5, 13, 3, '#4a2a1a'); rect(g, hx - 5, hy + 7, 11, 1, '#2a1810');   /* (claude/kitchengate2) a black butcher's beard, no tusk */
   rect(g, hx + 6, hy - 1, 5, 4, SK[2]); rect(g, hx + 6, hy - 1, 5, 1, SK[3]);   /* the nose */
   /* the toque: a tall crooked cook's hat with a bloody smear */
   rect(g, hx - 7, hy - 14 + 1, 15, 8, OUT); rect(g, hx - 6, hy - 13 + 1, 13, 7, '#f0ece0'); rect(g, hx - 6, hy - 13 + 1, 3, 7, '#ffffff'); rect(g, hx + 4, hy - 13 + 1, 3, 7, '#c8c2b0');
@@ -365,4 +365,160 @@ export function drawAmbient(g, cx, cy, VW, VH, time, at, T) {
     }
   }
   g.restore();
+}
+
+/* ------------------------------------------------------------------ (claude/kitchengate2art) THE ATTENDANT, DRAWN: the thief's AI turned serving man - a plum livery coat frogged in gold with an epaulette, a white cravat and apron, white gloves, a bald pate with side-whiskers
+   and a waxed moustache, a round silver tray (his shield: raised, it is a bright disc before him that turns a blow from the front) and a plate to throw. Seven frames: idle, walk x2, aim (a plate
+   cocked over the shoulder), throw (arm out, the plate gone), guard (tray up), bash (the tray swung). 26 x 28, anchored at his feet, facing right. ------------------------------------------------------------------ */
+const AW = 26, AH = 28, AAX = 12, AAY = 27;
+function trayAt(g, x, y, up) {
+  if (up) { ellipse(g, x, y, 5, 9, OUT); ellipse(g, x, y, 4, 8, '#9aa0aa'); ellipse(g, x, y, 3, 7, '#c8ccd4'); rect(g, x - 2, y - 6, 1, 9, '#ffffff'); rect(g, x - 1, y - 7, 1, 2, '#ffffff'); rect(g, x + 2, y - 3, 1, 7, '#6a6e76'); ellipse(g, x, y, 1, 1, '#ffd36b'); }   /* a silver disc seen edge-on, a gilt boss */
+  else { ellipse(g, x, y, 6, 2, OUT); ellipse(g, x, y, 5, 1, '#9aa0aa'); rect(g, x - 4, y - 1, 8, 1, '#c8ccd4'); ellipse(g, x, y - 3, 3, 3, OUT); ellipse(g, x, y - 3, 2, 2, '#c8ccd4'); rect(g, x - 1, y - 4, 1, 2, '#ffffff'); rect(g, x, y - 7, 1, 1, '#ffd36b'); }   /* a carried tray with a cloche (a waiter, not a blade) */
+}
+function attendantFrame(pose) {
+  const [c, g] = canvas(AW, AH), x0 = AAX, y0 = AAY, walk = pose === 'walk0' ? 1 : pose === 'walk1' ? -1 : 0, lean = pose === 'throw' ? 2 : pose === 'aim' ? -1 : pose === 'bash' ? 2 : 0, bob = pose === 'walk0' || pose === 'walk1' ? 0 : 0;
+  const SKN = ['#3a2018', '#b07a5a', '#e0aa88'], LIV = ['#1e0c16', '#4a1a2e', '#6a2a3a', '#8e3c50'], GOLD = '#ffd36b', GOLD2 = '#b08a30';
+  for (const [dx, off] of [[-4, walk], [1, -walk]]) { rect(g, x0 + dx - 1 + off, y0 - 8, 5, 8, OUT); rect(g, x0 + dx + off, y0 - 7, 3, 4, '#2a2830'); rect(g, x0 + dx + off, y0 - 7, 1, 4, '#4a4a58'); rect(g, x0 + dx + off, y0 - 3, 3, 1, '#efe8da'); rect(g, x0 + dx - 1 + off, y0 - 2, 6, 2, '#0a0a0e'); rect(g, x0 + dx + off + 3, y0 - 2, 2, 1, '#2a2a34'); }   /* breeches, white stockings, buckled shoes */
+  const tx = x0 + lean, ty = y0 - 15 + bob;
+  rect(g, tx - 6, ty - 6, 13, 15, OUT); rect(g, tx - 5, ty - 5, 11, 13, LIV[2]); rect(g, tx - 5, ty - 5, 2, 13, LIV[3]); rect(g, tx + 4, ty - 5, 2, 13, LIV[1]); rect(g, tx - 5, ty + 6, 11, 2, LIV[1]);   /* the livery coat, skirted */
+  rect(g, tx - 5, ty - 5, 11, 1, GOLD); rect(g, tx - 5, ty + 7, 11, 1, GOLD2);
+  rect(g, tx - 3, ty - 1, 7, 10, OUT); rect(g, tx - 2, ty, 5, 9, '#efe8da'); rect(g, tx - 2, ty, 1, 9, '#ffffff'); rect(g, tx - 4, ty + 1, 9, 1, '#c8c0ae'); rect(g, tx - 1, ty + 4, 3, 2, '#d8d0be');   /* the apron, a pocket */
+  for (const yy of [-3, 0]) { rect(g, tx + 3, ty + yy, 1, 1, GOLD); rect(g, tx - 4, ty + yy, 1, 1, GOLD); }
+  rect(g, tx - 4, ty - 4, 3, 1, GOLD); rect(g, tx + 2, ty - 4, 3, 1, GOLD);   /* frogging */
+  rect(g, tx + 3, ty - 7, 4, 2, OUT); rect(g, tx + 3, ty - 6, 4, 1, GOLD); rect(g, tx + 6, ty - 5, 1, 2, GOLD2);   /* the epaulette's fringe */
+  const hx = x0 + lean + (pose === 'throw' ? 1 : 0), hy = y0 - 25 + bob;
+  rect(g, hx - 2, hy + 3, 5, 3, OUT); rect(g, hx - 1, hy + 4, 3, 2, '#efe8da'); px(g, hx, hy + 5, '#c82a2a');   /* the cravat */
+  ellipse(g, hx, hy, 4, 4, OUT); ellipse(g, hx, hy, 3, 3, SKN[2]); rect(g, hx - 3, hy + 1, 6, 2, SKN[1]); rect(g, hx + 1, hy - 1, 1, 1, '#1a1010'); rect(g, hx + 3, hy - 1, 1, 1, '#1a1010'); rect(g, hx - 1, hy - 2, 3, 1, '#6a4a3a');   /* the face, brows */
+  rect(g, hx + 1, hy + 1, 4, 1, '#2a1810'); px(g, hx + 5, hy, '#2a1810'); px(g, hx - 1, hy + 1, '#2a1810');   /* a waxed moustache, whisker */
+  rect(g, hx - 4, hy - 2, 2, 3, '#2a1810'); rect(g, hx - 4, hy - 4, 8, 2, OUT); rect(g, hx - 3, hy - 4, 6, 1, '#efe8da'); rect(g, hx - 2, hy - 5, 4, 1, OUT);   /* side hair; a bald pate with a little powder */
+  if (pose === 'aim' || pose === 'guard') rect(g, hx + 1, hy + 2, 3, 1, OUT);
+  const arm = (sx, sy, ex, ey) => { line(g, sx, sy, ex, ey, OUT, 4); line(g, sx, sy, ex, ey, LIV[2], 2); ellipse(g, ex, ey, 2, 2, OUT); rect(g, ex - 1, ey - 1, 2, 2, '#ffffff'); rect(g, ex, ey - 1, 1, 1, '#d8d0be'); };
+  const H = { idle: [tx + 6, ty + 2], walk0: [tx + 6, ty + 3], walk1: [tx + 6, ty + 1], aim: [tx - 4, ty - 10], throw: [tx + 10, ty - 4], guard: [tx + 8, ty - 2], bash: [tx + 10, ty + 1] }[pose];
+  const F = { idle: [tx - 5, ty + 3], walk0: [tx - 5, ty + 2], walk1: [tx - 5, ty + 4], aim: [tx - 5, ty + 2], throw: [tx - 5, ty + 1], guard: [tx + 7, ty + 2], bash: [tx - 5, ty + 2] }[pose];
+  arm(tx - 3, ty - 4, F[0], F[1]); arm(tx + 3, ty - 4, H[0], H[1]);
+  if (pose === 'guard' || pose === 'bash') trayAt(g, H[0] + 2, H[1], pose === 'guard'); else trayAt(g, F[0] - 1, F[1] - 2, false);
+  if (pose === 'aim') { ellipse(g, H[0], H[1] - 3, 5, 2, OUT); ellipse(g, H[0], H[1] - 3, 4, 1, '#e8e0d0'); rect(g, H[0] - 2, H[1] - 4, 3, 1, '#ffffff'); rect(g, H[0] - 1, H[1] - 6, 2, 2, '#7a4a22'); }   /* the plate cocked, a dab of gravy */
+  return c;
+}
+export function bakeAttendant() {
+  return once('attendant', () => { const names = ['idle', 'walk0', 'walk1', 'aim', 'throw', 'guard', 'bash']; const Rr = names.map(attendantFrame), white = Rr.map(c => whiten(c));
+    return { R: Rr, L: Rr.map(flipX), white: { R: white, L: white.map(flipX) }, ax: AAX, ay: AAY, w: AW, h: AH }; });
+}
+export const attendantFrameOf = e => { const m = e.mode; return m === 'aim' ? 3 : m === 'throw' ? 4 : m === 'guard' || m === 'bashTell' ? 5 : m === 'bash' ? 6 : (Math.abs(e.vx || 0) > 4 ? 1 + (Math.floor((e.anim || 0) * 7) % 2) : 0); };
+/* a thrown plate in the air (the attendant's): white china, a blue rim, a dab of gravy, turning */
+export function drawPlate(g, x, y, rot) { g.save(); g.translate(Math.round(x), Math.round(y)); g.rotate(rot); ellipse(g, 0, 0, 6, 3, OUT); ellipse(g, 0, 0, 5, 2, '#e8e0d0'); ellipse(g, 0, 0, 3, 1, '#ffffff'); rect(g, -5, 0, 10, 1, '#3a5a9a'); rect(g, -1, -1, 2, 1, '#7a4a22'); g.restore(); }
+
+/* ------------------------------------------------------------------ (claude/kitchengate2art) THE KITCHEN MECHANICS, DRAWN (the greybox hooks, same footprints) ------------------------------------------------------------------
+   drawLine(g, x0, x1, y, scroll, dir, counter, time)  a serving line: a tarred-canvas belt with wooden cleats over end rollers (counter=true: on a glazed-tile counter with iron legs); a steel side rail; gilt chevrons the way it runs
+   drawFlare(g, x0, x1, y, state, k, h, time)          a cast-iron griddle in the floor: grooved plate, vent slots, a red glow growing under it (the tell, k 0..1), then a sheet of flame h px tall
+   drawMeatRail(g, z, cx, cy, clock)                   a chain-driven meat-hook rail: a roller chain, trolleys with S-hooks, and a pig-side, a gammon or a sausage string on every few
+   drawProp(g, kind, x, y, time, seed)                 the kitchen's dressing (x = the prop's middle, y = the floor's top): oven, spices, flour, block, vent, basin, hatch, pans */
+const TILEC = ['#2a4a3c', '#3e6a56', '#5f927a'];
+export function drawLine(g, x0, x1, y, scroll, dir, counter, time) {
+  const w = x1 - x0;
+  if (counter) {
+    for (let x = x0 + 8; x < x1 - 4; x += 32) { rect(g, x - 1, y + 8, 6, 24, OUT); rect(g, x, y + 8, 4, 24, IRON[2]); rect(g, x, y + 8, 1, 24, IRON[4]); rect(g, x - 2, y + 30, 8, 3, OUT); rect(g, x - 1, y + 30, 6, 2, IRON[3]); }   /* legs on foot-plates */
+    rect(g, x0 - 2, y - 2, w + 4, 14, OUT); rect(g, x0, y + 3, w, 8, TILEC[1]); rect(g, x0, y + 3, w, 2, TILEC[2]); rect(g, x0, y + 10, w, 1, TILEC[0]);
+    for (let x = x0 + 8; x < x1; x += 8) rect(g, x, y + 5, 1, 5, TILEC[0]);   /* a glazed tile front */
+    rect(g, x0 - 2, y + 11, w + 4, 2, OUT); rect(g, x0 - 1, y + 11, w + 2, 1, IRON[4]);
+  } else { rect(g, x0, y + 1, w, 2, OUT); rect(g, x0 + 1, y + 2, w - 2, 1, IRON[2]); }   /* a steel bed-plate on the floor */
+  rect(g, x0, y - 4, w, 8, OUT); rect(g, x0 + 1, y - 3, w - 2, 6, '#2a1e18'); rect(g, x0 + 1, y - 3, w - 2, 1, '#4a382a');   /* the tarred belt */
+  const off = ((scroll % 14) + 14) % 14; for (let x = x0 + off - 14; x < x1 - 1; x += 14) { const a = Math.max(x0 + 1, x), b = Math.min(x1 - 1, x + 3); if (b > a) { rect(g, R(a), y - 3, R(b - a), 6, '#6a4a30'); rect(g, R(a), y - 3, R(b - a), 1, '#9a7448'); rect(g, R(a), y + 2, R(b - a), 1, '#3a2818'); } }   /* the cleats, running */
+  rect(g, x0, y - 5, w, 1, IRON[4]); rect(g, x0, y + 3, w, 1, IRON[1]);   /* the rails */
+  for (const [xx, s] of [[x0 + 4, 0], [x1 - 5, 1]]) { ellipse(g, xx, y, 4, 4, OUT); ellipse(g, xx, y, 3, 3, IRON[3]); ellipse(g, xx - 1, y - 1, 2, 1, IRON[5]); const a = scroll / 5 * dir; for (let q = 0; q < 3; q++) line(g, xx, y, R(xx + Math.cos(a + q * 2.09) * 3), R(y + Math.sin(a + q * 2.09) * 3), IRON[1], 1); }   /* end rollers, spoked, turning */
+  for (let x = x0 + 20; x < x1 - 16; x += 48) { const a = dir > 0 ? [[x, y - 1], [x + 6, y + 1], [x, y + 3]] : [[x + 6, y - 1], [x, y + 1], [x + 6, y + 3]]; fillPoly(g, a, 'rgba(255,211,107,0.8)'); }
+}
+export function drawFlare(g, x0, x1, y, state, k, h, time) {
+  const w = x1 - x0; rect(g, x0 - 1, y - 3, w + 2, 6, OUT); rect(g, x0, y - 2, w, 4, IRON[2]); rect(g, x0, y - 2, w, 1, IRON[4]); rect(g, x0, y + 1, w, 1, IRON[1]);   /* the plate, a rolled lip */
+  for (let x = x0 + 3; x < x1 - 3; x += 6) { rect(g, x, y - 1, 3, 2, IRON[0]); rect(g, x, y - 1, 3, 1, IRON[1]); }   /* grease grooves */
+  for (let x = x0 + 5; x < x1 - 4; x += 12) rect(g, x, y - 3, 1, 1, IRON[5]);   /* rivet heads */
+  rect(g, x0 - 2, y - 4, 2, 7, OUT); rect(g, x1, y - 4, 2, 7, OUT); rect(g, x0 - 1, y - 3, 1, 5, IRON[3]); rect(g, x1, y - 3, 1, 5, IRON[3]);   /* the end stops */
+  if (state === 'glow') { g.globalAlpha = 0.25 + 0.6 * k; for (let x = x0 + 3; x < x1 - 3; x += 6) rect(g, x, y - 1, 3, 2, '#ff4a1a'); g.globalAlpha = 0.15 * k; rect(g, x0, y - 12, w, 10, '#ff6a2a'); g.globalAlpha = 1;
+    if (k > 0.35) for (let x = x0 + 4 + (Math.floor(time * 10) % 3) * 3; x < x1 - 2; x += 9) rect(g, x, y - 5 - R(k * 4), 1, 2, '#ffd36b');
+    if (k > 0.7 && Math.floor(time * 16) % 2) rect(g, x0 + (R(time * 30) % Math.max(4, w - 4)), y - 6, 2, 1, '#fff6c8'); }
+  else if (state === 'flame') { const f = Math.min(1, k * 4, (1 - k) * 4 + 0.3); flame(g, x0, y - 1, w, h * f, time, x0 * 0.13);
+    g.globalAlpha = 0.5; for (let x = x0 + 3; x < x1 - 3; x += 6) rect(g, x, y - 1, 3, 2, '#ffd36b'); g.globalAlpha = 1; }
+}
+export function drawMeatRail(g, z, cx, cy, clock) {
+  const x0 = z.x0 - cx, y0 = z.y0 - cy, x1 = z.x1 - cx, y1 = z.y1 - cy, L = Math.hypot(x1 - x0, y1 - y0) || 1, ux = (x1 - x0) / L, uy = (y1 - y0) / L, dir = Math.sign(x1 - x0) === (z.dir || 1) ? 1 : -1;
+  const run = ((clock * 60 * dir) % 36 + 36) % 36;
+  for (let s = 0; s < L; s += 3) { const hx = R(x0 + ux * s), hy = R(y0 + uy * s) - 6; if (((s / 3 | 0) + (run / 3 | 0)) % 2) rect(g, hx, hy - 3, 2, 2, IRON[4]); else rect(g, hx, hy - 3, 2, 1, IRON[2]); }   /* the roller chain on the rail, links running */
+  for (let s = run; s < L; s += 36) {
+    const hx = R(x0 + ux * s), hy = R(y0 + uy * s) - 6, n = Math.round((s - run) / 36), sway = Math.sin(clock * 3 + n) * 0.8;
+    rect(g, hx - 3, hy - 5, 6, 4, OUT); rect(g, hx - 2, hy - 4, 4, 2, IRON[4]); rect(g, hx - 2, hy - 1, 1, 3, IRON[3]); rect(g, hx + 1, hy - 1, 1, 3, IRON[3]);   /* the trolley wheels */
+    rect(g, hx - 1, hy, 3, 6, OUT); rect(g, hx, hy + 1, 1, 5, IRON[4]); rect(g, hx - 3, hy + 5, 6, 2, OUT); rect(g, hx - 2, hy + 6, 4, 1, IRON[4]); px(g, hx - 3, hy + 7, OUT); px(g, hx - 2, hy + 8, OUT);   /* the S-hook */
+    const kind = n % 3, bx = R(hx + sway), by = hy + 8;
+    if (kind === 1) { ellipse(g, bx, by + 8, 5, 9, OUT); ellipse(g, bx, by + 8, 4, 8, '#c8806a'); ellipse(g, bx - 1, by + 6, 2, 6, '#e8a890'); rect(g, bx, by + 2, 1, 12, '#8a2a2a'); rect(g, bx - 3, by + 9, 6, 1, '#e8d8c0'); rect(g, bx - 1, by + 16, 3, 3, OUT); rect(g, bx, by + 17, 1, 1, '#c8806a'); }   /* a pig-side: pale flank, a red spine */
+    else if (kind === 2) { for (let i = 0; i < 4; i++) { ellipse(g, bx - 3 + (i & 1) * 6, by + 3 + i * 3, 3, 2, OUT); ellipse(g, bx - 3 + (i & 1) * 6, by + 3 + i * 3, 2, 1, i % 2 ? '#b8402a' : '#d85a3a'); } rect(g, bx - 4, by + 2, 1, 9, '#e8d8c0'); }   /* a string of sausages */
+    else { ellipse(g, bx, by + 6, 6, 7, OUT); ellipse(g, bx, by + 6, 5, 6, '#a0402a'); ellipse(g, bx - 1, by + 4, 3, 3, '#d87a5a'); rect(g, bx - 3, by + 11, 6, 2, '#e8d8c0'); rect(g, bx - 1, by + 1, 2, 2, '#e8d8c0'); }   /* a gammon */
+  }
+}
+export function drawProp(g, kind, x, y, time, seed) {
+  if (kind === 'oven') {   /* a brick bread oven: domed, an iron door ajar on the fire, a peel and a flue */
+    rect(g, x - 24, y - 4, 48, 4, OUT); rect(g, x - 23, y - 3, 46, 3, '#6a5a4c');
+    fillPoly(g, [[x - 23, y - 4], [x - 23, y - 26], [x - 15, y - 42], [x, y - 48], [x + 15, y - 42], [x + 23, y - 26], [x + 23, y - 4]], OUT);
+    fillPoly(g, [[x - 22, y - 4], [x - 22, y - 26], [x - 14, y - 41], [x, y - 47], [x + 14, y - 41], [x + 22, y - 26], [x + 22, y - 4]], '#8a4a3a');
+    for (let yy = y - 46; yy < y - 4; yy += 6) { const row = ((y - yy) / 6) | 0; rect(g, x - 22, yy, 44, 1, '#5a2e24'); for (let xx = x - 22 + (row & 1) * 5; xx < x + 22; xx += 10) rect(g, xx, yy, 1, 6, '#5a2e24'); }
+    rect(g, x - 22, y - 26, 3, 22, '#a86a52'); rect(g, x - 14, y - 41, 6, 2, '#a86a52');
+    ellipse(g, x, y - 16, 12, 11, OUT); rect(g, x - 12, y - 16, 24, 12, OUT); ellipse(g, x, y - 16, 10, 9, '#140a08'); rect(g, x - 10, y - 16, 20, 11, '#140a08');
+    const q = 0.65 + 0.35 * Math.sin(time * 6 + seed); ellipse(g, x, y - 7, 8, R(5 * q) + 1, '#c0401a'); ellipse(g, x - 1, y - 6, 5, R(3 * q) + 1, '#ff9a3c'); rect(g, x - 2, y - 6, 3, 1, '#ffe9a0');
+    g.globalAlpha = 0.16 + 0.06 * q; ellipse(g, x, y - 12, 26, 20, '#ff7a2a'); g.globalAlpha = 1;
+    rect(g, x + 4, y - 24, 8, 21, OUT); rect(g, x + 5, y - 23, 6, 19, IRON[2]); rect(g, x + 5, y - 23, 1, 19, IRON[4]); rect(g, x + 4, y - 17, 8, 2, OUT); rect(g, x + 5, y - 17, 6, 1, IRON[4]);   /* the iron door, swung open */
+    rect(g, x + 13, y - 64, 8, 18, OUT); rect(g, x + 14, y - 63, 6, 17, IRON[2]); rect(g, x + 14, y - 63, 1, 17, IRON[4]); rect(g, x + 12, y - 66, 10, 3, OUT); rect(g, x + 13, y - 65, 8, 1, IRON[4]);   /* the flue pipe */
+    for (let i = 0; i < 3; i++) { const t = (time * 0.5 + i / 3) % 1; g.globalAlpha = 0.45 * (1 - t); ellipse(g, R(x + 17 + Math.sin(time * 2 + i) * 3), R(y - 70 - t * 28), 3 + t * 4, 2 + t * 3, '#9a948c'); g.globalAlpha = 1; }
+    rect(g, x - 30, y - 32, 2, 32, OUT); rect(g, x - 29, y - 32, 1, 32, WOOD[3]); rect(g, x - 33, y - 36, 8, 5, OUT); rect(g, x - 32, y - 35, 6, 3, WOOD[4]);   /* the baker's peel leaning on it */
+    return; }
+  if (kind === 'spices') {   /* a wall rack: two shelves of glass jars with labels, a garlic braid and dried herbs hanging */
+    rect(g, x - 20, y - 36, 2, 36, OUT); rect(g, x + 18, y - 36, 2, 36, OUT); rect(g, x - 19, y - 36, 1, 36, WOOD[3]); rect(g, x + 18, y - 36, 1, 36, WOOD[3]);
+    const COL = ['#c0302a', '#d8a020', '#5a8a2a', '#a05a2a', '#e8d8b0', '#6a3a7a'];
+    for (const yy of [y - 32, y - 18]) { rect(g, x - 20, yy, 40, 4, OUT); rect(g, x - 19, yy, 38, 3, WOOD[3]); rect(g, x - 19, yy, 38, 1, WOOD[4]);
+      for (let i = 0; i < 5; i++) { const c = COL[(i + seed + (yy === y - 18 ? 2 : 0)) % 6], jx = x - 18 + i * 7; rect(g, jx, yy - 11, 6, 11, OUT); rect(g, jx + 1, yy - 10, 4, 9, 'rgba(200,230,240,0.35)'); rect(g, jx + 1, yy - 7, 4, 6, c); rect(g, jx + 1, yy - 7, 1, 6, '#ffffff'); rect(g, jx + 1, yy - 12, 4, 2, OUT); rect(g, jx + 2, yy - 11, 2, 1, '#b8a070'); rect(g, jx + 2, yy - 4, 2, 2, '#efe8d8'); } }
+    rect(g, x - 2, y - 56, 1, 20, OUT); for (let i = 0; i < 5; i++) { ellipse(g, x - 2 + (i & 1) * 2, y - 52 + i * 3, 3, 2, OUT); ellipse(g, x - 2 + (i & 1) * 2, y - 52 + i * 3, 2, 1, '#efe8d8'); }   /* a garlic braid over the rack */
+    for (const hx of [x - 14, x + 12]) { rect(g, hx, y - 48, 1, 12, OUT); for (let i = 0; i < 4; i++) rect(g, hx - 2 + (i & 1) * 3, y - 46 + i * 3, 2, 3, i % 2 ? '#5a8a2a' : '#7aa03a'); }   /* herbs hung to dry */
+    return; }
+  if (kind === 'flour') {   /* three stitched flour sacks with a tied neck, a dusting spilled on the floor and a scoop */
+    ellipse(g, x + 1, y - 1, 18, 2, 'rgba(240,235,220,0.55)');
+    for (const [dx, dy, r] of [[-9, -8, 8], [8, -7, 7], [-1, -20, 7]]) { ellipse(g, x + dx, y + dy, r + 1, r + 1, OUT); ellipse(g, x + dx, y + dy, r, r, '#e0d4b4'); ellipse(g, x + dx - 2, y + dy - 2, R(r * 0.45), R(r * 0.35), '#ffffff'); ellipse(g, x + dx + 2, y + dy + 3, R(r * 0.6), 2, '#b8aa88');
+      rect(g, x + dx - 3, y + dy - r - 1, 6, 3, OUT); rect(g, x + dx - 2, y + dy - r, 4, 2, '#c8b890'); rect(g, x + dx - 3, y + dy - r + 2, 6, 1, '#7a4a2a'); rect(g, x + dx - 1, y + dy - 1, 3, 2, '#9a8a6a'); rect(g, x + dx - 1, y + dy - 2, 3, 1, '#c82a2a'); }   /* tied neck, a stamp */
+    rect(g, x + 15, y - 6, 6, 2, OUT); rect(g, x + 16, y - 5, 4, 1, WOOD[4]); rect(g, x + 20, y - 8, 4, 4, OUT); rect(g, x + 21, y - 7, 2, 2, IRON[4]);
+    return; }
+  if (kind === 'block') {   /* a butcher's block: end-grain top, a cleaver stuck in it, a knife roll, a bloody apron over the edge */
+    rect(g, x - 14, y - 20, 28, 20, OUT); rect(g, x - 13, y - 19, 26, 19, WOOD[2]); rect(g, x - 13, y - 19, 26, 5, WOOD[4]); rect(g, x - 13, y - 14, 26, 1, WOOD[1]);
+    for (const xx of [x - 11, x - 6, x + 6, x + 11]) rect(g, xx, y - 12, 1, 12, WOOD[1]);
+    for (let i = 0; i < 5; i++) rect(g, x - 12 + i * 5, y - 18, 3, 1, WOOD[3]);
+    rect(g, x - 15, y - 12, 30, 2, OUT); rect(g, x - 14, y - 11, 28, 1, IRON[3]);   /* the iron hoop */
+    rect(g, x - 9, y - 34, 11, 13, OUT); rect(g, x - 8, y - 33, 9, 11, IRON[4]); rect(g, x - 8, y - 33, 9, 1, IRON[5]); rect(g, x - 8, y - 23, 9, 1, IRON[2]); rect(g, x - 5, y - 32, 2, 2, IRON[1]); rect(g, x + 1, y - 22, 3, 8, OUT); rect(g, x + 2, y - 22, 1, 7, WOOD[3]);   /* the cleaver */
+    rect(g, x + 5, y - 22, 6, 4, '#8a1a1a'); rect(g, x + 6, y - 22, 3, 2, '#c02a2a'); rect(g, x + 10, y - 16, 4, 9, '#9a1a1a'); rect(g, x + 11, y - 7, 2, 2, '#9a1a1a');   /* blood, a drip */
+    rect(g, x + 13, y - 9, 8, 9, OUT); rect(g, x + 14, y - 8, 6, 8, '#d8d0be'); rect(g, x + 14, y - 8, 6, 2, '#efe8da'); rect(g, x + 15, y - 5, 4, 2, '#a02a2a');   /* a rolled apron on the floor */
+    return; }
+  if (kind === 'vent') {   /* an iron floor grate over a steam pipe: slotted, the pipe's flange, steam rolling up */
+    rect(g, x - 12, y - 5, 24, 5, OUT); rect(g, x - 11, y - 4, 22, 4, IRON[2]); rect(g, x - 11, y - 4, 22, 1, IRON[4]); for (let xx = x - 9; xx < x + 9; xx += 3) rect(g, xx, y - 3, 2, 3, IRON[0]);
+    rect(g, x - 13, y - 6, 3, 2, IRON[4]); rect(g, x + 10, y - 6, 3, 2, IRON[4]); rect(g, x - 1, y - 7, 2, 2, IRON[5]);
+    for (let i = 0; i < 4; i++) { const t = (time * 0.6 + i / 4 + seed * 0.1) % 1; g.globalAlpha = 0.5 * (1 - t); ellipse(g, R(x + Math.sin(time * 2 + i) * 4), R(y - 8 - t * 42), 4 + t * 7, 3 + t * 5, '#ececec'); g.globalAlpha = 1; }
+    return; }
+  if (kind === 'basin') {   /* a stone scullery sink: a copper tap, a rack of plates, a scrubbing brush, a wooden drainer */
+    rect(g, x - 17, y - 16, 34, 16, OUT); rect(g, x - 16, y - 15, 32, 15, '#8a8a92'); rect(g, x - 16, y - 15, 32, 2, '#b0b0b8'); rect(g, x - 16, y - 4, 32, 4, '#6a6a72');
+    rect(g, x - 14, y - 15, 20, 5, '#3a5a6a'); rect(g, x - 13, y - 14, 8, 1, '#8ab8c8'); rect(g, x - 5, y - 13, 1, 1, '#c8e8f0');   /* the water */
+    rect(g, x + 7, y - 15, 9, 3, OUT); rect(g, x + 8, y - 14, 7, 2, WOOD[3]); for (let i = 0; i < 3; i++) rect(g, x + 8 + i * 2, y - 14, 1, 2, WOOD[1]);   /* the drainer */
+    rect(g, x - 9, y - 30, 4, 16, OUT); rect(g, x - 8, y - 29, 2, 15, COP[2]); rect(g, x - 8, y - 29, 1, 15, COP[3]); rect(g, x - 12, y - 31, 11, 4, OUT); rect(g, x - 11, y - 30, 9, 2, COP[2]); rect(g, x - 12, y - 28, 3, 3, OUT); rect(g, x - 11, y - 27, 1, 1, '#8ab8c8');   /* the tap, a drip */
+    for (let i = 0; i < 4; i++) { ellipse(g, x + 9, y - 17 - i * 2, 6, 2, OUT); ellipse(g, x + 9, y - 17 - i * 2, 5, 1, '#e8e0d0'); }   /* the plate stack */
+    rect(g, x + 14, y - 22, 4, 2, OUT); rect(g, x + 15, y - 21, 2, 1, '#d8a04a'); rect(g, x - 18, y - 6, 2, 6, IRON[3]); rect(g, x + 16, y - 6, 2, 6, IRON[3]);
+    return; }
+  if (kind === 'hatch') {   /* a serving hatch in the wall: a shutter half up, warm light and steam inside, a counter, a brass service bell */
+    rect(g, x - 20, y - 60, 40, 36, OUT); rect(g, x - 19, y - 59, 38, 34, '#6a5a4c'); for (let yy = y - 58; yy < y - 26; yy += 6) rect(g, x - 19, yy, 38, 1, '#3a2c24');
+    rect(g, x - 15, y - 55, 30, 28, OUT); rect(g, x - 14, y - 54, 28, 26, '#1a0e0a'); g.globalAlpha = 0.3 + 0.1 * Math.sin(time * 3 + seed); rect(g, x - 14, y - 46, 28, 18, '#ff9a3c'); g.globalAlpha = 1;
+    rect(g, x - 14, y - 54, 28, 8, OUT); for (let xx = x - 14; xx < x + 14; xx += 3) rect(g, xx, y - 53, 2, 6, xx % 2 ? '#3a2c24' : '#2a2018'); rect(g, x - 14, y - 46, 28, 1, IRON[4]);   /* the shutter, half down */
+    rect(g, x - 22, y - 28, 44, 5, OUT); rect(g, x - 21, y - 27, 42, 4, WOOD[3]); rect(g, x - 21, y - 27, 42, 1, WOOD[4]);
+    rect(g, x - 18, y - 23, 3, 23, OUT); rect(g, x + 15, y - 23, 3, 23, OUT); rect(g, x - 17, y - 23, 1, 23, WOOD[2]); rect(g, x + 16, y - 23, 1, 23, WOOD[2]);
+    ellipse(g, x + 10, y - 31, 5, 3, OUT); ellipse(g, x + 10, y - 31, 4, 2, COP[3]); rect(g, x + 9, y - 36, 2, 3, OUT); rect(g, x + 9, y - 35, 2, 1, COP[3]);   /* the bell */
+    ellipse(g, x - 6, y - 31, 6, 2, OUT); ellipse(g, x - 6, y - 31, 5, 1, '#e8e0d0'); ellipse(g, x - 6, y - 33, 4, 2, '#a8501e');
+    for (let i = 0; i < 2; i++) { const t = (time * 0.5 + i / 2) % 1; g.globalAlpha = 0.45 * (1 - t); ellipse(g, R(x - 4 + i * 8), R(y - 56 - t * 14), 3 + t * 3, 2 + t * 2, '#e8e8e8'); g.globalAlpha = 1; }
+    return; }
+  if (kind === 'pans') {   /* a ceiling pot-rack: an iron bar on chains, copper pans, a skillet and a ladle swinging gently */
+    rect(g, x - 20, y, 40, 3, OUT); rect(g, x - 19, y, 38, 2, IRON[3]); rect(g, x - 19, y, 38, 1, IRON[4]); rect(g, x - 18, y - 8, 1, 8, OUT); rect(g, x + 17, y - 8, 1, 8, OUT);
+    for (let i = 0; i < 4; i++) { const px2 = x - 15 + i * 10, sw = Math.sin(time * 1.5 + i + seed) * 1.2, big = i % 2, d = 5 - big, cy = y + 14 + big * 1;
+      rect(g, px2, y + 2, 1, 6, IRON[4]); rect(g, R(px2 + sw) - 1, y + 7, 3, 3, OUT); rect(g, R(px2 + sw), y + 8, 1, 1, i % 2 ? COP[3] : IRON[4]);
+      ellipse(g, R(px2 + sw), cy, d, d, OUT); ellipse(g, R(px2 + sw), cy, d - 1, d - 1, big ? COP[2] : IRON[2]); ellipse(g, R(px2 + sw) - 1, cy - 1, 1, 1, big ? '#ffd0a0' : IRON[5]); rect(g, R(px2 + sw) - 3, cy + d - 2, 6, 1, big ? COP[1] : IRON[1]); }
+    rect(g, x + 14, y + 3, 1, 12, OUT); ellipse(g, x + 14, y + 17, 3, 2, OUT); ellipse(g, x + 14, y + 17, 2, 1, IRON[4]);   /* a ladle */
+    return; }
 }

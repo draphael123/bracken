@@ -10287,23 +10287,23 @@
   }
  },
  "kitchengate": {
-  "hash": "271f666dee38",
+  "hash": "e19d2ea38c1a",
   "boss": {
    "boss": "grubbag",
    "wins": 0,
    "fights": 6,
    "byHero": {
     "knight": [
-     "dead:100/81",
-     "dead:100/97"
+     "timeout:97/87",
+     "timeout:81/86"
     ],
     "warden": [
-     "dead:100/100",
-     "dead:100/100"
+     "timeout:57/100",
+     "timeout:76/100"
     ],
     "pyro": [
-     "dead:100/96",
-     "dead:100/95"
+     "timeout:48/95",
+     "timeout:30/94"
     ]
    },
    "rows": [
@@ -10311,38 +10311,38 @@
      "hero": "knight",
      "seed": 1,
      "tag": "expected",
-     "out": "dead",
-     "secs": 41.7,
-     "hpLostPct": 100,
-     "bossLeftPct": 81,
-     "landed": 45,
-     "swings": 1247,
-     "reprisalPct": 45,
+     "out": "timeout",
+     "secs": 150,
+     "hpLostPct": 97,
+     "bossLeftPct": 87,
+     "landed": 227,
+     "swings": 5362,
+     "reprisalPct": 0,
      "chip": []
     },
     {
      "hero": "knight",
      "seed": 2,
      "tag": "expected",
-     "out": "dead",
-     "secs": 38.9,
-     "hpLostPct": 100,
-     "bossLeftPct": 97,
-     "landed": 40,
-     "swings": 1181,
-     "reprisalPct": 16,
+     "out": "timeout",
+     "secs": 150,
+     "hpLostPct": 81,
+     "bossLeftPct": 86,
+     "landed": 234,
+     "swings": 5376,
+     "reprisalPct": 0,
      "chip": []
     },
     {
      "hero": "warden",
      "seed": 1,
      "tag": "expected",
-     "out": "dead",
-     "secs": 20.9,
-     "hpLostPct": 100,
+     "out": "timeout",
+     "secs": 150,
+     "hpLostPct": 57,
      "bossLeftPct": 100,
-     "landed": 2,
-     "swings": 594,
+     "landed": 92,
+     "swings": 5463,
      "reprisalPct": 0,
      "chip": []
     },
@@ -10350,12 +10350,12 @@
      "hero": "warden",
      "seed": 2,
      "tag": "expected",
-     "out": "dead",
-     "secs": 32.2,
-     "hpLostPct": 100,
+     "out": "timeout",
+     "secs": 150,
+     "hpLostPct": 76,
      "bossLeftPct": 100,
-     "landed": 7,
-     "swings": 1022,
+     "landed": 92,
+     "swings": 5495,
      "reprisalPct": 0,
      "chip": []
     },
@@ -10363,38 +10363,44 @@
      "hero": "pyro",
      "seed": 1,
      "tag": "expected",
-     "out": "dead",
-     "secs": 33,
-     "hpLostPct": 100,
-     "bossLeftPct": 96,
-     "landed": 37,
-     "swings": 1034,
-     "reprisalPct": 34,
-     "chip": []
-    },
-    {
-     "hero": "pyro",
-     "seed": 2,
-     "tag": "expected",
-     "out": "dead",
-     "secs": 37.3,
-     "hpLostPct": 100,
+     "out": "timeout",
+     "secs": 150,
+     "hpLostPct": 48,
      "bossLeftPct": 95,
-     "landed": 33,
-     "swings": 1194,
+     "landed": 98,
+     "swings": 5485,
+     "reprisalPct": 0,
+     "chip": []
+    },
+    {
+     "hero": "pyro",
+     "seed": 2,
+     "tag": "expected",
+     "out": "timeout",
+     "secs": 150,
+     "hpLostPct": 30,
+     "bossLeftPct": 94,
+     "landed": 101,
+     "swings": 5460,
      "reprisalPct": 0,
      "chip": []
     }
+   ]
+  },
+  "carried": {
+   "from": "271f666dee38",
+   "parts": [
+    "boss"
    ]
   },
   "level": {
    "knight": {
     "deaths": 2,
     "minHpPct": 0,
-    "hpLostPct": 242,
+    "hpLostPct": 205,
     "hits": 14,
     "walked": 100,
-    "lifts": 28,
+    "lifts": 27,
     "held": 0,
     "duels": 0,
     "boardLifts": 6,
@@ -10404,17 +10410,17 @@
      "mover": 6
     },
     "machines": true,
-    "frames": 10036,
-    "kills": 5,
-    "heroLevel": 19
+    "frames": 10026,
+    "kills": 9,
+    "heroLevel": 20
    },
    "warden": {
     "deaths": 3,
     "minHpPct": 0,
-    "hpLostPct": 300,
-    "hits": 15,
+    "hpLostPct": 310,
+    "hits": 21,
     "walked": 100,
-    "lifts": 29,
+    "lifts": 30,
     "held": 0,
     "duels": 0,
     "boardLifts": 7,
@@ -10424,17 +10430,17 @@
      "mover": 7
     },
     "machines": true,
-    "frames": 11251,
-    "kills": 8,
-    "heroLevel": 19
+    "frames": 11187,
+    "kills": 14,
+    "heroLevel": 20
    },
    "pyro": {
     "deaths": 2,
     "minHpPct": 0,
-    "hpLostPct": 262,
+    "hpLostPct": 263,
     "hits": 15,
     "walked": 100,
-    "lifts": 30,
+    "lifts": 27,
     "held": 0,
     "duels": 0,
     "boardLifts": 5,
@@ -10444,9 +10450,9 @@
      "mover": 5
     },
     "machines": true,
-    "frames": 10386,
+    "frames": 10002,
     "kills": 6,
-    "heroLevel": 19
+    "heroLevel": 20
    }
   }
  },
