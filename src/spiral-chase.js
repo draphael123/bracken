@@ -47,7 +47,7 @@
 // THE CHASE IS THE FIGHT'S TEACHER: a death mark stepped out of FINDS NO ONE and he flinches, open, for a breath - which is his whole
 // fight's opening, shown once on foot before the carpet. Here it is only shown: he is out of reach, and a blow that reaches him does
 // nothing (main.js hurtEnemy0). At the top he goes through the door ahead of you, and the carpet is left lying in front of it.
-import { MAGE, RING_COL } from './undead-mage.js';
+import { MAGE, RING_COL, reflectable, blowMeets, sendHome, homeStep } from './undead-mage.js';
 import { drawDesertOval } from './sanctum.js';
 
 /* THE STAIR TOWER, in tiles. Interior columns x0..x1, open rows top..floor-1 (floor: set from the flights below); the level's grid is W wide
@@ -133,6 +133,12 @@ export const CHASE = {
   settle: 0.35, pairFrom: 2, pairFan: 0.22,
   flinch: 1.2,    /* s he hangs open when his mark finds no one: the fight's opening, shown */
   range: 330,     /* px: he casts at you from no further */
+  /* THROW IT BACK ON THE CLIMB (claude/ft4a, Daniel 10-29 #6, brief-fallingtower4-1029.md #5): his fight's own rule on his stair - any blow that meets a
+     returnable shot (the gold orbit: fire, ice) strikes it back (undead-mage.js blowMeets/sendHome/homeStep, the fight's code). Home, it STUNS him:
+     no damage (his fight's 60-70% tuning is untouched), he REELS off his perch (reelDrop px) for reel s - perfect s on a PERFECT PARRY (a guard
+     raised on the beat, main.js parried()) - and casts nothing. One stun a flight (his 'turn' of the stair); after it his told ward holds ward s
+     (a shot struck home then rings off) and he ANSWERS with his mark, or a PAIR of fire and frost where the flight has no mark. */
+  reel: 5.0, perfect: 7.0, reelDrop: 32, ward: 3.5,
   get markR() { return MAGE.markR; }, get markFuse() { return MAGE.markFuse; },   /* (read late: undead-mage.js and this file can load in either order) */
 };
 /* BUILD IT into the tower's grid. `k` is tower-ascent.js's toolkit: rect, ledge, ent, crumbles (the failing stone list), interiors. */
@@ -153,14 +159,23 @@ export function buildSpiral(k, T) {
   ent('ringdoor', S.arrive, S.floor - 1, { id: 'spiral-foot' });
   ent('check', S.check, S.floor - 1);
   ent('sign', S.x0 + 1, S.floor - 1, { text: 'HIS DARK RISES UNDER YOU FROM HERE: KEEP CLIMBING, AND DO NOT WAIT ON A LANDING.' });
+  ent('sign', S.x0 + 9, S.floor - 1, { text: 'STRIKE HIS FIRE BACK AND HE REELS: NO SPELLS FOR A WHILE. ONCE A FLIGHT.' });   /* (claude/ft4a) THE THROW-BACK, taught where it is safe: the floor, before the dark is near */
   /* THE NEW FLIGHTS ARE SIGNED where they begin, on the landing under them, by its wall (claude/archmage2b): the verb, not the trick */
   FLIGHTS.forEach((F, k) => { const say = F.orrery ? 'THE ORRERY TURNS. NO STAIR CROSSES HERE: ITS WORLDS DO.' : F.pend ? 'THE CLOCK\'S WEIGHTS SWING OVER THE GAPS: LET ONE SWING BACK OVER YOU, AND GO AS IT TURNS.' : F.frost ? 'HIS FROST FREEZES THE STEPS IT FALLS ON: THEY ARE SLICK FOR A FEW BEATS.' : F.books ? 'HIS BOOKS FLY DOWN THIS STAIR AT YOU: GUARD THEM, OR JUMP THEM.' : null;
     if (!say || !k) return; const [lx, ll, lr] = FLIGHTS[k - 1].land; ent('sign', F.dir > 0 ? lx + 1 : lx + ll - 2, lr - 1, { text: say });   /* (a tile in from the wall: a sign against it runs into the stone) */ });
   ent('magechase', FLIGHTS[0].land[0] + 2, FLIGHTS[0].land[2] - CHASE.up, { face: -1 });
   return { ...S, flights: FLIGHTS.map(F => ({ ...F })), carpet: { ...TOP } };
 }
-const TELL = { fire: 'fireTell', ice: 'iceTell', mark: 'markTell' };
-const SAY = { fireTell: 'FIRE: GUARD IT', iceTell: 'FROST: GUARD IT', markTell: 'THE DEATH MARK: STEP OUT OF THE RING', frostTell: 'FROST: IT FREEZES THE STEPS' };
+const TELL = { fire: 'fireTell', ice: 'iceTell', mark: 'markTell', pair: 'pairTell' };
+const SAY = { fireTell: 'FIRE: STRIKE IT BACK, OR GUARD IT', iceTell: 'FROST: STRIKE A LANCE BACK, OR GUARD IT', markTell: 'THE DEATH MARK: STEP OUT OF THE RING', frostTell: 'FROST: IT FREEZES THE STEPS', pairTell: 'HE ANSWERS: FIRE AND FROST' };
+/* A SHOT STRUCK HOME (claude/ft4a): HE REELS - or, his ward up, or once already this flight, it rings off him */
+function struckHome(e, q, c) {
+  const k = nextOf(e);
+  if (e.mode === 'reel' || e.stunWard > 0 || e.stunFlight === k || e.mode === 'fly' || e.mode === 'enter') { e.wardHitT = 0.45; e.wardHitX = q.x; e.wardHitY = q.y; c.sound('aegis'); c.say(e.stunFlight === k && !(e.stunWard > 0) ? 'ONCE A FLIGHT: IT RINGS OFF HIM' : 'HIS WARD TURNS IT', false); return; }
+  const T = q.perfect ? CHASE.perfect : CHASE.reel;
+  e.mode = 'reel'; e.modeT = T; e.reelT0 = T; e.reelY = e.y + CHASE.reelDrop; e.stunFlight = k; e.deathMark = null; e.spell = null; e.stuns = (e.stuns || 0) + 1;
+  c.say(q.perfect ? 'A PERFECT RETURN: HE REELS LONG' : 'HIS OWN SPELL: HE REELS', true); c.sound('crack'); c.sound('sting');
+  if (c.reel) c.reel(e, T); }
 
 /* WHERE HE WAITS for flight k: over its landing, CHASE.up rows up, at the landing's wall end. Past the last flight: the door. */
 export function perchOf(k) {
@@ -188,9 +203,17 @@ export function updateMageChase(e, dt, c) {
   e.anim = (e.anim || 0) + dt; e.modeT = (e.modeT || 0) - dt; e.shots ??= []; e.clouds ??= []; e.rings ??= []; e.flashT = Math.max(0, (e.flashT || 0) - dt);
   const py = P.y - 8;
   // ---- what he has thrown: it flies on whatever he is doing, and the stone stops it ----
-  for (const q of e.shots) { q.t -= dt; q.x += q.vx * dt; q.y += q.vy * dt;
+  e.stunWard = Math.max(0, (e.stunWard || 0) - dt);
+  const blow = c.strike && !P.dead ? c.strike() : null;
+  for (const q of e.shots) { q.t -= dt;
+    /* STRUCK BACK (claude/ft4a): it flies home - through the stair's own stone, it is his - and STUNS him (or rings off his ward) */
+    if (q.reflected) { if (homeStep(q, e, dt)) { q.t = 0; q.gone = true; struckHome(e, q, c); } continue; }
+    if (reflectable(q) && blowMeets(q, blow)) { sendHome(q, e); q.t = 4; c.say('STRUCK BACK', false); c.sound('crack'); e.returned = (e.returned || 0) + 1; continue; }
+    q.x += q.vx * dt; q.y += q.vy * dt;
     if (c.solid && c.solid(q.x, q.y)) { q.t = 0; q.gone = true; continue; }
-    if (!q.hit && !P.dead && Math.abs(P.x - q.x) < q.r + 6 && Math.abs(py - q.y) < q.r + 9) { c.hit(q.x, q.y, q.dmg, false, q.kind); q.hit = true; q.t = 0; } }
+    if (!q.hit && !P.dead && Math.abs(P.x - q.x) < q.r + 6 && Math.abs(py - q.y) < q.r + 9) { const r = c.hit(q.x, q.y, q.dmg, false, q.kind);
+      if (reflectable(q) && c.parried && c.parried(r)) { sendHome(q, e); q.perfect = true; q.t = 4; c.say('PARRIED BACK', true); c.sound('crack'); e.returned = (e.returned || 0) + 1; continue; }   /* A PERFECT PARRY sends it home too - and pays the long stun */
+      q.hit = true; q.t = 0; } }
   e.shots = e.shots.filter(q => q.t > 0);
   // ---- THE DEATH MARK, where you stood ----
   if (e.deathMark) { const m = e.deathMark; m.t -= dt;
@@ -207,6 +230,10 @@ export function updateMageChase(e, dt, c) {
   if (e.mode === 'wake') { if (e.modeT <= 0) { e.mode = 'wait'; e.modeT = CHASE.settle; } return; }
   if (e.mode === 'gather') { e.y += Math.sin(e.anim * 2) * 4 * dt; if (e.modeT <= 0) { e.mode = 'wait'; e.modeT = CHASE.settle; } return; }
   if (e.mode === 'enter') { if (e.modeT <= 0) e.alive = false; return; }
+  /* HE REELS (claude/ft4a): off his perch, smoking, casting nothing - and then the ward, and his answer */
+  if (e.mode === 'reel') { e.y += (e.reelY - e.y) * Math.min(1, dt * 6) + Math.sin(e.anim * 9) * 0.3; e.face = Math.sign(P.x - e.x) || e.face;
+    if (e.modeT <= 0) { e.mode = 'wait'; e.modeT = CHASE.settle; e.stunWard = CHASE.ward; e.answer = true; e.wardHitT = 0.45; e.wardHitX = e.x; e.wardHitY = e.y - 26; c.say('HE RECOVERS: HIS WARD HOLDS', true); c.sound('aegis'); if (c.reelEnd) c.reelEnd(e); }
+    return; }
   /* YOU REACHED HIS LANDING: whatever he was doing, he goes on up (a tell half cast is dropped - he runs, he does not stand and trade) */
   if (e.mode !== 'fly' && e.mode !== 'markWait' && Math.hypot(want.x - e.x, want.y - e.y) > 4) e.mode = 'fly';
   if (e.mode === 'fly') {
@@ -223,8 +250,9 @@ export function updateMageChase(e, dt, c) {
     if (e.modeT > 0 || P.dead) return;
     /* NEVER FROM OFF THE SCREEN, NEVER FROM ACROSS THE TOWER: he casts only when you can see him and he is in range of you */
     if (!c.onScreen(e.x, e.y - 46, 28) || !c.onScreen(e.x, e.y, 28) || !c.onScreen(P.x, P.y - 8, 0) || Math.hypot(P.x - e.x, P.y - e.y) > CHASE.range) return;
-    const list = FLIGHTS[Math.min(FLIGHTS.length - 1, next)].spells, spell = list[(e.turn = (e.turn ?? -1) + 1) % list.length];
-    e.spell = spell; e.mode = TELL[spell]; e.modeT = MAGE.tell[spell]; c.say(SAY[spell === 'ice' && FLIGHTS[Math.min(FLIGHTS.length - 1, next)].frost ? 'frostTell' : e.mode], spell === 'mark'); return; }
+    const list = FLIGHTS[Math.min(FLIGHTS.length - 1, next)].spells;
+    let spell; if (e.answer) { e.answer = false; spell = list.includes('mark') ? 'mark' : 'pair'; } else spell = list[(e.turn = (e.turn ?? -1) + 1) % list.length];   /* (claude/ft4a) after a stun HE ANSWERS: his mark, or fire and frost together */
+    e.spell = spell; e.mode = TELL[spell]; e.modeT = MAGE.tell[spell === 'pair' ? 'fire' : spell]; c.say(SAY[spell === 'ice' && FLIGHTS[Math.min(FLIGHTS.length - 1, next)].frost ? 'frostTell' : e.mode], spell === 'mark' || spell === 'pair'); return; }
   if (e.modeT > 0) { e.face = Math.sign(P.x - e.x) || e.face; return; }
   // ---- the spell goes ----
   const hx = e.x + e.face * MAGE.staff.dx, hy = e.y - MAGE.staff.dy, aim = Math.atan2(py - hy, P.x - hx);   /* (archmage3: from the head of his staff) */
@@ -233,6 +261,7 @@ export function updateMageChase(e, dt, c) {
   else if (e.spell === 'ice') { for (let i = -2; i <= 2; i++) shot(aim + i * 0.3, 120, 4, MAGE.dmg.ice, 'ice', '#9be2ff'); c.sound('hiss');
     /* THE ICE STAIR (claude/archmage2b): his frost FREEZES the step you stand on and the next one up - slick for FROST.secs */
     if (FLIGHTS[Math.min(FLIGHTS.length - 1, next)].frost && c.freeze) for (const q of frostSteps(P, Math.min(FLIGHTS.length - 1, next))) c.freeze(q[0], q[0] + q[1] - 1, q[2], FROST.secs); }
+  else if (e.spell === 'pair') { shot(aim, MAGE.boltV, 5, MAGE.dmg.fire, 'fire', '#ff9b49'); for (const s of [-0.42, 0.42]) shot(aim + s, 120, 4, MAGE.dmg.ice, 'ice', '#9be2ff'); c.sound('mageBolt'); c.sound('hiss'); }   /* (claude/ft4a) HIS ANSWER: a firebolt at you and two lances either side of it */
   else if (e.spell === 'mark') { e.deathMark = { x: P.x, y: py, r: CHASE.markR, t: CHASE.markFuse, T: CHASE.markFuse }; e.mode = 'markWait'; e.modeT = 99; c.sound('crack'); return; }
   e.mode = 'wait'; e.modeT = CHASE.gap;
 }
@@ -299,6 +328,15 @@ function orreryTick(H, F, c) {
 }
 /* THE ORRERY, DRAWN (world space, behind its worlds): for each wheel its hub on a bracket, a brass arm to every world, and its ORBIT - a faint ring
    with chevrons running round it the way it turns (the rotation is TOLD: you see which way a world will carry you before you take it) */
+/* HE REELS (claude/ft4a): a gold ring round him and its countdown arc running out, smoke off him; his ward after it a pale shell (greybox - art lane) */
+export function drawReel(g, e, cx, cy, time) {
+  if (!e || !e.alive) return; const x = Math.round(e.x - cx), y = Math.round(e.y - 26 - cy);
+  if (e.mode === 'reel') { const k = Math.max(0, Math.min(1, e.modeT / (e.reelT0 || CHASE.reel)));
+    g.strokeStyle = 'rgba(255,211,107,0.35)'; g.lineWidth = 3; g.beginPath(); g.arc(x, y, 24, 0, Math.PI * 2); g.stroke();
+    g.strokeStyle = '#ffd36b'; g.lineWidth = 2; g.beginPath(); g.arc(x, y, 24, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * k); g.stroke(); g.lineWidth = 1;
+    for (let i = 0; i < 3; i++) { const t = (time * 0.9 + i / 3) % 1; g.fillStyle = 'rgba(120,116,140,' + (0.5 * (1 - t)).toFixed(2) + ')'; g.fillRect(x - 6 + i * 5 + Math.round(Math.sin(time * 3 + i) * 2), y - 18 - Math.round(t * 22), 3, 3); } }
+  else if (e.stunWard > 0) { g.strokeStyle = 'rgba(188,232,250,' + (0.25 + 0.2 * Math.abs(Math.sin(time * 6))).toFixed(2) + ')'; g.lineWidth = 1; g.beginPath(); g.arc(x, y, 20, 0, Math.PI * 2); g.stroke(); }
+}
 export function drawOrrery(g, movers, cx, cy, VW, VH, time, hub) {
   const seen = new Set();
   for (const m of movers) { if (!m.orrery || seen.has(m.px + ',' + m.py)) continue; seen.add(m.px + ',' + m.py);

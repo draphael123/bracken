@@ -213,6 +213,35 @@ const FS = FLIGHTS.findIndex(F => F.name === 'THE FAILING STAIR');
   for (let i = 0; i < 600 && !s.e.deathMark; i++) updateMageChase(s.e, 1 / 60, s.c); stand(s.P, ...ON(FS, 3)); s.run(CHASE.markFuse + 0.1);
   assert.ok(!s.hits.some(h => h.blow === 'mark'), 'stepped out of, the mark still lands'); assert.equal(s.e.mode, 'gather', 'the mark that finds no one does not open him (the fight\'s opening, shown)'); }
 { const r = rig(); stand(r.P, ...ON(0)); r.run(0.1); r.e.shots.push({ x: (S.x1 + 0.5) * TS, y: 115 * TS, vx: 150, vy: 0, r: 5, dmg: 14, kind: 'fire', t: 4 }); r.run(0.2); assert.ok(!r.e.shots.some(q => q.x > (S.x1 + 1) * TS), 'a bolt flies on through the stone wall'); }
+/* FALLING TOWER 4 (claude/ft4a, Daniel 10-29 #6): THROW IT BACK ON THE CLIMB - his fight's strike-back rule on his stair (undead-mage.js blowMeets/sendHome/homeStep,
+   shared): a blow that meets his fire strikes it home; home, HE REELS for CHASE.reel s (no damage: he has none to take), off his perch, casting nothing; a PERFECT
+   PARRY sends it home too and pays CHASE.perfect s; one stun a flight; after it his ward holds CHASE.ward s and he ANSWERS (his mark, or fire and frost) */
+{ const UM = await import('../src/undead-mage.js'); assert.ok(UM.blowMeets && UM.sendHome && UM.homeStep, 'the strike-back rule is not one shared helper');
+  const src = readFileSync(new URL('../src/undead-mage.js', import.meta.url), 'utf8'), sp = readFileSync(new URL('../src/spiral-chase.js', import.meta.url), 'utf8');
+  assert.ok(src.includes('blowMeets(q, b)) { sendHome(q, e)') && src.includes('homeStep(q, e, dt)') && sp.includes('blowMeets(q, blow)') && sp.includes('homeStep(q, e, dt)'), 'the fight and the stair do not share the strike-back rule');
+  assert.ok(CHASE.reel === 5 && CHASE.perfect === 7 && CHASE.ward >= 3, 'the stun is not 5 s (7 s on a perfect parry) with a ward after it');
+  const live = o => { const r = rig(o); let blow = null, parry = false; r.c.strike = () => blow; r.c.parried = res => parry && res === 'blocked'; r.c.hit = (x, y, d, hard, b) => { r.hits.push({ d, hard, blow: b }); return parry ? 'blocked' : 'hit'; };
+    const reels = []; r.c.reel = (m, T) => reels.push(T); stand(r.P, ...ON(0)); return { ...r, reels, setBlow: b => { blow = b; }, setParry: v => { parry = v; } }; };
+  /* struck back: he reels 5 s, nothing cast, no damage taken by anyone */
+  { const r = live(); r.run(4, () => {}); let q = null; for (let i = 0; i < 600 && !q; i++) { updateMageChase(r.e, 1 / 60, r.c); q = r.e.shots.find(s => UM.reflectable(s)); }
+    assert.ok(q && q.kind === 'fire', 'the first flight casts no fire to strike back');
+    r.setBlow({ l: q.x - 12, r: q.x + 12, t: q.y - 12, b: q.y + 12 }); updateMageChase(r.e, 1 / 60, r.c); r.setBlow(null); assert.ok(q.reflected, 'a blow that meets his fire on the stair does not strike it back');
+    let reeled = false; for (let i = 0; i < 400 && !reeled; i++) { updateMageChase(r.e, 1 / 60, r.c); reeled = r.e.mode === 'reel'; }
+    assert.ok(reeled && r.reels[0] === CHASE.reel && r.e.modeT > CHASE.reel - 0.5, 'his fire struck home does not stun him for ' + CHASE.reel + ' s: ' + [r.e.mode, r.reels]);
+    const y0 = r.e.y, n0 = r.e.shots.filter(s => !s.reflected).length, tells = []; r.run(CHASE.reel - 0.3, () => { if (/Tell$/.test(r.e.mode)) tells.push(r.e.mode); });
+    assert.ok(!tells.length && r.e.shots.filter(s => !s.reflected).length <= n0, 'he casts while he reels: ' + tells); assert.ok(r.e.y > y0 - 1 && r.e.mode === 'reel', 'he is not knocked off his perch while he reels');
+    r.run(0.6); assert.ok(r.e.mode !== 'reel' && r.e.stunWard > 0, 'the stun does not end in his told ward');
+    /* one stun a flight: the next one rings off */
+    let q2 = null; for (let i = 0; i < 900 && !q2; i++) { updateMageChase(r.e, 1 / 60, r.c); q2 = r.e.shots.find(s => UM.reflectable(s)); }
+    assert.ok(q2, 'after the stun he never casts again on the flight'); r.e.stunWard = 0; r.setBlow({ l: q2.x - 12, r: q2.x + 12, t: q2.y - 12, b: q2.y + 12 }); updateMageChase(r.e, 1 / 60, r.c); r.setBlow(null);
+    r.run(3); assert.ok(r.reels.length === 1 && r.e.mode !== 'reel', 'two stuns on one flight: ' + r.reels); }
+  /* a perfect parry: home, and the long stun */
+  { const r = live(); r.setParry(true); let reeled = false; for (let i = 0; i < 60 * 12 && !reeled; i++) { updateMageChase(r.e, 1 / 60, r.c); reeled = r.e.mode === 'reel'; }
+    assert.ok(reeled && r.reels[0] === CHASE.perfect, 'a perfect parry of his fire does not send it home for the long stun: ' + r.reels); }
+  /* the answer: on a flight with his mark, his mark; on one without, fire and frost together */
+  { const r = live(); r.e.answer = true; r.run(6, () => {}); assert.ok(r.e.shots.some(s => s.kind === 'ice') || r.hits.some(h => h.blow === 'ice'), 'after a stun on the first flight he does not answer with fire and frost'); }
+  /* the stair says so where it starts */
+  assert.ok(L.ents.some(e => e.t === 'sign' && /STRIKE HIS FIRE BACK/.test(e.text) && e.y === S.floor - 1), 'the first flight does not sign the throw-back'); }
 { const r = rig(); stand(r.P, TOP.check, TOP.row + 1); r.run(0.1); assert.ok(!r.e.alive, 'a retry at the top finds him still on the stair: he is through his door');
   const q = rig(); stand(q.P, FLIGHTS[FLIGHTS.length - 2].land[0] + 1, FLIGHTS[FLIGHTS.length - 2].land[2]); q.run(0.1); stand(q.P, TOP.check + 2, TOP.row + 1); q.run(4); assert.ok(!q.e.alive, 'you reach the top and he does not go through his door'); }
 assert.ok(CHASE.gap <= 0.6 && CHASE.settle <= 0.35 && CHASE.pairFrom <= 2, 'his spells are no closer together than they were (gap ' + CHASE.gap + ', settle ' + CHASE.settle + ')');
@@ -318,6 +347,7 @@ assert.ok(CHASE.gap <= 0.6 && CHASE.settle <= 0.35 && CHASE.pairFrom <= 2, 'his 
     s.armed = true; hb = { l: s.x - 8, r: s.x + 8, t: s.y - 20, b: s.y }; SU.supportsUpdate(L3, P, 1 / 60, c); assert.equal(s.st, 'tell', 'struck once he is through, the pillar does not give');
     hb = null; for (let i = 0; i < 60 * 1.3; i++) SU.supportsUpdate(L3, P, 1 / 60, c); assert.ok(s.st === 'down' && set.some(([x, y, t]) => y === roomOf(s.room).floor && t === T.AIR), 'the pillar does not take its floor with it'); } }
 // ---- PAGE ----
+if (process.env.TOWER_CHASE_NODE) { console.log('tower-chase: node part OK (TOWER_CHASE_NODE: page part skipped)'); process.exit(0); }
 const HEROES = ['knight', 'warden', 'pyro', 'paladin', 'pirate', 'reaper', 'geomancer'];
 const pg = await openPage({ audio: false, fonts: false }); let r;
 try {

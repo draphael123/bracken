@@ -88,13 +88,13 @@ export function chaseStep(sp, st, hero, dt, ground = true) {
     if (ahead(hero, sp.trigger) >= 0 && ahead(hero, sp.end) < 0) { Object.assign(st, newChase(), { phase: 'run', pos: sp.from, speed: sp.curve[0].speed }); st.warned[0] = true; ev.push({ k: 'start' }); }
     else return ev;
   }
-  st.t += dt; st.warnT = Math.max(0, st.warnT - dt);
+  st.t += dt; st.warnT = Math.max(0, st.warnT - dt); st.noSurge = Math.max(0, (st.noSurge || 0) - dt);   /* (claude/ft4a) noSurge: its next surge is HELD (not told, not come) - the Archmage reels on his stair */
   if (st.phase === 'done') {   // the crash: it runs on to the safe line and stops there
     st.crash += dt; if (ahead(st.pos, sp.end) < 0) { st.pos += d * st.speed * dt; if (ahead(st.pos, sp.end) >= 0) { st.pos = sp.end; st.speed = 0; ev.push({ k: 'crash' }); } } return ev; }
   // THE WARNING, then the speed-up it told
   let tgt = sp.curve[0].speed;
   for (let i = 1; i < sp.curve.length; i++) { const r = sp.curve[i];
-    if (!st.warned[i] && r.at - st.dist <= sp.lead * Math.max(st.speed, 30)) { st.warned[i] = true; st.warnT = 2.2; st.warnText = r.warn || 'IT QUICKENS'; ev.push({ k: 'warn', i, text: st.warnText, dist: st.dist, at: r.at }); }
+    if (!st.warned[i] && !(st.noSurge > 0) && r.at - st.dist <= sp.lead * Math.max(st.speed, 30)) { st.warned[i] = true; st.warnT = 2.2; st.warnText = r.warn || 'IT QUICKENS'; ev.push({ k: 'warn', i, text: st.warnText, dist: st.dist, at: r.at }); }
     if (st.warned[i] && st.dist >= r.at) tgt = r.speed; }
   if (tgt > st.speed + 0.01 && !(st.rose === tgt)) { st.rose = tgt; ev.push({ k: 'speedup', speed: tgt, dist: st.dist }); }
   if (st.speed < tgt) st.speed = Math.min(tgt, st.speed + sp.accel * dt); else if (st.speed > tgt) st.speed = Math.max(tgt, st.speed - sp.accel * dt);
