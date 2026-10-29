@@ -1,0 +1,167 @@
+{
+  "time": "2026-10-29T22:09:11.630Z",
+  "manifestSha256": "5fd9ed1d4cafd5ea59f67788721e177e14446402a2666ff13578b5d26bbdd0b3",
+  "helperSha256": "248d18e74b5d38322faad4eb3be15662d3475262090a4365107b13005a16a54d",
+  "component": {
+    "time": "2026-10-29T22:05:29.143Z",
+    "run": 40962256744,
+    "controller": "429c3c861f4594427d6263765d8100473fffd927",
+    "complete": true,
+    "qualifiedForGameIntegration": true,
+    "adopted": false,
+    "notGameMemoryCampaignLayoutOr40FpsProof": true,
+    "rawReceipt": "work\\pending-tile-selective-cloud-429c3c86\\pending-tile-selective-component\\receipt.json",
+    "rawSha256": "8bfeb65af8ee558a7426ac6221342472a8f57dae9cd6dfd313d46766a6b770ab",
+    "processes": {
+      "launches": 1,
+      "closures": 1,
+      "allClosed": true,
+      "profileAbsences": [
+        {
+          "profile": "/tmp/bracken-look-8wFXoe",
+          "absent": true
+        }
+      ],
+      "interruptions": [],
+      "maxRendererMb": 1064,
+      "events": [
+        {
+          "type": "launch",
+          "pid": 2526,
+          "profile": "/tmp/bracken-look-8wFXoe",
+          "time": 1793311238314
+        },
+        {
+          "type": "native-lab-collection",
+          "time": 1793311293920,
+          "requests": 0,
+          "completed": 0,
+          "failed": 0,
+          "postEvaluations": 2
+        },
+        {
+          "type": "closed",
+          "pid": 2526,
+          "profile": "/tmp/bracken-look-8wFXoe",
+          "time": 1793311294039,
+          "peak": {
+            "totalMb": 2395,
+            "rendererMb": 1064
+          },
+          "reason": null
+        }
+      ]
+    },
+    "sourceExact": true,
+    "originalGuardsAndNativeGcVerified": true,
+    "closed": true,
+    "arrayWriteControl": {
+      "priorHelperSha256": "72af32eedb3c2e3c2d64d9eea7d650fa1d16ca69bc621d032637869fb9b6164f",
+      "replaysBefore": 0,
+      "replaysAfter": 1,
+      "pendingAfter": false,
+      "sourceDerivedCauseObserved": true
+    },
+    "allOriginal99CasesPreserved": true,
+    "allOriginal109CasesPreserved": true,
+    "nativePolicyAndMainFallbackPrerequisitesVerified": true,
+    "legacyNegativeControls": [
+      {
+        "label": "Rejected71 captured method lookup",
+        "different": 768,
+        "originalCalls": 0,
+        "legacyCalls": 1,
+        "rejectedHelperSha256": "71cad61cf13117a8e6c9431e40527c41545100682ed18b9f64f1a927a6ed469b"
+      },
+      {
+        "label": "Rejected71 native destination queued source",
+        "different": 1024,
+        "rejectedHelperSha256": "71cad61cf13117a8e6c9431e40527c41545100682ed18b9f64f1a927a6ed469b"
+      }
+    ],
+    "allOriginal80CasesAndOriginalFamilyFixturesPreserved": true,
+    "status": "PASS isolated native safety/compatibility core only; source-specific main integration/loader and original proofs still required",
+    "familyCases": 4928,
+    "publicCases": 672,
+    "coreCases": 114,
+    "functionMetadata": [
+      {
+        "file": "src/redraw/buried_city_tiles.js",
+        "name": "bcTile",
+        "lengthExact": true,
+        "nameExact": true,
+        "prototypePresenceExact": true
+      },
+      {
+        "file": "src/redraw/skyroad_tiles.js",
+        "name": "skyTile",
+        "lengthExact": true,
+        "nameExact": true,
+        "prototypePresenceExact": true
+      },
+      {
+        "file": "src/redraw/rootway_tiles.js",
+        "name": "timberTile",
+        "lengthExact": true,
+        "nameExact": true,
+        "prototypePresenceExact": true
+      },
+      {
+        "file": "src/redraw/rootway_tiles.js",
+        "name": "springCap",
+        "lengthExact": true,
+        "nameExact": true,
+        "prototypePresenceExact": true
+      },
+      {
+        "file": "src/redraw/rootway_tiles.js",
+        "name": "rootTile",
+        "lengthExact": true,
+        "nameExact": true,
+        "prototypePresenceExact": true
+      },
+      {
+        "file": "src/redraw/sealed_pyramid_tiles.js",
+        "name": "spTile",
+        "lengthExact": true,
+        "nameExact": true,
+        "prototypePresenceExact": true
+      }
+    ],
+    "pendingObserved": 3817,
+    "rng": 0,
+    "stats": {
+      "created": 3862,
+      "replayed": 3850,
+      "exposed": 3768,
+      "recordedCommands": 547463,
+      "boundFlushes": 75,
+      "sourceFlushes": 5,
+      "nativeFallbacks": 26332,
+      "probes": 0,
+      "entryChecks": 3864,
+      "methodChecks": 295336,
+      "propertyChecks": 294441,
+      "arrayWrites": 12,
+      "arrayFastWrites": 4,
+      "arrayFallbackWrites": 8,
+      "maxCommandsPerCanvas": 512,
+      "maxSnapshotBytesPerCanvas": 65536
+    }
+  },
+  "componentCloud": {
+    "workflow": "load-perf-proof.yml",
+    "mode": "pending-tile-selective-component-oct29",
+    "status": "completed",
+    "outerTimeoutMinutes": 15,
+    "evaluationDeadlineMs": 240000,
+    "audited": true,
+    "controller": "429c3c861f4594427d6263765d8100473fffd927",
+    "directory": "work/pending-tile-selective-cloud-429c3c86",
+    "run": 40962256744,
+    "url": "https://github.com/draphael123/bracken/actions/runs/40962256744",
+    "createdAt": "2026-10-29T21:59:07Z",
+    "conclusion": "success"
+  },
+  "scope": "Same original19level/342readback/228pair controls; native fallback for unprotected arrays. No original assertion or limit changes."
+}
