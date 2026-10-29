@@ -104,7 +104,7 @@ try {
       return out; })()`, 60000);
   const shown = i => r.cards[i];
   ok(shown(7).includes('???') && !shown(7).includes('PIRATE') && shown(7).some(s => /BUY IN THE STORE - 10 SILVER/.test(s)), '3: a locked card says ??? and the how-to line: ' + shown(7).join(' | '));
-  ok(shown(4).includes('???') && !shown(4).includes('BERSERKER') && shown(4).some(s => /BUY IN THE STORE - 10 SILVER/.test(s)), '3: (claude/ranger) the berserker is no longer free: his card is locked and says BUY IN THE STORE - 10 SILVER: ' + shown(4).join(' | '));
+  ok(shown(4).includes('???') && !shown(4).includes('BERSERKER') && shown(4).some(s => /BEAT HIM AT THE WAR CAIRN, THEN BUY: 10 SILVER/.test(s)), '3: (claude/ranger) the berserker is no longer free: his card is locked and says BEAT HIM AT THE WAR CAIRN, THEN BUY: 10 SILVER (WARCAIRN_SHIPS, batch129): ' + shown(4).join(' | '));
   ok(shown(8).includes('???') && shown(8).some(s => /FOUND ON A HIDDEN PATH/.test(s)) && !shown(8).some(s => /UNBURIED/.test(s)), '3: (claude/secrets) the Death Knight card is locked, says FOUND ON A HIDDEN PATH and names no place before the secret is found: ' + shown(8).join(' | '));
   ok(shown(0).includes('KNIGHT') && shown(3).includes('RANGER') && shown(5).includes('PYRO') && shown(6).includes('PALADIN'), '3: open heroes are named: ' + shown(0).join(' | '));
   ok(shown(0).filter(s => s === '???').length === 3, '3: exactly the three locked cards are ??? (berserker, pirate, reaper): ' + shown(0).join(' | '));
