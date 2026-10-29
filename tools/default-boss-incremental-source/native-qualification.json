@@ -1,0 +1,306 @@
+{
+  "time": "2026-10-29T14:08:24.901Z",
+  "status": "PASS six strict native graphs under default/changed live gear and changed public pose mappings; eager fallback and unsafe live-context mutant checks PASS. No whole-source gain/adoption/layout/FPS proof.",
+  "receipt": "outputs/receipts/default-boss-context-native-oct29.json",
+  "sourceReview": "outputs/receipts/default-boss-context-source-review-oct29.json",
+  "manifest": "work/default-boss-context-oct29/manifest.json",
+  "manifestSha256": "6c8311c7b02caf3710ef98fdb56a9bd1c097a69e6184cb2936bd6937d5d5adc8",
+  "workflowController": "79c211c985abdddad7ee9ee7935ae0d1814192bf",
+  "cloud": {
+    "mode": "default-boss-native-oct29",
+    "controller": "79c211c985abdddad7ee9ee7935ae0d1814192bf",
+    "status": "completed",
+    "directory": "work/default-boss-native-cloud-79c211c9",
+    "outerTimeoutMinutes": 15,
+    "run": 40887824755,
+    "url": "https://github.com/draphael123/bracken/actions/runs/40887824755",
+    "audited": true,
+    "conclusion": "success"
+  },
+  "qualifiedModulesOnly": "CanonicalDC and62 chars/px/paladin-boss/unburied-foes/paladin-boss-art bytes verified equal; no whole-Game source backfill.",
+  "expected": {
+    "nativeGraphCases": 6,
+    "contracts": 2,
+    "globalRngCalls": 0,
+    "viewport": [
+      915,
+      412
+    ],
+    "DPR": 2.625,
+    "cpu": 4,
+    "rendererMb": 1536,
+    "admissionMb": 4352,
+    "evaluationDeadlineMs": 240000
+  },
+  "assertions": "Reuse original strict native comparator byte-for-byte: every pixel,context,metadata,descriptor,alias and fresh reachable object; exact temporary canvas trace; preserve all8live private context bindings under gear4/weapon changes, captured public pose mappings and original ownership. Unsupported mappings retain original eager fallback. Unsafe live-context mutant must fail the same comparator.",
+  "noLiveMutableHeroDeferral": true,
+  "noOldPaladinReuseRetiming": true,
+  "noLocalGameFactoryOrBrowserExecution": true,
+  "noSourceAdoptionOrSpeedOrLayoutOrFpsClaim": true,
+  "allThreeMismatchesRetained": true,
+  "prelaunchPreparationErrors": [
+    {
+      "kind": "Text generator regex/newline escaping",
+      "stage": "Acorn/static parsing before any native browser or verdict",
+      "recovery": "Use absolute HTTP import rewriting and character-code newline splitting; static sources parse and imports resolve before dispatch"
+    }
+  ],
+  "artifactsCollectedOnce": true,
+  "rows": [
+    {
+      "name": "blood",
+      "mode": "default",
+      "allPixelsContextsMetadataDescriptorsAliasesAndFreshOutputsExact": true,
+      "liveEightContextBindingsUnchanged": true,
+      "publicPoseSnapshotRetained": false,
+      "originalCreatedCanvases": 1425,
+      "candidateCreatedCanvases": 1425,
+      "outerLevelOwned": 2,
+      "canvases": 168,
+      "pixels": 348544
+    },
+    {
+      "name": "blood",
+      "mode": "changed-live-context",
+      "allPixelsContextsMetadataDescriptorsAliasesAndFreshOutputsExact": true,
+      "liveEightContextBindingsUnchanged": true,
+      "publicPoseSnapshotRetained": false,
+      "originalCreatedCanvases": 1425,
+      "candidateCreatedCanvases": 1425,
+      "outerLevelOwned": 2,
+      "canvases": 168,
+      "pixels": 348544
+    },
+    {
+      "name": "blood",
+      "mode": "changed-live-context-and-pose-data",
+      "allPixelsContextsMetadataDescriptorsAliasesAndFreshOutputsExact": true,
+      "liveEightContextBindingsUnchanged": true,
+      "publicPoseSnapshotRetained": true,
+      "originalCreatedCanvases": 1425,
+      "candidateCreatedCanvases": 1425,
+      "outerLevelOwned": 2,
+      "canvases": 168,
+      "pixels": 348544
+    },
+    {
+      "name": "paladin",
+      "mode": "default",
+      "allPixelsContextsMetadataDescriptorsAliasesAndFreshOutputsExact": true,
+      "liveEightContextBindingsUnchanged": true,
+      "publicPoseSnapshotRetained": false,
+      "originalCreatedCanvases": 1271,
+      "candidateCreatedCanvases": 1271,
+      "outerLevelOwned": 2,
+      "canvases": 148,
+      "pixels": 303744
+    },
+    {
+      "name": "paladin",
+      "mode": "changed-live-context",
+      "allPixelsContextsMetadataDescriptorsAliasesAndFreshOutputsExact": true,
+      "liveEightContextBindingsUnchanged": true,
+      "publicPoseSnapshotRetained": false,
+      "originalCreatedCanvases": 1271,
+      "candidateCreatedCanvases": 1271,
+      "outerLevelOwned": 2,
+      "canvases": 148,
+      "pixels": 303744
+    },
+    {
+      "name": "paladin",
+      "mode": "changed-live-context-and-pose-data",
+      "allPixelsContextsMetadataDescriptorsAliasesAndFreshOutputsExact": true,
+      "liveEightContextBindingsUnchanged": true,
+      "publicPoseSnapshotRetained": true,
+      "originalCreatedCanvases": 1271,
+      "candidateCreatedCanvases": 1271,
+      "outerLevelOwned": 2,
+      "canvases": 148,
+      "pixels": 303744
+    }
+  ],
+  "contracts": [
+    {
+      "case": "public pose accessor selects original eager fallback",
+      "getterReadsDuringSnapshot": 0,
+      "exact": true
+    },
+    {
+      "case": "unsafe live-context mutant rejected by unchanged native comparison",
+      "rejected": true
+    }
+  ],
+  "globalRngCalls": 0,
+  "processes": {
+    "launches": 1,
+    "closures": 1,
+    "rawInterruptions": [],
+    "profiles": [
+      {
+        "profile": "/tmp/bracken-look-WFg26D",
+        "absent": true
+      }
+    ],
+    "events": [
+      {
+        "type": "launch",
+        "pid": 2377,
+        "profile": "/tmp/bracken-look-WFg26D",
+        "time": 1793282698883
+      },
+      {
+        "type": "browser-stderr",
+        "pid": 2377,
+        "profile": "/tmp/bracken-look-WFg26D",
+        "time": 1793282699455,
+        "text": "[2377:2402:1029/140459.454439:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are \"tcp\" and on UNIX \"unix\")\n"
+      },
+      {
+        "type": "browser-stderr",
+        "pid": 2377,
+        "profile": "/tmp/bracken-look-WFg26D",
+        "time": 1793282699456,
+        "text": "[2377:2402:1029/140459.456377:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are \"tcp\" and on UNIX \"unix\")\n[2377:2402:1029/140459.456402:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are \"tcp\" and on UNIX \"unix\")\n"
+      },
+      {
+        "type": "browser-stderr",
+        "pid": 2377,
+        "profile": "/tmp/bracken-look-WFg26D",
+        "time": 1793282699470,
+        "text": "[2377:2402:1029/140459.469820:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are \"tcp\" and on UNIX \"unix\")\n"
+      },
+      {
+        "type": "browser-stderr",
+        "pid": 2377,
+        "profile": "/tmp/bracken-look-WFg26D",
+        "time": 1793282699523,
+        "text": "[2377:2402:1029/140459.523603:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are \"tcp\" and on UNIX \"unix\")\n"
+      },
+      {
+        "type": "browser-stderr",
+        "pid": 2377,
+        "profile": "/tmp/bracken-look-WFg26D",
+        "time": 1793282699606,
+        "text": "\nDevTools listening on ws://127.0.0.1:40763/devtools/browser/80047af2-02f8-49db-a0f2-9adac027eff8\n"
+      },
+      {
+        "type": "browser-stderr",
+        "pid": 2377,
+        "profile": "/tmp/bracken-look-WFg26D",
+        "time": 1793282699798,
+        "text": "[2377:2377:1029/140459.797825:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: \n"
+      },
+      {
+        "type": "browser-stderr",
+        "pid": 2377,
+        "profile": "/tmp/bracken-look-WFg26D",
+        "time": 1793282699798,
+        "text": "[2377:2402:1029/140459.797905:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are \"tcp\" and on UNIX \"unix\")\n[2377:2377:1029/140459.797939:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: \n[2377:2402:1029/140459.797974:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are \"tcp\" and on UNIX \"unix\")\n[2377:2377:1029/140459.798059:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: \n"
+      },
+      {
+        "type": "browser-stderr",
+        "pid": 2377,
+        "profile": "/tmp/bracken-look-WFg26D",
+        "time": 1793282699802,
+        "text": "[2377:2377:1029/140459.801885:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: \n"
+      },
+      {
+        "type": "browser-stderr",
+        "pid": 2377,
+        "profile": "/tmp/bracken-look-WFg26D",
+        "time": 1793282699803,
+        "text": "[2377:2402:1029/140459.803240:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are \"tcp\" and on UNIX \"unix\")\n"
+      },
+      {
+        "type": "browser-stderr",
+        "pid": 2377,
+        "profile": "/tmp/bracken-look-WFg26D",
+        "time": 1793282699845,
+        "text": "[2377:2377:1029/140459.844336:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: \n"
+      },
+      {
+        "type": "browser-stderr",
+        "pid": 2377,
+        "profile": "/tmp/bracken-look-WFg26D",
+        "time": 1793282699845,
+        "text": "[2377:2377:1029/140459.845631:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: \n[2377:2402:1029/140459.845683:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are \"tcp\" and on UNIX \"unix\")\n"
+      },
+      {
+        "type": "browser-stderr",
+        "pid": 2377,
+        "profile": "/tmp/bracken-look-WFg26D",
+        "time": 1793282699851,
+        "text": "[2377:2377:1029/140459.851028:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: \n"
+      },
+      {
+        "type": "browser-stderr",
+        "pid": 2377,
+        "profile": "/tmp/bracken-look-WFg26D",
+        "time": 1793282699902,
+        "text": "[2377:2377:1029/140459.901685:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.Properties.GetAll: object_path= /org/freedesktop/UPower/devices/DisplayDevice: org.freedesktop.DBus.Error.ServiceUnknown: The name org.freedesktop.UPower was not provided by any .service files\n"
+      },
+      {
+        "type": "browser-stderr",
+        "pid": 2377,
+        "profile": "/tmp/bracken-look-WFg26D",
+        "time": 1793282699903,
+        "text": "[2377:2377:1029/140459.902634:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: \n[2377:2402:1029/140459.902732:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are \"tcp\" and on UNIX \"unix\")\n"
+      },
+      {
+        "type": "browser-stderr",
+        "pid": 2377,
+        "profile": "/tmp/bracken-look-WFg26D",
+        "time": 1793282699936,
+        "text": "[2377:2377:1029/140459.936469:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: \n"
+      },
+      {
+        "type": "browser-stderr",
+        "pid": 2377,
+        "profile": "/tmp/bracken-look-WFg26D",
+        "time": 1793282699937,
+        "text": "[2377:2402:1029/140459.937539:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are \"tcp\" and on UNIX \"unix\")\n"
+      },
+      {
+        "type": "browser-stderr",
+        "pid": 2377,
+        "profile": "/tmp/bracken-look-WFg26D",
+        "time": 1793282699982,
+        "text": "[2377:2377:1029/140459.981598:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: \n"
+      },
+      {
+        "type": "browser-stderr",
+        "pid": 2377,
+        "profile": "/tmp/bracken-look-WFg26D",
+        "time": 1793282712211,
+        "text": "Created TensorFlow Lite XNNPACK delegate for CPU.\n"
+      },
+      {
+        "type": "closed",
+        "pid": 2377,
+        "profile": "/tmp/bracken-look-WFg26D",
+        "time": 1793282763857,
+        "peak": {
+          "totalMb": 2454,
+          "rendererMb": 1098
+        },
+        "reason": null
+      }
+    ]
+  },
+  "admission": {
+    "available": 14762,
+    "required": 4352,
+    "waited": false
+  },
+  "sourceFiles": [
+    {
+      "file": "src/startup-boss-private-chars.js",
+      "sha256": "0e8cbbd94900e4cc0884cd6daa943f81d54510fb52a4b0dad5999e4c9cff4585"
+    },
+    {
+      "file": "src/startup-boss-art.js",
+      "sha256": "5c00f2f42d307130e046fc87c68a4641b5e27d7eec3bc77d17523e59505026d3"
+    }
+  ]
+}
