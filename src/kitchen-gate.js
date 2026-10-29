@@ -202,7 +202,10 @@ export function buildKitchenGate({ painter, T, TS }) {
      drop into the larder pit - a floor, and the salting racks back up to the lip */
   const t2 = hookRail(a + 15, 16, a + 28, 18); hookRail(a + 3, 13, a + 14, 15, { hop: [a + 10.6, a + 13.2], hand: t2 });
   sign(a + 3, 13, 'JUMP OFF IN THE RED STRETCH AND CATCH THE NEXT HOOK. A FALL HERE IS ONLY A CLIMB.');
-  shelf(a + 4, a + 6, 20); shelf(a + 4, a + 6, 17); racks.push([a + 4, a + 6, 20], [a + 4, a + 6, 17]);   /* the salting racks: the way back up from the pit */
+  shelf(a + 5, a + 7, 20); shelf(a + 5, a + 7, 17); racks.push([a + 5, a + 7, 20], [a + 5, a + 7, 17]);   /* the salting racks: the way back up from the pit */
+  /* the larder's shelving (a second height; none of it a way past a rail): a spice shelf over the lip, a salting rack in the pit (it reaches the first rail again - a retry, not a way round), a salt-box
+     shelf over the first landing, a ham shelf over the attendant's ledge */
+  for (const [x0, x1, y] of [[a + 0, a + 3, 10], [a + 8, a + 11, 19], [a + 26, a + 29, 16], [a + 30, a + 33, 13], [a + 69, a + 72, 12]]) { shelf(x0, x1, y); racks.push([x0, x1, y]); ent('coin', Math.round((x0 + x1) / 2), y - 1); }
   deco(a + 9, 22, 'barrel'); deco(a + 12, 22, 'barrel', 1); deco(a + 20, 22, 'barrel'); coins([a + 14, 22], [a + 17, 22], [a + 8, 12], [a + 20, 13]);
   prop('pans', a + 10, 10); prop('flour', a + 22, 23); prop('block', a + 30, 19); prop('spices', a + 70, 16);
   /* the first landing: two cooks at their blocks */
@@ -213,7 +216,7 @@ export function buildKitchenGate({ painter, T, TS }) {
   coins([a + 38, 13], [a + 49, 16], [a + 60, 18]);
   /* the attendant's ledge: he throws plates as you come up the haul line, and holds the ledge */
   foe('attendant', a + 72, 15, 'larderB', { face: -1 }); coins([a + 68, 15], [a + 71, 15]);
-  shelf(a + 75, a + 77, 19); racks.push([a + 75, a + 77, 19]);   /* a dresser on the step down */
+  shelf(a + 76, a + 77, 19); racks.push([a + 76, a + 77, 19]);   /* a dresser on the step down */
   }
   M = oldCol;
 
@@ -269,6 +272,8 @@ export function buildKitchenGate({ painter, T, TS }) {
   coins([b + 10, 20], [b + 16, 17], [b + 22, 15]);
   /* the carvers' perch at the top of the wall */
   foe('hearthgob', b + 33, 13, 'perch', { face: -1 }); prop('pans', b + 32, 10);
+  /* the carvery's dressers: one height over the carving line (one only - two would be a stair up the wall past the haul line), and over the landing and the door's trail */
+  for (const [x0, x1, y] of [[b + 0, b + 3, 20], [b + 6, b + 9, 20], [b + 12, b + 15, 20], [b + 18, b + 21, 20], [b + 24, b + 27, 20], [b + 31, b + 34, 10], [b + 61, b + 64, 18], [b + 66, b + 69, 18], [b + 70, b + 73, 15], [b + 78, b + 81, 18]]) { shelf(x0, x1, y); racks.push([x0, x1, y]); ent('coin', Math.round((x0 + x1) / 2), y - 1); }
   /* REMIX 2: THE FLUE - a hop over the carving pit onto a rail that a flare out of the coal bed cuts: up through the hooks, on its rhythm. Take your hook from the perch while the flue
      glows or flares, and you pass over it as it dies (tools/kitchengate.mjs flies it: 1.65-2.0 s from the perch to the flue, for every hero) */
   const fl = flare('flue', b + 53, b + 55, 27, { period: 2.4, tell: 0.8, on: 0.8, phase: 0, h: 156, bed: 'coals' });
