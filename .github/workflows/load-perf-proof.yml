@@ -262,33 +262,6 @@ jobs:
           name: tile-numeric-qualification
           path: ${{ runner.temp }}/tile-numeric-qualification/
           if-no-files-found: error
-  tile-recipe-bindings-component-oct29:
-    if: inputs.mode == 'tile-recipe-bindings-component-oct29'
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - uses: actions/checkout@v4
-        with:
-          ref: 1a576c3f4511b6856df9fb4738df5aaae9987e81
-          path: tile-bindings-component-game
-          fetch-depth: 0
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '24.11.1'
-      - name: Original cache-binding reference and scoped V8 context evidence
-        run: node tools/tile-recipe-bindings-component.mjs
-        env:
-          FIXED_ART_GAME: tile-bindings-component-game
-          TILE_BINDINGS_OUT: ${{ runner.temp }}/tile-recipe-bindings-component-oct29
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: tile-recipe-bindings-component-oct29
-          path: ${{ runner.temp }}/tile-recipe-bindings-component-oct29/
-          if-no-files-found: error
   tile-numeric-lookups-component-oct29:
     if: inputs.mode == 'tile-numeric-lookups-component-oct29'
     runs-on: ubuntu-latest
