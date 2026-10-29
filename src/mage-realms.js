@@ -50,8 +50,11 @@ export const REALM = {
 };
 export const OPEN = new Set(['scorched', 'shattered', 'vented']);
 /* the realm he is due to tear: the index of the next mark he is at or under, or -1 */
-export function realmDue(e) { const n = e.realmN || 0; if (n >= REALM.at.length || e.realm || (e.realmRest || 0) > 0) return -1;
-  return e.hp <= (e.hp0 || e.maxHp) * REALM.at[n] ? n : -1; }
+/* (claude/fallingtower3) e.realmAt: THE CHASE brings him into his hall with part of his health gone (src/archmage-chase.js), and his three realms come at marks
+   cut from what is LEFT of him there (main.js chaseToHall), so each is still had in turn - REALM.at otherwise, unchanged */
+const realmMarks = e => (e && e.realmAt) || REALM.at;
+export function realmDue(e) { const n = e.realmN || 0, at = realmMarks(e); if (n >= at.length || e.realm || (e.realmRest || 0) > 0) return -1;
+  return e.hp <= (e.hp0 || e.maxHp) * at[n] ? n : -1; }
 /* THE REALM'S ROOM, in the hall's own coordinates: the middle REALM.w of it; the mire lifts its floor */
 export function realmBox(e, A) {
   const mid = (A.x0 + A.x1) / 2, b = { x0: mid - REALM.w / 2, x1: mid + REALM.w / 2, y0: A.y0 + 24, y1: A.floor - 4 };
@@ -60,7 +63,7 @@ export function realmBox(e, A) {
 }
 export const realmWarded = e => !!(e && e.realm && !OPEN.has(e.mode));
 /* how low this realm can take him: the next realm's mark (none past the last) */
-export const realmFloor = e => e && e.realm && e.realm.i + 1 < REALM.at.length ? Math.ceil((e.hp0 || e.maxHp) * REALM.at[e.realm.i + 1]) : 0;
+export const realmFloor = e => e && e.realm && e.realm.i + 1 < realmMarks(e).length ? Math.ceil((e.hp0 || e.maxHp) * realmMarks(e)[e.realm.i + 1]) : 0;
 
 /* INTO IT. P and he are set down at opposite ends; his hall's rings, shots and marks do not come with you. */
 export function enterRealm(e, A, P, c) {

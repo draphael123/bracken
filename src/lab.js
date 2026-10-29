@@ -982,6 +982,43 @@ async function runbossLab(BK, opts) {
          mark's ring, around the poison clouds, across the line of anything thrown at it (or onto the shield, for the three who
          carry one), and away from the death hand. Otherwise it closes on him and cuts - and when the mark has come back on him
          (gather) it goes in hard. Resting is done on the wing, away from him. */
+      /* THE UNDEAD ARCHMAGE ON FOOT - THE CHASE (claude/fallingtower3, src/archmage-chase.js): he hovers over the room and casts; the bot holds a place on the floor
+         off his line, STRIKES HIS SHOTS BACK (about two in three it can reach, decided once a shot, as on the carpet), guards or rolls the rest, keeps out of his
+         death mark's ring, his storm's column and his poison; when he FALLS it runs in and cuts him where he lies; when he has sunk through a floor it strikes
+         the lit pillar and drops after him; a floor he breaks pours it down on its own. Once the core has put it on his carpet, the carpet hands below take over. */
+      if(boss.t==='undeadmage'&&!P.carpet&&BK.L.chase3){
+        k.left=k.right=k.up=k.down=k.jump=k.block=false;if(!(P.labRotHold>0))k.atk=false;
+        if(boss.open>0&&!wasOpen)opened++;wasOpen=boss.open>0;
+        const m=boss.mode,py=P.y-8,R=BK.L.chase3.rooms[Math.min(BK.L.chase3.rooms.length-1,boss.room||0)],xL=A.x0+20,xR=A.x1-20,clampX=x=>Math.max(xL,Math.min(xR,x));
+        const sup=(BK.L.ftSupports||[]).find(s=>s.kind==='floor'&&s.armed&&s.st==='whole'),danger=[];let gx=null,block=false;
+        if(boss.deathMark&&Math.abs(boss.deathMark.y-py)<boss.deathMark.r+20)danger.push([boss.deathMark.x-boss.deathMark.r-12,boss.deathMark.x+boss.deathMark.r+12]);
+        if(m==='stormTell')danger.push([boss.markX-30,boss.markX+30]);
+        for(const q of boss.echoes||[])if(q.markX!==null&&q.markX!==undefined)danger.push([q.markX-30,q.markX+30]);
+        for(const c of boss.clouds||[])if(Math.abs(c.y-py)<c.r+24)danger.push([c.x-c.r-14,c.x+c.r+14]);
+        const rest=P.st<14||(P.labRest&&P.st<40);P.labRest=rest;
+        if(m==='down')gx=boss.x+(P.x<boss.x?-1:1)*Math.max(8,LAB_REACH[h]*0.5);
+        else if(sup)gx=sup.x+(P.x<sup.x?-1:1)*Math.max(8,Math.min(16,LAB_REACH[h]*0.5));
+        else if(['fall','rise','sink','tear','below','away','wake'].includes(m))gx=null;
+        else gx=boss.x+(P.x<boss.x?-1:1)*(rest?140:72);
+        for(const q of boss.shots||[]){if(q.reflected||q.kind==='feed')continue;const rx=P.x-q.x,ry=py-q.y,d=Math.hypot(rx,ry);if(d>150)continue;
+          const sp=Math.hypot(q.vx,q.vy)||1,closing=(rx*q.vx+ry*q.vy)/sp;if(closing<0)continue;
+          if(mageReflectable(q)&&!(boss.wardHold>0)&&!(boss.open>0)){q.botTry??=Math.random()<0.65;if(q.botTry&&Math.abs(q.x-P.x)<LAB_REACH[h]*0.85&&Math.abs(q.y-py)<18&&P.atk<0&&P.st>=8){P.face=Math.sign(q.x-P.x)||P.face;BK.press('atk');swings++;continue;}}
+          if(q.kind==='orb'){danger.push([q.x-36,q.x+36]);continue;}
+          if((SHIELDED(h)||(h==='warden'&&DEFLECT_TAP(f)))&&d<46){block=true;P.face=Math.sign(q.x-P.x)||P.face;continue;}
+          if(d<30&&P.st>20&&!(P.dodge>0))BK.press('dodge');}
+        const bad=x=>danger.some(([a,b])=>x>a&&x<b);
+        if(bad(P.x)||(gx!==null&&bad(gx))){let best=null;const from=bad(P.x)?P.x:gx;for(let s=8;s<360&&best===null;s+=8){if(!bad(from-s)&&from-s>xL)best=from-s;else if(!bad(from+s)&&from+s<xR)best=from+s;}if(best!==null)gx=best;}
+        if(gx!==null){gx=clampX(gx);if(Math.abs(gx-P.x)>5)k[gx>P.x?'right':'left']=true;}
+        /* off a ledge: the fight is on the floor (down through the one-way) */
+        if(P.ground&&P.y<R.floor*16-8&&!['tear','away'].includes(m)&&(m==='down'||sup||f%30===0)){k.down=true;BK.press('jump');}
+        if(block){k.block=true;k.left=k.right=false;}
+        else if(m==='down'&&!rest&&Math.abs(boss.x-P.x)<LAB_REACH[h]+12&&Math.abs(boss.y-P.y)<30&&P.atk<0){P.face=Math.sign(boss.x-P.x)||1;BK.press('atk');swings++;}
+        else if(sup&&Math.abs(sup.x-P.x)<LAB_REACH[h]+6&&Math.abs(sup.y-P.y)<20&&P.atk<0){P.face=Math.sign(sup.x-P.x)||1;BK.press('atk');swings++;}
+        if(boss.deathMark&&Math.hypot(P.x-boss.deathMark.x,py-boss.deathMark.y)<boss.deathMark.r&&boss.deathMark.t<0.5&&P.st>20&&!(P.dodge>0))BK.press('dodge');
+        const was=P.hp;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(m,Math.max(0,was-P.hp));if(P.dead)falls++;
+        if(opts.onFrame)await opts.onFrame({boss,P,f,h,lvl:lvId,open:boss.open>0});
+        if(f%600===599)await yieldNow();continue;
+      }
       if(boss.t==='undeadmage'){
         k.left=k.right=k.up=k.down=k.jump=k.block=false;if(!(P.labRotHold>0))k.atk=false;   /* (claude/labkeys) the attack key let go too, unless the rotation holds it */
         const py=P.y-8,by=boss.y-24,dx=boss.x-P.x,dy=by-py,side=Math.sign(dx)||1,m=boss.mode;let vx=0,vy=0,threat=false;
@@ -3165,7 +3202,7 @@ export async function killLab(BK, opts = {}) {
    guard this frame - a careful hand answering his tells) } -> { t, taken, died } */
 export function chaseClimb(BK, m, o = {}) {
   const F = SPIRAL_FLIGHTS, secs = o.secs || 150; let jh = 0, t = 0, taken = 0, died = 0, still = 0, lastX = 0, back = 0, kHere;
-  for (; t < 60 * secs && !BK.carpet() && !(o.stop && o.stop()); t++) {
+  for (; t < 60 * secs && !BK.carpet() && !(BK.L.chase3 && BK.P.y > BK.L.chase3.rooms[0].top * 16) && !(o.stop && o.stop()); t++) {   /* (claude/fallingtower3: or through his ring into THE CHASE) */
     const P = BK.P, G = BK.L.grid, W = BK.L.W;
     if (P.dead > 0) { BK.keys.right = BK.keys.left = BK.keys.jump = false; BK.sim(1); if (o.each) o.each(t); continue; }   /* (a death: it waits to wake) */
     /* THE FLIGHT IT IS ON, by where its feet are (not how far it has ever been: a fall puts it back on a lower flight) */

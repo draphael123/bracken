@@ -10,6 +10,13 @@
 //            plank before it strikes, THE DROP a hazard back to safe footing; THE SNAP: the chunk tells, then carries you to the parapet
 //   REACH    the shared fill climbs to his ring and the carpet with the rides; and with the outer face's planks taken away the parapet is
 //            out of reach (the outside is load-bearing); with the chunk taken away, too (the snap is the way)
+//   FT3      (claude/fallingtower3, scratch/brief-fallingtower3.md section 1: YOU MAKE IT FALL - the rule a VERB, design-standard A2) the level's rule line
+//            is the LEVELS row's and says it: STRIKE A CRACKED PILLAR AND WHAT IT HOLDS UP COMES DOWN YOUR WAY (src/tower-supports.js). Taught safe (the
+//            library's bookcase: a shortcut stair of its shelves), tested and REQUIRED (the lab: a bridge over fourteen tiles of poison - without its span
+//            the ring is out of reach), remixed (the crown's masonry crushes the two who hold its walk; the stair's rubble HOLDS HIS DARK), and the boss's
+//            exam (THE CHASE's floors - tools/tower-chase.mjs). Every one: one blow, a told collapse (SUP.tell s: a crack, grit, a word) before it goes,
+//            glowing as you come near, a sign at the point of use; the route's are glinted and nudged (src/stuck-spots.js). THE ROLLING LADDER (ACROSS):
+//            a library ladder on a rail, holding at each end, level with the fifth tier and a reading nook
 // usage: node tools/fallingtower2.mjs
 import assert from 'node:assert/strict';
 import { LEVELS, T } from '../src/level.js';
@@ -59,8 +66,10 @@ assert.ok(F.flares.length >= 2 && F.flares.every(q => L.towerFloors[0].top <= q.
   assert.ok(at(Math.floor((lo.x + m.w + 4) / TS), roof - 6) === T.ONEWAY && at(Math.floor((hi.x + m.w + 4) / TS), roof - 15) === T.ONEWAY, 'its stops are not beside the steps');
   for (let t = 0; t < FT2.scope.period; t += 0.05) { const q = { ...sc }; ftMover(L, q, 0, t); for (let x = Math.floor(q.x / TS); x <= Math.floor((q.x + q.w - 1) / TS); x++) assert.notEqual(at(x, Math.floor((q.y - 1) / TS)), T.SOLID, 'the telescope carries you into rock at t=' + t.toFixed(2)); } }
 { const lab = L.towerFloors[4], surf = lab.bot - 4, row = surf - 2, tops = []; for (let x = TOWER.X0 + 9; x < TOWER.X1 - 2; x++) if (at(x, row) === T.SOLID && at(x - 1, row) !== T.SOLID) tops.push(x);
-  const gaps = []; for (let x = TOWER.X0 + 9; x < TOWER.X1 - 2; x++) if (at(x, row) !== T.SOLID && at(x, row) !== T.BOUNCER) { let x1 = x; while (at(x1 + 1, row) !== T.SOLID && x1 < TOWER.X1) x1++; gaps.push(x1 - x + 1); x = x1; }
-  assert.ok(gaps.length >= 5 && gaps[0] <= 3 && gaps.slice(1).every(g => g <= 2), 'THE ALCHEMY LAB\'s poison gaps are wider than two (reachcore\'s frame-perfect crossings): ' + gaps);
+  /* (claude/fallingtower3: a deliberate design change - the gap the CRACKED PILLAR's bridge spans, YOU MAKE IT FALL's required use, is no jump by design; every other gap is still two) */
+  const spanned = (x0, x1) => (L.reachSpans || []).some(([a, b, r]) => r === row && a <= x0 && b >= x1);
+  const gaps = []; for (let x = TOWER.X0 + 9; x < TOWER.X1 - 2; x++) if (at(x, row) !== T.SOLID && at(x, row) !== T.BOUNCER) { let x1 = x; while (at(x1 + 1, row) !== T.SOLID && x1 < TOWER.X1) x1++; if (!spanned(x, x1)) gaps.push(x1 - x + 1); x = x1; }
+  assert.ok(gaps.length >= 3 && gaps[0] <= 3 && gaps.slice(1).every(g => g <= 2), 'THE ALCHEMY LAB\'s poison gaps are wider than two (reachcore\'s frame-perfect crossings): ' + gaps);
   assert.ok(F.syrup.length >= 2 && F.fizz.length >= 1 && at(F.fizz[0][0], F.fizz[0][1]) === T.BOUNCER, 'the lab has no spills');
   const z = F.syrup[0], r = rig({ x: (z.x0 + 1) * TS, y: z.row * TS }); r.step(); assert.ok(r.P.syrupT > 0, 'the syrup does not hold the feet'); }
 { const Z = F.tilt; assert.ok(Z && (L.scree || []).some(q => q.ft2), 'THE TREASURY has no tilting floor');
@@ -99,4 +108,33 @@ assert.ok(F.flares.length >= 2 && F.flares.every(q => L.towerFloors[0].top <= q.
   assert.ok(!floodReach(noFace, T, { rides: true }).jumpNear(ring.x, ring.y), 'without the outer face his ring is still reached: the outside is not the way');
   const noSnap = { ...L, rigBands: (L.rigBands || []).filter(b => b[2] > TOWER.SKY + 6) };
   assert.ok(!floodReach(noSnap, T, { rides: true }).jumpNear(ring.x, ring.y), 'without the chunk his ring is still reached: the snap is not the way'); }
+// ---- FT3: YOU MAKE IT FALL ----
+{ const lvRow = LEVELS.find(l => l.id === 'fallingtower'); assert.equal(lvRow.rule, 'CLIMB. STRIKE A CRACKED PILLAR AND WHAT IT HOLDS UP COMES DOWN YOUR WAY.', 'the rule line is not the cracked pillars\' (the LEVELS row says what the code does)');
+  const SU = await import('../src/tower-supports.js'), sup = L.ftSupports || [], by = id => sup.find(s => s.id === id);
+  for (const id of ['lib-ramp', 'lab-bridge', 'crown-crush', 'stair-dark', 'chase-0', 'chase-2']) assert.ok(by(id), 'no cracked pillar ' + id);
+  assert.ok(new Set(sup.map(s => s.kind)).size >= 4, 'the pillars are not used at least three distinct ways and the boss\'s exam: ' + [...new Set(sup.map(s => s.kind))]);
+  for (const s of sup) { assert.ok([T.SOLID, T.ONEWAY, T.PLANK].includes(at(s.col, s.row + 1)) && at(s.col, s.row) === T.AIR, s.id + ' does not stand on footing: ' + s.col + ',' + s.row);
+    assert.ok(L.ents.some(e => e.t === 'sign' && /CRACKED PILLAR/.test(e.text) && Math.abs(e.x - s.col) <= 6 && Math.abs(e.y - s.row) <= 14), s.id + ' is not signed at the point of use'); }
+  /* told, then down: a blow, SUP.tell s of its tell, then what it holds comes down */
+  const rigS = id => { const L3 = { ftSupports: [{ ...by(id) }] }; SU.supportsReset(L3); const s = L3.ftSupports[0], P = { x: s.x - 10, y: s.y, dead: 0 }, log = { set: [], hurt: [], dark: 0, says: [], calls: [] };
+    const foes = [{ x: 22 * TS, y: (L.towerFloors[6].bot - 1) * TS + 16, alive: true }, { x: 50 * TS, y: (L.towerFloors[6].bot - 1) * TS + 16, alive: true }]; let hb = null;
+    const c = { T, strike: () => hb, set: (x, y, t) => log.set.push([x, y, t]), resolve: () => {}, foes: () => foes, hurt: (e, d) => log.hurt.push([e, d]), holdDark: n => { log.dark = n; }, say: (x, y, m) => log.says.push(m), callout: m => log.calls.push(m), sound: () => {}, shake: () => {}, dust: () => {}, burst: () => {} };
+    const step = () => SU.supportsUpdate(L3, P, 1 / 60, c); return { s, P, log, foes, step, hit: () => { hb = { l: s.x - 8, r: s.x + 8, t: s.y - 20, b: s.y }; step(); hb = null; } }; };
+  for (const id of ['lib-ramp', 'lab-bridge', 'crown-crush', 'stair-dark']) { const r = rigS(id); r.step(); assert.equal(r.s.st, 'whole', id + ' goes unstruck'); r.hit(); assert.equal(r.s.st, 'tell', id + ' does not give to a blow');
+    let t = 0; while (r.s.st === 'tell' && t < 5) { r.step(); t += 1 / 60; } assert.ok(r.s.st === 'down' && t >= SU.SUP.tell - 0.05 && r.log.says.length && r.log.calls.length, id + ' comes down untold (or not at all): ' + [r.s.st, t.toFixed(2)]); }
+  { const r = rigS('lab-bridge'); r.hit(); for (let i = 0; i < 90; i++) r.step(); const [x0, x1, row] = by('lab-bridge').spans[0];
+    assert.ok(x1 - x0 + 1 >= 12 && r.log.set.filter(([, y, t]) => y === row && t === T.ONEWAY).length === x1 - x0 + 1, 'the lab\'s pillar does not lay its bridge over the poison'); }
+  { const r = rigS('crown-crush'); r.hit(); for (let i = 0; i < 90; i++) r.step(); assert.ok(r.log.hurt.length === 1 && r.log.hurt[0][0] === r.foes[0] && r.log.hurt[0][1] >= 100, 'the crown\'s masonry does not crush what stands under it (and only that): ' + r.log.hurt.length); }
+  { const r = rigS('stair-dark'); r.hit(); for (let i = 0; i < 90; i++) r.step(); assert.ok(r.log.dark >= 5, 'the stair\'s rubble does not hold his dark'); }
+  { const r = rigS('lib-ramp'); r.P.x = r.s.x - 300; r.step(); const far = r.s.near; r.P.x = r.s.x - 20; r.step(); assert.ok(far === 0 && r.s.near > 0.5, 'a pillar does not glow as you come near (and only then)'); }
+  /* LOAD-BEARING: the lab's bridge is the way */
+  { const ring = L.ents.find(e => e.id === 'crown-ring'); assert.ok(floodReach(L, T, { rides: true }).jumpNear(ring.x, ring.y), 'with the pillars down the fill does not reach his ring');
+    assert.ok(!floodReach({ ...L, reachSpans: (L.reachSpans || []).filter(s => !by('lab-bridge').spans.some(q => q[2] === s[2] && q[0] === s[0])) }, T, { rides: true }).jumpNear(ring.x, ring.y), 'without the lab\'s bridge his ring is still reached: the pillar is not the way'); }
+  /* the route's pillars are glinted and nudged */
+  { const { STUCK } = await import('../src/stuck-spots.js'); for (const id of ['lab-bridge', 'chase-0', 'chase-2']) { const s = by(id); assert.ok(STUCK.fallingtower.some(q => q.at && q.at[0] === s.col && q.done && q.done[0] === 'ftsupport' && q.done[1] === s.col && q.done[2] === s.row), id + ' has no glint + nudge (src/stuck-spots.js)'); } }
+  /* ACROSS: the rolling ladder holds at each end, level with the fifth tier and the nook */
+  { const lad = L.moversExtra.find(m => m.role === 'ladder'), F = await import('../src/tower-fall2.js'); assert.ok(lad, 'the library has no rolling ladder');
+    const a = { ...lad }, b = { ...lad }; F.ftMover(L, a, 0, 0.05); F.ftMover(L, b, 0, F.FT2.ladder.period * 0.5 + 0.05); assert.ok(a.x === lad.ax && b.x === lad.bx && a.y === b.y, 'the ladder does not hold at its two ends');
+    assert.ok([T.ONEWAY, T.PLANK].includes(at(Math.floor((lad.ax + lad.w) / TS) + 1, lad.ay / TS)) && at(Math.floor(lad.bx / TS) - 2, lad.ay / TS) === T.ONEWAY, 'the ladder\'s ends are not beside the tier and the nook'); } }
+console.log('ok  fallingtower2  (ft3) the rule is a verb: six cracked pillars - taught (a shortcut), tested (the lab\'s bridge, load-bearing), remixed (a crush, a hold on his dark) and the chase\'s floors - each told before it goes, glowing near, signed, the route\'s glinted; the rolling ladder holds at both ends');
 console.log('ok  fallingtower2  the collapse chases (fuse 1.4 s; debris told ' + FT2.debris.tell + ' s, ahead of you, off in a fight); the library burns (told ' + FT2.flare.smoulder + ' s), the observatory\'s telescope rides step to step, the lab\'s stones are three wide with syrup and fizz, the treasury tilts (told, both ways, its chests hurt); the lean; the breach, the outer face (wind told ' + FT2.gust.tell + ' s, lightning told ' + FT2.bolt.tell + ' s, the drop a hazard) and the snap (told ' + FT2.snap.tell + ' s, to the parapet) - load-bearing');

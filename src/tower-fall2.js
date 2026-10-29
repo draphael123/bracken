@@ -28,6 +28,7 @@ export const FT2 = {
   gust: { first: 2.0, calm: 3.4, tell: 1.3, blow: 1.6, push: 52, footing: 0.35 },   /* (the face is eight tiles wide: a gust shoves, it does not throw you off it unbraced in one) */
   bolt: { first: 3.0, every: 4.6, tell: 1.3, half: 12, dmg: 18 },
   scope: { period: 7.0, w: 40, hold: 0.2 },
+  ladder: { period: 8.0 },   /* (claude/fallingtower3) THE LIBRARY's rolling ladder: one trip along its rail and back, holding at each end as the telescope does */
   snap: { tell: 1.4, secs: 2.8 },
   lean: { perFloor: 0.5, max: 3 },
 };
@@ -105,10 +106,14 @@ export function ftUpdate(L, P, dt, c) {
 export function scopeK(time, phase = 0) { const H = FT2.scope.hold, u = ((time / FT2.scope.period + phase) % 1 + 1) % 1, ease = x => x * x * (3 - 2 * x);
   return u < H ? 0 : u < 0.5 ? ease((u - H) / (0.5 - H)) : u < 0.5 + H ? 1 : 1 - ease((u - 0.5 - H) / (0.5 - H)); }
 /* A RIDE OF THIS LEVEL'S (main.js updateMovers): the telescope's eyepiece on its arc, and the crown's chunk. Sets x, y, dx, dy. */
+/* THE ROLLING LADDER's place along its rail at time t (0 = its east end, 1 = its west), holding at each end (claude/fallingtower3) */
+export function ladderK(time, phase = 0) { const u = ((time / FT2.ladder.period + phase) % 1 + 1) % 1, H = 0.22, ease = x => x * x * (3 - 2 * x);
+  return u < H ? 0 : u < 0.5 ? ease((u - H) / (0.5 - H)) : u < 0.5 + H ? 1 : 1 - ease((u - 0.5 - H) / (0.5 - H)); }
 export function ftMover(L, m, dt, time) {
   const ox = m.x, oy = m.y;
   if (m.role === 'scope') { const k = scopeK(time, m.phase), a = m.a0 + (m.a1 - m.a0) * k;
     m.ang = a; m.x = m.px + Math.cos(a) * m.arm - m.w / 2; m.y = m.py + Math.sin(a) * m.arm; }
+  else if (m.role === 'ladder') { const k = ladderK(time, m.phase); m.x = m.ax + (m.bx - m.ax) * k; m.y = m.ay; }   /* (claude/fallingtower3) THE ROLLING LADDER: ACROSS the library on its rail */
   else if (m.role === 'chunk') { const S = L.ft2 && L.ft2.rt && L.ft2.rt.snap, k = S ? (S.st === 'done' ? 1 : S.st === 'ride' ? S.k : 0) : 0, e = k * k * (3 - 2 * k);
     m.x = m.ax + (m.bx - m.ax) * e; m.y = m.ay + (m.by - m.ay) * e - Math.sin(Math.PI * e) * (m.lift || 0); m.tip = S && S.st === 'tell' ? Math.sin(time * 40) * 1.5 : 0; }
   m.dx = m.x - ox; m.dy = m.y - oy; return true;
@@ -252,6 +257,10 @@ export function ftDraw(g, L, P, cx, cy, time, T, movers) {
       R_(g, C.brass[0], x, y, m.w, 6); R_(g, C.brass[2], x, y, m.w, 2); R_(g, C.brass[3], x + 1, y, m.w - 2, 1);   /* the eyepiece platform */
       for (let i = 4; i < m.w; i += 10) R_(g, C.brass[1], x + i, y - 5, 1, 5); R_(g, C.brass[2], x + 4, y - 5, m.w - 8, 1);   /* its rail */
       R_(g, '#e8f0ff', Math.round(ex) - 1, y + 3, 2, 2); if ((((time * 3) | 0) % 4) === 0) { R_(g, '#ffffff', Math.round(ex) - 3, y + 4, 6, 1); R_(g, '#ffffff', Math.round(ex), y + 1, 1, 6); } }   /* the lens, with its glint */
+    if (m.role === 'ladder') { const rx0 = Math.round(Math.min(m.ax, m.bx) - cx), rx1 = Math.round(Math.max(m.ax, m.bx) + m.w - cx), ry = Math.round(m.ay - cy) - 46;   /* (greybox, claude/fallingtower3) its rail high on the shelves, the ladder hung from it, its step */
+      R_(g, C.iron, rx0, ry, rx1 - rx0, 2); R_(g, C.brass[2], rx0, ry, rx1 - rx0, 1);
+      for (const lx of [x + 6, x + m.w - 8]) R_(g, C.wood[2], lx, ry + 2, 2, 46); for (let yy = ry + 8; yy < y; yy += 8) R_(g, C.wood[3], x + 6, yy, m.w - 12, 1);
+      R_(g, C.wood[1], x, y, m.w, 6); R_(g, C.wood[3], x, y, m.w, 2); R_(g, C.brass[2], x + 2, ry - 2, 4, 4); R_(g, C.brass[2], x + m.w - 6, ry - 2, 4, 4); }
     if (m.role === 'chunk') { const S = R.snap, tip = Math.round(m.tip || 0), w = m.w, top = y + tip;
       R_(g, '#2a2638', x, top, w, 22); R_(g, '#3a3448', x + 1, top + 1, w - 2, 20);   /* THE CHUNK: courses of ashlar... */
       for (let c = 0; c < 3; c++) { const yy = top + 3 + c * 7; R_(g, '#252b3a', x + 1, yy, w - 2, 1); for (let b = 0; b < w; b += 16) R_(g, '#252b3a', x + b + (c % 2 ? 8 : 0), yy + 1, 1, 6); }

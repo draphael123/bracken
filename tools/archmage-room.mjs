@@ -48,7 +48,7 @@ const claimed = (x, y) => skins.some(([a, b, c, d]) => x >= a && x <= b && y >= 
 }
 
 // ---------------------------------------------------------------- 3. WHERE THE TWO DOORS PUT YOU
-const A = L.arena, S = L.sanctum, box = carpetBox(A, 0), ft = fireTop(A);
+const A = (L.arena.hallArena ? { ...L.arena, ...L.arena.hallArena } : L.arena), S = L.sanctum, box = carpetBox(A, 0), ft = fireTop(A);   /* (claude/fallingtower3) the fight starts in THE CHASE now; his HALL - the sky this checks - is arena.hallArena, laid over the arena when his carpet carries you up */
 { assert.ok(S, 'the level hands over no sanctum');
   assert.deepEqual(S.in, L.carpetAt, 'the door in has moved off the carpet\'s own board check, so nothing opens it');
   assert.ok(S.spawn.x > box.x0 && S.spawn.x < box.x1, 'you come out through a wall');

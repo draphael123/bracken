@@ -21,7 +21,8 @@ const levels = new Map(LEVELS.map(l => [l.id, l]));
 
 /* a level's props and movers the way main.js has them, as far as the guide reads them: type, pixel position, the state fields false */
 /* (claude/hanging3) THE HANGING VILLAGE's ropes are props in the game (src/hanging-ropes.js H.props: t 'hvrope' at its knot) though not ents in the level: read from L.ropes */
-const entsOf = L => (L.ents || []).concat((L.ropes || []).filter(r => r.knot).map(r => ({ t: 'hvrope', x: r.knot[0], y: r.knot[1], kind: r.kind })));
+const entsOf = L => (L.ents || []).concat((L.ropes || []).filter(r => r.knot).map(r => ({ t: 'hvrope', x: r.knot[0], y: r.knot[1], kind: r.kind })))
+  .concat((L.ftSupports || []).map(s => ({ t: 'ftsupport', x: s.col, y: s.row, kind: s.kind })));   /* (claude/fallingtower3) THE FALLING TOWER's cracked pillars are props the guide reads (main.js hands L.ftSupports as extra props) */
 const envOf = (L, flags = new Set()) => {
   const props = entsOf(L).map(e => ({ t: e.t, x: e.x * TS + 8, y: e.y * TS + 16, kind: e.kind, ent: e })).map(p => { for (const f of flags) if (f.t === p.t && Math.abs(p.x / TS - f.c - 0.5) <= 1.5 && Math.abs(p.y / TS - f.r) <= 2.5) p[f.f] = true; return p; });
   const movers = (L.moversExtra || []).map(m => ({ ...m, x: m.x ?? 0, y: m.y ?? 0 }))

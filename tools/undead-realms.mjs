@@ -24,7 +24,7 @@ import { updateUndeadMage, MAGE } from '../src/undead-mage.js';
 import { carpetBox } from '../src/carpet.js';
 import { openPage } from './cdp.mjs';
 
-const L = LEVELS.find(l => l.id === 'fallingtower').build(), A = L.arena, HP = 600;
+const L = LEVELS.find(l => l.id === 'fallingtower').build(), A = (L.arena.hallArena ? { ...L.arena, ...L.arena.hallArena } : L.arena), HP = 600;   /* (claude/fallingtower3) the fight starts in THE CHASE now; his HALL - the sky this checks - is arena.hallArena, laid over the arena when his carpet carries you up */
 assert.ok(MR.REALM && typeof MR.enterRealm === 'function' && typeof MR.updateRealm === 'function', 'there are no spell realms (src/mage-realms.js)');
 const { REALM } = MR;
 assert.deepEqual(REALM.at, [0.75, 0.5, 0.25], 'the realms are not at 75/50/25%'); assert.deepEqual(REALM.kinds, ['fire', 'ice', 'poison'], 'the realms are not fire, ice, poison');

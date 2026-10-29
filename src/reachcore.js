@@ -145,6 +145,9 @@ export function floodReach(L, T, opts = {}) { const L0 = L;   /* (the level as b
   /* A LEVEL'S OWN SPANS (claude/fenroad2): L.reachSpans [[x0, x1, row]] are road the player LAYS - THE FEN ROAD's peat holes, a crew's plank from the bundle on the bank before
      each (every hero carries one: tools/fen-road.mjs proves each bundle stands before its hole and each hole is a lock) - so the full fill has them laid (the plain fill: legs only) */
   if (!plain) for (const [x0, x1, row] of (L.reachSpans || [])) for (let x = x0; x <= x1; x++) { const i = row * W + x; if (g[i] === T.AIR) g[i] = T.PLANK; }
+  /* A FLOOR THE FIGHT BREAKS (claude/fallingtower3, L.reachOpens [[x0, x1, y0, y1]]): THE CHASE's floors go under you - he breaks them, or you strike their pillar
+     after him - every time, so each is a floor you go DOWN through and nothing else (the observers' gallery's rule, above): its top row one-way, the rest air */
+  if (!plain) for (const [x0, x1, y0, y1] of (L.reachOpens || [])) for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) { const i = y * W + x; if (g[i] === T.SOLID) g[i] = y === y0 ? T.ONEWAY : T.AIR; }
   /* THE UNDERCROWN'S SLABS (claude/undercrown2, src/undercrown-slabs.js): a slab the route needs (L.reachSlabs [{ slab, hinge }]) is cut - three blows on a post,
      which every hero has - so the fill has its roof course out and its ramp down, a stair of boards (a slope with no rock under it is not footing to the model) */
   for (const rs of (L.reachSlabs || [])) { const sb = (L.slabs || []).find(s => s.id === rs.slab); if (!sb) continue;

@@ -14,7 +14,7 @@ import { TOWER, SAND } from '../src/tower-ascent.js';
 import { HALL_GAP, hallHolds } from '../src/tower-hall.js';
 import { carpetBox } from '../src/carpet.js';
 
-const L = LEVELS.find(l => l.id === 'fallingtower').build(), A = L.arena, TS = 16, W = L.W;
+const L = LEVELS.find(l => l.id === 'fallingtower').build(), A = (L.arena.hallArena ? { ...L.arena, ...L.arena.hallArena } : L.arena), TS = 16, W = L.W;   /* (claude/fallingtower3) the fight starts in THE CHASE now; his HALL - the sky this checks - is arena.hallArena, laid over the arena when his carpet carries you up */
 const at = (x, y) => L.grid[y * W + x];
 const fails = [], ok = (c, m) => { if (!c) fails.push(m); };
 ok(A && A.carpet && A.hall, 'the sky fight is not flagged as his hall (arena.hall)');
@@ -32,7 +32,10 @@ ok(minGap >= HALL_GAP, 'the highest ground under his hall is ' + minGap + ' rows
 const NOT = new Set(['undeadmage', 'coin', 'silver', 'check', 'sign', 'gate', 'deco', 'glyph', 'stal', 'torch', 'mend']);
 for (const e of L.ents) { if (NOT.has(e.t)) continue;
   if (e.x >= c0 && e.x <= c1 && e.y >= top && e.y < fr + HALL_GAP) ok(false, e.t + ' starts in his hall or the gap under it: ' + e.x + ',' + e.y); }
-ok(L.ents.some(e => e.t === 'undeadmage' && e.y >= top && e.y < fr), 'he does not wait in his own hall');
+/* (claude/fallingtower3, Daniel 10-27 - a deliberate design change) he is met in THE CHASE's first room now, and his carpet carries you both up: main.js chaseToHall
+   puts him in his own hall (36 tiles in, 8 rows over its floor) when you come through his door */
+ok(L.chase3 && L.ents.some(e => e.t === 'undeadmage' && e.y > L.chase3.rooms[0].top && e.y < L.chase3.rooms[0].floor), 'he does not wait in the first room of the chase');
+{ const s = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8'); ok(s.includes("e.x=36*TS;e.y=L.arena.floor-8*TS;") && 36 >= c0 && 36 <= c1 && fr - 8 >= top, 'the chase does not bring him into his own hall'); }
 const box = carpetBox(A, 0), sp = L.sanctum.spawn; ok(sp.x > box.x0 && sp.x < box.x1 && sp.y > box.y0 && sp.y < box.y1, 'the door does not put you in the hall');
 
 // ---- SEALED ----
