@@ -7,7 +7,7 @@
 // usage: node tools/false-abbot.mjs
 import { readFileSync } from 'node:fs';
 import { ABBOT, ABBOT_FRAMES, updateFalseAbbot, abbotBellRung, abbotOpen, abbotBlessed, abbotTake, abbotFrame, abbotSpoil, abbotPraying,
-  abbotBridgeBell, abbotWheelStruck, abbotPlunge, abbotClamp, abbotHighSpans, abbotLevelOf, abbotChairY } from '../src/false-abbot.js';
+  abbotBridgeBell, abbotInChair, CHAIR_SAY, drawAbbotHouse, abbotWheelStruck, abbotPlunge, abbotClamp, abbotHighSpans, abbotLevelOf, abbotChairY } from '../src/false-abbot.js';
 let fails = 0; const ok = (c, m) => { console.log((c ? '  ok   ' : '  FAIL ') + m); if (!c) fails++; };
 const DT = 1 / 60, FLOOR = 480, DECK = 384, BELL = 904;
 /* the belfry as the level lays it (level.js arena.house, in pixels as main.js abbotHouse() makes it) */
@@ -68,7 +68,7 @@ console.log('THE FALSE ABBOT 3: THE HOUSE ANSWERS THE BLOW');
   ok(Object.values(said).filter(Boolean).length === 9, `each windup says itself as it starts (${Object.values(said).filter(Boolean).length}/9)`);
   ok(said.swing?.red && said.coals?.red && said.knell?.red, 'THE BELL ROPE, THE COALS and THE KNELL wear the red mark: nothing turns them');
   ok(said.censer && !said.censer.red && said.cast && !said.cast.red && said.gleam && !said.gleam.red, 'THE CENSER, THE CHAIN and FALSE LIGHT wear the yellow one: a shield turns them');
-  ok(said.rite1?.quiet && /BRIDGE.*BELL/.test(said.rite1.m) && /CHAIR.*BASKET/.test(said.rite2?.m) && /WHEEL.*COME DOWN/.test(said.rite3?.m),
+  ok(said.rite1?.quiet && /BRIDGE.*BELL/.test(said.rite1.m) && /BASKET.*CHAIR/.test(said.rite2?.m) && /WHEEL.*COME DOWN/.test(said.rite3?.m),
     `and THE RITE wears none (it throws no blow) but says what to do with the house: "${said.rite1?.m}" / "${said.rite2?.m}" / "${said.rite3?.m}"`); }
 
 // ---- THE CENSER, THE CHAIN and FALSE LIGHT are blockable; THE SLAM and THE KNELL are not ----
@@ -148,6 +148,16 @@ console.log('THE FALSE ABBOT 3: THE HOUSE ANSWERS THE BLOW');
   ok(r.e.mode === 'fall' || r.e.mode === 'downed', 'RIDE THE BASKET DOWN: the chair comes down with it and spills him out');
   r.run(0.8); ok(r.e.mode === 'downed' && abbotOpen(r.e) && !abbotBlessed(r.e), 'he lands stunned = THE OPENING, unwarded');
   ok(r.log.said.some(s => /THROWN OUT/.test(s.m)), 'and it says HIS CHAIR COMES DOWN: HE IS THROWN OUT');
+  /* (claude/abbotp2) THE READ: the chair is a ward (B15's 0.4, never less, never a wall), the line names the basket, the spill has a payoff hook, the cue draws */
+  { const v = until('riteTell', { px: 900, x: 1000, hp: ABBOT.hp * 0.5 }, 30);
+    ok(abbotInChair(v.e) && abbotTake(v.e) === ABBOT.wardTake && ABBOT.wardTake >= 0.4, `a blow that finds him IN HIS CHAIR is turned to B15's ${ABBOT.wardTake} (told WARDED in main.js), never less than 0.4`);
+    ok(/BASKET DOWN/.test(CHAIR_SAY.ride) && /CHAIR/.test(CHAIR_SAY.ride) && CHAIR_SAY.ride === v.log.said.filter(s => s.quiet).map(s => s.m).find(m => /BASKET/.test(m)), 'the line he prays under names the action: ' + CHAIR_SAY.ride);
+    let spilled = 0; v.c.spill = () => spilled++; for (let k = 0; k <= 1.0001; k += 0.05) { v.setBasket(k); v.run(0.05); if (v.e.mode === 'fall' || v.e.mode === 'downed') break; }
+    ok(spilled === 1 && !abbotInChair(v.e) && abbotTake(v.e) === ABBOT.downMul, 'the spill fires its payoff hook once, and the opening is double');
+    const cvs = { width: 320, height: 180 }, calls = { arc: 0, rect: 0 }, g = new Proxy({ canvas: cvs }, { get: (t, k) => k in t ? t[k] : (k === 'arc' ? () => calls.arc++ : k === 'fillRect' ? () => calls.rect++ : () => {}), set: (t, k, val) => { t[k] = val; return true; } });
+    const sit = until('riteTell', { px: 900, x: 1000, hp: ABBOT.hp * 0.5 }, 30), H2 = { ...HOUSE, basketY0: 448 };
+    let threw = null; try { drawAbbotHouse(g, sit.e, H2, 400, 300, 1.2, FLOOR, 0); const n0 = calls.rect; sit.e.deck = 'floor'; drawAbbotHouse(g, sit.e, H2, 400, 300, 1.2, FLOOR, 0); const n1 = calls.rect - n0; sit.e.deck = 'chair'; const n2 = (() => { const a = calls.rect; drawAbbotHouse(g, sit.e, H2, 400, 300, 1.2, FLOOR, 0); return calls.rect - a; })(); ok(n2 > n1, `the basket cue draws only while he sits in the chair (${n2} rects vs ${n1})`); } catch (er) { threw = er; }
+    ok(!threw, 'drawAbbotHouse draws the cue without throwing' + (threw ? ': ' + threw.message : '')); }
   const q = until('riteTell', { px: 900, x: 1000, hp: ABBOT.hp * 0.5 }, 30); q.run(ABBOT.riteT[2] + 0.6);
   ok(abbotBlessed(q.e) && (q.e.deck !== 'chair' || q.e.mode === 'swingTell' || q.e.mode === 'swing'), 'left alone the chair rite wards him, and blessed he comes down out of it to fight');
   const w = rig({ px: 900, x: 1000, hp: ABBOT.hp * 0.5 }); w.setBasket(1); let went = false; for (let i = 0; i < 60 * 3; i++) { updateFalseAbbot(w.e, DT, w.c); if (w.e.swDeck === 'chair') went = true; }

@@ -60,17 +60,21 @@ export const ABBOT = {
    debugging passes in the tool that reads them back. A convention with a hole in it is not a convention. */
 const TELL = what => what + 'Tell';
 const SAY = { censerTell: 'THE CENSER', castTell: 'THE CHAIN', swingTell: 'THE BELL ROPE: OFF THE MARK', gleamTell: 'FALSE LIGHT', coalsTell: 'THE COALS', knellTell: 'HE RINGS IT HIMSELF' };
-const RITE_SAY = ['', 'HE PRAYS ON THE BRIDGE: STRIKE ITS BELL', 'HE PRAYS IN HIS CHAIR: RIDE THE BASKET DOWN', 'HE PRAYS AT THE WHEEL: COME DOWN ON HIM'];
+/* (claude/abbotp2, Daniel 10-29: "it needs to be clear in phase 2 how you actually hurt him") P2's three lines are routed (src/hint-lines.js CALL_LINES) and said in the hint box; P1 and P3 keep theirs as they were */
+export const CHAIR_SAY = { cut: 'HE CUTS HIS BRIDGES: TO HIS CHAIR', ride: 'RIDE HIS BASKET DOWN: THE CHAIR COMES WITH IT', spill: 'HIS CHAIR COMES DOWN: HE IS THROWN OUT' };
+const RITE_SAY = ['', 'HE PRAYS ON THE BRIDGE: STRIKE ITS BELL', CHAIR_SAY.ride, 'HE PRAYS AT THE WHEEL: COME DOWN ON HIM'];
 const RED = new Set(['swingTell', 'coalsTell', 'knellTell']);
 /* THE OPENING: the house has turned on him (downed), or he is falling with it */
 export const abbotOpen = e => e.mode === 'downed' || e.mode === 'fall';
 export const abbotBlessed = e => (e.blessT || 0) > 0;
+/* IN HIS CHAIR: hung high on the basket rope, a blow (a bolt, an arrow) that finds him there is turned by the chair's gilt - B15's floor, told (WARDED), never a wall. The answer is the basket. */
+export const abbotInChair = e => !!e && e.alive && e.deck === 'chair' && e.mode !== 'fall' && e.mode !== 'downed' && e.mode !== 'beaten';
 export const abbotPraying = e => !!e && e.alive && e.mode === 'riteTell';
 export const abbotBeaten = e => !!e && e.alive && e.mode === 'beaten';
 /* WHAT A BLOW IS WORTH AGAINST HIM. Blessed, B15's floor (0.4, told: main.js clanks WARDED); double while down - and the
    game's own bonus for an OPEN foe stacks on top of that, so a blow in the window measures about three. Beaten down at the
    end, the floor again: the great bell is the last blow, the blade only the slow way to it (never nothing - B15). */
-export const abbotTake = e => abbotOpen(e) ? ABBOT.downMul : abbotBeaten(e) ? ABBOT.beatTake : abbotBlessed(e) ? ABBOT.wardTake : 1;
+export const abbotTake = e => abbotOpen(e) ? ABBOT.downMul : abbotBeaten(e) ? ABBOT.beatTake : (abbotBlessed(e) || abbotInChair(e)) ? ABBOT.wardTake : 1;
 /* (kept for old callers: the sanctus bell is gone - the house's devices took its place) */
 export const abbotSanctus = () => null;
 /* THE RITE SPOILED, from the world: 'plunge' (come down on him) or 'wheel' (its wheel struck). Only while he prays;
@@ -220,7 +224,7 @@ function stepBridges(e, dt, c) {
 /* the phase changes: each one changes the house (B5) */
 function phaseTo(e, n, c) {
   const H = house(c); e.phase = n;
-  if (n === 2) { c.say('HE CUTS HIS BRIDGES: TO HIS CHAIR', true); c.sound('roar');
+  if (n === 2) { c.say(CHAIR_SAY.cut, true); c.sound('roar');
     if (H) { e.br = e.br || H.bridges.map(() => true);
       H.bridges.forEach((b, i) => { if (e.br[i] && c.bridge) c.bridge(i, false); e.br[i] = false; });
       e.brGone = true;
@@ -245,7 +249,7 @@ export function updateFalseAbbot(e, dt, c) {
   stepOrb(e, dt, c); stepBridges(e, dt, c);
   /* the chair rides the basket: in it, he goes where it goes - and far enough down, it spills him (P2's opening) */
   if (H && e.deck === 'chair' && e.mode !== 'swing' && e.mode !== 'swingTell') { const k = c.basketK ? c.basketK() : 0; e.y = abbotChairY(H, floor, k); e.x = H.chairX;
-    if (k >= ABBOT.spillAt && e.mode !== 'swing') { e.deck = 'floor'; drop(e, c, 'HIS CHAIR COMES DOWN: HE IS THROWN OUT'); e.vy = 120; } }
+    if (k >= ABBOT.spillAt && e.mode !== 'swing') { e.deck = 'floor'; drop(e, c, CHAIR_SAY.spill); e.vy = 120; if (c.spill) c.spill(e); } }   /* the payoff: a hit-stop, a dust burst, the chair swinging empty (main.js) */
   /* standing on boards that are not there any more (a bridge dropped under him some other way): he falls */
   if (H && e.deck === 'high' && e.mode !== 'swing' && e.mode !== 'fall' && !spanAt(e, H, e.x)) drop(e, c, 'THE BRIDGE GOES WITH HIM');
   // ---- THE CONGREGATION, all the way through: it does not stop for his windups ----
@@ -593,6 +597,22 @@ export function drawAbbotHouse(g, e, H, cx, cy, time, floorY, basketK) {
       rope(cxp - 1, py + 11, cxp - 1, ringY - 2, 2);
       g.strokeStyle = BRZ[3]; g.lineWidth = 1; g.beginPath(); g.arc(cxp, ringY, 3, 0, Math.PI * 2); g.stroke(); R(BRZ[1], cxp - 1, ringY + 2, 3, 2);
       g.strokeStyle = ROPE[2]; g.beginPath(); g.moveTo(cxp - 2, ringY + 2); g.lineTo(cxp - 11 + tilt, cyp - 30); g.moveTo(cxp + 2, ringY + 2); g.lineTo(cxp + 11 + tilt, cyp - 30); g.moveTo(cxp - 1, ringY + 2); g.lineTo(cxp - 6 + tilt, cyp - 34); g.moveTo(cxp + 1, ringY + 2); g.lineTo(cxp + 6 + tilt, cyp - 34); g.stroke();
+      /* THE BASKET CUE (claude/abbotp2, Daniel 10-29: how you hurt him must be CLEAR): while he sits in the chair, the BASKET glows - gold ripples and glints, as the bell does that blesses him on a bridge - three gold chevrons
+         bob down onto it, and a line of gold beads runs the whole rope from the basket over the beam to his chair, so the link is drawn: this is what brings that down. Gone the moment the chair spills. */
+      const cueOn = alive && ph === 2 && !spilled && (e.deck === 'chair' || ((e.mode === 'swing' || e.mode === 'swingTell') && e.swGoal && e.swGoal.deck === 'chair'));
+      if (cueOn && H.basketY0 !== undefined) {
+        const b0 = Math.round(H.basketY0 - cy), b1 = Math.round(floorY - 8 - cy), bY = Math.round(b0 + (b1 - b0) * k), pts = [[bxp, bY - 10], [bxp, py + 6], [cxp, py + 6], [cxp, cyp - 47]];
+        let run = 0; const off = (time * 26) % 7;   /* beads every 7 px, marching from the basket toward the chair */
+        for (let sI = 0; sI < pts.length - 1; sI++) { const [x0, y0] = pts[sI], [x1, y1] = pts[sI + 1], len = Math.hypot(x1 - x0, y1 - y0) || 1;
+          for (let d = (7 - ((run + off) % 7)) % 7; d < len; d += 7) { const bx_ = Math.round(x0 + (x1 - x0) * d / len), by_ = Math.round(y0 + (y1 - y0) * d / len); g.globalAlpha = 0.95; R('#2a1c0c', bx_ - 1, by_ - 1, 4, 4); R(GOLD, bx_, by_, 2, 2); R('#fffbe0', bx_, by_, 1, 1); }
+          run += len; }
+        g.globalAlpha = 1;
+        glow(bxp, bY + 4, 26 + 5 * p, 0.3 + 0.3 * p);
+        for (let q = 0; q < 3; q++) { const ph2 = (time * 1.4 + q / 3) % 1; g.globalAlpha = (1 - ph2) * 0.8; g.strokeStyle = GOLD; g.lineWidth = 1; g.beginPath(); g.ellipse(bxp, bY + 6, 14 + ph2 * 16, 7 + ph2 * 9, 0, 0, Math.PI * 2); g.stroke(); } g.globalAlpha = 1;
+        for (let q = 0; q < 4; q++) if (Math.sin(time * 6 + q * 2.2) > 0.1) glint(g, Math.round(bxp + Math.cos(time * 3 + q * 1.6) * 20), Math.round(bY + 3 + Math.sin(time * 3 + q * 1.6) * 8), '#fffbe0', 1);
+        if (k < 0.04) for (let q = 0; q < 3; q++) { const u = (time * 1.1 + q / 3) % 1, yy = Math.round(bY - 44 + u * 26); g.globalAlpha = Math.sin(Math.PI * u) * 0.95;   /* the way in: chevrons pointing DOWN onto it */
+          R('#2a1c0c', bxp - 7, yy - 1, 15, 4); R(GOLD, bxp - 6, yy, 3, 2); R(GOLD, bxp - 3, yy + 1, 3, 2); R(GOLD, bxp, yy + 2, 1, 2); R(GOLD, bxp + 1, yy + 1, 3, 2); R(GOLD, bxp + 4, yy, 3, 2); }
+        g.globalAlpha = 1; }
       if (ring) { glow(cxp, cyp - 18, 28 + 4 * p, 0.3 + 0.3 * p); for (let q = 0; q < 3; q++) { const ph2 = ((time * 1.2 + q / 3) % 1); g.globalAlpha = (1 - ph2) * 0.5; g.strokeStyle = GOLD; g.beginPath(); g.ellipse(cxp, cyp - 18, 14 + ph2 * 14, 20 + ph2 * 10, 0, 0, Math.PI * 2); g.stroke(); } g.globalAlpha = 1; }
       /* THE CHAIR: a tall gabled back of bronze-gilt framing with the red velvet let into it, a mitre finial, gilt arms with bronze knobs, a cushion with its tassel, a footboard */
       const X = cxp + Math.round(tilt * 0.5);
