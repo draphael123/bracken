@@ -10,7 +10,7 @@ Branch `claude/lance4` off master a005867a (BATCH129). Not merged, not deployed.
   - HEAVY: lance charge (1.0 s couch), vault 0.95.
   - Each class has its own sound; a heavy also gets a planted-foot stamp ring.
   - Never two heavies back to back, and 0.8 s of guard after one.
-  - **The shield bash is cut.**
+  - **The shield bash is cut.** HP 3000 -> 4500 (see rates).
 - **P1 (bells and gates):**
   - Gate towers on piers 1, 3 and 5. Each has a `lancebell` prop on its lookout, a portcullis column under the lookout, and a tower top one held jump up.
   - A ring gives three tolls over 1.2 s. HE ANSWERS THE BELL: his next move is a charge at that tower.
@@ -70,7 +70,12 @@ Node, all green:
 - answer-tags, blow-tags, goblin-lint, boss-read, combat-feel, audit, content-audit
 - signs, checkpoints, checkpoint-gaps, anchor-lint, dangling-paths
 
-PAGE: see "Page results" below.
+PAGE (after the gate flag cleared, one browser at a time, RAM >= 6.7 GB free): lance4 (every device forced: pin 3.4 x1.6 / answer+overrun 1.5 / whiff overrun / P2 haul, bells dead / helm rung 2.2 / whip 1.6 out of a shield wall / P3 home under the gate / great bell pin 3.9 x2 + shield split / shieldless front 70 of 100 / stones break planks / slam) GREEN; rule-openings GREEN; hint-shown GREEN; boss-openings GREEN; mark-integrity MI_ONLY=lance GREEN; zipline.mjs: storm 39/39 for all 7 heroes, then a Runtime.evaluate 601 s timeout on a LATER level (gantry, not Stormhold - a loaded-machine page timeout, not this change).
+
+## Boss rate (boss-rates storm practiced, profile human, flasks, L18, n=18)
+- 3000 hp (the brief): 6/6 6/6 5/6 = 94% (56-118 s). First found the bot never climbed to the bells (its jump was let go early) - fixed in lab.js, then measured.
+- 4000: 89%; 4300: 83%; **4500 (built): 4/6 5/6 6/6 = 83%, fights 66-155 s**; 4600: 1/6 5/6 4/6 = 56%. Steep and noisy between 4500 and 4600; the TUNE lane owns the 60-70% band (rec: try 4550-4600 and/or bell pin 3.0 at n=18+).
+- Mash 0/6 not run (tune lane).
 
 ## Files touched
 - src/main.js (updateLance block, hurtEnemy, spawn/props, death, draw, bestiary, DMG, MOVE_WORDS, windingUp)
@@ -79,6 +84,7 @@ PAGE: see "Page results" below.
 - tools/rule-openings.mjs, tools/lance-sheet.mjs, tools/check.mjs, tools/watchtowers.mjs, tools/zipline.mjs, tools/dangling-paths.mjs, tools/stormhold3.mjs, tools/hint-shown-silent.txt
 
 ## Questions for Daniel (rec built)
+0. HIS HEALTH: the on-foot fight with three device openings is much easier for the bot than the brief's 3000 (94%). REC (built): 4500 as a first cut (83%), the tune lane finishes the band.
 1. **Mark colour vs tempo class.** The brief says MEDIUM moves get a yellow '!'. But the sweep and the volley are unblockable, and the game-wide rule (tools/tells.mjs) is "yellow = the shield turns it".
    - REC (built): the mark colour stays the shield's promise. The tempo class shows through its word, its sound and the heavy's stamp.
 2. **How long the bell-gate pins last.** Your 10-29 "bell stuck ~1 s" note: the pins here come from the gate's bars, not the shared bell stun.
