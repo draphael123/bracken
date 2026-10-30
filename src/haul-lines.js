@@ -12,6 +12,7 @@
 // and WRECK it: 5 blows (marks, as the Stockade engine).
 // Pure of main.js: haulStep(c, dt) takes a small context (tools/stormhold4.mjs drives it in Node with stubs).
 import { lineY, norm } from './zipline.js';
+import * as SHA from './stormhold-art.js';
 
 export const HAUL = { lead: 1.3, every: 3.2, first: 0.8, dmg: 12, hitR: 14, escape: 7, hp: 5, restring: 6, arc: 88, armT: 0.55, upLo: -40, upHi: 48 };   // s, s, s, hp, px, tiles, blows, s, px, s, px (another line within 2.5 rows over / 3 under)
 
@@ -73,41 +74,26 @@ function fire(c, H, m, z, tx, cut) {
 /* where a stone is, k of the way (a lob: HAUL.arc px over the straight line at its middle) */
 export const stoneAt = (s, k) => [s.x0 + (s.tx - s.x0) * k, s.y0 + (s.ty - s.y0) * k - 4 * HAUL.arc * k * (1 - k)];
 
-/* ---------------- DRAWN (greybox, the castle's own colours; LANCE 4 ART redraws it) ---------------- */
+/* ---------------- DRAWN (claude/lance4art: the pictures are src/stormhold-art.js) ---------------- */
 export function drawHaul(g, L, cx, cy, VW, time) {
   const H = L.haulState, M = L.mangonel;
-  /* the lines are HEAVY HEMP: a second strand under the zip line's own, and a parted line whips and is strung again */
+  SHA.drawHaulTower(g, cx, cy, VW, time);   /* the haul tower's jib and winch, the barbican's corbels, banners and lantern */
+  /* the lines are HEAVY HEMP: a twisted strand under the zip line's own, with splices; a parted line whips and is strung again (the same whip as the bridge's signal ropes) */
   for (const z of L.zipLines || []) { if (!z.haul) continue; norm(z); if (z.xb < cx - 40 || z.xa > cx + VW + 40) continue;
     const X0 = Math.round(z.x0 - cx), Y0 = Math.round(z.y0 - cy), X1 = Math.round(z.x1 - cx), Y1 = Math.round(z.y1 - cy);
-    if (!(z.cut > 0)) { g.strokeStyle = '#7a6440'; g.lineWidth = 1; g.beginPath(); g.moveTo(X0, Y0 + 2.5); g.lineTo(X1, Y1 + 2.5); g.stroke();
-      for (let t = 0.1; t < 1; t += 0.2) { const x = Math.round(X0 + (X1 - X0) * t), y = Math.round(Y0 + (Y1 - Y0) * t); g.fillStyle = '#5a4630'; g.fillRect(x, y + 1, 1, 2); }   /* the lay of the hemp */
-      continue; }
-    for (const [px, py, gy] of (z.posts || [])) { const x = Math.round(px - cx); g.fillStyle = '#4a3020'; g.fillRect(x - 2, Math.round(py - cy) - 4, 4, gy - py + 4); g.fillStyle = '#8b8378'; g.fillRect(x - 4, Math.round(py - cy) - 6, 8, 3); }
-    if (z.whip > 0) { const k = 1 - z.whip / 0.6; g.strokeStyle = '#e8dcc0'; g.lineWidth = 2; g.beginPath();
-      for (let i = 0; i <= 16; i++) { const t = i / 16, lx = X0 + (X1 - X0) * t, ly = Y0 + (Y1 - Y0) * t + Math.sin(t * 9 + time * 40) * 6 * (1 - k) + k * 34 * Math.sin(t * Math.PI); if (i) g.lineTo(lx, ly); else g.moveTo(lx, ly); } g.stroke(); g.lineWidth = 1; }
-    const rk = 1 - z.cut / (z.cut0 || HAUL.restring); g.strokeStyle = '#c9b27c'; g.beginPath(); g.moveTo(X0, Y0 + 0.5); g.lineTo(X0 + (X1 - X0) * rk, Y0 + (Y1 - Y0) * rk + 0.5); g.stroke(); }
+    if (!(z.cut > 0)) { SHA.drawHaulHemp(g, z, cx, cy); continue; }
+    for (const [px, py, gy] of (z.posts || [])) { const x = Math.round(px - cx), y0 = Math.round(py - cy); g.fillStyle = '#3a3c50'; g.fillRect(x - 2, y0 - 4, 4, gy - py + 4); g.fillStyle = '#7a7e96'; g.fillRect(x - 2, y0 - 4, 1, gy - py + 4); g.fillStyle = '#2a2e38'; g.fillRect(x - 4, y0 - 6, 8, 3); g.fillStyle = '#8590a0'; g.fillRect(x - 4, y0 - 6, 8, 1); }
+    if (z.whip > 0) { const k = 1 - z.whip / 0.6, pts = [];
+      for (let i = 0; i <= 18; i++) { const t = i / 18; pts.push([X0 + (X1 - X0) * t, Y0 + (Y1 - Y0) * t + Math.sin(t * 9 + time * 40) * 6 * (1 - k) + k * 34 * Math.sin(t * Math.PI)]); }
+      for (let i = 1; i < pts.length; i++) SHA.hempLine(g, pts[i - 1][0], pts[i - 1][1], pts[i][0], pts[i][1], 2, 0, i * 2);
+      const [lx, ly] = pts[pts.length - 1]; g.fillStyle = '#e8dcc0'; for (let q = 0; q < 5; q++) g.fillRect(Math.round(lx) + (q % 3) - 1, Math.round(ly) + q * 2 - 2, 1, 2); }
+    const rk = 1 - z.cut / (z.cut0 || HAUL.restring); SHA.hempLine(g, X0, Y0, X0 + (X1 - X0) * rk, Y0 + (Y1 - Y0) * rk, 1); }
   if (!M || !H || !H.m) { if (M) drawMangonel(g, { x: M.x * 16 + 8, y: (M.y + 1) * 16, armT: 0, wrecked: false }, cx, cy, time); return; }
   drawMangonel(g, H.m, cx, cy, time);
   /* THE STONES: the dotted arc the whole way, the stone on it, and the red ring ON THE ROPE where it lands */
-  for (const s of H.stones) { const k = Math.min(1, s.t / s.T);
-    g.fillStyle = '#ff9a5c'; g.globalAlpha = 0.55; for (let i = 1; i < 16; i++) { const [ax, ay] = stoneAt(s, i / 16); if (i / 16 > k) g.fillRect(Math.round(ax - cx), Math.round(ay - cy), 1, 1); } g.globalAlpha = 1;
-    const [sx, sy] = stoneAt(s, k); g.fillStyle = '#5a5650'; g.beginPath(); g.arc(Math.round(sx - cx), Math.round(sy - cy), 4, 0, 7); g.fill(); g.fillStyle = '#8a8478'; g.fillRect(Math.round(sx - cx) - 2, Math.round(sy - cy) - 2, 2, 2);
-    const rx = Math.round(s.tx - cx), ry = Math.round(s.ty - cy), pulse = 0.5 + 0.5 * Math.sin(time * 16);
-    g.strokeStyle = '#ff4a4a'; g.globalAlpha = 0.5 + 0.4 * pulse; g.lineWidth = 1; g.beginPath(); g.ellipse(rx, ry, 14 - 6 * k, 6 - 2 * k, 0, 0, 7); g.stroke();
-    g.beginPath(); g.ellipse(rx, ry, 4, 2, 0, 0, 7); g.stroke(); g.globalAlpha = 1; }
+  for (const s of H.stones) { const k = Math.min(1, s.t / s.T), arc = [];
+    for (let i = 1; i < 16; i++) { const [ax, ay] = stoneAt(s, i / 16); if (i / 16 > k) arc.push([Math.round(ax - cx), Math.round(ay - cy)]); }
+    const [sx, sy] = stoneAt(s, k); SHA.drawStoneFlight(g, k, Math.round(sx - cx), Math.round(sy - cy), Math.round(s.tx - cx), Math.round(s.ty - cy), arc, time); }
 }
-/* THE MANGONEL: a stone-and-iron engine on the barbican's top - its frame, the arm (cocked back, or flung up as it looses), the sling, the
-   counterweight; wrecked, the arm snapped and the frame down on one side */
-export function drawMangonel(g, m, cx, cy, time) {
-  const x = Math.round(m.x - cx), y = Math.round(m.y - cy);
-  g.fillStyle = '#3a3a44'; g.fillRect(x - 16, y - 4, 32, 4); g.fillStyle = '#5a5a68'; g.fillRect(x - 16, y - 4, 32, 1);   /* the bed, iron-shod */
-  if (m.wrecked) { g.fillStyle = '#4a3020'; g.fillRect(x - 10, y - 12, 3, 8); g.fillRect(x + 6, y - 7, 10, 3); g.fillStyle = '#2a2a34'; g.fillRect(x - 4, y - 8, 9, 4);
-    g.fillStyle = '#6a4a30'; g.fillRect(x - 14, y - 6, 12, 2); return; }
-  g.fillStyle = '#4a3020'; g.fillRect(x - 9, y - 20, 3, 16); g.fillRect(x + 6, y - 20, 3, 16); g.fillStyle = '#2a2a34'; g.fillRect(x - 10, y - 21, 20, 2);   /* the uprights, the axle */
-  const k = m.armT > 0 ? m.armT / HAUL.armT : 0;   /* cocked: the arm laid back low to the east; loosing (k 1 -> 0 as it settles): flung up and over toward the ditch */
-  const ax = x, ay = y - 20, ex = Math.round(ax + 18 - 28 * k), ey = Math.round(ay + 10 - 30 * k);
-  g.strokeStyle = '#6a4a30'; g.lineWidth = 3; g.beginPath(); g.moveTo(ax + (ax - ex) * 0.35, ay + (ay - ey) * 0.35); g.lineTo(ex, ey); g.stroke(); g.lineWidth = 1;
-  g.fillStyle = '#2a2a34'; g.fillRect(Math.round(ax + (ax - ex) * 0.35) - 4, Math.round(ay + (ay - ey) * 0.35) - 2, 8, 7);   /* the counterweight box */
-  g.fillStyle = '#5a5650'; g.fillRect(Math.round(ex) - 2, Math.round(ey) - 2, 4, 4);   /* the sling, with its stone when cocked */
-  if (!k) { const glow = 0.5 + 0.5 * Math.sin(time * 4); g.globalAlpha = 0.25 + 0.25 * glow; g.strokeStyle = '#ff9a5c'; g.beginPath(); g.arc(Math.round(ex), Math.round(ey), 5, 0, 7); g.stroke(); g.globalAlpha = 1; }
-}
+/* THE MANGONEL: three states (cocked, loosing, wrecked) - src/stormhold-art.js drawMangonelArt */
+export function drawMangonel(g, m, cx, cy, time) { SHA.drawMangonelArt(g, m, cx, cy, time, HAUL.armT); }

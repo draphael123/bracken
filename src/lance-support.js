@@ -86,52 +86,9 @@ export function ropeTick(z, dt, X = LANCE4) {
 /* is he under its run? (between its two ends, on his feet) */
 export const underRope = (e, z) => !!e && e.x > Math.min(z.x0, z.x1) - 6 && e.x < Math.max(z.x0, z.x1) + 6;
 
-/* THE BELL, DRAWN (greybox in the bridge's colours; the art lane redraws it): on its frame on the lookout, swinging and throwing a ring per
-   toll; its rope on the winch drum paying back out while it winds back (the rewind, drawn); hauled up out of reach in P2 (a coil, high). */
-export function drawLanceBell(g, pr, cx, cy, TS, time) {
-  const x = Math.round(pr.x - cx), y = Math.round(pr.y - cy), up = pr.up ? 14 : 0, great = !!pr.great, s = great ? 1.5 : 1;
-  /* the frame: two posts and a beam (the great bell's on the hoarding is iron) */
-  g.fillStyle = great ? '#2a2e38' : '#4a3020'; g.fillRect(x - 9 * s, y - 26 * s - up, 2, 26 * s + up); g.fillRect(x + 8 * s - 1, y - 26 * s - up, 2, 26 * s + up); g.fillRect(x - 10 * s, y - 27 * s - up, 20 * s + 1, 3);
-  const sw = pr.ringT >= 0 || (pr.rings && pr.rings.length) ? Math.sin(time * 14) * 3 : 0, bx = x + Math.round(sw), by = y - 8 * s - up;
-  g.fillStyle = '#6a5a3a'; g.fillRect(x, y - 24 * s - up, 1, 6 * s);
-  g.fillStyle = great ? '#7a6a3a' : '#8a6a2a'; g.fillRect(bx - 5 * s, by - 10 * s, 11 * s, 11 * s); g.fillStyle = great ? '#e0c060' : '#c9a040'; g.fillRect(bx - 4 * s, by - 10 * s, 3 * s, 10 * s); g.fillRect(bx - 7 * s, by, 15 * s, 3);
-  g.fillStyle = '#3a2a1a'; g.fillRect(bx, by + 3, 2, 2);
-  for (const r of pr.rings || []) { const k = r.t / 0.8; g.globalAlpha = 0.8 * (1 - k); g.strokeStyle = '#ffd36b'; g.lineWidth = 1; g.beginPath(); g.ellipse(bx, by - 4 * s, 8 * s + 22 * k, 6 * s + 14 * k, 0, 0, 7); g.stroke(); }
-  g.globalAlpha = 1;
-  if (pr.up) { g.fillStyle = '#8a7a5a'; for (let k = 0; k < 3; k++) g.fillRect(x + 4, y - 30 - up + k * 2, 5, 1); return; }   /* hauled up: the bell rope coiled on the beam */
-  /* the winch drum on the post, and the rewind: a gold bar that fills as it winds back; ready, a glint */
-  g.fillStyle = '#3a2214'; g.beginPath(); g.arc(x - 9 * s, y - 10, 4, 0, 7); g.fill(); g.fillStyle = '#8a5a32'; g.fillRect(x - 9 * s - 1, y - 11, 3, 3);
-  if (pr.rewind > 0) { const k = 1 - pr.rewind / (pr.rewind0 || 10); g.fillStyle = '#2a2018'; g.fillRect(x - 8 * s, y + 2, 16 * s, 2); g.fillStyle = '#ffd36b'; g.fillRect(x - 8 * s, y + 2, Math.round(16 * s * k), 2);
-    g.strokeStyle = '#c9b27c'; g.beginPath(); const a = time * 8; g.moveTo(x - 9 * s, y - 10); g.lineTo(x - 9 * s + Math.cos(a) * 4, y - 10 + Math.sin(a) * 4); g.stroke(); }
-  else { const k = 0.5 + 0.5 * Math.sin(time * 5); g.globalAlpha = 0.3 + 0.4 * k; g.strokeStyle = '#ffd36b'; g.beginPath(); g.ellipse(bx, by - 4 * s, 9 * s + k, 10 * s + k, 0, 0, 7); g.stroke(); g.globalAlpha = 1; }
-}
-/* A TOWER'S PORTCULLIS (the bell's gate), up under the lookout with its teeth showing; down on him, the bars rest on his helm */
-export function drawBellGate(g, pr, cx, cy, TS, time, e) {
-  if (pr.great) return;   /* the main gate draws itself (main.js drawLanceBridge) */
-  const x = Math.round(pr.gx - cx), top = pr.gy0 * TS - cy;
-  const bars = (y0, y1) => { g.fillStyle = '#2a2a34'; g.fillRect(x - 9, y0, 18, 2); g.fillRect(x - 9, y1 - 2, 18, 2);
-    for (let k = -8; k <= 8; k += 4) { g.fillStyle = '#4a4a58'; g.fillRect(x + k - 1, y0, 2, y1 - y0); g.fillStyle = '#8a8a9c'; g.fillRect(x + k - 1, y0, 1, y1 - y0); }
-    g.fillStyle = '#c9c9d6'; for (let k = -8; k <= 8; k += 4) g.fillRect(x + k - 1, y1, 2, 2); };
-  if (pr.pinned && e) { const hy = Math.round(e.y - (e.h || 40) - cy); bars(Math.round(top) - 6, Math.max(Math.round(top), hy)); return; }
-  if (pr.down > 0) return;   /* down across the lane: its own tiles draw it */
-  bars(Math.round(top) - 6, Math.round(top) + 2);
-  if (pr.ringT >= 0) { const k = 0.5 + 0.5 * Math.sin(time * 20); g.globalAlpha = 0.4 + 0.5 * k; g.fillStyle = '#ff6b6b'; g.fillRect(x - 9, Math.round(top) + 3, 18, 1); g.globalAlpha = 1; }   /* it is coming down: red along its foot */
-}
-/* A SIGNAL ROPE'S POST and its cut: the post on the deck (struck to cut the line); the fray (sparks), the whip (the parted line lashing down
-   along its run) and the crew hauling it taut again (the line drawn back from the tower as it is re-strung) */
-export function drawRopeCut(g, z, cx, cy, time, live) {
-  const [px, py] = z.post, x = Math.round(px - cx), y = Math.round(py - cy);
-  g.fillStyle = '#4a3020'; g.fillRect(x - 2, y - 18, 4, 18); g.fillStyle = '#6a4a30'; g.fillRect(x - 1, y - 18, 1, 18); g.fillStyle = '#8b8378'; g.fillRect(x - 4, y - 20, 8, 3);
-  g.strokeStyle = '#c9b27c'; g.lineWidth = 1; g.beginPath(); g.moveTo(x + 0.5, y - 18); g.lineTo(Math.round(z.x1 - cx) + 0.5, Math.round(z.y1 - cy) + 0.5); g.stroke();   /* the stay from the post up to the line's end */
-  if (live && !(z.cut > 0) && !(z.fray > 0)) { const k = 0.5 + 0.5 * Math.sin(time * 5); g.globalAlpha = 0.3 + 0.4 * k; g.fillStyle = '#ffd36b'; g.fillRect(x - 3, y - 12, 7, 2); g.globalAlpha = 1; }   /* the lashing glints: strike it */
-  if (z.fray > 0) { g.fillStyle = Math.sin(time * 50) > 0 ? '#ffd36b' : '#ff9a5c'; for (let k = 0; k < 4; k++) g.fillRect(x - 4 + ((time * 97 + k * 37) % 9), y - 14 - ((time * 61 + k * 13) % 8), 1, 1); }
-  if (z.cut > 0) { const X0 = Math.round(z.x0 - cx), Y0 = Math.round(z.y0 - cy), X1 = Math.round(z.x1 - cx), Y1 = Math.round(z.y1 - cy);
-    if (z.whip > 0) { const k = 1 - z.whip / 0.6; g.strokeStyle = '#e8dcc0'; g.lineWidth = 2; g.beginPath();   /* THE WHIP: the line lashes down the length of its run */
-      for (let i = 0; i <= 16; i++) { const t = i / 16, lx = X0 + (X1 - X0) * t, ly = Y0 + (Y1 - Y0) * t + Math.sin(t * 9 + time * 40) * 6 * (1 - k) + k * 34 * Math.sin(t * Math.PI); if (i) g.lineTo(lx, ly); else g.moveTo(lx, ly); } g.stroke(); g.lineWidth = 1; }
-    const rk = 1 - z.cut / (z.cut0 || 14);   /* re-stringing: the line paid back out from the tower, taut as far as it has come */
-    g.strokeStyle = '#c9b27c'; g.beginPath(); g.moveTo(X0, Y0 + 0.5); g.lineTo(X0 + (X1 - X0) * rk, Y0 + (Y1 - Y0) * rk + 0.5); g.stroke();
-    g.strokeStyle = '#8a7a5a'; g.beginPath(); g.moveTo(X1, Y1); g.lineTo(X1, Y1 + 14); g.stroke(); }
-}
+/* THE BELL, THE TOWER'S PORTCULLIS AND THE SIGNAL ROPES' POSTS, DRAWN: src/stormhold-art.js (claude/lance4art) */
+import * as SHA from './stormhold-art.js';
+export const drawLanceBell = SHA.drawLanceBell, drawBellGate = SHA.drawBellGate, drawRopeCut = SHA.drawRopeCut;
 
 /* THE END LOOKOUTS. The bridge's piers are 5 tiles wide and 18 apart from P0; the five in the middle have had a lookout since the
    bridge was built (a five-tile one-way deck three rows over the boards, a bridgetower on the pier under it, a brazier on it), and
@@ -173,9 +130,7 @@ export function gateStep(pr) { if (pr.pinned && (!pr.pinned.alive || pr.pinned.m
 /* THE GATE, DRAWN: up, its teeth show under the lookout (so you can see it is there to drop); down on him, the bars rest on his helm */
 export function drawLanceGate(g, pr, cx, cy, TS, time) {
   const x = Math.round(pr.gate * TS + 8 - cx), top = pr.gy0 * TS - cy, e = pr.pinned;
-  const bars = (y0, y1) => { g.fillStyle = '#2a2a34'; g.fillRect(x - 9, y0, 18, 2); g.fillRect(x - 9, y1 - 2, 18, 2);
-    for (let k = -8; k <= 8; k += 4) { g.fillStyle = '#4a4a58'; g.fillRect(x + k - 1, y0, 2, y1 - y0); g.fillStyle = '#8a8a9c'; g.fillRect(x + k - 1, y0, 1, y1 - y0); }
-    g.fillStyle = '#c9c9d6'; for (let k = -8; k <= 8; k += 4) g.fillRect(x + k - 1, y1, 2, 2); };   /* the spikes at its foot */
+  const bars = (y0, y1) => SHA.drawPortcullis(g, x, y0, y1);   /* (src/stormhold-art.js) */
   if (pr.bell) { const bx = Math.round(pr.x - cx), by = Math.round(pr.y - cy), sw = pr.open > 0 ? Math.sin(time * 9) * 3 * Math.min(1, pr.open / 3) : 0;   /* THE HALL BELL: on its rope from the beam, swinging while its grate is down */
     g.fillStyle = '#5a4a3a'; g.fillRect(bx, by - 40, 1, 24); g.fillStyle = '#8a6a2a'; g.fillRect(bx - 5 + Math.round(sw), by - 16, 11, 12); g.fillStyle = '#c9a040'; g.fillRect(bx - 4 + Math.round(sw), by - 16, 3, 11); g.fillRect(bx - 7 + Math.round(sw), by - 5, 15, 3); g.fillStyle = '#3a2a1a'; g.fillRect(bx + Math.round(sw * 1.5), by - 2, 2, 2);
     if (!(pr.open > 0)) { const k = 0.5 + 0.5 * Math.sin(time * 5); g.globalAlpha = 0.3 + 0.4 * k; g.strokeStyle = '#ffd36b'; g.lineWidth = 1; g.beginPath(); g.ellipse(bx, by - 9, 9 + k, 10 + k, 0, 0, 7); g.stroke(); g.globalAlpha = 1; } }
