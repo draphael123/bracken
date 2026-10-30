@@ -21153,7 +21153,7 @@ function updateFt4(dt){
   sound:k=>(SFX[k]||({creak:SFX.clank,heavy:SFX.thud})[k]||SFX.stone)(),shake:n=>shakeCam(n),dust:(x,y,n)=>dust(x,y,n),burst:(x,y,n,cols)=>burst(x,y,n,cols,60,.9,420,2),
   onMover:()=>P.onMover||null,sextonDown:()=>!enemies.some(q=>q.t==='sexton'&&q.alive),supportDown:id=>(L.ftSupports||[]).some(s=>s.id===id&&s.st==='down'),
   crumbleBreak:b=>{for(const q of L.crumbles||[])if(q.kind==='deck'&&q.x1>=b[0]&&q.x0<=b[1])crumbleBreakAt(q);},carry:dy=>{P.y+=dy;P.vy=0;},slick:z=>{L.slick=(L.slick||[]).concat([z]);},
-  front:id=>fronts.find(q=>q.sp.id===id)||null,busy:miniActive||bossActive});
+  front:id=>fronts.find(q=>q.sp.id===id)||null,resolve:()=>resolveTiles(),busy:miniActive||bossActive});
  for(const c of fronts){if(c.st.phase!=='run'||!P.safe||P.safe.L!==L||P.safe.y<c.st.pos-2)continue;
   const to=chaseSafeAbove(c.sp,c.st.pos,P.x,(tx,row)=>{const t=tileAt(tx,row);return(t===T.ONEWAY||t===T.SOLID||t===T.PLANK)&&tileAt(tx,row-1)===T.AIR&&tileAt(tx,row-2)===T.AIR;});
   if(to){P.safe.x=to.x;P.safe.y=to.y;}}

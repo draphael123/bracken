@@ -1,7 +1,7 @@
 /* tools/tower-ascent.mjs — THE FALLING TOWER, rebuilt (batch 4, 2026-09-21). Replaces tower-return.mjs, tower-finish.mjs
    and their runtime twins, which pinned the old shape (the Folly walked backwards to an indoor arena).
      BUILT   an upward level: SEVEN floors, each its own room kind, a rope through every divider, a GARRISON row that
-             places on every floor, no blanket calm, the elites on this layout, 3 silvers, a checkpoint on every floor
+             places on every floor, no blanket calm, the elites on this layout, 3 silvers, FOUR shrines (claude/ft4b: a braced room an act + one before him)
      LONGER  (2026-09-22) THE READING ROOM and THE PENDULUM GALLERY, both LOAD-BEARING: take the flip away and nothing
              over the gallery is reached, take the pendulums away and the cistern is not; and FEWER ZOMBIES (3 + 1 husk)
      REACH   the fill climbs from the Folly's foot to the parapet and every silver/checkpoint; the sky has no footing
@@ -79,7 +79,8 @@ assert.ok(![...R.seen].some(s => +s.split(',')[1] < TOWER.SKY - 1), 'the climb r
 assert.equal(at(SAND.x0 + 4, SAND.row), T.SOLID, 'the sandy path is gone, so the line above passes for the wrong reason');
 assert.ok(![...R.seen].some(s => +s.split(',')[1] === SAND.row - 1), 'the sandy path can be WALKED to: it is meant to be reached only through the second door');
 const checks = L.ents.filter(e => e.t === 'check').map(e => e.y).sort((a, b) => a - b);
-for (const f of L.towerFloors) assert.ok(checks.some(y => y >= f.top - 2 && y < f.bot), 'a checkpoint on ' + f.name);
+/* (claude/ft4b, Daniel 10-29 #4: FOUR SHRINES - one braced room an act + one before him; tools/fallingtower4.mjs holds where) - not one a floor any more */
+assert.equal(checks.length, 4, 'four shrines'); for (const b of L.ft4.braced) assert.ok(checks.some(y => y >= b.box[2] && y <= b.box[3]), 'no shrine in the braced room ' + b.id);
 /* and one on the crown's last climb, for the sky fight - NOT on the parapet any more, where the fight saw it under the fire and could never reach it
    (round 2; tools/checkpoint-stand.mjs holds every flight arena to that) */
 assert.ok(checks[0] > TOWER.SKY + 1 && checks[0] <= TOWER.SKY + 8, "the last checkpoint before the sky is on the crown's last climb: row " + checks[0]);

@@ -402,7 +402,7 @@ export function buildTowerAscent({ painter, T, TS }) {
     const caseAt = (t, at, o) => ({ look: 'case', col: t[0], base: t[2], h: 4, dir: 1, span: [t[0] + 1, t[0] + 4, t[2]], hit: [t[0] + 1, t[0] + 4, t[2] - 4, t[2]], lay: false, at, name: 'A FALLING BOOKCASE', ...o });
     const pieces = [
       { id: 'shelves', act: 1, go: 'zone', zone: [LT[5][0], LT[4][0] + LT[4][1] - 1, LT[4][2] - 5, LT[4][2]], say: 'THE SHELVES GO', shake: 5,
-        items: [caseAt(LT[5], 0), caseAt(LT[6], 1.1), caseAt(LT[7], 2.2, { col: LT[7][0] + 1, span: [LT[7][0] + 6, LT[7][0] + 10, LT[8][2]], hit: [LT[7][0] + 6, LT[7][0] + 10, LT[8][2] - 4, LT[8][2]], hold: 'lib-top' })] },
+        items: [caseAt(LT[5], 0), caseAt(LT[6], 1.1), caseAt(LT[7], 2.2, { col: LT[7][0] + 5, span: [LT[7][0] + 6, LT[7][0] + 10, LT[8][2]], hit: [LT[7][0] + 6, LT[7][0] + 10, LT[8][2] - 4, LT[8][2]], hold: 'lib-top' })] },
       { id: 'dome', act: 2, go: 'mover', moverKey: 'role', moverVal: 'scope', say: 'THE DOME COMES IN', shake: 5,   /* from the far (east) side: the high rib first */
         items: [{ span: [stairOb[2][0] + 6, stairOb[2][0] + 10, roof - 12], from: ob.top + 1, slick: true, at: 0, name: 'A RIB OF THE DOME' },
           { span: [stairOb[1][0] + 8, stairOb[1][0] + 12, roof - 9], from: ob.top + 1, slick: true, at: 1.1, name: 'A RIB OF THE DOME' }] },
@@ -426,7 +426,7 @@ export function buildTowerAscent({ painter, T, TS }) {
       knockTo: [...loft.tiers.map(t => t.slice(0, 3)), ...O.ledges.map(l => l.slice(0, 3)), [X0, X1 - X0 + 1, crown.bot]],
       curve: [[0, 24], [(bell.deck - crown.bot) * TS, 30, 'THE CROWN SPLITS: IT SURGES'], [(bell.deck - O.ledges[3][2]) * TS, 36, 'THE FACE PEELS: IT SURGES']],
       rubber: { min: 72, max: 180, slow: 0.4, catch: 1.4 }, zone: [0, (X1 + 1) * TS, (SKY - 6) * TS, (loft.bot + 1) * TS], drawZone: [0, (X1 + 1) * TS, (SKY - 6) * TS, (loft.bot + 1) * TS], checkpoint: [labTop[0] + 1, labTop[2] - 1] });
-    return { x0: X0, x1: X1, acts, pieces, braced, fronts: [front2, front3], bell: { x: 30, y: bell.frame + 4, chain: bell.frame + 2 }, peel: { front: 'front3', ledges: O.ledges.slice(0, -1).map(l => l.slice(0, 3)), say: 'THE OUTER FACE PEELS' } };
+    return { x0: X0, x1: X1, acts, pieces, braced, fronts: [front2, front3], bell: { x: 30, y: bell.frame + 7, chain: bell.frame + 2 },   /* (low enough to be on the screen from the deck) */ peel: { front: 'front3', ledges: O.ledges.slice(0, -1).map(l => l.slice(0, 3)), say: 'THE OUTER FACE PEELS' } };
   })();
   for (const s of supports) { s.x ??= s.col * TS + 8; s.y ??= (s.row + 1) * TS; }   /* (fallingtower3) every pillar in px too: where it stands, its foot on its footing */
   // ---- THE DIVIDERS AND THEIR ROPES. Each floor's rope hangs from its last tier, through the divider over it, to its top. ----

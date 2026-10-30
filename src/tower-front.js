@@ -43,7 +43,7 @@ const TS = 16;
    stop: the row it waits under until that landing is stood on (default: the landing's own row - the spiral stair's rule). A ride (the telescope,
    the pendulums, the poison stones, a long floor walk) is one landing whose stop is the row the ride starts from: the front never reaches you on it. */
 export function frontSpec(o) {
-  const caps = o.landings.map(l => ({ reach: l.row * TS - 8, stop: ((l.stop ?? l.row) + 1) * TS + 6 }));
+  const caps = o.landings.map(l => ({ reach: l.row * TS - 4, stop: ((l.stop ?? l.row) + 1) * TS + 6 }));
   return { id: o.id, name: o.name, say: o.say, axis: 'y', dir: -1, trigger: o.trigger, end: o.end, gap0: o.gap0 ?? 120,
     curve: o.curve, lead: 1.6, accel: 24, rubber: o.rubber, contact: 'hurt', dmg: o.dmg ?? 21, hold: 1.2, band: true,
     caps, knockTo: o.knockTo, autoscroll: true, edge: 24, show: 28, showKeep: 0.55, glow: 220, look: 'rock', zone: o.zone, checkpoint: o.checkpoint,
@@ -102,7 +102,7 @@ function pieceGo(p, P, c) {
 function land(it, P, c, set, R) {
   const T = c.T, [x0, x1, row] = it.span; c.sound('stone'); c.shake(it.shake || 4);
   if (it.lay !== false) { for (let x = x0; x <= x1; x++) if (c.tile(x, row) === T.AIR) set(x, row, T.ONEWAY);
-    if (it.slick) { const z = [x0, x1, row]; z.frost = false; R.slick.push(z); c.slick(z); } }
+    if (it.slick) { const z = [x0, x1, row]; z.frost = false; R.slick.push(z); c.slick(z); } if (c.resolve) c.resolve(); }
   for (let x = x0; x <= x1; x += 2) c.burst(x * TS + 8, row * TS, 3, it.cols || ['#8a8e9c', '#5c6070', '#b8b4a8']);
   const hb = it.hit || [x0, x1, row - 4, row];
   if (P.x > hb[0] * TS - 6 && P.x < (hb[1] + 1) * TS + 6 && P.y > hb[2] * TS && P.y <= (hb[3] + 1) * TS + 2) c.hurt(P.x, FT4.piece.dmg, it.name || 'FALLING STONE');
@@ -115,7 +115,7 @@ function stepShear(p, S, P, dt, c, set) {
     for (const [x0, x1, row] of p.ledges) { const on = P.ground && Math.abs(P.y - row * TS) < 3 && P.x > x0 * TS - 4 && P.x < (x1 + 1) * TS + 4;
       for (let x = x0; x <= x1; x++) { const t = c.tile(x, row); set(x, row, T.AIR); set(x, row + n, t); }
       if (on && !carried) { carried = true; c.carry(n * TS); } }
-    for (const [x, y0, y1] of p.rope || []) for (let y = y0; y <= y1; y++) set(x, y, T.NET);
+    for (const [x, y0, y1] of p.rope || []) for (let y = y0; y <= y1; y++) set(x, y, T.NET); if (c.resolve) c.resolve();
     c.sound('stone'); c.sound('rumble'); c.shake(7); for (const [x0, x1, row] of p.ledges) for (let x = x0; x <= x1; x += 2) c.burst(x * TS + 8, (row + n) * TS, 3, ['#8a8e9c', '#5c6070', '#b8b4a8']);
     S.st = 'done'; }
 }
@@ -155,8 +155,8 @@ export function ft4Draw(g, L, P, cx, cy, time, T, chases) {
         if (q.st !== 'wait') { for (let xx = sx; xx < sx + w; xx += 4) R_(g, blink ? '#ff6b6b' : '#c9463d', xx, sy - 2, 2, 2);   /* where it will land, red */
           if (q.st === 'tell') { for (let k = 0; k < 4; k++) R_(g, '#a8987c', sx + ((k * 13 + time * 40) % Math.max(4, w)), top + 4 + ((time * 90 + k * 23) % Math.max(8, sy - top - 4)), 1, 2); }
           if (q.st === 'held' && T) T('STRIKE ITS PILLAR', sx + w / 2, sy - 30, '#ffd36b', 'center', 6); } }
-      else if (q.st === 'fall') { const k = 1 - Math.max(0, q.t) / FT4.piece.fallT, yy = Math.round(top + (sy - top) * k * k); R_(g, it.look === 'case' ? '#4a2c18' : '#3a3448', sx, yy - 8, w, 8); R_(g, it.look === 'case' ? '#7a4a28' : '#726a8a', sx, yy - 8, w, 2); }
-      else if (it.look === 'case') { R_(g, '#4a2c18', sx, sy - 4, w, 5); R_(g, '#7a4a28', sx, sy - 4, w, 1); for (let xx = sx + 2; xx < sx + w - 3; xx += 4) R_(g, ['#8a2a2a', '#2a4a7a', '#6a6a2a', '#5a2a6a'][(xx >> 2) & 3], xx, sy - 3, 3, 2); }   /* a toppled case: lying across, its books spilled */
+      else if (q.st === 'fall') { const k = 1 - Math.max(0, q.t) / FT4.piece.fallT, yy = Math.round(top + (sy - top) * k * k); if (it.look === 'case') drawCase(g, it, q, cx, cy, time, it.dir * Math.PI / 2 * k * k); else { R_(g, '#3a3448', sx, yy - 8, w, 8); R_(g, '#726a8a', sx, yy - 8, w, 2); } }   /* a case goes over on its foot; a rib drops */
+      else if (it.look === 'case') { R_(g, '#2a1a0e', sx, sy - 13, w, 13); R_(g, '#4a2c18', sx + 1, sy - 12, w - 2, 11); R_(g, '#7a4a28', sx, sy - 13, w, 2); for (let xx = sx + 6; xx < sx + w - 2; xx += 8) R_(g, '#2a1a0e', xx, sy - 11, 1, 10); for (let xx = sx + 2; xx < sx + w - 3; xx += 3) R_(g, ['#8a2a2a', '#2a4a7a', '#6a6a2a', '#5a2a6a'][(xx >> 1) & 3], xx, sy - 10 + ((xx >> 3) & 1) * 4, 2, 4); R_(g, '#e8dcc0', sx + w - 2, sy - 3, 5, 3); }   /* a toppled case: lying across, its books spilled */
       else if (it.slick) { R_(g, 'rgba(190,232,250,0.55)', sx, sy - 1, w, 2); for (let xx = sx + 3; xx < sx + w; xx += 9) R_(g, '#eefaff', xx, sy - 2, 2, 1); } });   /* a fallen rib: rimed with his frost */
   }
   // THE OUTER FACE PEELS: a plank near the front rattles and wears red; one that went falls away
@@ -164,8 +164,8 @@ export function ft4Draw(g, L, P, cx, cy, time, T, chases) {
       if (row * TS - ch.st.pos < FT4.peel.rattle && row * TS > ch.st.pos) { const sx = Math.round(x0 * TS - cx + Math.sin(time * 40) * 1.5), sy = Math.round(row * TS - cy); R_(g, blink ? '#ff6b6b' : '#c9463d', sx, sy + 13, len * TS, 2); } }
     for (const k in R.peeled) { const q = R.peeled[k]; if (q.t > 1.2) continue; const sx = Math.round(q.x0 * TS - cx), sy = Math.round(q.row * TS - cy + q.t * q.t * 300); R_(g, '#4a2c18', sx + q.t * 30, sy, q.len * TS, 4); R_(g, '#a8703c', sx + q.t * 30, sy, q.len * TS, 1); } }
 }
-function drawCase(g, it, q, cx, cy, time) {   /* a free-standing bookcase: in its tell it leans and shakes toward where it will lie */
-  const bx = Math.round((it.col + 0.5) * TS - cx), by = Math.round(it.base * TS - cy), h = it.h * TS, lean = q.st === 'tell' || q.st === 'held' ? (q.st === 'held' ? 0.35 : 0.12 + 0.1 * Math.sin(time * 30)) * it.dir : 0;
+function drawCase(g, it, q, cx, cy, time, ang) {   /* a free-standing bookcase: in its tell it leans and shakes toward where it will lie */
+  const bx = Math.round((it.col + 0.5) * TS - cx), by = Math.round(it.base * TS - cy), h = it.h * TS, lean = ang ?? (q.st === 'tell' || q.st === 'held' ? (q.st === 'held' ? 0.35 : 0.12 + 0.1 * Math.sin(time * 30)) * it.dir : 0);
   g.save(); g.translate(bx, by); g.rotate(lean); R_(g, '#2a1a0e', -8, -h, 16, h); R_(g, '#4a2c18', -7, -h + 1, 14, h - 2);
   for (let y = -h + 4; y < -2; y += 8) { R_(g, '#2a1a0e', -7, y + 6, 14, 1); for (let x = -6; x < 6; x += 3) R_(g, ['#8a2a2a', '#2a4a7a', '#6a6a2a', '#5a2a6a'][((x + y) >> 1) & 3], x, y, 2, 6); }
   g.restore();
