@@ -12,9 +12,9 @@ try {
     const snap=(name,note)=>{const c=document.createElement('canvas');c.width=BK.view.VW*2;c.height=BK.view.VH*2;const g=c.getContext('2d');g.imageSmoothingEnabled=false;g.drawImage(BK.buf,0,0,c.width,c.height);res.push([name,c.toDataURL('image/png'),note]);};
     const run=(n,f)=>{for(let i=0;i<n;i++){BK.P.hp=BK.P.maxHp;BK.sim(1);if(f&&f())break;if(i%4===0)BK.step(1);}BK.step(1);};
     BK.setHero('knight');BK.reset({fresh:true});BK.load(LEVELS.findIndex(l=>l.id==='fallingtower'));BK.state='play';BK.god=true;BK.sim(10);
-    BK.tp(33,50);for(let i=0;i<60;i++){BK.keys.right=true;BK.sim(1);}BK.keys.right=false;run(30);
-    BK.board();run(60);const b=BK.boss;for(let i=0;i<300&&b.mode==='wake';i++)BK.sim(1);
-    for(let k=0;k<3;k++){b.hp=Math.floor(b.hp0*MR.REALM.at[k]);b.realmRest=0;run(600,()=>b.mode==='realmTell'&&b.modeT<0.6);snap('tear-'+k,'he tears a portal: '+MR.REALM.kinds[k]);
+    
+    BK.board();run(60);const b=BK.boss;for(let i=0;i<3600&&b&&b.leg==='ascent';i++)BK.sim(1);   /* (claude/ft4c: THE ASCENT first, claude/ft4a) */for(let i=0;i<300&&b.mode==='wake';i++)BK.sim(1);
+    for(let k=0;k<3;k++){b.hp=Math.floor(b.hp0*(b.realmAt||MR.REALM.at)[k]);b.realmRest=0;run(600,()=>b.mode==='realmTell'&&b.modeT<0.6);snap('tear-'+k,'he tears a portal: '+MR.REALM.kinds[k]);
       run(200,()=>!!b.realm);const R=b.realm;run(20);snap(R.kind+"-banner","into the realm: the banner names its opening (claude/archfix)");
       if(R.kind==='fire'){run(400,()=>R.ph==='tell');snap('fire-tell','the fire realm: the tiles of the pattern glowing');run(120,()=>R.ph==='burn');run(10);snap('fire-burn','the pillars stand up');run(900,()=>R.wall&&R.wall.back);snap('fire-wall','his fire wall rolling back');b.mode='scorched';b.modeT=2;b.open=2;run(12);snap('fire-open','open: bold OPEN x2 and the window');b.modeT=0.2;}
       if(R.kind==='ice'){run(400,()=>R.icicles.some(q=>q.st==='crack'));run(20);snap('ice-crack','the ice realm: an icicle cracking over you, frost down to the floor; him in his shell');R.goT=99;R.goX=R.icicles[3].x;run(300,()=>Math.abs(b.x-R.goX)<2);run(4);snap('ice-cue','the icicle over his shell marked: STRIKE IT');BKT.hurtEnemy(b,20,b.x-10,false);run(6);snap('ice-warded','a blow on his ward: WARDED and the banner again');b.mode='shattered';b.modeT=2;b.open=2;run(12);snap('ice-open','open: bold OPEN x2 and the window');b.modeT=0.2;}
