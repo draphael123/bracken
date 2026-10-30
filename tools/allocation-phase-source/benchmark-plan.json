@@ -1,0 +1,96 @@
+{
+  "time": "2026-10-30T12:29:28.106Z",
+  "manifestSha256": "06495341cd87855f7e89336ab1a3fcd11261edcfdcdb9b0cc4deaa2fa5aaea23",
+  "helperSha256": "1608aa472835bafbcbfe1987d306467ffba17f09b12b9f61032a1ee0ad17ee5f",
+  "component": {
+    "complete": true,
+    "familyCases": 4928,
+    "publicCases": 672,
+    "coreCases": 122,
+    "rng": 0,
+    "processes": {
+      "launches": 1,
+      "closures": 1,
+      "allClosed": true,
+      "profileAbsences": [
+        {
+          "profile": "/tmp/bracken-look-qkXvDF",
+          "absent": true
+        }
+      ],
+      "interruptions": [],
+      "maxRendererMb": 1083,
+      "events": [
+        {
+          "type": "launch",
+          "pid": 2419,
+          "profile": "/tmp/bracken-look-qkXvDF",
+          "time": 1793361627578
+        },
+        {
+          "type": "native-lab-collection",
+          "time": 1793361691088,
+          "requests": 0,
+          "completed": 0,
+          "failed": 0,
+          "postEvaluations": 2
+        },
+        {
+          "type": "closed",
+          "pid": 2419,
+          "profile": "/tmp/bracken-look-qkXvDF",
+          "time": 1793361691172,
+          "peak": {
+            "totalMb": 2440,
+            "rendererMb": 1083
+          },
+          "reason": null
+        }
+      ]
+    },
+    "time": "2026-10-30T12:01:31.184Z",
+    "run": 41051941527,
+    "controller": "a2a704cb19ce253d0dddac01d66f7cf89e84a564",
+    "qualifiedForGameIntegration": true,
+    "rawReceipt": "work/pending-tile-wrapper-cloud-a2a704cb/pending-tile-wrapper-component/receipt.json",
+    "rawSha256": "a32458e9796a46895b3d113434433c4b4200c742b8ab064801877749c8aae2b2",
+    "nativePolicyAndMainFallbackPrerequisitesVerified": true,
+    "arrayWriteControl": {
+      "priorHelperSha256": "72af32eedb3c2e3c2d64d9eea7d650fa1d16ca69bc621d032637869fb9b6164f",
+      "replaysBefore": 0,
+      "replaysAfter": 1,
+      "pendingAfter": false,
+      "sourceDerivedCauseObserved": true
+    },
+    "originalGuardsAndNativeGcVerified": true,
+    "closed": true
+  },
+  "node": {
+    "complete": true,
+    "levels": 64,
+    "browsers": 0,
+    "priorFailureReproduced": true
+  },
+  "componentCloud": {
+    "workflow": "load-perf-proof.yml",
+    "mode": "pending-tile-wrapper-component-oct30",
+    "status": "completed",
+    "outerTimeoutMinutes": 15,
+    "evaluationDeadlineMs": 240000,
+    "audited": true,
+    "controller": "a2a704cb19ce253d0dddac01d66f7cf89e84a564",
+    "directory": "work/pending-tile-wrapper-cloud-a2a704cb",
+    "run": 41051941527,
+    "url": "https://github.com/draphael123/bracken/actions/runs/41051941527",
+    "createdAt": "2026-10-30T11:59:06.436Z",
+    "conclusion": "success"
+  },
+  "scope": "DIAGNOSTIC ONLY. Historical parent native evidence does not qualify the instrumented px source. No timing/gain/full-Game adoption verdict.",
+  "nativeProofEnvelopeCorrection": {
+    "priorActualSchema": "native and node audit fields",
+    "newMappedEnvelope": "All older gate facts derived from audited raw120case/64Node evidence; no fabricated or skipped condition",
+    "allOriginalPageEvidenceGuardsRetained": true,
+    "onlyCoreCountStrengthened114to120": true,
+    "priorLoaderBrowsers": 0
+  }
+}
