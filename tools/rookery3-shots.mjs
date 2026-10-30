@@ -14,7 +14,7 @@ const tellShot = (role, setup, mode, at) => `{boss();const S=SH.show();for(const
   const s=S.sis['${role}'];S.tLast=-99;s.ward=0;${setup};s.cd=0;for(let i=0;i<400;i++){BK.step(1);S.sis.snatcher.cd=99;if(s.mode==='${mode}'&&(1-s.modeT/(s.tempoT||1))>=${at})break;}}`;
 const SHOTS = [
   ['spires', `{tp(370,13);BK.sim(90);}`],
-  ['gale-spires', `{tp(378,18);P.vx=0;const ge=BK.enemies().find(e=>e.alive&&e.t==='galeharpy'&&e.squad==='galeSpires');ge.galeCd=0;for(let i=0;i<300&&ge.mode!=='galeTell';i++){BK.sim(1);P.hp=P.maxHp;}BK.sim(20);}`],
+  ['gale-spires', `{tp(381,16);BK.sim(60);P.vx=0;const ge=BK.enemies().find(e=>e.alive&&e.t==='galeharpy'&&e.squad==='galeSpires');ge.galeCd=0;for(let i=0;i<300&&ge.mode!=='galeTell';i++){BK.sim(1);P.hp=P.maxHp;}BK.sim(12);for(let i=0;i<3;i++)BK.step(1);}`],
   ['nest-face', `{tp(396,27);BK.sim(60);}`],
   ['nest-face-top', `{tp(401,14);BK.sim(60);}`],
   ['relay', `{const k='relayRide',d=BK.L.rkRides.find(q=>q.id===k),s=1;tp(d.mount[0],d.mount[1]);let aimed=0;
