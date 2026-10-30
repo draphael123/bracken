@@ -94,3 +94,96 @@ PAGE (after the gate flag cleared, one browser at a time, RAM >= 6.7 GB free): l
 4. **Cutting ropes in P1.** REC (built): the posts only fray from P2. In P1 they clank, and the lashing glint is not drawn.
 5. **Charge pass-through.** When answering a bell he charges *at the tower* and overruns about 0.35 s past it, not at you.
    - REC (built): keep it. It makes the timed ring (one toll-span ahead) the skill shot, and the early ring the reliable small opening.
+
+## STORMHOLD 4 LEVEL (lane 2, brief-lance4-1029.md s5 row 2)
+
+This work is stacked on lane 1's LANCE 4 BOSS on branch `claude/lance4`. Commits: c63f3453, f0bc5c39, 9f68cd78 and the report commit. The branch is pushed. It is not merged and not deployed.
+
+## What was built
+- **Gatehouse columns as G0 offsets first** (c63f3453). The level hash came out identical to before.
+- **Then the +180 shift.** H0 = 396 (the haul lines), G0 = 576 (the gatehouse), P0 = 670 (the bridge), W = 798.
+  - The level grows 618 -> 798 columns (+29%). It now has 7 areas.
+  - Columns moved by hand: ORDER_AT.storm (Storm Lance at [632,29], gate 637) and the storm dressing (skull totem 629).
+  - The storm AMBUSH, ELITES, GARRISON, CHECK_DROP and AFFIX_AT rows needed no change: none of them sits past col 395.
+- **5. THE HAUL LINES (396-575).** This is a new area of the level. The six lines are zip lines tagged `haul`; the mangonel and its stones live in `src/haul-lines.js`. Every line runs at 180.
+  - **TEACH, over the ditch's flat bottom:**
+    - Line A is the Wall Watch's rope, starting from its deck. It ends in the air over the ditch.
+    - Line B runs 2 rows under A's second half and lands on the haul tower's landing.
+    - If you miss, you fall to the ditch bottom with no bite, and a new ladder up the Wall Watch's east face takes you back.
+    - A shield foe stands under A's first stretch, to teach the drop-strike.
+    - Two signs: "JUMP OFF ONE AND TOUCH THE OTHER" and "A SHIELD CANNOT FACE UP".
+  - **The haul tower:** a stone stack with the masons' scaffold on its west face (landing, board, top deck).
+  - **TEST, over the spiked gorge:**
+    - L1 runs long and east-down, then ends in the air.
+    - L2 starts higher, on a mast, and crosses under L1 (the X). L1 -> L2 is a jump UP.
+    - L3 runs under L2's tail. L2 -> L3 is a DROP.
+  - **REMIX:** riding L3 draws "A STONE FOR THE LINE". It parts L3 ahead of you and the line whips down (re-strung in 6 s). You must jump UP onto L4 first. L4 sets you on the barbican plinth.
+  - **The barbican:** a ladder up its face to the mangonel, which takes 5 blows to wreck (marked for the run).
+- **THE MANGONEL** (a device, so one-new-foe still holds):
+  - Each stone gets a dotted arc and a red ring on your rope, 1.3 s ahead at line speed.
+  - A hit does 12 and makes you let go of the rope.
+  - Never two stones in flight; one every 3.2 s; none in the teach.
+  - Fairness rule: a ring only lands where another line that goes on further is in reach for at least 7 tiles before it.
+- **Rope to rope works now.**
+  - `src/zipline.js` had a 0.6 s release lock that blocked every mid-air catch, so the brief's transfer never worked.
+  - With `L.zipTransfer` set, a JUMP or DOWN kick only locks the rope you left. That is Stormhold only, so no other level changes.
+  - A rope ridden to its end still locks all ropes.
+- **Reach model:** `src/reachcore.js` has a rope -> rope edge, behind the same `L.zipTransfer` opt-in.
+  - The fill reaches the gatehouse and the bridge.
+  - With the edge turned off, the far side is unreachable. So the transfers are required.
+- **Bot:** `src/playtest.js` now transfers, as a player would.
+  - Two tiles into a window, it kicks up to (JUMP) or drops onto (one frame of DOWN) a line that goes further.
+- **6. THE GATEHOUSE (576-669), bell-gates** (`src/bell-gate.js`):
+  - **TEACH:** the winch became THE GATEHOUSE BELL on a gallery one jump up, with the sign "RING THE BELL: THEY RUN TO IT, AND THE GATE DROPS ON WHOEVER IS UNDER IT."
+    - It tolls 3 times over 1.2 s, using the gate towers' own bell code. The pike it calls runs to the gate, and the drop takes it.
+  - **EXAM, at the bridgehead:** the fire cage is gone. In its place is a gate tower (lookout, bell, portcullis).
+    - Two pikes and the shield captain charge when it rings. In the driven test the drop takes 2 of the 3; the captain arrives late and you fight him.
+- **CHECKPOINTS: 4 -> 5** (Q5): 152, 254, 388 (Wall Watch deck), 579 (gatehouse yard), 669 (arena).
+  - checkRun 160 -> 200, so the filler doesn't put a 6th shrine at 445, mid-ropes.
+- **Restamps:** the node-side ones are done (order-chapters, dressing, stuck spot `sh-haul-1` plus new rope-3 text, hint SAY_LINES and CALL_COUNTS for the new lines).
+  - **The page restamps are PENDING** (see below).
+- **Small fix outside my area:** lane 1's three gate-tower facades on the bridge floated, which failed tools/architecture.mjs. They now run down to the deck, as does my bridgehead tower's.
+
+## Level length / checkpoints
+798 columns (+180); 5 shrines; 7 areas. Transfer windows (tiles): A->B 14.9, L1->L2 22.1, L2->L3 16.6, L3->L4 22.9. All are at least 7.
+
+## Checks
+- **NODE, all green:**
+  - stormhold4 (new; replaces stormhold3). It covers the geometry, the windows, the reach, the ride driven with the real zipStep and haulStep (every transfer, stones dodged, a stone hit, L3 parted under a rider), the mangonel wrecked in 5, and both bell-gates driven.
+  - watchtowers, lance4 (node part), tells, hint-shown (source half), architecture, signs, dangling-paths.
+  - floating-geometry, solid-islands, dressing, spawns, one-new-foe, answer-tags, blow-tags, goblin-lint, boss-read.
+  - checkpoints, checkpoint-gaps, checkpoint-stand, anchor-lint, elites, keys, deadends, traps, killzones, collectables, threat-holes.
+  - zoom-coverage, ground-depth, bridge-props, homepaths, level-quality, combat-feel, audit, content-audit, reach.
+  - walk-controls part A (node): the key trips work, and the walker's route crosses the haul lines.
+- **PAGE: PENDING.** The release gate was running (GATE-RUNNING.flag set, no batch131 verdict yet), so no browser was started. A later lane runs these, one at a time, with free RAM of at least 1500 MB:
+  - zipline.mjs (storm rope A now `endsAir`), walk-controls.mjs (retargeted: bone gate from STORM_TOWN, gatehouse bell at G0+44, 7200 frames), bells, hint-shown (runtime), lance4 (page), reach-heroes storm, textfit, relics.
+  - Level walk / level1-pilot on storm: pilot deaths are not measured yet. Watch that the bot makes the transfers and dodges the rings.
+  - **Restamp, level then boss:** campaign-xp (`node tools/boss-level.mjs --write-xp`), the storm level mash rows, curve/level1-pilot stamps, pixels hashes. Then the Lance boss rows / boss-rates (his arena only moved by P0, but the restamp order is level first).
+  - mobile-perf: 9+6 ropes, the mangonel and the citadel at 4x.
+
+## Files touched
+- **New:** src/haul-lines.js, src/bell-gate.js, tools/stormhold4.mjs (renamed from tools/stormhold3.mjs).
+- **Changed:**
+  - src/stormhold-town.js (sections 4 tail, 5 new, 6 reworked, the gate-tower facades in 7)
+  - src/main.js (imports, gatebell spawn/step/draw, answerRun hook, `answers` on foes, haulStep and drawHaul)
+  - src/zipline.js, src/reachcore.js, src/playtest.js, src/hint-lines.js, src/stuck-spots.js, src/order-chapters.js, src/level.js (dressing)
+  - tools/watchtowers.mjs, tools/zipline.mjs, tools/walk-controls.mjs, tools/check.mjs, tools/dangling-paths.mjs (stormhold3 and lancebot.js listed)
+
+## Questions for Daniel (rec built)
+1. **A stone hit over the gorge** costs 12, lets go of the rope, and the fall then takes the teeth's bite.
+   - REC (built): keep it, as the brief says; the ring is 1.3 s ahead and the escape is always drawn.
+   - ALT: a hit staggers you but keeps you on the line.
+2. **Rope-to-rope catch** is Stormhold-only (`L.zipTransfer`).
+   - REC (built): Stormhold only.
+   - ALT: game-wide, so a kick-off can catch another rope anywhere.
+3. **The bridgehead exam takes 2 of 3.** The captain arrives after the drop and is fought, and the gate lifts in 6 s.
+   - REC (built): keep it, so it is an exam rather than a free clear.
+   - ALT: bunch all three so one ring takes them all.
+4. **Coins along the ropes:** reach.mjs lists 14 of them as "outside the fill", because they are picked up while riding (it lists 2 others from before).
+   - REC (built): keep them, as they guide the transfers.
+   - ALT: move them onto the decks.
+5. **The optional second moat line plus silver** at the Bell Watch was skipped.
+   - REC (built): leave it to the polish lane, or drop it.
+6. **Shrine filler:** checkRun 160 -> 200, so the 191-column run over the haul lines keeps the brief's 5 shrines.
+   - REC (built): 200.
+
