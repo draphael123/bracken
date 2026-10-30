@@ -29,13 +29,14 @@ import { lanceLookouts } from './lance-support.js';
 //   6. THE LONG BRIDGE  490-617  THE QUEEN'S LANCE, and the MAIN GATE that shuts when he falls (-> the Kitchen Gate)
 // The road climbs: the camp on row 37, the road 36, the bailey 34, the ditch 44, the wall-walk 29, the bridge 30.
 // ============================================================================================
-const P0 = 490;   // the Long Bridge's first pier
+const G0 = 396;      // THE GATEHOUSE's first column (claude/lance4 lane 2: the gatehouse is laid in G0 offsets)
+const P0 = G0 + 94;  // the Long Bridge's first pier
 export const STORM_TOWN = {
-  W: P0 + 128, H: 46,
+  W: P0 + 128, H: 46, G0,
   GATES: { brass: 94, iron: 262, bone: P0 - 2 },
   BRIDGE: P0,
   SECTIONS: [{ name: 'THE ROAD IN', x0: 0, x1: 91 }, { name: 'THE BARBICAN', x0: 92, x1: 150 }, { name: 'THE OUTER BAILEY', x0: 151, x1: 267 },
-    { name: 'THE CURTAIN WALL', x0: 268, x1: 395 }, { name: 'THE GATEHOUSE', x0: 396, x1: P0 - 1 }, { name: 'THE LONG BRIDGE', x0: P0, x1: P0 + 127 }],
+    { name: 'THE CURTAIN WALL', x0: 268, x1: 395 }, { name: 'THE GATEHOUSE', x0: G0, x1: P0 - 1 }, { name: 'THE LONG BRIDGE', x0: P0, x1: P0 + 127 }],
 };
 
 export function stormholdTown({ painter, T, TS }) {
@@ -205,25 +206,26 @@ export function stormholdTown({ painter, T, TS }) {
   coins([385, 24], [389, 19], [392, 19]);
 
   // ============================ 5. THE GATEHOUSE (396-489): the portcullis winch, THE STORM LANCE, the bridgehead exam ============================
-  floor(396, P0 - 1, 30);
-  ent('check', 400, 29);   /* THE CURTAIN WALL's exam (the breached walk, the Wall Watch) ends here */
+  /* (claude/lance4 lane 2) every gatehouse column is G0 + n: the section moves as one when the level grows in front of it */
+  floor(G0, P0 - 1, 30);
+  ent('check', G0 + 4, 29);   /* THE CURTAIN WALL's exam (the breached walk, the Wall Watch) ends here */
   // THE GATEHOUSE PORTCULLIS: held up on a winch. Strike the winch and it drops on whatever is under it; it winds itself back
   // up. The pikes come through that passage - and the same winch hangs the Lance's own two gates on his bridge.
-  laid(414, 420, 19, 25);
-  ent('winch', 410, 29, { gate: 417, gy0: 26, gy1: 29, drop: true, hold: 6 });
-  ent('sign', 406, 29, { text: 'THE GATEHOUSE. STRIKE THE WINCH AND THE PORTCULLIS DROPS ON WHAT IS UNDER IT.' });
-  ent('pike', 424, 29, { face: -1 }); ent('pike', 430, 29, { face: -1 }); ent('shield', 436, 29, { face: -1 }); ent('stormshaman', 441, 29, { face: -1 });
-  plat(424, 27, 5); plat(436, 27, 5); plat(445, 27, 4); plat(458, 27, 5); plat(465, 25, 4); plat(480, 27, 4);   // the gatehouse's fighting galleries along the yard wall
-  ent('torch', 412, 29); ent('deco', 422, 29, { kind: 'banner', v: 0 }); ent('deco', 445, 29, { kind: 'banner', v: 1 });
-  facades.push([403, 413, 19, 29, 'curtain', { town: true }], [421, 448, 19, 29, 'curtain', { town: true }]);
-  coins([404, 28], [417, 28], [427, 28], [433, 28], [439, 28], [446, 28]);
-  // (THE STORM LANCE, the Storm Chapter's knight, holds 452: src/order-chapters.js ORDER_AT.storm / level.js ELITES.storm)
+  laid(G0 + 18, G0 + 24, 19, 25);
+  ent('winch', G0 + 14, 29, { gate: G0 + 21, gy0: 26, gy1: 29, drop: true, hold: 6 });
+  ent('sign', G0 + 10, 29, { text: 'THE GATEHOUSE. STRIKE THE WINCH AND THE PORTCULLIS DROPS ON WHAT IS UNDER IT.' });
+  ent('pike', G0 + 28, 29, { face: -1 }); ent('pike', G0 + 34, 29, { face: -1 }); ent('shield', G0 + 40, 29, { face: -1 }); ent('stormshaman', G0 + 45, 29, { face: -1 });
+  plat(G0 + 28, 27, 5); plat(G0 + 40, 27, 5); plat(G0 + 49, 27, 4); plat(G0 + 62, 27, 5); plat(G0 + 69, 25, 4); plat(G0 + 84, 27, 4);   // the gatehouse's fighting galleries along the yard wall
+  ent('torch', G0 + 16, 29); ent('deco', G0 + 26, 29, { kind: 'banner', v: 0 }); ent('deco', G0 + 49, 29, { kind: 'banner', v: 1 });
+  facades.push([G0 + 7, G0 + 17, 19, 29, 'curtain', { town: true }], [G0 + 25, G0 + 52, 19, 29, 'curtain', { town: true }]);
+  coins([G0 + 8, 28], [G0 + 21, 28], [G0 + 31, 28], [G0 + 37, 28], [G0 + 43, 28], [G0 + 50, 28]);
+  // (THE STORM LANCE, the Storm Chapter's knight, holds G0 + 56: src/order-chapters.js ORDER_AT.storm / level.js ELITES.storm)
   // THE BRIDGEHEAD EXAM (RULES S3): the last stretch before his door, under the same fire cage his bridge hangs six of - cut it
   // loose on the pikes under it. No checkpoint inside it; the one at the first pier closes it.
-  ent('sign', 462, 29, { text: 'A CAGE COMES DOWN ON WHATEVER STANDS UNDER IT. CUT IT LOOSE ON HIM.' });
-  ent('pike', 466, 29, { face: -1 }); ent('pike', 476, 29, { face: -1 });
-  ent('weight', 471, 21, { len: 6, lamp: true });
-  coins([458, 28], [471, 28], [481, 28]);
+  ent('sign', G0 + 66, 29, { text: 'A CAGE COMES DOWN ON WHATEVER STANDS UNDER IT. CUT IT LOOSE ON HIM.' });
+  ent('pike', G0 + 70, 29, { face: -1 }); ent('pike', G0 + 80, 29, { face: -1 });
+  ent('weight', G0 + 75, 21, { len: 6, lamp: true });
+  coins([G0 + 62, 28], [G0 + 75, 28], [G0 + 85, 28]);
   laid(P0 - 4, P0 - 1, 19, 24);
   ent('lockgate', STORM_TOWN.GATES.bone, 29, { needs: 'bone', h: 5 }); gateCol(STORM_TOWN.GATES.bone, 25, 29);
   ent('deco', P0 - 7, 29, { kind: 'lanternPost' });
