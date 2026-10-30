@@ -127,7 +127,7 @@ export const TUNE = {
   scorpion: { hp: 1.1, dmg: 0.85 },
   pike: { dmg: 0.85 },
   husk: { dmg: 1.2 },
-  hobbyhorse: { dmg: 1.15 },
+  hobbyhorse: { dmg: 1.15 }, berserker: { dmg: 3.2 },
 };
 const ONE = { hp: 1, dmg: 1, tell: 1, every: 1 };
 export const tuneOf = t => { const r = TUNE[t]; return r ? { hp: r.hp ?? 1, dmg: r.dmg ?? 1, tell: r.tell ?? 1, every: r.every ?? 1 } : ONE; };
