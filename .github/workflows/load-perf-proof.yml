@@ -4,7 +4,7 @@ on:
     inputs:
       mode:
         type: choice
-        options: [pending-wrapper-load-profile-repaired-oct30, pending-wrapper-load-profile-oct30, pending-shape-dispatch-component-oct30, pending-numeric-stream-component-oct30, allocation-phase-readback-oct30, pending-tile-wrapper-union-game-loader-oct30, pending-tile-wrapper-game-loader-oct30, pending-tile-wrapper-component-oct30, pending-tile-minimal-game-loader-oct30, pending-tile-flat-game-loader-oct29, pending-tile-flat-component-oct29, pending-tile-node-campaign-oct29, pending-tile-node-compat-component-oct29, pending-tile-selective-full-oct29, pending-tile-selective-game-loader-oct29, pending-tile-selective-component-oct29, pending-tile-array-game-loader-oct29, pending-tile-array-writes-component-oct29, pending-tile-key-guards-component-oct29, pending-tile-game-loader-oct29, pending-tile-context-component-oct29, integer-presentation-component-oct29, native-draw-stage-oct29, native-raster-trace-oct29, tile-recipe-bindings-loader-oct29, tile-recipe-bindings-component-oct29, tile-numeric-lookups-loader-oct29, tile-numeric-lookups-component-oct29, tile-memo-fast-access-oct29, tile-memo-allocation-oct29, default-boss-incremental-oct29, default-boss-native-oct29, layout-phase-diagnostic-oct29, pure-sprite-fixed-qualified, pure-sprite-context-native, private-sprite-cold-profile, private-sprite-native, private-sprite-union-qualified, captured-art-union-qualified, captured-level-art-component, fixed-level-art-selfcontained-loader, fixed-level-art-main-loader, fixed-level-art-view-component, fixed-level-art-weak-component, frame-tile-typed-arenas, fixed-level-art-component, frame-tile-lips-arenas, frame-tile-pattern-component, art-use-coverage, fresh-canvas-clone-component, wall-phase-pattern-component, wall-pattern-runs-component, opaque-invisible-standing, foreground-invisible-arenas, foreground-invisible-component, foreground-row-component, opaque-art-fused-cold, opaque-art-fused-component, private-foreground-component, layout-work-queue, opaque-sprite-diagnostic, opaque-sprite-union, opaque-tile-standing, deferred-standing, palette-ui, palette-standing, palette-base, layout-candidate, foreground-reuse, foreground-direct, fixed-ornaments, region-props, border-present, tile-warm, captain-boot, cpu-profile, tile-cache, paladin-boot, hero-reuse, profile, sfx, compare, mobile, calls, present, campaign, variant, pixel-debug]
+        options: [ordinary-tile-store-component-oct30, pending-wrapper-load-profile-repaired-oct30, pending-wrapper-load-profile-oct30, pending-shape-dispatch-component-oct30, pending-numeric-stream-component-oct30, allocation-phase-readback-oct30, pending-tile-wrapper-union-game-loader-oct30, pending-tile-wrapper-game-loader-oct30, pending-tile-wrapper-component-oct30, pending-tile-minimal-game-loader-oct30, pending-tile-flat-game-loader-oct29, pending-tile-flat-component-oct29, pending-tile-node-campaign-oct29, pending-tile-node-compat-component-oct29, pending-tile-selective-full-oct29, pending-tile-selective-game-loader-oct29, pending-tile-selective-component-oct29, pending-tile-array-game-loader-oct29, pending-tile-array-writes-component-oct29, pending-tile-key-guards-component-oct29, pending-tile-game-loader-oct29, pending-tile-context-component-oct29, integer-presentation-component-oct29, native-draw-stage-oct29, native-raster-trace-oct29, tile-recipe-bindings-loader-oct29, tile-recipe-bindings-component-oct29, tile-numeric-lookups-loader-oct29, tile-numeric-lookups-component-oct29, tile-memo-fast-access-oct29, tile-memo-allocation-oct29, default-boss-incremental-oct29, default-boss-native-oct29, layout-phase-diagnostic-oct29, pure-sprite-fixed-qualified, pure-sprite-context-native, private-sprite-cold-profile, private-sprite-native, private-sprite-union-qualified, captured-art-union-qualified, captured-level-art-component, fixed-level-art-selfcontained-loader, fixed-level-art-main-loader, fixed-level-art-view-component, fixed-level-art-weak-component, frame-tile-typed-arenas, fixed-level-art-component, frame-tile-lips-arenas, frame-tile-pattern-component, art-use-coverage, fresh-canvas-clone-component, wall-phase-pattern-component, wall-pattern-runs-component, opaque-invisible-standing, foreground-invisible-arenas, foreground-invisible-component, foreground-row-component, opaque-art-fused-cold, opaque-art-fused-component, private-foreground-component, layout-work-queue, opaque-sprite-diagnostic, opaque-sprite-union, opaque-tile-standing, deferred-standing, palette-ui, palette-standing, palette-base, layout-candidate, foreground-reuse, foreground-direct, fixed-ornaments, region-props, border-present, tile-warm, captain-boot, cpu-profile, tile-cache, paladin-boot, hero-reuse, profile, sfx, compare, mobile, calls, present, campaign, variant, pixel-debug]
         default: profile
       raster_arena:
         type: choice
@@ -776,6 +776,44 @@ jobs:
         with:
           name: pending-shape-dispatch-component
           path: ${{ runner.temp }}/pending-shape-dispatch-component/
+          if-no-files-found: error
+  ordinary-tile-store-component-oct30:
+    if: inputs.mode == 'ordinary-tile-store-component-oct30'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/checkout@v4
+        with:
+          ref: 1a576c3f4511b6856df9fb4738df5aaae9987e81
+          path: pending-tile-reference
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.11.1'
+      - name: Exact original Node level-module compatibility before browser proof
+        run: node tools/ordinary-tile-store-import.mjs
+        env:
+          NODE_COMPAT_GAME: pending-tile-reference
+          NODE_COMPAT_OUT: ${{ runner.temp }}/ordinary-tile-store-import
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ordinary-tile-store-import
+          path: ${{ runner.temp }}/ordinary-tile-store-import/
+          if-no-files-found: error
+      - name: Original native tile command compatibility with original ownership guards and GC
+        run: node tools/ordinary-tile-store-component.mjs
+        env:
+          PENDING_TILE_REFERENCE: pending-tile-reference
+          PENDING_TILE_OUT: ${{ runner.temp }}/ordinary-tile-store-component
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ordinary-tile-store-component
+          path: ${{ runner.temp }}/ordinary-tile-store-component/
           if-no-files-found: error
   pending-tile-wrapper-component-oct30:
     if: inputs.mode == 'pending-tile-wrapper-component-oct30'
