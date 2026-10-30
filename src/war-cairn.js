@@ -80,9 +80,9 @@ export function buildWarCairn({ painter, T, TS }) {
   block(0, 2, 58, 95);                                     /* the gully's west wall */
   rock(41, 64, 69);                                        /* the mountain (its shoulder is the top, row 69) */
   block(3, 8, 94, 95); block(3, 5, 92, 93); block(3, 4, 90, 91);   /* T1 -> T2, on the left (rock steps, two rows each) */
-  block(8, 40, 89, 91);                                    /* T2, off the mountain (two clear columns at its west end: the jump up off T1 has its headroom) */
+  block(7, 40, 89, 91);                                    /* T2, off the mountain (two clear columns at its west end: the jump up off T1 has its headroom) */
   block(38, 40, 87, 88); block(39, 40, 85, 86); block(40, 40, 83, 84);   /* T2 -> T3, on the right */
-  block(3, 36, 82, 84);                                    /* T3, off the wall */
+  block(3, 37, 82, 84);                                    /* T3, off the wall */
   block(3, 6, 80, 81); block(3, 4, 78, 79);               /* T3 -> T4, on the left */
   block(7, 40, 76, 78);                                    /* T4, off the mountain */
   block(36, 40, 74, 75); block(38, 40, 72, 73); block(40, 40, 70, 71);   /* T4 -> the shoulder, on the right */

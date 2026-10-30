@@ -56,7 +56,7 @@
     "price": 10,
     "silver": true,
     "needs": null,
-    "feat": null
+    "feat": "boss:warcairn"
    },
    {
     "id": "ranger",
