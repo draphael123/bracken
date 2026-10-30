@@ -13,6 +13,10 @@
 //            it matters - the returning wall's road (to him or to you), the icicle over his shell, the vent lit only while the beam is cut -
 //            and OPEN is drawn and said, with its window
 //   RETURN   the opening runs out and the realm tears: back in his hall, the next realm not before REALM.rest
+//   LIVING   (claude/ft4c, brief-fallingtower4 #4 A) each realm comes apart in 3 beats (said, told, the border crumbling) and has a second
+//            return: FIRE burnt tiles fall (told) into low pits, the realm tilts, he keeps two perches - strike his firebolt into the brazier
+//            over him; ICE the ceiling comes down after its frost, floes he hides behind - two lances batted back shatter him; POISON the
+//            next vent bubbles and he hops, the mire surges (told) with bone rafts - a spore ring struck back chokes him. Robust to the hall moving
 //   PAGE     the real fight: board the carpet, each mark tears its realm (the right one, the carpet held in its room, the ice slick), a
 //            blow in a realm is warded, each opening struck with the game's own swing opens him, the realm returns you to his hall - and
 //            his death opens the desert door as it always did
@@ -29,13 +33,14 @@ assert.ok(MR.REALM && typeof MR.enterRealm === 'function' && typeof MR.updateRea
 const { REALM } = MR;
 assert.deepEqual(REALM.at, [0.75, 0.5, 0.25], 'the realms are not at 75/50/25%'); assert.deepEqual(REALM.kinds, ['fire', 'ice', 'poison'], 'the realms are not fire, ice, poison');
 /* a fight in Node: him, a hero on a carpet that stays where it is put, and everything the realm tells us */
-function rig(o = {}) {
+const A_ = A;
+function rig(o = {}) { const A = o.A || A_; let strikeBox = null;   /* (claude/ft4c) o.A: the hall moved; strikeBox: a blow box held out (setStrike) */
   const P = { x: (A.x0 + A.x1) / 2 - 120, y: (A.y0 + A.floor) / 2, dead: 0, carpet: { hitT: 0 }, dodge: 0, vx: 0, vy: 0 };
   const e = { t: 'undeadmage', alive: true, hp: o.hp ?? HP, hp0: HP, maxHp: HP, mode: 'hover', modeT: 0.3, x: (A.x0 + A.x1) / 2 + 100, y: (A.y0 + A.floor) / 2, face: -1, anim: 0, turn: 0, blinkT: 99, ...o.e };
   const log = { hits: [], says: [], pulls: [], leaves: [], tells: [], t: 0 };
   let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
   const c = () => ({ P, A, box: e.realm ? MR.realmBox(e, A) : carpetBox(A, 0), rnd, hit: (x, y, d, hard, blow) => log.hits.push({ t: log.t, d, hard, blow }), venom: () => { log.venom = (log.venom || 0) + 1; },
-    say: (m, h) => log.says.push(m), sound: k => (log.sounds = log.sounds || []).push([log.t, k]), dodging: () => P.dodge > 0, carry: () => {}, pull: k => log.pulls.push([log.t, k]), leave: k => log.leaves.push([log.t, k]) });
+    say: (m, h) => log.says.push(m), sound: k => (log.sounds = log.sounds || []).push([log.t, k]), dodging: () => P.dodge > 0, strike: () => strikeBox, carry: () => {}, pull: k => log.pulls.push([log.t, k]), leave: k => log.leaves.push([log.t, k]) });
   let lastMode = '', lastPh = '';
   const step = (dt = 1 / 60) => { const was = e.mode; updateUndeadMage(e, dt, c()); log.t += dt; P.vy = 0;
     if (e.mode !== lastMode && /Tell$/.test(e.mode)) log.tells.push([log.t, e.mode]); lastMode = e.mode;
@@ -43,7 +48,7 @@ function rig(o = {}) {
     if (R && R.kind === 'ice') for (const q of R.icicles) if (q.st === 'crack' && !q.seen) { q.seen = true; q.crackAt = log.t; } else if (q.st === 'hang') q.seen = false;
     return was; };
   const run = (s, each) => { for (let i = 0; i < Math.round(s * 60); i++) { step(); if (each && each()) return true; } return false; };
-  return { P, e, log, c, run, step };
+  return { P, e, log, c, run, step, setStrike: q => { strikeBox = q; } };
 }
 const toldBefore = (log, kinds, t, min) => log.tells.some(([tt, k]) => kinds.includes(k) && t - tt >= min - 0.02 && t - tt < 6);
 // ---- TEAR ----
@@ -154,6 +159,107 @@ const fireOut = {};
   assert.equal(s.e.mode, 'vented', 'the vent does not open him'); const mm = S.mire; s.run(1); assert.ok(S.mire > mm, 'the mire does not drain');
   s.run(REALM.openT + 0.3); assert.ok(!s.e.realm && s.e.realmN === 3, 'the poison realm does not tear back'); s.e.hp = 1; const tl = s.log.t; s.run(20); assert.ok(!s.e.realm && !s.log.tells.some(t => t[1] === 'realmTell' && t[0] > tl), 'a fourth realm'); }
 
+// ---- LIVING REALMS (claude/ft4c, scratch/brief-fallingtower4-1029.md #4 A: each realm comes apart in 3 told beats, has a SECOND thing to hit back, and he moves) ----
+const living = {};
+{ const L2 = MR.REALM, B = L2.beat;
+  assert.ok(L2.cue2 && L2.cue2.fire && L2.cue2.ice && L2.cue2.poison, 'a living realm does not name its second return');
+  /* THE BEATS: each realm's beat 2 and beat 3 come on time, each SAID and told, and the border crumbles (notches + chunks) - geometry from the realm's box only */
+  for (let k = 0; k < 3; k++) { const K = L2.kinds[k], r = intoRealm(k), R = r.e.realm, b = MR.realmBox(r.e, A), t0 = r.log.t, g0 = K === 'fire' ? L2.fire.grace : 0;
+    r.P.x = (b.x0 + b.x1) / 2; r.P.y = b.y0 + 50; const seen = {};
+    r.run(g0 + B.at[1] + 0.5, () => { if (K === 'poison') r.P.y = Math.min(r.P.y, R.mire - 40); if (MR.OPEN.has(r.e.mode)) return true; for (const n of [2, 3]) if (R.beat >= n && !seen[n]) { seen[n] = r.log.t - t0; seen['line' + n] = (MR.realmCue(r.e, r.P) || {}).beatLine; } });
+    assert.ok(!MR.OPEN.has(r.e.mode), K + ': he opened by himself while the beats ran');
+    assert.ok(Math.abs(seen[2] - (g0 + B.at[0])) < 0.1 && Math.abs(seen[3] - (g0 + B.at[1])) < 0.1, K + ': the beats do not come at ' + B.at + ' s: ' + JSON.stringify(seen));
+    for (const n of [2, 3]) { assert.ok(r.log.says.includes(B.say[K][n - 1]), K + ': beat ' + n + ' is not said: ' + B.say[K][n - 1]); assert.ok(R.told.some(q => q[1] === 'beat' + n), K + ': beat ' + n + ' is not told'); assert.equal(seen['line' + n], B.say[K][n - 1], K + ': beat ' + n + ' is not on the realm banner (number() drops it)'); }
+    assert.ok(R.bites.length >= 2 && R.bites.length <= 12, K + ': the border does not crumble (notches): ' + R.bites.length);
+    for (const q of R.bites) assert.ok(q.y >= b.y0 - 1 && q.y <= b.y1, K + ': a notch is off the realm wall');
+    living[K] = { beats: [+seen[2].toFixed(2), +seen[3].toFixed(2)], bites: R.bites.length }; }
+  /* ---- FIRE: burnt tiles fall (told), the realm tilts toward him, he moves between two perches, and his firebolt struck into the brazier over him burns him ---- */
+  { const r = intoRealm(0), R = r.e.realm, b = MR.realmBox(r.e, A), F2 = L2.fire2, tw = L2.w / L2.fire.n, perch = [b.x0 + F2.perch, b.x1 - F2.perch]; let at = { l: 0, r: 0 }, drops = [], picked = [];
+    r.P.y = b.y0 + 40; let px = b.x0 + 40;
+    r.run(30, () => { r.P.x = px; R.wall = null; R.nextWall = false; if (r.e.mode === 'scorched') return true;   /* (his wall held off: this measures the floor and his perches) */ const u = Math.floor((r.P.x - b.x0) / tw);
+      if (R.drop && !picked.includes(R.drop)) { picked.push(R.drop); drops.push([R.drop.k, u]); }
+      if (Math.abs(r.e.x - perch[0]) < 6) at.l++; if (Math.abs(r.e.x - perch[1]) < 6) at.r++; px = px > b.x1 - 60 ? b.x0 + 40 : px + 0.6; });
+    assert.ok(!MR.OPEN.has(r.e.mode), 'fire: he opened by himself');
+    assert.ok(at.l > 30 && at.r > 30 && R.told.some(q => q[1] === 'cross'), 'fire: he does not move between his two perches: ' + JSON.stringify(at));
+    assert.ok(R.holes.length >= 1 && R.holes.length <= F2.maxHoles, 'fire: no burnt tile falls in beat 2 (or too many): ' + R.holes);
+    for (const [k, u] of drops) assert.notEqual(k, u, 'fire: the tile under you was picked to fall');
+    const dr = R.told.filter(q => q[1] === 'drop'), ho = R.told.filter(q => q[1] === 'hole');
+    ho.forEach((h, i) => assert.ok(dr[i] && h[0] - dr[i][0] >= F2.drop - 0.03, 'fire: a tile falls without glowing dark for ' + F2.drop + ' s first: ' + JSON.stringify([dr, ho])));
+    assert.ok(R.beat === 3 && R.tilt === R.perch, 'fire: beat 3 does not tilt the realm toward him');
+    { const x0 = r.P.x = (b.x0 + b.x1) / 2; r.P.y = b.y0 + 40; R.crossT = 99; r.run(1); assert.ok((r.P.x - x0) * R.tilt > F2.tilt * 0.8, 'fire: the tilt does not slide you toward him: ' + (r.P.x - x0).toFixed(1)); }
+    /* a hero low over a burning pit is burned - and only after its told fall */
+    { const h = R.holes[0], n0 = r.log.hits.length; R.crossT = 99; r.run(1.2, () => { r.P.x = b.x0 + (h + 0.5) * tw; r.P.y = R.A.floor - 30; });
+      assert.ok(r.log.hits.slice(n0).some(q => q.blow === 'hole'), 'fire: a burning pit does not burn a hero low over it'); }
+    living.fire = { ...living.fire, holes: R.holes.length, perches: at }; }
+  /* THE BRAZIER: his firebolt struck back flies into the lit brazier over him and spills - on him at his perch, HE BURNS; struck while he is away from it, it spills on no one */
+  const strikeAt = (r, pred, s = 12) => { let q = null; r.run(s, () => { q = r.e.shots.find(pred); return !!q; }); return q; };
+  { const r = intoRealm(0), R = r.e.realm, b = MR.realmBox(r.e, A); r.P.x = b.x0 + 120; r.P.y = (b.y0 + b.y1) / 2; R.nextWall = false; R.crossT = 99;
+    const q = strikeAt(r, s => s.realmRet && !s.reflected && Math.hypot(s.x - r.P.x, s.y - r.P.y) < 70, 14); assert.ok(q, 'fire: he never casts a returnable firebolt in his realm');
+    assert.ok(MR.realmCanReturn(r.e, q), 'fire: his firebolt cannot be struck back in his realm');
+    r.setStrike({ l: q.x - 8, r: q.x + 8, t: q.y - 8, b: q.y + 8 }); r.step(); r.setStrike(null);
+    assert.ok(q.reflected && q.braz, 'fire: a blow on his firebolt does not send it into the brazier');
+    let op = -1; r.run(4, () => { if (r.e.mode === 'scorched') { op = r.log.t; return true; } });
+    assert.ok(op > 0 && R.told.some(t => t[1] === 'spill') && r.log.says.includes('THE BRAZIER SPILLS ON HIM. HE IS OPEN'), 'fire: the brazier struck over him does not burn him: ' + JSON.stringify([r.e.mode, r.log.says.slice(-3)]));
+    assert.ok(R.braziers.some(z => !z.lit), 'fire: the spilled brazier stays lit'); }
+  { const r = intoRealm(0), R = r.e.realm, b = MR.realmBox(r.e, A); r.P.x = b.x0 + 120; r.P.y = (b.y0 + b.y1) / 2; R.nextWall = false; R.crossT = 99;
+    const q = strikeAt(r, s => s.realmRet && !s.reflected && Math.hypot(s.x - r.P.x, s.y - r.P.y) < 70, 14); r.setStrike({ l: q.x - 8, r: q.x + 8, t: q.y - 8, b: q.y + 8 }); r.step(); r.setStrike(null);
+    r.e.x = (b.x0 + b.x1) / 2; R.perch = 0;   /* he is away from it, between his perches */
+    r.run(3, () => R.told.some(t => t[1] === 'spill')); assert.ok(R.told.some(t => t[1] === 'spill') && !MR.OPEN.has(r.e.mode), 'fire: the brazier spilled on no one opened him'); const br = R.braziers.find(z => !z.lit);
+    assert.ok(br, 'fire: the brazier did not empty'); R.perch = 1; r.run(L2.fire2.relight + 0.3); assert.ok(br.lit, 'fire: an emptied brazier never lights again'); }
+  /* ---- ICE: the ceiling comes down (frost first), floes he hides behind, and two of his lances batted back shatter his shell ---- */
+  { const r = intoRealm(1), R = r.e.realm, I2 = L2.ice2, y00 = MR.realmBox(r.e, A).y0; r.P.y = y00 + 60;
+    r.run(B.at[0] + 0.05); assert.equal(R.beat, 2, 'ice: no beat 2'); assert.equal(MR.realmBox(r.e, A).y0, y00, 'ice: the ceiling comes down with no frost first');
+    r.run(I2.creep - 0.15); assert.ok(MR.realmBox(r.e, A).y0 - y00 < 1, 'ice: the ceiling moves before its frost has crept for ' + I2.creep + ' s');
+    r.run(3); assert.equal(MR.realmBox(r.e, A).y0 - y00, I2.ceil, 'ice: beat 2 does not lower the ceiling ' + I2.ceil + ' px');
+    { const b2 = MR.realmBox(r.e, A), q = R.icicles.find(z => z.st === 'hang'); assert.equal(MR.strikeRealm(r.e, { l: q.x - 8, r: q.x + 8, t: b2.y0 - 20, b: b2.y0 }, new Set(), r.c()), 'icicle', 'ice: an icicle on the lowered ceiling cannot be struck'); }
+    r.run(B.at[1] - B.at[0] + 3, () => { r.P.y = MR.realmBox(r.e, A).y0 + 30; });
+    assert.equal(MR.realmBox(r.e, A).y0 - y00, I2.ceil * 2, 'ice: beat 3 does not lower the ceiling again');
+    assert.ok(R.floes && R.floes.length === I2.floes.length, 'ice: no floes in beat 3');
+    const b3 = MR.realmBox(r.e, A); let inF = 0, nF = 0; r.run(8, () => { nF++; if (R.floes.some(f => Math.abs(f.x - r.e.x) < I2.floeW / 2 + 4) && r.e.y > b3.y1 - 40) inF++; }); const hid = +(inF / nF).toFixed(2) >= 0.5 ? +(inF / nF).toFixed(2) : false;
+    assert.ok(hid, 'ice: in beat 3 he does not hide behind a floe: ' + JSON.stringify([Math.round(r.e.x), Math.round(r.e.y), R.floes.map(f => Math.round(f.x)), b3.y1]));
+    /* a lance of his into a floe breaks on it */
+    const f = R.floes[0]; r.e.shots.push({ x: f.x - 30, y: b3.y1 - 12, vx: 200, vy: 0, a: 0, sp: 200, r: 4, dmg: 12, kind: 'ice', col: '#9be2ff', t: 2, realmRet: true }); const shot = r.e.shots[r.e.shots.length - 1];
+    r.run(0.3); assert.ok(shot.gone, 'ice: his lance does not break on a floe');
+    living.ice = { ...living.ice, ceil: MR.realmBox(r.e, A).y0 - y00, floes: R.floes.length, hid }; }
+  { const r = intoRealm(1), R = r.e.realm, b = MR.realmBox(r.e, A); r.P.x = b.x0 + 100; r.P.y = (b.y0 + b.y1) / 2; R.dropT = 99; let n = 0;
+    r.run(14, () => { const q = r.e.shots.find(s => s.realmRet && !s.reflected && Math.hypot(s.x - r.P.x, s.y - (r.P.y - 8)) < 40); if (q && !(R.retCd > 0)) { r.setStrike({ l: q.x - 6, r: q.x + 6, t: q.y - 6, b: q.y + 6 }); r.step(); r.setStrike(null); n++; }
+      if (R.cracks === 1 && living.oneCrack === undefined) living.oneCrack = MR.realmWarded(r.e); return r.e.mode === 'shattered'; });
+    assert.equal(living.oneCrack, true, 'ice: one lance batted back already breaks his shell');
+    assert.equal(r.e.mode, 'shattered', 'ice: two of his lances batted back do not shatter his shell: ' + JSON.stringify([n, R.cracks, r.log.says.slice(-4)]));
+    assert.ok(r.log.says.includes('TWO LANCES: HIS SHELL SHATTERS. HE IS OPEN'), 'ice: the shatter is not said'); }
+  /* ---- POISON: the vents wake (the next one bubbles, he hops), the mire surges (told) with bone rafts to ride, and a spore ring struck back chokes him ---- */
+  { const r = intoRealm(2), R = r.e.realm, Q2 = L2.poison2, b = MR.realmBox(r.e, A); r.P.x = (b.x0 + b.x1) / 2; let hopTo = null, ventAt = null;
+    r.run(B.at[1] + 6, () => { r.P.y = Math.min(r.P.y, R.mire - 40); if (MR.OPEN.has(r.e.mode)) return true; if (R.next && !hopTo) hopTo = R.next; if (hopTo && R.vent === hopTo && !ventAt) ventAt = r.log.t; });
+    const bu = R.told.filter(q => q[1] === 'bubble'), hp = R.told.filter(q => q[1] === 'hop');
+    assert.ok(bu.length >= 1 && hp.length >= 1 && hp[0][0] - bu[0][0] >= Q2.bubble - 0.03, 'poison: the vent he goes to does not bubble ' + Q2.bubble + ' s first: ' + JSON.stringify([bu, hp]));
+    assert.ok(hopTo && ventAt, 'poison: he never goes to the bubbling vent');
+    r.run(5, () => { r.P.y = Math.min(r.P.y, R.mire - 40); return Math.abs(r.e.x - Math.max(b.x0 + 20, R.vent.x - 60)) < 12; }); assert.ok(Math.abs(r.e.x - Math.max(b.x0 + 20, R.vent.x - 60)) < 12, 'poison: he does not move over to his new vent: ' + [Math.round(r.e.x), Math.round(R.vent.x)]);
+    for (const v of R.vents) assert.ok(v.x > b.x0 && v.x < b.x1, 'poison: a vent is outside the realm');
+    assert.ok(R.rafts && R.rafts.length === Q2.rafts.length, 'poison: no bone rafts in beat 3');
+    /* THE SURGE: told (its line) for surgeTell s before the mire moves; on a raft it does not reach you; off one, it bites (told) */
+    r.run(12, () => { r.P.y = Math.min(r.P.y, R.mire - 60); return !R.surge; }); let tellAt = -1, upAt = -1; r.run(Q2.surgeEvery + 4, () => { r.P.y = Math.min(r.P.y, R.mire - 60); if (R.surge && R.surge.ph === 'tell' && tellAt < 0) tellAt = r.log.t; if (R.surgeOff > 0 && upAt < 0) { upAt = r.log.t; return true; } });
+    assert.ok(tellAt > 0 && upAt - tellAt >= Q2.surgeTell - 0.03, 'poison: the mire surges without its tell: ' + [tellAt, upAt]);
+    const raft = R.rafts[0], n0 = r.log.hits.length; r.run(Q2.surgeUp + 0.5, () => { r.P.x = raft.x; r.P.y = R.mire + 8; });
+    assert.ok(!r.log.hits.slice(n0).some(q => q.blow === 'surge' || q.blow === 'mire'), 'poison: the surge bites a hero on a raft');
+    r.P.y = R.mire + 8; r.step(); assert.ok(Math.abs(r.P.y - (R.mire - 6)) < 2, 'poison: a raft does not hold you up: ' + [r.P.y, R.mire]);
+    const n1 = r.log.hits.length; r.run(0.6, () => { r.P.x = b.x0 + 30; r.P.y = R.mire + 8; }); const sb = r.log.hits.slice(n1).filter(q => q.blow === 'surge');
+    assert.ok(sb.length >= 1 && sb.every(q => q.t - tellAt >= Q2.surgeTell - 0.03), 'poison: off a raft the surge does not bite, or bites untold');
+    living.poison = { ...living.poison, hops: hp.length, surge: +(upAt - tellAt).toFixed(2) }; }
+  { const r = intoRealm(2), R = r.e.realm; let got = null; r.run(12, () => { r.P.y = Math.min(r.P.y, R.mire - 40); if (r.e.mode === 'sporeTell' && R.spores.length === 3) { const s = R.spores[1];
+      got = MR.strikeRealm(r.e, { l: s.x - 8, r: s.x + 8, t: s.y - 8, b: s.y + 8 }, new Set(), r.c()); return true; } });
+    assert.equal(got, 'spore', 'poison: a spore ring struck before it blooms is not struck back');
+    assert.equal(R.spores.length, 2, 'poison: the spore struck back still blooms');
+    r.run(4, () => r.e.mode === 'vented'); assert.equal(r.e.mode, 'vented', 'poison: his own spore struck back does not choke him');
+    assert.ok(r.log.says.includes('HIS OWN SPORES CHOKE HIM. HE IS OPEN'), 'poison: the choke is not said');
+    const t = intoRealm(2), T2 = t.e.realm; let bolt = null; t.run(14, () => { t.P.y = Math.min(t.P.y, T2.mire - 40); bolt = t.e.shots.find(s => s.kind === 'fire'); return !!bolt; });
+    assert.ok(bolt && bolt.noReturn && !MR.realmCanReturn(t.e, bolt), 'poison: his firebolt in the poison realm wears the gold ring of a returnable shot (it is not its return)'); }
+  /* ---- ROBUST TO THE HALL MOVING (lane B restructures the level; the hall moved in ft4a): every living thing is placed from the realm's box ---- */
+  { const A2 = { ...A, x0: A.x0 + 160, x1: A.x1 + 160, y0: A.y0 + 48, floor: A.floor + 48 };
+    for (let k = 0; k < 3; k++) { const r = rig({ hp: Math.floor(HP * L2.at[k]), e: { realmN: k }, A: A2 }); r.run(10, () => !!r.e.realm); const R = r.e.realm, b = MR.realmBox(r.e, A2);
+      r.run((k === 0 ? L2.fire.grace : 0) + B.at[1] + 1, () => { r.P.x = (b.x0 + b.x1) / 2; r.P.y = k === 2 ? Math.min(b.y0 + 60, R.mire - 40) : b.y0 + 60; return MR.OPEN.has(r.e.mode); });
+      assert.ok(r.e.x > b.x0 && r.e.x < b.x1 && r.e.y > b.y0 - 60 && r.e.y < b.y1 + 20, L2.kinds[k] + ': with the hall moved he leaves the realm box');
+      for (const q of [...R.bites, ...(R.floes || []), ...(R.vents || []), ...(R.rafts || [])]) assert.ok((q.x === undefined || (q.x >= b.x0 - 1 && q.x <= b.x1 + 1)) && (q.y === undefined || (q.y >= b.y0 - 2 && q.y <= b.y1 + 2)), L2.kinds[k] + ': with the hall moved a living piece is outside the realm box: ' + JSON.stringify(q)); } } }
+
 // ---- PAGE: the real fight ----
 const pg = await openPage({ audio: false, fonts: false }); let r;
 try {
@@ -195,3 +301,4 @@ r.realms.forEach((q, k) => { const K = REALM.kinds[k];
   assert.ok(q.back, K + ': the realm does not return you to his hall: ' + JSON.stringify(q)); });
 assert.ok(r.dead && r.door && r.fightOver, 'his death does not open the desert door (or end the fight): ' + JSON.stringify(r));
 console.log('ok  undead-realms   at 75/50/25% he tears FIRE, ICE and POISON in turn (told ' + REALM.tear + ' s), warded in each till its one opening - his wall dodged back into him, an icicle on his shell, the vent while the beam is cut - every realm blow told first (fire: ' + fireOut.blows.join(' ') + '), each back to his hall, and his death opens the desert door');
+console.log('ok  undead-realms   LIVING (claude/ft4c): 3 told beats each ' + JSON.stringify(living) + ' - fire pits told 0.8 s, the tilt, his two perches, the brazier; the ice ceiling after its frost, the floes, two lances shatter; the vents bubble first, the surge told, rafts hold; a spore struck back chokes him; all of it moves with the hall');
