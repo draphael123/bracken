@@ -77,7 +77,7 @@
 //                    his ring-to-ring blink) and while he CHANNELS THE SKULLS or THE ORRERY (their tells and while he holds them).
 import { canvas, flipX, whiten } from './px.js';
 import { drawDesertOval } from './sanctum.js';
-import { REALM, OPEN as REALM_OPEN, realmDue, enterRealm, updateRealm } from './mage-realms.js';   /* HIS SPELL REALMS at 75/50/25% (claude/undead3) */
+import { REALM, OPEN as REALM_OPEN, realmDue, enterRealm, updateRealm, realmCanReturn, realmSendBack, realmHomeStep } from './mage-realms.js';   /* HIS SPELL REALMS at 75/50/25% (claude/undead3) */
 export { bakeUndeadMage, UNDEADMAGE_F } from './redraw/lich.js';
 
 export function smallerFamiliar(s) {
@@ -136,7 +136,7 @@ export const mageOpen = e => e.mode === 'gather' || e.mode === 'breached' || e.m
 export const wardBreakable = e => !!(e && e.alive && !mageOpen(e) && !(e.wardHold > 0) && !e.realm && !['sleep', 'wake', 'blinkOut', 'blinkIn', 'realmTell', 'fall', 'down', 'rise', 'sink', 'tear', 'below', 'away'].includes(e.mode));   /* (claude/fallingtower3: and none of THE CHASE's own beats - falling, down, fleeing, waiting below) */
 /* THE BOLT THAT CAN BE STRUCK BACK: his own firebolt (not his echo's, not one already struck) */
 export const RETURNABLE = new Set(['fire', 'ice', 'orb', 'hand', 'bent', 'trap']);   /* (fallingtower2: every shot of his; the skulls and the orrery's worlds are not shots, and nothing turns them) */
-export const reflectable = q => !!q && RETURNABLE.has(q.kind) && !q.reflected;
+export const reflectable = q => !!q && RETURNABLE.has(q.kind) && !q.reflected && !q.noReturn;   /* (claude/ft4c: noReturn - a realm's shot that is not its return, e.g. his firebolt in the poison realm: no gold ring) */
 /* STRIKING A SHOT BACK, ONE RULE FOR HIS FIGHT AND HIS STAIR (claude/ft4a, scratch/brief-fallingtower4-1029.md #5 - shared so the two cannot drift):
    blowMeets: the hero's blow box (main.js attackBox) meets the shot; sendHome: it turns pale and flies at him; homeStep: one step of its homing
    (MAGE.reflect.v, turning MAGE.reflect.turn rad/s) - true when it has reached him (MAGE.reflect.r of his chest) */
@@ -289,6 +289,9 @@ export function updateUndeadMage(e, dt, c) {
     q.t -= dt;
     /* STRUCK BACK (Daniel 10-05): a blow that meets his firebolt sends it home; home, it breaks his ward - or rings off it while it holds */
     if (reflectable(q) && !e.realm && c.strike) { const b = c.strike(); if (blowMeets(q, b)) { sendHome(q, e); say('STRUCK BACK', false); sound('crack'); } }
+    /* (claude/ft4c) IN A REALM, ITS SECOND RETURN: the fire realm's firebolt struck into the brazier over him, the ice realm's lances into his shell (src/mage-realms.js) */
+    else if (e.realm && c.strike && realmCanReturn(e, q)) { const b = c.strike(); if (blowMeets(q, b)) realmSendBack(e, q, c); }
+    if (q.reflected && e.realm) { if (realmHomeStep(e, q, dt, c)) { q.t = 0; q.gone = true; } continue; }
     if (q.reflected) { if (homeStep(q, e, dt)) { q.t = 0; q.gone = true;
         if (wardBreakable(e)) { if (e.mode === 'boneWait') e.bones = null; if (e.mode === 'orbitWait') e.orbit = null; if (c.unsay) c.unsay(); e.mode = 'reflected'; e.modeT = MAGE.reflect.openT; e.open = MAGE.reflect.openT; e.deathMark = null; e.chained = false; e.fireRing = null; say('HIS OWN SPELL STAGGERS HIM', true); sound('crack'); sound('sting'); }
         else { e.wardHitT = MAGE.ward.hitT; e.wardHitX = q.x; e.wardHitY = q.y; sound('aegis'); } }

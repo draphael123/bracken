@@ -22,7 +22,8 @@ import { profileOf, SKILL_RANGE } from './bot-profile.js'; import { makePercepti
 import { CHARGE_TELL } from './crouch-a.js';   /* THE CROUCH TWISTS, PART A (claude/croucha): what the warden sets her spear against */
 import { FLIGHTS as SPIRAL_FLIGHTS, pendSafe as spiralPendSafe } from './spiral-chase.js';
 import { boneGaps as mageBoneGaps, MAGE as UMAGE, orbitWorlds as mageOrbitWorlds, reflectable as mageReflectable } from './undead-mage.js';   /* (claude/archmage2b) the Undead Archmage's bone storm, for the carpet bot */   /* THE SPIRAL STAIR's flights, for chaseClimb (undead4) */
-import { realmBox } from './mage-realms.js';   /* HIS SPELL REALMS' rooms, for the carpet bot (undead4) */
+import { realmBox, REALM as MREALM } from './mage-realms.js';
+const REALM_HOLE_H = MREALM.fire2.holeH, REALM_SURGE_H = MREALM.poison2.surgeH;   /* (claude/ft4c) the living realms' heights, for the carpet bot */   /* HIS SPELL REALMS' rooms, for the carpet bot (undead4) */
 import { GEO as GEO_K } from './geomancer.js';
 import { hiding as crouchHiding } from './crouch-b.js';   /* THE CROUCH TWISTS (claude/crouchb): what the geomancer's sense counts as hidden, so the bot's calm does not count it as near */   /* THE GEOMANCER's FAULT LINE: how far the crack will run is read off the same numbers the kit uses */
 import { lanternPlan, leOpen } from './lantern-eater.js';   /* THE LANTERN-EATER (claude/lanterneater): the bot reads its lights, jaws, marks and the lantern off its own module */
@@ -1055,7 +1056,7 @@ async function runbossLab(BK, opts) {
         let block=false;
         for(const q of boss.shots||[]){const rx=P.x-q.x,ry=py-q.y,d=Math.hypot(rx,ry);if(d>(q.kind==='hand'?120:130))continue;
           /* (claude/fallingtower2) EVERY SHOT OF HIS CAN BE STRUCK BACK now (the skulls and the orrery are not shots) - the bot swings at one in its reach about two in three (a human hand, decided once a shot); otherwise it guards or dodges as ever */
-          if(mageReflectable(q)&&!boss.realm&&!(boss.wardHold>0)&&!(boss.open>0)){q.botTry??=Math.random()<0.65;if(q.botTry&&Math.abs(q.x-P.x)<LAB_REACH[h]*0.85&&Math.abs(q.y-py)<16&&P.atk<0&&P.st>=8){P.face=Math.sign(q.x-P.x)||P.face;BK.press('atk');swings++;continue;}}
+          if(mageReflectable(q)&&(!boss.realm||q.realmRet)&&!(boss.wardHold>0)&&!(boss.open>0)){q.botTry??=Math.random()<0.65;if(q.botTry&&Math.abs(q.x-P.x)<LAB_REACH[h]*0.85&&Math.abs(q.y-py)<16&&P.atk<0&&P.st>=8){P.face=Math.sign(q.x-P.x)||P.face;BK.press('atk');swings++;continue;}}
           if(q.kind==='hand'){const hs=Math.hypot(q.vx,q.vy)||1,nx=-q.vy/hs,ny=q.vx/hs,s3=((P.x-q.x)*nx+(py-q.y)*ny)>=0?1:-1;vx+=(nx*s3+(P.x-q.x)/d*0.6)*1.8;vy+=(ny*s3+(py-q.y)/d*0.6)*1.8;threat=true;if(d<26&&P.st>20)BK.press('dodge');continue;}   /* across its line: it turns slower than the carpet does */
           if(q.kind==='orb'){away(q.x,q.y,80,2);continue;}
           const sp=Math.hypot(q.vx,q.vy)||1,closing=(rx*q.vx+ry*q.vy)/sp;if(closing<0)continue;
@@ -1069,6 +1070,7 @@ async function runbossLab(BK, opts) {
         if(RL&&boss.alive&&!(boss.open>0)){const b=realmBox(boss,A),toward=(gx,gy,w=1.6)=>{if(Math.abs(gx-P.x)>4)vx+=Math.sign(gx-P.x)*w;if(Math.abs(gy-py)>4)vy+=Math.sign(gy-py)*w;};
           if(RL.kind==='fire'){const tw=(b.x1-b.x0)/7,ti=Math.floor((P.x-b.x0)/tw);
             if((RL.ph==='tell'||RL.ph==='burn')&&RL.lit&&RL.lit.includes(ti)){let best=null;for(let j=0;j<7;j++)if(!RL.lit.includes(j)&&(best===null||Math.abs(j-ti)<Math.abs(best-ti)))best=j;if(best!==null){vx+=Math.sign(b.x0+(best+0.5)*tw-P.x)*2.5;threat=true;}}
+            /* (claude/ft4c) a burning pit (or a tile about to fall) under it: up out of its fire */{const fl=A.floor-22;if(((RL.holes||[]).includes(ti)||(RL.drop&&RL.drop.k===ti))&&P.y>fl-REALM_HOLE_H-24){vy-=2.5;threat=true;}}
             const W=RL.wall;if(W){const closing=(P.x-W.x)*W.d>0,dd=Math.abs(P.x-W.x);
               if(!W.back&&closing&&dd<110&&Math.abs(py-W.y)<60){vy+=(py<W.y?-1:1)*2.5;threat=true;}
               if(W.back&&closing&&dd<46&&!W.hitP){threat=true;if(P.st>=10&&!(P.dodge>0)&&dd<34){P.face=-W.d;k.left=W.d>0;k.right=W.d<0;BK.press('dodge');}}}
@@ -1076,7 +1078,10 @@ async function runbossLab(BK, opts) {
           if(RL.kind==='ice'){for(const q of RL.icicles)if((q.st==='crack'||(q.st==='fall'&&!q.struck))&&Math.abs(q.x-P.x)<24){vx+=Math.sign(P.x-q.x||1)*2.5;threat=true;}
             let over=null;for(const q of RL.icicles)if(q.st==='hang'&&(!over||Math.abs(q.x-boss.x)<Math.abs(over.x-boss.x)))over=q;
             if(over){realmGoal=[over.x-10,b.y0+2-8];if(Math.abs(over.x-boss.x)<30&&Math.abs(P.x-(over.x-10))<8&&py<b.y0+10&&P.atk<0){P.face=1;BK.press('atk');swings++;}}}
-          if(RL.kind==='poison'){if(RL.exposedT<=0&&P.y>RL.mire-26){vy-=2.5;threat=true;}for(const s of [...(RL.spores||[]),...(RL.clouds||[])])away(s.x,s.y,(s.r||26)+24,3);
+          if(RL.kind==='poison'){if(RL.exposedT<=0&&P.y>RL.mire-26){vy-=2.5;threat=true;}
+            /* (claude/ft4c) the surge told: up over its line (a raft holds too); a spore ring round it while he casts: strike it back, about two in three */
+            if(RL.surge&&P.y>RL.mireBase-REALM_SURGE_H-20&&!(RL.rafts||[]).some(r=>Math.abs(P.x-r.x)<16)){vy-=2.5;threat=true;}
+            if(boss.mode==='sporeTell'&&P.atk<0&&P.st>=8){RL.botSpore??=Math.random()<0.65;if(RL.botSpore&&(RL.spores||[]).some(s=>Math.hypot(s.x-P.x,s.y-py)<22)){BK.press('atk');swings++;}}else if(boss.mode!=='sporeTell')RL.botSpore=undefined;for(const s of [...(RL.spores||[]),...(RL.clouds||[])])away(s.x,s.y,(s.r||26)+24,3);
             if(RL.exposedT>0){realmGoal=[RL.vent.x-12,RL.mire-6];if(Math.abs(P.x-(RL.vent.x-12))<8&&Math.abs(py-(RL.mire-6))<10&&P.atk<0){P.face=1;BK.press('atk');swings++;}}
             else realmGoal=[RL.vent.x-110,RL.mire-70];}
           if(realmGoal)toward(realmGoal[0],realmGoal[1],threat?0.8:1.6);}
