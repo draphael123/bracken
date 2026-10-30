@@ -139,6 +139,9 @@ ok(Object.values(KG_SAY).every(s => SAY_LINES.has(s)) && Object.values(GBM.GB_SA
 // ---- (claude/kitchengate3, Daniel 10-29) THE LEVEL, LONGER: THE HANGING LARDER and THE CARVERY, THE HOOK-TO-HOOK HOP, THE HAUL LINE, THE FLUE ----
 { ok(KG_INS.length === 2 && L.W === oldCol(432) && L.arena.x0 === oldCol(390) * TS && L.arena.x1 === (oldCol(428) + 1) * TS, 'two rooms let in (' + KG_INS.map(q => q[1] + ' columns before old ' + q[0]).join(', ') + '): the level is ' + L.W + ' wide; HIS HALL is the old one moved whole (' + L.arena.x0 / TS + '-' + (L.arena.x1 / TS - 1) + ')');
   const hand = L.zipLines.filter(z => z.hop && z.hand), hauls = L.zipLines.filter(z => z.haul);
+  /* THE KICK OFF A MEAT-HOOK RAIL is a fixed hop: tapped or held, the jump-cut never shortens it (src/zipline.js) - the hand-offs below are flown on the full hop */
+  { const { zipStep } = await import('../src/zipline.js'), z = hand[0], P = { x: z.x0 + 40, y: 0, vx: 0, vy: 0, face: 1, zip: z, zipDir: z.dir, canCut: true }, nop = () => {}, c = { P, L: { zipLines: [z] }, keys: {}, jumpPress: true, SFX: new Proxy({}, { get: () => nop }), callout: nop, burst: nop, sparks: nop, number: nop };
+    zipStep(c, 1 / 60); ok(!P.zip && P.vy === -240 && P.canCut === false, 'a JUMP off a meat-hook rail is a fixed kick (vy ' + P.vy + ', no jump-cut): a tap hops as far as a held jump'); }
   ok(hand.length >= 5 && hauls.length >= 2, hand.length + ' hand-off rails (the hop), ' + hauls.length + ' haul lines (a chain that runs uphill)');
   ok(hauls.every(z => { const dy = z.y1 - z.y0, dx = z.x1 - z.x0, down = dy > 0 ? Math.sign(dx) : -Math.sign(dx); return z.dir === -down; }), 'every HAUL LINE runs UPHILL (src/zipline.js dir against its slope): it hauls you up');
   /* THE HOP, FLOWN FOR EVERY HERO'S LEGS: from the middle of the red stretch he catches the rail it hands to (holding on the way it runs, or nothing); riding on to the END never does (the hop is the
