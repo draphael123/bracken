@@ -44,7 +44,7 @@ const untilFlue = (st, after = 6) => `for(let k=0;k<400;k++){BK.step(1);BK.P.hp=
 SHOTS.push(['kg3-larder', A + 2, 13, ''], ['kg3-larder-hop', A + 2, 13, ride(A + 4, 220, 0) + "for(let k=0;k<120&&BK.P.x<(" + A + "+11.9)*16+8;k++)BK.step(1);BK.press('jump');for(let k=0;k<14;k++)BK.step(1);"],
   ['kg3-salting-pit', A + 31, 18, ''], ['kg3-haul-line', A + 31, 18, ride(A + 58, 390, 30)], ['kg3-attendant-ledge', A + 70, 15, "for(let k=0;k<60;k++){BK.step(1);BK.P.hp=BK.P.maxHp;}"],
   ['kg3-carvery', B + 8, 23, "for(let k=0;k<240;k++){BK.step(1);BK.P.hp=BK.P.maxHp;}"], ['kg3-carvery-haul', B + 20, 23, ride(B + 22, 386, 40)],
-  ['kg3-flue-glow', B + 45, 13, untilFlue('glow', 60)], ['kg3-flue-flame', B + 45, 13, untilFlue('flame', 30)], ['kg3-flue-close', B + 61, 26, untilFlue('flame', 30)], ['kg3-flue-ride', B + 45, 13, untilFlue('out') + ride(B + 60, 280, 1)],
+  ['kg3-flue-glow', B + 45, 13, untilFlue('glow', 60)], ['kg3-flue-flame', B + 45, 13, untilFlue('flame', 30)], ['kg3-flue-close', B + 47, 26, untilFlue('flame', 30)], ['kg3-flue-ride', B + 45, 13, untilFlue('out', 2) + ride(B + 46, 216, 12)],
   ['kg3-carvery-door', B + 72, 21, stoke('stove4', 60)], ['kg3-hearth-hop', oldCol(318), 15, '']);
 SHOTS.splice(0, SHOTS.length, ...SHOTS.filter(s => !only || only.has(s[0])));
 const pg = await openPage({ audio: false, fonts: false });

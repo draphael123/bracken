@@ -450,7 +450,7 @@ function drawFlue(g, x0, x1, y, state, k, h, time) {
   const hot = state === 'glow' ? k : state === 'flame' ? 1 : 0;
   /* THE FLUE's HOOD: a sooty iron cowl in the back wall at the hooks' height, over the column the flame rises in - it is where you look from the perch (the coal bed is far below):
      dark when the flue is out, its mouth reddening through the glow, white-hot and spitting sparks in the flame */
-  { const hy = R(y - h - 18), hw = w + 10, hx = x0 - 5;
+  { const hy = R(y - h - 26), hw = w + 10, hx = x0 - 5;
     fillPoly(g, [[hx - 2, hy + 14], [hx + 6, hy], [hx + hw - 6, hy], [hx + hw + 2, hy + 14]], OUT); fillPoly(g, [[hx, hy + 13], [hx + 7, hy + 1], [hx + hw - 7, hy + 1], [hx + hw, hy + 13]], IRON[1]);
     rect(g, hx + 7, hy + 1, hw - 14, 1, IRON[3]); for (let x = hx + 3; x < hx + hw - 2; x += 6) rect(g, x, hy + 10, 1, 1, IRON[4]);   /* its rim and rivets */
     rect(g, hx + 4, hy - 26, hw - 8, 26, OUT); rect(g, hx + 5, hy - 26, hw - 10, 26, IRON[0]); rect(g, hx + 5, hy - 26, 1, 26, IRON[2]);   /* the flue pipe up into the vault */

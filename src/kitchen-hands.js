@@ -31,7 +31,7 @@ export const KG_SAY = {
   roar: 'THE FIRE ROARS', steam: 'THE COPPER STEAMS: STAND IN IT', turns: 'THE GREAT SPIT TURNS', dies: 'THE FIRE DIES DOWN', catches: 'THE GREASE CATCHES: OFF THE TRAIL',
   melts: 'THE TALLOW DOOR MELTS', race: 'THE GREASE POT GOES OVER: RUN!', page: 'A RECIPE PAGE', vault: 'THE SPICE VAULT OPENS', burns: 'HE BURNS', slides: 'HE SLIDES ON THE GREASE',
   knocked: 'KNOCKED OFF THE LINE', batted: 'BATTED ALONG', fizz: 'IT GOES OFF ON THE LINE', flare: 'THE STOVE FLARES: TIME IT', bellows: 'STRIKE THE BELLOWS', regrease: 'THE GREASE RUNS BACK', cleaver: 'THE CLEAVER: STEP BACK', tray: 'THE TRAY: GO ROUND HIM', plates: 'HE THROWS PLATES: OFF THE RING',
-  handoff: 'JUMP IN THE RED: HOOK TO HOOK', haul: 'THE CHAIN HAULS YOU UP', flue: 'THE FLUE: TAKE A HOOK AS IT GLOWS',   /* (claude/kitchengate3) THE HANGING LARDER and THE CARVERY */
+  handoff: 'JUMP IN THE RED: HOOK TO HOOK', haul: 'THE CHAIN HAULS YOU UP', flue: 'THE FLUE: TAKE A HOOK AS ITS FLAME DIES',   /* (claude/kitchengate3) THE HANGING LARDER and THE CARVERY */
 };
 /* a spit's place on its wheel at angle a: { x (its middle), y (its top) } */
 export const spitAt = (w, a) => ({ x: w.x + Math.cos(a) * WHEEL.R, y: w.y + Math.sin(a) * WHEEL.R });

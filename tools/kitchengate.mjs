@@ -162,15 +162,18 @@ ok(Object.values(KG_SAY).every(s => SAY_LINES.has(s)) && Object.values(GBM.GB_SA
     ok(rope + 12 <= top * TS - 4, 'THE HAUL LINE at column ' + Math.floor(lo[0] / TS) + ' clears the face of the ledge it lets you off on (column ' + fc + ', top row ' + top + '): feet ' + Math.round(rope + 12) + ' px over a top at ' + top * TS); }
   /* THE FLUE: a flare out of the coal bed under a hand-off's next rail, tall enough to take a rider off his hook; from the perch it is reached tIn..tOut s after the hook is taken (flown) */
   { const fl = L.kgFlares.find(f => f.bed === 'coals'), z = hand.find(q => q.flue), fx0 = fl.x0 * TS - 4, fx1 = (fl.x1 + 1) * TS + 4, worst = [];
-    for (const hero of HERO_MOVE_IDS) { const r = flyHop(L.zipLines, z, Math.min(z.x0, z.x1) + 8, (z.hop[0] + z.hop[1]) / 2, { hero, hold: 1 }); if (r.caught !== z.hand) { worst.push(hero + ' missed'); continue; }
-      const c2 = z.hand, sl = (c2.y1 - c2.y0) / (c2.x1 - c2.x0), feet = x => c2.y0 + sl * (x - c2.x0) + 12, tIn = r.t + Math.max(0, fx0 - r.at[0]) / c2.speed, tOut = r.t + (fx1 - r.at[0]) / c2.speed;
-      if (tIn < z.flue.tIn - 0.12 || tOut > z.flue.tOut + 0.12) worst.push(hero + ' ' + tIn.toFixed(2) + '-' + tOut.toFixed(2));
+    /* (the flue may cut the rail taken from the perch itself, or the one it hands to: either way the ride to it is the rails' pace from the hook taken at the perch's edge) */
+    for (const hero of HERO_MOVE_IDS) { const x0 = Math.min(z.x0, z.x1) + 8, onFirst = fx0 < Math.max(z.x0, z.x1), r = onFirst ? { caught: z.hand, t: 0, at: [x0] } : flyHop(L.zipLines, z, x0, (z.hop[0] + z.hop[1]) / 2, { hero, hold: 1 }); if (r.caught !== z.hand) { worst.push(hero + ' missed'); continue; }
+      const rr = onFirst ? z : z.hand, sl = (rr.y1 - rr.y0) / (rr.x1 - rr.x0), feet = x => rr.y0 + sl * (x - rr.x0) + 12, tIn = r.t + Math.max(0, fx0 - 5 - r.at[0]) / rr.speed, tOut = r.t + (fx1 + 5 - r.at[0]) / rr.speed;
+      if (tIn < z.flue.tIn - 0.12 || tOut > z.flue.tOut + 0.12 || tIn > z.flue.tIn + 0.12) worst.push(hero + ' ' + tIn.toFixed(2) + '-' + tOut.toFixed(2));
       if (feet((fx0 + fx1) / 2) < fl.f * TS - fl.h) worst.push(hero + ' rides over the flame'); }
     ok(fl && z && !worst.length, 'THE FLUE cuts the hooks: every hero reaches it ' + z.flue.tIn + '-' + z.flue.tOut + ' s after taking the perch\'s hook, low enough for its flame (' + fl.h + ' px) to take him off ' + worst.join(' '));
+    { const P1 = Math.floor(Math.min(z.x0, z.x1) / TS); ok(fl.x0 - P1 <= 8, 'THE FLUE stands in sight of the perch its rail is taken from (' + (fl.x0 - P1) + ' columns: the view is ~11 columns ahead)'); }
     /* the read: a hook taken in the glow or the flame passes it as it dies; one taken as the flame ends meets the next */
     const ph = t => { const q = ((t + fl.phase) % fl.period + fl.period) % fl.period; return q < fl.tell ? 'glow' : q < fl.tell + fl.on ? 'flame' : 'out'; }, pass = b => { for (let t = z.flue.tIn; t <= z.flue.tOut; t += 0.02) if (ph(b + t) === 'flame') return false; return true; };
+    /* (the flue is a beat ahead of the hook: whatever its rhythm, the window is what counts) */
     const safe = []; for (let b = 0; b < fl.period; b += 0.05) if (pass(b)) safe.push(+b.toFixed(2));
-    ok(pass(0.05) && pass(fl.tell) && !pass(fl.tell + fl.on) && safe.length * 0.05 / fl.period > 0.35 && safe.length * 0.05 / fl.period < 0.7, 'the flue\'s read: take the hook as it glows or flares (' + fl.tell + ' s) and you pass; as its flame dies (' + (fl.tell + fl.on) + ' s) you meet the next - ' + Math.round(safe.length * 0.05 / fl.period * 100) + '% of its beat is safe');
+    ok(pass(fl.tell + fl.on) && pass(0.05) && !pass(fl.tell) && !pass(fl.tell + fl.on / 2) && safe.length * 0.05 / fl.period > 0.35 && safe.length * 0.05 / fl.period < 0.7, 'the flue\'s read: take the hook as its flame dies (' + (fl.tell + fl.on) + ' s) or early in its glow and you pass; into the flame (' + fl.tell + ' s) and it takes you off - ' + Math.round(safe.length * 0.05 / fl.period * 100) + '% of its beat is safe');
     /* the pilot's hands read it the same way (H.flueClear) - in a fake world */
     const W2 = { TS, T, L, sfx: {}, players: () => [], enemies: () => [], number() {}, burst() {}, dust() {}, shake() {}, seen() {}, asPlayer: (p, f) => f(), damage: () => 'hit', cellSet() {}, solidAt: () => false, tileAt: () => T.AIR, text() {} };
     const H2 = makeKitchenHands(W2); H2.reset(); const okAt = []; for (let i = 0; i < 60 * fl.period; i++) { H2.update(1 / 60); okAt.push(H2.flueClear(z)); }

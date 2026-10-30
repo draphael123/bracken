@@ -61,7 +61,7 @@ export const ARCS = {
   grease: { teach: arc(202, 221), develop: arc(246, 282), exam: arc(342, 354) },
   butcher: { teach: arc(283, 298), exam: arc(342, 356) },
   belt: { teach: [5, 17], test: [188, 197], remix: arc(226, 235), reprise: [CARVERY + 4, CARVERY + 27], exam: arc(374, 387) },   /* (claude/kitchengate2) THE SERVING LINES - and the boss's own */
-  flare: { teach: [69, 71], test: [128, 130], remix: [CARVERY + 63, CARVERY + 65], exam: arc(377, 384) },
+  flare: { teach: [69, 71], test: [128, 130], remix: [CARVERY + 48, CARVERY + 50], exam: arc(377, 384) },
   /* (claude/kitchengate3) THE HOOK-TO-HOOK HOP: taught safe, tested twice over coals (the second onto the uphill haul line), remixed over a serving line and through the flue, examined over the hearth trench */
   hop: { teach: [LARDER + 3, LARDER + 28], test: [LARDER + 33, LARDER + 68], remix: [CARVERY + 26, CARVERY + 72], exam: arc(322, 342) },
 };
@@ -283,11 +283,11 @@ export function buildKitchenGate({ painter, T, TS }) {
   shelf(b + 24, b + 27, 12); racks.push([b + 24, b + 27, 12]); prop('pans', b + 25, 12);
   for (const [x0, x1, y] of [[b + 1, b + 4, 19], [b + 9, b + 12, 19], [b + 19, b + 22, 19], [b + 42, b + 45, 11], [b + 71, b + 74, 19], [b + 76, b + 79, 19], [b + 80, b + 83, 16], [b + 88, b + 91, 19]]) { shelf(x0, x1, y); racks.push([x0, x1, y]); ent('coin', Math.round((x0 + x1) / 2), y - 1); }
   coins([b + 30, 21], [b + 34, 18], [b + 37, 16]);   /* up the haul line */
-  /* REMIX 2: THE FLUE - a hop over the carving pit onto a rail that a flare out of the coal bed cuts: up through the hooks, on its rhythm. Take your hook from the perch while the flue
-     glows or flares, and you pass over it as it dies (tools/kitchengate.mjs flies it: 1.65-2.0 s from the perch to the flue, for every hero) */
-  const fl = flare('flue', b + 63, b + 65, 27, { period: 2.4, tell: 0.8, on: 0.8, phase: 0, h: 156, bed: 'coals' });
-  const c2 = hookRail(b + 57, 16, b + 72, 21); hookRail(b + 45, 13, b + 56, 15, { hop: [b + 52.6, b + 55.2], hand: c2, flue: { id: fl.id, tIn: 1.6, tOut: 2.05 } });
-  sign(b + 44, 13, 'THE FLUE FLARES UP THROUGH THE HOOKS. TAKE A HOOK AS IT GLOWS: YOU PASS AS IT DIES.');
+  /* REMIX 2: THE FLUE - a flare out of the coal bed, a sheet of fire up through the hooks, cuts the first rail just off the perch (in sight of it): take your hook as its flame
+     dies (or early in its glow) and you are past before the next; then the hop over the carving pit (tools/kitchengate.mjs flies it: 0.15-0.45 s from the perch to the flue) */
+  const fl = flare('flue', b + 48, b + 50, 27, { period: 2.4, tell: 0.8, on: 0.8, phase: 0, h: 220, bed: 'coals' });
+  const c2 = hookRail(b + 57, 16, b + 72, 21); hookRail(b + 45, 13, b + 56, 15, { hop: [b + 52.6, b + 55.2], hand: c2, flue: { id: fl.id, tIn: 0.15, tOut: 0.45 } });
+  sign(b + 44, 13, 'THE FLUE FLARES UP THROUGH THE HOOKS. TAKE A HOOK AS ITS FLAME DIES.');
   coins([b + 56, 13], [b + 57, 13]);   /* on the hop's arc */
   /* THE CARVERY DOOR (the trail, again): the carvers' stove, its grease trail, a cook on it, and a tallow door at its end */
   block(b + 83, b + 90, 6, 12);

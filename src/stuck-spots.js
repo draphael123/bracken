@@ -279,7 +279,7 @@ export const STUCK = {
     { id: 'kg-larder-hop', zone: [201, 6, 225, 23], at: [204, 13], line: 'UP THE RACKS, TAKE A HOOK, JUMP IN THE RED STRETCH' },
     { id: 'kg-door1', zone: [299, 14, 315, 23], at: [301, 23], done: ['kgbellows', 301, 23, 'on'], line: 'A TALLOW DOOR: STRIKE THE BELLOWS, LET THE GREASE BURN' },
     { id: 'kg-carvery-haul', zone: [378, 6, 406, 23], at: [399, 23], line: 'THE LINE CARRIES YOU: HOLD UP UNDER THE HAUL HOOK' },
-    { id: 'kg-flue', zone: [418, 6, 423, 13], at: [423, 13], line: 'TAKE THE HOOK AS THE FLUE GLOWS: YOU PASS AS IT DIES' },
+    { id: 'kg-flue', zone: [418, 6, 423, 13], at: [423, 13], line: 'TAKE THE HOOK AS THE FLUE\'S FLAME DIES' },
     { id: 'kg-door3', zone: [448, 13, 462, 21], at: [452, 21], done: ['kgbellows', 452, 21, 'on'], line: 'THE CARVERY DOOR: STRIKE THE BELLOWS, LET THE GREASE BURN' },
     { id: 'kg-spit3', zone: [470, 8, 485, 21], at: [474, 21], done: ['kgbellows', 474, 21, 'on'], line: 'THE GALLERY IS TOO HIGH: STRIKE THE BELLOWS, RIDE A SPIT UP' },
     { id: 'kg-door2', zone: [511, 13, 524, 21], at: [513, 21], done: ['kgbellows', 513, 21, 'on'], line: 'THE BUTTERY DOOR: STRIKE THE BELLOWS, LET IT BURN' },
