@@ -15,6 +15,8 @@ import { lineY, norm } from './zipline.js';
 
 export const HAUL = { lead: 1.3, every: 3.2, first: 0.8, dmg: 12, hitR: 14, escape: 7, hp: 5, restring: 6, arc: 88, armT: 0.55, upLo: -40, upHi: 48 };   // s, s, s, hp, px, tiles, blows, s, px, s, px (another line within 2.5 rows over / 3 under)
 
+/* WHAT IT SAYS (src/hint-lines.js routes the lines to the hint box; 'STONES' floats - a LANCE_WORD; 'THE MANGONEL: n MORE' is a CALL_COUNTS pattern) */
+export const HAUL_SAY = { cut: 'THE STONE PARTS THE LINE', forLine: 'A STONE FOR THE LINE', wrecked: 'THE MANGONEL IS WRECKED', more: n => 'THE MANGONEL: ' + n + ' MORE' };
 const lowEnd = z => (norm(z), (z.dir || 1) > 0 ? z.xb : z.xa);
 /* can a rider on z at x reach w (kick up to it, or drop onto it), with ride left on both? */
 export function inTransfer(z, w, x) {
@@ -41,7 +43,7 @@ export function haulStep(c, dt) {
   /* THE STONES IN FLIGHT */
   for (const s of H.stones) { s.t += dt; if (s.t < s.T) continue; s.done = true;
     c.sfx('thud'); c.burst(s.tx, s.ty, 10, ['#8a8478', '#b3aca0', '#5a5650']); c.shake(3);
-    if (s.cut && s.z) { s.z.cut = HAUL.restring; s.z.cut0 = HAUL.restring; s.z.whip = 0.6; s.z.fray = 0; c.sfx('crack'); c.say(s.tx, s.ty - 20, 'THE STONE PARTS THE LINE', '#ff9a5c'); }
+    if (s.cut && s.z) { s.z.cut = HAUL.restring; s.z.cut0 = HAUL.restring; s.z.whip = 0.6; s.z.fray = 0; c.sfx('crack'); c.say(s.tx, s.ty - 20, HAUL_SAY.cut, '#ff9a5c'); }
     if (P && !P.dead && Math.abs(P.x - s.tx) < HAUL.hitR && Math.abs(P.y - 12 - s.ty) < HAUL.hitR) { c.damage(s.tx, HAUL.dmg); if (P.zip) { P.zip = null; P.zipRelease = 0.6; } } }
   H.stones = H.stones.filter(s => !s.done);
   /* A RIDER ON A STONE LINE: the mangonel throws (not while wrecked, never two in flight) */
@@ -61,12 +63,12 @@ export function haulStep(c, dt) {
   /* WRECK IT: five blows on the engine */
   if (!m.wrecked && c.hb && !c.hitSet.has(m) && c.overlap(c.hb, { l: m.x - 18, r: m.x + 18, t: m.y - 30, b: m.y })) { c.hitSet.add(m); m.hp--;
     c.sfx('clank'); c.burst(m.x, m.y - 14, 6, ['#8a919c', '#c9b27c']);
-    c.say(m.x, m.y - 40, m.hp > 0 ? m.hp + ' MORE' : 'THE MANGONEL IS WRECKED', m.hp > 0 ? '#ffd36b' : '#8fd160');
+    c.say(m.x, m.y - 40, m.hp > 0 ? HAUL_SAY.more(m.hp) : HAUL_SAY.wrecked, m.hp > 0 ? '#ffd36b' : '#8fd160');
     if (m.hp <= 0) { m.wrecked = true; if (c.marks) c.marks.add('mang:' + M.x); c.sfx('crack'); c.sfx('heavy'); c.shake(5); c.burst(m.x, m.y - 16, 16, ['#5a3a24', '#8a919c', '#c9b27c']); } }
 }
 function fire(c, H, m, z, tx, cut) {
   const ty = lineY(z, tx); H.stones.push({ x0: m.x - 6, y0: m.y - 34, tx, ty, t: 0, T: HAUL.lead, z, cut });
-  m.armT = HAUL.armT; c.sfx('thud'); c.sfx('charge'); c.say(m.x, m.y - 44, cut ? 'A STONE FOR THE LINE' : 'STONES', '#ff9a5c');
+  m.armT = HAUL.armT; c.sfx('thud'); c.sfx('charge'); c.say(m.x, m.y - 44, cut ? HAUL_SAY.forLine : 'STONES', '#ff9a5c');
 }
 /* where a stone is, k of the way (a lob: HAUL.arc px over the straight line at its middle) */
 export const stoneAt = (s, k) => [s.x0 + (s.tx - s.x0) * k, s.y0 + (s.ty - s.y0) * k - 4 * HAUL.arc * k * (1 - k)];

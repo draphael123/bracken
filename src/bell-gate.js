@@ -9,7 +9,9 @@
 // Pure of main.js: the page hands its own io (tools/stormhold4.mjs hands stubs and drives the same code in Node).
 import { LANCE4, bellStrike, bellStep } from './lance-support.js';
 
-export const BELLGATE = { answer: 2.4, run: 96, hold: 6, catchX: 12 };   // s a called foe runs for (it gives up after), px/s it runs at, s the gate stays down, px either side of the gate's column the bars find
+export const BELLGATE = { answer: 2.4, run: 96, hold: 6, catchX: 12 };
+/* WHAT IT SAYS (src/hint-lines.js routes these to the hint box; 'THE BELL-GATE TAKES n' is a CALL_COUNTS pattern there) */
+export const BELLGATE_SAY = { rung: 'THE BELL: THEY RUN TO IT', drop: 'THE BELL-GATE DROPS', takes: n => 'THE BELL-GATE TAKES ' + n };   // s a called foe runs for (it gives up after), px/s it runs at, s the gate stays down, px either side of the gate's column the bars find
 
 /* the prop, from its level ent: { t: 'gatebell', x, y, id, gate, gy0, gy1 } (tiles) */
 export function makeGateBell(e, px, py, TS) {
@@ -23,7 +25,7 @@ export function gateBellStep(pr, dt, io) {
   const { TS } = io;
   /* struck: it rings (unless it is still winding back - a dull clank says so) */
   if (io.hb && !io.hitSet.has(pr) && io.overlap(io.hb, { l: pr.x - 8, r: pr.x + 8, t: pr.y - 26, b: pr.y })) { io.hitSet.add(pr);
-    if (pr.down <= 0 && bellStrike(pr, LANCE4)) { io.sfx('seaBell'); io.say(pr.x, pr.y - 36, 'THE BELL: THEY RUN TO IT', '#ffd36b');
+    if (pr.down <= 0 && bellStrike(pr, LANCE4)) { io.sfx('seaBell'); io.say(pr.x, pr.y - 36, BELLGATE_SAY.rung, '#ffd36b');
       for (const e of io.enemies) if (e.alive && e.answers === pr.id) { e.answerX = pr.gx; e.answerT = BELLGATE.answer; e.face = Math.sign(pr.gx - e.x) || e.face; } }
     else io.sfx('clank'); }
   for (const ev of bellStep(pr, dt, LANCE4)) {
@@ -33,7 +35,7 @@ export function gateBellStep(pr, dt, io) {
     io.closeGate(pr.gate, pr.gy0, pr.gy1); pr.down = BELLGATE.hold; let n = 0;
     for (const e of io.enemies) if (!e.maxHp && underGate(e, pr, TS)) { io.crush(e, pr.gx); n++; }
     for (const e of io.enemies) if (e.answerX === pr.gx) e.answerT = Math.min(e.answerT || 0, 0.4);   /* the bell is done: the rest stop running and turn on you */
-    pr.took += n; io.sfx('crack'); io.say(pr.gx, pr.gy0 * TS - 20, n ? 'THE GATE TAKES ' + n : 'THE GATE DROPS', n ? '#8fd160' : '#ffd36b');
+    pr.took += n; io.sfx('crack'); io.say(pr.gx, pr.gy0 * TS - 20, n ? BELLGATE_SAY.takes(n) : BELLGATE_SAY.drop, n ? '#8fd160' : '#ffd36b');
   }
   if (pr.down > 0) { pr.down -= dt; if (pr.down <= 0) { pr.down = 0; io.openGate(pr.gate, pr.gy0, pr.gy1); } }
 }

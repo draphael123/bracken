@@ -11,7 +11,7 @@
         3 OUT OF A CHIMNEY SLOT: Pyro from col 219 falls into a slot (or jumps clear) and is past col 258 within 3000 frames - the net climb works;
         4 THE KENNEL WINCH (393,29) is left alone: the walk from col 376 gets past col 410 (the gate drops only if struck).
    PORT=8795 node tools/walk-controls.mjs */
-import { LEVELS, T } from '../src/level.js';
+import { LEVELS, T } from '../src/level.js'; import { STORM_TOWN } from '../src/stormhold-town.js';   /* (stormhold4) the gatehouse moved +180: its columns are read off the level */
 import { makeGraph } from '../src/walk-graph.js';
 import { routeOf, walkCfg, runWalks } from './level-walk.mjs';
 const fails = [], ok = (c, m) => { if (!c) fails.push(m); };
@@ -31,16 +31,17 @@ for (const g of L.ents.filter(e => e.t === 'lockgate')) {
   if (best) console.log('  ' + g.needs + ' key trip: ' + best.length + ' cells there, ' + (back ? back.length : '?') + ' back');
 }
 //(batch125 integ) the zigzag one-way stair went with the old Stormhold (STORMHOLD 3 has no houses); the stair check is retired with it
-/* B: short page walks (batch125 integ: retargeted to STORMHOLD 3 - the iron key up THE BELL WATCH (222,17), the bone key up THE WALL WATCH (391,19), and the winch at 410,29 left alone;
+/* B: short page walks (batch125 integ: retargeted to STORMHOLD 3 - the iron key up THE BELL WATCH (222,17), the bone key up THE WALL WATCH (391,19), and the winch at 410,29 left alone (stormhold4: the bone key's walk rides THE HAUL LINES now, and the winch is THE GATEHOUSE BELL at G0+15);
    the old zigzag stair, chimney slots and kennel went with the old castle town; the thresholds are read off the route, not hard-coded) */
 const pct = col => { const i = R.findIndex(n => n[0] >= col); return Math.floor(100 * (i < 0 ? R.length : i) / R.length); };
 const W = (o, id = 'storm', hero = 'knight') => walkCfg(id, hero, 1, { stuck: 1500, ...o });
-const rows = await runWalks([W({ from: 200, frames: 4800 }), W({ from: 366, frames: 3000 }), W({ from: 396, frames: 2600 })], { jobs: 1 });
+const GH = STORM_TOWN.G0;   /* (stormhold4) the bone key's walk now rides THE HAUL LINES (rope to rope) to the gatehouse: more frames; the winch is THE GATEHOUSE BELL now, left alone */
+const rows = await runWalks([W({ from: 200, frames: 4800 }), W({ from: 366, frames: 7200 }), W({ from: GH, frames: 2600 })], { jobs: 1 });
 const [kr, br, wr] = rows;
 for (const r of rows) if (!r || r.err) fails.push('a walk failed: ' + (r && r.err));
 /* the key is fetched when the walk gets PAST its lock gate (the route climbs the tower itself, keyFirst takes the key - no side trip: subs stay empty) */
 const pastGate = (r, name, col, n) => { if (r && !r.err) { const need = pct(col + 6); ok(r.walked >= need, n + ' the ' + name + ' key was not fetched: the walk did not get past its gate at col ' + col + ' (walked ' + r.walked + '%, needs ' + need + '%)'); console.log('  ' + n + ' ' + name + ' key: walked ' + r.walked + '% (past the gate at ' + col + ' = ' + need + '%)'); } };
-pastGate(kr, 'iron', 262, 1); pastGate(br, 'bone', 488, 2);
-if (wr && !wr.err) { const need = pct(420); ok(wr.walked >= need, '3 the winch: the walk did not pass col 420 (walked ' + wr.walked + '%; col 420 is ' + need + '% of the route)'); console.log('  3 winch: walked ' + wr.walked + '% (col 420 = ' + need + '%)'); }
+pastGate(kr, 'iron', STORM_TOWN.GATES.iron, 1); pastGate(br, 'bone', STORM_TOWN.GATES.bone, 2);
+if (wr && !wr.err) { const c3 = GH + 44, need = pct(c3); ok(wr.walked >= need, '3 the gatehouse bell: the walk did not pass col ' + c3 + ' (walked ' + wr.walked + '%; col ' + c3 + ' is ' + need + '% of the route)'); console.log('  3 gatehouse bell: walked ' + wr.walked + '% (col ' + c3 + ' = ' + need + '%)'); }
 if (fails.length) { console.log('walk-controls: FAIL\n  ' + fails.join('\n  ')); process.exit(1); }
 console.log('walk-controls: ok');

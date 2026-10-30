@@ -277,9 +277,9 @@ export function stormholdTown({ painter, T, TS }) {
   // THE BRIDGEHEAD EXAM (RULES S3): the last stretch before his door is a GATE TOWER like the three on his bridge - a bell on its lookout and a
   // portcullis under it. Two pikes and the shielded captain charge at the rung bell: the Lance's P1 opening, exactly. No checkpoint inside
   // it; the one at the first pier closes it.
-  ent('sign', G0 + 66, 29, { text: 'A GATE TOWER. RING ITS BELL FROM THE LOOKOUT: THEY CHARGE AT IT, AND THE GATE DROPS ON THE THIRD TOLL.' });
+  ent('sign', G0 + 66, 29, { text: 'A GATE TOWER. RING ITS BELL: THEY CHARGE AT IT, AND ITS GATE DROPS ON THE THIRD TOLL.' });
   plat(G0 + 72, 27, 5); ent('deco', G0 + 74, 29, { kind: 'bridgetower' });
-  facades.push([G0 + 72, G0 + 76, 21, 26, 'tower', { town: true, roof: true }]);
+  facades.push([G0 + 72, G0 + 76, 21, 29, 'tower', { town: true, roof: true }]);   /* (down to the yard: a tower stands on something - tools/architecture.mjs) */
   ent('gatebell', G0 + 75, 26, { id: 'bridgehead', gate: G0 + 74, gy0: 28, gy1: 29 });
   ent('pike', G0 + 79, 29, { face: -1, answers: 'bridgehead' }); ent('pike', G0 + 81, 29, { face: -1, answers: 'bridgehead' }); ent('shield', G0 + 83, 29, { face: -1, answers: 'bridgehead' });
   coins([G0 + 62, 26], [G0 + 74, 26], [G0 + 85, 28]);
@@ -315,7 +315,7 @@ export function stormholdTown({ painter, T, TS }) {
      line frays, parts and whips down along its run). The fire cages are gone from the bridge (Q3). */
   for (const k of [1, 3, 5]) { const px0 = P0 + k * 18;
     plat(px0 + 1, BY - 6, 3);   // the tower top
-    facades.push([px0, px0 + 4, BY - 8, BY - 4, 'tower', { town: true, roof: true }]);
+    facades.push([px0, px0 + 4, BY - 8, BY - 1, 'tower', { town: true, roof: true }]);   /* (stormhold4: down to the deck on its pier - a tower stands on something, tools/architecture.mjs) */
     ent('lancebell', px0 + 3, BY - 4, { gate: px0 + 2, gy0: BY - 2, gy1: BY - 1, tower: k });
     const x0 = (px0 + 3) * TS + 8, y0 = (BY - 6) * TS - 12, x1 = (px0 + 18) * TS + 8, y1 = (BY - 3) * TS - 12;
     signal.push({ x0, y0, x1, y1, signal: k, post: [x1, BY * TS], posts: [[x0, y0, (BY - 6) * TS]] }); }
