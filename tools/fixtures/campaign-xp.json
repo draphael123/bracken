@@ -158,10 +158,10 @@
    "clear": 443
   },
   "fallingtower": {
-   "run": 1787,
-   "foeXp": 774,
+   "run": 1807,
+   "foeXp": 788,
    "bossXp": 704,
-   "clear": 464
+   "clear": 473
   },
   "burning": {
    "run": 1030,
@@ -314,10 +314,10 @@
    "clear": 150
   },
   "warcairn": {
-   "run": 765,
-   "foeXp": 300,
+   "run": 1162,
+   "foeXp": 584,
    "bossXp": 345,
-   "clear": 180
+   "clear": 350
   }
  }
 }
