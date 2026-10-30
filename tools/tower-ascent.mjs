@@ -1,7 +1,7 @@
 /* tools/tower-ascent.mjs — THE FALLING TOWER, rebuilt (batch 4, 2026-09-21). Replaces tower-return.mjs, tower-finish.mjs
    and their runtime twins, which pinned the old shape (the Folly walked backwards to an indoor arena).
      BUILT   an upward level: SEVEN floors, each its own room kind, a rope through every divider, a GARRISON row that
-             places on every floor, no blanket calm, the elites on this layout, 3 silvers, a checkpoint on every floor
+             places on every floor, no blanket calm, the elites on this layout, 3 silvers, FOUR shrines (claude/ft4b: a braced room an act + one before him)
      LONGER  (2026-09-22) THE READING ROOM and THE PENDULUM GALLERY, both LOAD-BEARING: take the flip away and nothing
              over the gallery is reached, take the pendulums away and the cistern is not; and FEWER ZOMBIES (3 + 1 husk)
      REACH   the fill climbs from the Folly's foot to the parapet and every silver/checkpoint; the sky has no footing
@@ -79,7 +79,8 @@ assert.ok(![...R.seen].some(s => +s.split(',')[1] < TOWER.SKY - 1), 'the climb r
 assert.equal(at(SAND.x0 + 4, SAND.row), T.SOLID, 'the sandy path is gone, so the line above passes for the wrong reason');
 assert.ok(![...R.seen].some(s => +s.split(',')[1] === SAND.row - 1), 'the sandy path can be WALKED to: it is meant to be reached only through the second door');
 const checks = L.ents.filter(e => e.t === 'check').map(e => e.y).sort((a, b) => a - b);
-for (const f of L.towerFloors) assert.ok(checks.some(y => y >= f.top - 2 && y < f.bot), 'a checkpoint on ' + f.name);
+/* (claude/ft4b, Daniel 10-29 #4: FOUR SHRINES - one braced room an act + one before him; tools/fallingtower4.mjs holds where) - not one a floor any more */
+assert.equal(checks.length, 4, 'four shrines'); for (const b of L.ft4.braced) assert.ok(checks.some(y => y >= b.box[2] && y <= b.box[3]), 'no shrine in the braced room ' + b.id);
 /* and one on the crown's last climb, for the sky fight - NOT on the parapet any more, where the fight saw it under the fire and could never reach it
    (round 2; tools/checkpoint-stand.mjs holds every flight arena to that) */
 assert.ok(checks[0] > TOWER.SKY + 1 && checks[0] <= TOWER.SKY + 8, "the last checkpoint before the sky is on the crown's last climb: row " + checks[0]);
@@ -184,7 +185,7 @@ try {
    // a floor you went back under waits for you
    BK.tp(16,F[1].top-9);BK.sim(20);BK.tp(24,F[1].bot-1);BK.sim(200);out.waited=!F[1].done&&F[1].front===null;
    // the carpet, boarded at the top, starts the fight; the crown goes under it
-   BK.tp(30,${TOWER.SKY});BK.sim(5);BK.board();BK.sim(5);out.carpet=!!BK.carpet();out.active=BK.bossActive;BK.sim(120);out.crownGone=F[6].done||F[6].front!==null;
+   BK.tp(30,${TOWER.SKY});BK.sim(5);BK.board();BK.sim(5);out.carpet=!!BK.carpet();out.active=BK.bossActive;for(let i=0;i<3600&&BK.boss&&BK.boss.leg==='ascent';i++)BK.sim(1);BK.sim(120);   /* (claude/ft4a: boarded in the core, THE ASCENT carries you up into his hall first) */out.crownGone=F[6].done||F[6].front!==null;
    const y0=BK.P.y;for(let i=0;i<120;i++){BK.keys.down=true;BK.sim(1);}BK.keys.down=false;out.floorHeld=BK.P.y<=BK.L.arena.floor;out.fellNot=!!BK.carpet();
    /* THE RISE IS MEASURED FROM THE BOTTOM OF THE DIVE, NOT FROM WHERE HE BOARDED. y0 used to be both: the carpet put
       him on the parapet, which was the lowest point in the arena, so y0-P.y happened to be the climb. Boarding now
@@ -204,7 +205,7 @@ try {
      through it you stand on the sand under the Caravan's sky and WALK to the level's end - the level is won at the gate, not on the kill */
   const e2 = await pg.evalp(`(async()=>{const{LEVELS}=await import('/src/level.js');BK.manualSimulation=true;const SS=n=>{for(let i=0;i<n;i++){if(BK.state==='card')BK.cardClose();BK.sim(1);}};const out={};
     BK.setHero('knight');BK.reset({fresh:true});BK.load(LEVELS.findIndex(l=>l.id==='fallingtower'));BK.state='play';BK.god=true;SS(10);
-    BK.tp(${SPIRAL_TOP.check},${SPIRAL_TOP.row});SS(5);BK.board();SS(30);const b=BK.boss||BK.enemies().find(e=>e.t==='undeadmage'&&e.alive);out.fought=!!BK.bossActive;for(let i=0;i<300&&b.mode==='wake';i++)SS(1);b.hp=1;BKT.hurtEnemy(b,99,b.x-10,false);
+    BK.tp(${SPIRAL_TOP.check},${SPIRAL_TOP.row});SS(5);BK.board();SS(30);for(let i=0;i<3600&&BK.boss&&BK.boss.leg==='ascent';i++)SS(1);   /* (claude/ft4a: THE ASCENT first - he cannot die in it, its floor holds) */const b=BK.boss||BK.enemies().find(e=>e.t==='undeadmage'&&e.alive);out.fought=!!BK.bossActive;for(let i=0;i<300&&b.mode==='wake';i++)SS(1);b.hp=1;BKT.hurtEnemy(b,99,b.x-10,false);
     const S=BK.L.sanctum;for(let i=0;i<600&&!(S.open&&S.outOpen>=1);i++)SS(1);out.open=!!S.open;out.stillPlaying=BK.state==='play';
     for(let i=0;i<120&&!BK.L.sandWalk;i++){BK.P.x=S.out.x;BK.P.y=S.out.y;SS(1);}out.sand=!!BK.L.sandWalk;out.onFoot=!BK.carpet();out.row=Math.round(BK.P.y/16);out.night=BK.L.nightA;
     for(let i=0;i<900&&BK.state==='play';i++){BK.keys.right=true;SS(1);}BK.keys.right=false;out.won=BK.state;return out;})()`, 240000);

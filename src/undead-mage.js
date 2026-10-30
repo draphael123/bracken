@@ -77,7 +77,7 @@
 //                    his ring-to-ring blink) and while he CHANNELS THE SKULLS or THE ORRERY (their tells and while he holds them).
 import { canvas, flipX, whiten } from './px.js';
 import { drawDesertOval } from './sanctum.js';
-import { REALM, OPEN as REALM_OPEN, realmDue, enterRealm, updateRealm } from './mage-realms.js';   /* HIS SPELL REALMS at 75/50/25% (claude/undead3) */
+import { REALM, OPEN as REALM_OPEN, realmDue, enterRealm, updateRealm, realmCanReturn, realmSendBack, realmHomeStep } from './mage-realms.js';   /* HIS SPELL REALMS at 75/50/25% (claude/undead3) */
 export { bakeUndeadMage, UNDEADMAGE_F } from './redraw/lich.js';
 
 export function smallerFamiliar(s) {
@@ -90,7 +90,7 @@ export const MAGE = {
   enrageAt: 0.4, fast: 1.6, blinkEvery: 8, blinkEnraged: 3, afterOpen: 3, openT: 3.0, openMul: 2,   /* (claude/archmage4: 3.6 -> 3.0, the hall openings shorter - HERO KIT made every hero hit harder) */
   order: ['fire', 'ice', 'step', 'bone', 'poison', 'orbit', 'mark', 'bend', 'storm', 'pull', 'hand', 'script', 'decoy', 'fire', 'mark', 'trap'],   /* (archmage3: HIS ORRERY and THE GRAVE SCRIPT) */   /* (round 3: the second step is the DECOY, the second bend the TRAP; archmage2: the BONE STORM, and the GRAVE PULL - stage 3 only, skipped before it) */
   tell: { fire: 0.9, ice: 0.9, storm: 1.2, poison: 1.0, hand: 0.9, mark: 0.6, step: 1.0, bend: 1.0, decoy: 1.1, trap: 1.0, bone: 1.1, pull: 1.0, orbit: 1.2, script: 1.2 },
-  dmg: { fire: 14, ice: 12, storm: 28, orb: 8, hand: 16, mark: 34, bent: 13, trap: 13, skull: 15, void: 18, world: 22, script: 24 },   /* (claude/sweep3: archmage4's red +15% taken back - storm 32, mark 38, skull 17, void 20, world 25, script 28 - the warden was 0/4 on the standard bot; his 2800 is Daniel's and stands) */   /* (archmage3: the red ones - nothing turns them - hit harder: harder by quality, not volume; archmage4: the red ones +15% again, the yellow ones a guard takes are unchanged) */
+  dmg: { fire: 15, ice: 13, storm: 30, orb: 9, hand: 17, mark: 36, bent: 14, trap: 14, skull: 16, void: 19, world: 24, script: 26 },   /* (claude/sweep3: archmage4's red +15% taken back - storm 32, mark 38, skull 17, void 20, world 25, script 28 - the warden was 0/4 on the standard bot; his 2800 is Daniel's and stands) */   /* (archmage3: the red ones - nothing turns them - hit harder: harder by quality, not volume; archmage4: the red ones +15% again, the yellow ones a guard takes are unchanged) */
   /* ARCHMAGE2. THE BONE STORM: n skulls on a ring of radius r0 round you, its gap slots left open (one wide gap, or every other cycle two
      narrow ones), closing to r1 over secs while the ring turns `turn` of a circle. THE ECHO: its delay, and the spells it repeats. THE GRAVE
      PULL: how long it drags, how hard (px/s at its full), its void's reach, and how long between two hurts by it */
@@ -136,7 +136,15 @@ export const mageOpen = e => e.mode === 'gather' || e.mode === 'breached' || e.m
 export const wardBreakable = e => !!(e && e.alive && !mageOpen(e) && !(e.wardHold > 0) && !e.realm && !['sleep', 'wake', 'blinkOut', 'blinkIn', 'realmTell', 'fall', 'down', 'rise', 'sink', 'tear', 'below', 'away'].includes(e.mode));   /* (claude/fallingtower3: and none of THE CHASE's own beats - falling, down, fleeing, waiting below) */
 /* THE BOLT THAT CAN BE STRUCK BACK: his own firebolt (not his echo's, not one already struck) */
 export const RETURNABLE = new Set(['fire', 'ice', 'orb', 'hand', 'bent', 'trap']);   /* (fallingtower2: every shot of his; the skulls and the orrery's worlds are not shots, and nothing turns them) */
-export const reflectable = q => !!q && RETURNABLE.has(q.kind) && !q.reflected;
+export const reflectable = q => !!q && RETURNABLE.has(q.kind) && !q.reflected && !q.noReturn;   /* (claude/ft4c: noReturn - a realm's shot that is not its return, e.g. his firebolt in the poison realm: no gold ring) */
+/* STRIKING A SHOT BACK, ONE RULE FOR HIS FIGHT AND HIS STAIR (claude/ft4a, scratch/brief-fallingtower4-1029.md #5 - shared so the two cannot drift):
+   blowMeets: the hero's blow box (main.js attackBox) meets the shot; sendHome: it turns pale and flies at him; homeStep: one step of its homing
+   (MAGE.reflect.v, turning MAGE.reflect.turn rad/s) - true when it has reached him (MAGE.reflect.r of his chest) */
+export const blowMeets = (q, b) => !!b && q.x > b.l - q.r && q.x < b.r + q.r && q.y > b.t - q.r - 8 && q.y < b.b + q.r;
+export function sendHome(q, e) { q.reflected = true; q.t = 3; q.hit = false; q.col = '#e8fff0'; const a = Math.atan2(e.y - 26 - q.y, e.x - q.x); q.a = a; q.vx = Math.cos(a) * MAGE.reflect.v; q.vy = Math.sin(a) * MAGE.reflect.v; q.kind0 = q.kind; }
+export function homeStep(q, e, dt) { const want = Math.atan2(e.y - 26 - q.y, e.x - q.x); let d = want - q.a; while (d > Math.PI) d -= 2 * Math.PI; while (d < -Math.PI) d += 2 * Math.PI;
+  q.a += Math.max(-MAGE.reflect.turn * dt, Math.min(MAGE.reflect.turn * dt, d)); q.vx = Math.cos(q.a) * MAGE.reflect.v; q.vy = Math.sin(q.a) * MAGE.reflect.v; q.x += q.vx * dt; q.y += q.vy * dt;
+  return Math.hypot(q.x - e.x, q.y - (e.y - 26)) < MAGE.reflect.r; }
 /* HIS SOFT WINDOWS (fallingtower2, Daniel's B15 exception): going into a portal, channelling the skulls or the orrery - a blow lands whole (x1) */
 export const SOFT = new Set(['stepTell', 'decoyTell', 'boneTell', 'boneWait', 'orbitTell', 'orbitWait']);   /* (NOT his realm tear: that is a set piece and a breather, warded - open, it was half his health in one tear for the human bot) */
 export const mageSoft = e => !!(e && e.alive && !e.realm && (SOFT.has(e.mode) || (e.mode === 'blinkOut' && e.ringBlink)));
@@ -280,11 +288,11 @@ export function updateUndeadMage(e, dt, c) {
   for (const q of e.shots) {
     q.t -= dt;
     /* STRUCK BACK (Daniel 10-05): a blow that meets his firebolt sends it home; home, it breaks his ward - or rings off it while it holds */
-    if (reflectable(q) && !e.realm && c.strike) { const b = c.strike(); if (b && q.x > b.l - q.r && q.x < b.r + q.r && q.y > b.t - q.r - 8 && q.y < b.b + q.r) {
-      q.reflected = true; q.t = 3; q.hit = false; q.col = '#e8fff0'; const a = Math.atan2(e.y - 26 - q.y, e.x - q.x); q.a = a; q.vx = Math.cos(a) * MAGE.reflect.v; q.vy = Math.sin(a) * MAGE.reflect.v; q.kind0 = q.kind; say('STRUCK BACK', false); sound('crack'); } }
-    if (q.reflected) { const want = Math.atan2(e.y - 26 - q.y, e.x - q.x); let d = want - q.a; while (d > Math.PI) d -= 2 * Math.PI; while (d < -Math.PI) d += 2 * Math.PI;
-      q.a += Math.max(-MAGE.reflect.turn * dt, Math.min(MAGE.reflect.turn * dt, d)); q.vx = Math.cos(q.a) * MAGE.reflect.v; q.vy = Math.sin(q.a) * MAGE.reflect.v; q.x += q.vx * dt; q.y += q.vy * dt;
-      if (Math.hypot(q.x - e.x, q.y - (e.y - 26)) < MAGE.reflect.r) { q.t = 0; q.gone = true;
+    if (reflectable(q) && !e.realm && c.strike) { const b = c.strike(); if (blowMeets(q, b)) { sendHome(q, e); say('STRUCK BACK', false); sound('crack'); } }
+    /* (claude/ft4c) IN A REALM, ITS SECOND RETURN: the fire realm's firebolt struck into the brazier over him, the ice realm's lances into his shell (src/mage-realms.js) */
+    else if (e.realm && c.strike && realmCanReturn(e, q)) { const b = c.strike(); if (blowMeets(q, b)) realmSendBack(e, q, c); }
+    if (q.reflected && e.realm) { if (realmHomeStep(e, q, dt, c)) { q.t = 0; q.gone = true; } continue; }
+    if (q.reflected) { if (homeStep(q, e, dt)) { q.t = 0; q.gone = true;
         if (wardBreakable(e)) { if (e.mode === 'boneWait') e.bones = null; if (e.mode === 'orbitWait') e.orbit = null; if (c.unsay) c.unsay(); e.mode = 'reflected'; e.modeT = MAGE.reflect.openT; e.open = MAGE.reflect.openT; e.deathMark = null; e.chained = false; e.fireRing = null; say('HIS OWN SPELL STAGGERS HIM', true); sound('crack'); sound('sting'); }
         else { e.wardHitT = MAGE.ward.hitT; e.wardHitX = q.x; e.wardHitY = q.y; sound('aegis'); } }
       continue; }
@@ -391,7 +399,7 @@ export function updateUndeadMage(e, dt, c) {
    the spell's colour; for the last STRIKE_S of the tell it is the RELEASE (the staff pointed, a glint at its head); and the release is held a beat after the
    cast as the follow-through. The same timings - only which frame shows when. */
 const STRIKE_S = 0.35, FOLLOW_S = 0.22;
-const WIND_OF = { fireTell: 'fire', bendTell: 'fire', trapTell: 'fire', wallTell: 'fire', iceTell: 'ice', stormTell: 'storm', markTell: 'storm', poisonTell: 'poison', sporeTell: 'poison', handTell: 'death', boneTell: 'bone', orbitTell: 'orbit', scriptTell: 'rune', pullTell: 'void' };
+const WIND_OF = { pairTell: 'fire', fireTell: 'fire', bendTell: 'fire', trapTell: 'fire', wallTell: 'fire', iceTell: 'ice', stormTell: 'storm', markTell: 'storm', poisonTell: 'poison', sporeTell: 'poison', handTell: 'death', boneTell: 'bone', orbitTell: 'orbit', scriptTell: 'rune', pullTell: 'void' };
 export function undeadFrame(e, F) {
   if (e.hurtT > 0) return F.hurt;
   const rel = { fire: F.fire, ice: F.ice, storm: F.storm, poison: F.poison, death: F.death, bone: F.plant, orbit: F.orbit, rune: F.rune, void: F.void };
@@ -399,7 +407,7 @@ export function undeadFrame(e, F) {
   if (w) return e.modeT > STRIKE_S ? F.wind[w] : rel[w];
   if (e.mode === 'markWait') return F.death; if (e.mode === 'boneWait') return F.plant; if (e.mode === 'orbitWait') return F.orbit;
   if (e.mode === 'hover' && e.spell && WIND_OF[TELL[e.spell]] && MAGE.hover / mageSpeed(e) - e.modeT < FOLLOW_S && e.modeT > 0) return rel[WIND_OF[TELL[e.spell]]];   /* the follow-through: the release held a beat */
-  return ({ fall: F.fall, down: F.crash, rise: F.blinkOut, sink: F.blinkOut, below: F.idle[Math.floor(e.anim * 2.5) % 2], tear: F.wind.storm, stepTell: F.blinkOut, decoyTell: F.blinkOut, blinkOut: F.blinkOut, blinkIn: F.blinkIn, gather: F.open, breached: F.open, reflected: F.recoil, scorched: F.open, shattered: F.open, vented: F.open, realmTell: F.blinkOut, wake: F.idle[Math.floor(e.anim * 2.5) % 2] })[e.mode]
+  return ({ fall: F.fall, down: F.crash, rise: F.blinkOut, sink: F.blinkOut, below: F.idle[Math.floor(e.anim * 2.5) % 2], tear: F.wind.storm, stepTell: F.blinkOut, decoyTell: F.blinkOut, blinkOut: F.blinkOut, blinkIn: F.blinkIn, gather: F.open, breached: F.open, reflected: F.recoil, reel: F.recoil, crushed: F.fall, scorched: F.open, shattered: F.open, vented: F.open, realmTell: F.blinkOut, wake: F.idle[Math.floor(e.anim * 2.5) % 2] })[e.mode]
     ?? (e.enraged ? F.enraged[Math.floor(e.anim * 4) % 2] : F.idle[Math.floor(e.anim * 2.5) % 2]);
 }
 /* ONE RING: the desert inside it, and a rim of sparks in his green - the bolt's colour when a bolt is coming through it, and bright and

@@ -240,14 +240,14 @@
   "bare": true
  },
  "fallingtower": {
-  "hash": "5849541d6d56",
+  "hash": "1518896357e3",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 50,
-  "deaths": 19,
-  "kills": 8,
-  "lifts": 150,
+  "hits": 66,
+  "deaths": 21,
+  "kills": 7,
+  "lifts": 154,
   "walked": 100,
   "bare": true
  },
