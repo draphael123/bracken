@@ -74,16 +74,16 @@ for (const s of L.wcSlabs) { const LL = clone({ reachSpans: L.reachSpans.filter(
   const ho = L.hoists.find(h => h.id === 'gorge' && h.load === 'throw'); ok(!!ho, 'the pilot reads it as a THROW hoist (src/playtest.js)');
   /* the lob from the throw spot hits the post (the told arc is the arc flown) */
   const solid = (px, py, falling) => { const tx = Math.floor(px / TS), ty = Math.floor(py / TS), t = L.grid[ty * L.W + tx]; return t === T.SOLID || (falling && (t === T.ONEWAY || t === T.PLANK) && (py % TS) < 6); };
-  const pb = { l: b.post[0] * TS + 2, r: b.post[0] * TS + 14, t: (b.post[1] - 2) * TS, b: (b.post[1] + 1) * TS };
+  const pb = { l: b.post[0] * TS - 4, r: b.post[0] * TS + 20, t: (b.post[1] - 4) * TS, b: (b.post[1] + 1) * TS };   /* (src/war-cairn-hatchets.js cutBox) */
   const lob = c => { const a = CTW.aimOf('hatchet', 1, { up: true }); const r = CTW.predictArc('hatchet', c * TS + 14, (ho.from[1] + 1) * TS - HATCHET.hand, { vx: a.vx, vy: a.vy }, solid, { stopAt: (x, y) => x > pb.l && x < pb.r && y > pb.t && y < pb.b ? 'post' : null }); return r.land && r.land.hit; };
-  const spots = [62, 63, 64].filter(lob); ok(spots.length >= 2 && spots.includes(ho.from[0]), 'a LOB (UP + ATTACK) from the lip hits the rope post: from cols ' + spots.join(', ')); }
+  const spots = [58, 59, 60, 61, 62, 63, 64].filter(lob); ok(spots.length >= 3 && L.wcRacks.some(r => r.id === 'shoulder' && spots.includes(r.x)) && spots.includes(ho.from[0]), 'a LOB (UP + ATTACK) from the lip - and from the rack - hits the rope post: from cols ' + spots.join(', ')); }
 ok((L.wcRacks || []).length >= 4, 'HATCHET RACKS: ' + L.wcRacks.map(r => r.id + '@' + r.x + ',' + r.f).join(' '));
 for (const r of L.wcRacks) ok([T.SOLID, T.ONEWAY].includes(L.grid[(r.f + 1) * L.W + r.x]), 'the rack ' + r.id + ' stands on footing');
 { const k = t => L.wcCuts.filter(c => c.kind === t).length; ok(k('bridge') >= 1 && k('stone') >= 2 && k('totem') >= 1 && k('nest') >= 3, 'what a hatchet knocks down: ' + ['bridge', 'stone', 'totem', 'nest'].map(t => k(t) + ' ' + t).join(', ')); }
 for (const c of L.wcCuts.filter(c => c.kind === 'nest')) ok(c.foes.length >= 2 && c.foes.every(([x, y]) => L.ents.some(e => e.t === 'harpy' && e.x === x && e.y === y)), 'the nest ' + c.id + ' has its harpies: ' + c.foes.map(q => q.join(',')).join(' '));
 { const n = t => L.ents.filter(e => e.t === t).length, els = L.ents.filter(e => e.t === 'berserker' && e.elite).length;
   ok(n('harpy') >= 6 && n('goat') >= 5 && els >= 2, 'MORE OF THE CLAN\'S BEASTS: ' + n('harpy') + ' crag harpies, ' + n('goat') + ' rams, ' + els + ' elite berserkers (' + n('berserker') + ' runners)');
-  const foes = L.ents.filter(e => !['sign', 'coin', 'silver', 'deco', 'check', 'cascade', 'wcdrum', 'wcgate', 'wcslab', 'wccornice', 'wchold', 'bzchief'].includes(e.t)), by = {}; for (const e of foes) by[e.t] = (by[e.t] || 0) + 1;
+  const foes = L.ents.filter(e => !['sign', 'coin', 'silver', 'deco', 'check', 'cascade', 'wcdrum', 'wcgate', 'wcslab', 'wccornice', 'wchold', 'wcrope', 'bzchief'].includes(e.t)), by = {}; for (const e of foes) by[e.t] = (by[e.t] || 0) + 1;
   const top = Object.entries(by).sort((a, b) => b[1] - a[1])[0]; ok(top[1] / foes.length <= 0.36, 'no foe type over ~35%: ' + Object.entries(by).map(([t, k]) => t + ' ' + k).join(', ')); }
 { const LL = clone({}); for (const d of L.wcDrums) for (const id of d.gates) { const g = L.wcGates.find(q => q.id === id); for (let y = g.y0; y <= g.y1; y++) for (let x = g.x0; x <= g.x1; x++) LL.grid[y * L.W + x] = T.AIR; }
   ok(reaches(LL, goal[0], goal[1]), 'with its gates open (the beat) the way is whole'); }
@@ -166,6 +166,8 @@ ok(!L.ents.some(e => e.t === 'deco' && /tree|log|timber|plank|crate|barrel|ice/i
   const st = LL.wcCuts.find(c => c.id === 'yard'), ax = { t: 'soldier', x: (st.x0 + 0.5) * TS + 8, y: 40 * TS, w: 10, h: 14, hp: 60, maxHp: 60, alive: true }; foes.push(ax);
   ok(HX.cut('yard'), 'the yard\'s HANGING STONE: a hatchet on its rope'); step(2); const top = HX.landRow ? HX.landRow('yard') : null;
   ok(at(st.x0, 39) === T.SOLID && at(st.x1, 38) === T.SOLID && ax.hp < 60, 'it falls, CRUSHES the axeman (' + ax.hp + '/60) and stays: a block (a step)');
+  { const tg = LL.wcGates.find(g => g.id === 'tunnel'); H.beat('gully', 'hero'); const open = at(tg.x0, tg.y0) === T.AIR; H.reset();
+    ok(open && at(tg.x0, tg.y0) === T.PORT && at(b.x0, b.y) === T.AIR && at(st.x0, 39) === T.AIR && HX.read().cuts.find(c => c.id === 'gorge').st === 'hang' && HX.read().cuts.find(c => c.id === 'yard').st === 'hang', 'A RESPAWN puts it all back (main.js respawn does not lay the grid again): the gate shut, the bridge hauled up, the stone hanging'); }
   /* A TOTEM crushes and shatters (no footing) */
   const tt = LL.wcCuts.find(c => c.kind === 'totem'), gd = { t: 'shield', x: tt.x0 * TS + 8, y: 34 * TS, w: 10, h: 14, hp: 60, maxHp: 60, alive: true }; foes.push(gd);
   HX.cut(tt.id); step(2); ok(gd.hp < 60 && at(tt.x0, 33) === T.AIR && HX.read().cuts.find(c => c.id === tt.id).st === 'gone', 'the TOTEM falls on the guard (' + gd.hp + '/60) and shatters - no footing left');

@@ -58,6 +58,8 @@ export function makeWarCairnHands(ctx) {
   H.reset = () => {
     const lv = L(); if (!lv || !lv.warcairn) { S = null; return; }
     const keep = S && S.L === lv ? S : null;
+    /* (claude/warcairn2) A RESPAWN does not lay the grid again (main.js respawn): every drum machine is put back as laid - the gates shut, the slabs hanging, the snow whole */
+    if (keep) { for (const g of keep.gates.values()) if (g.open) cells(g.d, ctx.T.PORT); for (const s of keep.slabs.values()) if (s.level) row(s.d.x0, s.d.x1, s.d.y, ctx.T.AIR); for (const c of keep.cornices.values()) if (c.state !== 'whole') row(c.d.x0, c.d.x1, c.d.y, ctx.T.ONEWAY); }
     const drums = new Map(), gates = new Map(), slabs = new Map(), cornices = new Map();
     for (const d of lv.wcDrums || []) drums.set(d.id, { d, spentT: 0, beatT: 0, by: null, his: false, count: 0 });
     for (const g of lv.wcGates || []) gates.set(g.id, { d: g, openT: 0, open: false });

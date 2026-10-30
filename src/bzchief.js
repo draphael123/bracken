@@ -42,13 +42,13 @@ export const BZC = {
   mul: { walk: 0.7, take: 0.4, committed: 1.0 },              /* B15: never under 0.4 outside an opening */
   rage: { max: 100, land: 12, taken: 8, hit: 2, p2: 1.5, decay: 0 },
   frenzy: { t: 6, max: 12, takeMul: 1.25, heal: 0.02, healCap: 0.04, quick: 0.75, cry: 0.7 },   /* heal: of his max a blow of his that lands in a frenzy; healCap: of his max a frenzy. (claude/warcairn2) max: the frenzy holds until a drum is rung - this is only its safety cap; t is kept for old readers */
-  counter: { tell: 0.4, per: 6, cap: 18 },                     /* (claude/warcairn2) TAKE IT's COUNTER: a cross-chop riposte, + per for each blow absorbed (cap) */
+  counter: { tell: 0.55, per: 6, cap: 18 },                     /* (claude/warcairn2) TAKE IT's COUNTER: a cross-chop riposte, + per for each blow absorbed (cap) */
   open: { t: 3.0, mul: 2.0, cap: 0.15 }, stuck: { t: 1.2, mul: 1.5 }, wardT: 2.0, ward: { take: 0.4 }, reelT: 0.8,
   flurry: { tell: 0.5, beat: 0.2, t: 0.16, reach: 34, step: 110, dmg: 18, n: 4 },
   cross: { tell: 0.55, t: 0.22, reach: 38, dmg: 30 },
   double: { tell: 0.8, t: 0.26, reach: 40, dmg: 34 },
   take: { t: 1.2, beat: 0.22, heat: 2.4 },                      /* heat: blows into his walk that raise the stance (like the Paladin's ward) */
-  throw: { tell: 0.55, sp: 300, range: 260, dmg: 22, hy: 16, hr: 6, cd: 9, min: 90, one: 1.3, pull: 0.9, walk: 90, stick: 1.5, tug: 0.4, back: 24 },   /* one: his chops' tells x this one-handed. (claude/warcairn2) stick: s it stands in the floor to be grabbed; tug: s it flies back on its thong; back: a thrown-back hatchet's blow */
+  throw: { tell: 0.55, sp: 300, range: 260, dmg: 22, hy: 16, hr: 6, cd: 9, min: 90, one: 1.3, pull: 0.9, walk: 90, stick: 1.7, tug: 0.4, back: 24, past: 56 },   /* one: his chops' tells x this one-handed. (claude/warcairn2) stick: s it stands in the floor to be grabbed; tug: s it flies back on its thong; back: a thrown-back hatchet's blow */
   whirl: { tell: 0.45, t: 0.35, r: 46, dmg: 22, cd: 4, behind: 0.5 },
   pounce: { tell: 0.7, t: 0.45, v: 330, dmg: 30, land: 0.6, cd: 7, min: 70 },
   split: { tell: 1.05, t: 0.3, r: 26, dmg: 32, wave: 18, v: 190, life: 1.2, seg: 4 },
@@ -95,7 +95,8 @@ export const BZC_POSES = [['idle', 0], ['run', 0], ['run', 2], ['run', 4],
   ['bzCoil', 0], ['bzPounce', 0], ['bzPLand', 0],                         /* 18-20 THE POUNCE */
   ['bzWind3', 0], ['bzTier3', 2],                                         /* 21,22 THE GROUND-SPLITTER */
   ['bzRoar', 0], ['blast', 0],                                            /* 23,24 THE WAR CRY / the frenzy's stamp */
-  ['slump', 0], ['slump', 1], ['hurt', 0]];                               /* 25 broken (he loses the beat) | 26 he yields | 27 hurt */
+  ['slump', 0], ['slump', 1], ['hurt', 0],                                /* 25 broken (he loses the beat) | 26 he yields | 27 hurt */
+  ['bzShrug', 0]];                                                        /* 28 (claude/warcairn2) TAKE IT's COUNTER windup: he shrugs off what he took (its release: the cross-chop, 9) */
 export const BZC_IDX = { broken: 25, yield: 26, hurt: 27 };
 export function bzcFrame(e) {
   switch (e.mode) {
@@ -103,7 +104,7 @@ export function bzcFrame(e) {
     case 'crossTell': return 8; case 'cross': return 9; case 'stuck': return 11;
     case 'doubleTell': return 10; case 'double': return 11;
     case 'take': return e.takeHitT > 0 ? 13 : 12;
-    case 'counterTell': return 13;   /* (claude/warcairn2) the counter's windup: the crossed axes thrown open off the blow he took (its release is the cross-chop, 9) */
+    case 'counterTell': return 28;   /* (claude/warcairn2) the counter's windup: he shrugs off the blows he took (its release is the cross-chop, 9) */
     case 'staggered': return 27;     /* (claude/warcairn2) his own hatchet in him: the hurt pose (the art lane: the hatchet in his shoulder) */
     case 'throwTell': return 14; case 'throw': return 15;
     case 'whirlTell': return 16; case 'whirl': return 17;
@@ -201,7 +202,7 @@ export function axeBack(e, S, c) {
 /* it came to rest somewhere (thrown and missed, set down, knocked from a hero's hand): it sticks there and the window runs again. x null: it is lost (off the ring) - it is back in his hand */
 export function axeDropped(e, S, c, x) {
   if (!S) return; if (x == null || !e || !e.alive) { S.axe = null; S.oneHand = false; return; }
-  const G = S.G; S.axe = { x: Math.max(G.x0 + 14, Math.min(G.x1 - 14, x)), x0: x, y: G.floorY - 2, dir: 1, act: S.act, fly: false, t: 0, stick: BZC.throw.stick, taken: false, tug: 0 }; S.oneHand = true;
+  const G = S.G, lo = G.x0 + 14 + (S.cracked[0] >= 2 ? (BZC_STAGE.slabs[0][1] + 1) * G.TS : 0), hi = G.x1 - 14 - (S.cracked[1] >= 2 ? (BZC_STAGE.W - BZC_STAGE.slabs[1][0]) * G.TS : 0); S.axe = { x: Math.max(lo, Math.min(hi, x)), x0: x, y: G.floorY - 2, dir: 1, act: S.act, fly: false, t: 0, stick: BZC.throw.stick, taken: false, tug: 0 }; S.oneHand = true;
 }
 /* A BEAT (src/war-cairn-hands.js): a war drum struck. by: 'hero' | 'boss'. Returns what it did to him: 'break' (A), 'reel' (C), 'his' (his own drum in P3), 'idle' */
 export function beatOn(e, S, c, drumId, by) {
@@ -348,10 +349,12 @@ function crackSlab(e, S, c) { let i = (e.face || 1) > 0 ? 1 : 0; if (S.cracked[i
 /* HIS THINGS IN THE ROOM: the hatchet in flight (it sticks in the floor where it comes down), the split running the floor */
 function stepWorld(e, S, dt, h, c) {
   const G = S.G, T = BZC.throw, a = S.axe;
-  if (a && a.fly) { a.x += a.dir * T.sp * dt; const out = Math.abs(a.x - a.x0) > T.range || a.x < G.x0 + 10 || a.x > G.x1 - 10;
+  const nearH = h.filter(q => q.alive).sort((p, q) => Math.abs(p.x - (a ? a.x : 0)) - Math.abs(q.x - (a ? a.x : 0)))[0];
+  const lo = G.x0 + 10 + (S.cracked[0] >= 2 ? (BZC_STAGE.slabs[0][1] + 1) * G.TS : 0), hi = G.x1 - 10 - (S.cracked[1] >= 2 ? (BZC_STAGE.W - BZC_STAGE.slabs[1][0]) * G.TS : 0);   /* (claude/warcairn2) never on a broken slab */
+  if (a && a.fly) { a.x += a.dir * T.sp * dt; const out = Math.abs(a.x - a.x0) > T.range || a.x < lo || a.x > hi || (nearH && (a.x - nearH.x) * a.dir > T.past);   /* (claude/warcairn2) it comes down at most T.past px past the hero it was thrown at: in reach of the grab */
     const hitIt = !out && c.hit([a.x - T.hr - 4, a.x + T.hr + 4, a.y - T.hr, a.y + T.hr], T.dmg, MOVE_NAME.throw, { blockable: true, key: 'ax' + a.act, noKnock: true });
     if (hitIt) blowLanded(e, S, c, T.dmg);
-    if (out || hitIt) { a.fly = false; a.x = Math.max(G.x0 + 14, Math.min(G.x1 - 14, a.x)); a.y = G.floorY - 2; a.stick = BZC.throw.stick; c.sound('clank');
+    if (out || hitIt) { a.fly = false; a.x = Math.max(lo + 4, Math.min(hi - 4, a.x)); a.y = G.floorY - 2; a.stick = BZC.throw.stick; c.sound('clank');
       if (!S.told.axeStuck) { S.told.axeStuck = 1; c.number(a.x, a.y - 30, BZC_SAY.axeStuck, '#ffd36b'); } } }
   if (a && !a.fly) a.t = (a.t || 0) + dt;
   /* (claude/warcairn2) IT STANDS IN THE FLOOR BZC.throw.stick s - then, if no hero took it, he TUGS it back on its thong (told, harmless) */

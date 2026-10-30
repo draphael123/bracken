@@ -84,7 +84,7 @@ export function buildWarCairn({ painter, T, TS }) {
   const rack = (id, x, f) => { racks.push({ id, x, f }); };
   /* A HAULED BRIDGE: its treads (x0..x1 on row y) stand hauled up on the near post; its rope runs over the gap to a tie POST at [px, feet row] - cut it and the bridge swings down
      (T.PLANK, the slate treads). The fill treats it as a span (reachSpans), like a chained slab: tools/warcairn.mjs proves it is a LOCK */
-  const hauled = (id, x0, x1, y, post) => { wcCuts.push({ id, kind: 'bridge', x0, x1, y, y0: y, y1: y, post }); reachSpans.push([x0, x1, y]); };
+  const hauled = (id, x0, x1, y, post) => { wcCuts.push({ id, kind: 'bridge', x0, x1, y, y0: y, y1: y, post }); reachSpans.push([x0, x1, y]); ent('wcrope', post[0], post[1], { id }); };
   /* A HANGING CAIRN STONE / TOTEM: cells x0..x1, rows y0..y1, hung by 'rope' rows of rope from a slate arm (drawn) - cut: it falls to the first footing under it */
   const hang = (id, kind, x0, x1, y0, y1, rope) => { wcCuts.push({ id, kind, x0, x1, y0, y1, rope }); };
   /* A HARPY NEST at x0..x1, y0..y1 (sitting on what is under it); foes: the spawn spots of its harpies (they are bound to it: it hatches them again while it stands) */
@@ -114,17 +114,17 @@ export function buildWarCairn({ painter, T, TS }) {
   deco(46, 68, 'eyrie'); foe('harpy', 47, 56, 'eyrie'); foe('harpy', 58, 56, 'eyrie');
   block(51, 55, 58, 68); for (const x of [51, 53, 55]) set(x, 57, T.SOLID); fill(50, 50, 58, 68, T.NET);
   ent('silver', 54, 57);                                   /* SILVER TWO: the watchtower's top */
-  coins([44, 68], [48, 68], [62, 68]);
+  coins([44, 68], [48, 68], [59, 68]);
   nest('tower', 52, 52, 57, 57, [[47, 56], [58, 56]]);   /* (claude/warcairn2) THE WATCHTOWER's NEST: the eyrie's two harpies - knock it down (a lob from the shoulder, or a blade up the ladder) */
-  rack('shoulder', 59, 68);   /* (claude/warcairn2) THE FIRST RACK: the gorge's bridge is hauled up across the gap */
-  sign(57, 68, 'HATCHETS: E TAKES ONE. HOLD UP AND ATTACK TO LOB IT AT THE ROPE POST ACROSS THE GORGE.');
+  rack('shoulder', 62, 68);   /* (claude/warcairn2) THE FIRST RACK: the gorge's bridge is hauled up across the gap */
+  sign(57, 68, 'HATCHETS: E TAKES ONE. AT THE EDGE, HOLD UP AND ATTACK: LOB IT AT THE ROPE POST.');
   /* THE GORGE: a fall of water down its near side, and the rope-and-slate bridge (slate treads lashed on two ropes, both ends on the rock). The far bank stands six rows
      higher than the bridge: ONE DRIVEN HATCHET in its face is the step up (the clan's - and a hatchet-thrower's miss stands in rock the same way, a while) */
   hauled('gorge', 65, 80, 69, [81, 62]);   /* (claude/warcairn2) THE GORGE'S BRIDGE IS HAULED UP: cut its rope at the far post with a thrown hatchet and it swings down (the one required throw) */
-  ent('cascade', 64, 70, { y1: BOT }); deco(64, 68, 'bridgepost'); foe('harpy', 72, 60, 'gorge'); foe('harpy', 76, 56, 'gorge');
+  ent('cascade', 64, 70, { y1: BOT }); deco(64, 68, 'bridgepost'); foe('harpy', 72, 60, 'gorge'); foe('harpy', 76, 56, 'gorgeHigh');
   rock(81, 92, 63);                                        /* the far bank (feet 62); its lip, cols 79-80, is old snow (the cornice, below) */
   hold(80, 66, 1);                                         /* THE HATCHET IN THE FACE: the bridge's feet 68 -> it (65) -> the bank (62) */
-  sign(63, 68, 'OVER THE GORGE, A HATCHET STANDS IN THE ROCK. STAND ON IT.');
+  sign(60, 68, 'CUT THE BRIDGE DOWN FIRST. OVER THE GORGE, A HATCHET IN THE ROCK IS A STEP.');
   foe('javelin', 89, 62, 'farBank', { face: -1 });         /* THE HATCHET-THROWER: his misses stick in the rock (a while) - a foothold too */
   /* THE FIRST DRUM (TEACH, safe: nothing on the beat): its gate is the cairn wall's tunnel mouth. The wall is twenty rows high - only the beat opens the way */
   const d1 = drum('gully', 83, 62);
@@ -140,11 +140,12 @@ export function buildWarCairn({ painter, T, TS }) {
   coins([86, 62], [88, 62], [96, 62], [98, 62]);
   /* THE BROKEN PIERS: three stone stacks up to the gate run's ground, each on its own column of rock (a fall is the gorge's) */
   rock(102, 104, 61); rock(106, 108, 59);
+  foe('harpy', 105, 50, 'piers');   /* (claude/warcairn2) a crag harpy over the broken piers (a free one: no nest) */
   coins([103, 60], [107, 58]);
 
   // ================= 2. THE DRUM GATES (110-230): SET PIECE A, THE GATE RUN =================
   rock(110, 140, 58);                                      /* the gate run's ground (feet 57) */
-  const d2 = drum('gaterun', 121, 57);
+  const d2 = drum('gaterun', 121, 57); foe('harpy', 116, 47, 'gateSky');   /* (claude/warcairn2) a crag harpy over the gate run */
   foe('soldier', 114, 57, 'gateFoot', { face: 1 }); foe('soldier', 118, 57, 'gateFoot', { face: 1 });
   block(122, 123, 55, 57); hold(124, 53, 1);               /* a step and a DRIVEN HATCHET in the chimney's face: up to the slate span (coins) */
   span(118, 123, 50, 58); coins([119, 49], [121, 49]); ent('silver', 123, 49);   /* SILVER THREE: on the span the chimney's hatchet leads up to */
@@ -165,7 +166,7 @@ export function buildWarCairn({ painter, T, TS }) {
   foe('drummer', 153, 48, 'drumLedge', { drum: 'drummer1', drums: ['drummer1', 'exam'] });
   foe('soldier', 158, 48, 'drumLedge'); foe('soldier', 163, 48, 'drumLedge');
   cornice(d3, 'pit', 167, 171, 49);                        /* THE CORNICE OVER THE PIT: footing until a beat shakes it loose */
-  sign(143, 48, 'HIS DRUM, HIS BEAT: THE CLAN SURGES. BEAT IT FIRST - A THROWN HATCHET DOES - OR CUT HIM DOWN.');
+  sign(143, 48, 'HIS DRUM, HIS BEAT: THE CLAN SURGES. A THROWN HATCHET BEATS IT FIRST.');
   coins([147, 48], [160, 48], [174, 48]);
   /* up to the exam yard */
   rock(177, 180, 46); rock(181, 184, 43);
@@ -173,7 +174,8 @@ export function buildWarCairn({ painter, T, TS }) {
   rock(185, 238, 40);
   const d4 = drum('exam', 205, 39);
   span(202, 212, 36, 40); block(196, 197, 38, 39); block(208, 209, 38, 39);   /* a slate span on posts over the yard, a rock step under it; a cairn step by the hanging stone */
-  hang('yard', 'stone', 192, 193, 34, 35, 2);   /* (claude/warcairn2) TEST: A HANGING CAIRN STONE over the yard's first axeman - a hatchet on its rope drops it on him (it stays: a step) */
+  hang('yard', 'stone', 192, 193, 34, 35, 2); rack('yard', 187, 39);
+  sign(186, 39, 'A HATCHET ON ITS ROPE DROPS THE HANGING STONE ON WHOEVER STANDS UNDER IT.');   /* (claude/warcairn2) TEST: A HANGING CAIRN STONE over the yard's first axeman - a hatchet on its rope drops it on him (it stays: a step) */
   coins([210, 35]);
   foe('soldier', 193, 39, 'examYard'); foe('soldier', 215, 39, 'examYard'); foe('berserker', 222, 39, 'examYard', { awake: false, elite: true });   /* (claude/warcairn2) the yard's runner is an ELITE berserker */
   block(199, 201, 37, 39);                                 /* a cairn in the yard (a second height) */
@@ -194,18 +196,19 @@ export function buildWarCairn({ painter, T, TS }) {
   slab(d6, 'face2a', 269, 276, 34);                        /* THE LOW LINE: a slab, a guard, the cornice */
   rock(277, 283, 34);
   foe('shield', 280, 33, 'faceGuard2');
-  hang('guard', 'totem', 280, 280, 30, 31, 2);   /* (claude/warcairn2) REMIX: A HANGING TOTEM over the low line's guard (on a bone arm off the cairn-stack): his crossed axes turn a blade, not a totem */
+  hang('guard', 'totem', 280, 280, 30, 31, 2);
+  sign(277, 33, 'A TOTEM HANGS OVER THE GUARD. CUT ITS ROPE: HIS AXES TURN A BLADE, NOT A TOTEM.');   /* (claude/warcairn2) REMIX: A HANGING TOTEM over the low line's guard (on a bone arm off the cairn-stack): his crossed axes turn a blade, not a totem */
   rock(284, 286, 28);                                      /* THE CAIRN-STACK: the high drum stands on it */
   hold(283, 31, 1);                                        /* ...up its face off a driven hatchet */
   cornice(d6, 'face', 287, 292, 34);                       /* the low line's cornice (the beat that swung the slab shakes it loose: wait for the snow) */
   rock(293, 300, 34); rock(301, 303, 31); span(294, 299, 30, 34);
-  nest('face', 297, 297, 29, 29, [[291, 22], [300, 21]]); foe('harpy', 291, 22, 'faceNest'); foe('harpy', 300, 21, 'faceNest');   /* (claude/warcairn2) THE HIGH LINE's NEST, on the span: two crag harpies over the slabs */
+  nest('face', 297, 297, 29, 29, [[291, 22], [300, 21]]); foe('harpy', 291, 22, 'faceNest'); foe('harpy', 300, 21, 'faceNest2');   /* (claude/warcairn2) THE HIGH LINE's NEST, on the span: two crag harpies over the slabs */
   foe('berserker', 298, 33, 'lowLine', { awake: false, elite: true });   /* (claude/warcairn2) an ELITE berserker asleep under the nest */
   const d7 = drum('high', 285, 27);
   slab(d7, 'high1', 287, 295, 28); slab(d7, 'high2', 296, 303, 28);   /* THE HIGH LINE: two slabs under the high drum - the shortcut */
   coins([286, 27]);
   coins([290, 33], [297, 33], [299, 27], [302, 30]);
-  sign(262, 33, 'THE LOW LINE IS SAFE. THE HIGH DRUM ON THE CAIRN-STACK SWINGS TWO SLABS: THE SHORT WAY.');
+  sign(262, 33, 'THE LOW LINE IS LONG. THE HIGH DRUM ON THE CAIRN-STACK SWINGS TWO SLABS: THE SHORT WAY.');
   rock(304, 310, 28); foe('goat', 306, 27, 'rams2', { face: -1 });   /* (claude/warcairn2) A RAM by the drum */
   const d8 = drum('face3', 309, 27);
   slab(d8, 'face3a', 311, 317, 28);
@@ -229,6 +232,7 @@ export function buildWarCairn({ painter, T, TS }) {
   foe('drummer', 351, 27, 'ring', { drum: 'ring1', drums: ['ring1', 'ring2'] });
   foe('heavy', 363, 27, 'ring', { elite: true, gate: 386 });   /* THE CLAN CHAMPION: crossed axes (his guard) and the flurry - he holds the way out of the ring to the summit (an elite's gate) */
   foe('soldier', 374, 27, 'ring'); foe('soldier', 356, 24, 'ringSeat'); foe('berserker', 369, 24, 'ringSeat', { awake: false });   /* (claude/warcairn2) a runner asleep on the seats */
+  foe('harpy', 352, 16, 'ringSky');   /* (claude/warcairn2) a crag harpy over the ring's rim */
   sign(344, 27, 'THE CLAN RING. TAKE THEIR DRUMS AND THE CHAMPION STUMBLES WITH THE REST.');
   deco(357, 24, 'bones'); coins([350, 27], [366, 27], [370, 24], [380, 27]);
   ent('check', 389, 27);                                   /* SHRINE TWO: the boss's retry point, at the stair's foot */
@@ -242,7 +246,7 @@ export function buildWarCairn({ painter, T, TS }) {
   block(sx - 1, W - 1, 0, R - st.roof - 1);               /* the sky over it is the peak's overhang (the camera's roof) */
   block(sx + st.W, W - 1, 0, R - 1);                       /* the east wall: the great cairn's foot */
   /* (claude/warcairn2) THE PILOT'S THROW (src/playtest.js): the gorge's bridge is a hoist of load 'throw' - to the rack, E, to the lip, UP + ATTACK */
-  hoists.push({ id: 'gorge', load: 'throw', rack: [59, 68], from: [63, 68], aim: 'high', face: 1, cleat: [81, 62], x: 81 });
+  hoists.push({ id: 'gorge', load: 'throw', rack: [62, 68], from: [63, 68], aim: 'high', face: 1, cleat: [81, 62], x: 81 });
   const arenaDrums = st.drums.map((c, i) => { const d = drum('arena' + i, sx + c, R - 1, { arena: true }); return d; });
   ent('bzchief', sx + st.him, R - 1, { face: -1 });
   deco(sx + st.W - 4, R - 1, 'cairn', 3);

@@ -36,6 +36,10 @@ export function makeHatchets(ctx, hook) {
 
   /* ---------- RESET: every load and respawn (the grid is laid again: the bridges are hauled up, the stones and totems hang, the nests stand) ---------- */
   H.reset = (keepN) => {
+    /* a RESPAWN does not lay the grid again (main.js respawn): what the hatchet changed is put back first - the bridge hauled up again (air), a fallen stone's block taken up */
+    if (inited && inited === L()) for (const c of cuts.values()) { const d = c.d;
+      if (d.kind === 'bridge' && (c.st === 'down' || c.st === 'swing')) for (let x = d.x0; x <= d.x1; x++) ctx.cellSet(x, d.y, ctx.T.AIR);
+      for (const [x, y] of c.cells || []) ctx.cellSet(x, y, ctx.T.AIR); }
     const lv = L(); axes = []; cuts = new Map(); racks = []; arc = null; inited = lv;
     if (!lv || !lv.warcairn) return;
     racks = (lv.wcRacks || []).map(r => ({ ...r, px: r.x * TS + 8, py: (r.f + 1) * TS }));
@@ -49,7 +53,7 @@ export function makeHatchets(ctx, hook) {
 
   /* ---------- THE TARGETS ---------- */
   const cutBox = c => { const d = c.d;
-    if (d.kind === 'bridge') { const [px, py] = d.post; return { l: px * TS + 2, r: px * TS + 14, t: (py - 2) * TS, b: (py + 1) * TS }; }   /* (its haul rope's tie post on the far bank) */
+    if (d.kind === 'bridge') { const [px, py] = d.post; return { l: px * TS - 4, r: px * TS + 20, t: (py - 4) * TS, b: (py + 1) * TS }; }   /* (its haul rope's tie post on the far bank, and the rope's knot over it: a generous box - reviewer 10-30) */
     if (d.kind === 'nest') return { l: d.x0 * TS - 2, r: (d.x1 + 1) * TS + 2, t: d.y0 * TS - 4, b: (d.y1 + 1) * TS };
     return { l: d.x0 * TS - 2, r: (d.x1 + 1) * TS + 2, t: (d.y0 - (d.rope || 1)) * TS, b: c.y + (d.y1 - d.y0 + 1) * TS }; };   /* a stone / totem: it and its rope */
   /* the bridge's haul rope: from the raised bridge's top to the tie post (px) */
@@ -83,7 +87,8 @@ export function makeHatchets(ctx, hook) {
         const dmg = e.elite || e.maxHp > 200 ? Math.round((e.maxHp || e.hp) * HATCHET.crushElite) : HATCHET.crush; ctx.hurtFoe(e, dmg, mx); if (e.alive) { e.broken = Math.max(e.broken || 0, 1.4); e.stagger = Math.max(e.stagger || 0, 1.0); }
         ctx.number(e.x, e.y - 30, HATCHET_SAY.crushed, '#ffd36b'); } }
     for (const pp of ctx.players()) { if (!pp || pp.dead) continue; if (pp.x + 5 > box.l && pp.x - 5 < box.r && pp.y > box.t + 6 && pp.y - 24 < box.b) ctx.shoveHero(pp, box.t + 6, HATCHET.crushHero); }
-    if (d.kind === 'stone') { c.st = 'down'; c.cells = []; for (let y = top; y < top + rows; y++) for (let x = d.x0; x <= d.x1; x++) { ctx.cellSet(x, y, ctx.T.SOLID); c.cells.push([x, y]); } H.n.stones++; }
+    if (d.kind === 'stone') { c.st = 'down'; c.cells = []; for (let y = top; y < top + rows; y++) for (let x = d.x0; x <= d.x1; x++) { ctx.cellSet(x, y, ctx.T.SOLID); c.cells.push([x, y]); } H.n.stones++;
+      for (const q of axes) if (q.state === 'rest' && q.x > box.l - 4 && q.x < box.r + 4 && q.y > top * TS - 2 && q.y <= (top + rows) * TS + 2) { q.y = top * TS; q.vy = 0; } }   /* (a hatchet lying under it is pushed up on top, never lost in the block) */
     else { c.st = 'gone'; H.n.totems++; ctx.burst(mx, (top + rows) * TS - 8, 18, ['#e8e0d0', '#c8b89a', '#c8281e', '#6a5a4a'], 110, 0.8);
       let n = 0; for (const e of ctx.enemies()) { if (!e.alive || e.boss || !hook.clan.has(e.t) || Math.hypot(e.x - mx, (e.y - box.b) * 1.5) > HATCHET.totemR * TS) continue; e.broken = Math.max(e.broken || 0, 1.2); e.wcSurge = 0; n++; }
       if (n) say(mx, box.t - 24, 'quail', '#8fd160'); }
