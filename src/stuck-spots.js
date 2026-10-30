@@ -279,9 +279,15 @@ export const STUCK = {
     { id: 'kg-spit1', zone: [105, 19, 118, 25], at: [108, 25], done: ['kgbellows', 108, 25, 'on'], line: 'THE LEDGE IS TOO HIGH: STRIKE THE BELLOWS, RIDE A SPIT UP' },
     { id: 'kg-spit2', zone: [120, 14, 146, 19], at: [135, 19], done: ['kgbellows', 135, 19, 'on'], line: 'THE LEDGE IS TOO HIGH: STRIKE THE BELLOWS, RIDE A SPIT UP' },
     { id: 'kg-trench', zone: [147, 4, 166, 13], at: [161, 13], done: ['kgbellows', 161, 13, 'on'], line: 'STRIKE THE BELLOWS: RISE ON THE STEAM, CATCH A HOOK' },
-    { id: 'kg-door1', zone: [221, 14, 237, 23], at: [223, 23], done: ['kgbellows', 223, 23, 'on'], line: 'A TALLOW DOOR: STRIKE THE BELLOWS, LET THE GREASE BURN' },
-    { id: 'kg-spit3', zone: [300, 8, 315, 21], at: [304, 21], done: ['kgbellows', 304, 21, 'on'], line: 'THE GALLERY IS TOO HIGH: STRIKE THE BELLOWS, RIDE A SPIT UP' },
-    { id: 'kg-door2', zone: [341, 13, 354, 21], at: [343, 21], done: ['kgbellows', 343, 21, 'on'], line: 'THE BUTTERY DOOR: STRIKE THE BELLOWS, LET IT BURN' },
+    /* (claude/kitchengate3) THE HANGING LARDER (201-278) and THE CARVERY (378-469) were let in: the halls after them moved east 78 and 170 columns. The larder's teach pit and the
+       carvery's line and perch have no prop to strike - the nudge says the hop, the haul line and the flue's read */
+    { id: 'kg-larder-hop', zone: [201, 6, 225, 23], at: [204, 13], line: 'UP THE RACKS, TAKE A HOOK, JUMP IN THE RED STRETCH' },
+    { id: 'kg-door1', zone: [299, 14, 315, 23], at: [301, 23], done: ['kgbellows', 301, 23, 'on'], line: 'A TALLOW DOOR: STRIKE THE BELLOWS, LET THE GREASE BURN' },
+    { id: 'kg-carvery-haul', zone: [378, 6, 406, 23], at: [399, 23], line: 'THE LINE CARRIES YOU: HOLD UP UNDER THE HAUL HOOK' },
+    { id: 'kg-flue', zone: [418, 6, 423, 13], at: [423, 13], line: 'TAKE THE HOOK AS THE FLUE\'S FLAME DIES' },
+    { id: 'kg-door3', zone: [448, 13, 462, 21], at: [452, 21], done: ['kgbellows', 452, 21, 'on'], line: 'THE CARVERY DOOR: STRIKE THE BELLOWS, LET THE GREASE BURN' },
+    { id: 'kg-spit3', zone: [470, 8, 485, 21], at: [474, 21], done: ['kgbellows', 474, 21, 'on'], line: 'THE GALLERY IS TOO HIGH: STRIKE THE BELLOWS, RIDE A SPIT UP' },
+    { id: 'kg-door2', zone: [511, 13, 524, 21], at: [513, 21], done: ['kgbellows', 513, 21, 'on'], line: 'THE BUTTERY DOOR: STRIKE THE BELLOWS, LET IT BURN' },
   ],
   /* THE WAR CAIRN (claude/warcairn): the two drum gates the route needs (strike the drum: its gate swings open a few seconds) */
   warcairn: [

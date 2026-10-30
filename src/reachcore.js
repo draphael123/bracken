@@ -268,9 +268,14 @@ export function floodReach(L, T, opts = {}) { const L0 = L;   /* (the level as b
   const zips = plain ? [] : (L.zipLines || []).filter(z => !z.snap).flatMap(z => {
     const dx = z.x1 - z.x0, dy = z.y1 - z.y0, xa = Math.min(z.x0, z.x1), xb = Math.max(z.x0, z.x1), slope = dx ? dy / dx : 0, hang = z.hang ?? 12;
     const dirs = z.dir !== undefined && z.dir !== 0 ? [z.dir] : Math.abs(dy) < 2 ? [1, -1] : [(dy > 0 ? 1 : -1) * Math.sign(dx)];
-    return dirs.map(dir => ({ xa, xb, dir, ly: px => z.y0 + slope * (Math.max(xa, Math.min(xb, px)) - z.x0),
-      land() { const lx = dir > 0 ? xb : xa, row = Math.floor((z.y0 + slope * (lx - z.x0) + hang - 1) / TSZ), out = [];
-        for (let k = -1; k <= 3; k++) { const cx = Math.floor(lx / TSZ) + dir * k; let ny = row; while (ny < H - 1 && !footing.has(key(cx, ny))) ny++; if (footing.has(key(cx, ny))) out.push([cx, ny]); } return out; },
+    return dirs.map(dir => ({ z, xa, xb, dir, ly: px => z.y0 + slope * (Math.max(xa, Math.min(xb, px)) - z.x0),
+      land(seen0) { const lx = dir > 0 ? xb : xa, row = Math.floor((z.y0 + slope * (lx - z.x0) + hang - 1) / TSZ), out = [];
+        for (let k = -1; k <= 3; k++) { const cx = Math.floor(lx / TSZ) + dir * k; let ny = row; while (ny < H - 1 && !footing.has(key(cx, ny))) ny++; if (footing.has(key(cx, ny))) out.push([cx, ny]); }
+        /* (claude/kitchengate3) A HAND-OFF (THE KITCHEN GATE's hook-to-hook hop): a rail with z.hand is let go of in its z.hop stretch and the hop takes the next rail in the air - so
+           wherever that rail lets you off is reached too. The hop is flown for every hero's legs (src/zipline.js + src/hero-move.js) by tools/kitchengate.mjs; a rail taken out of
+           L.zipLines (a lock test) takes its hand-off with it */
+        if (z.hand && z.hop) { const sn = seen0 || new Set([z]); for (const n of zips) if (n.z === z.hand && !sn.has(n.z)) { sn.add(n.z); out.push(...n.land(sn)); } }
+        return out; },
       board(x, y) { const px = x * TSZ + 8, feet = (y + 1) * TSZ; if (dir > 0 ? (px < xa - 10 || px > xb - 12) : (px > xb + 10 || px < xa + 12)) return false; const l = this.ly(px); return l >= feet - 72 && l <= feet - 4; } })); });
   const zipLand = new Map();
   const seen = new Set(), q = [];

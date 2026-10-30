@@ -73,7 +73,7 @@ export function zipStep(c, dt) {
     if (P.zipT >= z.snap || (z.snapX !== null && (dir > 0 ? P.x >= z.snapX : P.x <= z.snapX))) {
       P.zip = null; P.zipRelease = ZIP.RELEASE; P.vy = 0; P.vx = dir * 60; c.SFX.crack(); c.burst(P.x, P.y - 16, 8, ['#b8382c', '#e8c23a', '#5a4630'], 60, 0.5); c.callout('THE ROPE SNAPS'); return; } }
   /* LET GO: a kick off it (jump) or a drop (down) */
-  if (c.jumpPress) { P.zip = null; P.zipSkip = z; P.zipRelease = ZIP.RELEASE; P.jbuf = 0; P.vy = -240; P.vx = dir * z.speed * 0.8; P.ground = false; P.climb = false; c.SFX.pJump(); return; }
+  if (c.jumpPress) { P.zip = null; P.zipSkip = z; P.zipRelease = ZIP.RELEASE; P.jbuf = 0; P.vy = -240; P.vx = dir * z.speed * 0.8; P.ground = false; P.climb = false; if (z.meat) P.canCut = false; c.SFX.pJump(); return; }   /* (claude/kitchengate3) off a MEAT-HOOK RAIL the kick is a fixed hop, tapped or held (the jump-cut never shortens it): THE KITCHEN GATE's hook-to-hook hand-offs are flown on it */
   if (keys.down) { P.zip = null; P.zipSkip = z; P.zipRelease = ZIP.RELEASE * 0.5; P.vy = 40; P.vx = dir * z.speed * 0.4; c.SFX.pStep ? c.SFX.pStep() : 0; return; }
   /* RIDE: the rope's own height under his hands, his speed along it */
   const ty = lineY(z, P.x) + z.hang;
