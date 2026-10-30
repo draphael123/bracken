@@ -1,5 +1,6 @@
 import './bug-report.js';   /* FIRST: the console and error taps REPORT A BUG reads must be in before any other module speaks */
 import { bossSelectRows, bossKey, bossRecordNext } from './bossselect.js';
+import { drawBasketOutline } from './false-abbot.js';
 import { ABBOT, updateFalseAbbot as stepFalseAbbot, drawFalseAbbot, drawAbbotRopes, abbotFrame, abbotOpen, abbotTake, abbotBellRung, abbotBlessed, abbotInChair, abbotBridgeBell, abbotWheelStruck, abbotPlunge, abbotClamp, drawAbbotHouse } from './false-abbot.js';   /* THE FALSE ABBOT, the Monastery's boss (2026-09-22), in place of the Roc */
 import { layoutPlates, plateNodes, placePanel, plateLabel, panelSize } from './map-plates.js';
 import { bakeFalseAbbot } from './redraw/false_abbot.js';
@@ -8581,7 +8582,7 @@ function wardedDamage(e, dmg, blow, tag = blow) {
   if (e.geoTomb && GEO) dmg = GEO.tombHit(e, dmg);   /* ENTOMBED: a blow on the tomb cracks it and lands half as hard again (geomancer.js) */
   if (e.t === 'hedgewarden') dmg = hedgeTake(e, dmg, tag);
   if (e.t === 'sexton') { const d0 = dmg; dmg = sextonTake(e, dmg, tag); if (dmg > d0) sparks(e.x, e.y - 30, -(e.face || 1), 6); }   /* THE SEXTON caught in his own bell pit: every blow lands double */   /* THE HEDGE WARDEN: three growths and their roots, a burning stump twice (hedge-warden.js) */
-  if (e.t === 'abbot') { if (blowHas(tag, 'plunge') && abbotPlunge(e, abbotCtx(e))) burst(e.x, e.y - 30, 12, ['#ffe08a', '#e8a83a'], 70, 0.4); const ward = (abbotBlessed(e) || abbotInChair(e)) && !abbotOpen(e); dmg = Math.max(1, Math.round(dmg * abbotTake(e, tag))); dmg = abbotClamp(e, dmg); if (ward && blow) { BR.turned(e, P.x, 'WARDED', { stop: false }); if (abbotInChair(e)) number(e.x, e.y - 52, 'RIDE HIS BASKET DOWN: THE CHAIR COMES WITH IT', '#e8a83a'); } }   /* (claude/abbotp2) a blow on him in his chair is turned (B15's 0.4, WARDED) and the hint names the answer */   /* (claude/abbot3) a PLUNGE: in phase three on him praying or warded it is THE OPENING, before that it spoils the rite; abbotClamp: the finale's floor (beaten down at 5%, the great bell is the last blow) */   /* (claude/abbot2) A PLUNGE on him while he prays spoils the rite; warded he takes B15's 0.4, told (B10) */ if (e.t === 'lanterneater' && LEH) { const k = LEH.take(e, blow, tag); dmg = Math.max(1, Math.round(dmg * k)); if (k < 1) LEH.warded(e); else dmg = Math.max(1, LEH.cap(e, dmg)); }   /* THE LANTERN-EATER: its key (B14) - the keyed angle whole on what is in reach, the wrong one at a twentieth (it clanks and names it); open, every angle (src/lantern-eater.js leTakeAt) */ if (e.t === 'wickerqueen') dmg = Math.max(1, Math.round(dmg * WQN.wqTake(e, tag))); if (e.t === 'puppeteer' && PUPH) { const k = PUPH.take(e, tag); dmg = Math.max(1, Math.round(dmg * k)); if (PM.pupOpen(e)) dmg = PUPH.cap(e, dmg); else PUPH.warded(e); }   /* (PUPPETEER2: staggered on the gallery a blow lands whole, up to the visit's share of him - PUPH.cap) */   /* THE PUPPETEER: his hands on the bars take a blow; re-stringing, or fallen with his masterpiece, he is open (puppeteer.js pupTake) */   /* THE WICKER QUEEN: the wicker takes a blow and stands; frozen on the embers it burns open (wicker-queen.js) */   /* THE FALSE ABBOT: a fifth while the rite wards him, double while the bell has him down (false-abbot.js) */
+  if (e.t === 'abbot') { if (blowHas(tag, 'plunge') && abbotPlunge(e, abbotCtx(e))) burst(e.x, e.y - 30, 12, ['#ffe08a', '#e8a83a'], 70, 0.4); const ward = (abbotBlessed(e) || abbotInChair(e)) && !abbotOpen(e); dmg = Math.max(1, Math.round(dmg * abbotTake(e, tag))); dmg = abbotClamp(e, dmg); if (ward && blow) { BR.turned(e, P.x, 'WARDED', { stop: false }); if (abbotInChair(e)) { number(e.x, e.y - 52, 'RIDE HIS BASKET DOWN: THE CHAIR COMES WITH IT', '#e8a83a'); abbotPulseT = 0.9; } }   /* (claude/abbotclear) every warded blow pulses the basket and the rope (the text is rate-limited by the callout, the pulse is not) */ }   /* (claude/abbotp2) a blow on him in his chair is turned (B15's 0.4, WARDED) and the hint names the answer */   /* (claude/abbot3) a PLUNGE: in phase three on him praying or warded it is THE OPENING, before that it spoils the rite; abbotClamp: the finale's floor (beaten down at 5%, the great bell is the last blow) */   /* (claude/abbot2) A PLUNGE on him while he prays spoils the rite; warded he takes B15's 0.4, told (B10) */ if (e.t === 'lanterneater' && LEH) { const k = LEH.take(e, blow, tag); dmg = Math.max(1, Math.round(dmg * k)); if (k < 1) LEH.warded(e); else dmg = Math.max(1, LEH.cap(e, dmg)); }   /* THE LANTERN-EATER: its key (B14) - the keyed angle whole on what is in reach, the wrong one at a twentieth (it clanks and names it); open, every angle (src/lantern-eater.js leTakeAt) */ if (e.t === 'wickerqueen') dmg = Math.max(1, Math.round(dmg * WQN.wqTake(e, tag))); if (e.t === 'puppeteer' && PUPH) { const k = PUPH.take(e, tag); dmg = Math.max(1, Math.round(dmg * k)); if (PM.pupOpen(e)) dmg = PUPH.cap(e, dmg); else PUPH.warded(e); }   /* (PUPPETEER2: staggered on the gallery a blow lands whole, up to the visit's share of him - PUPH.cap) */   /* THE PUPPETEER: his hands on the bars take a blow; re-stringing, or fallen with his masterpiece, he is open (puppeteer.js pupTake) */   /* THE WICKER QUEEN: the wicker takes a blow and stands; frozen on the embers it burns open (wicker-queen.js) */   /* THE FALSE ABBOT: a fifth while the rite wards him, double while the bell has him down (false-abbot.js) */
   if (e.t === 'gorgecrab' && GCH) dmg = dmg * GCH.take(e, tag);
   if (e.t === 'windcaller') dmg = callerTake(e, dmg, tag);   /* THE WINDCALLER 3: a duelist on his ledge (whole; CALLER_GUARD while he steps away or is warded), x2 down (claude/windcaller3) */
   if (e.t === 'hawkmistress' && HMH) dmg = HMH.take(e, dmg, tag);   /* THE HAWK-MISTRESS: her gauntlet turns the front (0), her ward everything; open x1.6 (src/hawk-mistress.js); FULL_DAMAGE (no chip) */
@@ -20439,6 +20440,7 @@ function abbotTrap(open) { const t = L.arena && L.arena.house && L.arena.house.t
   resolveTiles(); }
 /* THE HOUSE LAID FRESH (his spawn - every try): the bridges hung, his wheel and its boards taken away, the basket back up */
 function abbotHouseReset() { const h = L.arena && L.arena.house; if (!h) return;
+  abbotIntro = null; abbotPulseT = abbotFlareT = abbotNudgeT = 0; abbotNudgePan = null; abbotNudged = false;
   abbotHouseP = null; abbotHouseOf = null; abbotCtxE = null; const H = abbotHouse(); if (!H) return;
   for (let i = 0; i < H.bridges.length; i++) { const [x0, x1, row] = H.bridges[i].tiles; for (let x = x0; x <= x1; x++) { const k = row * LW + x; if (L.grid[k] === T.AIR) { L.grid[k] = T.ONEWAY; tileSpr[k] = null; } } }
   for (let i = props.length - 1; i >= 0; i--) if (props[i].t === 'pwheel' && props[i].abbot) props.splice(i, 1);
@@ -20457,10 +20459,19 @@ function abbotHouseStep(dt, hb) {
   const fl = L.arena.floor;
   /* (claude/abbotp2) P2's READ: while he sits in the chair the hint box names the action (the callout repeats at most every 4 s), the first two chairs of a save say it longer, and the windlass clicks as the basket is ridden down */
   const bk = abbotBasketK();
+  if (abbotIntro) { abbotIntro.t += dt; P.inv = Math.max(P.inv || 0, 0.3); if (abbotIntro.t >= ABBOT_INTRO_T || (anyPress && abbotIntro.t > 0.35) || !b || b.phase !== 2) abbotIntro = null; }
+  if (abbotNudgePan) { abbotNudgePan.t += dt; if (abbotNudgePan.t >= ABBOT_NUDGE_T) abbotNudgePan = null; }
+  abbotPulseT = Math.max(0, abbotPulseT - dt); abbotFlareT = Math.max(0, abbotFlareT - dt);
+  { const waiting = !!b && b.phase === 2 && bk < 0.02 && !abbotIntro && (b.deck === 'chair' || ((b.mode === 'swing' || b.mode === 'swingTell') && b.swGoal && b.swGoal.deck === 'chair'));
+    if (waiting) { const was = abbotNudgeT; abbotNudgeT += dt;
+      if (Math.floor(abbotNudgeT / 10) > Math.floor(was / 10)) { abbotFlareT = 1.6; SFX.creak && SFX.creak(); number(b.x, b.y - 52, 'RIDE HIS BASKET DOWN: THE CHAIR COMES WITH IT', '#e8a83a'); hintSay('mechanic', 4, 'THE BASKET IS THE ANSWER: STAND IN THE GLOWING BASKET AND RIDE IT DOWN. THE CHAIR COMES DOWN AND SPILLS HIM OUT.'); }
+      if (!abbotNudged && abbotNudgeT >= 20) { abbotNudged = true; abbotNudgePan = { t: 0 }; abbotFlareT = 1.6; } }
+    else { abbotNudgeT = 0; if (!b || b.phase !== 2 || b.deck !== 'chair') abbotNudged = false; } }
+  if (b) { const m = abbotBasket(); b.clr = { pulse: Math.min(1, abbotPulseT / 0.5), flare: Math.min(1, abbotFlareT / 0.8), panS: abbotPanS(), near: !!m && Math.abs(P.x - (m.x + 16)) < 90 && Math.abs(P.y - m.y) < 70 }; }
   if (b && abbotInChair(b) && b.mode !== 'swing' && b.mode !== 'swingTell') { number(b.x, b.y - 52, 'RIDE HIS BASKET DOWN: THE CHAIR COMES WITH IT', '#e8a83a');
     if (!(PROG.abbotChairTold > 1) && !abbotChairHinted) { abbotChairHinted = true; PROG.abbotChairTold = (PROG.abbotChairTold || 0) + 1; hintSay('mechanic', 4, 'HIS CHAIR HANGS ON THE BASKET ROPE. STAND IN THE GLOWING BASKET AND RIDE IT DOWN: THE CHAIR COMES DOWN WITH YOU.'); } }
   else if (!b || b.deck !== 'chair') abbotChairHinted = false;
-  if (b && b.phase === 2 && Math.abs(bk - abbotRideK) > 0.0005 && bk > 0.02) { abbotRideT -= dt; if (abbotRideT <= 0) { abbotRideT = 0.11; SFX.ratchet && SFX.ratchet(); if (Math.random() < 0.3) SFX.creak && SFX.creak(); } } else abbotRideT = 0;
+  if (b && b.phase === 2 && Math.abs(bk - abbotRideK) > 0.0005 && bk > 0.02) { abbotRideT -= dt; if (abbotRideT <= 0) { abbotRideT = 0.11; SFX.ratchet && SFX.ratchet(); if (++abbotRideN % 4 === 0) SFX.creak && SFX.creak(); } } else abbotRideT = 0;
   abbotRideK = bk;
   if (hb && b) H.bridges.forEach((br, i) => { const key = 'abbr' + i, bx = br.bells.find(x => overlap(hb, { l: x - 12, r: x + 12, t: fl - 58, b: fl - 4 })); if (P.hitSet.has(key) || bx === undefined) return;
     P.hitSet.add(key); sparks(bx, fl - 44, P.face, 4); (SFX.seaBell || SFX.clank)(); ringAt(bx, fl - 44, 30, '#e8c88a', 0.5);
@@ -20471,12 +20482,30 @@ function abbotHouseStep(dt, hb) {
     if (!(PROG.abbotBridgeTold > 1)) { PROG.abbotBridgeTold = (PROG.abbotBridgeTold || 0) + 1; hintSay('mechanic', 4, 'A BELL DROPS THE BRIDGE IT HOLDS. STRIKE IT WITH HIM ON THE BRIDGE.'); } });
   if (b && b.smoke && !P.dead && Math.abs(P.x - b.smoke.x) < ABBOT.smokeW && P.y <= fl + 2 && P.y > fl - ABBOT.smokeH) { P.vy = Math.min(P.vy, -ABBOT.smokeLift); P.ground = false; P.plunge = false; if (Math.random() < dt * 30) parts.push({ x: b.smoke.x + (Math.random() - 0.5) * 16, y: P.y, vx: 0, vy: -120, life: 0.4, max: 0.4, col: '#ece4d8', size: 1, grav: 0 }); }
 }
-let abbotChairHinted = false, abbotRideK = 0, abbotRideT = 0;
+let abbotChairHinted = false, abbotRideK = 0, abbotRideT = 0, abbotRideN = 0;
+/* (claude/abbotclear, Daniel 10-30: ~100 kills and still unclear what hurts him in phase two) THE FIGHT SHOWS THE ANSWER:
+   - the INTRO BEAT: when he cuts his bridges the camera goes chair -> along the rope -> the basket (the rope drawn as one gold line), ~1.9 s, any press skips it; he holds his attacks and you cannot be hurt meanwhile
+   - the basket is outlined in gold and pulses, a dotted ghost of the chair marks where it lands, a gauge shows the ride to the spill, a prompt shows when you are near
+   - every warded blow pulses the basket and the rope; 10 s in the chair untouched = the line repeats and the basket flares; 20 s = the camera nudges to it once more */
+let abbotIntro = null, abbotPulseT = 0, abbotFlareT = 0, abbotNudgeT = 0, abbotNudgePan = null, abbotNudged = false;
+const ABBOT_INTRO_T = 1.9, ABBOT_NUDGE_T = 1.5;
+function abbotIntroStart() { if (SET.reduceMotion && false) return; abbotIntro = { t: 0 }; P.inv = Math.max(P.inv || 0, ABBOT_INTRO_T + 0.3); abbotNudgeT = 0; abbotNudged = false; }
+/* the rope as a path chair -> beam -> basket; s 0..1 along it (screen-free, world coordinates) */
+function abbotRopePt(H, s) { const m = abbotBasket(), bx = H.basketX + 16, by = (m ? m.y : H.basketY0) - 10, pts = [[H.chairX, H.chairY - 47], [H.chairX, H.pulleyY + 6], [bx, H.pulleyY + 6], [bx, by]];
+  const L2 = []; let tot = 0; for (let i = 0; i < 3; i++) { const l = Math.hypot(pts[i + 1][0] - pts[i][0], pts[i + 1][1] - pts[i][1]); L2.push(l); tot += l; }
+  let d = Math.max(0, Math.min(1, s)) * tot; for (let i = 0; i < 3; i++) { if (d <= L2[i] || i === 2) { const t = L2[i] ? Math.min(1, d / L2[i]) : 0; return { x: pts[i][0] + (pts[i + 1][0] - pts[i][0]) * t, y: pts[i][1] + (pts[i + 1][1] - pts[i][1]) * t }; } d -= L2[i]; } }
+/* where the camera is told to look (null = leave it): the intro beat holds the chair, travels the rope, holds the basket; the nudge eases toward the basket */
+function abbotCamFocus() { const H = abbotHouse(); if (!H) return null;
+  if (abbotIntro) { const u = abbotIntro.t / ABBOT_INTRO_T, s = u < 0.28 ? 0 : u > 0.72 ? 1 : (u - 0.28) / 0.44, e2 = s * s * (3 - 2 * s), f = abbotRopePt(H, e2); return { x: f.x, y: f.y, w: 1 }; }
+  if (abbotNudgePan) { const u = abbotNudgePan.t / ABBOT_NUDGE_T, w = Math.sin(Math.PI * Math.min(1, u)); return { x: H.basketX + 16, y: null, w: 0.85 * w }; }
+  return null; }
+function abbotPanS() { if (!abbotIntro) return -1; const u = abbotIntro.t / ABBOT_INTRO_T; return u < 0.28 ? 0.001 : u > 0.72 ? 1 : (u - 0.28) / 0.44; }
 let abbotCtxE = null, abbotCtxC = null;
 function abbotCtx(e) { if (abbotCtxE === e && abbotCtxC) return abbotCtxC; abbotCtxE = e; return (abbotCtxC = abbotMakeCtx(e)); }
 function updateFalseAbbotBoss(e, dt) {
   const A = L.arena; if (!A) return;
   if (!e.trapShut && A.house && A.house.trap) { e.trapShut = true; abbotTrap(false); }   /* the ringing floor's trapdoor is BARRED once he is up: a plunge or a crouch on it does not drop you into the well mid-fight */
+  if (abbotIntro) { e.H = abbotHouse(); e.basketM = abbotBasket(); return; }   /* (claude/abbotclear) the told camera beat: he holds his attacks while the camera shows the answer */
   stepFalseAbbot(e, dt, abbotCtx(e));
   e.x = Math.max(A.x0 + 16, Math.min(A.x1 - 16, e.x));
   e.H = abbotHouse(); e.basketM = abbotBasket();   /* (the lab's hands read the house off him: src/lab.js) */
@@ -20486,6 +20515,7 @@ function abbotMakeCtx(e) {
   const bell = abbotBell();
   return { P, A: { x0: A.x0, x1: A.x1, floor: A.floor, y0: A.y0, ropes: abbotRopes(), landLo: ABBOT_LAND[0] * TS, landHi: ABBOT_LAND[1] * TS, house: abbotHouse() },
     bridge: (i, up) => abbotBridgeTiles(i, up), basketK: () => abbotBasketK(), phase3: () => abbotPhase3(),
+    intro: q => abbotIntroStart(),
     spill: q => { const H = abbotHouse(), fl = A.floor; hitstop(0.14); zoomKick(1.1, 0.3); rumble(220, 0.8); SFX.sting && SFX.sting(); if (H) { burst(H.chairX, fl - 12, 26, ['#8e3a32', '#c9a44a', '#d8d0c0', '#ffe08a'], 120, 0.7); dust(H.chairX - 14, fl, 8); dust(H.chairX + 14, fl, 8); ringAt(H.chairX, fl - 12, 34, '#ffe08a', 0.6); } },   /* (claude/abbotp2) THE SPILL: his chair hits the floor - hit-stop, a burst of velvet and gilt, dust, a ring */
     hit: (x, d, hard, name) => damagePlayer(x, d, { unblockable: hard, who: e, name }),
     say: (m, red, green) => number(e.x, e.y - 52, m, green ? '#e8a83a' : red ? '#ff6b6b' : '#ffd36b'),
@@ -31279,7 +31309,7 @@ function updateCamera(dt) {
   /* THE LANTERN-EATER's basin is tall (the lights come down out of the fog over the raft): the camera holds the whole of it when the view is tall enough */
   else if (bossActive && boss && boss.t === 'lanterneater' && LEH && LEH.on()) ty = LEH.camY(ty);
   else if (bossActive && boss && boss.t === 'cisternqueen' && CQH && CQH.on()) ty = CQH.camY(ty);
-  else if (bossActive && boss && boss.t === 'abbot' && L.arena && L.arena.house) ty = Math.min(ty, L.arena.floor + 16 - VH);   /* (claude/abbot3) the belfry's bridges and his chair hang high: the camera looks up from the floor */   /* (batch91) 24 px higher while she is on the wellhead, so her tail is not cut */
+  else if (bossActive && boss && boss.t === 'abbot' && L.arena && L.arena.house) { ty = Math.min(ty, L.arena.floor + 16 - VH); const af = abbotCamFocus(); if (af) { tx += (af.x - VW / 2 - tx) * af.w; if (af.y !== null) ty += (af.y - VH * 0.5 - ty) * af.w; } }   /* (claude/abbotclear) the intro beat and the nudge */   /* (claude/abbot3) the belfry's bridges and his chair hang high: the camera looks up from the floor */   /* (batch91) 24 px higher while she is on the wellhead, so her tail is not cut */
   else if (bossActive && boss && boss.t === 'grubbag' && GBH && GBH.on()) ty = GBH.camY(ty, VH);   /* (claude/grubbagbig) the whole of LORD GRUBBAG (and his belly flop's rise) in the picture */
   /* THE SPIRAL STAIR (src/spiral-chase.js): the Undead Archmage waits over the landing you are climbing to, and he casts only with his whole
      body in the picture. So the camera looks UP the stairwell far enough to hold him - his head under the top of the frame - while it keeps
@@ -32989,7 +33019,7 @@ function drawWorld(cx, cy, showPlayer) {
     else if (m.kind === 'lift' && m.hoist) drawHoistDeck(m, cx, cy);   /* THE HANGING VILLAGE's hoists */
     else if (m.kind === 'lift' && m.pyr) {}   /* THE SEALED PYRAMID's counterweights: stone blocks on chains, drawn by its hands (src/sealed-pyramid-hands.js drawWorld) - never the default log */
     else if (m.kind === 'lift' && m.cw) drawBasket(m, cx, cy);   /* THE MONASTERY's counterweight baskets */
-    else if (m.kind === 'lift' && m.abbotBasket) { const x = Math.round(m.x - cx), y = Math.round(m.y - cy), ty = Math.round(m.top - cy); g.strokeStyle = '#c8b088'; g.lineWidth = 1; g.beginPath(); g.moveTo(x + 16.5, ty + 3); g.lineTo(x + 16.5, y - 10); g.lineTo(x + 2.5, y - 2); g.moveTo(x + 16.5, y - 10); g.lineTo(x + 30.5, y - 2); g.stroke(); g.drawImage(mo().basket, x - 1, y - 3); }   /* (claude/abbot3) HIS CHAIR'S BASKET, on the rope over the beam */
+    else if (m.kind === 'lift' && m.abbotBasket) { const x = Math.round(m.x - cx), y = Math.round(m.y - cy), ty = Math.round(m.top - cy); g.strokeStyle = '#c8b088'; g.lineWidth = 1; g.beginPath(); g.moveTo(x + 16.5, ty + 3); g.lineTo(x + 16.5, y - 10); g.lineTo(x + 2.5, y - 2); g.moveTo(x + 16.5, y - 10); g.lineTo(x + 30.5, y - 2); g.stroke(); g.drawImage(mo().basket, x - 1, y - 3); const ab_ = boss && boss.t === 'abbot' && boss.alive && boss.clr ? boss : null; if (ab_ && ab_.phase === 2 && (ab_.deck === 'chair' || ab_.mode === 'swing' || ab_.mode === 'swingTell') && abbotBasketK() < ABBOT.spillAt) { drawBasketOutline(g, x, y, time, Math.max(ab_.clr.pulse || 0, ab_.clr.flare || 0)); if (ab_.clr.near && abbotBasketK() < 0.05) { const ty2 = y - 30 + Math.round(Math.sin(time * 5) * 2); text('STAND IN IT: RIDE DOWN', x + 16, ty2 - 8, '#ffe08a', 'center', 6); g.fillStyle = '#ffe08a'; g.fillRect(x + 14, ty2 + 1, 5, 1); g.fillRect(x + 15, ty2 + 2, 3, 1); g.fillRect(x + 16, ty2 + 3, 1, 1); } } }   /* (claude/abbot3) HIS CHAIR'S BASKET, on the rope over the beam; (claude/abbotclear) the gold outline while P2 waits for it, and the prompt near it */
     else if (m.kind === 'lift' && L.hangingTown) { const x=Math.round(m.x-cx),y=Math.round(m.y-cy),top=Math.round(m.top-cy);g.fillStyle='#ab956c';g.fillRect(x+15,top,2,y-top);g.fillStyle='#725840';g.fillRect(x,y,32,7);g.fillRect(x,y-10,2,12);g.fillRect(x+30,y-10,2,12);g.strokeStyle='#aa8d64';g.lineWidth=1;g.strokeRect(x+.5,y-10.5,31,16);g.beginPath();g.arc(x+16,top,5,0,7);g.stroke();} else if (m.kind === 'lift') { const ry = m.top !== undefined ? Math.round(m.top - cy) : 0; g.fillStyle = '#b8a888'; g.fillRect(Math.round(m.x) + 15 - cx, ry, 2, Math.round(m.y) - cy - ry); if (m.top !== undefined) { g.fillStyle = '#3a2618'; g.beginPath(); g.arc(Math.round(m.x) + 16 - cx, ry, 4, 0, 7); g.fill(); g.fillStyle = '#8a919c'; g.fillRect(Math.round(m.x) + 15 - cx, ry - 1, 2, 2); } g.drawImage(PROP.lift, Math.round(m.x) - cx, Math.round(m.y) - cy); }
     else if (m.kind === 'orelift' && m.player) { const x = Math.round(m.x - cx), y = Math.round(m.y - cy); g.fillStyle = '#5a6270'; g.fillRect(x + 15, y - 200, 2, 200); g.fillStyle = '#3a3a44'; g.fillRect(x, y, m.w, 6); g.fillStyle = '#8a919c'; g.fillRect(x, y, m.w, 1); g.fillRect(x, y - 22, 2, 22); g.fillRect(x + m.w - 2, y - 22, 2, 22); g.fillRect(x, y - 22, m.w, 2); for (let k = 4; k < m.w - 4; k += 6) g.fillRect(x + k, y - 20, 1, 20); }
     else if (m.kind === 'growcap' && L.sporewood2) SW2W.drawGrowcap(g, m, cx, cy, time);   /* (claude/sporewood2art) SPOREWOOD 2's buds: bud, dark, lit, seed, her plum seed caps, the leaning stalk, the withered cap (src/redraw/sporewood2_world.js) */

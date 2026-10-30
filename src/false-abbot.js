@@ -224,7 +224,7 @@ function stepBridges(e, dt, c) {
 /* the phase changes: each one changes the house (B5) */
 function phaseTo(e, n, c) {
   const H = house(c); e.phase = n;
-  if (n === 2) { c.say(CHAIR_SAY.cut, true); c.sound('roar');
+  if (n === 2) { c.say(CHAIR_SAY.cut, true); c.sound('roar'); if (c.intro) c.intro(e);   /* (claude/abbotclear) the told camera beat: chair -> rope -> basket */
     if (H) { e.br = e.br || H.bridges.map(() => true);
       H.bridges.forEach((b, i) => { if (e.br[i] && c.bridge) c.bridge(i, false); e.br[i] = false; });
       e.brGone = true;
@@ -515,6 +515,13 @@ export function drawFalseAbbot(g, e, cx, cy, time, floorY) {
    the GREAT BELL once he is beaten (a pillar of light, tolling rings, a drift of motes from him to it). Canvas primitives on the 320x180 buffer. */
 const STONE = ['#4a463e', '#6a645a', '#8a8478', '#a49c8c', '#c8c0aa'], BRZ = ['#3a2a12', '#6a4a1e', '#9a7634', '#c9a44a', '#f0dc8a'], IRON = ['#26262e', '#3c3c44', '#5a5a64', '#8a8a96'];
 const CLOTH = ['#3a1216', '#5a1e1e', '#8e3a32', '#b8584a'], SAFF = ['#a8681c', '#e8a83a', '#ffe08a'], ROPE = ['#4a3418', '#8a6a3e', '#c8b088'];
+/* (claude/abbotclear) THE BASKET AS THE ANSWER: a pulsing gold outline round the basket (the shared OPEN read's gold), drawn over it by main.js's mover draw while he waits in the chair.
+   x, y = the mover's screen position (the sprite sits at x-1, y-3, 34x16); hot 0..1 = a warded blow / the nudge flare. */
+export function drawBasketOutline(g, x, y, time, hot) {
+  const p = 0.5 + 0.5 * Math.sin(time * 6), a = 0.65 + 0.3 * p + 0.2 * (hot || 0), w = (hot || 0) > 0.3 ? 2 : 1;
+  g.globalAlpha = Math.min(1, a); g.strokeStyle = '#ffe08a'; g.lineWidth = w;
+  g.strokeRect(x - 2.5 + 0.5 * (w - 1), y - 5.5 + 0.5 * (w - 1), 36 - (w - 1), 21 - (w - 1)); g.globalAlpha = 1;
+}
 export function drawAbbotHouse(g, e, H, cx, cy, time, floorY, basketK) {
   if (!H) return;
   const W = g.canvas.width, fy = Math.round(floorY - cy), dy = Math.round(H.deckY - cy), p = 0.5 + 0.5 * Math.sin(time * 9), alive = !!(e && e.alive && e.mode !== 'sleep');
@@ -602,12 +609,23 @@ export function drawAbbotHouse(g, e, H, cx, cy, time, floorY, basketK) {
       const cueOn = alive && ph === 2 && !spilled && (e.deck === 'chair' || ((e.mode === 'swing' || e.mode === 'swingTell') && e.swGoal && e.swGoal.deck === 'chair'));
       if (cueOn && H.basketY0 !== undefined) {
         const b0 = Math.round(H.basketY0 - cy), b1 = Math.round(floorY - 8 - cy), bY = Math.round(b0 + (b1 - b0) * k), pts = [[bxp, bY - 10], [bxp, py + 6], [cxp, py + 6], [cxp, cyp - 47]];
-        let run = 0; const off = (time * 26) % 7;   /* beads every 7 px, marching from the basket toward the chair */
+        const C = e.clr || {}, hot = Math.max(C.pulse || 0, C.flare || 0), panS = C.panS !== undefined && C.panS >= 0 ? C.panS : -1;
+        /* (claude/abbotclear) THE ROPE AS ONE LINE: a thin gold line chair -> beam -> basket, always; during the intro beat it draws itself from the chair to the basket */
+        { const lens = []; let tot = 0; for (let sI = 0; sI < pts.length - 1; sI++) { const l = Math.hypot(pts[sI + 1][0] - pts[sI][0], pts[sI + 1][1] - pts[sI][1]); lens.push(l); tot += l; }
+          const upto = panS >= 0 ? panS * tot : tot; let acc = 0; g.lineWidth = panS >= 0 ? 2 : 1; g.strokeStyle = GOLD; g.globalAlpha = panS >= 0 ? 0.95 : 0.3 + 0.5 * Math.min(1, hot); g.beginPath();
+          for (let sI = 0; sI < pts.length - 1 && acc < upto; sI++) { const t = Math.min(1, (upto - acc) / (lens[sI] || 1)); g.moveTo(pts[sI][0] + 0.5, pts[sI][1] + 0.5); g.lineTo(pts[sI][0] + (pts[sI + 1][0] - pts[sI][0]) * t + 0.5, pts[sI][1] + (pts[sI + 1][1] - pts[sI][1]) * t + 0.5); acc += lens[sI]; }
+          g.stroke(); g.globalAlpha = 1; }
+        /* THE GHOST CHAIR, dotted, where the chair will come down (the level's drawn-first convention, like the Rookery's and the trebuchet's ghosts) */
+        { const gy = Math.round(abbotChairY(H, floorY, ABBOT.spillAt) - cy), gx = cxp, dot = (x0, y0, w, h) => { g.fillStyle = GOLD; for (let x = 0; x < w; x += 3) { g.fillRect(x0 + x, y0, 1, 1); g.fillRect(x0 + x, y0 + h, 1, 1); } for (let y = 0; y <= h; y += 3) { g.fillRect(x0, y0 + y, 1, 1); g.fillRect(x0 + w, y0 + y, 1, 1); } };
+          g.globalAlpha = Math.min(1, 0.7 + 0.3 * p); dot(gx - 12, gy - 34, 24, 37); dot(gx - 8, gy - 38, 16, 4); dot(gx - 13, gy - 12, 26, 12); R(GOLD, gx - 1, gy - 42, 3, 4); g.globalAlpha = 1; }
+        /* THE RIDE GAUGE: a little rail beside the basket, filling as it sinks, and a tick where the chair spills him */
+        { const gx = bxp + 24, y0 = b0 - 4, y1 = b1 + 14; R('#2a1c0c', gx - 2, y0 - 2, 5, y1 - y0 + 4); R('#6a5a3a', gx, y0, 1, y1 - y0); R(GOLD, gx, y0, 1, Math.round((y1 - y0) * k)); R(GOLD, gx - 3, Math.round(y0 + (y1 - y0) * ABBOT.spillAt), 7, 1); R('#fffbe0', gx - 1, Math.round(y0 + (y1 - y0) * k) - 1, 3, 2); }
+        let run = 0; const off = (time * (26 + 40 * Math.min(1, hot))) % 7;   /* beads every 7 px, marching from the basket toward the chair (faster when the basket is being pointed at) */
         for (let sI = 0; sI < pts.length - 1; sI++) { const [x0, y0] = pts[sI], [x1, y1] = pts[sI + 1], len = Math.hypot(x1 - x0, y1 - y0) || 1;
           for (let d = (7 - ((run + off) % 7)) % 7; d < len; d += 7) { const bx_ = Math.round(x0 + (x1 - x0) * d / len), by_ = Math.round(y0 + (y1 - y0) * d / len); g.globalAlpha = 0.95; R('#2a1c0c', bx_ - 1, by_ - 1, 4, 4); R(GOLD, bx_, by_, 2, 2); R('#fffbe0', bx_, by_, 1, 1); }
           run += len; }
         g.globalAlpha = 1;
-        glow(bxp, bY + 4, 26 + 5 * p, 0.3 + 0.3 * p);
+        glow(bxp, bY + 4, 26 + 5 * p + 14 * Math.min(1, hot), 0.3 + 0.3 * p + 0.3 * Math.min(1, hot));
         for (let q = 0; q < 3; q++) { const ph2 = (time * 1.4 + q / 3) % 1; g.globalAlpha = (1 - ph2) * 0.8; g.strokeStyle = GOLD; g.lineWidth = 1; g.beginPath(); g.ellipse(bxp, bY + 6, 14 + ph2 * 16, 7 + ph2 * 9, 0, 0, Math.PI * 2); g.stroke(); } g.globalAlpha = 1;
         for (let q = 0; q < 4; q++) if (Math.sin(time * 6 + q * 2.2) > 0.1) glint(g, Math.round(bxp + Math.cos(time * 3 + q * 1.6) * 20), Math.round(bY + 3 + Math.sin(time * 3 + q * 1.6) * 8), '#fffbe0', 1);
         if (k < 0.04) for (let q = 0; q < 3; q++) { const u = (time * 1.1 + q / 3) % 1, yy = Math.round(bY - 44 + u * 26); g.globalAlpha = Math.sin(Math.PI * u) * 0.95;   /* the way in: chevrons pointing DOWN onto it */
