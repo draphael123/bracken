@@ -121,4 +121,17 @@ out.push('the gallery shears only on the last pendulum, told 2 s, two rows; a bo
   for (const [x0, len, row] of led) assert.equal(r.grid[row * W + x0], row > mid[2] ? T.AIR : T.PLANK, 'the face at row ' + row + ' peels wrong');
   const top = L.ft2.outer.ledges[L.ft2.outer.ledges.length - 1]; assert.ok(!led.some(l => l[2] === top[2]), 'the top plank (the shrine\'s) can peel'); }
 out.push('the shelves go in sequence (the last held by its pillar); the ribs land told and frozen; the bell waits for the Sexton, told, breaks the deck; the face peels under the front');
+/* PLUG OR WEAPON: the lab's pillar does what the side you strike it from says - east: its rubble holds the front (8 s); west: it crushes the armour over you */
+{ const SU = await import('../src/tower-supports.js'), base = (L.ftSupports || []).find(s => s.id === 'lab-plug'); assert.ok(base && base.sides, 'no PLUG OR WEAPON pillar in the lab');
+  assert.ok(L.ents.some(e => e.t === 'armour' && e.x >= base.sides.w.crush[0] && e.x <= base.sides.w.crush[1] && e.y >= base.sides.w.crush[2] && e.y <= base.sides.w.crush[3] + 1), 'no armour on the landing its masonry would crush');
+  const strike = from => { const L3 = { ftSupports: [JSON.parse(JSON.stringify(base))] }; SU.supportsReset(L3); const s = L3.ftSupports[0]; s.x = s.col * TS + 8; s.y = (s.row + 1) * TS;
+    const Pl = { x: s.x + from * 14, y: s.y, dead: 0 }, log = { dark: 0, hurt: 0 }, foe = { x: (s.sides.w.crush[0] + 3) * TS, y: (s.sides.w.crush[3] + 1) * TS, alive: true }; let hb = null;
+    const c = { T, strike: () => hb, set: () => {}, resolve: () => {}, foes: () => [foe], hurt: () => { log.hurt++; }, holdDark: n => { log.dark = n; }, vault: () => {}, say: () => {}, callout: () => {}, sound: () => {}, shake: () => {}, dust: () => {}, burst: () => {} };
+    SU.supportsUpdate(L3, Pl, 1 / 60, c); const view = s.view; hb = { l: s.x - 8, r: s.x + 8, t: s.y - 20, b: s.y }; SU.supportsUpdate(L3, Pl, 1 / 60, c); hb = null; for (let i = 0; i < 90; i++) SU.supportsUpdate(L3, Pl, 1 / 60, c);
+    const out = { side: s.side, view, kind: s.kind, ...log }; SU.supportsReset(L3); out.reset = s.kind; return out; };
+  const e = strike(1), w = strike(-1);
+  assert.ok(e.view === 'e' && e.side === 'e' && e.dark === 8 && e.hurt === 0, 'struck from the east it does not plug the well (8 s): ' + JSON.stringify(e));
+  assert.ok(w.view === 'w' && w.side === 'w' && w.dark === 0 && w.hurt === 1, 'struck from the west it does not crush the armour: ' + JSON.stringify(w));
+  assert.ok(e.reset === 'dark' && w.reset === 'dark', 'a death does not stand it undecided again'); }
+out.push('PLUG OR WEAPON: the lab pillar plugs the well (the front holds 8 s) struck from the east, crushes the armour over you struck from the west');
 console.log('ok  fallingtower4  ' + out.join('; '));

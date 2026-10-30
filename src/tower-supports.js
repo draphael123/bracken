@@ -19,7 +19,8 @@ export const supportBox = s => ({ l: s.x - SUP.w / 2 - 2, r: s.x + SUP.w / 2 + 2
 export function supportsReset(L, restore) {
   for (const s of L.ftSupports || []) {
     if (s.st === 'down' && restore) { for (const [x0, x1, row] of s.spans || []) for (let x = x0; x <= x1; x++) restore(x, row); for (const [x0, x1, y0, y1] of s.clear || []) for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) restore(x, y); }
-    s.st = 'whole'; s.t = 0; s.down = false; s.armed = !s.arm; s.fx = null; s.ring = 0; s.near = 0; }
+    s.st = 'whole'; s.t = 0; s.down = false; s.armed = !s.arm; s.fx = null; s.ring = 0; s.near = 0;
+    if (s.sides) { Object.assign(s, s.sides[s.sides.def || 'e']); s.side = null; } }   /* (claude/ft4b) a pillar with two outcomes stands undecided again */
 }
 /* ONE STEP. c: { T, strike() -> the hero's blow box or null, set(x, y, t), resolve(), foes() -> live foes, hurt(e, dmg), holdDark(s), say(x, y, s, col),
    callout(s), sound(k), shake(n), dust(x, y, n), burst(x, y, n, cols) }. Returns the pillars that came down this frame. */
@@ -27,11 +28,14 @@ export function supportsUpdate(L, P, dt, c) {
   const out = [], hb = c.strike ? c.strike() : null;
   for (const s of L.ftSupports || []) {
     s.ring = Math.max(0, (s.ring || 0) - dt);
+    if (s.sides && s.st === 'whole') s.view = P.x < s.x ? 'w' : 'e';   /* (claude/ft4b) its ghost shows the outcome for the side you stand on */
     s.near = !P.dead && s.st === 'whole' ? Math.max(0, 1 - Math.hypot(P.x - s.x, (P.y - 12) - (s.y - s.h * 8)) / SUP.glowR) : 0;
     if (s.fx) { s.fx.t += dt; if (s.fx.t > SUP.fallT + 0.6) s.fx = null; }
     if (s.st === 'whole' && hb && !s.struck && overlaps(hb, supportBox(s))) {
       s.struck = true;   /* (one blow is one strike: cleared when the swing ends, below) */
       if (s.arm && !s.armed) { s.ring = 0.4; c.sound('clank'); c.say(s.x, s.y - s.h * 16 - 8, s.hold || 'IT HOLDS', '#bce8fa'); continue; }
+      /* (claude/ft4b) WHICH WAY IT FALLS (brief-fallingtower4 2, the pillar choices): a pillar with `sides` does what the side you strike it FROM says (w: from its west, e: from its east) */
+      if (s.sides) { s.side = P.x < s.x ? 'w' : 'e'; Object.assign(s, s.sides[s.side]); }
       s.st = 'tell'; s.t = SUP.tell; c.sound('crack'); c.shake(2); c.dust(s.x, s.y - s.h * 16, 6); c.say(s.x, s.y - s.h * 16 - 8, s.tellSay || 'IT GIVES', '#ff9a5c');
     }
     if (!hb) s.struck = false;
@@ -70,7 +74,7 @@ export function drawSupports(g, L, cx, cy, time, VW, VH) {
     if (bx1 - cx < -20 || bx0 - cx > VW + 20 || by1 - cy < -20 || by0 - cy > VH + 20) continue;
     if (s.st === 'down') { paintResting(g, s, cx, cy, time); if (s.kind !== 'floor') paintStump(g, x, y, s.fx ? s.fx.t : null); }   /* (a chase floor's pillar went down WITH its floor) */
     else {
-      if (s.st === 'whole' && s.near > 0) ghost(g, s, cx, cy, s.near);   /* what it will become, dotted in, as you come near (A6) */
+      if (s.st === 'whole' && s.near > 0) ghost(g, s.sides && s.view ? { ...s, ...s.sides[s.view] } : s, cx, cy, s.near);   /* what it will become, dotted in, as you come near (A6) */
       paintPillar(g, x, y, h, { st: s.st, k: s.st === 'tell' ? 1 - s.t / SUP.tell : 0, time, near: s.near, arm: s.arm, armed: s.armed, ring: s.ring, kind: s.kind });
     }
     if (s.fx && s.fx.t < SUP.fallT + 0.9) paintFall(g, s, cx, cy, s.fx.t, SUP.fallT);
@@ -81,6 +85,7 @@ function ghost(g, s, cx, cy, near) {
   g.fillStyle = '#ffe6a0'; g.globalAlpha = 0.45 * Math.min(1, near * 2) * (0.6 + 0.4 * Math.abs(Math.sin(performanceTime() * 3)));
   for (const [x0, x1, row] of s.spans || []) { const px0 = Math.round(x0 * 16 - cx), w = (x1 - x0 + 1) * 16, py = Math.round(row * 16 - cy); for (let i = 0; i < w; i += 4) { g.fillRect(px0 + i, py, 2, 1); g.fillRect(px0 + i + 2, py + 15, 2, 1); } g.fillRect(px0, py, 1, 16); g.fillRect(px0 + w - 1, py, 1, 16); }
   if (s.crush) { const [x0, x1, , y1] = s.crush, py = Math.round((y1 + 1) * 16 - cy); for (let i = x0 * 16; i < (x1 + 1) * 16; i += 6) g.fillRect(Math.round(i - cx), py - 1, 3, 1); }
+  if (s.dark && s.plug) { const [x0, x1, row] = s.plug, py = Math.round(row * 16 - cy); for (let i = x0 * 16; i < (x1 + 1) * 16; i += 5) { g.fillRect(Math.round(i - cx), py, 3, 2); g.fillRect(Math.round(i - cx) + 1, py + 4, 2, 1); } }   /* (claude/ft4b) the plug: rubble dotted across the well under you */
   g.globalAlpha = 1;
 }
 const performanceTime = () => (typeof performance !== 'undefined' ? performance.now() : Date.now()) / 1000;

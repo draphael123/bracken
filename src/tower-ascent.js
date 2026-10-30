@@ -398,6 +398,12 @@ export function buildTowerAscent({ painter, T, TS }) {
        from that tier to the rope's (a shortcut past the stair's west turn - the TEACH ramp by the floor stays as it was) */
     ent('sign', LT[7][0] + 3, LT[7][2] - 1, { text: 'THE LAST CASE LEANS ON A CRACKED PILLAR. STRIKE IT: IT LIES DOWN AS A STAIR.' });
     supports.push({ t: 'ftsupport', id: 'lib-top', kind: 'ramp', col: LT[7][0] + 7, row: LT[7][2] - 1, h: 3, spans: [[LT[7][0] + 6, LT[7][0] + 10, LT[8][2]]], say: 'THE LAST CASE LIES DOWN: A STAIR OF ITS SHELVES' });
+    /* PLUG OR WEAPON (the pillar choices, brief #3): a cracked pillar on the lab's stair, over the well the front comes up. Struck from the side you arrive on (east)
+       its rubble PLUGS THE WELL - the front holds 8 s; walk past it and strike it from the west and its masonry comes down on THE ARMOUR on the landing over you */
+    { const t = lab.tiers[2], px = t[0] + 4, up = lab.tiers[3];
+      supports.push({ t: 'ftsupport', id: 'lab-plug', kind: 'dark', col: px, row: t[2] - 1, h: 3, dark: true, plug: [X0, X1, t[2] + 1], say: 'THE RUBBLE PLUGS THE WELL: THE FRONT HOLDS',
+        sides: { def: 'e', e: { kind: 'dark', dark: true, crush: null, say: 'THE RUBBLE PLUGS THE WELL: THE FRONT HOLDS' }, w: { kind: 'crush', dark: false, crush: [up[0], up[0] + up[1] - 1, up[2] - 4, up[2] - 1], say: 'THE MASONRY COMES DOWN ON THE ARMOUR' } } });
+      ent('sign', t[0] + 8, t[2] - 1, { text: 'CRACKED PILLAR: FROM HERE IT PLUGS THE WELL. FROM ITS FAR SIDE IT CRUSHES THE ARMOUR.' }); foe('armour', up[0] + 4, up[2] - 1, { face: 1 }); }
     moversExtra.filter(m => m.kind === 'swing' && m.book)[2].ft4 = 'shear';   /* the last pendulum: riding it shears the gallery */
     const caseAt = (t, at, o) => ({ look: 'case', col: t[0], base: t[2], h: 4, dir: 1, span: [t[0] + 1, t[0] + 4, t[2]], hit: [t[0] + 1, t[0] + 4, t[2] - 4, t[2]], lay: false, at, name: 'A FALLING BOOKCASE', ...o });
     const pieces = [
