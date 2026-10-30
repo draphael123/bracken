@@ -663,9 +663,9 @@ function lanceDuty(BK, boss, P, A, open) {
 /* climbing to a duty's surface: the waypoints first (a one-way deck is jumped up through), then the duty's own; returns the goal x */
 function lanceClimb(BK, D, P, k) { const at = (y) => P.ground && Math.abs(P.y - y) < 4;
   if (at(D.y) && Math.abs(P.x - D.stand) < 40) return null;
-  for (const w of D.via) { if (P.y <= w.y + 2) continue; if (P.ground && Math.abs(w.x - P.x) < 34) { BK.press('jump'); P.labJump = 20; } return w.x; }
+  for (const w of D.via) { if (P.y <= w.y + 2) continue; if (P.ground && Math.abs(w.x - P.x) < 34) { BK.press('jump'); P.labJump = 30; } return w.x; }
   const last = D.via[D.via.length - 1]; if (last && at(last.y) && P.x >= last.jx - 2) { BK.press('jump'); P.labJump = 22; }
-  if (D.y < P.y - 8 && P.ground && Math.abs(D.stand - P.x) < 34) { BK.press('jump'); P.labJump = 20; }
+  if (D.y < P.y - 8 && P.ground && Math.abs(D.stand - P.x) < 34) { BK.press('jump'); P.labJump = 30; }
   return D.stand; }
 /* (claude/stormhold3, LANCE_RT above) the oil's strip is seen once it has been marked a moment */
 /* a stable hash of the row's own key (level + hero + health mode), not the array index: renaming or reordering bosses[]/heroes[] must not reseed anything */
@@ -2489,7 +2489,7 @@ async function runbossLab(BK, opts) {
       else if (boss.t === 'forgemaster' && boss.rails && (fgA = forgeHands(BK, boss, A, P, h, f, open))) { goal = fgA.goal; strike = fgA.strike; if (fgA.jump) k.jump = true; }   /* (claude/forgemaster) his room's carts and levers */
       else if (hbell) { goal = null; strike = false; k.left = k.right = false; if (P.atk < 0) { P.face = Math.sign(hbell.x - P.x) || P.face; BK.press('atk'); swings++; } }
       else if (gateDuty) { const D = gateDuty; strike = false; k.block = false; const g0 = lanceClimb(BK, D, P, k);   /* (claude/lance4) up to the bell (or to the post) and strike it on the beat */
-        if (g0 !== null) { goal = g0; if (P.labJump > 0) { P.labJump--; k.jump = true; } }
+        if (g0 !== null) { goal = g0; if (P.labJump > 0) k.jump = true; }   /* (the held jump: the generic labJump countdown below lets it go - a jump held its full length reaches a lookout) */
         else { goal = null; k.left = P.x > D.stand + 6; k.right = P.x < D.stand - 6; if (D.go && P.atk < 0) { P.face = Math.sign(D.x - P.x) || 1; k.left = k.right = false; BK.press('atk'); swings++; } } }
       else if (boss.mode === 'stanceTell') goal = boss.x - Math.sign(d || 1) * 72;   /* EN GARDE: cut into it and she answers; stand off and wait for the point to drop */
       else if (rushing || (tell && (h === 'paladin' || h === 'reaper' || boss.modeT < (boss.t === 'closedhelm' ? 0.1 : h === 'geomancer' ? 0.17 : 0.14)))) {   /* (THE GEOMANCER's ward takes a tenth of a second to rise: she plants it that much sooner, so it is up on the beat) */
