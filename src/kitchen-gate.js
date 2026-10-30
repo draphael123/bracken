@@ -198,7 +198,7 @@ export function buildKitchenGate({ painter, T, TS }) {
   const a = LARDER;
   /* the larder hall: its lip (the spit hall's far floor runs on, row 14), the teach pit (a safe floor, row 23), the first landing (row 19), THE SALTING PIT (coals, row 26), the attendant's
      ledge (row 16), and the step down to the grease kitchens' floor (row 24) */
-  air(a, a + 77, 6, 13); air(a + 4, a + 24, 14, 22); air(a + 25, a + 33, 14, 18); air(a + 34, a + 68, 14, 25); spike(a + 34, a + 68, 26); air(a + 69, a + 74, 14, 15); air(a + 75, a + 77, 14, 23);
+  air(a, a + 77, 6, 13); air(a + 4, a + 24, 14, 22); air(a + 25, a + 33, 14, 18); air(a + 34, a + 68, 14, 25); spike(a + 34, a + 68, 26); air(a + 69, a + 77, 14, 15);   /* (the ledge runs to the larder's end: you step off it into the grease kitchens, as you once stepped off the spit hall's floor) */
   sign(a + 0, 13, "THE HANGING LARDER. THE HOOK RAILS RUN ON CHAINS: AT A RAIL'S END IT DROPS YOU.");
   /* TEACH (safe): two rails, the second lower and under the first's end. JUMP in the red stretch (the hand-off) and you carry your height to the next hook; ride to the end and you
      drop into the larder pit - a floor, and the salting racks back up to the lip */
@@ -209,7 +209,7 @@ export function buildKitchenGate({ painter, T, TS }) {
      shelf over the first landing, a ham shelf over the attendant's ledge */
   for (const [x0, x1, y] of [[a + 0, a + 3, 11], [a + 8, a + 11, 19], [a + 26, a + 29, 16], [a + 30, a + 33, 13]]) { shelf(x0, x1, y); racks.push([x0, x1, y]); ent('coin', Math.round((x0 + x1) / 2), y - 1); }
   /* THE HAM RACKS: the larder's own - high under the vault over the teach pit and the attendant's ledge, the hams hung from them (out of reach: no coin on them, and no way past a rail) */
-  for (const [x0, x1, y] of [[a + 12, a + 15, 9], [a + 17, a + 20, 9], [a + 22, a + 24, 9], [a + 70, a + 73, 12]]) { shelf(x0, x1, y); racks.push([x0, x1, y]); prop('pans', x0 + 1, y); }
+  for (const [x0, x1, y] of [[a + 12, a + 15, 9], [a + 17, a + 20, 9], [a + 22, a + 24, 9], [a + 70, a + 73, 12], [a + 75, a + 77, 12]]) { shelf(x0, x1, y); racks.push([x0, x1, y]); prop('pans', x0 + 1, y); }
   deco(a + 9, 22, 'barrel'); deco(a + 12, 22, 'barrel', 1); deco(a + 20, 22, 'barrel'); coins([a + 14, 22], [a + 17, 22], [a + 14, 13], [a + 15, 13]);   /* (the two in the air ride the hop's arc: a trail to follow) */
   prop('pans', a + 10, 10); prop('flour', a + 22, 23); prop('block', a + 30, 19); prop('spices', a + 70, 16);
   /* the first landing: two cooks at their blocks */
@@ -220,7 +220,7 @@ export function buildKitchenGate({ painter, T, TS }) {
   coins([a + 44, 18], [a + 45, 18], [a + 54, 20], [a + 55, 20], [a + 60, 21], [a + 64, 18]);   /* on the hops' arcs and up the haul line */
   /* the attendant's ledge: he throws plates as you come up the haul line, and holds the ledge */
   foe('attendant', a + 72, 15, 'larderB', { face: -1 }); coins([a + 70, 15], [a + 73, 15]);
-  shelf(a + 76, a + 77, 19); racks.push([a + 76, a + 77, 19]);   /* a dresser on the step down */
+
   }
   M = oldCol;
 
