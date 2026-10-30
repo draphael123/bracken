@@ -113,12 +113,12 @@ try {
       out.whip={wh:+wh.toFixed(2),open,cut:z.cut>0,from:'shieldwall'}; run(120,()=>{safe();hold();}); }
     /* P3: back to the main gate; the great bell pins him (x2) and splits the shield */
     { reset();b.x=A.x1-300;P.x=b.x-60;P.y=fl;b.hp=Math.round(b.maxHp*0.34);BKT.hurtAs('cut',b,Math.round(b.maxHp*0.02),b.x-10,false);out.p3={phase:b.phase,mode:b.mode};
-      run(400,()=>{safe();hold();P.x=b.x-70;P.y=fl;});out.p3.home=Math.round(b.x-gb.gx);gb.rewind=0;gb.ringT=-1;
+      let near=9e9;run(400,()=>{safe();hold();P.x=gb.x;P.y=gb.y;near=Math.min(near,Math.abs(b.x-gb.gx));});out.p3.home=Math.round(near);gb.rewind=0;gb.ringT=-1;
       let pin=0,mul=0;ring(gb);run(30,()=>{safe();if(b.mode==='pinned'){pin=Math.max(pin,b.modeT);mul=b.pinMul;}});out.great={pin:+pin.toFixed(2),mul};
-      run(320,()=>{safe();hold();P.x=b.x-70;P.y=fl;});out.great.bare=!!b.bare;
+      run(320,()=>{safe();hold();P.x=gb.x;P.y=gb.y;});out.great.bare=!!b.bare;
       const h0=b.hp;b.mode='guard';hold();P.x=b.x+(b.face>0?20:-20);P.face=-b.face;BKT.hurtAs('cut',b,100,P.x,false);out.great.front=h0-b.hp; }
     /* P3: THE STONES ring the deck and break the planks */
-    { reset();const s=A.spans[3];P.x=(s[0]+s[1]+1)*8;P.y=fl;b.lz.pen=1;b.mode='pennantTell';b.modeT=0.01;run(2);const n=b.lz.stones.length,g0=b.lz.gaps.size;run(120,()=>{safe();hold();P.vx=0;});out.stones={n,gaps:b.lz.gaps.size-g0}; }
+    { reset();const s=A.spans[3];P.x=(s[0]+s[1]+1)*8;P.y=fl;b.lz.pen=1;b.lz.stones=[];b.lz.bolt=null;b.lz.oil=null;b.mode='pennantTell';b.modeT=0.01;run(30,()=>{safe();hold();P.vx=0;});const n=b.lz.stones.length,g0=b.lz.gaps.size;run(120,()=>{safe();hold();P.vx=0;});out.stones={n,gaps:b.lz.gaps.size-g0}; }
     /* the slam */
     { for(let i=0;i<80&&b.alive;i++){b.hp=1;b.mode='pinned';BKT.hurtEnemy(b,1e6,b.x-10,false);BK.sim(2);} out.dead=!b.alive;out.slam=b.lz.slam;BK.sim(200);out.activeAfter=BK.bossActive; }
     return out;})()`, 300000);

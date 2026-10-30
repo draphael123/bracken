@@ -8936,6 +8936,7 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow, tag = blow) { const raw0 = dmg,
   if (angB && !GUARD_WALL(e)) e.angleHit = time;   /* (claude/keyscore) round or over THE DUELIST'S WALL a blow lands WHOLE, so it is still greed outside his openings: a masher who walks through him to his back meets the reprisal */
   dmg = angB ? Math.max(1, Math.round(wardedDamage(e, dmg, blow, tag) * BR_ANGLE.mul)) : bossChip(e, wardedDamage(e, dmg, blow, tag), raw0, !!blow);
   if (angB && GUARD_WALL(e)) dmg = Math.max(1, Math.round(dmg * BR_ANGLE.wall / BR_ANGLE.mul));   /* (claude/keyscore) round or over THE DUELIST'S WALL a blow lands at ANGLE.wall (his openings pay whole) */   /* every ward and every opening, in ONE place so that BURN goes through them too (see wardedDamage) */
+   if (e.t === 'lance' && e.bare && blow && !lanceOpen(e) && dmg > 0) dmg = Math.max(1, Math.round(dmg / BR_ANGLE.mul));   /* (claude/lance4) SHIELDLESS: no wall to go round - every angle lands at LANCE4.bare (0.7) of whole, not the angle table's half of it */
    if (angB && e.t === 'ram') dmg = Math.max(1, Math.round(dmg / BR_ANGLE.mul));   /* (claude/ramtune) round the horns (behind, the flank, above) he is cut WHOLE: his front is x0.4, so the angle is worth going round for (B15) */
   greedHit(e, fromX, blow);
   if (amV && dmg > 0 && !glance && e.alive && dpBossLike(e)) dmg = antiMash(e, dmg, amV);   /* (claude/difficulty) STALE BLOWS inside an opening, THE FINISHER into a broken boss, varied hits refill abilities (src/anti-mash.js) */
@@ -25123,9 +25124,9 @@ function updateLance(e, dt) {
     case 'guard': {
       e.face = Math.sign(d) || e.face;
       for (const k of ['thrustT', 'sweepT', 'vaultT', 'wallT', 'volleyT', 'chargeT']) e[k] = (e[k] ?? 2) - dt;
-      /* in his last stand he gives ground toward the gate when you press him, and never comes further out than the last pier */
+      /* in his last stand he holds the main gate: never more than three strides out from under it */
       const homeX = p3 ? (A.mainGate + 1) * TS : null;
-      want = ad > 26 ? e.face * X.walk : 0; if (p3 && e.x < homeX - 26 * TS && e.face < 0) want = 0;
+      want = ad > 26 ? e.face * X.walk : 0; if (p3 && e.x < homeX - 3 * TS && e.face < 0) want = 0; if (p3 && e.x < homeX - 4 * TS) want = X.walk; if (p3 && P.y < floor - 20) want = Math.abs(homeX - e.x) > 6 ? Math.sign(homeX - e.x) * X.walk : 0;   /* you up off the deck: he goes back under his gate and waits */   /* (claude/lance4) he holds the gate: three strides out at most, and back under it (the great bell's chance) */
       if (p3 && !e.bare) { e.p3T = (e.p3T || 0) + dt; if (e.p3T >= X.castOff) { lanceSplit(e, false); break; } }   /* no waiting room: the shield goes anyway */
       if (e.guardHold > 0) break;
       const heavyOK = !e.lastHeavy, ans = e.answer;
