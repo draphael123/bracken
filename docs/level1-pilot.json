@@ -516,14 +516,14 @@
   "bare": true
  },
  "kitchengate": {
-  "hash": "25f7fe50271c",
+  "hash": "da9d2153a739",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 44,
-  "deaths": 1,
-  "kills": 37,
-  "lifts": 67,
+  "hits": 40,
+  "deaths": 2,
+  "kills": 35,
+  "lifts": 66,
   "walked": 100,
   "bare": true
  },
