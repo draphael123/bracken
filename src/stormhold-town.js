@@ -15,7 +15,7 @@ import { lanceLookouts } from './lance-support.js';
 // Every tower is LEFT of its gate (a rope runs east: updateTowerSlides), and every tower has ladders back down (the reach
 // model does not ride a rope down, so nothing depends on one - except the moat, which the reach model's rope crosses).
 //
-// SIX SECTIONS (each ends at its exam's shrine, A10c - the Rootway recipe):
+// SEVEN SECTIONS (each ends at its exam's shrine, A10c - the Rootway recipe; claude/lance4 lane 2, STORMHOLD 4: +180 for THE HAUL LINES):
 //   1. THE ROAD IN      0-91     the failed siege's camp debris, the Gate Watch, the gate dogs   (no shrine: the road is short)
 //   2. THE BARBICAN     92-150   the outer gate's passage, MURDER HOLES overhead (told drops: strike one
 //                                loose on whoever is under it - the Lance's own verb, taught small)    -> shrine @ 152
@@ -23,20 +23,24 @@ import { lanceLookouts } from './lance-support.js';
 //                                cutter, the first ALARM, the Bell Watch, the dry moat                 -> shrine @ 254
 //   4. THE CURTAIN WALL 268-395  the sally stair into the ditch, the wall face on the masons' scaffold,
 //                                THE WALL-WALK (A14's platforming exam: breached hoardings, arrow-slit
-//                                towers, a pike on the walk), the Wall Watch                         -> shrine @ 400
-//   5. THE GATEHOUSE    396-489  the portcullis on its winch, the pikes it lets through, THE STORM LANCE
-//                                (the Storm Chapter's knight), the bridgehead exam under a fire cage
-//   6. THE LONG BRIDGE  490-617  THE QUEEN'S LANCE, and the MAIN GATE that shuts when he falls (-> the Kitchen Gate)
+//                                towers, a pike on the walk), the Wall Watch                         -> shrine @ 388 (its deck)
+//   5. THE HAUL LINES   396-575  the masons' ropes over THE KING'S DITCH: two lines taught over its flat bottom, three over the
+//                                spiked gorge with THE MANGONEL throwing (a ring on your rope), a line it parts, THE BARBICAN
+//                                TOWER and its engine to wreck                                        -> shrine @ 579
+//   6. THE GATEHOUSE    576-669  THE GATEHOUSE BELL (ring it: they run to it, the gate drops on them), THE STORM LANCE
+//                                (the Storm Chapter's knight), the bridgehead exam: a gate tower and its bell
+//   7. THE LONG BRIDGE  670-797  THE QUEEN'S LANCE, and the MAIN GATE that shuts when he falls (-> the Kitchen Gate)
 // The road climbs: the camp on row 37, the road 36, the bailey 34, the ditch 44, the wall-walk 29, the bridge 30.
 // ============================================================================================
-const G0 = 396;      // THE GATEHOUSE's first column (claude/lance4 lane 2: the gatehouse is laid in G0 offsets)
+const H0 = 396;      // THE HAUL LINES' first column (claude/lance4 lane 2, STORMHOLD 4)
+const G0 = H0 + 180; // THE GATEHOUSE's first column (the gatehouse is laid in G0 offsets: it moved +180 as one)
 const P0 = G0 + 94;  // the Long Bridge's first pier
 export const STORM_TOWN = {
   W: P0 + 128, H: 46, G0,
   GATES: { brass: 94, iron: 262, bone: P0 - 2 },
   BRIDGE: P0,
   SECTIONS: [{ name: 'THE ROAD IN', x0: 0, x1: 91 }, { name: 'THE BARBICAN', x0: 92, x1: 150 }, { name: 'THE OUTER BAILEY', x0: 151, x1: 267 },
-    { name: 'THE CURTAIN WALL', x0: 268, x1: 395 }, { name: 'THE GATEHOUSE', x0: G0, x1: P0 - 1 }, { name: 'THE LONG BRIDGE', x0: P0, x1: P0 + 127 }],
+    { name: 'THE CURTAIN WALL', x0: 268, x1: H0 - 1 }, { name: 'THE HAUL LINES', x0: H0, x1: G0 - 1 }, { name: 'THE GATEHOUSE', x0: G0, x1: P0 - 1 }, { name: 'THE LONG BRIDGE', x0: P0, x1: P0 + 127 }],
 };
 
 export function stormholdTown({ painter, T, TS }) {
@@ -201,37 +205,90 @@ export function stormholdTown({ painter, T, TS }) {
   ent('scalder', 384, 19, { face: 1, post: [384, 384] });
   ent('archer', 386, 24, { face: -1 });
   ent('key', 391, 19, { kind: 'bone' }); ent('brazier', 394, 19);
-  ent('sign', 382, 28, { text: 'THE WALL WATCH HOLDS THE BONE KEY. THE ROPE GOES DOWN TO THE GATEHOUSE.' });
-  ent('sign', 395, 19, { text: 'THE GATEHOUSE ROPE. HOLD UP AT ITS HANDLE, JUMP TO LET GO.' });
+  ent('check', 388, 19);   /* (stormhold4, Q5) THE CURTAIN WALL's exam (the breached walk, the Wall Watch) ends on its deck: the shrine before the haul lines */
+  ent('sign', 382, 28, { text: 'THE WALL WATCH HOLDS THE BONE KEY. ITS HAUL LINES GO OVER THE DITCH TO THE GATEHOUSE.' });
+  ent('sign', 393, 19, { text: 'DOWN DROPS YOU OFF A LINE. STRIKE DOWN AS YOU FALL - A SHIELD CANNOT FACE UP.' });
+  ent('sign', 395, 19, { text: 'TWO LINES OVER THE DITCH. JUMP OFF ONE AND TOUCH THE OTHER.' });
   coins([385, 24], [389, 19], [392, 19]);
 
-  // ============================ 5. THE GATEHOUSE (396-489): the portcullis winch, THE STORM LANCE, the bridgehead exam ============================
+  // ============================ 5. THE HAUL LINES (396-575): THE KING'S DITCH, the haul tower, the gorge, THE BARBICAN TOWER and its MANGONEL ============================
+  /* (claude/lance4 lane 2, scratch/brief-lance4-1029.md s4) The masons' ropes, strung from the Wall Watch over THE KING'S DITCH (the gorge, upstream of
+     the bridge) to the BARBICAN TOWER on the gatehouse's outer face. They are zip lines (src/zipline.js): JUMP kicks you off one and a TOUCH in the air
+     takes another - the Lance's P2 ropes, learned here. THE CASTLE'S MANGONEL on the barbican throws at the line you ride (src/haul-lines.js: a dotted arc
+     and a red ring on your rope 1.3 s ahead; a ring only lands where another line that goes on is in reach, so the escape is always drawn).
+       TEACH  (396-441) the Wall Watch's deck -> LINE A over the ditch's flat bottom; LINE B runs two rows under A's second half to the haul tower. A ends
+              in the air over the ditch: ride it out and you drop to the bottom - and walk back to the Wall Watch's ladder (no bite). A shielded pike
+              stands under A's first stretch: drop on him (DOWN) and strike down as you fall (P2a, the helm).
+       TEST   (442-530) the HAUL TOWER (stone, the masons' scaffold on its face) -> L1 long and east-down over the spiked gorge; L2 starts ABOVE it on a mast
+              and crosses under it (an X): L1 -> L2 is a jump UP (455-480); L2 -> L3 a DROP (500-520). L1 and L2 end in the air: a fall is the
+              teeth's bite and back to the last footing (the hazard rule).
+       REMIX  (528-575) a rider on L3 draws A STONE FOR THE LINE: it parts L3 ahead of you and the cut end whips down (the Lance's P2b, seen first and
+              harmless here) - jump UP onto L4 before it goes. L4 sets you on the barbican's plinth: climb its face and WRECK the mangonel (5 blows). */
+  const haul = [], post = (x, r) => [x * TS + 8, r * TS - 12];
+  const line = (id, x0, r0, x1, r1, g0, g1, o) => { const [X0, Y0] = post(x0, r0), [X1, Y1] = post(x1, r1);
+    haul.push({ x0: X0, y0: Y0, x1: X1, y1: Y1, speed: 180, haul: id, posts: [[X0, Y0, g0 * TS], [X1, Y1, g1 * TS]], ...(o || {}) }); };
+  // ---- TEACH: THE KING'S DITCH (flat bottom, no teeth) ----
+  block(396, 441, 42, 45);
+  ladder(396, 20, 41);   /* the Wall Watch's east face: a miss on the lines walks back here (~10 s) */
+  ent('shield', 404, 41, { face: -1 });   /* under line A's first stretch: the drop-strike, taught (A SHIELD CANNOT FACE UP) */
+  ent('deco', 399, 41, { kind: 'barrels' }); ent('deco', 420, 41, { kind: 'cart', v: 1 });   /* the masons' stone-cart, in the ditch they work from */
+  line('A', 395, 20, 428, 26, 20, 42, { endsAir: true });            /* off the Wall Watch's deck; it ends in the air over the ditch (a sheerleg on the bottom holds it) */
+  line('B', 412, 25, 440, 30, 42, 30);            /* two rows under A's second half (412-428), to the haul tower's landing */
+  coins([401, 21], [407, 22], [416, 26], [424, 27], [432, 28], [409, 41], [430, 41]);
+  // ---- THE HAUL TOWER: a stone stack the masons built to haul from, their scaffold on its west face (a landing, a board, the top) ----
+  laid(442, 446, 15, 45);
+  plat(437, 30, 5); plat(437, 22, 4); plat(437, 14, 10);   /* the landing, the board, and the top deck: timber over the stack's top course (the line leaves off it) */
+  ladder(441, 22, 29); ladder(437, 14, 21);
+  scaffolds.push({ x0: 436, x1: 441, top: 14, floor: 42, kind: 'timber', scaffold: true });
+  ent('sign', 438, 29, { text: 'THE HAUL TOWER. UP THE SCAFFOLD: THE LINES OVER THE GORGE START AT ITS TOP.' });
+  ent('sign', 444, 13, { text: 'THE MANGONEL THROWS AT THE LINE YOU RIDE. A RED RING: GET ONTO ANOTHER LINE BEFORE IT.' });
+  ent('brazier', 438, 13); coins([438, 21], [443, 13]);
+  // ---- TEST + REMIX: THE GORGE (its teeth the whole way to the barbican) ----
+  block(447, 556, 44, 45); spikesAt(447, 556, 43);
+  line('L1', 446, 14, 496, 23, 14, 44, { stones: true, endsAir: true });                  /* long, east and down; it ends in the air on a mast */
+  line('L2', 455, 13.2, 522, 29.9, 44, 44, { stones: true, endsAir: true });              /* from a mast ABOVE L1, steeper: it crosses under L1 at ~490 (the X) */
+  line('L3', 500, 26.6, 552, 35.5, 44, 44, { stones: true, endsAir: true, cutAt: 546 * TS + 8, cutTrig: 527 * TS });   /* under L2's tail; THE REMIX's line */
+  line('L4', 528, 29.8, 564, 37, 44, 37, { stones: true });               /* over L3's last stretch, down to the barbican's plinth */
+  coins([452, 16], [462, 16], [470, 18], [486, 22], [508, 28], [516, 29], [534, 31], [542, 32], [552, 34]);
+  // ---- THE BARBICAN TOWER on the gatehouse's outer face: its plinth (where L4 sets you down), a ladder up its face, THE MANGONEL on top ----
+  laid(557, 565, 37, 45); laid(566, 575, 17, 45);
+  ladder(565, 16, 36);
+  ent('deco', 559, 36, { kind: 'warStandard', v: 1 });
+  ent('sign', 562, 36, { text: 'THE BARBICAN. CLIMB IT AND WRECK THE MANGONEL: FIVE BLOWS.' });
+  coins([565, 30], [565, 24], [568, 16]);
+  const mangonel = { x: 571, y: 16 };   /* (src/haul-lines.js) its frame on the barbican's top; off its east side you drop into the gatehouse yard */
+
+  // ============================ 6. THE GATEHOUSE (576-669): THE GATEHOUSE BELL, THE STORM LANCE, the bridgehead's bell-gate exam ============================
   /* (claude/lance4 lane 2) every gatehouse column is G0 + n: the section moves as one when the level grows in front of it */
   floor(G0, P0 - 1, 30);
-  ent('check', G0 + 4, 29);   /* THE CURTAIN WALL's exam (the breached walk, the Wall Watch) ends here */
-  // THE GATEHOUSE PORTCULLIS: held up on a winch. Strike the winch and it drops on whatever is under it; it winds itself back
-  // up. The pikes come through that passage - and the same winch hangs the Lance's own two gates on his bridge.
+  ent('check', G0 + 3, 29);   /* THE HAUL LINES' exam (the gorge, the parted line, the barbican) ends in the gatehouse yard */
+  // THE GATEHOUSE BELL (the TEACH for the Lance's P1, src/bell-gate.js): a bell on the gallery by the portcullis passage. Ring it and it
+  // tolls three times: the pike it calls RUNS TO IT - to the gate - and on the third toll the portcullis drops on whoever is under it.
   laid(G0 + 18, G0 + 24, 19, 25);
-  ent('winch', G0 + 14, 29, { gate: G0 + 21, gy0: 26, gy1: 29, drop: true, hold: 6 });
-  ent('sign', G0 + 10, 29, { text: 'THE GATEHOUSE. STRIKE THE WINCH AND THE PORTCULLIS DROPS ON WHAT IS UNDER IT.' });
-  ent('pike', G0 + 28, 29, { face: -1 }); ent('pike', G0 + 34, 29, { face: -1 }); ent('shield', G0 + 40, 29, { face: -1 }); ent('stormshaman', G0 + 45, 29, { face: -1 });
-  plat(G0 + 28, 27, 5); plat(G0 + 40, 27, 5); plat(G0 + 49, 27, 4); plat(G0 + 62, 27, 5); plat(G0 + 69, 25, 4); plat(G0 + 84, 27, 4);   // the gatehouse's fighting galleries along the yard wall
-  ent('torch', G0 + 16, 29); ent('deco', G0 + 26, 29, { kind: 'banner', v: 0 }); ent('deco', G0 + 49, 29, { kind: 'banner', v: 1 });
+  plat(G0 + 12, 27, 5);   /* the bell's gallery: one held jump off the yard */
+  ent('gatebell', G0 + 15, 26, { id: 'gatehouse', gate: G0 + 21, gy0: 26, gy1: 29 });
+  ent('sign', G0 + 9, 29, { text: 'RING THE BELL: THEY RUN TO IT, AND THE GATE DROPS ON WHOEVER IS UNDER IT.' });
+  ent('pike', G0 + 28, 29, { face: -1, answers: 'gatehouse' }); ent('pike', G0 + 34, 29, { face: -1 }); ent('shield', G0 + 40, 29, { face: -1 }); ent('stormshaman', G0 + 45, 29, { face: -1 });
+  plat(G0 + 28, 27, 5); plat(G0 + 40, 27, 5); plat(G0 + 49, 27, 4); plat(G0 + 62, 27, 5); plat(G0 + 84, 27, 4);   // the gatehouse's fighting galleries along the yard wall
+  ent('torch', G0 + 17, 29); ent('deco', G0 + 26, 29, { kind: 'banner', v: 0 }); ent('deco', G0 + 49, 29, { kind: 'banner', v: 1 });
   facades.push([G0 + 7, G0 + 17, 19, 29, 'curtain', { town: true }], [G0 + 25, G0 + 52, 19, 29, 'curtain', { town: true }]);
   coins([G0 + 8, 28], [G0 + 21, 28], [G0 + 31, 28], [G0 + 37, 28], [G0 + 43, 28], [G0 + 50, 28]);
   // (THE STORM LANCE, the Storm Chapter's knight, holds G0 + 56: src/order-chapters.js ORDER_AT.storm / level.js ELITES.storm)
-  // THE BRIDGEHEAD EXAM (RULES S3): the last stretch before his door, under the same fire cage his bridge hangs six of - cut it
-  // loose on the pikes under it. No checkpoint inside it; the one at the first pier closes it.
-  ent('sign', G0 + 66, 29, { text: 'A CAGE COMES DOWN ON WHATEVER STANDS UNDER IT. CUT IT LOOSE ON HIM.' });
-  ent('pike', G0 + 70, 29, { face: -1 }); ent('pike', G0 + 80, 29, { face: -1 });
-  ent('weight', G0 + 75, 21, { len: 6, lamp: true });
-  coins([G0 + 62, 28], [G0 + 75, 28], [G0 + 85, 28]);
+  // THE BRIDGEHEAD EXAM (RULES S3): the last stretch before his door is a GATE TOWER like the three on his bridge - a bell on its lookout and a
+  // portcullis under it. Two pikes and the shielded captain charge at the rung bell: the Lance's P1 opening, exactly. No checkpoint inside
+  // it; the one at the first pier closes it.
+  ent('sign', G0 + 66, 29, { text: 'A GATE TOWER. RING ITS BELL FROM THE LOOKOUT: THEY CHARGE AT IT, AND THE GATE DROPS ON THE THIRD TOLL.' });
+  plat(G0 + 72, 27, 5); ent('deco', G0 + 74, 29, { kind: 'bridgetower' });
+  facades.push([G0 + 72, G0 + 76, 21, 26, 'tower', { town: true, roof: true }]);
+  ent('gatebell', G0 + 75, 26, { id: 'bridgehead', gate: G0 + 74, gy0: 28, gy1: 29 });
+  ent('pike', G0 + 79, 29, { face: -1, answers: 'bridgehead' }); ent('pike', G0 + 81, 29, { face: -1, answers: 'bridgehead' }); ent('shield', G0 + 83, 29, { face: -1, answers: 'bridgehead' });
+  coins([G0 + 62, 26], [G0 + 74, 26], [G0 + 85, 28]);
   laid(P0 - 4, P0 - 1, 19, 24);
   ent('lockgate', STORM_TOWN.GATES.bone, 29, { needs: 'bone', h: 5 }); gateCol(STORM_TOWN.GATES.bone, 25, 29);
   ent('deco', P0 - 7, 29, { kind: 'lanternPost' });
   facades.push([P0 - 9, P0 - 5, 20, 29, 'tower', { town: true, roof: true }]);
 
-  // ============================ 6. THE LONG BRIDGE (490-617): seven piers, the Queen's Lance, THE MAIN GATE ============================
+  // ============================ 7. THE LONG BRIDGE (670-797): seven piers, the Queen's Lance, THE MAIN GATE ============================
   // one height the whole way, so his charge has one line to run and the piers are the rhythm. Under the spans, far down, the
   // gorge's teeth: a plank he splinters out from under you is a fall onto rock (the spikes' bite and back to the last footing -
   // the hazard rule, never an untold death), and every gap he tears is three planks: a jump for every hero.
@@ -280,18 +337,19 @@ export function stormholdTown({ painter, T, TS }) {
   // ---- THE TOWERS' ROPES: from each top deck's east edge down to the foot of its own gate. UP grabs, JUMP lets go. ----
   const rope = (x0, top, x1, endRow, groundRow) => ({ x0: x0 * TS + 8, y0: top * TS - 12, x1: x1 * TS + 8, y1: endRow * TS - 12,
     posts: [[x0 * TS + 8, top * TS - 12, top * TS], [x1 * TS + 8, endRow * TS - 12, groundRow * TS]] });
-  const zipLines = [rope(52, T1.top, 88, 36, 36), rope(226, T2.top, 252, 34, 34), rope(395, T3.top, 405, 30, 30), ...signal];   /* each rope ends ON its landing's floor (the hero's feet = the rope + 12) */
+  const zipLines = [rope(52, T1.top, 88, 36, 36), rope(226, T2.top, 252, 34, 34), ...haul, ...signal];   /* (stormhold4) the Wall Watch's rope is HAUL LINE A (the teach); then B and L1-L4 (src/haul-lines.js), then the Lance's signal ropes */   /* each rope ends ON its landing's floor (the hero's feet = the rope + 12) */
   const watchtowers = [T1, T2, T3];
 
   // THE LADDERS, LAST: nothing is dug after this line
   for (const [x, y0, y1] of ladders) for (let y = y0; y <= y1; y++) set(x, y, T.NET);
 
   return {
-    watchtowers, structures: scaffolds, zipLines, ropes: zipLines, noDoorKeys: true,   /* every key hangs on a tower: the play bot's stall answer 'go and find a door' (src/playtest.js) has nothing to find */
+    watchtowers, structures: scaffolds, zipLines, ropes: zipLines, noDoorKeys: true, mangonel, zipTransfer: true,   /* (stormhold4) THE MANGONEL (src/haul-lines.js); the reach model rides rope to rope here (src/reachcore.js) */
+   /* every key hangs on a tower: the play bot's stall answer 'go and find a door' (src/playtest.js) has nothing to find */
     W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: 36 }, pools: [], falls: [], moversExtra: [], interiors: [[98, 146, 31, 35, 'stone']],   /* THE BARBICAN's passage: not a house, the gate's own vault - drawn as laid stone overhead, and the snow stays out */ bridges, houses: [], masonry, facades, masonryKit: 'limestone', climbLook: true,
-    calm: [[39, 53, 19, 35], [212, 227, 16, 33], [322, 334, 27, 43], [383, 396, 18, 28]],   /* the climbs carry their own authored encounters: the garrison stays off them (F4: a climb, then a fight) */
+    calm: [[39, 53, 19, 35], [212, 227, 16, 33], [322, 334, 27, 43], [383, 396, 18, 28], [396, 447, 12, 41], [556, 576, 14, 36]],   /* (stormhold4) and the haul tower and the barbican: the climbs between the lines */   /* the climbs carry their own authored encounters: the garrison stays off them (F4: a climb, then a fight) */
     playtestSections: STORM_TOWN.SECTIONS,
-    checkRun: 160,   /* one shrine a named area (A10c): the road in and the barbican share the first (152), so the filler must not put one back at 76 */
+    checkRun: 200,   /* (stormhold4: 160 -> 200 - the Wall Watch's deck to the gatehouse yard is 191 over THE HAUL LINES, one area's exam; the brief's five shrines, Q5) */   /* one shrine a named area (A10c): the road in and the barbican share the first (152), so the filler must not put one back at 76 */
     duskStart: -1, duskLen: 1, music: 'stormhold', night: true, glowNight: true, nightA: 0.26,
     palette: { set: 'village', sky: 'crag', far: 'crag', mid: 'crag', near: 'crag', dress: 'crag', haze: 'rgba(150,160,200,0.16)',
       grass: '#cfd8e2', grassL: '#eef4ff', grassD: '#9aa8bc', dirt: '#4a4a58', dirtL: '#62626e', dirtD: '#32323c',

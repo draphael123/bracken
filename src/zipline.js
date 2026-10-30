@@ -63,8 +63,11 @@ export function zipStep(c, dt) {
   if (P.dead || P.hurt > 0 || !list.includes(P.zip)) P.zip = null;
   if (P.zip && P.zip.cut > 0) { P.zip = null; P.zipRelease = ZIP.RELEASE; P.vy = 0; }   /* (claude/lance4) THE LINE PARTS under you: you fall */
   /* TAKE HOLD */
-  if (!P.zip && !P.dead && !(P.hurt > 0) && !(P.zipRelease > 0) && !P.climb && !P.swim && !P.plunge && !(P.dodge > 0) && !(P.asleep > 0) && !(P.atk >= 0) && !(P.abuf > 0)) {
-    const z = findCatch(L, P, !!(keys.up || c.upPress), !!keys.down);
+  /* (claude/lance4, STORMHOLD 4's HAUL LINES - L.zipTransfer) ROPE TO ROPE: after a KICK off a rope (JUMP) or a DROP (DOWN) the lock-out is for THAT rope only - a
+     touch in the air takes ANOTHER line straight away (the haul lines' transfers, the Lance's ropes). A rope ridden out to its end still locks every rope for the release */
+  const xfer = !!L.zipTransfer && P.zipRelease > 0 && !!P.zipSkip;
+  if (!P.zip && !P.dead && !(P.hurt > 0) && (!(P.zipRelease > 0) || xfer) && !P.climb && !P.swim && !P.plunge && !(P.dodge > 0) && !(P.asleep > 0) && !(P.atk >= 0) && !(P.abuf > 0)) {
+    const z = findCatch(L, P, xfer ? false : !!(keys.up || c.upPress), !!keys.down);
     if (z) { P.zip = z; P.zipT = 0; P.zipDir = runDir(z, P); P.zipFx = 0; P.zipSkip = null; P.climb = false; P.vx = P.zipDir * z.speed;
       c.SFX.zipCatch ? c.SFX.zipCatch() : c.SFX.ratchet();
       if (z.snap) { c.SFX.ratchet(); c.callout('THE ROPE FRAYS: JUMP OFF BEFORE IT GOES'); }

@@ -28,7 +28,7 @@ const PAGE = `(async (hero, levelId) => {
   const row = (name, ok, why, extra) => rows.push({ name, ok: !!ok, why: ok ? '' : why, ...extra });
   const info = P => ({ x: Math.round(P.x), y: Math.round(P.y), ground: !!P.ground, zip: !!P.zip, dead: !!(P.dead > 0), hurt: P.hurt > 0 });
 
-  const n = (() => { const { L } = fresh(); return L.zipLines.filter(z => z.signal === undefined).length; })();   /* (claude/lance4) the towers' ropes; the Lance's signal ropes (on his bridge, appended last) are tools/lance4.mjs's */
+  const n = (() => { const { L } = fresh(); return L.zipLines.filter(z => z.signal === undefined && !(z.haul && z.haul !== 'A')).length; })();   /* (stormhold4) and the haul lines past A are tools/stormhold4.mjs's */   /* (claude/lance4) the towers' ropes; the Lance's signal ropes (on his bridge, appended last) are tools/lance4.mjs's */
   for (let i = 0; i < n; i++) {
     let { L, P, k } = fresh(); let z = L.zipLines[i]; const tag = 'rope ' + (i + 1);
     const xa = Math.min(z.x0, z.x1), xb = Math.max(z.x0, z.x1), east = z.y1 > z.y0 === z.x1 > z.x0 ? 1 : -1;
@@ -39,7 +39,7 @@ const PAGE = `(async (hero, levelId) => {
     k.up = true; let got = false; for (let f = 0; f < 20 && !got; f++) { BK.sim(1); got = P.zip === z; } k.up = false;
     row(tag + ' top: UP takes the handle', got, 'UP at the top end did not take hold: ' + JSON.stringify(info(P)));
     if (got) { const r = rideOut(P, z); settle(P);
-      row(tag + ' top: the ride runs to the foot and sets him down', Math.abs(P.x - lo[0]) < 40 && P.ground && !(P.dead > 0) && P.hp === hp0, 'ended ' + JSON.stringify(info(P)) + ' hp ' + hp0 + '>' + P.hp + ' foot ' + Math.round(lo[0]), { frames: r.f }); }
+      row(tag + ' top: the ride runs to the foot and sets him down', Math.abs(P.x - lo[0]) < (z.endsAir ? 160 : 40) &&   /* (stormhold4) a line that ends in the air (HAUL LINE A: the teach's miss) sets him on the floor under its end */ P.ground && !(P.dead > 0) && P.hp === hp0, 'ended ' + JSON.stringify(info(P)) + ' hp ' + hp0 + '>' + P.hp + ' foot ' + Math.round(lo[0]), { frames: r.f }); }
     /* JUMP-IN: on the floor under the rope, no UP */
     { let best = null; for (let x = xa + 16; x < xb - 16; x += 4) { const g = feetUnder(L, x, ly(z, x) + 8); if (g === null) continue; const d = g - ly(z, x); if (d >= 40 && d <= 56 && (!best || Math.abs(d - 46) < Math.abs(best.d - 46))) best = { x, g, d }; }
       if (!best) row(tag + ' jump-in: a place under it, 40-56 px below the rope', true, '', { skipped: true });

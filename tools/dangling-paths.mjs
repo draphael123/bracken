@@ -46,6 +46,7 @@ const MISSING = new Map([
   ['tools/curtain-wall.mjs', 'DELETED ON PURPOSE (claude/stormhold3art, batch125): the curtain-wall splice check went with the real Stormhold rebuild (src/draft/curtain-wall.js stays as the draft). Only old lane reports and KICKOFF cite it as history.'],
   ['src/admiral.js', 'RENAMED ON PURPOSE (hotfix 10-28): now src/flotilla-boss.js because ad blockers (EasyPrivacy) block any /admiral.js. Only the old flotilla3 lane report cites the old name.'],
   ['tools/lance-support.mjs', 'REPLACED ON PURPOSE (claude/stormhold3): tools/lance3.mjs held the reworked Lance checks (now tools/lance4.mjs). Only the old lance lane report cites it as history.'],
+  ['tools/stormhold3.mjs', 'REPLACED ON PURPOSE (claude/lance4, STORMHOLD 4): tools/stormhold4.mjs holds the outer-works checks with THE HAUL LINES (+180) and the bell-gates. Old lane reports and stormhold-town.js comments cite it as history.'],
   ['tools/lance3.mjs', 'REPLACED ON PURPOSE (claude/lance4): tools/lance4.mjs holds the on-foot Lance (the mounted Lance is gone, Daniel 10-29). tools/lance4.mjs and the stormhold3art lane report cite it as history.'],
   ['tools/spore-exam.mjs', 'RETIRED ON PURPOSE (claude/sporewood2, the greybox): SPOREWOOD 2 is laid by hand and tools/sporewood2.mjs replaces the old grafted wood beat checks. Old lane reports and one level.js comment cite it as history.'],
   ['tools/spore-caps.mjs', 'RETIRED ON PURPOSE with tools/spore-exam.mjs (claude/sporewood2): tools/sporewood2.mjs holds the rule (caps, bounce, lanterns, puffs) now.'],
