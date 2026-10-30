@@ -36,7 +36,7 @@
 
 export const BZC = {
   hp: 2000, w: 16, h: 32, scale: 1.35, markH: 56,
-  heroHp: { knight: 1.95, warden: 1.7, geomancer: 0.6, ranger: 1.35, berserker: 0.6, pyro: 0.85, paladin: 1.0, pirate: 0.95, reaper: 1.0 },
+  heroHp: { knight: 2.24, warden: 1.96, geomancer: 0.69, ranger: 1.55, berserker: 0.69, pyro: 0.98, paladin: 1.15, pirate: 1.09, reaper: 1.15 },   /* (claude/warcairn2) x1.15 every row: the hatchet-back opening took him from ~53% to 83% with flasks; at x1.15 a 6-seed read is 69% (rough - the sonnet tune lane owns the band) */
   heroDmg: { knight: 1.15, warden: 1.15, geomancer: 0.8, ranger: 0.85, berserker: 0.95, pyro: 0.9, paladin: 1.0, pirate: 0.9, reaper: 1.0 },   /* TUNED 10-29 (PAGE+TUNE): 12 seeds x 6 heroes WITH flasks (campaign kit, human profile, L21) = 63% (kn 8/11, wa 7/12, ge 6/12, ra 7/12, be 8/12, py 9/12), avg win 129 s; dry (bare, 6 seeds) 56%. heroHp is the lever; heroDmg evens the knight/warden/geomancer */
   walk: 70, keep: 34, turn: 0.4, gap: [0.6, 0.5, 0.42],
   mul: { walk: 0.7, take: 0.4, committed: 1.0 },              /* B15: never under 0.4 outside an opening */
