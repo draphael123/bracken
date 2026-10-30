@@ -50,10 +50,10 @@
    "clear": 433
   },
   "moor": {
-   "run": 1110,
-   "foeXp": 568,
+   "run": 1138,
+   "foeXp": 588,
    "bossXp": 315,
-   "clear": 341
+   "clear": 353
   },
   "storm": {
    "run": 1539,
@@ -158,10 +158,10 @@
    "clear": 443
   },
   "fallingtower": {
-   "run": 1785,
-   "foeXp": 772,
+   "run": 1787,
+   "foeXp": 774,
    "bossXp": 704,
-   "clear": 463
+   "clear": 464
   },
   "burning": {
    "run": 1030,
@@ -308,10 +308,16 @@
    "clear": 319
   },
   "kitchengate": {
-   "run": 643,
-   "foeXp": 202,
+   "run": 649,
+   "foeXp": 206,
    "bossXp": 360,
-   "clear": 121
+   "clear": 124
+  },
+  "warcairn": {
+   "run": 1162,
+   "foeXp": 584,
+   "bossXp": 345,
+   "clear": 350
   }
  }
 }
