@@ -909,6 +909,15 @@ export const HEIGHT = {
 /* (claude/order) THE ROAD WARDENS's answers: a yellow ! is blocked (or PARRIED - the duelist's cut is the lesson), a red !! is dodged; only the duelist's LUNGE runs at chest height (duck under it) - the rest reach the floor */
 for (const t of ORDER_TYPES) for (const [m, v] of Object.entries(ORDER_MARKS)) if (v) { ANSWER[t + '|' + m] = v === '!' ? 'block' : 'dodge'; HEIGHT[t + '|' + m] = m === 'lungeTell' ? 'high' : 'low'; }
 export const UNTOLD = {};
+/* (claude/rookery3) THE TEMPO CLASS OF A WINDUP: 'heavy' (a long readable windup ~0.9-1.2 s, the biggest pose, a deep cue, hits hard, a long recovery to punish), 'medium' (~0.6-0.75 s),
+   'light' (~0.35-0.45 s, low damage, short; a quick flash). Daniel 10-29 live on THE SHRIEK SISTERS: "they attack way too quickly and at the same speed ... a heavy, a light and a medium one".
+   A boss that gives its windups a class reads them here (src/shriek-sisters.js TEMPO, drawn and sounded by class in its hands); tools/tells.mjs checks every row is a told windup in MARK */
+export const TEMPO_CLASS = {
+  'shrieksister|chainTell': 'heavy', 'shrieksister|screamTell': 'heavy', 'shrieksister|dropTell': 'heavy',
+  'shrieksister|diveTell': 'medium', 'shrieksister|shockTell': 'medium', 'shrieksister|grabTell': 'medium', 'shrieksister|waveTell': 'medium',
+  'shrieksister|rakeTell': 'light', 'shrieksister|echoTell': 'light', 'shrieksister|snatchTell': 'light',
+};
+export const tempoOf = k => TEMPO_CLASS[k] || '';
 // THE COMMON FOLK THAT NEVER HARM YOU AT ALL: no blow, so nothing to tell and nothing to answer.
 export const HARMLESS = new Set(['folk', 'sentry', 'squirrel', 'dummy', 'acolyte', 'shaman']);   /* (claude/sporewood2) THE SHAMAN strikes nobody himself: he raises sporelings (whose bites are told) and blinks away when struck */   // townsfolk, a bell-runner, a pickpocket (it is a thief underneath: see thief|snatchTell), a straw man
 export const answerOf = (t, mode) => ANSWER[t + '|' + mode] || ANSWER['*|' + mode] || UNTOLD[t] || '';

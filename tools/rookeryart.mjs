@@ -7,7 +7,7 @@ import { levelHash } from './level-quality.mjs';
 import * as A from '../src/audio.js';
 const rd = p => readFileSync(new URL('../' + p, import.meta.url), 'utf8'), main = rd('src/main.js'), lv = LEVELS.find(l => l.id === 'rookery'), L = lv.build();
 const ok = (c, m) => { assert.ok(c, m); console.log('ok   ' + m); };
-assert.equal(levelHash(lv), '4ef21b8a02e5', "the Rookery's level hash is not the greybox's (an art lane never changes it; claude/rookery2's greybox is 4ef21b8a02e5)"); console.log('ok   level hash is the greybox\'s (4ef21b8a02e5, claude/rookery2)');
+assert.equal(levelHash(lv), '3c07c53af25a', "the Rookery's level hash is not the greybox's (an art lane never changes it; claude/rookery3's extended Bone Stair is 3c07c53af25a - was 4ef21b8a02e5)"); console.log('ok   level hash is the extended greybox (3c07c53af25a, claude/rookery3)');
 for (const f of ['rookery_pal', 'rookery_tiles', 'rookery_backdrop', 'rookery_world', 'rookery_foes', 'shriek_sisters_art']) ok(existsSync(new URL('../src/redraw/' + f + '.js', import.meta.url)), 'src/redraw/' + f + '.js exists');
 ok(/RKT\.rkTile\(/.test(main) && /RKB\.drawBackdrop\(/.test(main) && /RKB\.drawNear\(/.test(main) && /RKW\.drawUpdraft\(/.test(main) && /RKF\.bakeShrieker\(\)/.test(main) && /RKF\.bakeCragHarpy\(\)/.test(main), 'main.js draws the tile kit, backdrop, near layer, updraft and bakes the two harpy sheets');
 ok(L.reskin && L.reskin.harpy === 'cragharpy' && L.palette.fg === 'rookery', 'the crag harpies wear their own skin; the level has its own foreground strip');
