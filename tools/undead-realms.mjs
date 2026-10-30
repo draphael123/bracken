@@ -13,6 +13,10 @@
 //            it matters - the returning wall's road (to him or to you), the icicle over his shell, the vent lit only while the beam is cut -
 //            and OPEN is drawn and said, with its window
 //   RETURN   the opening runs out and the realm tears: back in his hall, the next realm not before REALM.rest
+//   LIVING   (claude/ft4c, brief-fallingtower4 #4 A) each realm comes apart in 3 beats (said, told, the border crumbling) and has a second
+//            return: FIRE burnt tiles fall (told) into low pits, the realm tilts, he keeps two perches - strike his firebolt into the brazier
+//            over him; ICE the ceiling comes down after its frost, floes he hides behind - two lances batted back shatter him; POISON the
+//            next vent bubbles and he hops, the mire surges (told) with bone rafts - a spore ring struck back chokes him. Robust to the hall moving
 //   PAGE     the real fight: board the carpet, each mark tears its realm (the right one, the carpet held in its room, the ice slick), a
 //            blow in a realm is warded, each opening struck with the game's own swing opens him, the realm returns you to his hall - and
 //            his death opens the desert door as it always did
@@ -297,3 +301,4 @@ r.realms.forEach((q, k) => { const K = REALM.kinds[k];
   assert.ok(q.back, K + ': the realm does not return you to his hall: ' + JSON.stringify(q)); });
 assert.ok(r.dead && r.door && r.fightOver, 'his death does not open the desert door (or end the fight): ' + JSON.stringify(r));
 console.log('ok  undead-realms   at 75/50/25% he tears FIRE, ICE and POISON in turn (told ' + REALM.tear + ' s), warded in each till its one opening - his wall dodged back into him, an icicle on his shell, the vent while the beam is cut - every realm blow told first (fire: ' + fireOut.blows.join(' ') + '), each back to his hall, and his death opens the desert door');
+console.log('ok  undead-realms   LIVING (claude/ft4c): 3 told beats each ' + JSON.stringify(living) + ' - fire pits told 0.8 s, the tilt, his two perches, the brazier; the ice ceiling after its frost, the floes, two lances shatter; the vents bubble first, the surge told, rafts hold; a spore struck back chokes him; all of it moves with the hall');

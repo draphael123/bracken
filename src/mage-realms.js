@@ -409,6 +409,7 @@ export function drawRealmFx(g, e, cx, cy, time, P, T) {   /* P: the hero (the fi
       g.strokeStyle = 'rgba(143,209,96,0.6)'; g.beginPath(); g.ellipse(ex, ey, 16, 26, 0, 0, Math.PI * 2); g.stroke(); }
     for (const s of R.spores) { const r = Q.sporeR * (0.6 + 0.4 * ((time * 4) % 1)); g.strokeStyle = Math.floor(time * 10) % 2 ? '#ff6b6b' : '#a6e04a'; g.lineWidth = 1; g.beginPath(); g.arc(Math.round(s.x - cx), Math.round(s.y - cy), r, 0, Math.PI * 2); g.stroke(); }   /* THE TELL: rings where they will bloom */
     for (const cl of R.clouds) { const a = Math.min(1, cl.t) * 0.5; g.fillStyle = 'rgba(110,170,60,' + a.toFixed(2) + ')'; g.beginPath(); g.arc(Math.round(cl.x - cx), Math.round(cl.y - cy), cl.r + Math.sin(time * 3 + cl.x) * 2, 0, Math.PI * 2); g.fill(); } }
+  drawLiving(g, e, R, b, bb, cx, cy, time, T, P);   /* (claude/ft4c) the realm coming apart, its braziers, floes, vents and rafts - over him (he hides behind a floe), under his ward and OPEN words */
   /* WARDED, THE REST OF THE TIME (claude/archfix): a ring of his ward's runes turning round him in the realm's colour, and the word dim at
      his feet - so the moment it is gone (OPEN) reads as a change */
   if (!OPEN.has(e.mode) && e.alive) { const x = Math.round(e.x - cx), y = Math.round(e.y - cy) - 22, C = REALM.col[R.kind];
@@ -430,7 +431,6 @@ export function drawRealmFx(g, e, cx, cy, time, P, T) {   /* P: the hero (the fi
     g.fillStyle = 'rgba(10,8,20,0.85)'; g.fillRect(x - 20, y - 57, 40, 4); g.fillStyle = '#ffd36b'; g.fillRect(x - 20, y - 57, Math.round(40 * k), 4);   /* the window, running out */
     if (T) { T('OPEN x2', x, y - 72, Math.floor(time * 8) % 2 ? '#ffffff' : '#ffd36b', 8); T(REALM.openWord[m] || '', x, y - 84, REALM.col[R.kind][0]); }
     R.cueDrawn = 'open:' + m; }
-  drawLiving(g, e, R, b, bb, cx, cy, time, T, P);   /* (claude/ft4c) the realm coming apart, its braziers, floes, vents and rafts - over him (he hides behind a floe) */
   void b;
 }
 /* (claude/ft4c) LIVING REALMS, DRAWN (greybox - the art lane dresses them): the border's chunks; FIRE the burning pits, the falling slab, the two braziers (the one
