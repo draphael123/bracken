@@ -1,0 +1,10 @@
+{
+  "approved": true,
+  "allowSeparateOriginalLayoutScope": true,
+  "sourceManifestSha256": "6f8ee5230e76b844f08e3fc767c36cde26fc3703d354392dde2b7c630d029657",
+  "preserveAllFailedScopes": true,
+  "allOriginalCriteriaRemainRequired": true,
+  "reason": "Existing full-proof driver requires complete comparative loading qualification. The original return controls exceeded1536MB; this proposal is a separately approved original layout scope only,without waiving qualification or adoption requirements.",
+  "authorizationReceiptSha256": "bd9333e61a1eacacfd6854b5663ed2197703bd7034f764f26601f03117264dd6",
+  "oneSourceOccurrenceOnly": true
+}
