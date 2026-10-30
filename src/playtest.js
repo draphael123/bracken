@@ -263,6 +263,18 @@ export function makeBot(BK, opts = {}) {   /* opts.fightThrough (claude/foepass)
           if (r.mode === 'downed' || r.mode === 'rise') return go(r.x, 6);   /* under her: she climbs from where she fell */
           return go(mx, 4); }   /* on her mount: wait for her dive */
         tick.rdJob = null; keys.up = false; } }
+    // ---- (claude/warcairn2) A THROW HOIST (THE WAR CAIRN's hauled bridge: src/war-cairn-hatchets.js): near its throw spot with it still up - to the rack, E (a hatchet), to the
+    //   spot, face the way, UP for a lob (d.aim), ATTACK. Ten seconds and he gives it up for twenty, like a cleat.
+    { const WH = L.warcairn && BK.warCairnHands ? BK.warCairnHands() : null;
+      if (WH && !P.swim && !(P.dead > 0) && !P.climb) { tick.thNo = tick.thNo || new Map(); tick.frame3 = (tick.frame3 || 0) + 1;
+        for (const d of (L.hoists || [])) { if (d.load !== 'throw') continue; const h = WH.hoist(d.id); if (!h || h.state !== 'hang' || (tick.thNo.get(d.id) || 0) > tick.frame3) continue;
+          const rx = d.rack[0] * TS + 8, fx = d.from[0] * TS + 8, fy = (d.from[1] + 1) * TS; if (Math.abs(P.x - fx) > 10 * TS || Math.abs(P.y - fy) > 2 * TS) continue;
+          if (tick.thJob !== d.id) { tick.thJob = d.id; tick.thT = 0; } else if (++tick.thT > 900) { tick.thNo.set(d.id, tick.frame3 + 1200); tick.thJob = null; keys.up = false; continue; }
+          hold = 0; still = 0; tick.jumping = 0; keys.jump = false;
+          if (!WH.held(P)) { keys.up = false; if (Math.abs(P.x - rx) > 6) { keys.left = P.x > rx; keys.right = P.x < rx; return null; } keys.left = keys.right = false; if (P.ground && tick.thT % 15 === 0) BK.press('talk'); return null; }
+          if (Math.abs(P.x - fx) > 4) { keys.up = false; keys.left = P.x > fx; keys.right = P.x < fx; return null; }
+          keys.left = keys.right = false; P.face = d.face; keys.up = d.aim === 'high'; keys.down = d.aim === 'low'; if (P.ground && tick.thT % 20 === 10) BK.press('atk'); return null; }
+        if (tick.thJob) { tick.thJob = null; keys.up = false; keys.down = false; } } }
     // ---- THE ROOTWAY'S HOISTS (claude/rootway fix pass): a hoist is a machine on the way on, and the two things a player does at one. ----
     //   CUT THE CLEAT: an uncut hoist's cleat up to six tiles ahead (and no more than eight rows over his feet): walk to the tile before it, face it and
     //   swing - a JUMP and a swing when it is over his head (THE HIGH CLEAT, from its grown cap). STRIKE THE ARROW BACK: at an `arrow` hoist (THE LOOKOUT)
@@ -271,7 +283,7 @@ export function makeBot(BK, opts = {}) {   /* opts.fightThrough (claude/foepass)
       if (RWB && !P.swim && !(P.dead > 0) && !P.climb) {
         tick.rwNo = tick.rwNo || new Map(); tick.frame2 = (tick.frame2 || 0) + 1;
         const gd = Math.sign(goalX - P.x) || P.face || 1; let job = null, jd = 1e9;
-        for (const d of (L.hoists || [])) { if (d.boss) continue; const h = RWB.hoist(d.id); if (!h || h.state !== 'hang' || (tick.rwNo.get(d.id) || 0) > tick.frame2) continue;
+        for (const d of (L.hoists || [])) { if (d.boss || d.load === 'throw') continue; const h = RWB.hoist(d.id); if (!h || h.state !== 'hang' || (tick.rwNo.get(d.id) || 0) > tick.frame2) continue;
           const sx = d.arrow ? (d.span[0] - 1) * TS + 8 : d.cleat[0] * TS + 8 - gd * 14, dx = sx - P.x, top = (d.cleat[1] - 1) * TS;
           if (Math.abs(dx) > 6 * TS) continue;   /* (ahead or behind: the larder ties off three cleats in a row behind the pit) */
           if (d.arrow ? Math.abs((d.span[2]) * TS - P.y) > 2 * TS : (P.y - top > 9 * TS || top - P.y > TS)) continue;

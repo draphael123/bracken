@@ -4,6 +4,9 @@
 // arrow loosed at a drum is a beat; THE DRUMMER runs to his drum and beats it on his count, and the axemen in earshot SURGE; THE BERSERKER CHIEFTAIN wakes in the ring, a blade
 // on his walk lands x0.7, into TAKE IT x0.4 (and a held heavy breaks it), and a beat in his FRENZY opens him (x2); beaten in his own level he YIELDS - boss:warcairn and
 // THE CHIEFTAIN'S AXES are set. Frames are drawn throughout. No page error.
+// (claude/warcairn2) THE HATCHET with real keys: E at the shoulder's rack takes one, UP + ATTACK at the lip lobs it and the gorge's hauled bridge swings down (its row slate treads);
+// THE CHIEFTAIN 2: his thrown hatchet sticks, E takes it, ATTACK throws it back - he STAGGERS (open x2); in his FRENZY a blade does nothing (RING THE DRUM) until a drum is rung;
+// his HUD rage bar draws (frames drawn through it, no page error).
 //   PORT=<your port> node tools/warcairn-probe.mjs
 import { openPage } from './cdp.mjs';
 const pg = await openPage({ audio: false, fonts: false }); let bad = 0;
@@ -59,6 +62,30 @@ try {
     const WH=BK.warCairnHands(),P=BK.P,d1=BK.L.wcDrums.find(d=>d.id==='gully');BK.tp(d1.x-5,d1.f);P.vx=0;P.vy=0;P.face=1;BK.sim(10);const b0=WH.read().n.heroBeats;
     for(let i=0;i<120&&WH.read().n.heroBeats===b0;i++){if(P.atk<0&&!(i%20))BK.press('atk');BK.sim(1);}const n=WH.read().n;BK.manualSimulation=false;return {beats:n.heroBeats-b0,arrows:n.arrows};})()`, 60000);
   ok(q && q.beats >= 1, 'a RANGER\'s arrow loosed at a drum is a beat ' + JSON.stringify(q));
+  /* (claude/warcairn2) THE HATCHET, real keys */
+  const hx = await pg.evalp(`(async()=>{const {LEVELS}=await import('/src/level.js');BK.manualSimulation=true;const id=LEVELS.findIndex(l=>l.id==='warcairn');BK.setHero('knight');BK.reset({fresh:true});BK.load(id);BK.state='play';BK.god=true;BK.sim(20);
+    const WH=BK.warCairnHands(),P=BK.P,cell=(x,y)=>BK.L.grid[y*BK.L.W+x],out={};const r=BK.L.wcRacks.find(q=>q.id==='shoulder'),b=BK.L.wcCuts.find(c=>c.id==='gorge');
+    BK.tp(r.x,r.f);P.vx=0;P.vy=0;BK.sim(10);BK.press('talk');BK.sim(4);out.held=!!(P.carry&&P.carry.t==='wchatchet');out.before=cell(b.x0,b.y);
+    BK.tp(63,68);P.vx=0;P.vy=0;P.face=1;BK.sim(6);BK.keys.up=true;BK.sim(2);BK.press('atk');for(let i=0;i<150;i++){BK.sim(1);P.hp=P.maxHp;}BK.keys.up=false;
+    out.after=cell(b.x0,b.y);out.afterEnd=cell(b.x1,b.y);out.n=WH.read().hatchets.n;BK.manualSimulation=false;return out;})()`, 120000);
+  console.log(JSON.stringify(hx));
+  ok(hx.held, 'E at the shoulder\'s RACK: a hatchet in hand');
+  ok(hx.before === 0 && hx.after === 8 && hx.afterEnd === 8, 'UP + ATTACK at the lip: the hatchet cuts the rope and the GORGE BRIDGE swings down (' + hx.before + ' -> ' + hx.after + ')');
+  const bz = await pg.evalp(`(async()=>{const {LEVELS}=await import('/src/level.js');BK.manualSimulation=true;const id=LEVELS.findIndex(l=>l.id==='warcairn');BK.setHero('knight');BK.reset({fresh:true});BK.load(id);BK.state='play';BK.god=true;BK.sim(20);
+    const P=BK.P,A=BK.L.arena,out={};BK.tp(Math.floor(A.trigger/16)+1,Math.floor(A.floor/16)-1);for(let i=0;i<260;i++){BK.sim(1);P.hp=P.maxHp;}const b=BK.boss,BH=BK.bzchiefHands(),S=BH&&BH.show();if(!b||!S)return {none:true};
+    /* make him throw at the hero 150 px off, then take it and throw it back */
+    P.x=b.x-150;P.vx=0;b.face=-1;S.ward=0;S.frenzy=0;S.throwCd=0;S.axe=null;S.oneHand=false;b.mode='throwTell';b.modeT=0.01;let stuckAt=null;
+    for(let i=0;i<120;i++){BK.sim(1);P.hp=P.maxHp;if(S.axe&&!S.axe.fly){stuckAt={x:Math.round(S.axe.x),stick:+S.axe.stick.toFixed(2)};break;}}
+    out.stuck=stuckAt;if(stuckAt){P.x=S.axe.x;P.vx=0;BK.sim(2);BK.press('talk');BK.sim(3);out.taken=!!(P.carry&&P.carry.chief);out.oneHand=S.oneHand;
+      b.mode='walk';b.modeT=9;b.x=P.x+80;P.face=1;S.ward=0;BK.sim(1);BK.press('atk');let st=null;for(let i=0;i<60;i++){BK.sim(1);P.hp=P.maxHp;if(b.mode==='staggered'){st=b.mode;break;}}out.staggered=st;out.bar=BH.barName(b);}
+    /* his FRENZY: a blade does nothing (x0, told) */
+    for(let i=0;i<300;i++){BK.sim(1);P.hp=P.maxHp;}b.mode='walk';b.modeT=9;b.open=0;S.ward=0;S.frenzy=8;out.fz=BH.take(b,20,'light','light');out.fzWord=b.guardWord;
+    BK.manualSimulation=false;BK.sim(30);out.state=BK.state;return out;})()`, 120000);
+  console.log(JSON.stringify(bz));
+  ok(bz.stuck && bz.stuck.stick > 1, 'THE CHIEFTAIN\'s thrown hatchet STICKS in the floor ' + JSON.stringify(bz.stuck));
+  ok(bz.taken && bz.oneHand, 'E on it: the hero holds HIS hatchet (he is one-handed)');
+  ok(bz.staggered === 'staggered', 'ATTACK throws it back: it meets him and he STAGGERS (' + bz.bar + ')');
+  ok(bz.fz === 0 && bz.fzWord === 'RING THE DRUM', 'in his FRENZY a blade does nothing - told: ' + bz.fzWord);
   const errs = pg.errors; ok(!errs.length, 'no page error ' + errs.slice(0, 3).join(' | '));
 } catch (e) { console.log('  FAIL ' + e.message); bad++; }
 finally { await pg.close(); }

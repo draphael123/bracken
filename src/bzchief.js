@@ -22,21 +22,33 @@
 //   P3  30- 0% THE LAST RAGE      New: THE GROUND-SPLITTER (the floor splits both ways; the slab it cracks breaks on the next - the ring narrows). He TAKES A DRUM for each
 //                                 frenzy: walks to it (told), strikes it and frenzies at once - that drum burns red as HIS. Only THE OTHER drum breaks him.
 // WIN: THE CHIEFTAIN YIELDS (he kneels and offers his axes). PURE: no DOM, no main.js - the world is `c` (src/bzchief-hands.js binds it). bzcPlan is the lab's HUMAN bot.
+//
+// WAR CAIRN 2 (claude/warcairn2, Daniel 10-30 APPROVED, scratch/brief-warcairn2-1030.md section 3):
+//   D. THE HATCHET BACK - THE MAIN OPENING: his AXE THROW sticks in the floor BZC.throw.stick s (a gold ring, a timer: HIS HATCHET). E grabs it (the level's own verb, src/war-cairn-hatchets.js);
+//      ATTACK throws it back - if it meets him he STAGGERS: OPEN BZC.open.t s at x BZC.open.mul (capped BZC.open.cap), then the told ward. Not taken in time he TUGS it back on its thong
+//      (told, harmless); thrown and missed it sticks where it lands and the window runs again. While a hero holds it he is ONE-HANDED (slower chops, no cross-chop) - and the hero cannot swing.
+//      (This replaces the old walk-to-fetch: he never walks for it now.)
+//   E. FULL-RAGE FRENZY IS FULLY INVULNERABLE until a hero RINGS AN ARENA DRUM (Daniel 10-30: the SECOND resist-floor exception after the Crusader shield). Every blow on him clanks
+//      RING THE DRUM (x0, told - never silent, B10). It no longer burns out on a short clock: it holds until a drum is rung, with a safety cap of BZC.frenzy.max s. A beat: A above.
+//   F. HE FIGHTS LIKE THE BERSERKER HERO (Daniel 6 = A): a hero-style RAGE bar on his plate (src/bzchief-hands.js drawHud) and TAKE IT works as the hero's does - blows taken on his
+//      crossed axes are ABSORBED into rage, and when the stance drops having absorbed any he COUNTERS: a told cross-chop riposte (counterTell !!, dodge) that hits harder for each blow
+//      absorbed (BZC.counter). A heavy or a beat still breaks TAKE IT (he reels). A whiffed counter leaves his axes in the stone like any cross-chop.
 
 export const BZC = {
   hp: 2000, w: 16, h: 32, scale: 1.35, markH: 56,
-  heroHp: { knight: 1.95, warden: 1.7, geomancer: 0.6, ranger: 1.35, berserker: 0.6, pyro: 0.85, paladin: 1.0, pirate: 0.95, reaper: 1.0 },
+  heroHp: { knight: 2.24, warden: 1.96, geomancer: 0.69, ranger: 1.55, berserker: 0.69, pyro: 0.98, paladin: 1.15, pirate: 1.09, reaper: 1.15 },   /* (claude/warcairn2) x1.15 every row: the hatchet-back opening took him from ~53% to 83% with flasks; at x1.15 a 6-seed read is 69% (rough - the sonnet tune lane owns the band) */
   heroDmg: { knight: 1.15, warden: 1.15, geomancer: 0.8, ranger: 0.85, berserker: 0.95, pyro: 0.9, paladin: 1.0, pirate: 0.9, reaper: 1.0 },   /* TUNED 10-29 (PAGE+TUNE): 12 seeds x 6 heroes WITH flasks (campaign kit, human profile, L21) = 63% (kn 8/11, wa 7/12, ge 6/12, ra 7/12, be 8/12, py 9/12), avg win 129 s; dry (bare, 6 seeds) 56%. heroHp is the lever; heroDmg evens the knight/warden/geomancer */
   walk: 70, keep: 34, turn: 0.4, gap: [0.6, 0.5, 0.42],
   mul: { walk: 0.7, take: 0.4, committed: 1.0 },              /* B15: never under 0.4 outside an opening */
-  rage: { max: 100, land: 12, taken: 8, hit: 2, p2: 1.5, decay: 0 },
-  frenzy: { t: 6, takeMul: 1.25, heal: 0.02, healCap: 0.04, quick: 0.75, cry: 0.7 },   /* heal: of his max a blow of his that lands in a frenzy; healCap: of his max a frenzy */
+  rage: { max: 100, land: 16, taken: 10, hit: 4, p2: 1.5, decay: 0 },   /* (claude/warcairn2) quicker (12/8/2 -> 16/10/4): bot fights never reached a frenzy */
+  frenzy: { t: 6, max: 12, takeMul: 1.25, heal: 0.02, healCap: 0.04, quick: 0.75, cry: 0.7 },   /* heal: of his max a blow of his that lands in a frenzy; healCap: of his max a frenzy. (claude/warcairn2) max: the frenzy holds until a drum is rung - this is only its safety cap; t is kept for old readers */
+  counter: { tell: 0.55, per: 6, cap: 18 },                     /* (claude/warcairn2) TAKE IT's COUNTER: a cross-chop riposte, + per for each blow absorbed (cap) */
   open: { t: 3.0, mul: 2.0, cap: 0.15 }, stuck: { t: 1.2, mul: 1.5 }, wardT: 2.0, ward: { take: 0.4 }, reelT: 0.8,
   flurry: { tell: 0.5, beat: 0.2, t: 0.16, reach: 34, step: 110, dmg: 18, n: 4 },
   cross: { tell: 0.55, t: 0.22, reach: 38, dmg: 30 },
   double: { tell: 0.8, t: 0.26, reach: 40, dmg: 34 },
   take: { t: 1.2, beat: 0.22, heat: 2.4 },                      /* heat: blows into his walk that raise the stance (like the Paladin's ward) */
-  throw: { tell: 0.55, sp: 300, range: 260, dmg: 22, hy: 16, hr: 6, cd: 9, min: 90, one: 1.3, pull: 0.9, walk: 90 },   /* one: his chops' tells x this one-handed */
+  throw: { tell: 0.55, sp: 300, range: 260, dmg: 22, hy: 16, hr: 6, cd: 7, min: 60, one: 1.3, pull: 0.9, walk: 90, stick: 1.7, tug: 0.4, back: 24, past: 56 },   /* one: his chops' tells x this one-handed. (claude/warcairn2) stick: s it stands in the floor to be grabbed; tug: s it flies back on its thong; back: a thrown-back hatchet's blow */
   whirl: { tell: 0.45, t: 0.35, r: 46, dmg: 22, cd: 4, behind: 0.5 },
   pounce: { tell: 0.7, t: 0.45, v: 330, dmg: 30, land: 0.6, cd: 7, min: 70 },
   split: { tell: 1.05, t: 0.3, r: 26, dmg: 32, wave: 18, v: 190, life: 1.2, seg: 4 },
@@ -54,6 +66,7 @@ export const MOVES = {
   flurryTell: { mark: '!', answer: 'block' }, flurryBeat: { mark: '!', answer: 'block' }, crossTell: { mark: '!!', answer: 'dodge' }, doubleTell: { mark: '!!', answer: 'dodge' },
   throwTell: { mark: '!', answer: 'jump' }, whirlTell: { mark: '!', answer: 'dodge' }, coil: { mark: '!!', answer: 'jump' }, splitTell: { mark: '!!', answer: 'jump' },
   warcry: { mark: '', answer: '' }, drumWalk: { mark: '', answer: '' }, take: { mark: '', answer: '' },
+  counterTell: { mark: '!!', answer: 'dodge' },   /* (claude/warcairn2) TAKE IT's COUNTER: the riposte, the hero's own */
 };
 export const MOVE_NAME = { flurry: 'THE FLURRY', cross: 'THE CROSS-CHOP', double: 'THE DOUBLE CHOP', throw: 'THE AXE THROW', whirl: 'THE WHIRL', pounce: 'THE POUNCE',
   split: 'THE GROUND-SPLITTER', wave: 'THE SPLIT', };
@@ -62,6 +75,8 @@ export const BZC_SAY = {
   wake: 'THE BERSERKER CHIEFTAIN', rule: 'HE FIGHTS TO THE DRUMS: STRIKE ONE IN HIS FRENZY', take: 'HE TAKES IT: A HEAVY BLOW OR A BEAT BREAKS HIS GUARD', taken: 'ON HIS AXES: IT FEEDS HIS RAGE',
   reel: 'HIS GUARD BREAKS: HE REELS', parry: 'ON THE BEAT: HE PARRIES', frenzy: 'FRENZY: STRIKE A DRUM', broken: 'HE LOSES THE BEAT: STRIKE', ward: 'HE GATHERS HIMSELF: HE IS WARDED',
   stuck: 'HIS AXES ARE IN THE STONE', frenzyShort: 'FRENZY', burnsOut: 'HIS FRENZY BURNS OUT', forDrum: 'HE GOES FOR A DRUM', whirl: 'THE WHIRL: STAY OFF HIS BACK', cross: 'THE CROSS-CHOP: DODGE IT - A MISS LEAVES HIS AXES IN THE STONE', double: 'THE DOUBLE CHOP: OUT OF REACH', throw: 'THE AXE THROW: JUMP IT', pounce: 'THE POUNCE: JUMP OVER IT', split: 'THE GROUND-SPLITTER: JUMP THE SPLIT', beatReel: 'ON THE BEAT: HE REELS', notYet: 'HE IS WARDED: NOT YET', oneHand: 'ONE AXE: HE GOES FOR THE OTHER', knocked: 'KNOCKED OFF HIS AXE', p2: 'THE DRUMS BEAT FOR HIM: HIS RAGE RUNS', p3: 'THE LAST RAGE: HE TAKES A DRUM',
+  ringDrum: 'IN HIS FRENZY NOTHING TOUCHES HIM: RING A DRUM', ringShort: 'RING THE DRUM', counter: 'HE TOOK IT: THE COUNTER', axeStuck: 'HIS HATCHET: E TAKES IT, THROW IT BACK',
+  staggered: 'HIS OWN HATCHET: HE STAGGERS', tug: 'HE TUGS IT BACK', axeHeld: 'ONE AXE IN HIS HAND',
   hisDrum: 'HIS DRUM: STRIKE THE OTHER', ownTime: 'HE KEEPS HIS OWN TIME: WAIT FOR HIS FRENZY', yields: 'THE CHIEFTAIN YIELDS', winOwned: 'HIS AXES ARE YOURS', winNew: 'THE BERSERKER WILL FIGHT FOR YOU - 10 SILVER IN THE STORE', cracked: 'THE SLAB CRACKS', breaks: 'THE SLAB BREAKS AWAY',
 };
 const STRIKE = new Set(['flurry', 'cross', 'double', 'throw', 'whirl', 'pounce', 'split']);
@@ -80,7 +95,8 @@ export const BZC_POSES = [['idle', 0], ['run', 0], ['run', 2], ['run', 4],
   ['bzCoil', 0], ['bzPounce', 0], ['bzPLand', 0],                         /* 18-20 THE POUNCE */
   ['bzWind3', 0], ['bzTier3', 2],                                         /* 21,22 THE GROUND-SPLITTER */
   ['bzRoar', 0], ['blast', 0],                                            /* 23,24 THE WAR CRY / the frenzy's stamp */
-  ['slump', 0], ['slump', 1], ['hurt', 0]];                               /* 25 broken (he loses the beat) | 26 he yields | 27 hurt */
+  ['slump', 0], ['slump', 1], ['hurt', 0],                                /* 25 broken (he loses the beat) | 26 he yields | 27 hurt */
+  ['bzShrug', 0]];                                                        /* 28 (claude/warcairn2) TAKE IT's COUNTER windup: he shrugs off what he took (its release: the cross-chop, 9) */
 export const BZC_IDX = { broken: 25, yield: 26, hurt: 27 };
 export function bzcFrame(e) {
   switch (e.mode) {
@@ -88,6 +104,8 @@ export function bzcFrame(e) {
     case 'crossTell': return 8; case 'cross': return 9; case 'stuck': return 11;
     case 'doubleTell': return 10; case 'double': return 11;
     case 'take': return e.takeHitT > 0 ? 13 : 12;
+    case 'counterTell': return 28;   /* (claude/warcairn2) the counter's windup: he shrugs off the blows he took (its release is the cross-chop, 9) */
+    case 'staggered': return 27;     /* (claude/warcairn2) his own hatchet in him: the hurt pose (the art lane: the hatchet in his shoulder) */
     case 'throwTell': return 14; case 'throw': return 15;
     case 'whirlTell': return 16; case 'whirl': return 17;
     case 'coil': return 18; case 'pounce': return 19; case 'land': return 20;
@@ -117,18 +135,19 @@ export function newFight(G) {
     oneHand: false, axe: null, knocked: false, heat: 0, throwCd: 3, whirlCd: 0, pounceCd: 2, hisDrum: null, waves: [], told: {}, lastRage: 0,
     cracked: [0, 0],   /* per outer slab: 0 whole, 1 cracked, 2 broken */
     n: { cycles: 0, frenzies: 0, breaks: 0, stucks: 0, reels: 0, parries: 0, takes: 0, takenOn: 0, landed: 0, warded: 0, walked: 0, flurries: 0, chops: 0, crosses: 0, doubles: 0,
-      throws: 0, fetches: 0, knocks: 0, whirls: 0, pounces: 0, splits: 0, drumWalks: 0, beatsIdle: 0, beatsHis: 0, heal: 0, moves: {} } };
+      throws: 0, fetches: 0, knocks: 0, whirls: 0, pounces: 0, splits: 0, drumWalks: 0, beatsIdle: 0, beatsHis: 0, heal: 0, moves: {},
+      grabs: 0, backs: 0, staggers: 0, tugs: 0, counters: 0, frenzyTurned: 0 } };   /* (claude/warcairn2) the hatchet back, the tug, TAKE IT's counter, blows his frenzy turned */
 }
 export const pPhase = e => (e.hp <= e.maxHp * BZC.p3 ? 3 : e.hp <= e.maxHp * BZC.p2 ? 2 : 1);
-export const bzcOpen = e => !!e && ((e.mode === 'broken' && (e.open || 0) > 0) || (e.mode === 'stuck' && (e.open || 0) > 0));
+export const bzcOpen = e => !!e && ((e.mode === 'broken' || e.mode === 'stuck' || e.mode === 'staggered') && (e.open || 0) > 0);
 export const frenzied = S => (S.frenzy || 0) > 0;
 const nextScript = S => { const set = CYCLES[S.ph]; return set[S.cycle % set.length].slice(); };
 function setMode(e, m, t) { e.mode = m; e.modeT = t; }
 const clampX = (G, x) => Math.max(G.x0 + 18, Math.min(G.x1 - 18, x));
 const quick = S => (frenzied(S) ? BZC.frenzy.quick : 1) * (S.oneHand ? BZC.throw.one : 1);
 function tell(e, S, c, mode, t) { setMode(e, mode, t); S.act++; S.n.moves[mode] = (S.n.moves[mode] || 0) + 1; const mv = MOVES[mode]; if (mv && mv.mark) c.mark(mv.mark); c.sound(mv && mv.mark === '!!' ? 'tellHard' : mv && mv.mark ? 'tell' : 'growl'); }
-function addRage(e, S, c, n) { if (frenzied(S) || !(n > 0)) return; const k = S.ph >= 2 ? BZC.rage.p2 : 1; S.rage = Math.min(BZC.rage.max, S.rage + n * k); }
-function startFrenzy(e, S, c) { S.frenzy = BZC.frenzy.t; S.rage = 0; S.healed = 0; S.n.frenzies++; c.sound('roar'); c.shake(5); c.fx('frenzy', e.x, e.y); c.drums('answer');
+function addRage(e, S, c, n) { if (frenzied(S) || !(n > 0)) return; const k = S.ph >= 2 ? BZC.rage.p2 : 1; S.rage = Math.min(BZC.rage.max, S.rage + n * k); const W = globalThis.__bzcWhy; if (W) { const q = '#rageP' + S.ph; W[q] = Math.max(W[q] || 0, Math.round(S.rage)); } }
+function startFrenzy(e, S, c) { if (globalThis.__bzcWhy) globalThis.__bzcWhy['#frenzy'] = (globalThis.__bzcWhy['#frenzy'] || 0) + 1; S.frenzy = BZC.frenzy.max; S.rage = 0; S.healed = 0; S.n.frenzies++; c.sound('roar'); c.shake(5); c.fx('frenzy', e.x, e.y); c.drums('answer');
   c.number(e.x, e.y - 84, S.told.frenzy ? BZC_SAY.frenzyShort : BZC_SAY.frenzy, '#ff6b6b'); S.told.frenzy = 1; }
 function endWard(e, S, c) { S.ward = BZC.wardT; S.openTaken = 0; c.fx('ward', e.x, e.y); c.sound('growl'); c.number(e.x, e.y - 80, BZC_SAY.ward, '#c8b8a8'); }
 
@@ -140,11 +159,13 @@ export function blowOn(e, S, c, dmg, heavy, fromX) {
   const fz = frenzied(S) ? BZC.frenzy.takeMul : 1;
   if (bzcOpen(e)) { const mul = e.mode === 'stuck' ? BZC.stuck.mul : BZC.open.mul, cap = e.maxHp * BZC.open.cap - S.openTaken;
     const d = Math.max(0, Math.min(Math.round(dmg * mul * fz), Math.round(cap))); S.openTaken += d; return { dmg: Math.max(1, d), read: 'open' }; }
+  /* (claude/warcairn2) E. FULL-RAGE FRENZY: NOTHING touches him until a drum is rung (Daniel 10-30: the second resist-floor exception) - told every time, never silent */
+  if (frenzied(S)) { S.n.frenzyTurned++; if (!S.told.ringDrum || S.n.frenzyTurned % 5 === 0) { S.told.ringDrum = 1; c.number(e.x, e.y - 80, BZC_SAY.ringDrum, '#ffd36b'); } return { dmg: 0, read: 'frenzy' }; }
   if (S.ward > 0) { S.n.warded++; return { dmg: Math.max(1, Math.round(dmg * BZC.ward.take)), read: 'ward' }; }
   if (e.mode === 'take') { const front = Math.sign(fromX - e.x) === (e.face || 1);
     if (heavy) { reel(e, S, c, 'heavy'); return { dmg: Math.round(dmg * fz), read: 'reel' }; }
     if (front && e.modeT > BZC.take.t - BZC.take.beat) { S.n.parries++; S.nextCross = true; setMode(e, 'recover', 0.3); c.number(e.x, e.y - 74, BZC_SAY.parry, '#ffd36b'); c.sound('clank'); return { dmg: Math.max(1, Math.round(dmg * BZC.mul.take)), read: 'parry' }; }   /* (B15: even his parry lets x0.4 through - nothing is ever wholly turned) */
-    if (front) { S.n.takenOn++; addRage(e, S, c, BZC.rage.taken); e.takeHitT = 0.2; if (!S.told.taken || S.n.takenOn % 6 === 0) { S.told.taken = 1; c.number(e.x, e.y - 70, BZC_SAY.taken, '#ff9a5c'); }
+    if (front) { S.n.takenOn++; S.absorbed = (S.absorbed || 0) + 1; addRage(e, S, c, BZC.rage.taken);   /* (claude/warcairn2) ABSORBED: the counter comes when the stance drops */ e.takeHitT = 0.2; if (!S.told.taken || S.n.takenOn % 6 === 0) { S.told.taken = 1; c.number(e.x, e.y - 70, BZC_SAY.taken, '#ff9a5c'); }
       return { dmg: Math.max(1, Math.round(dmg * BZC.mul.take)), read: 'take' }; }
     return { dmg: Math.round(dmg * fz), read: 'landed' }; }
   addRage(e, S, c, BZC.rage.hit);
@@ -164,13 +185,32 @@ export function blowTurned(e, S, c, perfect) { if (!e || !e.alive) return; if (e
 function reel(e, S, c, why) { S.n.reels++; setMode(e, 'reel', BZC.reelT); e.vx = 0; S.heat = 0; c.number(e.x, e.y - 74, BZC_SAY.reel, '#8fd160'); c.sound('crack'); c.shake(3); }
 function stuck(e, S, c) { if (S.ward > 0) { setMode(e, 'recover', 0.6); return; } S.n.stucks++; setMode(e, 'stuck', BZC.stuck.t); e.open = BZC.stuck.t; S.openTaken = 0; c.shake(4); c.sound('crack'); c.fx('stuck', e.x + (e.face || 1) * 20, S.G.floorY);
   c.number(e.x, e.y - 80, BZC_SAY.stuck, '#ffd36b'); }
+/* ---------- (claude/warcairn2) D. HIS HATCHET: grabbed, thrown back, dropped ---------- */
+/* is it standing in the floor to be taken? */
+export const axeGrabbable = S => !!(S && S.axe && !S.axe.fly && !S.axe.taken && !(S.axe.tug > 0) && S.axe.stick > 0);
+/* E on it: a hero has it (he stays one-handed) */
+export function grabAxe(e, S, c) { if (!axeGrabbable(S)) return false; S.axe.taken = true; S.n.grabs++; if (globalThis.__bzcWhy) globalThis.__bzcWhy['#grab'] = (globalThis.__bzcWhy['#grab'] || 0) + 1; if (!S.told.axeHeld) { S.told.axeHeld = 1; c.number(e.x, e.y - 74, BZC_SAY.axeHeld, '#ffd36b'); } return true; }
+/* it MET HIM: he staggers (unless his frenzy holds - the drum is the answer to that - or he is warded). The hatchet is his again either way. Returns the read */
+export function axeBack(e, S, c) {
+  if (!e || !e.alive || e.mode === 'yield') return 'none';
+  S.axe = null; S.oneHand = false; S.n.backs++; const W = globalThis.__bzcWhy, tally = k => { if (W) W[k] = (W[k] || 0) + 1; }; tally(frenzied(S) ? '#back-frenzy' : S.ward > 0 || bzcOpen(e) ? '#back-ward' : '#stagger');
+  if (frenzied(S)) { c.number(e.x, e.y - 80, BZC_SAY.ringShort, '#ffd36b'); c.sound('clank'); return 'frenzy'; }
+  if (S.ward > 0 || bzcOpen(e)) { c.number(e.x, e.y - 80, BZC_SAY.notYet, '#c8b8a8'); c.sound('clank'); return 'ward'; }
+  S.n.staggers++; S.chainLeft = 0; S.waves = []; e.lift = 0; S.openTaken = 0; S.absorbed = 0; setMode(e, 'staggered', BZC.open.t + 0.05); e.open = BZC.open.t; e.vx = 0;
+  c.fx('open', e.x, e.y); c.sound('crack'); c.shake(5); c.number(e.x, e.y - 84, BZC_SAY.staggered, '#8fd160'); return 'stagger';
+}
+/* it came to rest somewhere (thrown and missed, set down, knocked from a hero's hand): it sticks there and the window runs again. x null: it is lost (off the ring) - it is back in his hand */
+export function axeDropped(e, S, c, x) {
+  if (!S) return; if (x == null || !e || !e.alive) { S.axe = null; S.oneHand = false; return; }
+  const G = S.G, lo = G.x0 + 14 + (S.cracked[0] >= 2 ? (BZC_STAGE.slabs[0][1] + 1) * G.TS : 0), hi = G.x1 - 14 - (S.cracked[1] >= 2 ? (BZC_STAGE.W - BZC_STAGE.slabs[1][0]) * G.TS : 0); S.axe = { x: Math.max(lo, Math.min(hi, x)), x0: x, y: G.floorY - 2, dir: 1, act: S.act, fly: false, t: 0, stick: BZC.throw.stick, taken: false, tug: 0 }; S.oneHand = true;
+}
 /* A BEAT (src/war-cairn-hands.js): a war drum struck. by: 'hero' | 'boss'. Returns what it did to him: 'break' (A), 'reel' (C), 'his' (his own drum in P3), 'idle' */
 export function beatOn(e, S, c, drumId, by) {
   if (!e || !e.alive || e.mode === 'sleep' || e.mode === 'wake' || e.mode === 'yield' || by !== 'hero') return 'idle';
   if (S.hisDrum && drumId === S.hisDrum) { S.n.beatsHis++; c.number(e.x, e.y - 80, BZC_SAY.hisDrum, '#ff6b6b'); return 'his'; }
   if (e.mode === 'take') { reel(e, S, c, 'beat'); return 'reel'; }
   if (frenzied(S) && !bzcOpen(e)) { if (S.ward > 0) { c.number(e.x, e.y - 80, BZC_SAY.notYet, '#c8b8a8'); return 'ward'; }
-    S.frenzy = 0; S.n.breaks++; S.chainLeft = 0; S.waves = []; e.lift = 0; S.openTaken = 0; setMode(e, 'broken', BZC.open.t + 0.05); e.open = BZC.open.t; e.vx = 0;
+    S.frenzy = 0; S.n.breaks++; if (globalThis.__bzcWhy) globalThis.__bzcWhy['#break'] = (globalThis.__bzcWhy['#break'] || 0) + 1; S.chainLeft = 0; S.waves = []; e.lift = 0; S.openTaken = 0; setMode(e, 'broken', BZC.open.t + 0.05); e.open = BZC.open.t; e.vx = 0;
     c.fx('open', e.x, e.y); c.sound('crack'); c.shake(5); c.number(e.x, e.y - 84, BZC_SAY.broken, '#8fd160'); return 'break'; }
   S.n.beatsIdle++; if (!S.told.ownTime) { S.told.ownTime = 1; c.number(e.x, e.y - 80, BZC_SAY.ownTime, '#c8b8a8'); }
   return 'idle';
@@ -206,10 +246,14 @@ export function stepChief(e, S, dt, h, c) {
     if (back) { S.behindT += dt; if (S.behindT > BZC.whirl.behind) { S.behindT = 0; S.whirlCd = BZC.whirl.cd; S.n.whirls++; tell(e, S, c, 'whirlTell', BZC.whirl.tell * quick(S)); if (!S.told.whirl) { S.told.whirl = 1; c.number(e.x, e.y - 80, BZC_SAY.whirl, '#ffd36b'); } return; } } }
   switch (e.mode) {
     case 'broken': e.vx = 0; if (e.open <= 0) { endWard(e, S, c); setMode(e, 'recover', 0.4); } return;   /* B4: on his knees, still */
+    case 'staggered': e.vx = 0; if (e.open <= 0) { endWard(e, S, c); setMode(e, 'recover', 0.4); } return;   /* (claude/warcairn2) his own hatchet: reeling where he stands */
     case 'stuck': e.vx = 0; if (e.open <= 0) { endWard(e, S, c); setMode(e, 'recover', 0.35); } return;
     case 'recover': e.vx = 0; if (e.modeT <= 0) nextMove(e, S, P, h, c); return;
     case 'reel': e.vx = 0; if (e.modeT <= 0) setMode(e, 'recover', 0.25); return;
-    case 'take': e.vx = 0; if (e.modeT <= 0) setMode(e, 'recover', 0.2); return;
+    case 'take': e.vx = 0; if (e.modeT <= 0) {   /* (claude/warcairn2) THE STANCE DROPS: having absorbed any blow, he COUNTERS (the hero's riposte) */
+        if ((S.absorbed || 0) > 0 && !S.oneHand) { S.counterN = S.absorbed; S.absorbed = 0; S.n.counters++; e.face = Math.sign(P.x - e.x) || e.face; tell(e, S, c, 'counterTell', BZC.counter.tell * (frenzied(S) ? BZC.frenzy.quick : 1));
+          if (!S.told.counter || S.n.counters % 4 === 0) { S.told.counter = 1; c.number(e.x, e.y - 74, BZC_SAY.counter, '#ff6b6b'); } return; }
+        S.absorbed = 0; setMode(e, 'recover', 0.2); } return;
     case 'warcry': e.vx = 0; if (e.modeT <= 0) { if (!S.cryOnly) startFrenzy(e, S, c); S.cryOnly = false; setMode(e, 'recover', 0.3); } return;
     case 'drumWalk': { const d = (c.drumsAt() || []).find(q => q.id === S.walkTo); if (!d) { setMode(e, 'walk', 0.3); return; }
       const dd = d.x - e.x; e.face = Math.sign(dd) || e.face; if (Math.abs(dd) > BZC.drumWalk.near) { const x0 = e.x; e.x = clampX(G, e.x + Math.sign(dd) * BZC.walk * 1.3 * dt); e.vx = (e.x - x0) / Math.max(1e-6, dt); if (e.modeT <= 0) { S.cryOnly = false; tell(e, S, c, 'warcry', BZC.frenzy.cry); } return; }
@@ -223,7 +267,7 @@ export function stepChief(e, S, dt, h, c) {
       if ((e.face || 1) * d < -8) { S.turnT = (S.turnT || 0) + dt; if (S.turnT > BZC.turn) { e.face = Math.sign(d) || e.face; S.turnT = 0; } } else S.turnT = 0;
       const x0 = e.x; if (Math.abs(d) > BZC.keep + 6) e.x = clampX(G, e.x + Math.sign(d) * BZC.walk * (frenzied(S) ? 1.3 : 1) * dt); e.vx = (e.x - x0) / Math.max(1e-6, dt);
       /* PRESSED (blows into his walk), he TAKES IT: the stance (told: the crossed axes and a growl) */
-      if (S.heat >= BZC.take.heat && Math.abs(d) < 70 && !frenzied(S)) { S.heat = 0; S.n.takes++; tell(e, S, c, 'take', BZC.take.t); e.vx = 0; e.face = Math.sign(d) || e.face;
+      if (S.heat >= BZC.take.heat && Math.abs(d) < 70 && !frenzied(S)) { S.heat = 0; S.n.takes++; S.absorbed = 0; tell(e, S, c, 'take', BZC.take.t); e.vx = 0; e.face = Math.sign(d) || e.face;
         if (!S.told.take) { S.told.take = 1; c.number(e.x, e.y - 74, BZC_SAY.take, '#ffd36b'); } return; }
       if (e.modeT <= 0) nextMove(e, S, P, h, c); return; }
   }
@@ -236,20 +280,20 @@ function nextMove(e, S, P, h, c) {
   const dx = P.x - e.x, ad = Math.abs(dx), G = S.G;
   e.face = Math.sign(dx) || e.face;
   /* ONE-HANDED: he goes for his hatchet first, a while into it (the walk is your window) */
-  if (S.oneHand && S.axe && (S.axe.t || 0) > 1.2) { S.n.fetches++; setMode(e, 'fetch', 9); e.pulling = false; if (!S.told.fetch) { S.told.fetch = 1; c.number(e.x, e.y - 74, BZC_SAY.oneHand, '#ffd36b'); } return; }
+  /* (claude/warcairn2) he no longer walks to fetch it: it stands in the floor BZC.throw.stick s for a hero to take, then he tugs it back on its thong (stepWorld) */
   if (S.nextCross && !S.oneHand) { S.nextCross = false; if (ad < BZC.cross.reach + 40) { S.n.crosses++; tell(e, S, c, 'crossTell', BZC.cross.tell * quick(S)); return; } }
   if (!S.script || S.step >= S.script.length) { S.cycle++; S.n.cycles++; S.script = nextScript(S); S.step = 0; }
   let m = S.script[S.step++];
-  if (m === 'throw' && (S.throwCd > 0 || ad < BZC.throw.min || S.oneHand)) m = 'flurry';
+  if (m === 'throw' && (S.throwCd > 0 || ad < BZC.throw.min || S.oneHand || S.axe)) m = 'flurry';
   if (m === 'cross' && S.oneHand) m = 'flurry';
   if (m === 'pounce' && (S.pounceCd > 0 || ad < BZC.pounce.min)) m = ad > BZC.flurry.reach + 50 ? 'pounce' : 'flurry';
   if (m === 'pounce' && S.pounceCd > 0) m = 'flurry';
-  if ((m === 'flurry' || m === 'cross' || m === 'double') && ad > BZC.flurry.reach + 46) { if (S.throwCd <= 0 && ad >= BZC.throw.min && !S.oneHand) m = 'throw'; else if (S.ph >= 2 && S.pounceCd <= 0 && ad >= BZC.pounce.min) m = 'pounce'; else { setMode(e, 'walk', 0.45); S.step--; return; } }
+  if ((m === 'flurry' || m === 'cross' || m === 'double') && ad > BZC.flurry.reach + 46) { if (S.throwCd <= 0 && ad >= BZC.throw.min && !S.oneHand && !S.axe) m = 'throw'; else if (S.ph >= 2 && S.pounceCd <= 0 && ad >= BZC.pounce.min) m = 'pounce'; else { setMode(e, 'walk', 0.45); S.step--; return; } }
   switch (m) {
     case 'flurry': S.chainLeft = BZC.flurry.n; S.whiffed = false; S.n.flurries++; e.left = true; tell(e, S, c, 'flurryTell', BZC.flurry.tell * quick(S)); return;
     case 'cross': S.n.crosses++; tell(e, S, c, 'crossTell', BZC.cross.tell * quick(S)); if (!S.told.cross) { S.told.cross = 1; c.number(e.x, e.y - 74, BZC_SAY.cross, '#ff6b6b'); } return;
     case 'double': S.n.doubles++; tell(e, S, c, 'doubleTell', BZC.double.tell * (frenzied(S) ? BZC.frenzy.quick : 1)); if (!S.told.double) { S.told.double = 1; c.number(e.x, e.y - 74, BZC_SAY.double, '#ff6b6b'); } return;
-    case 'throw': S.n.throws++; S.throwCd = BZC.throw.cd; tell(e, S, c, 'throwTell', BZC.throw.tell); if (!S.told.throw) { S.told.throw = 1; c.number(e.x, e.y - 74, BZC_SAY.throw, '#ffd36b'); } return;
+    case 'throw': S.n.throws++; if (globalThis.__bzcWhy) globalThis.__bzcWhy['#throw'] = (globalThis.__bzcWhy['#throw'] || 0) + 1; S.throwCd = BZC.throw.cd; tell(e, S, c, 'throwTell', BZC.throw.tell); if (!S.told.throw) { S.told.throw = 1; c.number(e.x, e.y - 74, BZC_SAY.throw, '#ffd36b'); } return;
     case 'pounce': S.n.pounces++; S.pounceCd = BZC.pounce.cd; addRage(e, S, c, 4); tell(e, S, c, 'coil', BZC.pounce.tell); S.leapX = clampX(G, P.x); if (!S.told.pounce) { S.told.pounce = 1; c.number(e.x, e.y - 80, BZC_SAY.pounce, '#ff6b6b'); } return;
     case 'split': S.n.splits++; tell(e, S, c, 'splitTell', BZC.split.tell); if (!S.told.split) { S.told.split = 1; c.number(e.x, e.y - 80, BZC_SAY.split, '#ff6b6b'); } return;
   }
@@ -274,12 +318,13 @@ function stepMove(e, S, dt, P, h, c) {
         if (S.chainLeft > 0) { e.face = Math.sign(P.x - e.x) || f; e.left = !e.left; tell(e, S, c, 'flurryBeat', BZC.flurry.beat * quick(S)); return; }
         if (!S.oneHand) { S.n.crosses++; tell(e, S, c, 'crossTell', BZC.cross.tell * quick(S)); return; }
         after(); } return; }
+    case 'counterTell': if (e.modeT <= 0) { e.face = Math.sign(P.x - e.x) || f; setMode(e, 'cross', BZC.cross.t); S.crossHit = false; S.counterBonus = Math.min(BZC.counter.cap, BZC.counter.per * (S.counterN || 1)); S.counterN = 0; c.sound('slam'); } return;   /* (claude/warcairn2) THE COUNTER: the cross-chop, harder for what he took */
     case 'crossTell': if (e.modeT <= 0) { e.face = Math.sign(P.x - e.x) || f; setMode(e, 'cross', BZC.cross.t); S.crossHit = false; c.sound('slam'); } return;
-    case 'cross': { if (land(front(BZC.cross.reach), BZC.cross.dmg, MOVE_NAME.cross, { key: 'cx' + S.act })) S.crossHit = true;
-      if (e.mode === 'cross' && e.modeT <= 0) { if (!S.crossHit) stuck(e, S, c); else after(0.45); } return; }
+    case 'cross': { if (land(front(BZC.cross.reach), BZC.cross.dmg + (S.counterBonus || 0), MOVE_NAME.cross, { key: 'cx' + S.act })) S.crossHit = true;
+      if (e.mode === 'cross' && e.modeT <= 0) { S.counterBonus = 0; if (!S.crossHit) stuck(e, S, c); else after(0.45); } return; }
     case 'doubleTell': if (e.modeT <= 0) { setMode(e, 'double', BZC.double.t); c.sound('slam'); c.shake(4); c.fx('chop', e.x + f * 24, G.floorY); } return;
     case 'double': land(front(BZC.double.reach, 40), BZC.double.dmg, MOVE_NAME.double, { key: 'dc' + S.act }); if (e.mode === 'double' && e.modeT <= 0) after(0.65); return;
-    case 'throwTell': if (e.modeT <= 0) { e.face = Math.sign(P.x - e.x) || f; setMode(e, 'throw', 0.25); S.axe = { x: e.x + e.face * 12, x0: e.x, y: G.floorY - BZC.throw.hy, dir: e.face, act: S.act, fly: true, t: 0 }; S.oneHand = true; S.knocked = false; c.sound('throw'); } return;
+    case 'throwTell': if (e.modeT <= 0) { e.face = Math.sign(P.x - e.x) || f; setMode(e, 'throw', 0.25); S.axe = { x: e.x + e.face * 12, x0: e.x, y: G.floorY - BZC.throw.hy, dir: e.face, act: S.act, fly: true, t: 0, stick: 0, taken: false, tug: 0 }; S.oneHand = true; S.knocked = false; c.sound('throw'); } return;
     case 'throw': if (e.modeT <= 0) after(0.35); return;
     case 'whirlTell': if (e.modeT <= 0) { setMode(e, 'whirl', BZC.whirl.t); c.sound('slash'); } return;
     case 'whirl': { const r = BZC.whirl.r; land([e.x - r, e.x + r, e.y - 34, e.y], BZC.whirl.dmg, MOVE_NAME.whirl, { blockable: true, key: 'wh' + S.act + (e.modeT > BZC.whirl.t / 2 ? 'a' : 'b') });
@@ -304,11 +349,17 @@ function crackSlab(e, S, c) { let i = (e.face || 1) > 0 ? 1 : 0; if (S.cracked[i
 /* HIS THINGS IN THE ROOM: the hatchet in flight (it sticks in the floor where it comes down), the split running the floor */
 function stepWorld(e, S, dt, h, c) {
   const G = S.G, T = BZC.throw, a = S.axe;
-  if (a && a.fly) { a.x += a.dir * T.sp * dt; const out = Math.abs(a.x - a.x0) > T.range || a.x < G.x0 + 10 || a.x > G.x1 - 10;
+  const nearH = h.filter(q => q.alive).sort((p, q) => Math.abs(p.x - (a ? a.x : 0)) - Math.abs(q.x - (a ? a.x : 0)))[0];
+  const lo = G.x0 + 10 + (S.cracked[0] >= 2 ? (BZC_STAGE.slabs[0][1] + 1) * G.TS : 0), hi = G.x1 - 10 - (S.cracked[1] >= 2 ? (BZC_STAGE.W - BZC_STAGE.slabs[1][0]) * G.TS : 0);   /* (claude/warcairn2) never on a broken slab */
+  if (a && a.fly) { a.x += a.dir * T.sp * dt; const out = Math.abs(a.x - a.x0) > T.range || a.x < lo || a.x > hi || (nearH && (a.x - nearH.x) * a.dir > T.past);   /* (claude/warcairn2) it comes down at most T.past px past the hero it was thrown at: in reach of the grab */
     const hitIt = !out && c.hit([a.x - T.hr - 4, a.x + T.hr + 4, a.y - T.hr, a.y + T.hr], T.dmg, MOVE_NAME.throw, { blockable: true, key: 'ax' + a.act, noKnock: true });
     if (hitIt) blowLanded(e, S, c, T.dmg);
-    if (out || hitIt) { a.fly = false; a.x = Math.max(G.x0 + 14, Math.min(G.x1 - 14, a.x)); a.y = G.floorY - 2; c.sound('clank'); } }
+    if (out || hitIt) { a.fly = false; a.x = Math.max(lo + 4, Math.min(hi - 4, a.x)); a.y = G.floorY - 2; a.stick = BZC.throw.stick; c.sound('clank');
+      if (!S.told.axeStuck) { S.told.axeStuck = 1; c.number(a.x, a.y - 30, BZC_SAY.axeStuck, '#ffd36b'); } } }
   if (a && !a.fly) a.t = (a.t || 0) + dt;
+  /* (claude/warcairn2) IT STANDS IN THE FLOOR BZC.throw.stick s - then, if no hero took it, he TUGS it back on its thong (told, harmless) */
+  if (a && !a.fly && !a.taken) { if (a.tug > 0) { a.tug -= dt; a.x += (e.x - a.x) * Math.min(1, dt * 9); a.y += (e.y - 30 - a.y) * Math.min(1, dt * 9); if (a.tug <= 0) { S.axe = null; S.oneHand = false; c.sound('clank'); } }
+    else if ((a.stick -= dt) <= 0 && e.mode !== 'yield') { a.tug = BZC.throw.tug; S.n.tugs++; if (!S.told.tug) { S.told.tug = 1; c.number(e.x, e.y - 74, BZC_SAY.tug, '#c8b8a8'); } } }
   for (const w of S.waves) { w.life -= dt; w.x += w.dir * w.v * dt; if (w.x < G.x0 + 4 || w.x > G.x1 - 4) w.life = 0;
     if (w.life > 0) c.hit([w.x - 6, w.x + 6, G.floorY - 14, G.floorY + 2], w.dmg, w.name, { key: w.key, noKnock: true }); }
   S.waves = S.waves.filter(w => w.life > 0);
@@ -319,11 +370,12 @@ function stepWorld(e, S, dt, h, c) {
    rolls or backs off the cross-chop, the double chop and the whirl, jumps the hatchet, the pounce and the split; it never stands at his back long; it does NOT swing
    into TAKE IT (a light blow feeds him) - it waits it out or goes round. THE RULE: when he FRENZIES it runs to the nearest drum that is not his and strikes it
    (any blow on it is a beat: a swing facing it), then hits him hard while he is broken. It hits him while he is committed (recoveries, a reel, the fetch, a landing, stuck).
-   s = { P: { x, y, face, ground, atk }, e, S, drums: [{ id, x, spent, his }], reach, shield, t, rng, mem, v2, hero, rest } -> { gx, face, atk, jump, dodge, block, why } */
+   s = { P: { x, y, face, ground, atk }, e, S, drums: [{ id, x, spent, his }], reach, shield, t, rng, mem, v2, hero, rest, holding (his hatchet in hand), carry (anything in hand) }
+     -> { gx, face, atk, jump, dodge, block, talk (E: take his hatchet), why } */
 export const PLAN = { react: 0.25, miss: 0.12, poke: 0.5 };
 export function bzcPlan(s) { const o = bzcPlan0(s); if (globalThis.__bzcWhy) { const k = o.why; globalThis.__bzcWhy[k] = (globalThis.__bzcWhy[k] || 0) + 1; } return o; }
 function bzcPlan0(s) {
-  const { P, e, S, reach } = s, G = S.G, out = { gx: null, face: P.face, atk: false, jump: false, dodge: false, block: false, up: false, down: false, why: '' };
+  const { P, e, S, reach } = s, G = S.G, out = { gx: null, face: P.face, atk: false, jump: false, dodge: false, block: false, up: false, down: false, talk: false, why: '' };
   const mem = s.mem || {}, rng = s.rng || Math.random, t = s.t || 0;
   mem.seen = mem.seen || new Map(); mem.roll = mem.roll || new Map(); if (mem.seen.size > 600) { mem.seen.clear(); mem.roll.clear(); }
   const seenFor = (key, d = s.v2 ? 0 : PLAN.react) => { if (!mem.seen.has(key)) mem.seen.set(key, t); return t - mem.seen.get(key) >= d; };
@@ -342,7 +394,7 @@ function bzcPlan0(s) {
     if (seen && !miss) {
       if ((e.mode === 'coil' || e.mode === 'pounce') && dx < 150 && same) { if (e.mode === 'pounce' || e.modeT < 0.16) { out.jump = P.ground; out.gx = clamp(P.x + side * 10); out.why = 'jump the pounce'; return out; } out.gx = P.x; out.why = 'wait for the pounce'; return out; }
       if ((e.mode === 'splitTell') && dx < 120) { out.gx = clamp(kx + side * (BZC.split.r + 40)); out.why = 'off the splitter'; return out; }
-      if ((e.mode === 'crossTell' || e.mode === 'cross' || e.mode === 'doubleTell' || e.mode === 'double') && dx < BZC.double.reach + 34 && same) {
+      if ((e.mode === 'crossTell' || e.mode === 'counterTell' || e.mode === 'cross' || e.mode === 'doubleTell' || e.mode === 'double') && dx < BZC.double.reach + 34 && same) {
         out.gx = clamp(kx + side * 90); if (dx < 46 && e.modeT < 0.2 && /Tell$/.test(e.mode) && !s.noRoll && P.ground) out.dodge = true; out.why = 'out of the heavy chop'; return out; }
       if ((e.mode === 'whirlTell' || e.mode === 'whirl') && dx < BZC.whirl.r + 16) { out.gx = clamp(kx + side * (BZC.whirl.r + 30)); out.why = 'out of the whirl'; return out; }
       if ((e.mode === 'flurryTell' || e.mode === 'flurryBeat' || e.mode === 'flurry') && dx < BZC.flurry.reach + 40 && same) {
@@ -350,6 +402,16 @@ function bzcPlan0(s) {
         out.gx = clamp(kx + side * 84); if (dx < 46 && e.modeT < 0.16 && /Tell$/.test(e.mode) && !s.noRoll && P.ground) out.dodge = true; out.why = 'back off the flurry'; return out; }
     }
   }
+  /* (claude/warcairn2) THE HATCHET: holding HIS hatchet - throw it back at him (the main opening); in his FRENZY at a drum instead (a hatchet on a drum is a beat). Off the
+     floor, a quick walk to take it while it stands (E) - unless he frenzies (the drum first) */
+  if (s.holding) { const free0 = (s.drums || []).filter(d => !d.his && !d.spent), fz = S.frenzy > 0;
+    const tx = fz && free0.length ? free0.slice().sort((a, z) => Math.abs(a.x - P.x) - Math.abs(z.x - P.x))[0].x : kx, want = fz ? 56 : 96, at = Math.abs(P.x - tx);
+    const stand = clamp(tx + (P.x < tx ? -want : want));
+    if ((at > want + 50 || at < 30) && Math.abs(P.x - stand) > 8) { out.gx = stand; out.face = Math.sign(tx - P.x) || 1; out.why = fz ? 'hatchet: to the drum' : 'hatchet: to range'; return out; }
+    out.gx = P.x; out.face = Math.sign(tx - P.x) || 1; if (P.ground && same && P.atk < 0 && seenFor('throwBack' + Math.floor(t * 2), 0)) out.atk = true; out.why = fz ? 'hatchet at the drum' : 'throw his hatchet back'; return out; }
+  if (axeGrabbable(S) && !s.carry && !(S.frenzy > 0) && !bzcOpen(e)) { const ax = S.axe.x, d = Math.abs(P.x - ax);
+    if (d < 10 && P.ground) { out.gx = P.x; out.talk = true; out.why = 'take his hatchet'; return out; }
+    if (d < 300) { out.gx = clamp(ax); out.face = Math.sign(ax - P.x) || 1; out.why = 'to his hatchet'; return out; } }
   /* 2. OPEN (broken or stuck): hit him; WARDED: x0.4 - hit him all the same, it is not wasted, but not greedy */
   if (bzcOpen(e)) { const st = s.tip ? 30 : 14; out.gx = clamp(kx + side * st); if (dx < hitR + 4 && same) swing(kx); out.why = 'hit him: he is open'; return out; }
   /* 3. THE RULE: HE FRENZIES - to the nearest drum that is not his (or spent), and strike it */
@@ -362,6 +424,7 @@ function bzcPlan0(s) {
   if (e.mode === 'take') { out.gx = clamp(kx + side * (hitR + 30)); out.face = Math.sign(kx - P.x) || 1; out.why = 'he takes it: off him'; return out; }
   if (s.rest) { out.gx = clamp(kx + side * (BZC.flurry.reach + 64)); out.face = Math.sign(kx - P.x) || 1; out.why = 'winded: off him'; return out; }
   /* 5. FIGHT HIM: while he is committed - and only pokes into his walk (each blow there heats him toward TAKE IT) */
+  if (S.frenzy > 0) { out.gx = clamp(kx + side * (BZC.flurry.reach + 70)); out.face = Math.sign(kx - P.x) || 1; out.why = 'frenzy: nothing touches him - off him'; return out; }   /* (claude/warcairn2) no drum free: blows are wasted on him */
   const committed = e.mode === 'reel' || e.mode === 'land' || e.mode === 'split' || e.mode === 'throw' || e.mode === 'fetch' || e.mode === 'warcry' || e.mode === 'drumWalk' || e.mode === 'drumStrike' || e.mode === 'recover';
   if (committed && same && !(e.mode === 'recover' && e.modeT < 0.12)) { if (dx > hitR - 2) { out.gx = clamp(kx + side * (hitR - 8)); out.why = 'in on him: committed'; return out; } swing(kx); out.gx = P.x; out.why = 'hit him: committed'; return out; }
   if (e.mode === 'walk' && dx < hitR + 34) { out.face = Math.sign(kx - P.x) || 1;

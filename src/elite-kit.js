@@ -71,7 +71,8 @@ export const AFFIX_AT = {
   'spire|goat': 'SUMMONER', 'spire|troll#amb': 'SWIFT',   /* (claude/wardens12: the scriptorium troll is THE GONG MAUL now) */
   'moor|troll': 'UNSTOPPABLE', 'moor|goat#amb': 'WARDING',   /* (claude/wardens12: the Kite Field's herd billy is THE GALE LANCE now) */
   'storm|shield#amb': 'UNSTOPPABLE', 'storm|shield#1': 'SWIFT', 'storm|brute': 'THORNED', 'storm|shield#2': 'WARDING', 'storm|pike': 'SHIELDED',   /* (claude/stormhold3, THE OUTER WORKS: the Road In's gate guard, the Barbican's brute under a murder hole, the ditch's shield, the wall-walk's pike between the breaches, the stable yard's brute) */
-  'warcairn|heavy': 'UNSTOPPABLE',   /* (claude/warcairn) THE CLAN CHAMPION: the ring's exam - he swings through a blow (his crossed axes are already his guard) */
+  'warcairn|heavy': 'UNSTOPPABLE', 'warcairn|berserker#1': 'SWIFT', 'warcairn|berserker#2': 'UNSTOPPABLE',   /* (claude/warcairn2tune) the yard's runner is quick; the low line's pushes through a blow */
+     /* (claude/warcairn) THE CLAN CHAMPION: the ring's exam - he swings through a blow (his crossed axes are already his guard) */
   'crown|heavy': 'UNSTOPPABLE', 'crown|hearthgob': 'BURNING', 'crown|brute#amb': 'WARDING',
   'longwater|tideguard': 'SHIELDED', 'longwater|tideguard#amb': 'SWIFT',
   'reef|tideguard': 'VENOMOUS',
@@ -126,7 +127,7 @@ export const TUNE = {
   scorpion: { hp: 1.1, dmg: 0.85 },
   pike: { dmg: 0.85 },
   husk: { dmg: 1.2 },
-  hobbyhorse: { dmg: 1.15 },
+  hobbyhorse: { dmg: 1.15 }, berserker: { dmg: 3.2 },
 };
 const ONE = { hp: 1, dmg: 1, tell: 1, every: 1 };
 export const tuneOf = t => { const r = TUNE[t]; return r ? { hp: r.hp ?? 1, dmg: r.dmg ?? 1, tell: r.tell ?? 1, every: r.every ?? 1 } : ONE; };

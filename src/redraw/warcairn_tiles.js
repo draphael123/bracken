@@ -4,7 +4,7 @@
 // ones (same tile types, same cells): the level grid, its entities and its hash are untouched.
 //   wcTile(t, x, y, at, T, L) -> a 16x16 canvas for one cell, or null (the game's own kit draws it)
 import { canvas, px, rect, mulberry } from '../px.js';
-const C = { g0: '#3a3836', g1: '#5e5a54', g2: '#7e7a72', g3: '#a09c94', g4: '#c0bcb2', lichO: '#d8923a', lichG: '#98a85a', sl0: '#2e3644', sl1: '#44505e', sl2: '#5c6a7a', sl3: '#8296aa', sl4: '#b0c2d4',
+const C = { g0: '#323a48', g1: '#4a586c', g2: '#64748a', g3: '#8a9cb4', g4: '#b4c4d8', lichO: '#d8923a', lichG: '#98a85a', sl0: '#2e3644', sl1: '#44505e', sl2: '#5c6a7a', sl3: '#8296aa', sl4: '#b0c2d4',
   rope: '#c8b888', ropeD: '#7a6a44', ropeL: '#e8dcb4', iron: '#3a3a42', ironL: '#8a8a96', under: '#1c1a1e' };
 const memo = new Map(); const once = (k, fn) => { if (!memo.has(k)) memo.set(k, fn()); return memo.get(k); };
 const px2 = (g, x, y, c) => { if (x >= 0 && x < 16 && y >= 0 && y < 16) px(g, x, y, c); };
@@ -19,6 +19,7 @@ function slab(l, r, v) {
     rect(g, 5 + (v % 3) * 2, 2, 1, 5, C.g0);                                                                       /* a joint between two stones */
     if (l) { rect(g, 0, 1, 2, 7, C.g3); rect(g, 1, 2, 2, 1, C.iron); px2(g, 1, 2, C.ironL); px2(g, 0, 0, C.g1); }
     if (r) { rect(g, 14, 1, 2, 7, C.g1); rect(g, 13, 2, 2, 1, C.iron); px2(g, 14, 2, C.ironL); px2(g, 15, 0, C.g1); }
+    rect(g, 0, 0, 16, 2, SN.s0); rect(g, 0, 2, 16, 1, SN.s1); for (let x = 1; x < 16; x += 3 + ((rr() * 2) | 0)) px2(g, x, 3, SN.s2); rect(g, 0, 0, 16, 1, '#ffffff');   /* (claude/warcairn2art) snow lies on the slab, not lichen */
     return c; });
 }
 /* a BRIDGE TREAD: slate lashed on two hemp ropes. Rows 0-4 the slate (lit lip, dark joint at its edge), a lashing of rope with an iron staple, the rope itself sagging under. */
@@ -36,7 +37,29 @@ function tread(l, r, v, mid) {
     return c; });
 }
 
+/* (claude/warcairn2art) A SLATE BLOCK: cold blue-grey strata with dark seams and pale flecks, snow lying on its top (scalloped, with a shaded lip) and wrapping any exposed corner, and
+   wind-scoured streaks on the face. No roots, no loam: this is bare mountain. top / left / right = which sides meet open air. 16x16, deterministic from the cell. */
+const SN = { s0: '#f6f9fd', s1: '#dbe5f1', s2: '#b4c4d8', s3: '#8296b0', st: '#6e8098', sl: '#4a586c' };
+function slate(top, left, right, v) {
+  return once('sb' + (top ? 1 : 0) + (left ? 1 : 0) + (right ? 1 : 0) + v, () => { const [c, g] = canvas(16, 16), rr = mulberry(v * 17 + (top ? 3 : 0) + (left ? 5 : 0) + (right ? 7 : 0) + 11);
+    const band = [C.sl2, '#556376', C.sl1, '#4e5c6e'];
+    for (let y = 0; y < 16; y++) rect(g, 0, y, 16, 1, band[((y + v * 3) >> 2) & 3]);
+    for (let i = 0; i < 4; i++) { const y = (rr() * 15) | 0; rect(g, 0, y, 16, 1, C.sl0); if (rr() < 0.6) rect(g, (rr() * 8) | 0, y + 1, 3 + ((rr() * 6) | 0), 1, C.sl3); }       /* the seams of the strata, a lit edge under some */
+    for (let i = 0; i < 9; i++) px2(g, (rr() * 16) | 0, (rr() * 16) | 0, i % 3 ? C.sl3 : C.sl0);                                                            /* flecks */
+    if (rr() < 0.35) { const x = (rr() * 12) | 0, y = 4 + ((rr() * 8) | 0); px2(g, x, y, C.sl0); px2(g, x + 1, y + 1, C.sl0); px2(g, x + 2, y + 1, C.sl0); px2(g, x + 3, y + 2, C.sl0); }   /* a crack */
+    for (let i = 0; i < 2; i++) { const y = 5 + ((rr() * 9) | 0), x = (rr() * 8) | 0, w = 4 + ((rr() * 5) | 0); rect(g, x, y, w, 1, SN.st); rect(g, x + 1, y + 1, Math.max(1, w - 3), 1, SN.sl); }   /* wind-scoured snow streaks on the face */
+    if (left) { rect(g, 0, 0, 1, 16, C.sl3); rect(g, 1, 0, 1, 16, C.sl2); }
+    if (right) { rect(g, 15, 0, 1, 16, C.sl0); }
+    if (top) { const hh = [3, 4, 3, 2, 3, 4, 4, 3, 2, 3, 3, 4, 3, 2, 3, 3];
+      for (let x = 0; x < 16; x++) { const d = hh[(x + v * 5) % 16]; rect(g, x, 0, 1, d, SN.s0); px2(g, x, d, SN.s1); if ((x + v) % 3 === 0) px2(g, x, d + 1, SN.s2); }
+      rect(g, 0, 0, 16, 1, '#ffffff'); for (let i = 0; i < 2; i++) px2(g, 2 + ((rr() * 12) | 0), 0, SN.s1);
+      if (left) { rect(g, 0, 0, 2, 5, SN.s0); px2(g, 0, 5, SN.s1); } if (right) { rect(g, 14, 0, 2, 5, SN.s0); px2(g, 15, 5, SN.s1); } }
+    else { if (left && rr() < 0.4) { rect(g, 1, 2 + ((rr() * 8) | 0), 2, 2, SN.s1); } }
+    return c; });
+}
+
 export function wcTile(t, x, y, at, T, L) {
+  if (t === T.SOLID) { const ex = (dx, dy) => { const w = at(x + dx, y + dy); return w === 0 || w === T.ONEWAY || w === T.PLANK || w === T.NET || w === T.CLIMB || w === T.SPIKE; }; return slate(ex(0, -1), ex(-1, 0), ex(1, 0), ((x * 7 + y * 13) % 5 + 5) % 5); }
   if (t === T.ONEWAY) { const sr = k => at(x + k, y) === t; return slab(!sr(-1), !sr(1), ((x * 5 + y) % 3 + 3) % 3); }
   if (t === T.PLANK) { const sr = k => at(x + k, y) === t; return tread(!sr(-1), !sr(1), x, ((x * 7 + y) & 1) === 1); }
   return null;
