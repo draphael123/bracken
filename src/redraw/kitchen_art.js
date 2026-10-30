@@ -470,11 +470,13 @@ function drawFlue(g, x0, x1, y, state, k, h, time) {
   flame(g, x0 + 2, y - 1, w - 4, h * f * 0.7, time * 1.3, x0 * 0.31, false);
   g.globalAlpha = 0.6; rect(g, x0 - 2, R(y - h * f) - 2, w + 4, 2, '#fff6c8'); g.globalAlpha = 1;   /* the hot crown where it licks the rail */
 }
-export function drawMeatRail(g, z, cx, cy, clock) {
+export function drawMeatRail(g, z, cx, cy, clock, VW = 1e5) {
   const x0 = z.x0 - cx, y0 = z.y0 - cy, x1 = z.x1 - cx, y1 = z.y1 - cy, L = Math.hypot(x1 - x0, y1 - y0) || 1, ux = (x1 - x0) / L, uy = (y1 - y0) / L, dir = Math.sign(x1 - x0) === (z.dir || 1) ? 1 : -1;
   const run = ((clock * 60 * dir) % 36 + 36) % 36;
-  for (let s = 0; s < L; s += 3) { const hx = R(x0 + ux * s), hy = R(y0 + uy * s) - 6; if (((s / 3 | 0) + (run / 3 | 0)) % 2) rect(g, hx, hy - 3, 2, 2, IRON[4]); else rect(g, hx, hy - 3, 2, 1, IRON[2]); }   /* the roller chain on the rail, links running */
-  for (let s = run; s < L; s += 36) {
+  /* (claude/kitchengate3) only the stretch on screen is drawn (the larder and the carvery hang several long rails in one view: the mobile-perf budget) */
+  const sA = ux ? (-48 - x0) / ux : 0, sB = ux ? (VW + 48 - x0) / ux : L, s0 = Math.max(0, Math.min(sA, sB)), s1 = Math.min(L, Math.max(sA, sB));
+  for (let s = Math.floor(s0 / 3) * 3; s < s1; s += 3) { const hx = R(x0 + ux * s), hy = R(y0 + uy * s) - 6; if (((s / 3 | 0) + (run / 3 | 0)) % 2) rect(g, hx, hy - 3, 2, 2, IRON[4]); else rect(g, hx, hy - 3, 2, 1, IRON[2]); }   /* the roller chain on the rail, links running */
+  for (let s = run + Math.max(0, Math.floor((s0 - run - 30) / 36)) * 36; s < Math.min(L, s1 + 30); s += 36) {
     const hx = R(x0 + ux * s), hy = R(y0 + uy * s) - 6, n = Math.round((s - run) / 36), sway = Math.sin(clock * 3 + n) * 0.8;
     rect(g, hx - 3, hy - 5, 6, 4, OUT); rect(g, hx - 2, hy - 4, 4, 2, IRON[4]); rect(g, hx - 2, hy - 1, 1, 3, IRON[3]); rect(g, hx + 1, hy - 1, 1, 3, IRON[3]);   /* the trolley wheels */
     rect(g, hx - 1, hy, 3, 6, OUT); rect(g, hx, hy + 1, 1, 5, IRON[4]); rect(g, hx - 3, hy + 5, 6, 2, OUT); rect(g, hx - 2, hy + 6, 4, 1, IRON[4]); px(g, hx - 3, hy + 7, OUT); px(g, hx - 2, hy + 8, OUT);   /* the S-hook */

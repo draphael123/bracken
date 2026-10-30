@@ -262,7 +262,7 @@ export function makeKitchenHands(ctx) {
     if (!S) return; const lv = L(), inX = (x, m = 80) => x - cx > -m && x - cx < VW + m;
     /* (claude/kitchengate2) THE KITCHEN'S DRESSING (greybox props, behind everything), THE MEAT-HOOK RAILS' hooks, THE SERVING LINES, THE STOVE FLARES */
     for (const p of lv.kgProps || []) { const x = p.x * TS + 8; if (!inX(x, 120)) continue; KA.drawProp(g, p.kind, R(x - cx), R(p.f * TS - cy), time, p.x); }
-    for (const z of lv.zipLines || []) if (z.meat && (inX(z.x0, 400) || inX(z.x1, 400))) KA.drawMeatRail(g, z, cx, cy, S.clock);
+    for (const z of lv.zipLines || []) if (z.meat && (inX(z.x0, 400) || inX(z.x1, 400))) KA.drawMeatRail(g, z, cx, cy, S.clock, VW);
     for (const b of S.belts) { const d = b.d, x0 = d.x0 * TS, x1 = (d.x1 + 1) * TS; if (!inX(x0, 600) || x0 - cx > VW + 40 || x1 - cx < -40) continue; KA.drawLine(g, R(x0 - cx), R(x1 - cx), R(d.f * TS - cy), b.scroll, d.dir, b.counter, time);
       for (const it of b.items) { const ix = R(it.x - cx), iy = R(it.y - cy); drawDish(g, false, ix, iy - 4, it.kind, time); if (it.kind === 'bomb' && it.state !== 'fall') { const k = Math.max(0, it.fuse / K.line.fuse); rect(g, ix - 9, iy - 28, 18, 3, '#1b1626'); rect(g, ix - 9, iy - 28, R(18 * k), 3, k < 0.3 ? (Math.floor(time * 10) % 2 ? '#ff4a2a' : '#ffd36b') : '#ff9a3c'); } } }
     for (const f of lv.kgFlares || []) { const x0 = f.x0 * TS, x1 = (f.x1 + 1) * TS; if (!inX(x0, 200)) continue; const [st, k] = flareState(f); KA.drawFlare(g, R(x0 - cx), R(x1 - cx), R(f.f * TS - cy), st, k, f.h, time, f.bed); }
