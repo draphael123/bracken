@@ -8,7 +8,7 @@
 import assert from 'node:assert/strict'; import { LEVELS, T } from '../src/level.js'; import { zipStep } from '../src/zipline.js';
 const TS = 16, L = LEVELS.find(l => l.id === 'storm').build();
 const at = (x, y) => (x < 0 || y < 0 || x >= L.W || y >= L.H) ? T.SOLID : L.grid[y * L.W + x];
-assert.equal(L.watchtowers.length, 3, 'three watchtowers'); assert.equal(L.zipLines.length, 3, 'a rope off each');
+assert.equal(L.watchtowers.length, 3, 'three watchtowers'); assert.equal(L.zipLines.filter(z => z.signal === undefined).length, 3, 'a rope off each');   /* (claude/lance4: the Lance's three signal ropes on the bridge are tools/lance4.mjs's) */
 const kinds = new Set();
 for (const [i, t] of L.watchtowers.entries()) { const tag = t.name || 'tower ' + i, z = L.zipLines[i]; kinds.add(t.key);
   const key = L.ents.find(e => e.t === 'key' && e.kind === t.key);

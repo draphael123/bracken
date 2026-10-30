@@ -28,7 +28,7 @@ const PAGE = `(async (hero, levelId) => {
   const row = (name, ok, why, extra) => rows.push({ name, ok: !!ok, why: ok ? '' : why, ...extra });
   const info = P => ({ x: Math.round(P.x), y: Math.round(P.y), ground: !!P.ground, zip: !!P.zip, dead: !!(P.dead > 0), hurt: P.hurt > 0 });
 
-  const n = (() => { const { L } = fresh(); return L.zipLines.length; })();
+  const n = (() => { const { L } = fresh(); return L.zipLines.filter(z => z.signal === undefined).length; })();   /* (claude/lance4) the towers' ropes; the Lance's signal ropes (on his bridge, appended last) are tools/lance4.mjs's */
   for (let i = 0; i < n; i++) {
     let { L, P, k } = fresh(); let z = L.zipLines[i]; const tag = 'rope ' + (i + 1);
     const xa = Math.min(z.x0, z.x1), xb = Math.max(z.x0, z.x1), east = z.y1 > z.y0 === z.x1 > z.x0 ? 1 : -1;

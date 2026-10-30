@@ -2,8 +2,8 @@
 // Daniel 10-03 (scratch/audit-rules.md): three bosses ignored their level's rule; each gets ONE rule-based opening, retrofitted. And his
 // BOSS WAVE 2 interview: poise fills from heavies only outside an opening, and a mini's opening is worth a third of him at most.
 // Played in the real page through the real input (a swing that meets the winch, the bell, the rune), the boss stood where the test says:
-//   lance     STORMHOLD (THREE GATES): from the first tower lookout, the BRIDGE GATE's winch struck while the Lance stands under it brings the bars
-//             down on HIM - planted (lanceOpen), 3 s or more, open; struck while he is a stride off, it only shuts the lane (its tiles close)
+//   lance     STORMHOLD (THREE GATES; claude/lance4): from the first gate tower's lookout, its BELL rung while the Lance stands under its gate - the
+//             third toll brings the bars down on HIM: PINNED (lanceOpen), 3 s or more, open; rung while he is a stride off, it only shuts the lane
 //   gqueen    HIGHCROWN (EVERY HALL HAS A BELL, AND A GATE THAT DROPS WITH IT): the hall bell struck while she stands under its grate pins her
 //             (gqPin, by 'grate'), 3 s or more, open; rung while she is elsewhere it only shuts the hall
 //   gargoyle  THE WITCHLIGHT STAIR (RUNES LIFT): the rune column struck while he flies in it turns him over - he crashes onto the spikes and
@@ -38,10 +38,10 @@ try {
     const swing=(face,n=40,each)=>{const P=BK.P;P.face=face;P.atk=-1;BK.press('atk');for(let i=0;i<n;i++){P.hp=P.maxHp;P.inv=9;if(each)each();BK.sim(1);}};
     const hold=q=>{q.vx=0;q.modeT=99;for(const k of ['chargeT','thrustT','sweepT','bashT','vaultT','javT','galeT','rushT','whirlT','slamT','chargeT','decreeT','throwT2','chandT','gLeapT','shadowT','leapT','courtT','cd'])if(q[k]!==undefined||k==='cd')q[k]=99;q.rearT=q.volleyT=q.wallT=q.penT=99;};
     /* ---- THE LANCE and the BRIDGE GATE ---- */
-    for (const under of [true,false]) { const {q,P}=setup('storm','knight','lance');const w=BK.props().find(p=>p.t==='winch'&&p.bossGate);
+    for (const under of [true,false]) { const {q,P}=setup('storm','knight','lance');const w=BK.props().find(p=>p.t==='lancebell'&&!p.great);
       if(!w){out.lance={noGate:true};break;}
-      const gx=w.gate*16+8;q.mode=q.mounted===false?'guard':'ride';hold(q);q.penT=99;q.x=under?gx:gx+140;q.y=(w.gy1+1)*16;P.x=w.x-6;P.y=w.y;P.vy=0;P.vx=0;BK.sim(1);P.x=w.x-6;P.y=w.y;
-      let best=0;swing(1,30,()=>{if(q.mode==='planted'||q.mode==='thrown')best=Math.max(best,q.modeT);if(q.mode!=='planted'&&q.mode!=='thrown'){q.x=under?gx:gx+140;q.vx=0;}});   /* (claude/stormhold3) mounted, the bars take him out of the saddle: THROWN, open, as long */
+      const gx=w.gx;q.mode='guard';hold(q);q.penT=99;q.x=under?gx:gx+140;q.y=(w.gy1+1)*16;P.x=w.x-10;P.y=w.y;P.vy=0;P.vx=0;BK.sim(1);P.x=w.x-10;P.y=w.y;
+      let best=0;swing(1,110,()=>{P.x=w.x-10;P.y=w.y;if(q.mode==='pinned')best=Math.max(best,q.modeT);else{q.x=under?gx:gx+140;q.vx=0;q.answer=null;hold(q);q.mode='guard';}});   /* (claude/lance4) three tolls over 1.2 s, then the drop */
       out['lance'+(under?'Under':'Away')]={mode:q.mode,planted:+best.toFixed(2),open:BK.bossOpen(q),gated:q.gated||0,tiles:BK.L.grid[w.gy1*BK.L.W+w.gate]!==0,pinned:!!w.pinned}; }
     /* ---- THE GOBLIN QUEEN and her HALL BELL ---- */
     for (const under of [true,false]) { const {q,P}=setup('crown','knight','gqueen');const b=BK.props().find(p=>p.t==='winch'&&p.bell);
