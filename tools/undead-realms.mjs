@@ -166,10 +166,10 @@ const living = {};
   /* THE BEATS: each realm's beat 2 and beat 3 come on time, each SAID and told, and the border crumbles (notches + chunks) - geometry from the realm's box only */
   for (let k = 0; k < 3; k++) { const K = L2.kinds[k], r = intoRealm(k), R = r.e.realm, b = MR.realmBox(r.e, A), t0 = r.log.t, g0 = K === 'fire' ? L2.fire.grace : 0;
     r.P.x = (b.x0 + b.x1) / 2; r.P.y = b.y0 + 50; const seen = {};
-    r.run(g0 + B.at[1] + 0.5, () => { if (K === 'poison') r.P.y = Math.min(r.P.y, R.mire - 40); if (MR.OPEN.has(r.e.mode)) return true; for (const n of [2, 3]) if (R.beat >= n && !seen[n]) seen[n] = r.log.t - t0; });
+    r.run(g0 + B.at[1] + 0.5, () => { if (K === 'poison') r.P.y = Math.min(r.P.y, R.mire - 40); if (MR.OPEN.has(r.e.mode)) return true; for (const n of [2, 3]) if (R.beat >= n && !seen[n]) { seen[n] = r.log.t - t0; seen['line' + n] = (MR.realmCue(r.e, r.P) || {}).beatLine; } });
     assert.ok(!MR.OPEN.has(r.e.mode), K + ': he opened by himself while the beats ran');
     assert.ok(Math.abs(seen[2] - (g0 + B.at[0])) < 0.1 && Math.abs(seen[3] - (g0 + B.at[1])) < 0.1, K + ': the beats do not come at ' + B.at + ' s: ' + JSON.stringify(seen));
-    for (const n of [2, 3]) { assert.ok(r.log.says.includes(B.say[K][n - 1]), K + ': beat ' + n + ' is not said: ' + B.say[K][n - 1]); assert.ok(R.told.some(q => q[1] === 'beat' + n), K + ': beat ' + n + ' is not told'); }
+    for (const n of [2, 3]) { assert.ok(r.log.says.includes(B.say[K][n - 1]), K + ': beat ' + n + ' is not said: ' + B.say[K][n - 1]); assert.ok(R.told.some(q => q[1] === 'beat' + n), K + ': beat ' + n + ' is not told'); assert.equal(seen['line' + n], B.say[K][n - 1], K + ': beat ' + n + ' is not on the realm banner (number() drops it)'); }
     assert.ok(R.bites.length >= 2 && R.bites.length <= 12, K + ': the border does not crumble (notches): ' + R.bites.length);
     for (const q of R.bites) assert.ok(q.y >= b.y0 - 1 && q.y <= b.y1, K + ': a notch is off the realm wall');
     living[K] = { beats: [+seen[2].toFixed(2), +seen[3].toFixed(2)], bites: R.bites.length }; }

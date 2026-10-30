@@ -21007,15 +21007,15 @@ const skyBox=()=>{const m=mageRealm();return m?realmBox(m,L.arena):carpetBox(L.a
    its opening in plain words, every time you are pulled in (REALM.cueLen s) and again after a blow his ward turned (REALM.cueAgain s) - a
    HUD band of its own, not the hint box (that waits for tells and is capped twice a save). While he is OPEN it says so, with the window */
 function drawRealmBanner(xpRow,cy){const m=mageRealm();if(!m)return;const q=realmCue(m,P);if(!q)return;const C=REALM.col[q.kind];
- const open=q.open,show=open||q.bannerT>0;if(!show)return;const k=open?1:Math.min(1,q.bannerT*2.5);
- const title=open?'HE IS OPEN: STRIKE HIM, x2':REALM.name[q.kind],lines=open?[]:wrap(q.text,VW-48,8),lines2=open||!q.text2?[]:wrap(q.text2,VW-48,6),tw=inkW(title,6);   /* (claude/ft4c) lines2: the realm's second return, smaller, under the first */
+ const open=q.open,beat=!open&&!(q.bannerT>0)&&q.beatLine,show=open||q.bannerT>0||!!beat;if(!show)return;const k=open||beat?1:Math.min(1,q.bannerT*2.5);   /* (claude/ft4c) beat: a realm's beat said on its banner (THE CEILING COMES DOWN...) */
+ const title=open?'HE IS OPEN: STRIKE HIM, x2':REALM.name[q.kind],lines=open?[]:wrap(beat||q.text,VW-48,8),lines2=open||beat||!q.text2?[]:wrap(q.text2,VW-48,6),tw=inkW(title,6);   /* (claude/ft4c) lines2: the realm's second return, smaller, under the first */
  const bw=Math.min(VW-16,Math.max(tw,...lines.map(l=>inkW(l,8)),...lines2.map(l=>inkW(l,6)))+20),bh=12+lines.length*11+lines2.length*9+(open?6:4);
  const heroY=P.y-cy,top=48+xpRow,foot=VH-bh-(bossActive?32:6),by=heroY>top-8&&heroY-28<top+bh+4?foot:top,bx=Math.round(VW/2-bw/2);
  g.globalAlpha=k;g.fillStyle='rgba(10,8,20,0.9)';g.beginPath();g.roundRect(bx,by,bw,bh,4);g.fill();
  g.strokeStyle=open?(Math.floor(time*8)%2?'#ffd36b':'#ffffff'):C[0];g.lineWidth=1;g.beginPath();g.roundRect(bx+0.5,by+0.5,bw-1,bh-1,4);g.stroke();
- text(title,VW/2,by+4,open?'#ffd36b':C[0],'center',6);lines.forEach((ln,i)=>text(ln,VW/2,by+14+i*11,C[1],'center',8));lines2.forEach((ln,i)=>text(ln,VW/2,by+14+lines.length*11+i*9,C[0],'center',6));
+ text(title,VW/2,by+4,open?'#ffd36b':C[0],'center',6);lines.forEach((ln,i)=>text(ln,VW/2,by+14+i*11,beat?(Math.floor(time*8)%2?'#ffffff':C[0]):C[1],'center',8));lines2.forEach((ln,i)=>text(ln,VW/2,by+14+lines.length*11+i*9,C[0],'center',6));
  if(open){const w=Math.max(0,Math.min(1,m.modeT/REALM.openT));g.fillStyle='rgba(255,255,255,0.15)';g.fillRect(bx+8,by+bh-6,bw-16,3);g.fillStyle='#ffd36b';g.fillRect(bx+8,by+bh-6,Math.round((bw-16)*w),3);}
- g.globalAlpha=1;m.realm.bannerDrawn=open?'open':q.text;}
+ g.globalAlpha=1;m.realm.bannerDrawn=open?'open':beat?'beat:'+beat:q.text;}
 function updateUndeadMage(e,dt){
  e.hp0??=e.maxHp;const asc=!!(L.chase3&&e.leg==='ascent');if(asc)chase3AscentStep(e,L.arena,L.arena.hallArena,dt,chase3AscentCtx(e));   /* (claude/ft4a) THE ASCENT: the scroll first - it moves the box he and you fly in */
  const A=L.arena,ch=!!(L.chase3&&e.leg==='chase'),box=ch?chase3Box(e.room||0):asc&&e.leg==='ascent'?chase3AscentBand(A):e.realm?realmBox(e,A):carpetBox(A,e.squeeze||0);   /* (claude/fallingtower3) THE CHASE: his sky is the room over your head */

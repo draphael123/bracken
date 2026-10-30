@@ -56,7 +56,7 @@ export const REALM = {
      ICE bat his ice lances back - two in his shell shatter it; POISON strike a spore ring back at him before it blooms. HE MOVES: between two perches (fire),
      behind the floes (ice), from vent to vent (poison). Everything here keys off the realm's box (realmBox), never off the level's tiles: no level hash change. */
   cue2: { fire: 'OR STRIKE HIS FIREBOLT INTO THE BRAZIER OVER HIM', ice: 'OR BAT TWO ICE LANCES BACK INTO HIS SHELL', poison: 'OR STRIKE A SPORE RING BACK BEFORE IT BLOOMS' },
-  beat: { at: [7, 14], crumble: 10, every: 0.7,
+  beat: { at: [7, 14], crumble: 10, every: 0.7, sayT: 2.5,
     say: { fire: ['', 'THE FLOOR BREAKS UP: BURNT TILES FALL', 'THE REALM TILTS TOWARD HIM'], ice: ['', 'THE CEILING COMES DOWN', 'THE FLOOR FREEZES: HE HIDES BEHIND THE FLOES'], poison: ['', 'THE VENTS WAKE: HE MOVES', 'THE MIRE SURGES: FIND A RAFT'] } },
   ret: { v: 260, turn: 5, r: 16, cd: 0.25 },   /* a blow struck back in a realm: his fight's speed (MAGE.reflect), a little keener on the turn (the room is small) */
   fire2: { drop: 0.8, maxHoles: 3, holeH: 44, holeDmg: 10, holeCd: 0.9, tilt: 24, perch: 64, cross: 7, crossV: 110, brazierY: 30, brazierR: 22, relight: 6, pourT: 0.6 },
@@ -114,7 +114,7 @@ export function realmWardHit(e) { const R = e && e.realm; if (!R) return null; R
      ice    the hanging icicle over his shell (strike it and it falls on him)
      poison the vent LIT while the beam is cut (strike it now), dark while he feeds */
 export function realmCue(e, P) {
-  const R = e && e.realm; if (!R) return null; const out = { kind: R.kind, text: REALM.cue[R.kind], text2: REALM.cue2[R.kind], bannerT: Math.max(0, R.cueT || 0), open: OPEN.has(e.mode), beat: R.beat || 1 };
+  const R = e && e.realm; if (!R) return null; const out = { kind: R.kind, text: REALM.cue[R.kind], text2: REALM.cue2[R.kind], bannerT: Math.max(0, R.cueT || 0), open: OPEN.has(e.mode), beat: R.beat || 1, beatLine: R.beatSayT > 0 ? R.beatLine : null };
   if (R.kind === 'fire') { const W = R.wall; out.wall = !!W; out.back = !!(W && W.back); out.first = null;
     if (W && W.back) { const ahead = x => (x - W.x) * W.d;
       const him = ahead(e.x) > -12 ? ahead(e.x) : Infinity, you = !P.dead && ahead(P.x) > -8 ? ahead(P.x) : Infinity;   /* (it hunts your height, and he keeps yours: whichever is nearer in its road is the one it meets) */
@@ -143,7 +143,8 @@ function crumble(R, b, n, big) { for (let i = 0; i < n; i++) { const side = rr(R
 /* THE BEAT CLOCK: beat 2 at beat.at[0] s, beat 3 at beat.at[1] s after you arrive (the fire room's after its grace) - each SAID, shaken in, with a crumble */
 function stepBeat(e, R, dt, c, b) {
   if (R.graceT > 0) return; R.bt += dt; const B = REALM.beat, n = R.bt >= B.at[1] ? 3 : R.bt >= B.at[0] ? 2 : 1;
-  if (n > R.beat) { R.beat = n; R.told.push([R.t, 'beat' + n]); c.say(B.say[R.kind][n - 1], true); c.sound('heavy'); c.sound('crack'); c.shake && c.shake(5); crumble(R, b, B.crumble, true);
+  R.beatSayT = Math.max(0, (R.beatSayT || 0) - dt);
+  if (n > R.beat) { R.beat = n; R.told.push([R.t, 'beat' + n]); c.say(B.say[R.kind][n - 1], true); R.beatLine = B.say[R.kind][n - 1]; R.beatSayT = B.sayT;   /* (said on the realm's own banner: number() drops an unrouted line, and the hint box is capped) */ c.sound('heavy'); c.sound('crack'); c.shake && c.shake(5); crumble(R, b, B.crumble, true);
     if (R.kind === 'fire' && n === 3) R.tilt = R.perch;
     if (R.kind === 'ice') { R.ceilTo += REALM.ice2.ceil; R.creepT = REALM.ice2.creep; R.told.push([R.t, 'creep']);
       if (n === 3) { R.floes = REALM.ice2.floes.map((f, i) => ({ x: b.x0 + REALM.w * f, d: i % 2 ? -1 : 1 })); R.hide = R.floes.reduce((a, f) => Math.abs(f.x - e.x) < Math.abs(a.x - e.x) ? f : a); } }
