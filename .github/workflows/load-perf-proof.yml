@@ -4,7 +4,7 @@ on:
     inputs:
       mode:
         type: choice
-        options: [pending-tile-wrapper-component-oct30, pending-tile-minimal-game-loader-oct30, pending-tile-flat-game-loader-oct29, pending-tile-flat-component-oct29, pending-tile-node-campaign-oct29, pending-tile-node-compat-component-oct29, pending-tile-selective-full-oct29, pending-tile-selective-game-loader-oct29, pending-tile-selective-component-oct29, pending-tile-array-game-loader-oct29, pending-tile-array-writes-component-oct29, pending-tile-key-guards-component-oct29, pending-tile-game-loader-oct29, pending-tile-context-component-oct29, integer-presentation-component-oct29, native-draw-stage-oct29, native-raster-trace-oct29, tile-recipe-bindings-loader-oct29, tile-recipe-bindings-component-oct29, tile-numeric-lookups-loader-oct29, tile-numeric-lookups-component-oct29, tile-memo-fast-access-oct29, tile-memo-allocation-oct29, default-boss-incremental-oct29, default-boss-native-oct29, layout-phase-diagnostic-oct29, pure-sprite-fixed-qualified, pure-sprite-context-native, private-sprite-cold-profile, private-sprite-native, private-sprite-union-qualified, captured-art-union-qualified, captured-level-art-component, fixed-level-art-selfcontained-loader, fixed-level-art-main-loader, fixed-level-art-view-component, fixed-level-art-weak-component, frame-tile-typed-arenas, fixed-level-art-component, frame-tile-lips-arenas, frame-tile-pattern-component, art-use-coverage, fresh-canvas-clone-component, wall-phase-pattern-component, wall-pattern-runs-component, opaque-invisible-standing, foreground-invisible-arenas, foreground-invisible-component, foreground-row-component, opaque-art-fused-cold, opaque-art-fused-component, private-foreground-component, layout-work-queue, opaque-sprite-diagnostic, opaque-sprite-union, opaque-tile-standing, deferred-standing, palette-ui, palette-standing, palette-base, layout-candidate, foreground-reuse, foreground-direct, fixed-ornaments, region-props, border-present, tile-warm, captain-boot, cpu-profile, tile-cache, paladin-boot, hero-reuse, profile, sfx, compare, mobile, calls, present, campaign, variant, pixel-debug]
+        options: [pending-tile-wrapper-game-loader-oct30, pending-tile-wrapper-component-oct30, pending-tile-minimal-game-loader-oct30, pending-tile-flat-game-loader-oct29, pending-tile-flat-component-oct29, pending-tile-node-campaign-oct29, pending-tile-node-compat-component-oct29, pending-tile-selective-full-oct29, pending-tile-selective-game-loader-oct29, pending-tile-selective-component-oct29, pending-tile-array-game-loader-oct29, pending-tile-array-writes-component-oct29, pending-tile-key-guards-component-oct29, pending-tile-game-loader-oct29, pending-tile-context-component-oct29, integer-presentation-component-oct29, native-draw-stage-oct29, native-raster-trace-oct29, tile-recipe-bindings-loader-oct29, tile-recipe-bindings-component-oct29, tile-numeric-lookups-loader-oct29, tile-numeric-lookups-component-oct29, tile-memo-fast-access-oct29, tile-memo-allocation-oct29, default-boss-incremental-oct29, default-boss-native-oct29, layout-phase-diagnostic-oct29, pure-sprite-fixed-qualified, pure-sprite-context-native, private-sprite-cold-profile, private-sprite-native, private-sprite-union-qualified, captured-art-union-qualified, captured-level-art-component, fixed-level-art-selfcontained-loader, fixed-level-art-main-loader, fixed-level-art-view-component, fixed-level-art-weak-component, frame-tile-typed-arenas, fixed-level-art-component, frame-tile-lips-arenas, frame-tile-pattern-component, art-use-coverage, fresh-canvas-clone-component, wall-phase-pattern-component, wall-pattern-runs-component, opaque-invisible-standing, foreground-invisible-arenas, foreground-invisible-component, foreground-row-component, opaque-art-fused-cold, opaque-art-fused-component, private-foreground-component, layout-work-queue, opaque-sprite-diagnostic, opaque-sprite-union, opaque-tile-standing, deferred-standing, palette-ui, palette-standing, palette-base, layout-candidate, foreground-reuse, foreground-direct, fixed-ornaments, region-props, border-present, tile-warm, captain-boot, cpu-profile, tile-cache, paladin-boot, hero-reuse, profile, sfx, compare, mobile, calls, present, campaign, variant, pixel-debug]
         default: profile
       raster_arena:
         type: choice
@@ -153,6 +153,68 @@ jobs:
         with:
           name: pending-tile-selective-game-${{ matrix.scope }}
           path: ${{ runner.temp }}/pending-tile-selective-game-${{ matrix.scope }}/
+          if-no-files-found: error
+  pending-tile-wrapper-game-loader-oct30:
+    if: inputs.mode == 'pending-tile-wrapper-game-loader-oct30'
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        cohort: [1,2,3]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/checkout@v4
+        with:
+          ref: 1a576c3f4511b6856df9fb4738df5aaae9987e81
+          path: pending-tile-wrapper-loader-game
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.11.1'
+      - name: Original standalone cleanup on exact source then restore
+        run: node tools/pending-tile-wrapper-game-preflight.mjs
+        env:
+          FIXED_ART_GAME: pending-tile-wrapper-loader-game
+          FIXED_ART_LOADER_OUT: ${{ runner.temp }}/pending-tile-wrapper-loader-${{ matrix.cohort }}
+      - name: Unchanged original controlled loading with supplemental complete allocation checks
+        run: node tools/pending-tile-wrapper-game-loader-runner.mjs
+        env:
+          FIXED_ART_GAME: pending-tile-wrapper-loader-game
+          FIXED_ART_LOADER_OUT: ${{ runner.temp }}/pending-tile-wrapper-loader-${{ matrix.cohort }}
+          PENDING_TILE_WRAPPER_COHORT: ${{ matrix.cohort }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pending-tile-wrapper-loader-${{ matrix.cohort }}
+          path: ${{ runner.temp }}/pending-tile-wrapper-loader-${{ matrix.cohort }}/
+          if-no-files-found: error
+  pending-tile-wrapper-game-qualification-oct30:
+    if: always() && inputs.mode == 'pending-tile-wrapper-game-loader-oct30'
+    needs: pending-tile-wrapper-game-loader-oct30
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.11.1'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: pending-tile-wrapper-loader-*
+          path: pending-tile-artifacts
+      - name: Preserve all cohort results and predeclared strong-control gain criteria
+        run: node tools/pending-tile-wrapper-game-qualify.mjs
+        env:
+          PENDING_TILE_WRAPPER_ARTIFACTS: pending-tile-artifacts
+          PENDING_TILE_WRAPPER_QUAL_OUT: ${{ runner.temp }}/pending-tile-qualification
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pending-tile-qualification
+          path: ${{ runner.temp }}/pending-tile-qualification/
           if-no-files-found: error
   pending-tile-minimal-game-loader-oct30:
     if: inputs.mode == 'pending-tile-minimal-game-loader-oct30'
