@@ -1662,7 +1662,8 @@ async function runbossLab(BK, opts) {
         k.left=k.right=k.up=k.down=k.jump=k.block=false;if(!(P.labRotHold>0))k.atk=false;
         const BH=BK.bzchiefHands(),S=BH&&BH.show();
         if(f===0||!P.labBzMem)P.labBzMem={};
-        const pl=S?bzcPlan({tip:h==='warden'?WARDEN_TIP:0,noRoll:h==='warden'&&!LABP.v2,v2:!!LABP.v2,hero:h,rest:!!P.labRest,P:{x:P.x,y:P.y,face:P.face,ground:P.ground,atk:P.atk},e:boss,S,drums:BH.drums(),reach:LAB_REACH[h],shield:SHIELDED(h),t:f/60,rng:Math.random,mem:P.labBzMem}):{gx:null,face:P.face};
+        const pl=S?bzcPlan({tip:h==='warden'?WARDEN_TIP:0,noRoll:h==='warden'&&!LABP.v2,v2:!!LABP.v2,hero:h,rest:!!P.labRest,P:{x:P.x,y:P.y,face:P.face,ground:P.ground,atk:P.atk},e:boss,S,drums:BH.drums(),reach:LAB_REACH[h],shield:SHIELDED(h),t:f/60,rng:Math.random,mem:P.labBzMem,holding:!!(P.carry&&P.carry.chief),carry:!!P.carry}):{gx:null,face:P.face};
+        if(pl.talk&&P.ground&&(P.labTalkF===undefined||f-P.labTalkF>20)){BK.press('talk');P.labTalkF=f;}   /* (claude/warcairn2) E: his hatchet, off the floor - the main opening is throwing it back */
         if(pl.dodge&&P.ground&&(P.labDodgeF===undefined||f-P.labDodgeF>30)){if(pl.gx!=null)k[pl.gx>P.x?'right':'left']=true;if(h==='warden'&&LABP.v2&&pl.gx!=null)P.face=pl.gx>P.x?-1:1;BK.press('dodge');P.labDodgeF=f;}
         if(pl.jump&&P.ground){if(P.labJumpF===undefined||f-P.labJumpF>14){BK.press('jump');P.labJumpF=f;P.labJump=16;}}
         if(P.labJump>0){P.labJump--;k.jump=true;}

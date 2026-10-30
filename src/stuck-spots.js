@@ -285,6 +285,7 @@ export const STUCK = {
   ],
   /* THE WAR CAIRN (claude/warcairn): the two drum gates the route needs (strike the drum: its gate swings open a few seconds) */
   warcairn: [
+    { id: 'wc-gorge', zone: [55, 58, 64, 68], at: [81, 62], done: ['wcrope', 81, 62, 'on'], line: 'TAKE A HATCHET, HOLD UP: LOB IT AT THE ROPE POST' },   /* (claude/warcairn2) the gorge's hauled bridge: a thrown hatchet cuts its rope */
     { id: 'wc-tunnel', zone: [79, 56, 92, 62], at: [83, 62], done: ['wcdrum', 83, 62, 'on'], line: 'THE DRUM GATE IS SHUT: STRIKE THE DRUM, THEN GO' },
     { id: 'wc-chimney', zone: [110, 50, 137, 57], at: [121, 57], done: ['wcdrum', 121, 57, 'on'], line: 'STRIKE THE DRUM AND CLIMB BEFORE THE HATCHES SWING BACK' },
   ],
