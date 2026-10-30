@@ -7,7 +7,8 @@
 // axes flare and the word names the answer - never silent.
 // main.js calls: spawnBoss, owns, on, update, take, frame, drawOver, barName, rageOf, end, read, show, clear, onBeat, drums, drawHud (claude/warcairn2: his hero-style RAGE bar on the plate).
 // (claude/warcairn2) axeApi: HIS HATCHET for src/war-cairn-hatchets.js - where it stands (grabbable), take it, does a flying hatchet meet him, it met him (the stagger), it came to rest.
-import * as WCW from './redraw/warcairn_world_art.js';   /* (claude/warcairnart) his hatchet and crossed axes, drawn */
+import * as WCW from './redraw/warcairn_world_art.js';
+import * as WA from './redraw/warcairn_art2.js';   /* (claude/warcairn2art) rage bar, frenzy aura, counter arc, stagger hatchet, tug thong */   /* (claude/warcairnart) his hatchet and crossed axes, drawn */
 import * as BZM from './bzchief.js';
 import { BOSS_PHASE } from './boss-music.js';
 const { BZC } = BZM;
@@ -115,7 +116,7 @@ export function makeBzChiefHands(ctx) {
     if (S.axe && !S.axe.taken) { const ax = R(S.axe.x - cx), ay = R(S.axe.y - cy); WCW.chiefHatchet(g, ax, ay, time, !!S.axe.fly || S.axe.tug > 0);
       if (BZM.axeGrabbable(S)) { const k = Math.max(0, S.axe.stick / BZC.throw.stick); g.globalAlpha = 0.55 + 0.35 * Math.sin(time * 12); g.strokeStyle = '#ffd36b'; g.lineWidth = 2; g.beginPath(); g.arc(ax, ay - 6, 12, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * k); g.stroke(); g.lineWidth = 1; g.globalAlpha = 1;
         ctx.text('E: HIS HATCHET', ax, ay - 26, '#ffd36b', 'center', 5); }
-      if (S.axe.tug > 0) { g.strokeStyle = '#c8b07a'; g.beginPath(); g.moveTo(ax, ay - 4); g.lineTo(x, y - 30); g.stroke(); } }
+      if (S.axe.tug > 0) WA.tugThong(g, ax, ay - 4, x, y - 30, time); }
     /* THE SPLIT running the floor */
     for (const w of S.waves) { g.fillStyle = '#c8c0b0'; g.fillRect(R(w.x - cx) - 3, fy - 10, 6, 10); g.fillStyle = '#ff6b3c'; g.fillRect(R(w.x - cx) - 1, fy - 12, 2, 3); }
     /* THE POUNCE: where he will land (the coil) */
@@ -128,15 +129,14 @@ export function makeBzChiefHands(ctx) {
     if (m === 'splitTell') ctx.text('GROUND-SPLITTER', x, y - 78, '#ff6b6b', 'center', 6);
     if (m === 'sleep') ctx.text('Z', x + 8 * f, y - 56 - R((time * 8) % 8), '#c8d8e8', 'center', 6);
     /* HIS FRENZY: a red haze on him - and the drum's answer named (claude/warcairn2: nothing touches him until a drum is rung) */
-    if (S.frenzy > 0) { g.globalAlpha = 0.25 + 0.15 * Math.sin(time * 14); g.fillStyle = '#ff2a1a'; g.fillRect(x - 12, y - 44, 24, 44); g.globalAlpha = 1;
-      g.globalAlpha = 0.5 + 0.3 * Math.sin(time * 8); g.strokeStyle = '#ff4a3a'; g.lineWidth = 2; g.beginPath(); g.arc(x, R(e.y - BZC.h * BZC.scale / 2 - cy), 31, 0, Math.PI * 2); g.stroke(); g.lineWidth = 1; g.globalAlpha = 1;
+    if (S.frenzy > 0) { WA.frenzyAura(g, x, y, time, BZC.scale);   /* (claude/warcairn2art: flame, not a pink block) */
       ctx.text('RING A DRUM', x, y - 92, Math.floor(time * 6) % 2 ? '#ffd36b' : '#ff6b6b', 'center', 6); }
-    if (m === 'counterTell') ctx.text('THE COUNTER', x, y - 78, '#ff6b6b', 'center', 6);
+    if (m === 'counterTell') { WA.counterArc(g, x, y, f, Math.min(1, (e.modeT || 0) / 0.55), time); ctx.text('THE COUNTER', x, y - 78, '#ff6b6b', 'center', 6); }
+    if (m === 'staggered') WA.staggerHatchet(g, x, y, f, time);
     if (e.guardFx > 0) e.guardFx = Math.max(0, e.guardFx - 1 / 60);
     /* HIS RAGE: a red bar over him (main.js draws it under his health bar too) */
     const by = R(e.y - BZC.h * BZC.scale - 14 - cy), bx = Math.max(40, Math.min(ctx.VW() - 40, x));
-    g.fillStyle = '#1b1626'; g.fillRect(bx - 18, by, 36, 3); g.fillStyle = S.frenzy > 0 ? (Math.floor(time * 10) % 2 ? '#ff4a3a' : '#ffd36b') : S.ph < 2 ? '#8a3a32' : '#e0322a';
-    g.fillRect(bx - 18, by, R(36 * (S.frenzy > 0 ? S.frenzy / BZC.frenzy.t : S.rage / BZC.rage.max)), 3);
+    WA.rageBar(g, bx - 18, by, 36, S.frenzy > 0 ? S.frenzy / BZC.frenzy.t : S.rage / BZC.rage.max, S.frenzy > 0, S.ph < 2, Math.floor(time * 10) % 2, time);
     /* THE READ (B10) */
     const yy = R(e.y - BZC.h * BZC.scale / 2 - cy);
     if (BZM.bzcOpen(e)) { const kk = Math.max(0, e.open / (m === 'stuck' ? BZC.stuck.t : BZC.open.t));
@@ -150,9 +150,7 @@ export function makeBzChiefHands(ctx) {
      locked grey in P1, and his TAKE IT stance named while it is up (what it absorbs comes back as THE COUNTER) ---------- */
   H.drawHud = (g, VW, VH, barY, time) => { const e = live(); if (!S || !e) return; const w = 120, x0 = R(VW / 2 - w / 2), y = R(barY - 30);
     const fz = S.frenzy > 0, k = fz ? S.frenzy / BZC.frenzy.max : S.rage / BZC.rage.max, blink = Math.floor(time * 8) % 2;
-    g.fillStyle = 'rgba(10,8,20,0.7)'; g.fillRect(x0 - 2, y - 2, w + 4, 7); g.fillStyle = '#2a1414'; g.fillRect(x0, y, w, 3);
-    g.fillStyle = fz ? (blink ? '#ffd36b' : '#ff4a3a') : S.ph < 2 ? '#6a4a46' : k >= 1 ? '#ff4a3a' : '#c8281e'; g.fillRect(x0, y, R(w * Math.max(0, Math.min(1, k))), 3);
-    g.fillStyle = '#ff9a8a'; for (const q of [0.25, 0.5, 0.75]) g.fillRect(x0 + R(w * q), y, 1, 3);
+    WA.rageBar(g, x0, y, w, k, fz, S.ph < 2, blink, time);   /* (claude/warcairn2art) iron frame, bone tines, a fill that burns hotter, flame when full */
     ctx.text(fz ? 'FRENZY' : S.ph < 2 ? 'RAGE (HELD)' : 'RAGE', x0 - 4, y - 2, fz ? (blink ? '#ffd36b' : '#ff6b6b') : '#ff9a8a', 'right', 5);
     if (e.mode === 'take') ctx.text('TAKE IT' + (S.absorbed ? ' x' + S.absorbed : ''), x0 + w + 4, y - 2, '#ff9a5c', 'left', 5);
     else if (S.oneHand) ctx.text('ONE AXE', x0 + w + 4, y - 2, '#ffd36b', 'left', 5); };

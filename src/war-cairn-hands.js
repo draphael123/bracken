@@ -12,7 +12,8 @@
 // THE DRUMMER (e.t 'drummer', the level's ONE new foe): small, light, no weapon - he runs to his drum, beats it on a told two-count ('1' .. '2' over him), and when you come at
 //   him he shoves you off (a told '!', a small push) and runs for his other drum. Cut him down and that stretch is quiet.
 // Every capital line it says is a WC_SAY line (src/hint-lines.js lists them).
-import * as WCW from './redraw/warcairn_world_art.js';   /* (claude/warcairnart) the world, drawn */
+import * as WCW from './redraw/warcairn_world_art.js';
+import * as WA from './redraw/warcairn_art2.js';   /* (claude/warcairn2art) slate and snow, banners, camps, the hatchet kit, the summit */   /* (claude/warcairnart) the world, drawn */
 import { makeHatchets, HATCHET_SAY } from './war-cairn-hatchets.js';   /* (claude/warcairn2) THE HATCHET: the level's second verb (racks, the clan's drops; cut, drop, knock down, beat) */
 export const WC = {
   beat: { r: 8, stumble: 1.0, spent: 6, box: 12, arenaSpent: 6 },
@@ -185,6 +186,7 @@ export function makeWarCairnHands(ctx) {
   const rect = (g, x, y, w, h, c) => { g.fillStyle = c; g.fillRect(R(x), R(y), R(w), R(h)); };
   H.drawWorld = (g, cx, cy, VW, VH, time) => {
     if (!S) return; const lv = L(), inX = (x, m = 80) => x - cx > -m && x - cx < VW + m;
+    WA.props(g, cx, cy, VW, time);   /* banners, hide tents + fire pits, antler totems: art only (no entity, no level data) */
     /* THE DRUM GATES, SLABS, SPANS' POSTS, CORNICES, DRIVEN HATCHETS and DRUMS: drawn (src/redraw/warcairn_world_art.js, claude/warcairnart) */
     for (const gt of S.gates.values()) { const d = gt.d; if (!inX(d.x0 * TS, 120)) continue; WCW.gate(g, d.x0 * TS - cx, d.y0 * TS - cy, (d.x1 - d.x0 + 1) * TS, (d.y1 - d.y0 + 1) * TS, gt.open, gt.openT, d.id, time); }
     for (const s of S.slabs.values()) { const d = s.d; if (!inX(d.x0 * TS, 200)) continue; WCW.slab(g, d.x0 * TS - cx, d.y * TS - cy, (d.x1 - d.x0 + 1) * TS, s.level, time); }
@@ -203,14 +205,10 @@ export function makeWarCairnHands(ctx) {
   /* (claude/warcairn2, GREYBOX for art pass 2) THE BIGGER SUMMIT CAIRN behind the ring: stacked slate, ~3x the old one, a pole with antlers and a red rag on top; and a DRUM BRAZIER
      beside each arena drum (an iron bowl on antler legs) - lit, flaring red on a beat and in his frenzy. The art lane draws them properly (scratch/brief-warcairn2-1030.md section 4.4) */
   function drawSummit(g, cx, cy, VW, time) { const lv = L(); if (!lv.arena || !lv.arena.bzc) return; const A = lv.arena; if (A.x1 - cx < -200 || A.x0 - cx > VW + 200) return;
-    const fy = A.floor - cy, bx = A.x1 - cx - 8;
-    for (let k = 0; k < 9; k++) { const w = 150 - k * 15, h = 14; rect(g, bx - w / 2 - 30, fy - (k + 1) * h, w, h - 1, k % 2 ? '#6e7480' : '#7e8590'); rect(g, bx - w / 2 - 30, fy - (k + 1) * h, w, 2, '#e8eef4'); }
-    rect(g, bx - 31, fy - 9 * 14 - 30, 2, 30, '#6a4a2a'); rect(g, bx - 38, fy - 9 * 14 - 30, 16, 2, '#e8e0d0'); rect(g, bx - 29, fy - 9 * 14 - 26, 8, 5, '#c8281e');
-    let fz = false; const bh = ctx.chiefFrenzy ? ctx.chiefFrenzy() : false; fz = !!bh;
+    const fy = A.floor - cy, bx = A.x1 - cx - 8; WA.cairn(g, bx - 30, fy, time);   /* (claude/warcairn2art) the bigger cairn, painted */
+    const fz = !!(ctx.chiefFrenzy && ctx.chiefFrenzy());
     for (const dr of S.drums.values()) { if (!dr.d.arena) continue; const x = drumX(dr.d) - cx + (dr.d.x < (A.x0 + A.x1) / 2 / TS ? -22 : 22), y = drumY(dr.d) - cy;
-      rect(g, x - 5, y - 14, 1, 14, '#d8d0c0'); rect(g, x + 4, y - 14, 1, 14, '#d8d0c0'); rect(g, x - 7, y - 18, 14, 4, '#3a3a42'); rect(g, x - 6, y - 19, 12, 1, '#6a6a72');
-      const flare = dr.beatT > 0 || fz || dr.his, fl = (flare ? 10 : 6) + Math.sin(time * 13 + dr.d.x) * 2;
-      g.globalAlpha = 0.85; rect(g, x - 4, y - 18 - fl, 8, fl, flare ? '#ff4a3a' : '#ff9a3c'); rect(g, x - 2, y - 18 - fl * 0.7, 4, fl * 0.6, '#ffd36b'); g.globalAlpha = 1; } }
+      WA.brazier(g, x, y, dr.beatT > 0 || fz || dr.his, time); } }
   /* THE SKYLINE (src/redraw/warcairn_world_art.js skyline): main.js calls it behind the near layers */
   H.drawFar = (g, cx, cy, VW, VH, time) => { const lv = L(); if (!lv || !lv.arena) return; WCW.skyline(g, cx, cy, VW, VH, (lv.arena.x0 + lv.arena.x1) / 2, time);
     /* THE CLAN ON THE FAR RIDGE BEHIND THE RING (deco only, claude/warcairnart): onlookers; they throw their axes up on a beat. Drawn here, behind the drums and the fight */
@@ -220,5 +218,9 @@ export function makeWarCairnHands(ctx) {
     g.globalAlpha = 0.35 + 0.2 * Math.sin(time * 12); g.strokeStyle = '#ff4a3a'; g.strokeRect(R(p.x - cx) - 7, R(p.y - cy) - 22, 14, 22); g.globalAlpha = 1; } };
   /* THE DRUMMER, greybox: a hide drum on his back, sticks (main.js draws his body: SPR.drummer) */
   H.drummerOver = (g, e, cx, cy, time) => { if (!e.alive) return; WCW.drummerDrum(g, e.x - cx, e.y - cy, e.face || 1, e.mode === 'count', time); };
+  /* AN ELITE BERSERKER OF THE CLAN (claude/warcairn2art): an antler crown, a red war-paint band, bone at the throat, a red pulse at his feet - drawn over his body, art only.
+     NOTE: the level flags them elite:true on the foe entity, but src/main.js ELITE has no 'berserker' row, so eliteMake ignores it (they are plain berserkers in play) - the mark follows the level's flag */
+  const eliteFlag = e => { if (e.wcElite !== undefined) return e.wcElite; const lv = L(); return (e.wcElite = !!(lv && lv.ents || []).some(en => en.t === e.t && en.elite && Math.abs(en.x * TS + 8 - e.x) < 24 && Math.abs((en.y + 1) * TS - e.y) < 24)); };
+  H.eliteOver = (g, e, cx, cy, time) => { if (!e.alive || e.t !== 'berserker' || !L() || !L().warcairn || !eliteFlag(e)) return; WA.eliteMark(g, e.x - cx, e.y - cy, e.face || 1, e.mode === 'asleep' ? 12 : (e.h || 18) - 1, time); };
   return H;
 }

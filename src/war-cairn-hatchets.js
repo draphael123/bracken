@@ -11,6 +11,7 @@
 // A blade knocks a nest down, or cuts a rope, where it can reach one - the hatchet is the reach.
 // Every capital line is in WC_SAY (src/war-cairn-hands.js: the hint lines list it).
 import * as CT from './carry-throw.js';
+import * as WA from './redraw/warcairn_art2.js';   /* (claude/warcairn2art) the kit, painted */
 export const HATCHET = { dmg: 24, stumble: 0.8, lie: 14, keep: 5, reachX: 16, reachY: 16, hand: 16, r: 3,
   crush: 70, crushElite: 0.3, crushHero: 12, stoneG: 900, totemR: 5, swing: 0.55,
   nestEvery: 12, nestNear: 22, nestDmg: 0.5, nestReel: 2.2 };
@@ -188,37 +189,37 @@ export function makeHatchets(ctx, hook) {
   H.props = () => [...cuts.values()].filter(c => c.d.kind === 'bridge').map(c => ({ t: 'wcrope', id: c.d.id, x: c.d.post[0] * TS + 8, y: c.d.post[1] * TS + 16, on: c.st !== 'hang' }));
   H.state = id => { const c = cuts.get(id); return c ? c.st : null; };
 
-  /* ---------- DRAWING (GREYBOX - the art lane draws the rack, the hatchet, the bridge, the stone, the totem and the nest: scratch/brief-warcairn2-1030.md section 4) ---------- */
-  const rc = (g, x, y, w, h, c) => { g.fillStyle = c; g.fillRect(R(x), R(y), R(w), R(h)); };
-  const axeShape = (g, x, y, rot) => { g.save(); g.translate(R(x), R(y)); g.rotate(rot || 0); rc(g, -1, -6, 2, 11, '#6a4a2a'); rc(g, -1, -5, 1, 9, '#8a6a42'); rc(g, 1, -6, 4, 4, '#9aa4b0'); rc(g, 4, -6, 1, 4, '#e8eef4'); rc(g, -1, -2, 2, 1, '#c8281e'); g.restore(); };
-  const glint = (g, x, y, time, col = '#fff6c8') => { g.globalAlpha = 0.35 + 0.3 * Math.sin(time * 5 + x * 0.01); g.strokeStyle = col; g.beginPath(); g.arc(R(x), R(y), 8, 0, 7); g.stroke(); g.globalAlpha = 1; };
+  /* ---------- DRAWING (claude/warcairn2art: src/redraw/warcairn_art2.js paints every piece; the logic above is untouched) ---------- */
   H.draw = (g, cx, cy, VW, time) => {
     const lv = L(); if (!lv || !lv.warcairn) return; const inX = (x, m = 80) => x - cx > -m && x - cx < VW + m, P = ctx.hero(), holding = !!held(P);
-    /* RACKS: a carved stone post, three hatchets in it */
-    for (const r of racks) { if (!inX(r.px)) continue; const x = r.px - cx, y = r.py - cy; rc(g, x - 4, y - 22, 8, 22, '#6e7480'); rc(g, x - 4, y - 22, 8, 2, '#c8d4e0'); rc(g, x - 3, y - 12, 6, 1, '#c8281e');
-      axeShape(g, x - 5, y - 16, -0.5); axeShape(g, x, y - 19, 0); axeShape(g, x + 5, y - 16, 0.5);
-      if (!holding && P && Math.abs(P.x - r.px) < 60 && Math.abs(P.y - r.py) < 40) glint(g, x, y - 14, time); }
+    for (const c of cuts.values()) if (c.artSt !== c.st) { c.artSt = c.st; c.artT = time; }   /* (when each target changed: the shards and dust are drawn off it) */
+    /* RACKS: a carved slate post, three hatchets on an antler bar */
+    for (const r of racks) { if (!inX(r.px)) continue; WA.rack(g, r.px - cx, r.py - cy, !holding && P && Math.abs(P.x - r.px) < 60 && Math.abs(P.y - r.py) < 40, time); }
     /* THE CUTS */
-    for (const c of cuts.values()) { const d = c.d; if (!inX(d.x0 * TS, 300)) continue; const x0 = d.x0 * TS - cx, w = (d.x1 - d.x0 + 1) * TS, rows = d.y1 - d.y0 + 1;
-      if (d.kind === 'bridge') { const len = w, px0 = x0, py0 = d.y * TS - cy;
+    for (const c of cuts.values()) { const d = c.d; if (!inX(d.x0 * TS, 300)) continue; const x0 = d.x0 * TS - cx, w = (d.x1 - d.x0 + 1) * TS, rows = d.y1 - d.y0 + 1, mx = x0 + w / 2;
+      if (d.kind === 'bridge') { const len = w, px0 = x0, py0 = d.y * TS - cy, s = ropeOf(d), [pxp, pyp] = d.post;
         if (c.st === 'hang' || c.st === 'swing') { const ang = c.st === 'hang' ? -Math.PI / 2 : -Math.PI / 2 * Math.max(0, c.t / HATCHET.swing);
-          g.save(); g.translate(R(px0), R(py0 + 8)); g.rotate(ang); for (let k = 0; k < len; k += 6) { rc(g, k, -3, 5, 4, '#7a8494'); rc(g, k, -3, 5, 1, '#c8d4e0'); } rc(g, 0, -5, len, 1, '#c8b07a'); rc(g, 0, 2, len, 1, '#c8b07a'); g.restore();
-          const s = ropeOf(d); if (c.st === 'hang') { g.strokeStyle = '#c8b07a'; g.beginPath(); g.moveTo(R(s.ax - cx), R(s.ay - cy)); g.lineTo(R(s.bx - cx), R(s.by - cy)); g.stroke(); } }
-        const [pxp, pyp] = d.post; rc(g, pxp * TS - cx + 4, (pyp - 2) * TS - cy, 8, 3 * TS, '#6e7480'); rc(g, pxp * TS - cx + 4, (pyp - 2) * TS - cy, 8, 2, '#c8d4e0');
-        if (c.st === 'hang') { rc(g, pxp * TS - cx + 3, (pyp - 1) * TS - cy, 10, 3, '#c8b07a'); if (holding) glint(g, pxp * TS - cx + 8, (pyp - 1) * TS - cy, time, '#ffd36b'); }
+          WA.bridge(g, { x: px0, y: py0 - 5, len, ang });
+          if (c.st === 'hang') WA.haulRope(g, s.ax - cx, s.ay - cy, s.bx - cx, s.by - cy, 0);
+          else { const tx = px0 + Math.cos(ang) * len, ty = py0 + 8 + Math.sin(ang) * len; WA.haulRope(g, tx, ty, tx + 8, ty + 24, 0); } }
+        if (c.st === 'down') WA.bridge(g, { x: px0, y: py0 - 5, len, ang: 0 });   /* (the swung-down bridge: the PLANK cells are set by the logic, but the tile layer is not re-baked, so it is drawn here) */
+        WA.tiePost(g, pxp * TS - cx + 4, (pyp - 2) * TS - cy, 3 * TS, c.st !== 'hang', time);
+        if (c.st === 'down' && time - c.artT < 0.8) { g.globalAlpha = Math.max(0, 1 - (time - c.artT) / 0.8); for (let i = 0; i < 6; i++) WA.shards(g, px0 + len - 8 - i * 6, py0 + 4, time - c.artT, 'stone'); g.globalAlpha = 1; }
+        if (c.st === 'hang' && holding) WA.glint(g, pxp * TS - cx + 8, (pyp - 1) * TS - cy, time, '#ffd36b');
         continue; }
-      if (c.st === 'gone' || c.st === 'down' && d.kind !== 'stone') continue;
       const y = c.y - cy;
-      if (c.st === 'hang' && d.kind !== 'nest') { const top = (d.y0 - (d.rope || 1)) * TS - cy; rc(g, x0 + w / 2 - 1, top, 2, y - top, '#c8b07a'); rc(g, x0 - 4, top - 2, w + 8, 3, '#7a8494'); }   /* its rope, and the slate arm it hangs from */
-      if (d.kind === 'stone') { rc(g, x0, y, w, rows * TS, '#7a808c'); rc(g, x0, y, w, 2, '#c8d4e0'); rc(g, x0 + 2, y + rows * TS - 3, w - 4, 2, '#4a505c'); if (c.st === 'hang') rc(g, x0 + w / 2 - 3, y + 3, 6, 1, '#c8281e'); }
-      else if (d.kind === 'totem') { rc(g, x0 + w / 2 - 2, y, 4, rows * TS, '#e8e0d0'); rc(g, x0 + w / 2 - 7, y + 2, 14, 2, '#d8d0c0'); rc(g, x0 + w / 2 - 7, y - 2, 2, 5, '#d8d0c0'); rc(g, x0 + w / 2 + 5, y - 2, 2, 5, '#d8d0c0'); rc(g, x0 + w / 2 - 2, y + 7, 4, 2, '#c8281e'); }
-      else if (d.kind === 'nest') { rc(g, x0 - 2, y + rows * TS - 7, w + 4, 7, '#6a4a2a'); rc(g, x0, y + rows * TS - 9, w, 3, '#8a6a42'); rc(g, x0 + 3, y + rows * TS - 8, 2, 2, '#e8e0d0'); rc(g, x0 + w - 6, y + rows * TS - 8, 2, 2, '#e8e0d0'); }
-      if (c.st === 'hang' && holding) glint(g, x0 + w / 2, y + rows * TS / 2, time, '#ffd36b'); }
-    /* THE HATCHETS: lying (glinting), flying (spinning), held (in the hand) */
+      if (c.st === 'gone') { if (time - c.artT < 1.0) WA.shards(g, mx, y + rows * TS - 4, time - c.artT, d.kind); continue; }
+      if (c.st === 'down' && d.kind !== 'stone') continue;
+      const ropeTop = (d.y0 - (d.rope || 1)) * TS - cy;
+      if (d.kind === 'stone') { WA.hangStone(g, x0, y, w, rows * TS, c.st === 'hang', ropeTop, time); if (c.st === 'down' && time - c.artT < 0.7) WA.shards(g, mx, y + rows * TS - 2, time - c.artT, 'stone'); }
+      else if (d.kind === 'totem') WA.hangTotem(g, x0, y, w, rows * TS, c.st === 'hang', ropeTop, time);
+      else if (d.kind === 'nest') WA.nest(g, x0, y + rows * TS, w, time);
+      if (c.st === 'hang' && holding) WA.glint(g, mx, y + rows * TS / 2, time, '#ffd36b'); }
+    /* THE HATCHETS: lying (glinting), flying (spinning, trailing), held (over the shoulder) */
     for (const q of axes) { if (!inX(q.x)) continue; const x = q.x - cx, y = q.y - cy;
-      if (q.state === 'rest') { axeShape(g, x, y - 4, 1.2); if (!holding && P && Math.abs(P.x - q.x) < 50 && Math.abs(P.y - q.y) < 30) glint(g, x, y - 5, time, q.chief ? '#ffd36b' : '#fff6c8'); }
-      else if (q.state === 'fly' || q.state === 'drop') axeShape(g, x, y, q.spin || 0);
-      else if (q.state === 'held') axeShape(g, x, y, (q.holder && q.holder.face || 1) > 0 ? 0.3 : -0.3); }
+      if (q.state === 'rest') { WA.hatchet(g, x, y - 4, 1.2); if (!holding && P && Math.abs(P.x - q.x) < 50 && Math.abs(P.y - q.y) < 30) WA.glint(g, x, y - 6, time, q.chief ? '#ffd36b' : '#fff6c8'); }
+      else if (q.state === 'fly' || q.state === 'drop') { for (let k = 3; k >= 1; k--) { g.globalAlpha = 0.14 * (4 - k); WA.hatchet(g, x - (q.vx || 0) * 0.012 * k, y - (q.vy || 0) * 0.012 * k, (q.spin || 0) - 0.5 * k * Math.sign(q.vx || 1)); } g.globalAlpha = 1; WA.hatchet(g, x, y, q.spin || 0); }
+      else if (q.state === 'held') { const f = (q.holder && q.holder.face) || 1; WA.carryPose(g, x, y, f, !!(q.holder && q.holder.hatchetPose === 'throw'), time); } }
     if (arc) CT.drawArc(g, arc, cx, cy, time, '#ffd36b');
   };
   return H;

@@ -269,7 +269,7 @@ export function buildWarCairn({ painter, T, TS }) {
       { kind: 'wcdrum', opens: 'gate', hud: 'THE DRUM GATE SWINGS OPEN' },
     ],
     duskStart: 99999, duskLen: 1, music: 'warcairn', night: false, glowNight: false,
-    palette: { sky: [[104, 150, 204], [238, 230, 210]], far: 'crag', mid: 'crag', near: 'crag', dress: 'none', ledges: 'rock', haze: 'rgba(222,228,238,0.10)', dirt: '#74706a', dirtL: '#98948c', dirtD: '#4a4844', grass: '#8a9a58', grassL: '#d09a48', grassD: '#5a6a38' },   /* (claude/warcairnart) high bare bright morning: grey granite, orange and green lichen on its tops, a cold clear sky */
+    palette: { sky: [[104, 150, 204], [238, 230, 210]], far: 'crag', mid: 'crag', near: 'crag', dress: 'none', ledges: 'rock', haze: 'rgba(222,228,238,0.10)', dirt: '#56647a', dirtL: '#7a8ca4', dirtD: '#38445a', grass: '#e2ecf8', grassL: '#ffffff', grassD: '#a4b8d2' },   /* (claude/warcairnart) high bare bright morning: grey granite, orange and green lichen on its tops, a cold clear sky */
     ambient: [{ x0: 0, x1: 99999, kind: 'wind' }],
     tints: [[-24, W + 24, [215, 225, 240], 0.05]],
     reachExact: false,
