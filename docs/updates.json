@@ -1,6 +1,18 @@
 [
   {
     "date": "2026-10-30",
+    "batch": 131,
+    "lines": [
+      "The Archmage falls: ride his carpet back up the broken tower, burst into his sky",
+      "The tower comes down around you: a collapse front, a falling bell, a harder Undead Mage",
+      "The realms come apart: broken floors, a lower ceiling, a surging mire, three ice lances",
+      "Two War-Runner berserkers on the War Cairn are tougher elites: swift and unstoppable",
+      "Fix: a death on the War Cairn no longer leaves its drum gates open",
+      "The War Cairn puts back its bridge, slabs and fallen stones when you respawn"
+    ]
+  },
+  {
+    "date": "2026-10-30",
     "batch": 130,
     "lines": [
       "The False Abbot punishes the wrong blow: ride his basket down to throw him out",
@@ -15,17 +27,6 @@
       "The War Cairn: climb to the clan, beat the Berserker Chieftain, win the Berserker",
       "Strike war drums to open gates; the Berserker is bought after beating him",
       "The Blood Knight lashes, drinks and frenzies: new blood art and a Vitae drop"
-    ]
-  },
-  {
-    "date": "2026-10-29",
-    "batch": 130,
-    "lines": [
-      "The Archmage's rooms fall around you: his misses bring stone down, and a vault on him",
-      "No more cut: ride his carpet back up the broken tower and burst out into his sky",
-      "On his stair, strike his fire back and he reels: no spells for a while",
-      "The tower comes down around you: a collapse front, a falling bell, shelves and dome",
-      "The realms come apart: broken floors, a lower ceiling, a surging mire, a second blow"
     ]
   },
   {
