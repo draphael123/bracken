@@ -1,0 +1,113 @@
+{
+  "time": "2026-10-30T18:14:45.459Z",
+  "manifestSha256": "6f8ee5230e76b844f08e3fc767c36cde26fc3703d354392dde2b7c630d029657",
+  "helperSha256": "88b5f952efde3a64ce5f2a442c03d4df8424c4109988713d66eb751b74086da8",
+  "component": {
+    "complete": true,
+    "familyCases": 4928,
+    "publicCases": 672,
+    "coreCases": 143,
+    "rng": 0,
+    "processes": {
+      "launches": 1,
+      "closures": 1,
+      "allClosed": true,
+      "profileAbsences": [
+        {
+          "profile": "/tmp/bracken-look-621WLn",
+          "absent": true
+        }
+      ],
+      "interruptions": [],
+      "maxRendererMb": 1133,
+      "events": [
+        {
+          "type": "launch",
+          "pid": 2542,
+          "profile": "/tmp/bracken-look-621WLn",
+          "time": 1793383375393
+        },
+        {
+          "type": "native-lab-collection",
+          "time": 1793383449930,
+          "requests": 0,
+          "completed": 0,
+          "failed": 0,
+          "postEvaluations": 3
+        },
+        {
+          "type": "closed",
+          "pid": 2542,
+          "profile": "/tmp/bracken-look-621WLn",
+          "time": 1793383450063,
+          "peak": {
+            "totalMb": 2359,
+            "rendererMb": 1133
+          },
+          "reason": null
+        }
+      ]
+    },
+    "time": "2026-10-30T18:04:10.084Z",
+    "run": 41103238380,
+    "controller": "8d5bf35550d57502ab3b7b4790de1c7607489d43",
+    "qualifiedForGameIntegration": true,
+    "rawReceipt": "work/ordinary-store-freeze-probe-repaired-cloud-8d5bf355/ordinary-store-freeze-probe-repaired-oct30/receipt.json",
+    "rawSha256": "83b803dc26744ca92d1668c0a19b06c5bf09b97f287ecebab8ac0b6687ac65d7",
+    "independentReadback": "outputs/receipts/ordinary-store-repaired-independent-readback-oct30.json",
+    "independentReadbackSha256": "f3146b3264565c874c7d7237df42d982241ef44514a154f0de81cf7851495a46",
+    "originalWorkflowFailureRetained": true,
+    "counterAttribution": {
+      "originalFailedAssertionRetained": true,
+      "originalMainHelperDirectWrites": 2,
+      "originalThresholdGreaterThan": 1000,
+      "microUsesFreshIndependentModules": true,
+      "measuredCandidateWritesPerRound": [
+        65536,
+        65536,
+        65536
+      ],
+      "sameThresholdVerifiedSeparatelyInEveryMeasuredRound": true,
+      "noCounterValueFabricatedOrGameSourceChanged": true
+    },
+    "nativePolicyAndMainFallbackPrerequisitesVerified": true,
+    "arrayWriteControl": {
+      "priorHelperSha256": "72af32eedb3c2e3c2d64d9eea7d650fa1d16ca69bc621d032637869fb9b6164f",
+      "replaysBefore": 0,
+      "replaysAfter": 1,
+      "pendingAfter": false,
+      "sourceDerivedCauseObserved": true
+    },
+    "originalGuardsAndNativeGcVerified": true,
+    "closed": true
+  },
+  "node": {
+    "complete": true,
+    "levels": 64,
+    "browsers": 0,
+    "sameExactGameModules": true,
+    "historicalSourceScopeOnly": true,
+    "receipt": "outputs/receipts/ordinary-tile-store-guarded-oct30.json"
+  },
+  "componentCloud": {
+    "workflow": "load-perf-proof.yml",
+    "mode": "ordinary-store-freeze-probe-repaired-oct30",
+    "status": "completed",
+    "outerTimeoutMinutes": 15,
+    "evaluationDeadlineMs": 240000,
+    "audited": true,
+    "controller": "8d5bf35550d57502ab3b7b4790de1c7607489d43",
+    "directory": "work/ordinary-store-freeze-probe-repaired-cloud-8d5bf355",
+    "run": 41103238380,
+    "runPointerSavedAt": "2026-10-30T18:01:25.501Z",
+    "conclusion": "failure"
+  },
+  "scope": "New exact ordinary-origin store9file source versus originalGame+sameUI. All19levels/342readbacks/228pairs,original5percent and additional15percent gates remain. Native body and65k-per-round activation independently audited; its wrong-module outer-counter workflow FAIL stays retained. No full gate/FPS/adoption pass inherited.",
+  "nativeProofEnvelopeCorrection": {
+    "priorActualSchema": "native and node audit fields",
+    "newMappedEnvelope": "All older gate facts derived from audited raw120case/64Node evidence; no fabricated or skipped condition",
+    "allOriginalPageEvidenceGuardsRetained": true,
+    "onlyCoreCountStrengthened114to120": true,
+    "priorLoaderBrowsers": 0
+  }
+}
