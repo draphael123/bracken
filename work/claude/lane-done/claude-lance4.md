@@ -187,3 +187,6 @@ This work is stacked on lane 1's LANCE 4 BOSS on branch `claude/lance4`. Commits
 6. **Shrine filler:** checkRun 160 -> 200, so the 191-column run over the haul lines keeps the brief's 5 shrines.
    - REC (built): 200.
 
+
+## LANCE 4 ART (lane 3) - 10-30
+On-foot sheet 119 frames at 1:1, gate towers/bells/portcullis, rope post+whip, mangonel 3 states, stone arc, haul hemp/tower/barbican dress, bestiary card, lance-sheet tool. Node checks green; page checks + restamps PENDING (release gate running). Report: scratch/lane-reports/lance4art.md. Branch claude/lance4 (pushed).
