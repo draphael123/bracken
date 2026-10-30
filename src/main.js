@@ -548,7 +548,7 @@ Object.assign(EHP, { burieddead: 950 });   /* (claude/retune2) THE REFIT RETUNE'
 EHP.king = GORM.hp1;   /* (claude/gorm2: P1 of three acts - was 1170 for the whole fight, claude/curvec4a; P2 is GORM.hp2 / hp1 of it) */
 EHP.mother = MC2K.hp;   /* (claude/sporewood2) THE MOTHER CAP 2: her bar is her own now (the heart node is gone) */
 EHP.gqueen = 3300;   /* (claude/curvec4a; claude/highcrown2: 1450 -> 3300 - B15 lets 0.4 of a blade through her plate, so she is a longer fight: 90-150 s with flasks) */
-EHP.lance = 3000;   /* (claude/stormhold3: 2800 -> 3000, the rework in band) */   /* (claude/curvec4a) */
+EHP.lance = 4500;   /* (claude/lance4: 3000 -> 4500 - on foot with his bells and ropes the bot won 94% at 3000, 89% at 4000, 83% at 4300, 56% at 4600 (n=18 each); a first cut toward 60-70% and 90-150 s, the tune lane owns the band) */   /* (claude/stormhold3: 2800 -> 3000, the rework in band) */   /* (claude/curvec4a) */
 EHP.windcaller = 1000;   /* (claude/windcaller4, Daniel 10-26: "lower his health a little") 1300 -> 1000 (-23%): the loop (three blows, he falls) and the still-only attacks set the fight's length now. */ /* (claude/moorpyro) 1400 -> 1150: the pyromancer can open him now (fire sends his bolt home); the knight still loses most fights to his thorns. (claude/moorpass) 1150 -> 1300: the summit room pass (stone under the east ledge, his fall clear of the strip, the Last Charge pulls up at thorns) and every hero his own way to send the bolt home */
 
 /* THE FODDER STANDS UP LONGER (docs/combat-tuning.md, measured 2026-09-22). Three in four common fights ended in ONE swing. Scaling
