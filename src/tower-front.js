@@ -13,7 +13,7 @@
 //                 Outer Face the planks behind you peel off (THE OUTER FACE PEELS). A red crack runs 1 s ahead of its edge (ft4Draw).
 //   FIVE SET PIECES (each told, each changes the route visibly; none is a drop-trap):
 //                 THE SHELVES GO     (Act I, the Library's upper stacks) a quake; the free-standing bookcases lean (told 1.0 s) and topple
-//                                    toward you in sequence and lie across the tiers as low cover; the last one leans and is held by its cracked
+//                                    toward you in sequence (each told: it leans and creaks 1.0 s, its landing red) and lie across the tiers; the last one leans and is held by its cracked
 //                                    pillar - strike it and it lies down as a stair of its shelves to the rope (lib-top, a ramp).
 //                 THE DOME COMES IN  (Act II, the Observatory) as you ride the telescope the dome's ribs break one by one from the far side; each
 //                                    lands as a ledge (told 1.0 s): a second stair from the telescope's low step to its high one. FROZEN RIBS
@@ -148,7 +148,7 @@ export function ft4Draw(g, L, P, cx, cy, time, T, chases) {
         for (let y = ya; y > yb; y -= 3) R_(g, blink ? '#ff6b6b' : '#ffb070', x + Math.round(Math.sin(y * 0.3) * 3), y - 3, 2, 3);
         for (const [x0, x1, row] of p.ledges) for (let xx = x0; xx <= x1; xx++) R_(g, blink ? '#ff6b6b' : '#c9463d', xx * TS - cx + 3, row * TS - cy + 13, 10, 2); }
       continue; }
-    if (p.kind === 'bell') { drawBell(g, F, R.bell, cx, cy, time); continue; }
+    if (p.kind === 'bell') { drawBell(g, F, R.bell, cx, cy, time, p); continue; }
     p.items.forEach((it, i) => { const q = S.items[i], [x0, x1, row] = it.span, sx = Math.round(x0 * TS - cx), w = (x1 - x0 + 1) * TS, sy = Math.round(row * TS - cy); if (sx > VW + 40 || sx + w < -40 || sy < -200 || sy > VH + 200) return;
       const top = Math.round((it.from ?? row - 8) * TS - cy);
       if (q.st === 'wait' || q.st === 'tell' || q.st === 'held') { if (it.look === 'case') drawCase(g, it, q, cx, cy, time); else { R_(g, '#2a2638', sx, top - 4, w, 6); R_(g, '#4a4458', sx + 1, top - 4, w - 2, 2); }   /* the rib / the slab, still up */
@@ -170,8 +170,9 @@ function drawCase(g, it, q, cx, cy, time, ang) {   /* a free-standing bookcase: 
   for (let y = -h + 4; y < -2; y += 8) { R_(g, '#2a1a0e', -7, y + 6, 14, 1); for (let x = -6; x < 6; x += 3) R_(g, ['#8a2a2a', '#2a4a7a', '#6a6a2a', '#5a2a6a'][((x + y) >> 1) & 3], x, y, 2, 6); }
   g.restore();
 }
-function drawBell(g, F, B, cx, cy, time) {
-  if (!F.bell || B.st === 'down') return; const x = Math.round(F.bell.x * TS + 8 - cx), sw = B.st === 'tell' ? Math.sin(time * 18) * 3 : 0, y = Math.round(B.y - cy);
+function drawBell(g, F, B, cx, cy, time, p) {
+  if (!F.bell || B.st === 'down') return;
+  if (B.st === 'tell' && p) { const y = Math.round(p.deck * TS - cy); for (let x = p.bays[0] * TS; x < (p.bays[1] + 1) * TS; x += 5) R_(g, Math.floor(time * 8) % 2 ? '#ff6b6b' : '#c9463d', Math.round(x - cx), y - 2, 3, 2); }   /* the deck it will break, told red */ const x = Math.round(F.bell.x * TS + 8 - cx), sw = B.st === 'tell' ? Math.sin(time * 18) * 3 : 0, y = Math.round(B.y - cy);
   if (y < -80 || y > g.canvas.height + 80) return;
   if (B.st !== 'fall') { R_(g, B.st === 'tell' && Math.floor(time * 8) % 2 ? '#ff6b6b' : '#1c1a24', x - 1, Math.round(F.bell.chain * TS - cy), 2, y - Math.round(F.bell.chain * TS - cy)); }   /* its chain to the frame */
   g.save(); g.translate(x + sw, y);

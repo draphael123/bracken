@@ -140,8 +140,8 @@ assert.deepEqual(foes.map(e => e.t), ['magechase'], 'the stair is his chase and 
   assert.ok(!/spiral\.seals|s\.wall|burnt/.test(lab.slice(lab.indexOf('export function chaseClimb'), lab.indexOf('export function chaseClimb') + 4000)), 'the stair bot still strikes braziers or jumps their fire');
   assert.ok(!/e\.t === 'ward'/.test(reach), 'the reach fill still opens a ward'); }
 // ---- RISE: the climb is an upward auto-scroller on src/chase.js ----
-const RL = L.chases || [];
-assert.equal(RL.length, 1, 'the stair hands the chase engine no chase (L.chases): ' + RL.length);
+const RL = (L.chases || []).filter(c => c.id === 'towerscroll');   /* (claude/ft4b: the tower's acts II and III have their own COLLAPSE FRONTS after it in L.chases - tools/fallingtower4.mjs; the stair's is the first) */
+assert.equal(RL.length, 1, 'the stair hands the chase engine no chase (L.chases): ' + RL.length); assert.equal(L.chases[0].id, 'towerscroll', 'the stairs chase is not the first (BK.chase.states()[0] below)');
 const sp = chaseSpec(RL[0]), cps = L.ents.filter(e => e.t === 'check').map(e => ({ x: e.x * TS + 8, y: (e.y + 1) * TS }));
 assert.ok(sp.axis === 'y' && sp.dir === -1 && sp.autoscroll, 'the dark does not rise up the stair with the camera (axis y, dir -1, autoscroll): ' + [sp.axis, sp.dir, sp.autoscroll]);
 assert.ok(sp.contact === 'hurt' && sp.dmg >= 18 && sp.dmg <= 24 && sp.hold >= 0.7, 'the rising dark does not HURT (18-24, about 25-30 after the damage scale) on contact and hold after it: ' + [sp.contact, sp.dmg, sp.hold]);
