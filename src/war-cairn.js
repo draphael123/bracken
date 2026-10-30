@@ -205,7 +205,7 @@ export function buildWarCairn({ painter, T, TS }) {
 
   // ================= 5. THE SUMMIT (386-452) =================
   rock(392, 395, 25); rock(396, 399, 22);
-  sign(391, 27, "THE WAR CAIRN. STRIKE A DRUM IN THE CHIEFTAIN'S FRENZY AND HE LOSES THE BEAT.");
+  sign(390, 27, "THE WAR CAIRN. STRIKE A DRUM IN THE CHIEFTAIN'S FRENZY AND HE LOSES THE BEAT.");
   coins([393, 24], [397, 21]);
   const st = BZC_STAGE, sx = st.sx, R = st.floor;
   rock(400, W - 1, R);                                     /* the ring's slabs */
