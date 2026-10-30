@@ -843,7 +843,7 @@ async function runbossLab(BK, opts) {
     { const mid = (A.x0 + A.x1) / 2; glass.sort((a, b) => Math.abs(a - mid) - Math.abs(b - mid)); }
     /* THE MODE LEDGER (opts.modes): how often the boss ENTERED each mode, and how much of the hero's health was lost while it was in each - which attacks fired at all, and which ones did the damage */
     const modeN = {}, hitBy = {}; let lastMode = null;
-    const ledger = (m0, lost) => { if (!opts.modes) return; if (boss.mode !== lastMode) { lastMode = boss.mode; modeN[lastMode] = (modeN[lastMode] || 0) + 1; } if (lost > 0) hitBy[m0] = (hitBy[m0] || 0) + lost; };
+    const ledger = (m0, lost) => { if (!opts.modes) return; if (boss.mode !== lastMode) { lastMode = boss.mode; modeN[lastMode] = (modeN[lastMode] || 0) + 1; } if (lost > 0) { const kk = (boss.realm ? boss.realm.kind + ':' : '') + m0; hitBy[kk] = (hitBy[kk] || 0) + lost; } };
     /* THE FIGHT ITSELF IS RESEEDED HERE, on the row's own seed again, right before its loop starts. The seed above
        (before BK.load) still pins the level's load and its settle sim end to end - so a retry of the SAME level is
        reproducible - but a boss's own rolls (the Abbot's archer-or-sprig summon, among others) used to draw from
@@ -1007,7 +1007,7 @@ async function runbossLab(BK, opts) {
         else gx=boss.x+(P.x<boss.x?-1:1)*(rest?140:72);
         for(const q of boss.shots||[]){if(q.reflected||q.kind==='feed')continue;const rx=P.x-q.x,ry=py-q.y,d=Math.hypot(rx,ry);if(d>150)continue;
           const sp=Math.hypot(q.vx,q.vy)||1,closing=(rx*q.vx+ry*q.vy)/sp;if(closing<0)continue;
-          if(mageReflectable(q)&&!(boss.wardHold>0)&&!(boss.open>0)){q.botTry??=Math.random()<0.65;if(q.botTry&&Math.abs(q.x-P.x)<LAB_REACH[h]*0.85&&Math.abs(q.y-py)<18&&P.atk<0&&P.st>=8){P.face=Math.sign(q.x-P.x)||P.face;BK.press('atk');swings++;continue;}}
+          if(mageReflectable(q)&&!(boss.wardHold>0)&&!(boss.open>0)){q.botTry??=Math.random()<(boss.realm?0.9:0.65);if(q.botTry&&Math.abs(q.x-P.x)<LAB_REACH[h]*(boss.realm?1.0:0.85)&&Math.abs(q.y-py)<18&&P.atk<0&&P.st>=8){P.face=Math.sign(q.x-P.x)||P.face;BK.press('atk');swings++;continue;}}
           if(q.kind==='orb'){danger.push([q.x-36,q.x+36]);continue;}
           if((SHIELDED(h)||(h==='warden'&&DEFLECT_TAP(f)))&&d<46){block=true;P.face=Math.sign(q.x-P.x)||P.face;continue;}
           if(d<30&&P.st>20&&!(P.dodge>0))BK.press('dodge');}
@@ -1054,11 +1054,20 @@ async function runbossLab(BK, opts) {
           if(r.flare){if(P.st>25&&d<110){vx-=rx/d*2.2;vy-=ry/d*2.2;threat=true;if(d<46&&!(P.dodge>0)){P.face=Math.sign(r.x-P.x)||P.face;BK.press('dodge');}}else away(r.x,r.y,80,2.5);}
           else if(r.glow){const s4=Math.sign(((A.y0+A.floor)/2-py)*(rx/d))||1;   /* across the line, toward the middle of the sky */vx+=(-ry/d)*1.5*s4+rx/d*0.4;vy+=(rx/d)*1.5*s4+ry/d*0.4;threat=true;}}
         let block=false;
+        /* (claude/ft4tune, lane A's rec: the knight is weak on the carpet - iceTell was his biggest hit, 96 of 500) HIS ICE FAN: five lances 0.3 rad apart from one point. A person flies
+           into a GAP of the fan (the nearest one, or just outside it) instead of dodging each lance sideways into its neighbour; the lances are read for their point of birth */
+        let fanOn=false;
+        {const fan=(boss.shots||[]).filter(s=>s.kind==='ice'&&!s.reflected&&!s.gone&&s.t>0);
+          if(fan.length>=3){const s0=fan[0],age=(s0.life0||4)-s0.t,ox=s0.x-s0.vx*age,oy=s0.y-s0.vy*age,sp0=Math.hypot(s0.vx,s0.vy)||1,ang=fan.map(s=>Math.atan2(s.y-oy,s.x-ox)).sort((u,v)=>u-v),
+            ap=Math.atan2(py-oy,P.x-ox),rr=Math.hypot(P.x-ox,py-oy),reached=sp0*age;
+            if(rr>reached-6&&rr<reached+150&&ap>ang[0]-0.16&&ap<ang[ang.length-1]+0.16){const gaps=[ang[0]-0.17];for(let i=0;i+1<ang.length;i++)gaps.push((ang[i]+ang[i+1])/2);gaps.push(ang[ang.length-1]+0.17);
+              let g=gaps[0];for(const x of gaps)if(Math.abs(x-ap)<Math.abs(g-ap))g=x;const tx=ox+Math.cos(g)*rr,ty=oy+Math.sin(g)*rr;vx+=Math.max(-2.5,Math.min(2.5,(tx-P.x)/6));vy+=Math.max(-2.5,Math.min(2.5,(ty-py)/6));threat=true;fanOn=true;}}}
         for(const q of boss.shots||[]){const rx=P.x-q.x,ry=py-q.y,d=Math.hypot(rx,ry);if(d>(q.kind==='hand'?120:130))continue;
           /* (claude/fallingtower2) EVERY SHOT OF HIS CAN BE STRUCK BACK now (the skulls and the orrery are not shots) - the bot swings at one in its reach about two in three (a human hand, decided once a shot); otherwise it guards or dodges as ever */
-          if(mageReflectable(q)&&(!boss.realm||q.realmRet)&&!(boss.wardHold>0)&&!(boss.open>0)){q.botTry??=Math.random()<0.65;if(q.botTry&&Math.abs(q.x-P.x)<LAB_REACH[h]*0.85&&Math.abs(q.y-py)<16&&P.atk<0&&P.st>=8){P.face=Math.sign(q.x-P.x)||P.face;BK.press('atk');swings++;continue;}}
+          if(mageReflectable(q)&&(!boss.realm||q.realmRet)&&!(boss.wardHold>0)&&!(boss.open>0)){q.botTry??=Math.random()<(boss.realm?0.9:0.65);if(q.botTry&&Math.abs(q.x-P.x)<LAB_REACH[h]*(boss.realm?1.0:0.85)&&Math.abs(q.y-py)<16&&P.atk<0&&P.st>=8){P.face=Math.sign(q.x-P.x)||P.face;BK.press('atk');swings++;continue;}}
           if(q.kind==='hand'){const hs=Math.hypot(q.vx,q.vy)||1,nx=-q.vy/hs,ny=q.vx/hs,s3=((P.x-q.x)*nx+(py-q.y)*ny)>=0?1:-1;vx+=(nx*s3+(P.x-q.x)/d*0.6)*1.8;vy+=(ny*s3+(py-q.y)/d*0.6)*1.8;threat=true;if(d<26&&P.st>20)BK.press('dodge');continue;}   /* across its line: it turns slower than the carpet does */
           if(q.kind==='orb'){away(q.x,q.y,80,2);continue;}
+          if(fanOn&&q.kind==='ice'&&!q.reflected){if(d<22&&P.st>20&&!(P.dodge>0))BK.press('dodge');continue;}
           const sp=Math.hypot(q.vx,q.vy)||1,closing=(rx*q.vx+ry*q.vy)/sp;if(closing<0)continue;
           if((SHIELDED(h)||(h==='warden'&&DEFLECT_TAP(f)))&&d<46&&q.kind!=='orb'){block=true;P.face=Math.sign(q.x-P.x)||P.face;continue;}
           const nx=-q.vy/sp,ny=q.vx/sp,s2=(rx*nx+ry*ny)>=0?1:-1;vx+=nx*s2*1.4;vy+=ny*s2*1.4;threat=true;if(d<24&&P.st>20&&!(P.dodge>0))BK.press('dodge');}   /* and the dash's i-frames through the one that is about to land */
@@ -3266,9 +3275,9 @@ export function chaseClimb(BK, m, o = {}) {
     /* THROW IT BACK (claude/ft4a, brief-fallingtower4-1029.md #5): the fight's strike-back hand on his stair - a returnable shot closing in at its reach is
        struck (about two in three, decided once a shot, as in the fight); not while he reels, his ward holds, or he has been stunned on this flight */
     if (m && m.alive && m.mode !== 'reel' && !(m.stunWard > 0) && m.stunFlight !== (m.reached ?? -1) + 1 && P.atk < 0 && !(o.noReturn)) { const h = (BK.PROG && BK.PROG.hero) || 'knight', reach = LAB_REACH[h] || 22, py = P.y - 8;
-      for (const q of m.shots || []) { if (!mageReflectable(q)) continue; q.botTry ??= Math.random() < 0.65; const rx = P.x - q.x, ry = py - q.y;
-        const sp = Math.hypot(q.vx, q.vy) || 1, lead = sp * (h === 'paladin' ? 0.22 : 0.12);   /* (the swing takes a moment to come round: meet the shot where it will be) */
-        if (q.botTry && Math.abs(rx) < reach * 0.85 + lead && Math.abs(ry) < 22 && rx * q.vx + ry * q.vy > 0) { P.face = Math.sign(q.x - P.x) || P.face; BK.press('atk'); break; } } }
+      for (const q of m.shots || []) { if (!mageReflectable(q)) continue; q.botTry ??= Math.random() < 0.92; const rx = P.x - q.x, ry = py - q.y;   /* (claude/ft4tune: was 0.65 - the paladin (slow swing) returned none in ft4b: lane A rec, raise the try rate, keep the assert) */
+        const sp = Math.hypot(q.vx, q.vy) || 1, lead = sp * (h === 'paladin' ? 0.34 : 0.14);   /* (the swing takes a moment to come round: meet the shot where it will be) */
+        if (q.botTry && Math.abs(rx) < reach * 0.95 + lead && Math.abs(ry) < 26 && rx * q.vx + ry * q.vy > 0) { P.face = Math.sign(q.x - P.x) || P.face; BK.press('atk'); break; } } }
 
     const was = P.hp; BK.sim(1); if (o.each) o.each(t);
     if (BK.P.dead > 0) died++;

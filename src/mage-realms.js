@@ -31,16 +31,16 @@ export const REALM = {
   col: { fire: ['#ff9b49', '#ffe9b0', '#c9463d'], ice: ['#9be2ff', '#ffffff', '#3a6a9a'], poison: ['#8fd160', '#d8ffb0', '#3a5a2a'] },
   w: 420,                   /* the realm is this wide, centred on his hall: the whole of it on a zoomed screen */
   tear: 1.2,                /* the tear's tell: his ring opens and flares this long before it takes you */
-  openT: 3.0, openMul: 1.5,   /* the opening: this long, at x1.5 (claude/archmage4: was x2 through his hall's MAGE.openMul - the three realms' openings were about 40% of what the human bot dealt him) */
+  openT: 2.0, openMul: 1.5,   /* the opening: this long, at x1.5 (claude/archmage4: was x2 through his hall's MAGE.openMul - the three realms' openings were about 40% of what the human bot dealt him) */
   rest: 6,                  /* seconds in his hall after a realm before the next can be torn */
   bolt: { v: 150, fire: 14, ice: 12, tellFire: 0.9, tellIce: 0.9 },
-  fire: { n: 7, grace: 2.0, tell: 1.2, burn: 0.8, every: 3.6, dmg: 16, wallTell: 1.4, wallV: 120, wallH: 64, track: 45, trackBack: 140, wallDmg: 18, cast: 2.4,
+  fire: { n: 7, grace: 2.0, tell: 1.2, burn: 0.8, every: 3.6, dmg: 20, wallTell: 1.4, wallV: 120, wallH: 64, track: 45, trackBack: 140, wallDmg: 22, cast: 1.7,
     /* (claude/fallingtower2, Daniel 10-08 'the fire room'): grace - an ARRIVAL GRACE, nothing burns or is cast while you get your bearings; the tile tell
        and the wall tell are longer and HISS as they start (the wall's vents glow where it will rise: drawRealmFx) */
     patterns: [[0, 2, 4, 6], [1, 3, 5], [0, 1, 2], [4, 5, 6], [0, 3, 6], [1, 2, 4, 5], [2, 3, 4]] },
-  ice: { n: 7, crack: 0.9, fallV: 380, every: 1.7, regrow: 3.0, dmg: 14, drift: 42, grip: 0.3, cast: 2.4, len: 20,
+  ice: { n: 7, crack: 0.9, fallV: 380, every: 1.3, regrow: 3.0, dmg: 18, drift: 42, grip: 0.3, cast: 1.7, len: 20,
     home: 40, homeV: 240, hitW: 22 },   /* claude/archfix (Daniel: "easier to hit him with"): an icicle struck within home px of him falls ONTO him (it homes at homeV), and it breaks his shell anywhere within hitW of his middle */
-  poison: { rise: 5, cap: 0.55, bite: 10, warm: 0.12, tick: 0.6, lift: 170, sporeTell: 1.1, sporeLife: 2.6, sporeR: 26, exposed: 3.0,   /* (claude/archmage4: exposed 2.4 -> 3.0 s: the knight never reached the vent in 2.4) */ every: 4.2, drain: 60, cast: 2.2 },
+  poison: { rise: 5, cap: 0.55, bite: 13, warm: 0.12, tick: 0.6, lift: 170, sporeTell: 1.1, sporeLife: 2.6, sporeR: 26, exposed: 3.0,   /* (claude/archmage4: exposed 2.4 -> 3.0 s: the knight never reached the vent in 2.4) */ every: 4.2, drain: 60, cast: 1.6 },
   /* claude/archfix (Daniel played both archmages, 2026-09-29: "these need to be more obvious" - in the fire realm he could not tell how to
      hurt him). EACH REALM SAYS ITS OPENING IN PLAIN WORDS: a banner every time you are pulled in (cueLen s; never the 2-per-save hint cap),
      and again for cueAgain s whenever a blow is turned by his ward */
@@ -55,12 +55,12 @@ export const REALM = {
      AND A SECOND THING TO HIT BACK (cue2, on the banner under the first): FIRE strike his firebolt into the BRAZIER hung over his perch (it spills on him);
      ICE bat his ice lances back - two in his shell shatter it; POISON strike a spore ring back at him before it blooms. HE MOVES: between two perches (fire),
      behind the floes (ice), from vent to vent (poison). Everything here keys off the realm's box (realmBox), never off the level's tiles: no level hash change. */
-  cue2: { fire: 'OR STRIKE HIS FIREBOLT INTO THE BRAZIER OVER HIM', ice: 'OR BAT TWO ICE LANCES BACK INTO HIS SHELL', poison: 'OR STRIKE A SPORE RING BACK BEFORE IT BLOOMS' },
+  cue2: { fire: 'OR STRIKE HIS FIREBOLT INTO THE BRAZIER OVER HIM', ice: 'OR BAT THREE ICE LANCES BACK INTO HIS SHELL', poison: 'OR STRIKE A SPORE RING BACK BEFORE IT BLOOMS' },
   beat: { at: [7, 14], crumble: 10, every: 0.7, sayT: 2.5,
     say: { fire: ['', 'THE FLOOR BREAKS UP: BURNT TILES FALL', 'THE REALM TILTS TOWARD HIM'], ice: ['', 'THE CEILING COMES DOWN', 'THE FLOOR FREEZES: HE HIDES BEHIND THE FLOES'], poison: ['', 'THE VENTS WAKE: HE MOVES', 'THE MIRE SURGES: FIND A RAFT'] } },
-  ret: { v: 260, turn: 5, r: 16, cd: 0.25 },   /* a blow struck back in a realm: his fight's speed (MAGE.reflect), a little keener on the turn (the room is small) */
-  fire2: { drop: 0.8, maxHoles: 3, holeH: 44, holeDmg: 10, holeCd: 0.9, tilt: 24, perch: 64, cross: 7, crossV: 110, brazierY: 30, brazierR: 22, relight: 6, pourT: 0.6 },
-  ice2: { ceil: 32, creep: 1.5, ceilV: 30, cracks: 2, floes: [0.22, 0.55, 0.86], floeW: 34, floeH: 38, floeV: 18 },
+  ret: { v: 260, turn: 5, r: 16, cd: 0.25, on: { fire: true, ice: true, poison: true } },   /* a blow struck back in a realm: his fight's speed (MAGE.reflect), a little keener on the turn (the room is small) */
+  fire2: { drop: 0.8, maxHoles: 3, holeH: 44, holeDmg: 10, holeCd: 0.9, tilt: 24, perch: 64, cross: 7, crossV: 110, brazierY: 30, brazierR: 22, relight: 10, pourT: 0.6 },
+  ice2: { ceil: 32, creep: 1.5, ceilV: 30, cracks: 3, floes: [0.22, 0.55, 0.86], floeW: 34, floeH: 38, floeV: 18 },
   poison2: { vents: [0.28, 0.5, 0.72], first: 2, hop: 6.5, bubble: 1.4, surgeEvery: 8, surgeFirst: 2, surgeTell: 1.5, surgeUp: 0.4, surgeHold: 1.8, surgeDown: 0.6, surgeH: 44,
     rafts: [0.39, 0.61], raftW: 40, sporeV: 170 },
 };
@@ -156,7 +156,7 @@ function stepChunks(R, dt, b) { for (const k of R.chunks) { k.t -= dt; k.vy += 4
 const floeAt = (R, b, x, y) => !!R.floes && R.floes.some(f => Math.abs(x - f.x) < REALM.ice2.floeW / 2 && y > b.y1 - REALM.ice2.floeH && y < b.y1 + 6);
 /* THE SECOND RETURN, HIS SHOTS (undead-mage.js asks, in its shots loop): his firebolt in the fire realm and his ice lances in the ice realm can be struck back
    by any blow that meets them (the fight's rule, blowMeets). The firebolt flies to the lit brazier over him; a lance flies into his shell. */
-export const realmCanReturn = (e, q) => { const R = e && e.realm; return !!(R && q && q.realmRet && !q.reflected && !OPEN.has(e.mode) && !(R.retCd > 0)); };
+export const realmCanReturn = (e, q) => { const R = e && e.realm; return !!(R && REALM.ret.on[R.kind] && q && q.realmRet && !q.reflected && !OPEN.has(e.mode) && !(R.retCd > 0)); };
 function retTarget(e, q, b) { if (q.braz) return [perchX(b, q.braz.side), b.y0 + REALM.fire2.brazierY]; return [e.x, e.y - 26]; }
 export function realmSendBack(e, q, c) { const R = e.realm, b = realmBox(e, R.A); R.retCd = REALM.ret.cd; q.reflected = true; q.t = 3; q.hit = false; q.kind0 = q.kind; q.col = '#e8fff0';
   if (R.kind === 'fire') { const br = brazierOver(e); q.braz = br && br.lit ? br : null; }
@@ -172,7 +172,7 @@ export function realmHomeStep(e, q, dt, c) { const R = e.realm; if (!R) return t
   if (q.braz) { const br = q.braz, bx = perchX(b, br.side); br.lit = false; br.cd = REALM.fire2.relight; R.pour = { x: bx, t: REALM.fire2.pourT }; c.sound('heavy'); R.told.push([R.t, 'spill']);
     if (Math.abs(e.x - bx) < REALM.fire2.brazierR + 6) { R.wall = null; open(e, 'scorched', c, 'THE BRAZIER SPILLS ON HIM. HE IS OPEN'); } else c.say('IT SPILLS: HE WAS NOT UNDER IT', false); return true; }
   if (R.kind === 'ice') { R.cracks = (R.cracks || 0) + 1; R.told.push([R.t, 'crack' + R.cracks]);
-    if (R.cracks >= REALM.ice2.cracks) open(e, 'shattered', c, 'TWO LANCES: HIS SHELL SHATTERS. HE IS OPEN'); else { R.wardT = 0.35; c.say('HIS SHELL CRACKS: ONE MORE', true); c.sound('crack'); } return true; }
+    if (R.cracks >= REALM.ice2.cracks) open(e, 'shattered', c, 'THREE LANCES: HIS SHELL SHATTERS. HE IS OPEN'); else { R.wardT = 0.35; c.say('HIS SHELL CRACKS: ONE MORE', true); c.sound('crack'); } return true; }
   R.wardT = 0.35; c.sound('clank'); return true; }
 
 /* ONE STEP OF A REALM: its hazard, his moves in it, and its opening. c: { P, hit, say, sound, venom, box } (box: realmBox) */

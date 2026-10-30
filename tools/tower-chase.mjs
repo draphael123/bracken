@@ -489,7 +489,7 @@ assert.ok(r.lab && [0, 1, 2, 3].every(k => r.lab.rooms.includes(k)) && r.lab.leg
 /* (claude/ft4a) THE ASCENT in the page: the lab's fight goes chase -> ascent -> hall with no camera cut (the FT3 cut was 2,923 px in one frame), the hero carried, not snapped; his hall over the spiral tower; no 'wake' freeze in it */
 { const a = r.lab.asc; assert.ok(r.lab.legs.includes('ascent') && a.t > 60 * 12 && a.camJump < 40 && a.pJump < 100 &&   /* (a ring's carry is a few tiles; the FT3 cut was 2,923 px) */  !a.hallWake && a.hallBox && a.hallBox[0] <= 80 * TS && a.hallBox[1] >= 106 * TS, '(ft4a) the climb out of the core into his hall is not one continuous ascent: ' + JSON.stringify(a)); }
 assert.ok(r.done === 'done' && ['idle', 'done'].includes(r.darkAfter), 'the dark does not stop at the top floor, or follows you through his ring into the chase: '   /* (fallingtower3: it stays stopped - 'done' - through his ring; the carpet's board used to reset it to 'idle') */ + [r.done, r.darkAfter]);
-assert.ok(r.casts.length >= 6 && r.casts.some(c => c.startsWith('fireTell')) && r.casts.some(c => c.startsWith('markTell')), 'he hardly casts on the way up: ' + r.casts);
+assert.ok(r.casts.length >= 6 && r.casts.some(c => c.startsWith('fireTell')) && r.casts.some(c => c.startsWith('markTell') || c.startsWith('pairTell')), 'he hardly casts on the way up (a mark, or the pair he answers a stun with, is cast): ' + r.casts);
 assert.ok(r.casts.every(c => c.startsWith('markTell') ? c.endsWith('!!') : c.endsWith('!') && !c.endsWith('!!')), 'a spell told with the wrong mark (or none): ' + r.casts);
 assert.equal(r.offCast, 0, 'a spell begun with him off the screen');
 const riseRows = (sp.from - sp.end);   /* px from where the dark starts to where it stops */

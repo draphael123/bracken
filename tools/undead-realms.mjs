@@ -15,7 +15,7 @@
 //   RETURN   the opening runs out and the realm tears: back in his hall, the next realm not before REALM.rest
 //   LIVING   (claude/ft4c, brief-fallingtower4 #4 A) each realm comes apart in 3 beats (said, told, the border crumbling) and has a second
 //            return: FIRE burnt tiles fall (told) into low pits, the realm tilts, he keeps two perches - strike his firebolt into the brazier
-//            over him; ICE the ceiling comes down after its frost, floes he hides behind - two lances batted back shatter him; POISON the
+//            over him; ICE the ceiling comes down after its frost, floes he hides behind - three lances batted back shatter him; POISON the
 //            next vent bubbles and he hops, the mire surges (told) with bone rafts - a spore ring struck back chokes him. Robust to the hall moving
 //   PAGE     the real fight: board the carpet, each mark tears its realm (the right one, the carpet held in its room, the ice slick), a
 //            blow in a realm is warded, each opening struck with the game's own swing opens him, the realm returns you to his hall - and
@@ -82,7 +82,7 @@ const fireOut = {};
   fireOut.grace = REALM.fire.grace; fireOut.first = +first.toFixed(2); }
 { const r = intoRealm(0); const P = r.P, R = r.e.realm, b = MR.realmBox(r.e, A);
   /* TOLD: 30 s standing in the middle of it, every blow after its tell */
-  P.x = (b.x0 + b.x1) / 2; P.y = (b.y0 + b.y1) / 2; r.run(30);
+  P.x = (b.x0 + b.x1) / 2; P.y = (b.y0 + b.y1) / 2; r.run(30, () => !r.e.realm);   /* (claude/ft4tune: stop if the realm ends - a returned shot opens it, and the opening is 2 s now) */
   const bl = r.log.hits.map(h => h.blow); fireOut.blows = [...new Set(bl)];
   assert.ok(bl.includes('pillar'), 'the burning floor never burned anyone standing on its pattern: ' + bl);
   for (const h of r.log.hits) { const ok = h.blow === 'pillar' ? toldBefore(r.log, ['tile'], h.t, REALM.fire.tell) : h.blow === 'firewall' ? toldBefore(r.log, ['wallTell'], h.t, REALM.fire.wallTell) : h.blow === 'fire' ? toldBefore(r.log, ['fireTell'], h.t, REALM.bolt.tellFire) : false;
@@ -99,7 +99,7 @@ const fireOut = {};
   s.run(25, () => { const W = S.wall; s.P.dodge = W && W.back && Math.abs(W.x - s.P.x) < 30 ? 0.2 : 0; if (W && !W.back) s.P.y = W.y > (b.y0 + b.y1) / 2 ? b.y0 + 30 : b.y1 - 10;   /* out of it going out, through it coming back */
     if (s.e.mode === 'scorched') { scorched = s.log.t; return true; } });
   assert.ok(scorched > 0, 'dodged through on its way back, his wall does not run on into him: ' + JSON.stringify(s.log.says.slice(-5)));
-  assert.ok(!MR.realmWarded(s.e) && s.e.open > 2, 'scorched, he is not open');
+  assert.ok(!MR.realmWarded(s.e) && s.e.open > REALM.openT - 0.5, 'scorched, he is not open');
   assert.ok(MR.realmCue(s.e, s.P).open, 'scorched, the cue does not say he is open');
   assert.ok((s.log.sounds || []).some(([t, k]) => k === 'sting' && Math.abs(t - scorched) < 0.05), 'he opens without a sting');
   { const t1 = s.log.t; s.run(REALM.openT + 0.3); assert.ok((s.log.sounds || []).some(([t, k]) => k === 'golemChime' && t > t1), 'the window shuts without a sound'); }
@@ -115,7 +115,7 @@ const fireOut = {};
   assert.ok(back >= REALM.rest - 0.5, 'the next realm comes before he has had ' + REALM.rest + ' s in his hall: ' + back); }
 // ---- ICE ----
 { const r = intoRealm(1), R = r.e.realm, P = r.P, b = MR.realmBox(r.e, A);
-  P.x = (b.x0 + b.x1) / 2; P.y = (b.y0 + b.y1) / 2; r.run(30);
+  P.x = (b.x0 + b.x1) / 2; P.y = (b.y0 + b.y1) / 2; r.run(30, () => !r.e.realm);   /* (claude/ft4tune: stop if the realm ends - a returned shot opens it, and the opening is 2 s now) */
   const ic = r.log.hits.filter(h => h.blow === 'icicle'); assert.ok(ic.length >= 1, 'no icicle ever falls on a hero who stands still');
   for (const h of r.log.hits) { const ok = h.blow === 'icicle' ? R.icicles.some(q => q.crackAt !== undefined) && r.log.hits.every(() => true) : h.blow === 'ice' ? toldBefore(r.log, ['iceTell'], h.t, REALM.bolt.tellIce) : false;
     assert.ok(ok, 'an UNTOLD blow in the ice realm: ' + JSON.stringify(h)); }
@@ -138,7 +138,7 @@ const fireOut = {};
     assert.equal(h.e.mode, 'shattered', 'an icicle struck a stride beside his shell does not fall onto him: ' + [h.e.mode, Math.round(h.e.x - q.x)]); }
   MR.strikeRealm(s.e, { l: over.x - 8, r: over.x + 8, t: sb.y0 - 20, b: sb.y0 }, new Set(), s.c()); let t = 0; s.run(2, () => { t++; return s.e.mode === 'shattered'; });
   assert.equal(s.e.mode, 'shattered', 'an icicle struck over him does not break his shell: ' + [s.e.mode, s.e.x, over.x]);
-  assert.ok(s.e.open > 2 && MAGE.openMul >= 2, 'shattered, he is not open'); s.run(REALM.openT + 0.3); assert.ok(!s.e.realm && s.e.realmN === 2, 'the ice realm does not tear back'); }
+  assert.ok(s.e.open > REALM.openT - 0.5 && MAGE.openMul >= 2, 'shattered, he is not open'); s.run(REALM.openT + 0.3); assert.ok(!s.e.realm && s.e.realmN === 2, 'the ice realm does not tear back'); }
 // ---- POISON ----
 { const r = intoRealm(2), R = r.e.realm, P = r.P;
   const m0 = R.mire; r.run(10); assert.ok(m0 - R.mire > 30, 'the mire does not rise: ' + [m0, R.mire]);
@@ -222,11 +222,11 @@ const living = {};
     r.run(0.3); assert.ok(shot.gone, 'ice: his lance does not break on a floe');
     living.ice = { ...living.ice, ceil: MR.realmBox(r.e, A).y0 - y00, floes: R.floes.length, hid }; }
   { const r = intoRealm(1), R = r.e.realm, b = MR.realmBox(r.e, A); r.P.x = b.x0 + 100; r.P.y = (b.y0 + b.y1) / 2; R.dropT = 99; let n = 0;
-    r.run(14, () => { const q = r.e.shots.find(s => s.realmRet && !s.reflected && Math.hypot(s.x - r.P.x, s.y - (r.P.y - 8)) < 40); if (q && !(R.retCd > 0)) { r.setStrike({ l: q.x - 6, r: q.x + 6, t: q.y - 6, b: q.y + 6 }); r.step(); r.setStrike(null); n++; }
+    r.run(24, () => { const q = r.e.shots.find(s => s.realmRet && !s.reflected && Math.hypot(s.x - r.P.x, s.y - (r.P.y - 8)) < 40); if (q && !(R.retCd > 0)) { r.setStrike({ l: q.x - 6, r: q.x + 6, t: q.y - 6, b: q.y + 6 }); r.step(); r.setStrike(null); n++; }
       if (R.cracks === 1 && living.oneCrack === undefined) living.oneCrack = MR.realmWarded(r.e); return r.e.mode === 'shattered'; });
     assert.equal(living.oneCrack, true, 'ice: one lance batted back already breaks his shell');
-    assert.equal(r.e.mode, 'shattered', 'ice: two of his lances batted back do not shatter his shell: ' + JSON.stringify([n, R.cracks, r.log.says.slice(-4)]));
-    assert.ok(r.log.says.includes('TWO LANCES: HIS SHELL SHATTERS. HE IS OPEN'), 'ice: the shatter is not said'); }
+    assert.equal(r.e.mode, 'shattered', 'ice: three of his lances batted back do not shatter his shell: ' + JSON.stringify([n, R.cracks, r.log.says.slice(-4)]));
+    assert.ok(r.log.says.includes('THREE LANCES: HIS SHELL SHATTERS. HE IS OPEN'), 'ice: the shatter is not said'); }
   /* ---- POISON: the vents wake (the next one bubbles, he hops), the mire surges (told) with bone rafts to ride, and a spore ring struck back chokes him ---- */
   { const r = intoRealm(2), R = r.e.realm, Q2 = L2.poison2, b = MR.realmBox(r.e, A); r.P.x = (b.x0 + b.x1) / 2; let hopTo = null, ventAt = null;
     r.run(B.at[1] + 6, () => { r.P.y = Math.min(r.P.y, R.mire - 40); if (MR.OPEN.has(r.e.mode)) return true; if (R.next && !hopTo) hopTo = R.next; if (hopTo && R.vent === hopTo && !ventAt) ventAt = r.log.t; });
@@ -301,4 +301,4 @@ r.realms.forEach((q, k) => { const K = REALM.kinds[k];
   assert.ok(q.back, K + ': the realm does not return you to his hall: ' + JSON.stringify(q)); });
 assert.ok(r.dead && r.door && r.fightOver, 'his death does not open the desert door (or end the fight): ' + JSON.stringify(r));
 console.log('ok  undead-realms   at 75/50/25% he tears FIRE, ICE and POISON in turn (told ' + REALM.tear + ' s), warded in each till its one opening - his wall dodged back into him, an icicle on his shell, the vent while the beam is cut - every realm blow told first (fire: ' + fireOut.blows.join(' ') + '), each back to his hall, and his death opens the desert door');
-console.log('ok  undead-realms   LIVING (claude/ft4c): 3 told beats each ' + JSON.stringify(living) + ' - fire pits told 0.8 s, the tilt, his two perches, the brazier; the ice ceiling after its frost, the floes, two lances shatter; the vents bubble first, the surge told, rafts hold; a spore struck back chokes him; all of it moves with the hall');
+console.log('ok  undead-realms   LIVING (claude/ft4c): 3 told beats each ' + JSON.stringify(living) + ' - fire pits told 0.8 s, the tilt, his two perches, the brazier; the ice ceiling after its frost, the floes, three lances shatter; the vents bubble first, the surge told, rafts hold; a spore struck back chokes him; all of it moves with the hall');
