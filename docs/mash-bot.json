@@ -10632,8 +10632,8 @@
    "knight": {
     "deaths": 2,
     "minHpPct": 0,
-    "hpLostPct": 270,
-    "hits": 16,
+    "hpLostPct": 226,
+    "hits": 12,
     "walked": 100,
     "lifts": 49,
     "held": 3,
@@ -10644,14 +10644,14 @@
     "ridden": {},
     "machines": true,
     "frames": 15360,
-    "kills": 8,
+    "kills": 9,
     "heroLevel": 21
    },
    "warden": {
     "deaths": 2,
     "minHpPct": 0,
-    "hpLostPct": 213,
-    "hits": 12,
+    "hpLostPct": 200,
+    "hits": 10,
     "walked": 100,
     "lifts": 49,
     "held": 3,
@@ -10668,10 +10668,10 @@
    "pyro": {
     "deaths": 1,
     "minHpPct": 0,
-    "hpLostPct": 170,
+    "hpLostPct": 175,
     "hits": 11,
     "walked": 100,
-    "lifts": 48,
+    "lifts": 46,
     "held": 3,
     "duels": 1,
     "boardLifts": 0,
@@ -10679,8 +10679,8 @@
     "pulls": 0,
     "ridden": {},
     "machines": true,
-    "frames": 15357,
-    "kills": 7,
+    "frames": 15314,
+    "kills": 8,
     "heroLevel": 21
    }
   }
