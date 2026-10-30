@@ -2977,6 +2977,7 @@ async function runbossLab(BK, opts) {
         if(Z.oil&&(Z.oil.on||LANCE_RT(Z.oil))&&P.x>Z.oil.x0-8&&P.x<Z.oil.x1+8&&Math.abs(P.y-Z.oil.y)<30)flee=(P.x-Z.oil.x0<Z.oil.x1-P.x)?-1:1;
         if((boss.mode==='perch'||boss.mode==='stab')&&boss.stab&&Math.abs(P.x-boss.stab.x)<36&&Math.abs(P.y-boss.stab.y)<30)flee=Math.sign(P.x-boss.stab.x)||1;
         if(boss.mode==='shieldwall'&&(P.x-boss.x)*boss.face>0&&Math.abs(P.x-boss.x)<70)flee=boss.face;
+        for(const s of (Z.stones||[]))if(!s.done&&s.max-s.t>0.3&&Math.abs(P.x-s.x)<22&&Math.abs(P.y-s.y)<30)flee=Math.sign(P.x-s.x)||1;   /* (claude/lance4) out of a stone's red ring */
         if(flee){k.left=flee<0;k.right=flee>0;k.block=false;}
         if(Z.bolt&&Z.bolt.live&&onDeck&&P.ground&&Z.bolt.x-P.x<70&&Z.bolt.x>P.x-6){BK.press('jump');P.labJump=14;}
       }
