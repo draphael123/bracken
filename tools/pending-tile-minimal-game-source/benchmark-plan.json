@@ -1,0 +1,96 @@
+{
+  "time": "2026-10-30T02:02:07.973Z",
+  "manifestSha256": "586c437bec5f2f8f3401061712c1660c24cbd116251f5c8a8143a677b971fc3c",
+  "helperSha256": "670a601f1dc89583112a81f3a1b9e918692172c7a591656e9ce12ff3a53b709f",
+  "component": {
+    "complete": true,
+    "familyCases": 4928,
+    "publicCases": 672,
+    "coreCases": 120,
+    "rng": 0,
+    "processes": {
+      "launches": 1,
+      "closures": 1,
+      "allClosed": true,
+      "profileAbsences": [
+        {
+          "profile": "/tmp/bracken-look-7LqJ1s",
+          "absent": true
+        }
+      ],
+      "interruptions": [],
+      "maxRendererMb": 1064,
+      "events": [
+        {
+          "type": "launch",
+          "pid": 2628,
+          "profile": "/tmp/bracken-look-7LqJ1s",
+          "time": 1793315539052
+        },
+        {
+          "type": "native-lab-collection",
+          "time": 1793315596992,
+          "requests": 0,
+          "completed": 0,
+          "failed": 0,
+          "postEvaluations": 2
+        },
+        {
+          "type": "closed",
+          "pid": 2628,
+          "profile": "/tmp/bracken-look-7LqJ1s",
+          "time": 1793315597120,
+          "peak": {
+            "totalMb": 2450,
+            "rendererMb": 1064
+          },
+          "reason": null
+        }
+      ]
+    },
+    "time": "2026-10-29T23:14:46.938Z",
+    "run": 40971314848,
+    "controller": "6cfba463447f67be6bb16802add13bd817624405",
+    "qualifiedForGameIntegration": true,
+    "rawReceipt": "work/pending-tile-flat-cloud-6cfba463/pending-tile-flat-component/receipt.json",
+    "rawSha256": "49597f9c153ce7d24c4f3e924968e08ea1bd7e49e58ec654c0610fcdfad38a81",
+    "nativePolicyAndMainFallbackPrerequisitesVerified": true,
+    "arrayWriteControl": {
+      "priorHelperSha256": "72af32eedb3c2e3c2d64d9eea7d650fa1d16ca69bc621d032637869fb9b6164f",
+      "replaysBefore": 0,
+      "replaysAfter": 1,
+      "pendingAfter": false,
+      "sourceDerivedCauseObserved": true
+    },
+    "originalGuardsAndNativeGcVerified": true,
+    "closed": true
+  },
+  "node": {
+    "complete": true,
+    "levels": 64,
+    "browsers": 0,
+    "priorFailureReproduced": true
+  },
+  "componentCloud": {
+    "workflow": "load-perf-proof.yml",
+    "mode": "pending-tile-flat-component-oct29",
+    "status": "completed",
+    "outerTimeoutMinutes": 15,
+    "evaluationDeadlineMs": 240000,
+    "audited": true,
+    "controller": "6cfba463447f67be6bb16802add13bd817624405",
+    "directory": "work/pending-tile-flat-cloud-6cfba463",
+    "run": 40971314848,
+    "url": "https://github.com/draphael123/bracken/actions/runs/40971314848",
+    "createdAt": "2026-10-29T23:10:46Z",
+    "conclusion": "success"
+  },
+  "scope": "Fresh exact minimal9file source versus originalGame+sameUI; original19levels/342readbacks/228pairs and all original controls, plus15percent whole-phase criterion. No D6 or prior-source pass inherited.",
+  "nativeProofEnvelopeCorrection": {
+    "priorActualSchema": "native and node audit fields",
+    "newMappedEnvelope": "All older gate facts derived from audited raw120case/64Node evidence; no fabricated or skipped condition",
+    "allOriginalPageEvidenceGuardsRetained": true,
+    "onlyCoreCountStrengthened114to120": true,
+    "priorLoaderBrowsers": 0
+  }
+}
