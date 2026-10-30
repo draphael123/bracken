@@ -3449,6 +3449,7 @@ const ELITE = {
   gobmage: { name: 'THE ARCHDEACON', own: true, mod: true, hp: 11 },   /* THE LIT CHURCH's elite (claude/litchurch): a priest's machine, his prayer over his whole room and his rites in src/lit-church-hands.js (mod: the elite adds the leash, the gate and the purse) */
   mummy: { name: 'THE TOMB-WARDEN', hp: 2.0, own: true, mod: true },   /* THE SEALED PYRAMID's exam (claude/sealedpyramid): under the deep way's block with a scarab pit at his back - his lash and grab are his own (src/mummy.js), the elite adds the body, the guard, the gate and the purse */
   construct: { name: 'THE BRASS WARDEN', hp: 1.4, own: true, mod: true },   /* THE BURIED CITY's section exams (claude/buriedcity fix pass M4: the halls 295, the quarter 388, the throne street 486): its poke and sweep are its own (src/construct.js), the elite adds the body, the guard, the leash, the gate and the purse - before this row a construct marked elite stood up a plain construct */
+  berserker: { name: 'THE WAR-RUNNER', hp: 2, own: true, mod: true },   /* (claude/warcairn2tune) THE CLAN'S ELITE RUNNER (War Cairn 2's yard and low line): his charge and rampage are the berserker's own (updateBerserker); the elite adds the body, the leash and the purse. mod: no guard holds a charger still */
   boarder: { name: 'THE BOARDING MASTER', hp: 10, own: true }, hedgeknight: { name: 'A HEDGE KNIGHT CHAMPION', own: true, hp: 5.5 }, heavy: { name: "THE KING'S CHAMPION", own: true, hp: 2.3 },
 };
 /* big: HALF AS BIG AGAIN, body and all. At 1.2 an elite was a goblin with a gold edge; at 1.5 it stands a head over the crowd it leads.
@@ -3544,6 +3545,7 @@ function updateElite(e, dt) {
   if (e.t === 'gobmage') return false;   /* THE ARCHDEACON: his bolt and his sigil are the priest's own (updateGobMage), his prayer and rites src/lit-church-hands.js's */
   if (e.t === 'drownedcaptain') return false;   /* the lunge and the combo are his own (updateDrownedKnight): only the leash, the gate and the purse are the elite's */
   if (e.t === 'mummy') return false;   /* (claude/sealedpyramid) THE TOMB-WARDEN: his lash and his grab are his own (src/mummy.js mummyStep): only the leash, the gate and the purse are the elite's */
+  if (e.t === 'berserker') return false;   /* (claude/warcairn2tune) the charge is the berserker's own: only the leash, the gate and the purse are the elite's */
   if (e.t === 'construct') return false;   /* its poke and its sweep are its own (src/construct.js constructStep): only the leash, the gate and the purse are the elite's */
   return false;
 }
