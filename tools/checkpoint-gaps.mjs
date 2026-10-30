@@ -25,6 +25,7 @@ import { THIN, CHECK_DROP, CHECK_PIN } from '../src/checkpoint-thin.js';
 import { MAX, MIN, judgeLevel, A10B, judgeLevelA10b } from './checkpoint-rule.mjs';
 export { MAX, MIN };
 const KNOWN = new Map([
+  ['fallingtower', 'FALLING TOWER 4 (claude/ft4b, Daniel 10-29 #4: checkpoints 8 -> 4, one braced room an act + one before him): ACT II - the Observatory, the Pendulum Gallery and the Alchemy Lab under THE COLLAPSE FRONT - runs ~263 route tiles from its braced room to the next, on purpose (the front never kills: it hurts and throws you up). Delete this line if a shrine is ever put in act II.'],
   ['kings', 'THE BURNING WOOD ESCAPE runs 220 route tiles from the last shrine (route 415) with no shrine in it, on purpose: claude/kingsfix2 lengthened it 40 columns (Daniel 10-23 playtest; src/kingswood.js checkRun 240). Delete this line if a shrine is ever put in it.'],
 ]);
 const bad = [], stale = [], rows = [], a10b = []; let total = 0;

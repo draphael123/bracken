@@ -64,7 +64,7 @@ import * as APL from './arena-polish.js'; const aplTint = APL.makeTint();   /* (
 import { attackPose } from './attack-animation.js'; import * as CM from './commit.js';   /* WEIGHT (Daniel 10-02): COMMITMENT + STAMINA - the commit, the held buffer, the bar's rules (src/commit.js) */
 import { AMBUSH_HEALTH } from './ambush.js';
 import {drawTowerBackdrop,gateOccupied,updateTowerAscent,towerAscentReset} from './tower-ascent.js';
-import { ftUpdate, ftMover, ftDraw, FT2, ftReset } from './tower-fall2.js';   /* THE FALLING TOWER 2 (claude/fallingtower2): debris on told shadows, burning books, spills, the tilting vault, the outer face, the snap */
+import { ftUpdate, ftMover, ftDraw, FT2, ftReset } from './tower-fall2.js'; import { ft4Update, ft4Draw, ft4Reset } from './tower-front.js';   /* (claude/ft4b) FALLING TOWER 4: THE COLLAPSE FRONT's acts, set pieces and braced rooms */   /* THE FALLING TOWER 2 (claude/fallingtower2): debris on told shadows, burning books, spills, the tilting vault, the outer face, the snap */
 import { crumbleStep, crackMarks } from './tower-collapse.js'; import * as FTW from './redraw/fallen_tower.js';   /* THE FALLING TOWER's FAILING STONE (docs/briefs/falling-tower-rework.md) */
 import {bakeCoastalFoe} from './coastal-foes.js';
 import {drawClimbCues} from './haunted-coast.js';
@@ -2688,6 +2688,7 @@ function spawnEntities() {
     /* (claude/fallingtower3) THE CHASE STARTS AGAIN WHOLE: every room's floor and ledges back, every cracked pillar standing, the arena its first room */
     if(L.chase3){for(let k=0;k<CH3_ROOMS.length;k++)for(const [x0,x1,y0,y1] of chase3Clear(k))for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++)cellSet(x,y,grid0[y*LW+x]);for(const [x0,x1,y0,y1] of chase3AscentClear())for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++)cellSet(x,y,grid0[y*LW+x]);if(L.arena&&L.arena.chaseArena)Object.assign(L.arena,L.arena.chaseArena,{ascent:false});if(L.carpetAt0)L.carpetAt={...L.carpetAt0};L.hallFadeT=null;}   /* (claude/ft4a) and THE ASCENT's plug and crown, and the rug back in the core */
     supportsReset(L,(x,y)=>cellSet(x,y,grid0[y*LW+x]));
+    if(L.ft4)ft4Reset(L,(x,y)=>cellSet(x,y,grid0[y*LW+x]));   /* (claude/ft4b) the set pieces stand again: the shelves, the ribs, the sheared gallery, the bell, the face's planks */
     /* AND HIS DOOR SHUTS AGAIN. A death in the fire with the way out already open used to leave that second portal
        hanging there through the whole re-fight, because it lives on L and L is not rebuilt on a retry. Past it (on the
        sand) there is nothing to shut: sandWalk stays, and so does the gate it unlocks. */
@@ -16063,7 +16064,7 @@ let DESERT_END = null;
 function desertEndArt() { if (DESERT_END) return DESERT_END; const A = cvArt(), one = c => (Array.isArray(c) ? c[0] : c);
   return (DESERT_END = { sky: DZ.bakeDesertSky(VH), far: DZ.bakeFarMesas(320, 70), mid: DZ.bakeMidDunes(480, 80), wagon: A.wagon[0], skull: one(A.bones.skull), tree: A.deadTree }); }
 function drawMageTiles(cx, cy) {
-  if(L.fallingTower){drawDeckBreaks(g,L,cx,cy,time);if(L.ft2)ftDraw(g,L,P,cx,cy,time,(s,x,y,col,al,z)=>text(s,x,y,col,al||'center',z||6),movers);}   /* (fallingtower2) */
+  if(L.fallingTower){drawDeckBreaks(g,L,cx,cy,time);if(L.ft2)ftDraw(g,L,P,cx,cy,time,(s,x,y,col,al,z)=>text(s,x,y,col,al||'center',z||6),movers);if(L.ft4)ft4Draw(g,L,P,cx,cy,time,(s,x,y,col,al,z)=>text(s,x,y,col,al||'center',z||6),chases);}   /* (claude/ft4b) the front's tell, the braced rooms, the set pieces */   /* (fallingtower2) */
   if (!MG || !L.mage) return; const A = ma(), S = A.skins; if (!S) return;
   const tx0 = Math.max(0, Math.floor(cx / TS) - 1), tx1 = Math.min(LW - 1, Math.ceil((cx + VW) / TS) + 1), ty0 = Math.max(0, Math.floor(cy / TS)), ty1 = Math.min(LH - 1, Math.floor((cy + VH) / TS) + 1);
   const lip = (x, y) => { g.fillStyle = 'rgba(236,224,255,0.55)'; g.fillRect(x, y, TS, 1); g.fillStyle = 'rgba(236,224,255,0.2)'; g.fillRect(x, y + 1, TS, 1); };
@@ -21143,6 +21144,20 @@ function drawCrumbles(cx,cy){
   text(String(n),Math.round(sx+w/2),Math.round(sy-22-4*pop),col,'center',n===1?16:12);}
 }
 /* THE FALLING TOWER, every frame: the floors going under you, and the carpet at the top */
+/* (claude/ft4b) FALLING TOWER 4, LANE B: THE TOWER COMES DOWN AROUND YOU (src/tower-front.js). The acts' banners, the five set pieces, the braced rooms, the
+   Outer Face's planks peeling as THE COLLAPSE FRONT comes up it - and a SAFE SPOT never under the front: a fall into THE DROP (or a pit) puts you back
+   on footing over its edge, never on a plank it has taken (hazardBack reads P.safe) */
+function updateFt4(dt){
+ const fronts=chases.filter(q=>q.sp.ft4);
+ ft4Update(L,P,dt,{T,set:(x,y,t)=>cellSet(x,y,t),tile:(x,y)=>tileAt(x,y),hurt:(x,d,name)=>damagePlayer(x,d,{unblockable:true,name}),say:s=>callout(s),
+  sound:k=>(SFX[k]||({creak:SFX.clank,heavy:SFX.thud})[k]||SFX.stone)(),shake:n=>shakeCam(n),dust:(x,y,n)=>dust(x,y,n),burst:(x,y,n,cols)=>burst(x,y,n,cols,60,.9,420,2),
+  onMover:()=>P.onMover||null,sextonDown:()=>!enemies.some(q=>q.t==='sexton'&&q.alive),supportDown:id=>(L.ftSupports||[]).some(s=>s.id===id&&s.st==='down'),
+  crumbleBreak:b=>{for(const q of L.crumbles||[])if(q.kind==='deck'&&q.x1>=b[0]&&q.x0<=b[1])crumbleBreakAt(q);},carry:dy=>{P.y+=dy;P.vy=0;},slick:z=>{L.slick=(L.slick||[]).concat([z]);},
+  front:id=>fronts.find(q=>q.sp.id===id)||null,busy:miniActive||bossActive});
+ for(const c of fronts){if(c.st.phase!=='run'||!P.safe||P.safe.L!==L||P.safe.y<c.st.pos-2)continue;
+  const to=chaseSafeAbove(c.sp,c.st.pos,P.x,(tx,row)=>{const t=tileAt(tx,row);return(t===T.ONEWAY||t===T.SOLID||t===T.PLANK)&&tileAt(tx,row-1)===T.AIR&&tileAt(tx,row-2)===T.AIR;});
+  if(to){P.safe.x=to.x;P.safe.y=to.y;}}
+}
 function updateAscent(dt){
  if(!L.towerAscent)return;
  /* THE SPIRAL STAIR IS FRAMED ON ITS OWN WALLS: the camera holds to the stair tower's width (centred on it when the view is wider), so the
@@ -21156,12 +21171,12 @@ function updateAscent(dt){
    if(how==='seal'){cellSet(x,y,T.SOLID);return true;}
    if(how==='restore'){cellSet(x,y,grid0[i]);return true;}
    if(t===T.AIR)return false;cellSet(x,y,T.AIR);if(Math.random()<0.08)parts.push({x:x*TS+8,y:y*TS+8,vx:(Math.random()-.5)*60,vy:-20,life:1.2,max:1.2,col:Math.random()<.5?'#726a8a':'#c0b4d0',size:2,grav:420});return true;},
-  crash:(f,y)=>{shakeCam(4);if(Math.abs(y*TS-P.y)<VH)SFX.stone();},
+  crash:(f,y)=>{shakeCam(4);if(Math.abs(y*TS-P.y)<VH)SFX.stone();},frontY:id=>{const c=chases.find(q=>q.sp.id===id);return c&&(c.st.phase==='run'||c.st.phase==='done')?c.st.pos:null;},   /* (claude/ft4b) THE COLLAPSE FRONT takes the floors it rises through */
   warn:f=>{shakeCam(3);SFX.rumble&&SFX.rumble();if(!f.last)number(P.x,P.y-40,f.name+' GOES DOWN BEHIND YOU','#ff9a5c');}});
  updateCrumbles(dt);
  /* (claude/fallingtower3) THE CRACKED PILLARS: a blow on one, its told collapse, and what it brings down (src/tower-supports.js) */
  if(L.ftSupports)supportsUpdate(L,P,dt,{T,strike:()=>P.atk>=0&&!P.dead?attackBox():null,set:(x,y,t)=>cellSet(x,y,t),resolve:()=>resolveTiles(),foes:()=>enemies.filter(q=>q.alive&&!q.maxHp&&!q.mini&&q!==boss),hurt:(q,d)=>hurtEnemy(q,d,q.x-P.face*8,false),
-  holdDark:s=>{for(const c of chases)if(c.sp.id==='towerscroll')c.st.hold=Math.max(c.st.hold||0,s);},vault:s=>chase3Vault(s),say:(x,y,s,col)=>number(x,y,s,col),callout:s=>callout(s),sound:k=>(SFX[k]||({rumble:SFX.stone})[k]||SFX.stone)(),shake:n=>shakeCam(n),dust:(x,y,n)=>dust(x,y,n),
+  holdDark:s=>{for(const c of chases)if(c.sp.id==='towerscroll'||(c.sp.ft4&&c.st.phase==='run'))c.st.hold=Math.max(c.st.hold||0,s);},   /* (claude/ft4b: a plug holds THE COLLAPSE FRONT too) */vault:s=>chase3Vault(s),say:(x,y,s,col)=>number(x,y,s,col),callout:s=>callout(s),sound:k=>(SFX[k]||({rumble:SFX.stone})[k]||SFX.stone)(),shake:n=>shakeCam(n),dust:(x,y,n)=>dust(x,y,n),
   burst:(x,y,n,cols)=>burst(x,y,n,cols,60,.9,420,2)});
  /* THE CORE (claude/fallingtower3): poured off the chase's last floor, you land on his carpet - its board check takes you up through his door */
  /* (claude/ft4a) THE RUG RISES TO CATCH YOU: poured into the core, you are not walked to it (the core was dead air) and not snapped onto it - it flies up under you */
@@ -21170,6 +21185,7 @@ function updateAscent(dt){
   hurt:(x,d,blow)=>damagePlayer(x,d,{unblockable:blow!=='chest',name:{debris:'FALLING STONE',flare:'THE BURNING BOOKS',chest:'A SLIDING CHEST',lightning:'THE LIGHTNING'}[blow]||'THE TOWER'}),
   fall:()=>{damagePlayer(P.x,1,{unblockable:true,pct:SV.HAZARD.pct,name:'THE DROP'});if(!P.dead&&P.hp>0)hazardBack();},
   say:(x,y,s,col)=>number(x,y,s,col),callout:s=>callout(s),sound:k=>(SFX[k]||({creak:SFX.clank,whoosh:SFX.throwWhoosh})[k]||SFX.stone)(),shake:n=>shakeCam(n),push:dx=>{moveBody(P,dx,0,false);},dust:(x,y,n)=>dust(x,y,n)});   /* (fallingtower2) src/tower-fall2.js */
+ if(L.ft4)updateFt4(dt);   /* (claude/ft4b) FALLING TOWER 4: the acts, the set pieces, the braced rooms, the face peeling (src/tower-front.js) */
  updateCarpet(L,P,dt,{board:()=>{SFX.leap();SFX.throwWhoosh&&SFX.throwWhoosh();dcBank();number(P.x,P.y-30,L.sanctum?'THROUGH THE DOOR':'THE CARPET RISES','#e0b050');checkpoint={x:L.carpetAt.x-5*TS,y:L.carpetAt.y+TS};   /* a retry comes back on the walk beside it, not on it: a breath before the sky again */if(L.chase3){checkpoint={...L.chase3.check};chaseToAscent();}   /* (claude/fallingtower3) THE CHASE: up through his door into the hall, and a retry is the whole fight from his ring */if(L.sanctum&&!L.chase3){shakeCam(6);zoomKick(1.12,.5);flash=Math.max(flash,.3);burst(P.x,P.y,26,['#b07cf0','#e0c8ff','#4a2a7a'],150,.9,0,2);camX=P.x-VW/2;camY=P.y-VH/2;}else if(L.chase3){SFX.leap();burst(P.x,P.y,18,['#e0b050','#f3ce77','#c9463d'],110,.7,0,2);}   /* A DOOR SNAPS. Without this the camera panned the 160px from the parapet up to the spawn, which reads as flying there - the one thing a portal is not */if(boss&&boss.alive&&!bossActive&&boss.t==='undeadmage')bossStart();for(const c of chases)if(c.sp.id==='towerscroll')chaseReset(c.st);   /* THE RISING DARK stays on the stair (claude/towerscroll) */}});
  /* THE SECOND DOOR: through it the carpet is left behind, the sky goes warm, and the last walk of the world is on sand */
  updateSanctum(L,P,dt,{leave:out=>{burst(out.x,out.y,26,['#e0b050','#ffe9b0','#8a5a1a'],150,.9,0,2);
@@ -25573,6 +25589,7 @@ function updateChase(dt) {
   for (const c of chases) for (const b of c.sp.beams) if (chaseBeamCd <= 0 && beamHit(duckBox(P), duckClears(P, b.y), b, time)) { chaseBeamCd = CHASE_BEAM.cd; damagePlayer((b.x0 + b.x1) / 2, b.dmg, { unblockable: true, name: b.name }); SFX.thud(); shakeCam(3); }   /* THE DUCK answers a beam: duckClears, never the down key */
   for (const c of chases) {
     if (c.st.phase === 'idle' && (chases.some(o => o !== c && o.st.phase === 'run') || !chaseInZone(c.sp, P.x, P.y))) continue;   /* (a zone: its start line counts only there) */
+    if (c.st.phase === 'idle' && c.sp.after === 'bell' && !(L.ft4 && L.ft4.rt && L.ft4.rt.bell.st === 'down')) continue;   /* (claude/ft4b) THE FALLING TOWER's act III front waits for THE BELL FALLS */
     c.st.flashT = Math.max(0, (c.st.flashT || 0) - dt);
     for (const e of chaseStep(c.sp, c.st, chaseHero(c.sp), dt, !!P.ground)) chaseEvent(c, e);
     if (c.sp.runsOver && c.st.phase === 'run') for (const q of enemies) if (q.alive && !q.boss && (q.x - c.st.pos) * c.sp.dir < 0 && chaseInZone(c.sp, q.x, q.y - 4)) { q.alive = false; burst(q.x, q.y - 10, 12, COLS[q.t] || ['#9ae0a8', '#ffffff'], 80, 0.5); spawnCorpse(q, 1); if (FAIR) FAIR.runOver++; }   /* THE GHOST TRAIN runs over what it overtakes in its cutting too (claude/fairfix) */

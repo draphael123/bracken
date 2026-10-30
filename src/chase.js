@@ -73,7 +73,8 @@ export function chaseSpec(c) {
     from: num(c.from, trigger - dir * gap0), gap0, curve, lead: num(c.lead, 1.6), accel: num(c.accel, 140), rubber: rb,
     contact: c.contact === 'hurt' ? 'hurt' : 'kill', dmg: num(c.dmg, 45), hold: num(c.hold, 0.7),
     autoscroll: !!c.autoscroll, edge: num(c.edge, 24), show: Number.isFinite(c.show) ? c.show : null, showKeep: num(c.showKeep, 0.1), glow: num(c.glow, 300), look: c.look || 'rock', music: c.music || null, say: c.say || 'RUN!', zone: Array.isArray(c.zone) && c.zone.length === 4 ? c.zone.slice() : null,
-    beams: (c.beams || []).map(b => ({ th: BEAM.th, dmg: BEAM.dmg, name: 'A LOW BEAM', ...b })), checkpoint: c.checkpoint || null, runsOver: !!c.runsOver };
+    beams: (c.beams || []).map(b => ({ th: BEAM.th, dmg: BEAM.dmg, name: 'A LOW BEAM', ...b })), checkpoint: c.checkpoint || null, runsOver: !!c.runsOver,
+    drawZone: Array.isArray(c.drawZone) && c.drawZone.length === 4 ? c.drawZone.slice() : null, ft4: !!c.ft4, act: c.act || 0, after: c.after || null };   /* (claude/ft4b) drawZone: where it is DRAWN when that is wider than where its start line counts (the Falling Tower's collapse front); ft4/act/after: the tower's own (src/tower-front.js) */
 }
 export const newChase = () => ({ phase: 'idle', pos: 0, dist: 0, speed: 0, t: 0, warned: {}, warnT: 0, warnText: '', hold: 0, crash: 0, rumT: 0, capI: 0, hits: 0 });
 export const chaseReset = st => Object.assign(st, newChase());
@@ -174,7 +175,7 @@ export function drawChaser(g, sp, st, cx, cy, VW, VH, time) {
   if (st.phase === 'idle') return;
   const L = LOOKS[sp.look] || LOOKS.rock, x = Math.round(st.pos - (sp.axis === 'x' ? cx : cy)), depth = 260;
   g.save();
-  if (sp.zone) { const zx = sp.zone[0] - cx, zy = sp.zone[2] - cy; g.beginPath(); g.rect(Math.round(zx), Math.round(zy), Math.round(sp.zone[1] - sp.zone[0]), Math.round(sp.zone[3] - sp.zone[2])); g.clip(); }   /* only over its own place */
+  { const z = sp.drawZone || sp.zone; if (z) { const zx = z[0] - cx, zy = z[2] - cy; g.beginPath(); g.rect(Math.round(zx), Math.round(zy), Math.round(z[1] - z[0]), Math.round(z[3] - z[2])); g.clip(); } }   /* only over its own place */
   const jag = i => Math.round(Math.sin(i * 1.7 + time * 9) * 3 + Math.sin(i * 0.6) * 4);
   if (sp.look === 'train' && sp.axis === 'x') { drawTrain(g, sp, x, (sp.zone ? Math.floor(sp.zone[3] / TS) * TS : cy + VH) - cy, time);   /* on the zone's floor tile */ g.restore(); return; }
   if (sp.axis === 'x') { const lo = sp.dir > 0 ? x - depth : x, hi = sp.dir > 0 ? x : x + depth;
