@@ -35,6 +35,7 @@ try {
     if(want('chief')){load();go(Math.floor(A.trigger/16)+1,Math.floor(A.floor/16)-1,260);const b=BK.boss,BH=BK.bzchiefHands(),S=BH&&BH.show();
       if(b&&S){P().x=b.x-150;S.throwCd=0;S.axe=null;S.oneHand=false;b.face=-1;b.mode='throwTell';b.modeT=0.01;for(let i=0;i<80;i++){BK.sim(1);if(S.axe&&!S.axe.fly)break;}shot('chief-hatchet',4);
         BK.sim(200);b.mode='walk';b.modeT=2;S.ward=0;S.rage=40;S.ph=2;shot('chief-rage-lo');S.rage=85;shot('chief-rage-hi');S.frenzy=8;S.rage=0;b.phase=2;shot('chief-frenzy');
+        S.frenzy=0;S.rage=90;b.phase=2;P().x=b.x-70;b.face=-1;b.mode='counterTell';b.modeT=0.3;shot('chief-counter',1);BK.sim(2);b.mode='counterTell';b.modeT=0.5;shot('chief-counter2',1);BK.sim(60);b.mode='walk';S.ward=0;S.frenzy=0;BK.sim(5);b.mode='staggered';b.open=3;shot('chief-stagger',1);
         P().x=A.x0+60;shot('summit-braziers',2);P().x=A.x1-150;shot('summit-cairn',2);}}
     BK.manualSimulation=false;return out;})()`, 900000);
   for (const s of r) { writeFileSync(join(OUT, PRE + '-' + s.tag + '.png'), Buffer.from(s.png.split(',')[1], 'base64')); console.log(PRE + '-' + s.tag + '.png'); }
