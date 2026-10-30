@@ -37,6 +37,7 @@ export const FT4 = {
 };
 export const FT4_LINES = ['ACT I - THE FIRST CRACK', 'ACT II - IT GIVES', 'ACT III - RACE TO THE TOP', 'THE SHELVES GO', 'THE DOME COMES IN', 'THE GALLERY SHEARS: HOLD ON', 'THE GREAT BELL TEARS LOOSE',
   'THE BELL IS DOWN: THE TOWER GOES', 'THE OUTER FACE PEELS', FT4.braced];
+import { paintCrack, paintWallBreak, paintButtress, paintActPlate, paintShearCrack, paintShearDust, paintCase, paintCaseLying, paintRib, paintRibDown, paintBell, paintBellImpact, paintPlankTell, paintPlankFall } from './redraw/ft4_art.js';   /* (claude/ft4art) the paint */
 const TS = 16;
 
 /* THE FRONT'S SPEC (a src/chase.js spec): landings = [{ row, stop? }] bottom to top - row: the landing's tile row (its top is where you stand);
@@ -46,7 +47,7 @@ export function frontSpec(o) {
   const caps = o.landings.map(l => ({ reach: l.row * TS - 4, stop: ((l.stop ?? l.row) + 1) * TS + 6 }));
   return { id: o.id, name: o.name, say: o.say, axis: 'y', dir: -1, trigger: o.trigger, end: o.end, gap0: o.gap0 ?? 120,
     curve: o.curve, lead: 1.6, accel: 24, rubber: o.rubber, contact: 'hurt', dmg: o.dmg ?? 21, hold: 1.2, band: true,
-    caps, knockTo: o.knockTo, autoscroll: true, edge: 24, show: 28, showKeep: 0.55, glow: 220, look: 'rock', zone: o.zone, checkpoint: o.checkpoint,
+    caps, knockTo: o.knockTo, autoscroll: true, edge: 24, show: 28, showKeep: 0.55, glow: 220, look: 'collapse', zone: o.zone, checkpoint: o.checkpoint,
     ft4: true, act: o.act, after: o.after || null, drawZone: o.drawZone || null };
 }
 
@@ -130,53 +131,57 @@ function stepBell(F, p, S, P, dt, c) {
     if (B.y > deckY + 300) { B.st = 'down'; S.st = 'done'; c.say(p.after); c.shake(6); } }
 }
 
-/* ---------------- drawing (world space; greybox - ft4art paints it) ---------------- */
+/* ---------------- drawing (world space; claude/ft4art paints it - src/redraw/ft4_art.js has every piece) ---------------- */
 const R_ = (g, c, x, y, w, h) => { g.fillStyle = c; g.fillRect(Math.round(x), Math.round(y), Math.round(w), Math.round(h)); };
 export function ft4Draw(g, L, P, cx, cy, time, T, chases) {
   const F = L && L.ft4; if (!F || !F.rt) return; const R = F.rt, VW = g.canvas.width, VH = g.canvas.height, blink = Math.floor(time * 8) % 2;
-  // THE FRONT'S TELL: a red crack running ahead of its edge (what goes next), and the tower's stone breaking off the walls in a wave
+  // THE FRONT'S TELL: a crack running ahead of its edge (what goes next), and the tower's stone breaking off both walls in a wave
   for (const ch of chases || []) { if (!ch.sp.ft4 || ch.st.phase !== 'run') continue; const y = Math.round(ch.st.pos - cy) - FT4.front.warn; if (y < -20 || y > VH + 20) continue;
     const x0 = Math.round((F.x0 - (ch.sp.act === 3 ? 11 : 0)) * TS - cx), x1 = Math.round((F.x1 + 1) * TS - cx);
-    for (let x = Math.max(0, x0); x < Math.min(VW, x1); x += 6) { const j = Math.round(Math.sin(x * 0.37 + time * 3) * 2); R_(g, blink ? '#ff6b6b' : '#c9463d', x, y + j, 4, 1); if ((x / 6) % 3 === 0) R_(g, '#ffb070', x + 2, y + j + 1, 1, 2); }
-    for (let i = 0; i < 8; i++) { const wx = i % 2 ? x0 + 4 : x1 - 10, yy = y + 6 + ((time * 70 + i * 17) % 40); R_(g, '#726a8a', wx + ((i * 5) % 7), yy, 3, 3); } }
+    paintCrack(g, Math.max(0, x0), Math.min(VW, x1), y, time);
+    if (x0 > -4) paintWallBreak(g, x0, y + 4, 1, time); if (x1 < VW + 4) paintWallBreak(g, x1, y + 4, -1, time + 0.37); }
   // THE BRACED ROOMS: two stone buttresses with iron bands either side of the shrine
-  for (const b of F.braced || []) for (const bx of b.posts) { const x = Math.round(bx * TS - cx), y = Math.round((b.box[3] + 1) * TS - cy); if (x < -30 || x > VW + 30 || y < -10 || y > VH + 90) continue;
-    R_(g, '#3a3448', x, y - 64, 10, 64); R_(g, '#5a5470', x + 1, y - 64, 3, 64); R_(g, '#1c1a24', x, y - 48, 10, 2); R_(g, '#1c1a24', x, y - 20, 10, 2); R_(g, '#8a8e9c', x - 2, y - 66, 14, 3); }
+  for (const b of F.braced || []) b.posts.forEach((bx, i) => { const x = Math.round(bx * TS - cx), y = Math.round((b.box[3] + 1) * TS - cy); if (x < -30 || x > VW + 30 || y < -10 || y > VH + 90) return; paintButtress(g, x, y, time, i > 0); });
+  // THE ACTS: the tablet that comes up with each act's banner
+  for (const n of [1, 2, 3]) { if (!R.seen['act' + n]) continue; R.plated = R.plated || {}; if (R.plated[n] === undefined) R.plated[n] = time; const age = time - R.plated[n]; if (age < 3.7 && n === R.act) paintActPlate(g, Math.round(VW / 2), 36, n, age, time); }
   // THE SET PIECES
   for (const p of F.pieces || []) { const S = R.pieces[p.id]; if (!S) continue;
     if (p.kind === 'shear') { if (S.st === 'run' && S.i === 0) { const k = Math.min(1, S.t / FT4.shear.tell), x = Math.round((p.crack[0] + 0.5) * TS - cx), ya = Math.round((p.crack[2] + 1) * TS - cy), yb = Math.round(ya - (p.crack[2] - p.crack[1] + 1) * TS * k);
-        for (let y = ya; y > yb; y -= 3) R_(g, blink ? '#ff6b6b' : '#ffb070', x + Math.round(Math.sin(y * 0.3) * 3), y - 3, 2, 3);
+        paintShearCrack(g, x, ya, yb, time);
         for (const [x0, x1, row] of p.ledges) for (let xx = x0; xx <= x1; xx++) R_(g, blink ? '#ff6b6b' : '#c9463d', xx * TS - cx + 3, row * TS - cy + 13, 10, 2); }
+      if (S.i === 1) { if (S.fxT0 === undefined) S.fxT0 = time; for (const [x0, x1, row] of p.ledges) paintShearDust(g, x0 * TS - cx, (x1 + 1) * TS - cx, row * TS - cy, p.rows ?? FT4.shear.rows, time - S.fxT0); }   /* the drop: its dust and rubble */
       continue; }
-    if (p.kind === 'bell') { drawBell(g, F, R.bell, cx, cy, time, p); continue; }
+    if (p.kind === 'bell') { drawBell(g, F, R, cx, cy, time, p); continue; }
     p.items.forEach((it, i) => { const q = S.items[i], [x0, x1, row] = it.span, sx = Math.round(x0 * TS - cx), w = (x1 - x0 + 1) * TS, sy = Math.round(row * TS - cy); if (sx > VW + 40 || sx + w < -40 || sy < -200 || sy > VH + 200) return;
       const top = Math.round((it.from ?? row - 8) * TS - cy);
-      if (q.st === 'wait' || q.st === 'tell' || q.st === 'held') { if (it.look === 'case') drawCase(g, it, q, cx, cy, time); else { R_(g, '#2a2638', sx, top - 4, w, 6); R_(g, '#4a4458', sx + 1, top - 4, w - 2, 2); }   /* the rib / the slab, still up */
+      if (q.st === 'wait' || q.st === 'tell' || q.st === 'held') { if (it.look === 'case') drawCase(g, it, q, cx, cy, time); else paintRib(g, sx, top, w, time, q.st === 'tell' || q.st === 'held');   /* the case / the rib, still up */
         if (q.st !== 'wait') { for (let xx = sx; xx < sx + w; xx += 4) R_(g, blink ? '#ff6b6b' : '#c9463d', xx, sy - 2, 2, 2);   /* where it will land, red */
           if (q.st === 'tell') { for (let k = 0; k < 4; k++) R_(g, '#a8987c', sx + ((k * 13 + time * 40) % Math.max(4, w)), top + 4 + ((time * 90 + k * 23) % Math.max(8, sy - top - 4)), 1, 2); }
           if (q.st === 'held' && T) T('STRIKE ITS PILLAR', sx + w / 2, sy - 30, '#ffd36b', 'center', 6); } }
-      else if (q.st === 'fall') { const k = 1 - Math.max(0, q.t) / FT4.piece.fallT, yy = Math.round(top + (sy - top) * k * k); if (it.look === 'case') drawCase(g, it, q, cx, cy, time, it.dir * Math.PI / 2 * k * k); else { R_(g, '#3a3448', sx, yy - 8, w, 8); R_(g, '#726a8a', sx, yy - 8, w, 2); } }   /* a case goes over on its foot; a rib drops */
-      else if (it.look === 'case') { R_(g, '#2a1a0e', sx, sy - 13, w, 13); R_(g, '#4a2c18', sx + 1, sy - 12, w - 2, 11); R_(g, '#7a4a28', sx, sy - 13, w, 2); for (let xx = sx + 6; xx < sx + w - 2; xx += 8) R_(g, '#2a1a0e', xx, sy - 11, 1, 10); for (let xx = sx + 2; xx < sx + w - 3; xx += 3) R_(g, ['#8a2a2a', '#2a4a7a', '#6a6a2a', '#5a2a6a'][(xx >> 1) & 3], xx, sy - 10 + ((xx >> 3) & 1) * 4, 2, 4); R_(g, '#e8dcc0', sx + w - 2, sy - 3, 5, 3); }   /* a toppled case: lying across, its books spilled */
-      else if (it.slick) { R_(g, 'rgba(190,232,250,0.55)', sx, sy - 1, w, 2); for (let xx = sx + 3; xx < sx + w; xx += 9) R_(g, '#eefaff', xx, sy - 2, 2, 1); } });   /* a fallen rib: rimed with his frost */
+      else if (q.st === 'fall') { const k = 1 - Math.max(0, q.t) / FT4.piece.fallT, yy = Math.round(top + (sy - top) * k * k); if (it.look === 'case') drawCase(g, it, q, cx, cy, time, it.dir * Math.PI / 2 * k * k); else paintRib(g, sx, yy, w, time, false, k); }   /* a case goes over on its foot, books flying; a rib drops */
+      else if (it.look === 'case') paintCaseLying(g, sx, sy, w);   /* a toppled case: lying across, its books spilled */
+      else paintRibDown(g, sx, sy, w, time, !!it.slick); });   /* a fallen rib: brass across the gap, rimed with his frost */
   }
-  // THE OUTER FACE PEELS: a plank near the front rattles and wears red; one that went falls away
+  // THE OUTER FACE PEELS: a plank near the front works loose and wears red; one that went tumbles away
   if (F.peel) { const ch = (chases || []).find(q => q.sp.id === F.peel.front); if (ch && ch.st.phase === 'run') for (const [x0, len, row] of F.peel.ledges) { if (R.peeled[x0 + ',' + row]) continue;
-      if (row * TS - ch.st.pos < FT4.peel.rattle && row * TS > ch.st.pos) { const sx = Math.round(x0 * TS - cx + Math.sin(time * 40) * 1.5), sy = Math.round(row * TS - cy); R_(g, blink ? '#ff6b6b' : '#c9463d', sx, sy + 13, len * TS, 2); } }
-    for (const k in R.peeled) { const q = R.peeled[k]; if (q.t > 1.2) continue; const sx = Math.round(q.x0 * TS - cx), sy = Math.round(q.row * TS - cy + q.t * q.t * 300); R_(g, '#4a2c18', sx + q.t * 30, sy, q.len * TS, 4); R_(g, '#a8703c', sx + q.t * 30, sy, q.len * TS, 1); } }
+      if (row * TS - ch.st.pos < FT4.peel.rattle && row * TS > ch.st.pos) paintPlankTell(g, Math.round(x0 * TS - cx), Math.round(row * TS - cy), len * TS, time); }
+    for (const k in R.peeled) { const q = R.peeled[k]; paintPlankFall(g, q.x0 * TS - cx, q.row * TS - cy, q.len * TS, q.t); } }
 }
-function drawCase(g, it, q, cx, cy, time, ang) {   /* a free-standing bookcase: in its tell it leans and shakes toward where it will lie */
+function drawCase(g, it, q, cx, cy, time, ang) {   /* a free-standing bookcase: in its tell it leans and shakes toward where it will lie; falling, its books come off */
   const bx = Math.round((it.col + 0.5) * TS - cx), by = Math.round(it.base * TS - cy), h = it.h * TS, lean = ang ?? (q.st === 'tell' || q.st === 'held' ? (q.st === 'held' ? 0.35 : 0.12 + 0.1 * Math.sin(time * 30)) * it.dir : 0);
-  g.save(); g.translate(bx, by); g.rotate(lean); R_(g, '#2a1a0e', -8, -h, 16, h); R_(g, '#4a2c18', -7, -h + 1, 14, h - 2);
-  for (let y = -h + 4; y < -2; y += 8) { R_(g, '#2a1a0e', -7, y + 6, 14, 1); for (let x = -6; x < 6; x += 3) R_(g, ['#8a2a2a', '#2a4a7a', '#6a6a2a', '#5a2a6a'][((x + y) >> 1) & 3], x, y, 2, 6); }
-  g.restore();
+  paintCase(g, bx, by, h, lean, time, ang !== undefined ? Math.min(1, Math.abs(ang) / (Math.PI / 2)) : q.st === 'held' ? 0.25 : 0, it.dir);
 }
-function drawBell(g, F, B, cx, cy, time, p) {
-  if (!F.bell || B.st === 'down') return;
-  if (B.st === 'tell' && p) { const y = Math.round(p.deck * TS - cy); for (let x = p.bays[0] * TS; x < (p.bays[1] + 1) * TS; x += 5) R_(g, Math.floor(time * 8) % 2 ? '#ff6b6b' : '#c9463d', Math.round(x - cx), y - 2, 3, 2); }   /* the deck it will break, told red */ const x = Math.round(F.bell.x * TS + 8 - cx), sw = B.st === 'tell' ? Math.sin(time * 18) * 3 : 0, y = Math.round(B.y - cy);
-  if (y < -80 || y > g.canvas.height + 80) return;
-  if (B.st !== 'fall') { R_(g, B.st === 'tell' && Math.floor(time * 8) % 2 ? '#ff6b6b' : '#1c1a24', x - 1, Math.round(F.bell.chain * TS - cy), 2, y - Math.round(F.bell.chain * TS - cy)); }   /* its chain to the frame */
-  g.save(); g.translate(x + sw, y);
-  R_(g, '#5a4420', -4, 0, 8, 4); R_(g, '#8a6a1a', -10, 4, 20, 6); R_(g, '#8a6a1a', -14, 10, 28, 10); R_(g, '#b08a3a', -18, 20, 36, 8); R_(g, '#e6c46a', -16, 20, 4, 8); R_(g, '#3a2e1c', -18, 27, 36, 2); R_(g, '#3a2e1c', -3, 29, 6, 4);   /* the great bell, bronze */
-  g.restore();
-  if (B.st === 'fall') { g.fillStyle = 'rgba(168,152,124,0.35)'; for (let i = 0; i < 6; i++) g.fillRect(x - 16 + i * 6, y - 20 - ((time * 200 + i * 31) % 60), 2, 6); }   /* the dust it drags */
+function drawBell(g, F, R, cx, cy, time, p) {
+  const B = R.bell; if (!F.bell) return;
+  const deckY = p.deck * TS, s0 = F.bell.y * TS, hit = deckY - 24, v0 = deckY - 94, vh = deckY - 60,   /* drawn LOWER than its data (the greybox hung it 8 rows up, off the top of the screen): hung with its lip a head's height over the deck, its lip meeting the deck as it breaks it */
+    vy = B.y <= hit ? v0 + (B.y - s0) * (vh - v0) / (hit - s0) : vh + (B.y - hit), x = Math.round(F.bell.x * TS + 8 - cx), ct = Math.round(F.bell.chain * TS - cy), y = Math.round(vy - cy);
+  if (B.hitDeck) { if (R.bellHitT === undefined) R.bellHitT = time; paintBellImpact(g, x, Math.round(deckY - cy), Math.round(p.bays[0] * TS - cx), Math.round((p.bays[1] + 1) * TS - cx), time - R.bellHitT); }
+  else if (B.st === 'hang' || B.st === 'tell') R.bellHitT = undefined;
+  if (B.st === 'tell' && p) { const yy = Math.round(deckY - cy); for (let xx = p.bays[0] * TS; xx < (p.bays[1] + 1) * TS; xx += 5) R_(g, Math.floor(time * 8) % 2 ? '#ff6b6b' : '#c9463d', Math.round(xx - cx), yy - 2, 3, 2); }   /* the deck it will break, told red */
+  if (ct > -40 && ct < g.canvas.height + 40) { R_(g, '#1c1a24', x - 7, ct - 3, 14, 5); R_(g, '#5a5a68', x - 7, ct - 3, 14, 1); R_(g, '#e6c46a', x - 2, ct - 1, 4, 2); }   /* the iron bracket it hangs from */
+  if (B.st === 'down') { if (ct > -40 && ct < g.canvas.height + 40) for (let k = 0; k < 3; k++) R_(g, '#2a2832', x - 1 + Math.round(Math.sin(time * 3 + k) * (k + 1) * 0.6), ct + 2 + k * 4, 2, 3); return; }   /* the snapped chain end swinging */
+  if (y < -90 || y > g.canvas.height + 90) return;
+  const sw = B.st === 'tell' ? Math.sin(time * 14) * (0.03 + 0.07 * (1 - Math.max(0, B.t) / FT4.bell.tell)) : B.st === 'hang' ? Math.sin(time * 0.9) * 0.012 : 0;
+  g.save(); g.translate(x, ct); g.rotate(sw); paintBell(g, 0, y - ct, 0, time, B.st, 0); g.restore();
+  if (B.st === 'fall') { g.fillStyle = 'rgba(168,152,124,0.35)'; for (let i = 0; i < 6; i++) g.fillRect(x - 24 + i * 9, y - 24 - ((time * 200 + i * 31) % 60), 2, 7); }   /* the dust it drags */
 }

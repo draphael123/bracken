@@ -310,6 +310,7 @@ export function strikeRealm(e, hb, seen, c) {
   return null;
 }
 
+import { paintPit, paintDropTile, paintPitFire, paintBrazier, paintPour, paintCeilingEdge, paintFrostCreep, paintFloe, paintShellCracks, paintShards, paintVent, paintBoneRaft, paintSurgeTell, paintSurgeCrest, paintSpore, paintBite, paintChunk } from './redraw/realm_beats.js';   /* (claude/ft4art) the living realms' paint */
 // ---------------------------------------------------------------- drawing
 const BACK = { fire: ['#1a0806', '#2a0c08', '#3a140a', '#5a200c'], ice: ['#060e1a', '#0c1a2c', '#14283e', '#1e3a56'], poison: ['#060e08', '#0c1a0e', '#142816', '#1e3a20'] };
 const WALL = { fire: ['#2a1410', '#4a2418', '#7a3a20'], ice: ['#1a2a3a', '#2e4a64', '#8ac8f0'], poison: ['#18241a', '#2a3a2a', '#5a7a4a'] };
@@ -327,16 +328,16 @@ export function drawRealm(g, e, A, cx, cy, time) {
   g.fillStyle = W[1]; g.fillRect(x0 - 4, 0, 4, H); g.fillRect(x1, 0, 4, H); g.fillRect(0, top - 4, VW, 4);
   g.fillStyle = W[2]; g.fillRect(x0 - 1, 0, 1, H); g.fillRect(x1, 0, 1, H); g.fillRect(0, top - 1, VW, 1);
   for (let y = ((-cy) % 18 + 18) % 18; y < H; y += 18) { g.fillStyle = W[1]; g.fillRect(x0 - 12, y, 8, 1); g.fillRect(x1 + 4, y, 8, 1); }
+  if (k === 'ice' && top > 2) paintCeilingEdge(g, VW, top, Math.round((R.ceil || 0) / 16), time);   /* (claude/ft4art) icicles off the ceiling's edge, longer as it comes down */
   /* (claude/ft4c) THE BORDER CRUMBLING: notches broken out of its walls as the beats run (R.bites), the realm's dark showing through */
-  for (const q of R.bites || []) { const y = Math.round(q.y - cy), wx = q.side < 0 ? x0 - q.d : x1; g.fillStyle = C[2]; g.fillRect(wx, y, q.d, q.h); g.fillStyle = W[2]; g.fillRect(q.side < 0 ? wx - 1 : wx + q.d, y, 1, q.h); g.fillRect(wx, y - 1, q.d, 1); g.fillRect(wx, y + q.h, q.d, 1); }
+  for (const q of R.bites || []) { const y = Math.round(q.y - cy), wx = q.side < 0 ? x0 - q.d : x1; paintBite(g, wx, y, q.d, q.h, q.side, C[2], W[2]); }
   const flr = Math.round(A.floor - cy);
   if (k === 'fire') { const F = REALM.fire, tw = REALM.w / F.n;   /* THE FLOOR TILES: charred slabs, the lit ones glowing through their cracks */
     for (let t = 0; t < F.n; t++) { const tx = Math.round(bb.x0 - cx + t * tw), lit = R.lit && R.lit.includes(t), telling = lit && R.ph === 'tell', tl = R.tilt ? Math.round(R.tilt * (t - 3) * 3) : 0;
       /* (claude/ft4c) A FALLEN TILE: a pit, fire deep in it. A TILE ABOUT TO FALL: it glows DARK, shakes and cracks (fire2.drop s) */
-      if ((R.holes || []).includes(t)) { g.fillStyle = '#0c0302'; g.fillRect(tx + 1, flr - 22 + tl, Math.round(tw) - 2, 30); g.fillStyle = Math.floor(time * 10 + t) % 2 ? '#c9463d' : '#ff6b2c'; g.fillRect(tx + 3, flr + 2 + tl, Math.round(tw) - 6, 6);
-        g.fillStyle = '#ff9b49'; for (let j = 0; j < 5; j++) g.fillRect(tx + 6 + j * 11, flr + 1 + tl - Math.round(Math.abs(Math.sin(time * 9 + j)) * 5), 3, 2); continue; }
+      if ((R.holes || []).includes(t)) { paintPit(g, tx, flr, tw, tl, time); continue; }
       const dropping = R.drop && R.drop.k === t, sh = dropping ? Math.round(Math.sin(time * 50)) : 0;
-      if (dropping) { g.fillStyle = Math.floor(time * 10) % 2 ? '#3a0604' : '#5a0c06'; g.fillRect(tx + 1 + sh, flr - 22 + tl, Math.round(tw) - 2, 30); g.fillStyle = '#ff4a2a'; g.fillRect(tx + 8 + sh, flr - 20 + tl, 1, 12); g.fillRect(tx + 9 + sh, flr - 9 + tl, 14, 1); g.fillRect(tx + 30 + sh, flr - 21 + tl, 1, 18); g.fillRect(tx + 31 + sh, flr - 4 + tl, 12, 1); continue; }
+      if (dropping) { paintDropTile(g, tx, flr, tw, tl, time); continue; }
       g.fillStyle = '#2a1008'; g.fillRect(tx + 1, flr - 22 + tl, Math.round(tw) - 2, 30);
       if (tl) { g.save(); g.translate(0, tl); }
       g.fillStyle = telling ? (Math.floor(time * 12) % 2 ? '#ff6b2c' : '#ffd36b') : '#4a1c0c'; g.fillRect(tx + 1, flr - 22, Math.round(tw) - 2, 2);
@@ -426,7 +427,7 @@ export function drawRealmFx(g, e, cx, cy, time, P, T) {   /* P: the hero (the fi
   if (OPEN.has(e.mode) && e.alive) { const x = Math.round(e.x - cx), y = Math.round(e.y - cy), m = e.mode, k = Math.max(0, Math.min(1, e.modeT / REALM.openT));
     for (let i = 0; i < 14; i++) { const s = Math.sin(i * 12.9898) * 43758.5, r = s - Math.floor(s), ph = (time * (m === 'shattered' ? 0.9 : 1.6) + r) % 1;
       if (m === 'scorched') { g.fillStyle = i % 3 ? '#ff9b49' : i % 2 ? '#ffe9b0' : '#c9463d'; g.fillRect(x - 12 + Math.round(r * 24), y - 4 - Math.round(ph * 50), 2, 3); }   /* flames up off him */
-      else if (m === 'shattered') { const a = r * Math.PI * 2; g.fillStyle = i % 2 ? '#ffffff' : '#9be2ff'; g.fillRect(x + Math.round(Math.cos(a) * (10 + ph * 30)), y - 22 + Math.round(Math.sin(a) * (14 + ph * 30) + ph * ph * 20), 2, 2); }   /* the shell in pieces */
+      else if (m === 'shattered') { paintShards(g, x, y, i, ph, r * Math.PI * 2); }   /* the shell in pieces */
       else { g.fillStyle = 'rgba(143,209,96,' + (0.7 * (1 - ph)).toFixed(2) + ')'; g.beginPath(); g.arc(x - 10 + Math.round(r * 20), y - 30 - Math.round(ph * 26), 2 + ph * 4, 0, Math.PI * 2); g.fill(); } }   /* he chokes: green gas out of him */
     g.strokeStyle = Math.floor(time * 8) % 2 ? '#ffd36b' : '#ffffff'; g.lineWidth = 2; g.strokeRect(x - 15, y - 47, 30, 50); g.lineWidth = 1;
     g.fillStyle = 'rgba(10,8,20,0.85)'; g.fillRect(x - 20, y - 57, 40, 4); g.fillStyle = '#ffd36b'; g.fillRect(x - 20, y - 57, Math.round(40 * k), 4);   /* the window, running out */
@@ -434,50 +435,37 @@ export function drawRealmFx(g, e, cx, cy, time, P, T) {   /* P: the hero (the fi
     R.cueDrawn = 'open:' + m; }
   void b;
 }
-/* (claude/ft4c) LIVING REALMS, DRAWN (greybox - the art lane dresses them): the border's chunks; FIRE the burning pits, the falling slab, the two braziers (the one
+/* (claude/ft4c) LIVING REALMS, DRAWN (claude/ft4art painted them: src/redraw/realm_beats.js): the border's chunks; FIRE the burning pits, the falling slab, the two braziers (the one
    over him ringed gold while lit) and a brazier's pour; ICE the frost creeping down the band the ceiling will take, the floes, the cracks in his shell; POISON the
    other vents (the next one bubbling), the bone rafts, the surge's wave line, a spore ring struck back flying home */
 function drawLiving(g, e, R, b, bb, cx, cy, time, T, P) {
   const k = R.kind, Wc = WALL[k], A = R.A, blink = Math.floor(time * 8) % 2;
-  for (const q of R.chunks) { g.fillStyle = q.s > 3 ? Wc[1] : Wc[2]; g.fillRect(Math.round(q.x - cx), Math.round(q.y - cy), q.s, q.s); }
+  for (const q of R.chunks) paintChunk(g, Math.round(q.x - cx), Math.round(q.y - cy), q.s, Wc[2], Wc[1]);   /* (claude/ft4art) stone off the wall, lit on top */
   if (k === 'fire') { const F2 = REALM.fire2, tw = REALM.w / REALM.fire.n, flTop = Math.round(A.floor - 22 - cy);
-    for (const t of R.holes) { const x0 = Math.round(bb.x0 - cx + t * tw) + 3, w = Math.round(tw) - 6;   /* the pit's fire, low: fly over it */
-      g.globalCompositeOperation = 'lighter'; g.fillStyle = 'rgba(255,107,44,0.22)'; g.fillRect(x0, flTop - F2.holeH, w, F2.holeH); g.globalCompositeOperation = 'source-over';
-      for (let j = 0; j < 7; j++) { const h = Math.round(F2.holeH * (0.45 + 0.55 * Math.abs(Math.sin(time * (5 + j) + j * 1.7)))); g.fillStyle = j % 3 ? '#ff9b49' : '#ffe9b0'; g.fillRect(x0 + 2 + Math.round(j * (w - 6) / 6), flTop - h, 2, h); } }
-    for (const d of R.debris) { g.fillStyle = '#4a1c0c'; g.fillRect(Math.round(d.x - cx) - 3, Math.round(d.y - cy), 6, 4); }
+    for (const t of R.holes) paintPitFire(g, Math.round(bb.x0 - cx + t * tw) + 3, flTop, Math.round(tw) - 6, F2.holeH, time);   /* the pit's fire, low: fly over it */
+    for (const d of R.debris) { g.fillStyle = '#4a1c0c'; g.fillRect(Math.round(d.x - cx) - 3, Math.round(d.y - cy), 6, 4); g.fillStyle = '#7a3a20'; g.fillRect(Math.round(d.x - cx) - 3, Math.round(d.y - cy), 6, 1); }
     const over = brazierOver(e);
-    for (const br of R.braziers) { const x = Math.round(perchX(b, br.side) - cx), ctop = Math.round(b.y0 - cy), y = Math.round(b.y0 + F2.brazierY - cy);
-      g.fillStyle = '#3a2a24'; for (let yy = ctop; yy < y - 3; yy += 4) g.fillRect(x - 1 + ((yy >> 2) % 2), yy, 2, 3);   /* its chain */
-      g.fillStyle = '#2a1a14'; g.fillRect(x - 9, y - 2, 18, 6); g.fillStyle = '#6a4a3a'; g.fillRect(x - 10, y - 3, 20, 2); g.fillRect(x - 3, y + 4, 6, 2);
-      if (br.lit) { g.fillStyle = '#ff6b2c'; g.fillRect(x - 7, y - 4, 14, 2); for (let j = 0; j < 5; j++) { const h = 3 + Math.round(Math.abs(Math.sin(time * 11 + j * 1.9)) * 6); g.fillStyle = j % 2 ? '#ffd36b' : '#ff9b49'; g.fillRect(x - 6 + j * 3, y - 4 - h, 2, h); } }
-      else { g.fillStyle = '#555'; for (let j = 0; j < 3; j++) { const ph = (time * 0.8 + j / 3) % 1; g.fillRect(x - 2 + j * 2, y - 6 - Math.round(ph * 14), 1, 1); } }
-      if (br === over && br.lit && !OPEN.has(e.mode) && e.alive) { g.strokeStyle = blink ? '#ffe46b' : '#ffffff'; g.lineWidth = 1; g.strokeRect(x - 13.5, y - 15.5, 27, 23);   /* THE ONE OVER HIM: strike his fire into it */
+    for (const br of R.braziers) { const x = Math.round(perchX(b, br.side) - cx), ctop = Math.round(b.y0 - cy), y = Math.round(b.y0 + F2.brazierY - cy), ringed = br === over && br.lit && !OPEN.has(e.mode) && e.alive;
+      paintBrazier(g, x, ctop, y, br.lit, ringed, time);
+      if (ringed) {   /* THE ONE OVER HIM: strike his fire into it */
         if (e.shots && e.shots.some(q => q.realmRet && !q.reflected)) { g.fillStyle = '#ffe46b'; for (let yy = y + 8; yy < Math.round(e.y - cy) - 50; yy += 5) g.fillRect(x, yy, 1, 2); if (T) T('INTO THE BRAZIER', x, y - 24, '#ffe46b'); }
         R.brazDrawn = br.side; } }
-    if (R.pour) { const x = Math.round(R.pour.x - cx), y0 = Math.round(b.y0 + F2.brazierY - cy), y1 = Math.round(A.floor - 22 - cy);   /* the brazier spills: a fall of fire */
-      g.fillStyle = 'rgba(255,155,73,0.85)'; g.fillRect(x - 6, y0, 12, y1 - y0); g.fillStyle = '#ffe9b0'; for (let y = y0; y < y1; y += 6) g.fillRect(x - 2 + Math.round(Math.sin(time * 30 + y) * 2), y, 4, 3); } }
+    if (R.pour) paintPour(g, Math.round(R.pour.x - cx), Math.round(b.y0 + F2.brazierY - cy), Math.round(A.floor - 22 - cy), time);   /* the brazier spills: a fall of fire */ }
   if (k === 'ice') { const I2 = REALM.ice2, top = Math.round(b.y0 - cy);
-    if (R.creepT > 0) { const p = 1 - R.creepT / I2.creep, h = Math.round((R.ceilTo - R.ceil) * p), x0 = Math.round(bb.x0 - cx), w = Math.round(REALM.w);   /* THE TELL: frost creeping down the band it will take */
-      g.fillStyle = 'rgba(216,244,255,' + (0.18 + 0.12 * blink).toFixed(2) + ')'; g.fillRect(x0, top, w, Math.round(R.ceilTo - R.ceil));
-      g.fillStyle = 'rgba(255,255,255,0.55)'; g.fillRect(x0, top, w, h); g.fillStyle = '#ffffff'; for (let x = x0; x < x0 + w; x += 7) g.fillRect(x, top + h, 2, 2 + ((x >> 3) % 3)); }
-    for (const f of R.floes || []) { const x = Math.round(f.x - cx - I2.floeW / 2), y = Math.round(b.y1 - I2.floeH - cy);
-      g.fillStyle = 'rgba(190,232,255,0.92)'; g.fillRect(x, y, I2.floeW, I2.floeH); g.fillStyle = '#ffffff'; g.fillRect(x, y, I2.floeW, 2); g.fillRect(x + 4, y + 6, 2, 10); g.fillStyle = '#8ac8f0'; g.fillRect(x + I2.floeW - 3, y + 2, 3, I2.floeH - 2); g.fillRect(x, y + I2.floeH - 3, I2.floeW, 3); }
+    if (R.creepT > 0) paintFrostCreep(g, Math.round(bb.x0 - cx), top, Math.round(REALM.w), Math.round(R.ceilTo - R.ceil), 1 - R.creepT / I2.creep, time);   /* THE TELL: frost creeping down the band it will take */
+    for (const f of R.floes || []) paintFloe(g, Math.round(f.x - cx - I2.floeW / 2), Math.round(b.y1 - I2.floeH - cy), I2.floeW, I2.floeH, time);
     if (R.cracks > 0 && !OPEN.has(e.mode) && e.alive) { const x = Math.round(e.x - cx), y = Math.round(e.y - cy) - 22;   /* his shell, cracked: one more */
-      g.fillStyle = '#ffffff'; for (let j = 0; j < 9; j++) g.fillRect(x - 6 + j, y - 12 + Math.round(Math.abs(Math.sin(j * 1.3)) * 6) + j * 2, 1, 2); for (let j = 0; j < 6; j++) g.fillRect(x + 4 + j, y + 4 - j * 2, 1, 2);
+      paintShellCracks(g, x, y, time);
       if (T) T('CRACKED: ONE MORE', x, y + 46, blink ? '#ffffff' : '#9be2ff'); } }
   if (k === 'poison') { const Q2 = REALM.poison2, my = Math.round(R.mire - cy);
     for (const v of R.vents) { if (v === R.vent) continue; const x = Math.round(v.x - cx), nx = v === R.next;   /* the other vents: shut, or BUBBLING - the next one */
-      g.fillStyle = nx ? '#1a2a0c' : '#080c06'; g.fillRect(x - 10, my - 3, 20, 6); g.fillStyle = nx ? '#8fd160' : '#26361a'; g.fillRect(x - 12, my - 4, 24, 2);
-      if (nx) { for (let j = 0; j < 6; j++) { const ph = (time * 2.6 + j / 6) % 1; g.fillStyle = j % 2 ? '#a6e04a' : '#d8ffb0'; g.fillRect(x - 6 + j * 2, my - 4 - Math.round(ph * 22), 2 + (j % 2), 2 + (j % 2)); }
-        g.strokeStyle = blink ? '#a6e04a' : '#d8ffb0'; g.beginPath(); g.ellipse(x, my - 1, 14 + (time * 20 % 6), 4, 0, 0, Math.PI * 2); g.stroke(); if (T) T('NEXT', x, my - 32, '#a6e04a'); } }
-    for (const r of R.rafts || []) { const x = Math.round(r.x - cx - Q2.raftW / 2), y = my - 6 + Math.round(Math.sin(time * 2 + r.x) * 1);   /* a raft of bone */
-      g.fillStyle = '#c8bea0'; g.fillRect(x, y + 2, Q2.raftW, 3); g.fillStyle = '#e8e0c8'; for (let j = 2; j < Q2.raftW; j += 6) g.fillRect(x + j, y, 2, 6); g.fillRect(x + Q2.raftW - 6, y - 3, 6, 5); g.fillStyle = '#2a2a1a'; g.fillRect(x + Q2.raftW - 5, y - 2, 1, 1); g.fillRect(x + Q2.raftW - 3, y - 2, 1, 1); }
+      paintVent(g, x, my, nx, time); if (nx && T) T('NEXT', x, my - 32, '#a6e04a'); }
+    for (const r of R.rafts || []) paintBoneRaft(g, Math.round(r.x - cx - Q2.raftW / 2), my - 6 + Math.round(Math.sin(time * 2 + r.x) * 1), Q2.raftW, time);   /* a raft of bone */
     if (R.surge && R.surge.ph === 'tell') { const y = Math.round(R.mireBase - Q2.surgeH - cy), x0 = Math.max(0, Math.round(bb.x0 - cx)), x1 = Math.min(g.canvas.width, Math.round(bb.x1 - cx));   /* THE TELL: where the surge will reach */
-      g.fillStyle = blink ? '#ff6b6b' : '#a6e04a'; for (let x = x0; x < x1; x += 8) g.fillRect(x, y + Math.round(Math.sin(x * 0.2 + time * 6) * 1.5), 5, 1);
-      for (let x = x0 + 30; x < x1; x += 70) for (let j = 0; j < 4; j++) { g.fillRect(x - j, y + 8 + j, 1, 1); g.fillRect(x + j, y + 8 + j, 1, 1); }
+      paintSurgeTell(g, x0, x1, y, time);
       if (T) T('THE MIRE WILL REACH HERE', Math.round((x0 + x1) / 2), y - 12, blink ? '#ff9b9b' : '#d8ffb0'); }
-    if (R.surgeOff > 0) { const x0 = Math.max(0, Math.round(bb.x0 - cx)), x1 = Math.min(g.canvas.width, Math.round(bb.x1 - cx)); g.fillStyle = '#d8ffb0'; for (let x = x0; x < x1; x += 4) g.fillRect(x, my - 1 + Math.round(Math.sin(x * 0.3 + time * 9) * 1.5), 2, 1); }
-    for (const s of R.rets) { const x = Math.round(s.x - cx), y = Math.round(s.y - cy); g.fillStyle = 'rgba(166,224,74,0.8)'; g.beginPath(); g.arc(x, y, 6, 0, Math.PI * 2); g.fill(); g.fillStyle = '#ffe46b'; g.fillRect(x - 1, y - 1, 3, 3); } }
+    if (R.surgeOff > 0) paintSurgeCrest(g, Math.max(0, Math.round(bb.x0 - cx)), Math.min(g.canvas.width, Math.round(bb.x1 - cx)), my, time);
+    for (const s of R.rets) paintSpore(g, Math.round(s.x - cx), Math.round(s.y - cy), time); }
   void P;
 }
 /* HIS TEAR: the great ring he opens by him in his hall, full of the realm it goes to, flaring before it takes you */

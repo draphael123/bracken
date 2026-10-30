@@ -52,6 +52,7 @@
 // THE CHECKPOINT RULE: a shrine within CHECKPOINT_GAP px before the start line (chaseProblems fails a level that has none), and a death
 // puts every chase back to IDLE (chaseReset) - the chaser goes back to its start and the trigger waits for the hero again.
 import { DUCK_H } from './duck.js';
+import { paintFront } from './redraw/ft4_art.js';   /* (claude/ft4art) THE TOWER FAILING: the collapse front's look */
 
 export const TS = 16;
 export const CHECKPOINT_GAP = 240;   // px: a shrine no further than this before the start line
@@ -169,7 +170,7 @@ export function chaseProblems(list, checkpoints) {   // checkpoints: [{x, y}] in
 }
 
 /* ---------- THE DRAWING (world space; g = the frame's 2d context, cx/cy the camera) ---------- */
-const LOOKS = { rock: { body: '#2a2119', edge: '#6b5a48', deb: '#8a7660' }, fire: { body: '#4a1408', edge: '#ff8a2a', deb: '#ffd36b' },
+const LOOKS = { collapse: { body: '#0b0912', edge: '#5a5470', deb: '#a8987c', wash: '190,95,75' }, rock: { body: '#2a2119', edge: '#6b5a48', deb: '#8a7660' }, fire: { body: '#4a1408', edge: '#ff8a2a', deb: '#ffd36b' },
   drill: { body: '#1c2026', edge: '#a9b4c2', deb: '#e0a040' }, train: { body: '#2a0e14', edge: '#9ae0a8', deb: '#ffd36b', wash: '120,230,150' }, water: { body: '#16323c', edge: '#bfe6f5', deb: '#eefaff', wash: '120,200,230' },   /* THE FOG CANAL's flood off the burst summit gate */ dark: { body: '#07120c', edge: '#6fe08a', deb: '#c8ffd8', deep: '#1f4a2c', haze: 'rgba(111,224,138,', wave: true, wash: '60,190,110' } };
 export function drawChaser(g, sp, st, cx, cy, VW, VH, time) {
   if (st.phase === 'idle') return;
@@ -177,6 +178,7 @@ export function drawChaser(g, sp, st, cx, cy, VW, VH, time) {
   g.save();
   { const z = sp.drawZone || sp.zone; if (z) { const zx = z[0] - cx, zy = z[2] - cy; g.beginPath(); g.rect(Math.round(zx), Math.round(zy), Math.round(z[1] - z[0]), Math.round(z[3] - z[2])); g.clip(); } }   /* only over its own place */
   const jag = i => Math.round(Math.sin(i * 1.7 + time * 9) * 3 + Math.sin(i * 0.6) * 4);
+  if (sp.look === 'collapse' && sp.axis === 'y' && sp.dir < 0 && g.createLinearGradient) { paintFront(g, x, VW, time, st.speed); g.restore(); return; }   /* (claude/ft4art) the tower's own stone, not the rock slide's */
   if (sp.look === 'train' && sp.axis === 'x') { drawTrain(g, sp, x, (sp.zone ? Math.floor(sp.zone[3] / TS) * TS : cy + VH) - cy, time);   /* on the zone's floor tile */ g.restore(); return; }
   if (sp.axis === 'x') { const lo = sp.dir > 0 ? x - depth : x, hi = sp.dir > 0 ? x : x + depth;
     g.fillStyle = L.body; g.fillRect(lo, 0, hi - lo, VH);
