@@ -561,7 +561,7 @@ const OPEN = (b, BK) => { const g = BK && BK.bossOpen ? BK.bossOpen(b) : null; r
 const DK_FREE = new Set(['rest', 'stuck', 'wrench', 'reel', 'open', 'held', 'pinned', 'down', 'stagger', 'staggered', 'winded', 'skid', 'downed', 'rise', 'catch', 'idle']);   /* (claude/herobots) modes a Death Knight may begin his slow swing in */
 const OPEN0 = b => b.t === 'ploughman' ? b.open > 0 : b.t === 'master' ? b.open > 0 : b.t === 'troll' && b.hill ? b.mode === 'pinned' : b.t === 'closedhelm' ? (b.open > 0 || ['cutRec', 'thrustRec', 'grabMiss', 'brandRec'].includes(b.mode)) : b.t === 'king' ? (b.mode === 'held' || b.open > 0) : b.t === 'gqueen' ? (b.mode === 'pinned' || (b.phase === 2 && !!b.plateOff)) : b.t === 'roc' ? (b.mode === 'stuck' || b.mode === 'skid' || b.mode === 'downed') : true;
 /* THE RED MARKS, from tools/tells.mjs (scratchpad hardtells.mjs writes this line): a tell no shield turns is dodged, never guarded */
-export const HARD_TELLS = new Set(["lance|charge","lance|rearTell","lance|sweepTell","troll|slamTell","troll|ripTell","assassin|markTell","berserker|windTell","captain|kegTell","captain|shootTell","closedhelm|bashTell","drownedking|slamTell","forgemaster|anvilTell","forgemaster|breathTell","forgemaster|dragTell","forgemaster|dropTell","forgemaster|hurlTell","forgemaster|ladleTell","forgemaster|pourTell","forgemaster|slamTell","forgemaster|whirlTell","golem|stompTell","gqueen|chandTell","gqueen|chargeTell","gqueen|gDropTell","gqueen|leapTell","gqueen|shadowTell","gqueen|slamTell","gqueen|sweepTell","grandmother|sweepTell","grandmother|throwTell","herald|sweepTell","king|cageTell","king|chargeTell","king|grabTell","king|liftTell","king|shoutTell","king|slamTell","lance|bashTell","lance|whirlTell","master|leapTell","masthead|boomTell","masthead|dropTell","owl|hootTell","prince|sinkTell","prince|snuffTell","quarter|shootTell","quarter|stanceTell","ram|leapTell","ram|stampTell","ram|tossTell","roadman|leapTell","roc|diveTell","suncatcher|frostTell","suncatcher|hailTell","suncatcher|spireTell","roc|shriekTell","tollmaster|tollTell","troop|grabTell","windcaller|wallTell"]);
+export const HARD_TELLS = new Set(["lance|charge","lance|sweepTell","troll|slamTell","troll|ripTell","assassin|markTell","berserker|windTell","captain|kegTell","captain|shootTell","closedhelm|bashTell","drownedking|slamTell","forgemaster|anvilTell","forgemaster|breathTell","forgemaster|dragTell","forgemaster|dropTell","forgemaster|hurlTell","forgemaster|ladleTell","forgemaster|pourTell","forgemaster|slamTell","forgemaster|whirlTell","golem|stompTell","gqueen|chandTell","gqueen|chargeTell","gqueen|gDropTell","gqueen|leapTell","gqueen|shadowTell","gqueen|slamTell","gqueen|sweepTell","grandmother|sweepTell","grandmother|throwTell","herald|sweepTell","king|cageTell","king|chargeTell","king|grabTell","king|liftTell","king|shoutTell","king|slamTell","lance|bashTell","lance|whirlTell","master|leapTell","masthead|boomTell","masthead|dropTell","owl|hootTell","prince|sinkTell","prince|snuffTell","quarter|shootTell","quarter|stanceTell","ram|leapTell","ram|stampTell","ram|tossTell","roadman|leapTell","roc|diveTell","suncatcher|frostTell","suncatcher|hailTell","suncatcher|spireTell","roc|shriekTell","tollmaster|tollTell","troop|grabTell","windcaller|wallTell"]);
 HARD_TELLS.add('owl|skimTell');
 HARD_TELLS.add('gobmage|runeTell');   /* THE GOBLIN MAGE'S RUNE: stepped off, never guarded */
 for (const m of ['sweepTell', 'baleTell', 'lanternTell', 'leapTell']) HARD_TELLS.add('strawking|' + m); HARD_TELLS.add('ploughman|chargeTell');   /* THE HEXED FIELDS' red marks */
@@ -638,7 +638,36 @@ function forgeHands(BK, boss, A, P, h, f, open) {
   if (p.state === 'set' && eta < 2.6 && P.ground && (P.labTalkF === undefined || f - P.labTalkF > 12)) { BK.press('talk'); P.labTalkF = f; }
   return { goal: lx - 8, strike: Math.abs(boss.x - P.x) < 46 }; }
 const DASH_IN = new Set(['lance']);
-const LANCE_RT = o => o.t < 0.85;   /* (claude/stormhold3) the oil's strip is seen once it has been marked a moment */
+const LANCE_RT = o => o.t < 0.85;
+/* (claude/lance4) THE QUEEN'S LANCE's DEVICES, what a player does with them (read from what the screen shows: the bells' rewind, the ropes' posts,
+   where he stands). Returns the duty { x, y (the surface to stand on), stand (x to stand at), via (waypoints to climb), go (strike now) } or null.
+   P1 A TOWER BELL: up on its lookout, rung as he runs at it about a toll-span (1.2 s) away - the third toll drops the gate on him - or, while he
+      stands off in his guard, rung anyway (he answers with a charge, and runs into the gate). P2 A ROPE POST: struck when he stands under that
+      rope's run and the post is a few strides off. P3 THE GREAT BELL: up the last lookout onto the gatehouse hoarding, rung when he is under the gate. */
+function lanceDuty(BK, boss, P, A, open) {
+  if (boss.t !== 'lance' || open || !boss.alive || ['pinned', 'rung', 'whipped', 'split', 'haul', 'fallback'].includes(boss.mode)) return null;
+  const bells = BK.props().filter(q => q.t === 'lancebell'), air = ['vaultUp', 'perch', 'stab'].includes(boss.mode);
+  if (boss.phase === 1) { const b = bells.filter(q => !q.great && !q.up && !(q.rewind > 0) && !(q.ringT >= 0) && Math.abs(q.x - P.x) < 200 && Math.abs(boss.x - q.gx) > 24).sort((a, c) => Math.abs(a.x - P.x) - Math.abs(c.x - P.x))[0];
+    if (!b) return null; const toward = boss.mode === 'charge' && Math.sign(b.gx - boss.x) === Math.sign(boss.vx || 0), eta = toward ? Math.abs(b.gx - boss.x) / 236 : 9;
+    if (boss.mode === 'charge' && !toward) return null;
+    const go = toward ? eta > 1.0 && eta < 1.4 : !['couch', 'charge'].includes(boss.mode) && Math.abs(boss.x - b.gx) > 40;
+    return { x: b.x, y: b.y, stand: b.x - 8, via: [], go }; }
+  if (boss.phase === 2) { for (const z of BK.L.zipLines || []) { if (z.signal === undefined || z.cut > 0 || z.fray > 0 || !z.post) continue; const [px, py] = z.post;
+      const under = boss.x > Math.min(z.x0, z.x1) + 10 && boss.x < Math.max(z.x0, z.x1) - 30 && boss.grounded && !air;
+      if (under && Math.abs(px - P.x) < 110 && Math.abs(py - P.y) < 40) return { x: px, y: py, stand: px - 12, via: [], go: true }; } return null; }
+  const gb = bells.find(q => q.great); if (!gb || gb.rewind > 0 || gb.ringT >= 0) return null;
+  const lk = (A.lookouts || [])[(A.lookouts || []).length - 1]; const via = lk ? [{ x: (lk[0] + 2) * 16 + 8, y: lk[2] * 16, jx: (lk[1] + 1) * 16 - 4 }] : [];
+  const under = Math.abs(boss.x - gb.gx) < 16 + (boss.w || 26) / 2 && boss.grounded && !air;
+  return { x: gb.x, y: gb.y, stand: gb.x - 8, via, go: under };
+}
+/* climbing to a duty's surface: the waypoints first (a one-way deck is jumped up through), then the duty's own; returns the goal x */
+function lanceClimb(BK, D, P, k) { const at = (y) => P.ground && Math.abs(P.y - y) < 4;
+  if (at(D.y) && Math.abs(P.x - D.stand) < 40) return null;
+  for (const w of D.via) { if (P.y <= w.y + 2) continue; if (P.ground && Math.abs(w.x - P.x) < 34) { BK.press('jump'); P.labJump = 20; } return w.x; }
+  const last = D.via[D.via.length - 1]; if (last && at(last.y) && P.x >= last.jx - 2) { BK.press('jump'); P.labJump = 22; }
+  if (D.y < P.y - 8 && P.ground && Math.abs(D.stand - P.x) < 34) { BK.press('jump'); P.labJump = 20; }
+  return D.stand; }
+/* (claude/stormhold3, LANCE_RT above) the oil's strip is seen once it has been marked a moment */
 /* a stable hash of the row's own key (level + hero + health mode), not the array index: renaming or reordering bosses[]/heroes[] must not reseed anything */
 const seedOf = s => { let h = 2166136261 >>> 0; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619) >>> 0; } return h >>> 0; };
 function dashIn(BK, h, e, f) {
@@ -2229,10 +2258,10 @@ async function runbossLab(BK, opts) {
       const bowT = boss.t === 'lance' && !open && !['couch', 'charge', 'vaultTell', 'vault', 'rushTell', 'rush', 'galeTell', 'gale'].includes(boss.mode) ? BK.enemies().filter(q => q.alive && q.lanceBow && Math.abs(q.x - P.x) < 200).sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0] || null : null;
       /* THE BRIDGE GATE (claude/bosswave2, src/lance-support.js): when he levels the lance or comes on and its lookout is near, up onto the lookout
          and strike the winch as he runs under it - a quarter-second ahead of him, as a human leads a moving thing. Nothing is dropped for the bot */
-      const lgate = boss.t === 'lance' && !open ? BK.props().find(p => p.t === 'winch' && p.bossGate && !(p.open > 0)) : null;
+      const lgate = boss.t === 'lance' ? lanceDuty(BK, boss, P, A, open) : null;   /* (claude/lance4) a tower bell, a rope post, the great bell */
       /* HIGHCROWN's hall bell (claude/bosswave2): rung when she stands under its grate and the bell is in reach - a human glancing up at it */
       const hbell = boss.t === 'gqueen' && !open ? BK.props().find(p => p.t === 'winch' && p.bell && !(p.open > 0) && Math.abs(boss.x - (p.gate * 16 + 8)) < 12 + (boss.w || 20) / 2 && Math.abs(p.x - P.x) < 24 && Math.abs(p.y - P.y) < 30) : null;
-      const gateDuty = lgate && ['couch', 'charge', 'rushTell', 'rush'].includes(boss.mode) && Math.abs(lgate.x - P.x) < 220 ? lgate : null;
+      const gateDuty = lgate;
       // THE ANSWER, on the beat. The paladin's aegis and the death knight's blood ward take a moment to come up, so they hold C from the start of the tell
       /* THE PALADIN'S WARD only breaks to his own sword met on the beat: the knight's guard in its last tenth of a second, the
          freebooter's tap just before it lands, the aegis raised in the last half second, the blood ward LET GO as it lands, a roll through for the
@@ -2459,9 +2488,9 @@ async function runbossLab(BK, opts) {
         if (goal !== null) goal = Math.max(A.x0 + 18, Math.min(A.x1 - 18, goal)); }
       else if (boss.t === 'forgemaster' && boss.rails && (fgA = forgeHands(BK, boss, A, P, h, f, open))) { goal = fgA.goal; strike = fgA.strike; if (fgA.jump) k.jump = true; }   /* (claude/forgemaster) his room's carts and levers */
       else if (hbell) { goal = null; strike = false; k.left = k.right = false; if (P.atk < 0) { P.face = Math.sign(hbell.x - P.x) || P.face; BK.press('atk'); swings++; } }
-      else if (gateDuty) { const wx = gateDuty.x, gx = gateDuty.gate * 16 + 8, onTop = P.ground && P.y <= gateDuty.y + 2; strike = false; k.block = false;
-        if (!onTop) { goal = wx - 6; if (P.ground && Math.abs(wx - P.x) < 36) { BK.press('jump'); P.labJump = 20; } if (P.labJump > 0) { P.labJump--; k.jump = true; } }
-        else { goal = null; k.left = k.right = false; const ahead = boss.x + (boss.vx || 0) * 0.12; if (Math.abs(ahead - gx) < 14 + (boss.w || 20) / 2 && Math.abs(boss.x - gx) < 40 && P.atk < 0) { P.face = Math.sign(wx - P.x) || 1; BK.press('atk'); swings++; } } }
+      else if (gateDuty) { const D = gateDuty; strike = false; k.block = false; const g0 = lanceClimb(BK, D, P, k);   /* (claude/lance4) up to the bell (or to the post) and strike it on the beat */
+        if (g0 !== null) { goal = g0; if (P.labJump > 0) { P.labJump--; k.jump = true; } }
+        else { goal = null; k.left = P.x > D.stand + 6; k.right = P.x < D.stand - 6; if (D.go && P.atk < 0) { P.face = Math.sign(D.x - P.x) || 1; k.left = k.right = false; BK.press('atk'); swings++; } } }
       else if (boss.mode === 'stanceTell') goal = boss.x - Math.sign(d || 1) * 72;   /* EN GARDE: cut into it and she answers; stand off and wait for the point to drop */
       else if (rushing || (tell && (h === 'paladin' || h === 'reaper' || boss.modeT < (boss.t === 'closedhelm' ? 0.1 : h === 'geomancer' ? 0.17 : 0.14)))) {   /* (THE GEOMANCER's ward takes a tenth of a second to rise: she plants it that much sooner, so it is up on the beat) */
         P.face = Math.sign(d) || P.face;
@@ -2942,20 +2971,13 @@ async function runbossLab(BK, opts) {
       if(boss.t==='windcaller'&&BK.callerWind&&P.ground&&!k.left&&!k.right&&!(P.labJump>0)){const W=BK.callerWind();if(W&&W.on&&W.ledges.some(([x0,x1,row])=>Math.abs(P.y-row*16)<4&&P.x>=x0*16-4&&P.x<=(x1+1)*16+4)){if(SHIELDED(h))k.block=true;else k.down=true;}}   /* (claude/windcaller3) STOOD STILL ON HIS LEDGE IN A GUST, BRACED: whatever else the hands chose, the gust does not walk them off it */
       /* (claude/stormhold3) THE QUEEN'S LANCE REWORKED: what a player does on his bridge - read from what the screen shows (src/main.js boss.lz): off a spear's
          shadow once it has been seen a moment, out of the oil's marked strip, over the ballista's bolt as it comes, over every gap he tore when walking at one,
-         and out from in front of his SHIELD WALL (nothing goes through it from the front). The cage and the vault's perch are not worked: the charger founders */
+         and out from in front of his SHIELD WALL (nothing goes through it from the front). The bells, the rope posts and the great bell are worked as duties (lanceDuty, claude/lance4) */
       if(boss.t==='lance'&&boss.lz&&!P.dead){const Z=boss.lz,G=BK.L,row=Math.floor(A.floor/16),gone=x=>G.grid[row*G.W+Math.floor(x/16)]===T.AIR,onDeck=Math.abs(P.y-A.floor)<4;let flee=0;
         for(const s of Z.spears)if(!(s.stuck>0)&&s.max-s.t>0.3&&Math.abs(P.x-s.x)<20&&Math.abs(P.y-s.y)<30)flee=Math.sign(P.x-s.x)||(P.x<boss.x?-1:1);
         if(Z.oil&&(Z.oil.on||LANCE_RT(Z.oil))&&P.x>Z.oil.x0-8&&P.x<Z.oil.x1+8&&Math.abs(P.y-Z.oil.y)<30)flee=(P.x-Z.oil.x0<Z.oil.x1-P.x)?-1:1;
         if((boss.mode==='perch'||boss.mode==='stab')&&boss.stab&&Math.abs(P.x-boss.stab.x)<36&&Math.abs(P.y-boss.stab.y)<30)flee=Math.sign(P.x-boss.stab.x)||1;
         if(boss.mode==='shieldwall'&&(P.x-boss.x)*boss.face>0&&Math.abs(P.x-boss.x)<70)flee=boss.face;
         if(flee){k.left=flee<0;k.right=flee>0;k.block=false;}
-        /* THE CAGE, from its lookout: when he levels the lance (or is about to), up onto the nearest lookout that has a cage off its end, and cut it as he rides under */
-        const cd=boss.mounted&&(boss.mode==='couch'||boss.mode==='charge'||(boss.mode==='ride'&&(boss.chargeT??9)<1.0));
-        if(cd&&!flee){const cs=BK.props().filter(p=>p.t==='weight'&&p.lamp&&p.state==='hang'&&p.x>A.x0&&p.x<A.x1).sort((p,q)=>Math.abs(p.x+14-P.x)-Math.abs(q.x+14-P.x)),c=cs[0];
-          const spot0=c?c.x+14:0,onTop0=c&&P.ground&&Math.abs(P.y-(A.floor-48))<4&&Math.abs(P.x-spot0)<40,etaP=(boss.mode==='couch'?boss.modeT:boss.mode==='ride'?(boss.chargeT??1)+0.9:0)+Math.abs(boss.x-P.x)/236,reachT=Math.abs(spot0-P.x)/95+0.4,passed=boss.mode==='charge'&&(P.x-boss.x)*(boss.vx||0)<0;
-          if(c&&!passed&&(onTop0||reachT<etaP-0.05)&&Math.abs(c.x+14-P.x)<170){const spot=c.x+14,ly=A.floor-48,onTop=P.ground&&Math.abs(P.y-ly)<4;k.block=false;k.atk=false;k.down=false;
-            if(!onTop){k.left=P.x>spot+3;k.right=P.x<spot-3;if(P.ground&&Math.abs(spot-P.x)<28){BK.press('jump');P.labJump=20;}}
-            else{k.left=P.x>spot+5;k.right=P.x<spot-5;k.jump=false;P.labJump=0;const eta=boss.mode==='charge'?(c.x-boss.x)/(boss.vx||1e-3):9;if(eta>0&&eta<0.16&&P.atk<0){P.face=Math.sign(c.x-P.x)||-1;k.left=k.right=false;BK.press('atk');swings++;}}}}
         if(Z.bolt&&Z.bolt.live&&onDeck&&P.ground&&Z.bolt.x-P.x<70&&Z.bolt.x>P.x-6){BK.press('jump');P.labJump=14;}
       }
       if(P.labJump>0&&!walker){P.labJump--;k.jump=true;}

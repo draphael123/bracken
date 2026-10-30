@@ -5,6 +5,8 @@
 //              bunting: true   the Fair's own cloth rope (src/redraw/fair_keys.js draws the line; this module still draws its handles)
 //              snap: s  fray: 0..1   a FRAYED rope: it gives way `snap` s after you take it - or where it would have snapped from its top
 //              dir: 1 | -1   force the way it runs (a level line that is flat); the default is DOWNHILL
+//              cut: s  fray: s   (claude/lance4) a CUT line (src/lance-support.js ropeFray/ropeTick: THE QUEEN'S LANCE's signal ropes): while it
+//                            frays it still holds; parted (cut > 0) it is slack - nobody takes it and a rider on it falls - until it is re-strung
 //   and main.js does the rest (updateTowerSlides -> zipStep, drawWorld -> drawZips / drawRider, the Fair's snap included).
 // WHAT THE PLAYER GETS (the old rope took hold only within 22 px of its top end, east and downhill only, and nothing marked it):
 //   - TAKE HOLD ANYWHERE ALONG IT: press UP with the rope inside your reach (standing under it too), or just TOUCH it from a jump.
@@ -43,6 +45,7 @@ export function inReach(z, P) {
 export function findCatch(L, P, up, downHeld) {
   let best = null, bd = 1e9;
   for (const z of (L.zipLines || [])) {
+    if (z.cut > 0) continue;   /* (claude/lance4) a parted line holds nobody until it is re-strung */
     if (z === P.zipSkip && !up) continue;   /* the rope he just kicked off, or dropped from: not by touch until he has landed or gone away from it */
     if (!up && (P.ground || downHeld || z.snap || z.raid)) continue;   /* (claude/ksar2) a RAIDER LINE (src/ksar-hands.js) is taken on purpose too: a jump up the tower's stair must not catch it */   /* by touch only in the air, and never a frayed one: that is taken on purpose (UP) */
     if (!inReach(z, P)) continue;
@@ -58,6 +61,7 @@ export function zipStep(c, dt) {
   if (!list || !list.length) { P.zip = null; P.zipSkip = null; return; }
   if (P.zipSkip && (P.ground || P.swim || P.climb || !list.includes(P.zipSkip))) P.zipSkip = null;   /* the rope he let go of is not taken again by touch until he has stood on something (UP always takes it) */
   if (P.dead || P.hurt > 0 || !list.includes(P.zip)) P.zip = null;
+  if (P.zip && P.zip.cut > 0) { P.zip = null; P.zipRelease = ZIP.RELEASE; P.vy = 0; }   /* (claude/lance4) THE LINE PARTS under you: you fall */
   /* TAKE HOLD */
   if (!P.zip && !P.dead && !(P.hurt > 0) && !(P.zipRelease > 0) && !P.climb && !P.swim && !P.plunge && !(P.dodge > 0) && !(P.asleep > 0) && !(P.atk >= 0) && !(P.abuf > 0)) {
     const z = findCatch(L, P, !!(keys.up || c.upPress), !!keys.down);
@@ -96,6 +100,7 @@ function pulley(g, x, y, dir, lit, time) {   /* a wheel on the rope with a hangi
 export function drawZips(g, L, cx, cy, VW, VH, time, P) {
   for (const z of (L.zipLines || [])) {
     norm(z); if (z.xb < cx - 40 || z.xa > cx + VW + 40) continue;
+    if (z.cut > 0) continue;   /* (claude/lance4) parted: src/lance-support.js drawRopeCut draws the whip and the re-stringing */
     const X0 = Math.round(z.x0 - cx), Y0 = Math.round(z.y0 - cy), X1 = Math.round(z.x1 - cx), Y1 = Math.round(z.y1 - cy);
     if (!z.bunting) {   /* the Fair draws its own cloth rope */
       g.strokeStyle = '#2a2018'; g.lineWidth = 1; g.beginPath(); g.moveTo(X0, Y0 + 1.5); g.lineTo(X1, Y1 + 1.5); g.stroke();

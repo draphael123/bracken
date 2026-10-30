@@ -79,7 +79,7 @@ import * as WN from './whatsnew.js';   /* WHAT'S NEW on the title board (docs/up
 import * as BUG from './bug-report.js'; import * as BUGUI from './bug-report-ui.js'; import { BUILD } from './build.js';   /* REPORT A BUG: a pasteable code (src/bug-report.js, tools/bug-decode.mjs); the console tap is installed by the first import below */
 import * as SAFE from './save-safety.js';   /* A SAVE IS NEVER LOST IN SILENCE: corrupt slots, backups, a full disk (src/save-safety.js) */
 import { creditPages, CC_BY, FONT_CREDITS, FONT_LICENCE } from './credits.js';   /* THE MUSIC CREDITS page: every outside composer, the CC-BY tracks with their licence */
-import { LANCE3, gateHas, gateCatch, gateStep, drawLanceGate } from './lance-support.js';   /* THE QUEEN'S LANCE (claude/stormhold3): his numbers, and the bridge gate's */
+import { LANCE4, LANCE_SAY, LANCE_WORD, bellStrike, bellStep, bellHas, ropeFray, ropeTick, underRope, drawLanceBell, drawBellGate, drawRopeCut, gateHas, gateCatch, gateStep, drawLanceGate } from './lance-support.js';   /* THE QUEEN'S LANCE (claude/lance4): his numbers, his bells and ropes; the bridge gate's (Highcrown's hall bell keeps it) */
 // BRACKEN — a 16-bit forest platformer with a knight, a sword, a shield, and a plunge.
 import {fallBounds} from './waterfalls.js';
 import { canvas, mulberry, fromGrid, outline, flipX, whiten, bakeScope, bakeScopeEnd } from './px.js';
@@ -521,7 +521,7 @@ const SALVAGE_HIT = 1.2;       /* (claude/sweep2) THE SALVAGE CAPTAIN's own pin,
 const LANCER_MINI_X = 3.7;   /* THE SERJEANT as the Waymeet mini: his health is the serjeant's times this (was 2: 100%, 35-60 s) */
 Object.assign(DMG, {
   kingAnchor: 16, kingSlamD: 22,   /* THE DROWNED KING: 20, 26 */
-  lanceCharge: 14, lanceRear: 12, lanceVolley: 10, lanceBallista: 14, lanceOil: 6, lanceThrust: 14, lanceVault: 12, lanceSweep: 14, lanceRush: 14, lanceBash: 8, lanceGuard: 16, lanceJav: 9, lanceWhirl: 10,   /* THE QUEEN'S LANCE (storm): 30, 22, 16, 18, 18, 10, 20, 11, 12 (25%: an L11 hero dead in 30-60 s) */
+  lanceCharge: 14, lanceStone: 12, lanceWhip: 6, lanceRear: 12, lanceVolley: 10, lanceBallista: 14, lanceOil: 6, lanceThrust: 14, lanceVault: 12, lanceSweep: 14, lanceRush: 14, lanceBash: 8, lanceGuard: 16, lanceJav: 9, lanceWhirl: 10,   /* THE QUEEN'S LANCE (storm): 30, 22, 16, 18, 18, 10, 20, 11, 12 (25%: an L11 hero dead in 30-60 s) */
   reeveSweep: 23, reeveLunge: 32, reeveHook: 19, reeveFlask: 19,   /* THE REEVE (lamplit mini, his own blows): 16, 24, 18, 14; (claude/lamplit2, Daniel 10-08 "too powerful": 31/42/25 a quarter lighter, his DOUSE cut, the OIL FLASK in its place) */
   tollScales: 20, tollSeal: 19, tollStream: 8,   /* (THE LEDGER 22 -> 17 beside them: off the x0.05 chip his fight runs 60-120 s, and the book alone took half a knight) */ /* THE TOLLMASTER's new told blows (claude/lamplit2): THE SCALES' counterweight, the SEAL OF DEBT, and the toll's stream to a hero who stands in it */
   bellLeap: 18, bellClaw: 22, bellPressure: 20,   /* THE DIVING BELL: 24, 26, 24 */
@@ -1101,7 +1101,7 @@ SPR.dummy = (() => { const pal = { s: '#b8a888', S: '#8a7a60', e: '#2a2230', w: 
   const rows = ['....ssss....', '...ssssss...', '...sesess...', '...ssssss...', '....SSSS....', '.....ww.....', '.yyyyyyyyyy.', 'yyYyyyyyyYyy', '.YyyyrryyyY.', '..yyrrrryy..', '..yyrrrryy..', '..yyyrryyy..', '..yYyyyyYy..', '...yyyyyy...', '.....ww.....', '.....ww.....', '.....ww.....', '.....ww.....', '...WWWWWW...', '..WWWWWWWW..'];
   const tilt = rows.map((r, i) => i < 14 ? '.' + r.slice(0, -1) : r);
   const f = r => outline(fromGrid(r, pal, 1), '#1b1626'); const R = [f(rows), f(tilt)], white = R.map(c => whiten(c));
-  return { R, L: R.map(flipX), white: { R: white, L: white.map(flipX) }, ax: 7, ay: 21, w: 10, h: 18 }; })(); /* the trials' straw man */ SPR.sweep = bakeSweep(); SPR.foreman = bakeForeman(); SPR.cook = bakeCook(); SPR.snuffer = bakeSnuffer(); SPR.sailer = bakeSailer(); SPR.masthead = bakeMasthead(); SPR.kraken = KRA.bakeKraken(); SPR.feeler = KRA.bakeFeeler(); SPR.hearthgob = bakeHearthGob(); SPR.temperer = bakeTemperer(); SPR.scalder = bakeScalder(); SPR.gravewarden = bakeGraveWarden(); SPR.abbot = bakeFalseAbbot(); SPR.winchmaster = bakeWinchmaster(); SPR.hedgewarden = bakeHedgeWarden(); SPR.sexton = bakeSexton(); SPR.gargoyle = bakeGateGargoyle(); SPR.burngob = charGob(SPR.hearthgob); SPR.pyromancerKit = bakePyro(PYRO_SETS.bracken); SPR.pyromancer = poseSet(SPR.pyromancerKit, 'idle'); SPR.emberwisp = bakeEmberWispSet();   /* the kit is drawn by pose (drawPyromancer); the flat sets are for everything that reads SPR[t] by frame: the bestiary, the body, the contact sheet */ SPR.cutter = bakeCutter(); SPR.assassin = bakeAssassin(); SPR.berserker = bakeBerserker(); SPR.grandmother = bakeGrandmother(); SPR.lance = LNA.bakeChampion(); SPR.lanceHorse = LNA.bakeCharger();   /* (claude/stormhold3art) THE QUEEN'S CHAMPION and his barded charger: src/lance-art.js */ SPR.shardling = bakeShardling(); SPR.suncatcher = bakeRimewright(); SPR.roc = bakeRoc(); SPR.sentry = bakeSentry(); SPR.gqueen = bakeGoblinQueen(); SPR.throne = bakeThrone(); SPR.ram = bakeRamLord(); SPR.shepherd = bakeShepherd(); SPR.sheep = bakeSheep(); SPR.keeper = bakeKeeper(); SPR.woodsman = bakeWoodsman(); SPR.ferryman = bakeFerryman(); SPR.squire = bakeSquire(); SPR.elder = bakeElder(); SPR.master = MASTER.mounted; SPR.masterFoot = MASTER.foot; SPR.masterRider = bakeHoundMaster(); SPR.king = KING.seated; SPR.kingUp = KING.standing; SPR.bearer = SPR.sprig;
+  return { R, L: R.map(flipX), white: { R: white, L: white.map(flipX) }, ax: 7, ay: 21, w: 10, h: 18 }; })(); /* the trials' straw man */ SPR.sweep = bakeSweep(); SPR.foreman = bakeForeman(); SPR.cook = bakeCook(); SPR.snuffer = bakeSnuffer(); SPR.sailer = bakeSailer(); SPR.masthead = bakeMasthead(); SPR.kraken = KRA.bakeKraken(); SPR.feeler = KRA.bakeFeeler(); SPR.hearthgob = bakeHearthGob(); SPR.temperer = bakeTemperer(); SPR.scalder = bakeScalder(); SPR.gravewarden = bakeGraveWarden(); SPR.abbot = bakeFalseAbbot(); SPR.winchmaster = bakeWinchmaster(); SPR.hedgewarden = bakeHedgeWarden(); SPR.sexton = bakeSexton(); SPR.gargoyle = bakeGateGargoyle(); SPR.burngob = charGob(SPR.hearthgob); SPR.pyromancerKit = bakePyro(PYRO_SETS.bracken); SPR.pyromancer = poseSet(SPR.pyromancerKit, 'idle'); SPR.emberwisp = bakeEmberWispSet();   /* the kit is drawn by pose (drawPyromancer); the flat sets are for everything that reads SPR[t] by frame: the bestiary, the body, the contact sheet */ SPR.cutter = bakeCutter(); SPR.assassin = bakeAssassin(); SPR.berserker = bakeBerserker(); SPR.grandmother = bakeGrandmother(); SPR.lance = LNA.bakeChampion();   /* (claude/stormhold3art) THE QUEEN'S CHAMPION: src/lance-art.js (claude/lance4: the charger is gone - he fights on foot) */ SPR.shardling = bakeShardling(); SPR.suncatcher = bakeRimewright(); SPR.roc = bakeRoc(); SPR.sentry = bakeSentry(); SPR.gqueen = bakeGoblinQueen(); SPR.throne = bakeThrone(); SPR.ram = bakeRamLord(); SPR.shepherd = bakeShepherd(); SPR.sheep = bakeSheep(); SPR.keeper = bakeKeeper(); SPR.woodsman = bakeWoodsman(); SPR.ferryman = bakeFerryman(); SPR.squire = bakeSquire(); SPR.elder = bakeElder(); SPR.master = MASTER.mounted; SPR.masterFoot = MASTER.foot; SPR.masterRider = bakeHoundMaster(); SPR.king = KING.seated; SPR.kingUp = KING.standing; SPR.bearer = SPR.sprig;
 /* THE REDRAW PASS (docs/animation-audit.md): the ten foes met most whose animation was thinnest. Each keeps its old frame indices, anchor
    and box; the new frames are appended (FV2.FRAMES_V2) and the picks below use them. */
 for (const t of Object.keys(FV2.FRAMES_V2)) { try { SPR[t] = FV2.FRAMES_V2[t].bake(); } catch (err) { console.error('the redraw', t, err); } }
@@ -3076,6 +3076,7 @@ function spawnEnt(e) {
       case 'firebox': { props.push({ t: 'firebox', x: px, y: py, x0: e.x0, x1: e.x1, y0: e.y0, y1: e.y1, burnT: 0, coolT: 0, cells: [], pending: [] });
         /* a fresh attempt finds the ice where the cutters left it */
         if (e.x0 !== undefined && grid0 && tileSpr) { let ch = false; for (let ty = e.y0; ty <= e.y1; ty++) for (let tx = e.x0; tx <= e.x1; tx++) { const i = ty * LW + tx; if (grid0[i] === T.ICE && L.grid[i] !== T.ICE) { L.grid[i] = T.ICE; tileSpr[i] = null; ch = true; } } if (ch) resolveTiles(); } } break;
+      case 'lancebell': props.push({ t: 'lancebell', x: px, y: py, gate: e.gate, gx: e.great ? (e.gate + 1) * TS : e.gate * TS + 8, gy0: e.gy0, gy1: e.gy1, great: !!e.great, tower: e.tower, ringT: -1, tolled: 0, rewind: 0, rings: [], down: 0, pinned: null, up: false }); break;   /* (claude/lance4) THE QUEEN'S LANCE's gate-tower bells and the main gate's great bell (src/lance-support.js) */
       case 'winch': props.push({ t: 'winch', x: px, y: py, gate: e.gate, gy0: e.gy0, gy1: e.gy1, open: 0, spin: 0, hold: e.hold || 6, drop: !!e.drop, bossGate: !!e.bossGate, bell: !!e.bell }); break;
       case 'weight': props.push({ t: 'weight', x: px, y: e.y * TS, len: (e.len || 3) * TS, state: 'hang', fy: 0, vy: 0, lamp: !!e.lamp, hang: !!e.hang, gq: !!e.gq, crane: !!e.crane, unstable: !!e.unstable, downT: 0 }); break;
       case 'timber': props.push({ t: 'timber', x: px, y: py, x0: e.x0, x1: e.x1, row: e.row, floor: e.floor,
@@ -3140,7 +3141,7 @@ function spawnEnt(e) {
       case 'bonearcher': enemies.push({ ...base, t: 'archer', bone: true, w: 8, h: 10, hp: EHP.bonearcher, speed: 22, timer: 1.2 + Math.random(), draw: 0, horn: false, hornT: 0, blown: false, fire: false }); break;   /* an archer in every respect but the frames it wears */
       case 'bonegob': enemies.push({ ...base, t: 'bonegob', w: 10, h: 13, hp: EHP.bonegob, speed: 34, mode: 'walk', modeT: 0, throwT: 1.6 + Math.random() * 2, bone: true }); break;
       case 'cutter': enemies.push({ ...base, t: 'cutter', w: 10, h: 13, hp: EHP.cutter, speed: 40, mode: 'work', modeT: 0, bridge: e.bridge, chopT: 1.4 }); break;
-      case 'lance': boss = { ...base, t: 'lance', w: 26, h: 30, hp: EHP.lance, maxHp: EHP.lance, mode: 'sleep', modeT: 0, face: -1, phase: 1, chargeT: 2.4, thrustT: 1.6, sweepT: 3, hitT: 0, broke: new Set() }; enemies.push(boss); break;
+      case 'lance': boss = { ...base, t: 'lance', w: 26, h: 40, hp: EHP.lance, maxHp: EHP.lance, mode: 'sleep', modeT: 0, face: -1, phase: 1, chargeT: 2.4, thrustT: 1.6, sweepT: 3, volleyT: 4, vaultT: 5, wallT: 7, hitT: 0, broke: new Set() }; enemies.push(boss); break;   /* (claude/lance4) ON FOOT from the first frame: one 26x40 box (the mounted 36x50 is gone) */
       case 'snuffer': enemies.push({ ...base, t: 'snuffer', w: 10, h: 14, hp: EHP.snuffer, speed: 46, mode: 'seek', modeT: 0, swipeT: 1.2, target: null }); break;
       case 'sailer': { const big = !!e.big; enemies.push({ ...base, t: 'sailer', w: big ? 20 : 12, h: big ? 22 : 14, hp: EHP.sailer * (big ? 11 : 1), maxHp: big ? EHP.sailer * 11 : undefined, speed: 22, mode: 'plant', modeT: 0, big, mini: !!e.mini, hitT: 0, phase: 1 }); break; }
       case 'troll': { const tr = { ...base, t: 'troll', w: e.big ? 30 : 18, h: e.big ? 36 : 21, big: !!e.big, mini: !!e.mini, maxHp: e.big ? Math.round(EHP.troll * 3.4) : undefined, hp: e.big ? Math.round(EHP.troll * 3.4) : EHP.troll, speed: e.big ? 34 : 22, mode: 'walk', modeT: 0, throwT: 2, hitT: 0 };
@@ -6052,7 +6053,7 @@ const BEASTS = [
   { t: 'sweep', name: 'CHIMNEY SWEEP', sub: 'up the flue', desc: 'He lives in the stacks. Walk past and he comes up out of one with a handful of soot, throws it, and stays up a moment to watch it land: that moment is the only time you can reach him. Then he is back down the flue.' },
   { t: 'stormshaman', name: 'STORM SHAMAN', sub: 'the weather is his', desc: 'A goblin with a staff who stands at the far end of a span and throws the storm at whoever is crossing it. His bolts are slow: strike one, or take it on a shield, and it goes back at him.' },
   { t: 'seawitch', name: 'THE SEA WITCH', sub: 'she signed the articles too', desc: "The ship's conjuror, in the crew's own coat, with a storm lantern on her crook. She marks a spot on the deck and the sky finds it a second later: no shield turns lightning, so move. Out of the weather she throws it by hand instead, slow enough to strike out of the air or send back off a shield." },
-  { t: 'lance', name: "THE QUEEN'S LANCE", sub: 'he holds the Long Bridge', desc: 'The Queen\'s champion on a barded charger: the barding turns every blow to a fraction. His charge tears the bridge up behind him - get up on a lookout and let him pass, and cut the fire cage off its end as he rides under: it puts him on the boards, open. On foot his plate faces you (round him or over him), he vaults onto a lookout and comes down point-first on the spot he marks, and his shield wall shoves you toward the gaps - get over him and it turns. Mind the shadows of his spears, and when his pennant goes up the gatehouse answers: a ballista bolt down the deck or boiling oil on a marked strip. Beaten back, he falls back under the main gate as it comes down.' },
+  { t: 'lance', name: "THE QUEEN'S LANCE", sub: 'he holds the Long Bridge', desc: "The Queen's champion, on foot with a war lance and a tower shield: his shield faces you (round him or over him). Ring a gate tower's bell from its lookout and he answers it with a charge - the third toll drops the tower's gate, on him or in his way. When he stops the bells, ride the signal ropes over him and drop on his helm, or cut a rope's post while he stands under its line. Mind the shadows of his spears, and when his pennant goes up the gatehouse answers: a ballista bolt down the deck, boiling oil, the mangonel's stones. Beaten back, he falls back under the main gate - ring the great bell on the gatehouse and it comes down on him." },
   { t: 'snuffer', name: 'THE SNUFFER', sub: 'lamp-killer', desc: 'It is not hunting you. It walks the boughs putting the village out, one lantern at a time, and the Reeve is glad of it. It swings the pole if you crowd it. Light what it snuffs, or cut it and the lamps stay lit.' },
   { t: 'sailer', name: 'SAIL GOBLIN', sub: 'carried, not driven', desc: 'A plank of sail and no way to steer. In the lull she shuffles at you and is nothing. When the gust takes her she is a battering ram: block her and she spills, or step aside and let the stone take her. THE MASTHEAD is the biggest of them.' },
   { t: 'horn', name: 'HORNBLOWER', sub: 'a gale of his own', desc: 'A goblin on a mound with a ram\'s horn. He winds it at you and a horn\'s worth of wind comes with it: on the ground it slides you back, in the air it throws you. Get under it or get to him; one good cut and he stops blowing.' },
@@ -7351,6 +7352,7 @@ const MOVE_WORDS = new Set(['THROWN BACK', 'LONG SHOT', 'TRIPLE SHOT', 'FOCUSED 
   /* (batch97 integ 10-17, hint-shown) the hero-pass and ranger feats and two old shared words - short, they float */
   'ORDER LOST', 'THE ORDER', 'VOLLEY', /* (batch122) THE HORNSMAN's horn words */ 'STONE SHRUG', 'BARGE', 'FLINCHES', 'DAZZLED', 'SHRUGGED', 'HOPPED', 'SHIELD-STEP', 'INTERRUPTED', 'VALIANT', 'COUNTER-THRUST', 'WALL PLANT', 'PULLED FREE', 'SNATCHED', 'FLUNG BACK', 'DAWNFALL', 'UNDER IT'])   /* (claude/ranger: her finisher, her mark, her shots, the bash, the snare, the quiver) */;   /* (claude/riposte) TOO STRONG: a red !! or a bolt met on the parry beat - it floats like OPEN, never a hint box */   /* (part 2: the finishers' own names, src/finishers.js - they are what the finisher says, so they are shown) */   /* (the last five: the knight's third cut, paid where it threw them - THIRD_WORD) */   /* (the last five: the starter kits' moves as they land - the bought rising cut, the heavy cut's two stages, THE WHEEL, DISARM) */   /* PINNED is the Warden's, and the only word her spear is allowed to say. (Not RUN THROUGH: that is the freebooter's FINISHER name, and no hero's finisher floats - putting it on this list would have started his doing it.) */
 for (const w of KI_WORDS) MOVE_WORDS.add(w);
+for (const w of Object.values(LANCE_WORD)) MOVE_WORDS.add(w);   /* (claude/lance4) THE QUEEN'S LANCE's move words float over him (HE CHARGES, SPEARS, STONES...) */
 for (const w of [...GORM_WORDS, ...Object.values(RBM.RB_SAY)]) MOVE_WORDS.add(w);   /* (claude/gorm2) KING GORM 2's short words float over the spot (CAUGHT, WARDED, HIGH: DUCK...) */
 for (const w of [...FOA.WORDS, ...TA.WORDS, 'THROWN BACK']) MOVE_WORDS.add(w);   /* (claude/foepass) the affix's shell, a told attack answered OVER / UNDER it, and the Death Knight's ward-release parry (it said RETURNED, which was never drawn) */   /* (claude/knockinto) INTO THE SPIKES / OFF THE EDGE / INTO THE FIRE ...: what a throw ended in is said */
 for (const w of PT_WORDS) MOVE_WORDS.add(w); for (const w of PLG.WORDS) MOVE_WORDS.add(w);   /* (claude/plunges) HAMMER OF DAWN / GUARD BROKEN / SAFE LANDING / BOARDED / ... */   /* (claude/partnerthrow) GRABBED / HEAVE / THROWN / WIGGLED FREE / SET DOWN / DROPPED / TOO QUICK / THE PARTNER */
@@ -8786,7 +8788,7 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow, tag = blow) { const raw0 = dmg,
   if (e.t === 'captain' && e.ward > 0 && blow && !capOpenNow(e)) { dmg = Math.max(1, Math.round(dmg * 0.4)); BR.turned(e, fromX, 'WARDED', { stop: false }); }   /* (claude/hurricane2) HIS WARD after an opening: round him or over him it is 0.4 too (B3; B15 floor - his front wall already takes a blow into it to 0.4) */
   if (e.t === 'captain' && e.mode === 'reel') dmg = Math.round(dmg * 1.5);
   /* (claude/hurricane2tune) THE WALL AND THE WARD FOR EVERY HAND: the front wall and the ward above only read a TAGGED blow, so every hero skill that calls hurtEnemy bare (the pyromancer's ALIGHT trail, flashover and firestorm, the paladin's holy ground and quake, a ranger's shot, a knight's skill...) walked through both at full weight. An UNTAGGED hit now answers to the same angle as a blow: into his front at his height 0.4 (GO ROUND), in his ward 0.4 from every side, round him or over him whole. The room's own blows (a thrown prop, a reflected seed) carry their tag and are untouched; a burn tick goes through the same wall in wardedDamage (B15: never below 0.4) */
-  if (wallDuel(e) && HERO_HAND && !blow && !tag && dmg > 0 && e.alive && e.mode !== 'sleep' && !wallOpen(e) && !(P.valiant && P.heavy) && ((e.t === 'lance' && e.mounted) || !BR.beats(e, fromX, pl || (!P.ground && P.y < e.y - e.h * 0.5), false))) {   /* (claude/stormhold3: mounted, his barding turns it from any side) */ dmg = Math.max(1, Math.round(dmg * BR_ANGLE.front)); BR.turned(e, fromX, undefined, { stop: false }); e.wallTurned = (e.wallTurned || 0) + 1; }   /* (claude/wardgap) an UNTAGGED hero skill into the Lance's plate / the Paladin's ward at his height answers to the same 0.4 (B15) */
+  if (wallDuel(e) && HERO_HAND && !blow && !tag && dmg > 0 && e.alive && e.mode !== 'sleep' && !wallOpen(e) && !(P.valiant && P.heavy) && !BR.beats(e, fromX, pl || (!P.ground && P.y < e.y - e.h * 0.5), false)) { dmg = Math.max(1, Math.round(dmg * BR_ANGLE.front)); BR.turned(e, fromX, undefined, { stop: false }); e.wallTurned = (e.wallTurned || 0) + 1; }   /* (claude/wardgap) an UNTAGGED hero skill into the Lance's plate / the Paladin's ward at his height answers to the same 0.4 (B15) */
   if (e.t === 'captain' && HERO_HAND && !blow && !tag && dmg > 0 && e.alive && e.mode !== 'sleep' && !capOpenNow(e) && !(P.valiant && P.heavy)) { const capAir = pl || (!P.ground && P.y < e.y - e.h * 0.5);
     if (e.ward > 0) { dmg = Math.max(1, Math.round(dmg * 0.4)); BR.turned(e, fromX, 'WARDED', { stop: false }); }
     else if (!BR.beats(e, fromX, capAir, false)) { dmg = Math.max(1, Math.round(dmg * BR_ANGLE.front)); BR.turned(e, fromX, undefined, { stop: false }); e.wallTurned = (e.wallTurned || 0) + 1; } }
@@ -8865,13 +8867,17 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow, tag = blow) { const raw0 = dmg,
      It is a rule about what you did, not about who you are. Not while he is coming at you or bringing the shield round
      (LANCE_BRACED): a man at a run is not knocked wide by a run. And not twice on the trot - he sets his feet for
      braceT seconds after, so it opens the fight up without becoming the whole of it. */
-  if (e.t === 'lance' && !e.mounted && !lanceOpen(e) && blowHas(blow, 'dash') && !LANCE_BRACED.has(e.mode)) {
+  /* (claude/lance4) HELM RUNG (P2 on): a plunge onto his helm - off a signal rope or a lookout - rings it like a bell: dazed, open. Not twice inside LANCE4.rungEvery s */
+  if (e.t === 'lance' && pl && e.phase >= 2 && e.alive && e.grounded && !lanceOpen(e) && e.mode !== 'sleep' && !LANCE_AIR.has(e.mode) && !(e.rungAt > time - LANCE4.rungEvery)) { e.rungAt = time; lanceFree(e); e.mode = 'rung'; e.modeT = LANCE4.rung; e.stagger = e.modeT; e.answer = null;
+    number(e.x, e.y - e.h - 16, LANCE_SAY.rung, '#8fd160'); SFX.seaBell(); SFX.clank(); shakeCam(4); ringAt(e.x, e.y - e.h, 18, '#ffd36b', 0.4); }
+  if (e.t === 'lance' && !lanceOpen(e) && blowHas(blow, 'dash') && !LANCE_BRACED.has(e.mode)) {
     if (e.braceT > time) { SFX.clank(); number(e.x, e.y - e.h - 20, 'HE HAS SET HIS FEET', '#9aa39a'); return; }
     /* the run takes his FEET, not his blood: the plate turns this blow like any other, and what it buys is the
        second and a bit after it, where every cut lands */
     e.mode = 'reel'; e.modeT = OFF_BALANCE; e.stagger = OFF_BALANCE; e.vx = -e.face * 70; e.braceT = time + 7;
     number(e.x, e.y - e.h - 20, 'OFF BALANCE', '#ffd36b'); breakBeat(e); lessonHint('dashatk'); return; }
-  if (e.t === 'lance' && lanceOpen(e)) dmg = Math.round(dmg * (e.mode === 'planted' ? 1.6 : 1.5));   /* (claude/keyscore, B15: an opening pays 1.5-2x - committed x1.5, the lance stuck x1.6) */
+  if (e.t === 'lance' && lanceOpen(e)) dmg = Math.round(dmg * lanceOpenMul(e));   /* (claude/lance4, B15: an opening pays 1.5-2x - LANCE4.open; pinned by a bell's bars x1.6, by the great bell's x2) */
+  else if (e.t === 'lance' && e.bare && e.mode !== 'sleep') dmg = Math.max(1, Math.round(dmg * LANCE4.bare));   /* (claude/lance4) SHIELDLESS (P3): no wall, x0.7 from anywhere (B15 floor) */
   /* B11 + B13, THE DUELIST'S WALL (claude/keyscore; src/boss-read.js GUARD 'wall'): the Lance, the Waymeet Paladin, the Salvage Captain and the Quartermaster
      were a flat NO (his plate, his ward, THE SEA HAS HIM, HER GUARD HOLDS) or a twentieth until they chose to open - a waiting room. Now each is ALWAYS
      HITTABLE and GUARDS BY ANGLE: a hero's blow from the front at his height is TURNED to ANGLE.front (0.4 - B15, never invulnerable: the clank, the flash, GO ROUND); from
@@ -8882,8 +8888,6 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow, tag = blow) { const raw0 = dmg,
     BR.turned(e, fromX, undefined, { stop: false }); e.wallTurned = (e.wallTurned || 0) + 1; dmg = Math.max(1, Math.round(dmg * BR_ANGLE.front));   /* B15 (Daniel 10-08): never totally invulnerable - the wall takes most of it (ANGLE.front), told by the clank and GO ROUND; greed still counts below */ if (e.t === 'closedhelm') { e.wardHit = 0.35; SFX.aegis(); }
     if (!(e.wallSaid > time)) { e.wallSaid = time + 8; PROG.wallTold = (PROG.wallTold || 0) + 1; if (PROG.wallTold <= 3) { hintSay('tip', 4.5, WALL_HINT[e.t] || WALL_HINT.lance); } }
     }
-  /* (claude/stormhold3) THE BARDING: mounted, the charger's plate and his take a hero's blow at x0.4 from ANY side (B15, told) - round him or over him is no help in the saddle; out of it (the cage) or wheeling he is open */
-  if (blow && (e.wallTurned || 0) === wt0 && e.t === 'lance' && e.mounted && !lanceOpen(e) && e.mode !== 'sleep') { dmg = Math.max(1, Math.round(dmg * BR_ANGLE.front)); BR.turned(e, fromX, undefined, { stop: false }); if (!(e.wallSaid > time)) { e.wallSaid = time + 8; hintSay('tip', 4.5, 'HE RIDES IN BARDING. CUT A FIRE CAGE DOWN ON HIM AS HE PASSES UNDER IT - OR CUT HIM AS HE WHEELS.'); } }
   if (e.t === 'forgemaster') { if (forgeOpen(e)) dmg *= 2; else { dmg = Math.max(1, Math.round(dmg * 0.5)); SFX.clank(); sparks(e.x + (Math.sign(fromX - e.x) || 1) * 14, e.y - 16, Math.sign(e.x - fromX) || 1, 3); if (e.rails && blow) BR.turned(e, fromX, e.ward > 0 ? 'HE BRACES' : 'IRON: SEND A CART', { stop: false }); } } // his iron turns half of every cut; stunned or scalded he takes it doubled
   if (e.t === 'frog' && frogOpen(e) && e.openHp0 !== undefined && e.openHp0 - e.hp >= e.maxHp * FROG_TAKE) { e.mode = 'idle'; e.modeT = 0.45; e.openHp0 = undefined; e.idleHits = 0; number(e.x, e.y - e.h - 12, 'HE SHAKES IT OFF', '#ff9a5c'); }   /* (claude/marsh2) ONE OPENING IS NEVER THE FIGHT, counted as the blows land: a flurry inside a hit-stop ran past frogShake (the window's own clock was frozen) */
   /* (claude/frogking2) THE PAD CHASE: no hide - reaching him is the fight. In the air (his leap) a blow takes FROGK.air (B15, told); DAZED x2, WINDED (after his flop) x1.5 */
@@ -9021,10 +9025,8 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow, tag = blow) { const raw0 = dmg,
     }
     if (!P.ground && !P.plunge && !P.dead) { P.vy = Math.min(P.vy, -30); P.airHold = 0.12; } // A HIT IN THE AIR HOLDS YOU UP
     if (wheel) guardWheel(e, fromX);
-    /* (claude/stormhold3) THE CHARGER FOUNDERS if no cage ever came down (no waiting room); on foot, THE LAST STAND: back to the main gate as it comes down */
-    if (e.t === 'lance' && e.alive && e.mounted && e.hp <= e.maxHp * LANCE3.founder) lanceUnhorse(e, false);
-    else if (e.t === 'lance' && e.alive && !e.mounted && e.phase === 2 && e.hp <= e.maxHp * LANCE3.lastStand) { e.phase = 3; e.mode = 'fallback'; e.modeT = 4; e.stagger = 0;
-      number(e.x, e.y - e.h - 16, 'HE FALLS BACK TO THE GATE', '#ff6b6b'); number(e.x, e.y - e.h - 28, 'THE PORTCULLIS IS COMING DOWN', '#ffd36b'); SFX.roar(); SFX.clank(); shakeCam(6); zoomKick(1.1, 0.4); }
+    /* (claude/lance4) THE QUEEN'S LANCE's phases: at 67% HE STOPS THE BELLS, at 33% he falls back to the main gate (src/lance-support.js) */
+    if (e.t === 'lance' && e.alive) lancePhase(e);
     if ((e.t === 'bellcrab' || e.t === 'queen' || e.t === 'chief' || e.t === 'ram' || e.t === 'owl' || e.t === 'greathound' || e.t === 'forgemaster' || e.t === 'prince' || e.t === 'drownedking' || e.t === 'closedhelm') && e.hp <= e.maxHp / 2 && e.phase === 1) { e.phase = 2; number(e.x, e.y - 24, 'ENRAGED', '#ff6b6b'); SFX.roar(); killFlash = 0.06; shakeCam(5); zoomKick(1.08, 0.3);
       /* THE RULE REACHES THE BOSS. The rafters blower calls a sapper wave down at the Chieftain's second wind - UNLESS he is
          already down, which is what climbing up there for him during phase one buys you. */
@@ -11976,7 +11978,8 @@ function bossEnd(e) {
       for (let i = 0; i < 30; i++) parts.push({ x: x + (Math.random() - 0.5) * 40, y: y - 10 - Math.random() * 34, vx: (Math.random() - 0.5) * 180, vy: -140 + Math.random() * 80, life: 1.5, max: 1.5, col: ['#9aa3b0', '#5a6270', '#c9463d', '#e0b040'][(Math.random() * 4) | 0], size: 2, grav: 420 });
       for (const dd of [-1, 1]) waves.push({ x: x + dd * 20, y: floor, dir: dd, life: 2.4, sp: 200 });
       /* (claude/stormhold3) THE MAIN GATE SLAMS SHUT behind him - the story's turn: the way into the castle is round with the supply carts (THE KITCHEN GATE) */
-      if (e.lz) { e.lz.slam = 1; e.lz.bolt = null; e.lz.oil = null; e.lz.spears = []; }
+      if (e.lz) { e.lz.slam = 1; e.lz.bolt = null; e.lz.oil = null; e.lz.spears = []; e.lz.stones = []; }
+      for (const pr of props) if (pr.t === 'lancebell') { if (pr.down > 0) openGate(pr.gate, pr.gy0, pr.gy1); pr.down = 0; pr.pinned = null; pr.ringT = -1; }   /* (claude/lance4) his towers' gates go up; the main gate SLAMS whatever its bell was doing (gateK forced by slam) */
       SFX.bellow(); SFX.heavy(); SFX.crack(); if (SFX.gateDrop) SFX.gateDrop(); shakeCam(14); say('THE MAIN GATE SLAMS SHUT', '#ffd36b'); number(L.arena.mainGate * TS, L.arena.floor - 70, 'ROUND BY THE SUPPLY CARTS', '#e8dcc0'); break; }
     case 'duneworm': { shakeCam(12); zoomKick(1.16, 0.7); rumble(160, 0.9); if (CV) { CV.storm = null; CV.stormNow = null; } dwClearStones();   /* (claude/caravan2) his ledges sink with him */   /* the storm was his: it goes with him */
       for (let i = 0; i < 40; i++) parts.push({ x: x + (Math.random() - 0.5) * 80, y: floor - 2, vx: (Math.random() - 0.5) * 160, vy: -60 - Math.random() * 150, life: 1.4, max: 1.4, col: ['#e2bb7a', '#f2d79c', '#bf8f63'][(Math.random() * 3) | 0], size: 2, grav: 420 });
@@ -24959,32 +24962,30 @@ function updateSpans(dt) {
   if (mending.length) mending = mending.filter(m => !m.done);
 }
 
-// THE QUEEN'S LANCE, REWORKED (claude/stormhold3; Daniel 10-25, scratch/brief-stormhold3-1024.md appendix). He holds the Long
-// Bridge, and the bridge is the fight - and it comes apart under you as it goes on.
-//   PHASE ONE, MOUNTED: an armoured charger thunders the length of the bridge. THE CHARGE (!! HE LEVELS IT) splinters the middle of
-//     every span he crosses (told: the planks crack, then go - a three-plank gap, a jump for every hero, rock teeth under it);
-//     at the end of a charge he WHEELS (open). Close to him the charger REARS and stamps (!!). At range he hurls a SPEAR VOLLEY high
-//     into the air (!) - a shadow on the deck under every spear. Barding: x0.4 from anywhere outside his openings (B15).
-//     THE FIRE CAGE (the level's verb, the main opening): cut its chain as he rides under it and it UNHORSES him - phase two. If
-//     no cage ever comes down, the charger founders at LANCE3.founder of his health (no waiting room, B13).
-//   PHASE TWO, ON FOOT: the lance and a tower shield; his plate faces you (guard by angle, B11). THRUST (!), the LOW sweep (!!),
-//     the SHIELD BASH (!!) - and two moves of his own: THE LANCE VAULT (!! HE VAULTS: up onto the lookout nearest you, then down
-//     point-first on the spot he marks) and THE SHIELD WALL (! plants the shield and edges forward, shoving you toward a gap: go
-//     over him from a lookout - his back is open, and turned he is open). The SPEAR VOLLEY again.
-//   PHASE THREE, THE LAST STAND (LANCE3.lastStand): he falls back toward the MAIN GATE as its portcullis comes down; the pennant
-//     calls both engines at once. When he falls the gate SLAMS shut - the way on is round with the supply carts (the Kitchen Gate).
-//   THE PENNANT (all phases; replaces the horn and its archers, which are the Hornsman's trick now): he raises it and the gatehouse
-//     answers - a BALLISTA bolt down the deck at chest height (jump it, duck it, or be up on a lookout) or BOILING OIL poured from
-//     the towers onto a marked strip (step off it).
+// THE QUEEN'S LANCE 4 (claude/lance4; scratch/brief-lance4-1029.md, Daniel 10-29 20:04 "recs are fine": the horse cut, the fire cages off the
+// bridge, the shield split in P3). He holds the Long Bridge ON FOOT, and the fight is the level's own three devices - src/lance-support.js
+// has every number and the header that says how each phase plays:
+//   P1 THE BELLS AND THE GATES: ring a gate tower's bell from its lookout - HE ANSWERS THE BELL (a lance charge at that tower) and the third
+//      toll drops its portcullis: on him PINNED, ahead of him a gate he runs into (OVERRUN). Every whiffed charge ends OVERRUN too.
+//   P2 THE ZIP LINES (HE STOPS THE BELLS): ride a signal rope over him and drop on his helm (HELM RUNG), or strike a rope's post while he is
+//      under its run (WHIPPED). His charge tears planks; the LANCE VAULT and the SHIELD WALL join (planted, and turned from behind, open).
+//   P3 THE MAIN GATE: he falls back under it as it comes down; THE GREAT BELL drops it on him at once (PINNED, x2), and its bars SPLIT HIS
+//      SHIELD (or he casts it off): two-handed, faster, x0.7 from anywhere. The pennant adds THE STONES.
+// TEMPO CLASSES (lanceClass): LIGHT the thrust, MEDIUM the low sweep / shield wall / spear volley, HEAVY the lance charge / lance vault - each
+// its own sound, the heavy a planted-foot stamp; never two heavies back to back, and LANCE4.heavyGap s of guard after one. The mark over a
+// tell stays the shield's promise ('!' yellow = the shield turns it, '!!' red = it does not: tools/tells.mjs).
+// THE PENNANT (between his moves): the gatehouse answers - a BALLISTA bolt down the deck at chest height, BOILING OIL on a lookout, and in P3
+// THE STONES (the castle's mangonel: three told rings on the deck, and each breaks the planks it lands on).
 function lanceSurf(x, row0) { const tx = Math.floor(x / TS); for (let ty = Math.max(0, row0); ty < LH; ty++) { const t = tileAt(tx, ty); if (isSolid(tx, ty) || isOneWay(t)) return ty * TS; } return LH * TS; }
 const lanceOnLookout = (A, q) => q.ground !== false && (A.lookouts || []).some(([x0, x1, row]) => q.x > x0 * TS - 6 && q.x < (x1 + 1) * TS + 6 && Math.abs(q.y - row * TS) < 6);
 const lanceDeckGone = x => tileAt(Math.floor(x / TS), Math.floor(L.arena.floor / TS)) === T.AIR;
-function lanceState(e) { return e.lz || (e.lz = { cracks: [], gaps: new Set(), spears: [], bolt: null, oil: null, gateK: 0, slam: 0, crossed: new Set(), pen: 0 }); }
-/* A SPAN SPLINTERS: told first (the middle three planks crack and shake for LANCE3.crack.tell s), then they go. Never more than
-   LANCE3.crack.max gaps on the bridge, never two in one span; the planks come back when you do (mendAll, on a death). */
-function lanceCrack(e, i) { const Z = lanceState(e), A = L.arena, s = A.spans[i]; if (!s || Z.gaps.has(i) || Z.cracks.some(c => c.i === i) || Z.gaps.size + Z.cracks.length >= LANCE3.crack.max) return;
-  const mid = (s[0] + s[1] + 1) >> 1, x0 = mid - (LANCE3.crack.w >> 1); Z.cracks.push({ i, x0, x1: x0 + LANCE3.crack.w - 1, t: LANCE3.crack.tell });
-  number((mid + 0.5) * TS, A.floor - 20, 'THE PLANKS GO', '#ff6b6b'); SFX.crack(); }
+const LANCE_AIR = new Set(['vaultUp', 'perch', 'stab']);
+function lanceState(e) { return e.lz || (e.lz = { cracks: [], gaps: new Set(), spears: [], stones: [], bolt: null, oil: null, gateK: 0, gateDrop: 0, slam: 0, crossed: new Set(), pen: 0 }); }
+/* A SPAN SPLINTERS (P2 on): told first (the middle planks crack and shake for LANCE4.crack.tell s), then they go. Never more than
+   LANCE4.crack.max gaps on the bridge, never two in one span; the planks come back when you do (mendAll, on a death). */
+function lanceCrack(e, i) { const Z = lanceState(e), A = L.arena, s = A.spans[i]; if (!s || Z.gaps.has(i) || Z.cracks.some(c => c.i === i) || Z.gaps.size + Z.cracks.length >= LANCE4.crack.max) return;
+  const mid = (s[0] + s[1] + 1) >> 1, x0 = mid - (LANCE4.crack.w >> 1); Z.cracks.push({ i, x0, x1: x0 + LANCE4.crack.w - 1, t: LANCE4.crack.tell });
+  number((mid + 0.5) * TS, A.floor - 20, LANCE_SAY.planks, '#ff6b6b'); SFX.crack(); }
 function lanceBreak(e, c) { const Z = lanceState(e), A = L.arena, row = Math.floor(A.floor / TS);
   for (let x = c.x0; x <= c.x1; x++) { const i = row * LW + x; if (L.grid[i] === T.AIR) continue; L.grid[i] = T.AIR; tileSpr[i] = null; destroyed.add(i); mending.push({ i, t: 1e9 });
     for (let k = 0; k < 3; k++) parts.push({ x: x * TS + 8, y: A.floor + 4, vx: (Math.random() - 0.5) * 90, vy: -40 + Math.random() * 60, life: 1.2, max: 1.2, col: k ? '#8a5a32' : '#c9b27c', size: 2, grav: 420 }); }
@@ -24993,39 +24994,110 @@ function lanceBreak(e, c) { const Z = lanceState(e), A = L.arena, row = Math.flo
   if (P.safe && P.safe.L === L && P.safe.x > c.x0 * TS - 4 && P.safe.x < (c.x1 + 1) * TS + 4 && Math.abs(P.safe.y - A.floor) < 4) {
     const pr = (A.piers || []).map(([a, b]) => (a + b + 1) * TS / 2).sort((p, q) => Math.abs(p - P.safe.x) - Math.abs(q - P.safe.x))[0]; if (pr) P.safe = { x: pr, y: A.floor, L }; } }
 /* THE SPEAR VOLLEY: n spears high into the air, one at your feet and the rest a stride either side; each has its shadow on the deck
-   (or the lookout) under it from the moment it leaves his hand, and lands LANCE3.volley.fall s later */
-function lanceVolley(e) { const Z = lanceState(e), A = L.arena, V = LANCE3.volley, n = V.n[Math.min(2, e.phase - 1)], offs = [0, -1, 1, -2, 2];
+   (or the lookout) under it from the moment it leaves his hand, and lands LANCE4.volley.fall s later */
+function lanceVolley(e) { const Z = lanceState(e), A = L.arena, V = LANCE4.volley, n = V.n[Math.min(2, e.phase - 1)], offs = [0, -1, 1, -2, 2];
   for (let k = 0; k < n; k++) { const x = Math.max(A.x0 + 24, Math.min(A.x1 - 24, P.x + offs[k] * V.spread)), y = lanceSurf(x, Math.floor((Math.min(P.y, A.floor) - 4 * TS) / TS));
     if (y > A.floor + 8) continue;   /* over a gap it goes down into the gorge: no shadow, no spear */
     Z.spears.push({ x, y, t: V.fall + k * 0.07, max: V.fall + k * 0.07, stuck: 0 }); }
   SFX.throwWhoosh(); }
-/* THE PENNANT: the gatehouse's answer. On a lookout he pours (the ballista flies under you); on the deck, by turns; the last stand calls both */
-function lancePennant(e) { const Z = lanceState(e), A = L.arena, up = lanceOnLookout(A, P), both = e.phase >= 3;
-  const ballista = both || (!up && Z.pen % 2 === 0), oil = both || up || Z.pen % 2 === 1; Z.pen++;
-  if (ballista) { Z.bolt = { t: LANCE3.ballista.tell, x: A.x1 - 8, y: A.floor - LANCE3.ballista.y, live: false, hit: false }; number(A.x1 - 60, A.floor - 60, 'BALLISTA', '#ff6b6b'); SFX.hornDraw && SFX.hornDraw(); }
-  if (oil) { const y = lanceSurf(P.x, Math.floor((P.y - 2 * TS) / TS)), w = LANCE3.oil.w * TS / 2; Z.oil = { t: LANCE3.oil.tell, x0: P.x - w, x1: P.x + w, y, on: false };
-    number(P.x, y - 44, 'BOILING OIL', '#ff9a5c'); SFX.hiss && SFX.hiss(); } }
-/* THE HORSE GOES: the cage (or the charger's own legs) puts him on the boards - phase two */
-function lanceUnhorse(e, cage) { if (!e.mounted) return; const X = LANCE3;
-  e.mounted = false; e.phase = 2; e.w = 26; e.h = 34; e.vx = -e.face * 40; e.vy = -120;
-  e.mode = 'thrown'; e.modeT = cage ? X.thrown : X.founderThrown; e.stagger = e.modeT; e.thrustT = 1.5; e.sweepT = 1.2; e.bashT = 2.5; e.vaultT = 5; e.wallT = 7; e.volleyT = 6;
-  corpses.push({ t: 'lancerHorse', color: null, x: e.x, y: e.y, vx: e.face * 190, vy: 0, rot: 0, spin: 0, face: e.face, life: 2.2, max: 2.2, frame: 0, grav: 0, bounced: false, ground: true, run: true });
-  number(e.x, e.y - 60, cage ? 'UNHORSED: CUT HIM' : 'THE CHARGER FOUNDERS', '#8fd160'); SFX.bellow(); SFX.heavy(); SFX.clank(); shakeCam(8); zoomKick(1.12, 0.4); hitstop(0.1); dust(e.x, e.y, 14); }
+/* THE STONES (P3): the castle's mangonel on the barbican answers the pennant - three told rings on the deck (yours, and a stride either
+   side), a dotted arc to each from over the castle wall, and LANCE4.stones.tell s later the stone: it hurts where it lands and breaks the
+   planks under it (a jump for every hero, at most LANCE4.crack.max gaps). A ring over a gap is not thrown. */
+function lanceStones(e) { const Z = lanceState(e), A = L.arena, S = LANCE4.stones, offs = [0, -1, 1];
+  for (let k = 0; k < S.n; k++) { const x = Math.max(A.x0 + 24, Math.min(A.x1 - 24, P.x + offs[k] * S.spread)), y = lanceSurf(x, Math.floor((Math.min(P.y, A.floor) - 4 * TS) / TS));
+    if (y > A.floor + 8) continue; Z.stones.push({ x, y, t: S.tell + k * 0.15, max: S.tell + k * 0.15, done: 0 }); }
+  number(P.x, P.y - 50, LANCE_WORD.stones, '#ff6b6b'); SFX.hornDraw && SFX.hornDraw(); }
+/* THE PENNANT: the gatehouse's answer. Up off the deck (a lookout, the hoarding, a rope) the oil is poured where you are; on the deck the
+   ballista's bolt; in P3 every other call is the mangonel's stones */
+function lancePennant(e) { const Z = lanceState(e), A = L.arena, up = lanceOnLookout(A, P) || P.y < A.floor - 20, p3 = e.phase >= 3, n = Z.pen++;
+  if (p3 && n % 2 === 1) { lanceStones(e); return; }
+  if (!up) { Z.bolt = { t: LANCE4.ballista.tell, x: A.x1 - 8, y: A.floor - LANCE4.ballista.y, live: false, hit: false }; number(A.x1 - 60, A.floor - 60, LANCE_WORD.ballista, '#ff6b6b'); SFX.hornDraw && SFX.hornDraw(); }
+  else { const y = lanceSurf(P.x, Math.floor((P.y - 2 * TS) / TS)), w = LANCE4.oil.w * TS / 2; Z.oil = { t: LANCE4.oil.tell, x0: P.x - w, x1: P.x + w, y, on: false };
+    number(P.x, y - 44, LANCE_WORD.oil, '#ff9a5c'); SFX.hiss && SFX.hiss(); } }
+/* THE TEMPO CLASS of the move he has just begun (its mark and word are on the line that begins it): its own sound, and the heavy's
+   planted-foot stamp. It also keeps the tempo rule's book: lastHeavy (never two heavies back to back) */
+function lanceClass(e, cls) {
+  if (cls === 'heavy') { SFX.heavy(); SFX.bellow(); shakeCam(2); dust(e.x - e.face * 6, e.y, 8); e.stampT = 0.3; }
+  else if (cls === 'medium') { SFX.stompClank ? SFX.stompClank() : SFX.clank(); }
+  else SFX.clank();
+  e.lastHeavy = cls === 'heavy'; }
+/* BACK TO HIS GUARD, facing you - and after a HEAVY, LANCE4.heavyGap s of guard before he begins another move */
+function lanceRest(e) { e.mode = 'guard'; e.modeT = 0.4; e.stagger = 0; e.face = Math.sign(P.x - e.x) || e.face; e.guardHold = e.lastHeavy ? LANCE4.heavyGap : 0.25; }
+/* AN OPENING OR A PHASE TURN ENDS WHATEVER HE WAS IN: a bell's bars let go of him */
+function lanceFree(e) { for (const pr of props) if (pr.t === 'lancebell' && pr.pinned === e) { pr.pinned = null; if (pr.great) lanceState(e).gateDrop = Math.max(lanceState(e).gateDrop, 0.6); } e.vx = 0; }
+/* HIS OPENINGS PAY (B15: 1.5-2x): pinned under a bell's gate its own multiplier, the rest LANCE4.open */
+const lanceOpenMul = e => e.mode === 'pinned' ? (e.pinMul || LANCE4.bell.mul) : (LANCE4.open[e.mode] || 1.5);
+/* THE SHIELD SPLITS (P3): the main gate's bars split it the first time they take him, or he casts it off LANCE4.castOff s into his last stand */
+function lanceSplit(e, byBars) { e.bare = true; e.mode = 'split'; e.modeT = LANCE4.split; e.stagger = e.modeT; e.vx = -e.face * 30; e.answer = null;
+  number(e.x, e.y - e.h - 16, byBars ? LANCE_SAY.split : LANCE_SAY.castOff, '#8fd160'); SFX.crack(); SFX.clank(); shakeCam(5);
+  for (let i = 0; i < 16; i++) parts.push({ x: e.x + e.face * 8, y: e.y - 20 - Math.random() * 16, vx: (Math.random() - 0.5) * 200, vy: -120 - Math.random() * 100, life: 1.2, max: 1.2, col: ['#8a4cb4', '#4e2670', '#f0c048', '#5e4430'][i % 4], size: 2, grav: 420 }); }
+/* THE BELL'S GATE COMES DOWN ON HIM: pinned under the bars (the bars' own blow lands whole), open at its multiplier */
+function lancePin(e, pr) { const X = LANCE4, great = !!pr.great, B = great ? X.great : X.bell, Z = lanceState(e);
+  lanceFree(e); e.mode = 'pinned'; e.modeT = B.pin; e.stagger = B.pin; e.vx = 0; e.pinMul = B.mul; e.answer = null; e.gated = (e.gated || 0) + 1; pr.pinned = e;
+  if (great) { Z.gateDrop = 1; if (!e.bare) e.splitDue = true; }
+  number(e.x, e.y - e.h - 14, great ? LANCE_SAY.great : LANCE_SAY.gate, '#8fd160'); hitstop(0.1); zoomKick(1.1, 0.3); shakeCam(7);
+  burst(pr.gx, e.y - e.h, 14, ['#8a8a9c', '#c9c9d6'], 90, 0.5);
+  hurtEnemy(e, Math.round(B.dmg / B.mul), pr.gx, false); }
+/* A BELL'S LAST TOLL: the gate drops - on him if he is under it, else across the lane (a tower's; the main gate's only falls and winds back) */
+function lanceDrop(e, pr) { const X = LANCE4, Z = lanceState(e); SFX.gateDrop(); SFX.clank(); shakeCam(pr.great ? 6 : 3);
+  if (e.alive && bossActive && bellHas(e, pr, TS, X) && !LANCE_AIR.has(e.mode)) { lancePin(e, pr); return; }
+  if (pr.great) { Z.gateDrop = 1; return; }
+  pr.down = X.bell.hold;
+  if (!P.dead && Math.abs(P.x - pr.gx) < 12 && P.y > pr.gy0 * TS && P.y - 14 < (pr.gy1 + 1) * TS) P.x = pr.gx + (P.x < pr.gx ? -13 : 13);   /* not on you */
+  closeGate(pr.gate, pr.gy0, pr.gy1); }
+/* THE BELLS, every frame (src/lance-support.js bellStrike/bellStep): struck from the lookout they toll; HE ANSWERS THE BELL; the last toll
+   drops the gate. In P2 the tower bells are hauled up out of reach; the great bell rings only in his last stand. A gate across the lane goes
+   back up after LANCE4.bell.hold s; the bell itself winds back over its rewind. */
+function lanceBells(e, dt) { const X = LANCE4, fight = bossActive && e.alive && e.mode !== 'sleep', hb = fight && P.atk >= 0 && !P.dead ? attackBox() : null;
+  for (const pr of props) { if (pr.t !== 'lancebell') continue;
+    if (hb && overlap(hb, { l: pr.x - 9, r: pr.x + 9, t: pr.y - 26, b: pr.y }) && !P.hitSet.has(pr)) { P.hitSet.add(pr);
+      if (pr.great ? e.phase >= 3 : !pr.up) { if (bellStrike(pr, X)) { SFX.seaBell(); if (!pr.great) { e.answer = pr; number(pr.x, pr.y - 40, LANCE_SAY.answer, '#ffd36b'); } } else SFX.ui(); }
+      else { SFX.clank(); sparks(pr.x, pr.y - 12, P.face, 3); } }
+    for (const ev of bellStep(pr, dt, X)) { if (ev === 'toll') { if (SFX.tollBell) SFX.tollBell(); else SFX.seaBell(); } else if (fight) lanceDrop(e, pr); }
+    if (pr.pinned && (!pr.pinned.alive || pr.pinned.mode !== 'pinned')) pr.pinned = null;
+    if (pr.down > 0) { pr.down -= dt; if (pr.down <= 0) { pr.down = 0; openGate(pr.gate, pr.gy0, pr.gy1); } } } }
+/* THE SIGNAL ROPES' POSTS (P2 on; src/lance-support.js ropeFray/ropeTick): struck, the line frays, then parts and WHIPS down the length of its
+   run - on him if he stands under it (WHIPPED, it breaks a shield wall), on you too if you are under it away from the post. The tower crew
+   strings it again in LANCE4.restring s (drawn hauling taut). */
+function lanceRopes(e, dt) { const X = LANCE4, A = L.arena, fight = bossActive && e.alive && e.mode !== 'sleep', hb = fight && P.atk >= 0 && !P.dead ? attackBox() : null;
+  for (const z of L.zipLines || []) { if (z.signal === undefined) continue; ZL.norm(z); const [px, py] = z.post;
+    if (hb && overlap(hb, { l: px - 8, r: px + 8, t: py - 24, b: py }) && !P.hitSet.has(z)) { P.hitSet.add(z);
+      if (e.phase >= 2 && ropeFray(z, X)) { SFX.clank(); if (SFX.ratchet) SFX.ratchet(); number(px, py - 34, LANCE_SAY.frays, '#ffd36b'); } else SFX.clank(); }
+    if (z.fray > 0 && Math.random() < dt * 30) sparks(px, py - 14, -1, 2);
+    if (ropeTick(z, dt, X) !== 'parted' || !fight) continue;
+    SFX.crack(); shakeCam(4);
+    if (underRope(e, z) && e.grounded && e.mode !== 'pinned' && !LANCE_AIR.has(e.mode)) { lanceFree(e); e.mode = 'whipped'; e.modeT = X.whipped; e.stagger = e.modeT; e.answer = null;
+      number(e.x, e.y - e.h - 16, LANCE_SAY.whipped, '#8fd160'); hitstop(0.06); burst(e.x, e.y - e.h, 10, ['#e8dcc0', '#c9b27c'], 80, 0.4); }
+    if (!P.dead && !P.zip && P.x > z.xa - 4 && P.x < z.xb - 20 && P.y > ZL.lineY(z, P.x) && P.y < A.floor + 4) damagePlayer(P.x, DMG.lanceWhip, { unblockable: true, name: 'THE LINE' }); } }
+/* THE PHASES, as his health goes (hurtEnemy): at LANCE4.p2 HE STOPS THE BELLS (the ropes are the fight now), at LANCE4.p3 he falls back to
+   the main gate. Either one ends the opening he is in (no burst runs through two phases). */
+function lancePhase(e) { const X = LANCE4;
+  if (e.phase === 1 && e.hp <= e.maxHp * X.p2) { e.phase = 2; lanceFree(e); e.mode = 'haul'; e.modeT = X.haul; e.stagger = 0; e.answer = null; e.chargeT = 3; e.vaultT = 4; e.wallT = 6;
+    for (const pr of props) if (pr.t === 'lancebell' && !pr.great) { pr.up = true; pr.ringT = -1; }
+    number(e.x, e.y - e.h - 16, LANCE_SAY.stops, '#ff6b6b'); SFX.bellow(); SFX.clank(); shakeCam(5); hintSay('tip', 4.5, LANCE_SAY.tip2); }
+  else if (e.phase === 2 && e.hp <= e.maxHp * X.p3) { e.phase = 3; lanceFree(e); e.mode = 'fallback'; e.modeT = 5; e.stagger = 0; e.p3T = 0; e.answer = null;
+    number(e.x, e.y - e.h - 16, LANCE_SAY.fallback, '#ff6b6b'); number(e.x, e.y - e.h - 28, LANCE_SAY.portcullis, '#ffd36b'); SFX.roar(); SFX.clank(); shakeCam(6); zoomKick(1.1, 0.4); hintSay('tip', 4.5, LANCE_SAY.tip3); } }
 function updateLance(e, dt) {
-  const A = L.arena, floor = A.floor, X = LANCE3, Z = lanceState(e);
-  if (e.mounted === undefined) { e.mounted = true; e.w = 36; e.h = 50; }
-  e.modeT -= dt; e.anim += dt; e.hitT = Math.max(0, e.hitT - dt);
+  const A = L.arena, floor = A.floor, X = LANCE4, Z = lanceState(e);
+  e.modeT -= dt; e.anim += dt; e.hitT = Math.max(0, e.hitT - dt); e.guardHold = Math.max(0, (e.guardHold || 0) - dt); e.stampT = Math.max(0, (e.stampT || 0) - dt);
+  if (e.mode !== e.mode0) { e.mode0 = e.mode; e.modeAge = 0; } else e.modeAge = (e.modeAge || 0) + dt;   /* how long he has been in this move: his anticipation and follow-through frames (src/lance-art.js frameOf) */
   e.vy += 1000 * dt; if (e.vy > 360) e.vy = 360;
-  const d = P.x - e.x, ad = Math.abs(d), dy = P.y - e.y, p1 = e.mounted, p3 = e.phase >= 3, live = bossActive && e.alive && e.mode !== 'sleep' && e.mode !== 'wake';
+  const d = P.x - e.x, ad = Math.abs(d), dy = P.y - e.y, p3 = e.phase >= 3, live = bossActive && e.alive && e.mode !== 'sleep' && e.mode !== 'wake';
   let want = 0;
-  const reach = (dist, dmg, opt) => { if (!P.dead && Math.sign(P.x - e.x) === e.face && ad < dist && Math.abs(dy) < 30) { const res = damagePlayer(e.x, dmg, opt); if (res === 'blocked' && !opt) { e.mode = 'reel'; e.modeT = 1.4; e.vx = -e.face * 60; number(e.x, e.y - e.h - 12, 'PARRIED', '#8fd160'); SFX.clank(); } return res || 'hit'; } return null; };
-  // ---- the bridge's own clocks: the cracks, the spears, the ballista, the oil, the main gate ----
+  const reach = (dist, dmg, opt) => { if (!P.dead && Math.sign(P.x - e.x) === e.face && ad < dist && Math.abs(dy) < 30) { const res = damagePlayer(e.x, dmg, opt); if (res === 'blocked' && !opt) { e.mode = 'reel'; e.modeT = 1.4; e.stagger = 1.4; e.vx = -e.face * 60; number(e.x, e.y - e.h - 12, LANCE_SAY.parried, '#8fd160'); SFX.clank(); } return res || 'hit'; } return null; };
+  // ---- the bridge's own clocks: the cracks, the spears, the stones, the ballista, the oil, the bells, the ropes, the main gate ----
   for (const c of Z.cracks) { c.t -= dt; if (Math.random() < dt * 30) parts.push({ x: (c.x0 + Math.random() * (c.x1 - c.x0 + 1)) * TS, y: floor + 2, vx: 0, vy: 30 + Math.random() * 40, life: 0.5, max: 0.5, col: '#c9b27c', size: 1, grav: 300 }); if (c.t <= 0) lanceBreak(e, c); }
   Z.cracks = Z.cracks.filter(c => c.t > 0);
   for (const s of Z.spears) { if (s.stuck > 0) { s.stuck -= dt; continue; } s.t -= dt;
     if (s.t <= 0) { s.stuck = X.volley.stick; SFX.stone(); dust(s.x, s.y, 4);
       if (!P.dead && Math.abs(P.x - s.x) < X.volley.hit && P.y > s.y - 30 && P.y < s.y + 4) { const res = damagePlayer(s.x, DMG.lanceVolley, { unblockable: true, up: true, name: 'THE SPEAR VOLLEY' }); if (res === 'hit') P.vx = Math.sign(P.x - s.x || 1) * 90; } } }
   Z.spears = Z.spears.filter(s => s.t > 0 || s.stuck > 0);
+  for (const s of Z.stones) { if (s.done) { s.done -= dt; continue; } s.t -= dt;
+    if (s.t <= 0) { s.done = 0.5; SFX.stone(); SFX.heavy(); shakeCam(4); dust(s.x, s.y, 10); burst(s.x, s.y - 4, 10, ['#8a8a9c', '#5a5a68', '#c9b27c'], 90, 0.6);
+      if (!P.dead && Math.abs(P.x - s.x) < X.stones.hit && P.y > s.y - 30 && P.y < s.y + 4) { const res = damagePlayer(s.x, DMG.lanceStone, { unblockable: true, up: true, name: 'THE STONES' }); if (res === 'hit') P.vx = Math.sign(P.x - s.x || 1) * 110; }
+      if (Math.abs(s.y - floor) < 4) { const i = (A.spans || []).findIndex(([s0, s1]) => s.x >= s0 * TS && s.x < (s1 + 1) * TS);
+        if (i >= 0 && !Z.gaps.has(i) && !Z.cracks.some(c => c.i === i) && Z.gaps.size + Z.cracks.length < X.crack.max) { const [s0, s1] = A.spans[i], x0 = Math.max(s0, Math.min(s1 - X.stones.w + 1, Math.floor(s.x / TS))); lanceBreak(e, { i, x0, x1: x0 + X.stones.w - 1 }); } } } }
+  Z.stones = Z.stones.filter(s => !s.done || s.done > 0);
   if (Z.bolt) { const B = Z.bolt; if (!B.live) { B.t -= dt; if (B.t <= 0) { B.live = true; SFX.throwWhoosh(); SFX.heavy(); shakeCam(3); } }
     else { B.x -= X.ballista.sp * dt;
       if (!B.hit && !P.dead && Math.abs(P.x - B.x) < 12 && P.y > B.y + 2 && P.y - (P.duck ? 12 : 22) < B.y) { B.hit = true; const res = damagePlayer(B.x + 20, DMG.lanceBallista, { unblockable: true, name: 'THE BALLISTA' }); if (res === 'hit') { P.vx = -140; P.vy = -140; } }
@@ -25033,157 +25105,172 @@ function updateLance(e, dt) {
   if (Z.oil) { const O = Z.oil; O.t -= dt; if (!O.on && Math.random() < dt * 40) parts.push({ x: O.x0 + Math.random() * (O.x1 - O.x0), y: O.y - 60 - Math.random() * 40, vx: 0, vy: 140, life: 0.4, max: 0.4, col: Math.random() < 0.5 ? '#ffd36b' : '#c9b27c', size: 1, grav: 200 });
     if (!O.on && O.t <= 0) { O.on = true; O.t = X.oil.burn; SFX.puff && SFX.puff(); for (let x = O.x0 + 6; x <= O.x1 - 4; x += 12) fires.push({ x, y: O.y, life: X.oil.burn, delay: 0, dmg: DMG.lanceOil, unb: true, lanceOil: true }); }
     else if (O.on && O.t <= 0) Z.oil = null; }
+  lanceBells(e, dt); lanceRopes(e, dt);
   if (p3 && e.alive) Z.gateK = Math.min(0.85, Z.gateK + dt / X.gateClose);   /* THE MAIN GATE comes down on the last stand: it shuts the rest of the way on him */
-  // ---- THE PENNANT, between his moves (not in a tell, not open, not mid-charge) ----
-  if (live && (e.mode === 'ride' || e.mode === 'guard')) { e.penT = (e.penT ?? X.pennant.first) - dt;
-    if (e.penT <= 0 && !Z.bolt && !Z.oil) { e.penT = p3 ? X.pennant.every * 0.8 : X.pennant.every; e.mode = 'pennantTell'; e.modeT = X.pennant.tell; number(e.x, e.y - e.h - 24, 'THE PENNANT', '#ffd36b'); SFX.snort(); e.vx = 0; } }
+  if (Z.gateDrop > 0 && e.mode !== 'pinned') Z.gateDrop = Math.max(0, Z.gateDrop - dt / X.great.rewind);   /* the great bell's drop, wound back up */
+  // ---- THE PENNANT, between his moves (in his guard, never in a tell, an opening or a run) ----
+  if (live && e.mode === 'guard' && !(e.guardHold > 0)) { e.penT = (e.penT ?? X.pennant.first) - dt;
+    if (e.penT <= 0 && !Z.bolt && !Z.oil && !Z.stones.length) { e.penT = p3 ? X.pennant.every * 0.8 : X.pennant.every; e.mode = 'pennantTell'; e.modeT = X.pennant.tell; number(e.x, e.y - e.h - 24, LANCE_WORD.pennant, '#ffd36b'); lanceClass(e, 'medium'); e.vx = 0; } }
   switch (e.mode) {
     case 'sleep': return;
-    case 'wake': if (e.modeT <= 0) { e.mode = 'ride'; e.modeT = 0.8; } break;
-    case 'pennantTell': want = 0; e.face = Math.sign(d) || e.face; if (e.modeT <= 0) { lancePennant(e); e.mode = p1 ? 'ride' : 'guard'; e.modeT = 0.5; } break;
-    // ======== PHASE ONE: MOUNTED ========
-    case 'ride': {
-      e.face = Math.sign(d) || e.face; e.chargeT = (e.chargeT ?? 2.6) - dt; e.rearT = (e.rearT ?? 1.5) - dt; e.volleyT = (e.volleyT ?? 4) - dt;
-      want = ad > 120 ? e.face * X.ride : ad < 70 ? -e.face * X.ride * 0.6 : 0;   /* a horseman keeps a lance's length off you */
-      if (ad < X.rearReach && Math.abs(dy) < 40 && e.rearT <= 0) { e.rearT = 3.2; e.mode = 'rearTell'; e.modeT = X.rearTell; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); number(e.x, e.y - e.h - 24, 'HE REARS', '#ff6b6b'); SFX.snort(); }
-      else if (ad > 80 && e.volleyT <= 0) { e.volleyT = X.volley.every[0]; e.mode = 'volleyTell'; e.modeT = X.volley.tell; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); number(e.x, e.y - e.h - 24, 'SPEARS', '#ff6b6b'); SFX.snort(); }
-      else if (ad > 50 && e.chargeT <= 0) { e.chargeT = X.chargeEvery; e.mode = 'couch'; e.modeT = X.couch; number(e.x, e.y - e.h - 14, 'HE LEVELS IT', '#ff6b6b'); number(e.x, e.y - e.h - 2, '!!', '#ff6b6b'); SFX.bellow(); shakeCam(2); }
-      break; }
-    case 'rearTell': want = 0; if (e.modeT <= 0) { e.mode = 'rear'; e.modeT = 0.4; SFX.heavy(); shakeCam(5); dust(e.x + e.face * 16, e.y, 10);
-      if (!P.dead && Math.sign(d || e.face) === e.face && ad < X.rearReach + 6 && Math.abs(dy) < 34) { const res = damagePlayer(e.x, DMG.lanceRear, { unblockable: true, up: true, name: 'THE CHARGER' }); if (res === 'hit') { P.vx = e.face * 160; P.vy = -170; } } } break;
-    case 'rear': want = 0; if (e.modeT <= 0) { e.mode = 'ride'; e.modeT = 0.4; } break;
-    case 'volleyTell': want = 0; e.face = Math.sign(d) || e.face; if (e.modeT <= 0) { lanceVolley(e); e.mode = 'volley'; e.modeT = 0.6; } break;
-    case 'volley': want = 0; if (e.modeT <= 0) { e.mode = p1 ? 'ride' : 'guard'; e.modeT = 0.4; } break;
-    case 'couch': e.face = Math.sign(d) || e.face; if (e.modeT <= 0) { e.mode = 'charge'; e.modeT = 4.5; e.vx = e.face * X.gallop; e.passT = -1; Z.crossed = new Set(); SFX.charge(); shakeCam(3); } break;
-    case 'charge': {
-      want = e.face * X.gallop;
-      if (!P.dead && e.hitT <= 0 && ad < 28 && dy > -46 && dy < 36) { e.hitT = 0.9; const res = damagePlayer(e.x, DMG.lanceCharge, { unblockable: true, up: true, name: 'THE CHARGE' }); if (res === 'hit') { P.vx = e.face * 190; P.vy = -210; } }   /* thrown UP more than along: a bridge with gaps in it is no place to be thrown down */
-      /* THE BRIDGE GOES UNDER HIM: the middle of every span he gallops over splinters behind him */
-      (A.spans || []).forEach(([s0, s1], i) => { const mid = (s0 + s1 + 1) * TS / 2; if (!Z.crossed.has(i) && (e.x - mid) * e.face > 0 && Math.abs(e.x - mid) < 40) { Z.crossed.add(i); lanceCrack(e, i); } });
-      if (Math.random() < dt * 26) dust(e.x - e.face * 14, e.y, 3);
-      if (e.grounded && lanceDeckGone(e.x + e.face * 26)) { e.vy = -300; SFX.leap(); }   /* the charger clears a gap he tore */
-      if (e.passT < 0 && (P.x - e.x) * e.face < -6) e.passT = 0.35; else if (e.passT > 0) e.passT -= dt;
-      const edge = e.face > 0 ? e.x > A.x1 - 40 : e.x < A.x0 + 40;
-      if (e.grounded && (edge || e.modeT <= 0 || (e.passT !== -1 && e.passT <= 0))) { e.mode = 'wheel'; e.modeT = X.wheel; e.stagger = e.modeT; e.vx = e.face * 40;
-        number(e.x, e.y - e.h - 14, 'HE WHEELS: CUT HIM', '#8fd160'); SFX.bellow(); dust(e.x + e.face * 10, e.y, 10); }
-      break; }
-    case 'wheel': want = 0; if (e.modeT <= 0) { e.mode = 'ride'; e.modeT = 0.5; e.stagger = 0; e.face = Math.sign(d) || e.face; } break;
-    // ======== THE FALL, and phase two ========
-    case 'thrown': want = 0; if (e.modeT <= 0) { e.mode = 'rise'; e.modeT = X.rise; e.stagger = X.rise; } break;
-    case 'rise': want = 0; if (e.modeT <= 0) { e.mode = 'guard'; e.modeT = 0.6; e.stagger = 0; } break;
-    case 'reel': if (e.modeT <= 0) { e.mode = p1 ? 'ride' : 'guard'; e.modeT = 0.5; } break;
-    case 'fallback': {   /* THE LAST STAND: back to the main gate under its portcullis, his shield up the whole way (x0.4 from the front) */
-      e.face = Math.sign(d) || e.face; const home = (A.mainGate - 7) * TS; want = Math.sign(home - e.x) * X.walk * 1.6;
-      if (Math.abs(home - e.x) < 10 || e.modeT <= 0) { e.mode = 'guard'; e.modeT = 0.4; } break; }
+    case 'wake': want = 0; if (e.modeT <= 0) { e.mode = 'guard'; e.modeT = 0.6; e.guardHold = 0.6; } break;   /* he wrenches his planted pennant up out of the boards */
+    case 'pennantTell': want = 0; e.face = Math.sign(d) || e.face; if (e.modeT <= 0) { lancePennant(e); e.mode = 'pennant'; e.modeT = 0.4; } break;
+    case 'pennant': want = 0; if (e.modeT <= 0) lanceRest(e); break;
+    case 'haul': want = 0; if (e.modeT <= 0) lanceRest(e); break;   /* HE STOPS THE BELLS: the pennant up to the towers, and their bells go up out of reach */
+    case 'fallback': {   /* THE LAST STAND: back to the main gate, under its portcullis, his shield up the whole way */
+      e.face = Math.sign(d) || e.face; const home = (A.mainGate + 1) * TS; want = Math.sign(home - e.x) * X.walk * 1.6;
+      if (Math.abs(home - e.x) < 10 || e.modeT <= 0) lanceRest(e); break; }
     case 'guard': {
       e.face = Math.sign(d) || e.face;
-      for (const k of ['thrustT', 'sweepT', 'bashT', 'vaultT', 'wallT', 'volleyT']) e[k] = (e[k] ?? 2) - dt;
+      for (const k of ['thrustT', 'sweepT', 'vaultT', 'wallT', 'volleyT', 'chargeT']) e[k] = (e[k] ?? 2) - dt;
       /* in his last stand he gives ground toward the gate when you press him, and never comes further out than the last pier */
-      const homeX = p3 ? (A.mainGate - 7) * TS : null;
+      const homeX = p3 ? (A.mainGate + 1) * TS : null;
       want = ad > 26 ? e.face * X.walk : 0; if (p3 && e.x < homeX - 26 * TS && e.face < 0) want = 0;
-      if (ad < 34 && e.sweepT <= 0 && !e.lastBash) { e.sweepT = 3.4; e.lastBash = true; e.mode = 'sweepTell'; e.modeT = 0.45; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); number(e.x, e.y - e.h - 24, 'LOW', '#ff6b6b'); SFX.snort(); }
-      else if (ad < 34 && e.bashT <= 0) { e.bashT = 4.2; e.lastBash = false; e.mode = 'bashTell'; e.modeT = 0.42; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); SFX.snort(); }
-      else if (ad < 96 && ad > 28 && e.thrustT <= 0) { e.thrustT = 3; e.mode = 'thrustTell'; e.modeT = 0.5; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.snort(); }
-      else if (ad > 60 && ad < 220 && e.vaultT <= 0 && !lanceOnLookout(A, P)) { const lk = lanceVaultTo(e); if (lk) { e.vaultT = X.vault.every; e.vk = lk; e.mode = 'vaultTell'; e.modeT = X.vault.tell; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); number(e.x, e.y - e.h - 24, 'HE VAULTS', '#ff6b6b'); SFX.snort(); } else e.vaultT = 2; }
-      else if (ad > 50 && ad < 170 && e.wallT <= 0 && Math.abs(dy) < 20) { e.wallT = X.wall.every; e.mode = 'wallTell'; e.modeT = X.wall.tell; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); number(e.x, e.y - e.h - 24, 'SHIELD WALL', '#ffd36b'); SFX.snort(); }
-      else if (ad > 110 && e.volleyT <= 0) { e.volleyT = X.volley.every[p3 ? 2 : 1]; e.mode = 'volleyTell'; e.modeT = X.volley.tell; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); number(e.x, e.y - e.h - 24, 'SPEARS', '#ff6b6b'); SFX.snort(); }
+      if (p3 && !e.bare) { e.p3T = (e.p3T || 0) + dt; if (e.p3T >= X.castOff) { lanceSplit(e, false); break; } }   /* no waiting room: the shield goes anyway */
+      if (e.guardHold > 0) break;
+      const heavyOK = !e.lastHeavy, ans = e.answer;
+      /* HE ANSWERS THE BELL: whatever he had in mind, his next move is a LANCE CHARGE at the tower that rang (the tempo rule's guard after a heavy still holds) */
+      if (ans && Math.abs(ans.gx - e.x) > 20) { e.answer = null; e.face = Math.sign(ans.gx - e.x) || e.face; e.chargeT = X.chargeEvery; e.chargeAt = ans.gx; e.mode = 'couch'; e.modeT = X.couch; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); number(e.x, e.y - e.h - 24, LANCE_WORD.charges, '#ff6b6b'); lanceClass(e, 'heavy'); }
+      else if (ad < 34 && e.sweepT <= 0) { e.answer = null; e.sweepT = X.sweep.every; e.mode = 'sweepTell'; e.modeT = X.sweep.tell; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); number(e.x, e.y - e.h - 24, 'LOW', '#ff6b6b'); lanceClass(e, 'medium'); }
+      else if (ad < 96 && ad > 28 && e.thrustT <= 0) { e.answer = null; e.thrustT = X.thrust.every; e.mode = 'thrustTell'; e.modeT = e.bare ? X.thrust.tell3 : X.thrust.tell; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); lanceClass(e, 'light'); }
+      else if (heavyOK && ad > 50 && e.chargeT <= 0 && Math.abs(dy) < 60) { e.chargeT = X.chargeEvery; e.chargeAt = null; e.mode = 'couch'; e.modeT = X.couch; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); number(e.x, e.y - e.h - 24, LANCE_WORD.charges, '#ff6b6b'); lanceClass(e, 'heavy'); }
+      else if (heavyOK && e.phase >= 2 && ad > 60 && ad < 220 && e.vaultT <= 0 && !lanceOnLookout(A, P)) { const lk = lanceVaultTo(e); if (lk) { e.vaultT = X.vault.every; e.vk = lk; e.mode = 'vaultTell'; e.modeT = X.vault.tell; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); number(e.x, e.y - e.h - 24, LANCE_WORD.vaults, '#ff6b6b'); lanceClass(e, 'heavy'); } else e.vaultT = 2; }
+      else if (e.phase === 2 && !e.bare && ad > 50 && ad < 170 && e.wallT <= 0 && Math.abs(dy) < 20) { e.wallT = X.wall.every; e.mode = 'wallTell'; e.modeT = X.wall.tell; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); number(e.x, e.y - e.h - 24, LANCE_WORD.wall, '#ffd36b'); lanceClass(e, 'medium'); }
+      else if (ad > 110 && e.volleyT <= 0) { e.volleyT = X.volley.every[Math.min(2, e.phase - 1)]; e.mode = 'volleyTell'; e.modeT = X.volley.tell; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); number(e.x, e.y - e.h - 24, LANCE_WORD.spears, '#ff6b6b'); lanceClass(e, 'medium'); }
       break; }
-    case 'thrustTell': e.face = Math.sign(d) || e.face; if (e.modeT <= 0) { e.mode = 'thrust'; e.modeT = 0.34; SFX.slash(); e.whiff = !reach(96, DMG.lanceThrust); } break;
-    case 'thrust': if (e.modeT <= 0) { if (e.whiff) { e.mode = 'recover'; e.modeT = 0.75; } else { e.mode = 'guard'; e.modeT = 0.5; } } break;
-    // a swing that finds nothing leaves him over his front foot: that is the answer for anyone who will not stand and block
-    case 'recover': if (e.modeT <= 0) { e.mode = p1 ? 'ride' : 'guard'; e.modeT = 0.4; } break;
-    case 'sweepTell': e.face = Math.sign(d) || e.face; if (e.modeT <= 0) { e.mode = 'sweep'; e.modeT = 0.3; SFX.slash(); shakeCam(3);
-      if (!P.dead && ad < 35 && Math.abs(dy) < 18 && P.ground) { const res = damagePlayer(e.x, DMG.lanceSweep, { unblockable: true }); if (res === 'hit') { P.vx = Math.sign(d) * 260; P.vy = -120; } } } break;
-    case 'sweep': if (e.modeT <= 0) { e.mode = 'guard'; e.modeT = 0.6; } break;
-    // THE BASH: the shield comes round and puts you on your back. Blocking does not stop a shield: get out from in front of it.
-    case 'bashTell': e.face = Math.sign(d) || e.face; want = -e.face * 16; if (e.modeT <= 0) { e.mode = 'bash'; e.modeT = 0.26; e.vx = e.face * 140; SFX.clank(); SFX.heavy(); shakeCam(3);
-      const hit = !P.dead && Math.sign(P.x - e.x) === e.face && ad < 40 && Math.abs(dy) < 26; if (hit) { const res = damagePlayer(e.x, DMG.lanceBash, { unblockable: true }); if (res === 'hit') { P.vx = e.face * 330; P.vy = -150; } } e.whiff = !hit; } break;
-    case 'bash': want = 0; if (e.modeT <= 0) { e.mode = e.whiff ? 'recover' : 'guard'; e.modeT = e.whiff ? 0.6 : 0.5; } break;
-    // THE LANCE VAULT: the point into the boards, up the shaft and onto the lookout nearest you; a breath up there marking the spot
-    // under him (the red ring); then down on it point-first. The point sticks: he is open where he lands.
-    case 'vaultTell': want = 0; if (e.modeT <= 0) { const [lx, ly] = e.vk, T0 = X.vault.up; e.mode = 'vaultUp'; e.modeT = 1.6; e.vx = (lx - e.x) / T0; e.vy = (ly - e.y) / T0 - 500 * T0; e.airT = 0; SFX.leap(); dust(e.x, e.y, 8); } break;
-    case 'vaultUp': e.airT += dt; if ((e.grounded && e.airT > 0.2) || e.modeT <= 0) { e.mode = 'perch'; e.modeT = X.vault.perch; e.vx = 0;
-      const sx = Math.max(A.x0 + 24, Math.min(A.x1 - 24, P.x)); let sy = lanceSurf(sx, Math.floor((Math.min(P.y, floor) - 8) / TS));   /* the surface YOU stand on (the deck, or a lookout of your own) */ let tx = sx;
-      if (sy > floor + 8) { const pr = (A.piers || []).map(([a, b]) => (a + b + 1) * TS / 2).sort((p, q) => Math.abs(p - sx) - Math.abs(q - sx))[0]; tx = pr; sy = floor; }   /* never down into a gap */
-      e.stab = { x: tx, y: sy }; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); SFX.snort(); } break;
-    case 'perch': want = 0; e.face = Math.sign(e.stab.x - e.x) || e.face; if (e.modeT <= 0) { const T0 = 0.42; e.mode = 'stab'; e.modeT = 1.2; e.vx = (e.stab.x - e.x) / T0; e.vy = (e.stab.y - e.y) / T0 - 500 * T0; e.airT = 0; e.dropThru = true; SFX.leap(); } break;
-    case 'stab': e.airT += dt; break;
-    // THE SHIELD WALL: the shield planted and the whole of him behind it, edging forward - a stride a second, shoving you along the
-    // deck toward whatever gap he has torn. His FRONT is a wall (x0.4); over him (from a lookout) his back is bare, and turned he is open.
+    // ======== LIGHT: THE THRUST (two-handed and quicker once the shield is gone) ========
+    case 'thrustTell': e.face = Math.sign(d) || e.face; want = 0; if (e.modeT <= 0) { e.mode = 'thrust'; e.modeT = X.thrust.active; SFX.slash(); e.whiff = !reach(X.thrust.reach, DMG.lanceThrust); } break;
+    case 'thrust': want = 0; if (e.modeT <= 0) { if (e.whiff) { e.mode = 'recover'; e.modeT = X.thrust.whiff; e.stagger = e.modeT; } else { e.mode = 'thrustRec'; e.modeT = X.thrust.rec; } } break;
+    // a thrust that finds nothing leaves him over his front foot, the point out past you: that is the answer for anyone who will not block
+    case 'recover': want = 0; if (e.modeT <= 0) lanceRest(e); break;
+    case 'thrustRec': want = 0; if (e.modeT <= 0) lanceRest(e); break;
+    // ======== MEDIUM: THE LOW SWEEP (jumped), THE SPEAR VOLLEY, THE SHIELD WALL ========
+    case 'sweepTell': e.face = Math.sign(d) || e.face; want = 0; if (e.modeT <= 0) { e.mode = 'sweep'; e.modeT = X.sweep.active; e.swept = false; SFX.slash(); shakeCam(3); } break;
+    case 'sweep': want = 0;
+      if (!e.swept && !P.dead && ad < X.sweep.reach && Math.abs(dy) < 18 && P.ground) { e.swept = true; const res = damagePlayer(e.x, DMG.lanceSweep, { unblockable: true }); if (res === 'hit') { P.vx = Math.sign(d) * 260; P.vy = -120; } }
+      if (e.modeT <= 0) { e.mode = 'sweepRec'; e.modeT = X.sweep.rec; } break;
+    case 'sweepRec': want = 0; if (e.modeT <= 0) lanceRest(e); break;
+    case 'volleyTell': want = 0; e.face = Math.sign(d) || e.face; if (e.modeT <= 0) { lanceVolley(e); e.mode = 'volley'; e.modeT = 0.6; } break;
+    case 'volley': want = 0; if (e.modeT <= 0) lanceRest(e); break;
+    // THE SHIELD WALL (P2): the shield planted and the whole of him behind it, edging forward - a stride a second, shoving you along the deck
+    // toward whatever gap he has torn. His FRONT is a wall; drop in behind him from a rope or a lookout and it is TURNED (open); a whipped
+    // line breaks it.
     case 'wallTell': want = 0; e.face = Math.sign(d) || e.face; if (e.modeT <= 0) { e.mode = 'shieldwall'; e.modeT = X.wall.t; SFX.clank(); SFX.heavy(); shakeCam(2); } break;
     case 'shieldwall': {
       want = lanceDeckGone(e.x + e.face * 20) ? 0 : e.face * X.wall.sp;
       if (!P.dead && (P.x - e.x) * e.face > 0 && ad < 26 && Math.abs(dy) < 24) { moveBody(P, e.face * X.wall.push * dt, 0, false); if (Math.random() < dt * 12) sparks(e.x + e.face * 14, e.y - 12, e.face, 2); }
-      if ((P.x - e.x) * e.face < -8 && Math.abs(dy) < 40 && P.ground) { e.mode = 'wallTurned'; e.modeT = X.wall.turned; e.stagger = e.modeT; e.vx = 0; number(e.x, e.y - e.h - 14, 'THE WALL IS TURNED: CUT HIM', '#8fd160'); SFX.clank(); }
-      else if (e.modeT <= 0) { e.mode = 'guard'; e.modeT = 0.4; }
+      if ((P.x - e.x) * e.face < -8 && Math.abs(dy) < 40 && P.ground) { e.mode = 'wallTurned'; e.modeT = X.wall.turned; e.stagger = e.modeT; e.vx = 0; number(e.x, e.y - e.h - 14, LANCE_SAY.turned, '#8fd160'); SFX.clank(); }
+      else if (e.modeT <= 0) lanceRest(e);
       break; }
-    case 'wallTurned': want = 0; if (e.modeT <= 0) { e.mode = 'guard'; e.modeT = 0.3; e.face = Math.sign(d) || e.face; } break;
-    case 'planted': want = 0; if (e.modeT <= 0) { e.mode = p1 ? 'ride' : 'guard'; e.modeT = 0.6; e.stagger = 0; } break;
-    case 'stumble': if (e.modeT <= 0) { e.mode = 'guard'; e.modeT = 0.4; } break;
+    // ======== HEAVY: THE LANCE CHARGE ========
+    // couched under his arm, the shield up, a foot scraping the boards: then a sprint the length of the bridge. From P2 every span he runs
+    // splinters behind him. Whiffed - past you, at the bridge's end, or into a dropped gate - he skids and the point catches the boards:
+    // OVERRUN (open). If it caught you, he only skids to a stop.
+    case 'couch': want = 0; e.face = e.chargeAt != null ? (Math.sign(e.chargeAt - e.x) || e.face) : (Math.sign(d) || e.face); if (e.modeT <= 0) { e.mode = 'charge'; e.modeT = 4.5; e.vx = e.face * X.sprint; e.passT = -1; e.chargeHit = false; Z.crossed = new Set(); SFX.charge(); shakeCam(3); } break;
+    case 'charge': {
+      want = e.face * X.sprint;
+      if (!P.dead && e.hitT <= 0 && ad < 28 && dy > -46 && dy < 36) { e.hitT = 0.9; const res = damagePlayer(e.x, DMG.lanceCharge, { unblockable: true, up: true, name: 'THE CHARGE' }); if (res === 'hit') { e.chargeHit = true; P.vx = e.face * 190; P.vy = -210; } }   /* thrown UP more than along: a bridge with gaps in it is no place to be thrown down */
+      if (e.phase >= 2) (A.spans || []).forEach(([s0, s1], i) => { const mid = (s0 + s1 + 1) * TS / 2; if (!Z.crossed.has(i) && (e.x - mid) * e.face > 0 && Math.abs(e.x - mid) < 40) { Z.crossed.add(i); lanceCrack(e, i); } });
+      if (Math.random() < dt * 26) dust(e.x - e.face * 14, e.y, 3);
+      if (e.grounded && lanceDeckGone(e.x + e.face * 26)) { e.vy = -300; SFX.leap(); }   /* he leaps a gap he tore */
+      const past = e.chargeAt != null ? (e.x - e.chargeAt) * e.face > 6 : (P.x - e.x) * e.face < -6;
+      if (e.passT < 0 && past) e.passT = 0.35; else if (e.passT > 0) e.passT -= dt;
+      const edge = e.face > 0 ? e.x > A.x1 - 40 : e.x < A.x0 + 40;
+      if (e.grounded && (edge || e.modeT <= 0 || (e.passT !== -1 && e.passT <= 0))) { if (e.chargeHit) { e.mode = 'skid'; e.modeT = 0.5; e.vx = e.face * 80; } else { e.mode = 'overrun'; e.modeT = X.overrun; e.stagger = e.modeT; e.vx = e.face * 70;
+        number(e.x, e.y - e.h - 14, LANCE_SAY.overrun, '#8fd160'); } SFX.stone(); dust(e.x + e.face * 10, e.y, 10); }
+      break; }
+    case 'skid': want = 0; if (e.modeT <= 0) lanceRest(e); break;
+    case 'overrun': want = 0; if (e.modeT <= 0) lanceRest(e); break;
+    // ======== HEAVY: THE LANCE VAULT (P2+) ========
+    // the point into the boards, up the shaft and onto the lookout nearest you; a breath up there marking the spot under him (the red ring);
+    // then down on it point-first. The point sticks: he is open where he lands.
+    case 'vaultTell': want = 0; if (e.modeT <= 0) { const [lx, ly] = e.vk, T0 = X.vault.up; e.mode = 'vaultUp'; e.modeT = 1.6; e.vx = (lx - e.x) / T0; e.vy = (ly - e.y) / T0 - 500 * T0; e.airT = 0; SFX.leap(); dust(e.x, e.y, 8); } break;
+    case 'vaultUp': e.airT += dt; if ((e.grounded && e.airT > 0.2) || e.modeT <= 0) { e.mode = 'perch'; e.modeT = X.vault.perch; e.vx = 0;
+      const sx = Math.max(A.x0 + 24, Math.min(A.x1 - 24, P.x)); let sy = lanceSurf(sx, Math.floor((Math.min(P.y, floor) - 8) / TS)); let tx = sx;   /* the surface YOU stand on (the deck, or a lookout of your own) */
+      if (sy > floor + 8) { const pr = (A.piers || []).map(([a, b]) => (a + b + 1) * TS / 2).sort((p, q) => Math.abs(p - sx) - Math.abs(q - sx))[0]; tx = pr; sy = floor; }   /* never down into a gap */
+      e.stab = { x: tx, y: sy }; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); SFX.clank(); } break;
+    case 'perch': want = 0; e.face = Math.sign(e.stab.x - e.x) || e.face; if (e.modeT <= 0) { const T0 = 0.42; e.mode = 'stab'; e.modeT = 1.2; e.vx = (e.stab.x - e.x) / T0; e.vy = (e.stab.y - e.y) / T0 - 500 * T0; e.airT = 0; e.dropThru = true; SFX.leap(); } break;
+    case 'stab': e.airT += dt; break;
+    // ======== HIS OPENINGS (lanceOpen): the bell's bars, the rung helm, the whipped line, the point stuck, the wall turned, parried ========
+    case 'pinned': want = 0; e.vx = 0; if (e.modeT <= 0) { if (e.splitDue) { e.splitDue = false; lanceSplit(e, true); } else lanceRest(e); } break;
+    case 'split': want = 0; if (e.modeT <= 0) lanceRest(e); break;
+    case 'rung': case 'whipped': case 'planted': case 'wallTurned': case 'stumble': want = 0; if (e.modeT <= 0) lanceRest(e); break;
+    case 'reel': if (e.modeT <= 0) lanceRest(e); break;
   }
   const free = e.mode === 'charge' || e.mode === 'vaultUp' || e.mode === 'stab';
-  if (!free) e.vx += (want - e.vx) * Math.min(1, dt * (e.mode === 'reel' || e.mode === 'stumble' || e.mode === 'thrown' ? 2 : 5));
-  /* ON FOOT HE HOPS A GAP HE TORE (the charger cleared his own; a man in plate steps over three planks) */
-  if (!p1 && !free && e.grounded && Math.abs(want) > 1 && lanceDeckGone(e.x + Math.sign(want) * 18) && Math.abs(e.y - floor) < 4) { e.vy = -330; e.vx = Math.sign(want) * 130; e.hopT = 0.7; }
+  if (!free) e.vx += (want - e.vx) * Math.min(1, dt * (e.mode === 'reel' || e.mode === 'stumble' || e.mode === 'overrun' || e.mode === 'skid' || e.mode === 'whipped' ? 2 : 5));
+  /* HE HOPS A GAP HE TORE (a man in plate steps over two planks) */
+  if (!free && e.grounded && Math.abs(want) > 1 && lanceDeckGone(e.x + Math.sign(want) * 18) && Math.abs(e.y - floor) < 4) { e.vy = -330; e.vx = Math.sign(want) * 130; e.hopT = 0.7; }
   if (e.hopT > 0) { e.hopT -= dt; if (!e.grounded) e.vx = Math.sign(e.vx) * 130; }
   const r = moveBody(e, e.vx * dt, e.vy * dt, e.mode === 'stab' && e.dropThru && e.y < e.stab.y - 8); e.grounded = !!r.ground; if (r.ground) e.vy = 0;
   e.x = Math.max(A.x0 + 18, Math.min(A.x1 - 18, e.x));
   if (e.mode === 'stab' && (r.ground && e.airT > 0.15 || e.modeT <= 0)) { e.mode = 'planted'; e.modeT = X.vault.planted; e.stagger = e.modeT; e.vx = 0;
     SFX.heavy(); SFX.stone(); shakeCam(8); zoomKick(1.1, 0.3); dust(e.x, e.y, 14);
     if (!P.dead && Math.abs(P.x - e.x) < 26 && Math.abs(P.y - e.y) < 30) { const res = damagePlayer(e.x, DMG.lanceVault, { unblockable: true, up: true, name: 'THE LANCE VAULT' }); if (res === 'hit') { P.vx = Math.sign(P.x - e.x || 1) * 240; P.vy = -150; } }
-    number(e.x, e.y - e.h - 14, 'THE POINT STICKS: CUT HIM', '#8fd160'); }
+    number(e.x, e.y - e.h - 14, LANCE_SAY.point, '#8fd160'); }
   /* he fell into the gorge (a shove, a missed hop): he climbs the nearest pier and is back on the boards, told - never lost under the bridge */
-  if (e.y > floor + 3 * TS) { const pr = (A.piers || []).map(([a, b]) => (a + b + 1) * TS / 2).sort((p, q) => Math.abs(p - e.x) - Math.abs(q - e.x))[0] || e.x; e.x = pr; e.y = floor; e.vy = 0; dust(e.x, e.y, 12); number(e.x, e.y - e.h - 10, 'HE CLIMBS BACK', '#9aa39a'); }
-  // what he ran into: if it was a barricade, it is not there any more (and it still stops him this once)
-  if (r.hitX && e.mode === 'charge') { smashBarricade(barricadeAt(e.x + e.face * 14, e.y - 10), e); e.mode = 'wheel'; e.modeT = X.wheel; e.stagger = e.modeT; e.vx = 0; SFX.heavy(); shakeCam(6); }
+  if (e.y > floor + 3 * TS) { const pr = (A.piers || []).map(([a, b]) => (a + b + 1) * TS / 2).sort((p, q) => Math.abs(p - e.x) - Math.abs(q - e.x))[0] || e.x; e.x = pr; e.y = floor; e.vy = 0; dust(e.x, e.y, 12); number(e.x, e.y - e.h - 10, LANCE_SAY.climbs, '#9aa39a'); }
+  /* WHAT HE RAN INTO mid-charge: a dropped tower gate (or a barricade, which goes) - OVERRUN against it, open */
+  if (r.hitX && e.mode === 'charge') { smashBarricade(barricadeAt(e.x + e.face * 14, e.y - 10), e); e.mode = 'overrun'; e.modeT = X.overrun; e.stagger = e.modeT; e.vx = 0; SFX.heavy(); SFX.clank(); shakeCam(6);
+    number(e.x, e.y - e.h - 14, LANCE_SAY.intoGate, '#8fd160'); }
 }
 /* WHICH LOOKOUT HE GOES UP: the one nearest you that he can reach in one vault (not more than ten strides off him), never one you stand on */
 function lanceVaultTo(e) { const A = L.arena; let best = null, bd = 1e9;
   for (const [x0, x1, row] of A.lookouts || []) { const mx = (x0 + x1 + 1) * TS / 2, dist = Math.abs(mx - P.x); if (Math.abs(mx - e.x) > 170 || Math.abs(mx - e.x) < 20) continue; if (P.x > x0 * TS - 6 && P.x < (x1 + 1) * TS + 6 && Math.abs(P.y - row * TS) < 6) continue;
     if (dist < bd) { bd = dist; best = [mx, row * TS]; } }
   return best; }
-/* THE BRIDGE, DRAWN (over the play): every crack's red seam and shaking boards, every spear's shadow growing to its landing and the
-   spear stuck after, the ballista's line down the deck and its bolt, the oil's marked strip and the pour, and the main gate's
-   portcullis coming down in his last stand. Drawn whether he is on the screen or not: these are where YOU are. */
+/* THE BRIDGE, DRAWN (over the play): every crack's red seam and shaking boards, every spear's shadow growing to its landing and the spear
+   stuck after, the mangonel's stones (a red ring where each lands and a dotted arc in from over the castle wall), the ballista's line down
+   the deck and its bolt, the oil's marked strip and the pour, the signal ropes' posts and cuts, and the main gate's portcullis - coming down
+   in his last stand, dropped by the great bell, resting on his helm when it has him. Drawn whether he is on the screen or not. */
 function drawLanceBridge(cx, cy) { const e = boss, Z = e && e.lz, A = L.arena; if (!Z || !A) return; const fy = Math.round(A.floor - cy);
-  for (const c of Z.cracks) { const k = 1 - c.t / LANCE3.crack.tell, jx = Math.round(Math.sin(time * 60) * k * 1.5); g.globalAlpha = 0.5 + 0.5 * k; g.fillStyle = '#ff6b6b';
+  for (const c of Z.cracks) { const k = 1 - c.t / LANCE4.crack.tell, jx = Math.round(Math.sin(time * 60) * k * 1.5); g.globalAlpha = 0.5 + 0.5 * k; g.fillStyle = '#ff6b6b';
     for (let x = c.x0; x <= c.x1; x++) { const px = x * TS - cx + jx; g.fillRect(px + 3, fy, 1, 4); g.fillRect(px + 9, fy + 1, 1, 3); g.fillRect(px + 4, fy + 2, 5, 1); } g.globalAlpha = 1; }
   for (const s of Z.spears) { const sx = Math.round(s.x - cx), sy = Math.round(s.y - cy);
     if (s.stuck > 0) { g.globalAlpha = Math.min(1, s.stuck / 0.4); g.fillStyle = '#5a3a22'; g.fillRect(sx, sy - 22, 2, 22); g.fillStyle = '#c9d1dc'; g.fillRect(sx - 1, sy - 2, 4, 3); g.fillStyle = '#c9463d'; g.fillRect(sx + 2, sy - 22, 4, 3); g.globalAlpha = 1; continue; }
     const k = 1 - s.t / s.max, r = 4 + 9 * k; g.globalAlpha = 0.25 + 0.55 * k; g.fillStyle = '#000'; g.beginPath(); g.ellipse(sx, sy - 1, r, 2 + k * 1.5, 0, 0, 7); g.fill();
     g.strokeStyle = k > 0.7 ? '#ff6b6b' : '#ffd36b'; g.lineWidth = 1; g.beginPath(); g.ellipse(sx, sy - 1, 13, 4, 0, 0, 7); g.stroke(); g.globalAlpha = 1;
     const hy = sy - 22 - Math.round((1 - k) * 160); g.fillStyle = '#5a3a22'; g.fillRect(sx, hy - 18, 2, 18); g.fillStyle = '#c9d1dc'; g.fillRect(sx - 1, hy, 4, 3); }
+  for (const s of Z.stones) { const sx = Math.round(s.x - cx), sy = Math.round(s.y - cy); if (s.done) continue;
+    const k = 1 - Math.max(0, s.t) / s.max, ox = sx + 260, oy = sy - 220;   /* the arc in from over the castle wall (east, high) */
+    g.globalAlpha = 0.35 + 0.5 * k; g.fillStyle = '#ffd36b'; for (let t = 0; t < 1; t += 0.06) { const ax = ox + (sx - ox) * t, ay = oy + (sy - oy) * t - Math.sin(t * Math.PI) * 60; g.fillRect(Math.round(ax), Math.round(ay), 1, 1); }
+    g.strokeStyle = k > 0.7 ? '#ff6b6b' : '#ffd36b'; g.lineWidth = 1; g.beginPath(); g.ellipse(sx, sy - 1, 16 - 4 * k, 5, 0, 0, 7); g.stroke(); g.globalAlpha = 1;
+    const tx = ox + (sx - ox) * k, ty = oy + (sy - oy) * k - Math.sin(k * Math.PI) * 60; g.fillStyle = '#5a5a68'; g.fillRect(Math.round(tx) - 3, Math.round(ty) - 3, 7, 7); g.fillStyle = '#8a8a9c'; g.fillRect(Math.round(tx) - 2, Math.round(ty) - 3, 3, 2); }
   if (Z.bolt) { const B = Z.bolt, by = Math.round(B.y - cy);
-    if (!B.live) { const k = 1 - B.t / LANCE3.ballista.tell; g.globalAlpha = 0.35 + 0.5 * k * (0.6 + 0.4 * Math.sin(time * 30)); g.fillStyle = '#ff6b6b'; for (let x = Math.max(0, Math.round(A.x0 - cx)); x < Math.min(VW, Math.round(A.x1 - cx)); x += 8) g.fillRect(x, by, 5, 1); g.globalAlpha = 1;
+    if (!B.live) { const k = 1 - B.t / LANCE4.ballista.tell; g.globalAlpha = 0.35 + 0.5 * k * (0.6 + 0.4 * Math.sin(time * 30)); g.fillStyle = '#ff6b6b'; for (let x = Math.max(0, Math.round(A.x0 - cx)); x < Math.min(VW, Math.round(A.x1 - cx)); x += 8) g.fillRect(x, by, 5, 1); g.globalAlpha = 1;
       const ex = Math.min(VW - 10, Math.round(A.x1 - cx) - 10); text('BALLISTA', ex - 20, by - 14, '#ff6b6b', 'center', 6); }
     else { const bx = Math.round(B.x - cx); g.fillStyle = '#4a3222'; g.fillRect(bx, by - 1, 22, 3); g.fillStyle = '#c9d1dc'; g.fillRect(bx - 4, by - 2, 5, 5); g.fillStyle = '#e8dcc0'; g.fillRect(bx + 18, by - 3, 5, 2); g.fillRect(bx + 18, by + 2, 5, 2); } }
   if (Z.oil) { const O = Z.oil, x0 = Math.round(O.x0 - cx), w = Math.round(O.x1 - O.x0), oy = Math.round(O.y - cy);
-    if (!O.on) { const k = 1 - O.t / LANCE3.oil.tell; g.globalAlpha = 0.3 + 0.5 * k; g.strokeStyle = '#ff9a5c'; g.lineWidth = 1; g.strokeRect(x0 + 0.5, oy - 6.5, w - 1, 6); g.fillStyle = '#c9a040'; g.fillRect(x0 + w / 2 - 2, oy - 120, 4, Math.round(114 * k)); g.globalAlpha = 1; }
+    if (!O.on) { const k = 1 - O.t / LANCE4.oil.tell; g.globalAlpha = 0.3 + 0.5 * k; g.strokeStyle = '#ff9a5c'; g.lineWidth = 1; g.strokeRect(x0 + 0.5, oy - 6.5, w - 1, 6); g.fillStyle = '#c9a040'; g.fillRect(x0 + w / 2 - 2, oy - 120, 4, Math.round(114 * k)); g.globalAlpha = 1; }
     else { g.globalAlpha = 0.55; g.fillStyle = '#3a2410'; g.fillRect(x0, oy - 2, w, 2); g.globalAlpha = 1; } }
-  if (A.mainGate) { const gx = A.mainGate * TS - cx, top = 26 * TS - cy, full = 4 * TS, down = Math.round(full * (e.alive ? Z.gateK : 1)); if (gx > -40 && gx < VW + 40 && down > 0) {
+  for (const z of L.zipLines || []) if (z.signal !== undefined && z.post) drawRopeCut(g, z, cx, cy, time, e.alive && e.phase >= 2);
+  if (A.mainGate) { const gx = A.mainGate * TS - cx, top = 26 * TS - cy, full = 4 * TS, pin = e.alive && e.mode === 'pinned' && e.pinMul >= LANCE4.great.mul;
+    let down = Math.round(full * (e.alive ? Math.max(Z.gateK, Z.gateDrop) : 1)); if (pin) down = Math.max(4, Math.min(full, Math.round(e.y - e.h - 26 * TS)));
+    if (gx > -40 && gx < VW + 40 && down > 0) {
     g.fillStyle = '#1e222c'; g.fillRect(gx - 4, top - 8, 2 * TS + 8, 5); g.fillStyle = '#4a5262'; g.fillRect(gx - 4, top - 8, 2 * TS + 8, 1);   /* the lintel's iron shoe */
     for (const ch of [gx + 3, gx + 2 * TS - 4]) { g.fillStyle = '#8590a0'; for (let yy = top - 24; yy < top - 8; yy += 3) g.fillRect(ch, yy, 2, 2); }   /* the winch chains up into the gatehouse */
     g.fillStyle = '#2a2a34'; g.fillRect(gx - 1, top - 4, 2 * TS + 2, 3); for (let k = 0; k <= 2 * TS; k += 5) { g.fillStyle = '#4a4a58'; g.fillRect(gx + k, top - 4, 2, down + 4); g.fillStyle = '#8a8a9c'; g.fillRect(gx + k, top - 4, 1, down + 4); }
     for (let yy = top + 8; yy < top + down - 4; yy += 10) { g.fillStyle = '#2a2a34'; g.fillRect(gx - 1, yy, 2 * TS + 2, 2); g.fillStyle = '#6a6a7c'; g.fillRect(gx - 1, yy, 2 * TS + 2, 1); }   /* the cross-bars */
     g.fillStyle = '#2a2a34'; g.fillRect(gx, top + down - 3, 2 * TS, 2); g.fillStyle = '#e0e4ee'; for (let k = 0; k <= 2 * TS; k += 5) { g.fillRect(gx + k, top + down - 1, 2, 3); g.fillRect(gx + k, top + down + 1, 1, 1); } } }
 }
-/* THE CHARGER, under him while he rides (the Serjeant's barded horse, scaled up: the art lane redraws it with the Queen's barding) */
-function drawLanceHorse(e, cx, cy) { const S = SPR.lanceHorse; if (!S) return;   /* (claude/stormhold3art) his barded charger (src/lance-art.js): a pose for the gallop, the rear and the wheel */
-  drawSet(S, null, LNA.chargerFrame(e), e.x - cx, e.y - cy, e.face, e.flash > 0, LANCE3.horseScale, LANCE3.horseScale, 1, 0); }
-const GUARD_WALL = e => BR_GUARD[e.t] === 'wall';
+/* HIS READ OVER HIM (B10): open, the green ring (lanceOpen); HELM RUNG, stars round the helm; a heavy's planted-foot stamp, a dust ring */
+function drawLanceRead(e, cx, cy) { const x = Math.round(e.x - cx), y = Math.round(e.y - cy);
+  if (e.mode === 'rung') for (let q = 0; q < 4; q++) { const a = time * 6 + q * 1.57; g.fillStyle = q % 2 ? '#ffd36b' : '#fff6c8'; const sx = x + Math.round(Math.cos(a) * 12), sy = y - e.h - 6 + Math.round(Math.sin(a) * 3); g.fillRect(sx - 1, sy, 3, 1); g.fillRect(sx, sy - 1, 1, 3); }
+  if (e.stampT > 0) { const k = 1 - e.stampT / 0.3; g.globalAlpha = 0.6 * (1 - k); g.strokeStyle = '#c9b27c'; g.lineWidth = 1; g.beginPath(); g.ellipse(x - e.face * 6, y, 6 + 14 * k, 2 + 2 * k, 0, 0, 7); g.stroke(); g.globalAlpha = 1; } }
+const GUARD_WALL = e => BR_GUARD[e.t] === 'wall' && !(e.t === 'lance' && e.bare);   /* (claude/lance4) THE LANCE without his shield (P3) has no wall: x0.7 from anywhere */
 /* IS HIS WALL UP? Always, for the Lance, the Paladin and the Captain. THE QUARTERMASTER offers her blade on guard - striding the deck, EN GARDE, or behind her deck guard -
    and drops it to commit: in her slash and her pistol (tell and blow) a blow from any side lands at ANGLE.wall (claude/keyscore: the time given back to attacks) */
 const wallOpen = e => e.t === 'captain' ? capOpenNow(e) || e.ward > 0 : e.t === 'lance' ? lanceOpen(e) : e.t === 'closedhelm' ? (e.open > 0 || e.mode === 'cutRec' || e.mode === 'thrustRec' || e.mode === 'grabMiss' || e.mode === 'brandRec') : GB.openOf(e);   /* (claude/wardgap) THE LANCE and THE WAYMEET PALADIN too: only THEIR OWN openings (the lance committed, the ward down / bent over a spent blow) skip the wall - a poise BREAK or a parry's riposte window (GB.openOf) used to, so a heavy hero broke them and everything landed whole */
-const wallDuel = e => e.t === 'lance' || e.t === 'closedhelm';   /* (claude/wardgap) the two duelists whose untagged skills and burn ticks the wall now reads (the Captain's own lines carry his ward) */   /* (claude/hurricane2tune) THE CAPTAIN'S WALL ONLY OPENS FOR HIS OWN OPENINGS (the flat, the struck, a turned cut): a poise BREAK or a parry's riposte window (GB.openOf) used to skip the wall AND the ward, so a heavy hero broke him and then took 3x through his ward (333 off a 99 blow); in his ward the ward line above has already taken 0.4 */
+const wallDuel = e => (e.t === 'lance' && !e.bare) || e.t === 'closedhelm';   /* (claude/wardgap) the two duelists whose untagged skills and burn ticks the wall now reads (the Captain's own lines carry his ward) */   /* (claude/hurricane2tune) THE CAPTAIN'S WALL ONLY OPENS FOR HIS OWN OPENINGS (the flat, the struck, a turned cut): a poise BREAK or a parry's riposte window (GB.openOf) used to skip the wall AND the ward, so a heavy hero broke him and then took 3x through his ward (333 off a 99 blow); in his ward the ward line above has already taken 0.4 */
 const wallUp = e => true;   /* (claude/keyscore) the duelists whose front is a wall (src/boss-read.js GUARD) */
-const WALL_HINT = { lance: 'HIS PLATE FACES YOU. GET BEHIND HIM OR COME DOWN ON HIM - AND CUT HIM WHENEVER HE COMMITS.', closedhelm: 'HIS WARD FACES YOU. GO ROUND HIM OR COME DOWN ON HIM - OR MEET HIS SWORD AT THE GLINT AND THE WARD BREAKS.',
+const WALL_HINT = { lance: LANCE_SAY.tip, closedhelm: 'HIS WARD FACES YOU. GO ROUND HIM OR COME DOWN ON HIM - OR MEET HIS SWORD AT THE GLINT AND THE WARD BREAKS.',
   captain: 'HIS FRONT IS GUARDED - ON THE WAVE TOO. CUT HIM FROM BEHIND OR FROM ABOVE; KNOCKED FLAT, HE IS OPEN.' };
 /* (claude/keyscore, B13 + B15) HIS OPENINGS are what he is LEFT in, not the blow itself: stuck, reeling, stumbling, over his front foot, his hands empty. In his thrust,
    sweep and guard swing he is a wall like any other moment (0.4 into it, whole round or over) - the knight mash bot took him 2/6 when every active frame paid x1.5 */
-const lanceOpen = e => e.mode === 'planted' || e.mode === 'reel' || e.mode === 'stumble' || e.mode === 'recover' || e.mode === 'wheel' || e.mode === 'thrown' || e.mode === 'wallTurned';   /* (claude/stormhold3) + the charger wheeling, thrown off it, the shield wall turned */
+const lanceOpen = e => e.mode === 'pinned' || e.mode === 'overrun' || e.mode === 'rung' || e.mode === 'whipped' || e.mode === 'planted' || e.mode === 'reel' || e.mode === 'stumble' || e.mode === 'recover' || e.mode === 'wallTurned' || e.mode === 'split';   /* (claude/lance4) the bell's bars, the overrun, the rung helm, the whipped line, the point stuck, parried, over his front foot, the wall turned, the shield splitting */
 /* WHEN A RUN AT HIM IS A RUN AT A WALL: coming at you, or with the shield already coming round. Everything else he
    is standing on his feet for, and a dash attack takes them out from under him (hurtEnemy0) */
-const LANCE_BRACED = new Set(['sleep', 'wake', 'ride', 'couch', 'charge', 'rearTell', 'rear', 'volleyTell', 'volley', 'pennantTell', 'bashTell', 'bash', 'vaultTell', 'vaultUp', 'perch', 'stab', 'wallTell', 'shieldwall', 'fallback']);   /* (claude/stormhold3) mounted he is never knocked off balance; nor in the air, nor behind his planted shield */
+const LANCE_BRACED = new Set(['sleep', 'wake', 'couch', 'charge', 'skid', 'volleyTell', 'volley', 'pennantTell', 'pennant', 'haul', 'vaultTell', 'vaultUp', 'perch', 'stab', 'wallTell', 'shieldwall', 'fallback']);   /* (claude/lance4) never knocked off balance coming at you, in the air, behind his planted shield, or signalling the towers */
 
 // THE SNUFFER - it is not hunting you. It is putting the village out, one lamp at a time, and the Reeve likes that.
 function updateSnuffer(e, dt) {
@@ -26298,7 +26385,7 @@ function updateCastleProps(dt, hb) {
       if (pr.bossGate) gateStep(pr);   /* (claude/bosswave2) THE BRIDGE GATE: he threw it off, it winds back up (src/lance-support.js) */
       if (struck && pr.bossGate && pr.open <= 0 && bossActive && boss && gateHas(boss, pr, TS)) { P.hitSet.add(pr); SFX.clank(); SFX.crack(); SFX.gateDrop(); if (pr.bell) SFX.seaBell();
         if (boss.t === 'gqueen') { if (gqPin(boss, gx, 'grate', '')) { number(boss.x, boss.y - 70, 'THE GRATE COMES DOWN ON HER', '#8fd160'); pr.pinned = boss; pr.pinMode = 'pinned'; pr.open = 9; burst(gx, boss.y - boss.h, 14, ['#8a8a9c', '#c9c9d6'], 90, 0.5); } }   /* HIGHCROWN: the hall bell drops its grate on her - pinned, as her pillars and her chandeliers pin her */
-        else gateCatch(boss, pr, { TS, say: q => number(q.x, q.y - q.h - 14, 'THE GATE HAS HIM: CUT HIM', '#8fd160'), fx: () => { shakeCam(7); zoomKick(1.1, 0.3); hitstop(0.1); burst(pr.gate * TS + 8, boss.y - boss.h, 14, ['#8a8a9c', '#c9c9d6'], 90, 0.5); }, hurt: (q, d, x) => hurtEnemy(q, d, x, true) }); if (boss.t === 'lance' && boss.mounted) lanceUnhorse(boss, true); }   /* THE GATE COMES DOWN ON HIM: pinned under the bars, open (mounted: the bars take him out of the saddle) */
+        else gateCatch(boss, pr, { TS, say: q => number(q.x, q.y - q.h - 14, 'THE GATE HAS HIM: CUT HIM', '#8fd160'), fx: () => { shakeCam(7); zoomKick(1.1, 0.3); hitstop(0.1); burst(pr.gate * TS + 8, boss.y - boss.h, 14, ['#8a8a9c', '#c9c9d6'], 90, 0.5); }, hurt: (q, d, x) => hurtEnemy(q, d, x, true) }); }   /* THE GATE COMES DOWN ON HIM: pinned under the bars, open */
       else if (struck) { P.hitSet.add(pr);
         if (pr.open <= 0) { pr.open = pr.hold; SFX.clank(); SFX.crack(); shakeCam(3);
           if (!P.dead && Math.abs(P.x - gx) < 12 && P.y > pr.gy0 * TS && P.y - 14 < (pr.gy1 + 1) * TS) P.x = gx + (P.x < gx ? -13 : 13);   /* you pulled it: it does not fall on you */
@@ -26333,10 +26420,8 @@ function updateCastleProps(dt, hb) {
              pinned 4.6 s (3.8 in round three), 7% of her off the top, and the plate open for the whole of it (gqOpen). The iron's own blow
              below is NOT added: the gallery never added one. */
           if (e.t === 'gqueen') { gqPin(e, pr.x, 'chandelier', 'HER OWN CHANDELIER COMES DOWN ON HER'); gqChip(e, GQC.chandChip, 'chandelier'); continue; }   /* (round two: and it cracks her plate - gqChip) */   /* (2026-09-25: the pin her pillars give too - gqPin) */
-          if (e.t === 'lance' && e.alive && e.mounted) { lanceUnhorse(e, true); number(e.x, e.y - e.h - 30, 'THE CAGE COMES DOWN ON HIM', '#8fd160'); SFX.golemShatter(); }   /* (claude/stormhold3) THE CAGE UNHORSES HIM: phase two */
-          else if (e.t === 'lance' && e.alive) { e.mode = 'reel'; e.modeT = 2.6; e.stagger = 2.6; e.vx = 0; number(e.x, e.y - e.h - 16, 'THE CAGE COMES DOWN ON HIM', '#8fd160'); SFX.golemShatter(); shakeCam(7); zoomKick(1.1, 0.3); } // knocked flat first, so his plate is no use to him
           if (e.hill && pr.crane) { e.mode = 'pinned'; e.modeT = e.phase === 2 ? 2.6 : 3.2; e.stagger = e.modeT; e.vx = 0; e.stone = null; e.pins = (e.pins || 0) + 1; SFX.golemShatter(); shakeCam(8); zoomKick(1.1, 0.3); ringAt(e.x, e.y - 16, 30, '#8fd160', 0.4); }   /* THE HILL TROLL, PINNED */
-          hurtEnemy(e, e.maxHp ? (pr.lamp ? (e.t === 'lance' ? 60 : 36) : 30) : 999, pr.x, true); }
+          hurtEnemy(e, e.maxHp ? (pr.lamp ? 36 : 30) : 999, pr.x, true); }
         if (!P.dead && Math.abs(P.x - pr.x) < 10 && pr.fy > P.y - 16 && pr.fy < P.y + 2 && !pr.hitP) { pr.hitP = true; damagePlayer(pr.x, DMG.crush, { up: true, unblockable: true, name: 'CRUSHED' }); }
         if (pr.gq && !isSolid(tx, ty) && isOneWay(tileAt(tx, ty)) && L.arena && L.arena.gallery && ty === L.arena.gallery.row) { const A = L.arena; A.taken = A.taken || new Map();
           for (let bx = tx - 1; bx <= tx + 1; bx++) { const i = ty * LW + bx; if (isOneWay(L.grid[i])) { if (!A.taken.has(i)) A.taken.set(i, L.grid[i]); L.grid[i] = T.AIR; tileSpr[i] = null; destroyed.add(i); } }
@@ -33189,6 +33274,7 @@ function drawWorld(cx, cy, showPlayer) {
       g.fillStyle = open ? '#8fd160' : '#c9463d'; g.fillRect(x - 4, y - 15 + (open ? 6 : 0), 8, 6);
       g.strokeStyle = '#8a6a3a'; g.lineWidth = 2; g.beginPath(); const a = pr.spin > 0 ? time * 18 : 0; g.moveTo(x - 6 * Math.cos(a), y - 20 - 6 * Math.sin(a)); g.lineTo(x + 6 * Math.cos(a), y - 20 + 6 * Math.sin(a)); g.stroke(); }
     else if (pr.t === 'firebox') drawFirebox(pr, cx, cy);
+    else if (pr.t === 'lancebell') { drawBellGate(g, pr, cx, cy, TS, time, pr.pinned); drawLanceBell(g, pr, cx, cy, TS, time); }   /* (claude/lance4) a gate tower's bell and its portcullis; the great bell (src/lance-support.js) */
     else if (pr.t === 'winch' && pr.bell) { if (L.hc2Kit) { HC2A.drawBell(g, pr, cx, cy, time); HC2A.drawGrate(g, pr, cx, cy, TS, time, pr.pinned); if (pr.tellUntil > time && !pr.pinned) HC2A.drawGrateFx(g, pr, cx, cy, TS, time, pr.tellK || 0); } else drawLanceGate(g, pr, cx, cy, TS, time); }
     else if (pr.t === 'winch' && L.hc2Kit && !pr.bossGate) HC2A.drawWinch(g, pr, cx, cy, TS, time);   /* (claude/bosswave2) HIGHCROWN's hall bell and its grate (src/lance-support.js) */
     else if (pr.t === 'winch') { if (pr.bossGate) drawLanceGate(g, pr, cx, cy, TS, time);   /* (claude/bosswave2) THE BRIDGE GATE, hanging or down on him */ const x = Math.round(pr.x - cx), y = Math.round(pr.y - cy); g.fillStyle = '#3a2214'; g.fillRect(x - 1, y - 16, 3, 16); g.fillStyle = '#5a3a24'; g.beginPath(); g.arc(x, y - 12, 6, 0, 7); g.fill(); g.strokeStyle = '#8a5a32'; g.lineWidth = 1; for (let k = 0; k < 4; k++) { const a = pr.spin + k * Math.PI / 2; g.beginPath(); g.moveTo(x, y - 12); g.lineTo(x + Math.cos(a) * 8, y - 12 + Math.sin(a) * 8); g.stroke(); } g.fillStyle = '#5a6270'; g.fillRect(x - 1, y - 13, 3, 3);
@@ -33499,7 +33585,7 @@ function drawWorld(cx, cy, showPlayer) {
        has one frame fewer than his, so the same index ran past the end of it */
     else if (e.hurtT > 0 && e.t === 'archmage') frame = e.fam ? MF.FAMILIAR_F.hurt : MF.ARCHMAGE_F.hurt;
     else if (e.hurtT > 0 && e.t === 'bellcrab' && e.phase === 3) frame = BELL_OUT_F.hurt;   /* out of the bell his hurt frame is his own set's */
-    else if (e.hurtT > 0 && e.t === 'lance') frame = e.mounted ? LNA.F.hurtRide : LNA.F.hurt;
+    else if (e.hurtT > 0 && e.t === 'lance' && !lanceOpen(e) && !LANCE_AIR.has(e.mode)) frame = e.bare ? LNA.F.hurt2 : LNA.F.hurt;   /* (claude/lance4) his flinch: not over an opening's own pose, nor in the air */
     else if (e.hurtT > 0 && HAS_HURT.has(e.t) && SPR[e.t] && SPR[e.t].R) frame = (reskinSet(e) || SPR[e.t]).R.length - (C3_DEAD.has(e.t) ? 2 : 1); // knocked about, and it shows (a reskin's own last frame: claude/corpses)
     else if (e.t === 'spit') frame = e.mouth > 0 ? 2 : (Math.floor(e.anim * 1.5) % 4 === 1 ? 1 : 0);
     else if (e.t === 'wasp') frame = Math.floor(e.anim * 30) % 3;
@@ -33683,8 +33769,8 @@ function drawWorld(cx, cy, showPlayer) {
     else if (e.t === 'archer') frame = e.flyman && e.mode === 'bagTell' ? 7 : e.mode === 'elVolleyTell' ? 1 : e.mode === 'elVolley' ? 6 : e.mode === 'elVolleyRest' ? 5 : e.mode === 'elRoll' || e.mode === 'elRollUp' ? 4 : e.draw > 0 ? (e.draw > 0.3 ? 1 : 5) : e.loose > 0 ? 6 : Math.abs(e.vx) > 4 ? 2 + Math.floor(e.anim * 8) % 2 : (Math.floor(e.anim * 0.6) % 3 === 1 ? 4 : 0);
     else frame = Math.abs(e.vx) > 4 ? Math.floor(e.anim * (e.mode === 'charge' ? 22 : 10)) % 4 : 0;
     const wind = windingUp(e);
-    const bob = e.t === 'spit' ? Math.round(Math.sin(e.anim * 3) * 0.6 - (e.ssLift || 0)) : e.t === 'sexton' ? -sextonHover(e) : e.t === 'lance' && e.mounted ? -LANCE3.saddle : 0;
-     if (e.t === 'lance' && e.mounted) drawLanceHorse(e, cx, cy);   /* (claude/stormhold3) THE CHARGER under him */   /* THE SEXTON glides a hand over his deck (round 3) */
+    const bob = e.t === 'spit' ? Math.round(Math.sin(e.anim * 3) * 0.6 - (e.ssLift || 0)) : e.t === 'sexton' ? -sextonHover(e) : 0;
+       /* THE SEXTON glides a hand over his deck (round 3) */
     if (e.t === 'queen') { g.globalAlpha = 0.3; g.drawImage(PROP.shadow, Math.round(e.x) - 6 - cx, L.arena.floor - 2 - cy); g.globalAlpha = 1; }
     if (e.t === 'kite' && e.alive) { const kx = Math.round(e.x - cx), ky = Math.round(e.y - e.h - 26 - cy) + (e.mode === 'fall' ? 10 : 0); g.strokeStyle = L.lumberKit ? '#a8905a' : '#e8dcc0'; g.lineWidth = 1; g.beginPath(); g.moveTo(kx + 0.5, Math.round(e.y - e.h - cy)); g.lineTo(kx + 0.5, ky + 8); g.stroke(); if (L.lumberKit) { OTA.drawWoodKite(g, kx, ky, e.col, time); } else { g.fillStyle = e.col; g.beginPath(); g.moveTo(kx, ky - 8); g.lineTo(kx + 7, ky); g.lineTo(kx, ky + 8); g.lineTo(kx - 7, ky); g.closePath(); g.fill(); g.fillStyle = '#2a2230'; g.fillRect(kx, ky - 8, 1, 16); g.fillRect(kx - 7, ky, 14, 1); for (let k = 1; k < 4; k++) { g.fillStyle = k % 2 ? '#ffd36b' : e.col; g.fillRect(kx - 1 + Math.round(Math.sin(time * 6 + k) * 2), ky + 8 + k * 4, 2, 2); } } }
     if (e.t === 'windcaller' && e.alive) callerRead(e, cx, cy);
@@ -33745,6 +33831,7 @@ function drawWorld(cx, cy, showPlayer) {
       if (!(PROG.guardMark > 2) && !P.heavy) { PROG.guardMark = (PROG.guardMark || 0) + 1; number(e.x, e.y - e.h - 14, 'GUARD', '#c9d1dc'); }
     }
     if (e.t === 'reefmaw' && e.alive && e.mode === 'beached') { const k = 0.5 + 0.5 * Math.sin(time * 10); g.globalAlpha = 0.35 + 0.35 * k; g.strokeStyle = '#8fd160'; g.lineWidth = 2; g.beginPath(); g.ellipse(Math.round(e.x - cx), Math.round(e.y - cy) - 2, 40 + k * 3, 7, 0, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1; }   /* BEACHED: the green ring every opening wears */
+    if (e.t === 'lance' && e.alive) drawLanceRead(e, cx, cy);   /* (claude/lance4) HELM RUNG's stars, a heavy's stamp */
     if (e.t === 'lance' && e.alive && lanceOpen(e)) { const k = 0.5 + 0.5 * Math.sin(time * 10); g.globalAlpha = 0.35 + 0.35 * k; g.strokeStyle = '#8fd160'; g.lineWidth = 2; g.beginPath(); g.ellipse(Math.round(e.x - cx), Math.round(e.y - cy) - 2, 24 + k * 3, 6, 0, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1; }
     if (e.t === 'ram') RLD.drawRamRead(g, e, cx, cy, time);   /* (claude/scree2) THE SHARED READ, B10: open = a GOLD ring and its timer; warded = a pale shell; the horn sweep's tell */
     if (e.t === 'ram' && ramOpen(e)) { for (let q = 0; q < 3; q++) { const a = time * 5 + q * 2.1; g.fillStyle = q % 2 ? '#ffd36b' : '#fff6c8'; g.fillRect(Math.round(e.x - cx + Math.cos(a) * 22), Math.round(e.y - e.h * 1.5 - cy) - 8 + Math.round(Math.sin(a * 1.4) * 4), 2, 2); } } // dazed: a green ring under him, green motes over him
@@ -33791,7 +33878,7 @@ function drawWorld(cx, cy, showPlayer) {
     if (e.shy && SPR.shy) sprSet = SPR.shy; else if (e.juggler && SPR.juggler) sprSet = SPR.juggler; else if (e.bandit && SPR.banditArcher) sprSet = SPR.banditArcher;   /* THE HARVEST FAIR's ranged pair (claude/fairfix2) */   /* THE THEATRE's own cast: the masked patron, the usher, the house's ghosts, the flying props */
     if (e.cnSkin === 'tidecrab' && e.alive && (e.mode === 'buried' || e.mode === 'rise' || e.mode === 'sink')) { drawTideCrab(e, sprSet, cx, cy); g.globalAlpha = 1; continue; }   /* (claude/tidecrab) lying in the sand: a mound and two eyes */
     if (!sprSet) { g.fillStyle = '#ff00ff'; g.fillRect(Math.round(e.x - e.w / 2 - cx), Math.round(e.y - e.h - cy), e.w, e.h); continue; } // a creature with no sprite shows as a box instead of crashing the frame
-    const bigF = e.t === 'winchmaster' ? WINCH.scale : e.t === 'raptor' && e.young ? 1 : e.t === 'marionette' ? PM.PUP.brute.scale : e.t === 'bloodknight' ? UNBF.BK_SCALE : e.t === 'paladinboss' ? PBG.PB.scale : e.t === 'bzchief' ? BZCM.BZC.scale : e.t === 'strawking' ? (e.grown || 1) : e.t === 'ploughman' ? 1 : e.miniBig ? 1.25 : e.t === 'tollmaster' ? 1.25 : e.t === 'lampreeve' ? 1.12 : e.t === 'captain' ? 1.3 : e.t === 'masthead' ? 1.2 : e.t === 'lance' ? (e.mounted ? LANCE3.riderScale : LANCE3.footScale) : e.big ? (e.t === 'spider' ? 2.1 : 1.7) : e.elite && OKD.isKnightT(e.t) ? 1 : e.elite ? EL.big : 1; const sq = e.sq > 0 ? e.sq / 0.16 : 0;
+    const bigF = e.t === 'winchmaster' ? WINCH.scale : e.t === 'raptor' && e.young ? 1 : e.t === 'marionette' ? PM.PUP.brute.scale : e.t === 'bloodknight' ? UNBF.BK_SCALE : e.t === 'paladinboss' ? PBG.PB.scale : e.t === 'bzchief' ? BZCM.BZC.scale : e.t === 'strawking' ? (e.grown || 1) : e.t === 'ploughman' ? 1 : e.miniBig ? 1.25 : e.t === 'tollmaster' ? 1.25 : e.t === 'lampreeve' ? 1.12 : e.t === 'captain' ? 1.3 : e.t === 'masthead' ? 1.2 : e.t === 'lance' ? LNA.SCALE : e.big ? (e.t === 'spider' ? 2.1 : 1.7) : e.elite && OKD.isKnightT(e.t) ? 1 : e.elite ? EL.big : 1; const sq = e.sq > 0 ? e.sq / 0.16 : 0;
     if (e.t === 'windcaller' && (e.mode === 'blink' || e.mode === 'appear')) g.globalAlpha = 0.3 + 0.25 * Math.sin(time * 40);
     if ((e.t === 'scout' || e.t === 'siren' || e.t === 'herald' || e.t === 'grandmother' || e.t === 'farmhand' || e.t === 'boo' || e.t === 'jelly' || e.t === 'lampreeve' || e.t === 'homunculus') && e.alpha !== undefined && e.alpha < 1) g.globalAlpha = Math.max(0.05, e.alpha);
     if (e.t === 'gqueen' && e.mode === 'shadow') g.globalAlpha = 0.12; else if (e.t === 'gqueen' && e.mode === 'shadowTell') g.globalAlpha = 1 - 0.6 * Math.min(1, (0.5 - e.modeT) / 0.5);

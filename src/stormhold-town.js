@@ -235,13 +235,12 @@ export function stormholdTown({ painter, T, TS }) {
   // the hazard rule, never an untold death), and every gap he tears is three planks: a jump for every hero.
   const BY = 30;
   ent('check', P0 - 1, BY - 1);
-  ent('sign', P0, BY - 1, { text: "THE QUEEN'S LANCE RIDES THE BRIDGE. GET UP ON A LOOKOUT AND LET HIM PASS." });
-  const piers = [], spans = [], cages = [];
-  for (let k = 0; k < 7; k++) { const px0 = P0 + k * 18, px1 = px0 + 4; piers.push([px0, px1]);
+  ent('sign', P0, BY - 1, { text: "THE QUEEN'S LANCE HOLDS THE BRIDGE. RING A TOWER BELL FROM ITS LOOKOUT: HE ANSWERS IT." });
+  const piers = [], spans = [], signal = [];
+  for (let k = 0; k < 7; k++) { const px0 = P0 + k * 18, px1 = px0 + 4, gateTower = k % 2 === 1; piers.push([px0, px1]);
     block(px0, px1, BY, 45);
     if (k > 0) { const s0 = px0 - 13, s1 = px0 - 1; span(s0, s1, BY, { sway: k >= 3 ? 2 : 1 }); spans.push([s0, s1]); }
-    if (k >= 1 && k <= 5) { ent('deco', px0 + 2, BY - 1, { kind: 'bridgetower' }); plat(px0, BY - 3, 5); ent('brazier', px0 + 4, BY - 4); }   // a lookout on every tower pier
-    if (k > 0) { ent('weight', px0 - 1, BY - 9, { len: 6, lamp: true }); cages.push(px0 - 1); }   // a fire cage off the west end of every lookout, hung from its tower's arm: from the lookout (where his charge cannot reach you) cut it as he rides under
+    if (k >= 1 && k <= 5) { ent('deco', px0 + 2, BY - 1, { kind: 'bridgetower' }); plat(px0, BY - 3, 5); if (!gateTower) ent('brazier', px0 + 4, BY - 4); }   // a lookout on every tower pier
   }
   span(P0 + 113, P0 + 121, BY, { sway: 2 }); spans.push([P0 + 113, P0 + 121]);   // the last span, to the main gate
   block(P0, W - 1, 44, 45); for (const [s0, s1] of spans) spikesAt(s0, s1, 43);   // the gorge floor: rock teeth under every span
@@ -249,11 +248,19 @@ export function stormholdTown({ painter, T, TS }) {
      every pier carries one - the seven his LANCE VAULT goes up onto and the ballista's bolt flies under. */
   const ends = lanceLookouts({ plat, ent }, P0, BY);
   const lookouts = [ends[0], ...piers.slice(1, 6).map(([px0]) => [px0, px0 + 4, BY - 3]), ends[1]];
-  /* THE BRIDGE GATE (claude/bosswave2: the level's rule in his fight - THREE GATES; src/lance-support.js LANCE_GATE). A portcullis hangs
-     under the first tower lookout on its own winch, as the Gatehouse's does. Up on the lookout his charge cannot reach you: strike the
-     winch as he runs under it and the bars come down on HIM. Early or late, it is only a gate across his lane. */
-  { const gp = P0 + 18; ent('winch', gp + 1, BY - 4, { gate: gp + 2, gy0: BY - 2, gy1: BY - 1, drop: true, hold: 7, bossGate: true });
-    ent('sign', gp - 4, BY - 1, { text: 'THE BRIDGE GATE. FROM THE LOOKOUT, STRIKE ITS WINCH AS HE RUNS UNDER.' }); }
+  /* (claude/lance4, scratch/brief-lance4-1029.md s3) THE GATE TOWERS on piers 1, 3 and 5: each lookout carries an ALARM BELL, and a portcullis
+     hangs under it across the deck (src/lance-support.js bellStrike). Ring it from the lookout - where his charge cannot reach you - and
+     it tolls three times: HE ANSWERS THE BELL (a lance charge at that tower), and the third toll drops the gate. On him: PINNED. Ahead of
+     him: a gate across his lane, and he runs into it. Over each lookout the tower's TOP (one held jump up), where its SIGNAL ROPE starts:
+     east and downhill over his head to the next pier's lookout, with a POST on that pier's deck holding the line's stay (strike it: the
+     line frays, parts and whips down along its run). The fire cages are gone from the bridge (Q3). */
+  for (const k of [1, 3, 5]) { const px0 = P0 + k * 18;
+    plat(px0 + 1, BY - 6, 3);   // the tower top
+    facades.push([px0, px0 + 4, BY - 8, BY - 4, 'tower', { town: true, roof: true }]);
+    ent('lancebell', px0 + 3, BY - 4, { gate: px0 + 2, gy0: BY - 2, gy1: BY - 1, tower: k });
+    const x0 = (px0 + 3) * TS + 8, y0 = (BY - 6) * TS - 12, x1 = (px0 + 18) * TS + 8, y1 = (BY - 3) * TS - 12;
+    signal.push({ x0, y0, x1, y1, signal: k, post: [x1, BY * TS], posts: [[x0, y0, (BY - 6) * TS]] }); }
+  ent('sign', P0 + 15, BY - 1, { text: 'A GATE TOWER. RING ITS BELL: THE GATE DROPS ON THE THIRD TOLL.' });
   for (const x of [8, 26, 44, 62, 80, 98]) { ent('deco', P0 + x, BY - 1, { kind: 'lanternPost' }); coins([P0 + x + 4, BY - 2]); }
   ent('silver', P0 + 71, BY - 2);
   // THE MAIN GATE: the castle's own, at the bridge's end. Its portcullis is up while he holds the bridge; in his last stand he falls
@@ -261,12 +268,17 @@ export function stormholdTown({ painter, T, TS }) {
   block(W - 2, W - 1, 20, 45); floor(P0 + 122, W - 1, BY);
   laid(W - 7, W - 3, 20, 25);
   ent('deco', W - 5, BY - 1, { kind: 'gatehouse' }); ent('gate', W - 3, BY - 1);
+  /* THE GREAT BELL on the gatehouse's hoarding (a timber gallery off the gatehouse wall, over the last span): reached from the last lookout
+     (or the last signal rope, which lands there). In his last stand, ring it while he stands under the main gate and the portcullis drops
+     on him at once. */
+  plat(W - 13, BY - 5, 6);
+  ent('lancebell', W - 9, BY - 6, { gate: W - 5, gy0: 26, gy1: BY - 1, great: true });
   ent('lance', P0 + 18, BY - 1);
 
   // ---- THE TOWERS' ROPES: from each top deck's east edge down to the foot of its own gate. UP grabs, JUMP lets go. ----
   const rope = (x0, top, x1, endRow, groundRow) => ({ x0: x0 * TS + 8, y0: top * TS - 12, x1: x1 * TS + 8, y1: endRow * TS - 12,
     posts: [[x0 * TS + 8, top * TS - 12, top * TS], [x1 * TS + 8, endRow * TS - 12, groundRow * TS]] });
-  const zipLines = [rope(52, T1.top, 88, 36, 36), rope(226, T2.top, 252, 34, 34), rope(395, T3.top, 405, 30, 30)];   /* each rope ends ON its landing's floor (the hero's feet = the rope + 12) */
+  const zipLines = [rope(52, T1.top, 88, 36, 36), rope(226, T2.top, 252, 34, 34), rope(395, T3.top, 405, 30, 30), ...signal];   /* each rope ends ON its landing's floor (the hero's feet = the rope + 12) */
   const watchtowers = [T1, T2, T3];
 
   // THE LADDERS, LAST: nothing is dug after this line
@@ -291,8 +303,8 @@ export function stormholdTown({ painter, T, TS }) {
       { id: 'bellwatch', gates: [[221, 13, 17]], garrison: [{ t: 'hearthgob', x: 217, y: 17 }, { t: 'hearthgob', x: 219, y: 17 }] },   /* rung, a grate drops across the deck between the ladder and the key, and his watch turns out on your side of it */
     ],
     /* THE LONG BRIDGE, for THE QUEEN'S LANCE (src/main.js updateLance; src/lance-support.js): his lookouts (all seven: the vault's
-       perches), the spans his charge tears up, the cages, and the main gate he falls back under in his last stand. */
+       perches), the spans his charge tears up, the gate towers (their bells: src/lance-support.js), and the main gate he falls back under in his last stand. */
     arena: { x0: P0 * TS, x1: (W - 1) * TS, floor: BY * TS, trigger: (P0 + 6) * TS, wallL: P0 - 1, wallR: W - 1, boss: 'lance', music: 'lance', tint: '#6a7a9a', tintA: 0.10, fx: 'dust',
-      lookouts, spans, piers, cages, mainGate: W - 5, fallPct: 0.12 },   /* fallPct: a fall through a gap he tore bites 12% (a walked-into pit, 27%: survival.js HAZARD) */   /* "Boss Battle #3 [8-bit re-upload]" V3 by nene, CC0 - THE QUEEN'S LANCE's own boss track (audio/CREDITS.txt) */
+      lookouts, spans, piers, bellTowers: [1, 3, 5], mainGate: W - 5, fallPct: 0.12 },   /* fallPct: a fall through a gap he tore bites 12% (a walked-into pit, 27%: survival.js HAZARD) */   /* "Boss Battle #3 [8-bit re-upload]" V3 by nene, CC0 - THE QUEEN'S LANCE's own boss track (audio/CREDITS.txt) */
   };
 }
