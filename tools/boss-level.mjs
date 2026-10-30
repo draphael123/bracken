@@ -57,7 +57,7 @@ export async function openLevelPage(opts = {}) {
    print every boss level's campaign level, old (depth) and new. */
 if (process.argv[1] && /boss-level.mjs$/.test(process.argv[1]) && process.argv.includes('--write-xp')) {
   const pg = await openPage({ audio: false, fonts: false });
-  try { const rows = await pg.evalp('BK.xpSim()', 600000), out = {};
+  try { const rows = await pg.evalp('BK.xpSim()', 1700000), out = {};
     for (const r of rows) out[r.id] = { run: Math.round(0.8 * r.foeXp) + r.bossXp + r.clear, foeXp: r.foeXp, bossXp: r.bossXp, clear: r.clear };
     writeFileSync(XP_FILE, JSON.stringify({ note: 'tools/boss-level.mjs --write-xp: a straight run per level (0.8 of its foes, its mini and boss, the clear share), from BK.xpSim', rows: out }, null, 1) + String.fromCharCode(10));
     for (const k of Object.keys(out)) XPROW[k] = out[k];

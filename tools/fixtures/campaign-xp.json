@@ -50,10 +50,10 @@
    "clear": 433
   },
   "moor": {
-   "run": 1110,
-   "foeXp": 568,
+   "run": 1138,
+   "foeXp": 588,
    "bossXp": 315,
-   "clear": 341
+   "clear": 353
   },
   "storm": {
    "run": 1539,
@@ -158,10 +158,10 @@
    "clear": 443
   },
   "fallingtower": {
-   "run": 1785,
-   "foeXp": 772,
+   "run": 1787,
+   "foeXp": 774,
    "bossXp": 704,
-   "clear": 463
+   "clear": 464
   },
   "burning": {
    "run": 1030,
@@ -296,10 +296,10 @@
    "clear": 134
   },
   "rookery": {
-   "run": 891,
-   "foeXp": 410,
+   "run": 952,
+   "foeXp": 454,
    "bossXp": 317,
-   "clear": 246
+   "clear": 272
   },
   "palisadewood": {
    "run": 979,
@@ -308,10 +308,16 @@
    "clear": 319
   },
   "kitchengate": {
-   "run": 643,
-   "foeXp": 202,
+   "run": 710,
+   "foeXp": 250,
    "bossXp": 360,
-   "clear": 121
+   "clear": 150
+  },
+  "warcairn": {
+   "run": 765,
+   "foeXp": 300,
+   "bossXp": 345,
+   "clear": 180
   }
  }
 }
