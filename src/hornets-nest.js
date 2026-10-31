@@ -183,7 +183,7 @@ export function buildHornetsNest({ painter, T, TS }) {
   smoke(212, 13);
   coins([218, 13], [221, 9], [226, 7]);
   air(223, 247, 4, 7);
-  ent('check', 240, 7);
+  ent('check', 292, 9);   /* (claude/bossheal 10-30, Daniel: a shrine before every boss) the nursery's last step, her door a few columns on: this was 240,7, fifty tiles back before the brood cells */
 
   // ================= 4. THE BROOD CELLS (248-294): TEACH THE BOSS - cells that pulse before they hatch =================
   air(248, 294, 3, 9);                                       /* the nursery: floor 10, two rows under the wall top (a step down at 248) */

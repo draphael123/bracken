@@ -235,7 +235,7 @@ export function buildSporewood({ painter, T, TS }) {
   /* THE LARDER'S EXAM: the elite (level.js ELITES spore: THE SPORE MAGE, the Order's battle mage, replaces this shield) holds its end - his gate at 353 */
   foe('shield', 346, 10, 'larderEnd', { face: -1 }); foe('archer', 351, 10, 'larderEnd', { face: -1 }); foe('shield', 341, 10, 'larderEnd', { face: -1 });   /* (a forager's bow behind the mage, a shield before him) */
   glow(338, 10); deco(349, 10, 'skullPile', 1);
-  ent('check', 356, 10);                                                            /* SHRINE FOUR: the larder's exam is behind you, and her door is ahead */
+  ent('check', 404, 4);                                                             /* SHRINE FOUR (claude/bossheal 10-30, Daniel: a shrine before every boss): the knot's gauntlet - the root break and the bounce caps - is behind you, her door a few steps on. Moved from 356,10 (the larder's end, 53 route tiles before her door, the gauntlet between): a fall in the gauntlet comes back HERE */
 
   // ================= 5. THE MOTHER'S KNOT (358-408): her approach - the SEED CAPS and A ROOT KNOT taught, her gill pods and skulls, her door =================
   ground(359, 367, 11);

@@ -283,7 +283,7 @@ export function buildUnderwell({ painter, T, TS }) {
      the stair room's top, the shaft down to her hall. Each also has a glint and a nudge (src/stuck-spots.js) */
   for (const [x, y] of [[247, 30], [338, 39], [447, 33], [495, 31], [567, 28]]) decor.push({ kind: 'waylamp', x: X(x), y });
   decor.push({ kind: 'husk', x: X(QX - 16), y: 31 });                                 /* HER CAST SHELL, split down the back, by her door (the approach sets her up) */
-  ent('check', QX - 15, 31); spring(QX - 7, 31);                              /* CHECKPOINT FOUR: her door, a spring */
+  ent('check', QX + 3, 31); spring(QX + 8, 31);                               /* CHECKPOINT FOUR: her door, a spring (claude/bossheal 10-30: moved from QX-15 to the shaft's head - a shrine a short walk before the boss) */
   air(QX - 16, QX + 26, 27, 31);                                              /* the corridor over her hall */
   sign(QX - 4, 31, "THE QUEEN'S CISTERN. FIRE ON HER FLOOR DRIVES HER UP; WATER OPENS HER.");
 

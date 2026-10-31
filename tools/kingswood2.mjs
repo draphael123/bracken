@@ -63,8 +63,8 @@ for (const h of L.hoists.filter(q => q.load === 'log')) { const fl = (() => { le
   const foes = L.ents.filter(e => ['pike', 'sprig', 'shield', 'hound', 'brute'].includes(e.t) && e.y === fl - 1 && (e.x - h.x) * h.roll >= -1 && (e.x - h.x) * h.roll <= n + 2);
   ok(n < h.rollMax ? L.grid[(fl - 1) * L.W + x + h.roll * 2] !== T.AIR : true, h.id + ': its road (row ' + (fl - 1) + ') runs ' + n + ' tiles ' + (h.roll > 0 ? 'east' : 'west') + (n < h.rollMax ? ' to a wall it splits on' : ' (rollMax)'));
   ok(foes.length >= (h.id === 'procLog' ? 0 : 2), h.id + ': foes stand on its road: ' + foes.map(e => e.t + '@' + e.x).join(' ')); }
-const checks = L.ents.filter(e => e.t === 'check').map(e => e.x).sort((a, b) => a - b);
-ok(checks.length === 5 && [0, 1, 2, 3, 5].map(i => SECTIONS[i]).every(([n, x0, x1], i) => checks[i] >= x1 - 12 && checks[i] < x1 + 2), 'A10c: one shrine closes each area\'s exam, at its end: ' + checks.join(' '));
+const checks0 = L.ents.filter(e => e.t === 'check').map(e => e.x).sort((a, b) => a - b), checks = checks0.filter(x => x !== 169);   /* (claude/bossheal 10-30: 169 (168 grounded) is the extra shrine a few steps before the kennel's gate - a shrine before every mini) */
+ok(checks0.includes(169) && checks.length === 5 && [0, 1, 2, 3, 5].map(i => SECTIONS[i]).every(([n, x0, x1], i) => checks[i] >= x1 - 12 && checks[i] < x1 + 2), 'A10c: one shrine closes each area\'s exam, at its end: ' + checks.join(' '));
 const elites = L.ents.filter(e => e.elite);
 ok(elites.length === 2 && elites.every(e => L.hoists.some(h => Math.abs(h.x - e.x) <= 1 && h.load === 'cage') || L.ents.some(q => q.t === 'dropcage' && Math.abs(q.x - e.x) <= 1)), 'each exam elite stands under something hung over him: ' + elites.map(e => e.t + '@' + e.x).join(' '));
 ok(L.ents.some(e => e.t === 'greathound' && e.mini) && L.mini && L.mini.boss === 'greathound', 'THE HOUND MASTER keeps his kennel (the stands\' exam, a mini)');

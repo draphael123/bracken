@@ -11385,7 +11385,7 @@ else if (P.stepHeld > 0 && !P.swim) { P.stepHeld = Math.max(0, P.stepHeld - dt);
   // A mini arena needs a HEIGHT as well as a width: the Hanging Village stacks eight floors at the same x,
   // and without y0/y1 the Weaver's fight started while you were three tiers below her.
   if (L.mini && !miniActive && !miniDone && (L.mini.reverse?P.x < L.mini.trigger && P.x > L.mini.x0+24:P.x > L.mini.trigger && P.x < L.mini.x1 - 24) && (P.ground || (L.mini.swim && P.swim))
-    && (L.mini.y0 === undefined || (P.y > L.mini.y0 && P.y < L.mini.y1))) { const mb = miniOne(); if (mb) { bossSelectBegin('mini'); miniActive = true; miniIntroT = 1.6; if (mb.t === 'forgemaster') { mb.mode = 'wake'; mb.modeT = 1.6; SFX.forgeHammer(); } if (mb.t === 'greathound') { mb.mode = 'idle'; mb.modeT = 1.2; } if (mb.t === 'scarabmother') { mb.mode = 'wake'; mb.modeT = 1.8; SFX.roar && SFX.roar(); } if (mb.t === 'gravewarden') { mb.mode = 'wake'; mb.modeT = 1.4; SFX.heavy(); SFX.seaBell ? SFX.seaBell() : SFX.clank(); } if (mb.t === 'hedgewarden') { mb.mode = 'wake'; mb.modeT = 1.2; SFX.rattle(); } if (mb.t === 'sexton') { mb.mode = 'wake'; mb.modeT = 1.3; (SFX.seaBell || SFX.golemChime)(); } if (mb.t === 'berserker') { mb.mode = 'wake'; mb.modeT = 0.8; SFX.roar(); } if (mb.t === 'suncatcher' || mb.t === 'golem') { mb.mode = 'wake'; mb.modeT = 1.6; SFX.golemChime(); } if (miniZooms(mb.t)) setView('zoom'); music.play(L.mini.music || 'minicharge'); setWallAt(L.mini.wallL, true, L.mini.floor); arenaShut(L.mini, mb); camLock = { x0: L.mini.x0, x1: L.mini.x1 }; number(mb.x, mb.y - 30, miniName(), '#ffd36b'); ({ greathound: SFX.bark, troll: SFX.snort, spider: SFX.hiss, sailer: SFX.puff, suncatcher: SFX.golemChime, golem: SFX.golemChime }[mb.t] || SFX.roar)(); if (mb.t !== 'suncatcher' && mb.t !== 'golem') SFX.roar(); shakeCam(4); zoomKick(1.08, 0.3); } }
+    && (L.mini.y0 === undefined || (P.y > L.mini.y0 && P.y < L.mini.y1))) { const mb = miniOne(); if (mb) { bossSelectBegin('mini'); arenaHeal(); miniActive = true; miniIntroT = 1.6; if (mb.t === 'forgemaster') { mb.mode = 'wake'; mb.modeT = 1.6; SFX.forgeHammer(); } if (mb.t === 'greathound') { mb.mode = 'idle'; mb.modeT = 1.2; } if (mb.t === 'scarabmother') { mb.mode = 'wake'; mb.modeT = 1.8; SFX.roar && SFX.roar(); } if (mb.t === 'gravewarden') { mb.mode = 'wake'; mb.modeT = 1.4; SFX.heavy(); SFX.seaBell ? SFX.seaBell() : SFX.clank(); } if (mb.t === 'hedgewarden') { mb.mode = 'wake'; mb.modeT = 1.2; SFX.rattle(); } if (mb.t === 'sexton') { mb.mode = 'wake'; mb.modeT = 1.3; (SFX.seaBell || SFX.golemChime)(); } if (mb.t === 'berserker') { mb.mode = 'wake'; mb.modeT = 0.8; SFX.roar(); } if (mb.t === 'suncatcher' || mb.t === 'golem') { mb.mode = 'wake'; mb.modeT = 1.6; SFX.golemChime(); } if (miniZooms(mb.t)) setView('zoom'); music.play(L.mini.music || 'minicharge'); setWallAt(L.mini.wallL, true, L.mini.floor); arenaShut(L.mini, mb); camLock = { x0: L.mini.x0, x1: L.mini.x1 }; number(mb.x, mb.y - 30, miniName(), '#ffd36b'); ({ greathound: SFX.bark, troll: SFX.snort, spider: SFX.hiss, sailer: SFX.puff, suncatcher: SFX.golemChime, golem: SFX.golemChime }[mb.t] || SFX.roar)(); if (mb.t !== 'suncatcher' && mb.t !== 'golem') SFX.roar(); shakeCam(4); zoomKick(1.08, 0.3); } }
   if (L.arena && boss && boss.alive && !bossActive && (L.arena.reverse?P.x < L.arena.trigger && P.x>L.arena.x0:P.x > L.arena.trigger) && (L.arena.y0 !== undefined ? P.y > L.arena.y0 && P.y <= L.arena.floor + 4 : P.ground && Math.abs(P.y - L.arena.floor) < 48)) bossStart(); // the floor check keeps a tall level's lower tiers from waking the boss
 }
 
@@ -11478,6 +11478,15 @@ function bossSelectOpen(from = 'title') {
   if (coop()) coopEnd();   /* (claude/partypersist) the party (coopWant) stays: the boss fight brings it, and the way back finds it again */
   bossSelectFrom = from; bossSelectI = 0; bossSelectWait = 0; bossSelectHero = PROG.heroes?.[hero()] ? hero() : (bossSelectHeroes()[0]?.id || 'knight');
   state = 'bossselect'; music.play(menuTrack()); SFX.uiSel();
+}
+/* THE ARENA HEAL (Daniel 10-30: "whenever you find a mini boss or a boss, you get automatically healed"): the moment a boss wakes or a mini's room shuts, every
+   standing hero is set to FULL HEALTH, told by a warm flash, the mend chime, a green number and RESTORED. FLASKS ARE NOT REFILLED (shrines do that: the death cost
+   stays). Once per engage - a death and a retry engage again - never mid-fight and never on a phase change. Not in the boss rush (it has its own pacing). */
+function arenaHeal() {
+  if (rushOn()) return; let any = false;
+  for (const p of players) { if (!upright(p) || !(p.hp < p.maxHp)) continue; const got = Math.round(p.maxHp - p.hp); p.hp = p.maxHp; any = true;
+    ringAt(p.x, p.y - 12, 22, '#ffd36b', 0.5); ringAt(p.x, p.y - 12, 12, '#fff6c8', 0.35); motes(p.x, p.y - 10, 14, 8, ['#ffd36b', '#fff6c8', '#8fd160']); number(p.x, p.y - 30, '+' + got, '#8fd160'); }
+  if (any) { SFX.mend(); flaskHud.glowT = 0.9; number(P.x, P.y - 46, 'RESTORED', '#8fd160'); }
 }
 function bossSelectBegin(kind) {
   if (!bossSelectFight || bossSelectFight.row.kind !== kind || bossSelectFight.began) return;
@@ -11662,7 +11671,7 @@ function setWall(col, solid) {
 function bossStart() {
   bossSelectBegin('boss');
   if (L.chase3 && L.arena && L.arena.chase && !bossJumpOn && !rushOn()) checkpoint = { ...L.chase3.check };   /* (claude/fallingtower3) THE CHASE: a death anywhere in the fight comes back to the top of his stair, beside his ring (the carpet's board used to set it) */
-  BUG.evlog('boss start: ' + (boss && boss.t));
+  BUG.evlog('boss start: ' + (boss && boss.t)); arenaHeal();
   bossActive = true; boss.mode = 'wake'; boss.modeT = 1.6; if (boss.t === 'mother') { boss.rootT = 3; boss.belchT = 8; } if (bossZooms(boss.t)) setView('zoom'); camLock = { x0: L.arena.x0, x1: L.arena.x1 }; if (boss.t === 'frog') SFX.croak(); if (boss.t === 'chief') SFX.gobDie(); if (boss.t === 'ram') SFX.bellow();
   setWall(L.arena.wallL, true); setWall(L.arena.wallR, true); arenaShut(L.arena, boss);   /* (claude/colossus3) the level's foes outside the walls are held there */
   if (boss.t === 'prince') number(boss.x, boss.y - 14, 'FORGOTTEN UNDER THE HILL', '#c9d1dc');   /* his subtitle, under the name */
