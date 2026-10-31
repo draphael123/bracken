@@ -268,5 +268,92 @@ ok(Object.values(KG_SAY).every(s => SAY_LINES.has(s)) && Object.values(GBM.GB_SA
     const p3 = pl(S3, [{ id: 3, kind: 'chilli', x: G.belt.x0 + 50, state: 'ride' }], { x: G.belt.x0 + 30, y: G.belt.y }); ok(!p3.atk, 'the bot never swings at a chilli (' + p3.why + ')');
     const S3b = GBM.newFight(G); ok(/stove/.test(pl(S3b, []).why), 'the bot stokes the pepper stove when it is hot'); } }
 
+// ---- (claude/kitchengate4, Daniel 10-30 17:30) THE COAL TRENCH, THE MEAT-HOOK RAILS AND THE PLATTER DROP, THE SECOND HELPING, ORDER UP ON THE HOOKS ----
+{ const A = L.arena, G = GBM.geom(A, TS), GB = GBM.GB, Tr = G.trench, { MOVE } = await import('../src/hero-move.js'), { inReach, norm } = await import('../src/zipline.js'), { makeGrubbagHands } = await import('../src/grubbag-hands.js');
+  const cell = (c, r) => L.grid[r * L.W + c], FL = A.floor / TS, jumpH = MOVE.JUMPV * MOVE.JUMPV / (2 * MOVE.GRAV);
+  /* THE TRENCH: cut under the line, the entry and his table side on the old floor, a chain-link step at each end - the climb is two short hops for every hero's base jump */
+  { const c0 = Tr.x0 / TS, c1 = Tr.x1 / TS - 1, [s0, s1] = Tr.steps.map(([a]) => a / TS), dug = []; for (let c = c0; c <= c1; c++) for (let r = FL; r < Tr.y / TS; r++) if (cell(c, r) !== T.AIR) dug.push(c + ',' + r);
+    ok(Tr && !dug.length && cell(c0, Tr.y / TS) === T.SOLID && Tr.y - A.floor === 3 * TS && Tr.x0 >= G.belt.x0 && Tr.x1 <= G.belt.x1, 'THE COAL TRENCH: the floor under the serving line cut three rows down to a coal bed (columns ' + c0 + '-' + c1 + ')');
+    ok(cell(s0, FL + 2) === T.SOLID && cell(s0, FL + 1) === T.AIR && cell(s1, FL + 2) === T.SOLID && cell(s1, FL + 1) === T.AIR && Tr.y - Tr.stepY === TS && Tr.stepY - A.floor === 2 * TS && 2 * TS < jumpH - 8, 'a chain-link step at each end: bed -> step ' + TS + ' px, step -> floor ' + 2 * TS + ' px (a base jump rises ' + Math.round(jumpH) + ')');
+    ok(cell(A.x0 / TS + 2, FL) === T.SOLID && cell(s0 - 1, FL) === T.SOLID && cell(s1 + 1, FL) === T.SOLID && G.chairX - GB.w / 2 - Tr.steps[1][1] >= 40, 'the hall entry, the stove and his table side stay on the old floor (room to strike him: ' + Math.round(G.chairX - GB.w / 2 - Tr.steps[1][1]) + ' px)');
+    ok(GBM.groundY(G, (Tr.x0 + Tr.x1) / 2) === Tr.y && GBM.surfaceY(G, (Tr.x0 + Tr.x1) / 2, Tr.y - 200) <= G.belt.y && GBM.groundY(G, G.x0 + 20) === G.floorY, 'the lob surface model knows the trench (the ground under it: the bed)'); }
+  const hits = [], said = [], spawned = [];
+  const w = { number: (x, y, t) => said.push(t), sound() {}, shake() {}, music() {}, mark() {}, dust() {}, fx() {}, stove() {}, burst() {}, smash() {}, spawnAdd: (x, y) => { const a = { t: 'attendant', x, y, alive: true }; spawned.push(a); return a; },
+    hit: () => null, hitArea: (b, d, n) => hits.push({ n, d }), hitHero: (h, d, n, k, o) => hits.push({ n, d, o: o || {} }) };
+  const E = o => ({ t: 'grubbag', x: G.chairX, y: G.floorY, w: GB.w, h: GB.h, hp: 1000, maxHp: 1000, mode: 'sit', modeT: 0, face: -1, alive: true, ...o });
+  const run = (e, S, s, heroes, f) => { for (let i = 0; i < Math.round(s * 60); i++) { GBM.stepGrubbag(e, S, 1 / 60, heroes, w); if (f && f()) return true; } return false; };
+  /* THE COAL BITE: on the bed - spared (never a death), no knock; again only after a beat; never on the floor */
+  { const S = GBM.newFight(G), e = E(), Ph = { x: (Tr.x0 + Tr.x1) / 2, y: Tr.y, ground: true, alive: true, pp: {} }; S.restT = 99; S.lineT = 99; hits.length = 0;
+    run(e, S, 0.1, [Ph]); const b1 = hits.filter(h => h.n === 'coal'); ok(b1.length === 1 && b1[0].d === GB.coal.dmg && b1[0].o.spare && b1[0].o.noKnock && said.includes(GBM.GB_SAY.coal), 'A FALL INTO THE TRENCH: a COAL BITE (' + GB.coal.dmg + ', spared - never a death on its own - and no knock), told: ' + GBM.GB_SAY.coal);
+    run(e, S, GB.coal.beat - 0.3, [Ph]); ok(hits.filter(h => h.n === 'coal').length === 1, 'no second bite inside ' + GB.coal.beat + ' s (no pin)'); run(e, S, 0.5, [Ph]); ok(hits.filter(h => h.n === 'coal').length === 2, 'stay on the coals and they bite again: climb out');
+    const S2 = GBM.newFight(G); S2.restT = 99; S2.lineT = 99; hits.length = 0; run(e, S2, 2, [{ x: G.x0 + 30, y: G.floorY, ground: true, alive: true, pp: {} }, { ...Ph, x: Tr.steps[0][0] + 8, y: Tr.stepY, pp: {} }]); ok(!hits.some(h => h.n === 'coal'), 'the floor and (banked) the steps never bite'); }
+  /* THE GREASE LIGHTS THE TRENCH: a glow first (the tell), then the flare - the bite x2 and the steps hot */
+  { const S = GBM.newFight(G), e = E({ mode: 'greaseTell', modeT: 0.01, hp: 600 }); S.ph = 2; S.restT = 99; S.lineT = 99; run(e, S, 0.05, []);
+    ok(GBM.coalState(S) === 'glow' && said.includes(GBM.GB_SAY.flare), 'THE GREASE SPILL lights the trench: the coals GLOW first (' + GB.coal.glow + ' s, told: ' + GBM.GB_SAY.flare + ')');
+    run(e, S, GB.coal.glow + 0.05, []); ok(GBM.coalState(S) === 'lit', 'then they FLARE for ' + GB.coal.fire + ' s');
+    hits.length = 0; run(e, S, 0.05, [{ x: (Tr.x0 + Tr.x1) / 2, y: Tr.y, ground: true, alive: true, pp: {} }, { x: Tr.steps[1][0] + 8, y: Tr.stepY, ground: true, alive: true, pp: {} }]); const c = hits.filter(h => h.n === 'coal');
+    ok(c.length === 2 && c.some(h => h.d === GB.coal.dmg * GB.coal.lit) && c.some(h => h.d === GB.coal.dmg) && c.every(h => h.o.spare), 'lit: the bite x' + GB.coal.lit + ' (' + c.map(h => h.d).join(', ') + ') and the climb out is hot (the steps bite) - still spared');
+    run(e, S, GB.coal.fire + 0.1, []); ok(GBM.coalState(S) === 'banked', 'and they bank down again'); }
+  /* THE MEAT-HOOK RAILS: two, chain-driven east from the hatch; the lower taken from the line, the upper by the hop and ending over his platter */
+  const RA = G.rails.find(z => z.hand), RB = RA && RA.hand; [RA, RB].forEach(z => z && norm(z));
+  ok(G.rails.length === 2 && RA && RB && G.rails.every(z => z.meat && z.dir === 1 && z.arena && L.zipLines.includes(z)) && Math.abs(RA.x0 - G.belt.x0) < 24, 'THE MEAT-HOOK RAILS: two chain-driven rails (L.zipLines) from the serving hatch east over the trench');
+  { const onLine = x => ({ x, y: G.belt.y, face: 1 }), shelf = G.plats.find(p => !p.belt);
+    ok(inReach(RA, onLine(RA.x0 + 20)) && !inReach(RA, { x: G.x0 + 40, y: G.floorY, face: 1 }), 'the LOWER rail is taken from the line (UP), not from the floor');
+    ok(![...Array(40)].some((_, i) => inReach(RB, onLine(RB.x0 + i * 3))) && ![...Array(16)].some((_, i) => inReach(RB, { x: shelf.x0 + i * ((shelf.x1 - shelf.x0) / 15), y: shelf.y, face: 1 })), 'the UPPER rail is not taken standing on the line or the shelf (the hop, or a jump)');
+    ok(RB.xb > G.platter.x0 && RB.xb < G.platter.x1, 'the UPPER rail ENDS OVER HIS PLATTER (' + Math.round(RB.xb) + ' in ' + G.platter.x0 + '-' + G.platter.x1 + ')');
+    const land = []; for (const hero of HERO_MOVE_IDS) for (const hold of [0, 1, -1]) { const r = flyHop(L.zipLines, RB, RB.x0 + 8, null, { hero, hold, floorY: G.platter.y }); if (!(r.at[0] >= G.platter.x0 && r.at[0] <= G.platter.x1)) land.push(hero + '/' + hold + ' ' + Math.round(r.at[0])); }
+    ok(!land.length, 'ridden to its end, every hero (holding on, back, or nothing) comes down ON THE PLATTER ' + land.slice(0, 4).join(' '));
+    const rush = []; for (const hero of HERO_MOVE_IDS) { const A2 = { ...RA, zipN: false, speed: RA.speed * GB.bell.hook }, B2 = { ...RB, zipN: false, speed: RB.speed * GB.bell.hook }; A2.hand = B2;
+      for (const hx of [RA.hopRush[0], (RA.hopRush[0] + RA.hopRush[1]) / 2, RA.hopRush[1]]) { const r = flyHop([A2, B2], A2, A2.x0 + 8, hx, { hero, hold: 1 }); if (r.caught !== B2) rush.push(hero + '@' + Math.round(hx)); } }
+    ok(!rush.length, 'ORDER UP (the hooks x' + GB.bell.hook + '): the rush stretch of the hand-off catches the upper rail for every hero ' + rush.slice(0, 4).join(' ')); }
+  /* THE PLATTER DROP: the food flies, the stove goes cold, KNOCKED OFF HIS FEET (short, capped), then the ward; one per cooldown; never on top of another opening */
+  { const S = GBM.newFight(G), e = E(); S.restT = 99; S.lineT = 99; S.stove.st = 'cool'; S.stove.t = 5; S.items.push({ id: 1, kind: 'dish', x: G.belt.x0 + 40, state: 'ride' }, { id: 2, kind: 'bomb', x: G.belt.x0 + 90, state: 'ride', fuse: 4 }, { id: 3, kind: 'dish', x: G.belt.x1 - 6, state: 'wait' });
+    const r = GBM.platterDrop(e, S, w, G.platter.x0 + 20);
+    ok(r === 'open' && S.items.every(q => q.state === 'fall') && S.stove.st === 'cold' && said.includes(GBM.GB_SAY.flying), 'DROP ONTO THE PLATTER: the food on the line is KNOCKED FLYING (' + S.n.flying + ' items) and the stove goes cold');
+    ok(e.mode === 'drop' && GBM.gbOpen(e) && e.modeT === GB.drop.t && Math.round(S.purse) === Math.round(e.maxHp * GB.drop.cap) && said.includes(GBM.OPEN_NAME.drop), 'he is ' + GBM.OPEN_NAME.drop + ': THE THIRD OPENING (' + GB.drop.t + ' s, blades x' + GB.drop.mul + ', capped ' + GB.drop.cap * 100 + '% of him)');
+    ok(GBM.takeBlow(e, S, 10)[0] === 10 * GB.drop.mul, 'open: x' + GB.drop.mul);
+    ok(GBM.platterDrop(e, S, w, G.platter.x0 + 20) === null, 'one drop per ' + GB.drop.cd + ' s (not spammable)');
+    run(e, S, GB.drop.t + 0.6, []); ok(S.ward > 0 && e.mode !== 'drop', 'then the told WARD (B3)');
+    const S3 = GBM.newFight(G), e3 = E({ mode: 'stun', modeT: 5, openT0: 7 }); S3.purse = 99; ok(GBM.platterDrop(e3, S3, w, G.platter.x0 + 10) === 'food' && e3.mode === 'stun' && e3.modeT === 5, 'on top of the bomb stun: only the food flies - the openings never stack');
+    ok(GB.drop.cap <= GB.stun.cap && GB.drop.t < GB.stun.t, 'the drop is the SHORT opening (' + GB.drop.t + ' s vs the bomb ' + GB.stun.t + ', cap ' + GB.drop.cap + ' <= ' + GB.stun.cap + ')'); }
+  /* THE SECOND HELPING: a dish eaten swells him, the big heal and MORE!, and owes one (never stacked) - spent on the next lob / fling / grease, the windup unchanged */
+  { const S = GBM.newFight(G), e = E({ hp: 800 }); S.restT = 99; S.lineT = 99; S.ceil = 1000; S.healLeft = 100; said.length = 0;
+    S.items.push({ id: 7, kind: 'dish', x: G.belt.x1 - 6, state: 'wait' }); run(e, S, 0.05, []);
+    ok(S.second === 1 && S.swellT > 0 && S.heal && S.heal.n === Math.round(e.maxHp * GB.dish.heal) && said.includes(GBM.GB_SAY.more), 'A DISH EATEN: the belly swells (' + GB.swell + ' s), a BIG green +' + (S.heal && S.heal.n) + ', MORE! - and a SECOND HELPING is owed');
+    ok(POSE_GB.eatSwell && POSE_GB.eatSwell.belly > POSE_GB.eat.belly, 'the swell is its own pose (belly ' + POSE_GB.eatSwell.belly + ')');
+    run(e, S, 1, []); S.items.push({ id: 8, kind: 'dish', x: G.belt.x1 - 6, state: 'wait' }); e.mode = 'sit'; run(e, S, 0.05, []); ok(S.second === 1, 'two dishes still owe ONE (not stacking)');
+    ok(GB.dish.heal === 0.05 && GB.dish.cap === 0.1, 'the small heal and its cap are unchanged (' + GB.dish.heal + ' / ' + GB.dish.cap + ')');
+    const P = { x: G.x0 + 60, y: G.floorY, ground: true, alive: true, pp: {} };
+    e.mode = 'belchTell'; e.modeT = 0.01; S.secondOn = null; run(e, S, 0.05, [P]); ok(S.second === 1, 'a belch leaves the helping owed (only the lob, the fling and the grease take it)');
+    const S5 = GBM.newFight(G), e5 = E(); S5.restT = 0; S5.lineT = 99; S5.second = 1; const r0 = Math.random; Math.random = () => 0; GBM.stepGrubbag(e5, S5, 1 / 60, [P], w); Math.random = r0;
+    ok(e5.mode === 'lobTell' && S5.secondOn === 'lob' && S5.second === 0 && e5.modeT === GB.lob.tell[0] && said.includes(GBM.GB_SAY.second), 'the next LOB takes it: SECOND HELPING said on the windup, the windup NOT shortened (' + e5.modeT + ' s)');
+    run(e5, S5, GB.lob.tell[0] + 0.02, [P], () => S5.throws.length); const th = S5.throws; ok(th.length === GB.lob.n[0] + 1 && th.some(c => c.second && c.t <= -GB.second.lobGap + 1e-9), 'a DOUBLE LOB: ' + th.length + ' hams (P1 throws ' + GB.lob.n[0] + '), the extra one landing ' + GB.second.lobGap + ' s after the last');
+    const S6 = GBM.newFight(G), e6 = E({ mode: 'flingTell', modeT: 0.01 }); S6.secondOn = 'fling'; run(e6, S6, 0.03, [P]); ok(S6.flings[0] && S6.flings[0].v === GB.fling.v * GB.second.flingV, 'a FASTER FLING (' + GB.fling.v + ' -> ' + (S6.flings[0] && S6.flings[0].v) + ' px/s)');
+    const S7 = GBM.newFight(G), e7 = E({ mode: 'greaseTell', modeT: 0.01, hp: 600 }); S7.ph = 2; S7.secondOn = 'grease'; run(e7, S7, 0.03, []); ok(S7.burns[0] && Math.abs(S7.burns[0].burn - GB.grease.burn * GB.second.greaseLife) < 1e-9, 'a LONGER GREASE WAVE (it burns ' + GB.grease.burn + ' -> ' + (S7.burns[0] && S7.burns[0].burn.toFixed(2)) + ' s)'); }
+  /* THE HANDS IN A FAKE WORLD: ORDER UP runs the hooks fast and the attendants ride them down; a landing on the platter off the upper hook drops him; the platter tips you off */
+  { let t = 0; const pp = { x: G.x0 + 40, y: G.floorY, ground: true, dead: false, zip: null, hp: 100 }, adds = [];
+    const ctx = { L, players: [pp], boss: null, bossActive: true, TS, T, EHP: {}, sfx: {}, hero: () => pp, heroId: () => 'knight', time: () => t, number: (x, y, s) => said.push(s), text() {}, burst() {}, sparks() {}, shake() {}, ring() {}, dust() {},
+      damagePlayer: () => 'hit', asPlayer: (p, f) => f(), upright: () => true, overlap: () => false, box: b => ({ l: b.x - 5, r: b.x + 5, t: b.y - 20, b: b.y }), hint() {}, spawnFoe: (k, x, y) => { const a = { t: k, x, y, alive: true, hp: 30, w: 10, h: 18 }; adds.push(a); return a; }, hitOnce: () => true };
+    const H = makeGrubbagHands(ctx), e = H.spawnBoss({ alive: true }); ctx.boss = e; e.mode = 'sit'; const S = H.show(); S.restT = 99; S.lineT = 99; S.warm = true;
+    const step = s => { for (let i = 0; i < Math.round(s * 60); i++) { t += 1 / 60; H.update(e, 1 / 60); S.restT = 99; for (const a of adds) if (a.gbRide) H.ride(a, 1 / 60); } };
+    S.rush = 3; step(0.05); ok(S.G.rails.every(z => Math.abs(z.speed - z.gbBase * GB.bell.hook) < 1e-6), 'ORDER UP: the hook rails run x' + GB.bell.hook + ' (' + S.G.rails.map(z => z.speed).join(', ') + ' px/s)'); S.rush = 0; step(0.05); ok(S.G.rails.every(z => z.speed === z.gbBase), 'and back to their own pace after');
+    e.mode = 'bellTell'; e.modeT = 0.01; S.ph = 2; step(0.05); const ride = adds.filter(a => a.gbRide); ok(ride.length === 2 && ride.every(a => a.x - (RA.x0 + 6) > -2 && a.x - (RA.x0 + 6) < 30), 'THE BELL: the attendants come out of the hatch ON THE HOOKS (' + ride.length + ')');
+    let onB = false, dropped = null; for (let i = 0; i < 60 * 8 && !dropped; i++) { t += 1 / 60; H.update(e, 1 / 60); S.restT = 99; for (const a of adds) if (a.gbRide) { H.ride(a, 1 / 60); if (a.gbRide && a.gbRide.z === RB) onB = true; } else if (a === adds[0]) dropped = { x: a.x }; }
+    ok(onB && dropped && dropped.x >= RB.xb - 12, 'they ride the lower rail, swing to the upper and drop off its end over the platter (at ' + (dropped && Math.round(dropped.x)) + ')');
+    const a2 = adds[1]; if (a2.gbRide) { a2.hp = 20; H.ride(a2, 1 / 60); } ok(!a2.gbRide, 'a blow knocks an attendant off his hook');
+    a2.x = (Tr.x0 + Tr.x1) / 2; a2.y = Tr.y; a2.alive = true; S.adds = [a2]; step(0.05); ok(!a2.alive && said.includes(GBM.GB_SAY.addFall), 'and down on the coals they take him: ' + GBM.GB_SAY.addFall);
+    e.mode = 'sit'; S.ward = 0; S.cd.drop = 0; S.rush = 0; pp.zip = RB; pp.ground = false; step(0.05); pp.zip = null; pp.x = G.platter.x0 + 20; pp.y = G.platter.y; pp.ground = true; step(0.02);
+    ok(e.mode === 'drop' && H.read().n.drops === 1, 'THE HANDS: let go of the upper hook and land on the platter - ' + GBM.OPEN_NAME.drop);
+    const x0 = pp.x; step(GB.drop.shove + 0.3); ok(pp.x > x0 + 10, 'left standing on the platter, it tips him off toward him (' + Math.round(pp.x - x0) + ' px in ' + (GB.drop.shove + 0.3) + ' s)'); H.end(); }
+  /* THE BOT learns the hooks (a weight - never the main loop) and climbs out of the coals */
+  { const pl = (o, Sx) => { const S0 = Sx || GBM.newFight(G); S0.stove.st = 'cool'; S0.stove.t = 9; return GBM.gbPlan({ P: { x: G.belt.x0 + 30, y: G.belt.y, vy: 0, face: 1, ground: true, atk: -1, ...(o.P || {}) }, e: E({ mode: 'sit' }), S: S0, reach: 30, t: 1, rng: () => 0.1, mem: o.mem || {}, zip: o.zip || null }); };
+    ok(/hook/.test(pl({ P: { x: RA.x0 + 40 } }).why) && pl({ P: { x: Math.max(G.belt.x0 + 10, RA.x0 + 18) } }).up, 'the bot goes under the lower hook and takes it (UP) when the drop is ready and nothing else is on');
+    const Sd = GBM.newFight(G); Sd.items = [{ id: 1, kind: 'bomb', x: G.belt.x0 + 120, state: 'ride', fuse: 4 }]; ok(/bomb/.test(pl({}, Sd).why), 'a bomb on the line still comes first');
+    ok(pl({ zip: RA.id, mem: { hook: true, hopK: 0.5 }, P: { x: (RA.hop[0] + RA.hop[1]) / 2 + 2, y: 312, ground: false } }).kick, 'on the lower hook it kicks off in the red stretch (the hand-off)');
+    const ob = pl({ zip: RB.id, P: { x: RB.xb - 20, y: 280, ground: false } }); ok(!ob.down && /platter/.test(ob.why), 'on the upper hook it rides on to the platter');
+    const tr = pl({ P: { x: (Tr.x0 + Tr.x1) / 2, y: Tr.y } }); ok(/coals/.test(tr.why) && tr.gx != null, 'down on the coals it heads for a step (' + tr.why + ')');
+    const ts = pl({ P: { x: Tr.steps[0][0] + 8, y: Tr.stepY } }); ok(ts.jump && ts.gx < Tr.steps[0][0], 'on the step it jumps up onto the floor'); }
+}
+
 console.log(bad ? '\nkitchengate: ' + bad + ' FAILED' : '\nok  kitchengate');
 process.exit(bad ? 1 : 0);
