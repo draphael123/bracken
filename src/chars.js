@@ -5287,6 +5287,8 @@ function rgKitPoses(F, h) {
   F.rgHuntPose = [KF({ legs: 'wide', arm: [X, Y, X + 2, Y - 3], arm2: [OFF[0], OFF[1], X + 1, Y - 3], ...slung, plume: 1, bits: horn(0, -3, false) }),
     KF({ wide: 14, legs: 'wide', sho: 1, hy: -1, arm: [X, Y, X + 3, Y - 4], arm2: [OFF[0], OFF[1], X + 2, Y - 4], ...slung, plume: 2, bits: [...horn(1, -4, true), o(8, -9, '#ff7a5a'), o(10, -10, '#ff7a5a'), o(11, -8, '#ff7a5a'), o(13, -10, '#ffb09a'), o(12, -13, '#ff7a5a'), o(9, -12, '#ff7a5a')] })];
   /* the shared keys hers stand in for: the plunge is her downward shot, the block her bash, a blast her mark and a cast the bow raised */
+  /* THE BOW GUARD (HOLD C, claude/heroblocksb): crouched a little behind the bow, held upright across her front in both hands, the cloak stirring - the bar of the stave is the read */
+  F.rgGuard = [0, 1].map(i => KF({ legs: 'wide', dx: -1, dy: 1, hy: 1, arm: [X, Y, X + 4, Y - 1 + i], arm2: [OFF[0], OFF[1], X + 3, Y - 6], stave: [X + 6, Y + 11, X + 6, Y - 15], plume: 1 + i }));
   F.plunge = F.rgDown[0]; F.block = F.rgBash; F.blast = F.rgMark; F.cast = F.rgMark;
   /* THE BACKFLIP (main.js plays F.rgFlip over the dodge: she goes up and over BACKWARDS, away from what she faces, the bow clutched to her chest) - four beats: the coil, then three quarter
      turns head over heels the way she is going (counter-clockwise on the page), the cloak whipping round her */

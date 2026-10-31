@@ -131,6 +131,7 @@ import * as OPF from './order-paladin.js'; import * as UPF from './undead-priest
 import { makeHurricane3 } from './hurricane3.js'; let H3H = null; import { makePowderMonkeys, PM as PMKC } from './powder-monkey.js'; import { bakeMonkeySet } from './redraw/powder_monkey_art.js'; let PMK = null;   /* (claude/flotilla4) THE POWDER MONKEY, a shared foe: lit grenades you strike back (src/powder-monkey.js) */   /* THE HURRICANE DECK 3 (claude/hurricane3): she sinks in steps, her waist floods, her casks run, her rods draw the sky (src/hurricane3.js) */
 import { makeTowpathHands } from './towpath-hands.js'; import { makeFogKnightHands, bakeFogKnightCard } from './fog-knight-hands.js'; import * as FKG from './fog-knight.js'; import * as FWR from './fog-wraith.js'; let TPH = null, FKH = null; let CHH = null, FL2H = null, ADH = null, F3H = null; import { makeFlotilla3, F3, F3_SAY } from './flotilla3.js'; import { bakePirateSkins } from './redraw/pirate_skins.js';   /* (claude/flotilla3) THE FLOTILLA 3: his broadside, the laid guns, the grapnel boarder, the keg roller's keg (src/flotilla3.js) */ import { makeAdmiralHands, bakeAdmiralCard } from './admiral-hands.js'; import * as ADMG from './flotilla-boss.js';   /* (claude/flotilla3) THE ADMIRAL (src/flotilla-boss.js) holds the flotilla now; the Champion stays registered for the Keep */ import { makeFlotilla2 } from './flotilla2.js';   /* (claude/flotilla2) THE ADMIRAL'S CHAMPION's hands (src/admirals-champion-hands.js) */ import { makeChampionHands, bakeChampionCard } from './admirals-champion-hands.js'; import * as ACG from './admirals-champion.js';   /* THE TOWPATH (claude/towpath, the greybox): the locks, the punts, the swing bridges, the lantern in the fog; THE FOG KNIGHT */
 import { makeUnderwellHands } from './underwell-hands.js'; import * as UWA from './redraw/underwell_art.js'; import * as UWT from './redraw/underwell_tiles.js'; import * as UWB from './redraw/underwell_backdrop.js'; let UWH = null;   /* THE UNDERWELL (claude/underwell): its hands (the oil, the torches, the great lamp, the nests, the dry fountain, the cast's twists) */
+import { makeWardenBrace, WB as WB_K } from './warden-brace.js';   /* THE WARDEN'S SPEAR-HAFT BRACE (claude/heroblocksb): hold C, the haft planted */
 import { makeCrouchA, CROUCH as CROUCH_A } from './crouch-a.js';   /* THE CROUCH TWISTS, PART A (claude/croucha): the knight's LOW GUARD and SHIELD TRIP, the warden's SET SPEAR and LOW POKE, the freebooter's DUCK AND RELOAD */
 import { TOKENS, tokenBoard, tokenPre, tokenHold, tokenPost, release as tokenRelease, claim as tokenClaim } from './attack-tokens.js';
 import * as GB from './boss-greed.js'; import { makeBossRead, ANGLE as BR_ANGLE, ROLL_SOON, roomBlow as brRoomBlow, GUARD as BR_GUARD } from './boss-read.js'; import { TEMPO, installTempo } from './foe-tempo.js';   /* THE GLOBAL BOSS RULE: x0.05 outside an opening, and the greed reprisal (claude/combat3, Daniel 2026-10-01) */
@@ -705,9 +706,9 @@ const HERO_LOOP = {
   paladin: 'BLOWS AND GUARDS BUILD CONVICTION. TAP C SPENDS IT: SMITE, RADIANCE, SUNFALL. EVERY SPEND LIGHTS HIS AURA.',
   pirate: 'THE PISTOL GOES THROUGH ANY GUARD, THEN IT IS EMPTY: THE WOOD\'S GOLD IS HIS POWDER.',
   reaper: 'A HIT ON HIM IS BLOOD DEBT: LAND BLOWS TO WIN IT BACK. HOLD X: FIVE TIERS. DOWN+C: BLOOD PRICE.',   /* (claude/bloodknight) */
-  warden: 'THE POINT PAYS, NOT THE HAFT: KEEP THEM OUT THERE. TAP C AND THE SHAFT TURNS A BLOW.',
+  warden: 'THE POINT PAYS, NOT THE HAFT: KEEP THEM OUT THERE. TAP C TURNS A BLOW; HOLD C BRACES THE HAFT.',
   berserker: 'BLOWS TAKEN ON THE AXES ARE RAGE (HOLD C). FULL: DOWN+C FOR FRENZY. FIVE CHOPS: CROSS-CHOP.',
-  ranger: 'ARROWS ARC AND STICK: WALK OVER THEM. SWEET-SPOT HITS FILL FOCUS. TAP C ON THE BEAT: BASH.',
+  ranger: 'ARROWS ARC AND STICK: WALK OVER THEM. SWEET-SPOT HITS FILL FOCUS. TAP C ON THE BEAT: BASH. HOLD C: GUARD.',
   geomancer: 'HOLD C: A RUNE-WARD. SHE IS PLANTED, AND ON THE BEAT IT EMPOWERS HER. HOLD X: A FAULT LINE.',   /* the deflect, not the old brace; 504 px, two lines on the card's 270 (the brace wording took three) */
 };
 // THE TALENT TREES. Every hero has three trees side by side, and a hero has the points for ONE of them: a point for every
@@ -724,6 +725,7 @@ const DK_KEYS = { ward: 'HOLD C: THE BLOOD WARD. A BLOW ON ITS FACE COSTS A THIR
 /* ==== THE WARDEN'S KEYS, IN WORDS. One place: her HUD prompts and the controls card read these, and her wood lesson
    should too when it is written. C is the one that has to be unlearned from the knight - it is not a shield. ==== */
 const WARDEN_KEYS = { deflect: 'TAP C: THE DEFLECT. THE SHAFT TURNS A YELLOW BLOW AND SWATS WHAT FLIES AT HER',
+  brace: 'HOLD C: THE BRACE. THE HAFT TAKES A YELLOW BLOW FROM THE FRONT (MORE WIND THAN A SHIELD) AND A CHARGE ON THE POINT IS IMPALED',
   impale: 'NO BUTTON: A YELLOW CHARGE THAT RUNS ONTO HER OUT-FRONT POINT DIES ON IT',
   red: 'A RED BLOW IS NEVER TURNED, BY HER OR BY ANYONE: GET OUT OF ITS WAY',
   vigil: 'TIP HITS AND STOPPED CHARGES FILL VIGIL. FULL, TAP C ON THE GROUND: THE PHALANX',
@@ -852,6 +854,7 @@ const godMode = () => isDev() && !!SET.godmode;   /* (claude/heroroster) UNLOCK 
 const owns = (tab, id) => godMode() || !!(PROG[tab.owned] && PROG[tab.owned][id]);
 const hero = () => PROG.hero || 'knight'; const isPyro = () => hero() === 'pyro'; const isPaladin = () => hero() === 'paladin'; const isPirate = () => hero() === 'pirate'; const isReaper = () => hero() === 'reaper'; const isWarden = () => hero() === 'warden'; const isGeo = () => hero() === 'geomancer'; let GEO = null; const isBz = () => hero() === 'berserker'; let BZK = null, CRC = null; const isRg = () => hero() === 'ranger'; let RGK = null;   /* THE RANGER's kit (src/ranger.js), bound below beside his */   /* THE BERSERKER's kit (src/berserker.js) and his crouch (src/crouch-c.js), bound below beside hers */ let EMBER = null;   /* THE PYROMANCER'S EMBER WARD (src/ember-ward.js), bound beside the Geomancer's kit */   /* THE GEOMANCER's kit (src/geomancer.js), bound below once the world it reaches into exists */
 let HPK = null;   /* (claude/heropassa) HERO PASS A (src/hero-pass.js), made beside the Ranger's kit */
+let WBR = null;   /* THE SPEAR-HAFT BRACE (src/warden-brace.js), bound after the crouch */
 let CA = null;   /* THE CROUCH TWISTS, PART A (src/crouch-a.js), bound beside the ember ward */
 const numWord = n => { const ONES = ['', 'ONE', 'TWO', 'THREE', 'FOUR', 'FIVE', 'SIX', 'SEVEN', 'EIGHT', 'NINE', 'TEN', 'ELEVEN', 'TWELVE', 'THIRTEEN', 'FOURTEEN', 'FIFTEEN', 'SIXTEEN', 'SEVENTEEN', 'EIGHTEEN', 'NINETEEN'];
   const TENS = ['', '', 'TWENTY', 'THIRTY', 'FORTY', 'FIFTY', 'SIXTY', 'SEVENTY', 'EIGHTY', 'NINETY'];
@@ -7496,7 +7499,8 @@ function hudMeterLabel() {
     if (P.pinning) return { s: 'X STAB   Z FREE', col: blink ? '#dff0d8' : '#8fd160' };   /* on the spear: the two ways off it */
     if ((P.vigil || 0) >= 100) return { s: 'PHALANX: C', col: blink ? '#8fd160' : '#dff0d8' };
     if ((P.deflectT || 0) > 0) return { s: 'TURNING', col: '#8fd160' };
-    return { s: (P.deflectRec || 0) > 0 ? 'RECOVER' : 'TAP C  DEFLECT', col: '#6a7a62' }; }
+    if (P.wBrace) return { s: 'BRACED', col: '#8fd160' };
+    return { s: (P.deflectRec || 0) > 0 ? 'RECOVER' : 'TAP C  DEFLECT   HOLD  BRACE', col: '#6a7a62' }; }
   if (isReaper()) { if (state !== 'play' && state !== 'talk') return null;   /* the plates own the screen when a menu is up */
     // WHAT HIS KEYS DO RIGHT NOW: hold C for the ward, and with a full blood HOLD F for the surge - and it says
     // which. While the ward is up it says what letting go will be (DK_KEYS.hud).
@@ -7699,6 +7703,8 @@ function damagePlayer0(fromX, dmg, { up = false, unblockable = false, pierce = f
     sparks(P.x + P.face * 10, P.y - 9, P.face, 10);
     return 'blocked';
   }
+  /* (claude/heroblocksb) THE WARDEN'S SPEAR-HAFT BRACE (src/warden-brace.js takes): held C - a yellow blow from the FRONT is turned at more chip than a shield, a yellow charge on the point is impaled, a red one and a bolt go through; out of wind the haft breaks (half) */
+  if (isWarden() && WBR && P.wBrace) { const w = WBR.takes(fromX, dmg, unblockable, rpFoe(fromX, who) || nearFoe(fromX), pierce); if (w === 'blocked') { blocks++; trialEvent('block'); return 'blocked'; } if (w === 'half') dmg = Math.ceil(dmg / 2); }
   /* THE WARDEN'S DEFLECT: the shaft swept across her body on the beat. It turns ANY yellow blow from the front, the
      same as every other hero's answer, and never a red one - `unblockable` is the whole test, and it is not hers to bend. */
   /* (claude/wardenkit) AND FROM OVERHEAD: what falls on her (`up`: a shard, a bolt out of the sky, a wash from above) is met by the shaft swept over her head,
@@ -7726,6 +7732,8 @@ function damagePlayer0(fromX, dmg, { up = false, unblockable = false, pierce = f
   /* (claude/ranger) THE RANGER'S BOW-BASH (src/ranger.js bashTakes): tapped AS a yellow blow lands from the front it is her PARRY - nothing taken, the foe reels and is thrown back out to range,
      and her next arrow is the riposte. Off the beat the bash is a shove and no guard: the blow finds her. A red one is TOO STRONG (said above) */
   if (isRg() && RGK && RGK.bashTakes(fromX, dmg, unblockable, rpFoe(fromX, who) || nearFoe(fromX), pierce) === 'blocked') { blocks++; return 'blocked'; }
+  /* (claude/heroblocksb) THE RANGER'S BOW GUARD (src/ranger.js guardTakes): held C - a projectile from the front is stopped dead, a blade costs HALF; a red blow and a bolt go through; out of wind the bow gives */
+  if (isRg() && RGK && P.rgGuard) { const w = RGK.guardTakes(fromX, dmg, unblockable, rpFoe(fromX, who) || nearFoe(fromX), pierce, geo); if (w === 'blocked') { blocks++; trialEvent('block'); return 'blocked'; } if (w === 'half') { blocks++; dmg = Math.ceil(dmg / 2); } }
   /* (a WALL stood between her and the blow - PARKED, raised only by the kit now - still stops a yellow one: geomancer.js wallTakes) */
   if (isGeo() && GEO && GEO.wallTakes(fromX, unblockable, nearFoe(fromX)) === 'blocked') { blocks++; trialEvent('block'); return 'blocked'; }
   /* A PIERCING BLOW (the crossbow bolt) goes through a guard that was already up: only a guard raised as it lands - a parry - turns it */
@@ -8444,6 +8452,11 @@ function deflectPays(x, y) {
 function deflectLesson() {
   if (!L || L.trial || (PROG.turnSeen || 0) >= 2) return;
   PROG.turnSeen = (PROG.turnSeen || 0) + 1; saveProgress(); hintSay('mechanic', 4.5, 'TAP C ON THE BEAT: THE SHAFT TURNS A YELLOW BLOW AND SWATS WHAT FLIES. NEVER A RED ONE.');
+}
+/* (claude/heroblocksb) THE BRACE / THE BOW GUARD, SAID TWICE IN WORDS AND THEN LEFT ALONE (the warden's brace, the ranger's guard) */
+function braceLesson() {
+  if (!L || L.trial || (PROG.braceSeen || 0) >= 2) return;
+  PROG.braceSeen = (PROG.braceSeen || 0) + 1; saveProgress(); hintSay('mechanic', 4.5, isRg() ? 'HOLD C: THE BOW GUARD. IT STOPS ARROWS DEAD AND TAKES HALF OF A BLADE. A RED BLOW AND A BOLT GO THROUGH.' : 'HOLD C: THE BRACE. THE HAFT TURNS A YELLOW BLOW FROM THE FRONT, AND A CHARGE ON THE POINT IS IMPALED.');
 }
 /* (claude/damagepct) THE BAR OVER ITS HEAD IS THE DAMAGE % NOW: the number in its heat colour, the poise strip a thin underline under it (src/damage-pct.js drawOver) */
 function drawPoise(e, cx, cy) { const m0 = poiseMax(e); DP.drawOver(g, e, Math.round(e.x - cx), Math.round(e.y - (e.h || 16) - cy), m0 ? (e.poise || 0) / m0 : null); }
@@ -10684,6 +10697,7 @@ function updatePlayer(dt) {
     else if (cGo && free && (P.vigil || 0) >= 100) { P.cBuf = 0; spendVigil(); if (P.deflectRec <= 0 && P.deflectT <= 0) deflect(); }   /* (claude/wardenkit) A FULL BAR NO LONGER EATS THE DEFLECT: the same tap raises the phalanx AND sweeps the shaft - with a full bar a tap on the beat of a yellow blow was a phalanx and no turn, and the blow landed */
     else if (cGo && free && P.deflectRec <= 0 && P.deflectT <= 0) { P.cBuf = 0; deflect(); }   /* THE DEFLECT: a tap, never a hold */
     if (P.deflectT > 0) deflectSwat();
+    if (WBR) WBR.update(dt, keys, free && !thrown);   /* (claude/heroblocksb) HOLD C: THE SPEAR-HAFT BRACE - the haft planted across her front, a yellow charge impaled on it (src/warden-brace.js) */
     /* THE POINT IS OUT: her thrust and her run-through carry it in front of her, and a charge that runs onto it is
        spitted with no button held. The rising cut goes over her head and the low sweep along the floor - neither is a
        line in front of her, so neither spits anything. */
@@ -10855,7 +10869,7 @@ function updatePlayer(dt) {
   if (sprinting && P.ground && !P.sprintFx) { P.sprintFx = true; streaks(P.x, P.y - 10, -P.face, ['#e8dcc0', '#c9d1dc'], 70); SFX.skid(); }
   else if (!sprinting) P.sprintFx = false;
   if (sprinting && P.ground && Math.random() < dt * (8 + 14 * sprintK)) dust(P.x - P.face * 5, P.y, 1);   // and it keeps saying so, off his heels
-  const cap = (P.ballast ? (P.swim ? 54 : 58) : P.ptC ? PTC.carrySpeed : P.carry ? (P.swim ? THROW_KIND[P.carry.thrKind || 'bucket'].carrySpeedSwim : THROW_KIND[P.carry.thrKind || 'bucket'].carrySpeed) : P.bkDrainOn ? 16 /* (claude/bkkit2) DRAIN held: his feet set */ : (P.block || P.jet || P.geoGuard) ? 32 : P.bulwark ? 26 : P.lanceWind > 0 ? HG.lance.slow : P.warding ? 24 : P.swim ? 96 : wading ? 46 : spored ? 40 : P.syrupT > 0 && P.ground ? FT2.syrup.cap : RUN * ((P.hasteT || 0) > 0 ? 1.12 : 1) * heroRunMul(hero(), P.ground) /* heavy on his feet, not in the air (reaper, geomancer): the levels' gaps are measured for the knight's jump; quicker pyro, slower paladin - src/hero-move.js HERO_RUN */ * (PROG.charm === 'swift' ? 1.12 : 1) * (1 + MOVE.SPRINT_BONUS * sprintK) * (KRS.inked > 0 && P.ground ? KRK_INK_SLOW : 1)) + (P.gustT > 0 && !P.ground ? 150 : 0);   /* (THE KRAKEN's ink patch: wading it, claude/kraken2) */ // a gust can carry you faster than your legs
+  const cap = (P.ballast ? (P.swim ? 54 : 58) : P.ptC ? PTC.carrySpeed : P.carry ? (P.swim ? THROW_KIND[P.carry.thrKind || 'bucket'].carrySpeedSwim : THROW_KIND[P.carry.thrKind || 'bucket'].carrySpeed) : P.bkDrainOn ? 16 /* (claude/bkkit2) DRAIN held: his feet set */ : (P.block || P.jet || P.geoGuard || P.wBrace || P.rgGuard) ? 32 : P.bulwark ? 26 : P.lanceWind > 0 ? HG.lance.slow : P.warding ? 24 : P.swim ? 96 : wading ? 46 : spored ? 40 : P.syrupT > 0 && P.ground ? FT2.syrup.cap : RUN * ((P.hasteT || 0) > 0 ? 1.12 : 1) * heroRunMul(hero(), P.ground) /* heavy on his feet, not in the air (reaper, geomancer): the levels' gaps are measured for the knight's jump; quicker pyro, slower paladin - src/hero-move.js HERO_RUN */ * (PROG.charm === 'swift' ? 1.12 : 1) * (1 + MOVE.SPRINT_BONUS * sprintK) * (KRS.inked > 0 && P.ground ? KRK_INK_SLOW : 1)) + (P.gustT > 0 && !P.ground ? 150 : 0);   /* (THE KRAKEN's ink patch: wading it, claude/kraken2) */ // a gust can carry you faster than your legs
   const onSlick = P.ground && (L.slick || []).some(z => P.x > z[0] * TS && P.x < (z[1] + 1) * TS && Math.floor((P.y + 2) / TS) === z[2]) || (P.ground && L.iceLedges && tileAt(Math.floor(P.x / TS), Math.floor((P.y + 2) / TS)) === T.CRYST); /* and its crystal ledges, which look like ice and held like rock */ // the Sunspire's ice: slow to get going, slower to stop
   /* UPHILL IS SLOWER (Daniel, 2026-09-25: "going up a slope doesn't really slow you down"): walking up a dune the legs cap at 0.6 of a run on a steep slope, 0.8 on a gentle one, and down it they run a little free (1.1). Walking only - the slide (below) keeps its own speeds. */
   const slopeK = SLOPES_ON && P.ground && move && !P.swim ? footSlope(tileAt, P) : 0, capW = slopeK ? cap * (slopeRise(slopeK) === move ? (slopeGrade(slopeK) === 1 ? UPHILL.steep : UPHILL.gentle) : UPHILL.down) : cap;
@@ -29071,7 +29085,7 @@ const rgTal = () => ({ deep: tal('rgDeep'), steady: tal('rgSteady'), fletch: tal
   keen: tal('rgKeen'), longMark: tal('rgLongMark'), snares: tal('rgSnares'), toothed: tal('rgToothed'), trail: tal('rgTrail'), kill: tal('rgKill'), apex: tal('rgApex'),
   bashLong: tal('rgBashLong'), bashBack: tal('rgBashBack'), highFlip: tal('rgHighFlip'), softStep: tal('rgSoftStep'), airDraw: tal('rgAirDraw'), cover: tal('rgCover'), last: tal('rgLast') });
 RGK = makeRanger({ boltHome: s => sendBoltHome(s, 'snatch'), get P() { return P; }, get enemies() { return enemies; }, get seeds() { return seeds; }, get parts() { return parts; }, get time() { return time; }, get LH() { return LH; }, get LW() { return LW; }, get boss() { return boss; }, TS, SFX,
-  isRg: () => isRg(), tal: rgTal, spend: c => spend(c), tired: () => { P.stFlash = 0.35; },
+  isRg: () => isRg(), tal: rgTal, spend: c => spend(c), tired: () => { P.stFlash = 0.35; }, blockCost: d => CM.blockCost(d, tal('steady')), STAM: CM.STAM, exhaust: p => CM.exhaust(p), ST, teachGuard: () => braceLesson(),   /* (claude/heroblocksb) the bow guard's price */
   isSolid: (x, y) => isSolid(x, y), tileAt: (x, y) => tileAt(x, y), isOneWay: t => isOneWay(t), knockSkip: e => KNOCK_SKIP.has(e.t), box: b => box(b), overlap: (a, b) => overlap(a, b),
   hurtAs: (b, e, d, x, pl) => hurtAs(b, e, d, x, pl), swordDmg: () => swordDmg(), amul: k => amul(k), number: (x, y, t, c) => number(x, y, t, c), sparks: (x, y, d, n) => sparks(x, y, d, n), dust: (x, y, n) => dust(x, y, n),
   ringAt: (x, y, r, c, l) => ringAt(x, y, r, c, l), shakeCam: (n, k) => shakeCam(n, k), hitstop: t => hitstop(t), zoomKick: (a, b) => zoomKick(a, b), streaks: (...a) => streaks(...a),
@@ -29136,6 +29150,12 @@ CA = makeCrouchA({ get P() { return P; }, get L() { return L; }, get enemies() {
   hurtAs: (b, e, d, x, pl) => hurtAs(b, e, d, x, pl), swordDmg: () => swordDmg(), reloadPistol: w => reloadPistol(w), floorFoe: (e, s) => floorFoe(e, s),
   heavy: e => POISE_HEAVY.has(e.t) || POISE_EXTRA_HEAVY.has(e.t) || !!e.elite || !!e.big || !!e.mini || !!e.maxHp,
   poiseLean: (e, n) => { const m = poiseMax(e); if (!m || !e.alive || e.broken > 0 || e.poiseCd > 0) return; e.poise = Math.min(m, (e.poise || 0) + n); e.poiseT = 2.5; if (e.poise >= m) addPoise(e, 1, P.x, false); } });
+/* THE WARDEN'S SPEAR-HAFT BRACE (src/warden-brace.js): hold C. main.js owns the world and the keys; the module owns the window, the price and the impale. Called from updatePlayer (update), damagePlayer0 (takes) and the draw (up) */
+WBR = makeWardenBrace({ get P() { return P; }, SFX, ST, STAM: CM.STAM, exhaust: p => CM.exhaust(p), blockCost: d => CM.blockCost(d, tal('steady')), guardOk: () => CM.guardOk(P), heavy: JUICE.heavyTaken, guardPush: d => guardPush(d),
+  wardJav: () => !!wardJav, dust: (x, y, n) => dust(x, y, n), ringAt: (x, y, r, c, l) => ringAt(x, y, r, c, l), number: (x, y, t, c) => number(x, y, t, c), shakeCam: (n, k) => shakeCam(n, k), hitstop: t => hitstop(t),
+  braceStops: e => BRACE_STOPS.has(e.t + '|' + (e.mode || '')), big: e => lcBig(e) || !!e.maxHp || !!e.mini, impale: e => impale(e), hurtAs: (b, e, d, x, pl) => hurtAs(b, e, d, x, pl), swordDmg: () => swordDmg(),
+  watch: p => CA && CA.setWatch(p), teach: () => braceLesson(),
+  blockFx: (x, y, sd, heavy) => { const bj = JUICE[heavy ? 'blockHeavy' : 'block']; hitstop(bj.stop); shakeCam(bj.shake, -P.face * bj.kick); SFX[bj.sfx](); SFX.shaftTurn && SFX.shaftTurn(); impactAt(x, y, 'steel'); ringAt(x, y, 10, '#dff0d8', 0.22); sparks(x, y, sd, heavy ? 9 : 6); } });
 /* TEACH THE WARD: the first yellow blow told near the pyromancer says what her crouch does to it. Twice in a save, once a level */
 let emberTaughtIn = null;
 function emberTeach() { if ((PROG.emberTold || 0) >= 2 || emberTaughtIn === levelIndex) return; emberTaughtIn = levelIndex; PROG.emberTold = (PROG.emberTold || 0) + 1;
@@ -34188,6 +34208,8 @@ function drawWorld(cx, cy, showPlayer) {
       else if ((isPyro() || isPaladin() || isPirate() || isReaper() || isWarden() || isGeo() || isBz()) && P.blastT > 0) { key = 'blast'; frame = P.blastT > 0.2 ? 0 : 1; }
       else if (P.castT > 0 && K.R.cast) { key = 'cast'; frame = P.castT > 0.1 ? 0 : 1; }   /* any hero with cast frames: a list of four left the Warden out, so SKEWER's castT drew nothing (her own pose, hero-poses.js, now plays first) */
       else if (isWarden() && P.vaultT > 0 && K.R.vault) { key = 'vault'; frame = P.vaultT > 0.21 ? 1 : 0; }   /* up on the shaft, and coming down off it */
+      else if (isRg() && P.rgGuard && K.R.rgGuard) { key = 'rgGuard'; frame = Math.floor(P.anim * 2) % 2; }   /* (claude/heroblocksb) THE BOW GUARD: the bow brought up across her front in both hands (chars.js F.rgGuard) */
+      else if (isWarden() && P.wBrace && K.R.block) { key = 'block'; frame = Math.floor(P.anim * 2) % 2; }   /* (claude/heroblocksb) THE SPEAR-HAFT BRACE: the heel driven in, the point levelled, both hands on the haft (chars.js F.block) */
       else if (isWarden() && (P.deflectT || 0) > 0 && K.R.deflect) { key = 'deflect'; frame = P.deflectT > DEF_LIVE * 0.5 ? 0 : 1; }   /* THE DEFLECT: the shaft crossing her body, then swept out to the point */
       else if (isPaladin() && P.bulwark && P.aegis && K.R.bulwark) { key = 'bulwark'; frame = Math.floor(time * 6) % 4; }   /* (PALADIN 3 ART) BULWARK ADVANCE: walking behind the aegis */
       else if (P.block || P.jet || P.aegis || P.warding || P.geoGuard || (isBz() && (P.braceT > 0 || P.braceRec > 0))) { key = isBz() && K.R.bzTake ? 'bzTake' : 'block'; frame = Math.floor(P.anim * 2) % 2; }
