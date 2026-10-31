@@ -11,7 +11,7 @@
 //   2. NOTHING STILL HOLDS A SHEET IT GAVE BACK. Every level is loaded (and drawn: a draw-time cache is a holder too) once with the audit on (main.js: a weak note of each emptied sheet);
 //      after a full collection any of them still alive is held by something other than the bake that made it, and would be drawn empty: a
 //      FAIL with the count, so a new cache that keeps a baked sheet is caught here and added to retireBakes' roots instead of shipping blank.
-//   node tools/load-leak.mjs [--budget=20] [--kept=5] [--cycles=5]
+//   node tools/load-leak.mjs [--budget=20] [--kept=5] [--cycles=5] [--chunk=7] [--chunk-ms=120000] [--heap=2200] [--restarts=8]
 import { openPage } from './cdp.mjs';
 import { execFileSync } from 'child_process';
 import { readFileSync } from 'fs';
@@ -37,7 +37,8 @@ function privMB(pids) {
   const o = execFileSync('ps', ['-o', 'rss=', '-p', pids.join(',')], { encoding: 'utf8' }); return Math.max(0, ...o.trim().split(/\s+/).filter(Boolean).map(n => Math.round(+n / 1024)));
 }
 
-const pg = await openPage({ audio: false, fonts: false, args: ['--js-flags=--expose-gc --max-old-space-size=2048'] });
+const OPEN = () => openPage({ audio: false, fonts: false, args: ['--js-flags=--expose-gc --max-old-space-size=2048'] });
+let pg = await OPEN();
 try {
   const ids = await pg.evalp(`(async () => { window.__LV = (await import('/src/level.js')).LEVELS; BK.manualSimulation = true; BK.god = true; return __LV.map(l => l.id); })()`);
   const set = SET.map(id => ids.indexOf(id)).filter(i => i >= 0);
@@ -60,14 +61,41 @@ try {
       : 'the renderer grew ' + per.toFixed(1) + ' MB a load over ' + loads + ' loads (budget ' + budget + ' MB; ~43 before claude/loadleak): a level load is leaving dead native memory for the collector again (main.js retireBakes, src/px.js bakeScope)');
   }
   /* 2. NOTHING STILL HOLDS A RETURNED SHEET */
-  const a = await pg.evalp(`(async () => { window.__bakeAudit = []; const bad = [];
-    for (let i = 0; i < __LV.length; i++) { try { BK.load(i); BK.state = 'play'; BK.sim(5); BK.step(2); } catch (e) { bad.push(__LV[i].id + ': ' + String(e && e.message || e).slice(0, 80)); } if (i % 8 === 7) await new Promise(r => setTimeout(r, 0)); }
-    /* the collections run from a timer at the bottom of the stack, several apart: a collector that scans the stack conservatively can keep a stray object or two alive for one
-       collection (seen: 2 of 46,000, a different two each run), and only a sheet that something really holds is still there after all of them */
-    for (let k = 0; k < 6; k++) await new Promise(r => setTimeout(() => { gc(); r(); }, 100));
-    const still = __bakeAudit.filter(r => r.w.deref()), held = still.length, n = __bakeAudit.length; window.__bakeAudit = null; return { n, held, at: [...new Set(still.map(r => r.at))].slice(0, 6), levels: __LV.length, bad }; })()`, 900000);
-  console.log('audit: ' + a.levels + ' levels loaded, ' + a.n + ' baked sheets given back, ' + a.held + ' of them still held after a collection');
-  ok(a.n > a.levels * 100, 'only ' + a.n + ' sheets were given back over ' + a.levels + ' loads: retireBakes is not running');
+  /* The audit used to load every level in ONE evaluation (all levels, 900 s bound): it hung on master and crashed the page after harnessstall (the renderer climbs past 3 GB: the one-time caches of
+     ~70 levels add up). Now CHUNK levels at a time (the floats tool does the same), a time bound per chunk, and when the renderer's private memory passes HEAP_MB the page is judged and REPLACED by a
+     fresh one (a restart, not a failure) so no page ever reaches the crash; the per-chunk result is printed. The weak notes are kept across chunks and judged after the collections of a
+     SEPARATE evaluation (a clean stack: a conservative scan of a deep one kept stray sheets alive), exactly like the one-shot audit judged them at its end. */
+  const CHUNK = +arg('chunk', 7), CHUNK_MS = +arg('chunk-ms', 120000), HEAP_MB = +arg('heap', 2200), MAX_RESTARTS = +arg('restarts', 8);
+  const a = { n: 0, held: 0, at: [], levels: ids.length, bad: [] }, t0 = Date.now(); let chunks = 0, restarts = 0, pids2 = pids, lastJudged = 0;
+  const judge = () => pg.evalp(`(async () => { for (let k = 0; k < 6; k++) await new Promise(r => setTimeout(() => { gc(); r(); }, 100));
+    const still = __bakeAudit.filter(r => r.w.deref()); return { alive: still.length, at: [...new Set(still.map(r => r.at))].slice(0, 6), heap: +(performance.memory.usedJSHeapSize / 1048576).toFixed(0) }; })()`, CHUNK_MS);
+  for (let from = 0; from < ids.length; from += CHUNK) {
+    const to = Math.min(ids.length, from + CHUNK), tc = Date.now();
+    const r = await pg.evalp(`(async () => { window.__bakeAudit = window.__bakeAudit || []; const bad = [], n0 = __bakeAudit.length;
+      for (let i = ${from}; i < ${to}; i++) { try { BK.load(i); BK.state = 'play'; BK.sim(5); BK.step(2); } catch (e) { bad.push(__LV[i].id + ': ' + String(e && e.message || e).slice(0, 80)); } await new Promise(r => setTimeout(r, 0)); }
+      return { given: __bakeAudit.length - n0, bad }; })()`, CHUNK_MS).catch(e => ({ err: e.message }));
+    chunks++;
+    if (r.err) { fails.push('audit chunk ' + ids[from] + '..' + ids[to - 1] + ' (levels ' + from + '-' + (to - 1) + ') did not finish within ' + CHUNK_MS / 1000 + ' s / the page died: ' + r.err); break; }
+    const j = await judge().catch(e => ({ err: e.message }));
+    if (j.err) { fails.push('audit chunk ' + ids[from] + '..' + ids[to - 1] + ': the collections did not finish / the page died: ' + j.err); break; }
+    a.n += r.given; a.bad.push(...r.bad); lastJudged = j.alive;
+    const mb = privMB(pids2);
+    console.log('  audit chunk ' + chunks + ' levels ' + from + '-' + (to - 1) + ' (' + ids[from] + '..' + ids[to - 1] + '): ' + r.given + ' sheets given back, ' + j.alive + ' alive after the collections so far, js heap ' + j.heap + ' MB, renderer ' + mb + ' MB, ' + ((Date.now() - tc) / 1000).toFixed(1) + ' s');
+    const last = to >= ids.length;
+    if (last || mb > HEAP_MB) {
+      /* the verdict for every sheet noted so far: the ones still alive after the clean-stack collections are held */
+      a.held += j.alive; a.at.push(...j.at);
+      if (last) break;
+      if (++restarts > MAX_RESTARTS) { fails.push('audit stopped after chunk ' + chunks + ': ' + restarts + ' page restarts (renderer over ' + HEAP_MB + ' MB each time)'); break; }
+      console.log('  renderer ' + mb + ' MB > ' + HEAP_MB + ' MB: judged, replacing the page (restart ' + restarts + ')');
+      await pg.close(); pg = await OPEN();
+      await pg.evalp(`(async () => { window.__LV = (await import('/src/level.js')).LEVELS; BK.manualSimulation = true; BK.god = true; return 1; })()`);
+      pids2 = await rendererPids(pg.dbg);
+    }
+  }
+  a.at = [...new Set(a.at)].slice(0, 6);
+  console.log('audit: ' + a.levels + ' levels loaded in ' + chunks + ' chunks of ' + CHUNK + ' (' + ((Date.now() - t0) / 1000).toFixed(0) + ' s), ' + a.n + ' baked sheets given back, ' + a.held + ' of them still held after a collection');
+  if (!fails.length) ok(a.n > a.levels * 100, 'only ' + a.n + ' sheets were given back over ' + a.levels + ' loads: retireBakes is not running');
   ok(a.held === 0, a.held + ' sheets given back (emptied) are still held by something: they would draw empty (baked as ' + a.at.join(', ') + '). Add their holder to main.js retireBakes\' roots');
   ok(!a.bad.length, a.bad.length + ' levels threw on load: ' + a.bad.slice(0, 3).join(' | '));
   ok(!pg.errors.length, 'the page threw: ' + pg.errors.slice(0, 3).join(' | '));
