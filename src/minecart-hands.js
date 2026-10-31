@@ -481,10 +481,12 @@ export function makeMinecartHands(ctx) {
     /* THE LANTERN STRINGS: a lamp post every sixth tile along the lines (none in the dark drift: its lamps are long out) */
     for (const [x, row, nx] of MCA.lampPlan(M.L, ctx.cellGet, ctx.T, x0c, x1c)) { if (inDark(x * ts) || fmLoop) continue; MCA.lampPost(g, R(x * ts + 7 - cx), R(row * ts - cy), time, x, nx); }
     /* the decor: fall-ins, the roof over the hidden lever, the bore, the smelter's glow, the ledges, the buffers, the lift's cage */
-    for (const d of M.L.decor) { if (d.kind === 'fallin') { const x = R(d.x * ts - cx), y = R((d.row - 2) * ts - cy); MCA.fallin(g, x, y, time); if (x > -40 && x < vw + 40) txt('FALLEN IN', x + 16, y - 6, '#ff9a5c', 'center', 5); }
+    for (const d of M.L.decor) { if (d.kind === 'fallin') { const x = R(d.x * ts - cx), y = R((d.row - 2) * ts - cy); if (!M.L.decor.some(q => q.kind === 'torn' && d.x >= q.x0 && d.x <= q.x1)) MCA.fallin(g, x, y, time);   /* (deeprails6art: under THE TORN HIGH LINE the heap is the fall-in) */ if (x > -40 && x < vw + 40) txt('FALLEN IN', x + 16, y - 6, '#ff9a5c', 'center', 5); }
       else if (d.kind === 'bore') { MCA.boreArch(g, R(d.x0 * ts - cx), (d.x1 - d.x0 + 1) * ts, R(d.row * ts - cy)); }
       else if (d.kind === 'crumble') { const x0 = R(d.x0 * ts - cx), x1 = R((d.x1 + 1) * ts - cx), y = R(d.row * ts - cy); if (x1 < -20 || x0 > vw + 20) continue;
         MCA.crumble(g, x0, x1, y, time, d.x0); if (Math.floor(time * 3) % 2) txt('GOING', R((x0 + x1) / 2), y + 12, '#ff9a5c', 'center', 5); }
+      else if (d.kind === 'torn') { const x0 = R(d.x0 * ts - cx), x1 = R((d.x1 + 1) * ts - cx), y = R(d.row * ts - cy); if (x1 < -20 || x0 > vw + 20) continue; MCA.tornHigh(g, x0, x1, y, time, d.x0); }   /* (deeprails6art) THE LEADING BORE: the torn high line */
+      else if (d.kind === 'rumble') { MCA.boreGlow(g, R(d.x0 * ts - cx), R((d.x1 + 1) * ts - cx), R(d.row * ts - cy), vh, time); }   /* (deeprails6art) the drill's glow ahead */
       else if (d.kind === 'scar') { const x = R(d.x * ts - cx), y = R(d.row * ts - cy); if (x < -60 || x > vw + 60) continue; MCA.scar(g, x, y, d.r, d.x); }
       else if (d.kind === 'spoil') { MCA.spoil(g, R(d.x0 * ts - cx), R(d.row * ts - cy), (d.x1 - d.x0) * ts); }
       else if (d.kind === 'headlight') { MCA.headlight(g, R(d.x * ts - cx), R(d.row * ts - cy), time); }

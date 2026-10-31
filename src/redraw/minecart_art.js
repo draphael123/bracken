@@ -178,13 +178,7 @@ export function tubFront(g, x, y, kind) {
 export function prowLamp(g, x, y, face, time) { const lx = x + face * 12; rc(g, lx - 1, y - 12, 3, 2, MP.i2); rc(g, lx - 1, y - 14, 3, 3, MP.l2); rc(g, lx, y - 14, 1, 1, MP.l3); add(g, () => { g.globalAlpha = 0.5; g.drawImage(glow(26, '255,190,90'), lx - 26, y - 38); }); }
 
 /* ---------------- THE LANDMARKS UP CLOSE ---------------- */
-export function scar(g, x, y, r, seed) {
-  g.strokeStyle = '#0c0807'; g.lineWidth = 3; g.beginPath(); g.arc(x, y - r, r + 1, 0, Math.PI * 2); g.stroke();
-  g.strokeStyle = MP.r5; g.lineWidth = 1; g.beginPath(); g.arc(x, y - r, r, Math.PI * 1.05, Math.PI * 1.95); g.stroke();   /* the lit rim of a fresh cut */
-  g.strokeStyle = '#2a1a10'; g.lineWidth = 1; g.beginPath(); g.arc(x, y - r, r * 0.6, 0, Math.PI * 2); g.stroke();   /* a second, inner ring */
-  for (let i = 0; i < 9; i++) { const a = i / 9 * Math.PI * 2 + seed; rc(g, x + Math.cos(a) * (r + 2), y - r + Math.sin(a) * (r + 2), 2, 2, '#050303'); }   /* the teeth's bites */
-  g.fillStyle = '#0b0807'; g.beginPath(); g.arc(x, y - r, r * 0.4, 0, Math.PI * 2); g.fill();
-}
+/* (deeprails6art) the drill's cutting scar (scar) now lives in deeprails6_art.js: a fractured rim, flute tracks, chisel marks, spoil at its foot */
 export function spoil(g, x0, y, w) { for (let x = 0; x < w; x += 6) { const h = 2 + ((x * 7) % 5) + ((x * 3) % 3); rc(g, x0 + x, y - h, 6, h, (x / 6) & 1 ? MP.r4 : MP.r3); rc(g, x0 + x, y - h, 6, 1, MP.r6); if (((x * 5) % 11) === 0) rc(g, x0 + x + 2, y - h + 1, 2, 1, MP.cu2); } }
 export function headlight(g, x, y, time) { const k = 0.5 + 0.5 * Math.sin(time * 9) * Math.sin(time * 2.3);
   add(g, () => { g.globalAlpha = 0.35 + 0.35 * k; g.drawImage(glow(60, '255,220,150'), R(x) - 60, R(y) - 60); g.globalAlpha = 0.5 + 0.4 * k; g.drawImage(glow(24, '255,245,210'), R(x) - 24, R(y) - 24); });

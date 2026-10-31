@@ -73,6 +73,8 @@ export function makeDrillHands(ctx) {
     if (e.mode === 'wake') S.R = Math.max(DRILL.homeR, S.R - 120 * dt);
     { const lv0 = S.lever, was = !!(lv0 && lv0.thrown); GD.stepDrill(e, S, dt, heroes(), world(e)); if (lv0 && lv0.thrown && !was) { S.lurchT = 0.5; ctx.shake(3); ctx.sparks(lv0.x, S.G.laneY[2] - 36, 1, 8); } }   /* (deeprails6) THE LEVER: the throw's lurch (the scroll stutters) and its spark */
     if (S.lurchT > 0) S.lurchT = Math.max(0, S.lurchT - dt);
+    /* (deeprails6art) THE ROAR BED: in P3 the rig's engine roars on a pulse that quickens and swells as its bar falls (the red lamps beat with it) - sound only */
+    if (S.oneRail && fighting()) { S.roarT = (S.roarT || 0) - dt; if (S.roarT <= 0) { S.roarT = 1.7 - 1.1 * (S.tension || 0); if (ctx.sfx.drillRoar) ctx.sfx.drillRoar(S.tension || 0); else if (ctx.sfx.rumble) ctx.sfx.rumble(); } }
     /* (deeprails6) THE LEVER MISSED: it goes by you still up - told */
     if (S.lever && !S.lever.thrown && !S.lever.missed) { const hx = Math.min(...ctx.players.map(pp => pp.x)); if (S.lever.x < hx - 14) { S.lever.missed = true; ctx.sfx.clank && ctx.sfx.clank(); ctx.number(S.lever.x, S.G.laneY[2] - 50, 'MISSED THE POINTS: IT KICKS AN ORE CART', '#ff9a5c'); } }
     /* (deeprails6) P3 ONE RAIL: once the rubble is down and no cart is under the MID line, the LOW line is sealed (a cart still under it is bucked again) */
@@ -123,11 +125,11 @@ export function makeDrillHands(ctx) {
   H.drawWorld = (g, cx, cy, time) => { const Ar = A(); if (!S || !Ar) return; const G = S.G, fight = fighting(), vw = ctx.VW(), vh = ctx.VH();
     if (fight || inArena()) { const x0 = fight ? 0 : R(G.x0 - cx), x1 = fight ? vw : R(G.x1 - cx);
       MCA.tunnel(g, x0, x1, R(G.ceilY - cy), R(G.floor - cy), vh, S.scroll || 0, G.laneY.map(v => R(v - cy)), !!S.highDown, time);
-      if (S.oneRail) { MCA.oneRailRubble(g, x0, x1, R(G.laneY[1] - cy), R(G.laneY[0] - cy), S.scroll || 0, 1 - (S.sealT || 0) / DRILL.sealT, time); MCA.tensionLamps(g, x0, x1, R(G.ceilY - cy), S.tension || 0, time); }   /* (deeprails6) ONE RAIL: the LOW line under rubble; the red lamps quicken as its bar falls */
+      if (S.oneRail) { MCA.oneRailRubble(g, x0, x1, R(G.laneY[1] - cy), R(G.laneY[0] - cy), S.scroll || 0, 1 - (S.sealT || 0) / DRILL.sealT, time); MCA.tensionLamps(g, x0, x1, R(G.ceilY - cy), S.tension || 0, time, S.scroll || 0); }   /* (deeprails6) ONE RAIL: the LOW line under rubble; the red lamps quicken as its bar falls */
       if (S.ph === 3) for (let i = 0; i < 7; i++) { const W2 = vw + 80, gx = (((i * 97 + 300 - (S.scroll || 0)) % W2) + W2) % W2 - 40; MCA.gouge(g, gx, Math.max(2, R(G.ceilY - cy)) + 2 + (i % 3) * 2, 8 + (i % 3) * 3); } }   /* (dr3art) P3: the roof gouged where it tore at the rock */
     /* the chute (its tell: it rattles and its shadow is on the LOW line) */
     if (S.chute) { const x = R(GD.rearX(S) - cx), y = R(G.laneY[0] - cy), k = 1 - S.chute.t / DRILL.chuteTell, sh = Math.floor(time * 24) % 2;   /* ITS ORE CART on its back deck, rattling - then kicked off onto the LOW line */
-      MCA.tub(g, x - 12 + sh, R(G.laneY[1] - cy) - 1, 'ore', time, 0); g.fillStyle = 'rgba(0,0,0,' + (0.3 + 0.4 * k).toFixed(2) + ')'; g.fillRect(x - 30, y - 2, 24, 3); txt('ORE!', x - 14, R(G.laneY[1] - cy) - 26, Math.floor(time * 12) % 2 ? '#ffd36b' : '#ff9a5c', 'center', 6); }
+      MCA.tub(g, x - 12 + sh, R(G.laneY[1] - cy) - 1, 'ore', time, 0); g.fillStyle = 'rgba(0,0,0,' + (0.3 + 0.4 * k).toFixed(2) + ')'; g.fillRect(x - 30, y - 2, 24, 3); }   /* (deeprails6art: its 'ORE!' word is a tag in the gear tags' column - drawBoss - so it never lands on one) */
     /* THE ORE CARTS (rammed, one flies up the line trailing sparks) */
     for (const o of S.ores) { const x = R(o.x - cx), y = R(o.y + o.dy - cy); MCA.tub(g, x, y, 'ore', time, o.fly ? 300 : 150); if (o.fly) { for (let i = 1; i < 4; i++) { g.fillStyle = i & 1 ? '#ffd36b' : '#ff9a3c'; g.fillRect(x - 12 - i * 6, y - 4 - (i % 2), 3, 1); } }
       else txt('RAM IT', x, y - 26, '#ffd36b', 'center', 5); }
@@ -175,9 +177,13 @@ export function makeDrillHands(ctx) {
     if (S.gears && rx > -60 && rx < ctx.VW() + 60) { const banks = GD.GEARS.map(gg => { const q = S.gears[gg.id], ga = GD.gearAt(S, gg), t = R(G.laneY[ga.lane] + ga.t - cy), b = R(G.laneY[ga.lane] + ga.b - cy);
         return { id: gg.id, dx: ga.dx, t, b, state: !q ? 'off' : q.broken ? 'broken' : 'up', hot: q && q.hot > 0 ? Math.min(1, q.hot / 0.6) : 0, k: q ? q.hp / q.max : 0, flash: q ? q.flash : 0, smoke: q ? q.smoke : 0 }; });
       MCA.gearTower(g, rx, lanes[2] - 38, lanes[0] - 4, banks.filter(b => !b.dx), time); for (const b of banks.filter(q => q.dx)) MCA.gearTower(g, rx + b.dx, b.t - 4, b.b + 4, [b], time);   /* (deeprails6: P3's feed bank stands on the deck by the cab) */
-      for (const b of banks) if (b.state !== 'off') { const gg = GD.GEARS.find(k => k.id === b.id), lab = { chain: 'CHAIN', lunge: 'LUNGE', dyn: 'DYNAMITE', roof: 'ROOF' }[b.id];
-        const lx = b.dx ? rx + b.dx + 12 : rx - 12, al = b.dx ? 'left' : 'right';   /* (deeprails6: a bank on the deck labels to its right, clear of the tower's) */
-        txt(lab, lx, R((b.t + b.b) / 2) - 2, b.state === 'broken' ? '#6a6a6a' : b.hot > 0 ? '#ffd36b' : '#ff8a6a', al, 5); if (GD.gearAt(S, gg).jump || (gg.lane === 2 && S.highDown)) txt('JUMP', lx, R((b.t + b.b) / 2) + 5, '#c8d8e8', al, 4); } }
+      /* (deeprails6art, Daniel: 'the gear labels are crowded') ONE column of tags to the left of the tower, a plate under each word, JUMP a small arrow on the plate (not a second line), a leader to its bank,
+        pushed apart so none overlaps another or the cab; a broken bank carries no tag (its wreck smokes) */
+      { const tags = banks.filter(q => q.state === 'up').map(q => { const gg = GD.GEARS.find(k => k.id === q.id), lab = { chain: 'CHAIN', lunge: 'LUNGE', dyn: 'DYNAMITE', roof: 'ROOF' }[q.id], jmp = !!(GD.gearAt(S, gg).jump || (gg.lane === 2 && S.highDown)); return { q, lab, jmp, y0: R((q.t + q.b) / 2), y: 0, w: R(lab.length * 5.4) + (jmp ? 12 : 6) }; }).sort((p, o) => p.y0 - o.y0);
+        if (S.chute) tags.push({ q: { hot: 1, dx: 0 }, lab: 'ORE!', jmp: false, y0: lanes[1] - 26, y: 0, w: R(4 * 5.4) + 6, ore: true });   /* the chute's tell joins the column (left of its cart) and the rest make room */
+        tags.sort((p, o) => p.y0 - o.y0);
+        let last = -99; for (const t of tags) { t.y = Math.max(t.y0, last + 11); last = t.y; }
+        for (const t of tags) { const lx = t.ore ? rx - 30 : rx - 14; MCA.gearTag(g, lx, t.y, t.w, t.jmp, t.q.hot > 0, t.ore ? t.y : t.y0, t.ore ? lx : rx - 8, t.q.dx ? rx + t.q.dx - 9 : 0); txt(t.lab, lx - 3, t.y - 3, t.ore ? (Math.floor(time * 12) % 2 ? '#ffd36b' : '#ff9a5c') : t.q.hot > 0 ? '#ffd36b' : '#ff8a6a', 'right', 5); } } }
     if (S.lever && S.lever.thrown && S.lever.dump > 0) MCA.oreStream(g, rx + 46, lanes[1] - DRILL.cabH - 8, rx + 14, lanes[0] - DRILL.plateH / 2 - 4, 1 - S.lever.dump / DRILL.leverDump, time);   /* (deeprails6) THE POINTS THROWN: its chute's hatch drops and its ore pours in an arc into its gears */
     if (jam) MCA.oreDump(g, rx + 23, lanes[0] - DRILL.plateH - 14, lanes[0] - DRILL.plateH / 2 - 5, time);   /* (dr3art) its own ore pouring into its bare gears */
     if ((S.dynPend || []).length) MCA.driverArm(g, rx + DRILL.cabIn + R(DRILL.cabW / 2), lanes[1] - DRILL.cabH + 14, 1 - Math.max(0, S.mT || 0) / DRILL.dynTell, time);   /* the dynamite throw */
