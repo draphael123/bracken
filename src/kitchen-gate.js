@@ -350,14 +350,27 @@ export function buildKitchenGate({ painter, T, TS }) {
   belt('passageLine', 374, 387, FL, 1, { v: 36, every: 2.6, bomb: 3 }); flare('passGriddle1', 377, 378, FL, { period: 2.4, phase: 0 }); flare('passGriddle2', 383, 384, FL, { period: 2.4, phase: 1.2 });
   sign(373, FL - 1, 'HIS SERVING LINE. EVERY DISH ON IT GOES TO HIM.'); foe('attendant', 386, FL - 1, 'passage', { face: -1 }); prop('hatch', 388, FL);
   air(A0 - 1, A1 + 1, RF, FL - 1);
-  { const BELT = [A0 + 7, A1 - 16, FL - 2], PLATS = [[A0 + 9, A0 + 12, FL - 5], [A0 + 16, A0 + 19, FL - 5]]; shelf(BELT[0], BELT[1], BELT[2]); for (const [a, b, y] of PLATS) shelf(a, b, y); }
+  /* (claude/kitchengate4) ONE SHELF now (the west one): the upper hook rail runs where the east one stood */
+  { const BELT = [A0 + 7, A1 - 16, FL - 2], PLATS = [[A0 + 9, A0 + 12, FL - 5]]; shelf(BELT[0], BELT[1], BELT[2]); for (const [a, b, y] of PLATS) shelf(a, b, y); }
+  /* (claude/kitchengate4, Daniel 10-30) THE COAL TRENCH: the floor under the serving line cut down three rows to a coal bed (columns TR0..TR1), a chain-link step one row up at
+     either end (the climb back up: a fall is a coal bite and a climb, never a death); the hall's entry and his table side stay on the old floor */
+  const TR0 = A0 + 9, TR1 = A1 - 18; air(TR0, TR1, FL, FL + 2); air(TR0 - 1, TR0 - 1, FL, FL + 1); air(TR1 + 1, TR1 + 1, FL, FL + 1);
+  /* THE MEAT-HOOK RAILS (src/zipline.js, chain-driven east, hatch -> platter): the LOWER taken from the line under the hatch (its rope 20 px over the line's top), its red stretch
+     the hop onto the UPPER, which climbs over the trench and ENDS OVER HIS PLATTER (its end lets you drop on it: THE THIRD OPENING, src/grubbag.js platterDrop) */
+  const PXC = c => (M(Math.floor(c)) + (c - Math.floor(c))) * TS;
+  const railB = { x0: PXC(A0 + 13.5), y0: 276, x1: PXC(A1 - 17.5), y1: 262, hooks: true, speed: 200, meat: true, dir: 1, arena: true, id: 'kg-arena-b', platter: true };
+  const railA = { x0: PXC(A0 + 7.5), y0: 300, x1: PXC(A0 + 16.5), y1: 300, hooks: true, speed: 200, meat: true, dir: 1, arena: true, id: 'kg-arena-a', hop: [PXC(A0 + 11.5), PXC(A0 + 14.5)], hopRush: [PXC(A0 + 10), PXC(A0 + 13)], hand: railB };
+  zipLines.push(railA, railB);
+  sign(A0 - 1, FL - 1, 'RIDE THE HOOK, DROP ON HIS PLATTER.');
   ent('torch', A0 + 1, FL - 1); ent('torch', A1 - 18, FL - 1);
   ent('grubbag', A1 - 7, FL - 1);
 
-  const arena = (([A0, A1]) => { const BELT = [A0 + 7, A1 - 16, FL - 2], PLATS = [[A0 + 9, A0 + 12, FL - 5], [A0 + 16, A0 + 19, FL - 5]]; return { x0: A0 * TS, x1: (A1 + 1) * TS, floor: FL * TS, y0: RF * TS, trigger: (A0 + 6) * TS, wallL: A0 - 1, wallR: A1 + 1, boss: 'grubbag', music: 'grubbag', tint: '#f0c890', tintA: 0.06,
+  const arena = (([A0, A1]) => { const BELT = [A0 + 7, A1 - 16, FL - 2], PLATS = [[A0 + 9, A0 + 12, FL - 5]]; return { x0: A0 * TS, x1: (A1 + 1) * TS, floor: FL * TS, y0: RF * TS, trigger: (A0 + 6) * TS, wallL: A0 - 1, wallR: A1 + 1, boss: 'grubbag', music: 'grubbag', tint: '#f0c890', tintA: 0.06,
     /* THE TABLE (src/grubbag.js geom): his chair's column, his platter (the line's end), the pepper stove and its bellows, THE SERVING LINE (the conveyor: first and last column,
        its top row), the shelves, the grease cauldron's hook (column, row) */
-    chair: A1 - 7, table: [A1 - 18, A1 - 15], oven: A0 + 2, bellows: A0 + 5, belt: BELT, plats: PLATS, cauldron: [A1 - 17, 13] }; })(KITCHEN.arena);
+    chair: A1 - 7, table: [A1 - 18, A1 - 15], oven: A0 + 2, bellows: A0 + 5, belt: BELT, plats: PLATS, cauldron: [A1 - 17, 13],
+    /* (claude/kitchengate4) THE COAL TRENCH (the coal bed's columns, its top row) and its two chain-link steps; the arena's two hook rails */
+    trench: [A0 + 9, A1 - 18, FL + 3], steps: [A0 + 8, A1 - 17], rails: [railA, railB] }; })(KITCHEN.arena);
   return {
     W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: 39 }, pools: [], falls: [],
     arena, kitchen: true, kgKit: true, hoists, kgFires: fires, kgPots: pots, kgWheels: wheels, kgTrails: trails, kgDoors: doors, kgRace: race, kgPages: pages, kgVault: vault, kgRacks: racks,

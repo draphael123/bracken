@@ -61,7 +61,7 @@ for (const id of ['sculleryCopper', 'brewCopper', 'trenchCopper']) lockOf('the c
 for (const w of L.kgWheels) lockOf('the great spit ' + w.id, w.hx, { kgWheels: L.kgWheels.filter(q => q !== w) });
 for (const d of L.kgDoors) lockOf('the tallow door ' + d.id, d.x0 - 2, { kgDoors: L.kgDoors.filter(q => q !== d) });
 const rails = L.zipLines.map((z, i) => ({ z, i, col: Math.floor(Math.min(z.x0, z.x1) / TS) }));
-for (const r of rails.filter(q => !q.z.race)) lockOf('the hook rail at ' + r.col + (r.z.haul ? ' (a HAUL LINE)' : r.z.hop ? ' (a hand-off)' : ''), r.col, { zipLines: L.zipLines.filter(z => z !== r.z) });
+for (const r of rails.filter(q => !q.z.race && !q.z.arena)) lockOf('the hook rail at ' + r.col + (r.z.haul ? ' (a HAUL LINE)' : r.z.hop ? ' (a hand-off)' : ''), r.col, { zipLines: L.zipLines.filter(z => z !== r.z) });
 { const race = rails.find(q => q.z.race); ok(race && at(boss, without('race rail', { zipLines: L.zipLines.filter(z => z !== race.z) })), 'the hook rail over THE OVERTURNED POT is the HIGH route: optional (the low route slides the grease)'); }
 /* A COLD GREAT SPIT IS NO STAIR: its four spits at rest, laid as footing, do not reach what it is for */
 for (const w of L.kgWheels) { const g = Uint8Array.from(L.grid);

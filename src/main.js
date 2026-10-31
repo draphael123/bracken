@@ -28700,7 +28700,7 @@ function updateEnemies(dt) {
     if (e.t === 'turtle' || e.t === 'eel' || e.t === 'heronfoe' || e.t === 'crab' || e.t === 'scout' || e.t === 'siren' || e.t === 'tideguard') { updateShore(e, dt); continue; }
     if (e.t === 'butcher') { if (KGH) KGH.butcher(e, dt); continue; }
     if (e.t === 'drummer' && WCH && WCH.drummer(e, dt)) continue;   /* THE DRUMMER (claude/warcairn): his own machine (src/war-cairn-hands.js) */
-    if (e.t === 'attendant') { if (KGH) KGH.attendant(e, dt); continue; }   /* THE ATTENDANT (claude/kitchengate2) */   /* THE BUTCHER (claude/kitchengate): his own machine (src/kitchen-hands.js) */
+    if (e.t === 'attendant') { if (e.gbRide && GBH && GBH.ride(e, dt)) continue; if (KGH) KGH.attendant(e, dt); continue; }   /* (claude/kitchengate4) ORDER UP: an attendant riding the hooks down (src/grubbag-hands.js ride) */   /* THE ATTENDANT (claude/kitchengate2) */   /* THE BUTCHER (claude/kitchengate): his own machine (src/kitchen-hands.js) */
     if (e.t === 'brute') { // slow, heavy: an unblockable overhead you dodge, a blockable sweep
       const d = P.x - e.x, ad = Math.abs(d), near = ad < 200 && Math.abs(e.y - P.y) < 40 && !P.dead;
       e.vy += 1000 * dt; if (e.vy > 270) e.vy = 270; e.modeT -= dt;
