@@ -360,8 +360,9 @@ function avoidTrench(s, out) {
   const { P, S } = s, G = S.G, TR = G.trench; if (!TR || !P.ground || !onFloor(G, P) || out.jump || out.gx == null) return out;
   const W0 = TR.steps[0][0], E1 = TR.steps[1][1], B = G.belt, mem = s.mem || {}, t = s.t || 0;
   const via = (x, why) => { if (Math.abs(P.x - x) < 9) { out.jump = true; out.gx = x + (x < G.mid ? 12 : -12); mem.jumpT = t; mem.jumpX = out.gx; out.why = why + ' (up)'; } else { out.gx = x; out.why = why; } out.atk = false; return out; };
-  if (P.x <= W0 + 2 && out.gx > W0 - 6) return out.gx > E1 ? via((B.x0 + W0) / 2, 'over the trench by the line') : (out.gx = W0 - 6, out);
-  if (P.x >= E1 - 2 && out.gx < E1 + 6) return out.gx < W0 ? via((B.x1 + E1) / 2, 'over the trench by the line') : (out.gx = E1 + 6, out);
+  /* (a way that ends well out over the trench is a way up onto the line there: by its near end) */
+  if (P.x <= W0 + 2 && out.gx > W0 - 6) return out.gx > W0 + 20 ? via((B.x0 + W0) / 2, out.gx > E1 ? 'over the trench by the line' : 'up on the line by its foot') : (out.gx = W0 - 6, out);
+  if (P.x >= E1 - 2 && out.gx < E1 + 6) return out.gx < E1 - 20 ? via((B.x1 + E1) / 2, out.gx < W0 ? 'over the trench by the line' : 'up on the line by its head') : (out.gx = E1 + 6, out);
   return out;
 }
 function gbPlan0(s) {
