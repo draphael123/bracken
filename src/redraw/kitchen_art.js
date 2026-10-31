@@ -376,7 +376,7 @@ function trayAt(g, x, y, up) {
   else { ellipse(g, x, y, 6, 2, OUT); ellipse(g, x, y, 5, 1, '#9aa0aa'); rect(g, x - 4, y - 1, 8, 1, '#c8ccd4'); ellipse(g, x, y - 3, 3, 3, OUT); ellipse(g, x, y - 3, 2, 2, '#c8ccd4'); rect(g, x - 1, y - 4, 1, 2, '#ffffff'); rect(g, x, y - 7, 1, 1, '#ffd36b'); }   /* a carried tray with a cloche (a waiter, not a blade) */
 }
 function attendantFrame(pose) {
-  const [c, g] = canvas(AW, AH), x0 = AAX, y0 = AAY, walk = pose === 'walk0' ? 1 : pose === 'walk1' ? -1 : 0, lean = pose === 'throw' ? 2 : pose === 'aim' ? -1 : pose === 'bash' ? 2 : 0, bob = pose === 'walk0' || pose === 'walk1' ? 0 : 0;
+  const [c, g] = canvas(AW, AH), x0 = AAX, y0 = AAY, walk = pose === 'walk0' ? 1 : pose === 'walk1' ? -1 : 0, lean = pose === 'throw' ? 2 : pose === 'aim' ? -1 : pose === 'bash' ? 2 : pose === 'hang' ? 1 : 0, bob = pose === 'walk0' || pose === 'walk1' ? 0 : 0;
   const SKN = ['#3a2018', '#b07a5a', '#e0aa88'], LIV = ['#1e0c16', '#4a1a2e', '#6a2a3a', '#8e3c50'], GOLD = '#ffd36b', GOLD2 = '#b08a30';
   for (const [dx, off] of [[-4, walk], [1, -walk]]) { rect(g, x0 + dx - 1 + off, y0 - 8, 5, 8, OUT); rect(g, x0 + dx + off, y0 - 7, 3, 4, '#2a2830'); rect(g, x0 + dx + off, y0 - 7, 1, 4, '#4a4a58'); rect(g, x0 + dx + off, y0 - 3, 3, 1, '#efe8da'); rect(g, x0 + dx - 1 + off, y0 - 2, 6, 2, '#0a0a0e'); rect(g, x0 + dx + off + 3, y0 - 2, 2, 1, '#2a2a34'); }   /* breeches, white stockings, buckled shoes */
   const tx = x0 + lean, ty = y0 - 15 + bob;
@@ -391,20 +391,21 @@ function attendantFrame(pose) {
   ellipse(g, hx, hy, 4, 4, OUT); ellipse(g, hx, hy, 3, 3, SKN[2]); rect(g, hx - 3, hy + 1, 6, 2, SKN[1]); rect(g, hx + 1, hy - 1, 1, 1, '#1a1010'); rect(g, hx + 3, hy - 1, 1, 1, '#1a1010'); rect(g, hx - 1, hy - 2, 3, 1, '#6a4a3a');   /* the face, brows */
   rect(g, hx + 1, hy + 1, 4, 1, '#2a1810'); px(g, hx + 5, hy, '#2a1810'); px(g, hx - 1, hy + 1, '#2a1810');   /* a waxed moustache, whisker */
   rect(g, hx - 4, hy - 2, 2, 3, '#2a1810'); rect(g, hx - 4, hy - 4, 8, 2, OUT); rect(g, hx - 3, hy - 4, 6, 1, '#efe8da'); rect(g, hx - 2, hy - 5, 4, 1, OUT);   /* side hair; a bald pate with a little powder */
-  if (pose === 'aim' || pose === 'guard') rect(g, hx + 1, hy + 2, 3, 1, OUT);
+  if (pose === 'aim' || pose === 'guard' || pose === 'hang') rect(g, hx + 1, hy + 2, 3, 1, OUT);
   const arm = (sx, sy, ex, ey) => { line(g, sx, sy, ex, ey, OUT, 4); line(g, sx, sy, ex, ey, LIV[2], 2); ellipse(g, ex, ey, 2, 2, OUT); rect(g, ex - 1, ey - 1, 2, 2, '#ffffff'); rect(g, ex, ey - 1, 1, 1, '#d8d0be'); };
-  const H = { idle: [tx + 6, ty + 2], walk0: [tx + 6, ty + 3], walk1: [tx + 6, ty + 1], aim: [tx - 4, ty - 10], throw: [tx + 10, ty - 4], guard: [tx + 8, ty - 2], bash: [tx + 10, ty + 1] }[pose];
-  const F = { idle: [tx - 5, ty + 3], walk0: [tx - 5, ty + 2], walk1: [tx - 5, ty + 4], aim: [tx - 5, ty + 2], throw: [tx - 5, ty + 1], guard: [tx + 7, ty + 2], bash: [tx - 5, ty + 2] }[pose];
+  const H = { idle: [tx + 6, ty + 2], walk0: [tx + 6, ty + 3], walk1: [tx + 6, ty + 1], aim: [tx - 4, ty - 10], throw: [tx + 10, ty - 4], guard: [tx + 8, ty - 2], bash: [tx + 10, ty + 1], hang: [tx + 9, ty + 9] }[pose];
+  const F = { idle: [tx - 5, ty + 3], walk0: [tx - 5, ty + 2], walk1: [tx - 5, ty + 4], aim: [tx - 5, ty + 2], throw: [tx - 5, ty + 1], guard: [tx + 7, ty + 2], bash: [tx - 5, ty + 2], hang: [tx + 8, ty + 10] }[pose];
   arm(tx - 3, ty - 4, F[0], F[1]); arm(tx + 3, ty - 4, H[0], H[1]);
-  if (pose === 'guard' || pose === 'bash') trayAt(g, H[0] + 2, H[1], pose === 'guard'); else trayAt(g, F[0] - 1, F[1] - 2, false);
+  if (pose === 'guard' || pose === 'bash') trayAt(g, H[0] + 2, H[1], pose === 'guard'); else if (pose !== 'hang') trayAt(g, F[0] - 1, F[1] - 2, false);
+  if (pose === 'hang') { rect(g, H[0] - 3, H[1] - 1, 7, 2, OUT); rect(g, H[0] - 3, H[1] - 1, 7, 1, '#8b6a44'); arm(tx - 3, ty - 4, F[0], F[1]); arm(tx + 3, ty - 4, H[0], H[1]); }   /* (claude/kitchengate4art) HANGING from the hook: both gloved hands on the grip bar (the pulley is drawn on the rope over it by src/grubbag-hands.js), no tray */
   if (pose === 'aim') { ellipse(g, H[0], H[1] - 3, 5, 2, OUT); ellipse(g, H[0], H[1] - 3, 4, 1, '#e8e0d0'); rect(g, H[0] - 2, H[1] - 4, 3, 1, '#ffffff'); rect(g, H[0] - 1, H[1] - 6, 2, 2, '#7a4a22'); }   /* the plate cocked, a dab of gravy */
   return c;
 }
 export function bakeAttendant() {
-  return once('attendant', () => { const names = ['idle', 'walk0', 'walk1', 'aim', 'throw', 'guard', 'bash']; const Rr = names.map(attendantFrame), white = Rr.map(c => whiten(c));
+  return once('attendant', () => { const names = ['idle', 'walk0', 'walk1', 'aim', 'throw', 'guard', 'bash', 'hang']; const Rr = names.map(attendantFrame), white = Rr.map(c => whiten(c));
     return { R: Rr, L: Rr.map(flipX), white: { R: white, L: white.map(flipX) }, ax: AAX, ay: AAY, w: AW, h: AH }; });
 }
-export const attendantFrameOf = e => { const m = e.mode; return m === 'aim' ? 3 : m === 'throw' ? 4 : m === 'guard' || m === 'bashTell' ? 5 : m === 'bash' ? 6 : (Math.abs(e.vx || 0) > 4 ? 1 + (Math.floor((e.anim || 0) * 7) % 2) : 0); };
+export const attendantFrameOf = e => { const m = e.mode; return e.gbRide ? 7 : m === 'aim' ? 3 : m === 'throw' ? 4 : m === 'guard' || m === 'bashTell' ? 5 : m === 'bash' ? 6 : (Math.abs(e.vx || 0) > 4 ? 1 + (Math.floor((e.anim || 0) * 7) % 2) : 0); };
 /* a thrown plate in the air (the attendant's): white china, a blue rim, a dab of gravy, turning */
 export function drawPlate(g, x, y, rot) { g.save(); g.translate(Math.round(x), Math.round(y)); g.rotate(rot); ellipse(g, 0, 0, 6, 3, OUT); ellipse(g, 0, 0, 5, 2, '#e8e0d0'); ellipse(g, 0, 0, 3, 1, '#ffffff'); rect(g, -5, 0, 10, 1, '#3a5a9a'); rect(g, -1, -1, 2, 1, '#7a4a22'); g.restore(); }
 
@@ -470,9 +471,13 @@ function drawFlue(g, x0, x1, y, state, k, h, time) {
   flame(g, x0 + 2, y - 1, w - 4, h * f * 0.7, time * 1.3, x0 * 0.31, false);
   g.globalAlpha = 0.6; rect(g, x0 - 2, R(y - h * f) - 2, w + 4, 2, '#fff6c8'); g.globalAlpha = 1;   /* the hot crown where it licks the rail */
 }
+const ARENA_PH = new WeakMap();
 export function drawMeatRail(g, z, cx, cy, clock, VW = 1e5) {
   const x0 = z.x0 - cx, y0 = z.y0 - cy, x1 = z.x1 - cx, y1 = z.y1 - cy, L = Math.hypot(x1 - x0, y1 - y0) || 1, ux = (x1 - x0) / L, uy = (y1 - y0) / L, dir = Math.sign(x1 - x0) === (z.dir || 1) ? 1 : -1;
-  const run = ((clock * 60 * dir) % 36 + 36) % 36;
+  let run = ((clock * 60 * dir) % 36 + 36) % 36, fast = 1;
+  /* (claude/kitchengate4art) THE GRUBBAG HALL's two rails: the chain runs at the rail's own pace (ORDER UP runs it x1.6: the phase is kept so the chain never jumps), see the hop below */
+  if (z.arena) { const base = z.gbBase || z.speed || 200; fast = Math.max(0.5, Math.min(3, (z.speed || base) / base)); let q = ARENA_PH.get(z); if (!q) { q = { t: clock, p: clock * 60 }; ARENA_PH.set(z, q); }
+    q.p += Math.max(0, Math.min(0.1, clock - q.t)) * 60 * fast; q.t = clock; run = ((q.p * dir) % 36 + 36) % 36; }
   /* (claude/kitchengate3) only the stretch on screen is drawn (the larder and the carvery hang several long rails in one view: the mobile-perf budget) */
   const sA = ux ? (-48 - x0) / ux : 0, sB = ux ? (VW + 48 - x0) / ux : L, s0 = Math.max(0, Math.min(sA, sB)), s1 = Math.min(L, Math.max(sA, sB));
   for (let s = Math.floor(s0 / 3) * 3; s < s1; s += 3) { const hx = R(x0 + ux * s), hy = R(y0 + uy * s) - 6; if (((s / 3 | 0) + (run / 3 | 0)) % 2) rect(g, hx, hy - 3, 2, 2, IRON[4]); else rect(g, hx, hy - 3, 2, 1, IRON[2]); }   /* the roller chain on the rail, links running */
@@ -485,6 +490,9 @@ export function drawMeatRail(g, z, cx, cy, clock, VW = 1e5) {
     else if (kind === 2) { for (let i = 0; i < 4; i++) { ellipse(g, bx - 3 + (i & 1) * 6, by + 3 + i * 3, 3, 2, OUT); ellipse(g, bx - 3 + (i & 1) * 6, by + 3 + i * 3, 2, 1, i % 2 ? '#b8402a' : '#d85a3a'); } rect(g, bx - 4, by + 2, 1, 9, '#e8d8c0'); }   /* a string of sausages */
     else { ellipse(g, bx, by + 6, 6, 7, OUT); ellipse(g, bx, by + 6, 5, 6, '#a0402a'); ellipse(g, bx - 1, by + 4, 3, 3, '#d87a5a'); rect(g, bx - 3, by + 11, 6, 2, '#e8d8c0'); rect(g, bx - 1, by + 1, 2, 2, '#e8d8c0'); }   /* a gammon */
   }
+  if (z.arena && fast > 1.05) for (let s = run + 18 + Math.max(0, Math.floor((s0 - run - 30) / 36)) * 36; s < Math.min(L, s1 + 30); s += 36) {   /* ORDER UP: order slips clipped to the chain and streaks behind the hooks */
+    const hx = R(x0 + ux * s), hy = R(y0 + uy * s) - 6, n = Math.round((s - run) / 36), fl = Math.sin(clock * 9 + n) * 1.2; rect(g, hx - 1, hy - 3, 3, 2, OUT); rect(g, hx - 2 + R(fl), hy - 1, 5, 6, OUT); rect(g, hx - 1 + R(fl), hy, 3, 4, '#f4ecd8'); rect(g, hx - 1 + R(fl), hy, 3, 1, '#c8302c'); rect(g, hx + R(fl), hy + 2, 1, 1, '#7a4a22');
+    for (let q = 1; q < 4; q++) { const sx = R(hx - ux * dir * (6 + q * 5)), sy = R(hy + 4 - uy * dir * (6 + q * 5)); g.globalAlpha = 0.55 - q * 0.13; rect(g, sx, sy, 5 - q, 1, '#fff0d0'); g.globalAlpha = 1; } }
   /* (claude/kitchengate3) THE HAND-OFF: the stretch of rail to jump from (z.hop, px) is painted butcher's red with white chalk ticks, and a red rag hangs at its start; the rail's END
      STOP is a red iron buffer (ride into it and you drop) */
   if (z.hop) { const at = x => { const t = (x - z.x0) / ((z.x1 - z.x0) || 1); return [x0 + (x1 - x0) * t, y0 + (y1 - y0) * t]; };
@@ -492,6 +500,10 @@ export function drawMeatRail(g, z, cx, cy, clock, VW = 1e5) {
     for (let i = 0; i <= n; i++) { const q = i / n, hx = R(ax + (bx2 - ax) * q), hy = R(ay + (by2 - ay) * q) - 6; rect(g, hx, hy - 4, 2, 3, i % 4 === 0 ? '#f4ecd8' : '#c8302c'); }
     const fl = Math.sin(clock * 6) * 1.5, rx = R(z.hop[0] === ha ? ax : bx2), ry = R(z.hop[0] === ha ? ay : by2) - 6;
     rect(g, rx - 1, ry - 4, 3, 3, OUT); fillPoly(g, [[rx, ry - 2], [rx + 2, ry + 6 + R(fl)], [rx - 3, ry + 7 - R(fl)], [rx - 1, ry - 2]], '#c8302c'); rect(g, rx - 1, ry + 1, 1, 3, '#e85a4a');   /* the rag */
+    if (z.arena) { const pu = 0.5 + 0.5 * Math.sin(clock * 6);   /* (claude/kitchengate4art) the arena's red jump-off stretch: a red-lit sleeve under it, a red lamp at each end, chevrons hopping above it */
+      for (let i = 0; i <= n; i++) { const q = i / n, hx = R(ax + (bx2 - ax) * q), hy = R(ay + (by2 - ay) * q) - 6; g.globalAlpha = 0.35 + 0.25 * pu; rect(g, hx, hy - 1, 3, 4, '#ff2a1a'); g.globalAlpha = 1; rect(g, hx, hy + 3, 3, 1, '#6a1410'); }
+      for (const [lx, ly] of [[ax, ay], [bx2, by2]]) { const px0 = R(lx), py0 = R(ly) - 6; rect(g, px0 - 2, py0 - 12, 5, 5, OUT); rect(g, px0 - 1, py0 - 11, 3, 3, pu > 0.5 ? '#ff6b5a' : '#c8302c'); g.globalAlpha = 0.18 + 0.2 * pu; ellipse(g, px0, py0 - 9, 8, 7, '#ff2a1a'); g.globalAlpha = 1; rect(g, px0, py0 - 7, 1, 3, IRON[3]); }
+      for (let c = 0; c < 3; c++) { const q = (c + 0.5) / 3, hx = R(ax + (bx2 - ax) * q), hy = R(ay + (by2 - ay) * q) - 20 - ((clock * 5 + c * 0.7) % 1 < 0.5 ? 0 : 2); g.globalAlpha = 0.9; fillPoly(g, [[hx - 4, hy + 3], [hx, hy - 1], [hx + 4, hy + 3], [hx + 4, hy + 5], [hx, hy + 1], [hx - 4, hy + 5]], '#ff6b5a'); g.globalAlpha = 1; } }
     const [ex, ey] = (z.dir || 1) * (x1 - x0) > 0 ? [x1, y1] : [x0, y0]; rect(g, R(ex) - 3, R(ey) - 13, 6, 8, OUT); rect(g, R(ex) - 2, R(ey) - 12, 4, 6, '#a8281e'); rect(g, R(ex) - 2, R(ey) - 12, 4, 1, '#e85a4a'); }   /* the end stop */
   /* THE HAUL LINE: the chain runs uphill - gilt chevrons along it point the way it hauls, and a drive wheel at its top */
   if (z.haul) { const n = Math.floor(L / 40); for (let i = 1; i < n; i++) { const s0 = i * 40 + (((clock * 30 * dir) % 40) + 40) % 40, hx = R(x0 + ux * s0), hy = R(y0 + uy * s0) - 12, d = dir * Math.sign(x1 - x0 || 1); fillPoly(g, d > 0 ? [[hx, hy - 2], [hx + 3, hy], [hx, hy + 2]] : [[hx + 3, hy - 2], [hx, hy], [hx + 3, hy + 2]], 'rgba(255,211,107,0.85)'); }

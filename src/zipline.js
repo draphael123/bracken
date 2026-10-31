@@ -5,6 +5,7 @@
 //              bunting: true   the Fair's own cloth rope (src/redraw/fair_keys.js draws the line; this module still draws its handles)
 //              snap: s  fray: 0..1   a FRAYED rope: it gives way `snap` s after you take it - or where it would have snapped from its top
 //              dir: 1 | -1   force the way it runs (a level line that is flat); the default is DOWNHILL
+//              upOnly: true  taken only with UP (never by a touch from a jump) - claude/kitchengate4
 //              cut: s  fray: s   (claude/lance4) a CUT line (src/lance-support.js ropeFray/ropeTick: THE QUEEN'S LANCE's signal ropes): while it
 //                            frays it still holds; parted (cut > 0) it is slack - nobody takes it and a rider on it falls - until it is re-strung
 //   and main.js does the rest (updateTowerSlides -> zipStep, drawWorld -> drawZips / drawRider, the Fair's snap included).
@@ -48,7 +49,7 @@ export function findCatch(L, P, up, downHeld) {
   for (const z of (L.zipLines || [])) {
     if (z.cut > 0) continue;   /* (claude/lance4) a parted line holds nobody until it is re-strung */
     if (z === P.zipSkip && (!up || rel)) continue;   /* the rope he just kicked off, or dropped from: not by touch until he has landed or gone away from it */
-    if (!up && (P.ground || downHeld || z.snap || z.raid)) continue;   /* (claude/ksar2) a RAIDER LINE (src/ksar-hands.js) is taken on purpose too: a jump up the tower's stair must not catch it */   /* by touch only in the air, and never a frayed one: that is taken on purpose (UP) */
+    if (!up && (P.ground || downHeld || z.snap || z.raid || z.upOnly)) continue;   /* (claude/kitchengate4) upOnly: a rope taken only on purpose (LORD GRUBBAG's lower hook over the line's foot: a jump up onto the line must not snatch it) */   /* (claude/ksar2) a RAIDER LINE (src/ksar-hands.js) is taken on purpose too: a jump up the tower's stair must not catch it */   /* by touch only in the air, and never a frayed one: that is taken on purpose (UP) */
     if (!inReach(z, P)) continue;
     const d = Math.abs(lineY(z, P.x) - (P.y - 12)); if (d < bd) { bd = d; best = z; }
   }

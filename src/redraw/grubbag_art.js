@@ -221,7 +221,7 @@ function drawLive(g, p, flash, time, holding) {
   if (p.item === 'dish' && holding) dish(g, flash, p.hand[0], p.hand[1] - 12, holding, time);
   if (p.rings) for (let n = 0; n < 2; n++) { const q = (time * 3 + n * 0.5) % 1; g.strokeStyle = 'rgba(160,200,90,' + (1 - q).toFixed(2) + ')'; g.lineWidth = 2; g.beginPath(); g.arc(mx + 4, my, 8 + q * 46, -0.8, 0.8); g.stroke(); g.lineWidth = 1; }
   if (p.smoke) for (let q = 0; q < 7; q++) { const a = time * 3 + q * 1.3, s = (time * 22 + q * 8) % 40, yy = -158 - s; g.globalAlpha = 0.7 * (1 - s / 40); rect(g, R(20 + Math.cos(a) * 14), R(yy), 8, 6, '#46403c'); g.globalAlpha = 1; }
-  if (p.smoke) for (let q = 0; q < 4; q++) { const an = time * 3.2 + q * 1.571, sx2 = R(mx - 6 + lean * 0 + Math.cos(an) * 22), sy2 = R(my - 36 + Math.sin(an) * 5); rect(g, sx2 - 1, sy2, 3, 1, '#ffd36b'); rect(g, sx2, sy2 - 1, 1, 3, '#ffd36b'); rect(g, sx2, sy2, 1, 1, '#ffffff'); }   /* (claude/kitchengate2art) STUNNED: stars wheel round his head */
+  if (p.smoke || p.stars) for (let q = 0; q < 4; q++) { const an = time * 3.2 + q * 1.571, sx2 = R(mx - 6 + lean * 0 + Math.cos(an) * 22), sy2 = R(my - 36 + Math.sin(an) * 5); rect(g, sx2 - 1, sy2, 3, 1, '#ffd36b'); rect(g, sx2, sy2 - 1, 1, 3, '#ffd36b'); rect(g, sx2, sy2, 1, 1, '#ffffff'); }   /* (claude/kitchengate2art) STUNNED: stars wheel round his head */
   if (p.zzz) { const q = (time * 0.8) % 1; g.globalAlpha = 1 - q; const zx = 30, zy = R(-160 - q * 18); rect(g, zx, zy, 7, 1, '#e8e0d0'); line(g, zx + 6, zy + 1, zx, zy + 6, '#e8e0d0'); rect(g, zx, zy + 6, 7, 1, '#e8e0d0'); g.globalAlpha = 1; }
   if (p.steam) for (let q = 0; q < 6; q++) { const s = (time * 40 + q * 9) % 36, sd = q % 2 ? 1 : -1; g.globalAlpha = 0.8 * (1 - s / 36); rect(g, R(12 + sd * (16 + s * 0.4)), R(-150 - s), 5, 5, '#f0f0f0'); g.globalAlpha = 1; }   /* TOO HOT: steam out of his ears */
   if (p.ring) for (let n = 0; n < 2; n++) { const q = (time * 4 + n * 0.5) % 1, hx = p.hand[0] - lean, hy = p.hand[1] - 20; g.strokeStyle = 'rgba(255,211,107,' + (1 - q).toFixed(2) + ')'; g.beginPath(); g.arc(hx, hy, 10 + q * 22, -2.4, -0.7); g.stroke(); }   /* the bell ringing */
@@ -388,9 +388,11 @@ export function drawPlatter(g, t0, t1, by, fy, time) {
 export function drawCauldron(g, x, y, roofY, tip, time) {
   const k = mk(g, false);
   for (let yy = roofY, i = 0; yy < y - 30; yy += 5, i++) { if (i & 1) { k.r(x - 1, yy, 3, 5, SK.out); k.r(x, yy + 1, 1, 3, SK.ironL); } else { k.r(x - 2, yy, 5, 4, SK.out); k.r(x - 1, yy + 1, 3, 2, SK.ironL); k.r(x - 1, yy + 1, 3, 1, SK.ironLL); } }   /* its chain, links turned alternately */
+  g.globalAlpha = 0.06; k.e(x, y - 14, 30, 24, '#ff9a5c'); g.globalAlpha = 0.035; k.e(x, y - 14, 38, 30, '#ff9a5c'); g.globalAlpha = 1;   /* (claude/kitchengate4art) the glow of the coals below, so the black iron stands off the wall */
   g.save(); g.translate(R(x), R(y - 16)); g.rotate(-tip * 1.3);
   k.e(0, 0, 21, 17, SK.out); k.e(0, 0, 20, 16, SK.ironD); k.e(-7, -5, 9, 6, SK.iron); k.e(-9, -8, 4, 2, SK.ironL); k.e(5, 7, 14, 6, SK.out); k.e(5, 7, 13, 5, '#14141a');
   for (const [rx, ry] of [[-15, -3], [-9, 6], [0, 9], [9, 6], [15, -3]]) k.r(rx, ry, 2, 2, SK.ironLL);   /* rivets */
+  k.a(0, 0, 20, 16, -0.4, 1.5, '#8a6a5a', 1); k.a(0, 0, 20, 16, 0.2, 1.1, '#c8805a', 1); k.a(0, 0, 20, 16, 2.2, 3.0, '#5a5a6a', 1);   /* (claude/kitchengate4art) a rim of firelight down its right side, a cool edge left */
   k.r(-22, -17, 44, 7, SK.out); k.r(-21, -16, 42, 5, SK.iron); k.r(-18, -15, 36, 3, C2.grease); k.r(-12, -15, 12, 1, C2.greaseL); k.r(-21, -16, 42, 1, SK.ironLL);   /* the rim, the grease's skin */
   k.r(-3, -27, 6, 11, SK.out); k.r(-2, -26, 4, 10, SK.ironL); k.e(0, -28, 4, 3, SK.out); k.e(0, -28, 3, 2, SK.ironD);   /* the bail's lug */
   if (tip > 0.3) { k.p([[-20, -14], [-31, -6], [-35, 14], [-26, 19], [-22, -2]], C2.grease); k.p([[-22, -12], [-29, -4], [-31, 10], [-26, 13]], C2.greaseL); k.r(-33, 10, 2, 6, C2.greaseL); }
@@ -422,4 +424,79 @@ export function drawHam(g, x, y, rot) {
 export function drawPlateFlat(g, x, y, time) {
   const k = mk(g, false); k.e(x, y, 9, 3, SK.out); k.e(x, y, 8, 2, SK.dish); k.r(x - 6, y - 1, 7, 1, '#ffffff'); k.r(x - 5, y + 1, 10, 1, SK.dishD); k.r(x - 3, y - 3, 6, 1, '#7a4a22');   /* the rim, a smear of gravy */
   for (let q = 1; q < 4; q++) rect(g, R(x + q * 8), R(y), 6 - q, 1, 'rgba(232,224,208,' + (0.7 - q * 0.18).toFixed(2) + ')');
+}
+/* ------------------------------------------------------------------ (claude/kitchengate4art) THE COAL TRENCH, DRAWN: a cookhouse fire-pit sunk under the serving line's east half - a bed of black coal lumps with the embers
+   breathing in their cracks (BANKED), the grease's 0.6 s GLOW (every crack bright, the pit heaving red), the 6 s LIT flare (a sheet of flame, sparks, the heat on the walls), and the chain-link
+   STEPS out of it: an iron cap over a curtain of hanging chain, which heat red from the bed up while it burns. Art only: nothing here reads or sets a number. ------------------------------------------------------------------ */
+const hsh = (a, b = 0) => { let h = Math.imul(a | 0, 374761393) + Math.imul(b | 0, 668265263) | 0; h = Math.imul(h ^ (h >>> 13), 1274126177); return ((h ^ (h >>> 16)) >>> 0) / 4294967296; };
+const COALS = { banked: ['#a8321a', '#ff6b2c', '#ffb04a'], glow: ['#ff4a2a', '#ff9a3c', '#ffe9a0'], lit: ['#ff8a2c', '#ffd36b', '#fff6c8'] };
+/* the bed: x0..x1 along the trench, by its surface (where a hero stands), st banked | glow | lit, k the glow's pulse 0..1 */
+export function drawCoalBed(g, x0, x1, by, st, time, k) {
+  const m = mk(g, false), pal = COALS[st] || COALS.banked, w = x1 - x0, hot = st === 'lit' ? 1 : st === 'glow' ? 0.6 + 0.4 * k : 0.25;
+  m.r(x0, by + 1, w, 6, '#0e0806'); m.r(x0, by + 5, w, 2, '#1c0e0a');   /* the sunk well under the heap */
+  for (let i = 0, x = x0 - 2; x < x1; i++) {   /* the heap: coal lumps, angular, each with an ember crack that breathes */
+    const lw = 6 + (hsh(i, 1) * 4 | 0), lh = 3 + (hsh(i, 2) * 4 | 0) + (i % 3 === 0 ? 1 : 0), lx = Math.max(x0, x), rx = Math.min(x1, x + lw), ty = by + 1 - lh;
+    if (rx > lx) {
+      m.p([[lx, by + 2], [lx, ty + 2], [lx + 2, ty], [rx - 2, ty - 1], [rx, ty + 2], [rx, by + 2]], '#0a0606');
+      m.p([[lx + 1, by + 2], [lx + 1, ty + 3], [lx + 2, ty + 1], [rx - 2, ty], [rx - 1, ty + 3], [rx - 1, by + 2]], i % 2 ? '#241a16' : '#1c1410');
+      m.r(lx + 2, ty + 1, Math.max(1, rx - lx - 4), 1, '#4a3a30'); m.r(lx + 1, ty + 3, 1, Math.max(1, lh - 2), '#3a2c24');   /* the lump's lit edge */
+      const ph = Math.sin(time * (st === 'banked' ? 1.7 : 14) + hsh(i, 3) * 6.3), v = 0.5 + 0.5 * ph, e = hot * 0.5 + v * (st === 'banked' ? 0.5 : 0.4);
+      if (rx - lx > 3 && hsh(i, 4) > (st === 'banked' ? 0.3 : 0.05)) { const cx = lx + 2 + (hsh(i, 5) * Math.max(1, rx - lx - 5) | 0);
+        m.r(cx, ty + 2, 1, Math.max(1, lh - 2), e > 0.65 ? pal[1] : pal[0]); if (e > 0.85) m.r(cx, ty + 2, 1, 1, pal[2]); if (hsh(i, 6) > 0.5) m.r(cx + 1, ty + 3, 2, 1, pal[0]); }
+    }
+    x += lw - 1;
+  }
+  for (let x = x0 + 3; x < x1 - 2; x += 7) { const f = hsh(x, 9), c = Math.sin(time * (st === 'banked' ? 2 : 11) + x) > 0.2; m.r(x, by + 3 + (f * 3 | 0), 2, 1, c ? pal[1] : pal[0]); }   /* embers in the rubble below */
+  for (let x = x0 + 5; x < x1 - 4; x += 19) { if (hsh(x, 11) > 0.5) m.r(x, by - 1, 3, 1, '#8a8a92'); }   /* grey ash on the heap */
+  for (let j = 0; j < 6; j++) { g.globalAlpha = (st === 'banked' ? 0.07 : st === 'glow' ? 0.12 + 0.1 * k : 0.2) * (1 - j / 7); rect(g, x0 - 6, by - 6 - j * 6, w + 12, 6, st === 'lit' ? '#ff8a2c' : '#ff4a2a'); }   /* the heat over it */
+  g.globalAlpha = 1;
+  const n = st === 'banked' ? 6 : 14;
+  for (let i = 0; i < n; i++) { const t = (time * (st === 'banked' ? 0.35 : 0.9) + hsh(i, 7)) % 1; g.globalAlpha = 1 - t; rect(g, R(x0 + hsh(i, 8) * w + Math.sin(time * 3 + i) * 3), R(by - 4 - t * (st === 'banked' ? 34 : 60)), 1, 1, i % 3 ? '#ffb04a' : '#ffe9a0'); }
+  g.globalAlpha = 1;
+}
+/* a chain-link step out of the trench: x0..x1 the cell, sy its top (where you stand), by the bed; st as above - hot from the bed up while it burns */
+export function drawCoalStep(g, x0, x1, sy, by, st, time) {
+  const m = mk(g, false), w = x1 - x0, hot = st === 'lit' ? 1 : st === 'glow' ? 0.5 : 0;
+  m.r(x0, sy + 3, w, by - sy - 3, '#0c0810'); m.r(x0 + 1, sy + 3, 1, by - sy - 3, '#2a2634'); m.r(x1 - 2, sy + 3, 1, by - sy - 3, '#2a2634');   /* the dark behind the chains */
+  for (let c = 0; c < 3; c++) { const cx = x0 + 3 + c * 5;
+    for (let y = sy + 3, i = 0; y < by - 1; y += 3, i++) {
+      const heat = hot * Math.max(0, 1 - (by - y) / 30) + (st === 'banked' ? Math.max(0, 1 - (by - y) / 9) * 0.5 : 0), edge = heat > 0.6 ? '#ffb04a' : heat > 0.3 ? '#d8622a' : heat > 0.1 ? '#8a4a32' : SK.ironL;
+      if (i & 1) { m.r(cx, y, 3, 3, SK.out); m.r(cx + 1, y, 1, 3, edge); m.r(cx + 1, y, 1, 1, heat > 0.3 ? '#ffe9a0' : SK.ironLL); } else { m.r(cx - 1, y, 5, 2, SK.out); m.r(cx, y, 3, 1, heat > 0.3 ? edge : SK.ironLL); m.r(cx, y + 1, 3, 1, heat > 0.3 ? '#8a2a1a' : SK.iron); } } }
+  for (let y = sy + 6; y < by - 2; y += 9) { m.r(x0 + 2, y, w - 4, 1, SK.out); m.r(x0 + 3, y + 1, w - 6, 1, hot > 0.3 && by - y < 24 ? '#c8502a' : SK.ironD); }   /* the cross-links tying the three chains */
+  const flick = hot ? 0.5 + 0.5 * Math.sin(time * 18) : 0;   /* the iron cap: plate, rivets; red-hot lit */
+  m.r(x0, sy, w, 5, SK.out); m.r(x0 + 1, sy + 1, w - 2, 3, hot > 0.6 ? '#c8402a' : hot ? '#8a3a2a' : SK.iron); m.r(x0 + 1, sy + 1, w - 2, 1, hot > 0.6 ? '#ffd36b' : hot ? '#ff8a4a' : SK.ironLL);
+  m.r(x0 + 2, sy + 3, 2, 1, hot ? '#ffb04a' : SK.ironL); m.r(x1 - 4, sy + 3, 2, 1, hot ? '#ffb04a' : SK.ironL);
+  if (hot > 0.6) { g.globalAlpha = 0.25 + 0.2 * flick; rect(g, x0 - 2, sy - 3, w + 4, 3, '#ff9a3c'); g.globalAlpha = 1; }
+}
+/* the lit flare's flames over the bed (drawn over the hero), fade 0..1 as it dies, and licks off the two steps' caps */
+export function drawCoalFlames(g, x0, x1, by, time, fade, steps, sy) {
+  const m = mk(g, false);
+  for (let x = x0 + 1, i = 0; x < x1 - 3; x += 4, i++) {
+    const ph = x * 0.43 + hsh(i, 2) * 4, h = fade * (10 + 13 * Math.abs(Math.sin(time * 8 + ph)) + 5 * Math.sin(time * 15 + ph * 1.7) + (i % 4 === 0 ? 7 : 0)), w = 5 + (hsh(i, 3) * 2 | 0);
+    if (h < 3) continue; const sw = Math.sin(time * 10 + ph) * 2;
+    m.p([[x, by + 1], [x + w, by + 1], [x + w * 0.7, by - h * 0.55], [x + w * 0.35 + sw, by - h]], '#c0401a');
+    m.p([[x + 1, by + 1], [x + w - 1, by + 1], [x + w * 0.55, by - h * 0.45], [x + w * 0.4 + sw * 0.7, by - h * 0.76]], '#ff8a2c');
+    m.r(x + 1, by - R(h * 0.28), Math.max(1, w - 3), R(h * 0.28) + 1, '#ffe9a0'); }
+  for (const [a, b] of steps || []) for (let x = a + 1; x < b - 2; x += 5) { const h = fade * (4 + 5 * Math.abs(Math.sin(time * 12 + x))); if (h < 2) continue; m.p([[x, sy], [x + 4, sy], [x + 2 + Math.sin(time * 9 + x), sy - h]], '#ff8a2c'); m.r(x + 1, sy - R(h * 0.4), 2, R(h * 0.4), '#ffe9a0'); }
+  g.globalAlpha = 0.16 * fade; rect(g, x0 - 24, by - 46, x1 - x0 + 48, 46, '#ff7a2a'); g.globalAlpha = 1;   /* the heat on the walls */
+}
+/* AN ATTENDANT CAUGHT ON THE COALS (t 0..1 over ~0.9 s): a figure in flames that crumples to a black husk, sparks and smoke */
+export function drawBurnedMan(g, x, y, t, time) {
+  const m = mk(g, false), a = 1 - t, sq = 1 - t * 0.7;
+  g.globalAlpha = Math.min(1, a * 1.6); const hh = R(26 * sq);
+  m.r(x - 5, y - hh, 10, hh, '#0c0808'); m.e(x, y - hh, 4, 4, '#0c0808'); m.r(x - 4, y - hh + 2, 1, Math.max(1, hh - 4), '#3a2a22');   /* the charring livery */
+  g.globalAlpha = 1;
+  for (let i = 0; i < 6; i++) { const h = (14 + 10 * Math.abs(Math.sin(time * 14 + i * 1.7))) * (1 - t * 0.6), fx = x - 8 + i * 3.2;
+    m.p([[fx, y], [fx + 5, y], [fx + 2.5 + Math.sin(time * 12 + i), y - h]], i % 2 ? '#ff8a2c' : '#c0401a'); m.r(fx + 1, y - R(h * 0.5), 2, R(h * 0.5), '#ffe9a0'); }
+  for (let i = 0; i < 5; i++) { const u = (t * 1.3 + i * 0.21) % 1; g.globalAlpha = 0.6 * (1 - u); m.r(x - 6 + i * 3 + Math.sin(i + time * 5) * 3, y - 24 - u * 26, 4, 4, '#3a3430'); } g.globalAlpha = 1;
+}
+/* THE PLATTER DROP's landing (k 0..1 over 0.8 s): a white flash, a flat shock ring along the cloth, a spray of gravy and china shards flung up and falling, dust off the table-cloth */
+export function drawPlatterSplat(g, x, y, k, time) {
+  const m = mk(g, false), t = k * 0.8;
+  if (k < 0.3) { const r = 5 + k * 40, a = 1 - k / 0.3; g.globalAlpha = a; for (let q = 0; q < 8; q++) { const an = q * 0.785 + 0.2; m.l(x, y - 4, x + Math.cos(an) * r, y - 4 + Math.sin(an) * r * 0.8, q % 2 ? '#ffe9a0' : '#ffffff', 1); } g.globalAlpha = 1; }
+  g.globalAlpha = 1 - k; g.strokeStyle = '#fff0d0'; g.lineWidth = 2; g.beginPath(); g.ellipse(x, y - 1, 10 + k * 52, 2 + k * 6, 0, 0, Math.PI * 2); g.stroke(); g.lineWidth = 1;
+  for (let q = 0; q < 5; q++) { const u = (q - 2) * 14 * (0.4 + k); g.globalAlpha = 0.5 * (1 - k); m.e(x + u, y - 3 - k * 10 - (q & 1) * 3, 4 + k * 5, 3 + k * 3, '#d8c8a8'); }   /* the cloth's dust */
+  for (let q = 0; q < 12; q++) { const an = -0.25 - (q * 0.2113 % 2.6), v = 70 + (q * 37 % 60), px = x + Math.cos(an) * v * t * (q & 1 ? -1 : 1) * 0.9, py = y - 4 + Math.sin(an) * v * t + 190 * t * t;
+    g.globalAlpha = Math.min(1, 1.6 * (1 - k)); if (q % 3 === 0) { m.p([[px, py], [px + 3, py + 1], [px + 1, py + 3]], '#e8e0d0'); m.r(px + 1, py + 1, 1, 1, '#c8ccd4'); } else { m.r(px, py, 2, 2, q % 3 === 1 ? '#7a4a22' : '#a8743a'); m.r(px, py - 2, 1, 2, '#7a4a22'); } }
+  g.globalAlpha = 1;
 }
