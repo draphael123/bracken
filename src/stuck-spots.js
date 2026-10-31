@@ -18,7 +18,9 @@ export const STUCK = {
   storm: [
     { id: 'sh-rope-1', zone: [48, 18, 52, 21], at: [52, 20], dy: 6, glint: 'stall', line: "THE GATE WATCH'S ROPE IS THE WAY DOWN TO THE BARBICAN" },
     { id: 'sh-rope-2', zone: [222, 15, 226, 18], at: [226, 17], dy: 6, glint: 'stall', line: "THE BELL WATCH'S ROPE IS THE WAY OVER THE MOAT" },
-    { id: 'sh-rope-3', zone: [391, 17, 395, 20], at: [395, 19], dy: 6, glint: 'stall', line: "THE WALL WATCH'S ROPE IS THE WAY DOWN TO THE GATEHOUSE" },
+    { id: 'sh-rope-3', zone: [391, 17, 395, 20], at: [395, 19], dy: 6, glint: 'stall', line: "THE WALL WATCH'S HAUL LINE IS THE WAY OVER THE DITCH" },
+    /* (stormhold4) THE HAUL LINES: the haul tower's top, where the lines over the gorge start */
+    { id: 'sh-haul-1', zone: [440, 11, 446, 14], at: [446, 13], dy: 6, glint: 'stall', line: 'THE HAUL LINE OFF THE TOWER TOP IS THE WAY OVER THE GORGE' },
   ],
   /* THE FALLING TOWER'S ORRERY LOFT (claude/archmage3; src/spiral-chase.js): the next world round on each wheel glints (m.next, kept by updateStairFx) from
      the gallery's landing and the board step (wheel A), and from the pier (wheel B) - never while you ride that wheel */

@@ -408,14 +408,14 @@
   "bare": true
  },
  "storm": {
-  "hash": "f6c737482291",
+  "hash": "11ab72a47c0b",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 20,
-  "deaths": 1,
-  "kills": 17,
-  "lifts": 134,
+  "hits": 33,
+  "deaths": 4,
+  "kills": 20,
+  "lifts": 132,
   "walked": 100,
   "bare": true
  },

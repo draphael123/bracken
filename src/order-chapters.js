@@ -175,7 +175,7 @@ export const ORDER_AT = {
     name: 'THE GALE LANCE', why: 'the Kite Field\'s herd billy, replaced by a lancer that braces into the gust (the field\'s gate is behind him)' },
   skyroad: { body: 'oathblade', chapter: 'crag', twist: 'updraft', sig: [], affix: 'THORNED', hp: 1.0, at: [277, 17], gate: 290, replaces: 'troll',
     name: 'THE SUN BLADE', why: 'the troll on the roc\'s road: a duelist who warms the rock until the air rises under you' },
-  storm: { body: 'oathlance', chapter: 'storm', twist: 'arc', sig: [], affix: 'SHIELDED', hp: 1.0, at: [452, 29], gate: 457, replaces: 'pike',
+  storm: { body: 'oathlance', chapter: 'storm', twist: 'arc', sig: [], affix: 'SHIELDED', hp: 1.0, at: [632, 29], gate: 637,   /* (stormhold4: the gatehouse moved +180 - G0 + 56 / G0 + 61, src/stormhold-town.js) */ replaces: 'pike',
     name: 'THE STORM LANCE', why: 'the gatehouse yard of the outer works (claude/stormhold3; was the Pike Serjeant\'s place at the Halls):the charged lance finds the iron in the floor (the zip-line ride is a QUESTION)' },
 };
 /* WHAT THE ROLL-OUT LANES ARE ASKED TO WRITE NEXT (suggestions, NOT wired: nothing reads PLANNED). Daniel's own examples are here. */

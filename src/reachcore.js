@@ -278,6 +278,14 @@ export function floodReach(L, T, opts = {}) { const L0 = L;   /* (the level as b
         return out; },
       board(x, y) { const px = x * TSZ + 8, feet = (y + 1) * TSZ; if (dir > 0 ? (px < xa - 10 || px > xb - 12) : (px > xb + 10 || px < xa + 12)) return false; const l = this.ly(px); return l >= feet - 72 && l <= feet - 4; } })); });
   const zipLand = new Map();
+  /* (claude/lance4, STORMHOLD 4's HAUL LINES) ROPE TO ROPE: a rider kicks off one line (JUMP: up to ~2.5 rows) or drops off it (DOWN: up to ~3 rows) and a
+     TOUCH in the air takes another (src/zipline.js). Only a level that says L.zipTransfer (no other level's fill moves): a line within that reach of another
+     for 3+ tiles of both their runs, the same way, is ridden on from it - and so on along the chain, off at the foot of any line in it */
+  const zipOn = new Map(), landOf = zl => zipLand.get(zl) || (zipLand.set(zl, zl.land()), zipLand.get(zl));
+  if (L.zipTransfer) for (const a of zips) zipOn.set(a, zips.filter(b => { if (b === a || b.dir !== a.dir) return false; let run = 0;
+    for (let px = Math.max(a.xa, b.xa) + 4; px <= Math.min(a.xb, b.xb) - 16; px += 4) { const dy = b.ly(px) - a.ly(px); run = dy >= -40 && dy <= 48 && Math.abs(dy) >= 8 ? run + 4 : 0; if (run >= 48) return true; }
+    return false; }));
+  const zipChain = zl => { if (!L.zipTransfer) return [zl]; const out = new Set([zl]), q2 = [zl]; while (q2.length) for (const b of (zipOn.get(q2.pop()) || [])) if (!out.has(b)) { out.add(b); q2.push(b); } return [...out]; };
   const seen = new Set(), q = [];
   const push = (x, y) => { const k = key(x, y); if (footing.has(k) && !seen.has(k)) { seen.add(k); q.push([x, y]); } };
   // start where the knight starts, and fall to whatever is under it
@@ -421,7 +429,7 @@ export function floodReach(L, T, opts = {}) { const L0 = L;   /* (the level as b
       const half = opts.rides ? Math.max(3, Math.ceil((v.w || 0) / 2 / TSZ)) : 3;
       for (let ty = top - 1; ty <= v.y; ty++) for (let dx = -half; dx <= half; dx++) push(v.x + dx, ty); }
     for (const lf of lifts) if (x >= lf.x0 - 2 && x <= lf.x1 + 2 && y >= lf.y0 - 2 && y <= lf.y1 && !wallBetween(x, y, lf)) for (let ty = lf.y0 - 1; ty <= lf.y1; ty++) for (let dx = -2; dx <= lf.x1 - lf.x0 + 2; dx++) push(lf.x0 + dx, ty);
-    for (const zl of zips) if (zl.board(x, y)) for (const [lx, ly] of (zipLand.get(zl) || (zipLand.set(zl, zl.land()), zipLand.get(zl)))) push(lx, ly);   /* a zip line: on it anywhere, off at its foot */
+    for (const zl of zips) if (zl.board(x, y)) for (const z2 of zipChain(zl)) for (const [lx, ly] of landOf(z2)) push(lx, ly);   /* a zip line: on it anywhere, off at its foot (L.zipTransfer: or at the foot of a line it carries you on to) */
     for (const arc of swings) if (arc.some(([ax, ay]) => Math.abs(ax - x) <= 2 && y - ay >= -1 && y - ay <= 3)) for (const [ax, ay] of arc) for (let dy = -3; dy <= 2; dy++) for (let dx = -3; dx <= 3; dx++) push(ax + dx, ay + dy);
     for (const grp of groups) if (grp.set.has(key(x, y))) for (const [gx, gy] of grp.cells) push(gx, gy);   /* a wheel carries you round to any of its paddles */
     /* the great kite: take hold of it and the Sky Road lets you down anywhere along it */

@@ -24,7 +24,7 @@ import { LEVELS, T, TS } from './level.js';
 import { THREAT, RAMP_DROP, RAMP_WALL, spanOf, indexOf, worstGap, measureLevel } from './threat.js';
 import { floodReach } from './reachcore.js';
 import { checkDrawables } from './floatlab.js';
-import { inReach as zipInReach } from './zipline.js';   /* THE ZIP LINE (claude/zipline): the bot takes a rope that runs his way, and lets it carry him */
+import { inReach as zipInReach, lineY as zipLineY } from './zipline.js'; import { inTransfer as hlTransfer } from './haul-lines.js';   /* (stormhold4) rope to rope */ const HLX = { inTransfer: hlTransfer, lineY: zipLineY };   /* THE ZIP LINE (claude/zipline): the bot takes a rope that runs his way, and lets it carry him */
 import { botShouldDrink } from './survival.js';   /* THE FLASK (claude/survival): the walker drinks like a person - under a third of the bar, a flask held */
 
 const SEV = { bug: 3, odd: 2, note: 1 };
@@ -408,9 +408,15 @@ export function makeBot(BK, opts = {}) {   /* opts.fightThrough (claude/foepass)
     }
 
     /* ---- A ZIP LINE (src/zipline.js): riding one, he lets it carry him (no keys, no pogo on what is under it); at the high end of one that runs the way his goal lies, with the rope in his reach, he takes hold (UP). A frayed one (the Fair's, `snap`) is not a way he takes. ---- */
+    if (!P.zip && tick.zipDrop) { tick.zipDrop = 0; keys.down = false; }   /* (stormhold4) the drop is one frame of DOWN: held, DOWN is "no" and the line under him would not take him */
     if (P.zip) { keys.left = keys.right = keys.up = keys.down = keys.jump = false; BK.unpress(); hold = 0; tick.jumping = 0; tick.pogoCd = 20; still = 0;
       /* (claude/kitchengate3) A HAND-OFF RAIL (THE KITCHEN GATE's hook-to-hook hop, z.hop / z.hand): he jumps in the middle of its red stretch, as the sign says - and holds on the way it runs */
-      const zz = P.zip; if (zz.hop && zz.hand && L.zipLines.includes(zz.hand)) { const mid = (zz.hop[0] + zz.hop[1]) / 2, d = P.zipDir || zz.dir || 1; if (d > 0 ? P.x >= mid : P.x <= mid) { BK.press('jump'); keys.right = d > 0; keys.left = d < 0; } } }
+      const zz = P.zip; if (zz.hop && zz.hand && L.zipLines.includes(zz.hand)) { const mid = (zz.hop[0] + zz.hop[1]) / 2, d = P.zipDir || zz.dir || 1; if (d > 0 ? P.x >= mid : P.x <= mid) { BK.press('jump'); keys.right = d > 0; keys.left = d < 0; } }
+      /* (claude/lance4, STORMHOLD 4's HAUL LINES - L.zipTransfer) ROPE TO ROPE: a line in reach that runs his way and goes on further than this one - two tiles into
+         its window he kicks up to it (JUMP) or drops onto it (DOWN), as a player does (src/haul-lines.js inTransfer: the same reach the mangonel's fairness rule uses) */
+      if (L.zipTransfer) { const z = P.zip, d = P.zipDir || z.dir || 1, end = q => (d > 0 ? Math.max(q.x0, q.x1) : Math.min(q.x0, q.x1));
+        const w = L.zipLines.find(q => q !== z && !q.snap && HLX.inTransfer(z, q, P.x) && HLX.inTransfer(z, q, P.x - d * 2 * TS) && (end(q) - end(z)) * d > 0);
+        if (w) { if (HLX.lineY(w, P.x) < HLX.lineY(z, P.x)) BK.press('jump'); else { keys.down = true; tick.zipDrop = 1; } } } }
     else if (L.zipLines && dir && P.ground && !(P.zipRelease > 0) && !P.climb && L.zipLines.some(z => !z.snap && (z.dir || dir) === dir && Math.abs(goalX - P.x) > 8 * TS && zipInReach(z, P) && z.flue && BK.kitchen && BK.kitchen() && !BK.kitchen().flueClear(z))) { keys.up = keys.left = keys.right = keys.jump = false; hold = 0; tick.jumping = 0; BK.unpress(); still = 0; }   /* (claude/kitchengate3) THE FLUE's rail: he waits on the perch for its glow (H.flueClear), as a player reads it */
     else if (L.zipLines && dir && P.ground && !(P.zipRelease > 0) && !P.climb && L.zipLines.some(z => !z.snap && (z.dir || dir) === dir && Math.abs(goalX - P.x) > 8 * TS && zipInReach(z, P))) { keys.up = true; keys.left = keys.right = false; keys.jump = false; tick.jumping = 0; hold = 0; BK.unpress(); still = 0; }   /* (claude/stormtough: not a jump on the grab frame - the deck-end leap of a goal that lies beyond the rope kicked him off it the frame he took hold, so the walker never rode Stormhold's first rope) */
 

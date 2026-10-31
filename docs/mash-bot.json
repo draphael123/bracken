@@ -1836,23 +1836,23 @@
   }
  },
  "storm": {
-  "hash": "f6c737482291",
+  "hash": "11ab72a47c0b",
   "boss": {
    "boss": "lance",
    "wins": 0,
    "fights": 6,
    "byHero": {
     "knight": [
-     "dead:100/99",
-     "dead:100/99"
+     "dead:100/96",
+     "dead:100/96"
     ],
     "warden": [
-     "dead:100/97",
-     "dead:100/97"
+     "dead:100/98",
+     "dead:100/98"
     ],
     "pyro": [
-     "dead:100/95",
-     "dead:100/95"
+     "dead:100/98",
+     "dead:100/98"
     ]
    },
    "rows": [
@@ -1861,12 +1861,12 @@
      "seed": 1,
      "tag": "expected",
      "out": "dead",
-     "secs": 41,
+     "secs": 39.7,
      "hpLostPct": 100,
-     "bossLeftPct": 99,
-     "landed": 16,
-     "swings": 1505,
-     "reprisalPct": 0,
+     "bossLeftPct": 96,
+     "landed": 55,
+     "swings": 1339,
+     "reprisalPct": 14,
      "chip": []
     },
     {
@@ -1874,12 +1874,12 @@
      "seed": 2,
      "tag": "expected",
      "out": "dead",
-     "secs": 41,
+     "secs": 39.7,
      "hpLostPct": 100,
-     "bossLeftPct": 99,
-     "landed": 16,
-     "swings": 1505,
-     "reprisalPct": 0,
+     "bossLeftPct": 96,
+     "landed": 55,
+     "swings": 1339,
+     "reprisalPct": 14,
      "chip": []
     },
     {
@@ -1887,12 +1887,12 @@
      "seed": 1,
      "tag": "expected",
      "out": "dead",
-     "secs": 43.1,
+     "secs": 23.5,
      "hpLostPct": 100,
-     "bossLeftPct": 97,
-     "landed": 7,
-     "swings": 1564,
-     "reprisalPct": 20,
+     "bossLeftPct": 98,
+     "landed": 12,
+     "swings": 714,
+     "reprisalPct": 21,
      "chip": []
     },
     {
@@ -1900,12 +1900,12 @@
      "seed": 2,
      "tag": "expected",
      "out": "dead",
-     "secs": 43.1,
+     "secs": 23.5,
      "hpLostPct": 100,
-     "bossLeftPct": 97,
-     "landed": 7,
-     "swings": 1564,
-     "reprisalPct": 20,
+     "bossLeftPct": 98,
+     "landed": 12,
+     "swings": 714,
+     "reprisalPct": 21,
      "chip": []
     },
     {
@@ -1913,12 +1913,12 @@
      "seed": 1,
      "tag": "expected",
      "out": "dead",
-     "secs": 44.5,
+     "secs": 22.9,
      "hpLostPct": 100,
-     "bossLeftPct": 95,
-     "landed": 45,
-     "swings": 1497,
-     "reprisalPct": 21,
+     "bossLeftPct": 98,
+     "landed": 31,
+     "swings": 666,
+     "reprisalPct": 20,
      "chip": []
     },
     {
@@ -1926,76 +1926,76 @@
      "seed": 2,
      "tag": "expected",
      "out": "dead",
-     "secs": 44.5,
+     "secs": 22.9,
      "hpLostPct": 100,
-     "bossLeftPct": 95,
-     "landed": 45,
-     "swings": 1497,
-     "reprisalPct": 21,
+     "bossLeftPct": 98,
+     "landed": 31,
+     "swings": 666,
+     "reprisalPct": 20,
      "chip": []
     }
    ]
   },
   "carried": {
-   "from": "601546e739c6",
+   "from": "f6c737482291",
    "parts": [
     "boss"
    ]
   },
   "level": {
    "knight": {
-    "deaths": 0,
-    "minHpPct": 16,
-    "hpLostPct": 66,
-    "hits": 7,
+    "deaths": 3,
+    "minHpPct": 0,
+    "hpLostPct": 397,
+    "hits": 27,
     "walked": 100,
-    "lifts": 48,
-    "held": 58,
-    "duels": 8,
+    "lifts": 50,
+    "held": 20,
+    "duels": 2,
     "boardLifts": 0,
     "rides": 0,
     "pulls": 0,
     "ridden": {},
     "machines": true,
-    "frames": 40378,
-    "kills": 5,
-    "heroLevel": 17
+    "frames": 17615,
+    "kills": 3,
+    "heroLevel": 18
    },
    "warden": {
-    "deaths": 10,
+    "deaths": 3,
     "minHpPct": 0,
-    "hpLostPct": 982,
-    "hits": 60,
+    "hpLostPct": 398,
+    "hits": 28,
     "walked": 100,
-    "lifts": 44,
-    "held": 26,
-    "duels": 8,
+    "lifts": 49,
+    "held": 7,
+    "duels": 2,
     "boardLifts": 0,
     "rides": 0,
-    "pulls": 3,
+    "pulls": 1,
     "ridden": {},
     "machines": true,
-    "frames": 27797,
-    "kills": 4,
-    "heroLevel": 17
+    "frames": 16187,
+    "kills": 8,
+    "heroLevel": 18
    },
    "pyro": {
-    "deaths": 11,
+    "deaths": 3,
     "minHpPct": 0,
-    "hpLostPct": 1104,
-    "hits": 64,
+    "hpLostPct": 441,
+    "hits": 25,
     "walked": 100,
-    "lifts": 43,
-    "held": 26,
-    "duels": 8,
+    "lifts": 50,
+    "held": 20,
+    "duels": 2,
     "boardLifts": 0,
     "rides": 0,
-    "pulls": 3,
+    "pulls": 0,
     "ridden": {},
     "machines": true,
-    "frames": 28223,
-    "kills": 16,
-    "heroLevel": 17
+    "frames": 17428,
+    "kills": 9,
+    "heroLevel": 18
    }
   }
  },

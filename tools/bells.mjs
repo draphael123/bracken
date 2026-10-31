@@ -50,7 +50,7 @@ for (const lv of LEVELS) {
   }
   if (alarms.length) for (const s of L.ents.filter(e => e.t === 'sign' && /\bBELLS?\b/.test(e.text || ''))) {
     if (Math.abs(s.x - L.START.x) <= 30 && Math.abs(s.y - L.START.y) <= 12) continue;   /* the level's preface, at its start */
-    if (!bells.some(b => ids.has(b.section) && Math.abs(b.x - s.x) <= 60 && Math.abs(b.y - s.y) <= 20)) fails.push(lv.id + ' signs: the sign at ' + s.x + ',' + s.y + ' names a bell, and no live one hangs within 60 columns');
+    if (!bells.some(b => ids.has(b.section) && Math.abs(b.x - s.x) <= 60 && Math.abs(b.y - s.y) <= 20) && !L.ents.some(b => (b.t === 'gatebell' || b.t === 'lancebell') && Math.abs(b.x - s.x) <= 60 && Math.abs(b.y - s.y) <= 20))   /* (lance4tune) a gate bell (stormhold4's gatebell, the Lance's tower bells) is a live bell too */ fails.push(lv.id + ' signs: the sign at ' + s.x + ',' + s.y + ' names a bell, and no live one hangs within 60 columns');
   }
 }
 
