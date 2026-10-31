@@ -635,7 +635,7 @@ export const LEGACY_NODES = [
     "branch": 0,
     "row": 2,
     "col": 2,
-    "name": "CONFLAGRATION",
+    "name": "CINDER SPREAD",
     "max": 1,
     "desc": "a burning foe that dies sets light to whatever stands near it",
     "parent": "scatter",

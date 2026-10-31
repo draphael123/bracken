@@ -98,7 +98,7 @@ Innate kit: tap C ember, hold C jet, full bar then C = the Pyre, a tap of down =
 | kindle | KINDLE | P | fire mends instead of burning | FITS | a dedicated `PYRO_ICONS.kindle` exists but passives never use `skillIcon`, so it is never shown |
 | heatShield | HEAT SHIELD | P | above half heat, a quarter less damage | FITS | |
 | brand | BRAND | P | burning foe takes 1.5x | FITS | |
-| conflagration | CONFLAGRATION | P | burning foe that dies ignites neighbours | FITS | |
+| conflagration | CINDER SPREAD | P | burning foe that dies ignites neighbours | FITS | |
 | jetWalk | WALKING FLAME | P | walk slowly while the jet burns | FITS | |
 | blaze | BLAZE | P | full heat lasts 10 s not 5 | WEAK FIT | duration stat, but it changes the Pyre's window |
 | smoulder | SMOULDER | P | standing in any fire fills heat | FITS | |
