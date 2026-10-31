@@ -1,0 +1,75 @@
+{
+  "time": "2026-10-31T18:33:49.696Z",
+  "sourceGame": "62d9c02c102decc69ceaef4e1ec593a23170f1ff",
+  "sourceTree": "d6f20846727ec42b3cca651d1b061136d9c6d2f1",
+  "originalMainSha256": "81866b69fec64de5fdd00da316fb0d1e8e997ae9912f73f280981f0a70cb36d8",
+  "candidateMainSha256": "fae08fa2b2614b3e604bfe49574904a46b9ab2dfcd5364c7b697c5c5b9e11ef8",
+  "helperFile": "tools/drowned-course-path-source-oct31/drowned-course-path.js",
+  "helperSha256": "1dd419aa71b7354d94479abdd1976452fd2cfbf52815b293d62a3db43a49b5cb",
+  "pageFile": "tools/drowned-course-path-page-oct31.mjs",
+  "pageSha256": "6ed8a4675c5e34a92b460ee059290740be7321025ebc08778a294717e7f643a5",
+  "exactMainUndo": true,
+  "originalCourses": "    for (let yy = sy; yy < sy + h; yy += 8) {                                             // coursed ashlar, wet\n      for (let xx = sx + (((yy / 8) & 1) ? 12 : 0); xx < sx + w; xx += 24) { g.fillStyle = '#1e343a'; g.fillRect(xx, yy, 22, 7); g.fillStyle = '#152a2e'; g.fillRect(xx, yy + 6, 22, 1); }\n      g.fillStyle = '#0e1c1e'; g.fillRect(sx, yy + 7, w, 1);\n    }\n",
+  "originalCoursesSha256": "0cccc178a7c2f67a6c983a1a41af5d41d3fcbf3de9aeb374e79f1a0b24b9f0b8",
+  "edits": [
+    {
+      "before": "    for (let yy = sy; yy < sy + h; yy += 8) {                                             // coursed ashlar, wet\n      for (let xx = sx + (((yy / 8) & 1) ? 12 : 0); xx < sx + w; xx += 24) { g.fillStyle = '#1e343a'; g.fillRect(xx, yy, 22, 7); g.fillStyle = '#152a2e'; g.fillRect(xx, yy + 6, 22, 1); }\n      g.fillStyle = '#0e1c1e'; g.fillRect(sx, yy + 7, w, 1);\n    }\n",
+      "after": "    if (!tryDrownedCourses(g,sx,sy,w,h)) { for (let yy = sy; yy < sy + h; yy += 8) {                                             // coursed ashlar, wet\n      for (let xx = sx + (((yy / 8) & 1) ? 12 : 0); xx < sx + w; xx += 24) { g.fillStyle = '#1e343a'; g.fillRect(xx, yy, 22, 7); g.fillStyle = '#152a2e'; g.fillRect(xx, yy + 6, 22, 1); }\n      g.fillStyle = '#0e1c1e'; g.fillRect(sx, yy + 7, w, 1);\n    } }\n"
+    },
+    {
+      "before": "",
+      "after": " import {tryDrownedCourses} from './drowned-course-path.js';"
+    }
+  ],
+  "scope": "Drowned solid courses only; disjoint rectangles within each pass, unchanged base/weed/fish/water effects, frame-local native paths. Original recorder hooks force original-loop fallback.",
+  "expected": {
+    "nativeCases": 291,
+    "lifecycleCases": 9,
+    "timingRows": 9,
+    "framesPerTimingRow": 180
+  },
+  "guide": {
+    "minimumGainEachRoundPercent": 30,
+    "maximumControlDriftEachRoundPercent": 15,
+    "candidateRangeBelowBothControls": true,
+    "noRetimingForGreen": true
+  },
+  "settings": {
+    "cpu": 4,
+    "viewport": [
+      915,
+      412
+    ],
+    "dpr": 2.625,
+    "game": [
+      640,
+      360
+    ],
+    "display": [
+      2402,
+      1082
+    ],
+    "rendererMb": 1536,
+    "admissionMb": 4352,
+    "evaluationDeadlineMs": 240000,
+    "outerTimeoutMinutes": 15
+  },
+  "target": {
+    "receipt": "outputs/receipts/current-heavy-arena-profiles.json",
+    "sourceOnlyLamplitLevelUsesDrownedInteriors": true,
+    "drawRoomPaintInclusivePercent": 13.02,
+    "nativeFillRectUnderRoomPaintPercent": 7.86,
+    "notMeasuredEligibleCoverageOrPromisedGain": true
+  },
+  "noNewCanvasesOrSourceRetention": true,
+  "maximumRectanglesPerPath": 4096,
+  "maximumPathsPerCall": 3,
+  "noAdoptionOrGameFpsLayoutProof": true,
+  "allThreeMismatches": [
+    "mummer6SUCCESSFUL hits versus2..5",
+    "tower-collapse/Tome rebound at200frames",
+    "offscreen mage sampling"
+  ],
+  "adopted": false,
+  "overallWorkComplete": false
+}
