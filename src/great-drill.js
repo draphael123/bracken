@@ -110,7 +110,7 @@ export const leverBox = (G, lv) => ({ l: lv.x - 9, r: lv.x + 9, t: G.laneY[2] - 
 export const GEARS = [
   { id: 'chain', name: 'THE CHAIN WINCH', moves: ['chain', 'claw'], lane: 0, t: -30, b: -8, word: 'NO MORE CHAIN', p3: { t: -24, b: -6 } },   /* (deeprails5) the chain winch drives the RAIL CLAW too */
   { id: 'lunge', name: 'THE SPIN-UP GEAR', moves: ['lunge', 'cutter'], lane: 0, t: -44, b: -32, jump: true, word: 'NO MORE LUNGE', p3: { t: -46, b: -32, jump: true } },   /* (deeprails5) and the SPARE CUTTER */
-  { id: 'dyn', name: 'THE DYNAMITE FEED', moves: ['dynamite'], lane: 1, t: -30, b: -8, word: 'NO MORE DYNAMITE', p3: { dx: 18, t: -26, b: -12 } },   /* (deeprails6: P3 - on the deck by the cab, a standing blow: two plain banks of four, so the one-rail gate is not a jump test - the pyro's P3 ran +47% with three jump banks) */
+  { id: 'dyn', name: 'THE DYNAMITE FEED', moves: ['dynamite'], lane: 1, t: -30, b: -8, word: 'NO MORE DYNAMITE', p3: { dx: 18, t: -50, b: -36, jump: true } },   /* (deeprails6: P3 - on the deck by the cab, a jump. Tried as a standing blow: the cab worker broke it by the way and the fight went 67% -> 77-86% - Q in the lane report) */
   { id: 'roof', name: 'THE ROOF WINCH', moves: ['rocks', 'collapse', 'ladle'], lane: 2, t: -30, b: -8, word: 'NO MORE ROCKFALL', p3: { t: -78, b: -56, jump: true } },
 ];
 /* (deeprails6) P3 ONE RAIL: every bank is struck from the MID rail (p3: px over the MID line, dx along its rear face; jump = a jump off the MID rail) */
