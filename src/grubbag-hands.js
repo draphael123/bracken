@@ -47,6 +47,7 @@ export const POSE = {
   bell: { head: [6, 0], belly: 1, hand: [62, -150], far: [-62, -66], eyes: 'open', mouth: 'wide', item: 'bell', ring: true },
   grabTell: { head: [10, 6], belly: 1, hand: [-10, -96], far: [-62, -66], eyes: 'red', mouth: 'wide', lean: 18, fingers: true },
   grab: { head: [16, 10], belly: 1, hand: [92, -30], far: [-62, -66], eyes: 'red', mouth: 'wide', lean: 24, arm: true },
+  drop: { head: [-8, -12], belly: 1.1, hand: [60, -150], far: [-66, -148], eyes: 'bulge', mouth: 'wide', stars: true, shake: true },   /* (claude/kitchengate4art) KNOCKED OFF HIS FEET: flung back in the chair, both hands up, the room wheeling */
   stun: { head: [0, -6], belly: 1.12, hand: [30, -112], far: [0, -114], eyes: 'bulge', mouth: 'wide', smoke: true, shake: true },
   hot: { head: [4, -4], belly: 1.04, hand: [70, -134], far: [-20, -128], eyes: 'bulge', mouth: 'wide', smoke: true, steam: true, red: true, fingers: true },
   recover: { head: [4, 4], belly: 1, hand: [52, -88], far: [-62, -72], eyes: 'open', mouth: 'open', cough: true },
@@ -113,8 +114,8 @@ export function makeGrubbagHands(ctx) {
         }
         if (pp.ground && GBM.onPlatter(G, pp)) { pp.gbPlatT = (pp.gbPlatT || 0) + dt; if (pp.gbPlatT > GB.drop.shove) pp.x = Math.min(G.platter.x1 + 10, pp.x + GB.drop.shoveV * dt); } else pp.gbPlatT = 0; }
       /* an attendant off the hooks and down on the coals: the coals take him */
-      const T = G.trench; if (T) for (const a of S.adds) if (a && a.alive && !a.gbRide && Math.abs(a.y - T.y) < 5 && a.x >= T.x0 - 8 && a.x <= T.x1 + 8) { a.hp = 0; a.alive = false; S.n.addFalls++; ctx.burst(a.x, a.y - 8, 16, ['#ff6b2c', '#ffd36b', '#4a4440'], 90, 0.6); ctx.number(a.x, a.y - 30, GBM.GB_SAY.addFall, '#ff9a5c'); } }
-    if (S.dropFx) { S.dropFx.t -= dt; if (S.dropFx.t <= 0) S.dropFx = null; }
+      const T = G.trench; if (T) for (const a of S.adds) if (a && a.alive && !a.gbRide && Math.abs(a.y - T.y) < 5 && a.x >= T.x0 - 8 && a.x <= T.x1 + 8) { a.hp = 0; a.alive = false; S.n.addFalls++; (S.burnFx || (S.burnFx = [])).push({ x: a.x, y: a.y, t: 0 }); ctx.burst(a.x, a.y - 8, 16, ['#ff6b2c', '#ffd36b', '#4a4440'], 90, 0.6); ctx.number(a.x, a.y - 30, GBM.GB_SAY.addFall, '#ff9a5c'); } }
+    if (S.dropFx) { S.dropFx.t -= dt; if (S.dropFx.t <= 0) S.dropFx = null; } if (S.burnFx) { for (const q of S.burnFx) q.t += dt / 0.9; S.burnFx = S.burnFx.filter(q => q.t < 1); if (!S.burnFx.length) S.burnFx = null; }
     e.phase = S.ph; e.open = GBM.gbOpen(e) ? Math.max(0, e.modeT) : 0; e.openKind = e.mode;
   };
   /* (claude/kitchengate4) AN ATTENDANT ON THE HOOKS (main.js updateEnemies, one guarded line: while a.gbRide is set his own machine waits): he waits his turn at the hatch, rides the
@@ -163,12 +164,10 @@ export function makeGrubbagHands(ctx) {
     GA.drawCauldron(g, x(cz.x), y(cz.y), y(A().y0), tip, time);
     /* the cauldron's chain down to his hand while he holds it (the grease) */
     if (e && e.alive && POSE[e.mode] && POSE[e.mode].chain) { const p = POSE[e.mode], hx = x(e.x - p.hand[0]), hy = y(e.y + p.hand[1]); GA.drawChain(g, x(cz.x) + 14, y(cz.y) - 6, hx, hy); }
-    /* (claude/kitchengate4) THE COAL TRENCH (greybox - the art lane draws the final): the coal bed (banked embers; the grease's glow; lit) and the chain-link steps out of it */
+    /* (claude/kitchengate4art) THE COAL TRENCH, drawn (src/redraw/grubbag_art.js): the chain-link steps (iron cap over a chain curtain), the coal bed (banked embers; the grease's glow; lit) */
     const T = G.trench; if (T) { const by = y(T.y), st = GBM.coalState(S), k = st === 'glow' ? 0.5 + 0.5 * Math.sin(time * 20) : 0;
-      rect(g, x(T.x0), by, x(T.x1) - x(T.x0), 6, '#1a0e0a'); for (let q = T.x0 + 3; q < T.x1 - 3; q += 7) { const f = (Math.sin(q * 0.37 + time * 2.3) + 1) / 2; rect(g, x(q), by + 1 + ((q / 7) | 0) % 2, 4, 2, st === 'lit' ? (f > 0.5 ? '#ffd36b' : '#ff6b2c') : st === 'glow' ? (f > 0.4 ? '#ff4a2a' : '#8a2a1a') : (f > 0.75 ? '#ff6b2c' : '#5a2a1a')); }
-      if (k) { g.globalAlpha = 0.18 + 0.25 * k; rect(g, x(T.x0), by - 18, x(T.x1) - x(T.x0), 18, '#ff4a2a'); g.globalAlpha = 1; }
-      for (const [a, b] of T.steps) { const sy = y(T.stepY); for (let q = sy; q < by; q += 4) { rect(g, x(a) + 4, q, 4, 3, '#8a8a9a'); rect(g, x(a) + 5, q + 1, 2, 1, '#2a2420'); }   /* the chain-link step */
-        rect(g, x(a), sy, x(b) - x(a), 2, st === 'lit' ? '#ff9a3c' : '#9a8a7a'); } } };
+      for (const [a, b] of T.steps) GA.drawCoalStep(g, x(a), x(b), y(T.stepY), by, st, time);
+      GA.drawCoalBed(g, x(T.x0), x(T.x1), by, st, time, k); } };
   H.drawBoss = (g, e, cx, cy, time) => { if (!S) return; e.guardFx = Math.max(0, (e.guardFx || 0) - 1 / 60);
     const p = (e.mode === 'eat' && S.swellT > 0 ? POSE.eatSwell : POSE[e.mode]) || POSE.sit, flash = (e.hurtT || 0) > 0 || (e.flash || 0) > 0.06;   /* (claude/kitchengate4) the belly swells as he eats */
     g.save(); g.translate(R(e.x - cx + (p.shake ? Math.sin(time * 50) * 2 : 0)), R(e.y - cy)); g.scale(-1, 1); drawGrubbag(g, p, flash, time, e.eating ? e.eating.kind : null); g.restore();
@@ -176,11 +175,13 @@ export function makeGrubbagHands(ctx) {
     if (e.mode === 'grab' && e.handX != null) { const el = POSE.grab.hand, ex = R(e.x - cx - el[0]), ey = R(e.y - cy + el[1]), hx = R(e.handX - cx), hy = R(e.y - cy) - 22; GA.drawGrabArm(g, ex, ey, hx, hy, flash); } };
   H.drawOver = (g, cx, cy, time) => { const Ar = A(); if (!S || !Ar) return; const e = ctx.boss, G = S.G, x = X(cx), y = Y(cy), fy = y(G.floorY), B = G.belt;
     /* THE ITEMS on the line (and knocked off it): a dish, a bomb (its fuse burning down: the bar over it), a red-hot chilli */
-    for (const it of S.items) { const ix = x(it.x), iy = y(GBM.itemY(G, it)); GA.dish(g, false, ix, iy - 4, it.kind, time);
+    for (const it of S.items) { const ix = x(it.x), iy = y(GBM.itemY(G, it)); if (it.state === 'fall') { g.save(); g.translate(ix, iy - 10); g.rotate(time * 9 + it.id); GA.dish(g, false, 0, 6, it.kind, time); g.restore(); for (let q = 1; q < 4; q++) rect(g, ix - R((it.vx || 0) * 0.02 * q) - 1, iy - 10 + q * 3, 2, 1, 'rgba(255,246,224,' + (0.6 - q * 0.15).toFixed(2) + ')'); } else GA.dish(g, false, ix, iy - 4, it.kind, time);
       if (it.kind === 'bomb' && it.state !== 'fall') { const k = Math.max(0, it.fuse / GB.line.fuse); rect(g, ix - 10, iy - 28, 20, 3, '#1b1626'); rect(g, ix - 10, iy - 28, R(20 * k), 3, k < 0.3 ? (Math.floor(time * 10) % 2 ? '#ff4a2a' : '#ffd36b') : '#ff9a3c');
         if (it.state === 'bat') for (let q = 1; q < 4; q++) rect(g, ix - q * 8, iy - 10, 5, 1, 'rgba(255,211,107,' + (0.8 - q * 0.2).toFixed(2) + ')'); } }
-    /* (claude/kitchengate4) THE COALS LIT: flames up off the bed (the climb out is hot) */
-    if (G.trench && GBM.coalState(S) === 'lit') { const T = G.trench; for (let q = T.x0 + 4; q < T.x1 - 4; q += 9) { const hh = 10 + 8 * Math.abs(Math.sin(q * 0.21 + time * 9)); rect(g, x(q), y(T.y) - R(hh), 4, R(hh), '#ff6b2c'); rect(g, x(q) + 1, y(T.y) - R(hh * 0.6), 2, R(hh * 0.6), '#ffd36b'); } }
+    for (const a of S.adds) if (a && a.alive && a.gbRide) { const rx = x(a.x) + 10, ry = y(a.y - (a.gbRide.z.hang ?? 12)); rect(g, rx - 3, ry - 3, 7, 4, '#2a2420'); rect(g, rx - 2, ry - 2, 5, 2, '#e8c23a'); rect(g, rx - 1, ry - 1, 3, 1, '#c9d1dc'); rect(g, rx, ry + 1, 1, 5, '#5a4630'); rect(g, rx - 3, ry + 6, 7, 2, '#6a4a30'); rect(g, rx - 3, ry + 6, 7, 1, '#8b6a44'); }   /* (claude/kitchengate4art) an attendant on the hooks: the pulley and the grip bar he hangs from */
+    /* (claude/kitchengate4art) THE COALS LIT: a sheet of flame off the bed and licks off the steps' caps (it dies down over the last 0.9 s); an attendant caught on the coals burns to a husk */
+    if (G.trench && GBM.coalState(S) === 'lit') { const T = G.trench; GA.drawCoalFlames(g, x(T.x0), x(T.x1), y(T.y), time, Math.min(1, S.coal.lit / 0.9), T.steps.map(([a, b]) => [x(a), x(b)]), y(T.stepY)); }
+    if (S.burnFx) for (const q of S.burnFx) GA.drawBurnedMan(g, x(q.x), y(q.y), Math.min(1, q.t), time);
     /* THE BURNING FLOOR (the grease spill) */
     for (const [a, b] of GBM.burning(S)) GA.drawBurn(g, x(a), x(b), fy, time);
     if (!ctx.bossActive || !e || e.t !== 'grubbag') return;
@@ -204,12 +205,17 @@ export function makeGrubbagHands(ctx) {
     if (S.ward > 0) { g.globalAlpha = 0.35 + 0.25 * Math.sin(time * 6); g.strokeStyle = '#c8d8e8'; g.lineWidth = 2; g.strokeRect(ex - bw / 2 - 2, by0 - 2, bw + 4, bh + 4); g.lineWidth = 1; g.globalAlpha = 1; ctx.text('WARDED', ex, y(e.y - GB.h - 44), '#c8d8e8', 'center', 5); }
     if (S.hungry > 0 && !GBM.gbOpen(e)) ctx.text(GBM.GB_SAY.hungry, ex, y(e.y - GB.h - 54), '#8fd160', 'center', 5);
     if (S.rush > 0) ctx.text('ORDER UP', x(B.x0 + 60), y(B.y) - 40, Math.floor(time * 6) % 2 ? '#ffd36b' : '#fff6e0', 'center', 5);
-    /* (claude/kitchengate4) THE SECOND HELPING on his windup: a gold-red rim round his throwing hand, and the words; THE FOOD BONUS: the big green heal and MORE!; THE DROP: the platter splatter */
+    /* (claude/kitchengate4art) THE SECOND HELPING on his windup: the dish he is about to throw TWICE - a second one ghosted beside his hand, a ring of gold-red sparks round it, an x2 and the words; THE FOOD BONUS: the belly swell (green rings, + sparkles), the big green heal and MORE!; THE DROP: the platter splat */
     if (S.secondOn && GBM.gbTelling(e)) { const p = POSE[e.mode] || POSE.sit, hx = x(e.x - p.hand[0]), hy = y(e.y + p.hand[1]), kk = 0.6 + 0.4 * Math.sin(time * 16);
-      g.globalAlpha = kk; g.strokeStyle = Math.floor(time * 10) % 2 ? '#ff4a2a' : '#ffd36b'; g.lineWidth = 2; g.beginPath(); g.arc(hx, hy, 13, 0, Math.PI * 2); g.stroke(); g.lineWidth = 1; g.globalAlpha = 1;
-      ctx.text(GBM.GB_SAY.second, ex, y(e.y - GB.h - 70), '#ff9a3c', 'center', 6); }
-    if (S.heal) { const up = R((1.3 - S.heal.t) * 18); if (S.heal.n > 0) ctx.text('+' + S.heal.n, ex - 30, y(e.y - GB.h - 30) - up, '#8fd160', 'center', 10); ctx.text(GBM.GB_SAY.more, ex + 30, y(e.y - GB.h - 34) - up, Math.floor(time * 8) % 2 ? '#c8f0a0' : '#8fd160', 'center', 8); }
-    if (S.dropFx) { const k = 1 - S.dropFx.t / 0.8, dx = x(S.dropFx.x), dy = y(G.platter.y); g.globalAlpha = 1 - k; for (let q = 0; q < 8; q++) { const a = q / 8 * Math.PI, rr = 6 + k * 30; rect(g, dx + R(Math.cos(a) * rr) - 1, dy - R(Math.sin(a) * rr * 0.7) - 1, 3, 3, q % 2 ? '#a0602a' : '#c8ccd4'); } g.globalAlpha = 1; }
+      g.globalAlpha = 0.5 + 0.2 * Math.sin(time * 14); if (S.secondOn === 'lob') GA.drawHam(g, hx + 18, hy - 6, time * 3); else if (S.secondOn === 'fling') { GA.drawPlateFlat(g, hx + 18, hy - 4, time); GA.drawPlateFlat(g, hx + 26, hy + 3, time); } g.globalAlpha = 1;
+      for (let q = 0; q < 8; q++) { const an = time * 7 + q * 0.785, rr = 14 + (q & 1) * 3; rect(g, hx + R(Math.cos(an) * rr) - 1, hy + R(Math.sin(an) * rr) - 1, 2, 2, q % 2 ? '#ff4a2a' : '#ffd36b'); }
+      g.globalAlpha = kk; g.strokeStyle = Math.floor(time * 10) % 2 ? '#ff4a2a' : '#ffd36b'; g.lineWidth = 2; g.beginPath(); g.arc(hx, hy, 11, 0, Math.PI * 2); g.stroke(); g.lineWidth = 1; g.globalAlpha = 1;
+      ctx.text('x2', hx, hy - 20, Math.floor(time * 8) % 2 ? '#ffd36b' : '#ff9a3c', 'center', 7); ctx.text(GBM.GB_SAY.second, ex, y(e.y - GB.h - 70), '#ff9a3c', 'center', 6); }
+    if (S.swellT > 0) { const k = 1 - S.swellT / GB.swell, bx = ex - 4, byy = y(e.y) - 58;   /* the swell: green rings out of his belly and plus-signs wheeling up */
+      for (let q = 0; q < 2; q++) { const u = (k + q * 0.5) % 1; g.globalAlpha = 0.7 * (1 - u); g.strokeStyle = '#8fd160'; g.lineWidth = 2; g.beginPath(); g.ellipse(bx, byy, 70 + u * 26, 44 + u * 16, 0, 0, Math.PI * 2); g.stroke(); g.lineWidth = 1; }
+      g.globalAlpha = 1; for (let q = 0; q < 6; q++) { const u = (k * 1.6 + q * 0.17) % 1, sx = bx - 50 + q * 20 + Math.sin(q * 2 + time * 6) * 4, sy = byy - 20 - u * 46; g.globalAlpha = 1 - u; rect(g, sx - 2, sy, 5, 1, '#c8f0a0'); rect(g, sx, sy - 2, 1, 5, '#c8f0a0'); } g.globalAlpha = 1; }
+    if (S.heal) { const up = R((1.3 - S.heal.t) * 18); if (S.heal.n > 0) { rect(g, ex - 49, y(e.y - GB.h - 30) - up - 4, 9, 3, '#1b1626'); rect(g, ex - 48, y(e.y - GB.h - 30) - up - 7, 3, 9, '#1b1626'); rect(g, ex - 47, y(e.y - GB.h - 30) - up - 3, 7, 1, '#8fd160'); rect(g, ex - 44, y(e.y - GB.h - 30) - up - 6, 1, 7, '#8fd160'); ctx.text('+' + S.heal.n, ex - 24, y(e.y - GB.h - 30) - up, '#8fd160', 'center', 10); } ctx.text(GBM.GB_SAY.more, ex + 30, y(e.y - GB.h - 34) - up, Math.floor(time * 8) % 2 ? '#c8f0a0' : '#8fd160', 'center', 8); }
+    if (S.dropFx) GA.drawPlatterSplat(g, x(S.dropFx.x), y(G.platter.y), 1 - S.dropFx.t / 0.8, time);
     if (e.guardFx > 0 && e.guardWord) ctx.text(e.guardWord, ex, y(e.y - GB.h - 60) - R((0.25 - e.guardFx) * 30), Math.floor(time * 12) % 2 ? '#ffffff' : '#e8c070', 'center', 6);
   };
   return H;
