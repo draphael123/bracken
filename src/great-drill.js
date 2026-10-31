@@ -62,14 +62,14 @@ export const DRILL = {
      that stretch of rail is TORN and comes down the tunnel at you with the world - too long for a cruising jump (clawW): PUMP AND JUMP it (the level's pump gap) or change line */
   cutterTell: 0.9, cutterFly: 0.45, cutterLead: 50, cutterV: 160, cutterDmg: 23, cutterR: 9, cutterH: 16, cutterBite: 55, cutterBackV: 420,   /* (bowled: it flies cutterFly s off the boom - its landing marked on your line, cutterLead px ahead of you - then rolls at you) */
   clawTell: 1.1, clawW: 92, clawDmg: 28,   /* (clawW: + a cart's width it is 0.45 s under a pumped jump (0.62 s aloft), 0.69 s under a cruising one - it falls short) */
-  /* (deeprails6, Daniel 10-29 #2: 'one more attack in P1') THE SLAG LADLE (P1, the DYNAMITE FEED's - break the feed and it is gone too): told (the boom rises over the cab with a
+  /* (deeprails6, Daniel 10-29 #2: 'one more attack in P1') THE SLAG LADLE (P1, THE ROOF WINCH's - its boom hoists the ladle; break the winch and it is gone too. deeprails6: the brief's rec was the dynamite feed, but the feed is the bank every player breaks first and the ladle was never seen - question in the lane report): told (the boom rises over the cab with a
      ladle of slag, the line it aims at marked, '!! SLAG LADLE: CHANGE LINE'), then the glob flies (harmless, its landing marked) and POOLS on your line ladleLead px ahead of
      you - a red-orange strip, ladlePool s, coming down the tunnel with the world: a cart that rides through it is burnt. Change line (P1 has three), or jump it */
   ladleTell: 0.9, ladleFly: 0.4, ladleLead: 120, ladlePool: 2.5, ladleW: 40, ladleDmg: 12,
   /* (deeprails6, Daniel 10-29 #1: 'ONE rail in the last phase, and tension') P3 ONE RAIL: the roof takes the LOW and the HIGH lines (sealT: the rubble coming down, a cart on the
      LOW line is bucked up onto the MID rail - told, never teleported); THE RIG CLOSES as its bar falls (its home closeR px nearer you at the end) */
   sealT: 0.7, buckV: 430, closeR: 70,
-  chain: { 1: ['dynamite', 'reverse', 'ladle', 'rocks', 'dynamite', 'reverse', 'rocks', 'ladle'], 2: ['lunge', 'dynamite', 'chain', 'reverse', 'cutter', 'chain', 'dynamite'],
+  chain: { 1: ['dynamite', 'ladle', 'reverse', 'rocks', 'dynamite', 'reverse', 'ladle', 'rocks'], 2: ['lunge', 'dynamite', 'chain', 'reverse', 'cutter', 'chain', 'dynamite'],
     3: ['collapse', 'chain', 'lunge', 'reverse', 'claw', 'dynamite', 'cutter'] },
 };
 export const LANE_NAME = ['LOW', 'MID', 'HIGH'];
@@ -110,8 +110,8 @@ export const leverBox = (G, lv) => ({ l: lv.x - 9, r: lv.x + 9, t: G.laneY[2] - 
 export const GEARS = [
   { id: 'chain', name: 'THE CHAIN WINCH', moves: ['chain', 'claw'], lane: 0, t: -30, b: -8, word: 'NO MORE CHAIN', p3: { t: -24, b: -6 } },   /* (deeprails5) the chain winch drives the RAIL CLAW too */
   { id: 'lunge', name: 'THE SPIN-UP GEAR', moves: ['lunge', 'cutter'], lane: 0, t: -44, b: -32, jump: true, word: 'NO MORE LUNGE', p3: { t: -46, b: -32, jump: true } },   /* (deeprails5) and the SPARE CUTTER */
-  { id: 'dyn', name: 'THE DYNAMITE FEED', moves: ['dynamite', 'ladle'], lane: 1, t: -30, b: -8, word: 'NO MORE DYNAMITE', p3: { dx: 18, t: -50, b: -36, jump: true } },   /* (deeprails6) it feeds THE SLAG LADLE too */
-  { id: 'roof', name: 'THE ROOF WINCH', moves: ['rocks', 'collapse'], lane: 2, t: -30, b: -8, word: 'NO MORE ROCKFALL', p3: { t: -78, b: -56, jump: true } },
+  { id: 'dyn', name: 'THE DYNAMITE FEED', moves: ['dynamite'], lane: 1, t: -30, b: -8, word: 'NO MORE DYNAMITE', p3: { dx: 18, t: -50, b: -36, jump: true } },
+  { id: 'roof', name: 'THE ROOF WINCH', moves: ['rocks', 'collapse', 'ladle'], lane: 2, t: -30, b: -8, word: 'NO MORE ROCKFALL', p3: { t: -78, b: -56, jump: true } },
 ];
 /* (deeprails6) P3 ONE RAIL: every bank is struck from the MID rail (p3: px over the MID line, dx along its rear face; jump = a jump off the MID rail) */
 export const gearAt = (S, g) => (S && S.oneRail && g.p3 ? { lane: 1, dx: g.p3.dx || 0, t: g.p3.t, b: g.p3.b, jump: !!g.p3.jump } : { lane: g.lane, dx: 0, t: g.t, b: g.b, jump: !!g.jump });
