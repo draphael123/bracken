@@ -350,8 +350,18 @@ export function takeBlow(e, S, dmg) {
 export const PLAN = { react: 0.24, miss: 0.12 };
 export const gbHazards = S => S.throws.filter(c => c.t > -0.05).map(c => [c.tx, GB.lob.r + 12, c.ty]);
 export function gbPlan(s) {
-  const out = gbPlan0(s);
+  const out = avoidTrench(s, gbPlan0(s));
   if (globalThis.__gbWhy) { const k = out.why.replace(/ \(.*/, ''); globalThis.__gbWhy[k] = (globalThis.__gbWhy[k] || 0) + 1; }
+  return out;
+}
+/* (claude/kitchengate4) THE TRENCH SPLITS THE FLOOR: a hero on the floor whose way lies over the trench goes by the line (up onto its near end, along it, off its far end); one
+   whose way stops in the trench stops at its lip instead */
+function avoidTrench(s, out) {
+  const { P, S } = s, G = S.G, TR = G.trench; if (!TR || !P.ground || !onFloor(G, P) || out.jump || out.gx == null) return out;
+  const W0 = TR.steps[0][0], E1 = TR.steps[1][1], B = G.belt, mem = s.mem || {}, t = s.t || 0;
+  const via = (x, why) => { if (Math.abs(P.x - x) < 9) { out.jump = true; out.gx = x + (x < G.mid ? 12 : -12); mem.jumpT = t; mem.jumpX = out.gx; out.why = why + ' (up)'; } else { out.gx = x; out.why = why; } out.atk = false; return out; };
+  if (P.x <= W0 + 2 && out.gx > W0 - 6) return out.gx > E1 ? via((B.x0 + W0) / 2, 'over the trench by the line') : (out.gx = W0 - 6, out);
+  if (P.x >= E1 - 2 && out.gx < E1 + 6) return out.gx < W0 ? via((B.x1 + E1) / 2, 'over the trench by the line') : (out.gx = E1 + 6, out);
   return out;
 }
 function gbPlan0(s) {
@@ -383,7 +393,7 @@ function gbPlan0(s) {
   /* 0b. DOWN IN THE COAL TRENCH: climb out at the nearer end (to the step, then up onto the floor) */
   const TR = G.trench;
   if (TR && P.ground && inTrench(G, P)) { mem.hook = false; const [w0, e0] = TR.steps, wx = (w0[0] + w0[1]) / 2, ex = (e0[0] + e0[1]) / 2, east = gbOpen(e) ? true : Math.abs(P.x - ex) < Math.abs(P.x - wx), st = east ? e0 : w0, sx = east ? ex : wx;
-    if (onStep(G, P)) return jump('climb out of the coals', east ? st[1] + 16 : st[0] - 16);
+    if (Math.abs(P.y - TR.stepY) < 4) { const ue = Math.abs(P.x - ex) < Math.abs(P.x - wx); return jump('climb out of the coals', ue ? e0[1] + 18 : w0[0] - 18); }   /* (on a step, wherever on it he stands) */
     if (Math.abs(P.x - sx) < 22) return jump('up onto the step', sx);
     out.gx = sx; out.why = 'the coals: to the step'; return out; }
   /* 1. IN THE AIR: keep going */
