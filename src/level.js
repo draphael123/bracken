@@ -3741,9 +3741,9 @@ function trialYard(hero) {
     pirate: [
       ['hit', 3, 'THE CUTLASS: X AND KEEP GOING, A RUN OF FIVE. HIT THE STRAW MAN THREE TIMES.', [['dummy', 18]], 'X'],
       ['third', 2, 'THE THIRD CUT: X THREE TIMES IN A RUN. THE THIRD LANDS HEAVY AND SHOVES. LAND TWO.', [['dummy', 16], ['dummy', 20]], 'X, X, X'],
-      ['parry', 3, 'NO SHIELD: TAP C TO PARRY. IT TURNS A YELLOW BLOW AND LOADS THE PISTOL. TURN THREE.', [['archer', 22]], 'TAP LB'],
+      ['parry', 3, 'NO SHIELD: TAP C FOR THE HOOK CATCH. ON THE BEAT IT TURNS A YELLOW BLOW AND LOADS THE PISTOL. CATCH THREE.', [['archer', 22]], 'TAP LB'],
       ['dodge', 2, 'THE POWDER FLASH: TAP A WAY TWICE, OR V. POWDER DAZZLES THE FOE AHEAD. TWICE.', [], 'B, OR THE STICK TWICE'],   /* (claude/heropassa) */
-      ['flash', 2, 'THE BEAT: TAP C AS HIS SWORD FLASHES WHITE. THE PARRY LEAVES HIM OPEN. TURN IT TWICE.', [['swornsword', 18]], 'TAP LB AS IT FLASHES'],
+      ['flash', 2, 'THE BEAT: TAP C AS HIS SWORD FLASHES WHITE. THE CATCH SNAGS IT AND LEAVES HIM OPEN. CATCH IT TWICE.', [['swornsword', 18]], 'TAP LB AS IT FLASHES'],
       ['tells', 2, 'ONE YELLOW ! : A PARRY TURNS IT. TWO RED !! : NOTHING DOES, SO GET CLEAR. DO BOTH.', [['hedgeknight', 18]], 'TAP LB FOR !    B OR A FOR !!', MARKS],
       ['heavyblow', 2, 'HOLD X: THE PISTOL GOES THROUGH ANY GUARD, THEN RELOADS. FIRE IT TWICE.', [['dummy', 14], ['dummy', 20]], 'HOLD X'],
       ['hook', 2, 'HOLD C: THE HOOK HAULS YOU TO RIGGING, OR A MAN TO YOU. THROW IT TWICE.', [['dummy', 20]], 'HOLD LB'],
