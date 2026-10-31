@@ -362,7 +362,7 @@ export function buildKitchenGate({ painter, T, TS }) {
   const railA = { x0: PXC(A0 + 7.5), y0: 300, x1: PXC(A0 + 16.5), y1: 300, hooks: true, speed: 200, meat: true, dir: 1, arena: true, id: 'kg-arena-a', hop: [PXC(A0 + 11.5), PXC(A0 + 14.5)], hopRush: [PXC(A0 + 10), PXC(A0 + 13)], hand: railB };
   zipLines.push(railA, railB);
   sign(A0 - 1, FL - 1, 'RIDE THE HOOK, DROP ON HIS PLATTER.');
-  ent('torch', A0 + 1, FL - 1); ent('torch', A1 - 18, FL - 1);
+  ent('torch', A0 + 1, FL - 1); ent('torch', A1 - 16, FL - 1);   /* (claude/kitchengate4: the east torch off the trench, on his table side) */
   ent('grubbag', A1 - 7, FL - 1);
 
   const arena = (([A0, A1]) => { const BELT = [A0 + 7, A1 - 16, FL - 2], PLATS = [[A0 + 9, A0 + 12, FL - 5]]; return { x0: A0 * TS, x1: (A1 + 1) * TS, floor: FL * TS, y0: RF * TS, trigger: (A0 + 6) * TS, wallL: A0 - 1, wallR: A1 + 1, boss: 'grubbag', music: 'grubbag', tint: '#f0c890', tintA: 0.06,
@@ -375,7 +375,8 @@ export function buildKitchenGate({ painter, T, TS }) {
     W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: 39 }, pools: [], falls: [],
     arena, kitchen: true, kgKit: true, hoists, kgFires: fires, kgPots: pots, kgWheels: wheels, kgTrails: trails, kgDoors: doors, kgRace: race, kgPages: pages, kgVault: vault, kgRacks: racks,
     zipLines, slick, reachVents, moversExtra: movers, kgBelts: belts, kgFlares: flares, kgProps: props,
-    calm: [[0, W - 1, 0, H - 1]],   /* placed wholly by hand: nothing sprinkled */
+    calm: [[0, W - 1, 0, H - 1]],
+    noCoin: [[oldCol(397), oldCol(412), 16, 24]],   /* (claude/kitchengate4) no gold sprinkled in (or over) the coal trench: nothing lures you onto the coals */   /* placed wholly by hand: nothing sprinkled */
     checkRun: 330,                  /* (claude/kitchengate3: 330 - the larder and the carvery widened two spans) four shrines, one closing each area's exam (A10c): src/level.js checkpoints() must not fill between them */
     sections: SECTIONS.map(([name, x0, x1]) => ({ id: name.toLowerCase().replace(/[^a-z]+/g, '-'), name, x0, x1 })),
     squadBands: [{ lo: KITCHEN.arena[0], hi: W - 1, spots: 0, why: "GRUBBAG'S TABLE: the boss's hall - no squad stands in a boss arena" }, ...[600].filter(lo => lo > KITCHEN.arena[0] && lo < W).map(lo => ({ lo, hi: W - 1, spots: 0, why: "GRUBBAG'S TABLE, the sprinkle section that starts at " + lo + " (tools/sprinkle-cap.mjs keys a band on its section start): his hall's east wall" }))]   /* (claude/kitchengate3: the 400-column band went - section 3 now holds the carvery and the feast hall, both with squads) */,
@@ -384,7 +385,7 @@ export function buildKitchenGate({ painter, T, TS }) {
       { kind: 'kgpage', opens: 'secret', hud: 'RECIPE PAGES n/3: THE SPICE VAULT' },
     ],
     duskStart: -1, duskLen: 1, music: 'kitchengate', night: false, glowNight: false,
-    interiors: [[1, 72, 28, 46, 'cellar'], [56, 104, 9, 26, 'cellar'], [105, 200, 4, 28, 'keep'], [LARDER, LARDER + 77, 6, 26, 'cellar'], [oldCol(201), CARVERY - 1, 8, 27, 'keep'], [CARVERY, oldCol(300) - 1, 6, 27, 'keep'], [oldCol(300), oldCol(388), 6, 27, 'royal'], [oldCol(389), oldCol(430), 6, 21, 'royal']],   /* INSIDE THE CASTLE: every hall has a back wall, never the sky (the art lane gives each its own) */
+    interiors: [[1, 72, 28, 46, 'cellar'], [56, 104, 9, 26, 'cellar'], [105, 200, 4, 28, 'keep'], [LARDER, LARDER + 77, 6, 26, 'cellar'], [oldCol(201), CARVERY - 1, 8, 27, 'keep'], [CARVERY, oldCol(300) - 1, 6, 27, 'keep'], [oldCol(300), oldCol(388), 6, 27, 'royal'], [oldCol(389), oldCol(430), 6, 24, 'royal']],   /* INSIDE THE CASTLE: every hall has a back wall, never the sky (the art lane gives each its own) */
     palette: { hall: true, sky: 'night', dress: 'none', ledges: 'beam', haze: 'rgba(255,170,90,0.10)', dirt: '#5e4a3a', dirtL: '#7a6450', dirtD: '#3a2c22', grass: '#8a7058', grassL: '#a88a6a', grassD: '#5a4636' },
     ambient: [{ x0: 0, x1: 99999, kind: 'cave' }],
     tints: [[-24, 104, [180, 190, 210], 0.07], [104, LARDER, [255, 200, 150], 0.07], [LARDER, oldCol(201), [180, 196, 214], 0.07], [oldCol(201), CARVERY, [255, 210, 160], 0.07], [CARVERY, oldCol(300), [255, 205, 160], 0.07], [oldCol(300), oldCol(372), [255, 215, 170], 0.06], [oldCol(372), W + 24, [255, 200, 140], 0.08]],

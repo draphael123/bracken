@@ -14,7 +14,7 @@ const only = process.argv[2] ? new Set(process.argv[2].split(',')) : null;
 mkdirSync(OUT, { recursive: true });
 const stoke = (id, n) => `BK.kitchen().stoke('${id}');for(let k=0;k<${n};k++){BK.step(1);BK.P.hp=BK.P.maxHp;}`;
 /* the boss: his hall, him set into a mode */
-const gb = (m, t, extra) => `BK.tp(${oldCol(398)},21);for(let k=0;k<320;k++){BK.sim(1);BK.P.hp=BK.P.maxHp;}const GH=BK.grubbagHands(),S=GH&&GH.show(),b=BK.boss;if(S&&b){S.restT=99;S.waves=[];S.throws=[];S.flings=[];S.sweeps=[];S.burns=[];S.items=[];S.lineT=99;S.stove.st='cold';BK.tp(${oldCol(404)},21);b.mode='${m}';b.modeT=${t};b.openT0=${t};b.face=-1;${extra || ''}}`;
+const gb = (m, t, extra) => `BK.tp(${oldCol(398)},21);for(let k=0;k<320;k++){BK.sim(1);BK.P.hp=BK.P.maxHp;}const GH=BK.grubbagHands(),S=GH&&GH.show(),b=BK.boss;if(S&&b){S.restT=99;S.waves=[];S.throws=[];S.flings=[];S.sweeps=[];S.burns=[];S.items=[];S.lineT=99;S.stove.st='cold';BK.tp(${oldCol(412)},21);b.mode='${m}';b.modeT=${t};b.openT0=${t};b.face=-1;${extra || ''}}`;
 const SHOTS = [
   ['cellar', 6, 39, ''], ['cellar-line', 8, 39, "for(let k=0;k<200;k++){BK.step(1);BK.P.hp=BK.P.maxHp;}"], ['cold-store', 30, 37, ''], ['scullery', 58, 39, ''], ['scullery-steam', 62, 39, stoke('scullery', 40)],
   ['vaults', 72, 26, ''], ['vault-griddle', 67, 26, "for(let k=0;k<200;k++){BK.step(1);BK.P.hp=BK.P.maxHp;if(BK.kitchen().flareState('vaultGriddle')==='flame')break;}"], ['brewhouse', 84, 26, stoke('brewhouse', 30)],
@@ -46,6 +46,13 @@ SHOTS.push(['kg3-larder', A + 2, 13, ''], ['kg3-larder-hop', A + 2, 13, ride(A +
   ['kg3-carvery', B + 8, 23, "for(let k=0;k<240;k++){BK.step(1);BK.P.hp=BK.P.maxHp;}"], ['kg3-carvery-haul', B + 20, 23, ride(B + 22, 386, 40)],
   ['kg3-flue-glow', B + 45, 13, untilFlue('glow', 60)], ['kg3-flue-flame', B + 45, 13, untilFlue('flame', 30)], ['kg3-flue-close', B + 47, 26, untilFlue('flame', 30)], ['kg3-flue-ride', B + 45, 13, untilFlue('out', 2) + ride(B + 46, 216, 12)],
   ['kg3-carvery-door', B + 72, 21, stoke('stove4', 60)], ['kg3-hearth-hop', oldCol(318), 15, '']);
+/* (claude/kitchengate4) THE COAL TRENCH (banked, lit), THE HOOK RAILS ridden, THE PLATTER DROP, THE SECOND HELPING's windup, the belly's swell and the big heal, ORDER UP's attendants on the hooks */
+const O = oldCol, hook = k => "const z=S.G.rails[" + k + "];BK.P.x=z.x0+40;BK.P.y=z.y0+12+(z.y1-z.y0)*40/(z.x1-z.x0);BK.P.vy=0;BK.keys.up=true;BK.step(2);BK.keys.up=false;BK.step(6);";
+SHOTS.push(['gb-trench', 0, 0, gb('sit', 1, 'BK.tp(' + O(404) + ',24);')], ['gb-trench-lit', 0, 0, gb('sit', 1, 'S.coal.lit=4;BK.tp(' + O(398) + ',23);')],
+  ['gb-hookA', 0, 0, gb('sit', 1, hook(0))], ['gb-hookB', 0, 0, gb('sit', 1, hook(1))],
+  ['gb-drop', 0, 0, gb('drop', 2.6, "S.dropFx={x:S.G.platter.x0+20,t:0.5};S.items.push({id:95,kind:'dish',x:S.G.belt.x0+120,state:'fall',y:S.G.belt.y-30,vx:-60,vy:-90},{id:96,kind:'bomb',x:S.G.belt.x0+60,state:'fall',y:S.G.belt.y-20,vx:-40,vy:-60});BK.P.x=S.G.platter.x0+20;BK.P.y=S.G.platter.y;")],
+  ['gb-second', 0, 0, gb('lobTell', 0.5, "S.secondOn='lob';")], ['gb-swell', 0, 0, gb('eat', 0.6, "b.eating={kind:'dish'};S.swellT=0.35;S.heal={n:180,t:1.0};")],
+  ['gb-bell-hooks', 0, 0, gb('bellTell', 0.01, "S.ph=2;S.adds=[];for(let k=0;k<75;k++){BK.step(1);BK.P.hp=BK.P.maxHp;S.restT=99;}")]);
 SHOTS.splice(0, SHOTS.length, ...SHOTS.filter(s => !only || only.has(s[0])));
 const pg = await openPage({ audio: false, fonts: false });
 try {
