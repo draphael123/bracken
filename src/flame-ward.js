@@ -22,11 +22,12 @@ import * as PA from './pyro-art.js';   /* (claude/pyroarttune) the dome, the par
 export const WARD = {
   t: 0.45,            // the ward is up this long from the press (a tap or not)
   perfect: 0.15,      // a blow in the first this long of it is a PARRY
-  cd: 1.0,            // after a ward ends: this long before the next
+  cd: 0.75,            // after a ward ends: this long before the next
   spent: 0.3,         // ...only this long after a parry
   fold: 0.35,         // C held this long: the ward folds into the held fireball (main.js FB.steps[0])
-  rec: 0.4,           // THE MISTIME: rooted this long
-  exposed: 1.25,      // ...and a blow that lands in it costs this much more
+  rec: 0.2,           // THE MISTIME: rooted this long
+  exposed: 1.1,      // ...and a blow that lands in it costs this much more
+  blockK: 0.7,        // (claude/pyroarttune, TUNE) the late block costs this x the shield rate in stamina (the ward is her only guard now: the crouch guard is gone)
   threat: 160,        // a foe or a projectile this near makes an empty ward a mistime
   R: 22,              // the dome's radius, px: contact and projectiles
   reach: 52,          // a melee attacker this close is the one scorched by a parry/block
@@ -99,7 +100,7 @@ export function makeFlameWard(api) {
   }
   /* THE BLOCK: later in the ward. 'blocked', or 'broken' (too little stamina: half comes through) */
   function block(p, f, dmg) {
-    p.fwDid = true; const cost = api.blockCost(dmg);
+    p.fwDid = true; const cost = api.blockCost(dmg) * WARD.blockK;
     if (p.st < cost) { stats.broken++; p.st = 0; p.stFlash = 0.5; end(p, WARD.cd); api.SFX.guardBreak(); api.number(p.x, p.y - 22, 'WARD BROKEN', '#ffd36b'); api.hitstop(0.08); return 'broken'; }
     p.st -= cost; p.stDelay = api.stDelay; stats.blocks++;
     api.SFX.wardBlock(); api.hitstop(0.05); PA.fx('block', p.x, p.y - 8, api.time, { dir: Math.sign((f ? f.x : p.x + p.face) - p.x) || p.face }); api.sparks(p.x + (Math.sign((f ? f.x : p.x + p.face) - p.x) || p.face) * 12, p.y - 8, Math.sign((f ? f.x : p.x + p.face) - p.x) || p.face, 7);
