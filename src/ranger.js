@@ -269,7 +269,7 @@ export function makeRanger(api) {
   function guardStep(p, dt, keys, ctx) {
     p.rgHeld = keys.block && !p.dead ? (p.rgHeld || 0) + dt : 0;
     const want = !p.dead && p.rgHeld >= RG.guard.hold && !keys.up && !keys.down && !ctx.stunned && !ctx.dodging && !ctx.attacking && ctx.guardOk !== false && !p.plunge && !(p.rgBashT > 0)
-      && !(p.charge > 0) && !p.rgNock && !p.rgFlip && (p.ground || p.swim) && !(p.guardTired > 0) && (p.st || 0) > 0;
+      && !(p.charge > 0) && !p.rgNock && !p.rgFlip && !(p.drinkT > 0) && (p.ground || p.swim) && !(p.guardTired > 0) && (p.st || 0) > 0;
     if (want && !p.rgGuard) { p.rgGuard = true; p.rgGuardT = 0; stats.guards++; api.SFX.braceSet && api.SFX.braceSet(); api.ringAt(p.x + p.face * 8, p.y - 11, 9, '#c8e89a', 0.2); api.teachGuard && api.teachGuard(); }
     else if (!want && p.rgGuard) { p.rgGuard = false; p.rgGuardT = 0; }
     if (!p.rgGuard) return;
