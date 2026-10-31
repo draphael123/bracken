@@ -338,17 +338,17 @@
   "lostPct": 236
  },
  "fallingtower": {
-  "hash": "5849541d6d56",
+  "hash": "7cf9269bbf41",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 58,
-  "deaths": 20,
-  "kills": 13,
-  "lifts": 148,
+  "hits": 65,
+  "deaths": 18,
+  "kills": 12,
+  "lifts": 155,
   "walked": 100,
   "bare": true,
-  "lostPct": 809
+  "lostPct": 733
  },
  "burning": {
   "hash": "342eb49d3ea1",
@@ -650,29 +650,29 @@
   "lostPct": 171
  },
  "kitchengate": {
-  "hash": "b7c5cd59e596",
+  "hash": "da9d2153a739",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 30,
-  "deaths": 1,
-  "kills": 28,
-  "lifts": 66,
+  "hits": 47,
+  "deaths": 2,
+  "kills": 33,
+  "lifts": 65,
   "walked": 100,
   "bare": true,
-  "lostPct": 132
+  "lostPct": 209
  },
  "rookery": {
-  "hash": "4ef21b8a02e5",
+  "hash": "3c07c53af25a",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 41,
-  "deaths": 4,
-  "kills": 31,
-  "lifts": 71,
+  "hits": 44,
+  "deaths": 5,
+  "kills": 30,
+  "lifts": 83,
   "walked": 100,
   "bare": true,
-  "lostPct": 244
+  "lostPct": 282
  }
 }

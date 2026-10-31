@@ -43,10 +43,11 @@ export function inReach(z, P) {
 }
 /* the rope he would take, nearest first, or null. `up`: the key (or a buffered press); otherwise only a touch in the air counts */
 export function findCatch(L, P, up, downHeld) {
+  const rel = P.zipRelease > 0;   /* (claude/zipregrab) a rope's END or SNAP (zipHard) still shuts every rope for the window - the hook rails' designed drop; a kick or a drop shuts only the rope just left. The let-go window shuts only the rope just left: another rope is caught at once, the hop to the next rail */
   let best = null, bd = 1e9;
   for (const z of (L.zipLines || [])) {
     if (z.cut > 0) continue;   /* (claude/lance4) a parted line holds nobody until it is re-strung */
-    if (z === P.zipSkip && !up) continue;   /* the rope he just kicked off, or dropped from: not by touch until he has landed or gone away from it */
+    if (z === P.zipSkip && (!up || rel)) continue;   /* the rope he just kicked off, or dropped from: not by touch until he has landed or gone away from it */
     if (!up && (P.ground || downHeld || z.snap || z.raid)) continue;   /* (claude/ksar2) a RAIDER LINE (src/ksar-hands.js) is taken on purpose too: a jump up the tower's stair must not catch it */   /* by touch only in the air, and never a frayed one: that is taken on purpose (UP) */
     if (!inReach(z, P)) continue;
     const d = Math.abs(lineY(z, P.x) - (P.y - 12)); if (d < bd) { bd = d; best = z; }
@@ -63,11 +64,8 @@ export function zipStep(c, dt) {
   if (P.dead || P.hurt > 0 || !list.includes(P.zip)) P.zip = null;
   if (P.zip && P.zip.cut > 0) { P.zip = null; P.zipRelease = ZIP.RELEASE; P.vy = 0; }   /* (claude/lance4) THE LINE PARTS under you: you fall */
   /* TAKE HOLD */
-  /* (claude/lance4, STORMHOLD 4's HAUL LINES - L.zipTransfer) ROPE TO ROPE: after a KICK off a rope (JUMP) or a DROP (DOWN) the lock-out is for THAT rope only - a
-     touch in the air takes ANOTHER line straight away (the haul lines' transfers, the Lance's ropes). A rope ridden out to its end still locks every rope for the release */
-  const xfer = !!L.zipTransfer && P.zipRelease > 0 && !!P.zipSkip;
-  if (!P.zip && !P.dead && !(P.hurt > 0) && (!(P.zipRelease > 0) || xfer) && !P.climb && !P.swim && !P.plunge && !(P.dodge > 0) && !(P.asleep > 0) && !(P.atk >= 0) && !(P.abuf > 0)) {
-    const z = findCatch(L, P, xfer ? false : !!(keys.up || c.upPress), !!keys.down);
+  if (!P.zip && !P.dead && !(P.hurt > 0) && !(P.zipRelease > 0 && P.zipHard) && !P.climb && !P.swim && !P.plunge && !(P.dodge > 0) && !(P.asleep > 0) && !(P.atk >= 0) && !(P.abuf > 0)) {
+    const z = findCatch(L, P, !!(keys.up || c.upPress), !!keys.down);
     if (z) { P.zip = z; P.zipT = 0; P.zipDir = runDir(z, P); P.zipFx = 0; P.zipSkip = null; P.climb = false; P.vx = P.zipDir * z.speed;
       c.SFX.zipCatch ? c.SFX.zipCatch() : c.SFX.ratchet();
       if (z.snap) { c.SFX.ratchet(); c.callout('THE ROPE FRAYS: JUMP OFF BEFORE IT GOES'); }
@@ -78,16 +76,16 @@ export function zipStep(c, dt) {
   /* THE FRAYED ROPE GIVES WAY (the Fair's bunting): `snap` s after you take it, or where it would have, from its top */
   if (z.snap) { P.zipT = (P.zipT || 0) + dt;
     if (P.zipT >= z.snap || (z.snapX !== null && (dir > 0 ? P.x >= z.snapX : P.x <= z.snapX))) {
-      P.zip = null; P.zipRelease = ZIP.RELEASE; P.vy = 0; P.vx = dir * 60; c.SFX.crack(); c.burst(P.x, P.y - 16, 8, ['#b8382c', '#e8c23a', '#5a4630'], 60, 0.5); c.callout('THE ROPE SNAPS'); return; } }
+      P.zip = null; P.zipSkip = z; P.zipRelease = ZIP.RELEASE; P.zipHard = true; P.vy = 0; P.vx = dir * 60; c.SFX.crack(); c.burst(P.x, P.y - 16, 8, ['#b8382c', '#e8c23a', '#5a4630'], 60, 0.5); c.callout('THE ROPE SNAPS'); return; } }
   /* LET GO: a kick off it (jump) or a drop (down) */
-  if (c.jumpPress) { P.zip = null; P.zipSkip = z; P.zipRelease = ZIP.RELEASE; P.jbuf = 0; P.vy = -240; P.vx = dir * z.speed * 0.8; P.ground = false; P.climb = false; c.SFX.pJump(); return; }
-  if (keys.down) { P.zip = null; P.zipSkip = z; P.zipRelease = ZIP.RELEASE * 0.5; P.vy = 40; P.vx = dir * z.speed * 0.4; c.SFX.pStep ? c.SFX.pStep() : 0; return; }
+  if (c.jumpPress) { P.zip = null; P.zipSkip = z; P.zipRelease = ZIP.RELEASE; P.zipHard = false; P.jbuf = 0; P.vy = -240; P.vx = dir * z.speed * 0.8; P.ground = false; P.climb = false; if (z.meat) P.canCut = false; c.SFX.pJump(); return; }   /* (claude/kitchengate3) off a MEAT-HOOK RAIL the kick is a fixed hop, tapped or held (the jump-cut never shortens it): THE KITCHEN GATE's hook-to-hook hand-offs are flown on it */
+  if (keys.down) { P.zip = null; P.zipSkip = z; P.zipRelease = ZIP.RELEASE * 0.5; P.zipHard = false; P.vy = 40; P.vx = dir * z.speed * 0.4; c.SFX.pStep ? c.SFX.pStep() : 0; return; }
   /* RIDE: the rope's own height under his hands, his speed along it */
   const ty = lineY(z, P.x) + z.hang;
   P.climb = false; P.cling = true; P.ground = false; P.coyote = 0; P.face = dir; P.vx = dir * z.speed; P.vy = z.slope * P.vx + (ty - P.y) * 10;
   P.zipFx = (P.zipFx || 0) - dt;
   if (P.zipFx <= 0) { P.zipFx = 0.1; c.SFX.zipWhine ? c.SFX.zipWhine() : 0; c.sparks(P.x, lineY(z, P.x) - 1, -dir, 2); }
-  if (dir > 0 ? P.x >= z.xb - ZIP.END_PAD + 3 : P.x <= z.xa + ZIP.END_PAD - 3) { P.zip = null; P.zipRelease = ZIP.RELEASE; P.vy = 0; P.vx = dir * 100; }
+  if (dir > 0 ? P.x >= z.xb - ZIP.END_PAD + 3 : P.x <= z.xa + ZIP.END_PAD - 3) { P.zip = null; P.zipSkip = z; P.zipRelease = ZIP.RELEASE; P.zipHard = true; P.vy = 0; P.vx = dir * 100; }
 }
 
 /* ---------------- DRAWING (greybox: plain shapes, in the rope's own colours) ---------------- */

@@ -12,7 +12,9 @@
 // THE DRUMMER (e.t 'drummer', the level's ONE new foe): small, light, no weapon - he runs to his drum, beats it on a told two-count ('1' .. '2' over him), and when you come at
 //   him he shoves you off (a told '!', a small push) and runs for his other drum. Cut him down and that stretch is quiet.
 // Every capital line it says is a WC_SAY line (src/hint-lines.js lists them).
-import * as WCW from './redraw/warcairn_world_art.js';   /* (claude/warcairnart) the world, drawn */
+import * as WCW from './redraw/warcairn_world_art.js';
+import * as WA from './redraw/warcairn_art2.js';   /* (claude/warcairn2art) slate and snow, banners, camps, the hatchet kit, the summit */   /* (claude/warcairnart) the world, drawn */
+import { makeHatchets, HATCHET_SAY } from './war-cairn-hatchets.js';   /* (claude/warcairn2) THE HATCHET: the level's second verb (racks, the clan's drops; cut, drop, knock down, beat) */
 export const WC = {
   beat: { r: 8, stumble: 1.0, spent: 6, box: 12, arenaSpent: 6 },
   rage: { t: 5, dealt: 1.25, taken: 1.25 },
@@ -23,6 +25,8 @@ export const WC = {
 export const WC_SAY = {
   beat: 'THE BEAT IS YOURS', rage: 'WAR-RAGE', spent: 'THE HIDE IS SLACK', surge: 'THE CLAN SURGES', stumble: 'THEY STUMBLE', gate: 'THE DRUM GATE SWINGS OPEN',
   shut: 'THE GATE SWINGS SHUT', slab: 'THE SLABS SWING LEVEL', cornice: 'THE SNOW CRACKS', drummer: 'THE DRUMMER: STRIKE HIS DRUM FIRST', shove: 'HE SHOVES YOU OFF', his: 'HIS DRUM',
+  ...HATCHET_SAY,   /* (claude/warcairn2) the hatchet's lines (src/war-cairn-hatchets.js) */
+  hatchetHint: 'A HATCHET: ATTACK THROWS IT, HOLD UP TO LOB IT, DOWN TO TOSS IT SHORT. IT CUTS ROPES, DROPS STONES, KNOCKS DOWN NESTS AND BEATS A DRUM.',
 };
 /* who counts as the clan (stumbles on a beat, surges on the drummer's) */
 export const CLAN = new Set(['soldier', 'javelin', 'shield', 'heavy', 'berserker', 'drummer']);
@@ -32,6 +36,16 @@ export function makeWarCairnHands(ctx) {
   const L = () => ctx.L;
   let S = null;
   H.on = () => !!(L() && L().warcairn);
+  /* (claude/warcairn2) THE HATCHET (src/war-cairn-hatchets.js): it beats a drum through beat() below, and reaches the Chieftain through ctx.chief */
+  const HX = makeHatchets(ctx, { clan: CLAN,
+    drumAt: (x, y) => { if (!S) return null; for (const dr of S.drums.values()) { const dx = drumX(dr.d), dy = drumY(dr.d); if (Math.abs(x - dx) < WC.beat.box + 2 && y > dy - 24 && y < dy + 4) return dr; } return null; },
+    beat: (dr, who) => { if (dr.his) { say(drumX(dr.d), drumY(dr.d) - 34, 'his', '#ff6b6b'); return false; } return beat(dr, 'hero', who); },
+    chief: () => (ctx.chief ? ctx.chief() : null),
+    told: k => !!(S && S.said.has('hx:' + k)), tell: k => { if (S) S.said.add('hx:' + k); }, hint: m => { if (ctx.hint) ctx.hint(WC_SAY.hatchetHint); } });
+  H.hatchets = () => HX;
+  H.interact = P => H.on() && HX.interact(P);
+  H.canTake = P => H.on() && HX.canTake(P);
+  H.held = P => H.on() && HX.held(P);
   const R = Math.round;
   const say = (x, y, k, col = '#ffd36b') => ctx.number(x, y, WC_SAY[k], col);
   const once = k => { if (S.said.has(k)) return false; S.said.add(k); return true; };
@@ -45,6 +59,8 @@ export function makeWarCairnHands(ctx) {
   H.reset = () => {
     const lv = L(); if (!lv || !lv.warcairn) { S = null; return; }
     const keep = S && S.L === lv ? S : null;
+    /* (claude/warcairn2) A RESPAWN does not lay the grid again (main.js respawn): every drum machine is put back as laid - the gates shut, the slabs hanging, the snow whole */
+    if (keep) { for (const g of keep.gates.values()) if (g.open) cells(g.d, ctx.T.PORT); for (const s of keep.slabs.values()) if (s.level) row(s.d.x0, s.d.x1, s.d.y, ctx.T.AIR); for (const c of keep.cornices.values()) if (c.state !== 'whole') row(c.d.x0, c.d.x1, c.d.y, ctx.T.ONEWAY); }
     const drums = new Map(), gates = new Map(), slabs = new Map(), cornices = new Map();
     for (const d of lv.wcDrums || []) drums.set(d.id, { d, spentT: 0, beatT: 0, by: null, his: false, count: 0 });
     for (const g of lv.wcGates || []) gates.set(g.id, { d: g, openT: 0, open: false });
@@ -52,6 +68,7 @@ export function makeWarCairnHands(ctx) {
     for (const c of lv.wcCornices || []) cornices.set(c.id, { d: c, state: 'whole', t: 0 });
     S = { L: lv, drums, gates, slabs, cornices, said: keep ? keep.said : new Set(), sec: -1, banner: null, answer: 0,
       n: keep ? keep.n : { beats: 0, heroBeats: 0, drummerBeats: 0, stumbles: 0, surges: 0, gates: 0, slabs: 0, cornices: 0, rages: 0, shoves: 0, arrows: 0, axes: 0 } };
+    HX.reset(!!keep);
   };
 
   /* ---------- A BEAT ---------- */
@@ -113,12 +130,14 @@ export function makeWarCairnHands(ctx) {
     if (P && lv.sections) { const k = lv.sections.findIndex(s => P.x >= s.x0 * TS && P.x < s.x1 * TS); if (k >= 0 && k !== S.sec) { S.banner = { name: lv.sections[k].name, t: 3.4 }; S.sec = k; } }
     if (S.banner) { S.banner.t -= dt; if (S.banner.t <= 0) S.banner = null; }
     if (S.answer > 0) S.answer = Math.max(0, S.answer - dt);
+    HX.update(dt);
   };
 
   /* ---------- A HERO'S BLOW (main.js attackBox): a drum it lands on is a beat ---------- */
   H.strike = hb => { if (!S || !hb) return;
     for (const dr of S.drums.values()) { const d = dr.d, x = drumX(d), y = drumY(d), box = { l: x - WC.beat.box, r: x + WC.beat.box, t: y - 22, b: y };
-      if (hb.l < box.r && hb.r > box.l && hb.t < box.b && hb.b > box.t && (!ctx.hitOnce || ctx.hitOnce(dr))) { if (dr.spentT > 0) { if (once('spent')) say(x, y - 34, 'spent', '#c8b8a8'); continue; } if (dr.his) { say(x, y - 34, 'his', '#ff6b6b'); continue; } beat(dr, 'hero', ctx.hero()); } } };
+      if (hb.l < box.r && hb.r > box.l && hb.t < box.b && hb.b > box.t && (!ctx.hitOnce || ctx.hitOnce(dr))) { if (dr.spentT > 0) { if (once('spent')) say(x, y - 34, 'spent', '#c8b8a8'); continue; } if (dr.his) { say(x, y - 34, 'his', '#ff6b6b'); continue; } beat(dr, 'hero', ctx.hero()); } }
+    HX.strike(hb); };
 
   /* ---------- WAR-RAGE on a hero (src/main.js) ---------- */
   H.raging = p => !!(S && p && (p.wcRageT || 0) > now());
@@ -156,16 +175,18 @@ export function makeWarCairnHands(ctx) {
 
   /* ---------- THE GUIDE's props (src/stuck-spots.js reads `on`), the tools, the pilot bot ---------- */
   const drumDone = dr => dr.spentT > 0 || dr.d.gates.some(id => { const g = S.gates.get(id); return g && g.open; }) || dr.d.slabs.some(id => { const s = S.slabs.get(id); return s && s.level; });
-  H.props = () => { if (!S) return []; const out = []; for (const dr of S.drums.values()) if (!dr.d.arena) out.push({ t: 'wcdrum', id: dr.d.id, x: drumX(dr.d), y: drumY(dr.d), on: drumDone(dr) }); return out; };
-  H.hoist = id => { const dr = S && S.drums.get(id); return dr ? { state: drumDone(dr) ? 'cut' : 'hang', d: (L().hoists || []).find(h => h.id === id) } : null; };
+  H.props = () => { if (!S) return []; const out = []; for (const dr of S.drums.values()) if (!dr.d.arena) out.push({ t: 'wcdrum', id: dr.d.id, x: drumX(dr.d), y: drumY(dr.d), on: drumDone(dr) }); return out.concat(HX.props()); };
+  H.hoist = id => { const dr = S && S.drums.get(id); if (dr) return { state: drumDone(dr) ? 'cut' : 'hang', d: (L().hoists || []).find(h => h.id === id) };
+    const st = S && HX.state(id); return st ? { state: st === 'hang' ? 'hang' : 'cut', d: (L().hoists || []).find(h => h.id === id) } : null; };   /* (claude/warcairn2) a hatchet target (the gorge's hauled bridge) is a hoist too: 'throw' */
   H.read = () => S ? { drums: [...S.drums.values()].map(dr => ({ id: dr.d.id, spent: +dr.spentT.toFixed(2), his: dr.his })), gates: [...S.gates.values()].map(g => ({ id: g.d.id, open: g.open, t: +g.openT.toFixed(2) })),
     slabs: [...S.slabs.values()].map(s => ({ id: s.d.id, level: s.level })), cornices: [...S.cornices.values()].map(c => ({ id: c.d.id, state: c.state })), banner: S.banner ? S.banner.name : null, sec: S.sec,
-    n: JSON.parse(JSON.stringify(S.n)) } : null;
+    n: JSON.parse(JSON.stringify(S.n)), hatchets: HX.read() } : null;
 
   /* ---------- DRAWING (flat granite and war-paint red; the art is src/redraw/warcairn_*.js) ---------- */
   const rect = (g, x, y, w, h, c) => { g.fillStyle = c; g.fillRect(R(x), R(y), R(w), R(h)); };
   H.drawWorld = (g, cx, cy, VW, VH, time) => {
     if (!S) return; const lv = L(), inX = (x, m = 80) => x - cx > -m && x - cx < VW + m;
+    WA.props(g, cx, cy, VW, time);   /* banners, hide tents + fire pits, antler totems: art only (no entity, no level data) */
     /* THE DRUM GATES, SLABS, SPANS' POSTS, CORNICES, DRIVEN HATCHETS and DRUMS: drawn (src/redraw/warcairn_world_art.js, claude/warcairnart) */
     for (const gt of S.gates.values()) { const d = gt.d; if (!inX(d.x0 * TS, 120)) continue; WCW.gate(g, d.x0 * TS - cx, d.y0 * TS - cy, (d.x1 - d.x0 + 1) * TS, (d.y1 - d.y0 + 1) * TS, gt.open, gt.openT, d.id, time); }
     for (const s of S.slabs.values()) { const d = s.d; if (!inX(d.x0 * TS, 200)) continue; WCW.slab(g, d.x0 * TS - cx, d.y * TS - cy, (d.x1 - d.x0 + 1) * TS, s.level, time); }
@@ -176,9 +197,18 @@ export function makeWarCairnHands(ctx) {
     for (const c of S.cornices.values()) { if (c.state === 'gone') continue; const d = c.d; if (!inX(d.x0 * TS, 120)) continue; WCW.cornice(g, d.x0 * TS - cx, d.y * TS - cy, (d.x1 - d.x0 + 1) * TS, c.state, time); }
     for (const h of lv.wcHolds || []) { if (!inX(h.x * TS)) continue; WCW.hold(g, h.x * TS - cx, h.y * TS - cy, h.dir); }
     for (const dr of S.drums.values()) { const d = dr.d; if (!inX(drumX(d))) continue; WCW.drum(g, drumX(d) - cx, drumY(d) - cy, { spent: dr.spentT, his: dr.his, beat: dr.beatT, by: dr.by, arena: !!d.arena, answer: S.answer, beatR: dr.beatT > 0 ? R((0.5 - dr.beatT) * 2 * WC.beat.r * TS) + 4 : null }, time); }
+    HX.draw(g, cx, cy, VW, time);   /* (claude/warcairn2) racks, hatchets, hauled bridges, hanging stones and totems, nests, the told arc */
+    drawSummit(g, cx, cy, VW, time);   /* (claude/warcairn2) THE BIGGER SUMMIT CAIRN and its DRUM BRAZIERS (greybox) */
     /* THE AREA BANNER */
     if (S.banner && ctx.text) { const a = Math.min(1, S.banner.t / 0.6, (3.4 - S.banner.t) / 0.4); g.globalAlpha = Math.max(0, a); ctx.text(S.banner.name, R(VW / 2), 34, '#ffe0c8', 'center', 8); g.globalAlpha = 1; }
   };
+  /* (claude/warcairn2, GREYBOX for art pass 2) THE BIGGER SUMMIT CAIRN behind the ring: stacked slate, ~3x the old one, a pole with antlers and a red rag on top; and a DRUM BRAZIER
+     beside each arena drum (an iron bowl on antler legs) - lit, flaring red on a beat and in his frenzy. The art lane draws them properly (scratch/brief-warcairn2-1030.md section 4.4) */
+  function drawSummit(g, cx, cy, VW, time) { const lv = L(); if (!lv.arena || !lv.arena.bzc) return; const A = lv.arena; if (A.x1 - cx < -200 || A.x0 - cx > VW + 200) return;
+    const fy = A.floor - cy, bx = A.x1 - cx - 8; WA.cairn(g, bx - 30, fy, time);   /* (claude/warcairn2art) the bigger cairn, painted */
+    const fz = !!(ctx.chiefFrenzy && ctx.chiefFrenzy());
+    for (const dr of S.drums.values()) { if (!dr.d.arena) continue; const x = drumX(dr.d) - cx + (dr.d.x < (A.x0 + A.x1) / 2 / TS ? -22 : 22), y = drumY(dr.d) - cy;
+      WA.brazier(g, x, y, dr.beatT > 0 || fz || dr.his, time); } }
   /* THE SKYLINE (src/redraw/warcairn_world_art.js skyline): main.js calls it behind the near layers */
   H.drawFar = (g, cx, cy, VW, VH, time) => { const lv = L(); if (!lv || !lv.arena) return; WCW.skyline(g, cx, cy, VW, VH, (lv.arena.x0 + lv.arena.x1) / 2, time);
     /* THE CLAN ON THE FAR RIDGE BEHIND THE RING (deco only, claude/warcairnart): onlookers; they throw their axes up on a beat. Drawn here, behind the drums and the fight */
@@ -188,5 +218,9 @@ export function makeWarCairnHands(ctx) {
     g.globalAlpha = 0.35 + 0.2 * Math.sin(time * 12); g.strokeStyle = '#ff4a3a'; g.strokeRect(R(p.x - cx) - 7, R(p.y - cy) - 22, 14, 22); g.globalAlpha = 1; } };
   /* THE DRUMMER, greybox: a hide drum on his back, sticks (main.js draws his body: SPR.drummer) */
   H.drummerOver = (g, e, cx, cy, time) => { if (!e.alive) return; WCW.drummerDrum(g, e.x - cx, e.y - cy, e.face || 1, e.mode === 'count', time); };
+  /* AN ELITE BERSERKER OF THE CLAN (claude/warcairn2art): an antler crown, a red war-paint band, bone at the throat, a red pulse at his feet - drawn over his body, art only.
+     NOTE: the level flags them elite:true on the foe entity, but src/main.js ELITE has no 'berserker' row, so eliteMake ignores it (they are plain berserkers in play) - the mark follows the level's flag */
+  const eliteFlag = e => { if (e.wcElite !== undefined) return e.wcElite; const lv = L(); return (e.wcElite = !!(lv && lv.ents || []).some(en => en.t === e.t && en.elite && Math.abs(en.x * TS + 8 - e.x) < 24 && Math.abs((en.y + 1) * TS - e.y) < 24)); };
+  H.eliteOver = (g, e, cx, cy, time) => { if (!e.alive || e.t !== 'berserker' || !L() || !L().warcairn || !eliteFlag(e)) return; WA.eliteMark(g, e.x - cx, e.y - cy, e.face || 1, e.mode === 'asleep' ? 12 : (e.h || 18) - 1, time); };
   return H;
 }

@@ -31,6 +31,7 @@ export const KG_SAY = {
   roar: 'THE FIRE ROARS', steam: 'THE COPPER STEAMS: STAND IN IT', turns: 'THE GREAT SPIT TURNS', dies: 'THE FIRE DIES DOWN', catches: 'THE GREASE CATCHES: OFF THE TRAIL',
   melts: 'THE TALLOW DOOR MELTS', race: 'THE GREASE POT GOES OVER: RUN!', page: 'A RECIPE PAGE', vault: 'THE SPICE VAULT OPENS', burns: 'HE BURNS', slides: 'HE SLIDES ON THE GREASE',
   knocked: 'KNOCKED OFF THE LINE', batted: 'BATTED ALONG', fizz: 'IT GOES OFF ON THE LINE', flare: 'THE STOVE FLARES: TIME IT', bellows: 'STRIKE THE BELLOWS', regrease: 'THE GREASE RUNS BACK', cleaver: 'THE CLEAVER: STEP BACK', tray: 'THE TRAY: GO ROUND HIM', plates: 'HE THROWS PLATES: OFF THE RING',
+  handoff: 'JUMP IN THE RED: HOOK TO HOOK', haul: 'THE CHAIN HAULS YOU UP', flue: 'THE FLUE: TAKE A HOOK AS ITS FLAME DIES',   /* (claude/kitchengate3) THE HANGING LARDER and THE CARVERY */
 };
 /* a spit's place on its wheel at angle a: { x (its middle), y (its top) } */
 export const spitAt = (w, a) => ({ x: w.x + Math.cos(a) * WHEEL.R, y: w.y + Math.sin(a) * WHEEL.R });
@@ -112,6 +113,8 @@ export function makeKitchenHands(ctx) {
     (lv.kgPages || []).forEach(([px, py], i) => { if (S.pages.has(i)) return; const x = px * TS + 8, y = (py + 1) * TS;
       for (const p of ps) if (p && !p.dead && Math.abs(p.x - x) < K.pageR && Math.abs(p.y - y) < 20) { S.pages.add(i); S.n.pages++; sfx('coin', 'pickup'); ctx.number(x, y - 30, KG_SAY.page + ' ' + S.pages.size + '/3', '#ffe9a0'); break; } });
     if (!S.vaultOpen && lv.kgVault && S.pages.size >= lv.kgVault.need) { S.vaultOpen = true; clearCells(lv.kgVault); sfx('clank', 'thud'); say(lv.kgVault.x0 * TS + 16, lv.kgVault.y0 * TS - 20, 'vault', '#ffe9a0'); }
+    /* (claude/kitchengate3) THE HOOK-TO-HOOK HOP, THE HAUL LINE, THE FLUE: told once each, the first time a hero takes such a rail */
+    for (const p of ps) { const z = p && p.zip; if (!z || !z.meat) continue; const k = z.flue ? 'flue' : z.hop ? 'handoff' : z.haul ? 'haul' : null; if (k && once(k)) say(p.x, p.y - 40, k, k === 'flue' ? '#ff9a5c' : '#ffd36b'); if (z.hop) S.n.hopRides = (S.n.hopRides || 0) + dt; }
     /* THE NAMED AREAS: the banner when you come into one */
     if (P && lv.sections) { const k = lv.sections.findIndex(s => P.x >= s.x0 * TS && P.x < s.x1 * TS); if (k >= 0 && k !== S.sec) { S.banner = { name: lv.sections[k].name, t: 3.4 }; S.sec = k; } }
     if (S.banner) { S.banner.t -= dt; if (S.banner.t <= 0) S.banner = null; }
@@ -138,6 +141,9 @@ export function makeKitchenHands(ctx) {
   /* ---------- A STOVE FLARE: glow (the tell) -> flame -> out, on its rhythm ---------- */
   const flareState = f => { const t = ((S.clock + f.phase) % f.period + f.period) % f.period; return t < f.tell ? ['glow', t / f.tell] : t < f.tell + f.on ? ['flame', (t - f.tell) / f.on] : ['out', 0]; };
   H.flareState = id => { const f = (L().kgFlares || []).find(q => q.id === id); return f && S ? flareState(f)[0] : null; };
+  /* (claude/kitchengate3) THE FLUE's rhythm ahead: is it out of flame for the whole of [now + t0, now + t1]? (a rail's z.flue: the pilot takes its hook only when it is - the player reads the glow) */
+  const flareAt = (f, dt) => { const t = ((S.clock + dt + f.phase) % f.period + f.period) % f.period; return t < f.tell ? 'glow' : t < f.tell + f.on ? 'flame' : 'out'; };
+  H.flueClear = z => { if (!S || !z || !z.flue) return true; const f = (L().kgFlares || []).find(q => q.id === z.flue.id); if (!f) return true; for (let t = z.flue.tIn - 0.12; t <= z.flue.tOut + 0.12; t += 0.04) if (flareAt(f, t) === 'flame') return false; return true; };
   function stepFlare(f, dt, ps) {
     const [st] = flareState(f); if (st !== 'flame') return; const x0 = f.x0 * TS - 4, x1 = (f.x1 + 1) * TS + 4, fy = f.f * TS;
     for (const p of ps) { if (!p || p.dead || p.x < x0 || p.x > x1 || p.y > fy + 2 || p.y < fy - f.h) continue;
@@ -256,10 +262,10 @@ export function makeKitchenHands(ctx) {
     if (!S) return; const lv = L(), inX = (x, m = 80) => x - cx > -m && x - cx < VW + m;
     /* (claude/kitchengate2) THE KITCHEN'S DRESSING (greybox props, behind everything), THE MEAT-HOOK RAILS' hooks, THE SERVING LINES, THE STOVE FLARES */
     for (const p of lv.kgProps || []) { const x = p.x * TS + 8; if (!inX(x, 120)) continue; KA.drawProp(g, p.kind, R(x - cx), R(p.f * TS - cy), time, p.x); }
-    for (const z of lv.zipLines || []) if (z.meat && (inX(z.x0, 400) || inX(z.x1, 400))) KA.drawMeatRail(g, z, cx, cy, S.clock);
+    for (const z of lv.zipLines || []) if (z.meat && (inX(z.x0, 400) || inX(z.x1, 400))) KA.drawMeatRail(g, z, cx, cy, S.clock, VW);
     for (const b of S.belts) { const d = b.d, x0 = d.x0 * TS, x1 = (d.x1 + 1) * TS; if (!inX(x0, 600) || x0 - cx > VW + 40 || x1 - cx < -40) continue; KA.drawLine(g, R(x0 - cx), R(x1 - cx), R(d.f * TS - cy), b.scroll, d.dir, b.counter, time);
       for (const it of b.items) { const ix = R(it.x - cx), iy = R(it.y - cy); drawDish(g, false, ix, iy - 4, it.kind, time); if (it.kind === 'bomb' && it.state !== 'fall') { const k = Math.max(0, it.fuse / K.line.fuse); rect(g, ix - 9, iy - 28, 18, 3, '#1b1626'); rect(g, ix - 9, iy - 28, R(18 * k), 3, k < 0.3 ? (Math.floor(time * 10) % 2 ? '#ff4a2a' : '#ffd36b') : '#ff9a3c'); } } }
-    for (const f of lv.kgFlares || []) { const x0 = f.x0 * TS, x1 = (f.x1 + 1) * TS; if (!inX(x0, 200)) continue; const [st, k] = flareState(f); KA.drawFlare(g, R(x0 - cx), R(x1 - cx), R(f.f * TS - cy), st, k, f.h, time); }
+    for (const f of lv.kgFlares || []) { const x0 = f.x0 * TS, x1 = (f.x1 + 1) * TS; if (!inX(x0, 200)) continue; const [st, k] = flareState(f); KA.drawFlare(g, R(x0 - cx), R(x1 - cx), R(f.f * TS - cy), st, k, f.h, time, f.bed); }
     /* THE GREASE FLOORS: a glossy amber skin on the floor's top */
     for (const [x0, x1, f] of lv.slick || []) { if (!inX(x0 * TS, 600) || x0 * TS - cx > VW || (x1 + 1) * TS - cx < 0) continue; KA.drawSlick(g, R(x0 * TS - cx), R(f * TS - cy), (x1 - x0 + 1) * TS, time, x0); }
     /* THE FIRES and their BELLOWS (the heat gauge over each bellows: the roar left) */

@@ -628,9 +628,30 @@
      31.2
     ]
    }
+  },
+  "berserker": {
+   "level": "warcairn",
+   "affix": "SWIFT",
+   "ehp": 1140,
+   "mash": {
+    "n": 6,
+    "wins": 0
+   },
+   "human": {
+    "n": 6,
+    "wins": 6,
+    "secs": [
+     22,
+     26.6,
+     23.5,
+     14.9,
+     3.3,
+     2.1
+    ]
+   }
   }
  },
- "stamp": "0d89fd28a51c",
+ "stamp": "6cbbb5a9e327",
  "heroes": [
   "knight",
   "warden",

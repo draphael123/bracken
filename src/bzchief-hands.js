@@ -5,8 +5,10 @@
 // draw x BZC.scale, frame = bzcFrame): his RAGE bar under his health bar (main.js reads rageOf), the hatchet in flight / in the floor, the split, the marks, the B10 read.
 // THE SHARED READ (B10): OPEN = a gold ring and a timer bar (HE LOSES THE BEAT / HIS AXES ARE IN THE STONE); WARDED = a pale shell ring and the word; TAKE IT = the crossed
 // axes flare and the word names the answer - never silent.
-// main.js calls: spawnBoss, owns, on, update, take, frame, drawOver, barName, rageOf, end, read, show, clear, onBeat, drums.
-import * as WCW from './redraw/warcairn_world_art.js';   /* (claude/warcairnart) his hatchet and crossed axes, drawn */
+// main.js calls: spawnBoss, owns, on, update, take, frame, drawOver, barName, rageOf, end, read, show, clear, onBeat, drums, drawHud (claude/warcairn2: his hero-style RAGE bar on the plate).
+// (claude/warcairn2) axeApi: HIS HATCHET for src/war-cairn-hatchets.js - where it stands (grabbable), take it, does a flying hatchet meet him, it met him (the stagger), it came to rest.
+import * as WCW from './redraw/warcairn_world_art.js';
+import * as WA from './redraw/warcairn_art2.js';   /* (claude/warcairn2art) rage bar, frenzy aura, counter arc, stagger hatchet, tug thong */   /* (claude/warcairnart) his hatchet and crossed axes, drawn */
 import * as BZM from './bzchief.js';
 import { BOSS_PHASE } from './boss-music.js';
 const { BZC } = BZM;
@@ -84,13 +86,24 @@ export function makeBzChiefHands(ctx) {
     if (r.read === 'take') { e.guardFx = 0.25; e.guardWord = S.n.takenOn < 6 ? ['HE TAKES IT', 'A HEAVY BLOW BREAKS IT'][S.n.takenOn % 2] : 'HE TAKES IT'; ctx.sfx.clank && ctx.sfx.clank();
       ctx.sparks(e.x + (Math.sign((P ? P.x : e.x) - e.x) || 1) * 12, e.y - 22, Math.sign((P ? P.x : e.x) - e.x) || 1, 5); return r.dmg; }
     if (r.read === 'ward') { e.guardFx = 0.2; e.guardWord = 'WARDED'; return r.dmg; }
+    if (r.read === 'frenzy') { e.guardFx = 0.25; e.guardWord = 'RING THE DRUM'; ctx.sfx.clank && ctx.sfx.clank(); ctx.sparks(e.x + (Math.sign((P ? P.x : e.x) - e.x) || 1) * 12, e.y - 26, Math.sign((P ? P.x : e.x) - e.x) || 1, 4); return 0; }   /* (claude/warcairn2) E: his frenzy - nothing touches him, told */
     if (r.read === 'walk') { e.guardFx = 0.12; e.guardWord = ''; return r.dmg; }
     e.angleHit = t;   /* (a blow while he is committed or open is the right blow: not greed - src/main.js greedHit) */
     return r.dmg; };
   H.frame = e => BZM.bzcFrame(e);
-  H.barName = e => 'THE BERSERKER CHIEFTAIN' + (BZM.bzcOpen(e) ? '  OPEN' : S && S.ward > 0 ? '  WARDED' : S && S.frenzy > 0 ? '  FRENZY' : '');
-  H.rageOf = () => (S ? { rage: S.rage / BZC.rage.max, frenzy: S.frenzy / BZC.frenzy.t, locked: S.ph < 2 } : null);
-  H.end = e => { if (S) { S.waves = []; S.axe = null; } if (e) { e.mode = 'yield'; } BOSS_PHASE.bzchief = 1; };
+  H.barName = e => 'THE BERSERKER CHIEFTAIN' + (BZM.bzcOpen(e) ? (e.mode === 'staggered' ? '  STAGGERED' : '  OPEN') : S && S.ward > 0 ? '  WARDED' : S && S.frenzy > 0 ? '  FRENZY: RING A DRUM' : '');
+  H.rageOf = () => (S ? { rage: S.rage / BZC.rage.max, frenzy: S.frenzy / BZC.frenzy.max, locked: S.ph < 2 } : null);
+  /* ---------- (claude/warcairn2) D. HIS HATCHET, for the level's hatchet hands ---------- */
+  H.axeApi = () => { const e = live(); if (!S || !e || !ctx.bossActive) return null;
+    return {
+      axe: () => S.axe && !S.axe.fly && !S.axe.taken ? { x: S.axe.x, y: S.axe.y, grab: BZM.axeGrabbable(S) } : null,
+      grab: () => BZM.grabAxe(e, S, world(e)),
+      hits: (x, y) => e.alive && Math.abs(x - e.x) < BZC.w * BZC.scale / 2 + 4 && y > e.y - BZC.h * BZC.scale - 4 && y < e.y + 2,
+      struck: (q, x) => { const r = q && q.chief ? BZM.axeBack(e, S, world(e)) : null; if (ctx.hurtBoss) ctx.hurtBoss(e, q && q.chief ? BZC.throw.back : 24, x); return r; },
+      dropped: x => BZM.axeDropped(e, S, world(e), x),
+    }; };
+  H.holding = () => !!(S && S.axe && S.axe.taken);
+  H.end = e => { if (S) { S.waves = []; S.axe = null; S.frenzy = 0; } if (e) { e.mode = 'yield'; } BOSS_PHASE.bzchief = 1; };
   H.read = () => S && { mode: ctx.boss && ctx.boss.mode, ph: S.ph, cycle: S.cycle, rage: R(S.rage), frenzy: +S.frenzy.toFixed(2), ward: +S.ward.toFixed(2), oneHand: S.oneHand, hisDrum: S.hisDrum,
     cracked: S.cracked.slice(), n: JSON.parse(JSON.stringify(S.n)), hurt: { ...(S.hurt || {}) } };
 
@@ -99,8 +112,11 @@ export function makeBzChiefHands(ctx) {
     const blink = Math.floor(time * 12) % 2 ? '#ff6b6b' : '#fff6e0', fy = R(G.floorY - cy), x = R(e.x - cx), y = R(e.y - cy), m = e.mode, f = e.face || 1;
     /* THE CRACKED SLABS: a dark seam across each cracked one (a broken one is rubble: the tiles) */
     for (const sl of G.slabs) { const st = S.cracked[sl.i]; if (st !== 1) continue; g.fillStyle = '#2a2622'; for (let k = 0; k < 6; k++) g.fillRect(R(sl.x0 - cx) + 6 + k * 9, fy + ((k * 3) % 4), 6, 1); }
-    /* THE HATCHET: in flight (spinning), or standing in the floor */
-    if (S.axe) { const ax = R(S.axe.x - cx), ay = R(S.axe.y - cy); WCW.chiefHatchet(g, ax, ay, time, !!S.axe.fly); if (!S.axe.fly && S.oneHand) ctx.text('HIS HATCHET', ax, ay - 20, '#ffd36b', 'center', 5); }
+    /* THE HATCHET: in flight (spinning), or standing in the floor - a gold ring and its timer while a hero may take it (claude/warcairn2), the thong when he tugs it back */
+    if (S.axe && !S.axe.taken) { const ax = R(S.axe.x - cx), ay = R(S.axe.y - cy); WCW.chiefHatchet(g, ax, ay, time, !!S.axe.fly || S.axe.tug > 0);
+      if (BZM.axeGrabbable(S)) { const k = Math.max(0, S.axe.stick / BZC.throw.stick); g.globalAlpha = 0.55 + 0.35 * Math.sin(time * 12); g.strokeStyle = '#ffd36b'; g.lineWidth = 2; g.beginPath(); g.arc(ax, ay - 6, 12, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * k); g.stroke(); g.lineWidth = 1; g.globalAlpha = 1;
+        ctx.text('E: HIS HATCHET', ax, ay - 26, '#ffd36b', 'center', 5); }
+      if (S.axe.tug > 0) WA.tugThong(g, ax, ay - 4, x, y - 30, time); }
     /* THE SPLIT running the floor */
     for (const w of S.waves) { g.fillStyle = '#c8c0b0'; g.fillRect(R(w.x - cx) - 3, fy - 10, 6, 10); g.fillStyle = '#ff6b3c'; g.fillRect(R(w.x - cx) - 1, fy - 12, 2, 3); }
     /* THE POUNCE: where he will land (the coil) */
@@ -112,21 +128,31 @@ export function makeBzChiefHands(ctx) {
     if (m === 'drumWalk') ctx.text('TO THE DRUM', x, y - 78, '#ff6b6b', 'center', 6);
     if (m === 'splitTell') ctx.text('GROUND-SPLITTER', x, y - 78, '#ff6b6b', 'center', 6);
     if (m === 'sleep') ctx.text('Z', x + 8 * f, y - 56 - R((time * 8) % 8), '#c8d8e8', 'center', 6);
-    /* HIS FRENZY: a red haze on him */
-    if (S.frenzy > 0) { g.globalAlpha = 0.25 + 0.15 * Math.sin(time * 14); g.fillStyle = '#ff2a1a'; g.fillRect(x - 12, y - 44, 24, 44); g.globalAlpha = 1; }
+    /* HIS FRENZY: a red haze on him - and the drum's answer named (claude/warcairn2: nothing touches him until a drum is rung) */
+    if (S.frenzy > 0) { WA.frenzyAura(g, x, y, time, BZC.scale);   /* (claude/warcairn2art: flame, not a pink block) */
+      ctx.text('RING A DRUM', x, y - 92, Math.floor(time * 6) % 2 ? '#ffd36b' : '#ff6b6b', 'center', 6); }
+    if (m === 'counterTell') { WA.counterArc(g, x, y, f, Math.min(1, (e.modeT || 0) / 0.55), time); ctx.text('THE COUNTER', x, y - 78, '#ff6b6b', 'center', 6); }
+    if (m === 'staggered') WA.staggerHatchet(g, x, y, f, time);
     if (e.guardFx > 0) e.guardFx = Math.max(0, e.guardFx - 1 / 60);
     /* HIS RAGE: a red bar over him (main.js draws it under his health bar too) */
     const by = R(e.y - BZC.h * BZC.scale - 14 - cy), bx = Math.max(40, Math.min(ctx.VW() - 40, x));
-    g.fillStyle = '#1b1626'; g.fillRect(bx - 18, by, 36, 3); g.fillStyle = S.frenzy > 0 ? (Math.floor(time * 10) % 2 ? '#ff4a3a' : '#ffd36b') : S.ph < 2 ? '#8a3a32' : '#e0322a';
-    g.fillRect(bx - 18, by, R(36 * (S.frenzy > 0 ? S.frenzy / BZC.frenzy.t : S.rage / BZC.rage.max)), 3);
+    WA.rageBar(g, bx - 18, by, 36, S.frenzy > 0 ? S.frenzy / BZC.frenzy.t : S.rage / BZC.rage.max, S.frenzy > 0, S.ph < 2, Math.floor(time * 10) % 2, time);
     /* THE READ (B10) */
     const yy = R(e.y - BZC.h * BZC.scale / 2 - cy);
     if (BZM.bzcOpen(e)) { const kk = Math.max(0, e.open / (m === 'stuck' ? BZC.stuck.t : BZC.open.t));
       g.globalAlpha = 0.6 + 0.3 * Math.sin(time * 10); g.strokeStyle = '#ffd36b'; g.lineWidth = 2; g.beginPath(); g.arc(x, yy, 28, 0, Math.PI * 2); g.stroke(); g.lineWidth = 1; g.globalAlpha = 1;
-      ctx.text(m === 'stuck' ? 'STUCK' : 'HE LOSES THE BEAT', x, by - 10, '#ffd36b', 'center', 6); g.fillStyle = '#1b1626'; g.fillRect(x - 18, by - 5, 36, 3); g.fillStyle = '#8fd160'; g.fillRect(x - 18, by - 5, R(36 * kk), 3); }
+      ctx.text(m === 'stuck' ? 'STUCK' : m === 'staggered' ? 'STAGGERED' : 'HE LOSES THE BEAT', x, by - 10, '#ffd36b', 'center', 6); g.fillStyle = '#1b1626'; g.fillRect(x - 18, by - 5, 36, 3); g.fillStyle = '#8fd160'; g.fillRect(x - 18, by - 5, R(36 * kk), 3); }
     if (S.ward > 0) { g.globalAlpha = 0.35 + 0.25 * Math.sin(time * 6); g.strokeStyle = '#c8b8a8'; g.lineWidth = 2; g.beginPath(); g.arc(x, yy, 30, 0, Math.PI * 2); g.stroke(); g.lineWidth = 1; g.globalAlpha = 1;
       ctx.text('WARDED', x, by - 10, '#c8b8a8', 'center', 5); }
     if (e.guardFx > 0 && e.guardWord) ctx.text(e.guardWord, x, by - 20 - R((0.25 - e.guardFx) * 30), Math.floor(time * 12) % 2 ? '#ffffff' : '#e8c070', 'center', 6);
   };
+  /* ---------- (claude/warcairn2) F. HIS RAGE, AS THE HERO'S: a RAGE bar on his plate (the hero Berserker's own meter: red filling, gold-white blinking FRENZY when full),
+     locked grey in P1, and his TAKE IT stance named while it is up (what it absorbs comes back as THE COUNTER) ---------- */
+  H.drawHud = (g, VW, VH, barY, time) => { const e = live(); if (!S || !e) return; const w = 120, x0 = R(VW / 2 - w / 2), y = R(barY - 30);
+    const fz = S.frenzy > 0, k = fz ? S.frenzy / BZC.frenzy.max : S.rage / BZC.rage.max, blink = Math.floor(time * 8) % 2;
+    WA.rageBar(g, x0, y, w, k, fz, S.ph < 2, blink, time);   /* (claude/warcairn2art) iron frame, bone tines, a fill that burns hotter, flame when full */
+    ctx.text(fz ? 'FRENZY' : S.ph < 2 ? 'RAGE (HELD)' : 'RAGE', x0 - 4, y - 2, fz ? (blink ? '#ffd36b' : '#ff6b6b') : '#ff9a8a', 'right', 5);
+    if (e.mode === 'take') ctx.text('TAKE IT' + (S.absorbed ? ' x' + S.absorbed : ''), x0 + w + 4, y - 2, '#ff9a5c', 'left', 5);
+    else if (S.oneHand) ctx.text('ONE AXE', x0 + w + 4, y - 2, '#ffd36b', 'left', 5); };
   return H;
 }

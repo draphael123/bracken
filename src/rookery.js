@@ -25,8 +25,12 @@
 //                                          with a shrieker over it (REQUIRED); shrine 312
 //   316-368  THE BONE STAIR        EXAM    every use at once under the landmark: a troll and a shrieker on the ledge, THE LAST NEST (REQUIRED), THE TOP SLAB (REQUIRED); shrine 362
 //   368-416  THE SISTERS' CRAG     BOSS    THE SHRIEK SISTERS on the summit
-export const ROOKERY = { W: 416, H: 52, arena: [370, 411], floor: 11 };
-export const SECTIONS = [['THE GUANO LEDGES', 0, 106], ['THE NEST TERRACES', 106, 206], ['THE UPDRAFT CHIMNEYS', 206, 316], ['THE BONE STAIR', 316, 368], ["THE SISTERS' CRAG", 368, 416]];
+/* (claude/rookery3, Daniel 10-29 live: "it can maybe be a little bit longer ... a little bit more platforming"): THE BONE STAIR goes on past the last ride - THE GALE SPIRES (a descent
+   spire to spire with a gale harpy beating you back), THE NEST FACE (two stepped crag faces climbed on lashed bone shelves under a second gale) and THE RELAY (a ride across the gorge
+   onto a lone spire, a second ride up the summit's face). Columns 363-434 are new; the summit door, its shrine, the arena and the world's edge moved 72 east (EXT) */
+export const EXT = 72;
+export const ROOKERY = { W: 416 + EXT, H: 52, arena: [370 + EXT, 411 + EXT], floor: 11 };
+export const SECTIONS = [['THE GUANO LEDGES', 0, 106], ['THE NEST TERRACES', 106, 206], ['THE UPDRAFT CHIMNEYS', 206, 316], ['THE BONE STAIR', 316, 368 + EXT], ["THE SISTERS' CRAG", 368 + EXT, 416 + EXT]];
 /* the rule's arc in COLUMNS - TAUGHT, TESTED, REMIXED, EXAMINED - read by tools/rookery.mjs and the brief */
 export const ARCS = {
   drop: { teach: [44, 52], remix: [282, 290] },
@@ -217,12 +221,44 @@ export function buildRookery({ painter, T, TS }) {
   sign(346, 9, 'THE LAST RIDE.');
   ride('lastRide', { mount: [349, 9], roost: [346, 1], path: [[351, 5], [353, 3]], land: [356, 4] });
   shrieker(341, -1, 'lastRide');
-  ground(353, W - 1, 5);
+  ground(353, 362, 5);                                                              /* (claude/rookery3) THE LIP: the last ride sets you on it; the gorge opens past it */
   gale(359, 0, 'lastRide');
   foe('harpy', 357, -1, 'summitDoor');
   coins([355, 4], [359, 4]);
-  ent('check', 362, r(4));                                                          /* SHRINE FOUR: the summit's door */
-  sign(366, 4, "THE SHRIEK SISTERS: BAIT A DIVE ONTO THE CRACKED ROCK. SHE LIES STUNNED IN IT.");
+  /* ================= (claude/rookery3) THE BONE STAIR GOES ON: THE GALE SPIRES, THE NEST FACE, THE RELAY (363-434) =================
+     Every rock here stands on the gorge floor (spires and faces to the bottom); every shelf is two wide off a face (tools/anchor-lint.mjs). A FALL IS A LONG CLIMB: the gorge floor
+     walks back to the boards up the lip's face (nine of them), and the spires again */
+  ground(363, 421, 30);                                                            /* the gorge floor, far below */
+  for (const y of [27, 24, 21, 18, 15, 12, 9, 6]) plank(363, 364, y);               /* the climb back: boards up the lip's face */
+  /* THE GALE SPIRES (A14): down across the gorge spire to spire - each top a guano cap two wide - while a gale harpy on a spire ahead beats you BACK toward the drop. Hit her in her
+     tell (wings back) or brace on a shield; past her, her gust is at your back */
+  sign(360, 4, 'THE GALE SPIRES. A GALE HARPY HOLDS THE GORGE: BRACE, OR STRIKE HER WINGS.');
+  ground(367, 368, 8); ground(370, 371, 10); ground(374, 375, 9); ground(377, 378, 12); ground(381, 382, 11); ground(384, 385, 15); ground(388, 389, 14); ground(390, 391, 18);   /* down a step, up a hop, down a step: the gale is the hard part */
+  coins([367, 7], [370, 9], [374, 8], [377, 11], [381, 10], [384, 14], [388, 13], [390, 17]);
+  gale(386, 7, 'galeSpires');
+  coins([379, 29], [381, 29], [383, 29], [386, 29], [387, 29], [386, 27], [387, 27]); deco(380, 29, 'bones', 1);   /* the gorge floor: a fall pays a little - the climb back is the cost */
+  foe('crow', 375, 3, 'galeSpires');
+  /* THE NEST FACE: two stepped crag faces, climbed on bone shelves lashed to each (two wide, three rows apart); a second gale harpy on the upper face's top beats down the climb -
+     her gust peels you off a shelf onto the one below (or the gorge) */
+  ground(392, 397, 23);                                                            /* the basin at the foot of the face */
+  ground(398, 402, 12);                                                            /* THE LOWER FACE (eleven high) */
+  for (const y of [20, 17, 14]) plank(396, 397, y);                                /* its shelves */
+  ground(403, 407, 0);                                                             /* THE UPPER FACE (twelve over the lower) */
+  for (const y of [9, 6, 3]) plank(401, 402, y);                                   /* its shelves */
+  sign(395, 22, 'THE NEST FACE. CLIMB THE SHELVES; WHEN SHE BEATS, HOLD ON OR BRACE.');
+  gale(405, -4, 'nestFace');
+  coins([396, 19], [397, 16], [399, 11], [401, 8], [402, 5], [404, -1]); egg(400, 11);
+  /* THE RELAY (REQUIRED x2): from the upper face's top a gorge fourteen wide to a lone spire, and from the spire a face six high to the summit's door. Ride her down across onto
+     the spire, and from there the next one up - she dives at you as you land on her mount */
+  sign(404, -1, 'THE RELAY. RIDE HER ACROSS, THEN THE NEXT ONE UP.');
+  ride('relayRide', { mount: [406, -1], roost: [410, -4], path: [[412, -3], [418, 2], [423, 7]], land: [424, 10] });
+  ground(420, 425, 11);                                                            /* THE LONE SPIRE (five wide: room to step off the second one's dive) */
+  ground(426, 427, 30);                                                            /* the gorge floor under the summit's face */
+  ride('doorRide', { mount: [423, 10], roost: [418, 4], path: [[425, 6], [427, 2], [430, 2]], land: [432, 4] });
+  coins([423, 10], [430, 4]);
+  ground(428, W - 1, 5);                                                           /* THE SUMMIT'S DOOR */
+  ent('check', 362 + EXT, r(4));                                                    /* SHRINE FOUR: the summit's door */
+  sign(366 + EXT, 4, "THE SHRIEK SISTERS: BAIT A DIVE ONTO THE CRACKED ROCK. SHE LIES STUNNED IN IT.");
 
   /* THE WIND-CUT SHELVES: rock ledges jutting over the road (a second height, coins on them) - never where one would climb a cliff a crack is for */
   for (const [a, b, y] of [[3, 7, 33], [18, 23, 34], [29, 33, 32], [43, 47, 30], [77, 80, 34], [102, 107, 28], [110, 114, 28], [177, 181, 25], [198, 202, 25], [205, 209, 25], [217, 221, 16], [236, 241, 10], [244, 248, 10], [281, 285, 6], [287, 290, 6], [335, 340, 6], [356, 360, 1]]) { plank(a, b, y); ent('coin', Math.round((a + b) / 2), r(y - 1)); }
@@ -248,7 +284,7 @@ export function buildRookery({ painter, T, TS }) {
     calm: [[0, W - 1, 0, H - 1]],   /* placed wholly by hand: nothing sprinkled */
     checkRun: 240,                  /* four shrines, one closing each area's exam (A10c): src/level.js checkpoints() must not fill between them */
     sections: SECTIONS.map(([name, x0, x1]) => ({ id: name.toLowerCase().replace(/[^a-z]+/g, '-'), name, x0, x1 })),
-    squadBands: [{ lo: 400, hi: W - 1, spots: 0, why: "THE SISTERS' CRAG: columns 400-415 are the boss's summit - no squad stands in a boss arena" }],
+    squadBands: [{ lo: 400 + EXT, hi: W - 1, spots: 0, why: "THE SISTERS' CRAG: columns 472-487 are the boss's summit - no squad stands in a boss arena" }],
     unlocks: [
       { kind: 'hoists', opens: "a cracked rock breaks under a harpy's dive: a floor gives way, a pillar falls across, a nest drops as a platform, a slab slides down as steps", hud: "HER DIVE BREAKS THE ROCK" },
     ],
@@ -258,7 +294,7 @@ export function buildRookery({ painter, T, TS }) {
     palette: { sky: [[150, 160, 196], [232, 222, 214]], far: 'crag', mid: 'crag', near: 'none', dress: 'crag', noNear: true, fg: 'rookery', haze: 'rgba(224,220,240,0.06)', grass: '#7a7a5a', grassL: '#a8a488', grassD: '#4e4e3a', dirt: '#8a8478', dirtL: '#b4ae9f', dirtD: '#5e594f', canopy: ['#6a6a7a', '#8a8a9a', '#b0b0be', '#e0e0e8'] },
     weather: [{ x0: 0, x1: 99999, kind: 'wind' }],
     ambient: [{ x0: 0, x1: 99999, kind: 'rookery' }],   /* (claude/rookeryart) its own bed (src/audio.js rookery()) */
-    tints: [[-24, 106, [210, 205, 225], 0.06], [106, 206, [205, 200, 220], 0.07], [206, 316, [200, 200, 225], 0.07], [316, 368, [215, 195, 210], 0.08], [368, W + 24, [220, 190, 205], 0.09]],
+    tints: [[-24, 106, [210, 205, 225], 0.06], [106, 206, [205, 200, 220], 0.07], [206, 316, [200, 200, 225], 0.07], [316, 368 + EXT, [215, 195, 210], 0.08], [368 + EXT, W + 24, [220, 190, 205], 0.09]],
     reachExact: false,
   };
   out.rkAnchors = rookeryAnchors(out, T);   /* (claude/rookery2) every roost, gale perch and hung nest's arm hangs on something (src/rookery-anchors.js; tools/anchor-lint.mjs) */

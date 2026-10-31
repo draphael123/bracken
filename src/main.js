@@ -1,6 +1,7 @@
 import './bug-report.js';   /* FIRST: the console and error taps REPORT A BUG reads must be in before any other module speaks */
 import { bossSelectRows, bossKey, bossRecordNext } from './bossselect.js';
-import { ABBOT, updateFalseAbbot as stepFalseAbbot, drawFalseAbbot, drawAbbotRopes, abbotFrame, abbotOpen, abbotTake, abbotBellRung, abbotBlessed, abbotBridgeBell, abbotWheelStruck, abbotPlunge, abbotClamp, drawAbbotHouse } from './false-abbot.js';   /* THE FALSE ABBOT, the Monastery's boss (2026-09-22), in place of the Roc */
+import { drawBasketOutline } from './false-abbot.js';
+import { ABBOT, updateFalseAbbot as stepFalseAbbot, drawFalseAbbot, drawAbbotRopes, abbotFrame, abbotOpen, abbotTake, abbotBellRung, abbotBlessed, abbotInChair, abbotBridgeBell, abbotWheelStruck, abbotPlunge, abbotClamp, drawAbbotHouse } from './false-abbot.js';   /* THE FALSE ABBOT, the Monastery's boss (2026-09-22), in place of the Roc */
 import { layoutPlates, plateNodes, placePanel, plateLabel, panelSize } from './map-plates.js';
 import { bakeFalseAbbot } from './redraw/false_abbot.js';
 import { stepFuse, fuseLeft, drawBurningBackdrop, drawPixelSmoke, drawTownFlame, drawSmokeColumn, BEAM, SMOKE } from './burning-village.js'; import { blazeAt, drawBlazingHouse, drawBlazingFront, FRONT } from './village-blaze.js'; import * as VWA from './village-water.js'; import * as CTW from './carry-throw.js';   /* (claude/burnvillage2) THROW WATER: the jug, the stun and the steam ward (src/village-water.js); the told arc (src/carry-throw.js) */   /* THE BURNING VILLAGE's stakes and its fire behind the town (2026-09-23) */
@@ -64,7 +65,7 @@ import * as APL from './arena-polish.js'; const aplTint = APL.makeTint();   /* (
 import { attackPose } from './attack-animation.js'; import * as CM from './commit.js';   /* WEIGHT (Daniel 10-02): COMMITMENT + STAMINA - the commit, the held buffer, the bar's rules (src/commit.js) */
 import { AMBUSH_HEALTH } from './ambush.js';
 import {drawTowerBackdrop,gateOccupied,updateTowerAscent,towerAscentReset} from './tower-ascent.js';
-import { ftUpdate, ftMover, ftDraw, FT2 } from './tower-fall2.js';   /* THE FALLING TOWER 2 (claude/fallingtower2): debris on told shadows, burning books, spills, the tilting vault, the outer face, the snap */
+import { ftUpdate, ftMover, ftDraw, FT2, ftReset } from './tower-fall2.js'; import { ft4Update, ft4Draw, ft4Reset } from './tower-front.js';   /* (claude/ft4b) FALLING TOWER 4: THE COLLAPSE FRONT's acts, set pieces and braced rooms */   /* THE FALLING TOWER 2 (claude/fallingtower2): debris on told shadows, burning books, spills, the tilting vault, the outer face, the snap */
 import { crumbleStep, crackMarks } from './tower-collapse.js'; import * as FTW from './redraw/fallen_tower.js';   /* THE FALLING TOWER's FAILING STONE (docs/briefs/falling-tower-rework.md) */
 import {bakeCoastalFoe} from './coastal-foes.js';
 import {drawClimbCues} from './haunted-coast.js';
@@ -242,9 +243,9 @@ import * as SHA from './stormhold-art.js';
 import { bakePaladinBoss, bakeLancer, bakeLancerHorse, bakeGuests, bakeBarkeep, bakeDrunk, bakeTownSpikes } from './redraw/waymeet.js';
 import { LEVELS, T, TS, CUSTOM, eliteGate, FRESH_TWIN, LOST_BANNERS, ROAD_OPEN } from './level.js';
 import { floodReach } from './reachcore.js';
-import { updateMageChase, drawRingDoor, inSpiral, newStairFx, updateStairFx, drawStairFx, drawOrrery, ORRERY as STAIR_ORRERY } from './spiral-chase.js';
+import { updateMageChase, drawRingDoor, inSpiral, newStairFx, updateStairFx, drawStairFx, drawOrrery, drawReel as drawStairReel, ORRERY as STAIR_ORRERY } from './spiral-chase.js';
 /* FALLING TOWER 3 (claude/fallingtower3): THE CHASE through the rooms under his stair (the Undead Archmage's fight, Daniel 10-27) and THE CRACKED PILLARS (the level's verb) */
-import { chaseLeg, chaseBox as chase3Box, roomArena as chase3RoomArena, roomClear as chase3Clear, inChase3, chaseFresh as chase3Fresh, drawChase3, CHASE_MODES as CHASE3_MODES, CH as CH3, ROOMS as CH3_ROOMS } from './archmage-chase.js';
+import { ascentStep as chase3AscentStep, ascentLeg as chase3AscentLeg, ascentBand as chase3AscentBand, ascentClear as chase3AscentClear, coreHang as chase3CoreHang, drawAscent as drawChase3Ascent, ASC as CH3_ASC, chaseRoomStep as chase3RoomStep, vaultReady as chase3VaultReady, floorHp as chase3FloorHp, chaseLeg, chaseBox as chase3Box, roomArena as chase3RoomArena, roomClear as chase3Clear, inChase3, chaseFresh as chase3Fresh, drawChase3, CHASE_MODES as CHASE3_MODES, CH as CH3, ROOMS as CH3_ROOMS } from './archmage-chase.js';
 import { supportsUpdate, supportsReset, drawSupports } from './tower-supports.js';
 import { drawActs as drawMageActs } from './archmage-acts.js';   /* (claude/archmage3) THE UNDEAD ARCHMAGE's ward, and his phase changes, drawn */   /* THE SPIRAL STAIR: the Falling Tower's chase up to the Undead Archmage's carpet (Daniel, 2026-09-29) */
 import { villageLandmarks, woodLandmarks } from './landmarks.js';
@@ -2690,8 +2691,9 @@ function spawnEntities() {
     for(const z of L.deckBreaks||[]){z.t=-1;z.down=false;z.seen=false;z.downT=0;for(let y=z.row-1;y<=z.row;y++)for(let x=z.x0;x<=z.x1;x++)cellSet(x,y,grid0[y*LW+x]);}
     resetCarpet(L,typeof P!=='undefined'?P:null);
     /* (claude/fallingtower3) THE CHASE STARTS AGAIN WHOLE: every room's floor and ledges back, every cracked pillar standing, the arena its first room */
-    if(L.chase3){for(let k=0;k<CH3_ROOMS.length;k++)for(const [x0,x1,y0,y1] of chase3Clear(k))for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++)cellSet(x,y,grid0[y*LW+x]);if(L.arena&&L.arena.chaseArena)Object.assign(L.arena,L.arena.chaseArena);}
+    if(L.chase3){for(let k=0;k<CH3_ROOMS.length;k++)for(const [x0,x1,y0,y1] of chase3Clear(k))for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++)cellSet(x,y,grid0[y*LW+x]);for(const [x0,x1,y0,y1] of chase3AscentClear())for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++)cellSet(x,y,grid0[y*LW+x]);if(L.arena&&L.arena.chaseArena)Object.assign(L.arena,L.arena.chaseArena,{ascent:false});if(L.carpetAt0)L.carpetAt={...L.carpetAt0};L.hallFadeT=null;}   /* (claude/ft4a) and THE ASCENT's plug and crown, and the rug back in the core */
     supportsReset(L,(x,y)=>cellSet(x,y,grid0[y*LW+x]));
+    if(L.ft4)ft4Reset(L,(x,y)=>cellSet(x,y,grid0[y*LW+x]));   /* (claude/ft4b) the set pieces stand again: the shelves, the ribs, the sheared gallery, the bell, the face's planks */
     /* AND HIS DOOR SHUTS AGAIN. A death in the fire with the way out already open used to leave that second portal
        hanging there through the whole re-fight, because it lives on L and L is not rebuilt on a retry. Past it (on the
        sand) there is nothing to shut: sandWalk stays, and so does the gate it unlocks. */
@@ -2913,7 +2915,7 @@ function spawnEnt(e) {
       case 'kiterider': { const st = SKY.newRider(px, py - 40, (e.home ?? e.x) * TS + 8); enemies.push({ ...base, t: 'kiterider', w: 14, h: 14, hp: EHP.kiterider, noGrav: true, y: st.y, mode: st.mode, st }); break; }   /* THE GOBLIN KITE-RIDER (THE SKY ROAD): a CV machine, src/sky-road-hands.js riderStep */
       case 'trophyhunter': { const st = RWH.newHunter(px, py, e.hang); st.face = e.face || -1; enemies.push({ ...base, t: 'trophyhunter', w: RW_HUNTER.w, h: RW_HUNTER.h, hp: EHP.trophyhunter, mode: st.mode, st, noGrav: !!e.hang }); break; }   /* THE GOBLIN TROPHY-HUNTER (THE ROOTWAY, claude/rootway): a CV machine, src/rootway-hands.js hunterStep; on a hoist (e.hang) the hands carry him */
       case 'huntmaster': { const a = HNH.spawnBoss(base); if (a) { boss = a; enemies.push(a); } break; }   /* THE GOBLIN HUNTMASTER (src/huntmaster.js): his fight is made here */
-      case 'wcdrum': case 'wcgate': case 'wcslab': case 'wccornice': case 'wchold': /* (claude/warcairn) THE WAR CAIRN's machines: src/war-cairn-hands.js reads them out of L */ case 'kgbellows': case 'kgpot': case 'kgspit': case 'kgtrail': case 'kgtallow': case 'kgpage': case 'kgvault': /* (claude/kitchengate) THE KITCHEN GATE's machines: src/kitchen-hands.js reads them out of L */ case 'sunstone': case 'sundisc': case 'cloak': case 'loft': case 'mast': case 'hoist': case 'scaffoldprop': case 'towerprop': case 'crewprop': case 'stakeprop': case 'mendpuff': case 'springpuff': case 'rootknot': break;         case 'crackfloor': case 'crackpillar': case 'cracknest': case 'crackslab': case 'sunstone': case 'sundisc': case 'cloak': case 'loft': case 'mast': case 'hoist': case 'scaffoldprop': case 'towerprop': case 'crewprop': case 'stakeprop': case 'mendpuff': case 'springpuff': case 'rootknot': break;   /* (claude/sporewood2: SPOREWOOD 2's mend puffs, puffballs and root knots - src/sporewood-hands.js reads them out of L.ents) */   /* THE SKY ROAD's stones, disc, cloak, loft and the Eyrie's masts: src/sky-road-hands.js and src/roc-eyrie.js read them out of L.ents */   /* THE RED GORGE's wheels, jams, water-wheels and the old nest: src/red-gorge-hands.js reads them out of L.ents */
+      case 'wcdrum': case 'wcgate': case 'wcslab': case 'wccornice': case 'wchold': case 'wcrope': /* (claude/warcairn) (claude/warcairn2: wcrope, the hauled bridge's rope post) THE WAR CAIRN's machines: src/war-cairn-hands.js reads them out of L */ case 'kgbellows': case 'kgpot': case 'kgspit': case 'kgtrail': case 'kgtallow': case 'kgpage': case 'kgvault': /* (claude/kitchengate) THE KITCHEN GATE's machines: src/kitchen-hands.js reads them out of L */ case 'sunstone': case 'sundisc': case 'cloak': case 'loft': case 'mast': case 'hoist': case 'scaffoldprop': case 'towerprop': case 'crewprop': case 'stakeprop': case 'mendpuff': case 'springpuff': case 'rootknot': break;         case 'crackfloor': case 'crackpillar': case 'cracknest': case 'crackslab': case 'sunstone': case 'sundisc': case 'cloak': case 'loft': case 'mast': case 'hoist': case 'scaffoldprop': case 'towerprop': case 'crewprop': case 'stakeprop': case 'mendpuff': case 'springpuff': case 'rootknot': break;   /* (claude/sporewood2: SPOREWOOD 2's mend puffs, puffballs and root knots - src/sporewood-hands.js reads them out of L.ents) */   /* THE SKY ROAD's stones, disc, cloak, loft and the Eyrie's masts: src/sky-road-hands.js and src/roc-eyrie.js read them out of L.ents */   /* THE RED GORGE's wheels, jams, water-wheels and the old nest: src/red-gorge-hands.js reads them out of L.ents */
       case 'puppeteer': { const a = PUPH.spawnBoss(base); if (a) { boss = a; enemies.push(a); } break; }   /* THE PUPPETEER (src/puppeteer.js): up on the fly gallery; his show is made here, and his puppets join it */
       case 'marionette': case 'harlequin': case 'acrobat': case 'masterpiece': { const a = PUPH.spawnPuppet(e.t, base); if (a) enemies.push(a); break; }
       case 'grindylow': enemies.push(CNF.newGrindylow({ ...base, t: 'grindylow', w: CNF.GRIND.w, h: CNF.GRIND.h, hp: EHP.grindylow, markH: 16 })); break;   /* THE FOG CANAL (src/canal-foes.js) */
@@ -3451,6 +3453,7 @@ const ELITE = {
   gobmage: { name: 'THE ARCHDEACON', own: true, mod: true, hp: 11 },   /* THE LIT CHURCH's elite (claude/litchurch): a priest's machine, his prayer over his whole room and his rites in src/lit-church-hands.js (mod: the elite adds the leash, the gate and the purse) */
   mummy: { name: 'THE TOMB-WARDEN', hp: 2.0, own: true, mod: true },   /* THE SEALED PYRAMID's exam (claude/sealedpyramid): under the deep way's block with a scarab pit at his back - his lash and grab are his own (src/mummy.js), the elite adds the body, the guard, the gate and the purse */
   construct: { name: 'THE BRASS WARDEN', hp: 1.4, own: true, mod: true },   /* THE BURIED CITY's section exams (claude/buriedcity fix pass M4: the halls 295, the quarter 388, the throne street 486): its poke and sweep are its own (src/construct.js), the elite adds the body, the guard, the leash, the gate and the purse - before this row a construct marked elite stood up a plain construct */
+  berserker: { name: 'THE WAR-RUNNER', hp: 8, own: true, mod: true },   /* (claude/warcairn2tune) THE CLAN'S ELITE RUNNER (War Cairn 2's yard and low line): his charge and rampage are the berserker's own (updateBerserker); the elite adds the body, the leash and the purse. mod: no guard holds a charger still */
   boarder: { name: 'THE BOARDING MASTER', hp: 10, own: true }, hedgeknight: { name: 'A HEDGE KNIGHT CHAMPION', own: true, hp: 5.5 }, heavy: { name: "THE KING'S CHAMPION", own: true, hp: 2.3 },
 };
 /* big: HALF AS BIG AGAIN, body and all. At 1.2 an elite was a goblin with a gold edge; at 1.5 it stands a head over the crowd it leads.
@@ -3546,6 +3549,7 @@ function updateElite(e, dt) {
   if (e.t === 'gobmage') return false;   /* THE ARCHDEACON: his bolt and his sigil are the priest's own (updateGobMage), his prayer and rites src/lit-church-hands.js's */
   if (e.t === 'drownedcaptain') return false;   /* the lunge and the combo are his own (updateDrownedKnight): only the leash, the gate and the purse are the elite's */
   if (e.t === 'mummy') return false;   /* (claude/sealedpyramid) THE TOMB-WARDEN: his lash and his grab are his own (src/mummy.js mummyStep): only the leash, the gate and the purse are the elite's */
+  if (e.t === 'berserker') return false;   /* (claude/warcairn2tune) the charge is the berserker's own: only the leash, the gate and the purse are the elite's */
   if (e.t === 'construct') return false;   /* its poke and its sweep are its own (src/construct.js constructStep): only the leash, the gate and the purse are the elite's */
   return false;
 }
@@ -7620,7 +7624,7 @@ BOSS_HIT.mother = 1.5;   /* (claude/curvec4a) */
 const DUEL_HERO = { closedhelm: { knight: 0.5, reaper: 0.7, warden: 2.8, pyro: 2.2 /* (claude/bkbot, Daniel 10-23: THE BLOOD KNIGHT took 1.0 = twice the knight; 0.7) */ /* (claude/waymeetpal, act-IV band 57-63: hp 3600 -> 3900, knight 0.62 -> 0.5, warden 2.2 -> 2.8, pyro 1.7 -> 2.2; 78% -> 60% n=24, human+flasks) */ }, lance: { knight: 1, warden: 1.25, pyro: 1.55 }, gqueen: { knight: 0.7, warden: 1, pyro: 2.2 } /* (claude/highcrown2: THE GOBLIN QUEEN 2 at 1.0 each read knight 2/6, warden 3/6, pyro 6/6 with flasks, hp 3300) */ };   /* (claude/stormhold3: the rework reset them - his charge, volley and pennant reach the kiters now; was warden 2.4, pyro 2.6) */   /* (claude/wardgap) THE WAYMEET PALADIN and THE LANCE, PER HERO (as CAP_HERO; the lance hit the kiters for 0-30 a fight): the warden out-ranges him and won 12/12 while the knight stood in his sword at 3/10 - his blows on the hero, the wall untouched */
 const CAP_HERO = { knight: 1.25, warden: 0.95, pyro: 0.85, paladin: 0.7, pirate: 0.45, reaper: 1.6, geomancer: 0.6, berserker: 0.7, ranger: 0.4 }, CAP_OPEN = { pirate: 1.2, ranger: 1.5, berserker: 1.1 };   /* (claude/hurricane3 FINISH+TUNE: 70% top edge, ranger 4/12 -> knight/warden/reaper/berserker a notch harder, ranger softer + his openings pay x1.5) */   /* (claude/hurricane3) THE CAPTAIN 3 on his yards: the hurricane2tune per-hero table was for the flat-deck fight (warden 1.45, knight 0.77...) - reset, re-measured below (tools/boss-rates.mjs --profile=human) */   /* (claude/hurricane2tune) THE CAPTAIN, PER HERO: after the guard fixes the warden still won 12/12 and the knight 5/12 - she out-ranges his sabre and deflects the cuts she does draw (each deflect is an opening), the knight stands in the sabre and blocks few; the cause is the heroes' kits, so the Captain's blows land a little lighter on the two who stand in them and heavier on her (measured at 24 seeds a hero, tools/boss-rates.mjs --profile=human) */   /* (claude/hurricane2) THE CAPTAIN 2: tied to the storm, his openings earned off the sea and the sky - tuned WITH flasks (tools/boss-rates.mjs --profile=human); on its own line (merge care) */   /* (claude/dk2tune) THE DEATH KNIGHT: how hard his own blows land - the knight went 0/N (3 flasks and all) at 1.0; on its own line (merge care) */
 const LP_HERO = { tollmaster: { knight: 0.92, ranger: 0.85, paladin: 1.3 }, lampreeve: { knight: 0.77, ranger: 0.7, paladin: 0.95 } };   /* (claude/lamplit3tune) on its own line (merge care), see damagePlayer0 */
-function damagePlayer0(fromX, dmg, { up = false, unblockable = false, pierce = false, noKnock = false, who = null, blow = null, name = null, geo = false, low = false, pct = 0 } = {}) {
+function damagePlayer0(fromX, dmg, { up = false, unblockable = false, pierce = false, noKnock = false, who = null, blow = null, name = null, geo = false, low = false, pct = 0, spare = false } = {}) {   /* (claude/ft4b) spare: it hurts but never kills - THE FALLING TOWER's collapse front (Daniel 10-29 #2) */
   { const src = who || updFoe; if (src && src.elite && dmg > 0) dmg = Math.max(1, Math.round(dmg * tuneOf(src.t).dmg));   /* (ELITETUNE) per-kind elite damage, elite-kit.js TUNE */
     if (src && src.disarmed && !lcBig(src) && dmg > 0) dmg = Math.max(1, Math.round(dmg * DISARMED_TAKE));
     if (src && src.nip > 0 && dmg > 0) dmg = Math.max(1, Math.round(dmg * src.nip));   /* (claude/underleaf3) A NIP: a summoned small thing bites for a share of its kind's blow (THE GRANDMOTHER 3's brood: src/potion-hands.js GM.broodBite) */
@@ -7789,7 +7793,8 @@ function damagePlayer0(fromX, dmg, { up = false, unblockable = false, pierce = f
   // and the mercy window comes down: a second and a tenth of nothing-can-touch-you was a reward for failing
   if (isReaper() && P.boneArmor > 0 && dmg > 0) { P.boneArmor--; dmg = Math.max(1, Math.round(dmg * 0.4)); 0; SFX.clank(); sparks(P.x, P.y - 12, Math.sign(fromX - P.x) || P.face, 6); if (P.boneArmor <= 0) P.boneArmorT = 0; }   /* OSSUARY MAIL (claude/herokit): three blows at two fifths */
   if (pct > 0) dmg = Math.max(1, Math.round(P.maxHp * pct * DFM.df('take')));   /* (claude/difficulty: x the mode's damage taken) */   /* A HAZARD'S SHARE (src/survival.js HAZARD): a share of the bar, past the difficulty, tier, co-op and armour chain above */
-  if (isBz() && BZK) dmg = BZK.lethal(dmg, pct > 0 ? 0 : (P.bzSur || 0));   /* LAST STAND / UNBOWED hold him at one - and HIS OWN COST never kills him: the frenzy's surcharge (claude/berserker2) */
+  if (isBz() && BZK) dmg = BZK.lethal(dmg, pct > 0 ? 0 : (P.bzSur || 0));
+  if (spare && dmg >= P.hp) dmg = Math.max(0, Math.ceil(P.hp) - 1);   /* (claude/ft4b) a spared blow leaves one */   /* LAST STAND / UNBOWED hold him at one - and HIS OWN COST never kills him: the frenzy's surcharge (claude/berserker2) */
   if (window.BK && window.BK.hitLog) { const q = who || updFoe; window.BK.hitLog.push([Math.round(time * 10) / 10, q ? q.t + " " + (q.mode || "") : "?", blow || name || "?", Math.round(dmg), Math.round(P.hp - dmg), "blk" + (P.block ? 1 : 0), "st" + Math.round(P.st), "atk" + P.atk, "x" + Math.round(P.x - (q ? q.x : 0)), "prev" + P.labDkPrev, "gt" + (P.guardTired || 0), "str" + (q ? q.strLeft : ""), "blkT" + (P.blockT || 0).toFixed(2), "kw" + (typeof knightWinding !== "undefined" ? knightWinding : "")]); }
   P.hp -= dmg; RP.hitReset(P); if (isBz() && BZK) BZK.took(dmg);   /* (claude/riposte: a blow taken resets the mix-up chain) */ P.inv = (armoured ? 0.55 : 0.8) + (perk('grit') ? 0.15 : 0); P.hurt = armoured ? 0 : Math.max(P.hurt, 0.35);
   if (!armoured) { P.atk = -1; P.atkRec = 0; P.plunge = false; if (dashStriking()) endDashStrike(false); } P.block = false; impactAt(P.x, P.y - 9, 'red');
@@ -7903,7 +7908,8 @@ function flaskObjSay(id) { SFX.medal(); toastNow(F2.OBJ_LINE[id], 5); }
 function toastNow(msg, t) { hintSay('tip', t, msg); }
 /* THE ONE DOOR EVERY HINT BOX GOES THROUGH (src/hints.js, Settings: Hints): hintSay(tier, seconds, text) puts the line in the hint box if the player's Hints level lets that tier through (HIGH: always, as before). Notices (level-up, XP, gate open) are not hints and set hintMsg/hintT themselves. */
 function hintGate(tier, id) { if (HINTS.hintLevel() !== 'high') PROG.hintSeen = HINTS.setSeenStore(PROG.hintSeen); return HINTS.hintAllowed(tier, id); }   /* (the "told once" map lives in the save, only while Hints is below HIGH) */
-function hintSay(tier, t, msg) { if (HINTS.takeStall()) tier = 'stall'; if (!hintGate(tier, msg)) return false; hintMsg = msg; hintT = t; return true; }
+function hintSay(tier, t, msg) { if (tier === 'mechanic' && L && L.chase3 && boss && boss.t === 'undeadmage' && boss.alive && (boss.leg === 'ascent' || (boss.leg === 'chase' && inChase3(L, P.x, P.y)))) return false;   /* (claude/ft4a) the crouch lessons' box covered a third of the core: not in THE CHASE, its core or THE ASCENT */
+  if (HINTS.takeStall()) tier = 'stall'; if (!hintGate(tier, msg)) return false; hintMsg = msg; hintT = t; return true; }
 const stanceKeyName = () => TCH.on ? 'THE BOW BUTTON' : padLast ? CTL.labelFor(SET.binds, 'pad1', 'stance', 1) : String(KEYS.stance[0] || '2').toUpperCase();   /* (claude/rangerhud) the key her swap answers to, whichever hand is in use */
 const flaskKeyName = () => padLast ? 'LT' : TCH.on ? 'FLASK' : String(KEYS.flask[0] || 'U').toUpperCase();
 /* HURT, WITH A FLASK HELD, AND NEVER DRUNK ONE: say how, twice a save */
@@ -8585,7 +8591,7 @@ function wardedDamage(e, dmg, blow, tag = blow) {
   if (e.geoTomb && GEO) dmg = GEO.tombHit(e, dmg);   /* ENTOMBED: a blow on the tomb cracks it and lands half as hard again (geomancer.js) */
   if (e.t === 'hedgewarden') dmg = hedgeTake(e, dmg, tag);
   if (e.t === 'sexton') { const d0 = dmg; dmg = sextonTake(e, dmg, tag); if (dmg > d0) sparks(e.x, e.y - 30, -(e.face || 1), 6); }   /* THE SEXTON caught in his own bell pit: every blow lands double */   /* THE HEDGE WARDEN: three growths and their roots, a burning stump twice (hedge-warden.js) */
-  if (e.t === 'abbot') { if (blowHas(tag, 'plunge') && abbotPlunge(e, abbotCtx(e))) burst(e.x, e.y - 30, 12, ['#ffe08a', '#e8a83a'], 70, 0.4); const ward = abbotBlessed(e) && !abbotOpen(e); dmg = Math.max(1, Math.round(dmg * abbotTake(e, tag))); dmg = abbotClamp(e, dmg); if (ward && blow) BR.turned(e, P.x, 'WARDED', { stop: false }); }   /* (claude/abbot3) a PLUNGE: in phase three on him praying or warded it is THE OPENING, before that it spoils the rite; abbotClamp: the finale's floor (beaten down at 5%, the great bell is the last blow) */   /* (claude/abbot2) A PLUNGE on him while he prays spoils the rite; warded he takes B15's 0.4, told (B10) */ if (e.t === 'lanterneater' && LEH) { const k = LEH.take(e, blow, tag); dmg = Math.max(1, Math.round(dmg * k)); if (k < 1) LEH.warded(e); else dmg = Math.max(1, LEH.cap(e, dmg)); }   /* THE LANTERN-EATER: its key (B14) - the keyed angle whole on what is in reach, the wrong one at a twentieth (it clanks and names it); open, every angle (src/lantern-eater.js leTakeAt) */ if (e.t === 'wickerqueen') dmg = Math.max(1, Math.round(dmg * WQN.wqTake(e, tag))); if (e.t === 'puppeteer' && PUPH) { const k = PUPH.take(e, tag); dmg = Math.max(1, Math.round(dmg * k)); if (PM.pupOpen(e)) dmg = PUPH.cap(e, dmg); else PUPH.warded(e); }   /* (PUPPETEER2: staggered on the gallery a blow lands whole, up to the visit's share of him - PUPH.cap) */   /* THE PUPPETEER: his hands on the bars take a blow; re-stringing, or fallen with his masterpiece, he is open (puppeteer.js pupTake) */   /* THE WICKER QUEEN: the wicker takes a blow and stands; frozen on the embers it burns open (wicker-queen.js) */   /* THE FALSE ABBOT: a fifth while the rite wards him, double while the bell has him down (false-abbot.js) */
+  if (e.t === 'abbot') { if (blowHas(tag, 'plunge') && abbotPlunge(e, abbotCtx(e))) burst(e.x, e.y - 30, 12, ['#ffe08a', '#e8a83a'], 70, 0.4); const ward = (abbotBlessed(e) || abbotInChair(e)) && !abbotOpen(e); dmg = Math.max(1, Math.round(dmg * abbotTake(e, tag))); dmg = abbotClamp(e, dmg); if (ward && blow) { BR.turned(e, P.x, 'WARDED', { stop: false }); if (abbotInChair(e)) { number(e.x, e.y - 52, 'RIDE HIS BASKET DOWN: THE CHAIR COMES WITH IT', '#e8a83a'); abbotPulseT = 0.9; } }   /* (claude/abbotclear) every warded blow pulses the basket and the rope (the text is rate-limited by the callout, the pulse is not) */ }   /* (claude/abbotp2) a blow on him in his chair is turned (B15's 0.4, WARDED) and the hint names the answer */   /* (claude/abbot3) a PLUNGE: in phase three on him praying or warded it is THE OPENING, before that it spoils the rite; abbotClamp: the finale's floor (beaten down at 5%, the great bell is the last blow) */   /* (claude/abbot2) A PLUNGE on him while he prays spoils the rite; warded he takes B15's 0.4, told (B10) */ if (e.t === 'lanterneater' && LEH) { const k = LEH.take(e, blow, tag); dmg = Math.max(1, Math.round(dmg * k)); if (k < 1) LEH.warded(e); else dmg = Math.max(1, LEH.cap(e, dmg)); }   /* THE LANTERN-EATER: its key (B14) - the keyed angle whole on what is in reach, the wrong one at a twentieth (it clanks and names it); open, every angle (src/lantern-eater.js leTakeAt) */ if (e.t === 'wickerqueen') dmg = Math.max(1, Math.round(dmg * WQN.wqTake(e, tag))); if (e.t === 'puppeteer' && PUPH) { const k = PUPH.take(e, tag); dmg = Math.max(1, Math.round(dmg * k)); if (PM.pupOpen(e)) dmg = PUPH.cap(e, dmg); else PUPH.warded(e); }   /* (PUPPETEER2: staggered on the gallery a blow lands whole, up to the visit's share of him - PUPH.cap) */   /* THE PUPPETEER: his hands on the bars take a blow; re-stringing, or fallen with his masterpiece, he is open (puppeteer.js pupTake) */   /* THE WICKER QUEEN: the wicker takes a blow and stands; frozen on the embers it burns open (wicker-queen.js) */   /* THE FALSE ABBOT: a fifth while the rite wards him, double while the bell has him down (false-abbot.js) */
   if (e.t === 'gorgecrab' && GCH) dmg = dmg * GCH.take(e, tag);
   if (e.t === 'windcaller') dmg = callerTake(e, dmg, tag);   /* THE WINDCALLER 3: a duelist on his ledge (whole; CALLER_GUARD while he steps away or is warded), x2 down (claude/windcaller3) */
   if (e.t === 'hawkmistress' && HMH) dmg = HMH.take(e, dmg, tag);   /* THE HAWK-MISTRESS: her gauntlet turns the front (0), her ward everything; open x1.6 (src/hawk-mistress.js); FULL_DAMAGE (no chip) */
@@ -8927,7 +8933,8 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow, tag = blow) { const raw0 = dmg,
   if (e.broken > 0 && dmg > 0 && e.offBalAt !== time) dmg = Math.round(dmg * (e.bkBroke && dpBossLike(e) ? AM.BREAK.mul : 1.5));   /* (claude/difficulty) a boss or mini BROKEN by the bar: x2 */   /* broken: nothing between the blow and the body (and not the blow that threw it OFF BALANCE: that one is paid once, as a key) */
   if (!glance) addPoise(e, dmg, fromX, plunge, amV);   /* a glancing blow moves nothing, the bar included */
   if(e.t==='undeadmage'&&mageOpen(e))dmg=Math.round(dmg*(e.realm?REALM.openMul:LICH.openMul));   /* (claude/archmage4) a realm's opening at REALM.openMul, his hall's at MAGE.openMul */
-  if(e.t==='undeadmage'&&L.chase3&&e.leg==='chase'){const f=Math.ceil((e.hp0||e.maxHp)*CH3.hpFloor);dmg=Math.max(0,Math.min(dmg,e.hp-f));}   /* (claude/fallingtower3) THE CHASE takes him no lower than CH.hpFloor: his hall is always had */
+  if(e.t==='undeadmage'&&L.chase3&&e.leg==='ascent'){const f=Math.ceil((e.maxHp||e.hp0)*CH3_ASC.hpFloor);dmg=Math.max(0,Math.min(dmg,e.hp-f));}   /* (claude/ft4a) THE ASCENT takes him no lower than ASC.hpFloor: his hall is always had */
+  if(e.t==='undeadmage'&&L.chase3&&e.leg==='chase'){const f=chase3FloorHp(e);dmg=Math.max(0,Math.min(dmg,e.hp-f));if(e.hp-dmg<=f){if(!e.holdSaid){e.holdSaid=true;callout('HE HOLDS ON - AFTER HIM');}if(e.mode==='down')e.modeT=Math.min(e.modeT,0.3);}}   /* (claude/ft4a: of the bar's health - maxHp; at the floor HE HOLDS ON: said, and his 'down' cut short, so no gold window does nothing) */   /* (claude/fallingtower3) THE CHASE takes him no lower than CH.hpFloor: his hall is always had */
   if(e.t==='undeadmage'&&e.realm){const f=realmFloor(e);if(f>0&&e.hp>f)dmg=Math.min(dmg,e.hp-f);}   /* a realm takes him no lower than the next realm's mark: each one is had */   /* the mark come back on him, or a dodge through his own ring (round 2) */
   /* (THE OWL REEVE, lamp-struck: double - owlTake, above, claude/owl2) */   /* THE OPENING: the mark came back on him, and he is open while he gathers himself */
   /* HIS HEALTH IS GATED BY THE STAGE, so while he holds the floor down no blow can take any of it - which left the one
@@ -11383,7 +11390,7 @@ else if (P.stepHeld > 0 && !P.swim) { P.stepHeld = Math.max(0, P.stepHeld - dt);
   // A mini arena needs a HEIGHT as well as a width: the Hanging Village stacks eight floors at the same x,
   // and without y0/y1 the Weaver's fight started while you were three tiers below her.
   if (L.mini && !miniActive && !miniDone && (L.mini.reverse?P.x < L.mini.trigger && P.x > L.mini.x0+24:P.x > L.mini.trigger && P.x < L.mini.x1 - 24) && (P.ground || (L.mini.swim && P.swim))
-    && (L.mini.y0 === undefined || (P.y > L.mini.y0 && P.y < L.mini.y1))) { const mb = miniOne(); if (mb) { bossSelectBegin('mini'); miniActive = true; miniIntroT = 1.6; if (mb.t === 'forgemaster') { mb.mode = 'wake'; mb.modeT = 1.6; SFX.forgeHammer(); } if (mb.t === 'greathound') { mb.mode = 'idle'; mb.modeT = 1.2; } if (mb.t === 'scarabmother') { mb.mode = 'wake'; mb.modeT = 1.8; SFX.roar && SFX.roar(); } if (mb.t === 'gravewarden') { mb.mode = 'wake'; mb.modeT = 1.4; SFX.heavy(); SFX.seaBell ? SFX.seaBell() : SFX.clank(); } if (mb.t === 'hedgewarden') { mb.mode = 'wake'; mb.modeT = 1.2; SFX.rattle(); } if (mb.t === 'sexton') { mb.mode = 'wake'; mb.modeT = 1.3; (SFX.seaBell || SFX.golemChime)(); } if (mb.t === 'berserker') { mb.mode = 'wake'; mb.modeT = 0.8; SFX.roar(); } if (mb.t === 'suncatcher' || mb.t === 'golem') { mb.mode = 'wake'; mb.modeT = 1.6; SFX.golemChime(); } if (miniZooms(mb.t)) setView('zoom'); music.play(L.mini.music || 'minicharge'); setWallAt(L.mini.wallL, true, L.mini.floor); arenaShut(L.mini, mb); camLock = { x0: L.mini.x0, x1: L.mini.x1 }; number(mb.x, mb.y - 30, miniName(), '#ffd36b'); ({ greathound: SFX.bark, troll: SFX.snort, spider: SFX.hiss, sailer: SFX.puff, suncatcher: SFX.golemChime, golem: SFX.golemChime }[mb.t] || SFX.roar)(); if (mb.t !== 'suncatcher' && mb.t !== 'golem') SFX.roar(); shakeCam(4); zoomKick(1.08, 0.3); } }
+    && (L.mini.y0 === undefined || (P.y > L.mini.y0 && P.y < L.mini.y1))) { const mb = miniOne(); if (mb) { bossSelectBegin('mini'); miniActive = true; arenaHeal(); miniIntroT = 1.6; if (mb.t === 'forgemaster') { mb.mode = 'wake'; mb.modeT = 1.6; SFX.forgeHammer(); } if (mb.t === 'greathound') { mb.mode = 'idle'; mb.modeT = 1.2; } if (mb.t === 'scarabmother') { mb.mode = 'wake'; mb.modeT = 1.8; SFX.roar && SFX.roar(); } if (mb.t === 'gravewarden') { mb.mode = 'wake'; mb.modeT = 1.4; SFX.heavy(); SFX.seaBell ? SFX.seaBell() : SFX.clank(); } if (mb.t === 'hedgewarden') { mb.mode = 'wake'; mb.modeT = 1.2; SFX.rattle(); } if (mb.t === 'sexton') { mb.mode = 'wake'; mb.modeT = 1.3; (SFX.seaBell || SFX.golemChime)(); } if (mb.t === 'berserker') { mb.mode = 'wake'; mb.modeT = 0.8; SFX.roar(); } if (mb.t === 'suncatcher' || mb.t === 'golem') { mb.mode = 'wake'; mb.modeT = 1.6; SFX.golemChime(); } if (miniZooms(mb.t)) setView('zoom'); music.play(L.mini.music || 'minicharge'); setWallAt(L.mini.wallL, true, L.mini.floor); arenaShut(L.mini, mb); camLock = { x0: L.mini.x0, x1: L.mini.x1 }; number(mb.x, mb.y - 30, miniName(), '#ffd36b'); ({ greathound: SFX.bark, troll: SFX.snort, spider: SFX.hiss, sailer: SFX.puff, suncatcher: SFX.golemChime, golem: SFX.golemChime }[mb.t] || SFX.roar)(); if (mb.t !== 'suncatcher' && mb.t !== 'golem') SFX.roar(); shakeCam(4); zoomKick(1.08, 0.3); } }
   if (L.arena && boss && boss.alive && !bossActive && (L.arena.reverse?P.x < L.arena.trigger && P.x>L.arena.x0:P.x > L.arena.trigger) && (L.arena.y0 !== undefined ? P.y > L.arena.y0 && P.y <= L.arena.floor + 4 : P.ground && Math.abs(P.y - L.arena.floor) < 48)) bossStart(); // the floor check keeps a tall level's lower tiers from waking the boss
 }
 
@@ -11476,6 +11483,15 @@ function bossSelectOpen(from = 'title') {
   if (coop()) coopEnd();   /* (claude/partypersist) the party (coopWant) stays: the boss fight brings it, and the way back finds it again */
   bossSelectFrom = from; bossSelectI = 0; bossSelectWait = 0; bossSelectHero = PROG.heroes?.[hero()] ? hero() : (bossSelectHeroes()[0]?.id || 'knight');
   state = 'bossselect'; music.play(menuTrack()); SFX.uiSel();
+}
+/* THE ARENA HEAL (Daniel 10-30: "whenever you find a mini boss or a boss, you get automatically healed"): the moment a boss wakes or a mini's room shuts, every
+   standing hero is set to FULL HEALTH, told by a warm flash, the mend chime, a green number and RESTORED. FLASKS ARE NOT REFILLED (shrines do that: the death cost
+   stays). Once per engage - a death and a retry engage again - never mid-fight and never on a phase change. Not in the boss rush (it has its own pacing). */
+function arenaHeal() {
+  if (rushOn()) return; let any = false;
+  for (const p of players) { if (!upright(p) || !(p.hp < p.maxHp)) continue; const got = Math.round(p.maxHp - p.hp); p.hp = p.maxHp; any = true;
+    ringAt(p.x, p.y - 12, 22, '#ffd36b', 0.5); ringAt(p.x, p.y - 12, 12, '#fff6c8', 0.35); motes(p.x, p.y - 10, 14, 8, ['#ffd36b', '#fff6c8', '#8fd160']); number(p.x, p.y - 30, '+' + got, '#8fd160'); }
+  if (any) { SFX.mend(); flaskHud.glowT = 0.9; number(P.x, P.y - 46, 'RESTORED', '#8fd160'); }
 }
 function bossSelectBegin(kind) {
   if (!bossSelectFight || bossSelectFight.row.kind !== kind || bossSelectFight.began) return;
@@ -11660,7 +11676,7 @@ function setWall(col, solid) {
 function bossStart() {
   bossSelectBegin('boss');
   if (L.chase3 && L.arena && L.arena.chase && !bossJumpOn && !rushOn()) checkpoint = { ...L.chase3.check };   /* (claude/fallingtower3) THE CHASE: a death anywhere in the fight comes back to the top of his stair, beside his ring (the carpet's board used to set it) */
-  BUG.evlog('boss start: ' + (boss && boss.t));
+  BUG.evlog('boss start: ' + (boss && boss.t)); arenaHeal();
   bossActive = true; boss.mode = 'wake'; boss.modeT = 1.6; if (boss.t === 'mother') { boss.rootT = 3; boss.belchT = 8; } if (bossZooms(boss.t)) setView('zoom'); camLock = { x0: L.arena.x0, x1: L.arena.x1 }; if (boss.t === 'frog') SFX.croak(); if (boss.t === 'chief') SFX.gobDie(); if (boss.t === 'ram') SFX.bellow();
   setWall(L.arena.wallL, true); setWall(L.arena.wallR, true); arenaShut(L.arena, boss);   /* (claude/colossus3) the level's foes outside the walls are held there */
   if (boss.t === 'prince') number(boss.x, boss.y - 14, 'FORGOTTEN UNDER THE HILL', '#c9d1dc');   /* his subtitle, under the name */
@@ -16090,7 +16106,7 @@ let DESERT_END = null;
 function desertEndArt() { if (DESERT_END) return DESERT_END; const A = cvArt(), one = c => (Array.isArray(c) ? c[0] : c);
   return (DESERT_END = { sky: DZ.bakeDesertSky(VH), far: DZ.bakeFarMesas(320, 70), mid: DZ.bakeMidDunes(480, 80), wagon: A.wagon[0], skull: one(A.bones.skull), tree: A.deadTree }); }
 function drawMageTiles(cx, cy) {
-  if(L.fallingTower){drawDeckBreaks(g,L,cx,cy,time);if(L.ft2)ftDraw(g,L,P,cx,cy,time,(s,x,y,col,al,z)=>text(s,x,y,col,al||'center',z||6),movers);}   /* (fallingtower2) */
+  if(L.fallingTower){drawDeckBreaks(g,L,cx,cy,time);if(L.ft2)ftDraw(g,L,P,cx,cy,time,(s,x,y,col,al,z)=>text(s,x,y,col,al||'center',z||6),movers);if(L.ft4)ft4Draw(g,L,P,cx,cy,time,(s,x,y,col,al,z)=>text(s,x,y,col,al||'center',z||6),chases);}   /* (claude/ft4b) the front's tell, the braced rooms, the set pieces */   /* (fallingtower2) */
   if (!MG || !L.mage) return; const A = ma(), S = A.skins; if (!S) return;
   const tx0 = Math.max(0, Math.floor(cx / TS) - 1), tx1 = Math.min(LW - 1, Math.ceil((cx + VW) / TS) + 1), ty0 = Math.max(0, Math.floor(cy / TS)), ty1 = Math.min(LH - 1, Math.floor((cy + VH) / TS) + 1);
   const lip = (x, y) => { g.fillStyle = 'rgba(236,224,255,0.55)'; g.fillRect(x, y, TS, 1); g.fillStyle = 'rgba(236,224,255,0.2)'; g.fillRect(x, y + 1, TS, 1); };
@@ -20423,7 +20439,7 @@ function abbotHouse() {
   if (abbotHouseOf === h && abbotHouseP) { if (abbotHouseP.bellX === undefined) { const b0 = abbotBell(); if (b0) abbotHouseP.bellX = b0.x; } return abbotHouseP; }
   const bell = abbotBell();
   abbotHouseOf = h; abbotHouseP = { deckY: h.deck * TS, spans: h.spans.map(([a, b]) => [a * TS, (b + 1) * TS]), bridges: h.bridges.map(b => ({ x0: b.x0 * TS, x1: (b.x1 + 1) * TS, bells: b.bells.map(x => x * TS), tiles: [b.x0, b.x1, h.deck] })),
-    chairX: h.chair.x * TS, chairY: h.chair.row * TS, pulleyY: h.pulleyRow * TS, basketX: h.basket.x * TS, wheels: h.wheels.map(w => ({ x: (w.pivot[0] + 1) * TS + 8, spotX: w.spot * TS, smokeX: w.smoke * TS })), bellX: bell ? bell.x : undefined };
+    chairX: h.chair.x * TS, chairY: h.chair.row * TS, basketY0: h.basket.row * TS, pulleyY: h.pulleyRow * TS, basketX: h.basket.x * TS, wheels: h.wheels.map(w => ({ x: (w.pivot[0] + 1) * TS + 8, spotX: w.spot * TS, smokeX: w.smoke * TS })), bellX: bell ? bell.x : undefined };
   return abbotHouseP;
 }
 const abbotBasket = () => movers.find(m => m.abbotBasket) || null;
@@ -20446,6 +20462,7 @@ function abbotTrap(open) { const t = L.arena && L.arena.house && L.arena.house.t
   resolveTiles(); }
 /* THE HOUSE LAID FRESH (his spawn - every try): the bridges hung, his wheel and its boards taken away, the basket back up */
 function abbotHouseReset() { const h = L.arena && L.arena.house; if (!h) return;
+  abbotIntro = null; abbotPulseT = abbotFlareT = abbotNudgeT = 0; abbotNudgePan = null; abbotNudged = false;
   abbotHouseP = null; abbotHouseOf = null; abbotCtxE = null; const H = abbotHouse(); if (!H) return;
   for (let i = 0; i < H.bridges.length; i++) { const [x0, x1, row] = H.bridges[i].tiles; for (let x = x0; x <= x1; x++) { const k = row * LW + x; if (L.grid[k] === T.AIR) { L.grid[k] = T.ONEWAY; tileSpr[k] = null; } } }
   for (let i = props.length - 1; i >= 0; i--) if (props[i].t === 'pwheel' && props[i].abbot) props.splice(i, 1);
@@ -20462,6 +20479,22 @@ function abbotHouseReset() { const h = L.arena && L.arena.house; if (!h) return;
 function abbotHouseStep(dt, hb) {
   const H = L.arena && L.arena.house ? abbotHouse() : null, b = boss && boss.t === 'abbot' && boss.alive && bossActive ? boss : null; if (!H) return;
   const fl = L.arena.floor;
+  /* (claude/abbotp2) P2's READ: while he sits in the chair the hint box names the action (the callout repeats at most every 4 s), the first two chairs of a save say it longer, and the windlass clicks as the basket is ridden down */
+  const bk = abbotBasketK();
+  if (abbotIntro) { abbotIntro.t += dt; P.inv = Math.max(P.inv || 0, 0.3); if (abbotIntro.t >= ABBOT_INTRO_T || (anyPress && abbotIntro.t > 0.35) || !b || b.phase !== 2) abbotIntro = null; }
+  if (abbotNudgePan) { abbotNudgePan.t += dt; if (abbotNudgePan.t >= ABBOT_NUDGE_T) abbotNudgePan = null; }
+  abbotPulseT = Math.max(0, abbotPulseT - dt); abbotFlareT = Math.max(0, abbotFlareT - dt);
+  { const waiting = !!b && b.phase === 2 && bk < 0.02 && !abbotIntro && (b.deck === 'chair' || ((b.mode === 'swing' || b.mode === 'swingTell') && b.swGoal && b.swGoal.deck === 'chair'));
+    if (waiting) { const was = abbotNudgeT; abbotNudgeT += dt;
+      if (Math.floor(abbotNudgeT / 10) > Math.floor(was / 10)) { abbotFlareT = 1.6; SFX.creak && SFX.creak(); number(b.x, b.y - 52, 'RIDE HIS BASKET DOWN: THE CHAIR COMES WITH IT', '#e8a83a'); hintSay('mechanic', 4, 'THE BASKET IS THE ANSWER: STAND IN THE GLOWING BASKET AND RIDE IT DOWN. THE CHAIR COMES DOWN AND SPILLS HIM OUT.'); }
+      if (!abbotNudged && abbotNudgeT >= 20) { abbotNudged = true; abbotNudgePan = { t: 0 }; abbotFlareT = 1.6; } }
+    else { abbotNudgeT = 0; if (!b || b.phase !== 2 || b.deck !== 'chair') abbotNudged = false; } }
+  if (b) { const m = abbotBasket(); b.clr = { pulse: Math.min(1, abbotPulseT / 0.5), flare: Math.min(1, abbotFlareT / 0.8), panS: abbotPanS(), near: !!m && Math.abs(P.x - (m.x + 16)) < 90 && Math.abs(P.y - m.y) < 70 }; }
+  if (b && abbotInChair(b) && b.mode !== 'swing' && b.mode !== 'swingTell') { number(b.x, b.y - 52, 'RIDE HIS BASKET DOWN: THE CHAIR COMES WITH IT', '#e8a83a');
+    if (!(PROG.abbotChairTold > 1) && !abbotChairHinted) { abbotChairHinted = true; PROG.abbotChairTold = (PROG.abbotChairTold || 0) + 1; hintSay('mechanic', 4, 'HIS CHAIR HANGS ON THE BASKET ROPE. STAND IN THE GLOWING BASKET AND RIDE IT DOWN: THE CHAIR COMES DOWN WITH YOU.'); } }
+  else if (!b || b.deck !== 'chair') abbotChairHinted = false;
+  if (b && b.phase === 2 && Math.abs(bk - abbotRideK) > 0.0005 && bk > 0.02) { abbotRideT -= dt; if (abbotRideT <= 0) { abbotRideT = 0.11; SFX.ratchet && SFX.ratchet(); if (++abbotRideN % 4 === 0) SFX.creak && SFX.creak(); } } else abbotRideT = 0;
+  abbotRideK = bk;
   if (hb && b) H.bridges.forEach((br, i) => { const key = 'abbr' + i, bx = br.bells.find(x => overlap(hb, { l: x - 12, r: x + 12, t: fl - 58, b: fl - 4 })); if (P.hitSet.has(key) || bx === undefined) return;
     P.hitSet.add(key); sparks(bx, fl - 44, P.face, 4); (SFX.seaBell || SFX.clank)(); ringAt(bx, fl - 44, 30, '#e8c88a', 0.5);
     const res = abbotBridgeBell(b, i, abbotCtx(b));
@@ -20471,11 +20504,30 @@ function abbotHouseStep(dt, hb) {
     if (!(PROG.abbotBridgeTold > 1)) { PROG.abbotBridgeTold = (PROG.abbotBridgeTold || 0) + 1; hintSay('mechanic', 4, 'A BELL DROPS THE BRIDGE IT HOLDS. STRIKE IT WITH HIM ON THE BRIDGE.'); } });
   if (b && b.smoke && !P.dead && Math.abs(P.x - b.smoke.x) < ABBOT.smokeW && P.y <= fl + 2 && P.y > fl - ABBOT.smokeH) { P.vy = Math.min(P.vy, -ABBOT.smokeLift); P.ground = false; P.plunge = false; if (Math.random() < dt * 30) parts.push({ x: b.smoke.x + (Math.random() - 0.5) * 16, y: P.y, vx: 0, vy: -120, life: 0.4, max: 0.4, col: '#ece4d8', size: 1, grav: 0 }); }
 }
+let abbotChairHinted = false, abbotRideK = 0, abbotRideT = 0, abbotRideN = 0;
+/* (claude/abbotclear, Daniel 10-30: ~100 kills and still unclear what hurts him in phase two) THE FIGHT SHOWS THE ANSWER:
+   - the INTRO BEAT: when he cuts his bridges the camera goes chair -> along the rope -> the basket (the rope drawn as one gold line), ~1.9 s, any press skips it; he holds his attacks and you cannot be hurt meanwhile
+   - the basket is outlined in gold and pulses, a dotted ghost of the chair marks where it lands, a gauge shows the ride to the spill, a prompt shows when you are near
+   - every warded blow pulses the basket and the rope; 10 s in the chair untouched = the line repeats and the basket flares; 20 s = the camera nudges to it once more */
+let abbotIntro = null, abbotPulseT = 0, abbotFlareT = 0, abbotNudgeT = 0, abbotNudgePan = null, abbotNudged = false;
+const ABBOT_INTRO_T = 1.9, ABBOT_NUDGE_T = 1.5;
+function abbotIntroStart() { if (SET.reduceMotion && false) return; abbotIntro = { t: 0 }; P.inv = Math.max(P.inv || 0, ABBOT_INTRO_T + 0.3); abbotNudgeT = 0; abbotNudged = false; }
+/* the rope as a path chair -> beam -> basket; s 0..1 along it (screen-free, world coordinates) */
+function abbotRopePt(H, s) { const m = abbotBasket(), bx = H.basketX + 16, by = (m ? m.y : H.basketY0) - 10, pts = [[H.chairX, H.chairY - 47], [H.chairX, H.pulleyY + 6], [bx, H.pulleyY + 6], [bx, by]];
+  const L2 = []; let tot = 0; for (let i = 0; i < 3; i++) { const l = Math.hypot(pts[i + 1][0] - pts[i][0], pts[i + 1][1] - pts[i][1]); L2.push(l); tot += l; }
+  let d = Math.max(0, Math.min(1, s)) * tot; for (let i = 0; i < 3; i++) { if (d <= L2[i] || i === 2) { const t = L2[i] ? Math.min(1, d / L2[i]) : 0; return { x: pts[i][0] + (pts[i + 1][0] - pts[i][0]) * t, y: pts[i][1] + (pts[i + 1][1] - pts[i][1]) * t }; } d -= L2[i]; } }
+/* where the camera is told to look (null = leave it): the intro beat holds the chair, travels the rope, holds the basket; the nudge eases toward the basket */
+function abbotCamFocus() { const H = abbotHouse(); if (!H) return null;
+  if (abbotIntro) { const u = abbotIntro.t / ABBOT_INTRO_T, s = u < 0.28 ? 0 : u > 0.72 ? 1 : (u - 0.28) / 0.44, e2 = s * s * (3 - 2 * s), f = abbotRopePt(H, e2); return { x: f.x, y: f.y, w: 1 }; }
+  if (abbotNudgePan) { const u = abbotNudgePan.t / ABBOT_NUDGE_T, w = Math.sin(Math.PI * Math.min(1, u)); return { x: H.basketX + 16, y: null, w: 0.85 * w }; }
+  return null; }
+function abbotPanS() { if (!abbotIntro) return -1; const u = abbotIntro.t / ABBOT_INTRO_T; return u < 0.28 ? 0.001 : u > 0.72 ? 1 : (u - 0.28) / 0.44; }
 let abbotCtxE = null, abbotCtxC = null;
 function abbotCtx(e) { if (abbotCtxE === e && abbotCtxC) return abbotCtxC; abbotCtxE = e; return (abbotCtxC = abbotMakeCtx(e)); }
 function updateFalseAbbotBoss(e, dt) {
   const A = L.arena; if (!A) return;
   if (!e.trapShut && A.house && A.house.trap) { e.trapShut = true; abbotTrap(false); }   /* the ringing floor's trapdoor is BARRED once he is up: a plunge or a crouch on it does not drop you into the well mid-fight */
+  if (abbotIntro) { e.H = abbotHouse(); e.basketM = abbotBasket(); return; }   /* (claude/abbotclear) the told camera beat: he holds his attacks while the camera shows the answer */
   stepFalseAbbot(e, dt, abbotCtx(e));
   e.x = Math.max(A.x0 + 16, Math.min(A.x1 - 16, e.x));
   e.H = abbotHouse(); e.basketM = abbotBasket();   /* (the lab's hands read the house off him: src/lab.js) */
@@ -20485,6 +20537,8 @@ function abbotMakeCtx(e) {
   const bell = abbotBell();
   return { P, A: { x0: A.x0, x1: A.x1, floor: A.floor, y0: A.y0, ropes: abbotRopes(), landLo: ABBOT_LAND[0] * TS, landHi: ABBOT_LAND[1] * TS, house: abbotHouse() },
     bridge: (i, up) => abbotBridgeTiles(i, up), basketK: () => abbotBasketK(), phase3: () => abbotPhase3(),
+    intro: q => abbotIntroStart(),
+    spill: q => { const H = abbotHouse(), fl = A.floor; hitstop(0.14); zoomKick(1.1, 0.3); rumble(220, 0.8); SFX.sting && SFX.sting(); if (H) { burst(H.chairX, fl - 12, 26, ['#8e3a32', '#c9a44a', '#d8d0c0', '#ffe08a'], 120, 0.7); dust(H.chairX - 14, fl, 8); dust(H.chairX + 14, fl, 8); ringAt(H.chairX, fl - 12, 34, '#ffe08a', 0.6); } },   /* (claude/abbotp2) THE SPILL: his chair hits the floor - hit-stop, a burst of velvet and gilt, dust, a ring */
     hit: (x, d, hard, name) => damagePlayer(x, d, { unblockable: hard, who: e, name }),
     say: (m, red, green) => number(e.x, e.y - 52, m, green ? '#e8a83a' : red ? '#ff6b6b' : '#ffd36b'),
     sound: k => ({ heavy: SFX.heavy, crack: SFX.crack, roar: SFX.roar, bell: SFX.seaBell || SFX.clank, whoosh: SFX.throwWhoosh,
@@ -21035,52 +21089,79 @@ const skyBox=()=>{const m=mageRealm();return m?realmBox(m,L.arena):carpetBox(L.a
    its opening in plain words, every time you are pulled in (REALM.cueLen s) and again after a blow his ward turned (REALM.cueAgain s) - a
    HUD band of its own, not the hint box (that waits for tells and is capped twice a save). While he is OPEN it says so, with the window */
 function drawRealmBanner(xpRow,cy){const m=mageRealm();if(!m)return;const q=realmCue(m,P);if(!q)return;const C=REALM.col[q.kind];
- const open=q.open,show=open||q.bannerT>0;if(!show)return;const k=open?1:Math.min(1,q.bannerT*2.5);
- const title=open?'HE IS OPEN: STRIKE HIM, x2':REALM.name[q.kind],lines=open?[]:wrap(q.text,VW-48,8),tw=inkW(title,6);
- const bw=Math.min(VW-16,Math.max(tw,...lines.map(l=>inkW(l,8)))+20),bh=12+lines.length*11+(open?6:4);
+ const open=q.open,beat=!open&&!(q.bannerT>0)&&q.beatLine,show=open||q.bannerT>0||!!beat;if(!show)return;const k=open||beat?1:Math.min(1,q.bannerT*2.5);   /* (claude/ft4c) beat: a realm's beat said on its banner (THE CEILING COMES DOWN...) */
+ const title=open?'HE IS OPEN: STRIKE HIM, x2':REALM.name[q.kind],lines=open?[]:wrap(beat||q.text,VW-48,8),lines2=open||beat||!q.text2?[]:wrap(q.text2,VW-48,6),tw=inkW(title,6);   /* (claude/ft4c) lines2: the realm's second return, smaller, under the first */
+ const bw=Math.min(VW-16,Math.max(tw,...lines.map(l=>inkW(l,8)),...lines2.map(l=>inkW(l,6)))+20),bh=12+lines.length*11+lines2.length*9+(open?6:4);
  const heroY=P.y-cy,top=48+xpRow,foot=VH-bh-(bossActive?32:6),by=heroY>top-8&&heroY-28<top+bh+4?foot:top,bx=Math.round(VW/2-bw/2);
  g.globalAlpha=k;g.fillStyle='rgba(10,8,20,0.9)';g.beginPath();g.roundRect(bx,by,bw,bh,4);g.fill();
  g.strokeStyle=open?(Math.floor(time*8)%2?'#ffd36b':'#ffffff'):C[0];g.lineWidth=1;g.beginPath();g.roundRect(bx+0.5,by+0.5,bw-1,bh-1,4);g.stroke();
- text(title,VW/2,by+4,open?'#ffd36b':C[0],'center',6);lines.forEach((ln,i)=>text(ln,VW/2,by+14+i*11,C[1],'center',8));
+ text(title,VW/2,by+4,open?'#ffd36b':C[0],'center',6);lines.forEach((ln,i)=>text(ln,VW/2,by+14+i*11,beat?(Math.floor(time*8)%2?'#ffffff':C[0]):C[1],'center',8));lines2.forEach((ln,i)=>text(ln,VW/2,by+14+lines.length*11+i*9,C[0],'center',6));
  if(open){const w=Math.max(0,Math.min(1,m.modeT/REALM.openT));g.fillStyle='rgba(255,255,255,0.15)';g.fillRect(bx+8,by+bh-6,bw-16,3);g.fillStyle='#ffd36b';g.fillRect(bx+8,by+bh-6,Math.round((bw-16)*w),3);}
- g.globalAlpha=1;m.realm.bannerDrawn=open?'open':q.text;}
+ g.globalAlpha=1;m.realm.bannerDrawn=open?'open':beat?'beat:'+beat:q.text;}
 function updateUndeadMage(e,dt){
- e.hp0??=e.maxHp;const A=L.arena,ch=!!(L.chase3&&e.leg==='chase'),box=ch?chase3Box(e.room||0):e.realm?realmBox(e,A):carpetBox(A,e.squeeze||0);   /* (claude/fallingtower3) THE CHASE: his sky is the room over your head */
- stepUndeadMage(e,dt,{P,box,A,rnd:Math.random,chase:ch?(m,d)=>chaseLeg(m,d,chase3Ctx(m)):null,unsay:()=>{if(LICH_CALLED.has(hintMsg)||/^(FIRE|ICE|STORM|BONE|HIS|THE GRAVE)/.test(hintMsg||''))hintT=0;},
-  hit:(x,y,d,hard,blow)=>{const r=damagePlayer(x,d,{unblockable:hard,who:e,blow:({fire:'FIREBOLT',ice:'ICE LANCE',storm:'THE STORM',orb:'POISON',hand:'THE DEATH HAND',mark:'THE DEATH MARK',bent:'BENT BOLT',trap:'RING TRAP',skull:'THE BONE STORM',void:'THE GRAVE',world:'HIS ORRERY',script:'THE GRAVE SCRIPT',pillar:'THE BURNING FLOOR',firewall:'HIS FIRE WALL',icicle:'AN ICICLE',mire:'THE MIRE'})[blow]});if(P.carpet)knockCarpet(P,x,y,r==='hit'?230:120);return r;},
+ e.hp0??=e.maxHp;const asc=!!(L.chase3&&e.leg==='ascent');if(asc)chase3AscentStep(e,L.arena,L.arena.hallArena,dt,chase3AscentCtx(e));   /* (claude/ft4a) THE ASCENT: the scroll first - it moves the box he and you fly in */
+ const A=L.arena,ch=!!(L.chase3&&e.leg==='chase'),box=ch?chase3Box(e.room||0):asc&&e.leg==='ascent'?chase3AscentBand(A):e.realm?realmBox(e,A):carpetBox(A,e.squeeze||0);   /* (claude/fallingtower3) THE CHASE: his sky is the room over your head */
+ stepUndeadMage(e,dt,{P,box,A,rnd:Math.random,chase:ch?(m,d)=>chaseLeg(m,d,chase3Ctx(m)):asc?(m,d)=>chase3AscentLeg(m,d,{P,A:L.arena}):null,unsay:()=>{if(LICH_CALLED.has(hintMsg)||/^(FIRE|ICE|STORM|BONE|HIS|THE GRAVE)/.test(hintMsg||''))hintT=0;},
+  hit:(x,y,d,hard,blow)=>{const r=damagePlayer(x,d,{unblockable:hard,who:e,blow:({fire:'FIREBOLT',ice:'ICE LANCE',storm:'THE STORM',orb:'POISON',hand:'THE DEATH HAND',mark:'THE DEATH MARK',bent:'BENT BOLT',trap:'RING TRAP',skull:'THE BONE STORM',void:'THE GRAVE',world:'HIS ORRERY',script:'THE GRAVE SCRIPT',pillar:'THE BURNING FLOOR',firewall:'HIS FIRE WALL',icicle:'AN ICICLE',mire:'THE MIRE',hole:'THE BURNING PIT',surge:'THE MIRE SURGE'})[blow]});if(P.carpet)knockCarpet(P,x,y,r==='hit'?230:120);return r;},
   /* THROUGH HIS TEAR, AND BACK: a flash and a snap - a portal is not a flight */
   pull:kind=>{const C=REALM.col[kind];flash=Math.max(flash,.45);shakeCam(7);zoomKick(1.14,.5);SFX.mageBolt?SFX.mageBolt():SFX.leap();burst(P.x,P.y-8,28,C,160,.9,0,2);camX=P.x-VW/2;camY=P.y-VH/2;number(P.x,P.y-40,REALM.name[kind],C[0]);},
   leave:kind=>{const C=REALM.col[kind];flash=Math.max(flash,.4);shakeCam(6);SFX.stone();burst(P.x,P.y-8,24,C,150,.8,0,2);number(P.x,P.y-40,'THE REALM TEARS: BACK TO HIS HALL','#e0c8ff');},
-  venom:()=>poisonPlayer(),
+  venom:()=>poisonPlayer(),shake:n=>shakeCam(n),   /* (claude/ft4c) a realm's beat shakes in */
   say:(m,h)=>LICH_CALLED.has(m)?callout(m):number(e.x,e.y-52,m,h?'#ff6b6b':'#bce8fa'),sound:k=>(SFX[k]||SFX.charge)(),   /* (claude/archmage3: his new moves and phase changes in the hint box) */
   /* HIS RINGS WORK BOTH WAYS (round 2): a dodge on the carpet through an open exit ring carries you out beside him */
   dodging:()=>(!!P.carpet||ch)&&P.dodge>0,   /* (fallingtower3: on foot in THE CHASE too - a roll through his ring) */
   strike:()=>P.atk>=0&&!P.dead?attackBox():null,   /* (claude/archmage3, Daniel 10-05) a blow that meets his firebolt strikes it back */
   carry:(x,y)=>{burst(P.x,P.y-8,18,['#6fe08a','#f2d79c','#e2bb7a'],110,.6,0,2);P.x=x;P.y=y+8;P.vx=P.vy=0;P.dodge=0;P.inv=Math.max(P.inv||0,0.3);burst(x,y,18,['#6fe08a','#f2d79c','#e2bb7a'],110,.6,0,2);shakeCam(3);}});
+ if(ch&&e.leg==='chase')chase3RoomStep(e,dt,chase3RoomCtx(e));   /* (claude/ft4a) THE ROOM COMES DOWN AROUND YOU: his misses shake stone loose, its ledges go one by one */
  if(!ch||!CHASE3_MODES.has(e.mode)){e.x=Math.max(A.x0,Math.min(A.x1,e.x));e.y=Math.max(A.y0+30,Math.min(A.floor+10,e.y));}   /* (fallingtower3: not while he falls, sinks, or waits in the room under) */
 }
+/* THE ROOM'S hands (claude/ft4a, src/archmage-chase.js chaseRoomStep): stone, footing, FT2's told debris, a ledge going */
+function chase3RoomCtx(e){return {P,solid:(x,y)=>tileAt(Math.floor(x/TS),Math.floor(y/TS))===T.SOLID,standable:(tx,ty)=>{const t=tileAt(tx,ty);return t===T.SOLID||isOneWay(t);},
+ debris:(x,y,top)=>{const F=L.ft2;if(!F)return null;if(!F.rt)ftReset(L);const d={x,y,top,st:'tell',t:FT2.debris.tell,ry:top,kind:'stone'};F.rt.debris.push(d);SFX.crack();return d;},
+ clearLedge:(x0,x1,row)=>{for(let x=x0;x<=x1;x++){cellSet(x,row,T.AIR);parts.push({x:x*TS+8,y:row*TS+8,vx:(Math.random()-.5)*60,vy:-30,life:1.1,max:1.1,col:Math.random()<.5?'#726a8a':'#c0b4d0',size:2,grav:420});}resolveTiles();},
+ say:(m,h)=>number(e.x,e.y-52,m,h?'#ff6b6b':'#bce8fa'),sound:k=>(SFX[k]||SFX.charge)(),shake:n=>shakeCam(n),dust:(x,y,n)=>dust(x,y,n)};}
+/* THE VAULT COMES DOWN (claude/ft4a): on HIM if he hangs over the pillar's crush box in its room - he FALLS ('crushed') - and its column lies across the floor as cover
+   (stone tiles: his shots break on it), never on a hero standing there */
+function chase3Vault(s){const e=boss&&boss.t==='undeadmage'?boss:null,[x0,x1,y0,y1]=s.crush;
+ if(e&&chase3VaultReady(e)&&(e.room||0)===s.room&&e.x>x0*TS&&e.x<(x1+1)*TS&&e.y>y0*TS&&e.y<=(y1+1)*TS+2){e.mode='crushed';e.modeT=1;number(e.x,e.y-52,'THE VAULT COMES DOWN ON HIM','#ff6b6b');shakeCam(8);flash=Math.max(flash,.15);}
+ else if(e&&e.alive&&e.leg==='chase')number(s.x,s.y-s.h*TS-8,'HE WAS NOT UNDER IT','#bce8fa');
+ if(s.cover){const [z0,z1,r0,r1]=s.cover,d=s.coverDir||1,w=3,pb=box(P),bx=e&&e.alive?e.x:-1e9,near=(x0,x1)=>(pb.r>x0*TS-TS&&pb.l<(x1+1)*TS+TS&&pb.b>r0*TS-TS)||(bx>x0*TS-TS&&bx<(x1+1)*TS+TS);   /* (and where he is not: he would lie inside it) */   /* (the column lies where you are not: the first coverW-wide place in its zone, from the pillar out, clear of you by a tile) */
+  for(let o=0;o<=z1-z0-(w-1);o++){const a=d>0?z0+o:z1-o-(w-1),b=a+w-1;if(near(a,b)||[...Array(w)].some((_,i)=>tileAt(a+i,r1)!==T.AIR))continue;for(let y=r0;y<=r1;y++)for(let x=a;x<=b;x++)cellSet(x,y,T.SOLID);s.laid=[a,b];resolveTiles();for(let x=a;x<=b;x++)dust(x*TS+8,(r1+1)*TS,4);break;}}}
 /* THE CHASE's hands (claude/fallingtower3, src/archmage-chase.js): what his beats do to the world */
-function chase3Ctx(e){return {P,say:(m,h)=>number(e.x,e.y-52,m,h?'#ff6b6b':'#bce8fa'),callout:m=>callout(m),sound:k=>(SFX[k]||SFX.charge)(),shake:n=>shakeCam(n),dust:(x,y,n)=>dust(x,y,n),
+function chase3Ctx(e){return {P,clearOf:x=>{for(const s of L.ftSupports||[]){if(!s.laid||s.st!=='down')continue;const x0=s.laid[0]*TS-10,x1=(s.laid[1]+1)*TS+10;if(x>x0&&x<x1)return Math.abs(x-x0)<Math.abs(x1-x)?Math.max(CH3.x0*TS+12,x0):Math.min((CH3.x1+1)*TS-12,x1);}return x;},say:(m,h)=>number(e.x,e.y-52,m,h?'#ff6b6b':'#bce8fa'),callout:m=>callout(m),sound:k=>(SFX[k]||SFX.charge)(),shake:n=>shakeCam(n),dust:(x,y,n)=>dust(x,y,n),
  arm:k=>{for(const s of L.ftSupports||[])if(s.room===k)s.armed=true;},
  clearRoom:k=>{for(const [x0,x1,y0,y1] of chase3Clear(k))for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++){cellSet(x,y,T.AIR);if((x+y)%3===0)parts.push({x:x*TS+8,y:y*TS+8,vx:(Math.random()-.5)*60,vy:-30,life:1.1,max:1.1,col:Math.random()<.5?'#726a8a':'#c0b4d0',size:2,grav:420});}resolveTiles();},
  setRoom:k=>{if(L.arena&&L.arena.chase)Object.assign(L.arena,chase3RoomArena(k));},
- away:()=>{const H=L.arena&&L.arena.hallArena;if(H){e.x=36*TS;e.y=H.floor-8*TS;}}};}
+ away:()=>{const q=chase3CoreHang();e.x=q.x;e.y=q.y;e.face=-1;}};}   /* (claude/ft4a) the last floor poured: he is IN THE CORE, over the rug - not through a door to his hall */
 /* THE CARPET CARRIES THE CHASE UP (claude/fallingtower3): poured off the last floor onto his carpet in the core, you come out in his hall - the arena IS his hall
    for the rest of the fight (L.arena.hallArena laid over it; a retry puts the chase's back), and he meets you there with what is left of him: his three realms
    come at marks cut from it (e.realmAt, src/mage-realms.js) so each is still had in turn */
-function chaseToHall(){if(!L.chase3||!L.arena||!L.arena.hallArena)return;Object.assign(L.arena,L.arena.hallArena);camLock={x0:L.arena.x0,x1:L.arena.x1};
+/* (claude/ft4a) THE ASCENT (src/archmage-chase.js ascentStep): boarded in the core, the rug carries you back UP the holes you fell through - the arena is the well's
+   box, moving up with the scroll - and out of his spiral tower's broken top into his sky (chaseToHall, at its end: the camera has widened, nothing snaps) */
+function chaseToAscent(){if(!L.chase3||!L.arena||!L.arena.hallArena)return;const e=boss&&boss.t==='undeadmage'?boss:enemies.find(q=>q.t==='undeadmage'&&q.alive);if(!e||!e.alive){chaseToHall();return;}
+ e.leg='ascent';e.asc=null;e.tear=null;e.noRealm=true;e.realmAt=null;e.wardHold=0;
+ Object.assign(L.arena,{chase:false,carpet:true,hall:false,ascent:true,noWall:true});chase3AscentStep(e,L.arena,L.arena.hallArena,0,chase3AscentCtx(e));
+ hintT=0;callout('HE FLEES UP HIS TOWER: AFTER HIM');}
+function chase3AscentCtx(e){return {P,rnd:Math.random,clear:([x0,x1,y0,y1])=>{for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++){if(tileAt(x,y)===T.AIR)continue;cellSet(x,y,T.AIR);if((x+y)%4===0)parts.push({x:x*TS+8,y:y*TS+8,vx:(Math.random()-.5)*90,vy:-60,life:1.2,max:1.2,col:Math.random()<.5?'#726a8a':'#c0b4d0',size:2,grav:420});}resolveTiles();flash=Math.max(flash,.2);},
+ say:(m,h)=>number(e.x,e.y-52,m,h?'#ff6b6b':'#bce8fa'),callout:m=>callout(m),sound:k=>(SFX[k]||SFX.charge)(),shake:n=>shakeCam(n),dust:(x,y,n)=>dust(x,y,n),
+ hurt:(x,d)=>{damagePlayer(x,d,{unblockable:true,name:'FALLING STONE'});if(P.carpet)knockCarpet(P,x,P.y-30,160);},lock:(x0,x1)=>{camLock={x0,x1};},toHall:()=>chaseToHall()};}
+function chaseToHall(){if(!L.chase3||!L.arena||!L.arena.hallArena)return;Object.assign(L.arena,L.arena.hallArena,{ascent:false});camLock={x0:L.arena.x0,x1:L.arena.x1};L.hallFadeT=time;
  const e=boss&&boss.t==='undeadmage'?boss:enemies.find(q=>q.t==='undeadmage'&&q.alive);if(!e||!e.alive)return;
- e.leg='hall';e.order=null;e.noRealm=false;e.tear=null;e.shots=[];e.clouds=[];e.rings=[];e.echoes=[];e.deathMark=null;e.vy=0;e.wardHold=0;
+ e.leg='hall';e.order=null;e.noRealm=false;e.tear=null;e.asc=null;e.clouds=[];e.rings=[];e.echoes=[];e.deathMark=null;e.vy=0;e.wardHold=0;
  const r=Math.max(0.05,e.hp/(e.hp0||e.maxHp));e.realmAt=[r*0.9,r*0.6,r*0.3];e.realmN=0;
- e.x=36*TS;e.y=L.arena.floor-8*TS;e.mode='wake';e.modeT=1.6;e.face=-1;}
+ e.mode='hover';e.modeT=CH3_ASC.firstCast;e.face=Math.sign(P.x-e.x)||-1;}   /* (claude/ft4a) no 'wake' freeze and no snap: he is already over you, settling to his hover spot - his first hall spell comes firstCast s on */
 /* THE SPIRAL STAIR (src/spiral-chase.js): the Undead Archmage run down on foot, up to his carpet. His fight's own spells and numbers, cast
    only from a landing and only while he and you are both on the screen; a stone wall stops a bolt. The stair is seen ZOOMED OUT - its
    whole width and the landing he waits over (chaseView, asked by desiredView) - so nothing he throws comes from off the screen. */
 function chaseMage(e,dt){
- if(P.carpet){e.alive=false;return;}   /* the carpet is boarded: he is through his door ahead of you, and the fight is his hall's */
+ if(P.carpet||(L.chase3&&inChase3(L,P.x,P.y))){e.alive=false;return;}   /* (claude/ft4a: and once you are through his ring into THE CHASE - a stun on the last flight left him reeling on the stair) */   /* the carpet is boarded: he is through his door ahead of you, and the fight is his hall's */
  updateMageChase(e,dt,{P,
   hit:(x,y,d,hard,blow)=>damagePlayer(x,d,{unblockable:hard,who:e,blow:({fire:'FIREBOLT',ice:'ICE LANCE',mark:'THE DEATH MARK'})[blow]}),
   say:(m,h)=>number(e.x,e.y-52,m,h?'#ff6b6b':'#bce8fa'),sound:k=>(SFX[k]||SFX.charge)(),
+  /* THROW IT BACK ON THE CLIMB (claude/ft4a): the fight's strike-back on his stair - your blow box, a perfect parry, and what a stun does to the stair */
+  strike:()=>P.atk>=0&&!P.dead?attackBox():null,parried:r=>parried(r),
+  reel:(m,T)=>{callout('HE REELS: CLIMB');shakeCam(4);ringAt(m.x,m.y-26,30,'#ffd36b',.5);for(const c of chases)if(c.sp.id==='towerscroll'){c.st.noSurge=Math.max(c.st.noSurge||0,T);}},
+  reelEnd:()=>{if(hintMsg==='HE REELS: CLIMB')hintT=0;},
   onScreen:(x,y,m=0)=>x>camX+m&&x<camX+VW-m&&y>camY+m&&y<camY+VH-m,
   solid:(x,y)=>tileAt(Math.floor(x/TS),Math.floor(y/TS))===T.SOLID,freeze:stairFrost,
   inSpiral:p=>inSpiral(L.spiral,p.x,p.y)});
@@ -21110,7 +21191,7 @@ function carpetPlayer(dt){
     the arena was the safest part of it. It burns now: a warning glow, then a bite and a shove back up, every tick you
     stay. It HURTS AND DOES NOT KILL - the way out is up, and up is always there. (claude/fallingtower2, THE FIRE ROOM FIXED: not in his fire realm -
     its floor is drawn as the realm's own tiles, so the hall's burn under them was an UNTOLD bite; the realm's floor hazard is its told pattern) */
- if(L.sanctum&&!mageRealm()&&burnSanctum(P,L.arena,dt,{ember:(x,y)=>{if(Math.random()<dt*24)parts.push({x:x+(Math.random()-.5)*26,y:y+2,vx:(Math.random()-.5)*30,vy:-40-Math.random()*50,life:.5,max:.5,col:Math.random()<.5?'#c88aff':'#ffe9ff',size:1,grav:-40});}}))
+ if(L.sanctum&&!mageRealm()&&!(L.arena&&L.arena.ascent)&&burnSanctum(P,L.arena,dt,{ember:(x,y)=>{if(Math.random()<dt*24)parts.push({x:x+(Math.random()-.5)*26,y:y+2,vx:(Math.random()-.5)*30,vy:-40-Math.random()*50,life:.5,max:.5,col:Math.random()<.5?'#c88aff':'#ffe9ff',size:1,grav:-40});}}))
   {damagePlayer(P.x,DMG.sanctumFire,{unblockable:true,blow:'THE FLOOR BURNS'});SFX.sizzle?SFX.sizzle():SFX.crack();shakeCam(3);burst(P.x,P.y+4,10,['#c88aff','#9a52e0','#ffe9ff'],90,.6,-30,1);}
 }
 /* FAILING STONE (src/tower-collapse.js is the rule; this is its hands). Weight on a cracked section starts its count: a crack on
@@ -21144,6 +21225,20 @@ function drawCrumbles(cx,cy){
   text(String(n),Math.round(sx+w/2),Math.round(sy-22-4*pop),col,'center',n===1?16:12);}
 }
 /* THE FALLING TOWER, every frame: the floors going under you, and the carpet at the top */
+/* (claude/ft4b) FALLING TOWER 4, LANE B: THE TOWER COMES DOWN AROUND YOU (src/tower-front.js). The acts' banners, the five set pieces, the braced rooms, the
+   Outer Face's planks peeling as THE COLLAPSE FRONT comes up it - and a SAFE SPOT never under the front: a fall into THE DROP (or a pit) puts you back
+   on footing over its edge, never on a plank it has taken (hazardBack reads P.safe) */
+function updateFt4(dt){
+ const fronts=chases.filter(q=>q.sp.ft4);
+ ft4Update(L,P,dt,{T,set:(x,y,t)=>cellSet(x,y,t),tile:(x,y)=>tileAt(x,y),hurt:(x,d,name)=>damagePlayer(x,d,{unblockable:true,name}),say:s=>callout(s),
+  sound:k=>(SFX[k]||({creak:SFX.clank,heavy:SFX.thud})[k]||SFX.stone)(),shake:n=>shakeCam(n),dust:(x,y,n)=>dust(x,y,n),burst:(x,y,n,cols)=>burst(x,y,n,cols,60,.9,420,2),
+  onMover:()=>P.onMover||null,sextonDown:()=>!enemies.some(q=>q.t==='sexton'&&q.alive),supportDown:id=>(L.ftSupports||[]).some(s=>s.id===id&&s.st==='down'),
+  crumbleBreak:b=>{for(const q of L.crumbles||[])if(q.kind==='deck'&&q.x1>=b[0]&&q.x0<=b[1])crumbleBreakAt(q);},carry:dy=>{P.y+=dy;P.vy=0;},slick:z=>{L.slick=(L.slick||[]).concat([z]);},
+  front:id=>fronts.find(q=>q.sp.id===id)||null,resolve:()=>resolveTiles(),busy:miniActive||bossActive});
+ for(const c of fronts){if(c.st.phase!=='run'||!P.safe||P.safe.L!==L||P.safe.y<c.st.pos-2)continue;
+  const to=chaseSafeAbove(c.sp,c.st.pos,P.x,(tx,row)=>{const t=tileAt(tx,row);return(t===T.ONEWAY||t===T.SOLID||t===T.PLANK)&&tileAt(tx,row-1)===T.AIR&&tileAt(tx,row-2)===T.AIR;});
+  if(to){P.safe.x=to.x;P.safe.y=to.y;}}
+}
 function updateAscent(dt){
  if(!L.towerAscent)return;
  /* THE SPIRAL STAIR IS FRAMED ON ITS OWN WALLS: the camera holds to the stair tower's width (centred on it when the view is wider), so the
@@ -21157,20 +21252,22 @@ function updateAscent(dt){
    if(how==='seal'){cellSet(x,y,T.SOLID);return true;}
    if(how==='restore'){cellSet(x,y,grid0[i]);return true;}
    if(t===T.AIR)return false;cellSet(x,y,T.AIR);if(Math.random()<0.08)parts.push({x:x*TS+8,y:y*TS+8,vx:(Math.random()-.5)*60,vy:-20,life:1.2,max:1.2,col:Math.random()<.5?'#726a8a':'#c0b4d0',size:2,grav:420});return true;},
-  crash:(f,y)=>{shakeCam(4);if(Math.abs(y*TS-P.y)<VH)SFX.stone();},
+  crash:(f,y)=>{shakeCam(4);if(Math.abs(y*TS-P.y)<VH)SFX.stone();},frontY:id=>{const c=chases.find(q=>q.sp.id===id);return c&&(c.st.phase==='run'||c.st.phase==='done')?c.st.pos:null;},   /* (claude/ft4b) THE COLLAPSE FRONT takes the floors it rises through */
   warn:f=>{shakeCam(3);SFX.rumble&&SFX.rumble();if(!f.last)number(P.x,P.y-40,f.name+' GOES DOWN BEHIND YOU','#ff9a5c');}});
  updateCrumbles(dt);
  /* (claude/fallingtower3) THE CRACKED PILLARS: a blow on one, its told collapse, and what it brings down (src/tower-supports.js) */
  if(L.ftSupports)supportsUpdate(L,P,dt,{T,strike:()=>P.atk>=0&&!P.dead?attackBox():null,set:(x,y,t)=>cellSet(x,y,t),resolve:()=>resolveTiles(),foes:()=>enemies.filter(q=>q.alive&&!q.maxHp&&!q.mini&&q!==boss),hurt:(q,d)=>hurtEnemy(q,d,q.x-P.face*8,false),
-  holdDark:s=>{for(const c of chases)if(c.sp.id==='towerscroll')c.st.hold=Math.max(c.st.hold||0,s);},say:(x,y,s,col)=>number(x,y,s,col),callout:s=>callout(s),sound:k=>(SFX[k]||({rumble:SFX.stone})[k]||SFX.stone)(),shake:n=>shakeCam(n),dust:(x,y,n)=>dust(x,y,n),
+  holdDark:s=>{for(const c of chases)if(c.sp.id==='towerscroll'||(c.sp.ft4&&c.st.phase==='run'))c.st.hold=Math.max(c.st.hold||0,s);},   /* (claude/ft4b: a plug holds THE COLLAPSE FRONT too) */vault:s=>chase3Vault(s),say:(x,y,s,col)=>number(x,y,s,col),callout:s=>callout(s),sound:k=>(SFX[k]||({rumble:SFX.stone})[k]||SFX.stone)(),shake:n=>shakeCam(n),dust:(x,y,n)=>dust(x,y,n),
   burst:(x,y,n,cols)=>burst(x,y,n,cols,60,.9,420,2)});
  /* THE CORE (claude/fallingtower3): poured off the chase's last floor, you land on his carpet - its board check takes you up through his door */
- if(L.chase3&&!P.carpet&&!P.dead&&!L.carpetUp&&boss&&boss.t==='undeadmage'&&boss.mode==='away'&&P.y>L.chase3.core.top*TS+8&&inChase3(L,P.x,P.y)){P.x=L.carpetAt.x;P.y=L.carpetAt.y;P.vx=P.vy=0;}
+ /* (claude/ft4a) THE RUG RISES TO CATCH YOU: poured into the core, you are not walked to it (the core was dead air) and not snapped onto it - it flies up under you */
+ if(L.chase3&&!P.carpet&&!P.dead&&!L.carpetUp&&boss&&boss.t==='undeadmage'&&boss.mode==='away'&&P.y>L.chase3.core.top*TS+8&&inChase3(L,P.x,P.y)){L.carpetAt0??={...L.carpetAt};const dx=P.x-L.carpetAt.x,dy=(P.y+2)-L.carpetAt.y,d=Math.hypot(dx,dy);if(d>2){const s=Math.min(d,520*dt);L.carpetAt.x+=dx/d*s;L.carpetAt.y+=dy/d*s;}if(Math.random()<dt*30)parts.push({x:L.carpetAt.x+(Math.random()-.5)*28,y:L.carpetAt.y+4,vx:0,vy:20,life:.4,max:.4,col:Math.random()<.5?'#e0b050':'#c9463d',size:1,grav:0});}
  if(L.ft2)ftUpdate(L,P,dt,{time,grid:L.grid,W:LW,T,standable:t=>t===T.SOLID||isOneWay(t)||(t>=20&&t<=25),solid:t=>t===T.SOLID||t===T.PORT||t===T.CRATE,busy:miniActive||bossActive,
   hurt:(x,d,blow)=>damagePlayer(x,d,{unblockable:blow!=='chest',name:{debris:'FALLING STONE',flare:'THE BURNING BOOKS',chest:'A SLIDING CHEST',lightning:'THE LIGHTNING'}[blow]||'THE TOWER'}),
   fall:()=>{damagePlayer(P.x,1,{unblockable:true,pct:SV.HAZARD.pct,name:'THE DROP'});if(!P.dead&&P.hp>0)hazardBack();},
   say:(x,y,s,col)=>number(x,y,s,col),callout:s=>callout(s),sound:k=>(SFX[k]||({creak:SFX.clank,whoosh:SFX.throwWhoosh})[k]||SFX.stone)(),shake:n=>shakeCam(n),push:dx=>{moveBody(P,dx,0,false);},dust:(x,y,n)=>dust(x,y,n)});   /* (fallingtower2) src/tower-fall2.js */
- updateCarpet(L,P,dt,{board:()=>{SFX.leap();SFX.throwWhoosh&&SFX.throwWhoosh();dcBank();number(P.x,P.y-30,L.sanctum?'THROUGH THE DOOR':'THE CARPET RISES','#e0b050');checkpoint={x:L.carpetAt.x-5*TS,y:L.carpetAt.y+TS};   /* a retry comes back on the walk beside it, not on it: a breath before the sky again */if(L.chase3){checkpoint={...L.chase3.check};chaseToHall();}   /* (claude/fallingtower3) THE CHASE: up through his door into the hall, and a retry is the whole fight from his ring */if(L.sanctum){shakeCam(6);zoomKick(1.12,.5);flash=Math.max(flash,.3);burst(P.x,P.y,26,['#b07cf0','#e0c8ff','#4a2a7a'],150,.9,0,2);camX=P.x-VW/2;camY=P.y-VH/2;}   /* A DOOR SNAPS. Without this the camera panned the 160px from the parapet up to the spawn, which reads as flying there - the one thing a portal is not */if(boss&&boss.alive&&!bossActive&&boss.t==='undeadmage')bossStart();for(const c of chases)if(c.sp.id==='towerscroll')chaseReset(c.st);   /* THE RISING DARK stays on the stair (claude/towerscroll) */}});
+ if(L.ft4)updateFt4(dt);   /* (claude/ft4b) FALLING TOWER 4: the acts, the set pieces, the braced rooms, the face peeling (src/tower-front.js) */
+ updateCarpet(L,P,dt,{board:()=>{SFX.leap();SFX.throwWhoosh&&SFX.throwWhoosh();dcBank();number(P.x,P.y-30,L.sanctum?'THROUGH THE DOOR':'THE CARPET RISES','#e0b050');checkpoint={x:L.carpetAt.x-5*TS,y:L.carpetAt.y+TS};   /* a retry comes back on the walk beside it, not on it: a breath before the sky again */if(L.chase3){checkpoint={...L.chase3.check};chaseToAscent();}   /* (claude/fallingtower3) THE CHASE: up through his door into the hall, and a retry is the whole fight from his ring */if(L.sanctum&&!L.chase3){shakeCam(6);zoomKick(1.12,.5);flash=Math.max(flash,.3);burst(P.x,P.y,26,['#b07cf0','#e0c8ff','#4a2a7a'],150,.9,0,2);camX=P.x-VW/2;camY=P.y-VH/2;}else if(L.chase3){SFX.leap();burst(P.x,P.y,18,['#e0b050','#f3ce77','#c9463d'],110,.7,0,2);}   /* A DOOR SNAPS. Without this the camera panned the 160px from the parapet up to the spawn, which reads as flying there - the one thing a portal is not */if(boss&&boss.alive&&!bossActive&&boss.t==='undeadmage')bossStart();for(const c of chases)if(c.sp.id==='towerscroll')chaseReset(c.st);   /* THE RISING DARK stays on the stair (claude/towerscroll) */}});
  /* THE SECOND DOOR: through it the carpet is left behind, the sky goes warm, and the last walk of the world is on sand */
  updateSanctum(L,P,dt,{leave:out=>{burst(out.x,out.y,26,['#e0b050','#ffe9b0','#8a5a1a'],150,.9,0,2);
   P.carpet=null;P.vx=0;P.vy=0;P.x=L.sanctum.sand.x;P.y=L.sanctum.sand.y;P.ground=true;P.face=1;L.sandWalk=true;L.sanctum.open=false;L.nightA=0;L.palette.noFg=true;   /* the desert is daylight: the tower's night wash is not laid over it, and the level's foreground grass strip is not drawn along the bottom of it (round 2) */
@@ -25646,7 +25743,7 @@ function chaseEvent(c, e) {
   const sp = c.sp;
   if (e.k === 'start') { if (sp.music) { music.play(sp.music); chaseMusicOn = true; } number(P.x, P.y - 34, sp.say, '#ff6b6b'); SFX.rumble(); shakeCam(4); if (sp.band) { c.st.warnT = 2.6; c.st.warnText = sp.say; } }   /* (a banded chase says it over the screen too: claude/archmage2b) */
   else if (e.k === 'warn') { number(P.x, P.y - 40, e.text, '#ff6b6b'); SFX.thunder(); shakeCam(3); c.st.flashT = 0.35; }   /* A SURGE IS TOLD: the banner, thunder, and a flash of its colour */
-  else if (e.k === 'contact') { if (e.mode === 'kill') damagePlayer(P.x, 9999, { unblockable: true, pierce: true, name: sp.name }); else { const front = chaseHero(sp); damagePlayer(P.x - sp.dir * 20, e.dmg, { unblockable: true, name: sp.name, noKnock: !!sp.knockTo });   /* (claude/archmage3: a dark that THROWS you up does not also knock you off the ledge it threw you onto) */ if (sp.knockTo && !P.dead) chaseKnock(c, front); } shakeCam(6); }
+  else if (e.k === 'contact') { if (e.mode === 'kill') damagePlayer(P.x, 9999, { unblockable: true, pierce: true, name: sp.name }); else { const front = chaseHero(sp); damagePlayer(P.x - sp.dir * 20, e.dmg, { unblockable: true, name: sp.name, noKnock: !!sp.knockTo, spare: !!sp.ft4 });   /* (claude/ft4b: THE FALLING TOWER's front never kills - Daniel 10-29 #2) */   /* (claude/archmage3: a dark that THROWS you up does not also knock you off the ledge it threw you onto) */ if (sp.knockTo && !P.dead) chaseKnock(c, front); } shakeCam(6); }
   else if (e.k === 'end') { number(P.x, P.y - 34, 'SAFE', '#8fd160'); SFX.rumble(); chaseMusicOff(); }
   else if (e.k === 'crash') { shakeCam(5); SFX.thud(); }
 }
@@ -25658,11 +25755,12 @@ function chaseKnock(c, front) {
   P.x = to.x; P.y = to.y; P.vx = 0; P.vy = -90; P.ground = false; P.climb = false; c.st.knocks = (c.st.knocks || 0) + 1;
   burst(P.x, P.y - 10, 16, ['#6fe08a', '#07120c', '#c8ffd8'], 120, 0.6); }
 function updateChase(dt) {
-  if (!chases.length || P.dead || state !== 'play') return;
+  if (!chases.length || P.dead || state !== 'play' || P.carpet) return;   /* (claude/ft4a: THE ASCENT rides up through the spiral stair's zone - its dark is the climb's, not the carpet's) */
   chaseBeamCd = Math.max(0, chaseBeamCd - dt);
   for (const c of chases) for (const b of c.sp.beams) if (chaseBeamCd <= 0 && beamHit(duckBox(P), duckClears(P, b.y), b, time)) { chaseBeamCd = CHASE_BEAM.cd; damagePlayer((b.x0 + b.x1) / 2, b.dmg, { unblockable: true, name: b.name }); SFX.thud(); shakeCam(3); }   /* THE DUCK answers a beam: duckClears, never the down key */
   for (const c of chases) {
     if (c.st.phase === 'idle' && (chases.some(o => o !== c && o.st.phase === 'run') || !chaseInZone(c.sp, P.x, P.y))) continue;   /* (a zone: its start line counts only there) */
+    if (c.st.phase === 'idle' && c.sp.after === 'bell' && !(L.ft4 && L.ft4.rt && L.ft4.rt.bell.st === 'down')) continue;   /* (claude/ft4b) THE FALLING TOWER's act III front waits for THE BELL FALLS */
     c.st.flashT = Math.max(0, (c.st.flashT || 0) - dt);
     for (const e of chaseStep(c.sp, c.st, chaseHero(c.sp), dt, !!P.ground)) chaseEvent(c, e);
     if (c.sp.runsOver && c.st.phase === 'run') for (const q of enemies) if (q.alive && !q.boss && (q.x - c.st.pos) * c.sp.dir < 0 && chaseInZone(c.sp, q.x, q.y - 4)) { q.alive = false; burst(q.x, q.y - 10, 12, COLS[q.t] || ['#9ae0a8', '#ffffff'], 80, 0.5); spawnCorpse(q, 1); if (FAIR) FAIR.runOver++; }   /* THE GHOST TRAIN runs over what it overtakes in its cutting too (claude/fairfix) */
@@ -29393,12 +29491,19 @@ WCH = makeWarCairnHands({ get L() { return L; }, TS, T, sfx: SFX, players: () =>
   number: (x, y, t, c) => number(x, y, t, c), burst: (...a) => burst(...a), dust: (x, y, n) => dust(x, y, n), shake: n => shakeCam(n), seen: k => beastSeen(k), ring: (x, y, r, c) => ringAt(x, y, r, c, 0.4),
   asPlayer: (p, fn) => asPlayer(p, fn), damage: (x, d, o) => damagePlayer(x, d, o), cellSet: (x, y, t) => { if (x >= 0 && y >= 0 && x < LW && y < LH) cellSet(x, y, t); },
   text: (s, x, y, c, a, z) => text(s, x, y, c, a, z), moveBody: (e, dx, dy) => moveBody(e, dx, dy, false), hitOnce: o => { if (!P || !P.hitSet || P.hitSet.has(o)) return false; P.hitSet.add(o); return true; },
-  bossBeat: (id, by) => (BZH ? BZH.onBeat(id, by) : null) });
+  bossBeat: (id, by) => (BZH ? BZH.onBeat(id, by) : null),
+  /* (claude/warcairn2) THE HATCHET's world (src/war-cairn-hatchets.js): the keys (its told arc), the tiles, a foe's blow, a harpy hatched from a nest, a hero under a falling stone, HIS hatchet */
+  keys: () => keys, solidPx: (x, y, falling) => { const tx = Math.floor(x / TS), ty = Math.floor(y / TS), t = tileAt(tx, ty); return isSolid(tx, ty) || (!!falling && (isOneWay(t) || t === T.PLANK) && (y % TS) < 6); },
+  footAt: (tx, ty) => { const t = tileAt(tx, ty); return isSolid(tx, ty) || isOneWay(t) || t === T.PLANK || t === T.SPIKE; }, hurtFoe: (e, d, x) => hurtAs('throw', e, d, x, false),
+  spawnFoe: (t, tx, ty) => { const n0 = enemies.length; spawnEnt({ t, x: tx, y: ty, face: -1 }); const made = enemies.slice(n0); for (const e of made) burst(e.x, e.y - 4, 8, ['#6a4a2a', '#c8b89a', '#e8e0d0'], 50, 0.5); return made; },
+  shoveHero: (pp, y, d) => asPlayer(pp, () => { P.y = y; P.vy = Math.min(P.vy || 0, 0); if (d > 0) damagePlayer(P.x, d, { unblockable: true, noKnock: true, name: 'A FALLING STONE' }); }),
+  chief: () => (BZH ? BZH.axeApi() : null), chiefFrenzy: () => !!(BZH && BZH.show() && BZH.show().frenzy > 0), hint: m => hintSay('mechanic', 7, m) });
 BZH = makeBzChiefHands({ heroT: () => hero(), get L() { return L; }, get players() { return players; }, get boss() { return boss; }, get bossActive() { return bossActive; }, TS, T, EHP, sfx: SFX, hero: () => P, time: () => time, VW: () => VW, VH: () => VH,
   number: (x, y, t, c) => number(x, y, t, c), text: (...a) => text(...a), burst: (...a) => burst(...a), sparks: (...a) => sparks(...a), shake: n => shakeCam(n), ring: (x, y, r, c) => ringAt(x, y, r, c, 0.5), dust: (x, y, n) => dust(x, y, n),
   damagePlayer: (...a) => damagePlayer(...a), asPlayer: (p, fn) => asPlayer(p, fn), upright: p => upright(p), overlap: (a, b) => overlap(a, b), box: b => box(b), blowHas: (b, v) => blowHas(b, v), answered: res => answered(res),
   cellSet: (x, y, t) => { if (x >= 0 && y >= 0 && x < LW && y < LH) cellSet(x, y, t); }, tileAt: (x, y) => tileAt(x, y), shove: (p, d) => { p.vx = d * 220; p.vy = Math.min(p.vy || 0, -120); p.ground = false; },
-  arenaDrums: () => (WCH ? WCH.arenaDrums() : []), takeDrum: id => { if (WCH) WCH.takeDrum(id); }, drumsAnswer: k => { if (WCH) WCH.drumsAnswer(k); } });
+  arenaDrums: () => (WCH ? WCH.arenaDrums() : []), takeDrum: id => { if (WCH) WCH.takeDrum(id); }, drumsAnswer: k => { if (WCH) WCH.drumsAnswer(k); },
+  hurtBoss: (e, d, x) => hurtAs('throw', e, d, x, false) });   /* (claude/warcairn2) a thrown hatchet on him (his own: the stagger first, src/bzchief.js axeBack) */
 EHP.bzchief = BZCM.BZC.hp; EHP.drummer = WCM.WC.drummer.hp; KNOCK_SKIP.add('bzchief'); POISE_SKIP.add('bzchief');
 /* HE IS BEATEN (claude/warcairn, scratch/brief-crownpath-1028.md section 4): the hero he is opens in the store (feat 'boss:warcairn' - only asked once src/hero-roster.js WARCAIRN_SHIPS
    is flipped; until then THE BERSERKER is sold as he always was), and anyone who beats him earns THE CHIEFTAIN'S AXES (a weapon skin: Q4). Set on his defeat in his own level - not in
@@ -30433,7 +30538,8 @@ function updateProps(dt) {
   if (talkPress && state === 'play' && !P.dead && KSH && KSH.on() && KSH.interact(P)) talkPress = false;
   if (talkPress && state === 'play' && !P.dead && HPD && HPD.on() && (HPD.held() || HPD.canTake()) && HPD.interact(P)) talkPress = false;
   if (talkPress && state === 'play' && !P.dead && FPK && FPK.on() && (FPK.held() || FPK.canTake()) && FPK.interact(P)) talkPress = false;
-  if (talkPress && state === 'play' && !P.dead && HNS && HNS.on() && (HNS.held() || HNS.canTake()) && HNS.interact(P)) talkPress = false;   /* (claude/hornetsnest) E takes a smoke pot off its stand, or sets the one you carry down */   /* (claude/fenroad2) E takes a plank, lays it at a broken edge, or sets it down */   /* (claude/rootway2) E takes a spore pod off its cap (or sets one down) */
+  if (talkPress && state === 'play' && !P.dead && HNS && HNS.on() && (HNS.held() || HNS.canTake()) && HNS.interact(P)) talkPress = false;
+  if (talkPress && state === 'play' && !P.dead && WCH && WCH.on() && (WCH.held(P) || WCH.canTake(P)) && WCH.interact(P)) talkPress = false;   /* (claude/warcairn2) E takes a hatchet (a rack, a clansman's, HIS in the ring) or sets yours down */   /* (claude/hornetsnest) E takes a smoke pot off its stand, or sets the one you carry down */   /* (claude/fenroad2) E takes a plank, lays it at a broken edge, or sets it down */   /* (claude/rootway2) E takes a spore pod off its cap (or sets one down) */
   if (talkPress && state === 'play' && !P.dead && WRK && WRK.on() && WRK.interact(P)) talkPress = false;
   if (talkPress && state === 'play' && !P.dead && OWK && OWK.on() && OWK.interact(P)) talkPress = false;   /* (claude/oreroadminor) E takes a rock off a pile (or sets one down) */
     /* (claude/winch5) THE WINCHMASTER: E takes a rock off his skip (or sets one down) */   /* THE BANDIT KSAR: E rings a gong, takes a keg or a flask, sets one down, hauls the winch, opens the strongroom */
@@ -31361,7 +31467,7 @@ function updateCamera(dt) {
   /* THE LANTERN-EATER's basin is tall (the lights come down out of the fog over the raft): the camera holds the whole of it when the view is tall enough */
   else if (bossActive && boss && boss.t === 'lanterneater' && LEH && LEH.on()) ty = LEH.camY(ty);
   else if (bossActive && boss && boss.t === 'cisternqueen' && CQH && CQH.on()) ty = CQH.camY(ty);
-  else if (bossActive && boss && boss.t === 'abbot' && L.arena && L.arena.house) ty = Math.min(ty, L.arena.floor + 16 - VH);   /* (claude/abbot3) the belfry's bridges and his chair hang high: the camera looks up from the floor */   /* (batch91) 24 px higher while she is on the wellhead, so her tail is not cut */
+  else if (bossActive && boss && boss.t === 'abbot' && L.arena && L.arena.house) { ty = Math.min(ty, L.arena.floor + 16 - VH); const af = abbotCamFocus(); if (af) { tx += (af.x - VW / 2 - tx) * af.w; if (af.y !== null) ty += (af.y - VH * 0.5 - ty) * af.w; } }   /* (claude/abbotclear) the intro beat and the nudge */   /* (claude/abbot3) the belfry's bridges and his chair hang high: the camera looks up from the floor */   /* (batch91) 24 px higher while she is on the wellhead, so her tail is not cut */
   else if (bossActive && boss && boss.t === 'grubbag' && GBH && GBH.on()) ty = GBH.camY(ty, VH);   /* (claude/grubbagbig) the whole of LORD GRUBBAG (and his belly flop's rise) in the picture */
   /* THE SPIRAL STAIR (src/spiral-chase.js): the Undead Archmage waits over the landing you are climbing to, and he casts only with his whole
      body in the picture. So the camera looks UP the stairwell far enough to hold him - his head under the top of the frame - while it keeps
@@ -33020,7 +33126,8 @@ function drawWorld(cx, cy, showPlayer) {
      and the tower keeps two rows of CRENELLATIONS at rows 46-49, which are inside the room's box, so the merlons stood up
      through the floor of a sealed hall like masonry floating in mid-air. Nothing up here is supposed to be tiles at all
      (see the head of src/sanctum.js), so the room covering them is the right way round as well as the good-looking one. */
-  if (L.sanctum && L.carpetUp && !L.sandWalk) { if (mageRealm()) drawRealm(g, boss, L.arena, cx, cy, time); else drawSanctum(g, L, L.arena, cx, cy, time, carpetBox(L.arena, 0)); }   /* (in one of his realms, the realm's room: src/mage-realms.js) */
+  if (L.sanctum && L.carpetUp && !L.sandWalk && !(L.arena && L.arena.ascent)) { if (mageRealm()) drawRealm(g, boss, L.arena, cx, cy, time); else { const fa = L.hallFadeT == null ? 1 : Math.min(1, (time - L.hallFadeT) / CH3_ASC.fade); g.globalAlpha = fa; drawSanctum(g, L, L.arena, cx, cy, time, carpetBox(L.arena, 0)); g.globalAlpha = 1; } }   /* (claude/ft4a: not in THE ASCENT's well - the tower is the picture there; out of it, his sky comes up round you over ASC.fade s, no cut) */
+  if (L.chase3 && boss && boss.t === 'undeadmage' && boss.leg === 'ascent') drawChase3Ascent(g, boss, L.arena, cx, cy, time);   /* (claude/ft4a) THE ASCENT's told stone and the cracking plug */   /* (in one of his realms, the realm's room: src/mage-realms.js) */
   if (L.sanctum) drawSanctumDoors(g, L, cx, cy, time);
   drawComb(cx, cy);
   drawGroundLight(cx, cy, tx0, ty0);
@@ -33072,7 +33179,7 @@ function drawWorld(cx, cy, showPlayer) {
     else if (m.kind === 'lift' && m.hoist) drawHoistDeck(m, cx, cy);   /* THE HANGING VILLAGE's hoists */
     else if (m.kind === 'lift' && m.pyr) {}   /* THE SEALED PYRAMID's counterweights: stone blocks on chains, drawn by its hands (src/sealed-pyramid-hands.js drawWorld) - never the default log */
     else if (m.kind === 'lift' && m.cw) drawBasket(m, cx, cy);   /* THE MONASTERY's counterweight baskets */
-    else if (m.kind === 'lift' && m.abbotBasket) { const x = Math.round(m.x - cx), y = Math.round(m.y - cy), ty = Math.round(m.top - cy); g.strokeStyle = '#c8b088'; g.lineWidth = 1; g.beginPath(); g.moveTo(x + 16.5, ty + 3); g.lineTo(x + 16.5, y - 10); g.lineTo(x + 2.5, y - 2); g.moveTo(x + 16.5, y - 10); g.lineTo(x + 30.5, y - 2); g.stroke(); g.drawImage(mo().basket, x - 1, y - 3); }   /* (claude/abbot3) HIS CHAIR'S BASKET, on the rope over the beam */
+    else if (m.kind === 'lift' && m.abbotBasket) { const x = Math.round(m.x - cx), y = Math.round(m.y - cy), ty = Math.round(m.top - cy); g.strokeStyle = '#c8b088'; g.lineWidth = 1; g.beginPath(); g.moveTo(x + 16.5, ty + 3); g.lineTo(x + 16.5, y - 10); g.lineTo(x + 2.5, y - 2); g.moveTo(x + 16.5, y - 10); g.lineTo(x + 30.5, y - 2); g.stroke(); g.drawImage(mo().basket, x - 1, y - 3); const ab_ = boss && boss.t === 'abbot' && boss.alive && boss.clr ? boss : null; if (ab_ && ab_.phase === 2 && (ab_.deck === 'chair' || ab_.mode === 'swing' || ab_.mode === 'swingTell') && abbotBasketK() < ABBOT.spillAt) { drawBasketOutline(g, x, y, time, Math.max(ab_.clr.pulse || 0, ab_.clr.flare || 0)); if (ab_.clr.near && abbotBasketK() < 0.05) { const ty2 = y - 30 + Math.round(Math.sin(time * 5) * 2); text('STAND IN IT: RIDE DOWN', x + 16, ty2 - 8, '#ffe08a', 'center', 6); g.fillStyle = '#ffe08a'; g.fillRect(x + 14, ty2 + 1, 5, 1); g.fillRect(x + 15, ty2 + 2, 3, 1); g.fillRect(x + 16, ty2 + 3, 1, 1); } } }   /* (claude/abbot3) HIS CHAIR'S BASKET, on the rope over the beam; (claude/abbotclear) the gold outline while P2 waits for it, and the prompt near it */
     else if (m.kind === 'lift' && L.hangingTown) { const x=Math.round(m.x-cx),y=Math.round(m.y-cy),top=Math.round(m.top-cy);g.fillStyle='#ab956c';g.fillRect(x+15,top,2,y-top);g.fillStyle='#725840';g.fillRect(x,y,32,7);g.fillRect(x,y-10,2,12);g.fillRect(x+30,y-10,2,12);g.strokeStyle='#aa8d64';g.lineWidth=1;g.strokeRect(x+.5,y-10.5,31,16);g.beginPath();g.arc(x+16,top,5,0,7);g.stroke();} else if (m.kind === 'lift') { const ry = m.top !== undefined ? Math.round(m.top - cy) : 0; g.fillStyle = '#b8a888'; g.fillRect(Math.round(m.x) + 15 - cx, ry, 2, Math.round(m.y) - cy - ry); if (m.top !== undefined) { g.fillStyle = '#3a2618'; g.beginPath(); g.arc(Math.round(m.x) + 16 - cx, ry, 4, 0, 7); g.fill(); g.fillStyle = '#8a919c'; g.fillRect(Math.round(m.x) + 15 - cx, ry - 1, 2, 2); } g.drawImage(PROP.lift, Math.round(m.x) - cx, Math.round(m.y) - cy); }
     else if (m.kind === 'orelift' && m.player) { const x = Math.round(m.x - cx), y = Math.round(m.y - cy); g.fillStyle = '#5a6270'; g.fillRect(x + 15, y - 200, 2, 200); g.fillStyle = '#3a3a44'; g.fillRect(x, y, m.w, 6); g.fillStyle = '#8a919c'; g.fillRect(x, y, m.w, 1); g.fillRect(x, y - 22, 2, 22); g.fillRect(x + m.w - 2, y - 22, 2, 22); g.fillRect(x, y - 22, m.w, 2); for (let k = 4; k < m.w - 4; k += 6) g.fillRect(x + k, y - 20, 1, 20); }
     else if (m.kind === 'growcap' && L.sporewood2) SW2W.drawGrowcap(g, m, cx, cy, time);   /* (claude/sporewood2art) SPOREWOOD 2's buds: bud, dark, lit, seed, her plum seed caps, the leaning stalk, the withered cap (src/redraw/sporewood2_world.js) */
@@ -33852,7 +33959,7 @@ function drawWorld(cx, cy, showPlayer) {
     if (e.t === 'owl' && (e.mode === 'stalk' || e.mode === 'plunge')) { const k = e.mode === 'plunge' ? 1 : 1 - e.modeT / 1.3, fl = L.arena.floor; g.fillStyle = 'rgba(10,8,20,' + (0.25 + 0.35 * k).toFixed(2) + ')'; g.beginPath(); g.ellipse(Math.round(e.x - cx), Math.round(fl - cy) - 1, 8 + 8 * k, 2 + 2 * k, 0, 0, Math.PI * 2); g.fill(); }
     if (e.t === 'owl') drawOwlReads(e, cx, cy);
     if (e.t === 'butcher' && KGH) KGH.butcherOver(g, e, cx, cy, time);
-    if (e.t === 'drummer' && WCH) WCH.drummerOver(g, e, cx, cy, time);   /* (claude/warcairn) the drum on his back, his sticks */   /* (claude/kitchengate) his apron, his cleaver, his flames */   /* (claude/owl2) */
+    if (e.t === 'drummer' && WCH) WCH.drummerOver(g, e, cx, cy, time); if (WCH && WCH.eliteOver) WCH.eliteOver(g, e, cx, cy, time);   /* (claude/warcairn2art) an elite of the clan: war paint, antlers, bone */   /* (claude/warcairn) the drum on his back, his sticks */   /* (claude/kitchengate) his apron, his cleaver, his flames */   /* (claude/owl2) */
     if ((e.t === 'harpy' || e.t === 'shrieker' || e.t === 'galeharpy') && RKH && RKH.on()) RKH.harpyOver(g, e, cx, cy, time);   /* (claude/rookery) the shrieker's crest and scream rings */   /* (claude/owl2) */
     if (e.t === 'owl' && e.mode === 'skimTell' && e.skimAt) { const y = Math.round(L.arena.floor - 4 - cy), k = 0.5 + 0.5 * Math.sin(time * 20), x0 = Math.round(e.x - cx), x1 = Math.round(Math.max(L.arena.x0, Math.min(L.arena.x1, e.x + e.skimDir * 400)) - cx); tellLine(x0, x1, y, k, '#ff6b6b'); }   /* THE SKIM'S LINE: where the talons will run, while it mantles */
     if (e.t === 'grandmother' && HUH && L.hush) HUH.drawGran(g, e, cx, cy, time);   /* (claude/underleaf2) her read (B10): OPEN gold ring + bar, WARDED shell + bar, and her ear's bearing */
@@ -33893,6 +34000,8 @@ function drawWorld(cx, cy, showPlayer) {
     const roar = e.enrageT > 0 ? 1 + 0.14 * Math.sin(Math.min(1, (0.7 - e.enrageT) / 0.7) * Math.PI) : 1;   /* THE ROAR: the phase change swells the body and lets it settle */
     const ps = poseOf(e, wind), pSX = bigF * roar * (1 + sq * 0.22) * ps.sx, pSY = bigF * roar * (1 - sq * 0.22) * ps.sy, pRot = ps.rot || 0;
     e.lastSet = sprSet; e.lastFrame = frame; e.lastBigF = bigF;   /* remembered, for the body it leaves */
+    const sinkClip = e.t === 'undeadmage' && L.chase3 && e.mode === 'sink' && e.leg === 'chase';   /* (claude/ft4a, FT3 art Q2/Q3) HE SINKS INTO THE STONE: his body clipped at the room's floor, not drawn over its tiles */
+    if (sinkClip) { g.save(); g.beginPath(); g.rect(0, 0, VW, Math.round(chase3RoomArena(e.room || 0).floor - cy)); g.clip(); }
     // a bright rim behind the sprite, for anyone who loses foes against the wood
     const inWater = (L.pools || []).some(q => q.swim && !q.dry && e.x > q.x0 && e.x < q.x1 && e.y > q.y);
     const inGloom = (L.darkZones || []).some(z => e.x > z.x0 && e.x < z.x1 && e.y > z.y0 && e.y < z.y1) || (darkNow > 0.2 && !!L.dark), inDark = inWater || inGloom;
@@ -33927,7 +34036,7 @@ function drawWorld(cx, cy, showPlayer) {
       if (e.alive && e.relT > 0 && !e.harmless && !FLYERS.has(e.t)) drawFoeSmear(e, bigF, cx, cy);
       /* HEAVY FEET: the big ones put a little of the road up every time a foot comes down */
       if (e.alive && (HEAVY.has(e.t) || e.t === 'closedhelm' || e.t === 'hedgeknight' || e.t === 'golem' || e.t === 'forgemaster') && Math.abs(e.vx) > 6) { if (e.lastF !== undefined && frame !== e.lastF && Math.random() < 0.8) dust(e.x - (e.face || 1) * 4, e.y, e.maxHp ? 3 : 2); e.lastF = frame; } }
-    g.globalAlpha = 1;
+    g.globalAlpha = 1; if (sinkClip) g.restore();
     { const bl = e === boss || bossActive || miniActive; if (openCommon(e, bl)) drawOpen(g, e, Math.round(e.x - cx), Math.round(e.y - e.h * bigF / (e.bodyK || 1) - cy) - 6, time, finishReady(e, P, bl)); }   /* OPEN: the stars over a broken foe, closing in and going white when the next blow will finish it (src/poise-break.js, src/finishers.js) */
     if (e.rpOpenT > 0 && e.alive) RP.drawParried(g, e, Math.round(e.x - cx), Math.round(e.y - e.h * bigF / (e.bodyK || 1) - cy) - 7);   /* (claude/riposteart) a parried foe's riposte window, over its head */
     if (e.t === 'windcaller' && e.alive && e.mode !== 'sleep' && (e.mode === 'howlTell' || e.mode === 'howl' || e.mode === 'galeTell')) { const k = 0.5 + 0.5 * Math.sin(time * 12); g.globalAlpha = 0.5 + 0.4 * k; g.strokeStyle = '#bfe6f5'; g.lineWidth = 1; for (let q = 0; q < 3; q++) { g.beginPath(); g.arc(Math.round(e.x - cx), Math.round(e.y - cy) - 14, 14 + q * 8 + k * 4, 0, 7); g.stroke(); } g.globalAlpha = 1; }
@@ -33959,9 +34068,9 @@ function drawWorld(cx, cy, showPlayer) {
   if (FKC && boss && boss.t === 'frog') { FKC.draw(g, cx, cy, time); if (L.frogCourt) FCA.drawBossFx(g, L, boss, cx, cy, time, FROGK.leap); }   /* (claude/marsh2) the flies, the ripples, the tipped pads */
   if (tongue && tongue.active && L.frogCourt && boss && boss.t === 'frog') FCA.drawTongue(g, tongue, cx, cy, time, boss.phase || 1); else if (tongue && tongue.active) { const x0 = Math.round(tongue.x0 - cx), y = Math.round(tongue.y - cy), len = Math.round(tongue.len); g.fillStyle = '#ff7a9a'; g.fillRect(tongue.dir > 0 ? x0 : x0 - len, y - 2, len, 4); g.fillStyle = '#ffb0c0'; g.fillRect(tongue.dir > 0 ? x0 : x0 - len, y - 2, len, 1); g.fillStyle = '#c9463d'; g.fillRect(tongue.dir > 0 ? x0 + len - 4 : x0 - len, y - 3, 4, 6); }
   for (const f of fish) { g.save(); g.translate(Math.round(f.x - cx), Math.round(f.y - cy)); g.rotate(Math.atan2(f.vy, f.vx) * 0.6); if (f.vx < 0) g.scale(-1, 1); g.drawImage(FISH, -3, -2); g.restore(); }
-  if(L.sanctum&&L.carpetUp&&!L.sandWalk&&!mageRealm())drawSanctumUnder(g,L.arena,cx,cy);   /* his hall is closed at the bottom: under the fire is stone, not the parapet and its lantern (round 2) */
+  if(L.sanctum&&L.carpetUp&&!L.sandWalk&&!mageRealm()&&!(L.arena&&L.arena.ascent))drawSanctumUnder(g,L.arena,cx,cy);   /* his hall is closed at the bottom: under the fire is stone, not the parapet and its lantern (round 2) */
   if (PUPH && PUPH.on()) PUPH.drawRig(cx, cy, time);   /* THE PUPPETEER's rig and strings (slack grey, taut gold), after the bodies they hold */
-  drawCarpetWorld(g,L,P,cx,cy,time);{const gh=enemies.find(q=>q.t==='greathound'&&q.alive);if(gh)GHD.drawHound(g,gh,cx,cy,time,L.mini&&L.mini.boss==='greathound'?L.mini.floor:gh.y);}drawSextonFx(cx,cy);drawMinerPicks(g,cx,cy);{const wm=boss&&boss.t==='winchmaster'&&boss.alive?boss:null;if(wm)drawWinchFx(g,wm,winchC(wm),cx,cy,time);}if(WRK&&WRK.on())WRK.draw(g,cx,cy,time);if(GMH&&GMH.on())GMH.drawFront(g,cx,cy,time);/* (claude/gorm2) KING GORM 2's told layer: the archers' arcs, the rock's arc, the fire, the cones, the logs, the quake */{const gw=enemies.find(q=>q.t==='gravewarden'&&q.alive);if(gw)drawGraveWarden(g,gw,cx,cy,time,(L.mini||L.arena).floor);}{const ab=boss&&boss.t==='abbot'&&boss.alive?boss:null;if(L.arena&&L.arena.boss==='abbot')drawAbbotRopes(g,abbotRopes(),L.arena.y0,L.arena.floor,cx,cy,time,ab);if(ab&&L.arena)drawFalseAbbot(g,ab,cx,cy,time,L.arena.floor);}if(L.witch&&(L.mini||L.arena))drawHedgeWarden(g,enemies.find(q=>q.t==='hedgewarden'),hedgeBraziers(),cx,cy,time,(L.mini||L.arena).floor);drawUndeadMage(g,boss?.t==='undeadmage'?boss:null,cx,cy,time);if(boss?.t==='undeadmage'){drawRealmFx(g,boss,cx,cy,time,P,(s,x,y,col,z)=>text(s,x,y,col,'center',z||6));drawTear(g,boss,cx,cy,time);drawMageActs(g,boss,cx,cy,time,(s,x,y,col,z)=>text(s,x,y,col,'center',z||6));}for(const q of enemies)if(q.t==='magechase'&&q.alive)drawUndeadMage(g,q,cx,cy,time);if(L.arena?.carpet&&boss?.t==='undeadmage'&&!mageRealm())drawStormWalls(g,L.arena,boss.squeeze||0,cx,cy,time,VW,VH);
+  drawCarpetWorld(g,L,P,cx,cy,time);{const gh=enemies.find(q=>q.t==='greathound'&&q.alive);if(gh)GHD.drawHound(g,gh,cx,cy,time,L.mini&&L.mini.boss==='greathound'?L.mini.floor:gh.y);}drawSextonFx(cx,cy);drawMinerPicks(g,cx,cy);{const wm=boss&&boss.t==='winchmaster'&&boss.alive?boss:null;if(wm)drawWinchFx(g,wm,winchC(wm),cx,cy,time);}if(WRK&&WRK.on())WRK.draw(g,cx,cy,time);if(GMH&&GMH.on())GMH.drawFront(g,cx,cy,time);/* (claude/gorm2) KING GORM 2's told layer: the archers' arcs, the rock's arc, the fire, the cones, the logs, the quake */{const gw=enemies.find(q=>q.t==='gravewarden'&&q.alive);if(gw)drawGraveWarden(g,gw,cx,cy,time,(L.mini||L.arena).floor);}{const ab=boss&&boss.t==='abbot'&&boss.alive?boss:null;if(L.arena&&L.arena.boss==='abbot')drawAbbotRopes(g,abbotRopes(),L.arena.y0,L.arena.floor,cx,cy,time,ab);if(ab&&L.arena)drawFalseAbbot(g,ab,cx,cy,time,L.arena.floor);}if(L.witch&&(L.mini||L.arena))drawHedgeWarden(g,enemies.find(q=>q.t==='hedgewarden'),hedgeBraziers(),cx,cy,time,(L.mini||L.arena).floor);drawUndeadMage(g,boss?.t==='undeadmage'?boss:null,cx,cy,time);if(boss?.t==='undeadmage'){drawRealmFx(g,boss,cx,cy,time,P,(s,x,y,col,z)=>text(s,x,y,col,'center',z||6));drawTear(g,boss,cx,cy,time);drawMageActs(g,boss,cx,cy,time,(s,x,y,col,z)=>text(s,x,y,col,'center',z||6));}for(const q of enemies)if(q.t==='magechase'&&q.alive){drawUndeadMage(g,q,cx,cy,time);drawStairReel(g,q,cx,cy,time);}if(L.arena?.carpet&&boss?.t==='undeadmage'&&!mageRealm())drawStormWalls(g,L.arena,boss.squeeze||0,cx,cy,time,VW,VH);
   if (L.witch) drawRoots(g, L.hedgeRoots, L.witch, cx, cy, time);   /* THE ROOTS crawling, THE ROOTED GARDEN's braziers and its shivering hedges (hedge-warden.js) */
   if(L.witch&&L.arena&&L.arena.rune)drawRune(g,L.arena.rune,cx,cy,time);   /* (claude/bosswave2) THE RUNE COLUMN in his arena */
   if(L.witch){drawGargoyleWorld(g,boss&&boss.t==='gargoyle'?boss:null,cx,cy,time,P,text);drawSlabShards(g,L.shards,cx,cy);}   /* (claude/witchfix: the read's words, and the broken slabs' pieces falling) */
@@ -35918,6 +36027,7 @@ function render() {
    : boss.t === 'queen' ? 'HORNET QUEEN' : bossTitle(boss); bossPlate(boss.t === 'king' ? (boss.mode === 'held' ? nm + '  HELD' : (boss.open > 0 || boss.mode === 'downed' || boss.mode === 'stung') ? nm + '  OPEN' : nm + '  CROWNED') : boss.phase === 2 && boss.t !== 'strawking' && boss.t !== 'wickerqueen' && boss.t !== 'puppeteer' && boss.t !== 'lanterneater' && boss.t !== 'cisternqueen' && !(boss.t === 'prince' && nm.includes('  ')) ? nm + '  ENRAGED' : nm, boss.phase >= 2 ? '#ff6b6b' : '#ffd36b', boss.t === 'pyromancer' ? PYRO_PLATE_LIFT : boss.t === 'shrieksisters' ? 7 : 0); g.drawImage(PROP.skullMini, VW / 2 - 72, VH - 15); if (boss.t === 'king' && (boss.mode === 'held' || boss.open > 0)) { bar(VW / 2 - 60, hpBy(), 120, hpBh(), boss.hp / boss.maxHp, boss.mode === 'held' ? (Math.floor(time * 8) % 2 ? '#8fd160' : '#e0b040') : '#8fd160'); if (boss.open > 0) { g.fillStyle = '#8fd160'; g.fillRect(VW / 2 - 60, VH - 5, Math.round(120 * boss.open / 7), 1); } } else if (boss.t === 'shrieksisters' && SSH && SSH.drawBars(g, VW, VH, hpBy(), hpBh(), time)) { /* (claude/rookery2) THREE BARS, one per sister (src/shriek-sisters-hands.js drawBars) */ } else if (boss.t === 'mother') { const gl = enemies.filter(g => g.alive && g.t === 'gill').length, ht = enemies.find(g => g.alive && g.t === 'heart'); bar(VW / 2 - 60, hpBy(), 120, hpBh(), ht ? ht.hp / EHP.heart : 1, ht ? '#ff7a9a' : '#9a5aa8'); } else bar(VW / 2 - 60, hpBy(), 120, hpBh(), boss.hp / boss.maxHp, (boss.t === 'ram' && ramOpen(boss)) || (boss.t === 'prince' && boss.mode === 'buried') ? (Math.floor(time * 8) % 2 ? (boss.t === 'ram' ? '#ffd36b' : '#8fd160') : '#fff6c8') : boss.phase === 2 ? '#ff6b6b' : '#e0b040'); if (boss.t !== 'shrieksisters') for (let i = 1; i < 10; i++) { g.fillStyle = 'rgba(0,0,0,0.35)'; g.fillRect(VW / 2 - 60 + i * 12, hpBy(), 1, hpBh()); } { const ht = boss.t === 'mother' ? enemies.find(q => q.alive && q.t === 'heart') : null; bossHpNums(ht ? ht.hp : boss.hp, ht ? EHP.heart : boss.maxHp); } }
     if (bossActive && boss && boss.alive && boss.t === 'gqueen' && state !== 'menu' && state !== 'win' && state !== 'gameover') drawGqPlate(boss);   /* HER PLATE, under her bar (round two) */
     if (bossActive && boss && boss.alive && boss.t === 'pyromancer' && state !== 'menu' && state !== 'win' && state !== 'gameover') drawPyroHeat(boss);   /* HIS HEAT, over his bar */
+    if (bossActive && boss && boss.alive && boss.t === 'bzchief' && BZH && state !== 'menu' && state !== 'win' && state !== 'gameover') BZH.drawHud(g, VW, VH, hpBy() - hpLift(), time);   /* (claude/warcairn2) HIS RAGE, as the hero Berserker's: a RAGE bar over his plate */
     if (state !== 'menu' && state !== 'win' && state !== 'gameover') { const pe = bossActive && boss && boss.alive ? boss : miniActive && !bossActive ? miniOne() : null; if (pe && pe.alive) RP.drawPoiseBar(g, pe, VW / 2 - 60, hpBy() + hpBh() + 2, 120); }   /* (claude/riposte) THE POISE BAR, under his health: thin, gold, white while broken (every BAR/%/NUMBERS mode: the numbers are his health's, above the bar) */
   }
   if (state === 'title' && pressCard) { TCH.hit(0, 0, VW, VH, () => { anyPress = true; initAudio(); dismissPress(); }); TC.drawPressText(g, text, UI, time, VW, VH, 1, touchOn); }   /* THE CARD: only its own words while it is up (the sign and the menu wait off screen, and are not drawn) */

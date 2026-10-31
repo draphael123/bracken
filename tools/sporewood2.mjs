@@ -74,7 +74,7 @@ ok(!(L.sleeps && L.sleeps.length) && !L.storm, 'no sleep clouds, no storm');
 
 // ---- SHRINES CLOSE THE EXAMS (A10c) ----
 const ends = SECTIONS.slice(0, 4).map(s => s[2]);
-ok(checks.length === 4 && checks.every((c, i) => c.x <= ends[i] && c.x >= ends[i] - 12), 'a shrine at the end of each of the first four areas (the last at her door): ' + checks.map(c => c.x).join(' ') + ' vs ends ' + ends.join(' '));
+ok(checks.length === 4 && checks.slice(0, 3).every((c, i) => c.x <= ends[i] && c.x >= ends[i] - 12) && checks[3].x >= 395 && checks[3].x <= 408, 'a shrine at the end of each of the first three areas, the last at her door past the knot gauntlet (claude/bossheal 10-30: 404, was 356): ' + checks.map(c => c.x).join(' ') + ' vs ends ' + ends.join(' '));
 
 // ---- HER HOLLOW ----
 const A = L.arena, seeds = (L.moversExtra || []).filter(m => m.kind === 'growcap' && m.mother && m.seed), kx = SPOREWOOD.mother * TS + 8;

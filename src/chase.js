@@ -52,6 +52,7 @@
 // THE CHECKPOINT RULE: a shrine within CHECKPOINT_GAP px before the start line (chaseProblems fails a level that has none), and a death
 // puts every chase back to IDLE (chaseReset) - the chaser goes back to its start and the trigger waits for the hero again.
 import { DUCK_H } from './duck.js';
+import { paintFront } from './redraw/ft4_art.js';   /* (claude/ft4art) THE TOWER FAILING: the collapse front's look */
 
 export const TS = 16;
 export const CHECKPOINT_GAP = 240;   // px: a shrine no further than this before the start line
@@ -73,7 +74,8 @@ export function chaseSpec(c) {
     from: num(c.from, trigger - dir * gap0), gap0, curve, lead: num(c.lead, 1.6), accel: num(c.accel, 140), rubber: rb,
     contact: c.contact === 'hurt' ? 'hurt' : 'kill', dmg: num(c.dmg, 45), hold: num(c.hold, 0.7),
     autoscroll: !!c.autoscroll, edge: num(c.edge, 24), show: Number.isFinite(c.show) ? c.show : null, showKeep: num(c.showKeep, 0.1), glow: num(c.glow, 300), look: c.look || 'rock', music: c.music || null, say: c.say || 'RUN!', zone: Array.isArray(c.zone) && c.zone.length === 4 ? c.zone.slice() : null,
-    beams: (c.beams || []).map(b => ({ th: BEAM.th, dmg: BEAM.dmg, name: 'A LOW BEAM', ...b })), checkpoint: c.checkpoint || null, runsOver: !!c.runsOver };
+    beams: (c.beams || []).map(b => ({ th: BEAM.th, dmg: BEAM.dmg, name: 'A LOW BEAM', ...b })), checkpoint: c.checkpoint || null, runsOver: !!c.runsOver,
+    drawZone: Array.isArray(c.drawZone) && c.drawZone.length === 4 ? c.drawZone.slice() : null, ft4: !!c.ft4, act: c.act || 0, after: c.after || null };   /* (claude/ft4b) drawZone: where it is DRAWN when that is wider than where its start line counts (the Falling Tower's collapse front); ft4/act/after: the tower's own (src/tower-front.js) */
 }
 export const newChase = () => ({ phase: 'idle', pos: 0, dist: 0, speed: 0, t: 0, warned: {}, warnT: 0, warnText: '', hold: 0, crash: 0, rumT: 0, capI: 0, hits: 0 });
 export const chaseReset = st => Object.assign(st, newChase());
@@ -88,13 +90,13 @@ export function chaseStep(sp, st, hero, dt, ground = true) {
     if (ahead(hero, sp.trigger) >= 0 && ahead(hero, sp.end) < 0) { Object.assign(st, newChase(), { phase: 'run', pos: sp.from, speed: sp.curve[0].speed }); st.warned[0] = true; ev.push({ k: 'start' }); }
     else return ev;
   }
-  st.t += dt; st.warnT = Math.max(0, st.warnT - dt);
+  st.t += dt; st.warnT = Math.max(0, st.warnT - dt); st.noSurge = Math.max(0, (st.noSurge || 0) - dt);   /* (claude/ft4a) noSurge: its next surge is HELD (not told, not come) - the Archmage reels on his stair */
   if (st.phase === 'done') {   // the crash: it runs on to the safe line and stops there
     st.crash += dt; if (ahead(st.pos, sp.end) < 0) { st.pos += d * st.speed * dt; if (ahead(st.pos, sp.end) >= 0) { st.pos = sp.end; st.speed = 0; ev.push({ k: 'crash' }); } } return ev; }
   // THE WARNING, then the speed-up it told
   let tgt = sp.curve[0].speed;
   for (let i = 1; i < sp.curve.length; i++) { const r = sp.curve[i];
-    if (!st.warned[i] && r.at - st.dist <= sp.lead * Math.max(st.speed, 30)) { st.warned[i] = true; st.warnT = 2.2; st.warnText = r.warn || 'IT QUICKENS'; ev.push({ k: 'warn', i, text: st.warnText, dist: st.dist, at: r.at }); }
+    if (!st.warned[i] && !(st.noSurge > 0) && r.at - st.dist <= sp.lead * Math.max(st.speed, 30)) { st.warned[i] = true; st.warnT = 2.2; st.warnText = r.warn || 'IT QUICKENS'; ev.push({ k: 'warn', i, text: st.warnText, dist: st.dist, at: r.at }); }
     if (st.warned[i] && st.dist >= r.at) tgt = r.speed; }
   if (tgt > st.speed + 0.01 && !(st.rose === tgt)) { st.rose = tgt; ev.push({ k: 'speedup', speed: tgt, dist: st.dist }); }
   if (st.speed < tgt) st.speed = Math.min(tgt, st.speed + sp.accel * dt); else if (st.speed > tgt) st.speed = Math.max(tgt, st.speed - sp.accel * dt);
@@ -168,14 +170,15 @@ export function chaseProblems(list, checkpoints) {   // checkpoints: [{x, y}] in
 }
 
 /* ---------- THE DRAWING (world space; g = the frame's 2d context, cx/cy the camera) ---------- */
-const LOOKS = { rock: { body: '#2a2119', edge: '#6b5a48', deb: '#8a7660' }, fire: { body: '#4a1408', edge: '#ff8a2a', deb: '#ffd36b' },
+const LOOKS = { collapse: { body: '#0b0912', edge: '#5a5470', deb: '#a8987c', wash: '190,95,75' }, rock: { body: '#2a2119', edge: '#6b5a48', deb: '#8a7660' }, fire: { body: '#4a1408', edge: '#ff8a2a', deb: '#ffd36b' },
   drill: { body: '#1c2026', edge: '#a9b4c2', deb: '#e0a040' }, train: { body: '#2a0e14', edge: '#9ae0a8', deb: '#ffd36b', wash: '120,230,150' }, water: { body: '#16323c', edge: '#bfe6f5', deb: '#eefaff', wash: '120,200,230' },   /* THE FOG CANAL's flood off the burst summit gate */ dark: { body: '#07120c', edge: '#6fe08a', deb: '#c8ffd8', deep: '#1f4a2c', haze: 'rgba(111,224,138,', wave: true, wash: '60,190,110' } };
 export function drawChaser(g, sp, st, cx, cy, VW, VH, time) {
   if (st.phase === 'idle') return;
   const L = LOOKS[sp.look] || LOOKS.rock, x = Math.round(st.pos - (sp.axis === 'x' ? cx : cy)), depth = 260;
   g.save();
-  if (sp.zone) { const zx = sp.zone[0] - cx, zy = sp.zone[2] - cy; g.beginPath(); g.rect(Math.round(zx), Math.round(zy), Math.round(sp.zone[1] - sp.zone[0]), Math.round(sp.zone[3] - sp.zone[2])); g.clip(); }   /* only over its own place */
+  { const z = sp.drawZone || sp.zone; if (z) { const zx = z[0] - cx, zy = z[2] - cy; g.beginPath(); g.rect(Math.round(zx), Math.round(zy), Math.round(z[1] - z[0]), Math.round(z[3] - z[2])); g.clip(); } }   /* only over its own place */
   const jag = i => Math.round(Math.sin(i * 1.7 + time * 9) * 3 + Math.sin(i * 0.6) * 4);
+  if (sp.look === 'collapse' && sp.axis === 'y' && sp.dir < 0 && g.createLinearGradient) { paintFront(g, x, VW, time, st.speed); g.restore(); return; }   /* (claude/ft4art) the tower's own stone, not the rock slide's */
   if (sp.look === 'train' && sp.axis === 'x') { drawTrain(g, sp, x, (sp.zone ? Math.floor(sp.zone[3] / TS) * TS : cy + VH) - cy, time);   /* on the zone's floor tile */ g.restore(); return; }
   if (sp.axis === 'x') { const lo = sp.dir > 0 ? x - depth : x, hi = sp.dir > 0 ? x : x + depth;
     g.fillStyle = L.body; g.fillRect(lo, 0, hi - lo, VH);

@@ -140,6 +140,7 @@ export function buildKingswood({ painter, T, TS }) {
   sign(177, 25, 'GREAT HOUND: JUMP THE LUNGE, DODGE THE POUNCE, KILL THE PUPS. A BLOCK SKIDS IT.', { pyro: 'GREAT HOUND: JUMP THE LUNGE, DODGE THE POUNCE, KILL THE PUPS. IT HATES FIRE.', paladin: 'GREAT HOUND: JUMP THE LUNGE, DODGE THE POUNCE, KILL THE PUPS. THE AEGIS SKIDS IT.' });
   gate(199, 20, 25);
   coins([202, 24], [204, 24]); plank(200, 206, 23); coins([201, 22], [205, 22]);
+  ent('check', 168, 24);                                                           /* SHRINE: the hunting stands' span and meadow are behind you, the kennel's gate a few steps on (claude/bossheal 10-30: a shrine before every mini) */
   ent('check', 205, 25);                                                           /* SHRINE TWO: the kennel is behind you */
 
   // ================= 3. THE CAGE GROVE (206-306): REMIX - the drop turned on the court, and his fight taught =================

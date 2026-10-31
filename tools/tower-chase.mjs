@@ -140,8 +140,8 @@ assert.deepEqual(foes.map(e => e.t), ['magechase'], 'the stair is his chase and 
   assert.ok(!/spiral\.seals|s\.wall|burnt/.test(lab.slice(lab.indexOf('export function chaseClimb'), lab.indexOf('export function chaseClimb') + 4000)), 'the stair bot still strikes braziers or jumps their fire');
   assert.ok(!/e\.t === 'ward'/.test(reach), 'the reach fill still opens a ward'); }
 // ---- RISE: the climb is an upward auto-scroller on src/chase.js ----
-const RL = L.chases || [];
-assert.equal(RL.length, 1, 'the stair hands the chase engine no chase (L.chases): ' + RL.length);
+const RL = (L.chases || []).filter(c => c.id === 'towerscroll');   /* (claude/ft4b: the tower's acts II and III have their own COLLAPSE FRONTS after it in L.chases - tools/fallingtower4.mjs; the stair's is the first) */
+assert.equal(RL.length, 1, 'the stair hands the chase engine no chase (L.chases): ' + RL.length); assert.equal(L.chases[0].id, 'towerscroll', 'the stairs chase is not the first (BK.chase.states()[0] below)');
 const sp = chaseSpec(RL[0]), cps = L.ents.filter(e => e.t === 'check').map(e => ({ x: e.x * TS + 8, y: (e.y + 1) * TS }));
 assert.ok(sp.axis === 'y' && sp.dir === -1 && sp.autoscroll, 'the dark does not rise up the stair with the camera (axis y, dir -1, autoscroll): ' + [sp.axis, sp.dir, sp.autoscroll]);
 assert.ok(sp.contact === 'hurt' && sp.dmg >= 18 && sp.dmg <= 24 && sp.hold >= 0.7, 'the rising dark does not HURT (18-24, about 25-30 after the damage scale) on contact and hold after it: ' + [sp.contact, sp.dmg, sp.hold]);
@@ -213,6 +213,35 @@ const FS = FLIGHTS.findIndex(F => F.name === 'THE FAILING STAIR');
   for (let i = 0; i < 600 && !s.e.deathMark; i++) updateMageChase(s.e, 1 / 60, s.c); stand(s.P, ...ON(FS, 3)); s.run(CHASE.markFuse + 0.1);
   assert.ok(!s.hits.some(h => h.blow === 'mark'), 'stepped out of, the mark still lands'); assert.equal(s.e.mode, 'gather', 'the mark that finds no one does not open him (the fight\'s opening, shown)'); }
 { const r = rig(); stand(r.P, ...ON(0)); r.run(0.1); r.e.shots.push({ x: (S.x1 + 0.5) * TS, y: 115 * TS, vx: 150, vy: 0, r: 5, dmg: 14, kind: 'fire', t: 4 }); r.run(0.2); assert.ok(!r.e.shots.some(q => q.x > (S.x1 + 1) * TS), 'a bolt flies on through the stone wall'); }
+/* FALLING TOWER 4 (claude/ft4a, Daniel 10-29 #6): THROW IT BACK ON THE CLIMB - his fight's strike-back rule on his stair (undead-mage.js blowMeets/sendHome/homeStep,
+   shared): a blow that meets his fire strikes it home; home, HE REELS for CHASE.reel s (no damage: he has none to take), off his perch, casting nothing; a PERFECT
+   PARRY sends it home too and pays CHASE.perfect s; one stun a flight; after it his ward holds CHASE.ward s and he ANSWERS (his mark, or fire and frost) */
+{ const UM = await import('../src/undead-mage.js'); assert.ok(UM.blowMeets && UM.sendHome && UM.homeStep, 'the strike-back rule is not one shared helper');
+  const src = readFileSync(new URL('../src/undead-mage.js', import.meta.url), 'utf8'), sp = readFileSync(new URL('../src/spiral-chase.js', import.meta.url), 'utf8');
+  assert.ok(src.includes('blowMeets(q, b)) { sendHome(q, e)') && src.includes('homeStep(q, e, dt)') && sp.includes('blowMeets(q, blow)') && sp.includes('homeStep(q, e, dt)'), 'the fight and the stair do not share the strike-back rule');
+  assert.ok(CHASE.reel === 5 && CHASE.perfect === 7 && CHASE.ward >= 3, 'the stun is not 5 s (7 s on a perfect parry) with a ward after it');
+  const live = o => { const r = rig(o); let blow = null, parry = false; r.c.strike = () => blow; r.c.parried = res => parry && res === 'blocked'; r.c.hit = (x, y, d, hard, b) => { r.hits.push({ d, hard, blow: b }); return parry ? 'blocked' : 'hit'; };
+    const reels = []; r.c.reel = (m, T) => reels.push(T); stand(r.P, ...ON(0)); return { ...r, reels, setBlow: b => { blow = b; }, setParry: v => { parry = v; } }; };
+  /* struck back: he reels 5 s, nothing cast, no damage taken by anyone */
+  { const r = live(); r.run(4, () => {}); let q = null; for (let i = 0; i < 600 && !q; i++) { updateMageChase(r.e, 1 / 60, r.c); q = r.e.shots.find(s => UM.reflectable(s)); }
+    assert.ok(q && q.kind === 'fire', 'the first flight casts no fire to strike back');
+    r.setBlow({ l: q.x - 12, r: q.x + 12, t: q.y - 12, b: q.y + 12 }); updateMageChase(r.e, 1 / 60, r.c); r.setBlow(null); assert.ok(q.reflected, 'a blow that meets his fire on the stair does not strike it back');
+    let reeled = false; for (let i = 0; i < 400 && !reeled; i++) { updateMageChase(r.e, 1 / 60, r.c); reeled = r.e.mode === 'reel'; }
+    assert.ok(reeled && r.reels[0] === CHASE.reel && r.e.modeT > CHASE.reel - 0.5, 'his fire struck home does not stun him for ' + CHASE.reel + ' s: ' + [r.e.mode, r.reels]);
+    const y0 = r.e.y, n0 = r.e.shots.filter(s => !s.reflected).length, tells = []; r.run(CHASE.reel - 0.3, () => { if (/Tell$/.test(r.e.mode)) tells.push(r.e.mode); });
+    assert.ok(!tells.length && r.e.shots.filter(s => !s.reflected).length <= n0, 'he casts while he reels: ' + tells); assert.ok(r.e.y > y0 - 1 && r.e.mode === 'reel', 'he is not knocked off his perch while he reels');
+    r.run(0.6); assert.ok(r.e.mode !== 'reel' && r.e.stunWard > 0, 'the stun does not end in his told ward');
+    /* one stun a flight: the next one rings off */
+    let q2 = null; for (let i = 0; i < 900 && !q2; i++) { updateMageChase(r.e, 1 / 60, r.c); q2 = r.e.shots.find(s => UM.reflectable(s)); }
+    assert.ok(q2, 'after the stun he never casts again on the flight'); r.e.stunWard = 0; r.setBlow({ l: q2.x - 12, r: q2.x + 12, t: q2.y - 12, b: q2.y + 12 }); updateMageChase(r.e, 1 / 60, r.c); r.setBlow(null);
+    r.run(3); assert.ok(r.reels.length === 1 && r.e.mode !== 'reel', 'two stuns on one flight: ' + r.reels); }
+  /* a perfect parry: home, and the long stun */
+  { const r = live(); r.setParry(true); let reeled = false; for (let i = 0; i < 60 * 12 && !reeled; i++) { updateMageChase(r.e, 1 / 60, r.c); reeled = r.e.mode === 'reel'; }
+    assert.ok(reeled && r.reels[0] === CHASE.perfect, 'a perfect parry of his fire does not send it home for the long stun: ' + r.reels); }
+  /* the answer: on a flight with his mark, his mark; on one without, fire and frost together */
+  { const r = live(); r.e.answer = true; r.run(6, () => {}); assert.ok(r.e.shots.some(s => s.kind === 'ice') || r.hits.some(h => h.blow === 'ice'), 'after a stun on the first flight he does not answer with fire and frost'); }
+  /* the stair says so where it starts */
+  assert.ok(L.ents.some(e => e.t === 'sign' && /STRIKE HIS FIRE BACK/.test(e.text) && e.y === S.floor - 1), 'the first flight does not sign the throw-back'); }
 { const r = rig(); stand(r.P, TOP.check, TOP.row + 1); r.run(0.1); assert.ok(!r.e.alive, 'a retry at the top finds him still on the stair: he is through his door');
   const q = rig(); stand(q.P, FLIGHTS[FLIGHTS.length - 2].land[0] + 1, FLIGHTS[FLIGHTS.length - 2].land[2]); q.run(0.1); stand(q.P, TOP.check + 2, TOP.row + 1); q.run(4); assert.ok(!q.e.alive, 'you reach the top and he does not go through his door'); }
 assert.ok(CHASE.gap <= 0.6 && CHASE.settle <= 0.35 && CHASE.pairFrom <= 2, 'his spells are no closer together than they were (gap ' + CHASE.gap + ', settle ' + CHASE.settle + ')');
@@ -307,7 +336,7 @@ assert.ok(CHASE.gap <= 0.6 && CHASE.settle <= 0.35 && CHASE.pairFrom <= 2, 'his 
     assert.ok(r.log.says.some(m => /BREAKS THE FLOOR/.test(m)) && !r.log.cleared.length, 'the floor breaks untold'); r.run(CH.tearT + 0.05); assert.deepEqual(r.log.cleared, [1], 'his tear does not take the floor'); assert.equal(r.e.mode, 'below'); }
   { const r = rig(3); r.e.mode = 'reflected'; r.run(4, () => r.e.mode === 'down'); r.run(CH.downT + CH.riseT + CH.tearT + 0.2); assert.ok(r.e.mode === 'away' && r.log.away === 1 && r.log.cleared[0] === 3, 'the last floor does not pour you into the core with him gone up: ' + r.e.mode); }
   { const src = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
-    assert.ok(/e\.leg==='chase'\)\{const f=Math\.ceil\(\(e\.hp0\|\|e\.maxHp\)\*CH3\.hpFloor\)/.test(src) && CH.hpFloor >= 0.3 && CH.hpFloor <= 0.6, 'the chase can take him lower than its floor (his hall would have nothing left)');
+    assert.ok(src.includes("e.leg==='chase'){const f=chase3FloorHp(e);dmg=Math.max(0,Math.min(dmg,e.hp-f));") && CC.floorHp({ hp: 100, maxHp: 1000, hp0: 5000 }) === Math.ceil(1000 * CH.hpFloor) && CH.hpFloor >= 0.3 && CH.hpFloor <= 0.7 && CC.ASC.hpFloor <= CH.hpFloor && CC.ASC.hpFloor >= 0.3, 'the chase (or the ascent under it) can take him lower than its floor, or reads it off anything but the bar (his hall would have nothing left)');   /* (ft4a: maxHp - the bar - not hp0) */
     assert.ok(/e\.realmAt=\[r\*0\.9,r\*0\.6,r\*0\.3\]/.test(src), 'his realms do not come at marks cut from what the chase left of him');
     const MR = await import('../src/mage-realms.js'); assert.equal(MR.realmDue({ hp: 1200, hp0: 2800, realmN: 0, realmAt: [0.45, 0.3, 0.15] }), 0, 'his first realm does not come at its cut mark'); assert.equal(MR.realmDue({ hp: 1300, hp0: 2800, realmN: 0, realmAt: [0.45, 0.3, 0.15] }), -1, 'his first realm comes before its cut mark'); }
   /* the floor's pillar: armed only once he is through (src/tower-supports.js) */
@@ -317,7 +346,84 @@ assert.ok(CHASE.gap <= 0.6 && CHASE.settle <= 0.35 && CHASE.pairFrom <= 2, 'his 
     SU.supportsUpdate(L3, P, 1 / 60, c); hb = null; SU.supportsUpdate(L3, P, 1 / 60, c); assert.ok(s.st === 'whole' && !set.length && says.some(m => /HOLDS/.test(m)), 'the chase\'s pillar breaks before he is through it');
     s.armed = true; hb = { l: s.x - 8, r: s.x + 8, t: s.y - 20, b: s.y }; SU.supportsUpdate(L3, P, 1 / 60, c); assert.equal(s.st, 'tell', 'struck once he is through, the pillar does not give');
     hb = null; for (let i = 0; i < 60 * 1.3; i++) SU.supportsUpdate(L3, P, 1 / 60, c); assert.ok(s.st === 'down' && set.some(([x, y, t]) => y === roomOf(s.room).floor && t === T.AIR), 'the pillar does not take its floor with it'); } }
+/* FALLING TOWER 4 (claude/ft4a, Daniel 10-29 #4): THE CHASE ROOMS COLLAPSE AROUND YOU - in Node (src/archmage-chase.js chaseRoomStep, FALL4) */
+{ const CC = await import('../src/archmage-chase.js'), UM = await import('../src/undead-mage.js'), { CH, ROOMS, roomOf, FALL4, chaseRoomStep, chaseLeg, coverOf, roomClear } = CC;
+  /* every room: a VAULT PILLAR inside it, floor to vault, with a crush box in the room and a cover spot on its floor clear of every sign, ringdoor and the floor pillar */
+  for (let k = 0; k < ROOMS.length; k++) { const R = roomOf(k), v = L.ftSupports.find(s => s.vault && s.room === k), cv = coverOf(k);
+    assert.ok(v && v.kind === 'crush' && v.col > CH.x0 && v.col < CH.x1 + 1 && v.h >= 8 && v.crush[0] >= CH.x0 && v.crush[1] <= CH.x1 && v.crush[2] === R.top && v.crush[3] === R.floor - 1, R.name + ' has no vault pillar over its own room: ' + JSON.stringify(v && [v.col, v.crush]));
+    assert.ok(cv[0] >= CH.x0 && cv[1] <= CH.x1 && cv[3] === R.floor - 1 && !(R.pillar >= cv[0] && R.pillar <= cv[1]) && !L.ents.some(e => (e.t === 'sign' || e.t === 'ringdoor') && e.y === R.floor - 1 && e.x >= cv[0] && e.x <= cv[1]), R.name + '\'s fallen column would lie on its pillar or a sign');
+    assert.ok(roomClear(k).some(([a, b, c, d]) => a === cv[0] && b === cv[1] && c === cv[2] && d === cv[3]), R.name + '\'s cover does not go with its floor (or come back on a retry)');
+    for (let x = cv[0]; x <= cv[1]; x++) for (let y = cv[2]; y <= cv[3]; y++) assert.equal(at(x, y), T.AIR, R.name + ': the cover spot is not open before the column falls'); }
+  assert.ok(L.ents.some(e => e.t === 'sign' && /HOLDS THE VAULT/.test(e.text) && e.y === roomOf(0).floor - 1), 'the first room does not sign the vault pillar');
+  const rig = (k = 0) => { const R = roomOf(k), P = { x: (CH.x0 + 6) * TS, y: R.floor * TS, ground: true, dead: 0 }, log = { debris: [], cleared: [], says: [] };
+    const e = { t: 'undeadmage', alive: true, hp: 2800, hp0: 2800, maxHp: 2800, mode: 'hover', modeT: 0.4, x: (CH.x1 - 5) * TS, y: (R.floor - CH.hover - 2) * TS, face: -1, anim: 0, turn: 0, blinkT: 99, leg: 'chase', room: k, shots: [] };
+    const c = { P, solid: (x, y) => at(Math.floor(x / TS), Math.floor(y / TS)) === T.SOLID, standable: (tx, ty) => at(tx, ty) === T.SOLID || at(tx, ty) === T.ONEWAY,
+      debris: (x, y, top) => { const d = { x, y, top, st: 'tell', t: 1.1, ry: top }; log.debris.push(d); return d; }, clearLedge: (x0, x1, row) => log.cleared.push([x0, x1, row]), say: m => log.says.push(m), sound: () => {}, shake: () => {}, dust: () => {} };
+    return { R, P, e, c, log, run: (sec, each) => { for (let i = 0; i < Math.round(sec * 60); i++) { chaseRoomStep(e, 1 / 60, c); if (each && each()) return true; } return false; } }; };
+  /* 1. a missed firebolt stops on the floor's stone and shakes masonry loose over it - told, on the footing; never more than debMax at once */
+  { const r = rig(0), x = (CH.x0 + 15) * TS + 4; r.e.shots.push({ x, y: r.R.floor * TS + 4, vx: 0, vy: 150, kind: 'fire', r: 5, t: 2, free: true }); r.run(1 / 60);
+    assert.ok(r.e.shots[0].gone && r.log.debris.length === 1, 'his bolt that hits the stone does not stop or shake nothing loose');
+    const d = r.log.debris[0]; assert.ok(Math.abs(d.x - (CH.x0 + 15) * TS - 8) < 1 && d.y === r.R.floor * TS && d.top === r.R.top * TS && d.st === 'tell', 'the stone does not come down told, over where it struck: ' + JSON.stringify(d));
+    for (let i = 0; i < 6; i++) { r.e.shots.push({ x: x + i * 20, y: r.R.floor * TS + 4, vx: 0, vy: 150, kind: 'ice', r: 4, t: 2, free: true }); r.run(0.05); }
+    assert.ok(r.log.debris.filter(q => q.st !== 'land').length <= FALL4.debMax, 'more stone than debMax hangs at once'); }
+  { const r = rig(0), q = { x: (CH.x0 + 15) * TS, y: (r.R.top - 1) * TS, vx: 0, vy: 150, kind: 'fire', r: 5, t: 2 }; r.e.shots.push(q); r.run(1 / 60); assert.ok(!q.gone, 'a bolt born in the vault stone (his staff high under the ceiling) dies at birth'); q.y = r.R.floor * TS - 20; r.run(1 / 60); q.y = r.R.floor * TS + 4; r.run(1 / 60); assert.ok(q.gone, 'out of the stone it was born in, his bolt does not stop on the floor'); }
+  { const r = rig(0); r.e.shots.push({ x: (CH.x0 + 10) * TS, y: (r.R.floor - 5) * TS, vx: 0, vy: 150, kind: 'fire', r: 5, t: 2, reflected: true }); r.run(1 / 60); assert.ok(!r.log.debris.length && !r.e.shots[0].gone, 'his struck-back bolt breaks on stone (it must fly home)'); }
+  /* ...and stone that falls on him drops him (his own spell's opening) */
+  { const r = rig(0); r.e.rfx = { k: 0, t: 0, debT: 0, mine: [{ x: r.e.x, y: r.R.floor * TS, ry: r.e.y - 20, st: 'fall' }], next: 99, drop: null, gone: [] }; r.run(1 / 60);
+    assert.equal(r.e.mode, 'crushed', 'his own stone coming down on him does not drop him');
+    const c2 = { P: r.P, say: () => {}, callout: () => {}, sound: () => {}, shake: () => {}, dust: () => {}, arm: () => {}, clearRoom: () => {}, setRoom: () => {}, away: () => {} };
+    chaseLeg(r.e, 1 / 60, c2); assert.equal(r.e.mode, 'fall', 'crushed, he does not FALL (an opening like his struck-back spell)'); }
+  /* 2. stage two: from stage2 s the ledges go, one at a time, each told dropTell s - never the one you stand on */
+  { const r = rig(0); r.run(FALL4.stage2 - 0.5); assert.ok(!r.e.rfx.drop && !r.log.cleared.length, 'a ledge goes before stage two');
+    const [x0, len, up] = r.R.ledges[0]; r.P.x = (x0 + 1) * TS; r.P.y = (r.R.floor - up) * TS; r.P.ground = true;
+    r.run(1); const d = r.e.rfx.drop; assert.ok(d && !(d.row === r.R.floor - up && d.x0 === x0), 'stage two does not start, or picks the ledge you stand on: ' + JSON.stringify(d));
+    assert.ok(!r.log.cleared.length && r.log.says.some(m => /LEDGE GIVES/.test(m)), 'the ledge goes untold'); r.run(FALL4.dropTell); assert.equal(r.log.cleared.length, 1, 'the told ledge does not go');
+    r.run(FALL4.dropEvery + FALL4.dropTell + 0.2); assert.equal(r.log.cleared.length, 2, 'the ledges do not go one at a time, dropEvery apart'); }
+  /* the vault: tower-supports' fall hands it to main.js (c.vault) */
+  { const SU = await import('../src/tower-supports.js'), L3 = { ftSupports: L.ftSupports.filter(s => s.vault && s.room === 0).map(s => ({ ...s })) }; SU.supportsReset(L3); const s = L3.ftSupports[0]; let got = null;
+    const c = { T, strike: () => ({ l: s.x - 8, r: s.x + 8, t: s.y - 20, b: s.y }), set: () => {}, resolve: () => {}, foes: () => [], hurt: () => {}, say: () => {}, callout: () => {}, sound: () => {}, shake: () => {}, dust: () => {}, burst: () => {}, vault: q => { got = q; } };
+    SU.supportsUpdate(L3, { x: s.x - 10, y: s.y, dead: 0 }, 1 / 60, c); c.strike = () => null; for (let i = 0; i < 80; i++) SU.supportsUpdate(L3, { x: s.x - 10, y: s.y, dead: 0 }, 1 / 60, c);
+    assert.ok(s.st === 'down' && got === s, 'the vault pillar struck does not come down, told, and hand its vault to the fight'); }
+  { const src = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8'); assert.ok(src.includes("function chase3Vault(s){") && src.includes("e.mode='crushed';e.modeT=1;number(e.x,e.y-52,'THE VAULT COMES DOWN ON HIM'") && src.includes('vault:s=>chase3Vault(s)'), 'the vault does not come down on him in the game'); }
+  /* the floor: at it, HE HOLDS ON - his 'down' is cut short */
+  { const r = rig(1); r.e.hp = CC.floorHp(r.e); r.e.mode = 'reflected'; const says = []; const c2 = { P: r.P, say: m => says.push(m), callout: () => {}, sound: () => {}, shake: () => {}, dust: () => {}, arm: () => {}, clearRoom: () => {}, setRoom: () => {}, away: () => {} };
+    for (let i = 0; i < 240 && r.e.mode !== 'down'; i++) chaseLeg(r.e, 1 / 60, c2); assert.ok(r.e.mode === 'down' && r.e.modeT <= FALL4.heldDown + 0.01 && says.some(m => /HOLDS ON/.test(m)), 'at the rooms\' floor he still lies open the full time, a gold window that does nothing: ' + r.e.modeT); } }
+/* FALLING TOWER 4 (claude/ft4a, Daniel 10-29 #1 A): THE ASCENT - no cut from the rooms to his sky. In Node: boarded in the core, the box you fly in rises up the
+   well, the four broken rooms, through the stair's floor (told) and his spiral stair, and out of its broken top into his hall's box (which stands over the spiral
+   tower now), never jumping: its bottom only ever rises, a frame at a time, and its sides only widen in the sky; he fights in the well with his fire, ice and hand
+   only and flees up ahead after; the stone off the walls is told before it falls; it takes 15-35 s */
+{ const CC = await import('../src/archmage-chase.js'), UM = await import('../src/undead-mage.js'), { CH, CORE, ASC, PLUG, CROWN, ascentStep, ascentLeg, ascentBand, coreHang, newAscent } = CC, H = L.arena.hallArena;
+  assert.equal(ASC.crownTop, TOWER.SKY, 'the spiral tower\'s roof is not cut up to the sky rows');
+  assert.ok(H.x0 <= CH.x0 * TS && H.x1 >= (CH.x1 + 1) * TS && H.floor < SPIRAL.top * TS, 'his hall does not stand over the spiral tower (the ascent would have to jump sideways into it)');
+  for (const [x0, x1, y0, y1] of [PLUG(), CROWN()]) { assert.ok(x0 === CH.x0 && x1 === CH.x1 && y1 >= y0, 'the ascent cuts outside the well'); for (let y = y0; y <= y1; y++) assert.equal(at(CH.x0 + 5, y), T.SOLID, 'the stone the ascent breaks is not there to break at row ' + y); }
+  const q = coreHang(); assert.ok(q.y > CORE.top * TS && q.y < CORE.bot * TS && q.x > CH.x0 * TS && q.x < (CH.x1 + 1) * TS, 'he does not wait IN the core');
+  const A = { ...L.arena }, P = { x: CORE.carpet.x, y: CORE.carpet.y, dead: 0 }, cleared = [], calls = [], locks = []; let hall = 0, hurt = 0;
+  const e = { t: 'undeadmage', alive: true, hp: 2000, hp0: 2800, maxHp: 2800, leg: 'ascent', mode: 'away', modeT: 99, x: q.x, y: q.y, face: -1, anim: 0, shots: [] };
+  const c = { P, rnd: () => 0.5, clear: r => cleared.push(r), say: () => {}, callout: m => calls.push(m), sound: () => {}, shake: () => {}, dust: () => {}, hurt: () => hurt++, lock: (a, b) => locks.push([a, b]), toHall: () => hall++ };
+  let t = 0, last = null, phases = [], tellsOk = true; const seenRocks = new Set();
+  for (; t < 60 && !hall; t += 1 / 60) { const ph = ascentStep(e, A, H, 1 / 60, c); if (phases[phases.length - 1] !== ph) phases.push(ph);
+    P.y = Math.max(A.y0 + 24, Math.min(A.floor - 4, P.y)); P.x = Math.max(A.x0 + 12, Math.min(A.x1 - 12, P.x));   /* the carpet held in its box, as carpetBox holds it */
+    if (last) { assert.ok(A.floor <= last.floor + 1e-6 && last.floor - A.floor <= ASC.spiral / 60 + 1e-6, 'the ascent\'s box jumps or goes back down at ' + t.toFixed(2) + ' s');
+      assert.ok(A.x0 <= last.x0 + 1e-6 && A.x1 >= last.x1 - 1e-6, 'the box narrows at ' + t.toFixed(2)); }
+    if (ph === 'well' || ph === 'plug' || ph === 'spiral') assert.ok(A.x0 === CH.x0 * TS && A.x1 === (CH.x1 + 1) * TS, 'out of the well before the sky');
+    for (const r of (e.asc && e.asc.rocks) || []) { if (r.st === 'tell') seenRocks.add(r); else if (r.st === 'fall' && !seenRocks.has(r)) tellsOk = false; }
+    if (e.asc && e.asc.ph === 'well' && e.mode === 'away') ascentLeg(e, 1 / 60, { P, A });
+    last = { ...A }; }
+  assert.ok(hall === 1, 'the ascent never reaches his hall');
+  assert.deepEqual(phases, ['well', 'plug', 'spiral', 'sky', 'hall'], 'the ascent is not well, the stair\'s floor, the spiral, the sky: ' + phases);
+  assert.ok(t >= 15 && t <= 35, 'the ascent takes ' + t.toFixed(1) + ' s (15-35)');
+  assert.ok(cleared.length === 2 && JSON.stringify(cleared) === JSON.stringify([PLUG(), CROWN()]), 'the stair\'s floor and the spiral\'s top are not broken through, in that order');
+  assert.ok(calls.some(m => /CRACKS/.test(m)), 'the stair\'s floor goes untold');
+  assert.ok(Math.abs(A.x0 - H.x0) < 1 && Math.abs(A.x1 - H.x1) < 1 && A.floor <= H.floor - 26, 'the ascent does not end in his hall\'s box, over its fire: ' + [A.x0, A.x1, A.floor]);
+  assert.ok(seenRocks.size >= 3 && tellsOk, 'the stone off the walls is not told before it falls (or never falls): ' + seenRocks.size);
+  /* him: in the well his fire, ice and hand at their fight tells; out of it he flees, casting nothing */
+  { const e2 = { ...e, leg: 'ascent', asc: newAscent(), mode: 'away', modeT: 99, anim: 0, shots: [], rings: [], clouds: [], turn: 0, blinkT: 99 }, A2 = { ...A }; Object.assign(A2, CC.ascentBox(e2.asc.y, H, 0)); const tells = new Set();
+    const cc = { P: { x: (CH.x0 + 6) * TS, y: A2.floor - 30, dead: 0 }, A: A2, box: ascentBand(A2), rnd: () => 0.5, hit: () => {}, venom: () => {}, say: () => {}, sound: () => {}, dodging: () => false, carry: () => {}, strike: () => null, chase: (m, d) => ascentLeg(m, d, { P: cc.P, A: A2 }) };
+    for (let i = 0; i < 60 * 14; i++) { UM.updateUndeadMage(e2, 1 / 60, cc); if (/Tell$/.test(e2.mode)) tells.add(e2.mode.replace('Tell', '')); }
+    assert.ok(tells.size >= 2 && [...tells].every(k => ASC.order.includes(k)), 'in the well he casts more than his fire, ice and hand (or nothing): ' + [...tells]);
+    e2.asc.ph = 'spiral'; e2.shots = []; for (let i = 0; i < 60 * 3; i++) UM.updateUndeadMage(e2, 1 / 60, cc); assert.ok(e2.mode === 'flee' && !e2.shots.length, 'up his stair he casts, rather than flee ahead: ' + e2.mode); } }
 // ---- PAGE ----
+if (process.env.TOWER_CHASE_NODE) { console.log('tower-chase: node part OK (TOWER_CHASE_NODE: page part skipped)'); process.exit(0); }
 const HEROES = ['knight', 'warden', 'pyro', 'paladin', 'pirate', 'reaper', 'geomancer'];
 const pg = await openPage({ audio: false, fonts: false }); let r;
 try {
@@ -344,13 +450,18 @@ try {
      /* HE FALLS when his own spell staggers him, lies open on the floor, and sinks through it; its pillar lights, a blow brings the floor down, and he wakes in the room under */
      for(let i=0;i<240&&b.mode==='wake';i++)BK.sim(1);b.mode='reflected';b.modeT=2;BK.sim(2);out.fell=b.mode;for(let i=0;i<180&&b.mode!=='down';i++)BK.sim(1);out.down=b.mode;out.downOpen=b.open>0;
      const h0=b.hp;b.flash=0;BKT.hurtEnemy(b,20,b.x-10,false);out.downDmg=h0-b.hp;
-     for(let i=0;i<600&&b.mode!=='below';i++)BK.sim(1);const s=BK.L.ftSupports.find(q=>q.room===0);out.armed=!!(s&&s.armed);
+     for(let i=0;i<600&&b.mode!=='below';i++)BK.sim(1);const s=BK.L.ftSupports.find(q=>q.room===0&&q.kind==='floor');out.armed=!!(s&&s.armed);
      BK.tp(Math.floor(s.x/16)-1,Math.round(s.y/16)-1);BK.sim(5);BK.P.face=1;BK.press('atk');for(let i=0;i<120;i++)BK.sim(1);out.pillar=s.st;for(let i=0;i<240&&b.mode!=='wake';i++)BK.sim(1);out.room1=[b.mode,b.room,Math.round(BK.P.y/16)];}
    out.tuneFight=AU.music.want;out.musicGap=BK.bossMusicT;
    /* 2. EVERY HERO GETS UP IT UNDER THE SCROLL: no god mode, health held up (his spells counted, not fatal) - the dark must never catch it */
-   for(const h of ${JSON.stringify(HEROES)}){boot(h,false);through();const q=LB.chaseClimb(BK,chase(),{secs:150,refill:true});out.heroes[h]={ring:BK.P.y>${L.chase3.rooms[0].top * TS},secs:Math.round(q.t/60),taken:Math.round(q.taken),died:q.died,dark:D().hits};}   /* (fallingtower3: up to his ring into the chase - it was the carpet) */
+   for(const h of ${JSON.stringify(HEROES)}){boot(h,false);through();const m0=chase();const q=LB.chaseClimb(BK,m0,{secs:150,refill:true});out.heroes[h]={ring:BK.P.y>${L.chase3.rooms[0].top * TS},secs:Math.round(q.t/60),taken:Math.round(q.taken),died:q.died,dark:D().hits,returned:m0.returned||0,stuns:m0.stuns||0};}   /* (claude/ft4a: and the shots it struck back, and his stuns) */   /* (fallingtower3: up to his ring into the chase - it was the carpet) */
    /* (claude/fallingtower3) THE LAB PLAYS THE CHASE: the bossLab's chase hands (health held up) go down all four rooms, onto his carpet and on into his hall */
-   {const seen=new Set(),legs=new Set();const o=await BK.bossLab({bosses:['fallingtower'],heroes:['warden'],healthMode:'refill',maxSecs:240,onFrame:({boss})=>{seen.add(boss.room);legs.add(boss.leg);}});out.lab={rooms:[...seen].sort(),legs:[...legs],outcome:o.rows[0]&&(o.rows[0].outcome||o.rows[0].skipped)};}
+   {const seen=new Set(),legs=new Set(),asc={camJump:0,pJump:0,t:0,hallWake:false,hallBox:null,lastCam:null,lastP:null,inHall:0};const o=await BK.bossLab({bosses:['fallingtower'],heroes:['warden'],healthMode:'refill',maxSecs:240,onFrame:({boss,P})=>{seen.add(boss.room);legs.add(boss.leg);
+      /* (claude/ft4a) THE ASCENT, in the page: from the board to two seconds into his hall the camera and the hero never jump (no cut), and he is never in a 'wake' freeze in his hall */
+      const c=BK.cam,cam=c?[c[0],c[1]]:null,watch=boss.leg==='ascent'||(boss.leg==='hall'&&asc.inHall<120);if(boss.leg==='hall')asc.inHall++;
+      if(watch&&cam&&asc.lastCam){asc.camJump=Math.max(asc.camJump,Math.hypot(cam[0]-asc.lastCam[0],cam[1]-asc.lastCam[1]));if(boss.leg==='ascent'||asc.inHall<=1)asc.pJump=Math.max(asc.pJump,Math.hypot(P.x-asc.lastP[0],P.y-asc.lastP[1]));   /* (the hero: in the ascent and across into the hall - his hall's ring carries are its own) */}
+      if(boss.leg==='ascent')asc.t++;if(boss.leg==='hall'&&asc.inHall<120&&boss.mode==='wake')asc.hallWake=true;if(boss.leg==='hall'&&!asc.hallBox){const A=BK.L.arena;asc.hallBox=[A.x0,A.x1];}
+      asc.lastCam=cam;asc.lastP=[P.x,P.y];}});delete asc.lastCam;delete asc.lastP;out.lab={rooms:[...seen].sort(),legs:[...legs],outcome:o.rows[0]&&(o.rows[0].outcome||o.rows[0].skipped),asc};}
    /* 3. STAND ON THE STAIR AND THE DARK HURTS YOU AND THROWS YOU UP - again and again, until it has killed you: you wake at the foot, the dark back under the floor, him over the first landing (archmage2) */
    boot('knight',false);through();for(let i=0;i<90&&BK.P.x<${checks[0].x * TS + 16};i++){BK.keys.right=true;BK.sim(1);}BK.keys.right=false;out.lit=BK.P.x>=${checks[0].x * TS + 8};   /* (out of the ring and past the foot's shrine, as the way to the first step goes: to the RIGHT since archmage3) */
    BK.tp(${FLIGHTS[0].steps[1][0] + 1},${FLIGHTS[0].steps[1][2] - 1});BK.P.maxHp=BK.P.hp=400;/* (batch128: 200 -> 400 - fallingtower3 marks hit 60, so two marks plus one dark contact (60) left 20 hp and the cast clock, not the dark, decided if a second contact was ever thrown) (batch71) a stander with a bigger bar: archmage3/4 made his death mark 38, and three marks plus one dark contact were a whole 100-hp bar, so a mark landing before the second contact killed him on it and the test passed or failed on the cast clock. Twice the health, and it is the dark that has to go on hurting and throwing until it kills */ let died=-1,h0=D().hits;out.thrown=[];for(let i=0;i<60*90&&died<0;i++){const y0=BK.P.y;BK.sim(1);if(D().hits>h0){h0=D().hits;if(!(BK.P.dead>0))out.thrown.push([Math.round(y0),Math.round(BK.P.y),i]);}if(BK.P.dead>0)died=i;}
@@ -375,12 +486,17 @@ assert.ok(r.inChase && r.fight && r.chaseArena && r.inArena && r.bossIn && r.cha
 assert.ok(r.fell === 'fall' && r.down === 'down' && r.downOpen && r.downDmg >= 30, '(fallingtower3) staggered, he does not fall to the floor open (x2): ' + JSON.stringify([r.fell, r.down, r.downOpen, r.downDmg]));
 assert.ok(r.armed && r.pillar === 'down' && r.room1[0] === 'wake' && r.room1[1] === 1, '(fallingtower3) through the floor, its pillar is not lit, or a blow does not bring the floor down and him awake in the room under: ' + JSON.stringify([r.armed, r.pillar, r.room1]));
 assert.ok(r.lab && [0, 1, 2, 3].every(k => r.lab.rooms.includes(k)) && r.lab.legs.includes('hall'), '(fallingtower3) the lab\'s chase hands do not play him down the four rooms and into his hall (a fresh page-level hero, health held up: how the fight ends is boss-rates\' to measure): ' + JSON.stringify(r.lab));
+/* (claude/ft4a) THE ASCENT in the page: the lab's fight goes chase -> ascent -> hall with no camera cut (the FT3 cut was 2,923 px in one frame), the hero carried, not snapped; his hall over the spiral tower; no 'wake' freeze in it */
+{ const a = r.lab.asc; assert.ok(r.lab.legs.includes('ascent') && a.t > 60 * 12 && a.camJump < 40 && a.pJump < 100 &&   /* (a ring's carry is a few tiles; the FT3 cut was 2,923 px) */  !a.hallWake && a.hallBox && a.hallBox[0] <= 80 * TS && a.hallBox[1] >= 106 * TS, '(ft4a) the climb out of the core into his hall is not one continuous ascent: ' + JSON.stringify(a)); }
 assert.ok(r.done === 'done' && ['idle', 'done'].includes(r.darkAfter), 'the dark does not stop at the top floor, or follows you through his ring into the chase: '   /* (fallingtower3: it stays stopped - 'done' - through his ring; the carpet's board used to reset it to 'idle') */ + [r.done, r.darkAfter]);
-assert.ok(r.casts.length >= 6 && r.casts.some(c => c.startsWith('fireTell')) && r.casts.some(c => c.startsWith('markTell')), 'he hardly casts on the way up: ' + r.casts);
+assert.ok(r.casts.length >= 6 && r.casts.some(c => c.startsWith('fireTell')) && r.casts.some(c => c.startsWith('markTell') || c.startsWith('pairTell')), 'he hardly casts on the way up (a mark, or the pair he answers a stun with, is cast): ' + r.casts);
 assert.ok(r.casts.every(c => c.startsWith('markTell') ? c.endsWith('!!') : c.endsWith('!') && !c.endsWith('!!')), 'a spell told with the wrong mark (or none): ' + r.casts);
 assert.equal(r.offCast, 0, 'a spell begun with him off the screen');
 const riseRows = (sp.from - sp.end);   /* px from where the dark starts to where it stops */
 for (const h of HEROES) { const q = r.heroes[h]; assert.ok(q && q.ring && q.died === 0, h + ' does not get up the stair under the scroll without the dark catching it: ' + JSON.stringify(q)); }
+/* (claude/ft4a) THROW IT BACK: the stair bot has the fight's strike-back hand, and every hero returns at least one of his shots on the climb (the rule is the hero's own blow box) */
+for (const h of HEROES) assert.ok(r.heroes[h].returned >= 1, h + ' strikes none of his shots back on the stair: ' + JSON.stringify(r.heroes[h]));
+assert.ok(HEROES.reduce((n, h) => n + r.heroes[h].stuns, 0) >= HEROES.length, 'his stair stuns are rare: ' + HEROES.map(h => h + ' ' + r.heroes[h].stuns));
 const slowest = Math.max(...HEROES.map(h => r.heroes[h].secs)), FAIR = (sp.trigger - sp.end) / slowest;
 /* (archmage2) the old "its fastest is under the slowest hero's average climb" is gone: the dark is MEANT to be faster than a hero who stops
    (30 px/s and surging, Daniel's "it doesn't do anything"). Its fairness is measured where it bites: a climbing hero is caught a few times at

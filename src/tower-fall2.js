@@ -58,10 +58,12 @@ export function ftUpdate(L, P, dt, c) {
   const f = floorAt(F, P.y), outside = inOuter(F, P);
   // ---- 1. DEBRIS ON TOLD SHADOWS ----
   R.debT -= dt;
-  if (R.debT <= 0) { R.debT = FT2.debris.every;
+  if (R.debT <= 0) { R.debT = (f && f.every) || FT2.debris.every;   /* (claude/ft4b) the pace is the act's: 4.4 / 3.5 / 2.5 s */
     if (f && f.debris && !c.busy && !P.climb) { const D = FT2.debris, dir = Math.sign(P.vx) || P.face || 1, a = D.ahead[0] + Math.random() * (D.ahead[1] - D.ahead[0]);
       const s = spot(F, c.grid, c.W, P.x + dir * a, P.y, c.standable, c.solid, f) || spot(F, c.grid, c.W, P.x + dir * D.ahead[0], P.y, c.standable, c.solid, f);
-      if (s) { R.debris.push({ ...s, st: 'tell', t: D.tell, ry: s.top, kind: f.theme || 'stone' }); c.sound('crack'); } } }
+      if (s) { R.debris.push({ ...s, st: 'tell', t: D.tell, ry: s.top, kind: f.theme || 'stone' }); c.sound('crack'); }
+      /* (claude/ft4b) ACT III: a second shadow, behind you - the tower comes down on both sides; never on the first one's spot */
+      if ((f.n || 1) >= 2) { const s2 = spot(F, c.grid, c.W, P.x - dir * (D.ahead[0] + Math.random() * 40), P.y, c.standable, c.solid, f); if (s2 && (!s || Math.abs(s2.x - s.x) > 24)) R.debris.push({ ...s2, st: 'tell', t: D.tell, ry: s2.top, kind: f.theme || 'stone' }); } } }
   for (const d of R.debris) {
     if (d.st === 'tell') { d.t -= dt; if (d.t <= 0) { d.st = 'fall'; d.ry = Math.max(d.top, d.y - FT2.debris.drop); } }
     else if (d.st === 'fall') { d.ry += FT2.debris.fallV * dt;

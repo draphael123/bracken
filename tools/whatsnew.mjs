@@ -50,7 +50,7 @@ try {
   /* scrolling: DOWN moves, and it never goes past the end */
   const oldest = await pg.evalp(`BK.WN.shortDate(${JSON.stringify(data.at(-1).date)})`);
   let previousScroll = -1;
-  for (let i = 0; i < 400; i++) {
+  for (let i = 0; i < 1500; i++) {   /* (batch131: the list passed 400 rows with 51 deploys) */
     const scroll = await pg.evalp('BK.wnScroll');
     if (scroll === previousScroll) break;
     previousScroll = scroll;

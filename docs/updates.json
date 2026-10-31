@@ -1,5 +1,37 @@
 [
   {
+    "date": "2026-10-30",
+    "batch": 132,
+    "lines": [
+      "False Abbot: a camera pan shows the basket, a glow and ghost chair mark the ride down",
+      "Hop from one zip-line to the next: only the rope you just left is locked out",
+      "Every boss and mini-boss fight now starts with your health restored",
+      "Shrines moved closer to the boss doors in Sporewood, Hornet Nest and Underwell",
+      "New shrines before the Kingswood hound and the Minecart foreman and Great Drill"
+    ]
+  },
+  {
+    "date": "2026-10-30",
+    "batch": 131,
+    "lines": [
+      "The Archmage falls: ride his carpet back up the broken tower, burst into his sky",
+      "The tower comes down around you: a collapse front, a falling bell, a harder Undead Mage",
+      "The realms come apart: broken floors, a lower ceiling, a surging mire, three ice lances",
+      "Two War-Runner berserkers on the War Cairn are tougher elites: swift and unstoppable",
+      "Fix: a death on the War Cairn no longer leaves its drum gates open",
+      "The War Cairn puts back its bridge, slabs and fallen stones when you respawn"
+    ]
+  },
+  {
+    "date": "2026-10-30",
+    "batch": 130,
+    "lines": [
+      "The False Abbot punishes the wrong blow: ride his basket down to throw him out",
+      "The Kitchen Gate is longer: hop between meat-hook rails, ride the haul line, time the flue",
+      "The Shriek Sisters strike heavy, medium or light; the Rookery stair is longer"
+    ]
+  },
+  {
     "date": "2026-10-29",
     "batch": 129,
     "lines": [
@@ -290,254 +322,6 @@
       "Lamplit Street rebuilt: light the dark",
       "Lamplit Street: throw fire",
       "The Wickling"
-    ]
-  },
-  {
-    "date": "2026-10-18",
-    "batch": 102,
-    "lines": [
-      "Foes get tougher act by act; fixed in Canal",
-      "Act cards and a boss-kill beat",
-      "New swing, hit and block sounds",
-      "Every hero and foe has its own voice",
-      "Footsteps change with the surface"
-    ]
-  },
-  {
-    "date": "2026-10-18",
-    "batch": 101,
-    "lines": [
-      "Deadly water now drains you; no more shoving",
-      "The Tollmaster has air pockets in his roof",
-      "Boss Select on the title menu",
-      "Menu music starts reliably",
-      "Warden XP and level-ups fixed"
-    ]
-  },
-  {
-    "date": "2026-10-18",
-    "batch": 100,
-    "lines": [
-      "Flotilla rebuilt: face the Admiral's Champion",
-      "Turn the deck guns on him to knock him flat",
-      "Hurricane Deck rebuilt: one ship in the storm",
-      "The wave knocks you flat; the lightning shows the way",
-      "New sea music for the Admiral's Champion"
-    ]
-  },
-  {
-    "date": "2026-10-17",
-    "batch": 99,
-    "lines": [
-      "Lamplit Street reworked: oil flasks, the Tollmaster",
-      "Lampreeve and the Tollmaster redrawn",
-      "New church music: the nave, the crypts, the Paladin",
-      "The Kraken has a new sea theme",
-      "Mage's Folly: new Archmage poses and an exit gate"
-    ]
-  },
-  {
-    "date": "2026-10-17",
-    "batch": 98,
-    "lines": [
-      "Owl Reeve and False Abbot return, redrawn",
-      "Death Knight: faster, with death-magic air strikes",
-      "Running out of breath drains health quietly",
-      "New Hints setting: None, Low, Medium or High",
-      "Levels open with a short title card, no story text",
-      "Towpath barge, church road lamps, theatre ropes"
-    ]
-  },
-  {
-    "date": "2026-10-16",
-    "batch": 97,
-    "lines": [
-      "The Paladin: Light-ward, Prayer and Dawnfall",
-      "Every hero dodges their own way",
-      "New moves: shield bash, wall plant, arrow snatch",
-      "Break a boss, then land the finisher",
-      "Undercrown reworked: prop the roof, face the Prince",
-      "Scree Path and Lit Church redrawn"
-    ]
-  },
-  {
-    "date": "2026-10-16",
-    "batch": 96,
-    "lines": [
-      "The Cistern Queen returns: strike the stinger, set her alight",
-      "Throw water as she surfaces to make her slip",
-      "World map: walk to side paths like the Burning Village",
-      "The Burning Village opens once you clear the Stockade",
-      "New music for the shop, the title and the Brackenwood",
-      "The Ram Lord: less of a wall, more of a fight"
-    ]
-  },
-  {
-    "date": "2026-10-15",
-    "batch": 95,
-    "lines": [
-      "Deep Rails: the Spoil Pits and new drill attacks",
-      "The Death Knight pays in blood: new kit",
-      "Buried City: clearer hourglasses, real gears",
-      "The Hourglass King: the sand rises in phase two",
-      "Elites in the Buried City now hold gates"
-    ]
-  },
-  {
-    "date": "2026-10-15",
-    "batch": 94,
-    "lines": [
-      "The Paladin: Conviction and a moving aura",
-      "Towpath reworked: fog, locks and the Fog Knight",
-      "Road Wardens guard the act I and II exams",
-      "New music for the Underwell and the Towpath",
-      "Ranger arrows are easier to see and find",
-      "Paste a share link to join co-op"
-    ]
-  },
-  {
-    "date": "2026-10-15",
-    "batch": 93,
-    "lines": [
-      "New hero: the Ranger, a bow and a knife",
-      "Buried City reworked: glass works and shade",
-      "The Hourglass King raises slabs",
-      "Ksar: Falconer and Plated Bandit",
-      "Every hero now has their own plunge",
-      "Each hero has their own pick colour"
-    ]
-  },
-  {
-    "date": "2026-10-14",
-    "batch": 92,
-    "lines": [
-      "Sealed Pyramid rebuilt: tombs, traps and the Coffin King",
-      "Paladin: hammer throw and new art",
-      "Deep Rails: the Great Drill gets its new look",
-      "Game speed now goes from 50% to 200%",
-      "Desert sun can no longer kill you, and the Ksar has more shade",
-      "New music for three more levels"
-    ]
-  },
-  {
-    "date": "2026-10-14",
-    "batch": 91,
-    "lines": [
-      "Bosses fight harder, and flasks heal less",
-      "Cistern Queen: fire and water",
-      "Red Gorge: lever stun, and the Spillway",
-      "Hawk-Mistress: burn the hawk",
-      "Glass Colossus walks the arena",
-      "Buried City: the exit gate works again"
-    ]
-  },
-  {
-    "date": "2026-10-13",
-    "batch": 90,
-    "lines": [
-      "Buried City: the invisible platforms are fixed",
-      "The Hourglass King: strike the great hourglass to flip it",
-      "New rooftops to run across, and new King moves",
-      "New game: the hero pick shows every hero, locked ones as silhouettes"
-    ]
-  },
-  {
-    "date": "2026-10-13",
-    "batch": 89,
-    "lines": [
-      "New level: THE SEALED PYRAMID",
-      "Co-op: GRAB your partner and THROW them",
-      "Tread the pale plates: the traps fire on you"
-    ]
-  },
-  {
-    "date": "2026-10-12",
-    "batch": 88,
-    "lines": [
-      "The Berserker reborn: two axes, Frenzy",
-      "Hills carry you: run downhill, and slide",
-      "Wear foes down, then launch them (damage %)",
-      "Report a bug from the pause menu",
-      "The Foreman's spikes: time your stomp"
-    ]
-  },
-  {
-    "date": "2026-10-12",
-    "batch": 87,
-    "lines": [
-      "Buried City rebuilt, with a new Trap Hall",
-      "Deep Rails 3: duck, switch, fight the Foreman",
-      "The Road Wardens hold three roads",
-      "Lost? Stand still: glints show the way"
-    ]
-  },
-  {
-    "date": "2026-10-11",
-    "batch": 86,
-    "lines": [
-      "Online co-op with a friend",
-      "Parry and riposte for every hero, a poise bar on elites and bosses, and a mix-up chain",
-      "Knock foes into spikes, pits, water and fire",
-      "Every region has its own gates and exits",
-      "Paladin prays at holy lights; Pyro holds DOWN",
-      "Three too-hard bosses eased"
-    ]
-  },
-  {
-    "date": "2026-10-11",
-    "batch": 85,
-    "lines": [
-      "New hero: the Berserker, two axes and a rage",
-      "Four heroes are free to start with now",
-      "67 sound effects and real boss bells",
-      "WHAT'S NEW on the title menu",
-      "The title changes with your progress"
-    ]
-  },
-  {
-    "date": "2026-10-11",
-    "batch": 84,
-    "lines": [
-      "Deep Rails redrawn, with new music",
-      "Falling Tower redrawn: drink flasks on the carpet, the Archmage casts with his staff",
-      "Caravan redrawn, with a new route through the upper ruins",
-      "Rootway redrawn, and the Lookout is easier to read",
-      "New flask art, and 18 tight jumps eased",
-      "The Crusader gets new poses"
-    ]
-  },
-  {
-    "date": "2026-10-10",
-    "batch": 83,
-    "lines": [
-      "Caravan 2, with the Dune Worm",
-      "Falling Tower 2, with the Archmage",
-      "Rootway 2, with the Huntmaster",
-      "Deep Rails 2 on the main road, with the Great Drill",
-      "Walking controls feel better"
-    ]
-  },
-  {
-    "date": "2026-10-10",
-    "batch": 82,
-    "lines": [
-      "New font and a slimmer HUD",
-      "A new title scene and a bigger map",
-      "Flasks 2: a drinking animation, potency, and the SECOND DRAUGHT",
-      "Hero keys, and boss tells shown as poses",
-      "Kraken 2, Ksar 2 and the Buried City"
-    ]
-  },
-  {
-    "date": "2026-10-09",
-    "batch": 81,
-    "lines": [
-      "Lit Church, with the Paladin",
-      "Towpath, with the Fog Knight",
-      "Underleaf 2, Scree 2, Owl 2 and Monastery 2",
-      "Winchmaster 5, with new music",
-      "Zip lines in Stormhold and the Rootway",
-      "A scout horn, elite gates, the Homunculus"
     ]
   }
 ]
