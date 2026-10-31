@@ -38,6 +38,7 @@ export const LANCE4 = {
   haul: 1.2,                     // HE STOPS THE BELLS (P2's turn): braced, not an opening
   split: 1.0, castOff: 8, bare: 0.7,   // THE SHIELD SPLIT (x1.5 while it goes), or cast off this long into P3; shieldless he takes x0.7 from anywhere
   open: { overrun: 1.5, rung: 1.5, whipped: 1.5, wallTurned: 1.5, recover: 1.5, reel: 1.5, stumble: 1.5, planted: 1.6, split: 1.5 },   // his openings (B15: 1.5-2x; pinned reads its bell)
+  heroDmg: { knight: 1.15, warden: 1.05, pyro: 0.65 },   // (claude/lance4tune) a hero's blows against him, x (knight takes the reach, pyro stands off)
   gateClose: 40,                 // s the main gate takes to come down in P3 (it stops at 85% until he falls, then SLAMS)
 };
 export const HEAVY_MODES = new Set(['couch', 'vaultTell']);   // the moves of the HEAVY class (tempo rule: never two back to back)
