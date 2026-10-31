@@ -30448,8 +30448,9 @@ const pyroCard = id => isPyro() && (PROG.pyroBoth === true || perkOn(PROG, 'pyro
 const pyroMarked = e => !!e && e.pyMarkAt !== undefined && time - e.pyMarkAt < PYRO_KIT.cf.markLife;
 function burnMark(e) { if (e && e.alive) e.pyMarkAt = time; }   /* (not markFoe: that is the Blood Knight's) */
 /* HER FIRE LANDS: marked first (a kill still counts as fire), the blow at its class, the burn */
-function hurtFire(e, dmg, fromX, { burn = 0, cls = null, tag = 'shot' } = {}) { if (!e || !e.alive) return; burnMark(e);
-  IMPACT = cls; try { hurtAs(tag, e, Math.max(1, Math.round(dmg)), fromX, false); } finally { IMPACT = null; }
+function hurtFire(e, dmg, fromX, { burn = 0, cls = null, tag = 'shot', burnOnly = false } = {}) { if (!e || !e.alive) return; burnMark(e);
+  const jh = P.jetHit; IMPACT = cls; if (burnOnly) P.jetHit = true;   /* burnOnly (the ward's CONTACT): a burn, not a blow - as the jet's: no flinch, no stagger, no poise, no stop of its own (the ward gives its own) - so the ward never knocks a foe out of the swing it is about to parry */
+  try { hurtAs(tag, e, Math.max(1, Math.round(dmg)), fromX, false); } finally { IMPACT = null; P.jetHit = jh; }
   if (burn > 0 && e.alive && !e.maxHp) e.burn = Math.max(e.burn || 0, burn); if (e.alive) e.heatOwner = P;
   flame(e.x, e.y - (e.h || 12) / 2, 4, 5, 50, 2); }
 const fbStepOf = t => t >= PYRO_KIT.fb.steps[2] ? 3 : t >= PYRO_KIT.fb.steps[1] ? 2 : t >= PYRO_KIT.fb.steps[0] ? 1 : 0;

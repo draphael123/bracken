@@ -80,7 +80,7 @@ export function makeFlameWard(api) {
       const dx = Math.abs(e.x - p.x) - (e.w || 12) / 2, dy = Math.abs((e.y - (e.h || 16) / 2) - (p.y - 8)) - (e.h || 16) / 2;
       if (dx > WARD.R || dy > WARD.R * 0.6) continue;
       p.fwHit.add(e); p.fwDid = true; stats.contacts++;
-      api.fire(e, Math.max(1, Math.round(api.swordDmg() * WARD.contactK * api.heatMul())), p.x, { burn: WARD.burn, cls: 'light' });
+      api.fire(e, Math.max(1, Math.round(api.swordDmg() * WARD.contactK * api.heatMul())), p.x, { burn: WARD.burn, cls: 'light', burnOnly: true });
       api.hitstop(WARD.stopContact); api.flame(e.x, e.y - (e.h || 16) / 2, 6, 6, 60, 2); api.sparks(e.x - Math.sign(e.x - p.x) * (e.w || 12) / 2, e.y - (e.h || 16) / 2, Math.sign(e.x - p.x) || p.face, 5);
     }
   }
