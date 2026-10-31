@@ -120,7 +120,7 @@ try {
   assert.deepEqual(o.padJump, [6, null], 'the pad rebinds through a real poll (LT)');
   assert(o.savedHasBinds, 'the bindings are in the saved settings'); assert.equal(o.afterBlank, JSON.stringify({ kb: {}, pad1: {}, pad2: {} })); assert.equal(o.reloaded, JSON.stringify(['y', 'Space']), 'and load back');
   assert(o.armed, 'reset asks twice'); assert.equal(o.afterReset, '{}', 'and puts the page back to its defaults');
-  assert(o.card_pyro.some(x => /^ember flare\|TAP DOWN/.test(x)) && !o.card_pyro.some(x => /^block\|/.test(x)), 'the game\'s Pyromancer card: ' + o.card_pyro.join(' ; ')); assert(o.card_knight.some(x => /^block\|HOLD C/.test(x)));
+  assert(o.card_pyro.some(x => /^ward \/ fireball\|TAP C WARD/.test(x)) && o.card_pyro.some(x => /^stoke\|HOLD DOWN/.test(x)) && !o.card_pyro.some(x => /^block\|/.test(x)), 'the game\'s Pyromancer card: ' + o.card_pyro.join(' ; ')); assert(o.card_knight.some(x => /^block\|HOLD C/.test(x)));
   assert.equal(o.coopFirst, 'coophelp', 'the co-op page opens the first time co-op is switched on'); assert(o.coopSeen1); assert.equal(o.coopClosed, 'map'); assert.equal(o.coopSecond, 'map', 'and only the first time');
   assert.equal(o.pauseGuide, 'coophelp', 'the pause menu opens it again');
   assert.deepEqual(pg.errors, []);
