@@ -384,6 +384,7 @@ export function buildMinecart({ painter, T, TS }) {
   const t8 = TOP;                                                           /* the high line at row 27, the low line at row 30 */
   decor.push({ kind: 'flood', x0: 856, x1: 969, row: 36 });                /* THE FLOOD: black water under the trestles (drawn: a fall is a fall, the exam's real death) */
   exams.push([857, 966]);
+  station(857, TOP - 1);                                                    /* STATION FIVE-B (claude/bossheal 10-30, Daniel: a shrine before every mini): the lip of the flooded run, the Foreman's loop 40 tiles on */
   tell(830, 859, 'HIGH CRUSHER, LOW GATE');
   sign(855, t8 - 1, 'THE FLOODED RUN. EVERY GAP HERE IS DEEP.'); foe('bat', 867, t8 + 1, { squad: 'exBat0' });
   rail(857, 867, t8); rail(871, 882, t8); rail(857, 882, B);   /* (deeprails4) THE EXAM's SIDES: the high line's gap (868-870, over the low beam) then its crusher; the low line's beam then its gate */
@@ -528,6 +529,7 @@ export function buildMinecart({ painter, T, TS }) {
     ent('mccart', FOOT[2].board, D - 1, {}); }
   // ================= 9. THE SMELTER (1248-1307), row 30: 8 ore open its points (silver three); THE BORE =================
   ground(1248, 1262, B); ground(1286, 1307, B);
+  station(1288, 29);                                                        /* STATION NINE (claude/bossheal 10-30, Daniel: a shrine before every boss): the bore's mouth, the Great Drill's wall nineteen columns on */
   tell(1239, 1260, 'THE SMELTER WANTS 8 ORE');
   sign(1256, B - 1, 'THE SMELTER: CARRY 8 ORE AND ITS POINTS WILL OPEN.'); rail(1248, 1259, B - 3); foe('bat', 1264, B - 2, { squad: 'smBat' });
   lever('smelter', 1260, B, 1263, 1267, B, 'set', { ore: 8, label: 'THE SMELTER: 8 ORE OPEN THESE POINTS' });
