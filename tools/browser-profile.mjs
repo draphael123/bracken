@@ -91,6 +91,11 @@ export function launchBrowser(exe, args, kind = 'look') {
      (0 = no cap); a tool that passes its own --js-flags keeps it. Native memory (canvas backing, GPU, ArrayBuffers) is outside V8's heap and not capped. */
   const heapMb = process.env.BRACKEN_HEAP_MB === undefined ? 2048 : +process.env.BRACKEN_HEAP_MB;
   if (heapMb > 0 && !args.some(a => /^--js-flags/.test(a))) args = [...args, '--js-flags=--max-old-space-size=' + heapMb];
+  /* NO TIMER THROTTLING (claude/harnessstall, 10-30): a headless page no one is looking at counts as hidden, and Chrome's intensive wake-up throttling then lets a
+     page's chained timers (setTimeout in a loop, the pattern every tool evaluation uses to yield) fire once a MINUTE after ~5 minutes hidden. load-leak's audit (46
+     yields + 6 collections), pixels, crouch-feet and windcaller-gusts each sat in one Runtime.evaluate for the rest of their 900 s budget. These flags keep a tool page
+     running at full speed however long the check has been going. */
+  if (args.some(a => /^--headless/.test(a))) for (const a of ['--disable-background-timer-throttling', '--disable-renderer-backgrounding', '--disable-backgrounding-occluded-windows', '--disable-features=IntensiveWakeUpThrottling,CalculateNativeWinOcclusion']) if (!args.includes(a)) args = [...args, a];
   try { child = spawn(exe, [...args, '--user-data-dir=' + prof], { stdio: 'ignore', detached: process.platform !== 'win32' }); }
   catch (e) { removeProfileSync(prof); throw e; }
   let exited = false; const gone = new Promise(r => { child.once('exit', () => { exited = true; r(); }); child.once('error', () => { exited = true; r(); }); });

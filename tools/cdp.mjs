@@ -65,19 +65,26 @@ export async function openPage(opts = {}) {
   const ws = new WebSocket(wsUrl); await new Promise((res, rej) => { ws.onopen = res; ws.onerror = rej; });
   let id = 0; const pending = new Map(), errors = [];
   ws.onmessage = ev => { const m = JSON.parse(ev.data); if (m.id && pending.has(m.id)) { pending.get(m.id)(m); pending.delete(m.id); }
+    if (m.method === 'Inspector.targetCrashed') dead('the page CRASHED (Inspector.targetCrashed)');
     if (m.method && opts.onEvent) opts.onEvent(m);   /* (a tool that wants the protocol's events, e.g. Tracing.dataCollected: tools/mobile-profile.mjs) */
     if (m.method === 'Runtime.exceptionThrown') errors.push(m.params.exceptionDetails.exception ? m.params.exceptionDetails.exception.description : m.params.exceptionDetails.text); };
+  /* a CRASHED OR CLOSED PAGE answers nothing, ever: every call waiting on it fails now, loudly, instead of sitting to the guard's 900 s (claude/harnessstall) */
+  let deadWhy = null; const dead = why => { deadWhy ||= why; for (const [k, fn] of [...pending]) { pending.delete(k); fn({ error: { message: deadWhy } }); } };
+  ws.onclose = () => dead('the page connection closed'); ws.onerror = () => dead('the page connection failed');
   // Navigation can destroy a context before its evaluation answers. Bound the protocol wait as well.
   const send = (method, params = {}, wait = 15000) => new Promise((res, rej) => {
+    if (deadWhy) return rej(new Error(method + ': ' + deadWhy));
     const i = ++id, timer = setTimeout(() => { pending.delete(i); rej(new Error(method + ' did not answer within ' + wait + 'ms')); }, wait);
     pending.set(i, reply => { clearTimeout(timer); if(reply.error) rej(new Error(reply.error.message || JSON.stringify(reply.error))); else res(reply); });
     ws.send(JSON.stringify({ id: i, method, params }));
   });
-  const evalp = async (expr, timeout = 1800000) => { const r = await send('Runtime.evaluate', { expression: expr, awaitPromise: true, returnByValue: true, timeout }, timeout + 1000);
+  /* A timed-out evaluation FAILS LOUDLY NAMING ITS EXPRESSION (claude/harnessstall): it used to say only 'Runtime.evaluate did not answer within 1801000ms', or never, and the guard killed the check 900 s in */
+  const evalp = async (expr, timeout = 1800000) => { const r = await send('Runtime.evaluate', { expression: expr, awaitPromise: true, returnByValue: true, timeout }, timeout + 1000)
+    .catch(e => { throw /did not answer/.test(e.message) ? new Error(e.message + ' - evaluating: ' + String(expr).replace(/\s+/g, ' ').slice(0, 160)) : e; });
     if (r.error) throw new Error(r.error.message || JSON.stringify(r.error));
     if (r.result && r.result.exceptionDetails) throw new Error(r.result.exceptionDetails.exception ? r.result.exceptionDetails.exception.description : r.result.exceptionDetails.text);
     return r.result && r.result.result ? r.result.result.value : undefined; };
-  await send('Runtime.enable'); await send('Page.enable');
+  await send('Runtime.enable'); await send('Page.enable'); await send('Inspector.enable').catch(() => {});
   // Physics-only audits do not need remote font stylesheets to delay every fresh document.
   // Pixel and text-layout tools keep the normal fonts unless they explicitly opt out.
   if(opts.fonts===false){await send('Network.enable');await send('Network.setBlockedURLs',{urls:['https://fonts.googleapis.com/*','https://fonts.gstatic.com/*']});}
