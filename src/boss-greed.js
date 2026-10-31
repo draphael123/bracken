@@ -115,7 +115,7 @@ export const OPEN_RULE = {
   paladinboss: e => pbOpen(e),                                               // THE PALADIN (claude/litchurch): his light starved, he FALTERS on one knee - open
   bogtroll: e => btOpen(e),                                                  // THE BOG TROLL (claude/fenroad): STUCK in a rotten section he burst up through
   hornetqueen: e => hqOpen(e),                                               // THE HORNET QUEEN 2 (claude/hornetsnest): STUCK in comb/wood, STAGGERED off a shield, DAZED by smoke under her, PINNED under a pine or the last comb
-  grubbag: e => e.mode === 'stun' || e.mode === 'hot',                                        // LORD GRUBBAG (claude/kitchengate): STUNNED by a bomb / TOO HOT from a chilli he gulped off the serving line (src/grubbag.js, claude/kitchengate2)
+  grubbag: e => e.mode === 'stun' || e.mode === 'hot' || e.mode === 'drop',                                        // (claude/kitchengate4: + KNOCKED OFF HIS FEET, the platter drop)  LORD GRUBBAG (claude/kitchengate): STUNNED by a bomb / TOO HOT from a chilli he gulped off the serving line (src/grubbag.js, claude/kitchengate2)
   shrieksisters: e => e.mode === 'open',                                    // THE SHRIEK SISTERS (claude/rookery): a sister STUNNED in the rubble (a dive into cracked rock) or knocked down - the anchor reads 'open' (src/shriek-sisters-hands.js)
   batteringbeast: e => bbOpen(e),                                           // THE BATTERING BEAST (claude/palisadewood): STUCK in a scaffold's wreck, DAZED off a wall, LOOSE (his harness cut)
   oldtusker: e => otOpen(e),                                                 // OLD TUSKER (claude/oldtusker): PINNED under a felled pine, or DAZED off a ram into a pine or the wall

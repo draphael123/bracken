@@ -259,7 +259,7 @@ ok(Object.values(KG_SAY).every(s => SAY_LINES.has(s)) && Object.values(GBM.GB_SA
   const tells = GBM.MOVES;
   ok(tells.length >= 7 && tells.every(k => POSE_GB[k + 'Tell'] && POSE_GB[k] && JSON.stringify(POSE_GB[k + 'Tell']) !== JSON.stringify(POSE_GB[k])), 'B16/B17: seven told attacks, each its own windup and release pose (' + tells.join(', ') + ')');
   ok(['eat', 'gulp', 'stun', 'hot', 'recover', 'sleep', 'wake', 'sit'].every(k => POSE_GB[k]), 'and his eating, gulping, stunned, too hot, coughing, sleeping and waking each their own');
-  ok(/OWN_WARD = new Set\(\['grubbag'/.test(src('src/boss-greed.js')) && /grubbag: e => e\.mode === 'stun' \|\| e\.mode === 'hot'/.test(src('src/boss-greed.js')), 'boss-greed knows his openings and his own ward');
+  ok(/OWN_WARD = new Set\(\['grubbag'/.test(src('src/boss-greed.js')) && /grubbag: e => e\.mode === 'stun' \|\| e\.mode === 'hot' \|\| e\.mode === 'drop'/.test(src('src/boss-greed.js')), 'boss-greed knows his openings and his own ward');
   /* THE BOT reads the line: it goes for a dish, bats a bomb, spares a chilli, stokes the stove when it is hot */
   { const pl = (S0, items, Pp) => { S0.items = items; return GBM.gbPlan({ P: { x: G.belt.x0 + 30, y: G.floorY, vy: 0, face: 1, ground: true, atk: -1, ...Pp }, e: { ...e, mode: 'sit' }, S: S0, reach: 30, t: 1, rng: () => 0.9, mem: {} }); };
     const S3 = GBM.newFight(G); S3.stove.st = 'cool'; S3.stove.t = 9;
@@ -309,7 +309,7 @@ ok(Object.values(KG_SAY).every(s => SAY_LINES.has(s)) && Object.values(GBM.GB_SA
   /* THE PLATTER DROP: the food flies, the stove goes cold, KNOCKED OFF HIS FEET (short, capped), then the ward; one per cooldown; never on top of another opening */
   { const S = GBM.newFight(G), e = E(); S.restT = 99; S.lineT = 99; S.stove.st = 'cool'; S.stove.t = 5; S.items.push({ id: 1, kind: 'dish', x: G.belt.x0 + 40, state: 'ride' }, { id: 2, kind: 'bomb', x: G.belt.x0 + 90, state: 'ride', fuse: 4 }, { id: 3, kind: 'dish', x: G.belt.x1 - 6, state: 'wait' });
     const r = GBM.platterDrop(e, S, w, G.platter.x0 + 20);
-    ok(r === 'open' && S.items.every(q => q.state === 'fall') && S.stove.st === 'cold' && said.includes(GBM.GB_SAY.flying), 'DROP ONTO THE PLATTER: the food on the line is KNOCKED FLYING (' + S.n.flying + ' items) and the stove goes cold');
+    ok(r === 'open' && S.items.filter(q => q.kind === 'dish').every(q => q.state === 'fall') && S.items.find(q => q.kind === 'bomb').state === 'ride' && S.stove.st === 'cold' && said.includes(GBM.GB_SAY.flying), 'DROP ONTO THE PLATTER: the dishes on the line are KNOCKED FLYING (' + S.n.flying + '), a bomb rides on (the drop never spoils a bomb or a chilli), a cooling stove is hot again');
     ok(e.mode === 'drop' && GBM.gbOpen(e) && e.modeT === GB.drop.t && Math.round(S.purse) === Math.round(e.maxHp * GB.drop.cap) && said.includes(GBM.OPEN_NAME.drop), 'he is ' + GBM.OPEN_NAME.drop + ': THE THIRD OPENING (' + GB.drop.t + ' s, blades x' + GB.drop.mul + ', capped ' + GB.drop.cap * 100 + '% of him)');
     ok(GBM.takeBlow(e, S, 10)[0] === 10 * GB.drop.mul, 'open: x' + GB.drop.mul);
     ok(GBM.platterDrop(e, S, w, G.platter.x0 + 20) === null, 'one drop per ' + GB.drop.cd + ' s (not spammable)');

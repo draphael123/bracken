@@ -322,14 +322,14 @@ function stepCoals(S, dt, heroes, w) {
     if (!S.told.coal) { S.told.coal = 1; w.number(h.x, h.y - 40, GB_SAY.coal, '#ff9a5c'); } }
 }
 export const coalState = S => (S.coal.lit > 0 ? 'lit' : S.coal.glow > 0 ? 'glow' : 'banked');
-/* (claude/kitchengate4) THE PLATTER DROP: a hero let go of an arena hook rail lands on his platter. The food on the line is KNOCKED FLYING (every item off: no dish, no bomb, no
-   chilli is left - the stove cold-restarts), and he is KNOCKED OFF HIS FEET: THE THIRD OPENING (GB.drop, short) - one every GB.drop.cd s; never on top of another opening (the
+/* (claude/kitchengate4) THE PLATTER DROP: a hero let go of an arena hook rail lands on his platter. The food on the line is KNOCKED FLYING (every DISH off it; a bomb or a chilli
+   rides on - the drop never spoils the opening the player is making; a cooling pepper stove is hot again at once), and he is KNOCKED OFF HIS FEET: THE THIRD OPENING (GB.drop, short) - one every GB.drop.cd s; never on top of another opening (the
    longer one stands) and never through his ward (B3). Returns what happened: 'open' | 'food' (open or warded already: only the food flies) | null (on cooldown) */
 export function platterDrop(e, S, w, x) {
   if (S.cd.drop > 0 || e.mode === 'sleep' || e.mode === 'wake') return null;
   S.cd.drop = GB.drop.cd; let flew = 0;
-  for (const it of S.items) if (it.state === 'ride' || it.state === 'bat' || it.state === 'wait') { it.state = 'fall'; it.y = S.G.belt.y; it.vx = (it.x < x ? -1 : 1) * (60 + Math.random() * 80); it.vy = -160 - Math.random() * 80; flew++; }
-  S.n.flying += flew; if (S.stove.st !== 'cold') { S.stove.st = 'cold'; S.stove.next = false; S.stove.t = 0; }
+  for (const it of S.items) if (it.kind === 'dish' && (it.state === 'ride' || it.state === 'bat' || it.state === 'wait')) { it.state = 'fall'; it.y = S.G.belt.y; it.vx = (it.x < x ? -1 : 1) * (60 + Math.random() * 80); it.vy = -160 - Math.random() * 80; flew++; }
+  S.n.flying += flew; if (S.stove.st === 'cool') { S.stove.st = 'cold'; S.stove.t = 0; }   /* (a cooling stove is hot again at once; a chilli roasting or riding is left be) */
   w.number(x, S.G.belt.y - 46, GB_SAY.flying, '#ffd36b'); w.smash(x, S.G.belt.y); w.shake(6);
   if (gbOpen(e) || S.ward > 0 || e.mode === 'gulp') return 'food';
   e.eating = null; e.handX = null; open(e, S, 'drop', w);
@@ -456,7 +456,7 @@ function gbPlan0(s) {
   if (coming && (B.x1 - coming.x) / (coming.state === 'bat' ? GB.line.batV : lineV(S)) < 3.2 && S.ward <= 0) { out.gx = strikeSpot - 30; out.why = 'the opening coming: to him'; return out; }
   /* (claude/kitchengate4) 11b. THE HOOK ROUTE: the drop is ready and he is himself - up on the line under the lower hook, UP to take it (then 0a flies it). Weighed per move of his
      (mem.hook, a roll) so it never starves the bombs, the chillies or the dishes */
-  if (RA && S.cd.drop <= 0 && S.ward <= 0 && !gbOpen(e) && e.mode !== 'gulp') { if (mem.hookAct !== S.act) { mem.hookAct = S.act; mem.hook = rng() < (s.v2 ? 0.7 : 0.5); mem.hopK = undefined; }
+  if (RA && S.cd.drop <= 0 && S.ward <= 0 && !gbOpen(e) && e.mode !== 'gulp' && !S.items.some(q => q.kind !== 'dish' && q.state !== 'fall')) { if (mem.hookAct !== S.act) { mem.hookAct = S.act; mem.hook = (S.made + 1) % GB.line.bombEvery !== 0 && rng() < (s.v2 ? 0.45 : 0.3); mem.hopK = undefined; }   /* (never when the next item out is a bomb) */
     if (mem.hook) { const spot = Math.max(B.x0 + 10, RA.x0 + 18);
       if (!onB) return toBelt(spot, 'to the hook');
       if (Math.abs(P.x - spot) < 14) { out.up = true; out.gx = P.x; out.why = 'take the hook (UP)'; return out; }
