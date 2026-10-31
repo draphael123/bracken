@@ -48,7 +48,7 @@ SHOTS.push(['kg3-larder', A + 2, 13, ''], ['kg3-larder-hop', A + 2, 13, ride(A +
   ['kg3-carvery-door', B + 72, 21, stoke('stove4', 60)], ['kg3-hearth-hop', oldCol(318), 15, '']);
 /* (claude/kitchengate4) THE COAL TRENCH (banked, lit), THE HOOK RAILS ridden, THE PLATTER DROP, THE SECOND HELPING's windup, the belly's swell and the big heal, ORDER UP's attendants on the hooks */
 const O = oldCol, hook = k => "const z=S.G.rails[" + k + "];BK.P.x=z.x0+40;BK.P.y=z.y0+12+(z.y1-z.y0)*40/(z.x1-z.x0);BK.P.vy=0;BK.keys.up=true;BK.step(2);BK.keys.up=false;BK.step(6);";
-SHOTS.push(['gb-trench', 0, 0, gb('sit', 1, 'BK.tp(' + O(404) + ',24);')], ['gb-trench-lit', 0, 0, gb('sit', 1, 'S.coal.lit=4;BK.tp(' + O(398) + ',23);')],
+SHOTS.push(['gb-trench', 0, 0, gb('sit', 1, 'BK.tp(' + O(406) + ',24);')], ['gb-trench-lit', 0, 0, gb('sit', 1, 'S.coal.lit=4;BK.tp(' + O(402) + ',23);')],
   ['gb-hookA', 0, 0, gb('sit', 1, hook(0))], ['gb-hookB', 0, 0, gb('sit', 1, hook(1))],
   ['gb-drop', 0, 0, gb('drop', 2.6, "S.dropFx={x:S.G.platter.x0+20,t:0.5};S.items.push({id:95,kind:'dish',x:S.G.belt.x0+120,state:'fall',y:S.G.belt.y-30,vx:-60,vy:-90},{id:96,kind:'bomb',x:S.G.belt.x0+60,state:'fall',y:S.G.belt.y-20,vx:-40,vy:-60});BK.P.x=S.G.platter.x0+20;BK.P.y=S.G.platter.y;")],
   ['gb-second', 0, 0, gb('lobTell', 0.5, "S.secondOn='lob';")], ['gb-swell', 0, 0, gb('eat', 0.6, "b.eating={kind:'dish'};S.swellT=0.35;S.heal={n:180,t:1.0};")],
