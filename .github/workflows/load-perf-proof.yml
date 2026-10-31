@@ -1315,6 +1315,7 @@ jobs:
         run: node tools/retile-cached-native-component-oct30.mjs
         env:
           RETILE_COMPONENT_REFERENCE: retile-cached-native-reference
+          RETILE_COMPONENT_HUMAN_RESUME: 2026-10-31
           RETILE_COMPONENT_OUT: ${{ runner.temp }}/retile-cached-native-component-oct30
       - uses: actions/upload-artifact@v4
         if: always()
