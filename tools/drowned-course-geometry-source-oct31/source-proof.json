@@ -1,0 +1,88 @@
+{
+  "time": "2026-10-31T18:45:53.172Z",
+  "sourceGame": "62d9c02c102decc69ceaef4e1ec593a23170f1ff",
+  "sourceTree": "d6f20846727ec42b3cca651d1b061136d9c6d2f1",
+  "originalMainSha256": "81866b69fec64de5fdd00da316fb0d1e8e997ae9912f73f280981f0a70cb36d8",
+  "candidateMainSha256": "16002327227165119c1ea46b347950ddc10d4dc003787c4a99a0dce7acf2eba3",
+  "helperFile": "tools/drowned-course-geometry-source-oct31/drowned-course-geometry.js",
+  "helperSha256": "602615ae5f2fbadd066ba9dfe56fc8a3b702314766e7ba45cb98b03b8c34ec4e",
+  "pageFile": "tools/drowned-course-geometry-page-oct31.mjs",
+  "pageSha256": "e9e5fdfb1b9d7dd178033326031e381e92127a9b99e774aa27305f686413cf3b",
+  "exactMainUndo": true,
+  "originalCourses": "    for (let yy = sy; yy < sy + h; yy += 8) {                                             // coursed ashlar, wet\n      for (let xx = sx + (((yy / 8) & 1) ? 12 : 0); xx < sx + w; xx += 24) { g.fillStyle = '#1e343a'; g.fillRect(xx, yy, 22, 7); g.fillStyle = '#152a2e'; g.fillRect(xx, yy + 6, 22, 1); }\n      g.fillStyle = '#0e1c1e'; g.fillRect(sx, yy + 7, w, 1);\n    }\n",
+  "originalCoursesSha256": "0cccc178a7c2f67a6c983a1a41af5d41d3fcbf3de9aeb374e79f1a0b24b9f0b8",
+  "edits": [
+    {
+      "before": "    for (let yy = sy; yy < sy + h; yy += 8) {                                             // coursed ashlar, wet\n      for (let xx = sx + (((yy / 8) & 1) ? 12 : 0); xx < sx + w; xx += 24) { g.fillStyle = '#1e343a'; g.fillRect(xx, yy, 22, 7); g.fillStyle = '#152a2e'; g.fillRect(xx, yy + 6, 22, 1); }\n      g.fillStyle = '#0e1c1e'; g.fillRect(sx, yy + 7, w, 1);\n    }\n",
+      "after": "    if (!tryDrownedGeometry(g,sx,sy,w,h)) { for (let yy = sy; yy < sy + h; yy += 8) {                                             // coursed ashlar, wet\n      for (let xx = sx + (((yy / 8) & 1) ? 12 : 0); xx < sx + w; xx += 24) { g.fillStyle = '#1e343a'; g.fillRect(xx, yy, 22, 7); g.fillStyle = '#152a2e'; g.fillRect(xx, yy + 6, 22, 1); }\n      g.fillStyle = '#0e1c1e'; g.fillRect(sx, yy + 7, w, 1);\n    } }\n"
+    },
+    {
+      "before": "",
+      "after": " import {tryDrownedGeometry} from './drowned-course-geometry.js';"
+    }
+  ],
+  "scope": "Bounded private native geometry reuse for disjoint courses; no canvas/pixel/source/context references or mutable artwork cache. Same native-state/hook guards and exact original fallback. No combination with other prototypes.",
+  "expected": {
+    "nativeCases": 308,
+    "lifecycleCases": 12,
+    "timingRows": 9,
+    "framesPerTimingRow": 180
+  },
+  "guide": {
+    "minimumGainEachRoundPercent": 30,
+    "maximumControlDriftEachRoundPercent": 15,
+    "candidateRangeBelowBothControls": true,
+    "noRetimingForGreen": true
+  },
+  "settings": {
+    "cpu": 4,
+    "viewport": [
+      915,
+      412
+    ],
+    "dpr": 2.625,
+    "game": [
+      640,
+      360
+    ],
+    "display": [
+      2402,
+      1082
+    ],
+    "rendererMb": 1536,
+    "admissionMb": 4352,
+    "evaluationDeadlineMs": 240000,
+    "outerTimeoutMinutes": 15
+  },
+  "target": {
+    "receipt": "outputs/receipts/current-heavy-arena-profiles.json",
+    "sourceOnlyLamplitLevelUsesDrownedInteriors": true,
+    "drawRoomPaintInclusivePercent": 13.02,
+    "nativeFillRectUnderRoomPaintPercent": 7.86,
+    "notMeasuredEligibleCoverageOrPromisedGain": true
+  },
+  "noNewCanvasesOrSourceRetention": true,
+  "maximumRectanglesPerPath": 4096,
+  "maximumPathsPerCall": 3,
+  "noAdoptionOrGameFpsLayoutProof": true,
+  "allThreeMismatches": [
+    "mummer6SUCCESSFUL hits versus2..5",
+    "tower-collapse/Tome rebound at200frames",
+    "offscreen mage sampling"
+  ],
+  "adopted": false,
+  "overallWorkComplete": false,
+  "parentRejectedReceipt": "outputs/receipts/drowned-course-path-oct31.json",
+  "parentQualified": false,
+  "parentGainPercent": [
+    9.950248756213863,
+    15.357276468388504,
+    14.766081871343372
+  ],
+  "distinctCause": "The previous version constructs three identical native paths and two rectangles per brick every frame. This version reuses only immutable private geometry keyed by the four exact numeric inputs; at most4keys/12paths/12288rectangles.",
+  "maximumCachedGeometryKeys": 4,
+  "maximumCachedPaths": 12,
+  "maximumTotalCachedRectangles": 12288,
+  "noCanvasSourceContextOrGameReferencesInCache": true,
+  "noGameFpsLayoutProof": true
+}
