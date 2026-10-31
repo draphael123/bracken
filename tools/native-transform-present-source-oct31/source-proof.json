@@ -1,0 +1,99 @@
+{
+  "time": "2026-10-31T18:05:33.174Z",
+  "sourceGame": "62d9c02c102decc69ceaef4e1ec593a23170f1ff",
+  "sourceTree": "d6f20846727ec42b3cca651d1b061136d9c6d2f1",
+  "originalMainSha256": "81866b69fec64de5fdd00da316fb0d1e8e997ae9912f73f280981f0a70cb36d8",
+  "candidateMainSha256": "88c64c1f5dc735ddd6beebfbe3d0c96111d4ff0635f9b8c806b66fd9b8337937",
+  "helperFile": "tools/native-transform-present-source-oct31/native-transform-present.js",
+  "helperSha256": "18887d32beb83b63733dc80f9b6115c8f61dd28d80e3a24d0e72a127e8953936",
+  "pageFile": "tools/native-transform-present-page-oct31.mjs",
+  "pageSha256": "ccd49d7404e2ceea6f9afbc0aaeac327041ce33a7e83c8fc004e3cf1f2a06b70",
+  "exactMainUndo": true,
+  "lineCountPreserved": true,
+  "edits": [
+    {
+      "before": "  dg.drawImage(buf, offX, offY, VW * S, VH * S);",
+      "after": "  if (!tryNativeTransformPresent(dg, buf, offX, offY, VW * S, VH * S)) dg.drawImage(buf, offX, offY, VW * S, VH * S);"
+    },
+    {
+      "before": "",
+      "after": " import {tryNativeTransformPresent} from './native-transform-present.js';"
+    }
+  ],
+  "frames": [
+    {
+      "id": "undercrown",
+      "name": "undercrown.png",
+      "sha256": "06aecb6d0e050eac08e4c929164fe7864e7b9b8431a8ae5c647fc7d852748e62",
+      "file": "tools/integer-presentation-source/undercrown.png"
+    },
+    {
+      "id": "lamplit",
+      "name": "lamplit.png",
+      "sha256": "662dba7d53257ffb224eb2c085b2e74d40b7e4f2a9ce92e60fb760071db1bdb3",
+      "file": "tools/integer-presentation-source/lamplit.png"
+    },
+    {
+      "id": "hanging",
+      "name": "hanging.png",
+      "sha256": "3e224ca243e2317c436563b3aca3cc7acf04f0ee98c70d481746c487bfe46d10",
+      "file": "tools/integer-presentation-source/hanging.png"
+    },
+    {
+      "id": "hurricane",
+      "name": "hurricane.png",
+      "sha256": "7370739d5407dfc5738cdfe61a430d5fb2aa3695f7e813a0520d637a6fbc820b",
+      "file": "tools/integer-presentation-source/hurricane.png"
+    },
+    {
+      "id": "minecart",
+      "name": "minecart.png",
+      "sha256": "1deef5f398339425870956e18ba52fdaf27a6cadaa7ab9ac449fd1382c3cb98a",
+      "file": "tools/integer-presentation-source/minecart.png"
+    }
+  ],
+  "expected": {
+    "nativeCases": 286,
+    "lifecycleCases": 6,
+    "timingRows": 9,
+    "framesPerTimingRow": 60,
+    "all5ImmutableSourcesPerTimedRow": true
+  },
+  "guide": {
+    "minimumGainEachRoundPercent": 20,
+    "maximumControlDriftEachRoundPercent": 15,
+    "candidateRangeBelowBothControls": true,
+    "noRetimingForGreen": true
+  },
+  "settings": {
+    "cpu": 4,
+    "viewport": [
+      915,
+      412
+    ],
+    "dpr": 2.625,
+    "game": [
+      640,
+      360
+    ],
+    "display": [
+      2402,
+      1082
+    ],
+    "rendererMb": 1536,
+    "admissionMb": 4352,
+    "evaluationDeadlineMs": 240000,
+    "outerTimeoutMinutes": 15
+  },
+  "target": "Existing original-source display-scale diagnostic18/37ms per frame; this is a new native transform/unscaled-draw overload path,not the rejected CPU expansion,bitmap,copy,pattern or context backend.",
+  "scope": "Native pixels/currentPath/context/fallback/hooks/lifecycle plus one controlled guide only; no Game integration/FPS/layout/adoption pass",
+  "noNewCanvasOrPixelBuffersInHelper": true,
+  "noSourceReferencesOrContentCached": true,
+  "allThreeMismatches": [
+    "mummer6SUCCESSFUL hits versus2..5",
+    "tower-collapse/Tome rebound at200frames",
+    "offscreen mage sampling"
+  ],
+  "adopted": false,
+  "overallWorkComplete": false
+}
