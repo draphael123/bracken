@@ -73,7 +73,9 @@ export async function openPage(opts = {}) {
     pending.set(i, reply => { clearTimeout(timer); if(reply.error) rej(new Error(reply.error.message || JSON.stringify(reply.error))); else res(reply); });
     ws.send(JSON.stringify({ id: i, method, params }));
   });
-  const evalp = async (expr, timeout = 1800000) => { const r = await send('Runtime.evaluate', { expression: expr, awaitPromise: true, returnByValue: true, timeout }, timeout + 1000);
+  /* A timed-out evaluation FAILS LOUDLY NAMING ITS EXPRESSION (claude/harnessstall): it used to say only 'Runtime.evaluate did not answer within 1801000ms', or never, and the guard killed the check 900 s in */
+  const evalp = async (expr, timeout = 1800000) => { const r = await send('Runtime.evaluate', { expression: expr, awaitPromise: true, returnByValue: true, timeout }, timeout + 1000)
+    .catch(e => { throw /did not answer/.test(e.message) ? new Error(e.message + ' - evaluating: ' + String(expr).replace(/s+/g, ' ').slice(0, 160)) : e; });
     if (r.error) throw new Error(r.error.message || JSON.stringify(r.error));
     if (r.result && r.result.exceptionDetails) throw new Error(r.result.exceptionDetails.exception ? r.result.exceptionDetails.exception.description : r.result.exceptionDetails.text);
     return r.result && r.result.result ? r.result.result.value : undefined; };
