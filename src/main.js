@@ -27319,13 +27319,25 @@ function wardStop(dmg, fromX) {
   if ((P.wardG || 0) >= cap - 0.5) { wardBreak(fromX); return 'broken'; }
   const blood = L && L.trial ? 0 : Math.max(1, Math.round(dmg * WARD_PRICE * diffNow().take * (1 + 0.28 * hitTierOf(curId())) * coopTake()));   /* a trial never hurts */
   if (blood >= P.hp) return 'bled';
-  if (!SET.invincible) P.hp -= blood; P.wardDmg = (P.wardDmg || 0) + blood; if (blood > 0) number(P.x, P.y - 20, '-' + blood, '#c0283a');
+  if (!SET.invincible) BKIT.guardPay(P, blood); P.bkPayAt = time; P.wardDmg = (P.wardDmg || 0) + blood; if (blood > 0) number(P.x, P.y - 20, '-' + blood + ' DEBT', '#c0283a');   /* (claude/heroblocksa) THE BLOOD-PAID GUARD: all of what the ward costs lies on the bar as DEBT (a win-back, not a loss), and the bar flashes where it was paid */
   P.wardG = Math.min(cap, (P.wardG || 0) + (8 + dmg * 0.9) * (1 + 0.12 * prk('dward')));
   P.st = Math.max(0, P.st - WARD_HIT); P.stDelay = ST.delay; P.inv = Math.max(P.inv, 0.22); P.hurt = 0; P.wardFlash = 0.2; blocks++; gainHarvest(2);
   const k = P.wardG / cap, sd = Math.sign(fromX - P.x) || P.face, x = P.x + sd * 13, y = P.y - 18;
-  SFX.dkWardHit(k); hitstop(0.04); shakeCam(2, -sd); ringAt(x, y, 12 + 8 * k, '#ff4a5a', 0.26); streaks(x, y, 7, ['#ffd0d0', '#ff4a5a', '#7a1020'], 130);
+  SFX.dkWardHit(k); bkGuardFx(k, sd, dmg, x, y); bkDrink(sd);   /* (claude/heroblocksa) THE BLOCK'S WEIGHT, and THE BLADE DRINKS */
   if (k >= 1 && !P.wardFull) { P.wardFull = true; ringAt(P.x, P.y - 18, 30, '#ffd0d0', 0.45); SFX.lightFull(); }   /* FULL: it says so, once - and the next blow breaks it */
   return 'held'; }
+/* (claude/heroblocksa) A BLOW HELD ON THE BLOOD WARD, WITH WEIGHT (BKIT.GUARD): the freeze grows with the ward's fill and a heavy blow, a visible ('hurt'-tagged) shake, a red spark spray + blood kicked off the steel, the wet heavy clang
+   (SFX.bkGuard, deeper as the debt climbs). The cost itself is the debt (BKIT.guardPay) and the bar's flash (drawn with the HUD bar). */
+function bkGuardFx(k, sd, dmg, x, y) { const G = BKIT.GUARD, hv = dmg >= G.heavyDmg, dk = Math.min(1, (P.bd || 0) / Math.max(1, BKIT.BLOOD.debt.cap * P.maxHp));
+  hitstop(G.stop[0] + (G.stop[1] - G.stop[0]) * k + (hv ? G.heavy : 0)); shakeCam(G.shake[0] + (G.shake[1] - G.shake[0]) * k + (hv ? 1.5 : 0), -sd * (2 + k * 2), 'hurt');
+  if (SFX.bkGuard) SFX.bkGuard(k, dk); ringAt(x, y, 12 + 8 * k, '#ff4a5a', 0.26); streaks(x, y, 10 + (hv ? 6 : 0), ['#ffd0d0', '#ff4a5a', '#7a1020'], 150 + 60 * k); impactAt(x, y, 'steel');
+  for (let i = 0; i < 8 + Math.round(8 * k); i++) parts.push({ x: x + (Math.random() - 0.5) * 6, y: y + (Math.random() - 0.5) * 18, vx: -sd * (30 + Math.random() * 130), vy: -30 - Math.random() * 120, life: 0.4, max: 0.4, col: i % 3 === 0 ? '#ffd0d0' : i % 3 === 1 ? '#ff4a5a' : '#7a1020', size: i % 4 ? 1 : 2, grav: 460 }); }
+/* THE BLADE DRINKS: each blow the ward holds fills a notch (blood runs up the steel); three, and the next held heavy comes down a tier higher (bkTier / bkHeavyStart) */
+function bkDrink(sd) { const was = BKIT.notchesOf(P, time), n = BKIT.notchDrink(P, time); if (n === was) return;
+  const x = P.x + P.face * 14, y = P.y - 6 - 8 * n; ringAt(x, y, 6 + 2 * n, '#ff4a5a', 0.3);
+  for (let i = 0; i < 5; i++) parts.push({ x: x + (Math.random() - 0.5) * 3, y: P.y - 4, vx: P.face * (Math.random() * 14), vy: -50 - Math.random() * 60, life: 0.4, max: 0.4, col: i % 2 ? '#c0283a' : '#ff6b6b', size: 1, grav: -30 });
+  if (n >= BKIT.GUARD.notches) { number(P.x, P.y - 44, 'THE BLADE DRINKS', '#ff4a5a'); ringAt(P.x + P.face * 14, P.y - 20, 20, '#ffd0d0', 0.4); if (SFX.bloodDraw) SFX.bloodDraw(); if (SFX.tell) SFX.tell(true); } }
+const bkNotches = () => BKIT.notchesOf(P, time);
 /* THE WARD BREAKS: a full ward struck again. It comes apart in shards with its own sound, what it held is gone (no nova, no healing), he
    reels, and it will not stand up again for WARD_BROKEN. The blow itself goes on into damagePlayer at half. */
 function wardBreak(fromX) {
@@ -27344,13 +27356,14 @@ function wardReturn(f, dmg) { const PP = BKIT.BLOOD.parry; P.wardRetAt = time;  
     RP.parried(f, { heavy: true }); P.riposteT = Math.max(P.riposteT || 0, PP.window);   /* (claude/riposte) THE BLADE BIND - the shared reaction, after his returned blow. (claude/bkfeel) his riposte is a HEAVY third cut, as the knight's, and waits PP.window: a greatsword is slow to come round */
     if (f.alive && !big && !KNOCK_SKIP.has(f.t)) { moveBody(f, sd * PP.push, 0, false); f.vx = 0; f.stagger = Math.max(f.stagger || 0, PP.stagger); f.rpHold = Math.max(f.rpHold || 0, PP.stagger); f.flash = 0.25; }   /* (claude/bkfeel) THROWN BACK: a real stumble back that leaves it inside his reach, reeling long enough to be answered (the old 240 px/s shove was zeroed by the parry reel the next frame) */
     if (f.alive || !big) bkParrySpray(f, sd); }
+  if (f && f.alive && !f.harmless) { f.bleed = Math.max(f.bleed || 0, PP.bleed); f.bleedN = Math.max(f.bleedN || 0, 1); }   /* (claude/heroblocksa) THE CRIMSON PARRY BLEEDS THE ONE WHO THREW IT */
   SFX.dkReturn(); if (SFX.dkClang) SFX.dkClang(); if (SFX.bkParry) SFX.bkParry(); hitstop(PP.stop); if (SET.hitstop && !SET.reduceMotion) slowT = Math.max(slowT, PP.slow); zoomKick(1.1, 0.3); if (!SET.reduceMotion) shakeCam(7, -P.face * 3); rumble(200, 0.85);   /* (claude/bkfeel) THE FREEZE (twice the Warden's), then a crimson HELD BREATH (the world at 0.3 for PP.slow s), his own heavy bind under the clang */
   P.bkParryAt = time;   /* (claude/bkfeel) the crimson wash over the screen (drawn with the kill flash; flashes setting) */
   const x = P.x + P.face * 12, y = P.y - 18; streaks(x, y, 22, ['#ffffff', '#ffd0d0', '#ff4a5a'], 300); ringAt(x, y, 50, '#ffffff', 0.4); ringAt(x, y, 28, '#ff4a5a', 0.5); ringAt(P.x, P.y - 12, DK_RETURN.wave, '#c0182a', 0.5); ringAt(P.x, P.y - 12, DK_RETURN.wave * 0.6, '#ff4a5a', 0.4); ringAt(P.x, P.y - 12, DK_RETURN.wave * 1.4, '#5a0a18', 0.55); P.rpTintT = Math.max(P.rpTintT || 0, 0.16);   /* (claude/foepass) the CRIMSON SHOCKWAVE off him (claude/bkfeel: a third, darker ring further out), and a breath of crimson over his body */
   for (let i = 0; i < 16; i++) { const a = i / 16 * 6.28; parts.push({ x, y, vx: Math.cos(a) * 190, vy: Math.sin(a) * 190, life: 0.34, max: 0.34, col: i % 2 ? '#ffffff' : '#ff6b6b', size: 2, grav: 0, glow: true }); }
   for (let i = 0; i < 14; i++) parts.push({ x: P.x + (Math.random() - 0.5) * 30, y: P.y, vx: (Math.random() - 0.5) * 40, vy: -90 - Math.random() * 110, life: 0.45, max: 0.5, col: i % 3 ? '#c0283a' : '#5a0a14', size: 2, grav: 520 });   /* (claude/bkfeel) blood kicked up off the ground round him by the shockwave */
   if (SET.flashes) killFlash = Math.max(killFlash, 0.05);
-  number(P.x, P.y - 30, 'THROWN BACK', '#ff8a8a'); DK_RETURN.n++; }   /* (claude/foepass: it said RETURNED, which MOVE_WORDS never let on the screen) */
+  number(P.x, P.y - 30, 'THROWN BACK', '#ff8a8a'); number(P.x, P.y - 42, 'CRIMSON PARRY', '#ff4a5a'); DK_RETURN.n++; }   /* (claude/foepass: it said RETURNED, which MOVE_WORDS never let on the screen) */
 /* (claude/bkfeel) THE BLOOD BIND, ON THE FOE: blood thrown off it the way it is thrown, and a hot line from his blade to it for a breath */
 function bkParrySpray(f, sd) { const fx = f.x, fy = f.y - (f.h || 16) * 0.6;
   for (let i = 0; i < 18; i++) parts.push({ x: fx + (Math.random() - 0.5) * 6, y: fy + (Math.random() - 0.5) * 8, vx: sd * (80 + Math.random() * 160), vy: -40 - Math.random() * 120, life: 0.5, max: 0.5, col: i % 3 === 0 ? '#ffd0d0' : i % 3 === 1 ? '#ff4a5a' : '#7a1020', size: i % 4 ? 1 : 2, grav: 480 });
@@ -27533,7 +27546,7 @@ function graveFall() {
    It replaces THE DEATH KNIGHT 2's held price (the blade drinking his blood as X was held) and its drink-backs: X held is THE FIVE-TIER HEAVY,
    his sustain is BLOOD DEBT (reclaimed by his landed blows), BLOOD PRICE is DOWN+C, and the crouch's low block on the beat is BLOOD SPIKE. ==== */
 const bkQuick = () => 1 - 0.1 * Math.max(0, tal('heavy') - 1);   /* the heavy node's rank: quicker to wind a point, as the knight's cutAt */
-const bkTier = () => BKIT.tierFor(P.atkHeld || 0, P.bd || 0, P.maxHp, bkQuick());
+const bkTier = () => BKIT.boostTier(BKIT.tierFor(P.atkHeld || 0, P.bd || 0, P.maxHp, bkQuick()), bkNotches());   /* (claude/heroblocksa) THE BLADE DRINKS: three notches and the hold's tier comes one higher */
 /* (claude/chargetiers) THE RANGER'S THREE-TIER DRAW: the wind's quickness (STEADY DRAW, the knee, the technique rank - heavyWind over her base draw), whether a bow draw is up, and the tier it has reached (src/ranger.js RG.tiers) */
 const rgQuick = () => heavyWind() / RG_K.draw.wind;
 const rgDrawing = () => isRg() && !!RGK && RGK.bowReady() && (P.charge || 0) > 0;
@@ -27575,6 +27588,7 @@ function bkReleasePose(R) { const st = P.bkTier || 3, k = BK_REL_KEY[st], ph = P
 let bkWaves = [];   /* T3 CRIMSON CRESCENT's travelling waves */
 /* THE TIER, LET GO (fireHeavy, after startSwing): its multiplier; T4/T5 SPEND the debt into it */
 function bkHeavyStart(st) { const T = BKIT.BLOOD.tiers; st = Math.max(1, Math.min(5, st | 0));
+  if (bkNotches() >= BKIT.GUARD.notches) { P.bkNotch = 0; P.bkDrunk = (P.bkDrunk || 0) + 1; number(P.x, P.y - 40, 'DRUNK', '#ff4a5a'); streaks(P.x + P.face * 16, P.y - 18, 8, ['#ff4a5a', '#ffd0d0'], 160); }   /* (claude/heroblocksa) the drunk blade is spent on the blow it raised */
   P.bkTier = st; P.bkSpent = 0; P.bkLanded = false; P.bkVolley = false; P.swingMul = T.mul[st] + 0.15 * Math.max(0, tal('heavy') - 1);
   if (st >= 4 && bkFed()) { const s = BKIT.debtSpend(P); P.bkSpent = s; P.swingMul *= BKIT.spendMul(s, P.maxHp); if (s > 0) { number(P.x, P.y - 40, '-' + Math.round(s), '#ff4a5a'); motes(P.x, P.y - 14, 6, 8, ['#ff4a5a', '#7a1020']); } }   /* (claude/bkfeel) BLOOD-FED: the debt is spent into the blow; half of it comes back as it lands (bkFedHeal) */
   number(P.x, P.y - 34, T.names[st], T.cols[st]); P.bkNames = (P.bkNames || 0) + 1; trialEvent('tier' + st); }
@@ -34305,6 +34319,10 @@ function drawWorld(cx, cy, showPlayer) {
       if (P.swim && !shadowed) swimQ.push({ set: KD, key, frame, x: P.x - cx, y: P.y - cy + dY, face: dFace, sx: sx * (2 - br) * hs, sy: sy * br * hs, rot: swimRot, white: false, a: 1, hero: true });   /* and he comes up through the water like everyone else in it, tilted the same way (drawSwimmers) */
       if (shadowed) drawTinted(K, key, frame, P.x - cx, P.y - cy + dY, dFace, sx * (2 - br) * hs, sy * br * hs, swimRot, '#140a1c', 0.75);
       if (isReaper() && P.plateFlash > 0) drawTinted(K, key, frame, P.x - cx, P.y - cy + dY, dFace, sx * (2 - br) * hs, sy * br * hs, swimRot, '#2a2634', Math.min(0.85, P.plateFlash * 4));
+      if (isReaper() && !P.dead && !((P.bkFrenzyT || 0) > 0) && ((P.bd || 0) > 0.4 || (P.wardFlash || 0) > 0)) { const G = BKIT.GUARD, dk = Math.min(1, (P.bd || 0) / Math.max(1, BKIT.BLOOD.debt.cap * P.maxHp)), calm = SET.reduceMotion || !SET.flashes;   /* (claude/heroblocksa) THE ARMOUR GLOWS WITH THE DEBT: a crimson pulse faster and deeper as he owes more, a flare on a held blow (steady in reduce-motion / flashes off) */
+        drawTinted(K, key, frame, P.x - cx, P.y - cy + dY, dFace, sx * (2 - br) * hs, sy * br * hs, swimRot, '#ff1e32', Math.min(G.glow, (0.04 + 0.2 * dk) * (calm ? 0.8 : 0.55 + 0.45 * Math.sin(time * (5 + 9 * dk))) + (P.wardFlash || 0) * 0.9)); }
+      if (isReaper() && !P.dead && bkNotches() > 0) { const n = bkNotches(), nx = Math.round(P.x - cx) + P.face * 15, ny = Math.round(P.y - cy) - 4, full = n >= BKIT.GUARD.notches;   /* (claude/heroblocksa) THE BLADE DRINKS, SEEN: a notch of blood a blow up the steel, the full blade pulsing */
+        for (let i = 0; i < BKIT.GUARD.notches; i++) { g.fillStyle = i < n ? (full && Math.floor(time * 8) % 2 ? '#ffd0d0' : '#ff3a50') : 'rgba(60,10,18,0.55)'; g.fillRect(nx - 1, ny - 7 * i - 4, 3, 5); g.fillStyle = 'rgba(0,0,0,0.5)'; g.fillRect(nx - 1, ny - 7 * i, 3, 1); } }
       if (isReaper() && (P.bkFrenzyT || 0) > 0 && !P.dead) { const Fz = BKIT.BLOOD.frenzy, ramp = Math.min(1, (Fz.t - P.bkFrenzyT) / 0.2, P.bkFrenzyT / 0.5), calm = SET.reduceMotion || !SET.flashes;   /* (claude/bkbloodart) CRIMSON FRENZY: the PLATE itself takes the red (a tint over the frame he is drawn in; steady in reduce-motion / flashes off) */
         drawTinted(K, key, frame, P.x - cx, P.y - cy + dY, dFace, sx * (2 - br) * hs, sy * br * hs, swimRot, '#ff1e32', Math.max(0, ramp) * (calm ? 0.26 : 0.2 + 0.1 * Math.sin(time * 16))); }   /* (claude/dkhero) THE PLATE TAKES THE BLOW: a dark steel flash */
       if (hero() === 'knight' && lcOn()) {   /* THE LAST CHARGE: a gold light on the face of the shield, pulsing, brace and rush */
@@ -35841,7 +35859,8 @@ function render() {
     bar(15, 6, 45, 5, P.hp / P.maxHp, P.hp > 30 ? '#e04848' : (Math.floor(time * 6) % 2 ? '#ff7a6b' : '#e04848'), P.hpShown / P.maxHp);
     g.fillStyle = 'rgba(255,255,255,0.22)'; g.fillRect(15, 6, Math.round(45 * Math.max(0, P.hp / P.maxHp)), 1); for (let i = 1; i < 4; i++) { g.fillStyle = 'rgba(0,0,0,0.35)'; g.fillRect(15 + Math.round(45 * i / 4), 6, 1, 5); }
     if (isReaper() && (P.bd || 0) > 0.4) drawDebt(15, 6, 45, 5, P);   /* (claude/bloodknight) BLOOD DEBT: the red segment past his health, draining */
-    if (isReaper()) drawDebtBack(15, 6, 45, 5, P);   /* (claude/bkfeel) and the part a reclaim filled flashes white-hot, the bar ringed crimson (a parry's ALL-BACK rings wider) */
+    if (isReaper()) drawDebtBack(15, 6, 45, 5, P);
+    if (isReaper() && time - (P.bkPayAt ?? -9) < 0.4) { g.strokeStyle = 'rgba(255,74,90,' + (0.9 * (1 - (time - P.bkPayAt) / 0.4)).toFixed(2) + ')'; g.lineWidth = 1; g.strokeRect(14.5, 5.5, 46, 6); }   /* (claude/heroblocksa) the bar flashes where a held blow's blood was paid */   /* (claude/bkfeel) and the part a reclaim filled flashes white-hot, the bar ringed crimson (a parry's ALL-BACK rings wider) */
     if (isReaper() && (P.bd || 0) > 0.4) text(String(Math.max(0, Math.ceil(P.hp))), 17, 5, '#fff6e0', 'left', 8, 'outline');   /* (claude/bkblood) while he owes, the number steps to the bar's head so the red segment at its end is SEEN (it sat under the number) */
     else text(String(Math.max(0, Math.ceil(P.hp))), 59, 5, '#fff6e0', 'right', 8, 'outline');   /* the number is ON the bar's end: one readout, no column beside it */
     { const gw = g; g = gShown; RP.drawPips(g, P, 70, 6, !!SET.reduceMotion); g = gw; }   /* (claude/riposte) THE MIX-UP CHAIN: its gold pips beside the health bar, in both HUDs (steady with reduced motion) */
