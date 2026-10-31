@@ -49,7 +49,7 @@ export const GB = {
   grab: { tell: 0.85, t: 0.55, reach: 240, h: 42, hand: 20, dmg: 18, rec: 0.9, throwV: 260 },
   stun: { t: 7, mul: 2, cap: 0.08, boom: 0.05 },
   hot: { t: 5, mul: 2, cap: 0.06 },
-  drop: { t: 3.5, mul: 2, cap: 0.08, cd: 12, h: 40, shove: 0.8, shoveV: 110 },   /* (claude/kitchengate4) THE PLATTER DROP: the third opening (short, a cooldown); h: how far over the platter's top a landing counts; shove: s on the platter before it tips you off */
+  drop: { t: 3, mul: 2, cap: 0.06, cd: 12, h: 40, shove: 0.8, shoveV: 110 },   /* (claude/kitchengate4) THE PLATTER DROP: the third opening (short, a cooldown); h: how far over the platter's top a landing counts; shove: s on the platter before it tips you off */
   coal: { dmg: 8, lit: 2, beat: 1.4, glow: 0.6, fire: 6 },   /* (claude/kitchengate4) THE COAL TRENCH: a bite, x lit while the grease burns it (fire s, after a glow s), again every beat s on the coals */
   second: { lobGap: 0.25, flingV: 1.25, greaseLife: 1.4 },   /* (claude/kitchengate4) THE SECOND HELPING: the extra lob lands lobGap s after the last; the fling flies x flingV; the wave burns x greaseLife */
   swell: 0.4,
