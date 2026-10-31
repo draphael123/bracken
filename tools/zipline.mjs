@@ -81,6 +81,16 @@ const PAGE = `(async (hero, levelId) => {
     ({ L, P, k } = fresh()); L.zipLines.splice(0); L.zipLines.push(z);
     stand(P, loX - dirn * 4, road); k.up = true; BK.sim(20); const up = !!P.zip; k.up = false;
     row(tag + ': UP right at its foot has no ride left to give', !up, 'took hold at the foot: ' + JSON.stringify(info(P))); }
+  /* (claude/zipregrab) LINE TO LINE: kick off rope A toward rope B and B is caught at once (the let-go window shuts only the rope just left); A itself is not re-caught, by touch or by UP, inside that window */
+  if (levelId === 'storm') { const road = 36 * TS, mk = () => { const o = fresh(); o.L.zipLines.splice(0); const a = { x0: 24, y0: road - 56, x1: 200, y1: road - 12 }; o.L.zipLines.push(a); return { ...o, a }; };
+    { const { L, P, k, a } = mk(); stand(P, 24 + 30, road); k.jump = true; BK.press('jump'); let on = false; for (let f = 0; f < 40 && !on; f++) { BK.sim(1); on = P.zip === a; } k.jump = false; for (let f = 0; f < 20; f++) BK.sim(1);
+      if (!on || P.zip !== a) row('line to line: rope A taken and ridden', false, 'not on A: ' + JSON.stringify(info(P)));
+      else { const y0 = P.y, x0 = P.x; const b = { x0: x0 + 12, y0: y0 - 14, x1: x0 + 300, y1: y0 + 6, dir: 1 }; L.zipLines.push(b);
+        k.jump = true; BK.press('jump'); BK.sim(1); k.jump = false; let onB = false, backA = false; for (let f = 0; f < 40 && !onB; f++) { if (P.zip === a) backA = true; if (P.zip === b) onB = true; else BK.sim(1); }
+        row('line to line: a kick off rope A is caught by rope B at once (inside the let-go window)', onB && !backA, 'onB=' + onB + ' backA=' + backA + ' ' + JSON.stringify(info(P))); } }
+    { const { L, P, k, a } = mk(); stand(P, 24 + 30, road); k.jump = true; BK.press('jump'); let on = false; for (let f = 0; f < 40 && !on; f++) { BK.sim(1); on = P.zip === a; } k.jump = false; for (let f = 0; f < 20; f++) BK.sim(1);
+      if (!on) row('line to line: rope A taken', false, 'not on A'); else { k.jump = true; BK.press('jump'); BK.sim(1); k.jump = false; let again = false; k.up = true; for (let f = 0; f < 30 && !again; f++) { BK.sim(1); if (P.zip === a) again = true; } k.up = false;
+        row('line to line: the SAME rope is not re-caught inside the let-go window (touch or UP)', !again, 'A re-caught: ' + JSON.stringify(info(P))); } } }
   /* THE ROOTWAY's HUNTERS' GANTRY (claude/ziproot) - the route use, played with the real keys: the road ends in a well ten wide; cut the cage down (a blow on its cleat), climb the cage, jump to the gantry,
      UP takes the trophy line and it sets him on the ledge across, alive; and a hero on the well's shelf, or at its lip, cannot reach the line without the step (the cage is the lock) */
   if (levelId === 'rootway') { const RW = BK.rootway, cellTp = (x, y) => { BK.tp(x, y); BK.sim(4); };
