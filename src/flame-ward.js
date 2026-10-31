@@ -3,7 +3,7 @@
 // HERO NEEDS A BLOCK. Hers is a fire shield that goes out quickly, burns what touches it, and cannot be held:
 //
 //   THE INPUT. TAP C (the block key): a dome of fire round her for WARD.t (0.45 s), however short the tap. It cannot be held past that. After it,
-//   WARD.cd (1 s) before the next. C STILL HELD at WARD.fold (0.35 s) is the HELD FIREBALL instead: the ward folds into the ball on the staff that
+//   WARD.cd (0.75 s: pyroarttune TUNE, was 1 s) before the next. C STILL HELD at WARD.fold (0.35 s) is the HELD FIREBALL instead: the ward folds into the ball on the staff that
 //   frame (main.js, castFireball) - never ward and fireball on one frame, and a ward on its cooldown never stops a press from charging a ball.
 //   DOWN is not the ward any more (claude/crouchfix, Daniel 10-11: a bare press of down flared by accident on every duck); down is STOKE now (main.js).
 //   - A YELLOW BLOW IN THE FIRST WARD.perfect (0.15 s) IS A PARRY: cancelled, the attacker SCORCHED (f.burn) and BURN-MARKED, she gains WARD.heatParry,

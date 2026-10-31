@@ -102,7 +102,7 @@ else {
   const T = R.tap;
   if (!T.upAtOnce) bad.push('a tap of C raised no ward on the frame');
   if (!(T.frames >= T.len * 100 - 2 && T.frames <= T.len * 100 + 3)) bad.push(`the ward lasted ${T.frames} frames (want ~${T.len * 100})`);
-  if (!(T.cdAfter > 0.8)) bad.push('no cooldown after the ward: ' + T.cdAfter);
+  if (!(T.cdAfter > 0.6)) bad.push('no cooldown after the ward: ' + T.cdAfter);
   if (T.inCd > 0) bad.push('a tap in the cooldown raised a ward');
   if (T.afterCd !== 1) bad.push('a tap after the cooldown raised no ward');
   if (T.bothFrames > 0) bad.push(`ward and fireball on one frame ${T.bothFrames} times (the conflict matrix)`);
@@ -134,4 +134,4 @@ else {
   if (R.knight.res !== 'blocked') bad.push('the knight\'s guard no longer blocks: ' + JSON.stringify(R.knight));
 }
 assert.deepEqual(bad, [], 'the flame ward:\n  ' + bad.join('\n  '));
-console.log('the flame ward holds: a tap is a 0.45 s ward then a 1 s wait, its first 0.15 s parries (scorch, mark, heat, riposte), later blocks for stamina (none left: it breaks), red breaks through, contact burns once, arrows melt, an empty ward near a foe roots her, a hold folds it into the fireball (never both), water puts it out, down is not the ward');
+console.log('the flame ward holds: a tap is a 0.45 s ward then a 0.75 s wait, its first 0.15 s parries (scorch, mark, heat, riposte), later blocks for stamina (none left: it breaks), red breaks through, contact burns once, arrows melt, an empty ward near a foe roots her, a hold folds it into the fireball (never both), water puts it out, down is not the ward');
