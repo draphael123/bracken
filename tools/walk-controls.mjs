@@ -36,7 +36,7 @@ for (const g of L.ents.filter(e => e.t === 'lockgate')) {
 const pct = col => { const i = R.findIndex(n => n[0] >= col); return Math.floor(100 * (i < 0 ? R.length : i) / R.length); };
 const W = (o, id = 'storm', hero = 'knight') => walkCfg(id, hero, 1, { stuck: 1500, ...o });
 const GH = STORM_TOWN.G0;   /* (stormhold4) the bone key's walk now rides THE HAUL LINES (rope to rope) to the gatehouse: more frames; the winch is THE GATEHOUSE BELL now, left alone */
-const rows = await runWalks([W({ from: 200, frames: 4800 }), W({ from: 366, frames: 7200 }), W({ from: GH, frames: 2600 })], { jobs: 1 });
+const rows = await runWalks([W({ from: 200, frames: 6000 }), W({ from: 366, frames: 9600 }), W({ from: GH, frames: 2600 })], { jobs: 1 });
 const [kr, br, wr] = rows;
 for (const r of rows) if (!r || r.err) fails.push('a walk failed: ' + (r && r.err));
 /* the key is fetched when the walk gets PAST its lock gate (the route climbs the tower itself, keyFirst takes the key - no side trip: subs stay empty) */
