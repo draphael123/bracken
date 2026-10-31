@@ -106,7 +106,7 @@ const pg = await openPage({ audio: false, fonts: false });
 try {
   const r = await pg.evalp(`(async()=>{const{LEVELS}=await import('/src/level.js');BK.manualSimulation=true;const out={};
     BK.setHero('knight');BK.reset({fresh:true});BK.load(LEVELS.findIndex(l=>l.id==='fallingtower'));BK.state='play';BK.god=true;BK.sim(10);
-    BK.tp(${SPIRAL_TOP.check},${SPIRAL_TOP.row});BK.sim(5);if(!BK.carpet())BK.board();BK.sim(30);const b=BK.boss||BK.enemies().find(e=>e.t==='undeadmage'&&e.alive);for(let i=0;i<300&&b.mode==='wake';i++)BK.sim(1);
+    BK.tp(${SPIRAL_TOP.check},${SPIRAL_TOP.row});BK.sim(5);if(!BK.carpet())BK.board();BK.sim(30);const b=BK.boss||BK.enemies().find(e=>e.t==='undeadmage'&&e.alive);for(let i=0;i<3600&&b&&b.leg==='ascent';i++)BK.sim(1);/* (batch131: THE ASCENT first, claude/ft4a) */for(let i=0;i<300&&b.mode==='wake';i++)BK.sim(1);
     b.mode='hover';b.modeT=0;b.turn=${MAGE.order.indexOf('step')};b.blinkT=99;BK.sim(1);out.tell=b.mode;BK.sim(15);const ex=b.rings.find(q=>q.kind==='exit');out.flare=!!(ex&&ex.flare);
     const P=BK.P;P.x=ex.x-40;P.y=ex.y+8;P.face=1;P.vx=0;P.vy=0;P.st=P.maxSt;BK.keys.right=true;BK.press('dodge');for(let i=0;i<14&&b.mode!=='breached';i++)BK.sim(1);BK.keys.right=false;
     out.mode=b.mode;out.open=+(b.open||0).toFixed(2);out.beside=Math.round(Math.abs(P.x-b.x));const hp=b.hp;BKT.hurtEnemy(b,10,b.x-10,false);out.took=hp-b.hp;
