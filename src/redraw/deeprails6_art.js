@@ -4,6 +4,7 @@
 // chunks, the dust at the gears, the smoke as they choke), and THE LEADING BORE's dressing (the torn high line, the drill's cutting scars, the glow ahead). Plain rects; every piece keeps its
 // read (B10/B16). Art only: nothing here reads a hit box, a timing or a tune.
 import { MP, glow, hash } from './minecart_backdrop.js';
+import { canvas } from '../px.js';
 const R = Math.round;
 const rc = (g, x, y, w, h, col) => { g.fillStyle = col; g.fillRect(R(x), R(y), R(w), R(h)); };
 const add = (g, fn) => { g.globalCompositeOperation = 'lighter'; fn(); g.globalCompositeOperation = 'source-over'; g.globalAlpha = 1; };
@@ -194,25 +195,29 @@ export function tornHigh(g, x0, x1, y, time, seed) {
   for (let i = 0; i < 4; i++) { const sx = hx - 6 + i * 11, sag = i * i + i; rc(g, sx, y + 2 + sag, 8, 3, i === 2 ? MP.t1 : MP.t2); rc(g, sx, y + 2 + sag, 8, 1, MP.t4); if (i === 3) { rc(g, sx + 3, y + 2 + sag, 1, 4, '#07050a'); rc(g, sx + 5, y + 1 + sag, 3, 2, MP.t3); } }   /* sleepers dropping away, the last one split */
   for (let i = 0; i < 28; i++) { const t = i / 27, xx = hx - 8 + i * 1.6, yy = y - 1 + t * t * 15; rc(g, xx, yy, 2, 2, MP.i3); rc(g, xx, yy - 1, 2, 1, MP.i5); }   /* the rail, bending down off its sleepers */
   pline(g, hx + 30, y + 14, hx + 36, y + 18, 1, MP.i4); rc(g, hx + 36, y + 17, 3, 2, '#2a2830');   /* its bent end hanging */
-  rc(g, hx + 8, y - 2, 1, 2, '#2a2830');
-  /* the heap: three tiers of boulders up the slope to the fallen slab */
-  const tiers = [[14, 0, 10], [28, 5, 16], [40, 12, 22]];   /* [x from heap start, rise, width] */
-  rc(g, hx + 36, y - 34, x1 - hx - 36, 38, '#0e0a10');
-  for (let ti = 0; ti < 3; ti++) { const [ox, , wd] = tiers[ti]; for (let i = 0; i < 6; i++) { const h0 = hash(seed + ti * 7, i + 3), bx = hx + 30 + ti * 11 + i * 9 + (h0 % 5), bh = 9 + (h0 >> 3) % 9, by = y + 3 - Math.max(0, ti * 4) - (i * 2 > 6 ? 6 : 0) - (ti === 2 ? 6 : ti === 1 ? 2 : 0);
-      if (bx + wd > x1 + 2 || by - bh < y - 34) continue; stone(g, bx, by, wd, bh, h0 >> 2, ti === 0 ? WARM1 : WARM0); } }
-  for (let i = 0; i < 5; i++) { const h0 = hash(seed, i + 40), bx = hx + 50 + i * 7 + (h0 % 4), bh = 8 + (h0 >> 4) % 8, wd = 11 + (h0 >> 8) % 6; if (bx + wd <= x1 + 2) stone(g, bx, y - 18 + (h0 >> 12) % 6, wd, bh, h0 >> 2, WARM0); }
-  for (let i = 0; i < 6; i++) { const h0 = hash(seed, i + 70); rc(g, hx + 36 + (h0 % 44), y - 24 + (h0 >> 6) % 24, 2, 1, i % 2 ? '#ff7a2a' : '#c8501a'); }   /* slag still glowing in the cracks */
+  /* the heap: a slope of broken rock climbing from the bed to the rock's underside at y - 32 (a core column per pixel, then boulders on it in three passes - a lit crest, a dark middle, the foot) */
+  const hs = hx + 26, top = x => Math.min(34, 3 + (x - hs) * 0.6 + ((hash(seed, (x >> 2) + 5) % 3) - 1));
+  for (let x = hs; x < x1; x++) { const h = R(top(x)); rc(g, x, y + 3 - h, 1, h + 2, '#160e0c'); }
+  for (let p = 0; p < 3; p++) for (let bx = hs + (p * 5) % 9; bx < x1 - 4; bx += 8 + p) { const h0 = hash(seed + p * 13, bx), bw = 9 + (h0 % 7), bh = 7 + (h0 >> 4) % 8, tp = top(bx), by = y + 3 - (p === 0 ? tp - bh * 0.55 : p === 1 ? tp * 0.62 - 2 : tp * 0.28 - 6);
+    if (bx + bw > x1 + 2 || by - bh < y - 34) continue; stone(g, bx, R(by), bw, bh, h0 >> 2, p === 0 ? WARM1 : WARM0); }
+  for (let i = 0; i < 6; i++) { const h0 = hash(seed, i + 70), bx = hs + 12 + (h0 % 50); rc(g, bx, y - 2 - R(top(bx) * 0.6) + (h0 >> 6) % 10, 2, 1, i % 2 ? '#ff7a2a' : '#c8501a'); }   /* slag still glowing in the cracks */
   add(g, () => { g.globalAlpha = 0.18; g.drawImage(glow(26, '255,120,50'), hx + 62 - 26, y - 6 - 26); });
-  rc(g, x1 - 40, y - 34, 40, 5, '#07050a'); rc(g, x1 - 40, y - 34, 40, 1, MP.r4);   /* the rock's own underside, the slab jammed in */
-  rc(g, hx + 50, y - 30, 3, 34, MP.t2); rc(g, hx + 50, y - 30, 1, 34, MP.t4); rc(g, hx + 49, y - 31, 5, 2, MP.t3); rc(g, hx + 52, y - 33, 1, 4, MP.t1);   /* a snapped prop in the heap */
-  pline(g, hx + 58, y - 28, hx + 74, y - 6, 2, MP.t2); pline(g, hx + 58, y - 29, hx + 74, y - 7, 1, MP.t4);   /* a split beam slanting down into it */
-  pline(g, hx + 62, y - 10, hx + 72, y - 20, 1, MP.i3);   /* a twisted rail end */
+  rc(g, x1 - 40, y - 34, 40, 3, '#07050a'); rc(g, x1 - 40, y - 34, 40, 1, MP.r4);   /* the rock's own underside, the slab jammed in */
+  rc(g, hx + 54, y - 28, 3, 32, MP.t2); rc(g, hx + 54, y - 28, 1, 32, MP.t4); rc(g, hx + 53, y - 29, 5, 2, MP.t3); rc(g, hx + 56, y - 31, 1, 4, MP.t1);   /* a snapped prop standing in the heap */
+  pline(g, hx + 46, y - 12, hx + 64, y - 2, 2, MP.t2); pline(g, hx + 46, y - 13, hx + 64, y - 3, 1, MP.t4);   /* a split beam slanting down into it */
+  pline(g, hx + 66, y - 14, hx + 76, y - 24, 1, MP.i3); rc(g, hx + 76, y - 25, 3, 1, MP.i4);   /* a twisted rail end */
   for (let i = 0; i < 7; i++) { const t = (time * 0.7 + i * 0.211) % 1, dx = hx + 52 + ((i * 11) % 26); g.fillStyle = 'rgba(150,132,118,' + (0.45 * (1 - t)).toFixed(2) + ')'; g.fillRect(R(dx + Math.sin(time * 2 + i) * 2), R(y - 34 + t * 30), 2 + (i & 1), 2 + R(t * 3)); }   /* dust still coming down the gap */
   for (let i = 0; i < 3; i++) { const h0 = hash(seed, i + 90), t = (time * 0.9 + i * 0.37) % 1; rc(g, hx + 56 + (h0 % 20), y - 34 + t * 36, 1, 2, MP.r5); }   /* a pebble or two */
 }
 /* THE DRILL'S CUTTING SCARS (decor 'scar'): the round cut where the bit bored through, seen in the wall - a jagged fractured rim (lit on its upper left), the bit's flute tracks as broken
    rings, chisel marks, steel flecks, a little spoil at its foot. seed = the column, so each is its own. Past column 1322 the heat of the bore ahead warms the rim. */
+const SCARS = new Map();   /* a scar never changes: baked once per (radius, column), then blitted (it cost 0.9 ms a frame drawn live) */
 export function scar(g, x, y, r, seed) {
+  const key = r + '|' + seed; let c = SCARS.get(key); const ox = r + 6, oy = 2 * r + 4;
+  if (!c) { const [cv, og] = canvas(2 * r + 12, 2 * r + 10); scarDraw(og, ox, oy, r, seed); SCARS.set(key, c = cv); }
+  g.drawImage(c, R(x) - ox, R(y) - oy);
+}
+function scarDraw(g, x, y, r, seed) {
   const cy = y - r, warm = seed >= 1322 ? 1 : 0, steps = Math.max(24, R(r * 7));
   g.fillStyle = '#080506'; g.beginPath(); g.arc(R(x), R(cy), r, 0, Math.PI * 2); g.fill();
   const px = (a, rr, col) => { g.fillStyle = col; g.fillRect(R(x + Math.cos(a) * rr), R(cy + Math.sin(a) * rr), 1, 1); };
