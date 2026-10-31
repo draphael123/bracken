@@ -75,11 +75,11 @@ export const SS = {
      turn: a sister HUNTS for t +/- jit s (x k per death) or until she is OPENED and the opening is done; then a hand-over of `hand` s (the old Hunter climbs to her roost, the next one
            drops: her portrait pulses on the bar). support: while one hunts, the other two ROOST and ONE of them at a time does ONE small told support move, every cd s (x k per death),
            never while the Hunter winds up or strikes (and the Hunter never starts into one). The three support moves (all MEDIUM tells, small blows): */
-  turn: { t: 13, jit: 2, k: 0.75, hand: 0.8 },
+  turn: { t: 12, jit: 2, k: 0.75, hand: 0.8 },   /* (12 +/- 2: with the wait for her to finish what she is in, a turn reads 12-16 s) */
   support: { cd: 6, first: 4.5, k: 0.85 },
   pebble: { tell: 0.7, T: 0.8, r: 14, dmg: 8, arc: 50 },   /* THE DIVER's PEBBLE KICK from her roost: a slow rock lobbed at your spot (or the mark), its landing ring drawn the whole way */
   smark: { tell: 0.7, life: 3.2 },                         /* THE SHRIEKER's MARK from her perch: her ring on your spot - the Hunter's next blow goes to it */
-  gust: { tell: 0.7, T: 0.5, low: 30, broken: 0.9 },       /* THE SNATCHER's WING GUST (src/gale-harpy.js GALE + inCone): she drops low by her nest and beats a gust along the floor - a shield braces
+  gust: { tell: 0.7, T: 0.5, low: 30, broken: 0.9, out: 170 },       /* THE SNATCHER's WING GUST (src/gale-harpy.js GALE + inCone): she drops low by her nest and beats a gust along the floor - a shield braces
                                                               (half), a blow in the tell BREAKS it (she tumbles, knocked down) */
   /* BONE NESTS ON CRACKED ARMS (the main new opening): bait the Hunter's dive (or the Snatcher's boulder) onto a nest's cracked ARM FOOT on the summit floor - the arm snaps, the nest
      DROPS (a platform low over the floor for the rest of the fight) and the sister ROOSTING on it crashes down STUNNED (x mul up to cap of her); the Hunter herself skids off the arm */
@@ -147,6 +147,8 @@ export function teamClear(S, s, len) { if (S.clock - S.tLast < SS.tempo.gap[S.tC
   return true; }
 /* is sister s the one who may start a blow now (the Hunter, not in the hand-over; the last sister always) */
 export const isHunter = (S, s) => !!s && (S.p2 ? S.p2 === s.role : S.hunter === s.role && !(S.hand > 0));
+/* ...and may she START a new move (her turn not run out: once it has, she finishes what she is in and hands over) */
+const mayStart = (S, s) => isHunter(S, s) && (!!S.p2 || S.turnT > 0);
 /* THE SHRIEKER's turn: what her next scream is, by phase (the survivors lean on their own: SHOCK and ECHO) */
 export const ROT = [['mark', 'echo', 'mark', 'shock'], ['shock', 'echo', 'mark', 'shock', 'echo'], ['shock', 'echo', 'shock', 'echo', 'mark']];
 /* THE SUMMIT (px): x0/x1 inside the walls, floorY, the three slabs (tile columns of their middles), the two shelves (the snatcher's perches) */
@@ -299,13 +301,13 @@ function stepSupport(S, dt, P, w) {
     if (r === 'shrieker' && (supMark(S) || h.role === 'shrieker')) continue;
     S.supI = (ROLES.indexOf(r) + 1) % ROLES.length; S.supCd = SS.support.cd * Math.pow(SS.support.k, Object.keys(S.dead).length); startSupport(S, s, P, w); return; }
 }
-function gustLow(S, s) { const R = s.roost && roostById(S, s.roost), x = R ? R.x : s.x; return [clampX(S, x + (x < S.G.mid ? 28 : -28), 20), S.G.floorY - SS.gust.low]; }
-function gustReach(S, s, P) { const [gx] = gustLow(S, s); return Math.abs(P.x - gx) < GALE.len - 10; }
+/* she swoops down off her nest toward you - at most SS.gust.out px from it - and beats from there, low (a blow in the tell breaks it) */ function gustLow(S, s, P) { const R = s.roost && roostById(S, s.roost), x = R ? R.x : s.x, d = P ? Math.sign(P.x - x) || 1 : (x < S.G.mid ? 1 : -1), want = P ? P.x - d * 70 : x + d * 28; return [clampX(S, x + Math.max(-SS.gust.out, Math.min(SS.gust.out, want - x)), 20), S.G.floorY - SS.gust.low]; }
+function gustReach(S, s, P) { const [gx] = gustLow(S, s, P); return Math.abs(P.x - gx) < GALE.len - 10; }
 function startSupport(S, s, P, w) {
   s.act = ++S.act; s.openT0 = 0.01;
   if (s.role === 'diver') { s.mode = 'pebbleTell'; s.modeT = SS.pebble.tell; const m = supMark(S); s.pbX = clampX(S, m ? m.x : P.x, 12); S.n.supports.pebble++; w.mark(s, '!!'); w.sound('pebbleTell'); if (!S.told.pebble) { S.told.pebble = 1; w.number(s.pbX, S.G.floorY - 48, SS_SAY.pebble, '#ff6b6b'); } }
   else if (s.role === 'shrieker') { s.mode = 'markTell'; s.modeT = SS.smark.tell; S.n.supports.mark++; w.mark(s, '!!'); w.sound('screamTell'); }
-  else { const [gx, gy] = gustLow(S, s); s.gX = gx; s.gY = gy; s.mode = 'gustTell'; s.modeT = SS.gust.tell; s.face = Math.sign(P.x - gx) || (gx < S.G.mid ? 1 : -1); s.gustHit = false; S.n.supports.gust++; w.mark(s, '!'); w.sound('gustTell'); if (!S.told.gust) { S.told.gust = 1; w.number(gx, S.G.floorY - 60, SS_SAY.gust, '#ffd36b'); } }
+  else { const [gx, gy] = gustLow(S, s, P); s.gX = gx; s.gY = gy; s.mode = 'gustTell'; s.modeT = SS.gust.tell; s.face = Math.sign(P.x - gx) || (gx < S.G.mid ? 1 : -1); s.gustHit = false; S.n.supports.gust++; w.mark(s, '!'); w.sound('gustTell'); if (!S.told.gust) { S.told.gust = 1; w.number(gx, S.G.floorY - 60, SS_SAY.gust, '#ffd36b'); } }
   s.openT0 = s.modeT; told(S, s, 'medium', w);
 }
 function stepSupportMove(S, s, dt, P, w, heroes) {
@@ -329,7 +331,7 @@ function stepPebbles(S, dt, heroes, w) {
 export const pebbleAt = (p, floorY) => { const k = Math.min(1, p.t / p.T); return { x: p.x0 + (p.tx - p.x0) * k, y: p.y0 + (floorY - p.y0) * k - SS.pebble.arc * 4 * k * (1 - k), k }; };
 const fly = (s, tx, ty, dt, k = 3) => { s.x += (tx - s.x) * Math.min(1, dt * k); s.y += (ty - s.y) * Math.min(1, dt * k); };
 const clampX = (S, x, m = 16) => Math.max(S.G.x0 + m, Math.min(S.G.x1 - m, x));
-const ready = (S, s, P) => s.cd <= 0 && P && P.alive && s.ward <= 0 && !S.held && isHunter(S, s);   /* (claude/rookery4: only the Hunter starts a blow) */   /* (claude/rookery3: the stagger is asked with the move chosen - teamClear(S, s, its windup)) */
+const ready = (S, s, P) => s.cd <= 0 && P && P.alive && s.ward <= 0 && !S.held && mayStart(S, s);   /* (claude/rookery4: only the Hunter starts a blow) */   /* (claude/rookery3: the stagger is asked with the move chosen - teamClear(S, s, its windup)) */
 /* A DIVE: aim (the red line follows you, then LOCKS), then straight down the line; what it meets breaks */
 function aimAt(S, s, P, w, mark, pair) {
   s.mode = 'diveTell'; s.modeT = mark ? SS.dive.markTell : s.chain ? SS.chain.aim : pair ? SS.dive.second : SS.dive.tell[ph(S)]; s.pair = !!pair; s.openT0 = s.modeT; s.aim = mark ? { x: mark.x, y: S.G.floorY, lock: true, mark: true } : { x: P ? P.x : s.x, y: S.G.floorY, lock: false };
@@ -537,6 +539,7 @@ function stepSnatcher(S, s, dt, P, w, heroes) {
 /* THE BOULDER DROP's legs (fly to a shelf, pick, carry, the drop's tell, the drop) - true = handled; a P2 survivor who took it runs it here too (s.rockGo) */
 function rockMoves(S, s, dt, P, w) {
   const G = S.G; if (s.mode === 'fly' && s.role !== 'snatcher' && !s.rockGo) return false;
+  if (s.mode === 'fly' && !mayStart(S, s)) return false;   /* (claude/rookery4: her turn run out - no new boulder) */
   if (s.mode === 'fly') { const px = G.perch[s.perchI || 0], py = G.perchY; fly(s, px, py, dt, 2.6); if (Math.abs(s.x - px) < 6 && Math.abs(s.y - py) < 6) { s.mode = 'pick'; s.modeT = SS.rock.pick; s.x = px; s.y = py; w.sound('pick'); } return true; }
   if (s.mode === 'pick') { if (s.modeT <= 0) { s.rocks = S.dead.shrieker && !S.p2 ? 2 : 1; s.mode = 'carry'; s.modeT = SS.rock.carry * cdK(S); s.target = null; } return true; }
   /* THE BOULDER DROP (her own): carried HIGH; its shadow follows you on the floor, then fixes (dropTell) and it falls */
@@ -558,7 +561,7 @@ function rockMoves(S, s, dt, P, w) {
 }
 /* THE GRAB (the snatcher's own): from the side at your height; caught, lifted over the floor; strike her loose or she lets you fall */
 function tryGrab(S, s, P, w) {
-  if (!P || !P.alive || !isHunter(S, s) || !P.ground || S.grabCd > 0 || S.held || S.ride || s.ward > 0 || (s.role !== 'snatcher' && S.p2 !== s.role) || !teamClear(S, s, SS.grab.tell)) return false;   /* (claude/rookery3: the stagger) */
+  if (!P || !P.alive || !mayStart(S, s) || !P.ground || S.grabCd > 0 || S.held || S.ride || s.ward > 0 || (s.role !== 'snatcher' && S.p2 !== s.role) || !teamClear(S, s, SS.grab.tell)) return false;   /* (claude/rookery3: the stagger) */
   if (ROLES.some(r => r !== 'snatcher' && S.sis[r].alive && ['dive', 'rake', 'shock', 'echo'].includes(S.sis[r].mode))) return false;   /* (one blow at a time: never into another sister's release) */
   const G = S.G; S.grabCd = S.p2 ? SS.p2.grabCd : SS.grab.cd[ph(S)] * cdK(S); s.gDir = P.x - G.x0 > 140 ? 1 : -1; s.gX = clampX(S, P.x - s.gDir * 120, 14);
   s.mode = 'grabTell'; s.modeT = SS.grab.tell; s.openT0 = s.modeT; s.face = s.gDir; s.act = ++S.act; S.n.grabs++;
@@ -598,7 +601,7 @@ export function strikeHeld(S, w) {
 function carryTo(S, s) { const occ = roostList(S).filter(R => ROLES.some(r => r !== s.role && S.sis[r].alive && S.sis[r].roost === R.id && (S.sis[r].mode === 'perched' || S.sis[r].mode === 'toRoost')));
   const R = occ.sort((a, b) => Math.abs(a.x - s.x) - Math.abs(b.x - s.x))[0]; if (!R) return null; const side = Math.sign(s.x - R.x) || 1; return { id: R.id, x: R.x + side * Math.max(0, R.w / 2 - 10) }; }
 function trySnatch(S, s, P, w) {
-  if (!P || !P.alive || !isHunter(S, s) || S.snatchCd > 0 || alive(S).length > 2 || s.ward > 0 || S.held || !teamClear(S, s, SS.snatch.tell)) return false;   /* (claude/rookery3: the stagger) */
+  if (!P || !P.alive || !mayStart(S, s) || S.snatchCd > 0 || alive(S).length > 2 || s.ward > 0 || S.held || !teamClear(S, s, SS.snatch.tell)) return false;   /* (claude/rookery3: the stagger) */
   const who = S.sis.snatcher.alive ? 'snatcher' : 'diver'; if (s.role !== who || !(s.mode === 'hover' || s.mode === 'fly')) return false;
   S.snatchCd = SS.snatch.cd * cdK(S); s.mode = 'snatchTell'; s.modeT = SS.snatch.tell; s.openT0 = s.modeT; s.act = ++S.act; s.sDir = P.x < S.G.mid ? -1 : 1;
   s.x = s.sDir < 0 ? S.G.x1 - 20 : S.G.x0 + 20; s.y = S.G.floorY - SS.snatch.h - 30; s.face = -s.sDir; w.mark(s, '!!'); w.sound('snatchTell'); told(S, s, 'light', w); if (!S.told.snatch) { S.told.snatch = 1; w.number(S.G.mid, S.G.floorY - 70, SS_SAY.snatch, '#ff6b6b'); }
