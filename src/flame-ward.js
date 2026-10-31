@@ -18,6 +18,7 @@
 //   - WATER puts it out: in a pool it will not light.
 // main.js binds it (makeFlameWard) and calls: raise (the pyro block of updatePlayer, on the press), fold (the hold reaching WARD.fold), update (every
 // frame), takes (damagePlayer0, before the duck), catchSeeds (before the seeds meet her body), exposed (the damage line), draw. State on the hero (P.ward*).
+import * as PA from './pyro-art.js';   /* (claude/pyroarttune) the dome, the parry star, the block ring and the contact spark are sprites now */
 export const WARD = {
   t: 0.45,            // the ward is up this long from the press (a tap or not)
   perfect: 0.15,      // a blow in the first this long of it is a PARRY
@@ -81,7 +82,7 @@ export function makeFlameWard(api) {
       if (dx > WARD.R || dy > WARD.R * 0.6) continue;
       p.fwHit.add(e); p.fwDid = true; stats.contacts++;
       api.fire(e, Math.max(1, Math.round(api.swordDmg() * WARD.contactK * api.heatMul())), p.x, { burn: WARD.burn, cls: 'light', burnOnly: true });
-      api.hitstop(WARD.stopContact); api.flame(e.x, e.y - (e.h || 16) / 2, 6, 6, 60, 2); api.sparks(e.x - Math.sign(e.x - p.x) * (e.w || 12) / 2, e.y - (e.h || 16) / 2, Math.sign(e.x - p.x) || p.face, 5);
+      api.hitstop(WARD.stopContact); PA.fx('spark', e.x - Math.sign(e.x - p.x) * (e.w || 12) / 2, e.y - (e.h || 16) / 2, api.time); api.flame(e.x, e.y - (e.h || 16) / 2, 6, 6, 60, 2); api.sparks(e.x - Math.sign(e.x - p.x) * (e.w || 12) / 2, e.y - (e.h || 16) / 2, Math.sign(e.x - p.x) || p.face, 5);
     }
   }
   function mistime(p) { stats.fizzled++; p.fwRec = WARD.rec; p.fwFizz = 0.4; p.vx = 0; api.SFX.emberFizzle(); api.smoke(p.x, p.y - 10, 5, 8); api.ringAt(p.x, p.y - 8, WARD.R - 8, '#8a8480', 0.25); }
@@ -90,7 +91,7 @@ export function makeFlameWard(api) {
   function parry(p, f) {
     end(p, WARD.spent); p.fwDid = true; p.fwFlash = 0.3; p.fwParryAt = api.time; stats.parries++;
     api.SFX.wardParry(); api.hitstop(WARD.stopParry); api.zoomKick(1.05, 0.18); api.shakeCam(2.5, -p.face * 2);
-    api.ringAt(p.x, p.y - 8, WARD.R + 12, '#ffffff', 0.3); api.ringAt(p.x, p.y - 8, WARD.R + 2, '#ff9a5c', 0.26); api.flame(p.x, p.y - 8, 12, 12, 90, 2);
+    PA.fx('parry', p.x, p.y - 8, api.time); api.flame(p.x, p.y - 8, 12, 12, 90, 2);
     api.streaks(p.x + p.face * 8, p.y - 9, 10, ['#ffffff', '#fff6c8', '#ffd36b'], 220); api.number(p.x, p.y - 28, 'PARRY', '#ffd36b'); api.flash(0.03);
     api.noteParry(); if (api.parried) api.parried(f);   /* the shared parry -> riposte */
     api.gainHeat(WARD.heatParry);
@@ -101,7 +102,7 @@ export function makeFlameWard(api) {
     p.fwDid = true; const cost = api.blockCost(dmg);
     if (p.st < cost) { stats.broken++; p.st = 0; p.stFlash = 0.5; end(p, WARD.cd); api.SFX.guardBreak(); api.number(p.x, p.y - 22, 'WARD BROKEN', '#ffd36b'); api.hitstop(0.08); return 'broken'; }
     p.st -= cost; p.stDelay = api.stDelay; stats.blocks++;
-    api.SFX.wardBlock(); api.hitstop(0.05); api.ringAt(p.x, p.y - 8, WARD.R, '#ff9a5c', 0.22); api.sparks(p.x + (Math.sign((f ? f.x : p.x + p.face) - p.x) || p.face) * 12, p.y - 8, Math.sign((f ? f.x : p.x + p.face) - p.x) || p.face, 7);
+    api.SFX.wardBlock(); api.hitstop(0.05); PA.fx('block', p.x, p.y - 8, api.time, { dir: Math.sign((f ? f.x : p.x + p.face) - p.x) || p.face }); api.sparks(p.x + (Math.sign((f ? f.x : p.x + p.face) - p.x) || p.face) * 12, p.y - 8, Math.sign((f ? f.x : p.x + p.face) - p.x) || p.face, 7);
     api.gainHeat(WARD.heatBlock);
     if (f && f.alive) { f.burn = Math.max(f.burn || 0, WARD.burn * 0.6); f.heatOwner = p; api.mark(f); }
     return 'blocked';
@@ -123,29 +124,18 @@ export function makeFlameWard(api) {
       if (api.burnHome && api.burnHome(s)) { parry(p, null); return; }   /* (claude/moorpyro) THE WINDCALLER's bolt is set alight and flies home */
       s.dead = true; stats.melted++; p.fwDid = true; api.SFX.emberMelt(); api.burst(s.x, s.y, 5, ['#ff9a5c', '#ffd36b', '#fff6c8'], 40, 0.3, -40, 1); api.smoke(s.x, s.y, 2, 3);
       if (p.fwT <= WARD.perfect) { parry(p, null); return; }
-      api.gainHeat(WARD.heatBlock); api.ringAt(p.x, p.y - 8, WARD.R, '#ff9a5c', 0.18);
+      api.gainHeat(WARD.heatBlock); PA.fx('block', p.x, p.y - 8, api.time, { dir: Math.sign(s.x - p.x) || p.face });
     }
   }
   const exposed = () => ((P().fwRec || 0) > 0 ? WARD.exposed : 1);
 
-  /* DRAWN (greybox until the art pass: scratch/lane-reports/pyrokit.md ART). THE WARD: a dome that blooms white-hot in its parry beat (a bright rim
+  /* DRAWN (the art pass, claude/pyroarttune: src/pyro-art.js). THE WARD: a dome that blooms white-hot in its parry beat (a bright rim
      while wardT <= perfect: the beat can be SEEN), then an orange shell with licks of flame, a red rim as it dies. A PARRY: a white flash ring.
      THE MISTIME: grey smoke ring and a grey bar over her head. THE COOLDOWN: a small ember pip under her feet that fills back. */
   function draw(g, cx, cy) {
     const p = P(); if (p.dead) return;
     const x = Math.round(p.x - cx), y = Math.round(p.y - cy) - 8, t = api.time, fl = (p.fwFlash || 0) / 0.3;
-    if (p.fwUp) {
-      const k = Math.min(1, p.fwT / WARD.t), beat = p.fwT <= WARD.perfect, R = Math.round(8 + (WARD.R - 8) * Math.min(1, p.fwT / 0.08));
-      const body = beat ? '#ffd36b' : k < 0.7 ? '#ff9a5c' : '#d8481c', rim = beat ? '#ffffff' : k < 0.7 ? '#ffd36b' : '#ff6b2c';
-      g.globalAlpha = 0.36 - 0.16 * k; g.fillStyle = body; g.beginPath(); g.arc(x, y, R, 0, Math.PI * 2); g.fill();
-      g.globalAlpha = beat ? 0.6 : 0.3; g.fillStyle = '#fff6c8'; g.beginPath(); g.arc(x, y, Math.max(2, Math.round(R * 0.35)), 0, Math.PI * 2); g.fill();
-      const N = 32;
-      for (let i = 0; i < N; i++) { const a = i / N * Math.PI * 2, lick = !beat && Math.sin(t * 41 + i * 2.1) > 0.2 ? 2 : 0, px = Math.round(x + Math.cos(a) * (R + lick)), py = Math.round(y + Math.sin(a) * (R + lick));
-        g.globalAlpha = 0.95; g.fillStyle = rim; g.fillRect(px, py, 1, 1); if (lick) { g.globalAlpha = 0.6; g.fillStyle = body; g.fillRect(px, py - 1, 1, 1); } }
-      g.globalAlpha = 1;
-    }
-    if (fl > 0) { const R = Math.round(WARD.R + 12 * (1 - fl)); g.globalAlpha = 0.45 * fl; g.fillStyle = '#ffffff'; g.beginPath(); g.arc(x, y, R, 0, Math.PI * 2); g.fill();
-      g.globalAlpha = fl; g.strokeStyle = '#fff6c8'; g.lineWidth = 1; g.beginPath(); g.arc(x, y, R, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1; }
+    if (p.fwUp) PA.dome(g, x, y, p.fwT, WARD, t);   /* (claude/pyroarttune) bloom -> white-hot parry beat -> orange shell with licks -> red gutter (src/pyro-art.js); the parry star / block ring / contact spark are fx the module draws after her */
     if ((p.fwFizz || 0) > 0) { const k = p.fwFizz / 0.4; g.globalAlpha = 0.6 * k; g.strokeStyle = '#8a8480'; g.lineWidth = 1; g.beginPath(); g.arc(x, y, Math.round(WARD.R - 8 + 4 * (1 - k)), 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1; }
     if ((p.fwRec || 0) > 0) { const w = 14, bx = x - 7, by = y - 24, f = p.fwRec / WARD.rec;
       g.fillStyle = '#1a0a04'; g.fillRect(bx - 1, by - 1, w + 2, 4); g.fillStyle = '#3a3430'; g.fillRect(bx, by, w, 2); g.fillStyle = '#8a8480'; g.fillRect(bx, by, Math.max(1, Math.round(w * f)), 2); }

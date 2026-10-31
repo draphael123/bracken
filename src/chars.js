@@ -1895,6 +1895,22 @@ function pyroKitPoses(F, up) {
       sparks: [[2, 13, 'y'], [-1, 15, 'r'], [4, 10, 'r'], [0, 18, 'y'], [-3, 16, 'r'], [-2, 12, 'y'], [-5, 14, 'y'], [-6, 17, 'r'], [27, 8, 'y'], [28, 13, 'r']] }),
     P({ lean: -2, dy: -1, bell: 3, hemW: 14, staff: up(), arm: [16, 10, 20, 7], arm2: [11, 10, 8, 8], cowl: 2, flick: 1,
       sparks: [[3, 5, 'r'], [24, 4, 'y'], [2, 11, 'y'], [25, 10, 'r'], [13, -2, 'y'], [6, 1, 'r'], [21, 0, 'r'], [4, 16, 'r'], [23, 16, 'y'], [9, -3, 'y'], [18, -4, 'r']] })];
+  /* ==== THE PYRO KIT'S POSES (claude/pyroarttune; the kit lane drew these with the cast/crouch frames). The dome, the ball and the flame crown are drawn over them (src/pyro-art.js).
+     WARD UP: the dome is raised off the free palm. 0 = the PARRY BEAT (first 0.15 s): both sleeves thrown out, the cowl blown back, the hem belled, sparks off the palms;
+     1 = held: braced wide and low, the staff slung behind, the palm pushed out flat; 2 = the ebb: the sleeves coming in, the cowl settling, the fire in the palm guttering. */
+  F.wardUp = [P({ bell: 2, hemW: 14, lean: 1, feet: [[8, 18], [18, 18]], staff: [9, 17, 10, 3, 'back'], arm: [16, 10, 22, 9], arm2: [11, 10, 5, 9], palm: [23, 9], cowl: 2, flick: 1, sparks: [[25, 6, 'y'], [26, 11, 'r'], [3, 6, 'y'], [2, 12, 'r'], [13, 1, 'y']] }),
+    P({ sit: 2, hemW: 13, lean: 2, feet: [[8, 18], [18, 18]], staff: [9, 17, 10, 3, 'back'], arm: [16, 12, 22, 11], arm2: [11, 12, 15, 13], palm: [23, 11], cowl: 1, flick: 0, trail: 2 }),
+    P({ sit: 2, hemW: 12, lean: 1, feet: [[9, 18], [17, 18]], staff: [9, 17, 10, 3, 'back'], arm: [16, 12, 20, 12], arm2: [11, 12, 14, 13], palm: [21, 12], cowl: 0, flick: 1, trail: 1 })];
+  /* HOLD THE BALL, STOOD: the staff levelled up and out ahead in both hands (the rear hand under the shaft, the front on the grip), its head - the ball's seat - at (25, 3). Two beats of the cage. */
+  const holdBody = o => P({ lean: 1, hemW: 11, staff: [12, 14, 25, 3], arm: [16, 10, 18, 9], arm2: [11, 11, 14, 13], cowl: 0, ...o });
+  F.holdStand = [holdBody({ feet: [[10, 18], [16, 18]], flick: 0 }), holdBody({ feet: [[10, 18], [16, 18]], flick: 1, sit: 1, trail: 1 })];
+  /* HOLD THE BALL, WALKING (half speed): her run's legs and bob, the cowl streaming, the same staff held out ahead so the ball never leaves its seat. */
+  F.holdWalk = [0, 1, 2, 3, 4, 5].map(i => holdBody({ dy: [0, -1, 0, 0, -1, 0][i], trail: 2 + (i % 3 === 1 ? 1 : 0), cowl: 1, flick: i % 2,
+    feet: [[[9, 18], [16, 17]], [[11, 18], [15, 18]], [[13, 17], [12, 18]], [[16, 17], [9, 18]], [[15, 18], [11, 18]], [[12, 18], [13, 17]]][i] }));
+  /* STOKE: down on her heels with the staff planted dead ahead in both fists, the head of it (21, 4) lit - the crown is drawn on it by the art module - and the cowl bowed over it.
+     Frame 1 draws the breath in: the shoulders a pixel lower, the hem belling. */
+  F.stoke = [P({ sit: 3, hemW: 13, lean: 1, feet: [[9, 18], [17, 18]], staff: [21, 19, 21, 4], arm: [16, 13, 20, 12], arm2: [11, 13, 20, 14], cowl: 0, flick: 0 }),
+    P({ sit: 4, hemW: 14, bell: 1, lean: 1, feet: [[8, 18], [18, 18]], staff: [21, 19, 21, 4], arm: [16, 14, 20, 13], arm2: [11, 14, 20, 15], cowl: 0, flick: 1, sparks: [[7, 16, 'r'], [19, 15, 'y']] })];
   riposteKit(F, 'pyro', P, { X: 19, Y: 13, OFF: [13, 13], up });
 }
 /* EVERY ABILITY HAS A BODY: THE PALADIN'S BOUGHT ACTIVES (lane P, 2026-09-24). Divine Shield played beside an idle paladin, Holy

@@ -98,6 +98,7 @@ import { DUCK_H, duckBox, duckClears, noteTell, noteRelease, blowHigh, blowLow, 
 import { isDev, setDev } from './dev-flag.js'; import * as HR from './hero-roster.js'; import { silhouetteOf } from './hero-silhouette.js';   /* (claude/heroroster) ?dev=1 gates UNLOCK EVERYTHING; the device-level hero roster; a locked hero's black silhouette */
 import { TABS as SET_TABS, tabRows, stepTab, isHeaderRow as isHeaderTab } from './settings-ui.js'; import * as CTL from './controls.js'; import { COOP_HELP_PAGES, SAVES_PAGE, coopTipDue, drawCoopHelp } from './coop-help.js';   /* SETTINGS IN TABS, REBINDING and THE CO-OP GUIDE (claude/storeui) */
 import * as WR from './world-react.js'; import * as UIH from './ui-hud.js'; import * as HINTS from './hints.js'; const toastQ = UIH.toastQueue(), uiFade = { coin: '', coinAt: -99, xp: '', xpAt: -99 };   /* UI POLISH A (claude/uihud): the one toast queue, the status icons, the idle fade, the graphics presets (src/ui-hud.js) */
+import * as PA from './pyro-art.js';   /* (claude/pyroarttune) THE PYRO KIT'S ART: the ward dome, the fireball sizes, the blast, the stoke crown, the burn-mark brand, the eruption and its word */
 import { makeFlameWard, WARD as FW_K } from './flame-ward.js';   /* THE FLAME WARD (claude/pyrokit): tap C, a 0.45 s dome of fire - a parry in its first 0.15 s, a block after, it burns what touches it (it replaced the down-held EMBER FLARE) */
 import { DK2, selfFloor as dkFloor, priceOf as dkPriceOf, rhythmStep as dkStep, cleaveMul as dkCleaveMul, dragDrain as dkDragDrain, rhythmBox as dkRhythmBox, crescentBox as dkCrescentBox, RHYTHM_NAMES as DK_RHYTHM } from './dk2.js';   /* (claude/dk2b) THE DEATH KNIGHT 2: the blood price, the drain, the rhythm, the grave kneel */
 import * as BKIT from './blood-kit.js';   /* (claude/bloodknight) THE BLOOD KNIGHT's BLOOD KIT: BLOOD DEBT, BLOOD PRICE, the five-tier heavy, BLOOD SPIKE (scratch/brief-bloodknight-1017.md 2-5) */
@@ -30466,7 +30467,7 @@ function fbTick(dt, keys, free, attacking) {
   if (st === 3 && Math.random() < dt * 20) { const tip = fbTip(); parts.push({ fire: true, x: tip.x + (Math.random() - 0.5) * 8, y: tip.y + (Math.random() - 0.5) * 8, vx: (Math.random() - 0.5) * 20, vy: -30, life: 0.3, max: 0.3, col: Math.random() < 0.5 ? '#ffd36b' : '#ff9a5c', size: 1, grav: -30 }); }
   if (P.cHeld >= F.steps[2] + F.readyMax) { castFireball(3); P.cMode = null; P.cHeld = 0; P.fbHold = 0; }   /* held READY too long: it goes */
 }
-const fbTip = () => ({ x: P.x + P.face * 9, y: P.y - 18 });   /* where the ball sits on the staff (greybox: the art pass gives the pose's tip) */
+const fbTip = () => ({ x: P.x + P.face * PA.TIP.hold[0], y: P.y + PA.TIP.hold[1] });   /* where the ball sits on the staff: the head of F.holdStand / F.holdWalk's staff (src/pyro-art.js TIP) */
 function fbFizzle() { SFX.emberFizzle(); const tip = fbTip(); smoke(tip.x, tip.y, 3, 5); number(P.x, P.y - 24, 'DROPPED', '#9aa39a'); }
 function castFireball(step) { noteVerb('cast');
   const F = PYRO_KIT.fb; if (P.dead || P.asleep > 0) return;
@@ -30485,7 +30486,7 @@ function castFireball(step) { noteVerb('cast');
 /* THE BIG ONE GOES OFF: a ring of fire; everything in it but the one it struck burns and is marked */
 function fbBoom(b, struck) {
   const F = PYRO_KIT.fb, sw = swordDmg(), hm = heatMul(); b.life = 0; if (b.boomed) return; b.boomed = true;
-  ringAt(b.x, b.y, F.boomR, '#ff6b2c', 0.4); ringAt(b.x, b.y, F.boomR * 0.6, '#ffd36b', 0.3); burst(b.x, b.y, 20, ['#fff6c8', '#ffd36b', '#ff9a5c', '#ff6b2c'], 110, 0.5, 60, 2); flame(b.x, b.y, 12, 10, 80, 3); smoke(b.x, b.y - 4, 4, 8);
+  PA.fx('blast', b.x, b.y, time); burst(b.x, b.y, 20, ['#fff6c8', '#ffd36b', '#ff9a5c', '#ff6b2c'], 110, 0.5, 60, 2); flame(b.x, b.y, 12, 10, 80, 3); smoke(b.x, b.y - 4, 4, 8);
   SFX.fbBoom(); hitstop(0.09); shakeCam(4); zoomKick(1.05, 0.15);
   for (const e of enemies) if (e.alive && !e.harmless && e !== struck && !b.hit.has(e) && Math.abs(e.x - b.x) < F.boomR + (e.w || 12) / 2 && Math.abs(e.y - (e.h || 16) / 2 - b.y) < F.boomR) { b.hit.add(e); hurtFire(e, sw * F.boomK * hm, b.x, { burn: 2, cls: 'heavy' }); flinch(e); }
   let gy = Math.floor(b.y / TS); for (let k = 0; k < 4 && !isSolid(Math.floor(b.x / TS), gy) && !isOneWay(tileAt(Math.floor(b.x / TS), gy)); k++) gy++;
@@ -30496,7 +30497,7 @@ function fbBoom(b, struck) {
 function fbHit(b, e) {
   const F = PYRO_KIT.fb, rk = e.t === 'ram' && !ramOpen(e) ? RLD.RAM.frontMul : 1; if (rk < 1) { SFX.clank(); number(e.x, e.y - e.h - 8, 'HIS HIDE TURNS IT', '#9aa39a'); }
   hurtFire(e, swordDmg() * F.k[b.fb] * heatMul() * rk, b.x, { burn: F.burn[b.fb], cls: b.fb >= 2 ? 'heavy' : 'light', tag: b.fb === 3 ? ['heavy', 'shot'] : 'shot' });
-  flinch(e); if (e.t === 'dummy') trialEvent('ember');
+  flinch(e); if (e.t === 'dummy') trialEvent('ember'); if (b.fb < 3) PA.fx('pop', b.x, b.y, time);
   if (b.fb === 3) fbBoom(b, e);
 }
 /* STOKE: down held still on the ground, nothing else asked of her, not hit - the bar fills, the staff glows. A move, a hit or any other key breaks it */
@@ -30516,7 +30517,7 @@ function castConflagration() { trialEvent('meter'); noteVerb('cast');
   const seen = e => e.x > camX - 24 && e.x < camX + VW + 24 && e.y > camY - 24 && e.y - (e.h || 16) < camY + VH + 24;
   const marked = enemies.filter(e => e.alive && !e.harmless && pyroMarked(e) && seen(e));
   SFX.conflag(); SFX.pyreBoom(); hitstop(0.11); zoomKick(1.1, 0.25); shakeCam(6); if (SET.flashes) killFlash = Math.max(killFlash, 0.04);
-  number(P.x, P.y - 34, 'CONFLAGRATION', '#ffd36b'); ringAt(P.x, P.y - 10, 26, '#fff6c8', 0.35); flame(P.x, P.y - 10, 12, 10, 80, 3); P.cfT = 0.5;
+  if (SET.numbers) PA.fx('word', P.x, P.y - 34, time, { txt: 'CONFLAGRATION' }); else number(P.x, P.y - 34, 'CONFLAGRATION', '#ffd36b'); PA.fx('blast', P.x, P.y - 10, time); ringAt(P.x, P.y - 10, 26, '#fff6c8', 0.35); flame(P.x, P.y - 10, 12, 10, 80, 3); P.cfT = 0.5;
   if (!marked.length) { number(P.x, P.y - 24, 'NOTHING MARKED', '#9aa39a'); ringAt(P.x, P.y - 8, C.noneR, '#ff9a5c', 0.35);
     for (const e of enemies) if (e.alive && !e.harmless && Math.abs(e.x - P.x) < C.noneR + (e.w || 12) / 2 && Math.abs(e.y - P.y) < 40) hurtFire(e, sw * C.kNone * hm, P.x, { burn: 1.5, cls: 'heavy' });
     P.heat = 0; return 0; }
@@ -30527,7 +30528,7 @@ function castConflagration() { trialEvent('meter'); noteVerb('cast');
 }
 function conflagErupt(e, sw, hm, splashed) {
   const C = PYRO_KIT.cf, h = e.h || 16, cy = e.y - h / 2, isBoss = e === boss, isMini = !isBoss && !!e.maxHp;
-  ringAt(e.x, cy, 36, '#ff6b2c', 0.45); ringAt(e.x, cy, 20, '#ffd36b', 0.3); flame(e.x, cy, 14, 12, 90, 3); burst(e.x, cy, 18, ['#fff6c8', '#ffd36b', '#ff9a5c', '#ff6b2c'], 110, 0.5, 40, 2); streaks(e.x, cy, 8, ['#fff6c8', '#ffd36b'], 200);
+  PA.fx('erupt', e.x, e.y + 2, time, { v: isBoss ? 2 : (isMini || h > 22) ? 1 : 0 }); ringAt(e.x, cy, 36, '#ff6b2c', 0.25); flame(e.x, cy, 14, 12, 90, 3); burst(e.x, cy, 18, ['#fff6c8', '#ffd36b', '#ff9a5c', '#ff6b2c'], 110, 0.5, 40, 2); streaks(e.x, cy, 8, ['#fff6c8', '#ffd36b'], 200);
   if (isBoss) {
     if (!(e.rpWardT > 0) && !(e.broken > 0)) { e.rpOpenT = e.rpOpenMax = C.open; e.stagger = Math.max(e.stagger || 0, 0.6); e.flash = 0.25; number(e.x, e.y - h - 18, 'SCORCHED OPEN', '#ffd36b'); ringAt(e.x, cy, 30, '#ffd36b', 0.5); }
     else number(e.x, e.y - h - 18, 'WARDED', '#d8e2ee');
@@ -30538,17 +30539,14 @@ function conflagErupt(e, sw, hm, splashed) {
 }
 /* DRAWN (greybox until the art pass): THE BALL on the staff growing a ring a step, READY pulsing white; THE STOKE glow at the staff; THE BURN MARKS
    on her marked foes (a small flame brand over the head, blinking in its last second and a half) */
-function drawPyroKit(g, cx, cy) {
+function drawPyroKit(g, cx, cy) {   /* (claude/pyroarttune) the art pass: src/pyro-art.js draws the ball, the crown, the brand and the effects below */
+  PA.drawFx(g, cx, cy, time, SET.flashes && !SET.reduceMotion);
   if (P.dead) return;
-  if (P.cMode === 'fb' && P.fbHold > 0) { const tip = fbTip(), x = Math.round(tip.x - cx), y = Math.round(tip.y - cy), st = P.fbHold, r = [0, 2, 3, 5][st], pulse = st === 3 ? 0.5 + 0.5 * Math.sin(time * 14) : 0;
-    g.globalAlpha = 0.35 + 0.25 * pulse; g.fillStyle = '#ff9a5c'; g.beginPath(); g.arc(x, y, r + 3, 0, Math.PI * 2); g.fill();
-    g.globalAlpha = 1; g.fillStyle = st === 3 ? '#fff6c8' : '#ffd36b'; g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fill();
-    for (let i = 0; i < st; i++) { g.globalAlpha = 0.7; g.strokeStyle = i === 2 ? '#ffffff' : '#ffd36b'; g.lineWidth = 1; g.beginPath(); g.arc(x, y, r + 5 + i * 3 + pulse * 2, 0, Math.PI * 2); g.stroke(); }
-    g.globalAlpha = 1; }
-  if (P.stoking) { const tip = fbTip(), x = Math.round(tip.x - cx), y = Math.round(P.y - 10 - cy), k = 0.5 + 0.5 * Math.sin(time * 8); g.globalAlpha = 0.25 + 0.2 * k; g.fillStyle = '#ffd36b'; g.beginPath(); g.arc(x, y, 4 + k * 2 + (P.heat || 0) / 40, 0, Math.PI * 2); g.fill(); g.globalAlpha = 1; }
-  for (const e of enemies) { if (!e.alive || !pyroMarked(e)) continue; const left = PYRO_KIT.cf.markLife - (time - e.pyMarkAt); if (left < 1.5 && Math.floor(time * 8) % 2) continue;
-    const x = Math.round(e.x - cx), y = Math.round(e.y - (e.h || 16) - cy) - 7, f = Math.floor(time * 6) % 2;
-    g.fillStyle = '#3a1408'; g.fillRect(x - 2, y - 1, 5, 7); g.fillStyle = '#ff6b2c'; g.fillRect(x - 1, y + 1, 3, 4); g.fillStyle = '#ffd36b'; g.fillRect(x, y + f, 1, 3); g.fillRect(x - 1, y + 3, 3, 1); }
+  if (P.cMode === 'fb' && P.fbHold > 0) { const tip = fbTip(), st = P.fbHold, F = PYRO_KIT.fb, lo = F.steps[st - 1], hi = st < 3 ? F.steps[st] : lo, prog = st < 3 ? Math.max(0, Math.min(1, ((P.cHeld || 0) - lo) / (hi - lo))) : 0;
+    PA.held(g, Math.round(tip.x - cx), Math.round(tip.y - cy), st, prog, time); }
+  if (P.stoking) PA.stoke(g, Math.round(P.x + P.face * PA.TIP.stoke[0] - cx), Math.round(P.y + PA.TIP.stoke[1] - cy), P.heat || 0, time);
+  for (const e of enemies) { if (!e.alive || !pyroMarked(e)) continue; const left = PYRO_KIT.cf.markLife - (time - e.pyMarkAt);
+    PA.brand(g, Math.round(e.x - cx), Math.round(e.y - (e.h || 16) - cy) - 2, time, left); }
 }
 function pyreBurst(b) {
   if (b.done) return; b.done = true; b.life = 0;
@@ -33697,7 +33695,8 @@ function drawWorld(cx, cy, showPlayer) {
     g.fillStyle = '#ff9a5c'; g.beginPath(); g.arc(x, y, 7 + pulse * 0.5, 0, Math.PI * 2); g.fill();
     g.fillStyle = '#ffd36b'; g.beginPath(); g.arc(x + b.dir, y, 5, 0, Math.PI * 2); g.fill();
     g.fillStyle = '#fff6c8'; g.beginPath(); g.arc(x + b.dir * 2, y - 1, 2.5, 0, Math.PI * 2); g.fill(); }
-  for (const b of embers) { const r = b.fb ? [0, 4, 6, 9][b.fb] : 4; g.fillStyle = '#ff6b2c'; g.beginPath(); g.arc(Math.round(b.x - cx), Math.round(b.y - cy), r, 0, 7); g.fill(); g.fillStyle = '#ffd36b'; g.beginPath(); g.arc(Math.round(b.x - cx) - 1, Math.round(b.y - cy) - 1, Math.max(2, Math.round(r * 0.55)), 0, 7); g.fill(); if (b.fb === 3) { g.fillStyle = '#fff6c8'; g.beginPath(); g.arc(Math.round(b.x - cx) - 1, Math.round(b.y - cy) - 1, 3, 0, 7); g.fill(); } }   /* (claude/pyrokit) the held fireball's three sizes (greybox: the art pass) */
+  for (const b of embers) { if (b.fb) { PA.ball(g, Math.round(b.x - cx), Math.round(b.y - cy), b.fb, b.vx, time); continue; }   /* (claude/pyroarttune) the held fireball's three sizes, with tails (src/pyro-art.js) */
+    const r = b.fb ? [0, 4, 6, 9][b.fb] : 4; g.fillStyle = '#ff6b2c'; g.beginPath(); g.arc(Math.round(b.x - cx), Math.round(b.y - cy), r, 0, 7); g.fill(); g.fillStyle = '#ffd36b'; g.beginPath(); g.arc(Math.round(b.x - cx) - 1, Math.round(b.y - cy) - 1, Math.max(2, Math.round(r * 0.55)), 0, 7); g.fill(); if (b.fb === 3) { g.fillStyle = '#fff6c8'; g.beginPath(); g.arc(Math.round(b.x - cx) - 1, Math.round(b.y - cy) - 1, 3, 0, 7); g.fill(); } }   /* (claude/pyrokit) the held fireball's three sizes (greybox: the art pass) */
   for (const b of bombs) if (b.flask) g.drawImage(UW_FLASK, Math.round(b.x - 3 - cx), Math.round(b.y - 8 - cy)); else if (b.dyn) { g.drawImage(DF2_CHARGE, Math.round(b.x - 5 - cx), Math.round(b.y - 6 - cy)); if (Math.random() < 0.5) { g.fillStyle = Math.random() < 0.5 ? '#fff2a0' : '#ff9a3a'; g.fillRect(Math.round(b.x + 4 - cx), Math.round(b.y - 8 - cy), 1, 1); }
     if (b.vy === 0) { g.strokeStyle = Math.floor(time * (b.fuse < 0.5 ? 16 : 8)) % 2 ? '#ff6b6b' : '#fff6e0'; g.lineWidth = 1; g.beginPath(); g.arc(Math.round(b.x - cx), Math.round(b.y - 2 - cy), DYN.ring, Math.PI, Math.PI * 2); g.stroke(); } }   /* THE DYNAMITE BANDIT's stick on the ground: the red ring is the blast (claude/desertfoes) */
   else if (b.barrel) { g.save(); g.translate(Math.round(b.x - cx), Math.round(b.y - 7 - cy)); g.rotate(time * 7); g.drawImage(PROP.barrel, -6, -7); g.restore(); } else drawSet(SPR.bomb, null, 0, b.x - cx, b.y - 2 - cy, 1, Math.floor(time * 10) % 2 === 0 && b.fuse < 0.5);
@@ -34340,8 +34339,11 @@ function drawWorld(cx, cy, showPlayer) {
         P.swimTiltA = (P.swimTiltA || 0) + (targetTilt - (P.swimTiltA || 0)) * Math.min(1, SWIM_TILT_EASE / 60);
         swimRot = Math.round(P.swimTiltA / SWIM_TILT_STEP) * SWIM_TILT_STEP; }
       else if (!P.ground) { P.nearFloor = P.vy > 140 && solidish(Math.floor(P.x / TS), Math.floor((P.y + 7) / TS)); [key, frame] = airPose(P, K.R); }   /* (nearFloor: art only - the BRACE a beat before the ground, claude/herokeys) the arc, with a take-off where the hero has one (hero-poses.js) */
-      else if (isPyro() && P.fwUp && K.R.cast) { key = 'cast'; frame = Math.floor(time * 12) % 2; }   /* (claude/pyrokit) THE FLAME WARD: palm out while it burns (placeholder: the cast frames - the art pass draws a WARD pose) */
-      else if (isPyro() && P.cMode === 'fb' && P.fbHold > 0 && Math.abs(P.vx) <= 10 && K.R.cast) { key = 'cast'; frame = 0; }   /* (claude/pyrokit) THE HELD FIREBALL, stood: the cast's raised palm held (placeholder; walking with it is the run - the art pass draws HOLD + WALK-WHILE-HOLDING) */
+      else if (isPyro() && P.fwUp && K.R.wardUp) { key = 'wardUp'; frame = P.fwT <= FW_K.perfect ? 0 : P.fwT >= FW_K.t * 0.72 ? 2 : 1; }   /* (claude/pyroarttune) THE FLAME WARD: the parry beat throws both sleeves out, then braced with the palm out, then the ebb (src/chars.js F.wardUp) */
+      else if (isPyro() && P.fwUp && K.R.cast) { key = 'cast'; frame = Math.floor(time * 12) % 2; }
+      else if (isPyro() && P.cMode === 'fb' && P.fbHold > 0 && K.R.holdStand) { if (Math.abs(P.vx) <= 10) { key = 'holdStand'; frame = Math.floor(time * 6) % 2; } else { key = 'holdWalk'; frame = Math.floor(P.anim * 13) % 6; } }   /* (claude/pyroarttune) THE HELD FIREBALL: the staff out ahead with the ball on its head, stood or walking (F.holdStand / F.holdWalk) */
+      else if (isPyro() && P.cMode === 'fb' && P.fbHold > 0 && Math.abs(P.vx) <= 10 && K.R.cast) { key = 'cast'; frame = 0; }
+      else if (isPyro() && P.stoking && K.R.stoke) { key = 'stoke'; frame = Math.floor(time * 2.2) % 2; }   /* (claude/pyroarttune) STOKE: down on her heels, the staff planted in both fists (F.stoke) */   /* (claude/pyrokit) THE HELD FIREBALL, stood: the cast's raised palm held (placeholder; walking with it is the run - the art pass draws HOLD + WALK-WHILE-HOLDING) */
       else if (CRB && CRB.pose(K.R)) { [key, frame] = CRB.pose(K.R); }
       else if (CRC && CRC.pose(K.R)) { [key, frame] = CRC.pose(K.R); }   /* THE COIL and THE WHETSTONE (src/crouch-c.js) */   /* KNEEL / SENSE / HARVEST (src/crouch-b.js): the crouch at work */
       else if (P.ducking || (keys.down && Math.abs(P.vx) < 10)) { key = 'crouch'; const ca = CA && P.ducking ? CA.crouchPose(K.R) : null; if (ca) [key, frame] = ca; }   /* the pose is the hurt box: crouched is DUCK_H tall (src/duck.js) */
