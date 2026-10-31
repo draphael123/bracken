@@ -738,6 +738,7 @@ export const STUCK_HANDS = {
     /* (deeprails5 #4) THE PARKED CARTS: each glints until you are in it (src/minecart-hands.js handsState board.<id>: out / in) - the first (THE WRECK's) at once, where it is taught */
     { id: 'mc-board-wreck', zone: [664, 28, 676, 38], steps: [ { key: 'boardWreck', is: ['board.wreck', 'out'], at: [674, 36], line: 'THE PARKED CART: JUMP INTO IT AND ITS GATE OPENS' } ] },
     { id: 'mc-board-lift', zone: [774, 18, 785, 28], steps: [ { key: 'boardLift', is: ['board.lift', 'out'], at: [783, 26], glint: 'stall', line: 'THE PARKED CART: JUMP INTO IT' } ] },
+    { id: 'mc-bore', zone: [1288, 20, 1312, 34], steps: [ { key: 'boreFork', is: ['points.boreFork', 'set'], at: [1298, 29], line: 'THE HIGH LINE IS TORN: STRIKE THE POINTS LEVER TO OPEN THEM AND DROP LOW' } ] },   /* (deeprails6) THE LEADING BORE's torn points: glint until OPEN */
     { id: 'mc-board-pits', zone: [1232, 22, 1241, 31], steps: [ { key: 'boardPits', is: ['board.pits', 'out'], at: [1240, 29], glint: 'stall', line: 'THE PARKED CART: JUMP INTO IT' } ] },   /* (claude/forgemaster: the spoil pits' cart waits past THE FORGE now) */
     /* (claude/forgemaster) THE SMELTER FLOOR's plugs: the teach's lever glints at once (the required use) until its plug is broken; the exam's after a stall (src/forge-rails.js state forge.<plug>: shut / open) */
     { id: 'mc-forge-teach', zone: [1062, 18, 1087, 31], steps: [ { key: 'forgeTeach', is: ['forge.pTeach', 'shut'], at: [1069, 29], line: 'THE JUNCTION LEVER: STRIKE IT, AND THE NEXT CART DROPS INTO THE PLUG' } ] },

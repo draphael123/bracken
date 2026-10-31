@@ -33,6 +33,7 @@
 //   758-785  THE LIFT          ON FOOT  the line ends at a cage lift: up ten rows on foot, a cart waits at the top
 //   786-899  THE FLOODED RUN   EXAM     over black water, real deaths: the junction under the pair, a deep gap, THE FOREMAN - THE MINI (deeprails3, src/foreman.js:
 //                                      an endless loop, his armoured cart shuttles; jump on it and stomp him, three boardings), duck + switch, the last deep gap
+//   (deeprails6) 1286-1355 THE LEADING BORE (on the cart, before the bore's mouth): the torn high line - OPEN the points; rock, beam, navvy; the fork exam. Drill at 1378.
 //   900-959  THE SMELTER       the points that want 8 ore (silver three); THE BORE, the drill's own tunnel (it sets him up)
 //   960-     THE GREAT DRILL   BOSS     src/great-drill.js (a goblin in a drill rig, an endless chase tunnel: ram an ore cart into its gears)
 import { stageDrill, DRILL_STAGE } from './great-drill.js';
@@ -88,8 +89,8 @@ export function cartSpeed(v, keys, dt) {
 /* A LAUNCH RAMP's flight from its lip (px, same height both sides): what a pace v carries */
 export const rampFlight = v => { const vy = MC.rampV0 + MC.rampK * v; return v * (2 * vy / 1000); };
 
-export const MINE = { W: 1348, H: 52, base: 30 };   /* (claude/forgemaster: 1170 -> 1348, THE SMELTER FLOOR and THE FORGE went in after the spoil pits, 178 columns) */   /* (deeprails5: 1070 -> 1170, THE SPOIL PITS went in after the flooded run) */
-export const SECTIONS = [['THE LAMP YARD', 0], ['THE DARK DRIFT', 171], ['THE GOBLIN LINE', 310], ['THE GLOW CAVERN', 472], ['THE WRECK', 625], ['THE CRUSHER WORKS', 676], ['THE LIFT', 758], ['THE TWIN LINES', 786], ['THE FLOODED RUN', 856], ['THE SPOIL PITS', 970], ['THE SMELTER FLOOR', 1062], ['THE FORGE', 1180], ['THE SMELTER', 1248], ['THE GREAT DRILL', 1308]];
+export const MINE = { W: 1418, H: 52, base: 30 };   /* (deeprails6: 1348 -> 1418, THE LEADING BORE went in between the smelter and the bore's mouth, 70 columns) */   /* (claude/forgemaster: 1170 -> 1348, THE SMELTER FLOOR and THE FORGE went in after the spoil pits, 178 columns) */   /* (deeprails5: 1070 -> 1170, THE SPOIL PITS went in after the flooded run) */
+export const SECTIONS = [['THE LAMP YARD', 0], ['THE DARK DRIFT', 171], ['THE GOBLIN LINE', 310], ['THE GLOW CAVERN', 472], ['THE WRECK', 625], ['THE CRUSHER WORKS', 676], ['THE LIFT', 758], ['THE TWIN LINES', 786], ['THE FLOODED RUN', 856], ['THE SPOIL PITS', 970], ['THE SMELTER FLOOR', 1062], ['THE FORGE', 1180], ['THE SMELTER', 1248], ['THE LEADING BORE', 1286], ['THE GREAT DRILL', 1378]];
 /* THE ON-FOOT STRETCHES (Daniel 10-09: mostly cart, plus two short stretches on foot on big platforms): from x0 the hero is out of the cart, from board he is back in one */
 export const FOOT = [{ id: 'wreck', name: 'THE WRECK', x0: 632, board: 674, derail: true }, { id: 'lift', name: 'THE LIFT', x0: 763, board: 783 }, { id: 'pits', name: 'THE SPOIL PITS', x0: 974, board: 1240 }];   /* (deeprails5) the third: THE SPOIL PITS */
 /* (deeprails5, Daniel 10-14 #4) THE HAND-OFF: at the end of every on-foot stretch its cart stands PARKED on the rail (board) and a GATE shuts the line just past its nose (gateCol, drawn) -
@@ -97,15 +98,16 @@ export const FOOT = [{ id: 'wreck', name: 'THE WRECK', x0: 632, board: 674, dera
 export const gateX = (f, TS = 16) => (f.board + 1) * TS + 6;
 /* each mechanic's arc (columns): TAUGHT, TESTED, REMIXED, EXAMINED - read by tools/minecart.mjs */
 export const ARCS = {
-  points: { teach: [118, 160], test: [186, 256], remix: [538, 552], exam: [859, 870], boss: [1308, 1338] },   /* the fallen-in low line; fork A in the dark; the junction at speed in the cave-in; the exam's junction */
-  speed: { teach: [52, 112], test: [314, 338], remix: [592, 624], exam: [883, 952], boss: [1308, 1338] },     /* the pump gap and the first crusher; THE RAIL BREAKS; the lava ramp; the exam's deep gaps */
-  combat: { teach: [76, 90], test: [340, 440], remix: [690, 750], exam: [892, 921], boss: [1308, 1338] },    /* the miner rammed; the thrower, the rider, the caster, the slow cart, the perched goblin; the works' swinging rider; THE FOREMAN (the mini) */
-  switch: { teach: [143, 163], test: [172, 189], remix: [748, 763], exam: [927, 943], boss: [1308, 1338] },
+  points: { teach: [118, 160], test: [186, 256], remix: [538, 552], exam: [859, 870], boss: [1378, 1408] },   /* the fallen-in low line; fork A in the dark; the junction at speed in the cave-in; the exam's junction */
+  speed: { teach: [52, 112], test: [314, 338], remix: [592, 624], exam: [883, 952], boss: [1378, 1408] },     /* the pump gap and the first crusher; THE RAIL BREAKS; the lava ramp; the exam's deep gaps */
+  combat: { teach: [76, 90], test: [340, 440], remix: [690, 750], exam: [892, 921], boss: [1378, 1408] },    /* the miner rammed; the thrower, the rider, the caster, the slow cart, the perched goblin; the works' swinging rider; THE FOREMAN (the mini) */
+  switch: { teach: [143, 163], test: [172, 189], remix: [748, 763], exam: [927, 943], boss: [1378, 1408] },
   pits: { teach: [976, 999], test: [1000, 1012], remix: [1013, 1028], exam: [1029, 1056] },   /* (deeprails5) THE SPOIL PITS on foot: high or low, the pits, the spoil, the crushers over the catwalk (A14) */
   forge: { teach: [1064, 1093], test: [1095, 1121], remix: [1123, 1150], exam: [1152, 1176], boss: [1181, 1238] },   /* (claude/forgemaster) THE SMELTER FLOOR's junction levers: a cart dropped into a plug, onto a brute, back at the loader, past the elite through the last plug; THE FORGEMASTER */
-  sides: { teach: [790, 800], test: [804, 814], remix: [830, 841], exam: [859, 882], boss: [1308, 1338] },   /* (deeprails4) SWITCH SIDES: THE TWIN LINES' three splits (high: a gap, low: a beam) and the flooded run's fork; the drill's three lines */   /* (deeprails3) DUCK + SWITCH under a low roof: the yard's tunnel, the dark, off the works' deep gap, over the flood; the drill's chute points */
+  bore: { teach: [1286, 1303], test: [1304, 1331], exam: [1332, 1355] },   /* (deeprails6) THE LEADING BORE: the torn high line (open the points, REQUIRED), the low line's rock, beam, navvy; the fork exam (A14) */
+  sides: { teach: [790, 800], test: [804, 814], remix: [830, 841], exam: [859, 882], boss: [1378, 1408] },   /* (deeprails4) SWITCH SIDES: THE TWIN LINES' three splits (high: a gap, low: a beam) and the flooded run's fork; the drill's three lines */   /* (deeprails3) DUCK + SWITCH under a low roof: the yard's tunnel, the dark, off the works' deep gap, over the flood; the drill's chute points */
 };
-export const ARENA_X = 1308;   /* (claude/forgemaster: -> 1308, THE SMELTER FLOOR and THE FORGE before the smelter's points) */   /* (deeprails4: 960 -> 1030, THE TWIN LINES went in before the flooded run; deeprails5: -> 1130, THE SPOIL PITS after it) */
+export const ARENA_X = 1378;   /* (deeprails6: 1308 -> 1378, THE LEADING BORE) */   /* (claude/forgemaster: -> 1308, THE SMELTER FLOOR and THE FORGE before the smelter's points) */   /* (deeprails4: 960 -> 1030, THE TWIN LINES went in before the flooded run; deeprails5: -> 1130, THE SPOIL PITS after it) */
 /* THE TELLS' LINES (review MF1): every tell() says one of these - five words or fewer (src/hint-lines.js routes them to the hint box) */
 export const TELL_LINES = ['A GAP AHEAD: JUMP', 'LOW BEAM: HOLD DOWN', 'LONG GAP: PUMP, THEN JUMP', 'MINER ON THE LINE: RAM', 'CRUSHER: BRAKE FOR ITS BEAT', 'POINTS: STRIKE TO STAY HIGH',
   'DUCK, THEN STRIKE THE SWITCH', 'DARK: DUCK, THEN THE SWITCH', 'FORK: ORE UP, CRUSHERS DOWN', 'THE RAIL BREAKS: PUMP!', 'ROCKFALL: BRAKE OR PUMP', 'THROWER: BRAKE OFF HIS MARK',
@@ -113,7 +115,8 @@ export const TELL_LINES = ['A GAP AHEAD: JUMP', 'LOW BEAM: HOLD DOWN', 'LONG GAP
   'SET THE POINTS, THEN PUMP', 'A RAMP: PUMP, THEN FLY', 'BUFFER AHEAD: YOU DERAIL', 'TWO CRUSHERS, OFF THE BEAT', 'A GATE: WATCH ITS GAUGE', 'DEEP GAP, THEN DUCK, SWITCH',
   'BRIDGE OUT, THEN THE LIFT', 'HIGH: JUMP. LOW: DUCK', 'RAIDERS ALONGSIDE: RAM OR STRIKE', 'HIGH CRUSHER, LOW GATE', 'DEEP GAP: PUMP AND JUMP', 'THE FOREMAN: JUMP ON HIM', 'DUCK, SWITCH, PUMP, JUMP', 'THE SMELTER WANTS 8 ORE', 'SOMETHING BORES TOWARD YOU',
   /* (deeprails5) */ 'A CART: JUMP INTO IT', 'THE LINE ENDS: ON FOOT', 'THE DEEP PITS KILL',
-  /* (claude/forgemaster) */ 'POINTS DROP A CART: STRIKE', 'A CART RUNS HIM DOWN', 'LOADER: JUMP HIS CARTS', 'THE SLAG GUTTER KILLS', 'SEND THE SMITH A CART'];
+  /* (claude/forgemaster) */ 'POINTS DROP A CART: STRIKE', 'A CART RUNS HIM DOWN', 'LOADER: JUMP HIS CARTS', 'THE SLAG GUTTER KILLS', 'SEND THE SMITH A CART',
+  /* (deeprails6) */ 'HIGH LINE TORN: OPEN POINTS', 'FORK: GAP HIGH, CRUSHER LOW'];
 
 export function buildMinecart({ painter, T, TS }) {
   const { W, H } = MINE;
@@ -528,8 +531,8 @@ export function buildMinecart({ painter, T, TS }) {
     sign(S + 175, D - 1, 'A CART WAITS: JUMP INTO IT AND THE GATE OPENS.');
     ent('mccart', FOOT[2].board, D - 1, {}); }
   // ================= 9. THE SMELTER (1248-1307), row 30: 8 ore open its points (silver three); THE BORE =================
-  ground(1248, 1262, B); ground(1286, 1307, B);
-  station(1288, 29);                                                        /* STATION NINE (claude/bossheal 10-30, Daniel: a shrine before every boss): the bore's mouth, the Great Drill's wall nineteen columns on */
+  ground(1248, 1262, B); ground(1356, 1377, B);
+  station(1358, 29);                                                        /* STATION NINE (claude/bossheal 10-30, Daniel: a shrine before every boss): the bore's mouth, the Great Drill's wall nineteen columns on (deeprails6: 1288 -> 1358, moved to the end of THE LEADING BORE - moved, not added: A10b, 181 route tiles after station eight) */
   tell(1239, 1260, 'THE SMELTER WANTS 8 ORE');
   sign(1256, B - 1, 'THE SMELTER: CARRY 8 ORE AND ITS POINTS WILL OPEN.'); rail(1248, 1259, B - 3); foe('bat', 1264, B - 2, { squad: 'smBat' });
   lever('smelter', 1260, B, 1263, 1267, B, 'set', { ore: 8, label: 'THE SMELTER: 8 ORE OPEN THESE POINTS' });
@@ -537,17 +540,50 @@ export function buildMinecart({ painter, T, TS }) {
   block(1263, 1278, B + 7, H - 1); track.push([1263, 1278, B + 7]); interiors.push([1263, 1285, B + 1, B + 6, 'smelter']);
   { let tt = B + 7; for (let i = 0; i < 7; i++) { set(1279 + i, tt - 1, T.SLOPE_R1); block(1279 + i, 1279 + i, tt, H - 1); tt--; } track.push([1279, 1285, B, 'slope']); }
   ent('silver', 1272, B + 6); decor.push({ kind: 'smelter', x: 1270, row: B + 7 });
-  decor.push({ kind: 'bore', x0: 1288, x1: 1307, row: B });
-  /* THE APPROACH SETS HIM UP (B8): its bore SCARS in the rock from the flooded run on (round, fresh, getting bigger), fresh spoil on the line, then from 1273 the
+  // ================= 9b. THE LEADING BORE (1286-1355), ON THE CART (claude/deeprails6, Daniel 10-29 #5: 'a new section between the Forgemaster and the Great Drill') =================
+  /* The ore line drops off the smelter into THE DRILL'S OWN TUNNEL: its fresh cutting scars in the walls, its spoil, its glow ahead. Two lines: the HIGH (row 30, the
+     smelter's rail run on, on trestles) and the LOW (row 33, the bore's floor). ONE VERB carried over, THE POINTS, with a twist: here the high line - the one the points
+     keep you on - is TORN (the roof down on it, rubble to the rock), so you must OPEN them and drop (REQUIRED, signed + told + glint). TEACH (the torn points, a crash is
+     cheap: back before them), TEST on the low line (a rockfall told by shadow, a duck beam under the cutting scars, a navvy on the line to ram, a bone-chucker on a ledge),
+     EXAM (A14: the line forks - HIGH: a rail gap to jump with a bat in it; LOW: a crusher to brake for and an elite navvy to ram - a bone-chucker over the merge), then
+     STATION NINE (moved here) and the bore's mouth. No goblins (house rule 'theme fit', and the brief): navvies (miner AI), bone-chuckers (rock-thrower AI), bats */
+  { const BS = 1286, BH = B, BL = B + 3;
+    ground(BS, BS + 9, BH);
+    sign(BS + 1, BH - 1, 'THE LEADING BORE. THE DRILL TORE ITS HIGH LINE: STRIKE THE POINTS TO OPEN THEM, AND DROP TO THE LOW LINE.');
+    tell(BS - 16, BS + 14, 'HIGH LINE TORN: OPEN POINTS');
+    rail(BS + 10, BS + 26, BH);                                              /* the high line (the smelter's rail run on) */
+    lever('boreFork', BS + 12, BH, BS + 14, BS + 17, BH, 'set', { label: 'THE HIGH LINE IS TORN: OPEN THE POINTS AND DROP LOW', retry: [BS + 4, BH - 1], req: true, want: 'open' });
+    fallIn(BS + 25, BH, [BS + 4, BH - 1]); block(BS + 25, BS + 26, BH - 9, BH - 3); decor.push({ kind: 'torn', x0: BS + 18, x1: BS + 26, row: BH });   /* TORN: rubble from the rail to the rock (no jump clears it) */
+    ground(BS + 10, BS + 57, BL);                                            /* the low line: the bore's floor */
+    /* TEST (1304-1331) on the low line */
+    tell(BS + 4, BS + 29, 'ROCKFALL: BRAKE OR PUMP');
+    rock('boreRock', BS + 20, BS + 29, BL);
+    foe('bat', BS + 33, BL - 3, { squad: 'boreBat' });
+    beam(BS + 38, BS + 39, BL);                                              /* under the drill's cutting scars */
+    block(BS + 40, BS + 43, BL - 6, BL - 6); decor.push({ kind: 'ledge', x0: BS + 40, x1: BS + 43, row: BL - 6 });
+    foe('rockgoblin', BS + 42, BL - 7, { squad: 'boreChucker', cnSkin: 'bonechucker' });
+    foe('miner', BS + 47, BL - 1, { squad: 'boreNavvy', cnSkin: 'navvy' });   /* on the line: pump and ram him */
+    /* EXAM (1332-1355): THE FORK - high and low, a different thing on each */
+    tell(BS + 24, BS + 52, 'FORK: GAP HIGH, CRUSHER LOW');
+    sign(BS + 45, BL - 1, 'THE BORE FORKS. JUMP UP TO THE HIGH LINE: A GAP. STAY LOW: A CRUSHER AND A NAVVY.');
+    rail(BS + 49, BS + 53, BH); rail(BS + 57, BS + 61, BH);               /* HIGH: a three-wide gap in its rail (a fall drops you to the low line) */
+    foe('bat', BS + 55, BH - 3, { squad: 'boreExBat' });
+    crusher('boreEx', BS + 52, BL, 2.4, 0.9, 0.4);                          /* LOW: a crusher, then the elite on the line */
+    foe('miner', BS + 56, BL - 1, { squad: 'boreElite', cnSkin: 'navvy', elite: true });
+    rise(BS + 58, BL, 3); ground(BS + 64, BS + 69, BH);                      /* the lines meet at the bore's mouth */
+    block(BS + 61, BS + 64, BH - 6, BH - 6); decor.push({ kind: 'ledge', x0: BS + 61, x1: BS + 64, row: BH - 6 });
+    foe('rockgoblin', BS + 63, BH - 7, { squad: 'boreChucker2', cnSkin: 'bonechucker' }); }
+  decor.push({ kind: 'bore', x0: 1358, x1: 1377, row: B });
+  /* THE APPROACH SETS HIM UP (B8): its bore SCARS in the rock from the flooded run on (round, fresh, getting bigger), fresh spoil on the line, then from 1343 the
      roof SHAKES and dusts on a beat that quickens, a rumble under it, and its HEADLIGHT flickers through the rock at the end of the bore */
-  for (const [x, r] of [[932, 7], [954, 9], [1004, 10], [1046, 10], [1254, 11], [1276, 14], [1294, 18]]) decor.push({ kind: 'scar', x, row: B - 4, r });
-  decor.push({ kind: 'spoil', x0: 1287, x1: 1306, row: B }); decor.push({ kind: 'rumble', x0: 1273, x1: 1316, row: B }); decor.push({ kind: 'headlight', x: 1310, row: B - 4 });
-  tell(1278, 1306, 'SOMETHING BORES TOWARD YOU');
-  sign(1290, B - 1, 'SOMETHING BIG BORED THESE TUNNELS. LISTEN.');
+  for (const [x, r] of [[932, 7], [954, 9], [1004, 10], [1046, 10], [1254, 11], [1276, 14], [1300, 14], [1322, 15], [1340, 16], [1364, 18]]) decor.push({ kind: 'scar', x, row: B - 4, r });
+  decor.push({ kind: 'spoil', x0: 1357, x1: 1376, row: B }); decor.push({ kind: 'rumble', x0: 1343, x1: 1386, row: B }); decor.push({ kind: 'headlight', x: 1380, row: B - 4 });
+  tell(1348, 1376, 'SOMETHING BORES TOWARD YOU');
+  sign(1360, B - 1, 'SOMETHING BIG BORED THESE TUNNELS. LISTEN.');
   /* A GOBLIN WHO LEAPS ONTO YOUR LINE (deeprails3): off his ledge over the bore's mouth, told ('!' and a shadow on your rail where he will land) - brake off his landing
      or pump past it, then RAM him off the line (or strike) */
-  rail(1288, 1304, B - 3); block(1294, 1298, B - 7, B - 7); decor.push({ kind: 'ledge', x0: 1294, x1: 1298, row: B - 7 });
-  foe('miner', 1296, B - 8, { squad: 'boreJumper', ride: { jumper: true, row: B - 7, trig: 1282, at: 1296, off: 0 } });
+  rail(1358, 1374, B - 3); block(1364, 1368, B - 7, B - 7); decor.push({ kind: 'ledge', x0: 1364, x1: 1368, row: B - 7 });
+  foe('miner', 1366, B - 8, { squad: 'boreJumper', ride: { jumper: true, row: B - 7, trig: 1352, at: 1366, off: 0 } });
 
   // ================= THE GREAT DRILL (src/great-drill.js) =================
   const AX = ARENA_X, AF = 30;
@@ -582,7 +618,7 @@ export function buildMinecart({ painter, T, TS }) {
     examSpans, mcPits: pits,   /* (deeprails5) THE SPOIL PITS: where their spikes kill (src/survival.js examAt), and every pit */
     /* THE DARK DRIFT (deeprails2: dark and light stretches): pitch, but for your headlamp's cone (src/minecart-hands.js holes) and the goblins' own lamps */
     dark: 0.01, darkZones: [{ x0: DRIFT[0], x1: DRIFT[1], y0: 0, y1: H * TS, dark: 0.88 }],
-    mcAreas: [['THE LAMP YARD', 0, 'lamp'], ['THE DARK DRIFT', 171, 'dark'], ['THE GOBLIN LINE', 310, 'goblin'], ['THE GLOW CAVERN', 472, 'glow'], ['THE WRECK', 625, 'works'], ['THE CRUSHER WORKS', 676, 'works'], ['THE LIFT', 758, 'works'], ['THE TWIN LINES', 786, 'works'], ['THE FLOODED RUN', 856, 'flood'], ['THE SPOIL PITS', 970, 'works'], ['THE SMELTER FLOOR', 1062, 'smelter'], ['THE FORGE', 1180, 'smelter'], ['THE SMELTER', 1248, 'smelter']],
+    mcAreas: [['THE LAMP YARD', 0, 'lamp'], ['THE DARK DRIFT', 171, 'dark'], ['THE GOBLIN LINE', 310, 'goblin'], ['THE GLOW CAVERN', 472, 'glow'], ['THE WRECK', 625, 'works'], ['THE CRUSHER WORKS', 676, 'works'], ['THE LIFT', 758, 'works'], ['THE TWIN LINES', 786, 'works'], ['THE FLOODED RUN', 856, 'flood'], ['THE SPOIL PITS', 970, 'works'], ['THE SMELTER FLOOR', 1062, 'smelter'], ['THE FORGE', 1180, 'smelter'], ['THE SMELTER', 1248, 'smelter'], ['THE LEADING BORE', 1286, 'bore']],
     chases: [{ id: 'cavein', name: 'THE CAVE-IN', trigger: 480 * TS, end: 604 * TS, gap0: 170, curve: [[0, 128], [700, 150, 'THE ROOF GOES FASTER']], rubber: { min: 90, max: 250, slow: 0.4, catch: 1.4 },
       contact: 'kill', look: 'rock', say: 'THE ROOF IS COMING DOWN: RIDE!', autoscroll: true, glow: 260, zone: [470 * TS, 610 * TS, 12 * TS, 40 * TS] }],
     quest: { n: 10, item: 'orenugget', name: 'ORE', done: 'ALL TEN ORE: THE SMELTER IS YOURS', thanks: 'THE SMELTER IS YOURS' },   /* (the HUD counts all ten; the smelter's lever wants eight of them) */

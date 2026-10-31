@@ -188,7 +188,7 @@ export function pointsPost(g, px_, topY, botY, thrown, time) {
   rc(g, px_ - 9, botY - 7, 18, 7, MP.t1); rc(g, px_ - 9, botY - 7, 18, 1, MP.t3); rc(g, px_ - 6, botY - 8, 12, 2, MP.i3);
   rc(g, px_ - 9, topY - 14, 18, 16, MP.i1); rc(g, px_ - 9, topY - 14, 18, 1, MP.i4); rc(g, px_ - 9, topY - 14, 1, 16, MP.i3); rc(g, px_ + 8, topY - 14, 1, 16, MP.i0);   /* the gate-head */
   const c = thrown ? '#ffd36b' : '#7fc4e0'; g.fillStyle = c; g.beginPath(); g.arc(px_, topY - 9, 4.5, 0, Math.PI * 2); g.fill(); g.fillStyle = 'rgba(255,255,255,0.4)'; g.fillRect(px_ - 3, topY - 12, 2, 2);
-  const a = thrown ? 2.2 : 0.55, hx = px_ + Math.sin(a) * 15, hy = topY - 2 - Math.cos(a) * 15;                          /* the hand-lever: UP = waiting, DOWN = thrown */
+  const kk = typeof thrown === 'number' ? Math.max(0, Math.min(1, thrown)) : thrown ? 1 : 0, a = 0.55 + (2.2 - 0.55) * kk, hx =   /* (deeprails6: thrown may be the pull's 0..1 - the lever comes down over 0.25 s) */ px_ + Math.sin(a) * 15, hy = topY - 2 - Math.cos(a) * 15;                          /* the hand-lever: UP = waiting, DOWN = thrown */
   g.strokeStyle = MP.i5; g.lineWidth = 3; g.beginPath(); g.moveTo(px_, topY - 2); g.lineTo(R(hx), R(hy)); g.stroke(); g.lineWidth = 1; g.fillStyle = '#d8261c'; g.beginPath(); g.arc(R(hx), R(hy), 4, 0, Math.PI * 2); g.fill(); g.fillStyle = 'rgba(255,255,255,0.4)'; g.fillRect(R(hx) - 2, R(hy) - 2, 2, 1);
   add(g, () => { g.globalAlpha = 0.5 + 0.1 * Math.sin(time * 5); g.drawImage(glow(26, thrown ? '255,200,80' : '120,190,255'), px_ - 26, topY - 9 - 26); });
 }
