@@ -6,7 +6,7 @@
 // wheel struck spoils the rite, his censer's smoke lifts you); beaten down at 5%, the great bell is the last blow.
 // usage: node tools/false-abbot.mjs
 import { readFileSync } from 'node:fs';
-import { ABBOT, ABBOT_FRAMES, updateFalseAbbot, abbotBellRung, abbotOpen, abbotBlessed, abbotTake, abbotFrame, abbotSpoil, abbotPraying,
+import { drawBasketOutline, ABBOT, ABBOT_FRAMES, updateFalseAbbot, abbotBellRung, abbotOpen, abbotBlessed, abbotTake, abbotFrame, abbotSpoil, abbotPraying,
   abbotBridgeBell, abbotInChair, CHAIR_SAY, drawAbbotHouse, abbotWheelStruck, abbotPlunge, abbotClamp, abbotHighSpans, abbotLevelOf, abbotChairY } from '../src/false-abbot.js';
 let fails = 0; const ok = (c, m) => { console.log((c ? '  ok   ' : '  FAIL ') + m); if (!c) fails++; };
 const DT = 1 / 60, FLOOR = 480, DECK = 384, BELL = 904;
@@ -158,6 +158,16 @@ console.log('THE FALSE ABBOT 3: THE HOUSE ANSWERS THE BLOW');
     const sit = until('riteTell', { px: 900, x: 1000, hp: ABBOT.hp * 0.5 }, 30), H2 = { ...HOUSE, basketY0: 448 };
     let threw = null; try { drawAbbotHouse(g, sit.e, H2, 400, 300, 1.2, FLOOR, 0); const n0 = calls.rect; sit.e.deck = 'floor'; drawAbbotHouse(g, sit.e, H2, 400, 300, 1.2, FLOOR, 0); const n1 = calls.rect - n0; sit.e.deck = 'chair'; const n2 = (() => { const a = calls.rect; drawAbbotHouse(g, sit.e, H2, 400, 300, 1.2, FLOOR, 0); return calls.rect - a; })(); ok(n2 > n1, `the basket cue draws only while he sits in the chair (${n2} rects vs ${n1})`); } catch (er) { threw = er; }
     ok(!threw, 'drawAbbotHouse draws the cue without throwing' + (threw ? ': ' + threw.message : '')); }
+  /* (claude/abbotclear) THE FIGHT SHOWS THE ANSWER: the phase change fires the camera-beat hook once; the clarity draw (rope line, ghost chair, gauge, flare, pan) and the basket outline do not throw */
+  { let intro = 0; const rr = rig({ px: 900, x: 1000, hp: ABBOT.hp * 0.9 }); rr.c.intro = () => intro++; rr.e.hp = ABBOT.hp * 0.5; for (let i = 0; i < 60 * 2; i++) updateFalseAbbot(rr.e, DT, rr.c);
+    ok(rr.e.phase === 2 && intro === 1, 'the cut into phase two fires the intro-beat hook exactly once (' + intro + ')');
+    const calls = { n: 0 }, g = new Proxy({ canvas: { width: 320, height: 180 } }, { get: (t, k) => k in t ? t[k] : () => calls.n++, set: (t, k, v) => { t[k] = v; return true; } });
+    const sit = until('riteTell', { px: 900, x: 1000, hp: ABBOT.hp * 0.5 }, 30), H2 = { ...HOUSE, basketY0: 448 }; let threw = null;
+    try { for (const clr of [undefined, { pulse: 1, flare: 0, panS: -1, near: true }, { pulse: 0, flare: 1, panS: 0.5, near: false }, { pulse: 0, flare: 0, panS: 1, near: false }]) { sit.e.clr = clr; drawAbbotHouse(g, sit.e, H2, 400, 300, 2.4, FLOOR, 0); drawAbbotHouse(g, sit.e, H2, 400, 300, 2.4, FLOOR, 0.5); }
+      drawBasketOutline(g, 100, 100, 1, 0); drawBasketOutline(g, 100, 100, 1, 1); } catch (er) { threw = er; }
+    ok(!threw && calls.n > 0, 'the clarity draw (rope line, ghost chair, ride gauge, pulse, pan) and the basket outline run without throwing' + (threw ? ': ' + threw.message : ''));
+    const main = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
+    ok(['abbotPulseT = 0.9', 'abbotNudgeT >= 20', 'Math.floor(abbotNudgeT / 10)', 'anyPress && abbotIntro.t > 0.35', 'if (abbotIntro) { e.H = abbotHouse'].every(t => main.includes(t)), 'main.js: every warded blow pulses the basket, the 10 s hint+flare and 20 s camera nudge, the skippable intro, and the boss holds while it plays'); }
   const q = until('riteTell', { px: 900, x: 1000, hp: ABBOT.hp * 0.5 }, 30); q.run(ABBOT.riteT[2] + 0.6);
   ok(abbotBlessed(q.e) && (q.e.deck !== 'chair' || q.e.mode === 'swingTell' || q.e.mode === 'swing'), 'left alone the chair rite wards him, and blessed he comes down out of it to fight');
   const w = rig({ px: 900, x: 1000, hp: ABBOT.hp * 0.5 }); w.setBasket(1); let went = false; for (let i = 0; i < 60 * 3; i++) { updateFalseAbbot(w.e, DT, w.c); if (w.e.swDeck === 'chair') went = true; }
