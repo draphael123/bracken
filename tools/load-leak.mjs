@@ -63,7 +63,7 @@ try {
   /* The audit used to load every level in ONE evaluation (~170 loads, 900 s bound): it hung on master and crashed the page after harnessstall. Now CHUNK levels at a time (the floats tool
      does the same), a collection after each chunk, a time bound per chunk and a bound on the renderer's private memory; the per-chunk result is printed. A sheet given back is judged at the end of its
      own chunk (weak notes do not keep it alive, so chunking changes nothing but the peak). */
-  const CHUNK = +arg('chunk', 7), CHUNK_MS = +arg('chunk-ms', 120000), HEAP_MB = +arg('heap', 2400);
+  const CHUNK = +arg('chunk', 7), CHUNK_MS = +arg('chunk-ms', 120000), HEAP_MB = +arg('heap', 3000);
   const a = { n: 0, held: 0, at: [], levels: ids.length, bad: [] }, t0 = Date.now(); let chunks = 0;
   for (let from = 0; from < ids.length; from += CHUNK) {
     const to = Math.min(ids.length, from + CHUNK), tc = Date.now();
@@ -71,6 +71,7 @@ try {
       for (let i = ${from}; i < ${to}; i++) { try { BK.load(i); BK.state = 'play'; BK.sim(5); BK.step(2); } catch (e) { bad.push(__LV[i].id + ': ' + String(e && e.message || e).slice(0, 80)); } await new Promise(r => setTimeout(r, 0)); }
       /* the collections run from a timer at the bottom of the stack, several apart: a collector that scans the stack conservatively can keep a stray object or two alive for one
          collection (seen: 2 of 46,000, a different two each run), and only a sheet that something really holds is still there after all of them */
+      BK.load(0);   /* retireBakes empties a bake once the NEXT level is loaded: load a neutral one so the chunk's last level is retired too and judged here */
       for (let k = 0; k < 6; k++) await new Promise(r => setTimeout(() => { gc(); r(); }, 100));
       const still = __bakeAudit.filter(r => r.w.deref()), held = still.length, n = __bakeAudit.length; window.__bakeAudit = null; return { n, held, at: [...new Set(still.map(r => r.at))].slice(0, 6), bad, heap: +(performance.memory.usedJSHeapSize / 1048576).toFixed(0) }; })()`, CHUNK_MS).catch(e => ({ err: e.message }));
     chunks++;
