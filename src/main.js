@@ -151,7 +151,7 @@ import { COMBAT, HEAL, COMMON_BLOWS, chainCost, impactPause, hitStagger } from '
 import * as BAR from './barriers.js';   /* THE BARRIERS BY REGION (claude/barriers): the gate, the boss seal, the lock plate - art only */
 import * as EG from './exit-gates.js';   /* THE EXIT GATES BY REGION (claude/exitgates): art only */
 const EGSFX = { light: () => SFX.lightFull(), open: () => SFX.gateOpen() };
-import * as SV from './survival.js'; import * as F2 from './flasks2.js';   /* FLASKS 2 (claude/flasks2, Daniel 10-08): the flask row, the drink, the store's FLASKS tab, the finds and objectives */   /* SURVIVAL (claude/survival, Daniel 10-07): the flask, dry shrines, % hazards and the exams' deadly spikes - the numbers live there */
+import * as SV from './survival.js'; import * as SKK from './skill-k.js';   /* (claude/lategamea) the one skill damage rule: swordDmg x k x amul */  import * as F2 from './flasks2.js';   /* FLASKS 2 (claude/flasks2, Daniel 10-08): the flask row, the drink, the store's FLASKS tab, the finds and objectives */   /* SURVIVAL (claude/survival, Daniel 10-07): the flask, dry shrines, % hazards and the exams' deadly spikes - the numbers live there */
 import { JUICE, blowClass, takenClass, blockClass, stopFor, shakeAdd, safeKnock, weaponOf } from './juice.js';   /* THE JUICE TABLE: one row per weight class, read by every landed blow and every blow the hero takes (tools/juice.mjs) */
 import { LEGACY_NODES, growthNodes, SKILLS, importProgress, exportProgress, loadProgress, migrateProgress, growthAt, skillScale, slotsAt, skillFor, skillsFor, equipped, buySkill, equipSkill, passiveOn, passiveLadder, passivesArriving, CARD, CARD_CAP, CARD_FULL, PERKS, RESPEC_SILVER, skillRank, rankUp, rankPrice, rankLevel, RANK_MAX, RANK_MUL, cardOf, evenCard, picksSpent, picksOwed, milestonesOwed, perkOffer, perkOn, perkRank, thrOn, thrNext, THRESH, MINOR_PERKS, ALL_HERO_PERKS, HERO_PERK_MAX, levelsToPerk, nextMilestone, techniquesArriving, pickCard, pickMilestone, respecCard, coopOpen, DEFAULT_HEROES, MAX_SLOTS } from './progression.js';
 import * as TR from './title-region.js';   /* THE TITLE BY REGION (claude/titleregion): which region the last-played slot has reached */
@@ -1055,7 +1055,7 @@ let hammers = [], kegs = [];   /* (claude/herokit) kegs: the freebooter's POWDER
 function updateKegs(dt) {
   for (const k of kegs) { k.t += dt;
     if (!k.boom && k.t >= k.fuse) { k.boom = true; k.life = 0.3; ringAt(k.x, k.y - 6, 56, '#ffd36b', 0.35); burst(k.x, k.y - 8, 18, ['#fff6c8', '#ffd36b', '#ff9a5c', '#5c3a1d'], 160, 0.5, 120, 2); shakeCam(7); SFX.crack(); SFX.heavy();
-      for (const e of enemies) { if (!e.alive || e.harmless || e.gone > 0 || Math.abs(e.x - k.x) > 52 || Math.abs(e.y - k.y) > 40) continue; hurtAs('shot', e, Math.round(17 * amul('powderKeg')), k.x, false); if (e.alive && !e.maxHp) { e.vx = (Math.sign(e.x - k.x) || 1) * 260; e.vy = -140; e.stagger = Math.max(e.stagger || 0, 0.9); } } }
+      for (const e of enemies) { if (!e.alive || e.harmless || e.gone > 0 || Math.abs(e.x - k.x) > 52 || Math.abs(e.y - k.y) > 40) continue; hurtAs('shot', e, Math.round(swordDmg() * SKK.K.powderKeg * amul('powderKeg')), k.x, false); if (e.alive && !e.maxHp) { e.vx = (Math.sign(e.x - k.x) || 1) * 260; e.vy = -140; e.stagger = Math.max(e.stagger || 0, 0.9); } } }
     else if (k.boom) k.life -= dt; }
   kegs = kegs.filter(k => !k.boom || k.life > 0);
 }
@@ -1082,7 +1082,7 @@ function drawHoly(cx, cy) {
   if (HFX) { for (const m of hammers) HFX.hammer(g, m, cx, cy, time, holyHand()); HFX.draw(g, cx, cy); }   /* (claude/palart) the spinning hammer of light, its trail, the catch flash, SMITE's column (src/holy-fx.js) */
 }
 const abilityHero = id => { const a = ABILITIES.find(x => x.id === id); return a ? a.hero : 'knight'; };
-const CD_MAX = { bzRoar: 12, bzSpin: 5, bzHarden: 14, bzCleave: 6, bzRampage: 8, bzShrug: 10, bzStand: 40, bzUnchained: 45, bzStorm: 18, flashover: 10, firestorm: 20, dawnburst: 12, holyWrath: 24, powderKeg: 9, heavySeas: 14, boneArmor: 18, soulReap: 20, stoneStep: 1.2, boulder: 4, spikeRow: 5, archway: 8, stoneWall: 7, entomb: 9, faultLine: 8, golem: 16, avalanche: 20, summonSkeleton: 12, deathGrip: 6, unholyGround: 11, harvestMoon: 8, gravecall: 3, bidden: 9,   /* (claude/bkkit2) BLOODWORMS 12, BLOOD BOLT 3, DRAIN 9 (BLOOD.host) */ broadside: 7, blackSpot: 10, keelhaul: 5, scytheThrown: 4, graveTide: 7, grapeshot: 6, rum: 18, boarding: 5, lunge: 3, warCry: 10, whirlwind: 4, meteor: 8, flameRing: 6, lightLance: 3, divineShield: 14, hammerLeap: 6, shieldThrow: 4,   /* (claude/herokit: the wait starts at the throw now, so the pierce-and-return does not add a second to it) */ groundSlam: 3, fireWall: 4, cinderStep: 3, risingCut: 2, vent: 3, wisp: 8, consecrate: 7, holyCharge: 4, blessedHammer: 2.5, skewer: 4, setSpears: 8, harrier: 5, wheel: 5, javelin: 5, poleSpring: 7, fullStretch: 16, spearDance: 8, rainOfSpears: 18, disarm: 6, ironclad: 12, swordOfRealm: 22 };
+const CD_MAX = { bzRoar: 12, bzSpin: 5, bzHarden: 14, bzCleave: 6, bzRampage: 8, bzShrug: 10, bzStand: 40, bzUnchained: 45, bzStorm: 18, flashover: 10, firestorm: 20, dawnburst: 12, holyWrath: 24, powderKeg: 9, heavySeas: 14, boneArmor: 18, soulReap: 20, stoneStep: 1.2, boulder: 4, spikeRow: 5, archway: 8, stoneWall: 7, entomb: 9, faultLine: 8, golem: 16, avalanche: 20, summonSkeleton: 12, deathGrip: 6, unholyGround: 11, harvestMoon: 8, gravecall: 3, bidden: 9,   /* (claude/bkkit2) BLOODWORMS 12, BLOOD BOLT 3, DRAIN 9 (BLOOD.host) */ broadside: 7, blackSpot: 10, keelhaul: 5, scytheThrown: 4, graveTide: 7, grapeshot: 6, rum: 18, boarding: 5, lunge: 3, warCry: 10, whirlwind: 5, meteor: 8, flameRing: 6, lightLance: 3, divineShield: 14, hammerLeap: 6, shieldThrow: 4,   /* (claude/herokit: the wait starts at the throw now, so the pierce-and-return does not add a second to it) */ groundSlam: 3, fireWall: 4, cinderStep: 3, risingCut: 2, vent: 3, wisp: 8, consecrate: 7, holyCharge: 4, blessedHammer: 2.5, skewer: 4, setSpears: 8, harrier: 5, wheel: 5, javelin: 5, poleSpring: 7, fullStretch: 16, spearDance: 8, rainOfSpears: 18, disarm: 6, ironclad: 12, swordOfRealm: 22 };
 const skillCd = k => (P.cds && P.cds[k]) || 0; // every skill keeps its own wait now: two on two keys cannot lock each other
 const GOLD_CD = 15, goldReady = k => isPirate() && tal('paidInGold') && (PROG.coins || 0) >= GOLD_CD && skillCd(k) > 0;   /* PAID IN GOLD: a wait bought off */
 const cdReady = k => !((P.cds && P.cds[k]) > 0) || goldReady(k), cdSet = k => { noteVerb('skill'); P.skillAt = time;   /* (claude/riposte: a skill's blows are the chain's 'skill' verb) */ if (REC.on) REC.skill(k); trialEvent(k === skillNow() ? 'skillF' : 'skillG'); P.cds = P.cds || {}; if (goldReady(k)) { PROG.coins -= GOLD_CD; number(P.x, P.y - 34, '-' + GOLD_CD + ' GOLD', '#ffd34a'); SFX.coin(); } P.cds[k] = cdOf(k); P.skReady = P.skReady || {}; P.skReady[k] = 0; };
@@ -9532,7 +9532,7 @@ function markFoe(e, why) {
 /* (claude/bkkit2) SUMMON THRALL and THE RED CALL are gone from the hero (BLOODWORMS and BLOOD BOLT keep their ids - see THE RED HOST below). The thralls'
    machinery is kept for what still reads it (an old body-block, the trial tools): nothing of the hero's puts one up now. The boss's blood thralls are src/unburied-foes.js. */
 const SUMMON_LIFE = 10, CALL_LIFE = 5;
-const boneDmg = () => Math.round((5 + Math.floor(Math.random() * 6)) * amul('summonSkeleton'));
+const boneDmg = () => Math.max(1, Math.round(swordDmg() * (SKK.K.boneMin + SKK.K.boneSpan * Math.random()) * amul('summonSkeleton')));
 /* ==== THE RED HOST: HIS BLOOD MAGIC (claude/bkkit2, Daniel 10-21 "He's not a death knight anymore. Abilities like BLOODWORM or DRAIN or BLOOD BOLT would be more
    fitting"). Every spell is PAID IN BLOOD - a slice of his health on the bar as BLOOD DEBT (BLOOD PRICE's rule, src/blood-kit.js payBlood) - and what it lands WINS IT
    BACK: the worms' bites, the bolt's hit, the pool's bites; DRAIN pulls blood out of a foe into the debt first. Numbers: BLOOD.host. Ids kept for the saves:
@@ -9704,12 +9704,12 @@ function updateRisen(dt) {
     // way back is touched at all.
     if (thrownScythe && s.out) { for (const e of enemies) { if (!e.alive || e.harmless) continue;
       if (Math.abs(e.x - s.x) < e.w / 2 + 10 && Math.abs((e.y - e.h / 2) - s.y) < 18) {
-        hurtAs('shot', e, Math.round((17 + 4 * tal('scytheThrown'))*amul('scytheThrown')), s.x - s.dir * 20, false); markFoe(e);
+        hurtAs('shot', e, Math.round(swordDmg() * (SKK.K.scytheBase + SKK.K.scytheTal * tal('scytheThrown')) * amul('scytheThrown')), s.x - s.dir * 20, false); markFoe(e);
         burst(e.x, e.y - e.h / 2, 8, ['#c0283a', '#ff6b6b'], 70, 0.4); SFX.squelch(); s.out = false; s.struck = true; if (e.alive) { e.bleed = Math.max(e.bleed || 0, 2); e.bleedN = Math.max(e.bleedN || 0, 1); } break; } } }
     if (s && s.t > 3) thrownScythe = null; }
   for (const h of hands) { h.delay -= dt; if (h.delay > 0) continue; h.life -= dt;
     for (const e of enemies) { if (!e.alive || e.harmless || h.hit.has(e)) continue;
-      if (Math.abs(e.x - h.x) < 12 && Math.abs(e.y - h.y) < 22) { h.hit.add(e); hurtEnemy(e, Math.round((10 + 4 * tal('graveTide'))*amul('graveTide')), h.x, false); markFoe(e);
+      if (Math.abs(e.x - h.x) < 12 && Math.abs(e.y - h.y) < 22) { h.hit.add(e); hurtEnemy(e, Math.round(swordDmg() * (SKK.K.graveTideBase + SKK.K.graveTideTal * tal('graveTide')) * amul('graveTide')), h.x, false); markFoe(e);
         if (!e.maxHp) { e.stagger = Math.max(e.stagger || 0, 1.2); e.vx = 0; } } } }
   hands = hands.filter(h => h.life > 0);
 }
@@ -10310,7 +10310,7 @@ function updatePlayer(dt) {
   if (isPaladin() && skillPress('holyCharge') && cdReady('holyCharge') && !P.dead && !(P.hurt > 0) && !(P.asleep > 0) && !(P.dodge > 0)) { if (spend(CM.dashCost('paladin', 25))) { cdSet('holyCharge'); P.chargeT = 0.3; P.dodge = 0.3; P.dodgeInv = CM.dashInv(0.3); kitPose(P, 'charge', 0.3); P.vx = P.face * 330; P.inv = Math.max(P.inv, CM.dashInv(0.3));   /* WEIGHT (10-03): 25 -> 32, grace 0.4 -> 0.2 s */ P.chargeHit = new Set(); SFX.throwWhoosh(); SFX.aegis(); streaks(P.x, P.y - 10, 8, ['#fff6c8', '#ffd36b'], 160); } else number(P.x, P.y - 22, 'TIRED', '#9aa39a'); }
   /* (claude/paladin2) THE HAMMER THROW is UP + C now (castHammer, Light spent), not a slot: the node is BLESSED HAMMER, a passive */
   if (P.chargeT > 0) { P.chargeT -= dt; P.vx = P.face * 330; if (Math.random() < dt * 40) parts.push({ x: P.x - P.face * 6, y: P.y - 4 - Math.random() * 14, vx: -P.face * 60, vy: 0, life: 0.3, max: 0.3, col: '#ffd36b', size: 1, grav: 0, glow: true });
-    for (const e of enemies) if (e.alive && !e.harmless && !P.chargeHit.has(e) && overlap({ l: P.x - 10, r: P.x + 10, t: P.y - 18, b: P.y }, box(e))) { P.chargeHit.add(e); hurtAs('dash', e,Math.round(12 * amul('holyCharge')), P.x, false); if (!e.maxHp) { e.stagger = Math.max(e.stagger || 0, 1); e.vx = P.face * 240; e.vy = -150; } sparks(e.x, e.y - e.h / 2, P.face, 8); shakeCam(3, P.face * 2); hitstop(0.04); } }
+    for (const e of enemies) if (e.alive && !e.harmless && !P.chargeHit.has(e) && overlap({ l: P.x - 10, r: P.x + 10, t: P.y - 18, b: P.y }, box(e))) { P.chargeHit.add(e); hurtAs('dash', e,Math.round(swordDmg() * SKK.K.holyCharge * amul('holyCharge')), P.x, false); if (!e.maxHp) { e.stagger = Math.max(e.stagger || 0, 1); e.vx = P.face * 240; e.vy = -150; } sparks(e.x, e.y - e.h / 2, P.face, 8); shakeCam(3, P.face * 2); hitstop(0.04); } }
   if (P.gripPull > 0) { P.gripPull -= dt; const ge = P.gripE; if (!ge || !ge.alive || Math.abs(ge.x - P.x) < (ge.w || 16) / 2 + 12) P.gripPull = 0; else P.vx = P.face * 380; }   /* BLOOD CHAIN on a boss: the rune hauls him in to it */
   if (skillPress('groundSlam') && (P.ground || P.swim) && cdReady('groundSlam') && !P.dead && !(P.hurt > 0) && !(P.asleep > 0) && !(P.dodge > 0) && P.atk < 0) { if (spend(31)) { cdSet('groundSlam'); P.block = false; P.atk = -1; kitPose(P, 'slam', 0.42); shakeCam(7); zoomKick(1.1, 0.22); ringAt(P.x, P.y - 2, 32, '#ffd36b', 0.35); dust(P.x - 10, P.y, 6); dust(P.x + 10, P.y, 6); SFX.heavy(); SFX.stone(); squash(1.45, 0.6, 0.14); hitstop(0.04); for (const d of [-1, 1]) pwaves.push({ x: P.x + d * 8, y: P.y, dir: d, life: P.ground ? 1.2 : 0.8, sp: 210, hit: new Set(), water: !P.ground, skill: 'groundSlam' }); for (const tx of [Math.floor((P.x - 12) / TS), Math.floor((P.x + 12) / TS)]) { const ty = Math.floor((P.y + 2) / TS); if (tileAt(tx, ty) === T.CRATE) breakCrate(tx, ty); const w = (L.walls || []).find(q => !q.broken && tx >= q.x0 && tx <= q.x1 && ty >= q.y0 && ty <= q.y1); if (w) breakWall(w); }   /* ONE HEAVY BLOW breaks a breakable wall outright, the same slam that breaks a crate in one */ number(P.x, P.y - 24, 'SLAM', '#ffd36b'); } else number(P.x, P.y - 22, 'TIRED', '#ffd36b'); }
   if (skillPress('shieldThrow') && !thrown && cdReady('shieldThrow') && tal('shieldThrow') && !P.dead && !(P.hurt > 0) && !(P.asleep > 0) && !P.plunge && !(P.dodge > 0)) { if (spend(25)) { cdSet('shieldThrow'); thrown = { x: P.x + P.face * 6, y: P.y - 9, dir: P.face, t: 0, back: false, hit: new Set(), hitB: new Set() }; P.block = false; kitPose(P, 'toss', 0.3); SFX.throwWhoosh(); squash(0.85, 1.15, 0.08); } else number(P.x, P.y - 22, 'TIRED', '#ffd36b'); }
@@ -10330,7 +10330,7 @@ function updatePlayer(dt) {
   if (P.whirlT > 0) { const prev = P.whirlT; P.whirlT -= dt; P.face = Math.floor(P.whirlT * 16) % 2 ? 1 : -1; const half = P.whirlT > 0.25 ? 0 : 1;
     if (Math.random() < dt * 50) { const a = Math.random() * 6.28; parts.push({ x: P.x + Math.cos(a) * 26, y: P.y - 9 + Math.sin(a) * 10, vx: -Math.sin(a) * 90, vy: Math.cos(a) * 30, life: 0.2, max: 0.2, col: '#fff6e0', size: 1, grav: 0 }); }
     if ((prev > 0.36 && P.whirlT <= 0.36) || (prev > 0.12 && P.whirlT <= 0.12)) { ringAt(P.x, P.y - 9, 44, '#fff6e0', 0.2); SFX.slash(); }
-    for (const e of enemies) if (e.alive && !e.harmless && !P.whirlHits[half].has(e) && Math.abs(e.x - P.x) < 46 + e.w / 2 && Math.abs((e.y - e.h / 2) - (P.y - 9)) < 26) { P.whirlHits[half].add(e); hurtEnemy(e, Math.round(swordDmg() * 1.1 * amul('whirlwind')), P.x, false); if (e.guardT > 0) e.guardT = 0; if (e.alive && !e.maxHp) { e.stagger = Math.max(e.stagger || 0, 0.6); e.vx = (Math.sign(e.x - P.x) || 1) * 190; } flinch(e);   /* (claude/herokit) it breaks a guard and shoves the ring off: its own job, beside the slam's quake */ sparks(e.x, e.y - e.h / 2, Math.sign(e.x - P.x) || 1, 5); } }
+    for (const e of enemies) if (e.alive && !e.harmless && !P.whirlHits[half].has(e) && Math.abs(e.x - P.x) < 46 + e.w / 2 && Math.abs((e.y - e.h / 2) - (P.y - 9)) < 26) { P.whirlHits[half].add(e); hurtEnemy(e, Math.round(swordDmg() * SKK.K.whirlwind * amul('whirlwind')), P.x, false); if (e.guardT > 0) e.guardT = 0; if (e.alive && !e.maxHp) { e.stagger = Math.max(e.stagger || 0, 0.6); e.vx = (Math.sign(e.x - P.x) || 1) * 190; } flinch(e);   /* (claude/herokit) it breaks a guard and shoves the ring off: its own job, beside the slam's quake */ sparks(e.x, e.y - e.h / 2, Math.sign(e.x - P.x) || 1, 5); } }
   /* ---- (claude/herokit) THE LATE ACTIVES: two each for the four heroes who owned every active by level 8 (pyro, paladin, freebooter, death knight) ---- */
   if (P.wrathT > 0) P.wrathT -= dt; if (P.boneArmorT > 0) { P.boneArmorT -= dt; if (P.boneArmorT <= 0) P.boneArmor = 0; }
   const lateFoes = (r, ry = 60) => enemies.filter(e => e.alive && !e.harmless && !(e.gone > 0) && !e.turncoat && Math.abs(e.x - P.x) <= r && Math.abs(e.y - P.y) <= ry);
@@ -10345,7 +10345,7 @@ function updatePlayer(dt) {
     gainHeat(60); ringAt(P.x, P.y - 8, 110, '#ff6b2c', 0.5); ringAt(P.x, P.y - 8, 60, '#ffd36b', 0.4); shakeCam(5); SFX.heavy(); SFX.puff(); } else tired(); }
   // DAWNBURST (paladin, L14): a flare of light - everything near is rocked and staggered, and the light bar fills for what it caught
   if (isPaladin() && skillPress('dawnburst') && cdReady('dawnburst') && canAct()) { if (spend(27)) { cdSet('dawnburst'); P.castT = 0.3; kitPose(P, 'dawn', 0.32); let n = 0;
-    for (const e of lateFoes(100)) { hurtEnemy(e, Math.round(12 * amul('dawnburst')), P.x, false); if (e.alive) { e.stagger = Math.max(e.stagger || 0, e.maxHp ? 0.3 : 1.4); if (!e.maxHp) e.vx = (Math.sign(e.x - P.x) || 1) * 110; } n++; }
+    for (const e of lateFoes(100)) { hurtEnemy(e, Math.round(swordDmg() * SKK.K.dawnburst * amul('dawnburst')), P.x, false); if (e.alive) { e.stagger = Math.max(e.stagger || 0, e.maxHp ? 0.3 : 1.4); if (!e.maxHp) e.vx = (Math.sign(e.x - P.x) || 1) * 110; } n++; }
     if (n) gainLight(10 + 8 * Math.min(n, 3)); ringAt(P.x, P.y - 8, 100, '#fff6c8', 0.4); ringAt(P.x, P.y - 8, 50, '#ffd36b', 0.3); motes(P.x, P.y - 8, 16, 40); SFX.mend(); SFX.heavy(); shakeCam(3); } else tired(); }
   // HOLY WRATH (paladin, L20): six seconds in which every blow lands harder and mends him
   if (isPaladin() && skillPress('holyWrath') && cdReady('holyWrath') && canAct()) { if (spend(34)) { cdSet('holyWrath'); P.wrathT = 6; P.castT = 0.3; kitPose(P, 'wrath', 0.4);
@@ -10354,14 +10354,14 @@ function updatePlayer(dt) {
   if (isPirate() && skillPress('powderKeg') && cdReady('powderKeg') && canAct()) { if (spend(26)) { cdSet('powderKeg'); P.castT = 0.3; kitPose(P, 'keg', 0.35); kegs.push({ x: P.x + P.face * 44, y: P.y, t: 0, fuse: 1, boom: false, life: 0 }); SFX.throwWhoosh(); 0; } else tired(); }
   // HEAVY SEAS (freebooter, L20): the deck heaves and a wave sweeps everything ahead off its feet
   if (isPirate() && skillPress('heavySeas') && cdReady('heavySeas') && canAct()) { if (spend(30)) { cdSet('heavySeas'); P.castT = 0.35; kitPose(P, 'seas', 0.4);
-    for (const e of lateFoes(160, 50)) { if (Math.sign(e.x - P.x) !== P.face) continue; hurtEnemy(e, Math.round(12 * amul('heavySeas')), P.x, false); if (e.alive) { if (e.maxHp) e.stagger = Math.max(e.stagger || 0, 0.3); else { e.vx = P.face * 340; e.vy = -100; e.stagger = Math.max(e.stagger || 0, 1.3); } } }
+    for (const e of lateFoes(160, 50)) { if (Math.sign(e.x - P.x) !== P.face) continue; hurtEnemy(e, Math.round(swordDmg() * SKK.K.heavySeas * amul('heavySeas')), P.x, false); if (e.alive) { if (e.maxHp) e.stagger = Math.max(e.stagger || 0, 0.3); else { e.vx = P.face * 340; e.vy = -100; e.stagger = Math.max(e.stagger || 0, 1.3); } } }
     for (let i = 0; i < 26; i++) parts.push({ x: P.x + P.face * (8 + Math.random() * 140), y: P.y - Math.random() * 12, vx: P.face * (120 + Math.random() * 160), vy: -40 - Math.random() * 90, life: 0.5, max: 0.5, col: Math.random() < 0.5 ? '#bfe6f5' : '#e8f4f0', size: 2, grav: 140 });
     shakeCam(6, P.face * 3); SFX.heavy(); SFX.splash ? SFX.splash() : SFX.puff(); 0; } else tired(); }
   // BLOOD MAIL (the blood knight, L14; id boneArmor, it was OSSUARY MAIL - claude/bloodknight): three blows are cut to two fifths, for twelve seconds
   if (isReaper() && skillPress('boneArmor') && cdReady('boneArmor') && canAct()) { if (spend(26)) { cdSet('boneArmor'); P.boneArmor = 3; P.boneArmorT = 12; P.castT = 0.3; kitPose(P, 'bone', 0.4); ringAt(P.x, P.y - 10, 30, '#ff4a5a', 0.45); burst(P.x, P.y - 10, 12, ['#7a1020', '#ff9aa6'], 70, 0.5); 0; SFX.clank(); } else tired(); }
   // BLOODLETTING (the blood knight, L20; id soulReap, it was THE REAPING - claude/bloodknight): everything near is cut, marked and bled, and he drinks from each
   if (isReaper() && skillPress('soulReap') && cdReady('soulReap') && canAct()) { if (spend(34)) { cdSet('soulReap'); P.castT = 0.35; kitPose(P, 'reap', 0.45); let n = 0;
-    for (const e of lateFoes(130)) { hurtEnemy(e, Math.round(14 * amul('soulReap')), P.x, false); markFoe(e); if (e.alive) { e.bleed = Math.max(e.bleed || 0, 2.5); e.bleedN = Math.max(e.bleedN || 0, 1); } if (n < 3) { P.hp = Math.min(P.maxHp, P.hp + Math.round(P.maxHp * 0.02)); n++; } }
+    for (const e of lateFoes(130)) { hurtEnemy(e, Math.round(swordDmg() * SKK.K.soulReap * amul('soulReap')), P.x, false); markFoe(e); if (e.alive) { e.bleed = Math.max(e.bleed || 0, 2.5); e.bleedN = Math.max(e.bleedN || 0, 1); } if (n < 3) { P.hp = Math.min(P.maxHp, P.hp + Math.round(P.maxHp * 0.02)); n++; } }
     gainHarvest(8 * n); ringAt(P.x, P.y - 10, 130, '#c0283a', 0.45); ringAt(P.x, P.y - 10, 70, '#ff9aa6', 0.4); shakeCam(4); SFX.squelch(); SFX.heavy(); 0; } else tired(); }
   // METEOR: fire out of the sky onto the nearest foe ahead
   if (isPyro() && skillPress('meteor') && cdReady('meteor') && canAct()) { if (spend(38)) { cdSet('meteor');  let tx = P.x + P.face * 90, best = 220; for (const e of enemies) if (e.alive && !e.harmless && Math.sign(e.x - P.x) === P.face && Math.abs(e.x - P.x) < best && Math.abs(e.y - P.y) < 120) { best = Math.abs(e.x - P.x); tx = e.x; }
@@ -10388,7 +10388,7 @@ function updatePlayer(dt) {
   } else number(P.x, P.y - 22, 'TIRED', '#ffd36b'); }
   // ---- THE HARVEST MOON: he plants the arc and walks away from it, and it keeps cutting ----
   if (isReaper() && skillPress('harvestMoon') && cdReady('harvestMoon') && canAct()) { if (spend(25)) { cdSet('harvestMoon');
-    moons.push({ x: P.x, y: P.y - 12, r: 42 + 5 * tal('harvestMoon'), t: 4, tick: 0.2, dmg: Math.round(17 * amul('harvestMoon')) });   /* (claude/herokit) 32 px, 3 s, 9 a tick: foes take one blow a second at most, so it landed ~10 a cast */
+    moons.push({ x: P.x, y: P.y - 12, r: 42 + 5 * tal('harvestMoon'), t: 4, tick: 0.2, dmg: Math.round(swordDmg() * SKK.K.harvestMoon * amul('harvestMoon')) });   /* (claude/herokit) 32 px, 3 s, 9 a tick: foes take one blow a second at most, so it landed ~10 a cast */
     SFX.squelch(); SFX.puff(); ringAt(P.x, P.y - 2, 32, '#c0283a', 0.4); shakeCam(3); P.atk = -1;
     number(P.x, P.y - 30, 'BLOOD WELL', '#ff6b6b'); kitPose(P, 'boil', 0.45); } else tired(); }
   // ---- (claude/bkkit2) THE RED HOST, his blood magic: paid in blood (on the bar as debt), not wind - BLOOD BOLT (gravecall), BLOODWORMS (summonSkeleton), DRAIN (bidden) ----
@@ -10404,7 +10404,7 @@ function updatePlayer(dt) {
       if (Math.sign(e.x - P.x) !== P.face || Math.abs(e.x - P.x) > len + 10) continue;
       if (e.y - e.h - 10 > y0 || e.y + 10 < y0) continue;
       if (e.guardT > 0) e.guardT = 0;                                  /* nothing blocks a ball */
-      hurtAs('shot', e, Math.round(22 * amul('broadside')), P.x, false); sparks(e.x, e.y - e.h / 2, P.face, 8);
+      hurtAs('shot', e, Math.round(swordDmg() * SKK.K.broadside * amul('broadside')), P.x, false); sparks(e.x, e.y - e.h / 2, P.face, 8);
       if (!e.maxHp) { e.stagger = Math.max(e.stagger || 0, 0.7); e.vx = P.face * 240; } }
     for (let i = 0; i < 18; i++) parts.push({ x: P.x + P.face * 12, y: y0, vx: P.face * (80 + Math.random() * 220), vy: (Math.random() - 0.5) * 80, life: 0.35, max: 0.35, col: Math.random() < 0.4 ? '#fff6c8' : Math.random() < 0.7 ? '#ffd36b' : '#9aa39a', size: 2, grav: -20 });
     SFX.crack(); SFX.heavy(); shakeCam(8, P.face * 4); zoomKick(1.08, 0.28); hitstop(0.05);
@@ -10430,7 +10430,7 @@ function updatePlayer(dt) {
       /* (claude/herokit) THE WHOLE LINE: every foe in reach goes over the rail, the lot of them dragged PAST him and left on their backs behind (the Grave Chain is one thing brought IN; this is the line turned round); a boss is hooked and rocked and stays put */
       for (const [, kh] of khRow) {
         shots.push({ x0: P.x + P.face * 8, y0: P.y - 12, x1: kh.x, y1: kh.y - kh.h / 2, life: 0.18 });
-        hurtAs('shot', kh,Math.round(12 * amul('keelhaul')), P.x + P.face * 20, false);
+        hurtAs('shot', kh,Math.round(swordDmg() * SKK.K.keelhaul * amul('keelhaul')), P.x + P.face * 20, false);
         if (!kh.alive) continue;
         if (kh.maxHp) { kh.stagger = Math.max(kh.stagger || 0, 0.7); 0; continue; }
         kh.x = P.x - P.face * (26 + 16 * khN); kh.face = P.face; kh.vx = -P.face * 130; kh.vy = -120; kh.stagger = Math.max(kh.stagger || 0, 1.6); khN++;
@@ -10446,7 +10446,7 @@ function updatePlayer(dt) {
     for (const e of enemies) { if (!e.alive || e.harmless || e.gone > 0) continue;
       const d = (e.x - x0) * P.face; if (d < -6 || d > reach) continue; if (Math.abs((e.y - e.h / 2) - y0) > 26) continue;
       n++; if (e.guardT > 0) e.guardT = 0;
-      hurtAs('shot', e, Math.round((10 + 4 * tal('grapeshot')) * amul('grapeshot') * (1 - Math.min(0.5, d / reach * 0.5))), x0 - P.face * 40, false);
+      hurtAs('shot', e, Math.round(swordDmg() * (SKK.K.grapeshotBase + SKK.K.grapeshotTal * tal('grapeshot')) * amul('grapeshot') * (1 - Math.min(0.5, d / reach * 0.5))), x0 - P.face * 40, false);
       if (e.alive && !e.maxHp) { e.stagger = Math.max(e.stagger || 0, 0.7); e.vx = P.face * 200; } }
     if (!n) number(P.x, P.y - 26, 'NOTHING IN IT', '#9aa39a'); } else number(P.x, P.y - 22, 'TIRED', '#ffd36b'); }
   if (isPirate() && skillPress('rum') && cdReady('rum') && canAct()) { cdSet('rum');
@@ -10512,7 +10512,7 @@ function updatePlayer(dt) {
   wardenKit(dt, canAct, tired); knightKit(dt, canAct, tired); geomancerKit(dt, canAct, tired); berserkerKit(dt, canAct, tired); rangerKit(dt, canAct, tired);   /* (and the Knight's three: DISARM, IRONCLAD, SWORD OF THE REALM) */   /* THE WARDEN'S SIX BOUGHT ACTIVES (below updatePlayer): the wheel, the javelin, the pole spring, the stretch, the dance, the rain */
   if (P.hleapT > 0) { P.hleapT -= dt; if (P.hleapWet) P.vy = Math.max(P.vy, 140); if (P.hleapT < 1.25 && (P.ground || (P.hleapWet && P.hleapT < 1.08))) { P.hleapT = 0; kitPose(P, 'leapLand', 0.3); if (HGR && HGR.of(P)) { HGR.move(HGR.of(P), P.x, P.y); number(P.x, P.y - 30, 'THE GROUND FOLLOWS', '#ffd36b'); }   /* (claude/paladin2) HAMMER LEAP carries his circle */ const wet = !P.ground; P.hleapWet = false; shakeCam(8); zoomKick(1.1, 0.22); ringAt(P.x, P.y - 2, 40, '#ffd36b', 0.4); dust(P.x - 10, P.y, 8); dust(P.x + 10, P.y, 8); SFX.forgeHammer(); SFX.heavy(); hitstop(0.05);
       for (const d of [-1, 1]) pwaves.push({ x: P.x + d * 8, y: P.y, dir: d, life: wet ? 0.7 : 1.1, sp: 220, hit: new Set(), water: wet });
-      for (const e of enemies) if (e.alive && !e.harmless && Math.abs(e.x - P.x) < 42 && Math.abs(e.y - P.y) < 30) { hurtAs('plunge', e, Math.round(24 * amul('hammerLeap')), P.x, false); if (!e.maxHp) { e.vy = -180; e.stagger = Math.max(e.stagger || 0, 0.8); } } }
+      for (const e of enemies) if (e.alive && !e.harmless && Math.abs(e.x - P.x) < 42 && Math.abs(e.y - P.y) < 30) { hurtAs('plunge', e, Math.round(swordDmg() * SKK.K.hammerLeap * amul('hammerLeap')), P.x, false); if (!e.maxHp) { e.vy = -180; e.stagger = Math.max(e.stagger || 0, 0.8); } } }
     else if (P.hleapT > 0) P.vx = P.face * (P.hleapWet ? 120 : 200); }
   if (P.counter) { P.counter.t -= dt; if (P.counter.t <= 0) { const c = P.counter; P.counter = null; counterLand(c); } }   /* COUNTERSTROKE and RIPOSTE land a beat after the guard */
   if (P.caged > 0) { P.caged -= dt; P.vx = 0; }
@@ -10525,7 +10525,7 @@ function updatePlayer(dt) {
   P.atkRec = Math.max(0, (P.atkRec || 0) - dt); if (!(P.atkRec > 0)) P.recSwing = false; CM.holdPresses(P, { dbuf: 0.12, jbuf: 0.12, abuf: 0.15 });   /* WEIGHT: the recovery runs down, and a press made while committed is HELD for the window */
   if (isPirate() && P.boardT > 0 && P.boardHit) { for (const e of enemies) { if (!e.alive || e.harmless || P.boardHit.has(e)) continue;
     if (Math.abs(e.x - P.x) < e.w / 2 + 12 && Math.abs((e.y - e.h / 2) - (P.y - 12)) < 22) { P.boardHit.add(e);
-      hurtAs('dash', e, Math.round((12 + 5 * tal('boarding'))*amul('boarding')), P.x, false); if (e.alive && !e.maxHp) { e.stagger = Math.max(e.stagger || 0, 0.7); e.vx = P.face * 180; }
+      hurtAs('dash', e, Math.round(swordDmg() * (SKK.K.boardingBase + SKK.K.boardingTal * tal('boarding')) * amul('boarding')), P.x, false); if (e.alive && !e.maxHp) { e.stagger = Math.max(e.stagger || 0, 0.7); e.vx = P.face * 180; }
       sparks(e.x, e.y - e.h / 2, P.face, 6); } } }
   if (isPirate() && !P.loaded) { P.reloadT = Math.max(0, (P.reloadT || 0) - dt); if (P.reloadT <= 0) reloadPistol(''); }
   if (isPirate() && P.loaded && !P.barrels) P.barrels = 1 + tal('secondBarrel');
@@ -29765,7 +29765,7 @@ function updateSpearRain(dt) {
     if (s.st === 'wait') { s.delay -= dt; if (s.delay <= 0) s.st = 'fall'; continue; }
     if (s.st === 'fall') { s.y += 520 * dt;
       const e = kitFoes().find(q => Math.abs(q.x - s.x) < (q.w || 12) / 2 + 3 && s.y > q.y - (q.h || 16) && s.y < q.y + 4);
-      if (e) { const big = lcBig(e); hurtAs('shot', e, Math.round(swordDmg() * 1.3 * (big ? 0.6 : 1) * amul('rainOfSpears')), s.x, false); sparks(e.x, e.y - (e.h || 16) / 2, 1, 6);
+      if (e) { const big = lcBig(e); hurtAs('shot', e, Math.round(swordDmg() * SKK.K.rainOfSpears * (big ? 0.6 : 1) * amul('rainOfSpears')), s.x, false); sparks(e.x, e.y - (e.h || 16) / 2, 1, 6);
         if (e.alive && pinFoe(e, PIN_HOLD)) number(e.x, e.y - (e.h || 16) - 18, 'PINNED', '#8fd160'); SFX.rainHit(); s.st = 'stuck'; s.y = e.y; s.life = 1.2; continue; }
       if (s.y >= s.gy) { s.y = s.gy; s.st = 'stuck'; s.life = 1.2; dust(s.x, s.gy, 3); if (Math.random() < 0.5) SFX.rainHit(); } }
     else if (s.st === 'stuck') s.life -= dt; }
@@ -29844,7 +29844,7 @@ function updateKnightKit(dt) {
     else if (!isSolid(tx, ty + 1) && !isOneWay(tileAt(tx, ty + 1)) && !inWater(w.x, w.y - 4)) w.life = 0;   /* and it runs along a floor: over the edge it is gone */
     if (Math.random() < dt * (w.big ? 50 : 30)) parts.push({ x: w.x - w.dir * 4, y: w.y - Math.random() * (w.big ? 20 : 12), vx: -w.dir * 30, vy: -30, life: 0.3, max: 0.3, col: Math.random() < 0.5 ? '#ffd36b' : '#fff6c8', size: 1, grav: 0 });
     for (const e of enemies) { if (!e.alive || e.harmless || e.gone > 0 || w.hit.has(e) || Math.abs(e.x - w.x) > (e.w || 12) / 2 + (w.big ? 8 : 5) || e.y - (e.h || 16) > w.y || e.y < w.y - (w.big ? 26 : 16)) continue;
-      w.hit.add(e); let dmg = Math.round(swordDmg() * (w.big ? 1.2 : 0.6) * amul('swordOfRealm'));
+      w.hit.add(e); let dmg = Math.round(swordDmg() * (w.big ? SKK.K.swordOfRealmBig : SKK.K.swordOfRealmSmall) * amul('swordOfRealm'));
       if (lcBig(e)) dmg = Math.min(dmg, Math.max(3, Math.round((e.maxHp || e.hp) * REALM_CAP)));   /* never what kills a boss outright */
       hurtAs(w.big ? 'heavy' : 'light', e, dmg, w.x - w.dir * 20, false); sparks(e.x, e.y - (e.h || 16) / 2, w.dir, w.big ? 8 : 4); if (w.big && e.alive && !lcBig(e)) e.stagger = Math.max(e.stagger || 0, 0.5); } }
   realmWaves = realmWaves.filter(w => w.life > 0 || w.delay > 0); }
@@ -30338,7 +30338,7 @@ function dawnfall(x, y, struck) { const D = HG.dawn; let hit = !!struck;
   P.dawnN = (P.dawnN || 0) + 1; }
 /* (PALADIN 4) SPEAR OF LIGHT's throw and flight (the wind-up is the paladin block's P.lanceWind) */
 function throwSpear() { const Ln = HG.lance; P.lanceWind = 0; P.castT = 0.25; kitPose(P, 'lanceThrow', 0.3); SFX.lightFull(); SFX.throwWhoosh(); shakeCam(2, P.face * 2); trialEvent('lance');
-  lanceBeams.push({ spear: true, x: P.x + P.face * 10, y: P.y - 11, x0: P.x + P.face * 10, dir: P.face, t: 9, hit: new Set(), dmg: Math.round(Ln.dmg * amul('lightLance')), pierce: tal('lightLance') >= 2 }); }
+  lanceBeams.push({ spear: true, x: P.x + P.face * 10, y: P.y - 11, x0: P.x + P.face * 10, dir: P.face, t: 9, hit: new Set(), dmg: Math.round(swordDmg() * SKK.K.lightLance * amul('lightLance')), pierce: tal('lightLance') >= 2 }); }
 function spearStep(b, dt) { const Ln = HG.lance, step = Ln.sp * dt, n = Math.max(1, Math.ceil(step / 4));
   for (let i = 0; i < n && b.t > 0; i++) { b.x += b.dir * step / n;
     if (Math.abs(b.x - b.x0) > Ln.range || isSolid(Math.floor(b.x / TS), Math.floor(b.y / TS))) { b.t = 0; sparks(b.x, b.y, -b.dir, 4); break; }
@@ -31313,8 +31313,8 @@ function updateThrown(dt) {
   else { const dx = P.x - s.x, dy = (P.y - 9) - s.y, d = Math.hypot(dx, dy) || 1; if (d < 10 || s.t > 3) { thrown = null; SFX.shieldCatch(); impactAt(P.x + P.face * 6, P.y - 9, 'steel'); return; } const sp = 300 + s.t * 60; s.x += dx / d * sp * dt; s.y += dy / d * sp * dt; }
   const sb = { l: s.x - 6, r: s.x + 6, t: s.y - 6, b: s.y + 6 };
   const RANGED = ['archer', 'spit', 'shaman', 'wasp', 'drone', 'bell', 'thief'];
-  if (!s.back) for (const e of enemies) { if (!e.alive || s.hit.has(e) || !overlap(sb, box(e))) continue; s.hit.add(e); if (e.t === 'drone') { s.back = true; SFX.clank(); sparks(s.x, s.y, -s.dir, 3); break; }   /* (claude/sporewood2: the shield takes THE MOTHER CAP 2 at her hide's share) */ const ranged = RANGED.includes(e.t); hurtAs('shot', e,Math.round((ranged ? 13 : 9)*amul('shieldThrow')), s.x - s.dir * 10, false); if (e.guardT > 0) e.guardT = 0; if (e.alive && !e.maxHp) e.stagger = Math.max(e.stagger || 0, ranged ? 1.6 : 0.8); impactAt(s.x, s.y, 'steel'); SFX.clank(); if (ranged) number(e.x, e.y - e.h - 14, 'STRUCK', '#c9d1dc'); if (e.maxHp || e.mini) { s.back = true; break; } }   /* (claude/herokit) it goes THROUGH the small and stuns what it hits (a guard dropped, a shooter reeling), and cuts again on the way home */
-  else for (const e of enemies) { if (!e.alive || s.hitB.has(e) || !overlap(sb, box(e))) continue; s.hitB.add(e); hurtAs('shot', e, Math.round(5 * amul('shieldThrow')), s.x + s.dir * 10, false); impactAt(s.x, s.y, 'steel'); }
+  if (!s.back) for (const e of enemies) { if (!e.alive || s.hit.has(e) || !overlap(sb, box(e))) continue; s.hit.add(e); if (e.t === 'drone') { s.back = true; SFX.clank(); sparks(s.x, s.y, -s.dir, 3); break; }   /* (claude/sporewood2: the shield takes THE MOTHER CAP 2 at her hide's share) */ const ranged = RANGED.includes(e.t); hurtAs('shot', e,Math.round(swordDmg() * (ranged ? SKK.K.shieldThrowFar : SKK.K.shieldThrowNear) * amul('shieldThrow')), s.x - s.dir * 10, false); if (e.guardT > 0) e.guardT = 0; if (e.alive && !e.maxHp) e.stagger = Math.max(e.stagger || 0, ranged ? 1.6 : 0.8); impactAt(s.x, s.y, 'steel'); SFX.clank(); if (ranged) number(e.x, e.y - e.h - 14, 'STRUCK', '#c9d1dc'); if (e.maxHp || e.mini) { s.back = true; break; } }   /* (claude/herokit) it goes THROUGH the small and stuns what it hits (a guard dropped, a shooter reeling), and cuts again on the way home */
+  else for (const e of enemies) { if (!e.alive || s.hitB.has(e) || !overlap(sb, box(e))) continue; s.hitB.add(e); hurtAs('shot', e, Math.round(swordDmg() * SKK.K.shieldThrowBack * amul('shieldThrow')), s.x + s.dir * 10, false); impactAt(s.x, s.y, 'steel'); }
   for (const sd of seeds) if (!sd.dead && !sd.reflected && overlap(sb, { l: sd.x - 3, r: sd.x + 3, t: sd.y - 3, b: sd.y + 3 })) { sd.dead = true; parries++; SFX.parry(); sparks(sd.x, sd.y, -s.dir, 4); number(sd.x, sd.y - 8, 'SWATTED', '#8fd160'); }
   for (const pr of props) if (pr.t === 'puffball' && !pr.popped && overlap(sb, { l: pr.x - 7, r: pr.x + 7, t: pr.y - 12, b: pr.y })) { pr.popped = true; SFX.crack(); burst(pr.x, pr.y - 6, 12, ['#e8e0d0', '#c8bcb0'], 60, 0.5); clouds2.push({ x: pr.x, y: pr.y - 6, r: 14, life: 2 }); }
 }

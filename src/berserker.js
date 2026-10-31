@@ -1,3 +1,4 @@
+import * as SKK from './skill-k.js';   /* (claude/lategamea) the one skill damage rule: swordDmg x k x amul */
 // src/berserker.js — THE BERSERKER'S KIT (claude/berserker 2026-10-04; REWORKED claude/berserker2 2026-10-11, scratch/brief-berserker2.md: "he never
 // defends by stopping - he defends by hitting harder"). A front-line aggressor and poise-breaker, pure PHYSICAL momentum, no magic - TWO axes
 // (a bearded axe and a hatchet), no shield, almost no reach, and a RAGE that only stays full while he stays in the fight. EVERYTHING IS DUAL-WIELDED.
@@ -253,7 +254,7 @@ export function makeBerserker(api) {
     if (p.hatchets && p.hatchets.length) { for (const h of p.hatchets) { h.life -= dt; h.vy += 300 * dt; h.x += h.vx * dt; h.y += h.vy * dt; h.spin += dt * 20;
         if (api.isSolid(Math.floor(h.x / api.TS), Math.floor(h.y / api.TS))) h.life = 0;
         for (const e of api.enemies) { if (h.life <= 0 || !e.alive || e.harmless || e.gone > 0 || h.hit.has(e) || !api.overlap({ l: h.x - 4, r: h.x + 4, t: h.y - 4, b: h.y + 4 }, api.box(e))) continue; h.hit.add(e);
-          api.hurtAs('shot', e, Math.round(api.swordDmg() * 1.2 * api.amul('bzStorm')), h.x - Math.sign(h.vx) * 10, false); api.sparks(e.x, e.y - (e.h || 16) / 2, Math.sign(h.vx), 4); } }
+          api.hurtAs('shot', e, Math.round(api.swordDmg() * SKK.K.bzStorm * api.amul('bzStorm')), h.x - Math.sign(h.vx) * 10, false); api.sparks(e.x, e.y - (e.h || 16) / 2, Math.sign(h.vx), 4); } }
       p.hatchets = p.hatchets.filter(h => h.life > 0); } }
 
   /* ---- DRAWN (after the hero): the axe in flight or on the ground, the hatchets, the frenzy's glow, the crossed axes, a rend's notches, a partner's haste ---- */
