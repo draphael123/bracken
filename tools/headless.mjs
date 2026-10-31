@@ -35,22 +35,26 @@ async function main() {
   const ws = new WebSocket(wsUrl); await new Promise((res, rej) => { ws.onopen = res; ws.onerror = rej; });
   let id = 0; const pending = new Map(), errors = [];
   ws.onmessage = ev => { const m = JSON.parse(ev.data); if (m.id && pending.has(m.id)) { pending.get(m.id)(m); pending.delete(m.id); }
+    if (m.method === 'Inspector.targetCrashed') dead('the page CRASHED (Inspector.targetCrashed)');
     if (m.method === 'Runtime.exceptionThrown') errors.push(m.params.exceptionDetails.exception ? m.params.exceptionDetails.exception.description : m.params.exceptionDetails.text); };
-  const send = (method, params = {}, wait = 0) => new Promise((res, rej) => { const i = ++id; let t = 0; if (wait) t = setTimeout(() => { pending.delete(i); rej(new Error(method + ' did not answer within ' + wait + 'ms' + (params.expression ? ' - evaluating: ' + String(params.expression).replace(/s+/g, ' ').slice(0, 160) : ''))); }, wait);
-    pending.set(i, m => { clearTimeout(t); res(m); }); ws.send(JSON.stringify({ id: i, method, params })); });   /* (claude/harnessstall) a Runtime.evaluate that never answers FAILS naming its expression, not 900 s later via the guard */
+  /* a CRASHED OR CLOSED PAGE answers nothing, ever: every call waiting on it fails now, loudly, instead of sitting to the guard's 900 s (claude/harnessstall) */
+  let deadWhy = null; const dead = why => { deadWhy ||= why; for (const [k, fn] of [...pending]) { pending.delete(k); fn.rej(new Error(deadWhy)); } };
+  ws.onclose = () => dead('the page connection closed'); ws.onerror = () => dead('the page connection failed');
+  const send = (method, params = {}, wait = 0) => new Promise((res, rej) => { if (deadWhy) return rej(new Error(method + ': ' + deadWhy)); const i = ++id; let t = 0; if (wait) t = setTimeout(() => { pending.delete(i); rej(new Error(method + ' did not answer within ' + wait + 'ms' + (params.expression ? ' - evaluating: ' + String(params.expression).replace(/\s+/g, ' ').slice(0, 160) : ''))); }, wait);
+    pending.set(i, Object.assign(m => { clearTimeout(t); res(m); }, { rej: e => { clearTimeout(t); rej(e); } })); ws.send(JSON.stringify({ id: i, method, params })); });   /* (claude/harnessstall) a Runtime.evaluate that never answers FAILS naming its expression, not 900 s later via the guard */
   const evalp = async (expr, timeout = 900000) => { const r = await send('Runtime.evaluate', { expression: expr, awaitPromise: true, returnByValue: true, timeout }, timeout + 1000);
     if (r.result && r.result.exceptionDetails) throw new Error(r.result.exceptionDetails.exception ? r.result.exceptionDetails.exception.description : r.result.exceptionDetails.text);
     return r.result && r.result.result ? r.result.result.value : undefined; };
-  await send('Runtime.enable'); await send('Page.enable');
+  await send('Runtime.enable'); await send('Page.enable'); await send('Inspector.enable').catch(() => {});
   await send('Page.navigate', { url: URL0 });
   for (let i = 0; i < 80; i++) { if (await evalp('typeof window.BK === "object" && !!window.BK.bossLab').catch(() => false)) break; await sleep(250); }
   let code = 0;
   try {
     if (mode === 'expr') { console.log(JSON.stringify(await evalp('(async () => JSON.parse(JSON.stringify(await (' + arg + '))))()'), null, 1)); }
     else if (mode === 'floats') {   /* src/floatlab.js: every sprite's pixels against the tiles, and every water creature against its water */
-      /* (release 10-29) six levels per Runtime.evaluate: one 68-level call stalled for an hour on batch126 (every level alone: 1-3 s) - the harness stall that also hit load-leak, textfit menu and footing-art */
+      /* (release 10-29) six levels per Runtime.evaluate (each bounded to 240 s, claude/harnessstall: a chunk takes 5-20 s, so a wedged page fails in 4 minutes, naming the chunk, not at the guard's 900 s): one 68-level call stalled for an hour on batch126 (every level alone: 1-3 s) - the harness stall that also hit load-leak, textfit menu and footing-art */
       const ids = arg ? arg.split(',') : await evalp('(async () => (await import("/src/level.js")).LEVELS.map(l => l.id))()'), r = { levels: 0, sprites: 0, hits: [], water: [] };
-      for (let i = 0; i < ids.length; i += 6) { const q = await evalp('(async () => { const r = await BK.floatLab(' + JSON.stringify({ levels: ids.slice(i, i + 6) }) + '); return { levels: r.levels, sprites: r.sprites, hits: r.hits, water: r.water }; })()'); r.levels += q.levels; r.sprites += q.sprites; r.hits.push(...q.hits); r.water.push(...q.water); }
+      for (let i = 0; i < ids.length; i += 6) { const q = await evalp('(async () => { const r = await BK.floatLab(' + JSON.stringify({ levels: ids.slice(i, i + 6) }) + '); return { levels: r.levels, sprites: r.sprites, hits: r.hits, water: r.water }; })()', 240000); r.levels += q.levels; r.sprites += q.sprites; r.hits.push(...q.hits); r.water.push(...q.water); }
       for (const h of r.hits) console.log('  ' + h); for (const h of r.water) console.log('  WATER ' + h);
       console.log(r.levels + ' levels, ' + r.sprites + ' sprites. ' + (r.hits.length + r.water.length ? (r.hits.length + r.water.length) + ' in the air, through the ground or out of the water.' : 'nothing in the air, through the ground or out of the water.'));
       if (r.hits.length + r.water.length) code = 1; }
