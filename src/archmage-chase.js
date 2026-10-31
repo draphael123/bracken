@@ -75,7 +75,7 @@ export function buildChase3(k, T, TS = 16) {
   ent('sign', CH.x0 + 6, R0.floor - 1, { text: 'STRIKE HIS SPELLS BACK AT HIM AND HE FALLS. HIT HIM WHERE HE LIES.' });
   ent('sign', ROOMS[0].pillar - 2, R0.floor - 1, { text: 'A CRACKED PILLAR HOLDS THIS FLOOR. WHEN HE IS THROUGH IT, STRIKE IT.' });
   ROOMS.forEach((R, i) => { if (i && R.follow === 'strike') ent('sign', R.pillar + 3, roomOf(i).floor - 1, { text: 'ANOTHER CRACKED PILLAR: STRIKE IT WHEN HE IS THROUGH.' }); });
-  ROOMS.forEach((R, i) => ent('sign', R.vault - coverSide(i), roomOf(i).floor - 1, { text: VAULT_SIGNS[i] }));   /* (ft4a) the vault pillars, signed at the point of use: at the foot on the wall's side (the column falls the other way) */
+  ROOMS.forEach((R, i) => ent('sign', (R.vault - coverSide(i) <= CH.x0 || R.vault - coverSide(i) >= CH.x1) ? R.vault + coverSide(i) : R.vault - coverSide(i), roomOf(i).floor - 1, { text: VAULT_SIGNS[i] }));   /* (ft4a) the vault pillars, signed at the point of use: at the foot on the wall's side (the column falls the other way) */   /* (batch131: a sign ON the shaft wall pierced it - tools pixels - so it stands one tile in, between the pillar and its cover) */
   ent('undeadmage', CH.x1 - 5, R0.floor - CH.hover - 2, { face: -1 });
   return { rooms: ROOMS.map((_, i) => roomOf(i)), core: CORE, supports, start: [CH.x0 + 4, R0.floor - 1], trigger: (CH.x0 + 6) * TS };
 }
