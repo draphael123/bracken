@@ -59,7 +59,7 @@ const PAGE = `(async (hero, levelId) => {
       const half = (lo[0] + hi[0]) / 2; for (let f = 0; f < 400 && P.zip === z && (P.x - half) * east < 0; f++) BK.sim(1);
       const xOff = P.x, vy0 = P.vy; if (how === 'jump') { k.jump = true; BK.press('jump'); } else k.down = true; BK.sim(2); k.jump = false;
       const off = P.zip !== z; const vy1 = P.vy; k.down = false;
-      let again = false; for (let f = 0; f < 200 && !(P.ground && !P.zip); f++) { BK.sim(1); if (P.zip) again = true; }
+      let again = false; for (let f = 0; f < 200 && !(P.ground && !P.zip); f++) { BK.sim(1); if (P.zip === z) again = true; if (P.zip && P.zip !== z) { BK.sim(400); break; } }   /* (lance4tune) game-wide regrab (claude/zipregrab): another rope in reach is caught at once - only THIS rope must not be re-caught */
       row(tag + ' ' + how + ': lets go part-way', off, 'still on the rope after ' + how + ': ' + JSON.stringify(info(P)));
       row(tag + ' ' + how + ': ' + (how === 'jump' ? 'a hop clear of it' : 'a drop') + ', lands, not re-caught', off && !again && P.ground && !(P.dead > 0) && (how === 'jump' ? vy1 < 0 : vy1 >= 0) && Math.abs(P.x - xOff) > 4, 'vy ' + Math.round(vy1) + ' again=' + again + ' ' + JSON.stringify(info(P)) + ' off at ' + Math.round(xOff)); }
   }
