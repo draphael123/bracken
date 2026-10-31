@@ -71,7 +71,7 @@ export function makeGrubbagHands(ctx) {
     const e = { ...base, t: 'grubbag', w: GB.w, h: GB.h, hp, maxHp: hp, noGrav: true, markH: GB.markH, face: -1, mode: 'sleep', modeT: 0, phase: 1, boss: true, ward: 0 };
     e.x = S.G.chairX; e.y = S.G.floorY; for (const pp of ctx.players) pp.gbKeys = null; return e; };
   const heroes = () => ctx.players.map(pp => ({ x: pp.x, y: pp.y, ground: !!pp.ground, alive: ctx.upright(pp) && !pp.dead, pp }));
-  const bzD = d => Math.round((ctx.heroId && ctx.heroId() === 'berserker' ? d * GB.bz.hurt : d) * (GB.dmgMul || 1));
+  const bzD = d => Math.round((ctx.heroId && ctx.heroId() === 'berserker' ? d * GB.bz.hurt : d) * (GB.dmgMul || 1) * ((GB.heroMul || {})[ctx.heroId && ctx.heroId()] ?? 1));
   function world(e) {
     return {
       number: (x, y, t, col) => ctx.number(x, y, t, col), sound: k => { const f = SOUND[k]; if (f) try { f(ctx.sfx); } catch {} }, shake: n => ctx.shake(n),
