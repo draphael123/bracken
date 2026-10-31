@@ -1,6 +1,17 @@
 [
   {
     "date": "2026-10-31",
+    "batch": 134,
+    "lines": [
+      "Lord Grubbag: a coal trench, meat-hook rails and a second helping for each dish",
+      "Gate bells lock for 1 second at most, so you can ring them again sooner",
+      "The Lumber Trail leads on to the Hornet Nest again (no ferry skipping past it)",
+      "The Undead Mage realm now speaks in the hint box",
+      "Load-leak test now audits levels in chunks (test tooling only)"
+    ]
+  },
+  {
+    "date": "2026-10-31",
     "batch": 133,
     "lines": [
       "Lance 4 fights on foot: no horse, three tempos of attack, a thrust, a sweep or a charge",
@@ -309,18 +320,6 @@
       "Fell pines into bridges, a lean-to, onto foes",
       "Bracken Wood rebuilt with a logging-camp look",
       "Waymeet Paladin retuned: a harder duel"
-    ]
-  },
-  {
-    "date": "2026-10-19",
-    "batch": 104,
-    "lines": [
-      "The Foe Pass: foes break, finisher refunds stamina",
-      "Foes tell their signature blows: parry, jump, duck",
-      "Shielded, hasted, heavy, volatile foes on the Moor",
-      "Foes chase runners, archers lead their shots",
-      "Death Knight: ward-release parry, THROWN BACK",
-      "The Stockade rebuilt: towers, horn, war tower"
     ]
   }
 ]

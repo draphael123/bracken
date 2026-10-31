@@ -1,9 +1,7 @@
 /* tools/transition-woodmarsh.mjs - THE FIRST LEVEL TRANSITION, pinned (claude/transwm; src/transitions.js + transitions-art.js; brief-transition-woodmarsh-1018.md).
    OLD TUSKER falls -> the clear is credited -> the way opens -> the heroes walk out -> the ferry carries them -> fade -> MARSH begins with them stepping off.
      node tools/transition-woodmarsh.mjs            node-only: the table, the timeline (skip, walk cap, policy), the ferry scene's geometry, the source wiring
-     node tools/transition-woodmarsh.mjs --browser  adds the page: kill the boss with ?trans=1 on -> credit first, wall opens, walk, scene, fade, Marsh at the ferry, input returns;
-                                                    a skip at 1.5 s and at the shore; co-op (all seats ride); a replay; a flag-off kill still shows the win card;
-                                                    the map return still works; the campaign order and the boss-select fight untouched
+     node tools/transition-woodmarsh.mjs --browser  adds the page: Old Tusker's kill shows the win card, no ferry (smallfix5 turned the L1 ferry off), flag on or off
      node tools/transition-woodmarsh.mjs --perf     the ride on a phone viewport at 4x CPU throttle: frames per second over the ride (>= ~45 fps)
    Exit 1 on any red row. */
 import { readFileSync } from 'node:fs';
@@ -31,7 +29,8 @@ ok('the next level begins with a stepping-off walk', E && E.arrive && E.arrive.f
 { const tl = TRM.start(E); while (TRM.phase(tl) !== 'shore') TRM.step(tl, 1 / 60, { ready: true }); TRM.step(tl, 1 / 60, { press: true }); ok('a skip works in the scene too', tl.skipped && TRM.phase(tl) === 'fade'); }
 ok('the policy: ON BY DEFAULT (the art is in); ?trans=0 / force(false) is the off switch; the setting is honoured (NEVER stops it, FIRST TIME skips a seen pair, ALWAYS replays)',
   TRM.policy({}) && !TRM.policy({ off: true }) && !TRM.policy({ mode: 'never' }) && TRM.policy({ mode: 'first', seen: false }) && !TRM.policy({ mode: 'first', seen: true }) && TRM.policy({ mode: 'always', seen: true }) && !TRM.policy({ off: true, mode: 'always' }));
-ok('main.js: the ?trans=1 gate is gone (default on), ?trans=0 is the off switch', src.includes("q.get('trans') === '0'") && !src.includes("q.get('trans') === '1'") && !src.includes('live: false'));
+ok('main.js: trnBegin only plays a transition into a level that needs the one just won (smallfix5: the L1 ferry is off, the road goes on to the Hornet Nest)', /LEVELS[to].needs !== LEVELS[levelIndex].id/.test(src));
+ok('main.js: the ?trans=1 gate is gone (default on), ?trans=0 is the off switch', src.includes("q.get('trans') === '0'") && !src.includes("q.get('trans') === '1'"));
 ok('the TRANSITIONS row is in Settings > Gameplay (Helpers), on the title and the pause menu alike, with its description, value and cycle wired in main.js', tabOf('Transitions') === 'gameplay' && tabRows('gameplay', 'play').includes('Transitions') && tabRows('gameplay', 'title').includes('Transitions') && src.includes("k === 'Transitions' ? TRM.MODE_LABEL") && src.includes("k === 'Transitions') { const o = ['always', 'first', 'never']") && src.includes("'Transitions': 'the cutscene"));ok('the setting: three values, ALWAYS / FIRST TIME / NEVER, an unknown value is FIRST TIME', TRM.MODES.join() === 'always,first,never' && TRM.modeOf(undefined) === 'first' && TRM.modeOf('bogus') === 'first' && TRM.MODE_LABEL.first === 'FIRST TIME');
 ok('letterbox bars slide in (0 -> 22) and out', TRM.barIn(0) === 0 && TRM.barIn(1) === TRM.BAR && TRM.barOut(0, 1.7) === TRM.BAR && TRM.barOut(1.7, 1.7) === 0);
 ok('the walk: slower is never under WALK_MIN, a long way is a run capped at WALK_MAX', TRM.walkSpeed(1) === TRM.WALK_MIN && TRM.walkSpeed(5000) === TRM.WALK_MAX);
@@ -51,61 +50,20 @@ ok('no text in the scenes but the skip hint (dialogue-free): transitions-art.js 
 
 /* ---- the page ---- */
 if (process.argv.includes('--browser')) {
+  /* smallfix5: the Lumber Trail -> Marsh Wood ferry is OFF (the road goes wood -> Hornet's Nest -> marsh). The table row and the art stay; this pins that
+     Old Tusker's kill now shows the normal win card, with the transition flag on or off, and that no page error comes of it. */
   const { openPage } = await import('./cdp.mjs'); const pg = await openPage({ audio: false });
   const ev = x => pg.evalp(x, 600000);
   try {
-    const setup = `window.__t = {}; window.__setup = async (flag, coop) => { BK.manualSimulation = true; const { LEVELS } = await import('/src/level.js'); window.__L = LEVELS; BK.setHero('knight'); BK.reset({ fresh: true });
-        delete BK.PROG.transSeen; BK.SET.transitions = undefined; BK.trans.force(flag); if (coop) BK.coopArm('warden', false); const wi = LEVELS.findIndex(l => l.id === 'wood'); BK.load(wi); BK.start(); BK.sim(30); return wi; };
-      window.__kill = () => { const A = BK.L.arena, e = BK.enemies().find(q => q.t === A.boss && q.alive); BK.god = true; BK.tp(Math.round(A.trigger / 16) + 1, Math.round(A.floor / 16) - 1); if (BK.players().length > 1) { const q = BK.players()[1]; q.x = BK.P.x + 20; q.y = BK.P.y; q.vx = q.vy = 0; } BK.sim(200);
-        for (let n = 0; n < 1000 && e && e.alive; n++) { BK.P.inv = 99; BK.P.hp = BK.P.maxHp; e.hp = Math.min(e.hp, 1); e.inv = 0; e.open = 9; e.passThrough = true; BKT.hurtEnemy(e, 1e6, e.x + (n % 2 ? 10 : -10), n % 3 === 0); if (e.alive) BK.sim(6); } return !!e && !e.alive; };
-      window.__lvl = () => BK.trans.levelId();`;
-    await ev(`(async()=>{ ${setup}; return 1; })()`);
-    /* 1. a full watch, flag on */
-    const a = await ev(`(async()=>{ const out = { ph: [] }; await __setup(true); out.killed = __kill();
-      let last = '', clearedAtBegin = null;
-      for (let i = 0; i < 3000; i++) { BK.sim(1); const tr = BK.trans.tr; if (tr && clearedAtBegin === null) { clearedAtBegin = !!(BK.PROG.wood && BK.PROG.wood.cleared); out.openCol = null; out.xs0 = BK.players ? 0 : 0; }
-        if (tr && !tr.loading) { const ph = BK.trans.TRM.phase(tr.tl); if (ph !== last) { out.ph.push(ph); last = ph; if (ph === 'walk') out.gap = [3,4,5,6,7,8].map(r => BK.L.grid[r * BK.L.W + 549]); if (ph === 'shore') out.edgeX = BK.P.x; }
-          if (i % 7 === 0) BK.draw1(); } if (BK.state === 'play' && __lvl() === 'marsh') { out.frames = i; break; } }
-      out.clearedAtBegin = clearedAtBegin; out.lvl = __lvl(); out.state = BK.state; out.arrive = !!BK.trans.arrive; out.x0 = BK.P.x; out.wood = !!(BK.PROG.wood && BK.PROG.wood.cleared); out.seen = JSON.stringify(BK.PROG.transSeen || null);
-      /* control returns after the step-off */
-      const x1 = BK.P.x; BK.sim(150); out.arriveDone = BK.trans.arrive && BK.trans.arrive.done; out.x1 = BK.P.x; BK.keys.right = true; BK.sim(30); BK.keys.right = false; out.moved = BK.P.x - out.x1;
-      out.errors = 0; return out; })()`);
-    ok('Old Tusker is killed in the page', a.killed, JSON.stringify(a));
-    ok('THE WOOD IS CLEARED AND SAVED BEFORE THE CUTSCENE (credit first)', a.clearedAtBegin === true && a.wood === true, JSON.stringify(a));
-    ok('beats run in order: open, walk, shore, ride, fade', a.ph.join() === 'open,walk,shore,ride,fade', a.ph.join());
-    ok('the way opened: the gate column is air, a lintel remains', a.gap && a.gap.every(v => v === 0) && true, JSON.stringify(a.gap));
-    ok('the Marsh begins (state play) with the stepping-off arrival', a.lvl === 'marsh' && a.state === 'play' && a.arrive, JSON.stringify(a));
-    ok('the heroes start ON the ferry (x < 40) and step off to the bank (x > 80), then control returns', a.x0 < 40 && a.x1 > 80 && a.arriveDone && a.moved > 3, JSON.stringify(a));
-    ok('the clear is marked as seen on the save', /wood>marsh/.test(a.seen || ''), a.seen);
-    /* 2. skip at 1.5 s */
-    const b = await ev(`(async()=>{ const out = {}; await __setup(true); __kill(); let k = 0;
-      for (let i = 0; i < 2000; i++) { BK.sim(1); const tr = BK.trans.tr; if (tr) { k++; if (k === 90) BK.trans.press(); } if (BK.state === 'play' && __lvl() === 'marsh') { out.frames = k; break; } }
-      out.lvl = __lvl(); out.wood = !!(BK.PROG.wood && BK.PROG.wood.cleared); out.arrive = !!BK.trans.arrive; out.sameStart = BK.P.x < 40; return out; })()`);
-    ok('a skip at 1.5 s lands in the Marsh at the ferry, same state as a full watch (<= 2.2 s total)', b.lvl === 'marsh' && b.arrive && b.sameStart && b.frames < 2.2 * 60 + 5, JSON.stringify(b));
-    ok('the wood stays cleared after a skip', b.wood);
-    /* 3. flag off: the win card, exactly as before */
-    const c = await ev(`(async()=>{ const out = {}; await __setup(false); __kill(); for (let i = 0; i < 800; i++) { BK.sim(1); if (BK.state === 'win') break; } out.state = BK.state; out.tr = !!BK.trans.tr; out.lvl = __lvl();
-      BK.keys.confirm = false; return out; })()`);
-    ok('with the flag OFF the win card arrives as before (no transition)', c.state === 'win' && !c.tr && c.lvl === 'wood', JSON.stringify(c));
-    /* 3a. the DEFAULT (no flag, no switch): the first kill plays the transition */
-    const dflt = await ev(`(async()=>{ const out = {}; await __setup(null); __kill(); let tr = false; for (let i = 0; i < 700; i++) { BK.sim(1); if (BK.trans.tr) { tr = true; break; } if (BK.state === 'win') break; } out.tr = tr; out.state = BK.state; return out; })()`);
-    ok('ON BY DEFAULT: with no flag the first Old Tusker kill plays the transition (no ?trans=1 needed)', dflt.tr === true, JSON.stringify(dflt));
-    /* 3b. the setting: NEVER stops it even with the flag; FIRST TIME skips a pair already seen; ALWAYS replays it */
-    const s3 = await ev(`(async()=>{ const out = {}; for (const m of ['never', 'first', 'always']) { await __setup(true); BK.SET.transitions = m; if (m === 'first') BK.PROG.transSeen = { 'wood>marsh': 1 }; __kill(); let tr = false; for (let i = 0; i < 700; i++) { BK.sim(1); if (BK.trans.tr) { tr = true; break; } if (BK.state === 'win') break; } out[m] = tr; }
-      BK.SET.transitions = undefined; return out; })()`);
-    ok('the TRANSITIONS setting is honoured: NEVER and a seen FIRST TIME play nothing, ALWAYS plays', s3.never === false && s3.first === false && s3.always === true, JSON.stringify(s3));
-    /* 4. a mid-cutscene quit: Wood cleared, the map return works */
-    const d = await ev(`(async()=>{ const out = {}; await __setup(true); __kill(); for (let i = 0; i < 400; i++) { BK.sim(1); if (BK.trans.tr) break; } out.began = !!BK.trans.tr; out.cleared = !!(BK.PROG.wood && BK.PROG.wood.cleared);
-      BK.state = 'map'; BK.trans.force(false); out.state = BK.state; return out; })()`);
-    ok('quitting mid-cutscene = the wood is cleared (and the map is reachable)', d.began && d.cleared && d.state === 'map', JSON.stringify(d));
-    /* 5. co-op: every seat rides */
-    const e = await ev(`(async()=>{ const out = {}; await __setup(true, true); out.seats = BK.players().length; __kill(); let rode = 0;
-      for (let i = 0; i < 3000; i++) { BK.sim(1); const tr = BK.trans.tr; if (tr && !tr.loading) { rode = Math.max(rode, tr.pos.length); out.pl = out.pl || BK.players().length; if (i % 9 === 0) BK.draw1(); } if (BK.state === 'play' && __lvl() === 'marsh') { out.frames = i; break; } }
-      out.rode = rode; out.after = BK.players().length; out.x0 = BK.players().map(p => Math.round(p.x)); BK.sim(150); out.x1 = BK.players().map(p => Math.round(p.x)); out.done = BK.trans.arrive && BK.trans.arrive.done; return out; })()`);
-    ok('CO-OP: both seats ride, both start on the ferry and both step off', e.seats === 2 && e.rode === 2 && e.after === 2 && e.x0.every(x => x < 40) && e.x1.every(x => x > 80) && e.done, JSON.stringify(e));
-    ok('every seat is walked, drawn on the ferry and handed back (the seat loops are over players)', /players\.forEach\(\(p, i\) => \{ const q2 = tr\.pos\[i\]/.test(src) && /n: players\.length/.test(src) && /players\.forEach\(\(p, i\) => asPlayer\(p, \(\) => \{ for \(const k of Object\.keys\(keys\)\)/.test(src));
-    const tw = await ev(`({ pc: BK.trans.textW('ANY BUTTON: SKIP'), touch: BK.trans.textW('TAP: SKIP'), VW: 320 })`);
-    ok('TEXTFIT: the skip hint (the only text in a transition) fits the bar at 320 wide, both wordings (right-aligned 6 px in)', tw.pc + 6 < tw.VW - 40 && tw.touch + 6 < tw.VW - 40, JSON.stringify(tw));
+    const run = flag => ev(`(async()=>{ const out = {}; BK.manualSimulation = true; const { LEVELS } = await import('/src/level.js'); BK.setHero('knight'); BK.reset({ fresh: true }); delete BK.PROG.transSeen; BK.SET.transitions = undefined; BK.trans.force(${flag}); BK.load(LEVELS.findIndex(l => l.id === 'wood')); BK.start(); BK.sim(30);
+      const A = BK.L.arena, e = BK.enemies().find(q => q.t === A.boss && q.alive); BK.god = true; BK.tp(Math.round(A.trigger / 16) + 1, Math.round(A.floor / 16) - 1); BK.sim(200);
+      for (let n = 0; n < 1000 && e && e.alive; n++) { BK.P.inv = 99; BK.P.hp = BK.P.maxHp; e.hp = Math.min(e.hp, 1); e.inv = 0; e.open = 9; e.passThrough = true; BKT.hurtEnemy(e, 1e6, e.x + (n % 2 ? 10 : -10), n % 3 === 0); if (e.alive) BK.sim(6); }
+      out.killed = !!e && !e.alive; let tr = false; for (let i = 0; i < 800; i++) { BK.sim(1); if (BK.trans.tr) { tr = true; break; } if (BK.state === 'win') break; }
+      out.tr = tr; out.state = BK.state; out.lvl = BK.trans.levelId(); out.wood = !!(BK.PROG.wood && BK.PROG.wood.cleared); return out; })()`);
+    for (const flag of ['true', 'false']) {
+      const a = await run(flag);
+      ok('flag ' + flag + ': Old Tusker falls, the wood is cleared, the WIN CARD shows and no ferry plays', a.killed && a.wood && a.state === 'win' && !a.tr && a.lvl === 'wood', JSON.stringify(a));
+    }
     ok('no page errors', pg.errors.length === 0, JSON.stringify(pg.errors.slice(0, 3)));
   } finally { pg.close(); }
 }
