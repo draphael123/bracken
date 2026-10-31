@@ -352,9 +352,9 @@ export function buildKitchenGate({ painter, T, TS }) {
   air(A0 - 1, A1 + 1, RF, FL - 1);
   /* (claude/kitchengate4) ONE SHELF now (the west one): the upper hook rail runs where the east one stood */
   { const BELT = [A0 + 7, A1 - 16, FL - 2], PLATS = [[A0 + 9, A0 + 12, FL - 5]]; shelf(BELT[0], BELT[1], BELT[2]); for (const [a, b, y] of PLATS) shelf(a, b, y); }
-  /* (claude/kitchengate4, Daniel 10-30) THE COAL TRENCH: the floor under the serving line cut down three rows to a coal bed (columns TR0..TR1), a chain-link step one row up at
+  /* (claude/kitchengate4, Daniel 10-30) THE COAL TRENCH: the floor under the serving line's EAST half cut down three rows to a coal bed (columns TR0..TR1), a chain-link step one row up at
      either end (the climb back up: a fall is a coal bite and a climb, never a death); the hall's entry and his table side stay on the old floor */
-  const TR0 = A0 + 9, TR1 = A1 - 18; air(TR0, TR1, FL, FL + 2); air(TR0 - 1, TR0 - 1, FL, FL + 1); air(TR1 + 1, TR1 + 1, FL, FL + 1);
+  const TR0 = A0 + 13, TR1 = A1 - 18;   /* (the EAST half of the line: the west half keeps its floor - the hatch, the stove and the line's foot are walked to, the way to HIM is over the coals) */ air(TR0, TR1, FL, FL + 2); air(TR0 - 1, TR0 - 1, FL, FL + 1); air(TR1 + 1, TR1 + 1, FL, FL + 1);
   /* THE MEAT-HOOK RAILS (src/zipline.js, chain-driven east, hatch -> platter): the LOWER taken from the line under the hatch (its rope 20 px over the line's top), its red stretch
      the hop onto the UPPER, which climbs over the trench and ENDS OVER HIS PLATTER (its end lets you drop on it: THE THIRD OPENING, src/grubbag.js platterDrop) */
   const PXC = c => (M(Math.floor(c)) + (c - Math.floor(c))) * TS;
@@ -370,7 +370,7 @@ export function buildKitchenGate({ painter, T, TS }) {
        its top row), the shelves, the grease cauldron's hook (column, row) */
     chair: A1 - 7, table: [A1 - 18, A1 - 15], oven: A0 + 2, bellows: A0 + 5, belt: BELT, plats: PLATS, cauldron: [A1 - 17, 13],
     /* (claude/kitchengate4) THE COAL TRENCH (the coal bed's columns, its top row) and its two chain-link steps; the arena's two hook rails */
-    trench: [A0 + 9, A1 - 18, FL + 3], steps: [A0 + 8, A1 - 17], rails: [railA, railB] }; })(KITCHEN.arena);
+    trench: [A0 + 13, A1 - 18, FL + 3], steps: [A0 + 12, A1 - 17], rails: [railA, railB] }; })(KITCHEN.arena);
   return {
     W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: 39 }, pools: [], falls: [],
     arena, kitchen: true, kgKit: true, hoists, kgFires: fires, kgPots: pots, kgWheels: wheels, kgTrails: trails, kgDoors: doors, kgRace: race, kgPages: pages, kgVault: vault, kgRacks: racks,

@@ -59,7 +59,7 @@ export const GB = {
   line: { v: 34, every: [5.6, 5.0, 4.5], bombEvery: 4, first: 2.2, fuse: 5.6, batV: 250, blast: 34, blastDmg: 12, knockV: 120 },
   hungry: { t: 6, mul: 0.7, cd: 0.8 },
   stove: { cool: 12, box: 16 },
-  bz: { hurt: 1.5 }, dmgMul: 2.9,
+  bz: { hurt: 1.5 }, dmgMul: 2.6,   /* (claude/kitchengate4: 2.9 -> 2.6 - the trench: the way to him is over the line or the hooks now, his blows land on a busier hero; a 3-seed greybox tune, the tune lane owns it) */
 };
 export const GB_SAY = { wake: 'LORD GRUBBAG THE GLUTTON', rule: 'THE SERVING LINE FEEDS HIM: KNOCK THE DISHES OFF. LET THE BOMBS AND THE CHILLIES REACH HIM.', p2: 'MORE! FASTER!', p3: 'HE REACHES FOR YOU',
   eats: 'HE EATS: HEALED', full: 'HE EATS: TOO FULL TO HEAL', smash: 'KNOCKED OFF: HE GOES HUNGRY', hungry: 'HUNGRY', bomb: 'A BOMB ON THE LINE: LET IT REACH HIM, OR BAT IT ALONG',
@@ -424,7 +424,8 @@ function gbPlan0(s) {
             return jump('jump the grab'); }
           if (e.mode === 'grabTell' && e.modeT < 0.14 && P.ground) return jump('jump the grab (on the beat)');
           out.gx = P.x; out.why = 'the grab: ready to jump'; return out; } }
-      if (e.mode === 'sweepTell' && onB) { out.gx = P.x; out.why = 'the sweep: ready to jump'; return out; }
+      if (e.mode === 'sweepTell' && onB) { if (P.x > B.x1 - 50 && e.modeT < 0.12) return jump('jump the sweep (at the platter end, on the beat)');   /* (claude/kitchengate4) by the platter the plates start under you: no time to read them */
+        out.gx = P.x; out.why = 'the sweep: ready to jump'; return out; }
       if (e.mode === 'flingTell') { out.gx = P.x; out.why = 'the fling: ready to jump'; return out; }
       if (e.mode === 'belchTell' && onF) { out.gx = P.x; out.why = 'the belch: ready to jump'; return out; }
       if (e.mode === 'lobTell') { out.gx = P.x + (P.x < G.mid ? 30 : -30); if (onB) out.gx = bx(out.gx); out.why = 'the lob: keep moving'; return out; }
