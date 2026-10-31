@@ -153,7 +153,7 @@ import * as EG from './exit-gates.js';   /* THE EXIT GATES BY REGION (claude/exi
 const EGSFX = { light: () => SFX.lightFull(), open: () => SFX.gateOpen() };
 import * as SV from './survival.js'; import * as F2 from './flasks2.js';   /* FLASKS 2 (claude/flasks2, Daniel 10-08): the flask row, the drink, the store's FLASKS tab, the finds and objectives */   /* SURVIVAL (claude/survival, Daniel 10-07): the flask, dry shrines, % hazards and the exams' deadly spikes - the numbers live there */
 import { JUICE, blowClass, takenClass, blockClass, stopFor, shakeAdd, safeKnock, weaponOf } from './juice.js';   /* THE JUICE TABLE: one row per weight class, read by every landed blow and every blow the hero takes (tools/juice.mjs) */
-import { LEGACY_NODES, growthNodes, SKILLS, importProgress, exportProgress, loadProgress, migrateProgress, growthAt, skillScale, slotsAt, skillFor, skillsFor, equipped, buySkill, equipSkill, passiveOn, passiveLadder, passivesArriving, CARD, CARD_CAP, PERKS, RESPEC_SILVER, skillRank, rankUp, rankPrice, rankLevel, RANK_MAX, RANK_MUL, cardOf, evenCard, picksSpent, picksOwed, milestonesOwed, perkOffer, perkOn, perkRank, thrOn, thrNext, THRESH, MINOR_PERKS, ALL_HERO_PERKS, HERO_PERK_MAX, levelsToPerk, nextMilestone, techniquesArriving, pickCard, pickMilestone, respecCard, coopOpen, DEFAULT_HEROES, MAX_SLOTS } from './progression.js';
+import { LEGACY_NODES, growthNodes, SKILLS, importProgress, exportProgress, loadProgress, migrateProgress, growthAt, skillScale, slotsAt, skillFor, skillsFor, equipped, buySkill, equipSkill, passiveOn, passiveLadder, passivesArriving, CARD, CARD_CAP, CARD_FULL, PERKS, RESPEC_SILVER, skillRank, rankUp, rankPrice, rankLevel, RANK_MAX, RANK_MUL, cardOf, evenCard, picksSpent, picksOwed, milestonesOwed, perkOffer, perkOn, perkRank, thrOn, thrNext, THRESH, MINOR_PERKS, ALL_HERO_PERKS, HERO_PERK_MAX, levelsToPerk, nextMilestone, techniquesArriving, pickCard, pickMilestone, respecCard, coopOpen, DEFAULT_HEROES, MAX_SLOTS } from './progression.js';
 import * as TR from './title-region.js';   /* THE TITLE BY REGION (claude/titleregion): which region the last-played slot has reached */
 import { depthsOf, gateOf } from './campaign-order.js'; import { roadEndId, roadTally } from './ending.js';   /* CATCH-UP XP: how deep a level sits is the level a hero is expected to be in it */
 import { GROUND_KITS } from './dressing.js';
@@ -4787,7 +4787,7 @@ function drawCard() { const u = cardUi; if (!u) return; const h = hero(), lv = h
     g.fillStyle = sel ? 'rgba(60,80,50,0.92)' : 'rgba(26,24,36,0.92)'; g.fillRect(x, top, cw, ch);
     g.strokeStyle = sel ? UI.sel : own ? 'rgba(143,209,96,0.55)' : 'rgba(255,255,255,0.16)'; g.lineWidth = 1; g.strokeRect(x + 0.5, top + 0.5, cw - 1, ch - 1);
     text(fitName(k.name, cw - 8, 8), x + cw / 2, top + 6, full ? UI.dim : sel ? UI.sel : own ? '#8fd160' : UI.title, 'center', 8);
-    wrap(k.what, cw - 8, 6).slice(0, stat ? 2 : 3).forEach((ln, j) => text(ln, x + cw / 2, top + 20 + j * 9, full ? UI.dim : UI.text, 'center', 6));
+    wrap(stat && (cd[k.id] || 0) >= CARD_FULL ? { v: '+4 HEALTH (HALF)', e: '+6 STAMINA (HALF)', m: '+1 DAMAGE PER 2 PICKS' }[k.id] || k.what : k.what, cw - 8, 6).slice(0, stat ? 2 : 3).forEach((ln, j) => text(ln, x + cw / 2, top + 20 + j * 9, full ? UI.dim : UI.text, 'center', 6));
     if (stat) { const now = { v: gr.hp + ' HEALTH', e: gr.stamina + ' STAMINA', m: '+' + gr.damage + ' DAMAGE' }[k.id], th = thrNext(PROG, h, k.id), have = cd[k.id] || 0;
       text(full ? 'FULL' : have + ' / ' + CARD_CAP + ' PICKS', x + cw / 2, top + 40, full ? '#ff9a5c' : UI.gold, 'center', 6);
       text(fitName(now, cw - 8, 6), x + cw / 2, top + 49, UI.dim, 'center', 6);
@@ -7767,9 +7767,9 @@ function damagePlayer0(fromX, dmg, { up = false, unblockable = false, pierce = f
     number(P.x, P.y - 22, 'GUARD BREAK', '#ffd36b');
   }
   if (L && L.trial) { P.inv = 0.8; P.hurt = 0.2; flash = 0.08; SFX.pHurt(); P.vx = (Math.sign(P.x - fromX) || -P.face) * 120; P.vy = -120; P.ground = false; return 'hit'; } // a trial never hurts
-  dmg = Math.max(1, Math.round(dmg * diffNow().take * DFM.df('take') * (1 + 0.28 * hitTierOf(curId(), who || updFoe)) * coopTake() * (perk('iron') ? 0.9 : 1)));   /* (claude/difficulty) the mode's damage taken (Normal x1) */   /* (IRON HIDE: a milestone perk) */   /* AND TWICE AS HARD: the other half of the co-op rule, on the one line every blow that ever lands on a hero comes through */
-  if (PROG.charm === 'iron') dmg = Math.max(1, Math.round(dmg * 0.8));
-  dmg = Math.max(1, Math.round(dmg * (PROG.items.mail ? 0.9 : 1) * (PROG.items.plate ? 0.9 : 1) * (PROG.items.mail2 ? 0.9 : 1) * (isPyro() && tal('heatShield') && (P.heat || 0) >= 50 ? 0.75 : 1)));
+  dmg = Math.max(1, Math.round(dmg * diffNow().take * DFM.df('take') * (1 + 0.28 * hitTierOf(curId(), who || updFoe)) * coopTake()));   /* (claude/difficulty) the mode's damage taken (Normal x1) */   /* (IRON HIDE: a milestone perk) */   /* AND TWICE AS HARD: the other half of the co-op rule, on the one line every blow that ever lands on a hero comes through */
+  /* (claude/lategamea) THE PERMANENT MITIGATION CHAIN passes through SV.mitigationMul's soft floor (x0.6): IRON HIDE, IRON CHARM, RINGMAIL, PLATE, WARDED PLATE */
+  dmg = Math.max(1, Math.round(dmg * SV.mitigationMul([perk('iron') ? 0.9 : 1, PROG.charm === 'iron' ? 0.8 : 1, PROG.items.mail ? 0.9 : 1, PROG.items.plate ? 0.9 : 1, PROG.items.mail2 ? 0.9 : 1]) * (isPyro() && tal('heatShield') && (P.heat || 0) >= 50 ? 0.75 : 1)));
   /* (PLATED took a twentieth off every blow; it is the shield at his back now) */
   { const cloak = tal('ashCloak'); if (cloak && (P.ashT || 0) > 0) dmg = Math.max(1, Math.round(dmg * (1 - 0.12 * cloak))); } // ASH CLOAK / THE SHROUD, for a moment after a roll
   if (isBz() && BZK) { const d0 = dmg; dmg = Math.max(1, Math.round(dmg * BZK.takeMul())); P.bzSur = Math.max(0, dmg - d0); }

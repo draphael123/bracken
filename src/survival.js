@@ -26,7 +26,10 @@ export const flaskMax = prog => Math.max(FLASK_MIN, FLASK.base + Math.max(0, Mat
 export const shrineRefill = (held, max) => Math.max(held | 0, Math.min(max, (held | 0) + 1));
 /* a death: all of them back, and a broken shrine's extra that was not drunk stays */
 export const deathRefill = (held, max) => Math.max(held | 0, max);
-export const flaskHeal = (maxHp, rich) => Math.max(1, Math.round(maxHp * (typeof rich === 'number' ? rich : rich ? FLASK.richHeal : FLASK.heal)));   /* (claude/flasks2) rich: the heal share itself (src/flasks2.js healPct), or the old true/false */
+/* LATE-GAME FLASK CAP (claude/lategamea, Daniel-approved 10-31 brief-lategame-1101 Q3A): a flask heals its share of MAX hp but never more than FLASK_HEAL_CAP (150) hp, so
+   VIGOR / HEART OF OAK / GREAT HEART stop compounding with the flask share at high level (L35 typical 353 hp x 40% = 141: the cap only bites from ~375 max hp at 40%). */
+export const FLASK_HEAL_CAP = 150;
+export const flaskHeal = (maxHp, rich) => Math.max(1, Math.min(FLASK_HEAL_CAP, Math.round(maxHp * (typeof rich === 'number' ? rich : rich ? FLASK.richHeal : FLASK.heal))));   /* (claude/flasks2) rich: the heal share itself (src/flasks2.js healPct), or the old true/false */
 
 export const HEART_PCT = 0.12;
 export const heartHeal = maxHp => Math.max(1, Math.round(maxHp * HEART_PCT));
@@ -100,3 +103,11 @@ export const LINES = {
   drink: 'HURT? KEY DRINKS A FLASK: +25% HEALTH. STAND STILL: A BLOW SPILLS IT.',
   exam: 'THE EXAM: HERE THE SPIKES KILL.',
 };
+
+/* LATE-GAME MITIGATION SOFT FLOOR (claude/lategamea, Daniel-approved 10-31 brief-lategame-1101 Q3A): the permanent damage-taken layers (IRON HIDE perk 0.9, IRON CHARM 0.8,
+   RINGMAIL 0.9, PLATE 0.9, WARDED PLATE 0.9) multiplied to x0.525 with no floor. The product now passes through a smooth floor: identity above MIT_KNEE (0.70), then it
+   approaches MIT_FLOOR (0.60) asymptotically, so a stack never goes under x0.6 and each extra layer past the knee is worth less. The temporary actives (war cry, harden,
+   blood mail, heat shield, divine shield) are NOT in this chain and still stack on top (they are the hero's verbs, not gear). */
+export const MIT_FLOOR = 0.6, MIT_KNEE = 0.7;
+export const softFloorMit = raw => { raw = Math.max(0, raw); if (raw >= MIT_KNEE) return Math.min(1, raw); const r = MIT_KNEE - MIT_FLOOR; return MIT_KNEE - r * (1 - Math.exp(-(MIT_KNEE - raw) / r)); };
+export const mitigationMul = layers => softFloorMit((layers || []).reduce((a, m) => a * (m > 0 ? m : 1), 1));
