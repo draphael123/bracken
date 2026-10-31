@@ -16,15 +16,16 @@
 //   node tools/mark-integrity.mjs                 every boss and mini (PORT=<port> for the page)
 //   MI_ONLY=mother,queen node tools/mark-integrity.mjs      only those
 //   MI_SECS=40   seconds of fight per boss (default 40)
+//   MI_BELT=1   (claude/kitchengate4tune) stand the hero on the boss's belt/serving line (A.belt) instead of beside him - the moves that need you on the line (Grubbag's sweep)
 //   MI_HPFRAC=0.25   (claude/kitchengate4tune) hold every boss at this fraction of its health - a forced-phase probe, so the moves a phase gates (Grubbag: grease/bell from 62%, grab from 30%) are reached inside the run
 import { openPage } from './cdp.mjs';
 
 /* KNOWN: 'type|mode' -> why it is allowed to stand for now. Every row is a bug to fix, not a pass (claude/mothermarks report lists them). */
 const KNOWN = {};
 
-const ONLY = (process.env.MI_ONLY || '').split(',').filter(Boolean), SECS = +(process.env.MI_SECS || 40), HPF = +(process.env.MI_HPFRAC || 0);
+const ONLY = (process.env.MI_ONLY || '').split(',').filter(Boolean), SECS = +(process.env.MI_SECS || 40), HPF = +(process.env.MI_HPFRAC || 0), BELT = process.env.MI_BELT ? 1 : 0;
 const pg = await openPage({ audio: false, fonts: false, seed: 20261007 });
-const FIGHT = String.raw`async (row, secs, HPF) => {
+const FIGHT = String.raw`async (row, secs, HPF, BELT) => {
   BK.manualSimulation = true; const M = await import('/src/marks.js');
   const go = row.kind === 'mini' ? row.level + ':mini' : row.t; if (!BK.bossJump.go(go)) return { err: 'go failed' };
   const live = () => row.kind === 'mini' ? BK.miniActive : BK.bossActive;
@@ -47,7 +48,7 @@ const FIGHT = String.raw`async (row, secs, HPF) => {
   const A = row.kind === 'mini' ? BK.L.mini : BK.L.arena;
   for (let fr = 0; fr < secs * 60; fr++) {
     const e = find(); if (!e) break;
-    if (fr % 150 === 0) { const side = fr % 300 ? 1 : -1, fl = A && A.floor ? A.floor : e.y; BK.tp((e.x + side * 44) / 16 - 0.5, fl / 16 - 1); tpd = true; }
+    if (fr % 150 === 0) { const side = fr % 300 ? 1 : -1, fl = A && A.floor ? A.floor : e.y; if (BELT && A && A.belt) BK.tp((A.belt[0] + A.belt[1]) / 2 + side * 3, A.belt[2] - 1); else BK.tp((e.x + side * 44) / 16 - 0.5, fl / 16 - 1); tpd = true; }
     if (HPF) e.hp = e.maxHp * HPF; p.maxHp = 5000; p.hp = 5000; p.inv = 0; p.dead = false;
     const own = () => { let n = 0; for (const k in e) { const v = e[k]; if (Array.isArray(v)) n += v.length; } return n; };   /* its own things: her zones, his crowns, the cargo marks */
     const w0 = world() + own(), hp0 = p.hp, np0 = BK.parts().length, nr0 = BK.rings().length; BK.sim(1);
@@ -75,7 +76,7 @@ try {
   const table = await pg.evalp('BK.bossJump.table()');
   for (const row of table) {
     if (ONLY.length && !ONLY.includes(row.t)) continue;
-    let r; try { r = await pg.evalp('(' + FIGHT + ')(' + JSON.stringify(row) + ',' + SECS + ',' + HPF + ')', 900000); } catch (err) { r = { err: String(err.message || err).slice(0, 160) }; }
+    let r; try { r = await pg.evalp('(' + FIGHT + ')(' + JSON.stringify(row) + ',' + SECS + ',' + HPF + ',' + BELT + ')', 900000); } catch (err) { r = { err: String(err.message || err).slice(0, 160) }; }
     if (r.err) { report.push(row.t.padEnd(14) + ' SKIPPED: ' + r.err); continue; }
     const keys = Object.keys(r.rows);
     for (const k of keys) { const x = r.rows[k]; const bad = [];
