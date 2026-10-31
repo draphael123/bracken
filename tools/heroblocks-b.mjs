@@ -12,7 +12,9 @@ import { writeFileSync, mkdirSync } from 'fs';
 const WANT = (process.argv[2] || 'warden,ranger').split(',');
 const pg = await openPage({ audio: false, fonts: false });
 const fail = [], t = (ok, msg) => { if (!ok) fail.push(msg); };
-const shot = async name => { mkdirSync('work/heroblocksb-shots', { recursive: true }); const r = await pg.send('Page.captureScreenshot', { format: 'png' }); writeFileSync('work/heroblocksb-shots/' + name + '.png', Buffer.from(r.data, 'base64')); };
+const shot = async name => { mkdirSync('work/heroblocksb-shots', { recursive: true });
+  const url = await pg.evalp(`(()=>{BK.step(1);const W=BK.view.VW,H=BK.view.VH,cw=Math.round(W*0.85),Z=2,o=document.createElement('canvas');o.width=cw*Z;o.height=H*Z;const g=o.getContext('2d');g.imageSmoothingEnabled=false;g.drawImage(BK.buf,0,0,cw,H,0,0,cw*Z,H*Z);return o.toDataURL('image/png');})()`);
+  writeFileSync('work/heroblocksb-shots/' + name + '.png', Buffer.from(url.split(',')[1], 'base64')); };
 try {
   await pg.evalp(`(async()=>{
     window.__set=(h,foes,o={})=>{for(const k in BK.keys)BK.keys[k]=false;BK.manualSimulation=true;BK.SET.speed=1;BK.setHero(h);BK.reset({fresh:true});BKT.setHeroLevel(h,o.lv||1);
