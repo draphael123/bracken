@@ -60,7 +60,7 @@ export const GB = {
   hungry: { t: 6, mul: 0.7, cd: 0.8 },
   stove: { cool: 12, box: 16 },
   bz: { hurt: 1.5 }, dmgMul: 2.9,
-  heroMul: { knight: 1.1, warden: 0.85, pyro: 1.8 },   /* (claude/kitchengate4tune) his blows on each hero (as DUEL_HERO / LANCE4.heroDmg): n=12 human+flasks, knight 82% warden 50% pyro 100% at 1 each -> the pyro stands off the line, the warden misses flings */
+  heroMul: { knight: 1.1, warden: 0.95, pyro: 1.8 },   /* (claude/kitchengate4tune) his blows on each hero (as DUEL_HERO / LANCE4.heroDmg): n=12 human+flasks, knight 82% warden 50% pyro 100% at 1 each -> the pyro stands off the line, the warden misses flings */
 };
 export const GB_SAY = { wake: 'LORD GRUBBAG THE GLUTTON', rule: 'THE SERVING LINE FEEDS HIM: KNOCK THE DISHES OFF. LET THE BOMBS AND THE CHILLIES REACH HIM.', p2: 'MORE! FASTER!', p3: 'HE REACHES FOR YOU',
   eats: 'HE EATS: HEALED', full: 'HE EATS: TOO FULL TO HEAL', smash: 'KNOCKED OFF: HE GOES HUNGRY', hungry: 'HUNGRY', bomb: 'A BOMB ON THE LINE: LET IT REACH HIM, OR BAT IT ALONG',
