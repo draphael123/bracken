@@ -288,6 +288,14 @@ export function frameOf(e) {
     case 'rung': return loop('rung', 'rungB', 2);
     case 'whipped': return 'whipped';
     case 'split': return a < 0.35 ? 'split' : 'splitB';
+    /* (claude/lance5) GREYBOX poses from the sheet until LANCE 5 ART draws their own (the 120-frame cap): the pivot, the rising skewer, the gust, the updraft */
+    case 'pivot': return 'turn';
+    case 'skewerTell': return 'pennantTell';
+    case 'skewer': return 'vaultUp';
+    case 'skewerRec': return loop('thrustRec', 'thrustRecB', 2.5);
+    case 'buffeted': return a < 0.35 ? 'stagger' : 'staggerB';
+    case 'updraft': case 'tossedAir': return 'whipped';
+    case 'tossed': return loop('stagger', 'staggerB', 2.5);
   }
   if (m === 'fallback' || mv) return e.grounded === false ? 'hopUp' : 'walk' + (Math.floor(e.anim * 8) % 4);
   if (e.grounded === false) return 'hopUp';

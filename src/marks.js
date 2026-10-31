@@ -281,7 +281,7 @@ export const MARK = {
   'kraken|rakeTell': '!!', 'kraken|roarTell': '!!', 'kraken|rollTell': '!!', 'kraken|shakeTell': '!!', 'kraken|slamTell': '!', 'kraken|sweepTell': '!!',
   'kraken|waveTell': '!!', 'lampreeve|flaskTell': '!!', 'lampreeve|hookTell': '!', 'lampreeve|lungeTell': '!!', 'lampreeve|snuffTell': '', 'lampreeve|sweepTell': '!',
   'lampreeve|takeTell': '', 'lamprey|lungeTell': '!!', 'lancer|chargeTell': '!', 'lancer|cutTell': '!', 'lancer|swipeTell': '!',
-  'lance|couch': '!!', 'lance|pennantTell': '', 'lance|sweepTell': '!!', 'lance|thrustTell': '!', 'lance|vaultTell': '!!',
+  'lance|couch': '!!', 'lance|pennantTell': '', 'lance|skewerTell': '!!', 'lance|sweepTell': '!!', 'lance|thrustTell': '!', 'lance|vaultTell': '!!',
   'lance|volleyTell': '!!', 'lance|wallTell': '!', 'lanterneater|gulpTell': '!!', 'lanterneater|huntTell': '!!', 'lanterneater|snapTell': '!!', 'lanterneater|swellTell': '!!',
   'lanternshade|flareTell': '!', 'leech|rear': '!!', 'lookout|shootTell': '!', 'lookout|slashTell': '!', 'lookout|swingTell': '!', 'lookout|throwTell': '!',
   'lurker|springTell': '!', 'magechase|fireTell': '!', 'magechase|iceTell': '!', 'magechase|markTell': '!!', 'magechase|pairTell': '!', 'manta|diveTell': '!',

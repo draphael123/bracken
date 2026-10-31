@@ -646,14 +646,18 @@ const LANCE_RT = o => o.t < 0.85;
       stands off in his guard, rung anyway (he answers with a charge, and runs into the gate). P2 A ROPE POST: struck when he stands under that
       rope's run and the post is a few strides off. P3 THE GREAT BELL: up the last lookout onto the gatehouse hoarding, rung when he is under the gate. */
 function lanceDuty(BK, boss, P, A, open) {
-  if (boss.t !== 'lance' || open || !boss.alive || ['pinned', 'rung', 'whipped', 'split', 'haul', 'fallback'].includes(boss.mode)) return null;
+  if (boss.t !== 'lance' || open || !boss.alive || ['pinned', 'rung', 'whipped', 'split', 'haul', 'fallback', 'buffeted', 'tossed', 'updraft', 'tossedAir'].includes(boss.mode)) return null;
   const bells = BK.props().filter(q => q.t === 'lancebell'), air = ['vaultUp', 'perch', 'stab'].includes(boss.mode);
   if (boss.phase === 1) { const b = bells.filter(q => !q.great && !q.up && !(q.rewind > 0) && !(q.ringT >= 0) && Math.abs(q.x - P.x) < 200 && Math.abs(boss.x - q.gx) > 24).sort((a, c) => Math.abs(a.x - P.x) - Math.abs(c.x - P.x))[0];
     if (!b) return null; const toward = boss.mode === 'charge' && Math.sign(b.gx - boss.x) === Math.sign(boss.vx || 0), eta = toward ? Math.abs(b.gx - boss.x) / 236 : 9;
     if (boss.mode === 'charge' && !toward) return null;
     const go = toward ? eta > 1.0 && eta < 1.4 : !['couch', 'charge'].includes(boss.mode) && Math.abs(boss.x - b.gx) > 40;
     return { x: b.x, y: b.y, stand: b.x - 8, via: [], go }; }
-  if (boss.phase === 2) { for (const z of BK.L.zipLines || []) { if (z.signal === undefined || z.cut > 0 || z.fray > 0 || !z.post) continue; const [px, py] = z.post;
+  if (boss.phase === 2) {
+    /* (claude/lance5) THE STORM: a tower bell's third toll GUSTS him toward the nearest gap - ring one near you while he stands on the deck (not mid-charge, not in the air) */
+    { const b = bells.filter(q => !q.great && !q.up && !(q.rewind > 0) && !(q.ringT >= 0) && Math.abs(q.x - P.x) < 150).sort((a, c) => Math.abs(a.x - P.x) - Math.abs(c.x - P.x))[0];
+      if (b && boss.grounded && !air && !['buffeted', 'tossed', 'updraft', 'tossedAir'].includes(boss.mode)) return { x: b.x, y: b.y, stand: b.x - 8, via: [], go: !['couch', 'charge'].includes(boss.mode) }; }
+    for (const z of BK.L.zipLines || []) { if (z.signal === undefined || z.cut > 0 || z.fray > 0 || !z.post) continue; const [px, py] = z.post;
       const under = boss.x > Math.min(z.x0, z.x1) + 10 && boss.x < Math.max(z.x0, z.x1) - 30 && boss.grounded && !air;
       if (under && Math.abs(px - P.x) < 110 && Math.abs(py - P.y) < 40) return { x: px, y: py, stand: px - 12, via: [], go: true }; } return null; }
   const gb = bells.find(q => q.great); if (!gb || gb.rewind > 0 || gb.ringT >= 0) return null;
