@@ -101,7 +101,7 @@ export function makeGrubbagHands(ctx) {
     if (S.woke && !S.told.rule && e.mode !== 'wake') { S.told.rule = 1; ctx.number(S.G.mid, S.G.floorY - 130, GBM.GB_SAY.rule, '#ffd36b'); ctx.hint && ctx.hint(GBM.GB_SAY.rule); }
     GBM.stepGrubbag(e, S, dt, heroes(), world(e));
     /* THE SERVING LINE carries whoever stands on it toward him (the level's conveyors) */
-    if (e.mode !== 'sleep') { const v = GBM.lineV(S), B = S.G.belt; S.scroll = (S.scroll || 0) + v * dt; for (const pp of ctx.players) if (!pp.dead && GBM.onBelt(S.G, pp) && !pp.zip) pp.x = Math.min(B.x1 + 6, pp.x + v * dt); }
+    if (e.mode !== 'sleep') { const v = GBM.lineV(S), B = S.G.belt; S.scroll = (S.scroll || 0) + v * dt; for (const pp of ctx.players) if (!pp.dead && GBM.onBelt(S.G, pp) && !pp.zip) pp.x = Math.min(B.x1 + 6, pp.x + v * dt * (S.G.trench && (pp.vx || 0) < -20 ? 0.5 : 1)); }   /* (claude/kitchengate4) walking back against it over the trench it carries you half as hard: the line is the way back to the hatch now */
     /* (claude/kitchengate4) THE HOOK RAILS: ORDER UP runs them fast (their pace is read each ride frame: src/zipline.js) - and THE PLATTER DROP: a hero let go of an arena rail who
        lands on his platter knocks the food flying and him off his feet (src/grubbag.js platterDrop); a hero left standing on the platter is tipped off it toward him */
     for (const z of S.G.rails) { if (z.gbBase === undefined) z.gbBase = z.speed || 200; z.speed = z.gbBase * (S.rush > 0 ? GB.bell.hook : 1); }

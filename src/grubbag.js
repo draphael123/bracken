@@ -49,7 +49,7 @@ export const GB = {
   grab: { tell: 0.85, t: 0.55, reach: 240, h: 42, hand: 20, dmg: 18, rec: 0.9, throwV: 260 },
   stun: { t: 7, mul: 2, cap: 0.08, boom: 0.05 },
   hot: { t: 5, mul: 2, cap: 0.06 },
-  drop: { t: 3, mul: 2, cap: 0.06, cd: 12, h: 40, shove: 0.8, shoveV: 110 },   /* (claude/kitchengate4) THE PLATTER DROP: the third opening (short, a cooldown); h: how far over the platter's top a landing counts; shove: s on the platter before it tips you off */
+  drop: { t: 3.5, mul: 2, cap: 0.08, cd: 12, h: 40, shove: 0.8, shoveV: 110 },   /* (claude/kitchengate4) THE PLATTER DROP: the third opening (short, a cooldown); h: how far over the platter's top a landing counts; shove: s on the platter before it tips you off */
   coal: { dmg: 8, lit: 2, beat: 1.4, glow: 0.6, fire: 6 },   /* (claude/kitchengate4) THE COAL TRENCH: a bite, x lit while the grease burns it (fire s, after a glow s), again every beat s on the coals */
   second: { lobGap: 0.25, flingV: 1.25, greaseLife: 1.4 },   /* (claude/kitchengate4) THE SECOND HELPING: the extra lob lands lobGap s after the last; the fling flies x flingV; the wave burns x greaseLife */
   swell: 0.4,
@@ -59,7 +59,7 @@ export const GB = {
   line: { v: 34, every: [5.6, 5.0, 4.5], bombEvery: 4, first: 2.2, fuse: 5.6, batV: 250, blast: 34, blastDmg: 12, knockV: 120 },
   hungry: { t: 6, mul: 0.7, cd: 0.8 },
   stove: { cool: 12, box: 16 },
-  bz: { hurt: 1.5 }, dmgMul: 2.6,   /* (claude/kitchengate4: 2.9 -> 2.6 - the trench: the way to him is over the line or the hooks now, his blows land on a busier hero; a 3-seed greybox tune, the tune lane owns it) */
+  bz: { hurt: 1.5 }, dmgMul: 2.9,
 };
 export const GB_SAY = { wake: 'LORD GRUBBAG THE GLUTTON', rule: 'THE SERVING LINE FEEDS HIM: KNOCK THE DISHES OFF. LET THE BOMBS AND THE CHILLIES REACH HIM.', p2: 'MORE! FASTER!', p3: 'HE REACHES FOR YOU',
   eats: 'HE EATS: HEALED', full: 'HE EATS: TOO FULL TO HEAL', smash: 'KNOCKED OFF: HE GOES HUNGRY', hungry: 'HUNGRY', bomb: 'A BOMB ON THE LINE: LET IT REACH HIM, OR BAT IT ALONG',
