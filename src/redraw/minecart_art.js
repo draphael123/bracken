@@ -4,6 +4,7 @@
 // they hand this file the numbers and it draws. Everything is plain fillRect pixel art on the screen (no per-frame allocation beyond a few gradients).
 import { MP, glow, lampSprite, hash, WALLK } from './minecart_backdrop.js';
 import { canvas } from '../px.js';
+import { goblinDriver } from './deeprails6_art.js';
 const R = Math.round;
 const rc = (g, x, y, w, h, col) => { g.fillStyle = col; g.fillRect(R(x), R(y), R(w), R(h)); };
 const add = (g, fn) => { g.globalCompositeOperation = 'lighter'; fn(); g.globalCompositeOperation = 'source-over'; g.globalAlpha = 1; };
@@ -462,11 +463,9 @@ export function rig(g, rx, lanes, ceilY, o, time) {
   const cx0 = rx + ci, ct = L1 - (o.cabH || 40), ch = L1 - ct;
   rc(g, cx0, ct, cw, ch, flash || '#5a4a3c'); rc(g, cx0, ct, cw, 2, '#8a7660'); rc(g, cx0, ct, 2, ch, '#7a6650'); rc(g, cx0 + cw - 2, ct, 2, ch, '#2a2018');
   for (let y = ct + 27; y < ct + ch - 3; y += 6) { rc(g, cx0 + 2, y, cw - 4, 1, '#2a2018'); rc(g, cx0 + 3, y + 2, 1, 1, MP.i5); rc(g, cx0 + cw - 5, y + 2, 1, 1, MP.i5); }
-  rc(g, cx0 + 3, ct + 5, cw - 6, 17, '#0e0a10'); rc(g, cx0 + 4, ct + 6, cw - 8, 15, o.jam ? '#ffd36b' : '#e0a040'); rc(g, cx0 + 4, ct + 6, cw - 8, 2, '#f8d890');
-  const gm = cx0 + R(cw / 2) - 2, look = Math.sin(time * 1.3) > 0.6 ? 1 : 0; if (o.slump > 0.5) { rc(g, cx0 + 4, ct + 6, cw - 8, 15, '#ffd36b'); rc(g, gm - 5, ct + 15, 10, 6, '#4a7a30'); rc(g, gm - 6, ct + 13, 12, 3, '#6a3a1a'); rc(g, gm - 4, ct + 17, 2, 1, '#101010'); rc(g, gm, ct + 17, 2, 1, '#101010'); } else {   /* the goblin: green head, a rusty helm, red eyes looking back (left) at you, a snarl; his hands on the levers */
-  rc(g, gm - 5, ct + 11, 10, 9, '#4a7a30'); rc(g, gm - 5, ct + 11, 10, 1, '#6aa048'); rc(g, gm - 8, ct + 13, 3, 2, '#4a7a30'); rc(g, gm - 6, ct + 9, 12, 3, '#6a3a1a'); rc(g, gm - 6, ct + 9, 12, 1, '#a0602a');
-  rc(g, gm - 4 - look, ct + 14, 2, 2, '#ff4030'); rc(g, gm - look, ct + 14, 2, 2, '#ff4030'); rc(g, gm - 4, ct + 18, 6, 1, '#101010'); rc(g, gm - 3, ct + 17, 1, 1, '#e8e0c0'); rc(g, gm, ct + 17, 1, 1, '#e8e0c0');
-  rc(g, gm + 5, ct + 18, 4, 2, '#4a7a30'); rc(g, gm + 8, ct + 15, 1, 6, MP.i4); }   /* a hand on the lever (jammed: the driver slumped over his levers, eyes shut) */
+  rc(g, cx0 + 3, ct + 5, cw - 6, 17, '#0e0a10');   /* the window's frame */
+  const gm = cx0 + R(cw / 2) - 2;
+  goblinDriver(g, cx0 + 4, ct + 6, { jam: o.jam, slump: o.slump, time });   /* (deeprails6art) THE GOBLIN DRIVER: a hand-set sprite in the glass - helm and lamp, snarl, ears, rag, jerkin, a hand on the lever; jammed: slumped over his levers, eyes shut */
   rc(g, cx0 + 3, ct + 5, 2, 17, '#14101a'); rc(g, cx0 + cw - 5, ct + 5, 2, 17, '#14101a');
   rc(g, cx0 + 4, ct - 5, cw - 8, 5, '#2a2018'); rc(g, cx0 + 4, ct - 5, cw - 8, 1, '#8a7660'); rc(g, gm - 3, ct - 9, 6, 5, MP.i2); rc(g, gm - 2, ct - 8, 4, 3, '#fff0b0');
   add(g, () => { g.globalAlpha = 0.6; g.drawImage(glow(30, '255,220,140'), gm - 30, ct - 7 - 30); });
