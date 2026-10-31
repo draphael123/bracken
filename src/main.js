@@ -21100,7 +21100,7 @@ function updateUndeadMage(e,dt){
   pull:kind=>{const C=REALM.col[kind];flash=Math.max(flash,.45);shakeCam(7);zoomKick(1.14,.5);SFX.mageBolt?SFX.mageBolt():SFX.leap();burst(P.x,P.y-8,28,C,160,.9,0,2);camX=P.x-VW/2;camY=P.y-VH/2;number(P.x,P.y-40,REALM.name[kind],C[0]);},
   leave:kind=>{const C=REALM.col[kind];flash=Math.max(flash,.4);shakeCam(6);SFX.stone();burst(P.x,P.y-8,24,C,150,.8,0,2);number(P.x,P.y-40,'THE REALM TEARS: BACK TO HIS HALL','#e0c8ff');},
   venom:()=>poisonPlayer(),shake:n=>shakeCam(n),   /* (claude/ft4c) a realm's beat shakes in */
-  say:(m,h)=>LICH_CALLED.has(m)?callout(m):number(e.x,e.y-52,m,h?'#ff6b6b':'#bce8fa'),sound:k=>(SFX[k]||SFX.charge)(),   /* (claude/archmage3: his new moves and phase changes in the hint box) */
+  say:(m,h)=>LICH_CALLED.has(m)||(e.realm&&typeof m==='string'&&!MOVE_WORDS.has(m))?callout(m):number(e.x,e.y-52,m,h?'#ff6b6b':'#bce8fa'),sound:k=>(SFX[k]||SFX.charge)(),   /* (claude/archmage3: his new moves and phase changes in the hint box) */
   /* HIS RINGS WORK BOTH WAYS (round 2): a dodge on the carpet through an open exit ring carries you out beside him */
   dodging:()=>(!!P.carpet||ch)&&P.dodge>0,   /* (fallingtower3: on foot in THE CHASE too - a roll through his ring) */
   strike:()=>P.atk>=0&&!P.dead?attackBox():null,   /* (claude/archmage3, Daniel 10-05) a blow that meets his firebolt strikes it back */
@@ -21174,7 +21174,7 @@ function carpetPlayer(dt){
  if(drinking){P.vx=0;P.vy=0;P.carpet.t+=dt;}else if(!(P.dodge>0))stepCarpet(P,{ax:P.block?ax*0.5:ax,ay:P.block?ay*0.5:ay},dt,sky);
  if(ax&&!P.block)P.face=ax;P.anim+=dt;P.ground=false;P.swim=false;P.climb=false;
  P.abuf=Math.max(0,(P.abuf||0)-dt);
- {const m=mageRealm(),hb=m&&attackBox();if(hb)strikeRealm(m,hb,P.hitSet,{box:realmBox(m,L.arena),say:(t,h)=>number(P.x,P.y-40,t,h?'#ff6b6b':'#bce8fa'),sound:k=>(SFX[k]||SFX.charge)()});}   /* A REALM'S OPENING is struck on the realm: an icicle, the vent */
+ {const m=mageRealm(),hb=m&&attackBox();if(hb)strikeRealm(m,hb,P.hitSet,{box:realmBox(m,L.arena),say:(t,h)=>typeof t==='string'&&!MOVE_WORDS.has(t)?callout(t):number(P.x,P.y-40,t,h?'#ff6b6b':'#bce8fa'),sound:k=>(SFX[k]||SFX.charge)()});}   /* (claude/smallfix5: a realm's lines go to the hint box - number() dropped every sentence that was not a move word) A REALM'S OPENING is struck on the realm: an icicle, the vent */
  if(P.abuf>0&&P.atk<0&&!drinking){P.abuf=0;if(spend((isPaladin()?28:sword().cost))){P.atk=0;P.hitSet.clear();SFX.pSlash();P.swingMul=1;P.heavySwing=false;}}
  if(P.atk>=0){P.atk+=dt*(isPaladin()?0.56:1);if(P.atk>0.3)P.atk=-1;}
  {const hb=attackBox();if(hb)for(const e of enemies){if(!e.alive||P.hitSet.has(e)||e.gone>0||!overlap(hb,box(e)))continue;P.hitSet.add(e);openBefore(e);hurtAs(meleeBlow(false),e,swingDmg(e),P.x,false);swordEffect(e);if(isPaladin())gainLight(8);}}
@@ -31269,6 +31269,7 @@ function trnBegin() {
   if (TRN || !L || !LEVELS[levelIndex] || rushOn() || bossSelectFight || edTesting || L.trial || L.shop) return false;
   const entry = TRM.entryFor(LEVELS[levelIndex].id); if (!entry) return false;
   const to = LEVELS.findIndex(l => l.id === entry.to); if (to < 0) return false;
+  if (LEVELS[to].needs !== LEVELS[levelIndex].id) return false;   /* (claude/smallfix5) the table's target must be the NEXT level on the road: the Lumber Trail's ferry carried the party to MARSH WOOD past THE HORNET'S NEST (marsh needs hornetsnest). No row, no cutscene: the normal win card, then the road */
   const key = entry.from + '>' + entry.to;
   if (!TRM.policy({ off: trnOff(), mode: TRM.modeOf(SET.transitions), seen: !!(PROG.transSeen && PROG.transSeen[key]) })) return false;
   PROG.transSeen = PROG.transSeen || {}; PROG.transSeen[key] = 1; saveProgress();
