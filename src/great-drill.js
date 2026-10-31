@@ -54,7 +54,8 @@ export const DRILL = {
   phase2: 0.6, phase3: 0.3, phaseT: 2.0,
   /* (deeprails4) THE GEARS: a bank's health (a few blows at campaign level), the stall a broken one costs it (an OPEN of its own: >= 3 s, its own purse), the held
      purse at a shut gate. The Sonnet tune lane owns these (and the fight's hp) - greybox numbers */
-  gearHp: 100, gearStallT: 3.0, gearStallCap: 0.05, heldCap: 0.12, gearW: 16,
+  gearHp: 100, gearHp3: 70, heroTake: { knight: 0.9, warden: 1.4, pyro: 1.2 },   /* (deeprails6tune) gearHp3: P3's jump banks are cheaper (the winning fights' P3 ran +27% on the old one); heroTake: what its blows cost each hero (the knight lives in its reach, pyro stands off: 12 seeds read k 42% / w 75% / p 82%) */
+  gearStallT: 3.0, gearStallCap: 0.05, heldCap: 0.12, gearW: 16,
   gap: [0.45, 0.35, 0.25],
   /* (deeprails5, Daniel 10-14: +2 told attacks tied to the gears / rails) THE SPARE CUTTER (P2, the SPIN-UP GEAR's): told (its boom lifts a spare cutter disc, the gear spins up,
      '!! A CUTTER: STRIKE IT BACK'), then bowled down your line at shin height - STRIKE IT as it reaches you and it flies back into its own gears (cutterBite off a bank), or JUMP it.
@@ -119,7 +120,7 @@ export const gearBoxOf = (G, S, g) => { const a = gearAt(S, g); return { l: rear
 export const phaseGears = ph => GEARS.filter(g => g.moves.some(m => (DRILL.chain[ph] || []).includes(m)));
 export const gearsNeed = ph => Math.ceil(phaseGears(ph).length / 2);
 export const moveGear = m => GEARS.find(g => g.moves.includes(m)) || null;
-export function armGears(S) { S.armed = 1; S.gears = {}; for (const g of phaseGears(S.ph)) S.gears[g.id] = { hp: DRILL.gearHp, max: DRILL.gearHp, broken: false, hot: 0, flash: 0, smoke: 0 }; }
+export function armGears(S) { S.armed = 1; S.gears = {}; for (const g of phaseGears(S.ph)) S.gears[g.id] = { hp: S.ph === 3 ? DRILL.gearHp3 : DRILL.gearHp, max: S.ph === 3 ? DRILL.gearHp3 : DRILL.gearHp, broken: false, hot: 0, flash: 0, smoke: 0 }; }
 export const gearUp = (S, id) => !!(S.gears && S.gears[id] && !S.gears[id].broken);
 export const brokenN = S => Object.values(S.gears || {}).filter(q => q.broken).length;
 export const gateShut = S => brokenN(S) < gearsNeed(S.ph);
