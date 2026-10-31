@@ -650,17 +650,17 @@
   "lostPct": 171
  },
  "kitchengate": {
-  "hash": "da9d2153a739",
+  "hash": "305bf291fd7d",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 47,
-  "deaths": 2,
-  "kills": 33,
-  "lifts": 65,
+  "hits": 45,
+  "deaths": 3,
+  "kills": 36,
+  "lifts": 64,
   "walked": 100,
   "bare": true,
-  "lostPct": 209
+  "lostPct": 195
  },
  "rookery": {
   "hash": "3c07c53af25a",
