@@ -110,7 +110,7 @@ export const ROSTER = {
        note: 'the sea: fights in the tide and the swim; water foes hold the water, boarders the decks' },
   4: { front: ['swornsword', 'hedgeknight', 'armour', 'heavy'], flank: ['zombie', 'husk', 'runner', 'hound', 'bonegob', 'farmhand', 'mummer', 'hobbyhorse', 'broom'], back: ['bonearcher', 'crossbow', 'apprentice', 'haunt', 'drunk', 'archer'],
        heavy: ['hedgeknight', 'armour', 'barrowrider', 'brute'], support: ['bannerbearer', 'gobpriest', 'barker', 'snuffer'], note: 'the old kingdom: knights, the risen dead and the fair folk - a banner or a priest to kill first' },
-  5: { front: ['shield'], flank: ['cutthroat', 'scorpion', 'waterthief', 'ambusher', 'raptor'], back: ['slinger', 'archer', 'gobmage'], heavy: ['scorpion', 'sandworm'], support: ['sapper', 'vulture'],
+  5: { front: ['shield', 'construct'], flank: ['cutthroat', 'scorpion', 'waterthief', 'ambusher', 'raptor'], back: ['slinger', 'archer', 'gobmage'], heavy: ['scorpion', 'sandworm', 'mummy'], support: ['sapper', 'vulture'],   /* (claude/lategameb: the act's second front kind is the Buried City's construct, the third heavy the Sealed Pyramid's mummy - kinds the game already spawns; a ksar plate-bearer and a brass-scorpion variant are a content lane's) */
        note: 'the desert: feinting cutthroats, slingers on the ledges, every fight in the sun or the flood' },
 };
 let ACT = ACTS[0];

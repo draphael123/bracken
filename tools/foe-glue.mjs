@@ -3,6 +3,8 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import * as GL from '../src/foe-glue.js';
+import * as DF from '../src/desert-foes.js';
+import * as BD from '../src/buried-dead.js';
 const bad = [], must = (ok, msg) => { if (!ok) bad.push(msg); };
 const MAIN = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
 const say = [], sfx = [], pushed = [];
@@ -93,6 +95,54 @@ GL.reset();
   const ar2 = mk('archer', 300, { loose: 0.16, timer: 2.4 }), h2 = hero(100, { dodge: 0.3 }); GL.frame({ heroes: [h2], enemies: [ar2], seeds: [], dt: 1 / 60, time: 10, api: { ...api, act: () => 3 } }); must(ar2.timer === 2.4, 'act III: no pin shot (act IV+)');
   const ar3 = mk('archer', 300, { loose: 0.16, timer: 2.4 }), h3 = hero(100, { dodge: 0 }); GL.frame({ heroes: [h3], enemies: [ar3], seeds: [], dt: 1 / 60, time: 10, api: a4 }); h3.dodge = 0.3; GL.frame({ heroes: [h3], enemies: [ar3], seeds: [], dt: 1 / 60, time: 11.5, api: a4 }); must(ar3.timer === 2.4, 'a roll long after the loose (past the window) is not punished');
   const el = mk('archer', 300, { loose: 0.16, timer: 2.4, elite: true }), h4 = hero(100, { dodge: 0.3 }); GL.frame({ heroes: [h4], enemies: [el], seeds: [], dt: 1 / 60, time: 10, api: a4 }); must(el.timer === 2.4, 'an elite archer has its own moves'); }
+
+
+/* ---- ACT V: the scorpion's claw-sting combo, the cutthroat's side-step combo and the pair ---- */
+{ const sc = DF.newScorpion(400, 300); sc.mode = 'claw'; sc.t = 0.01; sc.turned = true; sc.cd = 0;
+  const evs = []; for (let t = 0; t < 0.1; t += 1 / 60) for (const v of DF.scorpionStep(sc, { px: 380, py: 300, time: t }, 1 / 60)) evs.push(v);
+  must(evs.some(v => v.t === 'tell' && v.what === 'sting' && v.combo && v.mark === 'X'), 'SCORPION COMBO: a TURNED claw is followed by a told red-X sting');
+  must(DF.SCORPION.comboTell >= 0.45 && DF.SCORPION.comboTell < DF.SCORPION.stingTell, 'the combo tell is quicker than the plain one but still a real tell (' + DF.SCORPION.comboTell + ' s)');
+  const sc2 = DF.newScorpion(400, 300); sc2.mode = 'claw'; sc2.t = 0.01; sc2.turned = false; DF.scorpionStep(sc2, { px: 380, py: 300, time: 0 }, 1 / 60); must(sc2.mode === 'walk', 'a claw that was not turned ends as it always did');
+  const sc3 = DF.newScorpion(400, 300); sc3.mode = 'claw'; sc3.t = 0.01; sc3.turned = true; DF.scorpionStep(sc3, { px: 100, py: 300, time: 0 }, 1 / 60); must(sc3.mode === 'walk' && !sc3.turned, 'the hero out of the sting reach: no combo');
+  const ct = DF.newCutthroat(400, 300), W = { px: 380, py: 300, time: 0, combo: true }; ct.mode = 'feintHold'; ct.t = 0.001; ct.fc = 1; ct.face = -1; const E = [];
+  for (let t = 0; t < 2; t += 1 / 60) { W.time = t; for (const v of DF.cutthroatStep(ct, W, 1 / 60)) E.push(v); }
+  must(E.some(v => v.what === 'pass') && E.some(v => v.t === 'tell' && v.what === 'back' && v.mark === '!!'), 'SIDE-STEP: every second feint he rolls past (told as the feint, harmless) and the back-cut is a red !! tell');
+  const hb = E.find(v => v.t === 'hit' && v.what === 'back'); must(hb && hb.blockable === false && hb.box[3] - hb.box[2] <= 10, 'the back-cut is LOW and unturnable (jump it): ' + JSON.stringify(hb && hb.box));
+  must(ct.px1 !== undefined && ct.px1 < 380, 'he rolled out on the far side of the hero (target ' + ct.px1 + ')');
+  const ct1 = DF.newCutthroat(400, 300); ct1.mode = 'feintHold'; ct1.t = 0.001; ct1.fc = 0; const E1 = []; for (let t = 0; t < 1; t += 1 / 60) for (const v of DF.cutthroatStep(ct1, { px: 380, py: 300, time: t, combo: true }, 1 / 60)) E1.push(v);
+  must(E1.some(v => v.what === 'slash') && !E1.some(v => v.what === 'pass'), 'the FIRST feint still ends in the plain slash (the old lesson stands)');
+  const ct2 = DF.newCutthroat(400, 300); ct2.mode = 'feintHold'; ct2.t = 0.001; ct2.fc = 1; const E2 = []; for (let t = 0; t < 1; t += 1 / 60) for (const v of DF.cutthroatStep(ct2, { px: 380, py: 300, time: t, combo: false }, 1 / 60)) E2.push(v);
+  must(!E2.some(v => v.what === 'pass'), 'combo:false (not act V / a posted or reskinned man): no side-step');
+  const ct3 = DF.newCutthroat(400, 300); ct3.mode = 'feintHold'; ct3.t = 0.001; ct3.fc = 1; const E3 = []; for (let t = 0; t < 1; t += 1 / 60) for (const v of DF.cutthroatStep(ct3, { px: 380, py: 300, time: t, combo: true, groundAt: () => false }, 1 / 60)) E3.push(v);
+  must(!E3.some(v => v.what === 'pass'), 'no ground to land on: no side-step (a ledge is never the answer)');
+  const pr = DF.newCutthroat(400, 300), PE = []; for (let t = 0; t < 1.2; t += 1 / 60) for (const v of DF.cutthroatStep(pr, { px: 390, py: 300, time: t, combo: true, mates: [{ x: 430, feinting: true }] }, 1 / 60)) PE.push(v);
+  must(PE.some(v => v.t === 'tell' && v.what === 'low' && v.mark === '!!') && PE.some(v => v.t === 'hit' && v.what === 'low' && !v.blockable) && !PE.some(v => v.what === 'feint'), 'THE PAIR: with a packmate feinting, this one throws the LOW cut (red !!, jump)');
+  const pr2 = DF.newCutthroat(400, 300), PE2 = []; for (let t = 0; t < 1.2; t += 1 / 60) for (const v of DF.cutthroatStep(pr2, { px: 390, py: 300, time: t, combo: true, mates: [{ x: 430, feinting: false }] }, 1 / 60)) PE2.push(v);
+  must(!PE2.some(v => v.what === 'low'), 'a packmate that is not feinting: no low cut'); }
+
+/* ---- ACT IV: the zombie's clinch, the apprentice's ember on the held hero ---- */
+{ must(BD.CLINCH >= 1.0 && BD.CLINCH <= 1.3, 'CLINCH: a landed grab holds ~1.1 s (' + BD.CLINCH + ')');
+  let held = 0; const P = { x: 100, y: 100, dead: false }, said = [], z = { mode: 'grabTell', modeT: 0, x: 110, y: 100, face: -1, anim: 0, vx: 0 };
+  const ctx = h => ({ P, move: () => ({}), hit: () => 'hit', snare: t => { held = t; }, say: w => said.push(w), solid: () => true, shot: () => {}, lit: null, held: h });
+  BD.updateZombie(z, 1 / 60, ctx(false));
+  must(held === BD.CLINCH, 'a grab that lands snares for CLINCH (' + held + ')');
+  const ap = { apprentice: true, mode: 'walk', modeT: 0, x: 200, y: 100, face: -1, anim: 0, vx: 0, castCd: 9 };
+  BD.updateZombie(ap, 1 / 60, ctx(false)); must(ap.mode !== 'castTell', 'a free hero: the apprentice waits his own clock');
+  BD.updateZombie(ap, 1 / 60, ctx(true)); must(ap.mode === 'castTell' && ap.modeT <= BD.PAIR.ember + 1e-6 && BD.PAIR.ember >= 0.6 && said.includes('EMBER'), 'a HELD hero: his ember is told and comes now (' + BD.PAIR.ember + ' s)');
+  ap.mode = 'walk'; BD.updateZombie(ap, 1 / 60, ctx(true)); must(ap.mode !== 'castTell', 'and not again inside its gap (no machine-gun)'); }
+
+/* ---- ACT IV: the armour whirl, the tables, and the late-game dial ---- */
+{ const MK = await import('../src/marks.js');
+  must(MK.MARK['armour|ekWhirlTell'] === '!!' && MK.ANSWER['armour|ekWhirlTell'] === 'dodge', 'the armour whirl has its table rows (red !!, dodge)');
+  must(/case 'ekWhirlTell': e\.vx = 0; e\.face = Math\.sign\(d\) \|\| e\.face; if \(e\.modeT <= 0\) \{ e\.mode = 'ekWhirl'; e\.modeT = ARM_WHIRL\.spin/.test(MAIN), 'updateArmour runs the whirl');
+  must(/RX\.act\(\)\.act >= 4 && !e\.ceiling && \(crowd \|\| e\.armN % 3 === 0\)/.test(MAIN), 'the whirl is act IV+, when crowded or every third blow');
+  must(MK.MARK['cutthroat|backTell'] === '!!' && MK.MARK['cutthroat|lowTell'] === '!!' && MK.ANSWER['cutthroat|backTell'] === 'jump' && MK.HEIGHT['cutthroat|lowTell'] === 'low', 'the cutthroat combo rows are in the table');
+  const FR = await import('../src/foe-react.js'), FPL = await import('../src/foe-pass.js');
+  const caps = FR.ACTS.map(a => a.cap); must(caps.join() === '2,2,3,3,4', 'the purse by act is 2/2/3/3/4: ' + caps);
+  const ad = [1, 2, 3, 4, 5].map(a => FPL.AFFIX_ACT[a]); must(ad.join() === '0,0.15,0.25,0.4,0.5', 'AFFIX_ACT 0/0.15/0.25/0.4/0.5: ' + ad);
+  const all = [...FR.ACTS, ...FR.ACTS_LATE]; for (let i = 1; i < all.length; i++) must(all[i].dmg >= all[i - 1].dmg && all[i].hp >= all[i - 1].hp && all[i].cap >= all[i - 1].cap, 'the dial never falls along the acts incl. the three later arcs (act ' + all[i].act + ')');
+  must(FR.ACTS_LATE.map(a => a.dmg).join() === '3.75,4.5,5.25' && FR.ACTS_LATE.map(a => a.hp).join() === '1.15,1.2,1.3', 'ACTS_LATE continues 3.0 -> 3.75 -> 4.5 -> 5.25 and 1.1 -> 1.15 -> 1.2 -> 1.3');
+  for (const a of [3, 4, 5]) for (const id of FR.ACTS[a - 1].levels) must(FPL.live(id, 'affix') && FPL.live(id, 'lead') && FPL.live(id, 'pursue'), id + ' (act ' + a + ') stands the late-game levers'); }
 
 /* ---- main.js calls every hook (a rule nothing calls is a wish) ---- */
 for (const [what, re] of [['the frame', /GLU\.frame\(\{/], ['the hold', /GLU\.hold\(e, /], ['the turn in the melee loop', /GLU\.turns\(e, /], ['the take in hurtEnemy0', /GLU\.take\(e, /], ['the draw', /GLU\.draw\(g, e, cx, cy, time\)/], ['the lines', /GLU\.drawLines\(/],

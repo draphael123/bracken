@@ -30,11 +30,15 @@
 //             pass he RISES with the sand pouring off the cloak (the tell), cuts twice (!), then throws the cloak over
 //             himself and comes up again ahead of you. Frames: 0 buried | 1 rising | 2,3 walk | 4 cutTell | 5 cut | 6 burrowing | 7 hurt
 
-export const SCORPION = { hp: 34, speed: 26, clawR: 22, clawTell: 0.5, claw: 0.2, stingR: 40, stingTell: 0.75, sting: 0.25, cd: 1.1, patch: 64, w: 16, h: 9 };
+export const SCORPION = { hp: 34, speed: 26, clawR: 22, clawTell: 0.5, claw: 0.2, stingR: 40, stingTell: 0.75, sting: 0.25, cd: 1.1, patch: 64, w: 16, h: 9,
+  comboTell: 0.5 };   /* (claude/lategameb) THE CLAW-STING COMBO: a claw the shield TURNED is followed by the tail at once, a quicker (0.5 s) but still told X - hold the shield and the second beat is the one you move for */
 export const VULTURE = { hp: 22, alt: 90, circleR: 60, circleT: 4, watch: 0.8, diveV: 260, perch: 1.1, climb: 1.2, cd: 2.5, w: 22, h: 10 };
 export const SANDGOB = { hp: 26, speed: 44, wake: 56, rise: 0.5, knifeTell: 0.45, knife: 0.18, cd: 0.8, cuts: 2, burrow: 0.45, under: 0.7, ahead: 70, w: 10, h: 16,
   tellMode: 'knifeTell', blowMode: 'knife', what: 'knife', reach: 26, hitW: 24, dmg: 7 };
-export const CUTTHROAT = { hp: 38, speed: 46, sight: 150, reach: 28, feintTell: 0.4, feintHold: 0.3, slashTell: 0.5, slash: 0.18, cd: 0.9, dmg: 10, w: 10, h: 18 };
+export const CUTTHROAT = { hp: 38, speed: 46, sight: 150, reach: 28, feintTell: 0.4, feintHold: 0.3, slashTell: 0.5, slash: 0.18, cd: 0.9, dmg: 10, w: 10, h: 18,
+  /* (claude/lategameb, the moveset audit: 81 placements, two moves) THE SIDE-STEP COMBO: every SECOND feint he does not cut - he rolls PAST you (passRoll, harmless: the touch rule), turns, and cuts your
+     back low (backTell, a red !! - jump it). THE PAIR: when a packmate is feinting, this one does not feint, it throws a LOW cut (lowTell, a red !! - jump it): block the high, jump the low. */
+  passRoll: 0.3, passBehind: 22, backTell: 0.5, back: 0.18, backDmg: 11, lowTell: 0.5, low: 0.18, lowDmg: 10, pairR: 90, rest: 0.6 };
 export const SLINGER = { hp: 24, sight: 230, minR: 30, rise: 240,   /* rise: how far below him he will throw - a tower's roof is twelve to fourteen rows over the road (a level may cap it per frame: w.rise, THE RED GORGE) */ whirl: 0.8, loose: 0.18, flight: 0.75, cd: 2.2, dmg: 8, kickR: 24, kickTell: 0.4, kick: 0.15, kickDmg: 6, w: 10, h: 16 };
 export const AMBUSHER = { hp: 32, speed: 50, wake: 52, rise: 0.55, cutTell: 0.45, cut: 0.18, cd: 0.8, cuts: 2, burrow: 0.5, under: 0.8, ahead: 72, w: 12, h: 18,
   tellMode: 'cutTell', blowMode: 'cut', what: 'cut', reach: 28, hitW: 26, dmg: 9 };
@@ -55,7 +59,9 @@ export function scorpionStep(e, w, dt) {
       break;
     case 'clawTell': if (e.t <= 0) { e.mode = 'claw'; e.t = SCORPION.claw; e.frame = 3; ev(out, 'hit', { what: 'claw', mark: '!', box: [e.x + (e.face > 0 ? 4 : -SCORPION.clawR - 4), e.x + (e.face > 0 ? SCORPION.clawR + 4 : -4), e.y - 10, e.y], blockable: true, dmg: 8 }); } break;
     case 'stingTell': if (e.t <= 0) { e.mode = 'sting'; e.t = SCORPION.sting; e.frame = 5; ev(out, 'hit', { what: 'sting', mark: 'X', box: [e.x + (e.face > 0 ? 8 : -SCORPION.stingR - 4), e.x + (e.face > 0 ? SCORPION.stingR + 4 : -8), e.y - 18, e.y - 2], dmg: 12, poison: true }); } break;
-    case 'claw': case 'sting': if (e.t <= 0) { e.mode = 'walk'; e.cd = SCORPION.cd; } break;
+    case 'claw': case 'sting': if (e.t <= 0) {
+      if (e.mode === 'claw' && e.turned && near && ad < SCORPION.stingR) { e.turned = false; e.combo = (e.combo || 0) + 1; e.mode = 'stingTell'; e.t = SCORPION.comboTell; e.frame = 4; e.next = 'claw'; ev(out, 'tell', { what: 'sting', mark: 'X', combo: true }); }   /* THE COMBO (claude/lategameb): the claw was turned, the tail follows - told, quicker, the same red X */
+      else { e.turned = false; e.mode = 'walk'; e.cd = SCORPION.cd; } } break;
   }
   return out;
 }
@@ -113,12 +119,21 @@ export function cutthroatStep(e, w, dt) {
     case 'walk': e.frame = Math.floor(w.time * 7) % 2;
       if (near && ad < C.sight) e.face = Math.sign(d) || e.face;
       if (near && e.cd <= 0 && ad < C.reach + 6) {
-        if (e.n++ % 2 === 0) { e.mode = 'feintTell'; e.t = C.feintTell; e.frame = 2; ev(out, 'tell', { what: 'feint', mark: '' }); }   /* THE FEINT: told, and nothing behind it */
+        if (w.combo !== false && w.mates && w.mates.some(m => m.feinting && Math.abs(m.x - e.x) < C.pairR)) { e.face = Math.sign(d) || e.face; e.mode = 'lowTell'; e.t = C.lowTell; e.frame = 4; ev(out, 'tell', { what: 'low', mark: '!!' }); }   /* THE PAIR: his packmate is feinting high - this one cuts low */
+        else if (e.n++ % 2 === 0) { e.mode = 'feintTell'; e.t = C.feintTell; e.frame = 2; ev(out, 'tell', { what: 'feint', mark: '' }); }   /* THE FEINT: told, and nothing behind it */
         else real(); }
       else if (near && ad < C.sight && ad > C.reach * 0.7) e.x += e.face * C.speed * dt;
       break;
     case 'feintTell': if (e.t <= 0) { e.mode = 'feintHold'; e.t = C.feintHold; e.frame = 3; ev(out, 'feinted', {}); } break;   /* he stops short with a stamp: it was nothing - and now it is something */
-    case 'feintHold': if (e.t <= 0) real(); break;
+    case 'feintHold': if (e.t <= 0) {
+      e.fc = (e.fc || 0) + 1; const side = Math.sign(d) || e.face, to = w.px + side * C.passBehind;
+      if (w.combo !== false && e.fc % 2 === 0 && (!w.groundAt || w.groundAt(to))) { e.mode = 'passRoll'; e.t = C.passRoll; e.frame = 3; e.px0 = e.x; e.px1 = to; ev(out, 'tell', { what: 'pass', mark: '' }); }   /* THE SIDE-STEP: every second feint he rolls past you (nothing in it hurts) */
+      else real(); } break;
+    case 'passRoll': { const k = Math.min(1, 1 - Math.max(0, e.t) / C.passRoll); e.x = e.px0 + (e.px1 - e.px0) * k;
+      if (e.t <= 0) { e.face = Math.sign(w.px - e.x) || -e.face; e.mode = 'backTell'; e.t = C.backTell; e.frame = 4; ev(out, 'tell', { what: 'back', mark: '!!' }); } break; }
+    case 'backTell': if (e.t <= 0) { e.mode = 'back'; e.t = C.back; e.frame = 5; ev(out, 'hit', { what: 'back', mark: '!!', box: [e.x + (e.face > 0 ? 2 : -C.reach - 2), e.x + (e.face > 0 ? C.reach + 2 : -2), e.y - 9, e.y], blockable: false, dmg: C.backDmg }); } break;   /* low, and nothing turns it: JUMP */
+    case 'lowTell': if (e.t <= 0) { e.mode = 'low'; e.t = C.low; e.frame = 5; ev(out, 'hit', { what: 'low', mark: '!!', box: [e.x + (e.face > 0 ? 2 : -C.reach - 2), e.x + (e.face > 0 ? C.reach + 2 : -2), e.y - 9, e.y], blockable: false, dmg: C.lowDmg }); } break;
+    case 'back': case 'low': if (e.t <= 0) { e.mode = 'walk'; e.cd = C.cd + C.rest; } break;   /* the rest after a combo is the opening */
     case 'slashTell': if (e.t <= 0) { e.mode = 'slash'; e.t = C.slash; e.frame = 5; ev(out, 'hit', { what: 'slash', mark: '!', box: [e.x + (e.face > 0 ? 2 : -C.reach - 2), e.x + (e.face > 0 ? C.reach + 2 : -2), e.y - 18, e.y - 2], blockable: true, dmg: C.dmg }); } break;
     case 'slash': if (e.t <= 0) { e.mode = 'walk'; e.cd = C.cd; } break;
   }

@@ -15369,6 +15369,7 @@ function updateTopiary(e, dt) {
   const r = moveBody(e, e.vx * dt, e.vy * dt, false); e.onGround = !!r.ground; if (r.ground) e.vy = 0; if (r.hitX) e.vx = 0;
 }
 /* THE ARMOUR: it walks at you slowly and holds the sword high for a long beat before it comes down; it breaks into pieces */
+const ARM_WHIRL = { tell: 0.8, spin: 0.85, v: 85, dmg: 1.25, open: 1.2 };   /* (claude/lategameb) the base suit's whirl: the elite's (EL_ARMOUR) tell 0.7 / spin 0.9 / v 95 / 18 dmg, a little slower and lighter on a common foe */
 function updateArmour(e, dt) {
   /* THE CEILING ARMOUR (THE WITCHLIGHT STAIR's cloister) falls whichever way the hero falls: walk the roof and it walks the roof */
   if (e.ceiling && P.flip && Math.abs(P.x - e.x) < 320 && Math.abs(P.y - e.y) < 220) e.woke = true;   /* it waits on the roof until it has seen you turned over */
@@ -15379,9 +15380,18 @@ function updateArmour(e, dt) {
   switch (e.mode) {
     case 'swingTell': e.vx = 0; if (e.modeT <= 0) { e.mode = 'swing'; e.modeT = 0.35; SFX.throwWhoosh(); SFX.heavy(); if (!P.dead && ad < 36 && dy < 30 && Math.sign(d) === e.face) damagePlayer(e.x, DMG.armour); } break;
     case 'swing': e.vx = 0; if (e.modeT <= 0) { e.mode = 'walk'; e.cd = 1.6; } break;
+    /* (claude/lategameb, the moveset audit: 37 placements, ONE long-held overhead) THE WHIRL, promoted from the Warden Armour's elite kit to the base suit: a red !! - the blade held out and the whole suit spinning at you (roll away or through; it rattles to a stop, dizzy, the long opening) */
+    case 'ekWhirlTell': e.vx = 0; e.face = Math.sign(d) || e.face; if (e.modeT <= 0) { e.mode = 'ekWhirl'; e.modeT = ARM_WHIRL.spin; e.whirlHit = false; SFX.haft(); } break;
+    case 'ekWhirl': e.vx = tkApi.safeStep(e.x + e.face * (e.w / 2 + 6), e.y) ? e.face * ARM_WHIRL.v : 0; if (Math.random() < dt * 10) SFX.clank();
+      if (!e.whirlHit && !P.dead && ad < e.w / 2 + 16 && dy < 24) { e.whirlHit = true; damagePlayer(e.x, Math.round(DMG.armour * ARM_WHIRL.dmg), { unblockable: true, who: e, blow: 'the whirl' }); }
+      if (e.modeT <= 0) { e.mode = 'ekWhirlOpen'; e.modeT = ARM_WHIRL.open; } break;
+    case 'ekWhirlOpen': e.vx = 0; if (e.modeT <= 0) { e.mode = 'walk'; e.cd = 1.8; } break;   /* THE OPENING: rattling to a stop */
     default: e.mode = 'walk';
       if (!P.dead && ad < 240 && dy < 60) { e.face = Math.sign(d) || e.face; e.vx += (e.face * 22 - e.vx) * Math.min(1, dt * 3); } else e.vx *= Math.pow(0.1, dt);
-      if (!P.dead && ad < 32 && dy < 26 && e.cd <= 0) { e.mode = 'swingTell'; e.modeT = 0.9; e.vx = 0; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.clank(); }
+      if (!P.dead && ad < 32 && dy < 26 && e.cd <= 0) {
+        e.armN = (e.armN || 0) + 1; const crowd = enemies.some(q => q !== e && q.alive && !q.harmless && !q.maxHp && Math.abs(q.x - P.x) < 70 && Math.abs(q.y - P.y) < 40);
+        if (RX.act().act >= 4 && !e.ceiling && (crowd || e.armN % 3 === 0)) { e.mode = 'ekWhirlTell'; e.modeT = ARM_WHIRL.tell; e.vx = 0; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); SFX.charge(); }   /* (claude/lategameb) crowded round the hero, or every third blow, and from the old kingdom on: it SPINS */
+        else { e.mode = 'swingTell'; e.modeT = 0.9; e.vx = 0; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.clank(); } }
   }
   const r = moveBody(e, e.vx * dt, e.vy * dt, false); if (r.hitX) e.vx = 0;
   if (gs > 0) { e.onGround = !!r.ground; if (r.ground) e.vy = 0; } else { e.onGround = r.hitY && e.vy < 0; if (r.hitY) e.vy = 0; }
@@ -16079,7 +16089,7 @@ function mageAdvice(v2) {
 /* ---------- THE FRAMES ---------- */
 const MAGE_FRAME = {
   topiary: e => e.mode === 'shiver' ? 1 : e.mode === 'lurch' ? (e.vy < 0 ? 2 : 3) : e.mode === 'swipeTell' ? 4 : e.mode === 'swipe' ? 5 : 0,
-  armour: e => e.mode === 'swingTell' ? 3 : e.mode === 'swing' ? 4 : Math.abs(e.vx) > 3 ? 1 + Math.floor(e.anim * 3) % 2 : 0,
+  armour: e => e.mode === 'swingTell' || e.mode === 'ekWhirlTell' ? 3 : e.mode === 'swing' ? 4 : e.mode === 'ekWhirl' ? (Math.floor(e.anim * 14) % 2 ? 3 : 4) : Math.abs(e.vx) > 3 ? 1 + Math.floor(e.anim * 3) % 2 : 0,
   piece: e => Math.abs(e.vx) > 3 ? Math.floor(e.anim * 8) % 2 : 0,
   broom: e => e.mode === 'dashTell' || e.mode === 'sweepTell' ? 2 : e.mode === 'dash' || e.mode === 'sweep' ? 3 : Math.floor(e.anim * 6) % 2,
   mimic: e => e.mode === 'shut' ? 0 : e.mode === 'biteTell' ? 2 : e.mode === 'bite' ? 3 : e.mode === 'hop' ? 4 : 1,
@@ -23796,6 +23806,7 @@ function updateDesertFoe(e, dt) {
   if (e.stagger > 0 && e.t !== 'vulture' && e.t !== 'raptor' && e.t !== 'hawkscout' && !(e.t === 'kiterider' && s && s.fly) && !(e.t === 'trophyhunter' && s && s.hang)) { grav(); return; }   /* knocked about: its machine waits */
   s.x = e.x; s.y = e.y;
   const w = { px: P.x, py: P.y, time, pface: P.face || 1 };
+  if (e.t === 'cutthroat') { w.combo = RX.act().act >= 5 && !e.ks && !e.cnSkin; if (w.combo) { w.groundAt = x => cvGround(x, e.y) && !isSolid(Math.floor(x / TS), Math.floor((e.y - 8) / TS)); w.mates = []; for (const q of enemies) if (q !== e && q.alive && q.t === 'cutthroat' && q.st && !q.ks && Math.abs(q.x - e.x) < 120) w.mates.push({ x: q.x, feinting: q.st.mode === 'feintTell' || q.st.mode === 'feintHold' }); } }   /* (claude/lategameb) THE SIDE-STEP COMBO and THE PAIR's low cut (src/desert-foes.js): act V's plain cutthroats - not the Ksar's posted men, not a reskin */
   if (e.t === 'kiterider') { w.solid = (x, y) => isSolid(Math.floor(x / TS), Math.floor(y / TS)); w.sea = (L.cloudSea || LH * TS) + 2 * TS; w.ground = !s.fly && (e.vy || 0) === 0 && isSolid(Math.floor(e.x / TS), Math.floor((e.y + 2) / TS)); }   /* THE SKY ROAD's kite-rider reads the rock and the cloud sea */
   if (e.t === 'trophyhunter') { const fy = Math.floor((e.y + 2) / TS), fx = Math.floor(e.x / TS); w.ground = !s.hang && (e.vy || 0) === 0 && (isSolid(fx, fy) || isOneWay(tileAt(fx, fy))); }   /* THE ROOTWAY's trophy-hunter: off his hoist, he lands on rock or a span */
   if (e.t === 'sandworm') w.flood = !!(DF2H && DF2H.wormWorld(s)) || !!(UWH && UWH.heat(s));   /* (claude/underwell: and in the Underwell the heat of burning oil over its bed) */   /* THE SANDWORM: the gorge's horn and flood drive it under (claude/desertfoes) */
@@ -23826,7 +23837,7 @@ function updateDesertFoe(e, dt) {
     if (v.t === 'step') { if (e.t === 'stiltwalker') { const near = Math.abs(v.x - P.x) < 260; dust(v.x, v.y, v.hard ? 8 : 3); if (SET.parts !== 'low') { const n = v.hard ? 9 : 5; for (let q = 0; q < n; q++) { const d = q % 2 ? 1 : -1, sp = 26 + (q % 4) * 14 * (v.hard ? 1.5 : 1); parts.push({ x: v.x + d * 3, y: v.y - 1, vx: d * sp, vy: -4 - (q % 3) * 3, life: 0.42, max: 0.42, col: q % 3 ? '#c9b27c' : '#e6d4a0', size: 1, grav: 40 }); } for (let q = 0; q < (v.hard ? 5 : 2); q++) parts.push({ x: v.x + (q - 2) * 2, y: v.y - 2, vx: (q - 2) * 22, vy: -60 - q * 10, life: 0.5, max: 0.5, col: '#8a6a40', size: 1, grav: 260 }); } if (near) { (SFX.stoneThud || SFX.thud || (() => {}))(); if (v.hard) shakeCam(3); else if (Math.abs(v.x - P.x) < 90) shakeCam(1); } if (FRH && FRH.on()) FRH.stomp(v.x, v.y, !!v.hard); } continue; }   /* (claude/fenroad2) THE STILT-WALKER's STOMP: each planted stilt bows the boards under it (src/fen-road-hands.js stomp) */
     if (v.t === 'tell' && e.t === 'stiltwalker') { if (v.what === 'horn') SFX.hornDraw(); else if (v.what === 'stomp') { cvS('screech'); } else if (v.what === 'jab') cvS('bladeGlint'); else cvS('bladeGlint'); continue; }
     if (v.t === 'tell') { if (v.what === 'rise') { cvS('puff'); dust(e.x, e.y, 5); } else if (v.what === 'dive') cvS('screech');
-      else if (v.what === 'feint') cvS('feintScrape'); else if (v.what === 'slash') cvS('bladeGlint'); else if (v.what === 'sling') cvS('slingWhirl');   /* the feint and the real cut do not sound alike either */
+      else if (v.what === 'feint') cvS('feintScrape'); else if (v.what === 'slash' || v.what === 'back' || v.what === 'low') cvS('bladeGlint'); else if (v.what === 'sling') cvS('slingWhirl');   /* the feint and the real cut do not sound alike either */
       continue; }
     if (v.t === 'feinted') { dust(e.x + (s.face || 1) * 5, e.y, 2); continue; }   /* the stamp */
     if (e.t === 'sandworm' && v.t !== 'hit') { if (v.t === 'tell' && v.what === 'lunge') { cvS('wormHiss'); dust(e.x, e.y, 3); } else if (v.t === 'tell') cvS('wormRipple'); else if (v.t === 'rise') { cvS('puff'); dust(e.x, e.y, 6); } else if (v.t === 'burrow') dust(e.x, e.y, 4); else if (v.t === 'flushed') { dust(e.x, e.y, 3); if (Math.abs(e.x - P.x) < 260) { if (UWH && UWH.on()) UWH.flushed(e); else if (DF2H) DF2H.flushed(e, e.x, e.y); } } continue; }   /* (claude/desertfoes) */
@@ -23839,7 +23850,8 @@ function updateDesertFoe(e, dt) {
     if (DF2H && e.cnSkin === 'firescorpion' && !e.cvFire) { e.cvFire = true; DF2H.onHit(e, v, false, P); }   if (UWH && e.cnSkin) UWH.onBlow(e, v);   /* (claude/underwell) THE OIL SCORPION's sting leaves a slick where it strikes */   /* THE FIRE SCORPION: where the sting lands the ground catches (claude/desertfoes) */
     const [l, r, t, b] = v.box; if (!overlap({ l, r, t, b }, box(P))) continue;
     e.cvHit = true;
-    const hp0 = P.hp; const cvRes = damagePlayer(e.x, v.dmg, { unblockable: !v.blockable, who: e, name: v.what === 'sting' ? 'THE STING' : v.what === 'dive' ? 'THE DIVE' : v.what === 'lunge' ? 'THE SANDWORM' : v.what === 'stomp' ? 'A STILT-WALKER\'S STOMP' : null });
+    const hp0 = P.hp; const cvRes = damagePlayer(e.x, v.dmg, { unblockable: !v.blockable, who: e, name: v.what === 'back' ? 'THE BACK-CUT' : v.what === 'low' ? 'THE LOW CUT' : v.what === 'sting' ? 'THE STING' : v.what === 'dive' ? 'THE DIVE' : v.what === 'lunge' ? 'THE SANDWORM' : v.what === 'stomp' ? 'A STILT-WALKER\'S STOMP' : null });
+    if (e.t === 'scorpion' && v.what === 'claw' && cvRes === 'blocked') s.turned = true;   /* (claude/lategameb) THE CLAW-STING COMBO: a claw the shield turned is followed by the tail (src/desert-foes.js scorpionStep) */
     if (DF2H && e.cnSkin === 'venomscorpion') DF2H.onHit(e, v, P.hp < hp0, P);   if (UWH && e.cnSkin) UWH.onHit(e, v, P.hp < hp0, P);   if (KSH && e.cnSkin) KSH.onHit(e, v, P.hp < hp0, P);   /* (claude/underwell) the dust's grit, the thirsty one's sip */   if (e.t === 'kiterider' && SKY) SKY.riderStruck(e, cvRes);   /* THE SKY ROAD: a swoop turned on a shield knocks him out of the sky */ /* THE VENOM SCORPION's sting that lands: the Queen's venom (claude/desertfoes) */
     if (e.t === 'mummy' && PYH && PYH.on()) PYH.onHit(e, v, P.hp < hp0, P);   /* (claude/sealedpyramid) THE MUMMY's lash yanks you in, its grab holds you */
     if (e.t === 'waterthief' && WTH && P.hp < hp0) WTH.stole(e, P);   /* THE WATER-THIEF's cut that lands opens your skin: a sip goes with him (src/well-town-hands.js) */
@@ -28387,7 +28399,7 @@ function updateEnemies(dt) {
     if (Math.abs(e.x - P.x) > 420 && (!SETTLED_FOES.has(e.t) || foeHasFooting(e))) continue; // (bosses above never sleep at range: the Ram Lord used to freeze mid-charge when the fold was wide)
     { const bt = e.squirrel ? 'squirrel' : e.t; if (Math.abs(e.x - P.x) < 190 && !(PROG.beasts && PROG.beasts[bt] && PROG.beasts[bt].seen)) beastSeen(bt); }
     if (L.underwell && (e.cnSkin === 'oilthief' || e.cnSkin === 'cisternbat') && Math.abs(e.x - P.x) < 190 && !(PROG.beasts && PROG.beasts[e.cnSkin] && PROG.beasts[e.cnSkin].seen)) beastSeen(e.cnSkin);   /* (claude/underwell2) the oil thief's and the cistern bat's own cards (the sapper's and the bat's machines) */
-    if(e.t==='zombie'||e.t==='husk'||e.t==='apprentice'){beastSeen(e.t);if(e.cnSkin&&Math.abs(e.x-P.x)<190)beastSeen(e.cnSkin);updateZombie(e,dt,{P,lit:L.gasVents?(x,y)=>!!inVentLight(L,x,y):null,move:(q,x,y)=>moveBody(q,x,y,false),hit:(x,d,hard)=>damagePlayer(x,d,{unblockable:hard,who:e}),snare:t=>{P.snare=Math.max(P.snare||0,t);},say:(msg,hard)=>number(e.x,e.y-34,msg,hard?'#ff6b6b':'#ffd36b'),solid:(x,y)=>isSolid(Math.floor(x/TS),Math.floor(y/TS)),
+    if(e.t==='zombie'||e.t==='husk'||e.t==='apprentice'){beastSeen(e.t);if(e.cnSkin&&Math.abs(e.x-P.x)<190)beastSeen(e.cnSkin);updateZombie(e,dt,{P,held:(P.snare||0)>0.25,lit:L.gasVents?(x,y)=>!!inVentLight(L,x,y):null,move:(q,x,y)=>moveBody(q,x,y,false),hit:(x,d,hard)=>damagePlayer(x,d,{unblockable:hard,who:e}),snare:t=>{P.snare=Math.max(P.snare||0,t);},say:(msg,hard)=>number(e.x,e.y-34,msg,hard?'#ff6b6b':'#ffd36b'),solid:(x,y)=>isSolid(Math.floor(x/TS),Math.floor(y/TS)),
       shot:q=>{const y=q.y-14,dx=P.x-q.x,dy=(P.y-10)-y,d=Math.hypot(dx,dy)||1;seeds.push({x:q.x+q.face*8,y,vx:dx/d*170,vy:dy/d*170-30,g:150,life:2.4,dead:false,spore:false,dmg:DMG.apprenticeEmber,shot:true,owner:q});SFX.spit();}});continue;}
     if (e.t === 'wasp') {
       if (e.drone && !P.dead) { // hive drones dart at you, then drift back to their post
