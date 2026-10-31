@@ -36,8 +36,9 @@ async function main() {
   let id = 0; const pending = new Map(), errors = [];
   ws.onmessage = ev => { const m = JSON.parse(ev.data); if (m.id && pending.has(m.id)) { pending.get(m.id)(m); pending.delete(m.id); }
     if (m.method === 'Runtime.exceptionThrown') errors.push(m.params.exceptionDetails.exception ? m.params.exceptionDetails.exception.description : m.params.exceptionDetails.text); };
-  const send = (method, params = {}) => new Promise(res => { const i = ++id; pending.set(i, res); ws.send(JSON.stringify({ id: i, method, params })); });
-  const evalp = async (expr, timeout = 900000) => { const r = await send('Runtime.evaluate', { expression: expr, awaitPromise: true, returnByValue: true, timeout });
+  const send = (method, params = {}, wait = 0) => new Promise((res, rej) => { const i = ++id; let t = 0; if (wait) t = setTimeout(() => { pending.delete(i); rej(new Error(method + ' did not answer within ' + wait + 'ms' + (params.expression ? ' - evaluating: ' + String(params.expression).replace(/s+/g, ' ').slice(0, 160) : ''))); }, wait);
+    pending.set(i, m => { clearTimeout(t); res(m); }); ws.send(JSON.stringify({ id: i, method, params })); });   /* (claude/harnessstall) a Runtime.evaluate that never answers FAILS naming its expression, not 900 s later via the guard */
+  const evalp = async (expr, timeout = 900000) => { const r = await send('Runtime.evaluate', { expression: expr, awaitPromise: true, returnByValue: true, timeout }, timeout + 1000);
     if (r.result && r.result.exceptionDetails) throw new Error(r.result.exceptionDetails.exception ? r.result.exceptionDetails.exception.description : r.result.exceptionDetails.text);
     return r.result && r.result.result ? r.result.result.value : undefined; };
   await send('Runtime.enable'); await send('Page.enable');
