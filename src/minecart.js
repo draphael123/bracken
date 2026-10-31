@@ -103,7 +103,7 @@ export const ARCS = {
   combat: { teach: [76, 90], test: [340, 440], remix: [690, 750], exam: [892, 921], boss: [1378, 1408] },    /* the miner rammed; the thrower, the rider, the caster, the slow cart, the perched goblin; the works' swinging rider; THE FOREMAN (the mini) */
   switch: { teach: [143, 163], test: [172, 189], remix: [748, 763], exam: [927, 943], boss: [1378, 1408] },
   pits: { teach: [976, 999], test: [1000, 1012], remix: [1013, 1028], exam: [1029, 1056] },   /* (deeprails5) THE SPOIL PITS on foot: high or low, the pits, the spoil, the crushers over the catwalk (A14) */
-  forge: { teach: [1064, 1093], test: [1095, 1121], remix: [1123, 1150], exam: [1152, 1176], boss: [1181, 1238] },   /* (claude/forgemaster) THE SMELTER FLOOR's junction levers: a cart dropped into a plug, onto a brute, back at the loader, past the elite through the last plug; THE FORGEMASTER */
+  forge: { teach: [1064, 1093], test: [1095, 1121], remix: [1123, 1150], exam: [1152, 1176], boss: [1181, 1222] },   /* (claude/forgemaster) THE SMELTER FLOOR's junction levers: a cart dropped into a plug, onto a brute, back at the loader, past the elite through the last plug; THE FORGEMASTER */
   bore: { teach: [1286, 1303], test: [1304, 1331], exam: [1332, 1355] },   /* (deeprails6) THE LEADING BORE: the torn high line (open the points, REQUIRED), the low line's rock, beam, navvy; the fork exam (A14) */
   sides: { teach: [790, 800], test: [804, 814], remix: [830, 841], exam: [859, 882], boss: [1378, 1408] },   /* (deeprails4) SWITCH SIDES: THE TWIN LINES' three splits (high: a gap, low: a beam) and the flooded run's fork; the drill's three lines */   /* (deeprails3) DUCK + SWITCH under a low roof: the yard's tunnel, the dark, off the works' deep gap, over the flood; the drill's chute points */
 };
@@ -484,7 +484,7 @@ export function buildMinecart({ painter, T, TS }) {
     const plug = (id, x0, x1) => { forge.plugs.push({ id, x0, x1, y0: D - 5, y1: D - 1 }); decor.push({ kind: 'slagplug', x0, x1, row: D }); };   /* built OPEN (the static tools read the floor through); the hands shut it on load */
     const gutter = (x0, x1) => { block(x0, x1, D + 5, H - 1); for (let x = x0; x <= x1; x++) set(x, D + 4, T.SPIKE); pits.push([x0, x1]); roofRows.push([x0, x1, U]); decor.push({ kind: 'slaggutter', x0, x1, row: D + 4 }); };
     const buffer = x => decor.push({ kind: 'buffer', x, row: D, soft: true });
-    ground(S, S + 89, D); gutter(S + 90, S + 92); ground(S + 93, S + 185, D);
+    ground(S, S + 89, D); gutter(S + 90, S + 91); ground(S + 92, S + 185, D);   /* (deeprails6tune: the gutter 3 -> 2 wide - the bare knight fell short of the far lip, 1 death a run) */
     decor.push({ kind: 'smelterfloor', x0: S, x1: S + 177, row: D });
     /* TEACH (1062-1093): the loop, its junction, a slag plug across the floor - send the cart into it (a failure costs a wait for the next cart) */
     sign(S + 1, D - 1, 'THE SMELTER FLOOR. THE ORE CARTS RUN THE LOOP OVER YOUR HEAD.');
@@ -517,16 +517,17 @@ export function buildMinecart({ painter, T, TS }) {
     /* THE FORGE (1180-1239): THE FORGEMASTER, THE SECOND MINI. The loop runs the length of his room; three junctions on the floor; he wakes at the furnace end */
     tell(S + 92, S + 124, 'SEND THE SMITH A CART');
     sign(S + 119, D - 1, 'THE FORGE. HIS IRON TURNS HALF A CUT. SEND A CART INTO HIM AND HE TAKES IT ALL.');
-    loop('fForge', S + 120, S + 174, [S + 120, S + 174], { every: 2.4, speed: 130, carts: 4 });
-    junction('jForgeA', 'fForge', S + 124, S + 127, [S + 120, S + 174]);
-    junction('jForgeB', 'fForge', S + 142, S + 145, [S + 120, S + 174]);
-    junction('jForgeC', 'fForge', S + 158, S + 161, [S + 120, S + 174]);
-    for (const x of [S + 121, S + 150, S + 174]) ent('torch', x, D - 1);
-    decor.push({ kind: 'furnace', x: S + 173, row: D });
-    foe('forgemaster', S + 166, D - 1, { mini: true });
-    for (let y = D - 9; y <= D - 1; y++) set(S + 177, y, T.PORT);   /* his gate onto the smelter's line: shut until the smith is down (src/main.js miniEnd) */
-    forge.mini = { x0: (S + 119) * TS, x1: (S + 177) * TS, floor: D * TS, trigger: (S + 124) * TS, wallL: S + 118, gate: S + 177, boss: 'forgemaster', name: 'THE FORGEMASTER',
+    loop('fForge', S + 120, S + 158, [S + 120, S + 158], { every: 2.4, speed: 130, carts: 4 });
+    junction('jForgeA', 'fForge', S + 124, S + 127, [S + 120, S + 158]);
+    junction('jForgeB', 'fForge', S + 138, S + 141, [S + 120, S + 158]);
+    junction('jForgeC', 'fForge', S + 150, S + 153, [S + 120, S + 158]);
+    for (const x of [S + 121, S + 140, S + 158]) ent('torch', x, D - 1);
+    decor.push({ kind: 'furnace', x: S + 157, row: D });
+    foe('forgemaster', S + 150, D - 1, { mini: true });
+    for (let y = D - 9; y <= D - 1; y++) set(S + 161, y, T.PORT);   /* his gate onto the smelter's line: shut until the smith is down (src/main.js miniEnd) */
+    forge.mini = { x0: (S + 119) * TS, x1: (S + 161) * TS, floor: D * TS, trigger: (S + 124) * TS, wallL: S + 118, gate: S + 161, boss: 'forgemaster', name: 'THE FORGEMASTER',
       y0: (D - 12) * TS, y1: (D + 1) * TS, forge: 'rails', loopRow: U };
+    /* (deeprails6tune, the curve: his room is 16 columns shorter - the bare knight died twice a run crossing it - and the floor between his gate and the parked cart is a quiet beat) */
     /* past his gate: THE PARKED CART (FOOT[2].board) - jump into it and its gate opens (taught at THE WRECK; its sign here, its glint after a stall - no tell in his room) */
     sign(S + 175, D - 1, 'A CART WAITS: JUMP INTO IT AND THE GATE OPENS.');
     ent('mccart', FOOT[2].board, D - 1, {}); }
