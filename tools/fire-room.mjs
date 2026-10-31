@@ -27,6 +27,7 @@ try { for (const h of heroes) {
     for(let n=0;n<60*25&&b.realm;n++){P.hp=Math.max(P.hp,P.maxHp*0.5);clear();const box=MR.realmBox(b,A),py=P.y-8,W=R.wall;let vx=0,vy=0;
       const ti=Math.floor((P.x-box.x0)/tw);
       if((R.ph==='tell'||R.ph==='burn')&&R.lit&&R.lit.includes(ti)){let best=null;for(let j=0;j<${REALM.fire.n};j++)if(!R.lit.includes(j)&&(best===null||Math.abs(j-ti)<Math.abs(best-ti)))best=j;if(best!==null)vx=Math.sign(box.x0+(best+0.5)*tw-P.x);}
+      if((R.ph==='tell'||R.ph==='burn')&&R.lit&&!vx&&!R.lit.includes(ti)){const L=P.x-(box.x0+ti*tw),Rr=(box.x0+(ti+1)*tw)-P.x;if(R.lit.includes(ti-1)&&L<14)vx=1;else if(R.lit.includes(ti+1)&&Rr<14)vx=-1;}   /* (batch131) keep 14 px off a burning tile's edge: standing ON the seam burnt the flying bot (it read 1.0 = tile 1, the game 0.997 = tile 0) */
       if(b.mode==='wallTell'){if(!edge)edge=py<(box.y0+box.y1)/2?-1:1;vy=edge;}   /* the vents glow at your height, and it rises there: take it to an edge, then go the other way */
       if(W&&!W.back){const closing=(P.x-W.x)*W.d>0;if(!away)away=W.y<(box.y0+box.y1)/2?1:-1;if(closing&&Math.abs(py-W.y)<${REALM.fire.wallH}/2+40)vy=away;else if(closing)vy=0.0001;}else{away=0;if(b.mode!=='wallTell')edge=0;}
       if(W&&W.back){const closing=(P.x-W.x)*W.d>0;if(closing&&Math.abs(W.x-P.x)<30&&!W.hitP&&!(P.dodge>0)&&P.st>=10){P.face=-W.d;k[W.d>0?'left':'right']=true;BK.press('dodge');dodges++;}}
