@@ -11,7 +11,7 @@
 //   2. NOTHING STILL HOLDS A SHEET IT GAVE BACK. Every level is loaded (and drawn: a draw-time cache is a holder too) once with the audit on (main.js: a weak note of each emptied sheet);
 //      after a full collection any of them still alive is held by something other than the bake that made it, and would be drawn empty: a
 //      FAIL with the count, so a new cache that keeps a baked sheet is caught here and added to retireBakes' roots instead of shipping blank.
-//   node tools/load-leak.mjs [--budget=20] [--kept=5] [--cycles=5]
+//   node tools/load-leak.mjs [--budget=20] [--kept=5] [--cycles=5] [--chunk=7] [--chunk-ms=120000] [--heap=2200] [--restarts=8]
 import { openPage } from './cdp.mjs';
 import { execFileSync } from 'child_process';
 import { readFileSync } from 'fs';
