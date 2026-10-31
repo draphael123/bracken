@@ -1,0 +1,26 @@
+{
+  "source": {
+    "parentMain": "fc7f23740efc674fa3a85448ff11675dbae48e6d1dc0281348feab556b66e5ac",
+    "main": "e30cf745802640f0c5000375c5a411ba96cce7c74c595d9deaf17851f3dadbbd",
+    "helper": "3b2a0eb6816e0ddd9a812f8250267e0c8537f04bd903585d23d3aea41b283e29",
+    "factory": "4f033f18521cf1d929503364245602977f6fdb970c46491a654959ae0e00aba3"
+  },
+  "helper": "3b2a0eb6816e0ddd9a812f8250267e0c8537f04bd903585d23d3aea41b283e29",
+  "manifestSha256": "e33e891284022436dc879e9458cb87c0ad2d8c1715fe4293b20f98c0b6e464db",
+  "native": {
+    "run": 41215176107,
+    "controller": "3df22aa0924739dc326f37786a402465a64b9dfb",
+    "complete": true,
+    "core": 143,
+    "family": 4928,
+    "public": 672,
+    "rng": 0
+  },
+  "supplementary": {
+    "run": 41214171440,
+    "complete": true,
+    "cases": 135,
+    "activation": 64,
+    "rng": 0
+  }
+}
