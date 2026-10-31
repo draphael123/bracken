@@ -40,10 +40,10 @@ export const LANCE4 = {
   great: { pin: 4.0, mul: 2, dmg: 60, rewind: 12 },                         // the main gate's great bell (P3)
   rung: 2.2, rungEvery: 6,       // HELM RUNG: dazed (x1.5); not twice inside rungEvery s
   whipped: 1.6, whipHurt: 6, fray: 0.5, restring: 14,   // CUT THE LINE: the fray, the whip (x1.5), the crew's re-stringing
-  haul: 1.2,                     // HE STOPS THE BELLS (P2's turn): braced, not an opening
+  haul: 1.2,                     // THE STORM ARRIVES (P2.s turn, lance5; was HE STOPS THE BELLS): braced, not an opening
   split: 1.0, castOff: 8, bare: 0.7,   // THE SHIELD SPLIT (x1.5 while it goes), or cast off this long into P3; shieldless he takes x0.7 from anywhere
   open: { tossed: 1.6, buffeted: 1.5, overrun: 1.5, rung: 1.5, whipped: 1.5, wallTurned: 1.5, recover: 1.5, reel: 1.5, stumble: 1.5, planted: 1.6, split: 1.5 },   // his openings (B15: 1.5-2x; pinned reads its bell)
-  heroDmg: { knight: 1.15, warden: 1.05, pyro: 0.65 },   // (claude/lance4tune) a hero's blows against him, x (knight takes the reach, pyro stands off)
+  heroDmg: { knight: 1.32, warden: 1.0, pyro: 0.76 },   // (claude/lance4tune) a hero's blows against him, x (knight takes the reach, pyro stands off)
   /* (claude/lance5, Daniel 10-31 18:36) */
   pivot: 0.3,                    // NO BACKWARD CHARGE: a hero behind him - he plants and turns (a told 0.3 s pivot: the stamp and the pennant's swing), then moves
   skewer: { tell: 0.6, active: 0.22, rec: 0.9, recHit: 0.5, dx: 24, hitX: 18, low: 30, top: 124, every: 4.5 },   // RISING SKEWER (P2+, MEDIUM): braced, the point straight up at anyone over him (a rope rider, a lookout); a whiff leaves him looking up - drop on his helm then
