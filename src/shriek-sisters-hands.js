@@ -19,6 +19,7 @@ import { drawSister } from './redraw/shriek_sisters_art.js';
 import { drawHang } from './redraw/rookery_hang.js';
 import { drawArena, drawWind } from './redraw/rookery_arena_art.js';
 import { bakeSummitSlab, bakeSummitRubble, bakeSummitStone, bakeSummitEcho, bakeBoulder, bakeSummitLip } from './redraw/rookery_world.js';   /* (claude/rookerypolish) the summit's slabs, rubble and stones in the Sisters' Crag stone */
+import { GALE, drawGust } from './gale-harpy.js';   /* (claude/rookery4) THE SNATCHER's WING GUST: the gale harpy's push and its told cone */
 const { SS, ROLES } = SSM;
 
 const SOUND = { screech: s => (s.screech || s.tell)(), lock: s => (s.tell || s.clank)(), dive: s => (s.whoosh || s.throwWhoosh || s.screech || s.tell)(), smash: s => { (s.crack || s.stone || s.thud)(); (s.heavy || s.thud)(); },
@@ -31,7 +32,9 @@ const SOUND = { screech: s => (s.screech || s.tell)(), lock: s => (s.tell || s.c
   free: s => (s.clank || s.thud)(), letGo: s => (s.whoosh || s.tell)(), teeter: s => (s.stone || s.thud)(),
   /* (claude/rookery3) THE TEMPO CUES, over each windup's own sound: HEAVY a deep throat and a wingbeat that lands (slow: you have time), LIGHT a small bright tick (quick: move now);
      MEDIUM is the windup's own sound alone */
-  tempoHeavy: s => { (s.bellow || s.heavy || s.thud)(); (s.thud || s.heavy)(); }, tempoLight: s => (s.tink || s.strikeTell || s.tell)() };
+  tempoHeavy: s => { (s.bellow || s.heavy || s.thud)(); (s.thud || s.heavy)(); }, tempoLight: s => (s.tink || s.strikeTell || s.tell)(),
+  /* (claude/rookery4) the support moves */
+  pebbleTell: s => (s.stone || s.tell)(), pebble: s => (s.throwWhoosh || s.whoosh || s.tell)(), gustTell: s => (s.tell)(), gust: s => (s.throwWhoosh || s.whoosh || s.tell)() };
 const COL = { diver: { body: '#6a7890', dark: '#3e4a5e', light: '#9aaac4', crest: '#c8d4e8' }, shrieker: { body: '#7a4a5a', dark: '#4a2634', light: '#b0707e', crest: '#e04a3a' }, snatcher: { body: '#7a6448', dark: '#4a3a26', light: '#a88c64', crest: '#d8b070' } };
 const R = Math.round;
 const rect = (g, x, y, w, h, col) => { g.fillStyle = col; g.fillRect(R(x), R(y), R(w), R(h)); };
@@ -82,6 +85,13 @@ export const POSE = {
   dead3: { wing: 0.6, pitch: 0.05, head: [6, 8], sprawl: true, dead: true, rubble: true },
   /* (claude/rookery3) SPENT - the heavy boulder drop's recovery: empty talons hanging, wings dragging low, beak open (she sinks to your height: the punish) */
   spent: { wing: 0.35, pitch: 0.2, head: [8, 3], talon: 'spread', beak: true }, spentB: { wing: -0.1, flap: true, pitch: 0.05, head: [8, 1], talon: 'hang', beak: true },
+  /* (claude/rookery4) PLACEHOLDER POSES for ONE HUNTER AT A TIME (the sonnet art lane draws the new, bigger sisters): TO HER ROOST (beating up and back), and the three SUPPORT MOVES,
+     each its own windup + release (B16) - THE PEBBLE KICK (the Diver rocks back on her nest, one foot drawn up gripping a stone / the kick: leg flung out, wings up), THE MARK (the
+     Shrieker on her perch, head flung up, throat swelling - the same scream, smaller), THE WING GUST (the Snatcher low by her nest, wings swept far back / the beat: wings slammed forward) */
+  toRoost: { wing: -0.9, flap: true, pitch: -0.2, head: [8, -4], talon: 'hang' },
+  pebbleTell: { wing: -0.6, pitch: -0.3, head: [5, -5], talon: 'grip', rock: true, eye: 'red' }, pebble: { wing: -1.2, pitch: 0.2, head: [10, -1], talon: 'fwd', beak: true },
+  markTell: { wing: -1.1, pitch: -0.3, head: [4, -8], beak: true, sac: true, eye: 'red' },
+  gustTell: { wing: -1.6, pitch: -0.25, head: [7, -3], talon: 'spread', eye: 'red' }, gust: { wing: 0.4, pitch: 0.25, head: [12, 0], beak: true, talon: 'spread' },
 };
 /* HOW LONG she has been in this mode (s). The hands note the mode change as it happens; poseOf reads it */
 const modeAge = (b, s, time) => { if (b.__m !== s.mode) { b.__m = s.mode; b.__t0 = time; } return time - b.__t0; };
@@ -120,7 +130,7 @@ export function makeShriekSistersHands(ctx) {
   H.on = () => !!(S && A());
   H.owns = e => e.t === 'shrieksisters' || e.t === 'shrieksister';
   const unhold = () => { for (const pp of ctx.players || []) { pp.ssHeld = null; pp.ssShove = null; pp.ssRide = null; } };
-  H.clear = () => { S = null; A0 = null; BOSS_PHASE.shrieksisters = 1; unhold(); };
+  H.clear = () => { unlay(); S = null; A0 = null; BOSS_PHASE.shrieksisters = 1; unhold(); };
   const anchor = () => { const e = ctx.boss; return e && e.t === 'shrieksisters' ? e : null; };
   const hurt = (name, fn) => { const P = ctx.hero(), h0 = P.hp; fn(); if (S) { S.hurt = S.hurt || {}; S.hurt[name] = (S.hurt[name] || 0) + Math.max(0, h0 - Math.max(0, P.hp)); } };
   const keyed = (pp, key) => { pp.ssKeys = pp.ssKeys || new Map(); if (pp.ssKeys.size > 160) pp.ssKeys.clear(); if (pp.ssKeys.has(key)) return true; pp.ssKeys.set(key, 1); return false; };
@@ -131,8 +141,17 @@ export function makeShriekSistersHands(ctx) {
     e.x = S.G.mid; e.y = S.G.floorY - 15 * ctx.TS; A0 = e;
     for (const r of ROLES) { const s = S.sis[r]; const b = { t: 'shrieksister', role: r, x: s.x, y: s.y, w: SS.sister.w, h: SS.sister.h, hp: s.hp, maxHp: s.maxHp, alive: true, dying: 0, noGrav: true, face: -1, anim: 0, flash: 0, stagger: 0, vx: 0, vy: 0, mode: 'sleep', boss: false };
       bodies[r] = b; ctx.addEnemy(b); }
-    for (const pp of ctx.players) { pp.ssKeys = null; pp.ssHeld = null; pp.ssShove = null; pp.ssRide = null; } return e; };
-  const heroes = () => ctx.players.map(pp => ({ x: pp.x, y: pp.y, ground: !!pp.ground, alive: ctx.upright(pp) && !pp.dead, face: pp.face || 1, pp }));
+    for (const pp of ctx.players) { pp.ssKeys = null; pp.ssHeld = null; pp.ssShove = null; pp.ssRide = null; }
+    unlay(); laid = { L: ctx.L, cells: new Map() }; for (const nn of S.G.nests) layNest(nn);   /* (claude/rookery4) the nests hang on their arms */
+    return e; };
+  const heroes = () => ctx.players.map(pp => { let block = false; if (ctx.blocking) ctx.asPlayer(pp, () => { block = !!ctx.blocking(); }); return { x: pp.x, y: pp.y, ground: !!pp.ground, alive: ctx.upright(pp) && !pp.dead, face: pp.face || 1, block, pp }; });
+  /* (claude/rookery4) THE ROOSTS' CELLS: the nests are footing (ONEWAY) laid by the fight - where they hang, then where they lie once dropped; the overhang's steps. Every cell we set is
+     remembered with what was there, and put back when the fight is cleared (a death, a new level) - only into the same level */
+  let laid = null;
+  const setCell = (x, y, t) => { if (!ctx.cellSet || !ctx.T || !laid) return; const k = x + ',' + y; if (!laid.cells.has(k)) laid.cells.set(k, ctx.tileAt ? ctx.tileAt(x, y) : ctx.T.AIR); ctx.cellSet(x, y, t); };
+  const unsetCell = (x, y) => { const k = x + ',' + y; if (laid && laid.cells.has(k) && ctx.cellSet) { ctx.cellSet(x, y, laid.cells.get(k)); laid.cells.delete(k); } };
+  const layNest = n => { if (!ctx.T) return; const row = n.st === 'up' ? n.rowUp : n.rowDown; for (let x = n.cols[0]; x <= n.cols[1]; x++) setCell(x, row, ctx.T.ONEWAY); };
+  const unlay = () => { if (laid && ctx.cellSet && ctx.L === laid.L) for (const [k, t] of laid.cells) { const [x, y] = k.split(',').map(Number); ctx.cellSet(x, y, t); } laid = null; };
   function world() {
     return {
       number: (x, y, t, col) => ctx.number(x, y, t, col), sound: k => { const f = SOUND[k]; if (f) try { f(ctx.sfx); } catch {} }, shake: n => ctx.shake(n),
@@ -163,6 +182,13 @@ export function makeShriekSistersHands(ctx) {
       /* (claude/rookery2) the nest tips a hero off the perch (toward the summit's middle); a ride ended by a fall */
       tip: (h, P0) => { const pp = h.pp; if (!pp) return; ctx.asPlayer(pp, () => { const P = ctx.hero(); P.vx = (P.x < S.G.mid ? 1 : -1) * 150; P.vy = -90; P.ground = false; }); ctx.dust(P0.x, P0.y, 8); SOUND.teeter(ctx.sfx); },
       unride: pp => { if (pp) { pp.ssRide = null; } },
+      /* (claude/rookery4) a nest's arm snaps: its cells move from where it hung to where it lies; the overhang slides down as steps; the vents open */
+      nest: nn => { for (let x = nn.cols[0]; x <= nn.cols[1]; x++) unsetCell(x, nn.rowUp); layNest(nn); ctx.burst(nn.x, nn.topDown - 4, 22, ['#e6dcc0', '#b0a488', '#6a5e4a'], 130, 0.9); ctx.dust(nn.x, S.G.floorY, 12); },
+      over: o => { if (ctx.T) for (const st of o.steps) for (let x = st.cols[0]; x <= st.cols[1]; x++) setCell(x, st.row, ctx.T.ONEWAY); ctx.burst((o.slab.x0 + o.slab.x1) / 2, o.slab.y, 26, ['#bf9fa0', '#725a62', '#e4c8c4'], 140, 0.9); ctx.dust(o.footX, S.G.floorY, 12); },
+      vents: () => { ctx.shake(3); SOUND.gust(ctx.sfx); },
+      /* THE WING GUST's push (the gale harpy's): braced (block / crouch) half and no lift, else the full shove along the floor */
+      gust: (s, h, dir, key) => { const pp = h.pp; let r = null; ctx.asPlayer(pp, () => { const P = ctx.hero(); if (!ctx.upright(pp) || P.dead || pp.ssHeld || keyed(pp, key)) return;
+          if (h.block) { P.vx = dir * GALE.push * GALE.brace; r = 'braced'; ctx.number(P.x, P.y - 30, SSM.SS_SAY.braced, '#8fd160'); } else { P.vx = dir * GALE.push; P.vy = Math.min(P.vy || 0, -60); P.ground = false; pp.ssShove = { t: 0.6, dir }; r = 'hit'; } }); return r; },
       letGo: (s, pp, d) => { if (!pp) return; ctx.asPlayer(pp, () => { const P = ctx.hero(); pp.ssHeld = null; P.vx = 0; P.vy = 0; P.ground = false;
           if (d > 0 && ctx.upright(pp) && !P.dead) { hurt('drop', () => ctx.damagePlayer(P.x, d, { who: A0, name: 'drop', unblockable: true, noKnock: true })); ctx.number(P.x, P.y - 30, SSM.SS_SAY.letGo, '#ff6b6b'); SOUND.letGo(ctx.sfx); } }); },
     };
@@ -184,6 +210,9 @@ export function makeShriekSistersHands(ctx) {
         ctx.number(pp.x, pp.y - 34, SSM.SS_SAY.teeter, '#ff6b6b'); SOUND.teeter(ctx.sfx); ctx.burst(pp.x + q.dir * 6, S.G.floorY - 2, 8, ['#bf9fa0', '#725a62', '#e4c8c4'], 70, 0.7); ctx.shake(2); }
       else if (q.t <= 0) pp.ssShove = null; }
     SSM.stepSisters(S, dt, heroes(), w);
+    /* (claude/rookery4) THE UPDRAFTS (open once the Snatcher falls): stand or jump in one and it lifts you to the roost tier */
+    for (const v of S.G.vents) if (v.open) for (const pp of ctx.players) { if (!ctx.upright(pp) || pp.dead || pp.ssHeld || pp.ssRide || pp.plunge) continue;
+      if (Math.abs(pp.x - v.x) < 12 && pp.y > v.topY && pp.y <= S.G.floorY + 2) ctx.asPlayer(pp, () => { const P = ctx.hero(); P.vy = Math.min(P.vy || 0, -SS.vent.lift); P.ground = false; if (Math.random() < dt * 20) ctx.dust(v.x + (Math.random() - 0.5) * 10, S.G.floorY - 4, 1); }); }
     /* the bodies follow the sisters; a sister at 0 falls */
     let sum = 0;
     for (const r of ROLES) { const s = S.sis[r], b = bodies[r]; if (!b) continue;
@@ -196,7 +225,8 @@ export function makeShriekSistersHands(ctx) {
   };
   /* A BLOW ON A SISTER (main.js hurtEnemy0): her own number (B15), shown on her, then off the anchor's bar */
   H.hit = (b, dmg, fromX, pl) => { if (!S || !b || !b.alive) return; const s = S.sis[b.role]; if (!s || !s.alive || s.mode === 'sleep') return;
-    const [d, word] = SSM.takeBlow(s, dmg, pl); s.hp = Math.max(0, s.hp - d); b.hp = s.hp; b.flash = 0.12; b.hurtT = 0.12;
+    const P = ctx.hero(), R = s.roost && SSM.roostById(S, s.roost), close = !!(R && s.mode === 'perched' && P && Math.abs(P.x - s.x) < SS.roost.close && Math.abs(P.y - R.top) < 12);   /* (claude/rookery4) ON HER PERCH: struck from her own roost */
+    const [d, word] = SSM.takeBlow(s, dmg, pl, close); s.hp = Math.max(0, s.hp - d); if (close) { S.n.perchHits++; if (!S.told.perch) { S.told.perch = 1; ctx.number(s.x, s.y - 40, SSM.SS_SAY.perch, '#ffd36b'); } } b.hp = s.hp; b.flash = 0.12; b.hurtT = 0.12;
     if (word) { S.n[word === 'WARDED' ? 'wardHits' : 'wingHits']++; b.guardFx = 0.3; b.guardWord = word; ctx.sfx.clank && ctx.sfx.clank(); const sd = Math.sign(fromX - s.x) || 1; ctx.sparks(s.x + sd * 10, s.y - 10, -sd, 4);
       if (!S.told.wing && word === 'ON THE WING') { S.told.wing = 1; ctx.hint && ctx.hint('ON THE WING A BLOW BARELY LANDS. STAND ON A CRACK, LET HER DIVE, STEP OFF: SHE LIES STUNNED IN THE RUBBLE. CUT THEM WHEN THEY COME LOW.'); } }
     else S.n[SSM.sisOpen(s) ? 'openHits' : 'lowHits']++;
@@ -215,6 +245,7 @@ export function makeShriekSistersHands(ctx) {
     if (!s.alive || !(s.mode === 'lift' || s.mode === 'hold')) { S.held = null; P.ssHeld = null; return false; }
     P.x = s.x; P.y = s.y + SS.grab.hang; P.vx = 0; P.vy = 0; P.ground = false;
     if (swing) { const r = SSM.strikeHeld(S, world()); if (r) { if (ctx.strike && b) ctx.strike(b); ctx.sparks(s.x, s.y + 4, P.face || 1, 5); ctx.hitstop && ctx.hitstop(0.03); }
+      if (r === 'free' && S.lastFree) { const F = S.lastFree; S.lastFree = null; P.x = F.x; P.y = F.y; P.vy = 0; P.ssHeld = null; P.ground = false; return false; }   /* (claude/rookery4) struck loose BY A ROOST: onto it */
       if (r === 'free' || r === 'fall') { P.vy = r === 'fall' ? 20 : -40; P.ssHeld = null; return false; } }
     if (!S.held) P.ssHeld = null; return !!S.held; };
   /* (claude/rookery2) THREE BARS (brief B1): one per sister, side by side under the plate, each in her colour with her pip and her name; a fallen sister's bar is crossed out;
@@ -233,7 +264,11 @@ export function makeShriekSistersHands(ctx) {
     if (dead) { g.fillStyle = '#0a0810'; for (let q = 0; q < 9; q++) g.fillRect(x + q, y + Math.round(q * 0.9), 1, 1); } };
   H.drawBars = (g, VW, VH, y, h, time) => { if (!S) return false; const w = 42, gap = 5, x0 = Math.round(VW / 2 - (w * 3 + gap * 2) / 2), ih = Math.max(9, h + 2);
     ROLES.forEach((r, i) => { const s = S.sis[r], bx = x0 + i * (w + gap), k = s.alive ? Math.max(0, s.hp) / s.maxHp : 0, open = SSM.sisOpen(s), p2 = S.p2 === r, dead = !s.alive, fx = bx + 10, fw = w - 10;
-      bird(g, bx, y + Math.round((h - 9) / 2), r, dead, open || p2);
+      const hunt = !dead && (S.p2 ? S.p2 === r : S.hunter === r), iy = y + Math.round((h - 9) / 2);
+      bird(g, bx, iy, r, dead, open || p2 || hunt);
+      /* (claude/rookery4) THE TURN ORDER: the Hunter's portrait lit with her countdown ring (pulsing through the hand-over), a roosting sister's dimmed, the fallen crossed (above) */
+      if (!dead && !hunt) { g.fillStyle = 'rgba(20,16,30,0.55)'; g.fillRect(bx, iy, 9, 9); }
+      if (hunt) { const T0 = S.p2 ? 1 : Math.max(0, Math.min(1, S.turnT / SS.turn.t)), pul = S.hand > 0 ? 0.5 + 0.5 * Math.sin(time * 18) : 1; g.globalAlpha = pul; g.strokeStyle = '#ffd36b'; g.beginPath(); g.arc(bx + 4.5, iy + 4.5, 7, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * T0); g.stroke(); g.globalAlpha = 1; }
       g.fillStyle = '#14101e'; g.fillRect(fx - 1, y - 1, fw + 2, h + 2); g.fillStyle = dead ? '#3a3646' : '#2a2236'; g.fillRect(fx, y, fw, h);
       const col = open ? (Math.floor(time * 8) % 2 ? '#ffd36b' : '#fff6c8') : p2 ? (Math.floor(time * 5) % 2 ? '#ff8a4a' : '#ff6b3a') : COL[r].crest, fl = Math.round(fw * k);
       if (!dead && fl > 0) { g.fillStyle = col; g.fillRect(fx, y, fl, h); g.fillStyle = 'rgba(255,255,255,0.28)'; g.fillRect(fx, y, fl, 1); g.fillStyle = 'rgba(0,0,0,0.28)'; g.fillRect(fx, y + h - 1, fl, 1); }
@@ -245,7 +280,7 @@ export function makeShriekSistersHands(ctx) {
   H.barName = () => { if (!S) return 'THE SHRIEK SISTERS'; const left = ROLES.filter(r => S.sis[r].alive), open = left.find(r => SSM.sisOpen(S.sis[r]));
     return 'THE SHRIEK SISTERS' + (open ? '  ' + SSM.NAME[open] + ' ' + SSM.OPEN_NAME[S.sis[open].mode] : left.length < 3 ? '  ' + left.length + ' LEFT' : ''); };
   H.end = () => { if (S) { S.rocks = []; S.waves = []; S.marks = []; S.echoes = []; S.held = null; S.ride = null; } unhold(); BOSS_PHASE.shrieksisters = 1; for (const r of ROLES) if (bodies[r]) bodies[r].alive = false; };
-  H.read = () => S && { ph: S.ph, p2: S.p2, ride: S.ride ? S.ride.by : null, dead: { ...S.dead }, sis: Object.fromEntries(ROLES.map(r => [r, { mode: S.sis[r].mode, hp: S.sis[r].hp, alive: S.sis[r].alive, ward: S.sis[r].ward, x: S.sis[r].x, y: S.sis[r].y }])),
+  H.read = () => S && { hunter: S.hunter, turnT: S.turnT, hand: S.hand, nests: S.G.nests.map(nn => nn.st), over: S.G.over && S.G.over.st, vents: S.G.vents.map(v => v.open), ph: S.ph, p2: S.p2, ride: S.ride ? S.ride.by : null, dead: { ...S.dead }, sis: Object.fromEntries(ROLES.map(r => [r, { mode: S.sis[r].mode, hp: S.sis[r].hp, alive: S.sis[r].alive, ward: S.sis[r].ward, x: S.sis[r].x, y: S.sis[r].y }])),
     slabs: S.G.slabs.map(s => ({ x: s.x, st: s.st })), stones: S.stones.length, echoes: S.echoes.length, held: !!S.held, n: JSON.parse(JSON.stringify(S.n)), hurt: { ...(S.hurt || {}) } };
   const X = cx => v => R(v - cx), Y = cy => v => R(v - cy);
   /* THE SUMMIT: the slabs (cracked, or rubble growing back), the stones the snatcher left, the shelves' guano, the Roc's peak beyond */
@@ -258,9 +293,32 @@ export function makeShriekSistersHands(ctx) {
     for (const q of S.stones) { const sx = x(q.x), a = q.t < 2 ? (Math.floor(time * 8) % 2 ? 0.4 : 1) : 1; g.globalAlpha = a; g.drawImage(bakeSummitStone(), sx - 10, fy - 11); g.strokeStyle = '#ffd36b'; g.strokeRect(sx - 10.5, fy - 10.5, 21, 11); g.globalAlpha = 1; }
     /* (claude/sisters2) THE ECHO'S CRACKED TILES (bait: the gold glint ring, blinking out as they crumble) and THE LIP at each end of the summit (it blinks while a shock shriek swells) */
     const ew = SS.echo.w; for (const q of S.echoes) { const sx = x(q.x) - ew / 2, a = q.t < 2 ? (Math.floor(time * 8) % 2 ? 0.4 : 1) : 1; g.globalAlpha = a; g.drawImage(bakeSummitEcho(ew), sx, fy - 1); g.strokeStyle = Math.floor(time * 3) % 2 ? '#ffd36b' : 'rgba(255,211,107,0.5)'; g.strokeRect(sx + 0.5, fy - 2.5, ew - 1, 5); g.globalAlpha = 1; }
+    drawRoosts(g, x, y, fy, time);   /* (claude/rookery4) the nests on their cracked arms, the overhang / its steps, the vents */
     const shocking = ROLES.some(r => S.sis[r].alive && S.sis[r].mode === 'shockTell'), E = SS.shock.edge;
     for (const [ex, side] of [[x(G.x0), -1], [x(G.x1) - E, 1]]) { g.drawImage(bakeSummitLip(side), ex, fy - 1);
       if (shocking) { g.globalAlpha = 0.45 + 0.35 * Math.sin(time * 12); g.strokeStyle = '#ff6b6b'; g.strokeRect(ex + 0.5, fy - 3.5, E - 1, 5); g.globalAlpha = 1; } } };
+  /* (claude/rookery4) GREYBOX ROOSTS (the sonnet art lane draws them): a BONE NEST - a bowl of pale ribs and sticks, dark inside - on a CRACKED ARM (a leaning stone strut from the
+     summit floor up to it, a black crack zig-zagging through it) whose FOOT on the floor wears the shared gold crack ring (B10: bait a dive here); a dropped nest lies tilted on the arm's
+     stump, low over the floor; THE OVERHANG - a cracked slab of crag hanging under the Shrieker's perch, its foot ringed gold - and once broken, THE STEPS (three fallen blocks); the
+     UPDRAFT VENTS - a grate in the floor, PLUGGED (a dark rubble cap) until the Snatcher falls, then OPEN (pale streaks rising) */
+  const nestDraw = (g, nx, top, w, tilt, time) => { const L = Math.round(nx - w / 2), T0 = Math.round(top);
+    rect(g, L, T0, w, 4, '#3a2e26'); for (let i = 0; i < w; i += 3) { rect(g, L + i, T0 - 2 + ((i * 7) % 3) + (tilt ? Math.round((i / w - 0.5) * tilt) : 0), 4, 1, i % 2 ? '#e6dcc0' : '#b0a488'); }
+    rect(g, L - 1, T0 + 1, 2, 3, '#d8ccb0'); rect(g, L + w - 1, T0 + 1, 2, 3, '#d8ccb0'); for (let i = 2; i < w - 2; i += 5) rect(g, L + i, T0 + 3, 2, 2, '#e6dcc0'); };
+  const crackRing = (g, cx2, fy, w, time) => { g.strokeStyle = Math.floor(time * 3) % 2 ? '#ffd36b' : 'rgba(255,211,107,0.5)'; g.strokeRect(R(cx2 - w / 2) + 0.5, fy - 2.5, w - 1, 5); };
+  function drawRoosts(g, x, y, fy, time) {
+    for (const nn of S.G.nests) { const nx = x(nn.x), fx = x(nn.footX);
+      if (nn.st === 'up') { const ty = y(nn.topUp) + 4; g.strokeStyle = '#8a8478'; g.lineWidth = 4; g.beginPath(); g.moveTo(fx, fy); g.lineTo(nx, ty); g.stroke(); g.lineWidth = 1;
+        g.strokeStyle = '#1c161e'; g.beginPath(); const mx = (fx + nx) / 2, my = (fy + ty) / 2; g.moveTo(mx - 3, my - 4); g.lineTo(mx + 2, my - 1); g.lineTo(mx - 2, my + 2); g.lineTo(mx + 3, my + 5); g.stroke();
+        nestDraw(g, nx, y(nn.topUp), nn.w, 0, time); rect(g, fx - 6, fy - 2, 12, 2, '#5e594f'); crackRing(g, fx, fy, SS.nest.foot, time); }
+      else { g.strokeStyle = '#6a645a'; g.lineWidth = 4; g.beginPath(); g.moveTo(fx, fy); g.lineTo(fx + (nx - fx) * 0.3, fy - 14); g.stroke(); g.lineWidth = 1; nestDraw(g, nx, y(nn.topDown), nn.w, 4, time); } }
+    const o = S.G.over;
+    if (o && o.st === 'up') { const sx0 = x(o.slab.x0), sx1 = x(o.slab.x1), sy = y(o.slab.y), fx = x(o.footX); rect(g, sx0, sy, sx1 - sx0, 10, '#725a62'); rect(g, sx0, sy, sx1 - sx0, 2, '#bf9fa0'); rect(g, sx0 + 2, sy + 10, sx1 - sx0 - 4, 2, '#4e3c46');
+      g.strokeStyle = '#4e3c46'; g.lineWidth = 3; g.beginPath(); g.moveTo(fx, fy); g.lineTo(fx - 4, sy + 12); g.stroke(); g.lineWidth = 1;
+      g.strokeStyle = '#1c161e'; g.beginPath(); g.moveTo(sx0 + 10, sy); g.lineTo(sx0 + 16, sy + 5); g.lineTo(sx0 + 12, sy + 10); g.stroke(); crackRing(g, fx, fy, SS.nest.foot, time); }
+    else if (o) for (const st of o.steps) { const sx = x(st.x0), sy = y(st.y); rect(g, sx, sy, st.x1 - st.x0, 7, '#725a62'); rect(g, sx, sy, st.x1 - st.x0, 2, '#bf9fa0'); rect(g, sx + 2, sy + 7, st.x1 - st.x0 - 4, 2, '#4e3c46'); }
+    for (const v of S.G.vents) { const vx = x(v.x); rect(g, vx - 9, fy - 2, 18, 3, '#2a2236'); for (let k = -7; k <= 7; k += 4) rect(g, vx + k, fy - 2, 1, 3, '#8a8098');
+      if (!v.open) { rect(g, vx - 8, fy - 5, 16, 3, '#4e4a44'); rect(g, vx - 5, fy - 7, 4, 2, '#6a645a'); rect(g, vx + 2, fy - 6, 3, 1, '#6a645a'); }
+      else { g.fillStyle = 'rgba(232,240,255,0.55)'; for (let k = 0; k < 6; k++) { const t2 = (time * 1.4 + k / 6) % 1, yy = fy - 4 - t2 * (S.G.floorY - v.topY), xx = vx + Math.round(Math.sin(time * 5 + k * 2) * 4); g.globalAlpha = 0.6 * (1 - t2); g.fillRect(xx, R(yy), 1, 6); } g.globalAlpha = 1; } } }
   H.drawBoss = (g, b, cx, cy, time) => { if (!S || !b || b.t !== 'shrieksister') return; const s = S.sis[b.role]; if (!s) return; b.guardFx = Math.max(0, (b.guardFx || 0) - 1 / 60);
     const flash = (b.hurtT || 0) > 0 || (b.flash || 0) > 0.06; b.hurtT = Math.max(0, (b.hurtT || 0) - 1 / 60); const p = poseOf(s, b, time, flash, S.G);
     g.globalAlpha = 0.25; g.fillStyle = '#10060a'; g.fillRect(R(s.x - 12 - cx), R(S.G.floorY - 2 - cy), 24, 2); g.globalAlpha = 1;
@@ -296,8 +354,15 @@ export function makeShriekSistersHands(ctx) {
       if (fixed) { g.fillStyle = blink; for (let a = 0; a < 16; a++) { const t2 = a / 16 * Math.PI * 2; g.fillRect(Math.round(sx + Math.cos(t2) * (rw + 2)), Math.round(fy - 1 + Math.sin(t2) * (4 + 2 * k)), 1, 1); } } };
     for (const r of ROLES) { const s = S.sis[r]; if (!s.alive) continue; if (s.mode === 'carry') shadow(x(s.x), 0.2, false); if (s.mode === 'dropTell') shadow(x(s.dropX), 0.45 + 0.3 * (1 - Math.max(0, s.modeT) / SS.rock.tell), true); }
     for (const c of S.rocks) { const q = SSM.rockAt(c, G.floorY); shadow(x(c.x), 0.6 + 0.4 * q.k, true); g.drawImage(bakeBoulder(), x(q.x) - 13, y(q.y) - 17); }
+    /* (claude/rookery4) THE PEBBLES: the ring where each lands (from the kick's windup on), the stone in its arc */
+    for (const r of ROLES) { const s = S.sis[r]; if (s.alive && s.mode === 'pebbleTell') { const k = 1 - Math.max(0, s.modeT) / SS.pebble.tell; g.globalAlpha = 0.4 + 0.4 * k; g.strokeStyle = blink; g.beginPath(); g.ellipse(x(s.pbX), fy - 1, SS.pebble.r, 3, 0, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1; } }
+    for (const p of S.pebbles) { const q = SSM.pebbleAt(p, G.floorY); g.strokeStyle = blink; g.beginPath(); g.ellipse(x(p.tx), fy - 1, SS.pebble.r, 3, 0, 0, Math.PI * 2); g.stroke(); rect(g, x(q.x) - 2, y(q.y) - 2, 5, 4, '#8a8478'); rect(g, x(q.x) - 1, y(q.y) - 2, 3, 1, '#c8c0b0'); }
+    /* THE WING GUST: the gale harpy's told cone (src/gale-harpy.js drawGust) */
+    for (const r of ROLES) { const s = S.sis[r]; if (s.alive && (s.mode === 'gustTell' || s.mode === 'gust')) drawGust(g, { x: s.x, y: s.y, face: s.face || 1, mode: s.mode === 'gustTell' ? 'galeTell' : 'gust', galeT: Math.max(0, s.modeT) * GALE.tell / SS.gust.tell }, cx, cy, time); }
+    /* FRIENDLY FIRE: a dive turned onto a sister - a green line from the Hunter to her */
+    for (const r of ROLES) { const s = S.sis[r]; if (s.alive && s.mode === 'diveTell' && s.aim && s.aim.ff) { const q = S.sis[s.aim.ff]; g.fillStyle = '#8fd160'; const n2 = 10; for (let i = 1; i < n2; i++) rect(g, x(s.x + (q.x - s.x) * i / n2), y(s.y + (q.y - s.y) * i / n2), 2, 2, '#8fd160'); } }
     /* the marks */
-    for (const m of S.marks) { const mx = x(m.x), k = m.t / m.T; g.globalAlpha = 0.5 + 0.5 * k; g.strokeStyle = '#ff5a4a'; g.lineWidth = 2; g.strokeRect(mx - 14, fy - 4, 28, 5); g.lineWidth = 1; rect(g, mx - 1, fy - 14, 2, 10, '#ff5a4a'); g.globalAlpha = 1; }
+    for (const m of S.marks) { const mx = x(m.x), k = m.t / m.T; g.globalAlpha = 0.5 + 0.5 * k; if (m.sup) ctx.text('MARK', mx, fy - 18, '#ff8a7a', 'center', 5); g.strokeStyle = '#ff5a4a'; g.lineWidth = 2; g.strokeRect(mx - 14, fy - 4, 28, 5); g.lineWidth = 1; rect(g, mx - 1, fy - 14, 2, 10, '#ff5a4a'); g.globalAlpha = 1; }
     /* the waves */
     for (const q of S.waves) for (let k = 0; k < 3; k++) { g.strokeStyle = 'rgba(255,211,107,' + (0.8 - k * 0.25) + ')'; g.beginPath(); g.arc(x(q.x) - q.dir * k * 6, fy - 12, 10 + k * 3, q.dir > 0 ? -1 : 2.1, q.dir > 0 ? 1 : 4.2); g.stroke(); }
     /* every aim: the red line from her to her spot - dotted while it follows you, SOLID once it LOCKS */
