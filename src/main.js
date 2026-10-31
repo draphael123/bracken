@@ -74,6 +74,7 @@ import {updateGasVents,drawGasVents,updateGraveFire,drawHandFire,inVentLight,VEN
 import {updateKeepPassages,drawKeepPassages} from './keep-passages.js';
 import {whirlInit,updateWhirlpools,drawWhirlpools,strikeLever,whirlKey} from './whirlpools.js';   /* THE KEEP'S WHIRLPOOLS: the pull, the air they burn, and the lever each one shows you (docs/briefs/keep-rework-2.md) */
 import {bakeRouteLedges,drawRouteSupports,drawWorkPlatform} from './route-art.js';
+import { BELL_LOCK_MAX, bellLock } from './bell-lock.js';
 import {bakeBellcrab,bakeBellguard,bakeBellcrabOut,bakeBellShell,BELL,BELL_OUT_F,bellOutFrame} from './bellcrab.js';
 import * as DH from './deep-holds.js';
 import * as WN from './whatsnew.js';   /* WHAT'S NEW on the title board (docs/updates.json) */
@@ -11634,7 +11635,7 @@ function inPoolAt(p, x, y) { if (p.bottom !== undefined) return y <= p.bottom + 
 function hazardBack() { const s = P.safe; if (!s || s.L !== L || (MG && P.flip)) return; P.x = s.x; P.y = s.y; if (bossActive && boss && boss.t === 'windcaller' && L.arena && L.arena.safe && P.x > L.arena.x0 && P.x < L.arena.x1) { P.x = callerFallX(P.x); P.y = L.arena.floor; }   /* (claude/windcaller3) HIS THORNS HAND YOU BACK TO A FLOOR, never to a ledge's end with the gust still blowing off it - that was a second thorn, and a third */ P.vx = 0; P.vy = 0; P.onMover = null; P.ground = true; hazardSay(); }
 const spikeBite = (tx, name) => { const d = L.bellDeck, t = d && !P.dead ? bellPitThrow(d, P.x, P.y, c => ![1, 2].some(k => { const q = tileAt(c, d.deck - k); return q === T.SOLID || q === T.PORT; })) : null;
   if (!t && !P.dead && SV.spikeRule(L, P.x, TS) === 'death' && !SET.invincible && !(window.BK && window.BK.god)) { die({ name: name || 'THE SPIKES', red: false, rule: '' }); if (!(P.down > 0)) P.dead = 0.6; return; }   /* IN AN EXAM THE SPIKES KILL (src/survival.js; told as you walk in) */
-  const bit = damagePlayer(tx * TS + 8, t ? SEXTON.dmg.pit : DMG.spike, { up: true, unblockable: true, name: t ? 'THE BELL PIT' : name, pct: t ? 0 : (bossActive && L.arena && L.arena.fallPct && P.x > L.arena.x0 && P.x < L.arena.x1 ? L.arena.fallPct : SV.HAZARD.pct) });   /* (claude/stormhold3) L.arena.fallPct: THE LONG BRIDGE's gorge, under planks HE tears out, bites less than a pit you walked into */ if (!t && bit === 'hit' && !P.dead && P.hp > 0) hazardBack(); if (P.dead || !t) return;   /* the pit bites like one of his blows, not like a gear pit's spikes */ if (t) { P.vy = t.vy; P.vx = t.vx; P.ground = false; P.onMover = null; P.canCut = false; P.plunge = false; P.pitCarry = { vx: t.vx, t: 0.7 }; } };
+  const bit = damagePlayer(tx * TS + 8, t ? SEXTON.dmg.pit : DMG.spike, { up: true, unblockable: true, name: t ? 'THE BELL PIT' : name, pct: t ? 0 : (bossActive && L.arena && L.arena.fallPct && P.x > L.arena.x0 && P.x < L.arena.x1 ? L.arena.fallPct : SV.HAZARD.pct) });   /* (claude/stormhold3) L.arena.fallPct: THE LONG BRIDGE's gorge, under planks HE tears out, bites less than a pit you walked into */ if (!t && bit === 'hit' && !P.dead && P.hp > 0) hazardBack(); if (P.dead || !t) return;   /* the pit bites like one of his blows, not like a gear pit's spikes */ if (t) { P.vy = t.vy; P.vx = t.vx; P.ground = false; P.onMover = null; P.canCut = false; P.plunge = false; P.pitCarry = { vx: t.vx, t: bellLock(0.7) }; } };
 const REC_CTX = { get state() { return state; }, get P() { return P; }, get L() { return L; }, levelId: () => curId(), get boss() { return boss; }, get bossActive() { return bossActive; }, get miniActive() { return miniActive; }, mini: () => miniOne(), get SET() { return SET; }, get PROG() { return PROG; }, hero: () => hero(), heroLevel: () => heroLevel(), equipped: () => equipped(PROG, hero(), heroLevel()), bossOpen: e => window.BK.bossOpen(e) };   /* what the playtest recorder reads (src/playrec.js) */
 const miniOne = () => L.mini ? enemies.find(e => e.alive && e.t === L.mini.boss && (e.mini || e.t === 'greathound')) : null;
 // A mini dies: the wall it closed behind you opens, and so does the gate it was standing in front of.
@@ -14428,7 +14429,7 @@ function causeReset() { CT = L && L.causeTide ? { ph: 'low', t: L.causeTide.firs
 function updateCauseTide(dt) {
   const hb = attackBox();
   for (const pr of props) { if (pr.t !== 'tidebell' && pr.t !== 'knell') continue;
-    pr.swing = Math.max(0, (pr.swing || 0) - dt * 0.7); pr.cool = Math.max(0, (pr.cool || 0) - dt);
+    pr.swing = Math.max(0, (pr.swing || 0) - dt / BELL_LOCK_MAX); pr.cool = Math.max(0, (pr.cool || 0) - dt);
     if (hb && !P.dead && pr.cool <= 0 && overlap(hb, { l: pr.x - 11, r: pr.x + 11, t: pr.y - 32, b: pr.y - 8 })) { pr.cool = pr.t === 'knell' ? 1.6 : 5; pr.swing = 1; causeBell(pr); } }
   if (boss && boss.t === 'kraken') KRS.sky += (((boss.alive && bossActive) ? (boss.skyT || 0) : 0) - KRS.sky) * Math.min(1, dt * 1.2);
   const C = L.causeTide; if (!C || !CT) return;
@@ -26224,7 +26225,7 @@ function updateMonkProps(dt, hb) {
     if (pr.roc && over && pr.cool <= 0 && !pr.told && !(PROG.rocForkTold > 1)) { pr.told = true; PROG.rocForkTold = (PROG.rocForkTold || 0) + 1; hintSay('tip', 4, 'SHE IS OVER THE NEST BELL: STRIKE IT AND THE NOTE GOES THROUGH HER.'); }
     if (pr.ring > 0 && Math.random() < dt * 20) parts.push({ x: pr.x + (Math.random() - 0.5) * 14, y: pr.y - 16 - Math.random() * 10, vx: (Math.random() - 0.5) * 20, vy: -26, life: 0.4, max: 0.4, col: Math.random() < 0.5 ? '#f0dc8a' : '#c9a44a', size: 1, grav: -10 });
     const struck = hb && overlap(hb, tbellBox(pr)) && !P.hitSet.has(pr); if (!struck) continue;
-    P.hitSet.add(pr); pr.swing = 1.2; sparks(pr.x, pr.y - 12, P.face, 3);
+    P.hitSet.add(pr); pr.swing = bellLock(1.2); sparks(pr.x, pr.y - 12, P.face, 3);
     if (pr.cool > 0) { SFX.ui(); number(pr.x, pr.y - 36, 'STILL RINGING', '#9aa39a'); continue; }
     if (pr.guard && pr.tollT > 0) { SFX.clank(); number(pr.x, pr.y - 36, 'THE BELL IS SWINGING', '#9aa39a'); continue; }   /* THE GUARDIAN'S TOLL set it swinging: it cannot be struck till it settles */
     pr.ring = 1.2; if (TGM && (pr.span || pr.guard || pr.offer)) { if (pr.span) TGM.bellNote(pr); } else { ringAt(pr.x, pr.y - 12, 40, '#e8c88a', 0.5); SFX.seaBell(); }   /* THE BELL IS A NOTE (src/temple-guardian.js bellNote): its ring dazes goblins, birds and priests in it */
@@ -26420,7 +26421,7 @@ function updateCastleProps(dt, hb) {
     if (pr.t === 'seabell') { // THE SHIP'S BELL: strike it and the reef answers. The petrels go up off the wrecks and the drowned stand still to listen
       pr.swing = Math.max(0, pr.swing - dt); pr.cd = Math.max(0, pr.cd - dt);
       const struck = hb && overlap(hb, { l: pr.x - 9, r: pr.x + 9, t: pr.y - 22, b: pr.y }) && !P.hitSet.has(pr);
-      if (struck) { P.hitSet.add(pr); pr.swing = 1.2; SFX.seaBell(); shakeCam(2); ringAt(pr.x, pr.y - 14, 40, '#c9b27c', 0.4);
+      if (struck) { P.hitSet.add(pr); pr.swing = bellLock(1.2); SFX.seaBell(); shakeCam(2); ringAt(pr.x, pr.y - 14, 40, '#c9b27c', 0.4);
         if (pr.cd <= 0) { pr.cd = 6;
           for (const e of enemies) if (e.alive && Math.abs(e.x - pr.x) < 150) {
             if (e.t === 'petrel') { e.mode = 'climb'; e.modeT = 3.5; e.hy -= 40; number(e.x, e.y - 12, 'SCATTERED', '#c9d1dc'); }

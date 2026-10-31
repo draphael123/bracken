@@ -285,7 +285,7 @@ export function makeHushHands(ctx) {
       if (hb && !P.hitSet.has(pr) && ctx.overlap(hb, { l: pr.x - 5, r: pr.x + 5, t: pr.y - 30, b: pr.y })) { P.hitSet.add(pr); ctx.sfx.clank();
         if (pr.jangle) { ctx.number(pr.x, pr.y - 36, 'THE CHIMES ARE LOST IN THE BELL', '#9aa39a'); continue; }
         if (pr.cd > 0) continue;
-        pr.cd = GRAN.pullCd; pr.swing = 1.2; ctx.sfx.mummerBell(); H.n.pulls++;
+        pr.cd = GRAN.pullCd; pr.swing = 1;   /* (claude/bellshort) BELL_LOCK_MAX 1.0 s (src/bell-lock.js) */ ctx.sfx.mummerBell(); H.n.pulls++;
         ctx.ring(pr.chimeX, pr.chimeY, 14, '#fff6c8', 0.5); ctx.noise(pr.chimeX, ctx.L.arena ? ctx.L.arena.floor : pr.y, GRAN.chimeR, 'chime'); } }
     for (const c of propsOf('grancandle')) { if (c.fallen) c.burnT = Math.max(0, (c.burnT || 0) - dt); }
     for (const k of knells) { k.x += k.dir * GRAN.waveV * dt; k.life -= dt;
