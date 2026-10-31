@@ -259,7 +259,7 @@ function nextHunter(S, w) {
   S.hunter = nx; S.turnT = turnLen(S); S.hand = SS.turn.hand; S.handAt = S.clock; S.n.turns++; S.turnLog.push({ r: nx, at: Math.round(S.clock * 10) / 10 });
   const s = S.sis[nx]; s.openedTurn = false; s.cd = Math.max(s.cd, SS.turn.hand + 0.3);
   if (s.mode === 'perched' || s.mode === 'toRoost') { s.mode = nx === 'snatcher' ? 'fly' : nx === 'shrieker' ? 'rise' : 'hover'; s.modeT = 0.4; if (nx === 'snatcher') s.perchI = s.x > S.G.mid ? 1 : 0; }
-  if (w) { w.number(S.G.mid, S.G.floorY - 112, HUNTS[nx], '#ffd36b'); w.sound('screech'); }
+  if (w) { w.number(S.G.mid, S.G.floorY - 112, HUNTS[nx], '#ffd36b'); w.sound('screech'); if (!S.told.roost) { S.told.roost = 1; w.number(S.G.mid, S.G.floorY - 98, SS_SAY.roost, '#ffd36b'); } }   /* (the main opening, said once: at the first hand-over) */
 }
 /* A ROOSTING SISTER: to her roost, then sit (her support move is started by stepSupport). Struck on her perch from her own roost: whole (takeBlow's close) */
 function stepRoosting(S, s, dt, P, w) {
@@ -314,7 +314,7 @@ function stepSupportMove(S, s, dt, P, w, heroes) {
   const G = S.G;
   if (s.mode === 'pebbleTell') { if (P) s.face = Math.sign(s.pbX - s.x) || s.face; if (s.modeT <= 0) { s.mode = 'pebble'; s.modeT = 0.3; S.pebbles.push({ x0: s.x, y0: s.y - 4, tx: s.pbX, t: 0, T: SS.pebble.T, key: 'pb' + s.act }); w.sound('pebble'); } return; }
   if (s.mode === 'pebble') { if (s.modeT <= 0) s.mode = 'perched'; return; }
-  if (s.mode === 'markTell') { if (P) s.face = Math.sign(P.x - s.x) || s.face; if (s.modeT <= 0) { const m = { x: clampX(S, P ? P.x : G.mid), t: SS.smark.life, T: SS.smark.life, sup: true }; S.marks.push(m); w.sound('scream'); if (!S.told.smark) { S.told.smark = 1; w.number(m.x, G.floorY - 60, SS_SAY.smark, '#ff6b6b'); } s.mode = 'perched'; } return; }
+  if (s.mode === 'markTell') { if (P) s.face = Math.sign(P.x - s.x) || s.face; if (s.modeT <= 0) { const m = { x: clampX(S, P ? P.x : G.mid), t: SS.smark.life, T: SS.smark.life, sup: true }; S.marks.push(m); w.sound('scream'); if (!S.told.smark) { S.told.smark = 1; w.number(m.x, G.floorY - 60, SS_SAY.smark, '#ff6b6b'); w.number(m.x, G.floorY - 46, SS_SAY.ffTurn, '#8fd160'); } s.mode = 'perched'; } return; }
   if (s.mode === 'gustTell') { fly(s, s.gX, s.gY, dt, 5);
     if (s.gustBroken) { s.gustBroken = false; s.mode = 'downed'; s.modeT = SS.gust.broken; s.openT0 = s.modeT; s.y = G.floorY - 4; S.n.gustBroken++; S.n.downs++; w.number(s.x, s.y - 30, SS_SAY.gustBroken, '#8fd160'); w.sound('free'); return; }
     if (s.modeT <= 0) { s.mode = 'gust'; s.modeT = SS.gust.T; s.hitKey = 'gu' + s.act; w.sound('gust'); } return; }
