@@ -205,7 +205,7 @@ function breakCrack(S, c, w) { if (c.kind === 'arm') return dropNest(S, c.s, w);
 /* (claude/rookery4) A NEST'S ARM SNAPS: the nest drops low (a platform for the rest of the fight), and the sister roosting on it crashes down STUNNED */
 function dropNest(S, n, w) { if (!n || n.st !== 'up') return; n.st = 'down'; S.n.nests++; if (w && w.nest) w.nest(n); if (w) { w.shake(6); w.sound('smash'); w.number(n.x, n.topDown - 30, SS_SAY.nestFalls, '#ffd36b'); }
   const s = ROLES.map(r => S.sis[r]).find(q => q.alive && q.roost === n.id && (q.mode === 'perched' || q.mode === 'toRoost' || SUPPORT.has(q.mode)) && !isHunter(S, q) && Math.abs(q.x - n.x) < n.w);
-  if (!s) return; s.chain = null; s.mode = 'stuck'; s.modeT = SS.nest.stun; s.openT0 = s.modeT; s.purse = s.maxHp * SS.nest.cap; s.openMul = SS.nest.mul; s.big = false; s.x = n.x; s.y = n.topDown - 2; s.crash = true;
+  if (!s) return; s.chain = null; s.mode = 'stuck'; s.modeT = SS.nest.stun; s.openT0 = s.modeT; s.purse = s.maxHp * SS.nest.cap; s.openMul = SS.nest.mul; s.big = false; s.x = clampX(S, n.x + (n.x < S.G.mid ? 1 : -1) * (n.w / 2 + 10), 18); s.y = S.G.floorY; s.crash = true;   /* (down on the summit floor beside her nest: every hero reaches her - B12) */
   S.n.crashes++; S.n.stuns++; if (w) { w.fx('open', s.x, s.y); w.number(s.x, s.y - 40, SS_SAY.crash, '#ffd36b'); } }
 function dropOver(S, w) { const o = S.G.over; if (!o || o.st !== 'up') return; o.st = 'down'; S.n.overhang++; if (w && w.over) w.over(o); if (w) { w.shake(5); w.sound('smash'); w.number(o.footX, S.G.floorY - 60, SS_SAY.overhang, '#ffd36b'); } }
 /* ---------- ONE FRAME OF THE TEAM. heroes: [{ x, y, ground, alive, face, pp }]; w: the world (src/shriek-sisters-hands.js world()) ---------- */
@@ -426,7 +426,7 @@ function turnMark(S, s, w) {
 }
 function friendlyFire(S, s, role, w) {
   const q = S.sis[role]; s.chain = null; s.y = S.G.floorY; s.mode = 'downed'; s.modeT = SS.grab.free; s.openT0 = s.modeT; S.n.downs++;
-  if (q && q.alive && !sisOpen(q)) { q.mode = 'stuck'; q.modeT = SS.ff.stun; q.openT0 = q.modeT; q.purse = q.maxHp * SS.ff.cap; q.openMul = SS.ff.mul; q.big = false; q.crash = true; S.n.ff++; S.n.stuns++;
+  if (q && q.alive && !sisOpen(q)) { q.mode = 'stuck'; q.modeT = SS.ff.stun; q.openT0 = q.modeT; q.x = clampX(S, q.x, 18); q.y = S.G.floorY; q.purse = q.maxHp * SS.ff.cap; q.openMul = SS.ff.mul; q.big = false; q.crash = true; S.n.ff++; S.n.stuns++;
     w.fx('open', q.x, q.y); w.number(q.x, q.y - 40, SS_SAY.ff, '#ffd36b'); }
   w.shake(7); w.sound('smash'); w.number(s.x, s.y - 30, SS_SAY.downed, '#8fd160');
 }
@@ -589,7 +589,7 @@ export function strikeHeld(S, w) {
   if (H.strikes < (H.p2 ? SS.p2.strikes : SS.grab.strikes)) return 'strike';
   const s = S.sis[H.by || 'snatcher']; S.held = null; S.n.freed++; const hx = s.x, hy = s.y + SS.grab.hang;   /* (the hero's feet: she held him SS.grab.hang under her) */ s.y = S.G.floorY;
   if (H.p2) { S.n.p2Falls++; s.chain = null; s.mode = 'stuck'; s.modeT = SS.p2.stun; s.openT0 = s.modeT; s.purse = s.maxHp * SS.p2.cap; s.big = true; S.n.stuns++; if (w) { w.shake(8); w.sound('smash'); w.fx('open', s.x, s.y); w.number(s.x, s.y - 34, SS_SAY.fellBoth, '#ffd36b'); } return 'fall'; }   /* (claude/rookery2) P2: you fall together - she lands STUNNED */
-  S.lastFree = null; { const R = H.to && roostById(S, H.to.id); if (R && Math.abs(hx - R.x) < R.w / 2 + SS.roost.r / 2 && hy <= R.top + 6 && hy > R.top - 70) { S.lastFree = { id: R.id, x: Math.max(R.x - R.w / 2 + 6, Math.min(R.x + R.w / 2 - 6, hx)), y: R.top }; S.landMul = { id: R.id, t: 1.2 }; S.n.landed++; } }   /* (claude/rookery4) struck loose BY A ROOST: you land on it */
+  S.lastFree = null; { const R = H.to && roostById(S, H.to.id); if (R && Math.abs(hx - R.x) < R.w / 2 + SS.roost.r / 2 && hy <= R.top + 12 && hy > R.top - 70) { S.lastFree = { id: R.id, x: Math.max(R.x - R.w / 2 + 6, Math.min(R.x + R.w / 2 - 6, hx)), y: R.top }; S.landMul = { id: R.id, t: 1.2 }; S.n.landed++; } }   /* (claude/rookery4) struck loose BY A ROOST: you land on it */
   s.y = S.G.floorY; s.mode = 'downed'; s.modeT = SS.grab.free; s.openT0 = s.modeT; S.n.downs++; if (w) { w.number(s.x, s.y - 30, S.lastFree ? SS_SAY.landed : SS_SAY.free, '#8fd160'); w.sound('free'); }
   return 'free';
 }
@@ -613,6 +613,7 @@ function stepSnatch(S, s, dt, P, w) {
 function stepRocks(S, dt, heroes, w) {
   for (const c of S.rocks) { c.t += dt; if (c.t < c.T || c.done) continue; c.done = true; const fy = S.G.floorY; w.dust(c.x, fy, 10); w.sound('rockLand'); w.shake(4);
     w.hitArea([c.x - SS.rock.r, c.x + SS.rock.r, fy - 26, fy + 2], SS.rock.dmg, 'rock', c.key);
+    { const k = crackAt(S, c.x); if (k && (k.kind === 'arm' || k.kind === 'over')) { breakCrack(S, k, w); w.rubble(c.x); } }   /* (claude/rookery4) a boulder on a nest's arm or the overhang's foot breaks it */
     if (!crackAt(S, c.x)) { S.stones.push({ x: c.x, t: SS.rock.life }); S.n.stones++; if (!S.told.stone) { S.told.stone = 1; w.number(c.x, fy - 40, SS_SAY.stone, '#ffd36b'); } } }
   S.rocks = S.rocks.filter(c => !c.done);
 }
@@ -669,7 +670,11 @@ function ssPlan0(s) {
   const lo = G.x0 + 12, hi = G.x1 - 12, clamp = x => Math.max(lo, Math.min(hi, x));
   const sis = ROLES.map(r => S.sis[r]).filter(q => q.alive);
   /* 0. HELD: strike her loose (a reaction late, then every swing) */
-  if (s.held) { out.gx = P.x; out.why = 'held: strike her'; if (seenFor('held' + (S.n.grabbed || 0))) out.atk = P.atk < 0; return out; }
+  if (s.held) { out.gx = P.x;
+    /* (claude/rookery4) RIDE THE GRAB: she is carrying you toward a sister's roost - let her, strike her loose as you come over it (or once the bar is half gone) */
+    const H = S.held, hq = H && S.sis[H.by || 'snatcher'], R = H && H.to && roostById(S, H.to.id), near = !!(R && hq && Math.abs(hq.x - H.to.x) < 26 && hq.y + SS.grab.hang <= R.top + 12);
+    if (R && !near && H.t < SS.grab.hold * 0.55 && !roll('rg' + (S.n.grabbed || 0), 0.25)) { out.why = 'held: ride her to the roost'; return out; }
+    out.why = near ? 'held: over the roost - strike her loose' : 'held: strike her'; if (seenFor('held' + (S.n.grabbed || 0))) out.atk = P.atk < 0; return out; }
   if (s.ride) { out.gx = P.x; out.why = 'riding to the perch'; return out; }   /* (claude/rookery2) */
   const dropping = sis.filter(q => q.mode === 'dropTell');
   const inHaz = x => S.rocks.some(c => Math.abs(x - c.x) < SS.rock.r + 10) || dropping.some(q => Math.abs(x - q.dropX) < SS.rock.r + 8) || sis.some(q => q.mode === 'echoTell' && q.echoX != null && Math.abs(x - q.echoX) < SS.echo.w / 2 + 8);
@@ -679,6 +684,14 @@ function ssPlan0(s) {
   /* 2. A BOULDER'S SHADOW ON ME (falling, or fixed and about to fall): off it (the side away from the summit's edge); the echo's shivering tile: off it */
   const rk = S.rocks.find(c => Math.abs(P.x - c.x) < SS.rock.r + 10);
   if (rk && seenFor('rk' + rk.key)) { out.gx = clamp(P.x + (P.x < rk.x ? -1 : 1) * (SS.rock.r + 22)); if (out.gx === P.x) out.gx = clamp(rk.x + (rk.x < G.mid ? 1 : -1) * (SS.rock.r + 22)); out.why = 'off the boulder\'s shadow'; return out; }
+  /* (claude/rookery4) A PEBBLE's ring on me (from the kick's windup on): off it */
+  { const pb = (S.pebbles || []).find(p => Math.abs(P.x - p.tx) < SS.pebble.r + 8) || sis.find(q => q.mode === 'pebbleTell' && Math.abs(P.x - q.pbX) < SS.pebble.r + 8);
+    if (pb && seenFor('pb' + (pb.key || pb.act)) && !roll('pbm' + (pb.key || pb.act), PLAN.miss)) { const px = pb.tx ?? pb.pbX, d = P.x === px ? (px < G.mid ? 1 : -1) : Math.sign(P.x - px); out.gx = clamp(px + d * (SS.pebble.r + 20)); out.why = 'off the pebble\'s ring'; return out; } }
+  /* THE WING GUST coming at me: cut her in the tell (it breaks), brace on a shield, else get out of its reach */
+  for (const q of sis) if (q.mode === 'gustTell' && seenFor('gu' + q.act) && (P.x - q.gX) * q.face > -8 && Math.abs(P.x - q.gX) < GALE.len + 10) {
+    if (Math.abs(q.x - P.x) < reach + 14 && !roll('gc' + q.act, 0.3)) { swing(q.x); out.gx = P.x; out.why = 'cut her in the gust\'s tell'; return out; }
+    if (s.shield && !roll('gb' + q.act, 0.3)) { out.block = true; out.face = Math.sign(q.x - P.x) || 1; out.why = 'brace for the gust'; return out; }
+    out.gx = clamp(q.gX + q.face * (GALE.len + 24)); out.why = 'out of the gust'; return out; }
   const dt0 = dropping.find(q => Math.abs(P.x - q.dropX) < SS.rock.r + 8);
   if (dt0 && seenFor('dt' + dt0.act)) { const d = P.x === dt0.dropX ? (dt0.dropX < G.mid ? 1 : -1) : Math.sign(P.x - dt0.dropX); out.gx = clamp(dt0.dropX + d * (SS.rock.r + 24)); out.why = 'off the shadow before it falls'; return out; }
   const ec = sis.find(q => q.mode === 'echoTell' && q.echoX != null && Math.abs(P.x - q.echoX) < SS.echo.w / 2 + 8);
@@ -704,12 +717,17 @@ function ssPlan0(s) {
   /* 4. A DIVER AIMING AT ME: on a crack - wait for the LOCK, then step off; off a crack - get onto one if there is time, else step off at the lock */
   const aiming = sis.filter(q => q.mode === 'diveTell' && (!q.aim.mark || Math.abs(q.aim.x - P.x) < 26) && seenFor('dt' + q.act));
   const diving = sis.find(q => q.mode === 'dive' && Math.abs(q.dv.tx - P.x) < 20);
-  const cr = cracks(S).filter(c => !inHaz(c.x)).sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x));
+  /* (claude/rookery4) THE MAIN OPENING: a nest's cracked arm with a sister roosting on it (or the overhang's foot) is the best crack there is while a Hunter who DIVES hunts */
+  const hn = S.sis[S.hunter], diving0 = !!hn && hn.alive && (hn.role !== 'snatcher' || S.dead.diver);
+  const occ = arms(S).filter(a => a.over ? !roll('ov' + Math.floor(t / 20), 0.5) : ROLES.some(r => r !== S.hunter && S.sis[r].alive && S.sis[r].roost === a.arm.id && (S.sis[r].mode === 'perched' || SUPPORT.has(S.sis[r].mode))));
+  const cr = [...(diving0 && !S.p2 ? occ.filter(c => !inHaz(c.x)).map(c => ({ ...c, pri: 1 })) : []), ...cracks(S).filter(c => !inHaz(c.x))].sort((a, b) => (b.pri || 0) - (a.pri || 0) || Math.abs(a.x - P.x) - Math.abs(b.x - P.x));
   const onCrack = cr.find(c => Math.abs(c.x - P.x) < c.w / 2 - 4);
   const stepOff = (q, why) => { const d = (P.x < G.mid ? 1 : -1); let x = clamp(P.x + d * 46); if (inHaz(x)) x = clamp(P.x - d * 46); out.gx = x; out.why = why; return out; };
   if (diving) { if (s.shield && !onCrack && !roll('db' + diving.act, 0.55)) { out.block = true; out.face = Math.sign(diving.x - P.x) || 1; out.why = 'block the dive'; return out; }
     if (s.dodge && !roll('dd' + diving.act, 0.5)) { out.dodge = true; out.gx = clamp(P.x + (P.x < G.mid ? 1 : -1) * 40); out.why = 'roll out of the dive'; return out; }
     return stepOff(diving, 'out of the dive'); }
+  /* (claude/rookery4) FRIENDLY FIRE: her line locked on a MARK under me, a sister roosting - brace on the mark (a shield hero, often) and her dive goes to her sister */
+  for (const q of aiming) if (q.aim.mark && q.aim.lock && !q.aim.ff && s.shield && Math.abs(q.aim.x - P.x) < 16 && ROLES.some(r => r !== q.role && S.sis[r].alive && S.sis[r].mode === 'perched') && !roll('ff' + q.act, 0.5)) { out.block = true; out.gx = P.x; out.face = Math.sign(q.x - P.x) || 1; out.why = 'brace on the mark: friendly fire'; return out; }
   for (const q of aiming) { const miss = s.v2 ? false : roll('am' + q.act, PLAN.miss);
     if (q.aim.lock) { if (!seenFor('lk' + q.act, s.v2 ? 0 : PLAN.react * 0.6)) { out.gx = P.x; out.why = 'her line locked: reading it'; return out; }
       if (!miss) return stepOff(q, onCrack ? 'her line locked on the crack: step off' : 'her line locked: step off'); out.gx = P.x; out.why = 'her line locked: late (a miss)'; return out; }
