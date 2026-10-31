@@ -17,7 +17,7 @@
 //              THE VAULT and no route changes.
 //   PYROMANCER THE EMBER BLINK: a short flash forward (blink.t s at blink.speed: ~60 px), untouchable for blink.inv from its start and NOT on the
 //              landing (the brief: no i-frames on landing). She is not drawn in the middle of it - a streak of embers is. No trail fire (the old
-//              CINDER ROLL's alight); it still costs 8 heat (main.js). PHOENIX TRAIL still drops its fire along it.
+//              CINDER ROLL's alight). (claude/pyrokit) No heat cost either, in the air too: a PLAIN dodge. PHOENIX TRAIL (a talent) still drops its fire along it.
 //   FREEBOOTER THE POWDER FLASH: the roll, through a puff of black powder thrown where he stood - whatever was IN FRONT of him (flash.r px) is
 //              DAZZLED: a common foe flash.dazzle s (it reels, its tell is lost), an elite flash.elite s, a boss or a mini only FLINCHES (flash.boss,
 //              told - never a lock, B3/B13). Escape and set-up for a blow from behind. (scratch/brief-freebooter-scoundrel.md item 3.)

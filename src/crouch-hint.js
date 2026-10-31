@@ -9,7 +9,7 @@ export const FIRST = {
   warden: 'HOLD DOWN: THE SPEAR IS SET AGAINST A CHARGE.',
   pirate: 'HOLD DOWN WHEN EMPTY TO RELOAD TWICE AS FAST.',
   paladin: 'KNEEL BY A HOLY LIGHT TO FILL YOUR LIGHT.',
-  pyro: 'HOLD DOWN TO FLARE.',
+  pyro: 'HOLD DOWN, STILL: STOKE YOUR HEAT.',   /* (claude/pyrokit) */
   geomancer: 'HOLD DOWN: WHAT HIDES IN THE GROUND SHOWS.',
   reaper: 'DOWN: A LOW GUARD. KNEEL AS ANY BLOW LANDS: BLOOD SPIKE.',   /* (claude/bkkit2: any blow on the beat) */   /* (claude/bloodknight: the harvest is gone; DOWN+C is BLOOD PRICE) */
   berserker: 'DOWN TO COIL, A WAY, LET GO: POUNCE. FULL: DOWN+C.',

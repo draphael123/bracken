@@ -3717,13 +3717,13 @@ function trialYard(hero) {
       ['valiant', 1, 'OR SPEND A FULL RESOLVE ON A HEAVY CUT (HOLD X): VALIANT, IT GOES THROUGH ANY GUARD.', [['shield', 16]], 'HOLD X WITH A FULL BAR'],   /* (claude/heropassa) VALIANT STRIKE: the bar filled for it (the fill line below) */   /* a line of straw men inside one charge's run (13 tiles), so the step is the thing itself: it carries through */
       SKILL],
     pyro: [
-      ['ember', 3, 'THE EMBER. TAP C AND ONE FLIES. SET THE STRAW MAN ALIGHT THREE TIMES.', [['dummy', 18]], 'TAP LB'],
+      ['ember', 3, 'THE FIREBALL: HOLD C, LET GO. HOLD LONGER AND IT GROWS. HIT THE STRAW MAN THREE TIMES.', [['dummy', 18]], 'HOLD LB, LET GO'],   /* (claude/pyrokit: the trial key stays 'ember') */
       ['dodge', 2, 'NO SHIELD: YOU LIVE BY THE DODGE. TAP A WAY TWICE, OR V: THE EMBER BLINK. TWICE.', [], 'B, OR THE STICK TWICE'],   /* (claude/heropassa) */
       ['third', 2, 'THE STAFF: X THREE TIMES IN A RUN. THE THIRD BLOW LANDS HEAVY AND SHOVES. LAND TWO.', [['dummy', 16], ['dummy', 20]], 'X, X, X'],
-      ['meter', 1, 'HOLD C: THE JET FILLS YOUR HEAT. FULL, PRESS C AGAIN: THE PYRE. THROW IT AT THE STRAW.', [['dummy', 14], ['dummy', 18]], 'HOLD LB, THEN LB AGAIN'],
+      ['meter', 1, 'HOLD DOWN STILL: STOKE FILLS YOUR HEAT. FULL, TAP C: CONFLAGRATION. MARKED FOES ERUPT.', [['dummy', 14], ['dummy', 18]], 'HOLD DOWN, THEN LB'],   /* (claude/pyrokit) */
       ['firedrop', 2, 'THE FIREDROP: JUMP, THEN DOWN+X. HIT A STRAW MAN FROM ABOVE TWICE.', [['dummy', 14], ['dummy', 19]], 'A, THEN DOWN+X'],
       ['heavyblow', 2, 'HOLD X FOR THE BELLOWS: A CONE THAT THROWS DOWN AND BURNS. LAND IT TWICE.', [['dummy', 14], ['dummy', 20]], 'HOLD X'],
-      ['flash', 2, 'THE BEAT: ROLL THROUGH HIS CUT WITH V AS THE SWORD FLASHES WHITE, AND HE REELS. TWICE.', [['swornsword', 18]], 'B AS THE SWORD FLASHES'],
+      ['flash', 2, 'THE WARD: TAP C AS HIS SWORD FLASHES WHITE. CAUGHT ON THE BEAT, HE REELS. TWICE.', [['swornsword', 18]], 'TAP LB AS IT FLASHES'],   /* (claude/pyrokit: her block; the roll through still counts) */
       ['tells', 2, 'ONE YELLOW ! : ROLL THROUGH IT. TWO RED !! : ROLL THROUGH OR GET CLEAR. DO BOTH.', [['hedgeknight', 18]], 'B THROUGH BOTH, OR A CLEAR', MARKS],
       DASH, RISE, SWEEP, SKILL],
     reaper: [

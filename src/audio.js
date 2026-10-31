@@ -311,6 +311,17 @@ export const SFX = {
   emberFizzle() { if (!gate('emberFizzle', 0.15)) return; noise(0.34, 0.14, 380, 0.4); tone('sine', 240, 70, 0.3, 0.1); tone('sawtooth', 130, 55, 0.22, 0.05, 0.04); },
   emberMelt() { if (!gate('emberMelt', 0.05)) return; noise(0.18, 0.16, 4200, 1.4); tone('sine', 900, 1500, 0.1, 0.04); crackle(2, 0.03); },
   emberFlare() { if (!gate('emberFlare', 0.08)) return; noise(0.3, 0.24, 1600, 0.5); tone('sawtooth', 220, 660, 0.2, 0.08); bell(1568, 0.4, 0.07, 0.02); crackle(5, 0.04); },
+  /* THE PYRO KIT (claude/pyrokit, src/flame-ward.js): all synth, no new files. THE WARD TAKING A BLOW (late in the ward: a block) is a low wet whump with a
+     dull knock in it, weightier than the press (wardBlock); THE PARRY is the flare's catch with a deeper body under it (wardParry). THE HELD FIREBALL ticks up
+     a step at a time, each tick higher (fbStep 1-3), is loosed with a whoosh that grows with the step (fbCast), and the big one goes off with a boom (fbBoom).
+     STOKE is a soft crackle under the crouch (stoke). CONFLAGRATION: a rising roar, then the eruptions (conflag) */
+  wardBlock() { if (!gate('wardBlock', 0.06)) return; noise(0.22, 0.26, 700, 0.5); tone('sine', 150, 60, 0.18, 0.18); tone('square', 420, 300, 0.04, 0.05); crackle(3, 0.03); },
+  wardParry() { if (!gate('wardParry', 0.08)) return; noise(0.34, 0.28, 1400, 0.5); tone('sawtooth', 180, 720, 0.22, 0.1); tone('sine', 90, 40, 0.3, 0.22); bell(1568, 0.45, 0.08, 0.02); bell(2093, 0.3, 0.05, 0.06); crackle(6, 0.04); },
+  fbStep(n = 1) { if (!gate('fbStep', 0.05)) return; const f = [0, 520, 700, 940][n] || 520; tone('triangle', f, f * 1.5, 0.08, 0.07); noise(0.08, 0.1, 1800 + 600 * n, 0.8); crackle(1 + n, 0.02); },
+  fbCast(n = 1) { noise(0.12 + 0.06 * n, 0.16 + 0.04 * n, 1600 - 250 * n, 0.6); tone('triangle', 420 - 60 * n, 140, 0.12 + 0.05 * n, 0.08 + 0.03 * n); crackle(2 + n, 0.02); },
+  fbBoom() { noise(0.45, 0.4, 560, 0.45); tone('sine', 72, 28, 0.6, 0.36); noise(0.2, 0.18, 2400, 0.7, 0.04); crackle(7, 0.06); },
+  stoke() { if (!gate('stoke', 0.22)) return; noise(0.12, 0.05, 1100, 0.6); crackle(2, 0.02); },
+  conflag() { noise(0.4, 0.3, 900, 0.5); tone('sawtooth', 90, 260, 0.35, 0.16); tone('sine', 60, 24, 0.8, 0.4, 0.12); noise(0.3, 0.24, 2400, 0.7, 0.14); crackle(10, 0.1); },
   /* THE CROUCH TWISTS, PART B (src/crouch-b.js). THE PRAYER: a low sung fifth, soft, swelling on each beat and rising a little as his light
      fills, a small bell over it once the bar is half full. THE EARTH SENSE: her ear to the ground is a low thud and a hum out through the
      rock; what it finds answers as a deep knock and a ring coming back (a sounding). THE HARVEST: a wet pull as the draw starts, and a
