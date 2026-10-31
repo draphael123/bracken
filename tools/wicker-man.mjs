@@ -85,7 +85,7 @@ try {
       const throwAs = (how, keep) => { reset(keep); BK.god = false; BK.P.hp = BK.P.maxHp; BK.P.inv = 0; const hp0 = BK.P.hp; let pressed = 0, ret = false, caught = false, burned = false, idle = 0, saw = false;
         for (let i = 0; i < 60 * 6; i++) { BK.P.inv = 0; none(); hold(); const b = H.balls[0]; if (b) saw = true;
           if (how === 'mash') { if (BK.P.atk < 0) { BK.press('atk'); pressed++; } }
-          else if (how === 'flare') { if (b && !b.ret && b.x - BK.P.x <= 60) { K.down = true; pressed = 1; } }   /* (claude/crouchfix: the flare is a 0.3 s DOWN HOLD now, not a press - she holds down as the fire comes and the window opens over it) */
+          else if (how === 'flare') { if (b && !b.ret && !pressed && b.x - BK.P.x <= 40) { K.block = true; pressed = 1; } }   /* (claude/pyrokit: the flare is THE FLAME WARD now - a one-frame tap of C as the fire comes; the 0.45 s ward meets it) */
           else if (b && !b.ret && !pressed && b.x - BK.P.x <= 28 && b.x - BK.P.x >= 12) { BK.press('atk'); pressed++; }
           BK.sim(1); if (b && b.ret) ret = true; if (e.st.mode === 'catch') caught = true; if (e.st.mode === 'burn') { burned = true; break; }
           if (saw && !H.balls.length && !ret) { if (++idle > 30) break; } }

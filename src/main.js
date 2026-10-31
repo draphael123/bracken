@@ -30519,9 +30519,10 @@ function castConflagration() { trialEvent('meter'); noteVerb('cast');
   number(P.x, P.y - 34, 'CONFLAGRATION', '#ffd36b'); ringAt(P.x, P.y - 10, 26, '#fff6c8', 0.35); flame(P.x, P.y - 10, 12, 10, 80, 3); P.cfT = 0.5;
   if (!marked.length) { number(P.x, P.y - 24, 'NOTHING MARKED', '#9aa39a'); ringAt(P.x, P.y - 8, C.noneR, '#ff9a5c', 0.35);
     for (const e of enemies) if (e.alive && !e.harmless && Math.abs(e.x - P.x) < C.noneR + (e.w || 12) / 2 && Math.abs(e.y - P.y) < 40) hurtFire(e, sw * C.kNone * hm, P.x, { burn: 1.5, cls: 'heavy' });
-    return 0; }
+    P.heat = 0; return 0; }
   const splashed = new Set(marked);
   for (const e of marked) { e.pyMarkAt = undefined; conflagErupt(e, sw, hm, splashed); }
+  P.heat = 0;   /* the spender never refills itself: its own eruptions give no heat back */
   return marked.length;
 }
 function conflagErupt(e, sw, hm, splashed) {
