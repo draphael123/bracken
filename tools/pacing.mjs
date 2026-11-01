@@ -321,7 +321,7 @@ export function platforming(r, o = {}) {
   if (cur) swims.push(cur);
   const swimSecs = swims.filter(s => s.haz && s.cEnd - s.c0 >= P.swimLen).map(s => ({ type: 'swim', beats: 0, len: s.cEnd - s.c0, c0: s.c0, from: pts[s.first], to: pts[s.last], pct: [Math.round(100 * s.c0 / total), Math.round(100 * s.cEnd / total)] }));
   const plainSwims = swims.filter(s => !s.haz && s.cEnd - s.c0 >= P.swimLen).length;
-  return { sections: [...sections, ...swimSecs].sort((a, b) => a.c0 - b.c0), jumpSections: sections.length, swimSections: swimSecs.length, plainSwims, nearMiss, nBeats: beats.length, underFire: fused, total };
+  return { dbg: { ev, beats }, sections: [...sections, ...swimSecs].sort((a, b) => a.c0 - b.c0), jumpSections: sections.length, swimSections: swimSecs.length, plainSwims, nearMiss, nBeats: beats.length, underFire: fused, total };
 }
 
 const LEGEND = 'F fight  P platforming  H both  W swim  A ambush  M mini  B boss  X set-piece  R rest  S quiet+optional  - light  . EMPTY\n' +
