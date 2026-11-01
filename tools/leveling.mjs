@@ -62,10 +62,12 @@ check('card', () => {
 check('early milestones', () => {
   assert.deepEqual(PR.MILESTONES_MINOR, [5, 10, 15, 20]); assert.deepEqual(PR.MILESTONES, [5, 10, 15, 20, 25, 30, 35, 40, 45, 50]);
   for (const h of PR.HERO_IDS) { const c = { card: { [h]: { v: 0, e: 0, m: 0, ms: {} } } };
-    for (const n of PR.MILESTONES) { const o = PR.perkOffer(c, h, n); assert.equal(o.length, 3, h + ' L' + n + ' offers ' + o.length); assert.equal(new Set(o.map(k => k.id)).size, 3, h + ' L' + n + ' repeats');
+    for (const n of PR.MILESTONES) { const o = PR.perkOffer(c, h, n); if (PR.hasKit(h) && n >= 25) { assert.equal(o.length, 3, h + ' L' + n + ' kit card ' + o.length); assert(o[0].tech && o[0].rec, h + ' L' + n + ' leads with the technique'); continue; }   /* (claude/knightid: a kit hero's L25+ card is the TECH card: tools/tech-cards.mjs) */
+      assert.equal(o.length, 3, h + ' L' + n + ' offers ' + o.length); assert.equal(new Set(o.map(k => k.id)).size, 3, h + ' L' + n + ' repeats');
       assert.equal(o.filter(k => k.own).length, 1, h + ' L' + n + ' has no hero option'); assert(PR.HERO_PERKS[h].some(k => k.id === o[2].id), h + ' L' + n + ' own is not his');
       if (h === 'pyro' && n === 10 && PR.PYRO_CARDS) assert(o.slice(0, 2).every(k => PR.PYRO_CARDS.some(m => m.id === k.id)), h + ' L' + n + ' hand leads with the two verb cards (claude/pyrokit: THE JET / THE EMBER SHOT)'); else if (PR.isMinor(n)) assert(o.every(k => k.minor) && o.slice(0, 2).every(k => PR.MINOR_PERKS.some(m => m.id === k.id)), h + ' L' + n + ' minor hand has a major perk'); else assert(o.slice(0, 2).every(k => PR.PERKS.some(m => m.id === k.id)), h + ' L' + n + ' major hand has a minor perk'); }
     /* take the first two of every hand: each generic once, the hero's own stacks to HERO_PERK_MAX over the ten milestones, two per hero */
+    if (PR.hasKit(h)) { assert.equal(PR.HERO_PERKS[h].length, 2, h + ' needs two options'); continue; }   /* (a kit hero's own perk ranks are tools/tech-cards.mjs's) */
     const own = {}; for (const n of PR.MILESTONES) { const o = PR.perkOffer(c, h, n); assert.equal(PR.pickMilestone(c, h, n, o[2].id, 50), null); if (o[2].own) own[o[2].id] = (own[o[2].id] || 0) + 1; }
     assert.deepEqual(Object.values(own), h === 'pyro' ? [5, 4] : [5, 5], h + ' own ranks ' + JSON.stringify(own)); assert.equal(PR.perkRank(c, h, PR.HERO_PERKS[h][0].id), 5); assert.equal(PR.milestonesOwed(c, h, 50).length, 0);
     assert.equal(PR.HERO_PERKS[h].length, 2, h + ' needs two options'); }
@@ -73,7 +75,7 @@ check('early milestones', () => {
   /* the hero's own is a different hand per hero, and every id of every hero is unique */
   assert.equal(new Set(PR.ALL_HERO_PERKS.map(k => k.id)).size, 18);   /* (berserkerport: two a hero, eight heroes; claude/ranger: nine) */
   assert.equal(PR.levelsToPerk(0), 5); assert.equal(PR.levelsToPerk(7), 3); assert.equal(PR.levelsToPerk(20), 5); assert.equal(PR.levelsToPerk(49), 1); assert.equal(PR.levelsToPerk(50), null);
-  assert.deepEqual(PR.techniquesArriving('knight', 0, 50), []); assert.deepEqual(PR.TECH_LEVELS, [10, 20, 30]);   /* the technique hook: empty, ready, and L20/L30 untouched */
+  assert.deepEqual(PR.techniquesArriving('pyro', 0, 50), []); assert.deepEqual(PR.TECH_LEVELS, [25, 30, 35, 40, 45, 50]);   /* the technique hook: a hero with no kit offers none (claude/knightid: the knight's six are tools/tech-cards.mjs) */
 });
 check('stat thresholds', () => {
   const card = (v, e, m) => ({ card: { knight: { v, e, m, ms: {} } } });
