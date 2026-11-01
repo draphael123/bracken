@@ -48,7 +48,7 @@ import { doorSpot, standing, cleanBundle, drop, normalizeDeathCost, freshDeathCo
   db.setItem('slot', old); const ld = loadProgress(db, 'slot', old); assert.equal(ld.progress.deathCost.bundle, null); assert.equal(ld.changed, false); }
 
 /* THE SHRINES tools/checkpoint-stand.mjs documents as gaps in the reach MODEL (a wasp pogo, a gust ride, a breakable wall the fill has no pick for): a door beside one can not be filled either, for the same reason */
-const MODEL_GAPS = { wood: [[510, 8]], oreroad: [[470, 12]], glasssea: [[600, 30]], ksar: [[581, 33]], moor: [[701, 12]] };   /* (batch127 integ: windcaller4 Gale Stair - see tools/checkpoint-stand.mjs) */   /* (ksar, batch79 integ: the tower's bricked arch needs a thrown keg - see tools/checkpoint-stand.mjs) */   /* (claude/glasssea, batch75: the reach fill has no slide - see tools/checkpoint-stand.mjs) */
+const MODEL_GAPS = { wood: [[510, 8]], oreroad: [[470, 12]], glasssea: [[600, 30]], ksar: [[581, 33]], moor: [[701, 12]], minecart: [[1358, 29]] };   /* (batch135 integ: the Leading Bore's torn high line - see tools/checkpoint-stand.mjs) */   /* (batch127 integ: windcaller4 Gale Stair - see tools/checkpoint-stand.mjs) */   /* (ksar, batch79 integ: the tower's bricked arch needs a thrown keg - see tools/checkpoint-stand.mjs) */   /* (claude/glasssea, batch75: the reach fill has no slide - see tools/checkpoint-stand.mjs) */
 /* (claude/moor2: the moor's landing is walked now - the kite ride that hid it is gone) */
 /* ---- 3. EVERY ARENA'S DOOR IS STANDING ROOM THE FILL REACHES (a boss never carries one) ---- */
 { const misses = [], skipped = []; let n = 0;
@@ -58,7 +58,7 @@ const MODEL_GAPS = { wood: [[510, 8]], oreroad: [[470, 12]], glasssea: [[600, 30
     for (const [name, A] of [['arena', L.arena], ['mini', L.mini]]) { if (!A) continue; n++;
       const cps = L.ents.filter(e => e.t === 'check').map(e => ({ x: e.x * 16 + 8, y: (e.y + 1) * 16 })).filter(c => c.x < (A.trigger !== undefined ? A.trigger : A.x0));
       const cp = cps.sort((a, b) => b.x - a.x)[0] || { x: L.START.x * 16 + 8, y: (L.START.y + 1) * 16 };   /* the shrine before the door, as a respawn would use */
-      const gapCp = L.ents.find(e => e.t === 'check' && (MODEL_GAPS[lv.id] || []).some(([x, y]) => x === e.x && y === e.y) && Math.abs(e.x * 16 - (A.trigger !== undefined ? A.trigger : A.x0)) < 16 * 14);
+      const gapCp = L.ents.find(e => e.t === 'check' && (MODEL_GAPS[lv.id] || []).some(([x, y]) => x === e.x && y === e.y) && Math.abs(e.x * 16 - (A.trigger !== undefined ? A.trigger : A.x0)) < 16 * 26);   /* (batch135: 14 -> 26 columns - the Leading Bore shrine stands 24 columns before the Great Drill's door) */
       if (A.carpet) { skipped.push(lv.id + ' ' + name + ' (a flight: the bundle lies at the shrine)'); continue; }
       const d = doorSpot(A, cp, solid, spike, H);
       if (!d) { misses.push(lv.id + ' ' + name + ': no standing room by the door'); continue; }

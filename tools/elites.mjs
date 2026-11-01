@@ -23,6 +23,7 @@ const NO_KEEPER = new Set(['underleaf', 'burial', 'undercrown', 'hanging', 'rook
    vault's optional stair) fused to glass - the way a player who has turned the mirrors sees it. The gate is still shut on top of that, so it must hold. */
 function solvedRule(L) {
   if (L.ksar) return ksarOpened(L);   /* THE KSAR's winch, arches, walls, reeds and bridge are verbs the fill has none for: asked with the rule done, the gates the elite holds are laid on top and must still hold (tools/ksar-locks.mjs) */
+  if (L.minecart && (L.mcPoints || []).some(p => p.want === 'open')) { const grid = L.grid.slice(); for (const p of L.mcPoints) if (p.want === 'open') for (const [x, y] of p.tiles) grid[y * L.W + x] = T.ONEWAY; return { ...L, grid }; }   /* (batch135 integ, deeprails6) THE LEADING BORE's high line is torn: the points are struck OPEN to drop to the low line, which is where its elite stands - the fill reads them set */
   if (!L.glasssea || !L.beds) return L;
   const grid = L.grid.slice();
   for (const b of L.beds) { if (/vault/i.test(b.id)) continue; for (const [x, y] of b.tiles) grid[y * L.W + x] = T.SOLID; }

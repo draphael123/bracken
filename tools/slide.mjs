@@ -90,8 +90,8 @@ try {
     if (m) { out.blow = [60, 70, 120, 180].map(v => m.slideBlow(v, 12)); out.minSpeed = m.BUTT.minSpeed; out.chip = m.BUTT.chip; }
     /* THE PYROMANCER: down held on the slope is a slide, on the flat (held 0.3 s - claude/crouchfix) the flare */
     setUp('pyro'); clear();
-    { const on0 = free.find(r => r.on) || free[20]; BK.P.x = on0.x; BK.P.y = on0.y; BK.P.vx = 0; BK.sim(2); none(); BK.press('down'); BK.keys.down = true; let flare = 0, slide = 0; for (let f = 0; f < 45; f++) { BK.sim(1); if (BK.P.emberUp) flare++; if (BK.P.slideOn) slide++; } none(); out.pyroSlope = { flare, slide }; }
-    { BK.tp(flat[0], flat[1]); BK.sim(8); none(); BK.press('down'); BK.keys.down = true; let flare = 0; for (let f = 0; f < 45; f++) { BK.sim(1); if (BK.P.emberUp) flare++; } none(); out.pyroFlat = { flare }; }
+    { const on0 = free.find(r => r.on) || free[20]; BK.P.x = on0.x; BK.P.y = on0.y; BK.P.vx = 0; BK.sim(2); none(); BK.press('down'); BK.keys.down = true; let flare = 0, slide = 0; for (let f = 0; f < 45; f++) { BK.sim(1); if (BK.P.stoking) flare++; if (BK.P.slideOn) slide++; } none(); out.pyroSlope = { flare, slide }; }
+    { BK.tp(flat[0], flat[1]); BK.sim(8); none(); BK.press('down'); BK.keys.down = true; let flare = 0; for (let f = 0; f < 45; f++) { BK.sim(1); if (BK.P.stoking) flare++; } none(); out.pyroFlat = { flare }; }
     /* THE POSE: every hero, every skin */
     out.poses = [];
     for (const h of ['knight', 'warden', 'pirate', 'paladin', 'geomancer', 'reaper', 'pyro', 'berserker']) for (const s of BKT.skinIds()) {
@@ -127,7 +127,7 @@ ok(R.once && R.once.hit > 0 && R.once.last && R.once.hit <= R.once.last.blow, 'a
 ok(R.slowHits === 0 && R.fastHits === 1, 'a slide under the minimum speed hurt a foe (' + R.slowHits + ') or a fast one did not hit exactly once (' + R.fastHits + ')');
 ok(R.blow && R.blow[0] === R.blow[1] && R.blow[2] > R.blow[1] && R.blow[3] > R.blow[2], 'the blow does not scale with speed: ' + R.blow);
 ok(R.pyroSlope && R.pyroSlope.flare === 0 && R.pyroSlope.slide > 8, 'the Pyromancer pressing down on a slope: ' + JSON.stringify(R.pyroSlope) + ' (the slide must win)');
-ok(R.pyroFlat && R.pyroFlat.flare > 0, 'the Pyromancer pressing down on the flat no longer opens the ember flare');
+ok(R.pyroFlat && R.pyroFlat.flare > 0, 'the Pyromancer pressing down on the flat no longer STOKES (claude/pyrokit: down on the flat is her stoke; the ember flare is gone)');
 const heroes = new Set(R.poses.map(p => p.h)); ok(heroes.size === 8, 'poses measured for ' + heroes.size + ' heroes');
 const skins = new Set(R.poses.map(p => p.s)).size;
 for (const p of R.poses) { if (p.none) { ok(false, p.h + '/' + p.s + ' has no slide pose'); continue; }

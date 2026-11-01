@@ -17,7 +17,7 @@ const fails = [], ok = (c, m) => { if (!c) fails.push(m); console.log((c ? '  ok
 const HEROES = ['knight', 'warden', 'pyro', 'paladin', 'pirate', 'reaper', 'geomancer'];
 const SKILL = { knight: 'lunge', warden: 'skewer', pyro: 'flameRing', paladin: 'lightLance', pirate: 'grapeshot', reaper: 'scytheThrown', geomancer: 'stoneWall' };
 /* each hero's C: what it raises, and whether it is a hold or a tap */
-const GUARD = { knight: ['hold', 'block'], warden: ['tap', 'deflectT'], pyro: ['hold', 'jet'], paladin: ['hold', 'aegis'], reaper: ['hold', 'warding'], pirate: ['tap', 'parryW'], geomancer: ['hold', 'geoGuard'] };
+const GUARD = { knight: ['hold', 'block'], warden: ['tap', 'deflectT'], pyro: ['tap', 'fwUp'], paladin: ['hold', 'aegis'], reaper: ['hold', 'warding'], pirate: ['tap', 'parryW'], geomancer: ['hold', 'geoGuard'] };
 const sections = [];
 for (const id of ['witchlight', 'mage', 'fallingtower']) { const I = LEVELS.findIndex(l => l.id === id), L = LEVELS[I].build();
   for (const g of (L.ents || []).filter(e => e.t === 'glyph' && !e.ceiling)) sections.push({ id, I, x: g.x, y: g.y }); }

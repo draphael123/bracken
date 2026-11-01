@@ -550,7 +550,7 @@ export function buildMinecart({ painter, T, TS }) {
      STATION NINE (moved here) and the bore's mouth. No goblins (house rule 'theme fit', and the brief): navvies (miner AI), bone-chuckers (rock-thrower AI), bats */
   { const BS = 1286, BH = B, BL = B + 3;
     ground(BS, BS + 9, BH);
-    sign(BS + 1, BH - 1, 'THE LEADING BORE. THE DRILL TORE ITS HIGH LINE: STRIKE THE POINTS TO OPEN THEM, AND DROP TO THE LOW LINE.');
+    sign(BS + 1, BH - 1, 'THE LEADING BORE. THE HIGH LINE IS TORN: STRIKE THE POINTS OPEN AND DROP LOW.');
     tell(BS - 16, BS + 14, 'HIGH LINE TORN: OPEN POINTS');
     rail(BS + 10, BS + 26, BH);                                              /* the high line (the smelter's rail run on) */
     lever('boreFork', BS + 12, BH, BS + 14, BS + 17, BH, 'set', { label: 'THE HIGH LINE IS TORN: OPEN THE POINTS AND DROP LOW', retry: [BS + 4, BH - 1], req: true, want: 'open' });
@@ -616,6 +616,7 @@ export function buildMinecart({ painter, T, TS }) {
     minecart: true,
     mcTells: tells, mcTrack: track, mcPoints: points, mcCrushers: crushers, mcGates: gates, mcRocks: rocks, mcBeams: beams, mcWalls: walls, mcExam: exams, mcBoost: boosts, mcTrestles: trestles, decor,
     mcRamps: ramps, mcBreaks: breaks, mcFoot: FOOT,
+    squadBands: [{ lo: 1400, hi: W - 1, spots: 0, why: "THE DRILL'S TUNNEL: the last 18 columns past the bore's mouth are the Great Drill's arena - no squad stands in a boss arena (batch135 integ: deeprails6 lengthened the level past column 1400)" }],
     examSpans, mcPits: pits,   /* (deeprails5) THE SPOIL PITS: where their spikes kill (src/survival.js examAt), and every pit */
     /* THE DARK DRIFT (deeprails2: dark and light stretches): pitch, but for your headlamp's cone (src/minecart-hands.js holes) and the goblins' own lamps */
     dark: 0.01, darkZones: [{ x0: DRIFT[0], x1: DRIFT[1], y0: 0, y1: H * TS, dark: 0.88 }],
