@@ -1,0 +1,127 @@
+{
+  "time": "2026-11-01T16:53:55.516Z",
+  "sourceGame": "62d9c02c102decc69ceaef4e1ec593a23170f1ff",
+  "sourceTree": "d6f20846727ec42b3cca651d1b061136d9c6d2f1",
+  "originalMainSha256": "81866b69fec64de5fdd00da316fb0d1e8e997ae9912f73f280981f0a70cb36d8",
+  "originalCharsSha256": "eb1f35d0d2da8da4b62e7f61b5acfadbef49b858cc10fc891a5d2663d059f2cf",
+  "originalPxSha256": "e9a358b9170944e0dfae6d1b8c82d7b664562e0b2b0ab7f2538236e34214db1d",
+  "candidateMainSha256": "1a38a363df9e12023b8280d9c4d84666086e75d3fe114263b04296307d4804c3",
+  "candidateCharsSha256": "aed5c392e19d67a4998ba23fb323d80e7b3e83afd6e2534388d725b11568e381",
+  "originalReaperBodySha256": "989c5a53c8dc1ecebefb9ce62f8d27edf625f8461623c44168534c9507c0049e",
+  "workerBodyUndoExact": true,
+  "originalBossFunctionBytesPreserved": true,
+  "originalBossAdapter": "function palHeroSet(K) { const one = (side, [k, i]) => { const a = side[k] ?? side.idle; return Array.isArray(a) ? a[Math.min(i, a.length - 1)] : a; };\n  const Rr = PBG.PAL_POSES.map(q => one(K.R, q)); Rr[PBG.PAL_IDX.falter] = PBA.falter(Rr[PBG.PAL_IDX.falter]); Rr[PBG.PAL_IDX.hurt] = PBA.reel(Rr[PBG.PAL_IDX.hurt]); Rr[PBG.PAL_IDX.snuffTell] = PBA.snuffTell(Rr[PBG.PAL_IDX.snuffTell]); Rr[PBG.PAL_IDX.snuff] = PBA.snuff(Rr[PBG.PAL_IDX.snuff]);   /* (claude/church3art) his own SNUFF pair */   /* (claude/church2art) his own FALTER and REEL, made from the hero's frames (src/redraw/paladin_boss_art.js); (claude/church3) named rows: PAL_IDX */\n  const W = Rr.map(c => whiten(c)); return { R: Rr, L: Rr.map(flipX), white: { R: W, L: W.map(flipX) }, ax: K.ax, ay: K.ay, w: 12, h: 24 }; }",
+  "originalBossAdapterSha256": "4330d6987fdee86da8edde94e1d65075c851b5f0200e1935c5505f42e79a0062",
+  "originalMainLineCountPreserved": true,
+  "sourceUndo": {
+    "tailBefore": "const R = F, L = {}; for (const k in F) L[k] = mirror(F[k]);",
+    "tailAfter": "const R = F, L = {}; if (__projection === __REAPER_RIGHT && __reaperProjectionSafe(F)) { KP = Object.assign({}, KP0); BODY_REF = BODY; PLUME_REF = PLUME; return { R, ...KNIGHT_ANCHOR, ay: KNIGHT_ANCHOR.ay + ATTACK_HEADROOM }; } for (const k in F) L[k] = mirror(F[k]);",
+    "extra": "\n// Private eager projection only: no deferred canvas, Proxy, accessor or public graph replacement.\nconst __REAPER_RIGHT = Symbol('private right rows');\nconst __rpApply = Reflect.apply, __rpDesc = Object.getOwnPropertyDescriptor, __rpProto = Object.getPrototypeOf, __rpKeys = Reflect.ownKeys, __rpString = Function.prototype.toString;\nconst __rpCP = CanvasRenderingContext2D.prototype, __rpHP = HTMLCanvasElement.prototype, __rpDP = Document.prototype, __rpAP = Array.prototype, __rpOP = Object.prototype;\nconst __rpNative = f => typeof f === 'function' && /\\[native code\\]/.test(__rpApply(__rpString, f, []));\nconst __rpMethods = ['drawImage','fillRect','translate','scale'].map(k=>[k,__rpDesc(__rpCP,k).value]);\nconst __rpProperties = ['fillStyle','globalCompositeOperation'].map(k=>[k,__rpDesc(__rpCP,k)]);\nconst __rpDimensions = ['width','height'].map(k=>[k,__rpDesc(__rpHP,k)]);\nconst __rpContext = __rpDesc(__rpHP,'getContext').value, __rpCreate = __rpDesc(__rpDP,'createElement').value, __rpMap = __rpDesc(__rpAP,'map').value, __rpIsArray = Array.isArray;\nconst __rpInitial = [__rpApply,__rpDesc,__rpProto,__rpKeys,__rpString,__rpContext,__rpCreate,__rpMap,__rpIsArray,...__rpMethods.map(x=>x[1]),...__rpProperties.flatMap(x=>[x[1].get,x[1].set]),...__rpDimensions.flatMap(x=>[x[1].get,x[1].set])].every(__rpNative);\nfunction __reaperProjectionSafe(F) {\n  if (!__rpInitial || __rpDesc(document,'createElement') || __rpDesc(__rpDP,'createElement')?.value !== __rpCreate || __rpDesc(__rpHP,'getContext')?.value !== __rpContext || __rpDesc(__rpAP,'map')?.value !== __rpMap || Array.isArray !== __rpIsArray || __rpProto(F) !== __rpOP) return false;\n  if (__rpKeys(__rpOP).some(k=>__rpDesc(__rpOP,k).enumerable)) return false;\n  for (const [k,f] of __rpMethods) if (__rpDesc(__rpCP,k)?.value !== f) return false;\n  for (const [p,list] of [[__rpCP,__rpProperties],[__rpHP,__rpDimensions]]) for(const [k,d] of list) { const n=__rpDesc(p,k); if(!n||n.get!==d.get||n.set!==d.set)return false; }\n  for (const k of __rpKeys(F)) { const d=__rpDesc(F,k); if(!d||!('value'in d))return false; const a=__rpIsArray(d.value)?d.value:[d.value]; if(__rpProto(a)!==__rpAP||__rpDesc(a,'map'))return false;\n    for(let i=0;i<a.length;i++){const q=__rpDesc(a,''+i);if(!q||!('value'in q))return false;const c=q.value;if(!c||__rpProto(c)!==__rpHP||__rpDesc(c,'width')||__rpDesc(c,'height'))return false;}\n  } return true;\n}\nexport function bakeReaper(skin = {}, previewOnly = false) { return __privateReaperRows(skin, previewOnly); }\nexport function bakeReaperBossRightForCard(skin = {}) { BOSS_HORNS = true; try { return __privateReaperRows(skin, false, __REAPER_RIGHT); } finally { BOSS_HORNS = false; } }\n"
+  },
+  "candidateFiles": [
+    "tools/reaper-projection-source-nov01/candidate-main.js",
+    "tools/reaper-projection-source-nov01/candidate-chars.js"
+  ],
+  "settings": {
+    "cpu": 4,
+    "viewport": [
+      915,
+      412
+    ],
+    "dpr": 2.625,
+    "rendererMb": 1536,
+    "admissionMb": 4352,
+    "evalDeadlineMs": 240000,
+    "outerTimeoutMinutes": 15
+  },
+  "mechanism": "Eager unchanged right-pose painter and original palette/horn cleanup; privately omit only unused derived sides for the single bkHeroSet consumer. Every public API still returns native canvases and ordinary data graphs; no deferral,Proxy or accessor.",
+  "privateConsumerClosure": {
+    "line": 22306,
+    "cardBlockLine": 22310,
+    "onlyReadsRightAndAnchor": true,
+    "temporaryKitNotPublished": true
+  },
+  "expectedSkippedFinalDerivativeCalls": 840,
+  "contextCountsScope": "Actual native px.canvas calls in component only; not Game allocation bytes or whole startup saving",
+  "componentRequired": [
+    "selected boss pixels/context/metadata/aliases",
+    "complete right-graph equality",
+    "original public baker behavior",
+    "gear/weapon/skin and horn/palette restoration",
+    "native hook/inherited-array fallback",
+    "failure propagation and cleanup",
+    "three controlled factory rounds"
+  ],
+  "noSnapshotHandlePublished": true,
+  "noLazyMutablePaletteGearWeaponOrCanvasSharing": true,
+  "priorSnapshotsRemainSeparate": true,
+  "noTimingOrGameGainYet": true,
+  "adopted": false,
+  "overallWorkComplete": false,
+  "allThreeMismatches": [
+    "mummer6SUCCESSFUL hits versus2..5",
+    "tower-collapse/Tome rebound at200frames",
+    "offscreen mage sampling"
+  ],
+  "expected": {
+    "compatibilityCases": 20,
+    "timingRows": 9,
+    "projectedConfigurations": 8,
+    "publicDefaultCases": 2,
+    "hookFallbackCases": 7,
+    "referenceExceptionCases": 1,
+    "injectedFailureCases": 2,
+    "globalRngCalls": 0
+  },
+  "counterAdapter": {
+    "sameReferenceAndCandidatePxOnly": true,
+    "doesNotChangeNativeMethodsOrCapabilities": true,
+    "recordsEveryActualPxCanvasCallAndRetainsForExplicitZeroCleanup": true,
+    "notAllGameNativeAllocationCount": true
+  },
+  "guide": {
+    "minimumEveryRoundFactoryGainVersusFasterControlPercent": 10,
+    "notWholeStartupGain": true,
+    "noBroaderCycleUnlessWholeStartupQualificationGenuinelyJustified": true
+  },
+  "sourceFiles": [
+    {
+      "file": "tools/boss-right-projection-source-nov01/candidate-main.js",
+      "sha256": "1a38a363df9e12023b8280d9c4d84666086e75d3fe114263b04296307d4804c3"
+    },
+    {
+      "file": "tools/boss-right-projection-source-nov01/candidate-chars.js",
+      "sha256": "aed5c392e19d67a4998ba23fb323d80e7b3e83afd6e2534388d725b11568e381"
+    },
+    {
+      "file": "tools/paladin-projection-page-nov01.mjs",
+      "sha256": "0fd228ced830d29542eb48ca2b49ec2639a10987524dc9af8277d5ca5bad9d69"
+    },
+    {
+      "file": "tools/paladin-projection-component-nov01.mjs",
+      "sha256": "eff5507776917c2592420658ac6e50e415a0402d7c79f271486c6d46c779cf19"
+    }
+  ],
+  "referenceIsCanonicalGitBlob": true,
+  "preparationLineEndingRepair": {
+    "onlyServedToolCopyAndMetadataChanged": true,
+    "originalWorkingGameBytesUntouched": true,
+    "noBrowserOrVerdictBeforeRepair": true,
+    "prior": {
+      "originalChars": "be523bab6154a4a0f6b91ca3f822cbde96d447a2f51e5809c22fa86f25ca2cb1",
+      "originalPx": "9d3feee0d3a14e186f3259e7b7a1279b579989a0461de55d594f676f525533ae",
+      "candidateChars": "a391ada1fb45c2d1f6e24aaaa2101f54ece4425ff6628313834600c12281ecdd"
+    }
+  },
+  "originalConsumerBody": " SPR.paladinboss = palHeroSet(K0); HAS_HURT.add('paladinboss');\n  const cf = PBA.cardFrames(Array.isArray(K0.R.idle) ? K0.R.idle[0] : K0.R.idle, K0.ax, K0.ay); if (cf) SPR.paladinbossCard = { R: cf.R, L: cf.R.map(flipX), white: { R: cf.R.map(c => whiten(c)), L: cf.R.map(c => flipX(whiten(c))) }, ax: cf.ax, ay: cf.ay, w: 12, h: 24 }; ",
+  "originalConsumerBodySha256": "4cdccd866bbf33c686b330959ed32991a7f945600f3df99c9001e192c1d2cae1",
+  "pbgImport": "./paladin-boss.js",
+  "pbaImport": "./redraw/paladin_boss_art.js",
+  "originalPaladinBodySha256": "2b8ccb960e01d5262ff797b7982d7a5f93aa44c73dc126802422ba9b237ccf30",
+  "paladinWorkerUndoExact": true,
+  "reaperWorkerAndGuardBytesUnchanged": true,
+  "distinctCombinedSource": true,
+  "notEarlierReaperSourceProof": "58b3b8555735ea038c5b114b998e39b8c6c94e5c85214da6e23d3d63b222ef22",
+  "priorReaperEvidenceOnly": "outputs/receipts/reaper-projection-followthrough-nov01.json",
+  "noReaperPassInheritedForWholeCombinedGame": true
+}

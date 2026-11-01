@@ -9,3 +9,6 @@ tools/wall-pattern-cdp.mjs -text
 
 tools/reaper-projection-source-nov01/candidate-main.js -text
 tools/reaper-projection-source-nov01/candidate-chars.js -text
+
+tools/boss-right-projection-source-nov01/candidate-main.js -text
+tools/boss-right-projection-source-nov01/candidate-chars.js -text
