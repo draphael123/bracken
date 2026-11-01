@@ -38,10 +38,10 @@
 import { tempoOf } from './marks.js';   /* (claude/rookery3) THE TEMPO CLASSES: src/marks.js TEMPO_CLASS */
 import { GALE, inCone as GHinCone } from './gale-harpy.js';   /* (claude/rookery4) THE SNATCHER's WING GUST is the gale harpy's cone (a shared foe module, pure) */
 export const SS = {
-  hp: { diver: 860, shrieker: 650, snatcher: 750 },   /* (claude/rookery3: +4% with the stagger, 830/625/720 -> 860/650/750: n=24/hero read 62% at +11%, 60% at +7%; the fights had fallen to ~95 s at +0%) */   /* (claude/rookery2 tune: 770/580/670 -> 830/625/720 with the ride and phase 2, n=12/hero 74% -> see the lane report) */   /* (claude/sisters2 tune, BOT_PROFILE=human L14 n=36/hero: 920/690/800 -> 770/580/670, grab dmg 12 -> 10, grab cd 8/5.5/4.5 -> 10/7/5.5 first 7 -> 9: 47% -> 68%) */
+  hp: { diver: 775, shrieker: 585, snatcher: 675 },   /* (claude/rookery3: +4% with the stagger, 830/625/720 -> 860/650/750: n=24/hero read 62% at +11%, 60% at +7%; the fights had fallen to ~95 s at +0%) */   /* (claude/rookery2 tune: 770/580/670 -> 830/625/720 with the ride and phase 2, n=12/hero 74% -> see the lane report) */   /* (claude/sisters2 tune, BOT_PROFILE=human L14 n=36/hero: 920/690/800 -> 770/580/670, grab dmg 12 -> 10, grab cd 8/5.5/4.5 -> 10/7/5.5 first 7 -> 9: 47% -> 68%) */
   wing: 0.4, downK: 1.5, wardMul: 0.4, last: 0.8,
   hover: { diver: 112, shrieker: 150, snatcher: 104 },   /* (claude/sisters2: the boulder's carry 150 -> 118 so the dropTell pose and its mark are on the arena's screen; the shrieker stays at 150 - at 124 her own dives after the diver falls came too fast: 54%) */
-  dive: { tell: [0.75, 0.75, 0.72], lock: 0.26, markTell: 0.62, v: 430, dmg: 21, land: 0.7, rise: 0.8, cd: [1.8, 1.6, 1.4], second: 0.42, pairDmg: 15, downed: 0.9 },   /* (claude/rookery3: the shield's knock-down 1.1 -> 0.9 - the knight blocks every medium dive now that they come one at a time: 24/24) */   /* (claude/rookery3) MEDIUM: 0.75 in every phase (was 0.85/0.75/0.7); the pair's second dive is LIGHT (0.42, 12) */
+  dive: { tell: [0.75, 0.75, 0.72], lock: 0.26, markTell: 0.62, v: 430, dmg: 18, land: 0.7, rise: 0.8, cd: [1.8, 1.6, 1.4], second: 0.42, pairDmg: 15, downed: 0.9 },   /* (claude/rookery3: the shield's knock-down 1.1 -> 0.9 - the knight blocks every medium dive now that they come one at a time: 24/24) */   /* (claude/rookery3) MEDIUM: 0.75 in every phase (was 0.85/0.75/0.7); the pair's second dive is LIGHT (0.42, 12) */
   stun: { t: 2.6, mul: 2, cap: 0.24 },
   ward: 2.5,
   slab: { w: 48, regrow: [9, 9, 6.5] },
@@ -56,7 +56,7 @@ export const SS = {
   rake: { tell: 0.4, v: 250, T: 0.5, h: 16, dmg: 14, chance: [0.6, 1, 1], end: 0.6, pre: 0.25 },   /* (claude/rookery3) LIGHT: 0.5 -> 0.4, 18 -> 11, a shorter slide */
   shock: { tell: 0.7, range: 150, h: 64, dmg: 8, vx: 300, vy: -160, low: 30, gap: 64, edge: 30, teeter: 0.7, T: 0.45 },
   echo: { tell: 0.42, ahead: 56, w: 22, dmg: 11, life: 8, T: 0.3 },   /* (claude/rookery3) LIGHT: 0.75 -> 0.42, 14 -> 8 (the tile is AHEAD of you: a quick flash) */
-  grab: { tell: 0.7, v: 290, T: 0.8, h: 14, dmg: 10, lift: 0.8, hold: 2.6,   /* (claude/rookery4: hold 1.8 -> 2.6 - she carries you to a roost now) */ strikes: 3, gap: 0.22, liftH: 56, drop: 14, free: 1.6, cd: [8, 6, 4.5], first: 8, hang: 24 },
+  grab: { tell: 0.7, v: 290, T: 0.8, h: 14, dmg: 16, lift: 0.8, hold: 2.6,   /* (claude/rookery4: hold 1.8 -> 2.6 - she carries you to a roost now) */ strikes: 3, gap: 0.22, liftH: 56, drop: 22, free: 1.6, cd: [6.5, 5, 4], first: 8, hang: 24 },
   /* (claude/rookery2) THE LEVEL'S VERB IN THE FIGHT - P1: a sister KNOCKED DOWN (her dive or rake on a shield, a grab struck loose) climbs off the rock (ferryWait, SS.ride.window s:
      UP: GRAB): grab her talons and she FERRIES you up to the SHRIEKER'S PERCH (a bone nest lashed to a spire); land beside the shrieker and she is CORNERED (open x SS.ride.mul,
      up to SS.ride.cap of her) for SS.ride.startle s, then flees behind her ward. The nest tips you off after SS.ride.tip s (no camping on it) */
@@ -76,7 +76,7 @@ export const SS = {
            drops: her portrait pulses on the bar). support: while one hunts, the other two ROOST and ONE of them at a time does ONE small told support move, every cd s (x k per death),
            never while the Hunter winds up or strikes (and the Hunter never starts into one). The three support moves (all MEDIUM tells, small blows): */
   turn: { t: 12, jit: 2, k: 0.75, hand: 0.8 },   /* (12 +/- 2: with the wait for her to finish what she is in, a turn reads 12-16 s) */
-  support: { cd: 6, first: 4.5, k: 0.85 },
+  support: { cd: 5, first: 3.5, k: 0.85 },   /* (claude/rookery4tune: 6/4.5 -> 4/3 and dive.cd x0.78: rookery4 as built read 83% with 150-200 s fights; master 67% at ~100 s) */
   pebble: { tell: 0.7, T: 0.8, r: 14, dmg: 8, arc: 50 },   /* THE DIVER's PEBBLE KICK from her roost: a slow rock lobbed at your spot (or the mark), its landing ring drawn the whole way */
   smark: { tell: 0.7, life: 3.2 },                         /* THE SHRIEKER's MARK from her perch: her ring on your spot - the Hunter's next blow goes to it */
   gust: { tell: 0.7, T: 0.5, low: 30, broken: 0.9, out: 170 },       /* THE SNATCHER's WING GUST (src/gale-harpy.js GALE + inCone): she drops low by her nest and beats a gust along the floor - a shield braces
