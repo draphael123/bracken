@@ -1,6 +1,16 @@
 [
   {
     "date": "2026-11-01",
+    "batch": 137,
+    "lines": [
+      "BRACKEN is now THORNROAD: a new name, title and loading screen, and a new opening with the road, the goblins and your hero by name",
+      "Burning Village opens when you beat King Gorm without dying; a doused fire stays out, a soaked hero looks soaked, and co-op shares the credit",
+      "Frog King has less health and a new phase-2 look; Pyromancer: tap C for a fire ward, hold C for a 5-step fireball",
+      "Fixes: Stockade horn soft-lock, music starting late, invisible steps in Palisade Wood; the map road now runs on past Palisade Wood"
+    ]
+  },
+  {
+    "date": "2026-11-01",
     "batch": 136,
     "lines": [
       "The Shriek Sisters are reworked: one hunts at a time while two roost on their nests, and a grab drags you off the stair",

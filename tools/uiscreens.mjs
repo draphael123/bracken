@@ -52,7 +52,7 @@ try {
     BK.state='title'; BK.ui.titleI=1; BK.press('confirm'); BK.step(3); BK.ui.slotI=1; BK.press('confirm'); BK.step(3); out.tool=BK.state;
     return out; })()`);
   assert.equal(op.state0, 'opening');
-  OPENING_LINES.forEach(([t, a, b], i) => { const got = op.panels[i]; assert.ok(got.includes(t) && got.includes(a.toUpperCase()) && got.includes(b.toUpperCase()), 'panel ' + (i + 1) + ' shows its title and both lines: ' + got.join(' / ')); });
+  OPENING_LINES.forEach(([t, a, b], i) => { const got = op.panels[i]; const tt = i === OPENING_LINES.length - 1 ? 'THE KNIGHT' : t; /* (thornroad) the last page carries the picked hero's name */ assert.ok(got.includes(tt) && got.includes(a.toUpperCase()) && got.includes(b.toUpperCase()), 'panel ' + (i + 1) + ' shows its title and both lines: ' + got.join(' / ')); });
   assert.equal(op.after, 'heropick', 'X skips the lot, to the hero pick'); assert.equal(op.flag, '1', 'and the once-only flag is written');
   assert.notEqual(op.tool, 'opening', 'a tool run (manualSimulation) is never held up by the opening');
   console.log('ok  opening        4 panels each with its title and two lines; X skips to the hero pick and writes the flag; tool runs skip it');

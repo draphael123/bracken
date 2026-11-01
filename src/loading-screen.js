@@ -123,7 +123,7 @@ export const TIPS = [
   'TIP: THE DESERT SUN HURTS. STAND IN SHADE AND DRINK FROM YOUR SKIN.',
   'TIP: A BOSS CAN ALWAYS BE HURT. A CLANK MEANS WRONG ANGLE: GO ROUND. HIS GOLD RING IS AN OPENING: HIT HARD.',
   'TIP: THE MAP SHOWS EACH WOOD\'S MEDAL TIMES. BEAT THEM FOR GOLD FROM THE PURSE.',
-  'A KNIGHT, A WOOD, A MOUNTAIN.',
+  'A ROAD, A CROWN, A MOUNTAIN.',
   'THE BRACKEN HAS GROWN OVER THE OLD ROAD.',
   'SOMEONE LEFT THE FIRE LIT. NOBODY WILL SAY WHO.',
 ];
@@ -183,7 +183,7 @@ function paint(now) {
   if (S.hist.length < 4000 && (!S.hist.length || S.hist[S.hist.length - 1] !== S.disp)) S.hist.push(S.disp);
   ag.clearRect(0, 0, 320, 180); px(0, 0, 320, 180, BG);
   scene(t);
-  text('BRACKEN', 160, 12, GOLD, 5, 'center');
+  text('THORNROAD', 160, 12, GOLD, 5, 'center');
   // the bar: a dark frame, a track, a fill in blocks with a light top edge, a notch every eighth
   const bx = 64, bw = 192, bh = 8, by = 144;
   px(bx - 3, by - 3, bw + 6, bh + 6, INK); px(bx - 2, by - 2, bw + 4, bh + 4, '#4a4058'); px(bx - 1, by - 1, bw + 2, bh + 2, '#221c30');

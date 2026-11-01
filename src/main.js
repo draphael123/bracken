@@ -613,7 +613,7 @@ const RIPOSTE = { window: 0.6, beat: 0.25 };   /* beat: how long before the blow
 
 // ---------- bake ----------
 const SKINS = [
-  { id: 'bracken', name: 'BRACKEN BLUE', price: 0, pal: {} },
+  { id: 'bracken', name: 'THORN BLUE', price: 0, pal: {} },
   { id: 'black', name: 'BLACK KNIGHT', price: 30, pal: { b: '#2a2a34', B: '#15151c', r: '#c9463d', y: '#c9d1dc' } },
   { id: 'purple', name: 'VIOLET KNIGHT', price: 40, pal: { b: '#6a3aa0', B: '#40206a', r: '#ffd36b', y: '#ffd36b' } },
   { id: 'blue', name: 'RIVER BLUE', price: 50, pal: { b: '#2f7fe0', B: '#1f4fa0', r: '#fff6e0', y: '#e0b040' } },
@@ -6353,7 +6353,7 @@ function drawSlots() {
     if (eraseAsk >= 0 || fixAsk >= 0) continue;   /* (the erase question is up over the list: the rows are boxes only, so no words lie under it) */
     text('SAVE ' + (i + 1), x + 44, y + 4, sel ? '#fff6e0' : UI.dim);
     { const hs = slotHealthOf(i);   /* A DAMAGED SLOT IS NOT AN EMPTY ONE: it says so, and Z opens what can be done about it */
-      if (hs.state === 'corrupt' || hs.state === 'newer') { text(hs.state === 'corrupt' ? 'CORRUPT' : 'NEWER SAVE', x + 100, y + 4, '#ff9a5c'); text(hs.state === 'corrupt' ? 'Z FIX IT   X ERASE   A COPY IS KEPT' : 'MADE BY A NEWER BRACKEN   NOT TOUCHED', x + 44, y + 17, sel ? '#ffd36b' : '#7a6a5a', 'left', 6); if (i === slot) text('LAST PLAYED', x + w - 6, y + 5, '#ffd36b', 'right', 6); continue; } }
+      if (hs.state === 'corrupt' || hs.state === 'newer') { text(hs.state === 'corrupt' ? 'CORRUPT' : 'NEWER SAVE', x + 100, y + 4, '#ff9a5c'); text(hs.state === 'corrupt' ? 'Z FIX IT   X ERASE   A COPY IS KEPT' : 'MADE BY A NEWER THORNROAD   NOT TOUCHED', x + 44, y + 17, sel ? '#ffd36b' : '#7a6a5a', 'left', 6); if (i === slot) text('LAST PLAYED', x + w - 6, y + 5, '#ffd36b', 'right', 6); continue; } }
     if (!p) { text('EMPTY', x + 100, y + 4, '#6a6a7a'); text('NEW GAME', x + 44, y + 17, sel ? '#8fd160' : '#4a5a4a', 'left', 6); continue; }
     const cleared = LEVELS.filter(l => p[l.id] && p[l.id].cleared).length, medals = LEVELS.reduce((a, l) => a + ((p[l.id] && p[l.id].medal) || 0), 0), hid = p.hero || 'knight', hn = ((HEROES.find(q => q.id === hid) || {}).name || hid.toUpperCase()).replace(/^THE /, '');
     const skin = SKINS.find(k => k.id === (p.skin || 'bracken')); const gT = gearTier(slotLevel(p), SET.gear === false), K2 = preview('slot:' + (p.hero || 'knight') + ':' + (p.skin || 'bracken') + ':' + (p.sword || 'steel') + ':g' + gT, () => heroSet(p.skin || 'bracken', p.sword || 'steel', 'idle', p.hero || 'knight', gT)); void skin;
@@ -6372,7 +6372,7 @@ function drawSlots() {
     const hs = slotHealthOf(fixAsk), opts = fixOptions(fixAsk), bw = 236, bh = 40 + opts.length * 16, bx = Math.round(VW / 2 - bw / 2), by = Math.round(VH / 2 - bh / 2);
     board(bx, by, bw, bh, '#ff9a5c', undefined, false, 'iron');
     text('SAVE ' + (fixAsk + 1) + (hs.state === 'corrupt' ? ' IS CORRUPT' : ' IS A NEWER SAVE'), VW / 2, by + 7, '#ff9a5c', 'center');
-    text(fitName(hs.state === 'corrupt' ? 'A COPY IS KEPT. NOTHING IS ERASED YET' : 'MADE BY A NEWER BRACKEN. UPDATE IT', bw - 14, 6), VW / 2, by + 21, UI.dim, 'center', 6);
+    text(fitName(hs.state === 'corrupt' ? 'A COPY IS KEPT. NOTHING IS ERASED YET' : 'MADE BY A NEWER THORNROAD. UPDATE IT', bw - 14, 6), VW / 2, by + 21, UI.dim, 'center', 6);
     opts.forEach((o, j) => { const w2 = 200, x2 = Math.round(VW / 2 - w2 / 2), y2 = by + 33 + j * 16, on = fixI === j;
       TCH.hit(x2, y2, w2, 14, () => { fixI = j; confirmPress = true; });
       board(x2, y2, w2, 14, on ? '#ffd36b' : '#5a6474', on ? 'rgba(70,56,30,0.95)' : 'rgba(30,26,44,0.95)', false, 'ledger');
@@ -6550,7 +6550,10 @@ let heroPick = { i: 0, stage: 'pick' }, heroPickAt = 0;   /* (heroPickAt: when t
 let opening = { i: 0, t: 0 };
 const openingSeen = () => { try { return !!localStorage.getItem('bracken.openingSeen'); } catch { return true; } };
 const openingDue = () => !q.has('noopening') && !(window.BK && window.BK.manualSimulation) && !openingSeen();
-function openingEnd() { try { localStorage.setItem('bracken.openingSeen', '1'); } catch {} state = 'heropick'; SFX.uiSel(); }
+let openingHeroDue = false;   /* (claude/thornroad) the last page of the opening names the PICKED hero, so it plays right after the pick (once, only when the first three pages played) */
+const openingHeroLine = () => { const h = HEROES.find(x => x.id === PROG.hero); return h ? h.name : ''; };
+const openingHeroCloth = () => { const c = HERO_COLOR[PROG.hero]; return c ? c.mid : undefined; };
+function openingEnd() { try { localStorage.setItem('bracken.openingSeen', '1'); } catch {} if (opening.post) { opening.post = false; state = heroPick.stage === 'trial' ? 'heropick' : 'map'; } else { state = 'heropick'; openingHeroDue = true; } SFX.uiSel(); }
 function openingStart() { opening = { i: 0, t: 0 }; state = 'opening'; }
 // HIS COLOURS. Each hero hangs behind a banner in his own cloth with his own device on it, so the row of five
 // reads as a muster and not as a row of boxes. Drawn, not baked: it is five rectangles and a device.
@@ -6610,7 +6613,7 @@ function updateHeroPick() {
   if (heroPick.stage === 'pick') { const PICK = NEW_PICK; if (heroPick.i >= PICK.length) heroPick.i = 0;
     if (leftPress) { heroPick.i = (heroPick.i + PICK.length - 1) % PICK.length; heroPickAt = time; SFX.ui(); } if (rightPress) { heroPick.i = (heroPick.i + 1) % PICK.length; heroPickAt = time; SFX.ui(); }
     if (confirmPress && !heroOpen(PICK[heroPick.i])) { SFX.deny(); heroDenyAt = time; }
-    else if (confirmPress) { const h = PICK[heroPick.i]; PROG.heroes = { [h]: true }; PROG.hero = h; PROG.heroPicked = true; applySkin(); applyUpgrades(); saveProgress(); SFX.equip(); SFX.sting(); if (hasTrial(h)) heroPick.stage = 'trial'; else state = 'map'; } }
+    else if (confirmPress) { const h = PICK[heroPick.i]; PROG.heroes = { [h]: true }; PROG.hero = h; PROG.heroPicked = true; applySkin(); applyUpgrades(); saveProgress(); SFX.equip(); SFX.sting(); if (hasTrial(h)) heroPick.stage = 'trial'; else state = 'map'; if (openingHeroDue) { openingHeroDue = false; opening = { i: OP.HERO_PANEL, t: 0, post: true }; state = 'opening'; } } }
   else { if (confirmPress) { if (!startTrial(hero())) { state = 'map'; SFX.ui(); } } else if (atkPress || pausePress) { state = 'map'; SFX.ui(); } }
 }
 function drawHeroPick() { const PICK = NEW_PICK;
@@ -7205,7 +7208,7 @@ function partyBoardOpen() {
         out.push({ n, kind: k, icon: heroIconUrl(p.hero), c: p.ai ? '#c9a0ff' : PARTY.colourOf(PROG.tavern, n).c, heroId: p.hero, hero: HERO_SHORT[p.hero] || String(p.hero).toUpperCase(), lv, slot: own ? slot : p.prof ? (p.prof.dest.kind === 'local' ? p.prof.dest.slot : p.prof.slot) : -1, saved: own || !!p.prof, beh: p.ai ? (p.aiCfg || {}).beh || 'balanced' : null, line: p.ai ? AIC.seatLine(HERO_SHORT[p.hero] || String(p.hero).toUpperCase(), p.prof ? lv : null, p.prof ? p.prof.dest.slot : -1, (p.aiCfg || {}).beh) : null }); }
       return out; },
     slots: () => Array.from({ length: SLOTS }, (_, i) => { const raw = slotRaw(i), sm = CS.slotSummary(raw, CAMP_IDS), h = LOCKS.holder(i, '?');
-      const why = h ? (h.here && i === slot ? 'PLAYER ONE\'S SAVE' : h.here ? 'ALREADY IN THE PARTY' : 'OPEN IN ANOTHER TAB') : sm.state === 'corrupt' ? 'DAMAGED' : sm.state === 'newer' ? 'FROM A NEWER BRACKEN' : '';
+      const why = h ? (h.here && i === slot ? 'PLAYER ONE\'S SAVE' : h.here ? 'ALREADY IN THE PARTY' : 'OPEN IN ANOTHER TAB') : sm.state === 'corrupt' ? 'DAMAGED' : sm.state === 'newer' ? 'FROM A NEWER THORNROAD' : '';
       return { i, line: CS.summaryLine(i, sm, x => HERO_SHORT[x] || String(x).toUpperCase(), h ? (h.here ? 'IN USE HERE' : CS.HELD_LINE) : false), ok: !why, why, heroes: sm.state === 'empty' ? CS.heroesOf({}) : sm.heroes || [], hero: sm.hero || null }; }),
     heroName: h => HERO_SHORT[h] || String(h).toUpperCase(),
     visitHeroes: () => coopPickList(),
@@ -7217,7 +7220,7 @@ function partyBoardOpen() {
     invite: () => ONL.open(),
     /* (claude/aicompanions) the AI PARTNER picker: this browser's saves as LINKED companions (player one's own and held ones refused, told), the heroes for a DEFAULT one, the behaviours */
     aiSlots: () => Array.from({ length: SLOTS }, (_, i) => { const raw = slotRaw(i), sm = CS.slotSummary(raw, CAMP_IDS), h = LOCKS.holder(i, '?'), own = i === slot;
-      const why = own ? 'YOUR OWN SAVE' : h ? (h.here ? 'ALREADY IN THE PARTY' : 'OPEN IN ANOTHER TAB') : sm.state === 'corrupt' ? 'DAMAGED' : sm.state === 'newer' ? 'FROM A NEWER BRACKEN' : '';
+      const why = own ? 'YOUR OWN SAVE' : h ? (h.here ? 'ALREADY IN THE PARTY' : 'OPEN IN ANOTHER TAB') : sm.state === 'corrupt' ? 'DAMAGED' : sm.state === 'newer' ? 'FROM A NEWER THORNROAD' : '';
       return { i, line: AIC.linkedLine(i, sm, x => HERO_SHORT[x] || String(x).toUpperCase(), own ? 'YOUR OWN SAVE' : h ? (h.here ? 'IN USE HERE' : CS.HELD_LINE) : false), ok: !why, why, heroes: sm.state === 'empty' ? CS.heroesOf({}) : sm.heroes || [] }; }),
     aiHeroes: () => coopPickList(), aiBeh: () => AIC.BEH_ORDER.map(b => ({ id: b, name: AIC.BEH_NAME[b], line: AIC.BEH_LINE[b] })), defaultLine: AIC.DEFAULT_LINE,
     ai: (slotI, h, beh) => { const r = partyAi(slotI, h, beh); if (r.ok) SFX.uiSel(); else SFX.buzz(); return r; },
@@ -31974,7 +31977,7 @@ function update(dt) {
   if (state === 'controls') { if (confirmPress) openRebind('controls'); else if (pausePress) { state = controlsFrom; SFX.menuClose(); } return; }
   if (state === 'rebind') { updateRebind(dt); return; }
   if (state === 'coophelp') { updateCoopHelp(); return; }
-  if (state === 'opening') { opening.t += dt; if (atkPress || pausePress) openingEnd(); else if ((confirmPress || rightPress) && opening.t > 0.25) { SFX.ui(); if (opening.i + 1 >= OP.PANELS) openingEnd(); else { opening.i++; opening.t = 0; } } return; }
+  if (state === 'opening') { opening.t += dt; if (atkPress || pausePress) openingEnd(); else if ((confirmPress || rightPress) && opening.t > 0.25) { SFX.ui(); if (opening.i + 1 >= (opening.post ? OP.PANELS : OP.PRE_PANELS)) openingEnd(); else { opening.i++; opening.t = 0; } } return; }
   if (state === 'heropick') { updateHeroPick(); return; }
   if (state === 'card') { updateCard(dt); return; }
   if (state === 'coop') { updateCoopPick(); return; }
@@ -35481,7 +35484,7 @@ function drawSoundTest() {
   /* THE CREDIT LINE. Only a song already unlocked names its own maker - a locked one is '???' above and stays
      unnamed below it too, or the lock is not really a lock. fitText is a safety net, not the plan: MUSIC_CREDITS is
      kept short enough that it almost never has to cut (tools/textfit.mjs 'soundtest' sweeps every one unlocked). */
-  if (soundCat === 1) { const n = list[soundI], line = musicUnlocked(n) ? (MUSIC_CREDITS_ROW[n] || MUSIC_CREDITS[n] || 'made for BRACKEN') : 'not yet heard'; text(fitText(line, w - 16), x + w / 2, y + h - 34, UI.dim, 'center'); }
+  if (soundCat === 1) { const n = list[soundI], line = musicUnlocked(n) ? (MUSIC_CREDITS_ROW[n] || MUSIC_CREDITS[n] || 'made for THORNROAD') : 'not yet heard'; text(fitText(line, w - 16), x + w / 2, y + h - 34, UI.dim, 'center'); }
   text('Z play  L/R tab  ESC back', VW / 2, y + h - 14, UI.dim, 'center', 6);   /* (8 px it was wider than the panel and sat on its border) */
 }
 const UI = { text: '#f0e8d4', title: '#fff6e0', dim: '#c2c9c2', border: '#d9c28c', sel: '#a8e06e', gold: '#ffd34a', silver: '#eaf0ff', plate: 'rgba(16,13,24,0.96)' };
@@ -36108,7 +36111,7 @@ function render() {
   setView(desiredView());
   const sh = SET.shake ? shake : 0;
   const cx = Math.round(Math.max(0, Math.min(LW * TS - VW, camX)) + kick + (sh ? (Math.random() - 0.5) * sh * 2 : 0)), cy = Math.round(Math.max(0, Math.min(LH * TS - VH, camY)) + (sh ? (Math.random() - 0.5) * sh * 2 : 0)); /* never past the level's edge, whatever moved the camera */
-  if (state === 'opening') OP.drawPanel(g, opening.i, opening.t, VW, VH);
+  if (state === 'opening') OP.drawPanel(g, opening.i, opening.t, VW, VH, openingHeroCloth());
   else if (state === 'title' || state === 'slots' || state === 'bossjump') drawTitle(cx, cy);
   else if (state === 'map') { drawMap(); for (const p of parts) { g.globalAlpha = Math.min(1, p.life / p.max * 2); g.fillStyle = p.col; g.fillRect(Math.round(p.x - camX), Math.round(p.y - camY), p.size, p.size); } g.globalAlpha = 1; }
   else if (state === 'editor') drawEditor();
@@ -36433,10 +36436,10 @@ function render() {
     const sway = Math.sin(time * 0.9) * 1.2, ly = Math.round(2 - (1 - e) * 70 + sway);
     const lw = 192, lh = 38, tcx = Math.round(VW / 2), lx = Math.round(tcx - lw / 2);
     g.drawImage(PROP.plank, 0, 0, PROP.plank.width, PROP.plank.height, lx, ly, lw, lh);
-    text('BRACKEN', tcx, ly + 4, UI.gold, 'center', 22);   /* (one call: the face draws its own shadow, and a second BRACKEN 2px off it is what textfit calls a collision) */
+    text('THORNROAD', tcx, ly + 4, UI.gold, 'center', 22);   /* (one call: the face draws its own shadow, and a second THORNROAD 2px off it is what textfit calls a collision) */
     // a glint runs along the letters every few seconds
     { const k = ((time - titleSince) % 5.5) / 0.7; if (k > 0 && k < 1) { g.save(); g.beginPath(); g.rect(lx + 6, ly + 3, lw - 12, lh - 6); g.clip(); const sx = lx - 20 + k * (lw + 40); g.globalCompositeOperation = 'lighter'; g.globalAlpha = 0.35; g.fillStyle = '#fff6c8'; g.beginPath(); g.moveTo(sx, ly); g.lineTo(sx + 10, ly); g.lineTo(sx - 4, ly + lh); g.lineTo(sx - 14, ly + lh); g.closePath(); g.fill(); g.restore(); } }
-    { const a = Math.max(0, Math.min(1, (since - 0.5) / 0.4)); g.globalAlpha = a; g.fillStyle = 'rgba(20,12,8,0.6)'; g.fillRect(lx + 10, ly + 25, lw - 20, 10); text('a knight, a wood, a mountain', tcx, ly + 27, UI.text, 'center', 6); g.globalAlpha = 1; }
+    { const a = Math.max(0, Math.min(1, (since - 0.5) / 0.4)); g.globalAlpha = a; g.fillStyle = 'rgba(20,12,8,0.6)'; g.fillRect(lx + 10, ly + 25, lw - 20, 10); text('a road, a crown, a mountain', tcx, ly + 27, UI.text, 'center', 6); g.globalAlpha = 1; }
     // the menu: a board on two posts, standing on the road to the right of the camp
     { const items = titleItems(), n = Math.max(items.length, titleTop().length), RH = Math.min(11, Math.floor(96 / n)), mw = 126, mx = VW - mw - 16, mh = n * RH + 20, my = VH - 22 - 8 - mh;
       const slide = easeOutBack(Math.min(1, Math.max(0, (since - 0.25) / 0.5))); const ox = Math.round((1 - slide) * 160);   /* (160: at 140 a sliver of the board showed at the right edge while the press card was up) */
@@ -36482,7 +36485,7 @@ function render() {
   if (state === 'coophelp') drawCoopHelp(uiCtx(), coopHelpPage, coopHelpPages());
   if (state === 'practice') drawPractice();
   if (state === 'herocard') drawHeroCard();
-  if (state === 'opening') { TCH.hit(0, 0, VW, VH, () => { confirmPress = true; }); OP.drawPanelText(g, text, UI, opening.i, opening.t, VW, VH, touchOn); }
+  if (state === 'opening') { TCH.hit(0, 0, VW, VH, () => { confirmPress = true; }); OP.drawPanelText(g, text, UI, opening.i, opening.t, VW, VH, touchOn, openingHeroLine()); }
   if (state === 'heropick') drawHeroPick();
   if (state === 'card') drawCard();
   if (state === 'coop') drawCoopPick();

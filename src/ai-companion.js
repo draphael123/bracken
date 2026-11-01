@@ -100,7 +100,7 @@ export const LINKED_TAIL = n => 'EARNS XP INTO SAVE ' + n;
 export function linkedLine(i, s, name = h => String(h || '').toUpperCase(), held = false) {
   const n = 'SAVE ' + (i + 1), tail = held ? (typeof held === 'string' ? held : 'IN USE ELSEWHERE') : null;
   if (s.state === 'corrupt') return n + ' - DAMAGED';
-  if (s.state === 'newer') return n + ' - FROM A NEWER BRACKEN';
+  if (s.state === 'newer') return n + ' - FROM A NEWER THORNROAD';
   if (s.state === 'empty') return n + ' - EMPTY: ' + (tail || 'A NEW HERO, ' + LINKED_TAIL(i + 1));
   return n + ' - ' + name(s.hero) + ' LV ' + Math.max(1, s.level) + ': ' + (tail || LINKED_TAIL(i + 1));
 }

@@ -63,7 +63,7 @@ export const HOST_NOTE = 'GUESTS NEVER CHANGE YOUR SAVE';
 export const summaryLine = (i, s, name = h => String(h || '').toUpperCase(), held = false) => {
   const n = 'SAVE ' + (i + 1), tail = held ? (typeof held === 'string' ? held : HELD_LINE) : null;
   if (s.state === 'corrupt') return n + ' - DAMAGED';
-  if (s.state === 'newer') return n + ' - FROM A NEWER BRACKEN';
+  if (s.state === 'newer') return n + ' - FROM A NEWER THORNROAD';
   if (s.state === 'empty') return n + ' - EMPTY: ' + (tail || 'A NEW SAVE STARTS HERE');
   return n + ' - ' + name(s.hero) + ' LV ' + Math.max(1, s.level) + ': ' + (tail || 'EARNS XP, SILVER + CLEARS INTO ' + n);
 };
@@ -144,7 +144,7 @@ export function applyCredit(storage, key, credit, opts = {}) {
   const ids = opts.campaignIds || [], legacy = key === slotKey(0) ? get(storage, LEGACY_KEY) : null, raw = get(storage, key) || legacy;
   const health = slotHealth(raw, ids);
   if (health.state === 'corrupt') return { ok: false, why: 'THIS SAVE IS DAMAGED: NOTHING WAS WRITTEN (FIX IT FROM CHOOSE A SAVE)' };
-  if (health.state === 'newer') return { ok: false, why: 'THIS SAVE IS FROM A NEWER BRACKEN: NOTHING WAS WRITTEN' };
+  if (health.state === 'newer') return { ok: false, why: 'THIS SAVE IS FROM A NEWER THORNROAD: NOTHING WAS WRITTEN' };
   let p, fresh = false;
   try { if (raw === null) { p = migrateProgress(null).progress; fresh = true; } else p = loadProgress(storage, key, raw, ids).progress; }
   catch (e) { return { ok: false, why: 'THE SAVE COULD NOT BE OPENED: ' + String((e && e.message) || e).toUpperCase() }; }
