@@ -20,19 +20,19 @@ function bake(human) {
     : { g: '#6faa4a', G: '#3f6e2c', p: '#d98a7a', e: '#f3f0d2', x: '#1a1210', t: '#f3f0d2', n: '#8a3a22', N: '#4a1c10', l: '#b0583a', s: '#ff6b2c', S: '#a8361a', b: '#ffd36b', k: '#4a3a2e', K: '#2a2018', i: '#8a919c', f: '#ff9a3c', F: '#ffd36b', w: '#fff6c8', h: '#2a1a14', H: '#5a2a1a', o: OUT };
   /* the head: the goblin has a pointed hat bent back and singed black at the brim (ember glints), a long ear with a pink inside, a hooked nose and two fangs; the man has a deep ash hood with a shadowed face, a straight nose and a close beard */
   const hat = human
-    ? ['', '', '.....hhhh', '....hHHHHh', '...hHHHHHHh', '...hHHhhHHh', '..hHHh..hHHh', '..hHhh....hHh']
-    : ['.h', '.hH', '..hH', '..hNH', '...hNNH', '...hNnNNH', '..hhFhhFhhFhh', '..hhhhhhhhhhhh'];
+    ? ['', '....hhhh', '...hHHHHh', '..hHHHHHHh', '..hHHhhHHh', '..hHhh..hHh']
+    : ['.....h', '....hH', '...hNNH', '..hNnNnH', '.hhFhhFhhFhh', '.hhhhhhhhhhhh'];
   const head = human
-    ? ['..hHhggggGh', '..hhhgexgggg', '...hGgggGGg']
-    : ['.pGgggggggg', 'ppgggexgggGG', '.pGggGGGgtg'];
-  const body = ['...nnssnnnnn', '..nlnnnnnnnnn', '..nlnnnnnnnnn', '..nlnnnnnnnnn', '.nNNNNNbbNNNNn', '.nnlnnnnnnnnnn', '.nnlnnnnnnnnnn', '.NnlnnSnnnSnnN', '.NsSsfSsSfsSsN'];
+    ? ['..hHhgggggGh', '..hhhgexgggg', '...hhgggggGg', '...hhGgGGGgg', '....hhGgGGh']
+    : ['pp.gggggggg', '.ppgggeexggg', '..pggggggggGGG', '...gggGGtGgg', '....gGggggGg'];
+  const body = ['....nnssnnnn', '...nlnnnnnnn', '...nlnnnnnnnn', '...nlnnnnnnnn', '...NNNNbbNNNN', '..nnlnnnnnnnnn', '..nnlnnnnnnnnn', '..NnlnnSnnSnnN', '..NsSsfSsSfsSN'];
   const feet = ['...GG...GG', '....GG.GG', '...GG....GG'];
   /* the staff: iron-shod foot, a wooden shaft, a three-clawed iron head holding the flame */
   const staffV = (rows, x, y0, y1, lit, big) => { for (let y = y0 + 1; y <= y1; y++) putRow(rows, y, x, y === y1 ? 'i' : 'k');
     putRow(rows, y0, x - 1, 'KkK'); putRow(rows, y0 + 1, x - 1, 'K.K');
     if (lit) { putRow(rows, y0 - 1, x, 'f'); if (big) { putRow(rows, y0 - 2, x - 1, 'fFf'); putRow(rows, y0 - 3, x - 1, 'fwf'); putRow(rows, y0 - 4, x, 'F'); putRow(rows, y0 - 1, x - 1, 'FwF'); } else { putRow(rows, y0 - 1, x - 1, 'fFf'); putRow(rows, y0 - 2, x, 'F'); } } };
   const frame = pose => {
-    const rows = [...(pose === 6 || pose === 9 ? ['', '', '', '', '', '', '', human ? '..hHhh....hHh' : '..hhFhhhhhhhh'] : hat), ...head, ...body];
+    const rows = [...(pose === 6 || pose === 9 ? ['', '', '', '', '', human ? '..hHhh....hHh' : '..hhFhhhhhhhh'] : hat), ...head, ...body];
     if (pose === 6) { putRow(rows, 9, 9, human ? 'gGGg' : 'gGGgGGg'); putRow(rows, 18, 12, 'kkki'); putRow(rows, 10, 5, 'x'); }               /* HURT: knocked back, the eyes shut, the staff dropped at the feet */
     else if (pose === 9) {   /* DEATH: folded over, the hat off and singed, the staff snapped, a last wisp of smoke */
       for (let y = 11; y < 19; y++) rows[y] = (rows[y] || '').replace(/[ssfF]/g, 'S'); putRow(rows, 9, 4, 'GGGG'); putRow(rows, 17, 9, 'kkK'); putRow(rows, 18, 13, 'kK'); putRow(rows, 16, 12, 'K'); putRow(rows, 8, 10, 'xx'); }
@@ -81,7 +81,7 @@ export function drawBolt(g, x, y, vx, vy, time) {
    'thatch' (straw stalks, lit gold) or 'stone' (the plain scorch). Flames are 3-tone tongues with an outline and a flicker; it gutters low and dark at the end of its life. */
 export function drawFirePatch(g, x, y, k, time, w = 28, fuel = 'stone') {
   const X = Math.round(x), Y = Math.round(y), full = Math.min(1, k * 2.2), h = 3 + Math.round(9 * full), W = w / 2 | 0, dying = k < 0.25, spread = fuel !== 'stone';
-  g.globalAlpha = 0.2 + 0.1 * full; g.fillStyle = '#ff7a30'; g.fillRect(X - W - 5, Y - h - 7, w + 10, h + 8); g.globalAlpha = 1;                      /* the glow */
+  g.globalAlpha = 0.2 + 0.1 * full; g.fillStyle = '#ff7a30'; for (let j = 0; j < h + 8; j++) { const u = (h + 7 - j) / (h + 8), hw = Math.round((W + 5) * Math.sqrt(1 - u * u)); g.fillRect(X - hw, Y - h - 7 + j, 2 * hw, 1); } g.globalAlpha = 1;                      /* the glow */
   g.fillStyle = FC.dk; g.fillRect(X - W - 1, Y - 1, w + 2, 2); g.fillStyle = '#1c0c08'; for (let i = -W; i < W; i += 2) g.fillRect(X + i, Y, 1, 1);          /* the char, flecked */
   if (spread) {
     const blade = fuel === 'grass' ? ['#3d6a24', '#6faa4a'] : ['#8a6a2a', '#e0b84a'];
