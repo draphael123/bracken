@@ -4619,10 +4619,10 @@ function longWater() {
     G.R.moversExtra.push({ kind: 'swing', px: 394 * TS, py: 12 * TS, arm: 96, x: 0, y: 0, w: 32, h: 8, period: 3.6, phase: 2.2 });
     // who is holding it
     ent('scout', 411, 26, { face: -1 }); ent('scout', 413, 26, { face: -1 }); ent('tideguard', 409, 26, { face: -1 });
-    ent('siren', 370, 32); ent('siren', 390, 33); ent('eel', 382, 34);
+    ent('siren', 361, 32); ent('siren', 406, 32); ent('eel', 389, 34);   /* (claude/platwins1: the sirens sing from the two ends of the channel and the eel waits mid-channel, so the six piers read as a clean hop run) */
     /* THE SEA'S LIFE STARTS HERE (2026-09-25): the river above Saltreach is fresh now (L.fresh), so what the sprinkler used to put in the
        ferry run - the anglers, a lamprey, a puffer - is put in the first salt water on the road, the channel under the piers */
-    ent('angler', 375, 35); ent('angler', 397, 35); ent('lamprey', 362, 34); ent('puffer', 383, 32);
+    ent('angler', 375, 35); ent('angler', 403, 35); ent('lamprey', 362, 34); ent('puffer', 404, 32);
     ent('silver', 386, 17);
     ent('sign', 410, 26, { text: 'PAST THE STAIR. THE SQUARE IS AHEAD AND THE SEA IS STANDING IN IT.' });
   }
