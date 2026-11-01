@@ -83,16 +83,16 @@ try {
   if (WANT.includes('knight')) {
     const r = await pg.evalp(`(()=>{const o={},P=()=>BK.P;
       /* the bash into a wind-up */
-      { const [e]=__set('knight',[['swornsword',20,{trainer:'drill'}]]);e.cd=0;e.elT=0;let f=0;while(e.mode!=='cutTell'&&f++<600)BK.sim(1);const p=P();p.face=1;p.resolve=100;p.st=p.maxSt;const st0=p.st;
+      { const [e]=__set('knight',[['swornsword',20,{trainer:'drill'}]]);e.cd=0;e.elT=0;let f=0;while(e.mode!=='cutTell'&&f++<600)BK.sim(1);const p=P();p.face=1;p.links=3;p.st=p.maxSt;const st0=p.st;
         BK.keys.up=true;BK.keys.block=true;BK.sim(1);const blockAt=p.block;BK.sim(3);const blockMid=p.block;BK.keys.up=false;BK.keys.block=false;BK.sim(14);
-        o.bash={tell:e.mode,stagger:+(e.stagger||0).toFixed(2),blockAt,blockMid,rip:+(p.riposteT||0).toFixed(2),resolve:p.resolve,paid:Math.round(st0-p.st),stats:BK.hpass().stats.interrupts}; }
-      /* valiant: the heavy cut on a raised guard, with and without the bar */
-      const cut=(full)=>{const [e]=__set('knight',[['shield',18]]);const p=P();p.face=1;e.guardT=9;e.speed=0;p.resolve=full?100:0;p.st=p.maxSt;const hp0=e.hp;BK.keys.atk=true;let f=0;while(f++<80){BK.sim(1);e.x=p.x+18;e.vx=0;if(p.atkHeld>=0.9)break;}BK.keys.atk=false;BK.sim(40);return {dmg:hp0-e.hp,resolve:p.resolve,broken:+(e.broken||0).toFixed(2),valiants:BK.hpass().stats.valiantHits};};
-      o.plain=cut(false);o.valiant=cut(true);return o;})()`);
+        o.bash={tell:e.mode,stagger:+(e.stagger||0).toFixed(2),blockAt,blockMid,rip:+(p.riposteT||0).toFixed(2),links:p.links,paid:Math.round(st0-p.st),stats:BK.hpass().stats.interrupts}; }
+      /* (claude/knightid) the ONE fixed heavy cut on a raised guard: it breaks it (no bar, no stages) */
+      const cut=()=>{const [e]=__set('knight',[['shield',18]]);const p=P();p.face=1;e.guardT=9;e.speed=0;p.st=p.maxSt;const hp0=e.hp;BK.keys.atk=true;let f=0;while(f++<80){BK.sim(1);e.x=p.x+18;e.vx=0;if(p.atkHeld>=0.56)break;}BK.keys.atk=false;let bk=0;for(let i=0;i<40;i++){BK.sim(1);if(e.broken>0)bk=Math.max(bk,e.broken);}return {dmg:hp0-e.hp,broken:+bk.toFixed(2)};};
+      o.plain=cut();o.valiant=o.plain;return o;})()`);
     t(r.bash.stats > 0 && r.bash.stagger >= 0.6, 'knight: UP+C into a wind-up interrupts it: ' + JSON.stringify(r.bash));
     t(!r.bash.blockAt && !r.bash.blockMid && r.bash.rip === 0, 'knight: the bash raises no shield (no free perfect guard): ' + JSON.stringify(r.bash));
-    t(r.bash.resolve === 100 && r.bash.paid > 0, 'knight: UP+C is never the last charge - a full bar is kept: ' + JSON.stringify(r.bash));
-    t(r.valiant.resolve <= 10 && r.valiant.valiants > 0 && r.valiant.dmg > r.plain.dmg, 'knight: VALIANT STRIKE spends the bar and goes through the guard (more than the same cut without it): ' + JSON.stringify(r));
+    t(r.bash.links === 3 && r.bash.paid > 0, 'knight: UP+C is never the shield charge - three links are kept: ' + JSON.stringify(r.bash));
+    t(r.plain.dmg > 0 && r.plain.broken > 0, 'knight: the ONE heavy cut breaks a raised guard (no bar, no stages): ' + JSON.stringify(r.plain));
     console.log('knight ' + JSON.stringify(r));
   }
   if (WANT.includes('warden')) {
