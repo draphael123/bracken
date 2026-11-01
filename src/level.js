@@ -3699,7 +3699,7 @@ function trialYard(hero) {
   const DASH = ['dashatk', 2, 'DODGE AT HIM (TAP A WAY TWICE, OR V) AND X AT ONCE: THE ATTACK CARRIES YOU THROUGH. TWICE.', [['dummy', 15], ['dummy', 21]], 'B, THEN X AT ONCE'];
   const RISE = ['rise', 2, 'UP+X: THE RISING CUT LAUNCHES A SMALL FOE. CUT IT AGAIN WHILE IT HANGS. LAUNCH TWO.', [['sprig', 14], ['sprig', 19]], 'UP+X'];
   const SWEEP = ['sweep', 2, 'DOWN+X: THE LOW SWEEP GOES UNDER A RAISED SHIELD AND TRIPS HIM. TRIP THEM TWICE.', [['shield', 14], ['shield', 20]], 'DOWN+X'];
-  const SKILL = ['skill', 2, 'F AND G: SKILLS FROM THE TALENT TREE (Q). ANY NOT YET LEARNED ARE LENT HERE. USE BOTH.', [['dummy', 14], ['sprig', 20]], 'Y, THEN RT', ['skillF', 'skillG']];
+  const SKILL = ['skill', 2, 'F AND G: SKILLS FROM THE TALENT TREE (Q). YOU KEEP ONE SLOT, A SECOND FROM LEVEL 30; THE YARD LENDS TWO. USE BOTH.', [['dummy', 14], ['sprig', 20]], 'Y, THEN RT', ['skillF', 'skillG']];
   const MARKS = ['tellY', 'tellR'];   /* the marks step wants one of each */
   const ST = {
     knight: [

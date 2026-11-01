@@ -157,7 +157,7 @@ import * as EG from './exit-gates.js';   /* THE EXIT GATES BY REGION (claude/exi
 const EGSFX = { light: () => SFX.lightFull(), open: () => SFX.gateOpen() };
 import * as SV from './survival.js'; import * as SKK from './skill-k.js';   /* (claude/lategamea) the one skill damage rule: swordDmg x k x amul */  import * as F2 from './flasks2.js';   /* FLASKS 2 (claude/flasks2, Daniel 10-08): the flask row, the drink, the store's FLASKS tab, the finds and objectives */   /* SURVIVAL (claude/survival, Daniel 10-07): the flask, dry shrines, % hazards and the exams' deadly spikes - the numbers live there */
 import { JUICE, blowClass, takenClass, blockClass, stopFor, shakeAdd, safeKnock, weaponOf } from './juice.js';   /* THE JUICE TABLE: one row per weight class, read by every landed blow and every blow the hero takes (tools/juice.mjs) */
-import { LEGACY_NODES, growthNodes, SKILLS, importProgress, exportProgress, loadProgress, migrateProgress, growthAt, skillScale, slotsAt, skillFor, skillsFor, equipped, buySkill, equipSkill, passiveOn, passiveLadder, passivesArriving, CARD, CARD_CAP, CARD_FULL, PERKS, RESPEC_SILVER, skillRank, rankUp, rankPrice, rankLevel, RANK_MAX, RANK_MUL, cardOf, evenCard, picksSpent, picksOwed, milestonesOwed, perkOffer, perkOn, perkRank, thrOn, thrNext, THRESH, MINOR_PERKS, ALL_HERO_PERKS, PYRO_CARDS, HERO_PERK_MAX, levelsToPerk, nextMilestone, techniquesArriving, pickCard, pickMilestone, respecCard, coopOpen, DEFAULT_HEROES, MAX_SLOTS } from './progression.js';
+import { LEGACY_NODES, growthNodes, SKILLS, importProgress, exportProgress, loadProgress, migrateProgress, growthAt, skillScale, slotsAt, skillFor, skillsFor, equipped, SECOND_SLOT_LEVEL, buySkill, equipSkill, passiveOn, passiveLadder, passivesArriving, CARD, CARD_CAP, CARD_FULL, PERKS, RESPEC_SILVER, skillRank, rankUp, rankPrice, rankLevel, RANK_MAX, RANK_MUL, cardOf, evenCard, picksSpent, picksOwed, milestonesOwed, perkOffer, perkOn, perkRank, thrOn, thrNext, THRESH, MINOR_PERKS, ALL_HERO_PERKS, PYRO_CARDS, HERO_PERK_MAX, levelsToPerk, nextMilestone, techniquesArriving, pickCard, pickMilestone, respecCard, coopOpen, DEFAULT_HEROES, MAX_SLOTS } from './progression.js';
 import * as TR from './title-region.js';   /* THE TITLE BY REGION (claude/titleregion): which region the last-played slot has reached */
 import { depthsOf, gateOf } from './campaign-order.js'; import { roadEndId, roadTally } from './ending.js';   /* CATCH-UP XP: how deep a level sits is the level a hero is expected to be in it */
 import { GROUND_KITS } from './dressing.js';
@@ -722,7 +722,7 @@ const HERO_LOOP = {
 // everything is free.
 /* ==== THE DEATH KNIGHT'S KEYS, IN WORDS. One place: his HUD prompts and the controls card read these, and a tutorial step for him should too. ==== */
 const DK_KEYS = { ward: 'HOLD C: THE BLOOD WARD. A BLOW ON ITS FACE COSTS A THIRD IN BLOOD, AND THE BLOOD FILLS IT', nova: 'LET GO OF C: A BLOOD NOVA THAT HEALS THE BLOOD BACK. A FULL WARD STRUCK AGAIN BREAKS', ret: 'LET GO AS A BLOW LANDS AND IT IS RETURNED, FOR NO BLOOD',
-  summon: 'F: THE FIRST SKILL HE HAS EQUIPPED', surge: 'HOLD F WITH FULL VITAE: CRIMSON FRENZY', skill: 'G: THE SKILL HE HAS CHOSEN FROM HIS TREES',
+  summon: 'F: THE FIRST SKILL HE HAS EQUIPPED', surge: 'HOLD F WITH FULL VITAE: CRIMSON FRENZY', skill: 'G: A SECOND SKILL, FROM LEVEL 30',
   hud: { ward: 'HOLD C  WARD', nova: 'LET GO: NOVA', full: 'FULL: LET GO', surge: 'HOLD F  FRENZY', frenzy: 'CRIMSON FRENZY' },   /* (claude/bkblood: VITAE full -> CRIMSON FRENZY) */   /* short: the timer plate sits right of this row's plate, and the coins are past that */
 };
 /* ==== THE WARDEN'S KEYS, IN WORDS. One place: her HUD prompts and the controls card read these, and her wood lesson
@@ -1093,7 +1093,9 @@ const skillCd = k => (P.cds && P.cds[k]) || 0; // every skill keeps its own wait
 const GOLD_CD = 15, goldReady = k => isPirate() && tal('paidInGold') && (PROG.coins || 0) >= GOLD_CD && skillCd(k) > 0;   /* PAID IN GOLD: a wait bought off */
 const cdReady = k => !((P.cds && P.cds[k]) > 0) || goldReady(k), cdSet = k => { noteVerb('skill'); P.skillAt = time;   /* (claude/riposte: a skill's blows are the chain's 'skill' verb) */ if (REC.on) REC.skill(k); trialEvent(k === skillNow() ? 'skillF' : 'skillG'); P.cds = P.cds || {}; if (goldReady(k)) { PROG.coins -= GOLD_CD; number(P.x, P.y - 34, '-' + GOLD_CD + ' GOLD', '#ffd34a'); SFX.coin(); } P.cds[k] = cdOf(k); P.skReady = P.skReady || {}; P.skReady[k] = 0; };
 const skillsOwned = () => skillsFor(hero()).filter(n => n.active && (PROG.skillOwned[hero()]?.[n.id] || trialLend?.has(n.id)));
-const skillAt = index => { const id = equipped(PROG, hero(), heroLevel())[index]; if (skillFor(hero(), id)?.active) return id; if (trialLend) return [...trialLend].filter(k => skillFor(hero(), k)?.active)[index] || null; return null; };
+const skillAt = index => { const eq = equipped(PROG, hero(), heroLevel()), id = eq[index]; if (skillFor(hero(), id)?.active) return id;
+  /* A TRIAL'S LENT SKILLS fill the F and G the hero has nothing on (Daniel 11-01: he has ONE slot now, so G is lent after his F is taken by his own) */
+  if (trialLend && index < 2) { const lent = [...trialLend].filter(k => skillFor(hero(), k)?.active && !eq.includes(k)); return lent[index - eq.slice(0, index).filter(k => skillFor(hero(), k)?.active).length] || null; } return null; };
 const skillNow = () => skillAt(0), skill2Now = () => skillAt(1);
 const skillPress = k => [P.fRelease || (throwPress && !(isReaper() && (P.harvest >= 100 || P.fHeld > 0))), skill2Press, skill3Press, skill4Press].some((pressed,i) => pressed && skillAt(i) === k);
 applySkin(); LS.heroReady(K); await LS.step('hero');   /* the hero first, so the loading screen has his dance to show */
@@ -4734,7 +4736,7 @@ function seatLevelUp(n) { const mh = P.maxHp; applyUpgrades(); P.hp = Math.min(P
 const fightLive = () => !!(bossActive || miniActive || ambushLive() || eliteList.some(e => e.elite && OKD.isKnightT(e.t) && !e.paid && (!e.alive || (P && Math.abs(P.x - e.x) < 192 && Math.abs(P.y - e.y) < 80))));   /* a Warden's level-up waits until his gate and purse settle; nearby Wardens still fighting hold the card too */
 /* WHAT A LEVEL-UP SAYS: the growth, the heal and the passives, trimmed until it is two lines of the hint (textfit's rule) */
 function levelUpLine(h, n, from) { const before = grow(h, from), after = grow(h, n), got = passivesArriving(h, from, n);
-  const pas = got.length ? (got.length > 1 ? ' PASSIVES: ' + got[0].name + ' +' + (got.length - 1) + ' MORE.' : ' PASSIVE: ' + got[0].name + '.') : '';
+  const slot2 = from < SECOND_SLOT_LEVEL && n >= SECOND_SLOT_LEVEL ? ' A SECOND SKILL SLOT.' : '', pas = (got.length ? (got.length > 1 ? ' PASSIVES: ' + got[0].name + ' +' + (got.length - 1) + ' MORE.' : ' PASSIVE: ' + got[0].name + '.') : '') + slot2;
   const head = 'LEVEL ' + n + (n - from > 1 ? ' (+' + (n - from) + ')' : '');
   const owe = picksOwed(PROG, h, n) + milestonesOwed(PROG, h, n).length;   /* THE CARD (LEVELING): the growth is a pick now, so the line says there is one to make */
   const tries = [head + ': ' + (owe ? (owe > 1 ? owe + ' CARDS' : 'A CARD') + ' TO CHOOSE. ' : '+' + (after.hp - before.hp) + ' HEALTH. ') + 'FULLY HEALED.' + pas, head + '. FULLY HEALED.' + pas];
@@ -5787,9 +5789,10 @@ const treePreview = (n, x, y, w, h) => { if (!n) return;
   const set = preview('vignette:' + hero() + ':' + PROG.skin + ':' + PROG.sword, () => heroSet(PROG.skin, PROG.sword, true));
   drawAbilityPreview(g, x, y, w, h, { id: n.id, hero: hero(), t: time, idle: set.R.idle, atk: set.R.atk, icon: treeIcon(n) }); };
 function drawSkills() {   /* the SKILLS tab of the one store: the loadout on F and G, the abilities and passives, and the live preview of the one under the cursor */
- const h=hero(),lv=heroLevel(),ns=treeNodes(),idx=Math.max(0,Math.min(ns.length-1,treeI)),n=ns[idx],list=equipped(PROG,h,lv),limit=slotsAt(lv),width=(VW-20)/limit;
+ const h=hero(),lv=heroLevel(),ns=treeNodes(),idx=Math.max(0,Math.min(ns.length-1,treeI)),n=ns[idx],list=equipped(PROG,h,lv),limit=slotsAt(lv),width=(VW-20)/2;
  text('LEVEL '+Math.max(1,lv),VW/2,6,UI.dim,'center',6);
- for(let i=0;i<limit;i++){const x=10+i*width,id=list[i],sk=skillFor(h,id),lab=sk&&!sk.active?'PASSIVE':['F','G',SET.skill3Key.toUpperCase()][i],lw=inkW(lab,6)+8;g.fillStyle='#302c3e';g.fillRect(x,38,width-3,11);text(lab,x+4,40,UI.gold,'left',6);text(fitName(sk?sk.name:'EMPTY',width-lw-8,6),x+4+lw,40,UI.text,'left',6);}
+ for(let i=0;i<limit;i++){const x=10+i*width,id=list[i],sk=skillFor(h,id),lab=sk&&!sk.active?'PASSIVE':['F','G'][i],lw=inkW(lab,6)+8;g.fillStyle='#302c3e';g.fillRect(x,38,width-3,11);text(lab,x+4,40,UI.gold,'left',6);text(fitName(sk?sk.name:'EMPTY',width-lw-8,6),x+4+lw,40,UI.text,'left',6);}
+ if(limit<2){const x=10+width;g.fillStyle='#232130';g.fillRect(x,38,width-3,11);text('G',x+4,40,UI.dim,'left',6);text(fitName('SECOND SLOT AT LEVEL '+SECOND_SLOT_LEVEL,width-20,6),x+4+inkW('G',6)+8,40,UI.dim,'left',6);}   /* (Daniel 11-01: ONE slot, a second at 30: the locked one is shown, so the rule is told where the loadout is) */
  for(let tab=0;tab<2;tab++){const x=10+tab*95;g.fillStyle=treeBranch===tab?'#4a4431':'#201e2c';g.fillRect(x,51,91,11);text(tab===0?'ACTIVES':'PASSIVES',x+45,53,treeBranch===tab?UI.gold:UI.dim,'center',6);}
  const LW=192,start=Math.floor(idx/6)*6;for(let i=start;i<Math.min(ns.length,start+6);i++){const q=ns[i],y=64+(i-start)*10,owned=PROG.skillOwned[h]?.[q.id],eq=list.includes(q.id);if(i===idx){g.fillStyle='#4a4431';g.fillRect(9,y-1,LW,10);}
   /* THE PASSIVE LADDER: what he has is lit and says ON; what is coming is dim and says the level it arrives at */
@@ -5800,7 +5803,7 @@ function drawSkills() {   /* the SKILLS tab of the one store: the loadout on F a
  const needs=skillNeeds(n),missing=needs.length&&!needs.some(id=>list.includes(id)),description=(missing?'PAIR WITH '+needs.map(id=>skillFor(h,id).name).join(' OR ')+'. ':'')+n.desc;
  const lines=wrap(description,VW-26,6),per=4;treePages=Math.max(1,Math.ceil(lines.length/per));lines.slice((treePage%treePages)*per,(treePage%treePages)*per+per).forEach((line,i)=>text(line,12,137+i*8,UI.text,'left',6));if(treePages>1&&window.__textRec)textRec('paged',{s:description,pages:treePages});}
  const rkN=n&&n.active&&PROG.skillOwned[h]?.[n.id]?skillRank(PROG,h,n.id):0,rankHelp=rkN&&rkN<RANK_MAX?'Z: RANK '+(rkN+1)+' FOR '+rankPrice(n,rkN+1)+' GOLD'+(lv<rankLevel(n,rkN+1)?' AT LV '+rankLevel(n,rkN+1):''):null;
- const help=treeMsgT>0?treeMsg:!loadoutSafe()?STORE_HELP.skillsLook:rankHelp?rankHelp:treeBranch===1?STORE_HELP.passives:STORE_HELP.skills;text(fitName(help,VW-22,6),VW/2,VH-10,UI.gold,'center',6);
+ const help=treeMsgT>0?treeMsg:!loadoutSafe()?STORE_HELP.skillsLook:rankHelp?rankHelp:treeBranch===1?STORE_HELP.passives:limit>1?STORE_HELP.skills.replace('F slot','F/G slot'):STORE_HELP.skills;text(fitName(help,VW-22,6),VW/2,VH-10,UI.gold,'center',6);
 }
 function updateStore(dt) {
   if (PROG.refundNote) { storeMsg = PROG.refundNote + ' gold refunded from older training'; storeMsgT = 4; PROG.refundNote = 0; saveProgress(); }
@@ -35258,7 +35261,7 @@ function drawHeroCard() { // who you are right now: the numbers behind the bars
   const rowY = y + 15 + loop.length * BODY_LH + 1;
   drawSet(K, 'idle', Math.floor(time * 4.5), x + 30, y + 52, 1, false);
   const nameOfSkill = id => { if (!id) return 'NONE'; const n = skillFor(hero(), id); return n ? n.name : ((ABILITIES.find(a => a.id === id) || {}).name || 'NONE'); };
-  const skName = nameOfSkill(skillNow()), sk2Name = skillsOwned().length > (isReaper() ? 0 : 1) ? nameOfSkill(skill2Now()) : 'LOCKED';
+  const skName = nameOfSkill(skillNow()), sk2Name = slotsAt(heroLevel()) < 2 ? 'AT LEVEL ' + SECOND_SLOT_LEVEL : skillsOwned().length > (isReaper() ? 0 : 1) ? nameOfSkill(skill2Now()) : 'LOCKED';
   const ch = PROG.charm && PROG.charms[PROG.charm] ? (CHARMS.find(c => c.id === PROG.charm) || {}).name : 'NONE';
   const cleared = LEVELS.filter(l => !l.hidden && PROG[l.id] && PROG[l.id].cleared).length, total = LEVELS.filter(l => !l.hidden).length;
   const rows = [['health', String(P.maxHp)], ['stamina', String(P.maxSt)], ['damage', String(swordDmg())], ['sword', sword().name], ['skill  F', skName], ['skill  G', sk2Name], ['charm', ch], ['skin', (skinById(PROG.skin) || {}).name || ''], ['levels', cleared + ' / ' + total], ['gold / silver', PROG.coins + ' / ' + silverAvail() + ' spare']];
@@ -36246,7 +36249,7 @@ function render() {
         g.strokeStyle = busy ? '#4a4658' : col; g.lineWidth = 1; g.strokeRect(x + 0.5, 11.5, 13, 15);
         text(key, x + 7, 27, busy ? '#7a7a84' : col, 'center', 6); };
       const slot = (sk, x, key, col) => { g.save(); g.translate(0, -7); slot0(sk, x, key, col); g.restore(); if (sk && skillFor(hero(), sk)?.active) skillSlotRects.push([x - 1, 3, 16, 18]); };   /* (claude/flasks2: where each slot lies, for tools/flasks2.mjs - never over the flask row) */ skillSlotRects = [];   /* the skill row sits beside the plate, at the top: y 4-20 */
-      const load=equipped(PROG,hero(),heroLevel());slot(load[0]||skillNow(),70,'F','#c9d1dc');slot(load[1]||skill2Now(),88,'G','#8fd160');slot(load[2],106,SET.skill3Key.toUpperCase(),'#8fb8ff');slot(load[3],124,SET.skill4Key.toUpperCase(),'#e6a8e0'); }
+      const load=equipped(PROG,hero(),heroLevel());slot(load[0]||skillNow(),70,'F','#c9d1dc');slot(load[1]||skill2Now(),88,'G','#8fd160'); }   /* (Daniel 11-01: one slot, a second at level 30 - the old third and fourth draws are gone) */
     const low = P.stFlash > 0 && Math.floor(time * 12) % 2 === 0;
     hudG(); bar(15, 14, 45, 4, P.st / P.maxSt, low ? '#ff6b6b' : P.winded ? '#8a8a90' : '#8fd160'); g.fillStyle = P.regenOff ? 'rgba(255,255,255,0.07)' : 'rgba(255,255,255,0.22)'; g.fillRect(15, 14, Math.round(45 * Math.max(0, P.st / P.maxSt)), 1); if (P.winded) { g.strokeStyle = '#ff6b6b'; g.lineWidth = 1; g.strokeRect(14.5, 13.5, 46, 5); }   /* WEIGHT: WINDED - grey, rimmed red, until it is back to 30%; the highlight dims while the regen waits */
     { const vi = venomIcon(P, CQG.CQ.venom); if (vi) { hudStrip(flaskRowEnd, 20, 2 + vi.slots * 8 + (vi.slow > 0 ? 30 : vi.mode === 'plain' ? 40 : 0), 10); drawVenomIcon(g, (s, x, y, c, a, z) => text(s, x, y, c, a, z, HS), flaskRowEnd + 2, 21, vi, time); } }   /* (a strip, in the flask row after the flasks) */

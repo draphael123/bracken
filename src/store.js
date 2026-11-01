@@ -63,7 +63,7 @@ export const BUY_HINT = 'VIEW ONLY: BUY AT A SHRINE, MAP OR SHOP';
 export const STORE_HELP = {
   buy: 'L/R tabs  Z buy  ESC back',
   look: 'Z equip  buy at a shrine, map or shop',
-  skills: 'TAB/Q tabs  L/R list  Z buy  F/G slot  X more',
+  skills: 'TAB/Q tabs  L/R list  Z buy  F slot  X more',
   skillsLook: BUY_HINT,
   passives: 'PASSIVES COME WITH LEVELS',
 };
