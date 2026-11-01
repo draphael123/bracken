@@ -20,3 +20,7 @@ Not run: full suite (QUICK gate/nightly), real gamepad hardware (pad path = the 
 3. Shop-room art is drawn from rectangles (no new baked sprites), so the keeper's animation is his idle/talk frames plus props, not a redrawn sprite. Rec: ship, and give the keeper a proper 6-frame sheet in a later art lane if you want more.
 4. Keeper bark lines are mine (about 12 per shop, in the shop's voice). Rec: skim the list in src/shop-life.js LINES and edit any you dislike.
 5. The pad has no dedicated swap button on the SKILLS tab (F is a skill slot there): pad users press LB/RB to the HEROES tab and F. Rec: leave.
+
+## UPDATE 11-01 (Daniel live): loading screen = LAST HERO ONLY
+The camp mates are gone (and co-op's second dancer): only the last hero used (K, his idle frames, 3x) sits at the fire; locked/other heroes never appear. NEW GAME (no hero picked, no level cleared, level 0) shows an EMPTY FIRE: the fire, a log seat, a travelling pack and a bedroll beside it, no hero, no silhouette; after the first pick he sits there from then on. Code: loading-screen.js emptyReady/emptyCamp, main.js LS.emptyReady; the lazy camp code is removed.
+Stills: scratch/lane-reports/hubpolish-shots/ before-loading.png (old dance pose), after-loading.png (last hero only), after-loading-empty.png (empty fire). tools/loading-screen.mjs 6/6 green.

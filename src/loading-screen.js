@@ -51,6 +51,8 @@ function metrics(list) {
    that is only called the first time a frame is painted (a load too quick to show the screen never bakes them). */
 const standing = s => s && s.R && (s.R.idle && s.R.idle.length ? s.R.idle : s.R.dance && s.R.dance.length ? s.R.dance : null);
 export function heroReady(...sets) { S.heroes = (sets || []).map(s => { const l = standing(s); return l ? metrics(l) : null; }).filter(Boolean); }
+/* (Daniel 11-01) ONLY THE LAST HERO USED sits at the fire; no hero yet (a new game) is an EMPTY FIRE: a log seat, a pack and a bedroll waiting. emptyReady(fn): fn() is true until the first hero is picked. */
+export function emptyReady(fn) { S.emptyFn = typeof fn === 'function' ? fn : null; }
 export function campReady(fn) { S.campFn = typeof fn === 'function' ? fn : null; S.camp = null; }
 function campNow() {
   if (S.camp || !S.campFn) return S.camp || [];
@@ -174,6 +176,13 @@ function stand(t, x, gy) {
   px(x + 3, y, 8, 6, '#c9d1dc'); px(x + 4, y + 2, 6, 2, '#1b1626'); px(x + 2, y + 6, 10, 6, '#3f7fd0'); px(x + 5, y + 6, 4, 6, '#c9463d');
   px(x + 1 + arm, y + 6 + up, 2, 5, '#c9d1dc'); px(x + 11 - arm, y + 6 + up, 2, 5, '#c9d1dc'); px(x + 3, y + 12, 3, 4 + (k === 2 ? 0 : 0), '#3a2a1a'); px(x + 8, y + 12, 3, 4, '#3a2a1a');
 }
+/* THE EMPTY FIRE: a log to sit on, a travelling pack and a rolled bedroll beside it; nobody is there yet */
+function emptyCamp(t) {
+  const gy = GY + 3;
+  px(104, gy - 9, 30, 9, '#4a2c18'); px(104, gy - 9, 30, 2, '#6a4626'); px(102, gy - 8, 3, 7, '#3a2214'); px(132, gy - 8, 3, 7, '#3a2214'); px(106, gy - 5, 26, 1, '#3a2214');   // the log seat
+  px(84, gy - 14, 14, 14, '#6a4a2a'); px(84, gy - 14, 14, 3, '#8a6a3a'); px(87, gy - 10, 8, 6, '#4a3220'); px(90, gy - 8, 2, 3, '#c9a83a'); px(82, gy - 11, 2, 9, '#3a2214'); px(98, gy - 11, 2, 9, '#3a2214');   // the pack
+  px(66, gy - 7, 18, 7, '#7a3a30'); px(66, gy - 7, 18, 2, '#a85a4a'); px(64, gy - 6, 3, 5, '#e8dcc0'); px(77, gy - 7, 1, 7, '#4a2a20'); px(72, gy - 7, 1, 7, '#4a2a20');   // the bedroll
+}
 function drawHero(h, t, cx, gy, mirror, sc = 2) {
   const n = h.list.length, f = h.list[Math.floor(t / 222) % n];   // his idle, at the 4.5 a second the title camp plays it
   if (!f || !f.width) return;
@@ -211,9 +220,8 @@ function paint(now) {
   if (S.job === 'boot' && S.firstVisit) text('FIRST VISIT: EVERYTHING IS FETCHED FRESH. NEXT TIME IS QUICKER.', 160, 174, DIM, 1, 'center');
   // THE CAMP: the others you own stand round the fire (left and right of it, a step back, every one facing it), then the hero you play stands at the fire in front
   // (and in co-op the second player across it). Nobody is a drawing of a knight: each is his own baked frames.
-  const list = S.heroes, camp = campNow();
-  camp.forEach((h, i) => { const left = i % 2 === 0, k = i >> 1, x = left ? 88 - k * 22 : 196 + k * 22; drawHero(h, t + i * 340, x, GY + 1, !left); });
-  if (list.length) { drawHero(list[0], t, 122, GY + 4, false, 3); if (list[1]) drawHero(list[1], t + 700, 192, GY + 4, true, 3); }
+  const list = S.heroes; let empty = false; try { empty = !!(S.emptyFn && S.emptyFn()); } catch { /* boot: not known yet */ }
+  if (empty) emptyCamp(t); else if (list.length) drawHero(list[0], t, 122, GY + 4, false, 3);
   else stand(t, 118, GY + 2);
   foreground(t);
   cg.imageSmoothingEnabled = false;
@@ -317,5 +325,5 @@ function drive(gen, cont, opts = {}) {
   }
 }
 
-export const LS = { step, drive, heroReady, campReady, bootStart, bootDone, get busy() { return S.busy && (S.shown || bootOn); }, get state() { return S; }, JOBS };
+export const LS = { step, drive, heroReady, campReady, emptyReady, bootStart, bootDone, get busy() { return S.busy && (S.shown || bootOn); }, get state() { return S; }, JOBS };
 if (hasDom) { window.BKLoad = LS; bootStart(); }
