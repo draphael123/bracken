@@ -14,7 +14,7 @@ try {
   await pg.evalp(`import('/src/level.js').then(M => { window.__LV = M.LEVELS; BK.PROG.xp = Object.assign(BK.PROG.xp || {}, { knight: 1e6 }); return true; })`);
   const boss = (setup, frames = 1) => pg.evalp(`(() => { const i = __LV.findIndex(l => l.id === 'burning'); BK.setHero('knight'); BK.load(i); BK.start(); BK.god = true;
     const A = BK.L.arena; BK.tp(Math.round(A.trigger / 16) + 1, Math.round(A.floor / 16) - 1); for (let k = 0; k < 240; k++) BK.step(1);
-    const b = BK.boss; for (const e of BK.enemies()) if (e !== b) e.alive = false; b.x = (A.x0 + A.x1) / 2 + 20; b.y = A.floor; b.vx = 0; const P = BK.P; P.x = b.x - 90; P.y = A.floor; P.vx = 0;
+    const b = BK.boss; for (const e of BK.enemies()) if (e !== b) e.alive = false; b.x = (A.x0 + A.x1) / 2 + 20; b.y = A.floor; b.vx = 0; b.open = 0; b.ward = 0; const P = BK.P; P.x = b.x - 90; P.y = A.floor; P.vx = 0;
     const hold = () => { b.cd = 99; b.fwCd = 99; b.stokeCd = 99; P.x = b.x - 90; P.vx = 0; };
     ${setup}
     for (let k = 0; k < ${frames}; k++) { hold(); BK.step(1); }
@@ -30,7 +30,7 @@ try {
   save('boss-conflag-erupt', (await boss(`${marks} b.mode = 'conflagTell'; b.modeT = 0.02; b.heat = 100;`, 8)).png);
   /* THE FIRE MAGE (the Rootway: his first meeting) */
   const mage = (setup, frames = 1) => pg.evalp(`(() => { const i = __LV.findIndex(l => l.id === 'rootway'); BK.setHero('knight'); BK.load(i); BK.start(); BK.god = true;
-    const e = BK.enemies().find(q => q.alive && q.cnSkin === 'firemage'); BK.tp(Math.round(e.x / 16) - 6, Math.round(e.y / 16)); for (let k = 0; k < 60; k++) BK.step(1);
+    const e = BK.enemies().find(q => q.alive && q.cnSkin === 'firemage'); BK.tp(Math.round(e.x / 16) - 6, Math.round(e.y / 16)); for (let k = 0; k < 360; k++) { e.cd = 99; e.lobCd = 99; BK.step(1); }   /* (the level's title card runs out while drawn) */
     for (const q of BK.enemies()) if (q !== e && Math.abs(q.x - e.x) < 400) q.alive = false; const P = BK.P; P.x = e.x - 100; P.vx = 0;
     ${setup}
     for (let k = 0; k < ${frames}; k++) { e.cd = 99; e.lobCd = 99; e.fwCd = 99; P.x = e.x - 100; P.vx = 0; BK.step(1); }

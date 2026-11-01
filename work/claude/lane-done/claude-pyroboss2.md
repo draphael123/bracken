@@ -30,12 +30,13 @@ claude/smallfix7 was NOT on origin while I worked: no merge. Overlap = one line 
 
 ## WIN RATES (boss-rates, practiced, profile human, flasks kit, campaign L5)
 - Old 1500 hp, new kit: knight 3/5 (+1 page crash), warden 5/5, pyro 6/6 = 88% (n=16) - HIGH. Warden wins in 21-49 s.
-- Tune 1 committed (1900 hp, stoke rarer, ward a bit more often): SEE "RATES AFTER TUNE 1" below (filled if the browser hold lifted in time).
+- Tune 1 (1900 hp, stoke rarer, ward more often): knight 0/6, warden 6/6 (23-42 s) - pyro not run (gate137 hold).
+- TUNE 1b (CURRENT: 1700 hp, his ward scorches once a ward): knight 2/6, warden 6/6 (23-40 s), pyro 5/6 = 13/18 = 72% (n=18) - pooled just over the 60-70 band; the split is the problem: the WARDEN outreaches the ward and wins in half a minute, the KNIGHT bot swings into the ward and eats the blasts. TUNE LANE: per-hero (warden reach vs WARD.reach 64 / a ward that also turns thrusts; knight bot should wait out the ward), then measure all 9 heroes n=12.
 - Other heroes (paladin, freebooter, reaper, geomancer, berserker, ranger): NOT MEASURED (machine RAM: memguard killing pages; coordinator BROWSER HOLD from ~14:00).
 
 ## CHECKS
 GREEN: tools/pyro-duel.mjs (rewritten for the new kit), tools/village-water.mjs (boss part rewritten), tools/fire-mage.mjs (new; static + FM_PAGE game), tools/tells.mjs (+ --write table), tools/blow-tags.mjs (pyroTakes), tools/goblin-lint.mjs, tools/one-new-foe.mjs, tools/elites.mjs, level-quality (rootway/palisade/kings/kitchen/burning: all rows but pilot/mash; burning clears).
-NOT RUN / STALE (need the browser): level1-pilot --write --curve + mash-bot --write for rootway, palisadewood, kings, kitchengate (level hashes changed); burning pilot; level-reach for the 5 levels; mark-integrity (burning); textfit (new strings); corpses; the stills (tools/pyroboss2-shots.mjs ready).
+NOT RUN / STALE (need the browser): level1-pilot --write --curve + mash-bot --write for rootway, palisadewood, kings, kitchengate (level hashes changed); burning pilot; level-reach for the 5 levels; mark-integrity (burning); textfit (new strings); corpses; the corpses check. STILLS TAKEN: scratch/lane-reports/pyroboss2-shots/ (boss ward up/gutter, charge step 2 + step 4 with the red ring, phoenix tell, stoke, conflagration tell/erupt; the fire-mage/acolyte shots are covered by the Rootway title card - tools/pyroboss2-shots.mjs needs the card dismissed; the art lane reshoots).
 
 ## ART LANE NEXT
 1. Fire mage + cinder acolyte sheets (greybox grid, 9 frames: idle, walk x2, LOB windup/release, spare, hurt, WARD, DOUSED) - real goblin robe/staff, flame on the tip, a proper cinder acolyte head/hood; bestiary cards.
