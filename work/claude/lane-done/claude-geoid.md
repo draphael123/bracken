@@ -20,7 +20,9 @@ OWED to the STARTER-HEROES TUNE lane (coordinator 11-01: RAM). Handicap rows are
 ## Checks
 - tools/geomancer.mjs GREEN (updated: stones stand, clear restores grid, 3 levels end as they began).
 - tools/geo-board.mjs NEW, GREEN: stands, gnaw, ram (+open), fist (only 3rd jab), topple, 1-stone no-op, room reset.
-- Not run (RAM < 1500 MB): level-reach/stuck with stones, hero-trials, keys, textfit, mark-integrity, save migration, co-op stones, mash-gate, commit tests (COMMIT.geomancer.third changed). See "owed".
+- tools/hero-trials.mjs GREEN (yard follows: new THIRD + TOPPLE stations; tool updated).
+- textfit: trial/erase/opening scopes passed; the mapcard scope CRASHED the page (memory, not text) - rerun owed. skill-passives: dev server did not come up (env) - rerun owed (test rewired to RUMBLE=topple cd).
+- OWED (RAM): level-reach/stuck with stones, keys, mark-integrity, save migration, co-op stones, mash-gate, commit test (COMMIT.geomancer.third 0.132->0.192).
 
 ## Deferred (after demo)
 AIMED PLACEMENT (hold X ghost stone, distance/height by hold) and removal of the 3-tier ladder (kept: shard/fault/pillar - the bot hands use it); shard as a skill; foe AI "shooters take cover behind stones / path around" (today foes just gnaw or ram); art; L25-L50 techniques; pillar/wall/arch/step collapse into 3 aim shapes; checkpoint-touch stone reset (death/room exit only).
