@@ -115,7 +115,7 @@ try {
   console.log(JSON.stringify(r));
   const ehpLine = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8').split('\n').find(l => l.startsWith('const EHP = {')) || '';
   const ehp = +((ehpLine.match(/\bpyromancer: *(\d+)/) || [])[1]);
-  const NOW = 1500;   /* (claude/pyrotune 10-24: 1500 on the old kit; claude/pyroboss2 keeps it for the first read of the new kit - the TUNE lane sets it in band) */
+  const NOW = 1900;   /* (claude/pyrotune 10-24: 1500 on the old kit; claude/pyroboss2 keeps it for the first read of the new kit - the TUNE lane sets it in band) */
   assert.equal(ehp, NOW, 'his health is ' + NOW + ': ' + ehp);
   assert.ok(r.hp.max > NOW * 0.95 && r.hp.max <= NOW * 1.05, 'and it is the health he fights with in the square: ' + r.hp.max);
   /* 1 */

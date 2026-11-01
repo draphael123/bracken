@@ -16,7 +16,7 @@
 //                    MARK on the floor. A full meter = CONFLAGRATION: told (staff up, the marks pulse white), then every mark ERUPTS - step off them.
 //                    She is SPENT after it. Water on a mark puts it out.
 export const OPEN_MUL = 1.5;                 // every opening (spent, cancelled, stoking, the rise's recovery): x this
-export const WARD = { up: 1.0, gutter: 0.35, spent: 1.2, cd: [3.4, 2.6], chance: [0.5, 0.65], mul: 0.4, scorch: 7, scorchCd: 0.35, reach: 64, heat: 6 };
+export const WARD = { up: 1.0, gutter: 0.35, spent: 1.0, cd: [3.0, 2.4], chance: [0.55, 0.7], mul: 0.4, scorch: 7, scorchCd: 0.35, reach: 64, heat: 6 };
 export const CHARGE = {
   stepT: 0.45,                               // a step every this long (the hero's 0.18/0.9/1.5/2.0/2.5 s scaled to a boss's read)
   fastT: 0.3,                                // ...the READY ball a full P1 meter throws, quicker
@@ -30,7 +30,7 @@ export const CHARGE = {
   life: 2.2, heat: 10,
 };
 export const RISE = { tell: 0.6, v: 430, max: 230, dmg: 11, burstR: 40, burst: 12, rec: 0.7, far: 170, mul: 0.4 };
-export const STOKE = { rate: 32, max: 2.5, at: 45, near: 90, cd: 6 };
+export const STOKE = { rate: 32, max: 2.2, at: 40, near: 110, cd: 9 };   /* (claude/pyroboss2 first read: 88% k/w/p with flasks at 1500 hp, the warden in 21-49 s - the stoke opened him too often) */
 export const WIND = { t: 3.5, mul: 2 };
 export const STEAM = { t: 2.5, mul: 0.4 };
 export const WATER = { heat: 40 };           // water outside the stoke: this much meter gone, a raised ward out, a charge cancelled
