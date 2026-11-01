@@ -1,4 +1,4 @@
-# KING GORM 3 (OPUS) - claude/gorm3 off origin/master 0fe14c26 + origin/claude/smallfix7 (ff)
+# KING GORM 3 (OPUS) - claude/gorm3 @ tune sha 16b60604 off origin/master 0fe14c26 + origin/claude/smallfix7 (ff)
 Brief: scratch/brief-gorm3-1101.md (Daniel approved live 11-01 11:49). Do NOT merge/deploy (coordinator batches).
 
 ## BUILT
