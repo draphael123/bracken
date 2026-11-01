@@ -30630,11 +30630,11 @@ function bankHeat() { if (P.full || P.infernoT > 0) return; meterReady('#ff9a5c'
    IMPACT (impact-matrix-1101 outlier #3): the ward's parry, fireball steps 2-3 and every eruption carry an EXPLICIT heavy hit-stop class (IMPACT, read by
    blowKind); step 1 and the ward's contact are light with fire on impact; the jet card's ticks get a small flash + flame + crackle of their own. */
 const PYRO_KIT = {
-  fb: { steps: [0.35, 0.9, 1.5],      // THE HELD FIREBALL: C held this long = step 1 / 2 / 3 (step 1 = FW_K.fold: the ward folds into it)
-        k: [0, 0.9, 1.6, 2.4],         // x swordDmg x heat, the ball's direct hit (the big one must not out-damage the staff per second: 2.4 x1.4 / 1.5 s+ < a staff chain)
-        boomK: 1.2, boomR: 34,         // step 3 EXPLODES (on a foe, on stone or at the end of its flight): everything else in boomR takes boomK
-        cost: [0, 18, 26, 34],         // stamina at the release
-        burn: [0, 1.4, 1.8, 2.4],      // s of burn on a small foe
+  fb: { steps: [FW_K.fold, 0.9, 1.5, 2.0, 2.5], // THE HELD FIREBALL: C held this long = step 1 / 2 / 3 (step 1 = FW_K.fold = 0.18 s, claude/pyrocontrols: a tap shorter than that is the ward, held longer it charges; the ward folds into it)
+        k: [0, 0.9, 1.6, 2.4, 3.3, 4.6],         // x swordDmg x heat, the ball's direct hit (the big one must not out-damage the staff per second: 2.4 x1.4 / 1.5 s+ < a staff chain)
+        boomK: [0, 0, 0, 1.2, 1.6, 2.2], boomR: [0, 0, 0, 34, 42, 54],         // step 3 EXPLODES (on a foe, on stone or at the end of its flight): everything else in boomR takes boomK
+        cost: [0, 18, 26, 34, 42, 50],         // stamina at the release
+        burn: [0, 1.4, 1.8, 2.4, 2.8, 3.2],      // s of burn on a small foe
         readyMax: 4,                   // s she can hold a full ball READY before it goes by itself
         slow: 0.5,                     // her walk while the ball is on the staff (x her run)
         inFlight: 2 },                 // balls of hers in the air at once
@@ -30657,7 +30657,7 @@ function hurtFire(e, dmg, fromX, { burn = 0, cls = null, tag = 'shot', burnOnly 
   try { hurtAs(tag, e, Math.max(1, Math.round(dmg)), fromX, false); } finally { IMPACT = null; P.jetHit = jh; }
   if (burn > 0 && e.alive && !e.maxHp) e.burn = Math.max(e.burn || 0, burn); if (e.alive) e.heatOwner = P;
   flame(e.x, e.y - (e.h || 12) / 2, 4, 5, 50, 2); }
-const fbStepOf = t => t >= PYRO_KIT.fb.steps[2] ? 3 : t >= PYRO_KIT.fb.steps[1] ? 2 : t >= PYRO_KIT.fb.steps[0] ? 1 : 0;
+const fbStepOf = t => t >= PYRO_KIT.fb.steps[4] ? 5 : t >= PYRO_KIT.fb.steps[3] ? 4 : t >= PYRO_KIT.fb.steps[2] ? 3 : t >= PYRO_KIT.fb.steps[1] ? 2 : t >= PYRO_KIT.fb.steps[0] ? 1 : 0;
 /* THE HELD FIREBALL, every frame C is down in 'fb' mode: the clock, the steps told (a ring and a tick each), the fold, the drop, the release */
 function fbTick(dt, keys, free, attacking) {
   const F = PYRO_KIT.fb, st0 = fbStepOf(P.cHeld || 0);
@@ -30665,10 +30665,10 @@ function fbTick(dt, keys, free, attacking) {
   if (!free || attacking || P.hurt > 0 || P.dead) { if (st0 > 0) fbFizzle(); P.cMode = null; P.cHeld = 0; P.fbHold = 0; return; }   /* A DODGE, A HIT OR A SWING DROPS IT */
   P.cHeld = (P.cHeld || 0) + dt; const st = fbStepOf(P.cHeld);
   if (st >= 1 && P.fwUp && FWARD) FWARD.fold();   /* never ward and ball on one frame */
-  if (st > (P.fbStepWas || 0)) { P.fbStepWas = st; SFX.fbStep(st); const tip = fbTip(); ringAt(tip.x, tip.y, 5 + 4 * st, st === 3 ? '#fff6c8' : '#ffd36b', 0.22); burst(tip.x, tip.y, 3 + 3 * st, ['#ff9a5c', '#ffd36b', '#fff6c8'], 30 + 15 * st, 0.3, -30, 1); if (st === 3) number(P.x, P.y - 30, 'READY', '#fff6c8'); }
+  if (st > (P.fbStepWas || 0)) { P.fbStepWas = st; SFX.fbStep(st); const tip = fbTip(); ringAt(tip.x, tip.y, 5 + 4 * st, st === 3 ? '#fff6c8' : '#ffd36b', 0.22); burst(tip.x, tip.y, 3 + 3 * st, ['#ff9a5c', '#ffd36b', '#fff6c8'], 30 + 15 * st, 0.3, -30, 1); if (st === 5) number(P.x, P.y - 30, 'READY', '#fff6c8'); else if (st >= 4) number(P.x, P.y - 30, 'ALMOST', '#ffd36b'); }
   P.fbHold = st;
-  if (st === 3 && Math.random() < dt * 20) { const tip = fbTip(); parts.push({ fire: true, x: tip.x + (Math.random() - 0.5) * 8, y: tip.y + (Math.random() - 0.5) * 8, vx: (Math.random() - 0.5) * 20, vy: -30, life: 0.3, max: 0.3, col: Math.random() < 0.5 ? '#ffd36b' : '#ff9a5c', size: 1, grav: -30 }); }
-  if (P.cHeld >= F.steps[2] + F.readyMax) { castFireball(3); P.cMode = null; P.cHeld = 0; P.fbHold = 0; }   /* held READY too long: it goes */
+  if (st >= 3 && Math.random() < dt * 20 * (st - 2)) { const tip = fbTip(); parts.push({ fire: true, x: tip.x + (Math.random() - 0.5) * 8, y: tip.y + (Math.random() - 0.5) * 8, vx: (Math.random() - 0.5) * 20, vy: -30, life: 0.3, max: 0.3, col: Math.random() < 0.5 ? '#ffd36b' : '#ff9a5c', size: 1, grav: -30 }); }
+  if (P.cHeld >= F.steps[4] + F.readyMax) { castFireball(5); P.cMode = null; P.cHeld = 0; P.fbHold = 0; }   /* held READY too long: it goes */
 }
 const fbTip = () => ({ x: P.x + P.face * PA.TIP.hold[0], y: P.y + PA.TIP.hold[1] });   /* where the ball sits on the staff: the head of F.holdStand / F.holdWalk's staff (src/pyro-art.js TIP) */
 function fbFizzle() { SFX.emberFizzle(); const tip = fbTip(); smoke(tip.x, tip.y, 3, 5); number(P.x, P.y - 24, 'DROPPED', '#9aa39a'); }
@@ -30681,17 +30681,19 @@ function castFireball(step) { noteVerb('cast');
   const tip = fbTip();
   embers.push(step === 1 ? { fb: 1, r: 3, x: tip.x, y: P.y - 12, vx: P.face * 150, vy: -45, grav: 110, life: tal('skip') ? 3 : 1.8, hit: new Set() }   /* THE SMALL ONE: the old tap ember, lobbed */
     : step === 2 ? { fb: 2, r: 5, x: tip.x, y: P.y - 13, vx: P.face * 215, vy: -18, grav: 36, life: 1.6, hit: new Set() }   /* THE MEDIUM ONE: travels flatter and further */
-    : { fb: 3, r: 8, x: tip.x, y: P.y - 14, vx: P.face * 150, vy: 0, grav: 0, life: 1.5, hit: new Set() });   /* THE BIG ONE: slow, straight, EXPLODES */
+    : step === 3 ? { fb: 3, r: 8, x: tip.x, y: P.y - 14, vx: P.face * 150, vy: 0, grav: 0, life: 1.5, hit: new Set() }   /* THE BIG ONE: slow, straight, EXPLODES */
+    : step === 4 ? { fb: 4, r: 10, x: tip.x, y: P.y - 15, vx: P.face * 140, vy: 0, grav: 0, life: 1.5, hit: new Set() }   /* (claude/pyrocontrols, Daniel 11-01: five steps) THE BIGGER ONE */
+    : { fb: 5, r: 13, x: tip.x, y: P.y - 16, vx: P.face * 130, vy: 0, grav: 0, life: 1.6, hit: new Set() });   /* THE BIGGEST: slower, wider, the great explosion */
   if (step === 1 && tal('twin')) embers.push({ fb: 1, r: 3, x: tip.x, y: P.y - 12, vx: P.face * 105, vy: -150, grav: 110, life: tal('skip') ? 2.4 : 1.2, hit: new Set() });   /* TWIN EMBER: a high one after the low */
   SFX.fbCast(step); burst(tip.x, tip.y, 4 + 4 * step, ['#ff9a5c', '#ffd36b', '#fff6c8'], 40 + 20 * step, 0.3, 0, 1);
-  if (step === 3) { P.vx -= P.face * 70; hitstop(0.05); streaks(tip.x, tip.y, 8, ['#fff6c8', '#ffd36b', '#ff9a5c'], 200); }
+  if (step >= 3) { P.vx -= P.face * (40 + 15 * step); hitstop(0.03 + 0.01 * step); streaks(tip.x, tip.y, 8, ['#fff6c8', '#ffd36b', '#ff9a5c'], 200); }
 }
 /* THE BIG ONE GOES OFF: a ring of fire; everything in it but the one it struck burns and is marked */
 function fbBoom(b, struck) {
   const F = PYRO_KIT.fb, sw = swordDmg(), hm = heatMul(); b.life = 0; if (b.boomed) return; b.boomed = true;
   PA.fx('blast', b.x, b.y, time); burst(b.x, b.y, 20, ['#fff6c8', '#ffd36b', '#ff9a5c', '#ff6b2c'], 110, 0.5, 60, 2); flame(b.x, b.y, 12, 10, 80, 3); smoke(b.x, b.y - 4, 4, 8);
-  SFX.fbBoom(); hitstop(0.09); shakeCam(4); zoomKick(1.05, 0.15);
-  for (const e of enemies) if (e.alive && !e.harmless && e !== struck && !b.hit.has(e) && Math.abs(e.x - b.x) < F.boomR + (e.w || 12) / 2 && Math.abs(e.y - (e.h || 16) / 2 - b.y) < F.boomR) { b.hit.add(e); hurtFire(e, sw * F.boomK * hm, b.x, { burn: 2, cls: 'heavy' }); flinch(e); }
+  SFX.fbBoom(); hitstop(0.09 + 0.01 * (b.fb - 3)); shakeCam(4 + (b.fb - 3) * 1.5); zoomKick(1.05 + 0.01 * (b.fb - 3), 0.15);
+  for (const e of enemies) if (e.alive && !e.harmless && e !== struck && !b.hit.has(e) && Math.abs(e.x - b.x) < F.boomR[b.fb] + (e.w || 12) / 2 && Math.abs(e.y - (e.h || 16) / 2 - b.y) < F.boomR[b.fb]) { b.hit.add(e); hurtFire(e, sw * F.boomK[b.fb] * hm, b.x, { burn: 2, cls: 'heavy' }); flinch(e); }
   let gy = Math.floor(b.y / TS); for (let k = 0; k < 4 && !isSolid(Math.floor(b.x / TS), gy) && !isOneWay(tileAt(Math.floor(b.x / TS), gy)); k++) gy++;
   if (isSolid(Math.floor(b.x / TS), gy) || isOneWay(tileAt(Math.floor(b.x / TS), gy))) for (const dx of [-10, 10]) fires.push({ x: b.x + dx, y: gy * TS, life: 1.4, delay: Math.abs(dx) / 160, own: true });
   for (const pr of props) if ((pr.t === 'minerlamp' || pr.t === 'lantern') && !pr.lit && Math.abs(pr.x - b.x) < 40 && Math.abs(pr.y - b.y) < 40) { pr.lit = true; pr.hits = 0; SFX.spark(); }
@@ -30699,9 +30701,9 @@ function fbBoom(b, struck) {
 /* A FIREBALL STRIKES e (updateEmbers): the step's blow, its class, the burn, the mark - and the big one goes off */
 function fbHit(b, e) {
   const F = PYRO_KIT.fb, rk = e.t === 'ram' && !ramOpen(e) ? RLD.RAM.frontMul : 1; if (rk < 1) { SFX.clank(); number(e.x, e.y - e.h - 8, 'HIS HIDE TURNS IT', '#9aa39a'); }
-  hurtFire(e, swordDmg() * F.k[b.fb] * heatMul() * rk, b.x, { burn: F.burn[b.fb], cls: b.fb >= 2 ? 'heavy' : 'light', tag: b.fb === 3 ? ['heavy', 'shot'] : 'shot' });
+  hurtFire(e, swordDmg() * F.k[b.fb] * heatMul() * rk, b.x, { burn: F.burn[b.fb], cls: b.fb >= 2 ? 'heavy' : 'light', tag: b.fb >= 3 ? ['heavy', 'shot'] : 'shot' });
   flinch(e); if (e.t === 'dummy') trialEvent('ember'); if (b.fb < 3) PA.fx('pop', b.x, b.y, time);
-  if (b.fb === 3) fbBoom(b, e);
+  if (b.fb >= 3) fbBoom(b, e);
 }
 /* STOKE: down held still on the ground, nothing else asked of her, not hit - the bar fills, the staff glows. A move, a hit or any other key breaks it */
 function stokeTick(dt, keys, ok) {
@@ -30745,7 +30747,7 @@ function conflagErupt(e, sw, hm, splashed) {
 function drawPyroKit(g, cx, cy) {   /* (claude/pyroarttune) the art pass: src/pyro-art.js draws the ball, the crown, the brand and the effects below */
   PA.drawFx(g, cx, cy, time, SET.flashes && !SET.reduceMotion);
   if (P.dead) return;
-  if (P.cMode === 'fb' && P.fbHold > 0) { const tip = fbTip(), st = P.fbHold, F = PYRO_KIT.fb, lo = F.steps[st - 1], hi = st < 3 ? F.steps[st] : lo, prog = st < 3 ? Math.max(0, Math.min(1, ((P.cHeld || 0) - lo) / (hi - lo))) : 0;
+  if (P.cMode === 'fb' && P.fbHold > 0) { const tip = fbTip(), st = P.fbHold, F = PYRO_KIT.fb, lo = F.steps[st - 1], hi = st < 5 ? F.steps[st] : lo, prog = st < 5 ? Math.max(0, Math.min(1, ((P.cHeld || 0) - lo) / (hi - lo))) : 0;
     PA.held(g, Math.round(tip.x - cx), Math.round(tip.y - cy), st, prog, time); }
   if (P.stoking) PA.stoke(g, Math.round(P.x + P.face * PA.TIP.stoke[0] - cx), Math.round(P.y + PA.TIP.stoke[1] - cy), P.heat || 0, time);
   for (const e of enemies) { if (!e.alive || !pyroMarked(e)) continue; const left = PYRO_KIT.cf.markLife - (time - e.pyMarkAt);
@@ -30807,16 +30809,16 @@ function updateEmbers(dt) {
     for (const pr of props) if (pr.t === 'puffball' && !pr.popped && Math.abs(pr.x - b.x) < 9 && Math.abs(pr.y - 6 - b.y) < 9) { pr.popped = true; clouds2.push({ x: pr.x, y: pr.y - 6, r: 12, life: 1.5 }); burst(pr.x, pr.y - 6, 10, ['#e8e0d0', '#c8bcb0'], 60, 0.5); b.life = 0; }
     for (const e of enemies) { if (!e.alive || e.harmless || b.hit.has(e)) continue; if (b.plunge && isPyro() && firedropSpares(e, P)) continue;   /* the head she is coming down on: her boots, not her fire (src/pogo-chain.js) */
       if (Math.abs(e.x - b.x) < e.w / 2 + 5 + (b.r || 0) && b.y > e.y - e.h - 5 - (b.r || 0) && b.y < e.y + 5 + (b.r || 0)) { b.hit.add(e); const big = !!e.maxHp, lit = (e.burn || 0) > 0;
-        if (b.fb) { if (e.t === 'gill' || e.t === 'heart' || e.t === 'drone') { SFX.clank(); if (b.fb === 3) fbBoom(b, null); } else { fbHit(b, e); if (tal('stoke') && lit) { CM.refund(P, 17); gainHeat(6); number(P.x, P.y - 26, 'STOKED', '#ffd36b'); } if (tal('wildfire') && lit && !b.leapt) wildfireLeap(b, e); } b.life = 0; burst(b.x, b.y, 6 + 4 * b.fb, ['#ff9a5c', '#ffd36b', '#ff6b2c'], 60 + 20 * b.fb, 0.4, 100, 2); break; }   /* (claude/pyrokit) THE HELD FIREBALL: fbHit (scaled, classed, marked); the big one explodes */
+        if (b.fb) { if (e.t === 'gill' || e.t === 'heart' || e.t === 'drone') { SFX.clank(); if (b.fb >= 3) fbBoom(b, null); } else { fbHit(b, e); if (tal('stoke') && lit) { CM.refund(P, 17); gainHeat(6); number(P.x, P.y - 26, 'STOKED', '#ffd36b'); } if (tal('wildfire') && lit && !b.leapt) wildfireLeap(b, e); } b.life = 0; burst(b.x, b.y, 6 + 4 * b.fb, ['#ff9a5c', '#ffd36b', '#ff6b2c'], 60 + 20 * b.fb, 0.4, 100, 2); break; }   /* (claude/pyrokit) THE HELD FIREBALL: fbHit (scaled, classed, marked); the big one explodes */
         if (e.t === 'gill' || e.t === 'heart' || e.t === 'drone') { SFX.clank(); } else {   /* (claude/sporewood2: THE MOTHER CAP 2 takes her fire at her hide's share) */ const rk = e.t === 'ram' && !ramOpen(e) ? RLD.RAM.frontMul : 1; if (rk < 1) { SFX.clank(); number(e.x, e.y - e.h - 8, 'HIS HIDE TURNS IT', '#9aa39a'); } if (!b.plunge && !b.cone) burnMark(e); hurtAs(b.plunge ? 'plunge' : b.cone ? ['heavy', 'shot'] : 'shot', e, b.plunge || b.cone ? Math.max(1, Math.round(heatDmg(b.plunge ? (big ? 3 : 4) : (big ? 2 : 3)) * (b.plunge ? 1 + 0.075 * LV_GROW() : 1) * rk)) : Math.max(1, Math.round(swordDmg() * (big ? 0.3 : 0.45) * heatMul() * rk)), b.x, false);   /* (claude/pyrokit) THE EMBER SHOT (card) scales with the staff: x0.45 (x0.3 on a big one) x heat - it was heatDmg(3)/(2), flat */   /* the firedrop is her plunge, the bellows her held blow */ if (!big) e.burn = Math.max(e.burn || 0, 1.4); flinch(e); if (e.t === 'dummy') trialEvent(b.plunge ? 'firedrop' : b.cone ? 'heavyblow' : 'ember'); if (tal('stoke') && lit && !b.plunge && !b.cone) { CM.refund(P, 17); gainHeat(6); number(P.x, P.y - 26, 'STOKED', '#ffd36b'); } if (tal('wildfire') && lit && !b.leapt) wildfireLeap(b, e); } b.life = 0; burst(b.x, b.y, 8, ['#ff9a5c', '#ffd36b', '#ff6b2c'], 60, 0.4, 100, 2);
       if (tal('scatter')) { for (const q of enemies) if (q.alive && q !== e && !q.harmless && Math.abs(q.x - b.x) < 30 && Math.abs(q.y - b.y) < 26) { hurtEnemy(q, 6, b.x, false); flame(q.x, q.y - q.h / 2, 3, 3, 30, 1); } ringAt(b.x, b.y, 22, '#ff9a5c', 0.25); } // SCATTER
       break; } }
     const tx = Math.floor(b.x / TS), ty = Math.floor(b.y / TS);
-    if (b.life > 0 && isSolid(tx, ty) && b.fb === 3) fbBoom(b, null);   /* (claude/pyrokit) the big one goes off on stone */
+    if (b.life > 0 && isSolid(tx, ty) && b.fb >= 3) fbBoom(b, null);   /* (claude/pyrokit) the big one goes off on stone */
     else if (b.life > 0 && isSolid(tx, ty) && tal('skip') && !b.bounced && !b.plunge && !(b.fb > 1) && b.vy > 0 && !isSolid(tx, ty - 1)) { b.bounced = true; b.y = ty * TS - 3; b.vy = -170; fires.push({ x: b.x, y: ty * TS, life: 0.9, delay: 0, own: true }); flame(b.x, b.y, 4, 3, 45, 2); SFX.crack(); } // SKIPPING EMBER
     else if (b.life > 0 && isSolid(tx, ty)) { b.life = 0; const fy = isSolid(tx, ty) && !isSolid(tx, ty - 1) ? ty * TS : Math.floor((b.y - b.vy * dt) / TS) * TS + TS; if (b.vy > 0) fires.push({ x: b.x, y: fy, life: 1.2, delay: 0, own: true }); burst(b.x, b.y, 6, ['#ff9a5c', '#ffd36b'], 50, 0.35, 100, 1); flame(b.x, b.y, 5, 4, 60, 3); ringAt(b.x, b.y, 10, '#ff9a5c', 0.2); SFX.crack(); }
   }
-  for (const b of embers) if (b.fb === 3 && b.life <= 0 && !b.boomed) fbBoom(b, null);   /* ...and at the end of its flight */
+  for (const b of embers) if (b.fb >= 3 && b.life <= 0 && !b.boomed) fbBoom(b, null);   /* ...and at the end of its flight */
   embers = embers.filter(b => b.life > 0);
 }
 // ---------- talk: signs. One press opens the words; the world waits until they close. ----------
@@ -33904,7 +33906,7 @@ function drawWorld(cx, cy, showPlayer) {
     g.fillStyle = '#ffd36b'; g.beginPath(); g.arc(x + b.dir, y, 5, 0, Math.PI * 2); g.fill();
     g.fillStyle = '#fff6c8'; g.beginPath(); g.arc(x + b.dir * 2, y - 1, 2.5, 0, Math.PI * 2); g.fill(); }
   for (const b of embers) { if (b.fb) { PA.ball(g, Math.round(b.x - cx), Math.round(b.y - cy), b.fb, b.vx, time); continue; }   /* (claude/pyroarttune) the held fireball's three sizes, with tails (src/pyro-art.js) */
-    const r = b.fb ? [0, 4, 6, 9][b.fb] : 4; g.fillStyle = '#ff6b2c'; g.beginPath(); g.arc(Math.round(b.x - cx), Math.round(b.y - cy), r, 0, 7); g.fill(); g.fillStyle = '#ffd36b'; g.beginPath(); g.arc(Math.round(b.x - cx) - 1, Math.round(b.y - cy) - 1, Math.max(2, Math.round(r * 0.55)), 0, 7); g.fill(); if (b.fb === 3) { g.fillStyle = '#fff6c8'; g.beginPath(); g.arc(Math.round(b.x - cx) - 1, Math.round(b.y - cy) - 1, 3, 0, 7); g.fill(); } }   /* (claude/pyrokit) the held fireball's three sizes (greybox: the art pass) */
+    const r = b.fb ? [0, 4, 6, 9, 11, 14][b.fb] : 4; g.fillStyle = '#ff6b2c'; g.beginPath(); g.arc(Math.round(b.x - cx), Math.round(b.y - cy), r, 0, 7); g.fill(); g.fillStyle = '#ffd36b'; g.beginPath(); g.arc(Math.round(b.x - cx) - 1, Math.round(b.y - cy) - 1, Math.max(2, Math.round(r * 0.55)), 0, 7); g.fill(); if (b.fb >= 3) { g.fillStyle = '#fff6c8'; g.beginPath(); g.arc(Math.round(b.x - cx) - 1, Math.round(b.y - cy) - 1, 3, 0, 7); g.fill(); } }   /* (claude/pyrokit) the held fireball's three sizes (greybox: the art pass) */
   for (const b of bombs) if (b.flask) g.drawImage(UW_FLASK, Math.round(b.x - 3 - cx), Math.round(b.y - 8 - cy)); else if (b.dyn) { g.drawImage(DF2_CHARGE, Math.round(b.x - 5 - cx), Math.round(b.y - 6 - cy)); if (Math.random() < 0.5) { g.fillStyle = Math.random() < 0.5 ? '#fff2a0' : '#ff9a3a'; g.fillRect(Math.round(b.x + 4 - cx), Math.round(b.y - 8 - cy), 1, 1); }
     if (b.vy === 0) { g.strokeStyle = Math.floor(time * (b.fuse < 0.5 ? 16 : 8)) % 2 ? '#ff6b6b' : '#fff6e0'; g.lineWidth = 1; g.beginPath(); g.arc(Math.round(b.x - cx), Math.round(b.y - 2 - cy), DYN.ring, Math.PI, Math.PI * 2); g.stroke(); } }   /* THE DYNAMITE BANDIT's stick on the ground: the red ring is the blast (claude/desertfoes) */
   else if (b.barrel) { g.save(); g.translate(Math.round(b.x - cx), Math.round(b.y - 7 - cy)); g.rotate(time * 7); g.drawImage(PROP.barrel, -6, -7); g.restore(); } else drawSet(SPR.bomb, null, 0, b.x - cx, b.y - 2 - cy, 1, Math.floor(time * 10) % 2 === 0 && b.fuse < 0.5);

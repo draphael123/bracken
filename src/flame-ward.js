@@ -3,7 +3,7 @@
 // HERO NEEDS A BLOCK. Hers is a fire shield that goes out quickly, burns what touches it, and cannot be held:
 //
 //   THE INPUT. TAP C (the block key): a dome of fire round her for WARD.t (0.45 s), however short the tap. It cannot be held past that. After it,
-//   WARD.cd (0.75 s: pyroarttune TUNE, was 1 s) before the next. C STILL HELD at WARD.fold (0.35 s) is the HELD FIREBALL instead: the ward folds into the ball on the staff that
+//   WARD.cd (0.75 s: pyroarttune TUNE, was 1 s) before the next. C STILL HELD at WARD.fold (0.18 s, claude/pyrocontrols; it was 0.35) is the HELD FIREBALL instead: the ward folds into the ball on the staff that
 //   frame (main.js, castFireball) - never ward and fireball on one frame, and a ward on its cooldown never stops a press from charging a ball.
 //   DOWN is not the ward any more (claude/crouchfix, Daniel 10-11: a bare press of down flared by accident on every duck); down is STOKE now (main.js).
 //   - A YELLOW BLOW IN THE FIRST WARD.perfect (0.15 s) IS A PARRY: cancelled, the attacker SCORCHED (f.burn) and BURN-MARKED, she gains WARD.heatParry,
@@ -24,7 +24,7 @@ export const WARD = {
   perfect: 0.15,      // a blow in the first this long of it is a PARRY
   cd: 0.75,            // after a ward ends: this long before the next
   spent: 0.3,         // ...only this long after a parry
-  fold: 0.35,         // C held this long: the ward folds into the held fireball (main.js FB.steps[0])
+  fold: 0.18,         // (claude/pyrocontrols, Daniel 11-01: TAP = block, HOLD = charge) C held this long: the ward folds into the held fireball (main.js PYRO_KIT.fb.steps[0] = this); it was 0.35. The ward is raised on the PRESS either way, so a tap is never late
   rec: 0.2,           // THE MISTIME: rooted this long
   exposed: 1.1,      // ...and a blow that lands in it costs this much more
   blockK: 0.7,        // (claude/pyroarttune, TUNE) the late block costs this x the shield rate in stamina (the ward is her only guard now: the crouch guard is gone)

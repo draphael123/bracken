@@ -3,7 +3,7 @@
 //   THE L10 CARD     a pyro who never played before the kit is offered THE JET / THE EMBER SHOT / WILDFIRE at level 10 (and only there), the pick saves;
 //                    a save that played her before keeps BOTH (migratePyroKit) and its L10 is the plain small perks; idempotent
 //   STOKE            down held still fills the heat bar at PYRO_KIT.stoke/s (to FULL); a way held, or a hit, stops it; never while the ward is up
-//   HELD FIREBALL    C held 0.35 / 0.9 / 1.5 s and let go = steps 1 / 2 / 3; a tap is only the ward; each hit = swordDmg x k[step] x heat and BURN-MARKS;
+//   HELD FIREBALL    C held 0.18 / 0.9 / 1.5 / 2.0 / 2.5 s and let go = steps 1-5 (claude/pyrocontrols: five); a tap is only the ward; each hit = swordDmg x k[step] x heat and BURN-MARKS;
 //                    step 3 EXPLODES and burns its neighbours; she walks at ~half speed with a ball on the staff; a dodge drops it; the big step
 //                    does not out-damage the staff per second
 //   CONFLAGRATION    a full bar's press of C: every marked foe erupts (x kFoe, splash), the marks are spent, the bar empties; nothing marked = a small
@@ -71,7 +71,7 @@ try {
       K.block = true; for (let k = 0; k < frames; k++) { BK.sim(1); freeze(f); } const step = Kt().fbHold; K.block = false; BK.log = []; BK.sim(1); const balls = Kt().balls.map(b => b.fb);
       for (let k = 0; k < 160 && f.hp === h0; k++) { BK.sim(1); freeze(f); } const q = (BK.log || []).find(q => q.k === 'dmgE' && q.e === f); BK.log = null;
       const r = { frames, step, balls, took: q ? q.dmg : 0, lost: h0 - f.hp, marked: BK.pyroMarked(f), burn: +(f.burn || 0).toFixed(1) }; f.alive = false; return r; };
-    out.fb = [throwAt(10, 5), throwAt(45, 5), throwAt(100), throwAt(160)];   /* (step 1 is the old lobbed ember: short) */
+    out.fb = [throwAt(10, 5), throwAt(45, 5), throwAt(100), throwAt(160), throwAt(210), throwAt(260)];   /* (step 1 is the old lobbed ember: short) */
     /* the big one explodes: a second foe a little behind the first burns too */
     { home(); for (const f of BK.fires()) f.life = 0; const a = foe('topiary', 12, 9999), b = foe('topiary', 13, 9999); const fz = () => { freeze(a); freeze(b); b.x = a.x + 14; }; fz(); P().heat = 0; P().heatGrace = 9;   /* (the fires a big one left before are put out: a foe stood in them burns) */
       K.block = true; for (let k = 0; k < 160; k++) { BK.sim(1); fz(); } K.block = false; BK.log = []; for (let k = 0; k < 160; k++) { BK.sim(1); fz(); }
@@ -89,7 +89,7 @@ try {
     // ---- THE CARDS (UP + C) ----
     { home(); P().face = 1; K.up = true; K.block = true; BK.sim(30); out.noCard = { jet: Kt().jet, ward: BK.ward().stats.wards > 0 || BK.ward().stats.folded > 0, fb: Kt().fbHold, cMode: Kt().cMode }; none(); BK.sim(5);
       BK.PROG.pyroBoth = true; home(); K.up = true; K.block = true; BK.sim(30); out.jetCard = { jet: Kt().jet, ward: BK.ward().up, fb: Kt().fbHold }; none(); BK.sim(30);
-      home(); BK.wardReset(); const n0 = Kt().embers; K.up = true; K.block = true; BK.sim(3); K.block = false; BK.sim(2); out.emberCard = { embers: Kt().embers - n0, ward: BK.ward().stats.wards }; none(); BK.PROG.pyroBoth = false; }
+      BK.sim(250); home(); BK.wardReset(); const n0 = Kt().embers; K.up = true; K.block = true; BK.sim(3); K.block = false; BK.sim(2); out.emberCard = { embers: Kt().embers - n0, ward: BK.ward().stats.wards }; none(); BK.PROG.pyroBoth = false; }
     // ---- THE PLAIN DODGE ----
     { home(); const f = foe('topiary', 4, 9999); freeze(f); const h0 = f.hp; P().heat = 50; P().heatGrace = 9; BK.press('dodge'); BK.sim(25); freeze(f);
       BK.press('jump'); K.jump = true; BK.sim(8); BK.press('dodge'); BK.sim(25); K.jump = false; BK.sim(30);
@@ -108,15 +108,15 @@ else {
   if (S.afterHit > 1) bad.push('a hit did not break the stoke: +' + S.afterHit + ' heat in the 0.4 s after');
   if (!S.full) bad.push('stoke never filled the bar');
   if (S.stokeInWard > 0) bad.push('stoke ran while the ward was up');
-  const [f0, f1, f2, f3] = R.fb, sw = R.sw;
+  const [f0, f1, f2, f3, f4, f5] = R.fb, sw = R.sw;
   if (f0.step !== 0 || f0.balls.length) bad.push('a 0.1 s tap threw a fireball: ' + JSON.stringify(f0));
-  for (const [f, st, k] of [[f1, 1, 0.9], [f2, 2, 1.6], [f3, 3, 2.4]]) {
+  for (const [f, st, k] of [[f1, 1, 0.9], [f2, 2, 1.6], [f3, 3, 2.4], [f4, 4, 3.3], [f5, 5, 4.6]]) {
     if (f.step !== st || !f.balls.includes(st)) bad.push(`C held ${f.frames} frames was step ${f.step}, threw ${f.balls} (want ${st})`);
     const want = Math.max(1, Math.round(sw * k));   /* heat 0 at the throw: x1 (the hit itself gains heat after) */
     if (!(f.took >= want - 1 && f.took <= want + 2)) bad.push(`step ${st} hit for ${f.took} (want ~swordDmg ${sw} x ${k} = ${want})`);
     if (!f.marked) bad.push(`step ${st} left no burn mark`); }
   /* the big one, per second of the hold at a full bar, against the staff's light chain (swordDmg every ~0.38 s) */
-  if (!((2.4 * 1.4) / 1.5 < 1 / 0.38)) bad.push('the big step out-damages the staff per second');
+  if (!((2.4 * 1.4) / 1.5 < 1 / 0.38 && (3.3 * 1.4) / 2.0 < 1 / 0.38 && (4.6 * 1.4) / 2.5 < 1 / 0.38)) bad.push('the big step out-damages the staff per second');
   if (!(R.boom.b > 0 && R.boom.b < R.boom.a && R.boom.bMarked)) bad.push('the big one did not explode onto its neighbour: ' + JSON.stringify(R.boom));
   if (!(R.walk.held > 0 && R.walk.held < R.walk.free * 0.65)) bad.push(`with a ball on the staff she walked ${R.walk.held} px against ${R.walk.free} free (want ~half)`);
   if (R.walk.after.cMode || R.walk.after.fbHold || R.walk.balls) bad.push('a dodge did not drop the held ball: ' + JSON.stringify(R.walk));
