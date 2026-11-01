@@ -252,13 +252,13 @@ export const HELD = e => (e.broken || 0) > 0.3 || (e.pinned || 0) > 0.3;
    A bot that plants its feet to wind a heavy or stands off to shoot was measured standing in one for four ticks of it in the Stockade's room */
 export const fireAt = (BK, x, y) => BK.fires ? BK.fires().find(q => !(q.delay > 0) && Math.abs(q.x - x) < 14 && y > q.y - 14 && y <= q.y + 2) : null;
 export const ON_THE_BEAT = e => !(typeof e.modeT === 'number' && e.modeT > 0.2 && e.modeT < 5);
-/* THE KNIGHT SPENDS HIS BAR. A full RESOLVE is THE LAST CHARGE on a tap of C with his feet under him - so the bot taps it (C not
+/* THE KNIGHT SPENDS HIS CHAIN. THREE LINKS is THE SHIELD CHARGE on a tap of C with his feet under him - so the bot taps it (C not
    already held, or it is not a tap) when the foe is in front of him, inside a charge's run and on his level. A bot that never
    spent it would measure a knight who never charges. */
 /* THE KNIGHT'S HELD SWING IS THE HEAVY CUT (2026-09-23): it comes down when it is LET GO, at whatever stage it reached, and never by
    itself until 1.8 s - so a bot that held X until something fired stood there with the sword up. The bot lets go at the chop, or at the guard-break on anything with a bar. */
-export const KNIGHT_CUT = 0.72, knightCutAt = e => e && (e.maxHp || e.elite || e.mini) ? KNIGHT_CUT : 0.32;   /* a thing with a bar (a duelist, an elite, a boss) is worth the guard-break; the rest take the chop, which is sooner (measured: fightLab, 2026-09-23) */
-export const LAST_CHARGE = (P, ad, dy) => (P.resolve || 0) >= 100 && P.ground && !P.cWas && !(P.lcBrace > 0) && !(P.lcLeft > 0) && ad < 140 && Math.abs(dy) < 24;
+export const KNIGHT_CUT = 0.56, knightCutAt = e => KNIGHT_CUT;   /* (claude/knightid) ONE fixed heavy cut: it comes down at 0.5 s (the guard-break), so the bot holds a hair past it for everything */   /* a thing with a bar (a duelist, an elite, a boss) is worth the guard-break; the rest take the chop, which is sooner (measured: fightLab, 2026-09-23) */
+export const LAST_CHARGE = (P, ad, dy) => (P.links || 0) >= 3 && P.ground && !P.cWas && !(P.lcBrace > 0) && !(P.lcLeft > 0) && ad < 140 && Math.abs(dy) < 24;
 
 /* THE KEY VERB. The family table in main.js (FAMILY, read through BK.keyOf) says what each common body wants: the right tool lands half
    as hard again and the wrong one GLANCES. A bot that only cut and blocked was left chipping at plate and bouncing off shields - and it
@@ -3056,7 +3056,7 @@ async function runbossLab(BK, opts) {
       if (f % 30 === 0 && boss.y < P.y - 12 && strike && ad < reach + 20) { BK.press('jump'); if(boss.t==='herald')P.labJump=18; }   /* a boss standing a tile up (the roc in the glass) is cut from a hop */
       /* THE LAST CHARGE, spent as a player spends it: at the boss while he is in front of the knight, open, and not winding up or rushing him */
       /* (claude/heropassa) VALIANT STRIKE: a full RESOLVE against a duelist's wall is spent on a heavy cut (it goes through the wall), not on the last charge */
-      const valiantWall = h === 'knight' && (P.resolve || 0) >= 100 && BK.bossWall && BK.bossWall(boss);
+      const valiantWall = false;   /* (claude/knightid) VALIANT is the riposte FINISHER now (three links): nothing to spend on a heavy cut */
       if (valiantWall && !tell && !rushing && P.ground && ad <= reach + 4 && !cutGo) { P.face = Math.sign(d) || P.face; k.left = k.right = false; k.block = false; k.atk = true; }
       { const sn = snatchNow(BK, h); if (sn) { P.face = Math.sign(sn.x - P.x) || P.face; k.block = !P.cWas; } }   /* (claude/heropassa) ARROW SNATCH */
       if (h === 'knight' && !valiantWall && open && !tell && !rushing && !k.block && LAST_CHARGE(P, ad, boss.y - P.y)) { P.face = Math.sign(d) || P.face; k.left = false; k.right = false; k.jump = false; k.block = true; }

@@ -158,8 +158,8 @@ export function makeHeroPass(api) {
     if (h === 'reaper' && p.dodge > 0 && Math.random() < dt * 40) api.parts.push({ x: p.x + (Math.random() - 0.5) * 10, y: p.y - 2 - Math.random() * 18, vx: -p.vx * 0.1, vy: -6, life: 0.35, max: 0.35, col: Math.random() < 0.6 ? '#8a1424' : '#c0283a', size: 2, grav: 0 });   /* (claude/bloodstep) crimson mist, not shadow */
     if (h === 'knight') bashStep(p, dt);
     if (h === 'warden') footStep(p, dt, keys);
-    if (p.valiant && !(p.atk >= 0)) p.valiant = false;   /* (the valiant cut is over when its swing is) */
-    if (p.dead) { p.kBashT = 0; p.foot = null; p.valiant = false; }
+    if ((p.valiant || p.kOpen || p.finisher) && !(p.atk >= 0)) { p.valiant = false; p.kOpen = false; p.finisher = false; }   /* (the valiant cut is over when its swing is) */
+    if (p.dead) { p.kBashT = 0; p.foot = null; p.valiant = false; p.kOpen = false; p.finisher = false; }
   }
 
   /* ---- THE KNIGHT: THE SHIELD BASH (UP+C) ---- */
@@ -181,14 +181,12 @@ export function makeHeroPass(api) {
       else { e.stagger = Math.max(e.stagger || 0, 0.35); if (!e.elite && !api.knockSkip(e)) e.vx = p.face * B.shove; } } }
 
   /* ---- THE KNIGHT: VALIANT STRIKE (heavyCut -> valiantArm; heroCut -> valiantPre / valiantPost) ---- */
-  function valiantArm() { const p = P(); if (H() !== 'knight' || api.lcOn() || (p.resolve || 0) < 100) { p.valiant = false; return false; }
-    p.resolve = 0; p.valiant = true; stats.valiants++;
-    api.SFX.parry && api.SFX.parry(); api.zoomKick(1.05, 0.2); api.ringAt(p.x + p.face * 10, p.y - 18, 20, '#ffd36b', 0.35); api.number(p.x, p.y - 32, 'VALIANT', '#ffd36b'); return true; }
-  function valiantPre(e) { const p = P(); if (!p.valiant || !p.heavy || !live(e)) return;
+  function valiantArm() { return false; }   /* (claude/knightid: VALIANT is the RIPOSTE FINISHER now - main.js startSwing sets P.valiant at three links; the heavy cut no longer spends a bar) */
+  function valiantPre(e) { const p = P(); if (!(p.valiant || p.kOpen) || !live(e)) return;   /* the FINISHER (three links) and every cut out of a perfect guard (one link: guard-open) */
     if (big(e)) return;   /* (a boss's wall is read on the wall line: P.valiant) */
     const guarded = (e.guardT || 0) > 0 || (e.rxGuard || 0) > 0 || (e.raHigh || 0) >= 1 || !!e.elite || !!e.guard;   /* (only a GUARD is broken: an open foe takes the heavy cut as it is) */
     if (guarded && !(e.broken > 0)) { e.broken = HP.knight.valiant.guardBreak; e.guardT = 0; e.rxGuard = 0; e.raHigh = 0; e.vx = 0; e.valiantBroke = api.time; } }
-  function valiantPost(e) { const p = P(); if (!p.valiant || !p.heavy) return; stats.valiantHits++; api.trialEvent('valiant');
+  function valiantPost(e) { const p = P(); if (!p.valiant) return; stats.valiantHits++; api.trialEvent('valiant');
     if (!e.alive) return;
     if (big(e)) { const m = api.poiseMax(e); if (m) api.poiseLean(e, m * HP.knight.valiant.bossLean); api.number(e.x, e.y - (e.h || 16) - 24, 'VALIANT', '#ffd36b'); return; }
     if (e.elite) e.stagger = Math.max(e.stagger || 0, HP.knight.valiant.eliteStagger);
@@ -268,7 +266,7 @@ export function makeHeroPass(api) {
       rc(g, x + (p.face > 0 ? 1 : -3), y + 1, 3, 12, '#c9d1dc', a * 0.55); rc(g, x + (p.face > 0 ? 3 : -4), y, 1, 14, '#ffffff', a); rc(g, x + (p.face > 0 ? 3 : -5), y - 1, 2, 1, '#fff6c8', a);
       for (let q = 0; q < 3; q++) rc(g, x - p.face * (8 + q * 4) - (p.face > 0 ? 0 : 2), y + 4 + q * 3, 4, 1, '#c9d1dc', a * 0.45); }
     if (p.shrugT > 0 && H() === 'geomancer') drawStoneSkin(g, cx, cy, p);
-    if (H() === 'knight' && !p.dead && (p.valiant || ((p.resolve || 0) >= 100 && !api.lcOn()))) { const t = api.time, hot = p.valiant && p.heavy;   /* VALIANT: a full bar and the blade is lit - three gold motes rising off it; in the heavy cut, a gold bar through the air ahead of the edge */
+    if (H() === 'knight' && !p.dead && (p.valiant || ((p.links || 0) >= 3 && !api.lcOn()))) { const t = api.time, hot = p.valiant && p.atk >= 0;   /* VALIANT: a full bar and the blade is lit - three gold motes rising off it; in the heavy cut, a gold bar through the air ahead of the edge */
       const bx = Math.round(p.x - cx + p.face * 10), by = Math.round(p.y - cy) - 12;
       for (let q = 0; q < 3; q++) { const u = (t * 1.6 + q / 3) % 1; rc(g, bx + p.face * (3 + q * 2), by - 4 - u * 14 + q * 2, 1, 1, q ? '#ffd36b' : '#fff6c8', (1 - u) * (hot ? 1 : 0.75)); }
       if (hot) rc(g, p.face > 0 ? bx + 4 : bx - 18, by - 2, 14, 1, '#ffd36b', 0.6); }

@@ -3704,17 +3704,17 @@ function trialYard(hero) {
   const ST = {
     knight: [
       ['hit', 3, 'THE SWING. X STRIKES. HIT THE STRAW MAN THREE TIMES.', [['dummy', 16], ['dummy', 20]], 'X'],
-      ['third', 2, 'THE THIRD CUT: X THREE TIMES IN A RUN. THE THIRD LANDS HEAVY AND SHOVES. LAND TWO.', [['dummy', 16], ['dummy', 20]], 'X, X, X'],
+      ['third', 2, 'THE THIRD CUT: X THREE TIMES IN A RUN. THE THIRD IS THE SHIELD BASH: IT SHOVES AND BREAKS A GUARD. LAND TWO.', [['dummy', 16], ['dummy', 20]], 'X, X, X'],
       ['block', 3, 'THE SHIELD. HOLD C TO RAISE IT, AND FACE THE ARCHER. TURN THREE OF HIS ARROWS.', [['archer', 22]], 'HOLD LB'],
       ['dodge', 2, 'THE SHIELD-STEP: TAP A WAY TWICE, OR V. THE SHIELD STAYS UP. STEP TWICE.', [], 'B, OR THE STICK TWICE'],   /* (claude/heropassa) */
       ['flash', 2, 'THE BEAT: RAISE C AS HIS SWORD FLASHES WHITE, AND HE REELS OPEN. TURN HIS CUT TWICE.', [['swornsword', 18]], 'LB AS THE SWORD FLASHES'],
       ['kbash', 2, 'THE SHIELD BASH: UP+C AS HE WINDS UP. IT KNOCKS THE BLOW OUT. DO IT TWICE.', [['swornsword', 18]], 'UP + LB AS HE WINDS UP'],   /* (claude/heropassa) */
       ['tells', 2, 'ONE YELLOW ! : THE SHIELD TAKES IT. TWO RED !! : NOTHING DOES, SO GET CLEAR. DO BOTH.', [['hedgeknight', 18]], 'LB FOR !    B OR A FOR !!', MARKS],
       ['pogo', 3, 'THE PLUNGE: JUMP, THEN DOWN+X. BOUNCE OFF THE STRAW MEN THREE TIMES.', [['dummy', 12], ['dummy', 16], ['dummy', 20]], 'A, THEN DOWN+X'],
-      ['heavyblow', 2, 'THE SHIELD CHARGE: HOLD X TO BRACE, LET GO TO RUSH. THE BASH BREAKS A GUARD. LAND IT TWICE.', [['dummy', 14], ['dummy', 20]], 'HOLD X, LET GO'],
+      ['heavyblow', 2, 'THE HEAVY CUT: HOLD X, LET GO. ONE WEIGHT, AND IT BREAKS A GUARD. LAND IT TWICE.', [['dummy', 14], ['dummy', 20]], 'HOLD X, LET GO'],
       DASH, RISE, SWEEP,
-      ['meter', 1, 'BLOCKS FILL RESOLVE. FULL, TAP C: THE LAST CHARGE. RUN IT THROUGH ALL THREE STRAW MEN.', [['dummy', 9], ['dummy', 12], ['dummy', 15]], 'LB WITH A FULL BAR'],
-      ['valiant', 1, 'OR SPEND A FULL RESOLVE ON A HEAVY CUT (HOLD X): VALIANT, IT GOES THROUGH ANY GUARD.', [['shield', 16]], 'HOLD X WITH A FULL BAR'],   /* (claude/heropassa) VALIANT STRIKE: the bar filled for it (the fill line below) */   /* a line of straw men inside one charge's run (13 tiles), so the step is the thing itself: it carries through */
+      ['meter', 1, 'A PERFECT GUARD IS A LINK; THREE LINKS, TAP C: THE SHIELD CHARGE. RUN IT THROUGH ALL THREE STRAW MEN.', [['dummy', 9], ['dummy', 12], ['dummy', 15]], 'LB WITH THREE LINKS'],
+      ['valiant', 1, 'OR SPEND THE THREE LINKS ON THE FINISHER: TURN HIS CUT ON THE BEAT, THEN X. IT GOES THROUGH ANY GUARD.', [['swornsword', 18]], 'LB ON THE BEAT, THEN X'],   /* (claude/heropassa) VALIANT STRIKE: the bar filled for it (the fill line below) */   /* a line of straw men inside one charge's run (13 tiles), so the step is the thing itself: it carries through */
       SKILL],
     pyro: [
       ['ember', 3, 'THE FIREBALL: HOLD C, LET GO. HOLD LONGER AND IT GROWS. HIT THE STRAW MAN THREE TIMES.', [['dummy', 18]], 'HOLD LB, LET GO'],   /* (claude/pyrokit: the trial key stays 'ember') */
@@ -3838,7 +3838,7 @@ function trialYard(hero) {
       else ent(t, x0 + dx, 19, { face: -1, trainer: t === 'swornsword' || t === 'hedgeknight' ? 'drill' : 'still', lx0: x0 + 1, lx1: gate - 1 }); }   /* a drill fights you (it cannot hurt you here); a still one stands and takes it */
     for (let y = 14; y <= 19; y++) set(gate, y, T.PORT); block(gate, gate, 0, 13);
     trial.push({ x0, gate, kind, n, text, pad, kinds, fill: kind === 'mend' ? 60 : kind === 'hammer' || kind === 'sanctify' ? 60 : kind === 'smite' ? 20 : kind === 'twinsmite' ? 40 : kind === 'radiancePlus' ? 80 : kind === 'judgement' || (kind === 'meter' && hero !== 'pyro') ? 100 : 0 }); });
-  for (const q of trial) if (q.kind === 'valiant') q.fill = 100;   /* (claude/heropassa) VALIANT STRIKE's station: a full RESOLVE, as the meter's */
+  for (const q of trial) if (q.kind === 'valiant') q.fill = 100;   /* (claude/knightid) THE FINISHER's station: three links, as the meter's */
   const xe = 4 + ST.length * SW;
   ent('sign', xe + 2, 19, { text: 'THE TRIAL IS DONE. THE GATE AHEAD RETURNS YOU TO THE MAP.' });
   ent('gate', xe + 14, 19);

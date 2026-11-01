@@ -21,7 +21,17 @@ export const slotsAt = lv => SLOT_LEVELS.filter(n => (lv || 0) >= n).length;
 /* THE TOP OF THE LADDER IS DEARER (LEVELING, audit-econ sec.7E: 520 for an L20 capstone was 1.8 woods of gold): the knight's, the Warden's and
    the Geomancer's L12/L14/L17/L20 actives cost 600/700/800/900 (they were 360/400/460/520). The catalog keeps its history; the price is set here. */
 export const TOP_PRICE = { 12: 600, 14: 700, 17: 800, 20: 900 };
-for (const n of SKILLS) if (n.active && TOP_PRICE[n.level]) n.price = TOP_PRICE[n.level];   /* (batch71: every hero's top actives - HERO KIT's eight L14/L20 skills were priced 400/520 on the old ladder and nothing on tools/talents.mjs's ladder matched) */
+for (const n of SKILLS) if (n.active && TOP_PRICE[n.level]) n.price = TOP_PRICE[n.level];
+/* THE KNIGHT'S IDENTITY PASS (claude/knightid): ids stay (a save owns them), the words follow the kit. LUNGE is the SHIELD RAM (no grace; a link opens a guard); SUNDER is the knight's one next-blow x2 and VENGEANCE rides on it. */
+const KNIGHT_WORDS = {
+ lunge: { name: 'SHIELD RAM', desc: 'a dashing ram with the shield square in front. it shoves the small and, if you spend a link, opens a guard. no grace: the shield is all that stands between' },
+ sunder: { desc: 'whatever the heavy cut or a charge lands on takes the next blow twice as hard (the knight\'s one mark)' },
+ vengeance: { desc: 'what the shield turns is kept (up to 30) and rides on the sundered blow' },
+ riposte: { desc: 'turn a blow on the shield and your next swing, within a breath, cuts twice as hard' },
+ heavy: { desc: 'you already have it: HOLD the swing and let go to bring the sword down. one weight, and it breaks a guard. quicker a point' },
+ bash: { desc: 'THE SHIELD CHARGE runs four tiles further and what it strikes staggers twice as long. it knocks back what flies at you' },
+};
+for (const n of SKILLS) if (n.hero === 'knight' && KNIGHT_WORDS[n.id]) Object.assign(n, KNIGHT_WORDS[n.id]);   /* (batch71: every hero's top actives - HERO KIT's eight L14/L20 skills were priced 400/520 on the old ladder and nothing on tools/talents.mjs's ladder matched) */
 const BY_HERO=Object.fromEntries(HERO_IDS.map(h=>[h,SKILLS.filter(n=>n.hero===h)]));
 const BY_ID=Object.fromEntries(HERO_IDS.map(h=>[h,Object.fromEntries(BY_HERO[h].map(n=>[n.id,n]))]));
 export const growthNodes=Object.fromEntries(HERO_IDS.map(h=>[h,new Set(LEGACY_NODES.filter(n=>n.hero===h&&n.destination==='growth').map(n=>n.id))]));
@@ -106,7 +116,7 @@ export const MINOR_PERKS = [
    a RANK (to HERO_PERK_MAX: ten milestones = five of each): so a hero's own never runs out, and it is never the only way to grow. */
 export const HERO_PERK_MAX = 5;
 export const HERO_PERKS = {
- knight: [{ id: 'kbash', name: 'HARD BASH', what: 'SHIELD BASH STAGGERS 15% LONGER' }, { id: 'kguard', name: 'KEEN GUARD', what: 'THE PERFECT GUARD WINDOW GROWS' }],
+ knight: [{ id: 'kbash', name: 'HARD BASH', what: 'SHIELD BASH STAGGERS 15% LONGER' }, { id: 'kguard', name: 'KEEN GUARD', what: 'THE PERFECT GUARD WINDOW GROWS' }],   /* (HARD BASH: the charge's slam stagger, and the third-jab bash) */
  pyro: [{ id: 'pspread', name: 'WILDFIRE', what: 'FIRE SPREADS WHEN A BURNING FOE FALLS' }, { id: 'pheat', name: 'HEAT HOLD', what: 'HEAT FADES 12% SLOWER' }],
  paladin: [{ id: 'llight', name: 'RADIANT', what: 'THE LIGHT FILLS 8% FASTER' }, { id: 'ljudge', name: 'HARD SMITE', what: 'JUDGEMENT STRIKES 10% HARDER' }],
  pirate: [{ id: 'pricochet', name: 'RICOCHET', what: 'THE BALL GLANCES ON TO A SECOND FOE' }, { id: 'preload', name: 'QUICK LOAD', what: 'THE PISTOL RELOADS 8% SOONER' }],

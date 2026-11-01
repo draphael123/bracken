@@ -151,7 +151,7 @@ const first = (binds, prof, action) => labelFor(binds, prof, action, 1);
 /* ============================== THE PER-HERO CONTROLS CARD ==============================
    Rows are [what, keys, pad]. The words are the hero's; the keys are whatever the player has bound (tokens: the first key of the action). */
 const HEROES_C = {
-  knight:     ['block', tk => 'HOLD ' + tk.c + (tk.toggle ? ' (TOGGLE)' : '')],
+  knight:     ['shield', tk => 'HOLD ' + tk.c + (tk.toggle ? ' (TOGGLE)' : '') + ': ON THE BEAT = A LINK'],   /* (claude/knightid) the guard chain */
   pyro:       ['fire ward', tk => 'TAP ' + tk.c + ' WARD, HOLD FIREBALL'],   /* (claude/pyrokit) */
   paladin:    ['conviction', tk => 'TAP ' + tk.c + ' SPEND, HOLD AEGIS'],   /* (PALADIN 3) the tap spends Conviction by tier */
   pirate:     ['hook / catch', tk => 'TAP ' + tk.c + ' CATCH, HOLD HOOK'],   /* (claude/heroblocksa) the tap is the HOOK CATCH (src/hook-catch.js) */
@@ -176,13 +176,14 @@ export function cardRows({ hero = 'knight', binds = emptyBinds(), prof = 'pad1',
     [hero === 'ranger' ? 'shoot / knife' : 'swing', atkKeys, pd('atk')],
     [hero === 'ranger' ? 'down shot' : (PLUNGE_ROW[hero] || ['plunge'])[0], k1('down') + '+SWING IN AIR', pd('down') + '+' + pd('atk')],
     [hero === 'knight' ? 'heavy cut' : hero === 'geomancer' ? 'fault line' : hero === 'berserker' ? 'double chop' : hero === 'ranger' ? 'draw' : 'heavy blow', hero === 'geomancer' || hero === 'ranger' ? 'HOLD SWING, LET GO' : hero === 'knight' ? 'HOLD SWING, LET GO' : 'HOLD SWING', 'HOLD ' + pd('atk')],
-    hero === 'berserker' ? ['cross-chop', 'SWING x5 IN A RUN', pd('atk') + ' x5'] : hero === 'ranger' ? ['snare', k1('down') + '+' + tk.c + ' ON GROUND', pd('down') + '+' + pd('block')] : ['third cut', 'SWING x3 IN A RUN', pd('atk') + ' x3'],   /* (claude/ranger: no run of three - her row is the snare) */   /* (claude/berserker2: his flurry runs five) */
+    hero === 'berserker' ? ['cross-chop', 'SWING x5 IN A RUN', pd('atk') + ' x5'] : hero === 'ranger' ? ['snare', k1('down') + '+' + tk.c + ' ON GROUND', pd('down') + '+' + pd('block')] : [hero === 'knight' ? 'shield bash' : 'third cut', hero === 'knight' ? 'SWING x3: BREAKS A GUARD' : 'SWING x3 IN A RUN', pd('atk') + ' x3'],   /* (claude/ranger: no run of three - her row is the snare) */   /* (claude/berserker2: his flurry runs five) */
     [hero === 'ranger' ? 'rising shot' : 'rising cut', k1('up') + '+SWING', pd('up') + '+' + pd('atk')],
     ['low sweep', k1('down') + '+SWING', pd('down') + '+' + pd('atk')],
     /* THE CROUCH: every hero ducks (src/duck.js); the Pyromancer's held still is also STOKE (claude/pyrokit: the EMBER FLARE left down for the ward on C) */
     hero === 'berserker' ? ['pounce', 'HOLD ' + k1('down') + ', A WAY, LET GO', 'HOLD ' + pd('down')] : [hero === 'pyro' ? 'stoke' : 'crouch', 'HOLD ' + k1('down') + ' (STILL)', 'HOLD ' + pd('down')],   /* (claude/berserker2: his crouch coils, and lets go as THE POUNCE) */
     ['slide', 'HOLD ' + k1('down') + ' ON A SLOPE', 'HOLD ' + pd('down')],   /* THE BUTT-SLIDE (src/slide.js): down on any slope, feet first; it wins over the weak guard there */
-    ...(hero === 'pyro' ? [['full bar', tk.c + ': CONFLAGRATION', pd('block')]] : []),   /* (claude/pyrokit; the L10 card's UP + C row is the PAUSE > LEVEL CARD's words, not a 13th row here) */
+    ...(hero === 'pyro' ? [['full bar', tk.c + ': CONFLAGRATION', pd('block')]] : []),
+    ...(hero === 'knight' ? [['3 links', 'TAP ' + tk.c + ': SHIELD CHARGE', pd('block')]] : []),   /* (claude/knightid) the spender; a perfect guard, then X, is the riposte whose rider is the link count */   /* (claude/pyrokit; the L10 card's UP + C row is the PAUSE > LEVEL CARD's words, not a 13th row here) */
     [cRow[0], cRow[1](tk), pd('block')],
     ...(hero === 'paladin' ? [['hammer throw', k1('up') + '+' + tk.c + '  (THREE PIPS)', pd('up') + '+' + pd('block')], ['tap ' + tk.c + ' spends', 'SMITE 1-2 RADIANCE 3-4 SUN 5', pd('block')]] : []),   /* (claude/paladin2) THE LIGHT SPENT */
     ...(hero === 'berserker' ? [['axe throw', k1('up') + '+' + tk.c + '  (PICK IT UP)', pd('up') + '+' + pd('block')]] : []),   /* THE BERSERKER's off axe (src/berserker.js throwAxe) */
