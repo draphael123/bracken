@@ -37,7 +37,7 @@ export const FOEPASS = {
   /* act III */
   longwater: LATE, reef: LATE, flotilla: { ...LATE, affix: false }, hurricane: LATE, lamplit: LATE, deep: LATE, keep: LATE, causeway: LATE, harbor: LATE,
   /* act IV */
-  waymeet: LATE, towpath: LATE, canal: LATE, theatre: { ...LATE, affix: false },   /* (release batch136: the Puppeteer fight has adds that wore the act-IV affixes - the 57% boss took 2334 and timed out at 300 s, 11% left; like the flotilla, a boss level with adds keeps pursuit + lead and no affix) */ fair: LATE, fields: LATE, burial: LATE, witchlight: LATE, mage: LATE, unburied: LATE, fallingtower: LATE, church: LATE,
+  waymeet: LATE, towpath: LATE, canal: LATE, theatre: { ...LATE, affix: false },   /* (release batch136: the Puppeteer fight has adds that wore the act-IV affixes - the 57% boss took 2334 and timed out at 300 s, 11% left; like the flotilla, a boss level with adds keeps pursuit + lead and no affix) */ fair: { ...LATE, affix: false }, fields: LATE, burial: LATE, witchlight: LATE, mage: LATE, unburied: LATE, fallingtower: LATE, church: LATE,
   /* act V */
   caravan: LATE, welltown: LATE, underwell: { ...LATE, affix: false }, redgorge: LATE, glasssea: LATE, ksar: LATE, buriedcity: LATE, sealedpyramid: LATE,
 };
