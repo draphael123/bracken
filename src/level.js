@@ -3780,7 +3780,7 @@ function trialYard(hero) {
       ['runthrough', 2, 'HOLD X, LET GO: THE RUN-THROUGH LUNGES THROUGH A LINE. SKEWER BOTH STRAW MEN AT ONCE, TWICE.', [['dummy', 14], ['dummy', 17]], 'HOLD X, LET GO'],
       ['pin', 2, 'THE PIN: JUMP, THEN DOWN+X. THE POINT GOES THROUGH AND HOLDS IT. Z PULLS FREE. PIN TWO.', [['sprig', 13], ['sprig', 19]], 'A, THEN DOWN+X'],
       ['plant', 1, 'THE WALL PLANT: JUMP AT THE GATE, HOLD INTO IT, TAP C. THE SPEAR GOES IN: STAND ON IT.', [], 'A, HOLD INTO IT, LB'],   /* (claude/heropassa) */
-      ['meter', 1, 'TIP HITS AND TURNED BLOWS FILL VIGIL. FULL, TAP C: THE PHALANX. IT IS FILLED FOR YOU HERE.', [['dummy', 14], ['sprig', 20]], 'LB WITH A FULL BAR'],
+      ['third', 2, 'THE THIRD THRUST OF A RUN IS THE LONG ONE: 3 JABS, THE LAST REACHES FURTHER AND DRIVES THEM BACK. TWICE.', [['dummy', 18]], 'X X X, STANDING AT THE POINT'],
       SKILL],
     /* THE GEOMANCER'S YARD (2026-09-24, POLISH): she BUILDS SOMETHING IN ITS WAY. FAULT LINE (round 3: the held X is a crack along the
        floor, a LINE - so the station stands two straw men in a row and asks for both in one crack; it was UPHEAVAL's pillar),
