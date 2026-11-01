@@ -1,0 +1,62 @@
+name: Sprite publication native compatibility November1
+on:
+  push:
+    branches: [codex/load-perf]
+    paths:
+      - 'tools/sprite-publication-source-nov01/**'
+      - 'tools/sprite-publication-native-nov01.mjs'
+      - 'tools/sprite-publication-node-nov01.mjs'
+      - '.github/workflows/sprite-publication-nov01.yml'
+permissions: {contents: read}
+jobs:
+  node:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0}
+      - uses: actions/setup-node@v4
+        with: {node-version: '24.11.1'}
+      - name: Source identity and syntax before any proof
+        run: |
+          test -z "$(git diff 62d9c02c HEAD -- src index.html)"
+          node --check tools/sprite-publication-source-nov01/catalogue.js
+          node --check tools/sprite-publication-node-nov01.mjs
+          node --check tools/sprite-publication-native-nov01.mjs
+          mkdir -p "$PUBLICATION_OUT"
+          git rev-parse HEAD HEAD:src > "$PUBLICATION_OUT/source.txt"
+          sha256sum tools/sprite-publication-source-nov01/catalogue.js tools/sprite-publication-node-nov01.mjs tools/sprite-publication-native-nov01.mjs > "$PUBLICATION_OUT/source-sha256.txt"
+        env:
+          PUBLICATION_OUT: ${{ runner.temp }}/sprite-publication-node-nov01
+      - run: node tools/sprite-publication-node-nov01.mjs
+        env:
+          PUBLICATION_OUT: ${{ runner.temp }}/sprite-publication-node-nov01
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sprite-publication-node-nov01
+          path: ${{ runner.temp }}/sprite-publication-node-nov01/
+          if-no-files-found: error
+  native:
+    needs: node
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix: {shard: [0,1]}
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0}
+      - uses: actions/setup-node@v4
+        with: {node-version: '24.11.1'}
+      - name: Fresh native graph controls through approved publication boundary
+        run: node tools/sprite-publication-native-nov01.mjs
+        env:
+          PURE_SPRITE_SHARD: ${{ matrix.shard }}
+          PRIVATE_SPRITE_OUT: ${{ runner.temp }}/sprite-publication-native-nov01-${{ matrix.shard }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sprite-publication-native-nov01-${{ matrix.shard }}
+          path: ${{ runner.temp }}/sprite-publication-native-nov01-${{ matrix.shard }}/
+          if-no-files-found: error

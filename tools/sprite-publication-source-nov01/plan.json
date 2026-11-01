@@ -1,0 +1,74 @@
+{
+  "time": "2026-11-01T23:06:53.886Z",
+  "status": "Prepared approved limited API component; original Game tree unchanged, cloud native and ordinary-publication contracts required",
+  "sourceGame": "62d9c02c102decc69ceaef4e1ec593a23170f1ff",
+  "sourceTree": "d6f20846727ec42b3cca651d1b061136d9c6d2f1",
+  "parentController": "9b8b263d9d3acc62dbba818d4ebc64f5b8c15e92",
+  "authorization": {
+    "question": "May the developer sprite API load unused sprites on first access? Exact API reflection would differ;fresh cloud compatibility proof required.",
+    "answer": "Allow that limited API change",
+    "originalTestsQualityBalanceUnchanged": true,
+    "answerReceived": true
+  },
+  "design": "An ordinary private catalogue uses private per-field accessors. Reading the public SPR accessor completes all pending fields and republishes the same ordinary catalogue as a native writable data property. No proxy,blank canvas,private handle or alternate image type is published.",
+  "explicitDescriptorConsequences": [
+    "Before first read,the public SPR property is an accessor rather than writable data.",
+    "Reflect.set on a frozen holder before first read can throw TypeError instead of returning false;the frozen value remains protected. This is recorded explicitly as an accessor consequence,not claimed exact."
+  ],
+  "required": {
+    "nativeGraphs": 154,
+    "nativeShards": 2,
+    "eachNativeGraphs": 77,
+    "globalRng": 0,
+    "rendererMb": 1536,
+    "admissionMb": 4352,
+    "evalDeadlineMs": 240000,
+    "outerJobMinutes": 15,
+    "nativePixelsContextsMetadataDescriptorsAliasesFreshnessOwnership": true
+  },
+  "noOriginalAssertionOrLimitChange": true,
+  "noGameMainChanged": true,
+  "allTestingCloudOnly": true,
+  "noLocalBrowserGameFactoryComponentOrTest": true,
+  "noOldHelperGraphOrTimingPassInherited": true,
+  "noColdMemoryCampaignLayout425Or40FpsPass": true,
+  "retainedFailures": {
+    "candidateMemoryMb": [
+      1556,
+      1657
+    ],
+    "originalGearDiagnostic": {
+      "run": 41357238776,
+      "lastStage": "pyro:weapon:0",
+      "newContexts": 20992,
+      "peakMb": 1706,
+      "notCandidateCausalityProof": true
+    },
+    "layout": {
+      "run": 41115283695,
+      "ms": 600218,
+      "deadlineMs": 600000,
+      "batches": 72,
+      "required": 80,
+      "unproved": 8
+    }
+  },
+  "allThreeMismatches": [
+    "mummer6SUCCESSFUL hits versus2..5",
+    "tower-collapse/Tome rebound at200frames",
+    "offscreen mage sampling"
+  ],
+  "localAccess": {
+    "status": "Default isolated command runner and Node file session stalled;one native read succeeded. Continue through native source-only commands and authenticated existing CLI;no local tests.",
+    "githubConnectorWriteDenied": "403 Resource not accessible by integration;no permission change or connector retry",
+    "samePreviouslyAuthorizedCliScope": true
+  },
+  "prelaunchPreparationError": {
+    "kind": "orchestrator source parse",
+    "reason": "Unescaped workflow template token in source-text preparation",
+    "noToolMutationOrBrowserGameTestOrVerdict": true,
+    "correctedWithLiteralPlaceholders": true
+  },
+  "adoption": false,
+  "overallWorkComplete": false
+}
