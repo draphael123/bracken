@@ -83,6 +83,14 @@ export const HERO_PERKS = {
  ranger: [{ id: 'rgquiver', name: 'FULL QUIVER', what: 'THE QUIVER REFILLS A FIFTH SOONER' }, { id: 'rgfocus', name: 'PATIENT EYE', what: 'FOCUS FILLS A FIFTH FASTER' }],   /* (claude/ranger: 4% a rank, as the berserker's) */
  berserker: [{ id: 'bzstoke', name: 'STOKED', what: 'RAGE FILLS A FIFTH FASTER' }, { id: 'bzstout', name: 'STOUT BRACE', what: 'TAKE IT: THE BEAT IS A FIFTH LONGER' }],   /* (berserkerport: rank 5 = +20%, 4% a rank like the geomancer's) */
 };
+/* THE PYROMANCER'S L10 CARD (claude/pyrokit, Daniel 10-30 20:51 + 10-31 08:41): THE JET and THE EMBER SHOT left her base kit ('structurally too different'
+   beside the held fireball) and are a CHOICE at her level-10 milestone, beside WILDFIRE (her own perk, ranked as ever). The card is the milestone's
+   whole hand for her (no minor perks at 10). Both cards live on UP + C (main.js pyroCard). A save from before the kit keeps BOTH, free (migratePyroKit). */
+export const PYRO_CARD_LEVEL = 10;
+export const PYRO_CARDS = [
+ { id: 'pjet', name: 'THE JET', what: 'UP + HOLD C: A HELD JET OF FLAME', card: true },
+ { id: 'pember', name: 'THE EMBER SHOT', what: 'UP + TAP C: A QUICK EMBER, NO CHARGE', card: true },
+];
 export const ALL_HERO_PERKS = Object.values(HERO_PERKS).flat();
 export const heroPerkAt = (h, n) => { const l = HERO_PERKS[h]; return l ? l[Math.max(0, MILESTONES.indexOf(n)) % 2] : null; };
 export const perkRank = (p, h, id) => { const c = cardOf(p, h); return c ? Object.values(c.ms || {}).filter(v => v === id).length : 0; };
@@ -125,6 +133,7 @@ export const milestonesOwed = (p, h, lv) => MILESTONES.filter(n => n <= cardLv(l
 export const perkOn = (p, h, id) => { const c = cardOf(p, h); return !!c && Object.values(c.ms || {}).includes(id); };
 /* THE THREE A MILESTONE OFFERS: the perks this hero has not taken, turned by hero and level so two heroes see different hands, never more than three */
 export function perkOffer(p, h, n) { const c = cardOf(p, h), taken = new Set(Object.values((c && c.ms) || {})), left = (isMinor(n) ? MINOR_PERKS : PERKS).filter(k => !taken.has(k.id));
+ if (h === 'pyro' && n === PYRO_CARD_LEVEL && !(p && p.pyroBoth === true)) { const w = HERO_PERKS.pyro[0]; return [...PYRO_CARDS, { ...w, own: true, rank: perkRank(p, h, w.id) + 1, minor: true }]; }   /* (claude/pyrokit) THE JET / THE EMBER SHOT / WILDFIRE */
  const turn = ((HERO_IDS.indexOf(h) + 1) * 3 + Math.floor(n / 5)) % Math.max(1, left.length), rot = left.slice(turn).concat(left.slice(0, turn)), own = heroPerkAt(h, n);
  /* two of the pool, then the hero's own (LEVELING2): a hero with his own at its top rank, or none, gets three of the pool */
  return own && perkRank(p, h, own.id) < HERO_PERK_MAX ? rot.slice(0, 2).concat([{ ...own, own: true, rank: perkRank(p, h, own.id) + 1, minor: isMinor(n) }]) : rot.slice(0, 3); }
@@ -153,6 +162,13 @@ export function migrateCard(p) {
  if (p.cardV === 1) return false; p.card = object(p.card) ? p.card : {}; p.cardFree = object(p.cardFree) ? p.cardFree : {};
  for (const h of HERO_IDS) { const lv = levelOfXp((p.xp || {})[h] || 0); if (lv > 0 && !object(p.card[h])) { p.card[h] = evenCard(lv); p.cardFree[h] = 1; } }
  p.cardV = 1; return true; }
+/* THE PYRO KIT'S MIGRATION (pyroKit 1, claude/pyrokit): a save that has played the Pyromancer before the kit had THE JET and THE EMBER SHOT from level 1 -
+   it keeps BOTH (p.pyroBoth), so no save loses a verb; its L10 milestone then offers the plain small perks. A save that never played her picks at L10. Idempotent. */
+export function migratePyroKit(p) {
+ if (p.pyroKit === 1) return false;
+ const played = ((p.xp || {}).pyro || 0) > 0 || Object.keys((p.done || {}).pyro || {}).length > 0;
+ if (played) p.pyroBoth = true;
+ p.pyroKit = 1; return true; }
 /* ==== HEROES ARE BOUGHT WITH SILVER (LEVELING, Daniel 2026-10-03) ====
    A NEW GAME chooses ONE of the DEFAULT_HEROES; the others are unlocked but bought for silver (10 each, like every hero). Buying the first
    extra hero opens CO-OP (the AI partners and the co-op hub with it): coopOpen() is "owns two heroes", or a save from before this. OLD SAVES
@@ -203,9 +219,9 @@ export function trimSlots(p){if(!object(p)||!object(p.loadouts))return false;let
 export function migrateProgress(raw, campaignIds=[]){
  const source=raw===null?'{}':raw;let parsed;try{parsed=JSON.parse(source);}catch{throw Error('Unreadable save. Original save retained.');}
  trimSlots(parsed);validateProgress(parsed);const p=clone(parsed);
- if(p.progressionVersion===PROGRESSION_VERSION){normalizeDeathCost(p);retireRelics(p);migrateHeroes(p);migrateCard(p);p.bossRecords=p.bossRecords||{};return {progress:p,receipt:p.progressionReceipt,passiveReceipt:p.passiveReceipt,changed:false};}
+ if(p.progressionVersion===PROGRESSION_VERSION){normalizeDeathCost(p);retireRelics(p);migrateHeroes(p);migrateCard(p);migratePyroKit(p);p.bossRecords=p.bossRecords||{};return {progress:p,receipt:p.progressionReceipt,passiveReceipt:p.passiveReceipt,changed:false};}
  if(!(p.progressionVersion>=1))talentsToSkills(p,parsed,source,campaignIds);
- passivesToLevels(p,source);normalizeDeathCost(p);retireRelics(p);migrateHeroes(p);migrateCard(p);p.bossRecords=p.bossRecords||{};
+ passivesToLevels(p,source);normalizeDeathCost(p);retireRelics(p);migrateHeroes(p);migrateCard(p);migratePyroKit(p);p.bossRecords=p.bossRecords||{};
  validateProgress(p);return {progress:p,receipt:p.progressionReceipt,passiveReceipt:p.passiveReceipt,changed:true};
 }
 /* VERSION 0 TO 1: the talent trees became bought skills (the step every version-0 save still takes first). */

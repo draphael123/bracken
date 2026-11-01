@@ -16,7 +16,8 @@
 // reserved: they cannot be bound. A key shared by two actions is FLAGGED (both rows go red and the screen says which), not refused.
 //
 // The card (cardRows) is the one place the hero-by-hero button words live: it used to be a fixed table in main.js with the Pyromancer's
-// C listed as 'block' (it is her ember and her jet; her down is the EMBER FLARE).
+// C listed as 'block'. (claude/pyrokit) Her C IS a block now: TAP = THE FLAME WARD, HOLD = THE HELD FIREBALL, a full bar = CONFLAGRATION; her down
+// held still is STOKE; UP + C is her L10 card (THE JET / THE EMBER SHOT). The rebind screen's C row says so for her (blockLabel).
 
 export const KB_ACTIONS = [
   { id: 'left', label: 'MOVE LEFT' }, { id: 'right', label: 'MOVE RIGHT' }, { id: 'up', label: 'UP / LOOK UP' }, { id: 'down', label: 'CROUCH / DOWN' },
@@ -116,6 +117,9 @@ export function conflicts(binds, prof) {
   return out;
 }
 export const actionLabel = id => (KB_ACTIONS.find(a => a.id === id) || { label: String(id).toUpperCase() }).label;
+/* THE C ROW, PER HERO (claude/pyrokit: the brief's 'hero-aware block label'): the rebind screen names what C is for the hero being played */
+export const BLOCK_LABEL = { pyro: 'C: WARD / FIREBALL' };
+export const labelFor2 = (a, hero) => (a.id === 'block' && BLOCK_LABEL[hero]) || a.label;
 
 /* WHAT MAIN.JS APPLIES: every action's list in the spellings isKey() compares. ESC is always a pause key. */
 export function keysTable(binds) {
@@ -148,7 +152,7 @@ const first = (binds, prof, action) => labelFor(binds, prof, action, 1);
    Rows are [what, keys, pad]. The words are the hero's; the keys are whatever the player has bound (tokens: the first key of the action). */
 const HEROES_C = {
   knight:     ['block', tk => 'HOLD ' + tk.c + (tk.toggle ? ' (TOGGLE)' : '')],
-  pyro:       ['ember / jet', tk => 'TAP ' + tk.c + ' EMBER, HOLD JET'],
+  pyro:       ['ward / fireball', tk => 'TAP ' + tk.c + ' WARD, HOLD FIREBALL'],   /* (claude/pyrokit) */
   paladin:    ['conviction', tk => 'TAP ' + tk.c + ' SPEND, HOLD AEGIS'],   /* (PALADIN 3) the tap spends Conviction by tier */
   pirate:     ['parry / hook', tk => 'TAP ' + tk.c + ' PARRY, HOLD HOOK'],
   reaper:     ['blood ward', tk => 'HOLD ' + tk.c + ', LET GO: NOVA'],
@@ -175,10 +179,10 @@ export function cardRows({ hero = 'knight', binds = emptyBinds(), prof = 'pad1',
     hero === 'berserker' ? ['cross-chop', 'SWING x5 IN A RUN', pd('atk') + ' x5'] : hero === 'ranger' ? ['snare', k1('down') + '+' + tk.c + ' ON GROUND', pd('down') + '+' + pd('block')] : ['third cut', 'SWING x3 IN A RUN', pd('atk') + ' x3'],   /* (claude/ranger: no run of three - her row is the snare) */   /* (claude/berserker2: his flurry runs five) */
     [hero === 'ranger' ? 'rising shot' : 'rising cut', k1('up') + '+SWING', pd('up') + '+' + pd('atk')],
     ['low sweep', k1('down') + '+SWING', pd('down') + '+' + pd('atk')],
-    /* THE CROUCH: every hero ducks (src/duck.js); the Pyromancer's PRESS of down is also the EMBER FLARE (src/ember-ward.js) */
-    hero === 'berserker' ? ['pounce', 'HOLD ' + k1('down') + ', A WAY, LET GO', 'HOLD ' + pd('down')] : [hero === 'pyro' ? 'weak guard' : 'crouch', 'HOLD ' + k1('down') + ' (STILL)', 'HOLD ' + pd('down')],   /* (claude/berserker2: his crouch coils, and lets go as THE POUNCE) */
+    /* THE CROUCH: every hero ducks (src/duck.js); the Pyromancer's held still is also STOKE (claude/pyrokit: the EMBER FLARE left down for the ward on C) */
+    hero === 'berserker' ? ['pounce', 'HOLD ' + k1('down') + ', A WAY, LET GO', 'HOLD ' + pd('down')] : [hero === 'pyro' ? 'stoke' : 'crouch', 'HOLD ' + k1('down') + ' (STILL)', 'HOLD ' + pd('down')],   /* (claude/berserker2: his crouch coils, and lets go as THE POUNCE) */
     ['slide', 'HOLD ' + k1('down') + ' ON A SLOPE', 'HOLD ' + pd('down')],   /* THE BUTT-SLIDE (src/slide.js): down on any slope, feet first; it wins over the weak guard there */
-    ...(hero === 'pyro' ? [['ember flare', 'TAP ' + k1('down') + ' ON A HIT', 'TAP ' + pd('down')]] : []),
+    ...(hero === 'pyro' ? [['full bar', tk.c + ': CONFLAGRATION', pd('block')]] : []),   /* (claude/pyrokit; the L10 card's UP + C row is the PAUSE > LEVEL CARD's words, not a 13th row here) */
     [cRow[0], cRow[1](tk), pd('block')],
     ...(hero === 'paladin' ? [['hammer throw', k1('up') + '+' + tk.c + '  (THREE PIPS)', pd('up') + '+' + pd('block')], ['tap ' + tk.c + ' spends', 'SMITE 1-2 RADIANCE 3-4 SUN 5', pd('block')]] : []),   /* (claude/paladin2) THE LIGHT SPENT */
     ...(hero === 'berserker' ? [['axe throw', k1('up') + '+' + tk.c + '  (PICK IT UP)', pd('up') + '+' + pd('block')]] : []),   /* THE BERSERKER's off axe (src/berserker.js throwAxe) */
@@ -248,7 +252,7 @@ export function drawRebind(c, rb, binds) {
   KB_ACTIONS.forEach((a, i) => {
     const yy = top + i * step, sel = rb.i === i, bad = !!conf[a.id];
     if (sel) { g.fillStyle = 'rgba(143,209,96,0.13)'; g.fillRect(x + 4, yy - 1, w - 8, step); }
-    text(fitText(a.label, colA - x - 14, 6), x + 8, yy, bad ? '#ff8a7a' : sel ? UI.title : UI.text, 'left', 6);
+    text(fitText(labelFor2(a, c.hero), colA - x - 14, 6), x + 8, yy, bad ? '#ff8a7a' : sel ? UI.title : UI.text, 'left', 6);
     const sl = slotsOf(binds, prof, a.id);
     [0, 1].forEach(s => { const cx = s ? colB : colA, on = sel && rb.slot === s, listening = on && rb.listening;
       g.fillStyle = listening ? 'rgba(255,211,107,0.35)' : on ? 'rgba(143,209,96,0.28)' : 'rgba(255,255,255,0.06)'; g.fillRect(cx, yy - 1, cw, step - 1);

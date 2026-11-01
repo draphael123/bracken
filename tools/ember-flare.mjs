@@ -1,27 +1,14 @@
-// tools/ember-flare.mjs — THE EMBER FLARE (claude/emberflare, Daniel 2026-10-01): the pyromancer's down is no longer a sustained dome of
-// fire (that was "strictly better than a regular guard"). DOWN HELD ~0.3 s on the ground (claude/crouchfix, Daniel 10-11: it was a bare press, which
-// flared on every duck) is a ~0.25 s FLARE round her (src/ember-ward.js). Where this file says "press" or "n frames after the press" it means the
-// frame the flare OPENS, which is the hold's end: openFlare() holds down until BK.ember().flare is true:
-//   - a yellow blow (or projectile) caught inside the window is CANCELLED, the attacker is SCORCHED and she GAINS HEAT (P.heat, the bar
-//     the ember, the jet and the pyre run on)
-//   - a flare that catches nothing, with a threat near, FIZZLES: she is rooted and takes extra damage for a moment and cannot flare again
-//   - holding down is still the plain duck (a high blow goes over her), and the knight's guard is untouched
-// On flat Stockade floor with every foe held far away (>420 px a foe is frozen) and brought in only for the instant a blow is called,
-// this fails when:
-//   - THE HOLD: down held opens no flare window by EMBER.hold, or opens one on a shorter hold (a tap, 0.2 s), or flares twice in one hold, or never
-//     flares again after a let-go and a new hold; down + jump and down + swing flare (they must not); or the window outlasts EMBER.window
-//   - IN THE WINDOW: a yellow blow is not cancelled, or the attacker is not scorched, or no heat is gained; an arrow is not melted and
-//     does not add heat; a RED blow does not break through
-//   - OUTSIDE THE WINDOW: a blow after the window lands (blocked, no scorch, no heat) - even with down held the whole time
-//   - THE MISTIME: a flare that catches nothing with a foe near does not leave her rooted and exposed (recovery), a blow in recovery does
-//     not cost more than the same blow with her at rest, a press in recovery flares again, and with nothing near the flare costs nothing
-//   - A REAL FIGHT: the topiary's swipe, the dry run's landing frame known, is not cancelled by a press a few frames before it, or lands
-//     for nothing when the press was a half second early
-//   - THE WEAK GUARD: down held after the window does not chip a yellow blow to half, gives heat or scorches, lets a red blow through short, or comes up before a mistime's recovery is over (or never after it)
-//   - THE REGULAR GUARD: the knight's C no longer blocks a yellow blow; a high blow no longer goes over the pyromancer's held duck
-//   - WATER: a flare lights in a pool
-//   - OTHER HEROES: the knight, the warden and the paladin open a flare on down, stop ducking, or stop walking on down + a way
-//   - the page throws
+// tools/ember-flare.mjs — THE FLAME WARD (claude/pyrokit, Daniel 10-30 20:50-20:52; scratch/brief-pyrokit-1101.md 3A). The file keeps its name (the suite and
+// the reports call it ember-flare) but it holds the ward that REPLACED the ember flare: the pyromancer's down is no longer her parry (it is STOKE, tools/pyro-kit.mjs);
+// TAP C is a 0.45 s dome of fire (src/flame-ward.js WARD):
+//   - a yellow blow in its first WARD.perfect (0.15 s) is PARRIED: cancelled, the attacker scorched + burn-marked, heat gained, the shared parry (riposte window)
+//   - a yellow blow later in it is BLOCKED for stamina (none lost); with no stamina the ward BREAKS and half the blow comes through
+//   - a red blow breaks through; a blow after the ward lands; a ward cannot be held past WARD.t and waits WARD.cd for the next
+//   - a foe touching the dome is burned once a ward (and marked); an arrow flying into it melts
+//   - a ward that caught/blocked/burned nothing with a foe near ROOTS her (a blow costs more); with nothing near it costs nothing
+//   - C HELD to WARD.fold folds the ward into the held fireball - never both on one frame; a ward on its cooldown never stops a charge
+//   - WATER: no ward lights; DOWN never raises it; the knight's C still blocks; a real topiary swipe tapped just before it lands is parried
+// On flat Stockade floor, every foe held far off (>420 px a foe is frozen) and brought in only for the instant a blow is called. BK.sim is 100 frames a second.
 //   node tools/ember-flare.mjs            (PORT from tools/ports.mjs)
 import assert from 'node:assert/strict';
 import { openPage } from './cdp.mjs';
@@ -32,7 +19,7 @@ let R;
 try {
   await pg.reload();
   R = await pg.evalp(`(async()=>{
-    if (!BK.ember) return { err: 'no BK.ember: there is no ember ward or flare' };
+    if (!BK.ward) return { err: 'no BK.ward: there is no flame ward' };
     const { LEVELS } = await import('/src/level.js');
     const out = {};
     const setUp = h => { BK.setHero(h); BK.reset({ fresh: true }); BK.load(LEVELS.findIndex(l => l.id === 'stockade')); BK.start(); BK.god = false; BK.sim(5); };
@@ -45,92 +32,64 @@ try {
     if (!spot) return { err: 'no flat floor' };
     const K = BK.keys, none = () => { for (const k of ['left', 'right', 'up', 'down', 'jump', 'block', 'atk']) K[k] = false; };
     const clear = () => { for (const e of BK.enemies()) e.alive = false; for (const s of BK.seeds()) s.dead = true; };
-    const home = () => { clear(); none(); BK.god = true; BK.tp(spot[0], spot[1]); BK.sim(40); BK.god = false; const P = BK.P; P.hp = P.maxHp; P.vx = 0; P.heat = 0; P.heatGrace = 0; P.hurt = 0; P.face = 1; BK.sim(30); P.heat = 0; P.heatGrace = 0; };
+    const home = () => { clear(); none(); BK.god = true; BK.tp(spot[0], spot[1]); BK.sim(40); BK.god = false; const P = BK.P; P.hp = P.maxHp; P.st = P.maxSt; P.vx = 0; P.heat = 0; P.heatGrace = 0; P.hurt = 0; P.face = 1; P.fwCd = 0; P.fwRec = 0; P.riposteT = 0; BK.sim(30); P.heat = 0; P.heatGrace = 0; P.st = P.maxSt; BK.wardReset(); };
     const hold = () => { BK.P.vx = 0; BK.P.x = spot[0] * 16 + 8; BK.P.inv = 0; };
     const seedRandom = n => { let s = n; Math.random = () => { s = (Math.imul(s, 1664525) + 1013904223) >>> 0; return s / 4294967296; }; };
-    const E = () => BK.ember();
-    /* a foe held far off (frozen: it does nothing) and brought in only for the instant a blow is called */
+    const Wd = () => BK.ward();
     const FAR = 700, NEAR = 130;
-    const foeAt = dx => { const [f] = BK.spawnFoe({ t: 'topiary', x: spot[0] + dx, y: spot[1], face: -1 }); return f; };
-    const blow = (f, o = {}) => { const P = BK.P, x0 = f.x; f.x = P.x + 20; P.inv = 0; P.hurt = 0; const hp0 = P.hp, h0 = P.heat || 0;
-      const res = BKT.damagePlayer(f.x, o.dmg || 10, { who: f, unblockable: !!o.red }); const r = { res: res === 'blocked' ? 'blocked' : res === false ? 'over' : 'hit', lost: hp0 - P.hp, burn: f.burn || 0, heat: (P.heat || 0) - h0 };
+    const foeAt = dx => { const [f] = BK.spawnFoe({ t: 'topiary', x: spot[0] + dx, y: spot[1], face: -1 }); f.hp = 9999; return f; };
+    const park = (f, d) => { f.x = spot[0] * 16 + (d || FAR); };
+    const blow = (f, o = {}) => { const P = BK.P, x0 = f.x; f.x = P.x + 20; P.inv = 0; P.hurt = 0; const hp0 = P.hp, h0 = P.heat || 0, st0 = P.st, m0 = BK.pyroMarked(f);
+      const res = BKT.damagePlayer(f.x, o.dmg || 10, { who: f, unblockable: !!o.red }); const r = { res: res === 'blocked' ? 'blocked' : res === false ? 'over' : 'hit', lost: hp0 - P.hp, burn: f.burn || 0, heat: Math.round((P.heat || 0) - h0), st: Math.round(st0 - P.st), marked: BK.pyroMarked(f) && !m0, riposte: (P.riposteT || 0) > 0, parryT: (P.parryT || 0) > 0 };
       f.x = x0; P.hp = P.maxHp; P.inv = 0; return r; };
-    /* HOLD DOWN until the flare opens (BK.sim steps 0.01 s: about 30 frames for EMBER.hold), returns the frames it took */
-    const openFlare = (f, far) => { let h = 0; do { hold(); if (f) f.x = spot[0] * 16 + (far ? FAR : NEAR); BK.sim(1); h++; } while (!E().flare && h < 80); return h; };
-    /* hold down until the flare opens, n frames pass (the 0.25 s window is 25 frames), then the blow */
-    const pressThen = (n, o = {}) => { home(); BK.emberReset(); const f = foeAt(o.far ? FAR : NEAR); f.hp = 9999; if (o.far) f.x = spot[0] * 16 + FAR; K.down = true; openFlare(f, o.far);
-      if (o.release) K.down = false; for (let k = 1; k < n; k++) { hold(); f.x = spot[0] * 16 + (o.far ? FAR : NEAR); BK.sim(1); } hold(); const w = E(); const r = blow(f, o); r.state = { flare: w.flare, rec: w.rec }; r.stats = E().stats; K.down = false; return r; };
-    // ---- THE HOLD ----
-    { home(); BK.emberReset(); const f = foeAt(NEAR); f.hp = 9999; const r = {}; r.holdNeeded = E().holdNeeded;
-      /* a tap and a short hold (20 frames) are the plain duck: no flare, no mistime */
-      K.down = true; for (let k = 0; k < 20; k++) { hold(); f.x = spot[0] * 16 + NEAR; BK.sim(1); } r.shortFlare = E().flare; r.shortStats = E().stats.flares; K.down = false; BK.sim(60); r.shortRec = E().rec;
-      /* the hold: opens by about EMBER.hold */
-      K.down = true; r.holdFrames = openFlare(f); r.open = E().flare; r.stats1 = E().stats.flares;
-      let n = 1; while (E().flare && n < 60) { hold(); f.x = spot[0] * 16 + NEAR; BK.sim(1); n++; } r.frames = n; r.window = E().window;
-      /* held on and on: once per hold */
-      for (let k = 0; k < 120; k++) { hold(); f.x = spot[0] * 16 + FAR; BK.sim(1); } r.heldAgain = E().stats.flares - r.stats1; K.down = false; none(); BK.sim(80);
-      /* let go and hold again: a new flare */
-      const s1 = E().stats.flares; K.down = true; openFlare(f, true); r.second = E().stats.flares - s1; K.down = false; none();
-      /* down + jump and down + swing: never flare, held the whole way */
-      home(); BK.emberReset(); const g = foeAt(FAR); K.down = true; K.jump = true; for (let k = 0; k < 40; k++) { hold(); BK.sim(1); } r.jumpFlares = E().stats.flares; none();
-      home(); BK.emberReset(); K.down = true; K.atk = true; for (let k = 0; k < 50; k++) { hold(); BK.sim(1); } r.swingFlares = E().stats.flares; none();
-      out.press = r; }
-    // ---- IN THE WINDOW: the blow is cancelled, the attacker scorched, the heat gained ----
-    out.inWin = pressThen(6);
-    out.inWinTap = pressThen(6, { release: true });
-    // an arrow in the window melts and heats her; a red blow breaks through
-    { home(); BK.emberReset(); const f = foeAt(FAR); K.down = true; openFlare(f, true); const P = BK.P; const s = { x: P.x + 14, y: P.y - 8, vx: -200, vy: 0, g: 0, life: 3, arrow: true }; BK.seeds().push(s); const hp0 = P.hp; hold(); BK.sim(2);
-      out.arrow = { dead: !!s.dead, lost: hp0 - P.hp, heat: P.heat || 0 }; none(); }
-    out.red = pressThen(6, { red: true });
-    // ---- OUTSIDE THE WINDOW: it lands, with down held the whole time or not ----
-    out.late = pressThen(40, {});
-    out.lateFar = pressThen(80, { far: true });
-    out.lateNoPress = (() => { home(); BK.emberReset(); const f = foeAt(FAR); hold(); BK.sim(5); const r = blow(f); K.down = false; return r; })();
-    /* a blow on a SHORT hold (20 frames: the plain duck) is not caught either */
-    out.shortHold = (() => { home(); BK.emberReset(); const f = foeAt(FAR); K.down = true; for (let k = 0; k < 20; k++) { hold(); BK.sim(1); } const r = blow(f); r.stats = E().stats; K.down = false; return r; })();
-    // ---- THE WEAK PLAIN GUARD: down held after the window: half of a yellow blow, no heat, no scorch; red comes through; a mistime delays it ----
-    out.guard = pressThen(80, { far: true });
-    out.guardRed = pressThen(80, { far: true, red: true });
-    out.guardDelayed = pressThen(40, {});
-    out.guardAfterMiss = pressThen(95, {});
-    // ---- THE MISTIME: nothing caught, a foe near -> recovery ----
-    /* a let-go and a NEW full hold begun inside the recovery (it lasts 50 frames after the window: the hold ends inside it) must not flare */
-    let reflareInRec = -1;
-    { home(); BK.emberReset(); const f = foeAt(NEAR); f.hp = 9999; K.down = true; openFlare(f); while (E().flare) { hold(); f.x = spot[0] * 16 + NEAR; BK.sim(1); } K.down = false; hold(); BK.sim(1);
-      if (E().rec > 0.3) { const fl0 = E().stats.flares; K.down = true; for (let k = 0; k < 34; k++) { hold(); f.x = spot[0] * 16 + NEAR; BK.sim(1); } reflareInRec = E().stats.flares - fl0; } K.down = false; none(); }
-    { home(); BK.emberReset(); const f = foeAt(NEAR); f.hp = 9999; const P = BK.P; const r = {}; K.down = true; openFlare(f); K.down = false; for (let k = 0; k < 32; k++) { hold(); f.x = spot[0] * 16 + NEAR; BK.sim(1); }
-      r.rec = E().rec; r.missed = E().stats.missed; r.flaring = E().flare;
-      /* rooted: a way held does not walk her */ const x0 = P.x; K.right = true; for (let k = 0; k < 12; k++) { f.x = spot[0] * 16 + NEAR; BK.sim(1); } K.right = false; r.moved = Math.abs(P.x - x0);
-      r.reflare = reflareInRec;
-      f.x = spot[0] * 16 + NEAR; r.exposed = blow(f).lost; none();
-      /* the same blow with her at rest */ r.rest = (() => { home(); BK.emberReset(); const g = foeAt(FAR); hold(); BK.sim(5); return blow(g).lost; })();
-      out.miss = r; }
-    // with nothing near, the same press costs nothing
-    { home(); BK.emberReset(); const f = foeAt(FAR); const P = BK.P, r = {}; K.down = true; openFlare(f, true); K.down = false; for (let k = 0; k < 40; k++) { hold(); BK.sim(1); } r.rec = E().rec; r.flaresDry = E().stats.flares; none(); out.dry = r; }
-    // ---- A REAL FIGHT: the topiary's swipe, the landing frame measured with no flare ----
-    const fight = (t, dx, secs, o = {}) => { home(); BK.emberReset(); if (o.seed) seedRandom(o.seed);
-      const [f] = BK.spawnFoe({ t, x: spot[0] + dx, y: spot[1], face: -1 }); if (!f) return { err: t + ' did not spawn' };
-      let lost = 0, firstLoss = -1, heat0 = null;
-      for (let k = 0; k < secs * 60; k++) { const hp0 = BK.P.hp; K.down = o.holdFrom !== undefined ? k >= o.holdFrom : (o.pressAt !== undefined && k >= o.pressAt - HOLDF && k < o.pressAt + 1);   /* (pressAt: the frame the flare opens; down is held HOLDF frames before) */
-        hold(); BK.sim(1); if (BK.P.hp < hp0) { lost += hp0 - BK.P.hp; if (firstLoss < 0) firstLoss = k; BK.P.hp = BK.P.maxHp; } if (BK.P.dead) { BK.P.dead = 0; BK.P.hp = BK.P.maxHp; }
-        if (o.stopAt && o.stopAt(k)) break; }
-      none(); return { lost: Math.round(lost), firstLoss, heat: Math.round(BK.P.heat || 0), burn: f.burn || 0, ducked: BK.duck().ducked, stats: E().stats }; };
-    const HOLDF = 31;
-    const dry = fight('topiary', 2, 8, { seed: 77, stopAt: k => k > 0 && BK.P.hp < BK.P.maxHp });
+    /* TAP C: one frame down, then n frames (C up), then the blow */
+    const tapThen = (n, o = {}) => { home(); const f = foeAt(o.far ? FAR : NEAR); park(f, o.far ? FAR : NEAR); if (o.st0) BK.P.st = 0;
+      K.block = true; hold(); BK.sim(1); K.block = false; for (let k = 1; k < n; k++) { hold(); park(f, o.far ? FAR : NEAR); BK.sim(1); }
+      hold(); if (o.st0) BK.P.st = 0; const w = Wd(); const r = blow(f, o); r.state = { up: w.up, t: +w.t.toFixed(2) }; r.stats = Wd().stats; none(); return r; };
+    // ---- THE TAP: up at once, WARD.t long, then WARD.cd; a tap in the cooldown raises nothing ----
+    { home(); const r = {}; const f = foeAt(FAR); park(f);
+      K.block = true; hold(); BK.sim(1); K.block = false; r.upAtOnce = Wd().up; let n = 1; while (Wd().up && n < 120) { hold(); BK.sim(1); n++; } r.frames = n; r.len = Wd().len;
+      r.cdAfter = +Wd().cd.toFixed(2); const w0 = Wd().stats.wards; K.block = true; BK.sim(1); K.block = false; BK.sim(2); r.inCd = Wd().stats.wards - w0;
+      BK.sim(120); const w1 = Wd().stats.wards; K.block = true; BK.sim(1); K.block = false; r.afterCd = Wd().stats.wards - w1; none(); BK.sim(60);
+      /* a long hold is not a long ward: it folds at WARD.fold */
+      home(); park(foeAt(FAR)); let both = 0, upFrames = 0; K.block = true; for (let k = 0; k < 80; k++) { hold(); BK.sim(1); const w = Wd(), pk = BK.pyroKit(); if (w.up) upFrames++; if (w.up && pk.fbHold > 0) both++; }
+      r.heldUpFrames = upFrames; r.bothFrames = both; r.fbHold = BK.pyroKit().fbHold; r.folded = Wd().stats.folded; K.block = false; BK.sim(5); none();
+      /* a ward on its cooldown never stops a charge */
+      home(); park(foeAt(FAR)); K.block = true; BK.sim(1); K.block = false; BK.sim(50); const cd = Wd().cd; K.block = true; for (let k = 0; k < 40; k++) { hold(); BK.sim(1); } r.chargeInCd = { cd: +cd.toFixed(2), fbHold: BK.pyroKit().fbHold, up: Wd().up }; K.block = false; BK.sim(3); none();
+      /* DOWN never raises it */
+      home(); park(foeAt(NEAR), NEAR); K.down = true; for (let k = 0; k < 80; k++) { hold(); BK.sim(1); } r.downWards = Wd().stats.wards; none();
+      out.tap = r; }
+    // ---- IN THE BEAT: parried ----
+    out.parry = tapThen(5);
+    out.block = tapThen(30);
+    out.broken = tapThen(30, { st0: true });
+    out.red = tapThen(5, { red: true });
+    out.after = tapThen(60);
+    out.rest = (() => { home(); const f = foeAt(FAR); hold(); BK.sim(5); return blow(f); })();
+    // an arrow into the ward melts
+    { home(); const f = foeAt(FAR); K.block = true; hold(); BK.sim(1); K.block = false; const P = BK.P; const s = { x: P.x + 20, y: P.y - 8, vx: -200, vy: 0, g: 0, life: 3, arrow: true }; BK.seeds().push(s); const hp0 = P.hp; for (let k = 0; k < 6; k++) { hold(); park(f); BK.sim(1); }
+      out.arrow = { dead: !!s.dead, lost: hp0 - P.hp, heat: Math.round(P.heat || 0), melted: Wd().stats.melted }; none(); }
+    // CONTACT: a foe standing in the dome is burned once, and marked; no mistime
+    { home(); const f = foeAt(FAR); const P = BK.P; f.x = P.x + 14; f.mode = 'idle'; const hp0 = f.hp; K.block = true; hold(); BK.sim(1); K.block = false; for (let k = 0; k < 50; k++) { hold(); f.x = P.x + 14; f.vx = 0; BK.sim(1); }
+      out.contact = { took: hp0 - f.hp, burn: f.burn || 0, marked: BK.pyroMarked(f), contacts: Wd().stats.contacts, rec: Wd().rec }; park(f); none(); }
+    // ---- THE MISTIME: nothing caught, a foe near -> rooted, exposed ----
+    { home(); const f = foeAt(NEAR); park(f, NEAR); const P = BK.P, r = {}; K.block = true; hold(); BK.sim(1); K.block = false; for (let k = 0; k < 47; k++) { hold(); park(f, NEAR); BK.sim(1); }
+      r.rec = Wd().rec; r.fizzled = Wd().stats.fizzled; const x0 = P.x; K.right = true; for (let k = 0; k < 10; k++) { park(f, NEAR); BK.sim(1); } K.right = false; r.moved = Math.abs(P.x - x0);
+      park(f, NEAR); r.exposed = blow(f).lost; out.miss = r; none(); }
+    { home(); park(foeAt(FAR)); K.block = true; hold(); BK.sim(1); K.block = false; for (let k = 0; k < 50; k++) { hold(); BK.sim(1); } out.dry = { rec: Wd().rec }; none(); }
+    // ---- A REAL FIGHT: the topiary's swipe, its landing frame measured with no ward ----
+    const fight = (secs, o = {}) => { home(); if (o.seed) seedRandom(o.seed); const [f] = BK.spawnFoe({ t: 'topiary', x: spot[0] + 2, y: spot[1], face: -1 }); let lost = 0, firstLoss = -1;
+      for (let k = 0; k < secs * 100; k++) { const hp0 = BK.P.hp; K.block = o.tapAt !== undefined && k === o.tapAt; hold(); BK.sim(1); if (BK.P.hp < hp0) { lost += hp0 - BK.P.hp; if (firstLoss < 0) firstLoss = k; BK.P.hp = BK.P.maxHp; } if (BK.P.dead) { BK.P.dead = 0; BK.P.hp = BK.P.maxHp; } if (o.stopAt && o.stopAt(k)) break; }
+      none(); return { lost: Math.round(lost), firstLoss, burn: f.burn || 0, stats: Wd().stats }; };
+    const dry = fight(8, { seed: 77, stopAt: k => k > 0 && BK.P.hp < BK.P.maxHp });
     out.dryFight = { firstLoss: dry.firstLoss };
-    if (dry.firstLoss > 0) { out.realIn = fight('topiary', 2, 9, { seed: 77, pressAt: Math.max(HOLDF, dry.firstLoss - 6), stopAt: k => k > dry.firstLoss + 12 });
-      out.realEarly = fight('topiary', 2, 9, { seed: 77, pressAt: Math.max(HOLDF, dry.firstLoss - 40), stopAt: k => k > dry.firstLoss + 12 }); }
-    // ---- THE REGULAR GUARD: the plain duck still turns a high blow; the knight's C still blocks ----
-    out.high = fight('armour', 2, 6, { holdFrom: 0 });
-    { setUp('knight'); home(); const P = BK.P; const f = foeAt(FAR); K.block = true; hold(); BK.sim(30); out.knight = blow(f); K.block = false; none(); }
+    if (dry.firstLoss > 0) { out.realIn = fight(9, { seed: 77, tapAt: dry.firstLoss - 6, stopAt: k => k > dry.firstLoss + 12 });
+      out.realEarly = fight(9, { seed: 77, tapAt: Math.max(1, dry.firstLoss - 70), stopAt: k => k > dry.firstLoss + 12 }); }
     // ---- WATER ----
-    { setUp('pyro'); home(); BK.emberReset(); const P = BK.P, r = {}; const f = foeAt(NEAR); f.hp = 9999;
-      const pool = { x0: P.x - 40, x1: P.x + 40, y: P.y - 6, bottom: P.y + 2, shallow: true, emberTest: true }; (BK.L.pools = BK.L.pools || []).push(pool);
-      BK.sim(3); K.down = true; for (let k = 0; k < 45; k++) { hold(); f.x = spot[0] * 16 + NEAR; BK.sim(1); } r.flareWet = E().flare; r.flaresWet = E().stats.flares; K.down = false; BK.L.pools.splice(BK.L.pools.indexOf(pool), 1); none(); out.water = r; }
-    // ---- OTHER HEROES ----
-    out.others = [];
-    for (const h of ['knight', 'warden', 'paladin']) { setUp(h); home(); const P = BK.P, r = { h }; K.down = true; hold(); BK.sim(45); r.ducking = BK.duck().ducking; r.flares = E().stats.flares;
-      const x0 = P.x; K.right = true; BK.sim(30); r.walked = Math.abs(P.x - x0); r.duckWalking = BK.duck().ducking; none(); BK.sim(10); out.others.push(r); }
+    { home(); const P = BK.P; const pool = { x0: P.x - 40, x1: P.x + 40, y: P.y - 6, bottom: P.y + 2, shallow: true, emberTest: true }; (BK.L.pools = BK.L.pools || []).push(pool);
+      BK.sim(3); K.block = true; hold(); BK.sim(1); K.block = false; BK.sim(3); out.water = { up: Wd().up, wards: Wd().stats.wards, doused: Wd().stats.doused }; BK.L.pools.splice(BK.L.pools.indexOf(pool), 1); none(); }
+    // ---- THE KNIGHT ----
+    { setUp('knight'); home(); const f = foeAt(FAR); K.block = true; hold(); BK.sim(30); out.knight = blow(f); K.block = false; none(); }
     Math.random = Math.random;
     return out;
   })()`, 900000);
@@ -140,49 +99,39 @@ try {
 if (R.err) bad.push(R.err);
 else {
   for (const [k, v] of Object.entries(R)) console.log(k, JSON.stringify(v));
-  const Pr = R.press;
-  if (!Pr.open || !(Pr.stats1 > 0)) bad.push('down held opened no flare window');
-  if (Pr.shortFlare || Pr.shortStats > 0 || Pr.shortRec > 0) bad.push('a short hold (20 frames: a duck) flared or cost her a recovery: ' + JSON.stringify(Pr));
-  if (!(Pr.holdFrames >= 28 && Pr.holdFrames <= 34)) bad.push('the flare opened after ' + Pr.holdFrames + ' frames of down (want about ' + Pr.holdNeeded * 100 + ')');
-  if (Pr.jumpFlares > 0) bad.push('down + jump (drop-through) flared'); if (Pr.swingFlares > 0) bad.push('down + swing (the low sweep) flared');
-  if (Pr.second !== 1) bad.push('a let-go and a second hold did not flare again (' + Pr.second + ')');
-  if (!(Pr.frames >= 20 && Pr.frames <= 30)) bad.push(`the flare window lasted ${Pr.frames} frames (BK.sim is 100 frames a second: about 25 for ${Pr.window} s)`);
-  if (Pr.heldAgain > 0) bad.push('a down held on and on flared again without a let-go');
-  for (const [k, W] of [['held', R.inWin], ['tapped', R.inWinTap]]) {
-    if (W.res !== 'blocked' || W.lost > 0) bad.push(`a yellow blow inside the flare (down ${k}) was not cancelled: ${JSON.stringify(W)}`);
-    if (!(W.burn > 0)) bad.push(`the attacker was not scorched by the flare (down ${k})`);
-    if (!(W.heat > 0)) bad.push(`the flare gained no heat (down ${k})`); }
-  if (!R.arrow.dead || R.arrow.lost > 0) bad.push(`an arrow in the flare was not melted: ${JSON.stringify(R.arrow)}`);
-  if (!(R.arrow.heat > 0)) bad.push('a melted arrow gained no heat');
-  if (R.red.res === 'blocked' || !(R.red.lost > 0)) bad.push(`a red blow did not break through the flare: ${JSON.stringify(R.red)}`);
-  for (const [k, W] of [['40 frames after the flare opened', R.late], ['80 frames after, down held throughout', R.lateFar], ['with no hold at all', R.lateNoPress], ['on a short hold (20 frames: the duck)', R.shortHold]]) {
-    if (W.res === 'blocked' || !(W.lost > 0)) bad.push(`a blow ${k} did not land: ${JSON.stringify(W)}`);
-    if (W.burn > 0) bad.push(`a blow ${k} scorched its attacker`);
-    if (W.heat > 0) bad.push(`a blow ${k} gained heat`); }
-  const Gd = R.guard, Gr = R.guardRed, Gm = R.guardDelayed, Ga = R.guardAfterMiss, rest = R.lateNoPress.lost;
-  if (!(Gd.lost > 0 && Gd.lost < rest)) bad.push(`a held guard did not chip a yellow blow to a share of it: lost ${Gd.lost} against ${rest} unguarded`);
-  if (Gd.heat > 0 || Gd.burn > 0) bad.push(`the plain guard gave heat or scorched: ${JSON.stringify(Gd)}`);
-  if (!(Gd.stats.guards > 0)) bad.push('the guard stat did not count the guarded blow');
-  if (!(Gr.lost >= rest) || Gr.stats.guardThrough < 1) bad.push(`a red blow did not break through the guard whole: ${JSON.stringify(Gr)}`);
-  if (!(Gm.lost > rest) || Gm.stats.guards > 0) bad.push(`a mistime did not delay the guard (a blow 40 frames after, down held, should cost more than at rest): ${JSON.stringify(Gm)}`);
-  if (!(Ga.lost > 0 && Ga.lost < rest) || !(Ga.stats.guards > 0)) bad.push(`the guard did not come up after the mistime's recovery: ${JSON.stringify(Ga)}`);
+  const T = R.tap;
+  if (!T.upAtOnce) bad.push('a tap of C raised no ward on the frame');
+  if (!(T.frames >= T.len * 100 - 2 && T.frames <= T.len * 100 + 3)) bad.push(`the ward lasted ${T.frames} frames (want ~${T.len * 100})`);
+  if (!(T.cdAfter > 0.6)) bad.push('no cooldown after the ward: ' + T.cdAfter);
+  if (T.inCd > 0) bad.push('a tap in the cooldown raised a ward');
+  if (T.afterCd !== 1) bad.push('a tap after the cooldown raised no ward');
+  if (T.bothFrames > 0) bad.push(`ward and fireball on one frame ${T.bothFrames} times (the conflict matrix)`);
+  if (!(T.heldUpFrames <= 36 && T.folded === 1 && T.fbHold >= 1)) bad.push('C held did not fold the ward into the fireball at ~0.35 s: ' + JSON.stringify(T));
+  if (!(T.chargeInCd.cd > 0 && T.chargeInCd.fbHold >= 1 && !T.chargeInCd.up)) bad.push('a ward on its cooldown stopped a charge: ' + JSON.stringify(T.chargeInCd));
+  if (T.downWards > 0) bad.push('DOWN raised a ward (it is STOKE now)');
+  const Pa = R.parry;
+  if (Pa.res !== 'blocked' || Pa.lost > 0) bad.push('a yellow blow in the ward\'s beat was not parried: ' + JSON.stringify(Pa));
+  if (!(Pa.burn > 0) || !Pa.marked) bad.push('the parried attacker was not scorched + marked: ' + JSON.stringify(Pa));
+  if (!(Pa.heat >= 10)) bad.push('the parry gained ' + Pa.heat + ' heat (want >= 10)');
+  if (!Pa.riposte || !Pa.parryT || !(Pa.stats.parries > 0)) bad.push('the parry is not the shared parry (riposte window, parryT): ' + JSON.stringify(Pa));
+  const B = R.block;
+  if (B.res !== 'blocked' || B.lost > 0 || !(B.st > 0) || !(B.stats.blocks > 0) || B.stats.parries > 0) bad.push('a yellow blow late in the ward was not BLOCKED for stamina: ' + JSON.stringify(B));
+  if (!(R.broken.lost > 0 && R.broken.lost < R.rest.lost) || !(R.broken.stats.broken > 0)) bad.push(`a block with no stamina did not break the ward and let half through: ${JSON.stringify(R.broken)} vs rest ${R.rest.lost}`);
+  if (R.red.res === 'blocked' || !(R.red.lost > 0)) bad.push('a red blow did not break through the ward: ' + JSON.stringify(R.red));
+  if (R.after.res === 'blocked' || !(R.after.lost > 0) || R.after.burn > 0) bad.push('a blow after the ward did not land: ' + JSON.stringify(R.after));
+  if (!R.arrow.dead || R.arrow.lost > 0 || !(R.arrow.heat > 0)) bad.push('an arrow into the ward was not melted for heat: ' + JSON.stringify(R.arrow));
+  const C = R.contact;
+  if (!(C.took > 0) || !(C.burn > 0) || !C.marked || C.contacts !== 1 || C.rec > 0) bad.push('a foe in the dome was not burned once and marked (or it cost a mistime): ' + JSON.stringify(C));
   const M = R.miss;
-  if (!(M.missed > 0) || !(M.rec > 0)) bad.push(`a flare that caught nothing with a foe near left no recovery: ${JSON.stringify(M)}`);
-  if (M.moved > 2) bad.push(`she walked ${M.moved} px in the recovery`);
-  if (M.reflare > 0) bad.push('a hold in the recovery flared again');
-  if (!(M.exposed > M.rest)) bad.push(`a blow in the recovery cost ${M.exposed}, no more than the same blow at rest (${M.rest})`);
-  if (R.dry.rec > 0) bad.push('a flare with nothing near cost her a recovery');
-  if (!(R.dryFight.firstLoss > 0)) bad.push('the dry run never took the swipe (no landing frame to time the flare by)');
-  else {
-    const I = R.realIn, E0 = R.realEarly;
-    if (I.lost > 0 || !(I.stats.caught > 0)) bad.push(`a flare opened 6 frames before the swipe did not cancel it: ${JSON.stringify(I)}`);
-    if (!(I.burn > 0)) bad.push('the real swipe, cancelled, did not scorch the topiary');
-    if (!(I.heat > 0)) bad.push('the real swipe, cancelled, gained no heat');
-    if (!(E0.lost > 0)) bad.push(`a flare opened 40 frames before the swipe still kept it off her: ${JSON.stringify(E0)}`); }
-  if (R.high.lost > 0 || !(R.high.ducked > 0)) bad.push(`the held duck no longer lets a high swing go over her: ${JSON.stringify(R.high)}`);
-  if (R.knight.res !== 'blocked') bad.push(`the knight's guard no longer blocks a yellow blow: ${JSON.stringify(R.knight)}`);
-  if (R.water.flareWet || R.water.flaresWet > 0) bad.push('a flare lit in the water');
-  for (const o of R.others) { if (o.flares > 0) bad.push(`${o.h}: opened an ember flare`); if (!o.ducking) bad.push(`${o.h}: down no longer ducks`); if (o.duckWalking) bad.push(`${o.h}: still ducked with down + a way`); if (!(o.walked > 4)) bad.push(`${o.h}: down + a way no longer walks (${o.walked} px)`); }
+  if (!(M.rec > 0) || !(M.fizzled > 0)) bad.push('an empty ward with a foe near left no mistime: ' + JSON.stringify(M));
+  if (M.moved > 2) bad.push(`she walked ${M.moved} px in the mistime`);
+  if (!(M.exposed > R.rest.lost)) bad.push(`a blow in the mistime cost ${M.exposed}, no more than at rest (${R.rest.lost})`);
+  if (R.dry.rec > 0) bad.push('an empty ward with nothing near cost a mistime');
+  if (!(R.dryFight.firstLoss > 0)) bad.push('the dry run never took the swipe');
+  else { if (R.realIn.lost > 0 || !(R.realIn.stats.parries > 0)) bad.push('a ward tapped 6 frames before the real swipe did not parry it: ' + JSON.stringify(R.realIn));
+    if (!(R.realEarly.lost > 0)) bad.push('a ward tapped 0.7 s early still kept the swipe off her: ' + JSON.stringify(R.realEarly)); }
+  if (R.water.up || R.water.wards > 0) bad.push('a ward lit in the water');
+  if (R.knight.res !== 'blocked') bad.push('the knight\'s guard no longer blocks: ' + JSON.stringify(R.knight));
 }
-assert.deepEqual(bad, [], 'the ember flare:\n  ' + bad.join('\n  '));
-console.log('the ember flare holds: down held 0.3 s is a 0.25 s flare (a shorter hold, down + jump and down + swing are not), a blow caught in it is cancelled, scorches its attacker and gains heat, a blow after it lands, a flare that catches nothing leaves her rooted and exposed, holding down is still the plain duck, the knight guards as ever, and the other heroes keep the plain duck');
+assert.deepEqual(bad, [], 'the flame ward:\n  ' + bad.join('\n  '));
+console.log('the flame ward holds: a tap is a 0.45 s ward then a 0.75 s wait, its first 0.15 s parries (scorch, mark, heat, riposte), later blocks for stamina (none left: it breaks), red breaks through, contact burns once, arrows melt, an empty ward near a foe roots her, a hold folds it into the fireball (never both), water puts it out, down is not the ward');

@@ -167,21 +167,27 @@ export function duckNow(BK, h, e) { const D = BK.duck && BK.duck(), P = BK.P; if
      null    - nothing for the ward: the ward heat is at EMBER_HOT (a block or two from overheating, which staggers her), it is locked, she is
                in water or off her feet - then she does what she did before (the roll)
    The duck (duckNow) is left as it was: a HIGH yellow blow is still ducked early, and ducked is warded - it goes over her for nothing. */
+/* (claude/pyrokit) THE FLAME WARD, in the hands: the ember flare (down held 0.3 s) is gone - her block is a TAP OF C (src/flame-ward.js), a 0.45 s dome whose
+   first 0.15 s is the parry. emberPlan (the name kept: its callers are many) says, for one frame against one foe:
+     'raise' - TAP C now: the ward is ready and a yellow windup near her is EMBER_LEAD s from landing (so the blow meets the parry beat), its blow is
+               landing now (late: it is a block), or a yellow projectile is EMBER_LEAD s from the dome
+     'wait'  - the ward is up, or a yellow windup near her is not yet in its last beat: stand still for it
+     null    - nothing for the ward (on its cooldown, in a mistime, in water): she rolls as before
+   The caller taps: k.block = true on a frame where C was up (P.cWas false), so the press is one frame and the hold never becomes the fireball. */
 export const EMBER_LATE = 0.1, EMBER_HOT = 70, EMBER_HOLD = 0.45;
-/* (claude/crouchfix) THE FLARE IS A HOLD NOW: down held EMBER.hold (0.3 s) opens the window, so every lead the bot had is that much longer - it holds down
-   EMBER_LEAD = EMBER_LATE + the hold before the blow lands, and keeps holding until the window is open */
-export const EMBER_LEAD = EMBER_LATE + 0.3;
-export const emberReady = (BK, h) => { if (h !== 'pyro' || !BK.ember) return false; const W = BK.ember(), P = BK.P; return !!W && !(W.rec > 0) && !(W.spent > 0) && !W.wet && P.ground && !P.swim && !P.dead; };   /* (the flare: not in a mistime's recovery, not in the beat after a catch) */
+export const EMBER_LEAD = 0.08;
+export const emberReady = (BK, h) => { if (h !== 'pyro' || !BK.ward) return false; const W = BK.ward(), P = BK.P; return !!W && (W.ready || W.up) && !W.wet && !P.swim && !P.dead; };   /* (the ward: off its cooldown and its mistime, or up) */
 export function emberPlan(BK, h, e) {
-  if (!emberReady(BK, h)) return null; const P = BK.P, W = BK.ember();
-  if (W.up && W.t < EMBER_HOLD) return 'raise';
-  if (W.hold > 0 && !W.up) return 'raise';   /* (a hold begun is held through: let go and it was only a duck) */
+  if (!emberReady(BK, h)) return null; const P = BK.P, W = BK.ward();
+  if (W.up) return 'wait';
   if (e && e.alive && Math.abs(e.x - P.x) < 80 + (e.w || 12) / 2 && Math.abs(e.y - P.y) < 40 && BK.markOf(e) === '!') {
-    if (BK.telling(e) || /Tell$/.test(e.mode || '')) return typeof e.modeT !== 'number' || e.modeT <= EMBER_LEAD || W.up ? 'raise' : 'wait';   /* (a boss's windup is its ...Tell mode) */
-    if (W.up && W.t < 0.9 && e.blowMode && e.mode === e.blowMode) return 'raise'; }
+    if (BK.telling(e) || /Tell$/.test(e.mode || '')) return typeof e.modeT !== 'number' || e.modeT <= EMBER_LEAD ? 'raise' : 'wait';   /* (a boss's windup is its ...Tell mode) */
+    if (e.blowMode && e.mode === e.blowMode && Math.abs(e.x - P.x) < 48 + (e.w || 12) / 2) return 'raise'; }
   return BK.seeds().some(s => !s.dead && !s.reflected && !s.noBlock && !s.unblockable && !s.chain && (s.x - P.x) * (s.vx || 0) < 0 && Math.abs(s.y - (P.y - 6)) < 22
-    && Math.abs(s.x - P.x) < 18 + Math.max(10, Math.abs(s.vx || 0) * EMBER_LEAD)) ? 'raise' : null; }
+    && Math.abs(s.x - P.x) < 22 + Math.max(10, Math.abs(s.vx || 0) * EMBER_LEAD)) ? 'raise' : null; }
 export const emberNow = (BK, h, e) => emberPlan(BK, h, e) === 'raise';
+/* THE TAP: true on the one frame the ward should go up (C was up last frame) */
+export const wardTap = (BK, h, e) => emberNow(BK, h, e) && !BK.P.cWas;
 /* THE CROUCH TWISTS, PART B, in the hands (claude/crouchb, src/crouch-b.js). Each is a crouch that leaves the hero exposed, so the bot
    only ever does it when it is CALM (crouchCalm): nothing that can hurt him within CRB_CALM px on his level, nothing telling within
    CRB_TELL px, nothing thrown at him within 140 px, his feet on dry ground. crouchBPlan says, for one frame:
@@ -337,16 +343,15 @@ function callerNoRoll(BK, dir) { const W = BK.callerWind && BK.callerWind(), P =
   for (const [x0, x1, row] of W.ledges) if (P.ground && Math.abs(P.y - row * 16) < 6 && P.x >= x0 * 16 - 2 && P.x <= (x1 + 1) * 16 + 2) return to < x0 * 16 + 6 || to > (x1 + 1) * 16 - 6;
   return !(W.safe || []).some(([a, b]) => to >= a * 16 + 8 && to <= (b + 1) * 16 - 8); }
 /* (claude/windcaller3) ANY roll the hands would make in his fight - a red mark rolled late, a hard tell - that ends off his ledge or in the thorns is not made */
-/* (claude/moorpyro) FIRE SENDS HIS BOLT HOME: the pyromancer's FLARE (down held still ~0.3 s, src/ember-ward.js) catches his bolt and it flies back at him
-   burning. The hands hold down as a player does: his bolt seen a reaction late, the hold begun so the window opens over it, one bolt in misread is missed */
+/* (claude/moorpyro) FIRE SENDS HIS BOLT HOME: the pyromancer's FLAME WARD (a tap of C, src/flame-ward.js; it was the down-held flare) catches his bolt and it
+   flies back at him burning. The hands tap as a player does: his bolt seen a reaction late, the tap timed so the ward is up over it, one bolt in misread is missed */
 function burnFlare(BK, h, boss) { if (h !== 'pyro' || !boss || boss.t !== 'windcaller' || !BK.bossActive) return false; const P = BK.P;
-  if (P.labFlareHold > 0) { P.labFlareHold--; return true; }
-  if (!emberReady(BK, h) || P.galeRide) return false; const rt = (LABP.rtMode || 386) / 1000;
+  if (!emberReady(BK, h) || BK.ward().up || P.galeRide) return false; const rt = (LABP.rtMode || 386) / 1000;
   for (const s of BK.seeds()) { if (!s.bolt || s.dead || s.reflected || !s.owner || s.owner.t !== 'windcaller' || s.labFlare || 3.4 - s.life < rt) continue;
     const dx = P.x - s.x, dy = (P.y - 8) - s.y, v2 = s.vx * s.vx + s.vy * s.vy || 1, tc = (dx * s.vx + dy * s.vy) / v2; if (tc <= 0) continue;
-    if (Math.hypot(s.x + s.vx * tc - P.x, s.y + s.vy * tc - (P.y - 8)) > 18) continue;   /* (it will pass through her: the flare's 20 px) */
-    if (tc > 0.42 || tc < 0.28) continue;   /* (the hold opens the window 0.3 s on, for 0.25 s) */
-    s.labFlare = true; if (Math.random() < (LABP.misread || 0)) continue; P.labFlareHold = 33; return true; }
+    if (Math.hypot(s.x + s.vx * tc - P.x, s.y + s.vy * tc - (P.y - 8)) > 20) continue;   /* (it will pass through her: the ward's 22 px) */
+    if (tc > 0.3 || tc < 0.05) continue;   /* (the ward is up at once, for 0.45 s) */
+    s.labFlare = true; if (Math.random() < (LABP.misread || 0)) continue; return true; }
   return false; }
 /* (claude/moorpyro) where the pyromancer stands while he is up: on the floor he FALLS to (the safe floor nearest under him - a burnt bolt's fall is cut there),
    40 px in from its ends, 44 px clear of an updraft (a gust would lift her), nearest ~110 px out from under him */
@@ -395,7 +400,7 @@ function labBotFrame(BK, h, e, f) {
   k.left = false; k.right = false; k.block = false; k.atk = false; k.up = false; k.down = false; k.jump = false;
   if (h === 'reaper') { k.throw = P.harvest >= 100; if (k.throw && !(P.fHeld > 0)) BK.press('throw'); }   /* HOLD F on a full bar: the surge */
   if (duckNow(BK, h, e)) { defend = 1; k.down = true; BK.unpress(); }   /* THE DUCK: a high blow goes over (duckNow) */
-  else if (emberPlan(BK, h, e)) { defend = 1; k.down = emberPlan(BK, h, e) === 'raise'; BK.unpress(); }   /* THE EMBER WARD: stood still for a yellow windup and raised in its last beat, to flare (emberPlan) */
+  else if (emberPlan(BK, h, e)) { defend = 1; k.block = wardTap(BK, h, e); BK.unpress(); }   /* (claude/pyrokit) THE FLAME WARD: stood still for a yellow windup and tapped in its last beat (emberPlan) */
   else if (lowGuardNow(BK, h, e) || setSpearNow(BK, h, e)) { defend = 1; k.down = true; BK.unpress(); }   /* THE KNIGHT'S LOW GUARD, THE WARDEN'S SET SPEAR (src/crouch-a.js) */
   else if (crouchBKeys(BK, crouchBPlan(BK, h))) { /* nothing more */ }   /* THE CROUCH TWISTS: calm, the paladin kneels for light, the geomancer looks, the death knight draws a body (crouchBPlan) */
   else if (threat && P.atk < 0 && !(P.dash > 0)) {
@@ -2055,7 +2060,7 @@ async function runbossLab(BK, opts) {
         const greed=BK.greed?BK.greed.count(boss):0,glim=BK.greed?BK.greed.limit(boss):99,pad=P.onMover&&P.onMover.kind==='pad'?P.onMover:null;
         const F=C&&C.chase?{A,royal:C.royal,bank:C.bank,lanes:C.lanes,pads:C.pads,swarm:C.swarm,reel:C.reel,tongueMax:C.tongueMax,waves:BK.waves().filter(w=>w.life>0&&!w.royal).map(w=>({x:w.x,dir:w.dir})),greedNear:greed>=glim-1}:C?{A,pond:C.pond,pads:C.pads,swarm:C.swarm,ripples:C.ripples,fling:C.fling,reel:C.reel,tongueMax:C.tongueMax,waves:BK.waves().filter(w=>w.life>0&&!w.royal).map(w=>({x:w.x,dir:w.dir})),greedNear:greed>=glim-1,add:(()=>{const q=smallAim();if(!q)return null;const band=[q.y-(q.h||8)-P.y,q.y-P.y],inSweep=band[1]>=-8&&band[0]<=2,inCut=band[1]>=-12&&band[0]<=-1;return{x:q.x,y:q.y,air:!!q.air,ok:inSweep||inCut,sweep:inSweep&&keyVerb(BK,h,q)==='sweep'};})()}:null;
         const pl=F?frogPlan({tip:h==='warden'?WARDEN_TIP:0,P:{x:P.x,y:P.y,vy:P.vy,face:P.face,ground:P.ground,swim:!!P.swim,atk:P.atk,onPad:!!pad,padSink:pad?pad.sink:0,flung:!!P.frogFlung},e:boss,F,reach:LAB_REACH[h],shield:SHIELDED(h),deflect:DEFLECTS(h),ward:h==='pyro'&&emberReady(BK,h),rest:!!P.labRest,t:f/60,rng:Math.random,mem:P.labFkMem,eyes:!!LABP.v2}):{gx:null,face:P.face};
-        if(pl.ward){const ep=emberPlan(BK,h,boss),tg=(boss.mode==='tongueTell'||boss.mode==='snapTell'||boss.mode==='spitTell')&&typeof boss.modeT==='number'&&boss.modeT<=EMBER_LEAD;if(ep==='raise'||pl.wardHold||tg||boss.mode==='tongue'||boss.mode==='snap'||boss.mode==='spit')k.down=true;pl.gx=null;pl.atk=false;}   /* THE PYROMANCER's EMBER WARD turns his yellow blows (src/ember-ward.js): stood still, raised in the windup's last beat */
+        if(pl.ward){const ep=emberPlan(BK,h,boss),tg=(boss.mode==='tongueTell'||boss.mode==='snapTell'||boss.mode==='spitTell')&&typeof boss.modeT==='number'&&boss.modeT<=EMBER_LEAD;if((ep==='raise'||tg)&&!P.cWas)k.block=true;pl.gx=null;pl.atk=false;}   /* (claude/pyrokit) THE PYROMANCER's FLAME WARD turns his yellow blows (src/flame-ward.js): stood still, tapped in the windup's last beat */
         if(pl.dodge&&P.ground&&(P.labDodgeF===undefined||f-P.labDodgeF>30)){if(pl.gx!=null)k[pl.gx>P.x?'right':'left']=true;BK.press('dodge');P.labDodgeF=f;}
         if(pl.jump&&P.ground){if(P.labJumpF===undefined||f-P.labJumpF>14){BK.press('jump');P.labJumpF=f;P.labJump=14;}}
         if(P.labJump>0){P.labJump--;k.jump=true;}
@@ -2207,10 +2212,9 @@ async function runbossLab(BK, opts) {
         if(!ride&&P.ground&&ballCome&&!highD&&!floorD&&!toGap){const ahead=(ballCome.x-P.x)*Math.sign(ballCome.x-P.x),held=f-(P.labSwingF??-999)>=48;
           if(held||ahead<60){striking=true;swing=null;gx=P.x;face=Math.sign(ballCome.x-P.x)||face;}   /* hold the blade and face it */
           /* a human's hand, not a machine's: where he begins the blow is his own for each ball (0-44 px off, deterministic - the row's dice are left alone); the window is 6-32 */
-          const tgt=(ballCome.labTgt??(ballCome.labTgt=((ballCome.n||0)*37+h.length*11)%45))+(h==='pyro'?150*0.3:0);   /* (the pyro's flare opens 0.3 s after she holds down: she starts that much sooner) */
-          if(!ballCome.labTried&&h==='pyro'&&ahead<=tgt&&!(P.labFlare>0)){k.down=true;P.labFlare=30;ballCome.labTried=true;}   /* the ember flare */
+          const tgt=(ballCome.labTgt??(ballCome.labTgt=((ballCome.n||0)*37+h.length*11)%45))+(h==='pyro'?150*0.1:0);   /* (claude/pyrokit: the ward is up at once and lasts 0.45 s - a little early is enough) */
+          if(!ballCome.labTried&&h==='pyro'&&ahead<=tgt&&!P.cWas){k.block=true;ballCome.labTried=true;}   /* the flame ward (a tap) */
           else if(!ballCome.labTried&&h!=='pyro'&&held&&ahead<=tgt&&P.atk<0){P.face=face;BK.press('atk');swings++;P.labSwingF=f;ballCome.labTried=true;}}
-        if(P.labFlare>0){P.labFlare--;if(h==='pyro')k.down=true;}   /* (the flare is a hold: down stays down for the 0.3 s that opens it) */
         if(!ride&&P.ground&&ballNear&&!(striking&&!ballNear.labTried)){BK.press('jump');P.labJump=16;}   /* (claude/fairfix3) her wicker ball: over it (when he is not meeting it, or his blow went wide) */
         if(!ride&&P.ground&&sweepK==='low'&&q.mode==='sweep'&&Math.abs(sFront-P.x)<34){BK.press('jump');P.labJump=16;}   /* her low sweep: over each pass */
         if(P.labJump>0){P.labJump--;k.jump=true;}
@@ -3121,7 +3125,8 @@ async function runbossLab(BK, opts) {
         else k[f % 40 < 20 ? 'left' : 'right'] = true;
         if (P.ground) { BK.press('jump'); P.labJump = 18; if (!(LABP.v2 && h === 'warden') || Math.abs((boss.y - (boss.h || 16) / 2) - (P.y - 9)) < 30) BK.press('dodge'); } }   /* (claude/wardenkit, v2: the warden's step here only when he is at her height - it is her BACK-step, it carries ~45 px now, and a warden waiting under the Owl at her lamp read as 'stuck' 48 times a fight and was stepped off it each time; the jump unsticks her) */
       { const cb = crouchBPlan(BK, h); if (cb) { crouchBKeys(BK, cb); P.labJump = 0; } }   /* THE CROUCH TWISTS, when the room is calm (crouchBPlan) */
-      if (duckNow(BK, h, boss) || emberNow(BK, h, boss) || owlDuck || burnFlare(BK, h, boss)) { k.down = true; k.left = k.right = k.block = k.atk = k.jump = false; P.labJump = 0; BK.unpress(); }
+      if (duckNow(BK, h, boss) || owlDuck) { k.down = true; k.left = k.right = k.block = k.atk = k.jump = false; P.labJump = 0; BK.unpress(); }
+      else if (emberPlan(BK, h, boss) || (P.labBF = burnFlare(BK, h, boss))) { const tap = (emberNow(BK, h, boss) || P.labBF) && !P.cWas; P.labBF = false; k.left = k.right = k.atk = k.jump = k.down = false; k.block = tap; P.labJump = 0; BK.unpress(); }   /* (claude/pyrokit) THE FLAME WARD: a tap, stood still for the windup */
       { const hg = homeGuard(BK, h, boss); if (hg) { k.left = k.right = k.atk = k.jump = k.down = k.up = false; k.block = hg > 0; P.labJump = 0; } }   /* (claude/moorpass) the aegis / the ward let go, on his bolt */   /* (and the pyromancer's EMBER WARD, raised late to flare: emberNow) */   /* THE DUCK, last: whatever else the hands meant, a high blow at them goes over (duckNow) */
       /* (claude/owl3) THE DROP'S LIP: on the boards within a few steps of a break in them, nothing the hands asked for this frame carries him over it - no step,
          hop, roll or held jump toward it - unless the drop is what he means to cross (his goal is past it). A player minds the edge; the other hands do not know it is there */

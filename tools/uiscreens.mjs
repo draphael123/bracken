@@ -64,7 +64,7 @@ try {
       window.__textRec=[]; BK.step(1); const names=(window.__textRec||[]).filter(t=>t.kind==='text').map(t=>t.s); window.__textRec=null;
       const a=grab(); BK.step(40); const b=grab(); out.push({ names, moved: a.some((x,k)=>x!==b[k]) }); }
     return out; })()`);
-  const SIG = [/RISING CUT|SKEWER|FAULT LINE|EMBER FLARE|LIGHT LANCE|GRAPESHOT|HARVEST MOON/];
+  const SIG = [/RISING CUT|SKEWER|FAULT LINE|FLAME WARD|LIGHT LANCE|GRAPESHOT|HARVEST MOON/];
   hp.forEach((h, i) => { assert.ok(h.names.some(s => SIG[0].test(s)), 'pick ' + i + ' names its signature move: ' + h.names.join(' / ')); assert.ok(h.moved, 'pick ' + i + ': the move window animates'); });
   console.log('ok  hero pick      each of the ' + hp.length + ' heroes shows a named signature move, and the window moves');
 

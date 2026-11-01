@@ -56,7 +56,7 @@ export const PARRY_LOOK = {
   ranger:    { look: 'BOW-BASH',    input: 'tap C as the blow lands; the riposte is her next arrow', col: '#c8e89a' },   /* (claude/ranger) */
   berserker: { look: 'TAKE IT',     input: 'raise the crossed axes (hold C) as the blow lands; the riposte is the cross-chop', col: '#ff9a5c' },   /* (claude/berserker2) */
   paladin:   { look: 'LIGHT-WARD',  input: 'raise the aegis (hold C) as the blow lands', col: '#fff6c8' },
-  pyro:      { look: 'FLAME-CATCH', input: 'hold DOWN as the blow winds up (the ember flare opens after 0.3 s)', col: '#ff9a5c' },
+  pyro:      { look: 'FLAME-CATCH', input: 'tap C as the blow lands (the first 0.15 s of the flame ward)', col: '#ff9a5c' },   /* (claude/pyrokit) */
   geomancer: { look: 'STONE-SKIN',  input: 'raise the rune-ward (hold C) as the blow lands', col: '#c8bca8' },
   pirate:    { look: 'CUTLASS BIND', input: 'tap C as the blow lands',        col: '#ffd34a' },
   reaper:    { look: 'BLADE BIND',  input: 'let go of the blood ward (C) as the blow lands', col: '#ffd0d0' },

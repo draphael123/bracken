@@ -52,7 +52,7 @@ export function buildLumberTrail({ painter, T, TS }) {
 
   // ================= 1. THE WOODSMAN'S CABIN (0-104): TEACH - the mark, the gully bridge, the dodge, the skid road and the heavy cut =================
   floor(0, 26, 22);
-  sign(5, 21, 'ARROWS/WASD MOVE   Z JUMP   X SWING', { pyro: 'ARROWS/WASD MOVE   Z JUMP   X STAFF   TAP C: AN EMBER   HOLD C: THE JET', paladin: 'ARROWS/WASD MOVE   Z JUMP   X MAUL, SLOW AND HEAVY' });
+  sign(5, 21, 'ARROWS/WASD MOVE   Z JUMP   X SWING', { pyro: 'ARROWS/WASD MOVE   Z JUMP   X STAFF   TAP C: WARD   HOLD C: FIREBALL', paladin: 'ARROWS/WASD MOVE   Z JUMP   X MAUL, SLOW AND HEAVY' });
   deco('cabin', 10, 21); deco('stump', 15, 21, { v: 0 });   /* the woodsman's chopping block, the axe in it (the art lane draws the block + axe; the woodsman who hands it over stands beside it, drawn as dressing: src/redraw/lumber_trail_tiles.js dress) */
   sign(18, 21, "THE WOODSMAN'S MARK IS ON THE PINES. FOUR STROKES FELL ONE: IT FALLS THE WAY IT LEANS.");
   coins([12, 20], [13, 19], [14, 20], [20, 20], [22, 20]);
@@ -117,7 +117,7 @@ export function buildLumberTrail({ painter, T, TS }) {
   // ================= 3. THE LUMBER CAMP (206-300): REMIX - the camp gate's parry, the sawpit, the log stacks, THE BRIAR MAUL, the LEAN-TO =================
   floor(206, 227, 17); floor(228, 236, 19); floor(237, 276, 17);
   deco('fence', 207, 16, { v: 0 }); deco('fence', 224, 16, { v: 1 });
-  sign(209, 16, 'A PERFECT GUARD: RAISE C AS HIS SWORD FLASHES. HE REELS - YOUR RIPOSTE CUT IS HEAVY.', { pyro: 'PARRY: HOLD DOWN AS HIS SWORD RISES. THE FLARE CATCHES IT - THEN RIPOSTE.', reaper: 'PARRY: HOLD THE WARD, LET GO AS HIS SWORD FLASHES. HE REELS - THEN RIPOSTE.', paladin: 'PARRY: RAISE THE AEGIS AS HIS SWORD FLASHES. HE REELS - THEN RIPOSTE.', pirate: 'PARRY: TAP C AS HIS SWORD FLASHES. THE CUTLASS BINDS IT - THEN RIPOSTE.', warden: 'PARRY: TAP C AS HIS SWORD FLASHES. THE SHAFT TURNS IT - THEN RIPOSTE.', geomancer: 'PARRY: RAISE THE WARD AS HIS SWORD FLASHES. STONE TURNS IT - THEN RIPOSTE.', berserker: 'PARRY: TAP C AS HIS SWORD FLASHES. BRACE AND TAKE IT - THEN RIPOSTE.' });
+  sign(209, 16, 'A PERFECT GUARD: RAISE C AS HIS SWORD FLASHES. HE REELS - YOUR RIPOSTE CUT IS HEAVY.', { pyro: 'PARRY: TAP C AS HIS SWORD FLASHES. THE WARD CATCHES IT - THEN RIPOSTE.', reaper: 'PARRY: HOLD THE WARD, LET GO AS HIS SWORD FLASHES. HE REELS - THEN RIPOSTE.', paladin: 'PARRY: RAISE THE AEGIS AS HIS SWORD FLASHES. HE REELS - THEN RIPOSTE.', pirate: 'PARRY: TAP C AS HIS SWORD FLASHES. THE CUTLASS BINDS IT - THEN RIPOSTE.', warden: 'PARRY: TAP C AS HIS SWORD FLASHES. THE SHAFT TURNS IT - THEN RIPOSTE.', geomancer: 'PARRY: RAISE THE WARD AS HIS SWORD FLASHES. STONE TURNS IT - THEN RIPOSTE.', berserker: 'PARRY: TAP C AS HIS SWORD FLASHES. BRACE AND TAKE IT - THEN RIPOSTE.' });
   ent('swornsword', 217, 16, { face: -1, lesson: 'parry' });   /* the camp gate's watchman: the slowest blow in the game, one at a time, his sword FLASHES on the beat */
   lessons.push({ kind: 'parry', x0: 207, x1: 226 });
   coins([212, 15], [214, 14], [220, 15]); deck(211, 14, 3); deck(221, 14, 3);
@@ -183,7 +183,7 @@ export function buildLumberTrail({ painter, T, TS }) {
   ent('badger', 432, 12, { face: -1, cnSkin: 'boar' }); ent('sprig', 438, 12, { face: -1 });   /* the boar charges back along the trunk: a hit throws you the way he runs, over the water you just crossed */
   coins([435, 11], [438, 11]); deck(434, 10, 3);   /* (claude/oldtusker) a woodsmen's log crib on the far bank: the second height the clearing's old comb perches gave (level-quality bands) */
   /* THE HELM PIT: shields on stumps over a thorn bed - plunge the helm, land behind, cut */
-  sign(440, 12, 'SHIELD GOBLINS HIDE BEHIND IRON. PLUNGE THE HELM, LAND BEHIND, CUT.', { pyro: 'SHIELD GOBLINS HIDE BEHIND IRON. ARC AN EMBER OVER, OR FIREDROP THE HELM.', paladin: 'SHIELD GOBLINS HIDE BEHIND IRON. HAMMERFALL THE HELM, LAND BEHIND, STRIKE.' });
+  sign(440, 12, 'SHIELD GOBLINS HIDE BEHIND IRON. PLUNGE THE HELM, LAND BEHIND, CUT.', { pyro: 'SHIELD GOBLINS HIDE BEHIND IRON. ARC A FIREBALL OVER, OR FIREDROP THE HELM.', paladin: 'SHIELD GOBLINS HIDE BEHIND IRON. HAMMERFALL THE HELM, LAND BEHIND, STRIKE.' });
   block(442, 451, 17, 27); spikes(442, 451, 16);
   for (const x of [443, 448]) { block(x, x + 3, 13, 16); ent('shield', x + 1, 12, { face: -1 }); }   /* (four wide: room to land behind him) */   /* two stumps level with the banks, a shield goblin on each: no way round him, the thorns either side */
   block(452, 470, 13, 27);

@@ -1,6 +1,6 @@
 {
  "wood": {
-  "hash": "6639406ae816",
+  "hash": "721420634779",
   "boss": {
    "boss": "oldtusker",
    "wins": 0,
@@ -101,7 +101,7 @@
    ]
   },
   "carried": {
-   "from": "4509d53654d0",
+   "from": "6639406ae816",
    "parts": [
     "boss"
    ]
@@ -154,8 +154,8 @@
    "pyro": {
     "deaths": 3,
     "minHpPct": 0,
-    "hpLostPct": 344,
-    "hits": 21,
+    "hpLostPct": 324,
+    "hits": 20,
     "walked": 100,
     "lifts": 41,
     "held": 6,
@@ -169,7 +169,7 @@
      "swing": 1
     },
     "machines": true,
-    "frames": 17567,
+    "frames": 17210,
     "kills": 6,
     "heroLevel": 1
    }
