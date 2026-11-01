@@ -152,6 +152,9 @@ export function makeBogTrollHands(ctx) {
     const sinkK = Math.max(0, e.y - (S.G.floorY + BT.up));
     const spr = BTA.trollSprite(m, p, time, S.ph, flash, sinkK); g.save(); g.translate(R(x), R(y)); g.scale(f, 1); g.drawImage(spr, -BTA.TROLL_ANCHOR.ax, -BTA.TROLL_ANCHOR.ay); g.restore(); };
   H.drawOver = (g, cx, cy, time) => { const Ar = A(); if (!S || !Ar) return; const e = ctx.boss; const G = S.G, X = v => R(v - cx), Y = v => R(v - cy);
+    /* (claude/bogtroll2) THE CROSSING's ROTTEN SECTIONS READ ROTTEN BEFORE USE: their crossbeams drawn over the fen's surface, down into the water (snapped and hanging once wrecked) */
+    { const FR = ctx.fen(); if (FR && FR.sections) { g.globalAlpha = 0.85; for (const s of FR.sections()) { const x0 = X(s.x0 * ctx.TS); if (x0 > ctx.VW() + 20 || x0 + s.w * ctx.TS < -20) continue;
+      FRA.drawCrossbeams(g, x0, s.w * ctx.TS, Y(G.floorY), Y(G.waterY) + 18, s.st === 'gone' && s.hole ? [X(s.hole[0] * ctx.TS), X((s.hole[1] + 1) * ctx.TS)] : null, time, s.x0); } g.globalAlpha = 1; } }
     if (!ctx.bossActive || !e || e.t !== 'bogtroll') return;
     const blink = Math.floor(time * 12) % 2 ? '#ff6b6b' : '#fff6e0';
     /* WHERE HE SWIMS: bubbles over him; THE BULGE: the boards over him lift (amber while it follows you, red when it sets) */

@@ -64,7 +64,7 @@ function plankTile(x, y, at, T, L, kind) {
 }
 /* a bowed-section / rotten board sprite (also used live by the hands): the same board, sicker (soft, split, mossy), with a worn hollow */
 const rotBoard = (arena, i, w) => once('rb' + arena + (i % 3) + (i === 0 ? 'L' : i === w - 1 ? 'R' : ''), () => { const [c, g] = canvas(16, 9);
-  const b = arena ? ['#1f1a10', '#2e261a', '#443826', '#5a4a32', '#72603f'] : ['#2a2014', '#3a2e1e', '#54422c', '#6c563a', '#86704a'];
+  const b = arena ? ['#141a0c', '#262e16', '#38421f', '#4a5628', '#64723a'] : ['#2a2014', '#3a2e1e', '#54422c', '#6c563a', '#86704a'];
   Rr(g, b[2], 0, 1, 16, 4); Rr(g, b[3], 0, 0, 16, 1); Rr(g, b[1], 0, 5, 16, 2); Rr(g, OAK[0], 0, 7, 16, 1);   /* board, lit lip, the underside, the stringer shadow */
   Rr(g, OAK[3], 0, 5, 16, 2); Rr(g, OAK[2], 0, 6, 16, 1);                                                      /* the pole under it */
   for (let k = 0; k < 4; k++) { const sx = 2 + ((i * 5 + k * 4) % 12); P(g, b[0], sx, 1 + (k & 1)); P(g, b[0], sx + 1, 2 + (k & 1)); }   /* cracks */
@@ -412,15 +412,15 @@ export function drawDrips(g, x, w, y, time) { for (let i = 0; i < Math.floor(w /
    the beams there are snapped, one end hanging into the water, splinters at the break */
 export function drawCrossbeams(g, x, w, y, wy, hole, time, seed = 0) {
   const top = y + 7, bot = wy + 2, x1 = x + w, beam = (ax, ay, bx, by, c, wd = 2) => { g.strokeStyle = c; g.lineWidth = wd; g.beginPath(); g.moveTo(Math.round(ax), Math.round(ay)); g.lineTo(Math.round(bx), Math.round(by)); g.stroke(); g.lineWidth = 1; };
-  for (const px of [x + 1, x1 - 4]) { Rr(g, OAK[1], px, top, 3, bot - top); Rr(g, OAK[3], px, top, 1, bot - top); Rr(g, MOSS[1], px, bot - 5, 3, 3); }   /* the end piles, mossed at the waterline */
+  for (const px of [x + 1, x1 - 5]) { Rr(g, OAK[2], px, top, 4, bot - top); Rr(g, OAK[4], px, top, 1, bot - top); Rr(g, MOSS[2], px, bot - 6, 4, 4); Rr(g, MOSS[3], px, bot - 6, 4, 1); }   /* the end piles, mossed at the waterline */
   if (!hole) {
-    beam(x + 3, top + 1, x1 - 4, bot - 2, OAK[2]); beam(x + 3, bot - 2, x1 - 4, top + 1, OAK[2]); beam(x + 3, top + 2, x1 - 4, top + 2, OAK[1], 1);   /* the X and the stringer */
-    for (let k = 0; k < 5; k++) { const hx = x + 6 + ((k * 11 + seed * 3) % Math.max(8, w - 10)), hl = 3 + ((k + seed) % 4); Rr(g, MOSS[k & 1 ? 1 : 2], hx, top + 3 + (k % 3) * 2, 1, hl); }   /* weed off the beams */
+    beam(x + 4, top + 1, x1 - 5, bot - 2, OAK[1], 3); beam(x + 4, bot - 2, x1 - 5, top + 1, OAK[1], 3); beam(x + 4, top, x1 - 5, bot - 3, OAK[4], 1); beam(x + 4, bot - 3, x1 - 5, top, OAK[4], 1); beam(x + 3, top + 1, x1 - 4, top + 1, OAK[3], 2);   /* the X and the stringer */
+    for (let k = 0; k < 5; k++) { const hx = x + 6 + ((k * 11 + seed * 3) % Math.max(8, w - 10)), hl = 3 + ((k + seed) % 4); Rr(g, MOSS[k & 1 ? 2 : 3], hx, top + 3 + (k % 3) * 2, 1, hl + 2); }   /* weed off the beams */
     for (let k = 0; k < 3; k++) { const cx = x + 8 + ((k * 17 + seed * 5) % Math.max(8, w - 14)); Rr(g, '#0a0806', cx, y + 1, 1, 4); Rr(g, '#0a0806', cx + 1, y + 3, 1, 2); }   /* cracks through the boards */
     return; }
   const [h0, h1] = hole, sway = Math.sin(time * 1.7 + seed) * 1.5;
-  beam(x + 3, top + 1, h0, top + 6, OAK[2]); beam(h0, top + 6, h0 + 4, bot + sway, OAK[1]);   /* snapped at the hole: the left beam hangs into the fen */
-  beam(x1 - 4, top + 1, h1, top + 5, OAK[2]); beam(h1, top + 5, h1 - 5, bot - sway, OAK[1]);
+  beam(x + 4, top + 1, h0, top + 6, OAK[1], 3); beam(h0, top + 6, h0 + 4, bot + sway, OAK[2], 3); beam(x + 4, top, h0, top + 5, OAK[4], 1);   /* snapped at the hole: the left beam hangs into the fen */
+  beam(x1 - 5, top + 1, h1, top + 5, OAK[1], 3); beam(h1, top + 5, h1 - 5, bot - sway, OAK[2], 3); beam(x1 - 5, top, h1, top + 4, OAK[4], 1);
   for (let k = 0; k < 4; k++) { P(g, BOARD[4], h0 + (k & 1), top + 5 + k); P(g, BOARD[4], h1 - (k & 1), top + 4 + k); }   /* splinters at the breaks */
 }
 /* THE BULGE under the boards (the troll's burst, told): five boards humped up over him, a dark gap and water showing under them, splinters jumping once it has set; k 0..1 how long it has been rising */
