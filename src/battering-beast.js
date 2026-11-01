@@ -49,7 +49,7 @@ export const BB = {
   charge: { tell: [1.15, 0.92], speed: 280, sp2: 1.08, dmg: 18, hitH: 24, minD: 110 },
   daze: { t: [1.7, 1.4], mul: 1.25 },
   stuck: { t: 3.0, mul: 2, cap: 0.11, ward: 3, wreckBlow: 0.03 },
-  sweep: { tell: [0.68, 0.54], t: 0.42, mid: 0.3, reach: 50, h: 14, dmg: 22, chip: 0.8, rec: 0.6, range: 80 },
+  sweep: { tell: [0.68, 0.54], t: 0.42, mid: 0.3, reach: 50, h: 14, dmg: 19, chip: 0.8, rec: 0.6, range: 80 },
   volley: { tell: [0.85, 0.72], n: 3, flight: 1.0, r: 16, dmg: 21, rec: 0.6, spread: 62 },
   pots: { tell: 0.95, n: 2, flight: 0.95, r: 18, life: 2.6, tick: 0.45, dmg: 9, spread: 58, rec: 0.6 },
   batter: { tell: 0.8, shake: 1.25, dmg: 25, reach: 96 },
@@ -57,8 +57,8 @@ export const BB = {
      box off the beast's feet (px, facing right) and how many lost orders knock him off the gantry */
   order: { tell: 1.1, laneW: 44, pitch: 88, flight: 0.4, gap: 0.75, dmg: 20, top: 150, rec: 0.6, lost: 1.2, lives: 2, box: [-10, 14, -58, -27] },
   /* (claude/beast3) THE WALL BREAKER: the turn, the run, the slam, the timbers (how many, the beat between, their roll, their height) and THE BREACH's rubble (columns, one row) */
-  wall: { tell: 0.95, speed: 250, dmg: 19, slam: 0.6, back: 150, rec: 0.9, n: 2, gap: 0.7, sp: 140, h: 13, tdmg: 15, rubble: 4, room: 70 },
-  flail: { tell: 0.85, t: 0.36, reach: 132, low: 14, hiTop: 40, hiBot: 18, dmg: 21, rec: 0.7 },
+  wall: { tell: 0.95, speed: 250, dmg: 19, slam: 0.6, back: 150, rec: 0.9, n: 2, gap: 1.0, sp: 140, h: 13, tdmg: 15, rubble: 4, room: 70, cd: 6 },
+  flail: { tell: 0.85, t: 0.36, reach: 132, low: 14, hiTop: 40, hiBot: 18, dmg: 18, rec: 0.7 },
   kick: { tell: 0.6, t: 0.22, reach: 46, dmg: 25, chip: 0.6, rec: 0.5, range: 44 },
   scaf: { fall: 0.5, len: 6, heroDmg: 17, lie: 16, rearm: 11 },
   unchain: { tell: 1.0, adds: 2, addHp: 2.4 },
@@ -137,7 +137,7 @@ export function kickBox(e, S) { const f = e.face || 1, half = BB.w / 2, fy = S.G
 /* ---------- ONE FRAME OF HIM. heroes: [{ x, y, ground, alive, pp }]; w: the world (src/battering-beast-hands.js world()) ---------- */
 export function stepBeast(e, S, dt, heroes, w) {
   const G = S.G, ph = S.ph, i = ph - 1, P = heroes.find(h => h.alive) || heroes[0];
-  S.ward = Math.max(0, S.ward - dt); e.ward = S.ward;
+  S.ward = Math.max(0, S.ward - dt); e.ward = S.ward; S.wallCd = Math.max(0, (S.wallCd || 0) - dt);
   stepScafs(e, S, dt, heroes, w);
   stepStakes(S, dt, w); stepPots(S, dt, heroes, w); stepLanes(S, dt, w); stepTimbers(S, dt, w);
   S.adds = S.adds.filter(a => a && a.alive);
@@ -273,7 +273,7 @@ function pick(e, S, ad, dx, w) {
     if (k === 'order' && !ord) k = 'pots';
     if (k === 'charge' && ad < 54 && !cover) k = 'sweep';
   } else {        /* (claude/beast3) P2 goes after the PALISADE: THE WALL BREAKER leads, the flail and the buck answer you close, the charge is the rare one */
-    const wr = last[0] !== 'wall' && last[1] !== 'wall';   /* the wall breaker leads P2 but never twice in three */
+    const wr = last[0] !== 'wall' && last[1] !== 'wall' && !(S.wallCd > 0);   /* the wall breaker leads P2 but never twice in three */
     if (cover) k = r < 0.6 && wr ? 'wall' : 'flail';
     else if (ad < BB.kick.range) k = !twice('kick') ? 'kick' : 'flail';
     else if (ad < BB.sweep.range + 20) k = r < 0.6 ? 'flail' : wr ? 'wall' : 'flail';
@@ -294,7 +294,7 @@ function pick(e, S, ad, dx, w) {
   else if (k === 'order') { e.mode = 'orderTell'; e.modeT = BB.order.tell; e.face = Math.sign(dx) || e.face; w.mark('!!'); w.sound('hornDraw'); w.number(e.x, e.y - BB.h - 44, BB_SAY.order, '#ff9a5c');
     if (!S.told.hornTip) { S.told.hornTip = 1; w.number(e.x, e.y - BB.h - 58, BB_SAY.hornTip, '#ffd36b'); }
     S.lanes = orderLanes(S, e.x + dx, S.act); }
-  else { e.mode = 'wallTell'; e.modeT = BB.wall.tell; e.face = 1; w.mark('!!'); w.sound('snort'); if (!S.told.wallTurn) { S.told.wallTurn = 1; w.number(e.x, e.y - BB.h - 40, BB_SAY.wallTurn, '#ff6b6b'); } }
+  else { e.mode = 'wallTell'; e.modeT = BB.wall.tell; e.face = 1; S.wallCd = BB.wall.cd; w.mark('!!'); w.sound('snort'); if (!S.told.wallTurn) { S.told.wallTurn = 1; w.number(e.x, e.y - BB.h - 40, BB_SAY.wallTurn, '#ff6b6b'); } }
   order(e.mode);
 }
 /* (claude/beast3) THE LANES OF A VOLLEY ORDER: wave one centred on where you stand, every BB.order.pitch px across the clearing; wave two in its gaps. t = seconds till it lands */
@@ -402,8 +402,8 @@ function bbPlan0(s) {
   if (deck && (e.mode === 'batterTell' || e.mode === 'batter') && seenFor('bt' + S.act, 0.1)) { const sp = propSpot(deck); out.gx = sp; out.why = 'off the deck he batters'; return out; }
   if (inHaz(P.x) && P.ground) { const [hx, r] = hazards.find(([x0, r0]) => Math.abs(P.x - x0) < r0); out.gx = safeX(P.x + (P.x < hx ? -r - 8 : r + 8)); out.why = 'off the mark'; return out; }
   /* (claude/beast3) A ROLLING TIMBER coming at you: jump it */
-  const tim = S.timbers.find(q => timberAt(q, S).rolling && P.x < q.x + 6 && q.x - P.x < 40 && Math.abs(P.y - G.floorY) < 6);
-  if (tim && P.ground && seenFor('tb' + tim.key, 0.1)) { out.jump = true; out.gx = P.x; mem.jumpT = t; mem.jumpX = P.x; mem.plunge = false; mem.horn = false; out.why = 'jump the timber'; return out; }
+  const tim = S.timbers.find(q => timberAt(q, S).rolling && P.x < q.x + 6 && q.x - P.x < 52 && Math.abs(P.y - G.floorY) < 6);
+  if (tim && P.ground && seenFor('tb' + tim.key, 0.05)) { out.jump = true; out.gx = P.x; mem.jumpT = t; mem.jumpX = P.x; mem.plunge = false; mem.horn = false; out.why = 'jump the timber'; return out; }
   /* (claude/beast3) THE HORN IS UP: close enough, jump at the Hornsman and cut (a player who reads it); else the lanes are hazards (above) - stand in a gap */
   if (hornUp(e, S) && P.ground && seenFor('hn' + S.act, 0.15)) { const hb = hornBox(e), hx = (hb[0] + hb[1]) / 2, near = Math.abs(P.x - hx) < 64;
     if (near && e.modeT > 0.3 && !roll('hn' + S.act, s.v2 ? 0.15 : 0.35)) { out.jump = true; out.gx = hx - side * 8; mem.jumpT = t; mem.jumpX = out.gx; mem.plunge = false; mem.horn = true; out.why = 'jump at the hornsman'; return out; } }
