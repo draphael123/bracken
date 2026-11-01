@@ -113,7 +113,7 @@ ok(/'palisadewood'/.test(src('tools/one-new-foe.mjs')) || true, '(one-new-foe re
   { const [S, e] = fresh(), sc = S.scafs[0]; S.scafs[0].st = 'down'; S.scafs[0].t = 99; e.x = A.x1 - 80; e.face = -1; e.mode = 'charge'; e.modeT = 4; for (let i = 0; i < 300 && e.mode === 'charge'; i++) BBM.stepBeast(e, S, 1 / 60, hero(A.x0 + 30), w);
     ok(e.mode === 'stuck' && S.scafs[0].st === 'spent' && S.n.wreckRams === 1, 'his charge into a wreck: STUCK, and the wreck is spent'); }
   { const [S, e] = fresh(); e.x = A.x0 + 200; e.face = 1; e.mode = 'charge'; e.modeT = 4; for (let i = 0; i < 300 && e.mode === 'charge'; i++) BBM.stepBeast(e, S, 1 / 60, hero(A.x0 + 30), w);
-    ok(e.mode === 'dazed' && BBM.takeBlow(e, S, 20, false)[0] === 25, 'his charge into the wall: DAZED (x1.25)'); }
+    ok(e.mode === 'dazed' && BBM.takeBlow(e, S, 20, false)[0] === Math.round(20 * BB.daze.mul) && BB.daze.mul > 1, 'his charge into the wall: DAZED (x' + BB.daze.mul + ')'); }
   { const [S, e] = fresh(); const [d, wd] = BBM.takeBlow(e, S, 20, false); ok(d === Math.round(20 * BB.armour) && BB.armour >= 0.4 && wd === 'ARMOURED', 'his armour: ' + BB.armour + 'x (never under the 0.4x B15 floor) and ARMOURED'); ok(BBM.takeBlow(e, S, 20, true)[0] === 20, 'a plunge on his back lands whole'); }
   { const [S, e] = fresh(); e.hp = BB.hp * 0.49; e.mode = 'walk'; BBM.stepBeast(e, S, 1 / 60, hero(e.x + 200), w); ok(S.ph === 2 && e.mode === 'unchain', 'phase two at half: THE CHAINS SNAP (he rears, told)');
     added = 0; for (let i = 0; i < 90 && e.mode === 'unchain'; i++) BBM.stepBeast(e, S, 1 / 60, hero(e.x + 200), w);
