@@ -152,11 +152,11 @@ const first = (binds, prof, action) => labelFor(binds, prof, action, 1);
    Rows are [what, keys, pad]. The words are the hero's; the keys are whatever the player has bound (tokens: the first key of the action). */
 const HEROES_C = {
   knight:     ['block', tk => 'HOLD ' + tk.c + (tk.toggle ? ' (TOGGLE)' : '')],
-  pyro:       ['ward / fireball', tk => 'TAP ' + tk.c + ' WARD, HOLD FIREBALL'],   /* (claude/pyrokit) */
+  pyro:       ['fire ward', tk => 'TAP ' + tk.c + ' WARD, HOLD FIREBALL'],   /* (claude/pyrokit) */
   paladin:    ['conviction', tk => 'TAP ' + tk.c + ' SPEND, HOLD AEGIS'],   /* (PALADIN 3) the tap spends Conviction by tier */
-  pirate:     ['hook catch / hook', tk => 'TAP ' + tk.c + ' CATCH, HOLD HOOK'],   /* (claude/heroblocksa) the tap is the HOOK CATCH (src/hook-catch.js) */
+  pirate:     ['hook / catch', tk => 'TAP ' + tk.c + ' CATCH, HOLD HOOK'],   /* (claude/heroblocksa) the tap is the HOOK CATCH (src/hook-catch.js) */
   reaper:     ['blood ward', tk => 'HOLD ' + tk.c + ', LET GO: NOVA'],
-  warden:     ['deflect / brace', tk => 'TAP ' + tk.c + ' DEFLECT, HOLD BRACE'],   /* (claude/heroblocksb) hold = the spear-haft brace; the full-vigil tap is still the phalanx (the hint line) */
+  warden:     ['deflect', tk => 'TAP ' + tk.c + ' DEFLECT, HOLD BRACE'],   /* (claude/heroblocksb) hold = the spear-haft brace; the full-vigil tap is still the phalanx (the hint line) */
   geomancer:  ['rune-ward', tk => 'HOLD ' + tk.c + '  (SHE IS PLANTED)'],
   berserker:  ['take it', tk => 'HOLD ' + tk.c + ' (FULL: DOWN+' + tk.c + ' FRENZY)'],
   ranger:     ['bash / guard', tk => 'TAP ' + tk.c + ' BASH, HOLD GUARD'],   /* (claude/heroblocksb) hold = the bow guard; the bash on the beat is still her parry */
