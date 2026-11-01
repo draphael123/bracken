@@ -136,7 +136,7 @@ export function drawRoosts(g, x, y, fy, time, St, SS, now) {
       rect(g, vx - 11, fy - 4, 3, 2, S[4]); rect(g, vx + 8, fy - 4, 3, 2, S[4]);
       const hgt = fy - top;
       g.globalAlpha = 0.07; g.fillStyle = '#e8f0ff'; g.fillRect(vx - 9, top, 18, hgt); g.globalAlpha = 1;                    /* the column */
-      for (let k = 0; k < 9; k++) { const t2 = (time * 1.5 + k / 9) % 1, yy = fy - 4 - t2 * hgt, xx = vx + R(Math.sin(time * 5 + k * 2.2) * 5 * (0.4 + t2)); g.globalAlpha = 0.65 * (1 - t2 * 0.8); rect(g, xx, yy, 1, 6 + (k % 3) * 2, '#e8f0ff'); if (k % 3 === 0) rect(g, xx + 1, yy + 2, 2, 1, '#ffffff'); }
+      for (let k = 0; k < 9; k++) { const t2 = (time * 1.5 + k / 9) % 1, yy = fy - 4 - t2 * hgt, xx = vx + R(Math.sin(time * 5 + k * 2.2) * 5 * (0.4 + t2)); g.globalAlpha = 0.65 * (1 - t2 * 0.8); rect(g, xx, yy, 1, Math.max(1, Math.min(6 + (k % 3) * 2, fy - 2 - yy)), '#e8f0ff'); if (k % 3 === 0) rect(g, xx + 1, yy + 2, 2, 1, '#ffffff'); }
       for (let k = 0; k < 3; k++) { const t2 = (time * 0.7 + k / 3) % 1, yy = fy - 8 - t2 * hgt, xx = vx + R(Math.sin(time * 3 + k * 4) * 8); g.globalAlpha = 0.9 * (1 - t2); rect(g, xx, yy, 3, 1, '#e6e4ec'); px1(g, xx + 1, yy - 1, '#ffffff'); }   /* loose feathers riding it */
       g.globalAlpha = 1;
       if (age < 0.6) { g.globalAlpha = 0.7 * (1 - age / 0.6); g.strokeStyle = '#ffffff'; g.beginPath(); g.ellipse(vx, fy - 3, 8 + age * 50, 3 + age * 6, 0, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1; }   /* the plug blows out */
