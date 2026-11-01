@@ -37,6 +37,7 @@ try {
       const F=()=>__foes(st),kind=st.kind;let tries=0;
       if(kind==='tip'){for(let d=30;d<=44&&!st.done;d+=2)for(let k=0;k<2&&!st.done;k++){const e=F()[0];P.x=e.x-e.w/2-d;P.face=1;P.vx=0;BK.sim(12);__fresh();BK.press('atk');run(30);}}
       else if(kind==='runthrough'){while(!st.done&&tries++<6){const e=F()[0];P.x=e.x-30;P.face=1;P.vx=0;BK.sim(20);__fresh();K.atk=true;run(45);K.atk=false;run(50);}}
+      else if(kind==='third'&&h==='warden'){while(!st.done&&tries++<8){const e=F()[0];for(let j=0;j<3;j++){P.x=e.x-e.w/2-34;P.face=1;P.vx=0;BK.sim(3);__fresh();BK.press('atk');run(14);}run(50);}}   /* (claude/wardenid) the third jab is the long thrust: three jabs, stood at the point */
       else if(kind==='fault'){while(!st.done&&tries++<6){const e=F()[0];P.x=e.x-24;P.face=1;P.vx=0;BK.sim(10);__fresh();K.atk=true;run(45);K.atk=false;run(60);}}   /* (a full wind: the crack runs 160 px, through both straw men five tiles apart) */
       else if(kind==='pin'){while(!st.done&&tries++<8){const e=F()[tries%2]||F()[0];BK.sim(20);P.x=e.x;P.y=e.y-(e.h||8)-30;P.vx=0;P.vy=40;P.ground=false;P.face=1;__fresh();K.down=true;BK.press('atk');
           let f=0;while(!P.pinning&&f++<60)BK.sim(1);K.down=false;run(10);BK.press('jump');run(40);}}
