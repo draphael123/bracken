@@ -25,6 +25,7 @@ export const K_FLAT = {
   boneMin: 0.15, boneSpan: 0.2,              // blood knight legacy skeleton: was FLAT 5 + 0..5
   shieldThrowFar: 0.45, shieldThrowNear: 0.3, shieldThrowBack: 0.18,   // knight was FLAT 13 (ranged foe) / 9 / 5 on the return
 };
+export const K_WARDEN_REACH = { perHit: 1.0, final: 2.5 };   // (claude/wardenid) WARDEN'S REACH, the ultimate: every hit is a max tip hit at swordDmg x 1.0 x amul; the closing thrust is swordDmg x 2.5
 export const K_LINEAR = {
   whirlwind: 0.5,        // knight   was 1.1 per cut (x2 cuts); cd 4 -> 5 (CD_MAX). Brief k 0.7 measured 89% of an L35 brute in ONE cast (both cuts); 0.5 = ~64% (10-31 browser run)
   rainOfSpears: 0.9,     // warden   was 1.3 per spear

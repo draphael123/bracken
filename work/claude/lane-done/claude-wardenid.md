@@ -36,3 +36,9 @@ New poses: 'wLong' (planted-foot long thrust, 60 px reach, currently uses the ol
 2. Long thrust x1.25 + 0.30 s recovery - rec keep pending rates.
 3. Band tip pay x0.92 at empty: rec keep (the identity), retune if rates drop.
 4. Rows removed beyond the brief (drill, grubbag, archmage): rec keep removed, measure post-demo.
+
+## ADDENDUM 11-01: WARDEN'S REACH, the ultimate (UP+C at a full band)
+- Fires on UP+C at P.vigil 100 on the ground (tap C = deflect always, hold C = brace). 6 s: spear x2 reach (stretchMul 2; box hits the whole line), ghost spear drawn out to the hitbox (cyan-white line + leaf, pulsing; brighter mid-thrust), every hit = max tip (TIP.full 2.0), damage swordDmg x K_WARDEN_REACH.perHit 1.0 x amul('wardenReach') (src/skill-k.js), every hit knocks back (knockFoe 260 slide); boss/mini: 3 px push only, resist floors untouched. Band held at 100 and drain off during it; ends with a final thrust (130 px box, swordDmg x 2.5, non-boss stagger 1.2 + knock 320, boss stagger 0.6 only) and the band empties.
+- READY flash (meterReady + chime) when the band reaches 100, HUD gauge flashes, prompt 'REACH: UP+C' / 'WARDEN'S REACH n'. Text: hero card, WARDEN_KEYS.vigil, trial station 'meter' restored (warden yard now: ... third, meter), trialName. Bot (src/lab.js): UP+C with a foe within 150 px, no tell, on the ground. hero-trials 'meter' presses UP+C for the warden.
+- Checks: tools/warden-id.mjs 36 green (static). tools/warden-id-live.mjs 'reach' scenario written; first run showed cast works (tap-only no cast, UP+C casts, band 0 and timer 0 after 7 s) - the line-skewer / final-thrust asserts were re-placed (foes 50/66/82) but NOT re-run: BROWSER-HOLD flag. Owed: re-run warden-id-live, hero-trials (meter), textfit, keys when the hold lifts.
+- ART: ghost spear is a code-drawn overlay; a proper huge-spear sprite and a 'wReach' cast pose would replace it.

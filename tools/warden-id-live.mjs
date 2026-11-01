@@ -3,7 +3,7 @@
 // One browser; start it only with >= 1500 MB free (lane rule). tools/warden-id.mjs is the static twin.
 import assert from 'node:assert/strict';
 import { openPage } from './cdp.mjs';
-const WANT = (process.argv[2] || 'long,band,phalanx,vault').split(',');
+const WANT = (process.argv[2] || 'long,band,phalanx,vault,reach').split(',');
 const pg = await openPage({ audio: false, fonts: false });
 const out = {}, fails = [], t = (ok, msg) => { if (!ok) fails.push(msg); };
 try {
@@ -37,6 +37,18 @@ try {
       down=f.filter(e=>e.hp<5000).length;const cd1=BK.P.cds&&BK.P.cds.setSpears;BK.sim(1);return {hit:down,pinned,floored:f.map(e=>(e.floorAt||0)>0),cd:cd1||null,vigil:P.vigil}})()`);
     t(out.phalanx.hit === 2 && !out.phalanx.pinned, 'the phalanx skill hits both foes and pins neither (' + JSON.stringify(out.phalanx) + ')');
     t(out.phalanx.vigil === 0, 'and costs no bar (the band stays at 0)');
+  }
+  if (WANT.includes('reach')) {
+    /* WARDEN'S REACH: UP+C at a full band. Tap C at full is still only the deflect. */
+    out.reach = await pg.evalp(`(()=>{const [a,b,c]=__kit('warden',[],[['sprig',50],['sprig',66],['sprig',82]]);const P=BK.P;P.vigil=100;
+      BK.keys.block=true;BK.sim(1);BK.keys.block=false;BK.sim(2);const tapOnly=P.wReachT>0;BK.sim(30);P.vigil=100;
+      BK.keys.up=true;BK.keys.block=true;BK.sim(1);BK.keys.block=false;BK.keys.up=false;BK.sim(1);const cast=P.wReachT>0;
+      BK.press('atk');BK.sim(22);const hit=[a,b,c].map(e=>5000-e.hp);const push=[a,b,c].map(e=>Math.round(e.x-P.x));
+      BK.sim(60*7);return {tapOnly,cast,hit,push,left:+(P.wReachT||0).toFixed(2),band:Math.round(P.vigil),end:[a,b,c].map(e=>5000-e.hp)}})()`);
+    t(!out.reach.tapOnly && out.reach.cast, 'UP+C casts WARDEN\'S REACH; a plain tap C at a full band does not (' + JSON.stringify(out.reach) + ')');
+    t(out.reach.hit.every(x => x > 0), 'the huge spear skewers a line (3 foes in the line hit by one thrust)');
+    t(out.reach.left === 0 && out.reach.band === 0, 'it ends and the band is empty');
+    t(out.reach.end.some((x, i) => x > out.reach.hit[i]), 'the final thrust lands');
   }
   if (WANT.includes('vault')) {
     out.vault = await pg.evalp(`(()=>{const [e]=__kit('warden',['harrier'],[['sprig',40]]);const P=BK.P,x0=P.x;BK.press('throw');let inv=0;for(let i=0;i<90;i++){BK.sim(1);inv=Math.max(inv,P.inv||0);}return {over:P.x>e.x,moved:Math.round(P.x-x0),inv:+inv.toFixed(2),hurt:5000-e.hp,pinned:e.pinned>0}})()`);

@@ -28,6 +28,10 @@ export const WID = {
     payLo: 0.92, payHi: 1.04,   /* x the tip's pay at band 0 / 100 */
     range: 70,          /* a deflect/brace turn from a foe further than this (edge to edge) is "at range" and pays the band */
   },
+  /* 4. WARDEN'S REACH, THE ULTIMATE (Daniel 11-01): a FULL band + TAP C. For `t` s the spear is huge and ghostly (x2 reach, drawn out to the hitbox), every hit is a max TIP hit,
+     knocks back (a boss only gets a small push, its resist floors untouched), the box skewers a whole line; it ends with one big final thrust (+ stagger; a boss's stagger is small),
+     and the band is empty afterwards. */
+  reach: { t: 6, mul: 2, knock: 260, push: 3, finalLen: 130, finalKnock: 320, finalStagger: 1.2, bossStagger: 0.6 },
   phalanx: { cd: 16, st: 28, trip: 1.1 },   /* the skill: seconds of cooldown, stamina, seconds a tripped foe stays down */
   vault: { cd: 7, st: 28, over: 90 },
 };
