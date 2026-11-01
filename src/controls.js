@@ -16,7 +16,7 @@
 // reserved: they cannot be bound. A key shared by two actions is FLAGGED (both rows go red and the screen says which), not refused.
 //
 // The card (cardRows) is the one place the hero-by-hero button words live: it used to be a fixed table in main.js with the Pyromancer's
-// C listed as 'block'. (claude/pyrokit) Her C IS a block now: TAP = THE FLAME WARD, HOLD = THE HELD FIREBALL, a full bar = CONFLAGRATION; her down
+// C listed as 'block'. (claude/pyrokit) Her C IS a block now: TAP = THE FLAME WARD, HOLD = THE HELD FIREBALL, a full bar = METEOR FALL (claude/pyrokit2); her down
 // held still is STOKE; UP + C is her L10 card (THE JET / THE EMBER SHOT). The rebind screen's C row says so for her (blockLabel).
 
 export const KB_ACTIONS = [
@@ -182,7 +182,7 @@ export function cardRows({ hero = 'knight', binds = emptyBinds(), prof = 'pad1',
     /* THE CROUCH: every hero ducks (src/duck.js); the Pyromancer's held still is also STOKE (claude/pyrokit: the EMBER FLARE left down for the ward on C) */
     hero === 'berserker' ? ['pounce', 'HOLD ' + k1('down') + ', A WAY, LET GO', 'HOLD ' + pd('down')] : [hero === 'pyro' ? 'stoke' : 'crouch', 'HOLD ' + k1('down') + ' (STILL)', 'HOLD ' + pd('down')],   /* (claude/berserker2: his crouch coils, and lets go as THE POUNCE) */
     ['slide', 'HOLD ' + k1('down') + ' ON A SLOPE', 'HOLD ' + pd('down')],   /* THE BUTT-SLIDE (src/slide.js): down on any slope, feet first; it wins over the weak guard there */
-    ...(hero === 'pyro' ? [['full bar', tk.c + ': CONFLAGRATION', pd('block')]] : []),   /* (claude/pyrokit; the L10 card's UP + C row is the PAUSE > LEVEL CARD's words, not a 13th row here) */
+    ...(hero === 'pyro' ? [['full bar', tk.c + ': METEOR FALL', pd('block')]] : []),   /* (claude/pyrokit; the L10 card's UP + C row is the PAUSE > LEVEL CARD's words, not a 13th row here) */
     [cRow[0], cRow[1](tk), pd('block')],
     ...(hero === 'paladin' ? [['hammer throw', k1('up') + '+' + tk.c + '  (THREE PIPS)', pd('up') + '+' + pd('block')], ['tap ' + tk.c + ' spends', 'SMITE 1-2 RADIANCE 3-4 SUN 5', pd('block')]] : []),   /* (claude/paladin2) THE LIGHT SPENT */
     ...(hero === 'berserker' ? [['axe throw', k1('up') + '+' + tk.c + '  (PICK IT UP)', pd('up') + '+' + pd('block')]] : []),   /* THE BERSERKER's off axe (src/berserker.js throwAxe) */

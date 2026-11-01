@@ -38,4 +38,9 @@ export const PYRO_TODO = {   // flat today; convert to swordDmg x k when claude/
   flashover: 'FLAT 34 burning / 8 else', firestorm: 'FLAT 6 + ignite', ember: 'heatDmg(3)', jet: 'heatDmg(1) per tick', burn: '2 per 0.3 s', PYRE: 'FLAT 42 + 16 splash',
   heldFireball: 'pyrokit lane (must be swordDmg x k)', conflagration: 'pyrokit lane (must be swordDmg x k)',
 };
-export const K = { ...K_FLAT, ...K_LINEAR };
+export const K_PYRO = {   // (claude/pyrokit2, Daniel 11-01 11:17) LIVING BOMB and METEOR FALL: swordDmg x k x amul x heat, nothing flat
+  livingBomb: 1.2,       // a foe's third pip: it bursts for this (the brief's ~1.2x sword)
+  livingBombBig: 0.7,    // ...a boss or a mini takes this instead, and never more than the cap in main.js PYRO_KIT.lb.capPct of him (the stacks come every ~3 hits: a full 1.2 would be a +40% boss damage rider)
+  meteorFall: 5.0,       // the meter spender: one big hit on everything in the blast (a full bar x1.4 heat = 7.0 sword), beside the old CONFLAGRATION's 4.0 x 1.4 a marked foe; a boss or mini is capped (PYRO_KIT.mf.capPct)
+};
+export const K = { ...K_FLAT, ...K_LINEAR, ...K_PYRO };
