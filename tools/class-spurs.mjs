@@ -31,10 +31,10 @@ try {
     out.freshTry = BKT.PROG.mapNodeId;
 
     // SILVER MET: the same press now walks the branch, and back again
-    BKT.PROG.stockade = { cleared: true, medal: 3, best: 301 };   /* DANIEL'S DESIGN CHANGE 10-15: no clock - a cleared Stockade opens the Burning Village, however slow */
+    BKT.PROG.stockade = { cleared: true, medal: 3, best: 301 };   /* DANIEL 11-01: a cleared Stockade no longer opens the Burning Village - King Gorm beaten in ONE LIFE does (PROG.burningOpen, tools/gorm-unlock.mjs) */
     press('ArrowUp');
     out.slowTry = BKT.PROG.mapNodeId;
-    press('ArrowDown'); BKT.PROG.stockade = { cleared: true, medal: 1, best: 299 };
+    BKT.PROG.burningOpen = 1; BKT.PROG.stockade = { cleared: true, medal: 1, best: 299 };
     press('ArrowUp');
     out.afterSilver = BKT.PROG.mapNodeId;
     press('ArrowDown');
@@ -75,6 +75,8 @@ try {
     out.bronzeAt = goTo('stockade');
     press('ArrowUp');
     out.bronzeTry = BKT.PROG.mapNodeId;
+    BKT.PROG.burningOpen = 1; press('ArrowUp');
+    out.bronzeGorm = BKT.PROG.mapNodeId;
 
     return out;
   })()`);
