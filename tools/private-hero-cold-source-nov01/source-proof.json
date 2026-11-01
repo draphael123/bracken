@@ -1,0 +1,59 @@
+{
+  "time": "2026-11-01T18:57:21.630Z",
+  "sourceGame": "62d9c02c102decc69ceaef4e1ec593a23170f1ff",
+  "sourceTree": "d6f20846727ec42b3cca651d1b061136d9c6d2f1",
+  "originalMainSha256": "81866b69fec64de5fdd00da316fb0d1e8e997ae9912f73f280981f0a70cb36d8",
+  "originalCharsSha256": "eb1f35d0d2da8da4b62e7f61b5acfadbef49b858cc10fc891a5d2663d059f2cf",
+  "originalPxSha256": "e9a358b9170944e0dfae6d1b8c82d7b664562e0b2b0ab7f2538236e34214db1d",
+  "candidateMainSha256": "440f1a49e7f35c9c267c8d3879f3009bf47f9feb43a94115e04f95ccc862895a",
+  "candidateCharsSha256": "67ffd7aa5427230ab1be4d14dd8a5d6c15bbf7b7d93e8caba345ca774ba1bea5",
+  "candidatePxSha256": "c23cb8803f1bdde930130cbd7ea5b09375b52e6e39cedc0d17f40096fd7eaa72",
+  "helperSha256": "3f5f1b7144503b905bb6852a48c6a2dfda027ca4db6cd5ee729f2102e3347d49",
+  "originalSnapshotFunctionSha256": "89e31693c6ae1ef5740fbb64a65c20ba5df927fa3d173955e3ad37b7810ee14a",
+  "nativeQualification": {
+    "lifecycleCases": 5,
+    "gpuCases": 1,
+    "nativeCases": 17,
+    "nativeReceipt": "outputs/receipts/private-hero-native-collected-nov01.json",
+    "nativeRun": 41338995308,
+    "priorInterruptedOccurrence": 41338125168,
+    "noPriorFailedOccurrenceRelabeled": true,
+    "dispatchRequiresActualCompleteNativeReceipt": true
+  },
+  "settings": {
+    "rounds": 3,
+    "variants": [
+      "before",
+      "candidate",
+      "return"
+    ],
+    "originalLayoutOpenPageOptions": {
+      "audioFiles": false
+    },
+    "cpu": "original unmodified helper default",
+    "dpr": 1,
+    "gameView": [
+      320,
+      180
+    ],
+    "rendererMb": 1536,
+    "admissionMb": 4352,
+    "snapshotDeadlineMs": 120000,
+    "outerTimeoutMinutes": 15,
+    "nativeGc": "original unchanged"
+  },
+  "guide": {
+    "minimumBootGainPercent": 5,
+    "minimumOpenPageGainPercent": 5,
+    "maxControlDriftPercent": 15,
+    "eachCandidateFasterThanBothControls": true
+  },
+  "sourceCandidateUnchangedFromNativeProof": true,
+  "heroGetterReadbackIsAfterTimedBootReady": true,
+  "noCoopPlayerStoreCampaignMemoryLayoutFullStateRngOrFpsClaim": true,
+  "allThreeMismatches": [
+    "mummer6SUCCESSFUL hits versus2..5",
+    "tower-collapse/Tome rebound at200frames",
+    "offscreen mage sampling"
+  ]
+}
