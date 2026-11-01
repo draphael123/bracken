@@ -9496,7 +9496,7 @@ function updateCharge(dt) {
       if (P.atkHeld >= rgTierAt(3, rgQuick(), HEAVY_START) + RG_K.tiers.hold) { P.rgTierWant = 3; P.rgShown = 0; fireHeavy(); }   /* held at T3 long enough, it goes by itself */
       return; }
     if (isBz()) { const st = bzTierNow(), W = BZ_K.wind; P.chargeFull = st >= 1;   /* (claude/berserkerid, Daniel 10-31 Q6) THE WIND-UP COMMIT: past the minimum wind he is COMMITTED - armoured (berserker.js armoured), he cannot turn (the facing is held) and cannot stop (he creeps on); the longer he holds, the bigger the one chop (bzWindFrac) */
-      P.face = P.bzWindFace || P.face; if (st >= 1 && P.ground) P.vx = P.face * W.creep;
+      P.face = P.bzWindFace || P.face; P.faceLock = Math.max(P.faceLock || 0, 0.08); if (st >= 1 && P.ground) P.vx = P.face * W.creep;
       if (st > (P.bzShown || 0)) { P.bzShown = st; P.bzTierAt = time; bzTeach('wind'); const tx = P.x + P.face * 4, ty = P.y - 30, col = W.col;
         if (SFX.bzTier) SFX.bzTier(2); else SFX.cutStage(2); P.rpTintT = Math.max(P.rpTintT || 0, 0.07);
         ringAt(tx, ty, 11, col, 0.3); ringAt(P.x, P.y - 14, 18, col, 0.22); burst(tx, ty, 8, [col, '#ffd0a0'], 50, 0.3, -30, 1); shakeCam(1); }
@@ -10822,7 +10822,7 @@ function updatePlayer(dt) {
     if (P.st <= 0) { P.st = 0; P.block = false; P.guardTired = 0.8; P.stFlash = 0.5; SFX.guardBreak(); number(P.x, P.y - 22, 'TIRED', '#ffd36b'); }
   }
   P.rootT = Math.max(0, (P.rootT || 0) - dt); if (P.rootT > 0 && (P.ground || P.swim)) P.vx *= Math.pow(0.02, dt); // (a mend roots him)
-  const move = (stunned || dodging || (P.aegis && !tal('fortress') && !P.bulwark) || (P.warding && !tal('drainWalk')) || P.pinning || P.riding || P.spinning || P.rootT > 0 || (isPyro() && P.fwUp && P.ground) || P.braceT > 0 || P.braceRec > 0 || P.pounceT > 0 || P.pounceRec > 0 || (keys.down && isBz() && CRC && CRC.coiled()) || (isRg() && (P.charge > 0 || P.rgBashT > 0) && !(P.charge > 0 && tal('rgSoftStep') && !(P.rgBashT > 0)))) ? 0 : (keys.left ? -1 : 0) + (keys.right ? 1 : 0);   /* a hero stood on the end of a spear he has pinned something with does not walk */
+  const move = (stunned || dodging || (P.aegis && !tal('fortress') && !P.bulwark) || (P.warding && !tal('drainWalk')) || P.pinning || P.riding || P.spinning || P.rootT > 0 || (isPyro() && P.fwUp && P.ground) || P.braceT > 0 || P.braceRec > 0 || P.pounceT > 0 || P.pounceRec > 0 || (isBz() && bzCommittedNow()) || (keys.down && isBz() && CRC && CRC.coiled()) || (isRg() && (P.charge > 0 || P.rgBashT > 0) && !(P.charge > 0 && tal('rgSoftStep') && !(P.rgBashT > 0)))) ? 0 : (keys.left ? -1 : 0) + (keys.right ? 1 : 0);   /* a hero stood on the end of a spear he has pinned something with does not walk */
   /* THE UNIVERSAL DUCK (claude/duck): DOWN held on the ground with nothing else asked of it - no walk, no swing, no guard, no roll - and
      the hero is crouched: his hurt box is DUCK_H tall and a high blow goes over him (src/duck.js). On a mover he rides at its speed,
      so there it is only the keys that count. P.crouch is what the harbour lookout reads for a hero out of his sight. */
@@ -10972,7 +10972,7 @@ function updatePlayer(dt) {
     if (!attacking && !(P.faceLock > 0)) P.face = move;   /* THE CAROUSEL holds his facing for a moment after it turns him (src/mummer.js CAROUSEL.lock) */
     if (P.ground) P.airHang = false;
   } else if (!dodging) {
-    const fr = P.ground ? (groundAtk ? MOVE.FRIC_ATTACK : onSlick ? MOVE.FRIC_SLICK : MOVE.FRIC_GROUND) : MOVE.FRIC_AIR;
+    const fr = isBz() && bzCommittedNow() && P.ground ? 0 : P.ground ? (groundAtk ? MOVE.FRIC_ATTACK : onSlick ? MOVE.FRIC_SLICK : MOVE.FRIC_GROUND) : MOVE.FRIC_AIR;   /* (claude/berserkerid: a committed wind-up cannot STOP - no friction on the creep) */
     const s = Math.sign(P.vx); P.vx -= s * fr * dt; if (Math.sign(P.vx) !== s) P.vx = 0;
   }   else if (P.dash > 0 && !P.swim) { const s = Math.sign(P.vx) || P.face; P.vx = s * Math.max(Math.min(cap, Math.abs(P.vx)), Math.abs(P.vx) - 400 * dt); }   /* THE DODGE CARRIES as the dash did: its pace bleeds off to a run, held or not */
 else if (P.stepHeld > 0 && !P.swim) { P.stepHeld = Math.max(0, P.stepHeld - dt);   /* HER STEP CARRIES (claude/wardenkit): the pace it was given, held to its end (STEP_PACE) */
@@ -27679,6 +27679,7 @@ const rgTier = () => rgTierFor(P.atkHeld || 0, rgQuick(), HEAVY_START);
 const bzQuick = () => heavyWind() / BZ_K.wind.min * ((P.frenzyT || 0) > 0 ? BZ_K.wind.frenzyQ : (P.rage || 0) >= BZ_K.rage.high ? BZ_K.wind.rageQ : 1);
 const bzTierNow = () => bzCommitted(P.atkHeld || 0, bzQuick(), HEAVY_START) ? 1 : 0;   /* (claude/berserkerid) THE WIND-UP COMMIT: 0 = still winding, 1 = committed (armoured, creeping on); the SIZE is bzWindFrac */
 const bzWinding = () => isBz() && (P.charge || 0) > 0;
+const bzCommittedNow = () => isBz() && (P.charge || 0) > 0 && bzTierNow() >= 1;   /* (claude/berserkerid) COMMITTED: armoured, cannot turn (faceLock), cannot steer, cannot stop (no friction on the creep) */
 /* (claude/chargetiers) THE GEOMANCER'S THREE-TIER STAVE (src/geomancer.js GEO.tiers): her wind's quickness, the tier the hold has reached, and whether she is winding */
 const geoQuick = () => heavyWind() / GEO_K.wind;
 const geoTierNow = () => geoTierFor(P.atkHeld || 0, geoQuick(), HEAVY_START);

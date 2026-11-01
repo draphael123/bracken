@@ -31,7 +31,7 @@ try {
       T.s0=size(27); T.s1=size(50); T.s2=size(110);
       /* armoured while committed, cannot turn, creeps on */
       __bz(); K.atk=true; BK.press('atk'); for(let i=0;i<40;i++)BK.step(1); const xA=P().x,fA=P().face; K.left=true; for(let i=0;i<30;i++)BK.step(1); K.left=false; T.turned=P().face!==fA; T.crept=Math.round(P().x-xA); P().inv=0;P().hurt=0; const eA=__foe(14); BKT.damagePlayer(eA.x,6,{who:eA}); T.flinch=P().hurt>0; K.atk=false; BK.step(2); BK.sim(60);
-      const pz=n=>{__bz();const b=__foe(20,'brute');b.maxHp=b.hp;b.mini=true;b.poise=0;b.biteCd=99;BK.sim(2);P().st=P().maxSt;K.atk=true;BK.press('atk');for(let i=0;i<n;i++){P().inv=0.5;BK.sim(1);b.x=P().x+20;}K.atk=false;let most=0;for(let i=0;i<40;i++){P().inv=0.5;BK.sim(1);b.x=P().x+20;most=Math.max(most,b.poise||0);}return most;};
+      const pz=n=>{__bz();const b=__foe(20,'brute');b.maxHp=b.hp;b.mini=true;b.poise=0;b.biteCd=99;BK.sim(2);P().st=P().maxSt;K.atk=true;BK.press('atk');for(let i=0;i<n;i++){P().inv=0.5;BK.sim(1);b.x=P().x+20;}K.atk=false;let most=0;for(let i=0;i<40;i++){P().inv=0.5;BK.sim(1);b.x=P().x+20;most=Math.max(most,(b.broken>0||b.floored>BK.time)?999:(b.poise||0));}return most;};   /* (a bar the chop empties is BROKEN and reads 0 after: that is the biggest poise there is) */
       T.p1=pz(32); T.p3=pz(110);
       __bz(); P().rage=60; K.atk=true; BK.press('atk'); BK.step(2); T.atHot=Z().tierAt; K.atk=false; BK.sim(60);
       __bz(); K.atk=true; BK.press('atk'); let fired=-1,fw=0; for(let i=0;i<200;i++){BK.sim(1);if(P().heavy&&fired<0){fired=i;fw=P().bzWindF;}} K.atk=false; T.auto={fired,windF:fw}; BK.sim(60);
