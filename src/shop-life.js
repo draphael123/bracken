@@ -19,6 +19,8 @@ export const LINES = {
   shopSea: { greet: ['PERMISSION TO COME ABOARD, THEN.', 'MIND YOUR HEAD. SHE IS LOW IN THE WATER.'], bark: ['EVERYTHING HERE HAS BEEN IN THE SEA.', 'POLLY HAS OPINIONS ON YOUR PRICES.', 'A SQUARE DEAL OR NO DEAL.', 'SALT KEEPS EVERYTHING. EVEN BARGAINS.', 'THE TIDE TAKES CREDIT. I DO NOT.'], buy: ['SOLD, AND FAIRLY.', 'FAIR WINDS TO YOU.', 'A BARGAIN FOR US BOTH.'] },
   shopWell: { greet: ['SIT. THE WELL IS COOL. THE WATER IS FREE.', 'SHADE IS THE FIRST THING I SELL.'], bark: ['COOLER DOWN HERE THAN ANYWHERE ON THE ROAD.', 'THE SUN HATES A GOOD BARGAIN.', 'NOTHING I SELL HAS EVER GONE TO SAND.', 'DRINK FIRST. THEN BUY.', 'CLOTH FROM THE CARAVANS, OIL FROM THE WELL.'], buy: ['MAY YOUR SHADE LAST.', 'A GOOD DAY FOR BOTH OF US.', 'GO WELL. KEEP IT OUT OF THE SAND.'] },
 };
+/* THE INN'S BARKEEP: lighter than a shop's keeper (the room's own fire, lanterns, window and drinkers are src/redraw/tavern_backdrop.js): dust in the firelight and a line now and then */
+export const TAVERN_LINES = ['PULL UP A SEAT. THE FIRE IS FREE.', 'PRACTISE IN THE YARD. THE HAY FORGIVES.', 'FOUR AT A TABLE, ONE ROAD BETWEEN THEM.', 'THE ARENA IS ROPED OFF. NOT YET, NOT YET.', 'THE WARDROBE IS FOR THE HERO YOU WANT TO BE.'];
 export const SIGNS = { shop: 'THE STORE', shopCrag: 'HIGH STORE', shopSea: 'THE CHANDLER', shopWell: 'WELL STORE' };
 /* the store screen's keeper lines are the same shop's; the map's store is THE STORE */
 export const linesOf = id => LINES[id] || LINES.shop;
@@ -155,6 +157,13 @@ export function makeShopLife() {
     for (const [cx, k] of [[x0, 0], [x1, 2.1]]) { const f = Math.sin(t * 11 + k) + Math.sin(t * 17.3 + k * 2) * 0.6; g.globalAlpha = 0.10 + 0.04 * f; g.fillStyle = '#ffb35c'; g.beginPath(); g.arc(cx, y + 3, 9, 0, 7); g.fill(); g.globalAlpha = 1;
       rect(g, cx, y + 2, 1, 4, '#e8dcc0'); rect(g, cx, y - 1 + (f > 0.8 ? 1 : 0), 1, 3, '#ffd36b'); rect(g, cx, y - 1, 1, 1, '#fff6c8'); }
   }
+  /* THE INN: o = { cx, cy, time, bx, by (the bar's counter, world), hx (the hearth, world), px (nearest hero x), floor, text, textW, VW } */
+  function drawTavern(g, o) {
+    const t = o.time; motes(g, o.cx, o.cy, o.hx, o.floor, t); motes(g, o.cx, o.cy, o.bx, o.floor, t + 40);
+    const near = Math.abs(o.px - o.bx) < 170, k = Math.floor(t / 14), ph = t % 14;
+    if (near && ph < BARK_SHOW) { const s = TAVERN_LINES[k % TAVERN_LINES.length], w = o.textW(s, 6) + 10, a = Math.min(1, ph * 6, (BARK_SHOW - ph) * 4), bx = Math.round(Math.max(4, Math.min(o.VW - w - 4, o.bx - o.cx - w / 2))), by = o.by - o.cy - 62;
+      g.globalAlpha = Math.max(0, a); rect(g, bx - 1, by - 1, w + 2, 15, COL.ink); rect(g, bx, by, w, 13, '#2a2234'); rect(g, bx, by, w, 1, '#4a4058'); o.text(s, bx + w / 2, by + 3, COL.cream, 'center', 6); g.globalAlpha = 1; }
+  }
   const reset = () => { S.room = null; S.greeted = false; S.barkT = -99; S.buyT = -99; S.nodT = -99; S.lastTime = 0; };
-  return { drawRoom, storeLine, storeHead, pop, candles, bought, reset, state: S };
+  return { drawRoom, drawTavern, storeLine, storeHead, pop, candles, bought, reset, state: S };
 }
