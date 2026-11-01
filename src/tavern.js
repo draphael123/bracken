@@ -189,11 +189,12 @@ export function makeTavern(api) {
     if (!on()) return;
     let i = 0;
     for (const [p, c] of st.cardFor) {
-      const w = 132, h = 58, x = Math.round(VW / 2 - w / 2 + (i - (st.cardFor.size - 1) / 2) * (w + 4)), y = 26; i++;
+      const strip = !!api.heroStrip, w = 132, h = strip ? 84 : 58, x = Math.round(VW / 2 - w / 2 + (i - (st.cardFor.size - 1) / 2) * (w + 4)), y = 26; i++;
       api.board(x, y, w, h); const col = colourOf(api.PROG().tavern, p.n);
       api.text(api.tagOf(p) + ' WARDROBE', x + w / 2, y + 4, col.c, 'center', 6);
       const vals = [api.heroName(p.hero), api.weaponName(api.weaponOf(p)), col.name, tav().ring ? 'ON' : 'OFF'];
       ROWS.forEach((r, k) => { const yy = y + 15 + k * 9, sel = k === c.row; api.text((sel ? '> ' : '  ') + r, x + 6, yy, sel ? '#a8e06e' : '#c2c9c2', 'left', 6); api.text((sel ? '< ' : '') + vals[k] + (sel ? ' >' : ''), x + w - 6, yy, sel ? '#fff6e0' : '#c2c9c2', 'right', 6); });
+      if (strip) api.heroStrip(x + 4, y + 52, w - 8, p.hero, p);   /* (claude/hubpolish) every hero at a glance: yours lit, the others greyed */
       api.text('UP/DOWN  LEFT/RIGHT  E CLOSE', x + w / 2, y + h - 8, '#8a8f80', 'center', 6);
     }
   }
