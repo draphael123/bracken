@@ -219,7 +219,7 @@ export function validateProgress(p){
 /* A SKILL THAT WAS REPLACED IN ITS OWN SLOT (the Geomancer's LODESTONE became STONE WALL at level 9, 2026-09-24): a save that bought the
    old one owns the new one, in the same loadout slot - the price was the same. Done before the save is judged, so an id no catalog has
    any more is never "Invalid owned skill" (the save refused). */
-const RENAMED_SKILLS = { geomancer: { lodestone: 'stoneWall' } };
+const RENAMED_SKILLS = { geomancer: { lodestone: 'stoneWall' }, warden: { poleSpring: 'harrier', holdThem: 'pinTwist' } };   /* (claude/wardenid) her POLE SPRING and HARRIER became ONE skill, the POLE-VAULT (id harrier); HOLD THEM DOWN folded into TWIST IT: a save that bought either keeps it, in the same slot */
 function renameSkills(p){
  for(const [h,ren] of Object.entries(RENAMED_SKILLS))for(const [from,to] of Object.entries(ren)){
   const own=p.skillOwned&&object(p.skillOwned[h])?p.skillOwned[h]:null;if(own&&own[from]!==undefined){if(own[from]===true)own[to]=true;delete own[from];}
