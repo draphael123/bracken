@@ -9006,6 +9006,7 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow, tag = blow) { const raw0 = dmg,
   if (!e.maxHp && e.alive && !isSolid(Math.floor((e.x + dir * (e.w / 2 + 3)) / TS), Math.floor((e.y - 4) / TS))) e.x += dir * (KNOCK_SKIP.has(e.t) ? 2 : (weaponOf(hero()) || {}).shove || 2);   /* (claude/foepass) a greatsword shoves it further off the blow */
   if (dmg > 0 && e.alive && tal('bleed') && !isPyro() && !isPaladin()) { e.bleed = 3; e.bleedN = tal('bleed'); } // OPEN WOUND
   if (dmg > 0 && e.alive && isReaper() && tal('rend') && (e.mark || 0) > 0) { e.bleed = Math.max(e.bleed || 0, 3); e.bleedN = Math.max(e.bleedN || 0, 2); } // REND: the mark is a wound waiting for the blade
+  if (e.hp <= 0 && e.t === 'king' && e.stage === 'glade' && !e.rage && !e.rageSaved && e.alive) { e.hp = 1; e.rageSaved = true; }   /* (claude/gorm3) HE ALWAYS ENRAGES: a blow that would end him before his rage leaves him a sliver ONCE - the rage plays when his opening ends (the told transition is the fight's last act) */
   if (e.hp <= 0 && e.t === 'king' && GMH && GMH.spare(e)) e.flash = 0.3;   /* (claude/gorm2) HIS P1 BAR EMPTIES: no death - the court torches the wood and his bearers carry him off (src/gorm-hands.js spare) */
   if (e.hp <= 0) {
     if (e.t === 'husk') {   /* THE BELLY GOES. Killing one at arm's length costs you the same poison the green water carries. */
