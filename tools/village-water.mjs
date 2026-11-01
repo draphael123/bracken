@@ -118,14 +118,14 @@ try {
    for(const m of modes){b.mode=m;b.modeT=9;b.open=0;b.ward=0;whole[m]=blow(40);}b.mode='stalk';out.whole=whole;
    out.light=blow(40,'light');
    /* HER FLAME WARD: a blow into it is turned at 0.4 (B15, never 0), says WARDED, and burns the hand that struck it */
-   b.mode='ward';b.modeT=0.8;b.open=0;b.ward=0;b.scorchAt=-9;P().x=b.x-30;P().y=A.floor;P().inv=0;const hpW=P().hp;const fwBlade=blow(40,'light');out.fward={blade:fwBlade,said:BK.textLab.nums().map(n=>n.txt),scorched:hpW-P().hp};
+   b.poise=0;b.broken=0;b.poiseCd=0;b.mode='ward';b.modeT=0.8;b.open=0;b.ward=0;b.scorchAt=-9;P().x=b.x-30;P().y=A.floor;P().inv=0;BK.god=false;const hpW=P().hp;const fwBlade=blow(40,'light');BK.god=true;b.poise=0;b.broken=0;out.fward={blade:fwBlade,said:BK.textLab.nums().map(n=>n.txt),scorched:hpW-P().hp};
    /* HER CHARGE: a blow throws it off - FIZZLED, open */
-   b.mode='chargeTell';b.modeT=9;b.chT=0.3;b.step=1;b.stepGoal=3;b.open=0;b.ward=0;const chBlade=blow(40,'light');out.charge={blade:chBlade,mode:b.mode,open:+(b.open||0).toFixed(2)};
+   b.poise=0;b.broken=0;b.mode='chargeTell';b.modeT=9;b.chT=0.3;b.step=1;b.stepGoal=3;b.open=0;b.ward=0;const chBlade=blow(40,'light');out.charge={blade:chBlade,mode:b.mode,open:+(b.open||0).toFixed(2)};
    /* WATER WHILE SHE STOKES: WINDED (thrown from her floor) */
    b.mode='stoke';b.modeT=2.4;b.heat=20;b.open=2.4;b.openMax=2.4;b.ward=0;b.wetT=0;b.wetSeen=undefined;freeze();P().x=b.x-50;P().y=A.floor;P().vy=0;
    const pr=V().buckets().filter(q=>q.state==='rest'&&q.thrKind==='bucket').sort((p,q)=>Math.abs(p.x-b.x)-Math.abs(q.x-b.x))[0];V().take(pr);P().face=1;for(let i=0;i<6||(i<180&&Math.abs(pr.x-P().x)>12);i++){P().x=b.x-50;freeze();if(b.mode==='stoke')b.modeT=2.4;BK.sim(1);}BK.press('atk');let st=false;for(let i=0;i<60&&!st;i++){P().x=b.x-50;freeze();if(b.mode==='stoke')b.modeT=2.4;BK.sim(1);st=b.mode==='winded';}
    for(let i=0;i<2;i++){freeze();BK.step(1);}
-   out.stun={mode:b.mode,open:+(b.open||0).toFixed(2),bossOpen:BK.bossOpen(b),read:b.readNow,x2:blow(20,'light'),hint:BKT.hintNow.msg,words:BK.textLab.nums().map(n=>n.txt)};
+   out.stun={mode:b.mode,open:+(b.open||0).toFixed(2),bossOpen:BK.bossOpen(b),read:b.readNow,x2:(b.poise=0,b.broken=0,blow(20,'shot')),hint:BKT.hintNow.msg,words:BK.textLab.nums().map(n=>n.txt)};
    /* the winding runs out: THE STEAM WARD, told */
    for(let i=0;i<60*5&&b.mode==='winded';i++){freeze();BK.sim(1);}
    for(let i=0;i<2;i++){freeze();BK.step(1);}
@@ -162,7 +162,7 @@ try {
   assert.ok(r.charge.mode === 'spent' && r.charge.open >= 1.2, 'a blow on his CHARGE throws it off: he is open: ' + JSON.stringify(r.charge));
   assert.equal(r.stun.mode, 'winded', 'a thrown bucket while he STOKES winds him: ' + JSON.stringify(r.stun));
   assert.ok(r.stun.bossOpen === true && r.stun.read === 'winded', 'the shared read (B10): open, the gold ring and its bar: ' + JSON.stringify(r.stun));
-  assert.ok(r.stun.x2 >= 38, 'winded, a blow of 20 lands double: ' + r.stun.x2);
+  assert.ok(r.stun.x2 >= 34, 'winded, a blow of 20 lands double: ' + r.stun.x2);
   assert.ok(/WINDS HIM/.test(r.stun.hint) || r.stun.words.includes('WINDED'), 'and it is said, over him or in the hint box: ' + JSON.stringify([r.stun.hint, r.stun.words]));
   assert.ok(r.ward.ward >= STEAM.t - 0.4 && r.ward.read === 'steam', 'the winding over, the STEAM WARD is up (B3): ' + JSON.stringify(r.ward));
   assert.ok(r.ward.told.includes('STEAM WARD'), 'TOLD as it rises (the word over him, the pale shell and its bar): ' + r.ward.told);

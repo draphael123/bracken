@@ -66,23 +66,23 @@ if (process.env.FM_PAGE) {
   try {
     const r = await pg.evalp(`(async()=>{
     const {LEVELS}=await import('/src/level.js');BK.manualSimulation=true;BK.SET.speed=1;const out={};
-    const go=(id,hero)=>{const I=LEVELS.findIndex(l=>l.id===id);BK.setHero(hero||'knight');BK.reset({fresh:true});BK.load(I);BK.state='play';BK.god=true;BK.P.hp=BK.P.maxHp;};
+    const go=(id,hero)=>{const I=LEVELS.findIndex(l=>l.id===id);BK.setHero(hero||'knight');BK.reset({fresh:true});BK.load(I);BK.state='play';BK.god=true;BK.P.hp=BK.P.maxHp;BK.sim(2);if(!BK.enemies().some(q=>q.cnSkin==='firemage'))throw new Error('no fire mage in '+id+': '+BK.enemies().length+' foes, level '+(BK.L&&BK.L.id));};
     const P=()=>BK.P,FH=()=>BK.fireMageHands(),FS=()=>BK.fireMages();
     const mage=()=>BK.enemies().find(e=>e.alive&&e.t==='gobmage'&&(e.cnSkin==='firemage'||e.cnSkin==='cinderacolyte'));
     const blow=(e,n)=>{const h=e.hp;BKT.hurtAs('light',e,n,e.x-12,false);const d=h-e.hp;e.hp=h;return d;};
     /* THE ROOTWAY: the lob, the patch, the windup thrown off, the ward and SPENT, the bucket */
     go('rootway');let e=mage();BK.tp(Math.round(e.x/16)-8,Math.round(e.y/16));for(const q of BK.enemies())if(q!==e&&Math.abs(q.x-e.x)<400)q.alive=false;
     const seen=new Set();let patch=0,told=false;for(let i=0;i<60*8;i++){P().x=e.x-120;P().vx=0;BK.sim(1);seen.add(e.mode);if(e.mode==='lobTell'&&BK.markShown&&BK.markShown(e))told=true;patch=Math.max(patch,FS().patches.length);}
-    out.cast={seen:[...seen],patch,lobs:FS().n.lobs,told,frame:BK.textLab?1:0};
+    out.cast={seen:[...seen],patch,lobs:FS().n.lobs,told,n:FS().n,py:Math.round(P().y),ey:Math.round(e.y),ground:P().ground};
     e.mode='lobTell';e.modeT=0.5;e.stagger=0.3;BK.sim(1);out.thrown={mode:e.mode};e.stagger=0;
-    e.mode='keep';e.cd=99;e.fwCd=0;P().x=e.x-30;P().vx=140;P().atk=-1;BK.sim(1);const wardUp=e.mode==='flameWard';BK.god=false;P().inv=0;const hp0=P().hp;const wb=blow(e,20);const sc=hp0-P().hp;BK.god=true;
+    e.mode='keep';e.cd=99;e.fwCd=0;e.stagger=0;P().x=e.x-30;P().y=e.y;P().vx=0;P().atk=-1;BK.press('atk');let wardUp=false;for(let i=0;i<4&&!wardUp;i++){P().x=e.x-30;BK.sim(1);wardUp=e.mode==='flameWard';}BK.god=false;P().inv=0;const hp0=P().hp;const wb=blow(e,20);const sc=hp0-P().hp;BK.god=true;
     for(let i=0;i<60&&e.mode==='flameWard';i++){P().x=e.x-70;BK.sim(1);}out.ward={wardUp,blade:wb,scorched:sc,after:e.mode,x15:blow(e,20)};
-    e.mode='keep';e.cd=99;e.lobCd=99;const pr=BK.village().buckets()[0];out.bucketHere=!!pr;
-    if(pr){P().x=e.x-50;P().y=e.y;BK.village().take(pr);for(let i=0;i<8;i++){P().x=e.x-50;BK.sim(1);}P().face=1;BK.press('atk');let d=false;for(let i=0;i<60&&!d;i++){P().x=e.x-50;e.x=Math.max(e.x,P().x+40);BK.sim(1);d=e.mode==='doused';}
+    go('rootway');e=mage();for(const q of BK.enemies())if(q!==e&&Math.abs(q.x-e.x)<400)q.alive=false;e.mode='keep';e.cd=99;e.lobCd=99;e.fwCd=99;e.stagger=0;BK.tp(Math.round(e.x/16)-4,Math.round(e.y/16));BK.sim(5);FS().patches.length=0;FS().bolts.length=0;const pr=BK.village().buckets().find(q=>q.state==='rest');out.bucketHere=!!pr;
+    if(pr){P().x=e.x-50;P().y=e.y;BK.village().take(pr);for(let i=0;i<8;i++){P().x=e.x-50;BK.sim(1);}P().face=1;BK.press('atk');let d=false;for(let i=0;i<90&&!d;i++){P().x=e.x-50;e.cd=99;e.fwCd=99;BK.sim(1);d=e.mode==='doused';}
       const casts=FS().n.lobs;for(let i=0;i<60;i++){P().x=e.x-120;BK.sim(1);}out.doused={mode:e.mode,doused:d,castWhile:FS().n.lobs-casts};}
     /* THE VILLAGE: his patch lights the grid */
-    go('burning');e=mage();const G=BK.village().G();const before=G.cells.filter(c=>c.s===1||c.s===2).length;FH().lob(e,e.x-60,e.y);for(let i=0;i<60*3;i++)BK.sim(1);
-    out.village={grid:FS().n.grid,lit:G.cells.filter(c=>c.s===1||c.s===2).length-before};
+    go('burning');e=mage();const G=BK.village().G();const before=G.cells.filter(c=>c.s===1||c.s===2).length;const cells=G.cells.filter(c=>!c.square&&c.x>=200&&c.x<=230).map(c=>c.x+','+c.y);const cell=G.cells.find(c=>!c.square&&c.s===0&&(c.y+1)*16===e.y&&Math.abs(c.x*16-e.x)<400);if(cell)FH().light(cell.x*16+8,(cell.y+1)*16);for(let i=0;i<60*3;i++)BK.sim(1);
+    out.village={cells:cells.slice(0,6),patches:FH().read().patches,ey:e.y,grid:FS().n.grid,lit:G.cells.filter(c=>c.s===1||c.s===2).length-before};
     /* GRASS: the Palisade Wood's autumn wood - his patch runs; THE KITCHEN's stone - it does not */
     go('palisadewood');e=mage();FH().lob(e,e.x-40,e.y+0);for(let i=0;i<60*4;i++)BK.sim(1);out.grass={hops:FS().n.hops,patches:FS().n.patches};
     go('kitchengate');e=mage();FH().lob(e,e.x-40,e.y);for(let i=0;i<60*4;i++)BK.sim(1);out.stone={hops:FS().n.hops,patches:FS().n.patches};

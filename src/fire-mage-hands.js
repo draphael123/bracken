@@ -65,7 +65,7 @@ export function makeFireMageHands(ctx) {
       if (hit) { b.dead = true;
         if (hit.fwUp) { M.n.melted++; ctx.sfx.emberMelt && ctx.sfx.emberMelt(); ctx.burst(b.x, b.y, 5, ['#ff9a5c', '#ffd36b'], 40, 0.3); continue; }   /* the pyromancer's ward melts it */
         M.n.boltHit++; ctx.asPlayer(hit, () => ctx.hurtHero(b.x, FM.lobDmg, { who: b.owner, name: 'THE FIRE BOLT' }));
-        const gy = groundY(b.x, hit.y - 2); if (gy !== null && Math.abs(gy - hit.y) < 6) light(b.x, gy, 0); continue; }
+        const gy = groundY(b.x, Math.max(b.y, hit.y - 8)); if (gy !== null && gy - hit.y < 40) light(b.x, gy, 0); continue; }   /* it bursts on you and the ground under you catches */
       const tx = Math.floor(b.x / TS()), ty = Math.floor((b.y + 2) / TS());
       if (b.vy > 0 && ctx.standable(tx, ty) && b.y + 2 >= ty * TS()) { b.dead = true; light(b.x, ty * TS(), 0); continue; }
       if (ctx.solid(Math.floor((b.x + Math.sign(b.vx || 1) * 3) / TS()), Math.floor(b.y / TS()))) { b.dead = true; const gy = groundY(b.x - Math.sign(b.vx || 1) * 6, b.y); if (gy !== null) light(b.x - Math.sign(b.vx || 1) * 6, gy, 0); continue; }
@@ -96,6 +96,7 @@ export function makeFireMageHands(ctx) {
       g.globalAlpha = gut ? 0.5 : 0.9; g.strokeStyle = gut ? '#ff6b2c' : '#ffd36b'; g.lineWidth = 1; g.beginPath(); g.arc(x, y, r, 0, 7); g.stroke(); g.globalAlpha = 1; }
     if (e.mode === 'doused') { for (let q = 0; q < 3; q++) { const k2 = (time * 0.9 + q / 3) % 1; g.globalAlpha = 0.6 * (1 - k2); g.fillStyle = '#d8dce4'; g.fillRect(x - 4 + q * 4 + R(Math.sin(time * 3 + q) * 2), y - 10 - R(k2 * 14), 2, 2); } g.globalAlpha = 1; }   /* the steam off his dead staff */
     if (e.mode === 'spent') { g.globalAlpha = 0.5 + 0.3 * Math.sin(time * 10); g.strokeStyle = '#ffd36b'; g.beginPath(); g.ellipse(x, y + 9, 9, 3, 0, 0, 7); g.stroke(); g.globalAlpha = 1; } };   /* SPENT: the gold ring of an opening (B10) */
+  H.light = (x, y) => { if (M) light(x, y, 0); };   /* (tools/fire-mage.mjs: a patch put down where a bolt would land) */
   H.read = () => M && { n: { ...M.n }, bolts: M.bolts.length, patches: M.patches.map(p => ({ x: R(p.x), y: R(p.y), gen: p.gen, t: +p.t.toFixed(2) })) };
   return H;
 }
