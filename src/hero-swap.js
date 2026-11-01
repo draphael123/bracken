@@ -82,7 +82,7 @@ export function makeSwap(api) {
       if (row.owned) {
         api.text('L' + Math.max(0, row.level), cx + 4, gy + 41, sel ? '#fff6e0' : '#c2c9c2', 'left', 6);
         const ic = api.icon(row.id); if (ic) g.drawImage(ic, 0, 0, ic.width, ic.height, cx + cw - 4 - Math.min(9, ic.width), gy + 41, Math.min(9, ic.width), Math.min(9, ic.height));
-      } else api.text('LOCKED', cx + (cw >> 1), gy + 41, '#6a6a7a', 'center', 6);
+      }
       if (act) { g.fillStyle = '#ffd36b'; g.fillRect(cx + (cw >> 1) - 2, gy + 1, 5, 2); }   /* the one you play: a gold pip on top of his cell */
     });
     const row = r[S.i], ly = gy + CELL_H + 4;

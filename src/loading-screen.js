@@ -174,10 +174,10 @@ function stand(t, x, gy) {
   px(x + 3, y, 8, 6, '#c9d1dc'); px(x + 4, y + 2, 6, 2, '#1b1626'); px(x + 2, y + 6, 10, 6, '#3f7fd0'); px(x + 5, y + 6, 4, 6, '#c9463d');
   px(x + 1 + arm, y + 6 + up, 2, 5, '#c9d1dc'); px(x + 11 - arm, y + 6 + up, 2, 5, '#c9d1dc'); px(x + 3, y + 12, 3, 4 + (k === 2 ? 0 : 0), '#3a2a1a'); px(x + 8, y + 12, 3, 4, '#3a2a1a');
 }
-function drawHero(h, t, cx, gy, mirror) {
+function drawHero(h, t, cx, gy, mirror, sc = 2) {
   const n = h.list.length, f = h.list[Math.floor(t / 222) % n];   // his idle, at the 4.5 a second the title camp plays it
   if (!f || !f.width) return;
-  const sc = 2, w = f.width * sc, hh = f.height * sc, mid = h.cx * sc, top = gy - h.bottom * sc;
+  const w = f.width * sc, hh = f.height * sc, mid = h.cx * sc, top = gy - h.bottom * sc;
   ag.save();
   if (mirror) { ag.translate(cx + mid, 0); ag.scale(-1, 1); ag.drawImage(f, 0, top, w, hh); } else ag.drawImage(f, Math.round(cx - mid), top, w, hh);
   ag.restore();
@@ -212,8 +212,8 @@ function paint(now) {
   // THE CAMP: the others you own stand round the fire (left and right of it, a step back, every one facing it), then the hero you play stands at the fire in front
   // (and in co-op the second player across it). Nobody is a drawing of a knight: each is his own baked frames.
   const list = S.heroes, camp = campNow();
-  camp.forEach((h, i) => { const left = i % 2 === 0, k = i >> 1, x = left ? 92 - k * 24 : 190 + k * 24; drawHero(h, t + i * 340, x, GY + 1, !left); });
-  if (list.length) { drawHero(list[0], t, 126, GY + 3, false); if (list[1]) drawHero(list[1], t + 700, 188, GY + 3, true); }
+  camp.forEach((h, i) => { const left = i % 2 === 0, k = i >> 1, x = left ? 88 - k * 22 : 196 + k * 22; drawHero(h, t + i * 340, x, GY + 1, !left); });
+  if (list.length) { drawHero(list[0], t, 122, GY + 4, false, 3); if (list[1]) drawHero(list[1], t + 700, 192, GY + 4, true, 3); }
   else stand(t, 118, GY + 2);
   foreground(t);
   cg.imageSmoothingEnabled = false;
