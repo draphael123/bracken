@@ -258,8 +258,70 @@ export function pacing(lv, o = {}) {   /* o.hero (claude/reachcore, opt-in): the
       backtrack: back, backtrackPct: total ? Math.round(back / total * 100) : 0, backRuns, offRoutePct: reach ? Math.round(off / reach * 100) : 0,
       pockets: pockets.length, offLoot, foesOnRoute: foesOn, foesOffRoute: foesOff, mix, alternations, landingFoes, blindDrops },
     xAt: B.map(b => b.x), yAt: B.map(b => b.y), raw: B.map(b => [+b.threat.toFixed(1), +(b.plat + b.haz).toFixed(1)]),
-    route: pts, cum,
+    route: pts, cum, kind, foot, spikeSeen: [...spikeSeen], Lref: L,
   };
+}
+
+/* PLATFORMING SECTIONS (Daniel 10-31, brief platforming-audit-1101): a BEAT is one required platforming move on the main route (a gap jump, a 2+ row
+   hop, a 3+ row drop, a ride/bridge, a climb run, a spike the route threads, a moving or crumbling piece within 8 tiles of it); a SECTION is 5+ beats
+   no more than 16 route tiles apart, 24+ tiles long, with no fight/ambush/mini/boss stretch (F H A M B) inside it. Events inside such a stretch are
+   "under fire", counted apart. A HAZARD SWIM also counts: a swim run of 48+ route tiles with no fight stretch that threads harm-water, a current or
+   a spike (a plain open swim does not). Pure function of pacing()'s result, so a fixture can feed it. */
+export const PLAT = { beats: 5, gap: 16, minLen: 24, swimLen: 48, near: 8 };
+export function platforming(r, o = {}) {
+  const P = { ...PLAT, ...o }, L = r.Lref, W = r.W, pts = r.route, cum = r.cum, kind = r.kind, foot = r.foot, strip = r.strip, BLOCK = 'FHAMB';
+  const total = cum[cum.length - 1] || 1, bucketOf = c => Math.min(strip.length - 1, Math.max(0, Math.floor(c / STEP)));
+  const ev = [];
+  for (let i = 1; i < pts.length; i++) {
+    const [x0, y0] = pts[i - 1], [x1, y1] = pts[i], dx = Math.abs(x1 - x0), dy = y1 - y0, k = kind[i];
+    if (k === 'bridge' || k === 'ride') { ev.push({ c: cum[i], i, k }); continue; }
+    if (k === 'swim') continue;
+    if (k === 'climb') { if (kind[i - 1] !== 'climb') ev.push({ c: cum[i], i, k }); continue; }
+    if (dx >= 2 && dy >= -1 && dy <= 1) { const s = Math.sign(x1 - x0); for (let x = x0 + s; x !== x1; x += s) if (!foot[y0 * W + x] && !foot[y1 * W + x]) { ev.push({ c: cum[i], i, k: 'gap' }); break; } continue; }
+    if (dy <= -2 || (dx >= 2 && dy < -1)) { ev.push({ c: cum[i], i, k: 'hop' }); continue; }
+    if (dy >= 3 && k === 'fall') { ev.push({ c: cum[i], i, k: 'drop' }); continue; }
+  }
+  const hz = new Set();
+  for (const s of (r.spikeSeen || [])) { const [sx, sy] = s.split(',').map(Number); let bi = -1, bd = 1e9; for (let j = 0; j < pts.length; j++) { const d = Math.abs(pts[j][0] - sx) + Math.abs(pts[j][1] - sy); if (Math.abs(pts[j][0] - sx) <= 2 && Math.abs(pts[j][1] - sy) <= 1 && d < bd) { bd = d; bi = j; } } if (bi >= 0) hz.add(bi); }
+  for (const bi of hz) ev.push({ c: cum[bi], i: bi, k: 'spike' });
+  const near = (x, y, rx, ry) => { let bi = -1, bd = 1e9; for (let i = 0; i < pts.length; i++) { const dx = Math.abs(pts[i][0] - x), dy = Math.abs(pts[i][1] - y); if (dx <= rx && dy <= ry && dx + dy < bd) { bd = dx + dy; bi = i; } } return bi; };
+  const gad = [];
+  for (const m of (L.moversExtra || [])) gad.push(['mover:' + (m.kind || '?'), Math.floor((m.px ?? m.x ?? m.x0 ?? 0) / TS), Math.floor((m.py ?? m.y ?? m.y0 ?? 0) / TS)]);
+  for (const m of (L.crumbles || [])) gad.push(['crumble', m.x0, m.row]);
+  for (const m of (L.zipLines || [])) gad.push(['zip', Math.floor(m.x0 / TS), Math.floor(m.y0 / TS)]);
+  for (const m of (L.ropes || [])) gad.push(['rope', Math.floor(m.x0 / TS), Math.floor(m.y0 / TS)]);
+  for (const m of (L.hoists || [])) gad.push(['hoist', m.x, m.top]);
+  for (const m of (L.boats || [])) gad.push(['boat', Math.floor(m.px / TS), Math.floor(m.py / TS)]);
+  for (const m of (L.chairos || [])) gad.push(['chairo', Math.floor(m.cx / TS), Math.floor(m.cy / TS)]);
+  for (const m of (L.airRails || [])) gad.push(['airrail', Math.floor(m.x0 / TS), Math.floor(m.y / TS)]);
+  for (const m of (L.carousels || [])) gad.push(['carousel', m.x0, m.row]);
+  for (const e of (L.ents || [])) if (['mover', 'pad', 'vent', 'balloon', 'stal', 'plank', 'bridge'].includes(e.t)) gad.push(['ent:' + e.t, e.x, e.y]);
+  const seenG = []; for (const [gk, gx, gy] of gad) { const j = near(gx, gy, P.near, P.near); if (j < 0) continue; if (seenG.some(q => Math.abs(q[0] - gx) <= 3 && Math.abs(q[1] - gy) <= 3)) continue; seenG.push([gx, gy]); ev.push({ c: cum[j], i: j, k: gk, g: 1 }); }
+  ev.sort((a, b) => a.c - b.c);
+  const blocked = e => BLOCK.includes(strip[bucketOf(e.c)]);
+  const fused = ev.filter(blocked).length, live = ev.filter(e => !blocked(e));
+  const beats = []; for (const e of live) { const b = beats[beats.length - 1]; if (b && e.c - b.c <= 3 && !(e.g && b.g)) { b.kinds.push(e.k); b.cEnd = e.c; b.g = b.g || e.g; } else beats.push({ c: e.c, cEnd: e.c, i: e.i, kinds: [e.k], g: e.g }); }
+  const blockedBetween = (c0, c1) => { for (let b = bucketOf(c0); b <= bucketOf(c1); b++) if (BLOCK.includes(strip[b])) return true; return false; };
+  const chain = (arr, gap) => { const secs = []; let cur = null;
+    for (const b of arr) { if (cur && b.c - cur.cEnd <= gap && !blockedBetween(cur.cEnd, b.c)) { cur.beats.push(b); cur.cEnd = b.cEnd; } else { if (cur) secs.push(cur); cur = { c0: b.c, cEnd: b.cEnd, beats: [b] }; } }
+    if (cur) secs.push(cur); return secs; };
+  const shape = (s, type) => { const a = pts[s.beats[0].i], z = pts[s.beats[s.beats.length - 1].i]; return { type, beats: s.beats.length, len: s.cEnd - s.c0, c0: s.c0, from: a, to: z, pct: [Math.round(100 * s.c0 / total), Math.round(100 * s.cEnd / total)] }; };
+  const all = chain(beats, P.gap);
+  const sections = all.filter(s => s.beats.length >= P.beats && s.cEnd - s.c0 >= P.minLen).map(s => shape(s, 'jump'));
+  const nearMiss = all.filter(s => s.beats.length >= 3 && !(s.beats.length >= P.beats && s.cEnd - s.c0 >= P.minLen)).map(s => shape(s, 'near-miss'));
+  // hazard swims: a run of swim steps (breaks of <= 8 tiles allowed) with no fight bucket, that touches harm-water, a current or a spike
+  const pools = (L.pools || []).filter(p => p.swim && !p.arenaTide), curs = (L.deep && L.deep.currents) || [], vents = ((L.deep && L.deep.vents) || []).filter(v => v.hot), hazPool = (x, y) => curs.some(c => x >= c.x0 - 1 && x <= c.x1 + 1 && y >= c.y0 - 1 && y <= c.y1 + 1) || vents.some(v => Math.abs(x - v.x) <= 2) || pools.some(p => (p.harm || p.flow) && x * TS >= p.x0 && x * TS < p.x1 && y * TS >= p.y - TS * 3 && y * TS <= (p.bottom ?? p.y + 64) + TS);
+  const swims = []; let cur = null;
+  for (let i = 1; i < pts.length; i++) {
+    if (kind[i] !== 'swim' || BLOCK.includes(strip[bucketOf(cum[i])])) continue;
+    const h = hazPool(pts[i][0], pts[i][1]) || [...hz].some(j => Math.abs(cum[j] - cum[i]) <= 1);
+    if (cur && cum[i] - cur.cEnd <= 8 && !blockedBetween(cur.cEnd, cum[i])) { cur.cEnd = cum[i]; cur.last = i; cur.haz = cur.haz || h; }
+    else { if (cur) swims.push(cur); cur = { c0: cum[i], cEnd: cum[i], first: i, last: i, haz: h }; }
+  }
+  if (cur) swims.push(cur);
+  const swimSecs = swims.filter(s => s.haz && s.cEnd - s.c0 >= P.swimLen).map(s => ({ type: 'swim', beats: 0, len: s.cEnd - s.c0, c0: s.c0, from: pts[s.first], to: pts[s.last], pct: [Math.round(100 * s.c0 / total), Math.round(100 * s.cEnd / total)] }));
+  const plainSwims = swims.filter(s => !s.haz && s.cEnd - s.c0 >= P.swimLen).length;
+  return { sections: [...sections, ...swimSecs].sort((a, b) => a.c0 - b.c0), jumpSections: sections.length, swimSections: swimSecs.length, plainSwims, nearMiss, nBeats: beats.length, underFire: fused, total };
 }
 
 const LEGEND = 'F fight  P platforming  H both  W swim  A ambush  M mini  B boss  X set-piece  R rest  S quiet+optional  - light  . EMPTY\n' +
@@ -295,5 +357,5 @@ if (isMain) {
     const pc = (a, p) => a[Math.min(a.length - 1, Math.floor(a.length * p))];
     console.log('threat per stretch  p25 ' + pc(th, .25) + '  p50 ' + pc(th, .5) + '  p60 ' + pc(th, .6) + '  p75 ' + pc(th, .75) + '  p90 ' + pc(th, .9));
     console.log('platform+hazard     p25 ' + pc(pl, .25) + '  p50 ' + pc(pl, .5) + '  p60 ' + pc(pl, .6) + '  p75 ' + pc(pl, .75) + '  p90 ' + pc(pl, .9)); }
-  if (jsonOut) { writeFileSync(jsonOut, JSON.stringify(out.map(r => ({ ...r, cum: undefined })))); console.log('wrote ' + jsonOut); }
+  if (jsonOut) { writeFileSync(jsonOut, JSON.stringify(out.map(r => ({ ...r, cum: undefined, kind: undefined, foot: undefined, spikeSeen: undefined, Lref: undefined })))); console.log('wrote ' + jsonOut); }
 }
