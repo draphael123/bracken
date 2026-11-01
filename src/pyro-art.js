@@ -53,15 +53,15 @@ export function dome(g, x, y, t, K, now) {
 }
 
 /* ---------------------------------------------------------------- BALLS */
-const BALL_R = [0, 3, 5, 8], BALL_TAIL = [0, 5, 9, 15];
+const BALL_R = [0, 3, 5, 8, 10, 13], BALL_TAIL = [0, 5, 9, 15, 18, 22];   /* (claude/pyrocontrols) five sizes */
 export function ballSprite(size, f, tail) {   /* the ball moving RIGHT (tail to the left); no tail: the held ball, centred */
   return once('b' + size + '_' + f + (tail ? 't' : ''), () => {
     const r = BALL_R[size], T = tail ? BALL_TAIL[size] : 0, W = T + 2 * r + 8, H = 2 * r + 10, bx = T + r + 4, by = H >> 1, [c, g] = mk(W, H, bx, by);
     for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {                                                                           /* the body: hot at the middle, orange at the skin */
       const d = Math.hypot(x - bx, y - by); if (d > r + 1.2) continue; const k = d / r;
       if (d > r + 0.3) { px(g, x, y, C.rd, 0.7); continue; }
-      px(g, x, y, k < 0.28 ? (size === 3 ? C.wh : C.cr) : k < 0.55 ? (size >= 2 ? C.cr : C.yl) : k < 0.8 ? C.am : C.or); }
-    if (size >= 2) for (let i = 0; i < size + 1; i++) { const an = -Math.PI / 2 + (hash(i * 5 + f * 17 + size) - 0.5) * 2.2, h = 1 + Math.floor(hash(i * 3 + f * 11) * (size === 3 ? 4 : 3));
+      px(g, x, y, k < 0.28 ? (size >= 4 ? C.wh : C.cr) : k < 0.55 ? (size >= 2 ? C.cr : C.yl) : k < 0.8 ? C.am : C.or); }
+    if (size >= 2) for (let i = 0; i < size + 1; i++) { const an = -Math.PI / 2 + (hash(i * 5 + f * 17 + size) - 0.5) * 2.2, h = 1 + Math.floor(hash(i * 3 + f * 11) * (size >= 3 ? 4 : 3));
       for (let k = 1; k <= h; k++) px(g, bx + Math.round(Math.cos(an) * (r + k - 1)), by + Math.round(Math.sin(an) * (r + k - 1)), k === h ? C.or : C.am); }   /* tongues off the crown */
     if (tail) { for (let k = 1; k <= T; k++) { const hh = r * Math.pow(1 - k / (T + 1), 1.05) * (0.85 + 0.3 * hash(k * 7 + f * 29 + size)), x = bx - r + 1 - k;
         for (let y = -Math.ceil(hh); y <= Math.ceil(hh); y++) { const u = Math.abs(y) / Math.max(0.5, hh); if (u > 1) continue; if (k > T * 0.45 && ((x + y) & 1)) continue;
@@ -77,8 +77,9 @@ export function held(g, x, y, step, prog, now) {
   if (step < 1) return; const r = BALL_R[step], f = Math.floor(now * 12) % 2;
   disc(g, x, y, r + 3, C.am, 0.14 + 0.1 * prog);
   blit(g, ballSprite(step, f, false), x, y, false);
-  if (step < 3 && prog > 0.55) ringPx(g, x, y, r + 2, C.yl, 0.2 + 0.7 * (prog - 0.55) / 0.45);                                       /* the swell: the next size is coming */
-  if (step === 3) { const pu = Math.floor(now * 10) % 2; ringPx(g, x, y, r + 3 + pu, C.cr, 0.75 - 0.3 * pu); ringPx(g, x, y, r + 6 + pu * 2, C.yl, 0.3); disc(g, x, y, r - 3, C.wh, 0.35 * pu); }
+  if (step < 5 && prog > 0.55) ringPx(g, x, y, r + 2, C.yl, 0.2 + 0.7 * (prog - 0.55) / 0.45);                                       /* the swell: the next size is coming */
+  if (step === 3 || step === 4) ringPx(g, x, y, r + 3, step === 4 ? C.cr : C.yl, 0.35 + 0.2 * (step - 3));   /* loaded, not yet ready */
+  if (step === 5) { const pu = Math.floor(now * 10) % 2; ringPx(g, x, y, r + 3 + pu, C.cr, 0.75 - 0.3 * pu); ringPx(g, x, y, r + 6 + pu * 2, C.yl, 0.3); disc(g, x, y, r - 3, C.wh, 0.35 * pu); }
   for (let i = 0; i < step; i++) { const an = now * 7 + i * Math.PI * 2 / step; px(g, x + Math.cos(an) * (r + 4), y + Math.sin(an) * (r + 3), i % 2 ? C.yl : C.am); }
 }
 

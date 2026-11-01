@@ -51,6 +51,8 @@ try {
       K.block = true; hold(); BK.sim(1); K.block = false; r.upAtOnce = Wd().up; let n = 1; while (Wd().up && n < 120) { hold(); BK.sim(1); n++; } r.frames = n; r.len = Wd().len;
       r.cdAfter = +Wd().cd.toFixed(2); const w0 = Wd().stats.wards; K.block = true; BK.sim(1); K.block = false; BK.sim(2); r.inCd = Wd().stats.wards - w0;
       BK.sim(120); const w1 = Wd().stats.wards; K.block = true; BK.sim(1); K.block = false; r.afterCd = Wd().stats.wards - w1; none(); BK.sim(60);
+      /* (claude/pyrocontrols) a 0.15 s hold is still a TAP: the full ward, no ball */
+      home(); park(foeAt(FAR)); K.block = true; for (let k = 0; k < 9; k++) { hold(); BK.sim(1); } K.block = false; r.slowTapUp = Wd().up; r.slowTapWards = Wd().stats.wards; r.slowTapBall = BK.pyroKit().balls ? BK.pyroKit().balls.length : 0; BK.sim(2); r.slowTapStill = Wd().up; none(); BK.sim(60);
       /* a long hold is not a long ward: it folds at WARD.fold */
       home(); park(foeAt(FAR)); let both = 0, upFrames = 0; K.block = true; for (let k = 0; k < 80; k++) { hold(); BK.sim(1); const w = Wd(), pk = BK.pyroKit(); if (w.up) upFrames++; if (w.up && pk.fbHold > 0) both++; }
       r.heldUpFrames = upFrames; r.bothFrames = both; r.fbHold = BK.pyroKit().fbHold; r.folded = Wd().stats.folded; K.block = false; BK.sim(5); none();
@@ -105,8 +107,9 @@ else {
   if (!(T.cdAfter > 0.6)) bad.push('no cooldown after the ward: ' + T.cdAfter);
   if (T.inCd > 0) bad.push('a tap in the cooldown raised a ward');
   if (T.afterCd !== 1) bad.push('a tap after the cooldown raised no ward');
+  if (!(T.slowTapUp && T.slowTapStill && T.slowTapWards === 1 && !T.slowTapBall)) bad.push('a 0.15 s tap was not a plain ward: ' + JSON.stringify(T));
   if (T.bothFrames > 0) bad.push(`ward and fireball on one frame ${T.bothFrames} times (the conflict matrix)`);
-  if (!(T.heldUpFrames <= 36 && T.folded === 1 && T.fbHold >= 1)) bad.push('C held did not fold the ward into the fireball at ~0.35 s: ' + JSON.stringify(T));
+  if (!(T.heldUpFrames <= 20 && T.folded === 1 && T.fbHold >= 1)) bad.push('C held did not fold the ward into the fireball at ~0.18 s: ' + JSON.stringify(T));
   if (!(T.chargeInCd.cd > 0 && T.chargeInCd.fbHold >= 1 && !T.chargeInCd.up)) bad.push('a ward on its cooldown stopped a charge: ' + JSON.stringify(T.chargeInCd));
   if (T.downWards > 0) bad.push('DOWN raised a ward (it is STOKE now)');
   const Pa = R.parry;
