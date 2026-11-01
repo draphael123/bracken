@@ -50,8 +50,8 @@ try {
     /* a plain cut on the wing: 0.4x */
     const dv=S.sis.diver,body=BK.enemies().find(e=>e.t==='shrieksister'&&e.role==='diver');dv.mode='hover';dv.ward=0;const h0=dv.hp;SH.hit(body,20,P.x,false);out.wing=h0-dv.hp;
     /* bait the diver onto a slab: stand on it, hold the others off, step off at the lock */
-    S.sis.shrieker.cd=99;S.sis.snatcher.mode='fly';const sl=S.G.slabs[1];tp(Math.floor(sl.x/16),10);dv.cd=0;dv.ward=0;dv.mode='hover';let stun=false,steps=[];
-    for(let i=0;i<300&&!stun;i++){BK.sim(1);P.hp=P.maxHp;S.sis.shrieker.cd=99;if(dv.mode==='diveTell'&&dv.aim&&dv.aim.lock&&Math.abs(P.x-sl.x)<30){BK.tp(Math.floor((sl.x+56)/16),10);P.vx=0;}steps.push(dv.mode);stun=dv.mode==='stuck';}
+    S.sis.shrieker.cd=99;S.sis.snatcher.mode='fly';S.grabCd=99;S.snatchCd=99;S.supCd=99;/* (claude/rookery4tune: the grab's first is 5 s now) */const sl=S.G.slabs[1];tp(Math.floor(sl.x/16),10);P.x=sl.x;S.marks=[];dv.cd=0;S.hunter='diver';S.turnT=999;S.hand=0;dv.ward=0;dv.mode='hover';let stun=false,steps=[];
+    for(let i=0;i<300&&!stun;i++){if(dv.mode==='diveTell'&&!(dv.aim&&dv.aim.lock)){P.x=sl.x;P.vx=0;}BK.sim(1);P.hp=P.maxHp;S.sis.shrieker.cd=99;if(dv.mode==='diveTell'&&dv.aim&&dv.aim.lock&&Math.abs(P.x-sl.x)<30){BK.tp(Math.floor((sl.x+56)/16),10);P.vx=0;}steps.push(dv.mode);stun=dv.mode==='stuck';}
     out.stun={stun,slab:sl.st,modes:[...new Set(steps)].join(',')};if(stun){const h1=dv.hp;SH.hit(body,20,P.x,false);out.stunHit=h1-dv.hp;}
     out.bar=SH.barName(b);out.n=JSON.parse(JSON.stringify(S.n));}
   BK.manualSimulation=false;return out;})()`, 240000);
