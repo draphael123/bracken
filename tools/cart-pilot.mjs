@@ -143,4 +143,4 @@ function makeCartPilot(BK, plan) {
   return pilot;
 }`;
 /* THE PLAN THE ROUTE PILOT RIDES (every required lever SET; the risky lines optional by plan) */
-export const ROUTE_PLAN = { points: { yard: 'set', cavein: 'set', exam: 'set', yardSw: 'set', driftSw: 'set', worksSw: 'set', examSw: 'set' }, lines: [[492, 552, 27]] };   /* (deeprails3: and every SWITCH's bridge laid) */
+export const ROUTE_PLAN = { points: { yard: 'set', cavein: 'set', exam: 'set', yardSw: 'set', driftSw: 'set', worksSw: 'set', examSw: 'set', boreFork: 'open' }, lines: [[492, 552, 27]] };   /* (deeprails3: and every SWITCH's bridge laid) */

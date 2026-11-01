@@ -17,7 +17,7 @@ const SOUND = { tell: s => s.tell && s.tell(false), tellHard: s => s.tell && s.t
   /* (deeprails3) GREAT DRILL 3 */ points: s => { (s.leverClunk || s.clank)(); s.stone && s.stone(); }, boom: s => (s.boom || s.heavy)(), lunge: s => { (s.drillLunge || s.screech || s.heavy)(); s.heavy && s.heavy(); }, whine: s => { s.tell && s.tell(true); (s.drillWhine || s.charge || s.screech || s.zap || (() => {}))(); },
   /* (deeprails5 art) */ cutterWhine: s => { s.tell && s.tell(true); (s.cutterWhine || s.drillWhine || s.charge || s.screech || (() => {}))(); }, clawTear: s => { (s.clawTear || s.rubble || s.thud || s.heavy)(); s.clank && s.clank(); },
   /* (deeprails4) */ gearBreak: s => { (s.crack || s.heavy)(); s.clank && s.clank(); s.rubble && s.rubble(); },
-  chain: s => (s.chainRattle ? s.chainRattle() : s.rattle ? s.rattle(1) : s.clank && s.clank()), throw: s => { s.throwWhoosh && s.throwWhoosh(); s.fuseFizz && s.fuseFizz(); }, rumble: s => { s.tell && s.tell(true); (s.rumble || s.thud || s.heavy)(); }, clank: s => s.clank && s.clank() };
+  slag: s => { (s.sizzle || s.splash || s.thud || s.heavy)(); }, /* (deeprails6) */ chain: s => (s.chainRattle ? s.chainRattle() : s.rattle ? s.rattle(1) : s.clank && s.clank()), throw: s => { s.throwWhoosh && s.throwWhoosh(); s.fuseFizz && s.fuseFizz(); }, rumble: s => { s.tell && s.tell(true); (s.rumble || s.thud || s.heavy)(); }, clank: s => s.clank && s.clank() };
 BOSS_PHASE.greatdrill = BOSS_PHASE.greatdrill || 1;
 
 export function makeDrillHands(ctx) {
@@ -31,8 +31,12 @@ export function makeDrillHands(ctx) {
   H.owns = e => e.t === 'greatdrill' || e.t === 'drillgear';   /* (deeprails4: and its gear banks - moved and drawn here) */
   /* THE HIGH LINE (P3 brings the roof down on it): its rail laid or taken up - laid again whenever the fight is made or ends */
   const highLine = on => { const Ar = A(); if (!Ar || !ctx.cellSet || !ctx.T) return; const q = Ar.drill; for (let x = q.sx; x < q.sx + GD.DRILL_STAGE.W; x++) ctx.cellSet(x, q.F - GD.DRILL_STAGE.lanes[2], on ? ctx.T.RAIL : ctx.T.AIR); };
+  /* (deeprails6) P3 ONE RAIL: the LOW line sealed under rubble up to the MID rail (the rows between rock, and the MID rail rock too: no drop off it) - opened again whenever the fight is made or ends */
+  const lowSeal = on => { const Ar = A(); if (!Ar || !ctx.cellSet || !ctx.T) return; const q = Ar.drill, Ln = GD.DRILL_STAGE.lanes; for (let x = q.sx; x < q.sx + GD.DRILL_STAGE.W; x++) { for (let r = 1; r < Ln[1]; r++) ctx.cellSet(x, q.F - r, on ? ctx.T.SOLID : ctx.T.AIR); ctx.cellSet(x, q.F - Ln[1], on ? ctx.T.SOLID : ctx.T.RAIL); } };
+  /* a cart under the MID line as the roof comes down is BUCKED up onto it by the rubble (told - never put there) */
+  const buck = () => { if (!S) return; const yM = S.G.laneY[1]; for (const pp of ctx.players) ctx.asPlayer(pp, () => { const P = ctx.hero(); if (P.dead || !(P.y > yM + 4)) return; P.vy = -DRILL.buckV; P.ground = false; S.n.bucks++; ctx.number(P.x, P.y - 34, 'THE ROOF COMES DOWN ON THE LOW LINE: UP!', '#ff9a5c'); ctx.burst(P.x, P.y, 10, ['#6b5a48', '#8a7660', '#2a2119'], 90, 0.5); }); };
   const dropGears = () => { if (S && S.gearEnts) for (const ge of S.gearEnts) ge.alive = false; };
-  H.clear = () => { if (S && S.highDown) highLine(true); dropGears(); S = null; BOSS_PHASE.greatdrill = 1; };
+  H.clear = () => { if (S && S.highDown) highLine(true); if (S && S.sealed) lowSeal(false); dropGears(); S = null; BOSS_PHASE.greatdrill = 1; };
   H.phase = () => (S && ctx.bossActive && ctx.boss && ctx.boss.t === 'greatdrill' && ctx.boss.alive ? S.ph : 0);
   const fighting = () => { const e = ctx.boss; return !!(S && A() && ctx.bossActive && e && e.t === 'greatdrill' && e.alive && e.mode !== 'sleep'); };
   /* THE TUNNEL: while it fights the world runs past at the cart's cruise (the arena stands still); a hero cannot ride into the rig (its rear on his line is his limit) */
@@ -41,7 +45,7 @@ export function makeDrillHands(ctx) {
   const hurt = (name, fn) => { const P = ctx.hero(), h0 = P.hp; fn(); if (S) { S.hurt = S.hurt || {}; S.hurt[name] = (S.hurt[name] || 0) + Math.max(0, h0 - Math.max(0, P.hp)); } };
 
   H.spawnBoss = base => { const Ar = A(); if (!Ar) return null;
-    highLine(true); dropGears(); for (const q of ctx.enemies()) if (q.t === 'drillgear') q.alive = false; S = GD.newFight(GD.geom(Ar, ctx.TS)); S.R = DRILL.maxR + 80; BOSS_PHASE.greatdrill = 1;
+    highLine(true); lowSeal(false); dropGears(); for (const q of ctx.enemies()) if (q.t === 'drillgear') q.alive = false; S = GD.newFight(GD.geom(Ar, ctx.TS)); S.R = DRILL.maxR + 80; BOSS_PHASE.greatdrill = 1;
     const e = { ...base, t: 'greatdrill', w: DRILL.cabW, h: DRILL.cabH, hp: ctx.EHP.greatdrill, maxHp: ctx.EHP.greatdrill, noGrav: true, face: -1, mode: 'sleep', modeT: 0, open: 0, phase: 1, boss: true };
     const cb = GD.cabBox(S.G, S); e.x = (cb.l + cb.r) / 2; e.y = cb.b; for (const pp of ctx.players) pp.gdKeys = null; return e; };
 
@@ -50,7 +54,7 @@ export function makeDrillHands(ctx) {
   function world(e) {
     return {
       ramV: MC.ramV,
-      arena: k => { if (k === 'highDown') { highLine(false); ctx.shake(7); const G = S.G; for (let x = G.x0 + 20; x < G.x1; x += 24) ctx.burst(x, G.laneY[2], 6, ['#6b5a48', '#8a7660', '#2a2119'], 90, 0.7); } },
+      arena: k => { if (k === 'highDown' || k === 'oneRail') { highLine(false); ctx.shake(7); const G = S.G; for (let x = G.x0 + 20; x < G.x1; x += 24) { ctx.burst(x, G.laneY[2], 6, ['#6b5a48', '#8a7660', '#2a2119'], 90, 0.7); if (k === 'oneRail') ctx.burst(x + 12, G.laneY[0] - 8, 6, ['#6b5a48', '#8a7660', '#2a2119'], 90, 0.7); } if (k === 'oneRail') buck(); } },   /* (deeprails6) oneRail: the LOW line too */
       number: (x, y, t, col) => ctx.number(x, y, t, col), sound: k => { const f = SOUND[k]; if (f) try { f(ctx.sfx); } catch {} }, shake: n => ctx.shake(n),
       music: ph => { BOSS_PHASE.greatdrill = ph; if (ctx.music) ctx.music('greatdrill');   /* (the file plays through all three phases: the synth's ':p2' / ':p3' voicings are not played) */ },
       hit: (bx, d, name, o = {}) => { let any = false; for (const pp of ctx.players) ctx.asPlayer(pp, () => { const P = ctx.hero(); if (!ctx.upright(pp) || P.dead) return;
@@ -67,13 +71,20 @@ export function makeDrillHands(ctx) {
     if (!S || !e.alive) return; const Ar = A(); if (!Ar) return;
     if (e.mode === 'wake' && !S.woke) { S.woke = true; ctx.number(S.G.x0 + 140, S.G.laneY[2] - 40, 'THE GREAT DRILL BORES ON AHEAD: CHASE IT', '#ffd36b'); ctx.shake(8); }
     if (e.mode === 'wake') S.R = Math.max(DRILL.homeR, S.R - 120 * dt);
-    GD.stepDrill(e, S, dt, heroes(), world(e));
+    { const lv0 = S.lever, was = !!(lv0 && lv0.thrown); GD.stepDrill(e, S, dt, heroes(), world(e)); if (lv0 && lv0.thrown && !was) { S.lurchT = 0.5; ctx.shake(3); ctx.sparks(lv0.x, S.G.laneY[2] - 36, 1, 8); } }   /* (deeprails6) THE LEVER: the throw's lurch (the scroll stutters) and its spark */
+    if (S.lurchT > 0) S.lurchT = Math.max(0, S.lurchT - dt);
+    /* (deeprails6art) THE ROAR BED: in P3 the rig's engine roars on a pulse that quickens and swells as its bar falls (the red lamps beat with it) - sound only */
+    if (S.oneRail && fighting()) { S.roarT = (S.roarT || 0) - dt; if (S.roarT <= 0) { S.roarT = 1.7 - 1.1 * (S.tension || 0); if (ctx.sfx.drillRoar) ctx.sfx.drillRoar(S.tension || 0); else if (ctx.sfx.rumble) ctx.sfx.rumble(); } }
+    /* (deeprails6) THE LEVER MISSED: it goes by you still up - told */
+    if (S.lever && !S.lever.thrown && !S.lever.missed) { const hx = Math.min(...ctx.players.map(pp => pp.x)); if (S.lever.x < hx - 14) { S.lever.missed = true; ctx.sfx.clank && ctx.sfx.clank(); ctx.number(S.lever.x, S.G.laneY[2] - 50, 'MISSED THE POINTS: IT KICKS AN ORE CART', '#ff9a5c'); } }
+    /* (deeprails6) P3 ONE RAIL: once the rubble is down and no cart is under the MID line, the LOW line is sealed (a cart still under it is bucked again) */
+    if (S.oneRail && !S.sealed && S.sealT <= 0) { const yM = S.G.laneY[1], under = ctx.players.some(pp => !pp.dead && pp.y > yM + 2); if (!under) { lowSeal(true); S.sealed = true; } else if ((S.rebuck = (S.rebuck || 0) - dt) <= 0) { S.rebuck = 0.35; buck(); } }
     /* (deeprails3) THE CHAIN lets go: a jump off the line, or a blow on it; THE POINTS LEVER thrown by a blow that lands on its post */
     if (S.snag) { const pp = S.snag.pp; ctx.asPlayer(pp, () => { const P = ctx.hero(); if (P.vy < -60 && !P.ground) { GD.freeSnag(S, 'jump'); ctx.number(P.x, P.y - 34, 'OFF THE LINE: THE HOOK SLIPS', '#8fd160'); } else if (ctx.attackBox && ctx.attackBox()) { GD.freeSnag(S, 'cut'); ctx.sfx.clank && ctx.sfx.clank(); ctx.sparks(P.x + 10, P.y - 10, 1, 6); ctx.number(P.x, P.y - 34, 'CHAIN CUT', '#8fd160'); } }); }
     if (S.lever && !S.lever.thrown && ctx.attackBox) for (const pp of ctx.players) ctx.asPlayer(pp, () => { const hb = ctx.attackBox(); if (hb && ctx.overlap(hb, GD.leverBox(S.G, S.lever))) throwIt(); });
     /* (deeprails5) THE SPARE CUTTER: a blow that lands on a rolling disc strikes it back up the line into its gears */
     if (S.cutters.length && ctx.attackBox) for (const pp of ctx.players) ctx.asPlayer(pp, () => { const hb = ctx.attackBox(); if (hb && GD.strikeCutter(S, hb)) { ctx.sfx.clank && ctx.sfx.clank(); ctx.sparks(hb.r, (hb.t + hb.b) / 2, 1, 6); ctx.shake(2); } });
-    syncGears(e); e.phase = S.ph; S.scroll = (S.scroll || 0) + (fighting() ? DRILL.cruise * dt : 0);
+    syncGears(e); e.phase = S.ph; S.scroll = (S.scroll || 0) + (fighting() ? DRILL.cruise * dt * (S.lurchT > 0 ? 0.35 : 1) : 0);
     if (!S.told.cab && e.mode === 'idle' && S.t > 3) { S.told.cab = 1; ctx.number(GD.rearX(S) - 20, S.G.laneY[2] - 44, 'ITS CAB IS ARMOURED: JAM ITS GEARS', '#ffd36b'); }
   };
   /* (deeprails4) THE GEAR BANKS: one foe each, up its rear face while it is in the phase and whole; hidden under the floor otherwise (never dead until the fight ends) */
@@ -100,9 +111,11 @@ export function makeDrillHands(ctx) {
   H.interact = P => { if (!S || !fighting() || !S.lever || S.lever.thrown) return false; if (Math.abs(P.x - S.lever.x) > DRILL.leverReach) return false; return throwIt(); };   /* (GREAT DRILL 3: E at its chute's points lever - the opening) */
   H.interact = P => { if (!S || !fighting() || !S.lever || S.lever.thrown) return false; if (Math.abs(P.x - S.lever.x) > DRILL.leverReach) return false; return throwIt(); };   /* (GREAT DRILL 3: E at its chute's points lever - the opening) */
   H.barName = e => 'THE GREAT DRILL' + (e.mode === 'jammed' ? (S && S.openKind === 'gear' ? '  STALLED' : '  JAMMED') : S && S.ward > 0 ? '  PLATES UP' : '') + (S && S.gears && GD.gateShut(S) ? '  GEARS ' + GD.brokenN(S) + '/' + GD.gearsNeed(S.ph) : '');   /* (deeprails4) the gate: the gears it still wants broken */
-  H.end = e => { dropGears(); if (S) { S.ores = []; S.rocks = []; S.chute = null; S.dyn = []; S.spots = []; S.lunge = null; S.hook = null; S.snag = null; S.lever = null; S.cutters = []; S.tears = []; S.cutPend = null; S.clawPend = null; if (S.highDown) { S.highDown = false; highLine(true); } } BOSS_PHASE.greatdrill = 1; if (ctx.L) ctx.L.mcDrillDown = true; };
+  H.end = e => { dropGears(); if (S) { S.ores = []; S.rocks = []; S.chute = null; S.dyn = []; S.spots = []; S.lunge = null; S.hook = null; S.snag = null; S.lever = null; S.cutters = []; S.tears = []; S.cutPend = null; S.clawPend = null; S.globs = []; S.pools = []; S.ladlePend = null; if (S.highDown) { S.highDown = false; highLine(true); } if (S.sealed) { S.sealed = false; lowSeal(false); } S.oneRail = false; } BOSS_PHASE.greatdrill = 1; if (ctx.L) ctx.L.mcDrillDown = true; };
   H.fight = () => S;   /* (tools/damage-caps.mjs: the fight's own counters) */
-  H.read = () => S && { mode: ctx.boss && ctx.boss.mode, ph: S.ph, R: R(S.R), rear: R(GD.rearX(S)), ores: S.ores.map(o => ({ x: R(o.x), fly: o.fly })), chute: !!S.chute, rocks: S.rocks.length, lever: S.lever ? { x: R(S.lever.x), thrown: S.lever.thrown } : null, dyn: S.dyn.length, spots: S.spots.length, lunge: S.lunge ? S.lunge.lane : -1, hook: S.hook ? S.hook.lane : -1, snag: !!S.snag, ward: S.ward, n: { ...S.n }, hurt: { ...(S.hurt || {}) }, gears: Object.fromEntries(Object.entries(S.gears || {}).map(([k, q]) => [k, { hp: R(q.hp), broken: q.broken }])), gate: GD.gateShut(S), held: R(S.held), open: S.openKind };
+  H.read = () => S && { mode: ctx.boss && ctx.boss.mode, ph: S.ph, R: R(S.R), rear: R(GD.rearX(S)), ores: S.ores.map(o => ({ x: R(o.x), fly: o.fly })), chute: !!S.chute, rocks: S.rocks.length, lever: S.lever ? { x: R(S.lever.x), thrown: S.lever.thrown } : null, dyn: S.dyn.length, spots: S.spots.length, lunge: S.lunge ? S.lunge.lane : -1, hook: S.hook ? S.hook.lane : -1, snag: !!S.snag, ward: S.ward, n: { ...S.n }, hurt: { ...(S.hurt || {}) }, gears: Object.fromEntries(Object.entries(S.gears || {}).map(([k, q]) => [k, { hp: R(q.hp), broken: q.broken }])), gate: GD.gateShut(S), held: R(S.held), open: S.openKind,
+    /* (deeprails6) */ oneRail: !!S.oneRail, sealed: !!S.sealed, tension: S.tension || 0, lanes: GD.lanesOf(S), pools: S.pools.map(p => ({ x: R(p.x), lane: p.lane, t: p.t })), globs: S.globs.length, ladle: S.ladlePend ? S.ladlePend.lane : -1,
+    leverAnim: S.lever ? { thrown: !!S.lever.thrown, k: S.lever.thrown ? Math.min(1, (DRILL.leverDump - Math.max(0, S.lever.dump)) / 0.25) : 0, pour: !!(S.lever.thrown && S.lever.dump > 0), missed: !!S.lever.missed } : null, lurch: S.lurchT || 0 };
 
   /* ---------- DRAWING ---------- */
   /* THE TUNNEL: drawn in the world layer OVER the arena's own tiles (the static floor and rails must not show: that was the half-moving scenery), and while it fights
@@ -112,10 +125,11 @@ export function makeDrillHands(ctx) {
   H.drawWorld = (g, cx, cy, time) => { const Ar = A(); if (!S || !Ar) return; const G = S.G, fight = fighting(), vw = ctx.VW(), vh = ctx.VH();
     if (fight || inArena()) { const x0 = fight ? 0 : R(G.x0 - cx), x1 = fight ? vw : R(G.x1 - cx);
       MCA.tunnel(g, x0, x1, R(G.ceilY - cy), R(G.floor - cy), vh, S.scroll || 0, G.laneY.map(v => R(v - cy)), !!S.highDown, time);
+      if (S.oneRail) { MCA.oneRailRubble(g, x0, x1, R(G.laneY[1] - cy), R(G.laneY[0] - cy), S.scroll || 0, 1 - (S.sealT || 0) / DRILL.sealT, time); MCA.tensionLamps(g, x0, x1, R(G.ceilY - cy), S.tension || 0, time, S.scroll || 0); }   /* (deeprails6) ONE RAIL: the LOW line under rubble; the red lamps quicken as its bar falls */
       if (S.ph === 3) for (let i = 0; i < 7; i++) { const W2 = vw + 80, gx = (((i * 97 + 300 - (S.scroll || 0)) % W2) + W2) % W2 - 40; MCA.gouge(g, gx, Math.max(2, R(G.ceilY - cy)) + 2 + (i % 3) * 2, 8 + (i % 3) * 3); } }   /* (dr3art) P3: the roof gouged where it tore at the rock */
     /* the chute (its tell: it rattles and its shadow is on the LOW line) */
     if (S.chute) { const x = R(GD.rearX(S) - cx), y = R(G.laneY[0] - cy), k = 1 - S.chute.t / DRILL.chuteTell, sh = Math.floor(time * 24) % 2;   /* ITS ORE CART on its back deck, rattling - then kicked off onto the LOW line */
-      MCA.tub(g, x - 12 + sh, R(G.laneY[1] - cy) - 1, 'ore', time, 0); g.fillStyle = 'rgba(0,0,0,' + (0.3 + 0.4 * k).toFixed(2) + ')'; g.fillRect(x - 30, y - 2, 24, 3); txt('ORE!', x - 14, R(G.laneY[1] - cy) - 26, Math.floor(time * 12) % 2 ? '#ffd36b' : '#ff9a5c', 'center', 6); }
+      MCA.tub(g, x - 12 + sh, R(G.laneY[1] - cy) - 1, 'ore', time, 0); g.fillStyle = 'rgba(0,0,0,' + (0.3 + 0.4 * k).toFixed(2) + ')'; g.fillRect(x - 30, y - 2, 24, 3); }   /* (deeprails6art: its 'ORE!' word is a tag in the gear tags' column - drawBoss - so it never lands on one) */
     /* THE ORE CARTS (rammed, one flies up the line trailing sparks) */
     for (const o of S.ores) { const x = R(o.x - cx), y = R(o.y + o.dy - cy); MCA.tub(g, x, y, 'ore', time, o.fly ? 300 : 150); if (o.fly) { for (let i = 1; i < 4; i++) { g.fillStyle = i & 1 ? '#ffd36b' : '#ff9a3c'; g.fillRect(x - 12 - i * 6, y - 4 - (i % 2), 3, 1); } }
       else txt('RAM IT', x, y - 26, '#ffd36b', 'center', 5); }
@@ -124,7 +138,12 @@ export function makeDrillHands(ctx) {
       MCA.boulder(g, x - DRILL.rockW / 2, DRILL.rockW, y, k, time); txt('!', x, y - 50, '#ffd36b', 'center', 6); }
     /* (deeprails3) THE CHUTE'S POINTS LEVER coming down the tunnel (a tall trackside post: its disc and the word on it), the DYNAMITE (in its throw, then fizzing on its
        line), THE ROOF's told spots (dust and shadows over every line) */
-    if (S.lever && !S.lever.gone) { const lv = S.lever, x = R(lv.x - cx); MCA.pointsPost(g, x, R(G.laneY[2] - 34 - cy), R(G.laneY[0] - cy), lv.thrown, time); if (!lv.thrown) { const k = 0.5 + 0.5 * Math.sin(time * 10); g.strokeStyle = 'rgba(255,211,107,' + (0.5 + 0.5 * k).toFixed(2) + ')'; g.lineWidth = 2; g.beginPath(); g.arc(x, R(G.laneY[2] - 38 - cy), 10 + 3 * k, 0, Math.PI * 2); g.stroke(); g.lineWidth = 1; txt('THROW IT', x, R(G.laneY[2] - 58 - cy), Math.floor(time * 8) % 2 ? '#ffd36b' : '#ffffff', 'center', 6); } }
+    if (S.lever) { const lv = S.lever, x = R(lv.x - cx), pk = lv.thrown ? Math.min(1, (DRILL.leverDump - Math.max(0, lv.dump)) / 0.25) : 0; MCA.pointsPost(g, x, R(G.laneY[2] - 34 - cy), R(G.laneY[0] - cy), lv.thrown ? pk : 0, time);   /* (deeprails6) the hand-lever pulls DOWN over 0.25 s (and stays down as it goes by) */
+      if (lv.thrown && pk < 1) MCA.leverClunk(g, x, R(G.laneY[2] - 36 - cy), pk, time); if (lv.missed) txt('MISSED', x, R(G.laneY[2] - 58 - cy), '#ff9a5c', 'center', 5); if (!lv.thrown) { const k = 0.5 + 0.5 * Math.sin(time * 10); g.strokeStyle = 'rgba(255,211,107,' + (0.5 + 0.5 * k).toFixed(2) + ')'; g.lineWidth = 2; g.beginPath(); g.arc(x, R(G.laneY[2] - 38 - cy), 10 + 3 * k, 0, Math.PI * 2); g.stroke(); g.lineWidth = 1; txt('THROW IT', x, R(G.laneY[2] - 58 - cy), Math.floor(time * 8) % 2 ? '#ffd36b' : '#ffffff', 'center', 6); } }
+    /* (deeprails6) THE SLAG LADLE: its line marked through the tell, the glob in the air (its landing marked), the pools coming down the tunnel */
+    if (S.ladlePend) { const k = 1 - Math.max(0, S.mT || 0) / DRILL.ladleTell, ly = R(G.laneY[S.ladlePend.lane] - cy); MCA.ladleMark(g, 0, R(GD.rearX(S) - cx), ly, k, time); }
+    for (const gl of S.globs) { const k = 1 - Math.max(0, gl.fly) / DRILL.ladleFly, ly = G.laneY[gl.lane], x = R(gl.x0 + (gl.tx - gl.x0) * k - cx), y = R(ly - 40 - Math.sin(k * Math.PI) * 30 + 40 * k - cy); MCA.slagGlob(g, x, y, time); MCA.lobMark(g, R(gl.tx - cx), R(ly - cy), DRILL.ladleW / 2, k, time); }
+    for (const po of S.pools) MCA.slagPool(g, R(po.x - cx), R(G.laneY[po.lane] - cy), DRILL.ladleW, po.t / DRILL.ladlePool, time);
     for (const d of S.dynPend || []) { const k = 1 - Math.max(0, S.mT || 0) / DRILL.dynTell, x = R(d.x0 + (d.x - DRILL.cruise * DRILL.dynTell * k - d.x0) * k - cx), y = R(G.laneY[d.lane] - Math.sin(k * Math.PI) * 50 - cy); MCA.dynamite(g, x, y - 5, time, k * 9); }
     for (const d of S.dyn) { if (d.t <= 0) continue; const x = R(d.x - cx), y = R(G.laneY[d.lane] - cy), k = 1 - d.t / DRILL.dynFuse; MCA.lobMark(g, x, y, DRILL.dynR, k, time); MCA.dynamite(g, x, y - 5, time, 0.1 * Math.sin(time * 30)); }
     for (const sp of S.spots) { if (sp.t <= 0) continue; const x = R(sp.x - cx), k = 1 - sp.t / DRILL.collapseTell; for (const ly of GD.lanesOf(S).map(l => G.laneY[l])) { g.fillStyle = 'rgba(0,0,0,' + (0.25 + 0.45 * k).toFixed(2) + ')'; g.fillRect(x - DRILL.collapseW / 2, R(ly - cy) - 2, DRILL.collapseW, 3); }
@@ -141,6 +160,7 @@ export function makeDrillHands(ctx) {
   const poseOf = e => { if (GD.drillOpen(e)) { const k = Math.max(0, Math.min(1, ((e.openT0 || DRILL.jamT) - e.open) / 0.25, e.open / 0.4)); return { tilt: 0.05 * k, drop: 3 * k, slump: k, lift: e.open < 0.4 ? 1 - e.open / 0.4 : 0 }; }
     if (e.mode === 'dynTell') { const k = 1 - Math.max(0, S.mT || 0) / DRILL.dynTell; return { tilt: -0.02 * k, drop: 0, kind: 'dyn', k }; } if (e.mode === 'lunge' && S.lunge && !S.lunge.on) { const k = Math.min(1, 1 - S.lunge.t / DRILL.lungeTell); return { tilt: 0.05 * k, drop: 2 * k, kind: 'lunge', k }; }
     if (e.mode === 'chain' && S.hook && !S.hook.flying) return { tilt: -0.045, drop: 0, kind: 'chain', k: 1 };
+    if (e.mode === 'ladleTell') { const k = 1 - Math.max(0, S.mT || 0) / DRILL.ladleTell; return { tilt: -0.025 * k, drop: 0, kind6: 'ladle', k }; }   /* (deeprails6, B16) the boom rises over the cab with its ladle */
     if (e.mode === 'cutterTell') { const k = 1 - Math.max(0, S.mT || 0) / DRILL.cutterTell; return { tilt: 0.02 * k, drop: 1, kind5: 'cutter', k }; }   /* (deeprails5, B16) the boom lifts its spare cutter, then bowls it */
     if (e.mode === 'clawTell') { const k = 1 - Math.max(0, S.mT || 0) / DRILL.clawTell; return { tilt: -0.03 * k, drop: 0, kind5: 'claw', k }; }   /* the claw drops on its chain behind it and bites the rail */ if (e.mode === 'rockTell' || e.mode === 'collapseTell') { const tt = e.mode === 'rockTell' ? DRILL.rockTell : DRILL.collapseTell, k = 1 - Math.max(0, S.mT || 0) / tt; return { tilt: -0.012 * k, drop: -2 + R(Math.sin(ctx.time() * 30) * 1.5 * k), kind: 'roof', k }; }
     return { tilt: 0, drop: 0 }; };
@@ -149,15 +169,22 @@ export function makeDrillHands(ctx) {
       moving: fighting() && !jam, scroll: S.scroll || 0, spray: null, plateW: DRILL.plateW, plateH: DRILL.plateH, cabIn: DRILL.cabIn, cabW: DRILL.cabW, cabH: DRILL.cabH, stackX: DRILL.stackX, ph: S.ph, tilt: pose.tilt, drop: pose.drop, slump: pose.slump || 0 }, time);
     { const tg = (fn) => { g.save(); g.translate(rx, lanes[0]); g.rotate(pose.tilt || 0); g.translate(-rx, -lanes[0] + (pose.drop || 0)); fn(); g.restore(); };
     if (pose.kind) tg(() => MCA.windupPose(g, rx, lanes, R(G.ceilY - cy), DRILL.cabIn, DRILL.cabW, DRILL.cabH, pose.kind, pose.k, time));
+    if (pose.kind6) tg(() => MCA.ladleArm(g, rx + DRILL.cabIn + R(DRILL.cabW / 2), lanes[1] - DRILL.cabH, pose.k, time));
     if (pose.kind5) tg(() => MCA.windupPose5(g, rx, lanes, pose.kind5, pose.k, S.cutPend ? S.cutPend.lane : S.clawPend ? S.clawPend.lane : 0, time));   /* (deeprails5, greybox) the cutter's boom, the rail claw */   /* (dr4art, B16) its own windup pose per gear-driven attack */
     if (pose.slump) { tg(() => MCA.slumpPose(g, rx, lanes, DRILL.cabIn, DRILL.cabW, DRILL.cabH, pose.slump, time)); if (pose.lift > 0) MCA.steamHiss(g, rx + 174, R((lanes[1] + lanes[0]) / 2 - 6), rx + 23, lanes[0] - DRILL.plateH / 2 - 5, pose.lift, time); } }   /* (dr4art) the slump set, and the steam hiss as it lifts back */
     if (pose.slump) MCA.jamFx(g, pose.slump, rx + 174, R((lanes[1] + lanes[0]) / 2 - 6 + 6 * pose.slump), rx + 23, lanes[0] - DRILL.plateH / 2 - 5, rx + DRILL.cabIn + R(DRILL.cabW / 2), lanes[1] - DRILL.cabH + 8, time);   /* (deeprails4) the head smokes, sparks, the driver knocked silly */
     /* (deeprails4) THE GEAR TOWER up its rear face: each bank, its label, its state (spinning / spun up on its attack's windup / broken and smoking / shuttered) */
-    if (S.gears && rx > -60 && rx < ctx.VW() + 60) { const banks = GD.GEARS.map(gg => { const q = S.gears[gg.id], t = R(G.laneY[gg.lane] + gg.t - cy), b = R(G.laneY[gg.lane] + gg.b - cy);
-        return { id: gg.id, t, b, state: !q ? 'off' : q.broken ? 'broken' : 'up', hot: q && q.hot > 0 ? Math.min(1, q.hot / 0.6) : 0, k: q ? q.hp / q.max : 0, flash: q ? q.flash : 0, smoke: q ? q.smoke : 0 }; });
-      MCA.gearTower(g, rx, lanes[2] - 38, lanes[0] - 4, banks, time);
-      for (const b of banks) if (b.state !== 'off') { const gg = GD.GEARS.find(k => k.id === b.id), lab = { chain: 'CHAIN', lunge: 'LUNGE', dyn: 'DYNAMITE', roof: 'ROOF' }[b.id];
-        txt(lab, rx - 12, R((b.t + b.b) / 2) - 2, b.state === 'broken' ? '#6a6a6a' : b.hot > 0 ? '#ffd36b' : '#ff8a6a', 'right', 5); if (gg.jump || (gg.lane === 2 && S.highDown)) txt('JUMP', rx - 12, R((b.t + b.b) / 2) + 5, '#c8d8e8', 'right', 4); } }
+    if (S.gears && rx > -60 && rx < ctx.VW() + 60) { const banks = GD.GEARS.map(gg => { const q = S.gears[gg.id], ga = GD.gearAt(S, gg), t = R(G.laneY[ga.lane] + ga.t - cy), b = R(G.laneY[ga.lane] + ga.b - cy);
+        return { id: gg.id, dx: ga.dx, t, b, state: !q ? 'off' : q.broken ? 'broken' : 'up', hot: q && q.hot > 0 ? Math.min(1, q.hot / 0.6) : 0, k: q ? q.hp / q.max : 0, flash: q ? q.flash : 0, smoke: q ? q.smoke : 0 }; });
+      MCA.gearTower(g, rx, lanes[2] - 38, lanes[0] - 4, banks.filter(b => !b.dx), time); for (const b of banks.filter(q => q.dx)) MCA.gearTower(g, rx + b.dx, b.t - 4, b.b + 4, [b], time);   /* (deeprails6: P3's feed bank stands on the deck by the cab) */
+      /* (deeprails6art, Daniel: 'the gear labels are crowded') ONE column of tags to the left of the tower, a plate under each word, JUMP a small arrow on the plate (not a second line), a leader to its bank,
+        pushed apart so none overlaps another or the cab; a broken bank carries no tag (its wreck smokes) */
+      { const tags = banks.filter(q => q.state === 'up').map(q => { const gg = GD.GEARS.find(k => k.id === q.id), lab = { chain: 'CHAIN', lunge: 'LUNGE', dyn: 'DYNAMITE', roof: 'ROOF' }[q.id], jmp = !!(GD.gearAt(S, gg).jump || (gg.lane === 2 && S.highDown)); return { q, lab, jmp, y0: R((q.t + q.b) / 2), y: 0, w: R(lab.length * 5.4) + (jmp ? 12 : 6) }; }).sort((p, o) => p.y0 - o.y0);
+        if (S.chute) tags.push({ q: { hot: 1, dx: 0 }, lab: 'ORE!', jmp: false, y0: lanes[1] - 26, y: 0, w: R(4 * 5.4) + 6, ore: true });   /* the chute's tell joins the column (left of its cart) and the rest make room */
+        tags.sort((p, o) => p.y0 - o.y0);
+        let last = -99; for (const t of tags) { t.y = Math.max(t.y0, last + 11); last = t.y; }
+        for (const t of tags) { const lx = t.ore ? rx - 30 : rx - 14; MCA.gearTag(g, lx, t.y, t.w, t.jmp, t.q.hot > 0, t.ore ? t.y : t.y0, t.ore ? lx : rx - 8, t.q.dx ? rx + t.q.dx - 9 : 0); txt(t.lab, lx - 3, t.y - 3, t.ore ? (Math.floor(time * 12) % 2 ? '#ffd36b' : '#ff9a5c') : t.q.hot > 0 ? '#ffd36b' : '#ff8a6a', 'right', 5); } } }
+    if (S.lever && S.lever.thrown && S.lever.dump > 0) MCA.oreStream(g, rx + 46, lanes[1] - DRILL.cabH - 8, rx + 14, lanes[0] - DRILL.plateH / 2 - 4, 1 - S.lever.dump / DRILL.leverDump, time);   /* (deeprails6) THE POINTS THROWN: its chute's hatch drops and its ore pours in an arc into its gears */
     if (jam) MCA.oreDump(g, rx + 23, lanes[0] - DRILL.plateH - 14, lanes[0] - DRILL.plateH / 2 - 5, time);   /* (dr3art) its own ore pouring into its bare gears */
     if ((S.dynPend || []).length) MCA.driverArm(g, rx + DRILL.cabIn + R(DRILL.cabW / 2), lanes[1] - DRILL.cabH + 14, 1 - Math.max(0, S.mT || 0) / DRILL.dynTell, time);   /* the dynamite throw */
   };

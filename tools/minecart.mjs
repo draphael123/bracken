@@ -47,7 +47,7 @@ ok(MC.ramV > MC.cruise + 20 && MC.ramV < MC.boost, 'the RAM pace (' + MC.ramV + 
 ok(cartSpeed(MC.cruise, { boost: true }, 1) === MC.boost && cartSpeed(0, {}, 10) === MC.cruise, 'the cart: pump to ' + MC.boost + ', cruise at ' + MC.cruise);
 /* THE ARCS */
 for (const k of ['points', 'speed', 'combat', 'switch']) ok(['teach', 'test', 'remix', 'exam', 'boss'].every(s => ARCS[k][s]), 'the ' + k + ' arc is taught, tested, remixed, examined and in the boss');
-ok(SECTIONS.length === 14 && SECTIONS.find(s => s[0] === 'THE TWIN LINES') && SECTIONS.find(s => s[0] === 'THE SPOIL PITS') && SECTIONS.find(s => s[0] === 'THE SMELTER FLOOR') && SECTIONS.find(s => s[0] === 'THE FORGE') && SECTIONS.every((s, i) => i === 0 || s[1] > SECTIONS[i - 1][1]), 'thirteen sections (deeprails4: THE TWIN LINES went in before the flooded run; deeprails5: THE SPOIL PITS after it; claude/forgemaster: THE SMELTER FLOOR and THE FORGE after them) and the arena, in order');
+ok(SECTIONS.length === 15 && SECTIONS.find(s => s[0] === 'THE LEADING BORE') && SECTIONS.find(s => s[0] === 'THE TWIN LINES') && SECTIONS.find(s => s[0] === 'THE SPOIL PITS') && SECTIONS.find(s => s[0] === 'THE SMELTER FLOOR') && SECTIONS.find(s => s[0] === 'THE FORGE') && SECTIONS.every((s, i) => i === 0 || s[1] > SECTIONS[i - 1][1]), 'thirteen sections (deeprails4: THE TWIN LINES went in before the flooded run; deeprails5: THE SPOIL PITS after it; claude/forgemaster: THE SMELTER FLOOR and THE FORGE after them; deeprails6: THE LEADING BORE before the drill) and the arena, in order');
 const sec = name => { const i = SECTIONS.findIndex(s => s[0] === name); return [SECTIONS[i][1], SECTIONS[i + 1][1]]; };
 /* THE AREAS (A8: dark and light stretches) */
 { const dz = (L.darkZones || [])[0], [d0, d1] = sec('THE DARK DRIFT'); ok(dz && dz.dark >= 0.8 && dz.x0 <= (d0 + 6) * TS && dz.x1 >= (d1 - 6) * TS && L.dark > 0, 'THE DARK DRIFT is pitch (dark ' + (dz && dz.dark) + ': the headlamp cone, src/minecart-hands.js holes)');
@@ -57,9 +57,10 @@ const sec = name => { const i = SECTIONS.findIndex(s => s[0] === name); return [
 const P = id => L.mcPoints.find(p => p.id === id);
 const req = L.mcPoints.filter(p => p.req);
 ok(req.length >= 2, 'at least two REQUIRED forks (' + req.map(p => p.id).join(', ') + ')');
-for (const p of req) { ok(p.dflt === 'open' && p.retry, p.id + ': open by default, with a retry spot');
-  const w = L.mcWalls.find(q => q.x > p.x1 && q.x - p.x1 < 30); ok(w, p.id + ': a fall-in on the low line within 30 columns past its points');
-  ok(w.y1 > p.prow, p.id + ': the fall-in is UNDER the line the points keep you on (row ' + p.prow + ')'); }
+for (const p of req) { const torn = p.want === 'open';   /* (deeprails6) THE LEADING BORE's points: the line they KEEP you on is the torn one - open them and drop */
+  ok(p.dflt === (torn ? 'set' : 'open') && p.retry, p.id + ': ' + (torn ? 'set' : 'open') + ' by default (the wrong line), with a retry spot');
+  const w = L.mcWalls.find(q => q.x > p.x1 && q.x - p.x1 < 30); ok(w, p.id + ': a fall-in on the default line within 30 columns past its points');
+  ok(torn ? w.y1 < p.prow : w.y1 > p.prow, p.id + ': the fall-in is ' + (torn ? 'ON the line the points keep you on (the high line torn)' : 'UNDER the line the points keep you on') + ' (row ' + p.prow + ')'); }
 ok(P('forkA') && P('forkA').dflt === 'set', 'fork A is a risk / reward fork whose default is NOT the free line (set: the high line, ore and arrows)');
 { const fa = P('forkA'), low = [...L.mcCrushers, ...L.mcGates].filter(h => h.row > fa.prow && h.x > fa.x && h.x < fa.x + 45);
   ok(low.length >= 3, 'fork A low line is not a free pass: ' + low.length + ' crushers / gates on it'); }
@@ -126,7 +127,7 @@ ok(!runeHits(0, 150, { brake: true }) && !runeHits(0, 230, { brake: true }), 'a 
 ok(!runeHits(0, 150, { jump: MC.runeT - 0.35 }), 'a JUMP over the rune as it bursts dodges it');
 ok(runeHits(0, 150, {}, 1 / 60, MC.throwT, MC.throwR) && !runeHits(0, 150, { brake: true }, 1 / 60, MC.throwT, MC.throwR) && !runeHits(0, 150, { boost: true }, 1 / 60, MC.throwT, MC.throwR), 'a THROWN PICK: cruise held is hit, a brake (or a pump) off his mark dodges it');
 const kinds = new Set(L.ents.filter(e => THREAT[e.t] > 0 && e.t !== 'greatdrill' && e.t !== 'forgemaster').map(e => e.t));   /* (claude/forgemaster: the smith is the level's second MINI, a named fight - not a foe type) */
-ok([...kinds].every(t => ['archer', 'gobmage', 'tippler', 'miner', 'brute', 'sapper', 'bat'].includes(t)), 'no new foe type: ' + [...kinds].join(', '));
+ok([...kinds].every(t => ['archer', 'gobmage', 'tippler', 'miner', 'brute', 'sapper', 'bat', 'rockgoblin'].includes(t)), 'no new foe type (deeprails6: the rock-thrower AI, proven elsewhere, as THE LEADING BORE bone-chucker): ' + [...kinds].join(', '));
 /* CART COMBAT 2 (deeprails3): foes that come TO your line - each told, each answered with the cart's own verbs */
 { const perch = riders.filter(e => e.ride.perch), swing = riders.filter(e => e.ride.swing), jump = riders.filter(e => e.ride.jumper);
   ok(perch.length >= 1 && swing.length >= 1 && jump.length >= 1, 'a goblin on a roof timber (' + perch.length + '), a rider who swings in (' + swing.length + '), a goblin who leaps onto the line (' + jump.length + ')');
@@ -261,7 +262,7 @@ ok(L.decor.some(d => d.kind === 'buffer' && d.x === FOOT[0].x0 + 1) && at(FOOT[0
   const gut = L.mcPits.filter(([a]) => a >= A.exam[0] - 2 && a <= A.exam[1]); ok(gut.length >= 1 && L.examSpans.some(s => s[0] <= gut[0][0] && s[1] >= gut[0][1]) && T_.some(t => /GUTTER KILLS/.test(t.text) && t.at <= gut[0][0]), 'EXAM: the slag gutter kills there (an exam span) and is told before it can');
   { const el = L.ents.filter(e => e.elite && e.x >= A.exam[0] && e.x <= A.exam[1]); ok(el.length === 1 && gut.some(([, b]) => b < el[0].x), 'its exam: one weighty elite on the footing past the gutter (the gutter at your back)'); }
   { const st = L.ents.filter(e => e.t === 'check' && e.x > A.exam[1] && e.x < g0); ok(st.length === 1, 'a shrine after the exam, before the smith (A10c)'); }
-  const M = L.mini2; ok(M && M.boss === 'forgemaster' && M.forge === 'rails' && M.wallL === g0 && M.gate < g1 && M.gate > g1 - 12 && M.trigger > M.x0 && M.trigger < M.x1 && at(M.gate, D - 1) === T.PORT && L.ents.some(e => e.t === 'forgemaster' && e.mini && e.x * TS > M.x0 && e.x * TS < M.x1), 'THE FORGEMASTER is THE SECOND MINI (L.mini2): his room (' + g0 + '-' + M.gate + '), his gate shut till he is down');
+  const M = L.mini2; ok(M && M.boss === 'forgemaster' && M.forge === 'rails' && M.wallL === g0 && M.gate < g1 && M.gate > g0 + 30 && M.trigger > M.x0 && M.trigger < M.x1 && at(M.gate, D - 1) === T.PORT && L.ents.some(e => e.t === 'forgemaster' && e.mini && e.x * TS > M.x0 && e.x * TS < M.x1), 'THE FORGEMASTER is THE SECOND MINI (L.mini2): his room (' + g0 + '-' + M.gate + '), his gate shut till he is down');
   ok(L.forgePoints.filter(p => p.x * TS > M.x0 && p.x * TS < M.x1).length >= 3 && L.forgeLoops.some(lp => lp.x0 * TS <= M.x0 + 32 && lp.x1 * TS >= M.x1 - 96), 'his room: the ore loop over its length and three junctions on its floor');
   ok(K.openT >= 2.5 && K.openT <= 3.5 && K.wardT >= 2.5 && K.parryT > 1, 'a cart into him: OPEN ' + K.openT + ' s (brief: ~3 s); the ward after it ' + K.wardT + ' s (B3); HAMMER AND TONGS turned: OPEN ' + K.parryT + ' s');
   ok(/if \(forgeOpen\(e\)\) dmg \*= 2; else \{ dmg = Math\.max\(1, Math\.round\(dmg \* 0\.5\)\)/.test(main) && /BR\.turned\(e, fromX, e\.ward > 0 \? 'HE BRACES' : 'IRON: SEND A CART'/.test(main), 'B15: outside an opening his iron takes x0.5 (never under 0.4), open x2; a turned blow clanks and SAYS what beats it (B10)');
@@ -318,8 +319,8 @@ ok(GD.DRILL.revV * GD.DRILL.revT < GD.DRILL.homeR - 40, 'the reverse ram sweeps 
 { const C = GD.DRILL.chain, has = (p, m) => C[p].includes(m); ok(has(1, 'dynamite') && has(1, 'reverse') && has(1, 'rocks') && !has(1, 'lunge') && !has(1, 'chain') && !has(1, 'collapse'), 'P1: NEW the DYNAMITE (with the reverse ram and the boulders)');
   ok(has(2, 'lunge') && has(2, 'chain') && !has(2, 'collapse'), 'P2: NEW the SPIN-UP LUNGE and the GRAPPLE CHAIN'); ok(has(3, 'collapse'), 'P3: NEW the ROOF COLLAPSE (and the roof takes the HIGH line)');
   ok(!Object.values(C).flat().includes('sparks'), 'the spark spray is retired (the lunge is its rear\'s line attack now)'); }
-{ const { S, e } = fight(), log = []; S.ph = 2; e.hp = e.maxHp * 0.29; const x = {}; GD.stepDrill(e, S, 1 / 60, [], world(log, x)); ok(S.ph === 3 && S.highDown && x.arena === 'highDown' && GD.lanesOf(S).join() === '0,1', 'P3 brings the roof down on the HIGH line: two lines left (the arena changes)');
-  ok(log.some(t => /HIGH LINE/.test(t)) && isCallout('THE ROOF TAKES THE HIGH LINE: TWO LINES LEFT'), 'and says so'); }
+{ const { S, e } = fight(), log = []; S.ph = 2; e.hp = e.maxHp * 0.29; const x = {}; GD.stepDrill(e, S, 1 / 60, [], world(log, x)); ok(S.ph === 3 && S.highDown && S.oneRail && x.arena === 'oneRail' && GD.lanesOf(S).join() === '1', 'P3 (deeprails6, Daniel 10-29 #1): the roof comes down on the LOW and the HIGH lines - ONE rail, the MID (the arena changes)');
+  ok(log.some(t => /ONE RAIL/.test(t)) && isCallout('THE ROOF COMES DOWN: ONE RAIL LEFT') && isCallout('THE ROOF COMES DOWN ON THE LOW LINE: UP!'), 'and says so (a cart on the LOW line is bucked up onto the MID, told)'); }
 /* GREAT DRILL 3: THE OPENING IS THE LEVEL'S VERB - its chute's POINTS LEVER thrown (a blow or E, from any line) dumps its own ore into its gears: JAMMED */
 const H0 = (x, lane = 1) => [{ x, y: G.laneY[lane], ground: true, alive: true, lane, v: MC.cruise }];
 { const { S, e } = fight(), log = []; S.oreT = 0.01; S.cd = 99;
@@ -438,8 +439,53 @@ ok(GD.DRILL.hp >= 1900 && GD.DRILL.jamCap >= 0.15, 'the drill\'s health is never
   ok(GD.takeBlow(e, S, 5) === 150 && S.pass === 0, 'the held blows land (THE DRIVE GIVES)'); e.hp -= 150; e.open = 0; e.mode = 'idle'; S.ward = 0; for (let i = 0; i < 4; i++) GD.stepDrill(e, S, 1 / 60, [], world(log));
   ok(S.ph === 2 && GD.gateShut(S) && Object.keys(S.gears).sort().join() === 'chain,dyn,lunge' && !Object.values(S.gears).some(q => q.broken), 'the next phase bolts on new gears (the gate shut again)');
   e.hp = GD.gateFloor(S, e) + 10; ok(GD.gateBlow(e, S, 100) === 10, 'the 30% line holds the same way'); }
-{ const { S, e } = fight(); e.hp = 2400; e.maxHp = 2400; S.ph = 3; S.highDown = true; GD.armGears(S); S.cd = 0; const seen = new Set(); for (let i = 0; i < 60 * 60; i++) { GD.stepDrill(e, S, 1 / 60, H0(G.x0 + 60), world([])); seen.add(e.mode); if (e.mode === 'jammed') { e.open = 0; } }
+{ const { S, e } = fight(); e.hp = 2400; e.maxHp = 2400; S.ph = 3; S.highDown = true; S.oneRail = true; GD.armGears(S); S.cd = 0; const seen = new Set(); for (let i = 0; i < 60 * 60; i++) { GD.stepDrill(e, S, 1 / 60, H0(G.x0 + 60), world([])); seen.add(e.mode); if (e.mode === 'jammed') { e.open = 0; } }
   ok(!seen.has('rockTell'), 'P3 never drops the boulders (its chain has the roof collapse)'); }
 { const { S, e } = fight(); e.hp = 2400; e.maxHp = 2400; GD.armGears(S); const mem = {}, pl = GD.drillPlan({ P: { x: G.x0 + 60, y: G.laneY[1], ground: true, face: 1, atk: -1, lane: 1, v: 150 }, e, S, reach: 22, rng: () => 0.9, mem, t: 5 });
   ok(/gear dyn/.test(pl.why), 'the bot goes for a gear while its gears hold it (' + pl.why + ')'); }
+/* DEEP RAILS 6 (claude/deeprails6, Daniel 10-29: six items - brief scratch/brief-deeprails6-1029.md) */
+/* #5 THE LEADING BORE: on the cart between the smelter and the bore's mouth; its own small exam (A14: a fork, a different thing on each line); no goblins */
+{ const [b0, b1] = sec('THE LEADING BORE'), A = ARCS.bore, fk = L.mcPoints.find(p => p.id === 'boreFork');
+  ok(b0 >= sec('THE SMELTER')[0] && b1 === ARENA_X && b1 - b0 >= 70, 'THE LEADING BORE (' + b0 + '-' + b1 + ') runs from the smelter to the drill\'s arena, ' + (b1 - b0) + ' columns');
+  ok(A && A.teach[1] < A.test[0] && A.test[1] < A.exam[0] && A.exam[1] < b1, 'its arc runs teach -> test -> exam');
+  ok(fk && fk.req && fk.want === 'open' && fk.dflt === 'set' && fk.x >= A.teach[0] && fk.x <= A.teach[1], 'TEACH: the torn high line - its points must be OPENED (REQUIRED, the verb carried over with a twist)');
+  ok(L.ents.some(e => e.t === 'sign' && e.x >= b0 && e.x < fk.x && /OPEN/.test(e.text)) && T_.some(t => t.text === 'HIGH LINE TORN: OPEN POINTS' && t.at > fk.x), 'taught: a sign before it and a tell');
+  { const sp = (STUCK_HANDS.minecart || []).find(s => s.id === 'mc-bore'); ok(sp && sp.steps[0].is[0] === 'points.boreFork' && sp.steps[0].is[1] === 'set', 'and it glints until it is OPEN (stuck spot mc-bore)'); }
+  ok(L.mcRocks.some(r => r.x >= A.test[0] && r.x <= A.test[1]) && L.mcBeams.some(b => b.x0 >= A.test[0] && b.x0 <= A.test[1]), 'TEST on the low line: a rockfall (its shadow) and a duck beam under the cutting scars');
+  { const ex = A.exam, hi = [], lo = []; for (let x = ex[0]; x <= ex[1]; x++) { if (at(x, 30) === T.RAIL) hi.push(x); }
+    ok(hi.length >= 8 && hi.some((x, i) => i && x - hi[i - 1] >= 3), 'EXAM: a high rail over the low line, with a gap in it to jump');
+    ok(L.mcCrushers.some(c => c.x >= ex[0] && c.x <= ex[1] && c.row === 33), 'and a crusher on the low line (a different thing on each line)'); }
+  const foes = L.ents.filter(e => e.x >= b0 && e.x < b1 - 22 && !['sign', 'check', 'coin', 'mcpoints', 'mccrusher', 'mcrock', 'mcbeam', 'stray', 'mend', 'torch'].includes(e.t));
+  const kinds = foes.map(e => e.cnSkin || e.t), share = Math.max(...[...new Set(kinds)].map(k => kinds.filter(q => q === k).length)) / kinds.length;
+  ok(foes.length >= 5 && new Set(kinds).size >= 3 && share <= 0.35 + 1e-9, 'its foes: ' + kinds.join(', ') + ' (role mix >= 3, no type over 35%)');
+  ok(foes.every(e => ['bat'].includes(e.t) || ['navvy', 'bonechucker'].includes(e.cnSkin)), 'no living goblins in it (navvies, bone-chuckers, bats - house rule and the brief)');
+  ok(foes.some(e => e.elite && e.x >= A.exam[0]), 'an elite in its exam');
+  { const st = L.ents.filter(e => e.t === 'check').map(e => e.x).sort((a, b) => a - b), last = st.filter(x => x < ARENA_X).pop(), prev = st.filter(x => x < last).pop();
+    ok(last > A.exam[1] && ARENA_X - last <= 22, 'STATION NINE stands at its end, right before the bore\'s mouth (' + last + ', the arena at ' + ARENA_X + ')');
+    ok(last - prev >= 140 && last - prev <= 260, 'moved, not added: ' + (last - prev) + ' route tiles after station eight (A10b 140-260)'); } }
+/* #2 THE SLAG LADLE (P1, the dynamite feed's): told, its glob, its pool on your line - change line, or jump it */
+{ const D = GD.DRILL; ok(D.chain[1].includes('ladle') && !D.chain[2].includes('ladle') && !D.chain[3].includes('ladle') && GD.moveGear('ladle').id === 'roof', 'THE SLAG LADLE in P1 only, hoisted by THE ROOF WINCH (break it and the ladle is gone too)');
+  ok(D.ladleTell >= 0.8 && D.ladleDmg <= 14 && D.ladlePool >= 2 && D.ladleW < 6 * 16, 'told ' + D.ladleTell + ' s; dmg ' + D.ladleDmg + '; a pool ' + D.ladlePool + ' s, ' + D.ladleW + ' px (a cruising jump clears it)');
+  const { S, e } = fight(); GD.armGears(S); S.cd = 0; S.i = D.chain[1].indexOf('ladle'); const log = [], { got, w } = hits(); w.number = (a, b, t) => log.push(t);
+  GD.stepDrill(e, S, 1 / 60, H0(G.x0 + 100), w); ok(e.mode === 'ladleTell' && S.ladlePend && S.ladlePend.lane === 1 && log.some(t => /SLAG LADLE/.test(t)) && isCallout('!! SLAG LADLE: CHANGE LINE, OR JUMP IT'), 'told first, on your line (its own windup: the boom rises with the ladle)');
+  for (let i = 0; i < 300 && !got.some(g => g.name === 'THE SLAG'); i++) GD.stepDrill(e, S, 1 / 60, H0(G.x0 + 100), w);
+  const b = got.find(g => g.name === 'THE SLAG'); ok(b && b.b[2] >= G.laneY[1] - 6 && b.b[3] <= G.laneY[1] + 2, 'it pools on your line and burns a cart that rides through it (low: a jump clears it)');
+  const { S: S2, e: e2 } = fight(); GD.armGears(S2); S2.cd = 0; S2.i = D.chain[1].indexOf('ladle'); const h2 = hits(); for (let i = 0; i < 300; i++) GD.stepDrill(e2, S2, 1 / 60, [{ x: G.x0 + 100, y: G.laneY[i < 50 ? 1 : 2], ground: true, alive: true, lane: i < 50 ? 1 : 2, v: MC.cruise }], h2.w);
+  ok(h2.got.some(g => g.name === 'THE SLAG') && h2.got.filter(g => g.name === 'THE SLAG').every(g => g.b[3] < G.laneY[2] - 20 || g.b[2] > G.laneY[2] + 2), 'it pools on the line it was told on: a cart that changed line is clear of it');
+  const { S: S3, e: e3 } = fight(); GD.armGears(S3); S3.cd = 0; S3.i = D.chain[1].indexOf('ladle'); GD.stepDrill(e3, S3, 1 / 60, H0(G.x0 + 100), world([])); const o = {}; GD.hitGear(e3, S3, 'roof', 999, world([]), o); ok(o.broke && e3.mode !== 'ladleTell' && !S3.ladlePend, 'break the winch and a coming ladle is gone');
+  const { S: S4, e: e4 } = fight(); S4.ladlePend = { lane: 1 }; S4.n.ladle = 1; const mem = {}, ask = t => GD.drillPlan({ P: { x: G.x0 + 100, y: G.laneY[1], ground: true, face: 1, atk: -1, lane: 1, v: 150 }, e: e4, S: S4, reach: 22, rng: () => 0.9, mem, t });
+  ask(5); const pl = ask(5.5); ok((pl.jump || pl.drop) && /dodge/.test(pl.why), 'the bot changes line off the ladle (' + pl.why + ')'); }
+/* #1 P3 ONE RAIL + TENSION: every bank struck from the MID rail; the rig closes; three+ distinct answers */
+{ const { S, e } = fight(); e.hp = 2400; e.maxHp = 2400; S.ph = 3; S.highDown = true; S.oneRail = true; GD.armGears(S); const swing = y => ({ t: y - 28, b: y }), over = (a, q) => a.t < q.b && a.b > q.t;
+  for (const g of GD.GEARS) { const b = GD.gearBoxOf(G, S, g), st = GD.gearStand(S, g); ok(st.lane === 1, g.id + ': P3 - struck from the MID rail');
+    ok(st.jump ? !over(swing(G.laneY[1]), b) && over(swing(G.laneY[1] - 51), b) || over(swing(G.laneY[1] - 30), b) : over(swing(G.laneY[1]), b), g.id + ': ' + (st.jump ? 'a jump off it' : 'a standing swing') + ' reaches it'); }
+  e.hp = 2400 * 0.3; S.tension = 0; for (let i = 0; i < 60; i++) GD.stepDrill(e, S, 1 / 60, [], world([])); const r0 = S.R; e.hp = 2400 * 0.02; for (let i = 0; i < 600; i++) GD.stepDrill(e, S, 1 / 60, [], world([]));
+  ok(S.tension > 0.9 && S.R < r0 - GD.DRILL.closeR * 0.8, 'THE RIG CLOSES as its bar falls (rear ' + Math.round(r0) + ' -> ' + Math.round(S.R) + ' px, tension ' + S.tension.toFixed(2) + ')');
+  ok(S.R - GD.DRILL.revV * GD.DRILL.revT > 60, 'and still leaves room to brake out of its reverse ram');
+  const ans = { claw: 'pump-jump', lunge: 'duck', reverse: 'brake', collapse: 'brake', chain: 'jump', dynamite: 'jump/brake', cutter: 'strike/jump' }; ok(GD.DRILL.chain[3].every(m => ans[m]) && new Set(GD.DRILL.chain[3].map(m => ans[m])).size >= 3, 'P3 keeps >= 3 distinct answers on one rail (B17): ' + GD.DRILL.chain[3].map(m => m + '=' + ans[m]).join(', '));
+  const { S: S5, e: e5 } = fight(); S5.ph = 3; S5.oneRail = true; S5.highDown = true; S5.hook = { lane: 1, t: 0.1, flying: false }; S5.n.chain = 1; const mem = {}, ask = t => GD.drillPlan({ P: { x: G.x0 + 100, y: G.laneY[1], ground: true, face: 1, atk: -1, lane: 1, v: 150 }, e: e5, S: S5, reach: 22, rng: () => 0.9, mem, t });
+  ask(5); ok(ask(5.5).jump, 'the bot jumps the hook on the one rail'); }
+/* #3 THE LEVER: a pull animation and it visibly DOES something (the hands draw the pour, the read says so) */
+ok(/MCA\.pointsPost\(g, x, [^;]*lv\.thrown \? pk : 0/.test(ghands) && /MCA\.leverClunk/.test(ghands) && /MCA\.oreStream\(/.test(ghands) && /S\.lurchT = 0\.5/.test(ghands) && /leverAnim: S\.lever \? \{ thrown/.test(ghands), 'THE LEVER: the hand-lever pulls down over 0.25 s with a clunk and a spark; thrown, the chute pours its ore in an arc into its gears and the rig lurches; H.read says so (leverAnim)');
+ok(/'MISSED THE POINTS: IT KICKS AN ORE CART'/.test(ghands) && isCallout('MISSED THE POINTS: IT KICKS AN ORE CART'), 'missed, it goes by still up - told');
 console.log('minecart: ' + n + ' checks ok');

@@ -26,7 +26,7 @@ try {
       for (const e of BK.enemies()) if (!e.boss) { e.alive = false; e.mcWait = false; }
       const P = () => BK.P, k = BK.keys, out = [];
       const clear = () => { k.left = k.right = k.jump = k.down = k.up = k.atk = false; };
-      for (const p of BK.L.mcPoints) if (p.req || p.sw) BK.minecart().setPoints(p.id, 'set');   /* (deeprails3: and every switch's bridge laid) */
+      for (const p of BK.L.mcPoints) if (p.req || p.sw) BK.minecart().setPoints(p.id, p.want || 'set');   /* (deeprails3: and every switch's bridge laid) */
       for (const g of BK.L.mcBoost.filter(q => !q.ramp)) for (const [boost, early] of [[false, 0], [true, 0], [true, 8]]) {   /* (fix pass, review MF4: a boosted jump pressed 8 px EARLY must clear too - the gap is 8 wide now) */
         BK.tp(g.x0 - 14, g.row - 1); P().vx = 0; P().vy = 0; BK.minecart().cart(P()).v = boost ? 230 : 150; clear(); BK.sim(3);
         let n = 0; while (P().x < g.x0 * TS - 4 - early && n++ < 300) { clear(); k.right = boost; BK.sim(1); }

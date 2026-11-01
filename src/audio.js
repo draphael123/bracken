@@ -1187,6 +1187,7 @@ Object.assign(SFX, {
   /* DEEP RAILS 3 (claude/dr3art): the Great Drill's spin-up whine, its lunge, the chain's rattle, the dynamite's fuse, a stomp on the Foreman's iron lid, the switch's latch and the bridge swinging down.
      Synth first; REC (below) lays the clips already on disk over them (clang, r_charge, r_chain, r_hiss, r_latch, r_creak - no new files) */
   drillWhine() { tone('sawtooth', 200, 1500, 0.9, 0.09); tone('square', 100, 760, 0.9, 0.045, 0.05); noise(0.9, 0.12, 3200, 1.2, 0.1); },
+  drillRoar(k) { k = Math.max(0, Math.min(1, k || 0)); noise(0.9, 0.1 + 0.14 * k, 240 + 520 * k, 0.6); tone('sawtooth', 54 + 26 * k, 36, 0.95, 0.05 + 0.07 * k); tone('sine', 44, 30, 1.0, 0.12 + 0.06 * k); },   /* (deeprails6art) THE ROAR BED under P3: the rig's engine, a pulse that swells and quickens as its bar falls */
   drillLunge() { noise(0.45, 0.3, 2600, 0.9); tone('sawtooth', 1600, 480, 0.45, 0.12); tone('sine', 92, 40, 0.3, 0.18); },
   chainRattle() { for (let i = 0; i < 7; i++) { tone('square', 1900 - i * 90, 900, 0.03, 0.06, i * 0.04); noise(0.04, 0.1, 3000, 1.5, i * 0.04); } },
   fuseFizz() { noise(0.7, 0.14, 5200, 1.5); for (let i = 0; i < 6; i++) tone('square', 3000 + i * 230, 2200, 0.02, 0.04, i * 0.1); },

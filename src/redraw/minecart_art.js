@@ -4,6 +4,7 @@
 // they hand this file the numbers and it draws. Everything is plain fillRect pixel art on the screen (no per-frame allocation beyond a few gradients).
 import { MP, glow, lampSprite, hash, WALLK } from './minecart_backdrop.js';
 import { canvas } from '../px.js';
+import { goblinDriver } from './deeprails6_art.js';
 const R = Math.round;
 const rc = (g, x, y, w, h, col) => { g.fillStyle = col; g.fillRect(R(x), R(y), R(w), R(h)); };
 const add = (g, fn) => { g.globalCompositeOperation = 'lighter'; fn(); g.globalCompositeOperation = 'source-over'; g.globalAlpha = 1; };
@@ -177,13 +178,7 @@ export function tubFront(g, x, y, kind) {
 export function prowLamp(g, x, y, face, time) { const lx = x + face * 12; rc(g, lx - 1, y - 12, 3, 2, MP.i2); rc(g, lx - 1, y - 14, 3, 3, MP.l2); rc(g, lx, y - 14, 1, 1, MP.l3); add(g, () => { g.globalAlpha = 0.5; g.drawImage(glow(26, '255,190,90'), lx - 26, y - 38); }); }
 
 /* ---------------- THE LANDMARKS UP CLOSE ---------------- */
-export function scar(g, x, y, r, seed) {
-  g.strokeStyle = '#0c0807'; g.lineWidth = 3; g.beginPath(); g.arc(x, y - r, r + 1, 0, Math.PI * 2); g.stroke();
-  g.strokeStyle = MP.r5; g.lineWidth = 1; g.beginPath(); g.arc(x, y - r, r, Math.PI * 1.05, Math.PI * 1.95); g.stroke();   /* the lit rim of a fresh cut */
-  g.strokeStyle = '#2a1a10'; g.lineWidth = 1; g.beginPath(); g.arc(x, y - r, r * 0.6, 0, Math.PI * 2); g.stroke();   /* a second, inner ring */
-  for (let i = 0; i < 9; i++) { const a = i / 9 * Math.PI * 2 + seed; rc(g, x + Math.cos(a) * (r + 2), y - r + Math.sin(a) * (r + 2), 2, 2, '#050303'); }   /* the teeth's bites */
-  g.fillStyle = '#0b0807'; g.beginPath(); g.arc(x, y - r, r * 0.4, 0, Math.PI * 2); g.fill();
-}
+/* (deeprails6art) the drill's cutting scar (scar) now lives in deeprails6_art.js: a fractured rim, flute tracks, chisel marks, spoil at its foot */
 export function spoil(g, x0, y, w) { for (let x = 0; x < w; x += 6) { const h = 2 + ((x * 7) % 5) + ((x * 3) % 3); rc(g, x0 + x, y - h, 6, h, (x / 6) & 1 ? MP.r4 : MP.r3); rc(g, x0 + x, y - h, 6, 1, MP.r6); if (((x * 5) % 11) === 0) rc(g, x0 + x + 2, y - h + 1, 2, 1, MP.cu2); } }
 export function headlight(g, x, y, time) { const k = 0.5 + 0.5 * Math.sin(time * 9) * Math.sin(time * 2.3);
   add(g, () => { g.globalAlpha = 0.35 + 0.35 * k; g.drawImage(glow(60, '255,220,150'), R(x) - 60, R(y) - 60); g.globalAlpha = 0.5 + 0.4 * k; g.drawImage(glow(24, '255,245,210'), R(x) - 24, R(y) - 24); });
@@ -462,11 +457,9 @@ export function rig(g, rx, lanes, ceilY, o, time) {
   const cx0 = rx + ci, ct = L1 - (o.cabH || 40), ch = L1 - ct;
   rc(g, cx0, ct, cw, ch, flash || '#5a4a3c'); rc(g, cx0, ct, cw, 2, '#8a7660'); rc(g, cx0, ct, 2, ch, '#7a6650'); rc(g, cx0 + cw - 2, ct, 2, ch, '#2a2018');
   for (let y = ct + 27; y < ct + ch - 3; y += 6) { rc(g, cx0 + 2, y, cw - 4, 1, '#2a2018'); rc(g, cx0 + 3, y + 2, 1, 1, MP.i5); rc(g, cx0 + cw - 5, y + 2, 1, 1, MP.i5); }
-  rc(g, cx0 + 3, ct + 5, cw - 6, 17, '#0e0a10'); rc(g, cx0 + 4, ct + 6, cw - 8, 15, o.jam ? '#ffd36b' : '#e0a040'); rc(g, cx0 + 4, ct + 6, cw - 8, 2, '#f8d890');
-  const gm = cx0 + R(cw / 2) - 2, look = Math.sin(time * 1.3) > 0.6 ? 1 : 0; if (o.slump > 0.5) { rc(g, cx0 + 4, ct + 6, cw - 8, 15, '#ffd36b'); rc(g, gm - 5, ct + 15, 10, 6, '#4a7a30'); rc(g, gm - 6, ct + 13, 12, 3, '#6a3a1a'); rc(g, gm - 4, ct + 17, 2, 1, '#101010'); rc(g, gm, ct + 17, 2, 1, '#101010'); } else {   /* the goblin: green head, a rusty helm, red eyes looking back (left) at you, a snarl; his hands on the levers */
-  rc(g, gm - 5, ct + 11, 10, 9, '#4a7a30'); rc(g, gm - 5, ct + 11, 10, 1, '#6aa048'); rc(g, gm - 8, ct + 13, 3, 2, '#4a7a30'); rc(g, gm - 6, ct + 9, 12, 3, '#6a3a1a'); rc(g, gm - 6, ct + 9, 12, 1, '#a0602a');
-  rc(g, gm - 4 - look, ct + 14, 2, 2, '#ff4030'); rc(g, gm - look, ct + 14, 2, 2, '#ff4030'); rc(g, gm - 4, ct + 18, 6, 1, '#101010'); rc(g, gm - 3, ct + 17, 1, 1, '#e8e0c0'); rc(g, gm, ct + 17, 1, 1, '#e8e0c0');
-  rc(g, gm + 5, ct + 18, 4, 2, '#4a7a30'); rc(g, gm + 8, ct + 15, 1, 6, MP.i4); }   /* a hand on the lever (jammed: the driver slumped over his levers, eyes shut) */
+  rc(g, cx0 + 3, ct + 5, cw - 6, 17, '#0e0a10');   /* the window's frame */
+  const gm = cx0 + R(cw / 2) - 2;
+  goblinDriver(g, cx0 + 4, ct + 6, { jam: o.jam, slump: o.slump, time });   /* (deeprails6art) THE GOBLIN DRIVER: a hand-set sprite in the glass - helm and lamp, snarl, ears, rag, jerkin, a hand on the lever; jammed: slumped over his levers, eyes shut */
   rc(g, cx0 + 3, ct + 5, 2, 17, '#14101a'); rc(g, cx0 + cw - 5, ct + 5, 2, 17, '#14101a');
   rc(g, cx0 + 4, ct - 5, cw - 8, 5, '#2a2018'); rc(g, cx0 + 4, ct - 5, cw - 8, 1, '#8a7660'); rc(g, gm - 3, ct - 9, 6, 5, MP.i2); rc(g, gm - 2, ct - 8, 4, 3, '#fff0b0');
   add(g, () => { g.globalAlpha = 0.6; g.drawImage(glow(30, '255,220,140'), gm - 30, ct - 7 - 30); });
@@ -482,5 +475,6 @@ export function rig(g, rx, lanes, ceilY, o, time) {
 export * from './deeprails3_art.js';
 export * from './deeprails4_art.js';
 export * from './deeprails4_poses.js';   /* (dr4art) windup poses, the slump set, the raiders' tub, the gantry and siding */
+export * from './deeprails6_art.js';   /* (claude/deeprails6, greybox) one rail in P3, the slag ladle, the lever's throw and the ore stream */
 export * from './deeprails5_art.js';   /* (claude/deeprails5, greybox) the drill's spare cutter + rail claw, the Foreman's boom + tipped ore, the parked cart's gate */
 import { tunnelFloor } from './deeprails4_art.js';
