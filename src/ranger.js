@@ -47,7 +47,7 @@ export const RG = {
   /* DISTANCE BONUS (Daniel 10-31 Q9): an arrow pays by how far it has flown - a point-blank shot is x0.8 (the knife is the answer there), x1.0 from mid, rising to x1.6 at far px. A STEADY SHOT doubles the bonus (the part over x1.0) */
   dist: { near: 36, mid: 70, far: 280, lo: 0.8, hi: 1.6, empowered: 2 },
   /* (claude/rangerid, Daniel 11-01 3rd jab) THE PUSH KICK: the third knife cut in a run is a boot, not a stab - the foe is shoved OUT TO RANGE (room to shoot) and the cut pays less; mul = the blow, push = the shove's speed, a boss or elite is only staggered */
-  kick: { mul: 0.8, push: 300, stagger: 0.7, bossStagger: 0.25, reach: 22 },
+  kick: { mul: 0.8, push: 380, stagger: 0.7, bossStagger: 0.25, reach: 25, step: 70 },
   volleyCost: 2, volleyCd: 6,
   sweet: { near: 52, far: 138, quick: 14, draw: 26, rise: 10, down: 10 },   /* px from where it was loosed; focus each arrow that lands in it gives */
   mark: { t: 10, mul: 1.33, apex: 1.5, range: 300 },  /* THE MARK: s; x on every blow; px ahead it reaches (through walls) */
@@ -194,7 +194,7 @@ export function makeRanger(api) {
     const TC = RG.tiers.cols[tier] || '#ffffff', word = RG.tiers.names[tier];
     if (tier === 2) {   /* THE STEADY SHOT (let go inside the window): flat, through the whole line, and its distance bonus doubled */
       stats.pierces++; stats.steady++;
-      const a = loose(p, { kind: 'pierce', vx: p.face * RG.pierce.vx, vy: 0, g: 0, dmg: dmgBase() * RG.pierce.dmg, tag: ['heavy', 'shot'], pierce: true, range: RG.pierce.range * far * (focusFull(p) ? 1.25 : 1) }); a.full = true; a.emp = true;
+      const a = loose(p, { kind: 'pierce', vx: p.face * RG.pierce.vx, vy: 0, g: 0, dmg: dmgBase() * RG.pierce.dmg, tag: ['heavy', 'shot'], pierce: true, focus: RG.sweet.draw, range: RG.pierce.range * far * (focusFull(p) ? 1.25 : 1) }); a.full = true; a.emp = true;
       api.number(p.x, p.y - 28, word, RG.tiers.label[2]); api.shakeCam(3, p.face * 2); api.zoomKick(1.04, 0.18); api.streaks(p.x + p.face * 12, p.y - 13, 8, ['#dfffb0', TC], 160);
     } else {
       const kn = p.rgKneel ? RG.kneel : null;   /* (claude/heropassa) THE KNEELING DRAW: flatter, further, more Focus from the sweet spot, loosed low */
