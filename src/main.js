@@ -23887,6 +23887,7 @@ function updateDesertFoe(e, dt) {
   const w = { px: P.x, py: P.y, time, pface: P.face || 1 };
   if (e.t === 'kiterider') { w.solid = (x, y) => isSolid(Math.floor(x / TS), Math.floor(y / TS)); w.sea = (L.cloudSea || LH * TS) + 2 * TS; w.ground = !s.fly && (e.vy || 0) === 0 && isSolid(Math.floor(e.x / TS), Math.floor((e.y + 2) / TS)); }   /* THE SKY ROAD's kite-rider reads the rock and the cloud sea */
   if (e.t === 'trophyhunter') { const fy = Math.floor((e.y + 2) / TS), fx = Math.floor(e.x / TS); w.ground = !s.hang && (e.vy || 0) === 0 && (isSolid(fx, fy) || isOneWay(tileAt(fx, fy))); }   /* THE ROOTWAY's trophy-hunter: off his hoist, he lands on rock or a span */
+  if (e.t === 'stiltwalker') w.ground = x => cvGround(x, e.y);   /* (claude/bogtroll2) his stride lands only on footing (src/stilt-walker.js) */
   if (e.t === 'sandworm') w.flood = !!(DF2H && DF2H.wormWorld(s)) || !!(UWH && UWH.heat(s));   /* (claude/underwell: and in the Underwell the heat of burning oil over its bed) */   /* THE SANDWORM: the gorge's horn and flood drive it under (claude/desertfoes) */
   /* THE SLINGER THROWS ONLY AT WHAT IS UNDER THE SKY: a hero with stone over his head between him and the sling - inside a tower (his
      own), a house, under a lintel - is out of his arc. (A straight line of sight was tried first and was wrong: his stone goes UP and

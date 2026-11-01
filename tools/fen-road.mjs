@@ -142,6 +142,9 @@ ok(arenaReached(floodReach(L, T, { hero: 'knight' })), 'every hole laid: the cro
 { const s = SW.newStilt(400, 288, { face: 1 }); s.cd = 0; let tell = null, hit = null;
   for (let f = 0; f < 120 && !hit; f++) for (const v of SW.stiltStep(s, { px: 406, py: 288, time: f / 60 }, 1 / 60)) { if (v.t === 'tell' && v.what === 'stomp') tell = v; if (v.t === 'hit') hit = v; }
   ok(tell && tell.mark === '!!' && hit && hit.what === 'stomp' && !hit.blockable && hit.box[0] < 406 && hit.box[1] > 406, 'a hero under him: a told (!!) unblockable stomp where he stood'); }
+{ /* (claude/bogtroll2) never a stride onto nothing: a beat that runs off the boards turns back at the edge */
+  const s = SW.newStilt(400, 288, { face: 1, beat: 6 }), edge = 430; let maxX = 0; for (let f = 0; f < 60 * 12; f++) { SW.stiltStep(s, { px: 2000, py: 288, time: f / 60, ground: x => x < edge }, 1 / 60); maxX = Math.max(maxX, s.x); }
+  ok(maxX < edge && s.x < 420, 'a stilt-walker never strides onto nothing: his beat turns back at the edge (' + Math.round(maxX) + ' < ' + edge + ')'); }
 // ---- H. THE BOG LEECH (claude/fenroad2)
 { const sy = 304, H = { x: 400, y: 288, dead: false, face: 1, dodge: 0 }; let astir = false; const log = [];
   const X = { hero: () => H, heroes: () => [H], surfaceAt: () => sy, solidAt: (x, y) => y >= 288 && y < 304, astir: () => astir, inWater: () => false, rolling: pp => pp.dodge > 0,

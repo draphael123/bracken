@@ -60,7 +60,10 @@ export function stiltStep(s, w, dt) {
         if (s.cd <= 0 && ad < STILT.stompAt && Math.abs(dy) < 24) { s.mode = 'stompTell'; s.t = STILT.stompTell; s.stompX = w.px; s.frame = SW_POSE.stompTell; ev('tell', { what: 'stomp', mark: '!!' }); break; }
         if (s.cd <= 0 && ad < STILT.jabAt && ad >= STILT.stompAt && Math.abs(dy) < 28) { s.mode = 'jabTell'; s.t = STILT.jabTell; s.frame = SW_POSE.jabTell; ev('tell', { what: 'jab', mark: '!' }); break; }
         s.phT -= dt; if (s.phT > 0) break;
-        const want = wantOf(s, w, ad, dy, sees); if (!want) { s.phT = 0.15; break; }
+        let want = wantOf(s, w, ad, dy, sees); if (!want) { s.phT = 0.15; break; }
+        /* (claude/bogtroll2, Daniel 11-01 "stilt-walkers float in the air"): never a stride onto nothing - where the planted stilt would land there must be footing (w.ground, main.js),
+           else his beat turns back there (and a hero he sees past an edge is watched, not walked to) */
+        if (w.ground && !w.ground(s.x + want * (STILT.stride + 6))) { if (sees) { s.phT = 0.2; break; } s.pdir = -want; want = -want; if (!w.ground(s.x + want * (STILT.stride + 6))) { s.phT = 0.3; break; } }
         /* A HIGH STEP: the stilt comes up; where it will come down is told (footX) */
         s.ph = 'lift'; s.phT = STILT.lift; s.want = want; s.leg = 1 - s.leg; s.liftX = s.x; s.footX = s.x + want * STILT.stride; if (!sees) s.face = want;
         break; }

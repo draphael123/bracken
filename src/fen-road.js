@@ -83,7 +83,7 @@ export function buildFenRoad({ painter, T, TS }) {
      hut at its west wall - a pocket off the route), out by the steps at its east end */
   floor(37, 38, 20); floor(39, 52, 22); floor(51, 52, 20);
   for (let x = 41; x <= 48; x++) for (let y = 22; y <= 24; y++) set(x, y, T.AIR); set(47, 24, T.SOLID); set(48, 23, T.SOLID); set(48, 24, T.SOLID);   /* the pit, three rows deeper and six wide (no jump clears it), a cut step at its east wall to climb out by */
-  ent('sprig', 41, 21, { face: -1 }); ent('shield', 50, 21, { face: -1 }); ent('spit', 53, 17, { face: -1 });   /* the cutters in the trench; a spitter on its east lip lobbing in */
+  ent('sprig', 42, 24, { face: -1 }); ent('shield', 50, 21, { face: -1 }); ent('spit', 53, 17, { face: -1 });   /* the cutters in the trench (claude/bogtroll2: the sprig down in the pit, not over it - tools/foe-footing.mjs); a spitter on its east lip lobbing in */
   coins([44, 24], [45, 24], [46, 24]); deco('rock', 40, 21, { v: 1 });
   plat(39, 19, 3); ent('silver', 40, 18);   /* the cutter's shelf: up out of the trench's west end, a silver (off the route) */
   /* THE FIRST LASHING: the crew stands on the far side of a bowed section. Strike the lashing on its post as they cross: it goes under with them */
@@ -95,7 +95,7 @@ export function buildFenRoad({ painter, T, TS }) {
   floor(71, 84, ROAD);
   sign(72, 17, 'A LOOKOUT ON STILTS. HIS HORN CALLS HIS CREW. GO LOW: A SWEEP OR A SLIDE CUTS A STILT.');
   deco('bothy', 82, 17, { v: 0 });
-  ent('stiltwalker', 79, 17, { face: -1, horn: true, beat: 3, pack: [{ dx: 48, y: ROAD * TS, t: 'sprig' }, { dx: 56, y: ROAD * TS, t: 'sprig' }] });
+  ent('stiltwalker', 76, 17, { face: -1, horn: true, beat: 2, pack: [{ dx: 64, y: ROAD * TS, t: 'sprig' }, { dx: 72, y: ROAD * TS, t: 'sprig' }] });   /* (claude/bogtroll2) his beat clear of the bothy (Daniel 11-01: he stood in it) - tools/foe-footing.mjs */
   coins([75, 16], [77, 16]);
   /* out over the water again: two bowed sections in a row under a bowman on the lookout walk (a fight while the rule runs, A5) */
   water(85, 98); planks(85, 98); sag('c', 88, 3); sag('d', 93, 3);
@@ -109,7 +109,7 @@ export function buildFenRoad({ painter, T, TS }) {
   sign(105, 17, 'THE ROAD IS BROKEN. E TAKES A PLANK FROM THE CREW\'S BUNDLE; E AT THE EDGE LAYS IT.');
   /* (claude/fenroad2) THE FIRST PEAT HOLE (the plank TAUGHT): the road stops over a bog that sucks you down; the crew's bundle on the bank, nothing hunting you */
   hole('p1', 111, 7);
-  floor(118, 124, ROAD); ent('sprig', 119, 17, { face: -1 }); ent('shield', 122, 17, { face: -1 });
+  floor(118, 124, ROAD); ent('sprig', 119, 17, { face: -1 }); ent('shield', 123, 17, { face: -1 });
   deco('timber', 121, 17, { v: 0 }); coins([113, 16], [114, 15], [116, 16]);
   /* a second lashing, under a bowman on a stilt deck over it */
   water(125, 150); planks(125, 150); sag('e', 136, 4); lash(133, 'e');
@@ -145,7 +145,7 @@ export function buildFenRoad({ painter, T, TS }) {
   sag('h1', 216, 2, { hold: 1.4 }); plat(219, 17, 3); sag('h1b', 223, 2, { row: 17, hold: 1.4 }); sag('h2', 226, 2, { row: 17, hold: 1.4 });
   block(228, 231, 16, BED - 1); block(232, 234, 14, BED - 1); block(235, 237, 12, BED - 1); block(238, 240, 10, BED - 1);   /* THE LOOKOUT CRIBS: four timber cribs stepping up out of the fen to the lookout walk (the art lane draws them as lashed log cribs) */
   /* the lookout walk: the high deck, and the horn lookout on its post. His horn calls a bowman and a spitter onto the decks round him */
-  plat(241, 8, 10); ent('stiltwalker', 248, 7, { face: -1, horn: true, beat: 2, pack: [{ dx: 88, y: 10 * TS, t: 'archer' }, { dx: -168, y: 10 * TS, t: 'spit' }] });
+  plat(241, 8, 10); ent('stiltwalker', 246, 7, { face: -1, horn: true, beat: 2, pack: [{ dx: 88, y: 10 * TS, t: 'archer' }, { dx: -136, y: 10 * TS, t: 'spit' }] });
   coins([244, 7], [246, 7], [250, 7]);
   plat(252, 10, 3);
   plat(255, 12, 3); plat(258, 14, 2); sag('h3', 261, 2, { row: 16, hold: 1.4 }); plat(266, 16, 3); ent('spit', 267, 15, { face: -1 }); sag('h5', 271, 2, { row: 17, hold: 1.4 }); plat(274, 17, 2);
