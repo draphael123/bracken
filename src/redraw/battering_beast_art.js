@@ -134,7 +134,7 @@ function head(d, p, cut, step) {
   d.limb([[31 + X, -40 + Y], [36 + X, -50 + Y], [45 + X, -55 + Y], [52 + X, -50 + Y]], [8, 6, 5, 3], HORN[1], HORN[2], HORN[0]); d.poly([[49 + X, -53 + Y], [55 + X, -51 + Y], [54 + X, -46 + Y], [50 + X, -48 + Y]], PL[3]); d.dot(52 + X, -51 + Y, PL[4]);
   d.limb([[29 + X, -38 + Y], [32 + X, -45 + Y], [38 + X, -48 + Y]], [6, 5, 3], HORN[0], HORN[1], null);
   /* the skull and snout, the chamfron plate over the face, one amber eye */
-  d.poly([[28 + X, -42 + Y], [42 + X, -40 + Y], [52 + X, -30 + Y], [53 + X, -20 + Y], [46 + X, -15 + Y], [36 + X, -15 + Y], [28 + X, -24 + Y]], HIDE[1]);
+  d.poly([[28 + X, -42 + Y], [42 + X, -40 + Y], [52 + X, -30 + Y], [53 + X, -20 + Y], [46 + X, -15 + Y], [36 + X, -15 + Y], [28 + X, -24 + Y]], HIDE[2]);   /* (claude/beast3) a lighter skull: the slate head read too dark on the barding */
   d.poly([[30 + X, -42 + Y], [42 + X, -40 + Y], [50 + X, -32 + Y], [41 + X, -33 + Y], [32 + X, -34 + Y]], HIDE[3]);
   d.poly([[34 + X, -41 + Y], [44 + X, -39 + Y], [53 + X, -27 + Y], [51 + X, -21 + Y], [42 + X, -19 + Y], [35 + X, -27 + Y]], PL[2]); d.poly([[34 + X, -41 + Y], [44 + X, -39 + Y], [46 + X, -36 + Y], [36 + X, -37 + Y]], PL[4]); d.poly([[48 + X, -33 + Y], [53 + X, -27 + Y], [51 + X, -21 + Y], [47 + X, -22 + Y]], PL[1]);
   d.line(38 + X, -38 + Y, 51 + X, -26 + Y, PL[0]);                                                                                                                 /* the ridge down the plate */
