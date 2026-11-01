@@ -1,0 +1,138 @@
+{
+  "time": "2026-11-01T19:12:03.792Z",
+  "sourceGame": "dc02ecc059959b795f76dee47665b54f349d4e2f",
+  "gameController": "1a576c3f4511b6856df9fb4738df5aaae9987e81",
+  "sourceTree": "9d8acbb7f3182c1d29ac71f4a3b0227224446718",
+  "originalMainSha256": "1573d2d744b753e5611b021d97b70b013f7e2e6773640b707ae85d5ab5dae594",
+  "candidateMainSha256": "32f2d978163e1c0041ee351e0972d816f259ee00a77da82bb220b04419463d84",
+  "originalCharsSha256": "eb1f35d0d2da8da4b62e7f61b5acfadbef49b858cc10fc891a5d2663d059f2cf",
+  "candidateCharsSha256": "67ffd7aa5427230ab1be4d14dd8a5d6c15bbf7b7d93e8caba345ca774ba1bea5",
+  "originalPxSha256": "e9a358b9170944e0dfae6d1b8c82d7b664562e0b2b0ab7f2538236e34214db1d",
+  "candidatePxSha256": "c23cb8803f1bdde930130cbd7ea5b09375b52e6e39cedc0d17f40096fd7eaa72",
+  "helperSha256": "3f5f1b7144503b905bb6852a48c6a2dfda027ca4db6cd5ee729f2102e3347d49",
+  "candidateUiSha256": "def29ae7f0ea4c55ab29e3652a351d0d03c90a4c1c5f7f83ee39692c21c3061f",
+  "originalUiSha256": "6182574fc740afab14d0dfa4862b55f676d9c85df04f87b8fe2053648719ecce",
+  "mainEdits": [
+    {
+      "before": "import { reuseCurrentHeroBake } from './hero-bake-reuse.js';",
+      "after": "import { reuseCurrentHeroBake } from './hero-bake-reuse.js'; import {exposePrivateHeroKit} from './private-hero-derived.js';",
+      "count": 1
+    },
+    {
+      "before": "bakeKnight,",
+      "after": "bakeKnight, bakePrivateKnight,",
+      "count": 1
+    },
+    {
+      "before": "bakeReaper, bakeReaperBoss, bakeWarden",
+      "after": "bakeReaper, bakeReaperBoss, bakeReaperBossRightForCard, bakeWarden",
+      "count": 1
+    },
+    {
+      "before": "bakeClinger, bakeSweep, bakePaladin, bakeFreebooter",
+      "after": "bakeClinger, bakeSweep, bakePaladin, bakePaladinRightForBoss, bakeFreebooter",
+      "count": 1
+    },
+    {
+      "before": "bkHeroSet(bakeReaperBoss({}))",
+      "after": "bkHeroSet(bakeReaperBossRightForCard({}))",
+      "count": 1
+    },
+    {
+      "before": "SPR.paladinboss = palHeroSet(bakePaladin({}))",
+      "after": "SPR.paladinboss = palHeroSet(bakePaladinRightForBoss({}))",
+      "count": 1
+    },
+    {
+      "before": "const K0 = bakePaladin({})",
+      "after": "const K0 = bakePaladinRightForBoss({})",
+      "count": 1
+    },
+    {
+      "before": "() => heroSet(PROG.skin, PROG.sword)",
+      "after": "() => heroSetPrivate(PROG.skin, PROG.sword)",
+      "count": 1
+    },
+    {
+      "before": "get heroSet() { return K; }",
+      "after": "get heroSet() { return exposePrivateHeroKit(K); }",
+      "count": 1
+    },
+    {
+      "before": "players[0].set = K",
+      "after": "players[0].set = exposePrivateHeroKit(K)",
+      "count": 8
+    }
+  ],
+  "mainAppendedPrivateFunction": "\r\nfunction heroSetPrivate(skinId, swordId, previewOnly = false, h = hero(), tier = previewOnly ? 0 : gearNow(h)) { const sk = skinById(skinId); const pal = h === 'pyro' ? (PYRO_SETS[sk.id] || sk.pal) : sk.pal;   /* the skin dresses the hero; the weapon's palette goes to the weapon alone (chars.js withWeapon) */\n  const set = withGear(tier, () => withWeapon((swordId && swordId.pal ? swordId : swordById(swordId)).pal, () => h === 'pyro' ? bakePyro(pal, previewOnly) : h === 'paladin' ? bakePaladin(PAL_SETS[sk.id] || {}, previewOnly) : h === 'pirate' ? bakeFreebooter(FREE_SETS[sk.id] || {}, previewOnly) : h === 'reaper' ? bakeReaper(REAP_SETS[sk.id] || {}, previewOnly) : h === 'warden' ? bakeWarden(WARD_SETS[sk.id] || {}, previewOnly) : h === 'geomancer' ? bakeGeomancer(WARD_SETS[sk.id] || {}, previewOnly) : h === 'berserker' ? bakeBerserkerHero(WARD_SETS[sk.id] || {}, previewOnly) : h === 'ranger' ? bakeRanger(WARD_SETS[sk.id] || {}, previewOnly) : (h === 'knight' ? bakePrivateKnight(pal, false, previewOnly) : bakeKnight(pal, false, previewOnly)))); set.gearT = tier; return previewOnly ? set : FA.addDrink(set, h); }\r\n",
+  "mainExactUndo": true,
+  "publicHeroConstructorExact": true,
+  "playerPublications": 8,
+  "noTask5TenFileTreeTransfer": true,
+  "originalTwoPaladinFactoryCallsPreservedAsTwoPrivateRightCalls": true,
+  "noNewPaladinReuseClaim": true,
+  "charsPxOriginalCanonicalBytesIdenticalAcrossBranches": true,
+  "charsPxHelperCandidateBytesIdenticalToNativeProof": true,
+  "nativeMechanismEvidence": {
+    "receipt": "outputs/receipts/private-hero-native-collected-nov01.json",
+    "nativeCases": 17,
+    "lifecycleReceipt": "outputs/receipts/private-hero-derived-nov01.json",
+    "lifecycleCases": 5,
+    "gpuCases": 1,
+    "wholeGameEvidenceNotInherited": true
+  },
+  "priorTask5Startup": {
+    "receipt": "outputs/receipts/private-hero-cold-nov01.json",
+    "qualified": true,
+    "bootGainPercent": 5.864753913956477,
+    "openPageGainPercent": 5.134390614275574,
+    "noTask3GainClaim": true
+  },
+  "sameUiInBaselineAndCandidate": true,
+  "uiOnlyVerticalPaintAnchor": true,
+  "uiHasNoTimerTextAlphaCameraBalanceChange": true,
+  "originalSnapshotFunctionSha256": "89e31693c6ae1ef5740fbb64a65c20ba5df927fa3d173955e3ad37b7810ee14a",
+  "settings": {
+    "rounds": 3,
+    "variants": [
+      "before",
+      "candidate",
+      "return"
+    ],
+    "originalLayoutOpenPageOptions": {
+      "audioFiles": false
+    },
+    "cpu": "original unmodified helper default",
+    "dpr": 1,
+    "gameView": [
+      320,
+      180
+    ],
+    "rendererMb": 1536,
+    "admissionMb": 4352,
+    "snapshotDeadlineMs": 120000,
+    "outerTimeoutMinutes": 15,
+    "nativeGc": "original unchanged"
+  },
+  "guide": {
+    "minimumBootGainPercent": 5,
+    "minimumOpenPageGainPercent": 5,
+    "maxControlDriftPercent": 15,
+    "eachCandidateFasterThanBothControls": true
+  },
+  "actualTask3StartupLoadingMemoryCampaignLayoutFull425AndFpsRequired": true,
+  "allThreeMismatches": [
+    "mummer6SUCCESSFUL hits versus2..5",
+    "tower-collapse/Tome rebound at200frames",
+    "offscreen mage sampling"
+  ],
+  "nativeQualification": {
+    "lifecycleCases": 5,
+    "gpuCases": 1,
+    "nativeCases": 17,
+    "originalCharsPxCanonicalBytesIdentical": true,
+    "priorNativeReceipt": "outputs/receipts/private-hero-native-collected-nov01.json",
+    "noWholeTask5SourceProofInherited": true
+  },
+  "manifestSha256": "fc02abbc8a7541eeea5928ec37246465b49573a1bcc8eff269af02cf6a826e52"
+}
