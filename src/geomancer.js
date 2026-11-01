@@ -79,7 +79,7 @@ export function makeGeomancer(api) {
   const grid = () => api.L.grid;
   const heroBox = () => api.box(api.P);
   const foes = () => api.enemies.filter(e => e.alive && !(e.gone > 0));
-  const bodies = () => [heroBox(), ...foes().map(api.box)];
+  const bodies = () => [heroBox(), ...(api.players || []).filter(p => p !== api.P && !p.dead && p.hp > 0).map(p => api.box(p)), ...foes().map(api.box)];   /* (claude/geoid) a CO-OP PARTNER is a body too: standing stone never comes up inside either of them (the board is per-world) */
   const cellBox = (tx, ty) => ({ l: tx * TS, r: tx * TS + TS, t: ty * TS, b: ty * TS + TS });
   const tal = k => (api.tal()[k] || 0);
   const lifeOf = () => Infinity;   /* (claude/geoid) it STANDS: hp is its life */

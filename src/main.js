@@ -29293,7 +29293,7 @@ function rangerKit(dt, canAct, tired) {
    handed over by name. ==== */
 const geoTal = () => ({ fourth: tal('geoFourth'), lasting: tal('geoLasting'), tall: tal('geoTall'), hardLand: tal('geoHardLand'), returnFire: tal('geoReturn'),
   shrapnel: tal('geoShrapnel'), bulwark: tal('geoBulwark'), rumble: tal('geoRumble'), wideQuake: tal('geoWideQuake'), aftershock: tal('geoAftershock') });   /* (claude/geoid: rumble = TOPPLE comes back sooner, wideQuake = its boulders hit harder) */
-GEO = makeGeomancer({ refund: n => CM.refund(P, n), tierNow: () => geoTierNow(),   /* (claude/chargetiers: THE RISING PILLAR gives her wind back as it rises) */ get P() { return P; }, get L() { return L; }, get enemies() { return enemies; }, get seeds() { return seeds; }, get time() { return time; },
+GEO = makeGeomancer({ refund: n => CM.refund(P, n), tierNow: () => geoTierNow(),   /* (claude/chargetiers: THE RISING PILLAR gives her wind back as it rises) */ get P() { return P; }, get players() { return players; }, get L() { return L; }, get enemies() { return enemies; }, get seeds() { return seeds; }, get time() { return time; },
   T, TS, get LW() { return LW; }, get LH() { return LH; }, get tileSpr() { return tileSpr; },
   isSolid: (x, y) => isSolid(x, y), tileAt: (x, y) => tileAt(x, y), isOneWay: t => isOneWay(t), resolveTiles: () => resolveTiles(), moveBody: (b, dx, dy, d) => moveBody(b, dx, dy, d),
   hurtAs: (b, e, d, x, pl) => hurtAs(b, e, d, x, pl), floorFoe: (e, s) => floorFoe(e, s), lcBig: e => lcBig(e), knockSkip: e => KNOCK_SKIP.has(e.t), box: b => box(b), overlap: (a, b) => overlap(a, b),
