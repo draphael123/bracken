@@ -27,19 +27,27 @@ function feather(g, x0, y0, a, len, w, c, t, bars) {
 }
 /* a wing: shoulder (sx, sy), side s (-1 left, +1 right), elevation el (rad above horizontal), fold (swept back along the body) */
 function wing(g, r, sx, sy, s, el, P0, fold, shade, F) {
+  /* (claude/rookery4art) a real wing: the arm (a thick leading edge), a row of SECONDARIES hung from it along its whole length, the PRIMARIES fanned from the wrist, and short COVERTS laid over
+     the root - not a fan on a stick. Angles are 'mirror-agnostic': +delta turns the feather toward the ground on either side */
   const P = F && F.diverCrest && !P0.bar ? { ...P0, bar: true } : P0;
-  const nf = P.nf, base = -el, fanStep = P.fan * (fold ? 0.4 : 1);
-  /* the arm: a thick covert wedge from the shoulder out to the wrist */
-  const wr = fold ? 0.55 : 0.6, wx = sx + s * Math.cos(base) * P.wlen * wr, wy = sy + Math.sin(base) * P.wlen * wr;
-  for (let k = 0; k < nf; k++) {
-    const kk = k / (nf - 1), ang = base + (kk - 0.35) * fanStep * 7 * (fold ? 0.55 : 1), lenk = P.wlen * (0.55 + 0.45 * Math.sin(Math.PI * Math.min(1, kk * 0.8 + 0.18))) * (fold ? 0.9 : 1);
-    const dirx = s * Math.cos(ang), diry = Math.sin(ang), shd = shade ? P.dark : (k % 2 ? P.body : P.light);
-    const ang2 = Math.atan2(diry, dirx);
-    feather(g, wx - s * 2, wy, ang2, Math.round(lenk * (1 - wr * 0.4)), 3.2 + (P.cov > 3 ? 0.6 : 0), shd, P.dark, P.barred && !shade ? P.dark : null);
+  const nf = P.nf, base = -el, A = ang => Math.atan2(Math.sin(ang), s * Math.cos(ang)), wr = fold ? 0.55 : 0.6, tr = fold ? 0.55 : 1;
+  const wx = sx + s * Math.cos(base) * P.wlen * wr, wy = sy + Math.sin(base) * P.wlen * wr;
+  const dark = shade, c0 = dark ? P.dark : P.body, c1 = dark ? P.body : P.light, bars = P.barred && !dark ? P.dark : null;
+  const nSec = Math.max(4, Math.round(nf * 0.62)), nPri = nf - nSec + 2;
+  for (let i = 0; i < nSec; i++) {                                                  /* secondaries, from the wrist in toward the shoulder */
+    const t = 1 - i / nSec * 0.85, ox = sx + (wx - sx) * t, oy = sy + (wy - sy) * t, d = (1.15 - 0.25 * t) * tr + (fold ? 0.5 : 0);
+    feather(g, Math.round(ox), Math.round(oy), A(base + d), Math.round(P.wlen * (0.42 + 0.12 * Math.sin(Math.PI * (1 - t) * 0.9 + 0.5))), 3.4 + (P.cov > 3 ? 0.8 : 0), i % 2 ? c0 : c1, P.dark, bars);
   }
-  /* coverts: layered scallops over the arm */
-  const NC = P.cov || 3; for (let q = 0; q < NC; q++) { const t = q / NC, cx = sx + (wx - sx) * t, cy = sy + (wy - sy) * t, bigc = NC > 3 ? 1.6 : 0; ellipse(g, Math.round(cx), Math.round(cy), 4.5 + bigc - q * 0.8, 3.2 + bigc * 0.6, shade ? P.dark : P.body); ellipse(g, Math.round(cx) - 1, Math.round(cy) - 1, 3 + bigc * 0.6 - q * 0.6, 1.8, shade ? P.body : P.light); }
-  if (P.bar && !shade) { const bx = sx + (wx - sx) * 1.35, by = sy + (wy - sy) * 1.35; line(g, Math.round(bx), Math.round(by) - 2, Math.round(bx + s * Math.cos(base + 0.5) * 9), Math.round(by + Math.sin(base + 0.5) * 9), P.hi, 2); }   /* the white bar across the wing */
+  for (let k = 0; k < nPri; k++) {                                                  /* primaries, fanned from the wrist */
+    const kk = k / Math.max(1, nPri - 1), ang = base + (-0.12 + kk * 0.95) * tr + (fold ? 0.55 : 0), lenk = P.wlen * (0.78 - 0.34 * kk) * (fold ? 0.92 : 1);
+    feather(g, wx - s * 2, wy, A(ang), Math.round(lenk * (1 - wr * 0.3)), 3.4 + (P.cov > 3 ? 0.8 : 0), k % 2 ? c0 : c1, P.dark, bars);
+  }
+  const th = P.cov > 3 ? 8 : 6;                                                      /* the arm: leading edge, lit along its top */
+  line(g, Math.round(sx), Math.round(sy), Math.round(wx), Math.round(wy), c0, th);
+  line(g, Math.round(sx), Math.round(sy) - 2, Math.round(wx), Math.round(wy) - 2, c1, 2);
+  line(g, Math.round(sx), Math.round(sy) + 3, Math.round(wx), Math.round(wy) + 3, dark ? P.dark : P.dark, 1);
+  for (let q = 0; q < 3; q++) { const t = 0.12 + q * 0.2, cx = sx + (wx - sx) * t, cy = sy + (wy - sy) * t; feather(g, Math.round(cx), Math.round(cy), A(base + 0.95), 6 + q, 3, dark ? P.dark : P.light, c0); }   /* coverts over the root */
+  if (P.bar && !dark) { const bx = sx + (wx - sx) * 1.5, by = sy + (wy - sy) * 1.5; line(g, Math.round(bx), Math.round(by) - 2, Math.round(bx + s * Math.cos(base + 0.55) * 11), Math.round(by + Math.sin(base + 0.55) * 11), P.hi, 2); }   /* the white bar across the wing */
 }
 function body(g, P, p, role, F) {
   const sp = !!p.sprawl, cy = sp ? -9 : P.cy, bw = P.bw, bh = sp ? 5.5 + (P.bh - 9) * 0.4 : P.bh;
