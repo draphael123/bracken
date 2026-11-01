@@ -111,20 +111,23 @@ export function seatFromSlot(storage, i, hero, campaignIds = []) {
 /* ===== THE LEDGER (the host's side) ===== */
 let sidN = 0;
 export const newSid = (tag = '') => (String(tag).replace(/[^A-Za-z0-9]/g, '').slice(0, 12) || 'S') + '-' + Date.now().toString(36) + '-' + (++sidN).toString(36) + Math.floor(Math.random() * 1296).toString(36);
-export function newLedger(seat, sid) { return { sid: sid || newSid(), seq: 0, hero: seat.hero, slot: seat.slot, base: { ...seat.base }, view: seat.view, clears: [], last: { xp: 0, coins: 0, clears: 0 }, got: 0 }; }
+export function newLedger(seat, sid) { return { sid: sid || newSid(), seq: 0, hero: seat.hero, slot: seat.slot, base: { ...seat.base }, view: seat.view, clears: [], flags: [], last: { xp: 0, coins: 0, clears: 0, flags: 0 }, got: 0 }; }
 /* what the seat has earned this session: unbanked (the death cost's carry: { xp, coins }) is what a checkpoint must not pay yet */
 export function earnedOf(led, unbanked = null) {
   const v = led.view, h = led.hero, u = unbanked || { xp: 0, coins: 0 };
-  return { xp: Math.max(0, Math.round(((v.xp || {})[h] || 0) - led.base.xp - (u.xp || 0))), coins: Math.max(0, Math.floor((v.coins || 0) - led.base.coins - (u.coins || 0))), clears: led.clears.slice() };
+  return { xp: Math.max(0, Math.round(((v.xp || {})[h] || 0) - led.base.xp - (u.xp || 0))), coins: Math.max(0, Math.floor((v.coins || 0) - led.base.coins - (u.coins || 0))), clears: led.clears.slice(), flags: (led.flags || []).slice() };
 }
 export function noteClear(led, id) { if (typeof id === 'string' && !led.clears.includes(id)) led.clears.push(id); }
+/* (claude/smallfix8, Daniel 11-01) A PARTY UNLOCK: a named flag the whole party earned (CREDIT_FLAGS: the Burning Village on a clean King Gorm). Every seat on his own save gets it written with his credit. */
+export const CREDIT_FLAGS = ['burningOpen'];
+export function noteFlag(led, name) { if (CREDIT_FLAGS.includes(name)) { led.flags = led.flags || []; if (!led.flags.includes(name)) led.flags.push(name); } }
 /* the next credit, cumulative and never lower than the last one sent; null when nothing changed (a final one is always sent) */
 export function nextCredit(led, unbanked = null, final = false) {
   const e = earnedOf(led, unbanked), xp = Math.max(led.last.xp, e.xp), coins = Math.max(led.last.coins, e.coins);
-  if (!final && xp === led.last.xp && coins === led.last.coins && e.clears.length === led.last.clears) return null;
-  if (final && led.seq === 0 && !xp && !coins && !e.clears.length) return null;   /* a session that earned nothing writes nothing (an empty slot stays empty) */
-  led.seq++; led.last = { xp, coins, clears: e.clears.length };
-  return { v: 1, sid: led.sid, seq: led.seq, hero: led.hero, xp, coins, clears: e.clears, final: !!final };
+  if (!final && xp === led.last.xp && coins === led.last.coins && e.clears.length === led.last.clears && e.flags.length === (led.last.flags || 0)) return null;
+  if (final && led.seq === 0 && !xp && !coins && !e.clears.length && !e.flags.length) return null;   /* a session that earned nothing writes nothing (an empty slot stays empty) */
+  led.seq++; led.last = { xp, coins, clears: e.clears.length, flags: e.flags.length };
+  return { v: 1, sid: led.sid, seq: led.seq, hero: led.hero, xp, coins, clears: e.clears, flags: e.flags, final: !!final };
 }
 
 /* ===== THE CREDIT (the partner's side) ===== */
@@ -132,7 +135,8 @@ export function cleanCredit(c) {
   if (!object(c) || c.v !== 1 || typeof c.sid !== 'string' || !/^[A-Za-z0-9-]{1,64}$/.test(c.sid) || !Number.isInteger(c.seq) || c.seq < 1 || !HERO_IDS.includes(c.hero)) return null;
   if (!(Number.isFinite(c.xp) && c.xp >= 0) || !(Number.isFinite(c.coins) && c.coins >= 0) || !Array.isArray(c.clears) || c.clears.length > 500) return null;
   const clears = [...new Set(c.clears.filter(id => typeof id === 'string' && /^[A-Za-z0-9_-]{1,40}$/.test(id) && !['__proto__', 'constructor', 'prototype'].includes(id)))];
-  return { v: 1, sid: c.sid, seq: c.seq, hero: c.hero, xp: Math.floor(c.xp), coins: Math.floor(c.coins), clears, final: !!c.final };
+  const flags = Array.isArray(c.flags) ? [...new Set(c.flags.filter(f => CREDIT_FLAGS.includes(f)))] : [];
+  return { v: 1, sid: c.sid, seq: c.seq, hero: c.hero, xp: Math.floor(c.xp), coins: Math.floor(c.coins), clears, flags, final: !!c.final };
 }
 /* Returns { ok, dup, fresh, applied: { xp, coins, clears }, why, progress }. Never throws. opts: { campaignIds, now, xpOnly, isLevel(id) } */
 export function applyCredit(storage, key, credit, opts = {}) {
@@ -148,19 +152,20 @@ export function applyCredit(storage, key, credit, opts = {}) {
   if (c.seq <= (prev.seq || 0)) return { ok: true, dup: true, applied: { xp: 0, coins: 0, clears: [] } };
   const h = c.hero, dXp = Math.max(0, c.xp - (prev.xp || 0)), dCoins = opts.xpOnly ? 0 : Math.max(0, c.coins - (prev.coins || 0));
   const had = Array.isArray(prev.clears) ? prev.clears : [], newClears = opts.xpOnly ? [] : c.clears.filter(id => !had.includes(id) && (!opts.isLevel || opts.isLevel(id)));
+  const newFlags = opts.xpOnly ? [] : (c.flags || []).filter(f => !(Array.isArray(prev.flags) ? prev.flags : []).includes(f)); for (const f of newFlags) p[f] = 1;   /* (claude/smallfix8) a party unlock lands in his save too */
   p.xp = object(p.xp) ? p.xp : {}; const xp0 = p.xp[h] || 0; p.xp[h] = Math.min(Math.max(xp0, xpCap()), xp0 + dXp);
   if (dCoins) p.coins = (p.coins || 0) + dCoins;
   if (newClears.length) { p.done = object(p.done) ? p.done : {}; const d = p.done[h] = object(p.done[h]) ? p.done[h] : {};
     for (const id of newClears) { const lv = object(p[id]) ? p[id] : {}; p[id] = { ...lv, cleared: true }; d[id] = 1; const gw = object(p.xpGot) && object(p.xpGot[h]) ? p.xpGot[h][id] : null; if (object(gw)) delete gw.k; } }
   if (DEFAULT_HEROES.includes(h) && !opts.xpOnly) { p.heroes = object(p.heroes) ? p.heroes : { knight: true }; p.heroes[h] = true; }   /* a free starter he played is his */
   if (fresh) { p.hero = h; p.perHero = 1; p.xpVersion = 1; }
-  book[c.sid] = { seq: c.seq, hero: h, xp: Math.max(prev.xp || 0, c.xp), coins: opts.xpOnly ? (prev.coins || 0) : Math.max(prev.coins || 0, c.coins), clears: [...new Set([...had, ...newClears])], t: opts.now || Date.now() };
+  book[c.sid] = { seq: c.seq, hero: h, xp: Math.max(prev.xp || 0, c.xp), coins: opts.xpOnly ? (prev.coins || 0) : Math.max(prev.coins || 0, c.coins), clears: [...new Set([...had, ...newClears])], flags: [...new Set([...(Array.isArray(prev.flags) ? prev.flags : []), ...newFlags])], t: opts.now || Date.now() };
   const keep = Object.entries(book).sort((a, b) => (b[1].t || 0) - (a[1].t || 0)).slice(0, MAX_CREDIT_SESSIONS); p.coopCredit = Object.fromEntries(keep);
   try { validateProgress(p); } catch (e) { return { ok: false, why: 'THE CREDIT WOULD BREAK THE SAVE: NOTHING WAS WRITTEN' }; }
   const text = JSON.stringify(p), r = safeSet(storage, key, text, slotKeys());
   if (!r.ok) return { ok: false, full: r.full, why: r.full ? 'SAVE FAILED - STORAGE FULL' : 'SAVE FAILED - COULD NOT WRITE' };
   if (get(storage, key) !== text) return { ok: false, why: 'SAVE FAILED - COULD NOT VERIFY' };
-  return { ok: true, dup: false, fresh, applied: { xp: p.xp[h] - xp0, coins: dCoins, clears: newClears }, progress: p };
+  return { ok: true, dup: false, fresh, applied: { xp: p.xp[h] - xp0, coins: dCoins, clears: newClears, flags: newFlags }, progress: p };
 }
 /* what a credit said, in the toast's words */
 export function creditLine(slot, a) {
