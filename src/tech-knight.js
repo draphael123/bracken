@@ -1,7 +1,7 @@
 // src/tech-knight.js - THE KNIGHT'S L25-L50 KIT (claude/knightid, Daniel 10-31 18:07 + 11-01): six fixed techniques, one per tech level, and
 // eight ranked upgrades (I then II). Pure data (progression.js imports it; main.js reads the numbers through tech() / upg()).
 // brief-l50abilities-1101.md sec 7.1, rewritten for the GUARD CHAIN (brief-heroidentity-1101.md sec 2.1: RESOLVE is gone; 3 links earned by perfect
-// guards, tap C at 3 links = SHIELD CHARGE). Every number is swordDmg x k x amul (the late-game law): k is the multiplier here, never a flat hit.
+// guards, UP+C at 3 links = SHIELD CHARGE). Every number is swordDmg x k x amul (the late-game law): k is the multiplier here, never a flat hit.
 //   input   where the player does it (builder asserts no conflict in tools/keys.mjs)
 //   k       damage multiplier (or null: no damage)     cd / cost  seconds / stamina     teach  the one line the unlock banner says
 export const KNIGHT_TECH = {

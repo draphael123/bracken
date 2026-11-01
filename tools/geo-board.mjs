@@ -4,7 +4,7 @@
 //   ram      a foe that hits it at charge speed (>= GEO.stone.chargeSp) breaks it outright; a boss-class one is OPENED UP (stunned)
 //   gate     no stone goes within the gate rule of a gate/door/plate (freeCell asks blockedAt)
 //   fist     THE STONE FIST: her third jab knocks a normal foe UP (launchedT, vy < 0) once per GEO.fist.lock; a mini is only staggered; jabs 1 and 2 do not
-//   topple   UP+C with two stones up: both fall as boulders (rollers), the board is empty, and a foe in their way is hurt; one stone: nothing
+//   topple   (claude/ults: AVALANCHE) UP+C with the board FULL (3): every stone erupts then rolls as a boulder (rollers), the board is empty, a foe in the way is hurt; two stones: nothing
 //   room     leaving the room (clear) restores the grid byte for byte
 import assert from 'node:assert/strict';
 import { openPage } from './cdp.mjs';
@@ -28,18 +28,18 @@ try {
     return {small:run(false),big:run(true)}})()`);
   out.fist = await pg.evalp(`(()=>{__geo([]);BK.P.face=1;const e=__foe('sprig',20);e.x=BK.P.x+18;e.hp=e.hp0=99999;const P=BK.P;let ups=[];for(let n=1;n<=3;n++){let seen=false;BK.press('atk');for(let i=0;i<30;i++){BK.sim(1);e.x=P.x+18;if(e.liftImm>0)seen=true;}ups.push(seen);}
     return {ups}})()`);
-  out.topple = await pg.evalp(`(()=>{__geo([]);const G=BK.geo(),K=BK.keys,P=BK.P;P.st=P.maxSt;G.raiseWall();BK.sim(2);P.x+=30;P.face=1;G.raiseWall();BK.sim(2);P.x-=30;P.face=1;const e=__foe('swornsword',70);e.hp=e.hp0=9999;const n=G.pieces().length;
-    K.up=true;K.block=true;BK.sim(2);K.block=false;K.up=false;const rolled=G.rollers().length;let hurt=0;for(let i=0;i<120;i++){BK.sim(1);hurt=Math.max(hurt,e.hp0-e.hp);}return {n,after:G.pieces().length,rolled,hurt}})()`);
-  out.one = await pg.evalp(`(()=>{__geo([]);const G=BK.geo(),K=BK.keys,P=BK.P;P.st=P.maxSt;G.raiseWall();BK.sim(2);K.up=true;K.block=true;BK.sim(2);K.block=false;K.up=false;BK.sim(5);return {after:G.pieces().length,rolled:G.rollers().length}})()`);
+  out.topple = await pg.evalp(`(()=>{__geo([]);const G=BK.geo(),K=BK.keys,P=BK.P;P.st=P.maxSt;G.raiseWall();BK.sim(2);P.x+=30;P.face=1;G.raiseWall();BK.sim(2);P.x+=30;P.face=1;G.raiseWall();BK.sim(2);P.x-=60;P.face=1;const e=__foe('swornsword',100);e.hp=e.hp0=9999;const n=G.pieces().length;
+    K.up=true;K.block=true;BK.sim(2);K.block=false;K.up=false;const erupting=G.erupts().length;let rolled=0,hurt=0;for(let i=0;i<150;i++){BK.sim(1);rolled=Math.max(rolled,G.rollers().length);hurt=Math.max(hurt,e.hp0-e.hp);}return {n,after:G.pieces().length,erupting,rolled,hurt}})()`);
+  out.one = await pg.evalp(`(()=>{__geo([]);const G=BK.geo(),K=BK.keys,P=BK.P;P.st=P.maxSt;G.raiseWall();BK.sim(2);P.x+=30;P.face=1;G.raiseWall();BK.sim(2);P.x-=30;K.up=true;K.block=true;BK.sim(2);K.block=false;K.up=false;BK.sim(5);return {after:G.pieces().length,rolled:G.rollers().length}})()`);
   out.room = await pg.evalp(`(()=>{__geo([]);const g0=Array.from(BK.L.grid),G=BK.geo();BK.P.st=BK.P.maxSt;G.raiseWall();BK.sim(2);const had=G.pieces().length;G.clear();return {had,same:g0.every((v,i)=>v===BK.L.grid[i])}})()`);
   console.log(JSON.stringify(out));
   assert(out.stands.n === 2 && out.stands.after === 2 && out.stands.fill >= 60, 'her stone stands ten seconds on and the meter reads the board ' + JSON.stringify(out.stands));
   assert(out.gnaw.minhp < out.gnaw.hp0, 'a foe pressed on a stone costs it hp ' + JSON.stringify(out.gnaw));
   assert(out.ram.small.gone && out.ram.big.gone && out.ram.big.open, 'a charge breaks it outright, a mini is opened up ' + JSON.stringify(out.ram));
   assert.deepEqual(out.fist.ups, [false, false, true], 'only the third jab knocks up ' + JSON.stringify(out.fist));
-  assert(out.topple.n >= 2 && out.topple.after === 0 && out.topple.rolled >= 2, 'UP+C topples both stones as boulders ' + JSON.stringify(out.topple));
-  assert(out.one.after === 1 && out.one.rolled === 0, 'one stone is not enough to topple ' + JSON.stringify(out.one));
+  assert(out.topple.n >= 3 && out.topple.after === 0 && out.topple.erupting >= 3 && out.topple.rolled >= 3 && out.topple.hurt > 0, 'UP+C at a FULL board (3): every stone erupts, then rolls as a boulder, the stones are spent, the foe is hurt ' + JSON.stringify(out.topple));
+  assert(out.one.after === 2 && out.one.rolled === 0, 'two stones are not a full board: no avalanche ' + JSON.stringify(out.one));
   assert(out.room.had >= 1 && out.room.same, 'leaving the room puts the grid back ' + JSON.stringify(out.room));
   assert.deepEqual(pg.errors, []);
-  console.log('geo-board: stands, gnaw, ram, fist, topple, room all green');
+  console.log('geo-board: stands, gnaw, ram, fist, avalanche, room all green');
 } finally { pg.close(); }

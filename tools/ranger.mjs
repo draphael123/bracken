@@ -8,7 +8,8 @@
 //   rise      UP+X: the rising shot, steeply up, tagged 'rise' (B14's FROM BELOW)
 //   down      DOWN+X in the air: the downward shot, straight down, tagged 'plunge' (B14's FROM ABOVE), and a hop UP off it
 //   focus     an arrow that lands from the SWEET SPOT fills HUNTER'S FOCUS; one point-blank does not
-//   mark      focus full + UP+C MARKS the quarry ahead: its blows land RG.mark.mul harder; the focus is spent
+//   mark      a marked quarry's blows land RG.mark.mul harder (a steady shot that lands marks it; UP+C is the GREAT ARROW, tested under 'great')
+//   great     (claude/ults) focus full + UP+C: a rooted draw (no move, the world not slowed), then one arrow through three straws, harder the further it flew; focus spent; a hurt draw breaks and keeps the focus
 //   pierce    (claude/chargetiers) held to T2 the draw is the PIERCING SHOT: through two foes in a line; on a full focus it is FOCUSED (the focus spent)
 //   tiers     (claude/chargetiers) THE THREE-TIER DRAW: BK.rg().tier climbs 1-2-3 on the hold (each arrival its own pose: rgDraw2/rgDraw3), let go at T1 a LONG SHOT
 //             (the focus kept), T2 a PIERCING SHOT, T3 a TRIPLE SHOT (Daniel 10-22: a tight flat 3-arrow FAN, each arrow strong, one arrow of her quiver, nothing held)
@@ -63,9 +64,14 @@ try {
     /* focus: the sweet spot fills it, point-blank does not */
     { __rg(); const f=__foe(90,'sprig',5000); BK.sim(1); K.atk=true; BK.press('atk'); BK.sim(50); K.atk=false; BK.sim(40); out.focus={sweet:+(P().rgFocus||0).toFixed(1),hit:G().read().stats.hits}; f.alive=false;
       __rg(); const g=__foe(34,'sprig',5000); BK.sim(1); __tap(); BK.sim(30); out.focus.close=+(P().rgFocus||0).toFixed(1); out.focus.closeHit=G().read().stats.hits; g.alive=false; }
-    /* mark: full focus, UP+C, then the same shot on a marked and an unmarked foe */
-    { __rg(); const f=__foe(70,'sprig',5000); BK.sim(1); P().rgFocus=100; K.up=true; __c(); BK.sim(2); K.up=false; out.mark={on:(f.rgMarkT||0)>BK.time,focus:P().rgFocus};
+    /* mark (claude/ults: UP+C is the GREAT ARROW now; a mark is a STEADY SHOT that lands, or set here): the same shot on a marked and an unmarked foe */
+    { __rg(); const f=__foe(70,'sprig',5000); BK.sim(1); f.rgMarkT=BK.time+10; out.mark={on:(f.rgMarkT||0)>BK.time,focus:0};
       BK.sim(10); let hp0=f.hp; __tap(); BK.sim(40); const marked=hp0-f.hp; f.rgMarkT=0; BK.sim(25); hp0=f.hp; __tap(); BK.sim(40); out.mark.marked=marked; out.mark.plain=hp0-f.hp; f.alive=false; }
+    /* great arrow (claude/ults): UP+C at a full focus - rooted draw, one arrow through three straws, harder the further it flew; a hurt draw breaks and keeps the focus */
+    { __rg(); const a=__foe(60,'dummy',9000), b=__foe(140,'dummy',9000), c2=__foe(230,'dummy',9000); BK.sim(1); P().rgFocus=100; const x0=P().x, ha=a.hp, hb=b.hp, hc=c2.hp; K.up=true; __c(); BK.sim(2); K.up=false;
+      const drawing=G().greatDrawing(); BK.sim(8); K.right=true; BK.sim(6); K.right=false; const rooted=Math.abs(P().x-x0)<0.5, fMid=P().rgFocus; BK.sim(40);
+      out.great={drawing,rooted,fMid,focus:P().rgFocus,da:ha-a.hp,db:hb-b.hp,dc:hc-c2.hp}; a.alive=b.alive=c2.alive=false; }
+    { __rg(); const f=__foe(120,'dummy',9000); BK.sim(1); P().rgFocus=100; K.up=true; __c(); BK.sim(2); K.up=false; BK.sim(5); P().hurt=0.3; BK.sim(3); out.greatBreak={focus:P().rgFocus,untouched:f.hp===9000,drawing:G().greatDrawing()}; f.alive=false; }
     /* pierce (claude/chargetiers): the hold to T2 through two in a line; on a full focus it is FOCUSED and spends it */
     { __rg(); const a=__foe(60,'dummy',5000), b=__foe(80,'dummy',5000); BK.sim(1); P().rgFocus=100; const ha=a.hp, hb=b.hp; K.atk=true; BK.press('atk'); BK.sim(80); K.atk=false; BK.sim(30);
       out.pierce={hits:G().read().stats.hits,focus:P().rgFocus,n:G().read().stats.pierces,focused:G().read().stats.focused}; a.alive=b.alive=false; }
@@ -125,7 +131,9 @@ try {
   ok(r.down.kind === 'down' && has(r.down.tag, 'plunge') && r.down.vy < 0 && !r.down.plunge, 'down: DOWN+X in the air should shoot down (plunge tag) and hop her up: ' + JSON.stringify(r.down));
   ok(r.down.hit > 0, 'down: the downward shot should land on a foe under her: ' + r.down.hit);
   ok(r.focus.sweet > 0 && r.focus.close === 0 && r.focus.closeHit > 0, 'focus: the sweet spot should fill it and point-blank should not: ' + JSON.stringify(r.focus));
-  ok(r.mark.on && r.mark.focus === 0 && r.mark.marked > r.mark.plain * 1.2, 'mark: UP+C on full focus should mark (and its blows land harder): ' + JSON.stringify(r.mark));
+  ok(r.great.drawing && r.great.rooted && r.great.fMid === 100 && r.great.focus === 0 && r.great.da > 0 && r.great.db > r.great.da && r.great.dc > r.great.db, 'great arrow: a rooted draw, focus spent as it leaves, through all three straws, more the further it flew: ' + JSON.stringify(r.great));
+  ok(r.greatBreak.focus === 100 && r.greatBreak.untouched && !r.greatBreak.drawing, 'great arrow: a draw that is hurt breaks and keeps the focus: ' + JSON.stringify(r.greatBreak));
+  ok(r.mark.on && r.mark.marked > r.mark.plain * 1.2, 'mark: a marked foe takes harder blows: ' + JSON.stringify(r.mark));
   ok(r.pierce.hits === 2 && r.pierce.focus === 100 && r.pierce.n === 1, 'pierce: the steady shot should go through both and a full focus is KEPT (it only widens the window): ' + JSON.stringify(r.pierce));
   { const t = r.tiers;   /* (claude/rangerid) ONE DRAW, ONE STEADY WINDOW */
     ok(t.seen.join() === '1,2' && t.at.length === 2 && t.at[0] < t.at[1] && t.winEnd - t.at[1] >= 0.35 && t.winEnd - t.at[1] <= 0.45, 'tiers: the hold climbs the full draw (1) then the steady window (2, ~0.4 s) and no third: ' + JSON.stringify(t));

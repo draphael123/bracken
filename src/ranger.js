@@ -50,7 +50,10 @@ export const RG = {
   kick: { mul: 0.8, push: 380, stagger: 0.7, bossStagger: 0.25, reach: 25, step: 70 },
   volleyCost: 2, volleyCd: 6,
   sweet: { near: 52, far: 138, quick: 14, draw: 26, rise: 10, down: 10 },   /* px from where it was loosed; focus each arrow that lands in it gives */
-  mark: { t: 10, mul: 1.33, apex: 1.5, range: 300 },  /* THE MARK: s; x on every blow; px ahead it reaches (through walls) */
+  mark: { t: 10, mul: 1.33, apex: 1.5, range: 300, tSteady: 5 },   /* (claude/ults) a STEADY SHOT that lands marks its quarry for tSteady s - the mark's new home (UP+C is the ultimate now) */
+  /* (claude/ults, Daniel 11-01) THE GREAT ARROW = HER ULTIMATE: UP+C at a FULL Focus. A rooted draw of `draw` s (only SHE roots: the world does not slow, co-op safe), then one huge arrow flies `range` px (a screen's width; main.js passes the view),
+     piercing everything in its line. It pays by DISTANCE FLOWN: swordDmg x (dmg0 at her feet -> dmg1 at the far edge); a BOSS or a mini takes x boss on top and is staggered `stagger` s. Focus is spent as it leaves (a hit or a roll that breaks the draw keeps it). */
+  great: { draw: 0.5, vx: 900, range: 320, dmg0: 2.0, dmg1: 4.5, boss: 1.5, stagger: 1.0, miniStagger: 0.8, rec: 0.3 },  /* THE MARK: s; x on every blow; px ahead it reaches (through walls) */
   knife: { reach: 18, dmg: 1.0 },                    /* THE KNIFE: a short cut (its box is 17 out, main.js attackBox0: a foe whose near edge is inside reach is POINT-BLANK), a little lighter than a sword */
   guard: { hold: 0.24, proj: 0.4, melee: 1.0, drain: 0.8, breakTired: 1.2, minProj: 2 },   /* (claude/heroblocksb) THE BOW GUARD (HOLD C): s held before it is raised; x the shield's block cost for a projectile (stopped dead) and for a blade (half the blow); x the shared hold drain; s she cannot guard after it breaks; least wind an arrow costs */
   bash: { t: 0.22, rec: 0.18, st: 8, reach: 17, push: 210, dmg: 0.45, beat: 1 },   /* THE BOW-BASH: s up, s after; the shove; beat x the shared tap beat */
@@ -98,14 +101,12 @@ export function makeRanger(api) {
   /* ---- THE MARK ---- */
   const markOn = e => !!e && e.alive && (e.rgMarkT || 0) > api.time;
   const markMul = e => markOn(e) ? (T().apex ? RG.mark.apex : RG.mark.mul) : 1;
-  function markFoe(p, e, why) { if (!e || !e.alive || e.harmless) return false; e.rgMarkT = api.time + RG.mark.t * (T().longMark ? 1.5 : 1); e.rgMarkBy = p; stats.marks++;
+  function markFoe(p, e, why, t) { if (!e || !e.alive || e.harmless) return false; e.rgMarkT = api.time + (t || RG.mark.t) * (T().longMark ? 1.5 : 1); e.rgMarkBy = p; stats.marks++;
     api.number(e.x, e.y - (e.h || 16) - 18, why || 'QUARRY', '#ff7a5a'); api.ringAt(e.x, e.y - (e.h || 16) / 2, 16, '#ff7a5a', 0.3); api.SFX.rgMark && api.SFX.rgMark(); return true; }
   /* the nearest foe AHEAD of her within RG.mark.range - walls do not hide it (a hunter knows where her quarry is) */
   function quarry(p, range = RG.mark.range) { let best = null, bd = 1e9;
     for (const e of api.enemies) { if (!e.alive || e.harmless || e.gone > 0 || e.turncoat) continue; const dx = (e.x - p.x) * p.face; if (dx < -4 || dx > range || Math.abs(e.y - p.y) > 90) continue;
       const d = dx + Math.abs(e.y - p.y) * 0.5; if (d < bd) { bd = d; best = e; } } return best; }
-  function spendMark(p) { if (!focusFull(p)) { if (!p.rgFocusSaid || api.time - p.rgFocusSaid > 1.2) { p.rgFocusSaid = api.time; api.number(p.x, p.y - 26, 'FOCUS ' + Math.floor(p.rgFocus || 0) + '%: SWEET-SPOT HITS FILL IT', '#9aa39a'); } return false; }   /* (Daniel 10-15: UP+C did nothing below full focus - it says why now) */ const e = quarry(p); if (!e) { api.number(p.x, p.y - 26, 'NO QUARRY', '#9aa39a'); return false; }
-    p.rgFocus = 0; markFoe(p, e); api.kitPose(p, 'rgMark', 0.3); api.trialEvent('meter'); return true; }
 
   /* ---- HER STANCE (Daniel 10-15): BOW (X shoots; an empty quiver is the knife) or KNIFE (X is always the knife). Kept through deaths and levels ---- */
   function toggleStance(p) { ensure(p); p.rgStance = p.rgStance === 'knife' ? 'bow' : 'knife'; p.rgNock = null;
@@ -127,13 +128,17 @@ export function makeRanger(api) {
   function arrowHit(p, a, e) {
     const hp0 = e.hp, d = Math.abs(a.x - a.x0), sweet = d >= RG.sweet.near && d <= RG.sweet.far && !a.free;
     let dmg = a.dmg; if (sweet && T().eagle) dmg *= 4 / 3;
-    const dm = distMul(d, !!a.emp); dmg *= dm; if (dm >= 1.3) { stats.far++; api.number(e.x, e.y - (e.h || 16) - 26, a.emp ? 'STEADY x' + dm.toFixed(1) : 'FAR x' + dm.toFixed(1), a.emp ? '#dfffb0' : '#e8dcb0'); } else if (dm < 1) stats.near++;   /* (claude/rangerid) THE DISTANCE BONUS */
+    const big = !!(e.maxHp || e.mini || e === api.boss);
+    if (a.great) { const G = RG.great, k = Math.min(1, d / Math.max(1, a.range || G.range)); dmg = api.swordDmg() * (G.dmg0 + (G.dmg1 - G.dmg0) * k) * (big ? G.boss : 1); api.number(e.x, e.y - (e.h || 16) - 26, 'GREAT ARROW x' + (dmg / Math.max(1, api.swordDmg())).toFixed(1), '#ffd36b'); stats.greatHits = (stats.greatHits || 0) + 1; stats.greatMax = Math.max(stats.greatMax || 0, Math.round(dmg)); }
+    const dm = a.great ? 1 : distMul(d, !!a.emp); dmg *= dm; if (dm >= 1.3) { stats.far++; api.number(e.x, e.y - (e.h || 16) - 26, a.emp ? 'STEADY x' + dm.toFixed(1) : 'FAR x' + dm.toFixed(1), a.emp ? '#dfffb0' : '#e8dcb0'); } else if (dm < 1) stats.near++;   /* (claude/rangerid) THE DISTANCE BONUS */
     if (a.kind === 'draw' && a.full && T().bodkin && e.guardT > 0) { e.guardT = 0; api.number(e.x, e.y - (e.h || 16) - 14, 'THROUGH', '#ffd36b'); }   /* BODKIN POINTS: as a ball does */
     api.hurtAs(a.tag, e, Math.max(1, Math.round(dmg)), a.x - Math.sign(a.vx || p.face) * 20, false); stats.hits++;
     const landed = e.hp < hp0 || !e.alive;
     if (e.t === 'dummy') { api.trialEvent(a.kind === 'down' ? 'down' : (a.kind === 'draw' && a.full) || a.kind === 'pierce' ? 'heavyblow' : 'hit');   /* (claude/chargetiers: every drawn tier is a heavy blow on the straw) */ if (a.kneel) api.trialEvent('kdraw'); }   /* (claude/heropassa: a kneeling draw's arrow on the far straw) */ if (a.kneel) stats.kneelHits++;   /* (her yard: the straw men count her arrows) */
     if (landed && sweet) { stats.sweet++; focusGain(p, a.focus); if (!p.rgSweetSaid || api.time - p.rgSweetSaid > 1.2) { p.rgSweetSaid = api.time; api.ringAt(e.x, e.y - (e.h || 16) / 2, 10, '#9fdc6a', 0.2); } }
     if (landed && a.wild) markFoe(p, e);
+    if (landed && a.emp && a.kind === 'pierce' && e.alive && !markOn(e)) markFoe(p, e, 'QUARRY', RG.mark.tSteady);   /* (claude/ults) a steady shot that lands marks its quarry */
+    if (landed && a.great && e.alive) { if (big) { e.stagger = Math.max(e.stagger || 0, e.mini || e.maxHp ? RG.great.miniStagger : RG.great.stagger); api.poiseLean && api.poiseLean(e, 30); e.vx = 0; } else { e.stagger = Math.max(e.stagger || 0, 0.8); e.vx = Math.sign(a.vx || p.face) * 200; } api.hitstop(0.08); api.shakeCam(5, p.face * 3); }
     if (landed && a.kind === 'draw' && e.alive && !e.maxHp && !e.mini && !e.elite) { e.stagger = Math.max(e.stagger || 0, a.full ? 0.5 : 0.25); e.vx = Math.sign(a.vx || p.face) * (a.full ? 140 : 70); }
     if (landed && a.kind === 'quick' && e.alive && !e.maxHp && !e.mini) e.stagger = Math.max(e.stagger || 0, 0.12);
         api.sparks(a.x, a.y, Math.sign(a.vx) || 1, landed ? 4 : 6); if (a.kind === 'draw' || a.kind === 'pierce' || false) api.hitstop(0.04);
@@ -157,7 +162,7 @@ export function makeRanger(api) {
           const tx = Math.floor(a.x / TS), ty = Math.floor(a.y / TS);
           if (api.isSolid(tx, ty)) { a.x -= a.vx * h * 0.5; a.y -= a.vy * h * 0.5; a.ang = angleOf(a); a.vx = 0; a.vy = 0; stats.stuckWall++; api.SFX.rgThunk && api.SFX.rgThunk(); api.sparks(a.x, a.y, -1, 2); landArrow(p, a, 'stuck'); break; } }
         if (a.state === 'fly') { a.ang = angleOf(a);
-          if (a.pierce && a.range && Math.abs(a.x - a.x0) > a.range) { a.state = 'drop'; a.vx *= 0.3; }   /* (claude/chargetiers: the TRIPLE SHOT's flat flight ends as the pierce's does) */
+          if (a.pierce && a.range && Math.abs(a.x - a.x0) > a.range) { if (a.great) { a.state = 'gone'; api.sparks(a.x, a.y, Math.sign(a.vx) || 1, 6); } else { a.state = 'drop'; a.vx *= 0.3; } }   /* (claude/chargetiers: the TRIPLE SHOT's flat flight ends as the pierce's does) */
           if (a.t > 2.6) a.state = 'drop'; } }
       if (a.state === 'foe') { const e = a.foe; if (!e || !e.alive || e.gone > 0) { a.state = 'drop'; a.vx = 0; a.vy = -40; a.foe = null; }
         else { a.x = e.x + a.ox * (e.face || 1); a.y = e.y + a.oy; } }
@@ -171,6 +176,19 @@ export function makeRanger(api) {
       if (a.state !== 'gone' && (a.y > api.LH * TS + 24 || a.x < -40 || a.x > api.LW * TS + 40 || ((a.state === 'lie' || a.state === 'stuck') && a.t > RG.quiver.life))) { a.state = 'gone'; stats.lost++; }
     }
     p.rgArrows = p.rgArrows.filter(a => a.state !== 'gone'); }
+
+  /* ---- THE GREAT ARROW (UP+C at a full Focus; main.js's ultimate registry presses it) ---- */
+  const greatReady = () => { const p = P(); ensure(p); return focusFull(p) && !p.rgGreat && !p.dead && (p.ground || p.swim); };
+  function greatArrow() { const p = P(); if (!greatReady()) return false;
+    p.rgGreat = { t: 0 }; p.rgNock = null; stats.greats = (stats.greats || 0) + 1; api.kitPose(p, 'rgGreat', RG.great.draw + 0.05); api.number(p.x, p.y - 30, 'GREAT ARROW', '#ffd36b'); api.SFX.rgMark && api.SFX.rgMark(); api.trialEvent('meter'); return true; }
+  function greatStep(p, dt, ctx) { const G = p.rgGreat; if (!G) return;
+    if (ctx.stunned || p.dead || p.hurt > 0 || p.atk >= 0 || !(p.ground || p.swim)) { p.rgGreat = null; stats.greatBroke = (stats.greatBroke || 0) + 1; api.number(p.x, p.y - 26, 'DRAW BROKEN', '#9aa39a'); return; }   /* a blow, a swing or leaving the ground breaks the draw: the Focus is kept */
+    G.t += dt; p.vx = 0;   /* ROOTED: she alone stands still - the world does not slow */
+    if (Math.floor(G.t * 20) % 2 === 0 && Math.random() < 0.5) api.ringAt(p.x + p.face * 12, p.y - 11, 4 + (G.t / RG.great.draw) * 8, '#ffd36b', 0.12);
+    if (G.t < RG.great.draw) return;
+    p.rgGreat = null; p.rgFocus = 0; const R = RG.great, range = Math.min(R.range, api.VW || R.range) + 0;
+    const a = loose(p, { kind: 'great', vx: p.face * R.vx, vy: 0, g: 0, dmg: 1, tag: ['heavy', 'shot'], pierce: true, free: true, range }); a.great = true; a.full = true; a.range = range; a.x = p.x + p.face * 9; a.y0 = a.y; a.x0 = a.x;
+    p.rgCd = R.rec; api.kitPose(p, 'rgGreatLoose', 0.3); api.SFX.rgLoose && api.SFX.rgLoose(2); api.shakeCam(7, p.face * 4); api.zoomKick(1.06, 0.22); api.streaks(p.x + p.face * 12, p.y - 11, 12, ['#fff3b0', '#ffd36b'], 260); api.noteVerb && api.noteVerb('great'); }
 
   /* ---- THE SHOTS ---- */
   const dmgBase = () => api.swordDmg();
@@ -348,7 +366,8 @@ export function makeRanger(api) {
     nockStep(p, dt, !!keys.atk);
     const cDown = keys.block && !p.cWas; p.cWas = !!keys.block;
     const free = !ctx.stunned && !p.plunge && !(p.rgBashT > 0) && !p.dead && !(ctx.dodging && !p.rgFlip);
-    if (cDown && free && keys.up) spendMark(p);                                                  /* UP+C: THE MARK */
+    if (p.rgGreat) greatStep(p, dt, ctx);
+    if (cDown && free && keys.up) { if (!focusFull(p) && (!p.rgFocusSaid || api.time - p.rgFocusSaid > 1.2)) { p.rgFocusSaid = api.time; api.number(p.x, p.y - 26, 'FOCUS ' + Math.floor(p.rgFocus || 0) + '%: SWEET-SPOT HITS FILL IT', '#9aa39a'); } }   /* UP+C is THE GREAT ARROW (main.js's ultimate input fires it at a full Focus before this runs); below full it only says why */
     else if (cDown && free && keys.down && p.ground) setSnare(p);                                /* DOWN+C: THE SNARE */
     else if (cDown && free && !ctx.dodging) { if (ctx.guardOk === false) p.stFlash = 0.35; else bash(p); }   /* C: THE BOW-BASH (WINDED: none) */
     guardStep(p, dt, keys, ctx);   /* (claude/heroblocksb) HOLD C: THE BOW GUARD */
@@ -461,7 +480,7 @@ export function makeRanger(api) {
   const hudOf = (p, mq, rt) => { ensure(p); let lying = 0; for (const a of p.rgArrows) if ((a.state === 'lie' || a.state === 'stuck') && !a.free && !a.wild) lying++;
     return { stance: p.rgStance || 'bow', q: p.rgQ, mq, lying, refill: p.rgQ < mq ? Math.min(1, (p.rgRefT || 0) / rt) : 0 }; };   /* (a seat's plate reads the maxima her own update stored: p.rgMaxQ / p.rgRefMax) */
   const hud = () => hudOf(P(), maxQ(), refillT());
-  return { RG, distMul, kickHit: e => kickHit(P(), e), arrows, maxQ, hud, hudOf: p => hudOf(p, p.rgMaxQ || RG.quiver.n, p.rgRefMax || RG.quiver.refill), toggleStance: () => toggleStance(P()), bowReady, stance: () => P().rgStance || 'bow', press, nockStep, release: (w, tier, shaky) => release(P(), w, tier || 0, !!shaky), focusFull: () => focusFull(P()), quickShot: () => quickShot(P(), !P().ground), riseShot: () => riseShot(P()), downShot: () => downShot(P()),
+  return { RG, distMul, greatReady, greatArrow, greatDrawing: () => !!P().rgGreat, kickHit: e => kickHit(P(), e), arrows, maxQ, hud, hudOf: p => hudOf(p, p.rgMaxQ || RG.quiver.n, p.rgRefMax || RG.quiver.refill), toggleStance: () => toggleStance(P()), bowReady, stance: () => P().rgStance || 'bow', press, nockStep, release: (w, tier, shaky) => release(P(), w, tier || 0, !!shaky), focusFull: () => focusFull(P()), quickShot: () => quickShot(P(), !P().ground), riseShot: () => riseShot(P()), downShot: () => downShot(P()),
     bashTakes, guardTakes, guardUp: () => guardUp(P()), snatchSeeds, kneeling: () => !!P().rgKneel, onBeat: () => onBeat(P()), bashUp: () => bashUp(P()), bash: () => bash(P()), setSnare: () => setSnare(P()), spendMark: () => spendMark(P()), markFoe: e => markFoe(P(), e), markMul, markOn, killed,
     flip: dir => flip(P(), dir), focusGain: n => focusGain(P(), n), giveArrow: n => giveArrow(P(), n), takeArrow: () => takeArrow(P()), pointBlank: () => pointBlank(P()),
     update, restock, kit, kitStep, draw: render, drawMarks, clear, read, resetStats: () => { for (const k in stats) stats[k] = 0; } };

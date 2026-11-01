@@ -157,11 +157,12 @@ const HEROES_C = {
   pirate:     ['hook / catch', tk => 'TAP ' + tk.c + ' CATCH, HOLD HOOK'],   /* (claude/heroblocksa) the tap is the HOOK CATCH (src/hook-catch.js) */
   reaper:     ['blood ward', tk => 'HOLD ' + tk.c + ', LET GO: NOVA'],
   warden:     ['deflect', tk => 'TAP ' + tk.c + ' DEFLECT, HOLD BRACE'],   /* (claude/heroblocksb) hold = the spear-haft brace; the full-vigil tap is still the phalanx (the hint line) */
-  geomancer:  ['rune-ward', tk => 'HOLD ' + tk.c + '  (SHE IS PLANTED)'],   /* (claude/geoid) the topple is its own row below */
+  geomancer:  ['rune-ward', tk => 'HOLD ' + tk.c + '  (SHE IS PLANTED)'],   /* (claude/ults) the ultimate is the shared row below */
   berserker:  ['take it', tk => 'HOLD ' + tk.c + ' (FULL: DOWN+' + tk.c + ' FRENZY)'],
   ranger:     ['bash / guard', tk => 'TAP ' + tk.c + ' BASH, HOLD GUARD'],   /* (claude/heroblocksb) hold = the bow guard; the bash on the beat is still her parry */
 };
 import { ROW as PLUNGE_ROW } from './plunges.js';
+import { ultRow } from './ultimate.js';
 export function cardRows({ hero = 'knight', binds = emptyBinds(), prof = 'pad1', swapZX = false, blockToggle = false } = {}) {
   const kb = a => labelFor(binds, 'kb', a), pd = a => labelFor(binds, prof, a), k1 = a => first(binds, 'kb', a);
   const swapped = swapZX && !isCustom(binds, 'kb', 'jump') && !isCustom(binds, 'kb', 'atk');
@@ -183,12 +184,11 @@ export function cardRows({ hero = 'knight', binds = emptyBinds(), prof = 'pad1',
     hero === 'berserker' ? ['pounce', 'HOLD ' + k1('down') + ', A WAY, LET GO', 'HOLD ' + pd('down')] : [hero === 'pyro' ? 'stoke' : 'crouch', 'HOLD ' + k1('down') + ' (STILL)' + (hero === 'ranger' ? ', +' + tk.c + ' SNARE' : ''), 'HOLD ' + pd('down')],   /* (claude/berserker2: his crouch coils, and lets go as THE POUNCE) */
     ['slide', 'HOLD ' + k1('down') + ' ON A SLOPE', 'HOLD ' + pd('down')],   /* THE BUTT-SLIDE (src/slide.js): down on any slope, feet first; it wins over the weak guard there */
     ...(hero === 'pyro' ? [['full bar', tk.c + ': CONFLAGRATION', pd('block')]] : []),
-    ...(hero === 'knight' ? [['3 links', 'TAP ' + tk.c + ': SHIELD CHARGE', pd('block')]] : []),   /* (claude/knightid) the spender; a perfect guard, then X, is the riposte whose rider is the link count */   /* (claude/pyrokit; the L10 card's UP + C row is the PAUSE > LEVEL CARD's words, not a 13th row here) */
+    ...(ultRow(hero, k1('up'), tk.c, pd('up'), pd('block')) ? [ultRow(hero, k1('up'), tk.c, pd('up'), pd('block'))] : []),   /* (claude/ults) ONE ULTIMATE ROW for every hero that has one: UP + C with the meter full (src/ultimate.js) */   /* (claude/knightid) the spender; a perfect guard, then X, is the riposte whose rider is the link count */   /* (claude/pyrokit; the L10 card's UP + C row is the PAUSE > LEVEL CARD's words, not a 13th row here) */
     [cRow[0], cRow[1](tk), pd('block')],
     ...(hero === 'paladin' ? [['hammer throw', k1('up') + '+' + tk.c + '  (THREE PIPS)', pd('up') + '+' + pd('block')], ['tap ' + tk.c + ' spends', 'SMITE 1-2 RADIANCE 3-4 SUN 5', pd('block')]] : []),   /* (claude/paladin2) THE LIGHT SPENT */
-    ...(hero === 'geomancer' ? [['topple', k1('up') + '+' + tk.c + '  (TWO STONES UP)', pd('up') + '+' + pd('block')]] : []),   /* (claude/geoid) THE BOARD: her stones stand; this tips every one over as a boulder */
     ...(hero === 'berserker' ? [['axe throw', k1('up') + '+' + tk.c + '  (PICK IT UP)', pd('up') + '+' + pd('block')]] : []),   /* THE BERSERKER's off axe (src/berserker.js throwAxe) */
-    ...(hero === 'ranger' ? [['mark', k1('up') + '+' + tk.c + '  (FOCUS FULL)', pd('up') + '+' + pd('block')], ['bow / knife', kb('stance') + ': BOW / KNIFE', pd('stance')]] : []),   /* THE RANGER's focus, spent (src/ranger.js spendMark) */
+    ...(hero === 'ranger' ? [['bow / knife', kb('stance') + ': BOW / KNIFE', pd('stance')]] : []),   /* THE RANGER's focus, spent (src/ranger.js spendMark) */
     ['dodge', hero === 'ranger' ? k1('dodge') + ': BACKFLIP, OR TAP A WAY TWICE' : hero === 'warden' ? k1('dodge') + ' BACK, OR TAP A WAY TWICE' : 'TAP A WAY TWICE, OR ' + kb('dodge'), pd('dodge')],
     ['', 'TELLS ARE TIMED FOR ONE PRESS', pd('dodge')],
     hero === 'reaper' ? ['summon', kb('throw') + '  (HOLD, FULL: SURGE)', pd('throw')] : ['skill', kb('throw') + ' (THE ONE EQUIPPED)', pd('throw')],

@@ -47,7 +47,7 @@ try {
           let f=0;while(!P.ground&&f++<200&&!(P.vy<-200))BK.sim(1);K.down=false;run(120);}}   /* (claude/plunges) HAMMER OF DAWN and AXE SPIN: dropped onto the straw */
       else if(kind==='board'){while(!st.done&&tries++<8){const e=F()[tries%2]||F()[0];BK.sim(20);P.x=e.x;P.y=e.y-(e.h||8)-40;P.vx=0;P.vy=40;P.ground=false;P.face=1;__fresh();K.down=true;BK.press('atk');
           let f=0;while(!P.riding&&f++<120)BK.sim(1);K.down=false;run(10);BK.press('jump');run(40);}}   /* BOARDING: onto a goblin, then off it */
-      else if(kind==='meter'){run(10);__fresh();if(h==='geomancer')K.up=true;__tapC();K.up=false;run(90);}   /* (claude/geoid: her TOPPLE is UP+C with the board filled) */
+      else if(kind==='meter'){run(10);__fresh();if(h==='geomancer'||h==='knight'||h==='ranger')K.up=true;__tapC();K.up=false;run(90);}   /* (claude/ults: the ULTIMATE is UP+C with the meter full - her AVALANCHE, his SHIELD CHARGE, her GREAT ARROW) */
       else if(kind==='twinsmite'||kind==='radiancePlus'){while(!st.done&&tries++<4){const e=F()[0];P.x=e.x-14;P.face=1;P.vx=0;run(20);__fresh();__tapC();run(60);}}   /* (claude/paladin4) the empowered tiers: filled for him, tapped beside the straw */
       else if(kind==='pray'){K.down=true;run(60*5);K.down=false;run(5);}   /* (claude/paladin4) PRAYER: down and still until a pip comes */
       /* (claude/heropassa) HERO PASS A's stations: THE SHIELD BASH into his wind-up, VALIANT STRIKE (the bar filled) on the shield, THE COUNTER-THRUST (deflect on his flash, then X),

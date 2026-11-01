@@ -257,6 +257,11 @@ export const ON_THE_BEAT = e => !(typeof e.modeT === 'number' && e.modeT > 0.2 &
 /* THE KNIGHT'S HELD SWING IS THE HEAVY CUT (2026-09-23): it comes down when it is LET GO, at whatever stage it reached, and never by
    itself until 1.8 s - so a bot that held X until something fired stood there with the sword up. The bot lets go at the chop, or at the guard-break on anything with a bar. */
 export const KNIGHT_CUT = 0.56, knightCutAt = e => KNIGHT_CUT;   /* (claude/knightid) ONE fixed heavy cut: it comes down at 0.5 s (the guard-break), so the bot holds a hair past it for everything */   /* a thing with a bar (a duelist, an elite, a boss) is worth the guard-break; the rest take the chop, which is sooner (measured: fightLab, 2026-09-23) */
+/* (claude/ults) ONE ULTIMATE INPUT: UP + C. The knight's charge needs links; the geomancer's AVALANCHE a full board; the ranger's GREAT ARROW a full Focus and a foe in her line (she roots for the draw) */
+export const ULT_BOT = (BK, P, h, ad, dy) => { if (P.cWas || !(P.ground || P.swim) || P.atk >= 0 || P.charge > 0 || P.rgGreat) return false;
+  if (h === 'geomancer') { const G = BK.geo && BK.geo(); return !!G && G.avalancheReady() && ad < 220 && Math.abs(dy) < 40; }
+  if (h === 'ranger') { const R = BK.rgk && BK.rgk(); return !!R && R.greatReady() && ad > 50 && ad < 300 && Math.abs(dy) < 30; }
+  return false; };
 export const LAST_CHARGE = (P, ad, dy) => (P.links || 0) >= 3 && P.ground && !P.cWas && !(P.lcBrace > 0) && !(P.lcLeft > 0) && ad < 140 && Math.abs(dy) < 24;
 
 /* THE KEY VERB. The family table in main.js (FAMILY, read through BK.keyOf) says what each common body wants: the right tool lands half
@@ -418,7 +423,8 @@ function labBotFrame(BK, h, e, f) {
     if (!k.left && !k.right && !(P.charge > 0) && !(swing && s.verb === 'sweep' && (h === 'knight' || h === 'warden'))) { if (h === 'pirate' && s.verb === 'heavy' && ad < s.want - 8) k[d > 0 ? 'left' : 'right'] = true; else if (ad > s.want + 2) k[d > 0 ? 'right' : 'left'] = true; else if (s.verb === 'plunge' && !P.ground && ad > 3) k[d > 0 ? 'right' : 'left'] = true; }
   }
   { const fire = fireAt(BK, P.x, P.y); if (fire && !(h === 'pyro')) { const away = Math.sign(P.x - fire.x) || -Math.sign(d) || 1; k.left = away < 0; k.right = away > 0; k.atk = false; k.block = false; } }   /* (her own fire does not burn her) */
-  if (h === 'knight' && !threat && !k.atk && !(P.charge > 0) && LAST_CHARGE(P, ad, e.y - P.y)) { k.left = false; k.right = false; k.block = true; }
+  if (h === 'knight' && !threat && !k.atk && !(P.charge > 0) && LAST_CHARGE(P, ad, e.y - P.y)) { k.left = false; k.right = false; k.up = true; k.block = true; }
+  if ((h === 'geomancer' || h === 'ranger') && !threat && !k.atk && ULT_BOT(BK, P, h, ad, e.y - P.y)) { P.face = Math.sign(d) || P.face; k.left = false; k.right = false; k.up = true; k.block = true; }   /* (claude/ults) UP+C at a full meter */
   { const sn = snatchNow(BK, h); if (sn) { P.face = Math.sign(sn.x - P.x) || P.face; k.block = !P.cWas; k.up = false; k.down = false; } }   /* (claude/heropassa) ARROW SNATCH */
   return { defend, swing };
 }
@@ -3058,7 +3064,8 @@ async function runbossLab(BK, opts) {
       const valiantWall = false;   /* (claude/knightid) VALIANT is the riposte FINISHER now (three links): nothing to spend on a heavy cut */
       if (valiantWall && !tell && !rushing && P.ground && ad <= reach + 4 && !cutGo) { P.face = Math.sign(d) || P.face; k.left = k.right = false; k.block = false; k.atk = true; }
       { const sn = snatchNow(BK, h); if (sn) { P.face = Math.sign(sn.x - P.x) || P.face; k.block = !P.cWas; } }   /* (claude/heropassa) ARROW SNATCH */
-      if (h === 'knight' && !valiantWall && open && !tell && !rushing && !k.block && LAST_CHARGE(P, ad, boss.y - P.y)) { P.face = Math.sign(d) || P.face; k.left = false; k.right = false; k.jump = false; k.block = true; }
+      if (h === 'knight' && !valiantWall && open && !tell && !rushing && !k.block && LAST_CHARGE(P, ad, boss.y - P.y)) { P.face = Math.sign(d) || P.face; k.left = false; k.right = false; k.jump = false; k.up = true; k.block = true; }
+      if ((h === 'geomancer' || h === 'ranger') && !tell && !rushing && !k.block && ULT_BOT(BK, P, h, ad, boss.y - P.y)) { P.face = Math.sign(d) || P.face; k.left = false; k.right = false; k.jump = false; k.up = true; k.block = true; }   /* (claude/ults) UP+C at a full meter */
       /* (claude/bztune) THE BERSERKER'S OWN KEYS. FRENZY IS DOWN+C at a full bar (a plain C there is TAKE IT, which the beat-taps already use);
          the bar is spent as a player spends it - near the boss, between his tells. THE POUNCE: coiled (DOWN held 0.4 s) then DOWN let go with a way held,
          a gap-closer used from range, a few times a fight (not a spam). TAKE IT stays on the beat taps above. */

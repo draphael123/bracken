@@ -1,6 +1,6 @@
 /* tools/knight-chain.mjs - THE KNIGHT'S IDENTITY PASS (claude/knightid, Daniel 10-31 18:07 Q4 + 11-01): the GUARD CHAIN (3 links: a perfect guard +1, a turned blow keeps,
    a landed blow / the idle clock drops), the cut out of a perfect guard carries the links (1 guard-open, 2 shove, 3 the FINISHER), the third jab is the SHIELD BASH (breaks
-   a guard), the heavy cut is ONE fixed weight, the SHIELD RAM (no grace, a link opens a guard), tap C at 3 links is the SHIELD CHARGE, and the L25-L50 techniques do what
+   a guard), the heavy cut is ONE fixed weight, the SHIELD RAM (no grace, a link opens a guard), UP+C at 3 links is the SHIELD CHARGE, and the L25-L50 techniques do what
    their card says. Real page, real input. One headless browser. */
 import { openPage } from './cdp.mjs';
 const WANT = (process.env.ONLY || 'chain,riders,bash,heavy,ram,charge,tech').split(',');
@@ -16,6 +16,7 @@ try {
       return foes.map(([t,dx,fo])=>{BK.spawnEnt({t,x:(P.x+dx)/16,y:21,...(fo||{})});const e=BK.enemies().at(-1);e.hp=e.hp0=e.maxHp0=5000;e.cd=99;e.elT=99;e.face=-1;e.speed=0;return e;});};
     window.__perfect=()=>{const p=BK.P;BK.keys.block=false;BK.sim(2);p.inv=0;p.hurt=0;BK.keys.block=true;BK.sim(2);const r=BKT.damagePlayer(p.x+14,12,{});BK.sim(1);return r;};
     window.__tapC=()=>{BK.keys.block=false;BK.sim(2);BK.keys.block=true;BK.sim(1);BK.keys.block=false;};
+    window.__ultC=()=>{BK.keys.up=true;__tapC();BK.keys.up=false;};   /* (claude/ults) the ultimate is UP+C */
     return 1;})()`);
   const ev = s => pg.evalp(`(()=>{const o={},P=()=>BK.P;${s};return o;})()`);
 
@@ -58,8 +59,8 @@ try {
     t(R.ram.links === 0 && R.ram.broken > 0 && R.ram.inv <= 0.01, 'SHIELD RAM: no grace (the shield is all that stands between), a link is spent and a guard opens: ' + JSON.stringify(R.ram));
   }
   if (WANT.includes('charge')) {
-    R.charge = await ev(`__set([['sprig',90],['sprig',130]]);const p=P();p.links=2;__tapC();BK.sim(2);o.at2=p.lcBrace>0||p.lcLeft>0;BK.sim(30);p.links=3;__tapC();BK.sim(4);o.at3=p.lcBrace>0||p.lcLeft>0;o.spent=p.links;BK.sim(60);`);
-    t(!R.charge.at2 && R.charge.at3 && R.charge.spent === 0, 'two links are not enough; three, tap C: THE SHIELD CHARGE (all three spent): ' + JSON.stringify(R.charge));
+    R.charge = await ev(`__set([['sprig',90],['sprig',130]]);const p=P();p.links=2;__ultC();BK.sim(2);o.at2=p.lcBrace>0||p.lcLeft>0;BK.sim(30);p.links=3;__tapC();BK.sim(4);o.tapAt3=p.lcBrace>0||p.lcLeft>0;BK.sim(30);p.links=3;__ultC();BK.sim(4);o.at3=p.lcBrace>0||p.lcLeft>0;o.spent=p.links;BK.sim(60);`);
+    t(!R.charge.at2 && !R.charge.tapAt3 && R.charge.at3 && R.charge.spent === 0, 'two links are not enough; a plain tap of C at three is not the charge; three, UP+C: THE SHIELD CHARGE (all three spent): ' + JSON.stringify(R.charge));
   }
   if (WANT.includes('tech')) {
     R.tech = await ev(`
@@ -71,7 +72,7 @@ try {
       { /* STANDING ORDERS: hold C, tap X */
         __set([],{ms:{45:'korders'}});const p=P();BK.keys.block=true;BK.sim(4);BK.press('atk');BK.sim(3);o.rally=p.rallyN;o.cd=+(p.ordersCd||0).toFixed(1);BK.keys.block=false;BK.sim(2);BK.press('atk'); }
       { /* THE LONG CHARGE: a second slam */
-        const [a]=__set([['sprig',30]],{ms:{50:'kcharge2'}});const p=P();p.links=3;a.hp=a.hp0=a.maxHp0=5000;__tapC();let seen=false,f=0;while(f++<120){BK.sim(1);if(p.lc2T>0)seen=true;}o.second=seen; }
+        const [a]=__set([['sprig',30]],{ms:{50:'kcharge2'}});const p=P();p.links=3;a.hp=a.hp0=a.maxHp0=5000;__ultC();let seen=false,f=0;while(f++<120){BK.sim(1);if(p.lc2T>0)seen=true;}o.second=seen; }
       { /* COUNTER-THRUST: the riposte cut pays stamina back and opens the guard */
         const [e]=__set([['shield',16]],{ms:{25:'kcounter'}});const p=P();e.guardT=9;BK.keys.block=true;BK.sim(2);p.inv=0;BKT.damagePlayer(p.x+14,12,{});BK.keys.block=false;BK.sim(2);p.st=40;BK.press('atk');let ct=false,f=0,bk=0;while(f++<40){BK.sim(1);e.x=p.x+16;e.vx=0;if(p.counterThrust)ct=true;bk=Math.max(bk,e.broken||0);}o.counter=ct;o.stEnd=Math.round(p.st);o.cbroken=+bk.toFixed(2);
         const [e2]=__set([['shield',16]],{});const q=P();e2.guardT=9;BK.keys.block=true;BK.sim(2);q.inv=0;BKT.damagePlayer(q.x+14,12,{});BK.keys.block=false;BK.sim(2);q.st=40;BK.press('atk');for(let i=0;i<40;i++){BK.sim(1);e2.x=q.x+16;e2.vx=0;}o.stEndPlain=Math.round(q.st); }
