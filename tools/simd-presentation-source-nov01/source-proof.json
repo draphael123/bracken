@@ -1,0 +1,117 @@
+{
+  "time": "2026-11-01T13:57:52.165Z",
+  "sourceGame": "62d9c02c102decc69ceaef4e1ec593a23170f1ff",
+  "sourceTree": "d6f20846727ec42b3cca651d1b061136d9c6d2f1",
+  "originalMainSha256": "81866b69fec64de5fdd00da316fb0d1e8e997ae9912f73f280981f0a70cb36d8",
+  "candidateMainSha256": "ffaeeb12ee5e26edec9c3fdf57e709d0576721bbadcb798ec9cd34554561a83d",
+  "helperFile": "tools/simd-presentation-source-nov01/simd-presentation.js",
+  "helperSha256": "bc19dc78ca084f0ac00bda124a0d6dd7f08fb94c8c6b8e008ecb8650d79201d2",
+  "watFile": "tools/simd-presentation-source-nov01/scale3.wat",
+  "watSha256": "4a830bad03c73280afa7f81aa84d04235a846e1b68c078e4374327546888fdc6",
+  "pageFile": "tools/simd-presentation-page-nov01.mjs",
+  "pageSha256": "0ccca5e3b115405e6d6cfd0d8c9d00c359879cca378b11c54928f34ae29b67a1",
+  "exactMainUndo": true,
+  "edits": [
+    {
+      "before": "  dg.drawImage(buf, offX, offY, VW * S, VH * S);",
+      "after": "  if (!SIMD_PRESENT.draw(dg,buf,g0,offX,offY,VW*S,VH*S)) dg.drawImage(buf, offX, offY, VW * S, VH * S);"
+    },
+    {
+      "before": "",
+      "after": " import {makeSimdPresentation} from './simd-presentation.js';const SIMD_PRESENT=makeSimdPresentation(new URL('./scale3.wasm',import.meta.url));"
+    }
+  ],
+  "frames": [
+    {
+      "id": "undercrown",
+      "name": "undercrown.png",
+      "sha256": "06aecb6d0e050eac08e4c929164fe7864e7b9b8431a8ae5c647fc7d852748e62",
+      "file": "tools/integer-presentation-source/undercrown.png"
+    },
+    {
+      "id": "lamplit",
+      "name": "lamplit.png",
+      "sha256": "662dba7d53257ffb224eb2c085b2e74d40b7e4f2a9ce92e60fb760071db1bdb3",
+      "file": "tools/integer-presentation-source/lamplit.png"
+    },
+    {
+      "id": "hanging",
+      "name": "hanging.png",
+      "sha256": "3e224ca243e2317c436563b3aca3cc7acf04f0ee98c70d481746c487bfe46d10",
+      "file": "tools/integer-presentation-source/hanging.png"
+    },
+    {
+      "id": "hurricane",
+      "name": "hurricane.png",
+      "sha256": "7370739d5407dfc5738cdfe61a430d5fb2aa3695f7e813a0520d637a6fbc820b",
+      "file": "tools/integer-presentation-source/hurricane.png"
+    },
+    {
+      "id": "minecart",
+      "name": "minecart.png",
+      "sha256": "1deef5f398339425870956e18ba52fdaf27a6cadaa7ab9ac449fd1382c3cb98a",
+      "file": "tools/integer-presentation-source/minecart.png"
+    }
+  ],
+  "expected": {
+    "nativeCases": 292,
+    "lifecycleCases": 12,
+    "pureKernelCases": 102,
+    "timingRows": 9,
+    "framesPerTimingRow": 60
+  },
+  "guide": {
+    "minimumGainEachRoundPercent": 20,
+    "maximumControlDriftEachRoundPercent": 15,
+    "candidateRangeBelowBothControls": true,
+    "noRetimingForGreen": true
+  },
+  "settings": {
+    "cpu": 4,
+    "viewport": [
+      915,
+      412
+    ],
+    "dpr": 2.625,
+    "game": [
+      640,
+      360
+    ],
+    "display": [
+      2402,
+      1082
+    ],
+    "rendererMb": 1536,
+    "admissionMb": 4352,
+    "evaluationDeadlineMs": 240000,
+    "outerTimeoutMinutes": 15
+  },
+  "bounds": {
+    "wasmBytes": 16777216,
+    "maximumInputPixels": 288888,
+    "outputPixels": 2600000,
+    "outputCanvases": 1,
+    "outputImages": 1,
+    "noMemoryGrow": true,
+    "noSourceRetained": true
+  },
+  "compiler": {
+    "package": "wabt",
+    "version": "1.0.39",
+    "onlyCloudCompilation": true,
+    "options": {
+      "simd": true,
+      "bulk_memory": true
+    }
+  },
+  "target": "Original same-source final display upscale18ms/37ms instrumented frame. Prior JS expansion5times slower; this replaces per-pixel JS/opacity loops with4pixel SIMD shuffles and bulk row copies,not prior backend modes or cleaner retiming.",
+  "priorRejected": "outputs/receipts/integer-presentation-oct29.json",
+  "scope": "Native pixel/context/currentPath/fallback/lifetime and one controlled guide only; no Game/FPS/layout/adoption pass",
+  "allThreeMismatches": [
+    "mummer6SUCCESSFUL hits versus2..5",
+    "tower-collapse/Tome rebound at200frames",
+    "offscreen mage sampling"
+  ],
+  "adopted": false,
+  "overallWorkComplete": false
+}
