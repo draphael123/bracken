@@ -226,7 +226,7 @@ export function makeStockadeHands(ctx) {
           if (p.hall && ch && !chiefUp(ch) && !['toTower', 'towerClimb', 'towerFall', 'sleep', 'wake', 'leap'].includes(ch.mode) && Math.abs(ch.x - p.x) < PILE.half + ch.w / 2 && Math.abs(ch.y - p.floor) < 8) { crushChief(ch, p); him = true; }
           if (p.hall && crew && !p.drip && P && !P.dead) { p.drip = true; lst.fodder += crew; ctx.heal(Math.round(P.maxHp * CRUSH.drip)); say(P.x, P.y - 34, 'fodder', '#8fd160'); }
           if (p.ramp) { rampDown.add(p.id); layRamp(p); lst.ramp++; say(p.x, p.floor - 52, 'ramp', '#ffd36b'); }
-          if (n && !him) say(p.x, p.floor - 40, 'crushed', '#8fd160'); } }
+          if (n && !him) say(p.x, p.floor - 40, 'crushed', '#8fd160'); p.pinned = crew || (n && !him ? n : 0); } }
     }
     /* (claude/stockade3-1101) the crank gates their horn opened */
     for (const c of cranks) { c.t -= dt; if (c.t <= 0 && !c.pr.open) { ctx.openCrank(c.pr); lst.crank++; say(c.pr.wall * TS + 8, c.pr.y - 48, 'crank', '#8fd160'); } }
@@ -402,8 +402,9 @@ export function makeStockadeHands(ctx) {
   /* ---- drawing (claude/stockade2art: src/redraw/stockade2_art.js) ---- */
   function drawWorld(g, cx, cy, time) {
     if (!on()) return;
-    for (const p of piles) { drawTie(g, p, cx, cy, time); if (p.ramp && p.st === 'down') drawRamp(g, p, cx, cy); else SA.drawPile(g, p, cx, cy, time); }
+    for (const p of piles) { drawTie(g, p, cx, cy, time); if (p.ramp && p.st === 'down') drawRamp(g, p, cx, cy); else SA.drawPile(g, p, cx, cy, time); if (p.st === 'down' && p.pinned) SA.drawPinned(g, p.x - cx, p.floor - cy, p.pinned); }
     for (const k of pickups) if (!k.got) { if (k.spare) { const px = Math.round(k.x - cx), py = Math.round(k.y - cy); g.fillStyle = '#3a2a1a'; g.fillRect(px - 1, py - 30, 3, 30); g.fillRect(px - 4, py - 30, 9, 2); g.fillStyle = '#6b4a2a'; g.fillRect(px, py - 30, 1, 30); SA.drawHornPickup(g, { x: k.x, y: k.y - 14 }, cx, cy, time); } else SA.drawHornPickup(g, k, cx, cy, time); }   /* (the spare hangs from a hook on its post) */
+    if (S && S.gate) SA.drawGateWalk(g, Lk, cx, cy);
     if (S && S.gate) SA.drawGate(g, S.gate, cx, cy, { open: gateOpen, age: gateAge, lifting: gateT > 0 ? 1 - gateT / GATE.delay : 0 }, time);
     for (const e of ctx.enemies()) if (e.alive && e.dozing) SA.drawZs(g, Math.round(e.x - cx), Math.round(e.y - e.h - cy), time);   /* the dozing blower's Zs */
     if (tower) SA.drawWarTower(g, tower, cx, cy, time);
@@ -412,23 +413,17 @@ export function makeStockadeHands(ctx) {
   }
   /* (claude/stockade3-1101, GREYBOX - the art lane's turn) THE CLEAT: a peg on the floor and the rope from it up to the pile (glinting while the pile hangs; brighter
      while the Chieftain stands under a hall pile); a hall pile's beam across the rafters over it */
-  function drawTie(g, p, cx, cy, time) {
-    const px = Math.round(p.x - cx), py = Math.round(p.y - cy);
-    if (p.beam) { g.fillStyle = '#4a3420'; g.fillRect(px - 20, py - 30, 40, 4); g.fillStyle = '#2a1d12'; g.fillRect(px - 20, py - 26, 40, 1); }
+  function drawTie(g, p, cx, cy, time) {   /* (claude/stockade3art) the rafter beam, the gallows jib and the peg are SA's drawn pieces */
+    const px = Math.round(p.x - cx), py = Math.round(p.y - cy), live = p.st === 'hung' || p.st === 'creak';
+    if (p.beam && live) SA.drawBeam(g, px, py, p.hall);
+    if (p.ramp && !p.hall) SA.drawJib(g, px, py);
     if (p.cleat === undefined) return;
-    const qx = Math.round(p.cleat - cx), qy = Math.round(p.floor - cy), hung = p.st === 'hung' || p.st === 'creak';
-    g.fillStyle = '#5c3a1d'; g.fillRect(qx - 2, qy - 12, 4, 12); g.fillStyle = '#8a5a32'; g.fillRect(qx - 3, qy - 13, 6, 2);
-    if (hung) { g.strokeStyle = '#c9b27c'; g.lineWidth = 1; g.beginPath(); g.moveTo(qx + 0.5, qy - 10); g.lineTo(qx + 0.5 + (px - qx) * 0.15, py - 26); g.lineTo(px + 0.5, py - 26); g.stroke();
-      const ch = ctx.boss(), under = p.hall && ch && Math.abs(ch.x - p.x) < PILE.half + ch.w / 2;
-      const k = 0.5 + 0.5 * Math.sin(time * (under ? 12 : 5)); g.globalAlpha = (under ? 0.6 : 0.3) + 0.4 * k; g.fillStyle = '#ffd36b'; g.fillRect(qx - 3, qy - 9, 6, 2); g.fillRect(qx - 1, qy - 11, 2, 6); g.globalAlpha = 1; }
-    else { g.strokeStyle = '#c9b27c'; g.beginPath(); g.moveTo(qx + 0.5, qy - 10); g.lineTo(qx + 4.5, qy - 2); g.stroke(); }   /* the cut end */
+    const qx = Math.round(p.cleat - cx), qy = Math.round(p.floor - cy);
+    const ch = ctx.boss(), under = p.hall && ch && Math.abs(ch.x - p.x) < PILE.half + ch.w / 2;
+    SA.drawCleat(g, qx, qy, p.ramp && !p.hall ? px - 1 : px, p.ramp && !p.hall ? py - 26 : py - 28, live, under, time);
   }
   /* THE RAMP: the step-heap of logs a ramp pile lands as - log ends on every cell it laid */
-  function drawRamp(g, p, cx, cy) {
-    for (const [x, y] of rampCells(p)) { const sx = x * TS - cx, sy = y * TS - cy;
-      g.fillStyle = '#6b4a2a'; g.fillRect(sx, sy + 1, TS, TS - 2); g.fillStyle = '#8a6238'; g.fillRect(sx, sy + 1, TS, 3);
-      for (let i = 0; i < 2; i++) { g.fillStyle = '#c9a26a'; g.fillRect(sx + 2 + i * 8, sy + 6, 5, 5); g.fillStyle = '#8a6a3a'; g.fillRect(sx + 4 + i * 8, sy + 8, 1, 1); } }
-  }
+  function drawRamp(g, p, cx, cy) { SA.drawStair(g, rampCells(p), cx, cy); }
   /* (claude/chief3art) behind the props: the powder store's rack, tarp, spare kegs and sacks */
   function drawBack(g, cx, cy, time) { if (!on() || !store) return; SA.drawStoreBack(g, store.x, store.floor, store.scorch, cx, cy); }
   /* (claude/chief3art) a camp barrel in the Stockade IS a powder keg: its hoops and red burst, a cord that burns down, a roll */
@@ -449,16 +444,18 @@ export function makeStockadeHands(ctx) {
       SA.drawHornBar(g, x, y, k, e.mode === 'horn' ? (e.hornHits || 0) : 0, e.mode === 'horn' ? HORN.hits : 0, time);
       if (k >= HORN_BLOW_AT) SA.drawChiefFx(g, 'blow', x, fy, f, k, time);
     }
-    if (e.mode === 'planted' && e.poseKind) SA.drawChiefFx(g, e.poseKind === 'crushed' ? 'blasted' : e.poseKind, x, fy, f, 0, time);
+    if (e.mode === 'planted' && e.poseKind === 'crushed') { SA.drawCrushLogs(g, x, fy, f); SA.drawCrushFx(g, x, fy, f, time); }
+    else if (e.mode === 'planted' && e.poseKind) SA.drawChiefFx(g, e.poseKind, x, fy, f, 0, time);
     /* (claude/stockade3-1101) HE HEARS THE HORN: a '?' over him while he looks for it (greybox - the art lane's turn) */
-    if (e.mode === 'lured') { const b = Math.round(Math.sin(time * 6) * 1.5); g.fillStyle = '#ffd36b'; g.globalAlpha = 0.9; ctx.text('?', x, top - 14 + b, '#ffd36b', 'center', 8); g.globalAlpha = 1; }
+    if (e.mode === 'lured') SA.drawLureMark(g, x, top - 22, f, time);
     if (e.mode === 'kegTell' || e.mode === 'towerKeg') { const kx = x + f * 9, ky = fy - 44; SA.drawPowderKeg(g, kx, ky, 0, 1, time); SA.drawFuseBar(g, kx, ky - 22, 1, time); }   /* the keg in both hands, overhead (his frame 25) */
   }
   /* the Chieftain's frame on the tower (src/main.js): the climb, the hold-on, the deck's wait / aim / loose, the fall - or -1 (his own frame) */
   function chiefFrame(e) {
     if (!tower) return -1; const m = e.mode;
     /* (claude/chief3art) the silenced / blasted openings are his own poses (24 choked, 27 sat down scorched) while the opening lasts */
-    if (m !== 'planted') e.poseKind = null; else if (e.poseKind === 'silenced') return 24; else if (e.poseKind === 'blasted' || e.poseKind === 'crushed') return 27;   /* (claude/stockade3-1101: CRUSHED sits him down under the logs - the art lane draws its own pose) */
+    if (m !== 'planted') e.poseKind = null; else if (e.poseKind === 'silenced') return 24; else if (e.poseKind === 'crushed') return 29; else if (e.poseKind === 'blasted') return 27;   /* (claude/stockade3-1101: CRUSHED sits him down under the logs - the art lane draws its own pose) */
+    if (m === 'lured' && e.lureLook) return 28;   /* (claude/stockade3art) HE HEARS THE HORN: head thrown back, a hand cupped at his ear */
     if (m === 'towerClimb') return Math.floor((e.anim || 0) * 6) % 2 ? 15 : 16;
     if (m === 'towerFall') return 19;
     if (m === 'tower' || m === 'towerAim' || m === 'towerLoose') return tower.sway > 0 ? 17 : m === 'towerAim' ? 18 : m === 'towerLoose' ? 20 : 21;

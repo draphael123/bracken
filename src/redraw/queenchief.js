@@ -208,7 +208,7 @@ function curve(g, a, c, b, r0, r1, ramp, rings = 0) {
 // Each part is drawn on its own layer and outlined before it is laid down, so the near arm, the head and the
 // pelt read against the body the way a hand-drawn sprite's inner lines do.
 function chiefFrame(W, H, o) {
-  const { ax, F, legs = 'stand', dy = 0, lean = 0, mouth = 'grim', near, far, club = null, sword = null, shield = null, bow = null, nearOpen = false, farClub = null, horn = null, far2 = null, soot = false, hup = 0 } = o;   /* (claude/chief3art) horn: the great war horn {pts:[mouth, bend, bell], r1, strap}; far2: the far arm drawn IN FRONT, [elbow, hand], to hold it */
+  const { ax, F, legs = 'stand', dy = 0, lean = 0, mouth = 'grim', near, far, club = null, sword = null, shield = null, bow = null, nearOpen = false, farClub = null, horn = null, far2 = null, soot = false, hup = 0, gaze = null, dust = false } = o;   /* (claude/chief3art) horn: the great war horn {pts:[mouth, bend, bell], r1, strap}; far2: the far arm drawn IN FRONT, [elbow, hand], to hold it */
   const X = ax, Y = F + dy; // body origin: between the feet, on the floor (the body drops, the feet stay put)
   const hx = Math.round(X + 7 + lean), hy = Math.round(Y - 33 - hup); // head centre (hup: thrown back / raised)
   const shN = [X + 6 + lean * 0.7, Y - 25], shF = [X - 5 + lean * 0.7, Y - 26];
@@ -329,7 +329,7 @@ function chiefFrame(W, H, o) {
     oval(g, hx, hy, 6.2, 5.6, 0, CK.S);
     oval(g, hx + 2, hy + 3.5, 5.6, 3, 0.1, [CK.S[0], CK.S[1], CK.S[1]]);
     rect(g, hx - 4, hy - 1, 9, 2, CK.paint); rect(g, hx - 3, hy + 1, 2, 1, CK.paint); // the red mask across the eyes, a drip under it
-    rect(g, hx + 1, hy - 1, 3, 2, CK.eye); px(g, hx + 3, hy - 1, CK.pupil); px(g, hx + 3, hy, CK.pupil);
+    rect(g, hx + 1, hy - 1, 3, 2, CK.eye); if (gaze === 'up') { px(g, hx + 2, hy - 1, CK.pupil); px(g, hx + 3, hy - 1, CK.pupil); } else if (gaze === 'shut') { rect(g, hx + 1, hy - 1, 3, 2, CK.paint); px(g, hx + 2, hy, CK.pupil); px(g, hx + 3, hy, CK.pupil); } else { px(g, hx + 3, hy - 1, CK.pupil); px(g, hx + 3, hy, CK.pupil); }   /* (claude/stockade3art) gaze: 'up' = the pupils at the top of the eye (looking at the rafters), 'shut' = screwed shut under the weight */
     fillPoly(g, [[hx + 4.5, hy - 1.5], [hx + 10, hy + 2.5], [hx + 5.5, hy + 3]], CK.S[1]); line(g, hx + 6, hy + 2.5, hx + 9, hy + 2.5, CK.S[0]); px(g, hx + 6, hy - 0.5, CK.S[2]); // nose
     if (mouth === 'roar') { fillPoly(g, [[hx + 0.5, hy + 3], [hx + 8, hy + 2.5], [hx + 7, hy + 7], [hx + 1.5, hy + 6.5]], CK.mouth); rect(g, hx + 3, hy + 5, 3, 1, CK.tongue);
       rect(g, hx + 1, hy + 3, 1, 2, CK.tusk); rect(g, hx + 6, hy + 3, 1, 1, CK.tusk); rect(g, hx + 2, hy + 5.5, 1, 1, CK.tusk); rect(g, hx + 6, hy + 5.5, 1, 1, CK.tusk); }
@@ -344,7 +344,9 @@ function chiefFrame(W, H, o) {
   }, OUT);
   // ---------- 5. the near arm and what it holds, and the wolf-head pauldron over its root
   if (!o.armsBack) nearLayer();
-  if (soot) { go.globalCompositeOperation = 'source-atop'; go.fillStyle = 'rgba(18,10,8,0.42)'; go.fillRect(0, 0, W, H); go.fillStyle = 'rgba(70,64,60,0.55)'; for (let i = 0; i < 26; i++) go.fillRect((i * 17 + 5) % W, ((i * 29) % H), 2, 1); go.globalCompositeOperation = 'source-over'; }   /* BLASTED: scorched, soot-streaked */
+  if (soot) { go.globalCompositeOperation = 'source-atop'; go.fillStyle = 'rgba(18,10,8,0.42)'; go.fillRect(0, 0, W, H); go.fillStyle = 'rgba(70,64,60,0.55)'; for (let i = 0; i < 26; i++) go.fillRect((i * 17 + 5) % W, ((i * 29) % H), 2, 1); go.globalCompositeOperation = 'source-over'; }
+  if (dust) { go.globalCompositeOperation = 'source-atop'; go.fillStyle = 'rgba(190,172,136,0.34)'; go.fillRect(0, 0, W, H); go.fillStyle = 'rgba(232,220,192,0.7)'; for (let i = 0; i < 22; i++) go.fillRect((i * 13 + 3) % W, ((i * 31) % H), 2, 1); go.globalCompositeOperation = 'source-over'; }   /* (claude/stockade3art) CRUSHED: grey with sawdust and plaster dust, not scorched */
+  /* BLASTED: scorched, soot-streaked */
   return outline(out, OUT);
 }
 
@@ -389,6 +391,9 @@ export function bakeChief() {
     f({ legs: 'stride', lean: -2, mouth: 'roar', near: [[X + 15, Y - 33], [X + 14, Y - 42]], far: [[X + 2, Y - 33], [X + 4, Y - 42]] }),                            // 25 keg heave wind-up
     f({ legs: 'stride', dy: 2, lean: 4, mouth: 'roar', near: [[X + 15, Y - 28], [X + 24, Y - 27]], far: [[X + 8, Y - 24], [X + 18, Y - 23]] }),                    // 26 keg release
     f({ legs: 'sit', dy: 7, lean: -4, hup: -1, mouth: 'roar', soot: true, near: [[X + 11, Y - 15], [X + 18, Y - 9]], far: [[X - 8, Y - 16], [X - 13, Y - 9]] }),           // 27 blasted
+    /* (claude/stockade3art) THE LOG VERBS: 28 LURED (he stands turned to the horn: head thrown back, pupils up at the rafters, a hand cupped behind the ear, the club slack in the far hand), 29 CRUSHED (sat down under the logs: head bowed, eyes screwed shut, both arms up under the beam across his shoulders, dust-grey) */
+    f({ legs: 'stand', lean: -3, hup: 3, gaze: 'up', near: [[X + 13, Y - 30], [X + 13, Y - 43]], nearOpen: true, far: [[X - 8, Y - 20], [X - 9, Y - 13]], farClub: { at: [X - 9, Y - 13], ang: 2.1, len: 13 } }),   // 28 lured
+    f({ legs: 'sit', dy: 8, lean: 6, hup: -3, gaze: 'shut', mouth: 'roar', dust: true, near: [[X + 14, Y - 25], [X + 11, Y - 36]], far: [[X + 1, Y - 26], [X + 4, Y - 36]] }),   // 29 crushed
   ];
   return pack(frames, ax, H - 1, 22, 34);
 }
