@@ -12996,6 +12996,10 @@ function frogReelStep(dt) { const R = P.frogReel; if (!R) return false;
   P.x = nx; P.vx = 0; P.vy = 0; P.ground = false;
   if (Math.random() < dt * 30) parts.push({ x: P.x - R.dir * 6, y: P.y - 6, vx: -R.dir * 40, vy: -20, life: 0.3, max: 0.3, col: '#ffb0c0', size: 1, grav: 0 });
   return true; }
+/* (claude/frogking3) HIS REST after a told blow: phase 2 sometimes chains the next one (FROGK.pair) - never twice running, the next tell is whole */
+function frogRest(e, ph) { if (ph > 0 && !e.paired && Math.random() < FROGK.pair[ph]) { e.paired = true; return FROGK.pairGap; } e.paired = false; return FROGK.gap[ph]; }
+const frogP2On = () => !!(bossActive && boss && boss.t === 'frog' && boss.alive !== false && boss.phase >= 2);   /* (claude/frogking3) his track lifts a tone (music.storm) for phase 2 */
+let frogStirT = 0, frogStirAt = -99;   /* the THE POND STIRS banner's clock, and when it was croaked (the court's art ramps in from it) */
 function updateFrog(e, dt) {
   const A = L.arena;
   /* (claude/frogking2) THE PAD CHASE (src/frog-king.js header): he sits on a royal pad (A.royal[e.st]) and is hittable there; a share of him taken (FROGK.quota) or a
@@ -13038,10 +13042,10 @@ function updateFrog(e, dt) {
     case 'spitTell': e.y = floor; e.vy = 0; if (Math.random() < dt * 20) parts.push({ x: e.x + e.face * 14, y: e.y - 16, vx: e.face * 10, vy: -10, life: 0.3, max: 0.3, col: '#8fd160', size: 1, grav: 0 }); if (e.modeT <= 0) { e.mode = 'spit'; e.modeT = 0.6; e.shots = FROGK.spit.shots[ph]; e.shotT = 0; } break;
     case 'spit': { e.y = floor; e.vy = 0; e.shotT -= dt; if (e.shots > 0 && e.shotT <= 0) { e.shots--; e.shotT = 0.45; SFX.spit(); const dir = Math.sign(P.x - e.x) || e.face, sx = e.x + dir * 20, sy = e.y - 18, g = 320, T = FROGK.spit.flight + Math.min(0.5, Math.abs(P.x - sx) / 700);
         for (const k of [-1, 0, 1]) { const tx = P.x + k * FROGK.spit.spread, ty = P.y - 4; seeds.push({ x: sx, y: sy, vx: (tx - sx) / T, vy: (ty - sy - 0.5 * g * T * T) / T, dead: false, life: 3, venom: true, frogSpit: true, g }); } }
-      if (e.modeT <= 0 && e.shots <= 0) { e.mode = 'idle'; e.modeT = FROGK.gap[ph]; } break; }
+      if (e.modeT <= 0 && e.shots <= 0) { e.mode = 'idle'; e.modeT = frogRest(e, ph); } break; }
     /* THE TONGUE LASH: low and forward, the maw open (frame 7); out it goes at the height you stood at as it left (frame 8) - a shield bites it, a hit is a GRAB (frogGrab) */
     case 'tongueTell': e.y = floor; e.vy = 0; if (e.modeT <= 0) { e.mode = 'tongue'; e.modeT = FROGK.tongue.live; tongue = { x0: e.x + e.face * 22, y: Math.max(floor - 30, Math.min(floor + 22, P.y - 8)), dir: e.face, len: 0, max: FROGK.tongue.max[ph], active: true, grab: true }; SFX.tongue(); } break;
-    case 'tongue': { const live = FROGK.tongue.live, t = live - e.modeT; if (tongue) tongue.len = t < 0.2 ? tongue.max * (t / 0.2) : t < 0.35 ? tongue.max : tongue.max * Math.max(0, (live - t) / 0.2); if (e.modeT <= 0) { tongue = null; e.mode = 'idle'; e.modeT = FROGK.gap[ph]; } break; }
+    case 'tongue': { const live = FROGK.tongue.live, t = live - e.modeT; if (tongue) tongue.len = t < 0.2 ? tongue.max * (t / 0.2) : t < 0.35 ? tongue.max : tongue.max * Math.max(0, (live - t) / 0.2); if (e.modeT <= 0) { tongue = null; e.mode = 'idle'; e.modeT = frogRest(e, ph); } break; }
     /* THE FLY SWARM: cheeks full of flies (frame 11), then he spits them at you (frame 12) and they trail you */
     case 'swarmTell': e.y = floor; e.vy = 0; if (Math.random() < dt * 30) parts.push({ x: e.x + e.face * 16 + (Math.random() - 0.5) * 8, y: e.y - 18, vx: (Math.random() - 0.5) * 30, vy: -20, life: 0.3, max: 0.3, col: '#1a1a14', size: 1, grav: 0 }); if (e.modeT <= 0) { e.mode = 'swarm'; e.modeT = FROGK.swarm.spit; if (FKC) FKC.spitSwarm(e); SFX.spit(); number(P.x, P.y - 30, 'THE FLIES ARE ON YOU: LEAD THEM ONTO HIM', '#c9e3a0'); } break;
     case 'swarm': e.y = floor; e.vy = 0; if (e.modeT <= 0) { e.mode = 'idle'; e.modeT = 0.7; } break;
@@ -13082,7 +13086,7 @@ function updateFrog(e, dt) {
 function frogStir(e) {
   e.phase = 2; e.mode = 'croak2'; e.modeT = 1.6; e.vx = 0; tongue = null; if (FKC) { FKC.swarm = null; FKC.stir(1); }
   SFX.croak(); SFX.splash(); shakeCam(6); zoomKick(1.1, 0.4); killFlash = 0.06;
-  number(e.x, e.y - e.h - 26, 'HIS POND STIRS', '#bfe6f5');
+  number(e.x, e.y - e.h - 26, 'HIS POND STIRS', '#bfe6f5'); frogStirT = 3.2; frogStirAt = time; e.stirAt = time;
   hintSay('tip', 5, 'HIS POND STIRS: THE YELLOW PADS SINK FASTER NOW. KEEP MOVING, AND REST ONLY ON THE GREEN ONES.');
 }
 
@@ -31594,7 +31598,7 @@ function updateWeather(dt) {
   zoomT = Math.max(0, zoomT - dt); if (zoomT <= 0) zoomAmt = 1;
   // ambient bed by zone, and the music ducks while something winds up nearby
   let amb = 'forest', ambBell = false; for (const z of (L.ambient || [])) if (camX + VW / 2 >= z.x0 && camX + VW / 2 < z.x1) { amb = z.kind; ambBell = !!z.bell; }
-  { const st = state === 'play' && L && lanceStormOn(); if (st) amb = 'rain'; music.storm(st); }   /* (claude/lance5) THE STORM: the rain's bed, and his track lifted a tone (src/audio.js music.storm) */
+  { const st = state === 'play' && L && lanceStormOn(); if (st) amb = 'rain'; music.storm(st || (state === 'play' && frogP2On())); }   /* (claude/lance5) THE STORM: the rain's bed, and his track lifted a tone (src/audio.js music.storm) */
   if (L.hornetsNest && amb === 'forest' && camX + VW / 2 < 80 * TS) amb = 'hornetpines';   /* (claude/hornets2art) the old pines: the wood's air with the nest's far hum under it (src/audio.js AMB_EXTRA) */
   /* THE SECOND LAYER: step inside a room and the place goes behind a wall - the inn's common room, a ship's hold, a hollow trunk */
   { const tx = P.x / TS, ty = P.y / TS, room = !L.colosseum && (L.interiors || []).find(([x0, x1, y0, y1]) => tx >= x0 && tx <= x1 + 1 && ty >= y0 && ty <= y1 + 1.5);
@@ -34311,7 +34315,7 @@ function drawWorld(cx, cy, showPlayer) {
     let sprSet = e.t === 'mummer' && e.scare && !e.woke && !(e.hurtT > 0) ? SPR.scarecrowM : e.t === 'bellcrab' && e.phase === 3 ? SPR.bellcrabOut : e.t === 'reefmaw' && e.land && SPR.reefmaw && SPR.reefmaw.land ? SPR.reefmaw.land : e.bone && e.t === 'archer' ? SPR.bonearcher : e.t === 'familiar' ? SPR.familiarSmall : e.t === 'bat' && L.fields && SPR.bat ? (SPR.batHaunt = SPR.batHaunt || FF.hauntedSet(SPR.bat)) : e.t === 'lancer' && e.mini ? SPR.lancerRed : e.squirrel ? SPR.squirrel : e.t === 'hopper' && e.color && e.color !== 'green' ? SPR['hopper_' + e.color] : e.t === 'archmage' && e.fam ? SPR.familiar : (L.redgorge && RGSET[e.t === 'scorpion' && e.elite ? 'scorpionElite' : e.t]) || SPR[e.t];
     if (e.t === 'raptor' && e.young && SPR.raptorYoung) { sprSet = SPR.raptorYoung; if (e.st && e.st.mode === 'climb') frame = 6; }   /* (claude/matriarch2 art) HER YOUNG: their own juvenile set, drawn at scale 1 */
     if (e.t === 'sandworm' && L.underwell && e.st && e.st.fast && SPR.fastworm) sprSet = SPR.fastworm;   /* (claude/underwellart) THE FAST SANDWORM: slate violet, ivory bands, red-eyed */
-    if (e.lamplighter && SPR.lamplighter) sprSet = SPR.lamplighter; if (e.cnSkin && SPR[e.cnSkin]) sprSet = SPR[e.cnSkin]; if (e.skinNow && SPR[e.skinNow]) sprSet = SPR[e.skinNow];   /* (claude/ksarfoes) */ if (e.t === 'construct' && e.elite && SPR.constructelite) sprSet = SPR.constructelite; if (e.cnSkin === 'foremancart' && e.alive && MCH && MCH.foremanFrame) frame = MCH.foremanFrame(e);   /* (claude/canalfix3) a canal tough: the goblin's AI, a man's skin; (dr3art) THE FOREMAN's tell poses */   /* THE LAMPLIGHTER (THE FOG CANAL, claude/canalart): the snuffer's walk in a lamplighter's coat and cap */
+    if (e.lamplighter && SPR.lamplighter) sprSet = SPR.lamplighter; if (e.cnSkin && SPR[e.cnSkin]) sprSet = SPR[e.cnSkin]; if (e.t === 'frog' && e.phase >= 2 && SPR.frog && SPR.frog.p2) sprSet = SPR.frog.p2; if (e.skinNow && SPR[e.skinNow]) sprSet = SPR[e.skinNow];   /* (claude/frogking3 flush; claude/ksarfoes) */ if (e.t === 'construct' && e.elite && SPR.constructelite) sprSet = SPR.constructelite; if (e.cnSkin === 'foremancart' && e.alive && MCH && MCH.foremanFrame) frame = MCH.foremanFrame(e);   /* (claude/canalfix3) a canal tough: the goblin's AI, a man's skin; (dr3art) THE FOREMAN's tell poses */   /* THE LAMPLIGHTER (THE FOG CANAL, claude/canalart): the snuffer's walk in a lamplighter's coat and cap */
     if (L.theatre) sprSet = THF.foeSet(e) || sprSet;
     if (e.t === 'lance' && SPR.lanceTorn) { if (!SPR.lanceTorn.done) SPR.lanceTorn.fill(e.torn ? 999 : 4); if (e.torn) sprSet = SPR.lanceTorn; }   /* (claude/lance5finish) the torn sheet bakes lazily: 4 frames a tick once he is drawn (~35 ticks, <=10 ms each), whole if the storm gets there first */   /* (claude/lance5art) the pennant is gone from the storm on */
     if (L.tavern && e.t === 'dummy') sprSet = TVA.dummySet(Math.floor(e.x / TS) !== TAV_DUMMIES[0]);   /* (claude/tavernart) the inn's own straw men: a sack head, and a dented pot helm */
@@ -36321,6 +36325,7 @@ function render() {
       g.globalAlpha = a; g.fillStyle = 'rgba(10,8,20,0.62)'; g.fillRect(0, y0 - 10, VW, 30); g.fillStyle = '#ffd36b'; g.fillRect(0, y0 - 10, VW, 1); g.fillRect(0, y0 + 19, VW, 1);
       text(actCard.label, VW / 2, y0 - 5, '#c9a26a', 'center', 6); text(actCard.name, VW / 2 + 1, y0 + 5, '#3a2214', 'center', 10); text(actCard.name, VW / 2, y0 + 4, '#ffd36b', 'center', 10); g.globalAlpha = 1; } }
     if (secretToast && state === 'play') drawSecretToast();   /* (claude/secrets) 'LOST BANNER 1/3', 'A HIDDEN WAY OPENS': a card over the level */
+    if (frogStirT > 0 && state === 'play') { frogStirT -= 1 / 60; const k = Math.min(1, frogStirT > 2.7 ? (3.2 - frogStirT) / 0.5 : frogStirT < 0.6 ? frogStirT / 0.6 : 1); g.globalAlpha = k; g.fillStyle = 'rgba(6,24,34,0.72)'; g.fillRect(0, VH / 3 - 14, VW, 26); g.fillStyle = '#bfe6f5'; g.fillRect(0, VH / 3 - 14, VW, 1); g.fillRect(0, VH / 3 + 11, VW, 1); text('THE POND STIRS', VW / 2 + 1, VH / 3 - 1, '#0c2a22', 'center', 12); text('THE POND STIRS', VW / 2, VH / 3 - 2, '#bfe6f5', 'center', 12); g.globalAlpha = 1; }   /* (claude/frogking3) the court changes: the banner */
     if (bannerT > 0 && state === 'play') { const k = Math.min(1, bannerT > 2.2 ? (2.6 - bannerT) / 0.4 : bannerT < 0.5 ? bannerT / 0.5 : 1), rl = LEVELS[levelIndex].rule ? Math.min(3, wrap(LEVELS[levelIndex].rule, VW - 40, 6).length) * 9 : 0; g.globalAlpha = k; g.fillStyle = 'rgba(10,8,20,0.7)'; g.fillRect(0, VH / 2 - 22, VW, 24 + rl); g.fillStyle = '#ffd36b'; g.fillRect(0, VH / 2 - 22, VW, 1); g.fillRect(0, VH / 2 + 1 + rl, VW, 1); text(LEVELS[levelIndex].name, VW / 2 + 1, VH / 2 - 12, '#3a2214', 'center', 12); text(LEVELS[levelIndex].name, VW / 2, VH / 2 - 13, '#ffd36b', 'center', 12); /* (claude/storyremove) no story line under the name: the card is the NAME and its one-line RULE; it fades, never pauses play, never eats input */
       { const r = LEVELS[levelIndex].rule; if (r) wrap(r, VW - 40, 6).slice(0, 3).forEach((ln, i) => text(ln, VW / 2, VH / 2 + 4 + i * 9, '#ffd36b', 'center', 6)); }
       g.globalAlpha = 1; }

@@ -196,9 +196,21 @@ export function drawWater(g, L, cx, cy, time, boss, movers) {
     const n = b - a + 1, x0 = a * 16 - cx, x1 = (b + 1) * 16 - cx; if (x1 < -30 || x0 > VWD + 30) return;
     g.drawImage(stemSheet(i, n), Math.round(x0), Math.round(wy));   /* the water under the pad and its stems, one baked sheet */
   });
-  if (p2) churn(g, C, cx, wy, time);
+  if (p2) { churn(g, C, cx, wy, time); stirDim(g, C, boss, cx, cy, wy, time); }
   if (movers) for (const m of movers) if (m.kind === 'pad' && (m.slapT > 0 || m.shufTo) && m.x > cx - 40 && m.x < cx + VWD + 40) reshuffleRead(g, m, cx, cy, time, m.w, Math.round(m.y0) - cy + Math.round((m.big ? 9 : 7) / 2) + 1);   /* a leaf held under (the King's landing, the flop's wave) whirls; where it will come up the water boils in the colour of what it will be */
   if (boss) drawSplash(g, L, boss, cx, cy, time, null);
+}
+/* (claude/frogking3) HIS POND STIRS, the court changes look: over ~2 s from the croak the SKY dims toward a bruised teal (a gradient: dark at the top, clear by the water so the fight stays readable), the water goes
+   darker and RISES 3 px (a dark body over the old surface, a pale new lip that ripples), and the court breathes - a slow pulse in the dim */
+function stirDim(g, C, boss, cx, cy, wy, time) {
+  const k = Math.max(0, Math.min(1, (time - (boss.stirAt === undefined ? time - 2 : boss.stirAt)) / 2)), pul = 0.5 + 0.5 * Math.sin(time * 1.4);
+  const H = Math.max(40, wy - 24); const gr = g.createLinearGradient(0, 0, 0, H); gr.addColorStop(0, 'rgba(8,22,40,' + (0.5 * k).toFixed(3) + ')'); gr.addColorStop(1, 'rgba(8,22,40,0)'); g.fillStyle = gr; g.fillRect(0, 0, g.canvas.width, H);
+  g.globalAlpha = (0.2 + 0.05 * pul) * k; g.fillStyle = '#4a0a1e'; g.fillRect(0, 0, g.canvas.width, Math.max(0, wy - 2)); g.globalAlpha = 1;   /* a faint blood-dusk wash over the whole upper court */
+  const x0 = Math.max(0, C.lanes[0][0] * 16 - cx), x1 = Math.min(g.canvas.width, (C.royal[2][1] + 1) * 16 - cx), rise = Math.round(3 * k); if (x1 <= x0) return;
+  g.globalAlpha = 0.55 * k; g.fillStyle = '#082c2c'; g.fillRect(x0, wy + 1, x1 - x0, 14); g.globalAlpha = 1;   /* the water, darker */
+  g.fillStyle = '#0e4a46'; g.fillRect(x0, wy - rise, x1 - x0, rise + 1); g.fillStyle = '#6fc4c4'; g.fillRect(x0, wy - rise, x1 - x0, 1);   /* risen: a new lip 3 px up */
+  for (let i = 0; i < 14; i++) { const sx = x0 + ((i * 53 + Math.floor(time * 7) * 11) % Math.max(1, x1 - x0)); g.globalAlpha = 0.5 * k; g.fillStyle = '#bfe6f5'; g.fillRect(Math.round(sx), wy - rise - ((i + Math.floor(time * 5)) & 1), 3, 1); }
+  g.globalAlpha = 1;
 }
 /* HIS POND STIRS: the water boils - rings run out of the deep across the whole court, bubbles rise, the surface goes dark and green */
 function churn(g, C, cx, wy, time) {
@@ -247,7 +259,7 @@ export function drawBossFx(g, L, e, cx, cy, time, FKT) {
   const C = L.frogCourt; if (!C || !e) return;
   const wy = SURF - cy;
   if (e.mode === 'spit') spitSpray(g, e, cx, cy);
-  if (e.phase >= 2 && e.alive !== false && e.mode !== 'sleep') stirSteam(g, e, cx, cy, time);
+  if (e.phase >= 2 && e.alive !== false && e.mode !== 'sleep') { stirSteam(g, e, cx, cy, time); throatGlow(g, e, cx, cy, time); }
   if (e.mode === 'leap' && e.vx !== undefined) {   /* the spray he trails through the air, and the ring where he left */
     const T = (FKT && FKT.air) || 1.2, age = Math.max(0, (T + 1) - e.modeT), sx0 = e.x - e.vx * age;
     for (let i = 0; i < 22; i++) { const k = i / 22, bx = e.x - e.vx * 0.032 * (i + 1) + Math.sin(i * 7.1 + time * 30) * 2, by = e.y - 12 - e.vy * 0.032 * (i + 1) + ((i * 5 + (time * 36 | 0)) % 7) - 3;   /* a streak of water flung off him along the arc, spread and thinning */
@@ -273,6 +285,12 @@ function spitSpray(g, e, cx, cy) {
   g.globalAlpha = 1;
 }
 
+/* (claude/frogking3) HIS POND STIRS: the throat sac glows from within - an ember-orange bloom, a slow pulse that quickens as he gulps (a told blow) */
+function throatGlow(g, e, cx, cy, time) {
+  const f = e.face >= 0 ? 1 : -1, tell = /Tell$|^crouch$/.test(e.mode || ''), pul = 0.5 + 0.5 * Math.sin(time * (tell ? 9 : 3)), x = Math.round(e.x + f * 11 - cx), y = Math.round(e.y - 9 - cy), r = 11 + pul * (tell ? 5 : 3);
+  const gr = g.createRadialGradient(x, y, 1, x, y, r); gr.addColorStop(0, 'rgba(255,170,70,' + (0.55 + 0.25 * pul).toFixed(2) + ')'); gr.addColorStop(1, 'rgba(255,90,40,0)');
+  g.globalCompositeOperation = 'lighter'; g.fillStyle = gr; g.fillRect(x - r, y - r, r * 2, r * 2); g.globalCompositeOperation = 'source-over';
+}
 /* HIS POND STIRS: he is restless - steam breathing off his nostrils */
 function stirSteam(g, e, cx, cy, time) {
   const f = e.face >= 0 ? 1 : -1;
