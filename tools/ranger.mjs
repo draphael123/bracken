@@ -108,7 +108,7 @@ try {
     /* art */
     const set=BKT.heroSet('bracken','steel',false,'ranger');const need=['idle','run','jump','fall','land','takeoff','apex','skid','climb','atk','atkB','atkC','air','plunge','hurt','crouch','slide','block','dashAtk','cast','fidget','dance','dance2','dance3','follow','slump','swim','tread','roll','rise','sweep','airUp','windup','heavy','blast','parry','ripo',
       'rgSling','rgBowUp','rgShot','rgAirShot','rgLoose','rgRise','rgDown','rgBash','rgSnare','rgMark','rgHawkPose','rgLeapPose','rgVolleyPose','rgTrapPose','rgRainPose','rgSmokePose','rgRefillPose','rgHeartPose','rgHuntPose',
-      'rgDraw2','rgDraw3','rgKneelDraw2','rgKneelDraw3','rgLoose2','rgLoose3'];   /* (claude/chargetiers: the three-tier draw's own bodies) */
+      'rgDraw2','rgDraw3','rgKneelDraw2','rgKneelDraw3','rgLoose2','rgLoose3','rgGreat','rgGreatLoose'];   /* (claude/chargetiers: the three-tier draw's own bodies) */
     const gold=BKT.heroSet('bracken','ember',false,'ranger');const diff=(a,b)=>{const A=a.getContext('2d').getImageData(0,0,a.width,a.height).data,B=b.getContext('2d').getImageData(0,0,b.width,b.height).data;let n=0;for(let i=0;i<A.length;i+=4){if(A[i]!==B[i]||A[i+1]!==B[i+1]||A[i+2]!==B[i+2])n++;}return n;};
     out.art={missing:need.filter(k=>!set.R[k]),skinDiff:diff(set.R.idle[0],gold.R.idle[0])};
     return out;})()`);

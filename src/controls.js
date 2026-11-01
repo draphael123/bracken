@@ -188,7 +188,7 @@ export function cardRows({ hero = 'knight', binds = emptyBinds(), prof = 'pad1',
     [cRow[0], cRow[1](tk), pd('block')],
     ...(hero === 'paladin' ? [['hammer throw', k1('up') + '+' + tk.c + '  (THREE PIPS)', pd('up') + '+' + pd('block')], ['tap ' + tk.c + ' spends', 'SMITE 1-2 RADIANCE 3-4 SUN 5', pd('block')]] : []),   /* (claude/paladin2) THE LIGHT SPENT */
     ...(hero === 'berserker' ? [['axe throw', k1('up') + '+' + tk.c + '  (PICK IT UP)', pd('up') + '+' + pd('block')]] : []),   /* THE BERSERKER's off axe (src/berserker.js throwAxe) */
-    ...(hero === 'ranger' ? [['bow / knife', kb('stance') + ': BOW / KNIFE', pd('stance')]] : []),   /* THE RANGER's focus, spent (src/ranger.js spendMark) */
+    ...(hero === 'ranger' ? [['bow / knife', kb('stance') + ': BOW / KNIFE', pd('stance')]] : []),   /* THE RANGER's stance swap (her UP+C is the shared ultimate row above) */
     ['dodge', hero === 'ranger' ? k1('dodge') + ': BACKFLIP, OR TAP A WAY TWICE' : hero === 'warden' ? k1('dodge') + ' BACK, OR TAP A WAY TWICE' : 'TAP A WAY TWICE, OR ' + kb('dodge'), pd('dodge')],
     ['', 'TELLS ARE TIMED FOR ONE PRESS', pd('dodge')],
     hero === 'reaper' ? ['summon', kb('throw') + '  (HOLD, FULL: SURGE)', pd('throw')] : ['skill', kb('throw') + ' (THE ONE EQUIPPED)', pd('throw')],
