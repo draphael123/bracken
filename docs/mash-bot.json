@@ -1,6 +1,6 @@
 {
  "wood": {
-  "hash": "721420634779",
+  "hash": "aa73d62270cb",
   "boss": {
    "boss": "oldtusker",
    "wins": 0,
@@ -101,7 +101,7 @@
    ]
   },
   "carried": {
-   "from": "6639406ae816",
+   "from": "721420634779",
    "parts": [
     "boss"
    ]
@@ -8566,7 +8566,7 @@
   }
  },
  "minecart": {
-  "hash": "4020966545d3",
+  "hash": "9a58718f23d4",
   "boss": {
    "boss": "greatdrill",
    "wins": 0,
@@ -8851,7 +8851,7 @@
    ]
   },
   "carried": {
-   "from": "8319ef2d710f",
+   "from": "4020966545d3",
    "parts": [
     "boss",
     "mini",
