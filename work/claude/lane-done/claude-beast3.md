@@ -56,7 +56,7 @@ Hurt ledger at r2 (probe): timbers + flail were the killers (up to 98 + 69 a fig
 ## STILLS (scratch/lane-reports/beast3-shots/)
 beast3-vs-tusker.png (side by side, 3x), beast3-poses.png (every frame, 2x), beast3-look-walk(-zoom), beast3-volley-horn(-zoom),
 beast3-volley-arrows(-zoom), beast3-volley-lost, beast3-wall-tell, beast3-wall-slam(-zoom), beast3-wall-breach(-zoom), beast3-p2-flail.
-Re-shoot: `node tools/beast3-shots.mjs [tags]` (not in the suite).
+Re-shoot: `node tools/beast3-shots.mjs [tags]` (not in the suite). The stills predate two late changes (no browser time after the holds): the palisade end is now drawn just inside the east wall (so the breach + archer are on screen) and his skull is a shade lighter.
 
 ## ART LANE NOTES (polish list)
 - His head reads too dark against the slate barding - lift the chamfron/skull values, a lit horn base; the eye slit brighter.
