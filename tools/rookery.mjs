@@ -173,7 +173,7 @@ ok(Object.values(RK_SAY).every(s => SAY_LINES.has(s)), 'every capital line the r
   ok(S.marks.length >= 1 && sh.mode === 'diveTell' && sh.aim.mark && Math.abs(sh.aim.x - hero.x) < 2 && dv.mode !== 'diveTell', 'THE SHRIEKER screams: the MARK snaps onto the hero\'s spot and SHE dives at it (no sister strikes it for her)');
   hero.x += 70; step(2.0, () => sh.mode === 'stuck'); ok(sh.mode === 'stuck' && S.n.marksStruck >= 1, 'off the mark on a crack: her marked dive breaks it - stunned'); S.hunter = 'snatcher';
   /* THE SNATCHER: pick, carry, the red ring, the rock lies as a CRACKED STONE */
-  for (const r of SSM.ROLES) { const s = S.sis[r]; s.mode = 'hover'; s.cd = 99; } const sn = S.sis.snatcher; sn.mode = 'fly'; sn.perchI = 0; hero.x = S.G.mid + 100; const st0 = S.stones.length;
+  for (const r of SSM.ROLES) { const s = S.sis[r]; s.mode = 'hover'; s.cd = 99; } const sn = S.sis.snatcher; sn.mode = 'fly'; sn.perchI = 0; hero.x = S.G.mid + 100; const st0 = S.stones.length; S.grabCd = 99; S.snatchCd = 99;   /* (claude/rookery4tune: the grab's first is 5 s now - this block tests the boulder) */
   const d0 = S.n.drops; step(14, () => S.n.drops > d0 && !S.rocks.length);   /* (claude/rookery3: she may hold it a beat for the stagger) */ ok(S.n.drops >= 1 && (S.stones.length > st0 || !!SSM.crackAt(S, hero.x)), 'THE SNATCHER picks a rock on her shelf, carries it over the hero, tells the red ring and drops it: it lies CRACKED (a new bait spot)');
   /* TAKE ONE OUT AND THE OTHERS CHANGE */
   const S2 = SSM.newFight(SSM.geom(A, TS)); for (const r of SSM.ROLES) { S2.sis[r].mode = 'hover'; S2.sis[r].cd = 99; } S2.supCd = 999;
