@@ -358,6 +358,8 @@ export function makeGormHands(ctx) {
     { const Pp = ctx.P(); if (Pp && S.n.fightAt !== undefined && S.n.p1At === undefined) { if (S.lastHp !== undefined && Pp.hp < S.lastHp) S.n.p1Taken = (S.n.p1Taken || 0) + (S.lastHp - Pp.hp) / Pp.maxHp; if (S.lastFl !== undefined && (Pp.flasks || 0) < S.lastFl) S.n.p1Drinks = (S.n.p1Drinks || 0) + 1; S.lastHp = Pp.hp; S.lastFl = Pp.flasks || 0; } }   /* (claude/kingsfix2 measuring: what P1 cost the hero) */
     hallStep(dt); arrowsStep(dt); rocksStep(dt); runStep(dt); hangStep(dt); gladeFx(dt); potsStep(dt); sceptreStep(dt); trailStep(dt);
     const e = king(), lv = L();
+    if (typeof window !== 'undefined' && S.n.fightAt !== undefined) window.__gormN = S.n;   /* (claude/gorm3 measuring: tools/boss-run.mjs reads it after the fight) */
+    if (S.n.fightAt !== undefined && e && e.alive) S.n.lastT = Math.round(ctx.time() * 10) / 10;   /* (claude/gorm3 measuring: the last moment he stood) */
     if (e && e.rage && S.n.rageAt === undefined) S.n.rageAt = Math.round(ctx.time() * 10) / 10;   /* (claude/gorm3 measuring: when the rage came) */
     if (e && e.stage === 'glade' && ctx.bossActive() && S.n.p2At === undefined) S.n.p2At = Math.round(ctx.time() * 10) / 10;
     if (e && e.stage === 'glade' && ctx.bossActive()) lv.oakBurn = Math.min(1, 0.55 + 0.45 * (1 - e.hp / Math.max(1, e.maxHp)));

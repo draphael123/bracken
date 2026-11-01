@@ -43,9 +43,9 @@ export const GORM = {
   run: { grace: 2.4, v: 50, vMax: 150, lead: 340, surgeV: 60, surgeT: 3, tremEvery: 4.5, drain: 0.2, groundDrain: 0.12, branchTell: 0.9, branchDmg: 14, torchTell: 0.8, torchBurn: 6, torchReach: 110 },
   /* P2: THE KING'S GLADE */
   clubTell: 0.85, clubReach: 74, clubEvery: 2.0,
-  shakeTell: 0.8, coneTell: 1.1, cones: 5, coneDmg: 14,
-  logTell: 0.9, logV: 190, logDmg: 18,
-  quakeTell: 0.9, quakeAir: 0.45, quakeV: 175, quakeDmg: 18,
+  shakeTell: 0.8, coneTell: 1.1, cones: 5, coneDmg: 16,
+  logTell: 0.9, logV: 190, logDmg: 20,
+  quakeTell: 0.9, quakeAir: 0.45, quakeV: 175, quakeDmg: 20,
   huntAt: [0.70, 0.38],
   hangReset: { cage: 11, log: 13, hive: 14 },
   downedT: 3.5, stungT: 4, hiveR: 44,
@@ -53,10 +53,10 @@ export const GORM = {
      gets a lit pot lobbed at him (told: tell s; the red ring on the landing spot all through the flight); never at a hero on the ground; every s after a throw */
   pot: { perch: 1.5, up: 12, tell: 0.9, every: 7, first: 3, r: 18, dmg: 14, g: 520, tMin: 0.85, tMax: 1.3, patch: 48, patchT: 2.5, drain: 0.12 },
   /* P2 THE SCEPTRE THROW: a wide boomerang - out LOW (jump it), back HIGH (duck it). range = his distance + over, inside the glade; lowY / highY px off the floor */
-  sceptre: { tell: 0.9, every: 9, first: 6, over: 70, rMin: 150, rMax: 330, t: 2.1, lowY: 7, highY: 17, catchT: 0.5, minD: 50, maxD: 260, dmg: 18 },
+  sceptre: { tell: 0.9, every: 9, first: 6, over: 70, rMin: 150, rMax: 330, t: 2.1, lowY: 7, highY: 17, catchT: 0.5, minD: 50, maxD: 260, dmg: 20 },
   /* ENRAGE at rageAt of P2's bar: the crown cracks, he catches fire, the horn calls one last boar; tempo x his cooldowns; RAGE-ONLY THE BURNING CHARGE (a fire trail) */
   rageAt: 0.25,
-  rage: { tellT: 2.0, tempo: 1.25, walk: 1.2, chargeTell: 1.0, chargeV: 250, chargeEvery: 7, chargeFirst: 2.5, hitY: 26, endT: 0.9, trailT: 3.5, trailDrain: 0.12, dmg: 22 },
+  rage: { tellT: 2.0, tempo: 1.25, walk: 1.2, chargeTell: 1.0, chargeV: 250, chargeEvery: 7, chargeFirst: 2.5, hitY: 26, endT: 0.9, trailT: 3.5, trailDrain: 0.12, dmg: 26 },
 };
 export const GORM_SAY = {
   wake: 'KING GORM UNDERLEAF', litter: 'THE LITTER BREAKS. HE STANDS', horn: 'THE HUNTING HORN', boar: 'THE ROYAL BOAR', penned: 'PENNED',
