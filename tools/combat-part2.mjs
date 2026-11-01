@@ -8,7 +8,7 @@
 //   SQUAD      a squad (front shield, back archer, flank cutlass) holds its roles: the archer keeps further off than the shield, and the
 //              cutlass and the shield, on both sides of him, are given their turns at once (a pincer).
 //   VARIED     over a crowd's forty seconds, swings come held, quick and as feints (a stamp, then the real blow).
-//   ACTS       the purse is 2 in the Stockade (act I) and 3 in the Red Gorge (act V); a common foe's blow lands x1.2 in the Long Water.
+//   ACTS       the purse is 2 in the Stockade (act I), 3 in the Long Water (act III) and 4 in the Red Gorge (act V; lategameb 10-31); a common foe's blow lands x1.2 in the Long Water.
 // Proved red on the base (no src/foe-react.js): BK.tokens().RX is missing and every case fails.
 //   node tools/combat-part2.mjs            (PORT from tools/ports.mjs)
 import assert from 'node:assert/strict';
@@ -87,7 +87,7 @@ try {
     if (!r.err && !(r.helds >= 1 && r.quicks >= 1 && r.stamps >= 1)) bad.push(`varied: ${r.helds} held, ${r.quicks} quick, ${r.stamps} feint stamps over ${r.grants} turns (want all three)`); }
 
   /* ACTS: the purse and the damage tier by act */
-  for (const [lvl, cap, mul] of [['stockade', 2, 1], ['longwater', 2, 2.4], ['redgorge', 3, 3.0]]) {
+  for (const [lvl, cap, mul] of [['stockade', 2, 1], ['longwater', 3, 2.4], ['redgorge', 4, 3.0]]) {
     const r = await run('act-' + lvl, lvl, `BK.sim(1); return { cap: T.TOKENS.cap(P), act: T.RX.act().act, dmg: T.RX.tier({ t: 'cutlass', alive: true }, 100) / 100 };`);
     if (!r.err && (r.cap !== cap || Math.abs(r.dmg - mul) > 0.001)) bad.push(`acts: ${lvl} (act ${r.act}) has a purse of ${r.cap} (want ${cap}) and a damage tier x${r.dmg} (want x${mul})`); }
   assert.deepEqual(pg.errors, [], 'page errors');

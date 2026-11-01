@@ -31,9 +31,9 @@ export const ACTS = [
   /* act: the purse (TOKENS.cap), the damage tier on a common foe's blow, and the cut of a flurry that raises a mashed foe's guard */
   { act: 1, name: 'THE GREENWOOD', cap: 2, dmg: 1.0, hp: 1.0, mashAt: 3, levels: ['wood', 'hornetsnest', 'marsh', 'fenroad', 'stockade', 'spore', 'rootway', 'underleaf', 'palisadewood', 'burning', 'kings'] },   /* (claude/underleaf4, Daniel 10-25: UNDERLEAF back in act I, straight after the Rootway) */   /* (claude/underorder, Daniel 10-24: act I ends at KINGSWOOD; UNDERLEAF moved to act II, after the Scree Path) */   /* (claude/rootway: THE ROOTWAY, between Sporewood and Kingswood) */
   { act: 2, name: 'THE CRAGS', cap: 2, dmg: 1.1, hp: 1.0, mashAt: 3, levels: ['scree', 'hanging', 'spire', 'moor', 'rookery', 'skyroad', 'oreroad', 'minecart', 'storm', 'crown', 'undercrown', 'kitchengate', 'warcairn'] },
-  { act: 3, name: 'THE SEA', cap: 2, dmg: 2.4, hp: 1.0, mashAt: 2, levels: ['longwater', 'reef', 'flotilla', 'hurricane', 'lamplit', 'deep', 'keep', 'causeway', 'harbor'] },
+  { act: 3, name: 'THE SEA', cap: 3, dmg: 2.4, hp: 1.0, mashAt: 2, levels: ['longwater', 'reef', 'flotilla', 'hurricane', 'lamplit', 'deep', 'keep', 'causeway', 'harbor'] },
   { act: 4, name: 'THE OLD KINGDOM', cap: 3, dmg: 3.0, hp: 1.05, mashAt: 2, levels: ['waymeet', 'towpath', 'canal', 'theatre', 'fair', 'fields', 'burial', 'witchlight', 'mage', 'unburied', 'fallingtower', 'church'] },
-  { act: 5, name: 'THE DESERT', cap: 3, dmg: 3.0, hp: 1.1, mashAt: 2, levels: ['caravan', 'welltown', 'underwell', 'redgorge', 'glasssea', 'ksar', 'buriedcity', 'sealedpyramid'] },
+  { act: 5, name: 'THE DESERT', cap: 4, dmg: 3.0, hp: 1.1, mashAt: 2, levels: ['caravan', 'welltown', 'underwell', 'redgorge', 'glasssea', 'ksar', 'buriedcity', 'sealedpyramid'] },
 ];
 /* THE DIFFICULTY PILOT'S WEIGHT (claude/levelpilot, scratch/brief-levelsweep.md v2: SALT & SANCTUARY - fewer, weightier foes, every one a 1v1 threat at the
    campaign level; 'act damage scaling, no hp sponges'). A level reworked to the v2 recipe may stand its common foes' blows a step over its act's tier
@@ -43,10 +43,19 @@ export const ACTS = [
    person, who is hit more often than the walker). The per-act lanes fold this into ACTS[].dmg
    once Daniel has played the pilot; until then it is one level's knob, so the rest of the act is untouched. */
 export const LEVEL_DMG = { causeway: 0.8, church: 0.7, palisadewood: 1.8 };   /* (claude/palisadewood: THE PALISADE WOOD built to difficulty v2 - fewer, weightier crews; the level-1 curve read 40% at x1) */   /* (claude/curvec5 STEP 2b, Daniel 10-19: held at the pre-curve absolute blows - causeway 1.25 x 1.5 = 1.875 -> 2.4 x 0.8, church 1.4 x 1.5 = 2.1 -> 3.0 x 0.7) */   /* (claude/litchurch: THE LIT CHURCH, built to difficulty v2 - its dead and its clergy alike) */
+/* THE THREE LATER ARCS (claude/lategameb, Daniel 10-31 'foes harder by act', scratch/brief-lategame-1101.md Q1A item 5): the frost, the volcano and the demon act do not exist yet,
+   so they sit OUT of ACTS (act-cards, secrets and the curve tools walk ACTS and need a level in every row) and are read by actOf() the moment a level id is listed here. The dial
+   continues the desert's: the common blow 3.0 -> 3.75 -> 4.5 -> 5.25 (the common blow target 14 / 18 / 22 % of the bar, capped by COMMON_BLOW_CAP 25%), health 1.1 -> 1.15 -> 1.2 -> 1.3 (commons +
+   elites only), the purse four then five wide, a mashed foe guards its second cut. A new arc's level lane lists its ids in `levels` and adds them to FOEPASS (src/foe-pass.js). */
+export const ACTS_LATE = [
+  { act: 6, name: 'THE FROZEN REACH', cap: 4, dmg: 3.75, hp: 1.15, mashAt: 2, levels: [] },
+  { act: 7, name: 'THE FIRE MOUNTAIN', cap: 4, dmg: 4.5, hp: 1.2, mashAt: 2, levels: [] },
+  { act: 8, name: 'THE DEMON HOLD', cap: 5, dmg: 5.25, hp: 1.3, mashAt: 2, levels: [] },
+];
 /* a level not in the table (a new one, a trial, the shop) takes the act of its depth on the gate chain, else act 1 */
 const DEPTH_ACT = [[29, 5], [21, 4], [12, 3], [5, 2], [0, 1]];
 export function actOf(id, depth) {
-  const a = ACTS.find(q => q.levels.includes(id)); if (a) return a;
+  const a = ACTS.find(q => q.levels.includes(id)) || ACTS_LATE.find(q => q.levels.includes(id)); if (a) return a;
   if (typeof depth === 'number') for (const [d, n] of DEPTH_ACT) if (depth >= d) return ACTS[n - 1];
   return ACTS[0];
 }
@@ -101,7 +110,7 @@ export const ROSTER = {
        note: 'the sea: fights in the tide and the swim; water foes hold the water, boarders the decks' },
   4: { front: ['swornsword', 'hedgeknight', 'armour', 'heavy'], flank: ['zombie', 'husk', 'runner', 'hound', 'bonegob', 'farmhand', 'mummer', 'hobbyhorse', 'broom'], back: ['bonearcher', 'crossbow', 'apprentice', 'haunt', 'drunk', 'archer'],
        heavy: ['hedgeknight', 'armour', 'barrowrider', 'brute'], support: ['bannerbearer', 'gobpriest', 'barker', 'snuffer'], note: 'the old kingdom: knights, the risen dead and the fair folk - a banner or a priest to kill first' },
-  5: { front: ['shield'], flank: ['cutthroat', 'scorpion', 'waterthief', 'ambusher', 'raptor'], back: ['slinger', 'archer', 'gobmage'], heavy: ['scorpion', 'sandworm'], support: ['sapper', 'vulture'],
+  5: { front: ['shield', 'construct'], flank: ['cutthroat', 'scorpion', 'waterthief', 'ambusher', 'raptor'], back: ['slinger', 'archer', 'gobmage'], heavy: ['scorpion', 'sandworm', 'mummy'], support: ['sapper', 'vulture'],   /* (claude/lategameb: the act's second front kind is the Buried City's construct, the third heavy the Sealed Pyramid's mummy - kinds the game already spawns; a ksar plate-bearer and a brass-scorpion variant are a content lane's) */
        note: 'the desert: feinting cutthroats, slingers on the ledges, every fight in the sun or the flood' },
 };
 let ACT = ACTS[0];
