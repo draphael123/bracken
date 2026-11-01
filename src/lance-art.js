@@ -55,6 +55,11 @@ function champion(o0, S = KS) {
     disc(dx, dy, r, C.q); disc(dx - 0.3, dy - 0.4, r * 0.7, C.d); }
   // ---- the lance (and its smear): drawn behind the torso
   const hx = shX + o.hand[0], hy = shY + o.hand[1] + 2, ang = rad(o.ang), dx = Math.cos(ang), dy = Math.sin(ang);
+  /* (claude/lance5art) THE TATTERS: the storm took the pennant in his P2 - a knot of cloth still lashed under the head and three torn ribbons streaming from it, the longest scorched at its end */
+  const rags = (sx, sy, ddx, ddy) => { const kk = o.banner > 1 ? 1.35 : 1;
+    box(sx - ddx * 2 - 1, sy - ddy * 2 - 1, 2.4, 2.4, C.P); dot(sx - ddx * 2, sy - ddy * 2 - 1, C.p); dot(sx - ddx * 2 - 1, sy - ddy * 2 + 1, C.g);
+    [[6.5, -1.4, C.p], [5, 0.2, C.P], [3.2, 1.6, C.p]].forEach(([len, oy, col], i) => { for (let t = 0; t < len * kk; t += 0.8) { const x = sx - ddx * 3 - t * 0.95, y = sy - ddy * 3 + oy + Math.sin(fl * 1.7 + t * 0.9 + i * 2) * (0.5 + t * 0.12) + t * 0.18; dot(x, y, t > len * kk - 1.6 && i === 0 ? C.R : col); }
+      dot(sx - ddx * 3 - len * kk * 0.5, sy - ddy * 3 + oy + 0.5 + Math.sin(fl * 1.7 + len * 0.45 + i * 2) * (0.5 + len * 0.06), C.G); }); };
   const lance = (bx0, by0, a, len, banner, alpha) => { const ddx = Math.cos(a), ddy = Math.sin(a), nx = -ddy, ny = ddx, tx = bx0 + ddx * len, ty = by0 + ddy * len, bx = bx0 - ddx * 9, by = by0 - ddy * 9;
     g.globalAlpha = alpha;
     limb(bx, by, tx, ty, 2.5, 2.5, alpha < 1 ? '#dfe6f0' : C.W);
@@ -65,7 +70,8 @@ function champion(o0, S = KS) {
       limb(tx - ddx * 0.2, ty - ddy * 0.2, tx + ddx * 0.8, ty + ddy * 0.8, 4.6, 4.6, C.g);                                  /* the socket */
       disc(bx0 + ddx * 3, by0 + ddy * 3, 2.5, C.g); disc(bx0 + ddx * 3, by0 + ddy * 3, 1.5, C.G); }                          /* the vamplate at the hand */
     g.globalAlpha = 1;
-    if (banner && alpha >= 1) { const sx = tx - ddx * 6, sy = ty - ddy * 6, kk = banner, flyx = -Math.max(0.5, ddx * 0.6 + 0.8) * 12 * kk, flyy = (3 + Math.sin(fl + 1) * 2) * kk + (ddy < -0.6 ? 2 : 0), q = 3 * kk;
+    if (banner && alpha >= 1 && o.torn) rags(tx - ddx * 6, ty - ddy * 6, ddx, ddy);
+    else if (banner && alpha >= 1) { const sx = tx - ddx * 6, sy = ty - ddy * 6, kk = banner, flyx = -Math.max(0.5, ddx * 0.6 + 0.8) * 12 * kk, flyy = (3 + Math.sin(fl + 1) * 2) * kk + (ddy < -0.6 ? 2 : 0), q = 3 * kk;
       poly([[sx, sy], [sx - ddx * 7, sy - ddy * 7], [sx - ddx * 7 + flyx, sy - ddy * 7 + flyy + q * 0.4], [sx + flyx * 0.78, sy + flyy * 0.78 + 0.5 - q * 0.2], [sx + flyx, sy + flyy - q * 0.8]], C.p);
       poly([[sx - ddx * 3.5, sy - ddy * 3.5], [sx - ddx * 7, sy - ddy * 7], [sx - ddx * 7 + flyx, sy - ddy * 7 + flyy + q * 0.4], [sx - ddx * 3.5 + flyx * 0.6, sy - ddy * 3.5 + flyy * 0.6]], C.P);   /* the lower fold in shade */
       ln(sx, sy, sx + flyx, sy + flyy - q * 0.8, C.G); ln(sx - ddx * 7, sy - ddy * 7, sx - ddx * 7 + flyx, sy - ddy * 7 + flyy + q * 0.4, C.R); dot(sx + flyx * 0.4, sy + flyy * 0.4 + 1, C.G); } };
@@ -74,7 +80,8 @@ function champion(o0, S = KS) {
   if (o.plant != null) { const px0 = FX + o.plant; limb(px0, FY, px0, FY - 62, 2.5, 2.5, C.W); limb(px0 - 0.45, FY, px0 - 0.45, FY - 62, 1, 1, C.w);
     poly([[px0, FY - 70], [px0 + 2.3, FY - 62], [px0 - 2.3, FY - 62]], C.f); poly([[px0, FY - 70], [px0, FY - 62], [px0 - 2.3, FY - 62]], C.S);
     const sx = px0, sy = FY - 58, kk = o.banner || 1, fy = Math.sin(fl + 1) * 2;
-    poly([[sx, sy], [sx, sy + 6], [sx - 11 * kk, sy + 7 + fy], [sx - 8 * kk, sy + 3.5 + fy * 0.6], [sx - 12 * kk, sy + 1 + fy]], C.p); ln(sx, sy, sx - 12 * kk, sy + 1 + fy, C.G); }
+    if (o.torn) rags(px0, FY - 62, 0, -1); else {
+    poly([[sx, sy], [sx, sy + 6], [sx - 11 * kk, sy + 7 + fy], [sx - 8 * kk, sy + 3.5 + fy * 0.6], [sx - 12 * kk, sy + 1 + fy]], C.p); ln(sx, sy, sx - 12 * kk, sy + 1 + fy, C.G); } }
   if (o.drop) lance(FX + o.drop.x, FY + o.drop.y, rad(o.drop.ang), 36, 0.7, 1);
   // ---- THROWING SPEAR in the hand (the volley)
   if (o.spear) { const sa = rad(o.sang), sx = hx, sy = hy, ex = sx + Math.cos(sa) * 22, ey = sy + Math.sin(sa) * 22, bx = sx - Math.cos(sa) * 6, by = sy - Math.sin(sa) * 6;
@@ -202,6 +209,21 @@ const BASE = {
   wake0: { foot: [-9, 6], knee: [5, 4], crouch: 9, lean: 6, hand: [6, 6], ang: 84, len: 48, sh: [3, 7], head: [1, 4], banner: 0.8 },   /* kneeling on his planted pennant, helm bowed */
   wake1: { foot: [-7, 7], crouch: 6, lean: 4, hand: [7, 3], ang: 78, len: 48, sh: [4, 6], head: [0, 2], banner: 1.0, flut: 0.8 },     /* the wrench: up */
   wake2: { foot: [-6, 6], crouch: 2, lean: 0, hand: [8, -3], ang: -64, len: 46, sh: [6, 5], banner: 1.5, flut: 2.4, plume: 1.3 },     /* the pennant free, the cloth flung out */
+  /* ---- (claude/lance5art) LANCE 5: THE PIVOT (planted, the lance swung back and the cloth after it; then the turn on his heels), THE RISING SKEWER (braced low under a raised shield, the point
+     straight up; the thrust up with its smear; the overextended recovery, looking up), BUFFETED (lifted off his feet by the gust, cloak and plume flat), TOSSED (thrown down onto the lip, on one
+     hand, stunned) and the UPDRAFT's tumble */
+  pivotA: { foot: [-8, 8], knee: [0, 4], crouch: 4, lean: -2, hand: [4, -6], ang: -78, len: 42, sh: [8, 6], shS: 1.1, flut: 2.6, banner: 1.4, plume: 1.4, dust: 3, head: [-1, 1] },
+  pivotB: { foot: [-3, 3], lean: 0, crouch: 1, hand: [3, -9], ang: -52, len: 38, sh: [2, 5], shS: 0.8, head: [-1, 0], flut: 3.4, banner: 1.3, plume: 1.5, dust: 2 },
+  skewerTell0: { foot: [-6, 6], crouch: 3, lean: -2, hand: [2, -4], ang: -118, len: 40, sh: [8, -1], shS: 1.05, flut: 0.8, plume: 1.2, banner: 1.1 },
+  skewerTell: { foot: [-8, 8], knee: [0, 4], crouch: 5, lean: -3, hand: [4, 0], ang: -90, len: 46, sh: [8, -6], shS: 1.1, flut: 1.8, plume: 1.3, banner: 1.4, head: [0, 1], dust: 1 },
+  skewer: { foot: [-5, 5], lift: [0, 1], crouch: 0, lean: 1, hand: [3, -14], ang: -90, len: 40, sh: [5, 2], flut: 0.5, banner: 1.5, plume: 1.5, head: [-1, -1], ghost: [[0, 12, -90, 0.3], [0, 6, -90, 0.55]] },
+  skewerRecA: { foot: [-8, 9], knee: [0, 5], crouch: 3, lean: -4, hand: [3, -11], ang: -86, len: 42, sh: [5, 4], flut: 1.2, banner: 1.3, head: [-2, -2] },
+  skewerRecB: { foot: [-8, 9], knee: [0, 5], crouch: 4, lean: -2, hand: [5, -9], ang: -70, len: 44, sh: [6, 5], flut: 2.2, banner: 1.1, head: [-2, -1] },
+  buffeted: { air: 3, foot: [-6, 6], lift: [3, 4], knee: [2, 3], crouch: 1, lean: -9, hand: [2, -5], ang: -50, len: 38, sh: [8, 0], shS: 1.15, head: [-3, -1], flut: 5, cape: 1.8, plume: 1.7, banner: 1.4, dust: 2 },
+  buffetedB: { foot: [-9, 7], knee: [1, 4], crouch: 4, lean: -6, hand: [4, -2], ang: -36, len: 38, sh: [9, 2], shS: 1.2, head: [-2, 0], flut: 6.2, cape: 1.7, plume: 1.7, banner: 1.4, dust: 3 },
+  tossed: { foot: [-9, 4], knee: [4, 3], crouch: 9, lean: 6, hand: [6, 10], ang: 38, len: 36, sh: [2, 8], shS: 0.85, head: [2, 5], flut: 0.6, dust: 1 },
+  tossedB: { foot: [-9, 4], knee: [4, 3], crouch: 8, lean: 4, hand: [7, 9], ang: 44, len: 36, sh: [3, 7], shS: 0.85, head: [0, 4], flut: 1.4 },
+  updraft: { air: 13, rot: -22, foot: [-4, 6], lift: [8, 10], knee: [4, 5], lean: 2, crouch: 0, hand: [6, -7], ang: -62, len: 38, sh: [7, 2], flut: 5.5, cape: 1.9, plume: 1.8, banner: 1.5, head: [-2, -1] },
   /* ---- DEATH (shieldless set only): kneeling under the main gate, the lance falls, the slump, the collapse */
   deathKneel: { foot: [-9, 4], knee: [5, 3], crouch: 8, lean: 3, hand: [8, 4], ang: 70, len: 40, sh: [3, 6], head: [1, 3], flut: 0.5 },
   deathDrop: { foot: [-9, 4], knee: [5, 3], crouch: 9, lean: 6, hand: [6, 8], ang: 20, len: 0, pole: false, head: [2, 5], flut: 0.3, drop: { x: 20, y: -6, ang: 35 } },
@@ -226,6 +248,15 @@ const NAMES_S = Object.keys(BASE).filter(k => !BARE_ONLY.has(k) && k !== 'hurt' 
 const ORDER_S = [...NAMES_S, 'hurt', 'hurtB'];                      /* the shielded set, its flinch pair last of its half */
 const ORDER_B = [...NAMES_B, 'hurt', 'hurtB'];                      /* the shieldless set, its flinch pair last too (death sits in NAMES_B before them) */
 const POSES = [...ORDER_S.map(k => BASE[k]), ...ORDER_B.map(k => ({ ...BASE[k], ...(BARE_OWN[k] || {}), ...BARE }))];
+/* THE TWO SHEETS (claude/lance5art): his P1 sheet carries the PENNANT (only the poses he can take before the storm - no vault, wall, whip, helm or the rest of P2/P3) and the TORN sheet has the lance
+   stripped to its tatters (every pose from his P2 on: the shielded set and the shieldless one). Same frame numbers in both; a pose a sheet never shows is a 1x1 blank, so the extra sheet costs
+   only the frames it plays. main.js picks the sheet by e.torn. */
+const P1_ONLY = new Set(['wake0', 'wake1', 'wake2']);
+const P1_NAMES = new Set(['guard', 'breathA', 'breathB', 'walk0', 'walk1', 'walk2', 'walk3', 'turn', 'hopUp', 'thrustTell0', 'thrustTell', 'thrust', 'thrustFT', 'thrustRec', 'thrustRecB',
+  'sweepTell0', 'sweepTell', 'sweepArc', 'sweep', 'sweepRec', 'sweepRecB', 'couch0', 'couchA', 'couchB', 'chargeA', 'chargeB', 'chargeC', 'chargeD', 'skid', 'skidB', 'overrun', 'overrunB',
+  'volleyTell0', 'volleyTell', 'volley', 'volleyFT', 'pennantTell', 'pennantB', 'hurt', 'hurtB', 'stagger', 'staggerB', 'pinned', 'pinnedB', 'pivotA', 'pivotB', 'wake0', 'wake1', 'wake2']);
+const NAME_AT = [...ORDER_S, ...ORDER_B];                 /* frame -> pose name */
+export const POSE_COUNT = { shielded: ORDER_S.length, shieldless: ORDER_B.length };
 export const BARE_AT = ORDER_S.length;                    /* the first shieldless frame: F[name] + BARE_AT - (the shielded-only names skipped) is FB[name] */
 export const F = Object.fromEntries(ORDER_S.map((k, i) => [k, i]));
 export const FB = Object.fromEntries(ORDER_B.map((k, i) => [k, BARE_AT + i]));
@@ -233,8 +264,18 @@ F.hurt2 = FB.hurt;                                         /* (main.js flinch) t
 F.hurtB2 = FB.hurtB;
 export const FRAMES = POSES.length;                        /* the cap is 120 (brief s2); tools/lance-sheet.mjs and tools/lance4.mjs read it */
 export const SCALE = 1;                                    /* DRAWN AT 1:1: no runtime scale (the 1.35 is in the paint) */
-export const bakeChampion = () => { const fr = POSES.map(p => outline(champion(p), OUT)); const white = fr.map(c => whiten(c));
-  return { R: fr, L: fr.map(flipX), white: { R: white, L: white.map(flipX) }, ax: Math.round(FX * KS), ay: Math.round(FY * KS) + 1, w: 28, h: 40 }; };
+const bakeSheet = (torn, lazy) => { const blank = canvas(1, 1)[0], n = POSES.length;
+  const want = i => { const nm = NAME_AT[i], bare = i >= BARE_AT; return !(torn ? P1_ONLY.has(nm) && !bare : bare || !P1_NAMES.has(nm)); };
+  const R = new Array(n).fill(blank), L = new Array(n).fill(blank), WR = new Array(n).fill(blank), WL = new Array(n).fill(blank);
+  const sheet = { R, L, white: { R: WR, L: WL }, ax: Math.round(FX * KS), ay: Math.round(FY * KS) + 1, w: 28, h: 40, real: 0, done: false, next: 0 };
+  /* (claude/lance5finish) fill(k) bakes the next k wanted frames (R, L, white R, white L); the torn sheet is baked this way, a few frames a tick from the time he is drawn (and whole the moment it is wanted),
+     so its ~40 MB is not paid by the game's load. Same pixels as the old all-at-once bake. */
+  sheet.fill = k => { while (!sheet.done && k-- > 0) { const i = sheet.next++; if (sheet.next >= n) sheet.done = true; if (!want(i)) continue;
+    const c = outline(champion(torn ? { ...POSES[i], torn: true } : POSES[i]), OUT), w = whiten(c); R[i] = c; L[i] = flipX(c); WR[i] = w; WL[i] = flipX(w); sheet.real++; } return sheet.done; };
+  if (!lazy) sheet.fill(n);
+  return sheet; };
+export const bakeChampion = () => bakeSheet(false);      /* P1: the pennanted sheet (the poses of his first phase) */
+export const bakeChampionTorn = lazy => bakeSheet(true, lazy);   /* P2 on: the pennant torn away, shielded then shieldless */
 
 /* THE BESTIARY CARD: he stands on the Long Bridge under a gate tower's arch, the great bell hanging in it (portrait, 1.0 scale, two breaths) */
 export const bakeCard = () => {
@@ -288,6 +329,14 @@ export function frameOf(e) {
     case 'rung': return loop('rung', 'rungB', 2);
     case 'whipped': return 'whipped';
     case 'split': return a < 0.35 ? 'split' : 'splitB';
+    /* (claude/lance5art) LANCE 5's own poses: the pivot (the stamp, then the turn), the rising skewer (the brace, the thrust up, the look up), the gust, the updraft's tumble, the toss */
+    case 'pivot': return a < 0.17 ? 'pivotA' : 'pivotB';
+    case 'skewerTell': return a < 0.2 ? 'skewerTell0' : 'skewerTell';
+    case 'skewer': return 'skewer';
+    case 'skewerRec': return loop('skewerRecA', 'skewerRecB', 2.5);
+    case 'buffeted': return Math.floor(e.anim * 6) % 2 ? 'buffetedB' : 'buffeted';
+    case 'updraft': case 'tossedAir': return 'updraft';
+    case 'tossed': return loop('tossed', 'tossedB', 2.5);
   }
   if (m === 'fallback' || mv) return e.grounded === false ? 'hopUp' : 'walk' + (Math.floor(e.anim * 8) % 4);
   if (e.grounded === false) return 'hopUp';

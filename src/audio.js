@@ -46,7 +46,10 @@ let warpK = 0, warpAt = -1e9, warpDone = -1, warpLfoG = null;
 const warpLive = () => typeof performance !== 'undefined' && performance.now() - warpAt < 1500;
 const warpCents = k => -Math.pow(k, 1.4) * 160;
 function warpLfo() { if (warpLfoG || !ac) return warpLfoG; warpLfoG = ac.createGain(); warpLfoG.gain.value = 0; for (const [hz, a] of [[0.55, 1], [0.17, 0.6]]) { const o = ac.createOscillator(), g = ac.createGain(); o.frequency.value = hz; g.gain.value = a; o.connect(g); g.connect(warpLfoG); o.start(); } return warpLfoG; }
-function warpAttach(s, name) { if (!ac || name !== 'harvestfair' || !s.detune || !warpLive()) return; try { s.detune.value = warpCents(warpK); const lf = warpLfo(); lf.connect(s.detune); s.__warped = true; s.addEventListener('ended', () => { try { lf.disconnect(s.detune); } catch {} }); } catch {} }
+/* (claude/lance5) THE STORM over the Long Bridge lifts THE QUEEN'S LANCE's track a tone (main.js music.storm, his P2+): every loop copy, and the ones queued after */
+let stormCents = 0;
+function stormAttach(s) { if (stormCents && s && s.detune) { try { s.detune.value = stormCents; } catch {} } }
+function warpAttach(s, name) { stormAttach(s); if (!ac || name !== 'harvestfair' || !s.detune || !warpLive()) return; try { s.detune.value = warpCents(warpK); const lf = warpLfo(); lf.connect(s.detune); s.__warped = true; s.addEventListener('ended', () => { try { lf.disconnect(s.detune); } catch {} }); } catch {} }
 function stopMusic() { for (const s of musicSrcs) { try { s.stop(); } catch {} } musicSrcs = []; musicSrc = null; if (musicTimer) clearTimeout(musicTimer); musicTimer = null; musicGen++; }
 const clips = {}; // name -> [AudioBuffer]
 export const SFX_LANES = 8;   /* (claude/marsh3) how many sound clips load at once (initAudio) */
@@ -689,6 +692,7 @@ export const music = {
   get on() { return musicOn; },
   get track() { return currentTrack; },
   get want() { return wantTrack; },   /* the track asked for last (null: stopped) - what is meant to be playing, loaded or not, sound on or not */
+  storm(on) { const c = on ? 200 : 0; if (c === stormCents) return; stormCents = c; if (!ac) return; for (const s of musicSrcs) { try { if (s.detune) s.detune.setTargetAtTime(c, ac.currentTime, 0.5); } catch {} } },
   muffle(on) { if (!!on === muffled) return; muffled = !!on; applyMusicFilter(); },
   lowHealth(on) { if (!!on === lowHp) return; lowHp = !!on; applyMusicFilter(); },
 };

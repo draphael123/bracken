@@ -12,6 +12,10 @@
 //      at 67% HE STOPS THE BELLS (hauled up, they do nothing); a plunge on his helm RINGS it (open); a rope post struck with him under its run
 //      WHIPS him (open, and it breaks a shield wall); at 33% he falls back under the main gate; THE GREAT BELL pins him there (x2) and SPLITS
 //      HIS SHIELD (two-handed after, x0.7 from the front); THE STONES ring the deck and break the planks they land on; his death SLAMS the gate.
+//   4. LANCE 5 (claude/lance5, Daniel 10-31 18:36): NO BACKWARD CHARGE (a hero behind him: a told PIVOT, then the move; a charge goes the way he faces);
+//      a landed blow KNOCKS HIM BACK a little (P1/P2); at 67% THE STORM ARRIVES (rain, his pennant torn) and the bells stay rung-able - a rung bell's
+//      GUST drives him into a gap: the teeth bite him and the UPDRAFT throws him up TOSSED (open, on the deck); a hero who falls in is bitten and
+//      LIFTED out, alive, onto the deck; the RISING SKEWER drives straight up at a hero over him; in P3 the tower bells are hauled up.
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { LEVELS, T, TS } from '../src/level.js';
@@ -59,6 +63,11 @@ assert.ok(X.overrun >= 1.5 && X.bell.pin >= 3 && X.great.pin >= 3 && X.rung >= 2
 for (const [k, m] of Object.entries(X.open)) assert.ok(m >= 1.5 && m <= 2, 'opening ' + k + ' pays 1.5-2x: ' + m);
 assert.ok(X.bell.mul >= 1.5 && X.great.mul <= 2 && X.bare >= 0.4 && X.bare < 1, 'B15: pinned 1.5-2x, shieldless >= 0.4');
 assert.ok(X.p2 > X.p3 && X.p2 < 1 && X.p3 > 0.15, 'the phases in order');
+assert.ok(X.pivot >= 0.25 && X.pivot <= 0.4, 'LANCE 5: the pivot is a told ~0.3 s');
+assert.ok(X.skewer.tell >= 0.5 && X.skewer.tell <= 0.85, 'LANCE 5: the rising skewer is told like a MEDIUM (0.5-0.85 s): ' + X.skewer.tell);
+assert.ok(X.kb.v * X.kb.t >= 4 && X.kb.v * X.kb.t <= 14, 'LANCE 5: a blow knocks him back a little (4-14 px)');
+assert.ok(X.footMul > 0.6 && X.footMul < 1, 'LANCE 5: on-foot damage lowered a little');
+assert.ok(X.storm.spike > 0 && X.storm.spike <= 0.1 && X.storm.tossed >= 1.5 && X.crack.w >= 3, 'LANCE 5: the teeth bite him, the toss is an opening, a gap is three planks');
 const main = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
 assert.ok(!/lanceUnhorse|drawLanceHorse|SPR\.lanceHorse|LANCE3|e\.t === 'lance' && e\.mounted/.test(main), 'no horse anywhere (Q1)');
 assert.ok(!/case 'bashTell': e\.face = Math\.sign\(d\) \|\| e\.face; want = -e\.face \* 16/.test(main), 'the shield bash is cut');
@@ -102,9 +111,25 @@ try {
       out.away={couch,closed,over:+over.toFixed(2),open,x:Math.round(b.x-pr.gx)}; run(200,()=>{safe();hold();}); }
     /* A WHIFFED CHARGE: OVERRUN */
     { reset();b.x=A.x0+100;P.x=b.x+200;P.y=fl;b.face=1;b.mode='couch';b.modeT=0.01;b.chargeAt=null;let over=0;run(260,()=>{safe();if(b.mode==='charge'||b.mode==='couch'){P.y=fl-48;P.x=Math.min(P.x,b.x+200);}if(b.mode==='overrun')over=Math.max(over,b.modeT);if(over&&b.mode!=='overrun')hold();});out.whiff={over:+over.toFixed(2)}; }
-    /* P2: HE STOPS THE BELLS */
-    { reset();b.x=A.x0+300;P.x=b.x-40;P.y=fl;b.hp=Math.round(b.maxHp*0.68);BKT.hurtAs('cut',b,Math.round(b.maxHp*0.02),b.x+10,false);out.p2={phase:b.phase,mode:b.mode,up:bells.filter(p=>!p.great).every(p=>p.up)};run(90,()=>{safe();hold();});
-      const pr=tb(1);reset();b.x=pr.gx;ring(pr);run(100,()=>{safe();hold();b.x=pr.gx;});out.p2.bellAfter=b.mode; }
+    /* LANCE 5, P1: THE PIVOT - a hero behind him: he plants and turns, told, and only then moves */
+    { reset();b.x=A.x0+300;b.face=1;P.x=b.x-70;P.y=fl;P.face=1;let piv=0,faced=0;run(40,i=>{safe();P.x=b.x-70;P.vx=0;hold();if(b.mode==='pivot')piv++;if(b.face===-1&&!faced)faced=i;});out.pivot={frames:piv,faced}; }
+    /* LANCE 5: NO BACKWARD CHARGE - couched facing east, the hero gets behind him: the charge still goes east */
+    { reset();b.x=A.x0+200;b.face=1;P.x=b.x+160;P.y=fl;b.mode='couch';b.modeT=0.5;b.chargeAt=null;let vx=0;run(60,i=>{safe();if(i===5)P.x=b.x-90;if(b.mode==='charge'&&!vx)vx=Math.sign(b.vx);});out.fwd={vx};run(200,()=>{safe();hold();}); }
+    /* LANCE 5: A LANDED BLOW KNOCKS HIM BACK (P1) */
+    { reset();b.x=A.x0+300;b.face=-1;P.x=b.x-24;P.y=fl;run(3,safe);const x0=b.x;BKT.hurtAs('cut',b,10,b.x-20,false);run(12,()=>{safe();hold();});out.kb={dx:Math.round(b.x-x0)}; }
+    /* P2: THE STORM ARRIVES (the bells stay rung-able; the rain) */
+    { reset();b.x=A.x0+300;P.x=b.x-40;P.y=fl;b.hp=Math.round(b.maxHp*0.68);BKT.hurtAs('cut',b,Math.round(b.maxHp*0.02),b.x+10,false);out.p2={phase:b.phase,mode:b.mode,up:bells.some(p=>!p.great&&p.up),torn:!!b.torn};run(90,()=>{safe();hold();});out.p2.weather=BK.weather; }
+    const hole=(x)=>{const row=fl/16,tx=Math.floor(x/16);for(let k=-1;k<=1;k++)BK.L.grid[row*BK.L.W+tx+k]=0;};
+    const mended=()=>{BK.mendAll&&BK.mendAll();};
+    /* P2: A BELL'S GUST drives him into a gap: the teeth, the UPDRAFT, TOSSED on the deck (open) */
+    { reset();const pr=tb(3),s=A.spans.find(([a,c])=>(a+c+1)*8>pr.gx+40);const hx=(s[0]+s[1]+1)*8;hole(hx);b.x=hx-70;b.face=1;b.vy=0;P.x=pr.x-10;P.y=pr.y;const h0=b.hp;ring(pr);
+      let buf=false,up=false,tos=0,open=false;run(420,()=>{safe();P.x=pr.x-10;P.y=pr.y;if(b.mode==='buffeted')buf=true;if(b.mode==='updraft')up=true;if(b.mode==='tossed'){tos=Math.max(tos,b.modeT);open=open||BK.bossOpen(b);}if(tos&&b.mode!=='tossed')hold();});
+      out.gust={buf,up,tos:+tos.toFixed(2),open,lost:h0-b.hp,y:Math.round(b.y-fl),alive:b.alive}; }
+    /* P2: A HERO WHO FALLS IN: bitten, LIFTED out alive onto the deck - no hand-back */
+    { reset();b.x=A.x0+60;const s=A.spans[4],hx=(s[0]+s[1]+1)*8;hole(hx);P.x=hx;P.y=fl-2;P.vx=P.vy=0;P.hp=P.maxHp;P.inv=0;const hp0=P.hp;let lift=false,low=0;
+      run(240,()=>{hold();b.x=A.x0+60;if(P.stormLift)lift=true;low=Math.max(low,P.y-fl);});out.fall={lift,low:Math.round(low),hurt:hp0-P.hp,dead:!!P.dead,onDeck:P.ground&&Math.abs(P.y-fl)<3,dx:Math.round(P.x-hx)}; }
+    /* P2: THE RISING SKEWER at a hero over him */
+    { reset();b.skewerT=0;b.x=A.x0+300;b.face=1;let tell=false,hit=0;const hp0=P.hp;run(70,()=>{if(!hit){P.x=b.x;P.y=fl-60;P.vy=0;P.ground=false;P.inv=0;}if(b.mode==='skewerTell')tell=true;if(b.mode==='skewer'||b.mode==='skewerRec')hit=hit||(hp0-P.hp);});out.skewer={tell,hit};P.y=fl;run(80,()=>{safe();hold();}); }
     /* P2: HELM RUNG - a plunge onto his helm */
     { reset();b.rungAt=-99;b.x=A.x0+300;P.x=b.x;P.y=fl-60;P.ground=false;const h0=b.hp;BKT.hurtAs('plunge',b,20,b.x,true);out.rung={mode:b.mode,t:+b.modeT.toFixed(2),open:BK.bossOpen(b)};run(160,()=>{safe();hold();}); }
     /* P2: THE ROPE CUT with him under its run: WHIPPED (and it breaks a shield wall) */
@@ -115,7 +140,7 @@ try {
     { reset();b.x=A.x1-300;P.x=b.x-60;P.y=fl;b.hp=Math.round(b.maxHp*0.34);BKT.hurtAs('cut',b,Math.round(b.maxHp*0.02),b.x-10,false);out.p3={phase:b.phase,mode:b.mode};
       let near=9e9;run(400,()=>{safe();hold();P.x=gb.x;P.y=gb.y;near=Math.min(near,Math.abs(b.x-gb.gx));});out.p3.home=Math.round(near);gb.rewind=0;gb.ringT=-1;
       let pin=0,mul=0;ring(gb);run(30,()=>{safe();if(b.mode==='pinned'){pin=Math.max(pin,b.modeT);mul=b.pinMul;}});out.great={pin:+pin.toFixed(2),mul};
-      run(320,()=>{safe();hold();P.x=gb.x;P.y=gb.y;});out.great.bare=!!b.bare;
+      run(320,()=>{safe();hold();P.x=gb.x;P.y=gb.y;});out.great.bare=!!b.bare;out.great.towersUp=bells.filter(p=>!p.great).every(p=>p.up);
       const h0=b.hp;b.mode='guard';hold();P.x=b.x+(b.face>0?20:-20);P.face=-b.face;BKT.hurtAs('cut',b,100,P.x,false);out.great.front=h0-b.hp; }
     /* P3: THE STONES ring the deck and break the planks */
     { reset();const s=A.spans[3];P.x=(s[0]+s[1]+1)*8;P.y=fl;b.lz.pen=1;b.lz.stones=[];b.lz.bolt=null;b.lz.oil=null;b.mode='pennantTell';b.modeT=0.01;run(30,()=>{safe();hold();P.vx=0;});const n=b.lz.stones.length,g0=b.lz.gaps.size;run(120,()=>{safe();hold();P.vx=0;});out.stones={n,gaps:b.lz.gaps.size-g0}; }
@@ -130,14 +155,22 @@ ok(r.active === true && !r.mounted && r.box[0] === 26 && r.box[1] === 40, 'the f
 ok(r.under.pin >= 3 && r.under.open && r.under.mul >= 1.5, 'a bell rung with him under its gate PINS him, 3 s+, open: ' + JSON.stringify(r.under));
 ok(r.away.couch && r.away.couch.toward && r.away.closed && r.away.over >= 1.4 && r.away.open, 'rung with him away: HE ANSWERS THE BELL, and runs into the dropped gate (OVERRUN): ' + JSON.stringify(r.away));
 ok(r.whiff.over >= 1.4, 'a whiffed charge ends OVERRUN: ' + JSON.stringify(r.whiff));
-ok(r.p2.phase === 2 && r.p2.mode === 'haul' && r.p2.up && r.p2.bellAfter !== 'pinned', 'at 67% HE STOPS THE BELLS, and a hauled-up bell does nothing: ' + JSON.stringify(r.p2));
+ok(r.pivot.frames >= 14 && r.pivot.faced >= 14, 'LANCE 5: a hero behind him - a told PIVOT (~0.3 s) before he faces you: ' + JSON.stringify(r.pivot));
+ok(r.fwd.vx === 1, 'LANCE 5: NO BACKWARD CHARGE - the charge goes the way he faced: ' + JSON.stringify(r.fwd));
+ok(r.kb.dx >= 3 && r.kb.dx <= 16, 'LANCE 5: a landed blow knocks him back a little: ' + JSON.stringify(r.kb));
+ok(r.p2.phase === 2 && r.p2.mode === 'haul' && !r.p2.up && r.p2.torn && r.p2.weather === 'rain', 'at 67% THE STORM ARRIVES: rain, his pennant torn, the bells still up for ringing: ' + JSON.stringify(r.p2));
+ok(r.gust.buf && r.gust.up && r.gust.tos >= 1.5 && r.gust.open && r.gust.lost > 0 && Math.abs(r.gust.y) < 3, 'LANCE 5: a bell\'s GUST drives him into a gap - the teeth, the UPDRAFT, TOSSED on the deck (open): ' + JSON.stringify(r.gust));
+ok(r.fall.lift && r.fall.low > 48 && r.fall.hurt > 0 && !r.fall.dead && r.fall.onDeck && Math.abs(r.fall.dx) > 20 && Math.abs(r.fall.dx) < 60, 'LANCE 5: a hero who falls in is bitten and LIFTED out onto the lip, alive: ' + JSON.stringify(r.fall));
+ok(r.skewer.tell && r.skewer.hit > 0, 'LANCE 5: the RISING SKEWER is told and hits a hero over him: ' + JSON.stringify(r.skewer));
 ok(r.rung.mode === 'rung' && r.rung.t >= 2 && r.rung.open, 'a plunge on his helm RINGS it: ' + JSON.stringify(r.rung));
 ok(r.whip.wh >= 1.4 && r.whip.open && r.whip.cut, 'a rope post struck with him under its run WHIPS him, out of his shield wall: ' + JSON.stringify(r.whip));
 ok(r.p3.phase === 3 && r.p3.mode === 'fallback' && Math.abs(r.p3.home) < 30, 'at 33% he falls back under the main gate: ' + JSON.stringify(r.p3));
+ok(r.great.towersUp, 'LANCE 5: in the last stand the tower bells are hauled up (the great bell\'s fight)');
 ok(r.great.pin >= 3.5 && r.great.mul >= 2 && r.great.bare, 'THE GREAT BELL pins him (x2) and its bars SPLIT his shield: ' + JSON.stringify(r.great));
 ok(r.great.front >= 40 && r.great.front <= 85, 'shieldless, a front blow lands at ~0.7 (no wall, B15): ' + r.great.front);
 ok(r.stones.n >= 2 && r.stones.gaps >= 1, 'THE STONES ring the deck and break the planks: ' + JSON.stringify(r.stones));
 ok(r.dead && r.slam === 1 && r.activeAfter === false, 'his death slams the main gate and ends the fight');
 ok(!r.errors.length, 'page errors: ' + JSON.stringify(r.errors));
 if (fails.length) { for (const f of fails) console.error('FAIL ' + f); process.exit(1); }
+console.log('THE QUEEN\'S LANCE 5: the pivot, no backward charge, the knockback, the storm, the gust into a gap, the teeth and the updraft (him and you), the rising skewer;');
 console.log('THE QUEEN\'S LANCE 4: on foot; the bells pin him or drop a gate he runs into; he stops the bells; the helm rings; the line whips; the great bell pins him and splits his shield; the stones; the slam - all hold.');

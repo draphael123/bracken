@@ -8,7 +8,12 @@
 //   P1 THE BELLS AND THE GATES: three GATE TOWERS (piers 1, 3, 5), each with an ALARM BELL on its lookout and a portcullis under it. Ring
 //      one: three tolls, and HE ANSWERS THE BELL - his next move is a lance charge at that tower. The third toll drops the gate: on him,
 //      PINNED; ahead of him, a gate across his lane he runs into (OVERRUN). A bell winds back in 10 s.
-//   P2 THE ZIP LINES: he hauls the bells up. Three SIGNAL ROPES (tower 1 -> pier 2, 3 -> 4, 5 -> 6) ride over his head: drop off one and
+//   (claude/lance5, Daniel 10-31 18:36 - the FINAL fight: no backward charge (a told pivot), the RISING SKEWER, THE STORM in P2, knockback, gaps with
+//    teeth and an UPDRAFT, bells that GUST in P2, lighter blows on foot. See LANCE4.pivot / skewer / kb / footMul / storm.)
+//   P2 THE STORM (was THE ZIP LINES; lance5): rain, wind, a darker sky, the music lifts; the wind tears his pennant away. The tower bells still ring:
+//      their third toll sends a STORM GUST down the bridge that shoves him toward the nearest gap - over it he falls onto the teeth, and the gorge's
+//      UPDRAFT throws him back up stunned (open). Hits knock him back a little (P1 + P2). You falling in: the teeth bite, the updraft lifts you out.
+//      THE ZIP LINES stay the way across and the way down onto him: three SIGNAL ROPES (tower 1 -> pier 2, 3 -> 4, 5 -> 6) ride over his head: drop off one and
 //      plunge onto his helm (HELM RUNG), or strike a rope's deck post while he stands under its run - it frays, parts and WHIPS down on
 //      him (WHIPPED). Re-strung in 14 s. His charge tears planks from here on; the vault and the shield wall join.
 //   P3 THE MAIN GATE: he falls back under the main gate as it comes down. Its bars SPLIT his tower shield (or he casts it off): two-handed,
@@ -24,7 +29,7 @@ export const LANCE4 = {
   sweep: { tell: 0.60, active: 0.3, rec: 0.7, reach: 36, every: 3.4 },                              // MEDIUM, jumped
   couch: 1.0, chargeEvery: 6.5, overrun: 1.5,   // HEAVY: couched, a sprint, and a whiff or a gate ends it OVERRUN (the point in the boards)
   volley: { tell: 0.85, fall: 1.1, n: [3, 3, 5], spread: 38, hit: 13, stick: 1.4, every: [7, 8, 6] },   // MEDIUM: a shadow under each spear
-  crack: { tell: 0.75, w: 2, max: 4 },          // from P2 his charge tears planks: told, a jump for every hero, at most four gaps
+  crack: { tell: 0.75, w: 3, max: 4 },          // from P2 his charge tears planks: told, a jump for every hero, at most four gaps (claude/lance5: three planks wide, so a shove or a gust can put HIM in one)
   pennant: { tell: 0.8, every: 13, first: 9 },
   ballista: { tell: 1.1, sp: 560, y: 14 },
   oil: { tell: 1.2, burn: 2.4, w: 4 },
@@ -35,24 +40,31 @@ export const LANCE4 = {
   great: { pin: 4.0, mul: 2, dmg: 60, rewind: 12 },                         // the main gate's great bell (P3)
   rung: 2.2, rungEvery: 6,       // HELM RUNG: dazed (x1.5); not twice inside rungEvery s
   whipped: 1.6, whipHurt: 6, fray: 0.5, restring: 14,   // CUT THE LINE: the fray, the whip (x1.5), the crew's re-stringing
-  haul: 1.2,                     // HE STOPS THE BELLS (P2's turn): braced, not an opening
+  haul: 1.2,                     // THE STORM ARRIVES (P2.s turn, lance5; was HE STOPS THE BELLS): braced, not an opening
   split: 1.0, castOff: 8, bare: 0.7,   // THE SHIELD SPLIT (x1.5 while it goes), or cast off this long into P3; shieldless he takes x0.7 from anywhere
-  open: { overrun: 1.5, rung: 1.5, whipped: 1.5, wallTurned: 1.5, recover: 1.5, reel: 1.5, stumble: 1.5, planted: 1.6, split: 1.5 },   // his openings (B15: 1.5-2x; pinned reads its bell)
-  heroDmg: { knight: 1.15, warden: 1.05, pyro: 0.65 },   // (claude/lance4tune) a hero's blows against him, x (knight takes the reach, pyro stands off)
+  open: { tossed: 1.6, buffeted: 1.5, overrun: 1.5, rung: 1.5, whipped: 1.5, wallTurned: 1.5, recover: 1.5, reel: 1.5, stumble: 1.5, planted: 1.6, split: 1.5 },   // his openings (B15: 1.5-2x; pinned reads its bell)
+  heroDmg: { knight: 1.3, warden: 1.04, pyro: 0.71 },   // (claude/lance4tune) a hero's blows against him, x (knight takes the reach, pyro stands off)
+  /* (claude/lance5, Daniel 10-31 18:36) */
+  pivot: 0.3,                    // NO BACKWARD CHARGE: a hero behind him - he plants and turns (a told 0.3 s pivot: the stamp and the pennant's swing), then moves
+  skewer: { tell: 0.6, active: 0.22, rec: 0.9, recHit: 0.5, dx: 24, hitX: 18, low: 30, top: 124, every: 4.5 },   // RISING SKEWER (P2+, MEDIUM): braced, the point straight up at anyone over him (a rope rider, a lookout); a whiff leaves him looking up - drop on his helm then
+  kb: { v: 80, t: 0.1 },         // P1 + P2: a landed blow knocks him back ~8 px (not braced, not pinned, not in the air); the gaps are the point of it
+  footMul: 0.88,                 // a hero's own blows on him, x (on top of heroDmg): the devices, the gaps and the plunges are the main damage now
+  storm: { spike: 0.05, lift: 480, tossed: 2.2, tossedEvery: 5, liftHero: 430, gust: { v: 165, t: 1.6, buffet: 1.2 } },   // P2 THE STORM: his fall onto the teeth (of his max), the UPDRAFT that throws him up (opening), the hero's lift; a rung bell's GUST
   gateClose: 40,                 // s the main gate takes to come down in P3 (it stops at 85% until he falls, then SLAMS)
 };
 export const HEAVY_MODES = new Set(['couch', 'vaultTell']);   // the moves of the HEAVY class (tempo rule: never two back to back)
 
 /* WHAT HE SAYS (number() routes these: the short ones float as MOVE_WORDS, the teaching ones go to the hint box - src/hint-lines.js) */
-export const LANCE_WORD = { charges: 'HE CHARGES', spears: 'SPEARS', wall: 'SHIELD WALL', vaults: 'HE VAULTS', pennant: 'THE PENNANT', ballista: 'BALLISTA', oil: 'BOILING OIL', stones: 'STONES' };
+export const LANCE_WORD = { skewer: 'RISING SKEWER', gust: 'STORM GUST', gatehouse: 'THE GATEHOUSE', charges: 'HE CHARGES', spears: 'SPEARS', wall: 'SHIELD WALL', vaults: 'HE VAULTS', pennant: 'THE PENNANT', ballista: 'BALLISTA', oil: 'BOILING OIL', stones: 'STONES' };
 export const LANCE_SAY = {
   answer: 'HE ANSWERS THE BELL', overrun: 'HE OVERRUNS: CUT HIM', gate: 'THE GATE HAS HIM: CUT HIM', intoGate: 'HE RUNS INTO THE GATE: CUT HIM',
-  stops: 'HE STOPS THE BELLS', rung: 'HELM RUNG: CUT HIM', whipped: 'THE LINE WHIPS DOWN ON HIM: CUT HIM', frays: 'THE LINE FRAYS',
+  stops: 'THE STORM ARRIVES', torn: 'THE WIND TEARS HIS PENNANT AWAY', tossed: 'THE UPDRAFT THROWS HIM UP: CUT HIM', buffeted: 'THE GUST TAKES HIM: CUT HIM',
+  gustBell: 'THE STORM ANSWERS THE BELL', lifted: 'THE UPDRAFT LIFTS YOU OUT', rung: 'HELM RUNG: CUT HIM', whipped: 'THE LINE WHIPS DOWN ON HIM: CUT HIM', frays: 'THE LINE FRAYS',
   split: 'THE BARS SPLIT HIS SHIELD', castOff: 'HE CASTS THE SHIELD OFF', great: 'THE GREAT BELL: THE GATE HAS HIM', point: 'THE POINT STICKS: CUT HIM',
   turned: 'THE WALL IS TURNED: CUT HIM', fallback: 'HE FALLS BACK TO THE GATE', portcullis: 'THE PORTCULLIS IS COMING DOWN',
   slam: 'THE MAIN GATE SLAMS SHUT', round: 'ROUND BY THE SUPPLY CARTS', climbs: 'HE CLIMBS BACK', planks: 'THE PLANKS GO', parried: 'PARRIED',
   tip: 'HIS SHIELD FACES YOU. GET ROUND HIM OR COME DOWN ON HIM - AND RING A TOWER BELL: HE ANSWERS IT.',
-  tip2: 'RIDE A SIGNAL ROPE OVER HIM AND DROP ON HIS HELM - OR STRIKE A ROPE POST WHILE HE IS UNDER ITS LINE.',
+  tip2: 'RING A TOWER BELL: ITS GUST DRIVES HIM INTO A GAP. RIDE A ROPE OVER HIM AND DROP ON HIS HELM, OR STRIKE A POST WHILE HE IS UNDER ITS LINE.',
   tip3: 'RING THE GREAT BELL ON THE GATEHOUSE WHILE HE STANDS UNDER THE MAIN GATE.',
 };
 

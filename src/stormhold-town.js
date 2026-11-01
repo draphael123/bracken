@@ -365,6 +365,7 @@ export function stormholdTown({ painter, T, TS }) {
     /* THE LONG BRIDGE, for THE QUEEN'S LANCE (src/main.js updateLance; src/lance-support.js): his lookouts (all seven: the vault's
        perches), the spans his charge tears up, the gate towers (their bells: src/lance-support.js), and the main gate he falls back under in his last stand. */
     arena: { x0: P0 * TS, x1: (W - 1) * TS, floor: BY * TS, trigger: (P0 + 6) * TS, wallL: P0 - 1, wallR: W - 1, boss: 'lance', music: 'lance', tint: '#6a7a9a', tintA: 0.10, fx: 'dust',
-      lookouts, spans, piers, bellTowers: [1, 3, 5], mainGate: W - 5, fallPct: 0.12 },   /* fallPct: a fall through a gap he tore bites 12% (a walked-into pit, 27%: survival.js HAZARD) */   /* "Boss Battle #3 [8-bit re-upload]" V3 by nene, CC0 - THE QUEEN'S LANCE's own boss track (audio/CREDITS.txt) */
+      lookouts, spans, piers, bellTowers: [1, 3, 5], mainGate: W - 5, fallPct: 0.12,
+      phaseTints: [['#6a7a9a', 0.10], ['#141c2e', 0.30], ['#1a2234', 0.26]] },   /* (claude/lance5) THE STORM darkens the sky over the bridge in his P2 (and it stays dark for the last stand): src/arena-polish.js tintNow - art only, not in the level hash */   /* fallPct: a fall through a gap he tore bites 12% (a walked-into pit, 27%: survival.js HAZARD) */   /* "Boss Battle #3 [8-bit re-upload]" V3 by nene, CC0 - THE QUEEN'S LANCE's own boss track (audio/CREDITS.txt) */
   };
 }
