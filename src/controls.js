@@ -176,11 +176,11 @@ export function cardRows({ hero = 'knight', binds = emptyBinds(), prof = 'pad1',
     [hero === 'ranger' ? 'shoot / knife' : 'swing', atkKeys, pd('atk')],
     [hero === 'ranger' ? 'down shot' : (PLUNGE_ROW[hero] || ['plunge'])[0], k1('down') + '+SWING IN AIR', pd('down') + '+' + pd('atk')],
     [hero === 'knight' ? 'heavy cut' : hero === 'geomancer' ? 'fault line' : hero === 'berserker' ? 'double chop' : hero === 'ranger' ? 'draw' : 'heavy blow', hero === 'geomancer' || hero === 'ranger' ? 'HOLD SWING, LET GO' : hero === 'knight' ? 'HOLD SWING, LET GO' : 'HOLD SWING', 'HOLD ' + pd('atk')],
-    hero === 'berserker' ? ['cross-chop', 'SWING x5 IN A RUN', pd('atk') + ' x5'] : hero === 'ranger' ? ['snare', k1('down') + '+' + tk.c + ' ON GROUND', pd('down') + '+' + pd('block')] : ['third cut', 'SWING x3 IN A RUN', pd('atk') + ' x3'],   /* (claude/ranger: no run of three - her row is the snare) */   /* (claude/berserker2: his flurry runs five) */
+    hero === 'berserker' ? ['cross-chop', 'SWING x5 IN A RUN', pd('atk') + ' x5'] : hero === 'ranger' ? ['push kick', 'KNIFE x3 IN A RUN', pd('atk') + ' x3'] : ['third cut', 'SWING x3 IN A RUN', pd('atk') + ' x3'],   /* (claude/ranger: no run of three - her row is the snare) */   /* (claude/berserker2: his flurry runs five) */
     [hero === 'ranger' ? 'rising shot' : 'rising cut', k1('up') + '+SWING', pd('up') + '+' + pd('atk')],
     ['low sweep', k1('down') + '+SWING', pd('down') + '+' + pd('atk')],
     /* THE CROUCH: every hero ducks (src/duck.js); the Pyromancer's held still is also STOKE (claude/pyrokit: the EMBER FLARE left down for the ward on C) */
-    hero === 'berserker' ? ['pounce', 'HOLD ' + k1('down') + ', A WAY, LET GO', 'HOLD ' + pd('down')] : [hero === 'pyro' ? 'stoke' : 'crouch', 'HOLD ' + k1('down') + ' (STILL)', 'HOLD ' + pd('down')],   /* (claude/berserker2: his crouch coils, and lets go as THE POUNCE) */
+    hero === 'berserker' ? ['pounce', 'HOLD ' + k1('down') + ', A WAY, LET GO', 'HOLD ' + pd('down')] : [hero === 'pyro' ? 'stoke' : 'crouch', 'HOLD ' + k1('down') + ' (STILL)' + (hero === 'ranger' ? ', +' + tk.c + ' SNARE' : ''), 'HOLD ' + pd('down')],   /* (claude/berserker2: his crouch coils, and lets go as THE POUNCE) */
     ['slide', 'HOLD ' + k1('down') + ' ON A SLOPE', 'HOLD ' + pd('down')],   /* THE BUTT-SLIDE (src/slide.js): down on any slope, feet first; it wins over the weak guard there */
     ...(hero === 'pyro' ? [['full bar', tk.c + ': CONFLAGRATION', pd('block')]] : []),   /* (claude/pyrokit; the L10 card's UP + C row is the PAUSE > LEVEL CARD's words, not a 13th row here) */
     [cRow[0], cRow[1](tk), pd('block')],

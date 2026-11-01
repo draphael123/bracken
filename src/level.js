@@ -3803,7 +3803,8 @@ function trialYard(hero) {
        and HUNTER'S FOCUS (filled for her: UP+C marks the straw) */
     ranger: [
       ['hit', 3, 'TAP X: A QUICK SHOT. IT IS SHORT AND IT DROPS. HIT THE STRAW MAN THREE TIMES.', [['dummy', 13]], 'X'],
-      ['heavyblow', 2, 'HOLD X: DRAW, AND LET GO. A FULL DRAW FLIES FAR AND HITS HARD. LAND TWO ON THE FAR ONE.', [['dummy', 22]], 'HOLD X, LET GO'],
+      ['heavyblow', 2, 'HOLD X: DRAW. AT A FULL DRAW THE BOW GOES STILL: LET GO THEN, A STEADY SHOT. FAR HITS HARD. LAND TWO ON THE FAR ONE.', [['dummy', 22]], 'HOLD X, LET GO'],
+      ['third', 1, 'KNIFE THREE IN A RUN (STAND CLOSE). THE THIRD IS A PUSH KICK: IT SHOVES THEM OUT TO RANGE.', [['dummy', 11]], 'X x3'],   /* (claude/rangerid, Daniel 11-01) her distinct third jab */
       ['quiver', 3, 'YOUR ARROWS STICK WHERE THEY LAND AND GLINT. WALK OVER THEM: TAKE THREE BACK.', [['dummy', 12]], 'WALK OVER THEM'],
       ['flash', 2, 'THE BOW-BASH: TAP C AS HIS SWORD FLASHES. HE REELS, THROWN BACK OUT TO RANGE. TWICE.', [['swornsword', 18]], 'TAP LB AS IT FLASHES'],
       ['snatch', 2, 'ARROW SNATCH: TAP C AS HIS ARROW REACHES YOU. CAUGHT, IT GOES IN YOUR QUIVER. TWO.', [['archer', 22]], 'TAP LB AS IT ARRIVES'],   /* (claude/heropassa) */

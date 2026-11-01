@@ -38,17 +38,17 @@ export const RG = {
   rise: { vx: 110, airVx: 20, vy: -390, g: 560, dmg: 1.0 },   /* THE RISING SHOT, steeply up (in the air, nearly straight up) */
   down: { vy: 470, hop: -175, dmg: 1.05, st: 7 },      /* THE DOWNWARD SHOT (her plunge) and the hop it gives her */
   pierce: { vx: 520, range: 240, dmg: 2.0 },          /* THE PIERCING SHOT (T2): flat, through everything in the line (claude/chargetiers: 1.9 -> 2.0, a tier over the LONG SHOT's 1.7) */
-  /* (claude/chargetiers, Daniel 10-21 "each tier a DIFFERENT move"; T3 a 3-arrow fan, 10-22) THE THREE-TIER DRAW. at = s of DRAW (past HEAVY_START, x the wind's quickness: STEADY DRAW, the knee) each tier
-     arrives at - T1 is the full draw itself (= draw.wind); hold = s held at T3 before it goes by itself; st = wind each tier's release costs; focusMul = a T2/T3 loosed on a FULL
-     HUNTER'S FOCUS spends it and lands x this (FOCUSED - the old "full draw + focus = piercing" spend, moved up the ladder); names/cols = the meter, the word, the flash.
-       T1 LONG SHOT     the strong arcing shot she always had (draw.dmg1), the sweet spot's focus
-       T2 PIERCING SHOT flat and fast through a whole line (pierce)
-       T3 TRIPLE SHOT   three strong arrows from the one full draw, flat and fast, in a TIGHT fan (RG.fan: +-3 degrees, so at 150 px all three still find one man-sized foe and at 250 they
-                        are +-12 px apart: a group or a tall foe takes them spread). Costs ONE arrow (the middle one lies where it lands; the flankers are hers for free). Nothing is
-                        held or pinned: it is pure damage, the most one draw can do. NOT her VOLLEY (the level-1 skill: three light lobbed arrows in a wide arc from a button, no hold) */
-  tiers: { at: [0.55, 1.06, 1.61], hold: 2.0, st: [0, 9, 11, 13], focusMul: 1.3,
-    names: ['', 'LONG SHOT', 'PIERCING SHOT', 'TRIPLE SHOT'], focusNames: ['', '', 'FOCUSED PIERCING', 'FOCUSED TRIPLE SHOT'], cols: [null, '#f0ead8', '#9fdc6a', '#ffb84a'], label: [null, '#fff6d8', '#dfffb0', '#ffd68a'] },
-  fan: { vx: 560, spread: 0.05, g: 40, range: 250, dmg: 1.2 },   /* THE TRIPLE SHOT (T3): three arrows, each dmg x the sword (T2's one arrow is 2.0, the long shot 1.7); spread = tan of the angle between arrows (0.05 ~ 3 degrees) */
+  /* (claude/rangerid, Daniel 10-31 Q6/Q9) NO TIER LADDER: ONE DRAW, ONE STEADY WINDOW. at = s of DRAW (past HEAVY_START, x the wind's quickness) the full draw (T1, the LONG SHOT) and the STEADY WINDOW
+     (breath held, reticle still: T2, the STEADY SHOT) open at; win = s the window stays open (+ focusWin on a FULL HUNTER'S FOCUS - focus is no longer spent, it deepens the window);
+     let go in it and the arrow is EMPOWERED: it pierces the whole line and its DISTANCE BONUS is doubled. Held PAST it the hand shakes (RG.shaky: the shot loses its aim) and, auto s later, it goes by itself. */
+  tiers: { at: [0.55, 0.67], win: 0.4, focusWin: 0.2, auto: 0.6, st: [0, 9, 13],
+    names: ['', 'LONG SHOT', 'STEADY SHOT'], cols: [null, '#f0ead8', '#9fdc6a'], label: [null, '#fff6d8', '#dfffb0'] },
+  shaky: { vy: 70, dmg: 0.85 },                      /* a drawn arrow held past the steady window: it flies wide (+-vy) and a little weaker */
+  /* DISTANCE BONUS (Daniel 10-31 Q9): an arrow pays by how far it has flown - a point-blank shot is x0.8 (the knife is the answer there), x1.0 from mid, rising to x1.6 at far px. A STEADY SHOT doubles the bonus (the part over x1.0) */
+  dist: { near: 36, mid: 70, far: 280, lo: 0.8, hi: 1.6, empowered: 2 },
+  /* (claude/rangerid, Daniel 11-01 3rd jab) THE PUSH KICK: the third knife cut in a run is a boot, not a stab - the foe is shoved OUT TO RANGE (room to shoot) and the cut pays less; mul = the blow, push = the shove's speed, a boss or elite is only staggered */
+  kick: { mul: 0.8, push: 300, stagger: 0.7, bossStagger: 0.25, reach: 22 },
+  volleyCost: 2, volleyCd: 6,
   sweet: { near: 52, far: 138, quick: 14, draw: 26, rise: 10, down: 10 },   /* px from where it was loosed; focus each arrow that lands in it gives */
   mark: { t: 10, mul: 1.33, apex: 1.5, range: 300 },  /* THE MARK: s; x on every blow; px ahead it reaches (through walls) */
   knife: { reach: 18, dmg: 1.0 },                    /* THE KNIFE: a short cut (its box is 17 out, main.js attackBox0: a foe whose near edge is inside reach is POINT-BLANK), a little lighter than a sword */
@@ -70,13 +70,16 @@ export const RG = {
 const ARROW_HIT = 3;   /* half-size of an arrow's point, px */
 /* (claude/chargetiers) THE TIER A DRAW HAS REACHED: held = s X has been down (main.js P.atkHeld), q = the wind's quickness (heavyWind / RG.draw.wind: STEADY DRAW, the knee, the
    technique rank), start = main.js HEAVY_START (the press before the draw shows). 0 = a partial draw (still a shot, weaker) */
-export const rgTierAt = (i, q = 1, start = 0.14) => start + RG.tiers.at[i - 1] * q;
-export const rgTierFor = (held, q = 1, start = 0.14) => { let t = 0; for (let i = 1; i <= 3; i++) if (held >= rgTierAt(i, q, start) - 1e-6) t = i; return t; };
+export const rgTierAt = (i, q = 1, start = 0.14) => start + RG.tiers.at[Math.min(i, 2) - 1] * q;
+export const rgWinEnd = (q = 1, start = 0.14, focus = false) => rgTierAt(2, q, start) + (RG.tiers.win + (focus ? RG.tiers.focusWin : 0)) * q;
+export const rgShakyAt = (held, q = 1, start = 0.14, focus = false) => held > rgWinEnd(q, start, focus) + 1e-6;
+export const rgTierFor = (held, q = 1, start = 0.14, focus = false) => held >= rgTierAt(2, q, start) - 1e-6 && held <= rgWinEnd(q, start, focus) + 1e-6 ? 2 : held >= rgTierAt(1, q, start) - 1e-6 ? 1 : 0;
+export const distMul = (d, empowered = false) => { const D = RG.dist; if (d < D.near) return D.lo; const m = d <= D.mid ? 1 : 1 + (D.hi - 1) * Math.min(1, (d - D.mid) / (D.far - D.mid)); return empowered && m > 1 ? 1 + (m - 1) * D.empowered : m; };
 
 export function makeRanger(api) {
   const stats = { quick: 0, draws: 0, full: 0, rises: 0, downs: 0, pierces: 0, knife: 0, hits: 0, sweet: 0, focusFull: 0, marks: 0, markHits: 0, bashes: 0, parries: 0, tooStrong: 0, guards: 0, guardStopped: 0, guardHalf: 0, guardBroke: 0, guardRed: 0, guardBolt: 0, guardBehind: 0,
     snares: 0, snared: 0, restocked: 0, snatched: 0, flung: 0, kneels: 0, kneelHits: 0, flips: 0, flipShots: 0, picked: 0, refilled: 0, lost: 0, stuckWall: 0, stuckFoe: 0, empty: 0, riposteShots: 0,
-    tier1: 0, tier2: 0, tier3: 0, fans: 0, fanHits: 0, focused: 0 };   /* (claude/chargetiers) the three tiers loosed, the fan's arrows that landed, FOCUSED T2/T3 */
+    tier1: 0, tier2: 0, steady: 0, shaky: 0, far: 0, near: 0, kicks: 0, volleys: 0, volleyShort: 0 };   /* (claude/chargetiers) the three tiers loosed, the fan's arrows that landed, FOCUSED T2/T3 */
   const P = () => api.P, T = () => api.tal();
   const maxQ = () => RG.quiver.n + (T().deep ? 1 : 0);
   const refillT = () => (T().fletch ? RG.quiver.fletch : RG.quiver.refill) / RG.perk.quiver;
@@ -124,16 +127,16 @@ export function makeRanger(api) {
   function arrowHit(p, a, e) {
     const hp0 = e.hp, d = Math.abs(a.x - a.x0), sweet = d >= RG.sweet.near && d <= RG.sweet.far && !a.free;
     let dmg = a.dmg; if (sweet && T().eagle) dmg *= 4 / 3;
+    const dm = distMul(d, !!a.emp); dmg *= dm; if (dm >= 1.3) { stats.far++; api.number(e.x, e.y - (e.h || 16) - 26, a.emp ? 'STEADY x' + dm.toFixed(1) : 'FAR x' + dm.toFixed(1), a.emp ? '#dfffb0' : '#e8dcb0'); } else if (dm < 1) stats.near++;   /* (claude/rangerid) THE DISTANCE BONUS */
     if (a.kind === 'draw' && a.full && T().bodkin && e.guardT > 0) { e.guardT = 0; api.number(e.x, e.y - (e.h || 16) - 14, 'THROUGH', '#ffd36b'); }   /* BODKIN POINTS: as a ball does */
     api.hurtAs(a.tag, e, Math.max(1, Math.round(dmg)), a.x - Math.sign(a.vx || p.face) * 20, false); stats.hits++;
     const landed = e.hp < hp0 || !e.alive;
-    if (e.t === 'dummy') { api.trialEvent(a.kind === 'down' ? 'down' : (a.kind === 'draw' && a.full) || a.kind === 'pierce' || a.kind === 'fan' ? 'heavyblow' : 'hit');   /* (claude/chargetiers: every drawn tier is a heavy blow on the straw) */ if (a.kneel) api.trialEvent('kdraw'); }   /* (claude/heropassa: a kneeling draw's arrow on the far straw) */ if (a.kneel) stats.kneelHits++;   /* (her yard: the straw men count her arrows) */
+    if (e.t === 'dummy') { api.trialEvent(a.kind === 'down' ? 'down' : (a.kind === 'draw' && a.full) || a.kind === 'pierce' ? 'heavyblow' : 'hit');   /* (claude/chargetiers: every drawn tier is a heavy blow on the straw) */ if (a.kneel) api.trialEvent('kdraw'); }   /* (claude/heropassa: a kneeling draw's arrow on the far straw) */ if (a.kneel) stats.kneelHits++;   /* (her yard: the straw men count her arrows) */
     if (landed && sweet) { stats.sweet++; focusGain(p, a.focus); if (!p.rgSweetSaid || api.time - p.rgSweetSaid > 1.2) { p.rgSweetSaid = api.time; api.ringAt(e.x, e.y - (e.h || 16) / 2, 10, '#9fdc6a', 0.2); } }
     if (landed && a.wild) markFoe(p, e);
     if (landed && a.kind === 'draw' && e.alive && !e.maxHp && !e.mini && !e.elite) { e.stagger = Math.max(e.stagger || 0, a.full ? 0.5 : 0.25); e.vx = Math.sign(a.vx || p.face) * (a.full ? 140 : 70); }
     if (landed && a.kind === 'quick' && e.alive && !e.maxHp && !e.mini) e.stagger = Math.max(e.stagger || 0, 0.12);
-    if (landed && a.kind === 'fan') stats.fanHits++;
-    api.sparks(a.x, a.y, Math.sign(a.vx) || 1, landed ? 4 : 6); if (a.kind === 'draw' || a.kind === 'pierce' || (a.kind === 'fan' && !a.free)) api.hitstop(0.04);
+        api.sparks(a.x, a.y, Math.sign(a.vx) || 1, landed ? 4 : 6); if (a.kind === 'draw' || a.kind === 'pierce' || false) api.hitstop(0.04);
     return landed; }
   function landArrow(p, a, how) {
     if (a.free || a.wild) { if (a.wild && !a.free) giveArrow(p, 1, 'wild'); a.state = 'gone'; return; }   /* (a skill's arrow is not hers to keep; THE WILD HUNT's comes straight back) */
@@ -154,7 +157,7 @@ export function makeRanger(api) {
           const tx = Math.floor(a.x / TS), ty = Math.floor(a.y / TS);
           if (api.isSolid(tx, ty)) { a.x -= a.vx * h * 0.5; a.y -= a.vy * h * 0.5; a.ang = angleOf(a); a.vx = 0; a.vy = 0; stats.stuckWall++; api.SFX.rgThunk && api.SFX.rgThunk(); api.sparks(a.x, a.y, -1, 2); landArrow(p, a, 'stuck'); break; } }
         if (a.state === 'fly') { a.ang = angleOf(a);
-          if ((a.pierce || a.kind === 'fan') && a.range && Math.abs(a.x - a.x0) > a.range) { a.state = 'drop'; a.vx *= 0.3; }   /* (claude/chargetiers: the TRIPLE SHOT's flat flight ends as the pierce's does) */
+          if (a.pierce && a.range && Math.abs(a.x - a.x0) > a.range) { a.state = 'drop'; a.vx *= 0.3; }   /* (claude/chargetiers: the TRIPLE SHOT's flat flight ends as the pierce's does) */
           if (a.t > 2.6) a.state = 'drop'; } }
       if (a.state === 'foe') { const e = a.foe; if (!e || !e.alive || e.gone > 0) { a.state = 'drop'; a.vx = 0; a.vy = -40; a.foe = null; }
         else { a.x = e.x + a.ox * (e.face || 1); a.y = e.y + a.oy; } }
@@ -184,26 +187,19 @@ export function makeRanger(api) {
     a.x = p.x; a.y = p.y - 2;
     p.vy = Math.min(p.vy, RG.down.hop); p.rgCd = RG.quick.rec; pose(p, 'rgDown', 0.24); api.SFX.rgLoose && api.SFX.rgLoose(1); api.noteVerb('plunge'); api.dust(p.x, p.y + 2, 2); return true; }
   /* THE DRAW, LET GO (main.js fireHeavy): wound 0..1 */
-  /* (claude/chargetiers) tier = the tier the hold reached (rgTierFor, main.js): 0 a partial draw, 1 THE LONG SHOT, 2 THE PIERCING SHOT, 3 THE TRIPLE SHOT. A T2/T3 loosed on a FULL
-     focus spends it: FOCUSED (x RG.tiers.focusMul on every arrow; the fan flies a quarter further). The old spend (full draw + focus = piercing) is T2 now, reached by the hold */
-  function release(p, wound, tier = 0) { if (!takeArrow(p)) return false; stats.draws++;
+  /* (claude/rangerid) tier: 0 a partial draw, 1 THE LONG SHOT (full draw), 2 THE STEADY SHOT (let go inside the window: empowered). shaky: held past the window */
+  function release(p, wound, tier = 0, shaky = false) { if (!takeArrow(p)) return false; stats.draws++;
     const k = tier >= 1 ? 1 : Math.max(0, Math.min(1, wound)), full = k >= 0.999, far = T().far ? 1.2 : 1, heavy = k >= RG.draw.heavyAt;
     if (full) stats.full++; if (tier >= 1) stats['tier' + tier]++;
-    const focused = tier >= 2 && focusFull(p), fm = focused ? RG.tiers.focusMul : 1, TC = RG.tiers.cols[tier] || '#ffffff', word = RG.tiers.names[tier];
-    if (focused) { p.rgFocus = 0; stats.focused++; }
-    if (tier === 2) {   /* THE PIERCING SHOT: flat, through the whole line */
-      stats.pierces++;
-      const a = loose(p, { kind: 'pierce', vx: p.face * RG.pierce.vx, vy: 0, g: 0, dmg: dmgBase() * RG.pierce.dmg * fm, tag: ['heavy', 'shot'], pierce: true, range: RG.pierce.range * far * (focused ? 1.25 : 1) }); a.full = true; a.focused = focused;
-      api.number(p.x, p.y - 28, focused ? RG.tiers.focusNames[tier] : word, RG.tiers.label[2]); api.shakeCam(3, p.face * 2); api.zoomKick(1.04, 0.18); api.streaks(p.x + p.face * 12, p.y - 13, 8, ['#dfffb0', TC], 160);
-    } else if (tier === 3) {   /* THE TRIPLE SHOT: three strong arrows from the one draw, flat and fast, in a tight fan; one is her quiver's, the flankers are free */
-      stats.fans++;
-      const F = RG.fan, rg = F.range * far * (focused ? 1.25 : 1);
-      for (const s of [0, -1, 1]) { const a = loose(p, { kind: 'fan', vx: p.face * F.vx, vy: s * F.spread * F.vx, g: F.g, dmg: dmgBase() * F.dmg * fm, tag: s ? 'shot' : ['heavy', 'shot'], range: rg, free: !!s, focus: s ? 0 : RG.sweet.draw }); a.full = true; a.focused = focused; }
-      api.number(p.x, p.y - 28, focused ? RG.tiers.focusNames[tier] : word, RG.tiers.label[3]); api.shakeCam(4, p.face * 3); api.zoomKick(1.05, 0.2); api.hitstop(0.05);
-      api.streaks(p.x + p.face * 12, p.y - 13, 10, ['#ffffff', TC, '#ff7a5a'], 200); api.ringAt(p.x + p.face * 12, p.y - 13, 12, TC, 0.25);
+    const TC = RG.tiers.cols[tier] || '#ffffff', word = RG.tiers.names[tier];
+    if (tier === 2) {   /* THE STEADY SHOT (let go inside the window): flat, through the whole line, and its distance bonus doubled */
+      stats.pierces++; stats.steady++;
+      const a = loose(p, { kind: 'pierce', vx: p.face * RG.pierce.vx, vy: 0, g: 0, dmg: dmgBase() * RG.pierce.dmg, tag: ['heavy', 'shot'], pierce: true, range: RG.pierce.range * far * (focusFull(p) ? 1.25 : 1) }); a.full = true; a.emp = true;
+      api.number(p.x, p.y - 28, word, RG.tiers.label[2]); api.shakeCam(3, p.face * 2); api.zoomKick(1.04, 0.18); api.streaks(p.x + p.face * 12, p.y - 13, 8, ['#dfffb0', TC], 160);
     } else {
       const kn = p.rgKneel ? RG.kneel : null;   /* (claude/heropassa) THE KNEELING DRAW: flatter, further, more Focus from the sweet spot, loosed low */
-      const vx = (RG.draw.vx0 + (RG.draw.vx1 - RG.draw.vx0) * k) * Math.sqrt(far) * (kn ? kn.vx : 1), a = loose(p, { kind: 'draw', vx: p.face * vx, vy: RG.draw.vy * (kn ? kn.vy : 1), g: RG.draw.g / Math.sqrt(far) * (kn ? kn.g : 1), dmg: dmgBase() * (RG.draw.dmg0 + (RG.draw.dmg1 - RG.draw.dmg0) * k), tag: heavy ? ['heavy', 'shot'] : 'shot', focus: RG.sweet.draw * (0.5 + 0.5 * k) * (kn ? kn.focus : 1), low: !!kn });
+      const sh = shaky ? RG.shaky : null; if (sh) { stats.shaky++; api.number(p.x, p.y - 28, 'SHAKY', '#9aa39a'); }   /* (claude/rangerid) held past the steady window: the hand shakes */
+      const vx = (RG.draw.vx0 + (RG.draw.vx1 - RG.draw.vx0) * k) * Math.sqrt(far) * (kn ? kn.vx : 1), a = loose(p, { kind: 'draw', vx: p.face * vx, vy: RG.draw.vy * (kn ? kn.vy : 1) + (sh ? (Math.random() * 2 - 1) * sh.vy : 0), g: RG.draw.g / Math.sqrt(far) * (kn ? kn.g : 1), dmg: dmgBase() * (RG.draw.dmg0 + (RG.draw.dmg1 - RG.draw.dmg0) * k) * (sh ? sh.dmg : 1), tag: heavy ? ['heavy', 'shot'] : 'shot', focus: RG.sweet.draw * (0.5 + 0.5 * k) * (kn ? kn.focus : 1), low: !!kn });
       if (kn) a.kneel = true;
       a.full = full;
       if (full && T().twin && takeArrow(p)) { const b = loose(p, { kind: 'draw', vx: p.face * vx * 0.94, vy: RG.draw.vy + 30, g: RG.draw.g / Math.sqrt(far), dmg: a.dmg * 0.8, tag: a.tag, focus: 0 }); b.full = true; b.y += 3; }
@@ -211,7 +207,7 @@ export function makeRanger(api) {
     }
     if (tier >= 2 && p.rgKneel) { const a = p.rgArrows.at(-1); if (a) a.kneel = true; }   /* (the knee's trial counts any drawn tier) */
     /* (claude/chargetiers) EACH TIER LOOSES IN ITS OWN BODY: the long shot's loose, the piercing shot's flat snap (rgLoose2), the triple shot's heavy follow-through (rgLoose3) */
-    p.rgKneel = false; p.rgCd = RG.draw.rec + (tier >= 3 ? 0.06 : 0); pose(p, tier >= 3 ? 'rgLoose3' : tier === 2 ? 'rgLoose2' : 'rgLoose', tier >= 2 ? 0.26 : 0.22); api.SFX.rgLoose && api.SFX.rgLoose(full ? 2 : 1); if (tier >= 2 && api.SFX.rgTierLoose) api.SFX.rgTierLoose(tier); return true; }
+    p.rgKneel = false; p.rgCd = RG.draw.rec; pose(p, tier === 2 ? 'rgLoose2' : 'rgLoose', tier >= 2 ? 0.26 : 0.22); api.SFX.rgLoose && api.SFX.rgLoose(full ? 2 : 1); if (tier >= 2 && api.SFX.rgTierLoose) api.SFX.rgTierLoose(tier); return true; }
 
   /* ---- X, PRESSED (main.js: her X before the swing). Returns true when the press is hers (a shot is nocked or loosed); false: it is the knife ---- */
   function pointBlank(p) { for (const e of api.enemies) { if (!e.alive || e.harmless || e.gone > 0 || e.turncoat) continue; const dx = (e.x - p.x) * p.face, hw = (e.w || 12) / 2;
@@ -235,6 +231,12 @@ export function makeRanger(api) {
     if (p.dead || p.hurt > 0) { p.rgNock = null; return; }
     if (!keyAtk) { p.rgNock = null; quickShot(p, n.air || (!p.ground && !p.swim)); } }
 
+  /* ---- THE PUSH KICK (claude/rangerid, Daniel 11-01: the 3rd jab hit is DISTINCT per hero - hers shoves the foe away to make room to shoot). main.js heroCut calls it on the third knife cut that lands.
+     A common foe is thrown OUT TO RANGE and knocked; an elite / mini / boss is only staggered a beat (never thrown). Returns true when it shoved ---- */
+  function kickHit(p, e) { if (!e || !e.alive) return false; stats.kicks++;
+    if (e.maxHp || e.mini || e.elite || (api.knockSkip && api.knockSkip(e))) { e.stagger = Math.max(e.stagger || 0, e.maxHp || e.mini ? RG.kick.bossStagger : RG.kick.stagger * 0.6); api.ringAt(e.x, e.y - (e.h || 16) / 2, 10, '#c8e89a', 0.2); api.number(e.x, e.y - (e.h || 16) - 14, 'PUSHED', '#c8e89a'); return false; }
+    e.vx = (Math.sign(e.x - p.x) || p.face) * RG.kick.push * (T().bashBack ? 1.4 : 1); e.vy = Math.min(e.vy || 0, -90); knockOut(e, 0.4); e.stagger = Math.max(e.stagger || 0, RG.kick.stagger);
+    api.ringAt(p.x + p.face * 12, p.y - 6, 14, '#c8e89a', 0.25); api.sparks(e.x, e.y - (e.h || 16) / 2, p.face, 6); api.number(e.x, e.y - (e.h || 16) - 14, 'PUSH KICK', '#c8e89a'); api.SFX.rgBash && api.SFX.rgBash(); return true; }
   /* ---- THE BOW-BASH (C) and her PARRY ---- */
   const beatLen = () => api.tap() * RG.bash.beat * (T().bashLong ? 4 / 3 : 1);
   const bashUp = p => (p.rgBashT || 0) > 0;
@@ -357,7 +359,8 @@ export function makeRanger(api) {
 
   /* ---- HER NINE BOUGHT ACTIVES (main.js rangerKit presses them through skillPress / cdReady / spend, like everyone's) ---- */
   const kit = {
-    volley() { const p = P(); api.kitPose(p, 'rgVolleyPose', 0.3); for (const [k, vy] of [[0.92, -95], [1, -55], [1.06, -18]]) loose(p, { kind: 'skill', vx: p.face * RG.draw.vx1 * k, vy, g: RG.draw.g, dmg: dmgBase() * SKK.K.rgVolley * api.amul('rgVolley'), tag: 'shot', free: true }); api.SFX.rgLoose && api.SFX.rgLoose(2); },
+    /* (claude/rangerid, Daniel 10-31 Q9) VOLLEY: 6 s apart (main.js CD_MAX.rgVolley) and TWO ARROWS FROM THE QUIVER - two of its three arrows are hers to pick up again, the third is free. Short of two arrows it does not go */
+    volley() { const p = P(); if ((p.rgQ | 0) < RG.volleyCost) return false; for (let i = 0; i < RG.volleyCost; i++) takeArrow(p); stats.volleys++; api.kitPose(p, 'rgVolleyPose', 0.3); let n = 0; for (const [k, vy] of [[0.92, -95], [1, -55], [1.06, -18]]) loose(p, { kind: 'skill', vx: p.face * RG.draw.vx1 * k, vy, g: RG.draw.g, dmg: dmgBase() * SKK.K.rgVolley * api.amul('rgVolley'), tag: 'shot', free: n++ === 2 }); api.SFX.rgLoose && api.SFX.rgLoose(2); return true; },
     hawk() { const p = P(), e = quarry(p, 220); api.kitPose(p, 'rgHawkPose', 0.35); p.rgHawk = { x: p.x, y: p.y - 22, e, t: 0, strikes: 0, back: false }; api.SFX.rgHawk && api.SFX.rgHawk(); },
     leap() { const p = P(); api.kitPose(p, 'rgLeapPose', 0.4); p.vx = -p.face * 300; p.vy = -260; p.inv = Math.max(p.inv || 0, 0.3); loose(p, { kind: 'skill', vx: p.face * 120, vy: 260, g: 400, dmg: dmgBase() * 1.2 * api.amul('rgLeap'), tag: ['plunge', 'shot'], free: true }); api.SFX.rgFlip && api.SFX.rgFlip(); },
     bearTrap() { const p = P(); api.kitPose(p, 'rgTrapPose', 0.35); p.rgTraps = p.rgTraps || []; p.rgTraps.push({ x: p.x + p.face * 48, y: p.y, vy: -120, fly: 0.35, life: 16, held: null, sprung: 0 }); api.SFX.rgSnare && api.SFX.rgSnare(); },
@@ -452,13 +455,13 @@ export function makeRanger(api) {
       g.fillStyle = '#ffd0c0'; g.fillRect(x, y, 1, 1); if (k) { g.fillRect(x - 1, y, 1, 1); g.fillRect(x + 1, y, 1, 1); g.fillRect(x, y - 1, 1, 1); g.fillRect(x, y + 1, 1, 1); } } }
   function clear() { const p = P(); p.rgArrows = []; p.rgSnares = []; p.rgTraps = []; p.rgHawk = null; p.rgRain = null; p.rgNock = null; p.rgBashT = 0; p.rgGuard = false; p.rgHeld = 0; p.rgFlip = null; p.rgWildT = 0; p.rgQ = maxQ(); p.rgRefT = 0; p.rgRsT = 0; p.rgRsE = 0; }
   const read = () => { const p = P(); ensure(p); return { stance: p.rgStance || 'bow', q: p.rgQ, max: maxQ(), focus: +(p.rgFocus || 0).toFixed(1), nock: !!p.rgNock, bashUp: bashUp(p), onBeat: onBeat(p), flip: !!p.rgFlip, cd: +(p.rgCd || 0).toFixed(3),
-    arrows: p.rgArrows.map(a => ({ kind: a.kind, state: a.state, x: Math.round(a.x), y: Math.round(a.y), tag: a.tag, rip: a.rip, vy: Math.round(a.vy), free: !!a.free })), snares: (p.rgSnares || []).map(s => ({ x: Math.round(s.x), sprung: s.sprung > 0 })),
+    arrows: p.rgArrows.map(a => ({ kind: a.kind, state: a.state, x: Math.round(a.x), y: Math.round(a.y), tag: a.tag, rip: a.rip, vy: Math.round(a.vy), free: !!a.free, emp: !!a.emp })), snares: (p.rgSnares || []).map(s => ({ x: Math.round(s.x), sprung: s.sprung > 0 })),
     refT: +(p.rgRefT || 0).toFixed(2), wildT: p.rgWildT || 0, stats: { ...stats } }; };
   /* (claude/rangerhud) WHAT THE QUIVER ROW DRAWS: her stance, the arrows in the quiver / her most, the ones lying in the world she could take back, and how far the trickle is to the next */
   const hudOf = (p, mq, rt) => { ensure(p); let lying = 0; for (const a of p.rgArrows) if ((a.state === 'lie' || a.state === 'stuck') && !a.free && !a.wild) lying++;
     return { stance: p.rgStance || 'bow', q: p.rgQ, mq, lying, refill: p.rgQ < mq ? Math.min(1, (p.rgRefT || 0) / rt) : 0 }; };   /* (a seat's plate reads the maxima her own update stored: p.rgMaxQ / p.rgRefMax) */
   const hud = () => hudOf(P(), maxQ(), refillT());
-  return { RG, arrows, maxQ, hud, hudOf: p => hudOf(p, p.rgMaxQ || RG.quiver.n, p.rgRefMax || RG.quiver.refill), toggleStance: () => toggleStance(P()), bowReady, stance: () => P().rgStance || 'bow', press, nockStep, release: (w, tier) => release(P(), w, tier || 0), focusFull: () => focusFull(P()), quickShot: () => quickShot(P(), !P().ground), riseShot: () => riseShot(P()), downShot: () => downShot(P()),
+  return { RG, distMul, kickHit: e => kickHit(P(), e), arrows, maxQ, hud, hudOf: p => hudOf(p, p.rgMaxQ || RG.quiver.n, p.rgRefMax || RG.quiver.refill), toggleStance: () => toggleStance(P()), bowReady, stance: () => P().rgStance || 'bow', press, nockStep, release: (w, tier, shaky) => release(P(), w, tier || 0, !!shaky), focusFull: () => focusFull(P()), quickShot: () => quickShot(P(), !P().ground), riseShot: () => riseShot(P()), downShot: () => downShot(P()),
     bashTakes, guardTakes, guardUp: () => guardUp(P()), snatchSeeds, kneeling: () => !!P().rgKneel, onBeat: () => onBeat(P()), bashUp: () => bashUp(P()), bash: () => bash(P()), setSnare: () => setSnare(P()), spendMark: () => spendMark(P()), markFoe: e => markFoe(P(), e), markMul, markOn, killed,
     flip: dir => flip(P(), dir), focusGain: n => focusGain(P(), n), giveArrow: n => giveArrow(P(), n), takeArrow: () => takeArrow(P()), pointBlank: () => pointBlank(P()),
     update, restock, kit, kitStep, draw: render, drawMarks, clear, read, resetStats: () => { for (const k in stats) stats[k] = 0; } };
