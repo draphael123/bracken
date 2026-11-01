@@ -42,7 +42,7 @@
 //                     and topples into the clearing as ROLLING TIMBERS (jump them; a deck is over them; a wreck stops them). The first slam leaves THE BREACH for
 //                     the rest of the fight: a gap in the palisade and a RUBBLE STEP (solid) against the east wall - the timbers never reach it, the wall-ram does.
 export const BB = {
-  hp: 1050, w: 56, h: 40, markH: 60,
+  hp: 880, w: 56, h: 40, markH: 60,
   walk: 46, rest: [0.5, 0.3],
   armour: 0.45, above: 1, wardMul: 0.4,
   p2: 0.5,
@@ -57,14 +57,14 @@ export const BB = {
      box off the beast's feet (px, facing right) and how many lost orders knock him off the gantry */
   order: { tell: 1.1, laneW: 44, pitch: 88, flight: 0.4, gap: 0.75, dmg: 20, top: 150, rec: 0.6, lost: 1.2, lives: 2, box: [-10, 14, -58, -27] },
   /* (claude/beast3) THE WALL BREAKER: the turn, the run, the slam, the timbers (how many, the beat between, their roll, their height) and THE BREACH's rubble (columns, one row) */
-  wall: { tell: 0.95, speed: 250, dmg: 19, slam: 0.6, back: 150, rec: 0.9, n: 2, gap: 1.0, sp: 140, h: 13, tdmg: 15, rubble: 4, room: 70, cd: 6 },
+  wall: { tell: 0.95, speed: 250, dmg: 17, slam: 0.6, back: 150, rec: 0.9, n: 2, gap: 1.0, sp: 140, h: 13, tdmg: 15, rubble: 4, room: 70, cd: 6 },
   flail: { tell: 0.85, t: 0.36, reach: 132, low: 14, hiTop: 40, hiBot: 18, dmg: 18, rec: 0.7 },
   kick: { tell: 0.6, t: 0.22, reach: 46, dmg: 25, chip: 0.6, rec: 0.5, range: 44 },
   scaf: { fall: 0.5, len: 6, heroDmg: 17, lie: 16, rearm: 11 },
   unchain: { tell: 1.0, adds: 2, addHp: 2.4 },
   harness: { loose: 2.6, mul: 2, cap: 0.08 },
   bz: { hurt: 1.6 },
-  py: { hurt: 0.92 },   /* (claude/palisade2art) PYRO's pool is the smallest (126 hp at L7) and the bot dies to the charge at 13-31% boss left: his blows from the beast land at 0.92 (the berserker's bz precedent, the other way) */
+  py: { hurt: 0.85 },   /* (claude/palisade2art) PYRO's pool is the smallest (126 hp at L7) and the bot dies to the charge at 13-31% boss left: his blows from the beast land at 0.92 (the berserker's bz precedent, the other way) */
 };
 export const BB_SAY = { wake: 'THE BATTERING BEAST', rule: 'KNOCK OUT A SCAFFOLD PROP: ON HIM, OR IN HIS PATH, HE STICKS IN THE WRECK.', p2: 'THE CHAINS SNAP',
   stuck: 'STUCK IN THE WRECK', dazed: 'HE CRASHES INTO THE WALL', gate: 'THE OLD GATE HOLDS', bounce: 'IT BOUNCES OFF HIM: WARDED', ward: 'HE TEARS OUT OF THE TIMBER',
