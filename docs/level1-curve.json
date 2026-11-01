@@ -182,17 +182,17 @@
   "lostPct": 314
  },
  "hurricane": {
-  "hash": "9d08ad294c10",
+  "hash": "81f1158223c1",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 21,
-  "deaths": 9,
-  "kills": 12,
-  "lifts": 105,
+  "hits": 31,
+  "deaths": 10,
+  "kills": 16,
+  "lifts": 103,
   "walked": 100,
   "bare": true,
-  "lostPct": 395
+  "lostPct": 456
  },
  "lamplit": {
   "hash": "748c394aeaf3",
@@ -403,17 +403,17 @@
   "lostPct": 433
  },
  "caravan": {
-  "hash": "f01565ade95b",
+  "hash": "2dda566562c6",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 15,
-  "deaths": 7,
+  "hits": 18,
+  "deaths": 6,
   "kills": 6,
-  "lifts": 98,
+  "lifts": 93,
   "walked": 100,
   "bare": true,
-  "lostPct": 272
+  "lostPct": 332
  },
  "fair": {
   "hash": "1910666f87ff",
@@ -429,17 +429,17 @@
   "lostPct": 863
  },
  "theatre": {
-  "hash": "010422831498",
+  "hash": "7329a5a53321",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 36,
-  "deaths": 14,
+  "hits": 31,
+  "deaths": 12,
   "kills": 7,
-  "lifts": 94,
+  "lifts": 90,
   "walked": 100,
   "bare": true,
-  "lostPct": 616
+  "lostPct": 541
  },
  "canal": {
   "hash": "3e4445d07050",
@@ -533,30 +533,30 @@
   "lostPct": 622
  },
  "rootway": {
-  "hash": "60a847a7bab1",
+  "hash": "e7a8a8c9c301",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
   "hits": 40,
-  "deaths": 2,
-  "kills": 29,
-  "lifts": 86,
+  "deaths": 3,
+  "kills": 35,
+  "lifts": 89,
   "walked": 100,
   "bare": true,
-  "lostPct": 142
+  "lostPct": 151
  },
  "church": {
-  "hash": "65a003c5ca55",
+  "hash": "e7d86029ed16",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 58,
-  "deaths": 20,
-  "kills": 7,
-  "lifts": 110,
+  "hits": 46,
+  "deaths": 16,
+  "kills": 13,
+  "lifts": 109,
   "walked": 100,
   "bare": true,
-  "lostPct": 802
+  "lostPct": 652
  },
  "towpath": {
   "hash": "a494972ad32b",
@@ -663,16 +663,16 @@
   "lostPct": 209
  },
  "rookery": {
-  "hash": "3c07c53af25a",
+  "hash": "c1a7a9bb03c6",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 44,
-  "deaths": 5,
-  "kills": 30,
-  "lifts": 83,
+  "hits": 43,
+  "deaths": 6,
+  "kills": 28,
+  "lifts": 81,
   "walked": 100,
   "bare": true,
-  "lostPct": 282
+  "lostPct": 252
  }
 }
