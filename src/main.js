@@ -13007,7 +13007,7 @@ function updateFrog(e, dt) {
   if (e.st === undefined) { e.st = Math.max(0, frogStationAt(A, e.x)); e.stDir = 1; e.stHp0 = e.hp; e.stT = 0; e.phase = e.phase || 1; }
   const floor = A.floor, ST = A.royal, here = ST[e.st];
   if (FKC) FKC.step(dt, e);
-  const p2 = e.phase >= 2, ph = p2 ? 1 : 0;
+  const p2 = e.phase >= 2, ph = p2 ? 1 : 0; if (frogStirT > 0) frogStirT -= dt;
   e.modeT -= dt; e.anim += dt; e.hideSaid = Math.max(0, (e.hideSaid || 0) - dt);
   if (e.headT > 0) { e.headT -= dt; if (e.headT <= 0) e.headHits = 0; }
   e.vy += 1000 * dt; if (e.vy > 600) e.vy = 600;
@@ -36325,7 +36325,7 @@ function render() {
       g.globalAlpha = a; g.fillStyle = 'rgba(10,8,20,0.62)'; g.fillRect(0, y0 - 10, VW, 30); g.fillStyle = '#ffd36b'; g.fillRect(0, y0 - 10, VW, 1); g.fillRect(0, y0 + 19, VW, 1);
       text(actCard.label, VW / 2, y0 - 5, '#c9a26a', 'center', 6); text(actCard.name, VW / 2 + 1, y0 + 5, '#3a2214', 'center', 10); text(actCard.name, VW / 2, y0 + 4, '#ffd36b', 'center', 10); g.globalAlpha = 1; } }
     if (secretToast && state === 'play') drawSecretToast();   /* (claude/secrets) 'LOST BANNER 1/3', 'A HIDDEN WAY OPENS': a card over the level */
-    if (frogStirT > 0 && state === 'play') { frogStirT -= 1 / 60; const k = Math.min(1, frogStirT > 2.7 ? (3.2 - frogStirT) / 0.5 : frogStirT < 0.6 ? frogStirT / 0.6 : 1); g.globalAlpha = k; g.fillStyle = 'rgba(6,24,34,0.72)'; g.fillRect(0, VH / 3 - 14, VW, 26); g.fillStyle = '#bfe6f5'; g.fillRect(0, VH / 3 - 14, VW, 1); g.fillRect(0, VH / 3 + 11, VW, 1); text('THE POND STIRS', VW / 2 + 1, VH / 3 - 1, '#0c2a22', 'center', 12); text('THE POND STIRS', VW / 2, VH / 3 - 2, '#bfe6f5', 'center', 12); g.globalAlpha = 1; }   /* (claude/frogking3) the court changes: the banner */
+    if (frogStirT > 0 && state === 'play' && bossActive) { const k = Math.min(1, frogStirT > 2.7 ? (3.2 - frogStirT) / 0.5 : frogStirT < 0.6 ? frogStirT / 0.6 : 1); g.globalAlpha = k; g.fillStyle = 'rgba(6,24,34,0.72)'; g.fillRect(0, VH / 3 - 14, VW, 26); g.fillStyle = '#bfe6f5'; g.fillRect(0, VH / 3 - 14, VW, 1); g.fillRect(0, VH / 3 + 11, VW, 1); text('THE POND STIRS', VW / 2 + 1, VH / 3 - 1, '#0c2a22', 'center', 12); text('THE POND STIRS', VW / 2, VH / 3 - 2, '#bfe6f5', 'center', 12); g.globalAlpha = 1; }   /* (claude/frogking3) the court changes: the banner */
     if (bannerT > 0 && state === 'play') { const k = Math.min(1, bannerT > 2.2 ? (2.6 - bannerT) / 0.4 : bannerT < 0.5 ? bannerT / 0.5 : 1), rl = LEVELS[levelIndex].rule ? Math.min(3, wrap(LEVELS[levelIndex].rule, VW - 40, 6).length) * 9 : 0; g.globalAlpha = k; g.fillStyle = 'rgba(10,8,20,0.7)'; g.fillRect(0, VH / 2 - 22, VW, 24 + rl); g.fillStyle = '#ffd36b'; g.fillRect(0, VH / 2 - 22, VW, 1); g.fillRect(0, VH / 2 + 1 + rl, VW, 1); text(LEVELS[levelIndex].name, VW / 2 + 1, VH / 2 - 12, '#3a2214', 'center', 12); text(LEVELS[levelIndex].name, VW / 2, VH / 2 - 13, '#ffd36b', 'center', 12); /* (claude/storyremove) no story line under the name: the card is the NAME and its one-line RULE; it fades, never pauses play, never eats input */
       { const r = LEVELS[levelIndex].rule; if (r) wrap(r, VW - 40, 6).slice(0, 3).forEach((ln, i) => text(ln, VW / 2, VH / 2 + 4 + i * 9, '#ffd36b', 'center', 6)); }
       g.globalAlpha = 1; }
