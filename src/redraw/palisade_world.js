@@ -243,7 +243,7 @@ export function drawWorld(E) {
     const span = d.span ? [d.span[0] * TS - cx, (d.span[1] + 1) * TS - cx] : null;
     if (Math.max(ccx, lxs, span ? span[1] : -999) < -100 || Math.min(ccx, lxs, span ? span[0] : 9999) > VW + 100) continue;
     const lean = Math.sign(d.x - d.cleat[0]);
-    if (d.load === 'ramp') { const c = propCells(d, (x, y) => ctx.solidAt(x, y)), xs = c.map(q => q[0]), x0 = Math.min(...xs), x1 = Math.max(...xs) + 1, yTop = d.top;
+    if (d.load === 'ramp') { const c = h.cells || propCells(d, (x, y) => ctx.solidAt(x, y)), xs   /* (claude/palisadesteps) the cells the section lays, taken from the ground BEFORE they were laid: asked of the live grid after the fold they read as already solid and the steps drew as nothing */ = c.map(q => q[0]), x0 = Math.min(...xs), x1 = Math.max(...xs) + 1, yTop = d.top;
       if (up) { const foot = Math.max(...c.map(q => q[1])) + 1; section(g, R(x0 * TS - cx), R(yTop * TS - cy), (x1 - x0) * TS, (foot - yTop) * TS, 1, (d.x & 1) === 0);   /* the section standing against the face */
         g.fillStyle = 'rgba(255,233,160,0.4)'; for (const [x, y, k] of c) if (k === 'O' || !c.some(q => q[0] === x && q[1] === y - 1)) { g.fillRect(R(x * TS - cx) + 1, R(y * TS - cy), 14, 1); g.fillRect(R(x * TS - cx) + 1, R(y * TS - cy) + 2, 14, 1); }   /* THE RESULT FIRST: the steps' ghost */
         g.fillStyle = 'rgba(255,211,107,0.5)'; for (const [x, y, k] of c) if (k === 'O' || !c.some(q => q[0] === x && q[1] === y - 1)) { for (let q = 0; q < 14; q += 4) g.fillRect(R(x * TS - cx) + 1 + q, R(y * TS - cy) - 1, 2, 1); } }
