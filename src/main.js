@@ -24847,7 +24847,7 @@ function pyroBoom(b, hitHero) {
 }
 function updatePyroBalls(dt) {
   for (const b of pyroBalls) { if (b.dead) continue;
-    b.life -= dt; b.x += b.vx * dt; b.y += b.vy * dt; b.vy += 60 * dt;
+    b.life -= dt; b.x += b.vx * dt; b.y += b.vy * dt; b.vy += 30 * dt;
     if (Math.random() < dt * 30) parts.push({ x: b.x - Math.sign(b.vx) * PYB.CHARGE.r[b.step], y: b.y, vx: -b.vx * 0.1, vy: -20, life: 0.3, max: 0.3, col: Math.random() < 0.5 ? '#ff9a5c' : '#ffd36b', size: 1, grav: -20 });
     const r = PYB.CHARGE.r[b.step], big = PYB.big(b.step);
     /* THE HERO'S OWN WARD melts a small one (as hers melts a foe's bolt); a big one goes off on it */
