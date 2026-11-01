@@ -3704,7 +3704,7 @@
   }
  },
  "causeway": {
-  "hash": "6cda036ec414",
+  "hash": "7ee37db32a5a",
   "boss": {
    "boss": "kraken",
    "wins": 0,
@@ -3805,69 +3805,71 @@
    ]
   },
   "carried": {
-   "from": "93108b0b2c1e",
+   "from": "6cda036ec414",
    "parts": [
     "boss"
    ]
   },
   "level": {
    "knight": {
-    "deaths": 3,
+    "deaths": 2,
     "minHpPct": 0,
-    "hpLostPct": 336,
-    "hits": 22,
+    "hpLostPct": 242,
+    "hits": 24,
     "walked": 100,
-    "lifts": 41,
-    "held": 3,
-    "duels": 1,
-    "boardLifts": 3,
-    "rides": 1,
-    "pulls": 1,
-    "ridden": {
-     "vmover": 1
-    },
-    "machines": true,
-    "frames": 18370,
-    "kills": 6,
-    "heroLevel": 22
-   },
-   "warden": {
-    "deaths": 3,
-    "minHpPct": 0,
-    "hpLostPct": 372,
-    "hits": 26,
-    "walked": 100,
-    "lifts": 48,
-    "held": 19,
-    "duels": 1,
-    "boardLifts": 2,
-    "rides": 0,
-    "pulls": 1,
-    "ridden": {},
-    "machines": true,
-    "frames": 15697,
-    "kills": 4,
-    "heroLevel": 22
-   },
-   "pyro": {
-    "deaths": 1,
-    "minHpPct": 0,
-    "hpLostPct": 177,
-    "hits": 18,
-    "walked": 100,
-    "lifts": 35,
+    "lifts": 34,
     "held": 0,
     "duels": 0,
     "boardLifts": 3,
     "rides": 2,
-    "pulls": 3,
+    "pulls": 6,
     "ridden": {
      "vmover": 2
     },
     "machines": true,
-    "frames": 14660,
-    "kills": 9,
-    "heroLevel": 22
+    "frames": 17337,
+    "kills": 7,
+    "heroLevel": 29
+   },
+   "warden": {
+    "deaths": 3,
+    "minHpPct": 0,
+    "hpLostPct": 339,
+    "hits": 16,
+    "walked": 100,
+    "lifts": 45,
+    "held": 22,
+    "duels": 2,
+    "boardLifts": 2,
+    "rides": 1,
+    "pulls": 5,
+    "ridden": {
+     "vmover": 1
+    },
+    "machines": true,
+    "frames": 23870,
+    "kills": 4,
+    "heroLevel": 29
+   },
+   "pyro": {
+    "deaths": 2,
+    "minHpPct": 0,
+    "hpLostPct": 308,
+    "hits": 26,
+    "walked": 100,
+    "lifts": 34,
+    "held": 6,
+    "duels": 2,
+    "boardLifts": 1,
+    "rides": 1,
+    "pulls": 7,
+    "ridden": {
+     "vmover": 1
+    },
+    "machines": true,
+    "frames": 20269,
+    "kills": 14,
+    "heroLevel": 29
    }
   }
  },
@@ -8398,7 +8400,7 @@
   }
  },
  "rootway": {
-  "hash": "e7a8a8c9c301",
+  "hash": "0d06e68f74d9",
   "boss": {
    "boss": "huntmaster",
    "wins": 0,
@@ -8499,7 +8501,7 @@
    ]
   },
   "carried": {
-   "from": "60a847a7bab1",
+   "from": "e7a8a8c9c301",
    "parts": [
     "boss"
    ]
