@@ -264,12 +264,18 @@ F.hurt2 = FB.hurt;                                         /* (main.js flinch) t
 F.hurtB2 = FB.hurtB;
 export const FRAMES = POSES.length;                        /* the cap is 120 (brief s2); tools/lance-sheet.mjs and tools/lance4.mjs read it */
 export const SCALE = 1;                                    /* DRAWN AT 1:1: no runtime scale (the 1.35 is in the paint) */
-const bakeSheet = torn => { const blank = canvas(1, 1)[0]; let real = 0;
-  const fr = POSES.map((p, i) => { const nm = NAME_AT[i], bare = i >= BARE_AT; if (torn ? P1_ONLY.has(nm) && !bare : bare || !P1_NAMES.has(nm)) return blank; real++; return outline(champion(torn ? { ...p, torn: true } : p), OUT); });
-  const white = fr.map(c => c === blank ? blank : whiten(c));
-  return { R: fr, L: fr.map(c => c === blank ? blank : flipX(c)), white: { R: white, L: white.map(c => c === blank ? blank : flipX(c)) }, ax: Math.round(FX * KS), ay: Math.round(FY * KS) + 1, w: 28, h: 40, real }; };
+const bakeSheet = (torn, lazy) => { const blank = canvas(1, 1)[0], n = POSES.length;
+  const want = i => { const nm = NAME_AT[i], bare = i >= BARE_AT; return !(torn ? P1_ONLY.has(nm) && !bare : bare || !P1_NAMES.has(nm)); };
+  const R = new Array(n).fill(blank), L = new Array(n).fill(blank), WR = new Array(n).fill(blank), WL = new Array(n).fill(blank);
+  const sheet = { R, L, white: { R: WR, L: WL }, ax: Math.round(FX * KS), ay: Math.round(FY * KS) + 1, w: 28, h: 40, real: 0, done: false, next: 0 };
+  /* (claude/lance5finish) fill(k) bakes the next k wanted frames (R, L, white R, white L); the torn sheet is baked this way, a few frames a tick from the time he is drawn (and whole the moment it is wanted),
+     so its ~40 MB is not paid by the game's load. Same pixels as the old all-at-once bake. */
+  sheet.fill = k => { while (!sheet.done && k-- > 0) { const i = sheet.next++; if (sheet.next >= n) sheet.done = true; if (!want(i)) continue;
+    const c = outline(champion(torn ? { ...POSES[i], torn: true } : POSES[i]), OUT), w = whiten(c); R[i] = c; L[i] = flipX(c); WR[i] = w; WL[i] = flipX(w); sheet.real++; } return sheet.done; };
+  if (!lazy) sheet.fill(n);
+  return sheet; };
 export const bakeChampion = () => bakeSheet(false);      /* P1: the pennanted sheet (the poses of his first phase) */
-export const bakeChampionTorn = () => bakeSheet(true);   /* P2 on: the pennant torn away, shielded then shieldless */
+export const bakeChampionTorn = lazy => bakeSheet(true, lazy);   /* P2 on: the pennant torn away, shielded then shieldless */
 
 /* THE BESTIARY CARD: he stands on the Long Bridge under a gate tower's arch, the great bell hanging in it (portrait, 1.0 scale, two breaths) */
 export const bakeCard = () => {
