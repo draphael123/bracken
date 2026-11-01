@@ -54,7 +54,7 @@ export function profileOf(p) {
 /* THE BUILD a player carries at a level (claude/bot2 #3). 'bare' = the even card and no skills (the lab's floor, as BKT.setHeroLevel
    leaves him). 'typical' = a card leaning on health and damage as players pick (45% vigor, 35% might, 20% endurance), the milestone perks a
    fighter takes (iron hide, great heart, mastery...), and the loadout he would have bought by then: his best damaging skills unlocked at
-   that level, as many as his slots hold (two, three from L16), at rank one. Gold is flush from the eighth wood on (scratch/audit-econ.md),
+   that level, as many as his slots hold (ONE, two from L30: Daniel 11-01), at rank one. Gold is flush from the eighth wood on (scratch/audit-econ.md),
    so "affordable" is "unlocked". */
 export const TYPICAL_SKILLS = {   /* each hero's damaging actives, best first (tools/skill-balance-probe.mjs: damage per cast) */
   knight: ['swordOfRealm', 'groundSlam', 'lunge', 'whirlwind', 'disarm', 'shieldThrow'],

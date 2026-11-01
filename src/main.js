@@ -4736,10 +4736,10 @@ function seatLevelUp(n) { const mh = P.maxHp; applyUpgrades(); P.hp = Math.min(P
 const fightLive = () => !!(bossActive || miniActive || ambushLive() || eliteList.some(e => e.elite && OKD.isKnightT(e.t) && !e.paid && (!e.alive || (P && Math.abs(P.x - e.x) < 192 && Math.abs(P.y - e.y) < 80))));   /* a Warden's level-up waits until his gate and purse settle; nearby Wardens still fighting hold the card too */
 /* WHAT A LEVEL-UP SAYS: the growth, the heal and the passives, trimmed until it is two lines of the hint (textfit's rule) */
 function levelUpLine(h, n, from) { const before = grow(h, from), after = grow(h, n), got = passivesArriving(h, from, n);
-  const slot2 = from < SECOND_SLOT_LEVEL && n >= SECOND_SLOT_LEVEL ? ' A SECOND SKILL SLOT.' : '', pas = (got.length ? (got.length > 1 ? ' PASSIVES: ' + got[0].name + ' +' + (got.length - 1) + ' MORE.' : ' PASSIVE: ' + got[0].name + '.') : '') + slot2;
+  const slot2 = from < SECOND_SLOT_LEVEL && n >= SECOND_SLOT_LEVEL ? ' A SECOND SKILL SLOT.' : '', pas = (got.length ? (got.length > 1 ? ' PASSIVES: ' + got[0].name + ' +' + (got.length - 1) + ' MORE.' : ' PASSIVE: ' + got[0].name + '.') : '') + slot2;   /* (Daniel 11-01: level 30 opens the second skill slot - said in the level-up line) */
   const head = 'LEVEL ' + n + (n - from > 1 ? ' (+' + (n - from) + ')' : '');
   const owe = picksOwed(PROG, h, n) + milestonesOwed(PROG, h, n).length;   /* THE CARD (LEVELING): the growth is a pick now, so the line says there is one to make */
-  const tries = [head + ': ' + (owe ? (owe > 1 ? owe + ' CARDS' : 'A CARD') + ' TO CHOOSE. ' : '+' + (after.hp - before.hp) + ' HEALTH. ') + 'FULLY HEALED.' + pas, head + '. FULLY HEALED.' + pas];
+  const tries = [head + ': ' + (owe ? (owe > 1 ? owe + ' CARDS' : 'A CARD') + ' TO CHOOSE. ' : '+' + (after.hp - before.hp) + ' HEALTH. ') + 'FULLY HEALED.' + pas, head + '. FULLY HEALED.' + pas, head + '. FULLY HEALED.' + slot2];
   return tries.find(s => wrap(s, VW - 40, 6).length <= 2) || tries[tries.length - 1]; }
 function levelHealTick() { const o = lvHealOwed; if (!o || state !== 'play' || fightLive()) return; const p = players ? players[0] : P; if (!p || p.dead) return;
   lvHealOwed = null; p.hp = p.maxHp; p.hpShown = p.maxHp; p.st = p.maxSt;
