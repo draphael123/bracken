@@ -6,3 +6,6 @@ tools/foreground-invisible-source/candidate-main.js -text
 tools/foreground-invisible-source/foreground-invisible.js -text
 tools/wall-pattern-browser-profile.mjs -text
 tools/wall-pattern-cdp.mjs -text
+
+tools/reaper-projection-source-nov01/candidate-main.js -text
+tools/reaper-projection-source-nov01/candidate-chars.js -text

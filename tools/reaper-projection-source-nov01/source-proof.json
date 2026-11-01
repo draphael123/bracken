@@ -1,0 +1,103 @@
+{
+  "time": "2026-11-01T16:23:19.646Z",
+  "sourceGame": "62d9c02c102decc69ceaef4e1ec593a23170f1ff",
+  "sourceTree": "d6f20846727ec42b3cca651d1b061136d9c6d2f1",
+  "originalMainSha256": "81866b69fec64de5fdd00da316fb0d1e8e997ae9912f73f280981f0a70cb36d8",
+  "originalCharsSha256": "be523bab6154a4a0f6b91ca3f822cbde96d447a2f51e5809c22fa86f25ca2cb1",
+  "originalPxSha256": "9d3feee0d3a14e186f3259e7b7a1279b579989a0461de55d594f676f525533ae",
+  "candidateMainSha256": "64dd83f9e1ecb5d4c888dd8f4f4a3c6e49cb4e1a9c493a33519c377ac91f0342",
+  "candidateCharsSha256": "a391ada1fb45c2d1f6e24aaaa2101f54ece4425ff6628313834600c12281ecdd",
+  "originalReaperBodySha256": "0697c40b3dd046cb77e6484fad0cc1ebfbee3760e6c4041ea720e8799fbe1cd6",
+  "workerBodyUndoExact": true,
+  "originalBossFunctionBytesPreserved": true,
+  "originalBossAdapter": "function bkHeroSet(K) {\n  const dark = c => { if (!c || !c.width) return c; const [d, x] = canvas(c.width, c.height); x.drawImage(c, 0, 0); const im = x.getImageData(0, 0, c.width, c.height), p = im.data;\n    for (let i = 0; i < p.length; i += 4) { if (!p[i + 3]) continue; const lit = (p[i] > 200 && p[i + 1] < 130 && p[i + 2] < 140) || (p[i] === 208 && p[i + 1] === 40 && p[i + 2] === 64);   /* the CRIMSON lights in the helm stay lit (claude/bkpolish: this tested for the old green, so the red lights were being darkened too), and so do the boss's blood-red horn tips */\n      if (!lit) { p[i] = Math.round(p[i] * 0.6); p[i + 1] = Math.round(p[i + 1] * 0.58); p[i + 2] = Math.round(p[i + 2] * 0.66); } }\n    x.putImageData(im, 0, 0); return d; };\n  const one = (side, [k, i]) => { const a = side[k] ?? side.idle; return dark(Array.isArray(a) ? a[Math.min(i, a.length - 1)] : a); };\n  const Rr = UNBF.BK_POSES.map(q => one(K.R, q)), W = Rr.map(c => whiten(c));\n  return { R: Rr, L: Rr.map(flipX), white: { R: W, L: W.map(flipX) }, ax: K.ax, ay: K.ay, w: 12, h: 24 };\n}",
+  "originalBossAdapterSha256": "cba2ce4108d5dd1ad00777ecacc73ae90418cb8cb67a5b2ba4a2c73a44bd6e15",
+  "originalMainLineCountPreserved": true,
+  "sourceUndo": {
+    "tailBefore": "const R = F, L = {}; for (const k in F) L[k] = mirror(F[k]);",
+    "tailAfter": "const R = F, L = {}; if (__projection === __REAPER_RIGHT && __reaperProjectionSafe(F)) { KP = Object.assign({}, KP0); BODY_REF = BODY; PLUME_REF = PLUME; return { R, ...KNIGHT_ANCHOR, ay: KNIGHT_ANCHOR.ay + ATTACK_HEADROOM }; } for (const k in F) L[k] = mirror(F[k]);",
+    "extra": "\n// Private eager projection only: no deferred canvas, Proxy, accessor or public graph replacement.\nconst __REAPER_RIGHT = Symbol('private right rows');\nconst __rpApply = Reflect.apply, __rpDesc = Object.getOwnPropertyDescriptor, __rpProto = Object.getPrototypeOf, __rpKeys = Reflect.ownKeys, __rpString = Function.prototype.toString;\nconst __rpCP = CanvasRenderingContext2D.prototype, __rpHP = HTMLCanvasElement.prototype, __rpDP = Document.prototype, __rpAP = Array.prototype, __rpOP = Object.prototype;\nconst __rpNative = f => typeof f === 'function' && /\\[native code\\]/.test(__rpApply(__rpString, f, []));\nconst __rpMethods = ['drawImage','fillRect','translate','scale'].map(k=>[k,__rpDesc(__rpCP,k).value]);\nconst __rpProperties = ['fillStyle','globalCompositeOperation'].map(k=>[k,__rpDesc(__rpCP,k)]);\nconst __rpDimensions = ['width','height'].map(k=>[k,__rpDesc(__rpHP,k)]);\nconst __rpContext = __rpDesc(__rpHP,'getContext').value, __rpCreate = __rpDesc(__rpDP,'createElement').value, __rpMap = __rpDesc(__rpAP,'map').value, __rpIsArray = Array.isArray;\nconst __rpInitial = [__rpApply,__rpDesc,__rpProto,__rpKeys,__rpString,__rpContext,__rpCreate,__rpMap,__rpIsArray,...__rpMethods.map(x=>x[1]),...__rpProperties.flatMap(x=>[x[1].get,x[1].set]),...__rpDimensions.flatMap(x=>[x[1].get,x[1].set])].every(__rpNative);\nfunction __reaperProjectionSafe(F) {\n  if (!__rpInitial || __rpDesc(document,'createElement') || __rpDesc(__rpDP,'createElement')?.value !== __rpCreate || __rpDesc(__rpHP,'getContext')?.value !== __rpContext || __rpDesc(__rpAP,'map')?.value !== __rpMap || Array.isArray !== __rpIsArray || __rpProto(F) !== __rpOP) return false;\n  if (__rpKeys(__rpOP).some(k=>__rpDesc(__rpOP,k).enumerable)) return false;\n  for (const [k,f] of __rpMethods) if (__rpDesc(__rpCP,k)?.value !== f) return false;\n  for (const [p,list] of [[__rpCP,__rpProperties],[__rpHP,__rpDimensions]]) for(const [k,d] of list) { const n=__rpDesc(p,k); if(!n||n.get!==d.get||n.set!==d.set)return false; }\n  for (const k of __rpKeys(F)) { const d=__rpDesc(F,k); if(!d||!('value'in d))return false; const a=__rpIsArray(d.value)?d.value:[d.value]; if(__rpProto(a)!==__rpAP||__rpDesc(a,'map'))return false;\n    for(let i=0;i<a.length;i++){const q=__rpDesc(a,''+i);if(!q||!('value'in q))return false;const c=q.value;if(!c||__rpProto(c)!==__rpHP||__rpDesc(c,'width')||__rpDesc(c,'height'))return false;}\n  } return true;\n}\nexport function bakeReaper(skin = {}, previewOnly = false) { return __privateReaperRows(skin, previewOnly); }\nexport function bakeReaperBossRightForCard(skin = {}) { BOSS_HORNS = true; try { return __privateReaperRows(skin, false, __REAPER_RIGHT); } finally { BOSS_HORNS = false; } }\n"
+  },
+  "candidateFiles": [
+    "tools/reaper-projection-source-nov01/candidate-main.js",
+    "tools/reaper-projection-source-nov01/candidate-chars.js"
+  ],
+  "settings": {
+    "cpu": 4,
+    "viewport": [
+      915,
+      412
+    ],
+    "dpr": 2.625,
+    "rendererMb": 1536,
+    "admissionMb": 4352,
+    "evalDeadlineMs": 240000,
+    "outerTimeoutMinutes": 15
+  },
+  "mechanism": "Eager unchanged right-pose painter and original palette/horn cleanup; privately omit only unused derived sides for the single bkHeroSet consumer. Every public API still returns native canvases and ordinary data graphs; no deferral,Proxy or accessor.",
+  "privateConsumerClosure": {
+    "line": 22294,
+    "onlyReadsRightAndAnchor": true,
+    "doesNotPublishTemporaryKit": true
+  },
+  "expectedSkippedFinalDerivativeCalls": 909,
+  "contextCountsScope": "Actual native px.canvas calls in component only; not Game allocation bytes or whole startup saving",
+  "componentRequired": [
+    "selected boss pixels/context/metadata/aliases",
+    "complete right-graph equality",
+    "original public baker behavior",
+    "gear/weapon/skin and horn/palette restoration",
+    "native hook/inherited-array fallback",
+    "failure propagation and cleanup",
+    "three controlled factory rounds"
+  ],
+  "noSnapshotHandlePublished": true,
+  "noLazyMutablePaletteGearWeaponOrCanvasSharing": true,
+  "priorSnapshotsRemainSeparate": true,
+  "noTimingOrGameGainYet": true,
+  "adopted": false,
+  "overallWorkComplete": false,
+  "allThreeMismatches": [
+    "mummer6SUCCESSFUL hits versus2..5",
+    "tower-collapse/Tome rebound at200frames",
+    "offscreen mage sampling"
+  ],
+  "expected": {
+    "compatibilityCases": 20,
+    "timingRows": 9,
+    "projectedConfigurations": 8,
+    "publicDefaultCases": 3,
+    "hookFallbackCases": 7,
+    "injectedFailureCases": 2,
+    "globalRngCalls": 0
+  },
+  "counterAdapter": {
+    "sameReferenceAndCandidatePxOnly": true,
+    "doesNotChangeNativeMethodsOrCapabilities": true,
+    "recordsEveryActualPxCanvasCallAndRetainsForExplicitZeroCleanup": true,
+    "notAllGameNativeAllocationCount": true
+  },
+  "guide": {
+    "minimumEveryRoundFactoryGainVersusFasterControlPercent": 10,
+    "notWholeStartupGain": true,
+    "noBroaderCycleUnlessWholeStartupQualificationGenuinelyJustified": true
+  },
+  "sourceFiles": [
+    {
+      "file": "tools/reaper-projection-source-nov01/candidate-main.js",
+      "sha256": "64dd83f9e1ecb5d4c888dd8f4f4a3c6e49cb4e1a9c493a33519c377ac91f0342"
+    },
+    {
+      "file": "tools/reaper-projection-source-nov01/candidate-chars.js",
+      "sha256": "a391ada1fb45c2d1f6e24aaaa2101f54ece4425ff6628313834600c12281ecdd"
+    },
+    {
+      "file": "tools/reaper-projection-page-nov01.mjs",
+      "sha256": "5a8da5628f44da22a88defd81d1dc991221e0a793bfcce4d41761234b9151ce0"
+    },
+    {
+      "file": "tools/reaper-projection-component-nov01.mjs",
+      "sha256": "8bcc257c4f7e31f734da0153cd43174a303dd26b4423e14373279817728680f1"
+    }
+  ]
+}
