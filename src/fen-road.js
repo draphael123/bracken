@@ -45,7 +45,7 @@ export const ARENA = { x0: 407, x1: 450, gate: 405, exit: 448, wallR: 451, trigg
      freshly laid plank SAGS like a rotten section (the next lure). THE PROPS: the crossing's torches, warning boards and pennants stand on their own boards and topple into the fen when
      those boards go (src/fen-road-hands.js) */
   bankL: [407, 409], bankR: [446, 450], water0: 410, water1: 445,
-  bundles: [[408, 17, { stock: 2, refill: 9 }], [447, 17, { stock: 2, refill: 9 }]],
+  bundles: [[408, 17, { stock: 3, refill: 6 }], [447, 17, { stock: 3, refill: 6 }]],
   props: [['torch', 414], ['torch', 428], ['torch', 442], ['warn', 420], ['warn', 435], ['pennant', 424], ['pennant', 438], ['torch', 411], ['torch', 445]] };
 
 export function buildFenRoad({ painter, T, TS }) {

@@ -30,16 +30,16 @@ export const BT = {
   rest: [0.5, 0.4], hide: 0.4, wardMul: 0.4, p2: 0.5,
   sink: 0.45, swim: [0.6, 0.5], swimV: 180,
   burst: { track: 0.6, lock: 0.65, t: 0.3, r: 18, h: 40, dmg: 24, kick: -300, rise: 0.5 },
-  stuck: { t: [4.2, 3.6], mul: 2, cap: 0.2, heave: 0.6, ward: 3, w: 52 },
+  stuck: { t: [4.2, 3.6], mul: 2, cap: 0.25, heave: 0.6, ward: 3, w: 52 },
   drag: { tell: [0.85, 0.7], t: 0.32, reach: 118, h: 12, dmg: 15, pull: 210, rec: 0.6, range: 150 },
   hurl: { tell: [0.8, 0.65], flight: 1.0, r: 16, dmg: 15, spread: 56, rec: 0.55 },
   rip: { tell: 1.4, t: 0.6, roar: 0.8 },
   /* (claude/bogtroll2) THE WAVE SLAP: go = under, swimming for the far edge; tell = up there, arms over the fen (the ripple line); slap = the release; v = the crest's speed along the
      road, crest = its half-width (px); a hero whose feet are lower than floorY - clear when the crest passes under is struck: dmg, kick up, push on; lift = how high the boards rise (drawn) */
-  wave: { go: 0.55, tell: [1.0, 0.85], slap: 0.32, v: 175, crest: 13, clear: 9, lift: 9, dmg: 12, kick: -250, push: 80, rec: 0.6, edge: 26, every: 3 },
+  wave: { go: 0.55, tell: [1.0, 0.85], slap: 0.32, v: 175, crest: 13, clear: 9, lift: 9, dmg: 10, kick: -250, push: 80, rec: 0.6, edge: 26, every: 4 },
   /* THE PILING SWING (phase two): tell = wrenching the post out (the gap opens at its end), wind = the post back over his shoulder (the arc told red), t = the swing; the club's box:
      reach in front, back behind, top..bot over the road (a standing or ducking hero is in it; a roll's i-frames or a jump clear it); push = the knock-back */
-  pile: { tell: 0.85, wind: 0.5, t: 0.22, reach: 112, back: 34, top: 30, bot: 12, dmg: 18, push: 170, rec: 0.75, range: 150, every: 2 },
+  pile: { tell: 0.85, wind: 0.5, t: 0.22, reach: 112, back: 34, top: 30, bot: 12, dmg: 14, push: 170, rec: 0.75, range: 150, every: 3 },
 };
 export const BT_RELAY = 'THE ROAD DOES NOT MEND. TAKE A PLANK FROM A BANK AND LAY IT AT THE BROKEN EDGE: A FRESH PLANK SAGS - HIS NEXT LURE.';   /* (claude/bogtroll2) told once, as he tears free of the first wreck */
 export const BT_SAY = { wake: 'THE BOG TROLL', rule: 'HE FEELS YOUR WEIGHT. LURE HIS BURST UNDER A ROTTEN SECTION.', stuck: 'STUCK IN THE BOARDS', free: 'HE TEARS FREE', ward: 'HE SHAKES OFF THE WRECK',
@@ -262,7 +262,7 @@ function btPlan0(s) {
     if (s.held && slots.length) { const sl = slots.slice().sort((a, b) => Math.min(Math.abs(a.x0 - P.x), Math.abs(a.x1 - P.x)) - Math.min(Math.abs(b.x0 - P.x), Math.abs(b.x1 - P.x)))[0];
       const fromL = P.x < sl.x0 + 2, ex = fromL ? sl.x0 - 7 : sl.x1 + 7; out.gx = ex; out.noJump = true; out.face = fromL ? 1 : -1;
       if (Math.abs(P.x - ex) < 6 && P.ground) { out.gx = P.x; out.talk = true; out.why = 'lay the plank'; } else out.why = 'carry the plank to the edge'; return out; }
-    if (!s.held && !secs.length && slots.length && bundles.length && e.mode !== 'stuck') { const b = bundles.slice().sort((a, q) => Math.abs(a.x - P.x) - Math.abs(q.x - P.x))[0];
+    if (!s.held && secs.length <= 1 && slots.length && bundles.length && e.mode !== 'stuck' && !(secs.length && (e.mode === 'sink' || e.mode === 'under'))) { const b = bundles.slice().sort((a, q) => Math.abs(a.x - P.x) - Math.abs(q.x - P.x))[0];
       out.gx = b.x; if (Math.abs(P.x - b.x) < 9 && P.ground) { out.gx = P.x; out.talk = true; out.why = 'take a plank'; } else out.why = 'to the bundle'; return out; } }
   /* 6. HE IS DOWN THERE: go and stand on a rotten section (the lure) */
   if (e.mode === 'sink' || e.mode === 'under') {
