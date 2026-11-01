@@ -157,7 +157,7 @@ import * as EG from './exit-gates.js';   /* THE EXIT GATES BY REGION (claude/exi
 const EGSFX = { light: () => SFX.lightFull(), open: () => SFX.gateOpen() };
 import * as SV from './survival.js'; import * as SKK from './skill-k.js';   /* (claude/lategamea) the one skill damage rule: swordDmg x k x amul */  import * as F2 from './flasks2.js';   /* FLASKS 2 (claude/flasks2, Daniel 10-08): the flask row, the drink, the store's FLASKS tab, the finds and objectives */   /* SURVIVAL (claude/survival, Daniel 10-07): the flask, dry shrines, % hazards and the exams' deadly spikes - the numbers live there */
 import { JUICE, blowClass, takenClass, blockClass, stopFor, shakeAdd, safeKnock, weaponOf } from './juice.js';   /* THE JUICE TABLE: one row per weight class, read by every landed blow and every blow the hero takes (tools/juice.mjs) */
-import { LEGACY_NODES, growthNodes, SKILLS, importProgress, exportProgress, loadProgress, migrateProgress, growthAt, skillScale, slotsAt, skillFor, skillsFor, equipped, SECOND_SLOT_LEVEL, buySkill, equipSkill, passiveOn, passiveLadder, passivesArriving, CARD, CARD_CAP, CARD_FULL, PERKS, RESPEC_SILVER, skillRank, rankUp, rankPrice, rankLevel, RANK_MAX, RANK_MUL, cardOf, evenCard, picksSpent, picksOwed, milestonesOwed, perkOffer, perkOn, perkRank, thrOn, thrNext, THRESH, MINOR_PERKS, ALL_HERO_PERKS, PYRO_CARDS, HERO_PERK_MAX, levelsToPerk, nextMilestone, techniquesArriving, pickCard, pickMilestone, respecCard, coopOpen, DEFAULT_HEROES, MAX_SLOTS } from './progression.js';
+import { LEGACY_NODES, growthNodes, SKILLS, importProgress, exportProgress, loadProgress, migrateProgress, growthAt, skillScale, slotsAt, skillFor, skillsFor, equipped, SECOND_SLOT_LEVEL, buySkill, equipSkill, passiveOn, passiveLadder, passivesArriving, CARD, CARD_CAP, CARD_FULL, PERKS, RESPEC_SILVER, skillRank, rankUp, rankPrice, rankLevel, RANK_MAX, RANK_MUL, cardOf, evenCard, picksSpent, picksOwed, milestonesOwed, perkOffer, perkOn, perkRank, thrOn, thrNext, THRESH, MINOR_PERKS, ALL_HERO_PERKS, PYRO_CARDS, HERO_PERK_MAX, levelsToPerk, nextMilestone, techniquesArriving, techOn, upgRank, milestoneName, isTechLevel, isUpgradeLevel, techniqueById, pickCard, pickMilestone, respecCard, coopOpen, DEFAULT_HEROES, MAX_SLOTS } from './progression.js';
 import * as TR from './title-region.js';   /* THE TITLE BY REGION (claude/titleregion): which region the last-played slot has reached */
 import { depthsOf, gateOf } from './campaign-order.js'; import { roadEndId, roadTally } from './ending.js';   /* CATCH-UP XP: how deep a level sits is the level a hero is expected to be in it */
 import { GROUND_KITS } from './dressing.js';
@@ -798,6 +798,9 @@ const LV_GROW = h => grow(h || hero(), heroLevel(h)).ranks;
 const perk = id => perkOn(PROG, hero(), id);   /* a MILESTONE PERK this hero took (src/progression.js PERKS) */
 /* LEVELING2 (Daniel 10-04): prk = the RANK of the hero's OWN milestone perk (HERO_PERKS: 0..5), thr = a stat THRESHOLD (stat 'v'|'e'|'m', 0 = ten picks, 1 = twenty) */
 const prk = id => perkRank(PROG, hero(), id);
+/* THE L25-L50 KIT (claude/knightid, src/progression.js 'CARD v2'): tech(id) = this hero took that TECHNIQUE; upg(id) = the rank (0, 1, 2) of that UPGRADE. A trial lends none. */
+const tech = id => techOn(PROG, hero(), id);
+const upg = id => upgRank(PROG, hero(), id);
 const thr = (stat, i) => thrOn(PROG, hero(), stat, i);
 let mendSeen = 0;   /* TURNED BLOW: the count of turned blows last frame */
 const GEO_LIFE0 = GEO_K.life, GEO_PERFECT0 = GEO_K.ward.perfect;   /* her stone's life and the rune-ward's perfect window before the hero's own perks */
@@ -4725,7 +4728,9 @@ function xpKill(e) { if (!e || e.xpPaid || !e.xpKey || e.harmless || !xpWood()) 
    the growth, the heal, and any passive that came with the level - never a slot: there are two, always. */
 /* TECHNIQUE UNLOCKS (s5, a later lane): src/progression.js TECHNIQUES is empty; when it holds a move for this hero at L10/20/30, the level that crosses it
    records it and calls techniquePractice(move), the short practice moment that lane writes. Nothing here takes L20/L30 from the subclasses (parked). */
-function teachTechnique(n, from) { const got = techniquesArriving(hero(), from, n); if (!got.length) return; PROG.tech = PROG.tech || {}; for (const k of got) PROG.tech[hero() + ':' + k.id] = n; if (typeof techniquePractice === 'function') techniquePractice(got[0]); }
+function teachTechnique(n, from) { return; }   /* (claude/knightid: a technique is TAUGHT when its card is taken - see cardTake / techniquePractice - not when the level arrives: it is a pick now, deferred if passed over) */
+/* THE UNLOCK BANNER: a new move taken from the card. The one line says the input and the effect; it is said again by the controls card (src/controls.js) and the hero card. */
+function techniquePractice(t) { PROG.tech = PROG.tech || {}; PROG.tech[hero() + ':' + t.id] = heroLevel(); hintSay('mechanic', 7, 'NEW MOVE: ' + t.name + '. ' + t.teach + '.'); ringAt(P.x, P.y - 12, 26, '#ffd36b', 0.5); number(P.x, P.y - 40, t.name, '#ffd36b'); if (SFX.medal) SFX.medal(); }
 function levelUp(n, from) { lvUpN = n; PROG.cardNew = 1; if (state !== 'play') return; if (from === undefined) from = n - 1; teachTechnique(n, from);
   lvUpT = 2.6; const mh = P.maxHp; applyUpgrades(); regear(); P.hp = Math.min(P.maxHp, P.hp + Math.max(0, P.maxHp - mh));
   SFX.rankUp(); TCH.buzz('levelup'); ringAt(P.x, P.y - 12, 26, '#ffd36b', 0.5); ringAt(P.x, P.y - 12, 14, '#fff6c8', 0.35); motes(P.x, P.y - 10, 14, 10); number(P.x, P.y - 34, 'LEVEL UP', '#ffd36b'); seatLevelToast(P, n);
@@ -4765,6 +4770,7 @@ function closeCard() { if (!cardUi) return; delete PROG.cardNew; const back = ca
 function cardTake(i) { const c = cardNow(); if (!c || !cardUi) return; const h = hero(), lv = heroLevel(h), k = c.opts[i]; if (!k) return;
   const err = c.kind === 'perk' ? pickMilestone(PROG, h, c.n, k.id, lv) : pickCard(PROG, h, k.id, lv);
   if (err) { SFX.buzz(); cardUi.msg = err.toUpperCase(); cardUi.msgT = 2; return; }
+  if (k.tech) { const tt = techniqueById(h, k.id); if (tt) techniquePractice(tt); }   /* (claude/knightid) a technique taken is taught at once */
   const mh = P.maxHp, mst = P.maxSt; applyUpgrades(); P.hp = Math.min(P.maxHp, P.hp + Math.max(0, P.maxHp - mh)); P.st = Math.min(P.maxSt, P.st + Math.max(0, P.maxSt - mst));
   saveProgress(); SFX.equip(); statFlash = 1; cardUi.msg = k.name + ' TAKEN'; cardUi.msgT = 1.6; if (!cardNow() && !cardUi.review) closeCard(); }
 function cardRespec() { const h = hero(), free = !!(PROG.cardFree || {})[h], c = cardOf(PROG, h);
@@ -4784,12 +4790,12 @@ function updateCard(dt) { const u = cardUi; if (!u) { state = 'map'; return; } u
 }
 /* THE CARD'S LOOK (LEVELING2): the hero's own perk marked green and ranked; each stat card carries its THRESHOLD bar (VIGOR 7/10: BLOOD DRAWN) and what that
    threshold gives; under the three: how many levels to the next perk and the perks taken. A fresh card (a level-up, never a review) opens with a flash and slides in. */
-const perkName = id => { const k = PERKS.find(q => q.id === id) || MINOR_PERKS.find(q => q.id === id) || ALL_HERO_PERKS.find(q => q.id === id) || PYRO_CARDS.find(q => q.id === id); return k ? k.name : null; };   /* (claude/pyrokit: her L10 cards) */
+const perkName = id => { const kn = milestoneName(hero(), id); if (kn) return kn; const k = PERKS.find(q => q.id === id) || MINOR_PERKS.find(q => q.id === id) || ALL_HERO_PERKS.find(q => q.id === id) || PYRO_CARDS.find(q => q.id === id); return k ? k.name : null; };   /* (claude/pyrokit: her L10 cards) */
 function drawCard() { const u = cardUi; if (!u) return; const h = hero(), lv = heroLevel(h), c = cardNow(), cd = cardOf(PROG, h) || { v: 0, e: 0, m: 0, ms: {} }, gr = grow(h, lv);
   if (u.back === 'map') g.drawImage(MAPC, 0, 0); else { g.fillStyle = '#0e0c16'; g.fillRect(0, 0, VW, VH); } g.fillStyle = 'rgba(8,8,14,0.82)'; g.fillRect(0, 0, VW, VH);
   const owed = picksOwed(PROG, h, lv), mso = milestonesOwed(PROG, h, lv).length, calm = SET.reduceMotion;
   const slide = u.fresh && !calm ? Math.max(0, 1 - Math.min(1, u.t / 0.35)) : 0, oy = Math.round(slide * slide * 70);
-  text(c ? (c.kind === 'perk' ? (isMinorMs(c.n) ? 'LEVEL ' + c.n + ': A SMALL PERK' : 'LEVEL ' + c.n + ': A MILESTONE') : 'LEVEL UP: CHOOSE ONE') : 'THE LEVEL CARD', VW / 2, 6 - oy, UI.title, 'center', 12);
+  text(c ? (c.kind === 'perk' ? (isTechLevel(h, c.n) ? 'LEVEL ' + c.n + ': A NEW MOVE' : isUpgradeLevel(h, c.n) ? 'LEVEL ' + c.n + ': AN UPGRADE' : isMinorMs(c.n) ? 'LEVEL ' + c.n + ': A SMALL PERK' : 'LEVEL ' + c.n + ': A MILESTONE') : 'LEVEL UP: CHOOSE ONE') : 'THE LEVEL CARD', VW / 2, 6 - oy, UI.title, 'center', 12);
   text((HERO_SHORT[h] || h).toUpperCase() + '  LEVEL ' + lv + (owed + mso ? '   ' + (owed + mso) + ' TO CHOOSE' : ''), VW / 2, 22 - oy, UI.dim, 'center', 6);
   const opts = c ? c.opts : CARD, n = Math.max(1, opts.length), gap = 6, cw = Math.floor((VW - 16 - gap * (n - 1)) / n), top = 34 + oy, statCard = !c || c.kind === 'stat', ch = statCard ? 94 : 78;
   opts.forEach((k, i) => { const x = 8 + i * (cw + gap), sel = !!c && i === u.i, stat = !c || c.kind === 'stat', full = stat && (cd[k.id] || 0) >= CARD_CAP, own = !!k.own;
@@ -4805,10 +4811,11 @@ function drawCard() { const u = cardUi; if (!u) return; const h = hero(), lv = h
       if (th) text(have + '/' + th.at, x + cw - 8, top + 59, UI.gold, 'right', 6);   /* VIGOR 7/10 */
       text(fitName(th ? th.name : 'BOTH UNLOCKED', cw - 8, 6), x + cw / 2, top + 67, th ? UI.text : '#8fd160', 'center', 6);
       if (th) wrap(th.what, cw - 8, 6).slice(0, 2).forEach((ln, j) => text(ln, x + cw / 2, top + 76 + j * 8, UI.dim, 'center', 6)); }
-    else text(own ? 'YOURS  RANK ' + k.rank + '/' + HERO_PERK_MAX : k.card ? 'A NEW MOVE' : k.minor ? 'SMALL, ONCE' : 'ONCE, FOR GOOD', x + cw / 2, top + ch - 12, own ? '#8fd160' : UI.gold, 'center', 6);
+    else { text(k.tech ? 'A NEW MOVE' : k.up ? 'UPGRADE ' + (k.rank > 1 ? 'II' : 'I') : own ? 'YOURS  RANK ' + k.rank + '/' + HERO_PERK_MAX : k.card ? 'A NEW MOVE' : k.minor ? 'SMALL, ONCE' : 'ONCE, FOR GOOD', x + cw / 2, top + ch - 12, own ? '#8fd160' : k.tech || k.up ? '#ffd36b' : UI.gold, 'center', 6);
+      if (k.rec) text('RECOMMENDED', x + cw / 2, top + ch - 21, '#8fd160', 'center', 6); if (k.tech && k.input) wrap(k.input, cw - 8, 6).slice(0, 1).forEach(ln => text(ln, x + cw / 2, top + 20 + Math.min(3, wrap(k.what, cw - 8, 6).length) * 9, UI.dim, 'center', 6)); }   /* (claude/knightid) the pick that is the hero's NEXT technique is RECOMMENDED, and says its input */
     TCH.hit(x, top, cw, ch, () => { if (!c) return; if (u.i === i) cardTake(i); else { u.i = i; SFX.ui(); } }); });
   const below = top + ch + 5;
-  const nx = levelsToPerk(lv), nm = nextMilestone(lv);
+  const nx = levelsToPerk(lv, h), nm = nextMilestone(lv, h);
   text(nm === null ? 'EVERY PERK IS YOURS' : nx + (nx === 1 ? ' LEVEL' : ' LEVELS') + ' TO YOUR NEXT PERK (LEVEL ' + nm + ')', VW / 2, below, UI.gold, 'center', 6);
   const perks = Object.entries(cd.ms || {}).sort((a, b) => a[0] - b[0]).map(([, id]) => perkName(id)).filter(Boolean);
   if (perks.length) wrap('PERKS: ' + perks.join(', '), VW - 20, 6).slice(0, 3).forEach((ln, j) => text(ln, VW / 2, below + 10 + j * 8, UI.sel, 'center', 6));
