@@ -1,5 +1,5 @@
 {
-  "time": "2026-11-01T23:06:53.886Z",
+  "time": "2026-11-01T23:53:57.276Z",
   "status": "Prepared approved limited API component; original Game tree unchanged, cloud native and ordinary-publication contracts required",
   "sourceGame": "62d9c02c102decc69ceaef4e1ec593a23170f1ff",
   "sourceTree": "d6f20846727ec42b3cca651d1b061136d9c6d2f1",
@@ -24,7 +24,9 @@
     "admissionMb": 4352,
     "evalDeadlineMs": 240000,
     "outerJobMinutes": 15,
-    "nativePixelsContextsMetadataDescriptorsAliasesFreshnessOwnership": true
+    "nativePixelsContextsMetadataDescriptorsAliasesFreshnessOwnership": true,
+    "newHelperNodeContracts": 31,
+    "explicitDescriptorConsequences": 2
   },
   "noOriginalAssertionOrLimitChange": true,
   "noGameMainChanged": true,
@@ -70,5 +72,17 @@
     "correctedWithLiteralPlaceholders": true
   },
   "adoption": false,
-  "overallWorkComplete": false
+  "overallWorkComplete": false,
+  "cloudHold": {
+    "status": "held-at-user-request",
+    "reason": "Native GitHub connection failed. User requested skipping this step for now and working on other pieces.",
+    "userAnswer": "Can we just skip this for now. Work on the other piecs",
+    "noNetworkRetryOrCloudDispatch": true,
+    "initialLocalCommit": "81430ed8d65e730b3f77a98e508a5a7c95bb1e0b",
+    "lastVerifiedRemote": "9b8b263d9d3acc62dbba818d4ebc64f5b8c15e92",
+    "pushFailure": "github.com:443 connection failed after24193ms",
+    "oneReadOnlyRecovery": "Bounded gh read timed out at12000ms",
+    "connectorWriteDenied": "403 Resource not accessible by integration;no retry or permission change"
+  },
+  "actualTask3Preparation": "Prepared separately outside Game branches;its complete4file source has no inherited Game or native pass."
 }

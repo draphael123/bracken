@@ -38,3 +38,5 @@ export function installSpritePublicationBoundary(api,key,target){
  if(!define(api,key,{get,set,enumerable:original.enumerable,configurable:true}))throw TypeError('publication installation');
  return api;
 }
+
+export function assignDeferredSprite(target,key,value){if(!setDeferredSprite(target,key,value))throw TypeError('sprite assignment');return value;}
