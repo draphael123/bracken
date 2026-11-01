@@ -51,6 +51,7 @@ export const RG = {
   sweet: { near: 52, far: 138, quick: 14, draw: 26, rise: 10, down: 10 },   /* px from where it was loosed; focus each arrow that lands in it gives */
   mark: { t: 10, mul: 1.33, apex: 1.5, range: 300 },  /* THE MARK: s; x on every blow; px ahead it reaches (through walls) */
   knife: { reach: 18, dmg: 1.0 },                    /* THE KNIFE: a short cut (its box is 17 out, main.js attackBox0: a foe whose near edge is inside reach is POINT-BLANK), a little lighter than a sword */
+  guard: { hold: 0.24, proj: 0.4, melee: 1.0, drain: 0.8, breakTired: 1.2, minProj: 2 },   /* (claude/heroblocksb) THE BOW GUARD (HOLD C): s held before it is raised; x the shield's block cost for a projectile (stopped dead) and for a blade (half the blow); x the shared hold drain; s she cannot guard after it breaks; least wind an arrow costs */
   bash: { t: 0.22, rec: 0.18, st: 8, reach: 17, push: 210, dmg: 0.45, beat: 1 },   /* THE BOW-BASH: s up, s after; the shove; beat x the shared tap beat */
   flip: { vx: 175, vy: -235, high: 1.25, shots: 1 },  /* THE BACKFLIP: off the ground; HIGH FLIP x high */
   snare: { st: 12, life: 14, hold: 1.6, eliteHold: 0.8, bossLean: 22, dmg: 0.5, cd: 0.7, toothed: 4 / 3 },
@@ -72,7 +73,7 @@ export const rgTierAt = (i, q = 1, start = 0.14) => start + RG.tiers.at[i - 1] *
 export const rgTierFor = (held, q = 1, start = 0.14) => { let t = 0; for (let i = 1; i <= 3; i++) if (held >= rgTierAt(i, q, start) - 1e-6) t = i; return t; };
 
 export function makeRanger(api) {
-  const stats = { quick: 0, draws: 0, full: 0, rises: 0, downs: 0, pierces: 0, knife: 0, hits: 0, sweet: 0, focusFull: 0, marks: 0, markHits: 0, bashes: 0, parries: 0, tooStrong: 0,
+  const stats = { quick: 0, draws: 0, full: 0, rises: 0, downs: 0, pierces: 0, knife: 0, hits: 0, sweet: 0, focusFull: 0, marks: 0, markHits: 0, bashes: 0, parries: 0, tooStrong: 0, guards: 0, guardStopped: 0, guardHalf: 0, guardBroke: 0, guardRed: 0, guardBolt: 0, guardBehind: 0,
     snares: 0, snared: 0, restocked: 0, snatched: 0, flung: 0, kneels: 0, kneelHits: 0, flips: 0, flipShots: 0, picked: 0, refilled: 0, lost: 0, stuckWall: 0, stuckFoe: 0, empty: 0, riposteShots: 0,
     tier1: 0, tier2: 0, tier3: 0, fans: 0, fanHits: 0, focused: 0 };   /* (claude/chargetiers) the three tiers loosed, the fan's arrows that landed, FOCUSED T2/T3 */
   const P = () => api.P, T = () => api.tal();
@@ -260,6 +261,39 @@ export function makeRanger(api) {
     api.ringAt(p.x + p.face * 9, p.y - 12, 16, '#c8e89a', 0.3); api.sparks(p.x + p.face * 9, p.y - 12, p.face, 8); api.number(p.x, p.y - 28, 'BOW-BASH', '#c8e89a');
     api.noteParry(); api.trialEvent('parry'); return 'blocked'; }
 
+  /* ---- THE BOW GUARD (claude/heroblocksb, Daniel 10-30 22:15; HOLD C): the tap is the bow-bash and its arrow snatch, unchanged. Held past RG.guard.hold the bow is brought up
+     across her front in both hands (chars.js F.rgGuard) and she walks slowly behind it. A PROJECTILE from the front is stopped DEAD (a few points of wind, no damage); a blade from the
+     front costs HALF of the blow (and the wind the shield would pay). A RED blow and a bolt go through - the two NOs every guard has - and nothing from behind. Out of wind it
+     breaks: the whole blow, the stagger and the exhaust. A swing, a draw, a roll, a flip, the snare and the mark drop it; a still-held C raises it again. ---- */
+  const guardUp = p => !!p.rgGuard;
+  function guardStep(p, dt, keys, ctx) {
+    p.rgHeld = keys.block && !p.dead ? (p.rgHeld || 0) + dt : 0;
+    const want = !p.dead && p.rgHeld >= RG.guard.hold && !keys.up && !keys.down && !ctx.stunned && !ctx.dodging && !ctx.attacking && ctx.guardOk !== false && !p.plunge && !(p.rgBashT > 0)
+      && !(p.charge > 0) && !p.rgNock && !p.rgFlip && !(p.drinkT > 0) && (p.ground || p.swim) && !(p.guardTired > 0) && (p.st || 0) > 0;
+    if (want && !p.rgGuard) { p.rgGuard = true; p.rgGuardT = 0; stats.guards++; api.SFX.braceSet && api.SFX.braceSet(); api.ringAt(p.x + p.face * 8, p.y - 11, 9, '#c8e89a', 0.2); api.teachGuard && api.teachGuard(); }
+    else if (!want && p.rgGuard) { p.rgGuard = false; p.rgGuardT = 0; }
+    if (!p.rgGuard) return;
+    p.rgGuardT += dt; p.st -= api.ST.hold * RG.guard.drain * dt; p.stDelay = api.ST.delay;
+    if (p.st <= 0) { p.st = 0; p.rgGuard = false; p.guardTired = 0.8; p.stFlash = 0.5; api.SFX.guardBreak(); api.number(p.x, p.y - 22, 'TIRED', '#ffd36b'); }
+  }
+  /* A BLOW LANDING ON HER (main.js damagePlayer0): 'blocked' (a projectile stopped dead), 'half' (a blade: half the blow finds her; or the guard broke - see p.rgGuardBroke) or null.
+     proj: the blow is a seed in flight (main.js hands geo for every projectile it measures against her body) */
+  function guardTakes(fromX, dmg, unblockable, foe, pierce, proj) {
+    const p = P(); if (!guardUp(p)) return null;
+    const front = Math.sign(fromX - p.x) === p.face || fromX === p.x; if (!front) { stats.guardBehind++; return null; }
+    if (unblockable) { stats.guardRed++; return null; }                                       /* a RED blow is never turned */
+    if (pierce) { stats.guardBolt++; api.number(p.x, p.y - 30, 'THROUGH THE BOW', '#ff6b6b'); api.SFX.pierce && api.SFX.pierce(); return null; }   /* a bolt goes through a guard that was already up */
+    const base = api.blockCost(dmg), cost = proj ? Math.max(RG.guard.minProj, Math.round(base * RG.guard.proj)) : Math.round(base * RG.guard.melee);
+    if ((p.st || 0) < cost) {                                                                 /* THE BOW GIVES: the whole blow, the stagger, the exhaust */
+      p.st = 0; p.stFlash = 0.5; p.rgGuard = false; p.rgGuardT = 0; p.rgHeld = 0; stats.guardBroke++; api.SFX.guardBreak(); api.shakeCam(5, -p.face * 4); api.hitstop(0.1);
+      p.hurt = api.STAM.breakStagger; p.guardTired = Math.max(api.STAM.breakTired, RG.guard.breakTired); api.exhaust(p); api.number(p.x, p.y - 22, 'GUARD BREAK', '#ffd36b'); return null; }
+    p.st -= cost; p.stDelay = api.ST.delay;
+    if (proj) {                                                                               /* AN ARROW (or anything thrown) STOPPED ON THE BOW: the snatch's own sound, a short stop */
+      stats.guardStopped++; api.SFX.rgPick && api.SFX.rgPick(); api.SFX.block && api.SFX.block(); api.hitstop(0.045); api.shakeCam(1, -p.face * 1);
+      api.ringAt(p.x + p.face * 10, p.y - 12, 12, '#c8e89a', 0.22); api.sparks(p.x + p.face * 10, p.y - 12, p.face, 5); api.number(p.x, p.y - 28, 'STOPPED', '#c8e89a'); return 'blocked'; }
+    stats.guardHalf++; api.SFX.block && api.SFX.block(); api.hitstop(0.05); api.shakeCam(2, -p.face * 2);
+    api.ringAt(p.x + p.face * 9, p.y - 12, 11, '#c8e89a', 0.22); api.sparks(p.x + p.face * 9, p.y - 12, p.face, 6); api.number(p.x, p.y - 28, 'HALF', '#c8e89a'); return 'half'; }
+
   /* ---- ARROW SNATCH (claude/heropassa): main.js calls it before the seeds meet her body, as the ember flare's catch. The bash ON THE BEAT takes a yellow
      projectile out of the air in front of her: nothing taken, +1 arrow - or, the quiver full, it is flung straight back as her riposte arrow. A red one (noBlock,
      unblockable) and a chain (a haul, not a missile) go on to her ---- */
@@ -314,6 +348,7 @@ export function makeRanger(api) {
     if (cDown && free && keys.up) spendMark(p);                                                  /* UP+C: THE MARK */
     else if (cDown && free && keys.down && p.ground) setSnare(p);                                /* DOWN+C: THE SNARE */
     else if (cDown && free && !ctx.dodging) { if (ctx.guardOk === false) p.stFlash = 0.35; else bash(p); }   /* C: THE BOW-BASH (WINDED: none) */
+    guardStep(p, dt, keys, ctx);   /* (claude/heroblocksb) HOLD C: THE BOW GUARD */
     bashStep(p); stepArrows(p, dt); snareStep(p, dt);
     /* THE DRAW ROOTS HER (SOFT STEP: a slow walk; AIR DRAW: the fall slows while she holds it) */
     if (p.charge > 0) { if (p.ground || p.swim) { if (!t.softStep) p.vx = 0; else p.vx *= RG.draw.slow; } else if (t.airDraw && p.vy > 40) p.vy = 40; }
@@ -414,7 +449,7 @@ export function makeRanger(api) {
         for (const [sx, sy] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) { g.fillRect(x + sx * rr - (sx > 0 ? 3 - o : o), y + sy * rr - (o && sy > 0 ? 0 : 0), 4, 1); g.fillRect(x + sx * rr, y + sy * rr - (sy > 0 ? 3 : 0), 1, 4); }
         g.fillRect(x - rr - 3, y, 3, 1); g.fillRect(x + rr + 1, y, 3, 1); g.fillRect(x, y - rr - 3, 1, 3); g.fillRect(x, y + rr + 1, 1, 3); }
       g.fillStyle = '#ffd0c0'; g.fillRect(x, y, 1, 1); if (k) { g.fillRect(x - 1, y, 1, 1); g.fillRect(x + 1, y, 1, 1); g.fillRect(x, y - 1, 1, 1); g.fillRect(x, y + 1, 1, 1); } } }
-  function clear() { const p = P(); p.rgArrows = []; p.rgSnares = []; p.rgTraps = []; p.rgHawk = null; p.rgRain = null; p.rgNock = null; p.rgBashT = 0; p.rgFlip = null; p.rgWildT = 0; p.rgQ = maxQ(); p.rgRefT = 0; p.rgRsT = 0; p.rgRsE = 0; }
+  function clear() { const p = P(); p.rgArrows = []; p.rgSnares = []; p.rgTraps = []; p.rgHawk = null; p.rgRain = null; p.rgNock = null; p.rgBashT = 0; p.rgGuard = false; p.rgHeld = 0; p.rgFlip = null; p.rgWildT = 0; p.rgQ = maxQ(); p.rgRefT = 0; p.rgRsT = 0; p.rgRsE = 0; }
   const read = () => { const p = P(); ensure(p); return { stance: p.rgStance || 'bow', q: p.rgQ, max: maxQ(), focus: +(p.rgFocus || 0).toFixed(1), nock: !!p.rgNock, bashUp: bashUp(p), onBeat: onBeat(p), flip: !!p.rgFlip, cd: +(p.rgCd || 0).toFixed(3),
     arrows: p.rgArrows.map(a => ({ kind: a.kind, state: a.state, x: Math.round(a.x), y: Math.round(a.y), tag: a.tag, rip: a.rip, vy: Math.round(a.vy), free: !!a.free })), snares: (p.rgSnares || []).map(s => ({ x: Math.round(s.x), sprung: s.sprung > 0 })),
     refT: +(p.rgRefT || 0).toFixed(2), wildT: p.rgWildT || 0, stats: { ...stats } }; };
@@ -423,7 +458,7 @@ export function makeRanger(api) {
     return { stance: p.rgStance || 'bow', q: p.rgQ, mq, lying, refill: p.rgQ < mq ? Math.min(1, (p.rgRefT || 0) / rt) : 0 }; };   /* (a seat's plate reads the maxima her own update stored: p.rgMaxQ / p.rgRefMax) */
   const hud = () => hudOf(P(), maxQ(), refillT());
   return { RG, arrows, maxQ, hud, hudOf: p => hudOf(p, p.rgMaxQ || RG.quiver.n, p.rgRefMax || RG.quiver.refill), toggleStance: () => toggleStance(P()), bowReady, stance: () => P().rgStance || 'bow', press, nockStep, release: (w, tier) => release(P(), w, tier || 0), focusFull: () => focusFull(P()), quickShot: () => quickShot(P(), !P().ground), riseShot: () => riseShot(P()), downShot: () => downShot(P()),
-    bashTakes, snatchSeeds, kneeling: () => !!P().rgKneel, onBeat: () => onBeat(P()), bashUp: () => bashUp(P()), bash: () => bash(P()), setSnare: () => setSnare(P()), spendMark: () => spendMark(P()), markFoe: e => markFoe(P(), e), markMul, markOn, killed,
+    bashTakes, guardTakes, guardUp: () => guardUp(P()), snatchSeeds, kneeling: () => !!P().rgKneel, onBeat: () => onBeat(P()), bashUp: () => bashUp(P()), bash: () => bash(P()), setSnare: () => setSnare(P()), spendMark: () => spendMark(P()), markFoe: e => markFoe(P(), e), markMul, markOn, killed,
     flip: dir => flip(P(), dir), focusGain: n => focusGain(P(), n), giveArrow: n => giveArrow(P(), n), takeArrow: () => takeArrow(P()), pointBlank: () => pointBlank(P()),
     update, restock, kit, kitStep, draw: render, drawMarks, clear, read, resetStats: () => { for (const k in stats) stats[k] = 0; } };
 }

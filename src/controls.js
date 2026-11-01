@@ -156,10 +156,10 @@ const HEROES_C = {
   paladin:    ['conviction', tk => 'TAP ' + tk.c + ' SPEND, HOLD AEGIS'],   /* (PALADIN 3) the tap spends Conviction by tier */
   pirate:     ['hook catch / hook', tk => 'TAP ' + tk.c + ' CATCH, HOLD HOOK'],   /* (claude/heroblocksa) the tap is the HOOK CATCH (src/hook-catch.js) */
   reaper:     ['blood ward', tk => 'HOLD ' + tk.c + ', LET GO: NOVA'],
-  warden:     ['the deflect', tk => 'TAP ' + tk.c + '  (FULL: PHALANX)'],
+  warden:     ['deflect / brace', tk => 'TAP ' + tk.c + ' DEFLECT, HOLD BRACE'],   /* (claude/heroblocksb) hold = the spear-haft brace; the full-vigil tap is still the phalanx (the hint line) */
   geomancer:  ['rune-ward', tk => 'HOLD ' + tk.c + '  (SHE IS PLANTED)'],
   berserker:  ['take it', tk => 'HOLD ' + tk.c + ' (FULL: DOWN+' + tk.c + ' FRENZY)'],
-  ranger:     ['bow-bash', tk => 'TAP ' + tk.c + ' (ON THE BEAT: PARRY)'],
+  ranger:     ['bash / guard', tk => 'TAP ' + tk.c + ' BASH, HOLD GUARD'],   /* (claude/heroblocksb) hold = the bow guard; the bash on the beat is still her parry */
 };
 import { ROW as PLUNGE_ROW } from './plunges.js';
 export function cardRows({ hero = 'knight', binds = emptyBinds(), prof = 'pad1', swapZX = false, blockToggle = false } = {}) {
