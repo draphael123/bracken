@@ -1,3 +1,4 @@
+import * as SKK from './skill-k.js';   /* (claude/lategamea) the one skill damage rule: swordDmg x k x amul */
 // src/ranger.js - THE RANGER'S KIT (claude/ranger 2026-10-14, scratch/brief-ranger.md: Daniel 10-12, "didn't love the Berserker" - THE RANGER is the
 // fourth free starter). A hooded woodland archer: a LONGBOW, a QUIVER of a few arrows she has to go and pick up again, and a HUNTING KNIFE for
 // what gets too close. SHE COVERS SOME OF THE SCREEN, NOT ALL OF IT (Daniel's limits): her arrows ARC and DROP (~a third of the screen for a full
@@ -356,7 +357,7 @@ export function makeRanger(api) {
 
   /* ---- HER NINE BOUGHT ACTIVES (main.js rangerKit presses them through skillPress / cdReady / spend, like everyone's) ---- */
   const kit = {
-    volley() { const p = P(); api.kitPose(p, 'rgVolleyPose', 0.3); for (const [k, vy] of [[0.92, -95], [1, -55], [1.06, -18]]) loose(p, { kind: 'skill', vx: p.face * RG.draw.vx1 * k, vy, g: RG.draw.g, dmg: dmgBase() * 1.0 * api.amul('rgVolley'), tag: 'shot', free: true }); api.SFX.rgLoose && api.SFX.rgLoose(2); },
+    volley() { const p = P(); api.kitPose(p, 'rgVolleyPose', 0.3); for (const [k, vy] of [[0.92, -95], [1, -55], [1.06, -18]]) loose(p, { kind: 'skill', vx: p.face * RG.draw.vx1 * k, vy, g: RG.draw.g, dmg: dmgBase() * SKK.K.rgVolley * api.amul('rgVolley'), tag: 'shot', free: true }); api.SFX.rgLoose && api.SFX.rgLoose(2); },
     hawk() { const p = P(), e = quarry(p, 220); api.kitPose(p, 'rgHawkPose', 0.35); p.rgHawk = { x: p.x, y: p.y - 22, e, t: 0, strikes: 0, back: false }; api.SFX.rgHawk && api.SFX.rgHawk(); },
     leap() { const p = P(); api.kitPose(p, 'rgLeapPose', 0.4); p.vx = -p.face * 300; p.vy = -260; p.inv = Math.max(p.inv || 0, 0.3); loose(p, { kind: 'skill', vx: p.face * 120, vy: 260, g: 400, dmg: dmgBase() * 1.2 * api.amul('rgLeap'), tag: ['plunge', 'shot'], free: true }); api.SFX.rgFlip && api.SFX.rgFlip(); },
     bearTrap() { const p = P(); api.kitPose(p, 'rgTrapPose', 0.35); p.rgTraps = p.rgTraps || []; p.rgTraps.push({ x: p.x + p.face * 48, y: p.y, vy: -120, fly: 0.35, life: 16, held: null, sprung: 0 }); api.SFX.rgSnare && api.SFX.rgSnare(); },

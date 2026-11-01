@@ -47,6 +47,15 @@ export const CARD = [
  { id: 'm', name: 'MIGHT', what: '+1 DAMAGE', damage: 1 },
 ];
 export const CARD_CAP = 25;
+/* LATE-GAME TAPER (claude/lategamea, Daniel-approved 10-31 brief-lategame-1101 Q2A): the stat curve flattens so the L25+ milestone perks (real choices)
+   carry the growth, not raw stats. (1) a stat pick is FULL value for the first CARD_FULL (12) picks in that stat and HALF after (VIGOR +4, ENDURANCE +6,
+   MIGHT +1 every other pick); (2) the free growth is +2 hp a level to L24 then +1 hp a level, and +1 damage every 4th level to L24 then every 6th. */
+export const CARD_FULL = 16;
+export const FREE_TAPER_LV = 24;
+export const taperPicks = n => { n = Math.min(CARD_CAP, Math.max(0, n || 0)); return n <= CARD_FULL ? n : CARD_FULL + (n - CARD_FULL) * 0.5; };   /* full-value pick equivalents (halves allowed) */
+export const freeHp = lv => 2 * Math.min(lv, FREE_TAPER_LV) + Math.max(0, lv - FREE_TAPER_LV);
+export const freeStamina = lv => 2 * lv;   /* unchanged (Q7 stamina is optional and not part of this lane) */
+export const freeDamage = lv => Math.floor(Math.min(lv, FREE_TAPER_LV) / 4) + Math.floor(Math.max(0, lv - FREE_TAPER_LV) / 6);
 export const MILESTONES_MINOR = [5, 10, 15, 20];   /* LEVELING2 (Daniel 10-04): the early milestones - one SMALL perk from three, each once */
 export const MILESTONES_MAJOR = [25, 30, 35, 40, 45, 50];
 export const MILESTONES = [...MILESTONES_MINOR, ...MILESTONES_MAJOR];
@@ -152,9 +161,9 @@ export function respecCard(p, h) { const c = ensureCard(p, h); c.v = c.e = c.m =
 /* THE GROWTH a hero's level and card give. card omitted (undefined) = an even spread; null = no picks yet. */
 export function growthAt(h,lv,card){
  lv=Math.max(0,lv);const ranks=Math.min(lv,24)/12,c=card===undefined?evenCard(lv):(card||{v:0,e:0,m:0,ms:{}}),ms=Object.values(c.ms||{});
- const v=Math.min(CARD_CAP,c.v||0),e=Math.min(CARD_CAP,c.e||0),m=Math.min(CARD_CAP,c.m||0);
- const hp0=({knight:100,pyro:88,paladin:120,pirate:90,reaper:95,warden:100,geomancer:95,berserker:105,ranger:110}[h]||100)+2*lv+8*v;
- return {hp:Math.round(hp0*(ms.includes('heart')?1.1:1)),stamina:100+2*lv+12*e,damage:Math.floor(lv/4)+Math.floor(ranks*(h==='reaper'?1.5:1))+m,ranks,techniqueRank:Math.floor(ranks),skillMultiplier:skillScale(lv)*(ms.includes('arcane')?1.15:1),picks:{v,e,m}};
+ const v=Math.min(CARD_CAP,c.v||0),e=Math.min(CARD_CAP,c.e||0),m=Math.min(CARD_CAP,c.m||0),tv=taperPicks(v),te=taperPicks(e),tm=Math.floor(taperPicks(m));
+ const hp0=({knight:100,pyro:88,paladin:120,pirate:90,reaper:95,warden:100,geomancer:95,berserker:105,ranger:110}[h]||100)+freeHp(lv)+8*tv;
+ return {hp:Math.round(hp0*(ms.includes('heart')?1.1:1)),stamina:100+freeStamina(lv)+12*te,damage:freeDamage(lv)+Math.floor(ranks*(h==='reaper'?1.5:1))+tm,ranks,techniqueRank:Math.floor(ranks),skillMultiplier:skillScale(lv)*(ms.includes('arcane')?1.15:1),picks:{v,e,m}};
 }
 /* THE CARD'S MIGRATION (cardV 1): a save from before the card has levels and no picks. Every hero with XP gets his levels as an even spread
    (so nothing he had shrinks) and one FREE respec to make them his own; milestones (L25+) are left owed, to be chosen. Idempotent. */
