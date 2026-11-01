@@ -7,6 +7,8 @@
 // through the lab's own perception layer, like every other boss.
 // gormHands(c) -> { goal, strike } (null goal = no opinion: the generic hands keep theirs), or null when it has nothing to say.
 //   c = { BK, boss, P, k, A, h, f, reach, shielded, swing() }
+import { GORM } from './gorm.js';
+/* (claude/gorm3) KING GORM 3: a pot's red ring is stepped off; the sceptre's LOW pass is jumped as it comes, its HIGH pass ducked; the burning charge is jumped; the fire trail is stepped off */
 export function gormHands(c) {
   const { BK, boss: e, P, k, A, f } = c, G = BK.gorm && BK.gorm(); if (!G) return null;
   const d = e.x - P.x, ad = Math.abs(d), floor = A.floor, onFloor = Math.abs(P.y - floor) < 6;
@@ -16,6 +18,7 @@ export function gormHands(c) {
   /* the royal boar: jumped when it comes at you down its lane */
   const boar = BK.enemies().find(q => q.alive && q.t === 'royalboar' && (q.mode === 'charge' || q.mode === 'tell') && Math.abs(q.y - P.y) < 20 && (P.x - q.x) * q.face > 0);
   if (boar && boar.mode === 'charge' && Math.abs(P.x - boar.x) < 46) { jump(18); return { goal: null, strike: false }; }
+  for (const q of (G.pots || [])) if (Math.abs(P.x - q.tx) < GORM.pot.r + 8 && Math.abs(P.y - q.ty) < 24) return { goal: P.x + (P.x >= q.tx ? 1 : -1) * (GORM.pot.r + 16), strike: false };   /* (claude/gorm3) off the pot's red ring */
   if (e.stage === 'court') {
     /* the litter's charge: jumped as it comes (it runs the hall's length: a roll through it or a jump over the bearers) */
     if (e.mode === 'charge' && Math.sign(P.x - e.x) === e.cdir && ad < 74 && ad > 20) { jump(18); return { goal: null, strike: false }; }
@@ -35,6 +38,16 @@ export function gormHands(c) {
   }
   if (e.stage !== 'glade') return null;
   /* ---- P2: THE GLADE ---- */
+  /* (claude/gorm3) THE SCEPTRE: the low pass jumped a beat before it arrives, the high pass ducked while it comes back over */
+  for (const s of (G.sceptres || [])) { const back = s.u >= 0.5, dir = back ? -s.dir : s.dir, dx = P.x - s.x, v = Math.abs(s.R * Math.PI / GORM.sceptre.t * Math.cos(Math.PI * s.u)) + 40;
+    if (dx * dir < -6 || Math.abs(dx) > 120) continue; const eta = Math.abs(dx) / v;
+    if (!back && eta < 0.17) { jump(14); return { goal: null, strike: false }; }
+    if (back && eta < 0.4 && P.ground) { k.left = k.right = false; k.down = true; return { goal: null, strike: false, duck: true }; } }
+  /* (claude/gorm3) THE BURNING CHARGE: jumped as he comes; his fire trail stepped off */
+  if (e.mode === 'burnCharge' && Math.sign(P.x - e.x) === e.cdir && ad < 84 && ad > 18) { jump(18); return { goal: null, strike: false }; }
+  if (e.mode === 'burnChargeTell' && Math.sign(P.x - e.x) === e.cdir && ad < 140) return { goal: null, strike: false };
+  { const tz = (G.trail || []).find(z => P.x > z.x0 - 4 && P.x < z.x1 + 4); if (tz && P.ground) { const tr = G.trail; let lo = tz.x0, hi = tz.x1; for (let m = 1; m; ) { m = 0; for (const z of tr) { if (z.x1 >= lo - 1 && z.x0 < lo) { lo = z.x0; m = 1; } if (z.x0 <= hi + 1 && z.x1 > hi) { hi = z.x1; m = 1; } } }
+    return { goal: (P.x - lo < hi - P.x ? lo - 10 : hi + 10), strike: open }; } }
   if ((e.mode === 'clubHiTell' && e.modeT < 0.3 || e.mode === 'clubHi') && ad < 96 && Math.sign(P.x - e.x) === e.face) { k.left = k.right = false; k.down = true; return { goal: null, strike: false, duck: true }; }
   if ((e.mode === 'clubLoTell' && e.modeT < 0.12) && ad < 96) { jump(14); return { goal: null, strike: false }; }
   if (e.mode === 'quakeAir' && e.modeT < 0.16 && ad < 60) { jump(14); return { goal: null, strike: false }; }

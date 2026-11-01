@@ -18,6 +18,9 @@
 //      LOW: jump it), THE ROYAL HUNT (the horn: a boar and hounds, at 70% and 38%), THE CANOPY SHAKE (he punches the oak: burning cones on marked
 //      spots), THE LOG ROLL (jump it), THE BELLY QUAKE (jump the shockwave). What hangs in the oak is the opening: two CAGES (held, x2), the LOG TRAP
 //      (it rolls into him: knocked down, x1.75), the BEEHIVE (stung, x1.5). After every opening a told WARD (B3): the hangings glance off him 3 s.
+//   KING GORM 3 (claude/gorm3, Daniel 11-01, scratch/brief-gorm3-1101.md): P1 THE PITCH POT (a hero perched over his floor > 1.5 s: a lit pot lobbed,
+//      the red ring where it lands, a short burning-pitch patch; never at the ground). P2 THE SCEPTRE THROW (a boomerang: out LOW - jump; back HIGH - duck).
+//      ENRAGE at 25% of P2 (the crown cracks, he catches fire from his oak, the music lifts, one last boar; faster): RAGE-ONLY THE BURNING CHARGE (a fire trail).
 export const GORM = {
   hp1: 1000,              /* P1's bar (the old fight's 590 was one bar for the whole of him); P2's bar is hp2 / hp1 of whatever the game scaled hp1 to */
   hp2: 1000,
@@ -46,6 +49,14 @@ export const GORM = {
   huntAt: [0.70, 0.38],
   hangReset: { cage: 11, log: 13, hive: 14 },
   downedT: 3.5, stungT: 4, hiveR: 44,
+  /* (claude/gorm3, Daniel 11-01) KING GORM 3 - P1 THE PITCH POT: a hero ABOVE his floor (a deck, a plank, a ladder: > up px over it) for perch s straight
+     gets a lit pot lobbed at him (told: tell s; the red ring on the landing spot all through the flight); never at a hero on the ground; every s after a throw */
+  pot: { perch: 1.5, up: 12, tell: 0.9, every: 7, first: 3, r: 18, dmg: 14, g: 520, tMin: 0.85, tMax: 1.3, patch: 48, patchT: 2.5, drain: 0.12 },
+  /* P2 THE SCEPTRE THROW: a wide boomerang - out LOW (jump it), back HIGH (duck it). range = his distance + over, inside the glade; lowY / highY px off the floor */
+  sceptre: { tell: 0.9, every: 9, first: 6, over: 70, rMin: 150, rMax: 330, t: 2.1, lowY: 7, highY: 17, catchT: 0.5, minD: 50, maxD: 260, dmg: 18 },
+  /* ENRAGE at rageAt of P2's bar: the crown cracks, he catches fire, the horn calls one last boar; tempo x his cooldowns; RAGE-ONLY THE BURNING CHARGE (a fire trail) */
+  rageAt: 0.25,
+  rage: { tellT: 2.0, tempo: 1.25, walk: 1.2, chargeTell: 1.0, chargeV: 250, chargeEvery: 7, chargeFirst: 2.5, hitY: 26, endT: 0.9, trailT: 3.5, trailDrain: 0.12, dmg: 22 },
 };
 export const GORM_SAY = {
   wake: 'KING GORM UNDERLEAF', litter: 'THE LITTER BREAKS. HE STANDS', horn: 'THE HUNTING HORN', boar: 'THE ROYAL BOAR', penned: 'PENNED',
@@ -57,9 +68,12 @@ export const GORM_SAY = {
   hive: 'THE HIVE BURSTS', cagefall: 'THE CAGE FALLS', logfall: 'THE LOG ROLLS',
   backUp: 'THE CAGES GO BACK UP', lashed: 'LASHED: NOT THIS ONE', dropRock: 'A BLOW: YOU DROP THE ROCK', throwBows: 'THROW IT AT THE BOWS', fireDies: 'THE FIRE DIES AT THE GLADE',
   groundBurns: 'THE GROUND BURNS: UP INTO THE BOUGHS', hurled: 'HURLED', runDown: 'RUN DOWN', turned: 'TURNED', bolts: 'IT BOLTS', held: 'HELD',
+  /* (claude/gorm3) KING GORM 3 */
+  pot: 'PITCH POT', pitch: 'BURNING PITCH', sceptre: 'LOW OUT, HIGH BACK', caughtIt: 'CAUGHT IT', rage: 'THE CROWN CRACKS', rageFire: 'HE BURNS WITH HIS OAK',
+  lastBoar: 'ONE LAST BOAR', burnCharge: 'BURNING CHARGE: JUMP', trail: 'THE FIRE TRAIL',
 };
 /* the SHORT ones float over the spot (main.js MOVE_WORDS); every line is a said line too (src/hint-lines.js SAY_LINES: the hint box draws the long ones) */
-export const GORM_WORDS = ['caught', 'warded', 'penned', 'knocked', 'downed', 'stung', 'hurled', 'runDown', 'turned', 'bolts', 'held', 'high', 'low', 'quake', 'horn', 'hunt', 'boar', 'logroll', 'shake', 'branch', 'run', 'surge', 'healed', 'burning'].map(k => GORM_SAY[k]);
+export const GORM_WORDS = ['caught', 'warded', 'penned', 'knocked', 'downed', 'stung', 'hurled', 'runDown', 'turned', 'bolts', 'held', 'high', 'low', 'quake', 'horn', 'hunt', 'boar', 'logroll', 'shake', 'branch', 'run', 'surge', 'healed', 'burning', 'pot', 'caughtIt', 'trail'].map(k => GORM_SAY[k]);
 /* the share of the bar each opening is worth is the tune lane's; these are only the shape: is he open, and what does a blade pay */
 export const gormOpen = e => !!e && (e.mode === 'held' || e.mode === 'downed' || e.mode === 'stung' || e.open > 0);
 export function gormTake(e) {
