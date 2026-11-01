@@ -149,7 +149,7 @@ export function makeStockadeHands(ctx) {
   /* his lured beat (chiefStep): the walk to the pile, the look up; a blow, or a hero at his elbow, and he sees you */
   function chiefLured(e, dt) {
     const P = hero(), p2 = e.phase === 2;
-    if (e.hp < e.lureHp || (P && !P.dead && Math.abs(P.x - e.x) < CHIEF_LURE.near && Math.abs(P.y - e.y) < 24)) { e.mode = 'walk'; e.modeT = 0.25; e.vx = 0; say(e.x, e.y - e.h - 22, 'sees', '#ff9a5c'); return; }
+    if (e.hp < e.lureHp || (e.lureLook && P && !P.dead && Math.abs(P.x - e.x) < CHIEF_LURE.near && Math.abs(P.y - e.y) < 24)) {   /* (on his way to the sound he walks past you; stood looking up, a hero at his elbow is seen) */ e.mode = 'walk'; e.modeT = 0.25; e.vx = 0; say(e.x, e.y - e.h - 22, 'sees', '#ff9a5c'); return; }
     e.vy = Math.min(400, (e.vy || 0) + 1000 * dt); e.anim = (e.anim || 0) + dt; e.modeT -= dt;
     if (!e.lureLook) {   /* (the dais is two rows of stone: walked into, he steps up onto it and off - never stuck short of the logs) */ const d = e.lureX - e.x; e.vx = Math.abs(d) > 4 ? Math.sign(d) * (p2 ? CHIEF_LURE.walk2 : CHIEF_LURE.walk) : 0; if (e.vx) e.face = Math.sign(e.vx);
       if (!e.vx || e.modeT <= 0) { e.lureLook = true; e.vx = 0; e.modeT = e.lurePile ? (p2 ? CHIEF_LURE.look2 : CHIEF_LURE.look) : CHIEF_LURE.stand; } }

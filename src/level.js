@@ -624,6 +624,7 @@ function stockadeWatchtowers(R3) {
   coins([60, 8], [67, 10], [79, 6], [85, 6], [91, 5], [71, 1], [73, 1]);
   /* (claude/stockade3-1101) THE EXAM'S LAST WORD: logs at tower three's deck end over the walk down - if its horn sounds, horn its pack under them and cut (they land on the walk) */
   ent('logpile', 94, 6, { id: 'pile-3', floor: 12 });
+  coins([57, 21], [57, 22], [57, 23], [57, 24]);   /* (claude/stockade3-1101) the foot of tower one's rope: the gate walk is a way on up it now, so its foot is a longer pocket - and pays (tools/deadends.mjs) */
   /* the walk down off tower three to the hall's outer wall and the lift */
   run(94, 109, 12, T.PLANK); for (const u of [97, 103]) post(u, 12, 25);
   block(110, 123, 12, 27); coins([100, 11], [106, 11], [114, 11]);
