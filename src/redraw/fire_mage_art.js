@@ -10,7 +10,7 @@ import { outline, flipX, whiten, fromGrid } from '../px.js';
 import { OUT } from '../art.js';
 
 const pack = (frames, ax, ay, w, h) => { const white = frames.map(c => whiten(c)); return { R: frames, L: frames.map(flipX), white: { R: white, L: white.map(flipX) }, ax, ay, w, h }; };
-const putRow = (rows, y, x, str) => { while (rows.length <= y) rows.push(''); rows[y] = rows[y].padEnd(x, '.'); rows[y] = rows[y].slice(0, x) + str + rows[y].slice(x + str.length); };
+const putRow = (rows, y, x, str) => { if (y < 0 || x < 0) return; while (rows.length <= y) rows.push(''); if (rows[y] === undefined) rows[y] = ''; rows[y] = rows[y].padEnd(x, '.'); rows[y] = rows[y].slice(0, x) + str + rows[y].slice(x + str.length); };
 
 function bake(human) {
   const P = human

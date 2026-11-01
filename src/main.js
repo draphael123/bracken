@@ -24867,10 +24867,9 @@ function updatePyromancer(e, dt) {
     if (!(PROG.pyroMarkTold > 1)) { PROG.pyroMarkTold = (PROG.pyroMarkTold || 0) + 1; hintSay('tip', 5, 'HIS FIRE MARKS THE FLOOR. WHEN HIS BAR FILLS, EVERY MARK ERUPTS - STEP OFF THEM.'); } }
   if (e[PYRO_HIT_FIELD] !== undefined && e[PYRO_HIT_FIELD] !== e.wetSeen) { e.wetSeen = e[PYRO_HIT_FIELD]; pyroDouse(e); }
   const heat = n => { e.heat = Math.min(100, (e.heat || 0) + n); };
-  const tell = (mode, t, red) => { e.mode = mode; e.modeT = t; e.vx = 0; number(e.x, e.y - e.h - 12, red ? '!!' : '!', red ? '#ff6b6b' : '#ffd36b'); if (red) SFX.charge(); else SFX.tell(false); };
   const charge = (goal, fast) => { e.mode = 'chargeTell'; e.modeT = 9; e.chT = 0; e.step = 1; e.stepGoal = goal; e.fast = !!fast; e.vx = 0; e.face = Math.sign(d) || e.face; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.tell(false); SFX.fbStep(1); };
   const after = () => {
-    if (e.heat >= 100 && e.phase === 2 && e.marks.length >= 2) { tell('conflagTell', PYB.CONFLAG.tell, true); if (SET.numbers) PA.fx('word', e.x, e.y - 70, time, { txt: 'CONFLAGRATION' }); else number(e.x, e.y - 70, 'CONFLAGRATION', '#ffd36b'); return; }
+    if (e.heat >= 100 && e.phase === 2 && e.marks.length >= 2) { e.mode = 'conflagTell'; e.modeT = PYB.CONFLAG.tell; e.vx = 0; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); SFX.charge(); if (SET.numbers) PA.fx('word', e.x, e.y - 70, time, { txt: 'CONFLAGRATION' }); else number(e.x, e.y - 70, 'CONFLAGRATION', '#ffd36b'); return; }
     if (e.heat >= 100) { charge(5, true); e.spendAll = true; return; }   /* a full bar and nothing marked: it goes into one READY ball */
     e.mode = 'stalk'; e.cd = p2 ? 0.6 : 0.85; };
   /* HER GUARD COMES UP: you swing at her in reach (or a shot is coming), and she chooses to (her read is not a certainty) */
@@ -24900,8 +24899,8 @@ function updatePyromancer(e, dt) {
         if (spot && Math.abs(spot.x - e.x) < D.hopFar && !(above && e.turn % 3 === 0)) { e.mode = 'hopCrouch'; e.modeT = 0.22; e.vx = 0; e.hopTo = spot; break; } }
       if (!lvl) { if (ad < 260) charge(PYB.goalOf(ph, Math.random())); else e.cd = 0.25; break; }
       /* ON YOUR FLOOR: the staff up close, the fireball a step out, and far off PHOENIX RISE */
-      if (ad < D.reach + 4 && !(P.block && e.turn % 2 === 0)) { e.cut = 1; tell('cutTell', D.cutTell[0], false); break; }
-      if (ad > PYB.RISE.far && e.turn % 2 === 0) { tell('riseTell', PYB.RISE.tell, true); e.riseX = P.x; if (SET.numbers) PA.fx('word', e.x, e.y - 64, time, { txt: 'FIRE' }); break; }
+      if (ad < D.reach + 4 && !(P.block && e.turn % 2 === 0)) { e.cut = 1; e.mode = 'cutTell'; e.modeT = D.cutTell[0]; e.vx = 0; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.tell(false); break; }
+      if (ad > PYB.RISE.far && e.turn % 2 === 0) { e.mode = 'riseTell'; e.modeT = PYB.RISE.tell; e.vx = 0; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); SFX.charge(); e.riseX = P.x; if (SET.numbers) PA.fx('word', e.x, e.y - 64, time, { txt: 'FIRE' }); break; }
       if (ad > 100 && p2 && e.turn % 4 === 3) { const s = pyroStalls(e).filter(q => Math.abs((q.l + q.r) / 2 - e.x) < D.hopFar).sort((a, b) => Math.abs((a.l + a.r) / 2 - e.x) - Math.abs((b.l + b.r) / 2 - e.x))[0];
         if (s && e.y > s.y) { e.mode = 'hopCrouch'; e.modeT = 0.22; e.vx = 0; e.hopTo = { x: (s.l + s.r) / 2, y: s.y }; e.perch = 1; break; } }   /* P2: up onto a stall by choice, to charge from the height */
       if (ad > 90 || (ad > 60 && e.turn % 3 === 0)) { charge(PYB.goalOf(ph, Math.random())); break; }
@@ -24921,7 +24920,7 @@ function updatePyromancer(e, dt) {
       if (e.modeT <= 0) { heat(PYB.HEAT.cut);
         const more = e.cutRes !== 'hit' && e.cut < 3 && !P.dead && Math.abs(P.y - e.y) < 26 && ad < D.reach + 30;
         if (e.cutRes === 'hit') { e.mode = 'cutEnd'; e.modeT = 0.35; }
-        else if (more) { e.cut++; tell('cutTell', D.cutTell[e.cut - 1], false); }
+        else if (more) { e.cut++; e.mode = 'cutTell'; e.modeT = D.cutTell[e.cut - 1]; e.vx = 0; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.tell(false); }
         else after(); }
       break; }
     case 'cutEnd': if (e.modeT <= 0) after(); break;
