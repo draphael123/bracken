@@ -76,7 +76,7 @@ try { p = await pg.evalp(`(async()=>{const {LEVELS}=await import('/src/level.js'
   /* the fork, the loud way: the horn opens the gate, the crew run under the logs, the peg */
   load();H().give();BK.tp(Math.floor(p2.cleat/16)-1,19);BK.sim(20);const crew=()=>E().filter(e=>e.alive&&e.gateGuard!==undefined&&e.gateGuard!==false||e.alive&&e.gateGuard==='out');const n0=E().filter(e=>e.alive&&e.gateGuard).length;
   P().x=p2.cleat-14;P().face=1;H().blow();k=0;while(k++<400&&E().filter(e=>e.alive&&e.gateGuard==='out'&&Math.abs(e.x-p2.x)<26).length<2)BK.sim(1);o.loudOpen=S().gateOpen;o.loudUnder=E().filter(e=>e.alive&&e.gateGuard==='out'&&Math.abs(e.x-p2.x)<26).length;
-  P().face=1;BK.press('atk');BK.sim(80);o.loudCrushed=n0-E().filter(e=>e.alive&&e.gateGuard).length;o.loudPile=pile('pile-2').st;
+  P().face=1;BK.press('atk');k=0;while(k++<240&&pile('pile-2').st!=='down')BK.sim(1);BK.sim(5);o.loudCrushed=n0-E().filter(e=>e.alive&&e.gateGuard).length;o.loudPile=pile('pile-2').st;
   /* the Chieftain: the hall's horn, HE HEARS THE HORN, the peg, CRUSHED, the cooldown */
   const fight=()=>{load();const A=BK.L.arena;BK.tp(Math.round(A.trigger/16)+1,Math.round(A.floor/16)-1);BK.sim(200);const ch=E().find(q=>q.t==='chief'&&q.alive);ch.inv=0;ch.hornCd=99;ch.kegCd=99;return ch;};
   let ch=fight();o.hallHorn=S().held;const hl=pile('hall-l'),spot=hl.cleat+14;
