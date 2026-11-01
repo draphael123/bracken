@@ -58,7 +58,7 @@ export const PARRY_LOOK = {
   paladin:   { look: 'LIGHT-WARD',  input: 'raise the aegis (hold C) as the blow lands', col: '#fff6c8' },
   pyro:      { look: 'FLAME-CATCH', input: 'tap C as the blow lands (the first 0.15 s of the flame ward)', col: '#ff9a5c' },   /* (claude/pyrokit) */
   geomancer: { look: 'STONE-SKIN',  input: 'raise the rune-ward (hold C) as the blow lands', col: '#c8bca8' },
-  pirate:    { look: 'CUTLASS BIND', input: 'tap C as the blow lands',        col: '#ffd34a' },
+  pirate:    { look: 'HOOK CATCH', input: 'tap C as the blow lands (or an arrow flies in)',        col: '#ffd34a' },
   reaper:    { look: 'BLADE BIND',  input: 'let go of the blood ward (C) as the blow lands', col: '#ffd0d0' },
 };
 /* THE MIX-UP CHAIN */

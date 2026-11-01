@@ -47,8 +47,8 @@ try {
   const main = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8'), cat = readFileSync(new URL('../src/progression-catalog.js', import.meta.url), 'utf8');
   const card = id => { const line = main.split(/\r?\n/).find(l => l.startsWith("  { id: '" + id + "', name: '") && l.includes(' desc: ')); assert.ok(line, 'no hero card for ' + id); return line.slice(line.indexOf(' desc: ')); };
   const desc = id => { const i = cat.indexOf('"id": "' + id + '",'); assert.ok(i >= 0, 'no skill ' + id); const j = cat.indexOf('"desc": "', i); return cat.slice(j + 9, cat.indexOf('"', j + 9)); };
-  const pirate = card('pirate'); assert.ok(/tap C: THE PARRY/.test(pirate) && /HOLD C: THE HOOK/.test(pirate), 'the pirate card does not say tap = parry, hold = hook');
-  assert.ok(!/hold C: RUM/i.test(pirate) && !/tap C: THE HOOK/i.test(pirate), 'the pirate card gives C the old jobs (rum is a bought skill, the hook is a hold)');
+  const pirate = card('pirate'); assert.ok(/tap C: THE HOOK CATCH/.test(pirate) && /HOLD C: THE HOOK/.test(pirate), 'the pirate card does not say tap = hook catch, hold = hook');
+  assert.ok(!/hold C: RUM/i.test(pirate) && !/tap C: THE HOOK(?! CATCH)/i.test(pirate), 'the pirate card gives C the old jobs (rum is a bought skill, the hook is a hold)');
   const knight = card('knight'); assert.ok(!/third cuts fill RESOLVE/i.test(knight) && /heavy cuts fill RESOLVE/i.test(knight), 'RESOLVE is filled by blocks and HEAVY cuts');
   const dk = card('reaper'); assert.ok(!/TAP F for the equipped/i.test(dk), 'the death knight card gives F the equipped skill; F is summon and G is the equipped skill'); assert.ok(/G is the skill he has equipped/i.test(dk));
   assert.ok(!/shield/i.test(desc('holyCharge')), 'the Paladin has no shield: HOLY CHARGE cannot lead with one');

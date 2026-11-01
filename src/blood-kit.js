@@ -65,7 +65,7 @@ export const BLOOD = {
      knight's perfect guard 0.09), slow = the crimson held breath after it (s of the world at slowT's 0.3 speed), flash = the crimson wash (s), push = px the foe stumbles back (it stays in the
      greatsword's reach: the old 240 px/s shove was zeroed by the shared parry reel the next frame), stagger = s it reels, window = s his riposte waits (the shared 0.6 is short for a greatsword;
      the riposte is a HEAVY third cut, as the knight's), st = wind back, tap = a C flicked too short to stand the ward up also opens the beat (the same 0.22 s window) */
-  parry: { stop: 0.2, slow: 0.16, flash: 0.24, push: 18, stagger: 1.0, window: 0.9, st: 14, tap: true },
+  parry: { stop: 0.2, slow: 0.16, flash: 0.24, push: 18, stagger: 1.0, window: 0.9, st: 14, tap: true, bleed: 3 },   /* (claude/heroblocksa) bleed: s the CRIMSON PARRY leaves the one who threw it bleeding */
   /* BLOOD SPIKE: beat s; the spikes hit mul x the sword's blow, stagger s, knock px/s (not a big one), st wind refund (held to commit.js refundCap) */
   spike: { beat: 0.22, mul: 1.2, stagger: 0.8, knock: 200, st: 12,
     /* (claude/bkkit2, Daniel 10-21 "make the crouch's BLOOD SPIKE matter"): ANY blow from a foe that lands inside the beat is spiked - high, middling or low, from either side (a red
@@ -173,3 +173,17 @@ export function heavyBox(x, y, face, atk, tier, longHaft, live) {
   const r = ([0, 36, 34, 40, 48, 30][tier] || 36) + lh, top = [0, 30, 44, 40, 26, 30][tier] || 36, back = tier === 5 ? 30 : tier === 3 ? 6 : 2;   /* REND wide and low, SUNDER tall (overhead), the CRESCENT round the front, EXSANGUINATE long and level, the MOON both sides */
   return face > 0 ? { l: x - back, r: x + r, t: y - top, b: y + 4 } : { l: x - r, r: x + back, t: y - top, b: y + 4 };
 }
+/* THE BLOOD-PAID GUARD, FELT (claude/heroblocksa, Daniel 10-30 21:58 "Yes": scratch/brief-pyrokit-1101.md 7b). The ward (main.js wardStop) already costs a share of every blow in blood; this makes the cost a
+   DEBT he can win back, and the guard a thing with weight:
+     share    of the blood paid through the ward that goes ON THE BAR AS DEBT (1 = all of it; an ordinary blow leaves debt.share 0.6), so a guarded blow is never lost for good - cut, or throw the ward back, to win it back
+     notches  THE BLADE DRINKS: each blow the ward holds fills a notch (blood up the steel); this many and the NEXT held heavy comes down boost tiers higher (the tier its hold has reached, +boost, never past T5);
+              life = s a notch lasts without another
+     stop     hit-stop (s) on a held blow: [empty ward, full ward], +heavy on a blow of heavyDmg or more; shake [light, full] (a 'hurt'-tagged shake: the default save shows it); glow = the armour's top crimson alpha */
+export const GUARD = { share: 1, notches: 3, life: 12, boost: 1, stop: [0.06, 0.1], heavy: 0.03, heavyDmg: 20, shake: [2.5, 5], glow: 0.38 };
+/* the ward's blood price: `n` health leaves him and the WHOLE of it lies on the bar as debt. Returns what was paid. */
+export function guardPay(p, n) { if (!(n > 0)) return 0; p.hp -= n; p.bdLast = p.hp; debtAdd(p, n * GUARD.share); return n; }
+/* the notches a blade has (they run dry `life` s after the last), and one more drunk */
+export const notchesOf = (p, now) => (p.bkNotch || 0) > 0 && now - (p.bkNotchAt ?? -99) <= GUARD.life ? p.bkNotch : 0;
+export function notchDrink(p, now) { const n = Math.min(GUARD.notches, notchesOf(p, now) + 1); p.bkNotch = n; p.bkNotchAt = now; return n; }
+/* a hold's tier with the blade drunk: one higher once the notches are full (T1 on the clock becomes T2), never past T5, and nothing before T1 */
+export const boostTier = (tier, notches) => tier >= 1 && notches >= GUARD.notches ? Math.min(5, tier + GUARD.boost) : tier;
