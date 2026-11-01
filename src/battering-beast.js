@@ -42,7 +42,7 @@
 //                     and topples into the clearing as ROLLING TIMBERS (jump them; a deck is over them; a wreck stops them). The first slam leaves THE BREACH for
 //                     the rest of the fight: a gap in the palisade and a RUBBLE STEP (solid) against the east wall - the timbers never reach it, the wall-ram does.
 export const BB = {
-  hp: 880, w: 56, h: 40, markH: 60,
+  hp: 960, w: 56, h: 40, markH: 60,
   walk: 46, rest: [0.5, 0.3],
   armour: 0.45, above: 1, wardMul: 0.4,
   p2: 0.5,
