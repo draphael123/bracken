@@ -239,7 +239,7 @@ import * as GHD from './great-hound.js';   /* THE GREAT HOUND's own rules (claud
 import { bakeHoundMaster } from './redraw/hunt.js';
 import { bakeBuriedPrince, bakeCourtier, bakeSarcophagus, bakeCrownSpin, PRINCE_F } from './redraw/prince.js';
 import * as LNA from './lance-art.js';
-import * as SHA from './stormhold-art.js';
+import * as SHA from './stormhold-art.js'; import * as LSA from './lance-storm-art.js';   /* (claude/lance5art) THE STORM over the Long Bridge: sky, teeth, updraft, gust, skewer column, pivot ring, the torn pennant (src/lance-storm-art.js) */
 import { bakePaladinBoss, bakeLancer, bakeLancerHorse, bakeGuests, bakeBarkeep, bakeDrunk, bakeTownSpikes } from './redraw/waymeet.js';
 import { LEVELS, T, TS, CUSTOM, eliteGate, FRESH_TWIN, LOST_BANNERS, ROAD_OPEN } from './level.js';
 import { floodReach } from './reachcore.js';
@@ -1102,7 +1102,7 @@ SPR.dummy = (() => { const pal = { s: '#b8a888', S: '#8a7a60', e: '#2a2230', w: 
   const rows = ['....ssss....', '...ssssss...', '...sesess...', '...ssssss...', '....SSSS....', '.....ww.....', '.yyyyyyyyyy.', 'yyYyyyyyyYyy', '.YyyyrryyyY.', '..yyrrrryy..', '..yyrrrryy..', '..yyyrryyy..', '..yYyyyyYy..', '...yyyyyy...', '.....ww.....', '.....ww.....', '.....ww.....', '.....ww.....', '...WWWWWW...', '..WWWWWWWW..'];
   const tilt = rows.map((r, i) => i < 14 ? '.' + r.slice(0, -1) : r);
   const f = r => outline(fromGrid(r, pal, 1), '#1b1626'); const R = [f(rows), f(tilt)], white = R.map(c => whiten(c));
-  return { R, L: R.map(flipX), white: { R: white, L: white.map(flipX) }, ax: 7, ay: 21, w: 10, h: 18 }; })(); /* the trials' straw man */ SPR.sweep = bakeSweep(); SPR.foreman = bakeForeman(); SPR.cook = bakeCook(); SPR.snuffer = bakeSnuffer(); SPR.sailer = bakeSailer(); SPR.masthead = bakeMasthead(); SPR.kraken = KRA.bakeKraken(); SPR.feeler = KRA.bakeFeeler(); SPR.hearthgob = bakeHearthGob(); SPR.temperer = bakeTemperer(); SPR.scalder = bakeScalder(); SPR.gravewarden = bakeGraveWarden(); SPR.abbot = bakeFalseAbbot(); SPR.winchmaster = bakeWinchmaster(); SPR.hedgewarden = bakeHedgeWarden(); SPR.sexton = bakeSexton(); SPR.gargoyle = bakeGateGargoyle(); SPR.burngob = charGob(SPR.hearthgob); SPR.pyromancerKit = bakePyro(PYRO_SETS.bracken); SPR.pyromancer = poseSet(SPR.pyromancerKit, 'idle'); SPR.emberwisp = bakeEmberWispSet();   /* the kit is drawn by pose (drawPyromancer); the flat sets are for everything that reads SPR[t] by frame: the bestiary, the body, the contact sheet */ SPR.cutter = bakeCutter(); SPR.assassin = bakeAssassin(); SPR.berserker = bakeBerserker(); SPR.grandmother = bakeGrandmother(); SPR.lance = LNA.bakeChampion(); SPR.lanceCard = LNA.bakeCard();   /* (claude/stormhold3art) THE QUEEN'S CHAMPION: src/lance-art.js (claude/lance4: the charger is gone - he fights on foot) */ SPR.shardling = bakeShardling(); SPR.suncatcher = bakeRimewright(); SPR.roc = bakeRoc(); SPR.sentry = bakeSentry(); SPR.gqueen = bakeGoblinQueen(); SPR.throne = bakeThrone(); SPR.ram = bakeRamLord(); SPR.shepherd = bakeShepherd(); SPR.sheep = bakeSheep(); SPR.keeper = bakeKeeper(); SPR.woodsman = bakeWoodsman(); SPR.ferryman = bakeFerryman(); SPR.squire = bakeSquire(); SPR.elder = bakeElder(); SPR.master = MASTER.mounted; SPR.masterFoot = MASTER.foot; SPR.masterRider = bakeHoundMaster(); SPR.king = KING.seated; SPR.kingUp = KING.standing; SPR.bearer = SPR.sprig;
+  return { R, L: R.map(flipX), white: { R: white, L: white.map(flipX) }, ax: 7, ay: 21, w: 10, h: 18 }; })(); /* the trials' straw man */ SPR.sweep = bakeSweep(); SPR.foreman = bakeForeman(); SPR.cook = bakeCook(); SPR.snuffer = bakeSnuffer(); SPR.sailer = bakeSailer(); SPR.masthead = bakeMasthead(); SPR.kraken = KRA.bakeKraken(); SPR.feeler = KRA.bakeFeeler(); SPR.hearthgob = bakeHearthGob(); SPR.temperer = bakeTemperer(); SPR.scalder = bakeScalder(); SPR.gravewarden = bakeGraveWarden(); SPR.abbot = bakeFalseAbbot(); SPR.winchmaster = bakeWinchmaster(); SPR.hedgewarden = bakeHedgeWarden(); SPR.sexton = bakeSexton(); SPR.gargoyle = bakeGateGargoyle(); SPR.burngob = charGob(SPR.hearthgob); SPR.pyromancerKit = bakePyro(PYRO_SETS.bracken); SPR.pyromancer = poseSet(SPR.pyromancerKit, 'idle'); SPR.emberwisp = bakeEmberWispSet();   /* the kit is drawn by pose (drawPyromancer); the flat sets are for everything that reads SPR[t] by frame: the bestiary, the body, the contact sheet */ SPR.cutter = bakeCutter(); SPR.assassin = bakeAssassin(); SPR.berserker = bakeBerserker(); SPR.grandmother = bakeGrandmother(); SPR.lance = LNA.bakeChampion(); SPR.lanceTorn = LNA.bakeChampionTorn();   /* (claude/lance5art) his P2+ sheet: the pennant torn away */ SPR.lanceCard = LNA.bakeCard();   /* (claude/stormhold3art) THE QUEEN'S CHAMPION: src/lance-art.js (claude/lance4: the charger is gone - he fights on foot) */ SPR.shardling = bakeShardling(); SPR.suncatcher = bakeRimewright(); SPR.roc = bakeRoc(); SPR.sentry = bakeSentry(); SPR.gqueen = bakeGoblinQueen(); SPR.throne = bakeThrone(); SPR.ram = bakeRamLord(); SPR.shepherd = bakeShepherd(); SPR.sheep = bakeSheep(); SPR.keeper = bakeKeeper(); SPR.woodsman = bakeWoodsman(); SPR.ferryman = bakeFerryman(); SPR.squire = bakeSquire(); SPR.elder = bakeElder(); SPR.master = MASTER.mounted; SPR.masterFoot = MASTER.foot; SPR.masterRider = bakeHoundMaster(); SPR.king = KING.seated; SPR.kingUp = KING.standing; SPR.bearer = SPR.sprig;
 /* THE REDRAW PASS (docs/animation-audit.md): the ten foes met most whose animation was thinnest. Each keeps its old frame indices, anchor
    and box; the new frames are appended (FV2.FRAMES_V2) and the picks below use them. */
 for (const t of Object.keys(FV2.FRAMES_V2)) { try { SPR[t] = FV2.FRAMES_V2[t].bake(); } catch (err) { console.error('the redraw', t, err); } }
@@ -1488,6 +1488,7 @@ function resolveTiles() {
     else if (t === T.WEB) s = TILE.web || (TILE.web = bakeWebTile());
     else if (t === T.RAIL) s = TILE.rail[x % 2];
     else if (t === T.SOFT) s = villT ? VILL.turf[(tileAt(x - 1, y) === T.AIR ? 1 : 0) + '' + (tileAt(x + 1, y) === T.AIR ? 1 : 0)][(rnd() * 4) | 0] : TILE.soft[(x + y) % 3];
+    else if (t === T.SPIKE && L.arena && L.arena.boss === 'lance' && x * TS >= L.arena.x0) s = (TILE.rockTeeth || (TILE.rockTeeth = LSA.bakeRockTeeth()))[(rnd() * 4) | 0];   /* (claude/lance5art) THE GORGE'S TEETH under the Long Bridge: wet slate rock, not a railing */
     else if (t === T.SPIKE) s = L.fallingTower ? (TILE.towerSpikes || (TILE.towerSpikes = FTW.bakeTowerSpikes()))[(rnd() * 4) | 0] : L.palette && L.palette.nearSet === 'town' ? (TILE.townSpikes || (TILE.townSpikes = bakeTownSpikes()))[(rnd() * 4) | 0] : TILE.thorns[(rnd() * 4) | 0];   /* A TOWN DOES NOT GROW BRAMBLES: a railing with its points up and glass in the kerb */
     else if (t === T.CRATE) s = TILE.crate;
     if (L.hangingTown && (t === T.PLANK || t === T.SHELF)) { const ts = HV.hvTile(t, T, x, y, tileAt); if (ts) s = ts; }   /* (claude/hangingpolish) THE VILLAGE'S OWN BOARDS: hemp-lashed bridge planks and the snapping branch's split bark, not the old generic wood (src/hanging-village.js hvTile) */
@@ -25211,7 +25212,7 @@ function lanceRopes(e, dt) { const X = LANCE4, A = L.arena, fight = bossActive &
 function lancePhase(e) { const X = LANCE4;
   if (e.phase === 1 && e.hp <= e.maxHp * X.p2) { e.phase = 2; lanceFree(e); e.mode = 'haul'; e.modeT = X.haul; e.stagger = 0; e.answer = null; e.chargeT = 3; e.vaultT = 4; e.wallT = 6; e.skewerT = 2; e.torn = true;
     /* (claude/lance5) THE STORM ARRIVES: the rain, the wind, the dark sky and the music come in (lanceStormOn); the wind tears his pennant off the lance. The bells stay rung-able: in the storm they GUST */
-    number(e.x, e.y - e.h - 16, LANCE_SAY.stops, '#9fd0ff'); number(e.x, e.y - e.h - 28, LANCE_SAY.torn, '#c9b2e8'); if (SFX.thunder) SFX.thunder(); SFX.bellow(); shakeCam(5); if (SET.flashes !== false) lightFlash = 0.14; hintSay('tip', 4.5, LANCE_SAY.tip2);
+    number(e.x, e.y - e.h - 16, LANCE_SAY.stops, '#9fd0ff'); number(e.x, e.y - e.h - 28, LANCE_SAY.torn, '#c9b2e8'); if (SFX.thunder) SFX.thunder(); SFX.bellow(); shakeCam(5); boltBack = { t: 0.34, x: camX * 0.15 + VW * 0.5, i: 1 }; thunderT = 0.4; LSA.tearCloth(e.x + e.face * 8, e.y - 66, time); hintSay('tip', 4.5, LANCE_SAY.tip2);
     for (let k = 0; k < 14; k++) parts.push({ x: e.x + e.face * 10, y: e.y - e.h - 18 + Math.random() * 8, vx: -60 - Math.random() * 140, vy: -40 + Math.random() * 50, life: 1.4, max: 1.4, col: k % 3 ? '#8a4cb4' : '#f0c048', size: 2, grav: 30 }); }
   else if (e.phase === 2 && e.hp <= e.maxHp * X.p3) { e.phase = 3; lanceFree(e); e.mode = 'fallback'; e.modeT = 5; e.stagger = 0; e.p3T = 0; e.answer = null; lanceState(e).gust = null;
     for (const pr of props) if (pr.t === 'lancebell' && !pr.great) { pr.up = true; pr.ringT = -1; }   /* (claude/lance5) the last stand is the great bell's: the tower crews haul theirs up */
@@ -25389,13 +25390,16 @@ function updateLance(e, dt) {
    a bell's GUST told while it tolls (wind arrows along the deck, the way it will blow) and blowing (long streaks); the RISING SKEWER's column over him
    while he braces (a red dashed line straight up), and the stamp of his pivot (drawLanceRead) */
 function drawLanceStorm(e, Z, A, cx, cy, fy) { const storm = e.alive && e.phase >= 2;
-  if (storm) for (const [a, b] of lanceHoles()) { const x0 = Math.round(a - cx), w = b - a; if (x0 > VW || x0 + w < 0) continue;
-    for (let k = 0; k < 5; k++) { const ph = (time * 1.6 + k * 0.21) % 1, yy = Math.round(fy + 200 - ph * 230); g.globalAlpha = 0.25 + 0.3 * (1 - ph); g.fillStyle = '#cfe4f0'; g.fillRect(x0 + 4 + ((k * 11) % Math.max(1, w - 8)), yy, 1, 9); } g.globalAlpha = 1; }
-  for (const pr of props) { if (pr.t !== 'lancebell' || pr.great || !(pr.ringT >= 0) || !storm || e.phase >= 3) continue; const dir = pr.gustDir || 1, k = 0.5 + 0.5 * Math.sin(time * 12);
-    g.globalAlpha = 0.35 + 0.35 * k; g.fillStyle = '#9fd0ff'; for (let x = Math.max(0, Math.round(A.x0 - cx)); x < Math.min(VW, Math.round(A.x1 - cx)); x += 28) { const ax = x + Math.round((time * 60 * dir) % 28); g.fillRect(ax, fy - 22, 8, 1); g.fillRect(ax + (dir > 0 ? 6 : 0), fy - 23, 2, 3); } g.globalAlpha = 1; }
-  if (Z.gust && Z.gust.t > 0) { Z.gust.t -= 1 / 60; g.globalAlpha = 0.5; g.fillStyle = '#e8f4ff'; for (let i = 0; i < 14; i++) { const yy = fy - 6 - ((i * 7) % 40), xx = ((i * 53 + time * 420 * Z.gust.dir) % VW + VW) % VW; g.fillRect(Math.round(xx), Math.round(yy), 18, 1); } g.globalAlpha = 1; } else if (Z.gust) Z.gust = null;
-  if (e.alive && e.mode === 'skewerTell') { const x = Math.round(e.x - cx), top = Math.round(e.y - LANCE4.skewer.top - cy), bot = Math.round(e.y - e.h - 6 - cy), k = 1 - e.modeT / LANCE4.skewer.tell;
-    g.globalAlpha = 0.35 + 0.5 * k; g.fillStyle = '#ff6b6b'; for (let y = bot; y > top; y -= 6) g.fillRect(x - 1, y - 3, 2, 3); g.fillRect(x - LANCE4.skewer.hitX, top, LANCE4.skewer.hitX * 2, 1); g.globalAlpha = 1; } }
+  if (Z.teethY === undefined) { Z.teethY = null; const sp = (A.spans || [])[0]; if (sp) for (let r = Math.floor(A.floor / TS) + 1; r < LH; r++) if (tileAt(sp[0], r) === T.SPIKE) { Z.teethY = r * TS; break; } }   /* the row of the gorge's teeth */
+  if (Z.teethY) LSA.drawGorge(g, { spans: A.spans || [], holes: lanceHoles(), TS, cx, cy, VW, time, floorY: A.floor, teethY: Z.teethY, storm, hot: e.mode === 'updraft' || e.mode === 'tossedAir' || !!P.stormLift });   /* (claude/lance5art) spray over every tooth, the UPDRAFT in each gap (it blazes while someone rides it) */
+  if (storm) LSA.drawWetDeck(g, Math.max(0, Math.round(A.x0 - cx)), Math.min(VW, Math.round(A.x1 - cx)), fy, time, 1);
+  for (const pr of props) { if (pr.t !== 'lancebell' || pr.great || !storm || e.phase >= 3 || pr.up) continue; const dir = pr.gustDir || 1, ring = pr.ringT >= 0, bx = Math.round(pr.x - cx), by = Math.round(pr.y - cy);
+    LSA.drawBellRope(g, bx + 11, by - 29, 22, dir, ring ? 1 : 0, time);   /* the bell rope sways in the wind, and swings hard while it tolls */
+    if (ring) LSA.drawGustTold(g, dir > 0 ? bx : Math.round(A.x0 - cx), dir > 0 ? Math.round(A.x1 - cx) : bx, fy, dir, Math.min(1, (pr.tolled || 0) / 3), time); }   /* THE GUST, told: chevrons marching along the deck the way it will blow, one more row for each toll */
+  if (Z.gust && Z.gust.t > 0) { Z.gust.t -= 1 / 60; LSA.drawGustBlow(g, Math.round(Z.gust.x - cx), 0, VW, fy, Z.gust.dir, LANCE4.storm.gust.t - Z.gust.t, LANCE4.storm.gust.t, time); } else if (Z.gust) Z.gust = null;
+  if (e.alive && (e.mode === 'skewerTell' || e.mode === 'skewer')) LSA.drawSkewerColumn(g, Math.round(e.x - cx), Math.round(e.y - e.h - 6 - cy), Math.round(e.y - LANCE4.skewer.top - cy), LANCE4.skewer.hitX, e.mode === 'skewer' ? 1 : Math.max(0, Math.min(1, 1 - e.modeT / LANCE4.skewer.tell)), e.mode === 'skewer', time);   /* THE RISING SKEWER's column */
+  LSA.drawTear(g, cx, cy, time);   /* his pennant leaving on the gale */
+  if (P.stormLift && !P.dead) LSA.drawLiftWrap(g, Math.round(P.x - cx), Math.round(P.y - cy), time); }
 /* WHICH LOOKOUT HE GOES UP: the one nearest you that he can reach in one vault (not more than ten strides off him), never one you stand on */
 function lanceVaultTo(e) { const A = L.arena; let best = null, bd = 1e9;
   for (const [x0, x1, row] of A.lookouts || []) { const mx = (x0 + x1 + 1) * TS / 2, dist = Math.abs(mx - P.x); if (Math.abs(mx - e.x) > 170 || Math.abs(mx - e.x) < 20) continue; if (P.x > x0 * TS - 6 && P.x < (x1 + 1) * TS + 6 && Math.abs(P.y - row * TS) < 6) continue;
@@ -25438,7 +25442,8 @@ function drawLanceBridge(cx, cy) { const e = boss, Z = e && e.lz, A = L.arena; i
 }
 /* HIS READ OVER HIM (B10): open, the green ring (lanceOpen); HELM RUNG, stars round the helm; a heavy's planted-foot stamp, a dust ring */
 function drawLanceRead(e, cx, cy) { const x = Math.round(e.x - cx), y = Math.round(e.y - cy);
-  if (e.mode === 'rung') SHA.drawStars(g, x, y - e.h - 6, time);
+  if (e.mode === 'rung' || e.mode === 'tossed') SHA.drawStars(g, x, y - e.h - 6, time);
+  if (e.mode === 'pivot') LSA.drawPivotRing(g, x, y, Math.max(0, Math.min(1, 1 - e.modeT / LANCE4.pivot)), Math.sign(P.x - e.x) || e.face);   /* (claude/lance5art) the ring he stamps and the way he is about to face */
   if (e.stampT > 0) SHA.drawStamp(g, x, y, 1 - e.stampT / 0.3, e.face); }
 const GUARD_WALL = e => BR_GUARD[e.t] === 'wall' && !(e.t === 'lance' && e.bare);   /* (claude/lance4) THE LANCE without his shield (P3) has no wall: x0.7 from anywhere */
 /* IS HIS WALL UP? Always, for the Lance, the Paladin and the Captain. THE QUARTERMASTER offers her blade on guard - striding the deck, EN GARDE, or behind her deck guard -
@@ -31323,7 +31328,7 @@ function updateWeather(dt) {
        not touched. It waits (half a second at a time) while anything on the screen is winding up, the wash is building, the sky is
        marking a strike or she is about to roll, so a flash never lands on a tell. Everywhere else it is the old white frame. */
     if (lightT <= 0 && BG.storm) { if (stormQuiet()) lightT = 0.5; else { lightT = 9 + Math.random() * 10; boltBack = { t: 0.34, x: camX * 0.15 + 40 + Math.random() * (VW - 80), i: (Math.random() * 3) | 0 }; thunderT = 0.5 + Math.random() * 0.6; } }
-    else if (lightT <= 0 && lanceStormOn() && stormQuiet()) lightT = 0.5;   /* (claude/lance5) the storm's lightning never lands on one of his tells */
+    else if (lightT <= 0 && lanceStormOn()) { if (stormQuiet()) lightT = 0.5; else { lightT = 6 + Math.random() * 7; boltBack = { t: 0.34, x: camX * 0.15 + 40 + Math.random() * (VW - 80), i: (Math.random() * 3) | 0 }; thunderT = 0.5 + Math.random() * 0.6; } }   /* (claude/lance5) the storm's lightning never lands on one of his tells (stormQuiet); (claude/lance5art) it is the BACKDROP's bolt now (the clouds lit from under, the castle black against it), not a white frame */
     else if (lightT <= 0) { lightT = 7 + Math.random() * 9; lightFlash = 0.18; thunderT = 0.5 + Math.random() * 0.6; }
   }
   if (boltBack.t > 0) boltBack.t = Math.max(0, boltBack.t - dt);
@@ -32802,6 +32807,8 @@ function drawCastleBack(cx, cy) {
   // every slope; smoothed, the far range softens into the haze the way distance should
   g.imageSmoothingEnabled = true; g.imageSmoothingQuality = 'high'; g.globalAlpha = 0.72 + k * 0.2; g.drawImage(art, bx, by, w, h); g.globalAlpha = 1; g.imageSmoothingEnabled = false;
 }
+/* (claude/lance5art) THE STORM'S SKY (src/lance-storm-art.js drawSky): back = clouds and the bolt's glow behind the castle, front = the dark wash and the slanted rain sheets over it. Drawn on the Long Bridge only, easing in and out with the storm */
+function drawLanceSky(cx, cy, front) { if (!(L.arena && L.arena.boss === 'lance')) return; LSA.drawSky(g, cx, cy, VW, VH, time, lanceStormOn(), boltFlash(), boltBack, front, bgDY(cy)); }
 /* (claude/stormhold3art) THE QUEEN'S CASTLE, NEAR: at the Long Bridge her walls and towers stand across the gorge (src/stormhold-art.js), growing as you cross, over the far castle's mountain and under the near hills */
 function drawCitadel(cx, cy) {
   if (!(L.castle && L.arena && L.arena.boss === 'lance')) return; const t = (cx / TS - 395) / 70; if (t <= 0) return; const a = Math.min(1, t), art = PROP.citadel || (PROP.citadel = SHA.bakeCitadel()), kk = Math.max(0, Math.min(1, (cx / TS - 395) / 230));
@@ -33109,8 +33116,8 @@ function drawWorld(cx, cy, showPlayer) {
   else if (FAIR) { FCR.drawSky(g, cx, cy, VW, VH, L, time, dusk(), bgDY(cy)); FB.drawBackdrop(g, cx, cy, VW, VH, L, time, dusk(), bgDY(cy), SET.parallax === 'full'); FCR.drawMid(g, cx, cy, VW, VH, L, time, dusk(), bgDY(cy), { hx: P.x - cx, calm: fairCalm() }); }   /* + the night sky, moon and Wicker Queen before the far hills, and the scarecrows, ghost rides and vanishing townsfolk after the mid layer (claude/faircreepy) */   /* THE HARVEST FAIR's own far fields, steeple, tents and wheel (src/redraw/fair_backdrop.js), not Waymeet's town */
   else { if (SET.parallax === 'full') drawLayer(BG.far, 0.15, VH - 90, cx, cy);
   if (L.unburied && SET.parallax !== 'off') UW.drawFort(g, cx, cy, VW, VH, time);   /* THE CHAPEL-FORT, on its hill: small and far from the first screen, growing as you come (src/redraw/unburied_chapel.js) */
-  drawCastleBack(cx, cy); drawCitadel(cx, cy); drawLayer(BG.mid, 0.3, VH - 140, cx, cy); } }
-  else { drawCastleBack(cx, cy); drawCitadel(cx, cy); }
+  drawLanceSky(cx, cy, false); drawCastleBack(cx, cy); drawCitadel(cx, cy); drawLanceSky(cx, cy, true); drawLayer(BG.mid, 0.3, VH - 140, cx, cy); } }
+  else { drawLanceSky(cx, cy, false); drawCastleBack(cx, cy); drawCitadel(cx, cy); drawLanceSky(cx, cy, true); }
   if (L.ksar && KSH && KSH.on()) KSH.drawKeep(g, cx, cy, VW, VH, time, bgDY(cy));   /* (claude/ksar2 part B) THE KEEP over the souq, in front of the far dunes */
   if (GDH && GDH.on()) GDH.drawBack(g, cx, cy, time);   /* THE GREAT DRILL: its bore running past (it was an if/else ahead of the backdrop chain: with the boss asleep it skipped every backdrop in the level - claude/minecartart) */
   SEA.seaFar(g, cx, cy, VW, VH, time);   /* a sea level's far water: under the haze and the depth, so they sink into it */
@@ -34072,6 +34079,7 @@ function drawWorld(cx, cy, showPlayer) {
     if (e.t === 'sandworm' && L.underwell && e.st && e.st.fast && SPR.fastworm) sprSet = SPR.fastworm;   /* (claude/underwellart) THE FAST SANDWORM: slate violet, ivory bands, red-eyed */
     if (e.lamplighter && SPR.lamplighter) sprSet = SPR.lamplighter; if (e.cnSkin && SPR[e.cnSkin]) sprSet = SPR[e.cnSkin]; if (e.skinNow && SPR[e.skinNow]) sprSet = SPR[e.skinNow];   /* (claude/ksarfoes) */ if (e.t === 'construct' && e.elite && SPR.constructelite) sprSet = SPR.constructelite; if (e.cnSkin === 'foremancart' && e.alive && MCH && MCH.foremanFrame) frame = MCH.foremanFrame(e);   /* (claude/canalfix3) a canal tough: the goblin's AI, a man's skin; (dr3art) THE FOREMAN's tell poses */   /* THE LAMPLIGHTER (THE FOG CANAL, claude/canalart): the snuffer's walk in a lamplighter's coat and cap */
     if (L.theatre) sprSet = THF.foeSet(e) || sprSet;
+    if (e.t === 'lance' && e.torn && SPR.lanceTorn) sprSet = SPR.lanceTorn;   /* (claude/lance5art) the pennant is gone from the storm on */
     if (L.tavern && e.t === 'dummy') sprSet = TVA.dummySet(Math.floor(e.x / TS) !== TAV_DUMMIES[0]);   /* (claude/tavernart) the inn's own straw men: a sack head, and a dented pot helm */
     if (e.t === 'mummer' && FAIR && !L.theatre && SPR.harvestMummer) sprSet = SPR.harvestMummer;   /* (claude/fairfix5) the harvest skin */
     if (e.shy && SPR.shy) sprSet = SPR.shy; else if (e.juggler && SPR.juggler) sprSet = SPR.juggler; else if (e.bandit && SPR.banditArcher) sprSet = SPR.banditArcher;   /* THE HARVEST FAIR's ranged pair (claude/fairfix2) */   /* THE THEATRE's own cast: the masked patron, the usher, the house's ghosts, the flying props */

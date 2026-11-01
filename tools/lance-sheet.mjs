@@ -9,16 +9,17 @@ const out = join(ROOT, process.env.SHOTS || 'work/claude/shots-lance4'); mkdirSy
 const K = +(process.env.K || 2);
 const pg = await openPage({ audio: false });
 try {
-  const d = await pg.evalp(`(async () => { const A = await import('/src/lance-art.js'); const ch = A.bakeChampion(), K = ${K}, CW = 100 * K, CH = 78 * K, cols = Math.floor(1900 / CW);
+  const d = await pg.evalp(`(async () => { const A = await import('/src/lance-art.js'); const chP = A.bakeChampion(), ch = A.bakeChampionTorn(), K = ${K}, CW = 100 * K, CH = 78 * K, cols = Math.floor(1900 / CW);
     const sh = Object.keys(A.F).filter(k => !/hurt2|hurtB2/.test(k)).map(k => [k, A.F[k]]), bare = Object.keys(A.FB).map(k => [k + ' (bare)', A.FB[k]]);
-    const rows = [...sh, ...bare];
+    const P1 = ['guard', 'walk1', 'turn', 'thrustTell', 'sweepTell', 'couchA', 'chargeB', 'volleyTell', 'pennantTell', 'pinned', 'wake2', 'pivotA', 'pivotB'].map(k => [k + ' (P1 pennant)', A.F[k], true]);
+    let rows = [...sh, ...bare, ...P1]; const want = ${JSON.stringify(process.env.NAMES || '')}; if (want) rows = rows.filter(r => want.split(',').includes(r[0]));
     const c = document.createElement('canvas'); c.width = CW * cols; c.height = CH * Math.ceil(rows.length / cols) + 120 * K; const g = c.getContext('2d'); g.imageSmoothingEnabled = false; g.fillStyle = '#2a2838'; g.fillRect(0, 0, c.width, c.height);
-    const put = (f, x, y, s) => { const im = ch.R[f]; g.drawImage(im, Math.round(x - ch.ax * s), Math.round(y - ch.ay * s), im.width * s, im.height * s); };
-    rows.forEach(([nm, f], i) => { const x0 = (i % cols) * CW, y0 = Math.floor(i / cols) * CH, fx = x0 + 34 * K, fy = y0 + CH - 8 * K; g.fillStyle = '#4a4458'; g.fillRect(x0, fy, CW, 2);
-      put(f, fx, fy, A.SCALE * K); g.fillStyle = '#fff'; g.font = '10px monospace'; g.fillText(f + ' ' + nm, x0 + 3, y0 + 11); });
+    const put = (f, x, y, s, p1) => { const im = (p1 ? chP : ch).R[f]; g.drawImage(im, Math.round(x - ch.ax * s), Math.round(y - ch.ay * s), im.width * s, im.height * s); };
+    rows.forEach(([nm, f, p1], i) => { const x0 = (i % cols) * CW, y0 = Math.floor(i / cols) * CH, fx = x0 + 34 * K, fy = y0 + CH - 8 * K; g.fillStyle = '#4a4458'; g.fillRect(x0, fy, CW, 2);
+      put(f, fx, fy, A.SCALE * K, p1); g.fillStyle = '#fff'; g.font = '10px monospace'; g.fillText(f + ' ' + nm, x0 + 3, y0 + 11); });
     const card = A.bakeCard(), cy0 = CH * Math.ceil(rows.length / cols) + 4; card.R.forEach((im, i) => g.drawImage(im, 10 + i * (im.width * K + 10), cy0, im.width * K, im.height * K));
-    g.fillStyle = '#fff'; g.fillText('bestiary card x2 | frames ' + A.FRAMES + ' (cap 120)', 10, c.height - 4);
-    return { url: c.toDataURL('image/png'), frames: A.FRAMES }; })()`);
+    g.fillStyle = '#fff'; g.fillText('bestiary card x2 | poses ' + JSON.stringify(A.POSE_COUNT) + ' | frames ' + A.FRAMES + ' | real: pennant ' + chP.real + ' torn ' + ch.real, 10, c.height - 4);
+    return { url: c.toDataURL('image/png'), frames: A.FRAMES, poses: A.POSE_COUNT, real: [chP.real, ch.real] }; })()`);
   writeFileSync(join(out, 'lance-sheet.png'), Buffer.from(d.url.split(',')[1], 'base64'));
-  console.log('frames', d.frames, 'errors', JSON.stringify(pg.errors.slice(0, 5)), '->', join(out, 'lance-sheet.png'));
+  console.log('frames', d.frames, JSON.stringify(d.poses), 'real(pennant,torn)', d.real, 'errors', JSON.stringify(pg.errors.slice(0, 5)), '->', join(out, 'lance-sheet.png'));
 } finally { pg.close(); }
