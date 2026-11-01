@@ -1,1 +1,0 @@
-const fs=require('fs');for(const f of process.argv.slice(2)){let s=fs.readFileSync(f,'utf8');s=s.replace(/\r?\n/g,'\r\n');s=s.replace(" PROG.burningOpen = 1; for (const p of players) if (p !== players[0] && p.prof && p.prof.led && CS.noteBurning) CS.noteBurning(p.prof.led);\r\n"," PROG.burningOpen = 1;\r\n");fs.writeFileSync(f,s);}
