@@ -189,7 +189,7 @@ export function makeTavern(api) {
     if (!on()) return;
     let i = 0;
     for (const [p, c] of st.cardFor) {
-      const strip = !!api.heroStrip, w = 132, h = strip ? 84 : 58, x = Math.round(VW / 2 - w / 2 + (i - (st.cardFor.size - 1) / 2) * (w + 4)), y = 26; i++;
+      const strip = !!api.heroStrip, w = 132, h = strip ? 90 : 58, x = Math.round(VW / 2 - w / 2 + (i - (st.cardFor.size - 1) / 2) * (w + 4)), y = 26; i++;
       api.board(x, y, w, h); const col = colourOf(api.PROG().tavern, p.n);
       api.text(api.tagOf(p) + ' WARDROBE', x + w / 2, y + 4, col.c, 'center', 6);
       const vals = [api.heroName(p.hero), api.weaponName(api.weaponOf(p)), col.name, tav().ring ? 'ON' : 'OFF'];
