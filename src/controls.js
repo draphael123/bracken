@@ -157,7 +157,7 @@ const HEROES_C = {
   pirate:     ['hook / catch', tk => 'TAP ' + tk.c + ' CATCH, HOLD HOOK'],   /* (claude/heroblocksa) the tap is the HOOK CATCH (src/hook-catch.js) */
   reaper:     ['blood ward', tk => 'HOLD ' + tk.c + ', LET GO: NOVA'],
   warden:     ['deflect', tk => 'TAP ' + tk.c + ' DEFLECT, HOLD BRACE'],   /* (claude/heroblocksb) hold = the spear-haft brace; the full-vigil tap is still the phalanx (the hint line) */
-  geomancer:  ['rune-ward', tk => 'HOLD ' + tk.c + '  (SHE IS PLANTED)'],
+  geomancer:  ['rune-ward', tk => 'HOLD ' + tk.c + '  (SHE IS PLANTED)'],   /* (claude/geoid) the topple is its own row below */
   berserker:  ['take it', tk => 'HOLD ' + tk.c + ' (FULL: DOWN+' + tk.c + ' FRENZY)'],
   ranger:     ['bash / guard', tk => 'TAP ' + tk.c + ' BASH, HOLD GUARD'],   /* (claude/heroblocksb) hold = the bow guard; the bash on the beat is still her parry */
 };
@@ -176,7 +176,7 @@ export function cardRows({ hero = 'knight', binds = emptyBinds(), prof = 'pad1',
     [hero === 'ranger' ? 'shoot / knife' : 'swing', atkKeys, pd('atk')],
     [hero === 'ranger' ? 'down shot' : (PLUNGE_ROW[hero] || ['plunge'])[0], k1('down') + '+SWING IN AIR', pd('down') + '+' + pd('atk')],
     [hero === 'knight' ? 'heavy cut' : hero === 'geomancer' ? 'fault line' : hero === 'berserker' ? 'double chop' : hero === 'ranger' ? 'draw' : 'heavy blow', hero === 'geomancer' || hero === 'ranger' ? 'HOLD SWING, LET GO' : hero === 'knight' ? 'HOLD SWING, LET GO' : 'HOLD SWING', 'HOLD ' + pd('atk')],
-    hero === 'berserker' ? ['cross-chop', 'SWING x5 IN A RUN', pd('atk') + ' x5'] : hero === 'ranger' ? ['snare', k1('down') + '+' + tk.c + ' ON GROUND', pd('down') + '+' + pd('block')] : [hero === 'knight' ? 'shield bash' : 'third cut', hero === 'knight' ? 'SWING x3: BREAKS A GUARD' : 'SWING x3 IN A RUN', pd('atk') + ' x3'],   /* (claude/ranger: no run of three - her row is the snare) */   /* (claude/berserker2: his flurry runs five) */
+    hero === 'berserker' ? ['cross-chop', 'SWING x5 IN A RUN', pd('atk') + ' x5'] : hero === 'geomancer' ? ['stone fist', 'SWING x3: KNOCKS UP', pd('atk') + ' x3'] : hero === 'ranger' ? ['snare', k1('down') + '+' + tk.c + ' ON GROUND', pd('down') + '+' + pd('block')] : [hero === 'knight' ? 'shield bash' : 'third cut', hero === 'knight' ? 'SWING x3: BREAKS A GUARD' : 'SWING x3 IN A RUN', pd('atk') + ' x3'],   /* (claude/ranger: no run of three - her row is the snare) */   /* (claude/berserker2: his flurry runs five) */
     [hero === 'ranger' ? 'rising shot' : 'rising cut', k1('up') + '+SWING', pd('up') + '+' + pd('atk')],
     ['low sweep', k1('down') + '+SWING', pd('down') + '+' + pd('atk')],
     /* THE CROUCH: every hero ducks (src/duck.js); the Pyromancer's held still is also STOKE (claude/pyrokit: the EMBER FLARE left down for the ward on C) */
@@ -186,6 +186,7 @@ export function cardRows({ hero = 'knight', binds = emptyBinds(), prof = 'pad1',
     ...(hero === 'knight' ? [['3 links', 'TAP ' + tk.c + ': SHIELD CHARGE', pd('block')]] : []),   /* (claude/knightid) the spender; a perfect guard, then X, is the riposte whose rider is the link count */   /* (claude/pyrokit; the L10 card's UP + C row is the PAUSE > LEVEL CARD's words, not a 13th row here) */
     [cRow[0], cRow[1](tk), pd('block')],
     ...(hero === 'paladin' ? [['hammer throw', k1('up') + '+' + tk.c + '  (THREE PIPS)', pd('up') + '+' + pd('block')], ['tap ' + tk.c + ' spends', 'SMITE 1-2 RADIANCE 3-4 SUN 5', pd('block')]] : []),   /* (claude/paladin2) THE LIGHT SPENT */
+    ...(hero === 'geomancer' ? [['topple', k1('up') + '+' + tk.c + '  (TWO STONES UP)', pd('up') + '+' + pd('block')]] : []),   /* (claude/geoid) THE BOARD: her stones stand; this tips every one over as a boulder */
     ...(hero === 'berserker' ? [['axe throw', k1('up') + '+' + tk.c + '  (PICK IT UP)', pd('up') + '+' + pd('block')]] : []),   /* THE BERSERKER's off axe (src/berserker.js throwAxe) */
     ...(hero === 'ranger' ? [['mark', k1('up') + '+' + tk.c + '  (FOCUS FULL)', pd('up') + '+' + pd('block')], ['bow / knife', kb('stance') + ': BOW / KNIFE', pd('stance')]] : []),   /* THE RANGER's focus, spent (src/ranger.js spendMark) */
     ['dodge', hero === 'ranger' ? k1('dodge') + ': BACKFLIP, OR TAP A WAY TWICE' : hero === 'warden' ? k1('dodge') + ' BACK, OR TAP A WAY TWICE' : 'TAP A WAY TWICE, OR ' + kb('dodge'), pd('dodge')],

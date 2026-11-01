@@ -31,7 +31,7 @@
 // PURE: no DOM, no main.js. The world is a context `c` (src/admiral-hands.js binds it). adPlan is the boss lab's HUMAN bot (src/lab.js).
 
 /* (tune) THE PER-HERO TUNE: { in: x what his blows take off this hero, out: x what this hero's blows take off him }. Heroes not listed are 1 / 1. */
-export const TUNE = { knight: { in: 1, out: 1 }, pyro: { in: 1.3, out: 0.85 }, warden: { in: 0.8, out: 1.15 }, pirate: { in: 1.1, out: 1.0 }, paladin: { in: 1.45, out: 0.42 }, reaper: { in: 1.1, out: 0.8 }, geomancer: { in: 0.85, out: 1.15 }, ranger: { in: 1.2, out: 0.9 }, berserker: { in: 1.3, out: 0.8 } };   /* (claude/flotilla4) re-tuned for the doubled openings + hp 5200 (r3 n=12: knight/paladin/berserker/reaper 12/12, warden 2/12) */
+export const TUNE = { knight: { in: 1, out: 1 }, pyro: { in: 1.3, out: 0.85 }, warden: { in: 0.8, out: 1.15 }, pirate: { in: 1.1, out: 1.0 }, paladin: { in: 1.45, out: 0.42 }, reaper: { in: 1.1, out: 0.8 }, geomancer: { in: 1, out: 1 }, ranger: { in: 1.2, out: 0.9 }, berserker: { in: 1.3, out: 0.8 } };   /* (claude/flotilla4) re-tuned for the doubled openings + hp 5200 (r3 n=12: knight/paladin/berserker/reaper 12/12, warden 2/12) */
 export const tuneOf = h => TUNE[h] || { in: 1, out: 1 };
 export const AD = {
   hp: 4250, w: 22,   /* (claude/flotilla4) 3250 -> 4250 (+31%, the coordinator's cap: a LITTLE more health) with the openings doubled (3250: 98% wins, 77 s); the rest is pressure: AD.dmg x1.2 and the per-hero TUNE */
