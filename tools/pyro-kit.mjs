@@ -97,12 +97,12 @@ try {
       r.burst = h0 - f.hp; f.alive = false; out.lbStaff = r; }
     // ---- METEOR FALL ----
     { home(); const a = foe('topiary', 9, 9999), b = foe('topiary', 11, 9999), c = foe('topiary', 13, 9999); [a, b, c].forEach(freeze); const h0 = [a, b, c].map(f => f.hp); BK.pyStack(b, 2);
-      Object.assign(P(), { heat: 100, full: true, fullT: 5, heatGrace: 9 }); K.block = true; BK.sim(1); K.block = false; BK.sim(1); const m = BK.meteorNow(); const w0 = BK.ward().stats.wards;
+      Object.assign(P(), { heat: 100, full: true, fullT: 5, heatGrace: 9 }); K.up = true; K.block = true; BK.sim(1); K.block = false; K.up = false; BK.sim(1); const m = BK.meteorNow(); const w0 = BK.ward().stats.wards;
       let landed = 0; for (let k = 0; k < 90; k++) { BK.sim(1); [a, b, c].forEach(freeze); if (!landed && !BK.meteorNow()) landed = k; }
       BK.sim(30); [a, b, c].forEach(freeze);
       out.meteor = { aimedAt: m ? Math.round(m.x - b.x) : null, landedAt: landed, loss: [a, b, c].map((f, i) => h0[i] - f.hp), heat: Math.round(P().heat), full: P().full, ward: BK.ward().stats.wards - w0, left: BK.meteorNow() };
       [a, b, c].forEach(f => f.alive = false); }
-    { home(); Object.assign(P(), { heat: 100, full: true, fullT: 5, heatGrace: 9 }); K.block = true; BK.sim(1); K.block = false; BK.sim(1); const m = BK.meteorNow(); out.meteorNone = { ahead: m ? Math.round(m.x - P().x) : null }; BK.sim(70); }
+    { home(); Object.assign(P(), { heat: 100, full: true, fullT: 5, heatGrace: 9 }); K.up = true; K.block = true; BK.sim(1); K.block = false; K.up = false; BK.sim(1); const m = BK.meteorNow(); out.meteorNone = { ahead: m ? Math.round(m.x - P().x) : null }; BK.sim(70); }
     // ---- THE CARDS (UP + C) ----
     { home(); P().face = 1; K.up = true; K.block = true; BK.sim(30); out.noCard = { jet: Kt().jet, ward: BK.ward().stats.wards > 0 || BK.ward().stats.folded > 0, fb: Kt().fbHold, cMode: Kt().cMode }; none(); BK.sim(5);
       BK.PROG.pyroBoth = true; home(); K.up = true; K.block = true; BK.sim(30); out.jetCard = { jet: Kt().jet, ward: BK.ward().up, fb: Kt().fbHold }; none(); BK.sim(30);

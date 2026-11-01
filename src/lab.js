@@ -3072,7 +3072,7 @@ async function runbossLab(BK, opts) {
           && f - (P.labBzPounceAt ?? -999) > 1500 && f - (P.labBzFrenzied ?? -999) > 40) {
           P.labBzPounceAt = f; P.labBzDir = Math.sign(d) || P.face; P.labBzCoil = 38; BK.unpress(); P.labJump = 0; strike = false; k.left = k.right = false; k.down = true; } }
       // A BANKED METEOR FALL IS FOR SPENDING (claude/pyrokit2; it was the Pyre, then Conflagration): release the full heat meter toward a clear target between committed swings.
-      if (h==='pyro' && P.full && !tell && !rushing && ad<140 && Math.abs(boss.y-P.y)<30 && !P.plunge && !P.cWas && P.atk<0) { P.face=Math.sign(d)||P.face; k.block=true; }
+      if (h==='pyro' && P.full && !tell && !rushing && ad<140 && Math.abs(boss.y-P.y)<30 && !P.plunge && !P.cWas && P.atk<0) { P.face=Math.sign(d)||P.face; k.up=true; k.block=true; }   /* (UP + C, Daniel 11-01) */
       /* (claude/pyrocontrols, Daniel 11-01: TAP = ward, HOLD = charge) THE PYRO BOT'S CHARGE (profile mod +x_pyroCharge_N, N = the step it holds to; off by default so the standing rates keep their baseline): in a real opening, with room and no tell, it holds C up to step N and lets go. The ward stays a tap (emberPlan above); a tell drops the hold at once. */
       if (h==='pyro' && LABP.pyroCharge) { const pk = BK.pyroKit ? BK.pyroKit() : null, want = Math.max(1, Math.min(5, Math.round(LABP.pyroCharge))), open = BK.bossOpen ? !!BK.bossOpen(boss) : false;
         if (P.labCh) { if (tell || rushing || P.hurt > 0 || P.dodge > 0 || !open || f - P.labCh > 260 || (pk && pk.fbHold >= want)) { k.block = false; P.labCh = 0; P.labChAt = f; } else { k.block = true; k.left = k.right = k.atk = k.jump = k.down = false; P.face = Math.sign(d) || P.face; } }
