@@ -512,7 +512,7 @@
   }
  },
  "spore": {
-  "hash": "e06a1cd0ee49",
+  "hash": "ee66feddd3c1",
   "boss": {
    "boss": "mother",
    "wins": 0,
@@ -613,7 +613,7 @@
    ]
   },
   "carried": {
-   "from": "3bf985fd9575",
+   "from": "e06a1cd0ee49",
    "parts": [
     "boss"
    ]
@@ -2273,7 +2273,7 @@
   }
  },
  "longwater": {
-  "hash": "8ce17bb1e629",
+  "hash": "04defa7dcf82",
   "boss": {
    "boss": "herald",
    "wins": 0,
@@ -2374,71 +2374,74 @@
    ]
   },
   "carried": {
-   "from": "7bd34df98c92",
+   "from": "8ce17bb1e629",
    "parts": [
     "boss"
    ]
   },
   "level": {
    "knight": {
-    "deaths": 0,
-    "minHpPct": 13,
-    "hpLostPct": 190,
-    "hits": 24,
+    "deaths": 7,
+    "minHpPct": 0,
+    "hpLostPct": 699,
+    "hits": 52,
     "walked": 100,
-    "lifts": 43,
-    "held": 28,
+    "lifts": 40,
+    "held": 15,
     "duels": 5,
-    "boardLifts": 0,
+    "boardLifts": 2,
     "rides": 1,
-    "pulls": 0,
+    "pulls": 2,
     "ridden": {
      "raft": 1
     },
     "machines": true,
-    "frames": 29896,
-    "kills": 8,
-    "heroLevel": 13
+    "frames": 20444,
+    "kills": 17,
+    "heroLevel": 22
    },
    "warden": {
-    "deaths": 0,
-    "minHpPct": 3,
-    "hpLostPct": 219,
-    "hits": 29,
+    "deaths": 9,
+    "minHpPct": 0,
+    "hpLostPct": 901,
+    "hits": 66,
     "walked": 100,
-    "lifts": 42,
-    "held": 28,
+    "lifts": 39,
+    "held": 15,
     "duels": 5,
-    "boardLifts": 0,
-    "rides": 1,
-    "pulls": 0,
+    "boardLifts": 7,
+    "rides": 4,
+    "pulls": 5,
     "ridden": {
-     "raft": 1
+     "raft": 2,
+     "mover": 1,
+     "vmover": 1
     },
     "machines": true,
-    "frames": 29780,
-    "kills": 8,
-    "heroLevel": 13
+    "frames": 24693,
+    "kills": 17,
+    "heroLevel": 22
    },
    "pyro": {
-    "deaths": 0,
-    "minHpPct": 42,
-    "hpLostPct": 151,
-    "hits": 23,
+    "deaths": 8,
+    "minHpPct": 0,
+    "hpLostPct": 812,
+    "hits": 60,
     "walked": 100,
-    "lifts": 43,
-    "held": 28,
+    "lifts": 40,
+    "held": 16,
     "duels": 5,
     "boardLifts": 0,
-    "rides": 1,
-    "pulls": 0,
+    "rides": 2,
+    "pulls": 1,
     "ridden": {
-     "raft": 1
+     "raft": 1,
+     "vmover": 1
     },
     "machines": true,
-    "frames": 29748,
-    "kills": 13,
-    "heroLevel": 13
+    "frames": 20621,
+    "kills": 23,
+    "heroLevel": 22
    }
   }
  },

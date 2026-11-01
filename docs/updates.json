@@ -1,5 +1,16 @@
 [
   {
+    "date": "2026-11-01",
+    "batch": 136,
+    "lines": [
+      "The Shriek Sisters are reworked: one hunts at a time while two roost on their nests, and a grab drags you off the stair",
+      "The Rookery is tuned for all three heroes and its fight runs longer",
+      "Late game: sea guards plant a plate, scouts haul their harpoon back, zombies clinch, desert shields brace for archers",
+      "Late-game packs and affixes now scale by act, so the sea and the desert bite harder",
+      "Platforming fixes: spore, fair, caravan, theatre, church, rootway, hurricane and more get clean jumping stretches"
+    ]
+  },
+  {
     "date": "2026-10-31",
     "batch": 135,
     "lines": [
