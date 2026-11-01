@@ -56,7 +56,7 @@ export const SS = {
   rake: { tell: 0.4, v: 250, T: 0.5, h: 16, dmg: 14, chance: [0.6, 1, 1], end: 0.6, pre: 0.25 },   /* (claude/rookery3) LIGHT: 0.5 -> 0.4, 18 -> 11, a shorter slide */
   shock: { tell: 0.7, range: 150, h: 64, dmg: 8, vx: 300, vy: -160, low: 30, gap: 64, edge: 30, teeter: 0.7, T: 0.45 },
   echo: { tell: 0.42, ahead: 56, w: 22, dmg: 11, life: 8, T: 0.3 },   /* (claude/rookery3) LIGHT: 0.75 -> 0.42, 14 -> 8 (the tile is AHEAD of you: a quick flash) */
-  grab: { tell: 0.7, v: 290, T: 0.8, h: 14, dmg: 16, lift: 0.8, hold: 2.6,   /* (claude/rookery4: hold 1.8 -> 2.6 - she carries you to a roost now) */ strikes: 3, gap: 0.22, liftH: 56, drop: 22, free: 1.6, cd: [6.5, 5, 4], first: 8, hang: 24 },
+  grab: { tell: 0.7, v: 290, T: 0.8, h: 14, dmg: 22, lift: 0.8, hold: 2.6,   /* (claude/rookery4: hold 1.8 -> 2.6 - she carries you to a roost now) */ strikes: 3, gap: 0.22, liftH: 56, drop: 30, free: 1.6, cd: [5.5, 4.2, 3.5], first: 8, hang: 24 },
   /* (claude/rookery2) THE LEVEL'S VERB IN THE FIGHT - P1: a sister KNOCKED DOWN (her dive or rake on a shield, a grab struck loose) climbs off the rock (ferryWait, SS.ride.window s:
      UP: GRAB): grab her talons and she FERRIES you up to the SHRIEKER'S PERCH (a bone nest lashed to a spire); land beside the shrieker and she is CORNERED (open x SS.ride.mul,
      up to SS.ride.cap of her) for SS.ride.startle s, then flees behind her ward. The nest tips you off after SS.ride.tip s (no camping on it) */
@@ -83,7 +83,7 @@ export const SS = {
                                                               (half), a blow in the tell BREAKS it (she tumbles, knocked down) */
   /* BONE NESTS ON CRACKED ARMS (the main new opening): bait the Hunter's dive (or the Snatcher's boulder) onto a nest's cracked ARM FOOT on the summit floor - the arm snaps, the nest
      DROPS (a platform low over the floor for the rest of the fight) and the sister ROOSTING on it crashes down STUNNED (x mul up to cap of her); the Hunter herself skids off the arm */
-  nest: { stun: 4, mul: 2, cap: 0.08, foot: 24 },
+  nest: { stun: 4, mul: 2, cap: 0.14, foot: 24 },
   /* A ROOSTING SISTER: x0.4 on the wing (B15) - WHOLE when you strike her from her own roost; landing on a roost beside her CORNERS her (the ride's corner: x ride.mul, up to ride.cap;
      struck loose from the grab onto her roost: x roost.mul up to roost.cap) - once per `again` s each; r: how near a roost the grab must be for you to land on it */
   roost: { mul: 1, cap: 0.2, again: 12, close: 40, r: 56 },
