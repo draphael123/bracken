@@ -26,18 +26,18 @@ try {
 
     // FRESH SAVE: the branch is shut, and pressing at it does not move you
     wipe();
-    out.at1 = goTo('stockade');
-    press('ArrowUp');
+    out.at1 = goTo('kings');   /* (claude/smallfix8) the Burning Village hangs off KINGSWOOD, below it on the map: DOWN walks onto it */
+    press('ArrowDown');
     out.freshTry = BKT.PROG.mapNodeId;
 
     // SILVER MET: the same press now walks the branch, and back again
     BKT.PROG.stockade = { cleared: true, medal: 3, best: 301 };   /* DANIEL 11-01: a cleared Stockade no longer opens the Burning Village - King Gorm beaten in ONE LIFE does (PROG.burningOpen, tools/gorm-unlock.mjs) */
-    press('ArrowUp');
+    press('ArrowDown');
     out.slowTry = BKT.PROG.mapNodeId;
     BKT.PROG.burningOpen = 1; BKT.PROG.stockade = { cleared: true, medal: 1, best: 299 };
-    press('ArrowUp');
-    out.afterSilver = BKT.PROG.mapNodeId;
     press('ArrowDown');
+    out.afterSilver = BKT.PROG.mapNodeId;
+    press('ArrowUp');
     out.afterBack = BKT.PROG.mapNodeId;
 
     // THE HERO SHOP GATE STILL WORKS THROUGH THE NEW LOCK (coinNeeds: 'burning', unaffected by opensOn)
@@ -49,8 +49,8 @@ try {
     wipe();
     BKT.PROG.stockade = { cleared: true, medal: 0 };
     BKT.PROG.burning = { cleared: true };
-    out.migAt = goTo('stockade');
-    press('ArrowUp');
+    out.migAt = goTo('kings');
+    press('ArrowDown');
     out.migOpen = BKT.PROG.mapNodeId;
 
     // THE UNBURIED FIELD IS NOT A MEDAL ROAD ANY MORE (claude/unburiedsecret): a gold medal on the Witchlight Stair does nothing, the field is a SECRET
@@ -72,28 +72,29 @@ try {
     // BRONZE IS NOT ENOUGH: silver is asked for, so a bronze-only clear stays shut
     wipe();
     BKT.PROG.stockade = { cleared: true, medal: 1 };
-    out.bronzeAt = goTo('stockade');
-    press('ArrowUp');
+    out.bronzeAt = goTo('kings');
+    press('ArrowDown');
     out.bronzeTry = BKT.PROG.mapNodeId;
-    BKT.PROG.burningOpen = 1; press('ArrowUp');
+    BKT.PROG.burningOpen = 1; press('ArrowDown');
     out.bronzeGorm = BKT.PROG.mapNodeId;
 
     return out;
   })()`);
-  assert.equal(r.at1, 'stockade', 'gotoLevelNode did not land on the Stockade');
-  assert.equal(r.freshTry, 'stockade', 'a fresh save let the branch open with no silver on the Stockade');
-  assert.equal(r.slowTry, 'burning', "DANIEL'S DESIGN CHANGE 10-15: a slow (5:01) but CLEARED Stockade must open the Burning Village - there is no clock any more");
-  assert.equal(r.afterSilver, 'burning', 'a fast Stockade clear did not open the walkable branch to the Burning Village');
-  assert.equal(r.afterBack, 'stockade', 'pressing back off the spur did not return to its junction');
+  assert.equal(r.at1, 'kings', 'gotoLevelNode did not land on Kingswood');
+  assert.equal(r.freshTry, 'kings', 'a fresh save let the branch open before King Gorm');
+  assert.equal(r.slowTry, 'kings', "DANIEL 11-01: a CLEARED Stockade alone no longer opens the Burning Village - King Gorm in one life does");
+  assert.equal(r.afterSilver, 'burning', 'a clean King Gorm (PROG.burningOpen) did not open the walkable branch off Kingswood to the Burning Village');
+  assert.equal(r.afterBack, 'kings', 'pressing back off the spur did not return to its junction');
   assert.equal(r.coinRoute, true, "the Pyromancer's shop gate (coinNeeds: 'burning') broke under the new lock");
-  assert.equal(r.migAt, 'stockade', 'gotoLevelNode did not land on the Stockade for the migration case');
+  assert.equal(r.migAt, 'kings', 'gotoLevelNode did not land on Kingswood for the migration case');
   assert.equal(r.migOpen, 'burning', 'an old save that already cleared the Burning Village was re-locked by the new medal rule');
   assert.equal(r.wAt, 'witchlight', 'gotoLevelNode did not land on the Witchlight Stair');
   assert.equal(r.wGold, 'witchlight', 'a gold medal on the Witchlight Stair opened the Unburied Field: the medal rule is gone, only the three lost banners open it');
   assert.equal(r.wOpen, 'unburied', 'a save holding the three lost banners did not open the Unburied Field');
   assert.equal(r.wBack, 'witchlight', 'pressing back off the Unburied Field did not return to the Witchlight Stair');
-  assert.equal(r.bronzeAt, 'stockade', 'gotoLevelNode did not land on the Stockade for the bronze case');
-  assert.equal(r.bronzeTry, 'burning', "DANIEL'S DESIGN CHANGE 10-15: any clear of the Stockade (bronze, no best time) opens the Burning Village");
+  assert.equal(r.bronzeAt, 'kings', 'gotoLevelNode did not land on Kingswood for the bronze case');
+  assert.equal(r.bronzeTry, 'kings', 'a bronze Stockade clear alone opened the Burning Village (it asks for King Gorm in one life now)');
+  assert.equal(r.bronzeGorm, 'burning', 'burningOpen set, the walk off Kingswood did not reach the Burning Village');
   assert.deepEqual(pg.errors, []);
   console.log('Class-level side roads: walkable from their junction, shut until the Stockade is CLEARED (no clock, Daniel 10-15) (the Unburied Field is a banner-gated secret, tools/unburied-secret.mjs), open after, and the old-cleared-spur migration stays open with no extra step.');
 } finally { pg.close(); }

@@ -8,6 +8,36 @@
 import assert from 'node:assert/strict';
 import { openPage } from './cdp.mjs';
 import { portFor } from './ports.mjs';
+import fs from 'node:fs';
+import * as CS from '../src/coop-save.js';
+import { migrateProgress } from '../src/progression.js';
+import { LEVELS as LVS } from '../src/level.js';
+
+// 5. CO-OP CREDIT (claude/smallfix8, Daniel 11-01): a clean party win writes burningOpen into EVERY seat's own save (node, the save API; the page half
+//    is the source guard: only a run with no shrine respawn notes the flag, and the host and every profiled human seat get it).
+{ class Store { constructor() { this.m = new Map(); } get length() { return this.m.size; } key(i) { return [...this.m.keys()][i] ?? null; } getItem(k) { return this.m.has(k) ? this.m.get(k) : null; } setItem(k, v) { this.m.set(k, String(v)); } removeItem(k) { this.m.delete(k); } }
+  const CAMP = LVS.filter(l => !l.hidden).map(l => l.id), isLevel = id => LVS.some(l => l.id === id);
+  const seat = (slot) => ({ hero: 'warden', slot, base: { xp: 0, coins: 0 }, view: { xp: { warden: 0 }, coins: 0 } });
+  const st = new Store(), key = CS.slotKey(2), save0 = migrateProgress(null).progress; st.setItem(key, JSON.stringify(save0));
+  const led = CS.newLedger(seat(2));
+  CS.noteFlag(led, 'burningOpen'); CS.noteFlag(led, 'bogus'); CS.noteFlag(led, 'burningOpen');
+  const c = CS.nextCredit(led, null, false);
+  assert.ok(c && Array.isArray(c.flags) && c.flags.length === 1 && c.flags[0] === 'burningOpen', 'the credit carries the party unlock once, and only a known flag: ' + JSON.stringify(c));
+  const r1 = CS.applyCredit(st, key, c, { campaignIds: CAMP, isLevel });
+  assert.ok(r1.ok && !r1.dup && JSON.parse(st.getItem(key)).burningOpen === 1, "a seat's own save did not get burningOpen: " + JSON.stringify(r1.why || r1.applied));
+  const r2 = CS.applyCredit(st, key, c, { campaignIds: CAMP, isLevel });
+  assert.ok(r2.ok && r2.dup, 'the same credit twice pays once');
+  const st2 = new Store(); st2.setItem(key, JSON.stringify(save0)); const led2 = CS.newLedger(seat(2));
+  const none = CS.nextCredit(led2, null, true);
+  assert.ok(!none, 'a seat with no flag and no earnings writes nothing (a party that fell credits no seat)');
+  const st3 = new Store(); st3.setItem(key, JSON.stringify(save0)); const led3 = CS.newLedger(seat(2)); CS.noteFlag(led3, 'burningOpen');
+  CS.applyCredit(st3, key, CS.nextCredit(led3, null, false), { campaignIds: CAMP, isLevel, xpOnly: true });
+  assert.ok(JSON.parse(st3.getItem(key)).burningOpen !== 1, 'a linked AI companion (xpOnly) takes no unlock');
+  const src = fs.readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
+  const gb = src.slice(src.indexOf('function gormBeaten()'), src.indexOf('function gormBeaten()') + 1400);
+  assert.ok(gb.indexOf('if (gormFell)') > -1 && gb.indexOf('if (gormFell)') < gb.indexOf("noteFlag(p.prof.led, 'burningOpen')") && gb.includes('p !== players[0] && p.prof && !p.ai') && gb.includes('creditAll(false)'), 'gormBeaten notes the flag on every profiled human seat, only after the fell-check, then credits');
+  console.log('co-op credit: ok');
+}
 
 const pg = await openPage({ port: portFor(7) });
 try {

@@ -146,7 +146,9 @@ export function makeVillageHands(ctx) {
     if (!K) return; K.clock += dt; const P = hero();
     if (P) P.soaked = K.soak > 0 && !ctx.bossActive() ? K.soak : 0;
     if (K.soak > 0) { K.soak = Math.max(0, K.soak - dt); if (ctx.bossActive()) K.soak = 0;
-      if (P && !P.dead && Math.random() < dt * 9) ctx.parts().push({ x: P.x + (Math.random() - 0.5) * 8, y: P.y - 22 + Math.random() * 14, vx: (Math.random() - 0.5) * 8, vy: 10, life: 0.5, max: 0.5, col: Math.random() < 0.5 ? '#9ad0ff' : '#e8f6ff', size: 1, grav: 380 });
+      if (P && !P.dead && Math.random() < dt * 16) ctx.parts().push({ x: P.x + (Math.random() - 0.5) * 9, y: P.y - 24 + Math.random() * 18, vx: (Math.random() - 0.5) * 10, vy: 8, life: 0.6, max: 0.6, col: Math.random() < 0.5 ? '#9ad0ff' : '#e8f6ff', size: Math.random() < 0.3 ? 2 : 1, grav: 380 });   /* (claude/smallfix8) a soaked hero DRIPS: more, bigger drops off his body */
+      /* the flames beside him go DIM and STEAM (main.js fireDim draws them low): a wisp off each one in reach, so the fire reads harmless to him */
+      if (P && !P.dead) for (const f of ctx.fires()) if (f.delay <= 0 && !f.vent && Math.abs(P.x - f.x) < 24 && P.y > f.y - Math.max(24, f.tall || 0) - 4 && P.y <= f.y + 6 && Math.random() < dt * 5) ctx.parts().push({ x: f.x + (Math.random() - 0.5) * 8, y: f.y - 6, vx: (Math.random() - 0.5) * 6, vy: -34, life: 0.55, max: 0.55, col: Math.random() < 0.5 ? '#d8e4ee' : '#b9c6d2', size: 2, grav: -24 });
       /* a soaked hero in a flame HISSES: steam off him, where the fire would have burnt */
       if (P && !P.dead) for (const f of ctx.fires()) if (f.delay <= 0 && (f.oil || f.still || f.pillar) && Math.abs(P.x - f.x) < 10 && P.y > f.y - Math.max(14, f.tall || 0) && P.y <= f.y + 2) { if (Math.random() < dt * 14) ctx.parts().push({ x: P.x + (Math.random() - 0.5) * 8, y: P.y - 10, vx: 0, vy: -40, life: 0.5, max: 0.5, col: '#d8e4ee', size: 2, grav: -30 }); if (!K.said.hiss) { K.said.hiss = 1; ctx.sfx.hiss && ctx.sfx.hiss(); ctx.number(P.x, P.y - 40, VH_SAY.hiss, '#d8e4ee'); } break; }
       if (K.soak <= 0 && P && !P.dead) ctx.number(P.x, P.y - 34, VH_SAY.dry, '#c9b27c'); }
@@ -211,7 +213,7 @@ export function makeVillageHands(ctx) {
     if (!K) return; const P = hero();
     /* OIL: a slick of black oil under the flames, a bubble of smoke over them */
     for (const o of K.oil) { const x = o.x0 * TS() - cx, w = (o.x1 - o.x0 + 1) * TS(), y = R((o.row + 1) * TS() - cy); if (x > ctx.VW() + 20 || x + w < -20) continue;
-      for (let t = o.x0; t <= o.x1; t++) oilFlame(g, R(t * TS() + 8 - cx), y - 3, time, t);   /* the flames of the oil: dark red at the edges, a pale core, black at the tip */
+      for (let t = o.x0; t <= o.x1; t++) { const dm = ctx.fireDim ? ctx.fireDim(t * TS() + 8, (o.row + 1) * TS(), 18) : 1; if (dm < 1) g.globalAlpha = dm; oilFlame(g, R(t * TS() + 8 - cx), y - 3, time, t); g.globalAlpha = 1; }   /* the flames of the oil: dark red at the edges, a pale core, black at the tip */
       g.fillStyle = '#0c0808'; g.fillRect(x - 2, y - 2, w + 4, 3); g.fillStyle = '#1e1618'; g.fillRect(x, y - 3, w, 2);
       g.fillStyle = Math.floor(time * 7) % 2 ? '#7a3a1c' : '#4a2616'; for (let q = 3; q < w - 2; q += 7) g.fillRect(x + q + (Math.floor(time * 2 + q) % 2), y - 3, 3, 1);   /* the sheen */
       for (let q = 0; q < 5; q++) { const kk = ((time * 0.45) + q * 0.2 + o.x0 * 0.31) % 1; g.globalAlpha = 0.55 * (1 - kk); g.fillStyle = '#1a1214'; const s = kk < 0.4 ? 3 : 4; g.fillRect(R(x + (q + 0.5) * w / 5 + Math.sin(time + q) * 4 + kk * 8), R(y - 24 - kk * 54), s, s); } g.globalAlpha = 1; }
