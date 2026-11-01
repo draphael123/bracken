@@ -41,6 +41,7 @@ export const BT = {
      reach in front, back behind, top..bot over the road (a standing or ducking hero is in it; a roll's i-frames or a jump clear it); push = the knock-back */
   pile: { tell: 0.85, wind: 0.5, t: 0.22, reach: 112, back: 34, top: 30, bot: 12, dmg: 18, push: 170, rec: 0.75, range: 150, every: 2 },
 };
+export const BT_RELAY = 'THE ROAD DOES NOT MEND. TAKE A PLANK FROM A BANK AND LAY IT AT THE BROKEN EDGE: A FRESH PLANK SAGS - HIS NEXT LURE.';   /* (claude/bogtroll2) told once, as he tears free of the first wreck */
 export const BT_SAY = { wake: 'THE BOG TROLL', rule: 'HE FEELS YOUR WEIGHT. LURE HIS BURST UNDER A ROTTEN SECTION.', stuck: 'STUCK IN THE BOARDS', free: 'HE TEARS FREE', ward: 'HE SHAKES OFF THE WRECK',
   bounce: 'THE BOARDS BREAK ON HIM: WARDED', p2: 'HE RIPS THE ROAD', dragged: 'DRAGGED', hide: 'PEAT HIDE',
   pinned: 'PINNED UNDER THE WRECK', wave: 'JUMP THE WAVE', thrown: 'THE WAVE THROWS YOU', post: 'HE WRENCHES A POST OUT', swing: 'ROLL OR JUMP THE POST' };

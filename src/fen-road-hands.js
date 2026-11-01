@@ -215,7 +215,7 @@ export function makeFenRoadHands(ctx) {
     for (let i = 1; i < runs.length; i++) if (runs[i][0] - runs[i - 1][1] - 1 < CROSS.footMin) return false;
     return !runs.some(([a, b]) => (a > c.a && a - c.a < CROSS.footMin && !ctx.solidAt(c.a - 1, ROAD_ROW)) || (b < c.b && c.b - b < CROSS.footMin && !ctx.solidAt(c.b + 1, ROAD_ROW))); };
   /* he wrenches it out: the board over it goes into the fen (a gap - a slot for your next plank); what stands on it topples */
-  H.pull = col => { if (!S || col === null || col === undefined) return false; const TS = ctx.TS; ctx.cellSet(col, ROAD_ROW, ctx.T.AIR); S.ripped.add(col); S.posts.add(col); S.n.posts++;
+  H.pull = col => { if (!S || col === null || col === undefined || !foots(col) || !H.gapOk(col)) return false;   /* (the road may have changed since he chose it: checked again) */ const TS = ctx.TS; ctx.cellSet(col, ROAD_ROW, ctx.T.AIR); S.ripped.add(col); S.posts.add(col); S.n.posts++;
     ctx.burst(col * TS + 8, ROAD_ROW * TS, 14, ['#8a6a40', '#b08a5a', '#3e2c1c', '#9fb3a6'], 130, 0.7); snd('post');
     for (const pp of ctx.players()) { if (pp.x + 3 > col * TS && pp.x - 3 < (col + 1) * TS && Math.abs(pp.y - ROAD_ROW * TS) < 3) { pp.ground = false; pp.vy = Math.max(pp.vy || 0, 40); } H.fixSafe(pp); }
     return true; };

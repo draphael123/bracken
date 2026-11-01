@@ -126,6 +126,7 @@ export function makeBogTrollHands(ctx) {
     if (e.mode === 'wake' && !S.woke) { S.woke = true; e.modeT = 1.8; ctx.number(e.x, S.G.floorY - 90, BTM.BT_SAY.wake, '#ffd36b'); SOUND.roar(ctx.sfx); ctx.shake(6); ctx.burst(e.x, S.G.waterY, 26, ['#9fb3a6', '#e6efe6', '#3e2c1c'], 130, 0.8); }
     if (S.woke && !S.told.rule && e.mode !== 'wake') { S.told.rule = 1; ctx.number(S.G.mid, S.G.floorY - 120, BTM.BT_SAY.rule, '#ffd36b'); }
     BTM.stepTroll(e, S, dt, heroes(), world(e));
+    if (e.mode === 'heave' && !S.told.relay) { S.told.relay = 1; ctx.hint && ctx.hint(BTM.BT_RELAY); }   /* (claude/bogtroll2) the road does not mend: the planks are the way to his next lure */
     e.w = e.mode === 'stuck' || e.mode === 'stuckIn' ? BT.stuck.w : BT.w;   /* stuck, he is sprawled across the wreck: struck from the boards that hold at its ends */
     e.phase = S.ph; e.open = BTM.btOpen(e) ? Math.max(0, e.modeT) : 0; e.openKind = e.mode;
   };
