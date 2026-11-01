@@ -246,7 +246,7 @@ export function makeBerserker(api) {
       else { p.vx = 0; if (keys.block) p.braceT = Math.max(p.braceT, 0.05); } }
     const cDown = keys.block && !p.cWas; p.cWas = !!keys.block;
     const free = !ctx.stunned && !ctx.dodging && !p.plunge && !ctx.attacking && !(p.blastT > 0) && !(p.charge > 0) && !p.dead && !(p.pounceT > 0) && !(p.pounceRec > 0);
-    const xDown = !!keys.atk && !p.bzXWas; p.bzXWas = !!keys.atk;
+    const xDown = !!ctx.atkPress || (!!keys.atk && !p.bzXWas); p.bzXWas = !!keys.atk;
     if (xDown && takeUp(p) && !ctx.stunned && t.tech('bzwarcry') && (p.rage || 0) >= 100 && !(p.frenzyT > 0) && api.time >= (p.bzWarcryAt || 0)) warcryCharge(p);   /* WARCRY CHARGE (L30): C held at a full bar, X tapped */
     if (cDown && free && t.tech('bzrampage') && p.standT > 0 && (p.rage || 0) >= 100 && !(p.bzRampT > 0) && api.time >= (p.bzRampCd || 0)) unbowedRampage(p);   /* UNBOWED RAMPAGE (L50): C at a full bar during LAST STAND */
     else if (cDown && keys.up && free && !takeUp(p)) { if (p.bzAxe) { if (catchOnBeat(p)) { /* AXE CATCH (L25) */ } else if (t.ret) recall(p); } else throwAxe(p); }   /* UP+C: the throw (THE RETURN: again, it comes back) */

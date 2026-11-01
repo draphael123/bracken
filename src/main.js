@@ -742,8 +742,8 @@ const BZ_TEACH = { brace: ['bzBraceTold', 'HOLD C: TAKE IT ON THE AXES. A TENTH 
   full: ['bzFullTold', 'RAGE FULL: DOWN + C FOR THE FRENZY. EVERY BLOW HEALS, AND FOUR ON ONE FOE CRACK IT.'],
   throw: ['bzThrowTold', 'ONE AXE: SLOWER CHOPS, UNTIL YOU WALK OVER IT AND PICK IT UP.'],
   drain: ['bzDrainTold', 'OUT OF A FIGHT YOUR RAGE DRAINS AWAY. STAY IN IT, OR STAND STILL AND WHET IT UP.'],
-  wind: ['bzWindTold', 'HOLD X: THE LONGER YOU WIND, THE BIGGER THE CHOP. NO FLINCH, BUT NO TURNING OR STOPPING - AND IT LEAVES YOU OPEN.'],
-  cost: ['bzCostTold', 'SPIN, CLEAVE AND STORM COST STAMINA. RAGE PAYS PART OF IT BACK: HALF A BAR, A FIFTH. FULL, TWO FIFTHS.'] };
+  wind: ['bzWindTold', 'HOLD X: A BIGGER CHOP THE LONGER YOU WIND. NO FLINCH, BUT NO TURNING - AND IT LEAVES YOU OPEN.'],
+  cost: ['bzCostTold', 'SPIN, CLEAVE AND STORM COST STAMINA. RAGE PAYS PART BACK: A FIFTH AT HALF A BAR, TWO FIFTHS FULL.'] };
 /* ==== THE RANGER'S KEYS, IN WORDS (her teaching lines, claude/ranger): the draw, the quiver, the focus ==== */
 const RG_TEACH = { shot: ['rgShotTold', 'TAP X: QUICK SHOT. HOLD X: DRAW. HOLD LONGER: PIERCE, THEN THREE ARROWS.'],
   empty: ['rgEmptyTold', 'QUIVER EMPTY: CROUCH TO RESTOCK. OR WALK OVER YOUR ARROWS. UNTIL THEN, THE KNIFE.'],
@@ -10796,7 +10796,7 @@ function updatePlayer(dt) {
     GEO.guard(!!keys.block && !quake, free && !quake && (P.ground || P.swim) && !thrown && CM.guardOk(P), dt, (keys.right ? 1 : 0) - (keys.left ? 1 : 0));
   }
   if (isRg() && RGK) RGK.update(dt, keys, { stunned, dodging, attacking, guardOk: CM.guardOk(P) });   /* (claude/ranger) HER C: the bow-bash (her parry), DOWN+C the snare, UP+C the mark - and her arrows, her quiver's trickle, the nock let go (src/ranger.js) */
-  if (isBz() && BZK) BZK.update(dt, keys, { stunned, dodging, attacking, guardOk: CM.guardOk(P) });   /* (WEIGHT: no brace while EXHAUSTED - it is a guard) */   /* THE BERSERKER'S C: the brace; full rage, THE FRENZY; UP+C the axe throw - and his rage, frenzy and thrown axe (src/berserker.js) */
+  if (isBz() && BZK) BZK.update(dt, keys, { stunned, dodging, attacking, guardOk: CM.guardOk(P), atkPress });   /* (WEIGHT: no brace while EXHAUSTED - it is a guard) */   /* THE BERSERKER'S C: the brace; full rage, THE FRENZY; UP+C the axe throw - and his rage, frenzy and thrown axe (src/berserker.js) */
   if (hero() === 'knight') { // C held = the shield. A full RESOLVE and a tap of C on the ground is THE LAST CHARGE.
     P.resolve = Math.max(0, Math.min(100, P.resolve || 0));
     const cDown = keys.block && !P.cWas; P.cWas = !!keys.block;
@@ -30379,7 +30379,7 @@ function startSwing() { P.dkFed = false; P.dkDrained = false; P.bkLashSaid = fal
   if (ripHeavy) { P.ripostes = (P.ripostes || 0) + 1; SFX.riposte(); number(P.x, P.y - 30, 'RIPOSTE', '#ffd36b'); ringAt(P.x + P.face * 12, P.y - 11, 22, '#fff6c8', 0.25); streaks(P.x + P.face * 12, P.y - 12, 7, ['#ffffff', '#ffd36b'], 190); zoomKick(1.03, 0.14); }
   if (P.heavySwing) { SFX.heavy(); streaks(P.x + P.face * 12, P.y - 12, 5, ['#fff6e0', '#c9d1dc'], 140); if (isBz() && !P.heavy) { ringAt(P.x + P.face * 10, P.y - 14, 26, '#ff9a5c', 0.4); streaks(P.x, P.y - 14, 8, ['#ff9a5c', '#e8dcc0'], 150); }   /* (claude/berserkerid) THE WIDE SLOW CLEAVE: a broad ring, told */
     if ((PROG.thirdSeen || 0) < 2 && !lessonAt('third') && !ripHeavy) {   /* (not on a riposte: that heavy cut was the guard's, not the run's) */ PROG.thirdSeen = (PROG.thirdSeen || 0) + 1;   /* (not in the wood's third-cut stretch: the lesson there says it, once, as the first blow lands) */
-      hintSay('mechanic', 4, isBz() ? 'FOUR CHOPS THAT LAND END IN THE WIDE CLEAVE: SLOW AND BROAD, IT HITS BOTH SIDES AND LEAVES HIM OPEN.' : hero() === 'knight' ? 'THE THIRD SWING IN A RUN THROWS THEM: AT A WALL, THE SPIKES OR EACH OTHER.' : isReaper() ? 'THE THIRD CUT IN A RUN IS THE BLOOD LASH: ITS BLOOD WHIPS PAST THE BLADE AND BLEEDS.' : 'THE THIRD SWING IN A RUN IS A HEAVY SHOVE. STOP SWINGING AND IT STARTS OVER.'); } } }
+      hintSay('mechanic', 4, isBz() ? 'FOUR CHOPS THAT LAND, THEN THE WIDE CLEAVE: SLOW, BROAD, BOTH SIDES - AND IT LEAVES YOU OPEN.' : hero() === 'knight' ? 'THE THIRD SWING IN A RUN THROWS THEM: AT A WALL, THE SPIKES OR EACH OTHER.' : isReaper() ? 'THE THIRD CUT IN A RUN IS THE BLOOD LASH: ITS BLOOD WHIPS PAST THE BLADE AND BLEEDS.' : 'THE THIRD SWING IN A RUN IS A HEAVY SHOVE. STOP SWINGING AND IT STARTS OVER.'); } } }
 /* ==== THE TIP. The Warden's one rule, and the only thing a player has to learn about her: a blow pays by WHERE ALONG
    THE SPEAR it landed. The last third - 28 px out and beyond (it was 34, a quarter: claude/herokit), which is the leaf of the head and a little behind it -
    is the TIP and pays thirty percent more, with extra poise on it. The middle is a glancing blow at three quarters.
