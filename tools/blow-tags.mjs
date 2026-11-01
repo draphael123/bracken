@@ -15,8 +15,8 @@ import { readFileSync } from 'node:fs';
 import { KEYS, KEY_ORDER, KEY_ROWS, ROOM_TAGS, keyOf, keyed, roomBlow, tagHas, drawKeyGlyph, glyphAt, makeBossRead, behind, GUARD } from '../src/boss-read.js';
 const main = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8').replace(/\r\n/g, '\n');
 const bodyOf = name => { const i = main.indexOf('\nfunction ' + name + '('); assert.ok(i >= 0, 'main.js has ' + name); const j = main.indexOf('\nfunction ', i + 10); return main.slice(i, j); };
-/* the calls in a body whose name looks like a boss hook: fooHurt(...), fooTake(...), XYZ.take(...), PUPH.hurtPuppet(...), ROCE.plungeHit(...), pyroReads(...) */
-const HOOK = /\b((?:[A-Z][A-Z0-9]{1,5}\.)?(?:[a-z]\w*Hurt|[a-z]\w*Take|take|hurtPuppet|plungeHit|pyroReads))\(/g;
+/* the calls in a body whose name looks like a boss hook: fooHurt(...), fooTake(...), XYZ.take(...), PUPH.hurtPuppet(...), ROCE.plungeHit(...), pyroTakes(...) */
+const HOOK = /\b((?:[A-Z][A-Z0-9]{1,5}\.)?(?:[a-z]\w*Hurt|[a-z]\w*Take|take|hurtPuppet|plungeHit|pyroTakes))\(/g;
 const argsAt = (src, open) => { let d = 0, k = open; for (; k < src.length; k++) { const c = src[k]; if (c === '(') d++; else if (c === ')') { d--; if (d === 0) break; } } return src.slice(open + 1, k); };
 const splitArgs = a => { const out = []; let d = 0, cur = ''; for (const c of a) { if (c === '(' || c === '[' || c === '{') d++; if (c === ')' || c === ']' || c === '}') d--; if (c === ',' && d === 0) { out.push(cur.trim()); cur = ''; } else cur += c; } if (cur.trim()) out.push(cur.trim()); return out; };
 /* NOT BOSS HOOKS (a common foe's or an elite's own gate): named, with the reason, so a new boss hook can never hide among them */
@@ -43,7 +43,7 @@ assert.ok(/function hurtEnemy0\(e, dmg, fromX, plunge, blow, tag = blow\) \{ con
 assert.ok(/function wardedDamage\(e, dmg, blow, tag = blow\)/.test(main), 'wardedDamage takes the tag');
 assert.ok(/r = hurtEnemy0\(e, dmg, fromX, plunge, blow, tag\);/.test(main), 'hurtEnemy hands hurtEnemy0 the tag');
 for (const w of main.match(/wardedDamage\(e, dmg, blow(?:, tag)?\)/g)) assert.strictEqual(w, 'wardedDamage(e, dmg, blow, tag)', 'every blow into wardedDamage carries the tag');
-for (const fn of ['reeveHurt', 'strawHurt', 'archHurt', 'homHurt', 'krakenHurt', 'princeHurt', 'unbHurt', 'pyroReads']) {
+for (const fn of ['reeveHurt', 'strawHurt', 'archHurt', 'homHurt', 'krakenHurt', 'princeHurt', 'unbHurt', 'pyroTakes']) {
   const sig = new RegExp('\\nfunction ' + fn + '\\(([^)]*)\\)').exec(main); assert.ok(sig && splitArgs(sig[1]).includes('tag'), fn + ' takes a tag parameter'); }
 /* 2. NO BOOLEAN GATE on a boss */
 const PLUNGE_BODY = { drownedking: "a plunge IN HIS WATER is the hero's own body with nothing under it (P.swim): a penalty on the dive, not a key - the firedrop is fire, not weight" };
@@ -51,7 +51,7 @@ const bad = [];
 for (const line of bodyOf('hurtEnemy0').split('\n')) {
   const bare = line.replace(/'plunge'/g, '').replace(/P\.plunge/g, '').replace(/\.plunge\b/g, '');
   if (!/\bplunge\b/.test(bare)) continue; const t = /e\.t === '(\w+)'/.exec(line); if (!t) continue;
-  if (/\bpl\b/.test(line) || /blowHas\((?:blow|tag), 'plunge'\)/.test(line) || /\bpyroReads\(/.test(line) || /\bEK\.take\(/.test(line) || /TMK\.maskBlow/.test(line)) continue;
+  if (/\bpl\b/.test(line) || /blowHas\((?:blow|tag), 'plunge'\)/.test(line) || /\bpyroTakes\(/.test(line) || /\bEK\.take\(/.test(line) || /TMK\.maskBlow/.test(line)) continue;
   if (PLUNGE_BODY[t[1]]) continue; bad.push(t[1] + ': ' + line.trim().slice(0, 120)); }
 assert.deepStrictEqual(bad, [], 'no boss gates on the bare plunge boolean (pl, or the blow, is the plunge)');
 for (const [re, what] of [[/if \(e\.t === 'frog' && pl && e\.mode !== 'dazed'\)/, "the Bullfrog's head counts the firedrop"], [/strawHurt\(e, dmg, fromX, pl, tag\)/, "the Scarecrow King's lantern takes the firedrop"],

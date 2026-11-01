@@ -15,30 +15,10 @@
 //    blade both turned (clank, flash, the word), so a stun can never be chained into a lock. He fights on inside it.
 //    OVERHEATED (his own opening, struck while he runs hot) he takes OVER.mul, as he always has.
 export const SPLASH = { bucket: 2, jug: 1 };
-export const STUN = { t: 3.0, mul: 2 };
-export const WARD = { t: 3.0 };
-export const OVER = { mul: 1.5 };
-/* what a thrown water does to him, by his state: 'stun' (he goes down dripping), 'ward' (his steam ward turns it), 'cool' (already stunned:
-   it cools him and adds nothing - no lock), 'wake' (not in his fight yet) */
-export function waterOn(e) {
-  if (!e) return null;
-  if (e.mode === 'sleep' || e.mode === 'wake') return 'wake';
-  if (e.ward > 0) return 'ward';
-  if (e.mode === 'doused') return 'cool';
-  return 'stun';
-}
-/* the multiplier on a hero's blow (0 = turned by his ward) */
-export function pyroMul(e) {
-  if (e.ward > 0) return 0;
-  if (e.mode === 'doused' && e.open > 0) return STUN.mul;
-  if (e.open > 0) return OVER.mul;
-  return 1;
-}
-/* his read for B10: 'stunned' (gold ring + bar running out with STUN.t), 'overheat' (gold, his own opening), 'ward' (the pale shell + bar), or null */
-export function pyroRead(e, overT = 3.4) {
-  if (!e || !e.alive) return null;
-  if (e.ward > 0) return { st: 'ward', k: Math.max(0, Math.min(1, e.ward / WARD.t)) };
-  if (e.mode === 'doused' && e.open > 0) return { st: 'stunned', k: Math.max(0, Math.min(1, e.open / STUN.t)) };
-  if (e.open > 0) return { st: 'overheat', k: Math.max(0, Math.min(1, e.open / overT)) };
-  return null;
-}
+/* (claude/pyroboss2, Daniel 11-01) THE PYROMANCER 2: what water does to him is the NEW KIT's now (src/pyro-boss.js waterOn / takeMul / readOf): water while he
+   STOKES winds him (x2, then the told steam ward at 0.4 - B15, the old 0x is gone); water anywhere else takes his meter down, puts a raised ward out and
+   throws a charge off. The old stun (STUN / WARD / OVER below) is kept only as the names the old reports cite. */
+export { waterOn, takeMul as pyroMul, readOf as pyroRead } from './pyro-boss.js';
+export const STUN = { t: 3.5, mul: 2 };   /* = pyro-boss WIND */
+export const WARD = { t: 2.5 };           /* = pyro-boss STEAM */
+export const OVER = { mul: 1.5 };         /* = pyro-boss OPEN_MUL */

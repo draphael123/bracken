@@ -17,7 +17,7 @@
 // every other flame in the game) and tools/burning-village.mjs drives this module directly.
 export const FIRE = { CATCH: 1.2, SPREAD: 2.4, BURN: 9 };
 export const UNLIT = 0, CATCHING = 1, ALIGHT = 2, BURNT = 3;
-export const SPREADERS = new Set(['pyromancer', 'burngob']);
+export const SPREADERS = new Set(['pyromancer', 'burngob', 'firemage']);   /* (claude/pyroboss2) THE GOBLIN FIRE MAGE's patch lights the grid too (src/fire-mage.js): it spreads only along what burns */
 
 export function fireGrid(L) {
   const cells = [], at = new Map();

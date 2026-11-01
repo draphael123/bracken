@@ -144,6 +144,7 @@ export function buildBurningVillage({ painter, T, TS }) {
   // ---- 3. THE LONG STREET ----
   house(194, 206, 19, -1); captive(200, S);
   foe('sprig', 204, S); foe('thief', 213, S);
+  foe('gobmage', 192, S, { cnSkin: 'firemage' });   /* (claude/pyroboss2) THE GOBLIN FIRE MAGE: one of his order's goblins, at the house with a villager in it - his patch lights the straw and the thatch (the grid), the street well is behind him */
   /* THE STREET WELL: a bucket twenty tiles short of THE FALLEN HOUSE, under the burning goblin and the archer on the roof over the
      street. Carried into the heap it burns it down to a step, and the street is open - the other way past it */
   ent('villagewell', 210, S, { bucket: true, kind: 'well', splash: false });
@@ -236,7 +237,7 @@ export function buildBurningVillage({ painter, T, TS }) {
   ent('sign', 324, S, { text: 'THE BARN IS HAY FROM THE FLOOR TO THE RAFTERS. THE CAPTAIN AND HIS CREW WAIT PAST THE SCREEN.' });
   ent('check', 341, S);                                /* inside the barn: from the street's last checkpoint to the well yard's is ninety-five columns */
   debris(349, S, 'beam', 'barnbeam');                   /* (claude/burning3) a rafter of the barn burns through over the hay: told, it leaves burning ground */
-  foe('burngob', 336, S); foe('sprig', 345, S); ent('watertrough', 352, S); foe('burngob', 362, 19); foe('archer', 372, 19);
+  foe('burngob', 336, S); foe('sprig', 345, S); foe('gobmage', 333, 19, { cnSkin: 'firemage' });   /* (claude/pyroboss2) a FIRE MAGE in the barn's loft: what he lobs lands in the hay */ ent('watertrough', 352, S); foe('burngob', 362, 19); foe('archer', 372, 19);
   foe('emberwisp', 358, 17); foe('sprig', 384, 19);
   captive(372, 15); ent('silver', 379, 15); coins([346, 15], [352, 15], [356, 15]);
   captive(391, S, { hotNear: true });                 // the stall door: hot whenever the hay near it is burning
@@ -281,7 +282,7 @@ export function buildBurningVillage({ painter, T, TS }) {
      one up on the middle stall, off the floor his heat sets alight (tools/pyro-duel.mjs) */
   ent('villagewell', 492, F - 1, { bucket: true, kind: 'butt', splash: false });
   ent('villagewell', 476, F - 4, { bucket: true, kind: 'jug', splash: false });   /* (claude/burnvillage2) a JUG up on the middle stall: lobbed down on him from the height */
-  ent('sign', 449, F - 1, { text: 'WATER STUNS HIM AND EVERY BLOW LANDS DOUBLE. THEN HE WARDS HIMSELF IN STEAM.' });   /* (claude/burnvillage2) the first-use sign, at his door */
+  ent('sign', 449, F - 1, { text: 'WATER WHILE HE STOKES WINDS HIM. STRIKE HIS CHARGING FIRE AND IT FIZZLES.' });   /* (claude/burnvillage2) the first-use sign, at his door (claude/pyroboss2: the new kit's two answers) */
   burn.push([455, 495, F - 1, { square: true }]);
   foe('pyromancer', 484, F - 1, { boss: true });
   facades.push([448, 500, 12, F - 1, 'burning']);
