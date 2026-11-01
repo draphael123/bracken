@@ -34,3 +34,11 @@ hero-keys-strip rewrote tracked work/claude/herokeys/strips/* (sub-frame noise o
 
 ## Boss rates
 See the bottom of this file / scratch\lane-reports\skillslots-rates.md for the final table, or "NOT MEASURED" if the PC never had headroom.
+
+## RATES LANE - FINAL (stopped 14:30, no more browsers running)
+- Boss rates: NOT MEASURED. Free RAM sat at 300-1800 MB all afternoon (the 1500 MB gate was met only at launch; memguard then killed the Chrome within minutes); no boss-rates fight ran. The whole 'built' column is the only one the change can move (practiced/first are bare builds with no skills). Table: none; out-of-band bosses: unknown.
+- Re-run recipe (needs ~3 GB free and no other lane): work/tmp-skillslotsrates/second.sh (uncommitted helper) = per boss row, base vs branch: `node tools/boss-rates.mjs <row> --ways=built --built-seeds=6 --heroes=knight,pyro,paladin,pirate,reaper,warden,geomancer,berserker,ranger --profile=human --jobs=1`, rows marsh (Frog King), fenroad, stockade (Chieftain), underleaf (King Gorm), crown, reef, skyroad, sealedpyramid; base = detached worktree bracken-skillslots-base @ 0fe14c26.
+- READY for BATCH137: NO, not yet. Code + node tests green and 17 browser checks green, but touch (fixed, unverified), textfit (plates scope onward) and online-coop were not completed, and rates are unmeasured. Recommendation: run touch + textfit + online-coop + the rates in the nightly full suite when the PC is quiet, merge only if green; the change only removes slots so boss rates can only drop for 'built' heroes (expect reaper, pyro, warden most).
+## QUESTIONS FOR DANIEL (rec first)
+1. Ship BATCH137 with rates unmeasured, or hold one night for the measured run? Rec: hold one night (the nightly suite will have the RAM), since 'built' bosses are tuned to 60-70% and this removes 1-2 skills from every hero below L30.
+2. If bosses fall below band after measuring: retune with a follow-up lane (do not hand the slots back). Rec: yes.
