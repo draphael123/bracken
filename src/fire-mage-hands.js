@@ -4,7 +4,7 @@
 // (the bolt, the patches, the ward dome, the steam). main.js updateGobMage runs his modes and calls: lob, douse, wet, pourable, update, drawWorld,
 // drawOver, read, reset, onBucket. Every teaching line goes through ctx.number with a line listed in src/fire-mage.js FM_SAY.
 import { FM, isFireMage, newPatch, patchStep, lobVel, lobTime } from './fire-mage.js';
-import { drawPatch } from './redraw/desert_foes2.js';
+import { drawFirePatch, drawBolt, drawMageWard, drawDousedSteam, drawSpentRing } from './redraw/fire_mage_art.js';   /* (claude/pyroboss2art) his own fire art */
 
 export function makeFireMageHands(ctx) {
   let M = null;
@@ -86,16 +86,12 @@ export function makeFireMageHands(ctx) {
   };
   /* DRAWING: the patches on the floor, the bolts in flight (drawWorld); his dome and his steam over him (drawOver) */
   H.drawWorld = (g, cx, cy, time) => { if (!M) return; const vw = ctx.VW(), on = x => x > cx - 60 && x < cx + vw + 60;
-    for (const f of M.patches) if (on(f.x)) drawPatch(g, f.x - cx, f.y - cy, f.t / f.life, time, FM.patch.w);
-    for (const b of M.bolts) { if (!on(b.x)) continue; const x = R(b.x - cx), y = R(b.y - cy), fl = Math.floor(time * 14) % 2;
-      g.globalAlpha = 0.35; g.fillStyle = '#ff6b2c'; g.beginPath(); g.arc(x, y, FM.lobR + 3, 0, 7); g.fill(); g.globalAlpha = 1;
-      g.fillStyle = '#1a0a04'; g.fillRect(x - 3, y - 3, 6, 6); g.fillStyle = '#ff6b2c'; g.fillRect(x - 2, y - 3, 4, 6); g.fillRect(x - 3, y - 2, 6, 4); g.fillStyle = '#ffd36b'; g.fillRect(x - 1, y - 2, 2 + fl, 3); g.fillStyle = '#fff6c8'; g.fillRect(x, y - 1, 1, 1); } };
+    const fuel = ctx.VG() ? 'thatch' : grassy() ? 'grass' : 'stone'; for (const f of M.patches) if (on(f.x)) drawFirePatch(g, f.x - cx, f.y - cy, f.t / f.life, time, FM.patch.w, fuel);
+    for (const b of M.bolts) { if (!on(b.x)) continue; drawBolt(g, R(b.x - cx), R(b.y - cy), b.vx, b.vy, time); } };
   H.drawOver = (g, e, cx, cy, time) => { const x = R(e.x - cx), y = R(e.y - cy) - 9;
-    if (e.mode === 'flameWard') { const gut = e.modeT <= FM.ward.gutter, k = 1 - Math.max(0, e.modeT) / FM.ward.t, r = 13 + Math.min(1, k * 6) * 3;
-      g.globalAlpha = gut ? 0.18 + 0.12 * Math.sin(time * 40) : 0.3; g.fillStyle = gut ? '#c8281e' : '#ff9a5c'; g.beginPath(); g.arc(x, y, r, 0, 7); g.fill();
-      g.globalAlpha = gut ? 0.5 : 0.9; g.strokeStyle = gut ? '#ff6b2c' : '#ffd36b'; g.lineWidth = 1; g.beginPath(); g.arc(x, y, r, 0, 7); g.stroke(); g.globalAlpha = 1; }
-    if (e.mode === 'doused') { for (let q = 0; q < 3; q++) { const k2 = (time * 0.9 + q / 3) % 1; g.globalAlpha = 0.6 * (1 - k2); g.fillStyle = '#d8dce4'; g.fillRect(x - 4 + q * 4 + R(Math.sin(time * 3 + q) * 2), y - 10 - R(k2 * 14), 2, 2); } g.globalAlpha = 1; }   /* the steam off his dead staff */
-    if (e.mode === 'spent') { g.globalAlpha = 0.5 + 0.3 * Math.sin(time * 10); g.strokeStyle = '#ffd36b'; g.beginPath(); g.ellipse(x, y + 9, 9, 3, 0, 0, 7); g.stroke(); g.globalAlpha = 1; } };   /* SPENT: the gold ring of an opening (B10) */
+    if (e.mode === 'flameWard') drawMageWard(g, x, y, 1 - Math.max(0, e.modeT) / FM.ward.t, e.modeT <= FM.ward.gutter, time);
+    if (e.mode === 'doused') drawDousedSteam(g, x, y, time);   /* the steam off his dead staff */
+    if (e.mode === 'spent') drawSpentRing(g, x, y + 9, time); };   /* SPENT: the gold ring of an opening (B10) */
   H.light = (x, y) => { if (M) light(x, y, 0); };   /* (tools/fire-mage.mjs: a patch put down where a bolt would land) */
   H.read = () => M && { n: { ...M.n }, bolts: M.bolts.length, patches: M.patches.map(p => ({ x: R(p.x), y: R(p.y), gen: p.gen, t: +p.t.toFixed(2) })) };
   return H;

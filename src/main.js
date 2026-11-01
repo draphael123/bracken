@@ -8126,7 +8126,8 @@ function spawnCorpse(e, dir) {
   const c = { t: e.t, color: e.color, x: e.x, y: e.y, vx: 0, vy: 0, rot: 0, spin: 0, face: e.face, life: 1, max: 1, frame: 0, grav: 900, bounced: false, ground: false };
   const rsk = reskinSet(e); if (rsk) c.set = rsk; if (OKD.isKnightT(e.t)) { c.frame = 9; c.kn = 10; }   /* (claude/orderart) a knight goes over backwards (frame 9) and lies as the heap (10) when he lands */
      /* a reskinned foe dies in its OWN skin (claude/corpses) */
-  { const bs = rsk || SPR[e.t]; if (HAS_HURT.has(e.t) && bs && bs.R && !OKD.isKnightT(e.t)) c.frame = bs.R.length - 1; }   /* it dies in the pose it was hit in, not mid-stride */
+  { const bs = rsk || SPR[e.t]; if (HAS_HURT.has(e.t) && bs && bs.R && !OKD.isKnightT(e.t)) c.frame = bs.R.length - 1; }
+  if (e.t === 'gobmage' && FMR.isFireMage(e) && rsk && rsk.R && rsk.R[9]) c.frame = 9;   /* (claude/pyroboss2art) THE FIRE MAGE falls in his own folded death pose, the staff snapped */   /* it dies in the pose it was hit in, not mid-stride */
   const cSig = () => [c.t, c.vx, c.vy, c.spin, c.life, c.frame, c.grav, !!c.crumple, !!c.tip, !!c.flip, !!c.run, !!c.wobble].join(), cSig0 = cSig();   /* (claude/flotilla4) did its own case below say how it goes down? */
   switch (e.t) {
     case 'lanternshade': case 'bonecorsair': case 'tidemarauder': Object.assign(c,{vx:dir*30,vy:-70,spin:dir*2,life:1.2,max:1.2});SFX.rattle();break;
@@ -24566,9 +24567,7 @@ function drawWaterOutline(pr, x, y) { const was = g.fillStyle; g.save(); g.globa
   const fr = g.fillRect.bind(g); g.fillRect = (a, b, c, d) => { g.fillStyle = '#eef8ff'; fr(a - 1, b, c + 2, d); fr(a, b - 1, c, d + 2); };   /* every rect of its shape, grown a pixel: its outline */
   try { drawThrowWater(pr, x, y); } finally { g.fillRect = fr; delete g.fillRect; g.restore(); g.fillStyle = was; } }
 /* (claude/pyroboss2) A WATER BUTT OUTSIDE THE VILLAGE (the village's draw is gated on its fire grid): the rain butt's own picture */
-function drawLoneButts(cx, cy) { for (const pr of props) { if (pr.t !== 'vwell' || pr.x < cx - 40 || pr.x > cx + VW + 40) continue; const x = Math.round(pr.x - cx), y = Math.round(pr.y - cy);
-  g.fillStyle = '#1b1626'; g.fillRect(x - 8, y - 16, 16, 16); g.fillStyle = '#3a2616'; g.fillRect(x - 7, y - 15, 14, 15); g.fillStyle = '#5a3a22'; for (let k = -6; k < 7; k += 4) g.fillRect(x + k, y - 15, 2, 15);
-  g.fillStyle = '#8a919c'; g.fillRect(x - 7, y - 12, 14, 1); g.fillRect(x - 7, y - 4, 14, 1); g.fillStyle = '#4a8ac0'; g.fillRect(x - 6, y - 15, 12, 2); g.fillStyle = '#bfe6f5'; g.fillRect(x - 4, y - 15, 3, 1); } }
+function drawLoneButts(cx, cy) { for (const pr of props) { if (pr.t !== 'vwell' || pr.x < cx - 40 || pr.x > cx + VW + 40) continue; FMA.drawWaterButt(g, Math.round(pr.x - cx), Math.round(pr.y - cy), time, false); } }   /* (claude/pyroboss2art) the water butt: staves, hoops, the bright water at the lip */
 function drawBuckets(cx, cy) {
   for (const pr of props) { if (pr.t !== 'vbucket' || pr.state === 'return') continue; const x = Math.round(pr.x - cx), y = Math.round(pr.y - cy); if (x < -20 || x > VW + 20) continue;
     if (pr.state === 'rest') { drawWaterOutline(pr, x, y); pr.glint = true; }   /* THE OUTLINE */
@@ -24808,7 +24807,7 @@ function pyroDouse(e) {
   /* anywhere else: her meter down, a raised ward out, a charge thrown off */
   e.heat = Math.max(0, (e.heat || 0) - PYB.WATER.heat);
   if (e.mode === 'ward') { pyroSpent(e, PYB.WARD.spent, 'HIS WARD GOES OUT'); return; }
-  if (e.mode === 'chargeTell' || e.mode === 'chargeBigTell') { pyroSpent(e, PYB.CHARGE.cancelOpen, 'FIZZLED'); smoke(pyroTip(e).x, pyroTip(e).y, 6, 8); return; }
+  if (e.mode === 'chargeTell' || e.mode === 'chargeBigTell') { pyroSpent(e, PYB.CHARGE.cancelOpen, 'FIZZLED'); smoke(pyroTip(e).x, pyroTip(e).y, 6, 8); PA.fx('fizzle', pyroTip(e).x, pyroTip(e).y, time); return; }
   number(e.x, e.y - 56, 'DOUSED', '#9ad0ff');
   if (!(PROG.pyroStokeTold > 1)) { PROG.pyroStokeTold = (PROG.pyroStokeTold || 0) + 1; hintSay('tip', 4, 'SHE STOKES WHEN HIS FIRE RUNS LOW. THROW THE WATER THEN.'); }
 }
@@ -24825,7 +24824,7 @@ function pyroTakes(e, fromX, tag) {   /* (tag: the blow, tools/blow-tags.mjs - e
     if (!(PROG.pyroWardTold > 1)) { PROG.pyroWardTold = (PROG.pyroWardTold || 0) + 1; hintSay('tip', 4, 'HIS WARD BURNS YOU. WAIT FOR IT TO GUTTER - THEN HE IS OPEN.'); }
     return PYB.WARD.mul; }
   if (e.mode === 'chargeTell' || e.mode === 'chargeBigTell') {   /* A BLOW ON THE CHARGE: thrown off, and she is open */
-    const mul = PYB.takeMul(e); const t = pyroTip(e); smoke(t.x, t.y, 6, 8); SFX.emberFizzle(); pyroSpent(e, PYB.CHARGE.cancelOpen, 'FIZZLED');
+    const mul = PYB.takeMul(e); const t = pyroTip(e); smoke(t.x, t.y, 6, 8); PA.fx('fizzle', t.x, t.y, time); SFX.emberFizzle(); pyroSpent(e, PYB.CHARGE.cancelOpen, 'FIZZLED');
     if (!(PROG.pyroCancelTold > 1)) { PROG.pyroCancelTold = (PROG.pyroCancelTold || 0) + 1; hintSay('tip', 4, 'STRIKE HIM WHILE HE CHARGES: THE FIREBALL FIZZLES AND HE IS OPEN.'); }
     return mul; }
   return PYB.takeMul(e);
@@ -24950,7 +24949,7 @@ function updatePyromancer(e, dt) {
       for (let k = 0; k < 3; k++) parts.push({ x: e.x - e.face * (6 + Math.random() * 16), y: e.y - 6 - Math.random() * 30, vx: -e.face * 60, vy: -30, life: 0.35, max: 0.35, col: Math.random() < 0.4 ? '#fff6c8' : Math.random() < 0.6 ? '#ffd36b' : '#ff6b2c', size: 2, grav: -40 });
       if (!e.riseHit && !P.dead && Math.abs(P.x - e.x) < 14 + (P.w || 10) / 2 && Math.abs(P.y - e.y) < 30) { e.riseHit = true; damagePlayer(e.x, PYB.RISE.dmg, { unblockable: true, who: e, name: 'PHOENIX RISE' }); }
       const done = Math.abs(e.x - e.riseFrom) >= PYB.RISE.max || (e.face > 0 ? e.x >= e.riseX : e.x <= e.riseX) || e.x <= A.x0 + 61 || e.x >= A.x1 - 61 || e.modeT <= 0;
-      if (done) { e.vx = 0; e.mode = 'riseLand'; e.modeT = PYB.RISE.rec; pyroOpen(e, PYB.RISE.rec); shakeCam(6); SFX.pyreBoom(); ringAt(e.x, e.y - 14, PYB.RISE.burstR, '#ff6b2c', 0.4); ringAt(e.x, e.y - 14, PYB.RISE.burstR - 10, '#ffd36b', 0.3); flame(e.x, e.y - 10, 18, 12, 100, 3);
+      if (done) { e.vx = 0; e.mode = 'riseLand'; e.modeT = PYB.RISE.rec; pyroOpen(e, PYB.RISE.rec); shakeCam(6); SFX.pyreBoom(); PA.fx('land', e.x, e.y, time); ringAt(e.x, e.y - 14, PYB.RISE.burstR, '#ff6b2c', 0.4); ringAt(e.x, e.y - 14, PYB.RISE.burstR - 10, '#ffd36b', 0.3); flame(e.x, e.y - 10, 18, 12, 100, 3);
         if (!e.riseHit && !P.dead && Math.hypot(P.x - e.x, (P.y - 10) - (e.y - 14)) < PYB.RISE.burstR) damagePlayer(e.x, PYB.RISE.burst, { unblockable: true, who: e, name: 'PHOENIX RISE' });
         pyroMark(e, e.x, e.y); } break; }
     case 'riseLand': e.vx = 0; if (e.modeT <= 0) after(); break;
@@ -24997,8 +24996,7 @@ function pyroPose(e) {
 function drawPyroMarks(e, cx, cy) {
   const tellOn = e.mode === 'conflagTell', pul = tellOn ? 0.5 + 0.5 * Math.sin(time * 24) : 0;
   for (const m of e.marks || []) { const x = Math.round(m.x - cx), y = Math.round(m.y - cy); if (x < -30 || x > VW + 30) continue; const left = PYB.MARKS.life - (time - m.t);
-    g.globalAlpha = 0.55; g.fillStyle = '#1a0a04'; g.beginPath(); g.ellipse(x, y - 1, 11, 3, 0, 0, Math.PI * 2); g.fill();
-    g.globalAlpha = tellOn ? 0.5 + 0.5 * pul : 0.35 + 0.15 * Math.sin(time * 5 + m.x); g.fillStyle = tellOn ? '#fff6c8' : '#ff6b2c'; g.beginPath(); g.ellipse(x, y - 1, 8 + (tellOn ? 4 * pul : 0), 2, 0, 0, Math.PI * 2); g.fill(); g.globalAlpha = 1;
+    PA.scorch(g, x, y, left, tellOn ? pul : -1, time, Math.round(m.x) & 7);   /* (claude/pyroboss2art) the charred oval with glowing cracks */
     PA.brand(g, x, y - 3, time, tellOn ? 0.5 : left);
     if (tellOn) { g.globalAlpha = 0.25 + 0.35 * pul; g.strokeStyle = '#ff6b6b'; g.beginPath(); g.ellipse(x, y - 1, PYB.CONFLAG.r, 5, 0, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1; } }
 }
@@ -25009,7 +25007,7 @@ function drawPyromancer(e, cx, cy) {
   const [key, frame] = pyroPose(e);
   const x = e.x - cx, y = e.y - cy, k = (e.heat || 0) / 100;
   if (k > 0.05) { g.globalAlpha = 0.1 + 0.22 * k; g.fillStyle = '#ff6b2c'; g.beginPath(); g.arc(Math.round(x), Math.round(y - 20), 14 + 12 * k, 0, 7); g.fill(); g.globalAlpha = 1; }
-  if (e.mode === 'riseTell' || e.mode === 'rise') { g.globalAlpha = 0.35 + 0.2 * Math.sin(time * 20); g.fillStyle = '#ffd36b'; g.beginPath(); g.ellipse(Math.round(x), Math.round(y - 18), 14, 24, 0, 0, 7); g.fill(); g.globalAlpha = 1; }   /* PHOENIX: wrapped in rising flame */
+  if (e.mode === 'riseTell') PA.phoenixTell(g, Math.round(x), Math.round(y), Math.max(0, Math.min(1, 1 - e.modeT / PYB.RISE.tell)), time); else if (e.mode === 'rise') PA.phoenixDash(g, Math.round(x), Math.round(y), e.face, time);   /* (claude/pyroboss2art) PHOENIX: the rising column, then the burning streak */
   const white = e.flash > 0 || (/Tell$/.test(e.mode) && e.mode !== 'chargeTell' && e.mode !== 'chargeBigTell' && Math.floor(time * 12) % 3 === 0);
   drawSet(set, key, frame, x, y, e.face, white, PYRO_SCALE, PYRO_SCALE);
   /* THE WARD: the hero's own dome, at her size - bloom, hold, then the red GUTTER (her tell that the opening is coming) */
@@ -25019,10 +25017,10 @@ function drawPyromancer(e, cx, cy) {
   if ((e.mode === 'chargeTell' || e.mode === 'chargeBigTell') && e.step > 0) { const tip = pyroTip(e), stT = e.fast ? PYB.CHARGE.fastT : PYB.CHARGE.stepT, prog = e.step < 5 ? Math.max(0, Math.min(1, (e.chT - (e.step - 1) * stT) / stT)) : 0;
     PA.held(g, Math.round(tip.x - cx), Math.round(tip.y - cy), e.step, prog, time);
     if (PYB.big(e.step) && e.aimX !== undefined) { const R = PYB.CHARGE.boomR[e.step], X = Math.round(e.aimX - cx), Y = Math.round(e.aimY - cy), pul = 0.5 + 0.5 * Math.sin(time * 14);
-      g.globalAlpha = 0.35 + 0.4 * pul; g.strokeStyle = '#ff6b6b'; g.lineWidth = 2; g.beginPath(); g.ellipse(X, Y - 1, R, Math.max(4, R * 0.18), 0, 0, Math.PI * 2); g.stroke(); g.lineWidth = 1;
-      g.globalAlpha = 0.12; g.fillStyle = '#ff6b2c'; g.fill(); g.globalAlpha = 1; } }
+      PA.landRing(g, X, Y, R, time); } }
   if (e.mode === 'stoke') PA.stoke(g, Math.round(x + e.face * PA.TIP.stoke[0] * PYRO_SCALE), Math.round(y + PA.TIP.stoke[1] * PYRO_SCALE), e.heat || 0, time);
-  if (e.mode === 'conflagTell') PA.stoke(g, Math.round(x + e.face * 6), Math.round(y - 40), 100, time);
+  if (e.mode === 'conflagTell') { PA.stoke(g, Math.round(x + e.face * 6), Math.round(y - 40), 100, time); PA.conflagPillar(g, Math.round(x + e.face * 6), Math.round(y - 44), Math.max(0, Math.min(1, 1 - e.modeT / PYB.CONFLAG.tell)), time); }   /* (claude/pyroboss2art) the staff-up pillar */
+  if (e.mode === 'winded') PA.windedSteam(g, Math.round(x), Math.round(y), time);   /* (claude/pyroboss2art) the water takes his wind: steam, drips, a hiss ring */
   if (e.wetT > 0) { g.fillStyle = '#9ad0ff'; for (let q = 0; q < 3; q++) { const k2 = (time * 1.7 + q / 3) % 1; g.globalAlpha = 1 - k2; g.fillRect(Math.round(x - 8 + q * 7), Math.round(y - 38 + k2 * 34), 1, 2); } g.globalAlpha = 1; }   /* WET: she drips */
   /* THE SHARED READ (B10): OPEN / WINDED = the gold ring at her feet and a gold bar over her; STEAM WARD = a pale shell and its own pale bar */
   const rd = PYB.readOf(e); e.readNow = rd ? rd.st : null;

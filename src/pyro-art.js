@@ -112,7 +112,7 @@ export function brand(g, x, y, now, left) { if (left < 1.5 && Math.floor(now * 8
 /* ---------------------------------------------------------------- EFFECTS: parry star, block ring, contact spark, blast, eruption, word */
 const FX = [];
 export const fxClear = () => { FX.length = 0; };
-export function fx(type, x, y, now, o = {}) { if (FX.length > 48) FX.shift(); FX.push({ type, x, y, t0: now, ...o, life: { parry: 0.32, block: 0.24, spark: 0.18, blast: 0.44, erupt: 0.52, word: 1.15, pop: 0.22 }[type] || 0.3 }); }
+export function fx(type, x, y, now, o = {}) { if (FX.length > 48) FX.shift(); FX.push({ type, x, y, t0: now, ...o, life: { parry: 0.32, block: 0.24, spark: 0.18, blast: 0.44, erupt: 0.52, word: 1.15, pop: 0.22, land: 0.5, fizzle: 0.55 }[type] || 0.3 }); }
 
 function starSprite(f) { return once('s' + f, () => {
   const S = 71, c0 = 35, [c, g] = mk(S, S, c0, c0), R = [6, 14, 22, 28, 32][f], cols = [C.wh, C.cr, C.yl, C.am, C.or][f];
@@ -181,6 +181,8 @@ export function drawFx(g, cx, cy, now, flashes = true) {
     else if (f.type === 'block') blit(g, blockSprite(Math.min(3, Math.floor(p * 4))), x, y, f.dir < 0);
     else if (f.type === 'spark' || f.type === 'pop') blit(g, sparkSprite(Math.min(2, Math.floor(p * 3))), x, y, false);
     else if (f.type === 'blast') blit(g, blastSprite(Math.min(4, Math.floor(p * 5))), x, y, false);
+    else if (f.type === 'land') { const fi = Math.min(5, Math.floor(p * 6)); blit(g, blastSprite(Math.min(4, Math.floor(p * 5))), x, y - 6, false); blit(g, eruptSprite(0, fi), x - 14, y + 2, false); blit(g, eruptSprite(0, fi), x + 14, y + 2, false); }   /* PHOENIX RISE's landing: the burst, a flame column off each side */
+    else if (f.type === 'fizzle') fizzleDraw(g, x, y, p);
     else if (f.type === 'erupt') blit(g, eruptSprite(f.v || 0, Math.min(5, Math.floor(p * 6))), x, y, false);
     else if (f.type === 'word') { const s = wordSprite(f.txt), rise = Math.round(Math.min(1, age / 0.5) * 10), jit = age < 0.12 && flashes ? (Math.floor(age * 60) % 2 ? 1 : -1) : 0;
       g.globalAlpha = p > 0.78 ? 1 - (p - 0.78) / 0.22 : 1; blit(g, s, x + jit, y - rise, false); g.globalAlpha = 1; }
@@ -188,3 +190,60 @@ export function drawFx(g, cx, cy, now, flashes = true) {
 }
 /* WHERE THE POSES HOLD THE STAFF HEAD, from the player's feet (x is mirrored by face): chars.js holdStand/holdWalk staff tip (25, 3), stoke (21, 4); a frame's row r is world P.y - 20 + r */
 export const TIP = { hold: [9, -17], stoke: [5, -16] };
+
+/* ---------------------------------------------------------------- BOSS 2 POSES AND MARKS (claude/pyroboss2art) - the Pyromancer's second fight; art only */
+/* FIZZLE (a blow or water mid-charge): the held ball sputters, a pale smoke ring, the last sparks fall. p 0-1 over the fx life. */
+function fizzleDraw(g, x, y, p) {
+  const r = Math.round(10 * (1 - p) + 2); if (p < 0.4) disc(g, x, y, r, p < 0.2 ? C.yl : C.rd, 0.8 - p);
+  for (let i = 0; i < 7; i++) { const a = hash(i * 7) * Math.PI * 2, d = 4 + p * (8 + hash(i * 3) * 8); px(g, x + Math.cos(a) * d, y + Math.sin(a) * d * 0.7 + p * p * 16, i % 2 ? C.or : C.yl, 1 - p); }
+  for (let k = 0; k < 4; k++) { const pp = Math.min(1, p * 1.4 - k * 0.1); if (pp <= 0) continue; disc(g, x - 4 + k * 3, y - 4 - pp * 16, 2 + (k & 1), C.sm, 0.5 * (1 - pp)); }
+}
+/* PHOENIX RISE: the TELL is a crouch in a rising column (two tongues up either side, the red ring on the floor widening, embers climbing); the DASH is a burning
+   streak - wing-shaped flame swept back off both shoulders and a tail of flame along the floor, short and long tongues alternating. face = his heading. */
+export function phoenixTell(g, x, y, p, now) {   /* (x, y) = his feet; p 0-1 through the tell */
+  const f = Math.floor(now * 11) % 4, w = Math.round(7 + 5 * p), h = Math.round(14 + 22 * p);
+  ringPx(g, x, y - 1, Math.round(10 + 10 * p), C.rd, 0.9, an => Math.sin(an) < 0);
+  blit(g, flameSprite(w, h, f, 1), x - 10, y, false); blit(g, flameSprite(w, h, f + 1, 2), x + 10, y, false);
+  disc(g, x, y - 12, 12 + Math.round(5 * p), C.am, 0.1 + 0.12 * p);
+  for (let i = 0; i < 4 + Math.round(6 * p); i++) { const k = (now * 1.6 + hash(i * 5)) % 1; px(g, x + (hash(i * 9) - 0.5) * 28, y - 2 - k * (30 + 14 * p), i % 3 ? C.yl : C.cr, 1 - k); }
+}
+export function phoenixDash(g, x, y, face, now) {   /* (x, y) = his feet, in the dash */
+  const f = Math.floor(now * 16) % 4, d = face || 1;
+  disc(g, x, y - 16, 16, C.or, 0.16); disc(g, x, y - 16, 11, C.am, 0.2);
+  for (let k = 0; k < 3; k++) { const L = 18 + k * 9; for (let i = 1; i <= L; i++) { const t = i / L, hh = Math.max(0, Math.round((4.5 - k) * (1 - t) * (0.8 + 0.4 * hash(i * 3 + f * 17 + k)))), X = x - d * (6 + i), Y = y - 24 + k * 8 + Math.round(Math.sin(i * 0.5 + f) * 1.2);
+    for (let j = -hh; j <= hh; j++) { if (t > 0.5 && ((i + j) & 1)) continue; px(g, X, Y + j, Math.abs(j) < hh * 0.4 ? C.cr : Math.abs(j) < hh * 0.75 ? C.yl : (t < 0.4 ? C.am : C.or), 1 - t * 0.7); } } }   /* three streaks off the shoulders and the back: the wings */
+  for (let i = 1; i < 26; i++) { const t = i / 26; px(g, x - d * (4 + i), y - 1 - ((i + f) % 3), t < 0.5 ? C.yl : C.or, 1 - t); }   /* the tail along the floor */
+  for (let i = 0; i < 6; i++) px(g, x - d * (8 + hash(i * 3 + f) * 30), y - 28 + hash(i * 5 + f) * 26, i % 2 ? C.yl : C.or);
+}
+/* THE BOSS WINDED (a bucket while he stokes): gasping steam off the chest and shoulders, grey-blue puffs, water running off the robe, a hiss ring at the feet. */
+export function windedSteam(g, x, y, now) {   /* (x, y) = his feet */
+  for (let q = 0; q < 5; q++) { const k = (now * 0.9 + q / 5) % 1, X = x - 10 + q * 5 + Math.sin(now * 3 + q * 2) * 2; disc(g, Math.round(X), Math.round(y - 14 - k * 26), 2 + (q & 1) + (k > 0.5 ? 1 : 0), '#d8dce4', 0.7 * (1 - k)); }
+  for (let q = 0; q < 4; q++) { const k = (now * 1.3 + q * 0.27) % 1; px(g, x - 9 + q * 6, y - 30 + k * 28, '#9ad0ff', 1 - k * 0.6); px(g, x - 9 + q * 6, y - 29 + k * 28, '#bfe6f5', 1 - k * 0.6); }
+  ringPx(g, x, y - 1, 12 + Math.round((now * 6) % 3), '#9ad0ff', 0.4, an => Math.sin(an) < 0);
+}
+/* CONFLAGRATION told: the staff held UP with a pillar of flame standing on it (grows to the sky) - over the existing crown. */
+export function conflagPillar(g, x, y, p, now) {   /* (x, y) = the staff head */
+  const f = Math.floor(now * 13) % 4, h = Math.round(26 + 18 * p), w = Math.round(8 + 4 * p);
+  blit(g, flameSprite(w, h, f, 3), x, y - 8, false); disc(g, x, y - 20, 12 + Math.round(6 * p), C.cr, 0.1 + 0.15 * p);
+  ringPx(g, x, y - 14, 10 + Math.round((now * 14) % 4), C.wh, 0.5 * p + 0.2);
+}
+/* A BURN MARK on the floor: a charred oval with glowing cracks, the ember seams brightening toward white as the mark nears its end or the eruption is told;
+   a drift of ember pixels; the brand over it is brand() above. left = seconds to live (16 max), tell = CONFLAGRATION told (0-1 pulse, or -1 for off). */
+export function scorch(g, x, y, left, tell, now, seed = 0) {
+  const W = 11, ph = Math.floor(now * 3);
+  g.globalAlpha = 0.6; g.fillStyle = C.out; g.fillRect(x - W, y - 2, W * 2 + 1, 2); g.fillRect(x - W + 2, y - 3, W * 2 - 3, 1); g.fillRect(x - W + 2, y, W * 2 - 3, 1); g.globalAlpha = 1;   /* the char */
+  const hot = tell >= 0 ? (tell > 0.5 ? C.wh : C.yl) : left < 2 ? C.am : C.or;
+  for (let i = -W + 2; i <= W - 2; i++) { const hh = hash(i * 3 + seed * 11); if (hh > 0.55 || (((i + ph) & 1) && tell < 0)) continue; px(g, x + i, y - 1 - (hh > 0.3 ? 1 : 0), i & 1 ? hot : C.rd, tell >= 0 ? 0.9 : 0.5 + 0.3 * Math.sin(now * 4 + i)); }   /* the glowing cracks */
+  for (let i = 0; i < 3; i++) { const k = (now * 0.8 + hash(i * 7 + seed)) % 1; px(g, x - 7 + hash(i * 13 + seed) * 14, y - 3 - k * 10, C.yl, 1 - k); }
+  if (tell >= 0) for (let i = 0; i < 6; i++) { const a = i * Math.PI / 3 + now * 3; px(g, x + Math.cos(a) * (W + 2), y - 1 + Math.sin(a) * 3, C.cr, 0.5 + 0.5 * tell); }
+}
+/* THE RED RING on the floor where a big charged ball will land: a dashed ellipse of radius R, ticks that chase round it, a darker ground wash inside. */
+export function landRing(g, X, Y, R, now) {
+  const pul = 0.5 + 0.5 * Math.sin(now * 14), ry = Math.max(3, Math.round(R * 0.18));
+  g.globalAlpha = 0.14; g.fillStyle = C.rd; g.beginPath(); g.ellipse(X, Y - 1, R, ry, 0, 0, Math.PI * 2); g.fill(); g.globalAlpha = 1;
+  const n = Math.max(16, Math.round(R * 0.8)), ph = Math.floor(now * 12);
+  for (let i = 0; i < n; i++) { const a = i / n * Math.PI * 2; if ((i + ph) % 3 === 0) continue; px(g, X + Math.cos(a) * R, Y - 1 + Math.sin(a) * ry, i % 6 === ph % 6 ? C.yl : C.or, 0.55 + 0.4 * pul); }
+  for (const a of [0, Math.PI / 2, Math.PI, Math.PI * 1.5]) { px(g, X + Math.cos(a) * (R - 3), Y - 1 + Math.sin(a) * (ry - 1), C.cr); px(g, X + Math.cos(a) * (R - 5), Y - 1 + Math.sin(a) * Math.max(1, ry - 2), C.yl); }
+  px(g, X, Y - 1, C.cr, 0.6 + 0.4 * pul); px(g, X - 1, Y - 1, C.or, 0.5); px(g, X + 1, Y - 1, C.or, 0.5);
+}
+export { disc as _disc, ringPx as _ringPx, px as _px, hash as _hash };
