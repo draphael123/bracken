@@ -35,7 +35,7 @@ export const FOEPASS = {
      walked past (the walker: 0.1 deaths a run in act III, arrival at the shrines 68-78%). Every level of them now stands the affixes at the act's density (AFFIX_ACT: 25 / 40 / 50 %), the
      archer's lead and the walkers' pursuit. NOT YET MEASURED (no browser this lane): each level's mash / pilot / walker rows are the act sweep's to re-stamp. Delete a level's row to take it back out. */
   /* act III */
-  longwater: LATE, reef: LATE, flotilla: LATE, hurricane: LATE, lamplit: LATE, deep: LATE, keep: LATE, causeway: LATE, harbor: LATE,
+  longwater: LATE, reef: LATE, flotilla: { ...LATE, affix: false }, hurricane: LATE, lamplit: LATE, deep: LATE, keep: LATE, causeway: LATE, harbor: LATE,
   /* act IV */
   waymeet: LATE, towpath: LATE, canal: LATE, theatre: LATE, fair: LATE, fields: LATE, burial: LATE, witchlight: LATE, mage: LATE, unburied: LATE, fallingtower: LATE, church: LATE,
   /* act V */

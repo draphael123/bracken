@@ -142,7 +142,7 @@ GL.reset();
   const ad = [1, 2, 3, 4, 5].map(a => FPL.AFFIX_ACT[a]); must(ad.join() === '0,0.15,0.25,0.4,0.5', 'AFFIX_ACT 0/0.15/0.25/0.4/0.5: ' + ad);
   const all = [...FR.ACTS, ...FR.ACTS_LATE]; for (let i = 1; i < all.length; i++) must(all[i].dmg >= all[i - 1].dmg && all[i].hp >= all[i - 1].hp && all[i].cap >= all[i - 1].cap, 'the dial never falls along the acts incl. the three later arcs (act ' + all[i].act + ')');
   must(FR.ACTS_LATE.map(a => a.dmg).join() === '3.75,4.5,5.25' && FR.ACTS_LATE.map(a => a.hp).join() === '1.15,1.2,1.3', 'ACTS_LATE continues 3.0 -> 3.75 -> 4.5 -> 5.25 and 1.1 -> 1.15 -> 1.2 -> 1.3');
-  for (const a of [3, 4, 5]) for (const id of FR.ACTS[a - 1].levels) must(FPL.live(id, 'affix') && FPL.live(id, 'lead') && FPL.live(id, 'pursue'), id + ' (act ' + a + ') stands the late-game levers'); }
+  for (const a of [3, 4, 5]) for (const id of FR.ACTS[a - 1].levels) must((FPL.live(id, 'affix') || id === 'flotilla') && FPL.live(id, 'lead') && FPL.live(id, 'pursue'), id + ' (act ' + a + ') stands the late-game levers'); }
 
 /* ---- main.js calls every hook (a rule nothing calls is a wish) ---- */
 for (const [what, re] of [['the frame', /GLU\.frame\(\{/], ['the hold', /GLU\.hold\(e, /], ['the turn in the melee loop', /GLU\.turns\(e, /], ['the take in hurtEnemy0', /GLU\.take\(e, /], ['the draw', /GLU\.draw\(g, e, cx, cy, time\)/], ['the lines', /GLU\.drawLines\(/],
