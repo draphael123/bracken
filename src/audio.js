@@ -55,8 +55,8 @@ const clips = {}; // name -> [AudioBuffer]
 export const SFX_LANES = 8;   /* (claude/marsh3) how many sound clips load at once (initAudio) */
 
 export function initAudio() {
-  if (ac) { if (ac.state === 'suspended') ac.resume(); return; }
-  ac = new (window.AudioContext || window.webkitAudioContext)();
+  if (ac) { resumeAudio(); return; }
+  ac = new (window.AudioContext || window.webkitAudioContext)(); resumeAudio();   /* (claude/smallfix6) a context made by a gamepad poll or before a gesture starts suspended: ask for it to run now and on every input after */
   master = ac.createGain(); master.gain.value = 1; master.connect(ac.destination);
   sfxGain = ac.createGain(); sfxGain.gain.value = vol;
   { const comp = ac.createDynamicsCompressor(); comp.threshold.value = -12; comp.knee.value = 10; comp.ratio.value = 3.5; comp.attack.value = 0.003; comp.release.value = 0.18; sfxGain.connect(comp); comp.connect(master); } // twenty things dying at once should not clip
@@ -82,6 +82,10 @@ export function initAudio() {
     for (let k = 0; k < SFX_LANES; k++) lane();
   }).catch(() => {});
 }
+/* (claude/smallfix6, Daniel 11-01: "music sometimes doesn't start when a level starts") THE CONTEXT MUST BE RUNNING: it was only resumed when 'suspended' (a phone call / tab switch leaves Safari's 'interrupted'), and only from an input. Now any
+   state but running is asked to run - on every input, at every music.play, and when the tab comes back. A track started on a context that never runs is silence. */
+function resumeAudio() { if (!ac || ac.state === 'running') return; try { const p = ac.resume(); if (p && p.catch) p.catch(() => {}); } catch {} }
+if (typeof document !== 'undefined' && document.addEventListener) document.addEventListener('visibilitychange', () => { if (!document.hidden) resumeAudio(); });
 export const ready = () => !!ac;
 export const audioTap = () => (ac && master ? { ac, master } : null);   /* ONLINE CO-OP (src/online.js): the whole mix, tapped into a MediaStreamDestination for the guest */
 export function setVolume(v) { vol = Math.max(0, Math.min(1, v)); if (sfxGain) sfxGain.gain.value = vol; }
@@ -569,7 +573,13 @@ const PAL = {
 for (const k in PAL) { const base = SFX[k]; SFX[k] = (...a) => heroVoice === 'paladin' ? PAL[k](...a) : base(...a); }
 
 // ---------- music: files, with the synth loop as a fallback for the theme ----------
-const trackWarned = new Set(), trackFailed = {};
+const trackWarned = new Set(), trackFailed = {}, trackTries = {};
+/* (claude/smallfix6) A FILE THAT WILL NOT LOAD IS ASKED FOR AGAIN, NOT GIVEN UP ON: three quick tries used to end in trackFailed and the synth stood in for the whole level (or, on a fetch that never answered, trackPending stayed true
+   for good - no music, and the sound clips wait on a pending track). A fetch now times out, and a failed track is retried every ms while it is still the one wanted (tools/music-levelstart.mjs). */
+export const MUSIC_RETRY = { ms: 4000, max: 10, timeoutMs: 20000 };
+const MUSIC_SYNTH_ONLY = new Set(['waymeet', 'greenteeth']);   /* played by the step synth with no file (schedule below) */
+/* does music.play(name) know this name? a track with a file, a boss synth voicing, a listed song or one of the two town synths */
+export const musicKnown = name => !!name && (!!TRACKS[name] || !!bossSynthOf(name) || MUSIC_SYNTH_ONLY.has(name) || MUSIC_NAMES.includes(name));
 function loadTrack(name) {
   if (!ac || !TRACKS[name] || trackBuf[name] || trackPending[name]) return;
   trackPending[name] = true;
@@ -577,10 +587,11 @@ function loadTrack(name) {
   (async () => {
     for (let attempt = 0; attempt < 3; attempt++) {
       try {
-        const r = await fetch(TRACKS[name], { priority: 'high' });   /* (claude/marsh3) a music file goes ahead of the boot's 867 sound clips (see initAudio) */
-        if (!r.ok) throw new Error('HTTP ' + r.status);
-        const b = await ac.decodeAudioData(await r.arrayBuffer());
-        trackBuf[name] = b; trackEnd[name] = audibleEnd(b);
+        const ctl = typeof AbortController !== 'undefined' ? new AbortController() : null, to = ctl ? setTimeout(() => ctl.abort(), MUSIC_RETRY.timeoutMs) : null;
+        let r, ab; try { r = await fetch(TRACKS[name], ctl ? { priority: 'high', signal: ctl.signal } : { priority: 'high' });   /* (claude/marsh3) a music file goes ahead of the boot's 867 sound clips (see initAudio) */
+          if (!r.ok) throw new Error('HTTP ' + r.status); ab = await r.arrayBuffer(); } finally { if (to) clearTimeout(to); }
+        const b = await ac.decodeAudioData(ab);
+        trackBuf[name] = b; trackEnd[name] = audibleEnd(b); trackFailed[name] = false; trackTries[name] = 0;
         if (wantTrack === name) playFile(name); else addLayer(wantTrack);
         return;
       } catch (e) {
@@ -589,6 +600,8 @@ function loadTrack(name) {
       }
     }
     trackFailed[name] = true;   /* (claude/marsh3) three tries and no file: now the synth may stand in for it */
+    trackTries[name] = (trackTries[name] || 0) + 1;   /* (claude/smallfix6) and ask again later while it is still the track wanted */
+    if (trackTries[name] < MUSIC_RETRY.max) setTimeout(() => { if (wantTrack === name && !trackBuf[name] && !trackPending[name]) loadTrack(name); }, MUSIC_RETRY.ms);
   })().finally(() => { trackPending[name] = false; });
 }
 // A LOOP ENDS WHERE THE MUSIC DOES, NOT WHERE THE FILE DOES. Copies are played back to back, so a silent tail
@@ -689,8 +702,10 @@ function fadeUnloadedTrack() {
 let heardHook = null;
 export function setHeardHook(fn) { heardHook = fn; }
 export const music = {
-  play(name) { if (heardHook) heardHook(name);   /* the whole name: 'archmage:undead' is its own Sound Test entry and unlocks on its own */ wantTrack = name; silenced = false; if (name === 'theatre' && currentTrack !== 'theatre') thAct = 0; if (!ac) return;   /* (the theatre's act starts again with its track: claude/theatre3) */
-    if (trackBuf[name]) { playFile(name); return; }
+  play(name) { if (heardHook) heardHook(name);   /* the whole name: 'archmage:undead' is its own Sound Test entry and unlocks on its own */
+    if (!musicKnown(name)) { if (!trackWarned.has('?' + name)) { trackWarned.add('?' + name); console.warn('Music track ' + name + ' is not a known track; playing the theme instead of silence'); } name = 'theme'; }   /* (claude/smallfix6) a level whose music key is missing or mis-spelt plays the theme, never nothing */
+    wantTrack = name; silenced = false; if (ac) { trackTries[name] = 0; resumeAudio(); } if (name === 'theatre' && currentTrack !== 'theatre') thAct = 0; if (!ac) return;   /* (the theatre's act starts again with its track: claude/theatre3) */
+    if (trackBuf[name]) { if (currentTrack === name && !musicSrcs.length) currentTrack = null; playFile(name); return; }   /* (a track marked as playing with no copy left running - timers throttled in a hidden tab - is started again) */
     // A TRACK WITH NO FILE IS PLAYED BY THE SYNTH - but the synth only runs while `currentTrack` is null,
     // and nothing was clearing it. So walking into UNDERLEAF left the PREVIOUS level's file playing and
     // the level had no theme of its own at all, which is exactly what it sounded like.
