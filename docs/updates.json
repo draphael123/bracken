@@ -1,6 +1,17 @@
 [
   {
     "date": "2026-10-31",
+    "batch": 135,
+    "lines": [
+      "Pyromancer: tap C for a fire ward (parry), hold C for a growing fireball, stoke for heat",
+      "Freebooter: tap C to catch a blow on the hook and snag the weapon, or fling a bolt back",
+      "Warden: hold C to brace the spear haft; Ranger: hold C to guard with the bow",
+      "Blood Knight: blood paid to block builds as debt, three blocks power up the next blow",
+      "Lance 4 loads lighter; the Great Drill is kinder in phase 3 and the Forge room is shorter"
+    ]
+  },
+  {
+    "date": "2026-10-31",
     "batch": 134,
     "lines": [
       "Lord Grubbag: a coal trench, meat-hook rails and a second helping for each dish",
@@ -309,16 +320,6 @@
       "The Tavern, settings inside, PARTY BOARD",
       "Co-op saves: guests level their own hero",
       "Later acts hit harder: foes in acts III-V"
-    ]
-  },
-  {
-    "date": "2026-10-19",
-    "batch": 105,
-    "lines": [
-      "The Lumber Trail: the axe in minute one",
-      "Fell pines into bridges, a lean-to, onto foes",
-      "Bracken Wood rebuilt with a logging-camp look",
-      "Waymeet Paladin retuned: a harder duel"
     ]
   }
 ]
