@@ -1,0 +1,40 @@
+{
+  "time": "2026-11-01T14:31:56.871Z",
+  "sourceGame": "62d9c02c102decc69ceaef4e1ec593a23170f1ff",
+  "sourceTree": "d6f20846727ec42b3cca651d1b061136d9c6d2f1",
+  "originalMainSha256": "81866b69fec64de5fdd00da316fb0d1e8e997ae9912f73f280981f0a70cb36d8",
+  "pageFile": "tools/derived-context-census-page-nov01.mjs",
+  "pageSha256": "1ae95a99adb6f71db26134d6ddf8cdad8ce8f1a713336022c727d35384f0a563",
+  "question": "Count actual first successful2Dcontexts/logical dimensions under flipX/whiten during unchanged original cold startup before any lazy-derivative proposal. Existing197ms/89ms sampled canvas callers are not invocation/allocation counts.",
+  "sourceReview": "flipX/whiten return fresh mutable native canvases. Any future deferral requires immutable source snapshots,all consumer/escape/context-mode/metadata/lifetime coverage; no pooling/sharing/lazy gear context is approved by this census.",
+  "reference": "outputs/receipts/startup-allocation-callers-oct26.json",
+  "patternSnapshotStandard": "https://html.spec.whatwg.org/multipage/canvas.html",
+  "limits": "This is an instrumented baseline census,not speed/timing,actual allocated bytes,full Game/state/RNG,compatibility or any candidate proof. Source canvases are weakly tracked and never retained.",
+  "settings": {
+    "cpu": 4,
+    "viewport": [
+      915,
+      412
+    ],
+    "dpr": 2.625,
+    "game": [
+      640,
+      360
+    ],
+    "display": [
+      2402,
+      1082
+    ],
+    "rendererMb": 1536,
+    "admissionMb": 4352,
+    "evalDeadlineMs": 10000,
+    "outerTimeoutMinutes": 15
+  },
+  "allThreeMismatches": [
+    "mummer6SUCCESSFUL hits versus2..5",
+    "tower-collapse/Tome rebound at200frames",
+    "offscreen mage sampling"
+  ],
+  "adopted": false,
+  "overallWorkComplete": false
+}
