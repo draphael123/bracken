@@ -52,6 +52,7 @@ export const STK_SAY = {
   dropped: 'HE DROPS THE HORN', hornOut: 'THE HORN SOUNDS',
   ramp: 'THE LOGS MAKE A STAIR', crank: 'THEY OPEN IT TO THEIR HORN', hears: 'HE HEARS THE HORN', ignores: 'HE IGNORES IT', sees: 'HE SEES YOU',
   crushedHim: 'CRUSHED: CUT HIM', fodder: 'CRUSHED: +HEALTH', hallHorn: 'A HORN HANGS BY THE DOOR: E BLOWS IT',
+  needHorn: 'A HORN OPENS THE GATE', spare: 'THE SPARE HORN: E BLOWS IT',   /* (claude/smallfix6) the told backup: no horn at the gate, a spare hangs on the gate tower's post */
 };
 /* (claude/stockade3-1101) HE HEARS YOUR HORN: walk (px/s) to the pile, look up for look (s; look2 in his second wind), cd between lures (s), near: a hero this close and
    he sees you; reach: a hall pile this far (px) from where you blew is the one he walks to. CRUSH: open (s) under the logs, hit: the knock (of his max), drip: what a
@@ -77,7 +78,7 @@ const LURED = new Set(['sprig', 'shield', 'pike', 'brute', 'hound', 'sapper', 't
 export function makeStockadeHands(ctx) {
   const TS = ctx.TS, say = (x, y, k, c) => ctx.number(x, y, STK_SAY[k], c || '#ffd36b');
   let gateAge = 0, Lk = null, S = null, held = false, piles = [], pickups = [], rings = [], gateOpen = false, gateT = 0, cd = 0, examOn = false, banner = null, seenArea = -1, tower = null, tookSaid = false;
-  let kegs = [], crew = [], looks = [], st = {}, fx = [], store = null;   /* (claude/chief3art) fx: the blasts being drawn; store: the powder store's rack {x, floor, scorch, n, chainT} */
+  let hintCd = 0, kegs = [], crew = [], looks = [], st = {}, fx = [], store = null;   /* (claude/chief3art) fx: the blasts being drawn; store: the powder store's rack {x, floor, scorch, n, chainT} */
   const storeFrom = L => { const A0 = L.arena, bs = (L.ents || []).filter(e => e.t === 'barrel' && A0 && e.x * 16 > A0.x0 - 40 * 16 && e.x * 16 < A0.x0), grp = bs.filter(b => bs.some(o => o !== b && Math.abs(o.x - b.x) <= 3));
     return grp.length >= 2 ? { x: (grp.reduce((a, b) => a + b.x, 0) / grp.length) * 16 + 8, floor: (grp[0].y + 1) * 16, scorch: 0, n: 0, chainT: 0 } : null; };   /* (claude/chief3) his powder kegs in the hall, the crew his horn called, the lookouts on stakes */
   const on = () => !!(ctx.L && ctx.L.stockade);
@@ -90,7 +91,8 @@ export function makeStockadeHands(ctx) {
       cleat: e.cleat !== undefined ? (e.x + e.cleat) * TS + 8 : undefined, ramp: e.ramp || null, hall: !!e.hall, beam: !!(e.hall || e.beam), drip: false };   /* floor: a pile that lands on a walk (one-way boards) names its row */
       if (p.ramp && rampDown.has(p.id)) { p.st = 'down'; p.by = floor; layRamp(p); } return p; });   /* (claude/stockade3-1101) a ramp pile dropped this run is still down, its stair still laid */
     cranks = [];
-    pickups = []; rings = []; cd = 0; gateT = 0; examOn = false; banner = null; kegs = []; crew = []; fx = []; store = storeFrom(ctx.L); st = { horn: 0, sil: 0, snd: 0, keg: 0, kick: 0, blast: 0, ptower: 0 };
+    pickups = []; hintCd = 0; if (S && S.spare && !held) pickups.push({ x: S.spare.x, y: S.spare.y, vy: 0, spare: true });   /* (claude/smallfix6) THE SPARE HORN: hung on the gate tower's post until ANY horn is yours - a hero who walked past the dozing blower is never shut out */
+    rings = []; cd = 0; gateT = 0; examOn = false; banner = null; kegs = []; crew = []; fx = []; store = storeFrom(ctx.L); st = { horn: 0, sil: 0, snd: 0, keg: 0, kick: 0, blast: 0, ptower: 0 };
     looks = ((S && S.lookouts) || []).map(o => ({ ...o, down: false }));
     const W = ctx.L.arena, T0 = S && S.tower;
     tower = T0 ? { x: T0.x, deck: T0.deck, base: T0.base, foot: T0.foot, pegs: T0.pegs.map(x => ({ x, cut: false, cutT: 0 })), st: 'up', t: 0, dir: 1, fallK: 0 } : null;
@@ -103,7 +105,12 @@ export function makeStockadeHands(ctx) {
   const hero = () => ctx.P();
 
   /* ---- THE HORN ---- */
-  function dropHorn(e) { e.hornDropped = true; if (held) return; pickups.push({ x: e.x, y: e.y - 6, vy: -80 }); }
+  /* (claude/smallfix6) A HORN NEVER LANDS OUT OF REACH: it drops onto the first footing under the blower, and a blower who died over nothing (a pit, the map's edge) leaves it on the post instead */
+  function standY(x, y0) { const tx = Math.floor(x / TS); for (let ty = Math.max(0, Math.floor(y0 / TS)); ty < ctx.L.H; ty++) if (ctx.solidAt(tx, ty) || ctx.oneWay(tx, ty)) return ty * TS; return null; }
+  const hornHome = () => (S && S.spare ? { x: S.spare.x, y: S.spare.y } : null);
+  function dropHorn(e) { e.hornDropped = true; if (held) return; const fy = standY(e.x, e.y - 6), h = hornHome();
+    if (fy === null && h) { pickups.push({ x: h.x, y: h.y, vy: 0, spare: true }); return; }
+    pickups.push({ x: e.x, y: e.y - 6, vy: -80 }); }
   function blow() {
     const P = hero(); if (!held || cd > 0 || !P || P.dead) return false;
     cd = LURE.cd; ctx.sfx.hornBlast && ctx.sfx.hornBlast(); ctx.shake(2);
@@ -192,9 +199,13 @@ export function makeStockadeHands(ctx) {
     for (const b of fx) b.t += dt; fx = fx.filter(b => b.t < (SA.BLAST_LIFE[b.kind] || 1)); if (store && store.chainT > 0) store.chainT -= dt;   /* (claude/chief3art) the blasts' own clock */
     /* the horns that fall */
     for (const e of ctx.enemies()) if (e.drops && !e.alive && !e.hornDropped) dropHorn(e);
-    for (const k of pickups) { if (k.got) continue; k.vy = Math.min(320, k.vy + 900 * dt); const ny = k.y + k.vy * dt, tx = Math.floor(k.x / TS), ty = Math.floor(ny / TS);
-      if (k.vy > 0 && (ctx.solidAt(tx, ty) || ctx.oneWay(tx, ty))) { k.y = ty * TS; k.vy = 0; } else k.y = ny;
-      if (P && !P.dead && Math.abs(P.x - k.x) < 12 && Math.abs(P.y - k.y) < 20) { k.got = true; held = true; ctx.sfx.pickup && ctx.sfx.pickup(); if (!tookSaid) { tookSaid = true; say(P.x, P.y - 30, 'took'); } } }
+    if (held) for (const k of pickups) if (k.spare) k.got = true;   /* (any horn in hand: the spare is no longer owed) */
+    for (const k of pickups) { if (k.got) continue; if (k.spare) { k.y = S.spare.y; } else if (k.y > ctx.L.H * TS - 4) { const h = hornHome(); if (h) { k.x = h.x; k.y = h.y; k.vy = 0; k.spare = true; } else k.vy = 0; }
+      if (!k.spare) k.vy = Math.min(320, k.vy + 900 * dt); const ny = k.spare ? k.y : k.y + k.vy * dt, tx = Math.floor(k.x / TS), ty = Math.floor(ny / TS);
+      if (k.spare) { /* hung: stays */ } else if (k.vy > 0 && (ctx.solidAt(tx, ty) || ctx.oneWay(tx, ty))) { k.y = ty * TS; k.vy = 0; } else k.y = ny;
+      if (P && !P.dead && Math.abs(P.x - k.x) < 12 && Math.abs(P.y - k.y) < 20) { k.got = true; held = true; ctx.sfx.pickup && ctx.sfx.pickup(); if (!tookSaid) { tookSaid = true; say(P.x, P.y - 30, k.spare ? 'spare' : 'took'); } } }
+    /* (claude/smallfix6) NO HORN AT THE GATE: told, once per approach */
+    hintCd = Math.max(0, hintCd - dt); if (!held && P && !P.dead && S && S.gate && S.spare && hintCd <= 0 && Math.abs(P.x - (S.gate.x * TS + 8)) < GATE.r + 6 * TS && Math.abs(P.x - (S.gate.x * TS + 8)) > 2 * TS) { hintCd = 9; say(P.x, P.y - 30, 'needHorn', '#ffd36b'); }
     /* the gate */
     if (gateOpen) gateAge += dt;
     if (gateT > 0) { gateT -= dt; if (gateT <= 0 && !gateOpen && S.gate) { gateOpen = true; gateAge = 0; ctx.openCells(S.gate.x, S.gate.y0, S.gate.y1); ctx.sfx.crack && ctx.sfx.crack(); ctx.shake(3); say(S.gate.x * TS + 8, S.gate.y0 * TS, 'gate', '#8fd160');
@@ -392,7 +403,7 @@ export function makeStockadeHands(ctx) {
   function drawWorld(g, cx, cy, time) {
     if (!on()) return;
     for (const p of piles) { drawTie(g, p, cx, cy, time); if (p.ramp && p.st === 'down') drawRamp(g, p, cx, cy); else SA.drawPile(g, p, cx, cy, time); }
-    for (const k of pickups) if (!k.got) SA.drawHornPickup(g, k, cx, cy, time);
+    for (const k of pickups) if (!k.got) { if (k.spare) { const px = Math.round(k.x - cx), py = Math.round(k.y - cy); g.fillStyle = '#3a2a1a'; g.fillRect(px - 1, py - 30, 3, 30); g.fillRect(px - 4, py - 30, 9, 2); g.fillStyle = '#6b4a2a'; g.fillRect(px, py - 30, 1, 30); SA.drawHornPickup(g, { x: k.x, y: k.y - 14 }, cx, cy, time); } else SA.drawHornPickup(g, k, cx, cy, time); }   /* (the spare hangs from a hook on its post) */
     if (S && S.gate) SA.drawGate(g, S.gate, cx, cy, { open: gateOpen, age: gateAge, lifting: gateT > 0 ? 1 - gateT / GATE.delay : 0 }, time);
     for (const e of ctx.enemies()) if (e.alive && e.dozing) SA.drawZs(g, Math.round(e.x - cx), Math.round(e.y - e.h - cy), time);   /* the dozing blower's Zs */
     if (tower) SA.drawWarTower(g, tower, cx, cy, time);

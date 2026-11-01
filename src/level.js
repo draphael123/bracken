@@ -593,6 +593,7 @@ function stockadeWatchtowers(R3) {
 
   // ---- THE BARRED GATE: the gate tower, its pile over the gate's mouth, and the crew behind ----
   ent('sign', 34, 19, { text: 'THE GATE OPENS ONLY TO THEIR HORN. OR STRIKE THE PEG: THE LOGS MAKE A STAIR.' });
+  ent('sign', 40, 19, { text: 'A HORN OPENS THE GATE. A SPARE HANGS ON THE POST.', stuck: true });   /* (claude/smallfix6, Daniel 11-01: walk past the blower and you were shut out) THE TOLD BACKUP: a spare horn on the gate tower's post, owed only while you hold none (src/stockade-hands.js) */
   /* (claude/stockade3-1101) THE FORK. The gate tower is a gallows on stilts now (the yard floor runs under it; no rope - its deck would drop you on the gate walk past the
      stair) and the gate's logs hang from its deck end over the gate's mouth, tied off at a PEG on the floor under the gallows. LOUD: blow the horn - the gate opens to
      their own horn, the crew run out under the logs - strike the peg: CRUSHED. QUIET: strike the peg FIRST - the logs land as a stair against the gate - climb onto
@@ -659,6 +660,7 @@ function stockadeWatchtowers(R3) {
   R.stockade = {
     tower: { x: twx, deck: 15 * TS, base: 18 * TS, foot: 20 * TS, pegs: [twx - 4 * TS, twx + 4 * TS] },
     gate: { x: X(43), y0: 15, y1: 19 },
+    spare: { x: X(39) * TS + 8, y: 20 * TS },
     exam: { x0: X(56), x1: X(62), y0: 0, y1: 24, end: X(110), draw: [6.5, 10, 13.5] },
     lookouts,
     areas: [['THE OUTER CAMP', 0, 131], ['THE YARD', 131, 226], ['THE WALL WALK AND THE KENNELS', 226, 334], ["THE SAPPERS' TUNNEL", 334, 378], ['THE WATCHTOWERS', 378, X(N)], ['THE GREAT HALL', X(N), 9999]],
