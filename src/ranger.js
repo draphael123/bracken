@@ -432,6 +432,10 @@ export function makeRanger(api) {
     if (p.rgSnatchFx) drawSnatchFx(g, cx, cy, p.rgSnatchFx);
     for (const a of p.rgArrows) { const x = a.x - cx, y = a.y - cy, ang = a.state === 'fly' ? angleOf(a) : (a.ang ?? 0);
       if (a.state === 'foe' && a.foe) drawArrowAt(g, x, y, (a.foe.face || 1) > 0 ? ang : Math.PI - ang, 5, true);
+      else if (a.great) { const dir = Math.sign(a.vx) || 1, X = Math.round(x), Y = Math.round(y);   /* (claude/ults) THE GREAT ARROW: a long gold shaft three pixels thick with a fat white-hot head, and a bright trail the length of the screen's last stretch */
+        for (let u = 14; u <= 90; u++) { g.globalAlpha = 0.8 * (1 - (u - 14) / 80); g.fillStyle = u % 7 < 3 ? '#fff3b0' : '#ffd36b'; g.fillRect(X - dir * u, Y - (u % 5 === 0 ? 1 : 0), 1, u < 40 ? 3 : 1); } g.globalAlpha = 1;
+        for (let u = -26; u <= 0; u++) { g.fillStyle = u % 3 === 0 ? '#fff3b0' : '#c9a24a'; g.fillRect(X + dir * u, Y - 1, 1, 3); g.fillStyle = '#6a4a1a'; g.fillRect(X + dir * u, Y + 2, 1, 1); }
+        g.fillStyle = '#ffffff'; for (let k = 0; k < 5; k++) g.fillRect(X + dir * (1 + k), Y - 2 + (k > 2 ? k - 2 : 0), 1, 5 - 2 * (k > 2 ? k - 2 : 0)); g.fillStyle = '#ff6a3a'; g.fillRect(X - dir * 26, Y - 3, 1, 7); g.fillRect(X - dir * 24, Y - 3, 1, 7); }
       else { const len = a.kind === 'fan' ? 9 : a.kind === 'pierce' || (a.kind === 'skill' && a.pierce) ? 9 : 7;
         if (a.state === 'fly' && a.kind !== 'pierce' && a.kind !== 'fan') { const c = Math.cos(ang), s = Math.sin(ang);   /* (Daniel 10-15: easier to see in flight) a pale streak behind it, fading */
           for (let u = len + 1; u <= len + 10; u++) { g.globalAlpha = 0.75 * (1 - (u - len) / 11); g.fillStyle = '#fff6d8'; g.fillRect(Math.round(x - u * c), Math.round(y - u * s), 1, 1); } g.globalAlpha = 1; }
