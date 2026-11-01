@@ -198,7 +198,7 @@ export function validateProgress(p){
  const inspect=v=>{if(!v||typeof v!=='object')return;for(const key of Object.keys(v)){if(['__proto__','constructor','prototype'].includes(key))throw Error('Unsafe save key. Original retained.');inspect(v[key]);}};inspect(p);
  if(p.hero!==undefined&&!HERO_IDS.includes(p.hero))throw Error('Unknown hero. Original save retained.');
  for(const value of Object.values(p.done||{}))if(!object(value))throw Error('Invalid completion history. Original retained.');
- if(p.progressionVersion && p.progressionVersion>PROGRESSION_VERSION)throw Error('This save needs a newer version of BRACKEN.');
+ if(p.progressionVersion && p.progressionVersion>PROGRESSION_VERSION)throw Error('This save needs a newer version of THORNROAD.');
  for(const k of ['coins','silverSpent'])if(p[k]!==undefined&&(!Number.isFinite(p[k])||p[k]<0))throw Error('Invalid '+k+'. Original save retained.');
  for(const k of ['xp','done','talents','skillOwned','loadouts','heroes','items','card','cardFree','skillRank'])if(p[k]!==undefined&&!object(p[k]))throw Error('Invalid '+k+'. Original save retained.');
  if(p.bossRecords!==undefined){

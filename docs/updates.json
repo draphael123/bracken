@@ -11,6 +11,15 @@
     ]
   },
   {
+    "date": "2026-11-01",
+    "batch": 137,
+    "lines": [
+      "BRACKEN is now THORNROAD: a new name, title and loading screen",
+      "New opening: the road, the goblins coming down it, then your hero by name",
+      "Old saves load as before; nothing about your progress changes"
+    ]
+  },
+  {
     "date": "2026-10-31",
     "batch": 135,
     "lines": [
