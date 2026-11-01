@@ -152,7 +152,7 @@ export function buildRookery({ painter, T, TS }) {
   sign(180, 28, 'THE EGG LEDGES.');
   crack('eggNest', { load: 'nest', x: 186, top: 22, cleat: [184, 28], span: [188, 193, 30], roost: [182, 21] });
   ground(186, 195, 41); plank(191, 193, 38); plank(187, 189, 35); plank(186, 187, 32);
-  shrieker(191, 19, 'eggLedges'); foe('crow', 196, 24, 'eggLedges'); foe('crow', 200, 26, 'eggLedges'); foe('goat', 200, 28, 'eggLedges', { face: -1 });
+  shrieker(191, 19, 'eggLedges'); foe('crow', 196, 24, 'eggLedges'); foe('crow', 200, 26, 'eggLedges'); foe('goat', 208, 28, 'eggLedges', { face: -1 });   /* (claude/platwins2) the goat waits past the egg ledges' ride-and-gap run (was 200, on its last gap): platforming section x179-235 */
   ground(196, 214, 29);
   coins([182, 28], [183, 28], [190, 29], [198, 28]); egg(199, 28);
   ent('check', 203, r(28));                                                         /* SHRINE TWO: the egg ledges are behind you */

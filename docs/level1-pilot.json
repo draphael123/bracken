@@ -12,26 +12,26 @@
   "bare": true
  },
  "theatre": {
-  "hash": "010422831498",
+  "hash": "7329a5a53321",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 21,
-  "deaths": 1,
-  "kills": 21,
-  "lifts": 94,
+  "hits": 31,
+  "deaths": 11,
+  "kills": 8,
+  "lifts": 90,
   "walked": 100,
   "bare": true
  },
  "fair": {
-  "hash": "e22579750acd",
+  "hash": "1910666f87ff",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 47,
-  "deaths": 12,
-  "kills": 9,
-  "lifts": 93,
+  "hits": 59,
+  "deaths": 20,
+  "kills": 4,
+  "lifts": 104,
   "walked": 100,
   "bare": true
  },
@@ -132,14 +132,14 @@
   "bare": true
  },
  "rootway": {
-  "hash": "60a847a7bab1",
+  "hash": "e7a8a8c9c301",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 30,
-  "deaths": 1,
-  "kills": 36,
-  "lifts": 85,
+  "hits": 37,
+  "deaths": 2,
+  "kills": 31,
+  "lifts": 91,
   "walked": 100,
   "bare": true
  },
@@ -168,14 +168,14 @@
   "bare": true
  },
  "church": {
-  "hash": "65a003c5ca55",
+  "hash": "e7d86029ed16",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 41,
-  "deaths": 13,
-  "kills": 8,
-  "lifts": 123,
+  "hits": 48,
+  "deaths": 14,
+  "kills": 11,
+  "lifts": 107,
   "walked": 100,
   "bare": true
  },
@@ -324,13 +324,13 @@
   "bare": true
  },
  "caravan": {
-  "hash": "f01565ade95b",
+  "hash": "2dda566562c6",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 9,
-  "deaths": 4,
-  "kills": 9,
+  "hits": 18,
+  "deaths": 6,
+  "kills": 6,
   "lifts": 93,
   "walked": 100,
   "bare": true
@@ -384,14 +384,14 @@
   "bare": true
  },
  "spore": {
-  "hash": "3bf985fd9575",
+  "hash": "e06a1cd0ee49",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 19,
+  "hits": 13,
   "deaths": 0,
-  "kills": 28,
-  "lifts": 89,
+  "kills": 24,
+  "lifts": 84,
   "walked": 100,
   "bare": true
  },
@@ -444,14 +444,14 @@
   "bare": true
  },
  "hurricane": {
-  "hash": "0d3ed6be8e5a",
+  "hash": "81f1158223c1",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 20,
-  "deaths": 5,
-  "kills": 11,
-  "lifts": 142,
+  "hits": 42,
+  "deaths": 12,
+  "kills": 15,
+  "lifts": 115,
   "walked": 100,
   "bare": true
  },
@@ -528,14 +528,14 @@
   "bare": true
  },
  "rookery": {
-  "hash": "3c07c53af25a",
+  "hash": "c1a7a9bb03c6",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 39,
-  "deaths": 4,
-  "kills": 32,
-  "lifts": 81,
+  "hits": 45,
+  "deaths": 5,
+  "kills": 35,
+  "lifts": 85,
   "walked": 100,
   "bare": true
  },

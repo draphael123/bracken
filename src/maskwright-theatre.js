@@ -166,7 +166,7 @@ function buildBackstage({ painter, T, TS }) {
   ent('check', 141, FL - 1);                                                 /* CHECKPOINT TWO: the top of the tower */
   /* THE GRID: the roof walk, up a rope from the fly floor's near end; a silver at the far end of it */
   boards(128, GR, 18); rope(143, GR + 1, FL - 1);   /* (THEATRE3, floating geometry: the roof walk runs to the tower's wall, and the fly floor's near end hangs from it on the rope) */
-  ent('silver', 130, GR - 1); coins([134, GR - 1], [138, GR - 1]); foe('spider', 136, GR + 2);
+  ent('silver', 130, GR - 1); coins([134, GR - 1], [138, GR - 1]); foe('spider', 129, GR + 2);   /* (claude/platwins2) the roof walk's spider hangs at its tower end (was 136, over the ride-and-climb run below it: that run is a platforming section now) */
   foe('archer', 142, GR - 1, { flyman: true, squad: 'the grid' });           /* THEATRE3: a FLYMAN on the grid over the bridge - he throws at your back while you wait on the batten (climb the rope and he is a free kill) */
   /* THE BRIDGE AND THE BAG: the fly floor stops over the tower (145-154 is open to the tower floor, eighteen rows down), a long batten hangs in
      under the gap, and a sandbag hangs over the far side where the fly floor's crew waits. Strike the lock: the batten flies up into the gap -

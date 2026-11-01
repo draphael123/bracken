@@ -157,7 +157,7 @@ export function buildRootway({ painter, T, TS }) {
   deco(208, 44, 'skullPile', 0); glow(207, 44);
   foe('sporeling', 209, 44, 'larderPit', { face: -1 });
   ground(225, 238, 27); ent('rockfall', 226, 0, { spore: true, every: 2.8, tell: 0.9 });   /* (on the larder's far lip, where the stair tops out) */
-  foe('archer', 231, 26, 'larderBow', { face: -1 }); foe('trophyhunter', 234, 26, 'larderBow', { face: -1 }); foe('shield', 227, 26, 'larderBow', { face: -1 });   /* (claude/rootway2, v2: a shield where the stair tops out - his push is back down the larder) */   /* (FIX PASS: a hunter on the far lip lunges at you as you top the stair) */
+  foe('archer', 246, 22, 'larderBow', { face: -1 }); foe('trophyhunter', 245, 22, 'larderBow', { face: -1 });   /* (claude/platwins2) the bow and the hunter hold the high root's ledge with its shield, past the larder stair's hop run (platforming section x213-241): they stood on the lip at 231/234 */ foe('shield', 227, 26, 'larderBow', { face: -1 });   /* (claude/rootway2, v2: a shield where the stair tops out - his push is back down the larder) */   /* (FIX PASS: a hunter on the far lip lunges at you as you top the stair) */
   /* A CLEAT ON THE ROOT'S FACE, high over the floor: grow the bud under it and strike it from the cap - the span over the next gap drops */
   bud(237, 27); ground(239, 246, 23); foe('shield', 244, 22, 'highRoot', { face: -1 });   /* (FIX PASS: a shield holds the root by the span: his push is toward the well) */ /* (FIX PASS: the cap stands flush against the root - no one-column corner between them to fall into) */
   hoist('highCleat', { x: 251, top: 12, hang: 17, cleat: [238, 19], load: 'span', span: [247, 255, 23], face: true });

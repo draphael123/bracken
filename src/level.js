@@ -4619,10 +4619,10 @@ function longWater() {
     G.R.moversExtra.push({ kind: 'swing', px: 394 * TS, py: 12 * TS, arm: 96, x: 0, y: 0, w: 32, h: 8, period: 3.6, phase: 2.2 });
     // who is holding it
     ent('scout', 411, 26, { face: -1 }); ent('scout', 413, 26, { face: -1 }); ent('tideguard', 409, 26, { face: -1 });
-    ent('siren', 370, 32); ent('siren', 390, 33); ent('eel', 382, 34);
+    ent('siren', 361, 32); ent('siren', 406, 32); ent('eel', 389, 34);   /* (claude/platwins1: the sirens sing from the two ends of the channel and the eel waits mid-channel, so the six piers read as a clean hop run) */
     /* THE SEA'S LIFE STARTS HERE (2026-09-25): the river above Saltreach is fresh now (L.fresh), so what the sprinkler used to put in the
        ferry run - the anglers, a lamprey, a puffer - is put in the first salt water on the road, the channel under the piers */
-    ent('angler', 375, 35); ent('angler', 397, 35); ent('lamprey', 362, 34); ent('puffer', 383, 32);
+    ent('angler', 375, 35); ent('angler', 403, 35); ent('lamprey', 362, 34); ent('puffer', 404, 32);
     ent('silver', 386, 17);
     ent('sign', 410, 26, { text: 'PAST THE STAIR. THE SQUARE IS AHEAD AND THE SEA IS STANDING IN IT.' });
   }
@@ -5312,6 +5312,7 @@ function theHurricane() {
   // THE FORE HATCH: open to her hold, five boards wide (no hero jumps five on the level). Downhill (she heels to the stern) you jump it; uphill you fall short into the hatch (a cheap fall: the ladder
   // brings you back to the near side)
   ent('sign', 50, DK - 1, { text: 'THE FORE HATCH: WAIT FOR HER TO HEEL TOWARD THE STERN, THEN JUMP. DOWNHILL GOES LONG.' });
+  block(52, 53, DK - 2, DK - 1); ent('deco', 52, DK - 3, { kind: 'kegStack' });   /* (claude/platwins2) A SEA CHEST lashed on the deck (two rows: a hop) between the forecastle step and the fore hatch, so the forecastle's cask, step, chest, hatch, house and cask-step read as one platforming run (Daniel 10-31) */
   air(56, 61, DK, DK + 4); net(56, 56, DK, DK + 4);   /* the hatch's well (57-61), four rows: its ladder is on the near side */
   rollGaps.push({ x0: 50 * TS, x1: 66 * TS, y0: (DK - 6) * TS, y1: DK * TS, carry: 2, dir: 1, alt: true, roll: true, hole: [57, 61] });   /* (src/reachcore.js reads it as a carry: a jump taken in the heel goes two columns further) */
   // THE FORE HOUSE: four rows of deckhouse across her deck. A cask lashed by the bitt: strike its lashing and the next heel to the stern runs it to the house - a step
@@ -7101,7 +7102,7 @@ function theDrownedCauseway() {
   ent('mover', 129, 28, { len: 2, vert: true, rise: 8, tide: true });   /* A RAFT moored on the second stone: a dry deck over the urchins at high water (not on the pilgrim's stone) */
   coins([126, 27], [130, 27], [134, 27], [138, 27], [142, 27]);
   
-  road(147, 160); ent('feeler', 152, R - 1); ent('crab', 157, R - 1, { face: -1 });
+  road(147, 160); ent('feeler', 160, R - 1); ent('crab', 157, R - 1, { face: -1 });   /* (claude/platwins2) the feeler waits past the hop run's end (was 152, on it) */
 
   // ---------------- 3. THE ARCADE (x 160-250). A roofed gallery that floods to its roof, with vaults where the air stays. ----------------
   road(160, 250);
@@ -7268,7 +7269,7 @@ function theDrownedCauseway() {
      - a scout past the ARCADE's broken span, a netter on the WAYSTATION's holm over the climb from the boom;
      - THE LAST MILE is the road's EXAM: its tide guard is an ELITE (ELITES.causeway) who holds the light's foot while the breakers come over,
        a scout on a parapet stone behind him - a stone's lee keeps your feet, his does not move him. The checkpoint at 561 is after it. */
-  ent('petrel', 131, 23); ent('scout', 148, R - 1, { face: -1 });
+  ent('petrel', 131, 23); ent('scout', 164, R - 1, { face: -1 });   /* (claude/platwins2) the bow stands past the stepping stones' hop run (was 148, on it) */
   ent('petrel', 436, 20); ent('petrel', 454, 20); ent('tideguard', 440, R - 1, { face: -1 }); ent('scout', 449, R - 1, { face: -1 });
   ent('scout', 533, R - 2, { face: -1 });
   /* AND THE BOW COVERS THE JUMPS (the walker: on this road the blows that land come from range - a melee foe on the flat is cut down before
@@ -7284,6 +7285,7 @@ function theDrownedCauseway() {
        + is seaward): the flood across the dip, the ebb over the stones, and the fall out through the sea arch. The BREAKERS come over
        the last mile from the end of the road and a stone's lee turns them. The FOG of the last mile, and the light's lamp that cuts it */
     causeCurrents: [{ x0: 79, x1: 96, y0: 19, y1: 28, rise: -40 }, { x0: 122, x1: 145, y0: 20, y1: 39, high: 45, ebb: 45 }, { x0: 433, x1: 457, y0: 31, y1: 37, fall: 120, ebb: 70 }],
+    calm: [[144, 156, 0, H]],   /* (claude/platwins2) the stepping stones' gap-and-hop run (x123-147) is a platforming section: the sprinkler keeps off its end */
     causeBreakers: { x0: 511, x1: 565, every: 4.4, row: R },
     causeFog: { x0: 505, x1: 566, lamp: [541.5, 5] },
     noDress: [[535, 548, 2, 8]],   /* the lamp gallery round the top of the light: the dress took its boards for a quay and stood a mooring post on it */
