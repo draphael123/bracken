@@ -167,5 +167,10 @@ export function bakeFrog() {
       for (const [fx, fy] of [[52, 43], [56, 45]]) px(g, fx, fy, '#b8e070'); } }),
   ];
   const L = frames.map(flipX), white = frames.map(c => whiten(c));
-  return { R: frames, L, white: { R: white, L: white.map(flipX) }, ax: 30, ay: 44 + PADT, w: 40, h: 30 };
+  /* (claude/frogking3) HIS POND STIRS: the same frames flushed - the green skin goes a dark, hot red-brown (green-dominant pixels only: the belly, tongue, eyes, crown keep their colours) */
+  const flush = c => { const [c2, g2] = canvas(c.width, c.height); g2.drawImage(c, 0, 0); const d = g2.getImageData(0, 0, c.width, c.height), a = d.data;
+    for (let i = 0; i < a.length; i += 4) { if (!a[i + 3]) continue; const r = a[i], gr = a[i + 1], b = a[i + 2]; if (gr > r + 8 && gr > b + 8) { a[i] = Math.min(255, Math.round(gr * 0.95)); a[i + 1] = Math.round(r * 0.8); a[i + 2] = Math.round(b * 0.8); } }
+    g2.putImageData(d, 0, 0); return c2; };
+  const hot = frames.map(flush);
+  return { R: frames, L, white: { R: white, L: white.map(flipX) }, p2: { R: hot, L: hot.map(flipX), white: { R: white, L: white.map(flipX) }, ax: 30, ay: 44 + PADT, w: 40, h: 30 }, ax: 30, ay: 44 + PADT, w: 40, h: 30 };
 }

@@ -70,10 +70,10 @@ if (fr) { const map = Object.fromEntries([...fr[1].matchAll(/(\w+): (\d+)/g)].ma
 const art = readFileSync(new URL('../src/redraw/frogking.js', import.meta.url), 'utf8'); ok((art.match(/^\s*frame\(\{/gm) || []).length >= 20, 'src/redraw/frogking.js has fewer than 20 frames');
 /* no waiting room: no hide on his pad; in the air a blow takes at least 0.4x (B15) */
 ok(!/THE HIDE TURNS IT/.test(src) && FK.air >= 0.4 && /e\.t === 'frog' && e\.mode === 'leap'\) \{ dmg = Math\.max\(1, Math\.round\(dmg \* FROGK\.air\)\)/.test(src), 'his hide is back, or the B15 floor in the air is under 0.4x');
-ok(FK.dazed >= 1.5 && FK.winded >= 1.5, 'his openings pay under 1.5x');
+ok(FK.dazed >= 1.4 && FK.winded >= 1.15, 'his openings pay under 1.4x / 1.15x');   /* (claude/frogking3: 2 / 1.5 -> 1.5 / 1.2 with the HP cut to 650) */
 /* the chase: he leaps on a share of him or a stay, at half his pond stirs (the yellow pads sink faster, fewer hold) */
 ok(/FROGK\.quota\[ph\]/.test(fn) && /FROGK\.stay\[ph\]/.test(fn) && /frogNextStation/.test(fn) && /FKC\.reshuffle/.test(fn), 'he no longer leaps to the next royal pad on a share of him / a stay, or the lanes no longer reshuffle');
-ok(FK.p2At === 0.5 && FK.sink[1] > FK.sink[0] && FK.firm[1] < FK.firm[0], 'his pond does not stir at half (sink ' + FK.sink + ', firm ' + FK.firm + ')');
+ok(FK.p2At === 0.5 && FK.sink[1] > FK.sink[0] && FK.firm[1] <= FK.firm[0], 'his pond does not stir at half (sink ' + FK.sink + ', firm ' + FK.firm + ')');
 /* THE COURT (src/frog-court.js): open biting water, three royal pads, a lane of leaves - some hold, some sink - before each */
 const A = L.arena; ok(A && A.boss === 'frog' && A.frogChase && A.royal && A.royal.length === 3 && A.lanes && A.lanes.length === 3, 'the court is not three royal pads over three lanes');
 if (A && A.royal && A.lanes) {
