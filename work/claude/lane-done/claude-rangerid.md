@@ -38,3 +38,7 @@ Push-kick pose + leg trail (uses rgBash); steady-window cue: bow stillness/retic
 3. UP+C hunter's mark stays a focus spend (not a cooldown skill). REC keep for the demo.
 4. Heartseeker cd 14 s added with the volley (brief table, not in Q9). REC keep.
 5. Old Tusker is 100% for ranger/knight bots: REC the tune lane lowers the boss's tolerance, not hero rows.
+
+## FINAL CHECKS (11-01, after the coordinator's RAM stop)
+GREEN: tools/ranger.mjs (all asserts incl. kick), hero-pass ranger, keys, textfit pick,menu,hints,hud --strict (0 issues), progression (save migration, exit 0), curve-shape.
+RED/UNRUN: tools/hero-trials.mjs - page never put up window.BK (boot failure under RAM pressure, not an assert; ranger.mjs and others booted the same build) - RE-RUN; the new 'third' trial step is unplayed. Not run: mark-integrity, mash-gate, coop, pilots, boss rows (owed to STARTER-HEROES TUNE).
