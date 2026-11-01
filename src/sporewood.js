@@ -132,7 +132,7 @@ export function buildSporewood({ painter, T, TS }) {
   /* down into the hollow: three steps */
   ground(105, 110, 31); ground(111, 116, 34); ground(117, 137, 38); plank(111, 116, 31);
   lantern(108, 30);                                                                 /* LANTERN ONE, on the first step: the teach */
-  glow(114, 33); foe('brute', 114, 33, 'terrace', { face: -1 }); foe('spitcap', 111, 33, 'terrace', { face: -1 });   /* (platwins1: the terrace's heavy and spitcap, moved down off the climb) */
+  glow(114, 33); foe('brute', 114, 33, 'hollowSteps', { face: -1 }); foe('spitcap', 111, 33, 'hollowSteps', { face: -1 });   /* (platwins1: the terrace's heavy and spitcap, moved down off the climb) */
   /* the first LURKER, by the second lantern: strike the lantern and its light dazzles him out of his cap (a sign at the point of use) */
   lantern(120, 37); foe('lurker', 125, 37, 'hollowA'); foe('brute', 128, 37, 'hollowA', { face: -1 }); foe('shield', 134, 37, 'hollowB', { face: -1 });   /* (a guard at the dark bud's lantern: light it under his blade) */
   sign(118, 37, "LURKERS HIDE AMONG THE CAPS. A LANTERN'S LIGHT DAZZLES THEM OUT.");
