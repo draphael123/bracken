@@ -9,13 +9,18 @@
 //   THE CLEARING  the OLD FOREST GATE (a great timber gate in its arch, iron-strapped and barred, scorched, vine-grown) and THE PALISADE'S UNFINISHED END (raw stakes, a scaffold), the two SCAFFOLDS (deck on posts and braces, the prop
 //            with its wedge and rope - the level's verb), the wreck, the spent stumps.
 // px.js primitives. frame(mode, cut, step) -> canvas CW x CH with the feet at (AX, AY).   bakeCard() -> his bestiary card.   deadSet() -> a sprite set for the body he leaves.
+// (claude/beast3, Daniel 11-01 "still too like Old Tusker"): A WAR-OX IN A SIEGE HARNESS, not a brown boar - SLATE-IRON hide, a riveted plate BARDING skirt down both flanks,
+//   THE RAM SLUNG UNDER HIM on short chains from his girths (between his legs, its iron head out under his chest), WAR BANNERS (a tall crimson banner with the gold ram at the
+//   gantry's tail, a black-and-red pennant at his shoulder). THE HORNSMAN (src/hornsman.js's look: kettle hat, red crest, the order horn) is the gantry's second handler; he raises
+//   the horn for THE VOLLEY ORDER and, knocked off (solo), the gantry carries one. THE TRAMPLE's rear-and-stamp frames are gone; new: the order (horn up / blast / lost) and
+//   THE WALL BREAKER (the turn, the run, the slam, the recoil). The clearing gains the archers on its walls, the palisade cracked / leaning / BREACHED, the rubble step, the timbers.
 import { canvas, fillPoly, outline, flipX, whiten } from '../px.js';
 import { WOOD, ROPE, IRON, RUST, mix } from './palisade_pal.js';
 import { drawProp } from './palisade_world.js';
 
 /* THE ART IS DRAWN IN A 1.35x STUDIO SPACE and scaled by K on the way to the pixels (every shape goes through D), so he fits the fight's 56 x 40 box: a body about as long as it, the head and the ram out in front */
 export const K = 0.74, CW = 150, CH = 98, AX = 70, AY = 86;
-const HIDE = ['#1e140e', '#3a281c', '#5a4030', '#7c5c44'], PL = ['#202028', '#3e3e4a', '#64646f', '#9494a2', '#c8c8d6'], HORN = ['#6a5a3c', '#b8a874', '#ece0b8'], LE = ['#160c06', '#33200f', '#573616'], GB = ['#8a6210', '#d8a020', '#ffd36b'], OUT = '#120804';
+const HIDE = ['#121318', '#24262e', '#3a3d48', '#575b68'], PL = ['#202028', '#3e3e4a', '#64646f', '#9494a2', '#c8c8d6'], HORN = ['#6a5a3c', '#b8a874', '#ece0b8'], LE = ['#160c06', '#33200f', '#573616'], GB = ['#8a6210', '#d8a020', '#ffd36b'], OUT = '#120804';
 const FR = WOOD.fresh, MD = WOOD.mid;
 const memo = new Map(); const once = (k, fn) => { if (!memo.has(k)) memo.set(k, fn()); return memo.get(k); };
 const R = Math.round;
@@ -64,8 +69,9 @@ function handler(d, x, y, hand, step, cut, horn) {
 function ram(d, cx, cy, a, cut, deck) {
   if (cut) return;
   const c = Math.cos(a), s = Math.sin(a), P = (x, y) => [cx + x * c - y * s, cy + x * s + y * c], tr = (pts, col) => d.poly(pts.map(([x, y]) => P(x, y)), col);
-  /* the chains (two) from the gantry's cross-beam to the ram's lashings */
-  for (const [gx, lx] of [[-18, -11], [0, 9]]) { const [bx, by] = P(lx, -5); d.line(gx, -63, bx, by, IRON[2]); d.line(gx + 1, -63, bx + 1, by, IRON[1]); for (let k = 1; k < 5; k++) { const t = k / 5; d.rc(gx + (bx - gx) * t - 1, -63 + (by + 63) * t - 1, 3, 2, IRON[3]); } }
+  /* the chains (two) from his girths' iron rings under the belly to the ram's lashings: THE RAM IS SLUNG UNDER HIM (claude/beast3) */
+  for (const [gx, gy, lx] of [[-10, -15, -11], [10, -16, 9]]) { const [bx, by] = P(lx, -5); d.line(gx, gy, bx, by, IRON[2]); d.line(gx + 1, gy, bx + 1, by, IRON[1]); d.rc(gx - 1, gy - 1, 3, 3, IRON[3]);
+    for (let k = 1; k < 4; k++) { const t = k / 4; d.rc(gx + (bx - gx) * t - 1, gy + (by - gy) * t - 1, 3, 2, IRON[3]); } }
   tr([[-23, -5], [21, -5], [21, 5], [-23, 5]], FR[1]); tr([[-23, -5], [21, -5], [21, -3], [-23, -3]], FR[4]); tr([[-23, -3], [21, -3], [21, -1], [-23, -1]], FR[3]); tr([[-23, 2], [21, 2], [21, 5], [-23, 5]], MD[1]);   /* the log: lit top, dark belly */
   for (const bx of [-17, -2, 12]) { tr([[bx, -6], [bx + 3, -6], [bx + 3, 6], [bx, 6]], IRON[1]); tr([[bx, -6], [bx + 1, -6], [bx + 1, 6], [bx, 6]], IRON[3]); }   /* three iron bands */
   tr([[-24, -4], [-21, -4], [-21, 4], [-24, 4]], FR[0]);                                                                                                          /* the butt end: cut grain */
@@ -108,6 +114,10 @@ function body(d, p, ph, cut, step, time) {
     d.poly([[x, t0], [x + 13, t0 - 1], [x + 14, t0 + 15], [x + 1, t0 + 16]], PL[2]); d.poly([[x, t0], [x + 13, t0 - 1], [x + 13, t0 + 2], [x, t0 + 3]], PL[4]); d.poly([[x + 1, t0 + 13], [x + 14, t0 + 12], [x + 14, t0 + 15], [x + 1, t0 + 16]], PL[0]);
     d.poly([[x + 11, t0 - 1], [x + 14, t0 - 1], [x + 14, t0 + 15], [x + 12, t0 + 15]], PL[1]);
     for (const [rx, ry] of [[3, 4], [9, 4], [3, 10], [9, 10]]) { d.dot(x + rx, t0 + ry, PL[4]); d.dot(x + rx + 1, t0 + ry + 1, PL[0]); } }
+  /* (claude/beast3) THE BARDING: a riveted plate skirt down the flank, three scalloped lames over the barrel - a war-ox in iron, not a hide beast */
+  d.poly([[-33, -31], [27, -33], [30, -20], [24, -15], [-26, -13], [-34, -20]], PL[1]);
+  for (let i = 0; i < 5; i++) { const x = -32 + i * 12; d.poly([[x, -31], [x + 13, -31], [x + 13, -17], [x + 6, -14], [x, -17]], i & 1 ? PL[2] : PL[1]); d.rc(x, -31, 13, 1, PL[3]); d.line(x + 13, -31, x + 13, -17, PL[0]); d.dot(x + 6, -27, PL[4]); d.dot(x + 6, -21, PL[4]); d.dot(x + 6, -15, PL[3]); }
+  d.rc(-33, -32, 60, 2, RUST[1] || PL[0]); d.rc(-33, -32, 60, 1, PL[3]);   /* the barding's top edge, a rusted rim */
   /* the great pauldron on the shoulder, and spikes along the spine */
   d.poly([[14, -50], [31, -48], [34, -34], [30, -24], [16, -26]], PL[2]); d.poly([[14, -50], [31, -48], [29, -44], [15, -46]], PL[4]); d.poly([[28, -45], [34, -34], [30, -24], [27, -26], [29, -38]], PL[1]);
   for (const [rx, ry] of [[19, -42], [25, -40], [20, -33], [26, -30]]) { d.dot(rx, ry, PL[4]); d.dot(rx + 1, ry + 1, PL[0]); } d.rc(18, -37, 9, 1, PL[0]);
@@ -138,36 +148,44 @@ function head(d, p, cut, step) {
     d.rc(40 + X, -32 + Y, 7, 1, '#ff4a2a'); d.line(44 + X, -37 + Y, 50 + X, -29 + Y, '#5a1e12'); }
 }
 /* ===== THE POSES ===== */
-export const POSES = {
-  sleep: { lie: true, ram: [14, -6, 0], hand: 'sit', eye: 'shut', head: [4, 12], legs: 'lie' },
-  wake: { head: [2, -9], ram: [14, -12, 0], legs: 'stand', hand: 'sit', steam: true },
-  walk: { head: [0, 0], ram: [14, -13, 0], legs: 'walk', hand: 'sit' },
-  recover: { head: [0, 9], ram: [13, -9, 0.12], legs: 'stand', hand: 'sit', steam: true },
-  chargeTell: { head: [4, 10], ram: [10, -9, 0.15], legs: 'paw', pitch: 0.1, hand: 'whip', eye: 'red', steam: true, flag: '#ff4a2a' },
-  charge: { head: [12, 12], ram: [26, -11, 0.04], legs: 'run', pitch: 0.15, hand: 'duck', eye: 'red', speed: true, streaks: true },
-  dazed: { head: [-3, 8], ram: [8, -6, 0.5], legs: 'splay', hand: 'flail', eye: 'shut', stars: true },
-  sweepTell: { head: [-2, 1], ram: [-12, -26, -0.75], legs: 'stand', hand: 'hold', twist: true, flag: '#ffd36b' },
-  sweep: { head: [5, 4], ram: [24, -8, 0.42], legs: 'lunge', hand: 'hold', swing: true },
-  volleyTell: { head: [0, 2], ram: [14, -12, 0], legs: 'stand', hand: 'stand', flag: '#ff9a5c' },
-  volley: { head: [1, 2], ram: [14, -12, 0], legs: 'stand', hand: 'throw' },
-  trampleTell: { rear: true, head: [-2, -2], ram: [6, -16, -0.5], hand: 'cling', eye: 'red', steam: true },
-  trample: { head: [6, 8], ram: [16, -7, 0.25], legs: 'splay', pitch: 0.12, hand: 'cling', dust: true },
-  stuck: { head: [6, 8], ram: [24, -7, 0.35], legs: 'brace', sunk: 7, hand: 'flail', eye: 'red', timber: true },
-  tear: { head: [-2, -4], ram: [12, -18, -0.35], legs: 'splay', shake: true, hand: 'cling', timber: true },
+export const POSES = {   /* (claude/beast3) ram: [x, y, angle] of THE RAM SLUNG UNDER HIM (its chains run up to his girths) */
+  sleep: { lie: true, ram: [10, -4, 0], hand: 'sit', eye: 'shut', head: [4, 12], legs: 'lie' },
+  wake: { head: [2, -9], ram: [6, -9, 0], legs: 'stand', hand: 'sit', steam: true },
+  walk: { head: [0, 0], ram: [6, -9, 0], legs: 'walk', hand: 'sit' },
+  recover: { head: [0, 9], ram: [5, -8, 0.08], legs: 'stand', hand: 'sit', steam: true },
+  chargeTell: { head: [4, 10], ram: [0, -9, 0.08], legs: 'paw', pitch: 0.1, hand: 'whip', eye: 'red', steam: true, flag: '#ff4a2a' },
+  charge: { head: [12, 12], ram: [16, -9, 0.02], legs: 'run', pitch: 0.15, hand: 'duck', eye: 'red', speed: true, streaks: true },
+  dazed: { head: [-3, 8], ram: [4, -5, 0.4], legs: 'splay', hand: 'flail', eye: 'shut', stars: true },
+  sweepTell: { head: [-2, 1], ram: [-12, -11, -0.3], legs: 'stand', hand: 'hold', twist: true, flag: '#ffd36b' },
+  sweep: { head: [5, 4], ram: [22, -7, 0.3], legs: 'lunge', hand: 'hold', swing: true },
+  volleyTell: { head: [0, 2], ram: [6, -9, 0], legs: 'stand', hand: 'stand', flag: '#ff9a5c' },
+  volley: { head: [1, 2], ram: [6, -9, 0], legs: 'stand', hand: 'throw' },
+  stuck: { head: [6, 8], ram: [16, -6, 0.3], legs: 'brace', sunk: 7, hand: 'flail', eye: 'red', timber: true },
+  tear: { head: [-2, -4], ram: [8, -12, -0.2], legs: 'splay', shake: true, hand: 'cling', timber: true },
   loose: { head: [8, 3], legs: 'run', pitch: 0.05, eye: 'red', speed: true, trail: true, noRam: true },
   dead: { lie: true, head: [10, 20], eye: 'shut', legs: 'lie', dead: true },
-  /* (claude/palisade2) THE NEW MOVES - P1 the handlers' orders, P2 the beast unchained */
-  sweepMid: { head: [3, 2], ram: [-18, -8, -0.5], legs: 'stand', hand: 'hold', twist: true },
-  sweepBack: { head: [-3, 3], ram: [-26, -6, -0.3], legs: 'lunge', hand: 'hold', swing: true },
-  potTell: { head: [0, 2], ram: [14, -12, 0], legs: 'stand', hand: 'pot', flag: '#ff6a1a', fire: true },
-  pot: { head: [1, 2], ram: [14, -12, 0], legs: 'stand', hand: 'lob', fire: true },
-  batterTell: { head: [6, 12], ram: [16, -9, 0.08], legs: 'brace', pitch: 0.08, hand: 'whip', eye: 'red', steam: true, flag: '#c83a2a' },
-  batter: { head: [12, 10], ram: [28, -9, 0], legs: 'lunge', pitch: 0.06, hand: 'cling', eye: 'red', shake: true, dust: true },
-  unchain: { rear: true, head: [-4, -6], ram: [2, -22, -0.9], hand: 'flail', eye: 'red', steam: true, snap: true },
+  /* (claude/palisade2) P1 the handlers' orders, P2 the beast unchained */
+  sweepMid: { head: [3, 2], ram: [-15, -8, -0.3], legs: 'stand', hand: 'hold', twist: true },
+  sweepBack: { head: [-3, 3], ram: [-24, -6, -0.2], legs: 'lunge', hand: 'hold', swing: true },
+  potTell: { head: [0, 2], ram: [6, -9, 0], legs: 'stand', hand: 'pot', flag: '#ff6a1a', fire: true },
+  pot: { head: [1, 2], ram: [6, -9, 0], legs: 'stand', hand: 'lob', fire: true },
+  batterTell: { head: [6, 12], ram: [4, -8, 0.06], legs: 'brace', pitch: 0.08, hand: 'whip', eye: 'red', steam: true, flag: '#c83a2a' },
+  batter: { head: [12, 10], ram: [20, -8, 0], legs: 'lunge', pitch: 0.06, hand: 'cling', eye: 'red', shake: true, dust: true },
+  unchain: { rear: true, head: [-4, -6], ram: [0, -11, -0.6], hand: 'flail', eye: 'red', steam: true, snap: true },
   flailTell: { head: [-8, -12], legs: 'brace', eye: 'red', noRam: true, chain: 'coil', pitch: -0.1, steam: true, whirl: true },
   flail: { head: [12, 8], legs: 'lunge', eye: 'red', noRam: true, chain: 'out', pitch: 0.09, speed: true, blur: true },
   kickTell: { head: [-4, 11], legs: 'kickTell', eye: 'red', noRam: true, buck: 0.15, steam: true, dust: true },
   kick: { head: [0, 12], legs: 'kick', eye: 'red', noRam: true, buck: 0.27, dust: true, impact: true },
+  /* (claude/beast3) THE VOLLEY ORDER: the head up and braced while THE HORNSMAN puts the horn to his mouth (the driver whips); the blast (the horn, the crew clinging);
+     the order LOST (the Hornsman reeling, the beast unsteered, head swinging) */
+  orderTell: { head: [-2, -7], ram: [4, -9, 0], legs: 'brace', hand: 'whip', horn: 'up', steam: true },
+  order: { head: [3, 3], ram: [7, -9, 0.05], legs: 'stand', hand: 'cling', horn: 'blast' },
+  lost: { head: [-5, 5], ram: [3, -7, 0.25], legs: 'splay', hand: 'flail', horn: 'reel', eye: 'shut' },
+  /* (claude/beast3) THE WALL BREAKER (P2, unchained): he wheels and paws, head down at the wall; the run; the SLAM (head buried, timber flying); the recoil off the breach */
+  wallTell: { head: [6, 13], legs: 'paw', pitch: 0.13, eye: 'red', noRam: true, steam: true, dust: true },
+  wallRun: { head: [13, 13], legs: 'run', pitch: 0.16, eye: 'red', noRam: true, speed: true, streaks: true },
+  wallHit: { head: [15, 9], legs: 'brace', pitch: 0.05, eye: 'red', noRam: true, shake: true, splinters: true },
+  wallBack: { head: [-2, 6], legs: 'splay', eye: 'shut', noRam: true, stars: true },
 };
 /* (claude/palisade2) THE BROKEN RAM CHAIN (P2): dragged from the collar, coiled for the flail, whipped out in it */
 function chain(d, kind, step) {
@@ -175,7 +193,7 @@ function chain(d, kind, step) {
   for (let i = 0; i < pts.length - 1; i++) { const [x0, y0] = pts[i], [x1, y1] = pts[i + 1]; d.line(x0, y0, x1, y1, IRON[1], 2); for (let k = 0; k < 3; k++) { const t = k / 3; d.rc(x0 + (x1 - x0) * t - 1, y0 + (y1 - y0) * t - 1, 3, 2, IRON[3]); } }
   const [ex, ey] = pts[pts.length - 1]; d.rc(ex - 3, ey - 3, 6, 6, IRON[2]); d.rc(ex - 3, ey - 3, 6, 1, IRON[4]);   /* the torn shackle at its end */
 }
-function bakeFrame(mode, cut, step, ph) {
+function bakeFrame(mode, cut, step, ph, solo) {
   const p = POSES[mode] || POSES.walk, [c, g] = canvas(CW, CH);
   const sunk = p.sunk || 0, lift = p.lie ? 10 : 0;
   g.save(); g.translate(0, sunk);
@@ -194,11 +212,14 @@ function bakeFrame(mode, cut, step, ph) {
   /* the gantry on his back, then the far fore leg */
   leg(dBody, 14, hipY + 2, p.rear ? 22 : lg[2][0], p.rear ? -14 : lg[2][1], p.rear ? 10 : lg[2][2], true);
   body(dBody, p, ph, cut, step, 0);
+  if (!p.noRam && !p.dead) ram(dBody, ...(p.ram || [6, -9, 0]), cut, null);   /* (claude/beast3) THE RAM SLUNG UNDER HIM: under the barrel, in front of the far legs, behind the near fore leg */
   if (!cut) gantry(dBody, p, step); else if (!p.dead) brokenGantry(dBody, step);
+  if (!p.dead && !p.lie) banners(dBody, cut, step);   /* (claude/beast3) THE WAR BANNERS */
   head(dBody, p, cut && !p.dead, step);
   leg(dBody, 23, hipY + 2, p.rear ? 30 : lg[3][0], p.rear ? -22 : lg[3][1], p.rear ? 12 : lg[3][2], false);
-  if (!cut) { handler(dBody, -22, -45, p.hand, step, cut, false); handler(dBody, -6, -45, p.hand, step + 1, cut, !!p.flag && (p.hand === 'whip' || p.hand === 'hold')); }
-  if (!p.noRam && !p.dead) ram(dBody, ...(p.ram || [14, -13, 0]), cut, null);
+  if (!cut) { handler(dBody, -22, -45, p.hand, step, cut, false);   /* (claude/beast3) the second handler is THE HORNSMAN: the horn up for an order (or a flagged order's word), reeling when it is lost; gone when knocked off (solo) */
+    if (!solo) handler(dBody, -6, -45, p.horn === 'reel' ? 'flail' : p.hand, step + 1, cut, p.horn === 'up' || p.horn === 'blast' || (!!p.flag && (p.hand === 'whip' || p.hand === 'hold'))); }
+  if (p.splinters) for (let k = 0; k < 5; k++) d0.line(56 + k * 3, -24 + k * 5, 64 + k * 4, -34 + k * 6 - (step & 1) * 3, k & 1 ? FR[4] : FR[2], 2);   /* (claude/beast3) the slam: timber flying off the wall */
   if (cut && !p.dead && !p.lie) chain(p.chain ? dBody : d0, p.chain || 'drag', step);   /* (claude/palisade2) unchained: the broken chain */
   if (p.whirl) for (let k = 0; k < 14; k++) { const a = -2.6 + k * 0.28, rr = k & 1 ? 'rgba(220,220,235,0.55)' : 'rgba(170,170,190,0.4)'; d0.dot(20 + Math.cos(a) * 30, -52 + Math.sin(a) * 15, rr); }   /* (claude/palisade2art) the chain whirling over his head: the swing it is about to make */
   if (p.impact) { g.fillStyle = '#fff6d0'; for (const [a, b] of [[-56, -58], [-60, -50], [-52, -64]]) g.fillRect(AX + R(a * K), AY + R(b * K), 2, 2); g.fillStyle = '#ffd36b'; for (const [a, b] of [[-62, -57], [-57, -66], [-48, -68]]) g.fillRect(AX + R(a * K), AY + R(b * K), 1, 1); }   /* (claude/palisade2art) the hooves land: sparks */
@@ -213,6 +234,20 @@ function bakeFrame(mode, cut, step, ph) {
   outline(c, OUT);
   if (p.dust) { for (let k = 0; k < 7; k++) { g.fillStyle = k % 3 ? 'rgba(206,176,128,0.62)' : 'rgba(232,208,160,0.5)'; g.fillRect(AX + R((-34 + k * 11) * K), AY - 3 - (k % 2) * 2 - (k % 3), 5 - (k % 2), 2 + (k % 2)); } }   /* (claude/palisade2art) dust drawn after the outline: soft puffs, not rings */
   return c;
+}
+/* (claude/beast3) THE WAR BANNERS: a tall crimson banner on a pole at the gantry's tail (a gold ram's head on it, a swallow tail), a black-and-red pennant on a staff at his
+   shoulder streaming back; unchained (P2) the tail pole is snapped and the banner hangs torn from its stump */
+function banners(d, cut, step) {
+  const fl = step & 1, CR = ['#4a0c0a', '#8a1a14', '#c02a1e'], GD = ['#8a6210', '#d8a020', '#ffd36b'];
+  if (!cut) { d.rc(-31, -106, 2, 60, MD[1]); d.rc(-31, -106, 1, 60, FR[3]); d.rc(-33, -107, 6, 2, IRON[2]); d.rc(-32, -109, 2, 2, GD[1]);   /* the pole, an iron finial */
+    d.rc(-31, -104, 14, 1, MD[0]); const t = fl ? 1 : 0;
+    d.poly([[-30, -103], [-17, -103], [-17 + t, -80], [-21 + t, -84], [-25 + t, -79], [-30, -82]], CR[1]); d.poly([[-30, -103], [-17, -103], [-17, -101], [-30, -101]], CR[2]); d.line(-18, -101, -17 + t, -81, CR[0]);   /* the cloth */
+    d.rc(-30, -103, 13, 1, GD[1]); d.line(-30, -102, -30, -83, GD[0]);
+    d.rc(-26, -97, 5, 4, GD[1]); d.rc(-27, -98, 2, 2, GD[2]); d.rc(-22, -98, 2, 2, GD[2]); d.rc(-25, -93, 3, 2, GD[0]); d.dot(-24, -96, CR[0]); }   /* the gold ram's head */
+  else { d.poly([[-31, -47], [-31, -66], [-29, -63], [-28, -69], [-27, -64], [-29, -47]], MD[1]);   /* the snapped pole, the banner torn and hanging */
+    d.poly([[-31, -64], [-24, -63], [-23, -50 + fl], [-26, -54], [-28, -48 + fl], [-31, -52]], CR[0]); d.rc(-31, -64, 7, 1, GD[0]); }
+  d.rc(23, -76, 1, 28, IRON[2]); d.dot(23, -77, GD[2]);   /* the shoulder staff */
+  d.poly([[24, -76], [10 - fl, -73], [14 - fl, -71], [8 - fl * 2, -68], [24, -69]], '#16100c'); d.poly([[24, -74], [12 - fl, -72], [24, -71]], CR[2]);   /* the pennant streaming back */
 }
 /* the gantry: two uprights, a cross-beam, a deck of boards; braces and lashings */
 function gantry(d, p, step) {
@@ -247,11 +282,11 @@ function deadExtras(d) {
   d.line(-12, -44, -4, -30, LE[1]); d.line(8, -44, 16, -32, LE[1]);
 }
 /* ============================== the public frames ============================== */
-export function frame(mode, cut, step = 0, ph = 1) {
-  const p = POSES[mode] || POSES.walk, st = (p.legs === 'walk' || p.legs === 'run' || p.legs === 'paw' || p.hand === 'flail' || p.steam || p.stars || p.speed || p.flag || p.fire || cut) ? (step & 1) : 0;
-  return once('bf' + mode + (cut ? 'c' : '') + st, () => bakeFrame(mode, !!cut || !!p.noRam || !!p.dead, st, ph));
+export function frame(mode, cut, step = 0, ph = 1, solo = false) {
+  const p = POSES[mode] || POSES.walk, st = (p.legs === 'walk' || p.legs === 'run' || p.legs === 'paw' || p.hand === 'flail' || p.steam || p.stars || p.speed || p.flag || p.fire || p.horn || cut) ? (step & 1) : 0, so = solo && !cut && !p.noRam ? 's' : '';
+  return once('bf' + mode + (cut ? 'c' : '') + so + st, () => bakeFrame(mode, !!cut || !!p.noRam || !!p.dead, st, ph, !!so));
 }
-export const whiteOf = (mode, cut, step) => once('bw' + mode + (cut ? 'c' : '') + (step & 1), () => whiten(frame(mode, cut, step)));
+export const whiteOf = (mode, cut, step, solo = false) => once('bw' + mode + (cut ? 'c' : '') + (solo ? 's' : '') + (step & 1), () => whiten(frame(mode, cut, step, 1, solo)));
 export function deadSet() { return once('bdead', () => { const f = bakeFrame('dead', true, 0, 1), L = flipX(f), w = whiten(f); return { R: [f], L: [L], white: { R: [w], L: [flipX(w)] }, ax: AX, ay: AY, w: 56, h: 40 }; }); }
 export function bakeCard() {
   const fr = [['walk', 0], ['chargeTell', 0]].map(([n, i]) => { const [c, g] = canvas(76, 48); g.imageSmoothingEnabled = false; const f = frame(n, false, i); g.drawImage(f, 0, 0, CW, CH, 8, 2, Math.round(CW * 0.5), Math.round(CH * 0.5)); return c; });
@@ -272,12 +307,53 @@ export function drawGate(g, gx, fy) {
   for (const [dx, dy] of [[-2, -30], [4, -64], [8, -20]]) { rc(gx + dx, fy + dy, 5, 4, '#1a1008'); rc(gx + dx - 1, fy + dy - 1, 2, 1, FR[3]); }   /* the beast's old blows: dents with fresh splinters */
 }
 /* THE PALISADE'S UNFINISHED END: raw stakes in ranks, one rank still a frame of posts, a rope and a lantern */
-export function drawEnd(g, px, fy, time) {
+export function drawEnd(g, px, fy, time, breach = 0, crack = 0, lean = 0) {
   const rc = (x, y, w, h, c) => { g.fillStyle = c; g.fillRect(R(x), R(y), R(w), R(h)); };
-  for (let k = 0; k < 6; k++) { const x = px + k * 6, h = 64 - (k % 3) * 6 - (k > 3 ? 14 : 0); rc(x - 1, fy - h - 4, 6, h + 4, OUT); rc(x, fy - h, 4, h, k % 2 ? FR[2] : FR[1]); rc(x, fy - h, 1, h, FR[4]); rc(x + 3, fy - h, 1, h, MD[0]); rc(x + 1, fy - h - 4, 2, 4, FR[4]); rc(x + 1, fy - h - 5, 1, 2, '#fff6d0'); }
-  rc(px - 2, fy - 48, 40, 3, ROPE[1]); rc(px - 2, fy - 24, 40, 3, ROPE[1]);
+  /* (claude/beast3) BREACHED: the forest seen through the gap, the stakes snapped to stumps (stage 2: the whole rank) */
+  if (breach) { rc(px - 2, fy - 70, breach > 1 ? 40 : 26, 70, '#2a1a10'); for (let k = 0; k < 8; k++) rc(px + (k * 7) % (breach > 1 ? 36 : 22), fy - 66 + k * 8, 3, 4, '#4a3a1c'); }
+  const stake = (k, x, h) => { rc(x - 1, fy - h - 4, 6, h + 4, OUT); rc(x, fy - h, 4, h, k % 2 ? FR[2] : FR[1]); rc(x, fy - h, 1, h, FR[4]); rc(x + 3, fy - h, 1, h, MD[0]); rc(x + 1, fy - h - 4, 2, 4, FR[4]); rc(x + 1, fy - h - 5, 1, 2, '#fff6d0');
+    if (crack && k < 4) for (let c = 0; c < 4; c++) rc(x + 1 + (c & 1), fy - h + 8 + c * 9, 1, 4, OUT); };
+  const stump = (k, x) => { const h = 9 + (k * 5) % 9; rc(x - 1, fy - h - 1, 6, h + 1, OUT); rc(x, fy - h, 4, h, FR[1]); rc(x, fy - h, 1, h, FR[4]); rc(x, fy - h - 3, 1, 3, FR[4]); rc(x + 2, fy - h - 2, 1, 2, FR[3]); rc(x + 3, fy - h - 4, 1, 4, FR[4]); };
+  const broken = k => breach && (k < 4 || breach > 1);
+  if (lean > 0 && !breach) { g.save(); g.translate(R(px), R(fy)); g.rotate(-lean * 0.32); g.translate(-R(px), -R(fy)); }   /* the slam: the section leans into the clearing */
+  for (let k = 0; k < 4; k++) { const x = px + k * 6, h = 64 - (k % 3) * 6; if (broken(k)) stump(k, x); else stake(k, x, h); }
+  if (lean > 0 && !breach) g.restore();
+  for (let k = 4; k < 6; k++) { const x = px + k * 6, h = 64 - (k % 3) * 6 - 14; if (broken(k)) stump(k, x); else stake(k, x, h); }
+  if (!breach) { rc(px - 2, fy - 48, 40, 3, ROPE[1]); rc(px - 2, fy - 24, 40, 3, ROPE[1]); } else { rc(px + 24, fy - 48, 14, 3, ROPE[1]); rc(px + 24, fy - 24, 14, 3, ROPE[1]); rc(px + 22, fy - 46, 2, 10, ROPE[0]); }   /* the ropes, parted at the breach */
   rc(px + 40, fy - 70, 4, 70, FR[1]); rc(px + 40, fy - 70, 1, 70, FR[4]); rc(px + 52, fy - 54, 4, 54, FR[1]); rc(px + 40, fy - 70, 16, 3, FR[2]); for (let q = 0; q < 24; q++) rc(px + 44 + (q >> 1), fy - 4 - q * 2, 2, 2, MD[1]);   /* the next rank, a frame */
   rc(px + 38, fy - 62, 1, 12, ROPE[1]); rc(px + 36, fy - 50, 5, 6, OUT); rc(px + 37, fy - 49, 3, 4, Math.floor(time * 3) % 2 ? '#ffd36b' : '#f0a030');   /* a lantern hung */
+}
+/* (claude/beast3) A PALISADE ARCHER of the siege crew (the Hornsman's men: kettle hat, red crest, rust tunic), feet at (x, y), facing f: idle (bow down), draw (bow up and
+   drawn, aimed high - the rain), loose (the string forward, the arrow gone) */
+export function drawArcher(g, x, y, f, pose, time) {
+  const rc = (a, b, w, h, c) => { g.fillStyle = c; g.fillRect(R(f > 0 ? x + a : x - a - w), R(y + b), R(w), R(h)); };
+  rc(-3, -1, 7, 1, OUT); rc(-2, -7, 2, 7, '#3a2a1c'); rc(1, -7, 2, 7, '#3a2a1c');                                   /* legs */
+  rc(-3, -15, 7, 9, OUT); rc(-2, -14, 5, 8, TUN[1]); rc(-2, -14, 1, 8, TUN[2]); rc(-2, -9, 5, 1, APR[0]);              /* tunic, belt */
+  rc(-2, -19, 5, 4, SOOT); rc(1, -18, 1, 1, '#ffd36b');                                                                 /* soot face, a lit eye */
+  rc(-4, -21, 9, 2, HELM[1]); rc(-4, -21, 9, 1, HELM[3]); rc(-2, -24, 5, 3, HELM[2]); rc(0, -26, 1, 2, CREST);          /* kettle hat, crest */
+  if (pose === 'idle') { rc(3, -14, 1, 6, TUN[1]); rc(4, -18, 1, 14, MD[1]); rc(4, -18, 1, 1, FR[4]); }                 /* the bow held down */
+  else { const lo = pose === 'loose', bob = Math.floor(time * 8) & 1;
+    rc(3, -18, 4, 1, TUN[1]); rc(7, -27, 1, 10, MD[1]); rc(8, -28, 1, 3, MD[2]); rc(8, -18, 1, 2, MD[2]);                 /* the bow up and forward */
+    rc(lo ? 6 : 2, -26, 1, 9, '#e8dcc0');                                                                                 /* the string: drawn back, or loosed */
+    if (!lo) { rc(2, -25 - bob, 9, 1, '#8a6a40'); rc(10, -26 - bob, 2, 2, '#d8d0c0'); rc(1, -26 - bob, 1, 2, '#ff6b6b'); }   /* the arrow nocked, pointing up */
+    rc(1, -17, 2, 2, GLV); }
+}
+/* (claude/beast3) THE BREACH's RUBBLE STEP: the toppled section's foot lying against the wall over its solid cells - broken stakes crossed in a heap, earth, splinters */
+export function drawRubble(g, x0, x1, fy, stage) {
+  const rc = (a, b, w, h, c) => { g.fillStyle = c; g.fillRect(R(a), R(b), R(w), R(h)); }, w = x1 - x0;
+  rc(x0 - 2, fy - 17, w + 2, 17, OUT); rc(x0, fy - 15, w, 15, '#3a2616'); rc(x0, fy - 15, w, 1, '#6a4a2c');
+  for (let k = 0; k < 6; k++) { const a = x0 + 2 + (k * 11) % Math.max(1, w - 18), b = fy - 15 + (k % 3) * 4, len = 18 + (k % 2) * 6;   /* stakes lying crossed */
+    rc(a, b, len, 4, OUT); rc(a + 1, b + 1, len - 2, 2, k & 1 ? FR[2] : FR[1]); rc(a + 1, b + 1, len - 2, 1, FR[4]); rc(a + len - 3, b, 3, 1, FR[4]); }
+  for (let k = 0; k < 4; k++) { const a = x0 + 6 + k * (w - 12) / 3; rc(a, fy - 22 - (k % 2) * 3, 3, 8 + (k % 2) * 3, FR[2]); rc(a, fy - 22 - (k % 2) * 3, 1, 8, FR[4]); rc(a + 1, fy - 24 - (k % 2) * 3, 1, 2, '#fff6d0'); }   /* stakes stood up broken */
+  for (let k = 0; k < 7; k++) rc(x0 + 3 + (k * 9) % Math.max(1, w - 4), fy - 16 - (k % 2), 2, 1, '#c9a060');   /* sawdust, splinters */
+  if (stage > 1) for (let k = 0; k < 3; k++) rc(x0 + 8 + k * 14, fy - 19, 10, 3, MD[1]);
+}
+/* (claude/beast3) A ROLLING TIMBER: a palisade log seen end-on, rolling - bark, end grain in rings, a split that turns as it rolls (rot); wob tips it on the wall top */
+export function drawTimber(g, cx, cy, rot, wob = 0) {
+  const rc = (a, b, w, h, c) => { g.fillStyle = c; g.fillRect(R(a), R(b), R(w), R(h)); }, x = R(cx + wob * 10), y = R(cy);
+  for (let dy = -8; dy <= 8; dy++) for (let dx = -8; dx <= 8; dx++) { const d2 = dx * dx + dy * dy; if (d2 > 66) continue; g.fillStyle = d2 > 50 ? OUT : d2 > 34 ? MD[1] : d2 > 18 ? FR[2] : d2 > 6 ? FR[3] : FR[1]; g.fillRect(x + dx, y + dy, 1, 1); }
+  for (let k = 0; k < 6; k++) { const a = rot + k * 0.18; g.fillStyle = MD[0]; g.fillRect(R(x + Math.cos(a) * k), R(y + Math.sin(a) * k), 1, 1); }   /* the split, turning */
+  rc(x - 3, y - 8, 6, 1, FR[4]);   /* the lit top edge */
 }
 /* A SCAFFOLD of the clearing: deck on posts and braces, the PROP at its inner foot with its wedge (the verb), the dotted line where it will fall */
 export function drawScaf(g, s, X, Y, floorY, time, lineCol, lineOf, up, shakeK = 0) {

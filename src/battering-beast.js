@@ -24,11 +24,23 @@
 //                   4 PITCH  (NEW)  (a handler lights a pot and lobs two - they burst into BURNING PITCH on the floor for a few seconds: keep off it)
 //                   5 BATTER THE SCAFFOLD (NEW) (you stand on a deck: he rams its posts, it SHAKES for a told beat and COLLAPSES - get off it; knock its prop
 //                                    while he batters and it comes down ON HIM instead)
-//     P2 (50-0%)    THE CHAINS SNAP (the set piece): the handlers are thrown off (two on foot), he smashes into the palisade (LOOSE), then:
-//                   1 THE CHARGE, wilder (shorter tell, faster)   2 THE TRAMPLE (he rears and stamps: a shockwave runs out both ways - jump the ring)
-//                   3 THE CHAIN FLAIL (NEW) (the broken ram chain whips a wide arc in front of him: LOW = jump it; HIGH = stay on the ground)
-//                   4 THE BUCK (NEW) (hug his flank and he turns his rump on you and kicks: back off, block, or jump)
-//                   + THE HANDLERS ON FOOT (NEW): the goblins are a problem he made, not riders.
+//     P2 (50-0%)    THE CHAINS SNAP (the set piece): the handlers are thrown off (two on foot), he slams the palisade - it holds, cracked (LOOSE), then:
+//                   1 THE CHARGE (rarer now - P2 is never charge-led)
+//                   2 THE CHAIN FLAIL (the broken ram chain whips a wide arc in front of him: LOW = jump it; HIGH = stay on the ground)
+//                   3 THE BUCK (hug his flank and he turns his rump on you and kicks: back off, block, or jump)
+//                   + THE HANDLERS ON FOOT: the crew are a problem he made, not riders.
+// (claude/beast3, Daniel 11-01 11:31 "Build as described": "still too like OLD TUSKER; the P2 quake looks low-poly; 1-2 more attacks"; scratch/brief-beast3-1101.md)
+//   HE IS A WAR-OX IN A SIEGE HARNESS now (slate iron, barding, the ram slung under him, war banners - src/redraw/battering_beast_art.js).
+//   THE TRAMPLE (the rear-and-stamp shockwave: the Tusker's stomp-wave echo) IS CUT - code, poses, art, bot.
+//     P1 NEW        6 THE VOLLEY ORDER: the gantry's second handler is A HORNSMAN (src/hornsman.js - the level's own foe and rule): he raises the order horn
+//                     (a bar filling over him, the climbing note, THE ORDER), the palisade's archers draw, and the arrows come down in TWO WAVES OF LANES marked
+//                     on the floor from the first beat of the tell (wave one red, wave two orange in its gaps: stand in a gap, then step into the lane that fell).
+//                     HIT THE HORNSMAN WHILE THE HORN IS UP = ORDER LOST (the lanes are wiped, the beast stands unsteered a beat); lose him BB.order.lives
+//                     orders and he is knocked off the gantry - no more volley orders.
+//     P2 NEW        4 THE WALL BREAKER: he goes after the PALISADE, not after you: he wheels on it (told: he turns, paws, a red run line to the wall), runs it
+//                     (anything in his path is hit as by a charge; a WRECK in his path still sticks him - the rule works in P2 too), SLAMS it, a section teeters
+//                     and topples into the clearing as ROLLING TIMBERS (jump them; a deck is over them; a wreck stops them). The first slam leaves THE BREACH for
+//                     the rest of the fight: a gap in the palisade and a RUBBLE STEP (solid) against the east wall - the timbers never reach it, the wall-ram does.
 export const BB = {
   hp: 1350, w: 56, h: 40, markH: 60,
   walk: 46, rest: [0.5, 0.3],
@@ -41,7 +53,11 @@ export const BB = {
   volley: { tell: [0.85, 0.72], n: 3, flight: 1.0, r: 16, dmg: 21, rec: 0.6, spread: 62 },
   pots: { tell: 0.95, n: 2, flight: 0.95, r: 18, life: 2.6, tick: 0.45, dmg: 9, spread: 58, rec: 0.6 },
   batter: { tell: 0.8, shake: 1.25, dmg: 25, reach: 96 },
-  trample: { tell: 0.85, sp: 150, life: 1.9, dmg: 25, rec: 0.8, w: 7 },
+  /* (claude/beast3) THE VOLLEY ORDER: the horn's tell, the lanes (width, pitch: wave two sits in wave one's gaps), the arrows' fall, the beat between waves, the Hornsman's
+     box off the beast's feet (px, facing right) and how many lost orders knock him off the gantry */
+  order: { tell: 1.1, laneW: 44, pitch: 88, flight: 0.4, gap: 0.75, dmg: 20, top: 150, rec: 0.6, lost: 1.2, lives: 2, box: [-10, 14, -58, -27] },
+  /* (claude/beast3) THE WALL BREAKER: the turn, the run, the slam, the timbers (how many, the beat between, their roll, their height) and THE BREACH's rubble (columns, one row) */
+  wall: { tell: 0.95, speed: 250, dmg: 21, slam: 0.6, back: 150, rec: 0.9, n: 2, gap: 0.65, sp: 150, h: 13, tdmg: 20, rubble: 4, room: 70 },
   flail: { tell: 0.85, t: 0.36, reach: 132, low: 14, hiTop: 40, hiBot: 18, dmg: 24, rec: 0.7 },
   kick: { tell: 0.6, t: 0.22, reach: 46, dmg: 25, chip: 0.6, rec: 0.5, range: 44 },
   scaf: { fall: 0.5, len: 6, heroDmg: 17, lie: 16, rearm: 11 },
@@ -55,13 +71,15 @@ export const BB_SAY = { wake: 'THE BATTERING BEAST', rule: 'KNOCK OUT A SCAFFOLD
   jarred: 'JARRED: JUMP THE RAM', creak: 'THE SCAFFOLD TIPS', rebuilt: 'THE CREW PROPS IT BACK UP', loose: 'HE BUCKS THEM OFF AND SMASHES THE PALISADE',
   oRam: 'RAM IT!', oSwing: 'SWING THE RAM!', oStakes: 'STAKES!', oPitch: 'PITCH!', oBatter: 'BATTER THE SCAFFOLD!',
   shake: 'THE SCAFFOLD SHAKES: GET OFF', collapse: 'THE SCAFFOLD COLLAPSES', burn: 'BURNING PITCH', thrown: 'THE HANDLERS FIGHT ON FOOT',
-  flailLo: 'THE CHAIN: LOW - JUMP', flailHi: 'THE CHAIN: HIGH - STAY DOWN', buck: 'HE BUCKS' };
+  flailLo: 'THE CHAIN: LOW - JUMP', flailHi: 'THE CHAIN: HIGH - STAY DOWN', buck: 'HE BUCKS',
+  /* (claude/beast3) */ order: 'THE ORDER', volley: 'VOLLEY: KEEP OUT OF THE LANES', lost: 'ORDER LOST', hornFalls: 'THE HORNSMAN FALLS: NO MORE ORDERS',
+  hornTip: 'HIT THE HORNSMAN WHILE THE HORN IS UP', holds: 'THE PALISADE HOLDS', wallTurn: 'HE TURNS ON THE PALISADE', breach: 'THE PALISADE BREAKS', timbers: 'TIMBERS: JUMP THEM' };
 export const OPEN_NAME = { stuck: 'STUCK', dazed: 'DAZED', loose: 'LOOSE' };
 /* THE ORDERS (P1): the flag the handlers raise and the word they shout, per move - drawn by the hands over his gantry (src/battering-beast-hands.js) */
 export const ORDER = { chargeTell: { say: 'oRam', flag: '#ff4a2a' }, sweepTell: { say: 'oSwing', flag: '#ffd36b' }, volleyTell: { say: 'oStakes', flag: '#ff9a5c' },
   potTell: { say: 'oPitch', flag: '#ff6a1a' }, batterTell: { say: 'oBatter', flag: '#c83a2a' } };
 export const bbOpen = e => !!e && (e.mode === 'stuck' || e.mode === 'dazed' || e.mode === 'loose');
-const TELLS = new Set(['chargeTell', 'sweepTell', 'sweepMid', 'volleyTell', 'trampleTell', 'potTell', 'batterTell', 'flailTell', 'kickTell', 'unchain']);
+const TELLS = new Set(['chargeTell', 'sweepTell', 'sweepMid', 'volleyTell', 'orderTell', 'potTell', 'batterTell', 'flailTell', 'kickTell', 'wallTell', 'unchain']);
 export const bbTelling = e => TELLS.has(e.mode);
 /* THE CLEARING (px): x0/x1 inside the walls, floorY, and the scaffolds: arena.scaffolds = [{ x0, x1, row, prop, dir }] (tile columns; dir: the way it tips, +1 east) */
 export function geom(A, TS = 16) {
@@ -76,9 +94,23 @@ export const deckUnder = (S, h) => S.scafs.find(s => s.st === 'stand' && h && h.
 /* where he stands to batter a scaffold: against its posts, on its inner (clearing) side */
 export const batterX = s => s.dir > 0 ? s.x1 + BB.w / 2 - 6 : s.x0 - BB.w / 2 + 6;
 export function newFight(G) {
-  return { G, ph: 1, ward: 0, act: 0, last: [], walkT: 0, restT: 1, stakes: [], pots: [], fires: [], waves: [], adds: [], told: {}, harness: { hits: 0, cut: false },
-    n: { charge: 0, sweep: 0, volley: 0, trample: 0, pots: 0, batter: 0, collapse: 0, flail: 0, kick: 0, stuck: 0, dazed: 0, bounced: 0, knocks: 0, wreckRams: 0, loose: 0 },
+  return { G, ph: 1, ward: 0, act: 0, last: [], walkT: 0, restT: 1, stakes: [], pots: [], fires: [], lanes: [], timbers: [], adds: [], told: {}, harness: { hits: 0, cut: false },
+    horn: { hits: 0, down: false }, breach: 0, crack: 0,
+    n: { charge: 0, sweep: 0, volley: 0, order: 0, lost: 0, pots: 0, batter: 0, collapse: 0, flail: 0, kick: 0, wall: 0, timbers: 0, stuck: 0, dazed: 0, bounced: 0, knocks: 0, wreckRams: 0, loose: 0 },
     scafs: G.scafs.map(s => ({ ...s, st: 'stand', t: 0, shake: 0 })) };
+}
+/* (claude/beast3) THE EAST WALL as he meets it: the palisade, or - once breached - the rubble step's west face. rubbleCols: the breach's solid cells [x0, x1, row] (tiles) */
+export const wallX = S => S.breach ? S.G.x1 - BB.wall.rubble * S.G.TS : S.G.x1;
+export const rubbleCols = G => { const c1 = Math.round(G.x1 / G.TS) - 1; return [c1 - BB.wall.rubble + 1, c1, Math.round(G.floorY / G.TS) - 1]; };
+/* THE HORNSMAN's box on the gantry (px), mirrored by the way the beast faces */
+export function hornBox(e) { const f = e.face || 1, [a, b, t, u] = BB.order.box, l = f > 0 ? e.x + a : e.x - b, r = f > 0 ? e.x + b : e.x - a; return [l, r, e.y + t, e.y + u]; }
+export const hornUp = (e, S) => e.mode === 'orderTell' && !S.horn.down;
+/* A BLOW ON THE HORNSMAN while the horn is up: the order dies in his throat (ORDER LOST); BB.order.lives of them and he is knocked off the gantry */
+export function hornStruck(e, S, w) {
+  if (!hornUp(e, S)) return false;
+  S.lanes = []; S.horn.hits++; S.n.lost++; e.mode = 'lost'; e.modeT = BB.order.lost; w.sound('clank'); w.number(e.x, e.y - BB.h - 40, BB_SAY.lost, '#ffd36b');
+  if (S.horn.hits >= BB.order.lives) { S.horn.down = true; w.number(e.x, e.y - BB.h - 54, BB_SAY.hornFalls, '#ffd36b'); w.hornFalls && w.hornFalls(); }
+  return true;
 }
 export const wrecks = S => S.scafs.filter(s => s.st === 'down');
 export const wreckEnd = (s, dir) => { const [lo, hi] = lineOf(s); return dir > 0 ? lo : hi; };
@@ -87,7 +119,7 @@ export function chargeStop(S, x, dir) {
   const half = BB.w / 2, G = S.G; let best = null, bd = Infinity;
   for (const s of wrecks(S)) { const d = (wreckEnd(s, dir) - x) * dir; if (d > half - 6 && d < bd) { best = s; bd = d; } }
   if (best) return { x: wreckEnd(best, dir) - dir * (half + 3), scaf: best };
-  return { x: dir > 0 ? G.x1 - half - 2 : G.x0 + half + 2, scaf: null };
+  return { x: dir > 0 ? wallX(S) - half - 2 : G.x0 + half + 2, scaf: null };
 }
 export const wreckBetween = (S, x, hx) => { const dir = Math.sign(hx - x) || 1; return wrecks(S).find(s => { const n = wreckEnd(s, dir); return (n - x) * dir > BB.w / 2 - 6 && (hx - n) * dir > 0; }) || null; };
 /* A HERO'S BLOW on a prop: the scaffold tips */
@@ -107,7 +139,7 @@ export function stepBeast(e, S, dt, heroes, w) {
   const G = S.G, ph = S.ph, i = ph - 1, P = heroes.find(h => h.alive) || heroes[0];
   S.ward = Math.max(0, S.ward - dt); e.ward = S.ward;
   stepScafs(e, S, dt, heroes, w);
-  stepStakes(S, dt, w); stepPots(S, dt, heroes, w); stepWaves(S, dt, heroes, w);
+  stepStakes(S, dt, w); stepPots(S, dt, heroes, w); stepLanes(S, dt, w); stepTimbers(S, dt, w);
   S.adds = S.adds.filter(a => a && a.alive);
   if (e.mode === 'sleep') return;
   e.modeT -= dt;
@@ -115,10 +147,10 @@ export function stepBeast(e, S, dt, heroes, w) {
   S.deck = P ? deckUnder(S, P) : null;
   if (S.ph < 2 && e.hp <= e.maxHp * BB.p2 && (e.mode === 'walk' || e.mode === 'recover')) {
     S.ph = 2; e.phase = 2; w.number(e.x, e.y - BB.h - 30, BB_SAY.p2, '#ff6b6b'); w.sound('rear'); w.shake(6); w.music(2);
-    e.mode = 'unchain'; e.modeT = BB.unchain.tell; w.mark('!!'); S.act++; S.pots = []; return; }
+    e.mode = 'unchain'; e.modeT = BB.unchain.tell; w.mark('!!'); S.act++; S.pots = []; S.lanes = []; return; }
   const face = () => { if (P) e.face = Math.sign(dx) || e.face; };
   const half = BB.w / 2, floor = G.floorY;
-  const slide = vx => { if (!vx) return; const sg = Math.sign(vx); let x = Math.max(G.x0 + half + 2, Math.min(G.x1 - half - 2, e.x + vx * dt));
+  const slide = vx => { if (!vx) return; const sg = Math.sign(vx); let x = Math.max(G.x0 + half + 2, Math.min(wallX(S) - half - 2, e.x + vx * dt));
     const st = chargeStop(S, e.x, sg); if (st.scaf && (x - st.x) * sg > 0) x = (e.x - st.x) * sg > 0 ? e.x : st.x; e.x = x; };
   switch (e.mode) {
     case 'wake': if (e.modeT <= 0) { e.mode = 'walk'; e.modeT = 0; S.restT = 0.6; } return;
@@ -173,10 +205,31 @@ export function stepBeast(e, S, dt, heroes, w) {
           for (const h of heroes) if (h.alive && Math.abs(h.y - s.deckY) < 6 && h.x > s.x0 - 4 && h.x < s.x1 + 4) w.hitHero(h, BB.batter.dmg, 'batter', 'bt' + S.act); }
         e.mode = 'recover'; e.modeT = BB.sweep.rec; }
       return; }
-    case 'trampleTell': if (e.modeT <= 0) { e.mode = 'trample'; e.modeT = 0.3; w.sound('stomp'); w.shake(8); w.dust(e.x, floor, 14);
-        for (const d of [-1, 1]) S.waves.push({ x: e.x + d * (half - 6), dir: d, life: BB.trample.life, key: 'wv' + S.act + d }); }
+    /* (claude/beast3) THE VOLLEY ORDER: the Hornsman's horn up (the lanes already marked); it blows, the archers loose, the waves come down (stepLanes) */
+    case 'orderTell': if (e.modeT <= 0) { e.mode = 'order'; e.modeT = BB.order.flight + BB.order.gap + 0.2; w.sound('blast'); w.shake(2); w.fx('blast', e.x, e.y);
+        if (!S.told.volley) { S.told.volley = 1; w.number(S.G.mid, floor - 100, BB_SAY.volley, '#ff6b6b'); } }
       return;
-    case 'trample': if (e.modeT <= 0) { e.mode = 'recover'; e.modeT = BB.trample.rec; } return;
+    case 'order': if (e.modeT <= 0) { e.mode = 'recover'; e.modeT = BB.order.rec; } return;
+    case 'lost': if (e.modeT <= 0) { e.mode = 'walk'; S.restT = BB.rest[i] * 0.5; } return;
+    /* (claude/beast3) THE WALL BREAKER (P2): he wheels on the palisade (backing off it for room), runs it, slams it; a section teeters and topples into the clearing as
+       ROLLING TIMBERS; the first slam leaves THE BREACH (the rubble step) */
+    case 'wallTell': { e.face = 1; const room = wallX(S) - half - 2 - e.x; if (room < BB.wall.room) slide(-BB.walk * 1.6);
+      if (e.modeT <= 0) { e.mode = 'wallRun'; e.modeT = 4; e.hitKey = 'wr' + S.act; w.sound('charge'); } return; }
+    case 'wallRun': {
+      const st = chargeStop(S, e.x, 1), nx = e.x + BB.wall.speed * dt; w.dust(e.x - half, floor, 1);
+      w.hit([e.x - half + 4, e.x + half + 6, floor - BB.charge.hitH, floor], BB.wall.dmg, 'wallrun', { key: e.hitKey, knock: 240 });
+      if (st.x - nx <= 0 || e.modeT <= 0) { e.x = st.x; w.shake(8); w.sound('ram'); w.dust(e.x + half, floor - 10, 12);
+        if (st.scaf) { const s = S.scafs[st.scaf.id]; s.st = 'spent'; s.t = BB.scaf.rearm; S.n.wreckRams++; w.splinter(s); stick(e, S, w); return; }   /* a wreck in his road to the wall: STUCK, the rule in P2 */
+        e.mode = 'wallHit'; e.modeT = BB.wall.slam; S.wallLean = BB.wall.slam; return; }
+      e.x = nx; return; }
+    case 'wallHit': S.wallLean = Math.max(0, e.modeT);
+      if (e.modeT <= 0) { S.n.wall++; w.sound('timber'); w.shake(7);
+        if (!S.breach) { S.breach = 1; w.rubble(true); w.number(wallX(S) + 20, floor - 80, BB_SAY.breach, '#ff9a5c'); } else S.breach = 2;
+        const sx = wallX(S) - 10; for (let k = 0; k < BB.wall.n; k++) S.timbers.push({ x: sx, d: k * BB.wall.gap, fall: 0.25, key: 'tb' + S.act + '.' + k });
+        S.n.timbers += BB.wall.n; if (!S.told.timbers) { S.told.timbers = 1; w.number(S.G.mid, floor - 90, BB_SAY.timbers, '#ffd36b'); }
+        const tx = wallX(S) - half - 2; if (e.x > tx + 1) { e.mode = 'wallBack'; e.modeT = 1.5; } else { e.mode = 'recover'; e.modeT = BB.wall.rec; } }
+      return;
+    case 'wallBack': { const tx = wallX(S) - half - 2; e.x = Math.max(tx, e.x - BB.wall.back * dt); if (e.x <= tx + 0.5 || e.modeT <= 0) { e.x = tx; e.mode = 'recover'; e.modeT = BB.wall.rec; } return; }
     /* THE CHAIN FLAIL (P2): the broken ram chain whipped in a wide arc in front of him - LOW (jump) or HIGH (stay on the ground) */
     case 'flailTell': if (e.modeT > BB.flail.tell * 0.5) face(); if (e.modeT <= 0) { e.mode = 'flail'; e.modeT = BB.flail.t; e.hitKey = 'fl' + S.act; w.sound('sweep'); } return;
     case 'flail': { const bx = flailBox(e, S); w.hit(bx, BB.flail.dmg, 'flail', { key: e.hitKey, knock: e.face * 180 }); if (e.modeT <= 0) { e.mode = 'recover'; e.modeT = BB.flail.rec; } return; }
@@ -195,34 +248,36 @@ export function stepBeast(e, S, dt, heroes, w) {
         e.mode = 'loose'; e.modeT = BB.harness.loose + 0.8; e.openT0 = e.modeT; S.purse = e.maxHp * BB.harness.cap; w.number(e.x, e.y - BB.h - 30, BB_SAY.loose, '#ffd36b'); w.sound('roar'); w.shake(8); w.fx('open', e.x, e.y); }
       return;
     case 'loose': {   /* THE SET PIECE: he bolts at the palisade (the east wall) and batters it; he stands there, open, till it ends */
-      const tx = G.x1 - half - 2; if (Math.abs(e.x - tx) > 4) { e.face = 1; e.x = Math.min(tx, e.x + 200 * dt); w.dust(e.x - half, floor, 1); } else if (!e.smashed) { e.smashed = true; w.shake(9); w.sound('ram'); w.palisade(); }
+      const tx = wallX(S) - half - 2; if (Math.abs(e.x - tx) > 4) { e.face = 1; e.x = Math.min(tx, e.x + 200 * dt); w.dust(e.x - half, floor, 1); } else if (!e.smashed) { e.smashed = true; w.shake(9); w.sound('ram'); w.palisade(); S.crack = 1; w.number(tx + 20, floor - 80, BB_SAY.holds, '#c9b27c'); }   /* (claude/beast3) it holds - cracked: his wall breaker opens it later */
       if (e.modeT <= 0) { e.mode = 'tear'; e.modeT = 0.5; e.smashed = false; } return; }
     default: e.mode = 'walk';
   }
 }
 function stick(e, S, w) { e.mode = 'stuck'; e.modeT = BB.stuck.t; e.openT0 = e.modeT; S.purse = e.maxHp * BB.stuck.cap; S.n.stuck++; w.number(e.x, e.y - BB.h - 24, BB_SAY.stuck, '#ffd36b'); w.fx('open', e.x, e.y); w.trunkBlow(Math.max(1, Math.round(e.maxHp * BB.stuck.wreckBlow))); }
 /* WHICH MOVE. P1 (the handlers' orders): on a deck, BATTER IT; close, SWING THE RAM; at range RAM IT, STAKES or PITCH. P2 (unchained): hugging him, THE BUCK; close, the flail
-   or the trample; at range the charge, the flail or the trample. Never the same move three times running. */
+   or THE WALL BREAKER; at range THE WALL BREAKER, the flail, rarely the charge (claude/beast3: the trample is cut). Never the same move three times running. */
 function pick(e, S, ad, dx, w) {
   const ph = S.ph, i = ph - 1, last = S.last, twice = k => last.length >= 2 && last[0] === k && last[1] === k, r = Math.random();
   let k; const cover = S.coverP;
-  if (ph < 2) {
-    const dk = S.deck;
+  if (ph < 2) {   /* (claude/beast3) THE VOLLEY ORDER joins the orders; STAKES comes less often (the order is the P1 ranged beat); no order once the Hornsman is off the gantry */
+    const dk = S.deck, ord = !S.horn.down && !(last[0] === 'order');
     if (dk && Math.abs(batterX(dk) - e.x) < 8 && !twice('batter')) k = 'batter';
-    else if (dk) { if (S.walkT < 1.4) return; k = r < 0.5 ? 'volley' : 'pots'; }
-    else if (cover) k = r < 0.35 && !twice('volley') ? 'volley' : r < 0.6 ? 'pots' : 'charge';
-    else if (ad < BB.sweep.range) k = 'sweep';
-    else if (ad > BB.charge.minD) k = r < 0.5 ? 'charge' : r < 0.78 ? 'volley' : 'pots';
-    else { if (S.walkT < 1.1) return; k = r < 0.35 ? 'volley' : r < 0.65 ? 'pots' : 'charge'; }
-    if (twice(k)) k = k === 'charge' ? 'volley' : k === 'sweep' ? 'charge' : k === 'pots' ? 'charge' : 'pots';
+    else if (dk) { if (S.walkT < 1.4) return; k = r < 0.35 && ord ? 'order' : r < 0.6 ? 'volley' : 'pots'; }
+    else if (cover) k = r < 0.3 && ord ? 'order' : r < 0.45 && !twice('volley') ? 'volley' : r < 0.7 ? 'pots' : 'charge';
+    else if (ad < BB.sweep.range) k = r < 0.15 && ord ? 'order' : 'sweep';
+    else if (ad > BB.charge.minD) k = r < 0.38 ? 'charge' : r < 0.62 && ord ? 'order' : r < 0.78 ? 'pots' : 'volley';
+    else { if (S.walkT < 1.1) return; k = r < 0.28 && ord ? 'order' : r < 0.5 ? 'pots' : r < 0.65 ? 'volley' : 'charge'; }
+    if (twice(k)) k = k === 'charge' ? (ord ? 'order' : 'pots') : k === 'sweep' ? 'charge' : k === 'pots' ? 'charge' : 'pots';
+    if (k === 'order' && !ord) k = 'pots';
     if (k === 'charge' && ad < 54 && !cover) k = 'sweep';
-  } else {
-    if (cover) k = r < 0.5 ? 'trample' : 'charge';
-    else if (ad < BB.kick.range) k = !twice('kick') ? 'kick' : 'trample';
-    else if (ad < BB.sweep.range + 20) k = r < 0.55 ? 'flail' : 'trample';
-    else if (ad > BB.charge.minD + 40) k = r < 0.45 ? 'charge' : r < 0.75 ? 'flail' : 'trample';
-    else k = r < 0.55 ? 'flail' : r < 0.8 ? 'trample' : 'charge';
-    if (twice(k)) k = k === 'flail' ? 'trample' : k === 'trample' ? 'flail' : k === 'charge' ? 'flail' : 'trample';
+  } else {        /* (claude/beast3) P2 goes after the PALISADE: THE WALL BREAKER leads, the flail and the buck answer you close, the charge is the rare one */
+    const wr = last[0] !== 'wall';
+    if (cover) k = r < 0.6 && wr ? 'wall' : 'flail';
+    else if (ad < BB.kick.range) k = !twice('kick') ? 'kick' : 'flail';
+    else if (ad < BB.sweep.range + 20) k = r < 0.6 ? 'flail' : wr ? 'wall' : 'flail';
+    else if (ad > BB.charge.minD + 40) k = r < 0.5 && wr ? 'wall' : r < 0.78 ? 'flail' : 'charge';
+    else k = r < 0.45 ? 'flail' : r < 0.85 && wr ? 'wall' : 'charge';
+    if (twice(k)) k = k === 'flail' ? (wr ? 'wall' : 'charge') : 'flail';
     if (k === 'charge' && ad < 54 && !cover) k = 'flail';
   }
   last.unshift(k); last.length = Math.min(last.length, 3); S.walkT = 0; S.act++; S.n[k]++;
@@ -234,8 +289,19 @@ function pick(e, S, ad, dx, w) {
   else if (k === 'batter') { e.mode = 'batterTell'; e.modeT = BB.batter.tell; e.batterId = S.deck.id; w.mark('!!'); w.sound('snort'); }
   else if (k === 'flail') { e.mode = 'flailTell'; e.modeT = BB.flail.tell; S.flailHigh = Math.random() < 0.5; w.mark(S.flailHigh ? '!!' : '!'); w.sound('grunt'); w.number(e.x, e.y - BB.h - 40, S.flailHigh ? BB_SAY.flailHi : BB_SAY.flailLo, S.flailHigh ? '#ff6b6b' : '#ffd36b'); }
   else if (k === 'kick') { e.mode = 'kickTell'; e.modeT = BB.kick.tell; e.face = -(Math.sign(dx) || e.face); w.mark('!'); w.sound('snort'); if (!S.told.buck) { S.told.buck = 1; w.number(e.x, e.y - BB.h - 40, BB_SAY.buck, '#ffd36b'); } }
-  else { e.mode = 'trampleTell'; e.modeT = BB.trample.tell; w.mark('!!'); w.sound('rear'); }
+  else if (k === 'order') { e.mode = 'orderTell'; e.modeT = BB.order.tell; e.face = Math.sign(dx) || e.face; w.mark('!!'); w.sound('hornDraw'); w.number(e.x, e.y - BB.h - 44, BB_SAY.order, '#ff9a5c');
+    if (!S.told.hornTip) { S.told.hornTip = 1; w.number(e.x, e.y - BB.h - 58, BB_SAY.hornTip, '#ffd36b'); }
+    S.lanes = orderLanes(S, e.x + dx, S.act); }
+  else { e.mode = 'wallTell'; e.modeT = BB.wall.tell; e.face = 1; w.mark('!!'); w.sound('snort'); if (!S.told.wallTurn) { S.told.wallTurn = 1; w.number(e.x, e.y - BB.h - 40, BB_SAY.wallTurn, '#ff6b6b'); } }
   order(e.mode);
+}
+/* (claude/beast3) THE LANES OF A VOLLEY ORDER: wave one centred on where you stand, every BB.order.pitch px across the clearing; wave two in its gaps. t = seconds till it lands */
+export function orderLanes(S, px, act) {
+  const O = BB.order, G = S.G, out = [], T1 = O.tell + O.flight;
+  for (const [wave, off, t] of [[1, 0, T1], [2, O.pitch / 2, T1 + O.gap]]) {
+    let c = px + off; while (c - O.pitch > G.x0 - O.laneW / 2) c -= O.pitch;
+    for (let i = 0; c < G.x1 + O.laneW / 2; c += O.pitch, i++) { const l = Math.max(G.x0, c - O.laneW / 2), r = Math.min(wallX(S), c + O.laneW / 2); if (r - l > 10) out.push({ l, r, wave, t, key: 'ln' + act + '.' + wave + '.' + i }); } }
+  return out;
 }
 /* THE SCAFFOLDS: a knocked scaffold tips for BB.scaf.fall, then lands - on him (STUCK, unless warded: it bounces off), on a hero under its line (it hurts), or on the empty floor (a wreck) */
 function stepScafs(e, S, dt, heroes, w) {
@@ -266,11 +332,28 @@ function stepPots(S, dt, heroes, w) {
     for (const h of heroes) if (h.alive && h.ground && Math.abs(h.y - S.G.floorY) < 6 && Math.abs(h.x - f.x) < BB.pots.r) w.hitHero(h, BB.pots.dmg, 'pitch', f.key + '.' + f.n); }
   S.fires = S.fires.filter(f => f.life > 0);
 }
-function stepWaves(S, dt, heroes, w) {
-  for (const q of S.waves) { q.life -= dt; q.x += q.dir * BB.trample.sp * dt; if (q.x < S.G.x0 || q.x > S.G.x1) q.life = 0;
-    for (const h of heroes) if (h.alive && h.ground && Math.abs(h.y - S.G.floorY) < 6 && Math.abs(h.x - q.x) < BB.trample.w) w.hitHero(h, BB.trample.dmg, 'trample', q.key); }
-  S.waves = S.waves.filter(q => q.life > 0);
+/* (claude/beast3) THE VOLLEY's LANES: each lands when its t runs out - the arrows come down the whole column, floor to deck (a deck is no shelter) */
+function stepLanes(S, dt, w) {
+  const fy = S.G.floorY;
+  for (const q of S.lanes) { q.t -= dt; if (q.t > 0 || q.done) continue; q.done = true; q.stuck = 0.7; w.sound('arrows'); w.dust((q.l + q.r) / 2, fy, 3);
+    w.hit([q.l + 3, q.r - 3, fy - BB.order.top, fy + 2], BB.order.dmg, 'volley order', { key: q.key }); }
+  for (const q of S.lanes) if (q.done) q.stuck -= dt;
+  S.lanes = S.lanes.filter(q => !q.done || q.stuck > 0);
 }
+/* (claude/beast3) THE ROLLING TIMBERS: each drops off the broken wall (fall), then rolls west along the floor; a wreck on the floor or the old gate stops it (it breaks) */
+function stepTimbers(S, dt, w) {
+  const G = S.G, fy = G.floorY;
+  for (const q of S.timbers) {
+    if (q.d > 0) { q.d -= dt; continue; }
+    if (q.fall > 0) { q.fall -= dt; if (q.fall <= 0) { w.sound('timber'); w.dust(q.x, fy, 5); } continue; }
+    q.x -= BB.wall.sp * dt; q.rot = (q.rot || 0) + dt * 9;
+    const wk = wrecks(S).find(s => { const [lo, hi] = lineOf(s); return q.x - 8 < hi && q.x + 8 > lo; });
+    if (q.x < G.x0 + 10 || wk) { q.gone = true; w.dust(q.x, fy - 4, 8); w.sound('stake'); continue; }
+    w.hit([q.x - 8, q.x + 8, fy - BB.wall.h, fy], BB.wall.tdmg, 'timbers', { key: q.key, knock: -160 }); }
+  S.timbers = S.timbers.filter(q => !q.gone);
+}
+/* where a timber is (px), and whether it is still dropping off the wall: for the drawing and the bot */
+export const timberAt = (q, S) => ({ x: q.x, y: S.G.floorY - 6 - (q.d > 0 ? 60 : q.fall > 0 ? 60 * (q.fall / 0.25) : 0), rolling: !(q.d > 0) && !(q.fall > 0), waiting: q.d > 0 });
 export function stakeAt(c, floorY) { const k = Math.min(1, c.t / c.T), ty = c.ty ?? floorY; return { x: c.x0 + (c.tx - c.x0) * k, y: c.y0 + (ty - c.y0) * k - Math.sin(k * Math.PI) * 60, k }; }
 /* ---------- A BLOW ON HIM (B15) -> [what lands, the word or null] ---------- */
 export function takeBlow(e, S, dmg, plunge) {
@@ -282,11 +365,13 @@ export function takeBlow(e, S, dmg, plunge) {
   return [Math.max(1, Math.round(dmg * BB.armour)), 'ARMOURED'];
 }
 
-/* ---------- THE BOT (src/lab.js): what a player reads - his tells a reaction late, the stakes' and pots' rings, the burning pitch, the waves, the scaffolds' lines - and THE RULE:
+/* ---------- THE BOT (src/lab.js): what a player reads - his tells a reaction late, the stakes' and pots' rings, the burning pitch, the volley order's lanes and its Hornsman, the rolling timbers, the scaffolds' lines - and THE RULE:
    knock a prop so the wreck lies between him and you (stand on the wall side of it), or knock it when he stands under its line; strike him stuck; off a deck he batters ---------- */
 export const PLAN = { react: 0.25, miss: 0.12, missKnock: 0.2 };
 export const bbHazards = S => [...S.stakes.map(c => [c.tx, BB.volley.r + 12, c.ty]), ...S.pots.map(c => [c.tx, BB.pots.r + 12, c.ty]), ...S.fires.map(f => [f.x, BB.pots.r + 8, S.G.floorY]),
-  ...S.scafs.filter(s => s.st === 'fall').map(s => { const [lo, hi] = lineOf(s); return [(lo + hi) / 2, (hi - lo) / 2 + 10]; })];
+  ...S.scafs.filter(s => s.st === 'fall').map(s => { const [lo, hi] = lineOf(s); return [(lo + hi) / 2, (hi - lo) / 2 + 10]; }),
+  /* (claude/beast3) the next wave of a volley order's lanes (the one that lands first), while it is still to land */
+  ...(() => { const up = S.lanes.filter(q => !q.done); if (!up.length) return []; const w0 = Math.min(...up.map(q => q.wave)); return up.filter(q => q.wave === w0).map(q => [(q.l + q.r) / 2, (q.r - q.l) / 2 + 6]); })()];
 export function bbPlan(s) {
   const out = bbPlan0(s), S = s.S, P = s.P, hz = bbHazards(S);
   if (out.gx != null && !out.jump && P.ground) { const bad = x => hz.some(([hx, r]) => Math.abs(x - hx) < r);
@@ -308,19 +393,29 @@ function bbPlan0(s) {
   const hazards = bbHazards(S), inHaz = x => hazards.some(([hx, r]) => Math.abs(x - hx) < r);
   const safeX = x => { let q = clamp(x); for (let k = 0; k < 3; k++) for (const [hx, r] of hazards) if (Math.abs(q - hx) < r) q = clamp(q < hx ? hx - r - 4 : hx + r + 4); return q; };
   const deck = deckUnder(S, P);
-  if (!P.ground && mem.jumpT !== undefined && t - mem.jumpT < 0.5) { out.gx = mem.jumpX; out.why = 'in the air'; if (mem.plunge && Math.abs(P.x - kx) < half && P.y < e.y - BB.h && P.vy > -40) { out.down = true; out.atk = P.atk < 0; out.why = 'plunge his back'; } return out; }
+  if (!P.ground && mem.jumpT !== undefined && t - mem.jumpT < 0.5) { out.gx = mem.jumpX; out.why = 'in the air';
+    if (mem.horn && hornUp(e, S)) { const hb = hornBox(e), hx = (hb[0] + hb[1]) / 2; out.gx = hx - side * 8; out.face = Math.sign(hx - P.x) || out.face; if (Math.abs(P.x - hx) < reach + 14 && P.y - 22 < hb[3]) out.atk = P.atk < 0; out.why = 'cut the hornsman'; return out; }
+    if (mem.plunge && Math.abs(P.x - kx) < half && P.y < e.y - BB.h && P.vy > -40) { out.down = true; out.atk = P.atk < 0; out.why = 'plunge his back'; } return out; }
   /* ON A DECK HE BATTERS (or a flag goes up for it): off it, to its prop's spot - then the prop (1b) drops it on him */
   if (deck && (e.mode === 'batterTell' || e.mode === 'batter') && seenFor('bt' + S.act, 0.1)) { const sp = propSpot(deck); out.gx = sp; out.why = 'off the deck he batters'; return out; }
   if (inHaz(P.x) && P.ground) { const [hx, r] = hazards.find(([x0, r0]) => Math.abs(P.x - x0) < r0); out.gx = safeX(P.x + (P.x < hx ? -r - 8 : r + 8)); out.why = 'off the mark'; return out; }
-  const wave = S.waves.find(q => (P.x - q.x) * q.dir > 0 && Math.abs(P.x - q.x) < 40);
-  if (wave && P.ground && seenFor('wv' + wave.key, 0.1)) { out.jump = true; out.gx = P.x; mem.jumpT = t; mem.jumpX = P.x; mem.plunge = false; out.why = 'jump the ring'; return out; }
+  /* (claude/beast3) A ROLLING TIMBER coming at you: jump it */
+  const tim = S.timbers.find(q => timberAt(q, S).rolling && P.x < q.x + 6 && q.x - P.x < 34 && Math.abs(P.y - G.floorY) < 6);
+  if (tim && P.ground && seenFor('tb' + tim.key, 0.1)) { out.jump = true; out.gx = P.x; mem.jumpT = t; mem.jumpX = P.x; mem.plunge = false; mem.horn = false; out.why = 'jump the timber'; return out; }
+  /* (claude/beast3) THE HORN IS UP: close enough, jump at the Hornsman and cut (a player who reads it); else the lanes are hazards (above) - stand in a gap */
+  if (hornUp(e, S) && P.ground && seenFor('hn' + S.act, 0.15)) { const hb = hornBox(e), hx = (hb[0] + hb[1]) / 2, near = Math.abs(P.x - hx) < 64;
+    if (near && e.modeT > 0.3 && !roll('hn' + S.act, s.v2 ? 0.15 : 0.35)) { out.jump = true; out.gx = hx - side * 8; mem.jumpT = t; mem.jumpX = out.gx; mem.plunge = false; mem.horn = true; out.why = 'jump at the hornsman'; return out; } }
+  /* (claude/beast3) THE WALL BREAKER: off his run line to the wall (west of him is safe; east of him, get up on the rubble or a deck, or past him) */
+  if ((e.mode === 'wallTell' || e.mode === 'wallRun') && P.x > kx - half && P.ground && seenFor('wl' + S.act, 0.1)) { const gap = P.x - kx - half;
+    if (e.mode === 'wallRun' && gap < 46) { out.jump = true; out.gx = P.x + 6; mem.jumpT = t; mem.jumpX = out.gx; mem.plunge = false; mem.horn = false; out.why = 'jump his wall run'; return out; }
+    out.gx = safeX(kx - half - 40); out.why = 'off his road to the wall'; return out; }
   const between = wreckBetween(S, kx, P.x);
   /* 1b. HE IS UNDER A STANDING SCAFFOLD'S LINE and busy: knock its prop */
   for (const sc of S.scafs) { if (sc.st !== 'stand' || S.ward > 0) continue; const spot = propSpot(sc);
     const busy = e.mode === 'dazed' ? e.modeT > 0.6 : e.mode === 'recover' ? e.modeT > 0.3 : e.mode === 'batter' ? e.modeT > 0.5 : bbTelling(e) && e.modeT > 0.45;
     if (busy && underLine(sc, kx, half - 8) && Math.abs(P.x - spot) < 10 && P.ground && !roll('k' + S.act + sc.id, PLAN.missKnock)) { out.gx = spot; out.face = sc.dir; out.atk = P.atk < 0; out.why = 'knock the prop: he is under it'; return out; } }
   /* 2. HIS TELLS */
-  const moving = ['charge', 'sweep', 'sweepBack', 'trample', 'flail', 'kick'];
+  const moving = ['charge', 'sweep', 'sweepBack', 'flail', 'kick'];
   if (bbTelling(e) || moving.includes(e.mode)) {
     const key = 'a' + S.act + e.mode, miss = s.v2 ? false : roll(key + 'm', PLAN.miss), seen = seenFor('a' + S.act + (e.mode === 'charge' ? 'chargeTell' : e.mode));
     if (seen && !miss) {
@@ -341,7 +436,6 @@ function bbPlan0(s) {
       if ((e.mode === 'kickTell' || e.mode === 'kick') && dx < half + BB.kick.reach + 12) {
         if (s.shield && !roll(key + 'b', 0.5)) { out.block = true; out.face = Math.sign(kx - P.x) || 1; out.why = 'block the buck'; return out; }
         out.gx = safeX(kx + side * (half + BB.kick.reach + 24)); out.why = 'out of the buck'; return out; }
-      if (e.mode === 'trampleTell' && dx < 70) { out.gx = safeX(kx + side * 90); out.why = 'back off the trample'; return out; }
       if (e.mode === 'volleyTell' || e.mode === 'potTell') { out.gx = safeX(P.x + (P.x < G.mid ? 30 : -30)); out.why = 'the throw: keep moving'; return out; }
       if (e.mode === 'unchain') { out.gx = safeX(kx + side * 90); out.why = 'the chains snap: off him'; return out; }
     }
