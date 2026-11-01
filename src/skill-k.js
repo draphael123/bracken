@@ -26,7 +26,7 @@ export const K_FLAT = {
   shieldThrowFar: 0.45, shieldThrowNear: 0.3, shieldThrowBack: 0.18,   // knight was FLAT 13 (ranged foe) / 9 / 5 on the return
 };
 export const K_LINEAR = {
-  whirlwind: 0.7,        // knight   was 1.1 per cut (x2 cuts); cd 4 -> 5 (CD_MAX)
+  whirlwind: 0.5,        // knight   was 1.1 per cut (x2 cuts); cd 4 -> 5 (CD_MAX). Brief k 0.7 measured 89% of an L35 brute in ONE cast (both cuts); 0.5 = ~64% (10-31 browser run)
   rainOfSpears: 0.9,     // warden   was 1.3 per spear
   bzStorm: 0.85,         // berserker was 1.2 per hatchet
   rgVolley: 0.7,         // ranger   was 1.0 per arrow (x3)

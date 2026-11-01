@@ -50,7 +50,7 @@ export const CARD_CAP = 25;
 /* LATE-GAME TAPER (claude/lategamea, Daniel-approved 10-31 brief-lategame-1101 Q2A): the stat curve flattens so the L25+ milestone perks (real choices)
    carry the growth, not raw stats. (1) a stat pick is FULL value for the first CARD_FULL (12) picks in that stat and HALF after (VIGOR +4, ENDURANCE +6,
    MIGHT +1 every other pick); (2) the free growth is +2 hp a level to L24 then +1 hp a level, and +1 damage every 4th level to L24 then every 6th. */
-export const CARD_FULL = 12;
+export const CARD_FULL = 16;
 export const FREE_TAPER_LV = 24;
 export const taperPicks = n => { n = Math.min(CARD_CAP, Math.max(0, n || 0)); return n <= CARD_FULL ? n : CARD_FULL + (n - CARD_FULL) * 0.5; };   /* full-value pick equivalents (halves allowed) */
 export const freeHp = lv => 2 * Math.min(lv, FREE_TAPER_LV) + Math.max(0, lv - FREE_TAPER_LV);
