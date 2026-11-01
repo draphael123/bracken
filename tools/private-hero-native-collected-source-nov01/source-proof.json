@@ -1,0 +1,223 @@
+{
+  "time": "2026-11-01T18:51:41.014Z",
+  "candidateProof": {
+    "time": "2026-11-01T18:15:52.443Z",
+    "status": "Prepared guarded private current-knight native/ownership/lifetime/GPU-fallback proofs; no runtime adoption claim",
+    "sourceGame": "62d9c02c102decc69ceaef4e1ec593a23170f1ff",
+    "sourceTree": "d6f20846727ec42b3cca651d1b061136d9c6d2f1",
+    "originalMainSha256": "81866b69fec64de5fdd00da316fb0d1e8e997ae9912f73f280981f0a70cb36d8",
+    "originalCharsSha256": "eb1f35d0d2da8da4b62e7f61b5acfadbef49b858cc10fc891a5d2663d059f2cf",
+    "originalPxSha256": "e9a358b9170944e0dfae6d1b8c82d7b664562e0b2b0ab7f2538236e34214db1d",
+    "candidateMainSha256": "440f1a49e7f35c9c267c8d3879f3009bf47f9feb43a94115e04f95ccc862895a",
+    "candidateCharsSha256": "67ffd7aa5427230ab1be4d14dd8a5d6c15bbf7b7d93e8caba345ca774ba1bea5",
+    "candidatePxSha256": "c23cb8803f1bdde930130cbd7ea5b09375b52e6e39cedc0d17f40096fd7eaa72",
+    "helperSha256": "3f5f1b7144503b905bb6852a48c6a2dfda027ca4db6cd5ee729f2102e3347d49",
+    "coreSha256": "5cc06bca828f39ba3b9a0c4d8106645eb179654a3230f884a66b995ea675b8ce",
+    "coreExactUnchangedPrefix": true,
+    "bridgeSha256": "dfe25740a16c8bffac163e5ec2151751a8c88b402ad029d68bf554a5900e086a",
+    "originalKnightBodySha256": "e76d6594212e390f883654c5d5d0463934ab34ac105b64e5e6be1a9bdb9da9b1",
+    "knightBodyUndo": {
+      "before": "const R = F, L = {}; for (const k in F) L[k] = mirror(F[k]);",
+      "after": "const R = F, L = {}; if (__heroMode === PRIVATE_HERO_TOKEN && privateHeroSupported() && __reaperProjectionSafe(F) && privateHeroPixelsLive(F)) { const __set = makePrivateKnightKit(F, { ...KNIGHT_ANCHOR, ay: KNIGHT_ANCHOR.ay + ATTACK_HEADROOM }); if (!bare) __set.bare = __privateKnightRows(skin, true, previewOnly, PRIVATE_HERO_TOKEN); return __set; } for (const k in F) L[k] = mirror(F[k]);"
+    },
+    "originalPublicHeroSetFunctionBytesUnchanged": true,
+    "privateHeroSetCopyOnlyKnightFactoryChanged": true,
+    "publicGetterPreservedAsGetter": true,
+    "allEightPlayerStoresNormalizedBeforeAssignment": true,
+    "publishedSpriteCatalogueSPRUnchanged": true,
+    "noPublicProxySnapshotHandleOrLazyFieldAllowed": true,
+    "noLazyMutablePaletteGearWeaponOrRightPainter": true,
+    "onlyNativeRPixelSnapshotsDeferred": true,
+    "activeOwnershipAndGpuBakeUseOriginalEagerPath": true,
+    "modelBounds": {
+      "pendingOutputs": 4096,
+      "pendingPixels": 8388608,
+      "perSnapshotPixels": 262144,
+      "maxDepth": 8,
+      "privateScratchCanvases": 1,
+      "privateScratchPixels": 1
+    },
+    "publicBoundaries": {
+      "existingHeroSetGetter": {
+        "line": 35104,
+        "currentlyReturnsK": true,
+        "proposed": "Finish only this private graph before returning the same ordinary native kit;preserve the existing accessor descriptor and object identity."
+      },
+      "existingEagerHeroConstructor": {
+        "line": 766,
+        "proposed": "Leave public heroSet construction eager and unchanged;only applySkin uses a new private entry."
+      },
+      "allEightDirectPlayerSetPublications": [
+        {
+          "line": 835,
+          "owner": "regear:834",
+          "proposed": "Finish K before ordinary player.set assignment;raw players aliases therefore receive only complete native kits."
+        },
+        {
+          "line": 1560,
+          "owner": "coopStart:1559",
+          "proposed": "Finish K before ordinary player.set assignment;raw players aliases therefore receive only complete native kits."
+        },
+        {
+          "line": 6752,
+          "owner": "onlineArm:6747",
+          "proposed": "Finish K before ordinary player.set assignment;raw players aliases therefore receive only complete native kits."
+        },
+        {
+          "line": 6789,
+          "owner": "tavernJoin:6786",
+          "proposed": "Finish K before ordinary player.set assignment;raw players aliases therefore receive only complete native kits."
+        },
+        {
+          "line": 6893,
+          "owner": "partyAiSeat:6890",
+          "proposed": "Finish K before ordinary player.set assignment;raw players aliases therefore receive only complete native kits."
+        },
+        {
+          "line": 6984,
+          "owner": "tavSetHero:6983",
+          "proposed": "Finish K before ordinary player.set assignment;raw players aliases therefore receive only complete native kits."
+        },
+        {
+          "line": 6990,
+          "owner": "tavSetWeapon:6989",
+          "proposed": "Finish K before ordinary player.set assignment;raw players aliases therefore receive only complete native kits."
+        },
+        {
+          "line": 35017,
+          "owner": "(callback):35017",
+          "proposed": "Finish K before ordinary player.set assignment;raw players aliases therefore receive only complete native kits."
+        }
+      ]
+    },
+    "sourceContractReceipt": "outputs/receipts/private-hero-source-contract-nov01.json",
+    "parentTwoBossStartup": {
+      "receipt": "outputs/receipts/boss-projection-cold-nov01.json",
+      "qualified": false,
+      "noSameSourceRetiming": true,
+      "noWholeGameProofInherited": true
+    },
+    "nativeProofRequired": [
+      "Private pose getters/setters/aliases and complete publication descriptors versus original eager kit.",
+      "Fresh output identities,metadata,context/currentPath,pixel equality and immutable source snapshot behavior.",
+      "Gear/weapon/skin changes occur only while R is painted eagerly;no mutable context consulted later.",
+      "Original active ownership scope fallback and native hook fallback,queue eviction,retirement,resize/context-loss cases.",
+      "Actual served main integration across heroSet getter,all8player stores,co-op,loading and native frame consumption.",
+      "Once-only actual-source startup qualification;then necessary original campaign,memory,layout/full425 and original-five-arena FPS proof."
+    ],
+    "allThreeMismatches": [
+      "mummer6SUCCESSFUL hits versus2..5",
+      "tower-collapse/Tome rebound at200frames",
+      "offscreen mage sampling"
+    ],
+    "noLocalTestsExecuted": true,
+    "allTestingCloudOnly": true,
+    "adopted": false,
+    "overallWorkComplete": false,
+    "lateExposureUsesCapturedIntrinsicsAndExistingNativeArrays": true,
+    "expected": {
+      "native": 17,
+      "lifecycle": 5,
+      "gpu": 1,
+      "globalRngCalls": 0
+    },
+    "settings": {
+      "cpu": 4,
+      "viewport": [
+        915,
+        412
+      ],
+      "dpr": 2.625,
+      "hostGameView": [
+        320,
+        180
+      ],
+      "notOriginalFiveArenaFixture": true,
+      "rendererMb": 1536,
+      "admissionMb": 4352,
+      "evalDeadlineMs": 240000,
+      "outerTimeoutMinutes": 15
+    },
+    "componentReference": "Original Game62chars functions; same original px function bodies with shared call counter/explicit cleanup tracking only. GPU-only synthetic group evaluates the same original CPU_BAKEfalse branch in both copies.",
+    "sourceFiles": [
+      {
+        "file": "tools/private-hero-source-nov01/candidate-main.js",
+        "sha256": "440f1a49e7f35c9c267c8d3879f3009bf47f9feb43a94115e04f95ccc862895a"
+      },
+      {
+        "file": "tools/private-hero-source-nov01/candidate-chars.js",
+        "sha256": "67ffd7aa5427230ab1be4d14dd8a5d6c15bbf7b7d93e8caba345ca774ba1bea5"
+      },
+      {
+        "file": "tools/private-hero-source-nov01/candidate-px.js",
+        "sha256": "c23cb8803f1bdde930130cbd7ea5b09375b52e6e39cedc0d17f40096fd7eaa72"
+      },
+      {
+        "file": "tools/private-hero-source-nov01/private-hero-derived.js",
+        "sha256": "3f5f1b7144503b905bb6852a48c6a2dfda027ca4db6cd5ee729f2102e3347d49"
+      },
+      {
+        "file": "tools/private-hero-native-page-nov01.mjs",
+        "sha256": "b3508b7cc1d58ce06f60085cc194a4b5c5ed1190f7cbdba50b727efbc19d2b6e"
+      },
+      {
+        "file": "tools/private-hero-native-component-nov01.mjs",
+        "sha256": "18e97087b641d8dbbc00a6a2938322bcc3a09177426bd3e65941f09d6f37d52a"
+      }
+    ],
+    "actualMainIntegrationUnproved": true,
+    "contextResetNotClaimedAsForcedNativeContextLoss": true,
+    "nativeSourceContextLostGuard": true,
+    "unknownHeroIdsUseUnchangedEagerFallback": true,
+    "nativeSpeciesNameSource": "https://tc39.es/ecma262/2025/#sec-get-array-%symbol.species%",
+    "symbolNamedGetterGuardIsSeparateFromUnchangedCoreNativeGuard": true
+  },
+  "priorRun": 41338125168,
+  "priorReceipt": "outputs/receipts/private-hero-derived-nov01.json",
+  "priorFailurePreserved": true,
+  "sameCandidateSource": true,
+  "all17OriginalNativeAssertionsPreserved": true,
+  "noCompletedLifecycleOrGpuRerun": true,
+  "cause": "Original manual native collection bridge was installed but never requested inside long17case evaluation; only one post-evaluation opportunity existed after memory guard disconnected page.",
+  "repair": "Release/clear each case roots,await existing original native collection bridge,save every row durably; no memory/deadline/assertion/candidate policy change.",
+  "originalPageSha256": "b3508b7cc1d58ce06f60085cc194a4b5c5ed1190f7cbdba50b727efbc19d2b6e",
+  "pageEdits": [
+    {
+      "before": "save=()=>window.__privateHeroDiagnostic={group,rows,complete:false};save();",
+      "after": "save=()=>{window.__privateHeroDiagnostic={group,rows,complete:false};if(typeof window.__privateHeroProgress==='function')window.__privateHeroProgress(JSON.stringify({group,rows,complete:false}));};save();"
+    },
+    {
+      "before": "release([a,b,aa,ab,ownA,ownB,px.__testMade()]);}}",
+      "after": "release([a,b,aa,ab,ownA,ownB,px.__testMade()]);a=b=aa=ab=ownA=ownB=null;assert(typeof window.__brackenLabCollect==='function','original native collection bridge available');await window.__brackenLabCollect();}}"
+    }
+  ],
+  "files": [
+    {
+      "file": "tools/private-hero-native-collected-page-nov01.mjs",
+      "sha256": "8394ebd33409b9330551a6987bcf98385b6cb991649d60f5d0c1d4ba77dc9654"
+    },
+    {
+      "file": "tools/private-hero-native-collected-nov01.mjs",
+      "sha256": "6f775247fdf4d682ee5ca01cf673d0acf09d7fe62d76dc6aa52bf71735831214"
+    }
+  ],
+  "settings": {
+    "cpu": 4,
+    "viewport": [
+      915,
+      412
+    ],
+    "dpr": 2.625,
+    "hostGameView": [
+      320,
+      180
+    ],
+    "notOriginalFiveArenaFixture": true,
+    "rendererMb": 1536,
+    "admissionMb": 4352,
+    "evalDeadlineMs": 240000,
+    "outerTimeoutMinutes": 15
+  },
+  "expectedNativeCases": 17,
+  "globalRng": 0
+}
