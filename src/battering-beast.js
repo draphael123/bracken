@@ -42,14 +42,14 @@
 //                     and topples into the clearing as ROLLING TIMBERS (jump them; a deck is over them; a wreck stops them). The first slam leaves THE BREACH for
 //                     the rest of the fight: a gap in the palisade and a RUBBLE STEP (solid) against the east wall - the timbers never reach it, the wall-ram does.
 export const BB = {
-  hp: 1250, w: 56, h: 40, markH: 60,
+  hp: 1050, w: 56, h: 40, markH: 60,
   walk: 46, rest: [0.5, 0.3],
   armour: 0.45, above: 1, wardMul: 0.4,
   p2: 0.5,
-  charge: { tell: [1.15, 0.92], speed: 280, sp2: 1.08, dmg: 21, hitH: 24, minD: 110 },
+  charge: { tell: [1.15, 0.92], speed: 280, sp2: 1.08, dmg: 18, hitH: 24, minD: 110 },
   daze: { t: [1.7, 1.4], mul: 1.25 },
   stuck: { t: 3.0, mul: 2, cap: 0.11, ward: 3, wreckBlow: 0.03 },
-  sweep: { tell: [0.68, 0.54], t: 0.42, mid: 0.3, reach: 50, h: 14, dmg: 27, chip: 0.8, rec: 0.6, range: 80 },
+  sweep: { tell: [0.68, 0.54], t: 0.42, mid: 0.3, reach: 50, h: 14, dmg: 22, chip: 0.8, rec: 0.6, range: 80 },
   volley: { tell: [0.85, 0.72], n: 3, flight: 1.0, r: 16, dmg: 21, rec: 0.6, spread: 62 },
   pots: { tell: 0.95, n: 2, flight: 0.95, r: 18, life: 2.6, tick: 0.45, dmg: 9, spread: 58, rec: 0.6 },
   batter: { tell: 0.8, shake: 1.25, dmg: 25, reach: 96 },
@@ -73,12 +73,12 @@ export const BB_SAY = { wake: 'THE BATTERING BEAST', rule: 'KNOCK OUT A SCAFFOLD
   shake: 'THE SCAFFOLD SHAKES: GET OFF', collapse: 'THE SCAFFOLD COLLAPSES', burn: 'BURNING PITCH', thrown: 'THE HANDLERS FIGHT ON FOOT',
   flailLo: 'THE CHAIN: LOW - JUMP', flailHi: 'THE CHAIN: HIGH - STAY DOWN', buck: 'HE BUCKS',
   /* (claude/beast3) */ order: 'THE ORDER', volley: 'VOLLEY: KEEP OUT OF THE LANES', lost: 'ORDER LOST', hornFalls: 'THE HORNSMAN FALLS: NO MORE ORDERS',
-  hornTip: 'HIT THE HORNSMAN WHILE THE HORN IS UP', holds: 'THE PALISADE HOLDS', wallTurn: 'HE TURNS ON THE PALISADE', breach: 'THE PALISADE BREAKS', timbers: 'TIMBERS: JUMP THEM' };
-export const OPEN_NAME = { stuck: 'STUCK', dazed: 'DAZED', loose: 'LOOSE' };
+  hornTip: 'HIT THE HORNSMAN WHILE THE HORN IS UP', holds: 'THE PALISADE HOLDS', wallTurn: 'HE TURNS ON THE PALISADE', breach: 'THE PALISADE BREAKS', timbers: 'TIMBERS: JUMP THEM', reels: 'HE REELS OFF THE WALL' };
+export const OPEN_NAME = { stuck: 'STUCK', dazed: 'DAZED', loose: 'LOOSE', lost: 'ORDER LOST' };
 /* THE ORDERS (P1): the flag the handlers raise and the word they shout, per move - drawn by the hands over his gantry (src/battering-beast-hands.js) */
 export const ORDER = { chargeTell: { say: 'oRam', flag: '#ff4a2a' }, sweepTell: { say: 'oSwing', flag: '#ffd36b' }, volleyTell: { say: 'oStakes', flag: '#ff9a5c' },
   potTell: { say: 'oPitch', flag: '#ff6a1a' }, batterTell: { say: 'oBatter', flag: '#c83a2a' } };
-export const bbOpen = e => !!e && (e.mode === 'stuck' || e.mode === 'dazed' || e.mode === 'loose');
+export const bbOpen = e => !!e && (e.mode === 'stuck' || e.mode === 'dazed' || e.mode === 'loose' || e.mode === 'lost');   /* (claude/beast3) ORDER LOST: the horn cut short, he stands unsteered - a short opening the player earned */
 const TELLS = new Set(['chargeTell', 'sweepTell', 'sweepMid', 'volleyTell', 'orderTell', 'potTell', 'batterTell', 'flailTell', 'kickTell', 'wallTell', 'unchain']);
 export const bbTelling = e => TELLS.has(e.mode);
 /* THE CLEARING (px): x0/x1 inside the walls, floorY, and the scaffolds: arena.scaffolds = [{ x0, x1, row, prop, dir }] (tile columns; dir: the way it tips, +1 east) */
@@ -108,7 +108,7 @@ export const hornUp = (e, S) => e.mode === 'orderTell' && !S.horn.down;
 /* A BLOW ON THE HORNSMAN while the horn is up: the order dies in his throat (ORDER LOST); BB.order.lives of them and he is knocked off the gantry */
 export function hornStruck(e, S, w) {
   if (!hornUp(e, S)) return false;
-  S.lanes = []; S.horn.hits++; S.n.lost++; e.mode = 'lost'; e.modeT = BB.order.lost; w.sound('clank'); w.number(e.x, e.y - BB.h - 40, BB_SAY.lost, '#ffd36b');
+  S.lanes = []; S.horn.hits++; S.n.lost++; e.mode = 'lost'; e.modeT = BB.order.lost; e.openT0 = e.modeT; w.sound('clank'); w.number(e.x, e.y - BB.h - 40, BB_SAY.lost, '#ffd36b');
   if (S.horn.hits >= BB.order.lives) { S.horn.down = true; w.number(e.x, e.y - BB.h - 54, BB_SAY.hornFalls, '#ffd36b'); w.hornFalls && w.hornFalls(); }
   return true;
 }
@@ -227,9 +227,9 @@ export function stepBeast(e, S, dt, heroes, w) {
         if (!S.breach) { S.breach = 1; w.rubble(true); w.number(wallX(S) + 20, floor - 80, BB_SAY.breach, '#ff9a5c'); } else S.breach = 2;
         const sx = wallX(S) - 10; for (let k = 0; k < BB.wall.n; k++) S.timbers.push({ x: sx, d: k * BB.wall.gap, fall: 0.25, key: 'tb' + S.act + '.' + k });
         S.n.timbers += BB.wall.n; if (!S.told.timbers) { S.told.timbers = 1; w.number(S.G.mid, floor - 90, BB_SAY.timbers, '#ffd36b'); }
-        const tx = wallX(S) - half - 2; if (e.x > tx + 1) { e.mode = 'wallBack'; e.modeT = 1.5; } else { e.mode = 'recover'; e.modeT = BB.wall.rec; } }
+        const tx = wallX(S) - half - 2; if (e.x > tx + 1) { e.mode = 'wallBack'; e.modeT = 1.5; } else reel(e, S, w); }
       return;
-    case 'wallBack': { const tx = wallX(S) - half - 2; e.x = Math.max(tx, e.x - BB.wall.back * dt); if (e.x <= tx + 0.5 || e.modeT <= 0) { e.x = tx; e.mode = 'recover'; e.modeT = BB.wall.rec; } return; }
+    case 'wallBack': { const tx = wallX(S) - half - 2; e.x = Math.max(tx, e.x - BB.wall.back * dt); if (e.x <= tx + 0.5 || e.modeT <= 0) { e.x = tx; reel(e, S, w); } return; }
     /* THE CHAIN FLAIL (P2): the broken ram chain whipped in a wide arc in front of him - LOW (jump) or HIGH (stay on the ground) */
     case 'flailTell': if (e.modeT > BB.flail.tell * 0.5) face(); if (e.modeT <= 0) { e.mode = 'flail'; e.modeT = BB.flail.t; e.hitKey = 'fl' + S.act; w.sound('sweep'); } return;
     case 'flail': { const bx = flailBox(e, S); w.hit(bx, BB.flail.dmg, 'flail', { key: e.hitKey, knock: e.face * 180 }); if (e.modeT <= 0) { e.mode = 'recover'; e.modeT = BB.flail.rec; } return; }
@@ -253,6 +253,8 @@ export function stepBeast(e, S, dt, heroes, w) {
     default: e.mode = 'walk';
   }
 }
+/* (claude/beast3) HE REELS OFF THE WALL he slammed: DAZED (the shared rule - he crashes into what is behind him), while the timbers roll */
+function reel(e, S, w) { e.mode = 'dazed'; e.modeT = BB.daze.t[1]; e.openT0 = e.modeT; S.n.dazed++; w.number(e.x, e.y - BB.h - 24, BB_SAY.reels, '#ffd36b'); }
 function stick(e, S, w) { e.mode = 'stuck'; e.modeT = BB.stuck.t; e.openT0 = e.modeT; S.purse = e.maxHp * BB.stuck.cap; S.n.stuck++; w.number(e.x, e.y - BB.h - 24, BB_SAY.stuck, '#ffd36b'); w.fx('open', e.x, e.y); w.trunkBlow(Math.max(1, Math.round(e.maxHp * BB.stuck.wreckBlow))); }
 /* WHICH MOVE. P1 (the handlers' orders): on a deck, BATTER IT; close, SWING THE RAM; at range RAM IT, STAKES or PITCH. P2 (unchained): hugging him, THE BUCK; close, the flail
    or THE WALL BREAKER; at range THE WALL BREAKER, the flail, rarely the charge (claude/beast3: the trample is cut). Never the same move three times running. */
@@ -360,7 +362,7 @@ export function takeBlow(e, S, dmg, plunge) {
   if (S.ward > 0 || e.mode === 'tear') return [Math.max(1, Math.round(dmg * BB.wardMul)), 'WARDED'];
   if (e.mode === 'stuck' || e.mode === 'loose') { const mul = e.mode === 'loose' ? BB.harness.mul : BB.stuck.mul, d = Math.round(dmg * mul), left = S.purse ?? Infinity;
     if (d >= left) { S.purse = 0; e.modeT = Math.min(e.modeT, 0.01); return [Math.max(1, Math.round(left)), null]; } S.purse = left - d; return [d, null]; }
-  if (e.mode === 'dazed') return [Math.round(dmg * BB.daze.mul), null];
+  if (e.mode === 'dazed' || e.mode === 'lost') return [Math.round(dmg * BB.daze.mul), null];
   if (plunge) return [Math.round(dmg * BB.above), null];
   return [Math.max(1, Math.round(dmg * BB.armour)), 'ARMOURED'];
 }

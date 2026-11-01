@@ -153,7 +153,7 @@ ok(/'palisadewood'/.test(src('tools/one-new-foe.mjs')) || true, '(one-new-foe re
     ok(at(hx) && at(hx + BB.order.pitch / 2), 'both waves land (wave one on you, then wave two in its gaps)');
     const t1 = BB.order.tell + BB.order.flight; ok(BB.order.gap >= 0.6 && t1 >= 1.3, 'told: ' + t1.toFixed(2) + ' s from the horn to wave one, ' + BB.order.gap + ' s on to wave two (time to step across a ' + BB.order.laneW + ' px lane)'); }
   { const [S, e] = fresh(); said.length = 0; e.mode = 'orderTell'; e.modeT = BB.order.tell; S.lanes = BBM.orderLanes(S, e.x - 100, 3);
-    ok(BBM.hornStruck(e, S, w) && e.mode === 'lost' && S.lanes.length === 0 && said.includes(BBM.BB_SAY.lost) && !S.horn.down, 'hit the Hornsman while the horn is up: ORDER LOST (the lanes are wiped, he stands unsteered)');
+    ok(BBM.hornStruck(e, S, w) && e.mode === 'lost' && BBM.bbOpen(e) && BBM.takeBlow(e, S, 20, false)[0] === Math.round(20 * BB.daze.mul) && S.lanes.length === 0 && said.includes(BBM.BB_SAY.lost) && !S.horn.down, 'hit the Hornsman while the horn is up: ORDER LOST (the lanes are wiped, he stands unsteered: a short opening, x' + BB.daze.mul + ')');
     ok(!BBM.hornStruck(e, S, w), 'a blow on him with the horn down does nothing (the read is the horn)');
     e.mode = 'orderTell'; e.modeT = 0.5; S.lanes = BBM.orderLanes(S, e.x - 100, 4); BBM.hornStruck(e, S, w); ok(S.horn.down && said.includes(BBM.BB_SAY.hornFalls), BB.order.lives + ' orders lost: THE HORNSMAN FALLS off the gantry');
     const n0 = S.n.order; for (let i = 0; i < 12000; i++) { if (e.mode === 'walk') S.restT = Math.min(S.restT, 0.01); if (e.mode === 'stuck' || e.mode === 'dazed') e.mode = 'walk'; BBM.stepBeast(e, S, 1 / 60, hero(A.x0 + 30 + (i * 7) % 600), w); e.hp = BB.hp; }
@@ -161,8 +161,8 @@ ok(/'palisadewood'/.test(src('tools/one-new-foe.mjs')) || true, '(one-new-foe re
   { const hs = src('src/battering-beast-hands.js'); ok(hs.includes('BBM.hornUp(e, S)') && /ctx\.hitOnce\(S\.horn\)/.test(hs) && /rgArrows[\s\S]{0,600}BBM\.hornStruck/.test(hs), 'the hands route a blow (strike) and a ranger arrow into the Hornsman while the horn is up'); }
   /* (claude/beast3) THE WALL BREAKER */
   { const [S, e] = fresh(); S.ph = 2; S.harness.cut = true; hits.length = 0; said.length = 0; let rub = 0; const ww = { ...w, rubble: () => { rub++; } }; const x1 = A.x1; e.x = A.x0 + 300; e.mode = 'wallTell'; e.modeT = BB.wall.tell; S.act = 50;
-    const seen = []; for (let i = 0; i < 400 && seen.indexOf('recover') < 0; i++) { BBM.stepBeast(e, S, 1 / 60, hero(A.x0 + 40), ww); if (seen[seen.length - 1] !== e.mode) seen.push(e.mode); }
-    ok(seen.join('>').startsWith('wallTell>wallRun>wallHit') && S.n.wall === 1, 'THE WALL BREAKER: he wheels on the palisade, runs it, slams it: ' + seen.join('>'));
+    const seen = []; for (let i = 0; i < 400 && seen.indexOf('dazed') < 0; i++) { BBM.stepBeast(e, S, 1 / 60, hero(A.x0 + 40), ww); if (seen[seen.length - 1] !== e.mode) seen.push(e.mode); }
+    ok(seen.join('>').startsWith('wallTell>wallRun>wallHit') && seen.includes('dazed') && BBM.bbOpen(e) && S.n.wall === 1, 'THE WALL BREAKER: he wheels on the palisade, runs it, slams it, reels off it (DAZED): ' + seen.join('>'));
     ok(S.breach === 1 && rub === 1 && BBM.wallX(S) === x1 - BB.wall.rubble * 16 && e.x <= BBM.wallX(S) - BB.w / 2 - 1.5 && said.includes(BBM.BB_SAY.breach), 'the first slam leaves THE BREACH: the rubble step (' + BB.wall.rubble + ' cols) and he stands off it');
     ok(S.timbers.length === BB.wall.n, 'a section topples into the clearing: ' + S.timbers.length + ' timbers');
     const rc = BBM.rubbleCols(S.G); ok(rc[1] === Math.round(x1 / 16) - 1 && rc[1] - rc[0] + 1 === BB.wall.rubble && rc[2] === Math.round(A.floor / 16) - 1 && rc[0] > A.scaffolds[1].x1, 'the rubble cells sit on the clearing floor against the east wall, clear of the east scaffold ' + JSON.stringify(rc));
@@ -170,7 +170,7 @@ ok(/'palisadewood'/.test(src('tools/one-new-foe.mjs')) || true, '(one-new-foe re
     const ww2 = { ...ww, hit: (b, d, n) => { if (n !== 'timbers') return; if (hx > b[0] && hx < b[1]) hitT++; if (deckHero.x > b[0] && deckHero.x < b[1] && deckHero.y > b[2] && deckHero.y - 16 < b[3]) deckHit++; } };
     for (let i = 0; i < 600 && S.timbers.length; i++) BBM.stepBeast(e, S, 1 / 60, hero(A.x0 + 40), ww2);
     ok(hitT > 0 && deckHit === 0 && S.timbers.length === 0, 'the timbers roll the floor (they hit a hero standing in their road, never one up on a deck) and break at the old gate');
-    e.mode = 'wallTell'; e.modeT = BB.wall.tell; e.x = A.x0 + 300; for (let i = 0; i < 400 && e.mode !== 'recover'; i++) BBM.stepBeast(e, S, 1 / 60, hero(A.x0 + 40), ww); ok(S.breach === 2 && rub === 1, 'the next slam widens the breach (the rubble is laid once)'); }
+    e.mode = 'wallTell'; e.modeT = BB.wall.tell; e.x = A.x0 + 300; for (let i = 0; i < 400 && e.mode !== 'dazed'; i++) BBM.stepBeast(e, S, 1 / 60, hero(A.x0 + 40), ww); ok(S.breach === 2 && rub === 1, 'the next slam widens the breach (the rubble is laid once)'); }
   { const [S, e] = fresh(); S.ph = 2; S.harness.cut = true; const sc = S.scafs[1]; sc.st = 'down'; sc.t = 99; e.x = A.x0 + 200; e.mode = 'wallRun'; e.modeT = 4; for (let i = 0; i < 400 && e.mode === 'wallRun'; i++) BBM.stepBeast(e, S, 1 / 60, hero(A.x0 + 40), w);
     ok(e.mode === 'stuck', 'a wreck in his road to the wall: STUCK (the rule works in P2)');
     const [S2, e2] = fresh(); S2.ph = 2; S2.scafs[0].st = 'down'; S2.scafs[0].t = 99; S2.timbers.push({ x: A.x1 - 80, d: 0, fall: 0, key: 't' }); for (let i = 0; i < 600 && S2.timbers.length; i++) BBM.stepBeast(e2, S2, 1 / 60, hero(A.x1 - 40), w);
