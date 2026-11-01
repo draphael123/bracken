@@ -34,10 +34,11 @@ export const FOEPASS = {
   /* THE LATE-GAME SWEEP (claude/lategameb, Daniel 10-31 'foes harder by act via smarter / mixed packs, not HP'): acts III-V had NO lever live - the sea, the old kingdom and the desert were
      walked past (the walker: 0.1 deaths a run in act III, arrival at the shrines 68-78%). Every level of them now stands the affixes at the act's density (AFFIX_ACT: 25 / 40 / 50 %), the
      archer's lead and the walkers' pursuit. NOT YET MEASURED (no browser this lane): each level's mash / pilot / walker rows are the act sweep's to re-stamp. Delete a level's row to take it back out. */
+  /* (release batch136) KEPT OFF where a level has adds in a tuned boss fight, a fire-and-oil puzzle, or a bot route measured without them: theatre/underwell/fair no affix; canal no affix + no lead (tools/foe-glue.mjs OFF) */
   /* act III */
   longwater: LATE, reef: LATE, flotilla: { ...LATE, affix: false }, hurricane: LATE, lamplit: LATE, deep: LATE, keep: LATE, causeway: LATE, harbor: LATE,
   /* act IV */
-  waymeet: LATE, towpath: LATE, canal: LATE, theatre: { ...LATE, affix: false },   /* (release batch136: the Puppeteer fight has adds that wore the act-IV affixes - the 57% boss took 2334 and timed out at 300 s, 11% left; like the flotilla, a boss level with adds keeps pursuit + lead and no affix) */ fair: { ...LATE, affix: false }, fields: LATE, burial: LATE, witchlight: LATE, mage: LATE, unburied: LATE, fallingtower: LATE, church: LATE,
+  waymeet: LATE, towpath: LATE, canal: { ...LATE, affix: false, lead: false }, theatre: { ...LATE, affix: false },   /* (release batch136: the Puppeteer fight has adds that wore the act-IV affixes - the 57% boss took 2334 and timed out at 300 s, 11% left; like the flotilla, a boss level with adds keeps pursuit + lead and no affix) */ fair: { ...LATE, affix: false }, fields: LATE, burial: LATE, witchlight: LATE, mage: LATE, unburied: LATE, fallingtower: LATE, church: LATE,
   /* act V */
   caravan: LATE, welltown: LATE, underwell: { ...LATE, affix: false }, redgorge: LATE, glasssea: LATE, ksar: LATE, buriedcity: LATE, sealedpyramid: LATE,
 };
