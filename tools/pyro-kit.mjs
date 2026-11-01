@@ -91,6 +91,10 @@ try {
     { home(); const f = foe('topiary', 10, 9999); freeze(f); f.maxHp = 1000; f.hp = 1000; P().heat = 0; P().heatGrace = 9; const r = { dmg: [], stag: [] };
       for (let n = 0; n < 3; n++) { f.pyNoStk = 0; f.pyGapAt = -99; f.stagger = 0; const h = f.hp; BK.pyStack(f, 3); BK.sim(12); freeze(f); r.dmg.push(h - f.hp); r.stag.push(+(f.stagger || 0).toFixed(2)); }
       r.cap = Math.round(0.03 * 1000); f.alive = false; out.lbBoss = r; }
+    /* the STAFF is a pip too (the generic hook in hurtEnemy): three cuts in a run burst a straw man */
+    { home(); const f = foe('topiary', 1, 9999); freeze(f); f.x = P().x + 14; P().heat = 0; P().heatGrace = 9; const r = { stk: [], burst: 0 }; const h0 = f.hp;
+      for (let n = 0; n < 4; n++) { BK.press('atk'); for (let k = 0; k < 26; k++) { BK.sim(1); freeze(f); f.x = P().x + 14; } r.stk.push(BK.pyStacks(f)); }
+      r.burst = h0 - f.hp; f.alive = false; out.lbStaff = r; }
     // ---- METEOR FALL ----
     { home(); const a = foe('topiary', 9, 9999), b = foe('topiary', 11, 9999), c = foe('topiary', 13, 9999); [a, b, c].forEach(freeze); const h0 = [a, b, c].map(f => f.hp); BK.pyStack(b, 2);
       Object.assign(P(), { heat: 100, full: true, fullT: 5, heatGrace: 9 }); K.block = true; BK.sim(1); K.block = false; BK.sim(1); const m = BK.meteorNow(); const w0 = BK.ward().stats.wards;
@@ -139,6 +143,7 @@ else {
   if (!(B.burst >= want * 0.9 && B.burst <= want * 2.4)) bad.push(`the burst took ${B.burst} (want ~swordDmg ${sw} x 1.2 = ${Math.round(want)})`);
   if (B.after !== 0 || B.noStack !== 0 || B.restack !== 1) bad.push('a foe that burst built pips inside 2 s (or never again): ' + JSON.stringify(B));
   if (B.heat > 12) bad.push('the burst refilled the bar: ' + B.heat);
+  if (!(R.lbStaff.stk[0] >= 1 && R.lbStaff.stk.some(s => s >= 2))) bad.push('a staff cut did not leave pips: ' + JSON.stringify(R.lbStaff));
   const Ch = R.lbChain;
   if (!Ch.bBurst || Ch.cFar !== 0) bad.push('the burst did not chain to a neighbour with 2 pips (or reached a far foe): ' + JSON.stringify(Ch));
   const Bo = R.lbBoss;
