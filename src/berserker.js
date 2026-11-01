@@ -77,11 +77,11 @@ export const selfFloor = (hp, cost) => Math.max(Math.min(hp, 1), hp - Math.max(0
 export function makeBerserker(api) {
   const stats = { takes: 0, taken: 0, absorbed: 0, chip: 0, parries: 0, takeRed: 0, takeBroken: 0, frenzies: 0, throws: 0, pickups: 0, recalls: 0, axeHits: 0, rollShoves: 0, kills: 0,
     healed: 0, rageDealt: 0, rageTaken: 0, cries: 0, rends: 0, cracks: 0, floored: 0,
-    braces: 0, braced: 0, braceMiss: 0, braceRed: 0, tier1: 0, tier2: 0, tier3: 0 };   /* (claude/chargetiers: the rage wind-up's tiers let go) */   /* (the brace's names, kept as the take's: braces = raised, braced = took one) */
+    braces: 0, braced: 0, braceMiss: 0, braceRed: 0, tier1: 0, tier2: 0, tier3: 0, catches: 0, warcries: 0, leaps: 0, rampages: 0, chained: 0, aoeCasts: 0 };   /* (claude/berserkerid: the L25-L50 techniques' counters) */   /* (claude/chargetiers: the rage wind-up's tiers let go) */   /* (the brace's names, kept as the take's: braces = raised, braced = took one) */
   const P = () => api.P, T = () => api.tal();
   const clampRage = p => { p.rage = Math.max(0, Math.min(100, p.rage || 0)); };
   const raging = p => (p.rage || 0) >= BZ.rage.high || p.frenzyT > 0;
-  function gain(p, n, why) { if (!(n > 0) || p.frenzyT > 0) return; n *= BZ.perk.rage; const was = (p.rage || 0) >= 100; p.rage = Math.min(100, (p.rage || 0) + n);
+  function gain(p, n, why) { if (!(n > 0) || p.frenzyT > 0) return; n *= BZ.perk.rage * (1 + 0.1 * T().upg('ubstoke')); const was = (p.rage || 0) >= 100; p.rage = Math.min(100, (p.rage || 0) + n);
     if (why === 'dealt') stats.rageDealt += n; else if (why === 'taken') stats.rageTaken += n;
     if (!was && p.rage >= 100) { api.meterReady('#ff4a3a'); api.teach('full'); } }
   const fight = p => { p.bzFightT = api.time; };
@@ -97,7 +97,8 @@ export function makeBerserker(api) {
   function dealt(e, dmg, killed) { const p = P(); if (!e || e.harmless || !(dmg > 0)) return; fight(p);
     gain(p, Math.min(BZ.rage.hitCap, dmg * BZ.rage.dealt * (T().hot ? 4 / 3 : 1)), 'dealt');
     if (killed) stats.kills++;
-    if (p.frenzyT > 0 && p.hp > 0 && p.hp < p.maxHp) { p.bzHealAcc = (p.bzHealAcc || 0) + dmg * (T().price ? BZ.frenzy.priceHeal : BZ.frenzy.heal);
+    if (killed && p.frenzyT > 0 && T().tech('bzchained') && (p.bzChainExt || 0) < 6) { const add = Math.min(0.5, 6 - (p.bzChainExt || 0)); p.bzChainExt = (p.bzChainExt || 0) + add; p.frenzyT += add; p.frenzyMax = Math.max(p.frenzyMax || 0, p.frenzyT); stats.chained++; api.number(p.x, p.y - 34, '+' + add + 's', '#ff9a5c'); }   /* CHAINED RAGE (L40) */
+    if (p.frenzyT > 0 && p.hp > 0 && p.hp < p.maxHp) { p.bzHealAcc = (p.bzHealAcc || 0) + dmg * (T().price ? BZ.frenzy.priceHeal : BZ.frenzy.heal) * (1 + 0.25 * T().upg('ubprice'));
       const whole = Math.floor(p.bzHealAcc); if (whole >= 1) { p.bzHealAcc -= whole; const hp0 = p.hp; p.hp = Math.min(p.maxHp, p.hp + whole); stats.healed += p.hp - hp0;
         if (p.hp > hp0 && Math.random() < 0.5) api.parts.push({ x: p.x + (Math.random() - 0.5) * 8, y: p.y - 14, vx: 0, vy: -26, life: 0.4, max: 0.4, col: '#ff6b6b', size: 1, grav: 0 }); } } }
   /* REND (main.js bzRendBlow, as a frenzied melee blow is struck): a stack on THIS foe; the n-th CRACKS him - true: that blow is a heavy */
@@ -111,7 +112,7 @@ export function makeBerserker(api) {
   /* A CHOP THAT LANDED (main.js swingDmg): the chain goes on, and every fourth link of it pays THE CHAIN */
   function chopLanded(e) { const p = P(); p.bzChainHit = true; p.bzChainN = (p.bzChainN || 0) + 1;
     if (T().chain && p.bzChainN % 4 === 0) gain(p, BZ.rage.chain, 'dealt');
-    const bite = T().bite && p.bzChainSet && p.bzChainSet.has(e) ? 1.1 : 1; (p.bzChainSet = p.bzChainSet || new Set()).add(e); return bite; }
+    const bite = (T().bite && p.bzChainSet && p.bzChainSet.has(e) ? 1.1 : 1) * (p.bzRampT > 0 ? 1.25 : 1); (p.bzChainSet = p.bzChainSet || new Set()).add(e); return bite; }   /* (UNBOWED RAMPAGE: a quarter harder) */
   /* A CHOP STARTS (main.js startSwing): the run only goes on if the last chop landed (a whiff, or a pause, starts it over) */
   function chopStart(quick) { const p = P(); const keep = quick && p.bzChainHit !== false; if (!keep) { p.bzChainN = 0; p.bzChainSet = new Set(); } p.bzChainHit = false; return keep; }
   /* A BLOW HE TOOK (main.js damagePlayer0, after it landed): rage */
@@ -119,7 +120,8 @@ export function makeBerserker(api) {
 
   /* ---- WHAT A BLOW ON HIM COSTS (main.js damagePlayer0, multiplied in with the rest) ---- */
   function takeMul() { const p = P(), t = T(); let k = 1;
-    if (p.frenzyT > 0) k *= t.hide ? BZ.frenzy.hideMul : BZ.frenzy.takeMul;
+    if (p.frenzyT > 0) k *= Math.max(1, (t.hide ? BZ.frenzy.hideMul : BZ.frenzy.takeMul) - 0.05 * T().upg('ubthick'));   /* THICK SKIN+ */
+    if (p.bzDebtT > 0) k *= 1.25;   /* UNBOWED RAMPAGE's debt (L50): a quarter more taken for six seconds after it */
     if (p.hardenT > 0) k *= 2 / 3;
     return k; }
   /* A BLOW THAT WOULD KILL HIM: LAST STAND (his ONE "do not die" card now: SCARRED and UNBOWED are gone, Daniel 10-31 Q6/identity) holds him at one for 4 s. And THE FRENZY'S SURCHARGE never
@@ -132,7 +134,7 @@ export function makeBerserker(api) {
   const armoured = () => { const p = P(); return p.frenzyT > 0 || (p.charge || 0) >= BZ.wind.min * 0.9 || (T().unflinch && (p.rage || 0) >= BZ.rage.high) || p.bzIronT > 0; };
 
   /* ---- TAKE IT: the crossed axes ---- */
-  const beatLen = () => api.tap() * BZ.take.beat * BZ.perk.brace * (T().braceLong ? 4 / 3 : 1);   /* (STOUT BRACE and WIDE BRACE widen the beat) */
+  const beatLen = () => api.tap() * BZ.take.beat * BZ.perk.brace * (T().braceLong ? 4 / 3 : 1) + 0.03 * T().upg('ubtake');   /* TAKE IT+ */   /* (STOUT BRACE and WIDE BRACE widen the beat) */
   const takeUp = p => (p.braceT || 0) > 0;
   const onBeat = p => takeUp(p) && api.time - (p.bzTakeAt ?? -9) <= beatLen() + 1e-6;
   function raise(p) { p.braceT = BZ.take.min; p.bzTakeAt = api.time; p.braceRec = 0; p.braceHit = false; p.vx = 0; stats.takes++; stats.braces++;
@@ -165,8 +167,28 @@ export function makeBerserker(api) {
     api.ringAt(p.x + p.face * 8, p.y - 12, 11, '#ff9a5c', 0.22); api.sparks(p.x + p.face * 8, p.y - 12, p.face, 6); api.number(p.x, p.y - 28, 'TOOK IT', '#ff9a5c');
     api.trialEvent('block'); return 'blocked'; }
 
+  /* ---- THE L25-L50 TECHNIQUES (src/tech-berserker.js) ---- */
+  /* AXE CATCH (L25): UP+C as the recalled hatchet reaches him - caught on the beat: rage back, and it flies again for free (k 0.8 / 1.3 of a throw) */
+  function catchOnBeat(p) { const a = p.bzAxe; if (!T().tech('bzcatch') || !a || a.state !== 'back' || Math.hypot(a.x - p.x, a.y - (p.y - 14)) > 46) return false;
+    gain(p, 20, 'brace'); stats.catches++; p.bzAxe = null; api.SFX.bzCatch && api.SFX.bzCatch(); api.ringAt(p.x, p.y - 14, 14, '#ffd36b', 0.3); api.number(p.x, p.y - 30, 'CAUGHT', '#ffd36b'); api.hitstop(0.03);
+    throwAxe(p, true, 0.8 / BZ.axe.dmg); return true; }
+  /* WARCRY CHARGE (L30): C held at a full bar, X tapped - a wide shout: poise off everything near, half the bar spent, no flinch for two seconds */
+  function warcryCharge(p) { p.bzWarcryAt = api.time + 14; p.rage = Math.max(0, (p.rage || 0) - 50); p.bzIronT = Math.max(p.bzIronT || 0, 2); p.abuf = 0; p.atk = -1; stats.warcries++; fight(p);
+    api.kitPose(p, 'bzRoar', 0.5); api.SFX.bzRoar && api.SFX.bzRoar(); api.shakeCam(5); api.zoomKick(1.05, 0.2); api.ringAt(p.x, p.y - 12, 90, '#ff9a5c', 0.5); api.ringAt(p.x, p.y - 12, 40, '#ffd0a0', 0.3); api.number(p.x, p.y - 32, 'WARCRY', '#ff9a5c');
+    for (const e of near(p, 90, 50)) { api.poiseLean(e, 40); if (!e.maxHp && !e.mini) e.stagger = Math.max(e.stagger || 0, 0.4); } }
+  /* UNBOWED RAMPAGE (L50): C at a full bar during LAST STAND - four seconds quicker and a quarter harder, then six seconds of a quarter more taken as debt; LAST STAND holds him only to two seconds more (the law: a capstone's grace is <= 2 s) */
+  function unbowedRampage(p) { p.bzRampCd = api.time + 40; p.bzRampT = 4; p.standT = Math.max(p.standT || 0, 2); p.rage = 60; p.hasteT = Math.max(p.hasteT || 0, 4); p.braceT = 0; stats.rampages++; fight(p);
+    api.kitPose(p, 'bzUnch', 0.45); api.SFX.bzRoar && api.SFX.bzRoar(); api.shakeCam(6); api.zoomKick(1.07, 0.25); api.ringAt(p.x, p.y - 12, 34, '#ff2a1a', 0.5); api.number(p.x, p.y - 34, 'RAMPAGE', '#ff2a1a'); }
+  /* BERSERK LEAP (L45): a committed wind-up let go upward - he leaps; kitStep lands it in a ground-splitter (k 0.7) round him */
+  function leap(p) { if (!api.spend(12)) { api.tired(); return false; } p.atk = -1; p.heavy = false; p.heavySwing = false; p.swingMul = 1; p.vy = -250; p.vx = p.face * 150; p.ground = false; p.bzLeap = true; p.bzLeapAir = false; p.bzLeapT = 0; stats.leaps++;
+    api.kitPose(p, 'bzCleave', 0.35); api.SFX.bzHeavy && api.SFX.bzHeavy(); api.streaks(p.x, p.y - 8, -p.face, ['#ff9a5c', '#e8dcc0'], 140); return true; }
+  function leapStep(p, dt) { if (!p.bzLeap) return; p.bzLeapT += dt; if (!p.ground && !p.swim) p.bzLeapAir = true;
+    if ((p.ground || p.swim) && p.bzLeapAir) { p.bzLeap = false; fight(p); api.SFX.bzSplit ? api.SFX.bzSplit() : api.SFX.bzHeavy && api.SFX.bzHeavy(); api.shakeCam(7, p.face * 2); api.zoomKick(1.07, 0.22); api.ringAt(p.x, p.y - 2, 60, '#ff3a2a', 0.38); api.dust(p.x, p.y, 14); api.hitstop(0.06);
+      for (const e of near(p, 60, 34)) { api.hurtAs('heavy', e, Math.round(api.swordDmg() * 0.7 * api.amul('bzleap')), p.x, false); api.poiseLean(e, 20); if (e.alive && smallFoe(e, api.knockSkip)) { e.stagger = Math.max(e.stagger || 0, 0.7); e.vx = (Math.sign(e.x - p.x) || 1) * 160; e.vy = -110; } api.sparks(e.x, e.y - (e.h || 16) / 2, Math.sign(e.x - p.x) || 1, 6); } }
+    else if (p.bzLeapT > 2) p.bzLeap = false; }
+
   /* ---- FRENZY ---- */
-  function frenzy(p, free) { p.frenzyT = BZ.frenzy.t + (T().long ? BZ.frenzy.long : 0); p.frenzyMax = p.frenzyT; p.rage = 100; stats.frenzies++; p.bzRendE = null; p.bzRendN = 0; p.bzHealAcc = 0;
+  function frenzy(p, free) { p.bzChainExt = 0; p.frenzyT = BZ.frenzy.t + (T().long ? BZ.frenzy.long : 0); p.frenzyMax = p.frenzyT; p.rage = 100; stats.frenzies++; p.bzRendE = null; p.bzRendN = 0; p.bzHealAcc = 0;
     p.blastT = 0.45; p.vx = 0; p.braceT = 0;
     api.SFX.bzRoar && api.SFX.bzRoar(); api.shakeCam(6); api.zoomKick(1.08, 0.3); api.hitstop(0.05); api.ringAt(p.x, p.y - 12, 30, '#ff4a3a', 0.45); api.ringAt(p.x, p.y - 12, BZ.frenzy.cryR, '#ff9a5c', 0.6);
     api.number(p.x, p.y - 32, 'FRENZY', '#ff4a3a'); warCry(p, BZ.frenzy.haste); api.trialEvent('meter'); api.teach('frenzy'); void free; }
@@ -174,13 +196,13 @@ export function makeBerserker(api) {
   function warCry(p, t) { stats.cries++; for (const q of api.players()) if (q !== p && !q.dead && Math.hypot(q.x - p.x, q.y - p.y) < BZ.frenzy.cryR) { q.hasteT = Math.max(q.hasteT || 0, t); api.ringAt(q.x, q.y - 12, 14, '#ff9a5c', 0.35); } }
 
   /* ---- THE AXE THROW ---- */
-  function throwAxe(p) { if (p.bzAxe) return false; if (!api.spend(BZ.axe.st)) { api.tired(); return false; } stats.throws++;
+  function throwAxe(p, free = false, mul = 1) { if (p.bzAxe) return false; if (!free && !api.spend(BZ.axe.st)) { api.tired(); return false; } stats.throws++;
     const far = T().haft ? BZ.axe.haft : 1;
-    p.bzAxe = { x: p.x + p.face * 8, y: p.y - 10, vx: p.face * BZ.axe.vx * Math.sqrt(far), vy: BZ.axe.vy, spin: 0, state: 'fly', t: 0, hit: new Set(), lostT: 0 };
+    p.bzAxe = { x: p.x + p.face * 8, y: p.y - 10, vx: p.face * BZ.axe.vx * Math.sqrt(far), vy: BZ.axe.vy, spin: 0, state: 'fly', t: 0, hit: new Set(), lostT: 0, mul };
     api.kitPose(p, 'bzThrow', 0.24); api.SFX.bzThrow && api.SFX.bzThrow(); p.atk = -1; p.braceT = 0; api.teach('throw'); return true; }
   function recall(p) { const a = p.bzAxe; if (!a || a.state === 'back') return false; a.state = 'back'; a.hit = new Set(); a.t = 0; stats.recalls++; api.SFX.bzThrow && api.SFX.bzThrow(); return true; }
   function axeHit(p, a, e, back) { const far = T().haft ? BZ.axe.haft : 1;
-    api.hurtAs('shot', e, Math.round(api.swordDmg() * BZ.axe.dmg * (back ? 0.7 : 1) * far), a.x - Math.sign(a.vx || p.face) * 20, false); stats.axeHits++;
+    api.hurtAs('shot', e, Math.round(api.swordDmg() * BZ.axe.dmg * (back ? 0.7 : 1) * far * (a.mul || 1)), a.x - Math.sign(a.vx || p.face) * 20, false); stats.axeHits++;
     if (T().stagger && e.alive) { if (e.maxHp || e.mini) api.poiseLean(e, 18); else e.stagger = Math.max(e.stagger || 0, 0.8); }
     api.trialEvent('axe');   /* (his yard's axe station) */
     api.sparks(e.x, e.y - (e.h || 16) / 2, Math.sign(a.vx) || 1, 6); api.hitstop(0.04); }
@@ -213,7 +235,8 @@ export function makeBerserker(api) {
   /* ---- EVERY FRAME (main.js updatePlayer, the hero's own C block): the timers, the drain, the C key, the axe ---- */
   function update(dt, keys, ctx) {
     const p = P(), t = T(); clampRage(p);
-    for (const k of ['braceT', 'braceRec', 'hardenT', 'standT', 'bzIronT', 'blastT', 'parryT']) p[k] = Math.max(0, (p[k] || 0) - dt);
+    for (const k of ['braceT', 'braceRec', 'hardenT', 'standT', 'bzIronT', 'blastT', 'parryT', 'bzDebtT']) p[k] = Math.max(0, (p[k] || 0) - dt);
+    if (p.bzRampT > 0) { p.bzRampT = Math.max(0, p.bzRampT - dt); fight(p); if (p.bzRampT <= 0) { p.bzDebtT = 6; api.number(p.x, p.y - 30, 'DEBT', '#9a6a5a'); api.SFX.bzFrenzyEnd && api.SFX.bzFrenzyEnd(); } }   /* UNBOWED RAMPAGE (L50) */
     if (p.frenzyT > 0) { p.frenzyT = Math.max(0, p.frenzyT - dt); p.rage = 100 * p.frenzyT / (p.frenzyMax || BZ.frenzy.t); fight(p);
       if (Math.random() < dt * 24) api.parts.push({ x: p.x + (Math.random() - 0.5) * 12, y: p.y - 4 - Math.random() * 18, vx: (Math.random() - 0.5) * 10, vy: -30 - Math.random() * 30, life: 0.45, max: 0.45, col: Math.random() < 0.5 ? '#ff4a3a' : '#ffb08a', size: 1, grav: -30 });
       if (p.frenzyT <= 0) { p.rage = t.mist ? BZ.frenzy.mist : 0; p.bzRendE = null; p.bzRendN = 0; api.SFX.bzFrenzyEnd && api.SFX.bzFrenzyEnd(); api.ringAt(p.x, p.y - 12, 16, '#9a6a5a', 0.3); } }
@@ -223,7 +246,10 @@ export function makeBerserker(api) {
       else { p.vx = 0; if (keys.block) p.braceT = Math.max(p.braceT, 0.05); } }
     const cDown = keys.block && !p.cWas; p.cWas = !!keys.block;
     const free = !ctx.stunned && !ctx.dodging && !p.plunge && !ctx.attacking && !(p.blastT > 0) && !(p.charge > 0) && !p.dead && !(p.pounceT > 0) && !(p.pounceRec > 0);
-    if (cDown && keys.up && free && !takeUp(p)) { if (p.bzAxe) { if (t.ret) recall(p); } else throwAxe(p); }   /* UP+C: the throw (THE RETURN: again, it comes back) */
+    const xDown = !!keys.atk && !p.bzXWas; p.bzXWas = !!keys.atk;
+    if (xDown && takeUp(p) && !ctx.stunned && t.tech('bzwarcry') && (p.rage || 0) >= 100 && !(p.frenzyT > 0) && api.time >= (p.bzWarcryAt || 0)) warcryCharge(p);   /* WARCRY CHARGE (L30): C held at a full bar, X tapped */
+    if (cDown && free && t.tech('bzrampage') && p.standT > 0 && (p.rage || 0) >= 100 && !(p.bzRampT > 0) && api.time >= (p.bzRampCd || 0)) unbowedRampage(p);   /* UNBOWED RAMPAGE (L50): C at a full bar during LAST STAND */
+    else if (cDown && keys.up && free && !takeUp(p)) { if (p.bzAxe) { if (catchOnBeat(p)) { /* AXE CATCH (L25) */ } else if (t.ret) recall(p); } else throwAxe(p); }   /* UP+C: the throw (THE RETURN: again, it comes back) */
     else if (cDown && free && keys.down && (p.ground || p.swim) && (p.rage || 0) >= 100 && !(p.frenzyT > 0)) frenzy(p, free);   /* (claude/bzart, Daniel 10-11: THE FRENZY IS DOWN+C; a plain C at a full bar is TAKE IT) */
     else if (cDown && free && (p.ground || p.swim) && !takeUp(p)) { if (ctx.guardOk === false) { p.stFlash = 0.35; } else raise(p); }   /* (WINDED: no guard - claude/weight guardOk) */
     stepAxe(p, dt); rollStep(p);
@@ -234,18 +260,19 @@ export function makeBerserker(api) {
   const kit = {
     roar() { const p = P(); api.kitPose(p, 'bzRoar', 0.5); gain(p, 25, 'brace'); warCry(p, 5); fight(p); api.SFX.bzRoar && api.SFX.bzRoar(); api.shakeCam(4); api.ringAt(p.x, p.y - 12, 70, '#ff9a5c', 0.45);
       for (const e of near(p, 70)) { if (e.maxHp || e.mini) e.stagger = Math.max(e.stagger || 0, 0.2); else { e.stagger = Math.max(e.stagger || 0, 0.6); e.vx = (Math.sign(e.x - p.x) || 1) * 110; } } },
-    spin() { const p = P(); api.kitPose(p, 'bzSpin', 0.5); p.spinT = 0.5; p.spinHits = [new Set(), new Set()]; api.SFX.bzChop && api.SFX.bzChop(); },
+    spin() { const p = P(); stats.aoeCasts++; api.kitPose(p, 'bzSpin', 0.5); p.spinT = 0.5; p.spinHits = [new Set(), new Set()]; api.SFX.bzChop && api.SFX.bzChop(); },
     harden() { const p = P(); api.kitPose(p, 'bzHarden', 0.4); p.hardenT = 5; api.SFX.bzHarden && api.SFX.bzHarden(); api.ringAt(p.x, p.y - 12, 16, '#8a5a3a', 0.4); },
-    cleave() { const p = P(); api.kitPose(p, 'bzCleave', 0.35); p.cleaveT = 0.16; p.cleaveHit = new Set(); p.vx = p.face * 60; api.SFX.bzHeavy && api.SFX.bzHeavy(); api.shakeCam(3, p.face * 2); },
+    cleave() { const p = P(); stats.aoeCasts++; api.kitPose(p, 'bzCleave', 0.35); p.cleaveT = 0.16; p.cleaveHit = new Set(); p.vx = p.face * 60; api.SFX.bzHeavy && api.SFX.bzHeavy(); api.shakeCam(3, p.face * 2); },
     rampage() { const p = P(); api.kitPose(p, 'bzRamp', 0.45); p.rampT = 0.45; p.rampHit = new Set(); api.SFX.bzRoar && api.SFX.bzRoar(); api.streaks(p.x, p.y - 10, -p.face, ['#ff9a5c', '#e8dcc0'], 140); },
     shrug() { const p = P(); api.kitPose(p, 'bzShrug', 0.35); p.hurt = 0; p.flatT = 0; p.bzIronT = 0.4; gain(p, 15, 'brace'); api.SFX.bzShrug && api.SFX.bzShrug(); api.ringAt(p.x, p.y - 12, 14, '#c9b27c', 0.3); },
     stand() { const p = P(); api.kitPose(p, 'bzStand', 0.5); p.standT = 4; api.SFX.bzRoar && api.SFX.bzRoar(); api.ringAt(p.x, p.y - 12, 22, '#ff4a3a', 0.45); },
     unchained() { const p = P(); api.kitPose(p, 'bzUnch', 0.45); p.rage = 100; frenzy(p, true); },
     storm() { const p = P(); api.kitPose(p, 'bzStorm', 0.4); p.hatchets = p.hatchets || [];
-      for (let i = 0; i < 4; i++) p.hatchets.push({ x: p.x + p.face * 8, y: p.y - 14, vx: p.face * (260 + i * 20), vy: -120 + i * 55, life: 1.1, hit: new Set(), spin: i }); api.SFX.bzThrow && api.SFX.bzThrow(); },
+      const n = 4 + Math.min(2, T().upg('ubstorm')), hm = T().upg('ubstorm') >= 2 ? 1.2 : 1;   /* AXE STORM+ : a fifth, a sixth and a fifth harder */
+      for (let i = 0; i < n; i++) p.hatchets.push({ x: p.x + p.face * 8, y: p.y - 14, vx: p.face * (260 + i * 20), vy: -120 + i * 55 * 4 / Math.max(4, n), life: 1.1, hit: new Set(), spin: i, hm }); stats.aoeCasts++; api.SFX.bzThrow && api.SFX.bzThrow(); },
   };
   /* THE KIT'S BODIES IN MOTION (every frame, after update): the spin, the cleave, the rampage and the hatchets */
-  function kitStep(dt) { const p = P();
+  function kitStep(dt) { const p = P(); leapStep(p, dt);
     if (p.spinT > 0) { const prev = p.spinT; p.spinT -= dt; const half = p.spinT > 0.25 ? 0 : 1;
       if ((prev > 0.38 && p.spinT <= 0.38) || (prev > 0.13 && p.spinT <= 0.13)) { api.ringAt(p.x, p.y - 10, 36, '#e8eef6', 0.2); api.SFX.bzChop && api.SFX.bzChop(); }
       for (const e of near(p, 36, 26)) if (!p.spinHits[half].has(e)) { p.spinHits[half].add(e); api.hurtAs('light', e, Math.round(api.swordDmg() * 1.15 * api.amul('bzSpin')), p.x, false); api.sparks(e.x, e.y - (e.h || 16) / 2, Math.sign(e.x - p.x) || 1, 5); } }
@@ -259,7 +286,7 @@ export function makeBerserker(api) {
     if (p.hatchets && p.hatchets.length) { for (const h of p.hatchets) { h.life -= dt; h.vy += 300 * dt; h.x += h.vx * dt; h.y += h.vy * dt; h.spin += dt * 20;
         if (api.isSolid(Math.floor(h.x / api.TS), Math.floor(h.y / api.TS))) h.life = 0;
         for (const e of api.enemies) { if (h.life <= 0 || !e.alive || e.harmless || e.gone > 0 || h.hit.has(e) || !api.overlap({ l: h.x - 4, r: h.x + 4, t: h.y - 4, b: h.y + 4 }, api.box(e))) continue; h.hit.add(e);
-          api.hurtAs('shot', e, Math.round(api.swordDmg() * SKK.K.bzStorm * api.amul('bzStorm')), h.x - Math.sign(h.vx) * 10, false); api.sparks(e.x, e.y - (e.h || 16) / 2, Math.sign(h.vx), 4); } }
+          api.hurtAs('shot', e, Math.round(api.swordDmg() * SKK.K.bzStorm * api.amul('bzStorm') * (h.hm || 1)), h.x - Math.sign(h.vx) * 10, false); api.sparks(e.x, e.y - (e.h || 16) / 2, Math.sign(h.vx), 4); } }
       p.hatchets = p.hatchets.filter(h => h.life > 0); } }
 
   /* ---- DRAWN (after the hero): the axe in flight or on the ground, the hatchets, the frenzy's glow, the crossed axes, a rend's notches, a partner's haste ---- */
@@ -300,14 +327,14 @@ export function makeBerserker(api) {
       else if (Math.floor(api.time * 18) % 2) { px1(0, 0, '#ffb070'); px1(1, 0, '#ff9a5c'); px1(-1, 0, '#ff9a5c'); px1(0, 1, '#ff9a5c'); px1(0, -1, '#ff9a5c'); } }
     if (p.hardenT > 0 && Math.random() < 0.25) api.parts.push({ x: p.x + (Math.random() - 0.5) * 10, y: p.y - 6 - Math.random() * 14, vx: 0, vy: -8, life: 0.3, max: 0.3, col: '#8a5a3a', size: 1, grav: 0 });
     if (p.standT > 0) { g.globalAlpha = 0.25 + 0.15 * Math.sin(api.time * 10); g.strokeStyle = '#ff4a3a'; g.beginPath(); g.arc(Math.round(p.x - cx), Math.round(p.y - cy) - 12, 15, 0, 7); g.stroke(); g.globalAlpha = 1; } }
-  function clear() { const p = P(); p.bzAxe = null; p.hatchets = []; p.braceT = 0; p.braceRec = 0; p.frenzyT = 0; p.spinT = 0; p.cleaveT = 0; p.rampT = 0; p.hardenT = 0; p.standT = 0; p.bzIronT = 0; p.bzUnbowedUsed = false; p.bzChainN = 0;
+  function clear() { const p = P(); p.bzAxe = null; p.hatchets = []; p.braceT = 0; p.braceRec = 0; p.frenzyT = 0; p.spinT = 0; p.cleaveT = 0; p.rampT = 0; p.hardenT = 0; p.standT = 0; p.bzIronT = 0; p.bzUnbowedUsed = false; p.bzChainN = 0; p.bzRampT = 0; p.bzDebtT = 0; p.bzLeap = false;
     p.bzRendE = null; p.bzRendN = 0; p.bzHealAcc = 0; }
   const read = () => { const p = P(); return { rage: +(p.rage || 0).toFixed(1), frenzyT: +(p.frenzyT || 0).toFixed(2), braceT: p.braceT || 0, braceRec: p.braceRec || 0, takeUp: takeUp(p), onBeat: onBeat(p), axe: p.bzAxe ? { state: p.bzAxe.state, x: Math.round(p.bzAxe.x), y: Math.round(p.bzAxe.y) } : null,
     oneHanded: !!p.bzAxe, chain: p.bzChainN || 0, rendN: p.bzRendN || 0, workT: p.workT || 0, coilT: p.coilT || 0, whetT: p.whetT || 0, pounceT: p.pounceT || 0, pounceRec: p.pounceRec || 0, hasteT: p.hasteT || 0,
     swingMul: +swingMul().toFixed(3), takeMul: +takeMul().toFixed(3), armoured: armoured(), stats: { ...stats } }; };
   /* THE WIND-UP COMMIT as it stands now (main.js reads it for the blow, the poise and the recovery) */
   const aoeCost = id => bzAoeCost(BZ.cost[id], P().rage || 0, P().frenzyT > 0);
-  return { BZ, aoeCost, tierStat: n => { stats['tier' + n] = (stats['tier' + n] || 0) + 1; }, swingMul, oneHanded, dealt, rend, chopLanded, chopStart, took, takeMul, lethal, armoured, takeTakes, braceTakes: takeTakes, takeUp: () => takeUp(P()), onBeat: () => onBeat(P()),
+  return { BZ, aoeCost, leap: () => leap(P()), tierStat: n => { stats['tier' + n] = (stats['tier' + n] || 0) + 1; }, swingMul, oneHanded, dealt, rend, chopLanded, chopStart, took, takeMul, lethal, armoured, takeTakes, braceTakes: takeTakes, takeUp: () => takeUp(P()), onBeat: () => onBeat(P()),
     throwAxe: () => throwAxe(P()), recall: () => recall(P()), frenzy: () => frenzy(P(), true),
     update, kit, kitStep, draw, clear, read, raging: () => raging(P()), resetStats: () => { for (const k in stats) stats[k] = 0; }, canThrowMedium: e => canThrowMedium(P(), e) };
 }

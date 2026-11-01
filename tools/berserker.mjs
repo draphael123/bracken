@@ -47,17 +47,40 @@ try {
     const poiseOf=h=>{__bz();
       const b=__foe(20,'brute');b.maxHp=b.hp;b.mini=true;b.biteCd=99;BK.sim(2);P().st=P().maxSt;K.atk=true;BK.press('atk');for(let i=0;i<36;i++){P().inv=0.5;BK.sim(1);b.x=P().x+20;}K.atk=false;let most=0,heavy=false;   /* (claude/chargetiers: the double chop is T1 now and no longer goes by itself at the full wind - let go PAST T1 - the old 28 frames (0.47 s) let go just BEFORE the tier-1 wind (0.14 + 0.36 s, x his quickness) so the blow was a part-wind 57.6; redcleanup 10-26: the tier wind counts from a real PRESS (BK.press, as the tiers case does) - K.atk alone let go a part-wind blow of 57.6 - so press, hold 36 frames inside T1, foe kept off the bite; floor still 60, now measures 61.06) */for(let i=0;i<40;i++){BK.sim(1);b.x=P().x+20;heavy=heavy||P().heavy;most=Math.max(most,b.poise||0,b.broken>0?100:0);}return {most,heavy,hit:b.hp0-b.hp};};
     out.cross={bz:poiseOf('berserker')};
-    /* (claude/chargetiers) THE RAGE WIND-UP: the climb and its poses, each blow, rage quickens it, the auto-loose */
+    /* (claude/berserkerid, Daniel 10-31 Q6) THE WIND-UP COMMIT replaces the three-tier ladder: armoured from the minimum wind, cannot turn and cannot stop, ONE heavy chop that grows with the wind (damage, reach, poise), overcommits (recovery), rage winds quicker, and it goes by itself at full + hold */
     { const T={}, hold=n=>{P().st=P().maxSt;K.atk=true;BK.press('atk');for(let i=0;i<n;i++)BK.step(1);}, rel=()=>{K.atk=false;BK.step(2);};
-      __bz(); const seen=[],keys=[]; K.atk=true; BK.press('atk'); for(let i=0;i<110;i++){BK.step(1);const t=Z().tier;if(t&&!seen.includes(t))seen.push(t);if(t>=2&&!keys.includes(P().lastKey))keys.push(P().lastKey);} T.at=Z().tierAt; T.seen=seen; T.keys=keys; rel(); T.t3=Z().heavyTier; BK.sim(60);
-      __bz(); hold(40); rel(); T.t1=Z().heavyTier; BK.sim(60);
-      __bz(); const bk=__foe(-15,'sprig',5000); bk.biteCd=99; BK.sim(1); const hb=bk.hp; hold(70); rel(); T.t2=Z().heavyTier; const k2=[]; for(let i=0;i<20;i++){BK.step(1);k2.push(P().lastKey);} T.t2key=k2.includes('bzTier2'); T.behind=hb-bk.hp; bk.alive=false; BK.sim(60);
-      __bz(); const fw=__foe(44,'sprig',5000); fw.biteCd=99; BK.sim(1); hold(100); rel(); T.t3b=Z().heavyTier; const k3=[]; for(let i=0;i<24;i++){BK.step(1);k3.push(P().lastKey);fw.x=Math.max(fw.x,P().x+40);} T.t3key=k3.includes('bzTier3'); T.split={floored:(fw.floored||0)>BK.time,hit:fw.hp0-fw.hp}; fw.alive=false; BK.sim(60);
-      const pz=n=>{__bz();const b=__foe(20,'brute');b.maxHp=b.hp;b.mini=true;b.poise=0;b.biteCd=99;BK.sim(2);P().st=P().maxSt;K.atk=true;BK.press('atk');for(let i=0;i<n;i++){P().inv=0.5;BK.sim(1);b.x=P().x+20;}K.atk=false;let most=0;   /* (the brute swings on its own clock: a blow mid-hold drops the wind-up - he is kept untouchable for the hold, as the other cases' foes are kept quiet) */for(let i=0;i<40;i++){BK.sim(1);b.x=P().x+20;most=Math.max(most,b.poise||0,b.broken>0?999:0);}b.alive=false;BK.sim(30);return most;};
-      T.p1=pz(40); T.p3=pz(100);
+      __bz(); const seen=[],keys=[]; K.atk=true; BK.press('atk'); for(let i=0;i<110;i++){BK.step(1);const t=Z().tier;if(t&&!seen.includes(t))seen.push(t);if(t>=1&&!keys.includes(P().lastKey))keys.push(P().lastKey);} T.at=Z().tierAt; T.seen=seen; T.keys=keys; rel(); T.fullF=Z().windF; BK.sim(60);
+      __bz(); hold(20); rel(); T.shortF=Z().windF; T.shortTier=Z().heavyTier; BK.sim(60);
+      __bz(); hold(60); rel(); T.midF=Z().windF; BK.sim(60);
+      /* size: damage, reach, recovery of a short / mid / full wind on a dummy foe he cannot be hurt by */
+      const size=n=>{__bz();const w=__foe(18,'sprig',5000);w.biteCd=99;BK.sim(1);const h0=w.hp;P().st=P().maxSt;K.atk=true;BK.press('atk');let reach=0;for(let i=0;i<n;i++){BK.step(1);w.x=P().x+18;}K.atk=false;const x0=P().x;let rc=0;for(let f=0;f<40;f++){BK.sim(1);w.x=P().x+18;const b=BK.attackBox();if(b)rc=Math.max(rc,Math.round(b.r-P().x));}
+        let rec=0;for(let f=0;f<80&&!(P().atk<0&&(P().atkRec||0)<=0);f++){BK.sim(1);} return {dmg:h0-w.hp,reach:rc,rec:+(P().atkRecMax||0).toFixed(2),f:Z().windF};};
+      T.s0=size(18); T.s1=size(50); T.s2=size(110);
+      /* armoured while committed, cannot turn, creeps on */
+      __bz(); K.atk=true; BK.press('atk'); for(let i=0;i<40;i++)BK.step(1); const xA=P().x,fA=P().face; K.left=true; for(let i=0;i<30;i++)BK.step(1); K.left=false; T.turned=P().face!==fA; T.crept=Math.round(P().x-xA); P().inv=0;P().hurt=0; const eA=__foe(14); BKT.damagePlayer(eA.x,6,{who:eA}); T.flinch=P().hurt>0; K.atk=false; BK.step(2); BK.sim(60);
+      const pz=n=>{__bz();const b=__foe(20,'brute');b.maxHp=b.hp;b.mini=true;b.poise=0;b.biteCd=99;BK.sim(2);P().st=P().maxSt;K.atk=true;BK.press('atk');for(let i=0;i<n;i++){P().inv=0.5;BK.sim(1);b.x=P().x+20;}K.atk=false;let most=0;for(let i=0;i<40;i++){P().inv=0.5;BK.sim(1);b.x=P().x+20;most=Math.max(most,b.poise||0);}return most;};
+      T.p1=pz(32); T.p3=pz(110);
       __bz(); P().rage=60; K.atk=true; BK.press('atk'); BK.step(2); T.atHot=Z().tierAt; K.atk=false; BK.sim(60);
-      __bz(); K.atk=true; BK.press('atk'); let fired=-1,ft=0; for(let i=0;i<200;i++){BK.sim(1);if(P().heavy&&fired<0){fired=i;ft=P().bzTier;}} K.atk=false; T.auto={fired,tier:ft}; BK.sim(60);
+      __bz(); K.atk=true; BK.press('atk'); let fired=-1,fw=0; for(let i=0;i<200;i++){BK.sim(1);if(P().heavy&&fired<0){fired=i;fw=P().bzWindF;}} K.atk=false; T.auto={fired,windF:fw}; BK.sim(60);
       out.tiers=T; }
+    /* (claude/berserkerid) THE WIDE SLOW CLEAVE: the run-ender reaches wide both ways, is slower than a chop, and recovers longer */
+    { const W={}; __bz(); const e5=__foe(16); BK.sim(2); const t0=[]; for(let i=0;i<5;i++){P().st=P().maxSt;BK.press('atk');let n=0;for(let f=0;f<60;f++){BK.sim(1);e5.x=P().x+16;n++;if(P().atk<0&&(P().atkRec||0)<=0&&f>2)break;}t0.push(n);} W.frames=t0; W.chopFrames=t0[0]; W.cleaveFrames=t0[4];
+      __bz(); const eb=__foe(-10,'sprig',5000); eb.biteCd=99; BK.sim(1); P().combo=4; P().st=P().maxSt; P().bzChainHit=true; BK.press('atk'); let back=0; for(let f=0;f<40;f++){BK.sim(1);const b=BK.attackBox();if(b)back=Math.max(back,Math.round(P().x-b.l));} W.back=back; out.cleave=W; }
+    /* (claude/berserkerid) dash strike: 1.3x, and the rider SHOVES the small */
+    { const D={}; __bz(); const ds=__foe(40,'sprig',5000); ds.biteCd=99; BK.sim(2); D.cfg=BK.DASH_STRIKE?BK.DASH_STRIKE.berserker:null; P().st=P().maxSt; BK.press('dodge'); BK.sim(3); BK.press('atk'); const x0=ds.x; for(let f=0;f<30;f++){BK.sim(1);} D.shoved=Math.round(ds.x-x0); D.hurt=ds.hp0-ds.hp; out.dash=D; }
+    /* (claude/berserkerid) THE AoE COSTS: 25 / 30 / 45 stamina, rage pays part back (half bar -20%, full -40%) */
+    { const C2={}; for(const [id,key] of [['bzSpin','spin'],['bzCleave','cleave'],['bzStorm','storm']]) for(const rg of [0,60,100]){ __bz([id],24); __foe(24); BK.sim(2); P().rage=rg; P().bzFightT=BK.time||0; P().st=P().maxSt; const st=P().st; BK.press('throw'); BK.sim(2); (C2[key]=C2[key]||[]).push(Math.round(st-P().st)); } out.cost=C2; }
+    /* (claude/berserkerid) THE L25-L50 TECHNIQUES, taken from the card, then played */
+    { const Tn={}; const givenCard=(ms,up)=>{ BKT.PROG.card=BKT.PROG.card||{}; BKT.PROG.card.berserker={v:0,e:0,m:0,ms,up:up||{}}; };
+      __bz([],40); givenCard({25:'bzcatch'}); BK.applyUpgrades(); { const ax=Z(); P().st=P().maxSt; K.up=true; K.block=true; BK.sim(2); K.block=false; BK.sim(8); /* thrown: recall (THE RETURN) then catch on the beat */ }
+      /* catch: needs THE RETURN passive: grant it, throw, recall, catch */
+      __bz([],40); givenCard({25:'bzcatch'}); P().st=P().maxSt; K.up=true; K.block=true; BK.sim(2); K.block=false; BK.sim(4); K.block=true; BK.sim(2); K.block=false; let caught=0; const r0=P().rage||0; for(let i=0;i<60;i++){ BK.sim(1); const a=Z().axe; if(a&&a.state==='back'&&Math.hypot(a.x-P().x,a.y-(P().y-14))<40){ K.block=true; BK.sim(1); K.block=false; break; } } BK.sim(3); K.up=false; Tn.catch={catches:Z().stats.catches,flies:!!(Z().axe&&Z().axe.state==='fly')};
+      __bz([],40); givenCard({30:'bzwarcry'}); const wf=__foe(40,'brute'); wf.maxHp=wf.hp; wf.mini=true; wf.poise=0; wf.biteCd=99; BK.sim(2); P().rage=100; P().st=P().maxSt; K.block=true; BK.sim(3); BK.press('atk'); BK.sim(3); K.block=false; Tn.warcry={n:Z().stats.warcries,rage:Math.round(P().rage),iron:Z().armoured,poise:Math.round(wf.poise||0)};
+      __bz([],40); givenCard({35:'bzreckless'}); P().rage=100; P().frenzyT=6; P().frenzyMax=8; const hp0=P().hp; K.atk=true; BK.press('atk'); for(let i=0;i<40;i++)BK.step(1); K.atk=false; BK.step(2); Tn.reckless={cost:hp0-P().hp,pct:+((hp0-P().hp)/P().maxHp).toFixed(3)};
+      __bz([],40); givenCard({40:'bzchained'}); P().frenzyT=5; P().frenzyMax=8; const kf=__foe(16,'sprig',1); kf.biteCd=99; BK.sim(2); const f0=P().frenzyT; for(let i=0;i<30&&kf.alive;i++){ P().st=P().maxSt; BK.press('atk'); BK.sim(8); kf.x=P().x+16; } Tn.chained={gain:+(P().frenzyT-f0+0.4).toFixed(2),n:Z().stats.chained,alive:kf.alive};
+      __bz([],40); givenCard({45:'bzleap'}); const lf=__foe(30,'sprig',5000); lf.biteCd=99; BK.sim(2); P().st=P().maxSt; K.atk=true; BK.press('atk'); for(let i=0;i<50;i++)BK.step(1); K.up=true; K.atk=false; BK.step(1); K.up=false; let air=false; for(let i=0;i<90;i++){BK.sim(1); if(!P().ground)air=true; lf.x=P().x+30;} Tn.leap={n:Z().stats.leaps,air,hit:lf.hp0-lf.hp,landed:P().ground};
+      __bz([],40); givenCard({50:'bzrampage'}); P().standT=3; P().rage=100; P().st=P().maxSt; BK.press('block'); K.block=true; BK.sim(2); K.block=false; Tn.rampage={n:Z().stats.rampages,stand:+(P().standT||0).toFixed(1),rage:Math.round(P().rage),haste:+(P().hasteT||0).toFixed(1)}; BK.sim(60*4+20); Tn.rampageAfter={debt:+(P().bzDebtT||0).toFixed(1),take:Z().takeMul};
+      out.tech=Tn; }
     /* roll */
     __bz();e=__foe(30);BK.sim(2);const x0=e.x;BK.press('dodge');for(let i=0;i<24;i++)BK.sim(1);out.roll={shoved:Math.round(e.x-x0),stag:e.stagger>0||e.shoved>0,passed:P().x>e.x-4,shoves:Z().stats.rollShoves};
     /* TAKE IT */
@@ -146,15 +169,26 @@ try {
   ok(Math.max(...F.reach.slice(0, 4)) <= 20 && Math.max(...F.reach.slice(0, 4)) >= 16, 'flurry: the chops should reach 16-20 px (short: the knight\'s sword is longer): ' + F.reach);
   ok(F.spinL >= 12 && F.spinR >= 12, 'air: both axes should spin round him (a box both sides): ' + JSON.stringify(F));
   ok(r.cross.bz.heavy && r.cross.bz.most >= 60, 'double chop: not a heavy, or one does not fill most of a mini\'s poise bar: ' + JSON.stringify(r.cross));
-  { const T = r.tiers;   /* (claude/chargetiers) THE RAGE WIND-UP */
-    ok(T.seen.join() === '1,2,3' && T.at[1] - T.at[0] >= 0.4 && T.at[2] - T.at[1] >= 0.4, 'tiers: the hold climbs T1, T2, T3 at least 0.4 s apart: ' + JSON.stringify(T));
-    ok(T.keys.includes('bzWind2') && T.keys.includes('bzWind3'), 'tiers: T2 and T3 held show their own wind-up poses: ' + JSON.stringify(T.keys));
-    ok(T.t1 === 1 && T.t2 === 2 && T.t3 === 3 && T.t3b === 3, 'tiers: let go on T1/T2/T3, that tier comes down: ' + [T.t1, T.t2, T.t3, T.t3b]);
-    ok(T.t2key && T.behind > 0, 'tiers: THE WHIRL cuts the foe BEHIND him, in its own frames: ' + JSON.stringify({ key: T.t2key, behind: T.behind }));
-    ok(T.t3key && T.split.floored && T.split.hit > 0, 'tiers: the GROUND-SPLITTER splits the floor: a foe out past the axes is hit and knocked down: ' + JSON.stringify(T.split) + ' ' + T.t3key);
-    ok(T.p3 > T.p1, 'tiers: the GROUND-SPLITTER leans harder on a mini\'s bar than the overhead chop: ' + [T.p1, T.p3]);
-    ok(T.atHot[2] < T.at[2] - 0.15, 'tiers: RAGE winds them quicker: ' + JSON.stringify([T.at, T.atHot]));
-    ok(T.auto.fired > 0 && T.auto.tier === 3, 'tiers: held at T3 it comes down by itself: ' + JSON.stringify(T.auto)); }
+  { const T = r.tiers;   /* (claude/berserkerid) THE WIND-UP COMMIT */
+    ok(T.seen.join() === '1' && T.at[0] >= 0.3 && T.at[2] - T.at[0] >= 0.5, 'wind-up: the hold COMMITS once (tier 1) and keeps growing to full: ' + JSON.stringify(T.at) + ' ' + T.seen);
+    ok(T.keys.includes('bzWind2') && T.keys.includes('bzWind3'), 'wind-up: committed and full show their own wind poses: ' + JSON.stringify(T.keys));
+    ok(T.shortF === 0 && T.midF > 0.2 && T.midF < 0.9 && T.fullF >= 0.99, 'wind-up: the size grows with the hold (0 .. 1): ' + JSON.stringify([T.shortF, T.midF, T.fullF]));
+    ok(T.s2.dmg > T.s1.dmg && T.s1.dmg > T.s0.dmg, 'wind-up: a longer wind hits harder: ' + JSON.stringify([T.s0, T.s1, T.s2]));
+    ok(T.s2.reach > T.s0.reach + 6, 'wind-up: a longer wind reaches further: ' + JSON.stringify([T.s0, T.s1, T.s2]));
+    ok(T.s2.rec > T.s0.rec + 0.1 && T.s2.rec >= 0.45, 'wind-up: it OVERCOMMITS - a long recovery, longer for a bigger wind: ' + JSON.stringify([T.s0, T.s1, T.s2]));
+    ok(!T.turned && T.crept > 5 && !T.flinch, 'wind-up: committed he cannot turn, creeps on, and a blow does not flinch him: ' + JSON.stringify({ turned: T.turned, crept: T.crept, flinch: T.flinch }));
+    ok(T.p3 > T.p1, 'wind-up: a bigger wind leans harder on a mini\'s bar: ' + [T.p1, T.p3]);
+    ok(T.atHot[2] < T.at[2] - 0.15, 'wind-up: RAGE winds quicker: ' + JSON.stringify([T.at, T.atHot]));
+    ok(T.auto.fired > 0 && T.auto.windF >= 0.99, 'wind-up: held at full it comes down by itself: ' + JSON.stringify(T.auto)); }
+  { const W = r.cleave; ok(W.cleaveFrames > W.chopFrames * 1.4, 'wide cleave: the run-ender is slower than a chop: ' + JSON.stringify(W)); ok(W.back >= 10, 'wide cleave: it reaches BEHIND him too: ' + JSON.stringify(W)); ok(F.reach[4] >= 34, 'wide cleave: it reaches wide in front (34+): ' + F.reach); }
+  { const D = r.dash; ok(D.cfg && D.cfg.dmg === 1.3, 'dash strike: normalised to 1.3x: ' + JSON.stringify(D)); ok(D.shoved > 20, 'dash strike: the berserker\'s rider SHOVES the small: ' + JSON.stringify(D)); }
+  { const C2 = r.cost; ok(C2.spin.join() === '25,20,15' && C2.cleave.join() === '30,24,18' && C2.storm.join() === '45,36,27', 'AoE costs: 25/30/45, -20% at half rage, -40% at full: ' + JSON.stringify(C2)); }
+  { const Tn = r.tech; ok(Tn.catch.catches === 1 && Tn.catch.flies, 'AXE CATCH: caught on the beat, rage back, the hatchet flies again: ' + JSON.stringify(Tn.catch));
+    ok(Tn.warcry.n === 1 && Tn.warcry.rage <= 55 && Tn.warcry.iron && Tn.warcry.poise > 20, 'WARCRY CHARGE: poise off the near, half the bar spent, armoured: ' + JSON.stringify(Tn.warcry));
+    ok(Tn.reckless.cost >= 1 && Tn.reckless.pct >= 0.03 && Tn.reckless.pct <= 0.05, 'RECKLESS BLOW: costs 4% of his health: ' + JSON.stringify(Tn.reckless));
+    ok(Tn.chained.n >= 1 && Tn.chained.gain >= 0.4, 'CHAINED RAGE: a kill in a frenzy extends it: ' + JSON.stringify(Tn.chained));
+    ok(Tn.leap.n === 1 && Tn.leap.air && Tn.leap.hit > 0 && Tn.leap.landed, 'BERSERK LEAP: a committed wind let go upward leaps and lands in a split: ' + JSON.stringify(Tn.leap));
+    ok(Tn.rampage.n === 1 && Tn.rampage.stand <= 3 && Tn.rampage.haste > 0 && Tn.rampageAfter.debt > 0 && Tn.rampageAfter.take >= 1.25, 'UNBOWED RAMPAGE: a rampage, then the debt: ' + JSON.stringify([Tn.rampage, Tn.rampageAfter])); }
   ok(r.roll.stag && r.roll.shoves > 0, 'roll: the shoulder roll did not knock the small foe aside: ' + JSON.stringify(r.roll));
   const T = r.take;
   ok(T.beat === 'blocked' && T.beatLost === 0 && T.parries === 1 && T.ripT > 0 && T.ripCross, 'take it: raised as the blow landed it should parry (nothing lost, the riposte window, the next cut the cross-chop): ' + JSON.stringify(T));
