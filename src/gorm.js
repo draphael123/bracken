@@ -56,7 +56,7 @@ export const GORM = {
   sceptre: { tell: 0.9, every: 8, first: 6, over: 70, rMin: 150, rMax: 330, t: 2.1, lowY: 7, highY: 17, catchT: 0.5, minD: 50, maxD: 260, dmg: 22 },
   /* ENRAGE at rageAt of P2's bar: the crown cracks, he catches fire, the horn calls one last boar; tempo x his cooldowns; RAGE-ONLY THE BURNING CHARGE (a fire trail) */
   rageAt: 0.25,
-  rage: { tellT: 2.0, tempo: 1.25, walk: 1.2, chargeTell: 1.0, chargeV: 250, chargeEvery: 7, chargeFirst: 1.5, hitY: 26, endT: 0.9, trailT: 3.5, trailDrain: 0.12, dmg: 28 },
+  rage: { tellT: 2.0, tempo: 1.35, walk: 1.2, chargeTell: 1.0, chargeV: 250, chargeEvery: 6, chargeFirst: 1.5, hitY: 26, endT: 0.9, trailT: 3.5, trailDrain: 0.16, dmg: 28 },
 };
 export const GORM_SAY = {
   wake: 'KING GORM UNDERLEAF', litter: 'THE LITTER BREAKS. HE STANDS', horn: 'THE HUNTING HORN', boar: 'THE ROYAL BOAR', penned: 'PENNED',
