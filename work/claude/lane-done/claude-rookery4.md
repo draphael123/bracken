@@ -141,7 +141,7 @@ All checks ran as node, with no browser while the gate flag stood, except the on
   - Free RAM afterwards was about 2.9 GB. No other process was touched. corpses.mjs has no result (this lane does not change reskins).
 
 ## SMOKE BOSS RUNS (after the gate)
-(see the section at the end: filled in if the gate cleared in time)
+NOT RUN. GATE-RUNNING.flag (batch134, started 16:39) still stood at 20:29, after I waited about 45 min, so no headless browser was started. Not run for the same reason: rookery-probe, boss-openings, untold-told, boss-fight-end, reach-heroes, stuck, boss-rates and mash-bot. The next lane (tune), or a short browser follow-up, runs them: one at a time, >= 1500 MB free, explicit PORT.
 
 ## WHAT THE ART LANE NEEDS (sonnet; art before live)
 - **The sisters.** NEW, BIGGER, DISTINCT MODELS for all three: the Diver heavy-winged and dark, the Shrieker tall and pale with a swelling throat, the Snatcher broad with long talons. Per-move poses use the existing POSE table plus the new placeholders (toRoost, pebbleTell/pebble, markTell, gustTell/gust).
