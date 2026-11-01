@@ -7101,7 +7101,7 @@ function theDrownedCauseway() {
   ent('mover', 129, 28, { len: 2, vert: true, rise: 8, tide: true });   /* A RAFT moored on the second stone: a dry deck over the urchins at high water (not on the pilgrim's stone) */
   coins([126, 27], [130, 27], [134, 27], [138, 27], [142, 27]);
   
-  road(147, 160); ent('feeler', 152, R - 1); ent('crab', 157, R - 1, { face: -1 });
+  road(147, 160); ent('feeler', 160, R - 1); ent('crab', 157, R - 1, { face: -1 });   /* (claude/platwins2) the feeler waits past the hop run's end (was 152, on it) */
 
   // ---------------- 3. THE ARCADE (x 160-250). A roofed gallery that floods to its roof, with vaults where the air stays. ----------------
   road(160, 250);
@@ -7268,7 +7268,7 @@ function theDrownedCauseway() {
      - a scout past the ARCADE's broken span, a netter on the WAYSTATION's holm over the climb from the boom;
      - THE LAST MILE is the road's EXAM: its tide guard is an ELITE (ELITES.causeway) who holds the light's foot while the breakers come over,
        a scout on a parapet stone behind him - a stone's lee keeps your feet, his does not move him. The checkpoint at 561 is after it. */
-  ent('petrel', 131, 23); ent('scout', 148, R - 1, { face: -1 });
+  ent('petrel', 131, 23); ent('scout', 164, R - 1, { face: -1 });   /* (claude/platwins2) the bow stands past the stepping stones' hop run (was 148, on it) */
   ent('petrel', 436, 20); ent('petrel', 454, 20); ent('tideguard', 440, R - 1, { face: -1 }); ent('scout', 449, R - 1, { face: -1 });
   ent('scout', 533, R - 2, { face: -1 });
   /* AND THE BOW COVERS THE JUMPS (the walker: on this road the blows that land come from range - a melee foe on the flat is cut down before
@@ -7284,6 +7284,7 @@ function theDrownedCauseway() {
        + is seaward): the flood across the dip, the ebb over the stones, and the fall out through the sea arch. The BREAKERS come over
        the last mile from the end of the road and a stone's lee turns them. The FOG of the last mile, and the light's lamp that cuts it */
     causeCurrents: [{ x0: 79, x1: 96, y0: 19, y1: 28, rise: -40 }, { x0: 122, x1: 145, y0: 20, y1: 39, high: 45, ebb: 45 }, { x0: 433, x1: 457, y0: 31, y1: 37, fall: 120, ebb: 70 }],
+    calm: [[144, 156, 0, H]],   /* (claude/platwins2) the stepping stones' gap-and-hop run (x123-147) is a platforming section: the sprinkler keeps off its end */
     causeBreakers: { x0: 511, x1: 565, every: 4.4, row: R },
     causeFog: { x0: 505, x1: 566, lamp: [541.5, 5] },
     noDress: [[535, 548, 2, 8]],   /* the lamp gallery round the top of the light: the dress took its boards for a quay and stood a mooring post on it */
