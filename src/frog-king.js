@@ -32,14 +32,14 @@ export const FK = {
   drainAt: -1,                     /* (claude/firsthour's plug drain is retired: the court is open water from the start) */
   quota: [0.10, 0.10],             /* the share of him one royal pad is worth before he leaps on, per phase */
   stay: [20, 16],                  /* or this long with you on his pad */
-  take: 0.05,                      /* one opening is worth at most this share of him, then he shakes it off */
-  dazed: 1.6, winded: 1.25, air: 0.4, throat: 1.5,
-  tongue: { tell: [0.5, 0.45], live: 0.55, max: [175, 210], reel: 330, reelMax: 0.6, dmg: 22 },
+  take: 0.045,                      /* one opening is worth at most this share of him, then he shakes it off */
+  dazed: 1.5, winded: 1.2, air: 0.4, throat: 1.5,
+  tongue: { tell: [0.5, 0.45], live: 0.55, max: [175, 210], reel: 330, reelMax: 0.6, dmg: 26 },
   spit: { tell: [0.5, 0.42], shots: [1, 2], flight: 0.8, spread: 18 },
-  flop: { tell: 0.8, air: 0.5, rest: 1.6, sp: 170, life: 2.4, dmg: 24, dunk: 0.6 },
+  flop: { tell: 0.8, air: 0.5, rest: 1.6, sp: 170, life: 2.4, dmg: 28, dunk: 0.6 },
   swarm: { tell: 0.6, spit: 0.35, life: 3.2, lag: 0.5, orbit: 13, snapTell: 0.85, snapLive: 0.45, reach: 240, bite: 34, open: 2.4 },
   leap: { tell: [0.65, 0.5], air: 1.2, under: 0.9 },
-  sink: [1.15, 1.8],                  /* the sinking pads' pace, per phase */
+  sink: [1.3, 2.0],                  /* the sinking pads' pace, per phase */
   firm: [1, 1],                    /* leaves in a lane that HOLD after a reshuffle, per phase (of four) */
   gap: [0.55, 0.35],                /* his rest between blows, per phase */
   pair: [0, 0.6],                  /* (claude/frogking3) PHASE 2 CHAINS: after a told tongue or spit, the chance his NEXT told blow follows at once (a short rest, the same full tell) - the existing moves in pairs, no new attack */
