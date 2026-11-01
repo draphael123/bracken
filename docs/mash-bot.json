@@ -348,7 +348,7 @@
   }
  },
  "stockade": {
-  "hash": "74827c0946e6",
+  "hash": "c856eba07270",
   "boss": {
    "boss": "chief",
    "wins": 0,
@@ -449,7 +449,7 @@
    ]
   },
   "carried": {
-   "from": "f7bc642b7ffe",
+   "from": "74827c0946e6",
    "parts": [
     "boss"
    ]
@@ -458,28 +458,28 @@
    "knight": {
     "deaths": 29,
     "minHpPct": 0,
-    "hpLostPct": 2946,
-    "hits": 202,
+    "hpLostPct": 2913,
+    "hits": 270,
     "walked": 100,
-    "lifts": 51,
-    "held": 81,
+    "lifts": 52,
+    "held": 86,
     "duels": 27,
     "boardLifts": 0,
     "rides": 0,
-    "pulls": 8,
+    "pulls": 15,
     "ridden": {},
     "machines": true,
-    "frames": 80972,
-    "kills": 141,
-    "heroLevel": 2
+    "frames": 90398,
+    "kills": 82,
+    "heroLevel": 4
    },
    "warden": {
     "deaths": 29,
     "minHpPct": 0,
     "hpLostPct": 2903,
-    "hits": 203,
+    "hits": 229,
     "walked": 100,
-    "lifts": 51,
+    "lifts": 52,
     "held": 81,
     "duels": 27,
     "boardLifts": 0,
@@ -487,27 +487,27 @@
     "pulls": 8,
     "ridden": {},
     "machines": true,
-    "frames": 84484,
-    "kills": 111,
-    "heroLevel": 2
+    "frames": 90004,
+    "kills": 141,
+    "heroLevel": 4
    },
    "pyro": {
-    "deaths": 29,
+    "deaths": 28,
     "minHpPct": 0,
-    "hpLostPct": 2903,
-    "hits": 175,
+    "hpLostPct": 2870,
+    "hits": 199,
     "walked": 100,
     "lifts": 50,
-    "held": 81,
+    "held": 82,
     "duels": 27,
     "boardLifts": 0,
     "rides": 0,
     "pulls": 7,
     "ridden": {},
     "machines": true,
-    "frames": 69176,
-    "kills": 135,
-    "heroLevel": 2
+    "frames": 73023,
+    "kills": 163,
+    "heroLevel": 4
    }
   }
  },
