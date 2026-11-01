@@ -56,7 +56,7 @@ export const SS = {
   rake: { tell: 0.4, v: 250, T: 0.5, h: 16, dmg: 14, chance: [0.6, 1, 1], end: 0.6, pre: 0.25 },   /* (claude/rookery3) LIGHT: 0.5 -> 0.4, 18 -> 11, a shorter slide */
   shock: { tell: 0.7, range: 150, h: 64, dmg: 8, vx: 300, vy: -160, low: 30, gap: 64, edge: 30, teeter: 0.7, T: 0.45 },
   echo: { tell: 0.42, ahead: 56, w: 22, dmg: 11, life: 8, T: 0.3 },   /* (claude/rookery3) LIGHT: 0.75 -> 0.42, 14 -> 8 (the tile is AHEAD of you: a quick flash) */
-  grab: { tell: 0.7, v: 290, T: 0.8, h: 14, dmg: 22, lift: 0.8, hold: 2.6,   /* (claude/rookery4: hold 1.8 -> 2.6 - she carries you to a roost now) */ strikes: 3, gap: 0.22, liftH: 56, drop: 30, free: 1.6, cd: [5.5, 4.2, 3.5], first: 8, hang: 24 },
+  grab: { tell: 0.7, v: 290, T: 0.8, h: 14, dmg: 28, lift: 0.8, hold: 2.6,   /* (claude/rookery4: hold 1.8 -> 2.6 - she carries you to a roost now) */ strikes: 4, gap: 0.22, liftH: 56, drop: 36, free: 1.6, cd: [4.5, 3.6, 3], first: 5, hang: 24 },
   /* (claude/rookery2) THE LEVEL'S VERB IN THE FIGHT - P1: a sister KNOCKED DOWN (her dive or rake on a shield, a grab struck loose) climbs off the rock (ferryWait, SS.ride.window s:
      UP: GRAB): grab her talons and she FERRIES you up to the SHRIEKER'S PERCH (a bone nest lashed to a spire); land beside the shrieker and she is CORNERED (open x SS.ride.mul,
      up to SS.ride.cap of her) for SS.ride.startle s, then flees behind her ward. The nest tips you off after SS.ride.tip s (no camping on it) */
