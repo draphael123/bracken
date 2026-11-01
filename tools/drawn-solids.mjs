@@ -20,7 +20,7 @@ import { sweepLevels } from './sweep-pages.mjs';
 const want = process.argv.slice(2).filter(a => !a.startsWith('-'));
 const all = process.argv.includes('--all'), reportOnly = process.argv.includes('--report-only'), json = process.argv.includes('--json');
 const selftest = process.argv.includes('--selftest-red');
-const ids = want.length ? want : all ? LEVELS.map(l => l.id) : ['buriedcity'];
+const ids = want.length ? want : all ? LEVELS.map(l => l.id) : ['buriedcity', 'palisadewood'];   /* (claude/palisadesteps) the Palisade's ramp steps were solid with no art */
 /* (redcleanup 10-26) ONE LEVEL PER CALL, a fresh page every 11 levels, a hard limit per level that NAMES the level (a hang is a red, never a 40-minute silence): see tools/sweep-pages.mjs.
    The 66-level sweep used to be one evalp in one page (1800 s limit) and hung at SEALEDPYRAMID on an accumulated page. */
 const PER_LEVEL_MS = +(process.env.SWEEP_LEVEL_MS || 150000);
@@ -79,8 +79,19 @@ const code = id => `(async()=>{const {LEVELS,T}=await import('/src/level.js');co
         /* the new verb (claude/buriedcity3): every hourglass flipped, run out, and sunk back */
         if(K.glasses&&BK.flipAll){BK.flipAll();BK.sim(240);ph.push(scan('every hourglass flipped'));BK.sim(2400);ph.push(scan('every flip run out'));}
       }
+      /* (claude/palisadesteps, Daniel 11-01: "invisible steps in Palisade Wood") THE PALISADE WOOD's props lay cells when they come down (a scaffold's ramp, a watchtower's
+         bridge) and DRAW them themselves (src/palisade-hands.js + src/redraw/palisade_world.js), so the tile scan sees a null picture. Knock every prop, then every cell that
+         is still picture-less must show hands art: the frame with the props' art on differs from the frame with it off, inside that cell. */
+      const PW=BK.pwood&&BK.pwood(),isPW=!!(PW&&BK.L.pwood&&PW.knockProp);
+      const pwArt=r=>{if(!isPW||!r.cells.length)return r;const keep=[];BK.hideHero=true;PW.hideArt=false;
+        for(const [x,y] of r.cells){const v=BK.look(x,y);const Wd=BK.view.VW,Hd=BK.view.VH;const A=BK.view.buf.getContext('2d').getImageData(0,0,Wd,Hd).data.slice();
+          PW.hideArt=true;BK.look(x,y);const B=BK.view.buf.getContext('2d').getImageData(0,0,Wd,Hd).data;PW.hideArt=false;let n=0;
+          for(let yy=0;yy<16;yy++)for(let xx=0;xx<16;xx++){const sx=Math.round(x*16+xx-v.cx),sy=Math.round(y*16+yy-v.cy);if(sx<0||sy<0||sx>=Wd||sy>=Hd)continue;const j=(sy*Wd+sx)*4;if(Math.abs(A[j]-B[j])+Math.abs(A[j+1]-B[j+1])+Math.abs(A[j+2]-B[j+2])>=12)n++;}
+          if(n<40)keep.push([x,y,BK.L.grid[y*BK.L.W+x]]);}
+        BK.hideHero=false;r.cells=keep;r.bad=keep.length;return r;};
+      if(isPW){for(const h of BK.L.hoists||[])PW.knockProp(h.id);BK.sim(300);ph.push(pwArt(scan('palisade props knocked')));}
       /* a death: the respawn puts every small room back as built. The long settle is needed only for the City's moving sand. */
-      BK.respawn();BK.sim(60);ph.push(scan('after a respawn'));if(K&&K.L===BK.L){BK.sim(600);ph.push(scan('after a respawn, settled'));}
+      BK.respawn();BK.sim(60);ph.push(pwArt(scan('after a respawn')));if(K&&K.L===BK.L){BK.sim(600);ph.push(scan('after a respawn, settled'));}
       res.push({id,ph,movers:move});}
     return res;})()`;
 const got = await sweepLevels(ids, async (pg, id, ms) => { const r = await pg.evalp(code(id), ms); for (const e of pg.errors.slice(0, 3)) pageErrors.add(e); return r; }, { label: 'drawn-solids', chunk: 11, perLevelMs: PER_LEVEL_MS });

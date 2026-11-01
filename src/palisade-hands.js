@@ -42,7 +42,7 @@ export function makePalisadeHands(ctx) {
   const once = k => { if (S.said.has(k)) return false; S.said.add(k); return true; };
   const propBox = d => ({ l: d.cleat[0] * TS - 2, r: d.cleat[0] * TS + 18, t: (d.cleat[1] - 2) * TS, b: (d.cleat[1] + 1) * TS });
   const standAt = (tx, ty) => ctx.solidAt(tx, ty) || ctx.tileAt(tx, ty) === ctx.T.ONEWAY || ctx.tileAt(tx, ty) === ctx.T.PLANK;
-  const layCells = d => { for (const [x, y, k] of propCells(d, (x, y) => ctx.solidAt(x, y))) ctx.cellSet(x, y, k === 'S' ? ctx.T.SOLID : ctx.T.ONEWAY); };
+  const layCells = (d, cells) => { for (const [x, y, k] of (cells || propCells(d, (x, y) => ctx.solidAt(x, y)))) ctx.cellSet(x, y, k === 'S' ? ctx.T.SOLID : ctx.T.ONEWAY); };
   const walkCells = (d, on) => { const [x0, x1, row] = d.walk; for (let x = x0; x <= x1; x++) ctx.cellSet(x, row, on ? ctx.T.ONEWAY : ctx.T.AIR); };
   const stays = d => d.load === 'ramp' || d.load === 'tower' || d.load === 'bridge';
 
@@ -53,8 +53,8 @@ export function makePalisadeHands(ctx) {
     const hs = new Map();
     for (const d of (lv.hoists || [])) { const was = keep && keep.hs.get(d.id);
       const stay = was && stays(d) && was.state === 'down';
-      hs.set(d.id, stay ? was : { d, id: d.id, state: 'hang', lx: d.x * TS + 8, ly: ((d.hang !== undefined ? d.hang : d.load === 'crew' ? d.walk[2] : d.top) + 1) * TS, vy: 0, t: 0, hit: new Set(), heroHit: false, rolled: 0, fold: 0 });
-      if (stay) layCells(d); else if (d.load === 'crew') walkCells(d, true); }
+      hs.set(d.id, stay ? was : { d, cells: (d.load === 'ramp' || d.load === 'tower' || d.load === 'bridge') ? propCells(d, (x, y) => ctx.solidAt(x, y)) : null, id: d.id, state: 'hang', lx: d.x * TS + 8, ly: ((d.hang !== undefined ? d.hang : d.load === 'crew' ? d.walk[2] : d.top) + 1) * TS, vy: 0, t: 0, hit: new Set(), heroHit: false, rolled: 0, fold: 0 });
+      if (stay) layCells(d, was.cells); else if (d.load === 'crew') walkCells(d, true); }
     /* a stake wall comes out of the ground with a death (the grid is laid again) */
     S = { L: lv, hs, walls: [], said: keep ? keep.said : new Set(), sec: -1, banner: null, n: keep ? keep.n : { knocks: 0, crushed: 0, ramps: 0, bridges: 0, crews: 0, rolls: 0, stakeHits: 0, walls: 0, wallsDown: 0 } };
     for (const e of ctx.enemies()) if (e.alive && e.pwSetter) { e.setT = 1.2; e.setMode = null; }
@@ -164,7 +164,8 @@ export function makePalisadeHands(ctx) {
   H.hoist = id => S && S.hs.get(id);
 
   /* ---------- DRAWING (claude/palisadeart: every picture is in src/redraw/palisade_world.js; this file keeps the state and the rules) ---------- */
-  H.drawWorld = (g, cx, cy, VW, VH, time) => { if (!S) return; PWW.drawWorld({ g, S, lv: L(), ctx, cx, cy, VW, VH, time, propCells, PROPS, SETTER, standAt }); };
+  H.hideArt = false;   /* tools/drawn-solids.mjs draws the world with the props' own art off, to ask what THEY paint on a laid cell */
+  H.drawWorld = (g, cx, cy, VW, VH, time) => { if (!S || H.hideArt) return; PWW.drawWorld({ g, S, lv: L(), ctx, cx, cy, VW, VH, time, propCells, PROPS, SETTER, standAt }); };
   /* the setter's mallet and his stakes are drawn in his own frames (src/redraw/palisade_foes.js: 5 the raise, 6 the drive); nothing is laid over him now */
   H.setterOver = () => {};
   /* THE LANDMARK on the skyline (claude/palisadeart): THE PALISADE LINE and THE HALF-BUILT GATEHOUSE are baked and placed in src/redraw/palisade_backdrop.js (between the far wood and the mid row, so the trees stand in front of them);
