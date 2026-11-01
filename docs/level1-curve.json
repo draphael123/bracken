@@ -416,17 +416,17 @@
   "lostPct": 272
  },
  "fair": {
-  "hash": "e22579750acd",
+  "hash": "1910666f87ff",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 47,
-  "deaths": 18,
+  "hits": 62,
+  "deaths": 23,
   "kills": 2,
-  "lifts": 103,
+  "lifts": 104,
   "walked": 100,
   "bare": true,
-  "lostPct": 666
+  "lostPct": 863
  },
  "theatre": {
   "hash": "010422831498",

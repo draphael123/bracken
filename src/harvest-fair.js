@@ -105,6 +105,7 @@ export function buildHarvestFair({ painter, T, TS }) {
   hill(52, 3, 4);                                        /* a stall building's roof street: three rows up over six, a level top (58-61), down (52-67) */
   coins([58, R - 4], [60, R - 4]);
   pit(71, 73); coins([71, S - 2], [72, S - 3], [73, S - 2]);
+  block(68, 69, R - 2, R - 1); ent('deco', 68, R - 3, { kind: 'barrels' }); coins([68, R - 5]);   /* (claude/platwins1) a stack of prize barrels at the hill's foot: a two-row hop before the pit, so the roof street, the barrels, the pit and the stair read as one run */
   /* THE STALL-ROOF STAIR up to THE BOARDWALK: two roofs, three tiles a step (row 25, 22), then the plank street at row 19. Everybody can climb it; THE HIGH STRIKER (a plunge on its pad
      rings the bell and throws you straight up onto the boardwalk) is the quick way, and the first game the fair teaches */
   plat(74, R - 3, 3); plat(78, R - 6, 3); coins([75, R - 4], [79, R - 7]);
@@ -346,7 +347,7 @@ export function buildHarvestFair({ painter, T, TS }) {
      The fire takes the mummers it overtakes (runsOver). It pays off the effigy you watched them build, and it is the Queen's fire before you meet her */
   cut(469, 3, 44);                                        /* the descent 469-474, the lane 475-518 (floor row 31), the climb 519-524 */
   post(478, R + 2, 0.5); post(494, R + 2, 1); post(508, R + 2, 0);
-  foe('mummer', 478, { y: R + 2, squad: 'fire' }); foe('brute', 505, { y: R + 2, cnSkin: 'strongman', squad: 'fire' });   /* each a few steps before a line of bunting */
+  foe('mummer', 527, { y: R - 1, squad: 'fire' }); foe('brute', 536, { y: R - 3, cnSkin: 'strongman', squad: 'round' });   /* (claude/platwins1: the lane's two men stand OUT of the lane now - the lane and its stall roofs are a clean run. The mummer waits on the step where the fire lets you out (you run at it, so your look holds it); the strongman stands on the disc's near end.) */
   block(490, 490, R + 2, R + 2); block(502, 502, R + 2, R + 2); fallen.push(490, 502);   /* two fallen stalls across the lane: a tile high, a hop */
   for (const [x0, row] of [[471, R - 1], [478, R - 2], [485, R - 1], [492, R - 2], [499, R - 1], [506, R - 2], [513, R - 1]]) {   /* the HIGH lane: seven stall roofs, a three-tile gap between, each one gives; past the last the lanes meet - drop into the straw and run the climb out with the fire behind */
     plat(x0, row, 4); crumbles.push({ x0, x1: x0 + 3, row, rows: 1, count: 0.7, kind: 'stall', fire: true }); }

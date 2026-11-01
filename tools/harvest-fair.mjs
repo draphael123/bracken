@@ -383,8 +383,9 @@ if (fair) {
     ok(C && C.curve.length >= 3 && C.curve.slice(1).every(r => r[2]) && C.beams.length >= 3 && C.beams.every(b => b.period > b.up && b.up > 0.6) && new Set(C.beams.map(b => b.period)).size === C.beams.length, 'the chase has no told speed-ups, or its beams are not timed (three, each down part of a period, never all lifting together)');
     const CH = await import('../src/chase.js'), cps = L.ents.filter(e => e.t === 'check').map(e => ({ x: e.x * 16 + 8, y: (e.y + 1) * 16 }));
     ok(C && CH.chaseProblems(L.chases, cps).length === 0, 'the effigy\'s fire fails the chase lint: ' + (C && CH.chaseProblems(L.chases, cps).join('; ')));
-    const tm = L.ents.filter(e => (e.t === 'mummer' || strongman(e)) && e.x * 16 > C.trigger && e.x * 16 < C.end && e.y === R + 2);
-    ok(tm.length >= 2 && tm.every(e => C.beams.some(b => b.x0 / 16 > e.x && b.x0 / 16 - e.x <= 8)), 'the chase does not put mummers in the way, each a few steps before a beam: ' + tm.map(e => e.x));
+    /* (claude/platwins1, Daniel 10-31: every level needs a platforming section with no fight inside) the lane and its stall roofs are a CLEAN RUN now: the two men it had (a mummer and a strongman a few steps before a beam) stand OUT of it - the mummer on the step where the fire lets you out, the strongman on the near end of the last round's disc */
+    const tm = L.ents.filter(e => (e.t === 'mummer' || strongman(e)) && (e.squad === 'fire' || (e.squad === 'round' && strongman(e))));
+    ok(!L.ents.some(e => (e.t === 'mummer' || strongman(e)) && e.x * 16 > C.trigger && e.x * 16 < C.end - 16 && e.y >= R) && tm.length >= 2, 'the chase lane is not a clean run, or its two men went missing: ' + tm.map(e => e.x));
     ok(!L.ents.some(e => e.t === 'mend' && e.x >= G.x0 && e.x <= G.x1) && !L.ents.some(e => e.t === 'mend' && e.x >= L.arc.exam[0] && e.x < L.green.door && e.y >= 26), 'a free heart lies in the cutting or on the exam\'s road (the review cut 470 and 597)'); }
   // THE WICKER EFFIGY going up behind the fair, five stages, passed again and again
   /* (claude/fairfix2) four stages going up, the fourth standing on the bank at the fire and BURNING, and after it the ash */
@@ -772,7 +773,8 @@ try {
     // 5. THE GHOST TRAIN: cross the start line and stand still - it kills; with god on, a mummer left behind in the cutting is run over
     load(); { const C = BK.L.chases[0]; BK.god = false; BK.P.hp = BK.P.maxHp; BK.tp(Math.floor(C.trigger / 16) + 1, 30); BK.sim(2); let dead = false, t = 0;
       for (let i = 0; i < 60 * 14 && !dead; i++) { none(); BK.sim(1); t = i; dead = !!BK.P.dead || BK.P.hp <= 0; } out.trainKills = { dead, secs: +(t / 60).toFixed(1) }; }
-    load(e => (e.t === 'mummer' || e.cnSkin === 'strongman') && e.y === 30 * 16 + 16); { const C = BK.L.chases[0], mm = BK.enemies().filter(e => (e.t === 'mummer' || e.cnSkin === 'strongman') && e.alive); const r0 = BK.fair().runOver; BK.tp(Math.floor(C.trigger / 16) + 1, 30); BK.sim(2);
+    load(e => (e.t === 'mummer' || e.cnSkin === 'strongman') && e.x >= 526 * 16 && e.x <= 538 * 16); { const C = BK.L.chases[0], mm = BK.enemies().filter(e => (e.t === 'mummer' || e.cnSkin === 'strongman') && e.alive); const r0 = BK.fair().runOver;
+      mm.forEach((e, i) => { e.x = (i ? 505 : 478) * 16 + 8; e.y = 30 * 16 + 16; });   /* (claude/platwins1) the level keeps the lane clean now: stand the two men that wait outside it IN the lane for this test, where the fire's runsOver is what is being proved */ BK.tp(Math.floor(C.trigger / 16) + 1, 30); BK.sim(2);
       for (let i = 0; i < 60 * 12 && BK.P.x < C.end - 120; i++) { K.right = true; BK.sim(1); } none(); for (const e of mm) if (e.alive) e.stagger = 30;   /* (claude/fairfix2: the fair's mummers creep after you faster than the fire comes at first - stun the ones left behind, and wait for it) */
       for (let i = 0; i < 60 * 10 && BK.fair().runOver === r0 && !BK.P.dead; i++) BK.sim(1); for (let i = 0; i < 60 * 4 && BK.P.x < C.end + 16; i++) { K.right = true; BK.sim(1); } none(); out.runOver = { mummers: mm.length, runOver: BK.fair().runOver - r0 }; }
     return out; })()`, 900000);
