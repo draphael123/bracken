@@ -1,0 +1,80 @@
+{
+  "time": "2026-11-01T17:05:59.714Z",
+  "sourceGame": "62d9c02c102decc69ceaef4e1ec593a23170f1ff",
+  "sourceTree": "d6f20846727ec42b3cca651d1b061136d9c6d2f1",
+  "originalMainSha256": "81866b69fec64de5fdd00da316fb0d1e8e997ae9912f73f280981f0a70cb36d8",
+  "originalCharsSha256": "eb1f35d0d2da8da4b62e7f61b5acfadbef49b858cc10fc891a5d2663d059f2cf",
+  "candidateMainSha256": "1a38a363df9e12023b8280d9c4d84666086e75d3fe114263b04296307d4804c3",
+  "candidateCharsSha256": "aed5c392e19d67a4998ba23fb323d80e7b3e83afd6e2534388d725b11568e381",
+  "originalSnapshotFunctionSha256": "89e31693c6ae1ef5740fbb64a65c20ba5df927fa3d173955e3ad37b7810ee14a",
+  "unchangedSnapshotSource": "work/round-row-cold.mjs",
+  "nativeQualification": {
+    "paladinReceipt": "outputs/receipts/boss-right-projection-nov01.json",
+    "paladinRun": 41329008054,
+    "paladinNativeCases": 20,
+    "paladinFactoryGuideQualified": true,
+    "reaperReceipt": "outputs/receipts/reaper-projection-followthrough-nov01.json",
+    "reaperRun": 41328048001,
+    "reaperFactoryGuideQualified": true,
+    "priorReaperReferenceExceptionRemains": "outputs/receipts/reaper-projection-nov01.json",
+    "noFullGameGateInherited": true
+  },
+  "comparison": "Original Game62/originalUI versus exact two-private-boss projection only; no cache/near/UI/recorder/renderer/ownership/scheduler proposals combined",
+  "settings": {
+    "rounds": 3,
+    "variants": [
+      "before",
+      "candidate",
+      "return"
+    ],
+    "originalLayoutOpenPageOptions": {
+      "audioFiles": false
+    },
+    "cpu": "original unmodified helper default",
+    "dpr": 1,
+    "gameView": [
+      320,
+      180
+    ],
+    "display": "original unmodified helper default,exact control equality required",
+    "fonts": "original helper default",
+    "rendererMb": 1536,
+    "admissionMb": 4352,
+    "snapshotDeadlineMs": 120000,
+    "outerTimeoutMinutes": 15,
+    "nativeGc": "original helper unchanged"
+  },
+  "guide": {
+    "minimumBootMedianGainVsFasterControlPercent": 5,
+    "minimumOpenPageMedianGainVsFasterControlPercent": 5,
+    "all3CandidateSamplesFasterThanBothPairedControls": true,
+    "maximumMedianControlDriftPercent": 15,
+    "noSameSourceCleanerTimingRerun": true
+  },
+  "noFullGameStateRngMemoryCampaignLayoutOrFpsClaim": true,
+  "adopted": false,
+  "overallWorkComplete": false,
+  "allThreeMismatches": [
+    "mummer6SUCCESSFUL hits versus2..5",
+    "tower-collapse/Tome rebound at200frames",
+    "offscreen mage sampling"
+  ],
+  "sourceFiles": [
+    {
+      "file": "tools/boss-right-projection-source-nov01/candidate-main.js",
+      "sha256": "1a38a363df9e12023b8280d9c4d84666086e75d3fe114263b04296307d4804c3"
+    },
+    {
+      "file": "tools/boss-right-projection-source-nov01/candidate-chars.js",
+      "sha256": "aed5c392e19d67a4998ba23fb323d80e7b3e83afd6e2534388d725b11568e381"
+    },
+    {
+      "file": "tools/boss-projection-cold-nov01.mjs",
+      "sha256": "b5e37430a50119d406afbb9c1944dc58c89862ffa8f88380599341c12e89eff4"
+    },
+    {
+      "file": "tools/boss-projection-cold-snapshot-nov01.mjs",
+      "sha256": "5e03d07346dc99af37989d01567016b0b20a8e5f0c0d5fe669ff83225b0f965b"
+    }
+  ]
+}
