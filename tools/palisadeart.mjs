@@ -50,11 +50,11 @@ try {
   for (const [k, v] of Object.entries(o.foes)) ok(v.n > 0 && v.n === v.skinned, 'every ' + k + ' of the level wears its own skin on the page (' + v.skinned + '/' + v.n + ')');
   for (const [sk, v] of Object.entries(o.sheets)) ok(v.have && v.frames === v.base && v.left === v.base && v.white, sk + ' has its own sheet with the base\'s ' + v.base + ' frames, mirrored and white-flash');
   const [w0, w1, w2, w3, look, raise, drive, hurt] = o.setterSig; ok(new Set([w0, raise, drive, hurt, look]).size === 5 && raise !== w1 && drive !== w1 && raise !== w2 && raise !== w3, 'the stake-setter\'s raise (5), drive (6), look (4) and hurt (7) are each their own picture, none the walk');
-  const need = ['sleep', 'wake', 'walk', 'recover', 'chargeTell', 'charge', 'dazed', 'sweepTell', 'sweep', 'volleyTell', 'volley', 'trampleTell', 'trample', 'stuck', 'tear', 'loose', 'dead'];
+  const need = ['sleep', 'wake', 'walk', 'recover', 'chargeTell', 'charge', 'dazed', 'sweepTell', 'sweep', 'volleyTell', 'volley', 'orderTell', 'order', 'lost', 'wallTell', 'wallRun', 'wallHit', 'wallBack', 'stuck', 'tear', 'loose', 'dead'];
   ok(need.every(n => o.modes.includes(n)), 'every windup and release of the beast has a pose: ' + need.join(' '));
   const all = new Map(), dup = []; for (const n of need) { const s = o.bsig[n]; if (all.has(s)) dup.push(n + '=' + all.get(s)); all.set(s, n); }
   ok(dup.length === 0, 'each beast frame is its own picture (B16), none a copy of another' + (dup.length ? ': ' + dup.join(',') : ''));
-  const walk = o.bsig.walk, told = ['chargeTell', 'sweepTell', 'volleyTell', 'trampleTell']; ok(told.every(n => o.bsig[n] !== walk), 'no told move is drawn as the walk');
+  const walk = o.bsig.walk, told = ['chargeTell', 'sweepTell', 'volleyTell', 'orderTell']; ok(told.every(n => o.bsig[n] !== walk), 'no told move is drawn as the walk');
   ok(['walk', 'chargeTell', 'charge', 'sweep', 'volley'].every(n => o.bsig[n] !== o.bsig[n + '/cut']), 'the cut-harness set (no ram, no handlers) is a different picture');
   ok(o.dead.ok && o.dead.w > 60, 'he leaves a body (' + o.dead.w + ' px)'); ok(o.card.n === 2 && o.card.w >= 60 && o.card.h >= 40, 'his bestiary card is painted (' + o.card.w + 'x' + o.card.h + ')');
   ok(o.area.length === 6, 'a frame of every area draws');

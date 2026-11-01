@@ -121,7 +121,7 @@ export function makeBatteringBeastHands(ctx) {
   H.drawBack = (g, cx, cy, time) => { if (!S) return; const e = live(), x = X(cx), y = Y(cy), G = S.G;
     /* THE OLD FOREST GATE at the clearing's west wall (the gate you came through), and the palisade's unfinished end at its east */
     const gx = x(G.x0) - 4, fy = y(G.floorY); if (gx > -80) BBA.drawGate(g, gx, fy);
-    const px = x(G.x1) + 2; if (px < ctx.VW() + 60) BBA.drawEnd(g, px, fy, time, S.breach, S.crack, e && e.mode === 'wallHit' ? 1 - Math.max(0, e.modeT) / BB.wall.slam : 0);   /* (claude/beast3) cracked by LOOSE, leaning in the slam, BREACHED */
+    const px = x(G.x1) - 60; /* (claude/beast3) drawn just inside the east wall, over the rubble cells: the camera stops at the wall, so the end stood off-screen before */ if (px < ctx.VW() + 60) BBA.drawEnd(g, px, fy, time, S.breach, S.crack, e && e.mode === 'wallHit' ? 1 - Math.max(0, e.modeT) / BB.wall.slam : 0);   /* (claude/beast3) cracked by LOOSE, leaning in the slam, BREACHED */
     /* (claude/beast3) THE PALISADE'S ARCHERS: one on the old gate's lintel, one on the palisade's next rank - they draw on the Hornsman's horn and loose on the blast */
     const ap = !e || !ctx.bossActive ? 'idle' : e.mode === 'orderTell' && !S.horn.down ? 'draw' : e.mode === 'order' ? 'loose' : 'idle';
     if (gx > -80) BBA.drawArcher(g, gx + 4, fy - 106, 1, ap, time); if (px < ctx.VW() + 60) BBA.drawArcher(g, px + 47, fy - 70, -1, ap, time + 0.3);
@@ -148,9 +148,9 @@ export function makeBatteringBeastHands(ctx) {
     for (const q of S.lanes) { const l = x(q.l), r2 = x(q.r), w2 = r2 - l;
       if (q.done) { g.globalAlpha = Math.max(0, Math.min(1, q.stuck / 0.3)); for (let k = 0; k < 4; k++) { const ax = l + 5 + R((k + 0.5) * (w2 - 10) / 4); rect(g, ax, fyy - 7, 1, 7, '#6a4a2a'); rect(g, ax - 1, fyy - 9, 3, 2, '#d8d0c0'); } g.globalAlpha = 1; continue; }
       const col = q.wave === 1 ? '#ff4a2a' : '#ff9a5c', soon = q.t < 0.5, on = Math.floor(time * (soon ? 16 : 6)) % 2;
-      g.globalAlpha = 0.07 + (soon ? 0.06 : 0); g.fillStyle = col; g.fillRect(l, fyy - BB.order.top, w2, BB.order.top); g.globalAlpha = 1;
+      g.globalAlpha = 0.13 + (soon ? 0.1 : 0); g.fillStyle = col; g.fillRect(l, fyy - BB.order.top, w2, BB.order.top); g.globalAlpha = 1;
       g.fillStyle = on ? col : '#fff6e0'; for (let q2 = l; q2 < r2 - 2; q2 += 6) g.fillRect(q2, fyy - 2, 4, 2);
-      rect(g, l, fyy - 6, 1, 6, col); rect(g, r2 - 1, fyy - 6, 1, 6, col);
+      rect(g, l, fyy - 12, 1, 12, col); rect(g, r2 - 1, fyy - 12, 1, 12, col); rect(g, l, fyy - 3, w2, 1, col);
       const cx2 = R((l + r2) / 2); g.fillStyle = col; g.fillRect(cx2 - 3, fyy - 12, 7, 1); g.fillRect(cx2 - 2, fyy - 11, 5, 1); g.fillRect(cx2 - 1, fyy - 10, 3, 1); g.fillRect(cx2, fyy - 9, 1, 1);   /* a chevron down */
       ctx.text(String(q.wave), cx2, fyy - 15, col, 'center', 5);
       if (q.t < BB.order.flight) { const k = 1 - q.t / BB.order.flight; for (let n = 0; n < 4; n++) { const ax = l + 5 + R((n + 0.5) * (w2 - 10) / 4), ay = R(fyy - 170 + k * 168 - ((n * 13) % 22));   /* the arrows coming down */
