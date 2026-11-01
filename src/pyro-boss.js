@@ -16,7 +16,7 @@
 //                    MARK on the floor. A full meter = CONFLAGRATION: told (staff up, the marks pulse white), then every mark ERUPTS - step off them.
 //                    She is SPENT after it. Water on a mark puts it out.
 export const OPEN_MUL = 1.5;                 // every opening (spent, cancelled, stoking, the rise's recovery): x this
-export const WARD = { up: 1.0, gutter: 0.35, spent: 1.0, cd: [3.0, 2.4], chance: [0.55, 0.7], mul: 0.4, scorch: 7, scorchCd: 0.35, reach: 64, heat: 6 };
+export const WARD = { up: 1.0, gutter: 0.35, spent: 1.0, cd: [3.0, 2.4], chance: [0.55, 0.7], mul: 0.4, scorch: 5, scorchCd: 1.0, reach: 64, heat: 6 };   /* (tune 1b: the scorch once a ward, not every blow - the knight bot fed it 0/6) */
 export const CHARGE = {
   stepT: 0.45,                               // a step every this long (the hero's 0.18/0.9/1.5/2.0/2.5 s scaled to a boss's read)
   fastT: 0.3,                                // ...the READY ball a full P1 meter throws, quicker
