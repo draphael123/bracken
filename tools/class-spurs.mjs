@@ -16,7 +16,7 @@ try {
   const r = await pg.evalp(`(async()=>{
     const {LEVELS} = await import('/src/level.js');
     const idx = id => LEVELS.findIndex(l=>l.id===id);
-    const wipe = () => { for (const id of ['stockade','burning','witchlight','unburied']) delete BKT.PROG[id]; delete BKT.PROG.lostBanners; delete BKT.PROG.fieldOpen; BKT.PROG.bannerMig = 1; };
+    const wipe = () => { for (const id of ['stockade','burning','witchlight','unburied']) delete BKT.PROG[id]; delete BKT.PROG.lostBanners; delete BKT.PROG.fieldOpen; delete BKT.PROG.burningOpen; BKT.PROG.bannerMig = 1; };
     /* THE JUMP TO A NODE. gotoLevelNode(levelIndex) runs off the game's own 'return to map' path (BK.load then a
        confirm off gameover), so this is not a shortcut invented for the test - it is the same door the game uses
        every time a level ends, and it leaves PROG.mapNodeId set to the node's own id (main.js's gotoLevelNode). */
