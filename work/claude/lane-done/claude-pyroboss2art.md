@@ -11,7 +11,7 @@ Base: claude/pyroboss2 2b6daecf. Art only: no numbers, boxes, hit rules or level
 
 ## CHECKS (gate137 beside; one browser at a time, >= 1.5 GB free each)
 GREEN: goblin-lint, pyro-duel, village-water, fire-mage (static + FM_PAGE=1 game).
-SEE BELOW for corpses / textfit / mark-integrity.
+corpses.mjs ran 30 of 32 levels clean before my 590 s cap (the fire-mage levels not confirmed in that window; a smoke kill in the burning village drew with no page errors, corpse frame 9 not asserted). NOT RUN: textfit, mark-integrity (long, browser; no new strings, no new marks - art only), per-level pixels/art checks (no level or tile changes).
 
 ## QUESTIONS FOR DANIEL (built as rec)
 1. Fire mage patch tone on grass is the same flame with green blades catching at the edge - enough, or a bigger "spreading" tell? (rec: enough.)
