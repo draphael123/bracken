@@ -39,7 +39,7 @@ export const FOEPASS = {
   /* act IV */
   waymeet: LATE, towpath: LATE, canal: LATE, theatre: { ...LATE, affix: false },   /* (release batch136: the Puppeteer fight has adds that wore the act-IV affixes - the 57% boss took 2334 and timed out at 300 s, 11% left; like the flotilla, a boss level with adds keeps pursuit + lead and no affix) */ fair: LATE, fields: LATE, burial: LATE, witchlight: LATE, mage: LATE, unburied: LATE, fallingtower: LATE, church: LATE,
   /* act V */
-  caravan: LATE, welltown: LATE, underwell: LATE, redgorge: LATE, glasssea: LATE, ksar: LATE, buriedcity: LATE, sealedpyramid: LATE,
+  caravan: LATE, welltown: LATE, underwell: { ...LATE, affix: false }, redgorge: LATE, glasssea: LATE, ksar: LATE, buriedcity: LATE, sealedpyramid: LATE,
 };
 /* THE AFFIX DENSITY BY ACT: the share of a level's eligible common foes that carry one (never more than one each). Act I none: "from act 2". */
 export const AFFIX_ACT = { 1: 0, 2: 0.15, 3: 0.25, 4: 0.4, 5: 0.5, 6: 0.5, 7: 0.55, 8: 0.6 };   /* (claude/lategameb, Daniel 10-31, brief-lategame-1101 Q1A: 0 / 15 / 20 / 25 / 30 % -> 0 / 15 / 25 / 40 / 50 %, then the three later arcs; densityOf caps a level at 0.6) */
