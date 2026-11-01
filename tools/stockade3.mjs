@@ -79,10 +79,10 @@ try { p = await pg.evalp(`(async()=>{const {LEVELS}=await import('/src/level.js'
   P().face=1;BK.press('atk');k=0;while(k++<240&&pile('pile-2').st!=='down')BK.sim(1);BK.sim(5);o.loudCrushed=n0-E().filter(e=>e.alive&&e.gateGuard).length;o.loudPile=pile('pile-2').st;
   /* the Chieftain: the hall's horn, HE HEARS THE HORN, the peg, CRUSHED, the cooldown */
   const fight=()=>{load();const A=BK.L.arena;BK.tp(Math.round(A.trigger/16)+1,Math.round(A.floor/16)-1);BK.sim(200);const ch=E().find(q=>q.t==='chief'&&q.alive);ch.inv=0;ch.hornCd=99;ch.kegCd=99;return ch;};
-  let ch=fight();o.hallHorn=S().held;const hl=pile('hall-l'),spot=hl.cleat+14;
+  let ch=fight();o.hallHorn=S().held;const hl=pile('hall-l'),spot=hl.cleat+Math.sign(hl.x-hl.cleat)*14;
   P().x=spot;P().y=BK.L.arena.floor;ch.x=spot+90;ch.mode='walk';ch.modeT=1;ch.lureCd=0;BK.sim(2);o.lureable=S().chiefLureable;H().blow();o.lured=ch.mode==='lured';
   k=0;while(k++<300&&!(ch.mode==='lured'&&ch.lureLook))BK.sim(1);o.lureLook=ch.mode==='lured'&&ch.lureLook;o.lureAt=Math.round(ch.x-hl.x);
-  P().x=spot;P().face=-1;BK.sim(1);BK.press('atk');k=0;while(k++<120&&ch.mode!=='planted')BK.sim(1);o.crushed=ch.mode==='planted'&&ch.poseKind==='crushed';ch.inv=0;let h0=ch.hp;BKT.hurtAs('light',ch,20,ch.x+12,false);o.crushTake=(h0-ch.hp)/20;
+  P().x=spot;P().face=Math.sign(hl.cleat-hl.x);BK.sim(1);BK.press('atk');k=0;while(k++<120&&ch.mode!=='planted')BK.sim(1);o.crushed=ch.mode==='planted'&&ch.poseKind==='crushed';ch.inv=0;let h0=ch.hp;BKT.hurtAs('light',ch,20,ch.x+12,false);o.crushTake=(h0-ch.hp)/20;
   k=0;while(k++<400&&ch.mode==='planted')BK.sim(1);ch.mode='walk';ch.modeT=1;BK.sim(2);H().blow();o.ignored=ch.mode!=='lured'&&S().lure.ignored>=1;
   /* his crew under a hall pile: CRUSHED and a drip of health */
   ch=fight();const hr=pile('hall-r');ch.x=hl.x+40;ch.mode='walk';ch.modeT=0;P().x=ch.x-60;P().hp=Math.round(P().maxHp*0.4);const hp0=P().hp;BKT.stk().update(0);

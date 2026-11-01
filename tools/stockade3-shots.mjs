@@ -14,9 +14,9 @@ try {
     P().x=p2.cleat-14;P().face=1;tick(2);BK.press('atk');tick(90);P().x=p2.x-40;tick(30);o.shots.stair=shot();o.stair=pile('pile-2').st;
     load();H().give();const g=BK.L.stockade.gate;BK.tp(Math.floor(p2.cleat/16)-1,19);P().face=1;tick(20);H().blow();let k=0;while(k++<300&&E().filter(e=>e.alive&&e.gateGuard==='out'&&Math.abs(e.x-p2.x)<26).length<2)tick(1);o.shots.loud=shot();
     BK.press('atk');tick(40);o.shots.loudCrush=shot();
-    load();const A=BK.L.arena;BK.tp(Math.round(A.trigger/16)+1,Math.round(A.floor/16)-1);tick(200);const ch=E().find(q=>q.t==='chief'&&q.alive);ch.hornCd=99;ch.kegCd=99;const hl=pile('hall-l'),spot=hl.cleat+14;
+    load();const A=BK.L.arena;BK.tp(Math.round(A.trigger/16)+1,Math.round(A.floor/16)-1);tick(200);const ch=E().find(q=>q.t==='chief'&&q.alive);ch.hornCd=99;ch.kegCd=99;const hl=pile('hall-l'),spot=hl.cleat+Math.sign(hl.x-hl.cleat)*14;
     P().x=spot;P().y=A.floor;P().face=-1;ch.x=spot+90;ch.mode='walk';ch.modeT=1;ch.lureCd=0;tick(2);H().blow();k=0;while(k++<300&&!(ch.mode==='lured'&&ch.lureLook))tick(1);tick(10);o.shots.lured=shot();o.lured=ch.mode;
-    P().x=spot;P().face=-1;tick(1);BK.press('atk');k=0;while(k++<120&&ch.mode!=='planted')tick(1);tick(12);o.shots.crushed=shot();o.crushed=ch.poseKind;
+    P().x=spot;P().face=Math.sign(hl.cleat-hl.x);tick(1);BK.press('atk');k=0;while(k++<120&&ch.mode!=='planted')tick(1);tick(12);o.shots.crushed=shot();o.crushed=ch.poseKind;
     return o;})()`, 240000);
   for (const [k, v] of Object.entries(r.shots)) writeFileSync(join(out, k + '.png'), Buffer.from(v.split(',')[1], 'base64'));
   console.log('stockade3-shots:', JSON.stringify({ ...r, shots: Object.keys(r.shots) }), '->', out);

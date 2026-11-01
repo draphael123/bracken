@@ -2314,11 +2314,12 @@ async function runbossLab(BK, opts) {
       /* (claude/stockade3-1101) HE HEARS YOUR HORN, as a player uses it: with a hall pile still hung and the horn lit, the hands stand a step off its peg (away
          from the logs) and blow it once he is on his feet between blows and near; while he walks to the logs they wait at the peg, and strike it the moment he
          stands under them (the peg glints). The powder and his war horn below still come first */
+      let chiefLureDuty = null;   /* (the chain below walks it: the generic approach would undo a goal set here) */
       { const sk = boss.t === 'chief' && BK.stockade ? BK.stockade() : null, hp = sk && sk.piles ? sk.piles.filter(q => q.hall && q.st === 'hung' && q.cleat !== undefined) : [];
         const SKH = sk, lured = boss.mode === 'lured', pl = lured ? hp.find(q => q.id === boss.lurePile) : hp.sort((a, b) => Math.abs(a.cleat - P.x) - Math.abs(b.cleat - P.x))[0];
-        if (pl && SKH && sk.held && !(sk.tower && sk.tower.st === 'manned')) { const away = Math.sign(pl.cleat - pl.x) || 1, spot = pl.cleat + away * 14;
-          if (lured) { goal = spot; strike = false; if (boss.lureLook && Math.abs(boss.x - pl.x) < 18 && Math.abs(P.x - spot) < 10 && P.ground) { P.face = -away; if (P.atk < 0 && f % 4 === 0) { BK.press('atk'); swings++; } } }
-          else if (!(boss.lureCd > 0) && sk.cd <= 0 && sk.chiefLureable && Math.abs(boss.x - P.x) < 150) { goal = spot; strike = false; if (Math.abs(P.x - spot) < 10 && P.ground && f % 6 === 0) BK.press('talk'); } } }
+        if (pl && SKH && sk.held && !(sk.tower && sk.tower.st === 'manned')) { const away = Math.sign(pl.cleat - pl.x) || 1, spot = pl.cleat - away * 14;   /* between the peg and the logs, facing the peg: he comes from the middle of the hall */
+          if (lured) { chiefLureDuty = { goal: spot }; if (boss.lureLook && Math.abs(boss.x - pl.x) < 18 && Math.abs(P.x - spot) < 10 && P.ground) { P.face = away; if (P.atk < 0 && f % 4 === 0) { BK.press('atk'); swings++; } } }
+          else if (!(boss.lureCd > 0) && sk.cd <= 0 && sk.chiefLureable && Math.abs(boss.x - P.x) < 150) { chiefLureDuty = { goal: spot }; if (Math.abs(P.x - spot) < 10 && P.ground && f % 6 === 0) BK.press('talk'); } } }
       /* (claude/chief3) HIS POWDER and HIS WAR HORN, as a player reads them: a lit keg by the hands is struck back at him (at his tower's legs when he is
          up it) when its fuse has time left - its bar is drawn - else they step well off it; while he winds his horn they walk in and cut him (two blows
          silence it: the pips under the bar) */
@@ -2526,6 +2527,7 @@ async function runbossLab(BK, opts) {
         else { goal = boss.x; strike = !(P.labRest); }
         if (goal !== null) goal = Math.max(A.x0 + 18, Math.min(A.x1 - 18, goal)); }
       else if (boss.t === 'forgemaster' && boss.rails && (fgA = forgeHands(BK, boss, A, P, h, f, open))) { goal = fgA.goal; strike = fgA.strike; if (fgA.jump) k.jump = true; }   /* (claude/forgemaster) his room's carts and levers */
+      else if (chiefLureDuty && !rushing && !tell) { goal = chiefLureDuty.goal; strike = false; k.block = false; const stuck = Math.abs(P.x - (P.labLureX ?? -999)) < 1; if (f % 10 === 0) P.labLureX = P.x; if (P.ground && stuck && Math.abs(goal - P.x) > 10 && f % 10 === 0) { BK.press('jump'); P.labJump = 14; } if (P.labJump > 0) { P.labJump--; k.jump = true; } }   /* (over the dais: two rows of stone) */   /* (claude/stockade3-1101) to the peg, and the horn */
       else if (hbell) { goal = null; strike = false; k.left = k.right = false; if (P.atk < 0) { P.face = Math.sign(hbell.x - P.x) || P.face; BK.press('atk'); swings++; } }
       else if (gateDuty) { const D = gateDuty; strike = false; k.block = false; const g0 = lanceClimb(BK, D, P, k);   /* (claude/lance4) up to the bell (or to the post) and strike it on the beat */
         if (g0 !== null) { goal = g0; if (P.labJump > 0) k.jump = true; }   /* (the held jump: the generic labJump countdown below lets it go - a jump held its full length reaches a lookout) */

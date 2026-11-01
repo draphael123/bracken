@@ -57,7 +57,7 @@ export const STK_SAY = {
 /* (claude/stockade3-1101) HE HEARS YOUR HORN: walk (px/s) to the pile, look up for look (s; look2 in his second wind), cd between lures (s), near: a hero this close and
    he sees you; reach: a hall pile this far (px) from where you blew is the one he walks to. CRUSH: open (s) under the logs, hit: the knock (of his max), drip: what a
    crushed crew gives back (of yours) */
-export const CHIEF_LURE = { walk: 84, walk2: 96, look: 1.7, look2: 1.3, stand: 0.8, cd: 10, near: 30, reach: 8 * 16, maxWalk: 3.2 };
+export const CHIEF_LURE = { walk: 84, walk2: 96, look: 1.7, look2: 1.3, stand: 0.8, cd: 10, near: 24, reach: 8 * 16, maxWalk: 3.2 };
 export const CRUSH = { open: 2.8, hit: 0.04, drip: 0.1 };
 const LURE_MODES = new Set(['walk', 'landed', 'toRack', 'rainLoose', 'sweep', 'kegThrow']);
 export const LURE = { r: 15 * 16, ry: 11 * 16, t: 6, cd: 2.4, near: 40, spread: 9, speed: 70, crewSpeed: 125 };
@@ -132,7 +132,7 @@ export function makeStockadeHands(ctx) {
        if you come near, or if struck). He stands alone. */
     { const cb = ctx.boss(), A = ctx.L.arena; let pulled = 0;
       if (cb && cb.alive && cb.t === 'chief' && A) { let fx = 0;
-        for (const e of ctx.enemies()) { if (!e.alive || e.dying > 0 || !e.chiefCrew) continue; fx = e.x < (A.x0 + A.x1) / 2 ? A.x0 + 40 : A.x1 - 40; e.lureT = LURE.t; e.lureSp = LURE.crewSpeed; e.lureX = fx; e.emote = 'shock'; e.emoteT = 0.6; e.seenP = true; pulled++; }
+        for (const e of ctx.enemies()) { if (!e.alive || e.dying > 0 || !e.chiefCrew) continue; fx = e.x < (A.x0 + A.x1) / 2 ? A.x0 + 40 : A.x1 - 40; { const hp = piles.find(p => p.hall && p.st === 'hung' && (p.x < (A.x0 + A.x1) / 2) === (fx < (A.x0 + A.x1) / 2)); if (hp) fx = hp.x; }   /* (claude/stockade3-1101) home is under the hall's logs while they hang: his crew are fodder */ e.lureT = LURE.t; e.lureSp = LURE.crewSpeed; e.lureX = fx; e.emote = 'shock'; e.emoteT = 0.6; e.seenP = true; pulled++; }
         if (pulled) say(cb.x, cb.y - cb.h - 24, 'pulled', '#8fd160'); } }
     /* (claude/chief3) HORN ANSWERS HORN: blown while the Chieftain winds his, his crew do not know which call to answer - nobody comes */
     const ch = ctx.boss(); if (ch && (ch.mode === 'horn' || ch.mode === 'towerHorn') && Math.abs(ch.x - P.x) < LURE.r && !ch.hornAnswered) { ch.hornAnswered = true; say(ch.x, ch.y - ch.h - 22, 'answered', '#8fd160'); }
@@ -479,7 +479,7 @@ export function makeStockadeHands(ctx) {
   /* for the bots and the checks */
   const read = () => ({ held, gateOpen, examOn, piles: piles.map(p => ({ id: p.id, x: p.x, y: p.y, st: p.st, floor: p.floor, cleat: p.cleat, hall: p.hall, ramp: !!p.ramp })), rampDown: [...rampDown], lure: { ...lst }, chiefLureable: lureable(ctx.boss()), pickups: pickups.filter(k => !k.got).map(k => ({ x: k.x, y: k.y })), cd,
     tower: tower ? { x: tower.x, deck: tower.deck, foot: tower.foot, st: tower.st, pegs: tower.pegs.map(p => ({ x: p.x, cut: p.cut })) } : null, banner: banner && banner.name,
-    kegs: kegs.filter(k => !k.dead).map(k => ({ x: k.x, y: k.y, st: k.st, fuse: k.fuse, kicked: !!k.kicked })), crew: crew.filter(q => q.alive).length, stats: { ...st }, looks: looks.map(l => ({ x0: l.x0, x1: l.x1, down: l.down })) });
+    kegs: kegs.filter(k => !k.dead).map(k => ({ x: k.x, y: k.y, st: k.st, fuse: k.fuse, kicked: !!k.kicked })), crew: crew.filter(q => q.alive).length, stats: { ...st, lure: lst.lure || 0, crush: lst.crushed || 0, fod: lst.fodder || 0 }, looks: looks.map(l => ({ x0: l.x0, x1: l.x1, down: l.down })) });
   /* for the shared guide (src/stuck-guide.js `is`): the horn, the gate, the war tower */
   const state = n => n === 'stkHorn' ? (held ? 'held' : 'none') : n === 'stkGate' ? (gateOpen ? 'open' : 'shut') : n === 'stkTower' ? (tower ? tower.st : 'none') : '';
   /* and as props the guide's done / when read: each pile carries the horn's and the gate's state (the static tool finds the piles in L.ents) */

@@ -486,14 +486,14 @@ function theStockade() {
   plat(327, 18, 2); plat(329, 16, 3); plat(333, 14, 2); plat(334, 12, 2); plat(334, 10, 4);   /* (claude/stockade2: the step at 336,12 moved two left - his war tower stands on the dais under it) */ plat(338, 11, 3); plat(342, 9, 5);
   plat(360, 18, 2); plat(356, 16, 3); plat(353, 14, 2); plat(350, 12, 2); plat(350, 10, 4); plat(347, 11, 3);
   ent('archer', 344, 9, { face: -1, horn: true, rafters: true });   /* THE RULE, IN THE BOSS: a blower up the escape-gate climb. Reach him before the Chieftain's second wind, or he calls a sapper wave down on you */
-  ent('brazier', 354, 19); ent('torch', 328, 19); ent('torch', 361, 19);
-  ent('rack', 335, 19, { kind: 'club' });   /* (claude/stockade3-1101: from 331 - the left hall pile's peg stands there now) */ ent('rack', 358, 19, { kind: 'bow' }); block(336, 339, 18, 19); coins([337, 17]); // the racks he swaps at, and a stone dais his club and sword cannot reach
+  ent('brazier', 351, 19); ent('torch', 328, 19);   /* (claude/stockade3-1101: the brazier from 354 - the right hall pile hangs there now) */ ent('torch', 361, 19);
+  ent('rack', 346, 19, { kind: 'club' }); ent('rack', 349, 19, { kind: 'bow' });   /* (claude/stockade3-1101: from 331 / 358 - the hall piles and their pegs stand by the doors now; his racks by his throne) */ block(336, 339, 18, 19); coins([337, 17]); // the racks he swaps at, and a stone dais his club and sword cannot reach
   ent('deco', 331, 19, { kind: 'banner', v: 0 }); ent('deco', 358, 19, { kind: 'banner', v: 1 }); ent('deco', 344, 19, { kind: 'boneThrone' });
   ent('deco', 334, 19, { kind: 'skullPile', v: 0 }); ent('deco', 351, 19, { kind: 'skullPile', v: 1 });
   ent('deco', 338, 8, { kind: 'hangCage', hang: true });   /* (a tree's bough hung in the Chieftain's hall, among its racks: it went - level review, 2026-09-24) */ ent('deco', 349, 8, { kind: 'hangCage', hang: true });
   ent('chief', 343, 19);
   /* (claude/stockade3-1101) THE HALL PILES: logs on the rafters over the floor by each door (where his crew come in), each tied off at a peg on the floor - horn him under one and strike its peg */
-  ent('logpile', 329, 12, { id: 'hall-l', cleat: 3, hall: true }); ent('logpile', 357, 12, { id: 'hall-r', cleat: -5, hall: true });
+  ent('logpile', 333, 12, { id: 'hall-l', cleat: -3, hall: true }); ent('logpile', 354, 12, { id: 'hall-r', cleat: 3, hall: true });   /* each peg on the DOOR side of its logs: he comes to the sound from the middle of the hall and never walks past you to reach them */
 
   const ret = {
     W: L.W, H: L.H, grid: L.grid, ents: L.ents, START: { x: 3, y: 19 }, pools: [], falls: [], moversExtra: movers,
