@@ -42,7 +42,7 @@
 //                     and topples into the clearing as ROLLING TIMBERS (jump them; a deck is over them; a wreck stops them). The first slam leaves THE BREACH for
 //                     the rest of the fight: a gap in the palisade and a RUBBLE STEP (solid) against the east wall - the timbers never reach it, the wall-ram does.
 export const BB = {
-  hp: 1350, w: 56, h: 40, markH: 60,
+  hp: 1250, w: 56, h: 40, markH: 60,
   walk: 46, rest: [0.5, 0.3],
   armour: 0.45, above: 1, wardMul: 0.4,
   p2: 0.5,
@@ -57,8 +57,8 @@ export const BB = {
      box off the beast's feet (px, facing right) and how many lost orders knock him off the gantry */
   order: { tell: 1.1, laneW: 44, pitch: 88, flight: 0.4, gap: 0.75, dmg: 20, top: 150, rec: 0.6, lost: 1.2, lives: 2, box: [-10, 14, -58, -27] },
   /* (claude/beast3) THE WALL BREAKER: the turn, the run, the slam, the timbers (how many, the beat between, their roll, their height) and THE BREACH's rubble (columns, one row) */
-  wall: { tell: 0.95, speed: 250, dmg: 21, slam: 0.6, back: 150, rec: 0.9, n: 2, gap: 0.65, sp: 150, h: 13, tdmg: 20, rubble: 4, room: 70 },
-  flail: { tell: 0.85, t: 0.36, reach: 132, low: 14, hiTop: 40, hiBot: 18, dmg: 24, rec: 0.7 },
+  wall: { tell: 0.95, speed: 250, dmg: 19, slam: 0.6, back: 150, rec: 0.9, n: 2, gap: 0.7, sp: 140, h: 13, tdmg: 15, rubble: 4, room: 70 },
+  flail: { tell: 0.85, t: 0.36, reach: 132, low: 14, hiTop: 40, hiBot: 18, dmg: 21, rec: 0.7 },
   kick: { tell: 0.6, t: 0.22, reach: 46, dmg: 25, chip: 0.6, rec: 0.5, range: 44 },
   scaf: { fall: 0.5, len: 6, heroDmg: 17, lie: 16, rearm: 11 },
   unchain: { tell: 1.0, adds: 2, addHp: 2.4 },
@@ -271,12 +271,12 @@ function pick(e, S, ad, dx, w) {
     if (k === 'order' && !ord) k = 'pots';
     if (k === 'charge' && ad < 54 && !cover) k = 'sweep';
   } else {        /* (claude/beast3) P2 goes after the PALISADE: THE WALL BREAKER leads, the flail and the buck answer you close, the charge is the rare one */
-    const wr = last[0] !== 'wall';
+    const wr = last[0] !== 'wall' && last[1] !== 'wall';   /* the wall breaker leads P2 but never twice in three */
     if (cover) k = r < 0.6 && wr ? 'wall' : 'flail';
     else if (ad < BB.kick.range) k = !twice('kick') ? 'kick' : 'flail';
     else if (ad < BB.sweep.range + 20) k = r < 0.6 ? 'flail' : wr ? 'wall' : 'flail';
-    else if (ad > BB.charge.minD + 40) k = r < 0.5 && wr ? 'wall' : r < 0.78 ? 'flail' : 'charge';
-    else k = r < 0.45 ? 'flail' : r < 0.85 && wr ? 'wall' : 'charge';
+    else if (ad > BB.charge.minD + 40) k = r < 0.45 && wr ? 'wall' : r < 0.78 ? 'flail' : 'charge';
+    else k = r < 0.5 ? 'flail' : r < 0.82 && wr ? 'wall' : 'charge';
     if (twice(k)) k = k === 'flail' ? (wr ? 'wall' : 'charge') : 'flail';
     if (k === 'charge' && ad < 54 && !cover) k = 'flail';
   }
@@ -400,7 +400,7 @@ function bbPlan0(s) {
   if (deck && (e.mode === 'batterTell' || e.mode === 'batter') && seenFor('bt' + S.act, 0.1)) { const sp = propSpot(deck); out.gx = sp; out.why = 'off the deck he batters'; return out; }
   if (inHaz(P.x) && P.ground) { const [hx, r] = hazards.find(([x0, r0]) => Math.abs(P.x - x0) < r0); out.gx = safeX(P.x + (P.x < hx ? -r - 8 : r + 8)); out.why = 'off the mark'; return out; }
   /* (claude/beast3) A ROLLING TIMBER coming at you: jump it */
-  const tim = S.timbers.find(q => timberAt(q, S).rolling && P.x < q.x + 6 && q.x - P.x < 34 && Math.abs(P.y - G.floorY) < 6);
+  const tim = S.timbers.find(q => timberAt(q, S).rolling && P.x < q.x + 6 && q.x - P.x < 40 && Math.abs(P.y - G.floorY) < 6);
   if (tim && P.ground && seenFor('tb' + tim.key, 0.1)) { out.jump = true; out.gx = P.x; mem.jumpT = t; mem.jumpX = P.x; mem.plunge = false; mem.horn = false; out.why = 'jump the timber'; return out; }
   /* (claude/beast3) THE HORN IS UP: close enough, jump at the Hornsman and cut (a player who reads it); else the lanes are hazards (above) - stand in a gap */
   if (hornUp(e, S) && P.ground && seenFor('hn' + S.act, 0.15)) { const hb = hornBox(e), hx = (hb[0] + hb[1]) / 2, near = Math.abs(P.x - hx) < 64;
