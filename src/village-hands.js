@@ -98,7 +98,7 @@ export function makeVillageHands(ctx) {
     /* what the water puts out, the whole reach at once: the grid's fire, the loose flames, the barn roof's wall, a hot door (main.js villageSplash), and
        the flame pillars in reach (held out a while); OIL is never in this list - no water puts out oil */
     ctx.splash(tk.px, tk.py, a.r, a.r + 2);
-    for (const f of ctx.fires()) if (f.pillar && Math.abs(f.x - tk.px) < a.r * TS()) { f.outT = PILLAR_OUT; f.delay = Math.max(f.delay, 1); f.tall = 0; }
+    for (const f of ctx.fires()) if (f.pillar && Math.abs(f.x - tk.px) < a.r * TS()) { if (!(f.outT > 0) && !(f.delay > 0.5)) ctx.burst(f.x, f.y - 6, 8, ['#e8eef0', '#b7c2c8'], 40, 0.7, -18, 2); f.outT = PILLAR_OUT; f.delay = Math.max(f.delay, 1); f.tall = 0; }   /* (claude/smallfix7) a column that was roaring goes out in a puff of steam */
   }
   function stepWave(w, dt) {
     const P = hero(), a = TANKS[w.kind], front = frontAfter(w.kind, w.t), ex = ctx.enemies();

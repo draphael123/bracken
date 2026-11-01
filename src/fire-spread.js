@@ -62,7 +62,7 @@ export function stepFire(G, dt) {
 /* WATER: every catching or burning cell within r tiles (and two rows) goes back to UNLIT. A burnt cell stays burnt */
 export function douse(G, x, y, r) {
   if (!G) return 0; let n = 0;
-  for (const c of G.cells) if (!c.square && (c.s === CATCHING || c.s === ALIGHT) && Math.abs(c.x - x) <= r && Math.abs(c.y - y) <= 2) { c.s = UNLIT; c.t = 0; c.spread = false; n++; }
+  for (const c of G.cells) if (!c.square && (c.s === CATCHING || c.s === ALIGHT) && Math.abs(c.x - x) <= r && Math.abs(c.y - y) <= 2) { c.s = UNLIT; c.t = 0; c.spread = false; n++; (G.out = G.out || []).push(c); }   /* (claude/smallfix7) G.out: the cells water just put out - main.js villageOut() takes their drawn flame down in the same frame and puffs steam off them */
   return n;
 }
 /* THE SQUARE follows his bar: a patch catches once his heat is past its mark, and goes out when the heat falls five under it.
@@ -79,7 +79,7 @@ export function squareHeat(G, heat, dt = 0) {
 export const QUENCH = { secs: 8 };
 export function quench(G, x, y, r, secs = QUENCH.secs) {
   if (!G) return 0; let n = 0;
-  for (const c of G.cells) if (c.square && Math.abs(c.x - x) <= r && Math.abs(c.y - y) <= 2) { if (c.s !== UNLIT) n++; c.s = UNLIT; c.t = 0; c.outT = secs; }
+  for (const c of G.cells) if (c.square && Math.abs(c.x - x) <= r && Math.abs(c.y - y) <= 2) { if (c.s !== UNLIT) { n++; (G.out = G.out || []).push(c); } c.s = UNLIT; c.t = 0; c.outT = secs; }
   return n;
 }
 export const burning = c => c && (c.s === ALIGHT);
