@@ -264,6 +264,7 @@ import * as OP from './opening-panels.js';   /* THE FIRST-RUN OPENING (claude/ui
 import * as TC from './title-card.js';   /* THE PRESS ANY KEY CARD (claude/uiscreens): the wood closed over the picture, the fronds part, the knight walks in */
 import * as FA from './flask-art.js';   /* (claude/flasks2art) the drink frames, the flask bottles and icons */
 import * as HSWP from './hero-swap.js';   /* (claude/hubpolish) THE SWAP HERO PANEL */
+import { makeShopLife } from './shop-life.js';   /* (claude/hubpolish) THE SHOPS ARE ALIVE */
 import { LS } from './loading-screen.js';   /* THE LOADING SCREEN (claude/loadbar): a true progress bar and the hero's dance over every slow load */
 import { isCallout, calloutText } from './hint-lines.js';   /* THE HINT LINES THAT WERE NEVER SHOWN (claude/hintsweep) */
 import * as AIC from './ai-companion.js';   /* AI COMPANIONS (claude/aicompanions, brief-aicompanions.md 10-14): linked / default, the four behaviours, the catch-up, the lighter scaling - the pure half; allyTick below is the hands */
@@ -5821,6 +5822,8 @@ function swapHeroTo(id) {
   saveProgress(); SFX.equip(); return (HERO_SHORT[id] || String(id).toUpperCase()) + ' IS YOURS NOW';
 }
 const swapIdle = id => preview('hero:' + id + ':' + PROG.skin + ':' + PROG.sword + ':g' + gearNow(id), () => heroSet(PROG.skin, PROG.sword, 'idle', id, gearNow(id)));
+const SHOPLIFE = makeShopLife();
+const shopIdNow = () => (L && L.shop && LEVELS[levelIndex] && LEVELS[levelIndex].id) || 'shop';
 const SWAPUI = HSWP.makeSwap({ g: () => g, VW: () => VW, VH: () => VH, time: () => time, text: (s, x, y, c, a, z) => text(s, x, y, c, a, z), panel: (x, y, w, h) => panel(x, y, w, h), hit: (x, y, w, h, fn) => TCH.hit(x, y, w, h, fn),
   sfx: k => { const f = SFX[k]; if (f) f(); }, active: () => hero(),
   lines: (s, cx, y, w, c) => wrap(s, w, 6).slice(0, 2).forEach((ln, i) => text(ln, cx, y + i * 8, c, 'center', 6)),
@@ -5835,7 +5838,9 @@ function swapFrame(dt) {
   leftPress = rightPress = confirmPress = pausePress = upPress = downPress = throwPress = swapPress = false;
 }
 const swapMenuOk = () => menuFrom !== 'play' || !!(L && (L.shop || L.tavern));
-function updateStore(dt) {
+/* THE BUY BEAT: a purchase is the gold or the silver going down in this frame of the store */
+function updateStore(dt) { const c0 = PROG.coins | 0, s0 = PROG.silverSpent | 0; updateStore0(dt); if (state === 'store' && ((PROG.coins | 0) < c0 || (PROG.silverSpent | 0) > s0)) SHOPLIFE.bought(time); }
+function updateStore0(dt) {
   if (PROG.refundNote) { storeMsg = PROG.refundNote + ' gold refunded from older training'; storeMsgT = 4; PROG.refundNote = 0; saveProgress(); }
   storeMsgT = Math.max(0, storeMsgT - dt);
   const tab = STORE_TABS[storeTab];
@@ -5979,7 +5984,9 @@ function drawStore() {
       bl.slice(pg * per, pg * per + per).forEach((ln, i) => text(ln, pvX + 5, ty + i * BODY_LH, locked ? '#ff9a5c' : UI.text, 'left', 6));
       if (pages > 1) text(moreKey() + ' MORE ' + (pg + 1) + '/' + pages, pvX + pvW - 5, pvY + pvH - 10, UI.sel, 'right', 6);
     } else storePages = 1; }
-  text(storeMsgT > 0 ? storeMsg : fitName(loadoutSafe() ? STORE_HELP.buy : STORE_HELP.look, w - 16, 6), VW / 2, y + h - 10, storeMsgT > 0 ? UI.title : UI.dim, 'center', 6);
+  { const bark = storeMsgT > 0 ? '' : SHOPLIFE.storeLine(time, shopIdNow()), set = SPR.keeper, head = set && (Array.isArray(set.R) ? set.R[0] : set.R);   /* (claude/hubpolish) the keeper's head at the foot of the page: he nods when you buy and says a line every while */
+    SHOPLIFE.candles(g, x + 4, x + w - 5, y + 2, time); if (head) SHOPLIFE.storeHead(g, head, x + 7, y + h - 14, time); SHOPLIFE.pop(g, pvX + pvW / 2, pvY + 30, time);
+    text(storeMsgT > 0 ? fitName(storeMsg, w - 44, 6) : fitName(bark || (loadoutSafe() ? STORE_HELP.buy : STORE_HELP.look), w - 44, 6), VW / 2 + 8, y + h - 10, storeMsgT > 0 ? UI.title : bark ? '#c9b892' : UI.dim, 'center', 6); }
 }
 
 // ---------- bestiary ----------
@@ -33966,7 +33973,8 @@ function drawWorld(cx, cy, showPlayer) {
   for (const pr of props) if (pr.t === 'npc' && pr.x > cx - 40 && pr.x < cx + VW + 40) { { const set = SPR[pr.kind] || SPR.shepherd, near = Math.abs(P.x - pr.x) < 90, ph = time + (pr.anim || 0) * 3, c0 = Array.isArray(set.R) ? set.R[0] : set.R, breathe = Math.sin(ph * 2.1) > 0.55 ? 1 + 1 / c0.height : 1;
         const face = near ? (P.x < pr.x ? -1 : 1) : (Math.floor(ph / 3.3) % 2 ? 1 : -1);
         const jig = P.dance > 0 && Math.abs(P.x - pr.x) < 110 && talkTo !== pr;   /* AND THE TOWN DANCES WITH YOU: anyone friendly nearby picks up the beat */
-        drawSet(set, null, talkTo === pr ? Math.floor(time * 3) % 2 : 0, pr.x - cx, pr.y - cy - (jig ? Math.round(Math.abs(Math.sin(P.dance * 4.2 * Math.PI + pr.x)) * 4) : 0), jig ? (Math.floor(P.dance * 2.1 + (pr.anim || 0)) % 2 ? 1 : -1) : face, false, 1, breathe); } if (talkTo !== pr && !P.dead && state === 'play' && Math.abs(P.x - pr.x) < 24 && Math.abs(P.y - pr.y) < 24) text(talkGlyph(), pr.x - cx, pr.y - 28 - cy + Math.round(Math.sin(time * 5)), '#ffe6a0', 'center', 6); }
+        drawSet(set, null, talkTo === pr || pr.barkOn ? Math.floor(time * 3) % 2 : 0, pr.x - cx, pr.y - cy - (pr.nodY | 0) - (jig ? Math.round(Math.abs(Math.sin(P.dance * 4.2 * Math.PI + pr.x)) * 4) : 0), jig ? (Math.floor(P.dance * 2.1 + (pr.anim || 0)) % 2 ? 1 : -1) : face, false, 1, breathe); } if (talkTo !== pr && !P.dead && state === 'play' && Math.abs(P.x - pr.x) < 24 && Math.abs(P.y - pr.y) < 24) text(talkGlyph(), pr.x - cx, pr.y - 28 - cy + Math.round(Math.sin(time * 5)), '#ffe6a0', 'center', 6); }
+  if (L && L.shop) { const kp = props.find(q => q.t === 'npc' && q.kind === 'keeper'); if (kp) SHOPLIFE.drawRoom(g, { cx, cy, time, id: shopIdNow(), room: L, kx: kp.x, ky: kp.y, px: P.x, floor: kp.y, VW, text, textW: (s, z) => inkW(s, z), keeper: kp }); }   /* (claude/hubpolish) the keeper's loops, his lines, the sign, the wares, the light */
   /* THE BEER GARDEN. They drink, they sway, they laugh: every one of them on its own clock, and never off its bench */
   for (const pr of props) if (pr.t === 'guest' && !(L && L.tavern) && SPR.guests && pr.x > cx - 30 && pr.x < cx + VW + 30) { const set = SPR.guests[pr.v % SPR.guests.length], ph = (time + pr.anim) % 7, fr = ph > 4.2 && ph < 5.1 ? 1 : ph > 5.4 && ph < 6.5 ? 2 : 0;
     const sway = pr.v >= 3 ? Math.round(Math.sin((time + pr.anim) * 1.6)) : 0;
