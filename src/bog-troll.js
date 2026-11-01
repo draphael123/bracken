@@ -17,6 +17,13 @@
 //                   THE PEAT HURL (he scoops a clod of bog and lobs it, a red !! and a red ring where it lands - step off it)
 //     P2 (50-0%)    RIP THE ROAD: he grips the boardwalk and tears two stretches of it away (the boards flash red first: get off them) - the crossing is three
 //                   plank islands over the biting water from then on; his hurl is two clods; he comes up in the open water too.
+//   (claude/bogtroll2, Daniel 11-01 live: "the boss needs 2 MORE ATTACKS (likes the idea of him)" - scratch/brief-bogtroll2-1101.md, approved "Yes this works"):
+//     P1 + THE WAVE SLAP: he goes under and surfaces at the crossing's far edge, both arms up over the fen (a red !!, a ripple line runs out across the water from him), then
+//                   SLAPS the fen: a WAVE runs along under the boardwalk lifting each board in turn - JUMP THE CREST or it throws you (a blow, bounced up off the lifted boards).
+//     P2 + THE PILING SWING: he wrenches a support post out of the wrecked bridge (a red !!, the board over it goes into the fen: one more gap - src/fen-road-hands.js postAt/pull),
+//                   swings it back over his shoulder (the arc drawn red) and round in a wide arc as a club - ROLL under it or JUMP it.
+//   THE ROAD DOES NOT REPAIR (Daniel 11-01): every section he breaks stays broken - the crews' plank bundles on the banks and LAY THE ROAD rebuild it, and a fresh plank sags like a rotten
+//     section (his next lure). Pinned under the wreck he is STUCK: the beams and boards came down on his head (drawn over his shoulders, stars).
 //   NO ADDS (no summons in the brief).
 export const BT = {
   hp: 680, w: 40, h: 56, markH: 60, up: 26, under: 84,   // up: his feet under the boards when he stands waist-deep (px below the road); under: where he swims
@@ -27,21 +34,29 @@ export const BT = {
   drag: { tell: [0.85, 0.7], t: 0.32, reach: 118, h: 12, dmg: 15, pull: 210, rec: 0.6, range: 150 },
   hurl: { tell: [0.8, 0.65], flight: 1.0, r: 16, dmg: 15, spread: 56, rec: 0.55 },
   rip: { tell: 1.4, t: 0.6, roar: 0.8 },
+  /* (claude/bogtroll2) THE WAVE SLAP: go = under, swimming for the far edge; tell = up there, arms over the fen (the ripple line); slap = the release; v = the crest's speed along the
+     road, crest = its half-width (px); a hero whose feet are lower than floorY - clear when the crest passes under is struck: dmg, kick up, push on; lift = how high the boards rise (drawn) */
+  wave: { go: 0.55, tell: [1.0, 0.85], slap: 0.32, v: 175, crest: 13, clear: 9, lift: 9, dmg: 12, kick: -250, push: 80, rec: 0.6, edge: 26, every: 3 },
+  /* THE PILING SWING (phase two): tell = wrenching the post out (the gap opens at its end), wind = the post back over his shoulder (the arc told red), t = the swing; the club's box:
+     reach in front, back behind, top..bot over the road (a standing or ducking hero is in it; a roll's i-frames or a jump clear it); push = the knock-back */
+  pile: { tell: 0.85, wind: 0.5, t: 0.22, reach: 112, back: 34, top: 30, bot: 12, dmg: 18, push: 170, rec: 0.75, range: 150, every: 2 },
 };
 export const BT_SAY = { wake: 'THE BOG TROLL', rule: 'HE FEELS YOUR WEIGHT. LURE HIS BURST UNDER A ROTTEN SECTION.', stuck: 'STUCK IN THE BOARDS', free: 'HE TEARS FREE', ward: 'HE SHAKES OFF THE WRECK',
-  bounce: 'THE BOARDS BREAK ON HIM: WARDED', p2: 'HE RIPS THE ROAD', dragged: 'DRAGGED', hide: 'PEAT HIDE' };
+  bounce: 'THE BOARDS BREAK ON HIM: WARDED', p2: 'HE RIPS THE ROAD', dragged: 'DRAGGED', hide: 'PEAT HIDE',
+  pinned: 'PINNED UNDER THE WRECK', wave: 'JUMP THE WAVE', thrown: 'THE WAVE THROWS YOU', post: 'HE WRENCHES A POST OUT', swing: 'ROLL OR JUMP THE POST' };
 export const OPEN_NAME = { stuck: 'STUCK' };
 export const btOpen = e => !!e && e.mode === 'stuck';
-const TELLS = new Set(['burstTell', 'dragTell', 'hurlTell', 'ripTell']);
+const TELLS = new Set(['burstTell', 'dragTell', 'hurlTell', 'ripTell', 'waveTell', 'pileTell', 'pileWind']);
 export const btTelling = e => TELLS.has(e.mode);
-export const btUnder = e => !!e && (e.mode === 'under' || e.mode === 'burstTell');
+export const btUnder = e => !!e && (e.mode === 'under' || e.mode === 'burstTell' || e.mode === 'waveGo');
 /* THE CROSSING (px): x0/x1 the boards' ends inside the walls, floorY the road's top, waterY the fen's surface; rip: the two stretches (tile columns) he tears away */
 export function geom(A, TS = 16) {
-  return { x0: A.x0, x1: A.x1, floorY: A.floor, waterY: A.water || A.floor + TS, mid: (A.x0 + A.x1) / 2, rip: (A.rip || []).map(([a, b]) => [a * TS, (b + 1) * TS]), TS };
+  return { x0: A.x0, x1: A.x1, floorY: A.floor, waterY: A.water || A.floor + TS, mid: (A.x0 + A.x1) / 2, rip: (A.rip || []).map(([a, b]) => [a * TS, (b + 1) * TS]), TS,
+    w0: A.w0 !== undefined ? A.w0 : A.x0, w1: A.w1 !== undefined ? A.w1 : A.x1 };   /* (claude/bogtroll2) w0/w1: the open water between the banks (he swims there only) */
 }
 export function newFight(G) {
-  return { G, ph: 1, ward: 0, act: 0, restT: 1, moves: 0, clods: [], ripped: false, last: [], told: {}, purse: null,
-    n: { burst: 0, stuck: 0, drag: 0, hurl: 0, rip: 0, bounced: 0, dragged: 0 } };
+  return { G, ph: 1, ward: 0, act: 0, restT: 1, moves: 0, clods: [], ripped: false, last: [], told: {}, purse: null, wave: null, dives: 0, sinceWave: 1, sincePile: 1,
+    n: { burst: 0, stuck: 0, drag: 0, hurl: 0, rip: 0, bounced: 0, dragged: 0, wave: 0, thrown: 0, pile: 0, posts: 0 } };
 }
 /* is x (px) over the water - a stretch he has ripped? */
 export const inRip = (S, x) => S.ripped && S.G.rip.some(([a, b]) => x > a && x < b);
@@ -50,11 +65,11 @@ export const inRip = (S, x) => S.ripped && S.G.rip.some(([a, b]) => x > a && x <
 export function stepTroll(e, S, dt, heroes, w) {
   const G = S.G, ph = S.ph, i = ph - 1, P = heroes.find(h => h.alive) || heroes[0];
   S.ward = Math.max(0, S.ward - dt); e.ward = S.ward;
-  stepClods(S, dt, heroes, w);
+  stepClods(S, dt, heroes, w); stepWave(S, dt, w);
   if (e.mode === 'sleep') return;
   e.modeT -= dt;
   const dx = P ? P.x - e.x : 0, ad = Math.abs(dx), face = () => { if (P) e.face = Math.sign(dx) || e.face; };
-  const clampX = x => Math.max(G.x0 + 24, Math.min(G.x1 - 24, x));
+  const clampX = x => Math.max(G.w0 + 24, Math.min(G.w1 - 24, x));
   const upY = G.floorY + BT.up, underY = G.floorY + BT.under;
   switch (e.mode) {
     case 'wake': e.y = Math.max(upY, e.y - 90 * dt); if (e.modeT <= 0) { e.mode = 'up'; e.y = upY; S.restT = 0.7; } return;
@@ -86,7 +101,7 @@ export function stepTroll(e, S, dt, heroes, w) {
       if (e.modeT <= 0) { e.mode = 'up'; e.y = upY; S.restT = BT.burst.rise; } return; }
     case 'stuckIn': e.y = Math.max(upY, e.y - 400 * dt);
       w.hit([e.x - BT.burst.r, e.x + BT.burst.r, G.floorY - BT.burst.h, G.floorY + 4], BT.burst.dmg, 'burst', { key: e.hitKey, up: BT.burst.kick });
-      if (e.modeT <= 0) { e.mode = 'stuck'; e.y = upY; e.modeT = BT.stuck.t[i]; e.openT0 = e.modeT; S.purse = e.maxHp * BT.stuck.cap; S.n.stuck++; w.number(e.x, G.floorY - 60, BT_SAY.stuck, '#ffd36b'); w.fx('open', e.x, G.floorY); w.sound('stuck'); }
+      if (e.modeT <= 0) { e.mode = 'stuck'; e.y = upY; e.modeT = BT.stuck.t[i]; e.openT0 = e.modeT; S.purse = e.maxHp * BT.stuck.cap; S.n.stuck++; w.number(e.x, G.floorY - 60, BT_SAY.pinned, '#ffd36b'); w.fx('open', e.x, G.floorY); w.sound('stuck'); }
       return;
     case 'stuck': e.y = upY; if (e.modeT <= 0) { e.mode = 'heave'; e.modeT = BT.stuck.heave; w.sound('roar'); w.shake(5); w.number(e.x, G.floorY - 60, BT_SAY.free, '#ff9a5c'); } return;
     case 'heave': if (e.modeT <= 0) { S.ward = BT.stuck.ward; e.ward = S.ward; w.fx('ward', e.x, G.floorY); w.number(e.x, G.floorY - 72, BT_SAY.ward, '#c8d8e8'); e.mode = 'sink'; e.modeT = BT.sink; } return;
@@ -101,6 +116,19 @@ export function stepTroll(e, S, dt, heroes, w) {
       return;
     case 'hurl': if (e.modeT <= 0) { e.mode = 'recover'; e.modeT = BT.hurl.rec; } return;
     case 'recover': if (e.modeT <= 0) { e.mode = 'up'; S.restT = BT.rest[i] * 0.5; } return;
+    /* (claude/bogtroll2) THE WAVE SLAP: under to the far edge, up with both arms over the fen (told: !!, the ripple line), the slap - the wave runs along under the road */
+    case 'waveGo': e.y = underY; if (e.modeT <= 0) { const P0 = P || { x: G.mid }, left = Math.abs(P0.x - (G.w0 + BT.wave.edge)) > Math.abs(P0.x - (G.w1 - BT.wave.edge));
+        e.x = left ? G.w0 + BT.wave.edge : G.w1 - BT.wave.edge; e.face = left ? 1 : -1; e.waveDir = e.face; e.mode = 'waveTell'; e.modeT = BT.wave.tell[i]; e.y = upY; w.splash(e.x, 24); w.mark('!!'); w.sound('waveTell'); w.number(e.x, G.floorY - 70, BT_SAY.wave, '#ff6b6b'); } return;
+    case 'waveTell': e.y = upY; e.face = e.waveDir; if (e.modeT <= 0) { e.mode = 'waveSlap'; e.modeT = BT.wave.slap; S.n.wave++; w.sound('slap'); w.shake(7); w.splash(e.x, 34);
+        S.wave = { x: e.x + e.waveDir * 10, dir: e.waveDir, t: 0, key: 'wv' + S.act }; } return;
+    case 'waveSlap': e.y = upY; if (e.modeT <= 0) { e.mode = 'recover'; e.modeT = BT.wave.rec; } return;
+    /* (claude/bogtroll2) THE PILING SWING: he wrenches a post out of the wreck (one more gap), winds it back over his shoulder, swings it round */
+    case 'pileTell': if (e.modeT <= 0) { e.mode = 'pileWind'; e.modeT = BT.pile.wind; const col = e.postCol; if (col !== null && col !== undefined && w.pull && w.pull(col)) S.n.posts++; w.sound('wrench'); w.shake(4); w.splash(e.x + e.face * 18, 12);
+        e.hitKey = 'pl' + S.act; } return;
+    case 'pileWind': if (e.modeT <= 0) { e.mode = 'pileSwing'; e.modeT = BT.pile.t; w.sound('swing'); } return;
+    case 'pileSwing': { const f = e.face || 1, a = e.x - f * BT.pile.back, b = e.x + f * BT.pile.reach;
+      w.hit([Math.min(a, b), Math.max(a, b), G.floorY - BT.pile.top, G.floorY - BT.pile.bot], BT.pile.dmg, 'pile', { key: e.hitKey, push: f * BT.pile.push });
+      if (e.modeT <= 0) { e.mode = 'recover'; e.modeT = BT.pile.rec; w.splash(e.x - f * 40, 10); w.sound('clod'); } return; }
     case 'ripTell': face(); if (e.modeT <= 0) { e.mode = 'rip'; e.modeT = BT.rip.t; w.rip(); S.ripped = true; S.n.rip++; w.sound('rip'); w.shake(10); } return;
     case 'rip': if (e.modeT <= 0) { e.mode = 'roar'; e.modeT = BT.rip.roar; w.sound('roar'); } return;
     case 'roar': if (e.modeT <= 0) { e.mode = 'up'; S.restT = 0.4; } return;
@@ -115,10 +143,25 @@ function pick(e, S, ad, w) {
   else if (ad < BT.drag.range) k = Math.random() < 0.6 ? 'drag' : 'hurl';
   else k = Math.random() < 0.75 ? 'hurl' : 'sink';
   if (k !== 'sink' && twice(k)) k = k === 'drag' ? 'hurl' : ad < BT.drag.range ? 'drag' : 'sink';
-  if (k === 'sink') { S.moves = 0; e.mode = 'sink'; e.modeT = BT.sink; w.sound('sink'); return; }
+  /* (claude/bogtroll2) THE PILING SWING (phase two): every BT.pile.every moves at most, when you are within his swing's range */
+  if (k !== 'sink' && ph > 1 && S.sincePile >= BT.pile.every && ad < BT.pile.range && (S.sincePile > BT.pile.every || Math.random() < 0.6)) k = 'pile';
+  if (k === 'sink') { S.moves = 0; S.dives++;
+    /* (claude/bogtroll2) THE WAVE SLAP: one dive in BT.wave.every goes to the far edge and slaps the fen instead of hunting your weight */
+    if (S.sinceWave >= BT.wave.every - 1 && (S.sinceWave >= BT.wave.every || Math.random() < 0.5)) { S.sinceWave = 0; S.act++; e.mode = 'waveGo'; e.modeT = BT.wave.go; w.sound('sink'); return; }
+    S.sinceWave++; e.mode = 'sink'; e.modeT = BT.sink; w.sound('sink'); return; }
+  if (k === 'pile') { S.sincePile = 0; S.moves++; S.act++; S.n.pile++; last.unshift(k); last.length = Math.min(last.length, 3); face0(e, w); e.postCol = w.postAt ? w.postAt(e.x, e.face) : null;
+    e.mode = 'pileTell'; e.modeT = BT.pile.tell; w.mark('!!'); w.sound('pileTell'); w.number(e.x, S.G.floorY - 70, BT_SAY.post, '#ff6b6b'); return; }
+  S.sincePile++;
   last.unshift(k); last.length = Math.min(last.length, 3); S.moves++; S.act++; S.n[k]++;
   if (k === 'drag') { e.mode = 'dragTell'; e.modeT = BT.drag.tell[i]; w.mark('!!'); w.sound('dragTell'); }
   else { e.mode = 'hurlTell'; e.modeT = BT.hurl.tell[i]; w.mark('!!'); w.sound('scoop'); }
+}
+const face0 = (e, w) => { const px = w.heroX ? w.heroX() : null; if (px !== null && px !== undefined) e.face = Math.sign(px - e.x) || e.face; };
+/* (claude/bogtroll2) THE WAVE: its crest runs along under the road; a hero on the boards where it passes (feet lower than floorY - BT.wave.clear) is thrown */
+function stepWave(S, dt, w) {
+  const v = S.wave; if (!v) return; v.t += dt; v.x += v.dir * BT.wave.v * dt;
+  if (v.x < S.G.w0 - 20 || v.x > S.G.w1 + 20) { S.wave = null; return; }
+  w.hit([v.x - BT.wave.crest, v.x + BT.wave.crest, S.G.floorY - BT.wave.clear, S.G.floorY + 2], BT.wave.dmg, 'wave', { key: v.key, up: BT.wave.kick, push: v.dir * BT.wave.push, thrown: true });
 }
 function stepClods(S, dt, heroes, w) {
   for (const c of S.clods) { c.t += dt; if (c.t < c.T || c.done) continue; c.done = true; w.splash(c.tx, 3); w.sound('clod');
@@ -137,13 +180,16 @@ export function takeBlow(e, S, dmg) {
 /* ---------- THE BOT (src/lab.js): what a player reads - the bubbles, the bulge (amber while it follows, red when it sets), his tells a reaction late,
    the clods' rings, the red boards before the rip - and THE RULE: stand on a rotten section while he hunts, step off when the bulge sets ---------- */
 export const PLAN = { react: 0.2, miss: 0.1, missLure: 0.15 };
-/* s = { P, e, S, reach, secs: [{ x0, x1, ok }] (px; ok: standing), holes: [[x0, x1]] (px: water where there are no boards), t, mem, rng, v2, shield, dodge } */
+/* s = { P, e, S, reach, secs: [{ x0, x1, ok }] (px; ok: standing), holes: [[x0, x1]] (px: water where there are no boards), t, mem, rng, v2, shield, dodge }
+   (claude/bogtroll2) + slots: [{ x0, x1 }] (px: the crossing's open stretches a plank can go across), bundles: [{ x, y, stock }] (the banks' bundles with a plank on them), held (a plank on the
+   shoulder): with no rotten section left standing it fetches a plank and lays it at the nearest broken edge (talk = E) - the next lure; it jumps the wave's crest and rolls or jumps the post */
 export function btPlan(s) {
   const out = btPlan0(s);
   if (globalThis.__btWhy) { const k = out.why.replace(/ \(.*/, ''); globalThis.__btWhy[k] = (globalThis.__btWhy[k] || 0) + 1; }
   /* THE WATER: never walk off the boards - a hole between him and the spot is jumped */
   const P = s.P, holes = s.holes || [];
-  if (out.gx != null && P.ground && !out.jump) { const dir = Math.sign(out.gx - P.x);
+  if (s.held) out.atk = false;   /* (claude/bogtroll2) a swing with a plank on the shoulder throws it */
+  if (out.gx != null && P.ground && !out.jump && !out.noJump) { const dir = Math.sign(out.gx - P.x);
     if (dir) { const ahead = holes.find(([a, b]) => (dir > 0 ? a > P.x - 2 && a < P.x + 22 : b < P.x + 2 && b > P.x - 22));
       if (ahead && Math.abs(out.gx - P.x) > 10) { const far = dir > 0 ? ahead[1] : ahead[0]; if (Math.abs(far - (dir > 0 ? ahead[0] : ahead[1])) <= 56) { out.jump = true; out.why += ' (jump the water)'; } else { out.gx = P.x; out.why += ' (water ahead)'; } } }
     if (holes.some(([a, b]) => out.gx > a - 4 && out.gx < b + 4)) { const h = holes.find(([a, b]) => out.gx > a - 4 && out.gx < b + 4); out.gx = Math.abs(out.gx - (h[0] - 8)) < Math.abs(out.gx - (h[1] + 8)) ? h[0] - 8 : h[1] + 8; } }
@@ -169,6 +215,10 @@ function btPlan0(s) {
   if (P.y > G.floorY + 6) { let best = null; for (let dx = 0; dx < 200 && best === null; dx += 8) for (const sg of [-1, 1]) { const x = P.x + sg * dx; if (best === null && x > lo && x < hi && !wet(x)) best = x; } out.gx = best ?? P.x; out.jump = true; out.swim = true; out.why = 'out of the fen'; return out; }
   /* 0b. a rotten section about to go under me (and he is not setting his bulge on it): off it */
   if (onSec && P.ground && onSec.bow > onSec.hold - 0.7 && !(e.mode === 'burstTell' && !e.locked)) { out.gx = offRot(P.x); out.why = 'off the bowing boards'; return out; }
+  /* (claude/bogtroll2) 0c. THE WAVE: its crest coming along under the road - jump it as it reaches you (a reaction late, some misread) */
+  if (S.wave && P.ground) { const v = S.wave, d = (P.x - v.x) * v.dir, key = 'w' + v.key, lead = BT.wave.v * 0.17 + BT.wave.crest + 6;
+    if (d > -6 && d < lead && seenFor(key, s.v2 ? 0.05 : 0.15) && !(s.v2 ? false : roll(key + 'm', PLAN.miss))) { out.jump = true; out.gx = P.x; mem.jumpT = t; mem.jumpX = P.x; out.why = 'jump the wave'; return out; }
+    if (d >= lead && d < lead + 60) { out.gx = P.x; out.why = 'the wave: ready to jump it'; out.noJump = true; return out; } }
   /* 0. a jump is carried through */
   if (!P.ground && mem.jumpT !== undefined && t - mem.jumpT < 0.5) { out.gx = mem.jumpX; out.why = 'in the air'; return out; }
   /* 1. OFF A RING */
@@ -196,11 +246,23 @@ function btPlan0(s) {
           if (P.ground) { out.jump = true; out.gx = P.x; mem.jumpT = t; mem.jumpX = P.x; out.why = 'jump the drag'; return out; } }
         out.gx = P.x; out.why = 'his drag: ready to jump it'; return out; }
       if (e.mode === 'hurlTell') { out.gx = safeX(P.x + (P.x < G.mid ? 34 : -34)); out.why = 'the hurl: keep moving'; return out; }
+      /* (claude/bogtroll2) THE PILING SWING: out of the club's reach while he wrenches the post; inside it as he swings - roll under it (or jump it) */
+      if (e.mode === 'pileTell' || e.mode === 'pileWind') { const f = e.face || 1, rel = (P.x - kx) * f, inBox = rel > -BT.pile.back - 8 && rel < BT.pile.reach + 8;
+        if (inBox && e.mode === 'pileWind' && e.modeT < 0.16) { if (s.dodge && P.ground && !roll(key + 'd', 0.8)) { out.dodge = true; out.gx = P.x - f * 30; out.why = 'roll under the post'; return out; }
+          if (P.ground) { out.jump = true; out.gx = P.x; mem.jumpT = t; mem.jumpX = P.x; out.why = 'jump the post'; return out; } }
+        if (inBox) { let gx = kx + f * (BT.pile.reach + 26); if (wet(gx) || gx > hi || gx < lo) gx = kx - f * (BT.pile.back + 30); out.gx = clamp(gx); out.why = 'out of the post\'s reach'; return out; } }
     } }
   /* 5. OPEN: strike him (stuck) - from the sound boards at the wreck's edge */
   if (btOpen(e)) { const sd = s.tip ? BT.stuck.w / 2 + s.tip : half + Math.max(6, reach - 10); let sx = kx + side * sd; if (wet(sx)) sx = kx - side * sd; out.gx = clamp(sx);   /* (the warden at her point's distance: inside the shaft she only glances) */
     if (dx < (s.tip ? sd + 8 : hitR + 4)) swing(); out.why = 'strike him: stuck'; return out; }
   if (S.ward > 0 || e.mode === 'heave') { out.gx = safeX(kx + side * 90); out.why = 'his ward: off him'; return out; }
+  /* (claude/bogtroll2) 5b. LAY THE ROAD: no rotten section standing (or a plank already on the shoulder) - a plank from a bank's bundle, laid at the nearest broken edge: the next lure */
+  { const slots = s.slots || [], bundles = s.bundles || [];
+    if (s.held && slots.length) { const sl = slots.slice().sort((a, b) => Math.min(Math.abs(a.x0 - P.x), Math.abs(a.x1 - P.x)) - Math.min(Math.abs(b.x0 - P.x), Math.abs(b.x1 - P.x)))[0];
+      const fromL = P.x < sl.x0 + 2, ex = fromL ? sl.x0 - 7 : sl.x1 + 7; out.gx = ex; out.noJump = true; out.face = fromL ? 1 : -1;
+      if (Math.abs(P.x - ex) < 6 && P.ground) { out.gx = P.x; out.talk = true; out.why = 'lay the plank'; } else out.why = 'carry the plank to the edge'; return out; }
+    if (!s.held && !secs.length && slots.length && bundles.length && e.mode !== 'stuck') { const b = bundles.slice().sort((a, q) => Math.abs(a.x - P.x) - Math.abs(q.x - P.x))[0];
+      out.gx = b.x; if (Math.abs(P.x - b.x) < 9 && P.ground) { out.gx = P.x; out.talk = true; out.why = 'take a plank'; } else out.why = 'to the bundle'; return out; } }
   /* 6. HE IS DOWN THERE: go and stand on a rotten section (the lure) */
   if (e.mode === 'sink' || e.mode === 'under') {
     const near = secs.slice().sort((a, b) => Math.abs((a.x0 + a.x1) / 2 - P.x) - Math.abs((b.x0 + b.x1) / 2 - P.x))[0];

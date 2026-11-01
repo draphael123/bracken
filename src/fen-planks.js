@@ -7,6 +7,8 @@
 //   ATTACK THROWS IT (src/carry-throw.js's told arc: UP lobs, DOWN tosses short): a foe it meets STAGGERS (a small blow, tagged 'throw'); a STILT-WALKER
 //     it meets loses his stilts (src/stilt-walker.js cutStilt: he topples). It lies where it lands on the boards (E takes it again); the fen keeps it.
 //   E with a plank and no broken edge in front of you SETS IT DOWN. A blow on you, or the water, makes you drop it.
+//   (claude/bogtroll2) THE CROSSING's BUNDLES (L.bundles [col, row, { stock, refill }]): a STOCK of planks that REFILLS one every refill s (never a soft-lock - you wait a few seconds);
+//     drawn with the planks left on it and a refill tick under it when empty. A level bundle (no stock) never runs out, as before.
 // PURE but for ctx (main.js builds it): L(), P(), keys(), enemies(), fen() (the road's hands: slotAhead, lay), solidPx(x, y, falling), number, text, burst, dust,
 //   sfx, hint(msg), told() / tell(), hurtFoe(e, d, x), topple(e) -> bool
 import * as CT from './carry-throw.js'; import * as FPA from './redraw/fen_planks_art.js';   /* (claude/fenroad2art) the bundle, the plank, the ghost */
@@ -31,11 +33,11 @@ export function makeFenPlanks(ctx) {
   const arcFor = (P, aim) => { const h = handAt(P), a = CT.KINDS.plank.aims[aim], v = { vx: (P.face || 1) * a.vx, vy: a.vy };
     return CT.predictArc('plank', h.x, h.y, v, ctx.solidPx, { stopAt: (x, y) => target(x, y) }); };
   W.on = () => bundles.length > 0;
-  W.reset = () => { const L = ctx.L(); items = []; arc = null; near = null; ahead = null; bundles = ((L && L.bundles) || []).map(([x, row]) => ({ x: x * TS + 8, y: (row + 1) * TS })); };
+  W.reset = () => { const L = ctx.L(); items = []; arc = null; near = null; ahead = null; bundles = ((L && L.bundles) || []).map(([x, row, o]) => ({ x: x * TS + 8, y: (row + 1) * TS, max: o && o.stock ? o.stock : 0, stock: o && o.stock ? o.stock : -1, refill: o && o.refill ? o.refill : 0, t: 0 })); };
   W.held = () => !!held(ctx.P());
-  W.bundles = () => bundles.map(b => ({ x: b.x, y: b.y }));
+  W.bundles = () => bundles.map(b => ({ x: b.x, y: b.y, stock: b.stock }));   /* (stock -1: a level bundle, never runs out) */
   const reachable = P => { if (!P || P.dead || P.carry || !P.ground) return null;
-    const b = bundles.find(c => Math.abs(P.x - c.x) < PLANK.reachX && Math.abs(P.y - c.y) < PLANK.reachY); if (b) return b;
+    const b = bundles.find(c => c.stock !== 0 && Math.abs(P.x - c.x) < PLANK.reachX && Math.abs(P.y - c.y) < PLANK.reachY); if (b) return b;
     return items.find(q => q.state === 'rest' && Math.abs(P.x - q.x) < PLANK.reachX + 6 && Math.abs(P.y - q.y) < PLANK.reachY) || null; };
   W.canTake = () => !!reachable(ctx.P());
   /* E: lay it (a broken edge in front of you), set it down, or take one */
@@ -47,7 +49,7 @@ export function makeFenPlanks(ctx) {
       if (!P.ground) return false;
       P.carry = null; h.state = 'rest'; h.x = P.x + (P.face || 1) * 10; h.y = P.y; h.restT = 0; W.n.setDown++; ctx.dust(h.x, h.y, 3); return true; }
     const c = reachable(P); if (!c) return false;
-    if (c.state === 'rest') { c.state = 'gone'; }
+    if (c.state === 'rest') { c.state = 'gone'; } else if (c.stock > 0) { c.stock--; c.t = 0; }
     W.n.taken++;
     const q = { t: 'fplank', thrKind: 'plank', noClimb: true, state: 'held', holder: P, x: P.x, y: P.y - 20, vx: 0, vy: 0, hurtWas: P.hurt > 0, launch: PP => CT.launchOf('plank', PP, ctx.keys ? ctx.keys() : {}) };
     items.push(q); P.carry = q; P.plankPose = 'carry'; ctx.sfx.clank ? ctx.sfx.clank() : null;
@@ -58,6 +60,7 @@ export function makeFenPlanks(ctx) {
   const inWater = (x, y) => { const L = ctx.L(); return (L.pools || []).some(p => x > p.x0 && x < p.x1 && y > p.y + 2 && (p.bottom === undefined || y < p.bottom + 16)); };
   W.update = dt => {
     const P = ctx.P();
+    for (const b of bundles) if (b.max && b.stock < b.max) { b.t += dt; if (b.t >= b.refill) { b.t = 0; b.stock++; } }   /* (claude/bogtroll2) the crossing's bundles refill slowly */
     if (P && P.plankPoseT > 0) { P.plankPoseT -= dt; if (P.plankPoseT <= 0) P.plankPose = held(P) ? 'carry' : null; }
     for (const q of items) {
       if (q.state === 'held') { const H = q.holder;
@@ -99,7 +102,9 @@ export function makeFenPlanks(ctx) {
   W.draw = (g, cx, cy, time) => {
     if (!W.on()) return; const rc = (x, y, w, h, c) => { g.fillStyle = c; g.fillRect(R(x), R(y), R(w), R(h)); };
     /* THE BUNDLES (claude/fenroad2art): the stack on its sawhorses, roped, a glint sweeping it */
-    for (const b of bundles) { const x = R(b.x - cx), y = R(b.y - cy); if (x < -60 || x > 2000) continue; FPA.drawBundle(g, x, y, time, b.x); }
+    for (const b of bundles) { const x = R(b.x - cx), y = R(b.y - cy); if (x < -60 || x > 2000) continue;
+      if (b.stock !== 0) FPA.drawBundle(g, x, y, time, b.x); else { rc(x - 14, y - 9, 3, 9, '#3e2c1c'); rc(x + 11, y - 9, 3, 9, '#3e2c1c'); rc(x - 15, y - 10, 30, 2, '#6a4a2a'); }   /* (claude/bogtroll2) empty: the bare sawhorses */
+      if (b.max) { for (let i = 0; i < b.max; i++) rc(x - b.max * 3 + i * 6, y + 3, 4, 2, i < b.stock ? PLANK.col : '#3a2e22'); if (b.stock < b.max) { rc(x - 12, y + 6, 24, 1, '#1b1626'); rc(x - 12, y + 6, R(24 * b.t / b.refill), 1, '#c9b27c'); } } }
     for (const q of items) { const x = q.x - cx, y = q.y - cy;
       if (q.state === 'held') continue;   /* a carried plank is drawn with the hero's arms (drawHeld, src/redraw/hero_plank_poses.js) */
       else if (q.state === 'fly') FPA.drawPlank(g, x, y, q.spin || 0, 1);

@@ -26,7 +26,9 @@ function seg(g, x0, y0, x1, y1, w0, w1, col) {
   const dx = x1 - x0, dy = y1 - y0, l = Math.hypot(dx, dy) || 1, nx = -dy / l, ny = dx / l;
   poly(g, [[x0 + nx * w0 / 2, y0 + ny * w0 / 2], [x1 + nx * w1 / 2, y1 + ny * w1 / 2], [x1 - nx * w1 / 2, y1 - ny * w1 / 2], [x0 - nx * w0 / 2, y0 - ny * w0 / 2]], col);
 }
-/* THE POSE A MODE WEARS (src/bog-troll-hands.js POSE, the contract): torso [dy, lean], armF/armB [x, y] hands, head [dx, dy, tilt], mouth, splinter, weed, clod, wreck, flail, planks, grip */
+/* THE POSE A MODE WEARS (src/bog-troll-hands.js POSE, the contract): torso [dy, lean], armF/armB [x, y] hands, head [dx, dy, tilt], mouth, splinter, weed, clod, wreck, flail, planks, grip
+   (claude/bogtroll2, GREYBOX - the art lane redraws): post ('haul' | 'wind' | 'swing': the support post in both fists), pinned (the section's beams + boards across his shoulders and head),
+   spray (the slap's wall of water off his hands) */
 const WATER = 16;   /* the fen's surface under the road's top */
 
 /* one arm: shoulder -> elbow -> hand; the elbow bows OUT and down (a long heavy arm), a knuckled fist with three claws */
@@ -116,6 +118,15 @@ function drawTroll(g, name, p, flash, time, ph, sinkK) {
     box(g, -27, -3, 54, 6, C.board); box(g, -27, -3, 54, 1, C.boardL); box(g, -27, 2, 54, 2, C.boardD); for (let i = -25; i < 26; i += 14) { box(g, i, -3, 1, 6, C.boardD); box(g, i + 3, -1, 1, 1, C.boardD); }
     box(g, -27, 3, 6, 3, C.boardD); box(g, 20, 3, 5, 5, C.boardD); box(g, -22, 4, 1, 5, C.p1); box(g, 12, 4, 1, 6, C.w1);   /* torn ends, a stump of post, weed + peat dripping */
     g.restore(); }
+  if (p.post) {   /* (claude/bogtroll2) THE POST: a black pile, peat-caked at the foot, a frayed lashing, from one fist out past the other */
+    const ax = (aF[0] + aB[0]) / 2, ay = (aF[1] + aB[1]) / 2, ang = p.post === 'haul' ? -1.45 : p.post === 'wind' ? -2.5 : -0.08, len = 64, back = p.post === 'haul' ? 26 : 12;
+    g.save(); g.translate(ax, ay); g.rotate(ang); box(g, -back, -3, len, 6, C.boardD); box(g, -back, -3, len, 2, C.board); box(g, -back, 1, len, 1, '#1a120a'); box(g, len - back - 9, -4, 9, 8, C.p1); box(g, len - back - 6, -2, 3, 3, C.p2);
+    box(g, 6, -3, 2, 6, '#c9b27c'); box(g, 9, -3, 1, 6, '#8e7a52'); box(g, -back - 1, -2, 2, 4, '#6a5038'); g.restore(); }
+  if (p.spray) for (let i = 0; i < 9; i++) { const q = ((time * 5 + i * 0.13) % 1), sx2 = 18 + i * 3.4, sy2 = WATER - 4 - Math.sin(q * Math.PI) * (10 + (i % 3) * 6); box(g, sx2, sy2, 2, 2, i % 2 ? '#e6efe6' : '#9fb3a6'); }
+  if (p.pinned) {   /* (claude/bogtroll2) PINNED UNDER THE WRECK: two crossbeams down across his shoulders, boards on his head, splinters */
+    g.save(); g.translate(-2, top + 8); g.rotate(0.32); box(g, -30, -3, 60, 5, C.boardD); box(g, -30, -3, 60, 2, C.board); for (let i = -26; i < 30; i += 13) box(g, i, -3, 1, 5, '#1a120a'); g.restore();
+    g.save(); g.translate(2, top + 10); g.rotate(-0.42); box(g, -28, -3, 56, 5, C.boardD); box(g, -28, -3, 56, 1, C.boardL); box(g, 20, -6, 2, 4, C.boardL); g.restore();
+    g.save(); g.translate(12, top - 6); g.rotate(-0.2); box(g, -9, -2, 18, 4, C.board); box(g, -9, 1, 18, 1, C.boardD); box(g, 7, -4, 3, 2, C.boardL); g.restore(); }
   if (p.grip) { for (const a of [aF, aB]) { box(g, a[0] - 5, a[1] - 3, 12, 3, C.board); box(g, a[0] - 5, a[1] - 3, 12, 1, C.boardL); box(g, a[0] - 3, a[1] - 5, 2, 2, C.boardD); } }
   if (p.splinter) for (let i = 0; i < 8; i++) { const a = i * 0.78 + time * 4; box(g, Math.cos(a) * 24, -8 - Math.abs(Math.sin(a)) * 22, 4, 2, i % 3 ? C.board : C.boardL); }
   /* the water he stands in: a broken foam ring at the surface, drips off his belly */
@@ -126,7 +137,7 @@ function drawTroll(g, name, p, flash, time, ph, sinkK) {
 }
 
 /* the animation index a pose's own motion uses: flail / weed / splinter / spit / the foam ring all move on 8 steps a second, so the cache stays small */
-const animated = p => p.flail || p.weed || p.splinter || p.mouth || p.wreck;
+const animated = p => p.flail || p.weed || p.splinter || p.mouth || p.wreck || p.spray;
 export const TROLL_ANCHOR = { ax: 100, ay: 92, w: 200, h: 112 };
 export function trollSprite(name, pose, time, ph, flash, sinkK = 0) {
   const k = animated(pose) || true ? Math.floor(time * 6) % 8 : 0, sk = Math.max(0, Math.min(40, Math.round(sinkK / 2) * 2)), key = `${name}|${k}|${ph > 1 ? 2 : 1}|${flash ? 1 : 0}|${sk}`;

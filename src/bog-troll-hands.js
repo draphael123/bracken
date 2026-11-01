@@ -18,7 +18,11 @@ const R = Math.round;
 const SOUND = { roar: s => (s.trollRoar || s.boreRoar || s.roar)(), gurgle: s => (s.trollBubble || s.splash)(), bubble: s => (s.trollBubble || s.splash)(), bulge: s => (s.trollBulge || s.creak || s.thud)(),
   burst: s => { (s.trollBurst || s.splash)(); (s.crack || s.thud)(); }, stuck: s => { (s.trollGroan || s.thud)(); (s.crack || s.thud)(); }, sink: s => (s.splash || s.thud)(),
   dragTell: s => (s.trollDragTell || s.snort || s.tell)(), drag: s => (s.trollDrag || s.throwWhoosh || s.thud)(), scoop: s => (s.trollScoop || s.thud)(), hurl: s => (s.trollHurl || s.throwWhoosh || s.thud)(),
-  clod: s => (s.splash || s.thud)(), rip: s => { (s.trollRip || s.crack)(); (s.heavy || s.thud)(); }, clank: s => (s.clank || s.thud)() };
+  clod: s => (s.splash || s.thud)(), rip: s => { (s.trollRip || s.crack)(); (s.heavy || s.thud)(); }, clank: s => (s.clank || s.thud)(),
+  /* (claude/bogtroll2) THE WAVE SLAP and THE PILING SWING: their own sounds - the arms going up out of the fen (a gathering roar of water), the slap (a flat crack and a wall of spray), the post
+     groaning in its socket, wrenched out (the crack of timber), the club whooshing round */
+  waveTell: s => (s.trollSlapTell || s.trollRoar || s.roar)(), slap: s => { (s.trollSlap || s.waveBreak || s.splash)(); (s.wave || s.thud)(); }, pileTell: s => (s.trollWrenchTell || s.creak || s.thud)(),
+  wrench: s => (s.trollWrench || s.crack || s.thud)(), swing: s => (s.trollSwing || s.throwWhoosh || s.thud)() };
 const C = { hide: '#5a6a4a', hideL: '#7a8a62', hideD: '#3e4a32', belly: '#6e7a56', peat: '#3e2c1c', weed: '#2e4a22', eye: '#ffcf6a', red: '#ff4a2a', tusk: '#e8dcc0', mouth: '#2a1a14', board: '#6a5038', boardD: '#3a2818' };
 const rect = (g, x, y, w, h, col) => { g.fillStyle = col; g.fillRect(R(x), R(y), Math.max(1, R(w)), Math.max(1, R(h))); };
 const ell = (g, x, y, rx, ry, col) => { g.fillStyle = col; g.beginPath(); g.ellipse(R(x), R(y), Math.max(1, rx), Math.max(1, ry), 0, 0, 7); g.fill(); };
@@ -41,7 +45,16 @@ export const POSE = {
   sink: { torso: [10, 0], armF: [16, 6], armB: [-16, 6], head: [6, 4, 0] },
   ripTell: { torso: [6, 0.3], armF: [30, 2], armB: [22, 2], head: [12, 4, 0.3], grip: true },
   rip: { torso: [-6, -0.15], armF: [14, -50], armB: [-12, -50], head: [4, -4, -0.3], mouth: true, planks: true },
+  /* (claude/bogtroll2) THE WAVE SLAP: up at the edge, both arms raised high over the fen, leaning back, roaring (windup) -> both arms slammed down flat on the water in front (release, spray) */
+  waveTell: { torso: [-4, -0.22], armF: [10, -52], armB: [-6, -54], head: [2, -4, -0.45], mouth: true, weed: true },
+  waveSlap: { torso: [8, 0.3], armF: [34, 14], armB: [24, 15], head: [12, 6, 0.3], spray: true },
+  /* THE PILING SWING: hunched, both fists round a post down in the wreck, hauling (windup 1: the post rising) -> the post back over his shoulder (windup 2: the arc told red) -> swung round flat
+     in front of him (release) */
+  pileTell: { torso: [6, 0.28], armF: [26, 8], armB: [16, 8], head: [10, 4, 0.25], mouth: true, post: 'haul' },
+  pileWind: { torso: [-2, -0.2], armF: [-6, -34], armB: [-14, -30], head: [4, -2, -0.1], post: 'wind' },
+  pileSwing: { torso: [2, 0.18], armF: [40, -14], armB: [30, -12], head: [10, 0, 0.1], mouth: true, post: 'swing' },
 };
+POSE.stuck = { ...POSE.stuck, pinned: true };   /* (claude/bogtroll2) STUCK = PINNED: the beams and boards of the section he burst through lie across his shoulders and head (stars over him: drawOver) */
 /* HIS BODY (greybox): a hunched mossy bulk from the water up, a small head slung forward, an underbite with two tusks, long arms; peat caked on him */
 function drawTroll(g, p, flash, time, ph, sinkK = 0) {
   const ty = (p.torso ? p.torso[0] : 0) + sinkK, lean = p.torso ? p.torso[1] : 0, base = 16, top = -30 + ty, hide = flash ? '#ffffff' : C.hide;
@@ -97,11 +110,14 @@ export function makeBogTrollHands(ctx) {
       fx: (k, x, y) => { if (k === 'open') { ctx.ring(x, y - 14, 34, '#ffd36b'); ctx.burst(x, y - 8, 16, ['#6a5038', '#3a2818', '#9fb3a6'], 110, 0.7); } else if (k === 'ward') ctx.ring(x, y - 14, 36, '#c8d8e8'); },
       splash: (x, n = 18) => ctx.burst(x, S.G.waterY, n, ['#9fb3a6', '#e6efe6', '#3e2c1c', '#6a5038'], 120, 0.6),
       sectionAt: x => (FR ? FR.sectionAt(x) : null), collapse: sec => (FR ? FR.collapse(sec) : false),
+      postAt: (x, f) => (FR && FR.postAt ? FR.postAt(x, f) : null), pull: col => (FR && FR.pull ? FR.pull(col) : false), heroX: () => { const P = ctx.hero(); return P ? P.x : null; },   /* (claude/bogtroll2) the piling swing's post */
       rip: () => { if (FR) FR.rip(A().rip || []); },
       hit: (bx, d, name, o = {}) => { for (const pp of ctx.players) ctx.asPlayer(pp, () => { const P = ctx.hero(); if (!ctx.upright(pp) || P.dead) return;
           if (!ctx.overlap({ l: bx[0], r: bx[1], t: bx[2], b: bx[3] }, ctx.box(P)) || keyed(pp, o.key || name)) return;
           let res = null; hurt(name, () => { res = ctx.damagePlayer(e.x, d, { who: e, name, unblockable: true }); });
-          if (res === 'hit') { if (o.up) { P.vy = o.up; P.ground = false; } if (o.pull) { P.vx = o.pull; P.vy = Math.min(P.vy || 0, -90); P.ground = false; S.n.dragged++; ctx.number(P.x, P.y - 30, BTM.BT_SAY.dragged, '#ff9a5c'); } } }); },
+          if (res === 'hit') { if (o.push) { P.vx = o.push; P.vy = Math.min(P.vy || 0, -110); P.ground = false; }   /* (claude/bogtroll2) the post's knock-back, the wave's shove */
+            if (o.thrown) { S.n.thrown++; ctx.number(P.x, P.y - 30, BTM.BT_SAY.thrown, '#ff9a5c'); }
+            if (o.up) { P.vy = o.up; P.ground = false; } if (o.pull) { P.vx = o.pull; P.vy = Math.min(P.vy || 0, -90); P.ground = false; S.n.dragged++; ctx.number(P.x, P.y - 30, BTM.BT_SAY.dragged, '#ff9a5c'); } } }); },
     };
   }
   /* ---------- ONE FRAME OF HIM ---------- */
@@ -120,12 +136,15 @@ export function makeBogTrollHands(ctx) {
     return d; };
   H.barName = e => 'THE BOG TROLL' + (BTM.btOpen(e) ? '  ' + (BTM.OPEN_NAME[e.mode] || 'OPEN') : S && S.ward > 0 ? '  WARDED' : '');
   H.end = () => { if (S) S.clods = []; BOSS_PHASE.bogtroll = 1; };
-  H.read = () => S && { mode: ctx.boss && ctx.boss.mode, ph: S.ph, ward: S.ward, ripped: S.ripped, n: JSON.parse(JSON.stringify(S.n)), hurt: { ...(S.hurt || {}) } };
+  H.read = () => S && { mode: ctx.boss && ctx.boss.mode, ph: S.ph, ward: S.ward, ripped: S.ripped, wave: S.wave ? { x: Math.round(S.wave.x), dir: S.wave.dir } : null, n: JSON.parse(JSON.stringify(S.n)), hurt: { ...(S.hurt || {}) } };
   /* THE BOT'S VIEW (src/lab.js): the rotten sections standing, and the water where there are no boards (ripped or collapsed) */
   H.plan = () => { const FR = ctx.fen(), TS = ctx.TS; if (!S || !FR) return null;
-    const secs = FR.sections().map(s => ({ x0: s.x0 * TS, x1: (s.x0 + s.w) * TS, ok: s.st === 'up' || s.st === 'bow', bow: s.st === 'bow' ? s.t : 0, hold: s.hold }));
-    const holes = [...S.G.rip.filter(() => S.ripped), ...FR.sections().filter(s => s.st === 'under' || s.st === 'gone').map(s => (s.hole ? [s.hole[0] * TS, (s.hole[1] + 1) * TS] : [s.x0 * TS, (s.x0 + s.w) * TS]))];
-    return { secs, holes }; };
+    const secs = FR.sections().map(s => ({ x0: s.x0 * TS, x1: (s.x0 + s.w) * TS, ok: s.st === 'up' || s.st === 'bow', bow: s.st === 'bow' ? s.t : 0, hold: s.hold, laid: !!s.laid }));
+    /* (claude/bogtroll2) the open water is read off the crossing's row itself (a wreck, a rip, a post's gap - nothing floats back) */
+    const holes = (FR.crossRuns ? FR.crossRuns() : []).map(([a, b]) => [a * TS, (b + 1) * TS]);
+    const PK = ctx.planks && ctx.planks(), slots = (FR.slots ? FR.slots() : []).filter(q => q.arena).map(q => ({ x0: q.x0 * TS, x1: (q.x1 + 1) * TS }));
+    const bundles = PK && PK.bundles ? PK.bundles().filter(b => b.x > S.G.x0 - 32 && b.x < S.G.x1 + 32 && b.stock !== 0) : [];
+    return { secs, holes, slots, bundles, held: !!(PK && PK.held && PK.held()), wave: S.wave ? { x: S.wave.x, dir: S.wave.dir } : null }; };
   H.drawBoss = (g, e, cx, cy, time) => { if (!S) return; e.guardFx = Math.max(0, (e.guardFx || 0) - 1 / 60);
     const m = e.mode; if (m === 'sleep' || m === 'under' || m === 'burstTell') return;
     const f = e.face || 1, x = e.x - cx, y = S.G.floorY - cy, flash = (e.hurtT || 0) > 0 || (e.flash || 0) > 0.06, p = POSE[m] || POSE.up;
@@ -142,6 +161,22 @@ export function makeBogTrollHands(ctx) {
       for (let i = 0; i < 4; i++) { const q = (time * 3 + i * 0.25) % 1; g.globalAlpha = 1 - q; rect(g, bx - 9 + i * 6, Y(G.waterY) - q * 8, 2, 2, '#cfe0d0'); g.globalAlpha = 1; } }
     /* THE DRAG's reach along the boards while he winds it */
     if (e.mode === 'dragTell') { const f = e.face || 1, a = e.x + f * 14, b = e.x + f * (14 + BT.drag.reach); g.globalAlpha = 0.45 + 0.3 * Math.sin(time * 14); g.fillStyle = '#ff6b6b'; for (let q = Math.min(a, b); q < Math.max(a, b); q += 9) g.fillRect(X(q), Y(G.floorY) - 2, 5, 2); g.globalAlpha = 1; }
+    /* (claude/bogtroll2) THE WAVE SLAP's tell: a ripple line running out across the fen from him (blinking red at its head); then THE WAVE: a crest of swell and spray under the road, the boards
+       over it lifted in turn (a dark gap under each) */
+    if (e.mode === 'waveTell') { const d = e.waveDir || 1, k = 1 - Math.max(0, e.modeT) / BT.wave.tell[S.ph - 1], len = (G.w1 - G.w0) * Math.min(1, k * 1.4);
+      for (let q = 0; q < len; q += 10) { const xx = e.x + d * (14 + q), wob = Math.sin(time * 9 - q * 0.08) > 0 ? 1 : 0; g.globalAlpha = 0.85 - 0.5 * (q / Math.max(1, len)); rect(g, X(xx), Y(G.waterY) - 1 - wob, 6, 1, q + 10 >= len ? blink : '#e6efe6'); }
+      g.globalAlpha = 1; }
+    if (S.wave) { const v = S.wave, cr = BT.wave.crest;
+      for (let q = -cr * 3; q <= cr * 3; q += 2) { const h = Math.max(0, Math.cos(q / (cr * 3) * Math.PI / 2)) * 7; rect(g, X(v.x + q), Y(G.waterY) - R(h), 2, R(h) + 2, h > 4 ? '#cfe0d0' : '#6f8f7a'); }
+      for (let i = 0; i < 4; i++) { const q = (time * 6 + i * 0.25) % 1; g.globalAlpha = 1 - q; rect(g, X(v.x) - 6 + i * 4, Y(G.waterY) - 8 - q * 10, 2, 2, '#e6efe6'); g.globalAlpha = 1; }
+      const c0 = Math.floor((v.x - cr * 2) / ctx.TS), c1 = Math.floor((v.x + cr * 2) / ctx.TS), FR = ctx.fen();
+      for (let c = c0; c <= c1; c++) { if (!FR || !FR.footsAt || !FR.footsAt(c)) continue; const cx0 = c * ctx.TS + 8, lift = R(Math.max(0, 1 - Math.abs(cx0 - v.x) / (cr * 2)) * BT.wave.lift); if (lift < 1) continue;
+        rect(g, X(c * ctx.TS), Y(G.floorY) - lift + 4, ctx.TS, lift, '#10160e'); FRA.drawBoard(g, X(c * ctx.TS), Y(G.floorY) - lift, c & 3, 4, false, 1, false); } }
+    /* THE PILING SWING's arc, told red while he winds it back */
+    if (e.mode === 'pileWind' || e.mode === 'pileSwing') { const f = e.face || 1, a = e.x - f * BT.pile.back, b = e.x + f * BT.pile.reach; g.globalAlpha = e.mode === 'pileWind' ? 0.35 + 0.3 * Math.sin(time * 16) : 0.7;
+      g.strokeStyle = '#ff4a2a'; g.lineWidth = 2; g.beginPath(); g.ellipse(X((a + b) / 2), Y(G.floorY - (BT.pile.top + BT.pile.bot) / 2), Math.abs(b - a) / 2, (BT.pile.top - BT.pile.bot) / 2 + 3, 0, 0, 7); g.stroke(); g.lineWidth = 1; g.globalAlpha = 1; }
+    /* PINNED: the stars of the beams that came down on his head */
+    if (e.mode === 'stuck') for (let i = 0; i < 3; i++) { const a = time * 3 + i * 2.09, sx = X(e.x) + R(Math.cos(a) * 14), sy = Y(G.floorY - 44) + R(Math.sin(a) * 4); rect(g, sx - 1, sy, 3, 1, '#ffe08a'); rect(g, sx, sy - 1, 1, 3, '#ffe08a'); }
     /* THE RIP's boards flash red first */
     if (e.mode === 'ripTell') for (const [a, b] of G.rip) { g.globalAlpha = 0.5 + 0.4 * Math.sin(time * 16); g.fillStyle = '#ff4a2a'; g.fillRect(X(a), Y(G.floorY), R(b - a), 4); g.globalAlpha = 1; }
     for (const c of S.clods) { const q = BTM.clodAt(c, G.floorY); FRA.drawClod(g, X(q.x), Y(q.y), time);

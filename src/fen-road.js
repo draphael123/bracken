@@ -39,7 +39,14 @@ export const BUNDLES = [[107, 17], [153, 17], [371, 17], [391, 17]];
 export const ROAD = 18, WATER = 19, BED = 23;   /* the boardwalk's row, the water's surface row, the bed's first row */
 /* THE ARENA: the troll's crossing at the Stockade's gate. Three ROTTEN sections (arena sags: a longer hold, so you can stand on one and lure him) and
    the two stretches he RIPS in his phase two (src/bog-troll.js): islands 407-418, 422-433, 437-450, every rotten section on one of them */
-export const ARENA = { x0: 407, x1: 450, gate: 405, exit: 448, wallR: 451, trigger: 411, boss: 428, rot: [[413, 4], [427, 4], [441, 4]], rip: [[419, 421], [434, 436]] };
+export const ARENA = { x0: 407, x1: 450, gate: 405, exit: 448, wallR: 451, trigger: 411, boss: 428, rot: [[413, 4], [427, 4], [441, 4]], rip: [[419, 421], [434, 436]],
+  /* (claude/bogtroll2, Daniel 11-01 "THE ROAD SHOULD NOT REPAIR"): the crossing stands between two PEAT BANKS (407-409, 446-450) and the water runs 410-445 under it. Nothing floats back:
+     each burst wrecks its section for good, and the crews' PLANK BUNDLES on the banks (a stock that refills slowly: never a soft-lock) rebuild it - LAY THE ROAD at a broken edge, and a
+     freshly laid plank SAGS like a rotten section (the next lure). THE PROPS: the crossing's torches, warning boards and pennants stand on their own boards and topple into the fen when
+     those boards go (src/fen-road-hands.js) */
+  bankL: [407, 409], bankR: [446, 450], water0: 410, water1: 445,
+  bundles: [[408, 17, { stock: 2, refill: 9 }], [447, 17, { stock: 2, refill: 9 }]],
+  props: [['torch', 414], ['torch', 428], ['torch', 442], ['warn', 420], ['warn', 435], ['pennant', 424], ['pennant', 438], ['torch', 411], ['torch', 445]] };
 
 export function buildFenRoad({ painter, T, TS }) {
   const W = 452, H = 28, L = painter(W, H);
@@ -175,15 +182,16 @@ export function buildFenRoad({ painter, T, TS }) {
 
   // ================= 5. THE TROLL'S CROSSING (405-451): THE BOG TROLL (src/bog-troll.js) =================
   ent('gate', ARENA.exit, 17);   /* THE STOCKADE'S GATE at the crossing's east end: it opens when the troll falls (gateAfterBoss) - you arrive at it */
-  water(407, 450); planks(407, 450);
+  water(ARENA.water0, ARENA.water1); planks(ARENA.water0, ARENA.water1);
+  block(ARENA.bankL[0], ARENA.bankL[1], ROAD, H - 1); block(ARENA.bankR[0], ARENA.bankR[1], ROAD, H - 1);   /* (claude/bogtroll2) the crossing's two peat banks, a crews' bundle on each */
   ARENA.rot.forEach(([x0, w], i) => sag('rot' + i, x0, w, { arena: true }));
-  coins([407, 22], [408, 22], [409, 22], [410, 22]);   /* the troll's hoard on the bed under the crossing's first boards (the pocket pays) */
+  coins([419, 22], [420, 22], [421, 22], [422, 22]);   /* the troll's hoard on the bed under the first stretch he rips (the pocket pays) */
   block(ARENA.wallR, ARENA.wallR, 0, H - 1);
   ent('bogtroll', ARENA.boss, 17, { face: -1 });
 
   return {
     W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: 17 }, pools, falls: [], moversExtra: movers, fenroad: true, gateAfterBoss: true, reachDoors: [{ x0: 192, x1: 193, y0: 13, y1: ROAD }],   /* THE BARRICADE: every hero can strike its lashing (src/reachcore.js: the full fill has it down, the plain fill keeps it) */
-    reachSpans, bundles: BUNDLES.map(b => b.slice()),   /* (claude/fenroad2) THE BROKEN ROAD: every hero carries a plank and lays it (the full fill has each hole laid, the plain fill not); the crews' bundles */
+    reachSpans, bundles: [...BUNDLES, ...ARENA.bundles].map(b => b.slice()),   /* (claude/fenroad2) THE BROKEN ROAD: every hero carries a plank and lays it (the full fill has each hole laid, the plain fill not); the crews' bundles */
     waterHurts: true, noStack: true, sagCells, machineCells: [...sagCells, ...machine].map(([x, y]) => y * W + x),
     sections: SECTIONS.map(([name, x0, x1]) => ({ id: name.toLowerCase().replace(/[^a-z]+/g, '-').replace(/^-|-$/g, ''), name, x0, x1 })),
     music: 'fenroad', duskStart: undefined,
@@ -193,6 +201,7 @@ export function buildFenRoad({ painter, T, TS }) {
     ambient: [{ x0: 0, x1: 99999, kind: 'rain' }],
     tints: [[0, 104, [150, 140, 100], 0.10], [105, 210, [140, 120, 90], 0.10], [211, 310, [110, 140, 130], 0.14], [311, 404, [150, 110, 80], 0.14], [405, 451, [90, 110, 80], 0.16]],
     arena: { x0: ARENA.x0 * TS, x1: ARENA.x1 * TS, floor: ROAD * TS, trigger: ARENA.trigger * TS, wallL: ARENA.gate + 1, wallR: ARENA.wallR, boss: 'bogtroll', music: 'boss3', tint: '#4a6a3a', tintA: 0.12, fx: 'motes',
-      water: WATER * TS, bed: BED * TS, rip: ARENA.rip, rot: ARENA.rot.map(([x0, w], i) => ({ id: 'rot' + i, x0, w })) },
+      water: WATER * TS, bed: BED * TS, rip: ARENA.rip, rot: ARENA.rot.map(([x0, w], i) => ({ id: 'rot' + i, x0, w })),
+      w0: ARENA.water0 * TS, w1: (ARENA.water1 + 1) * TS, water0: ARENA.water0, water1: ARENA.water1, props: ARENA.props.map(([k, col]) => ({ k, col })) },   /* (claude/bogtroll2) the open water he swims in; the props that stand on the crossing's boards */
   };
 }

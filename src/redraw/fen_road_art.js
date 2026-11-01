@@ -407,6 +407,22 @@ export function drawSunk(g, x, w, y, time) {
 }
 export function drawDrips(g, x, w, y, time) { for (let i = 0; i < Math.floor(w / 16); i++) { const ph = (time * 2.2 + i * 0.5) % 1; g.globalAlpha = 1 - ph * 0.5; P(g, '#cfe0d0', x + 4 + i * 16 + (i & 1) * 5, y + ph * 8); } g.globalAlpha = 1; }
 
+/* (claude/bogtroll2) THE CROSSBEAMS under a rotten section of the crossing (GREYBOX - the art lane draws them): read it as rotten BEFORE you use it - two black-mossy
+   piles at its ends, an X of sagging crossbeams between them down to the fen, weed hanging off them, a crack of light through the boards. hole = [x0, x1] screen px of a wreck:
+   the beams there are snapped, one end hanging into the water, splinters at the break */
+export function drawCrossbeams(g, x, w, y, wy, hole, time, seed = 0) {
+  const top = y + 7, bot = wy + 2, x1 = x + w, beam = (ax, ay, bx, by, c, wd = 2) => { g.strokeStyle = c; g.lineWidth = wd; g.beginPath(); g.moveTo(Math.round(ax), Math.round(ay)); g.lineTo(Math.round(bx), Math.round(by)); g.stroke(); g.lineWidth = 1; };
+  for (const px of [x + 1, x1 - 4]) { Rr(g, OAK[1], px, top, 3, bot - top); Rr(g, OAK[3], px, top, 1, bot - top); Rr(g, MOSS[1], px, bot - 5, 3, 3); }   /* the end piles, mossed at the waterline */
+  if (!hole) {
+    beam(x + 3, top + 1, x1 - 4, bot - 2, OAK[2]); beam(x + 3, bot - 2, x1 - 4, top + 1, OAK[2]); beam(x + 3, top + 2, x1 - 4, top + 2, OAK[1], 1);   /* the X and the stringer */
+    for (let k = 0; k < 5; k++) { const hx = x + 6 + ((k * 11 + seed * 3) % Math.max(8, w - 10)), hl = 3 + ((k + seed) % 4); Rr(g, MOSS[k & 1 ? 1 : 2], hx, top + 3 + (k % 3) * 2, 1, hl); }   /* weed off the beams */
+    for (let k = 0; k < 3; k++) { const cx = x + 8 + ((k * 17 + seed * 5) % Math.max(8, w - 14)); Rr(g, '#0a0806', cx, y + 1, 1, 4); Rr(g, '#0a0806', cx + 1, y + 3, 1, 2); }   /* cracks through the boards */
+    return; }
+  const [h0, h1] = hole, sway = Math.sin(time * 1.7 + seed) * 1.5;
+  beam(x + 3, top + 1, h0, top + 6, OAK[2]); beam(h0, top + 6, h0 + 4, bot + sway, OAK[1]);   /* snapped at the hole: the left beam hangs into the fen */
+  beam(x1 - 4, top + 1, h1, top + 5, OAK[2]); beam(h1, top + 5, h1 - 5, bot - sway, OAK[1]);
+  for (let k = 0; k < 4; k++) { P(g, BOARD[4], h0 + (k & 1), top + 5 + k); P(g, BOARD[4], h1 - (k & 1), top + 4 + k); }   /* splinters at the breaks */
+}
 /* THE BULGE under the boards (the troll's burst, told): five boards humped up over him, a dark gap and water showing under them, splinters jumping once it has set; k 0..1 how long it has been rising */
 export function drawBulge(g, bx, by, k, locked, time) {
   const spr = rottenBoard(true, 1, 3);

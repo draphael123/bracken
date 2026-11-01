@@ -87,6 +87,10 @@ function layout(L, T) {
   const INT = new Set(['sign', 'lashing', 'check', 'crewgap', 'broken', 'sag', 'rotten', 'gate', 'deco', 'undertow', 'shrine', 'bogtroll', 'silver']);
   for (const e of L.ents || []) { if (!INT.has(e.t)) continue; for (let d = -1; d <= 1; d++) { const x = Math.round(e.x) + d; if (x >= 0 && x < W) busy[x] = 1; } }
   for (const b of L.bundles || []) for (let d = -3; d <= 3; d++) { const x = b[0] + d; if (x >= 0 && x < W) busy[x] = 1; }
+  /* (claude/bogtroll2, Daniel 11-01 "the signs + torches float"): nothing is set on boards that can go - a bowed section, a crew gap, a peat hole, the whole crossing (its own props stand on
+     their boards and topple with them: src/fen-road-hands.js drawProp) */
+  for (const e of L.ents || []) if ((e.t === 'sag' || e.t === 'rotten' || e.t === 'crewgap' || e.t === 'broken') && e.w) for (let d = -1; d <= e.w; d++) { const x = Math.round(e.x) + d; if (x >= 0 && x < W) busy[x] = 1; }
+  if (L.arena) for (let x = Math.floor(L.arena.x0 / 16) - 1; x <= Math.floor(L.arena.x1 / 16) + 1; x++) if (x >= 0 && x < W) busy[x] = 1;
   const free = (x, n) => { for (let i = 0; i < n; i++) { const q = x + i; if (q < 1 || q >= W - 1 || busy[q]) return false; if (at(q, ROAD - 1) !== T.AIR || at(q, ROAD - 2) !== T.AIR) return false; const t = at(q, ROAD); if (t !== T.PLANK && t !== T.SOLID) return false; } return true; };
   const take = (x, n) => { for (let i = -1; i <= n; i++) if (x + i >= 0 && x + i < W) busy[x + i] = 1; };
   const MIX = [
@@ -117,5 +121,16 @@ export function drawSites(g, L, cx, cy, time, T) {
     if (o.k === 'banner') { const s = banner(), sw = Math.round(Math.sin(time * 1.6 + o.x) * 1); g.drawImage(s, X - ox + sw * 0, yb - oh); Rr(g, '#4a0e0e', X - 4 + 8 + sw, yb - oh + 19, 1, 1); continue; }
     if (!SPR[o.k]) throw new Error("site kind " + o.k); const s = SPR[o.k](); g.drawImage(s, X - ox, yb - s.height); }
 }
+/* (claude/bogtroll2) A PROP OF THE CROSSING (src/fen-road-hands.js): k = 'torch' (a lamp post), 'warn' (a goblin warning board: a red X on a stake), 'pennant'; yb = the road's top, wy = the water's
+   (screen px); fall 0..1 = toppling into the fen to the side (it tips, slides off the broken board and sinks to the waterline - a torch's flame goes out half way) */
+export function drawProp(g, k, x, yb, wy, time, fall = 0, side = 1, seed = 0) {
+  const s = k === 'torch' ? lampPost(false) : k === 'pennant' ? banner() : warnBoard(), [ox] = k === 'torch' ? OFF.lamp : k === 'pennant' ? OFF.banner : [5, 22];
+  if (!fall) { g.drawImage(s, x - ox, yb - s.height); if (k === 'torch') { const fl = 0.6 + 0.25 * Math.sin(time * 6 + seed) * Math.sin(time * 2.3 + seed * 0.1); glow(g, x - ox + 14.5, yb - s.height + 9, 9, 0.16 * fl); } return; }
+  const a = Math.min(1.45, fall * 2.4) * side, drop = Math.max(0, fall - 0.35) / 0.65 * (wy - yb + s.height * 0.5);
+  g.save(); g.beginPath(); g.rect(x - 80, yb - 200, 160, wy - yb + 200); g.clip(); g.translate(Math.round(x + side * fall * 10), Math.round(yb + drop)); g.rotate(a); g.drawImage(s, -ox, -s.height); g.restore();
+  if (fall > 0.4) { g.globalAlpha = 0.7 * (1 - fall); Rr(g, '#e6efe6', x + side * 12 - 8, wy - 1, 16, 1); g.globalAlpha = 1; }   /* the ring where it went in */
+}
+const warnBoard = () => once('warnB', () => { const [c, g] = canvas(12, 24); Rr(g, '#3a2818', 5, 6, 2, 18); Rr(g, '#5a4630', 1, 1, 10, 8); Rr(g, '#2a1e12', 1, 8, 10, 1);
+  for (let i = 0; i < 6; i++) { P(g, '#b8322a', 3 + i, 2 + i); P(g, '#b8322a', 8 - i, 2 + i); } Rr(g, '#c9b27c', 4, 10, 4, 1); return outline(c, '#120c08'); });   /* a crew's warning board: a red X - BAD BOARDS */
 /* bake every sprite now (the level's load) */
 export function warm() { lampPost(false); lampPost(true); sawhorse(); barrel(); lean(); driver(); stackB(); brazier(); net(); skullStake(); banner(); stakes(); for (let v = 0; v < 4; v++) pilings(v); lantern(); }

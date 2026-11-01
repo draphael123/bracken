@@ -13,6 +13,9 @@
 //      a thrown one topples a stilt-walker and staggers a foe
 //   G. (claude/fenroad2) THE STILT-WALKER MOVES: a beat walked in told high steps (footX before every step), each step a stomp (an event the road bows to: a section
 //      already bowing goes under), a told unblockable stomp on a hero under him
+//   I. (claude/bogtroll2) THE CROSSING DOES NOT REPAIR: a burst wrecks a rotten section for good (its end boards hang on), a plank laid in the hole makes it a sagging lure again
+//      (and he can wreck it again), the rip tears what's left, the post he wrenches keeps every gap a jump and every footing two boards, the banks' bundles run low and refill,
+//      the crossing's props stand on their boards and topple into the fen with them (nothing floats), and no site dressing stands on boards that can go
 //   H. (claude/fenroad2) THE BOG LEECH: lurks untouchable, wakes on a bowing section near it, a told rear (!!), the lunge latches (a bite + the drain), a roll shakes it off
 //      onto the boards (x2 there), it drops off sated at last
 import assert from 'node:assert/strict';
@@ -149,4 +152,37 @@ ok(arenaReached(floodReach(L, T, { hero: 'knight' })), 'every hole laid: the cro
   H.dodge = 0.3; BL.stepLeech(e, 1 / 60, X); ok(e.mode === 'flop' && !H.leech && log.includes('unlatch shaken') && BL.leechTake(e) === BL.LEECH.weak, 'a ROLL shakes it off onto the boards, where it is weak');
   H.dodge = 0; e.mode = 'latched'; e.host = H; H.leech = e; e.latchT = 0; for (let f = 0; f < 60 * (BL.LEECH.sated + 0.2); f++) BL.stepLeech(e, 1 / 60, X); ok(e.mode !== 'latched' && log.includes('unlatch sated'), 'it lets go sated at last (' + BL.LEECH.sated + ' s)'); }
 ok(L.ents.filter(e => e.t === 'leech').length >= 5 && L.ents.filter(e => e.t === 'leech').every(e => (L.pools || []).some(p => e.x * TS + 8 > p.x0 && e.x * TS + 8 < p.x1)), 'the leeches lie in the water by the boards');
+// ---- I. THE CROSSING DOES NOT REPAIR (claude/bogtroll2)
+{ const A = L.arena; ok(A.water0 === ARENA.water0 && at(ARENA.bankL[1], ROAD) === T.SOLID && at(ARENA.bankR[0], ROAD) === T.SOLID && L.bundles.filter(b => b[2] && b[2].stock).length === 2, 'the crossing: two peat banks, a refilling bundle on each');
+  for (const b of L.bundles.filter(q => q[2])) ok(at(b[0], b[1] + 1) === T.SOLID && b[0] >= ARENA.x0 && b[0] <= ARENA.x1, 'bundle ' + b[0] + ' stands on a bank inside the crossing'); }
+{ const w = mkWorld(), rot0 = w.H.sections().find(q => q.id === 'rot0'); const P = { x: (ARENA.bankL[1]) * TS + 8, y: ROAD * TS, ground: true, dead: false, face: 1 }; w.players.push(P);
+  ok(w.H.collapse(rot0) && rot0.st === 'gone' && w.grid[ROAD * W + rot0.x0 + 1] === T.AIR && w.grid[ROAD * W + rot0.x0] === T.PLANK && w.grid[ROAD * W + rot0.x0 + rot0.w - 1] === T.PLANK, 'his burst wrecks the section: its middle boards in the fen, its end boards hang on');
+  for (let f = 0; f < 60 * 40; f++) w.H.update(1 / 60); ok(rot0.st === 'gone' && w.grid[ROAD * W + rot0.x0 + 1] === T.AIR, 'and it stays wrecked (40 s: nothing floats back)');
+  const props = w.H.read().props; ok(props.find(p => p.col === 414).st !== 'up', 'the torch on it toppled into the fen with it (' + props.find(p => p.col === 414).st + ')');
+  ok(props.filter(p => p.col !== 414 && p.st !== 'up').length === 0, 'every other prop still stands on its board');
+  ok(w.H.read().n.hissed >= 1, 'a torch hisses out');
+  const sl = w.H.slots().find(q => q.arena && q.x0 === rot0.hole[0]); ok(sl && sl.kind === 'wreck' && sl.x1 === rot0.hole[1], 'the wreck is a slot for a plank (' + (sl && sl.kind) + ')');
+  P.x = rot0.x0 * TS + 8; P.face = 1; const ahead = w.H.slotAhead(P); ok(ahead && ahead.x0 === rot0.hole[0], 'stood on the end board facing the hole: it is the slot ahead');
+  ok(w.H.lay(ahead) && rot0.st === 'up' && rot0.laid && w.grid[ROAD * W + rot0.hole[0]] === T.PLANK, 'LAY THE ROAD: the section is back, laid');
+  P.x = (rot0.hole[0]) * TS + 8; let bowed = false; for (let f = 0; f < 60 * 2; f++) { w.H.update(1 / 60); if (rot0.st === 'bow') bowed = true; } ok(bowed && w.H.sectionAt(P.x) === rot0, 'a fresh plank SAGS like a rotten section (the next lure)');
+  P.x = ARENA.bankL[1] * TS + 8; ok(w.H.collapse(rot0) && rot0.st === 'gone', 'and his burst wrecks it again');
+  const w2 = mkWorld(); w2.players.push({ x: ARENA.bankL[1] * TS + 8, y: ROAD * TS, ground: true, dead: false }); const lay2 = w2.H.slots(); ok(!lay2.some(q => q.arena), 'before he breaks anything the crossing has no slots'); }
+{ const w = mkWorld(); w.players.push({ x: ARENA.bankL[1] * TS + 8, y: ROAD * TS, ground: true, dead: false }); w.H.rip(ARENA.rip);
+  ok(w.H.sections().every(q => q.st === 'gone'), 'HE RIPS THE ROAD and tears what is left: every rotten section goes');
+  const runs = w.H.crossRuns(); ok(runs.every(([a, b]) => b - a + 1 <= 3), 'every stretch of open water after the rip is a jump (' + runs.map(r => r.join('-')).join(' ') + ')');
+  for (let f = 0; f < 120; f++) w.H.update(1 / 60); ok(w.H.read().props.filter(p => p.k === 'warn').every(p => p.st !== 'up'), 'the warning boards on the ripped stretches topple into the fen');
+  ok(w.H.slots().filter(q => q.arena).length === runs.length, 'every open stretch is a slot (rebuild a route from the islands)');
+  /* THE POST: wherever he stands, the gap he leaves keeps every water a jump and every footing two boards */
+  let pulled = 0; for (let x = ARENA.water0 * TS; x <= (ARENA.water1 + 1) * TS; x += 24) { const c = w.H.postAt(x, 1); if (c === null) continue; ok(w.H.gapOk(c), 'post ' + c + ' keeps the crossing jumpable'); w.H.pull(c); pulled++; const r2 = w.H.crossRuns();
+    ok(r2.every(([a, b]) => b - a + 1 <= 3), 'after post ' + c + ': no water over 3 columns'); for (let i = 1; i < r2.length; i++) ok(r2[i][0] - r2[i - 1][1] - 1 >= 2, 'after post ' + c + ': every footing two boards (' + r2[i - 1][1] + '..' + r2[i][0] + ')'); }
+  ok(pulled >= 1, pulled + ' post(s) he could wrench out (then none: he swings one out of the wreck, no new gap)'); }
+{ /* the bundles run low and refill (src/fen-planks.js) */
+  const w = mkWorld(), b = L.bundles.find(q => q[2]), P = { x: b[0] * TS + 8, y: (b[1] + 1) * TS, ground: true, dead: false, face: 1, hurt: 0 }; w.players.push(P);
+  const FP = makeFenPlanks({ L: () => w.Lw, P: () => P, keys: () => ({}), enemies: () => [], fen: () => w.H, solidPx: () => true, number: () => {}, text: () => {}, burst: () => {}, dust: () => {}, sfx: {}, hint: () => {}, told: () => true, tell: () => {}, hurtFoe: () => {}, topple: () => false });
+  FP.reset(); const stockOf = () => FP.bundles().find(q => Math.abs(q.x - P.x) < 2).stock;
+  for (let k = 0; k < b[2].stock; k++) { ok(FP.interact(P), 'take plank ' + (k + 1)); P.carry = null; } ok(stockOf() === 0 && !FP.canTake(), 'the bank bundle runs out');
+  for (let f = 0; f < 60 * (b[2].refill + 0.2); f++) FP.update(1 / 60); ok(stockOf() === 1 && FP.canTake(), 'and refills one in ' + b[2].refill + ' s (never a soft-lock)'); }
+// the site dressing never stands on boards that can go (Daniel 11-01: "the signs + torches float")
+{ const FSAm = await import('../src/redraw/fen_site_art.js').catch(() => null); void FSAm;
+  const src = (await import('node:fs')).readFileSync(new URL('../src/redraw/fen_site_art.js', import.meta.url), 'utf8'); ok(/e\.t === 'sag' \|\| e\.t === 'rotten' \|\| e\.t === 'crewgap' \|\| e\.t === 'broken'/.test(src) && /L\.arena/.test(src), 'the work-site dressing keeps off every board that can go (sections, crew gaps, peat holes, the crossing)'); }
 console.log('ok  fen-road    ' + n + ' checks: the road, the shrines, the verb (bow, sink, lashings, the barricade as the required use), the crew gaps, the stilt-walker, the crossing; LAY THE ROAD (locks, bundles, lay, throw), the stomping stilt-walker, the bog leech');
