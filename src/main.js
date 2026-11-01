@@ -5892,11 +5892,12 @@ const skinPreview = (k, icon = false) => preview('skin:' + hero() + ':' + k.id +
 const preview = (key, make) => previewCache[key] || (previewCache[key] = make());
 const weaponPreview = (k, icon = false) => preview('weapon:' + hero() + ':' + PROG.skin + ':' + k.id + ':' + icon, () => heroSet(PROG.skin, k.id, icon ? 'weaponIcon' : 'atk'));
 function drawStore() {
+  if (SWAPUI.isOpen) { g.fillStyle = '#0a0810'; g.fillRect(0, 0, VW, VH); return; }   /* (claude/hubpolish) the swap hero panel has the screen: nothing of the store shows through it */
   if (storeBack === 'map') { g.drawImage(MAPC, 0, 0); g.fillStyle = 'rgba(10,14,12,0.75)'; g.fillRect(0, 0, VW, VH); } else { g.fillStyle = '#0a0810'; g.fillRect(0, 0, VW, VH); }
   const x = 3, y = 2, w = VW - 6, h = VH - 4;
   panel(x, y, w, h, UI.border, 'ledger');
   text('THE STORE', x + 8, y + 4, UI.title, 'left', TYPE.head);
-  { const lab = (touchOn || padLast ? '' : (STORE_TABS[storeTab].talent ? 'H ' : 'F ')) + 'SWAP HERO', bw = inkW(lab, 6) + 8, bx = x + 8 + textW('THE STORE', TYPE.head) + 8;   /* (claude/hubpolish) one press, or one tap, to change hero from any tab */
+  if (!STORE_TABS[storeTab].talent) { const lab = (touchOn || padLast ? '' : 'F ') + 'SWAP HERO', bw = inkW(lab, 6) + 8, bx = x + 8 + textW('THE STORE', TYPE.head) + 8;   /* (claude/hubpolish) one press, or one tap, to change hero from any tab */
     g.fillStyle = 'rgba(60,90,60,0.75)'; g.fillRect(bx, y + 3, bw, 10); g.strokeStyle = 'rgba(168,224,110,0.6)'; g.strokeRect(bx + 0.5, y + 3.5, bw - 1, 9); text(lab, bx + 4, y + 5, '#e8f4d8', 'left', 6); TCH.hit(bx, y + 2, bw, 12, () => SWAPUI.open()); }
   { const gold = String(PROG.coins), silv = String(silverAvail());
     const gx = x + w - 10 - textW(gold, 8), sx0 = gx - 22 - textW(silv, 8);
@@ -36811,7 +36812,7 @@ window.BK = { setView: m => setView(m), env: () => ({ hurt: (e, d, x) => hurtEne
   healths: () => healths, acorns: () => acorns,   /* the hearts and coins lying about, the dead-end stashes among them: BK.collectLab({ stash: true }) goes for those */
   /* THE AUDITS (tools/audit-hitboxes.mjs, audit-feel.mjs, audit-input.mjs, audit-contact.mjs, audit-audio.mjs): read-only. log is an array while a
      tool listens (damagePlayer and hurtEnemy write to it), else null; the rest are the numbers a blow leaves behind, the hero's live reach, his set, the particles */
-  log: null, blowRec: null, shakeCam: (n, k, tag) => shakeCam(n, k, tag), get shake() { return shake; }, get kick() { return kick; }, attackBox: () => attackBox(), boxOf: q => box(q), get hurtKnock() { return hurtKnock; }, get heroSet() { return K; },
+  log: null, blowRec: null, shakeCam: (n, k, tag) => shakeCam(n, k, tag), get shake() { return shake; }, get kick() { return kick; }, attackBox: () => attackBox(), boxOf: q => box(q), get hurtKnock() { return hurtKnock; }, get heroSet() { return K; }, swap: SWAPUI, shopLife: SHOPLIFE,   /* (claude/hubpolish) tools/hero-swap.mjs, tools/shop-life.mjs, tools/textfit.mjs */
   parts: () => parts, bossBodies: () => bossBodies, get PROP() { return PROP; }, get FLYERS() { return FLYERS; }, get HAS_HURT() { return HAS_HURT; }, get EHP() { return EHP; },
 };
 /* THE HOIST, for the harnesses: the decks (each with its state in .hs), a way to put n loads in one's basket, and the Reeve's cut */
