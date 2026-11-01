@@ -19,6 +19,7 @@ import { drawSister } from './redraw/shriek_sisters_art.js';
 import { drawHang } from './redraw/rookery_hang.js';
 import { drawArena, drawWind } from './redraw/rookery_arena_art.js';
 import { bakeSummitSlab, bakeSummitRubble, bakeSummitStone, bakeSummitEcho, bakeBoulder, bakeSummitLip } from './redraw/rookery_world.js';   /* (claude/rookerypolish) the summit's slabs, rubble and stones in the Sisters' Crag stone */
+import * as RA from './redraw/shriek_roosts_art.js';   /* (claude/rookery4art) the nests / arms / overhang / steps / vents, the support moves' reads, the fall arc and the turn portraits */
 import { GALE, drawGust } from './gale-harpy.js';   /* (claude/rookery4) THE SNATCHER's WING GUST: the gale harpy's push and its told cone */
 const { SS, ROLES } = SSM;
 
@@ -89,7 +90,7 @@ export const POSE = {
      each its own windup + release (B16) - THE PEBBLE KICK (the Diver rocks back on her nest, one foot drawn up gripping a stone / the kick: leg flung out, wings up), THE MARK (the
      Shrieker on her perch, head flung up, throat swelling - the same scream, smaller), THE WING GUST (the Snatcher low by her nest, wings swept far back / the beat: wings slammed forward) */
   toRoost: { wing: -0.9, flap: true, pitch: -0.2, head: [8, -4], talon: 'hang' },
-  pebbleTell: { wing: -0.6, pitch: -0.3, head: [5, -5], talon: 'grip', rock: true, eye: 'red' }, pebble: { wing: -1.2, pitch: 0.2, head: [10, -1], talon: 'fwd', beak: true },
+  pebbleTell: { wing: -0.6, pitch: -0.3, head: [5, -5], talon: 'grip', pebble: true, eye: 'red' }, pebble: { wing: -1.2, pitch: 0.2, head: [10, -1], talon: 'fwd', beak: true },
   markTell: { wing: -1.1, pitch: -0.3, head: [4, -8], beak: true, sac: true, eye: 'red' },
   gustTell: { wing: -1.6, pitch: -0.25, head: [7, -3], talon: 'spread', eye: 'red' }, gust: { wing: 0.4, pitch: 0.25, head: [12, 0], beak: true, talon: 'spread' },
 };
@@ -265,9 +266,10 @@ export function makeShriekSistersHands(ctx) {
   H.drawBars = (g, VW, VH, y, h, time) => { if (!S) return false; const w = 42, gap = 5, x0 = Math.round(VW / 2 - (w * 3 + gap * 2) / 2), ih = Math.max(9, h + 2);
     ROLES.forEach((r, i) => { const s = S.sis[r], bx = x0 + i * (w + gap), k = s.alive ? Math.max(0, s.hp) / s.maxHp : 0, open = SSM.sisOpen(s), p2 = S.p2 === r, dead = !s.alive, fx = bx + 10, fw = w - 10;
       const hunt = !dead && (S.p2 ? S.p2 === r : S.hunter === r), iy = y + Math.round((h - 9) / 2);
-      bird(g, bx, iy, r, dead, open || p2 || hunt);
+      RA.portrait(g, bx, iy, r, dead, open || p2 || hunt);
       /* (claude/rookery4) THE TURN ORDER: the Hunter's portrait lit with her countdown ring (pulsing through the hand-over), a roosting sister's dimmed, the fallen crossed (above) */
       if (!dead && !hunt) { g.fillStyle = 'rgba(20,16,30,0.55)'; g.fillRect(bx, iy, 9, 9); }
+      if (hunt && S.hand > 0) { g.globalAlpha = 0.5 + 0.5 * Math.sin(time * 18); g.strokeStyle = '#fff6c8'; g.strokeRect(bx - 1.5, iy - 1.5, 12, 12); g.globalAlpha = 1; }   /* (claude/rookery4art) THE HAND-OVER: her portrait flares as the word goes up */
       if (hunt) { const T0 = S.p2 ? 1 : Math.max(0, Math.min(1, S.turnT / SS.turn.t)), pul = S.hand > 0 ? 0.5 + 0.5 * Math.sin(time * 18) : 1; g.globalAlpha = pul; g.strokeStyle = '#ffd36b'; g.beginPath(); g.arc(bx + 4.5, iy + 4.5, 7, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * T0); g.stroke(); g.globalAlpha = 1; }
       g.fillStyle = '#14101e'; g.fillRect(fx - 1, y - 1, fw + 2, h + 2); g.fillStyle = dead ? '#3a3646' : '#2a2236'; g.fillRect(fx, y, fw, h);
       const col = open ? (Math.floor(time * 8) % 2 ? '#ffd36b' : '#fff6c8') : p2 ? (Math.floor(time * 5) % 2 ? '#ff8a4a' : '#ff6b3a') : COL[r].crest, fl = Math.round(fw * k);
@@ -297,40 +299,26 @@ export function makeShriekSistersHands(ctx) {
     const shocking = ROLES.some(r => S.sis[r].alive && S.sis[r].mode === 'shockTell'), E = SS.shock.edge;
     for (const [ex, side] of [[x(G.x0), -1], [x(G.x1) - E, 1]]) { g.drawImage(bakeSummitLip(side), ex, fy - 1);
       if (shocking) { g.globalAlpha = 0.45 + 0.35 * Math.sin(time * 12); g.strokeStyle = '#ff6b6b'; g.strokeRect(ex + 0.5, fy - 3.5, E - 1, 5); g.globalAlpha = 1; } } };
-  /* (claude/rookery4) GREYBOX ROOSTS (the sonnet art lane draws them): a BONE NEST - a bowl of pale ribs and sticks, dark inside - on a CRACKED ARM (a leaning stone strut from the
-     summit floor up to it, a black crack zig-zagging through it) whose FOOT on the floor wears the shared gold crack ring (B10: bait a dive here); a dropped nest lies tilted on the arm's
-     stump, low over the floor; THE OVERHANG - a cracked slab of crag hanging under the Shrieker's perch, its foot ringed gold - and once broken, THE STEPS (three fallen blocks); the
-     UPDRAFT VENTS - a grate in the floor, PLUGGED (a dark rubble cap) until the Snatcher falls, then OPEN (pale streaks rising) */
-  const nestDraw = (g, nx, top, w, tilt, time) => { const L = Math.round(nx - w / 2), T0 = Math.round(top);
-    rect(g, L, T0, w, 4, '#3a2e26'); for (let i = 0; i < w; i += 3) { rect(g, L + i, T0 - 2 + ((i * 7) % 3) + (tilt ? Math.round((i / w - 0.5) * tilt) : 0), 4, 1, i % 2 ? '#e6dcc0' : '#b0a488'); }
-    rect(g, L - 1, T0 + 1, 2, 3, '#d8ccb0'); rect(g, L + w - 1, T0 + 1, 2, 3, '#d8ccb0'); for (let i = 2; i < w - 2; i += 5) rect(g, L + i, T0 + 3, 2, 2, '#e6dcc0'); };
-  const crackRing = (g, cx2, fy, w, time) => { g.strokeStyle = Math.floor(time * 3) % 2 ? '#ffd36b' : 'rgba(255,211,107,0.5)'; g.strokeRect(R(cx2 - w / 2) + 0.5, fy - 2.5, w - 1, 5); };
-  function drawRoosts(g, x, y, fy, time) {
-    for (const nn of S.G.nests) { const nx = x(nn.x), fx = x(nn.footX);
-      if (nn.st === 'up') { const ty = y(nn.topUp) + 4; g.strokeStyle = '#8a8478'; g.lineWidth = 4; g.beginPath(); g.moveTo(fx, fy); g.lineTo(nx, ty); g.stroke(); g.lineWidth = 1;
-        g.strokeStyle = '#1c161e'; g.beginPath(); const mx = (fx + nx) / 2, my = (fy + ty) / 2; g.moveTo(mx - 3, my - 4); g.lineTo(mx + 2, my - 1); g.lineTo(mx - 2, my + 2); g.lineTo(mx + 3, my + 5); g.stroke();
-        nestDraw(g, nx, y(nn.topUp), nn.w, 0, time); rect(g, fx - 6, fy - 2, 12, 2, '#5e594f'); crackRing(g, fx, fy, SS.nest.foot, time); }
-      else { g.strokeStyle = '#6a645a'; g.lineWidth = 4; g.beginPath(); g.moveTo(fx, fy); g.lineTo(fx + (nx - fx) * 0.3, fy - 14); g.stroke(); g.lineWidth = 1; nestDraw(g, nx, y(nn.topDown), nn.w, 4, time); } }
-    const o = S.G.over;
-    if (o && o.st === 'up') { const sx0 = x(o.slab.x0), sx1 = x(o.slab.x1), sy = y(o.slab.y), fx = x(o.footX); rect(g, sx0, sy, sx1 - sx0, 10, '#725a62'); rect(g, sx0, sy, sx1 - sx0, 2, '#bf9fa0'); rect(g, sx0 + 2, sy + 10, sx1 - sx0 - 4, 2, '#4e3c46');
-      g.strokeStyle = '#4e3c46'; g.lineWidth = 3; g.beginPath(); g.moveTo(fx, fy); g.lineTo(fx - 4, sy + 12); g.stroke(); g.lineWidth = 1;
-      g.strokeStyle = '#1c161e'; g.beginPath(); g.moveTo(sx0 + 10, sy); g.lineTo(sx0 + 16, sy + 5); g.lineTo(sx0 + 12, sy + 10); g.stroke(); crackRing(g, fx, fy, SS.nest.foot, time); }
-    else if (o) for (const st of o.steps) { const sx = x(st.x0), sy = y(st.y); rect(g, sx, sy, st.x1 - st.x0, 7, '#725a62'); rect(g, sx, sy, st.x1 - st.x0, 2, '#bf9fa0'); rect(g, sx + 2, sy + 7, st.x1 - st.x0 - 4, 2, '#4e3c46'); }
-    for (const v of S.G.vents) { const vx = x(v.x); rect(g, vx - 9, fy - 2, 18, 3, '#2a2236'); for (let k = -7; k <= 7; k += 4) rect(g, vx + k, fy - 2, 1, 3, '#8a8098');
-      if (!v.open) { rect(g, vx - 8, fy - 5, 16, 3, '#4e4a44'); rect(g, vx - 5, fy - 7, 4, 2, '#6a645a'); rect(g, vx + 2, fy - 6, 3, 1, '#6a645a'); }
-      else { g.fillStyle = 'rgba(232,240,255,0.55)'; for (let k = 0; k < 6; k++) { const t2 = (time * 1.4 + k / 6) % 1, yy = fy - 4 - t2 * (S.G.floorY - v.topY), xx = vx + Math.round(Math.sin(time * 5 + k * 2) * 4); g.globalAlpha = 0.6 * (1 - t2); g.fillRect(xx, R(yy), 1, 6); } g.globalAlpha = 1; } } }
+  /* (claude/rookery4art) THE ROOSTS - the bone nests on their cracked arms (and snapped), the overhang / its steps, the vents - are drawn by src/redraw/shriek_roosts_art.js */
+  const drawRoosts = (g, x, y, fy, time) => RA.drawRoosts(g, x, y, fy, time, S, SS, ctx.time());
   H.drawBoss = (g, b, cx, cy, time) => { if (!S || !b || b.t !== 'shrieksister') return; const s = S.sis[b.role]; if (!s) return; b.guardFx = Math.max(0, (b.guardFx || 0) - 1 / 60);
-    const flash = (b.hurtT || 0) > 0 || (b.flash || 0) > 0.06; b.hurtT = Math.max(0, (b.hurtT || 0) - 1 / 60); const p = poseOf(s, b, time, flash, S.G);
-    g.globalAlpha = 0.25; g.fillStyle = '#10060a'; g.fillRect(R(s.x - 12 - cx), R(S.G.floorY - 2 - cy), 24, 2); g.globalAlpha = 1;
+    const flash = (b.hurtT || 0) > 0 || (b.flash || 0) > 0.06; b.hurtT = Math.max(0, (b.hurtT || 0) - 1 / 60); let p = poseOf(s, b, time, flash, S.G);
+    /* (claude/rookery4art) THE FALL ARC: a sister who is put on the floor in ONE step (the nest's crash, the friendly-fire crash) is drawn dropping 0.5 s from where she was - spinning, a feather trail, a landing burst; her body (the hurtbox) is already down */
+    const nowT = ctx.time(); let ax = s.x, ay = s.y, arot = 0;
+    { if (!b.__arc && b.__ly !== undefined && (s.mode === 'stuck' || s.mode === 'downed') && s.y - b.__ly > 24) b.__arc = { t0: nowT, x0: b.__lx, y0: b.__ly, x1: s.x, y1: s.y }; b.__lx = s.x; b.__ly = s.y; const a2 = b.__arc;
+      if (a2) { const k = (nowT - a2.t0) / 0.5; if (k >= 1) { b.__landT = nowT; b.__arc = null; if (ctx.dust) ctx.dust(s.x, S.G.floorY, 8); } else { const fp = RA.fallPose(a2, k); ax = fp.x; ay = fp.y; arot = fp.rot; p = POSE.fall; RA.fallTrail(g, a2, k, cx, cy, COL[b.role].light); } } }
+    const shw = b.role === 'snatcher' ? 40 : b.role === 'diver' ? 34 : 28;
+    g.globalAlpha = 0.25; g.fillStyle = '#10060a'; g.fillRect(R(s.x - shw / 2 - cx), R(S.G.floorY - 2 - cy), shw, 2); g.globalAlpha = 1;
     /* (claude/rookery3) THE TEMPO, SEEN: HEAVY - she swells into her biggest pose (up to +16%) over a dark blood pool that spreads under her, slow crimson rings; MEDIUM - one amber
        ring tightening on her; LIGHT - a white flash of her whole body and a glint at her head, gone in a blink */
-    const tc = SSM.sisTelling(s) ? s.tempo : null, tk = tc ? Math.min(1, 1 - Math.max(0, s.modeT) / (s.tempoT || 1)) : 0, tAge = ctx.time() - (s.tempoAt || -9), bx = R(s.x - cx), by = R(s.y - cy);
+    const tc = SSM.sisTelling(s) ? s.tempo : null, tk = tc ? Math.min(1, 1 - Math.max(0, s.modeT) / (s.tempoT || 1)) : 0, tAge = ctx.time() - (s.tempoAt || -9), bx = R(ax - cx), by = R(ay - cy);
     let sc = scaleOf(s); if (tc === 'heavy') sc *= 1 + 0.16 * Math.sin(Math.min(1, tk * 1.4) * Math.PI / 2);
     if (tc === 'heavy') { const fy = R(S.G.floorY - cy), rw = 10 + 16 * tk; g.globalAlpha = 0.16 + 0.24 * tk; g.fillStyle = '#4a0610'; g.beginPath(); g.ellipse(bx, fy - 1, rw, 2.5 + 2 * tk, 0, 0, Math.PI * 2); g.fill();
       g.lineWidth = 2; for (let q = 0; q < 2; q++) { const ph = ((time * 1.6 + q * 0.5) % 1); g.globalAlpha = (1 - ph) * (0.35 + 0.4 * tk); g.strokeStyle = '#b8202c'; g.beginPath(); g.arc(bx, by - 10, 14 + ph * 20 * sc, 0, Math.PI * 2); g.stroke(); } g.lineWidth = 1; g.globalAlpha = 1; }
     if (tc === 'medium') { g.globalAlpha = 0.35 + 0.45 * tk; g.strokeStyle = '#ffb04a'; g.beginPath(); g.arc(bx, by - 10, 28 - 12 * tk, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1; }
     const lit = tc === 'light' && tAge < 0.14;
-    g.save(); g.translate(bx, by); g.scale((s.face || -1) * sc, sc); drawSister(g, b.role, p, flash || lit, time, b.role === 'snatcher' ? undefined : false, S.p2 === b.role ? giftsOf(S.dead) : ''); g.restore();
+    g.save(); g.translate(bx, by); if (arot) { g.translate(0, -18); g.rotate(arot); g.translate(0, 18); } g.scale((s.face || -1) * sc, sc); drawSister(g, b.role, p, flash || lit, time, b.role === 'snatcher' ? undefined : false, S.p2 === b.role ? giftsOf(S.dead) : ''); g.restore();
+    if (b.__landT !== undefined) RA.landBurst(g, bx, R(S.G.floorY - cy), nowT - b.__landT);
     if (tc === 'light' && tAge < 0.3) { const k = 1 - tAge / 0.3, L = Math.round(3 + 7 * k), hx = bx + (s.face || -1) * 8, hy = by - 24; g.globalAlpha = 0.5 + 0.5 * k; g.fillStyle = '#ffffff';
       g.fillRect(hx - L, hy, L * 2 + 1, 1); g.fillRect(hx, hy - L, 1, L * 2 + 1); g.fillRect(hx - 1, hy - 1, 3, 3); g.globalAlpha = 1; } };
   /* (claude/rookery2art) A SISTER'S DEATH: struck up and back, a tumbling fall with loose feathers, lying in the rubble, fading (the body is not in the foe list once she is dead) */
@@ -355,14 +343,14 @@ export function makeShriekSistersHands(ctx) {
     for (const r of ROLES) { const s = S.sis[r]; if (!s.alive) continue; if (s.mode === 'carry') shadow(x(s.x), 0.2, false); if (s.mode === 'dropTell') shadow(x(s.dropX), 0.45 + 0.3 * (1 - Math.max(0, s.modeT) / SS.rock.tell), true); }
     for (const c of S.rocks) { const q = SSM.rockAt(c, G.floorY); shadow(x(c.x), 0.6 + 0.4 * q.k, true); g.drawImage(bakeBoulder(), x(q.x) - 13, y(q.y) - 17); }
     /* (claude/rookery4) THE PEBBLES: the ring where each lands (from the kick's windup on), the stone in its arc */
-    for (const r of ROLES) { const s = S.sis[r]; if (s.alive && s.mode === 'pebbleTell') { const k = 1 - Math.max(0, s.modeT) / SS.pebble.tell; g.globalAlpha = 0.4 + 0.4 * k; g.strokeStyle = blink; g.beginPath(); g.ellipse(x(s.pbX), fy - 1, SS.pebble.r, 3, 0, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1; } }
-    for (const p of S.pebbles) { const q = SSM.pebbleAt(p, G.floorY); g.strokeStyle = blink; g.beginPath(); g.ellipse(x(p.tx), fy - 1, SS.pebble.r, 3, 0, 0, Math.PI * 2); g.stroke(); rect(g, x(q.x) - 2, y(q.y) - 2, 5, 4, '#8a8478'); rect(g, x(q.x) - 1, y(q.y) - 2, 3, 1, '#c8c0b0'); }
+    for (const r of ROLES) { const s = S.sis[r]; if (s.alive && s.mode === 'pebbleTell') RA.drawPebbleRing(g, x(s.pbX), fy, SS.pebble.r, 1 - Math.max(0, s.modeT) / SS.pebble.tell, time); }
+    for (const p of S.pebbles) { const q = SSM.pebbleAt(p, G.floorY); RA.drawPebbleRing(g, x(p.tx), fy, SS.pebble.r, 1, time); RA.drawPebble(g, x(q.x), y(q.y), p.tx - q.x, time); }
     /* THE WING GUST: the gale harpy's told cone (src/gale-harpy.js drawGust) */
     for (const r of ROLES) { const s = S.sis[r]; if (s.alive && (s.mode === 'gustTell' || s.mode === 'gust')) drawGust(g, { x: s.x, y: s.y, face: s.face || 1, mode: s.mode === 'gustTell' ? 'galeTell' : 'gust', galeT: Math.max(0, s.modeT) * GALE.tell / SS.gust.tell }, cx, cy, time); }
     /* FRIENDLY FIRE: a dive turned onto a sister - a green line from the Hunter to her */
-    for (const r of ROLES) { const s = S.sis[r]; if (s.alive && s.mode === 'diveTell' && s.aim && s.aim.ff) { const q = S.sis[s.aim.ff]; g.fillStyle = '#8fd160'; const n2 = 10; for (let i = 1; i < n2; i++) rect(g, x(s.x + (q.x - s.x) * i / n2), y(s.y + (q.y - s.y) * i / n2), 2, 2, '#8fd160'); } }
+    for (const r of ROLES) { const s = S.sis[r]; if (s.alive && s.mode === 'diveTell' && s.aim && s.aim.ff) { const q = S.sis[s.aim.ff]; RA.drawFFLine(g, x(s.x), y(s.y), x(q.x), y(q.y), time); } }
     /* the marks */
-    for (const m of S.marks) { const mx = x(m.x), k = m.t / m.T; g.globalAlpha = 0.5 + 0.5 * k; if (m.sup) ctx.text('MARK', mx, fy - 18, '#ff8a7a', 'center', 5); g.strokeStyle = '#ff5a4a'; g.lineWidth = 2; g.strokeRect(mx - 14, fy - 4, 28, 5); g.lineWidth = 1; rect(g, mx - 1, fy - 14, 2, 10, '#ff5a4a'); g.globalAlpha = 1; }
+    for (const m of S.marks) { const mx = x(m.x), k = m.t / m.T; g.globalAlpha = 0.5 + 0.5 * k; if (m.sup) { RA.drawSupMark(g, mx, fy, k, time); ctx.text('MARK', mx, fy - 26, '#ff8ac0', 'center', 5); continue; } g.strokeStyle = '#ff5a4a'; g.lineWidth = 2; g.strokeRect(mx - 14, fy - 4, 28, 5); g.lineWidth = 1; rect(g, mx - 1, fy - 14, 2, 10, '#ff5a4a'); g.globalAlpha = 1; }
     /* the waves */
     for (const q of S.waves) for (let k = 0; k < 3; k++) { g.strokeStyle = 'rgba(255,211,107,' + (0.8 - k * 0.25) + ')'; g.beginPath(); g.arc(x(q.x) - q.dir * k * 6, fy - 12, 10 + k * 3, q.dir > 0 ? -1 : 2.1, q.dir > 0 ? 1 : 4.2); g.stroke(); }
     /* every aim: the red line from her to her spot - dotted while it follows you, SOLID once it LOCKS */
