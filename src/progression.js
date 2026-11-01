@@ -90,7 +90,7 @@ export const HERO_PERKS = {
  pirate: [{ id: 'pricochet', name: 'RICOCHET', what: 'THE BALL GLANCES ON TO A SECOND FOE' }, { id: 'preload', name: 'QUICK LOAD', what: 'THE PISTOL RELOADS 8% SOONER' }],
  reaper: [{ id: 'dward', name: 'BLOOD WARD', what: 'THE BLOOD WARD FILLS 12% FASTER' }, { id: 'dnova', name: 'DEEP DRAW', what: 'THE NOVA HEALS 10% MORE BLOOD' }],
  warden: [{ id: 'wdef', name: 'LONG TURN', what: 'THE DEFLECT WINDOW LASTS LONGER' }, { id: 'wrec', name: 'QUICK POLE', what: 'THE SHAFT RECOVERS 8% SOONER' }],
- geomancer: [{ id: 'gstone', name: 'HARD STONE', what: 'HER STONE STANDS A FIFTH LONGER' }, { id: 'gward', name: 'WIDE RUNE', what: 'THE RUNE-WARD PERFECT WINDOW GROWS' }],
+ geomancer: [{ id: 'gstone', name: 'HARD STONE', what: 'FOES GNAW HER STONE A FIFTH SLOWER' }, { id: 'gward', name: 'WIDE RUNE', what: 'THE RUNE-WARD PERFECT WINDOW GROWS' }],
  ranger: [{ id: 'rgquiver', name: 'FULL QUIVER', what: 'THE QUIVER REFILLS A FIFTH SOONER' }, { id: 'rgfocus', name: 'PATIENT EYE', what: 'FOCUS FILLS A FIFTH FASTER' }],   /* (claude/ranger: 4% a rank, as the berserker's) */
  berserker: [{ id: 'bzstoke', name: 'STOKED', what: 'RAGE FILLS A FIFTH FASTER' }, { id: 'bzstout', name: 'STOUT BRACE', what: 'TAKE IT: THE BEAT IS A FIFTH LONGER' }],   /* (berserkerport: rank 5 = +20%, 4% a rank like the geomancer's) */
 };

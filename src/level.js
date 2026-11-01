@@ -3786,13 +3786,14 @@ function trialYard(hero) {
        floor, a LINE - so the station stands two straw men in a row and asks for both in one crack; it was UPHEAVAL's pillar),
        THE RUNE-WARD on the beat (round 3: it takes GEO.ward.raise to rise, so in her yard the sword flashes that much before the blow), the
        marks (the ward takes a yellow one; a red one breaks through it), STONEFALL (she lands like a boulder and the ring knocks down
-       both sides) and THE QUAKE (a full TREMOR, spent). */
+       both sides) and THE TOPPLE (two stones up, UP+C; claude/geoid). */
     geomancer: [
+      ['third', 2, 'THE STONE FIST: X THREE TIMES IN A RUN. THE THIRD KNOCKS A FOE UP, FORWARD ONLY. LAND TWO.', [['dummy', 12], ['dummy', 15]], 'X, X, X'],
       ['fault', 2, 'FAULT LINE: HOLD X TILL THE STAVE NAMES IT, LET GO. CATCH BOTH IN ONE CRACK.', [['dummy', 12], ['dummy', 17]], 'HOLD X, LET GO'],
       ['flash', 2, 'THE WARD: TAP C AS HIS SWORD FLASHES. IT RISES ON THE BEAT AND EMPOWERS YOU. TWICE.', [['swornsword', 18]], 'TAP LB AS IT FLASHES'],
       ['tells', 2, 'ONE YELLOW ! : THE WARD TAKES IT. TWO RED !! : IT BREAKS THROUGH, SO GET CLEAR. DO BOTH.', [['hedgeknight', 18]], 'TAP LB FOR !    B OR A FOR !!', MARKS],
       ['stonefall', 2, 'EARTHFALL: JUMP, THEN DOWN+X BETWEEN THEM. A STONE RISES AND HITS. LAND IT TWICE.', [['dummy', 13], ['dummy', 17]], 'A, THEN DOWN+X'],
-      ['meter', 1, 'WHAT SHE BUILDS AND BREAKS FILLS TREMOR. FULL, TAP C: THE QUAKE. IT IS FILLED FOR YOU HERE.', [['dummy', 12], ['sprig', 18]], 'LB WITH A FULL BAR'],
+      ['meter', 1, 'HER STONES STAND UNTIL BROKEN. TWO UP: UP+C TOPPLES THEM AS BOULDERS. THEY ARE RAISED FOR YOU HERE.', [['dummy', 12], ['sprig', 18]], 'UP + LB WITH TWO STONES UP'],
       SKILL],
     /* THE BERSERKER'S YARD (claude/berserker, 2026-10-04): his verbs. THE CHAIN (the run goes on only while the chops land, so it is taught on
        straw that takes them; claude/berserker2: a FLURRY of five, the fifth THE CROSS-CHOP), THE DOUBLE CHOP (his held X), TAKE IT on the beat (C: the crossed axes, a parry on the beat, rage off it), the marks
@@ -8075,7 +8076,7 @@ export const LEVELS = [
   { id: 'custom', name: 'YOUR WOOD', sub: 'made by hand', build: () => CUSTOM.build(), hidden: true },
   /* (2026-09-24, POLISH) the Warden's and the Geomancer's yards, APPENDED: LEVELS is an append log (map nodes and saves count by index) */
   { id: 'trial_warden', name: "THE WARDEN'S TRIAL", sub: 'point, shaft and pin', build: () => trialYard('warden'), hidden: true },
-  { id: 'trial_geomancer', name: "THE GEOMANCER'S TRIAL", sub: 'fault line, shield and quake', build: () => trialYard('geomancer'), hidden: true },
+  { id: 'trial_geomancer', name: "THE GEOMANCER'S TRIAL", sub: 'stone fist, fault line, shield and topple', build: () => trialYard('geomancer'), hidden: true },
   { id: 'trial_berserker', name: "THE BERSERKER'S TRIAL", sub: 'flurry, take it and frenzy', build: () => trialYard('berserker'), hidden: true },
   { id: 'trial_ranger', name: "THE RANGER'S TRIAL", sub: 'the shot, the bash and the mark', build: () => trialYard('ranger'), hidden: true },   /* (claude/ranger) APPENDED: LEVELS is an append log */
   /* THE HARVEST FAIR (claude/fair1, L1: greybox + the facing mechanic): the road inland's second stop, between WAYMEET and THE HEXED FIELDS (the Fields
