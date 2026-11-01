@@ -5312,6 +5312,7 @@ function theHurricane() {
   // THE FORE HATCH: open to her hold, five boards wide (no hero jumps five on the level). Downhill (she heels to the stern) you jump it; uphill you fall short into the hatch (a cheap fall: the ladder
   // brings you back to the near side)
   ent('sign', 50, DK - 1, { text: 'THE FORE HATCH: WAIT FOR HER TO HEEL TOWARD THE STERN, THEN JUMP. DOWNHILL GOES LONG.' });
+  block(52, 53, DK - 2, DK - 1); ent('deco', 52, DK - 3, { kind: 'kegStack' });   /* (claude/platwins2) A SEA CHEST lashed on the deck (two rows: a hop) between the forecastle step and the fore hatch, so the forecastle's cask, step, chest, hatch, house and cask-step read as one platforming run (Daniel 10-31) */
   air(56, 61, DK, DK + 4); net(56, 56, DK, DK + 4);   /* the hatch's well (57-61), four rows: its ladder is on the near side */
   rollGaps.push({ x0: 50 * TS, x1: 66 * TS, y0: (DK - 6) * TS, y1: DK * TS, carry: 2, dir: 1, alt: true, roll: true, hole: [57, 61] });   /* (src/reachcore.js reads it as a carry: a jump taken in the heel goes two columns further) */
   // THE FORE HOUSE: four rows of deckhouse across her deck. A cask lashed by the bitt: strike its lashing and the next heel to the stern runs it to the house - a step
