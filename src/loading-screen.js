@@ -1,6 +1,6 @@
 // src/loading-screen.js - THE LOADING SCREEN (claude/loadbar, 2026-09-30). Daniel: "progress bars for loading and a hero do a dance
-// at them." A pixel bar with the percentage and a line of what is loading, and the player's own hero dancing beside it (his dance from
-// chars.js: K.R.dance, the same frames the H key plays).
+// at them." A pixel bar with the percentage and a line of what is loading, and the player's own hero beside it (since claude/hubpolish: standing at the
+// fire in his own idle frames, with the others you own round it - see heroReady / campReady below).
 //
 // THE BAR IS TRUE. Two jobs, each a list of STEPS with a weight (about what the step costs on this machine, measured by tools/
 // loading-screen.mjs --times); the bar is the weight of the steps DONE over the weight of them all. Nothing runs on a timer: a step
@@ -46,7 +46,17 @@ function metrics(list) {
   bots.sort((a, b) => b - a);   // his feet are where MOST frames have them (the median): a bow or a raised blade that reaches lower must not lift him off the ground
   return { list, bottom: bots.length ? bots[bots.length >> 1] : list[0].height, cx: n ? cx / n : list[0].width / 2 };
 }
-export function heroReady(...sets) { S.heroes = (sets || []).map(s => s && s.R && s.R.dance && s.R.dance.length ? metrics(s.R.dance) : null).filter(Boolean); }
+/* (claude/hubpolish, Daniel 11-01: "the minis on the loading screen don't look like the actual hero") THE CAMP IS THE REAL HEROES, STANDING: each is his own baked IDLE frames (the breathing the
+   game plays, his skin and his gear), not the dance pose. heroReady(K, p2set) is who is playing (the first stands at the fire, a second across it); campReady(fn) is who ELSE you own, by a function
+   that is only called the first time a frame is painted (a load too quick to show the screen never bakes them). */
+const standing = s => s && s.R && (s.R.idle && s.R.idle.length ? s.R.idle : s.R.dance && s.R.dance.length ? s.R.dance : null);
+export function heroReady(...sets) { S.heroes = (sets || []).map(s => { const l = standing(s); return l ? metrics(l) : null; }).filter(Boolean); }
+export function campReady(fn) { S.campFn = typeof fn === 'function' ? fn : null; S.camp = null; }
+function campNow() {
+  if (S.camp || !S.campFn) return S.camp || [];
+  try { S.camp = (S.campFn() || []).map(s => { const l = standing(s); return l ? metrics(l) : null; }).filter(Boolean).slice(0, 8); } catch { S.camp = null; S.campTries = (S.campTries || 0) + 1; if (S.campTries > 400) S.campFn = null; return []; }   /* (too early in the boot: ask again next frame) */
+  S.campFn = null; return S.camp;
+}
 
 function mount() {
   if (!hasDom || cv) return;
@@ -165,7 +175,7 @@ function stand(t, x, gy) {
   px(x + 1 + arm, y + 6 + up, 2, 5, '#c9d1dc'); px(x + 11 - arm, y + 6 + up, 2, 5, '#c9d1dc'); px(x + 3, y + 12, 3, 4 + (k === 2 ? 0 : 0), '#3a2a1a'); px(x + 8, y + 12, 3, 4, '#3a2a1a');
 }
 function drawHero(h, t, cx, gy, mirror) {
-  const n = h.list.length, f = h.list[Math.floor(t / 100) % n];   // ten frames a second, as the game plays it
+  const n = h.list.length, f = h.list[Math.floor(t / 222) % n];   // his idle, at the 4.5 a second the title camp plays it
   if (!f || !f.width) return;
   const sc = 2, w = f.width * sc, hh = f.height * sc, mid = h.cx * sc, top = gy - h.bottom * sc;
   ag.save();
@@ -199,10 +209,12 @@ function paint(now) {
     ag.globalAlpha = Math.max(0, Math.min(1, al));
     wrapGlyph(line, 74).forEach((r, i) => text(r, 160, 159 + i * 7, line.startsWith('TIP') ? GOLD : CREAM, 1, 'center')); ag.globalAlpha = 1; }
   if (S.job === 'boot' && S.firstVisit) text('FIRST VISIT: EVERYTHING IS FETCHED FRESH. NEXT TIME IS QUICKER.', 160, 174, DIM, 1, 'center');
-  // THE DANCERS: player one by the fire, and in co-op player two across it (his own dance)
-  const list = S.heroes;
-  if (list.length) { drawHero(list[0], t, 112, GY + 2, false); if (list[1]) drawHero(list[1], t + 130, 200, GY + 2, true); }
-  else stand(t, 104, GY + 2);
+  // THE CAMP: the others you own stand round the fire (left and right of it, a step back, every one facing it), then the hero you play stands at the fire in front
+  // (and in co-op the second player across it). Nobody is a drawing of a knight: each is his own baked frames.
+  const list = S.heroes, camp = campNow();
+  camp.forEach((h, i) => { const left = i % 2 === 0, k = i >> 1, x = left ? 92 - k * 24 : 190 + k * 24; drawHero(h, t + i * 340, x, GY + 1, !left); });
+  if (list.length) { drawHero(list[0], t, 126, GY + 3, false); if (list[1]) drawHero(list[1], t + 700, 188, GY + 3, true); }
+  else stand(t, 118, GY + 2);
   foreground(t);
   cg.imageSmoothingEnabled = false;
   const sc = Math.max(1, Math.floor(Math.min(cv.width / 320, cv.height / 180))), ox = Math.floor((cv.width - 320 * sc) / 2), oy = Math.floor((cv.height - 180 * sc) / 2);
@@ -281,6 +293,7 @@ export function bootDone() { if (!bootOn) return; bootOn = false; if (S.job === 
 function drive(gen, cont, opts = {}) {
   const manual = typeof window !== 'undefined' && window.BK && window.BK.manualSimulation, sync = manual || opts.sync || !hasDom || window.__noLoadScreen;
   if (opts.heroes) heroReady(...opts.heroes);
+  if (opts.camp) campReady(opts.camp);
   const boot = bootOn && S.job === 'boot';   // the first level is part of the boot: its steps count in the boot bar, and it never ends the bar
   if (!boot) begin('level', false);
   const RENAME = { build: 'l_build', tiles: 'l_bake', props: 'l_bake', sky: 'l_bake', deep: 'l_deep', rest: 'l_rest' };
@@ -304,5 +317,5 @@ function drive(gen, cont, opts = {}) {
   }
 }
 
-export const LS = { step, drive, heroReady, bootStart, bootDone, get busy() { return S.busy && (S.shown || bootOn); }, get state() { return S; }, JOBS };
+export const LS = { step, drive, heroReady, campReady, bootStart, bootDone, get busy() { return S.busy && (S.shown || bootOn); }, get state() { return S; }, JOBS };
 if (hasDom) { window.BKLoad = LS; bootStart(); }
