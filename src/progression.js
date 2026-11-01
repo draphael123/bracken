@@ -9,11 +9,13 @@ export const PROGRESSION_VERSION = 2;
 export const HERO_IDS = ['knight','pyro','paladin','pirate','reaper','warden','geomancer','berserker','ranger'];   /* THE GEOMANCER (2026-09-24): a third starter; THE BERSERKER (2026-10-04): the fourth default; THE RANGER (claude/ranger, 2026-10-14): the fourth free starter in his place */
 const object = v => !!v && typeof v === 'object' && !Array.isArray(v);
 const clone = v => JSON.parse(JSON.stringify(v));
-/* THE THIRD SLOT OPENS AT LEVEL 16, AND THREE IS THE MOST (Daniel 2026-10-04; it was two at every level from 2026-09-23): two from the start,
-   a third at 16. A save with a fourth slot filled (the old four-slot days) keeps that ability LEARNED and unslotted (trimSlots, before the save
-   is judged). equipped() only reads the slots the level has. */
-export const MAX_SLOTS = 3;
-export const SLOT_LEVELS = [0, 0, 16];
+/* ONE ABILITY SLOT, A SECOND AT LEVEL 30, AND TWO IS THE MOST (Daniel 2026-11-01: "by default the player can only have ONE ability equipped... once you
+   get to like level 30 you can get a second... three kind of breaks the game"). It was two from the start and a third at 16 (2026-10-04). A save with
+   more equipped than its hero's level holds (trimSlots, before the save is judged) keeps the FIRST equipped ability in the first slot; the rest stay
+   LEARNED (skillOwned) and unequipped. equipped() only reads the slots the level has. */
+export const MAX_SLOTS = 2;
+export const SLOT_LEVELS = [0, 30];
+export const SECOND_SLOT_LEVEL = SLOT_LEVELS[1];
 export const slotsAt = lv => SLOT_LEVELS.filter(n => (lv || 0) >= n).length;
 /* THE TOP OF THE LADDER IS DEARER (LEVELING, audit-econ sec.7E: 520 for an L20 capstone was 1.8 woods of gold): the knight's, the Warden's and
    the Geomancer's L12/L14/L17/L20 actives cost 600/700/800/900 (they were 360/400/460/520). The catalog keeps its history; the price is set here. */
@@ -223,8 +225,20 @@ function renameSkills(p){
   const own=p.skillOwned&&object(p.skillOwned[h])?p.skillOwned[h]:null;if(own&&own[from]!==undefined){if(own[from]===true)own[to]=true;delete own[from];}
   const lo=p.loadouts&&Array.isArray(p.loadouts[h])?p.loadouts[h]:null;if(lo)for(let i=0;i<lo.length;i++)if(lo[i]===from)lo[i]=lo.includes(to)?null:to;}
 }
-/* MORE THAN MAX_SLOTS IN A LOADOUT (a save from the four-slot days): the extra slots are dropped - the abilities in them stay owned (skillOwned), only unslotted */
-export function trimSlots(p){if(!object(p)||!object(p.loadouts))return false;let cut=false;for(const h of Object.keys(p.loadouts)){const v=p.loadouts[h];if(Array.isArray(v)&&v.length>MAX_SLOTS){p.loadouts[h]=v.slice(0,MAX_SLOTS);cut=true;}}return cut;}
+/* MORE EQUIPPED THAN THE HERO'S LEVEL HOLDS (a save from the two-, three- or four-slot days): the abilities past the slots his level has are
+   dropped from the loadout - they stay owned (skillOwned), only unequipped. Below level 30 the FIRST equipped ability is kept, moved to the first
+   slot if the first was empty (a save with [null, 'x'] must not leave the hero with nothing). From level 30 two slots stay where they were. */
+export function trimSlots(p){
+ if(!object(p)||!object(p.loadouts))return false;let cut=false;
+ for(const h of Object.keys(p.loadouts)){
+  const v=p.loadouts[h];if(!Array.isArray(v))continue;
+  const room=Math.min(MAX_SLOTS,slotsAt(levelOfXp(object(p.xp)&&Number.isFinite(p.xp[h])?p.xp[h]:0)));
+  if(room>=2){if(v.length>2){p.loadouts[h]=v.slice(0,2);cut=true;}continue;}
+  const first=v.find(id=>typeof id==='string'&&!isPassive(h,id)),out=first?[first]:[];
+  if(JSON.stringify(out)!==JSON.stringify(v)){p.loadouts[h]=out;cut=true;}
+ }
+ return cut;
+}
 export function migrateProgress(raw, campaignIds=[]){
  const source=raw===null?'{}':raw;let parsed;try{parsed=JSON.parse(source);}catch{throw Error('Unreadable save. Original save retained.');}
  trimSlots(parsed);validateProgress(parsed);const p=clone(parsed);
@@ -315,7 +329,7 @@ export function rankUp(p,h,id,lv){
  p.skillRank=object(p.skillRank)?p.skillRank:{};p.skillRank[h]=object(p.skillRank[h])?p.skillRank[h]:{};p.skillRank[h][id]=next;p.coins-=price;return null;
 }
 export function equipSkill(p,h,id,index,lv,safe){
- if(!safe)return 'Change skills at a shop, map or safe shrine';if(index<0||index>=slotsAt(lv))return 'Slot is locked';if(id!==null&&isPassive(h,id))return 'Passives are always on';if(id!==null&&!p.skillOwned?.[h]?.[id])return 'Learn it first';
+ if(!safe)return 'Change skills at a shop, map or safe shrine';if(index<0||index>=slotsAt(lv))return index===1?'A second skill slot opens at level '+SECOND_SLOT_LEVEL:'Slot is locked';if(id!==null&&isPassive(h,id))return 'Passives are always on';if(id!==null&&!p.skillOwned?.[h]?.[id])return 'Learn it first';
  p.loadouts=p.loadouts||{};const list=p.loadouts[h]=[...(p.loadouts[h]||[])];while(list.length<=index)list.push(null);
  const previous=list.indexOf(id);if(id&&previous>=0&&previous!==index)list[previous]=list[index]||null;list[index]=id;return null;
 }

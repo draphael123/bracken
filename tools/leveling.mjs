@@ -117,13 +117,20 @@ check('soft cap', () => {
   assert.equal(XP.xpSoftCap(40, 14, d), 20); assert.equal(XP.xpSoftCap(40, 20, d), 8); assert.equal(XP.xpSoftCap(1, 20, d), 1); assert.equal(XP.xpSoftCap(0, 20, d), 0);
 });
 
-check('slots', () => {
-  assert.deepEqual([0, 7, 8, 15, 16, 23, 24, 50].map(PR.slotsAt), [2, 2, 2, 2, 3, 3, 3, 3]); assert.equal(PR.MAX_SLOTS, 3);
-  const p = PR.migrateProgress(null).progress, n = PR.skillsFor('knight').find(s => s.active); p.coins = 9999; p.skillOwned.knight = { [n.id]: true };
-  assert.equal(PR.equipSkill(p, 'knight', n.id, 2, 15, true), 'Slot is locked'); assert.equal(PR.equipSkill(p, 'knight', n.id, 3, 50, true), 'Slot is locked'); assert.equal(PR.equipSkill(p, 'knight', n.id, 2, 16, true), null);
-  assert.equal(PR.equipped(p, 'knight', 15).length, 2); assert.equal(PR.equipped(p, 'knight', 16)[2], n.id); assert.equal(PR.equipped(p, 'knight', 50).length, 3);
-  const four = PR.skillsFor('warden').filter(s => s.active).slice(0, 4).map(s => s.id), old = PR.migrateProgress(JSON.stringify({ progressionVersion: 2, hero: 'warden', heroes: { warden: true }, xp: { warden: XP.xpFloor(20) }, skillOwned: { warden: Object.fromEntries(four.map(id => [id, true])) }, loadouts: { warden: four } })).progress;
-  assert.deepEqual(old.loadouts.warden, four.slice(0, 3), 'a four-slot save was not cut to three'); assert(four.every(id => old.skillOwned.warden[id]), 'the fourth ability was lost, not just unslotted');
+check('slots', () => {   // ONE SLOT, A SECOND AT LEVEL 30, TWO AT MOST (Daniel 2026-11-01; it was 2 + a third at 16)
+  assert.deepEqual([0, 1, 7, 8, 15, 16, 23, 29, 30, 31, 50].map(PR.slotsAt), [1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2]); assert.equal(PR.MAX_SLOTS, 2); assert.equal(PR.SECOND_SLOT_LEVEL, 30);
+  const p = PR.migrateProgress(null).progress, n = PR.skillsFor('knight').find(s => s.active), m = PR.skillsFor('knight').filter(s => s.active)[1]; p.coins = 9999; p.skillOwned.knight = { [n.id]: true, [m.id]: true };
+  assert.match(PR.equipSkill(p, 'knight', n.id, 1, 29, true), /level 30/, 'the second slot opens at 30'); assert.equal(PR.equipSkill(p, 'knight', n.id, 2, 50, true), 'Slot is locked'); assert.equal(PR.equipSkill(p, 'knight', n.id, 0, 1, true), null); assert.equal(PR.equipSkill(p, 'knight', m.id, 1, 30, true), null);
+  assert.equal(PR.equipped(p, 'knight', 29).length, 1); assert.equal(PR.equipped(p, 'knight', 29)[0], n.id); assert.equal(PR.equipped(p, 'knight', 30)[1], m.id); assert.equal(PR.equipped(p, 'knight', 50).length, 2);
+  // OLD SAVES (a two-, three- and four-slot save): the first equipped ability stays first, the rest are unequipped but still owned; a hero at 30+ keeps two
+  const act = PR.skillsFor('warden').filter(s => s.active).slice(0, 4).map(s => s.id), mk = (xpLv, lo) => PR.migrateProgress(JSON.stringify({ progressionVersion: 2, hero: 'warden', heroes: { warden: true }, xp: { warden: XP.xpFloor(xpLv) }, skillOwned: { warden: Object.fromEntries(act.map(id => [id, true])) }, loadouts: { warden: lo } })).progress;
+  let old = mk(20, act); assert.deepEqual(old.loadouts.warden, [act[0]], 'a four-slot L20 save was not cut to its one'); assert(act.every(id => old.skillOwned.warden[id]), 'an extra ability was lost, not just unslotted');
+  old = mk(20, [null, act[1]]); assert.deepEqual(old.loadouts.warden, [act[1]], 'a save with only its second slot filled lost its skill'); assert.deepEqual(PR.equipped(old, 'warden', 20), [act[1]]);
+  old = mk(12, [act[0], act[1], act[2]]); assert.deepEqual(old.loadouts.warden, [act[0]]);
+  old = mk(31, act); assert.deepEqual(old.loadouts.warden, act.slice(0, 2), 'a hero past 30 keeps two'); old = mk(31, [null, act[1]]); assert.deepEqual(old.loadouts.warden, [null, act[1]], 'the slots of a 30+ hero stay where they were');
+  old = mk(5, []); assert.deepEqual(old.loadouts.warden, []); old = mk(5, [act[0]]); assert.deepEqual(old.loadouts.warden, [act[0]]);
+  assert.deepEqual(PR.migrateProgress(JSON.stringify(old)).progress.loadouts.warden, old.loadouts.warden, 'migrating twice changed the loadout');
+  for (const lo of [[null], [null, null], [act[0], null, act[2]]]) { assert.doesNotThrow(() => mk(10, lo), 'a loadout ' + JSON.stringify(lo) + ' crashed the load'); }
 });
 
 check('heroes for silver', () => {

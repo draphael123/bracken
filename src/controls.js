@@ -189,8 +189,8 @@ export function cardRows({ hero = 'knight', binds = emptyBinds(), prof = 'pad1',
     ...(hero === 'ranger' ? [['mark', k1('up') + '+' + tk.c + '  (FOCUS FULL)', pd('up') + '+' + pd('block')], ['bow / knife', kb('stance') + ': BOW / KNIFE', pd('stance')]] : []),   /* THE RANGER's focus, spent (src/ranger.js spendMark) */
     ['dodge', hero === 'ranger' ? k1('dodge') + ': BACKFLIP, OR TAP A WAY TWICE' : hero === 'warden' ? k1('dodge') + ' BACK, OR TAP A WAY TWICE' : 'TAP A WAY TWICE, OR ' + kb('dodge'), pd('dodge')],
     ['', 'TELLS ARE TIMED FOR ONE PRESS', pd('dodge')],
-    hero === 'reaper' ? ['summon', kb('throw') + '  (HOLD, FULL: SURGE)', pd('throw')] : ['skill', kb('throw') + ' (equipped)', pd('throw')],
-    hero === 'reaper' ? ['his skill', kb('skill2') + ' (CHOSEN)', pd('skill2')] : ['skill two', kb('skill2') + ' (equipped)', pd('skill2')],
+    hero === 'reaper' ? ['summon', kb('throw') + '  (HOLD, FULL: SURGE)', pd('throw')] : ['skill', kb('throw') + ' (THE ONE EQUIPPED)', pd('throw')],
+    ['skill two', kb('skill2') + ' (FROM LEVEL 30)', pd('skill2')],   /* (Daniel 11-01) ONE slot from the start, a second at level 30 */
     ['talk', kb('talk') + ' (signs, folk)', pd('talk')],
     ['flask', kb('flask') + ' (A BLOW SPILLS IT)', pd('flask')],
     ['grab', kb('grab') + ' (CO-OP: LIFT, THROW)', pd('grab')],   /* (claude/partnerthrow) */

@@ -18,7 +18,7 @@ export const COOP_HELP_PAGES = ({ downT = 20, reviveT = 1.5 } = {}) => [
   { title: 'THE SECOND PLAYER', lines: [
     ['#', 'GAMEPAD DEFAULTS'],
     ['', 'STICK or D-PAD move   A jump   X swing (hold: heavy)   B dodge'],
-    ['', 'LB or RB the hero\'s C   Y skill one   RT skill two   BACK emote'],
+    ['', 'LB or RB the hero\'s C   Y skill   RT skill two (LEVEL 30)   BACK emote'],
     ['', 'START and every menu belong to player one.'],
     ['#', 'GRAB YOUR PARTNER'],
     ['', 'Stand close and press GRAB (I, or R3) to lift them overhead; press it again to THROW (UP lobs, DOWN sets them down). They can mash to get free. A thrown partner hits foes and is hurt by spikes.'],
