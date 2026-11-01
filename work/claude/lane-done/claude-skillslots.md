@@ -21,3 +21,16 @@ Expect the biggest drops for heroes whose pilots relied on 2-3 skills (reaper, p
 1. Nothing replaced the L16 slot (it was never a reward). Rec (built): none. Alternative: a free stat-card pick at L16.
 2. Trial yards still LEND two skills so the F and G step is doable (built; text says so). Rec: keep.
 3. Death Knight F is now his one slot (hold at full vitae still = frenzy). Rec: keep.
+
+# RATES LANE (browser work, 11-01 afternoon) - INTERIM
+Worktree claude/skillslots; baseline worktree bracken-skillslots-base @ 0fe14c26. Gate flag was down. The PC was saturated all afternoon (free RAM 300-1800 MB, memguard KILLing test Chromes every minute or two), so many pages died with Inspector.targetCrashed - environment, not the change.
+
+## Checks (headless, node tools/X.mjs on this branch)
+GREEN: skill-menu, skill-passives, skill-icons, skill-balance-probe, hud-default, ui-hud, keys, hero-keys-sheet, hero-keys-strip, settings-tabs, hero-trials, ai-companion, curve-gate, curve-shape, coop-progress, save-slots, death-cost (+ leveling, progression in the code lane).
+RED, caused by the change, FIXED (bf3fa4da): tools/touch.mjs 'defend-skill' wheel test needed 2 equipped skills and set a 4-skill loadout on a level-1 hero; trimSlots now keeps one. Fixture now levels the hero to L30 (second slot open). The test's assertions are untouched.
+  NOT YET RE-VERIFIED: after the fix three full reruns of touch all died to memguard kills (targetCrashed on every section). Pre-fix the only real FAILs were defend-skill (+ the 1.2-radii ATTACK-hit step that follows it).
+NOT CLEAN (crashed under memory pressure, no assertion failure seen): textfit scoped run (hints and bestiary scopes passed; 'plates' scope crashed, rest not reached), online-coop (page crashed). Reruns queued.
+hero-keys-strip rewrote tracked work/claude/herokeys/strips/* (sub-frame noise only); reverted, not committed.
+
+## Boss rates
+See the bottom of this file / scratch\lane-reports\skillslots-rates.md for the final table, or "NOT MEASURED" if the PC never had headroom.
