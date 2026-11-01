@@ -318,7 +318,7 @@ export function makeGormHands(ctx) {
     for (const q of S.pots) { q.vy += PT.g * dt; q.x += q.vx * dt; q.y += q.vy * dt; q.t -= dt; q.spin += dt * 12;
       if (Math.random() < dt * 24) ctx.part({ x: q.x, y: q.y - 4, vx: (Math.random() - 0.5) * 20, vy: -30, life: 0.3, max: 0.3, col: Math.random() < 0.5 ? '#ff9a5c' : '#ffd36b', size: 1, grav: -20 });
       if (q.t > 0) continue;
-      q.dead = true; ctx.burst(q.tx, q.ty - 4, 14, ['#ff9a5c', '#ffd36b', '#3a2416', '#7a4a2a'], 90, 0.6); ctx.sfx.crack && ctx.sfx.crack(); ctx.sfx.fireWhoosh && ctx.sfx.fireWhoosh(); ctx.shake(3);
+      q.dead = true; ctx.burst(q.tx, q.ty - 4, 14, ['#ff9a5c', '#ffd36b', '#3a2416', '#7a4a2a'], 90, 0.6); ctx.sfx.crack && ctx.sfx.crack(); ctx.sfx.conflag && ctx.sfx.conflag(); ctx.shake(3);
       if (P && !P.dead && Math.abs(P.x - q.tx) < PT.r && P.y > q.ty - 24 && P.y < q.ty + 10) { const res = ctx.damage(q.tx, PT.dmg, { name: 'A PITCH POT' }); if (res === 'hit') S.n.potHits++; }
       if (ctx.solidPx(q.tx, q.ty + 2, true)) S.pitch.push({ x0: q.tx - PT.patch / 2, x1: q.tx + PT.patch / 2, y: q.ty, t: PT.patchT }); }
     S.pots = S.pots.filter(q => !q.dead); S.pitch = S.pitch.filter(z => (z.t -= dt) > 0);

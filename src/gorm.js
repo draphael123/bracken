@@ -23,7 +23,7 @@
 //      ENRAGE at 25% of P2 (the crown cracks, he catches fire from his oak, the music lifts, one last boar; faster): RAGE-ONLY THE BURNING CHARGE (a fire trail).
 export const GORM = {
   hp1: 1000,              /* P1's bar (the old fight's 590 was one bar for the whole of him); P2's bar is hp2 / hp1 of whatever the game scaled hp1 to */
-  hp2: 1000,
+  hp2: 1200,
   chip: 0.4,             /* B15: outside an opening a blade lands at 0.4 (boss-greed GREED.chipBy.king) */
   take: { held: 2, open: 1.25, downed: 1.75, stung: 1.5 },
   p1take: { held: 1.4, open: 1.0 },   /* (claude/kingsfix2) P1 ONLY: with every rope free at any moment his hall needs a little less per opening (P2's take is unchanged) */
@@ -56,7 +56,7 @@ export const GORM = {
   sceptre: { tell: 0.9, every: 9, first: 6, over: 70, rMin: 150, rMax: 330, t: 2.1, lowY: 7, highY: 17, catchT: 0.5, minD: 50, maxD: 260, dmg: 20 },
   /* ENRAGE at rageAt of P2's bar: the crown cracks, he catches fire, the horn calls one last boar; tempo x his cooldowns; RAGE-ONLY THE BURNING CHARGE (a fire trail) */
   rageAt: 0.25,
-  rage: { tellT: 2.0, tempo: 1.25, walk: 1.2, chargeTell: 1.0, chargeV: 250, chargeEvery: 7, chargeFirst: 2.5, hitY: 26, endT: 0.9, trailT: 3.5, trailDrain: 0.12, dmg: 26 },
+  rage: { tellT: 2.0, tempo: 1.25, walk: 1.2, chargeTell: 1.0, chargeV: 250, chargeEvery: 7, chargeFirst: 1.5, hitY: 26, endT: 0.9, trailT: 3.5, trailDrain: 0.12, dmg: 26 },
 };
 export const GORM_SAY = {
   wake: 'KING GORM UNDERLEAF', litter: 'THE LITTER BREAKS. HE STANDS', horn: 'THE HUNTING HORN', boar: 'THE ROYAL BOAR', penned: 'PENNED',

@@ -30,7 +30,7 @@ export function updateGorm(e, dt, c) {
   const potTell = () => { e.mode = 'potTell'; e.modeT = PT.tell; e.face = Math.sign(d) || e.face; c.number(e.x, e.y - e.h - 18, GORM_SAY.pot, '#ff6b5c'); c.sfx.fuse ? c.sfx.fuse() : c.sfx.charge && c.sfx.charge(); c.sfx.kingLaugh && c.sfx.kingLaugh(); };
   if (e.mode === 'potTell') { e.face = Math.sign(d) || e.face;
     if (e.modeT <= 0) { e.mode = 'pot'; e.modeT = 0.45; e.potT = PT.every;
-      if (perched(P, floor)) { G.pot(e, P); c.sfx.throwWhoosh && c.sfx.throwWhoosh(); } else { e.potT = PT.every * 0.5; c.sfx.grunt && c.sfx.grunt(); } }   /* he is down again: no throw (never at the ground) - the pot goes back to the bearer */
+      if (perched(P, floor)) { G.pot(e, P); c.sfx.throwWhoosh && c.sfx.throwWhoosh(); } else { e.potT = PT.every * 0.5; c.sfx.effort && c.sfx.effort(); } }   /* he is down again: no throw (never at the ground) - the pot goes back to the bearer */
     if (e.phase >= 2) settle(e, dt, c, 0); else e.y = floor - 9; return; }
   if (e.mode === 'pot') { if (e.modeT <= 0) { e.mode = e.phase >= 2 ? 'walk' : 'carried'; e.modeT = 0.5; } if (e.phase >= 2) settle(e, dt, c, 0); else e.y = floor - 9; return; }
   const grab = () => { const reach = GORM.grabReach; if (!P.dead && Math.sign(P.x - e.x) === e.face && ad > 8 && ad < reach && P.y > e.y - 30 && P.y <= floor + 4) { const res = c.damage(e.x, c.dmg.grab, { unblockable: true, name: 'THE KING\'S HAND' }); if (res === 'hit') { P.vx = e.face * GORM.hurlVx; P.vy = GORM.hurlVy; P.hurt = 0.7; P.ground = false; P.block = false; c.sfx.throwWhoosh && c.sfx.throwWhoosh(); c.sfx.bellow && c.sfx.bellow(); c.shake(6); c.zoom(1.12, 0.3); c.number(P.x, P.y - 30, GORM_SAY.hurled, '#ff6b6b'); } } };
@@ -98,12 +98,12 @@ function glade(e, dt, c, A, floor, P, d, ad, G) {
     case 'walk': e.face = Math.sign(d) || e.face; want = ad > 34 ? e.face * T.walkV2 * (e.rage ? RG.walk : 1) : 0;
       if (e.rage && !e.rageBoar && !P.dead && e.mode === 'walk') { e.rageBoar = true; e.lastHorn = true; e.face = Math.sign(d) || e.face; tell('hornTell', T.hornTell, GORM_SAY.lastBoar, '#ff6b5c'); c.sfx.hornDraw && c.sfx.hornDraw(); want = 0; break; }   /* (claude/gorm3) the horn calls ONE LAST BOAR (no hounds) */
       if (e.modeT <= 0 && !P.dead) {
-        if (rageNow) { e.rage = true; e.rageT = 0; tell('rageTell', RG.tellT, GORM_SAY.rage, '#ff6b5c'); c.sfx.crack && c.sfx.crack(); c.sfx.roar && c.sfx.roar(); c.shake(8); c.zoom(1.14, 0.6); c.music && c.music(true); want = 0; }   /* (claude/gorm3) ENRAGE: the crown cracks, he catches fire from the oak, the music lifts */
+        if (rageNow) { e.rage = true; e.rageT = 0; tell('rageTell', RG.tellT, GORM_SAY.rage, '#ff6b5c'); c.sfx.crack && c.sfx.crack(); c.sfx.warCry ? c.sfx.warCry() : c.sfx.roar && c.sfx.roar(); c.shake(8); c.zoom(1.14, 0.6); c.music && c.music(true); want = 0; }   /* (claude/gorm3) ENRAGE: the crown cracks, he catches fire from the oak, the music lifts */
         else if (pend) { e.face = Math.sign(d) || e.face; tell('hornTell', T.hornTell, GORM_SAY.hunt, '#ff9a5c'); c.sfx.hornDraw && c.sfx.hornDraw(); want = 0; }
-        else if (e.rage && e.burnT <= 0 && ad > 70) { e.face = e.cdir = Math.sign(d) || e.face; tell('burnChargeTell', RG.chargeTell, GORM_SAY.burnCharge, '#ff6b5c'); c.sfx.roar && c.sfx.roar(); c.sfx.fireWhoosh && c.sfx.fireWhoosh(); G.lane && G.lane(e.x, e.cdir); want = 0; }
+        else if (e.rage && e.burnT <= 0 && ad > 70) { e.face = e.cdir = Math.sign(d) || e.face; tell('burnChargeTell', RG.chargeTell, GORM_SAY.burnCharge, '#ff6b5c'); c.sfx.trollDragTell ? c.sfx.trollDragTell() : c.sfx.roar && c.sfx.roar(); c.sfx.conflag && c.sfx.conflag(); G.lane && G.lane(e.x, e.cdir); want = 0; }
         else if (e.clubT <= 0 && ad < T.clubReach + 8 && Math.abs(P.y - e.y) < 60) { e.hi = (e.hiN || 0) % 3 !== 2 ? Math.random() < 0.5 : !e.hi; e.hiN = (e.hiN || 0) + 1;
           tell(e.hi ? 'clubHiTell' : 'clubLoTell', T.clubTell, e.hi ? GORM_SAY.high : GORM_SAY.low, e.hi ? '#ffd36b' : '#ff9a5c'); want = 0; }
-        else if (e.sceptreT <= 0 && ad > SC.minD && ad < SC.maxD && Math.abs(P.y - e.y) < 60) { e.face = Math.sign(d) || e.face; tell('sceptreTell', SC.tell, GORM_SAY.sceptre, '#ff6b5c'); c.sfx.whirr ? c.sfx.whirr() : c.sfx.charge && c.sfx.charge(); want = 0; }   /* (claude/gorm3) THE SCEPTRE THROW */
+        else if (e.sceptreT <= 0 && ad > SC.minD && ad < SC.maxD && Math.abs(P.y - e.y) < 60) { e.face = Math.sign(d) || e.face; tell('sceptreTell', SC.tell, GORM_SAY.sceptre, '#ff6b5c'); c.sfx.swingUp ? c.sfx.swingUp() : c.sfx.charge && c.sfx.charge(); want = 0; }   /* (claude/gorm3) THE SCEPTRE THROW */
         else if (e.logT <= 0 && ad > 80) { e.face = Math.sign(d) || e.face; tell('logTell', T.logTell, GORM_SAY.logroll, '#ff9a5c'); want = 0; }
         else if (e.quakeT <= 0 && ad < 150) { tell('quakeTell', T.quakeTell, GORM_SAY.quake, '#ff9a5c'); want = 0; }
         else if (e.shakeT <= 0) { e.mode = 'toOak'; e.modeT = 4; } }
@@ -120,7 +120,7 @@ function glade(e, dt, c, A, floor, P, d, ad, G) {
     case 'sceptreTell': e.face = Math.sign(d) || e.face;
       if (e.modeT <= 0) { const gl = A, R0 = Math.max(SC.rMin, Math.min(SC.rMax, ad + SC.over)), lim = e.face > 0 ? gl.x1 - 14 - e.x : e.x - gl.x0 - 14, R1 = Math.max(60, Math.min(R0, lim));
         e.mode = 'sceptreOut'; e.modeT = SC.t + 0.6; e.sceptreT = SC.every; e.club = false; G.sceptre(e.x + e.face * 16, e.face, R1); c.sfx.throwWhoosh && c.sfx.throwWhoosh(); c.shake(2); } break;
-    case 'sceptreOut': if (!G.sceptreOut() || e.modeT <= 0) { e.mode = 'sceptreCatch'; e.modeT = SC.catchT; c.sfx.clank ? c.sfx.clank() : c.sfx.thud && c.sfx.thud(); } break;
+    case 'sceptreOut': if (!G.sceptreOut() || e.modeT <= 0) { e.mode = 'sceptreCatch'; e.modeT = SC.catchT; c.sfx.hookCatch ? c.sfx.hookCatch() : c.sfx.thud && c.sfx.thud(); } break;
     case 'sceptreCatch': if (e.modeT <= 0) { e.mode = 'walk'; e.modeT = 0.6; e.club = true; } break;
     /* (claude/gorm3) RAGE-ONLY: THE BURNING CHARGE - the flaming limb lowered like a ram, the glade's length, a fire trail behind him */
     case 'burnChargeTell': e.face = e.cdir || e.face; if (Math.random() < dt * 20) c.dust(e.x - e.face * 20, floor, 1);
