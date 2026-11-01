@@ -55,7 +55,7 @@ try {
       /* size: damage, reach, recovery of a short / mid / full wind on a dummy foe he cannot be hurt by */
       const size=n=>{__bz();const w=__foe(18,'sprig',5000);w.biteCd=99;BK.sim(1);const h0=w.hp;P().st=P().maxSt;K.atk=true;BK.press('atk');let reach=0;for(let i=0;i<n;i++){BK.step(1);w.x=P().x+18;}K.atk=false;const x0=P().x;let rc=0;for(let f=0;f<40;f++){BK.sim(1);w.x=P().x+18;const b=BK.attackBox();if(b)rc=Math.max(rc,Math.round(b.r-P().x));}
         let rec=0;for(let f=0;f<80&&!(P().atk<0&&(P().atkRec||0)<=0);f++){BK.sim(1);} return {dmg:h0-w.hp,reach:rc,rec:+(P().atkRecMax||0).toFixed(2),f:Z().windF};};
-      T.s0=size(18); T.s1=size(50); T.s2=size(110);
+      T.s0=size(27); T.s1=size(50); T.s2=size(110);
       /* armoured while committed, cannot turn, creeps on */
       __bz(); K.atk=true; BK.press('atk'); for(let i=0;i<40;i++)BK.step(1); const xA=P().x,fA=P().face; K.left=true; for(let i=0;i<30;i++)BK.step(1); K.left=false; T.turned=P().face!==fA; T.crept=Math.round(P().x-xA); P().inv=0;P().hurt=0; const eA=__foe(14); BKT.damagePlayer(eA.x,6,{who:eA}); T.flinch=P().hurt>0; K.atk=false; BK.step(2); BK.sim(60);
       const pz=n=>{__bz();const b=__foe(20,'brute');b.maxHp=b.hp;b.mini=true;b.poise=0;b.biteCd=99;BK.sim(2);P().st=P().maxSt;K.atk=true;BK.press('atk');for(let i=0;i<n;i++){P().inv=0.5;BK.sim(1);b.x=P().x+20;}K.atk=false;let most=0;for(let i=0;i<40;i++){P().inv=0.5;BK.sim(1);b.x=P().x+20;most=Math.max(most,b.poise||0);}return most;};
@@ -64,8 +64,7 @@ try {
       __bz(); K.atk=true; BK.press('atk'); let fired=-1,fw=0; for(let i=0;i<200;i++){BK.sim(1);if(P().heavy&&fired<0){fired=i;fw=P().bzWindF;}} K.atk=false; T.auto={fired,windF:fw}; BK.sim(60);
       out.tiers=T; }
     /* (claude/berserkerid) THE WIDE SLOW CLEAVE: the run-ender reaches wide both ways, is slower than a chop, and recovers longer */
-    { const W={}; __bz(); const e5=__foe(16); BK.sim(2); const t0=[]; for(let i=0;i<5;i++){P().st=P().maxSt;BK.press('atk');let n=0;for(let f=0;f<60;f++){BK.sim(1);e5.x=P().x+16;n++;if(P().atk<0&&(P().atkRec||0)<=0&&f>2)break;}t0.push(n);} W.frames=t0; W.chopFrames=t0[0]; W.cleaveFrames=t0[4];
-      __bz(); const eb=__foe(-10,'sprig',5000); eb.biteCd=99; BK.sim(1); P().combo=4; P().st=P().maxSt; P().bzChainHit=true; BK.press('atk'); let back=0; for(let f=0;f<40;f++){BK.sim(1);const b=BK.attackBox();if(b)back=Math.max(back,Math.round(P().x-b.l));} W.back=back; out.cleave=W; }
+    { const W={}; __bz(); const e5=__foe(16); BK.sim(2); const t0=[]; let back=0; for(let i=0;i<5;i++){P().st=P().maxSt;BK.press('atk');let n=0;for(let f=0;f<80;f++){BK.sim(1);e5.x=P().x+16;n++;if(i===4){const b=BK.attackBox();if(b)back=Math.max(back,Math.round(P().x-b.l));}if(P().atk<0&&(P().atkRec||0)<=0&&f>2)break;}t0.push(n);} W.frames=t0; W.chopFrames=t0[0]; W.cleaveFrames=t0[4]; W.back=back; out.cleave=W; }
     /* (claude/berserkerid) dash strike: 1.3x, and the rider SHOVES the small */
     { const D={}; __bz(); const ds=__foe(40,'sprig',5000); ds.biteCd=99; BK.sim(2); D.cfg=BK.DASH_STRIKE?BK.DASH_STRIKE.berserker:null; P().st=P().maxSt; BK.press('dodge'); BK.sim(3); BK.press('atk'); const x0=ds.x; for(let f=0;f<30;f++){BK.sim(1);} D.shoved=Math.round(ds.x-x0); D.hurt=ds.hp0-ds.hp; out.dash=D; }
     /* (claude/berserkerid) THE AoE COSTS: 25 / 30 / 45 stamina, rage pays part back (half bar -20%, full -40%) */
