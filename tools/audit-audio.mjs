@@ -211,7 +211,7 @@ async function pageLib(CFG) {
         act('skill G: ' + (BK.PROG.skill2 || 'none')); press('skill2', 2); tick(70); settle();
         if (h === 'pyro') { act('heat to full (a blow at 96)'); P.heat = 96; swing(); tick(40); settle(); act('jet (block held)'); K.block = true; tick(40); K.block = false; settle(); }
         if (h === 'paladin') { act('light to full (a blow at 96)'); P.light = 96; swing(); tick(40); settle(); act('aegis (block held)'); K.block = true; tick(40); K.block = false; settle(); }
-        if (h === 'knight') { act('resolve to full (a blow at 96)'); P.resolve = 96; swing(); tick(40); settle(); }
+        if (h === 'knight') { act('three links (a blow at 96)'); P.links = 3; swing(); tick(40); settle(); }
         if (h === 'reaper') { act('harvest to full, F held'); P.harvest = 100; K.throw = true; BK.press('throw'); tick(40); K.throw = false; settle(); act('ward (block held)'); K.block = true; tick(40); K.block = false; settle(); }
         if (h === 'pirate') { act('pistol (atk held, loaded)'); P.loaded = true; K.atk = true; BK.press('atk'); tick(60); K.atk = false; settle(); }
         // a sprig, for what happens when the blow comes in: the guard held through it, tapped as it lands, not raised, and the last hit

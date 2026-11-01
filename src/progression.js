@@ -1,6 +1,7 @@
 import {LEGACY_NODES, SKILLS} from './progression-catalog.js';
 import {levelOfXp, xpFloor, LV_MAX} from './xp.js';
 import {retireRelics} from './relics.js';   /* THE RELICS ARE GONE: an old save's found-relic tick is dropped and its vault silver paid */
+import {KNIGHT_TECH, KNIGHT_UPGRADES} from './tech-knight.js';   /* THE L25-L50 KITS, one file a hero (claude/knightid; a hero lane adds its file and one line below) */
 import {normalizeDeathCost} from './death-cost.js';   /* THE DEATH COST's save shape: an older save has none, and gets an empty one (everything it holds is banked) */
 export {LEGACY_NODES, SKILLS};
 /* 2 (2026-09-24): PASSIVES COME WITH LEVELS, ABILITIES ARE BOUGHT (docs/briefs/hero-kits.md 1b). A passive is no longer sold
@@ -20,7 +21,17 @@ export const slotsAt = lv => SLOT_LEVELS.filter(n => (lv || 0) >= n).length;
 /* THE TOP OF THE LADDER IS DEARER (LEVELING, audit-econ sec.7E: 520 for an L20 capstone was 1.8 woods of gold): the knight's, the Warden's and
    the Geomancer's L12/L14/L17/L20 actives cost 600/700/800/900 (they were 360/400/460/520). The catalog keeps its history; the price is set here. */
 export const TOP_PRICE = { 12: 600, 14: 700, 17: 800, 20: 900 };
-for (const n of SKILLS) if (n.active && TOP_PRICE[n.level]) n.price = TOP_PRICE[n.level];   /* (batch71: every hero's top actives - HERO KIT's eight L14/L20 skills were priced 400/520 on the old ladder and nothing on tools/talents.mjs's ladder matched) */
+for (const n of SKILLS) if (n.active && TOP_PRICE[n.level]) n.price = TOP_PRICE[n.level];
+/* THE KNIGHT'S IDENTITY PASS (claude/knightid): ids stay (a save owns them), the words follow the kit. LUNGE is the SHIELD RAM (no grace; a link opens a guard); SUNDER is the knight's one next-blow x2 and VENGEANCE rides on it. */
+const KNIGHT_WORDS = {
+ lunge: { name: 'SHIELD RAM', desc: 'a dashing ram with the shield square in front. it shoves the small and, if you spend a link, opens a guard. no grace: the shield is all that stands between' },
+ sunder: { desc: 'whatever the heavy cut or a charge lands on takes the next blow twice as hard (the knight\'s one mark)' },
+ vengeance: { desc: 'what the shield turns is kept (up to 30) and rides on the sundered blow' },
+ riposte: { desc: 'turn a blow on the shield and your next swing, within a breath, cuts twice as hard' },
+ heavy: { desc: 'you already have it: HOLD the swing and let go to bring the sword down. one weight, and it breaks a guard. quicker a point' },
+ bash: { desc: 'THE SHIELD CHARGE runs four tiles further and what it strikes staggers twice as long. it knocks back what flies at you' },
+};
+for (const n of SKILLS) if (n.hero === 'knight' && KNIGHT_WORDS[n.id]) Object.assign(n, KNIGHT_WORDS[n.id]);   /* (batch71: every hero's top actives - HERO KIT's eight L14/L20 skills were priced 400/520 on the old ladder and nothing on tools/talents.mjs's ladder matched) */
 const BY_HERO=Object.fromEntries(HERO_IDS.map(h=>[h,SKILLS.filter(n=>n.hero===h)]));
 const BY_ID=Object.fromEntries(HERO_IDS.map(h=>[h,Object.fromEntries(BY_HERO[h].map(n=>[n.id,n]))]));
 export const growthNodes=Object.fromEntries(HERO_IDS.map(h=>[h,new Set(LEGACY_NODES.filter(n=>n.hero===h&&n.destination==='growth').map(n=>n.id))]));
@@ -65,10 +76,31 @@ export const isMinor = n => MILESTONES_MINOR.includes(n);
 /* TECHNIQUE UNLOCKS (s5, a later lane): a NEW MOVE per hero at each of these levels, taught with a short practice. The hook lives here and in main.js
    (techniqueFor / teachTechnique): TECHNIQUES is empty until that lane fills it, {hero: {10: {id, name, what, teach}, 20: {...}, 30: {...}}}. L20/L30 are
    also where SUBCLASSES (parked) would hang: nothing here takes those two levels away from them. */
-export const TECH_LEVELS = [10, 20, 30];
-export const TECHNIQUES = {};
+/* ==== THE L25-L50 TECHNIQUE FRAMEWORK (claude/knightid, Daniel-approved 10-31 18:07 'CARD v2', hero-agnostic) ====
+   Past level 24 a hero with a kit (TECHNIQUES[hero]) is dealt a different card: every five levels from 25 a TECH card (his NEXT technique first, the
+   RECOMMENDED pick; a hero upgrade; or a generic perk), and the second and fourth level after it an UPGRADE card (two ranked upgrades and a perk); the
+   levels between stay the stat card. A technique you do not take is DEFERRED, not lost: the next tech card offers it again (the six are the same six in
+   order for every build). Upgrades have two ranks, II needs I. A hero with NO kit entry keeps the old card exactly (milestone perk at 25, 30, ...).
+     TECHNIQUES[hero] = {25: {id, name, what, teach, input, k, cd, cost}, 30: ..., 50: ...}      UPGRADES[hero] = [{id, name, what: [rankI, rankII]}, ...]
+   Save: p.card[hero] = {v, e, m, ms: {25: 'techId' | 'upgId:2' | 'perkId', 27: ...}, up: {upgId: rank}} (validateProgress; respec clears ms and up).
+   A hero lane adds ONE import above, one TECHNIQUES row and one UPGRADES row here. The numbers live in the hero's file; the rules in main.js read tech(id) / upg(id). */
+export const TECH_LEVELS = [25, 30, 35, 40, 45, 50];
+export const UPGRADE_LEVELS = [27, 29, 32, 34, 37, 39, 42, 44, 47, 49];
+export const UPGRADE_MAX = 2;
+export const TECHNIQUES = { knight: KNIGHT_TECH };
+export const UPGRADES = { knight: KNIGHT_UPGRADES };
+export const hasKit = h => !!TECHNIQUES[h];
 export const techniqueFor = (h, n) => (TECHNIQUES[h] || {})[n] || null;
-export const techniquesArriving = (h, from, to) => TECH_LEVELS.filter(n => n > from && n <= to).map(n => techniqueFor(h, n)).filter(Boolean);
+export const techniqueById = (h, id) => Object.values(TECHNIQUES[h] || {}).find(t => t.id === id) || null;
+export const upgradeById = (h, id) => (UPGRADES[h] || []).find(u => u.id === id) || null;
+/* the cards of THIS hero past 24: TECH_LEVELS and UPGRADE_LEVELS replace the stat pick (a hero with no kit: none) */
+export const kitCardLevels = (h, lv) => hasKit(h) ? TECH_LEVELS.concat(UPGRADE_LEVELS).filter(n => n <= Math.max(0, Math.floor(lv || 0))).length : 0;
+export const milestoneLevels = h => hasKit(h) ? MILESTONES.concat(UPGRADE_LEVELS).sort((a, b) => a - b) : MILESTONES;
+export const isTechLevel = (h, n) => hasKit(h) && TECH_LEVELS.includes(n);
+export const isUpgradeLevel = (h, n) => hasKit(h) && !!UPGRADES[h] && UPGRADE_LEVELS.includes(n);
+export const techniquesArriving = (h, from, to) => TECH_LEVELS.filter(n => n > from && n <= to).map(n => techniqueFor(h, n)).filter(Boolean);   /* what a level-up can OFFER (the card teaches it when it is taken: main.js cardTake) */
+export const techOn = (p, h, id) => { const c = (p && p.card && object(p.card[h])) ? p.card[h] : null; return !!c && Object.values(c.ms || {}).includes(id); };
+export const upgRank = (p, h, id) => { const c = (p && p.card && object(p.card[h])) ? p.card[h] : null; return c && object(c.up) ? Math.min(UPGRADE_MAX, Math.max(0, c.up[id] | 0)) : 0; };
 /* THE EARLY PERKS: smaller than the L25+ ones. Each is a hook main.js reads through perkOn() */
 export const MINOR_PERKS = [
  { id: 'stride', name: 'STRIDE', what: 'YOUR ROLL CARRIES A BIT FURTHER', minor: true },
@@ -84,7 +116,7 @@ export const MINOR_PERKS = [
    a RANK (to HERO_PERK_MAX: ten milestones = five of each): so a hero's own never runs out, and it is never the only way to grow. */
 export const HERO_PERK_MAX = 5;
 export const HERO_PERKS = {
- knight: [{ id: 'kbash', name: 'HARD BASH', what: 'SHIELD BASH STAGGERS 15% LONGER' }, { id: 'kguard', name: 'KEEN GUARD', what: 'THE PERFECT GUARD WINDOW GROWS' }],
+ knight: [{ id: 'kbash', name: 'HARD BASH', what: 'SHIELD BASH STAGGERS 15% LONGER' }, { id: 'kguard', name: 'KEEN GUARD', what: 'THE PERFECT GUARD WINDOW GROWS' }],   /* (HARD BASH: the charge's slam stagger, and the third-jab bash) */
  pyro: [{ id: 'pspread', name: 'WILDFIRE', what: 'FIRE SPREADS WHEN A BURNING FOE FALLS' }, { id: 'pheat', name: 'HEAT HOLD', what: 'HEAT FADES 12% SLOWER' }],
  paladin: [{ id: 'llight', name: 'RADIANT', what: 'THE LIGHT FILLS 8% FASTER' }, { id: 'ljudge', name: 'HARD SMITE', what: 'JUDGEMENT STRIKES 10% HARDER' }],
  pirate: [{ id: 'pricochet', name: 'RICOCHET', what: 'THE BALL GLANCES ON TO A SECOND FOE' }, { id: 'preload', name: 'QUICK LOAD', what: 'THE PISTOL RELOADS 8% SOONER' }],
@@ -103,7 +135,7 @@ export const PYRO_CARDS = [
  { id: 'pember', name: 'THE EMBER SHOT', what: 'UP + TAP C: A QUICK EMBER, NO CHARGE', card: true },
 ];
 export const ALL_HERO_PERKS = Object.values(HERO_PERKS).flat();
-export const heroPerkAt = (h, n) => { const l = HERO_PERKS[h]; return l ? l[Math.max(0, MILESTONES.indexOf(n)) % 2] : null; };
+export const heroPerkAt = (h, n) => { const l = HERO_PERKS[h]; return l ? l[(MILESTONES.includes(n) ? MILESTONES.indexOf(n) : Math.floor(n / 5)) % 2] : null; };   /* (an upgrade level turns the pair by its own count) */
 export const perkRank = (p, h, id) => { const c = cardOf(p, h); return c ? Object.values(c.ms || {}).filter(v => v === id).length : 0; };
 /* STAT THRESHOLDS (Daniel 10-04): 10 and 20 picks in a stat unlock a small bonus that changes how the build PLAYS. VIGOR: a kill heals 2 /
    a faster, fuller co-op revive. ENDURANCE: rolls cost a fifth less below half stamina / a second wind once a fight. MIGHT: heavy blows push the
@@ -119,8 +151,8 @@ export const thrOn = (p, h, stat, i) => { const c = cardOf(p, h); return !!c && 
 export const thrNext = (p, h, stat) => { const c = cardOf(p, h), have = c ? (c[stat] || 0) : 0, i = THRESH_AT.findIndex(a => have < a); return i < 0 ? null : { i, at: THRESH_AT[i], have, ...THRESH[stat][i] }; };
 /* THE COUNT FOR THE CARD: the next milestone above this level, and how many levels away it is (null past the last) */
 const lvClamp = lv => Math.max(0, Math.min(LV_MAX, Math.floor(lv || 0)));
-export const nextMilestone = lv => MILESTONES.find(n => n > lvClamp(lv)) ?? null;
-export const levelsToPerk = lv => { const n = nextMilestone(lv); return n === null ? null : n - lvClamp(lv); };
+export const nextMilestone = (lv, h) => milestoneLevels(h).find(n => n > lvClamp(lv)) ?? null;   /* (h: a kit hero's upgrade cards count too) */
+export const levelsToPerk = (lv, h) => { const n = nextMilestone(lv, h); return n === null ? null : n - lvClamp(lv); };
 /* THE PERKS: what a milestone card offers, each a hook main.js reads through perkOn(). Several stand where a relic stood (the fleece's stamina,
    the gauntlet's light swing, the banner's thinner blows) - kept, not carried and lost. */
 export const PERKS = [
@@ -139,15 +171,40 @@ const cardLv = lv => Math.max(0, Math.min(LV_MAX, Math.floor(lv || 0)));
 export const evenCard = lv => { const n = cardLv(lv), b = Math.floor(n / 3), r = n - 3 * b; return { v: b + (r > 0 ? 1 : 0), e: b + (r > 1 ? 1 : 0), m: b, ms: {} }; };
 export const cardOf = (p, h) => (p && p.card && object(p.card[h])) ? p.card[h] : null;
 export const picksSpent = c => c ? (c.v || 0) + (c.e || 0) + (c.m || 0) : 0;
-export const picksOwed = (p, h, lv) => Math.max(0, cardLv(lv) - picksSpent(cardOf(p, h)));
-export const milestonesOwed = (p, h, lv) => MILESTONES.filter(n => n <= cardLv(lv) && !((cardOf(p, h) || {}).ms || {})[n]);
+export const picksOwed = (p, h, lv) => Math.max(0, cardLv(lv) - kitCardLevels(h, cardLv(lv)) - picksSpent(cardOf(p, h)));   /* (a kit hero's tech and upgrade levels are not stat picks) */
+export const milestonesOwed = (p, h, lv) => milestoneLevels(h).filter(n => n <= cardLv(lv) && !((cardOf(p, h) || {}).ms || {})[n]);
 export const perkOn = (p, h, id) => { const c = cardOf(p, h); return !!c && Object.values(c.ms || {}).includes(id); };
 /* THE THREE A MILESTONE OFFERS: the perks this hero has not taken, turned by hero and level so two heroes see different hands, never more than three */
-export function perkOffer(p, h, n) { const c = cardOf(p, h), taken = new Set(Object.values((c && c.ms) || {})), left = (isMinor(n) ? MINOR_PERKS : PERKS).filter(k => !taken.has(k.id));
+export function perkOffer(p, h, n) { if (isTechLevel(h, n)) return techOffer(p, h, n); if (isUpgradeLevel(h, n)) return upgOffer(p, h, n); return perkOffer0(p, h, n); }
+function perkOffer0(p, h, n) { const c = cardOf(p, h), taken = new Set(Object.values((c && c.ms) || {})), left = (isMinor(n) ? MINOR_PERKS : PERKS).filter(k => !taken.has(k.id));
  if (h === 'pyro' && n === PYRO_CARD_LEVEL && !(p && p.pyroBoth === true)) { const w = HERO_PERKS.pyro[0]; return [...PYRO_CARDS, { ...w, own: true, rank: perkRank(p, h, w.id) + 1, minor: true }]; }   /* (claude/pyrokit) THE JET / THE EMBER SHOT / WILDFIRE */
  const turn = ((HERO_IDS.indexOf(h) + 1) * 3 + Math.floor(n / 5)) % Math.max(1, left.length), rot = left.slice(turn).concat(left.slice(0, turn)), own = heroPerkAt(h, n);
  /* two of the pool, then the hero's own (LEVELING2): a hero with his own at its top rank, or none, gets three of the pool */
  return own && perkRank(p, h, own.id) < HERO_PERK_MAX ? rot.slice(0, 2).concat([{ ...own, own: true, rank: perkRank(p, h, own.id) + 1, minor: isMinor(n) }]) : rot.slice(0, 3); }
+/* THE KIT CARDS. A TECH card: the hero's next technique not yet taken (RECOMMENDED, first), the best untaken upgrade, a generic perk. An UPGRADE card: the
+   top untaken upgrade, one drawn from the next three (turned by hero and level like perkOffer), a generic perk. An upgrade option's id is 'upgId:rank'. A
+   card never offers fewer than one option: a hero who has everything is offered the generic perks. */
+const upgNext = (p, h) => (UPGRADES[h] || []).filter(u => upgRank(p, h, u.id) < UPGRADE_MAX);
+const upgOpt = (p, h, u) => { const r = upgRank(p, h, u.id) + 1; return { id: u.id + ':' + r, name: u.name + (r > 1 ? ' II' : ' I'), what: u.what[r - 1], up: true, rank: r, upgrade: u.id }; };
+const genericPerk = (p, h, n) => { const o = perkOffer0(p, h, n); return o.find(k => !k.own) || o[0] || null; };
+function techOffer(p, h, n) {
+ const out = [], t = TECH_LEVELS.filter(l => l <= n).map(l => techniqueFor(h, l)).filter(Boolean).find(k => !techOn(p, h, k.id)), left = upgNext(p, h);
+ if (t) out.push({ id: t.id, name: t.name, what: t.what, tech: true, rec: true, input: t.input, level: Object.entries(TECHNIQUES[h]).find(([, v]) => v === t)[0] | 0 });
+ if (left[0]) out.push(upgOpt(p, h, left[0]));
+ const g = genericPerk(p, h, n); if (g) out.push(g);
+ if (out.length && !out[0].rec) out[0] = { ...out[0], rec: true };
+ return out.length ? out : perkOffer0(p, h, n);
+}
+function upgOffer(p, h, n) {
+ const left = upgNext(p, h), out = [];
+ if (left[0]) out.push(upgOpt(p, h, left[0]));
+ const rest = left.slice(1, 4); if (rest.length) out.push(upgOpt(p, h, rest[(HERO_IDS.indexOf(h) + 1 + n) % rest.length]));
+ const g = genericPerk(p, h, n); if (g) out.push(g);
+ if (out.length) out[0] = { ...out[0], rec: true };
+ return out.length ? out : perkOffer0(p, h, n);
+}
+/* what a taken milestone value is called on the card's summary line: a perk, a technique or 'an upgrade I' */
+export function milestoneName(h, id) { const t = techniqueById(h, id); if (t) return t.name; const m = /^(\w+):(\d)$/.exec(String(id)), u = m && upgradeById(h, m[1]); return u ? u.name + (m[2] > 1 ? ' II' : ' I') : null; }
 const ensureCard = (p, h) => { p.card = object(p.card) ? p.card : {}; if (!object(p.card[h])) p.card[h] = { v: 0, e: 0, m: 0, ms: {} }; const c = p.card[h]; if (!object(c.ms)) c.ms = {}; return c; };
 /* ONE PICK. null when it took, else why not (the card says it) */
 export function pickCard(p, h, stat, lv) {
@@ -156,10 +213,12 @@ export function pickCard(p, h, stat, lv) {
  c[stat] = (c[stat] || 0) + 1; return null; }
 export function pickMilestone(p, h, n, perk, lv) {
  if (!milestonesOwed(p, h, lv).includes(n)) return 'No milestone owed'; if (!perkOffer(p, h, n).some(k => k.id === perk)) return 'Not offered';
- const c = ensureCard(p, h); c.ms[n] = perk; return null; }
+ const c = ensureCard(p, h); c.ms[n] = perk;
+ const um = /^(\w+):(\d)$/.exec(String(perk)); if (um && upgradeById(h, um[1])) { c.up = object(c.up) ? c.up : {}; c.up[um[1]] = Math.max(c.up[um[1]] | 0, +um[2]); }   /* an upgrade pick records its rank */
+ return null; }
 /* THE RESPEC: every pick and every perk of this hero back on the table (picksOwed / milestonesOwed are owed again). The silver is the caller's
    (main.js spends RESPEC_SILVER unless p.cardFree[h], a migrated save's free first one). */
-export function respecCard(p, h) { const c = ensureCard(p, h); c.v = c.e = c.m = 0; c.ms = {}; if (object(p.cardFree)) delete p.cardFree[h]; return null; }
+export function respecCard(p, h) { const c = ensureCard(p, h); c.v = c.e = c.m = 0; c.ms = {}; c.up = {}; if (object(p.cardFree)) delete p.cardFree[h]; return null; }
 /* THE GROWTH a hero's level and card give. card omitted (undefined) = an even spread; null = no picks yet. */
 export function growthAt(h,lv,card){
  lv=Math.max(0,lv);const ranks=Math.min(lv,24)/12,c=card===undefined?evenCard(lv):(card||{v:0,e:0,m:0,ms:{}}),ms=Object.values(c.ms||{});
@@ -210,7 +269,7 @@ export function validateProgress(p){
    for(const record of Object.values(heroes))if(!object(record)||!Number.isFinite(record.best)||record.best<=0||typeof record.noHit!=='boolean')throw Error('Invalid boss record. Original save retained.');
   }
  }
- for(const [h,c] of Object.entries(p.card||{})){if(!object(c))throw Error('Invalid card: '+h);for(const k of ['v','e','m'])if(c[k]!==undefined&&(!Number.isInteger(c[k])||c[k]<0||c[k]>CARD_CAP))throw Error('Invalid card pick: '+h);if(c.ms!==undefined&&!object(c.ms))throw Error('Invalid card milestones: '+h);}
+ for(const [h,c] of Object.entries(p.card||{})){if(!object(c))throw Error('Invalid card: '+h);for(const k of ['v','e','m'])if(c[k]!==undefined&&(!Number.isInteger(c[k])||c[k]<0||c[k]>CARD_CAP))throw Error('Invalid card pick: '+h);if(c.ms!==undefined&&!object(c.ms))throw Error('Invalid card milestones: '+h);if(c.up!==undefined&&(!object(c.up)||Object.values(c.up).some(r=>!Number.isInteger(r)||r<0||r>UPGRADE_MAX)))throw Error('Invalid card upgrades: '+h);}
  for(const v of Object.values(p.xp||{}))if(!Number.isFinite(v)||v<0)throw Error('Invalid XP. Original save retained.');
  for(const [h,v] of Object.entries(p.skillOwned||{})){if(!object(v))throw Error('Invalid skill ownership: '+h);for(const [id,on] of Object.entries(v))if(on!==true||!skillFor(h,id))throw Error('Invalid owned skill: '+id);}
  for(const [h,v] of Object.entries(p.loadouts||{}))if(!Array.isArray(v)||v.length>MAX_SLOTS||v.some(id=>id!==null&&(!skillFor(h,id)||!p.skillOwned?.[h]?.[id]))||new Set(v.filter(Boolean)).size!==v.filter(Boolean).length)throw Error('Invalid loadout: '+h);

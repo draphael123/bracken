@@ -43,7 +43,7 @@ export const LANCE4 = {
   haul: 1.2,                     // THE STORM ARRIVES (P2.s turn, lance5; was HE STOPS THE BELLS): braced, not an opening
   split: 1.0, castOff: 8, bare: 0.7,   // THE SHIELD SPLIT (x1.5 while it goes), or cast off this long into P3; shieldless he takes x0.7 from anywhere
   open: { tossed: 1.6, buffeted: 1.5, overrun: 1.5, rung: 1.5, whipped: 1.5, wallTurned: 1.5, recover: 1.5, reel: 1.5, stumble: 1.5, planted: 1.6, split: 1.5 },   // his openings (B15: 1.5-2x; pinned reads its bell)
-  heroDmg: { knight: 1.3, warden: 1.04, pyro: 0.71 },   // (claude/lance4tune) a hero's blows against him, x (knight takes the reach, pyro stands off)
+  heroDmg: { knight: 1, warden: 1.04, pyro: 0.71 },   // (claude/lance4tune) a hero's blows against him, x (knight takes the reach, pyro stands off)
   /* (claude/lance5, Daniel 10-31 18:36) */
   pivot: 0.3,                    // NO BACKWARD CHARGE: a hero behind him - he plants and turns (a told 0.3 s pivot: the stamp and the pennant's swing), then moves
   skewer: { tell: 0.6, active: 0.22, rec: 0.9, recHit: 0.5, dx: 24, hitX: 18, low: 30, top: 124, every: 4.5 },   // RISING SKEWER (P2+, MEDIUM): braced, the point straight up at anyone over him (a rope rider, a lookout); a whiff leaves him looking up - drop on his helm then
