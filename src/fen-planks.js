@@ -103,8 +103,8 @@ export function makeFenPlanks(ctx) {
     if (!W.on()) return; const rc = (x, y, w, h, c) => { g.fillStyle = c; g.fillRect(R(x), R(y), R(w), R(h)); };
     /* THE BUNDLES (claude/fenroad2art): the stack on its sawhorses, roped, a glint sweeping it */
     for (const b of bundles) { const x = R(b.x - cx), y = R(b.y - cy); if (x < -60 || x > 2000) continue;
-      if (b.stock !== 0) FPA.drawBundle(g, x, y, time, b.x); else { rc(x - 14, y - 9, 3, 9, '#3e2c1c'); rc(x + 11, y - 9, 3, 9, '#3e2c1c'); rc(x - 15, y - 10, 30, 2, '#6a4a2a'); }   /* (claude/bogtroll2) empty: the bare sawhorses */
-      if (b.max) { for (let i = 0; i < b.max; i++) rc(x - b.max * 3 + i * 6, y + 3, 4, 2, i < b.stock ? PLANK.col : '#3a2e22'); if (b.stock < b.max) { rc(x - 12, y + 6, 24, 1, '#1b1626'); rc(x - 12, y + 6, R(24 * b.t / b.refill), 1, '#c9b27c'); } } }
+      if (b.stock !== 0) FPA.drawBundle(g, x, y, time, b.x); else FPA.drawBundleEmpty(g, x, y);   /* (claude/bogtroll2art) empty: the bare sawhorses */
+      if (b.max) FPA.drawStock(g, x, y, b.stock, b.max, b.t, b.refill, time); }
     for (const q of items) { const x = q.x - cx, y = q.y - cy;
       if (q.state === 'held') continue;   /* a carried plank is drawn with the hero's arms (drawHeld, src/redraw/hero_plank_poses.js) */
       else if (q.state === 'fly') FPA.drawPlank(g, x, y, q.spin || 0, 1);

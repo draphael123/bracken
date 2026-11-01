@@ -124,13 +124,22 @@ export function drawSites(g, L, cx, cy, time, T) {
 /* (claude/bogtroll2) A PROP OF THE CROSSING (src/fen-road-hands.js): k = 'torch' (a lamp post), 'warn' (a goblin warning board: a red X on a stake), 'pennant'; yb = the road's top, wy = the water's
    (screen px); fall 0..1 = toppling into the fen to the side (it tips, slides off the broken board and sinks to the waterline - a torch's flame goes out half way) */
 export function drawProp(g, k, x, yb, wy, time, fall = 0, side = 1, seed = 0) {
-  const s = k === 'torch' ? lampPost(false) : k === 'pennant' ? banner() : warnBoard(), [ox] = k === 'torch' ? OFF.lamp : k === 'pennant' ? OFF.banner : [5, 22];
+  const s = k === 'torch' ? lampPost(false) : k === 'pennant' ? banner() : warnBoard(), [ox] = k === 'torch' ? OFF.lamp : k === 'pennant' ? OFF.banner : [6, 24];
   if (!fall) { g.drawImage(s, x - ox, yb - s.height); if (k === 'torch') { const fl = 0.6 + 0.25 * Math.sin(time * 6 + seed) * Math.sin(time * 2.3 + seed * 0.1); glow(g, x - ox + 14.5, yb - s.height + 9, 9, 0.16 * fl); } return; }
   const a = Math.min(1.45, fall * 2.4) * side, drop = Math.max(0, fall - 0.35) / 0.65 * (wy - yb + s.height * 0.5);
   g.save(); g.beginPath(); g.rect(x - 80, yb - 200, 160, wy - yb + 200); g.clip(); g.translate(Math.round(x + side * fall * 10), Math.round(yb + drop)); g.rotate(a); g.drawImage(s, -ox, -s.height); g.restore();
-  if (fall > 0.4) { g.globalAlpha = 0.7 * (1 - fall); Rr(g, '#e6efe6', x + side * 12 - 8, wy - 1, 16, 1); g.globalAlpha = 1; }   /* the ring where it went in */
+  if (fall > 0.4) { const wx = x + side * 12, q = (fall - 0.4) / 0.6;   /* (claude/bogtroll2art) where it went in: a ring spreading, a crown of droplets thrown up (a torch's flame dies in a hissing steam cloud) */
+    g.globalAlpha = 0.7 * (1 - fall); Rr(g, '#e6efe6', wx - 8 - q * 4, wy - 1, 16 + q * 8, 1); Rr(g, '#9fb3a6', wx - 6 - q * 3, wy, 12 + q * 6, 1); g.globalAlpha = 1;
+    for (let i = 0; i < 6; i++) { const u = Math.min(1, q * 1.6), ang = (i - 2.5) * 0.45, hx = wx + Math.sin(ang) * u * 12, hy = wy - Math.cos(ang) * u * 11 + u * u * 9; if (u < 1) { g.globalAlpha = 1 - u * 0.6; P(g, i & 1 ? '#f2f8f0' : '#cfe0d0', Math.round(hx), Math.round(hy)); P(g, '#9fb3a6', Math.round(hx), Math.round(hy) + 1); g.globalAlpha = 1; } }
+    if (k === 'torch') steam(g, wx, wy, q); }
 }
-const warnBoard = () => once('warnB', () => { const [c, g] = canvas(12, 24); Rr(g, '#3a2818', 5, 6, 2, 18); Rr(g, '#5a4630', 1, 1, 10, 8); Rr(g, '#2a1e12', 1, 8, 10, 1);
-  for (let i = 0; i < 6; i++) { P(g, '#b8322a', 3 + i, 2 + i); P(g, '#b8322a', 8 - i, 2 + i); } Rr(g, '#c9b27c', 4, 10, 4, 1); return outline(c, '#120c08'); });   /* a crew's warning board: a red X - BAD BOARDS */
+/* a steam puff cluster: grey-white blobs rising and spreading from (x, y) while q runs 0..1 */
+export function steam(g, x, y, q) { for (let i = 0; i < 5; i++) { const u = Math.min(1, q * 1.2 + i * 0.05), px = x + (i - 2) * 3 + Math.round(Math.sin(i * 2.3 + q * 5) * 2), py = y - 3 - u * (12 + i * 2), r = 1 + Math.floor(u * 3);
+  g.globalAlpha = Math.max(0, 0.85 * (1 - q) * (1 - u * 0.4)); Rr(g, '#eef2ee', px - r, py - r, 2 * r + 1, 2 * r); Rr(g, '#b8c0bc', px - r + 1, py, 2 * r - 1, r); } g.globalAlpha = 1; }
+const warnBoard = () => once('warnB', () => { const [c, g] = canvas(14, 26); Rr(g, '#2a1e12', 6, 8, 3, 18); Rr(g, '#5a4630', 6, 8, 1, 18); P(g, '#2a2014', 7, 14); P(g, '#2a2014', 8, 19);   /* the stake, black with age */
+  Rr(g, '#3a2c1c', 1, 1, 12, 10); Rr(g, '#745c3e', 1, 1, 12, 8); Rr(g, '#947a52', 2, 1, 10, 1); Rr(g, '#2a1e12', 1, 5, 12, 1); Rr(g, '#2a1e12', 1, 10, 12, 1);   /* two nailed planks, a lit top edge */
+  for (let i = 0; i < 7; i++) { Rr(g, '#c24a3c', 3 + i, 2 + i, 2, 1); Rr(g, '#c24a3c', 10 - i, 2 + i, 2, 1); } for (let i = 0; i < 7; i++) { P(g, '#8f2f28', 3 + i, 3 + i); P(g, '#8f2f28', 11 - i, 3 + i); }   /* a fat red X, shaded */
+  P(g, '#c4c0ac', 2, 2); P(g, '#c4c0ac', 12, 2); P(g, '#c4c0ac', 2, 9); P(g, '#c4c0ac', 12, 9);   /* nail heads */
+  Rr(g, '#c9b27c', 5, 12, 4, 1); Rr(g, '#8e7a52', 5, 13, 1, 3); Rr(g, '#8f2f28', 8, 12, 2, 4); return outline(c, '#120c08'); });   /* a tied rag + rope */
 /* bake every sprite now (the level's load) */
 export function warm() { lampPost(false); lampPost(true); sawhorse(); barrel(); lean(); driver(); stackB(); brazier(); net(); skullStake(); banner(); stakes(); for (let v = 0; v < 4; v++) pilings(v); lantern(); }

@@ -46,8 +46,8 @@ export const POSE = {
   ripTell: { torso: [6, 0.3], armF: [30, 2], armB: [22, 2], head: [12, 4, 0.3], grip: true },
   rip: { torso: [-6, -0.15], armF: [14, -50], armB: [-12, -50], head: [4, -4, -0.3], mouth: true, planks: true },
   /* (claude/bogtroll2) THE WAVE SLAP: up at the edge, both arms raised high over the fen, leaning back, roaring (windup) -> both arms slammed down flat on the water in front (release, spray) */
-  waveTell: { torso: [-4, -0.22], armF: [10, -52], armB: [-6, -54], head: [2, -4, -0.45], mouth: true, weed: true },
-  waveSlap: { torso: [8, 0.3], armF: [34, 14], armB: [24, 15], head: [12, 6, 0.3], spray: true },
+  waveTell: { torso: [-4, -0.22], armF: [10, -52], armB: [-6, -54], head: [2, -4, -0.45], mouth: true, weed: true, pour: true },
+  waveSlap: { torso: [8, 0.3], armF: [34, 14], armB: [24, 15], head: [12, 6, 0.3], spray: true, palm: true },
   /* THE PILING SWING: hunched, both fists round a post down in the wreck, hauling (windup 1: the post rising) -> the post back over his shoulder (windup 2: the arc told red) -> swung round flat
      in front of him (release) */
   pileTell: { torso: [6, 0.28], armF: [26, 8], armB: [16, 8], head: [10, 4, 0.25], mouth: true, post: 'haul' },
@@ -168,19 +168,24 @@ export function makeBogTrollHands(ctx) {
     /* (claude/bogtroll2) THE WAVE SLAP's tell: a ripple line running out across the fen from him (blinking red at its head); then THE WAVE: a crest of swell and spray under the road, the boards
        over it lifted in turn (a dark gap under each) */
     if (e.mode === 'waveTell') { const d = e.waveDir || 1, k = 1 - Math.max(0, e.modeT) / BT.wave.tell[S.ph - 1], len = (G.w1 - G.w0) * Math.min(1, k * 1.4);
-      for (let q = 0; q < len; q += 10) { const xx = e.x + d * (14 + q), wob = Math.sin(time * 9 - q * 0.08) > 0 ? 1 : 0; g.globalAlpha = 0.85 - 0.5 * (q / Math.max(1, len)); rect(g, X(xx), Y(G.waterY) - 1 - wob, 6, 1, q + 10 >= len ? blink : '#e6efe6'); }
+      for (let q = 0; q < len; q += 8) { const xx = e.x + d * (14 + q), ph = Math.sin(time * 9 - q * 0.25), up = ph > 0.3 ? 1 : 0, head = q + 8 >= len, y0 = Y(G.waterY) - 1; g.globalAlpha = 0.9 - 0.5 * (q / Math.max(1, len));   /* (claude/bogtroll2art) wavelets: a crest pixel row over a darker trough, the head an arrow chevron in blinking red */
+        if (head) { for (let c = 0; c < 4; c++) { rect(g, X(xx) - d * c * 2 - (d < 0 ? 2 : 0), y0 - c, 2, 1, blink); rect(g, X(xx) - d * c * 2 - (d < 0 ? 2 : 0), y0 + c, 2, 1, blink); } } else { rect(g, X(xx), y0 - up, 5, 1, '#e6efe6'); rect(g, X(xx) + 1, y0 + 1 - up, 4, 1, '#9fb3a6'); } }
       g.globalAlpha = 1; }
     if (S.wave) { const v = S.wave, cr = BT.wave.crest;
-      for (let q = -cr * 3; q <= cr * 3; q += 2) { const h = Math.max(0, Math.cos(q / (cr * 3) * Math.PI / 2)) * 7; rect(g, X(v.x + q), Y(G.waterY) - R(h), 2, R(h) + 2, h > 4 ? '#cfe0d0' : '#6f8f7a'); }
+      for (let q = -cr * 3; q <= cr * 3; q += 2) { const fw = q * (v.dir || 1) > 0, h = Math.max(0, Math.cos(q / (cr * 3) * Math.PI / 2)) * (fw ? 10 : 8), hh = R(h);   /* (claude/bogtroll2art) a curling swell: dark teal body, lit face, white foam cap, a lip curling over the front */
+        rect(g, X(v.x + q), Y(G.waterY) - hh, 2, hh + 2, h > 5 ? '#6f9a88' : '#3f6a5c'); if (hh > 3) rect(g, X(v.x + q), Y(G.waterY) - hh, 2, 2, '#f2f8f0'); if (hh > 6 && !fw) rect(g, X(v.x + q), Y(G.waterY) - hh + 3, 1, 3, '#a6c8b8'); }
+      { const lp = (v.dir || 1) * 6; rect(g, X(v.x + lp) - 1, Y(G.waterY) - 11, 4, 1, '#f2f8f0'); rect(g, X(v.x + lp * 1.5), Y(G.waterY) - 10, 2, 2, '#e6efe6'); }
       for (let i = 0; i < 4; i++) { const q = (time * 6 + i * 0.25) % 1; g.globalAlpha = 1 - q; rect(g, X(v.x) - 6 + i * 4, Y(G.waterY) - 8 - q * 10, 2, 2, '#e6efe6'); g.globalAlpha = 1; }
       const c0 = Math.floor((v.x - cr * 2) / ctx.TS), c1 = Math.floor((v.x + cr * 2) / ctx.TS), FR = ctx.fen();
       for (let c = c0; c <= c1; c++) { if (!FR || !FR.footsAt || !FR.footsAt(c)) continue; const cx0 = c * ctx.TS + 8, lift = R(Math.max(0, 1 - Math.abs(cx0 - v.x) / (cr * 2)) * BT.wave.lift); if (lift < 1) continue;
-        rect(g, X(c * ctx.TS), Y(G.floorY) - lift + 4, ctx.TS, lift, '#10160e'); FRA.drawBoard(g, X(c * ctx.TS), Y(G.floorY) - lift, c & 3, 4, false, 1, false); } }
+        rect(g, X(c * ctx.TS), Y(G.floorY) - lift + 4, ctx.TS, lift, '#10160e'); FRA.drawBoard(g, X(c * ctx.TS), Y(G.floorY) - lift, c & 3, 4, false, 1, false);
+        if (lift > 2) { rect(g, X(c * ctx.TS), Y(G.floorY) - lift + 5, 1, lift - 1, '#2a3a30'); rect(g, X(c * ctx.TS) + ctx.TS - 1, Y(G.floorY) - lift + 5, 1, lift - 1, '#2a3a30'); const q = (time * 3 + c * 0.37) % 1; g.globalAlpha = 1 - q; rect(g, X(c * ctx.TS) + 3 + (c & 3), Y(G.floorY) - lift + 6 + q * lift, 1, 2, '#cfe0d0'); g.globalAlpha = 1; } } }
     /* THE PILING SWING's arc, told red while he winds it back */
     if (e.mode === 'pileWind' || e.mode === 'pileSwing') { const f = e.face || 1, a = e.x - f * BT.pile.back, b = e.x + f * BT.pile.reach; g.globalAlpha = e.mode === 'pileWind' ? 0.35 + 0.3 * Math.sin(time * 16) : 0.7;
-      g.strokeStyle = '#ff4a2a'; g.lineWidth = 2; g.beginPath(); g.ellipse(X((a + b) / 2), Y(G.floorY - (BT.pile.top + BT.pile.bot) / 2), Math.abs(b - a) / 2, (BT.pile.top - BT.pile.bot) / 2 + 3, 0, 0, 7); g.stroke(); g.lineWidth = 1; g.globalAlpha = 1; }
+      g.strokeStyle = '#ff4a2a'; g.lineWidth = 2; g.setLineDash([5, 3]); g.lineDashOffset = -time * 40 * (f > 0 ? 1 : -1); g.beginPath(); g.ellipse(X((a + b) / 2), Y(G.floorY - (BT.pile.top + BT.pile.bot) / 2), Math.abs(b - a) / 2, (BT.pile.top - BT.pile.bot) / 2 + 3, 0, 0, 7); g.stroke(); g.setLineDash([]); g.lineWidth = 1; g.globalAlpha = 1; }
     /* PINNED: the stars of the beams that came down on his head */
-    if (e.mode === 'stuck') for (let i = 0; i < 3; i++) { const a = time * 3 + i * 2.09, sx = X(e.x) + R(Math.cos(a) * 14), sy = Y(G.floorY - 44) + R(Math.sin(a) * 4); rect(g, sx - 1, sy, 3, 1, '#ffe08a'); rect(g, sx, sy - 1, 1, 3, '#ffe08a'); }
+    if (e.mode === 'stuck') for (let i = 0; i < 4; i++) { const a = time * 3 + i * 1.57, sx = X(e.x) + R(Math.cos(a) * 15), sy = Y(G.floorY - 46) + R(Math.sin(a) * 4), big = Math.sin(a) > 0 ? 2 : 1;   /* (claude/bogtroll2art) four-point stars, a white heart, the near ones bigger */
+      rect(g, sx - big, sy, 2 * big + 1, 1, '#ffd36b'); rect(g, sx, sy - big, 1, 2 * big + 1, '#ffd36b'); rect(g, sx, sy, 1, 1, '#fffbe0'); if (big > 1) { rect(g, sx - 1, sy - 1, 3, 3, 'rgba(255,224,138,0.35)'); rect(g, sx, sy, 1, 1, '#ffffff'); } }
     /* THE RIP's boards flash red first */
     if (e.mode === 'ripTell') for (const [a, b] of G.rip) { g.globalAlpha = 0.5 + 0.4 * Math.sin(time * 16); g.fillStyle = '#ff4a2a'; g.fillRect(X(a), Y(G.floorY), R(b - a), 4); g.globalAlpha = 1; }
     for (const c of S.clods) { const q = BTM.clodAt(c, G.floorY); FRA.drawClod(g, X(q.x), Y(q.y), time);

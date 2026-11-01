@@ -145,3 +145,25 @@ export function drawPeat(g, p, x0, x1, y, h, cx, cy, time, over) {
 }
 /* bake every sprite now (the level's load) */
 export function warm() { plankSprite(); bundleSprite(); ghostBoard(); laidBoard(''); laidBoard('L'); laidBoard('R'); for (let v = 0; v < 4; v++) { snapEnd(v); sunkBoard(v); } stake(); peatTex(); for (let v = 0; v < 3; v++) clod(v); }
+
+/* (claude/bogtroll2art) THE CROSSING's BUNDLE when its stock is spent: the bare sawhorses (A-frames, a crossbar, a hemp loop, a stub of plank and a few splinters), and the STOCK PIPS under it
+   (a little plank glyph each: lit when there, a dark slot when not) with the refill tick - x,y = the bundle's foot as drawPile in drawBundle */
+const horseSprite = () => once('horseE', () => { const [c, g] = canvas(44, 14);
+  for (const lx of [4, 30]) { for (let i = 0; i < 9; i++) { P(g, OAK[1], lx + (i >> 1), 4 + i); P(g, OAK[3], lx + 9 - (i >> 1), 4 + i); } Rr(g, OAK[3], lx + 1, 3, 9, 2); Rr(g, OAK[4], lx + 1, 3, 9, 1); }
+  Rr(g, OAK[2], 1, 1, 42, 3); Rr(g, OAK[4], 1, 1, 42, 1); Rr(g, OAK[0], 1, 4, 42, 1);                 /* the crossbar */
+  Rr(g, ROPE, 20, 4, 1, 5); Rr(g, ROPE_D, 21, 4, 1, 4); Rr(g, ROPE_D, 19, 8, 4, 1);                  /* a hemp loop hung from it */
+  Rr(g, FRESH[2], 36, 0, 7, 2); Rr(g, FRESH[4], 36, 0, 7, 1); P(g, FRESH[0], 36, 1);                 /* a stub of plank left across */
+  P(g, FRESH[3], 12, 12); P(g, FRESH[3], 14, 13); P(g, FRESH[1], 28, 12);                            /* splinters on the ground */
+  return outline(c, OUT); });
+export function drawBundleEmpty(g, x, y) { g.drawImage(horseSprite(), R(x) - 22, R(y) - 14); }
+export function drawStock(g, x, y, stock, max, t, refill, time) {
+  for (let i = 0; i < max; i++) { const px = R(x) - max * 4 + i * 8, on = i < stock; Rr(g, on ? OUT : '#1b1626', px - 1, y + 2, 8, 4); Rr(g, on ? FRESH[2] : '#3a2e22', px, y + 3, 6, 2); if (on) { Rr(g, FRESH[4], px, y + 3, 6, 1); P(g, FRESH[0], px + 4, y + 4); } }
+  if (stock < max) { const k = Math.max(0, Math.min(1, t / refill)); Rr(g, OUT, R(x) - 13, y + 7, 26, 3); Rr(g, '#2a2236', R(x) - 12, y + 8, 24, 1); Rr(g, ROPE_L, R(x) - 12, y + 8, R(24 * k), 1);
+    P(g, '#fff6d8', R(x) - 12 + R(24 * k), y + 8); if (Math.floor(time * 3) % 2) P(g, ROPE_D, R(x) - 12 + R(24 * k) + 1, y + 7); }
+}
+/* (claude/bogtroll2art) A FRESH PLANK UNDER STRAIN: it sags like a rotten board, so it shows it - b 0..1 how far it has bowed: hairline cracks opening across the pale wood, a splinter lifting, dust off the nails */
+export function drawStrain(g, x, y, i, b, time) {
+  const n = 1 + (b > 0.6 ? 1 : 0) + (b > 0.85 ? 1 : 0);
+  for (let k = 0; k < n; k++) { const cx = x + 3 + ((k * 5 + i * 3) % 9); Rr(g, '#5a4020', cx, y + 1, 1, 3); P(g, '#5a4020', cx + 1, y + 3); if (b > 0.6) P(g, '#fff6d8', cx - 1, y); }
+  if (b > 0.5) { const q = (time * 3 + i * 0.4) % 1; g.globalAlpha = 0.8 * (1 - q); P(g, FRESH[4], x + 4 + (i & 1) * 6, y - 1 - q * 5); g.globalAlpha = 1; }
+}
