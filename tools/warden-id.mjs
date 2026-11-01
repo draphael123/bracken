@@ -45,7 +45,7 @@ ok(COMMIT.warden.third === 0.30 && COMMIT.warden.light < 0.1, 'the long thrust r
 { const w = SKILLS.filter(s => s.hero === 'warden'), ids = new Set(w.map(s => s.id));
   ok(!ids.has('poleSpring') && !ids.has('holdThem') && ids.has('harrier') && ids.has('pinTwist'), 'catalog: POLE SPRING and HOLD THEM DOWN gone; the POLE-VAULT (harrier) and TWIST IT stay');
   ok(w.find(s => s.id === 'harrier').name === 'POLE-VAULT', 'the pole-vault is named');
-  const casters = w.filter(s => /\bpins\b/i.test(s.desc)).map(s => s.id).sort();
+  const casters = w.filter(s => /\bpins\b|\bpin what/i.test(s.desc)).map(s => s.id).sort();
   ok(JSON.stringify(casters) === JSON.stringify(['javelin', 'rainOfSpears', 'skewer']), 'pin-casting skills are skewer, javelin, rain of spears only (' + casters + ')');
   ok(w.find(s => s.id === 'setSpears').name === 'PHALANX' && !/pin/.test(w.find(s => s.id === 'setSpears').desc.replace(/\bspin/, '')), 'the phalanx is a skill and trips (no pin)'); }
 /* 5. SAVE MIGRATION: a save that bought either removed skill keeps it as the merged one, in the same slot */
