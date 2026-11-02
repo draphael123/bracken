@@ -1,0 +1,42 @@
+name: Private R guard cause diagnosis November2
+on:
+  push:
+    branches: [codex/load-perf]
+    paths:
+      - 'tools/private-r-guard-diagnostic-nov02/**'
+      - 'tools/private-r-guard-diagnostic-nov02.mjs'
+      - '.github/workflows/private-r-guard-diagnostic-nov02.yml'
+permissions: {contents: read}
+jobs:
+  cause:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0}
+      - uses: actions/setup-node@v4
+        with: {node-version: '24.11.1'}
+      - name: Frozen strict helper source and source identity
+        run: |
+          test -z "$(git diff 62d9c02c HEAD -- src index.html)"
+          git worktree add --detach "$PRIVATE_R_GUARD_REFERENCE" 1a576c3f4511b6856df9fb4738df5aaae9987e81
+          mkdir -p "$PRIVATE_R_GUARD_OUT"
+          git rev-parse HEAD HEAD:src > "$PRIVATE_R_GUARD_OUT/source.txt"
+          sha256sum tools/private-r-guard-diagnostic-nov02/* tools/private-r-guard-diagnostic-nov02.mjs .github/workflows/private-r-guard-diagnostic-nov02.yml > "$PRIVATE_R_GUARD_OUT/source-sha256.txt"
+          cp tools/private-r-guard-diagnostic-nov02/source-proof.json "$PRIVATE_R_GUARD_OUT/diagnostic-source-proof.json"
+          node --check tools/private-r-guard-diagnostic-nov02/backend-diagnostic.js
+          node --check tools/private-r-guard-diagnostic-nov02.mjs
+        env:
+          PRIVATE_R_GUARD_OUT: ${{ runner.temp }}/private-r-guard-diagnostic-nov02
+          PRIVATE_R_GUARD_REFERENCE: ${{ runner.temp }}/private-r-guard-reference
+      - name: Collect guard rejection descriptors without rerunning failed pack assertions
+        run: node tools/private-r-guard-diagnostic-nov02.mjs
+        env:
+          PRIVATE_R_GUARD_OUT: ${{ runner.temp }}/private-r-guard-diagnostic-nov02
+          PRIVATE_R_GUARD_REFERENCE: ${{ runner.temp }}/private-r-guard-reference
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: private-r-guard-diagnostic-nov02
+          path: ${{ runner.temp }}/private-r-guard-diagnostic-nov02/
+          if-no-files-found: error

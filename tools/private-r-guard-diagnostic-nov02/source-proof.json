@@ -1,0 +1,11 @@
+{
+  "time": "2026-11-02T16:29:53.294Z",
+  "parentRun": 41480563077,
+  "parentBackendSha256": "95605a41891507dd2aa96896a68f534f4683e08cb4e4c7e13533412ce4d234cd",
+  "diagnosticSha256": "4d0f5ef374ee95e3b3e6d9af867a6329781e546ac06d21cf86933c5124e4a838",
+  "runnerSha256": "4532998d25f6b0aedc852101b75acc43be57cc37bcd4ca8174827815ed4a8150",
+  "exactBackendUndo": true,
+  "noPackSnapshotOrPriorAssertionRerun": true,
+  "noLocalCandidateExecution": true,
+  "oneBoundedDescriptorDiagnosis": true
+}
