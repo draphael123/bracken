@@ -25,7 +25,7 @@ export const GEO = {
   fist: { mul: 1.2, knockVy: -300, lock: 2, stagger: 0.3 },
   /* (claude/ults, Daniel 11-01) AVALANCHE = THE ULTIMATE (UP+C at a FULL board, cap stones standing): every stone ERUPTS as a pillar (eruptT s: launches the common foe in its column, a blow x erupt) and then ROLLS down the room as a boulder (sp px/s, life s, one bounce).
      Each stone hits a BOSS or a mini for swordDmg x boss (a common foe x roll, and is bowled over); the stones are consumed - the board is rebuilt by hand. No cooldown: the cost is the three stones. */
-  avalanche: { erupt: 0.9, eruptT: 0.5, roll: 2.0, boss: 3.0, bossStagger: 0.7, sp: 230, life: 3.8, bounces: 1, r: 9, launchVy: -380, reach: 22 },
+  avalanche: { erupt: 0.9, eruptT: 0.5, roll: 2.0, boss: 5.0, bossStagger: 0.7, sp: 230, life: 3.8, bounces: 1, r: 9, launchVy: -380, reach: 22 },
   bigBodyGrace: 0.4,
   cap: 3, life: 4, lifeLong: 6, archLife: 6, crack: 1.0, rise: 0.12,
   pillarH: 2, wallH: 2, perfect: 0.2, wallHp: 3,
@@ -40,7 +40,7 @@ export const GEO = {
      crack is half that (mul0/mulK), and the full wind's spike is the big hit (spikeMul), so a foe at its tip takes about what it did
      and a crowd along it takes half. */
   wind: 0.5,
-  fault: { len0: 22, lenK: 138, speed: 520, mul0: 0.5, mulK: 0.2, fullAt: 0.98, spikeMul: 1.2, spikeVy: -360, spikeVyTall: -440, linger: 0.35 },
+  fault: { len0: 22, lenK: 138, speed: 520, mul0: 0.8, mulK: 0.35, fullAt: 0.98, spikeMul: 1.6, spikeVy: -360, spikeVyTall: -440, linger: 0.35 },
   /* (claude/chargetiers, Daniel 10-21 "each tier a DIFFERENT move ... the pillar ... should ease her stamina wall") THE THREE-TIER STAVE. at = s of WIND (past HEAVY_START, x her
      wind's quickness) each tier arrives at - T2 is the old full wind; let go BEFORE T1 and it is the short crack it always was (it hits what touches her).
        T1 STONE SHARD   a shard of stone flung flat ahead at chest height (shard: px/s, its own blow) - it reaches what the crack cannot: a flyer, a shooter on a ledge; HALF the
@@ -62,7 +62,7 @@ export const GEO = {
      pierce it, a blow does not push her back, and a PERFECT guard throws a shot back the way it came and EMPOWERS her for `emp` s -
      her blows `empMul` as hard and TREMOR filling `empTremor` times as fast, the runes on her alight so it reads. `hold`: a tap
      keeps it up this long after it has risen (a tap on the beat is a guard). `lock`: after it breaks, how long before it will rise. */
-  ward: { raise: 0.1, perfect: 0.07, hold: 0.15, hitSt: 20, holdSt: 19, lock: 0.6, emp: 3, empMul: 1.25, empTremor: 2 },
+  ward: { raise: 0.1, perfect: 0.1, hold: 0.15, hitSt: 12, holdSt: 14, lock: 0.6, emp: 3, empMul: 1.25, empTremor: 2 },
   tremor: { wall: 18, perfect: 28, launch: 14, shot: 6 },
   launchVy: -330, heroLaunchVy: -430, stepVy: -400,
   quakeR: 200, quakeWideMul: 1.5,
