@@ -186,7 +186,7 @@ export function makeRanger(api) {
     G.t += dt; p.vx = 0;   /* ROOTED: she alone stands still - the world does not slow */
     if (Math.floor(G.t * 20) % 2 === 0 && Math.random() < 0.5) api.ringAt(p.x + p.face * 12, p.y - 11, 4 + (G.t / RG.great.draw) * 8, '#ffd36b', 0.12);
     if (G.t < RG.great.draw) return;
-    p.rgGreat = null; p.rgFocus = 0; const R = RG.great, range = Math.min(R.range, api.VW || R.range) + 0;
+    p.rgGreat = null; p.rgFocus = 0; const R = RG.great, range = Math.min(R.range, (typeof api.VW === 'function' ? api.VW() : api.VW) || R.range);
     const a = loose(p, { kind: 'great', vx: p.face * R.vx, vy: 0, g: 0, dmg: 1, tag: ['heavy', 'shot'], pierce: true, free: true, range }); a.great = true; a.full = true; a.range = range; a.x = p.x + p.face * 9; a.y0 = a.y; a.x0 = a.x;
     p.rgCd = R.rec; api.kitPose(p, 'rgGreatLoose', 0.3); api.SFX.rgLoose && api.SFX.rgLoose(2); api.shakeCam(7, p.face * 4); api.zoomKick(1.06, 0.22); api.streaks(p.x + p.face * 12, p.y - 11, 12, ['#fff3b0', '#ffd36b'], 260); api.noteVerb && api.noteVerb('great'); }
 

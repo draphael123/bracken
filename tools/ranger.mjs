@@ -67,9 +67,9 @@ try {
     /* mark (claude/ults: UP+C is the GREAT ARROW now; a mark is a STEADY SHOT that lands, or set here): the same shot on a marked and an unmarked foe */
     { __rg(); const f=__foe(70,'sprig',5000); BK.sim(1); f.rgMarkT=BK.time+10; out.mark={on:(f.rgMarkT||0)>BK.time,focus:0};
       BK.sim(10); let hp0=f.hp; __tap(); BK.sim(40); const marked=hp0-f.hp; f.rgMarkT=0; BK.sim(25); hp0=f.hp; __tap(); BK.sim(40); out.mark.marked=marked; out.mark.plain=hp0-f.hp; f.alive=false; }
-    /* great arrow (claude/ults): UP+C at a full focus - rooted draw, one arrow through three straws, harder the further it flew; a hurt draw breaks and keeps the focus */
-    { __rg(); const a=__foe(60,'dummy',9000), b=__foe(140,'dummy',9000), c2=__foe(230,'dummy',9000); BK.sim(1); P().rgFocus=100; const x0=P().x, ha=a.hp, hb=b.hp, hc=c2.hp; K.up=true; __c(); BK.sim(2); K.up=false;
-      const drawing=G().greatDrawing(); BK.sim(8); K.right=true; BK.sim(6); K.right=false; const rooted=Math.abs(P().x-x0)<0.5, fMid=P().rgFocus; BK.sim(40);
+    /* great arrow (claude/ults; sprigs, not straw men: a straw man heals to full every frame, so only a live foe shows the damage): UP+C at a full focus - rooted draw, one arrow through three straws, harder the further it flew; a hurt draw breaks and keeps the focus */
+    { __rg(); BK.props().length=0; const a=__foe(60,'sprig',9000), b=__foe(140,'sprig',9000), c2=__foe(230,'sprig',9000); BK.sim(1); P().rgFocus=100; const x0=P().x, ha=a.hp, hb=b.hp, hc=c2.hp; K.up=true; __c(); BK.sim(2); K.up=false;
+      const drawing=G().greatDrawing(); BK.sim(8); K.right=true; BK.sim(6); K.right=false; const rooted=Math.abs(P().x-x0)<0.5, fMid=P().rgFocus; BK.sim(90);
       out.great={drawing,rooted,fMid,focus:P().rgFocus,da:ha-a.hp,db:hb-b.hp,dc:hc-c2.hp}; a.alive=b.alive=c2.alive=false; }
     { __rg(); const f=__foe(120,'dummy',9000); BK.sim(1); P().rgFocus=100; K.up=true; __c(); BK.sim(2); K.up=false; BK.sim(5); P().hurt=0.3; BK.sim(3); out.greatBreak={focus:P().rgFocus,untouched:f.hp===9000,drawing:G().greatDrawing()}; f.alive=false; }
     /* pierce (claude/chargetiers): the hold to T2 through two in a line; on a full focus it is FOCUSED and spends it */
