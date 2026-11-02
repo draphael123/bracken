@@ -53,7 +53,7 @@ export const TABLE = [
     open: { col: 502, rows: [19, 24], kind: 'palisade' }, arrive: { ferry: false, walk: 1.3 } },
   { from: 'kings', to: 'burning', scene: 'smoke', when: { burningOpen: true },   /* KING GORM falls (a clean fight: the spur is OPEN): the court road, and SMOKE on the horizon - the village is burning */
     beats: [{ id: 'walk', dur: 1.6, max: 2.8 }, { id: 'smoke', dur: 8.0, sc: true }, { id: 'fade', dur: 0.8 }],
-    walk: { to: 478 }, arrive: { ferry: false, walk: 1.4 } },
+    walk: { to: 478 }, endOnMap: true, arrive: null },   /* (Daniel 11-02 17:53) NOT auto-loaded: after the smoke the party ends on the WORLD MAP with the spur node lit (the player chooses to go) */
   { from: 'kings', to: 'scree', scene: null, when: { burningOpen: false },   /* GORM fell the party in a life (the spur stays shut): the plain walk-out onto the road to the Scree Path (beyond the demo) */
     beats: [{ id: 'walk', dur: 2.0, max: 3.0 }, { id: 'fade', dur: 0.7 }], walk: { to: 478 }, arrive: { ferry: false, walk: 1.3 } },
 ];

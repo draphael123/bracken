@@ -4666,7 +4666,7 @@ function partyNextLevel() {
   return k >= 0 && k !== levelIndex && LEVELS[k] && !nodeLocked(NODES.find(n => n.kind === 'level' && n.level === k) || {}) && !levelLocked(LEVELS[k]) ? k : -1;
 }
 function partyGoNext(k) { gotoLevelNode(k); saveProgress(); selI = k; SFX.uiSel(); selectStart(); }
-function startGame() {
+function startGame() { mapSpurLit = null;
   trnArrive = null;   /* (claude/transwm) a fresh start: no ferry left from the last arrival (trnArriveBegin sets it again after this) */
   /* A CO-OP RUN IS ARMED ON THE PICK SCREEN AND BEGINS HERE, on whatever wood is started from the map. A trial, a
      shop and the rush are one hero's business, so they run alone and the pair are put back together on the next wood.
@@ -5421,6 +5421,7 @@ function drawMap() {
   g.__world = true;   /* the map has its own camera: a label off the edge of the buffer is off the edge of the MAP, not a bug */
   g.save(); g.translate(0, -Math.round(mapCamY));
   g.drawImage(MAPC, 0, 0);
+  if (mapSpurLit) { const n = NODES.find(n => n.id === mapSpurLit.id); if (n) { mapSpurLit.t += 0.016; const pu = 0.5 + 0.5 * Math.sin(time * 5), by = n.y - 26 + Math.round(Math.sin(time * 4) * 2); g.save(); g.globalAlpha = 0.25 + 0.3 * pu; g.fillStyle = '#ff9a30'; g.beginPath(); g.arc(n.x, n.y, 12 + pu * 6, 0, 6.2832); g.fill(); g.globalAlpha = 0.6; g.strokeStyle = '#ffd36b'; g.lineWidth = 1; g.beginPath(); g.arc(n.x, n.y, 9 + pu * 3, 0, 6.2832); g.stroke(); g.restore(); g.fillStyle = '#ffd36b'; g.fillRect(n.x - 1, by, 3, 6); g.fillRect(n.x - 1, by + 8, 3, 2); text('NEW', n.x + 1, by - 10, '#ffd36b', 'center'); } }
   if (PROG.storeHint) { const n = NODES.find(n => n.kind === 'store'); if (n) { const by = n.y - 26 + Math.round(Math.sin(time * 4) * 2); g.fillStyle = '#ffd36b'; g.fillRect(n.x - 1, by, 3, 6); g.fillRect(n.x - 1, by + 8, 3, 2); text('NEW', n.x + 1, by - 10, '#ffd36b', 'center'); } }
   // river sparkle (the river is on the wood sheet)
   g.fillStyle = 'rgba(230,245,255,0.8)'; for (let i = 0; i < 8; i++) { const t = (time * 0.4 + i * 0.13) % 1; const pts = [[VW - 34, WOOD_Y], [VW - 58, 40 + WOOD_Y], [VW - 26, 82 + WOOD_Y], [VW - 70, 122 + WOOD_Y], [VW - 44, VH + WOOD_Y]]; const k = Math.min(3, Math.floor(t * 4)); const a = pts[k], b = pts[k + 1]; const u = t * 4 - k; if (Math.sin(time * 3 + i) > 0.4) g.fillRect(Math.round(a[0] + (b[0] - a[0]) * u) - 1 + (i & 1), Math.round(a[1] + (b[1] - a[1]) * u), 2, 1); }
@@ -31972,8 +31973,10 @@ function trnUpdate(dt) {
     if ((TRM.phase(tl) === 'open' || TRM.phase(tl) === 'walk') && tr.entry.open) { const gx = Math.max(0, Math.min(LW * TS - VW + 56, (tr.entry.open.col + 1) * TS - VW * 0.72)); camX = cx0 + (gx - cx0) * Math.min(1, dt * 9); } }   /* (claude/transwmart) while the way opens and the heroes walk out the camera holds the gate (the input is locked): they run in from the left and hop the fallen rails */
   else if (TRM.phase(tl) === 'ride' && Math.floor(trnSceneS(tl) * 0.9) !== Math.floor((trnSceneS(tl) - dt) * 0.9) && SFX.pole) SFX.pole();
 }
+let mapSpurLit = null;   /* (Daniel 11-02) the kings > burning row ends ON THE MAP: the spur node pulses until a level starts */
 function trnFinish() {
   const tr = TRN, entry = tr.entry; tr.loading = true;
+  if (entry.endOnMap) { TRN = null; trnArrive = null; setView('normal'); state = 'map'; gotoLevelNode(levelIndex); const k = NODES.findIndex(n => n.id === entry.to); if (k >= 0) { map.node = k; map.seg = NODE_AT[k]; map.t = 0; map.walking = 0; PROG.mapNode = k; PROG.mapNodeId = NODES[k].id; mapSpurLit = { id: entry.to, t: 0 }; } music.play(menuTrack()); transT = 1; transKind = 'fade'; return; }
   loadThen(tr.to, () => { TRN = null; startGame(); trnArriveBegin(entry); });
 }
 /* THE ARRIVAL: the next level begins with the heroes standing on the ferry at its start; they step off (their hands are taken), the bars slide out, control returns */
@@ -36840,6 +36843,7 @@ window.BK = { setView: m => setView(m), env: () => ({ hurt: (e, d, x) => hurtEne
   xpSim: () => xpSim(), gainXp: n => gainXp(n), cardOpen: (back, review) => openCard(back || 'map', review), cardTake: i => cardTake(i), cardClose: () => closeCard(), cardRespec: () => cardRespec(), cardNow: () => cardNow(), cardOwed: h => cardOwed(h || hero()), get cardUi() { return cardUi; }, grow: (h, lv) => grow(h || hero(), lv === undefined ? heroLevel(h) : lv), heroXp: h => heroXp(h), xpStart: () => xpStart(), xpWin: () => winLevel(), mage: v2 => mageAdvice(v2), archCfg: () => ARCH, mg: () => MG, straw: () => strawAdvice(), fld: () => FLD, krak: v2 => krakenAdvice(!!v2), krakCargo: v => (KRK_CARGO = v !== false), krakInk: () => krakenInkSpans(boss),   /* tools/kraken-rework.mjs: the stretches the ink holds this frame */ krakRing: i => { const pr = props.filter(q => q.t === 'knell').sort((a, b) => a.x - b.x)[i]; if (pr) causeBell(pr); return pr ? pr.x : null; },   /* tools/kraken-rework.mjs: strike knell bell i (0 the tower's, 1 the shrine's) as a blade would */   /* the lab's two routes: with the cargo worked, and with it walked past */ get tide() { return CT; }, get krs() { return KRS; }, noteVerb: v => noteVerb(v), varietyMul: () => varietyMul(),   /* the variety meter, for the labs */
   hide: HIDE, P, god: false, keys, SET, PROG, SPR, carpet: () => P.carpet, towerFloors: () => L.towerFloors, board: () => { if (L.carpetAt) { P.x = L.carpetAt.x; P.y = L.carpetAt.y; } },   /* THE FALLING TOWER, for tools/tower-ascent.mjs */
   get view() { return { x: camX, y: camY, buf, VW, VH, z: (zoomT > 0 ? zoomAmt : 1) * (1 + bossZoom), tilt: seaTilt() }; },   /* z and tilt: a frame drawn scaled or rolled does not line up with the tiles */ /* the camera and the unscaled frame, for crops in tests */
+  mapSpurLit: () => (mapSpurLit ? mapSpurLit.id : null), get map() { return map; },
   trans: { get tr() { return TRN; }, get arrive() { return trnArrive; }, force: v => { trnForce = v === null || v === undefined ? null : !!v; }, begin: () => trnBegin(), textW: str => textW(str, 6), levelId: () => LEVELS[levelIndex].id, press: () => { anyPress = true; }, TRM, TRA },   /* (claude/transwm) tools/transition-woodmarsh.mjs */
   step(n = 1) { for (let i = 0; i < n; i++) { update(STEP); clearPresses(); } render(); },
   draw1() { render(); },   /* (claude/tunnelfix) one frame drawn, nothing updated: tools/no-hidden-hits.mjs draws it twice (a foe in, a foe out) and compares */

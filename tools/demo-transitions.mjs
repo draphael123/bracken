@@ -31,7 +31,7 @@ for (const e of TRM.TABLE) {
   ok(key + ': beats walk -> (scene) -> fade, fade last, walk before any scene, an open beat (if any) first', ids.includes('walk') && last === 'fade' && (!ids.includes('open') || ids[0] === 'open') && (!hasScene || ids.indexOf('walk') < e.beats.findIndex(TRM.isSceneBeat)), ids.join());
   ok(key + ': a scene row has scene beats and a scene name, a walk-out has neither', !!e.scene === hasScene, JSON.stringify([e.scene, hasScene]));
   ok(key + ': the walk is capped (max) and short; the whole row is ' + TRM.length(e).toFixed(1) + ' s (a walk-out <= 6 s, a scene <= 15 s)', e.beats.find(b => b.id === 'walk').max >= e.beats.find(b => b.id === 'walk').dur && TRM.length(e) <= (hasScene ? 15 : 6), TRM.length(e).toFixed(1));
-  ok(key + ': it arrives walking in from the left for 1-3 s' + (e.arrive.ferry ? ' off the ferry' : ''), e.arrive && e.arrive.walk >= 1 && e.arrive.walk <= 3 && (e.scene === 'ferry') === !!e.arrive.ferry);
+  if (e.endOnMap) ok(key + ': it ENDS ON THE MAP (endOnMap, no arrival): the spur is chosen by the player, not auto-loaded', e.endOnMap === true && !e.arrive && e.to === 'burning'); else ok(key + ': it arrives walking in from the left for 1-3 s' + (e.arrive.ferry ? ' off the ferry' : ''), e.arrive && e.arrive.walk >= 1 && e.arrive.walk <= 3 && (e.scene === 'ferry') === !!e.arrive.ferry);
   if (e.open) ok(key + ': the way opens in the arena\'s last column(s) - ' + (e.open.kind || 'pine') + (e.open.w ? ' x' + e.open.w : ''), e.open.rows[0] < e.open.rows[1] && ['pine', 'bog', 'palisade', 'leaf', 'light', undefined].includes(e.open.kind) && (e.open.w || 1) <= 3);
   /* a skip at ANY moment lands in the same place: the timeline reaches done, with fade once, never stuck (soft-lock) */
   let worst = 0, bad = '';
@@ -125,6 +125,8 @@ if (process.argv.includes('--browser')) {
       ok(key + ': it is the ' + (e.scene || 'walk-out') + ' row into ' + e.to, a.to === e.to && (a.scene || null) === (e.scene || null), JSON.stringify([a.to, a.scene]));
       if (!fl) ok(key + ': the clear is CREDITED and SAVED before the cutscene', a.cleared && a.saved, JSON.stringify([a.cleared, a.saved]));
       if (e.open && e.open.kind !== 'light') ok(key + ': the way OPENED - every tile of the gap is air after the open beat', a.openedTiles && a.openedTiles.length > 0 && a.openedTiles.every(v => v === 0), JSON.stringify(a.openedTiles));
+      if (e.endOnMap) { const mp = await ev(`(()=>{ for (let i = 0; i < 30; i++) BK.sim(1); return { state: BK.state, node: BK.map ? BK.map.node : null, lit: BK.mapSpurLit ? BK.mapSpurLit() : null, trn: !!BK.trans.tr }; })()`);
+        ok(key + ': the transition ends ON THE MAP with the Burning Village node selected and LIT (no level loaded)', z.done && (mp.state === 'map' || mp.state === 'card') && !mp.trn && mp.lit === e.to, JSON.stringify([z, mp]).slice(0, 260)); await ev('(()=>{ if (BK.state === "card") BK.cardClose(); for (let i = 0; i < 20; i++) BK.sim(1); return 0; })()'); await shot('after-kings-map-lit'); continue; }
       ok(key + ': the transition ends, the next level (' + e.to + ') is loaded', z.done && z.lvl === e.to, JSON.stringify(z).slice(0, 200));
       const arr = await ev(`(async()=>{ const out = {}; const A = BK.trans.arrive; out.hasArrive = !!A; const L = BK.L, W = L.W, ps = BK.players();
         const solid = (cx, cy) => cx < 0 || cy < 0 || cy >= L.grid.length / W || (L.grid[cy * W + cx] === 1);
@@ -140,6 +142,7 @@ if (process.argv.includes('--browser')) {
     for (const [from, tag, at] of [['hornetsnest', 'skip-ride', 'ride'], ['fenroad', 'skip-road', 'road'], ['kings', 'skip-smoke', 'smoke'], ['marsh', 'skip-walk', 'walk'], ['underleaf', 'skip-open', 'open'], ['palisadewood', 'skip-walk', 'walk']]) {
       const e = TRM.entryFor(from, undefined, { burningOpen: true });
       const w = await watch(from, { tag, skipAt: at, burning: from === 'kings' ? true : undefined });
+      if (e.endOnMap) { const mp = await ev(`(()=>{ for (let i = 0; i < 30; i++) BK.sim(1); return { state: BK.state, lit: BK.mapSpurLit ? BK.mapSpurLit() : null }; })()`); ok(from + ' > ' + e.to + ': a SKIP in the ' + at + ' beat ends on the map with the spur lit', w.end.done && w.base.skipPhase === at && (mp.state === 'map' || mp.state === 'card') && mp.lit === e.to, JSON.stringify([w.end, mp]).slice(0, 260)); continue; }
       ok(from + ' > ' + e.to + ': a SKIP in the ' + at + ' beat ends in ' + e.to + ' with the party standing in it (control back)', w.end.done && w.end.lvl === e.to && w.base.skipPhase === at, JSON.stringify(w).slice(0, 260));
       const st = await ev(`(()=>{ for (let i = 0; i < 300; i++) BK.sim(1); const ps = BK.players(); return { state: BK.state, alive: ps.every(p => p.hp > 0), cleared: !!(BK.PROG['${from}'] && BK.PROG['${from}'].cleared), a: BK.trans.arrive ? BK.trans.arrive.done : true }; })()`);
       ok(from + ': after the skip the state is play, the arrival done, the party alive, the clear credited', st.state === 'play' && st.alive && st.cleared && st.a, JSON.stringify(st));
@@ -148,6 +151,7 @@ if (process.argv.includes('--browser')) {
     for (const [from, tag, m] of [['fenroad', '4seats', { seats: 4 }], ['hornetsnest', '3seats', { seats: 3 }], ['kings', 'reduce', { reduce: true, burning: true }], ['fenroad', 'reduce', { reduce: true }], ['hornetsnest', 'reduce', { reduce: true }]]) {
       const e = TRM.entryFor(from, undefined, { burningOpen: true });
       const w = await watch(from, { tag, ...m });
+      if (e.endOnMap) { ok(from + ' > ' + e.to + ' (' + tag + '): the transition plays through to the map' + (m.reduce ? ' and reduce-motion' : ''), w.base.tr && w.end.done, JSON.stringify([w.base.tr, w.end]).slice(0, 200)); continue; }
       ok(from + ' > ' + e.to + ' (' + tag + '): the transition plays through to the next level' + (m.seats ? ' with ' + m.seats + ' seats' : '') + (m.reduce ? ' and reduce-motion' : ''), w.base.tr && w.end.done && w.end.lvl === e.to && (!m.seats || w.base.walkers === m.seats), JSON.stringify([w.base.tr, w.base.walkers, w.end]).slice(0, 260));   /* every seat is walked out (BK.load drops a co-op session in the harness, so the arrival of 4 is not measurable here - owed to a hand test) */
     }
     { const off = await ev(`(async()=>{ const { LEVELS } = await import('/src/level.js'); BK.manualSimulation = true; BK.setHero('knight'); BK.reset({ fresh: true }); delete BK.PROG.transSeen; BK.trans.force(false); BK.load(LEVELS.findIndex(l => l.id === 'fenroad')); BK.start(); BK.sim(5); BK.state = 'win'; const a = BK.trans.begin();
