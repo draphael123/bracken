@@ -37,9 +37,9 @@ export const TABLE = [
   { from: 'fenroad', to: 'stockade', scene: 'road',  /* THE BOG TROLL's gate, then THE LAID ROAD: the boardwalk runs on to the stockade's walls on the skyline */
     beats: [{ id: 'walk', dur: 1.2, max: 2.2 }, { id: 'road', dur: 8.2, sc: true }, { id: 'fade', dur: 0.8 }],
     arrive: { ferry: false, walk: 1.5 } },
-  { from: 'stockade', to: 'spore', scene: null,       /* THE CHIEFTAIN falls: the camp's back gate stands open (no wall in the arena: only the light beyond), the party walks down into the fungus */
-    beats: [{ id: 'open', dur: 1.3 }, { id: 'walk', dur: 2.4, max: 3.6 }, { id: 'fade', dur: 0.7 }],
-    open: { col: 616, rows: [14, 19], kind: 'light' }, arrive: { ferry: false, walk: 1.3 } },
+  { from: 'stockade', to: 'spore', scene: null,       /* THE CHIEFTAIN falls and the hall BURNS: the party climbs the rafters to the escape gate (a gate end, col 596) - through it, out of the burning camp and down into the fungus */
+    beats: [{ id: 'walk', dur: 1.5, max: 2.4 }, { id: 'fade', dur: 0.8 }],
+    walk: { to: 600 }, arrive: { ferry: false, walk: 1.3 } },
   { from: 'spore', to: 'rootway', scene: null,        /* THE MOTHER falls: the knot opens on the root-way (no wall: light) */
     beats: [{ id: 'open', dur: 1.3 }, { id: 'walk', dur: 2.4, max: 3.6 }, { id: 'fade', dur: 0.7 }],
     open: { col: 470, rows: [9, 14], kind: 'light' }, arrive: { ferry: false, walk: 1.3 } },

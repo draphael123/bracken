@@ -31979,15 +31979,20 @@ function trnFinish() {
 /* THE ARRIVAL: the next level begins with the heroes standing on the ferry at its start; they step off (their hands are taken), the bars slide out, control returns */
 function trnArriveBegin(entry) {
   if (!entry.arrive) return;
-  trnArrive = { entry, t: 0, dur: entry.arrive.walk, ferry: !!entry.arrive.ferry, done: false, floorY: (L.START.y + 1) * TS };
-  players.forEach((p, i) => { p.x = 12 + i * 12; p.y = trnArrive.floorY; p.vx = 0; p.vy = 0; p.face = 1; p.inv = 0; });
+  trnArrive = { entry, t: 0, dur: entry.arrive.walk, ferry: !!entry.arrive.ferry, done: false, floorY: (L.START.y + 1) * TS, x0: 12, goal: 92 };
+  if (!entry.arrive.ferry) {   /* (claude/demotransitions) NOT every level's first columns are open (the Palisade Wood, Kingswood, Underleaf start behind a boundary wall): start at the leftmost column of the OPEN, FLOORED run that leads to the level's start, and walk a few tiles in */
+    const sy = L.START.y; let cx = Math.min(L.START.x, LW - 1);
+    while (cx > 0 && !isSolid(cx - 1, sy) && !isSolid(cx - 1, sy - 1) && isSolid(cx - 1, sy + 1)) cx--;
+    trnArrive.x0 = cx * TS + 8; trnArrive.goal = Math.max(92, trnArrive.x0 + 36);
+  }
+  players.forEach((p, i) => { p.x = trnArrive.x0 + i * 12; p.y = trnArrive.floorY; p.vx = 0; p.vy = 0; p.face = 1; p.inv = 0; });
   camX = 0; camY = P.y - 100; transT = 1; transKind = 'fade'; if (entry.arrive.ferry) ambient.set('water');   /* (claude/demotransitions) any other arrival keeps the ambience startGame set for its own level */
 }
 function trnArriveTick(dt) {
   const A = trnArrive; if (!A || A.done) return;
   A.t += dt;
   if (A.t >= A.dur || (anyPress && A.t > 0.35)) { A.done = true; return; }
-  players.forEach((p, i) => asPlayer(p, () => { for (const k of Object.keys(keys)) keys[k] = false; keys.right = P.x < 92 + i * 12; jumpPress = atkPress = dodgePress = upPress = downPress = leftPress = rightPress = throwPress = skill2Press = skill3Press = skill4Press = talkPress = flaskPress = grabPress = false; P.jbuf = 0; P.abuf = 0; P.dbuf = 0; }));
+  players.forEach((p, i) => asPlayer(p, () => { for (const k of Object.keys(keys)) keys[k] = false; keys.right = P.x < A.goal + i * 12; jumpPress = atkPress = dodgePress = upPress = downPress = leftPress = rightPress = throwPress = skill2Press = skill3Press = skill4Press = talkPress = flaskPress = grabPress = false; P.jbuf = 0; P.abuf = 0; P.dbuf = 0; }));
 }
 function trnDrawScene() {
   const tr = TRN, tl = tr.tl, env = trnEnv(), s = trnSceneS(tl);

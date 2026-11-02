@@ -122,8 +122,8 @@ function layers(VW, VH, wl) {
   return LAY;
 }
 let JET = null;   /* the jetty + the Wood's bank, in GROUND coordinates (screen x = gx - ground); gx runs from -40 to jx1; JT is the plank top (sprite row 34) */
-function jetty(VW) {
-  if (JET && JET.VW === VW) return JET;
+function jetty(VW, bank = 'wood') {
+  if (JET && JET.VW === VW && JET.bank === bank) return JET;
   const jx1 = Math.round(VW * FERRY.dockAt) + 6, W = jx1 + 44, H = 130;
   const spr = mk(W, H, g => {
     const gx = x => x + 40, JT = 34;
@@ -323,7 +323,7 @@ function gateRail(g, len, lit, pal) {
   if (lit) R(g, pal.cord, 5, 0, 2, 13);
 }
 export function drawWayGate(env, o, cx, cy, t, opened, time, reduce) {
-  const { g } = env, X0 = o.col * 16 - cx, GX = X0 - 12, Y0 = o.rows[0] * 16 - cy, Hh = (o.rows[1] - o.rows[0] + 1) * 16, floor = Y0 + Hh;
+  const kind = o.kind || 'pine', pal = GATE_PAL[kind] || GATE_PAL.pine, { g } = env, X0 = o.col * 16 - cx, GX = X0 - 12, Y0 = o.rows[0] * 16 - cy, Hh = (o.rows[1] - o.rows[0] + 1) * 16, floor = Y0 + Hh;
   if (X0 > env.VW + 40 || X0 < -60) return;
   const T0 = 0.25, falling = opened || t >= T0, tau = t - T0, bare = kind === 'light';   /* bare: no wall to open - only the spill of light */
   if (bare && !falling) return;
@@ -406,7 +406,7 @@ export function drawRoadScene(env, s) {
   { const k = 0.34 + 0.98 * gr, w = Math.round(420 * k), h = Math.round(100 * k), xc = VW * (0.80 - 0.14 * gr), baseY = wl + 3 + Math.round(16 * gr), sky = stockadeSkyline();
     const farX = -Math.round(scroll * P_.far) % 700; for (let x = farX; x < VW + 700; x += 700) g.drawImage(marshStrip(), x, wl - 70 + 3);
     g.globalAlpha = 0.52 + 0.48 * gr; g.drawImage(sky, Math.round(xc - w / 2), baseY - h, w, h); g.globalAlpha = 1;
-    g.fillStyle = 'rgba(176,196,190,' + (0.36 * (1 - gr)).toFixed(3) + ')'; g.fillRect(Math.round(xc - w / 2), baseY - h, w, h);   /* the haze lies on it, thinner as it nears (a wash; the art lane bakes it) */
+    /* (the haze is the alpha above and the mist bands below: a flat wash over the sprite's box drew a visible rectangle) */
     for (const fx of [0.05, 0.71, 0.89]) { const lx = Math.round(xc - w / 2 + fx * w + 6 * k), ly = Math.round(baseY - h + (fx === 0.05 ? 38 : 30) * k), fl = calm ? 1 : 0.85 + Math.sin(time * 9 + fx * 20) * 0.12;
       g.globalAlpha = (0.35 + 0.55 * gr) * fl; g.drawImage(halo(16, '255,170,70'), lx - 16, ly - 16); g.globalAlpha = 1; }
     if (!calm) for (let i = 0; i < 3; i++) { for (let j = 0; j < 7; j++) { const u = ((time * 0.07 + j / 7 + i * 0.31) % 1), x = xc - w / 2 + (0.2 + i * 0.28) * w + Math.sin(u * 4 + i) * 6 + u * 10 * k, y = baseY - h * 0.9 - u * 34 * k;
