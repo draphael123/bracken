@@ -70,7 +70,7 @@ if (process.argv.includes('--browser')) {
   const shotsArg = process.argv.find(a => a.startsWith('--shots=')), SHOTS = shotsArg ? shotsArg.slice(8) : null; if (SHOTS) mkdirSync(SHOTS, { recursive: true });
   const { openPage } = await import('./cdp.mjs'); let pg = await openPage({ audio: false }); const oldErrors = [];
   const ev = x => pg.evalp(x, 600000);
-  const shot = async n => { if (!SHOTS) return; const r = await pg.send('Page.captureScreenshot', { format: 'png' }); writeFileSync(SHOTS + '/' + n + '.png', Buffer.from(r.result.data, 'base64')); };
+  const shot = async n => { if (!SHOTS) return; await ev('BK.step(1);0'); await new Promise(r => setTimeout(r, 250)); const r = await pg.send('Page.captureScreenshot', { format: 'png' }); writeFileSync(SHOTS + '/' + n + '.png', Buffer.from(r.result.data, 'base64')); };
   /* the browser side: set a level up, bring the party to the end of it, end it, and watch the transition. mode: { seats, reduce, skipAt: a beat id to press in (after 1 s), shots: name prefix } */
   const run = (from, mode = {}) => ev(`(async()=>{ const MODE = ${JSON.stringify(mode)}; const { LEVELS } = await import('/src/level.js'); const idx = id => LEVELS.findIndex(l => l.id === id); const out = { log: [], shots: [] };
     BK.manualSimulation = true; BK.setHero('knight'); BK.reset({ fresh: true }); delete BK.PROG.transSeen; BK.SET.transitions = 'always'; BK.SET.reduceMotion = !!MODE.reduce; BK.trans.force(true);
@@ -104,7 +104,7 @@ if (process.argv.includes('--browser')) {
   /* a run that pauses for a picture: the page keeps its state, the tool shoots, then continues */
   let runs = 0;   /* a fresh page every 3 runs: one page that loads thirty levels in a row grew until Chrome crashed it (Inspector.targetCrashed) */
   const watch = async (from, mode = {}) => {
-    if (runs++ % 3 === 2) { oldErrors.push(...pg.errors); pg.close(); pg = await openPage({ audio: false }); }
+    if (runs++ % 2 === 1) { oldErrors.push(...pg.errors); pg.close(); pg = await openPage({ audio: false }); }
     const key = from + '-' + (mode.tag || 'full');
     const base = await run(from, { ...mode, shots: SHOTS && mode.shots ? mode.shots : null });
     let r = base; const shotsDone = [];
@@ -117,7 +117,7 @@ if (process.argv.includes('--browser')) {
   try {
     for (const e of TRM.TABLE) {
       const key = e.from + '>' + e.to, fl = e.from === 'kings' && e.to === 'scree';
-      const shots = SHOTS ? (e.scene ? [{ n: 'a', ph: e.beats.find(TRM.isSceneBeat).id, pt: 0.9 }, { n: 'b', ph: e.beats.find(TRM.isSceneBeat).id, pt: e.beats.find(TRM.isSceneBeat).dur * 0.5 }, { n: 'c', ph: e.beats.find(TRM.isSceneBeat).id, pt: e.beats.find(TRM.isSceneBeat).dur * 0.9 }].concat(e.scene === 'ferry' ? [{ n: 'd', ph: 'ride', pt: 4.5 }, { n: 'e', ph: 'ride', pt: 7.0 }] : []) : e.open ? [{ n: 'a', ph: 'open', pt: 0.9 }, { n: 'b', ph: 'walk', pt: 1.2 }] : [{ n: 'a', ph: 'walk', pt: 0.3 }]) : null;
+      const shots = SHOTS ? (e.scene ? [{ n: 'a', ph: e.beats.find(TRM.isSceneBeat).id, pt: 1.6 }, { n: 'b', ph: e.beats.find(TRM.isSceneBeat).id, pt: e.beats.find(TRM.isSceneBeat).dur * 0.5 }, { n: 'c', ph: e.beats.find(TRM.isSceneBeat).id, pt: e.beats.find(TRM.isSceneBeat).dur * 0.9 }].concat(e.scene === 'ferry' ? [{ n: 'd', ph: 'ride', pt: 4.5 }, { n: 'e', ph: 'ride', pt: 7.0 }] : []) : e.open ? [{ n: 'a', ph: 'open', pt: 1.25 }, { n: 'b', ph: 'walk', pt: 1.2 }] : [{ n: 'a', ph: 'walk', pt: 0.4 }]) : null;
       const w = await watch(e.from, { tag: 'full', direct: fl, burning: e.when ? e.when.burningOpen : undefined, shots });
       const a = w.base, z = w.end;
       ok(key + ': the boss falls' + (fl ? '' : '') + (fl ? ' (begun off the table)' : '') + ' and the transition PLAYS (state win, TRN set)', a.tr, JSON.stringify(a).slice(0, 300));
@@ -156,5 +156,36 @@ if (process.argv.includes('--browser')) {
     const errs = oldErrors.concat(pg.errors).filter(x => !/favicon/.test(JSON.stringify(x)));
     ok('no page errors / console clean through every row', errs.length === 0, JSON.stringify(errs.slice(0, 3)));
   } finally { pg.close(); }
+}
+/* ---- the three scenes on a phone: 915x412 landscape at DPR 2.625, CPU throttled (MP_CPU, default 4x), the game on its own requestAnimationFrame loop; frames per second over the scene beats (>= MP_FPS_MIN, default 40) ---- */
+if (process.argv.includes('--perf')) {
+  const { openPage } = await import('./cdp.mjs'); const sleep = ms => new Promise(r => setTimeout(r, ms));
+  const CPU = +(process.env.MP_CPU || 4), FPS_MIN = +(process.env.MP_FPS_MIN || 40);
+  for (const from of ['hornetsnest', 'fenroad', 'kings']) {
+    const pg = await openPage({ audio: false, fonts: false, speed: 0.6 });
+    try {
+      await pg.send('Emulation.setDeviceMetricsOverride', { width: 915, height: 412, deviceScaleFactor: 2.625, mobile: true, screenOrientation: { type: 'landscapePrimary', angle: 90 } });
+      await pg.send('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 5 });
+      await pg.send('Emulation.setCPUThrottlingRate', { rate: CPU });
+      await pg.evalp(`(async()=>{ const { LEVELS } = await import('/src/level.js'); BK.setHero('knight'); BK.reset({ fresh: true }); BK.trans.force(true); BK.SET.transitions = 'always'; BK.PROG.burningOpen = 1; BK.manualSimulation = true;
+        BK.load(LEVELS.findIndex(l => l.id === '${from}')); BK.start(); BK.sim(20); const L = BK.L, A = L.arena, e = BK.enemies().find(q => q.t === A.boss && q.alive); BK.god = true; BK.tp(Math.round(A.trigger / 16) + 1, Math.round(A.floor / 16) - 1); BK.sim(200);
+        const dismiss = () => { for (let k = 0; k < 12 && BK.state === 'card'; k++) { for (let i = 0; i < 4 && BK.state === 'card'; i++) { try { BK.cardTake(i); } catch (e) {} } if (BK.state === 'card') { try { BK.cardClose(); } catch (e) {} } } };
+        for (let n = 0; n < 1500 && e && e.alive; n++) { BK.P.inv = 99; BK.P.hp = BK.P.maxHp; e.hp = Math.min(e.hp, 1); e.inv = 0; e.open = 9; e.passThrough = true; BKT.hurtEnemy(e, 1e6, e.x + (n % 2 ? 10 : -10), n % 3 === 0); dismiss(); if (e.alive) BK.sim(6); }
+        if (L.gateAfterBoss) { for (let i = 0; i < 400 && !L.gateOpen; i++) { dismiss(); BK.sim(1); } BK.P.x = BK.gate.x; BK.P.y = BK.gate.y; }
+        for (let i = 0; i < 900 && !BK.trans.tr && BK.state !== 'win'; i++) { dismiss(); BK.sim(1); }
+        BK.manualSimulation = false; return 1; })()`, 600000);
+      const wait = async (pred, ms) => { for (const until = Date.now() + ms; Date.now() < until;) { if (await pg.evalp(pred, 5000).catch(() => false)) return true; await sleep(100); } return false; };
+      const inScene = await wait("!!(BK.trans.tr && !BK.trans.tr.loading && BK.trans.TRM.isSceneBeat(BK.trans.tr.tl.beats[BK.trans.tr.tl.i]))", 120000);
+      ok('PERF ' + from + ': the page reached the scene on its own loop', inScene);
+      if (inScene) {
+        await pg.evalp("(() => { const a = window.__fr = { n: 0, dts: [], last: performance.now(), on: true }; const f = t => { if (!a.on) return; a.n++; a.dts.push(t - a.last); a.last = t; requestAnimationFrame(f); }; requestAnimationFrame(f); window.__t0 = performance.now(); })()");
+        await wait("!BK.trans.tr || BK.trans.TRM.phase(BK.trans.tr.tl) === 'fade'", 60000);
+        const r = await pg.evalp("(() => { const a = window.__fr; a.on = false; const d = a.dts.slice().sort((x, y) => x - y); return { n: a.n, wall: (performance.now() - window.__t0) / 1000, p95: d[Math.floor(d.length * 0.95)] || 0, worst: d[d.length - 1] || 0 }; })()");
+        const fps = r.n / r.wall; console.log(from + ' scene: ' + JSON.stringify({ fps: +fps.toFixed(1), p95: +r.p95.toFixed(1), worst: +r.worst.toFixed(1), secs: +r.wall.toFixed(1), cpu: CPU + 'x' }));
+        ok('PERF ' + from + ': >= ' + FPS_MIN + ' fps over the scene at ' + CPU + 'x CPU on a phone viewport', fps >= FPS_MIN, fps.toFixed(1) + ' fps');
+      }
+      ok('PERF ' + from + ': no page errors', pg.errors.length === 0, JSON.stringify(pg.errors.slice(0, 3)));
+    } finally { pg.close(); }
+  }
 }
 const bad = rows.filter(x => !x.pass); console.log(bad.length ? bad.length + ' red of ' + rows.length : 'all ' + rows.length + ' green'); process.exit(bad.length ? 1 : 0);

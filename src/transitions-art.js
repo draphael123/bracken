@@ -401,7 +401,7 @@ export function drawRoadScene(env, s) {
   const { g, VW, VH, time, n, reduce } = env, calm = !!reduce;
   const wl = Math.round(VH * 0.56), rt = wl + 34, scroll = roadScroll(s, calm), gr = roadGrowth(s), P_ = ROAD.parallax, L = layers(VW, VH, wl);
   /* SKY: the fen's cool grey going to a smoky amber at the horizon; it warms and darkens a little as the wall comes up */
-  g.drawImage(L.skyB, 0, 0); g.fillStyle = 'rgba(214,150,84,' + (0.10 + gr * 0.16).toFixed(3) + ')'; g.fillRect(0, wl - 60, VW, 60);
+  g.drawImage(L.skyB, 0, 0); { const am = g.createLinearGradient(0, wl - 70, 0, wl); am.addColorStop(0, 'rgba(214,150,84,0)'); am.addColorStop(1, 'rgba(214,150,84,' + (0.16 + gr * 0.2).toFixed(3) + ')'); g.fillStyle = am; g.fillRect(0, wl - 70, VW, 70); }
   /* FAR: the haze of the fen's reed flats (slow), then THE STOCKADE: grows from a smudge, hazy at first, sharper and darker as it comes up */
   { const k = 0.34 + 0.98 * gr, w = Math.round(420 * k), h = Math.round(100 * k), xc = VW * (0.80 - 0.14 * gr), baseY = wl + 3 + Math.round(16 * gr), sky = stockadeSkyline();
     const farX = -Math.round(scroll * P_.far) % 700; for (let x = farX; x < VW + 700; x += 700) g.drawImage(marshStrip(), x, wl - 70 + 3);
