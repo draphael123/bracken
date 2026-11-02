@@ -53,7 +53,8 @@ export function makeBatteringBeastHands(ctx) {
   H.show = () => S;
   H.on = () => !!(S && A());
   H.owns = e => e.t === 'batteringbeast';
-  H.clear = () => { S = null; BOSS_PHASE.batteringbeast = 1; };
+  H.clear = () => { S = null; fall = null; BOSS_PHASE.batteringbeast = 1; };
+  let fall = null;   /* (claude/beast3art) THE HORNSMAN FALLS: the tumble off the gantry, drawn in drawOver (world x, y of his body, the beast's facing, the clock at the first frame) */
   const live = () => { const e = ctx.boss; return e && e.alive && e.t === 'batteringbeast' ? e : null; };
   const hurt = (name, fn) => { const P = ctx.hero(), h0 = P.hp; fn(); if (S) { S.hurt = S.hurt || {}; S.hurt[name] = (S.hurt[name] || 0) + Math.max(0, h0 - Math.max(0, P.hp)); } };
   const keyed = (pp, key) => { pp.bbKeys = pp.bbKeys || new Map(); if (pp.bbKeys.size > 120) pp.bbKeys.clear(); if (pp.bbKeys.has(key)) return true; pp.bbKeys.set(key, 1); return false; };
@@ -78,7 +79,7 @@ export function makeBatteringBeastHands(ctx) {
       dust: (x, y, n) => ctx.dust(x, y, n), deck: (id, on) => deckSet(id, on),
       fx: (k, x, y) => { if (k === 'open') { ctx.ring(x, y - 20, 40, '#ffd36b'); ctx.burst(x, y - 20, 14, ['#8a5a32', '#c9a060', '#5a3a1d'], 100, 0.7); } else if (k === 'ward') ctx.ring(x, y - 20, 42, '#c8d8e8'); else if (k === 'blast') { S.blastT = 0.6; } },
       rubble: on => { rubbleSet(on); ctx.burst(BBM.wallX(S) + 30, S.G.floorY - 30, 26, ['#8a5a32', '#c9a060', '#5a5560', '#3e2614'], 150, 1); },   /* (claude/beast3) THE BREACH */
-      hornFalls: () => { const hb = BBM.hornBox(e); ctx.burst((hb[0] + hb[1]) / 2, hb[2] + 10, 14, ['#a8442a', '#5a5e6c', '#d8c08a'], 120, 0.8); },   /* (claude/beast3) the Hornsman knocked off the gantry */
+      hornFalls: () => { fall = { x: e.x - (e.face || 1) * 2, y: e.y - 31, f: e.face || 1, t0: null }; const hb = BBM.hornBox(e); ctx.burst((hb[0] + hb[1]) / 2, hb[2] + 10, 14, ['#a8442a', '#5a5e6c', '#d8c08a'], 120, 0.8); },   /* (claude/beast3) the Hornsman knocked off the gantry */
       splinter: s => { const [lo, hi] = BBM.lineOf(s); ctx.burst((lo + hi) / 2, S.G.floorY - 6, 16, ['#8a5a32', '#c9a060', '#3e2614'], 110, 0.7); },
       gate: () => { ctx.burst(S.G.x0 + 4, S.G.floorY - 30, 12, ['#6a4a2a', '#c9a060'], 90, 0.6); },
       palisade: () => { ctx.burst(S.G.x1 - 6, S.G.floorY - 30, 22, ['#8a5a32', '#c9a060', '#6a8a3a'], 140, 0.9); },
@@ -146,15 +147,13 @@ export function makeBatteringBeastHands(ctx) {
        they blink faster as they come; the arrows come down the last BB.order.flight s and stand in the floor a moment after */
     const fyy = y(G.floorY);
     for (const q of S.lanes) { const l = x(q.l), r2 = x(q.r), w2 = r2 - l;
-      if (q.done) { g.globalAlpha = Math.max(0, Math.min(1, q.stuck / 0.3)); for (let k = 0; k < 4; k++) { const ax = l + 5 + R((k + 0.5) * (w2 - 10) / 4); rect(g, ax, fyy - 7, 1, 7, '#6a4a2a'); rect(g, ax - 1, fyy - 9, 3, 2, '#d8d0c0'); } g.globalAlpha = 1; continue; }
+      if (q.done) { g.globalAlpha = Math.max(0, Math.min(1, q.stuck / 0.3)); for (let k = 0; k < 4; k++) BBA.drawArrowStuck(g, l + 5 + R((k + 0.5) * (w2 - 10) / 4), fyy, k); g.globalAlpha = 1; continue; }
       const col = q.wave === 1 ? '#ff4a2a' : '#ff9a5c', soon = q.t < 0.5, on = Math.floor(time * (soon ? 16 : 6)) % 2;
       g.globalAlpha = 0.13 + (soon ? 0.1 : 0); g.fillStyle = col; g.fillRect(l, fyy - BB.order.top, w2, BB.order.top); g.globalAlpha = 1;
-      g.fillStyle = on ? col : '#fff6e0'; for (let q2 = l; q2 < r2 - 2; q2 += 6) g.fillRect(q2, fyy - 2, 4, 2);
-      rect(g, l, fyy - 12, 1, 12, col); rect(g, r2 - 1, fyy - 12, 1, 12, col); rect(g, l, fyy - 3, w2, 1, col);
-      const cx2 = R((l + r2) / 2); g.fillStyle = col; g.fillRect(cx2 - 3, fyy - 12, 7, 1); g.fillRect(cx2 - 2, fyy - 11, 5, 1); g.fillRect(cx2 - 1, fyy - 10, 3, 1); g.fillRect(cx2, fyy - 9, 1, 1);   /* a chevron down */
-      ctx.text(String(q.wave), cx2, fyy - 15, col, 'center', 5);
-      if (q.t < BB.order.flight) { const k = 1 - q.t / BB.order.flight; for (let n = 0; n < 4; n++) { const ax = l + 5 + R((n + 0.5) * (w2 - 10) / 4), ay = R(fyy - 170 + k * 168 - ((n * 13) % 22));   /* the arrows coming down */
-        rect(g, ax, ay - 8, 1, 8, '#8a6a40'); rect(g, ax - 1, ay, 3, 2, '#d8d0c0'); rect(g, ax - 1, ay - 9, 1, 2, '#ff6b6b'); rect(g, ax + 1, ay - 9, 1, 2, '#ff6b6b'); g.globalAlpha = 0.35; rect(g, ax, ay - 18, 1, 9, '#fff6e0'); g.globalAlpha = 1; } } }
+      g.globalAlpha = 0.5 + (soon ? 0.3 : 0); g.fillStyle = col; g.fillRect(l, fyy - BB.order.top, 1, BB.order.top); g.fillRect(r2 - 1, fyy - BB.order.top, 1, BB.order.top); g.globalAlpha = 1;   /* (claude/beast3art) the column's edges: a deck is no shelter */
+      const cx2 = BBA.drawLane(g, l, r2, fyy, col, on, soon);   /* (claude/beast3art) hazard-striped boards, end stakes with pennants, a numbered sign plate */
+      ctx.text(String(q.wave), cx2, fyy - 31, on ? '#fff6e0' : col, 'center', 7);
+      if (q.t < BB.order.flight) { const k = 1 - q.t / BB.order.flight; for (let n = 0; n < 4; n++) BBA.drawArrow(g, l + 5 + R((n + 0.5) * (w2 - 10) / 4), R(fyy - 170 + k * 168 - ((n * 13) % 22))); } }   /* the arrows coming down */
     /* (claude/beast3) THE HORNSMAN's horn: a bar filling over him through the tell (the level's read), the blast's rings going out */
     if (BBM.hornUp(e, S)) { const hb = BBM.hornBox(e), hx = x((hb[0] + hb[1]) / 2), hy = y(hb[2]) - 8, k = 1 - Math.max(0, e.modeT) / BB.order.tell, w0 = 18, pulse = 0.6 + 0.4 * Math.sin(time * (8 + k * 14));
       rect(g, hx - w0 / 2 - 1, hy - 1, w0 + 2, 4, '#120804'); g.globalAlpha = pulse; rect(g, hx - w0 / 2, hy, Math.max(1, R(w0 * k)), 2, k > 0.7 ? '#ff6b6b' : '#ff9a5c'); g.globalAlpha = 1;
@@ -164,9 +163,16 @@ export function makeBatteringBeastHands(ctx) {
     /* (claude/beast3) THE WALL BREAKER: his road to the wall in red dots through the turn, the wall's mark at its end */
     if (e.mode === 'wallTell') { const st = BBM.chargeStop(S, e.x, 1); g.globalAlpha = 0.4; g.fillStyle = '#ff6b6b'; for (let q2 = e.x; q2 < st.x; q2 += 10) g.fillRect(x(q2), fyy - 1, 6, 1); g.globalAlpha = 1;
       const on = Math.floor(time * 10) % 2; g.fillStyle = st.scaf ? (on ? '#ffd36b' : '#fff6e0') : (on ? '#ff6b6b' : '#ffd36b'); g.fillRect(x(st.x + BB.w / 2 + 3) - 1, fyy - 18, 2, 16); }
+    /* (claude/beast3art) THE SLAM: a flash and a ring of dust at the wall where his head lands, the first beats of wallHit */
+    if (e.mode === 'wallHit') { const k = 1 - Math.max(0, e.modeT) / BB.wall.slam, wx = x(e.x + (e.face || 1) * 12), ky = Math.min(1, k * 2.2);   /* at his shoulder: the wall and his head land at the screen edge, so the flash is drawn where it can be seen */
+      if (k < 0.45) { g.globalAlpha = 1 - k / 0.45; g.fillStyle = '#fff6d0'; g.fillRect(wx - 8, fyy - 46, 3, 24); g.fillRect(wx - 14, fyy - 38, 12, 3); g.fillRect(wx - 12, fyy - 30, 9, 3); g.fillStyle = '#ffd36b'; for (let q2 = 0; q2 < 8; q2++) { const an = q2 * 0.8 + 0.2; g.fillRect(R(wx - 6 - Math.cos(an) * 18 * ky), R(fyy - 34 + Math.sin(an) * 18 * ky), 2, 2); } g.globalAlpha = 1; }
+      for (let q2 = 0; q2 < 10; q2++) { const rr = 6 + k * 44 + q2 * 3; g.globalAlpha = Math.max(0, 0.7 - k * 0.8); g.fillStyle = q2 & 1 ? '#c9a878' : '#8a7050'; g.fillRect(R(wx - 4 - rr * (0.4 + (q2 % 3) * 0.3)), R(fyy - 3 - (q2 % 4) * 3 - k * 10), 4, 3); } g.globalAlpha = 1; }
+    if (fall) { if (fall.t0 == null) fall.t0 = time; const tt = time - fall.t0; if (tt > 1.6) fall = null; else BBA.drawHornsmanFall(g, x(fall.x), y(fall.y), fall.f, tt, fyy); }   /* (claude/beast3art) THE HORNSMAN FALLS */
     /* (claude/beast3) THE ROLLING TIMBERS: teetering on the broken wall, dropping, then rolling west; a red streak ahead of each one rolling */
     for (const q of S.timbers) { const p = BBM.timberAt(q, S); if (p.rolling) { g.globalAlpha = 0.45; g.fillStyle = blink; for (let k = 1; k < 4; k++) g.fillRect(x(p.x) - 10 - k * 8, fyy - 2, 5, 1); g.globalAlpha = 1; }
-      BBA.drawTimber(g, x(p.x), y(p.y), q.rot || 0, p.waiting ? Math.sin(time * 30) * 0.08 : 0); }
+      if (p.rolling) BBA.drawDustTrail(g, x(p.x), fyy, time + (q.rot || 0));   /* (claude/beast3art) a dust trail behind each rolling timber */
+      if (p.waiting) { for (let k = 0; k < 3; k++) { g.fillStyle = k & 1 ? '#c9a060' : '#8a6a40'; g.fillRect(R(x(p.x) - 5 + k * 5), R(y(p.y) + 9 + ((time * 50 + k * 9) % 22)), 1, 2); } }   /* it teeters on the wall top: the chips falling from under it */
+      BBA.drawTimber(g, x(p.x), y(p.y), p.waiting ? Math.sin(time * 18) * 0.35 : (q.rot || 0), p.waiting ? Math.sin(time * 22) * 0.25 : 0); }
     for (const c of S.stakes) { const q = BBM.stakeAt(c, G.floorY); g.save(); g.translate(x(q.x), y(q.y)); g.rotate(q.k * 6); rect(g, -6, -1, 12, 3, '#a8783e'); rect(g, 5, -2, 3, 5, '#e0c890'); g.restore();
       g.strokeStyle = blink; g.strokeRect(x(c.tx) - BB.volley.r, y(c.ty ?? G.floorY) - 3, BB.volley.r * 2, 3); }
     /* (claude/palisade2) THE PITCH POTS in flight (a clay pot, a flame) and their red rings; the BURNING PITCH where they burst */
