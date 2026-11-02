@@ -1,0 +1,66 @@
+name: Explicit private R factory integration November2
+on:
+  push:
+    branches: [codex/load-perf]
+    paths:
+      - 'tools/private-r-integration-nov02/**'
+      - 'tools/private-r-integration-component-nov02.mjs'
+      - '.github/workflows/private-r-integration-nov02.yml'
+permissions: {contents: read}
+jobs:
+  node:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0}
+      - uses: actions/setup-node@v4
+        with: {node-version: '24.11.1'}
+      - name: Preserve exact source bytes and original 39 plus 26 assertion bodies
+        run: |
+          test -z "$(git diff 62d9c02c HEAD -- src index.html)"
+          mkdir -p "$PUBLICATION_OUT"
+          node tools/private-r-integration-nov02/materialize-node.mjs
+          git rev-parse HEAD HEAD:src > "$PUBLICATION_OUT/source.txt"
+          sha256sum tools/private-r-integration-nov02/*.json tools/private-r-integration-component-nov02.mjs .github/workflows/private-r-integration-nov02.yml > "$PUBLICATION_OUT/source-sha256.txt"
+          cp tools/private-r-integration-nov02/source-proof.json "$PUBLICATION_OUT/source-proof.json"
+          node --check tools/private-r-integration-component-nov02.mjs
+          node --check tools/private-r-integration-nov02/integration-page.mjs
+          node tools/private-r-integration-nov02/node-fallback.mjs
+          node tools/private-r-integration-nov02/prior-contracts.mjs
+          node tools/private-r-integration-nov02/protocol-contracts.mjs
+        env:
+          PUBLICATION_OUT: ${{ runner.temp }}/private-r-integration-node-nov02
+          PRIVATE_R_NATIVE_OUT: ${{ runner.temp }}/private-r-integration-node-nov02
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: private-r-integration-node-nov02
+          path: ${{ runner.temp }}/private-r-integration-node-nov02/
+          if-no-files-found: error
+  native:
+    needs: node
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0}
+      - uses: actions/setup-node@v4
+        with: {node-version: '24.11.1'}
+      - name: Frozen original admission native GC and memory policy
+        run: |
+          git worktree add --detach "$PRIVATE_R_NATIVE_REFERENCE" 1a576c3f4511b6856df9fb4738df5aaae9987e81
+          node tools/private-r-integration-nov02/materialize-node.mjs
+        env:
+          PRIVATE_R_NATIVE_REFERENCE: ${{ runner.temp }}/private-r-integration-reference-nov02
+      - name: All original primitive and kernel assertions then fresh real factory alias graphs
+        run: node tools/private-r-integration-component-nov02.mjs
+        env:
+          PRIVATE_R_NATIVE_OUT: ${{ runner.temp }}/private-r-integration-native-nov02
+          PRIVATE_R_NATIVE_REFERENCE: ${{ runner.temp }}/private-r-integration-reference-nov02
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: private-r-integration-native-nov02
+          path: ${{ runner.temp }}/private-r-integration-native-nov02/
+          if-no-files-found: error

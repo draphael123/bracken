@@ -1,0 +1,249 @@
+{
+  "time": "2026-11-02T19:31:47.814Z",
+  "scope": "Fresh explicit private source integration compatibility,not Game/main or performance proof",
+  "sourceGame": "dc02ecc059959b795f76dee47665b54f349d4e2f",
+  "sourceTree": "9d8acbb7f3182c1d29ac71f4a3b0227224446718",
+  "sourceCheckpoint": "outputs/receipts/private-r-explicit-source-bridge-nov02.json",
+  "sourceCheckpointSha256": "67de3c11a0eb1888d409f13fb5bb74f9a03aa80409a3fd07bab9767f7298c348",
+  "sourceFilesManifestSha256": "9e520b9a5281a57f36b5ea57703614b2d0328b8d7d2e6c914c0d02a8e3134128",
+  "sourceFiles": [
+    {
+      "file": "chars.js",
+      "sha256": "eefe6b2d70e25ecfb37373789973857ea6f43ba84c5ac4236d4497b5e54cfb61",
+      "bytes": 646799
+    },
+    {
+      "file": "private-r-backend.js",
+      "sha256": "0759b0393bf482baec8c111bfb307d1004aecb347a7b5ff82c6c668c13383316",
+      "bytes": 8861
+    },
+    {
+      "file": "private-r-integration.js",
+      "sha256": "b5aee8e5494867197a09b607ef5b66bbe44eea490d65d9fd9f00c3483b978396",
+      "bytes": 8520
+    },
+    {
+      "file": "private-r-snapshot.js",
+      "sha256": "3d564629aeb5d7c63792c01782fe2a6bf850077fa934c137e94ff6a1773e424c",
+      "bytes": 7042
+    },
+    {
+      "file": "px.js",
+      "sha256": "700fef3fa23ac97f6794e92465a8026863ad2b1ca2b355ba13071ed170359804",
+      "bytes": 6679
+    },
+    {
+      "file": "redraw/canal_foes_art.js",
+      "sha256": "6d3fb4f12556402727241e326a3712037db232ceb90d66ebb7361c8565ffd25a",
+      "bytes": 11834
+    },
+    {
+      "file": "redraw/caravan_bandits.js",
+      "sha256": "6ef595893c88a3a908a7548ea4ecb4a96e44c4884e5564fa1441a221c633859f",
+      "bytes": 16544
+    },
+    {
+      "file": "redraw/church_art.js",
+      "sha256": "6f9f2d25a9d0c77c1a4882841a5f8d3a455575c5c11dee1c32549a3dc3a1beab",
+      "bytes": 12027
+    },
+    {
+      "file": "redraw/desert_foes.js",
+      "sha256": "b8822ea7565f525e329d2c339e40c37a5cbb3da39958ab90144cf200fe76a3fc",
+      "bytes": 26408
+    },
+    {
+      "file": "redraw/desert_foes2.js",
+      "sha256": "648eb3f5bc8ec95cfc7e07a92f403470381431b5941f18e557b6ba2f22026c48",
+      "bytes": 17908
+    },
+    {
+      "file": "redraw/foes1.js",
+      "sha256": "e81853c7ab0ff2bac316f1db69bd47a35080b0d7a9b02f2e4788a563f8a086b3",
+      "bytes": 12838
+    },
+    {
+      "file": "redraw/ksar_art.js",
+      "sha256": "997c00f31351c808b469e844b7f971fac8b0c029b1d24dd1c828c41a62f9cd7d",
+      "bytes": 47394
+    },
+    {
+      "file": "redraw/mage_foes.js",
+      "sha256": "69ce4f119b9f9e03a6905edf79305132f855f99896339beec2678212d3396457",
+      "bytes": 48684
+    },
+    {
+      "file": "redraw/monastery.js",
+      "sha256": "f5a8b99dab234863f84600315815d7945c87df5946d5fa4f9b4a8f4ccf1e4987",
+      "bytes": 58873
+    },
+    {
+      "file": "redraw/mystic_art.js",
+      "sha256": "3b186559aabe09265d916c4b809202bb27c39c3db3664bbccb2a858a01b40064",
+      "bytes": 9162
+    },
+    {
+      "file": "redraw/redgorge_art.js",
+      "sha256": "635b5a7e795e8ffc0fae984213c20db28bb15b8d7f33edb5c546cb668e7455b3",
+      "bytes": 20012
+    },
+    {
+      "file": "redraw/rootway_art.js",
+      "sha256": "e41a5fff51934cc51386887dc005134080969a22eb96551c05ac92fa835abf39",
+      "bytes": 29886
+    },
+    {
+      "file": "redraw/shore.js",
+      "sha256": "e67941358b0ca100d34089868be3559fcb26a20726f414e96f0cd3bf1993dacf",
+      "bytes": 27523
+    },
+    {
+      "file": "redraw/undercrown_skins.js",
+      "sha256": "58b637b40d6768673f9287b127830a91d39dc957c4b7666176f935f720499198",
+      "bytes": 4897
+    },
+    {
+      "file": "redraw/variety_skins.js",
+      "sha256": "992f5468f2dd2bba5c5495b72ea76fc5cbe55cbc2b61b8c3e6e1ffd303b25bc6",
+      "bytes": 4970
+    },
+    {
+      "file": "sprite-publication.js",
+      "sha256": "f254580b1cb613ca06c994d365fc2036c2c9bc312ba8f1a715951d67caf47dee",
+      "bytes": 12073
+    }
+  ],
+  "assertionAdapters": [
+    {
+      "name": "prior-contracts.mjs",
+      "originalFile": "tools/private-r-prior-contracts-nov02.mjs",
+      "originalSha256": "d6453a8901fc0317ff28f4cf7343d4cf68a5de279cb8ccb1c47696990d121325",
+      "candidateSha256": "ac15b09a6aae298ac55233d86413b3b4f5aa6bb11b91a449c948faf15aa8cd88",
+      "onlyImportPathChanged": true
+    },
+    {
+      "name": "protocol-contracts.mjs",
+      "originalFile": "tools/private-r-contracts-nov02.mjs",
+      "originalSha256": "7e105d156eeb9ac699cefe8082de42c1cc35e5017eb99741e6962fe34e25dcd2",
+      "candidateSha256": "1bb42b00894c6592fd1b9cb438063a7a47d6adae97c0284052ddc5ab50deef8a",
+      "onlyImportPathChanged": true
+    },
+    {
+      "name": "node-fallback.mjs",
+      "originalFile": "tools/private-r-native-node-nov02.mjs",
+      "originalSha256": "757ea686594ee119e989b916eb6bbf82b56ce27d9eebcf6ee5ebc991ed87c66d",
+      "candidateSha256": "481f70b454d294822377ccd2c9d50117eb3e76916f99191b5c975a688f05f7ed",
+      "onlyImportPathChanged": true
+    }
+  ],
+  "kernelAdapter": {
+    "originalFile": "tools/private-r-native-nov02/native-page.mjs",
+    "originalSha256": "39aa3e9ba243eca65d1299801c4dd447e4181e293388b397e715b052f4643ae2",
+    "candidateSha256": "df2e16d5b1d5d16b444ebe7e0c140ef29fff9254e6811f4aceda36537a82aab4",
+    "edits": [
+      [
+        "baseUrl+'backend.js'",
+        "baseUrl+'private-r-backend.js'"
+      ],
+      [
+        "baseUrl+'catalogue.js'",
+        "baseUrl+'sprite-publication.js'"
+      ],
+      [
+        "baseUrl+'px-reference.js'",
+        "baseUrl+'px.js'"
+      ]
+    ],
+    "assertionBodiesBytePreserved": true,
+    "expectedCases": 52,
+    "expectedCanvasPairs": 480
+  },
+  "nativeGraphOracle": {
+    "originalFile": "tools/sprite-publication-native-nov01.mjs",
+    "originalFileSha256": "cf29db83176737a15aa98e2b97d579f5b15a37cb92080eac38c8a89efaa774a4",
+    "extractedSourceSha256": "a8b2ce9c45f363a75b68be7383800ff2232da19557dcdcb8215a109a3e4d21b7",
+    "originalStateAndRecursiveComparisonByteExact": true
+  },
+  "noLocalCandidateImportedOrExecuted": true,
+  "noMainIntegrated": true,
+  "noGameAdopted": true,
+  "noRuntimeOrMemoryTimingLayout425OrFpsPassClaim": true,
+  "integrationPage": {
+    "file": "tools/private-r-integration-nov02/integration-page.mjs",
+    "sha256": "85e162ddd607071b885e70faa5595343e4cf336399dc5706969361748bad0c38",
+    "expectedCases": 10,
+    "realProducerFields": 26,
+    "realConsumerInvocations": 7,
+    "controlledGraphFlows": 4,
+    "originalRecursiveNativeOracleByteExact": true,
+    "originalPublicOracleFromSameCompiledNamespace": true,
+    "noCreateElementOrCanvasPrototypeCountingHookInOptimizedFlows": true,
+    "includes": [
+      "normal-native-publication",
+      "changed-gear-and-weapon",
+      "GPU-policy-fallback",
+      "active-level-ownership-fallback",
+      "enemy-corpse-alias",
+      "foreign-root-getter",
+      "foreign-receiver",
+      "late-native-method-hook",
+      "unknown-Proxy-trace",
+      "retained-output-teardown"
+    ],
+    "noActualGameUsageOrResidentMemoryTimingClaim": true,
+    "rngScope": "Factory/consumer operations after module imports;not whole Game RNG proof"
+  },
+  "legacyHelperSha256": "65261b1db2a21daf1787a45e4c45af03eebda1b299c897cbbbd2106a171d66f1",
+  "runtimeBundleSha256": "3d419f4badc9d2512f927d0e89ddcdbb6c34ae0c36ecef6f992a578df81e6e7e",
+  "runtimeFiles": [
+    {
+      "file": "prior-contracts.mjs",
+      "sha256": "ac15b09a6aae298ac55233d86413b3b4f5aa6bb11b91a449c948faf15aa8cd88"
+    },
+    {
+      "file": "protocol-contracts.mjs",
+      "sha256": "1bb42b00894c6592fd1b9cb438063a7a47d6adae97c0284052ddc5ab50deef8a"
+    },
+    {
+      "file": "node-fallback.mjs",
+      "sha256": "481f70b454d294822377ccd2c9d50117eb3e76916f99191b5c975a688f05f7ed"
+    },
+    {
+      "file": "kernel-page.mjs",
+      "sha256": "df2e16d5b1d5d16b444ebe7e0c140ef29fff9254e6811f4aceda36537a82aab4"
+    },
+    {
+      "file": "integration-page.mjs",
+      "sha256": "85e162ddd607071b885e70faa5595343e4cf336399dc5706969361748bad0c38"
+    },
+    {
+      "file": "legacy-catalogue.js",
+      "sha256": "65261b1db2a21daf1787a45e4c45af03eebda1b299c897cbbbd2106a171d66f1"
+    },
+    {
+      "file": "native-graph-oracle.txt",
+      "sha256": "a8b2ce9c45f363a75b68be7383800ff2232da19557dcdcb8215a109a3e4d21b7"
+    },
+    {
+      "file": "sprite-publication-source-nov01/receiver-before.js",
+      "sha256": "9f5b1e34590b530268dd71cfd9cb833774d9105bdddfa1ededa7ea9a8be61bf8"
+    }
+  ],
+  "runner": {
+    "file": "tools/private-r-integration-component-nov02.mjs",
+    "sha256": "aae08f1149150e6f301e9f9af0d9da185434d8c7a42cf41498340ce08ae75726",
+    "originalAdmissionMb": 4352,
+    "originalRendererMb": 1536,
+    "originalEvaluationDeadlineMs": 240000,
+    "viewport": [
+      915,
+      412
+    ],
+    "dpr": 2.625,
+    "cpuRate": 4,
+    "oneOwnedBrowser": true,
+    "noMainIntegrated": true,
+    "newAdapterCanonicalLfOnly": true
+  },
+  "runtimeAssertionBytesUnchanged": true
+}

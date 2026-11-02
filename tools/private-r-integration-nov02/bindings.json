@@ -1,0 +1,522 @@
+{
+  "privateBuilders": [
+    {
+      "id": "chars.js:bakeMiner",
+      "field": "miner",
+      "module": "chars.js",
+      "originalFunctionSha256": "e2eae2a364898f8ffbb36f306e1beb61ec8be718e8a3c7af929fa76502f7c88b",
+      "RExpression": "[walk1, walk2, dig, swing, bare1, bare2, throwTell, helpless]",
+      "RInitializer": null,
+      "publicConstructorUnchanged": true,
+      "params": [],
+      "scope": "Existing fixed-input deferred factory only",
+      "privateName": "__brPrivate_bakeMiner",
+      "originalBodySha256": "9f1b45ae902cb758951124ef629ea8900090ef0694af98efa80dfd65d4fb0380",
+      "privatePainterBodyExact": true,
+      "onlyNewPrelude": "Local pack shadow calls explicit per-invocation private capability;original painters/arguments/statements byte-preserved."
+    },
+    {
+      "id": "chars.js:bakeRockGoblin",
+      "field": "rockgoblin",
+      "module": "chars.js",
+      "originalFunctionSha256": "f6d41f5cda180dafd3f06a47652339c4c5d663d5fa2f83fcfca83515a8e77e29",
+      "RExpression": "[walk1, walk2, thr, lift, hurt]",
+      "RInitializer": null,
+      "publicConstructorUnchanged": true,
+      "params": [],
+      "scope": "Existing fixed-input deferred factory only",
+      "privateName": "__brPrivate_bakeRockGoblin",
+      "originalBodySha256": "079df9ad8b494e88adc0687b042b6ae958c96ab3163204a7359bc15722e8abdf",
+      "privatePainterBodyExact": true,
+      "onlyNewPrelude": "Local pack shadow calls explicit per-invocation private capability;original painters/arguments/statements byte-preserved."
+    },
+    {
+      "id": "chars.js:bakePropman",
+      "field": "propman",
+      "module": "chars.js",
+      "originalFunctionSha256": "eed93c863997ca3efdd1788306c87cf95fa6211916c27edfa9d2863285c59a6e",
+      "RExpression": "[walk1, walk2, setUp, run]",
+      "RInitializer": null,
+      "publicConstructorUnchanged": true,
+      "params": [],
+      "scope": "Existing fixed-input deferred factory only",
+      "privateName": "__brPrivate_bakePropman",
+      "originalBodySha256": "a3b605a932af61c816b13c0d8513dba185e3c2230eaa05c21aa515eedc3dc867",
+      "privatePainterBodyExact": true,
+      "onlyNewPrelude": "Local pack shadow calls explicit per-invocation private capability;original painters/arguments/statements byte-preserved."
+    },
+    {
+      "id": "chars.js:bakeSentry",
+      "field": "sentry",
+      "module": "chars.js",
+      "originalFunctionSha256": "172741575b2aafe7c6176afdbbcdae7356b50e1e04201c95c3eabb933a02a540",
+      "RExpression": "[f(spear([...helm, ...head, ...tab, ...L1])), f(spear([...helm, ...head, ...tab, ...L2])), alarm, f(spear([...helm, ...head, ...tab, ...R1])), f(spear([...helm, ...head, ...tab, ...R2]))]",
+      "RInitializer": null,
+      "publicConstructorUnchanged": true,
+      "params": [],
+      "scope": "Existing fixed-input deferred factory only",
+      "privateName": "__brPrivate_bakeSentry",
+      "originalBodySha256": "2676b9ee3a7abd1373dbce626a42cc3896af1c5fd912f94706c31adba537d07c",
+      "privatePainterBodyExact": true,
+      "onlyNewPrelude": "Local pack shadow calls explicit per-invocation private capability;original painters/arguments/statements byte-preserved."
+    },
+    {
+      "id": "chars.js:bakeArcher",
+      "field": "archer",
+      "module": "chars.js",
+      "originalFunctionSha256": "16d66c0a2b41b78a8eb135bd47213603434041118673d2a6075a360bed4d5a56",
+      "RExpression": "[spr(bow([...hood, ...bodyIdle])), spr(bow([...hood, ...bodyDraw], true)), spr(bow([...hood, ...walk1])), spr(bow([...hood, ...walk2])), spr(bow([...hoodLook, ...bodyIdle])),\n    spr(bow([...hood, ...bodyFull], 2)), spr(bow([...hood, ...bodyLoose])), spr(bow(hurtRows)),\n    /* (claude/stockade2art) 8 DOZE: sat on the walk, hood down over the face, the bow across his knees, the horn at his belt | 9 WIND: the horn blower's own pose - head back, cheeks full, the bow slung, one arm up to the horn (the horn is drawn at his mouth) */\n    spr(['............', '............', '............', '............', '............', '....HHHH....', '...HHHHHH...', '..HHHHHHHH..', '..HHggHHHH..', '..bbbbbbbaa.', '.wwwwwwwwwwl', 'GGGGGGGGGGG.']),\n    spr(['............', '............', '....HHHH....', '...HHHHHH...', '.wHHgeoggeH.', '.wHHggooggg.', '.w.HgGGGg...', '.wbbbbbb.aa.', '.wbbbbbbaa..', '..rrrrrr....', '..GG..GG....', '.GG....GG...'])]",
+      "RInitializer": null,
+      "publicConstructorUnchanged": true,
+      "params": [
+        "over = {}"
+      ],
+      "scope": "Existing fixed-input deferred factory only",
+      "privateName": "__brPrivate_bakeArcher",
+      "originalBodySha256": "9abcc2368b994a01efdfe65ade1049b598d8c649da0ac58bf1770360eb444398",
+      "privatePainterBodyExact": true,
+      "onlyNewPrelude": "Local pack shadow calls explicit per-invocation private capability;original painters/arguments/statements byte-preserved."
+    },
+    {
+      "id": "chars.js:bakeSpider",
+      "field": "spider",
+      "module": "chars.js",
+      "originalFunctionSha256": "8daec69ca1577c981b8d22ee5a5b00086d0a8f43de5daab8549dfa321a279e23",
+      "RExpression": "[hang, drop, hang2, climb1, climb2, hurt]",
+      "RInitializer": null,
+      "publicConstructorUnchanged": true,
+      "params": [],
+      "scope": "Existing fixed-input deferred factory only",
+      "privateName": "__brPrivate_bakeSpider",
+      "originalBodySha256": "aa097582e5bda19c59d4d2f454ea270df26bda852a146746345539291c4c7225",
+      "privatePainterBodyExact": true,
+      "onlyNewPrelude": "Local pack shadow calls explicit per-invocation private capability;original painters/arguments/statements byte-preserved."
+    },
+    {
+      "id": "chars.js:bakeLurker",
+      "field": "lurker",
+      "module": "chars.js",
+      "originalFunctionSha256": "65ff3e1d924e8b7606303c6511d51a8321d2415c0f9eec1762de9f3224837b48",
+      "RExpression": "[a, b, half]",
+      "RInitializer": null,
+      "publicConstructorUnchanged": true,
+      "params": [],
+      "scope": "Existing fixed-input deferred factory only",
+      "privateName": "__brPrivate_bakeLurker",
+      "originalBodySha256": "5f0675ecb1733e2dfdc91e6d230e14149b734fcd0c68b17fc588526562a6628f",
+      "privatePainterBodyExact": true,
+      "onlyNewPrelude": "Local pack shadow calls explicit per-invocation private capability;original painters/arguments/statements byte-preserved."
+    },
+    {
+      "id": "chars.js:bakeShield",
+      "field": "shield",
+      "module": "chars.js",
+      "originalFunctionSha256": "c252370bf9db4b0584bfea1e1c28cde8751b1c6f93fc7e36e7032d51d85a1623",
+      "RExpression": "frames",
+      "RInitializer": "legs.map((l, i) => sprite([...top, ...torso(i % 2 === 0), ...l]))",
+      "publicConstructorUnchanged": true,
+      "params": [],
+      "scope": "Existing fixed-input deferred factory only",
+      "privateName": "__brPrivate_bakeShield",
+      "originalBodySha256": "d81ed0f570d43d011d3cefc9418b50654799110f8f4ed35ae7d40fd350fb30c2",
+      "privatePainterBodyExact": true,
+      "onlyNewPrelude": "Local pack shadow calls explicit per-invocation private capability;original painters/arguments/statements byte-preserved."
+    },
+    {
+      "id": "chars.js:bakeSapper",
+      "field": "sapper",
+      "module": "chars.js",
+      "originalFunctionSha256": "8b7fa2b8523e4f6c7d061060b2723bc96adcd2ebf4d69af203bd8eb17553b1ef",
+      "RExpression": "[...legs.map(l => spr([...bomb, ...head, ...l])), spr([...arms[0], ...head, ...legs[0]]), spr([...arms[1], ...head, ...legs[2]])]",
+      "RInitializer": null,
+      "publicConstructorUnchanged": true,
+      "params": [],
+      "scope": "Existing fixed-input deferred factory only",
+      "privateName": "__brPrivate_bakeSapper",
+      "originalBodySha256": "b26fd0ce5094680d3a9b7bc4476f35b2478338c37c8d39e48942ce88e6892563",
+      "privatePainterBodyExact": true,
+      "onlyNewPrelude": "Local pack shadow calls explicit per-invocation private capability;original painters/arguments/statements byte-preserved."
+    },
+    {
+      "id": "chars.js:bakeRunner",
+      "field": "runner",
+      "module": "chars.js",
+      "originalFunctionSha256": "7349382fcd536b9fe57d32db76293984102b58454a0e071e0d56e6ac5d33b6a3",
+      "RExpression": "[run1, run2, shout, stab]",
+      "RInitializer": null,
+      "publicConstructorUnchanged": true,
+      "params": [],
+      "scope": "Existing fixed-input deferred factory only",
+      "privateName": "__brPrivate_bakeRunner",
+      "originalBodySha256": "df2007e51e766c44fb5944586f97cf58f50707fd610ac15183ddc16d6d5a6231",
+      "privatePainterBodyExact": true,
+      "onlyNewPrelude": "Local pack shadow calls explicit per-invocation private capability;original painters/arguments/statements byte-preserved."
+    },
+    {
+      "id": "chars.js:bakeSwornSword",
+      "field": "swornsword",
+      "module": "chars.js",
+      "originalFunctionSha256": "001b23b29cd17a64a8f8299e5382ea6ed3cfb90452d8cd2d7ff479940d4a1413",
+      "RExpression": "[walk1, walk2, tell, cut, rest, walk3, walk4, hurt]",
+      "RInitializer": null,
+      "publicConstructorUnchanged": true,
+      "params": [],
+      "scope": "Existing fixed-input deferred factory only",
+      "privateName": "__brPrivate_bakeSwornSword",
+      "originalBodySha256": "c1fd535ddbc6be8ae9465f176aa5e7b0bde34ea7d8efecccaff2409b04319591",
+      "privatePainterBodyExact": true,
+      "onlyNewPrelude": "Local pack shadow calls explicit per-invocation private capability;original painters/arguments/statements byte-preserved."
+    },
+    {
+      "id": "chars.js:bakeHedgeKnight",
+      "field": "hedgeknight",
+      "module": "chars.js",
+      "originalFunctionSha256": "be9a8d351d4408e1421842d07d7e81cc6ff4b29a1b3d65d7cfc1a3a131fef85d",
+      "RExpression": "[walk1, walk2, tell, swing, leap]",
+      "RInitializer": null,
+      "publicConstructorUnchanged": true,
+      "params": [],
+      "scope": "Existing fixed-input deferred factory only",
+      "privateName": "__brPrivate_bakeHedgeKnight",
+      "originalBodySha256": "bf6a2eedf393984436adb80717cc13dec8766b27b7b104b1610168c7137c9b9b",
+      "privatePainterBodyExact": true,
+      "onlyNewPrelude": "Local pack shadow calls explicit per-invocation private capability;original painters/arguments/statements byte-preserved."
+    },
+    {
+      "id": "chars.js:bakeCrossbowman",
+      "field": "crossbow",
+      "module": "chars.js",
+      "originalFunctionSha256": "3d2a5ac85a0d9e3b4fc285440b96ff3f10fb80cc635b97cf88f9264d842a403e",
+      "RExpression": "[wspr(pavise(lay(base, spanning))), wspr(pavise(lay(base, level))), wspr(pavise(lay(base, shot)))]",
+      "RInitializer": null,
+      "publicConstructorUnchanged": true,
+      "params": [],
+      "scope": "Existing fixed-input deferred factory only",
+      "privateName": "__brPrivate_bakeCrossbowman",
+      "originalBodySha256": "e954d94cfb684442483a988ccf860bd60c03658df56aeaf9db4b1b20735ec7ec",
+      "privatePainterBodyExact": true,
+      "onlyNewPrelude": "Local pack shadow calls explicit per-invocation private capability;original painters/arguments/statements byte-preserved."
+    },
+    {
+      "id": "redraw/foes1.js:bakeHound",
+      "field": "hound",
+      "module": "redraw/foes1.js",
+      "originalFunctionSha256": "d7f620048b1e3b68465c3c37f6beea63e2fc9c0e134ab96122767cee07f41d67",
+      "RExpression": "[a, b, l]",
+      "RInitializer": null,
+      "publicConstructorUnchanged": true,
+      "params": [
+        "pal = {}"
+      ],
+      "scope": "Existing fixed-input deferred factory only",
+      "privateName": "__brPrivate_bakeHound",
+      "originalBodySha256": "e1a4b4093aca7e08f7856043ac1594535a75a14d45f3b346a29ce1c3ce4bad24",
+      "privatePainterBodyExact": true,
+      "onlyNewPrelude": "Local pack shadow calls explicit per-invocation private capability;original painters/arguments/statements byte-preserved."
+    },
+    {
+      "id": "redraw/shore.js:bakeEel",
+      "field": "eel",
+      "module": "redraw/shore.js",
+      "originalFunctionSha256": "d5c396e20aea48bc78d57d45a6777a8a03fc8aa80eff3f78eb5aab03b25f9821",
+      "RExpression": "[swim(0), swim(Math.PI), lunge(), curl(), swim(Math.PI / 2), swim(Math.PI * 1.5), coil()]",
+      "RInitializer": null,
+      "publicConstructorUnchanged": true,
+      "params": [],
+      "scope": "Existing fixed-input deferred factory only",
+      "privateName": "__brPrivate_bakeEel",
+      "originalBodySha256": "2625d33a8cf9e290654c06422eae6e275818675f4baaec3f67e60752d925d78a",
+      "privatePainterBodyExact": true,
+      "onlyNewPrelude": "Local pack shadow calls explicit per-invocation private capability;original painters/arguments/statements byte-preserved."
+    },
+    {
+      "id": "redraw/shore.js:bakeCrab",
+      "field": "crab",
+      "module": "redraw/shore.js",
+      "originalFunctionSha256": "2c6d54e25cc9beca965b2da2d9e38aa6df6e0f4837291321670aed17fb3463d6",
+      "RExpression": "[walk('a'), walk('b'), walk('a', true), flipped(), walk('a', false, 1), walk('b', false, 1), snap(), hurt()]",
+      "RInitializer": null,
+      "publicConstructorUnchanged": true,
+      "params": [],
+      "scope": "Existing fixed-input deferred factory only",
+      "privateName": "__brPrivate_bakeCrab",
+      "originalBodySha256": "df5be24407b1e546cb273124a4f2553c76fbbea57979d8f6b48d214986020aab",
+      "privatePainterBodyExact": true,
+      "onlyNewPrelude": "Local pack shadow calls explicit per-invocation private capability;original painters/arguments/statements byte-preserved."
+    },
+    {
+      "id": "redraw/desert_foes2.js:bakeDynamiter",
+      "field": "dynamiter",
+      "module": "redraw/desert_foes2.js",
+      "originalFunctionSha256": "7dff2162386fc3d0ec9bd7b85367c8a30ab3a90e639556ea76e7dfdadeafe8f4",
+      "RExpression": "F",
+      "RInitializer": "frames(W, H, 7, (g, f) => {\n    const by = gy - 12, flee = f === 4 || f === 5, legs = f <= 3 ? [[0, 1], [1, 0], [0, -1], [-1, 0]][f] : flee ? (f === 4 ? [2, -2] : [-2, 2]) : [0, 0];\n    const lean = flee ? -2 : 0;\n    manBody(g, cx, by, legs, lean, MN.vest, MN",
+      "publicConstructorUnchanged": true,
+      "params": [],
+      "scope": "Existing fixed-input deferred factory only",
+      "privateName": "__brPrivate_bakeDynamiter",
+      "originalBodySha256": "275b452e84dfe9b2b46ccdafac1cbe8ead339d43ef1be4a1a1e760f9857f59bb",
+      "privatePainterBodyExact": true,
+      "onlyNewPrelude": "Local pack shadow calls explicit per-invocation private capability;original painters/arguments/statements byte-preserved."
+    },
+    {
+      "id": "redraw/desert_foes2.js:bakeShieldGuard",
+      "field": "shieldguard",
+      "module": "redraw/desert_foes2.js",
+      "originalFunctionSha256": "684d6dcff78b3968fc8bf7fd20acb9eeec44cd1e1be29d0da7ec07af68e94ea3",
+      "RExpression": "F",
+      "RInitializer": "frames(W, H, 7, (g, f) => {\n    const by = gy - 12, walk = f <= 3, legs = walk ? [[0, 1], [1, 0], [0, -1], [-1, 0]][f] : f === 6 ? [2, -1] : f === 5 ? [-1, 1] : [0, 0];\n    const lean = f === 6 ? 2 : f === 5 ? -1 : 0, dip = f === 5 ? 1 : 0;\n    manBody(g, cx, ",
+      "publicConstructorUnchanged": true,
+      "params": [],
+      "scope": "Existing fixed-input deferred factory only",
+      "privateName": "__brPrivate_bakeShieldGuard",
+      "originalBodySha256": "2c338dbd5484cedffafbd6a6eebe4d4c1c8147d8d9a492c8b5fb10ba8283fe26",
+      "privatePainterBodyExact": true,
+      "onlyNewPrelude": "Local pack shadow calls explicit per-invocation private capability;original painters/arguments/statements byte-preserved."
+    }
+  ],
+  "eagerRegistrations": [
+    {
+      "id": "chars.js:bakeWeaver",
+      "field": "weaver",
+      "module": "chars.js",
+      "originalFunctionSha256": "5b660e9a943cd00d0d5bcd4cab27be423959959df1f5d8110e5c6412ad00c99d",
+      "RExpression": "[hang, spit, sc1, sc2]",
+      "RInitializer": null,
+      "publicConstructorUnchanged": true,
+      "params": [],
+      "scope": "Original live eager expression remains unchanged;provenance registration only"
+    },
+    {
+      "id": "redraw/canal_foes_art.js:bakeLamplighter",
+      "field": "lamplighter",
+      "module": "redraw/canal_foes_art.js",
+      "originalFunctionSha256": "b288474fd38f9d68d301eff60d891178ede7cd8649189a51732b9104e1b36a0a",
+      "RExpression": "Fr",
+      "RInitializer": "[g => gob(g, {}), g => gob(g, { step: 1, lean: 1 }), g => gob(g, { pole: 'up' }), g => gob(g, { pole: 'swipe', lean: 1 }), g => gob(g, { step: -1, lean: 1 }), g => { gob(g, { lean: -2 }); px(g, 3, 3, C.smoke); }].map(mk)",
+      "publicConstructorUnchanged": true,
+      "params": [],
+      "scope": "Original live eager expression remains unchanged;provenance registration only"
+    },
+    {
+      "id": "redraw/mage_foes.js:bakeImp",
+      "field": "imp",
+      "module": "redraw/mage_foes.js",
+      "originalFunctionSha256": "b1854b736a9a006318491056adb6a4c3646b658e99fa384b8597cdf883794941",
+      "RExpression": "['hoverA', 'hoverB', 'throwTell', 'throw', 'puff', 'hurt'].map(frame)",
+      "RInitializer": null,
+      "publicConstructorUnchanged": true,
+      "params": [],
+      "scope": "Original live eager expression remains unchanged;provenance registration only"
+    },
+    {
+      "id": "redraw/caravan_bandits.js:bakeCutthroat",
+      "field": "cutthroat",
+      "module": "redraw/caravan_bandits.js",
+      "originalFunctionSha256": "7bf260bc7b2240870b804bfa18d4b91a6f51b48b660e79609dcfe9203dff6800",
+      "RExpression": "F",
+      "RInitializer": "frames(W, H, 7, (g, f) => {\n    const by = gy - 12;\n    if (f === 6) { body(g, cx - 1, by + 1, [0, 0], -1); head(g, cx - 2, by - 3, 1); hilt(g, cx + 2, by + 4); blade(g, cx + 2, by + 4, cx + 8, by + 10, 2, CT.steel, CT.steelL); return; }   // hurt: rocked back",
+      "publicConstructorUnchanged": true,
+      "params": [],
+      "scope": "Original live eager expression remains unchanged;provenance registration only"
+    },
+    {
+      "id": "redraw/caravan_bandits.js:bakeSlinger",
+      "field": "slinger",
+      "module": "redraw/caravan_bandits.js",
+      "originalFunctionSha256": "b0cb3fde6c570523f382f8c96f105b356995565e4c1d390c06c652bb62b1603a",
+      "RExpression": "F",
+      "RInitializer": "frames(W, H, 7, (g, f) => {\n    const by = gy - 11;\n    if (f === 6) { body(g, cx - 1, by + 1, [0, 0]); head(g, cx - 2, by - 3); sling(g, cx + 2, by + 3, cx + 3, by + 9, false); return; }    // hurt\n    if (f === 4 || f === 5) {                                ",
+      "publicConstructorUnchanged": true,
+      "params": [],
+      "scope": "Original live eager expression remains unchanged;provenance registration only"
+    },
+    {
+      "id": "redraw/mystic_art.js:bakeBanditMystic",
+      "field": "banditmystic",
+      "module": "redraw/mystic_art.js",
+      "originalFunctionSha256": "df23c3ccf1b608f394af501f1e6bfa6715ed14b261e5a979ab3f335edcc62d92",
+      "RExpression": "F",
+      "RInitializer": "Array.from({ length: 7 }, (_, f) => { const [c, g] = canvas(W, H); const b = body(g, f, {}), { cx, top, lean } = b;\n    if (f === 3 || f === 4) { const ax = cx + (f === 4 ? 10 : 8), ay = top + (f === 4 ? 3 : 4); line(g, cx + 3 + lean, top + 2, ax, ay, C.robe, ",
+      "publicConstructorUnchanged": true,
+      "params": [],
+      "scope": "Original live eager expression remains unchanged;provenance registration only"
+    },
+    {
+      "id": "redraw/monastery.js:bakeGoblinPriest",
+      "field": "gobpriest",
+      "module": "redraw/monastery.js",
+      "originalFunctionSha256": "6a6d8780f310c2965214d479420c305a9ca97dc71579099023aeeac57cefb43a",
+      "RExpression": "[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(frame)",
+      "RInitializer": null,
+      "publicConstructorUnchanged": true,
+      "params": [],
+      "scope": "Original live eager expression remains unchanged;provenance registration only"
+    },
+    {
+      "id": "redraw/desert_foes.js:bakeScorpion",
+      "field": "scorpion",
+      "module": "redraw/desert_foes.js",
+      "originalFunctionSha256": "c8409e9f01359f0cbd5d3da4893d2e7fdd2db40fa2f2d513ff6f0b8b166f48ef",
+      "RExpression": "F",
+      "RInitializer": "frames(W, H, 7, (g, f) => {\n    const dy = f === 6 ? 1 : 0;\n    tail(g, f === 4 ? 1 : f === 5 ? 0.6 : 0.35, f === 5 ? 1 : 0, f === 4 || f === 5);\n    legs(g, f === 1 ? 1 : 0); body(g, dy);\n    if (f === 2) { claw(g, 30, gy - 11, 2); }                     // CL",
+      "publicConstructorUnchanged": true,
+      "params": [],
+      "scope": "Original live eager expression remains unchanged;provenance registration only"
+    }
+  ],
+  "privateConsumers": [
+    {
+      "id": "redraw/undercrown_skins.js:bakeUndercrownSkins",
+      "module": "redraw/undercrown_skins.js",
+      "inputs": [
+        "miner",
+        "rockgoblin",
+        "propman",
+        "sentry",
+        "lamplighter",
+        "hound"
+      ],
+      "whiteMode": "independent",
+      "helperNames": [],
+      "closedDataBindings": [
+        "SKIN_MAPS",
+        "FOR"
+      ],
+      "originalFunctionSha256": "791ead004ee339dbfd6be743e7520ccdf6e67548465c428cf86a3b07b529c4ac",
+      "publicConstructorUnchanged": true,
+      "originalMainOccurrences": [
+        22828
+      ],
+      "originalBodySha256": "f89e64607a061f4c4d5dd3c8dc68471cb657190a4bcfd49cd48b58222be79beb",
+      "privateBodyExact": true
+    },
+    {
+      "id": "redraw/variety_skins.js:bakeVarietySkins",
+      "module": "redraw/variety_skins.js",
+      "inputs": [
+        "imp",
+        "dynamiter",
+        "eel",
+        "crab"
+      ],
+      "whiteMode": "independent",
+      "helperNames": [],
+      "closedDataBindings": [
+        "VARIETY_MAPS",
+        "FOR"
+      ],
+      "originalFunctionSha256": "6ff12a943a8c2d1d6566413eaf4cf8e6f862448a0ad7041e822115dc492a69a2",
+      "publicConstructorUnchanged": true,
+      "originalMainOccurrences": [
+        22828,
+        22836
+      ],
+      "originalBodySha256": "7a30baf54bbb9a85dfd4fae819341feb6de7c44fba657eced1a27cd9727fa5c9",
+      "privateBodyExact": true
+    },
+    {
+      "id": "redraw/rootway_art.js:bakeRootSkins",
+      "module": "redraw/rootway_art.js",
+      "inputs": [
+        "archer",
+        "weaver",
+        "spider",
+        "lurker"
+      ],
+      "whiteMode": "shared",
+      "helperNames": [
+        "reskin"
+      ],
+      "closedDataBindings": [
+        "SCOUT_MAP"
+      ],
+      "originalFunctionSha256": "f657bacbdd8a3df148b85f3bf8e51868bfdfc9515f5836096d08033a89aa87f8",
+      "publicConstructorUnchanged": true,
+      "originalMainOccurrences": [
+        22835
+      ],
+      "originalBodySha256": "9716a7419446821c379aa70310070ad646e6152b48bb65ed8cd0c1a651d97bd2",
+      "privateBodyExact": true
+    },
+    {
+      "id": "redraw/ksar_art.js:bakeKsarSets",
+      "module": "redraw/ksar_art.js",
+      "inputs": [
+        "cutthroat",
+        "shieldguard",
+        "shield",
+        "dynamiter",
+        "sapper",
+        "slinger"
+      ],
+      "whiteMode": "shared",
+      "helperNames": [
+        "remap",
+        "bakeKsarBlade",
+        "bakeGongLookout",
+        "bakeWhipApprentice",
+        "bakeShieldSentry",
+        "bakeSmokeThrower",
+        "bakeWallSlinger"
+      ],
+      "closedDataBindings": [
+        "HMC",
+        "POSES",
+        "HK"
+      ],
+      "originalFunctionSha256": "c91b6470425ca9db06fd5c7720811035ae7f7e68381b7661a1f1ea9331594d09",
+      "publicConstructorUnchanged": true,
+      "originalMainOccurrences": [
+        22840
+      ],
+      "originalBodySha256": "9a427f9be9ad98d1f6d5422167454b20bba18ff242c23b5dd19033abc50a5c33",
+      "privateBodyExact": true
+    },
+    {
+      "id": "redraw/church_art.js:bakeChurchSkins",
+      "module": "redraw/church_art.js",
+      "inputs": [
+        "banditmystic",
+        "runner",
+        "swornsword",
+        "hedgeknight",
+        "crossbow",
+        "gobpriest"
+      ],
+      "whiteMode": "independent",
+      "helperNames": [],
+      "closedDataBindings": [
+        "CHURCH_SKINS"
+      ],
+      "originalFunctionSha256": "d88a94c375f1dbd2806a77f079060a26f35bb75f40cc847822688df0f5405067",
+      "publicConstructorUnchanged": true,
+      "originalMainOccurrences": [
+        22841
+      ],
+      "originalBodySha256": "3912a50a35049779e4d5b67ab02454e0fdcde9d22b30d52f36a14c7970453b74",
+      "privateBodyExact": true
+    },
+    {
+      "id": "redraw/redgorge_art.js:gorgeSets",
+      "module": "redraw/redgorge_art.js",
+      "inputs": [
+        "cutthroat",
+        "slinger",
+        "scorpion"
+      ],
+      "whiteMode": "shared",
+      "helperNames": [
+        "reskin"
+      ],
+      "closedDataBindings": [],
+      "originalFunctionSha256": "af650dabdeeb6973abeb3649742a5d71f83568ad30800198fffa6bbbda441598",
+      "publicConstructorUnchanged": true,
+      "originalMainOccurrences": [
+        22843
+      ],
+      "originalBodySha256": "7fa687ca7e084d197f651eacb878f63d17248ba0c2b504cc7bac205f8fbdeaf2",
+      "privateBodyExact": true
+    }
+  ]
+}
