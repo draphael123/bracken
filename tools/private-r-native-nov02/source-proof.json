@@ -12,7 +12,7 @@
   "allExistingAssertionsToRemainUnchanged": true,
   "noLocalCandidateOrGameExecution": true,
   "noCloudOccurrenceYet": true,
-  "backendSha256": "2efa6209c7ba0fe873729290d512df30893dce8fbd7183955997cca8751d97ee",
+  "backendSha256": "95605a41891507dd2aa96896a68f534f4683e08cb4e4c7e13533412ce4d234cd",
   "sourceReview": {
     "automaticDrainImplementedFor": [
       "Foreign output setter/prototype before assignment, including earlier outstanding entries",
@@ -38,12 +38,15 @@
     },
     {
       "reason": "Use character10 for the cloud receipt terminator. Two source-text/AST correction attempts stopped before any candidate/test execution;their preparation scripts remain retained."
+    },
+    {
+      "reason": "Function.prototype caller/arguments accessors are never called by this kernel. Their complete descriptors remain watched for mutations;initial callable-name screening need not reject their anonymous native poison-pill getters. This is source-derived guard closure,not an observed native result."
     }
   ],
   "sourceFiles": [
     {
       "path": "tools/private-r-native-nov02/backend.js",
-      "sha256": "2efa6209c7ba0fe873729290d512df30893dce8fbd7183955997cca8751d97ee"
+      "sha256": "95605a41891507dd2aa96896a68f534f4683e08cb4e4c7e13533412ce4d234cd"
     },
     {
       "path": "tools/private-r-native-nov02/snapshot.js",
@@ -116,5 +119,11 @@
     "exactUndo": "Unwrap factory,remove ownedScratch getter,restore export,and restore original line endings.",
     "originalGameAndFixtureBytesUnchanged": true
   },
-  "catalogueShimReexportsExactParentSha256": "cbd25b1b0970dd9e84b7df5626180ea2abe93f208ca91b9ba835721bb3c78fe1"
+  "catalogueShimReexportsExactParentSha256": "cbd25b1b0970dd9e84b7df5626180ea2abe93f208ca91b9ba835721bb3c78fe1",
+  "recoveryFromRun": 41479540156,
+  "setupRepair": {
+    "frozenHelperController": "1a576c3f4511b6856df9fb4738df5aaae9987e81",
+    "hostGameSource": "62d9c02c102decc69ceaef4e1ec593a23170f1ff",
+    "originalAssertionsAndGuardsUnchanged": true
+  }
 }

@@ -18,7 +18,7 @@ watch(Math,false,['max']);
 if(browser){for(let p=HP;p;p=proto(p))watch(p);for(let p=CP;p;p=proto(p))watch(p);for(let p=proto(doc);p;p=proto(p))watch(p);watch(doc,false,['createElement']);}
 const bindings=['document','Document','HTMLCanvasElement','CanvasRenderingContext2D','Object','Array','Reflect','Math','Number','WeakMap','WeakRef'];watch(globalThis,false,bindings);
 let pristine=native(apply)&&native(own)&&native(keys)&&native(proto)&&native(define)&&native(fnText)&&native(get)&&native(put)&&native(has);
-for(let i=0;i<watched.length;i++){const w=watched[i];for(let j=0;j<w.names.length;j++){const d=w.descriptors[j];if(d){if(typeof d.value==='function'&&!native(d.value))pristine=false;if(d.get&&!native(d.get))pristine=false;if(d.set&&!native(d.set))pristine=false;}}}
+for(let i=0;i<watched.length;i++){const w=watched[i];for(let j=0;j<w.names.length;j++){const d=w.descriptors[j],unusedPoisonPill=w.object===FP&&(w.names[j]==='arguments'||w.names[j]==='caller');if(d&&!unusedPoisonPill){if(typeof d.value==='function'&&!native(d.value))pristine=false;if(d.get&&!native(d.get))pristine=false;if(d.set&&!native(d.set))pristine=false;}}}
 const stable=()=>{if(!pristine)return false;for(let i=0;i<watched.length;i++){const w=watched[i];if(proto(w.object)!==w.parent)return false;if(w.full){const now=keys(w.object);if(now.length!==w.names.length)return false;for(let j=0;j<now.length;j++)if(now[j]!==w.names[j])return false;}for(let j=0;j<w.names.length;j++)if(!same(own(w.object,w.names[j]),w.descriptors[j]))return false;}return true;};
 const defaultOwner=fn=>fn();
 export function makePrivatePackBackend(reference,{cpu=true,owner=defaultOwner,maxPending=128,maxSnapshotPending=16384,maxSnapshotPixels=33554432}={}){

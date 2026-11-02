@@ -47,7 +47,7 @@ jobs:
       - uses: actions/setup-node@v4
         with: {node-version: '24.11.1'}
       - name: Preserve frozen admission, native GC, and 1536MB browser guard
-        run: git worktree add --detach "$PRIVATE_R_NATIVE_REFERENCE" 62d9c02c102decc69ceaef4e1ec593a23170f1ff
+        run: git worktree add --detach "$PRIVATE_R_NATIVE_REFERENCE" 1a576c3f4511b6856df9fb4738df5aaae9987e81
         env:
           PRIVATE_R_NATIVE_REFERENCE: ${{ runner.temp }}/private-r-native-reference
       - name: All 504 original pixel and 19 lifecycle assertions plus 51 new kernel cases
