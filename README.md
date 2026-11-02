@@ -363,3 +363,9 @@ of the current save slot.
 `window.BK` exposes `P` (player), `step(n)` (deterministic sim steps), `tp(tx, ty)`, `reset()`,
 `respawnEnemies()`, `enemies()`, `stats()`, `god`, `SET`, and `sheet` (sprite sheet view).
 `?tx=N&ty=M` starts at a tile and skips the intro.
+
+## Restamping after a level edit (tools/restamp.mjs)
+A level edit changes its levelHash, which stales its stamped rows (docs/level1-pilot.json, level1-curve.json, mash-bot.json level row; walk-curve.json is report-only).
+- `node tools/restamp.mjs --level <id>[,<id>]` re-runs pilot + curve + mash-level for those levels; `--all` re-runs only STALE or required-but-MISSING rows; `--dry` lists them.
+- `--boss` also re-runs boss/mini mash rows (carried across an edit otherwise); `--only=pilot,curve,mash,boss` picks parts; `--no-verify` skips the closing level-quality / curve-gate / mash-gate run.
+- One headless browser at a time, 1500 MB RAM check, stops (no waiting) on low RAM or BROWSER-HOLD.flag. Prints old -> new per row; jumps over 15% print WARN: review, do not blindly commit. A restamp that goes red is a real regression, not a stale stamp.
