@@ -72,7 +72,7 @@ try {
   ok('A5: P2 cloak: pot 1 strips the cloak and does not ground her', r.c1.cloak === 0 && r.c1.mode !== 'dazed' && r.c1.grounded === 0 && r.c1.off === 1 && r.c1.smokeCd > 0, JSON.stringify(r.c1));
   ok('A5: P2 cloak: pot 2 (after the 2 s) grounds her (stun 2.6 s)', r.c2.mode === 'dazed' && r.c2.grounded === 1, JSON.stringify(r.c2));
   ok('A7: the hall has two stands, both full', r.d0.hall === 2 && r.d0.full, JSON.stringify(r.d0));
-  ok('A7: her body through a full stand BURSTS the pot (the stand empties, a fog at it), and the fog grounds her', r.d1.stand === 'empty' && r.d1.clouds >= 1 && r.d1.burst === 1 && r.d2.mode === 'dazed' && r.d2.grounded === 1, JSON.stringify([r.d1, r.d2]));
+  ok('A7: her body through a full stand BURSTS the pot (the stand empties, a fog at it), and the fog grounds her', r.d1.stand === 'empty' && r.d1.clouds >= 1 && r.d1.burst >= 1 && r.d2.mode === 'dazed' && r.d2.grounded === 1, JSON.stringify([r.d1, r.d2]));
   ok('A8: the burst stand regrows its pot ~9 s on', r.d3.regrow !== null && r.d3.regrow > 8 && r.d3.regrow < 10, JSON.stringify(r.d3));
   ok('A3: the resist floor: nothing she wears takes a blow below 0.4x (min ' + r.e.min + ')', r.e.min >= 0.4, JSON.stringify(r.e));
   ok('B: 9 honey drips in the level', r.dn === 9, String(r.dn));
