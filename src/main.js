@@ -21338,15 +21338,16 @@ function updateCrumbles(dt){
   else if(v.t==='tick'){SFX.crack();shakeCam(v.n===1?3:2);dust(mx,my+TS*c.rows,v.n===1?12:7);if(v.n===1&&SFX.rumble)SFX.rumble();}
   else if(v.t==='fall'&&c.kind==='bough'){re=true;SFX.crack();SFX.rumble&&SFX.rumble();shakeCam(4);for(let x=c.x0;x<=c.x1;x++)burst(x*TS+8,my+6,4,['#ff9a3c','#ffd36b','#47291b','#2c1a12'],80,.9,380,2);}   /* (claude/kingsfix2) a limb of the burning wood goes: splinters and embers */
   else if(v.t==='fall'&&c.kind==='awning'){re=true;SFX.puff();for(let x=c.x0;x<=c.x1;x++)burst(x*TS+8,my+4,4,['#b8382c','#ece0c4','#7a2418'],70,.8,300,2);}   /* (claude/fairfix5) a TEARING awning rips: canvas scraps, not stone */
+  else if(v.t==='fall'&&c.kind==='comb'&&L.hornetsNest){re=true;SFX.squelch&&SFX.squelch();SFX.crack();shakeCam(3);for(let x=c.x0;x<=c.x1;x++)burst(x*TS+8,my+8,4,['#e0a838','#ffd36b','#a8741e','#6a4410'],60,.9,380,2);}   /* (claude/hornetsnest2art) a SAGGING COMB lets go: wax and honey, not stone */
   else if(v.t==='fall'){re=true;SFX.stone();shakeCam(5);for(let x=c.x0;x<=c.x1;x++)burst(x*TS+8,my+8,3,['#8a8e9c','#5c6070','#b8b4a8'],60,.9,420,2);}
   else if(v.t==='back'){re=true;SFX.clank&&SFX.clank();dust(mx,my,8);}}
  if(re)resolveTiles();
- for(const c of L.crumbles){if(c.gone||c.st==='down'||c.kind==='awning')continue;if(Math.random()<dt*(c.st==='count'?16:1.1))parts.push({x:(c.x0+Math.random()*(c.x1-c.x0+1))*TS,y:(c.row+c.rows)*TS,vx:(Math.random()-.5)*6,vy:12,life:.9,max:.9,col:Math.random()<.5?'#a8a498':'#7c7a74',size:1,grav:150});}
+ for(const c of L.crumbles){if(c.gone||c.st==='down'||c.kind==='awning')continue;if(Math.random()<dt*(c.st==='count'?16:1.1))parts.push({x:(c.x0+Math.random()*(c.x1-c.x0+1))*TS,y:(c.row+c.rows)*TS,vx:(Math.random()-.5)*6,vy:12,life:.9,max:.9,col:c.kind==='comb'&&L.hornetsNest?(Math.random()<.5?'#e0a838':'#c47a14'):Math.random()<.5?'#a8a498':'#7c7a74',size:1,grav:150});}
 }
 /* ...and its drawing: cracks on every tile of a section that holds, brighter and wider as it counts, and the count itself over it */
 function drawCrumbles(cx,cy){
  if(!L.crumbles||!L.crumbles.length)return;
- for(const c of L.crumbles){if(c.gone||c.st==='down'||c.kind==='awning')continue;const sx=c.x0*TS-cx,sy=c.row*TS-cy,w=(c.x1-c.x0+1)*TS;if(sx>VW||sx+w<0||sy>VH+16||sy<-40)continue;   /* (a tearing awning draws its own fray: src/redraw/fair_tiles.js) */
+ for(const c of L.crumbles){if(c.gone||c.st==='down'||c.kind==='awning'||(c.kind==='comb'&&L.hornetsNest))continue;const sx=c.x0*TS-cx,sy=c.row*TS-cy,w=(c.x1-c.x0+1)*TS;if(sx>VW||sx+w<0||sy>VH+16||sy<-40)continue;   /* (a tearing awning draws its own fray: src/redraw/fair_tiles.js) */
   const counting=c.st==='count',k=counting?Math.min(1,1-c.t/c.count):0,jig=counting&&c.t<1?Math.round(Math.sin(time*50)):0;
   g.strokeStyle=counting?(c.t<1?'#ff6b6b':'#ffb070'):'rgba(20,16,26,0.85)';g.lineWidth=1;g.beginPath();
   for(let x=c.x0;x<=c.x1;x++)for(let y=c.row;y<c.row+c.rows;y++)for(const [a,b,e,f] of crackMarks(x,y)){g.moveTo(x*TS-cx+a+.5+jig,y*TS-cy+b+.5);g.lineTo(x*TS-cx+e+.5+jig,y*TS-cy+f+.5);}

@@ -22,6 +22,7 @@ import { drawSwarm } from './hornet-swarm.js';
 import * as HNP from './redraw/hornets_nest_props.js';
 import * as HNHY from './redraw/hornets_nest_honey.js';
 import * as HNHL from './redraw/hornets_nest_hall.js';
+import * as HNSAG from './redraw/hornets_nest_sag.js';   /* (claude/hornetsnest2art) the sagging combs, the drips, the honey beds, the burst */
 import * as HNE from './redraw/hornets_nest_edge.js';   /* (claude/hornets2art) the old pines and the marsh edge */   /* (claude/hornets2art) the honey: the sticky patch, the hall's flood and combs */   /* (claude/hornetsnestart) the props, drawn */
 export const SMOKE = { reachX: 15, reachY: 18, aura: 58, rest: 7, cloudR: 46, cloudT: 6, dmg: 3, stagger: 0.7, keep: 3, col: '#c8d0d8',
   hallR: 56, hallT: 4.0, regrow: 9, potW: 12, potH: 14 };   /* (claude/hornetsnest2) THE HALL'S FOG (inside the arena: the Hornet Queen's grounding): 56 px, 4 s, thinning over its last second; a hall stand holds ONE pot and regrows it 9 s after it is taken or burst. The level's clouds stay 46 px / 6 s (the swarm-quiet rule) and its stands never run out. */
@@ -224,6 +225,9 @@ export function makeNestHands(ctx) {
     /* WAX: the tiles are the glossy footing (src/redraw/hornets_nest_tiles.js); here only its glints, that sparkle and creep */
     for (const [x0, x1, row] of Lv.wax || []) { const x = x0 * TS - cx, y = row * TS - cy, w = (x1 - x0 + 1) * TS; if (x > VW + 20 || x + w < -20) continue;
       for (let k = 7; k < w - 4; k += 13) { const ph = (time * 0.6 + k * 0.173) % 1; if (ph < 0.3) rc(g, x + k, y + 1, 1 + (ph < 0.15 ? 1 : 0), 1, '#fff6c8'); } }
+    /* (claude/hornetsnest2art) THE HONEY BEDS (the sump's and the well's): a glossy skin over the wax; THE SAGGING COMBS: whole / bowing under its count / the ghost while it is gone */
+    for (const [x0, x1, row] of Lv.wax || []) { if (row < 44 || x1 - x0 < 11) continue; const x = x0 * TS - cx, w = (x1 - x0 + 1) * TS; if (x > VW + 20 || x + w < -20) continue; HNSAG.bed(g, x, row * TS - cy, w, time); }
+    for (const c of Lv.crumbles || []) { if (c.kind !== 'comb' || c.gone) continue; const sx = c.x0 * TS - cx; if (sx > VW + 20 || sx + (c.x1 - c.x0 + 1) * TS < -20) continue; c.back = 4; HNSAG.sagComb(g, c, cx, cy, time, ctx.text); }
     /* THE COMBS: hanging (with the stalk up and the gold plumb line down to a ghost of where it lands), falling, landed */
     for (const c of combs) { const x = c.x0 * TS - cx, w = (c.x1 - c.x0 + 1) * TS, h = c.rows * TS; if (x > VW + 40 || x + w < -40) continue;
       if (c.st === 'hang') { const y = c.y - cy, mid = x + w / 2;
@@ -238,12 +242,8 @@ export function makeNestHands(ctx) {
     for (const h of honey) { if (h.kind === 'flood') continue; const x = h.x0 - cx, w = h.x1 - h.x0, y = h.row * TS - cy; if (x > VW + 20 || x + w < -20) continue; HNHY.patch(g, x, y, w, h.t, h.t0, time); }
     /* THE SMOKE STANDS: a clay pot on a tripod of sticks, smouldering */
     for (const s of stands) { const x = R(s.x - cx), y = R(s.y - cy); if (x < -30 || x > VW + 30) continue; if (s.hall && s.st === 'empty') HNP.standEmpty(g, x, y, time, s.t < 1 ? 1 - s.t : 0); else HNP.stand(g, x, y, time); }   /* (a hall stand whose pot is taken or burst: the bare tripod, its smoke thickening over the last second) */
-    /* HONEY DRIPS (greybox): the bead swelling at the comb's foot, then the glossy drop falling */
-    for (const d of drips) { const px = d.x * TS + 8, x = R(px - cx), y = R(d.y0 * TS - cy); if (x < -20 || x > VW + 20) continue;
-      if (d.top < d.y0 - 1) { g.globalAlpha = 0.55; g.fillStyle = '#c47a14'; g.fillRect(x, R(d.top * TS - cy), 1, y - R(d.top * TS - cy)); g.globalAlpha = 1; }   /* the honey string from the comb or the roof it hangs from */
-      if (d.st === 'wait') { g.fillStyle = '#a8600a'; g.fillRect(x - 1, y - 2, 3, 3); g.fillStyle = '#e0a020'; g.fillRect(x - 1, y, 3, 2); continue; }   /* its nub, waiting */
-      if (d.st === 'swell') { const k = Math.min(1, d.s / DRIP.tell), r = 1 + k * 2.2; g.fillStyle = '#a8600a'; g.fillRect(x, y - 1, 1, 2); g.fillStyle = '#e0a020'; g.beginPath(); g.arc(x + 0.5, y + 2 + k * 2, r, 0, 7); g.fill(); g.fillStyle = Math.floor(time * 14) % 2 ? '#fff4b0' : '#ffd36b'; g.fillRect(x - 1, y + 1 + k * 2, 1, 1); }
-      else if (d.st === 'fall') HNHY.glob(g, px - cx, d.y - cy, d.vy, time); }
+    /* HONEY DRIPS (claude/hornetsnest2art): the string, the nub, the bead swelling on its thinning neck and pinching off, then the glossy drop */
+    for (const d of drips) { const px = d.x * TS + 8, x = R(px - cx), y = R(d.y0 * TS - cy); if (x < -20 || x > VW + 20) continue; HNSAG.drip(g, d, x, y, DRIP.tell, time, HNHY.glob, d.top < d.y0 - 1 ? R(d.top * TS - cy) : y, cy); }
     /* THE BROOD CELLS: a capped wax pocket; pulsing, it swells, reddens and cracks */
     for (const k of cells) { const x = R(k.x - cx), y = R(k.y - cy); if (x < -30 || x > VW + 30) continue; HNP.cell(g, x, y, k.st, k.st === 'pulse' ? 1 - k.t / BROOD.pulse : 0, time); }
     dress(g, cx, cy, time, VW);
@@ -271,7 +271,7 @@ export function makeNestHands(ctx) {
     for (const q of pots) { const x = R(q.x - cx), y = R(q.y - cy); HNP.pot(g, x, y + 3, time, true);
       if (q.state === 'held' && q.holder) { g.globalAlpha = 0.16 + 0.06 * Math.sin(time * 3); g.strokeStyle = '#c8d0d8'; g.beginPath(); g.arc(R(q.holder.x - cx), R(q.holder.y - 14 - cy), SMOKE.aura, 0, 7); g.stroke(); g.globalAlpha = 1; }
       if (q.state === 'rest') { g.globalAlpha = 0.12; g.fillStyle = '#c8d0d8'; g.beginPath(); g.arc(x, y - 8, SMOKE.aura * Math.min(1, q.smoulder / 2), 0, 7); g.fill(); g.globalAlpha = 1; } }
-    for (const c of clouds) { HNP.cloud(g, c.x - cx, c.y - cy, c.r, Math.min(1, c.t / (c.hall ? 1.0 : 1.2)), time); }
+    for (const c of clouds) { HNP.cloud(g, c.x - cx, c.y - cy, c.r, Math.min(1, c.t / (c.hall ? 1.0 : 1.2)), time); HNSAG.bloom(g, c.x - cx, c.y - cy, c.r, (c.t0 || c.t) - c.t); }   /* (claude/hornetsnest2art) a pot's burst: flash, ring, clay shards */
     if (near && ctx.text) ctx.text('E: A SMOKE POT', R(near.x - cx), R(near.y - cy) - 30, SMOKE.col, 'center');
     if (arc) CT.drawArc(g, arc, cx, cy, time, arc.land && arc.land.hit ? '#8fd160' : '#c8ccd4');
     dressOver(g, cx, cy, time, ctx.VW ? ctx.VW() : 640);   /* (claude/hornetsnest2) the marsh's lily pads and its mist, over the water */

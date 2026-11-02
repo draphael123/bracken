@@ -11,6 +11,7 @@
 import { canvas, mulberry } from '../px.js';
 import { PAPER, COMB, BARK, NEEDLE } from './hornets_nest_tiles.js';
 import { warmEdge } from './hornets_nest_edge.js';
+import { hiveWall } from './hornets_nest_sag.js';
 
 const TS = 16, memo = new Map(); const once = (k, fn) => { if (!memo.has(k)) memo.set(k, fn()); return memo.get(k); };
 /* the big baked pictures are drawn every frame: a CPU-side bake canvas has to be uploaded to the graphics card each time it is drawn (a 576 x 320 vault cost ~12 ms a frame headless), so each one is copied ONCE onto a GPU canvas */
@@ -23,6 +24,7 @@ const mix = (a, b, t) => { const A = rgbOf(a), B = rgbOf(b); return '#' + hx(A[0
 export const NEST_X0 = 80, NEST_X1 = 432, HALL = { x0: 395, x1: 432, y0: 3, y1: 22 };   /* (claude/hornetsnest2: +100 columns) */
 /* the sky by place: [top, mid, low] over the pines. foot = a green-gold morning; fall = the nest tearing loose (warmer); pine = the late gold under the great pine */
 const SKY = { foot: ['#6f9a62', '#b5cf8a', '#e8e2a0'], fall: ['#7f9a58', '#d2c47c', '#f0d890'], pine: ['#7a8f46', '#d8b860', '#f2c878'] };
+const HONEY_WALLS = [[171, 204, 32, 43], [298, 347, 4, 47]];
 const skyAt = tx => { if (tx < 440) return SKY.foot; if (tx < 454) return SKY.fall; return SKY.pine; };
 const WALL = [['#251712', '#34221a', '#46301f', '#573d28'], ['#281509', '#38200f', '#4a2e16', '#5c3c1e'], ['#2c0e0a', '#421810', '#582416', '#6e301c']];
 
@@ -132,6 +134,8 @@ export function drawBackdrop(g, cx, cy, VW, VH, L, time, dY, full) {
     /* the combs hanging in the wall (parallax 0.62), dim */
     { const kk = 0.62, per = 210, i0 = Math.floor((cx * kk - 120) / per) - 1, i1 = Math.floor((cx * kk + VW) / per) + 1;
       for (let i = i0; i <= i1; i++) { const h = hash(i, 17); if (h % 4 === 0) continue; const sp = curtain(h % 5, z), wx = i * per + (h % 70) - Math.round(cx * kk), wy = -10 - Math.round(cy * kk) + (h % 5) * 40; if (wy + 300 < 0 || wy > VH) continue; g.globalAlpha = 0.9; g.drawImage(sp, wx, wy); } g.globalAlpha = 1; }
+    /* (claude/hornetsnest2art) THE SUMP and THE HONEY WELL: a wall of capped, honey-filled and empty cells (world-anchored), stained with honey toward the bed. [col0, col1, row0, row1] */
+    if (L && L.hornetsNest) for (const [c0, c1, r0, r1] of HONEY_WALLS) hiveWall(g, c0, c1, r0, r1, cx, cy, VW, VH);
     /* shade the back wall a step so the footing reads in front of it; deeper rows (the roots) darker */
     g.fillStyle = 'rgba(8,4,2,0.24)'; g.fillRect(0, 0, VW, VH);
     /* the HONEY LIGHTS: warm pools on the wall, breathing */

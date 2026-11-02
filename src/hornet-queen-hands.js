@@ -31,7 +31,7 @@ export const POSE = {   /* (claude/hornetsnestart: the abdomen's angle reads as 
   sleep: { tilt: 0.1, abd: -0.4, wing: 'fold', y: 0 }, wake: { tilt: -0.1, abd: -0.2, wing: 'blur' }, hover: { tilt: 0, abd: -0.25, wing: 'blur' }, rise: { tilt: -0.15, abd: -0.3, wing: 'blur' },
   circle: { tilt: 0.1, abd: -0.15, wing: 'blur' }, rejoin: { tilt: -0.1, abd: -0.2, wing: 'blur' }, enter: { tilt: 0.3, abd: -0.1, wing: 'back' },
   aim: { tilt: -0.1, abd: -1.3, wing: 'blur', sting: true }, dive: { tilt: 1.0, abd: -2.3, wing: 'back', sting: true }, skim: { tilt: -0.5, abd: -0.4, wing: 'blur' },
-  stuck: { tilt: 0.15, abd: -1.6, wing: 'beat', sting: true }, winded: { tilt: 0.2, abd: -0.6, wing: 'droop', y: 2 }, dazed: { tilt: -0.2, abd: -0.5, wing: 'droop', y: 2, stars: true },
+  stuck: { tilt: 0.15, abd: -1.6, wing: 'beat', sting: true }, winded: { tilt: 0.2, abd: -0.6, wing: 'droop', y: 2 }, dazed: { tilt: -0.2, abd: -0.5, wing: 'droop', y: 2, stars: true }, grounded: { tilt: 0.32, abd: -0.45, wing: 'splay', legs: true, y: 5, head: -1 },   /* (claude/hornetsnest2art) GROUNDED: face-down on the boards, legs splayed, wings sprawled and twitching */
   fogfall: { tilt: 1.25, abd: -0.9, wing: 'fold' }, thrash: { tilt: -0.4, abd: 0.4, wing: 'beat' },   /* (claude/hornetsnest2) THE FOG DROPS HER: tumbling, nose down, wings folded (GREYBOX - the art lane draws the tumble) */
   sweepTell: { tilt: -0.1, abd: 0.15, wing: 'blur', head: 3 }, sweep: { tilt: 0.05, abd: 0.3, wing: 'back' },
   buzzTell: { tilt: -1.1, abd: -0.3, wing: 'wide' }, buzz: { tilt: -1.0, abd: -0.4, wing: 'wide' }, tearTell: { tilt: -1.3, abd: -0.6, wing: 'wide', legs: true },
@@ -171,11 +171,14 @@ export function makeHornetQueenHands(ctx) {
     /* a perch her buzz (or the tear) has set shaking: it drips and trembles (the tell) */
     for (const p of S.perches) if (p.st === 'shake') { const x0 = p.x0p - cx, y = p.y - cy; for (let k = 0; k < 4; k++) rect(g, x0 + 4 + k * 18 + Math.sin(time * 30 + k) * 1.5, y + 2, 2, 3 + ((time * 8 + k) % 4), '#ff9a5c'); } };
   H.drawBoss = (g, e, cx, cy, time) => { if (!S || e.mode === 'away') return; e.guardFx = Math.max(0, (e.guardFx || 0) - 1 / 60);
-    const f = e.face || 1, x = e.x - cx, y = e.y - cy - HQ.h / 2, p = (e.mode === 'dazed' && e.fall ? POSE.fogfall : POSE[e.mode]) || POSE.hover, flash = (e.hurtT || 0) > 0 || (e.flash || 0) > 0.06;
+    const f = e.face || 1, x = e.x - cx, y = e.y - cy - HQ.h / 2, p = (e.mode === 'dazed' ? (e.fall ? POSE.fogfall : POSE.grounded) : POSE[e.mode]) || POSE.hover, flash = (e.hurtT || 0) > 0 || (e.flash || 0) > 0.06;
     if (S.stage !== 'down') { const fl = S.G.h.floor; g.globalAlpha = 0.25; ell(g, x, fl - cy - 1, 14, 2.5, '#10060a'); g.globalAlpha = 1; }
     if (S.cloak > 0) HQA.cloak(g, x, y, time);
+    const tumble = e.mode === 'dazed' && e.fall;   /* (claude/hornetsnest2art) the fog drop tumbles her: a loose roll about her middle, wings folded */
+    if (tumble) { g.save(); g.translate(R(x), R(y)); g.rotate(Math.sin(time * 9) * 0.38 * f + Math.sin(time * 4.3) * 0.2); g.translate(-R(x), -R(y)); }
     const at = HQA.drawQueen(g, x, y + (p.y || 0), f, p, time, flash);
-    HQA.queenFx(g, { mode: e.mode, x, y, f, time, tip: at.tip, head: at.head, vx: (e.vx || 0) * f, vy: e.vy || 0, held: !!e.held });
+    if (tumble) g.restore();
+    HQA.queenFx(g, { mode: tumble ? 'fogfall' : e.mode, grounded: e.mode === 'dazed' && !e.fall, x, y, f, time, tip: at.tip, head: at.head, vx: (e.vx || 0) * f, vy: e.vy || 0, held: !!e.held });
     if (e.mode === 'dazed') HNP.smokeCurl(g, x + f * 6, y + 2, time, e.fall ? 5 : 3);   /* the fog round her head (and the trail she falls through) */
     if (e.mode === 'aim' && e.held && Math.floor(time * 6) % 2) rect(g, x - f * 14, y + 10, 3, 3, '#ffd36b');
     if ((e.smokeCd || 0) > 0) { g.globalAlpha = 0.5; for (let k = 0; k < 3; k++) { const ph = (time * 2 + k / 3) % 1; rect(g, x + (k - 1) * 10, y - 12 - ph * 14, 4, 2, '#c8d0d8'); } g.globalAlpha = 1; } };   /* wary of smoke: her wings fan it off (the read of her smoke cooldown) */
