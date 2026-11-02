@@ -28,9 +28,9 @@ try {
     return {small:run(false),big:run(true)}})()`);
   out.fist = await pg.evalp(`(()=>{__geo([]);BK.P.face=1;const e=__foe('sprig',20);e.x=BK.P.x+18;e.hp=e.hp0=99999;const P=BK.P;let ups=[];for(let n=1;n<=3;n++){let seen=false;BK.press('atk');for(let i=0;i<30;i++){BK.sim(1);e.x=P.x+18;if(e.liftImm>0)seen=true;}ups.push(seen);}
     return {ups}})()`);
-  out.topple = await pg.evalp(`(()=>{__geo([]);const G=BK.geo(),K=BK.keys,P=BK.P;P.st=P.maxSt;G.raiseWall();BK.sim(2);P.x+=30;P.face=1;G.raiseWall();BK.sim(2);P.x+=30;P.face=1;G.raiseWall();BK.sim(2);P.x-=60;P.face=1;const e=__foe('swornsword',100);e.hp=e.hp0=9999;const n=G.pieces().length;
+  out.topple = await pg.evalp(`(()=>{__geo([]);const G=BK.geo(),K=BK.keys,P=BK.P;P.st=P.maxSt;G.raiseWall();BK.sim(2);P.x+=48;P.face=1;G.raiseWall();BK.sim(2);P.x+=48;P.face=1;G.raiseWall();BK.sim(2);P.x-=96;P.face=1;BK.sim(60);const e=__foe('swornsword',170,{set:{speed:0}});e.hp=e.hp0=9999;const n=G.pieces().length;
     K.up=true;K.block=true;BK.sim(2);K.block=false;K.up=false;const erupting=G.erupts().length;let rolled=0,hurt=0;for(let i=0;i<150;i++){BK.sim(1);rolled=Math.max(rolled,G.rollers().length);hurt=Math.max(hurt,e.hp0-e.hp);}return {n,after:G.pieces().length,erupting,rolled,hurt}})()`);
-  out.one = await pg.evalp(`(()=>{__geo([]);const G=BK.geo(),K=BK.keys,P=BK.P;P.st=P.maxSt;G.raiseWall();BK.sim(2);P.x+=30;P.face=1;G.raiseWall();BK.sim(2);P.x-=30;K.up=true;K.block=true;BK.sim(2);K.block=false;K.up=false;BK.sim(5);return {after:G.pieces().length,rolled:G.rollers().length}})()`);
+  out.one = await pg.evalp(`(()=>{__geo([]);const G=BK.geo(),K=BK.keys,P=BK.P;P.st=P.maxSt;G.raiseWall();BK.sim(2);P.x+=48;P.face=1;G.raiseWall();BK.sim(2);P.x-=48;BK.sim(60);K.up=true;K.block=true;BK.sim(2);K.block=false;K.up=false;BK.sim(5);return {after:G.pieces().length,rolled:G.rollers().length}})()`);
   out.room = await pg.evalp(`(()=>{__geo([]);const g0=Array.from(BK.L.grid),G=BK.geo();BK.P.st=BK.P.maxSt;G.raiseWall();BK.sim(2);const had=G.pieces().length;G.clear();return {had,same:g0.every((v,i)=>v===BK.L.grid[i])}})()`);
   console.log(JSON.stringify(out));
   assert(out.stands.n === 2 && out.stands.after === 2 && out.stands.fill >= 60, 'her stone stands ten seconds on and the meter reads the board ' + JSON.stringify(out.stands));
