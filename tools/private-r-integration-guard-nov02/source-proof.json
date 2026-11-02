@@ -1,0 +1,13 @@
+{
+  "time": "2026-11-02T19:56:29.887Z",
+  "scope": "One read-only expanded-guard diagnosis only;no failed assertions rerun",
+  "failedRun": 41513008031,
+  "originalBackendSha256": "0759b0393bf482baec8c111bfb307d1004aecb347a7b5ff82c6c668c13383316",
+  "diagnosticBackendSha256": "253ee076cbc9bd38600c6fd2aa2c41a527f0dcc09ad562930321bd458eeeb1f3",
+  "diagnosticAppendix": "// Read-only descriptor attribution;no pack or snapshot operations.\nexport function privateNativeGuardDiagnostic(){\n const rejected=[],changed=[];\n for(let i=0;i<watched.length;i++){const w=watched[i],label=w.object===FP?'Function.prototype':w.object===OP?'Object.prototype':w.object===AP?'Array.prototype':w.object===HP?'HTMLCanvasElement.prototype':w.object===CP?'CanvasRenderingContext2D.prototype':w.object===globalThis?'globalThis':'watched-'+i;\n  for(let j=0;j<w.names.length;j++){const d=w.descriptors[j],key=String(w.names[j]),unused=w.object===FP&&(key==='arguments'||key==='caller');if(d&&!unused){for(const role of ['value','get','set'])if(typeof d[role]==='function'&&!native(d[role]))append(rejected,{object:label,key,role,text:apply(fnText,d[role],[])});}if(!same(own(w.object,w.names[j]),d))append(changed,{object:label,key});}\n }\n return{pristine,stable:stable(),rejected,changed,watchedObjects:watched.length,nativeCalls:0,packCalls:0,snapshotCalls:0,compatibilityVerdict:false};\n}\n",
+  "exactOriginalPrefixAndUndo": true,
+  "packCalls": 0,
+  "snapshotCalls": 0,
+  "noNativeCompatibilityOrBenefitVerdict": true,
+  "runnerSha256": "f6ca2878c70cff941c732b590bcec62969ca30eed950de5423c42765f7527771"
+}

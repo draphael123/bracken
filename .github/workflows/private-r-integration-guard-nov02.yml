@@ -1,0 +1,40 @@
+name: Explicit private R expanded guard diagnosis November2
+on:
+  push:
+    branches: [codex/load-perf]
+    paths:
+      - 'tools/private-r-integration-guard-nov02/**'
+      - 'tools/private-r-integration-guard-nov02.mjs'
+      - '.github/workflows/private-r-integration-guard-nov02.yml'
+permissions: {contents: read}
+jobs:
+  cause:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0}
+      - uses: actions/setup-node@v4
+        with: {node-version: '24.11.1'}
+      - name: Frozen original admission native GC and memory policy
+        run: |
+          test -z "$(git diff 62d9c02c HEAD -- src index.html)"
+          git worktree add --detach "$PRIVATE_R_NATIVE_REFERENCE" 1a576c3f4511b6856df9fb4738df5aaae9987e81
+          mkdir -p "$PRIVATE_R_NATIVE_OUT"
+          git rev-parse HEAD HEAD:src > "$PRIVATE_R_NATIVE_OUT/source.txt"
+          sha256sum tools/private-r-integration-guard-nov02/* tools/private-r-integration-guard-nov02.mjs .github/workflows/private-r-integration-guard-nov02.yml > "$PRIVATE_R_NATIVE_OUT/source-sha256.txt"
+          node --check tools/private-r-integration-guard-nov02.mjs
+        env:
+          PRIVATE_R_NATIVE_OUT: ${{ runner.temp }}/private-r-integration-guard-nov02
+          PRIVATE_R_NATIVE_REFERENCE: ${{ runner.temp }}/private-r-integration-guard-reference-nov02
+      - name: Read descriptors only without packs snapshots or assertion retries
+        run: node tools/private-r-integration-guard-nov02.mjs
+        env:
+          PRIVATE_R_NATIVE_OUT: ${{ runner.temp }}/private-r-integration-guard-nov02
+          PRIVATE_R_NATIVE_REFERENCE: ${{ runner.temp }}/private-r-integration-guard-reference-nov02
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: private-r-integration-guard-nov02
+          path: ${{ runner.temp }}/private-r-integration-guard-nov02/
+          if-no-files-found: error
