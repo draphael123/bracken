@@ -300,6 +300,9 @@ export function buildSunkenCaravan(T) {
     for (let i = 0; i < n; i++) { let x = w0 + 3 + Math.floor(i * 20 / n); while (x < w0 + 23 && !standOK(x)) x++; if (x >= w0 + 23) continue;
       const t = ROSTER[sec][k++ % ROSTER[sec].length]; ent(t, x, t === 'vulture' ? top(x) - 7 : on(x)); busy.add(x); } }
 
+  /* (claude/platwins2) THE ROAD PAST THE TOWN IS A PLATFORMING STRETCH (Daniel 10-31 PLATFORMING RULE: 5+ beats, 24+ tiles, no fight inside): x243-298 is the pit-and-slab run
+     (three gap jumps, the hop run up the slabs, the drops); the sprinkled garrison keeps off it (L.calm), the same crowd stands before and after it */
+  calm.push([241, 300, 0, H]);
   return { W, H, grid, ents, START: { x: 6, y: on(6) }, pools: [], falls: [], moversExtra, interiors, masonry, facades, calm: calm.concat(deckCalm), roofs, sections, marks, arena, quicksand: qs, shade, timberPlanks, crumbles, slabs, duneSlides, walls, viaducts,
     draft: true, palette: { set: 'desert' }, rule: 'THE SUN', lengthCols: ax0 };
 }

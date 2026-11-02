@@ -1880,7 +1880,7 @@ async function runbossLab(BK, opts) {
         k.left=k.right=k.up=k.down=k.jump=k.block=false;if(!(P.labRotHold>0))k.atk=false;   /* (claude/labkeys) the attack key let go too, unless the rotation holds it */
         const QH=BK.hornetQueenHands(),S=QH&&QH.show(),NH=BK.nestHands&&BK.nestHands();
         if(f===0||!P.labHqMem)P.labHqMem={};
-        const pl=S?hqPlan({v2:!!LABP.v2,hero:h,rest:!!P.labRest,P:{x:P.x,y:P.y,vy:P.vy,face:P.face,ground:P.ground,atk:P.atk,held:!!(P.carry&&P.carry.t==='smokepot')},e:boss,S,reach:LAB_REACH[h],shield:SHIELDED(h)&&(h!=='geomancer'||P.st>=30),dodge:!(h==='warden'&&!LABP.v2),t:f/60,rng:Math.random,mem:P.labHqMem,stands:NH&&NH.on()?NH.stands():[],adds:BK.enemies().filter(q=>q.alive&&q!==boss&&q.t==='wasp').map(q=>({x:q.x,y:q.y}))}):{gx:null,face:P.face};
+        const pl=S?hqPlan({v2:!!LABP.v2,hero:h,rest:!!P.labRest,P:{x:P.x,y:P.y,vy:P.vy,face:P.face,ground:P.ground,atk:P.atk,held:!!(P.carry&&P.carry.t==='smokepot')},e:boss,S,reach:LAB_REACH[h],shield:SHIELDED(h)&&(h!=='geomancer'||P.st>=30),dodge:!(h==='warden'&&!LABP.v2),t:f/60,rng:Math.random,mem:P.labHqMem,stands:NH&&NH.on()?NH.stands().filter(s=>s.st!=='empty'):[],adds:BK.enemies().filter(q=>q.alive&&q!==boss&&q.t==='wasp').map(q=>({x:q.x,y:q.y}))}):{gx:null,face:P.face};
         if(pl.dodge&&P.ground&&(P.labDodgeF===undefined||f-P.labDodgeF>30)){if(pl.gx!=null)k[pl.gx>P.x?'right':'left']=true;if(h==='warden'&&LABP.v2&&pl.gx!=null)P.face=pl.gx>P.x?-1:1;BK.press('dodge');P.labDodgeF=f;}
         if(pl.jump&&P.ground){if(P.labJumpF===undefined||f-P.labJumpF>14){BK.press('jump');P.labJumpF=f;P.labJump=16;}}
         if(P.labJump>0){P.labJump--;k.jump=true;}

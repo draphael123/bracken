@@ -11,7 +11,7 @@ import { canvas } from '../px.js';
 const memo = new Map(); const once = (k, fn) => { if (!memo.has(k)) memo.set(k, fn()); return memo.get(k); };
 const hash = (a, b) => { let h = (Math.imul(a | 0, 73856093) ^ Math.imul(b | 0, 19349663)) >>> 0; h = Math.imul(h ^ (h >>> 13), 1274126177) >>> 0; return h ^ (h >>> 16); };
 const R = (g, c, x, y, w, h) => { g.fillStyle = c; g.fillRect(Math.round(x), Math.round(y), Math.max(1, Math.round(w)), Math.max(1, Math.round(h))); };
-export const TEAR = { cx: 5024, y0: 100, y1: 190, hw: 142 };   /* world px: the hall's vault centre; the hole's top, its lower lip (the camera's top edge is ~y 139: the hole is the lower half of this) */
+export const TEAR = { cx: 6624, y0: 100, y1: 190, hw: 142 };   /* world px: the hall's vault centre; the hole's top, its lower lip (the camera's top edge is ~y 139: the hole is the lower half of this) */
 const PAPERS = ['#2a1c10', '#4a3420', '#6a4e30', '#8a6c46', '#a8896a', '#c8aa84'];
 const gpu = c => { const [o, g] = canvas(c.width, c.height, true); g.imageSmoothingEnabled = false; g.drawImage(c, 0, 0); return o; };
 const hardAlpha = (c, g, thr = 110) => { const d = g.getImageData(0, 0, c.width, c.height), a = d.data; for (let i = 3; i < a.length; i += 4) a[i] = a[i] >= thr ? 255 : 0; g.putImageData(d, 0, 0); };
@@ -103,7 +103,7 @@ function stalk(g, ax, ay, bx, by, hw, time, seed) {
 export function tornStalks(g, c, x, y, w, cx, cy, time) {
   const topY = TEAR.y1 - cy - 6;
   if (c.last) { for (const [dx, ax] of [[0.14, -64], [0.5, 0], [0.86, 64]]) stalk(g, TEAR.cx - cx + ax, topY, x + w * dx, y, dx === 0.5 ? 3 : 4, time, 3 + dx * 10); return; }
-  const west = (c.x0 + c.x1) / 2 < 313.5, ax = TEAR.cx - cx + (west ? -92 : 92);
+  const west = (c.x0 + c.x1) / 2 < 413.5, ax = TEAR.cx - cx + (west ? -92 : 92);
   stalk(g, ax, topY, x + w * (west ? 0.7 : 0.3), y, 4, time, west ? 1 : 2); stalk(g, ax + (west ? 20 : -20), topY + 2, x + w * (west ? 0.9 : 0.1), y, 3, time, west ? 5 : 6);
 }
 

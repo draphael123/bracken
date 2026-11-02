@@ -137,7 +137,7 @@ import { makeWardenBrace, WB as WB_K } from './warden-brace.js';   /* THE WARDEN
 import { makeCrouchA, CROUCH as CROUCH_A } from './crouch-a.js';   /* THE CROUCH TWISTS, PART A (claude/croucha): the knight's LOW GUARD and SHIELD TRIP, the warden's SET SPEAR and LOW POKE, the freebooter's DUCK AND RELOAD */
 import { TOKENS, tokenBoard, tokenPre, tokenHold, tokenPost, release as tokenRelease, claim as tokenClaim } from './attack-tokens.js';
 import * as GB from './boss-greed.js'; import { makeBossRead, ANGLE as BR_ANGLE, ROLL_SOON, roomBlow as brRoomBlow, GUARD as BR_GUARD } from './boss-read.js'; import { TEMPO, installTempo } from './foe-tempo.js';   /* THE GLOBAL BOSS RULE: x0.05 outside an opening, and the greed reprisal (claude/combat3, Daniel 2026-10-01) */
-import { installTactics, braceHit } from './foe-tactics.js'; import { installReact, actOf as bpActOf } from './foe-react.js'; import { gapFactor as bpGap, dmgFactor as bpDmg, capBoost as bpCap, kiteBoost as bpKite } from './boss-pressure.js';   /* (claude/flasklever) THE GLOBAL BOSS PRESSURE DIAL: one table per act (src/boss-pressure.js) */ import { installEliteKit, AFFIX as ELITE_AFFIX, tuneOf } from './elite-kit.js';   /* (ELITES2) the elite's affix, guard, opening and escalation */   /* THE COMBAT PASS, PART 2b: reactive foes, varied swings, squads, the ramp by act (src/foe-react.js) */
+import * as GLU from './foe-glue.js'; import { installTactics, braceHit } from './foe-tactics.js';   /* (claude/lategameb) PACK GLUE (src/foe-glue.js) */  import { installReact, actOf as bpActOf } from './foe-react.js'; import { gapFactor as bpGap, dmgFactor as bpDmg, capBoost as bpCap, kiteBoost as bpKite } from './boss-pressure.js';   /* (claude/flasklever) THE GLOBAL BOSS PRESSURE DIAL: one table per act (src/boss-pressure.js) */ import { installEliteKit, AFFIX as ELITE_AFFIX, tuneOf } from './elite-kit.js';   /* (ELITES2) the elite's affix, guard, opening and escalation */   /* THE COMBAT PASS, PART 2b: reactive foes, varied swings, squads, the ramp by act (src/foe-react.js) */
 import { POISE_EXTRA, POISE_EXTRA_HEAVY, OPEN, openCommon, broke, staggerPose, drawOpen } from './poise-break.js';
 import { roleOf as rxRoleOf } from './foe-react.js'; import * as FBR from './foe-break.js'; import * as FOA from './foe-affix.js'; import * as FP from './foe-pursuit.js'; import * as FPL from './foe-pass.js';   /* (claude/foepass) LEVER 3 affixes from act II; LEVER 1 pursuit + the archer's lead and LEVER 4a squad roles; where they are live (src/foe-pass.js) */ import * as TA from './told-attacks.js';   /* (claude/foepass) LEVER 4b: every family's ONE told attack - its own windup shape, the answer read beside the mark, a jumped / ducked one OVERREACHES */   /* (claude/foepass) THE FOE PASS, LEVER 2: varied blows fill a common foe's bar, the same one spammed goes stale; a finisher refunds wind + a sliver of health */
 import * as AM from './anti-mash.js'; import * as DFM from './difficulty.js';   /* (claude/difficulty) ANTI-MASH INSIDE OPENINGS (stale blows, the universal break bar + finisher, varied hits refill abilities) and THE DIFFICULTY MODES' table */
@@ -436,6 +436,8 @@ function progDefaults() { DFM.setSaveMode(PROG.mode);   /* (claude/difficulty) t
   if (!PROG.bannerMig) { PROG.bannerMig = 1; const w = PROG.witchlight || {}; if ((w.medal || 0) >= 2 || (PROG.unburied && PROG.unburied.cleared)) PROG.fieldOpen = 1; }
   /* THE LIT CHURCH'S ROAD (claude/towpathchurch): it used to open on a BRONZE medal on THE TOWPATH; it opens on WAYMEET's three votive lamps now. A save that had it open (that medal, or the church cleared) keeps it - once */
   if (!PROG.churchMig) { PROG.churchMig = 1; if (((PROG.towpath || {}).medal || 0) >= 1 || (PROG.church && PROG.church.cleared)) PROG.churchOpen = 1; }
+  /* (claude/smallfix7, Daniel 11-01) THE BURNING VILLAGE opens on KING GORM beaten in one life, not on a Stockade clear. A save that already had it open (the Stockade cleared under the old rule) or has played it keeps it, once. */
+  if (!PROG.burningMig) { PROG.burningMig = 1; if ((PROG.stockade && PROG.stockade.cleared) || (PROG.burning && PROG.burning.cleared)) PROG.burningOpen = 1; }
   SC.migrate(PROG);   /* (claude/secrets) a secret this save already has open is TOLD: it shows as found and is not announced again */
   /* a secret wood cleared before secret woods counted: credit it to the hero carrying the save, once */
   for (const lv of LEVELS) if (lv.secret && PROG[lv.id] && PROG[lv.id].cleared && !Object.values(PROG.done || {}).some(dd => dd && dd[lv.id])) { const hh = PROG.hero || 'knight'; PROG.done[hh] = PROG.done[hh] || {}; PROG.done[hh][lv.id] = 1; }
@@ -612,7 +614,7 @@ const RIPOSTE = { window: 0.6, beat: 0.25 };   /* beat: how long before the blow
 
 // ---------- bake ----------
 const SKINS = [
-  { id: 'bracken', name: 'BRACKEN BLUE', price: 0, pal: {} },
+  { id: 'bracken', name: 'THORN BLUE', price: 0, pal: {} },
   { id: 'black', name: 'BLACK KNIGHT', price: 30, pal: { b: '#2a2a34', B: '#15151c', r: '#c9463d', y: '#c9d1dc' } },
   { id: 'purple', name: 'VIOLET KNIGHT', price: 40, pal: { b: '#6a3aa0', B: '#40206a', r: '#ffd36b', y: '#ffd36b' } },
   { id: 'blue', name: 'RIVER BLUE', price: 50, pal: { b: '#2f7fe0', B: '#1f4fa0', r: '#fff6e0', y: '#e0b040' } },
@@ -809,7 +811,7 @@ const GEO_LIFE0 = GEO_K.stone.gnaw, GEO_PERFECT0 = GEO_K.ward.perfect;   /* (cla
 const cdOf = k => Math.max(0.5, (k === 'summonSkeleton' && isReaper() && tal('gleaner') ? BKIT.BLOOD.host.worms.quick : CD_MAX[k] || 3) - (k === 'whirlwind' && hero() === 'knight' ? 0.5 * upg('ucalm') : 0)) * (perk('focus') ? 0.85 : 1);
 const amul = k => grow(hero(), heroLevel()).skillMultiplier * (1 + RANK_MUL * Math.max(0, skillRank(PROG, hero(), k) - 1)) * (hero() === 'knight' ? 1 + 0.2 * (k === 'shieldThrow' ? upg('uthrow') : k === 'risingCut' ? upg('urise') : 0) : 1); // skill damage grows (and MASTERY, a perk, and the skill's RANK), cooldowns and invulnerability do not
 let treeResetT = 0, talentsBackT = 0, talentsBackWho = '', talentsBackWhy = '';   /* RESET POINTS asks twice; the trees-have-changed notice shows once */
-window.BKT = { fieldsState: () => FLD, cqState: () => (CQH && CQH.show ? CQH.show() : null),   /* (claude/arenapolish) tools/arena-polish-shots.mjs: the moon's clock and the Underwell hall's state */ stk: () => SKD, stkExplode: (x, y, r) => explode(x, y, r, DMG.bomb),   /* (claude/chief3) tools/chief3.mjs: the Stockade's hands, and a blast */ shrineFill: () => shrineFill(),   /* (claude/difficulty) tools/difficulty.mjs: a shrine's refill per mode */ lights: () => lights, get PROG() { return PROG; }, krkArmPts: a => krkArmPts(a, L.arena.floor, 0), krakLimp: (e, t) => krakenArmsLimp(e, t), krkTop: (x, n) => krkTop(x, n), krkRoadEnds: () => krkRoadEnds(),   /* (tools/kraken-reach.mjs, tools/kraken-rework.mjs) */
+window.BKT = { fieldsState: () => FLD, cqState: () => (CQH && CQH.show ? CQH.show() : null),   /* (claude/arenapolish) tools/arena-polish-shots.mjs: the moon's clock and the Underwell hall's state */ stk: () => SKD, stkExplode: (x, y, r) => explode(x, y, r, DMG.bomb),   /* (claude/chief3) tools/chief3.mjs: the Stockade's hands, and a blast */ shrineFill: () => shrineFill(),   /* (claude/difficulty) tools/difficulty.mjs: a shrine's refill per mode */ lights: () => lights, get PROG() { return PROG; },   /* (claude/smallfix7) tools/gorm-unlock.mjs: the one-life Gorm clear */ vil: () => ({ grid: VG, fires, parts: parts.length }), vilSplash: (x, y, r, c) => villageSplash(x, y, r, c), vilIgnite: (tx, ty) => ignite(VG, tx, ty, 'burngob'),   /* tools/douse-agree.mjs */ gormUnlock: () => ({ fell: gormFell, live: gormFightLive(), open: !!PROG.burningOpen }), gormDie: () => die({ name: 'TEST', red: false, rule: '' }), gormWin: () => gormBeaten(), krkArmPts: a => krkArmPts(a, L.arena.floor, 0), krakLimp: (e, t) => krakenArmsLimp(e, t), krkTop: (x, n) => krkTop(x, n), krkRoadEnds: () => krkRoadEnds(),   /* (tools/kraken-reach.mjs, tools/kraken-rework.mjs) */
   /* THE HARNESS LEVEL (HARNESSCARD): a bot hero at level n is n XP-levels AND n card picks spread evenly (the migrated-save spread), the stats a real player who spent his picks has; xp alone reads a no-card hero (-8 hp a Vigor pick, -12 stamina an Endurance pick, -1 damage a Might). Tools only: a real player chooses his own picks. */
   setHeroLevel: (h, n) => { PROG.xp = PROG.xp || {}; PROG.card = PROG.card || {}; PROG.xp[h] = n > 0 ? xpFloor(n) : 0; PROG.card[h] = evenCard(n > 0 ? n : 0); return heroLevel(h); }, TREE, TBR, TREE_WHO, tal, skillIcon: k => skillIcon(k), talIcon: (i, w) => talIcon(i, w), TAL_KIND: (i, w) => TAL_KIND(i, w), ptsTotal, ptsSpent, ptsLeft, branchPts, nodeState, capOf, resetTalents, heroLevel, LV_GROW, CAP_NEED, PTS_CAP,
   skillNow: () => skillNow(), skill2Now: () => skill2Now(), skillAt: i => skillAt(i), loadoutSafe: () => loadoutSafe(), get saveBlocked() { return saveBlocked; }, get saveFail() { return saveFail; }, saveNow: () => saveProgress(), eraseAskNow: () => eraseAsk, slotHealth: i => slotHealthOf(i), get fixAsk() { return fixAsk; }, get fixI() { return fixI; }, get bugSnapshot() { return bugSnapshot; }, inputSnapshot: ()=>pressRead(), padState: gp=>padState(gp), touchPress: k=>touchPressName(k), tipPay: e => tipPay(e), swordDmg: () => swordDmg(), perfectWindow: () => perfectWindow(), dodgeCost: () => dodgeCost(), get P() { return P; },
@@ -1719,7 +1721,7 @@ function coopWatch() {
   coopFall = false;
   if (L && L.tavern) { for (const p of players) if (p.down > 0) tavernStandUp(p); return; }   /* (claude/tavern) all of them down in the inn: everybody up, no shrine, no cost */
   for (const p of players) p.score.deaths++; for (const p of players) if (!p.dcDone) asPlayer(p, () => deathCost(P, p.killer));
-  deaths++;                                                          /* the run's own count: one fall, however many of them went down in it */
+  deaths++; gormNoteDeath();                                         /* the run's own count: one fall, however many of them went down in it */
   number(players[0].x, players[0].y - 40, 'BACK TO THE SHRINE', '#ff6b6b');
   for (const p of players) { p.down = 0; p.reviveT = 0; p.dead = 0; }
   asPlayer(players[0], () => respawn());
@@ -2150,7 +2152,7 @@ function allyTick() {
 }
 /* ==================== end of the co-op block ==================== */
 let state = 'title', time = 0, levelTime = 0, deaths = 0, got = 0, total = 0, kills = 0, pogoCount = 0, parries = 0, blocks = 0, dodges = 0, hitsTaken = 0;
-const MEDALS = { hornetsnest: [360, 520, 760],   /* THE HORNET'S NEST (claude/hornetsnest): an ESTIMATE (the climb ~3 min walked, the Queen's two rooms and the drop ~2), no timed run */ fenroad: [420, 600, 860],   /* THE FEN ROAD (claude/fenroad): an ESTIMATE, no timed run */ minecart: [260, 360, 520],   /* THE DEEP RAILS (claude/minecart): the cart pilot rides the route in ~160 s and the drill takes ~90 - an ESTIMATE, no timed run */ rootway: [470, 650, 920],   /* THE ROOTWAY (claude/rootway): ~450 columns of roots, buds and hoists and THE HUNTMASTER - an ESTIMATE off the sky road's, no timed run */ skyroad: [520, 720, 1020],   /* THE SKY ROAD (claude/skyroad): ~460 columns of climbing and gliding and THE ROC - an ESTIMATE off the moor's, no timed run */ caravan: [410, 560, 780],   /* THE SUNKEN CARAVAN: 505 columns to the hollow, one ambush, and since claude/duneworm THE DUNE WORM in it: the old estimate (300/440/660, off the stair's, no boss) plus about 110 s for him - the boss lab's median fight at normal health (tools/duneworm-pilot.mjs). Still an ESTIMATE: no timed human run. work/claude/lane-done/claude-duneworm.md */ unburied: [330, 480, 720],   /* THE UNBURIED FIELD: 420 columns, a mini and a boss, eleven encounters and an ambush - an ESTIMATE off the stair's, no pilot yet */ witchlight: [312, 468, 707],   /* (x619/595 for the Rooted Garden's 24 columns, claude/hedgewarden2) the stair, redesigned (2026-09-22): ~430 tiles of road and a 36-row shaft, slab crossings and the cloister's roof walk, thirteen encounters and the Hedge Warden - an ESTIMATE, no climbing pilot */ burning: [480, 680, 980], fallingtower:[420,600,880],   /* the ascent (2026-09-21): the carpet pilot's median win 122 s (17 of 24 at normal health) + a climb of ~55 tiers at ~4-5 s */ keep: [850,1200,1700], harbor: [850, 1200, 1700], burial: [520, 760, 1100]   /* claude/burial2: cut from 1,386 cols to 660 (a 740-tile walked route, the Keeper and the Buried Dead in it): about the Hexed Fields' times, a little under */, mage: [660, 920, 1300], fields: [600, 860, 1220], causeway: [660, 920, 1290], frost: [640, 890, 1250], hunt: [640, 900, 1260], quarry: [600, 850, 1200], skyship: [660, 920, 1280], waymeet: [620, 870, 1220], deep: [600, 840, 1180], undercrown: [540, 760, 1080], underleaf: [420, 600, 900], lamplit: [620, 860, 1220], hurricane: [560, 790, 1130], flotilla: [580, 820, 1160], reef: [650, 910, 1280],   /* LONGER (docs/briefs/reef-longer.md): 90 more columns - the bell-pool and the hulk, about 35 s at the walk the old times assumed - and the Reefmaw's land phase, about 15 s more at the boss lab's median. An ESTIMATE: no timed human run */ longwater: [600, 840, 1180], crown: [460, 640, 900], storm: [600, 820, 1150], moor: [480, 660, 960], scree: [450, 630, 920], spire: [520, 700, 980], hanging: [480, 660, 960], wood: [240, 360, 540], marsh: [300, 450, 660], stockade: [330, 480, 720], spore: [360, 520, 780], kings: [420, 600, 900] };
+const MEDALS = { hornetsnest: [440, 630, 920],   /* (claude/hornetsnest2: +100 columns, the gallery and the well: x1.2) THE HORNET'S NEST (claude/hornetsnest): an ESTIMATE (the climb ~3 min walked, the Queen's two rooms and the drop ~2), no timed run */ fenroad: [420, 600, 860],   /* THE FEN ROAD (claude/fenroad): an ESTIMATE, no timed run */ minecart: [260, 360, 520],   /* THE DEEP RAILS (claude/minecart): the cart pilot rides the route in ~160 s and the drill takes ~90 - an ESTIMATE, no timed run */ rootway: [470, 650, 920],   /* THE ROOTWAY (claude/rootway): ~450 columns of roots, buds and hoists and THE HUNTMASTER - an ESTIMATE off the sky road's, no timed run */ skyroad: [520, 720, 1020],   /* THE SKY ROAD (claude/skyroad): ~460 columns of climbing and gliding and THE ROC - an ESTIMATE off the moor's, no timed run */ caravan: [410, 560, 780],   /* THE SUNKEN CARAVAN: 505 columns to the hollow, one ambush, and since claude/duneworm THE DUNE WORM in it: the old estimate (300/440/660, off the stair's, no boss) plus about 110 s for him - the boss lab's median fight at normal health (tools/duneworm-pilot.mjs). Still an ESTIMATE: no timed human run. work/claude/lane-done/claude-duneworm.md */ unburied: [330, 480, 720],   /* THE UNBURIED FIELD: 420 columns, a mini and a boss, eleven encounters and an ambush - an ESTIMATE off the stair's, no pilot yet */ witchlight: [312, 468, 707],   /* (x619/595 for the Rooted Garden's 24 columns, claude/hedgewarden2) the stair, redesigned (2026-09-22): ~430 tiles of road and a 36-row shaft, slab crossings and the cloister's roof walk, thirteen encounters and the Hedge Warden - an ESTIMATE, no climbing pilot */ burning: [480, 680, 980], fallingtower:[420,600,880],   /* the ascent (2026-09-21): the carpet pilot's median win 122 s (17 of 24 at normal health) + a climb of ~55 tiers at ~4-5 s */ keep: [850,1200,1700], harbor: [850, 1200, 1700], burial: [520, 760, 1100]   /* claude/burial2: cut from 1,386 cols to 660 (a 740-tile walked route, the Keeper and the Buried Dead in it): about the Hexed Fields' times, a little under */, mage: [660, 920, 1300], fields: [600, 860, 1220], causeway: [660, 920, 1290], frost: [640, 890, 1250], hunt: [640, 900, 1260], quarry: [600, 850, 1200], skyship: [660, 920, 1280], waymeet: [620, 870, 1220], deep: [600, 840, 1180], undercrown: [540, 760, 1080], underleaf: [420, 600, 900], lamplit: [620, 860, 1220], hurricane: [560, 790, 1130], flotilla: [580, 820, 1160], reef: [650, 910, 1280],   /* LONGER (docs/briefs/reef-longer.md): 90 more columns - the bell-pool and the hulk, about 35 s at the walk the old times assumed - and the Reefmaw's land phase, about 15 s more at the boss lab's median. An ESTIMATE: no timed human run */ longwater: [600, 840, 1180], crown: [460, 640, 900], storm: [600, 820, 1150], moor: [480, 660, 960], scree: [450, 630, 920], spire: [520, 700, 980], hanging: [480, 660, 960], wood: [240, 360, 540], marsh: [300, 450, 660], stockade: [330, 480, 720], spore: [360, 520, 780], kings: [420, 600, 900] };
 const medalFor = (id, t) => { const m = MEDALS[id] || [300, 450, 660]; return t <= m[0] ? 3 : t <= m[1] ? 2 : t <= m[2] ? 1 : 0; };
 const MEDAL_NAME = ['', 'BRONZE', 'SILVER', 'GOLD'], MEDAL_COL = ['#5a5a5a', '#b87333', '#c9d1dc', '#ffd34a'];
 let lives = Infinity, bannerT = 0, soundI = 0, soundCat = 0;
@@ -2170,6 +2172,7 @@ const CAM_FOOT = 0.68;
 /* LOOKING UP A CLIMB (L.climbLook: STORMHOLD's towers, THE RED GORGE - its UPGRADE D): on a rope the camera looks up it 48 px, and in the gorge on a basket too */
 const lookingUp = () => !!(L && L.climbLook && (P.climb || (L.redgorge && P.onMover && P.onMover.gorge)));
 let boss = null, bossActive = false, bossWon = 0, camLock = null, bossMusicT = 0;
+let gormFell = false;   /* (claude/smallfix7, Daniel 11-01) a hero fell to a SHRINE RESPAWN inside the King Gorm fight (either phase, or the burning wood between them) this run: his clear no longer opens the Burning Village. Reset with the run (startGame). */
 let actCard = null, bossBeat = null;   /* (claude/actcards) the act card on screen ({ t, act, label, name }) and this level's boss-kill beat ({ left, plan, x, y }; kept at left 0 so it cannot fire twice) */
 let zoomT = 0, zoomAmt = 1, bossZoom = 0, birds = [], drops = [], pollen = [], lightT = 8, lightFlash = 0, thunderT = 0, pogoChain = 0, tongue = null;
 let burnT = {}; // per-tile burn timers for stake walls
@@ -4673,7 +4676,7 @@ function startGame() {
   if (coopWant && L && !L.trial && !L.shop && !rushOn()) partyStart(); else if (coop()) coopEnd();   /* (claude/tavern) the whole party: up to four seats (coopWant.seats) */
   if (TAVO) TAVO.reset();
   dcStart(); for (const p of players) { p.score = freshScore(); if (p.prof) p.prof.woodBase = CS.earnedOf(p.prof.led); }   /* the card's tally is THIS wood's; p.total is the run's, and winLevel adds this to it */
-  state = 'play'; levelTime = 0; deaths = 0; P.phoenixUsed = false; kills = 0; got = 0; lives = SET.iron ? 3 : Infinity; pogoCount = 0; parries = 0; blocks = 0; dodges = 0; hitsTaken = 0;
+  state = 'play'; levelTime = 0; deaths = 0; gormFell = false; P.phoenixUsed = false; kills = 0; got = 0; lives = SET.iron ? 3 : Infinity; pogoCount = 0; parries = 0; blocks = 0; dodges = 0; hitsTaken = 0;
   for (const a of acorns) a.got = false; { const sv = (PROG[LEVELS[levelIndex].id] || {}).silver || 0; for (const s of silvers) s.got = !!(sv & (1 << s.i)); } for (const s of shrines) s.lit = false; collectedCrates.clear(); healCrates.clear(); healths = []; destroyed = new Set(); cutBridges = new Set(); marks = new Set(); straysGot = new Set(); strayLast = null; resetPools();
   checkpoint = { x: L.START.x * TS + 8, y: (L.START.y + 1) * TS };
   if (q.get('tx')) checkpoint = { x: +q.get('tx') * TS + 8, y: (+(q.get('ty') || 21) + 1) * TS };
@@ -4908,7 +4911,7 @@ const killPct = lv => { const n = lv.needsKills; if (!n) return 1; const p = PRO
    is open the moment this code runs, no migration step needed - both read straight off saved PROG. */
 const MEDAL_RANK = { bronze: 1, silver: 2, gold: 3 };
 const medalMet = (id, rank) => { const p = PROG[id]; return !!(p && (p.medal || 0) >= rank); };
-const opensLocked = lv => { const o = lv.opensOn; if (!o) return false; if (PROG[lv.id] && PROG[lv.id].cleared) return false; if (o.time) { const b = (PROG[o.level] || {}).best; return !(b !== undefined && b !== null && b <= o.time); }   /* a TIME threshold: the junction's best clear must be at or under it (seconds), independent of its medal times */
+const opensLocked = lv => { const o = lv.opensOn; if (!o) return false; if (PROG[lv.id] && PROG[lv.id].cleared) return false; if (o.gorm) return !PROG.burningOpen;   /* (claude/smallfix7) THE BURNING VILLAGE opens on KING GORM beaten in ONE LIFE (gormBeaten), not on a Stockade clear */ if (o.time) { const b = (PROG[o.level] || {}).best; return !(b !== undefined && b !== null && b <= o.time); }   /* a TIME threshold: the junction's best clear must be at or under it (seconds), independent of its medal times */
   if (!o.medal) return !(PROG[o.level] && PROG[o.level].cleared); return !medalMet(o.level, MEDAL_RANK[o.medal] || o.medal); };   /* NO medal named = open once the junction level is CLEARED (any time): the class levels' own roads (Daniel 10-07: a silver-time gate left THE BURNING VILLAGE unreachable on the map in a normal run) */
 /* THE UNBURIED FIELD IS A SECRET (claude/unburiedsecret, Daniel 10-08): no medal opens it. THREE LOST BANNERS do - one hidden off the road in each of THE HEXED FIELDS,
    THE BURIAL CAVERNS and THE WITCHLIGHT STAIR (PROG.lostBanners[levelId], saved per profile). A save that already opened or cleared the field keeps it (PROG.fieldOpen,
@@ -4965,11 +4968,11 @@ const WOOD_NODES = [
   { id: 'marsh', kind: 'level', level: 1, x: 251, y: 129, plate: 'right', name: 'MARSH WOOD' },
   { id: 'fenroad', kind: 'level', level: LEVELS.findIndex(l => l.id === 'fenroad'), x: 268, y: 94, plate: 'right', name: 'THE FEN ROAD' },   /* THE FEN ROAD (claude/fenroad, Daniel 10-20): between MARSH WOOD and THE STOCKADE, on the road's old bend */
   { id: 'stockade', kind: 'level', level: 2, x: 288, y: 47, plate: 'right', name: 'THE STOCKADE' },
-  { id: 'burning', kind: 'level', level: LEVELS.findIndex(l => l.id === 'burning'), x: 304, y: 38, plate: 'above', spur: true, name: 'THE BURNING VILLAGE' },   /* A SPUR off the road between the Stockade and Sporewood: the Pyromancer's class level, and optional, so the road does not go through it */
+  { id: 'burning', kind: 'level', level: LEVELS.findIndex(l => l.id === 'burning'), x: 120, y: 36, plate: 'below', spur: true, name: 'THE BURNING VILLAGE' },   /* (claude/smallfix8, Daniel 11-01: it hangs off KINGSWOOD, where King Gorm earns it; it was [304,38] off the Stockade) A SPUR off the road at Kingswood [was: between the Stockade and Sporewood]: the Pyromancer's class level, and optional, so the road does not go through it */
   { id: 'spore', kind: 'level', level: 3, x: 199, y: 38, plate: 'above', name: 'SPOREWOOD' },
   { id: 'rootway', kind: 'level', level: LEVELS.findIndex(l => l.id === 'rootway'), x: 221, y: 68, plate: 'right', name: 'THE ROOTWAY' },   /* THE ROOTWAY (claude/rootway): between SPOREWOOD and KINGSWOOD (Daniel 10-07): the only spot map-spacing passes near them, so the road dips south to it and climbs back to Kingswood (the map lane may relay the sheet) */
   { id: 'underleaf', kind: 'level', level: LEVELS.findIndex(l => l.id === 'underleaf'), x: 196, y: 72, plate: 'below', name: 'UNDERLEAF' },   /* UNDERLEAF (claude/underleaf4, Daniel 10-25): back on the WOOD sheet, ON the road between THE ROOTWAY and THE PALISADE WOOD (it was a crag node between Scree and Hanging, claude/underorder 10-24) */
-  { id: 'palisadewood', kind: 'level', level: LEVELS.findIndex(l => l.id === 'palisadewood'), x: 178, y: 58, plate: 'below', board: 'PALISADE', name: 'THE PALISADE WOOD' },   /* THE PALISADE WOOD (claude/palisadewood, Daniel 10-15): ON the road between THE ROOTWAY and KINGSWOOD */
+  { id: 'palisadewood', kind: 'level', level: LEVELS.findIndex(l => l.id === 'palisadewood'), x: 178, y: 58, plate: 'below', board: 'PALE', name: 'THE PALISADE WOOD' },   /* THE PALISADE WOOD (claude/palisadewood, Daniel 10-15): ON the road between THE ROOTWAY and KINGSWOOD */
   { id: 'kings', kind: 'level', level: 4, x: 141, y: 24, name: 'KINGSWOOD' },
 ];
 /* the road itself, and nothing but: the Burning Village hangs off it on a spur (NODES `spur: true`); UNDERLEAF is ON it (between Kingswood and the Scree Path) */
@@ -5073,14 +5076,31 @@ const NODE_AT = NODES.map(n=>PATH.reduce((best,p,i)=>Math.hypot(p[0]-n.x,p[1]-n.
 const junctionId = lv => (lv.opensOn && lv.opensOn.level) || lv.spurOf || gateOf(lv);
 const spursAt = id => NODES.filter(n => n.spur && n.kind === 'level' && LEVELS[n.level] && junctionId(LEVELS[n.level]) === id && !nodeSecret(n));
 const spurAt = id => spursAt(id)[0];   /* (a secret spur nobody has earned is not a spur yet: no step onto it, no tip) */
-const spurReqText = lv => { const o = lv.opensOn; if (lv.votiveLamps) return "LIGHT WAYMEET'S VOTIVE LAMPS " + votiveOwned() + '/' + VOTIVE_N; if (!o) return secretWants(lv)[0]; if (o.time) { const j = NODES.find(n => n.level === LEVELS.findIndex(l => l.id === o.level)); return 'BEAT ' + (j ? j.name : o.level.toUpperCase()) + ' IN ' + fmt(o.time) + ' TO OPEN THIS ROAD'; } if (!o.medal) { const j = NODES.find(n => n.level === LEVELS.findIndex(l => l.id === o.level)); return 'CLEAR ' + (j ? j.name : o.level.toUpperCase()) + ' TO OPEN THIS ROAD'; } const rank = MEDAL_RANK[o.medal] || o.medal; const t = (MEDALS[o.level] || [300, 450, 660])[3 - rank];
+/* (claude/smallfix8, Daniel 11-01: 'SOAKED reads soaked') THE FLAME A SOAKED HERO STANDS IN GOES DIM (draw alpha < 1) while he is the only one in its reach: it cannot burn him and the picture says so. A hero in the flame who is NOT soaked (co-op) keeps it at full - it still burns him. 1 = full flame. */
+function fireDim(x, y, tall) { const ps = coop() ? players : [P]; let wet = false;
+  for (const p of ps) { if (!p || p.dead || p.down > 0) continue; if (Math.abs(p.x - x) < 24 && p.y > y - Math.max(24, tall || 0) - 4 && p.y <= y + 6) { if (p.soaked > 0) wet = true; else return 1; } }
+  return wet ? 0.36 : 1; }
+/* KING GORM IN ONE LIFE (claude/smallfix7, Daniel 11-01: "beating him without dying" - both phases, the burning wood between them). The fight is live from the moment he is awake in the court (or any later stage persists) to his real death; a SHRINE RESPAWN inside it (die() / coopWatch) taints the run. A flask or a co-op lift is not a death. In co-op the party's clean win counts when nobody went back to the shrine (a hero downed and lifted is not a fall); it is written on the hosting save only (a seat on his own save opens it by winning a clean run himself). Boss rush and the boss-select ring never open it: only the real Kingswood run does. */
+const gormFightLive = () => !!(L && L.gorm && ((GMH && GMH.persist && GMH.persist()) || (boss && boss.t === 'king' && boss.alive && bossActive)));
+function gormNoteDeath() { if (gormFightLive()) gormFell = true; }
+function gormBeaten() { if (!L || !L.gorm || bossSelectFight || rushOn() || LEVELS[levelIndex].id !== 'kings') return;
+  if (gormFell) { if (!PROG.burningOpen) hintSay('tip', 6, 'YOU FELL TO GORM: THE BURNING VILLAGE STAYS SHUT'); return; }
+  /* (claude/smallfix8, Daniel 11-01) CO-OP: a clean party win credits EVERY seat's own save (the ledger's flag rides the credit; a seat already holding it takes nothing twice) */
+  for (const p of players || []) if (p !== players[0] && p.prof && !p.ai) CS.noteFlag(p.prof.led, 'burningOpen');
+  const had = !!PROG.burningOpen; PROG.burningOpen = 1;
+  if (!had) { hintMsg = 'THE BURNING VILLAGE IS OPEN: A NEW ROAD OFF KINGSWOOD'; hintT = 6; }
+  saveProgress(); try { creditAll(false); } catch {} }
+const gormWant = () => 'BEAT KING GORM WITHOUT FALLING';
+const spurReqText = lv => { const o = lv.opensOn; if (o && o.gorm) return gormWant(); if (lv.votiveLamps) return "LIGHT WAYMEET'S VOTIVE LAMPS " + votiveOwned() + '/' + VOTIVE_N; if (!o) return secretWants(lv)[0]; if (o.time) { const j = NODES.find(n => n.level === LEVELS.findIndex(l => l.id === o.level)); return 'BEAT ' + (j ? j.name : o.level.toUpperCase()) + ' IN ' + fmt(o.time) + ' TO OPEN THIS ROAD'; } if (!o.medal) { const j = NODES.find(n => n.level === LEVELS.findIndex(l => l.id === o.level)); return 'CLEAR ' + (j ? j.name : o.level.toUpperCase()) + ' TO OPEN THIS ROAD'; } const rank = MEDAL_RANK[o.medal] || o.medal; const t = (MEDALS[o.level] || [300, 450, 660])[3 - rank];
   const jn = NODES.find(n => n.level === LEVELS.findIndex(l => l.id === o.level)); const nm = jn ? jn.name : o.level.toUpperCase();
   return 'BEAT ' + nm + ' IN ' + fmt(t) + ' TO OPEN THIS ROAD'; };
 /* THE LOCKED-ROAD TIP (Daniel 10-07: the rule must be SHOWN). Pressing toward a shut side road, or tapping/clicking its node, raises this for a few seconds: what it asks and the best time you hold on that level. */
 const mapTip = { id: null, t: 0 };
-const spurTip = lv => { const o = lv.opensOn; if (lv.votiveLamps) return ['LOCKED: ' + spurReqText(lv), 'THREE DARK LAMPS ON LOFTS IN WAYMEET: A BRAZIER GIVES THE FLAME']; if (!o) return secretWants(lv); const p = PROG[o.level] || {}, j = NODES.find(n => n.level === LEVELS.findIndex(l => l.id === o.level)); return ['LOCKED: ' + spurReqText(lv), p.best !== undefined ? 'YOUR BEST ' + (j ? j.name : o.level.toUpperCase()) + ': ' + fmt(p.best) : 'YOU HAVE NOT CLEARED IT YET']; };
+const spurTip = lv => { const o = lv.opensOn; if (o && o.gorm) return ['LOCKED: ' + gormWant(), PROG.kings && PROG.kings.cleared ? 'ONE LIFE, BOTH PHASES: FIGHT HIM AGAIN IN KINGSWOOD' : 'ONE LIFE, BOTH PHASES, IN KINGSWOOD']; if (lv.votiveLamps) return ['LOCKED: ' + spurReqText(lv), 'THREE DARK LAMPS ON LOFTS IN WAYMEET: A BRAZIER GIVES THE FLAME']; if (!o) return secretWants(lv); const p = PROG[o.level] || {}, j = NODES.find(n => n.level === LEVELS.findIndex(l => l.id === o.level)); return ['LOCKED: ' + spurReqText(lv), p.best !== undefined ? 'YOUR BEST ' + (j ? j.name : o.level.toUpperCase()) + ': ' + fmt(p.best) : 'YOU HAVE NOT CLEARED IT YET']; };
 const raiseTip = nd => { mapTip.id = nd.id; mapTip.t = 6; };
-const MAPC = ART.bakeWorldMap(MAPW, MAPH, [{ x: 0, y: DESERT_Y, w: 320, h: 180, nodes: DESERT_NODES, path: DESERT_PATH, seed: 59, style: 'desert', seam: { y: INLAND_Y, gold: true } }, { x: 0, y: INLAND_Y, w: 320, h: 180, nodes: INLAND_NODES, path: INLAND_PATH, seed: 47, style: 'haunted', seam: COAST_Y }, { x: 0, y: COAST_Y, w: 320, h: 180, nodes: COAST_NODES, path: COAST_PATH, seed: 31, style: 'coast', seam: CRAG_Y }, { x: 0, y: CRAG_Y, w: 320, h: 180, nodes: CRAG_NODES, path: CRAG_PATH, seed: 23, style: 'crag', seam: WOOD_Y }, { x: 0, y: WOOD_Y, w: 320, h: 180, nodes: WOOD_NODES, path: WOOD_PATH, seed: 11, style: 'wood' }], [[[40, 64 + WOOD_Y], [40, 200 + CRAG_Y]], [[40, 200 + CRAG_Y], [40, 152 + CRAG_Y]], [[260, 26 + CRAG_Y], [260, 172 + COAST_Y]], [[140, 8 + COAST_Y], [140, 176 + INLAND_Y]], [[260, 34 + INLAND_Y], [274, 174 + DESERT_Y], 'sand']]);   /* the last connector is sand-coloured, not road-brown: the road changes material crossing into the desert, answering the gold portal on the level side (map-redesign §5) */
+/* THE ROADS THAT JOIN THE SHEETS (a seam leg is baked as road; tools/map-roads.mjs reads this list to prove every road of the chain is painted). (claude/maproad, Daniel 11-01: the first leg started at the old Kingswood spot [40,64], so the road from KINGSWOOD west to the crags' door was never painted - only the dotted unwalked-road overlay showed it) */
+const MAP_CONNECTORS = [[[141, 24 + WOOD_Y], [40, 200 + CRAG_Y]], [[40, 200 + CRAG_Y], [40, 152 + CRAG_Y]], [[260, 26 + CRAG_Y], [260, 172 + COAST_Y]], [[140, 8 + COAST_Y], [140, 176 + INLAND_Y]], [[260, 34 + INLAND_Y], [274, 174 + DESERT_Y], 'sand']];
+const MAPC = ART.bakeWorldMap(MAPW, MAPH, [{ x: 0, y: DESERT_Y, w: 320, h: 180, nodes: DESERT_NODES, path: DESERT_PATH, seed: 59, style: 'desert', seam: { y: INLAND_Y, gold: true } }, { x: 0, y: INLAND_Y, w: 320, h: 180, nodes: INLAND_NODES, path: INLAND_PATH, seed: 47, style: 'haunted', seam: COAST_Y }, { x: 0, y: COAST_Y, w: 320, h: 180, nodes: COAST_NODES, path: COAST_PATH, seed: 31, style: 'coast', seam: CRAG_Y }, { x: 0, y: CRAG_Y, w: 320, h: 180, nodes: CRAG_NODES, path: CRAG_PATH, seed: 23, style: 'crag', seam: WOOD_Y }, { x: 0, y: WOOD_Y, w: 320, h: 180, nodes: WOOD_NODES, path: WOOD_PATH, seed: 11, style: 'wood' }], MAP_CONNECTORS);   /* the last connector is sand-coloured, not road-brown: the road changes material crossing into the desert, answering the gold portal on the level side (map-redesign §5) */
 let mapCamY = MAPH - 180;
 let ghostPathT = 0, ghostT0 = null;   /* how much of the Unburied Field's ghost-path has drawn itself (0..1; PROG.fieldPathDrawn once seen whole) */
 /* A LEVEL THAT LEADS ON (LEVELS leadsTo, claude/archmage3: THE FALLING TOWER's portal takes you to the desert): won, the map puts you on the next node of the road, not back on this one */
@@ -5164,7 +5184,7 @@ function drawMapPanel() {
   { const dy = y0 + h0 - detailH; g.strokeStyle = 'rgba(201,178,124,0.4)'; g.beginPath(); g.moveTo(x0 + 1, dy); g.lineTo(x0 + MAP_PANEL_W - 1, dy); g.stroke();
     const nd = NODES[vis[mapPanel.sel]], lk = nd && nodeLocked(nd);
     if (lk && nd.kind === 'level') { const need = LEVELS[nd.level].needs, nname = need && (NODES.find(n => n.level === LEVELS.findIndex(l => l.id === need)) || {}).name;
-      text(fitText(nname ? 'NEEDS ' + nname : LEVELS[nd.level].locked ? 'LOCKED' : 'NOT YET', MAP_PANEL_W - 10, 6), x0 + 5, dy + 4, '#c9463d', 'left', 6); }
+      text(fitText((LEVELS[nd.level].opensOn || {}).gorm && PROG[need] && PROG[need].cleared ? gormWant() : nname ? 'NEEDS ' + nname : LEVELS[nd.level].locked ? 'LOCKED' : 'NOT YET', MAP_PANEL_W - 10, 6), x0 + 5, dy + 4, '#c9463d', 'left', 6); }
     else if (lk) text('SHUT', x0 + 5, dy + 4, '#c9463d', 'left', 6);
     else text('↑↓ SELECT  Z JUMP', x0 + 5, dy + 4, UI.dim, 'left', 6); }
 }
@@ -6296,7 +6316,7 @@ const BEASTS = [
   { t: 'royalboar', name: 'THE ROYAL BOAR', sub: "the King's own hunting beast", desc: 'Half again the woodsmen\'s boar, gilded tusks and a royal collar. It paws (a yellow !, its lane drawn on the ground) and charges the length of the ground. Jump it, or turn it on a shield - at the end of its run it stands dazed. Drop a cage on it and it is penned. The King blows his horn for it.' },
   { t: 'chief', name: 'GOBLIN CHIEFTAIN', sub: 'lord of the stockade', desc: 'Red tells and a stamp: the club. Blue tells and a glint: sword and shield. Green: the bow. He swaps at the racks by the walls; break a rack and that weapon is out of the fight. The dais is beyond his club and sword, not his arrows or his leap. He swaps weapons every few swings. Club: dodge the slam and hit him while it is planted. Sword and shield: block his slash to parry it, or get behind the shield. Bow: parry the arrows back at him. Whatever he holds, when he crouches he is about to leap on you: move. HIS WAR HORN: when he stops to wind it, two blows on him silence it and he chokes, open; let it sound and his crew come in at the doors. HIS POWDER: with the club he heaves a lit keg - step off it, or strike it and it rolls back; a blast that catches him knocks him down, open. At his second wind he climbs his war tower on the dais and shoots and drops powder from it: up there blows half land. Cut both its lashings, or blow its legs with his own keg, and it goes over - he comes down in the wreck, open.' },
   { t: 'mother', name: 'THE MOTHER CAP', sub: 'root of the wood', desc: 'Her cap turns blades. Strike a seed cap by her and the pair grows a stair: climb it and plunge onto the knot on her crown - she opens, and every blow lands double until she seals. Jump her root lash, step off the ring where her cap will crush, strike a spore bloom to make it a spring, and a heavy blow bursts her brood into springs too. At half health her floor stings: live on the caps, and regrow the ones she withers.' },   /* (claude/sporewood2) THE MOTHER CAP 2 */
-  { t: 'shrieksisters', name: 'THE SHRIEK SISTERS', sub: 'the daughters of the Roc', desc: 'Three harpies who hunt as one on the rookery summit, each with her own bar. The Diver drops down a red line once it locks; the Shrieker sits on her high nest and marks your spot; the Snatcher drops BOULDERS and GRABS. On the wing they barely feel a blade: let a dive lock on cracked rock and step off - she lies stunned. Block a dive and, as she climbs, grab her talons: she carries you up to the nest of the Shrieker and corners her there. Kill two and the last one grows, takes their moves and SNATCHES you - strike her in the air and you fall together.' },   /* (claude/rookery) THE ROOKERY's boss (claude/rookery2: the three bars, the ride to the perch, phase 2) */
+  { t: 'shrieksisters', name: 'THE SHRIEK SISTERS', sub: 'the daughters of the Roc', desc: 'Three harpies on the rookery summit, each with her own bar - and ONE HUNTS AT A TIME (her portrait lit on the bar) while her sisters roost on their bone nests and throw in one small move: a pebble, a mark, a wing gust. The Diver dives down a red line once it locks; the Shrieker marks your spot from her high perch and stoops on it; the Snatcher drops BOULDERS and GRABS. On the wing they barely feel a blade: let a dive lock on cracked rock and step off - she lies stunned. Bait it onto the cracked arm of a nest and the nest falls with the sister on it. Let the Snatcher carry you up and strike her loose over a roost: you land beside a sister, cornered. Kill two and the last one grows, takes their moves and SNATCHES you - strike her in the air and you fall together.' },   /* (claude/rookery) THE ROOKERY's boss (claude/rookery2: the three bars, the ride to the perch, phase 2) */
   { t: 'galeharpy', name: 'GALE HARPY', sub: 'she beats the wind at you', desc: 'A storm-grey harpy that holds her perch and never dives. She throws her wings back - a yellow ! and a dashed cone - and BEATS A GUST along it: it shoves you, rocks and eggs away from her, off a ledge if you stand at its lip. Hit her in the tell and the gust is broken; a shield braces it. Used well, the gust carries a jump over a gap. She never beats while a dive is coming.' },   /* (claude/rookery2) THE ROOKERY's new foe (a shared module: Windcaller 4, the Roc) */
   { t: 'shrieker', name: 'HARPY SHRIEKER', sub: 'she calls the dives', desc: 'A red-crested harpy that hangs high over the crags and never dives herself. She screams, and a red ring snaps onto the spot you stand on: every harpy near dives at it, one after another. Get off the mark - or stand on a cracked rock and let her: their dives break it. After a scream she swoops low, and one blow brings her down.' },   /* (claude/rookery) THE ROOKERY's new foe */
   { t: 'harpy', name: 'CRAG HARPY', sub: 'diver of the cliffs', desc: 'Hangs in the wind above you, screams, and dives in a straight line. Block the dive and she hits the ground stunned: plunge her there. A sword hit sends her back to her perch.' },
@@ -6345,7 +6365,7 @@ function drawSlots() {
     if (eraseAsk >= 0 || fixAsk >= 0) continue;   /* (the erase question is up over the list: the rows are boxes only, so no words lie under it) */
     text('SAVE ' + (i + 1), x + 44, y + 4, sel ? '#fff6e0' : UI.dim);
     { const hs = slotHealthOf(i);   /* A DAMAGED SLOT IS NOT AN EMPTY ONE: it says so, and Z opens what can be done about it */
-      if (hs.state === 'corrupt' || hs.state === 'newer') { text(hs.state === 'corrupt' ? 'CORRUPT' : 'NEWER SAVE', x + 100, y + 4, '#ff9a5c'); text(hs.state === 'corrupt' ? 'Z FIX IT   X ERASE   A COPY IS KEPT' : 'MADE BY A NEWER BRACKEN   NOT TOUCHED', x + 44, y + 17, sel ? '#ffd36b' : '#7a6a5a', 'left', 6); if (i === slot) text('LAST PLAYED', x + w - 6, y + 5, '#ffd36b', 'right', 6); continue; } }
+      if (hs.state === 'corrupt' || hs.state === 'newer') { text(hs.state === 'corrupt' ? 'CORRUPT' : 'NEWER SAVE', x + 100, y + 4, '#ff9a5c'); text(hs.state === 'corrupt' ? 'Z FIX IT   X ERASE   A COPY IS KEPT' : 'MADE BY A NEWER THORNROAD   NOT TOUCHED', x + 44, y + 17, sel ? '#ffd36b' : '#7a6a5a', 'left', 6); if (i === slot) text('LAST PLAYED', x + w - 6, y + 5, '#ffd36b', 'right', 6); continue; } }
     if (!p) { text('EMPTY', x + 100, y + 4, '#6a6a7a'); text('NEW GAME', x + 44, y + 17, sel ? '#8fd160' : '#4a5a4a', 'left', 6); continue; }
     const cleared = LEVELS.filter(l => p[l.id] && p[l.id].cleared).length, medals = LEVELS.reduce((a, l) => a + ((p[l.id] && p[l.id].medal) || 0), 0), hid = p.hero || 'knight', hn = ((HEROES.find(q => q.id === hid) || {}).name || hid.toUpperCase()).replace(/^THE /, '');
     const skin = SKINS.find(k => k.id === (p.skin || 'bracken')); const gT = gearTier(slotLevel(p), SET.gear === false), K2 = preview('slot:' + (p.hero || 'knight') + ':' + (p.skin || 'bracken') + ':' + (p.sword || 'steel') + ':g' + gT, () => heroSet(p.skin || 'bracken', p.sword || 'steel', 'idle', p.hero || 'knight', gT)); void skin;
@@ -6364,7 +6384,7 @@ function drawSlots() {
     const hs = slotHealthOf(fixAsk), opts = fixOptions(fixAsk), bw = 236, bh = 40 + opts.length * 16, bx = Math.round(VW / 2 - bw / 2), by = Math.round(VH / 2 - bh / 2);
     board(bx, by, bw, bh, '#ff9a5c', undefined, false, 'iron');
     text('SAVE ' + (fixAsk + 1) + (hs.state === 'corrupt' ? ' IS CORRUPT' : ' IS A NEWER SAVE'), VW / 2, by + 7, '#ff9a5c', 'center');
-    text(fitName(hs.state === 'corrupt' ? 'A COPY IS KEPT. NOTHING IS ERASED YET' : 'MADE BY A NEWER BRACKEN. UPDATE IT', bw - 14, 6), VW / 2, by + 21, UI.dim, 'center', 6);
+    text(fitName(hs.state === 'corrupt' ? 'A COPY IS KEPT. NOTHING IS ERASED YET' : 'MADE BY A NEWER THORNROAD. UPDATE IT', bw - 14, 6), VW / 2, by + 21, UI.dim, 'center', 6);
     opts.forEach((o, j) => { const w2 = 200, x2 = Math.round(VW / 2 - w2 / 2), y2 = by + 33 + j * 16, on = fixI === j;
       TCH.hit(x2, y2, w2, 14, () => { fixI = j; confirmPress = true; });
       board(x2, y2, w2, 14, on ? '#ffd36b' : '#5a6474', on ? 'rgba(70,56,30,0.95)' : 'rgba(30,26,44,0.95)', false, 'ledger');
@@ -6542,7 +6562,10 @@ let heroPick = { i: 0, stage: 'pick' }, heroPickAt = 0;   /* (heroPickAt: when t
 let opening = { i: 0, t: 0 };
 const openingSeen = () => { try { return !!localStorage.getItem('bracken.openingSeen'); } catch { return true; } };
 const openingDue = () => !q.has('noopening') && !(window.BK && window.BK.manualSimulation) && !openingSeen();
-function openingEnd() { try { localStorage.setItem('bracken.openingSeen', '1'); } catch {} state = 'heropick'; SFX.uiSel(); }
+let openingHeroDue = false;   /* (claude/thornroad) the last page of the opening names the PICKED hero, so it plays right after the pick (once, only when the first three pages played) */
+const openingHeroLine = () => { const h = HEROES.find(x => x.id === PROG.hero); return h ? h.name : ''; };
+const openingHeroCloth = () => { const c = HERO_COLOR[PROG.hero]; return c ? c.mid : undefined; };
+function openingEnd() { try { localStorage.setItem('bracken.openingSeen', '1'); } catch {} if (opening.post) { opening.post = false; state = heroPick.stage === 'trial' ? 'heropick' : 'map'; } else { state = 'heropick'; openingHeroDue = true; } SFX.uiSel(); }
 function openingStart() { opening = { i: 0, t: 0 }; state = 'opening'; }
 // HIS COLOURS. Each hero hangs behind a banner in his own cloth with his own device on it, so the row of five
 // reads as a muster and not as a row of boxes. Drawn, not baked: it is five rectangles and a device.
@@ -6602,7 +6625,7 @@ function updateHeroPick() {
   if (heroPick.stage === 'pick') { const PICK = NEW_PICK; if (heroPick.i >= PICK.length) heroPick.i = 0;
     if (leftPress) { heroPick.i = (heroPick.i + PICK.length - 1) % PICK.length; heroPickAt = time; SFX.ui(); } if (rightPress) { heroPick.i = (heroPick.i + 1) % PICK.length; heroPickAt = time; SFX.ui(); }
     if (confirmPress && !heroOpen(PICK[heroPick.i])) { SFX.deny(); heroDenyAt = time; }
-    else if (confirmPress) { const h = PICK[heroPick.i]; PROG.heroes = { [h]: true }; PROG.hero = h; PROG.heroPicked = true; applySkin(); applyUpgrades(); saveProgress(); SFX.equip(); SFX.sting(); if (hasTrial(h)) heroPick.stage = 'trial'; else state = 'map'; } }
+    else if (confirmPress) { const h = PICK[heroPick.i]; PROG.heroes = { [h]: true }; PROG.hero = h; PROG.heroPicked = true; applySkin(); applyUpgrades(); saveProgress(); SFX.equip(); SFX.sting(); if (hasTrial(h)) heroPick.stage = 'trial'; else state = 'map'; if (openingHeroDue) { openingHeroDue = false; opening = { i: OP.HERO_PANEL, t: 0, post: true }; state = 'opening'; } } }
   else { if (confirmPress) { if (!startTrial(hero())) { state = 'map'; SFX.ui(); } } else if (atkPress || pausePress) { state = 'map'; SFX.ui(); } }
 }
 function drawHeroPick() { const PICK = NEW_PICK;
@@ -7197,7 +7220,7 @@ function partyBoardOpen() {
         out.push({ n, kind: k, icon: heroIconUrl(p.hero), c: p.ai ? '#c9a0ff' : PARTY.colourOf(PROG.tavern, n).c, heroId: p.hero, hero: HERO_SHORT[p.hero] || String(p.hero).toUpperCase(), lv, slot: own ? slot : p.prof ? (p.prof.dest.kind === 'local' ? p.prof.dest.slot : p.prof.slot) : -1, saved: own || !!p.prof, beh: p.ai ? (p.aiCfg || {}).beh || 'balanced' : null, line: p.ai ? AIC.seatLine(HERO_SHORT[p.hero] || String(p.hero).toUpperCase(), p.prof ? lv : null, p.prof ? p.prof.dest.slot : -1, (p.aiCfg || {}).beh) : null }); }
       return out; },
     slots: () => Array.from({ length: SLOTS }, (_, i) => { const raw = slotRaw(i), sm = CS.slotSummary(raw, CAMP_IDS), h = LOCKS.holder(i, '?');
-      const why = h ? (h.here && i === slot ? 'PLAYER ONE\'S SAVE' : h.here ? 'ALREADY IN THE PARTY' : 'OPEN IN ANOTHER TAB') : sm.state === 'corrupt' ? 'DAMAGED' : sm.state === 'newer' ? 'FROM A NEWER BRACKEN' : '';
+      const why = h ? (h.here && i === slot ? 'PLAYER ONE\'S SAVE' : h.here ? 'ALREADY IN THE PARTY' : 'OPEN IN ANOTHER TAB') : sm.state === 'corrupt' ? 'DAMAGED' : sm.state === 'newer' ? 'FROM A NEWER THORNROAD' : '';
       return { i, line: CS.summaryLine(i, sm, x => HERO_SHORT[x] || String(x).toUpperCase(), h ? (h.here ? 'IN USE HERE' : CS.HELD_LINE) : false), ok: !why, why, heroes: sm.state === 'empty' ? CS.heroesOf({}) : sm.heroes || [], hero: sm.hero || null }; }),
     heroName: h => HERO_SHORT[h] || String(h).toUpperCase(),
     visitHeroes: () => coopPickList(),
@@ -7209,7 +7232,7 @@ function partyBoardOpen() {
     invite: () => ONL.open(),
     /* (claude/aicompanions) the AI PARTNER picker: this browser's saves as LINKED companions (player one's own and held ones refused, told), the heroes for a DEFAULT one, the behaviours */
     aiSlots: () => Array.from({ length: SLOTS }, (_, i) => { const raw = slotRaw(i), sm = CS.slotSummary(raw, CAMP_IDS), h = LOCKS.holder(i, '?'), own = i === slot;
-      const why = own ? 'YOUR OWN SAVE' : h ? (h.here ? 'ALREADY IN THE PARTY' : 'OPEN IN ANOTHER TAB') : sm.state === 'corrupt' ? 'DAMAGED' : sm.state === 'newer' ? 'FROM A NEWER BRACKEN' : '';
+      const why = own ? 'YOUR OWN SAVE' : h ? (h.here ? 'ALREADY IN THE PARTY' : 'OPEN IN ANOTHER TAB') : sm.state === 'corrupt' ? 'DAMAGED' : sm.state === 'newer' ? 'FROM A NEWER THORNROAD' : '';
       return { i, line: AIC.linkedLine(i, sm, x => HERO_SHORT[x] || String(x).toUpperCase(), own ? 'YOUR OWN SAVE' : h ? (h.here ? 'IN USE HERE' : CS.HELD_LINE) : false), ok: !why, why, heroes: sm.state === 'empty' ? CS.heroesOf({}) : sm.heroes || [] }; }),
     aiHeroes: () => coopPickList(), aiBeh: () => AIC.BEH_ORDER.map(b => ({ id: b, name: AIC.BEH_NAME[b], line: AIC.BEH_LINE[b] })), defaultLine: AIC.DEFAULT_LINE,
     ai: (slotI, h, beh) => { const r = partyAi(slotI, h, beh); if (r.ok) SFX.uiSel(); else SFX.buzz(); return r; },
@@ -7372,7 +7395,7 @@ const big2 = (() => { const m = new WeakMap(); return c => { if (!c || !c.width)
    same baked type as the numbers, once per event; the same word then waits MOVE_WORD_GAP before it floats again, so a run of parries
    is one PARRY and not a column of them. Every other capitalised string is still kept off the screen, the trial keeps its own panel
    for these, and the Hit numbers option off turns the words off with the numbers. (tools/popclutter.mjs counts what floats over a tell.) */
-const MOVE_WORDS = new Set(['THROWN BACK', 'LONG SHOT', 'STEADY SHOT', 'PUSH KICK', 'PUSHED', 'SHAKY', 'SHAKING', 'BLOOD STEP', 'BLOODWORMS', 'DRAIN', 'RED GROUND', 'NOTHING TO DRAIN', /* (claude/bkkit2) THE RED HOST's casts float, as every hero's skill words */ 'BURNED BACK', 'LOOSED BACK', 'HALLOWED BACK', 'THROWN HOME', /* (claude/moorpass) the Windcaller's bolt, sent home by the ranger, the paladin, the Blood Knight */ /* (claude/moorpyro) the Windcaller's bolt, set alight and sent home */ 'SHIELDED', 'SHIELD BROKEN', 'OVER IT', 'UNDER IT', /* (claude/foepass) the ward-release parry, the affix shell, a told attack answered */ 'GRAVE KNEEL', 'BLOOD PRICE', 'THE FULL PRICE', 'THE BLOOD IS LOST', 'NO BLOOD LEFT TO PAY', /* (claude/bloodknight) the five tiers, the spike, the low guard */ 'REND', 'SUNDER', 'CRIMSON CRESCENT', 'EXSANGUINATE', 'BLOOD MOON', 'NEEDS BLOOD DEBT', 'GUARD CRACKED', 'BLOOD SPIKE', 'CRIMSON FRENZY', 'BLOOD LASH', 'VITAE FULL', 'LOW GUARD', 'UNDER THE BLADE', 'THE KNEEL BREAKS', 'HAMMER OF DAWN', 'SAFE LANDING', 'BOARDED', 'OFF THE BACK', 'TOO BIG TO RIDE', 'TOO HEAVY TO RIDE', 'EARTHFALL', 'A STEP OF STONE', 'AXE SPIN', 'SHREDDED', 'BRACED IT', 'TOOK IT', 'CRACKED', 'FRENZY', 'SWEPT', 'BRACED', 'INK', 'THE WAVE', 'HE SHAKES IT', 'HIS EYE', 'THE EYE IS SHUT', /* (claude/kraken2) told on the road: the wave's shove and the crest's lee, the ink, the climb's shake, his eye */ 'FINISHER', 'RICOCHET', 'SECOND WIND', 'DASH ATTACK', 'OFF BALANCE', 'LAUNCHED', 'TRIPPED', 'BROKEN', 'PARRY', 'PARRIED', 'RIPOSTE', 'TURNED IT', 'EVADED', 'SHOULDERED', 'SLAM', 'OPENED UP', 'OFF THE GROUND', 'SHAKEN LOOSE', 'POWDER AND STEEL', 'TOO EARLY: AT THE FLASH', 'LEVEL UP', 'PINNED', 'IN THE EYE', 'GLANCES OFF', 'HE IS UNDER', 'MIXED UP', 'GLANCES', 'CARRIED UP', 'GUARD BROKEN', 'KNOCKED DOWN', 'ON ITS BACK', 'DISARMED', 'AGAINST THE WALL', 'BOWLED OVER', 'ON THE SPIKES', 'OFF THE EDGE', 'INTO THE WATER', 'PUSHED BACK', "THE QUEEN'S BOWS", 'COVERED', 'EXECUTED', 'IMMOLATED', 'REAPED', 'RUN THROUGH', 'SMITTEN', 'SHATTERED', 'SKEWERED', 'CLEAVED', 'TOO STRONG', 'BROUGHT DOWN', 'QUARRY', 'PIERCING SHOT', 'BOW-BASH', 'SNARED', 'CHECKED', 'THROUGH', 'OUT OF ARROWS', 'QUIVER FULL', 'THE WILD HUNT', 'NO QUARRY', 'WIND BACK',
+const MOVE_WORDS = new Set(['THROWN BACK', 'LONG SHOT', 'STEADY SHOT', 'PUSH KICK', 'PUSHED', 'SHAKY', 'SHAKING', 'BLOOD STEP', 'BLOODWORMS', 'DRAIN', 'RED GROUND', 'NOTHING TO DRAIN', /* (claude/bkkit2) THE RED HOST's casts float, as every hero's skill words */ 'BURNED BACK', 'LOOSED BACK', 'HALLOWED BACK', 'THROWN HOME', /* (claude/moorpass) the Windcaller's bolt, sent home by the ranger, the paladin, the Blood Knight */ /* (claude/moorpyro) the Windcaller's bolt, set alight and sent home */ 'SHIELDED', 'SHIELD BROKEN', 'OVER IT', 'UNDER IT', /* (claude/foepass) the ward-release parry, the affix shell, a told attack answered */ 'GRAVE KNEEL', 'BLOOD PRICE', 'THE FULL PRICE', 'THE BLOOD IS LOST', 'NO BLOOD LEFT TO PAY', /* (claude/bloodknight) the five tiers, the spike, the low guard */ 'REND', 'SUNDER', 'CRIMSON CRESCENT', 'EXSANGUINATE', 'BLOOD MOON', 'NEEDS BLOOD DEBT', 'GUARD CRACKED', 'BLOOD SPIKE', 'CRIMSON FRENZY', 'BLOOD LASH', 'VITAE FULL', 'LOW GUARD', 'UNDER THE BLADE', 'THE KNEEL BREAKS', 'HAMMER OF DAWN', 'SAFE LANDING', 'BOARDED', 'OFF THE BACK', 'TOO BIG TO RIDE', 'TOO HEAVY TO RIDE', 'EARTHFALL', 'A STEP OF STONE', 'AXE SPIN', 'SHREDDED', 'BRACED IT', 'TOOK IT', 'CRACKED', 'FRENZY', 'SWEPT', 'BRACED', 'INK', 'THE WAVE', 'HE SHAKES IT', 'HIS EYE', 'THE EYE IS SHUT', /* (claude/kraken2) told on the road: the wave's shove and the crest's lee, the ink, the climb's shake, his eye */ 'FINISHER', 'RICOCHET', 'SECOND WIND', 'DASH ATTACK', 'OFF BALANCE', 'LAUNCHED', 'TRIPPED', 'BROKEN', 'PARRY', 'PARRIED', 'RIPOSTE', 'TURNED IT', 'EVADED', 'SHOULDERED', 'SLAM', 'OPENED UP', 'OFF THE GROUND', 'SHAKEN LOOSE', 'POWDER AND STEEL', 'TOO EARLY: AT THE FLASH', 'LEVEL UP', 'PINNED', 'IN THE EYE', 'GLANCES OFF', 'HE IS UNDER', 'MIXED UP', 'GLANCES', 'CARRIED UP', 'GUARD BROKEN', 'KNOCKED DOWN', 'ON ITS BACK', 'DISARMED', 'AGAINST THE WALL', 'BOWLED OVER', 'ON THE SPIKES', 'OFF THE EDGE', 'INTO THE WATER', 'PUSHED BACK', "THE QUEEN'S BOWS", 'COVERED', 'EXECUTED', 'IMMOLATED', 'REAPED', 'RUN THROUGH', 'SMITTEN', 'SHATTERED', 'SKEWERED', 'CLEAVED', 'TOO STRONG', 'BROUGHT DOWN', 'QUARRY', 'PIERCING SHOT', 'BOW-BASH', 'SNARED', 'CHECKED', 'THROUGH', 'OUT OF ARROWS', 'QUIVER FULL', 'THE WILD HUNT', 'NO QUARRY', 'WIND BACK', ...GLU.WORDS,
   /* (batch97 integ 10-17, hint-shown) the hero-pass and ranger feats and two old shared words - short, they float */
   'ORDER LOST', 'THE ORDER', 'VOLLEY', /* (batch122) THE HORNSMAN's horn words */ 'STONE SHRUG', 'BARGE', 'FLINCHES', 'DAZZLED', 'SHRUGGED', 'HOPPED', 'SHIELD-STEP', 'INTERRUPTED', 'VALIANT', 'COUNTER-THRUST', 'WALL PLANT', 'PULLED FREE', 'SNATCHED', 'FLUNG BACK', 'DAWNFALL', 'UNDER IT'])   /* (claude/ranger: her finisher, her mark, her shots, the bash, the snare, the quiver) */;   /* (claude/riposte) TOO STRONG: a red !! or a bolt met on the parry beat - it floats like OPEN, never a hint box */   /* (part 2: the finishers' own names, src/finishers.js - they are what the finisher says, so they are shown) */   /* (the last five: the knight's third cut, paid where it threw them - THIRD_WORD) */   /* (the last five: the starter kits' moves as they land - the bought rising cut, the heavy cut's two stages, THE WHEEL, DISARM) */   /* PINNED is the Warden's, and the only word her spear is allowed to say. (Not RUN THROUGH: that is the freebooter's FINISHER name, and no hero's finisher floats - putting it on this list would have started his doing it.) */
 for (const w of KI_WORDS) MOVE_WORDS.add(w);
@@ -8097,7 +8120,7 @@ function die(killer) {
   /* IN CO-OP HE GOES DOWN, NOT OUT - as long as somebody is still standing to come and get him (goDown) */
   if (coop() && !(P.down > 0) && players.some(q => q !== P && upright(q))) { goDown(killer); return; }
   P.killer = killer || null; BUG.evlog('died: ' + ((killer && killer.name) || '?') + ' @' + (P.x / TS).toFixed(0) + ',' + (P.y / TS).toFixed(0));
-  P.dead = 1.2; deaths++; P.hp = 0; SFX.pDie(); SFX.jet(false); shakeCam(7, 0, 'hurt'); crowdJeer(true); if (SET.iron) { lives--; if (lives > 0) number(P.x, P.y - 30, lives + (lives === 1 ? ' LIFE LEFT' : ' LIVES LEFT'), '#ff6b6b'); }
+  P.dead = 1.2; deaths++; gormNoteDeath(); P.hp = 0; SFX.pDie(); SFX.jet(false); shakeCam(7, 0, 'hurt'); crowdJeer(true); if (SET.iron) { lives--; if (lives > 0) number(P.x, P.y - 30, lives + (lives === 1 ? ' LIFE LEFT' : ' LIVES LEFT'), '#ff6b6b'); }
   burst(P.x, P.y - 8, 22, ['#c9d1dc', '#3d5aa8', '#c9463d'], 120, 0.9); deathCost(P, killer);
 }
 // Per-enemy death: a corpse object animates the fall so every foe dies its own way.
@@ -8892,6 +8915,7 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow, tag = blow) { const raw0 = dmg,
   if (e.t === 'windcaller' && callerHitCounts(e)) { e.hits = (e.hits || 0) + 1; e.reelT = 0.25; if (e.hits < CALLER_HITS) number(e.x, e.y - e.h - 30, e.hits === 1 ? 'HE REELS' : 'HE TOTTERS: ONE MORE', '#ffd36b'); }   /* (claude/windcaller4) THE LOOP: three blows on his ledge, beside him, and he falls (callerHitCounts: up close and level, never in his ward) */
   if (e.t === 'herald') { if (e.mode === 'mired') dmg = Math.round(dmg * 1.5); else if (e.mode !== 'reel') { dmg = Math.max(1, Math.round(dmg * 0.35)); SFX.clank(); sparks(e.x + (Math.sign(fromX - e.x) || 1) * 8, e.y - 24, Math.sign(e.x - fromX) || 1, 4); } }
   if (e.t === 'tideguard' && e.mode !== 'rest' && e.mode !== 'thrust' && !(e.stagger > 0) && Math.sign(fromX - e.x) === e.face) { dmg = Math.max(1, Math.round(dmg * 0.5)); SFX.clank(); }
+  if (e.glS && dmg > 0) { const d0 = dmg; dmg = GLU.take(e, dmg, fromX, pl || blowHas(tag, 'heavy') || blowHas(tag, 'sweep')); if (dmg < d0) SFX.clank(); }   /* (claude/lategameb) a planted plate / braced shield turns the skill that reaches its front to 0.2 - a heavy, a plunge or a sweep goes through whole (src/foe-glue.js take) */
   if (e.t === 'crab' && e.mode === 'flipped') dmg = Math.round(dmg * 2);
   if (e.t === 'siren' && e.alive && e.hp - dmg > 0 && e.mode !== 'dive') { e.mode = 'dive'; e.modeT = 6; SFX.splash(); burst(e.x, e.y - 6, 10, ['#e8f4f0', '#7cc8c8'], 60, 0.4); }
   if (e.t === 'gqueen') { if (!gqOpen(e)) {   /* (2026-09-25) ONLY A PIN OPENS HER - and (2026-09-29, her court) in round two, her plate off */
@@ -9042,6 +9066,7 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow, tag = blow) { const raw0 = dmg,
        her heart; if her body is put down any other way the wood breathes again all the same. */
     if (e === boss && e.t === 'mother') { L.violet = false; L.healed = true; for (const pr of props) if (pr.t === 'glow') pr.dark = 0; for (const pp of players || [P]) BRD.stop(pp, 'mycelium'); if (e.net) e.net.ph = 'off'; }   /* (claude/sporewood2) her net dies with her: its drain stops */
     if (e.t === 'chief') chiefDies(); else if (!e.mini && (e === boss || e.t === 'undeadmage' || e.t === 'winchmaster' || e.t === 'gargoyle' || e.t === 'duneworm' || e.t === 'burieddead' || e.t === 'deathknight' || e.t === 'bloodknight' || e.t === 'harbormaster' || e.t === 'pyromancer' || e.t === 'bellcrab' || e.t === 'closedhelm' || e.t === 'drownedking' || e.t === 'prince' || e.t === 'gqueen' || e.t === 'queen' || e.t === 'frog' || e.t === 'king' || e.t === 'ram' || e.t === 'owl' || e.t === 'forgemaster' || e.t === 'golem' || e.t === 'windcaller' || e.t === 'lance' || e.t === 'suncatcher' || e.t === 'roc' || e.t === 'herald' || e.t === 'reefmaw' || e.t === 'champion' || e.t === 'admiral' || e.t === 'captain' || e.t === 'masthead' || e.t === 'kraken' || e.t === 'strawking' || e.t === 'wickerqueen' || e.t === 'archmage' || e.t === 'tollmaster' || e.t === 'grandmother' || e.t === 'master' || (e.t === 'troll' && e.hill))) queenDies(e); // (a boss missing from this list leaves the walls shut and the fight running)
+    if (e.t === 'king' && !e.mini) gormBeaten();   /* (claude/smallfix7) King Gorm's real death (his P1 bar only flees): a clean fight opens THE BURNING VILLAGE */
     if (e.t === 'thief' && e.loot > 0) { for (let i = 0; i < e.loot + 3; i++) acorns.push({ x: e.x + (i - e.loot / 2) * 6, y: e.y - 10, got: false, ph: Math.random() * 6, crate: 'thief' + e.x + i, vy: -110 - Math.random() * 60 }); number(e.x, e.y - 24, 'WITH INTEREST', '#ffd34a'); SFX.coin(); }
     if (e.t === 'folk') number(e.x, e.y - 18, 'SHAME', '#9aa39a');
     if (e.t === 'gargoyle') { for (const q of enemies) if (q.alive && q.fromGarg) { q.alive = false; spawnCorpse(q, Math.sign(q.x - e.x) || 1); } }   /* THE WHELPS HE CALLED CRUMBLE WITH HIM */
@@ -11451,6 +11476,7 @@ else if (P.stepHeld > 0 && !P.swim) { P.stepHeld = Math.max(0, P.stepHeld - dt);
       /* (the Hound Master's guard lives in hurtEnemy0 now: a blade, an ember and a ball all meet the same hound) */
       if (chiefShielded(e) && front && !throughGuard(e)) { guardTurned(e); BR.turned(e, P.x); hitstop(0.02); P.vx = e.face * 120; continue; }   /* B10/B11: his shield, said - GO ROUND */
       if (e.t === 'brute' && front && braceHit(e, time, !!(P.heavy || P.heavySwing))) { guardTurned(e); SFX.clank(); hitstop(0.05); sparks(e.x + e.face * 9, e.y - 12, P.face, 6); P.vx = e.face * 130; number(e.x, e.y - e.h - 6, 'COVERED', '#c9d1dc'); continue; }   /* THE BRUTE COVERS UP: the third light cut of a flurry off his front is turned (src/foe-tactics.js braceHit) - a heavy blow goes through */
+      if (front !== undefined && GLU.turns(e, !!P.heavy, front, GLU_API)) { guardTurned(e); SFX.clank(); hitstop(0.05); sparks(e.x + e.face * 9, e.y - e.h * 0.6, P.face, 6); P.vx = e.face * 130; number(e.x, e.y - e.h - 6, 'COVERED', '#c9d1dc'); continue; }   /* (claude/lategameb) A PLANTED PLATE / BRACED SHIELD turns a light cut off its front (src/foe-glue.js) - a heavy blow breaks it, a sweep goes under */
       if (front !== undefined && RX.guards(e, time, !!P.heavy, front)) { guardTurned(e); SFX.clank(); hitstop(0.05); sparks(e.x + e.face * 8, e.y - e.h * 0.6, P.face, 6); P.vx = e.face * 130; number(e.x, e.y - e.h - 6, 'COVERED', '#c9d1dc'); continue; }   /* MASHED, IT GUARDS (src/foe-react.js): a light cut off its front meets its raised guard */
       if (e.t === 'brute' && e.mode === 'raise') { hurtAs(meleeBlow(false), e, swingDmg(e), P.x, false); swordEffect(e); continue; }
       if (e.t === 'turtle' && front && !throughGuard(e) && !(e.broken > 0) && e.mode !== 'snap' && e.mode !== 'rest' && e.stagger <= 0) { guardTurned(e); SFX.clank(); hitstop(0.04); P.vx = e.face * 120; sparks(e.x + e.face * 8, e.y - 5, e.face, 5); e.mode = 'hide'; e.modeT = 1.2; continue; } // the shell turns it and in goes the head
@@ -13064,6 +13090,10 @@ function frogReelStep(dt) { const R = P.frogReel; if (!R) return false;
   P.x = nx; P.vx = 0; P.vy = 0; P.ground = false;
   if (Math.random() < dt * 30) parts.push({ x: P.x - R.dir * 6, y: P.y - 6, vx: -R.dir * 40, vy: -20, life: 0.3, max: 0.3, col: '#ffb0c0', size: 1, grav: 0 });
   return true; }
+/* (claude/frogking3) HIS REST after a told blow: phase 2 sometimes chains the next one (FROGK.pair) - never twice running, the next tell is whole */
+function frogRest(e, ph) { if (ph > 0 && !e.paired && Math.random() < FROGK.pair[ph]) { e.paired = true; return FROGK.pairGap; } e.paired = false; return FROGK.gap[ph]; }
+const frogP2On = () => !!(bossActive && boss && boss.t === 'frog' && boss.alive !== false && boss.phase >= 2);   /* (claude/frogking3) his track lifts a tone (music.storm) for phase 2 */
+let frogStirT = 0, frogStirAt = -99;   /* the THE POND STIRS banner's clock, and when it was croaked (the court's art ramps in from it) */
 function updateFrog(e, dt) {
   const A = L.arena;
   /* (claude/frogking2) THE PAD CHASE (src/frog-king.js header): he sits on a royal pad (A.royal[e.st]) and is hittable there; a share of him taken (FROGK.quota) or a
@@ -13071,7 +13101,7 @@ function updateFrog(e, dt) {
   if (e.st === undefined) { e.st = Math.max(0, frogStationAt(A, e.x)); e.stDir = 1; e.stHp0 = e.hp; e.stT = 0; e.phase = e.phase || 1; }
   const floor = A.floor, ST = A.royal, here = ST[e.st];
   if (FKC) FKC.step(dt, e);
-  const p2 = e.phase >= 2, ph = p2 ? 1 : 0;
+  const p2 = e.phase >= 2, ph = p2 ? 1 : 0; if (frogStirT > 0) frogStirT -= dt;
   e.modeT -= dt; e.anim += dt; e.hideSaid = Math.max(0, (e.hideSaid || 0) - dt);
   if (e.headT > 0) { e.headT -= dt; if (e.headT <= 0) e.headHits = 0; }
   e.vy += 1000 * dt; if (e.vy > 600) e.vy = 600;
@@ -13106,10 +13136,10 @@ function updateFrog(e, dt) {
     case 'spitTell': e.y = floor; e.vy = 0; if (Math.random() < dt * 20) parts.push({ x: e.x + e.face * 14, y: e.y - 16, vx: e.face * 10, vy: -10, life: 0.3, max: 0.3, col: '#8fd160', size: 1, grav: 0 }); if (e.modeT <= 0) { e.mode = 'spit'; e.modeT = 0.6; e.shots = FROGK.spit.shots[ph]; e.shotT = 0; } break;
     case 'spit': { e.y = floor; e.vy = 0; e.shotT -= dt; if (e.shots > 0 && e.shotT <= 0) { e.shots--; e.shotT = 0.45; SFX.spit(); const dir = Math.sign(P.x - e.x) || e.face, sx = e.x + dir * 20, sy = e.y - 18, g = 320, T = FROGK.spit.flight + Math.min(0.5, Math.abs(P.x - sx) / 700);
         for (const k of [-1, 0, 1]) { const tx = P.x + k * FROGK.spit.spread, ty = P.y - 4; seeds.push({ x: sx, y: sy, vx: (tx - sx) / T, vy: (ty - sy - 0.5 * g * T * T) / T, dead: false, life: 3, venom: true, frogSpit: true, g }); } }
-      if (e.modeT <= 0 && e.shots <= 0) { e.mode = 'idle'; e.modeT = FROGK.gap[ph]; } break; }
+      if (e.modeT <= 0 && e.shots <= 0) { e.mode = 'idle'; e.modeT = frogRest(e, ph); } break; }
     /* THE TONGUE LASH: low and forward, the maw open (frame 7); out it goes at the height you stood at as it left (frame 8) - a shield bites it, a hit is a GRAB (frogGrab) */
     case 'tongueTell': e.y = floor; e.vy = 0; if (e.modeT <= 0) { e.mode = 'tongue'; e.modeT = FROGK.tongue.live; tongue = { x0: e.x + e.face * 22, y: Math.max(floor - 30, Math.min(floor + 22, P.y - 8)), dir: e.face, len: 0, max: FROGK.tongue.max[ph], active: true, grab: true }; SFX.tongue(); } break;
-    case 'tongue': { const live = FROGK.tongue.live, t = live - e.modeT; if (tongue) tongue.len = t < 0.2 ? tongue.max * (t / 0.2) : t < 0.35 ? tongue.max : tongue.max * Math.max(0, (live - t) / 0.2); if (e.modeT <= 0) { tongue = null; e.mode = 'idle'; e.modeT = FROGK.gap[ph]; } break; }
+    case 'tongue': { const live = FROGK.tongue.live, t = live - e.modeT; if (tongue) tongue.len = t < 0.2 ? tongue.max * (t / 0.2) : t < 0.35 ? tongue.max : tongue.max * Math.max(0, (live - t) / 0.2); if (e.modeT <= 0) { tongue = null; e.mode = 'idle'; e.modeT = frogRest(e, ph); } break; }
     /* THE FLY SWARM: cheeks full of flies (frame 11), then he spits them at you (frame 12) and they trail you */
     case 'swarmTell': e.y = floor; e.vy = 0; if (Math.random() < dt * 30) parts.push({ x: e.x + e.face * 16 + (Math.random() - 0.5) * 8, y: e.y - 18, vx: (Math.random() - 0.5) * 30, vy: -20, life: 0.3, max: 0.3, col: '#1a1a14', size: 1, grav: 0 }); if (e.modeT <= 0) { e.mode = 'swarm'; e.modeT = FROGK.swarm.spit; if (FKC) FKC.spitSwarm(e); SFX.spit(); number(P.x, P.y - 30, 'THE FLIES ARE ON YOU: LEAD THEM ONTO HIM', '#c9e3a0'); } break;
     case 'swarm': e.y = floor; e.vy = 0; if (e.modeT <= 0) { e.mode = 'idle'; e.modeT = 0.7; } break;
@@ -13150,7 +13180,7 @@ function updateFrog(e, dt) {
 function frogStir(e) {
   e.phase = 2; e.mode = 'croak2'; e.modeT = 1.6; e.vx = 0; tongue = null; if (FKC) { FKC.swarm = null; FKC.stir(1); }
   SFX.croak(); SFX.splash(); shakeCam(6); zoomKick(1.1, 0.4); killFlash = 0.06;
-  number(e.x, e.y - e.h - 26, 'HIS POND STIRS', '#bfe6f5');
+  number(e.x, e.y - e.h - 26, 'HIS POND STIRS', '#bfe6f5'); frogStirT = 3.2; frogStirAt = time; e.stirAt = time;
   hintSay('tip', 5, 'HIS POND STIRS: THE YELLOW PADS SINK FASTER NOW. KEEP MOVING, AND REST ONLY ON THE GREEN ONES.');
 }
 
@@ -15526,6 +15556,7 @@ function updateTopiary(e, dt) {
   const r = moveBody(e, e.vx * dt, e.vy * dt, false); e.onGround = !!r.ground; if (r.ground) e.vy = 0; if (r.hitX) e.vx = 0;
 }
 /* THE ARMOUR: it walks at you slowly and holds the sword high for a long beat before it comes down; it breaks into pieces */
+const ARM_WHIRL = { tell: 0.8, spin: 0.85, v: 85, dmg: 1.25, open: 1.2 };   /* (claude/lategameb) the base suit's whirl: the elite's (EL_ARMOUR) tell 0.7 / spin 0.9 / v 95 / 18 dmg, a little slower and lighter on a common foe */
 function updateArmour(e, dt) {
   /* THE CEILING ARMOUR (THE WITCHLIGHT STAIR's cloister) falls whichever way the hero falls: walk the roof and it walks the roof */
   if (e.ceiling && P.flip && Math.abs(P.x - e.x) < 320 && Math.abs(P.y - e.y) < 220) e.woke = true;   /* it waits on the roof until it has seen you turned over */
@@ -15536,9 +15567,18 @@ function updateArmour(e, dt) {
   switch (e.mode) {
     case 'swingTell': e.vx = 0; if (e.modeT <= 0) { e.mode = 'swing'; e.modeT = 0.35; SFX.throwWhoosh(); SFX.heavy(); if (!P.dead && ad < 36 && dy < 30 && Math.sign(d) === e.face) damagePlayer(e.x, DMG.armour); } break;
     case 'swing': e.vx = 0; if (e.modeT <= 0) { e.mode = 'walk'; e.cd = 1.6; } break;
+    /* (claude/lategameb, the moveset audit: 37 placements, ONE long-held overhead) THE WHIRL, promoted from the Warden Armour's elite kit to the base suit: a red !! - the blade held out and the whole suit spinning at you (roll away or through; it rattles to a stop, dizzy, the long opening) */
+    case 'ekWhirlTell': e.vx = 0; e.face = Math.sign(d) || e.face; if (e.modeT <= 0) { e.mode = 'ekWhirl'; e.modeT = ARM_WHIRL.spin; e.whirlHit = false; SFX.haft(); } break;
+    case 'ekWhirl': e.vx = tkApi.safeStep(e.x + e.face * (e.w / 2 + 6), e.y) ? e.face * ARM_WHIRL.v : 0; if (Math.random() < dt * 10) SFX.clank();
+      if (!e.whirlHit && !P.dead && ad < e.w / 2 + 16 && dy < 24) { e.whirlHit = true; damagePlayer(e.x, Math.round(DMG.armour * ARM_WHIRL.dmg), { unblockable: true, who: e, blow: 'the whirl' }); }
+      if (e.modeT <= 0) { e.mode = 'ekWhirlOpen'; e.modeT = ARM_WHIRL.open; } break;
+    case 'ekWhirlOpen': e.vx = 0; if (e.modeT <= 0) { e.mode = 'walk'; e.cd = 1.8; } break;   /* THE OPENING: rattling to a stop */
     default: e.mode = 'walk';
       if (!P.dead && ad < 240 && dy < 60) { e.face = Math.sign(d) || e.face; e.vx += (e.face * 22 - e.vx) * Math.min(1, dt * 3); } else e.vx *= Math.pow(0.1, dt);
-      if (!P.dead && ad < 32 && dy < 26 && e.cd <= 0) { e.mode = 'swingTell'; e.modeT = 0.9; e.vx = 0; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.clank(); }
+      if (!P.dead && ad < 32 && dy < 26 && e.cd <= 0) {
+        e.armN = (e.armN || 0) + 1; const crowd = enemies.some(q => q !== e && q.alive && !q.harmless && !q.maxHp && Math.abs(q.x - P.x) < 70 && Math.abs(q.y - P.y) < 40);
+        if (RX.act().act >= 4 && !e.ceiling && (crowd || e.armN % 3 === 0)) { e.mode = 'ekWhirlTell'; e.modeT = ARM_WHIRL.tell; e.vx = 0; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); SFX.charge(); }   /* (claude/lategameb) crowded round the hero, or every third blow, and from the old kingdom on: it SPINS */
+        else { e.mode = 'swingTell'; e.modeT = 0.9; e.vx = 0; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.clank(); } }
   }
   const r = moveBody(e, e.vx * dt, e.vy * dt, false); if (r.hitX) e.vx = 0;
   if (gs > 0) { e.onGround = !!r.ground; if (r.ground) e.vy = 0; } else { e.onGround = r.hitY && e.vy < 0; if (r.hitY) e.vy = 0; }
@@ -16236,7 +16276,7 @@ function mageAdvice(v2) {
 /* ---------- THE FRAMES ---------- */
 const MAGE_FRAME = {
   topiary: e => e.mode === 'shiver' ? 1 : e.mode === 'lurch' ? (e.vy < 0 ? 2 : 3) : e.mode === 'swipeTell' ? 4 : e.mode === 'swipe' ? 5 : 0,
-  armour: e => e.mode === 'swingTell' ? 3 : e.mode === 'swing' ? 4 : Math.abs(e.vx) > 3 ? 1 + Math.floor(e.anim * 3) % 2 : 0,
+  armour: e => e.mode === 'swingTell' || e.mode === 'ekWhirlTell' ? 3 : e.mode === 'swing' ? 4 : e.mode === 'ekWhirl' ? (Math.floor(e.anim * 14) % 2 ? 3 : 4) : Math.abs(e.vx) > 3 ? 1 + Math.floor(e.anim * 3) % 2 : 0,
   piece: e => Math.abs(e.vx) > 3 ? Math.floor(e.anim * 8) % 2 : 0,
   broom: e => e.mode === 'dashTell' || e.mode === 'sweepTell' ? 2 : e.mode === 'dash' || e.mode === 'sweep' ? 3 : Math.floor(e.anim * 6) % 2,
   mimic: e => e.mode === 'shut' ? 0 : e.mode === 'biteTell' ? 2 : e.mode === 'bite' ? 3 : e.mode === 'hop' ? 4 : 1,
@@ -21366,15 +21406,16 @@ function updateCrumbles(dt){
   else if(v.t==='tick'){SFX.crack();shakeCam(v.n===1?3:2);dust(mx,my+TS*c.rows,v.n===1?12:7);if(v.n===1&&SFX.rumble)SFX.rumble();}
   else if(v.t==='fall'&&c.kind==='bough'){re=true;SFX.crack();SFX.rumble&&SFX.rumble();shakeCam(4);for(let x=c.x0;x<=c.x1;x++)burst(x*TS+8,my+6,4,['#ff9a3c','#ffd36b','#47291b','#2c1a12'],80,.9,380,2);}   /* (claude/kingsfix2) a limb of the burning wood goes: splinters and embers */
   else if(v.t==='fall'&&c.kind==='awning'){re=true;SFX.puff();for(let x=c.x0;x<=c.x1;x++)burst(x*TS+8,my+4,4,['#b8382c','#ece0c4','#7a2418'],70,.8,300,2);}   /* (claude/fairfix5) a TEARING awning rips: canvas scraps, not stone */
+  else if(v.t==='fall'&&c.kind==='comb'&&L.hornetsNest){re=true;SFX.squelch&&SFX.squelch();SFX.crack();shakeCam(3);for(let x=c.x0;x<=c.x1;x++)burst(x*TS+8,my+8,4,['#e0a838','#ffd36b','#a8741e','#6a4410'],60,.9,380,2);}   /* (claude/hornetsnest2art) a SAGGING COMB lets go: wax and honey, not stone */
   else if(v.t==='fall'){re=true;SFX.stone();shakeCam(5);for(let x=c.x0;x<=c.x1;x++)burst(x*TS+8,my+8,3,['#8a8e9c','#5c6070','#b8b4a8'],60,.9,420,2);}
   else if(v.t==='back'){re=true;SFX.clank&&SFX.clank();dust(mx,my,8);}}
  if(re)resolveTiles();
- for(const c of L.crumbles){if(c.gone||c.st==='down'||c.kind==='awning')continue;if(Math.random()<dt*(c.st==='count'?16:1.1))parts.push({x:(c.x0+Math.random()*(c.x1-c.x0+1))*TS,y:(c.row+c.rows)*TS,vx:(Math.random()-.5)*6,vy:12,life:.9,max:.9,col:Math.random()<.5?'#a8a498':'#7c7a74',size:1,grav:150});}
+ for(const c of L.crumbles){if(c.gone||c.st==='down'||c.kind==='awning')continue;if(Math.random()<dt*(c.st==='count'?16:1.1))parts.push({x:(c.x0+Math.random()*(c.x1-c.x0+1))*TS,y:(c.row+c.rows)*TS,vx:(Math.random()-.5)*6,vy:12,life:.9,max:.9,col:c.kind==='comb'&&L.hornetsNest?(Math.random()<.5?'#e0a838':'#c47a14'):Math.random()<.5?'#a8a498':'#7c7a74',size:1,grav:150});}
 }
 /* ...and its drawing: cracks on every tile of a section that holds, brighter and wider as it counts, and the count itself over it */
 function drawCrumbles(cx,cy){
  if(!L.crumbles||!L.crumbles.length)return;
- for(const c of L.crumbles){if(c.gone||c.st==='down'||c.kind==='awning')continue;const sx=c.x0*TS-cx,sy=c.row*TS-cy,w=(c.x1-c.x0+1)*TS;if(sx>VW||sx+w<0||sy>VH+16||sy<-40)continue;   /* (a tearing awning draws its own fray: src/redraw/fair_tiles.js) */
+ for(const c of L.crumbles){if(c.gone||c.st==='down'||c.kind==='awning'||(c.kind==='comb'&&L.hornetsNest))continue;const sx=c.x0*TS-cx,sy=c.row*TS-cy,w=(c.x1-c.x0+1)*TS;if(sx>VW||sx+w<0||sy>VH+16||sy<-40)continue;   /* (a tearing awning draws its own fray: src/redraw/fair_tiles.js) */
   const counting=c.st==='count',k=counting?Math.min(1,1-c.t/c.count):0,jig=counting&&c.t<1?Math.round(Math.sin(time*50)):0;
   g.strokeStyle=counting?(c.t<1?'#ff6b6b':'#ffb070'):'rgba(20,16,26,0.85)';g.lineWidth=1;g.beginPath();
   for(let x=c.x0;x<=c.x1;x++)for(let y=c.row;y<c.row+c.rows;y++)for(const [a,b,e,f] of crackMarks(x,y)){g.moveTo(x*TS-cx+a+.5+jig,y*TS-cy+b+.5);g.lineTo(x*TS-cx+e+.5+jig,y*TS-cy+f+.5);}
@@ -23953,6 +23994,7 @@ function updateDesertFoe(e, dt) {
   if (e.stagger > 0 && e.t !== 'vulture' && e.t !== 'raptor' && e.t !== 'hawkscout' && !(e.t === 'kiterider' && s && s.fly) && !(e.t === 'trophyhunter' && s && s.hang)) { grav(); return; }   /* knocked about: its machine waits */
   s.x = e.x; s.y = e.y;
   const w = { px: P.x, py: P.y, time, pface: P.face || 1 };
+  if (e.t === 'cutthroat') { w.combo = RX.act().act >= 5 && !e.ks && !e.cnSkin; if (w.combo) { w.groundAt = x => cvGround(x, e.y) && !isSolid(Math.floor(x / TS), Math.floor((e.y - 8) / TS)); w.mates = []; for (const q of enemies) if (q !== e && q.alive && q.t === 'cutthroat' && q.st && !q.ks && Math.abs(q.x - e.x) < 120) w.mates.push({ x: q.x, feinting: q.st.mode === 'feintTell' || q.st.mode === 'feintHold' }); } }   /* (claude/lategameb) THE SIDE-STEP COMBO and THE PAIR's low cut (src/desert-foes.js): act V's plain cutthroats - not the Ksar's posted men, not a reskin */
   if (e.t === 'kiterider') { w.solid = (x, y) => isSolid(Math.floor(x / TS), Math.floor(y / TS)); w.sea = (L.cloudSea || LH * TS) + 2 * TS; w.ground = !s.fly && (e.vy || 0) === 0 && isSolid(Math.floor(e.x / TS), Math.floor((e.y + 2) / TS)); }   /* THE SKY ROAD's kite-rider reads the rock and the cloud sea */
   if (e.t === 'trophyhunter') { const fy = Math.floor((e.y + 2) / TS), fx = Math.floor(e.x / TS); w.ground = !s.hang && (e.vy || 0) === 0 && (isSolid(fx, fy) || isOneWay(tileAt(fx, fy))); }   /* THE ROOTWAY's trophy-hunter: off his hoist, he lands on rock or a span */
   if (e.t === 'sandworm') w.flood = !!(DF2H && DF2H.wormWorld(s)) || !!(UWH && UWH.heat(s));   /* (claude/underwell: and in the Underwell the heat of burning oil over its bed) */   /* THE SANDWORM: the gorge's horn and flood drive it under (claude/desertfoes) */
@@ -23983,7 +24025,7 @@ function updateDesertFoe(e, dt) {
     if (v.t === 'step') { if (e.t === 'stiltwalker') { const near = Math.abs(v.x - P.x) < 260; dust(v.x, v.y, v.hard ? 8 : 3); if (SET.parts !== 'low') { const n = v.hard ? 9 : 5; for (let q = 0; q < n; q++) { const d = q % 2 ? 1 : -1, sp = 26 + (q % 4) * 14 * (v.hard ? 1.5 : 1); parts.push({ x: v.x + d * 3, y: v.y - 1, vx: d * sp, vy: -4 - (q % 3) * 3, life: 0.42, max: 0.42, col: q % 3 ? '#c9b27c' : '#e6d4a0', size: 1, grav: 40 }); } for (let q = 0; q < (v.hard ? 5 : 2); q++) parts.push({ x: v.x + (q - 2) * 2, y: v.y - 2, vx: (q - 2) * 22, vy: -60 - q * 10, life: 0.5, max: 0.5, col: '#8a6a40', size: 1, grav: 260 }); } if (near) { (SFX.stoneThud || SFX.thud || (() => {}))(); if (v.hard) shakeCam(3); else if (Math.abs(v.x - P.x) < 90) shakeCam(1); } if (FRH && FRH.on()) FRH.stomp(v.x, v.y, !!v.hard); } continue; }   /* (claude/fenroad2) THE STILT-WALKER's STOMP: each planted stilt bows the boards under it (src/fen-road-hands.js stomp) */
     if (v.t === 'tell' && e.t === 'stiltwalker') { if (v.what === 'horn') SFX.hornDraw(); else if (v.what === 'stomp') { cvS('screech'); } else if (v.what === 'jab') cvS('bladeGlint'); else cvS('bladeGlint'); continue; }
     if (v.t === 'tell') { if (v.what === 'rise') { cvS('puff'); dust(e.x, e.y, 5); } else if (v.what === 'dive') cvS('screech');
-      else if (v.what === 'feint') cvS('feintScrape'); else if (v.what === 'slash') cvS('bladeGlint'); else if (v.what === 'sling') cvS('slingWhirl');   /* the feint and the real cut do not sound alike either */
+      else if (v.what === 'feint') cvS('feintScrape'); else if (v.what === 'slash' || v.what === 'back' || v.what === 'low') cvS('bladeGlint'); else if (v.what === 'sling') cvS('slingWhirl');   /* the feint and the real cut do not sound alike either */
       continue; }
     if (v.t === 'feinted') { dust(e.x + (s.face || 1) * 5, e.y, 2); continue; }   /* the stamp */
     if (e.t === 'sandworm' && v.t !== 'hit') { if (v.t === 'tell' && v.what === 'lunge') { cvS('wormHiss'); dust(e.x, e.y, 3); } else if (v.t === 'tell') cvS('wormRipple'); else if (v.t === 'rise') { cvS('puff'); dust(e.x, e.y, 6); } else if (v.t === 'burrow') dust(e.x, e.y, 4); else if (v.t === 'flushed') { dust(e.x, e.y, 3); if (Math.abs(e.x - P.x) < 260) { if (UWH && UWH.on()) UWH.flushed(e); else if (DF2H) DF2H.flushed(e, e.x, e.y); } } continue; }   /* (claude/desertfoes) */
@@ -23996,7 +24038,8 @@ function updateDesertFoe(e, dt) {
     if (DF2H && e.cnSkin === 'firescorpion' && !e.cvFire) { e.cvFire = true; DF2H.onHit(e, v, false, P); }   if (UWH && e.cnSkin) UWH.onBlow(e, v);   /* (claude/underwell) THE OIL SCORPION's sting leaves a slick where it strikes */   /* THE FIRE SCORPION: where the sting lands the ground catches (claude/desertfoes) */
     const [l, r, t, b] = v.box; if (!overlap({ l, r, t, b }, box(P))) continue;
     e.cvHit = true;
-    const hp0 = P.hp; const cvRes = damagePlayer(e.x, v.dmg, { unblockable: !v.blockable, who: e, name: v.what === 'sting' ? 'THE STING' : v.what === 'dive' ? 'THE DIVE' : v.what === 'lunge' ? 'THE SANDWORM' : v.what === 'stomp' ? 'A STILT-WALKER\'S STOMP' : null });
+    const hp0 = P.hp; const cvRes = damagePlayer(e.x, v.dmg, { unblockable: !v.blockable, who: e, name: v.what === 'back' ? 'THE BACK-CUT' : v.what === 'low' ? 'THE LOW CUT' : v.what === 'sting' ? 'THE STING' : v.what === 'dive' ? 'THE DIVE' : v.what === 'lunge' ? 'THE SANDWORM' : v.what === 'stomp' ? 'A STILT-WALKER\'S STOMP' : null });
+    if (e.t === 'scorpion' && v.what === 'claw' && cvRes === 'blocked') s.turned = true;   /* (claude/lategameb) THE CLAW-STING COMBO: a claw the shield turned is followed by the tail (src/desert-foes.js scorpionStep) */
     if (DF2H && e.cnSkin === 'venomscorpion') DF2H.onHit(e, v, P.hp < hp0, P);   if (UWH && e.cnSkin) UWH.onHit(e, v, P.hp < hp0, P);   if (KSH && e.cnSkin) KSH.onHit(e, v, P.hp < hp0, P);   /* (claude/underwell) the dust's grit, the thirsty one's sip */   if (e.t === 'kiterider' && SKY) SKY.riderStruck(e, cvRes);   /* THE SKY ROAD: a swoop turned on a shield knocks him out of the sky */ /* THE VENOM SCORPION's sting that lands: the Queen's venom (claude/desertfoes) */
     if (e.t === 'mummy' && PYH && PYH.on()) PYH.onHit(e, v, P.hp < hp0, P);   /* (claude/sealedpyramid) THE MUMMY's lash yanks you in, its grab holds you */
     if (e.t === 'waterthief' && WTH && P.hp < hp0) WTH.stole(e, P);   /* THE WATER-THIEF's cut that lands opens your skin: a sip goes with him (src/well-town-hands.js) */
@@ -24312,12 +24355,17 @@ function villageAshes(e) {   /* where a burning goblin falls, the ground catches
   let n = 0; for (const dx of [-1, 0, 1]) { const c = cellNear(VG, tx + dx, ty); if (c && ignite(VG, c.x, c.y, 'burngob')) n++; }
   if (n) number(e.x, e.y - 22, 'THE STRAW CATCHES', '#ff9a5c');
 }
+/* (claude/smallfix7, Daniel 11-01: "where you knock water into things, the fire still appears but does no damage") A DOUSED FIRE GOES OUT WHERE IT IS DRAWN, IN THE SAME FRAME ITS DAMAGE STOPS: a puff of steam, the flame gone, the hiss. steamPuff is the one picture of it (the grid's cells, the barn roof's wall, the flame pillars, a beam, a goblin); villageOut takes the grid cells water just put out (fire-spread.js G.out) down at once - the entry in `fires` is what hurts AND what draws, so it dies with the cell, not a frame later in villageTick's sync. */
+function steamPuff(x, y, n = 7) { for (let i = 0; i < n; i++) parts.push({ x: x + (Math.random() - 0.5) * 12, y: y - Math.random() * 4, vx: (Math.random() - 0.5) * 18, vy: -34 - Math.random() * 30, life: 0.8 + Math.random() * 0.4, max: 1.2, col: Math.random() < 0.5 ? '#e8eef0' : '#b7c2c8', size: 2, grav: -18 }); }
+function villageOut() { if (!VG || !VG.out || !VG.out.length) return 0; const out = VG.out; VG.out = [];
+  for (const c of out) { if (c.f) { c.f.life = 0; c.f = null; } steamPuff(c.x * TS + 8, (c.y + 1) * TS - 2, 5); }
+  fires = fires.filter(f => f.life > 0); SFX.hiss(); return out.length; }
 /* WATER: out goes the spread within r tiles, and any hot door within cool tiles is cooled for twelve seconds */
 function villageSplash(x, y, r, cool) {
   if (VWH && VWH.on() && r <= 7 && !P.dead && Math.abs(P.x - x) < 30 && Math.abs(P.y - y) < 34) VWH.soak('splash');   /* (claude/burning3) the trough or the well you struck is over you: SOAKED */
-  const n = douse(VG, Math.floor(x / TS), Math.floor((y - 1) / TS), r);
-  for (const f of fires) if (!f.still && !f.grid && Math.abs(f.x - x) < r * TS && Math.abs(f.y - y) < 40) f.life = 0;
-  if (fires.some(f => f.barrier && !f.heap && Math.abs(f.x - x) < (r + 3) * TS && Math.abs(f.y - y) < 40)) { const bs = fires.filter(f => f.barrier && !f.heap);   /* (the barn roof's: a heap is put out by a bucket, never by a splash) */ if (bs.some(f => !(f.delay > 0))) number(bs[0].x + 16, bs[0].y - 40, 'THE FIRE IS OUT - GO', '#9ad0ff'); for (const f of bs) f.delay = 12; }   /* the roof's fire: out for twelve seconds, and back */
+  const n = douse(VG, Math.floor(x / TS), Math.floor((y - 1) / TS), r); villageOut();
+  for (const f of fires) if (!f.still && !f.grid && Math.abs(f.x - x) < r * TS && Math.abs(f.y - y) < 40) { f.life = 0; steamPuff(f.x, f.y - 6, 4); }
+  if (fires.some(f => f.barrier && !f.heap && Math.abs(f.x - x) < (r + 3) * TS && Math.abs(f.y - y) < 40)) { const bs = fires.filter(f => f.barrier && !f.heap);   /* (the barn roof's: a heap is put out by a bucket, never by a splash) */ if (bs.some(f => !(f.delay > 0))) number(bs[0].x + 16, bs[0].y - 40, 'THE FIRE IS OUT - GO', '#9ad0ff'); for (const f of bs) { if (!(f.delay > 0)) steamPuff(f.x, f.y - 10, 6); f.delay = 12; } }   /* the roof's fire: out for twelve seconds, and back */
   for (const pr of props) if (pr.t === 'captive' && !pr.freed && !pr.lost && Math.abs(pr.x - x) < cool * TS && Math.abs(pr.y - y) < 3 * TS) { pr.coolT = 12; pr.cooled = true; if (pr.hot || pr.hotNear) number(pr.x, pr.y - 40, 'COOLED', '#9ad0ff'); }
   for (let i = 0; i < 26; i++) parts.push({ x: x + (Math.random() - 0.5) * 16, y: y - 10, vx: (Math.random() - 0.5) * r * 40, vy: -120 - Math.random() * 120, life: 0.8, max: 0.8, col: Math.random() < 0.5 ? '#9ad0ff' : '#e8f6ff', size: 2, grav: 500 });
   SFX.splash(); number(x, y - 30, n ? 'PUT OUT' : 'SPLASH', '#9ad0ff');
@@ -24510,9 +24558,9 @@ function pourBucket(pr, tg) {
   const fx = pr.x, fy = pr.y, dir = Math.sign(pr.vx) || P.face;
   if (tg.heap) putOutHeap(tg.heap);
   else if (tg.cap) { tg.cap.coolT = BUCKET.cool; tg.cap.cooled = true; number(tg.cap.x, tg.cap.y - 40, 'COOLED', '#9ad0ff'); }
-  else if (tg.beam) { tg.beam.wet = BUCKET.beamWet; tg.beam.t = -1; number((tg.beam.x0 + tg.beam.x1 + 1) * 8, tg.beam.row * TS - 20, 'THE BEAM HOLDS', '#9ad0ff'); }
-  else if (tg.bar) { const bs = fires.filter(f => f.barrier && !f.heap); for (const f of bs) f.delay = 12; number(tg.bar.x, tg.bar.y - 40, 'THE FIRE IS OUT - GO', '#9ad0ff'); }
-  else if (tg.cell) { const cx0 = tg.cell.x, cy0 = tg.cell.y, r = VWA.SPLASH[pr.thrKind || 'bucket'] || 2; const n = douse(VG, cx0, cy0, r) + quench(VG, cx0, cy0, r); number(fx, fy - 30, n ? 'PUT OUT' : 'SPLASH', '#9ad0ff'); }   /* (claude/burnvillage2) a bucket's splash is two tiles, a jug's one */
+  else if (tg.beam) { tg.beam.wet = BUCKET.beamWet; tg.beam.t = -1; number((tg.beam.x0 + tg.beam.x1 + 1) * 8, tg.beam.row * TS - 20, 'THE BEAM HOLDS', '#9ad0ff'); for (let x = tg.beam.x0; x <= tg.beam.x1; x += 2) steamPuff(x * TS + 8, tg.beam.row * TS, 3); SFX.hiss(); }
+  else if (tg.bar) { const bs = fires.filter(f => f.barrier && !f.heap); for (const f of bs) { if (!(f.delay > 0)) steamPuff(f.x, f.y - 10, 6); f.delay = 12; } SFX.hiss(); number(tg.bar.x, tg.bar.y - 40, 'THE FIRE IS OUT - GO', '#9ad0ff'); }
+  else if (tg.cell) { const cx0 = tg.cell.x, cy0 = tg.cell.y, r = VWA.SPLASH[pr.thrKind || 'bucket'] || 2; const n = douse(VG, cx0, cy0, r) + quench(VG, cx0, cy0, r); villageOut(); number(fx, fy - 30, n ? 'PUT OUT' : 'SPLASH', '#9ad0ff'); }   /* (claude/burnvillage2) a bucket's splash is two tiles, a jug's one */
   for (let i = 0; i < 22; i++) parts.push({ x: fx, y: fy - 10, vx: dir * (60 + Math.random() * 90), vy: -90 - Math.random() * 90, life: 0.6, max: 0.6, col: Math.random() < 0.5 ? '#9ad0ff' : '#e8f6ff', size: 2, grav: 500 });
   SFX.splash(); pr.state = 'return'; pr.retT = THROW_KIND[pr.thrKind || 'bucket'].respawn; pr.spent = (pr.spent || 0) + 1;
 }
@@ -24670,14 +24718,15 @@ function drawVillage(cx, cy) {
   if (THEATRE) THH.drawTheatre(THEATRE, g, THX, cx, cy, VW, VH, time);   /* THE MASKWRIGHT'S THEATRE: beams, flats, traps, gadgets, the curtain */
   if (!VG) return;
   drawSmoke(cx, cy); drawHeaps(cx, cy); drawBuckets(cx, cy);
-  for (const f of fires) if (f.pillar && f.delay > 0 && f.x > cx - 20 && f.x < cx + VW + 20) { const x = Math.round(f.x - cx), y = Math.round(f.y - cy), soon = f.delay < PILLAR.warn;   /* a pillar at rest: its vent glowing, and brighter just before it goes */
+  for (const f of fires) if (f.pillar && f.delay > 0 && f.x > cx - 20 && f.x < cx + VW + 20) { const x = Math.round(f.x - cx), y = Math.round(f.y - cy), soon = f.delay < PILLAR.warn && !(f.outT > 0);   /* a pillar at rest: its vent glowing, and brighter just before it goes */
+    if (f.outT > 0) { g.fillStyle = '#1e2024'; g.fillRect(x - 6, y - 2, 12, 2); g.fillStyle = '#3a4048'; g.fillRect(x - 4, y - 3, 8, 1); if (Math.random() < 0.05) steamPuff(f.x, f.y - 4, 2); continue; }   /* (claude/smallfix7) a column a wave has put out is a cold, wet vent: no glow, no 'about to roar' flicker, a wisp of steam */
     g.fillStyle = '#2a1410'; g.fillRect(x - 6, y - 2, 12, 2); g.fillStyle = soon ? (Math.floor(time * 16) % 2 ? '#ffd36b' : '#ff6b2c') : '#8a2a14'; g.fillRect(x - 4, y - 3, 8, 1); g.fillRect(x - 2 + Math.round(Math.sin(time * 7 + f.x) * 2), y - 5, 3, 2); }
   for (const z of L.deckBreaks || []) { if (!(z.log || z.beam) || z.down) continue; const x = Math.round(z.x0 * TS - cx), y = Math.round(z.row * TS - cy), w = (z.x1 - z.x0 + 1) * TS; if (x > VW || x + w < 0) continue;   /* THE BURNING LOG */
-    const hot = z.t >= 0; g.fillStyle = '#1b1626'; g.fillRect(x - 1, y - 1, w + 2, 9); g.fillStyle = hot ? '#6a2a14' : '#4a2e1a'; g.fillRect(x, y, w, 7); g.fillStyle = '#7a4a2a'; g.fillRect(x, y, w, 2);
+    const wet = z.wet > 0, hot = !wet && z.t >= 0; g.fillStyle = '#1b1626'; g.fillRect(x - 1, y - 1, w + 2, 9); g.fillStyle = wet ? '#2e3238' : hot ? '#6a2a14' : '#4a2e1a';   /* (claude/smallfix7) a DOUSED beam is wet, dark wood: no flame teeth, a wisp of steam (it was drawn alight while its fuse held) */ g.fillRect(x, y, w, 7); g.fillStyle = '#7a4a2a'; g.fillRect(x, y, w, 2);
     g.fillStyle = '#2e1c12'; for (let q = 6; q < w; q += 11) g.fillRect(x + q, y + 2, 1, 4);
     if (z.bridge) { g.fillStyle = '#3a2616'; g.fillRect(x - 2, y - 14, 3, 15); g.fillRect(x + w - 1, y - 14, 3, 15); g.fillStyle = hot ? '#ff9a5c' : '#8a7340'; for (let q = 0; q < w; q += 2) g.fillRect(x + q, y - 12 + Math.round(Math.sin(q / w * Math.PI) * 4), 2, 1); }   /* (claude/burnvillage2) A BURNING BRIDGE: its two posts and a rope rail (alight once it is going) */
-    g.fillStyle = hot ? (Math.floor(time * 14) % 2 ? '#ffd36b' : '#ff6b2c') : '#ff7a2c'; for (let q = 2; q < w; q += 5) if ((q * 7 + Math.floor(time * 4)) % 3 === 0 || hot) g.fillRect(x + q, y + 5 + ((q >> 2) % 2), 2, 1);
-    if (hot || Math.random() < 0.06) parts.push({ x: z.x0 * TS + Math.random() * w, y: z.row * TS, vx: 0, vy: -30, life: 0.5, max: 0.5, col: '#ff9a5c', size: 1, grav: -10 }); }
+    g.fillStyle = hot ? (Math.floor(time * 14) % 2 ? '#ffd36b' : '#ff6b2c') : '#ff7a2c'; if (!wet) for (let q = 2; q < w; q += 5) if ((q * 7 + Math.floor(time * 4)) % 3 === 0 || hot) g.fillRect(x + q, y + 5 + ((q >> 2) % 2), 2, 1);
+    if (wet) { if (Math.random() < 0.08) steamPuff(z.x0 * TS + Math.random() * w, z.row * TS, 1); } else if (hot || Math.random() < 0.06) parts.push({ x: z.x0 * TS + Math.random() * w, y: z.row * TS, vx: 0, vy: -30, life: 0.5, max: 0.5, col: '#ff9a5c', size: 1, grav: -10 }); }
   for (const r of vflee) { const set = SPR.hearthgob; if (!set) break; drawSet(set, null, 4 + Math.floor(r.t * 12) % 2, Math.round(r.x - cx), Math.round(r.y - cy), 1, false); g.fillStyle = '#ff9a5c'; if (Math.floor(r.t * 10) % 2) g.fillRect(Math.round(r.x - cx) - 6, Math.round(r.y - cy) - 17, 2, 2); }   /* goblins running from what they lit */
   const x0 = Math.floor(cx / TS) - 1, x1 = Math.ceil((cx + VW) / TS) + 1;
   for (const c of VG.cells) { if (c.x < x0 || c.x > x1) continue; const sx = c.x * TS - cx, sy = (c.y + 1) * TS - cy; if (sy < -8 || sy > VH + 8) continue;
@@ -24710,9 +24759,9 @@ function drawVillage(cx, cy) {
     else if (pr.t === 'vbeam' && pr.state !== 'gone') { const wob = pr.state === 'tell' ? Math.round(Math.sin(time * 40)) : 0;
       if (pr.state === 'hung' || pr.state === 'tell') { g.fillStyle = '#3a3030'; g.fillRect(x - 1 + wob, Math.round((pr.cy + 1) * TS - cy) + 2, 1, Math.max(0, y - Math.round((pr.cy + 1) * TS - cy) - 2)); }
       g.fillStyle = '#2a1a12'; g.fillRect(x - 15 + wob, y - 3, 30, 6); g.fillStyle = '#5a3a22'; g.fillRect(x - 14 + wob, y - 2, 28, 2);
-      if (pr.state !== 'down' || Math.floor(time * 8) % 3) { g.fillStyle = '#ff9a5c'; g.fillRect(x - 10 + wob, y - 4, 3, 1); g.fillRect(x + 6 + wob, y - 4, 2, 1); } } }
+      if ((pr.state !== 'down' || Math.floor(time * 8) % 3) && (() => { const bc = VG && VG.get(pr.cx, pr.cy); return pr.state !== 'hung' || (bc && (bc.s === ALIGHT || bc.s === BURNT)); })()) { g.fillStyle = '#ff9a5c'; g.fillRect(x - 10 + wob, y - 4, 3, 1); g.fillRect(x + 6 + wob, y - 4, 2, 1); } } }
   /* a flame over every burning goblin's head: it is alight, and it says so */
-  for (const e of enemies) if (e.t === 'burngob' && e.alive && e.x > cx - 20 && e.x < cx + VW + 20) { const fr = PROP.fire[Math.floor(time * 12 + e.x) % 3]; g.drawImage(fr, Math.round(e.x - cx) - 5, Math.round(e.y - e.h - cy) - 9, 10, 12); }
+  for (const e of enemies) if (e.t === 'burngob' && e.alive && e.x > cx - 20 && e.x < cx + VW + 20) { if (e.doused > 0) { if (Math.random() < 0.12) steamPuff(e.x, e.y - e.h - 2, 1); continue; }   /* (claude/smallfix7) a DOUSED burning goblin has no flame over its head: it was drawn alight while it lit nothing */ const fr = PROP.fire[Math.floor(time * 12 + e.x) % 3]; g.drawImage(fr, Math.round(e.x - cx) - 5, Math.round(e.y - e.h - cy) - 9, 10, 12); }
 }
 /* THE BURNING GOBLIN: the Stockade's goblin, alight. It fights like the goblins you know - a told, blockable swing - and
    touching it costs nothing (the touch rule); what it costs is the straw it walks on and the ground it dies on. */
@@ -28395,7 +28444,7 @@ const FPS = { toldWatch: 0, overreach: 0, pursuits: 0, roles: 0 };
 let faDt = null;
 const FA_SKIP = new Set([...ONE_HIT, ...POISE_SKIP]);   /* (claude/foepass) no affix on a one-blow flyer or on what the stagger bar leaves out on purpose */
 function foePassSpawn() {
-  FOA.reset(); const id = curId(), act = (bpActOf(id, LEVEL_DEPTH[id]) || { act: 1 }).act, dens = FPL.densityOf(id, act, DFM.df('affix') ?? 1); let n = 0;
+  FOA.reset(); GLU.reset();   /* (claude/lategameb) PACK GLUE: a new level starts with no recall line in flight */ const id = curId(), act = (bpActOf(id, LEVEL_DEPTH[id]) || { act: 1 }).act, dens = FPL.densityOf(id, act, DFM.df('affix') ?? 1); let n = 0;
   if (dens > 0) for (const e of enemies) { if (!e.xpKey || !FOA.eligible(e, FA_SKIP)) continue; const a = FOA.pick(id, e.xpKey, e.t, rxRoleOf(e), dens); if (a) { FOA.apply(e, a); n++; } }
   const r = FP.assignRoles(enemies, rxRoleOf); FPS.affixes = n; FPS.squads = r.squads; FPS.roles = r.promoted;
 }   /* (claude/foepass) the dt a HASTED foe's frame would have left for the next creature */
@@ -28427,10 +28476,14 @@ const GREED_API = { dt: 0, get time() { return time; }, get P() { return P; },
   ring: (x, y, r, c, l) => ringAt(x, y, r, c, l),
   mark: e => { number(e.x, e.y - (e.markH || e.h || 20) - 16, '!!', '#ff6b6b'); number(e.x, e.y - (e.h || 20) - 30, 'TOO GREEDY: HE HITS BACK', '#ff6b6b'); },
   boom: e => { SFX.heavy(); shakeCam(5); ringAt(e.x, e.y - (e.h || 20) / 2, GB.GREED.reach + (e.w || 20) / 2, '#ff6b6b', 0.3); burst(e.x, e.y - (e.h || 20) / 2, 16, ['#ff6b6b', '#ffd36b', '#fff6e0'], 140, 0.5); } };
+/* (claude/lategameb) PACK GLUE's world (src/foe-glue.js): a plate-step, a brace, a harpoon hauled back, a held volley, an archer's pin shot */
+const GLU_API = { act: () => RX.act().act, safeStep: (x, y) => tkApi.safeStep(x, y), move: (e, dx) => moveBody(e, dx, 0, false), fall: (e, dy) => moveBody(e, 0, dy, false),
+  say: (e, w, c) => number(e.x, e.y - (e.h || 16) - 18, w, c), sfx: k => { if (typeof SFX[k] === 'function') SFX[k](); }, seed: q => seeds.push(q) };
 function updateEnemies(dt) {
   const DT_FRAME = dt, bpAct = bpActOf(curId(), ((bpDepths || (bpDepths = depthsOf(LEVELS)))[curId()]) || 1).act;   /* (claude/flasklever) a boss's gaps run the act's pressure dial; dt is put back for every other creature */
   OK.world(dt);   /* (claude/order) the knights' bolts in flight, mud, rust and the felled pine on the floor, the snare's hold, the dark that re-plates the ore (src/order-knights.js world) */
   updatePack(dt); eliteWatch(); tkApi.dt = dt; RX.frame(players || [P], enemies, dt);   /* (src/foe-react.js: the act, the ring's sides, a whiff punished, a squad's pincer) */
+  GLU.frame({ heroes: players || [P], enemies, seeds, dt, time, api: GLU_API });   /* (claude/lategameb) PACK GLUE: who starts a plate-step / a brace / a recall line / a pin shot this frame (src/foe-glue.js) */
   if (WMH) WMH.tick(dt, time);   /* (claude/fairfix6) THE WICKER MAN's fire in flight and the swing clock it is struck back by: once a frame, whoever threw it */
   if (L.witch) updateHedgeRoots(dt);   /* THE HEDGE WARDEN's roots and THE ROOTED GARDEN's */
   for (const e of enemies) {
@@ -28529,7 +28582,7 @@ function updateEnemies(dt) {
     if (e.rallyT > 0) { e.rallyT -= dt; if (!windingUp(e) && e.modeT > 0) e.modeT -= dt * 0.6; if (e.cd > 0) e.cd -= dt * 0.6; }   /* RALLIED: it gets to the next blow sooner (never through the tell itself: that stays as long as it was) */
     if (e.wallT > 0) e.wallT -= dt;
     if (e.blessT > 0) e.blessT -= dt;   /* A PRIEST'S BLESSING wears off */
-    if (tokenHold(TK, e, tkApi, dt) || (e.tokFrame >= 0 && RX.hold(e, P, dt))) continue;   /* (RX: a mashed foe's guard, a foe giving ground) */   /* ATTACK TOKENS: turned away, it waits its turn on the ring (src/attack-tokens.js) */
+    if (tokenHold(TK, e, tkApi, dt) || (e.tokFrame >= 0 && RX.hold(e, P, dt)) || ((e.glS || e.glCd > 0) && GLU.hold(e, P, dt, GLU_API))) continue;   /* (RX: a mashed foe's guard, a foe giving ground) */   /* ATTACK TOKENS: turned away, it waits its turn on the ring (src/attack-tokens.js) */
     if (e.elite && updateElite(e, dt)) continue;
     if (e.t === 'oathblade' || e.t === 'oathmaul' || e.t === 'oathlance' || e.t === 'oathmage') { if (!(e.elite && OK.elite(e, dt))) OK.walk(e, dt); continue; }   /* (claude/order) a knight: his moves when he is an elite (src/order-knights.js elite - his body's two, his chapter's, his level's twist, his anti-plunge pose), else between them: to his own distance, facing you, never off a ledge (src/order-knights.js walk) */
     if (e.work && oreWorkStep(e, dt)) continue;   /* MINE LIFE: a goblin at work is not fighting - nothing of his runs until his told alert has played out */
@@ -28633,7 +28686,7 @@ function updateEnemies(dt) {
     if (Math.abs(e.x - P.x) > 420 && (!SETTLED_FOES.has(e.t) || foeHasFooting(e))) continue; // (bosses above never sleep at range: the Ram Lord used to freeze mid-charge when the fold was wide)
     { const bt = e.squirrel ? 'squirrel' : e.t; if (Math.abs(e.x - P.x) < 190 && !(PROG.beasts && PROG.beasts[bt] && PROG.beasts[bt].seen)) beastSeen(bt); }
     if (L.underwell && (e.cnSkin === 'oilthief' || e.cnSkin === 'cisternbat') && Math.abs(e.x - P.x) < 190 && !(PROG.beasts && PROG.beasts[e.cnSkin] && PROG.beasts[e.cnSkin].seen)) beastSeen(e.cnSkin);   /* (claude/underwell2) the oil thief's and the cistern bat's own cards (the sapper's and the bat's machines) */
-    if(e.t==='zombie'||e.t==='husk'||e.t==='apprentice'){beastSeen(e.t);if(e.cnSkin&&Math.abs(e.x-P.x)<190)beastSeen(e.cnSkin);updateZombie(e,dt,{P,lit:L.gasVents?(x,y)=>!!inVentLight(L,x,y):null,move:(q,x,y)=>moveBody(q,x,y,false),hit:(x,d,hard)=>damagePlayer(x,d,{unblockable:hard,who:e}),snare:t=>{P.snare=Math.max(P.snare||0,t);},say:(msg,hard)=>number(e.x,e.y-34,msg,hard?'#ff6b6b':'#ffd36b'),solid:(x,y)=>isSolid(Math.floor(x/TS),Math.floor(y/TS)),
+    if(e.t==='zombie'||e.t==='husk'||e.t==='apprentice'){beastSeen(e.t);if(e.cnSkin&&Math.abs(e.x-P.x)<190)beastSeen(e.cnSkin);updateZombie(e,dt,{P,held:(P.snare||0)>0.25,lit:L.gasVents?(x,y)=>!!inVentLight(L,x,y):null,move:(q,x,y)=>moveBody(q,x,y,false),hit:(x,d,hard)=>damagePlayer(x,d,{unblockable:hard,who:e}),snare:t=>{P.snare=Math.max(P.snare||0,t);},say:(msg,hard)=>number(e.x,e.y-34,msg,hard?'#ff6b6b':'#ffd36b'),solid:(x,y)=>isSolid(Math.floor(x/TS),Math.floor(y/TS)),
       shot:q=>{const y=q.y-14,dx=P.x-q.x,dy=(P.y-10)-y,d=Math.hypot(dx,dy)||1;seeds.push({x:q.x+q.face*8,y,vx:dx/d*170,vy:dy/d*170-30,g:150,life:2.4,dead:false,spore:false,dmg:DMG.apprenticeEmber,shot:true,owner:q});SFX.spit();}});continue;}
     if (e.t === 'wasp') {
       if (e.drone && !P.dead) { // hive drones dart at you, then drift back to their post
@@ -29009,7 +29062,7 @@ function updateEnemies(dt) {
       if (near && !watched && e.timer <= 0 && e.draw <= 0 && ad > SHOT_CLOSE) { e.draw = e.juggler ? FK.JUGGLER.draw : 0.55; e.timer = e.juggler ? FK.JUGGLER.every : e.ordered > 0 ? HM.ORDER.rate : 2.4; SFX.bow(); number(e.x, e.y - e.h - 10, '!', '#ffd36b'); }
       if (e.draw > 0 && e.draw - dt <= 0) { e.loose = 0.16;
         if (e.juggler) { const k = FK.knifeShot(e.x + e.face * 5, e.y - 16, P.x, P.y - 9, P.vx || 0); seeds.push({ knife: true, x: k.x, y: k.y, vx: k.vx, vy: k.vy, dead: false, life: 2, arrow: true, g: 0, owner: e }); } else {   /* THE JUGGLER's knife: flat and fast, thrown where you are going (src/fair-keys.js knifeShot) */
-        const sx = e.x + e.face * 5, sy = e.y - 7, fpLead = FPL.live(curId(), 'lead') && !e.juggler && !e.bowman, fpShot = fpLead ? FP.leadShot(P, sx, 200) : null, dx = (fpShot ? fpShot.x : P.x) - sx,   /* (claude/foepass) THE LEAD: where you are going, a longer, higher flight when that is out of a flat shot's reach (src/foe-pursuit.js leadShot) */ Tf = e.bowman ? Math.max(0.75, Math.abs(dx) / 300) : fpShot ? fpShot.T : 0.75, G = 320, dy = (P.y - 8) - sy; /* a royal bowman lobs it the length of the hall */
+        const sx = e.x + e.face * 5, sy = e.y - 7, fpPin = GLU.pinLead(e) > 0, fpLead = (FPL.live(curId(), 'lead') || fpPin) && !e.juggler && !e.bowman, fpShot = fpLead ? FP.leadShot(P, sx, 200) : null, dx = (fpShot ? fpShot.x : P.x) - sx,   /* (claude/foepass) THE LEAD: where you are going, a longer, higher flight when that is out of a flat shot's reach (src/foe-pursuit.js leadShot) */ Tf = e.bowman ? Math.max(0.75, Math.abs(dx) / 300) : fpShot ? fpShot.T : 0.75, G = 320, dy = (P.y - 8) - sy; /* a royal bowman lobs it the length of the hall */
         seeds.push({ knife: !!e.juggler, x: sx, y: sy, vx: Math.max(-(e.bowman ? 320 : 200), Math.min(e.bowman ? 320 : 200, dx / Tf)), vy: dy / Tf - 0.5 * G * Tf, dead: false, life: 3, arrow: true, g: G, owner: e, fire: e.fire }); e.fpAim = sx + dx; e.fpAimFrom = P.x;
         if (e.fire) number(e.x, e.y - 20, 'FIRE', '#ff9a5c'); }
       }
@@ -29561,6 +29614,7 @@ FRH = makeFenRoadHands({ get L() { return L; }, TS, T, sfx: SFX, players: () => 
 SSH = makeShriekSistersHands({ get L() { return L; }, get players() { return players && players.length ? players : [P]; }, get boss() { return boss; }, get bossActive() { return bossActive; }, TS, sfx: SFX, hero: () => P, time: () => time,
   number: (x, y, t, c) => number(x, y, t, c), text: (...a) => text(...a), burst: (...a) => burst(...a), sparks: (...a) => sparks(...a), shake: n => shakeCam(n), ring: (x, y, r, c) => ringAt(x, y, r, c, 0.5), dust: (x, y, n) => dust(x, y, n),
   damagePlayer: (...a) => damagePlayer(...a), asPlayer: (p, fn) => asPlayer(p, fn), upright: p => upright(p), overlap: (a, b) => overlap(a, b), box: b => box(b), hint: m => hintSay('tip', 5, m), hitstop: s => hitstop(s),
+  T, cellSet: (x, y, t) => { if (x >= 0 && y >= 0 && x < LW && y < LH) cellSet(x, y, t); }, tileAt: (x, y) => tileAt(x, y), blocking: () => braced() || !!P.block,   /* (claude/rookery4) the roosts' cells (the nests, the steps) and a braced hero (FRIENDLY FIRE, the gust) */
   addEnemy: b => enemies.push(b), killBoss: e => hurtEnemy(e, 1, e.x, false), strike: b => hurtEnemy(b, swingDmg(b), P.x, false) });   /* (claude/sisters2: strike - a held hero's swing on the sister who holds him) THE SHRIEK SISTERS (claude/rookery, src/shriek-sisters-hands.js): the summit's slabs and stones, the rocks, the marks, the waves */
 /* their rows in the shared tables, set here (one line each table is edited by every boss lane: these merge clean) */
 EHP.shrieksisters = SSG.SS.hp.diver + SSG.SS.hp.shrieker + SSG.SS.hp.snatcher; BEAST_SHORT.shrieksisters = 'THE SHRIEK SISTERS'; COLS.shrieksisters = ['#6a7890', '#7a4a5a', '#7a6448']; COLS.shrieker = ['#8a2a30', '#c0302a', '#e6dcc0'];   /* (claude/rookery) THE HARPY SHRIEKER's burst colours */
@@ -29695,7 +29749,8 @@ HNS = makeNestHands({ L: () => L, P: () => P, players: () => (players && players
   shoveHero: (pp, y, d) => asPlayer(pp, () => { P.y = y; P.vy = Math.min(P.vy || 0, 0); if (d > 0) damagePlayer(P.x, d, { unblockable: true, noKnock: true, name: 'A FALLING COMB' }); }),
   spawnHornet: (x, y) => { enemies.push({ t: 'wasp', x, y, hx: x, hy: y, vx: 0, vy: 0, w: 8, h: 6, hp: EHP.wasp, face: -1, alive: true, dying: 0, anim: Math.random() * 6, flash: 0, stagger: 0, sting: true, mode: 'hover', modeT: 0, cd: 1.2, cnSkin: 'hornet' }); burst(x, y, 6, COLS.hornet, 50, 0.4); },
   arrows: () => (players && players.length ? players : [P]).flatMap(pp => pp.rgArrows || []),
-  onQueen: (x, y) => !!(HQH && HQH.potHits(x, y)) });
+  dripHit: (pp, d) => asPlayer(pp, () => { if (!P.dead) damagePlayer(P.x, d, { unblockable: true, noKnock: true, name: 'A HONEY DRIP' }); }),   /* (claude/hornetsnest2) the nest's honey drips: a bead that falls on you */
+  onQueen: (x, y, q) => !!(HQH && HQH.potHits(x, y, q)) });
 /* (claude/hornetsnest2) THE FAT HONEY HORNET's world (src/honey-hornet.js is pure): its ram and its globs strike through damagePlayer (a shield turns them); a glob splashes into a
    STICKY PATCH (the nest's honey: src/hornets-nest-hands.js addHoney); smoke (the nest's) makes it drowsy */
 const HHX = { heroes: () => (players && players.length ? players : [P]), calm: (x, y) => !!(HNS && HNS.on() && HNS.calm(x, y)), sfx: SFX,
@@ -29744,7 +29799,7 @@ SKD = makeStockadeHands({ get L() { return L; }, TS, T, sfx: SFX, hornSounds: e 
   volley: (e, px, n) => { const A = L.arena; for (let i = 0; i < n; i++) { const x = Math.max(A.x0 + 10, Math.min(A.x1 - 10, px + (i - (n - 1) / 2) * 24 + (Math.random() - 0.5) * 10)); rain.push({ x, y: A.floor, t: 0.85 + i * 0.07, owner: e, fired: false }); seeds.push({ x: e.x + e.face * 6, y: e.y - 14, vx: (x - e.x) / 1.4, vy: -340, g: 0, dead: false, life: 0.45, arrow: true, owner: e }); } SFX.bow(); } });
 VWH = makeVillageHands({ get L() { return L; }, TS, T, DMG, sfx: SFX, hero: () => P, enemies: () => enemies, fires: () => fires, parts: () => parts, boss: () => boss, bossActive: () => bossActive, VW: () => VW, VH: () => VH, camX: () => camX, camY: () => camY, camTile: () => Math.floor((camX + VW / 2) / TS),
   number: (x, y, t, c) => number(x, y, t, c), burst: (...a) => burst(...a), dust: (...a) => dust(...a), shake: n => shakeCam(n), attackBox: () => attackBox(), splash: (x, y, r, cool) => villageSplash(x, y, r, cool),
-  hurtEnemy: (...a) => hurtEnemy(...a), damagePlayer: (...a) => damagePlayer(...a), isFireFoe, setTile: (x, y, t) => { const i = y * LW + x; L.grid[i] = t; tileSpr[i] = null; } });   /* (claude/burning3) src/village-hands.js */
+  hurtEnemy: (...a) => hurtEnemy(...a), damagePlayer: (...a) => damagePlayer(...a), isFireFoe, fireDim: (x, y, tall) => fireDim(x, y, tall), heroes: () => (coop() ? players : [P]), setTile: (x, y, t) => { const i = y * LW + x; L.grid[i] = t; tileSpr[i] = null; } });   /* (claude/burning3) src/village-hands.js */   /* (claude/smallfix8) fireDim / heroes: a SOAKED hero's flames dim and steam */
 VTH = makeVotiveHands({ get L() { return L; }, get players() { return players; }, TS, T, sfx: SFX, hero: () => P, movers: () => movers, time: () => time, VW: () => VW, VH: () => VH,
   number: (x, y, t, c) => number(x, y, t, c), burst: (...a) => burst(...a), shake: n => shakeCam(n), owned: () => (PROG.votive = PROG.votive || {}),
   lit: id => { PROG.votive = PROG.votive || {}; PROG.votive[id] = 1; const n = votiveOwned(); if (n >= VOTIVE_N) PROG.churchOpen = 1; saveProgress(); secretFound('church', n); return n; } });
@@ -31751,7 +31806,7 @@ function updateWeather(dt) {
   zoomT = Math.max(0, zoomT - dt); if (zoomT <= 0) zoomAmt = 1;
   // ambient bed by zone, and the music ducks while something winds up nearby
   let amb = 'forest', ambBell = false; for (const z of (L.ambient || [])) if (camX + VW / 2 >= z.x0 && camX + VW / 2 < z.x1) { amb = z.kind; ambBell = !!z.bell; }
-  { const st = state === 'play' && L && lanceStormOn(); if (st) amb = 'rain'; music.storm(st); }   /* (claude/lance5) THE STORM: the rain's bed, and his track lifted a tone (src/audio.js music.storm) */
+  { const st = state === 'play' && L && lanceStormOn(); if (st) amb = 'rain'; music.storm(st || (state === 'play' && frogP2On())); }   /* (claude/lance5) THE STORM: the rain's bed, and his track lifted a tone (src/audio.js music.storm) */
   if (L.hornetsNest && amb === 'forest' && camX + VW / 2 < 80 * TS) amb = 'hornetpines';   /* (claude/hornets2art) the old pines: the wood's air with the nest's far hum under it (src/audio.js AMB_EXTRA) */
   /* THE SECOND LAYER: step inside a room and the place goes behind a wall - the inn's common room, a ship's hold, a hollow trunk */
   { const tx = P.x / TS, ty = P.y / TS, room = !L.colosseum && (L.interiors || []).find(([x0, x1, y0, y1]) => tx >= x0 && tx <= x1 + 1 && ty >= y0 && ty <= y1 + 1.5);
@@ -31854,7 +31909,8 @@ function trnOpenWay() {
   SFX.crumble(); if (SFX.gateLift) SFX.gateLift(); shakeCam(6); rumble(120, 0.8);
 }
 /* the scene clock: seconds since the shore beat began (0 before it) */
-function trnSceneS(tl) { const sh = tl.beats.findIndex(b => b.id === 'shore'), ri = tl.beats.findIndex(b => b.id === 'ride'); if (tl.i < sh) return 0;
+function trnSceneS(tl) { const sh = tl.beats.findIndex(b => b.id === 'shore'), ri = tl.beats.findIndex(b => b.id === 'ride'); if (sh < 0 || ri < 0) return 0;   /* (claude/hornetsnest2) a walk-out has no scene (scene: null): no shore / ride beat to read */
+  if (tl.i < sh) return 0;
   if (tl.i === sh) return tl.pt; if (tl.i === ri) return tl.beats[sh].dur + tl.pt; return tl.beats[sh].dur + tl.beats[ri].dur; }
 function trnUpdate(dt) {
   const tr = TRN; if (tr.loading) return;
@@ -31885,7 +31941,7 @@ function trnArriveBegin(entry) {
   if (!entry.arrive) return;
   trnArrive = { entry, t: 0, dur: entry.arrive.walk, ferry: !!entry.arrive.ferry, done: false, floorY: (L.START.y + 1) * TS };
   players.forEach((p, i) => { p.x = 12 + i * 12; p.y = trnArrive.floorY; p.vx = 0; p.vy = 0; p.face = 1; p.inv = 0; });
-  camX = 0; camY = P.y - 100; transT = 1; transKind = 'fade'; ambient.set('water');
+  camX = 0; camY = P.y - 100; transT = 1; transKind = 'fade'; ambient.set(entry.arrive.ferry ? 'water' : 'forest');
 }
 function trnArriveTick(dt) {
   const A = trnArrive; if (!A || A.done) return;
@@ -32079,7 +32135,7 @@ function update(dt) {
   if (state === 'controls') { if (confirmPress) openRebind('controls'); else if (pausePress) { state = controlsFrom; SFX.menuClose(); } return; }
   if (state === 'rebind') { updateRebind(dt); return; }
   if (state === 'coophelp') { updateCoopHelp(); return; }
-  if (state === 'opening') { opening.t += dt; if (atkPress || pausePress) openingEnd(); else if ((confirmPress || rightPress) && opening.t > 0.25) { SFX.ui(); if (opening.i + 1 >= OP.PANELS) openingEnd(); else { opening.i++; opening.t = 0; } } return; }
+  if (state === 'opening') { opening.t += dt; if (atkPress || pausePress) openingEnd(); else if ((confirmPress || rightPress) && opening.t > 0.25) { SFX.ui(); if (opening.i + 1 >= (opening.post ? OP.PANELS : OP.PRE_PANELS)) openingEnd(); else { opening.i++; opening.t = 0; } } return; }
   if (state === 'heropick') { updateHeroPick(); return; }
   if (state === 'card') { updateCard(dt); return; }
   if (state === 'coop') { updateCoopPick(); return; }
@@ -34029,7 +34085,7 @@ function drawWorld(cx, cy, showPlayer) {
   drawVillage(cx, cy);   /* THE BURNING VILLAGE's straw, char, doors, troughs and beams, under the flames */
   if (HUH && L.hush) HUH.drawWorld(g, cx, cy, time);   /* UNDERLEAF 2: the pots, the streets' gates, alarms and caches, the toll, the key's nail, her bell-pulls and rugs */
   if (POH && POH.on()) POH.drawWorld(g, cx, cy, time);   /* UNDERLEAF 3: her shelves and jars, the seed beds and their vines, the thorn hedges, the float wells, her cauldron */
-  for (const f of fires) { if (f.delay > 0 || f.vent || f.x < cx - 20 || f.x > cx + VW + 20) continue; if (f.oil) continue; if ((f.pillar || f.barrier || f.debris) && f.tall > 14) { const n = Math.ceil(f.tall / 12); for (let q = n - 1; q >= 0; q--) { const s2 = 1.25 - q * 0.12, fr = PROP.fire[Math.floor(time * 14 + f.x + q) % 3], w = Math.round(16 * s2), h = Math.round(16 * s2), wob = Math.round(Math.sin(time * 11 + q * 1.7 + f.x) * 2); g.drawImage(fr, Math.round(f.x - w / 2 + wob) - cx, Math.round(f.y - h - q * 11) - cy, w, h); } continue; } g.drawImage(PROP.fire[Math.floor(time * 12 + f.x) % 3], Math.round(f.x) - 8 - cx, Math.round(f.y) - 16 - cy); }   /* (a FLAME PILLAR at its roar is a column of them) */
+  for (const f of fires) { if (f.delay > 0 || f.vent || f.x < cx - 20 || f.x > cx + VW + 20) continue; if (f.oil) continue; if ((f.pillar || f.barrier || f.debris) && f.tall > 14) { const n = Math.ceil(f.tall / 12), dmP = fireDim(f.x, f.y, f.tall); g.globalAlpha = dmP; for (let q = n - 1; q >= 0; q--) { const s2 = 1.25 - q * 0.12, fr = PROP.fire[Math.floor(time * 14 + f.x + q) % 3], w = Math.round(16 * s2), h = Math.round(16 * s2), wob = Math.round(Math.sin(time * 11 + q * 1.7 + f.x) * 2); g.drawImage(fr, Math.round(f.x - w / 2 + wob) - cx, Math.round(f.y - h - q * 11) - cy, w, h); } g.globalAlpha = 1; continue; } { const dm = fireDim(f.x, f.y, f.tall), fi = PROP.fire[Math.floor(time * 12 + f.x) % 3]; if (dm < 1) { g.globalAlpha = dm; g.drawImage(fi, Math.round(f.x) - 6 - cx, Math.round(f.y) - 11 - cy, 12, 11); g.globalAlpha = 1; } else g.drawImage(fi, Math.round(f.x) - 8 - cx, Math.round(f.y) - 16 - cy); } }   /* (a FLAME PILLAR at its roar is a column of them) */
   drawLampWorld(cx, cy);   /* (claude/lamplit2) the Lamplit Street's oil, wax, writ, flare reach and fuse */
   for (const e of enemies) if (e.alive && (e.t === 'spider' || e.t === 'weaver')) { g.strokeStyle = 'rgba(230,230,240,0.7)'; g.lineWidth = 1; g.beginPath(); g.moveTo(Math.round(e.x - cx) + 0.5, Math.round(e.restY - 26 - cy)); g.lineTo(Math.round(e.x - cx) + 0.5, Math.round(e.y - 8 - cy)); g.stroke(); }
   for (const b of pyres) { const x = Math.round(b.x - cx), y = Math.round(b.y - cy), pulse = Math.sin(time * 30) * 1.2;
@@ -34091,7 +34147,7 @@ function drawWorld(cx, cy, showPlayer) {
       const cs = c.set || (c.t === 'hopper' && c.color && c.color !== 'green' ? SPR['hopper_' + c.color] : SPR[c.t]); c.shown = cs;   /* (c.shown: what was drawn, for tools/corpses.mjs) */ drawRot(cs, c.frame, c.x - cx, c.y - cy + sink, c.face, c.rot, al, 1 + 0.3 * q, 1 - 0.3 * q); }
   }
   if (FKH && FKH.drawDead && L.arena && L.arena.boss === 'fogknight') FKH.drawDead(g, cx, cy, time); if (CHH && L.arena && L.arena.boss === 'champion') CHH.drawDead(g, cx, cy, time); if (ADH && L.arena && L.arena.boss === 'admiral') ADH.drawDead(g, cx, cy, time);   /* the Fog Knight's plate, fallen (src/redraw/fog_knight_art.js) */
-  for (const fx of deathFx) drawDeathFx(g, fx, cx, cy);   /* what they were made of, after the bodies and before the living */
+  for (const fx of deathFx) drawDeathFx(g, fx, cx, cy);   GLU.drawLines(g, cx, cy, time);   /* (claude/lategameb) a scout's taut RECALL LINE (src/foe-glue.js) */   /* what they were made of, after the bodies and before the living */
   if (boss && boss.t === 'lance' && boss.lz) drawLanceBridge(cx, cy);   /* (claude/stormhold3) the cracks, the spears' shadows, the ballista's line, the oil's strip, the main gate: drawn where YOU are */
   for (const e of enemies) {
     if (OKD.isKnightT(e.t)) { OK.draw(g, e, cx, cy); if (e.elite) OK.drawBanner(g, e, cx, cy, TS); }   /* (claude/order) what a knight leaves on the floor and in the air, and HIS CHAPTER'S BANNER on the gate he holds (src/order-knights.js) */
@@ -34099,6 +34155,7 @@ function drawWorld(cx, cy, showPlayer) {
     if (e.alive && (e.poise > 0 || e.broken > 0 || e.dmgPct >= 1) && !(e === boss || e.xpRole === 'mini' || (e.elite && Math.abs(P.x - e.x) < EL.near && Math.abs(P.y - e.y) < 110))) drawPoise(e, cx, cy);   /* the stagger bar over its head (claude/riposte: a boss's, a mini's and a near elite's is under their health instead) */
     if (e.alive && (e === boss || e.xpRole === 'mini')) RP.drawRead(g, e, cx, cy);   /* (claude/riposte) THE SHARED B10 READ for a riposte opening, a poise break, and the B3 ward after */
     if (e.alive && (e === boss || e.xpRole === 'mini') && BR.keyOf(e)) BR.drawKey(g, e, cx, cy, time);   /* B14 (claude/keyscore): HIS KEY, SHOWN - the per-key glyph over a keyed boss or mini (src/boss-read.js KEY_ROWS; none yet: the per-act key lanes add them) */
+    if (e.alive && e.glS && e.x > cx - 40 && e.x < cx + VW + 40) GLU.draw(g, e, cx, cy, time);   /* (claude/lategameb) the planted plate / braced shield, drawn (src/foe-glue.js) */
     if (e.alive && (e.rxGuard > 0 || e.rxVary || e.rxFlash > 0 || e.rxStamp > 0) && e.x > cx - 40 && e.x < cx + VW + 40) RX.draw(g, e, cx, cy, time);   /* told: a raised guard, a held or quick swing, a feint's stamp (src/foe-react.js) */
     if (e.t === 'kraken') { drawKraken(e, cx, cy); continue; }   /* most of it is off the screen and in the sea: it draws itself, dead or alive */
     if (e.t === 'krakenarm') continue;
@@ -34468,7 +34525,7 @@ function drawWorld(cx, cy, showPlayer) {
     let sprSet = e.t === 'mummer' && e.scare && !e.woke && !(e.hurtT > 0) ? SPR.scarecrowM : e.t === 'bellcrab' && e.phase === 3 ? SPR.bellcrabOut : e.t === 'reefmaw' && e.land && SPR.reefmaw && SPR.reefmaw.land ? SPR.reefmaw.land : e.bone && e.t === 'archer' ? SPR.bonearcher : e.t === 'familiar' ? SPR.familiarSmall : e.t === 'bat' && L.fields && SPR.bat ? (SPR.batHaunt = SPR.batHaunt || FF.hauntedSet(SPR.bat)) : e.t === 'lancer' && e.mini ? SPR.lancerRed : e.squirrel ? SPR.squirrel : e.t === 'hopper' && e.color && e.color !== 'green' ? SPR['hopper_' + e.color] : e.t === 'archmage' && e.fam ? SPR.familiar : (L.redgorge && RGSET[e.t === 'scorpion' && e.elite ? 'scorpionElite' : e.t]) || SPR[e.t];
     if (e.t === 'raptor' && e.young && SPR.raptorYoung) { sprSet = SPR.raptorYoung; if (e.st && e.st.mode === 'climb') frame = 6; }   /* (claude/matriarch2 art) HER YOUNG: their own juvenile set, drawn at scale 1 */
     if (e.t === 'sandworm' && L.underwell && e.st && e.st.fast && SPR.fastworm) sprSet = SPR.fastworm;   /* (claude/underwellart) THE FAST SANDWORM: slate violet, ivory bands, red-eyed */
-    if (e.lamplighter && SPR.lamplighter) sprSet = SPR.lamplighter; if (e.cnSkin && SPR[e.cnSkin]) sprSet = SPR[e.cnSkin]; if (e.skinNow && SPR[e.skinNow]) sprSet = SPR[e.skinNow];   /* (claude/ksarfoes) */ if (e.t === 'construct' && e.elite && SPR.constructelite) sprSet = SPR.constructelite; if (e.cnSkin === 'foremancart' && e.alive && MCH && MCH.foremanFrame) frame = MCH.foremanFrame(e);   /* (claude/canalfix3) a canal tough: the goblin's AI, a man's skin; (dr3art) THE FOREMAN's tell poses */   /* THE LAMPLIGHTER (THE FOG CANAL, claude/canalart): the snuffer's walk in a lamplighter's coat and cap */
+    if (e.lamplighter && SPR.lamplighter) sprSet = SPR.lamplighter; if (e.cnSkin && SPR[e.cnSkin]) sprSet = SPR[e.cnSkin]; if (e.t === 'frog' && e.phase >= 2 && SPR.frog && SPR.frog.p2) sprSet = SPR.frog.p2; if (e.skinNow && SPR[e.skinNow]) sprSet = SPR[e.skinNow];   /* (claude/frogking3 flush; claude/ksarfoes) */ if (e.t === 'construct' && e.elite && SPR.constructelite) sprSet = SPR.constructelite; if (e.cnSkin === 'foremancart' && e.alive && MCH && MCH.foremanFrame) frame = MCH.foremanFrame(e);   /* (claude/canalfix3) a canal tough: the goblin's AI, a man's skin; (dr3art) THE FOREMAN's tell poses */   /* THE LAMPLIGHTER (THE FOG CANAL, claude/canalart): the snuffer's walk in a lamplighter's coat and cap */
     if (L.theatre) sprSet = THF.foeSet(e) || sprSet;
     if (e.t === 'lance' && SPR.lanceTorn) { if (!SPR.lanceTorn.done) SPR.lanceTorn.fill(e.torn ? 999 : 4); if (e.torn) sprSet = SPR.lanceTorn; }   /* (claude/lance5finish) the torn sheet bakes lazily: 4 frames a tick once he is drawn (~35 ticks, <=10 ms each), whole if the storm gets there first */   /* (claude/lance5art) the pennant is gone from the storm on */
     if (L.tavern && e.t === 'dummy') sprSet = TVA.dummySet(Math.floor(e.x / TS) !== TAV_DUMMIES[0]);   /* (claude/tavernart) the inn's own straw men: a sack head, and a dented pot helm */
@@ -35585,7 +35642,7 @@ function drawSoundTest() {
   /* THE CREDIT LINE. Only a song already unlocked names its own maker - a locked one is '???' above and stays
      unnamed below it too, or the lock is not really a lock. fitText is a safety net, not the plan: MUSIC_CREDITS is
      kept short enough that it almost never has to cut (tools/textfit.mjs 'soundtest' sweeps every one unlocked). */
-  if (soundCat === 1) { const n = list[soundI], line = musicUnlocked(n) ? (MUSIC_CREDITS_ROW[n] || MUSIC_CREDITS[n] || 'made for BRACKEN') : 'not yet heard'; text(fitText(line, w - 16), x + w / 2, y + h - 34, UI.dim, 'center'); }
+  if (soundCat === 1) { const n = list[soundI], line = musicUnlocked(n) ? (MUSIC_CREDITS_ROW[n] || MUSIC_CREDITS[n] || 'made for THORNROAD') : 'not yet heard'; text(fitText(line, w - 16), x + w / 2, y + h - 34, UI.dim, 'center'); }
   text('Z play  L/R tab  ESC back', VW / 2, y + h - 14, UI.dim, 'center', 6);   /* (8 px it was wider than the panel and sat on its border) */
 }
 const UI = { text: '#f0e8d4', title: '#fff6e0', dim: '#c2c9c2', border: '#d9c28c', sel: '#a8e06e', gold: '#ffd34a', silver: '#eaf0ff', plate: 'rgba(16,13,24,0.96)' };
@@ -36212,7 +36269,7 @@ function render() {
   setView(desiredView());
   const sh = SET.shake ? shake : 0;
   const cx = Math.round(Math.max(0, Math.min(LW * TS - VW, camX)) + kick + (sh ? (Math.random() - 0.5) * sh * 2 : 0)), cy = Math.round(Math.max(0, Math.min(LH * TS - VH, camY)) + (sh ? (Math.random() - 0.5) * sh * 2 : 0)); /* never past the level's edge, whatever moved the camera */
-  if (state === 'opening') OP.drawPanel(g, opening.i, opening.t, VW, VH);
+  if (state === 'opening') OP.drawPanel(g, opening.i, opening.t, VW, VH, openingHeroCloth());
   else if (state === 'title' || state === 'slots' || state === 'bossjump') drawTitle(cx, cy);
   else if (state === 'map') { drawMap(); for (const p of parts) { g.globalAlpha = Math.min(1, p.life / p.max * 2); g.fillStyle = p.col; g.fillRect(Math.round(p.x - camX), Math.round(p.y - camY), p.size, p.size); } g.globalAlpha = 1; }
   else if (state === 'editor') drawEditor();
@@ -36480,6 +36537,7 @@ function render() {
       g.globalAlpha = a; g.fillStyle = 'rgba(10,8,20,0.62)'; g.fillRect(0, y0 - 10, VW, 30); g.fillStyle = '#ffd36b'; g.fillRect(0, y0 - 10, VW, 1); g.fillRect(0, y0 + 19, VW, 1);
       text(actCard.label, VW / 2, y0 - 5, '#c9a26a', 'center', 6); text(actCard.name, VW / 2 + 1, y0 + 5, '#3a2214', 'center', 10); text(actCard.name, VW / 2, y0 + 4, '#ffd36b', 'center', 10); g.globalAlpha = 1; } }
     if (secretToast && state === 'play') drawSecretToast();   /* (claude/secrets) 'LOST BANNER 1/3', 'A HIDDEN WAY OPENS': a card over the level */
+    if (frogStirT > 0 && state === 'play' && bossActive) { const k = Math.min(1, frogStirT > 2.7 ? (3.2 - frogStirT) / 0.5 : frogStirT < 0.6 ? frogStirT / 0.6 : 1); g.globalAlpha = k; g.fillStyle = 'rgba(6,24,34,0.72)'; g.fillRect(0, VH / 3 - 14, VW, 26); g.fillStyle = '#bfe6f5'; g.fillRect(0, VH / 3 - 14, VW, 1); g.fillRect(0, VH / 3 + 11, VW, 1); text('THE POND STIRS', VW / 2 + 1, VH / 3 - 1, '#0c2a22', 'center', 12); text('THE POND STIRS', VW / 2, VH / 3 - 2, '#bfe6f5', 'center', 12); g.globalAlpha = 1; }   /* (claude/frogking3) the court changes: the banner */
     if (bannerT > 0 && state === 'play') { const k = Math.min(1, bannerT > 2.2 ? (2.6 - bannerT) / 0.4 : bannerT < 0.5 ? bannerT / 0.5 : 1), rl = LEVELS[levelIndex].rule ? Math.min(3, wrap(LEVELS[levelIndex].rule, VW - 40, 6).length) * 9 : 0; g.globalAlpha = k; g.fillStyle = 'rgba(10,8,20,0.7)'; g.fillRect(0, VH / 2 - 22, VW, 24 + rl); g.fillStyle = '#ffd36b'; g.fillRect(0, VH / 2 - 22, VW, 1); g.fillRect(0, VH / 2 + 1 + rl, VW, 1); text(LEVELS[levelIndex].name, VW / 2 + 1, VH / 2 - 12, '#3a2214', 'center', 12); text(LEVELS[levelIndex].name, VW / 2, VH / 2 - 13, '#ffd36b', 'center', 12); /* (claude/storyremove) no story line under the name: the card is the NAME and its one-line RULE; it fades, never pauses play, never eats input */
       { const r = LEVELS[levelIndex].rule; if (r) wrap(r, VW - 40, 6).slice(0, 3).forEach((ln, i) => text(ln, VW / 2, VH / 2 + 4 + i * 9, '#ffd36b', 'center', 6)); }
       g.globalAlpha = 1; }
@@ -36538,10 +36596,10 @@ function render() {
     const sway = Math.sin(time * 0.9) * 1.2, ly = Math.round(2 - (1 - e) * 70 + sway);
     const lw = 192, lh = 38, tcx = Math.round(VW / 2), lx = Math.round(tcx - lw / 2);
     g.drawImage(PROP.plank, 0, 0, PROP.plank.width, PROP.plank.height, lx, ly, lw, lh);
-    text('BRACKEN', tcx, ly + 4, UI.gold, 'center', 22);   /* (one call: the face draws its own shadow, and a second BRACKEN 2px off it is what textfit calls a collision) */
+    text('THORNROAD', tcx, ly + 4, UI.gold, 'center', 22);   /* (one call: the face draws its own shadow, and a second THORNROAD 2px off it is what textfit calls a collision) */
     // a glint runs along the letters every few seconds
     { const k = ((time - titleSince) % 5.5) / 0.7; if (k > 0 && k < 1) { g.save(); g.beginPath(); g.rect(lx + 6, ly + 3, lw - 12, lh - 6); g.clip(); const sx = lx - 20 + k * (lw + 40); g.globalCompositeOperation = 'lighter'; g.globalAlpha = 0.35; g.fillStyle = '#fff6c8'; g.beginPath(); g.moveTo(sx, ly); g.lineTo(sx + 10, ly); g.lineTo(sx - 4, ly + lh); g.lineTo(sx - 14, ly + lh); g.closePath(); g.fill(); g.restore(); } }
-    { const a = Math.max(0, Math.min(1, (since - 0.5) / 0.4)); g.globalAlpha = a; g.fillStyle = 'rgba(20,12,8,0.6)'; g.fillRect(lx + 10, ly + 25, lw - 20, 10); text('a knight, a wood, a mountain', tcx, ly + 27, UI.text, 'center', 6); g.globalAlpha = 1; }
+    { const a = Math.max(0, Math.min(1, (since - 0.5) / 0.4)); g.globalAlpha = a; g.fillStyle = 'rgba(20,12,8,0.6)'; g.fillRect(lx + 10, ly + 25, lw - 20, 10); text('a road, a crown, a mountain', tcx, ly + 27, UI.text, 'center', 6); g.globalAlpha = 1; }
     // the menu: a board on two posts, standing on the road to the right of the camp
     { const items = titleItems(), n = Math.max(items.length, titleTop().length), RH = Math.min(11, Math.floor(96 / n)), mw = 126, mx = VW - mw - 16, mh = n * RH + 20, my = VH - 22 - 8 - mh;
       const slide = easeOutBack(Math.min(1, Math.max(0, (since - 0.25) / 0.5))); const ox = Math.round((1 - slide) * 160);   /* (160: at 140 a sliver of the board showed at the right edge while the press card was up) */
@@ -36587,7 +36645,7 @@ function render() {
   if (state === 'coophelp') drawCoopHelp(uiCtx(), coopHelpPage, coopHelpPages());
   if (state === 'practice') drawPractice();
   if (state === 'herocard') drawHeroCard();
-  if (state === 'opening') { TCH.hit(0, 0, VW, VH, () => { confirmPress = true; }); OP.drawPanelText(g, text, UI, opening.i, opening.t, VW, VH, touchOn); }
+  if (state === 'opening') { TCH.hit(0, 0, VW, VH, () => { confirmPress = true; }); OP.drawPanelText(g, text, UI, opening.i, opening.t, VW, VH, touchOn, openingHeroLine()); }
   if (state === 'heropick') drawHeroPick();
   if (state === 'card') drawCard();
   if (state === 'coop') drawCoopPick();

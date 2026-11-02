@@ -12,7 +12,7 @@ try {
   /* ---- 1. THE TITLE ---- */
   const t = await pg.evalp(`(async()=>{ BK.manualSimulation = true; BK.setHero('knight'); BK.reset({ fresh: true }); BK.ui.pressCard = false; BK.state = 'title'; BK.step(150);
     const { VW, VH } = BK.view; window.__textRec = []; BK.step(1); const r = window.__textRec.filter(x => x.kind === 'text').map(x => ({ s: x.s, x0: x.x0, y0: x.y0, w: x.w, h: x.h, size: x.size })); window.__textRec = null; return { VW, VH, r, items: BK.ui.titleItems() }; })()`);
-  const by = s => t.r.find(x => x.s === s), logo = t.r.filter(x => x.s === 'BRACKEN' && x.size >= 16), tag = by('a knight, a wood, a mountain');
+  const by = s => t.r.find(x => x.s === s), logo = t.r.filter(x => x.s === 'THORNROAD' && x.size >= 16), tag = by('a road, a crown, a mountain');
   assert.ok(logo.length >= 1 && tag, 'the sign and its tagline are drawn: ' + t.r.map(x => x.s).join(' / '));
   for (const x of t.r) assert.ok(x.x0 >= 4 && x.x0 + x.w <= t.VW - 4 && x.y0 >= 0 && x.y0 + x.h <= t.VH, 'on the screen, whole: ' + x.s + ' ' + JSON.stringify(x));
   const menu = t.items.map(s => by(s)).filter(Boolean);

@@ -101,7 +101,7 @@ export function buildSporewood({ painter, T, TS }) {
   glow(33, 35); deco(37, 35, 'rootDecor', 1); coins([32, 34], [35, 34]);
   plank(31, 57, 33); coins([33, 32], [48, 32]);                                    /* a root shelf over the wall top */
   /* the wall top: THE SPITCAP, taught. It swells before it spits: strike it then (a sign at the point of use) */
-  foe('spitcap', 43, 35, 'wallTop', { face: -1 });
+  foe('spitcap', 43, 35, 'wallTop', { face: -1 }); foe('brute', 52, 35, 'wallTopB', { face: -1 });   /* (platwins1: the pit's heavy stands here, before the pit, not on the pit's far lip) */
   sign(39, 35, 'A SPITCAP SWELLS BEFORE IT SPITS. STRIKE IT THEN; STEP OUT OF ITS CLOUD.');
   coins([46, 34], [51, 34]); deco(54, 35, 'sporePod'); drip(45, 3.1);
   /* THE BOUNCE PIT: eight wide (no jump crosses), a floor four rows down with bounce caps on it - one throws you out over the far lip (hold jump: higher).
@@ -109,7 +109,7 @@ export function buildSporewood({ painter, T, TS }) {
   air(59, 66, 0, 39); ground(59, 66, 40); for (let x = 59; x <= 66; x++) spring(x, 40);   /* (its whole floor is cap: wherever you land, it throws you) */
   sign(56, 35, 'NO JUMP CROSSES. DROP IN: A BOUNCE CAP THROWS YOU OUT.');
   coins([62, 37], [63, 35], [65, 37]);
-  ground(67, 78, 36); glow(70, 35); deco(73, 35, 'tinyCap', 2); foe('brute', 71, 35, 'pitFar', { face: -1 }); foe('archer', 76, 35, 'pitFar', { face: -1 });   /* (where the bounce throws you out: a heavy, the pit at your back) */
+  ground(67, 78, 36); glow(70, 35); deco(73, 35, 'tinyCap', 2); foe('archer', 76, 35, 'pitFar', { face: -1 });   /* (where the bounce throws you out: an archer on the far lip; the pit's heavy waits on the wall top before it, platwins1: the pit-and-terrace stretch is a clean platforming run) */
   /* THE GLADE'S EXAM, THE CAP TERRACE: two buds up two four-row tiers - the first under a spore drop on a count (let it burst, then stop on the bud), a SHIELD on
      the first tier where the cap sets you down, a SPITCAP on the second tier's lip over the bud, a sporeling behind it. Shrine at the top */
   bud(77, 36); ground(79, 104, 32); drip(78, 2.8);
@@ -117,7 +117,7 @@ export function buildSporewood({ painter, T, TS }) {
   foe('shield', 82, 31, 'terrace', { face: -1 });
   bud(85, 32); ground(87, 104, 28);
   plank(88, 89, 25); plank(97, 102, 25);                                            /* root shelves over the top tier (split: none spans the gap) */
-  foe('spitcap', 88, 27, 'terrace', { face: -1, perch: true }); foe('brute', 89, 27, 'terrace', { face: -1, perch: true }); drip(87, 2.9);   /* (the terrace's heavy, where the bud sets you down) */
+  drip(87, 2.9);   /* (platwins1: the terrace's spitcap and heavy stand below the shrine, on the hollow's steps, so the terrace stretch is a clean climb and bounce) */
   /* THE TERRACE'S FALL (claude/sporewood2tune, the walker band): the top tier ends in a REAL GAP, six wide, no floor - a fall is the end (back to the last shrine). A pillar of two BOUNCE CAPS stands in it: a hop from the lip onto them, and they throw you over to the far lip
      (hold jump for height). Told: the sign on the lip, a warning post each side, the pit's mouth the same as the bounce pit taught (which had a floor); a spitcap holds the far lip */
   air(91, 96, 28, 42); ground(93, 94, 28); spring(93, 28); spring(94, 28); deco(90, 27, 'warnPost', 0); deco(97, 27, 'warnPost', 1);
@@ -132,7 +132,7 @@ export function buildSporewood({ painter, T, TS }) {
   /* down into the hollow: three steps */
   ground(105, 110, 31); ground(111, 116, 34); ground(117, 137, 38); plank(111, 116, 31);
   lantern(108, 30);                                                                 /* LANTERN ONE, on the first step: the teach */
-  glow(114, 33);
+  glow(114, 33); foe('brute', 114, 33, 'hollowSteps', { face: -1 }); foe('spitcap', 111, 33, 'hollowSteps', { face: -1 });   /* (platwins1: the terrace's heavy and spitcap, moved down off the climb) */
   /* the first LURKER, by the second lantern: strike the lantern and its light dazzles him out of his cap (a sign at the point of use) */
   lantern(120, 37); foe('lurker', 125, 37, 'hollowA'); foe('brute', 128, 37, 'hollowA', { face: -1 }); foe('shield', 134, 37, 'hollowB', { face: -1 });   /* (a guard at the dark bud's lantern: light it under his blade) */
   sign(118, 37, "LURKERS HIDE AMONG THE CAPS. A LANTERN'S LIGHT DAZZLES THEM OUT.");
@@ -149,7 +149,7 @@ export function buildSporewood({ painter, T, TS }) {
   sign(139, 33, 'THE LANTERN LEDGES. HOP THE LIT STALKS; THE BOUNCE CAPS THROW YOU UP. THE BOG STINGS.');
   sign(130, 37, 'THIS BUD IS DARK. LIGHT THE LANTERN CAP BESIDE IT, THEN STOP ON THE BUD.');
   /* the wall top: a lurker in the caps, the hollows' SHAMAN (he raises the dead: the kill-first target), a mend puff for after */
-  foe('lurker', 158, 33, 'wallTop2'); foe('shaman', 160, 33, 'wallTop2', { face: -1 });
+  foe('lurker', 158, 33, 'wallTop2'); foe('shaman', 123, 37, 'hollowA', { face: -1 });   /* (platwins1: the shaman moved back to the hollow floor, behind the lurker and the heavy, so the ledges' far lip is one lurker) */
   lantern(159, 33); mend(157, 33); plank(139, 141, 31);
   coins([143, 32], [146, 31], [152, 26], [155, 26]);
   /* THE DARK SHAFT (the hollows' EXAM): down off the wall into a room under the canopy, and up its far side on three dark buds, each lit by the lantern beside it;
@@ -218,7 +218,7 @@ export function buildSporewood({ painter, T, TS }) {
   sign(297, 18, 'THE WEB LARDER. THE MOTHER KEEPS HER CATCH HERE. ONE CUT CLEARS A WEB.');
   ground(301, 315, 19);
   web(304, 15, 18); web(311, 15, 18);
-  foe('weaver', 308, 16, 'larderDoor', { face: -1, perch: true }); plank(305, 310, 15); foe('shield', 302, 18, 'larderDoor', { face: -1 });         /* (a root ledge over the larder floor, level with the first tier: walked onto from it) */                              /* the larder's WEAVER hangs between its curtains: cut him or cut the web */
+  foe('weaver', 299, 18, 'larderDoor', { face: -1 }); plank(305, 310, 15); foe('shield', 302, 18, 'larderDoor', { face: -1 });         /* (a root ledge over the larder floor, level with the first tier: walked onto from it) */                              /* the larder's WEAVER hangs between its curtains: cut him or cut the web */
   deco(306, 18, 'bones', 0); deco(309, 18, 'skullPile', 0);
   /* THE LARDER STAIR: two four-row tiers up the root wall, a bud at each foot (no web on a tier: a web's top is footing, and a curtain there was a stair round the bud) */
   bud(314, 19); ground(316, 358, 15);

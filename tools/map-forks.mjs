@@ -50,8 +50,9 @@ try {
     const go = (id, key) => { BK.mapLook(id); BK.state = 'map'; BK.step(2); BK.press(key); for (let i = 0; i < 120; i++) BK.step(1); const n = BK.mapNodes(); return n.ids[n.node]; };
     const info = id => { const n = BK.mapNodes(), i = n.ids.indexOf(id); return { secret: n.secret[i], locked: n.locked[i] }; };
     const wipe = () => { BK.reset({ fresh: true }); for (const l of LEVELS) delete BKT.PROG[l.id]; delete BKT.PROG.lostBanners; delete BKT.PROG.fieldOpen; }; wipe(); for (const l of LEVELS) if (!['burning', 'church', 'unburied', 'undercrown', 'harbor'].includes(l.id)) BKT.PROG[l.id] = { cleared: true, medal: 3, best: 400, silver: 7 };
-    BKT.PROG.stockade = { best: 250 };   /* NOT cleared */ out.unclearedStockade = { info: info('burning'), up: go('stockade', 'up'), right: go('stockade', 'right') };
-    BKT.PROG.stockade = { cleared: true, medal: 1, best: 400 }; out.slowStockade = { info: info('burning'), up: go('stockade', 'up'), right: go('stockade', 'right') };
+    BKT.PROG.stockade = { best: 250 };   /* NOT cleared */ out.unclearedStockade = { info: info('burning'), down: go('kings', 'down'), right: go('kings', 'right') };   /* (claude/smallfix8) the spur hangs off KINGSWOOD, below it */
+    BKT.PROG.stockade = { cleared: true, medal: 1, best: 400 }; out.slowStockade = { info: info('burning'), down: go('kings', 'down'), right: go('kings', 'right') };   /* (claude/smallfix7, Daniel 11-01) a CLEARED Stockade no longer opens it: King Gorm in one life does (PROG.burningOpen) */
+    BKT.PROG.burningOpen = 1; out.gormStockade = { info: info('burning'), down: go('kings', 'down'), right: go('kings', 'right') };
     const { ROAD_OPEN } = await import('/src/level.js');
     if (ROAD_OPEN.undercrown) {   /* (claude/undercrown2, DANIEL'S DESIGN CHANGE 10-15) the Undercrown is ON THE ROAD: Stormhold -> THE UNDERCROWN -> Highcrown */
       const road = () => { for (const l of LEVELS) if (!['burning', 'church', 'unburied', 'harbor', 'undercrown', 'crown', 'storm', 'kitchengate'].includes(l.id)) BKT.PROG[l.id] = { cleared: true, medal: 3, best: 400, silver: 7 }; };
@@ -79,9 +80,10 @@ try {
     BKT.PROG.crown.slain = 90; out.crownMany = { info: info('undercrown'), up: go('crown', 'up'), right: go('crown', 'right') };
     }
     return out; })()`, 300000);
-  // DANIEL'S DESIGN CHANGE 10-15 (never weaken): the Burning Village opens as soon as the Stockade is CLEARED - no best-time clock.
-  S.unclearedStockade.info.locked && S.unclearedStockade.up === 'stockade' && S.unclearedStockade.right === 'spore' ? ok('burning shut while the Stockade is not cleared: UP stays, RIGHT walks the road on') : fail('burning, Stockade not cleared: ' + JSON.stringify(S.unclearedStockade));
-  !S.slowStockade.info.locked && S.slowStockade.up === 'burning' && S.slowStockade.right === 'burning' ? ok('burning open once the Stockade is cleared, even slowly (best 6:40): UP and RIGHT walk onto it') : fail('burning open: ' + JSON.stringify(S.slowStockade));
+  // DANIEL 11-01 (replaces the 10-15 'Stockade cleared' gate): the Burning Village opens when KING GORM is beaten in ONE LIFE (PROG.burningOpen, tools/gorm-unlock.mjs) - never on the Stockade alone.
+  S.unclearedStockade.info.locked && S.unclearedStockade.down === 'kings' && S.unclearedStockade.right !== 'burning' ? ok('burning shut while King Gorm is not beaten: DOWN stays on Kingswood, RIGHT walks the road on (' + S.unclearedStockade.right + ')') : fail('burning, Stockade not cleared: ' + JSON.stringify(S.unclearedStockade));
+  S.slowStockade.info.locked && S.slowStockade.down === 'kings' && S.slowStockade.right !== 'burning' ? ok('burning STILL shut with the Stockade cleared (Daniel 11-01): DOWN stays on Kingswood') : fail('burning, Stockade cleared but King Gorm not beaten clean: ' + JSON.stringify(S.slowStockade));
+  !S.gormStockade.info.locked && S.gormStockade.down === 'burning' ? ok('burning open once King Gorm is beaten in one life (PROG.burningOpen): DOWN off Kingswood walks onto it') : fail('burning open after Gorm: ' + JSON.stringify(S.gormStockade));
   if (ROAD_OPEN.undercrown) {
     !S.ucBefore.uc.secret && S.ucBefore.uc.locked && S.ucBefore.crown.locked ? ok('undercrown on the road: shown and shut before Stormhold is cleared, Highcrown shut behind it') : fail('undercrown before stormhold: ' + JSON.stringify(S.ucBefore));
     !S.ucOpen.uc.locked && S.ucOpen.crown.locked && S.ucOpen.right === 'undercrown' ? ok('Stormhold cleared: the road walks on to THE UNDERCROWN, and Highcrown waits for it') : fail('undercrown after stormhold: ' + JSON.stringify(S.ucOpen));

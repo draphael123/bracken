@@ -76,7 +76,7 @@ export async function buildReport(snap, note = '') {
 const SETS = { df: 'difficulty', sp: 'game speed', zm: 'zoom', sc: 'pixel scale', hud: 'hud', rm: 'reduce motion', fl: 'flashes', as: 'assist', ir: 'iron knight', bt: 'big text', cs: 'colour tells' };
 export function formatReport(r) {
   const o = [], v = r.v || {};
-  o.push('BRACKEN BUG REPORT  (code v' + r.c + ', ' + (r.t ? new Date(r.t * 1000).toISOString().replace('T', ' ').slice(0, 19) + 'Z' : 'no time') + ')');
+  o.push('THORNROAD BUG REPORT  (code v' + r.c + ', ' + (r.t ? new Date(r.t * 1000).toISOString().replace('T', ' ').slice(0, 19) + 'Z' : 'no time') + ')');
   o.push('build      batch ' + (v.b || '?') + (v.d ? '  ' + v.d : '') + (v.s ? '  sha ' + v.s : '  (no sha stamped)'));
   o.push('where      ' + (r.lv ? r.lv + (r.ln ? ' (' + r.ln + ')' : '') + '  col ' + r.x + ' row ' + r.y : '(not in a level)') + '   screen: ' + r.st + (r.co ? '   CO-OP' : ''));
   o.push('hero       ' + r.h + '   hp ' + (r.hp || []).join('/') + '   flasks ' + r.fl + '   save ' + (r.sl + 1) + (r.dfl ? '   level difficulty ' + r.dfl : ''));

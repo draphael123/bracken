@@ -1,7 +1,7 @@
 {
   "id": "./",
-  "name": "BRACKEN",
-  "short_name": "BRACKEN",
+  "name": "THORNROAD",
+  "short_name": "THORNROAD",
   "description": "A pixel-art platformer: walk the road from the wood to the desert, and the bosses that hold it.",
   "start_url": "./",
   "scope": "./",

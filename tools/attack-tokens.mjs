@@ -67,7 +67,7 @@ for (const r of out) {
   if (r.err) { bad.push(r.lvl + ': ' + r.err); continue; }
   if (r.alive < 6) bad.push(`${r.lvl}: only ${r.alive} of the crowd of six stood the forty seconds`);
   if (r.attacks < 12) bad.push(`${r.lvl}: the crowd attacked ${r.attacks} times in forty seconds - nothing to measure`);
-  const purse = ACTS.find(a => a.levels.includes(r.lvl)).cap;   /* (batch106 integ) the purse is the ACT's: two in acts I-III, three in IV and V (curvec5 STEP 2b, Daniel 10-19) */
+  const purse = ACTS.find(a => a.levels.includes(r.lvl)).cap;   /* (batch106 integ) the purse is the ACT's: two in acts I-II, three in III-IV, four in V (curvec5 STEP 2b 10-19; lategameb 10-31) */
   if (r.maxA > purse) bad.push(`${r.lvl}: ${r.maxA} foes attacking the hero at once (the purse is ${purse})`);
   if (r.waitSecs < 20) bad.push(`${r.lvl}: only ${r.waitSecs} foe-seconds of waiting near the hero - nothing to measure`);
   if (r.nRedWith) bad.push(`${r.lvl}: ${r.nRedWith} frames with another windup under a red !! (a heavy comes alone): ${r.redWith.join(', ')}`);

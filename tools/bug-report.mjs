@@ -66,7 +66,7 @@ try {
   assert.ok(r.snap.lv === 'wood' && r.snap.h === 'pyro' && r.snap.st === 'menu', 'the snapshot: level, hero, screen: ' + JSON.stringify(r.snap));
   console.log('ok  C round trip   the page\'s code, decoded by tools/bug-decode.mjs, carries the note, level, hero, hp, settings, errors and events - not the save');
   assert.ok(r.bigLen <= MAX_LEN, 'a flood of errors and a huge note still fit: ' + r.bigLen);
-  const big = decode(r.big); assert.match(big, /BRACKEN BUG REPORT/); assert.ok(r.bigEr <= 20);
+  const big = decode(r.big); assert.match(big, /THORNROAD BUG REPORT/); assert.ok(r.bigEr <= 20);
   const j = JSON.parse(execFileSync(process.execPath, ['tools/bug-decode.mjs', '--json', r.big], { cwd: new URL('..', import.meta.url), encoding: 'utf8' })); assert.equal(j.c, 1);
   const bad = spawnSync(process.execPath, ['tools/bug-decode.mjs', 'BRK1-' + r.big.slice(5, 40)], { cwd: new URL('..', import.meta.url), encoding: 'utf8' }); assert.notEqual(bad.status, 0, 'a cut-off code is refused'); assert.match(bad.stderr, /bug-decode:/, 'with a message, not a stack trace');
   const none = spawnSync(process.execPath, ['tools/bug-decode.mjs', 'hello there'], { cwd: new URL('..', import.meta.url), encoding: 'utf8' }); assert.notEqual(none.status, 0);

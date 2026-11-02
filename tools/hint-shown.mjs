@@ -17,6 +17,7 @@ const HL = path.join(src, 'hint-lines.js');
 const { CALL_LINES, isCallout, calloutText } = fs.existsSync(HL) ? await import(pathToFileURL(HL).href) : { CALL_LINES: new Set(), isCallout: () => false, calloutText: s => s };
 const main = fs.readFileSync(path.join(src, 'main.js'), 'utf8');
 const m = /const MOVE_WORDS = new Set\((\[[^\]]*\])\)/.exec(main); if (!m) { console.error('hint-shown: MOVE_WORDS not found'); process.exit(1); }
+const GLU = fs.existsSync(path.join(src, 'foe-glue.js')) ? await import(pathToFileURL(path.join(src, 'foe-glue.js')).href) : { WORDS: [] };   /* MOVE_WORDS spreads ...GLU.WORDS (claude/lategameb): resolve it as main.js does */
 const WORDS = new Set(eval(m[1]));
 const drops = txt => /[A-Z]/.test(txt) && !WORDS.has(txt);
 const BS = String.fromCharCode(92);

@@ -211,10 +211,10 @@ export function buildLitChurch({ painter, T, TS }) {
   block(74, 76, CF - 2, CF - 1); block(102, 104, CF - 2, CF - 1);                 /* chest tombs */
   air(78, 80, CF, CF + 1); spikes(78, 80, CF + 1); drops.push([78, 80, 'hurt']);   /* a bone pit */
   lamp('candleA', 64, CF - 1, 'ossuary', 'sconce'); lamp('candleB', 96, CF - 1, 'ossuary', 'sconce');
-  ent('wight', 70, CF - 1, { room: 'ossuary', lc: 'dead' }); ent('bonearcher', 95, 49, { room: 'ossuary', lc: 'dead', face: -1 });
+  ent('wight', 100, CF - 1, { room: 'ossuary', lc: 'dead' });   /* (claude/platwins2) the three dead of the ossuary's floor wait at its east end, past the shelf hops (platforming section x50-93, Daniel's 10-31 rule): the wight was at 70, */ ent('bonearcher', 95, 49, { room: 'ossuary', lc: 'dead', face: -1 });
   /* (claude/church3) THE NEW DEAD: an UNDEAD PRIEST among the ossuary's shelves (he raises a wight, mends the dead, pinches out the corpse candles you light - bring the
      sexton's flame near him and he flees it) and an UNDEAD PALADIN on the floor (his cracked shield: parry the gleam, or strike him with the flame in your hand) */
-  ent('deadpriest', 92, CF - 1, { room: 'ossuary', face: -1 }); ent('deadpaladin', 86, CF - 1, { room: 'ossuary', face: -1 });
+  ent('deadpriest', 99, CF - 1, { room: 'ossuary', face: -1 }); ent('deadpaladin', 101, CF - 1, { room: 'ossuary', face: -1 });   /* the priest at 92 and the paladin at 86 */
   sign(82, CF - 1, 'THE DEAD PRIEST FEARS A FLAME. PARRY THE DEAD KNIGHT\'S GLEAM.');
   ent('haunt', 84, 43, { room: 'ossuary', lc: 'dead' });
   grate(72, CF, 'ossuary'); grate(91, CF, 'ossuary');

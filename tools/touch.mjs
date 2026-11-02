@@ -591,7 +591,7 @@ try {
   // ===================== 8: THE INSTALLABLE APP =====================
   await section('pwa-files', async () => {
     const mf = JSON.parse(readFileSync(ROOT + 'manifest.webmanifest', 'utf8'));
-    ok(mf.name === 'BRACKEN' && mf.short_name, 'the manifest has no name');
+    ok(mf.name === 'THORNROAD' && mf.short_name, 'the manifest has no name');
     ok(['fullscreen', 'standalone'].includes(mf.display) && mf.orientation === 'landscape', 'the manifest is not fullscreen/landscape: ' + mf.display + ' ' + mf.orientation);
     ok(/^#[0-9a-f]{6}$/i.test(mf.theme_color) && /^#[0-9a-f]{6}$/i.test(mf.background_color) && mf.start_url, 'the manifest lacks theme/background colours or a start_url');
     ok(mf.icons.some(i => i.sizes === '192x192') && mf.icons.some(i => i.sizes === '512x512') && mf.icons.some(i => i.purpose === 'maskable'), 'the manifest needs a 192, a 512 and a maskable icon');

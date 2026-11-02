@@ -23,12 +23,12 @@ export const BARK = ['#130d0a', '#221812', '#37271c', '#523a28', '#6f4f34', '#8e
 export const NEEDLE = ['#222f10', '#38491a', '#506a26', '#728c34', '#9eb44c'];
 export const DRY = ['#5a3c1c', '#7c5a2a', '#a07e3c'];
 export const EARTH = ['#18120e', '#261c14', '#382a1c', '#503c26', '#6a5232'];
-const zoneP = x => x < 169 ? 0 : x < 248 ? 1 : 2;
+const zoneP = x => x < 169 ? 0 : x < 348 ? 1 : 2;   /* (claude/hornetsnest2: +100 columns - the gallery and the well are comb-stair ochre) */
 const FEET = (at, T, x, y) => { const f = v => v === T.SOLID || v === T.ONEWAY; return f(at(x, y + 1)); };
 /* the pieces of the level the art reads (the level's own layout, src/hornets-nest.js) */
-const inNest = (x, y) => x >= 80 && x <= 332 && y <= 51;
-const inTrunk = (x, y) => x >= 347 && x <= 352 && y < 60;
-const inBough = (x, y) => x >= 370 && x <= 382 && y === 62;
+const inNest = (x, y) => x >= 80 && x <= 432 && y <= 51;
+const inTrunk = (x, y) => x >= 447 && x <= 452 && y < 60;
+const inBough = (x, y) => x >= 470 && x <= 482 && y === 62;
 export const isNestCell = inNest, isTrunkCell = inTrunk;
 
 /* a honeycomb lattice: 6 wide, 4 tall per course, every other course shifted 3. -> 0 outside, 1 wall, 2 cell floor, 3 cell highlight */
@@ -40,7 +40,7 @@ function paperTile(x, y, at, T, L) {
   const up = at(x, y - 1), dn = at(x, y + 1), lf = at(x - 1, y), rt = at(x + 1, y);
   const open = v => v === T.AIR || v === T.ONEWAY || v === T.SPIKE;
   const eU = open(up), eD = open(dn), eL = open(lf), eR = open(rt), zi = zoneP(x), wx = L._hnWax && L._hnWax.has(y * L.W + x);
-  const outer = (x === 80 && eL) || (x === 332 && eR);                                  /* the nest's outside face (from the forest / the falling nest's shaft) */
+  const outer = (x === 80 && eL) || (x === 432 && eR);                                  /* the nest's outside face (from the forest / the falling nest's shaft) */
   const key = 'pa' + zi + '_' + (x & 7) + '_' + (y & 7) + (eU ? 'u' : '') + (eD ? 'd' : '') + (eL ? 'l' : '') + (eR ? 'r' : '') + (wx ? 'w' : '') + (outer ? 'o' : '');
   return once(key, () => tile((px, py) => {
     const P = PAPER[outer ? 0 : zi], u = x * 16 + px, v = y * 16 + py;
@@ -157,16 +157,16 @@ export function hnTile(t, x, y, at, T, L) {
   if (!L._hnWax) { L._hnWax = new Set(); for (const [x0, x1, row] of L.wax || []) for (let xx = x0; xx <= x1; xx++) L._hnWax.add(row * L.W + xx); }
   if (t === T.SPIKE) return brambleTile(x, y);
   if (t === T.ONEWAY) {
-    if (inBough(x, y) || x < 80 || x >= 354) return boughTile(x, y, at, T);
-    const cr = x >= 333 && x <= 353;
+    if (inBough(x, y) || x < 80 || x >= 454) return boughTile(x, y, at, T);
+    const cr = x >= 433 && x <= 453;
     return combShelf(x, y, at, T, L, cr);
   }
   if (t !== T.SOLID) return null;
   if (inTrunk(x, y)) return barkTile(x, y, at, T, true);
   if (inNest(x, y)) return paperTile(x, y, at, T, L);
   /* below the nest: the roots / the shaft's earth / the forest floor */
-  if (x < 80 || x >= 333) { if (y <= 65) return barkTile(x, y, at, T, false); if (x >= 354 && y <= 69) return mudTile(x, y, at, T, 66);   /* (claude/hornets2art) THE MARSH EDGE: the muddy bank */ return earthTile(x, y, at, T, 'floor'); }
+  if (x < 80 || x >= 433) { if (y <= 65) return barkTile(x, y, at, T, false); if (x >= 454 && y <= 69) return mudTile(x, y, at, T, 66);   /* (claude/hornets2art) THE MARSH EDGE: the muddy bank */ return earthTile(x, y, at, T, 'floor'); }
   if (x <= 92 && y <= 65) return barkTile(x, y, at, T, false);
-  if (x >= 328 && y < 66 && y >= 52 && x <= 332) return earthTile(x, y, at, T, 'duff');
+  if (x >= 428 && y < 66 && y >= 52 && x <= 432) return earthTile(x, y, at, T, 'duff');
   return earthTile(x, y, at, T, 'duff');
 }

@@ -27,8 +27,8 @@ function line(g, col, x0, y0, x1, y1) { const n = Math.max(Math.abs(x1 - x0), Ma
 const lit = (dx, dy, R0) => -(dx * 0.45 + dy * 0.9) / R0;   /* light from above and a little in front */
 
 function wingPair(g, pivot, tilt, kind, step, hind, far) {
-  const base = { fold: -2.95, blur: -1.95, wide: -1.55, back: -2.7, beat: -1.75, droop: 2.3 }[kind] ?? -2;
-  const osc = kind === 'blur' ? (step - 1) * 0.55 : kind === 'wide' ? (step - 1) * 0.45 : kind === 'beat' ? (step - 1) * 0.95 : 0;
+  const base = { fold: -2.95, blur: -1.95, wide: -1.55, back: -2.7, beat: -1.75, droop: 2.3, splay: 2.55 }[kind] ?? -2;
+  const osc = kind === 'blur' ? (step - 1) * 0.55 : kind === 'wide' ? (step - 1) * 0.45 : kind === 'beat' ? (step - 1) * 0.95 : kind === 'splay' ? (step - 1) * 0.14 : 0;
   const L = (hind ? 17 : 24) * (kind === 'wide' ? 1.15 : 1), Wd = hind ? 3.6 : 4.8, a = tilt + base + osc + (hind ? 0.32 : 0) + (far ? -0.1 : 0);
   const cx = pivot[0] + Math.cos(a) * L / 2, cy = pivot[1] + Math.sin(a) * L / 2, ghost = kind === 'blur' || kind === 'wide';
   g.globalAlpha = ghost ? 0.62 : 1;
@@ -90,9 +90,9 @@ export function queenFrame(p, step = 0, flash = false) { const k = keyOf(p, step
   const f = memo.get(k); if (!flash) return f;
   const kf = keyOf(p, step, true); if (!memo.has(kf)) memo.set(kf, { ...f, c: whiten(f.c) }); return memo.get(kf); }
 /* how many beats a wing state has (a folded or drooping wing has one) */
-export const beats = p => (p.wing === 'blur' || p.wing === 'wide' || p.wing === 'beat') ? 3 : 1;
+export const beats = p => (p.wing === 'blur' || p.wing === 'wide' || p.wing === 'beat' || p.wing === 'splay') ? 3 : 1;
 /* DRAW HER: the frame for the pose at (x, y), facing f (1 right / -1 left). The caller's context is untouched */
-export function drawQueen(g, x, y, f, p, time, flash) { const n = beats(p), step = n > 1 ? Math.floor(time * (p.wing === 'beat' ? 14 : 22)) % n : 0, fr = queenFrame(p, step, flash);
+export function drawQueen(g, x, y, f, p, time, flash) { const n = beats(p), step = n > 1 ? Math.floor(time * (p.wing === 'beat' ? 14 : p.wing === 'splay' ? 2.6 : 22)) % n : 0, fr = queenFrame(p, step, flash);
   g.save(); g.translate(Math.round(x), Math.round(y)); g.scale(f, 1); g.drawImage(fr.c, -fr.ox, -fr.oy); g.restore();
   return { tip: [Math.round(x) + f * (fr.tip[0] - fr.ox), Math.round(y) + (fr.tip[1] - fr.oy)], head: [Math.round(x) + f * (fr.head[0] - fr.ox), Math.round(y) + (fr.head[1] - fr.oy)] }; }
 
@@ -110,7 +110,12 @@ export function queenFx(g, o) {
     case 'stuck': {   /* the sting buried: chips fly off the perch, the body strains */
       for (let i = 0; i < 4; i++) { const ph = (time * 3 + i / 4) % 1; g.globalAlpha = 1 - ph; px(g, i % 2 ? '#e0a838' : '#8a5a32', tip[0] + (i - 1.5) * 4 * ph + Math.sin(i * 3) * 2, tip[1] - ph * 10 + ph * ph * 14); } g.globalAlpha = 1;
       line(g, '#2a1408', tip[0] - 5, tip[1] + 1, tip[0] + 5, tip[1] + 1); px(g, '#fff6c8', tip[0], tip[1] + 2); break; }
+    case 'fogfall': {   /* (claude/hornetsnest2art) THE FOG DROPS HER: a column of grey fog streaming up off her as she falls, wing-dust and ember flecks shaken loose */
+      for (let i = 0; i < 7; i++) { const ph = (time * 2.2 + i / 7) % 1, sx = x + Math.sin(i * 2.3 + time * 3) * (5 + ph * 8), sy = y - 8 - ph * 34; g.globalAlpha = 0.6 * (1 - ph); g.fillStyle = i % 2 ? '#c8d0d8' : '#8a9098'; g.beginPath(); g.arc(Math.round(sx), Math.round(sy), 3 + ph * 4, 0, 7); g.fill(); }
+      for (let i = 0; i < 5; i++) { const ph = (time * 3 + i / 5) % 1; g.globalAlpha = 0.8 * (1 - ph); px(g, i % 2 ? '#fff0a0' : '#ffb060', x + Math.cos(i * 1.7) * (6 + ph * 10), y - 4 - ph * 22); } g.globalAlpha = 1;
+      for (let i = 0; i < 4; i++) { const ph = (time * 2.8 + i / 4) % 1; line(g, '#d8e6f2', x + (i - 1.5) * 6, y - 14 - ph * 10, x + (i - 1.5) * 6, y - 22 - ph * 10); } break; }
     case 'dazed': {   /* the smoke round her head and stars circling it */
+      if (o.grounded) { for (let i = 0; i < 6; i++) { const side = i % 2 ? 1 : -1, ph = (time * 0.35 + i / 6) % 1; g.globalAlpha = 0.5 * (1 - ph); g.fillStyle = i % 3 ? '#aab0b8' : '#d0d6dc'; g.beginPath(); g.ellipse(Math.round(x + side * (12 + ph * 24)), Math.round(y + 17 - ph * 2), 6 + ph * 5, 2 + ph * 1.5, 0, 0, 7); g.fill(); } g.globalAlpha = 1; }   /* (grounded: a skirt of fog creeping out along the floor round her) */
       for (let i = 0; i < 4; i++) { const ph = (time * 0.9 + i / 4) % 1; g.globalAlpha = 0.5 * (1 - ph); g.fillStyle = i % 2 ? '#c8d0d8' : '#9aa0a8'; g.beginPath(); g.arc(Math.round(head[0] + Math.sin(time * 2 + i * 2) * 6), Math.round(head[1] - 6 - ph * 16), 3 + ph * 3, 0, 7); g.fill(); } g.globalAlpha = 1;
       for (let i = 0; i < 3; i++) { const an = time * 4.5 + i * 2.1; star(g, head[0] + Math.cos(an) * 10, head[1] - 12 + Math.sin(an) * 3, '#ffd36b'); } break; }
     case 'winded': { for (let i = 0; i < 3; i++) { const ph = (time * 1.6 + i / 3) % 1; g.globalAlpha = 0.6 * (1 - ph); px(g, '#fff6e0', head[0] + f * (8 + ph * 8), head[1] + 2 + ph * 4 + i); px(g, '#fff6e0', head[0] + f * (9 + ph * 8), head[1] + 2 + ph * 4 + i); } g.globalAlpha = 1; break; }

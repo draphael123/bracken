@@ -1,5 +1,26 @@
 [
   {
+    "date": "2026-11-01",
+    "batch": 137,
+    "lines": [
+      "BRACKEN is now THORNROAD: new title and loading screen, and a new road-and-goblins opening",
+      "Burning Village opens when you beat King Gorm without dying; co-op shares the credit",
+      "Frog King has less health; Pyromancer: tap C to ward, hold C to build a fireball",
+      "Fixes: Stockade horn soft-lock, late music, Palisade Wood steps; the map road runs past it"
+    ]
+  },
+  {
+    "date": "2026-11-01",
+    "batch": 136,
+    "lines": [
+      "Shriek Sisters reworked: one hunts while two roost, and a grab drags you off the stair",
+      "The Rookery is tuned for all three heroes and its fight runs longer",
+      "Late game: sea guards plant a plate, scouts haul harpoons, zombies clinch, shields brace",
+      "Late-game packs and affixes now scale by act, so the sea and the desert bite harder",
+      "Platforming fixes: spore, fair, caravan, theatre, church, rootway and more jump cleaner"
+    ]
+  },
+  {
     "date": "2026-10-31",
     "batch": 135,
     "lines": [

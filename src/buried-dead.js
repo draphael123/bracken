@@ -116,6 +116,9 @@ export function updateBuriedDead(e,dt,c){
 function handLine(e,P,A){const dir=Math.sign(P.x-e.x)||e.face||1,arms=[];
  for(let i=0,x=e.x+dir*HANDS.first;x>A.x0+8&&x<A.x1-8;i++,x+=dir*HANDS.step)arms.push({x,at:i*HANDS.gap});
  return {dir,t:-HANDS.tell,arms,hit:false};}
+/* (claude/lategameb, the moveset audit: 145 one-verb placements in act IV) THE CLINCH: a grab that LANDS holds the hero for 1.1 s (mash or turn to break it: P.snare), not the old 0.75 - and a held hero is
+   the apprentice's cue: his ember (the same told EMBER, 0.65 s) comes AT ONCE, not on its own 3 s clock. The dead hold, the tower's hand finishes. */
+export const CLINCH=1.1, PAIR={ember:.65,gap:3.2};
 export function updateZombie(e,dt,c){
  const{P,move,hit,snare,say,solid,shot}=c;e.anim+=dt;e.modeT-=dt;e.vx=0;
  /* THE APPRENTICE STILL THROWS. He is the only one of the dead with a reach, so the caverns and the tower are not one
@@ -123,13 +126,15 @@ export function updateZombie(e,dt,c){
  if(e.apprentice&&shot){
   if(e.mode==='castTell'){if(e.modeT<=0){shot(e);e.mode='rest';e.modeT=1.5;}return;}
   const ad=Math.abs(P.x-e.x);
+  if(e.mode==='walk'&&c.held&&ad>34&&ad<190&&Math.abs(P.y-e.y)<40&&!P.dead&&!(e.pairCd>0)){e.pairCd=PAIR.gap;e.castCd=PAIR.gap+Math.random();e.face=Math.sign(P.x-e.x)||e.face;e.mode='castTell';e.modeT=PAIR.ember;say&&say('EMBER',false);return;}   /* THE PAIR: a zombie has him - the ember comes now */
+  if(e.pairCd>0)e.pairCd-=dt;
   if(e.mode==='walk'&&ad>52&&ad<190&&Math.abs(P.y-e.y)<40&&!P.dead&&(e.castCd=(e.castCd||0)-dt)<=0){
    e.castCd=3.2+Math.random();e.face=Math.sign(P.x-e.x)||e.face;e.mode='castTell';e.modeT=.75;say&&say('EMBER',false);return;}
  }
  if(e.mode==='buried'){if(c.lit&&c.lit(e.x,e.y))return;   /* THE DEAD WILL NOT RISE INSIDE A BURNING VENT'S LIGHT (burial-expansion.js) */
   if(Math.abs(P.x-e.x)<85&&Math.abs(P.y-e.y)<60){e.mode='riseTell';e.modeT=1.1;say(e.cnSkin==='drowneddead'?'THE WATER STIRS':'MOVING EARTH',false);}return;}   /* (claude/underwell2: THE DROWNED DEAD come up out of the Drowned Cistern's water) */
  if(e.mode==='riseTell'){if(e.modeT<=0){e.mode='walk';e.modeT=.7;}return;}
- if(e.mode==='grabTell'){if(e.modeT<=0){if(Math.abs(P.x-e.x)<28&&Math.abs(P.y-e.y)<28){if(hit(e.x,12,false)==='hit')snare(.75);}e.mode='rest';e.modeT=1;}return;}
+ if(e.mode==='grabTell'){if(e.modeT<=0){if(Math.abs(P.x-e.x)<28&&Math.abs(P.y-e.y)<28){if(hit(e.x,12,false)==='hit')snare(CLINCH);}e.mode='rest';e.modeT=1;}return;}
  if(e.mode==='rest'){if(e.modeT<=0)e.mode='walk';return;}
  e.face=Math.sign(P.x-e.x)||e.face;e.vy=Math.min(320,(e.vy||0)+1000*dt);
  if(Math.abs(P.x-e.x)<25&&Math.abs(P.y-e.y)<25){e.mode='grabTell';e.modeT=.7;say('GRAB',false);return;}

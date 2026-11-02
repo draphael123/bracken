@@ -8,6 +8,8 @@
      PHASE 1  THE COURT      (100% -> 50%)  his tongue, his spit, his belly-flop, his flies, his leap
      PHASE 2  HIS POND STIRS  (50% -> 0)    one great croak on the throne bank: the yellow pads sink 1.6x faster and fewer pads hold; his tongue reaches
                                             further, his spit comes twice, and he is restless (a shorter stay)
+                                            (claude/frogking3: the court CHANGES - sky dims, water darkens and rises, his skin flushes red, his throat glows, a banner, the track lifts a tone;
+                                            and his told blows CHAIN in pairs, FK.pair, with the same whole tells)
    HIS MOVES, each told, each its own windup + release pose (src/redraw/frogking.js, B16), each with its answer (B10, B14, B15, B17 four+):
      THE TONGUE LASH   tongueTell (yellow !) - out it comes at the height you stood at: SHIELD it (he bites his tongue: DAZED) or JUMP it. Taken, it GRABS:
                        on his pad it reels you to his feet; anywhere else it drops you IN THE WATER (the marsh's hurting water: a quarter of you, back to
@@ -25,21 +27,23 @@
 import * as M2A from './redraw/marsh2_art.js';
 
 export const FK = {
-  hp: 1500,
+  hp: 650,                         /* (claude/frogking3, Daniel 11-01: "way too much health" - the Hornet Queen before him is 430) 1500 -> 650: a second boss is a step up, not 3.5x */
   p2At: 0.5,                       /* HIS POND STIRS */
   drainAt: -1,                     /* (claude/firsthour's plug drain is retired: the court is open water from the start) */
-  quota: [0.22, 0.22],             /* the share of him one royal pad is worth before he leaps on, per phase */
+  quota: [0.10, 0.10],             /* the share of him one royal pad is worth before he leaps on, per phase */
   stay: [20, 16],                  /* or this long with you on his pad */
-  take: 0.08,                      /* one opening is worth at most this share of him, then he shakes it off */
-  dazed: 2, winded: 1.5, air: 0.4, throat: 1.5,
-  tongue: { tell: [0.6, 0.5], live: 0.55, max: [175, 210], reel: 330, reelMax: 0.6, dmg: 12 },
-  spit: { tell: [0.55, 0.45], shots: [1, 2], flight: 0.8, spread: 18 },
-  flop: { tell: 0.8, air: 0.5, rest: 1.6, sp: 170, life: 2.4, dmg: 18, dunk: 0.6 },
+  take: 0.045,                      /* one opening is worth at most this share of him, then he shakes it off */
+  dazed: 1.5, winded: 1.2, air: 0.4, throat: 1.5,
+  tongue: { tell: [0.5, 0.45], live: 0.55, max: [175, 210], reel: 330, reelMax: 0.6, dmg: 26 },
+  spit: { tell: [0.5, 0.42], shots: [1, 2], flight: 0.8, spread: 18 },
+  flop: { tell: 0.8, air: 0.5, rest: 1.6, sp: 170, life: 2.4, dmg: 28, dunk: 0.6 },
   swarm: { tell: 0.6, spit: 0.35, life: 3.2, lag: 0.5, orbit: 13, snapTell: 0.85, snapLive: 0.45, reach: 240, bite: 34, open: 2.4 },
   leap: { tell: [0.65, 0.5], air: 1.2, under: 0.9 },
-  sink: [1, 1.6],                  /* the sinking pads' pace, per phase */
-  firm: [2, 1],                    /* leaves in a lane that HOLD after a reshuffle, per phase (of four) */
-  gap: [1.0, 0.8],                 /* his rest between blows, per phase */
+  sink: [1.3, 2.0],                  /* the sinking pads' pace, per phase */
+  firm: [1, 1],                    /* leaves in a lane that HOLD after a reshuffle, per phase (of four) */
+  gap: [0.55, 0.35],                /* his rest between blows, per phase */
+  pair: [0, 0.6],                  /* (claude/frogking3) PHASE 2 CHAINS: after a told tongue or spit, the chance his NEXT told blow follows at once (a short rest, the same full tell) - the existing moves in pairs, no new attack */
+  pairGap: 0.3,
   ripple: { open: 2.4 },           /* (kept for frogFlat) */
   pound: { sink: 1.5 },
 };

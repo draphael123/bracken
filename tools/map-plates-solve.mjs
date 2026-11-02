@@ -22,7 +22,7 @@ const geoNear = i => nearOf[i].reduce((s, j) => s + geo(j), 0);
 const aff = nodes.map((nd, i) => nodes.filter(n => n.id === nd.id || M.neighbours(n, nodes).includes(nd.id)));
 const ok = n => M.placePanel(n, nodes, live, M.SCREEN, true).ok;
 const cands = nodes.map(nd => M.plateCandidates(nd, VW));
-let seed = 20261009; const rnd = () => { seed = (seed + 0x6D2B79F5) | 0; let t = Math.imul(seed ^ (seed >>> 15), 1 | seed); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+let seed = +(process.env.SEED || 20261009); const rnd = () => { seed = (seed + 0x6D2B79F5) | 0; let t = Math.imul(seed ^ (seed >>> 15), 1 | seed); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
 const okCount = i => aff[i].filter(n => !ok(n)).length;
 let bad0 = nodes.filter(n => !ok(n)).length, g0 = nodes.reduce((s, _, i) => s + geo(i), 0);
 console.log('start: geometry cost ' + g0.toFixed(0) + ', cards hiding something: ' + bad0);

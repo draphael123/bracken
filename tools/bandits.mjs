@@ -49,7 +49,7 @@ log('THE CUTTHROAT: he feints, and the mark says which one is real');
   ok([...reader.marks.feint].join() === '' && [...reader.marks.slash].join() === '!', `the feint wears no mark (it throws nothing: rule H) and the real cut the yellow ! - distinct, the one to read`);
   /* THE FEINT DOES SOMETHING: a fighter who answers the FIRST windup he sees and then drops his guard (no block again within 1.2 s) */
   let last = -9; const eager = duel(mk, F.cutthroatStep, (o, t) => { if (t - last < 1.2) return null; last = t; return 'block'; });
-  ok(eager.hits > 0 && (eager.hitsBy.slash || 0) === eager.hits, `a fighter who blocks the first windup he sees and then lowers his shield is cut ${eager.hits} times by the real one behind the feint`);
+  ok(eager.hits > 0 && (eager.hitsBy.slash || 0) > 0 && (eager.hitsBy.slash || 0) + (eager.hitsBy.back || 0) + (eager.hitsBy.low || 0) === eager.hits, `a fighter who blocks the first windup he sees and then lowers his shield is cut ${eager.hits} times by the real one behind the feint (${eager.hitsBy.slash || 0} the cut, ${eager.hitsBy.back || 0} the back-cut of the side-step combo - claude/lategameb)`);
   /* and the feint is a pose of its own: no blow in feintTell or feintHold, and the real windup is longer than the feint's */
   const e = mk(); let blowInFeint = 0, sawHold = false; for (let t = 0; t < 20; t += DT) { const m0 = e.mode; const out = F.cutthroatStep(e, { px: 380, py: FLOOR, pface: 1, time: t }, DT);
     if (e.mode === 'feintHold') sawHold = true; if ((m0 === 'feintTell' || m0 === 'feintHold') && out.some(o => o.t === 'hit')) blowInFeint++; }

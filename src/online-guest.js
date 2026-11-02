@@ -44,7 +44,7 @@ let link = null, net = null, stream = null;
 
 /* ===== the page ===== */
 UI.styles();
-document.title = 'BRACKEN - ONLINE CO-OP';
+document.title = 'THORNROAD - ONLINE CO-OP';
 const disp = document.getElementById('c');   /* the game's canvas, unused by a game here: it is the touch surface the touch layer reads */
 const video = document.createElement('video'); video.id = 'olvideo'; video.playsInline = true; video.autoplay = true; video.muted = true;
 video.style.cssText = 'position:fixed;z-index:1;image-rendering:pixelated;background:#000;display:none';
@@ -178,7 +178,7 @@ function pick(h) { if (!link || !link.open || !pickList().some(r => r.id === h))
   link.send(seat ? { t: 'pick', hero: h, seat } : { t: 'pick', hero: h }); G.phase = 'waitgo'; render(); unmute(); return true; }
 /* HIS SLOT: one of his five (an empty one is a new save), or -1 to JUST VISIT. A slot open elsewhere (his game in another tab, another guest page) is refused */
 function slots() { return Array.from({ length: CS.SLOTS }, (_, i) => { const sm = CS.slotSummary(CS.slotRawOf(localStorage, i), G.camp), h = LOCKS.holder(i, 'guest');
-  const why = h ? CS.lockLine(i, h) : sm.state === 'corrupt' ? 'DAMAGED: FIX IT IN YOUR OWN GAME' : sm.state === 'newer' ? 'FROM A NEWER BRACKEN' : '';
+  const why = h ? CS.lockLine(i, h) : sm.state === 'corrupt' ? 'DAMAGED: FIX IT IN YOUR OWN GAME' : sm.state === 'newer' ? 'FROM A NEWER THORNROAD' : '';
   return { i, line: CS.summaryLine(i, sm, x => G.names[x] || String(x).toUpperCase(), h ? CS.HELD_LINE : false), ok: !why, why, heroes: sm.state === 'empty' ? CS.heroesOf({}) : sm.heroes || [] }; }); }
 function chooseSlot(i) {
   if (i < 0) { G.slot = -1; G.slotMsg = ''; G.phase = 'pick'; render(); return true; }
