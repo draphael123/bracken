@@ -24,7 +24,7 @@ const SHOTS = [
   ['breach-enter', 310, 24, ''], ['breach-tower1', 321, 21, ''], ['breach-boards', 331, 20, ''], ['breach-tower2', 346, 18, ''], ['breach-exam', 355, 19, ''], ['breach-landing', 364, 24, ''],
   ['leaves-edge', 30, 32, ''],
   ['beast-walk', 0, 0, boss('walk')], ['beast-chargeTell', 0, 0, boss('chargeTell', 0.8)], ['beast-charge', 0, 0, boss('charge', 3)], ['beast-sweepTell', 0, 0, boss('sweepTell', 0.6)],
-  ['beast-sweep', 0, 0, boss('sweep', 0.3)], ['beast-volleyTell', 0, 0, boss('volleyTell', 0.8)], ['beast-trampleTell', 0, 0, boss('trampleTell', 0.8)], ['beast-stuck', 0, 0, boss('stuck', 3)],
+  ['beast-sweep', 0, 0, boss('sweep', 0.3)], ['beast-volleyTell', 0, 0, boss('volleyTell', 0.8)], ['beast-orderTell', 0, 0, boss('orderTell', 0.8)], ['beast-stuck', 0, 0, boss('stuck', 3)],
   ['beast-loose', 0, 0, boss('loose', 3, P2)],
   ['beast-sweepBack', 0, 0, boss('sweepBack', 0.2)], ['beast-potTell', 0, 0, boss('potTell', 0.6, POTS)], ['beast-pot', 0, 0, boss('pot', 0.2, POTS)],
   ['beast-batterTell', 0, 0, boss('batterTell', 0.6, DECK)], ['beast-batter', 0, 0, boss('batter', 0.9, DECK)],
