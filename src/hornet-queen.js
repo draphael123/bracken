@@ -12,7 +12,9 @@
 //     STUCK   x1.5  a dive that meets COMB drives her sting into it (her comb perches; in P2 the wall perches and every comb you have cut down). Stand on comb as she
 //                   dives and LEAVE LATE - one dive in three is HELD (her sting pulses twice) to punish a hero who leaves on the tell.
 //     WINDED  x2    a dive or a sweep taken on a raised shield (the sweep: a parry).
-//     DAZED   x1.5  SMOKE UNDER HER: a thrown pot's cloud, a set-down pot or a carried one beneath her as she comes low (the ranged / no-heavy heroes' opening).
+//     GROUNDED (mode 'dazed', x1.5)  THE FOG DROPS HER (claude/hornetsnest2): a pot thrown ON her, or her body 0.25 s in a hall fog cloud, in ANY flying mode - she folds her wings and FALLS (HQ.dazed.g),
+//                   and the stun (3.0 / 2.6 s) starts on landing; her own dive onto a full hall smoke stand bursts its pot (the fog is where she is). Wary of fog 8 s after (no chain-lock). The old low rule
+//                   (a carried or set-down pot beneath her as she dives) stays - the ranged / no-heavy heroes' opening.
 //     PINNED  x2    (P2) a HANGING COMB cut down onto her (a torn comb over her low pass, x2 capped at HQ.pin.cap of her), and the big one: THE LAST COMB, the
 //                   royal comb in the hall's vault, dropped on her (capped at HQ.pin.capLast, held longer). A comb dropped on her while she is STUCK or DAZED under it
 //                   turns that opening into the pin.
@@ -289,7 +291,7 @@ function stepP2(e, S, dt, P, w, hs) {
       return;
     case 'volley': if (e.modeT <= 0) back(e, S); return;
     case 'cloakTell': e.vx = 0; e.vy = 0; if (Math.random() < dt * 30) w.dust(e.x + (Math.random() - 0.5) * 40, e.y - 10 + (Math.random() - 0.5) * 20, 1);
-      if (e.modeT <= 0) { S.cloak = HQ.cloakT.t; e.cloak = S.cloak; S.n.cloak++; w.sound('cloak'); w.number(e.x, e.y - HQ.h - 18, HQ_SAY.cloak, '#ff9a5c'); if (!S.told.cloak) { S.told.cloak = 1; w.say('HER SWARM CLOAKS HER: SMOKE UNDER HER SCATTERS IT.'); } back(e, S); }
+      if (e.modeT <= 0) { S.cloak = HQ.cloakT.t; e.cloak = S.cloak; S.n.cloak++; w.sound('cloak'); w.number(e.x, e.y - HQ.h - 18, HQ_SAY.cloak, '#ff9a5c'); if (!S.told.cloak) { S.told.cloak = 1; w.say("HER SWARM CLOAKS HER: A POT'S FOG SCATTERS IT, THE NEXT ONE DROPS HER."); } back(e, S); }
       return;
     default: back(e, S);
   }
