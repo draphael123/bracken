@@ -3,21 +3,21 @@
     "date": "2026-11-01",
     "batch": 137,
     "lines": [
-      "BRACKEN is now THORNROAD: a new name, title and loading screen, and a new opening with the road, the goblins and your hero by name",
-      "Burning Village opens when you beat King Gorm without dying; a doused fire stays out, a soaked hero looks soaked, and co-op shares the credit",
-      "Frog King has less health and a new phase-2 look; Pyromancer: tap C for a fire ward, hold C for a 5-step fireball",
-      "Fixes: Stockade horn soft-lock, music starting late, invisible steps in Palisade Wood; the map road now runs on past Palisade Wood"
+      "BRACKEN is now THORNROAD: new title and loading screen, and a new road-and-goblins opening",
+      "Burning Village opens when you beat King Gorm without dying; co-op shares the credit",
+      "Frog King has less health; Pyromancer: tap C to ward, hold C to build a fireball",
+      "Fixes: Stockade horn soft-lock, late music, Palisade Wood steps; the map road runs past it"
     ]
   },
   {
     "date": "2026-11-01",
     "batch": 136,
     "lines": [
-      "The Shriek Sisters are reworked: one hunts at a time while two roost on their nests, and a grab drags you off the stair",
+      "Shriek Sisters reworked: one hunts while two roost, and a grab drags you off the stair",
       "The Rookery is tuned for all three heroes and its fight runs longer",
-      "Late game: sea guards plant a plate, scouts haul their harpoon back, zombies clinch, desert shields brace for archers",
+      "Late game: sea guards plant a plate, scouts haul harpoons, zombies clinch, shields brace",
       "Late-game packs and affixes now scale by act, so the sea and the desert bite harder",
-      "Platforming fixes: spore, fair, caravan, theatre, church, rootway, hurricane and more get clean jumping stretches"
+      "Platforming fixes: spore, fair, caravan, theatre, church, rootway and more jump cleaner"
     ]
   },
   {

@@ -4961,7 +4961,7 @@ const WOOD_NODES = [
   { id: 'spore', kind: 'level', level: 3, x: 199, y: 38, plate: 'above', name: 'SPOREWOOD' },
   { id: 'rootway', kind: 'level', level: LEVELS.findIndex(l => l.id === 'rootway'), x: 221, y: 68, plate: 'right', name: 'THE ROOTWAY' },   /* THE ROOTWAY (claude/rootway): between SPOREWOOD and KINGSWOOD (Daniel 10-07): the only spot map-spacing passes near them, so the road dips south to it and climbs back to Kingswood (the map lane may relay the sheet) */
   { id: 'underleaf', kind: 'level', level: LEVELS.findIndex(l => l.id === 'underleaf'), x: 196, y: 72, plate: 'below', name: 'UNDERLEAF' },   /* UNDERLEAF (claude/underleaf4, Daniel 10-25): back on the WOOD sheet, ON the road between THE ROOTWAY and THE PALISADE WOOD (it was a crag node between Scree and Hanging, claude/underorder 10-24) */
-  { id: 'palisadewood', kind: 'level', level: LEVELS.findIndex(l => l.id === 'palisadewood'), x: 178, y: 58, plate: 'below', board: 'PALISADE', name: 'THE PALISADE WOOD' },   /* THE PALISADE WOOD (claude/palisadewood, Daniel 10-15): ON the road between THE ROOTWAY and KINGSWOOD */
+  { id: 'palisadewood', kind: 'level', level: LEVELS.findIndex(l => l.id === 'palisadewood'), x: 178, y: 58, plate: 'below', board: 'PALE', name: 'THE PALISADE WOOD' },   /* THE PALISADE WOOD (claude/palisadewood, Daniel 10-15): ON the road between THE ROOTWAY and KINGSWOOD */
   { id: 'kings', kind: 'level', level: 4, x: 141, y: 24, name: 'KINGSWOOD' },
 ];
 /* the road itself, and nothing but: the Burning Village hangs off it on a spur (NODES `spur: true`); UNDERLEAF is ON it (between Kingswood and the Scree Path) */
