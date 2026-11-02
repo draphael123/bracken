@@ -10087,10 +10087,10 @@
     "heroLevel": 1
    },
    "warden": {
-    "deaths": 1,
+    "deaths": 2,
     "minHpPct": 0,
-    "hpLostPct": 199,
-    "hits": 13,
+    "hpLostPct": 200,
+    "hits": 16,
     "walked": 100,
     "lifts": 45,
     "held": 3,
@@ -10100,8 +10100,8 @@
     "pulls": 0,
     "ridden": {},
     "machines": true,
-    "frames": 11275,
-    "kills": 4,
+    "frames": 13440,
+    "kills": 6,
     "heroLevel": 1
    },
    "pyro": {

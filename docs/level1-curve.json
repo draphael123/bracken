@@ -628,13 +628,13 @@
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 15,
+  "hits": 10,
   "deaths": 0,
-  "kills": 48,
-  "lifts": 88,
+  "kills": 49,
+  "lifts": 85,
   "walked": 100,
   "bare": true,
-  "lostPct": 69
+  "lostPct": 55
  },
  "palisadewood": {
   "hash": "344234fcd689",
