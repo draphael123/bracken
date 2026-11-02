@@ -12,7 +12,7 @@
   "allExistingAssertionsToRemainUnchanged": true,
   "noLocalCandidateOrGameExecution": true,
   "noCloudOccurrenceYet": true,
-  "backendSha256": "95605a41891507dd2aa96896a68f534f4683e08cb4e4c7e13533412ce4d234cd",
+  "backendSha256": "622670c5bcded9d574498b4f924e1481a47e013e23379cbd04c077b104579495",
   "sourceReview": {
     "automaticDrainImplementedFor": [
       "Foreign output setter/prototype before assignment, including earlier outstanding entries",
@@ -46,7 +46,7 @@
   "sourceFiles": [
     {
       "path": "tools/private-r-native-nov02/backend.js",
-      "sha256": "95605a41891507dd2aa96896a68f534f4683e08cb4e4c7e13533412ce4d234cd"
+      "sha256": "622670c5bcded9d574498b4f924e1481a47e013e23379cbd04c077b104579495"
     },
     {
       "path": "tools/private-r-native-nov02/snapshot.js",
@@ -58,7 +58,7 @@
     },
     {
       "path": "tools/private-r-native-nov02/native-page.mjs",
-      "sha256": "b7e12eee8711cd651e7ccab1684c6eb4e626ad3ee2b494ffaff66c0dcbb3fd61"
+      "sha256": "39aa3e9ba243eca65d1299801c4dd447e4181e293388b397e715b052f4643ae2"
     },
     {
       "path": "tools/private-r-native-nov02/px-reference.js",
@@ -70,7 +70,7 @@
     },
     {
       "path": "tools/private-r-native-component-nov02.mjs",
-      "sha256": "111638f28578140776c560953e159d2f2ce3a54778c84aa85c69b71892c23aaf"
+      "sha256": "bc7c0c80ff6183ea0faa45ca5b236f1c02e6ec216212a2c7450306b48264ae46"
     },
     {
       "path": "tools/private-r-native-node-nov02.mjs",
@@ -85,7 +85,7 @@
   "originalSnapshotPageSha256": "5e855fb70de5861e7ebcb804198fa8686c0390f73115acdd25c39a7f6cc1a2f5",
   "originalSnapshotAssertions": 504,
   "originalSnapshotLifecycleAssertions": 19,
-  "newKernelCases": 51,
+  "newKernelCases": 52,
   "nodeFallback": true,
   "originalPxPrefixUnchanged": true,
   "pxAppendix": "\nexport function withStartupBakeOwnership(build){const previous=OWN;OWN=null;try{return build();}finally{OWN=previous;}}\n",
@@ -125,5 +125,13 @@
     "frozenHelperController": "1a576c3f4511b6856df9fb4738df5aaae9987e81",
     "hostGameSource": "62d9c02c102decc69ceaef4e1ec593a23170f1ff",
     "originalAssertionsAndGuardsUnchanged": true
+  },
+  "sameValueRepair": {
+    "causeReceipt": "outputs/receipts/private-r-guard-diagnostic-nov02.json",
+    "causeRun": 41482470072,
+    "oldAssertionRun": 41480563077,
+    "exactChange": "Captured native Object.is for descriptor values;retain all other flags/getters/setters and signed-zero sensitivity.",
+    "all51PriorKernelCaseBodiesPreserved": true,
+    "addedCase": "samevalue-signed-zero-prototype-fallback"
   }
 }

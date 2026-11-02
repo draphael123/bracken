@@ -1,7 +1,7 @@
 // Unintegrated PRIVATE native kernel. Public px/pack constructors are never replaced.
 import {makeDerivedSnapshots,nativeSnapshotCoreAvailable} from './snapshot.js';
 import {makePrivateRRecord,materializePrivateRRecord,flushPrivateRRecords,privateRRecordInfo} from './catalogue.js';
-const apply=Reflect.apply,own=Reflect.getOwnPropertyDescriptor,keys=Reflect.ownKeys,proto=Reflect.getPrototypeOf,define=Reflect.defineProperty,set=Reflect.set,capturedGet=Reflect.get;
+const sameValue=Object.is,apply=Reflect.apply,own=Reflect.getOwnPropertyDescriptor,keys=Reflect.ownKeys,proto=Reflect.getPrototypeOf,define=Reflect.defineProperty,set=Reflect.set,capturedGet=Reflect.get;
 const get=WeakMap.prototype.get,put=WeakMap.prototype.set,has=WeakMap.prototype.has;
 const lookup=(m,k)=>apply(get,m,[k]),remember=(m,k,v)=>apply(put,m,[k,v]),contains=(m,k)=>apply(has,m,[k]);
 const O=Object,A=Array,OP=Object.prototype,AP=Array.prototype,FP=Function.prototype,fnText=own(FP,'toString').value;
@@ -9,7 +9,7 @@ const browser=typeof Document==='function'&&typeof CanvasRenderingContext2D==='f
 const HP=browser?HTMLCanvasElement.prototype:null,CP=browser?CanvasRenderingContext2D.prototype:null,doc=browser?document:null;
 const dims=browser?{width:own(HP,'width'),height:own(HP,'height')}:null;
 const native=f=>typeof f==='function'&&/^function\s+(?:(?:get|set)\s+)?(?:[\w$]+|\[Symbol\.[\w$]+\])\s*\([^)]*\)\s*\{\s*\[native code\]\s*\}$/.test(apply(fnText,f,[]));
-const same=(a,b)=>!!a===!!b&&(!a||a.value===b.value&&a.get===b.get&&a.set===b.set&&a.writable===b.writable&&a.enumerable===b.enumerable&&a.configurable===b.configurable);
+const same=(a,b)=>!!a===!!b&&(!a||sameValue(a.value,b.value)&&a.get===b.get&&a.set===b.set&&a.writable===b.writable&&a.enumerable===b.enumerable&&a.configurable===b.configurable);
 const append=(a,v)=>{if(!define(a,''+a.length,{value:v,writable:true,enumerable:true,configurable:true}))throw TypeError('private list');};
 const watched=[];
 function watch(object,full=true,selected=[]){if(!object)return;for(let i=0;i<watched.length;i++)if(watched[i].object===object&&watched[i].full)return;const names=full?keys(object):selected,descriptors=[];for(let i=0;i<names.length;i++)append(descriptors,own(object,names[i]));append(watched,{object,full,names,descriptors,parent:proto(object)});}
@@ -17,7 +17,7 @@ for(const p of [OP,AP,FP,A,O,Reflect,Number,WeakMap,WeakMap.prototype,globalThis
 watch(Math,false,['max']);
 if(browser){for(let p=HP;p;p=proto(p))watch(p);for(let p=CP;p;p=proto(p))watch(p);for(let p=proto(doc);p;p=proto(p))watch(p);watch(doc,false,['createElement']);}
 const bindings=['document','Document','HTMLCanvasElement','CanvasRenderingContext2D','Object','Array','Reflect','Math','Number','WeakMap','WeakRef'];watch(globalThis,false,bindings);
-let pristine=native(apply)&&native(own)&&native(keys)&&native(proto)&&native(define)&&native(fnText)&&native(get)&&native(put)&&native(has);
+let pristine=native(sameValue)&&native(apply)&&native(own)&&native(keys)&&native(proto)&&native(define)&&native(fnText)&&native(get)&&native(put)&&native(has);
 for(let i=0;i<watched.length;i++){const w=watched[i];for(let j=0;j<w.names.length;j++){const d=w.descriptors[j],unusedPoisonPill=w.object===FP&&(w.names[j]==='arguments'||w.names[j]==='caller');if(d&&!unusedPoisonPill){if(typeof d.value==='function'&&!native(d.value))pristine=false;if(d.get&&!native(d.get))pristine=false;if(d.set&&!native(d.set))pristine=false;}}}
 const stable=()=>{if(!pristine)return false;for(let i=0;i<watched.length;i++){const w=watched[i];if(proto(w.object)!==w.parent)return false;if(w.full){const now=keys(w.object);if(now.length!==w.names.length)return false;for(let j=0;j<now.length;j++)if(now[j]!==w.names[j])return false;}for(let j=0;j<w.names.length;j++)if(!same(own(w.object,w.names[j]),w.descriptors[j]))return false;}return true;};
 const defaultOwner=fn=>fn();

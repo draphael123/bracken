@@ -50,7 +50,7 @@ jobs:
         run: git worktree add --detach "$PRIVATE_R_NATIVE_REFERENCE" 1a576c3f4511b6856df9fb4738df5aaae9987e81
         env:
           PRIVATE_R_NATIVE_REFERENCE: ${{ runner.temp }}/private-r-native-reference
-      - name: All 504 original pixel and 19 lifecycle assertions plus 51 new kernel cases
+      - name: All 504 original pixel and 19 lifecycle assertions plus 52 new kernel cases
         run: node tools/private-r-native-component-nov02.mjs
         env:
           PRIVATE_R_NATIVE_OUT: ${{ runner.temp }}/private-r-native-component-nov02
