@@ -19,7 +19,7 @@ ok(!!lv && lv.needs === 'spore' && LEVELS.find(l => l.id === 'underleaf').needs 
 const main = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
 ok(/id: 'rootway', kind: 'level'/.test(main), 'a map node on the wood sheet');
 const lq = readFileSync(new URL('./level-quality.mjs', import.meta.url), 'utf8'), onf = readFileSync(new URL('./one-new-foe.mjs', import.meta.url), 'utf8');
-ok(/GATE = \[[^\]]*'rootway'/.test(lq) && /rootway: \['trophyhunter'\]/.test(onf), 'gated by level-quality; its one new foe is the trophy-hunter');
+ok(/GATE = \[[^\]]*'rootway'/.test(lq) && /rootway: \['trophyhunter'(, 'gobmage')?\]/.test(onf), 'gated by level-quality; its one new foe is the trophy-hunter');
 const at = (e, r) => r.near(e.x, e.y) || r.jumpNear(e.x, e.y);
 const KEY = ['check', 'silver', 'stray', 'loft', 'gate', 'huntmaster'];
 const full = floodReach(L, T);

@@ -20,12 +20,13 @@
 import assert from 'node:assert/strict';
 import { openPage } from './cdp.mjs';
 const want = process.argv.slice(2).filter(a => !a.startsWith('-'));
-const pg = await openPage({ audio: false, fonts: false });
+let pg = await openPage({ audio: false, fonts: false });
+const oldErrors = [];   /* (batch138) the page is reopened every 24 levels: one page that built all 69 levels crashed (Inspector.targetCrashed) on the last chunk once the art lanes had grown the levels' memory */
 let out;
 try {
   /* (batch125 release) one long Runtime.evaluate over every level stalled for the full 1800 s (the gate hung on it, nothing else wrong: the same code run a few levels per call passes in ~65 s), so the sweep goes a chunk of levels per call */
   const nLevels = await pg.evalp('(async()=>{const {LEVELS}=await import("/src/level.js");return LEVELS.length})()', 60000), rows = [];
-  for (let lo = 0; lo < nLevels; lo += 6) rows.push(...await pg.evalp(`(async()=>{const {LEVELS,T}=await import('/src/level.js');const res=[];
+  for (let lo = 0; lo < nLevels; lo += 6) { if (lo && lo % 24 === 0) { oldErrors.push(...pg.errors); pg.close(); pg = await openPage({ audio: false, fonts: false }); } rows.push(...await pg.evalp(`(async()=>{const {LEVELS,T}=await import('/src/level.js');const res=[];
     const want=${JSON.stringify(want)};
     const SOLID=new Set([T.SOLID,T.CRATE,T.PALISADE,T.PORT,T.CLIMB,T.SOFT,T.ICE,T.WEB]),LEDGE=new Set([T.ONEWAY,T.REED,T.PLANK,T.BOUNCER,T.SHELF,T.RAIL,T.CRYST]);
     const FLY=new Set(['bat','crow','wasp','harpy','kite','petrel','vulture','boo','haunt','imp','tome','broom','emberwisp','fledgling','gull','jelly','lanternshade','familiar','owl']);
@@ -44,8 +45,8 @@ try {
       for(const a of (L.ambushes||[]))for(const w of a.waves)for(const [t,x,y] of w)look(t,x,y==null?a.row:y,' (ambush '+a.name+')');
       for(const a of (L.alarms||[]))for(const g of (a.garrison||[]))look(g.t,g.x,g.y,' (alarm '+a.id+')');
       const cells=[...bare].map(k=>(k%W)+','+Math.floor(k/W));res.push({id:lv.id,bare:cells.length,on,cells:cells.slice(0,12)});}
-    return res;})()`, 120000));
-  out = { rows, errors: pg.errors.slice(0, 3) };
+    return res;})()`, 120000)); }
+  out = { rows, errors: [...oldErrors, ...pg.errors].slice(0, 3) };
 } finally { pg.close(); }
 const fails = [];
 for (const r of out.rows) {
