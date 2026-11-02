@@ -25,13 +25,16 @@ const FROZEN = /Tell$|^(sleep|wake|phase|dead|dying|stuck|downed|stun|stunned|op
 export const DIAL_EXEMPT = new Set(['cisternqueen', 'hourglassking', 'matriarch', 'hawkmistress', 'colossus', 'greatdrill', 'foremancart', 'tombking', 'scarabmother', 'fogknight', 'champion', 'admiral', 'paladinboss', 'deacon']);   /* (claude/church2) THE PALADIN, the hero as the boss, and THE DEACON (LIT CHURCH 2 mini): tuned into their bands by their own lane (3-seed sanity) - no dial */ /* (dr4art merge) the Deep Rails 4 boss pair: dr4tune measured them 69% / 81% with flasks BEFORE the dial existed, so they are self-tuned */
 export function pressureOf(act, mini) { const r = PRESSURE[act] || PRESSURE[5]; return mini ? r.mini : r; }
 /* the dt factor for one boss this frame: 1 unless his clock is a gap's */
+/* (claude/jointtune139, Daniel 11-02: the demo reads ABOVE the band, hero trims do not move it -> raise BOSS dials) PER-BOSS TRIM on top of the act's row, by e.t: { gap, dmg } (1 = none) */
+export const BOSS_TRIM = { hornetqueen: { gap: 1.1, dmg: 1.35 }, oldtusker: { gap: 1.08, dmg: 1.3 }, batteringbeast: { dmg: 0.9 } };   /* r1 (n=6 baselines hornet 93, tusker 87, beast 43) */
+const trim = e => (e && BOSS_TRIM[e.t]) || null;
 export function gapFactor(e, act, mini, winding) {
-  const g = pressureOf(act, mini).gap; if (!(g > 1) || !e || winding || DIAL_EXEMPT.has(e.t)) return 1;
+  const g0 = pressureOf(act, mini).gap, tg = trim(e), g = tg && tg.gap && g0 > 1 ? g0 * tg.gap : g0; if (!(g > 1) || !e || winding || DIAL_EXEMPT.has(e.t)) return 1;
   if (e.open > 0 || e.broken > 0 || e.stagger > 0 || e.warded > 0 || e.ward > 0) return 1;
   if (typeof e.mode === 'string' && FROZEN.test(e.mode)) return 1;
   return g;
 }
-export const dmgFactor = (act, mini, e) => (e && DIAL_EXEMPT.has(e.t) ? 1 : pressureOf(act, mini).dmg);
+export const dmgFactor = (act, mini, e) => (e && DIAL_EXEMPT.has(e.t) ? 1 : pressureOf(act, mini).dmg * ((trim(e) || {}).dmg || 1));
 /* (claude/oneshotcap) THE ONE-BLOW CEILING ON THE DIAL'S BOOST: the dial's x(dmg) must never turn one blow of a boss or mini into more than BLOW_CAP of the hero's max hp on the bar
    (tools/blow-census.mjs found 5 of 58 rows over 45% of the lowest-hp hero at campaign level: Lanterneater's Snap, the Owl, the Ploughman, the Lamp-Reeve and the Serjeant minis).
    It caps only what the dial ADDED: a blow that is already over the ceiling as tuned (before the dial) is left at that tuned number, so un-dialled numbers stay as authored. `fin` is the
