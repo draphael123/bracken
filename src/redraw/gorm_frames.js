@@ -10,6 +10,7 @@ const SKM = '#559038', SKDD = '#2a4f1e', RBM = '#ab3a34', RBDD = '#5a1c1c', FURL
 const SK = '#6faa4a', SKD = '#3f6e2c', SKL = '#8fd160', RB = '#c9463d', RBD = '#8f2f28', RBL = '#e07060', FUR = '#e8dcc0', GLD = '#ffd36b', GLD2 = '#a07a1c', EYE = '#f3f0d2', BELT = '#3a2e22', TOOTH = '#fff6e0', WOOD = '#5c3a1d', OUT = '#1b1626';
 const px = (g, x, y, c) => { g.fillStyle = c; g.fillRect(x | 0, y | 0, 1, 1); };
 export const TIPS = {};
+let RAGE = false;   /* (claude/gorm3art) true while the ENRAGED set bakes: the same frames with the crown cracked, the eyes ember-red, the robe and fur scorched and burning at the hem */
 const memo = new Map(); const once = (k, fn) => { if (!memo.has(k)) memo.set(k, fn()); return memo.get(k); };
 
 /* ---------- the body, as bakeKingBig draws it, with the parts a pose moves ---------- */
@@ -29,6 +30,7 @@ function head(g, x, y, mouth, eyes) {   /* 30 wide, 22 tall; mouth 0 shut / 1 sh
   else { const eh = eyes === 'wide' ? 6 : 5;
     rect(g, x + 6, y + 7, 6, eh, EYE); rect(g, x + 18, y + 7, 6, eh, EYE); rect(g, x + 6, y + 6 + eh, 6, 1, '#b9b896'); rect(g, x + 18, y + 6 + eh, 6, 1, '#b9b896');   /* the lower lid in shade */
     rect(g, x + 9, y + 8, 2, 3, OUT); rect(g, x + 21, y + 8, 2, 3, OUT); px(g, x + 9, y + 8, '#a03020'); px(g, x + 21, y + 8, '#a03020'); px(g, x + 6, y + 7, '#ffffff'); px(g, x + 18, y + 7, '#ffffff'); }
+  if (RAGE && eyes !== 'shut' && eyes !== 'x') { rect(g, x + 9, y + 8, 2, 3, '#d83a10'); rect(g, x + 21, y + 8, 2, 3, '#d83a10'); px(g, x + 9, y + 8, '#ffd36b'); px(g, x + 21, y + 8, '#ffd36b'); px(g, x + 10, y + 10, '#ff7a1a'); px(g, x + 22, y + 10, '#ff7a1a'); }   /* (gorm3art) ember eyes */
   /* the heavy brow: a dark ridge, slanting down to the nose */
   rect(g, x + 4, y + (eyes === 'wide' ? 4 : 5), 10, 2, SKDD); rect(g, x + 16, y + (eyes === 'wide' ? 4 : 5), 10, 2, SKDD); rect(g, x + 12, y + (eyes === 'wide' ? 5 : 6), 2, 1, SKDD); rect(g, x + 16, y + (eyes === 'wide' ? 5 : 6), 2, 1, SKDD);
   rect(g, x + 12, y + 10, 6, 4, SKM); rect(g, x + 13, y + 10, 2, 1, SKL); px(g, x + 13, y + 13, SKDD); px(g, x + 16, y + 13, SKDD); rect(g, x + 12, y + 14, 6, 1, SKD);   /* the nose, nostrils */
@@ -38,7 +40,17 @@ function head(g, x, y, mouth, eyes) {   /* 30 wide, 22 tall; mouth 0 shut / 1 sh
   else if (mouth === 3) { rect(g, x + 11, y + 14, 8, 6, RBD); rect(g, x + 12, y + 15, 6, 4, '#2a0e0a'); rect(g, x + 7, y + 15, 2, 3, TOOTH); rect(g, x + 21, y + 15, 2, 3, TOOTH); rect(g, x - 1, y + 12, 5, 6, SKL); rect(g, x + 26, y + 12, 5, 6, SK); rect(g, x + 26, y + 16, 5, 2, SKM); }   /* cheeks blown out */
   else { rect(g, x + 8, y + 16, 14, 1, SKDD); rect(g, x + 9, y + 17, 12, 1, SKM); tusk(x + 6); tusk(x + 21); if (mouth === 2) { rect(g, x + 10, y + 16, 10, 2, TOOTH); for (let k = 0; k < 4; k++) px(g, x + 12 + k * 2, y + 16, SKDD); rect(g, x + 10, y + 17, 10, 1, TOOTHD); } }
 }
-function crown(g, x, y, askew) {
+function crown(g, x, y, askew) { crown0(g, x, y, askew); if (RAGE) crack(g, askew ? x + askew : x, askew ? y + 2 : y); }
+/* (claude/gorm3art) THE CRACKED CROWN: a jagged split through the middle spike and the blue gem, the gem gone to shards, one spike chipped off, gold chips hanging off it, the fire showing in the crack */
+function crack(g, x, y) {
+  g.clearRect(x + 18, y, 3, 2); px(g, x + 19, y + 2, GLD3);
+  for (const [dx, dy] of [[13, 0], [13, 1], [12, 2], [12, 3], [13, 4], [12, 5], [13, 6], [12, 7]]) px(g, x + dx, y + dy, OUT);
+  px(g, x + 13, y + 3, '#ff7a1a'); px(g, x + 12, y + 4, '#ffb04a'); px(g, x + 13, y + 5, '#ff7a1a'); px(g, x + 14, y + 6, GLD3);
+  px(g, x + 11, y + 4, '#4a90e0'); px(g, x + 14, y + 5, '#bfe0ff');   /* the blue gem in two */
+  px(g, x + 21, y - 2, GLD); px(g, x + 23, y - 3, GLDL); px(g, x + 3, y - 2, GLD2); px(g, x + 26, y + 1, GLD);   /* chips off it */
+  px(g, x + 6, y + 4, OUT); px(g, x + 7, y + 5, OUT);   /* a second hairline */
+}
+function crown0(g, x, y, askew) {
   if (askew) { x += askew; y += 2; }
   rect(g, x, y + 3, 26, 5, GLD); rect(g, x, y + 3, 26, 1, GLDL); rect(g, x, y + 6, 26, 1, GLD2); rect(g, x, y + 7, 26, 1, GLD3); rect(g, x + 21, y + 4, 5, 3, GLD2);   /* the band: lit top, shaded right and foot */
   for (let i = 0; i < 5; i++) { const cx = Math.round(x + 2 + i * 5.5); rect(g, cx - 1, y + 1, 3, 2, GLD); rect(g, cx - 1, y + 1, 1, 2, GLDL); rect(g, cx + 1, y + 1, 1, 2, GLD2); px(g, cx, y, '#fff6e0'); }   /* five real spikes */
@@ -61,7 +73,15 @@ function boot(g, x, y) {   /* one boot, 14 wide, 8 tall, planted on y + 8: green
   rect(g, x, y, 14, 8, SKD); rect(g, x + 1, y, 12, 1, SK); rect(g, x + 1, y + 1, 5, 2, SKM); rect(g, x + 9, y + 1, 4, 6, SKDD); rect(g, x, y + 3, 14, 1, SKDD); rect(g, x + 3, y + 3, 8, 1, BELT); rect(g, x + 6, y + 2, 3, 3, GLD2); px(g, x + 7, y + 3, GLDL); rect(g, x, y + 6, 15, 2, OUT); rect(g, x + 1, y + 5, 3, 1, SK);
 }
 function boots(g, x, y, apart, liftL = 0, liftR = 0) { boot(g, x, y - liftL); boot(g, x + apart, y - liftR); }
-function robe(g, x, y, w, h, sway = 0) {
+function robe(g, x, y, w, h, sway = 0) { robe0(g, x, y, w, h, sway); if (RAGE) scorch(g, x, y, w, h); }
+/* (claude/gorm3art) THE BURNING ROBE: the ermine collar charred in patches, soot up the folds, the hem eaten into a ragged black edge with live embers and low tongues of flame */
+function scorch(g, x, y, w, h) {
+  for (let i = 0; i < w + 4; i += 7) { rect(g, x - 2 + i, y, 3, 3, '#5a4a3c'); px(g, x - 2 + i, y + 1, '#2a2018'); px(g, x - 1 + i, y + 3, '#2a1410'); }
+  for (let i = 4; i < w; i += 13) { rect(g, x + i, y + h - 14, 2, 8, '#3a1c14'); px(g, x + i + 1, y + h - 12, '#c9463d'); }
+  for (let i = -4; i < w + 4; i += 3) { const d = (i * 7 + 3 + 40) % 5; rect(g, x + i, y + h - 5 + (d > 2 ? 1 : 0), 3, 5 - (d > 2 ? 1 : 0), '#241210'); px(g, x + i + 1, y + h - 5 + d % 3, d % 2 ? '#ff9a3c' : '#e0601a'); }
+  for (let i = 0; i < w - 6; i += 9) { const k = (i / 9) & 1; rect(g, x + 3 + i, y + h - 8 - k * 2, 3, 4 + k * 2, '#e0601a'); rect(g, x + 4 + i, y + h - 7 - k * 2, 1, 4 + k * 2, '#ffd36b'); px(g, x + 4 + i, y + h - 9 - k * 2, '#ff9a3c'); }
+}
+function robe0(g, x, y, w, h, sway = 0) {
   const m = Math.floor(h / 2), cx = x + Math.floor(w / 2);
   rect(g, x, y, w, h, RB); rect(g, x - 4, y + 8, w + 8, h - 14, RB); rect(g, x - 2, y + 9, 6, h - 18, RBL); rect(g, x - 4, y + h - 8, w + 8, 2, RBD); rect(g, x + 2, y + 2, w - 4, 3, RBL); rect(g, x, y + h - 4, w, 4, RBD);
   /* the light is upper left: the right flank and belly fall into shade, with the underside of the belly darkest */
@@ -109,14 +129,37 @@ function horn(g, x0, y0, x1, y1) {   /* the royal hunting horn: a curved ivory h
   circle(g, x1 + 1, y1, 3, '#2a1410');
   rect(g, x0 - 2, y0 + 1, 2, 5, '#a83a2a'); rect(g, x0 - 2, y0 + 5, 2, 4, '#a83a2a');   /* a red tassel off the mouthpiece */
 }
-function limb(g, x0, y0, x1, y1) {   /* the limb he tears off his oak: long, forked, leaves at one end, a white splintered break at the other */
+function limb(g, x0, y0, x1, y1, name = 'limbTell') {   /* the limb he tears off his oak: long, forked, leaves at one end, a white splintered break at the other */
   const n = Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0)), dx = (x1 - x0) / n, dy = (y1 - y0) / n;
   for (let i = 0; i <= n; i++) { const t = i / n, w = 7 - t * 3, x = x0 + dx * i, y = y0 + dy * i + Math.sin(t * 5) * 1.5;
     rect(g, x - 1, y - w / 2, 3, w, i % 5 ? '#3a2214' : '#241210'); rect(g, x - 1, y - w / 2, 3, 1, '#6a4424'); if (t < 0.5 && (i & 3) === 0) px(g, x, y + w / 2 - 1, '#e0601a'); }
   for (const [t, up] of [[0.3, -1], [0.55, 1]]) { const bx = x0 + dx * n * t, by = y0 + dy * n * t; line(g, bx, by, bx + 8 * (dx > 0 ? 1 : -1), by + up * 9, '#3a2214', 2); for (let k = 0; k < 4; k++) rect(g, bx + 6 * (dx > 0 ? 1 : -1) - 3 + k * 2, by + up * 9 - 2 + (k % 2), 4, 3, k % 2 ? '#c9463d' : '#7a2a1a'); }
   for (let k = 0; k < 7; k++) { rect(g, x0 - 8 + (k * 3) % 14, y0 - 6 + ((k * 5) % 9), 5, 4, k % 3 ? '#a83a2a' : '#e07a30'); }   /* leaves, some already lit */
   for (let k = 0; k < 5; k++) rect(g, x1 + 1 + k, y1 - 4 + (k % 2) * 3, 2, 3, k % 2 ? '#fff6e0' : '#d9c9a0');   /* the splintered break */
-  TIPS.limbTell = [[x0 - 2, y0 - 6], [x0 + 12, y0 - 4], [x1 - 2, y1 - 3]];
+  TIPS[name] = [[x0 - 2, y0 - 6], [x0 + 12, y0 - 4], [x1 - 2, y1 - 3]];
+}
+
+/* (claude/gorm3art) THE PITCH POT: a squat black-glazed clay pot, a rope round its waist, pitch dribbling down it, a rag fuse stuffed in the neck (the flame is the run-time's; the fuse tip is TIPS) */
+function pot(g, x, y, lit) {
+  rect(g, x - 6, y - 2, 12, 8, '#1c1a24'); rect(g, x - 5, y - 4, 10, 2, '#1c1a24'); rect(g, x - 4, y + 6, 8, 1, '#14121a');
+  rect(g, x - 3, y - 6, 6, 2, '#2a2634'); rect(g, x - 4, y - 5, 8, 1, '#3a3648');
+  rect(g, x - 5, y - 3, 3, 5, '#4a4860'); rect(g, x - 5, y - 3, 1, 3, '#9a98b8'); rect(g, x + 3, y - 2, 3, 8, '#0e0c14');
+  rect(g, x - 6, y + 1, 12, 1, '#8a6a3a'); rect(g, x - 6, y + 2, 12, 1, '#5c3a1d');
+  rect(g, x + 4, y + 3, 2, 6, '#0a0810'); px(g, x + 5, y + 8, '#0a0810'); px(g, x + 4, y + 5, '#3a3648');
+  rect(g, x - 1, y - 9, 3, 4, '#c9b27c'); px(g, x - 1, y - 9, '#fff0c0'); rect(g, x, y - 10, 2, 2, lit ? '#ff9a3c' : '#8a7a54');
+}
+/* the flying pot, four tumbles (0 / 90 / 180 / 270 degrees: the pixels stay square); the result's fx, fy say where the fuse is (the flame goes there) */
+let POTS = null;
+export function potProp(spin) {
+  if (!POTS) POTS = [0, 1, 2, 3].map(k => { const [c, g] = canvas(28, 28); g.translate(14, 14); g.rotate(k * Math.PI / 2); g.translate(-14, -14); pot(g, 14, 15, true); g.setTransform(1, 0, 0, 1, 0, 0); return { c: outline(c, OUT), a: k * Math.PI / 2 }; });
+  const k = (((Math.floor(spin * 1.3)) % 4) + 4) % 4, p = POTS[k]; return { c: p.c, ax: 14, ay: 14, fx: Math.round(-Math.sin(p.a) * -11), fy: 1 - Math.round(Math.cos(p.a) * 11) };
+}
+/* the thrown sceptre, eight turns (every 45 degrees): the gilded shaft with its collar, the ruby orb at the leading end */
+let SCEP = null;
+export function sceptreProp(spin) {
+  if (!SCEP) SCEP = Array.from({ length: 8 }, (_, k) => { const [c, g] = canvas(30, 30), a = k * Math.PI / 4, ux = Math.cos(a), uy = Math.sin(a);
+    sceptre(g, 15 - ux * 10, 15 - uy * 10, 15 + ux * 10, 15 + uy * 10, false); rect(g, 15 - ux * 10 - 1, 15 - uy * 10 - 1, 3, 3, GLD2); return outline(c, OUT); });
+  const k = (((Math.round(spin / (Math.PI / 4))) % 8) + 8) % 8; return { c: SCEP[k], ax: 15, ay: 15 };
 }
 
 const AX = 88, AYU = 100, W_UP = 176, H_UP = 100, OX = 56, OY = 36;
@@ -141,7 +184,7 @@ const stand = (g, by, o = {}) => {   /* the standing body with its parts */
   head(g, hx, hy, o.mouth || 0, o.eyes || 0); crown(g, hx + 2, hy - 4, o.askew);
   if (o.front) o.front(g);
 };
-function bakeUp() {
+function bakeUp() {   /* (called twice: once plain, once with RAGE set - same frames, same order, so one index serves both sets) */
   const A = [], put = (name, fn) => { A.push([name, standing(name, fn)]); };
   /* THE SCEPTRE SWEEP: tell - the sceptre raised high and back, his weight on his heels; release - the arm out level, the sceptre flat, his mouth open */
   put('sweepTell', (g, by) => stand(g, by, { lean: -2, hx: -2, mouth: 2, armL: [-12, 4, 'fist'], armR: [4, -28, 'fist'], front: g => sceptre(g, 66, by - 22, 52, by - 62, true) }));
@@ -189,6 +232,21 @@ function bakeUp() {
   /* ON HIS STUMP: asleep (slumped, the crown slipped) and waking (head up, a fist at his eye) */
   put('throneSleep', (g, by) => stand(g, by + 4, { kneel: true, robeH: 28, hy: 8, hx: 1, eyes: 'shut', mouth: 0, askew: 4, armL: [-4, 14, 'fist'], armR: [4, 14, 'fist'], front: g => sceptre(g, 8, by + 36, 60, by + 40) }));
   put('throneWake', (g, by) => stand(g, by + 4, { kneel: true, robeH: 28, hy: 0, mouth: 1, armL: [-4, 14, 'fist'], armR: [-12, -18, 'fist'], front: g => sceptre(g, 8, by + 36, 60, by + 40) }));
+  /* ---- (claude/gorm3art, KING GORM 3) THE PITCH POT afoot: tell - the lit pot raised in his fist over his head, laughing; release - the arm flung out and up, empty-handed, leaning after it ---- */
+  put('potTellUp', (g, by) => { TIPS.potTellUp = [[68, by - 47]]; stand(g, by, { lean: -2, hx: -2, hy: -1, mouth: 1, armL: [-12, 6, 'fist'], armR: [6, -30, 'fist'], front: g => pot(g, 68, by - 36, true) }); });
+  put('potUp', (g, by) => stand(g, by, { lean: 4, hx: 5, mouth: 1, armL: [-10, 8, 'fist'], armR: [38, -18, 'open'], front: g => { rect(g, 96, by - 28, 6, 1, '#ff9a3c'); rect(g, 100, by - 32, 5, 1, '#ffd36b'); rect(g, 94, by - 22, 4, 1, '#ff9a3c'); } }));
+  /* THE SCEPTRE THROW: he slings the burning club on his back (it still smoulders over his shoulder), draws the sceptre back by his ear, the other arm out to aim; release - the arm flung out, hand open and EMPTY; catch - the hand up, open, to snatch it */
+  const sling = (name, by) => g => club(g, 52, by + 22, 14, by - 48, name);
+  put('sceptreTell', (g, by) => stand(g, by, { lean: -3, hx: -3, mouth: 2, armL: [-4, -26, 'fist'], armR: [24, -6, 'open'], behind: sling('sceptreTell', by), front: g => sceptre(g, -2, by - 20, -42, by - 34, true) }));
+  put('sceptreOut', (g, by) => stand(g, by, { lean: 4, hx: 4, mouth: 1, armL: [-10, 8, 'fist'], armR: [40, -10, 'open'], behind: sling('sceptreOut', by) }));
+  put('sceptreCatch', (g, by) => stand(g, by, { lean: 2, hx: 2, mouth: 2, armL: [-10, 8, 'fist'], armR: [30, -24, 'open'], behind: sling('sceptreCatch', by) }));
+  /* THE ENRAGE: head thrown back (hy), eyes wide, mouth a roar, both claws flung wide, the robe's hem catching (tongues baked on it); the plain set has the crown whole, the ENRAGED set (drawn from the crack on) the crown split */
+  put('rageTell', (g, by) => stand(g, by, { hy: -3, hx: 0, mouth: 1, eyes: 'wide', armL: [-30, -14, 'claw'], armR: [30, -14, 'claw'], front: g => { for (let i = 0; i < 7; i++) { const k = i % 3; rect(g, 2 + i * 9, by + 24 - k * 2, 3, 12 + k * 2, '#e0601a'); rect(g, 3 + i * 9, by + 25 - k * 2, 1, 10 + k * 2, '#ffd36b'); px(g, 3 + i * 9, by + 22 - k * 2, '#ff9a3c'); } } }));
+  /* THE BURNING CHARGE: tell - head down, the burning limb gripped in both fists and lowered like a ram, one boot pawing; run (bc0-3) - bent into it, the limb level, boots in a flat run; end - the skid, heels dug in, the limb swinging up */
+  put('burnChargeTell', (g, by) => stand(g, by, { lean: -3, hx: 2, hy: 5, mouth: 2, eyes: 'wide', boots: [9, by + 36, 34, 0, 6], armL: [28, 22, 'grip'], armR: [4, 26, 'grip'], front: g => limb(g, 6, by + 22, 100, by + 36, 'burnChargeTell') }));
+  { const FT = [[[26, 5], [46, 0]], [[34, 10], [40, 8]], [[46, 0], [26, 5]], [[34, 10], [40, 8]]], BYS = [21, 17, 21, 17], FLAT = [0, 1, 0, 1];
+    for (let i = 0; i < 4; i++) put('bc' + i, (g, by0) => { const by = BYS[i]; stand(g, by, { robeH: 56 - by, footY: 20 - by, feet: FT[i], sway: i & 1 ? -2 : 2, lean: 5, hx: 6, hy: 4, mouth: 2, eyes: 'wide', armL: [32, 18, 'grip'], armR: [8, 20 + FLAT[i], 'grip'], front: g => limb(g, 12, by + 20, 104, by + 32 + FLAT[i], 'bc' + i) }); }); }
+  put('burnChargeEnd', (g, by) => stand(g, by + 2, { lean: -4, hx: -3, hy: 2, mouth: 1, eyes: 'wide', boots: [2, by + 38, 46, 0, 0], armL: [28, 8, 'grip'], armR: [8, 12, 'grip'], front: g => limb(g, 8, by + 8, 98, by - 14, 'burnChargeEnd') }));
   return A;
 }
 function bakeSeat() {
@@ -202,6 +260,9 @@ function bakeSeat() {
   put('horn', g => body(g, { mouth: 3, hx: -1, armL: [-6, 10, 'fist'], armR: [-8, -16, 'fist'], front: g => horn(g, 52, 14, 96, -2) }));
   put('fleeTell', g => body(g, { hy: -1, eyes: 'wide', mouth: 1, askew: -4, armL: [-10, -16, 'open'], armR: [10, -18, 'open'] }));
   put('fleeCarried', g => body(g, { hx: -2, hy: 1, eyes: 'wide', mouth: 2, askew: 5, armL: [4, 12, 'fist'], armR: [6, 8, 'grip'], front: g => { sceptre(g, 70, 36, 84, 12); rect(g, 15, 4, 1, 3, '#9fd0ff'); rect(g, 52, 3, 1, 3, '#9fd0ff'); } }));
+  /* (claude/gorm3art) THE PITCH POT on the litter: tell - the pot taken from a bearer and raised lit in his fist, laughing; release - the arm flung out */
+  put('potTell', g => { TIPS.potTell = [[70, -15]]; body(g, { hx: -1, mouth: 1, armL: [-6, 10, 'fist'], armR: [4, -18, 'fist'], front: g => pot(g, 70, -4, true) }); });
+  put('pot', g => body(g, { hx: 3, mouth: 1, armL: [-6, 10, 'fist'], armR: [24, -8, 'open'], front: g => { rect(g, 96, -4, 6, 1, '#ff9a3c'); rect(g, 100, -8, 5, 1, '#ffd36b'); } }));
   /* the litter's idle, the shout as he wakes, and held (the cage): the new model's, so the whole fight is one king */
   put('idle', g => body(g, { armL: [-6, 12, 'fist'], armR: [6, 12, 'fist'], front: g => sceptre(g, 74, 36, 82, 10) }));
   put('wake', g => body(g, { mouth: 1, armL: [-6, 12, 'fist'], armR: [6, 12, 'fist'], front: g => sceptre(g, 74, 36, 82, 10) }));
@@ -214,6 +275,8 @@ function toSet(frames, ax, ay, w, h) {
 }
 export const UP = once('up', () => { const A = bakeUp(), idx = {}; A.forEach(([n], i) => { idx[n] = i; }); return { set: toSet(A.map(a => a[1]), AX, AYU, 90, 90), idx }; });
 export const SEAT = once('seat', () => { const A = bakeSeat(), idx = {}; A.forEach(([n], i) => { idx[n] = i; }); return { set: toSet(A.map(a => a[1]), AXS, AYS, 90, 60), idx }; });
+/* (claude/gorm3art) THE ENRAGED SET: every standing frame again, same order, with the crown cracked, the eyes ember-red, the robe and fur scorched and burning at the hem. Baked on first use (warm() does it at the level's load). */
+export const UPR = once('upr', () => { RAGE = true; try { const A = bakeUp(); return { set: toSet(A.map(a => a[1]), AX, AYU, 90, 90) }; } finally { RAGE = false; } });
 export const upFrame = n => UP.idx[n], seatFrame = n => SEAT.idx[n];
 
 /* ---------- THE BEARERS: four goblins of the court, a pole on the shoulder: 0 stand, 1-2 walk, 3-4 run, 5 crouch-lift ---------- */

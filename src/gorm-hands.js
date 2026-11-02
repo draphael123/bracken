@@ -384,18 +384,14 @@ export function makeGormHands(ctx) {
   /* ---------------- DRAWING (claude/gorm2art: painted; src/redraw/gorm_fx.js flames / smoke, gorm_glade.js the glade and the wood, kingswood_oak.js the great oak, gorm_hall.js the hall's decks and heaps) ---------------- */
   const R = Math.round, f = (g, c, x, y, w, h) => { g.fillStyle = c; g.fillRect(R(x), R(y), R(w), R(h)); };
   const flame = (g, x, y, h, time, seed) => FX.flame(g, x, y, h >= 14 ? 'L' : h >= 9 ? 'M' : 'S', time, seed);
-  /* (claude/gorm3, greybox - the ART lane bakes these) THE PITCH POT: a squat black-glazed clay pot, a rag fuse alight at its neck. THE SCEPTRE: a gilt rod, a crowned head, spinning */
+  /* (claude/gorm3art, painted: the sprites are src/redraw/gorm_frames.js potProp / sceptreProp) THE PITCH POT: a squat black-glazed clay pot tumbling, its rag fuse alight (the flame follows the fuse). THE SCEPTRE: a gilt rod, a ruby orb, turning in a gold streak */
   function drawPot(g, x, y, spin, time, seed) {
-    g.save(); g.translate(x, y); g.rotate(Math.sin(spin) * 0.6);
-    f(g, '#1a0e08', -4, -3, 8, 7); f(g, '#3a2416', -3, -4, 6, 9); f(g, '#5a3a22', -2, -3, 2, 5); f(g, '#1a0e08', -2, -6, 4, 2); f(g, '#c9a060', -1, -8, 2, 2);
-    g.restore(); flame(g, x, y - 7, 8, time, seed); FX.glow(g, x, y - 6, 14, 0.25);
+    const p = GPZ.potProp(spin); g.drawImage(p.c, x - p.ax, y - p.ay);
+    flame(g, x + p.fx, y + p.fy + 2, 8, time, seed); FX.glow(g, x + p.fx, y + p.fy + 3, 16, 0.28);
   }
   function drawSceptre(g, x, y, spin, dir) {
-    const a = spin, c = Math.cos(a), s = Math.sin(a);
-    g.save(); g.globalAlpha = 0.35; g.strokeStyle = '#ffd36b'; g.lineWidth = 2; g.beginPath(); g.arc(x, y, 8, a, a + 2.4); g.stroke(); g.restore();   /* the gold streak */
-    g.save(); g.strokeStyle = '#8b6a2a'; g.lineWidth = 2; g.beginPath(); g.moveTo(R(x - c * 7), R(y - s * 7)); g.lineTo(R(x + c * 7), R(y + s * 7)); g.stroke();
-    g.strokeStyle = '#ffd36b'; g.lineWidth = 1; g.beginPath(); g.moveTo(R(x - c * 7), R(y - s * 7)); g.lineTo(R(x + c * 7), R(y + s * 7)); g.stroke(); g.restore();
-    f(g, '#ffd36b', x + c * 7 - 2, y + s * 7 - 2, 4, 4); f(g, '#c9463d', x + c * 7 - 1, y + s * 7 - 1, 2, 2);   /* its crowned head and the ruby */
+    g.save(); g.globalAlpha = 0.35; g.strokeStyle = '#ffd36b'; g.lineWidth = 2; g.beginPath(); g.arc(x, y, 9, spin, spin + 2.4); g.stroke(); g.restore();   /* the gold streak */
+    const p = GPZ.sceptreProp(spin); g.drawImage(p.c, x - p.ax, y - p.ay);
   }
   /* THE GREAT OAK OF THE GLADE (behind the tiles): its long boughs (every hanging hangs from one), THE SAME TREE as the skyline's oak (kingswood_oak.js: the trunk, the King's door, the crown - burning by L.oakBurn),
      the hunting lodge and the stump throne; ash and smoke drift off the burning half (capped) */
@@ -444,8 +440,12 @@ export function makeGormHands(ctx) {
     for (const c of (lv.crumbles || [])) { if (c.kind !== 'bough' || c.st === 'down' || c.gone) continue; const x0 = R(c.x0 * TS - cx), x1 = R((c.x1 + 1) * TS - cx), y = R(c.row * TS - cy); if (x1 < -20 || x0 > VW + 20) continue; const cnt = c.st === 'count';
       FX.flame(g, x0 + 6, y + 1, cnt ? 'M' : 'S', time, c.x0); FX.flame(g, x1 - 6, y + 1, cnt ? 'M' : 'S', time, c.x1 + 5); if (cnt || (c.x0 & 1)) FX.flame(g, (x0 + x1) / 2, y + 1, 'S', time, c.x0 + 11); }
     /* (claude/gorm3) the burning pitch where a pot burst (P1) and the fire trail behind his burning charge (rage): a bed of flame that sinks as it fades */
-    for (const z of S.pitch.concat(S.trail)) { const x0 = R(z.x0 - cx), x1 = R(z.x1 - cx), y = R(z.y - cy); if (x1 < -20 || x0 > VW + 20) continue;
-      g.save(); g.globalAlpha = Math.min(1, z.t / 0.8); FX.bed(g, x0, x1, y, time); g.restore(); }
+    for (const z of S.pitch.concat(S.trail)) { const x0 = R(z.x0 - cx), x1 = R(z.x1 - cx), y = R(z.y - cy); if (x1 < -20 || x0 > VW + 20) continue; const pitch = S.pitch.includes(z);
+      g.save(); g.globalAlpha = Math.min(1, z.t / 0.8);
+      /* (claude/gorm3art) what burns: a glossy black pool of pitch (the pot's patch) / scorched, cracked floor with live coals (the charge's trail) under the flames */
+      if (pitch) { f(g, '#0e0a10', x0 + 1, y - 1, x1 - x0 - 2, 3); f(g, '#1c1626', x0 + 3, y - 1, x1 - x0 - 6, 1); f(g, '#3a3648', x0 + 5, y - 1, 3, 1); f(g, '#0a0810', x0 - 1, y + 1, x1 - x0 + 2, 1); }
+      else { f(g, '#1a0e08', x0, y - 1, x1 - x0, 2); for (let q = x0 + 2; q < x1 - 1; q += 5) f(g, (q + z.x0) % 3 ? '#e0601a' : '#ff9a3c', q, y - 1, 2, 1); f(g, '#2a1410', x0 + 1, y + 1, x1 - x0 - 2, 1); }
+      FX.bed(g, x0, x1, y, time); g.restore(); }
     /* THE GLADE: what hangs in the oak (ropes from the boughs, the pegs), the marks, the logs, the hive */
     const gl = lv.glade; if (gl) { const gOn = gladeOn();
       for (const h of S.hangs) for (const [pk, pgx] of h.d.pegs.entries()) { const d = h.d, px = R(d.x - cx), py = R(d.top - cy), gx = R(pgx - cx), gy = R(d.pegY - cy), lx = R(h.lx - cx), ly = R(h.y - cy); if (Math.max(px, gx, lx) < -60 || Math.min(px, gx, lx) > VW + 60) continue;
