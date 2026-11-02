@@ -1,0 +1,145 @@
+{
+  "time": "2026-11-02T21:04:57.816Z",
+  "sourceGame": "dc02ecc059959b795f76dee47665b54f349d4e2f",
+  "sourceTree": "9d8acbb7f3182c1d29ac71f4a3b0227224446718",
+  "originalController": "1a576c3f4511b6856df9fb4738df5aaae9987e81",
+  "originalToolsController": "1a576c3f4511b6856df9fb4738df5aaae9987e81",
+  "allOriginalToolFiles": 921,
+  "manifestSha256": "f7528e5d9f64f4928ad38025c670eec27862175a9a2fcb0fd9111edc9436a395",
+  "candidateMainSha256": "ad4b73c5b7e463f1c2fbf1f20026cd9154d8837c8c07d64655530eb88a1a9cf6",
+  "baselineMainSha256": "235253b0152463a51a6dae4dda7ca0f6c286e9c0ec791cc6e367dd4f86fb4ce7",
+  "candidateFileCount": 23,
+  "baselineFileCount": 4,
+  "newSourceFiles": [
+    "src/private-r-backend.js",
+    "src/private-r-integration.js",
+    "src/private-r-snapshot.js",
+    "src/sprite-publication.js"
+  ],
+  "baselineDescription": "Already-studied4file publication proposal235253+Px140576+helper65261+sameUIdef29;8PASS/2Unknown safety stays unqualified. No old source pass inherited.",
+  "sameUiSha256": "def29ae7f0ea4c55ab29e3652a351d0d03c90a4c1c5f7f83ee39692c21c3061f",
+  "originalSnapshotFunctionSha256": "89e31693c6ae1ef5740fbb64a65c20ba5df927fa3d173955e3ad37b7810ee14a",
+  "contextObserverSha256": "ba3f88d37f1339c18373d97029460af6ba1a1f9bc62f142d6530026227fd27be",
+  "strictProfileSha256": "9d38b09c585f0054e40125c63b2435e61e8cd6f5cc53e6011edf62178c8c2184",
+  "nativeQualification": {
+    "receipt": "outputs/receipts/private-r-integration-regexp-cloud-nov02.json",
+    "run": 41517361187,
+    "nodeCases": 65,
+    "primitiveCases": 504,
+    "lifecycleCases": 19,
+    "kernelCases": 60,
+    "kernelCanvasPairs": 528,
+    "realCases": 10,
+    "realNativeCanvasComparisons": 6996,
+    "noWholeGameResultInherited": true
+  },
+  "originalAssertionsAndSettings": {
+    "pixelSnapshotFunctionByteExact": true,
+    "nativeContextObserverByteExact": true,
+    "allAfterPublicationDescriptorsStatsAliasesAndSourceAssertsPreserved": true,
+    "onlyBeforeKindExpectationAdaptsToBothExactPublicationSources": "accessor",
+    "freshDocuments": 9,
+    "rounds": 3,
+    "order": [
+      "before",
+      "candidate",
+      "return"
+    ],
+    "startupGame": [
+      320,
+      180
+    ],
+    "DPR": 1,
+    "audioFiles": false,
+    "originalFonts": true,
+    "nativeGc": true,
+    "rendererMb": 1536,
+    "admissionMb": 4352,
+    "snapshotDeadlineMs": 120000,
+    "outerMinutes": 15
+  },
+  "originalColdGuidesUnchanged": {
+    "originalStartupGuidePercent": 5,
+    "additionalMaterialStartupPercent": 10,
+    "allPairedTrialsFasterThanBothControls": true,
+    "maximumControlDriftPercent": 15,
+    "maximumThroughFirstPublicationRegressionPercent": 5,
+    "allFirstPublicationCostsReported": true,
+    "noTimingOrAssertionRerun": true
+  },
+  "supplementaryMemoryGuide": {
+    "prePublicationRendererReductionMb": 64,
+    "everyPairedTrialLowerThanBothControls": true,
+    "controlDriftLimitPercent": 15,
+    "notOriginalMemoryAuditOrAdoptionGate": true,
+    "noTimingGuideFailureRelabelled": true,
+    "noLoadingQualificationWaived": true
+  },
+  "supplementaryObservations": {
+    "ownedOsWorkingSetBeforeAndAfterFirstPublication": true,
+    "postPublicationReadOnlyInspectorModelStats": true,
+    "noMainInstrumentationOrPrototypeHooks": true,
+    "noClockRngOrNativeGcPolicyChange": true,
+    "neverSubtractProbeTimeFromOriginalTimingMetrics": true,
+    "unavailableInspectorStatsStayUnknown": true
+  },
+  "allTestingCloudOnly": true,
+  "noLocalCandidateOrTestExecuted": true,
+  "noOriginalTestLimitThresholdQualityBalanceChanged": true,
+  "noSourceAdoption": true,
+  "overallWorkComplete": false,
+  "runner": {
+    "file": "tools/private-r-standing-cold-nov02.mjs",
+    "sha256": "950f0afc36b9d675298163ddaab9eb48a8c1368fe51a00986a1b6950b9f593da",
+    "parentRunner": "tools/sprite-publication-standing-cold-nov01.mjs",
+    "parentTextSha256": "93cd36f08734367f987f0670eddab6bfc1b0a2a7416680af17d0ac486c799ba6",
+    "exactSourceUndoBeforeCanonicalNewAdapterLineEndings": true,
+    "sourceEdits": [
+      {
+        "before": "import{spritePublicationContext}from'./sprite-publication-standing-context-nov01.mjs';",
+        "after": "import{spritePublicationContext}from'./sprite-publication-standing-context-nov01.mjs';import{ownedMemory,privateModelAfterPublication}from'./private-r-standing-cold-nov02/observations.mjs';"
+      },
+      {
+        "before": "assert(process.env.CI);for(const k of['BRACKEN_RENDERER_MB','BRACKEN_RECYCLE_MB','BRACKEN_LAB_GC'])assert.equal(process.env[k],undefined);const control=process.cwd(),game=path.resolve(process.env.PUBLICATION_STANDING_GAME),out=path.resolve(process.env.PUBLICATION_STANDING_OUT),reference=path.resolve(process.env.PUBLICATION_STANDING_REFERENCE),sha=b=>createHash('sha256').update(b).digest('hex'),git=(cwd,...a)=>execFileSync('git',a,{cwd,encoding:'utf8',maxBuffer:32<<20}).trim(),proofFile=control+'/tools/sprite-publication-standing-source-nov01/source-proof.json',proof=JSON.parse(fs.readFileSync(proofFile)),manifestFile=control+'/tools/sprite-publication-standing-source-nov01/manifest.json',manifest=JSON.parse(fs.readFileSync(manifestFile));assert.equal(sha(fs.readFileSync(manifestFile)),proof.manifestSha256);assert.equal(manifest.candidate.length,4);assert.equal(proof.nativeQualification.nodeCases,39);assert.equal(proof.nativeQualification.nativeCases,154);assert.equal(manifest.candidate.find(x=>x.file==='src/sprite-publication.js').sha256,proof.nativeQualification.helper);assert.equal(sha(snapshot.toString()),proof.originalSnapshotFunctionSha256);assert.equal(sha(fs.readFileSync(control+'/tools/sprite-publication-standing-context-nov01.mjs')),proof.contextObserverSha256);assert.equal(git(game,'rev-parse','HEAD'),proof.originalController);assert.equal(git(game,'rev-parse','HEAD:src'),proof.sourceTree);assert.equal(git(game,'diff',proof.sourceGame,'HEAD','--','src','index.html'),'');assert.equal(git(game,'status','--porcelain'),'');assert.equal(sha(fs.readFileSync(control+'/tools/browser-profile.mjs')),proof.strictProfileSha256);\nconst candidates=new Map(),originals=new Map();for(const f of manifest.candidate){const b=Buffer.from(f.contentBase64,'base64');assert.equal(sha(b),f.sha256);candidates.set('/'+f.file,b);if(f.originalSha256){const old=fs.readFileSync(game+'/'+f.file);assert.equal(sha(old),f.originalSha256);originals.set('/'+f.file,old);}else assert(!fs.existsSync(game+'/'+f.file));}assert.equal(candidates.get('/src/puppeteer-hands.js').toString('base64'),manifest.proof.baseline[0].contentBase64);fs.mkdirSync(out,{recursive:true});assert(!fs.existsSync(out+'/receipt.json'),'preserve occurrence');const r={time:new Date().toISOString(),workflowController:git(control,'rev-parse','HEAD'),gameController:git(game,'rev-parse','HEAD'),gameSource:proof.sourceGame,gameTree:proof.sourceTree,proof,manifestSha256:proof.manifestSha256,complete:false,rows:[],adopted:false,overallWorkComplete:false,status:'Partial actual-source9document startup/native publication proof'},save=()=>fs.writeFileSync(out+'/receipt.json',JSON.stringify(r,null,2)+'\\n');save();fs.copyFileSync(proofFile,out+'/source-proof.json');fs.copyFileSync(manifestFile,out+'/manifest.json');\n",
+        "after": "assert(process.env.CI);for(const k of['BRACKEN_RENDERER_MB','BRACKEN_RECYCLE_MB','BRACKEN_LAB_GC'])assert.equal(process.env[k],undefined);const control=process.cwd(),game=path.resolve(process.env.PUBLICATION_STANDING_GAME),out=path.resolve(process.env.PUBLICATION_STANDING_OUT),reference=path.resolve(process.env.PUBLICATION_STANDING_REFERENCE),sha=b=>createHash('sha256').update(b).digest('hex'),git=(cwd,...a)=>execFileSync('git',a,{cwd,encoding:'utf8',maxBuffer:32<<20}).trim(),proofFile=control+'/tools/private-r-standing-cold-nov02/source-proof.json',proof=JSON.parse(fs.readFileSync(proofFile)),manifestFile=control+'/tools/private-r-standing-cold-nov02/manifest.json',manifest=JSON.parse(fs.readFileSync(manifestFile));assert.equal(sha(fs.readFileSync(manifestFile)),proof.manifestSha256);assert.equal(manifest.candidate.length,23);assert.equal(manifest.baseline.length,4);assert.equal(proof.nativeQualification.nodeCases,65);assert.equal(proof.nativeQualification.kernelCases,60);assert.equal(proof.nativeQualification.realNativeCanvasComparisons,6996);assert.equal(sha(snapshot.toString()),proof.originalSnapshotFunctionSha256);assert.equal(sha(fs.readFileSync(control+'/tools/sprite-publication-standing-context-nov01.mjs')),proof.contextObserverSha256);assert.equal(git(game,'rev-parse','HEAD'),proof.originalController);assert.equal(git(game,'rev-parse','HEAD:src'),proof.sourceTree);assert.equal(git(game,'diff',proof.sourceGame,'HEAD','--','src','index.html'),'');assert.equal(git(game,'status','--porcelain'),'');assert.equal(sha(fs.readFileSync(control+'/tools/browser-profile.mjs')),proof.strictProfileSha256);\nconst candidates=new Map(),baseline=new Map();for(const f of manifest.candidate){const b=Buffer.from(f.contentBase64,'base64');assert.equal(sha(b),f.sha256);candidates.set('/'+f.file,b);}for(const f of manifest.originals){const b=fs.readFileSync(game+'/'+f.file);assert.equal(sha(b),f.sha256);baseline.set('/'+f.file,b);}for(const f of manifest.baseline){const b=Buffer.from(f.contentBase64,'base64');assert.equal(sha(b),f.sha256);baseline.set('/'+f.file,b);}assert.equal(baseline.size,20);assert.equal(candidates.get('/src/puppeteer-hands.js').toString('base64'),baseline.get('/src/puppeteer-hands.js').toString('base64'));for(const name of manifest.newSourceFiles)assert(!fs.existsSync(game+'/'+name));fs.mkdirSync(out,{recursive:true});assert(!fs.existsSync(out+'/receipt.json'),'preserve occurrence');const toolNames=git(game,'ls-tree','-r','--name-only',proof.originalToolsController,'--','tools').split(String.fromCharCode(10));assert.equal(toolNames.length,921);const originalToolHashes={};for(const name of toolNames){const expected=execFileSync('git',['show',proof.originalToolsController+':'+name],{cwd:game,maxBuffer:32<<20}),actual=fs.readFileSync(game+'/'+name);assert.equal(sha(actual),sha(expected),name);originalToolHashes[name]=sha(expected);}const r={time:new Date().toISOString(),workflowController:git(control,'rev-parse','HEAD'),gameController:git(game,'rev-parse','HEAD'),gameSource:proof.sourceGame,gameTree:proof.sourceTree,proof,manifestSha256:proof.manifestSha256,complete:false,rows:[],adopted:false,overallWorkComplete:false,all921OriginalToolHashesMatch:true,status:'Partial exact new23file Task3 versus4file publication baseline9document proof'},save=()=>fs.writeFileSync(out+'/receipt.json',JSON.stringify(r,null,2)+String.fromCharCode(10));save();fs.copyFileSync(proofFile,out+'/source-proof.json');fs.copyFileSync(manifestFile,out+'/manifest.json');fs.writeFileSync(out+'/original-tool-hashes.json',JSON.stringify(originalToolHashes,null,2)+String.fromCharCode(10));\n"
+      },
+      {
+        "before": "body=p==='/src/puppeteer-hands.js'?candidates.get(p):variant==='candidate'?candidates.get(p):originals.get(p)",
+        "after": "body=(variant==='candidate'?candidates:baseline).get(p)"
+      },
+      {
+        "before": "const ready=performance.now();await pg.evalp('BK.manualSimulation=true');const publicationHostStart=performance.now()",
+        "after": "const ready=performance.now();await pg.evalp('BK.manualSimulation=true');const memoryBeforePublication=await ownedMemory(process.env.BRACKEN_PROCESS_LOG);const publicationHostStart=performance.now()"
+      },
+      {
+        "before": "publicationReady=performance.now(),asset=",
+        "after": "publicationReady=performance.now(),memoryAfterPublication=await ownedMemory(process.env.BRACKEN_PROCESS_LOG),eligibility=await privateModelAfterPublication(pg,'private-r-'+round+'-'+variant),asset="
+      },
+      {
+        "before": "const row={round,variant,bootMs:",
+        "after": "const row={round,variant,memoryBeforePublication,memoryAfterPublication,eligibility,bootMs:"
+      },
+      {
+        "before": "else{for(const[file,body]of originals)if(file!=='/src/puppeteer-hands.js')assert(served.some(x=>x.path===file&&x.sha256===sha(body)));assert(!served.some(x=>x.path==='/src/sprite-publication.js'));}",
+        "after": "else{for(const[file,body]of baseline)assert(served.some(x=>x.path===file&&x.sha256===sha(body)));for(const name of manifest.newSourceFiles)if(name!=='src/sprite-publication.js')assert(!served.some(x=>x.path==='/'+name));}"
+      },
+      {
+        "before": "assert.equal(publication.beforeKind,variant==='candidate'?'accessor':'data','first-access path was not active as prepared');",
+        "after": "assert.equal(publication.beforeKind,'accessor','Both exact publication sources must retain their approved first-access boundary');if(variant==='candidate'&&eligibility.available){assert.equal(eligibility.readOnlyStats.consumerCalls,7);assert(eligibility.readOnlyStats.privateProducerBuilds>0&&eligibility.readOnlyStats.backend.optimizedPacks>0,'Actual new private route did not activate');}if(variant!=='candidate')assert.equal(eligibility.available,false,'Baseline unexpectedly contained the new private model');"
+      },
+      {
+        "before": "r.complete=true;r.status='Complete9actual Task3 full-SPR/native context readbacks;timing and complete-phase guide require independent audit';",
+        "after": "r.complete=true;r.status='Complete9new exact Task3 incremental full-SPR/native context readbacks;timing and supplementary memory/eligibility require independent audit';"
+      },
+      {
+        "before": "r.time=new Date().toISOString();save();console.log(JSON.stringify({complete:r.complete,rows:r.rows.length,owned:l.length,closed:c.length,error:r.error}));",
+        "after": "for(const name of toolNames)assert.equal(sha(fs.readFileSync(game+'/'+name)),originalToolHashes[name],name);r.all921OriginalToolHashesMatch=true;r.time=new Date().toISOString();save();console.log(JSON.stringify({complete:r.complete,rows:r.rows.length,owned:l.length,closed:c.length,error:r.error}));"
+      }
+    ],
+    "unchangedNativeSnapshotAndAfterPublicationAssertions": true,
+    "onlySourceSelectionAndSupplementalObservationsChanged": true
+  },
+  "observerSha256": "1fd3f342aecb70e384ec8288f8cbed6d68ed6e4ea780bb2489a3a6fc64ee83c0",
+  "singleStrictRuntimeProfileResolutionOnly": true,
+  "noGenericHelperOrSourceAllowlistChange": true
+}
