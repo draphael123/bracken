@@ -138,6 +138,9 @@ export function buildRootway({ painter, T, TS }) {
   ground(157, 162, 23); plank(163, 168, 23); ground(167, 170, 26); ground(171, 174, 29); ground(175, 190, 32);
   zips.push(rope(168, 23, 186, 32, 32)); sign(164, 22, 'A TROPHY LINE. UP TAKES THE HANDLE; IT CARRIES YOU DOWNHILL. JUMP LETS GO, DOWN DROPS.'); coins([171, 24], [175, 26], [179, 28]);
   deco(158, 22, 'gobPennant', 1); deco(176, 31, 'trophyRack'); glow(188, 31);
+  /* (claude/pyroboss2) THE GOBLIN FIRE MAGE, TAUGHT (his first level on the road, Daniel 11-01): alone on the road at the foot of the bough's steps, a flat, safe floor under him
+     (nothing to fall into; his patch runs a tile or two on the fungus earth and burns out), and a RAIN BUTT with a bucket beside the trophy rack - INTERACT takes it, ATTACK throws it: his staff goes out */
+  ent('villagewell', 177, 31, { bucket: true, kind: 'butt', splash: false }); foe('gobmage', 184, 31, 'fireTeach', { face: -1, cnSkin: 'firemage' });
   ground(191, 206, 32);
   ent('check', 193, 31);                                                          /* CHECKPOINT TWO */
   plank(196, 205, 29); foe('archer', 201, 28, 'larderGallery', { face: 1 }); ent('vent', 198, 31, { period: 4.5, on: 1.6, h: 70, phase: 2 }); coins([199, 28], [203, 28]);   /* a vent up to the larder's gallery */

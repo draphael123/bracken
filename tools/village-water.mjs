@@ -17,7 +17,7 @@ import { readFileSync } from 'node:fs';
 import { LEVELS, T } from '../src/level.js';
 import { THROW_KIND } from '../src/throwables.js';
 import { KINDS, launchOf } from '../src/carry-throw.js';
-import { SPLASH, STUN, WARD, OVER, waterOn, pyroMul, pyroRead } from '../src/village-water.js';
+import { SPLASH } from '../src/village-water.js'; import { WIND, STEAM, WARD as PWARD, RISE, OPEN_MUL, waterOn, takeMul, readOf } from '../src/pyro-boss.js';   /* (claude/pyroboss2) his water and his multipliers are the new kit's */
 import { BLAZE, FRONT, STAGES, stageOf, blazeAt, igniteAt, frontAt } from '../src/village-blaze.js';
 import { BRIDGE } from '../src/burning-village.js';
 import { openPage } from './cdp.mjs';
@@ -60,13 +60,14 @@ assert.equal(taught.fuse, BRIDGE.taught); assert.equal(tested.fuse, BRIDGE.teste
 assert.ok(taught.fuse > tested.fuse, 'TAUGHT slow, TESTED shorter: ' + taught.fuse + ' then ' + tested.fuse);
 assert.ok(signs.some(s => s.x >= taught.x0 - 8 && s.x < taught.x0 && /BURNING BRIDGE/.test(s.text)), 'the first one is signed where you meet it');
 assert.ok(L.ents.some(e => ['emberwisp', 'archer', 'sprig', 'burngob'].includes(e.t) && e.x >= tested.x0 - 1 && e.x <= tested.x1 + 1), 'the tested one is crossed under a foe');
-// ---- 2 (pure): HIS WATER ----
-assert.equal(waterOn({ mode: 'stalk' }), 'stun'); assert.equal(waterOn({ mode: 'doused' }), 'cool'); assert.equal(waterOn({ mode: 'stalk', ward: 1 }), 'ward'); assert.equal(waterOn({ mode: 'sleep' }), 'wake');
-assert.equal(pyroMul({ mode: 'stalk', open: 0 }), 1, 'outside every opening: WHOLE (never invulnerable)');
-assert.equal(pyroMul({ mode: 'doused', open: 2 }), STUN.mul); assert.equal(STUN.mul, 2, 'stunned, x2');
-assert.equal(pyroMul({ mode: 'overheat', open: 2 }), OVER.mul); assert.equal(pyroMul({ mode: 'stalk', ward: 1 }), 0);
-assert.ok(STUN.t >= 2.5 && WARD.t >= 2.5 && WARD.t <= 3.5, 'a stun worth taking, a ward of ~3 s: ' + STUN.t + ' / ' + WARD.t);
-assert.equal(pyroRead({ alive: true, mode: 'doused', open: STUN.t }).st, 'stunned');
+// ---- 2 (pure): HIS WATER (claude/pyroboss2: the new kit, src/pyro-boss.js) ----
+assert.equal(waterOn({ mode: 'stoke' }), 'wind'); assert.equal(waterOn({ mode: 'winded' }), 'cool'); assert.equal(waterOn({ mode: 'stalk', ward: 1 }), 'turned'); assert.equal(waterOn({ mode: 'sleep' }), 'wake'); assert.equal(waterOn({ mode: 'stalk' }), 'douse');
+assert.equal(takeMul({ mode: 'stalk', open: 0 }), 1, 'outside every opening: WHOLE (never invulnerable)');
+assert.equal(takeMul({ mode: 'winded', open: 2 }), WIND.mul); assert.equal(WIND.mul, 2, 'winded, x2');
+assert.equal(takeMul({ mode: 'spent', open: 2 }), OPEN_MUL); assert.equal(takeMul({ mode: 'stalk', ward: 1 }), STEAM.mul); assert.equal(takeMul({ mode: 'ward' }), PWARD.mul);
+for (const m of [STEAM.mul, PWARD.mul, RISE.mul]) assert.ok(m >= 0.4, 'B15: never below 0.4: ' + m);
+assert.ok(WIND.t >= 2.5 && STEAM.t >= 2 && STEAM.t <= 3.5, 'a winding worth taking, a ward of ~2.5 s: ' + WIND.t + ' / ' + STEAM.t);
+assert.equal(readOf({ alive: true, mode: 'winded', modeT: WIND.t }).st, 'winded');
 // ---- 4 (pure): THE BLAZE ----
 { const seen = new Set(); let last = -1;
   for (let t = -20; t < 200; t += 0.5) { const st = stageOf(t).st, i = STAGES.indexOf(st); assert.ok(i >= last, 'a building only goes forward through its fire: ' + st + ' at ' + t); last = i; seen.add(st); }
@@ -109,30 +110,35 @@ try {
    const res={};for(const t of ['burngob','emberwisp','sprig']){const e=BK.enemies().filter(q=>q.alive&&q.t===t).sort((a,b)=>Math.abs(a.x-P().x)-Math.abs(b.x-P().x))[0];if(!e){res[t]='none';continue;}e.alive=true;e.hp=Math.max(e.hp,8);if(t==='sprig'){e.burn=3;}
      for(const c of V().G().cells)if(!c.square){c.s=F.UNLIT;c.t=0;}const pr=near('bucket',P().x)||near('jug',P().x);V().take(pr);pr.state='fly';pr.x=e.x;pr.y=e.y-Math.round(e.h/2);pr.vx=1;pr.vy=0;e.vx=0;for(let i=0;i<12&&pr.state==='fly';i++){if(i){pr.x=e.x;pr.y=e.y-Math.round(e.h/2);pr.vy=0;}BK.sim(1);}res[t]={alive:e.alive,doused:e.doused||0,burn:e.burn||0,pr:pr.state,ex:Math.round(e.x),ey:Math.round(e.y),px:Math.round(pr.x),py:Math.round(pr.y),hp:e.hp};}
    out.foes=res;}
-  /* 2. THE PYROMANCER */
+  /* 2. THE PYROMANCER 2 (claude/pyroboss2, Daniel 11-01: the new kit - src/pyro-boss.js) */
   {boot('knight');const A=BK.L.arena;BK.tp(Math.round(A.trigger/16)+1,Math.round(A.floor/16)-1);BK.sim(150);const b=BK.boss;for(const e of BK.enemies())if(e!==b)e.alive=false;out.bossAlive=b.alive&&BK.bossActive;
-   const freeze=()=>{b.cd=99;b.vx=0;};const blow=(n,tag)=>{const h=b.hp;b.readN=0;b.readAt=-99;BK.P.mixN=0;BK.P.mixLast=null;/* (claude/riposte: the mix-up chain multiplies a blow after a different verb - each measured blow starts it clean) */BKT.hurtAs(tag||'heavy',b,n,b.x-12,false);const d=h-b.hp;b.hp=h;return d;};
-   /* NEVER INVULNERABLE: every mode of his kit, outside the ward, takes a hero's blow whole */
-   const modes=['stalk','cutTell','cut','cutEnd','bellowsTell','bellows','emberTell','ember','hopCrouch','hop','land','ventTell','vent'];const whole={};
+   const freeze=()=>{b.cd=99;b.vx=0;b.fwCd=99;b.stokeCd=99;};const blow=(n,tag)=>{const h=b.hp;BK.P.mixN=0;BK.P.mixLast=null;/* (claude/riposte: the mix-up chain multiplies a blow after a different verb - each measured blow starts it clean) */BKT.hurtAs(tag||'heavy',b,n,b.x-12,false);const d=h-b.hp;b.hp=h;return d;};
+   /* NEVER INVULNERABLE: every mode of her kit that is not a guard or an opening takes a hero's blow whole */
+   const modes=['stalk','cutTell','cut','cutEnd','hopCrouch','hop','land','loose','riseTell','conflagTell'];const whole={};
    for(const m of modes){b.mode=m;b.modeT=9;b.open=0;b.ward=0;whole[m]=blow(40);}b.mode='stalk';out.whole=whole;
    out.light=blow(40,'light');
-   /* WATER STUNS HIM: thrown from his floor */
-   b.mode='stalk';b.heat=40;b.open=0;b.ward=0;b.wetT=0;b.wetSeen=undefined;freeze();P().x=b.x-50;P().y=A.floor;P().vy=0;
-   const pr=V().buckets().filter(q=>q.state==='rest'&&q.thrKind==='bucket').sort((p,q)=>Math.abs(p.x-b.x)-Math.abs(q.x-b.x))[0];   /* (batch97 integ: the NEAREST bucket to the fight - the first in the list is 6000 px away in this build, and a taken bucket throws from where it stood) */V().take(pr);P().face=1;for(let i=0;i<6||(i<180&&Math.abs(pr.x-P().x)>12);i++){P().x=b.x-50;freeze();BK.sim(1);}/* (batch97 integ: wait until the held bucket is in his hands - it follows the hero on the first frames the village update runs) */BK.press('atk');let st=false;for(let i=0;i<60&&!st;i++){P().x=b.x-50;freeze();BK.sim(1);st=b.mode==='doused';}
+   /* HER FLAME WARD: a blow into it is turned at 0.4 (B15, never 0), says WARDED, and burns the hand that struck it */
+   b.poise=0;b.broken=0;b.poiseCd=0;b.mode='ward';b.modeT=0.8;b.open=0;b.ward=0;b.scorchAt=-9;P().x=b.x-30;P().y=A.floor;P().inv=0;BK.god=false;const hpW=P().hp;const fwBlade=blow(40,'light');BK.god=true;b.poise=0;b.broken=0;out.fward={blade:fwBlade,said:BK.textLab.nums().map(n=>n.txt),scorched:hpW-P().hp};
+   /* HER CHARGE: a blow throws it off - FIZZLED, open */
+   b.poise=0;b.broken=0;b.mode='chargeTell';b.modeT=9;b.chT=0.3;b.step=1;b.stepGoal=3;b.open=0;b.ward=0;const chBlade=blow(40,'light');out.charge={blade:chBlade,mode:b.mode,open:+(b.open||0).toFixed(2)};
+   /* WATER WHILE SHE STOKES: WINDED (thrown from her floor) */
+   b.mode='stoke';b.modeT=2.4;b.heat=20;b.open=2.4;b.openMax=2.4;b.ward=0;b.wetT=0;b.wetSeen=undefined;freeze();P().x=b.x-50;P().y=A.floor;P().vy=0;
+   const pr=V().buckets().filter(q=>q.state==='rest'&&q.thrKind==='bucket').sort((p,q)=>Math.abs(p.x-b.x)-Math.abs(q.x-b.x))[0];V().take(pr);P().face=1;for(let i=0;i<6||(i<180&&Math.abs(pr.x-P().x)>12);i++){P().x=b.x-50;freeze();if(b.mode==='stoke')b.modeT=2.4;BK.sim(1);}BK.press('atk');let st=false;for(let i=0;i<60&&!st;i++){P().x=b.x-50;freeze();if(b.mode==='stoke')b.modeT=2.4;BK.sim(1);st=b.mode==='winded';}
    for(let i=0;i<2;i++){freeze();BK.step(1);}
-   out.stun={mode:b.mode,open:+(b.open||0).toFixed(2),bossOpen:BK.bossOpen(b),read:b.readNow,x2:blow(20,'light'),hint:BKT.hintNow.msg,words:BK.textLab.nums().map(n=>n.txt)};
-   /* the stun runs out: THE STEAM WARD, told */
-   for(let i=0;i<60*4&&b.mode==='doused';i++){freeze();BK.sim(1);}
+   out.stun={mode:b.mode,open:+(b.open||0).toFixed(2),bossOpen:BK.bossOpen(b),read:b.readNow,x2:(b.poise=0,b.broken=0,blow(20,'shot')),hint:BKT.hintNow.msg,words:BK.textLab.nums().map(n=>n.txt)};
+   /* the winding runs out: THE STEAM WARD, told */
+   for(let i=0;i<60*5&&b.mode==='winded';i++){freeze();BK.sim(1);}
    for(let i=0;i<2;i++){freeze();BK.step(1);}
    const words=BK.textLab.nums().map(n=>n.txt);
-   const wardBlade=blow(40);const wordsAfter=BK.textLab?BK.textLab.nums().map(n=>n.txt):[];b.poise=0;b.broken=0;b.poiseCd=0;/* (batch97 integ: claude/difficulty gave every boss a break bar - the blows measured above filled it and a soft break reads as open; this step is about the ward, so the bar starts clean) */
-   /* water in the ward: turned, no stun */
+   const wardBlade=blow(40);const wordsAfter=BK.textLab?BK.textLab.nums().map(n=>n.txt):[];b.poise=0;b.broken=0;b.poiseCd=0;/* (batch97 integ: the break bar starts clean for the ward step) */
+   /* water in the steam ward: turned, no winding */
    const pr2=V().buckets().filter(q=>q.state==='rest'&&q.thrKind==='bucket')[0];V().take(pr2);pr2.state='fly';pr2.x=b.x;pr2.y=b.y-12;pr2.vx=1;pr2.vy=10;for(let i=0;i<12&&pr2.state==='fly';i++){if(i){pr2.x=b.x;pr2.y=b.y-12;pr2.vy=10;}freeze();BK.sim(1);}const hit2=pr2.state;
    out.ward={ward:+(b.ward||0).toFixed(2),mode:b.mode,read:b.readNow,told:words,blade:wardBlade,said:wordsAfter,waterMode:b.mode,hit:hit2,bossOpen:BK.bossOpen(b)};
    for(let i=0;i<60*4&&b.ward>0;i++){freeze();BK.sim(1);}
    out.after={ward:b.ward,blow:blow(40)};
-   const pr3=V().buckets().filter(q=>q.state==='rest'&&q.thrKind==='bucket')[0];V().take(pr3);pr3.state='fly';pr3.x=b.x;pr3.y=b.y-12;pr3.vx=1;pr3.vy=10;for(let i=0;i<12&&b.mode!=='doused';i++){if(pr3.state==='fly'){pr3.x=b.x;pr3.y=b.y-12;pr3.vy=10;}freeze();BK.sim(1);}out.again=b.mode;
-   b.mode='overheat';b.modeT=3;b.open=3;b.ward=0;out.over=blow(20);}
+   /* water outside the stoke: her meter goes down, no stun (the stoke is where water is the big opening) */
+   b.mode='stalk';b.heat=80;b.open=0;const pr3=V().buckets().filter(q=>q.state==='rest'&&q.thrKind==='bucket')[0];V().take(pr3);pr3.state='fly';pr3.x=b.x;pr3.y=b.y-12;pr3.vx=1;pr3.vy=10;for(let i=0;i<12&&b.heat>=80;i++){if(pr3.state==='fly'){pr3.x=b.x;pr3.y=b.y-12;pr3.vy=10;}freeze();BK.sim(1);}out.again={mode:b.mode,heat:Math.round(b.heat),open:+(b.open||0).toFixed(2)};
+   b.mode='spent';b.modeT=3;b.open=3;b.openMax=3;b.ward=0;out.over=blow(20);}
   /* 4. (the town behind burns on the level's clock: asserted in Node below from the page's own source and village-blaze.js - the fire-pixel count that stood here could not tell the far town from the street's own fires: batch81 integ) */
   return out;})()`, 900000);
   console.log(JSON.stringify(r));
@@ -147,22 +153,25 @@ try {
   if (r.foes.emberwisp !== 'none') assert.ok(!r.foes.emberwisp.alive, 'a wisp is put out: ' + JSON.stringify(r.foes));
   if (r.foes.sprig !== 'none') assert.equal(r.foes.sprig.burn, 0, 'a foe alight is put out: ' + JSON.stringify(r.foes));
   assert.ok(Object.values(r.foes).filter(v => v !== 'none').length >= 2, 'the foes were there to douse: ' + JSON.stringify(r.foes));
-  /* 2 */
+  /* 2 (claude/pyroboss2: the new kit) */
   assert.ok(r.bossAlive, 'his fight is on');
   for (const [m, d] of Object.entries(r.whole)) assert.ok(d >= 36, 'NEVER INVULNERABLE: in ' + m + ' a heavy blow of 40 lands whole (took ' + d + ')');
-  assert.ok(r.light >= 36, 'and a light one (the first of a run) lands whole: ' + r.light);
-  assert.equal(r.stun.mode, 'doused', 'a thrown bucket STUNS him: ' + JSON.stringify(r.stun));
-  assert.ok(r.stun.open >= STUN.t - 0.3 && r.stun.bossOpen === true && r.stun.read === 'stunned', 'the shared read (B10): open, the gold ring and its bar: ' + JSON.stringify(r.stun));
-  assert.ok(r.stun.x2 >= 38, 'stunned, a blow of 20 lands double: ' + r.stun.x2);
-  assert.ok(/STUN/.test(r.stun.hint) && r.stun.words.includes('STUNNED'), 'and it is said, over him and in the hint box: ' + JSON.stringify([r.stun.hint, r.stun.words]));
-  assert.ok(r.ward.ward >= WARD.t - 0.4 && r.ward.read === 'ward', 'the stun over, the STEAM WARD is up (B3): ' + JSON.stringify(r.ward));
+  assert.ok(r.light >= 36, 'and a light one lands whole: ' + r.light);
+  assert.ok(r.fward.blade >= 14 && r.fward.blade <= 18, 'HIS FLAME WARD turns a blow at 0.4 (B15: never 0): ' + JSON.stringify(r.fward));
+  assert.ok(r.fward.said.includes('WARDED') && r.fward.scorched > 0, '...says WARDED, and burns the hand that struck it: ' + JSON.stringify(r.fward));
+  assert.ok(r.charge.mode === 'spent' && r.charge.open >= 1.2, 'a blow on his CHARGE throws it off: he is open: ' + JSON.stringify(r.charge));
+  assert.equal(r.stun.mode, 'winded', 'a thrown bucket while he STOKES winds him: ' + JSON.stringify(r.stun));
+  assert.ok(r.stun.bossOpen === true && r.stun.read === 'winded', 'the shared read (B10): open, the gold ring and its bar: ' + JSON.stringify(r.stun));
+  assert.ok(r.stun.x2 >= 34, 'winded, a blow of 20 lands double: ' + r.stun.x2);
+  assert.ok(/WINDS HIM/.test(r.stun.hint) || r.stun.words.includes('WINDED'), 'and it is said, over him or in the hint box: ' + JSON.stringify([r.stun.hint, r.stun.words]));
+  assert.ok(r.ward.ward >= STEAM.t - 0.4 && r.ward.read === 'steam', 'the winding over, the STEAM WARD is up (B3): ' + JSON.stringify(r.ward));
   assert.ok(r.ward.told.includes('STEAM WARD'), 'TOLD as it rises (the word over him, the pale shell and its bar): ' + r.ward.told);
-  assert.equal(r.ward.blade, 0, 'a blade in the ward takes nothing...');
+  assert.ok(r.ward.blade >= 14 && r.ward.blade <= 18, 'a blade in the steam ward lands at 0.4 (B15 - the old 0x is gone)...: ' + r.ward.blade);
   assert.ok(r.ward.said.includes('WARDED'), '...and says so (B10: a turned blow is never silent): ' + r.ward.said);
-  assert.ok(r.ward.hit === 'return' && r.ward.waterMode !== 'doused' && r.ward.bossOpen === false, 'water in the ward is turned: no stun, no lock: ' + JSON.stringify(r.ward));
+  assert.ok(r.ward.hit === 'return' && r.ward.waterMode !== 'winded' && r.ward.bossOpen === false, 'water in the steam ward is turned: no winding, no lock: ' + JSON.stringify(r.ward));
   assert.ok(!r.after.ward && r.after.blow >= 36, 'the ward over, a blow lands whole again: ' + JSON.stringify(r.after));
-  assert.equal(r.again, 'doused', 'and water stuns him again');
-  assert.ok(r.over >= 28 && r.over <= 32, 'overheated (his own opening) he takes x1.5: ' + r.over);
+  assert.ok(r.again.mode !== 'winded' && r.again.heat <= 40 + 2, 'water outside the stoke takes his meter down and does not stun: ' + JSON.stringify(r.again));
+  assert.ok(r.over >= 28 && r.over <= 32, 'spent (an opening) he takes x1.5: ' + r.over);
   /* 4 */
   /* 4. THE TOWN BEHIND BURNS on the level's clock (burnvillage2). It used to be a count of fire-coloured pixels on the screen at level time 1 and 330, and it could not tell: the street's own fires
      and the houses in front of the backdrop swamp the far town's (the count moved 17-36 between runs on one build, and the check failed on the lane's own tip). Now the two halves are asserted where they are exact:

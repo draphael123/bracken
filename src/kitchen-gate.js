@@ -252,6 +252,7 @@ export function buildKitchenGate({ painter, T, TS }) {
   const race = { x0: M(246), x1: M(283), f: 24, trig: M(249), pot: [M(247), 23], v: 66, behind: 2.6 };
   sign(245, 23, 'THE GREAT GREASE POT.');
   foe('sprig', 248, 23, 'pot', { face: -1 }); foe('sprig', 269, 23, 'race', { face: -1 });
+  foe('gobmage', 253, 17, 'pot', { face: -1, cnSkin: 'firemage' });   /* (claude/pyroboss2) THE GOBLIN FIRE MAGE up on the pot's racks: he lobs down at the race - a stove-boy with the order's staff */
   shelf(274, 278, 20); foe('attendant', 276, 19, 'race', { face: -1, perch: true });   /* (claude/kitchengate2) THE ATTENDANT throws plates from the dresser */
   coins([250, 23], [256, 23], [260, 23], [267, 23], [272, 23], [279, 23]);
   /* THE BUTCHER (the area's EXAM; the level's ONE new foe): on the stove's trail. Stoke it as he stands on it: he burns */

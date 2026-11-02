@@ -139,6 +139,7 @@ export function buildPalisadeWood({ painter, T, TS }) {
   ground(169, 204, 29);                                                            /* the yard's upper ground (three up) */
   plank(170, 176, 26); coins([172, 25], [175, 25]);
   foe('brute', 178, 28, 'yardCart', { face: -1 }); foe('hound', 174, 25, 'yardCart', { face: -1, perch: true });
+  foe('gobmage', 184, 28, 'yardCart', { face: -1, cnSkin: 'firemage' });   /* (claude/pyroboss2) THE GOBLIN FIRE MAGE in a pack: he lobs from behind the brute - the stacked stakes and the autumn grass catch */
   deco(171, 28, 'cart', 0); crop(174, 28, 'sheaf');
   /* THE YARD GATE (the area's exam): a setter and a shield hold it, an archer on the scaffold over the gate; a stake stack racked over them rolls through them */
   prop('yardExamStakes', { x: 183, top: 21, hang: 25, cleat: [179, 28], load: 'stakes', roll: 1, rollMax: 13 });

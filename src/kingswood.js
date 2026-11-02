@@ -150,6 +150,7 @@ export function buildKingswood({ painter, T, TS }) {
   plank(214, 220, 23); ent('plate', 218, 22, { cage: 223 }); ent('dropcage', 223, 19);
   sign(213, 25, 'STAND ON A PLATE AND ITS CAGE FALLS. THE KING HAS FIVE IN HIS HALL.');
   foe('brute', 224, 25, 'boughPlate', { face: -1 }); foe('sprig', 228, 25, 'boughPlate', { face: -1 });
+  foe('gobmage', 230, 22, 'boughPlate', { face: -1, cnSkin: 'firemage' });   /* (claude/pyroboss2) THE GOBLIN FIRE MAGE with the plate's crew: on the raised root behind them, lobbing into the grove */
   coins([215, 22], [219, 22]); plank(225, 231, 23);
   /* the wasps' boughs: a rise, the wasps out of their hives, a cage over a shield (cut it from the bough) */
   ground(215, 232, 26); ground(233, 249, 23);

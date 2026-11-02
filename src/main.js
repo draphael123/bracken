@@ -38,6 +38,7 @@ import * as USL from './undercrown-slabs.js';   /* THE UNDERCROWN'S SLABS (claud
 import { levelHasSlopes, moveBodySquare, moveBodySlopes, isSlope, footSlope, slideStep, slideKeepAt, aheadTile, slopeRise, slopeGrade, hillTop, hillAcc, hillBleed } from './slopes.js'; import { slopeTile } from './redraw/ground-slopes.js';   /* a slope in the level's own ground (claude/fairlevel) */
 import * as DF from './desert-foes.js';   /* THE SUNKEN CARAVAN: the scorpion, the vulture and the sand goblin, as pure state machines */
 import { makeLesserDjinnHands } from './lesser-djinn-hands.js'; import * as LDA from './redraw/lesser_djinn_art.js'; let LDH = null;   /* (claude/djinn3) THE LESSER DJINN: the will-o'-the-wisp's AI (the ember wisp's, cold) under the Djinn's skins - sand a pour makes mud, fire a pour douses */
+import { makeFireMageHands } from './fire-mage-hands.js'; import * as FMR from './fire-mage.js'; import * as FMA from './redraw/fire_mage_art.js'; let FMH = null;   /* (claude/pyroboss2) THE GOBLIN FIRE MAGE (and the CINDER ACOLYTE): the goblin mage's AI with a fire kit - the lobbed bolt, the burning patch, the ward pop, doused by water */
 import { makeMysticHands } from './bandit-mystic-hands.js'; import * as MYA from './redraw/mystic_art.js'; let MYH = null;   /* (claude/djinn2) THE BANDIT MYSTICS: the goblin mage's AI under men's skins - casters, and lamp-bearers whose light wards (src/bandit-mystic.js) */
 import * as DF2 from './desert-foes2.js'; import { makeDesertFoes2Hands } from './desert-foes2-hands.js'; import * as DF2A from './redraw/desert_foes2.js'; let DF2H = null; const DF2_CORPSE = { firescorpion: 6, venomscorpion: 6, shieldguard: 4, dynamiter: 4, powderboy: 4, banditmystic: 6, lampbearer: 6, sanddjinn: 5, firedjinn: 5, oilscorpion: 6, dustscorpion: 6, thirstscorpion: 6, spitscorpion: 6, oilthief: 4, cisternbat: 0, drowneddead: 6, glassscorpion: 6, shardthrower: 6, nighthunter: 6, glasssentinel: 4 }; const isDyn = e => e.cnSkin === 'dynamiter' || e.cnSkin === 'powderboy' || e.cnSkin === 'kegroller' || e.cnSkin === 'oilthief' || e.cnSkin === 'smokethrower';   /* (claude/underwell2: THE OIL THIEF is the dynamite bandit's machine too - he keeps his distance and throws a FLASK of lamp oil: b.flask) */   /* (claude/variety: THE POWDER MONKEY is the dynamite bandit's AI under a sailor's jersey) */   /* the frame each reskin lies in (src/redraw/desert_foes2.js) */ const DYN = { near: 44, far: 120, dy: 60, tell: 0.7, cd: 2.4, flight: 0.65, fuse: 1.0, ring: 36 };   /* THE DYNAMITE BANDIT: lights between near and far px, holds it TELL s, it flies FLIGHT s and lies FUSE s in a RING px (explode's 36) */   /* THE DESERT'S SECOND CAST (claude/desertfoes): the fire and venom scorpions, the sandworm, the gorge's dynamite bandit and shield guard */
 import { SUN, sunStep, roofShade, shadeZones, inShade, vultureShade } from './sunstroke.js';   /* its rule */ import { makeSunHands } from './sun-hands.js'; let SUNH = null;   /* (claude/ksar2) THE SUN v2, game-wide: the drain, the drawn shade, the heat, the HUD sun */
@@ -99,7 +100,7 @@ import { DUCK_H, duckBox, duckClears, noteTell, noteRelease, blowHigh, blowLow, 
 import { isDev, setDev } from './dev-flag.js'; import * as HR from './hero-roster.js'; import { silhouetteOf } from './hero-silhouette.js';   /* (claude/heroroster) ?dev=1 gates UNLOCK EVERYTHING; the device-level hero roster; a locked hero's black silhouette */
 import { TABS as SET_TABS, tabRows, stepTab, isHeaderRow as isHeaderTab } from './settings-ui.js'; import * as CTL from './controls.js'; import { COOP_HELP_PAGES, SAVES_PAGE, coopTipDue, drawCoopHelp } from './coop-help.js';   /* SETTINGS IN TABS, REBINDING and THE CO-OP GUIDE (claude/storeui) */
 import * as WR from './world-react.js'; import * as UIH from './ui-hud.js'; import * as HINTS from './hints.js'; const toastQ = UIH.toastQueue(), uiFade = { coin: '', coinAt: -99, xp: '', xpAt: -99 };   /* UI POLISH A (claude/uihud): the one toast queue, the status icons, the idle fade, the graphics presets (src/ui-hud.js) */
-import * as PA from './pyro-art.js';   /* (claude/pyroarttune) THE PYRO KIT'S ART: the ward dome, the fireball sizes, the blast, the stoke crown, the burn-mark brand, the eruption and its word */
+import * as PA from './pyro-art.js'; import * as PYB from './pyro-boss.js';   /* (claude/pyroboss2) THE PYROMANCER 2's numbers and pure rules */   /* (claude/pyroarttune) THE PYRO KIT'S ART: the ward dome, the fireball sizes, the blast, the stoke crown, the burn-mark brand, the eruption and its word */
 import { makeFlameWard, WARD as FW_K } from './flame-ward.js';   /* THE FLAME WARD (claude/pyrokit): tap C, a 0.45 s dome of fire - a parry in its first 0.15 s, a block after, it burns what touches it (it replaced the down-held EMBER FLARE) */
 import { DK2, selfFloor as dkFloor, priceOf as dkPriceOf, rhythmStep as dkStep, cleaveMul as dkCleaveMul, dragDrain as dkDragDrain, rhythmBox as dkRhythmBox, crescentBox as dkCrescentBox, RHYTHM_NAMES as DK_RHYTHM } from './dk2.js';   /* (claude/dk2b) THE DEATH KNIGHT 2: the blood price, the drain, the rhythm, the grave kneel */
 import * as BKIT from './blood-kit.js';   /* (claude/bloodknight) THE BLOOD KNIGHT's BLOOD KIT: BLOOD DEBT, BLOOD PRICE, the five-tier heavy, BLOOD SPIKE (scratch/brief-bloodknight-1017.md 2-5) */
@@ -517,7 +518,7 @@ const DMG = { wormBreach: DWM.WORM.dmg.breach, wormBreath: DWM.WORM.dmg.breath, 
   helmCut: 21, helmStamp: 18, helmGrab: 22, palCut: 24, palThrust: 20, palBash: 26, palJudge: 22, lancerCharge: 24, lancerSwipe: 16, lancerCut: 16, drunkLob: 10, flyTool: 14, flyBag: 22, drunkStool: 14, drunkBottle: 12, drunkGlass: 8,
   priseSnap: 16, priseTake: 7, holdfastGrip: 7, kingSlamD: 26, kingHaul: 12, kingDebt: 18, propman: 16, clingerGrab: 12, clingerHold: 6, princeCut: 22, princeRise: 26, princeCrown: 16, princeWind: 12, courtier: 12, roofFall: 34, granSweep: 40, granFire: 33, granFeel: 24, granJab: 20, granStick: 35, assassinLunge: 20, assassinStab: 14, berserkerSwing: 26, berserkerRun: 18, watchThrust: 16, watchHaft: 10, reeveSweep: 16, reeveLunge: 24, reeveSnuff: 0, reeveDouse: 14, reeveHook: 18, tollLedger: 17, tollWeight: 18, tollRod: 14, tollFlood: 12, foul: 9, venomTick: 5, capSabre: 15, capShot: 12, capHook: 12, capBoot: 14, capKeg: 28, drownChain: 12, heraldSpear: 19, heraldMaelstrom: 15, cutlass: 14, boarderPull: 10, marineBolt: 12, bosunPin: 18, quarterSlash: 20, quarterShot: 16, kegBlast: 30, sailorHook: 16, netterNet: 8, urchin: 12, anglerBite: 18, petrelDive: 12, mawBite: 24, mawLunge: 22, mawTail: 18, mawRoll: 8, mawDrown: 20, mawThrash: 18, mawSpit: 12, turtle: 12, eel: 10, heronfoe: 10, crab: 10, scoutJav: 11, tideguard: 16, heraldSweep: 23, heraldThrust: 20, heraldWave: 18, rocRake: 18, owlPlunge: 28, owlHoot: 8, soldier: 14, heavySlam: 30, heavySweep: 22, lanceWhirl: 12, dummy: 0, gqSceptre: 14, sweep: 10, stormshaman: 10, crow: 8, skybolt: 14, horn: 12, bale: 14, lanceBash: 10, lanceVault: 16, lanceJav: 11, shardFall: 16, shardling: 14, fledgling: 10, shardBurst: 18, sunShard: 16, rocDive: 22, rocShriek: 16, rocFeather: 12, sentry: 10, gqSlam: 20, gqSweep: 15, gqCharge: 22, gqSlate: 11, gqBolt: 18, gqArrow: 9, sunSpire: 22, sunGlare: 20, hearthgob: 16, cutter: 14, lanceCharge: 30, lanceThrust: 22, lanceRush: 18, lanceSweep: 18, lanceGuard: 20, snuffer: 8, sailer: 14, sailerBig: 20, web: 10, miner: 22, tipplerBar: 15, tipplerOre: 14, shearSnip: 12, shearCut: 16, gafferHook: 16, gafferHaft: 13, bat: 10, cartHit: 12, gas: 20, piston: 25, steam: 12, hammer: 30, fmTongs: 14, fmChain: 22, fmLadle: 22, greathound: 15, pounce: 19, snap: 11, spider: 15, owlSwoop: 38, screech: 12, feather: 10, troll: 25, sprig: 15, shield: 25, spit: 15, wasp: 15, thorn: 30, spike: 20, seed: 15, spined: 20, queen: 24, wave: 20, venom: 18, archer: 15, arrow: 18, frog: 20, tongue: 20, hopper: 15, crown: 15, sapper: 15, bomb: 25, brute: 20, bruteOver: 30, bruteSweep: 20, hound: 18, chief: 20, chiefOver: 28, chiefSweep: 16, chiefGrab: 16, fire: 15, sporeling: 15, lurker: 22, drone: 15, shaman: 15, sporeBomb: 12, webSpit: 10, root: 15, roller: 12, sporeRain: 10, pike: 20, master: 20, whip: 15, goblet: 15, sceptre: 25, shout: 10, kingSlam: 28, grab: 22, gormSweep: 20, gormClub: 22, gormGrab: 18, throne: 30, ram: 20, cage: 15, skull: 20, vent: 15, ramLeap: 19, litter: 14, crush: 35, beam: 15, slide: 22, counter: 18, acid: 15, lantern: 10, gasBlast: 22, shard: 15, golemStomp: 25, golem: 20, blast: 12, staff: 20, grub: 12, rockgoblin: 12, badger: 12, boar: 16, gar: 12, hare: 10, wight: 15, kite: 12, windcaller: 20, hurlCart: 26, anvilHammer: 30, breath: 18, hotplate: 12, bolt: 20, crownToss: 18, lash: 15, vine: 15, harpy: 18, goat: 20, ramLord: 21, ramStamp: 14, rock: 20, gobpriest: 0, priestCenser: 10, priestBell: 7, gobmage: 0, gobBolt: 12, kingWhirl: 16, kingGulp: 10, merrowSpear: 12, merrowSurge: 8, merrowBrute: 16, gobRune: 16, pufferBurst: 10, jelly: 8, mantaDive: 16,
   dkLunge: DKN.DK.knight.dmg.lunge, dkCapLunge: DKN.DK.captain.dmg.lunge, dkSlash: DKN.DK.captain.dmg.slash, dkSlash2: DKN.DK.captain.dmg.slash2, whelpSwoop: WHF.WH.dmg.swoop, whelpFire: WHF.WH.dmg.fire };
-const EHP = { butcher: 64, attendant: 30, grubbag: 3600, shrieker: 14, galeharpy: GHM.GALE.hp, hornetqueen: HQM.HQ.hp, swarm: HSW.SWARM.hp, honeyhornet: HHM.HONEY.hp, bogtroll: BTM.BT.hp, stiltwalker: SWM.STILT.hp, leech: BLM.LEECH.hp, orderpaladin: OPF.OPL.hp.orderpaladin, deadpaladin: OPF.OPL.hp.deadpaladin, deadpriest: UPF.UPR.hp, mummy: MUM.MUMMY.hp, scarabmother: SMG.SM.hp, tombking: TKG.TK.hp, oldtusker: OTM.OT.hp, bellman: HUSH_BELL.hp, trophyhunter: RW_HUNTER.hp, huntmaster: HMK.hp, greatdrill: GDG.DRILL.hp, kiterider: 16, waterthief: 26, skitter: GSF.SKITTER.hp, hawkscout: KSF.HAWK.hp, hawkmistress: HMG.HM.hp, fogknight: FKG.FK.hp, fogwraith: FWR.WRAITH.hp, paladinboss: PBG.PB.hp, deacon: DCG.DC.hp, acolyte: 22, construct: CON.CONSTRUCT.hp, hourglassking: HKG.HK.hp, colossus: COG.COL.hp, gangleader: GLM.GL.hp, cisternqueen: CQG.CQ.hp, djinn: DJG.DJ.hp, raptor: 24, gorgecrab: GCB.CRAB.hp, matriarch: RMG.MAT.hp, sexton: SEXTON.hp, duneworm: DWM.WORM.hp, scorpion: DF.SCORPION.hp, sandworm: DF2.SANDWORM.hp, vulture: DF.VULTURE.hp, sandgob: DF.SANDGOB.hp, cutthroat: DF.CUTTHROAT.hp, slinger: DF.SLINGER.hp, ambusher: DF.AMBUSHER.hp, bannerbearer:UNBF.UNB.hp.bannerbearer, corpse:UNBF.UNB.hp.corpse, barrowrider:UNBF.UNB.hp.barrowrider, deathknight:UNBF.UNB.hp.deathknight, bloodknight:UNBF.UNB.hp.bloodknight, winchmaster:WINCH.hp, abbot:ABBOT.hp, tome:TOME.hp, gargoyle:410, hedgewarden:HEDGE.hp, gravewarden:800, burngob:26, emberwisp:8, pyromancer:1500, bonegob:30, bonearcher:26, undeadmage:2800, burieddead: 1000, zombie: 38, husk: 74, apprentice: 34, harbormaster: 1400, familiar:160, lanternshade:32, bonecorsair:48, tidemarauder:110, bellcrab: 750, bellguard: 70, topiary: 34, armour: 60, piece: 6, broom: 14, mimic: 40, imp: 20, turret: 26, homunculus: 2400, archmage: 640, scarecrow: 40, rook: 6, farmhand: 34, pumpkin: 26, marshlight: 8, haunt: 18, boo: 22, ploughman: 520, strawking: 590, kraken: 480, feeler: 30, masthead: 540, swornsword: 44, hedgeknight: 92, runner: 18, crossbow: 26, closedhelm: 610, lancer: 110, drunk: 22, temperer: 30, scalder: 26,
+const EHP = { butcher: 64, attendant: 30, grubbag: 3600, shrieker: 14, galeharpy: GHM.GALE.hp, hornetqueen: HQM.HQ.hp, swarm: HSW.SWARM.hp, honeyhornet: HHM.HONEY.hp, bogtroll: BTM.BT.hp, stiltwalker: SWM.STILT.hp, leech: BLM.LEECH.hp, orderpaladin: OPF.OPL.hp.orderpaladin, deadpaladin: OPF.OPL.hp.deadpaladin, deadpriest: UPF.UPR.hp, mummy: MUM.MUMMY.hp, scarabmother: SMG.SM.hp, tombking: TKG.TK.hp, oldtusker: OTM.OT.hp, bellman: HUSH_BELL.hp, trophyhunter: RW_HUNTER.hp, huntmaster: HMK.hp, greatdrill: GDG.DRILL.hp, kiterider: 16, waterthief: 26, skitter: GSF.SKITTER.hp, hawkscout: KSF.HAWK.hp, hawkmistress: HMG.HM.hp, fogknight: FKG.FK.hp, fogwraith: FWR.WRAITH.hp, paladinboss: PBG.PB.hp, deacon: DCG.DC.hp, acolyte: 22, construct: CON.CONSTRUCT.hp, hourglassking: HKG.HK.hp, colossus: COG.COL.hp, gangleader: GLM.GL.hp, cisternqueen: CQG.CQ.hp, djinn: DJG.DJ.hp, raptor: 24, gorgecrab: GCB.CRAB.hp, matriarch: RMG.MAT.hp, sexton: SEXTON.hp, duneworm: DWM.WORM.hp, scorpion: DF.SCORPION.hp, sandworm: DF2.SANDWORM.hp, vulture: DF.VULTURE.hp, sandgob: DF.SANDGOB.hp, cutthroat: DF.CUTTHROAT.hp, slinger: DF.SLINGER.hp, ambusher: DF.AMBUSHER.hp, bannerbearer:UNBF.UNB.hp.bannerbearer, corpse:UNBF.UNB.hp.corpse, barrowrider:UNBF.UNB.hp.barrowrider, deathknight:UNBF.UNB.hp.deathknight, bloodknight:UNBF.UNB.hp.bloodknight, winchmaster:WINCH.hp, abbot:ABBOT.hp, tome:TOME.hp, gargoyle:410, hedgewarden:HEDGE.hp, gravewarden:800, burngob:26, emberwisp:8, pyromancer:1700, bonegob:30, bonearcher:26, undeadmage:2800, burieddead: 1000, zombie: 38, husk: 74, apprentice: 34, harbormaster: 1400, familiar:160, lanternshade:32, bonecorsair:48, tidemarauder:110, bellcrab: 750, bellguard: 70, topiary: 34, armour: 60, piece: 6, broom: 14, mimic: 40, imp: 20, turret: 26, homunculus: 2400, archmage: 640, scarecrow: 40, rook: 6, farmhand: 34, pumpkin: 26, marshlight: 8, haunt: 18, boo: 22, ploughman: 520, strawking: 590, kraken: 480, feeler: 30, masthead: 540, swornsword: 44, hedgeknight: 92, runner: 18, crossbow: 26, closedhelm: 610, lancer: 110, drunk: 22, temperer: 30, scalder: 26,
   powdermonkey: 24, prise: 30, holdfast: 34, drownedking: 560, propman: 26, clinger: 14, prince: 960, courtier: 22, grandmother: 505, assassin: 30, berserker: 96, watch: 56, wickling: 12, lampreeve: 200, tollmaster: 520, captain: 620, cutlass: 30, boarder: 46, marine: 22, grapnel: 70, bosun: 54, lookout: 16, quarter: 560, sailor: 40, netter: 26, urchin: 18, angler: 30, petrel: 10, reefmaw: 500, turtle: 26, eel: 14, heronfoe: 8, crab: 22, scout: 18, siren: 12, tideguard: 44, herald: 340, soldier: 34, javelin: 16, heavy: 120, dummy: 9999, sweep: 14, stormshaman: 20, seawitch: 20, crow: 6, horn: 22, bale: 12, shardling: 18, fledgling: 16, suncatcher: 430, roc: 1100, sentry: 14, gqueen: 830, hearthgob: 24, cutter: 20, lance: 380, snuffer: 16, sailer: 18, miner: 30, tippler: 26, sheargob: 30, gaffer: 44, bat: 8, forgemaster: 480, golem: 1500, kite: 15, badger: 30, gar: 16, hare: 8, wight: 12, windcaller: 1400, grub: 26, rockgoblin: 20, greathound: GHD.GH.hp, spider: 15, owl: 1750, troll: 60, sprig: 10, shield: 20, spit: 10, wasp: 10, thorn: 30, queen: 200, archer: 10, frog: FROGK.hp, hopper: 10, sapper: 10, brute: 40, hound: 15, chief: 530, sporeling: 10, lurker: 20, drone: 10, shaman: 20, spitcap: 24, weaver: 22, gill: 20, heart: 8, mother: 8, thief: 10, pike: 20, folk: 1, master: 300, bearer: 20, king: GORM.hp1, royalboar: RBM.RB.hp, harpy: 18, goat: 20, ram: RLD.RAM.hp, gobpriest: 14, merrowspear: 24, merrowcaller: 22, merrowbrute: 50, gobmage: 22, puffer: 12, jelly: 10, lamprey: 24, manta: 34,
   drownedknight: DKN.DK.knight.hp, drownedcaptain: DKN.DK.captain.hp, whelp: WHF.WH.hp, mummer: MU.MUMMER.hp, hobbyhorse: MU.HORSE.hp, wickerqueen: WQN.WQ.hp, lanterneater: LEM.LE.hp, stagehand: THF.STAGEHAND.hp, puppeteer: PM.PUP.hp, marionette: 999, harlequin: 999, acrobat: 999, masterpiece: 999, stringjack: FAF.MARIONETTE.hp, hornsman: HM.HORNSMAN.hp, barker: FAF.BARKER.hp, grindylow: CNF.GRIND.hp, willowisp: CNF.WISP.hp, wickerman: WMN.WM.hp };   /* (his puppets are wood: a blow on a body does nothing, only the strings are cut - src/puppeteer.js) */
 /* (claude/sweep2) THE ACT II BOSS RETUNE (2026-10-06), measured with tools/boss-rates.mjs (profile human, campaign level, n=12): every
@@ -2295,6 +2296,7 @@ function drawShards(cx, cy) { for (const sh of shards) { const x = Math.round(sh
 let webs = []; // web the Weaver spat onto the floor: { x, y, t } - it holds your feet until you cut it
 let destroyed = new Set(), cutBridges = new Set(); // tiles the player broke this attempt: they stay broken
 let embers = []; // the pyromancer's fireballs: { x, y, vx, vy, life, hit }
+let pyroBalls = [];   /* (claude/pyroboss2) THE PYROMANCER boss's fireballs in flight: { x, y, vx, vy, step, life, owner } (updatePyroBalls) */
 let FOGC = null, DARKC = null, darkNow = 0.5; const DARK_A = { cx: -1e9, cy: -1e9, id: '' };   /* where the dark was last drawn: a jump snaps it */
 /* WHO IS IN THE WATER, AND WHO IS IN THE DARK, this frame: the creature loop remembers how it drew each of them (set, frame, place,
    scale) so the two passes that paint over them - the water's wash and the darkness - can bring them back up through it.
@@ -2720,7 +2722,7 @@ function spawnEntities() {
   tomeToken = newTomeToken();   /* ONE TOKEN A LEVEL: every tome on every shelf shares it, so only one is ever winding up or darting (one windup at a time) */
   (L.dressExtra ? L.ents.concat(L.dressExtra) : L.ents).forEach((e, k) => { const n0 = enemies.length; spawnEnt(e);   /* L.dressExtra: dressing that is not level DATA (lamps, claude/screefix): spawned like an ent, after them, never hashed by tools/level-quality levelHash */ for (let i = n0; i < enemies.length; i++) { enemies[i].xpKey = k + '.' + (i - n0); if (e.squad) enemies[i].squad = e.squad; if (e.stk) Object.assign(enemies[i], e.stk); if (e.kw) Object.assign(enemies[i], e.kw); if (e.rk) Object.assign(enemies[i], e.rk); if (e.pw) Object.assign(enemies[i], e.pw); if (e.pw && e.pw.pwSetter) enemies[i].cnSkin = 'stakesetter'; } });   /* (claude/palisadeart) THE STAKE-SETTER wears his own sheet, name and bestiary card */   /* (claude/stockade2) e.stk: a placed foe's part in THE STOCKADE's verbs (dozing, drops, cook, gateGuard, exam, packOnly - src/stockade-hands.js) */   /* XP KEYS: which placed thing a foe is, so the second time it falls it pays a fifth (xpKill). A foe with no key was summoned, and pays nothing */
   foePassSpawn();   /* (claude/foepass) the affixes of a live level (src/foe-pass.js, src/foe-affix.js) and every squad's roles (src/foe-pursuit.js assignRoles) */
-  spawnEntitiesTail(); if (WCH) WCH.reset(); if (OWK) OWK.reset(); if (HVR) HVR.reset(); seaReset(); if (H3H) H3H.clear();   /* (claude/hurricane3) after the grid and the felled masts: the sea back to the step of the shrine you woke at */ fieldsReset(); mageReset(); villageReset(); canalReset(); if (FRH) FRH.reset(); if (RKH) RKH.reset(); if (FPK) FPK.reset(); if (HNS) HNS.reset(); if (L.hornetsNest) { HNB.warm(); warmQueen(); } if (L.hangingTown && L.groundZones && SET.parallax !== 'off') HV.warm(L);   /* (claude/smallfix3) the cliff faces baked now, not when the camera first reaches the crown (a 1-3 s hitch at 4x) */   /* (claude/hornetsnestart) every wall, pine, vault and queen frame baked now, not mid-fight */ if (L.sporewood2) { SW2W.warm(); if (MC2H) MC2H.warm(); } if (L.fenroad) { FRA.warmAll(); FPA.warm(); if (K && K.R && K.R.idle) HPL.install(K, hero()); }   /* (claude/fenroad2art) bake the fen's sprites at the load, not in the first frames */ if (WTH) WTH.reset(); if (RGH) RGH.reset(); if (UWH) UWH.reset(); if (GSH) GSH.reset(); if (KSH) KSH.reset(); if (WRK) WRK.reset(); if (TPH) TPH.reset(); if (LCH) LCH.reset(); if (VTH) VTH.reset(); if (SKD) SKD.reset(); if (BCH) BCH.reset(); if (PYH) PYH.reset(); if (MCH) MCH.reset(); if (FGR) FGR.reset(); if (MRH) MRH.reset(); if (SKY) SKY.reset(); if (RWH) RWH.reset(); if (KWH) KWH.reset(); if (PWH) PWH.reset(); if (KGH) KGH.reset(); if (GMH) GMH.reset(); if (SWH) SWH.reset(); if (SNR) SNR.reset(); if (HPD) HPD.reset(); if (HUH) HUH.reset(); if (DF2H) DF2H.reset(); if (MYH) MYH.reset(); if (STK) STK.reset(curId()); eliteGates();
+  spawnEntitiesTail(); if (WCH) WCH.reset(); if (OWK) OWK.reset(); if (HVR) HVR.reset(); seaReset(); if (H3H) H3H.clear();   /* (claude/hurricane3) after the grid and the felled masts: the sea back to the step of the shrine you woke at */ fieldsReset(); mageReset(); villageReset(); canalReset(); if (FRH) FRH.reset(); if (RKH) RKH.reset(); if (FPK) FPK.reset(); if (HNS) HNS.reset(); if (L.hornetsNest) { HNB.warm(); warmQueen(); } if (L.hangingTown && L.groundZones && SET.parallax !== 'off') HV.warm(L);   /* (claude/smallfix3) the cliff faces baked now, not when the camera first reaches the crown (a 1-3 s hitch at 4x) */   /* (claude/hornetsnestart) every wall, pine, vault and queen frame baked now, not mid-fight */ if (L.sporewood2) { SW2W.warm(); if (MC2H) MC2H.warm(); } if (L.fenroad) { FRA.warmAll(); FPA.warm(); if (K && K.R && K.R.idle) HPL.install(K, hero()); }   /* (claude/fenroad2art) bake the fen's sprites at the load, not in the first frames */ if (WTH) WTH.reset(); if (RGH) RGH.reset(); if (UWH) UWH.reset(); if (GSH) GSH.reset(); if (KSH) KSH.reset(); if (WRK) WRK.reset(); if (TPH) TPH.reset(); if (LCH) LCH.reset(); if (VTH) VTH.reset(); if (SKD) SKD.reset(); if (BCH) BCH.reset(); if (PYH) PYH.reset(); if (MCH) MCH.reset(); if (FGR) FGR.reset(); if (MRH) MRH.reset(); if (SKY) SKY.reset(); if (RWH) RWH.reset(); if (KWH) KWH.reset(); if (PWH) PWH.reset(); if (KGH) KGH.reset(); if (GMH) GMH.reset(); if (SWH) SWH.reset(); if (SNR) SNR.reset(); if (HPD) HPD.reset(); if (HUH) HUH.reset(); if (DF2H) DF2H.reset(); if (MYH) MYH.reset(); if (FMH) FMH.reset(); if (STK) STK.reset(curId()); eliteGates();
   lamps = props.filter(pr => pr.t === 'lantern' && pr.city); // THE LAMPLIT STREET gathers its lamps once
   if (LPF) LPF.reset(); if (WKH) WKH.reset();   /* (claude/lamplit3) the oil laid again (a burnt tar net stays burnt: marks), the thrown fire gone */
   if (POH) POH.reset();   /* (claude/underleaf3) HER JARS back on their shelves; what grew and what burnt stays for the attempt */
@@ -3248,6 +3250,7 @@ function spawnEnt(e) {
   if (e.cnSkin) for (let i = n0; i < enemies.length; i++) enemies[i].cnSkin = e.cnSkin;   /* (claude/goblinsweep) a placed foe's reskin: the Undercrown's navvy / bone-chucker / timberman / mine warden (drawn, dies and is named by it: reskinSet, beastName) */
   if (e.work && L.oreRoad) for (let i = n0; i < enemies.length; i++) oreWorkBind(enemies[i], e.work);   /* MINE LIFE: a goblin at work (docs/briefs/ore-road-mine-life.md) */
   if (e.cnSkin) for (let i = n0; i < enemies.length; i++) { enemies[i].cnSkin = e.cnSkin; if (e.cnSkin === 'shieldguard' || e.cnSkin === 'shieldsentry' || isDyn(e)) enemies[i].h = 18; if (e.cnSkin === 'banditmystic' || e.cnSkin === 'lampbearer' || e.cnSkin === 'priest' || e.cnSkin === 'archdeacon') enemies[i].h = 22; }   if ((e.wKey || e.cnSkin) && L.foeHp && L.foeHp[e.wKey || e.cnSkin]) for (let i = n0; i < enemies.length; i++) { enemies[i].hp = Math.round(enemies[i].hp * L.foeHp[e.wKey || e.cnSkin]); if (e.wKey) enemies[i].hp0 = enemies[i].hp; }   if (e.wKey) for (let i = n0; i < enemies.length; i++) enemies[i].wKey = e.wKey;   /* (claude/towpath fix) wKey: a placed ELITE's own weight row over its skin's (the towpath's champions) */   /* (claude/ksar fix pass) A LEVEL'S OWN WEIGHT: its men stand a blow or two longer (L.foeHp by skin - THE BANDIT KSAR) */   /* (claude/desertfoes) A RESKIN by a top-level ent flag: the fire and venom scorpions, the gorge's shield guard and dynamite bandit (men: a man's height) */
+  if (FMR.FIRE_SKINS.has(e.cnSkin)) for (let i = n0; i < enemies.length; i++) { if (e.cnSkin === FMR.ACOLYTE_SKIN) enemies[i].h = 22; enemies[i].lobCd = 1 + Math.random(); if (enemies[i].elite) enemies[i].eliteName = e.cnSkin === FMR.ACOLYTE_SKIN ? 'THE CINDER PRIOR' : 'THE EMBER-SHAMAN'; }   /* (claude/pyroboss2) THE FIRE MAGE: the acolyte stands a man's height; an elite one is named for his own kind (the mage's elite row is the Lit Church's Archdeacon) */
   if (e.tp) for (let i = n0; i < enemies.length; i++) Object.assign(enemies[i], e.tp);   /* (claude/towpath) THE TOWPATH's eyes in the fog: a bargeman's hook from the bank (bargee), a watchman who sees only the lit (tpSight), a dozer who wakes to a lit hero (tpDoze) */
   if (e.cnSkin === 'boar') for (let i = n0; i < enemies.length; i++) { const q = enemies[i]; q.w = 18; q.h = 12; for (const k of ['hp', 'maxHp', 'hp0']) if (q[k] > 0) q[k] = Math.round(q[k] * 1.5); }   /* (claude/oldtusker) THE BOAR: the badger's AI in a heavier body (half again its health, its charge harder and quicker: updateBadger) */
   if (e.cnSkin === 'sandbound') for (let i = n0; i < enemies.length; i++) enemies[i].glass = e.glass;   /* (claude/buriedcity4) THE SAND-BOUND: the hourglass that holds it (src/buried-city-flip.js F.bound) */
@@ -4485,7 +4488,7 @@ function respawn() { if (bossSelectFight) bossSelectFight.began = false; lifeN++
   if (flight || P.fly) { P.fly = false; flight = null; }
   setView('normal'); applyUpgrades();
   Object.assign(P, { x: checkpoint.x, y: checkpoint.y, vx: 0, vy: 0, hp: P.maxHp, hpShown: P.maxHp, st: P.maxSt, inv: 1, hurt: 0, dead: 0, atk: -1, plunge: false, pinning: null, perch: 0, runThrough: false, onMover: null, wheelT: 0, sdN: 0, springT: 0, stretchT: 0, javThrowT: 0, disarmT: 0, ironT: 0, realmT: 0, kPoseT: 0, flasks: SV.deathRefill(P.flasks, SV.flaskMax(PROG)), drinkT: 0, breakT: 0, examIn: null, face: 1, block: false, dodge: 0, deflectT: 0, deflectRec: 0, throwCd: 0, slamCd: 0, riseT: 0, riseUsed: false, torch: 0 }); wisp = null; phalanx = [];
-  mendAll(); wallsMendAll(); resetCastle(); spawnEntities(); seeds = []; javHolds = []; if (GEO) GEO.clear(); if (CRB) CRB.clear(); if (CRC) CRC.clear(); if (BZK && isBz()) BZK.clear(); if (RGK && isRg()) RGK.clear(); wardJav = null; spearRain = []; droppedArms = []; realmWaves = []; gateFx = []; if (HGR) HGR.clear(); if (HFX) HFX.clear(); hammers = []; kegs = []; sceptres = []; embers = []; pyres = []; P.full = false; P.fullT = 0; P.heatGrace = 0; P.lcBrace = 0; P.lcLeft = 0; nums = []; ghosts = []; wisp = null; rain = []; P.heat = 0; P.overheat = 0; P.light = 0; P.cHeld = 0; music.play(L.music || 'theme'); setReverb(L.dark ? 0.34 : (L.interiors && L.interiors.length) ? 0.16 : (L.palette && L.palette.hall) ? 0.12 : 0.04);
+  mendAll(); wallsMendAll(); resetCastle(); spawnEntities(); seeds = []; pyroBalls = []; javHolds = []; if (GEO) GEO.clear(); if (CRB) CRB.clear(); if (CRC) CRC.clear(); if (BZK && isBz()) BZK.clear(); if (RGK && isRg()) RGK.clear(); wardJav = null; spearRain = []; droppedArms = []; realmWaves = []; gateFx = []; if (HGR) HGR.clear(); if (HFX) HFX.clear(); hammers = []; kegs = []; sceptres = []; embers = []; pyres = []; P.full = false; P.fullT = 0; P.heatGrace = 0; P.lcBrace = 0; P.lcLeft = 0; nums = []; ghosts = []; wisp = null; rain = []; P.heat = 0; P.overheat = 0; P.light = 0; P.cHeld = 0; music.play(L.music || 'theme'); setReverb(L.dark ? 0.34 : (L.interiors && L.interiors.length) ? 0.16 : (L.palette && L.palette.hall) ? 0.12 : 0.04);
   recallRafts(P.x); // (claude/frogking2: the same recall as a hazard hand-back) EVERY RAFT AHEAD OF THE SHRINE POLES BACK TO ITS DOCK: only the Ferryman's did, so a fall off the marsh rafts left them docked on the far bank and the stream uncrossable
   if (escape) { escape.t = 0; escape.fireY = L.arena.floor + 6; for (const e of enemies) if (e.t === 'chief') e.alive = false; boss = null; bossActive = false; setWall(L.arena.wallL, false); setWall(L.arena.wallR, false); }
   P.breath=breathCapacity(L);P.drownT=0;BRD.clear(P);
@@ -6064,6 +6067,8 @@ const BEASTS = [
   { t: 'abbot', name: 'THE FALSE ABBOT', sub: "in the abbot's chair", desc: "The priest's superior, in a cope that fits and a mitre that does not. His ward comes from the house: the monks' bells, his stolen chair and the prayer wheel glow while they bless him, and a warded Abbot takes less than half of every blow. So turn the house on him. Strike a bridge's bell while he kneels on that bridge and it drops with him. Ride the basket down and his chair comes down with it, throwing him out. Strike the wheel he prays at, ride his censer's smoke up, and come down on him. When he is beaten down, the great bell is the last blow." },
   { t: 'gobpriest', name: 'GOBLIN PRIEST', sub: "in the monks' robe", desc: 'Its rite mends the goblins near it and blesses them: half of every blow. Any blow breaks the rite. Far off it lobs its censer at you, close in it rings you back with its bell. Kill it first.' },
   { t: 'gobmage', name: 'GOBLIN MAGE', sub: 'it found the library', desc: 'It keeps its distance. Its bolt is slow: strike it or take it on a shield and it goes back. When it lifts the book it is writing a rune under your feet, and no shield turns that. Move.' },
+  { t: 'firemage', name: 'GOBLIN FIRE MAGE', sub: 'the order\'s fire, in a goblin\'s hands', desc: 'A goblin in a scorched robe with an iron-shod staff and a flame on its tip. He keeps his distance like any mage, but draws the staff back (a yellow mark) and LOBS a ball of fire at where you stand - a shield takes it, and where it lands the ground burns. On thatch, straw and open grass the fire spreads; on stone it dies where it fell. Rush him and he pops a WARD of fire: it turns your blows and burns you - wait, and when it gutters he is spent and helpless. WATER is the answer: a bucket, a jug or a pour puts his staff out and he stands steaming, DOUSED.' },   /* (claude/pyroboss2) */
+  { t: 'cinderacolyte', name: 'THE CINDER ACOLYTE', sub: 'he keeps the order\'s fire', desc: 'A man in an ash-grey hood with an ember sash, the order\'s novice, carrying the fire mage\'s iron-shod staff and every trick of it: the lobbed fire bolt that leaves the ground burning, the ward of fire when you rush him (wait it out - when it gutters he is spent), and water puts his staff out.' },   /* (claude/pyroboss2) the fire mage\'s machine as a man: the theme-fit reskin past the Goblin Queen */
   { t: 'sentry', name: 'CASTLE SENTRY', sub: 'the Queen\'s watch', desc: 'A goblin in a kettle helm whose whole job is a bell. See him before he sees you: once he has you he runs for it, and a rung bell drops the gates of that hall and turns out the garrison. Catch him on the way, or break the bell.' },
   { t: 'gqueen', name: 'THE GOBLIN QUEEN', sub: 'the last of the goblin line', desc: 'Old, huge and clever, and she does not charge: she holds court. She leaps about her hall and lands in a quake that runs the floor - jump it. When she lands beside one of her cracked pillars she turns her back and points, and her gallery looses where she points: break that pillar, three blows, and it comes down on her. Her plate turns most of a blade; a pillar, a chandelier cut down on her, or her hall bell rung while she stands under its grate pins her, and then every blow lands. A chandelier spent stays down until her round turns. In her second round the pillars stay down, her plate wears its own bar - drop a chandelier on her, or strike her back while she points - and she rings the bell herself when you stand by its grate: the grate comes down on you. At the last her crown burns.' },
   { t: 'suncatcher', name: 'THE RIMEWRIGHT', sub: 'it works the ice', desc: 'Frost down the floor: jump it. Spires under you: move. Cold light and claws: block. The rime turns part of every blade. Burn the rime off it at a firebox, or break its own spire on it.' },
@@ -6078,7 +6083,7 @@ const BEASTS = [
   { t: 'hedgewarden', name: 'THE HEDGE WARDEN', sub: 'the garden keeps its gate', desc: 'A topiary knight as tall as the garden wall. Guard his cut and his charge; when he flings his arms wide the thorns come out all round him, and no shield turns them - get clear. His thorn lash cracks along the lawn well out in front of him: guard it or jump it. When he drives his sword into the lawn, roots crawl out at you: jump them, or stand at a brazier, where the witch-fire burns them out. Cut him down and he falls to a stump that stands him up again, and a stump on the open lawn is green wood a blow only chips. He follows you. Fell him beside a witchlight brazier and the fire takes the stump - it cannot grow while it burns, and every blow counts twice.' },
   { t: 'burngob', name: 'BURNING GOBLIN', sub: 'it carries the fire', desc: 'A goblin already alight. It fights like the others - a told swing a shield turns - and touching it costs nothing. What it costs is the ground: the straw it walks on catches, and so does the straw it dies on. Kill it on bare ground.' },
   { t: 'emberwisp', name: 'EMBER WISP', sub: 'the fire that drifts', desc: 'Its touch is its blow, and nothing turns it: the red cross is over it whenever it is near. It is slow and it turns wide, so it cannot double back on you, and it will not pin you to a wall. One cut puts it out.' },
-  { t: 'pyromancer', name: 'THE PYROMANCER', sub: 'a renegade of the order', desc: 'He fights with the Pyromancer\'s own staff - her run of three cuts and her held blow, THE BELLOWS, that no shield turns - and her ember, and he hops the stalls to meet you. He reads a run: the third light blow in a row he turns, but a heavy goes through. Struck while he runs hot he OVERHEATS, open. A thrown bucket of water puts him out and opens him too. The square burns with his bar.' },
+  { t: 'pyromancer', name: 'THE PYROMANCER', sub: 'a renegade of the order', desc: 'He fights with the Pyromancer\'s own kit. His FLAME WARD turns your blows and burns you - wait for it to gutter and he is spent and open. He charges a fireball on his staff a step at a time: strike him while he charges and it fizzles, but let it grow past the third step and it explodes where the red ring says. Far off, PHOENIX RISE carries him to you in a burning dash. When his fire runs low he crouches to STOKE it, open - and a thrown bucket while he stokes winds him. Past half, his fire marks the floor, and when his bar fills every mark erupts at once: CONFLAGRATION.' },   /* (claude/pyroboss2) the new kit */
   { t: 'scalder', name: 'THE SCALDER', sub: 'he holds the top of the ladder', desc: 'A goblin and a pot of boiling pitch on the lip of a tower. Climb under him and he tips it straight down the ladder: no shield turns it. Wait on a landing while he stirs the pot back up, then climb.' },
   { t: 'temperer', name: 'THE TEMPERER', sub: 'he goes back to the fire', desc: 'The least dangerous thing in the hall until he turns and runs. He fetches the heat himself: at a lit brazier the blade comes back glowing, and the next blow is one no shield turns. Catch him at the fire, or put the fire out.' },
   { t: 'hearthgob', name: 'HEARTH GOBLIN', sub: 'it lives here', desc: 'Asleep by its own fire until you are close enough to wake it, and then it comes at you with a stool. Not a soldier. Worse than it sounds in a room you cannot back out of.' },
@@ -8144,7 +8149,8 @@ function spawnCorpse(e, dir) {
   const c = { t: e.t, color: e.color, x: e.x, y: e.y, vx: 0, vy: 0, rot: 0, spin: 0, face: e.face, life: 1, max: 1, frame: 0, grav: 900, bounced: false, ground: false };
   const rsk = reskinSet(e); if (rsk) c.set = rsk; if (OKD.isKnightT(e.t)) { c.frame = 9; c.kn = 10; }   /* (claude/orderart) a knight goes over backwards (frame 9) and lies as the heap (10) when he lands */
      /* a reskinned foe dies in its OWN skin (claude/corpses) */
-  { const bs = rsk || SPR[e.t]; if (HAS_HURT.has(e.t) && bs && bs.R && !OKD.isKnightT(e.t)) c.frame = bs.R.length - 1; }   /* it dies in the pose it was hit in, not mid-stride */
+  { const bs = rsk || SPR[e.t]; if (HAS_HURT.has(e.t) && bs && bs.R && !OKD.isKnightT(e.t)) c.frame = bs.R.length - 1; }
+  if (e.t === 'gobmage' && FMR.isFireMage(e) && rsk && rsk.R && rsk.R[9]) c.frame = 9;   /* (claude/pyroboss2art) THE FIRE MAGE falls in his own folded death pose, the staff snapped */   /* it dies in the pose it was hit in, not mid-stride */
   const cSig = () => [c.t, c.vx, c.vy, c.spin, c.life, c.frame, c.grav, !!c.crumple, !!c.tip, !!c.flip, !!c.run, !!c.wobble].join(), cSig0 = cSig();   /* (claude/flotilla4) did its own case below say how it goes down? */
   switch (e.t) {
     case 'lanternshade': case 'bonecorsair': case 'tidemarauder': Object.assign(c,{vx:dir*30,vy:-70,spin:dir*2,life:1.2,max:1.2});SFX.rattle();break;
@@ -8502,7 +8508,7 @@ let hurtKnock = false;
 /* the ground a fire can run along: the woods, the marsh, the fungus wood, the moor's grass, the camps and the village - not rock halls, decks or the deep (every level has a grass colour, so the colour cannot say it) */
 /* WHOSE VOICE. A bone archer is spawned as an 'archer' with bone set (it shares the goblin archer's whole body of code), so it was hurt
    and died in the GOBLIN's voice - a squeal out of a skeleton. It has its own now (HURT.bonearcher / DIE.bonearcher in audio.js). */
-const voiceOf = e => (e.cnSkin && /^clan(axe|thrower|guard|champ|runner)$/.test(e.cnSkin) ? e.cnSkin : e.bone && e.t === 'archer' ? 'bonearcher' : e.cnSkin === 'bonechucker' ? 'bonegob' : e.t);
+const voiceOf = e => (e.cnSkin && (/^clan(axe|thrower|guard|champ|runner)$/.test(e.cnSkin) || FMR.FIRE_SKINS.has(e.cnSkin)) ? e.cnSkin : e.bone && e.t === 'archer' ? 'bonearcher' : e.cnSkin === 'bonechucker' ? 'bonegob' : e.t);
 const GRASSY = new Set(['wood', 'marsh', 'myc', 'crag', 'camp', 'village', 'battlefield', 'fair']);   /* 'fair' (claude/fairfix5): its straw burns as the village's grass did */   /* 'battlefield': THE UNBURIED FIELD's dead grass burns exactly as it did when the level fell through to the wood's dress */
 /* THE FINISHER. A creature broken, burning, bleeding, frozen or reeling, and down to its last quarter, is not cut again: it is
    finished, in the hero's own way, and the world stops to watch. EXECUTION reaches further down the bar. */
@@ -8838,8 +8844,8 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow, tag = blow) { const raw0 = dmg,
   if (e.t === 'sandgob' && e.st && !DF.sandGobTouchable(e.st)) return;   /* THE SAND GOBLIN under its mound: the blade goes through sand */
   if (e.t === 'ambusher' && e.st && !DF.ambusherTouchable(e.st)) return;   /* THE SAND-CLOAKED AMBUSHER under his cloak: the same */
   if (UNBF.UNB_FOES.has(e.t)) { const ud = unbHurt(e, dmg, fromX, tag); if (ud === false) return; dmg = ud; }   /* THE UNBURIED FIELD: the fallen only fall under a banner; the Death Knight and the Barrow Rider open */   /* ON HIS KNEES IN THE GRAVE: double */
-  if (e.t === 'pyromancer') { if (e.ward > 0) { BR.turned(e, fromX, 'WARDED'); return; }   /* (claude/burnvillage2) HIS STEAM WARD (B3): told, short, and it says so (B10) */
-    if (pyroReads(e, blow, plunge, tag)) return; dmg = Math.round(dmg * VWA.pyroMul(e)); e.heat = Math.min(100, (e.heat || 0) + 3); e.calmT = 0; }   /* STRUCK, HE STOKES: every blow heats him and keeps him from venting; STUNNED by water x2, overheated x1.5 (src/village-water.js) - and outside them a hero's blow lands WHOLE (FULL_DAMAGE: never invulnerable, B11/B13) */   /* STRUCK, HE STOKES: every blow heats him and keeps him from venting; overheated he takes half as much again */
+  if (e.t === 'gobmage' && FMR.isFireMage(e)) { if (e.mode === 'flameWard') { BR.turned(e, fromX, 'WARDED'); if (!P.dead && Math.abs(P.x - e.x) < 40 && time - (e.scorchAt ?? -9) > 0.4) { e.scorchAt = time; damagePlayer(e.x, FMR.FM.ward.scorch, { unblockable: true, noKnock: true, who: e, name: 'HIS WARD' }); } return; } dmg = Math.round(dmg * FMR.takeMul(e)); }   /* (claude/pyroboss2) THE FIRE MAGE's ward turns a blow whole (a common foe's guard) and burns the hand; SPENT or DOUSED he takes x1.5 */
+  if (e.t === 'pyromancer') { const pm0 = pyroTakes(e, fromX, tag); if (pm0 === null) return; dmg = Math.round(dmg * pm0); }   /* (claude/pyroboss2) HER WARD turns a blow at 0.4 and scorches you, a blow on her CHARGE throws it off (open), every opening x1.5, winded x2, her steam ward 0.4 (B15: never 0) - src/pyro-boss.js takeMul */
   if (e.t === 'captain' && e.mode === 'beach') dmg = Math.round(dmg * 2); // KNOCKED FLAT on his own planking (claude/hurricane2: the wave, baited)
   if (e.t === 'captain' && e.ward > 0 && blow && !capOpenNow(e)) { dmg = Math.max(1, Math.round(dmg * 0.4)); BR.turned(e, fromX, 'WARDED', { stop: false }); }   /* (claude/hurricane2) HIS WARD after an opening: round him or over him it is 0.4 too (B3; B15 floor - his front wall already takes a blow into it to 0.4) */
   if (e.t === 'captain' && e.mode === 'reel') dmg = Math.round(dmg * 1.5);
@@ -11952,7 +11958,7 @@ function bossEnd(e) {
       say('THE TOLL IS PAID', '#e6b94a'); break; }
     case 'undeadmage': {e.shots=[];e.clouds=[];e.deathMark=null;e.bones=null;e.void=null;e.echoes=[];e.flashT=0;e.squeeze=0;shakeCam(10);zoomKick(1.14,0.6);burst(x,y-24,30,['#8fffb0','#3fe08a','#d9d6c0','#2e2840'],140,1.2,200,2);say('THE LAST SPELL IS BROKEN','#8fffb0');SFX.stone();break;}
     case 'burieddead': {for(const z of enemies)if(z.graveAdd)z.alive=false;e.effectT=0;shakeCam(10);SFX.heavy();burst(x,y-40,35,COLS.burieddead,90,.8);say('THE DEAD REST','#cbd8a5');break;}
-    case 'pyromancer': { e.heat = 0; for (const s of seeds) if (s.pyroEmber) s.dead = true; shakeCam(10); SFX.hiss(); burst(x, y - 20, 36, ['#ff6b2c', '#ffd36b', '#3a3036', '#fff6c8'], 120, 1, -40, 2); say('THE FIRE GOES OUT OF HIM', '#ffd36b'); break; }
+    case 'pyromancer': { e.heat = 0; for (const s of seeds) if (s.pyroEmber) s.dead = true; pyroBalls = []; if (e.marks) e.marks.length = 0; shakeCam(10); SFX.hiss(); burst(x, y - 20, 36, ['#ff6b2c', '#ffd36b', '#3a3036', '#fff6c8'], 120, 1, -40, 2); say('THE FIRE GOES OUT OF HIM', '#ffd36b'); break; }
     case 'harbormaster': {for(const s of seeds)if(s.wardenShot)s.dead=true;e.marks=[];e.effectT=0;shakeCam(9);SFX.seaBell();burst(x,y-30,35,['#427d79','#c1a05c','#b9f1eb'],90,.8);say('THE SEA GATE IS OPEN','#b9f1eb');break;}
     case 'captain': { // he goes down on his own quarterdeck, and the storm goes off her with him
       shakeCam(12); zoomKick(1.18, 0.6); killFlash = 0.14; SFX.waveCrash(); SFX.seaBell(); bossWon = 2.8;
@@ -22205,7 +22211,22 @@ function updateGobMage(e, dt) {
   e.modeT -= dt; e.cd = (e.cd || 0) - dt; e.boltCd = (e.boltCd || 0) - dt; e.runeCd = (e.runeCd || 0) - dt; e.vy = Math.min(320, (e.vy || 0) + 1000 * dt);
   const d = P.x - e.x, ad = Math.abs(d), dy = P.y - e.y, sees = !P.dead && ad < MAGE.sees && Math.abs(dy) < 110;
   let want = 0;
+  const fm = FMR.isFireMage(e), FMK = FMR.FM; if (fm) { e.burn = 0; e.fwCd = Math.max(0, (e.fwCd || 0) - dt); e.lobCd = (e.lobCd || 0) - dt; }   /* (claude/pyroboss2) THE FIRE MAGE: fireproof, his ward's and his bolt's own clocks */
   switch (e.mode) {
+    /* (claude/pyroboss2) THE GOBLIN FIRE MAGE's kit (src/fire-mage.js): THE FIRE BOLT - the staff drawn back, the flame swelling on its tip (a yellow !: a shield takes it), then lobbed at where you stand; a blow in the windup throws it off */
+    case 'lobTell': e.vx = 0; e.face = Math.sign(d) || e.face;
+      if (Math.random() < dt * 24) parts.push({ x: e.x - e.face * 6, y: e.y - 20 - Math.random() * 4, vx: (Math.random() - 0.5) * 10, vy: -30, life: 0.3, max: 0.3, col: Math.random() < 0.5 ? '#ff9a5c' : '#ffd36b', size: 1, grav: -20 });
+      if (e.stagger > 0) { e.mode = 'keep'; e.cd = MAGE.gap; e.lobCd = 1.2; SFX.emberFizzle(); break; }
+      if (e.modeT <= 0) { e.mode = 'lob'; e.modeT = 0.3; e.lobCd = FMK.lobCd + Math.random(); const tx = P.x + (P.vx || 0) * 0.15, ty = P.ground ? P.y : (surfaceUnder(tx, P.y - 6) ?? P.y); if (FMH) FMH.lob(e, tx, ty); }
+      break;
+    case 'lob': e.vx = 0; if (e.modeT <= 0) { e.mode = 'keep'; e.cd = MAGE.gap; } break;
+    /* THE FLAME WARD POP (no windup: a guard) - your blows turned, a touch burns you; then it gutters and he is SPENT, helpless */
+    case 'flameWard': e.vx = 0; e.face = Math.sign(d) || e.face;
+      if (!e.fwTouch && !P.dead && Math.abs(P.x - e.x) < 16 + (P.w || 10) / 2 && Math.abs(P.y - e.y) < 24) { e.fwTouch = true; damagePlayer(e.x, FMK.ward.scorch, { unblockable: true, noKnock: true, who: e, name: 'HIS WARD' }); }
+      if (e.modeT <= 0) { e.fwTouch = false; e.mode = 'spent'; e.modeT = FMK.ward.spent; number(e.x, e.y - e.h - 12, 'SPENT', '#ffd36b'); SFX.emberFizzle(); } break;
+    case 'spent': e.vx = 0; if (Math.random() < dt * 8) parts.push({ x: e.x + (Math.random() - 0.5) * 8, y: e.y - 18, vx: 0, vy: -20, life: 0.5, max: 0.5, col: '#8a8480', size: 1, grav: -10 }); if (e.modeT <= 0) { e.mode = 'keep'; e.cd = 0.5; } break;
+    /* DOUSED (src/fire-mage-hands.js douse: a bucket, a jug, the pour, wading in): his staff out, steaming - no cast, no ward */
+    case 'doused': e.vx = 0; if (e.modeT <= 0) { e.mode = 'keep'; e.cd = 0.8; number(e.x, e.y - e.h - 12, 'HIS STAFF RELIGHTS', '#ff9a5c'); SFX.emberBurst(); burst(e.x + e.face * 6, e.y - 20, 8, ['#ff9a5c', '#ffd36b'], 40, 0.4, -30, 1); } break;
     case 'boltTell': e.vx = 0; e.face = Math.sign(d) || e.face;
       if (Math.random() < dt * 20) parts.push({ x: e.x + e.face * 12, y: e.y - 8 - Math.random() * 4, vx: (Math.random() - 0.5) * 20, vy: -20, life: 0.3, max: 0.3, col: '#c9a0ff', size: 1, grav: 0 });
       if (e.stagger > 0) { e.mode = 'keep'; e.cd = MAGE.gap; break; }
@@ -22225,6 +22246,11 @@ function updateGobMage(e, dt) {
     default: e.mode = 'keep';
       if (!sees || e.stagger > 0) break;
       e.face = Math.sign(d) || e.face;
+      if (fm) {   /* (claude/pyroboss2) THE FIRE MAGE: the ward when you rush him, the lobbed bolt at range - no rune (that is the plain mage's) */
+        if (e.fwCd <= 0 && FMR.rushed(e, P)) { e.mode = 'flameWard'; e.modeT = FMK.ward.t; e.fwCd = FMK.ward.cd; e.vx = 0; SFX.emberBurst(); ringAt(e.x, e.y - 9, 12, '#fff6c8', 0.14); break; }
+        if (e.cd <= 0 && e.onGround && e.lobCd <= 0 && ad < MAGE.reach && Math.abs(dy) < 90) { e.mode = 'lobTell'; e.modeT = FMK.lobTell; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.mageBoltTell(); break; }
+        if (ad < MAGE.near) want = -Math.sign(d) * e.speed; else if (ad > MAGE.far) want = Math.sign(d) * e.speed * 0.75;
+        break; }
       if (e.cd <= 0 && e.onGround && e.runeCd <= 0 && ad < MAGE.runeReach && Math.abs(dy) < 60) {
         const tx = Math.floor(P.x / TS); let gy = Math.floor((P.y - 4) / TS);
         for (let k = 0; k < 10 && !isSolid(tx, gy) && !isOneWay(tileAt(tx, gy)); k++) gy++;
@@ -23784,7 +23810,7 @@ SPR.scorpion = DFA.bakeScorpion(); SPR.vulture = DFA.bakeVulture(); SPR.sandgob 
 SPR.banditmystic = MYA.bakeBanditMystic(); SPR.lampbearer = MYA.bakeLampBearer(); SPR.sanddjinn = LDA.bakeLesserDjinn('sanddjinn'); SPR.firedjinn = LDA.bakeLesserDjinn('firedjinn');   /* (claude/djinn3) THE LESSER DJINN */   /* (claude/djinn2) THE BANDIT MYSTICS */
 SPR.bellman = bakeBellman(); SPR.trophyhunter = RWA.bakeTrophyHunter(); HAS_HURT.add('trophyhunter'); SPR.stiltwalker = SWM.bakeStiltWalker(canvas, flipX, whiten); HAS_HURT.add('stiltwalker'); SPR.leech = BLM.bakeLeech(canvas, flipX, whiten); HAS_HURT.add('leech'); SPR.mapNest = bakeMapNest(canvas, flipX); /* (claude/hornets2art) the map's landmark beside the nest's node */ { const hh = HHM.bakeHoneyHornet(canvas, flipX, whiten); SPR.honeyhornet = hh; SPR.honeyhornetCard = hh.card; HAS_HURT.add('honeyhornet'); }   /* (claude/hornetsnest2) THE FAT HONEY HORNET's sheet (src/redraw/honey_hornet_art.js): its poses, its corpse, its card */ SPR.swarm = HSW.bakeSwarm(canvas, flipX, whiten); { const K = HNA.bakeNestSkins(SPR); for (const k of Object.keys(K)) SPR[k] = K[k]; }   /* (claude/hornetsnest) THE SWARM's card sheet; the nest's skins - the hornet, the comb drone, the nest-guard (src/redraw/hornets_nest_art.js, greybox) */   /* (claude/fenroad2) THE BOG LEECH's greybox sheet (src/bog-leech.js LEECH_POSE) */ SPR.bogtrollCard = bakeBogTrollCard();   /* (claude/fenroad) THE GOBLIN STILT-WALKER's greybox sheet, THE BOG TROLL's card */ SPR.huntmaster = RWA.bakeHuntmasterCard(); { const K = RWA.bakeRootSkins(SPR); for (const k of Object.keys(K)) SPR[k] = K[k]; }   /* (the art pass) THE ROOTWAY's reskins: the goblin scout, the root weaver / spider / lurker */   /* THE ROOTWAY's cast (src/redraw/rootway_art.js, the greybox): the trophy-hunter, the Huntmaster's card */
 SPR.firescorpion = DF2A.bakeFireScorpion(SPR.scorpion); { const K = SKA.bakeSkySets(SPR); for (const k of Object.keys(K)) SPR[k] = K[k]; HAS_HURT.add('kiterider'); }   /* THE SKY ROAD's cast (src/redraw/skyroad_art.js): the kite-rider; the pot-slinger recoloured off the rock goblin */ SPR.venomscorpion = DF2A.bakeVenomScorpion(SPR.scorpion); SPR.sandworm = DF2A.bakeSandworm(); SPR.shieldguard = DF2A.bakeShieldGuard(); SPR.dynamiter = DF2A.bakeDynamiter(); const DF2_CHARGE = DF2A.bakeCharge(); HAS_HURT.add('sandworm');   /* (claude/desertfoes) src/redraw/desert_foes2.js */   { const V2 = VSK.bakeVarietySkins(SPR); if (V2.powderboy) SPR.powderboy = V2.powderboy; } { const PS = bakePirateSkins(SPR); for (const k of Object.keys(PS)) SPR[k] = PS[k]; } SPR.powdermonkey = bakeMonkeySet(); HAS_HURT.add('powdermonkey');   /* (claude/flotilla4) THE POWDER MONKEY's sheet: his body and his card (greybox) */   /* (claude/flotilla3) THE FLOTILLA 3's pirate crews (greybox recolours) and the grapnel boarder's sheet */   /* (claude/variety) the powder monkey, recoloured off the dynamite bandit (baked after it) */
-SPR.foremancart = MCA.bakeForemanSkin(); SPR.gobrider = MCK.bakeCartArcher(SPR.archer);   /* (dr3art) THE FOREMAN, seated in his cart: his own skin and tell poses (src/redraw/deeprails3_art.js) */ SPR.gobcaster = MCK.bakeCartCaster(SPR.gobmage);   /* THE DEEP RAILS' cart-riders (claude/minecartart): the archer and the goblin mage as mine goblins (src/redraw/minecart_skins.js) */
+SPR.foremancart = MCA.bakeForemanSkin(); SPR.gobrider = MCK.bakeCartArcher(SPR.archer);   /* (dr3art) THE FOREMAN, seated in his cart: his own skin and tell poses (src/redraw/deeprails3_art.js) */ SPR.gobcaster = MCK.bakeCartCaster(SPR.gobmage); SPR.firemage = FMA.bakeGoblinFireMage(); SPR.cinderacolyte = FMA.bakeCinderAcolyte();   /* (claude/pyroboss2) THE GOBLIN FIRE MAGE and THE CINDER ACOLYTE (greybox, src/redraw/fire_mage_art.js) */   /* THE DEEP RAILS' cart-riders (claude/minecartart): the archer and the goblin mage as mine goblins (src/redraw/minecart_skins.js) */
 SPR.fastworm = UWA.bakeFastWorm(SPR.sandworm); SPR.oilscorpion = UWA.bakeOilScorpion(SPR.scorpion); SPR.dustscorpion = UWA.bakeDustScorpion(SPR.scorpion); SPR.thirstscorpion = UWA.bakeThirstScorpion(SPR.scorpion); SPR.spitscorpion = UWA.bakeSpitScorpion(SPR.scorpion); const UW_GLOB = UWA.bakeGlob(); SPR.oilthief = UWA.bakeOilThief(SPR.dynamiter); SPR.cisternbat = UWA.bakeCisternBat(SPR.bat); SPR.drowneddead = UWA.bakeDrownedDead(SPR.zombie); const UW_FLASK = UWA.bakeFlask();   /* (claude/underwell2) THE OIL THIEF, THE CISTERN BAT, THE DROWNED DEAD and the thief's flask */   /* THE UNDERWELL's four scorpions (claude/underwell, src/redraw/underwell_art.js: the spitter on the slinger's frames) */   SPR.skitter = GSAR.bakeSkitter(); SPR.glassscorpion = GSAR.bakeGlassScorpion(SPR.scorpion); SPR.shardthrower = GSAR.bakeShardThrower(SPR.slinger); SPR.nighthunter = GSAR.bakeNightHunter(SPR.cutthroat); SPR.glasssentinel = GSAR.bakeGlassSentinel(SPR.shieldguard || SPR.shield);   /* (claude/glasssea) THE GLASS SEA's greybox skins and THE SKITTER */
 SPR.colossus = (() => { const f = COART.farSprite(0), [c, k] = canvas(48, 46); k.imageSmoothingEnabled = false; k.drawImage(f, 0, 0, f.width, f.height, 0, 0, 48, 46); return { R: [c], L: [c] }; })();   /* (batch75: the bestiary card's set for THE GLASS COLOSSUS - it draws itself live in the fight (glass-colossus-hands.js), but the card reads SPR[b.t].R[0]) */
 { const K = KSA.bakeKsarSets(SPR); for (const k of Object.keys(K)) SPR[k] = K[k]; }
@@ -24393,10 +24419,11 @@ function updateVillage(dt) {
   if (HVR && HVR.on()) HVR.update(dt);   if (RWH && RWH.on()) RWH.update(dt);   if (FRH && FRH.on()) FRH.update(dt); if (FPK && FPK.on()) FPK.update(dt);   /* (claude/fenroad2) the planks */ if (HNS && HNS.on()) HNS.update(dt);   /* (claude/hornetsnest) THE HORNET'S NEST: comb, wax, smoke pots, brood cells */ if (HQH && L.hornetsNest) HQH.tick(dt);   /* (and the falling nest's comb on the way down the trunk) */   /* THE FEN ROAD (src/fen-road-hands.js): the bowed sections, the crew gaps, the thing under the road, the footing */   /* THE ROOTWAY (src/rootway-hands.js): the hoists falling, the hunters on them, the lookout manned */
   if (SKY && SKY.on()) { SKY.update(dt); if (L.crumbles && L.crumbles.length) updateCrumbles(dt); }   /* THE SKY ROAD: the stones, the disc, the horn's call; THE BROKEN SKY BRIDGE's cracked spans (src/tower-collapse.js) */
   if (MRH && MRH.on()) { MRH.update(dt); MRH.tick(dt); }   /* GALE MOOR: the wind that takes a struck goblin, the frame (src/moor-rocks-hands.js) */
+  if (FMH && FMH.on()) FMH.update(dt);   /* (claude/pyroboss2) THE GOBLIN FIRE MAGE: his bolts, the patches, the water */
   if (MYH && MYH.on()) MYH.update(dt);   /* (claude/djinn2) THE BANDIT MYSTICS: the lamps, their ward, a thrown lamp, the lamp fires */
   if (DF2H && DF2H.on()) DF2H.update(dt);   /* THE DESERT'S SECOND CAST: the burning patches, the venom (src/desert-foes2-hands.js) */   /* THE WELL TOWN (src/well-town-hands.js) */
   if (THEATRE) THH.theatreUpdate(THEATRE, THX, dt);   /* THE MASKWRIGHT'S THEATRE */
-  if (!VG) return;
+  if (!VG) { if (props.some(q => q.t === 'vbucket')) updateBuckets(dt); return; }   /* (claude/pyroboss2) A BUCKET OUTSIDE THE VILLAGE: the water butt by a fire mage */
   villageTick(dt);
   if (VWH && VWH.on()) VWH.update(dt);   /* (claude/burning3) the tanks, the waves, SOAKED, the debris, the ember storm */
   /* THE SMOKE RISES (THE ROOFTOPS): a hero in the air inside a plume while it is up is carried up with it, to its top */
@@ -24406,7 +24433,7 @@ function updateVillage(dt) {
   stepFire(VG, dt);
   { let n = 0; for (const c of VG.cells) if (c.s === ALIGHT && !c.square && Math.abs(c.x * TS - (camX + VW / 2)) < VW) n++; VG.heat = (VG.heat || 0) + (Math.min(1, 0.15 + n / 24) - (VG.heat || 0)) * Math.min(1, dt * 1.5); }   /* THE SKY BEHIND THE TOWN follows the fire that is burning near you */
   const pm = boss && boss.t === 'pyromancer' ? boss : null;
-  if (pm) squareHeat(VG, pm.alive && bossActive ? (pm.heat || 0) : 0, dt);
+  if (pm) squareHeat(VG, pm.alive && bossActive && pm.phase !== 2 ? (pm.heat || 0) : 0, dt);   /* (claude/pyroboss2) P2: THE SQUARE COOLS - her marks burn instead */
   updateBuckets(dt);
   for (const c of VG.cells) {
     const on = c.s === ALIGHT;
@@ -24476,6 +24503,8 @@ function bucketTargets(fx, fy) {   /* what the water would go on, from a point (
   if (bar) return { bar };
   const cell = VG && VG.cells.find(c => (c.s === ALIGHT || c.s === CATCHING) && Math.abs(c.x * TS + 8 - fx) < 16 && Math.abs((c.y + 1) * TS - fy) < 20);
   if (cell) return { cell };
+  const fmp = FMH && FMH.on() && FMH.patchAt(fx, fy); if (fmp) return { fmp };   /* (claude/pyroboss2) THE FIRE MAGE's burning patch */
+  const pmk = boss && boss.t === 'pyromancer' && boss.marks && boss.marks.find(m => Math.abs(m.x - fx) < 20 && Math.abs(m.y - fy) < 20); if (pmk) return { pmk };   /* (claude/pyroboss2) THE PYROMANCER's P2 burn mark */
   return null;
 }
 function putOutHeap(h) {
@@ -24492,6 +24521,8 @@ function pourBucket(pr, tg) {
   else if (tg.cap) { tg.cap.coolT = BUCKET.cool; tg.cap.cooled = true; number(tg.cap.x, tg.cap.y - 40, 'COOLED', '#9ad0ff'); }
   else if (tg.beam) { tg.beam.wet = BUCKET.beamWet; tg.beam.t = -1; number((tg.beam.x0 + tg.beam.x1 + 1) * 8, tg.beam.row * TS - 20, 'THE BEAM HOLDS', '#9ad0ff'); for (let x = tg.beam.x0; x <= tg.beam.x1; x += 2) steamPuff(x * TS + 8, tg.beam.row * TS, 3); SFX.hiss(); }
   else if (tg.bar) { const bs = fires.filter(f => f.barrier && !f.heap); for (const f of bs) { if (!(f.delay > 0)) steamPuff(f.x, f.y - 10, 6); f.delay = 12; } SFX.hiss(); number(tg.bar.x, tg.bar.y - 40, 'THE FIRE IS OUT - GO', '#9ad0ff'); }
+  else if (tg.fmp) { FMH.splash(fx, fy, 30); number(fx, fy - 30, 'PUT OUT', '#9ad0ff'); }
+  else if (tg.pmk) { PYB.douseMarks(boss.marks, fx, tg.pmk.y); number(fx, fy - 30, 'PUT OUT', '#9ad0ff'); }
   else if (tg.cell) { const cx0 = tg.cell.x, cy0 = tg.cell.y, r = VWA.SPLASH[pr.thrKind || 'bucket'] || 2; const n = douse(VG, cx0, cy0, r) + quench(VG, cx0, cy0, r); villageOut(); number(fx, fy - 30, n ? 'PUT OUT' : 'SPLASH', '#9ad0ff'); }   /* (claude/burnvillage2) a bucket's splash is two tiles, a jug's one */
   for (let i = 0; i < 22; i++) parts.push({ x: fx, y: fy - 10, vx: dir * (60 + Math.random() * 90), vy: -90 - Math.random() * 90, life: 0.6, max: 0.6, col: Math.random() < 0.5 ? '#9ad0ff' : '#e8f6ff', size: 2, grav: 500 });
   SFX.splash(); pr.state = 'return'; pr.retT = THROW_KIND[pr.thrKind || 'bucket'].respawn; pr.spent = (pr.spent || 0) + 1;
@@ -24504,6 +24535,7 @@ function hitThrownBucket(pr, e) {
   if (e.t === 'pyromancer') e[PYRO_HIT_FIELD] = time;   /* (set BEFORE the hit: hurtEnemy's pyroReads knows a bucket by it, and a bucket is never a blow he reads) */
   hurtAs('throw', e, throwDamage(pr.thrKind || 'bucket', e.t), pr.x, false);   /* (claude/keyscore, B14) tagged THROW: the room's blow (not chipped, not greed - as before), named for a boss keyed to it */
   if (isFireFoe(e.t)) { e.doused = 2; number(e.x, e.y - e.h - 10, 'DOUSED', '#9ad0ff'); }
+  if (FMH && FMR.isFireMage(e)) FMH.douse(e);   /* (claude/pyroboss2) THE FIRE MAGE: his staff goes out */
   if (e.t === 'emberwisp' && e.alive) { number(e.x, e.y - e.h - 18, 'PUT OUT', '#9ad0ff'); hurtEnemy(e, e.hp + 1, pr.x, false); }   /* (claude/burnvillage2) A WISP IS A FLAME: water puts it out */
   if (e.burn > 0 && e.t !== 'pyromancer') { e.burn = 0; SFX.hiss(); }   /* and a foe alight is put out */
   sparks(e.x, e.y - e.h / 2, Math.sign(pr.vx) || 1, 6);
@@ -24582,6 +24614,8 @@ function drawThrowWater(pr, x, y) { if (pr.thrKind === 'jug') drawJug(x, y); els
 function drawWaterOutline(pr, x, y) { const was = g.fillStyle; g.save(); g.globalAlpha = 0.55 + 0.25 * Math.sin(time * 4 + pr.hx);
   const fr = g.fillRect.bind(g); g.fillRect = (a, b, c, d) => { g.fillStyle = '#eef8ff'; fr(a - 1, b, c + 2, d); fr(a, b - 1, c, d + 2); };   /* every rect of its shape, grown a pixel: its outline */
   try { drawThrowWater(pr, x, y); } finally { g.fillRect = fr; delete g.fillRect; g.restore(); g.fillStyle = was; } }
+/* (claude/pyroboss2) A WATER BUTT OUTSIDE THE VILLAGE (the village's draw is gated on its fire grid): the rain butt's own picture */
+function drawLoneButts(cx, cy) { for (const pr of props) { if (pr.t !== 'vwell' || pr.x < cx - 40 || pr.x > cx + VW + 40) continue; FMA.drawWaterButt(g, Math.round(pr.x - cx), Math.round(pr.y - cy), time, false); } }   /* (claude/pyroboss2art) the water butt: staves, hoops, the bright water at the lip */
 function drawBuckets(cx, cy) {
   for (const pr of props) { if (pr.t !== 'vbucket' || pr.state === 'return') continue; const x = Math.round(pr.x - cx), y = Math.round(pr.y - cy); if (x < -20 || x > VW + 20) continue;
     if (pr.state === 'rest') { drawWaterOutline(pr, x, y); pr.glint = true; }   /* THE OUTLINE */
@@ -24641,6 +24675,7 @@ function drawVillage(cx, cy) {
   if (GSH && GSH.on()) GSH.drawWorld(g, cx, cy, time);   /* THE GLASS SEA: the props, the cracks, the heaps and the fused glass, the beams, the fires, the mirrors */
   if (MCH && MCH.on()) MCH.drawWorld(g, cx, cy, time); if (FGR && FGR.on()) FGR.drawWorld(g, cx, cy, time); if (GDH && GDH.on()) GDH.drawWorld(g, cx, cy, time);   /* THE DEEP RAILS: rails, levers, crushers, gates, rock, beams, goblin carts; THE GREAT DRILL's chute, mast and ore carts */
   if (COH && COH.on()) COH.drawBack(g, cx, cy, time);   /* THE GLASS COLOSSUS: its holds, the shelf-mirrors, the relayed light */   /* THE UNDERWELL: the oil, the fire, the nests, the torches, the great lamp, the fountain */
+  if (FMH && FMH.on()) FMH.drawWorld(g, cx, cy, time);   /* (claude/pyroboss2) his burning patches and his bolts */
   if (MYH && MYH.on()) MYH.drawWorld(g, cx, cy, time);   /* (claude/djinn2) the warding light, the lamps, the ward pips, the lamp fires */
   if (DF2H && DF2H.on()) DF2H.drawWorld(g, cx, cy, time);   /* the burning patches (src/desert-foes2-hands.js) */
   if (RGH && RGH.on()) RGH.drawWorld(g, cx, cy, time); if (SKY && SKY.on()) SKY.drawWorld(g, cx, cy, VW, VH, time); if (HVR && HVR.on()) HVR.drawWorld(g, cx, cy, VW, VH, time); if (RWH && RWH.on()) RWH.drawWorld(g, cx, cy, VW, VH, time); if (KWH && KWH.on()) KWH.drawWorld(g, cx, cy, VW, VH, time); if (PWH && PWH.on()) PWH.drawWorld(g, cx, cy, VW, VH, time); if (KGH && KGH.on()) KGH.drawWorld(g, cx, cy, VW, VH, time); if (WCH && WCH.on()) WCH.drawWorld(g, cx, cy, VW, VH, time); if (RKH && RKH.on()) RKH.drawWorld(g, cx, cy, VW, VH, time); if (SWH && SWH.on()) SWH.drawWorld(g, cx, cy, VW, VH, time); if (SNR && SNR.on()) SNR.draw(g, cx, cy, time); if (HPD && HPD.on()) HPD.draw(g, cx, cy, time); if (ROCE && ROCE.on()) ROCE.draw(g, cx, cy, time);   /* THE SKY ROAD: the stones, the disc, the cloak, the reel's kite and cage, the loft, the riders' kites */   /* THE RED GORGE: the channel, the flood, the gates, the wheels, the baskets, the jams, the nests */   /* THE WELL TOWN: the wells, the mud, the fires, the windlass, the dry cistern */
@@ -24648,7 +24683,7 @@ function drawVillage(cx, cy) {
   if (STK) STK.draw(g, cx, cy, VW, VH, time);   /* THE GLINT over what the route needs next (src/stuck-guide.js) */
   if (CANAL) CNH.drawCanal(CANAL, g, CNX, cx, cy, VW, VH, time);   /* THE FOG CANAL: the gates, the bridges, the weed, the machines */
   if (THEATRE) THH.drawTheatre(THEATRE, g, THX, cx, cy, VW, VH, time);   /* THE MASKWRIGHT'S THEATRE: beams, flats, traps, gadgets, the curtain */
-  if (!VG) return;
+  if (!VG) { if (props.some(q => q.t === 'vbucket')) { drawLoneButts(cx, cy); drawBuckets(cx, cy); } return; }   /* (claude/pyroboss2) the water butt and its bucket outside the village */
   drawSmoke(cx, cy); drawHeaps(cx, cy); drawBuckets(cx, cy);
   for (const f of fires) if (f.pillar && f.delay > 0 && f.x > cx - 20 && f.x < cx + VW + 20) { const x = Math.round(f.x - cx), y = Math.round(f.y - cy), soon = f.delay < PILLAR.warn && !(f.outT > 0);   /* a pillar at rest: its vent glowing, and brighter just before it goes */
     if (f.outT > 0) { g.fillStyle = '#1e2024'; g.fillRect(x - 6, y - 2, 12, 2); g.fillStyle = '#3a4048'; g.fillRect(x - 4, y - 3, 8, 1); if (Math.random() < 0.05) steamPuff(f.x, f.y - 4, 2); continue; }   /* (claude/smallfix7) a column a wave has put out is a cold, wet vent: no glow, no 'about to roar' flicker, a wisp of steam */
@@ -24756,33 +24791,25 @@ function drawEmberWisp(e, cx, cy) {
   g.fillStyle = '#3a0c08'; g.fillRect(x - 2, y - 6, 1, 1); g.fillRect(x + 1, y - 6, 1, 1);
   if (Math.hypot(P.x - e.x, P.y - 10 - e.y) < 96 && !(e.recoil > 0)) tellQ.push({ txt: '!!', x, y: y - 28, col: '#ff6b6b', a: 1 });   /* THE RED CROSS: its touch is its blow, and nothing turns it */
 }
-/* (claude/burnvillage2, Daniel 10-07) A DUELIST, NEVER INVULNERABLE (B11/B13): a hero's blow lands WHOLE outside his openings (src/boss-greed.js FULL_DAMAGE),
-   he guards by READING a run, no burn takes on him; WATER STUNS HIM (gold ring + bar, x2), then a told ~3 s STEAM WARD (B3) - src/village-water.js.
-   THE PYROMANCER: a renegade of the Pyromancers' order, fought in the square - AS A MIRROR DUEL (Daniel, 2026-09-28: "a tad
-   harder and play more like a duel where they jump on platforms and use their regular/heavy attacks"). He fights with the
-   hero's own staff: HER RUN OF THREE (the thrust, the run's second cut, and a heavier third that shoves), HER HELD BLOW (THE
-   BELLOWS, the cone of fire out of the staff that goes through a guard), and ONE of her spells, the ember. He HOPS the square's
-   market stalls to meet you on your own floor. He READS YOU: two light blows in a row and his guard comes up, and the third is
-   turned - a heavy goes through it. And he runs the class's own HEAT: each attack stokes him, and every blow he takes does too.
-   Left alone past seventy he VENTS (a told ring of fire, the heat gone, the square put out) and gives nothing away. Struck
-   while he runs hot he cannot vent, his own fire takes him over the top and he OVERHEATS: open in his own smoke. The square
-   burns as the bar climbs (squareHeat). THE BUCKET is the other way in: a thrown bucket of water that reaches him DOUSES him -
-   his heat to nothing, the square with it - and he stands staggered and OPEN (pyroDouse); racks at both ends of the square and
-   one up on its middle stall keep a bucket in reach. Phase two, HE TAKES THE STALLS: his run of three ends in the Bellows
-   instead of the third cut, and he goes up onto a stall to rain the ember down on you. */
-const PYRO_VENT_AT = 70, PYRO_CALM = 2.2, PYRO_OVER = 3.4, PYRO_SCALE = 1.4;   /* (PYRO_SCALE: he is drawn at 1.4 of her size, drawPyromancer) */
+/* (claude/pyroboss2, Daniel 11-01 09:05 + 09:07) THE PYROMANCER 2: HER NEW KIT. The renegade of the order fought the mirror duel with the OLD pyro kit (the
+   run of three, THE BELLOWS, the ember volley, the vent/overheat, a guard that read a run). The hero's kit changed (BATCH135 pyrokit + claude/pyrocontrols),
+   so the mirror does: src/pyro-boss.js holds the numbers and the pure rules, this the fight. A DUELIST (B11): always hittable, she guards with her ward.
+   P1  THE STAFF (her run of three, kept - it is still the hero's X) / FLAME WARD (her guard: a blow into it is turned at 0.4 and scorches you; it gutters,
+       told, and she is SPENT) / THE STEPPED FIREBALL (5 steps on her staff; 3+ explode where a red ring says; a blow or water mid-charge cancels it = open) /
+       PHOENIX RISE (a told crouch, a burning dash to your spot, a landing burst; open as she rises from it) / STOKE (her refill = an opening; WATER while she
+       stokes WINDS her, x2, then her told steam ward). Her meter (the old heat bar) still lights the square floor.
+   P2  HER MARKS BURN: the square cools; her fireballs, blasts, wards and Phoenix landings leave BURN MARKS on the floor; a full meter is CONFLAGRATION (told:
+       staff up, the marks pulse white) - every mark erupts at once. Then she is SPENT. Water on a mark puts it out. She still hops the stalls to meet you. */
+const PYRO_SCALE = 1.4;   /* (PYRO_SCALE: she is drawn at 1.4 of the hero's size, drawPyromancer) */
 const PYRO_DUEL = {
   cutTell: [0.4, 0.28, 0.32],                              /* the first cut of a run is told longest; each after it is told again, shorter */
   cutT: PYRO_STAFF.swing, live: PYRO_STAFF.live,           /* HER SWING'S CLOCK: 0.3 s, live from 0.04 to 0.18 (attackBox's own numbers) */
-  reach: Math.round(PYRO_STAFF.reach * PYRO_SCALE),        /* her 32 px thrust at his size */
+  reach: Math.round(PYRO_STAFF.reach * PYRO_SCALE),        /* her 32 px thrust at her size */
   top: Math.round(PYRO_STAFF.top * PYRO_SCALE) + 6,
-  shove: 170,                                              /* the third cut shoves, as hers does (a blow that lands or a shield that takes it) */
-  bellowsTell: 0.62, bellowsT: 0.5, cone: Math.round(PYRO_STAFF.heavyReach * PYRO_SCALE) + 35,   /* HER HELD BLOW: the gather, then the cone - the staff's 38 px and the fire's flight past it */
-  read: 1.4,                                               /* HE READS A RUN: blows further apart than this are not a run */
-  doused: 3.0, wet: 6,                                     /* (claude/burnvillage2: no longer read - the stun and the steam ward after it are src/village-water.js STUN / WARD) */
-  hopMax: 340, hopFar: 210,                                /* a hop's top speed, and the furthest spot he will hop for (further, he walks first) */
+  shove: 170,                                              /* the third cut shoves, as the hero's does */
+  hopMax: 340, hopFar: 210,                                /* a hop's top speed, and the furthest spot she will hop for (further, she walks first) */
 };
-/* THE STALLS, read off the grid once a fight: every one-way run in his arena above the floor he can stand on */
+/* THE STALLS, read off the grid once a fight: every one-way run in her arena above the floor she can stand on */
 function pyroStalls(e) {
   if (e.stalls) return e.stalls;
   const A = L.arena, out = [], fy = Math.floor(A.floor / TS);
@@ -24792,7 +24819,7 @@ function pyroStalls(e) {
     if (run) out.push(run); }
   return (e.stalls = out.map(s => ({ l: s.x0 * TS + 7, r: (s.x1 + 1) * TS - 7, y: s.y })));
 }
-/* WHERE HE LANDS TO MEET YOU: on your floor, a staff's length off you on the side he comes from (the other side if the stall is too short) */
+/* WHERE SHE LANDS TO MEET YOU: on your floor, a staff's length off you on the side she comes from */
 function pyroSpot(e) {
   const A = L.arena, side = Math.sign(e.x - P.x) || 1, lo = A.x0 + 60, hi = A.x1 - 60;
   if (P.y > A.floor - 8) return { x: Math.max(lo, Math.min(hi, P.x + side * 34)), y: A.floor };
@@ -24800,167 +24827,262 @@ function pyroSpot(e) {
   let x = Math.max(s.l, Math.min(s.r, P.x + side * 30)); if (Math.abs(x - P.x) < 18) x = Math.max(s.l, Math.min(s.r, P.x - side * 30));
   return { x, y: s.y };
 }
-/* A HOP: a ballistic arc from where he stands to (tx, ty), its top two tiles over the higher end - his gravity is 1000 */
+/* A HOP: a ballistic arc from where she stands to (tx, ty), its top two tiles over the higher end - her gravity is 1000 */
 function pyroHop(e, tx, ty) {
   const g = 1000, apex = Math.min(e.y, ty) - 30, up = Math.sqrt(2 * g * Math.max(8, e.y - apex)), T = up / g + Math.sqrt(2 * g * Math.max(1, ty - apex)) / g;
   e.vy = -up; e.vx = Math.max(-PYRO_DUEL.hopMax, Math.min(PYRO_DUEL.hopMax, (tx - e.x) / T)); e.hopDown = ty > e.y + 8; e.hopY = ty; e.face = Math.sign(tx - e.x) || e.face;
   SFX.jump(); dust(e.x, e.y, 5);
 }
-/* THE BUCKET OPENING (CARRY & THROW's hook, PYRO_HIT_FIELD): his flames out, his heat gone - and staggered, OPEN. A bucket while
-   he is already open, or still wet from the last, only cools him: nothing a player can chain into a lock. */
-/* (claude/burnvillage2, Daniel 10-07: "a thrown water splash STUNS him (B10 shared read: gold ring + timer) and he takes x2 damage while stunned,
-   followed by a told ~3 s ward (B3)"; src/village-water.js). Water in his steam ward is TURNED (clank, flash, WARDED); on a stunned man it only cools. */
+const pyroOpen = (e, t) => { e.open = Math.max(e.open || 0, t); e.openMax = Math.max(e.open, e.openMax && e.open > 0.05 ? e.openMax : 0, t); };
+const pyroMark = (e, x, y) => { if (e.phase === 2) PYB.addMark(e.marks || (e.marks = []), x, y, time); };
+const pyroTip = e => ({ x: e.x + e.face * Math.round(PA.TIP.hold[0] * PYRO_SCALE), y: e.y + Math.round(PA.TIP.hold[1] * PYRO_SCALE) });
+const pyroFloorAt = x => { const A = L.arena; return surfaceUnder(x, Math.min(A.floor - 4, P.y - 8)) ?? A.floor; };
+/* SHE IS SPENT: her ward gone, her charge thrown off, her eruption done - stood still and OPEN (B4: stagger means still) */
+function pyroSpent(e, t, word) { e.mode = 'spent'; e.modeT = t; e.vx = 0; pyroOpen(e, t); e.step = 0;
+  if (word) { number(e.x, e.y - 56, word, '#ffd36b'); ringAt(e.x, e.y - 20, 24, '#ffd36b', 0.3); } }
+/* THE WATER (CARRY & THROW's hook, PYRO_HIT_FIELD): what it does depends on what she is doing (src/pyro-boss.js waterOn) */
 function pyroDouse(e) {
-  const how = VWA.waterOn(e); SFX.hiss(); SFX.splash();
+  const how = PYB.waterOn(e); SFX.hiss(); SFX.splash();
   for (let i = 0; i < 24; i++) parts.push({ x: e.x + (Math.random() - 0.5) * 18, y: e.y - 10 - Math.random() * 26, vx: (Math.random() - 0.5) * 50, vy: -50 - Math.random() * 50, life: 0.9, max: 0.9, col: Math.random() < 0.5 ? '#e8f6ff' : '#9a9aa4', size: 2, grav: -30 });
-  if (how === 'ward') { BR.turned(e, P.x, 'WARDED'); return; }
-  if (how !== 'stun') { number(e.x, e.y - 56, 'DOUSED', '#9ad0ff'); return; }
-  e.heat = 0; e.readN = 0; e.calmT = 0;
-  e.mode = 'doused'; e.modeT = VWA.STUN.t; e.open = VWA.STUN.t; e.wetT = VWA.STUN.t + VWA.WARD.t; e.vx = 0; if (e.vy < 0) e.vy = 0;
-  number(e.x, e.y - 56, 'STUNNED', '#ffd36b'); turnWord(e.x, e.y - 66, 'STUNNED', '#ffd36b'); ringAt(e.x, e.y - 20, 26, '#ffd36b', 0.4); shakeCam(3); SFX.clank();
-  if (!(PROG.pyroDousedTold > 1)) { PROG.pyroDousedTold = (PROG.pyroDousedTold || 0) + 1; hintSay('tip', 2.8, 'WATER STUNS HIM. WHILE THE GOLD RING RUNS, EVERY BLOW LANDS DOUBLE.'); }   /* (2.8 s: gone before the stun ends, so the ward's own line is seen) */
+  if (how === 'wake') return;
+  if (how === 'turned') { BR.turned(e, P.x, 'WARDED'); return; }
+  if (how === 'cool') { number(e.x, e.y - 56, 'DOUSED', '#9ad0ff'); return; }
+  e.wetT = 2.5;
+  if (how === 'wind') {   /* THE BIG ONE: water on her while she stokes - the fire in her goes out with a gasp, and she is down */
+    e.heat = Math.max(0, (e.heat || 0) - PYB.WATER.heat); e.mode = 'winded'; e.modeT = PYB.WIND.t; e.open = 0; pyroOpen(e, PYB.WIND.t); e.vx = 0; if (e.vy < 0) e.vy = 0; e.wetT = PYB.WIND.t + PYB.STEAM.t;
+    number(e.x, e.y - 56, 'WINDED', '#ffd36b'); turnWord(e.x, e.y - 66, 'WINDED', '#ffd36b'); ringAt(e.x, e.y - 20, 28, '#ffd36b', 0.45); shakeCam(4); SFX.clank();
+    if (!(PROG.pyroWindTold > 1)) { PROG.pyroWindTold = (PROG.pyroWindTold || 0) + 1; hintSay('tip', 2.8, 'WATER WHILE HE STOKES WINDS HIM. EVERY BLOW LANDS DOUBLE.'); }
+    return; }
+  /* anywhere else: her meter down, a raised ward out, a charge thrown off */
+  e.heat = Math.max(0, (e.heat || 0) - PYB.WATER.heat);
+  if (e.mode === 'ward') { pyroSpent(e, PYB.WARD.spent, 'HIS WARD GOES OUT'); return; }
+  if (e.mode === 'chargeTell' || e.mode === 'chargeBigTell') { pyroSpent(e, PYB.CHARGE.cancelOpen, 'FIZZLED'); smoke(pyroTip(e).x, pyroTip(e).y, 6, 8); PA.fx('fizzle', pyroTip(e).x, pyroTip(e).y, time); return; }
+  number(e.x, e.y - 56, 'DOUSED', '#9ad0ff');
+  if (!(PROG.pyroStokeTold > 1)) { PROG.pyroStokeTold = (PROG.pyroStokeTold || 0) + 1; hintSay('tip', 4, 'SHE STOKES WHEN HIS FIRE RUNS LOW. THROW THE WATER THEN.'); }
 }
-/* THE STEAM WARD (B3): the stun over, he steams dry - told (a hiss, the word, the pale shell) - and for WARD.t nothing goes through it */
-function pyroWard(e) { e.ward = VWA.WARD.t; SFX.hiss(); if (SFX.aegis) SFX.aegis(); number(e.x, e.y - 56, 'HE WARDS IN STEAM', '#dfe8ff'); turnWord(e.x, e.y - 66, 'STEAM WARD', '#dfe8ff'); ringAt(e.x, e.y - 20, 22, '#dfe8ff', 0.35); }
-/* HE READS YOU (hurtEnemy0): a blow the hero struck - light, a sweep, a dash, a shot - counts toward a run; two in a row and his
-   guard comes up, and the THIRD is turned. A HEAVY (or a plunge) goes through it and breaks the read. What is not a hero's blow
-   (a spell, a burn, the bucket) is not read at all, and open he reads nothing. Returns true when the blow was turned. */
-function pyroReads(e, blow, plunge, tag) {
-  if (!blow || e[PYRO_HIT_FIELD] === time || e.open > 0) return false;
-  if (plunge || blowHas(blow, 'heavy') || blowHas(blow, 'plunge') || (P.heavy && P.atk >= 0)) { e.readN = 0; return false; }
-  e.readN = time - (e.readAt ?? -99) > PYRO_DUEL.read ? 1 : (e.readN || 0) + 1; e.readAt = time;
-  if (e.readN === 2) { number(e.x, e.y - 64, 'HE READS YOU', '#dfe8ff');
-    if (!(PROG.pyroReadTold > 1)) { PROG.pyroReadTold = (PROG.pyroReadTold || 0) + 1; hintSay('tip', 5, 'HE READS A RUN AND TURNS THE THIRD BLOW. HOLD ATTACK: A HEAVY GOES THROUGH HIS GUARD.'); } }
-  if (e.readN < 3) return false;
-  e.readN = 0; e.guardT = 0.35; e.heat = Math.min(100, (e.heat || 0) + 3); e.calmT = 0;   /* (a turned blow still stokes him: he is working) */
-  SFX.clank(); SFX.enGarde(); hitstop(0.04); sparks(e.x - (Math.sign(e.x - P.x) || 1) * 10, e.y - 20, -(Math.sign(e.x - P.x) || 1), 6);
-  number(e.x, e.y - e.h - 16, 'BLOCKED', '#dfe8ff'); if (Math.abs(P.x - e.x) < 60) P.vx = -(Math.sign(e.x - P.x) || 1) * 110;   /* a small push off his staff, never a stun */
-  return true;
+/* THE STEAM WARD (B3): the winding over, she steams dry - told (a hiss, the word, the pale shell) - and for STEAM.t blows land at 0.4 (B15) and water is turned */
+function pyroWard(e) { e.ward = PYB.STEAM.t; SFX.hiss(); if (SFX.aegis) SFX.aegis(); number(e.x, e.y - 56, 'HE WARDS IN STEAM', '#dfe8ff'); turnWord(e.x, e.y - 66, 'STEAM WARD', '#dfe8ff'); ringAt(e.x, e.y - 20, 22, '#dfe8ff', 0.35); }
+/* A HERO'S BLOW ON HER (hurtEnemy0): her guard and her charge answer it. Returns the multiplier (B15: never below 0.4), or null for no blow at all */
+function pyroTakes(e, fromX, tag) {   /* (tag: the blow, tools/blow-tags.mjs - every blow on her is read the same way, by her mode) */
+  if (e[PYRO_HIT_FIELD] === time) return 1;   /* the bucket itself: its own small blow; pyroDouse does the rest */
+  if (e.ward > 0) BR.turned(e, fromX, 'WARDED', { stop: false });
+  if (e.mode === 'ward') {   /* HER FLAME WARD: turned, and it burns the hand that struck it */
+    BR.turned(e, fromX, 'WARDED'); e.heat = Math.min(100, (e.heat || 0) + PYB.WARD.heat); e.fwDid = true;
+    if (!P.dead && Math.abs(P.x - e.x) < PYB.WARD.reach && Math.abs(P.y - e.y) < 40 && time - (e.scorchAt ?? -9) > PYB.WARD.scorchCd) { e.scorchAt = time;
+      damagePlayer(e.x, PYB.WARD.scorch, { unblockable: true, noKnock: true, who: e, name: 'HIS WARD' }); flame(P.x, P.y - 10, 8, 8, 70, 2); }
+    if (!(PROG.pyroWardTold > 1)) { PROG.pyroWardTold = (PROG.pyroWardTold || 0) + 1; hintSay('tip', 4, 'HIS WARD BURNS YOU. WAIT FOR IT TO GUTTER - THEN HE IS OPEN.'); }
+    return PYB.WARD.mul; }
+  if (e.mode === 'chargeTell' || e.mode === 'chargeBigTell') {   /* A BLOW ON THE CHARGE: thrown off, and she is open */
+    const mul = PYB.takeMul(e); const t = pyroTip(e); smoke(t.x, t.y, 6, 8); PA.fx('fizzle', t.x, t.y, time); SFX.emberFizzle(); pyroSpent(e, PYB.CHARGE.cancelOpen, 'FIZZLED');
+    if (!(PROG.pyroCancelTold > 1)) { PROG.pyroCancelTold = (PROG.pyroCancelTold || 0) + 1; hintSay('tip', 4, 'STRIKE HIM WHILE HE CHARGES: THE FIREBALL FIZZLES AND HE IS OPEN.'); }
+    return mul; }
+  return PYB.takeMul(e);
+}
+/* HER FIREBALL LEAVES THE STAFF */
+function pyroLoose(e) {
+  const st = e.step || 1, tip = pyroTip(e), tx = e.aimX ?? P.x, ty = (e.aimY ?? P.y) - 8, dx = tx - tip.x, dy = ty - tip.y, d = Math.hypot(dx, dy) || 1, v = PYB.CHARGE.v[st];
+  pyroBalls.push({ x: tip.x, y: tip.y, vx: dx / d * v, vy: dy / d * v, step: st, life: PYB.CHARGE.life, owner: e, tx, ty: e.aimY ?? P.y });
+  e.heat = Math.min(100, (e.heat || 0) + PYB.CHARGE.heat); SFX.fbStep(st); if (st >= 3) { SFX.roar(); shakeCam(2 + st, e.face * 2); } else SFX.spark();
+  e.vx = -e.face * (st >= 3 ? 90 : 40);   /* the recoil, as the hero's big ones */
+}
+/* A BALL GOES OFF: a puff (1-2) or the BLAST (3+) - and on the floor in P2, a mark */
+function pyroBoom(b, hitHero) {
+  const e = b.owner, big = PYB.big(b.step);
+  if (big) { const R = PYB.CHARGE.boomR[b.step]; PA.fx('blast', b.x, b.y, time); burst(b.x, b.y, 20, ['#fff6c8', '#ffd36b', '#ff9a5c', '#ff6b2c'], 110, 0.5, 60, 2); flame(b.x, b.y, 12, 10, 80, 3); smoke(b.x, b.y - 4, 4, 8); shakeCam(3 + b.step); SFX.pyreBoom();
+    if (!hitHero && !P.dead && Math.hypot(P.x - b.x, (P.y - 10) - b.y) < R + 6) damagePlayer(b.x, PYB.CHARGE.boomDmg[b.step], { unblockable: true, who: e, name: 'HIS FIREBALL' }); }
+  else { PA.fx('pop', b.x, b.y, time); burst(b.x, b.y, 8, ['#ffd36b', '#ff9a5c'], 60, 0.3, 40, 1); SFX.spark(); }
+  if (e && e.alive) { const fy = surfaceUnder(b.x, b.y - 6); if (fy !== null && fy !== undefined && Math.abs(fy - b.y) < 40) pyroMark(e, b.x, fy); }
+}
+function updatePyroBalls(dt) {
+  for (const b of pyroBalls) { if (b.dead) continue;
+    b.life -= dt; b.x += b.vx * dt; b.y += b.vy * dt; b.vy += 30 * dt;
+    if (Math.random() < dt * 30) parts.push({ x: b.x - Math.sign(b.vx) * PYB.CHARGE.r[b.step], y: b.y, vx: -b.vx * 0.1, vy: -20, life: 0.3, max: 0.3, col: Math.random() < 0.5 ? '#ff9a5c' : '#ffd36b', size: 1, grav: -20 });
+    const r = PYB.CHARGE.r[b.step], big = PYB.big(b.step);
+    /* THE HERO'S OWN WARD melts a small one (as hers melts a foe's bolt); a big one goes off on it */
+    if (isPyro() && P.fwUp && !P.dead && Math.hypot(b.x - P.x, b.y - (P.y - 8)) < 24 + r) { b.dead = true; if (big) pyroBoom(b, false); else { SFX.emberMelt(); burst(b.x, b.y, 5, ['#ff9a5c', '#ffd36b'], 40, 0.3, -40, 1); } continue; }
+    if (!P.dead && Math.abs(b.x - P.x) < 6 + r && b.y > P.y - (P.h || 18) - r && b.y < P.y + r) { b.dead = true;
+      if (big) pyroBoom(b, false); else { damagePlayer(b.x, PYB.CHARGE.dmg[b.step], { who: b.owner, name: 'HIS FIREBALL' }); pyroBoom(b, true); } continue; }
+    const tx = Math.floor(b.x / TS), ty = Math.floor(b.y / TS);
+    if (isSolid(tx, ty) || (b.vy > 0 && isOneWay(tileAt(tx, ty)) && b.y >= b.ty - 6) || b.y >= L.arena.floor || b.life <= 0) { b.dead = true; if (b.y > L.arena.floor) b.y = L.arena.floor; pyroBoom(b, false); }
+  }
+  pyroBalls = pyroBalls.filter(b => !b.dead);
 }
 function updatePyromancer(e, dt) {
-  const A = L.arena, floor = A.floor, D = PYRO_DUEL, d = P.x - e.x, ad = Math.abs(d), p2 = e.hp < e.maxHp * 0.5;
-  e.modeT -= dt; e.cd -= dt; e.calmT = (e.calmT || 0) + dt; e.open = Math.max(0, (e.open || 0) - dt); e.anim += dt; e.wetT = Math.max(0, (e.wetT || 0) - dt); e.guardT = Math.max(0, (e.guardT || 0) - dt); e.ward = Math.max(0, (e.ward || 0) - dt);
-  if (time - (e.readAt ?? -99) > D.read) e.readN = 0;
-  if (p2 && e.phase === 1) { e.phase = 2; number(e.x, e.y - 56, 'HE TAKES THE STALLS', '#ff9a5c'); SFX.roar(); }
+  const A = L.arena, D = PYRO_DUEL, d = P.x - e.x, ad = Math.abs(d), p2 = e.hp < e.maxHp * 0.5, ph = p2 ? 2 : 1;
+  e.modeT -= dt; e.cd -= dt; e.open = Math.max(0, (e.open || 0) - dt); e.anim += dt; e.wetT = Math.max(0, (e.wetT || 0) - dt); e.ward = Math.max(0, (e.ward || 0) - dt);
+  e.fwCd = Math.max(0, (e.fwCd || 0) - dt); e.stokeCd = Math.max(0, (e.stokeCd || 0) - dt); e.marks = e.marks || []; PYB.ageMarks(e.marks, time);
+  if (p2 && e.phase === 1) { e.phase = 2; number(e.x, e.y - 56, 'HIS MARKS BURN', '#ff9a5c'); turnWord(e.x, e.y - 68, 'THE SQUARE COOLS', '#ffd36b'); SFX.roar(); ringAt(e.x, e.y - 16, 60, '#ff6b2c', 0.5);
+    if (!(PROG.pyroMarkTold > 1)) { PROG.pyroMarkTold = (PROG.pyroMarkTold || 0) + 1; hintSay('tip', 5, 'HIS FIRE MARKS THE FLOOR. WHEN HIS BAR FILLS, EVERY MARK ERUPTS - STEP OFF THEM.'); } }
   if (e[PYRO_HIT_FIELD] !== undefined && e[PYRO_HIT_FIELD] !== e.wetSeen) { e.wetSeen = e[PYRO_HIT_FIELD]; pyroDouse(e); }
   const heat = n => { e.heat = Math.min(100, (e.heat || 0) + n); };
-  const after = () => { if (e.heat >= 100) { e.mode = 'overheat'; e.modeT = PYRO_OVER; e.open = PYRO_OVER; e.vx = 0; number(e.x, e.y - 56, 'OVERHEATED', '#fff6c8'); SFX.hiss(); SFX.heatFull(); ringAt(e.x, e.y - 20, 30, '#fff6c8', 0.4); }
-    else { e.mode = 'stalk'; e.cd = p2 ? 0.75 : 1.0; } };
+  const charge = (goal, fast) => { e.mode = 'chargeTell'; e.modeT = 9; e.chT = 0; e.step = 1; e.stepGoal = goal; e.fast = !!fast; e.vx = 0; e.face = Math.sign(d) || e.face; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.tell(false); SFX.fbStep(1); };
+  const after = () => {
+    if (e.heat >= 100 && e.phase === 2 && e.marks.length >= 2) { e.mode = 'conflagTell'; e.modeT = PYB.CONFLAG.tell; e.vx = 0; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); SFX.charge(); if (SET.numbers) PA.fx('word', e.x, e.y - 70, time, { txt: 'CONFLAGRATION' }); else number(e.x, e.y - 70, 'CONFLAGRATION', '#ffd36b'); return; }
+    if (e.heat >= 100) { charge(5, true); e.spendAll = true; return; }   /* a full bar and nothing marked: it goes into one READY ball */
+    e.mode = 'stalk'; e.cd = p2 ? 0.6 : 0.85; };
+  /* HER GUARD COMES UP: you swing at her in reach (or a shot is coming), and she chooses to (her read is not a certainty) */
+  const guardOK = e.mode === 'stalk' || e.mode === 'land' || e.mode === 'cutEnd';
+  if (guardOK && e.fwCd <= 0 && !P.dead && e.onGround) {
+    const swing = P.atk >= 0 && P.atk < 0.1 && ad < PYB.WARD.reach && Math.abs(P.y - e.y) < 36;
+    const shot = embers.some(b => Math.abs(b.x - e.x) < 70 && Math.abs(b.y - (e.y - 20)) < 40 && Math.sign(e.x - b.x) === Math.sign(b.vx || 0));
+    if ((swing || shot) && time - (e.fwRollAt ?? -9) > 0.45) { e.fwRollAt = time;
+      if (Math.random() < PYB.WARD.chance[ph - 1]) { e.mode = 'ward'; e.modeT = PYB.WARD.up; e.vx = 0; e.fwDid = false; e.fwCd = PYB.WARD.cd[ph - 1] + PYB.WARD.up; e.face = Math.sign(d) || e.face;
+        SFX.emberBurst(); ringAt(e.x, e.y - 20, 14, '#fff6c8', 0.16); pyroMark(e, e.x, e.y); } } }
   let want = 0;
   switch (e.mode) {
     case 'sleep': break;
     case 'wake': e.face = Math.sign(d) || e.face; if (e.modeT <= 0) { e.mode = 'stalk'; e.cd = 0.8;
-      if (!(PROG.pyroBucketTold > 1)) { PROG.pyroBucketTold = (PROG.pyroBucketTold || 0) + 1; hintSay('tip', 5, 'THE SQUARE HAS BUCKETS. THROW ONE AT HIM.'); } } break;
+      if (!(PROG.pyroBucketTold > 1)) { PROG.pyroBucketTold = (PROG.pyroBucketTold || 0) + 1; hintSay('tip', 5, 'THE SQUARE HAS BUCKETS. THROW ONE AT HIM WHILE HE STOKES.'); } } break;
     case 'stalk': { e.face = Math.sign(d) || e.face;
       const lvl = Math.abs(P.y - e.y) < 22, above = !lvl && P.y < e.y;
-      want = lvl ? (ad < 28 ? -1 : ad > 38 ? 1 : 0) * e.face * (p2 ? 85 : 70) : (ad > 150 ? e.face * (p2 ? 85 : 70) : 0);   /* A DUELLIST: he closes to a staff's length, and under you he comes to hop */
-      if (e.heat >= PYRO_VENT_AT && e.calmT >= PYRO_CALM) { e.mode = 'ventTell'; e.modeT = 0.9; e.vx = 0; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); number(e.x, e.y - 56, 'HE VENTS', '#ff9a5c'); SFX.charge(); break; }
+      want = lvl ? (ad < 28 ? -1 : ad > 38 ? 1 : 0) * e.face * (p2 ? 85 : 70) : (ad > 150 ? e.face * (p2 ? 85 : 70) : 0);
       if (e.cd > 0 || P.dead || !e.onGround) break;
       e.turn = (e.turn || 0) + 1;
-      /* UP ON A STALL BY CHOICE (phase two): one ember from the height, then down to you */
-      if (!lvl && !P.ground && !P.climb) { e.cd = 0.1; break; }   /* (a hero in the air is not on another floor: he waits to see where you come down) */
-      if (!lvl && e.perch > 0) { e.perch = 0; e.mode = 'emberTell'; e.modeT = 0.55; e.vx = 0; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.tell(false); break; }
-      /* ON ANOTHER FLOOR: he hops to yours - or, now and then from under a stall, lobs the ember up (an arc is what answers height) */
+      if (!lvl && !P.ground && !P.climb) { e.cd = 0.1; break; }   /* a hero in the air is not on another floor: she waits to see where you come down */
+      /* STOKE: her fire low and you not in her face - she crouches to refill (an opening) */
+      if (e.heat < PYB.STOKE.at && ad > PYB.STOKE.near && e.stokeCd <= 0 && !e.perch) { e.mode = 'stoke'; e.modeT = PYB.STOKE.max; e.vx = 0; e.stokeCd = PYB.STOKE.cd; pyroOpen(e, PYB.STOKE.max); SFX.stoke(); number(e.x, e.y - 56, 'HE STOKES', '#ffd36b'); break; }
+      if (!lvl && e.perch > 0) { e.perch = 0; charge(PYB.goalOf(ph, Math.random())); break; }
+      /* ON ANOTHER FLOOR: she hops to yours - or now and then lobs a charged ball up at you, or rises */
       if (!lvl && (P.ground || P.climb)) { const spot = pyroSpot(e);
         if (spot && Math.abs(spot.x - e.x) < D.hopFar && !(above && e.turn % 3 === 0)) { e.mode = 'hopCrouch'; e.modeT = 0.22; e.vx = 0; e.hopTo = spot; break; } }
-      if (!lvl) { if (ad < 220) { e.mode = 'emberTell'; e.modeT = 0.55; e.vx = 0; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.tell(false); } else e.cd = 0.25; break; }
-      /* ON YOUR FLOOR: HER RUN OF THREE up close, HER HELD BLOW a step out, and far off the ember - or (phase two) up onto a stall */
+      if (!lvl) { if (ad < 260) charge(PYB.goalOf(ph, Math.random())); else e.cd = 0.25; break; }
+      /* ON YOUR FLOOR: the staff up close, the fireball a step out, and far off PHOENIX RISE */
       if (ad < D.reach + 4 && !(P.block && e.turn % 2 === 0)) { e.cut = 1; e.mode = 'cutTell'; e.modeT = D.cutTell[0]; e.vx = 0; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.tell(false); break; }
-      if (ad < D.cone - 10 && (e.turn % 3 === 0 || P.block)) {   /* (and he answers a raised shield with the blow no shield turns) */
-        e.mode = 'bellowsTell'; e.modeT = D.bellowsTell; e.vx = 0; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); SFX.charge(); break; }
-      if (ad > 110 && p2 && e.turn % 3 === 2) { const s = pyroStalls(e).filter(q => Math.abs((q.l + q.r) / 2 - e.x) < D.hopFar).sort((a, b) => Math.abs((a.l + a.r) / 2 - e.x) - Math.abs((b.l + b.r) / 2 - e.x))[0];
-        if (s && e.y > s.y) { e.mode = 'hopCrouch'; e.modeT = 0.22; e.vx = 0; e.hopTo = { x: (s.l + s.r) / 2, y: s.y }; e.perch = 1; break; } }
-      if (ad > 110 && e.turn % 3 === 0) { e.mode = 'emberTell'; e.modeT = 0.55; e.vx = 0; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.tell(false); break; }
-      e.cd = 0.25; break; }
-    /* THE HOP (not a blow: he lands on nobody, and a tell with no blow wears no mark) */
+      if (ad > PYB.RISE.far && e.turn % 2 === 0) { e.mode = 'riseTell'; e.modeT = PYB.RISE.tell; e.vx = 0; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); SFX.charge(); e.riseX = P.x; if (SET.numbers) PA.fx('word', e.x, e.y - 64, time, { txt: 'FIRE' }); break; }
+      if (ad > 100 && p2 && e.turn % 4 === 3) { const s = pyroStalls(e).filter(q => Math.abs((q.l + q.r) / 2 - e.x) < D.hopFar).sort((a, b) => Math.abs((a.l + a.r) / 2 - e.x) - Math.abs((b.l + b.r) / 2 - e.x))[0];
+        if (s && e.y > s.y) { e.mode = 'hopCrouch'; e.modeT = 0.22; e.vx = 0; e.hopTo = { x: (s.l + s.r) / 2, y: s.y }; e.perch = 1; break; } }   /* P2: up onto a stall by choice, to charge from the height */
+      if (ad > 90 || (ad > 60 && e.turn % 3 === 0)) { charge(PYB.goalOf(ph, Math.random())); break; }
+      e.cd = 0.2; break; }
+    /* THE HOP (not a blow: she lands on nobody) */
     case 'hopCrouch': e.vx = 0; if (e.modeT <= 0) { pyroHop(e, e.hopTo.x, e.hopTo.y); e.mode = 'hop'; e.modeT = 1.6; } break;
     case 'hop': if ((e.onGround && e.vy >= 0 && e.modeT < 1.52) || e.modeT <= 0) { e.mode = 'land'; e.modeT = 0.18; e.vx = 0; dust(e.x, e.y, 4); SFX.thud(); } break;
     case 'land': if (e.modeT <= 0) { e.mode = 'stalk'; e.cd = 0.15; } break;
-    /* HER RUN OF THREE. Each cut told (a yellow !: the shield turns it), each on her own swing's clock. A cut that LANDS ends the run -
-       never a second blow into a hero still reeling from the first; a cut the shield takes, or the air, goes on to the next. */
+    /* HER RUN OF THREE. Each cut told (a yellow !: the shield turns it), each on the hero's swing clock. A cut that LANDS ends the run */
     case 'cutTell': e.face = Math.sign(d) || e.face; if (e.modeT <= 0) { e.mode = 'cut'; e.modeT = D.cutT; e.cutRes = null; e.cutDone = false; e.vx = e.face * 70; SFX.foeSlash(); } break;
     case 'cut': { const t = D.cutT - e.modeT, third = e.cut === 3;
       if (!e.cutDone && t >= D.live[0] && t < D.live[1]) { const fx = (P.x - e.x) * e.face;
         if (!P.dead && fx > -4 && fx < D.reach + (P.w || 10) / 2 && Math.abs((P.y - 8) - (e.y - 12)) < D.top) { e.cutDone = true;
           e.cutRes = damagePlayer(e.x, third ? DMG.pyroThird : DMG.pyroCut, { who: e, name: third ? 'THE THIRD CUT' : 'THE STAFF' });
+          if (e.cutRes === 'hit') heat(PYB.HEAT.hit);
           if (third && e.cutRes) { P.vx = e.face * D.shove; if (P.ground) P.vy = -80; } } }
-      if (e.modeT <= 0) { heat(8);   /* each cut stokes him as her staff blow stokes her */
+      if (e.modeT <= 0) { heat(PYB.HEAT.cut);
         const more = e.cutRes !== 'hit' && e.cut < 3 && !P.dead && Math.abs(P.y - e.y) < 26 && ad < D.reach + 30;
         if (e.cutRes === 'hit') { e.mode = 'cutEnd'; e.modeT = 0.35; }
-        else if (more && p2 && e.cut === 2) { e.mode = 'bellowsTell'; e.modeT = D.bellowsTell; e.vx = 0; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); SFX.charge(); }
         else if (more) { e.cut++; e.mode = 'cutTell'; e.modeT = D.cutTell[e.cut - 1]; e.vx = 0; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.tell(false); }
         else after(); }
       break; }
     case 'cutEnd': if (e.modeT <= 0) after(); break;
-    /* HER HELD BLOW, THE BELLOWS: the flame gathered back low, then a cone of fire out of the staff. It goes through a guard, as hers
-       does (a red !!): get over it, roll through it or be out of its reach. One blow a Bellows. */
-    case 'bellowsTell': e.face = Math.sign(d) || e.face; e.vx = 0;
-      if (Math.random() < dt * 30) parts.push({ x: e.x + e.face * 8 + (Math.random() - 0.5) * 12, y: e.y - 18 - Math.random() * 16, vx: 0, vy: -30, life: 0.3, max: 0.3, col: Math.random() < 0.5 ? '#ff9a5c' : '#ffd36b', size: 1, grav: -20 });
-      if (e.modeT <= 0) { e.mode = 'bellows'; e.modeT = D.bellowsT; e.jetHit = false; e.vx = e.face * 110; SFX.roar(); SFX.jet(); shakeCam(3, e.face * 2); } break;
-    case 'bellows': {
-      for (let k = 0; k < 3; k++) { const r = Math.random(); parts.push({ x: e.x + e.face * (14 + r * (D.cone - 14)), y: e.y - 18 + (Math.random() - 0.5) * (8 + r * 26), vx: e.face * 90, vy: -20, life: 0.25, max: 0.25, col: r < 0.4 ? '#fff6c8' : r < 0.7 ? '#ffd36b' : '#ff6b2c', size: 2, grav: -40 }); }
-      const fx = (P.x - e.x) * e.face, fy = (P.y - 10) - (e.y - 18);
-      if (!P.dead && !e.jetHit && fx > 6 && fx < D.cone && Math.abs(fy) < 12 + fx * 0.18) { e.jetHit = true; damagePlayer(e.x, DMG.pyroBellows, { unblockable: true, who: e, name: 'THE BELLOWS' }); }
-      if (e.modeT <= 0) { heat(20); after(); } break; }
-    /* HER ONE SPELL, THE EMBER: three off the palm, lobbed at you - a yellow !, and a shield takes them */
-    case 'emberTell': e.face = Math.sign(d) || e.face; if (e.modeT <= 0) { e.mode = 'ember'; e.modeT = 0.55; e.shots = 3; e.shotT = 0; } break;
-    case 'ember': e.shotT -= dt;
-      if (e.shotT <= 0 && e.shots > 0) { e.shots--; e.shotT = 0.15; const sx = e.x + e.face * 12, sy = e.y - 24, ty = P.y - 10, dx2 = P.x - sx, dy2 = ty - sy, dd = Math.hypot(dx2, dy2) || 1;
-        seeds.push({ x: sx, y: sy, vx: dx2 / dd * 200 + (Math.random() - 0.5) * 30, vy: dy2 / dd * 200 - 40, g: 160, life: 2.4, dead: false, spore: false, dmg: DMG.pyroEmber, shot: true, fire: true, pyroEmber: true, owner: e }); SFX.spark(); }
-      if (e.modeT <= 0 && e.shots <= 0) { heat(12); after(); } break;
-    case 'doused': e.vx = 0; if (Math.random() < dt * 14) parts.push({ x: e.x + (Math.random() - 0.5) * 14, y: e.y - 6 - Math.random() * 24, vx: 0, vy: 40, life: 0.4, max: 0.4, col: '#9ad0ff', size: 1, grav: 300 });
-      if (e.modeT <= 0) { e.mode = 'stalk'; e.cd = 0.6; e.open = 0; pyroWard(e); } break;   /* (claude/burnvillage2) the stun over: THE STEAM WARD, told */
-    case 'overheat': if (Math.random() < dt * 30) parts.push({ x: e.x + (Math.random() - 0.5) * 16, y: e.y - 30 - Math.random() * 10, vx: (Math.random() - 0.5) * 20, vy: -40 - Math.random() * 30, life: 1.1, max: 1.1, col: Math.random() < 0.7 ? '#4a4048' : '#ff9a5c', size: 3, grav: -30 });
-      if (e.modeT <= 0 && e.heat < PYRO_VENT_AT) { e.mode = 'stalk'; e.cd = 0.6; }   /* (a bucket put him out while he stood there: nothing left to vent) */
-      else if (e.modeT <= 0) { e.mode = 'ventTell'; e.modeT = 0.8; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); SFX.charge(); } break;
-    case 'ventTell': if (Math.random() < dt * 40) parts.push({ x: e.x + (Math.random() - 0.5) * 50, y: e.y - Math.random() * 30, vx: 0, vy: -10, life: 0.4, max: 0.4, col: '#ff9a5c', size: 1, grav: 0 });
-      if (e.modeT <= 0) { e.mode = 'vent'; e.modeT = 0.5; e.heat = 0; shakeCam(5); SFX.roar(); ringAt(e.x, e.y - 16, 66, '#ff6b2c', 0.5); ringAt(e.x, e.y - 16, 40, '#ffd36b', 0.35);
-        if (!P.dead && Math.hypot(P.x - e.x, (P.y - 10) - (e.y - 16)) < 66) damagePlayer(e.x, DMG.pyroVent, { unblockable: true, who: e, name: 'THE VENT' }); } break;
-    case 'vent': if (e.modeT <= 0) { e.mode = 'stalk'; e.cd = 1.0; } break;
+    /* HER FLAME WARD: up for WARD.up, its last WARD.gutter GUTTERING (the red dome, told) - then SPENT, open */
+    case 'ward': e.vx = 0; e.face = Math.sign(d) || e.face;
+      if (!e.fwTouch && !P.dead && Math.abs(P.x - e.x) < 22 + (P.w || 10) / 2 && Math.abs(P.y - e.y) < 30) { e.fwTouch = true; damagePlayer(e.x, PYB.WARD.scorch, { unblockable: true, noKnock: true, who: e, name: 'HIS WARD' }); }   /* touching the dome burns too, once a ward */
+      if (e.modeT <= PYB.WARD.gutter && !e.gutSaid) { e.gutSaid = true; SFX.emberFizzle(); }
+      if (e.modeT <= 0) { e.fwTouch = false; e.gutSaid = false; pyroSpent(e, PYB.WARD.spent, 'SPENT'); } break;
+    case 'spent': e.vx = 0; if (Math.random() < dt * 10) parts.push({ x: e.x + (Math.random() - 0.5) * 12, y: e.y - 30 - Math.random() * 8, vx: 0, vy: -24, life: 0.6, max: 0.6, col: '#8a8480', size: 1, grav: -10 });
+      if (e.modeT <= 0) { e.mode = 'stalk'; e.cd = 0.4; } break;
+    /* THE STEPPED FIREBALL: a step every CHARGE.stepT, the ball growing on her staff; '!' for steps 1-2, '!!' from step 3 (it explodes - the red ring
+       where it will land); she lets go at stepGoal. A blow or water on it is pyroTakes / pyroDouse: FIZZLED, open */
+    case 'chargeTell': case 'chargeBigTell': { e.chT += dt; e.face = Math.sign(d) || e.face;
+      want = (ad < 60 ? -1 : ad > 160 ? 1 : 0) * e.face * 28;   /* the slow hold-walk, keeping her range */
+      const st = PYB.stepAt(e.chT, e.fast ? PYB.CHARGE.fastT : PYB.CHARGE.stepT);
+      if (st !== e.step) { e.step = st; SFX.fbStep(st); if (st === 3 && e.mode === 'chargeTell') { e.mode = 'chargeBigTell'; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); SFX.charge(); }
+        if (st === 5) number(e.x, e.y - e.h - 22, 'READY', '#fff6c8'); }
+      e.aimX = P.x; e.aimY = pyroFloorAt(P.x);
+      if (e.step >= e.stepGoal && e.chT >= (e.step - 1) * (e.fast ? PYB.CHARGE.fastT : PYB.CHARGE.stepT) + 0.2) { pyroLoose(e); e.mode = 'loose'; e.modeT = PYB.big(e.step) ? 0.45 : 0.3; if (e.spendAll) { e.heat = 30; e.spendAll = false; } }
+      break; }
+    case 'loose': if (e.modeT <= 0) { e.step = 0; after(); } break;
+    /* PHOENIX RISE: the crouch in rising flame (red !!), the burning dash to your spot, the LANDING BURST; open as she rises from it */
+    case 'riseTell': e.face = Math.sign(e.riseX - e.x) || e.face; e.riseX = P.x;
+      if (Math.random() < dt * 40) parts.push({ x: e.x + (Math.random() - 0.5) * 22, y: e.y - Math.random() * 6, vx: 0, vy: -80 - Math.random() * 60, life: 0.4, max: 0.4, col: Math.random() < 0.5 ? '#ff9a5c' : '#ffd36b', size: 2, grav: -40 });
+      if (e.modeT <= 0) { e.mode = 'rise'; e.modeT = PYB.RISE.max / PYB.RISE.v + 0.05; e.riseFrom = e.x; e.riseHit = false; e.vx = e.face * PYB.RISE.v; SFX.jet(); SFX.roar(); shakeCam(3, e.face * 2); } break;
+    case 'rise': { e.vx = e.face * PYB.RISE.v;
+      for (let k = 0; k < 3; k++) parts.push({ x: e.x - e.face * (6 + Math.random() * 16), y: e.y - 6 - Math.random() * 30, vx: -e.face * 60, vy: -30, life: 0.35, max: 0.35, col: Math.random() < 0.4 ? '#fff6c8' : Math.random() < 0.6 ? '#ffd36b' : '#ff6b2c', size: 2, grav: -40 });
+      if (!e.riseHit && !P.dead && Math.abs(P.x - e.x) < 14 + (P.w || 10) / 2 && Math.abs(P.y - e.y) < 30) { e.riseHit = true; damagePlayer(e.x, PYB.RISE.dmg, { unblockable: true, who: e, name: 'PHOENIX RISE' }); }
+      const done = Math.abs(e.x - e.riseFrom) >= PYB.RISE.max || (e.face > 0 ? e.x >= e.riseX : e.x <= e.riseX) || e.x <= A.x0 + 61 || e.x >= A.x1 - 61 || e.modeT <= 0;
+      if (done) { e.vx = 0; e.mode = 'riseLand'; e.modeT = PYB.RISE.rec; pyroOpen(e, PYB.RISE.rec); shakeCam(6); SFX.pyreBoom(); PA.fx('land', e.x, e.y, time); ringAt(e.x, e.y - 14, PYB.RISE.burstR, '#ff6b2c', 0.4); ringAt(e.x, e.y - 14, PYB.RISE.burstR - 10, '#ffd36b', 0.3); flame(e.x, e.y - 10, 18, 12, 100, 3);
+        if (!e.riseHit && !P.dead && Math.hypot(P.x - e.x, (P.y - 10) - (e.y - 14)) < PYB.RISE.burstR) damagePlayer(e.x, PYB.RISE.burst, { unblockable: true, who: e, name: 'PHOENIX RISE' });
+        pyroMark(e, e.x, e.y); } break; }
+    case 'riseLand': e.vx = 0; if (e.modeT <= 0) after(); break;
+    /* STOKE: crouched on the planted staff, the meter climbing - OPEN the whole time (pyroOpen above); water now WINDS her */
+    case 'stoke': e.vx = 0; heat(PYB.STOKE.rate * dt); if (Math.random() < dt * 12) SFX.stoke();
+      if (e.modeT <= 0 || e.heat >= 100) { e.open = 0; after(); } break;
+    case 'winded': e.vx = 0; if (Math.random() < dt * 14) parts.push({ x: e.x + (Math.random() - 0.5) * 14, y: e.y - 6 - Math.random() * 24, vx: 0, vy: 40, life: 0.4, max: 0.4, col: '#9ad0ff', size: 1, grav: 300 });
+      if (e.modeT <= 0) { e.mode = 'stalk'; e.cd = 0.6; e.open = 0; pyroWard(e); } break;
+    /* CONFLAGRATION (P2): staff up, the marks pulse - then every mark erupts at once. Then she is SPENT */
+    case 'conflagTell': e.vx = 0; if (e.modeT <= 0) {
+      SFX.conflag(); shakeCam(8); let hit = false;
+      for (const m of e.marks) { PA.fx('erupt', m.x, m.y + 2, time, { v: 1 }); flame(m.x, m.y - 10, 10, 12, 90, 3); ringAt(m.x, m.y - 6, PYB.CONFLAG.r + 4, '#ff6b2c', 0.3); }
+      if (!P.dead && PYB.onMark(e.marks, P.x, P.y)) { hit = true; damagePlayer(e.x, PYB.CONFLAG.dmg, { unblockable: true, who: e, name: 'CONFLAGRATION' }); }
+      e.marks.length = 0; e.heat = 0; pyroSpent(e, PYB.CONFLAG.spent, 'SPENT'); e.conflagN = (e.conflagN || 0) + 1; e.conflagHit = (e.conflagHit || 0) + (hit ? 1 : 0); } break;
   }
-  if (e.mode === 'stalk' || e.mode === 'wake') e.vx += (want - e.vx) * Math.min(1, dt * 6);
-  else if (e.mode !== 'hop') e.vx *= Math.max(0, 1 - dt * 10);
+  if (e.mode === 'stalk' || e.mode === 'wake' || e.mode === 'chargeTell' || e.mode === 'chargeBigTell') e.vx += (want - e.vx) * Math.min(1, dt * 6);
+  else if (e.mode !== 'hop' && e.mode !== 'rise') e.vx *= Math.max(0, 1 - dt * 10);
   e.vy += 1000 * dt; if (e.vy > 560) e.vy = 560;
-  const drop = e.mode === 'hop' && e.hopDown && e.y < e.hopY - 6;   /* hopping DOWN he passes through the stall he left */
-  const r = moveBody(e, e.vx * dt, e.vy * dt, drop); e.onGround = !!r.ground; if (r.ground) e.vy = 0; if (r.hitX) e.vx = 0;
-  e.x = Math.max(A.x0 + 60, Math.min(A.x1 - 60, e.x));   /* he keeps off the walls: there is always a way round him, never a corner he hides in behind his own fire */
+  const drop = e.mode === 'hop' && e.hopDown && e.y < e.hopY - 6;   /* hopping DOWN she passes through the stall she left */
+  const r = moveBody(e, e.vx * dt, e.vy * dt, drop); e.onGround = !!r.ground; if (r.ground) e.vy = 0; if (r.hitX && e.mode !== 'rise') e.vx = 0;
+  e.x = Math.max(A.x0 + 60, Math.min(A.x1 - 60, e.x));   /* she keeps off the walls: there is always a way round her */
+  updatePyroBalls(dt);
 }
-const PYRO_ANIM = { stalk: 'run', wake: 'idle', emberTell: 'cast', ember: 'cast', hopCrouch: 'crouch', land: 'land', cutEnd: 'idle', doused: 'hurt', overheat: 'hurt', ventTell: 'blast', vent: 'blast', sleep: 'idle' };
-/* HER FRAMES, ON HER CLOCK: the cuts are the hero's own swing (attackPose, the same beats her swing is drawn on) over her baked kit,
-   the Bellows her own held blow; [key, frame] */
+const PYRO_ANIM = { stalk: 'run', wake: 'idle', hopCrouch: 'crouch', land: 'land', cutEnd: 'idle', winded: 'hurt', spent: 'idle', sleep: 'idle', loose: 'atk', riseLand: 'land' };
+/* HER FRAMES, ON HER CLOCK: the cuts are the hero's own swing over her baked kit; the ward, the held ball, the stoke and the rise are the hero's kit poses */
 function pyroPose(e) {
-  const set = SPR.pyromancerKit, D = PYRO_DUEL, R = set ? set.R : {};
+  const set = SPR.pyromancerKit, D = PYRO_DUEL, R = set ? set.R : {}, has = k => Array.isArray(R[k]) && R[k].length;
+  const pick = (k, n) => [k, Math.floor(e.anim * n) % R[k].length];
   if (e.mode === 'cutTell') return [e.cut === 2 && R.atkB ? 'atkB' : 'atk', 0];
   if (e.mode === 'cut') { const p = attackPose('pyro', { atk: D.cutT - e.modeT, combo: e.cut % 3, ground: true }, R); return [p.key, p.frame]; }
-  if (e.mode === 'bellowsTell') return ['heavy', 0];
-  if (e.mode === 'bellows') { const t = D.bellowsT - e.modeT; return t < 0.2 ? ['heavy', 1] : t < 0.36 ? ['heavy', 2] : ['atk', 3]; }
+  if (e.mode === 'ward' && has('wardUp')) return ['wardUp', e.modeT > PYB.WARD.up - 0.15 ? 0 : e.modeT <= PYB.WARD.gutter ? 2 : 1];
+  if ((e.mode === 'chargeTell' || e.mode === 'chargeBigTell') && has('holdWalk')) return Math.abs(e.vx) > 6 ? pick('holdWalk', 6) : pick('holdStand', 3);
+  if (e.mode === 'stoke' && has('stoke')) return pick('stoke', 3);
+  if (e.mode === 'riseTell' && has('stoke')) return ['stoke', 1];
+  if (e.mode === 'rise') return [has('roll') ? 'roll' : 'run', Math.floor(e.anim * 14) % (has('roll') ? R.roll.length : 2)];
+  if (e.mode === 'conflagTell' && has('blast')) return ['blast', 0];
+  if (e.mode === 'loose') return ['atk', 3];
   if (e.mode === 'hop') return [e.vy < 0 ? 'jump' : 'fall', Math.floor(e.anim * 8) % 2];
-  if (e.mode === 'stalk' && (e.guardT > 0 || e.readN >= 2)) return ['block', 0];   /* HIS GUARD IS UP: the staff levelled across him */
   let key = PYRO_ANIM[e.mode] || 'idle'; if (key === 'run' && Math.abs(e.vx) < 6) key = 'idle';
+  if (!has(key)) key = 'idle';
   const fr = R[key], n = Array.isArray(fr) ? fr.length : 1; return [key, Math.floor(e.anim * (key === 'run' ? 10 : 6)) % n];
+}
+/* HER MARKS ON THE FLOOR (P2): a scorch and the burn brand; white-hot and pulsing while CONFLAGRATION is told */
+function drawPyroMarks(e, cx, cy) {
+  const tellOn = e.mode === 'conflagTell', pul = tellOn ? 0.5 + 0.5 * Math.sin(time * 24) : 0;
+  for (const m of e.marks || []) { const x = Math.round(m.x - cx), y = Math.round(m.y - cy); if (x < -30 || x > VW + 30) continue; const left = PYB.MARKS.life - (time - m.t);
+    PA.scorch(g, x, y, left, tellOn ? pul : -1, time, Math.round(m.x) & 7);   /* (claude/pyroboss2art) the charred oval with glowing cracks */
+    PA.brand(g, x, y - 3, time, tellOn ? 0.5 : left);
+    if (tellOn) { g.globalAlpha = 0.25 + 0.35 * pul; g.strokeStyle = '#ff6b6b'; g.beginPath(); g.ellipse(x, y - 1, PYB.CONFLAG.r, 5, 0, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1; } }
 }
 function drawPyromancer(e, cx, cy) {
   const set = SPR.pyromancerKit; if (!set) return;
+  if (!isPyro()) PA.drawFx(g, cx, cy, time, SET.flashes && !SET.reduceMotion);   /* (the hero's own draw runs it when she is the pyromancer) */
+  drawPyroMarks(e, cx, cy);
   const [key, frame] = pyroPose(e);
   const x = e.x - cx, y = e.y - cy, k = (e.heat || 0) / 100;
-  if (k > 0.05) { g.globalAlpha = 0.12 + 0.28 * k + (e.mode === 'overheat' ? 0.15 * Math.sin(time * 20) : 0); g.fillStyle = e.mode === 'overheat' ? '#fff6c8' : '#ff6b2c'; g.beginPath(); g.arc(Math.round(x), Math.round(y - 20), 16 + 14 * k, 0, 7); g.fill(); g.globalAlpha = 1; }
-  const white = e.flash > 0 || (e.mode === 'overheat' && Math.floor(time * 10) % 2 === 0) || (/Tell$/.test(e.mode) && Math.floor(time * 12) % 3 === 0);
+  if (k > 0.05) { g.globalAlpha = 0.1 + 0.22 * k; g.fillStyle = '#ff6b2c'; g.beginPath(); g.arc(Math.round(x), Math.round(y - 20), 14 + 12 * k, 0, 7); g.fill(); g.globalAlpha = 1; }
+  if (e.mode === 'riseTell') PA.phoenixTell(g, Math.round(x), Math.round(y), Math.max(0, Math.min(1, 1 - e.modeT / PYB.RISE.tell)), time); else if (e.mode === 'rise') PA.phoenixDash(g, Math.round(x), Math.round(y), e.face, time);   /* (claude/pyroboss2art) PHOENIX: the rising column, then the burning streak */
+  const white = e.flash > 0 || (/Tell$/.test(e.mode) && e.mode !== 'chargeTell' && e.mode !== 'chargeBigTell' && Math.floor(time * 12) % 3 === 0);
   drawSet(set, key, frame, x, y, e.face, white, PYRO_SCALE, PYRO_SCALE);
-  if (e.wetT > 0) { g.fillStyle = '#9ad0ff'; for (let q = 0; q < 3; q++) { const k2 = (time * 1.7 + q / 3) % 1; g.globalAlpha = 1 - k2; g.fillRect(Math.round(x - 8 + q * 7), Math.round(y - 38 + k2 * 34), 1, 2); } g.globalAlpha = 1; }   /* WET: he drips */
-  /* (claude/burnvillage2) THE SHARED READ (B10): OPEN (stunned by water, or overheated) = the gold ring at his feet and a gold bar over him that runs out
-     with it; WARDED = a pale shell round him and its own pale bar */
-  const rd = VWA.pyroRead(e, PYRO_OVER); e.readNow = rd ? rd.st : null;
-  if (rd) { const X = Math.round(x), Y = Math.round(y), pul = 0.5 + 0.5 * Math.sin(time * 10), gold = rd.st !== 'ward';
+  /* THE WARD: the hero's own dome, at her size - bloom, hold, then the red GUTTER (her tell that the opening is coming) */
+  if (e.mode === 'ward') { const t = PYB.WARD.up - e.modeT, K = { perfect: 0.12, t: PYB.WARD.up }; g.save(); g.translate(Math.round(x), Math.round(y - 22)); g.scale(PYRO_SCALE, PYRO_SCALE);
+    PA.dome(g, 0, 0, e.modeT <= PYB.WARD.gutter ? K.t : t, K, time); g.restore(); }
+  /* THE BALL ON HER STAFF: the hero's five sizes; and for a big one, THE RED RING on the floor where it will land */
+  if ((e.mode === 'chargeTell' || e.mode === 'chargeBigTell') && e.step > 0) { const tip = pyroTip(e), stT = e.fast ? PYB.CHARGE.fastT : PYB.CHARGE.stepT, prog = e.step < 5 ? Math.max(0, Math.min(1, (e.chT - (e.step - 1) * stT) / stT)) : 0;
+    PA.held(g, Math.round(tip.x - cx), Math.round(tip.y - cy), e.step, prog, time);
+    if (PYB.big(e.step) && e.aimX !== undefined) { const R = PYB.CHARGE.boomR[e.step], X = Math.round(e.aimX - cx), Y = Math.round(e.aimY - cy), pul = 0.5 + 0.5 * Math.sin(time * 14);
+      PA.landRing(g, X, Y, R, time); } }
+  if (e.mode === 'stoke') PA.stoke(g, Math.round(x + e.face * PA.TIP.stoke[0] * PYRO_SCALE), Math.round(y + PA.TIP.stoke[1] * PYRO_SCALE), e.heat || 0, time);
+  if (e.mode === 'conflagTell') { PA.stoke(g, Math.round(x + e.face * 6), Math.round(y - 40), 100, time); PA.conflagPillar(g, Math.round(x + e.face * 6), Math.round(y - 44), Math.max(0, Math.min(1, 1 - e.modeT / PYB.CONFLAG.tell)), time); }   /* (claude/pyroboss2art) the staff-up pillar */
+  if (e.mode === 'winded') PA.windedSteam(g, Math.round(x), Math.round(y), time);   /* (claude/pyroboss2art) the water takes his wind: steam, drips, a hiss ring */
+  if (e.wetT > 0) { g.fillStyle = '#9ad0ff'; for (let q = 0; q < 3; q++) { const k2 = (time * 1.7 + q / 3) % 1; g.globalAlpha = 1 - k2; g.fillRect(Math.round(x - 8 + q * 7), Math.round(y - 38 + k2 * 34), 1, 2); } g.globalAlpha = 1; }   /* WET: she drips */
+  /* THE SHARED READ (B10): OPEN / WINDED = the gold ring at her feet and a gold bar over her; STEAM WARD = a pale shell and its own pale bar */
+  const rd = PYB.readOf(e); e.readNow = rd ? rd.st : null;
+  if (rd) { const X = Math.round(x), Y = Math.round(y), pul = 0.5 + 0.5 * Math.sin(time * 10), gold = rd.st !== 'steam';
     if (gold) { g.globalAlpha = 0.5 + 0.35 * pul; g.strokeStyle = '#ffd36b'; g.lineWidth = 2; g.beginPath(); g.ellipse(X, Y - 1, 18 + pul * 2, 5, 0, 0, Math.PI * 2); g.stroke(); g.lineWidth = 1; g.globalAlpha = 1; }
     else { g.globalAlpha = 0.28 + 0.15 * pul; g.strokeStyle = '#dfe8ff'; g.beginPath(); g.ellipse(X, Y - 22, 17, 26, 0, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 0.1; g.fillStyle = '#dfe8ff'; g.fill(); g.globalAlpha = 1; }
     g.fillStyle = ART.OUT; g.fillRect(X - 21, Y - 62, 42, 5); g.fillStyle = gold ? '#ffd36b' : '#dfe8ff'; g.fillRect(X - 20, Y - 61, Math.round(40 * rd.k), 3); }
-  if (e.mode === 'stalk' && (e.guardT > 0 || e.readN >= 2)) { g.globalAlpha = 0.35 + 0.2 * Math.sin(time * 14); g.strokeStyle = '#dfe8ff'; g.beginPath(); g.arc(Math.round(x + e.face * 12), Math.round(y - 22), 12, e.face > 0 ? -1.2 : Math.PI - 1.2, e.face > 0 ? 1.2 : Math.PI + 1.2); g.stroke(); g.globalAlpha = 1; }   /* HIS GUARD: a pale arc in front of him */
+  for (const b of pyroBalls) PA.ball(g, Math.round(b.x - cx), Math.round(b.y - cy), b.step, b.vx, time);
 }
-function drawPyroHeat(b) {   /* HIS HEAT, over his bar: the class's own meter, and the fight's clock - on its own line of the plate, under his name */
-  const k = (b.heat || 0) / 100, over = b.mode === 'overheat', y = VH - 17 - hpLift();
+function drawPyroHeat(b) {   /* HER METER, over her bar: the class's own bar (it lights the square in P1, it is CONFLAGRATION's clock in P2) - on its own line of the plate */
+  const k = (b.heat || 0) / 100, y = VH - 17 - hpLift(), full = k >= 0.999;
   g.fillStyle = 'rgba(10,8,20,0.55)'; g.fillRect(VW / 2 - 61, y - 1, 122, 5);
-  bar(VW / 2 - 60, y, 120, 3, k, over ? (Math.floor(time * 10) % 2 ? '#fff6c8' : '#ffd36b') : k >= PYRO_VENT_AT / 100 ? '#ff6b2c' : '#ff9a5c');
-  g.fillStyle = 'rgba(255,255,255,0.5)'; g.fillRect(VW / 2 - 60 + Math.round(120 * PYRO_VENT_AT / 100), y - 1, 1, 5);
+  bar(VW / 2 - 60, y, 120, 3, k, full ? (Math.floor(time * 10) % 2 ? '#fff6c8' : '#ffd36b') : b.mode === 'stoke' ? '#ffd36b' : '#ff9a5c');
   g.drawImage(PROP.fire[Math.floor(time * 12) % 3], VW / 2 + 62, y - 4, 7, 8);   /* (on the right: the skull stands at the left of the health bar under it) */
 }
 
@@ -29422,7 +29544,7 @@ WTH = makeWellTownHands({ get L() { return L; }, get players() { return players;
   attackBox: () => attackBox(), overlap: (a, b) => overlap(a, b), asPlayer: (p, fn) => asPlayer(p, fn), hurtHero: (x, d, o) => damagePlayer(x, d, o), VW: () => VW,
   cellGet: (x, y) => tileAt(x, y), cellOpen: (x, y) => { if (x >= 0 && y >= 0 && x < LW && y < LH) { cellSet(x, y, T.AIR); destroyed.add(y * LW + x); } },   /* opened for good: a respawn (spawnEntitiesTail) leaves a destroyed cell as it is */
   cellBuild: (x, y, t) => { if (x >= 0 && y >= 0 && x < LW && y < LH) { grid0[y * LW + x] = t; cellSet(x, y, t); } },   /* a barricade the level lights at load: part of the level as built, so a respawn puts it back while it burns */
-  questGot: () => straysGot.size, questN: () => questOf().n, pourables: () => [DJH && DJH.pourable, CQH && CQH.pourable, GLH && GLH.pourable, DF2H && DF2H.pourable, MYH && MYH.pourable, MYH && MYH.firePourable, LDH && LDH.pourable, UWH && UWH.pourable].filter(Boolean) });   /* (claude/desertfoes: and a fire scorpion's burning patch) */   /* (claude/welltown5: and THE GANG LEADER's floor - a puddle - or yourself, alight) */
+  questGot: () => straysGot.size, questN: () => questOf().n, pourables: () => [DJH && DJH.pourable, CQH && CQH.pourable, GLH && GLH.pourable, DF2H && DF2H.pourable, FMH && FMH.pourable, MYH && MYH.pourable, MYH && MYH.firePourable, LDH && LDH.pourable, UWH && UWH.pourable].filter(Boolean) });   /* (claude/desertfoes: and a fire scorpion's burning patch) */   /* (claude/welltown5: and THE GANG LEADER's floor - a puddle - or yourself, alight) */
 /* THE GANG LEADER'S HANDS and THE CISTERN QUEEN'S (claude/welltown3): main.js owns the world; the modules own their fights */
 FKC = makeFrogCourt({ P: () => P, heroes: () => players, riders: () => players.filter(p => !p.dead).map(p => p.onMover), splash: () => SFX.splash(), time: () => time, movers: () => movers, arena: () => (L && L.arena && L.arena.boss === 'frog' ? L.arena : null), boss: () => (boss && boss.t === 'frog' && boss.alive ? boss : null),
   damage: (x, d, o) => damagePlayer(x, d, o), ring: (x, y, r, c) => ringAt(x, y, r, c, 0.35), number: (x, y, t, c) => number(x, y, t, c), buzz: () => {}, spring: () => { SFX.budSpring(); squash(0.7, 1.35, 0.14); } });   /* (claude/marsh2) THE BULLFROG KING's court (src/frog-king.js) */
@@ -29815,8 +29937,12 @@ UWH = makeUnderwellHands({ get L() { return L; }, get players() { return players
   spawn: o => { const n0 = enemies.length; spawnEnt(o); return enemies[n0] || null; },   /* a brood scorpion spilled out of a nest under a blade */
   queen: () => (CQH && bossActive && boss && boss.t === 'cisternqueen' && boss.alive && CQH.show() ? { S: CQH.show(), e: boss } : null),   /* (fix pass) she burns through her hall's lamp oil */
   keys: () => keys, retile: () => resolveTiles(),
-  pourAim: p => [DJH && DJH.pourable, CQH && CQH.pourable, GLH && GLH.pourable, DF2H && DF2H.pourable, MYH && MYH.pourable, MYH && MYH.firePourable, LDH && LDH.pourable].filter(Boolean).some(q => { try { return !!q.aim(p); } catch { return false; } }),   /* (claude/underwell2) a pour on a boss or a foe's fire in front of you wins E over a torch beside you (the Queen's mound by a cresset); plain oil does not - E takes the torch */ solidAt: (tx, ty) => isSolid(tx, ty), oneWayAt: (tx, ty) => isOneWay(tileAt(tx, ty)), box: b => box(b),   /* (claude/underwell2) the aim of a thrown torch (UP / DOWN held); a rope hung again is DRAWN again */
+  pourAim: p => [DJH && DJH.pourable, CQH && CQH.pourable, GLH && GLH.pourable, DF2H && DF2H.pourable, FMH && FMH.pourable, MYH && MYH.pourable, MYH && MYH.firePourable, LDH && LDH.pourable].filter(Boolean).some(q => { try { return !!q.aim(p); } catch { return false; } }),   /* (claude/underwell2) a pour on a boss or a foe's fire in front of you wins E over a torch beside you (the Queen's mound by a cresset); plain oil does not - E takes the torch */ solidAt: (tx, ty) => isSolid(tx, ty), oneWayAt: (tx, ty) => isOneWay(tileAt(tx, ty)), box: b => box(b),   /* (claude/underwell2) the aim of a thrown torch (UP / DOWN held); a rope hung again is DRAWN again */
   questGot: () => straysGot.size, questN: () => questOf().n, wt: () => (WTH && WTH.on() ? WTH.state() : null), patches: () => (DF2H && DF2H.on() && DF2H.read() ? DF2H.read().patches : []) });
+FMH = makeFireMageHands({ get L() { return L; }, get players() { return players; }, TS, sfx: SFX, hero: () => P, enemies: () => enemies, VW: () => VW, get parts() { return parts; },   /* (claude/pyroboss2) THE GOBLIN FIRE MAGE */
+  number: (x, y, t, c) => number(x, y, t, c), burst: (...a) => burst(...a), asPlayer: (p, fn) => asPlayer(p, fn), hurtHero: (x, d, o) => damagePlayer(x, d, o), hurtFoe: (e, d, x) => hurtEnemy(e, d, x, false),
+  standable: (tx, ty) => isSolid(tx, ty) || isOneWay(tileAt(tx, ty)), solid: (tx, ty) => isSolid(tx, ty), VG: () => VG, grassy: () => GRASSY.has((L.palette && L.palette.dress) || 'wood'), seen: k => beastSeen(k),
+  igniteAt: (x, y) => { const c = cellNear(VG, Math.floor(x / TS), Math.floor((y - 1) / TS)); return !!(c && ignite(VG, c.x, c.y, 'firemage')); } });
 MYH = makeMysticHands({ get L() { return L; }, get players() { return players; }, TS, sfx: SFX, hero: () => P, enemies: () => enemies, VW: () => VW,   /* (claude/djinn2) THE BANDIT MYSTICS */
   number: (x, y, t, c) => number(x, y, t, c), burst: (...a) => burst(...a), asPlayer: (p, fn) => asPlayer(p, fn), hurtHero: (x, d, o) => damagePlayer(x, d, o), hurtFoe: (e, d, x) => hurtEnemy(e, d, x, false),
   standable: (tx, ty) => isSolid(tx, ty) || isOneWay(tileAt(tx, ty)), solid: (tx, ty) => isSolid(tx, ty) });
@@ -34178,6 +34304,7 @@ function drawWorld(cx, cy, showPlayer) {
     else if (e.t === 'shardling') frame = e.mode === 'bristle' || e.mode === 'shedTell' || e.mode === 'shed' || e.mode === 'flickTell' || e.mode === 'flick' ? 2 : Math.abs(e.vx) > 4 ? Math.floor(e.anim * 8) % 2 : 0;
     else if (e.t === 'fledgling') frame = e.mode === 'peckTell' ? 2 : e.mode === 'peck' ? 3 : !e.onGround ? 4 : Math.abs(e.vx) > 4 ? Math.floor(e.anim * 8) % 2 : 0;
     else if (e.t === 'gobpriest') frame = e.mode === 'riteTell' || e.mode === 'rite' ? 3 + Math.floor(e.anim * 5) % 2 : e.mode === 'censerTell' ? 5 : e.mode === 'censer' ? 6 : e.mode === 'bellTell' ? 7 : e.mode === 'bell' ? 8 : e.mode === 'broken' ? 9 : Math.abs(e.vx) > 4 ? 1 + Math.floor(e.anim * 6) % 2 : 0;   /* the censer up and swinging on the rite; knocked back when it breaks */
+    else if (e.t === 'gobmage' && FMR.isFireMage(e)) frame = FMA.fireMageFrame(e);   /* (claude/pyroboss2) THE FIRE MAGE's own poses: the lob drawn back and flung, the ward, doused */
     else if (e.t === 'gobmage') frame = e.mode === 'boltTell' ? 3 : e.mode === 'bolt' ? 4 : e.mode === 'runeTell' || e.mode === 'rune' ? 5 : Math.abs(e.vx) > 4 ? 1 + Math.floor(e.anim * 6) % 2 : 0;   /* the book held out, thrown open, and up over the hat for the rune */
     else if (e.t === 'gqueen') frame = GQ_FRAME[e.mode] !== undefined ? (typeof GQ_FRAME[e.mode] === 'function' ? GQ_FRAME[e.mode](e) : GQ_FRAME[e.mode]) : 3;
     else if (e.t === 'sentry') frame = e.mode === 'run' ? 3 + Math.floor(e.anim * 12) % 2 : e.mode === 'spot' || e.ringing ? 2 : Math.abs(e.vx) > 4 ? Math.floor(e.anim * 8) % 2 : 0;
@@ -34664,6 +34791,7 @@ function drawWorld(cx, cy, showPlayer) {
       drawSwing(cx, cy);
       for (const s of shots) { const a = Math.min(1, s.life * 9); g.globalAlpha = a;   // the ball's line, gone in a breath
         g.strokeStyle = '#fff6c8'; g.lineWidth = a > 0.6 ? 2 : 1; g.beginPath(); g.moveTo(Math.round(s.x0 - cx), Math.round(s.y0 - cy)); g.lineTo(Math.round(s.x1 - cx), Math.round(s.y1 - cy)); g.stroke(); g.globalAlpha = 1; }
+      if (FMH && FMH.on()) for (const e of enemies) if (e.alive && FMR.isFireMage(e)) FMH.drawOver(g, e, cx, cy, time);   /* (claude/pyroboss2) THE FIRE MAGE's ward dome, his steam, his SPENT ring */
       if (isPyro() && FWARD) FWARD.draw(g, cx, cy); if (isPyro()) drawPyroKit(g, cx, cy); if (CA) CA.draw(g, cx, cy);   /* (claude/pyrokit) THE FLAME WARD, DRAWN; the ball on the staff, the stoke glow, the burn marks */
       if (CRB) CRB.draw(g, cx, cy); if (CRC) CRC.draw(g, cx, cy); if (BZK) BZK.draw(g, cx, cy); if (RGK) RGK.draw(g, cx, cy); if (HPK) HPK.draw(g, cx, cy);   /* (claude/ranger) HER ARROWS (flying, stuck and glinting), the snares, the hawk, the rain (THE MARK is drawn on the late pass, drawMarks) */   /* (THE BERSERKER: the thrown axe and its glint, the hatchets, the frenzy's glow, the brace; a war cry's haste on anyone) */   /* THE CROUCH TWISTS, DRAWN: the prayer's glow, what the earth showed her, the draw out of a body */
       if (P.aegis && isPaladin() && HFX) HFX.ward(g, Math.round(P.x - cx), Math.round(P.y - cy) - 12, time, Math.max(0, 1 - (time - (P.wardHitAt ?? -9)) / 0.25));   /* (PALADIN 4 ART) THE LIGHT-WARD: an all-round dome, a back half and ribs, brighter a beat after a blow */
@@ -36390,7 +36518,7 @@ function render() {
     }
     if (state === 'menu' || state === 'win' || state === 'gameover') { /* the plates own the screen: the boss bar waits */ }
     else if (miniActive && !bossActive) { const m = miniOne(); if (m) { bossPlate(m.phase === 2 ? miniName() + '  ENRAGED' : m.t === 'sailer' && m.mode === 'tumble' ? miniName() + '  SPILLED' : miniName(), m.phase === 2 ? '#ff6b6b' : '#ffd36b'); g.drawImage(PROP.skullMini, VW / 2 - 72, VH - 15); bar(VW / 2 - 60, hpBy(), 120, hpBh(), Math.max(0, m.hp) / fullHp(m), m.mounted ? '#e0b040' : '#8fd160');   /* the Stalker, the Overman, the Boatswain, and the Serjeant carry no maxHp - that is the boss flag, and giving it them changes how every blow treats them - so their bars drew NaN, empty. What it stood up with is hp0. */ for (let i = 1; i < 10; i++) { g.fillStyle = 'rgba(0,0,0,0.35)'; g.fillRect(VW / 2 - 60 + i * 12, hpBy(), 1, hpBh()); } bossHpNums(Math.max(0, m.hp), fullHp(m)); } }
-    else if (bossActive && boss && boss.alive) { const nm = boss.t === 'bloodknight' ? (boss.open > 0 ? 'THE BLOOD KNIGHT  OPEN' : 'THE BLOOD KNIGHT') : boss.t === 'deathknight' ? (boss.open > 0 ? 'THE REAPER  OPEN' : 'THE REAPER') : boss.t === 'pyromancer' ? (boss.mode === 'overheat' ? 'THE PYROMANCER  OVERHEATED' : 'THE PYROMANCER') : boss.t === 'burieddead' ? (boss.open>0?'THE BURIED DEAD  OPEN':'THE BURIED DEAD') : boss.t === 'harbormaster' ? (boss.open>0?'BREAKWATER WARDEN  OPEN':'THE BREAKWATER WARDEN') : boss.t === 'bellcrab' ? (boss.open>0?'THE DIVING BELL  VENTING':'THE DIVING BELL') : boss.t === 'grandmother' ? (boss.mode === 'floated' || boss.mode === 'opened' ? 'THE POTION MASTER  OPEN' : boss.phase === 3 ? 'THE POTION MASTER  RED CAULDRON' : boss.phase === 2 ? 'THE POTION MASTER  BLUE BUBBLES' : 'THE POTION MASTER  GREEN BRAMBLE') : boss.t === 'owl' ? 'THE OWL REEVE' : boss.t === 'golem' ? (boss.mode === 'counter' || boss.mode === 'drink' ? 'THE FACET  OFF THE LINE' : 'THE FACET  NEEDS ' + (boss.need || 'blue').toUpperCase()) : boss.t === 'windcaller' ? (boss.mode === 'howl' || boss.mode === 'howlTell' ? 'THE WINDCALLER  HOLD ON' : boss.mode === 'blink' || boss.mode === 'appear' ? 'THE WINDCALLER  GONE' : boss.phase === 2 ? 'THE WINDCALLER  WRATH' : 'THE WINDCALLER') : boss.t === 'closedhelm' ? (boss.open > 0 ? 'THE CRUSADER  THE WARD IS DOWN' : boss.phase === 2 ? 'THE CRUSADER  HIS OATH' : 'THE CRUSADER') : boss.t === 'drownedking' ? (boss.mode === 'whirl' || boss.mode === 'whirlTell' ? 'THE DROWNED KING  THE MAELSTROM' : boss.mode === 'gulp' || boss.mode === 'gulpTell' ? 'THE DROWNED KING  HE TAKES THE AIR' : boss.phase === 2 ? 'THE DROWNED KING  HE LETS GO' : 'THE DROWNED KING') : boss.t === 'prince' ? (boss.mode === 'buried' ? 'THE BURIED PRINCE  BURIED AGAIN' : princeShrouded(boss) ? 'THE BURIED PRINCE  SHROUDED' : boss.bare > 0 ? 'THE BURIED PRINCE  BAREHEADED' : princeLight(boss) ? 'THE BURIED PRINCE  IN THE LIGHT' : 'THE BURIED PRINCE') : boss.t === 'forgemaster' ? (boss.mode === 'stun' ? 'THE FORGEMASTER  STUNNED' : boss.mode === 'scald' ? 'THE FORGEMASTER  SCALDED' : 'THE FORGEMASTER') : boss.t === 'gqueen' ? (gqOpen(boss) ? 'THE GOBLIN QUEEN  OPEN' : boss.phase === 3 ? 'THE GOBLIN QUEEN  THE CROWN' : boss.phase === 2 ? 'THE GOBLIN QUEEN  RISEN' : 'THE GOBLIN QUEEN') : boss.t === 'roc' ? (rocOpen(boss) ? 'THE ROC  GROUNDED' : boss.phase === 2 ? 'THE ROC  SHEDDING' : 'THE ROC') : boss.t === 'suncatcher' ? (boss.mode === 'thaw' ? 'THE RIMEWRIGHT  THAWED' : boss.mode === 'crack' ? 'THE RIMEWRIGHT  CRACKED' : 'THE RIMEWRIGHT') : boss.t === 'lance' ? (lanceOpen(boss) ? "THE LANCE  OPEN" : boss.phase === 2 ? "THE LANCE  UNARMED" : "THE QUEEN'S LANCE") : boss.t === 'frog' ? 'BULLFROG KING' : boss.t === 'chief' ? 'GOBLIN CHIEFTAIN  ' + (boss.stance || 'club').toUpperCase() : boss.t === 'mother' ? 'THE MOTHER CAP' : boss.t === 'king' ? 'KING GORM' : boss.t === 'ram' ? (boss.mode === 'stun' ? 'THE RAM LORD  STUNNED' : boss.mode === 'crash' ? 'THE RAM LORD  IN THE WALL' : boss.ward > 0 ? 'THE RAM LORD  WARDED' : 'THE RAM LORD') : boss.t === 'champion' && CHH ? CHH.barName(boss) : boss.t === 'admiral' && ADH ? ADH.barName(boss) : boss.t === 'reefmaw' ? (boss.mode === 'stuck' || boss.mode === 'reel' ? 'THE REEFMAW  JAW STUCK' : boss.mode === 'beached' ? 'THE REEFMAW  BEACHED' : boss.mode === 'roll' ? 'THE REEFMAW  DEATH ROLL' : boss.mode === 'lurk' || boss.mode === 'sink' || boss.mode === 'sleep' || boss.mode === 'drain' ? 'THE REEFMAW  IN ITS HOLE' : boss.phase === 3 ? 'THE REEFMAW  ON THE REEF' : 'THE REEFMAW') : boss.t === 'herald' ? (boss.mode === 'mired' ? 'THE TIDE HERALD  MIRED' : boss.mode === 'reel' ? 'THE TIDE HERALD  REELING' : boss.phase === 3 ? 'THE TIDE HERALD  THE FLOOD' : 'THE TIDE HERALD') : boss.t === 'kraken' ? krakenBarName(boss) : boss.t === 'masthead' ? (mastOpen(boss) ? 'THE MASTHEAD  FOULED' : boss.mode === 'sail' ? 'THE MASTHEAD  UNDER SAIL' : 'THE MASTHEAD') : boss.t === 'captain' ? (boss.mode === 'ride' ? 'THE CAPTAIN  THE SEA HAS HIM'
+    else if (bossActive && boss && boss.alive) { const nm = boss.t === 'bloodknight' ? (boss.open > 0 ? 'THE BLOOD KNIGHT  OPEN' : 'THE BLOOD KNIGHT') : boss.t === 'deathknight' ? (boss.open > 0 ? 'THE REAPER  OPEN' : 'THE REAPER') : boss.t === 'pyromancer' ? (boss.mode === 'winded' ? 'THE PYROMANCER  WINDED' : boss.open > 0 ? 'THE PYROMANCER  OPEN' : 'THE PYROMANCER') : boss.t === 'burieddead' ? (boss.open>0?'THE BURIED DEAD  OPEN':'THE BURIED DEAD') : boss.t === 'harbormaster' ? (boss.open>0?'BREAKWATER WARDEN  OPEN':'THE BREAKWATER WARDEN') : boss.t === 'bellcrab' ? (boss.open>0?'THE DIVING BELL  VENTING':'THE DIVING BELL') : boss.t === 'grandmother' ? (boss.mode === 'floated' || boss.mode === 'opened' ? 'THE POTION MASTER  OPEN' : boss.phase === 3 ? 'THE POTION MASTER  RED CAULDRON' : boss.phase === 2 ? 'THE POTION MASTER  BLUE BUBBLES' : 'THE POTION MASTER  GREEN BRAMBLE') : boss.t === 'owl' ? 'THE OWL REEVE' : boss.t === 'golem' ? (boss.mode === 'counter' || boss.mode === 'drink' ? 'THE FACET  OFF THE LINE' : 'THE FACET  NEEDS ' + (boss.need || 'blue').toUpperCase()) : boss.t === 'windcaller' ? (boss.mode === 'howl' || boss.mode === 'howlTell' ? 'THE WINDCALLER  HOLD ON' : boss.mode === 'blink' || boss.mode === 'appear' ? 'THE WINDCALLER  GONE' : boss.phase === 2 ? 'THE WINDCALLER  WRATH' : 'THE WINDCALLER') : boss.t === 'closedhelm' ? (boss.open > 0 ? 'THE CRUSADER  THE WARD IS DOWN' : boss.phase === 2 ? 'THE CRUSADER  HIS OATH' : 'THE CRUSADER') : boss.t === 'drownedking' ? (boss.mode === 'whirl' || boss.mode === 'whirlTell' ? 'THE DROWNED KING  THE MAELSTROM' : boss.mode === 'gulp' || boss.mode === 'gulpTell' ? 'THE DROWNED KING  HE TAKES THE AIR' : boss.phase === 2 ? 'THE DROWNED KING  HE LETS GO' : 'THE DROWNED KING') : boss.t === 'prince' ? (boss.mode === 'buried' ? 'THE BURIED PRINCE  BURIED AGAIN' : princeShrouded(boss) ? 'THE BURIED PRINCE  SHROUDED' : boss.bare > 0 ? 'THE BURIED PRINCE  BAREHEADED' : princeLight(boss) ? 'THE BURIED PRINCE  IN THE LIGHT' : 'THE BURIED PRINCE') : boss.t === 'forgemaster' ? (boss.mode === 'stun' ? 'THE FORGEMASTER  STUNNED' : boss.mode === 'scald' ? 'THE FORGEMASTER  SCALDED' : 'THE FORGEMASTER') : boss.t === 'gqueen' ? (gqOpen(boss) ? 'THE GOBLIN QUEEN  OPEN' : boss.phase === 3 ? 'THE GOBLIN QUEEN  THE CROWN' : boss.phase === 2 ? 'THE GOBLIN QUEEN  RISEN' : 'THE GOBLIN QUEEN') : boss.t === 'roc' ? (rocOpen(boss) ? 'THE ROC  GROUNDED' : boss.phase === 2 ? 'THE ROC  SHEDDING' : 'THE ROC') : boss.t === 'suncatcher' ? (boss.mode === 'thaw' ? 'THE RIMEWRIGHT  THAWED' : boss.mode === 'crack' ? 'THE RIMEWRIGHT  CRACKED' : 'THE RIMEWRIGHT') : boss.t === 'lance' ? (lanceOpen(boss) ? "THE LANCE  OPEN" : boss.phase === 2 ? "THE LANCE  UNARMED" : "THE QUEEN'S LANCE") : boss.t === 'frog' ? 'BULLFROG KING' : boss.t === 'chief' ? 'GOBLIN CHIEFTAIN  ' + (boss.stance || 'club').toUpperCase() : boss.t === 'mother' ? 'THE MOTHER CAP' : boss.t === 'king' ? 'KING GORM' : boss.t === 'ram' ? (boss.mode === 'stun' ? 'THE RAM LORD  STUNNED' : boss.mode === 'crash' ? 'THE RAM LORD  IN THE WALL' : boss.ward > 0 ? 'THE RAM LORD  WARDED' : 'THE RAM LORD') : boss.t === 'champion' && CHH ? CHH.barName(boss) : boss.t === 'admiral' && ADH ? ADH.barName(boss) : boss.t === 'reefmaw' ? (boss.mode === 'stuck' || boss.mode === 'reel' ? 'THE REEFMAW  JAW STUCK' : boss.mode === 'beached' ? 'THE REEFMAW  BEACHED' : boss.mode === 'roll' ? 'THE REEFMAW  DEATH ROLL' : boss.mode === 'lurk' || boss.mode === 'sink' || boss.mode === 'sleep' || boss.mode === 'drain' ? 'THE REEFMAW  IN ITS HOLE' : boss.phase === 3 ? 'THE REEFMAW  ON THE REEF' : 'THE REEFMAW') : boss.t === 'herald' ? (boss.mode === 'mired' ? 'THE TIDE HERALD  MIRED' : boss.mode === 'reel' ? 'THE TIDE HERALD  REELING' : boss.phase === 3 ? 'THE TIDE HERALD  THE FLOOD' : 'THE TIDE HERALD') : boss.t === 'kraken' ? krakenBarName(boss) : boss.t === 'masthead' ? (mastOpen(boss) ? 'THE MASTHEAD  FOULED' : boss.mode === 'sail' ? 'THE MASTHEAD  UNDER SAIL' : 'THE MASTHEAD') : boss.t === 'captain' ? (boss.mode === 'ride' ? 'THE CAPTAIN  THE SEA HAS HIM'
       : boss.mode === 'beach' ? 'THE CAPTAIN  KNOCKED FLAT'
       : boss.mode === 'reel' ? (boss.struck ? 'THE CAPTAIN  STRUCK' : 'THE CAPTAIN  TURNED') : boss.mode === 'call' ? 'THE CAPTAIN  THE SEA COMES UP'
       : boss.phase === 3 ? 'THE CAPTAIN  HE GOES DOWN WITH HER' : 'THE CAPTAIN')
@@ -36648,7 +36776,7 @@ window.BK = { setView: m => setView(m), env: () => ({ hurt: (e, d, x) => hurtEne
   dmgCommon: () => Object.fromEntries(Object.keys(DMG_COMMON).map(k => [k, [DMG_COMMON[k], DMG[k]]])), duck: () => ({ H: DUCK_H, ducking: !!P.ducking, box: duckBox(P), ducked: P.ducked || 0, tells: tellsDrawn, braced: braced(), clears: y => duckClears(P, y), high: e => blowHigh(e, time), lane: e => laneOf(tellKey(e)), height: e => heightOf(tellKey(e)) }),   /* THE UNIVERSAL DUCK, for tools/duck.mjs and the bot (src/duck.js) */ marksMissed: () => marksMissed(),   /* the mark the screen holds over a windup, and every windup the table had no row for */
   sim(n = 1) { for (let i = 0; i < n; i++) { update(STEP); clearPresses(); } },   /* the same, without the draw: the playtest bot renders when it wants to look */
   tp(tx, ty) { P.x = tx * TS + 8; P.y = (ty + 1) * TS; P.vx = P.vy = 0; },
-  pyroDuel: { D: PYRO_DUEL, pose: e => pyroPose(e), stalls: e => pyroStalls(e) },   /* THE PYROMANCER's mirror duel, for tools/pyro-duel.mjs */
+  pyroDuel: { D: PYRO_DUEL, pose: e => pyroPose(e), stalls: e => pyroStalls(e), K: PYB, balls: () => pyroBalls, douse: e => pyroDouse(e) },   /* (claude/pyroboss2) + her new kit: the numbers, her balls in flight, the water */   /* THE PYROMANCER's mirror duel, for tools/pyro-duel.mjs */
   /* THE BOT HAS TO BE ABLE TO LOOK AT A PLACE IT IS NOT STANDING. A backdrop fault lives at a height: a band cut off
      above the fourth storey, a room wall that stops a row short. Walking there to see it takes a minute a frame. This
      puts the hero and the camera on a tile and draws one frame, nothing updated, so a sweep of a level is a loop. */

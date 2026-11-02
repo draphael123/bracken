@@ -1959,6 +1959,7 @@ const CAST = {
    glass, stone and clockwork things have no throat at all, so they are synthesised below (the same HURT / DIE tables as the rest). */
 Object.assign(CAST, {
   oathblade: { kit: 'm5', rate: 0.95, mat: 'plate', human: true }, oathmaul: { kit: 'm4', rate: 0.8, lp: 1500, mat: 'plate', human: true }, oathlance: { kit: 'm3', rate: 0.95, mat: 'mail', human: true }, oathmage: { kit: 'm1', rate: 1.05, mat: 'cloth', human: true },
+  firemage: { kit: 'gobbig', rate: 1.3 }, cinderacolyte: { kit: 'ev', rate: 1.05, mat: 'cloth', human: true },   /* (claude/pyroboss2) THE GOBLIN FIRE MAGE (a goblin throat), THE CINDER ACOLYTE (the mystics' evil voice) */
   familiar: { kit: 'sc', rate: 0.8 }, lanternshade: { kit: 'zb', rate: 1.35, lp: 2600 }, bonegob: { kit: 'zb', rate: 1.45, lp: 2400 }, husk: { kit: 'zb', rate: 0.75, lp: 1800 }, apprentice: { kit: 'zb', rate: 1.1, lp: 2600, mat: 'cloth' },
   bonecorsair: { kit: 'zb', rate: 1, lp: 2400, mat: 'cloth' }, tidemarauder: { kit: 'zb', rate: 0.9, lp: 2000, mat: 'cloth' }, drowneddead: { kit: 'zb', rate: 0.85, lp: 1700 }, bonechucker: { kit: 'zb', rate: 1.3, lp: 2400 },
   bellman: { kit: 'm6', rate: 0.95, mat: 'cloth', human: true }, gravewarden: { kit: 'ev', rate: 0.8, lp: 2400, mat: 'mail', human: true, boss: true }, banditmystic: { kit: 'ev', rate: 1, mat: 'cloth', human: true, boss: true },
