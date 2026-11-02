@@ -11,8 +11,14 @@ const rows = []; const ok = (name, pass, why = '') => { rows.push({ name, pass: 
 const src = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
 
 /* ---- the table and the timeline ---- */
-const E = TRM.entryFor('wood', 'marsh');
-ok('the table has the wood -> marsh row, scene ferry', E && E.scene === 'ferry' && E.to === 'marsh');
+/* (claude/hornetsnest2) the wood -> marsh ferry row is GONE from the table (smallfix5 had turned it off; the road runs through the nest). The ferry scene's art stays in src/transitions-art.js, so its
+   timeline and geometry are still pinned here with a LOCAL copy of the old row; the live row is the walk-out into the nest. */
+const E = { from: 'wood', to: 'marsh', scene: 'ferry', beats: [{ id: 'open', dur: 1.5 }, { id: 'walk', dur: 2.4, max: 3.6 }, { id: 'shore', dur: 3.3 }, { id: 'ride', dur: 7.5 }, { id: 'fade', dur: 0.7 }], open: { col: 549, rows: [3, 8], lintel: 2 }, arrive: { ferry: true, walk: 1.7 } };
+const WN = TRM.entryFor('wood');
+ok('the table has the wood -> hornetsnest WALK-OUT row (scene null, open / walk / fade, no ferry) and no wood -> marsh row', WN && WN.to === 'hornetsnest' && WN.scene === null && WN.beats.map(b => b.id).join() === 'open,walk,fade' && !WN.arrive.ferry && WN.arrive.walk >= 1 && WN.open.col === 549 && !TRM.entryFor('wood', 'marsh'));
+{ const tl = TRM.start(WN), seen = [TRM.phase(tl)]; let guard = 0; while (!tl.done && guard++ < 5000) for (const e of TRM.step(tl, 1 / 60, { ready: true })) seen.push(e);
+  ok('the walk-out runs open, walk, fade, done (about 4 s)', seen.join() === 'open,walk,fade,done' && tl.t > 2.5 && tl.t < 7, seen.join() + ' ' + tl.t.toFixed(1));
+  ok('main.js: trnSceneS returns 0 for a timeline with no shore / ride beat (a null scene: beats[-1] would crash)', src.includes("if (sh < 0 || ri < 0) return 0;")); }
 ok('the beats are open, walk, shore, ride, fade in that order', E && E.beats.map(b => b.id).join() === 'open,walk,shore,ride,fade');
 ok('the way opens in the wood\'s last column (the clearing\'s east gate)', E && E.open.col === 549 && E.open.rows[0] < E.open.rows[1]);
 ok('the ferry leaves the jetty and is on the water 8-10 s (shore after pole-off + ride)', (() => { const sh = E.beats.find(b => b.id === 'shore').dur, ri = E.beats.find(b => b.id === 'ride').dur, on = sh - TRM.FERRY.poleAt + ri; return on >= 8 && on <= 10; })());
@@ -59,10 +65,13 @@ if (process.argv.includes('--browser')) {
       const A = BK.L.arena, e = BK.enemies().find(q => q.t === A.boss && q.alive); BK.god = true; BK.tp(Math.round(A.trigger / 16) + 1, Math.round(A.floor / 16) - 1); BK.sim(200);
       for (let n = 0; n < 1000 && e && e.alive; n++) { BK.P.inv = 99; BK.P.hp = BK.P.maxHp; e.hp = Math.min(e.hp, 1); e.inv = 0; e.open = 9; e.passThrough = true; BKT.hurtEnemy(e, 1e6, e.x + (n % 2 ? 10 : -10), n % 3 === 0); if (e.alive) BK.sim(6); }
       out.killed = !!e && !e.alive; let tr = false; for (let i = 0; i < 800; i++) { BK.sim(1); if (BK.trans.tr) { tr = true; break; } if (BK.state === 'win') break; }
-      out.tr = tr; out.state = BK.state; out.lvl = BK.trans.levelId(); out.wood = !!(BK.PROG.wood && BK.PROG.wood.cleared); return out; })()`);
+      out.tr = tr; out.state = BK.state; out.lvl = BK.trans.levelId(); out.wood = !!(BK.PROG.wood && BK.PROG.wood.cleared); out.scene = tr ? !!BK.trans.tr.scene : null;
+      if (tr) { for (let i = 0; i < 1500 && (BK.trans.tr || BK.trans.levelId() === 'wood'); i++) { if (i % 200 === 100) BK.press('atk'); BK.sim(2); } out.after = BK.trans.levelId(); out.arrive = !!(BK.trans.arrive && BK.trans.arrive.entry && !BK.trans.arrive.ferry); }
+      return out; })()`);
     for (const flag of ['true', 'false']) {
       const a = await run(flag);
-      ok('flag ' + flag + ': Old Tusker falls, the wood is cleared, the WIN CARD shows and no ferry plays', a.killed && a.wood && a.state === 'win' && !a.tr && a.lvl === 'wood', JSON.stringify(a));
+      if (flag === 'true') ok('flag true: Old Tusker falls, the wood is cleared, the WALK-OUT plays (no ferry scene) and the party arrives in the nest', a.killed && a.wood && a.tr && a.scene === false && a.after === 'hornetsnest' && a.arrive, JSON.stringify(a));
+      else ok('flag false: Old Tusker falls, the wood is cleared, the WIN CARD shows and no transition plays', a.killed && a.wood && a.state === 'win' && !a.tr && a.lvl === 'wood', JSON.stringify(a));
     }
     ok('no page errors', pg.errors.length === 0, JSON.stringify(pg.errors.slice(0, 3)));
   } finally { pg.close(); }

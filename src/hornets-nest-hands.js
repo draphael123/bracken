@@ -65,10 +65,12 @@ export function makeNestHands(ctx) {
   W.stickyAt = (x, y) => { const ty = Math.floor((y + 2) / TS), Lv = L(); for (const [x0, x1, row] of Lv.wax || []) if (row === ty && x > x0 * TS - 2 && x < (x1 + 1) * TS + 2) return true; for (const h of honey) if (h.row === ty && x > h.x0 - 2 && x < h.x1 + 2) return true; return false; };
   W.cells = () => cells;
   W.clouds = () => clouds;
-  W.stands = () => stands.map(s => ({ x: s.x, y: s.y, hall: s.hall, st: s.st }));
+  W.stands = () => stands.map(s => ({ x: s.x, y: s.y, hall: s.hall, st: s.st, t: s.t }));
   W.drips = () => drips;
   const inHall = x => { const A = L().arena; return !!(A && x >= A.x0 && x <= A.x1); };
   W.held = () => !!held(ctx.P());
+  W.puff = (x, y) => addCloud(x, y);   /* (tools/hornetsnest-fog.mjs) a fog out of nowhere */
+  W.lob = (x, y, vx = 0, vy = 0) => { pots.push({ t: 'smokepot', thrKind: 'smokepot', state: 'fly', x, y, vx, vy, holder: null }); };   /* (tools/hornetsnest-fog.mjs) a thrown pot out of nowhere: the arc is the hero's, this is only its test seat */
   /* ---------- SMOKE: is (x, y) quiet? (a carried pot's smoke round its holder, a set-down pot's, a cloud) ---------- */
   W.calm = (x, y) => {
     for (const q of pots) { if (q.state === 'held' && q.holder && !q.holder.dead) { if (Math.hypot(q.holder.x - x, q.holder.y - 14 - y) < SMOKE.aura) return true; }
