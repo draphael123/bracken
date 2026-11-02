@@ -64,7 +64,7 @@ function plankTile(x, y, at, T, L, kind) {
 }
 /* a bowed-section / rotten board sprite (also used live by the hands): the same board, sicker (soft, split, mossy), with a worn hollow */
 const rotBoard = (arena, i, w) => once('rb' + arena + (i % 3) + (i === 0 ? 'L' : i === w - 1 ? 'R' : ''), () => { const [c, g] = canvas(16, 9);
-  const b = arena ? ['#1f1a10', '#2e261a', '#443826', '#5a4a32', '#72603f'] : ['#2a2014', '#3a2e1e', '#54422c', '#6c563a', '#86704a'];
+  const b = arena ? ['#141a0c', '#262e16', '#38421f', '#4a5628', '#64723a'] : ['#2a2014', '#3a2e1e', '#54422c', '#6c563a', '#86704a'];
   Rr(g, b[2], 0, 1, 16, 4); Rr(g, b[3], 0, 0, 16, 1); Rr(g, b[1], 0, 5, 16, 2); Rr(g, OAK[0], 0, 7, 16, 1);   /* board, lit lip, the underside, the stringer shadow */
   Rr(g, OAK[3], 0, 5, 16, 2); Rr(g, OAK[2], 0, 6, 16, 1);                                                      /* the pole under it */
   for (let k = 0; k < 4; k++) { const sx = 2 + ((i * 5 + k * 4) % 12); P(g, b[0], sx, 1 + (k & 1)); P(g, b[0], sx + 1, 2 + (k & 1)); }   /* cracks */
@@ -407,6 +407,31 @@ export function drawSunk(g, x, w, y, time) {
 }
 export function drawDrips(g, x, w, y, time) { for (let i = 0; i < Math.floor(w / 16); i++) { const ph = (time * 2.2 + i * 0.5) % 1; g.globalAlpha = 1 - ph * 0.5; P(g, '#cfe0d0', x + 4 + i * 16 + (i & 1) * 5, y + ph * 8); } g.globalAlpha = 1; }
 
+/* (claude/bogtroll2) THE CROSSBEAMS under a rotten section of the crossing (GREYBOX - the art lane draws them): read it as rotten BEFORE you use it - two black-mossy
+   piles at its ends, an X of sagging crossbeams between them down to the fen, weed hanging off them, a crack of light through the boards. hole = [x0, x1] screen px of a wreck:
+   the beams there are snapped, one end hanging into the water, splinters at the break */
+export function drawCrossbeams(g, x, w, y, wy, hole, time, seed = 0) {   /* (claude/bogtroll2art) real bracing: lit-edged oak, an iron plate where the X crosses, moss caps, weed streaming into the fen, rot patches; broken: pale snapped cores + splinters */
+  const top = y + 7, bot = wy + 2, x1 = x + w, ix = v => Math.round(v);
+  const beam = (ax, ay, bx, by, c, wd = 2) => { g.strokeStyle = c; g.lineWidth = wd; g.beginPath(); g.moveTo(ix(ax), ix(ay)); g.lineTo(ix(bx), ix(by)); g.stroke(); g.lineWidth = 1; };
+  const timberB = (ax, ay, bx, by) => { beam(ax, ay + 1, bx, by + 1, OAK[0], 4); beam(ax, ay, bx, by, OAK[2], 3); beam(ax, ay - 1, bx, by - 1, OAK[4], 1); };   /* dark under-edge, body, lit top edge */
+  for (const px of [x + 1, x1 - 5]) { Rr(g, OAK[1], px, top, 4, bot - top); Rr(g, OAK[3], px, top, 2, bot - top); Rr(g, OAK[5], px, top, 1, bot - top);
+    Rr(g, MOSS[1], px - 1, bot - 8, 6, 6); Rr(g, MOSS[2], px, bot - 8, 4, 3); Rr(g, MOSS[3], px + 1, bot - 8, 2, 1); Rr(g, MOSS[0], px - 1, bot - 3, 6, 2);   /* the end piles, mossed + slimed at the waterline */
+    Rr(g, '#8e8a78', px, top + 3, 4, 1); P(g, '#c4c0ac', px + 1, top + 3); }                                                                                   /* an iron strap */
+  if (!hole) {
+    timberB(x + 4, top + 1, x1 - 5, bot - 2); timberB(x + 4, bot - 2, x1 - 5, top + 1); timberB(x + 3, top + 1, x1 - 4, top + 1);   /* the X and the stringer */
+    const mx = ix((x + x1) / 2), my = ix((top + bot) / 2); Rr(g, '#6b6f68', mx - 2, my - 2, 5, 5); Rr(g, '#a4a89a', mx - 2, my - 2, 5, 1); P(g, '#2a2a26', mx, my);   /* an iron plate + bolt where they cross */
+    for (let k = 0; k < 5; k++) { const hx = x + 6 + ((k * 11 + seed * 3) % Math.max(8, w - 10)), hl = 3 + ((k + seed) % 4), sw = Math.round(Math.sin(time * 1.4 + k + seed) * 1); Rr(g, MOSS[k & 1 ? 2 : 3], hx, top + 3 + (k % 3) * 2, 1, hl + 2); Rr(g, MOSS[1], hx + sw, top + 5 + (k % 3) * 2 + hl, 1, 4); }   /* weed streaming off the beams */
+    for (let k = 0; k < 3; k++) { const cx = x + 8 + ((k * 17 + seed * 5) % Math.max(8, w - 14)); Rr(g, '#0a0806', cx, y + 1, 1, 4); Rr(g, '#0a0806', cx + 1, y + 3, 1, 2); P(g, OAK[0], cx - 1, y + 5); }   /* cracks through the boards */
+    for (let k = 0; k < 3; k++) { const px = x + 10 + ((k * 13 + seed * 7) % Math.max(8, w - 18)), py = top + 2 + (k % 2) * 4; Rr(g, MOSS[1], px, py, 3, 2); P(g, MOSS[3], px, py); }   /* rot + moss patches on the timber */
+    return; }
+  const [h0, h1] = hole, sway = Math.sin(time * 1.7 + seed) * 1.5;
+  timberB(x + 4, top + 1, h0, top + 6); beam(h0, top + 6, h0 + 4, bot + sway, OAK[1], 4); beam(h0, top + 6, h0 + 4, bot + sway, OAK[2], 3);   /* snapped at the hole: the left beam hangs into the fen */
+  timberB(x1 - 5, top + 1, h1, top + 5); beam(h1, top + 5, h1 - 5, bot - sway, OAK[1], 4); beam(h1, top + 5, h1 - 5, bot - sway, OAK[2], 3);
+  for (let k = 0; k < 4; k++) { P(g, '#d8c496', h0 + (k & 1) - 1, top + 5 + k); P(g, BOARD[4], h1 - (k & 1) + 1, top + 4 + k); }   /* pale snapped cores, splinters at the breaks */
+  Rr(g, '#d8c496', h0 - 2, top + 5, 2, 1); Rr(g, '#d8c496', h1 + 1, top + 4, 2, 1);
+  Rr(g, MOSS[1], h0 + 3, bot - 3 + Math.round(sway), 2, 4); Rr(g, MOSS[1], h1 - 6, bot - 3 - Math.round(sway), 2, 4);   /* weed on the hanging ends */
+  for (let k = 0; k < 3; k++) { const q = (time * 1.5 + k * 0.33) % 1; g.globalAlpha = 1 - q; P(g, '#cfe0d0', h0 + 2 + k * 3, top + 8 + q * 8); g.globalAlpha = 1; }   /* water running off */
+}
 /* THE BULGE under the boards (the troll's burst, told): five boards humped up over him, a dark gap and water showing under them, splinters jumping once it has set; k 0..1 how long it has been rising */
 export function drawBulge(g, bx, by, k, locked, time) {
   const spr = rottenBoard(true, 1, 3);

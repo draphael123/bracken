@@ -26,7 +26,9 @@ function seg(g, x0, y0, x1, y1, w0, w1, col) {
   const dx = x1 - x0, dy = y1 - y0, l = Math.hypot(dx, dy) || 1, nx = -dy / l, ny = dx / l;
   poly(g, [[x0 + nx * w0 / 2, y0 + ny * w0 / 2], [x1 + nx * w1 / 2, y1 + ny * w1 / 2], [x1 - nx * w1 / 2, y1 - ny * w1 / 2], [x0 - nx * w0 / 2, y0 - ny * w0 / 2]], col);
 }
-/* THE POSE A MODE WEARS (src/bog-troll-hands.js POSE, the contract): torso [dy, lean], armF/armB [x, y] hands, head [dx, dy, tilt], mouth, splinter, weed, clod, wreck, flail, planks, grip */
+/* THE POSE A MODE WEARS (src/bog-troll-hands.js POSE, the contract): torso [dy, lean], armF/armB [x, y] hands, head [dx, dy, tilt], mouth, splinter, weed, clod, wreck, flail, planks, grip
+   (claude/bogtroll2, GREYBOX - the art lane redraws): post ('haul' | 'wind' | 'swing': the support post in both fists), pinned (the section's beams + boards across his shoulders and head),
+   spray (the slap's wall of water off his hands) */
 const WATER = 16;   /* the fen's surface under the road's top */
 
 /* one arm: shoulder -> elbow -> hand; the elbow bows OUT and down (a long heavy arm), a knuckled fist with three claws */
@@ -95,6 +97,71 @@ function torso(g, p, flash, time, ph, top, base, name) {
   box(g, 14, cy + 12, 1, 6, col(C.w1)); box(g, 15, cy + 12, 1, 4, col(C.w2));
 }
 
+/* (claude/bogtroll2art) THE BRIDGE MOVES, DRAWN: timber, the support post, the slap's palms + spray, the pour off raised arms, the pinned wreck. All colour from the palette above. */
+const OAK = ['#16110b', '#241a10', '#3a2c1c', '#54402a', '#735a3a'], ROPE_ = '#c9b27c', ROPE_D = '#8e7a52';
+/* a length of old bog-oak timber centred on (0,0), len x th: lit top edge, grain, bolts, moss tuft, one jagged broken end (jag: -1 left, 1 right, 0 none) */
+function timber(g, len, th, jag, mossy) {
+  const x0 = -len / 2, y0 = -th / 2;
+  box(g, x0, y0, len, th, OAK[1]); box(g, x0, y0 + 1, len, th - 2, OAK[2]); box(g, x0, y0, len, 1, OAK[4]); box(g, x0, y0 + th - 1, len, 1, OAK[0]);
+  for (let i = 0; i < len; i += 9) box(g, x0 + i + (i * 7 % 4), y0 + 1 + (i % 3), 5, 1, OAK[1]);   /* grain */
+  box(g, x0 + 4, y0 + 1, 2, 2, '#8e8a78'); box(g, x0 + len - 6, y0 + 1, 2, 2, '#8e8a78');       /* iron bolts */
+  if (mossy) { box(g, x0 + 10, y0 - 1, 9, 2, C.w1); box(g, x0 + 12, y0 - 2, 4, 1, C.w2); box(g, x0 + len - 20, y0 - 1, 6, 1, C.w2); box(g, x0 + 22, y0 + th - 1, 1, 4, C.w1); }
+  if (jag) { const ex = jag > 0 ? x0 + len : x0; for (let k = 0; k < 4; k++) { const dx = (k & 1 ? 2 : 4); box(g, jag > 0 ? ex : ex - dx, y0 + k * (th / 4), dx, Math.max(1, th / 4 - (k & 1)), k & 1 ? OAK[3] : C.boardL); } }
+}
+/* THE SUPPORT POST in both fists: a black pile, chewed top, iron strap, frayed lashing, the peat foot with roots + weed + drips, a smear trailing the swing */
+function drawPost(g, p, aF, aB, time) {
+  const ax = (aF[0] + aB[0]) / 2, ay = (aF[1] + aB[1]) / 2, mode = p.post, ang = mode === 'haul' ? -1.45 : mode === 'wind' ? -2.5 : -0.08, len = 64, back = mode === 'haul' ? 26 : 12;
+  const pile = () => {
+    box(g, -back, -3, len, 6, OAK[1]); box(g, -back, -2, len, 3, OAK[2]); box(g, -back, -3, len, 1, OAK[4]); box(g, -back, 2, len, 1, OAK[0]);
+    for (let i = 3; i < len - 6; i += 8) box(g, -back + i, -1 + (i % 3), 4, 1, OAK[1]);                                                  /* grain */
+    box(g, -back - 2, -3, 2, 2, OAK[3]); box(g, -back - 3, -1, 3, 2, C.boardL); box(g, -back - 1, 1, 2, 2, OAK[3]);                    /* chewed, splintered top */
+    box(g, len - back - 8, -4, 9, 8, C.p1); box(g, len - back - 7, -4, 6, 2, C.p2); box(g, len - back - 4, -1, 3, 3, C.p0); box(g, len - back - 3, -5, 2, 1, C.p3);   /* the peat foot */
+    box(g, len - back - 9, -3, 1, 2, C.w2); box(g, len - back - 10, -1, 2, 1, C.w1);                                                       /* weed on the foot */
+    box(g, len - back + 1, -2, 1, 2, C.p1); box(g, len - back + 2, 0, 1, 3, C.p0); box(g, len - back + 1, 2, 1, 2, C.p1);                  /* root threads */
+    box(g, 20 - back, -4, 3, 8, '#7e8278'); box(g, 20 - back, -4, 1, 8, '#a4a89a');                                                         /* iron strap */
+    box(g, 6, -4, 2, 8, ROPE_); box(g, 9, -4, 1, 8, ROPE_D); box(g, 7, -7, 1, 3, ROPE_); box(g, 9, 4, 1, 3, ROPE_D); box(g, 6, 4, 1, 2, ROPE_); };   /* hemp lashing, frayed both sides */
+  g.save(); g.translate(ax, ay);
+  if (mode === 'swing') for (let k = 3; k >= 1; k--) { g.save(); g.rotate(ang - k * 0.2); g.globalAlpha = 0.16 + (3 - k) * 0.06; box(g, -back, -3, len, 5, '#cfe0d0'); g.restore(); }   /* the smear: where the post just was */
+  g.rotate(ang); pile();
+  if (mode === 'swing') { g.globalAlpha = 0.7; for (let i = 0; i < 3; i++) box(g, len - back + 3 + i * 5, -5 + i * 4, 6 - i, 1, '#e6efe6'); g.globalAlpha = 1; }   /* the whoosh lines off the tip */
+  g.restore();
+  /* water + peat shaken off the foot (drawn in screen space off the foot's end) */
+  const fx = ax + Math.cos(ang) * (len - back), fy = ay + Math.sin(ang) * (len - back);
+  for (let i = 0; i < 4; i++) { const q = (time * 2.2 + i * 0.27) % 1, dx = mode === 'swing' ? -q * 10 : (i - 1.5) * 2; g.globalAlpha = 1 - q; box(g, fx + dx, fy + 3 + q * (mode === 'swing' ? 6 : 16), 1, 2, i & 1 ? C.wet : C.p1); g.globalAlpha = 1; }
+}
+/* the slap: palms laid flat on the fen (fingers spread), a ring of foam round them */
+function drawPalms(g, aF, aB) {
+  for (const [hx, hy, far] of [[aB[0], aB[1], 1], [aF[0], aF[1], 0]]) { const dk = far ? C.h1 : C.h2, md = far ? C.h2 : C.h3;
+    box(g, hx - 7, hy - 3, 15, 6, dk); box(g, hx - 6, hy - 3, 13, 3, md); box(g, hx - 6, hy - 3, 6, 1, far ? C.h3 : C.h4);                  /* the broad flat back of the hand */
+    for (let k = 0; k < 4; k++) { box(g, hx + 8, hy - 3 + k * 1.6, 4, 1.4, dk); box(g, hx + 11, hy - 3 + k * 1.6, 2, 1.4, '#cfc8a8'); }    /* four spread claws */
+    box(g, hx - 9, hy - 1, 3, 3, C.p1); box(g, hx - 8, hy - 3, 1, 3, C.w2); }
+}
+/* the slap's wall of spray flung up off the surface, droplets arcing, a foam ring */
+function drawSpray(g, time) {
+  g.globalAlpha = 0.9;
+  for (let i = 0; i < 7; i++) { const x = 18 + i * 5, k = 0.55 + 0.45 * Math.abs(Math.sin(time * 5 + i * 1.7)), h = R((9 + (hash(i, 9) % 11)) * k);
+    box(g, x, WATER - 2 - h, 3, h + 2, '#cfe0d0'); box(g, x, WATER - 2 - h, 3, 2, '#f2f8f0'); box(g, x - 1, WATER - 3 - h, 5, 1, '#e6efe6'); box(g, x + 1, WATER - 2 - h * 0.5, 1, 1, '#9fb3a6'); }   /* the wall: foam columns, white caps */
+  g.globalAlpha = 1;
+  for (let i = 0; i < 12; i++) { const q = ((time * 4 + i * 0.083) % 1), sx2 = 20 + i * 3.2 + q * 7, sy2 = WATER - 6 - Math.sin(q * Math.PI) * (16 + (i % 4) * 6); box(g, sx2, sy2, i % 3 ? 2 : 1, i % 3 ? 2 : 1, i % 2 ? '#f2f8f0' : '#9fb3a6'); }   /* flung droplets */
+  for (let i = -1; i <= 5; i++) box(g, 8 + i * 8, WATER - 2, 5, 1, '#f2f8f0');   /* the foam ring */
+}
+/* the wave tell: water pouring off the raised arms in streams, drips off the fingers */
+function drawPour(g, aF, aB, time) {
+  for (const [hx, hy, far] of [[aB[0], aB[1], 1], [aF[0], aF[1], 0]]) for (let s = 0; s < 3; s++) { const x = hx - 3 + s * 3, off = (time * 38 + s * 11 + (far ? 5 : 0)) % 12;
+    for (let j = 0; j < 4; j++) { const y = hy + 8 + j * 12 + off; if (y < WATER - 2) { g.globalAlpha = far ? 0.55 : 0.85; box(g, x, y, 1, 4, s & 1 ? C.wet : '#9fb3a6'); } }
+    g.globalAlpha = 1; box(g, x, hy + 5, 1, 2, C.wet); }
+}
+/* PINNED: the section's two crossbeams down across his shoulders in an X, the boards of the road on his head, splinters + dust, water dripping off the timber */
+function drawPinned(g, top, time) {
+  g.save(); g.translate(-2, top + 10); g.rotate(0.3); timber(g, 62, 6, -1, true); g.restore();
+  g.save(); g.translate(2, top + 11); g.rotate(-0.4); timber(g, 58, 6, 1, false); g.restore();
+  g.save(); g.translate(11, top - 5); g.rotate(-0.22); box(g, -10, -2, 20, 5, C.board); box(g, -10, -2, 20, 1, C.boardL); box(g, -10, 2, 20, 1, C.boardD); box(g, -2, -2, 1, 5, C.boardD); box(g, 5, -1, 1, 1, '#8e8a78'); box(g, 8, -4, 3, 2, C.boardL); g.restore();   /* a board across the crown */
+  g.save(); g.translate(-8, top - 1); g.rotate(0.5); box(g, -7, -2, 14, 4, C.boardD); box(g, -7, -2, 14, 1, C.board); box(g, 4, -4, 2, 2, C.boardL); g.restore();                                                  /* a second, tilted */
+  box(g, -22, top + 16, 3, 2, C.boardL); box(g, 20, top + 8, 3, 2, C.boardL); box(g, 24, top + 17, 2, 2, C.board);                                                                                          /* splinters */
+  for (let i = 0; i < 4; i++) { const q = (time * 2 + i * 0.25) % 1; g.globalAlpha = 1 - q; box(g, -20 + i * 13, top + 18 + q * 12, 1, 2, C.wet); g.globalAlpha = 1; }
+  g.globalAlpha = 0.5; for (let i = 0; i < 3; i++) { const q = (time * 1.2 + i * 0.33) % 1; box(g, -14 + i * 14, top - 8 - q * 8, 3, 2, '#b8b098'); } g.globalAlpha = 1;   /* dust off the timber */
+}
+
 /* the whole body, in its pose; origin = the road's top under his middle, facing right; nothing under the water line */
 function drawTroll(g, name, p, flash, time, ph, sinkK) {
   const ty = (p.torso ? p.torso[0] : 0) + sinkK, lean = p.torso ? p.torso[1] : 0, top = -30 + ty, base = WATER;
@@ -110,12 +177,17 @@ function drawTroll(g, name, p, flash, time, ph, sinkK) {
   const aF = p.armF || [20, 0], aB = p.armB || [-20, 0];
   arm(g, shB[0], shB[1], aB[0] - fl, aB[1] + ty * 0.3, true, { up: aB[1] < -20 });
   arm(g, sh[0], sh[1], aF[0] + fl, aF[1] + (p.flail ? -fl : 0), false, { up: aF[1] < -20 });
+  if (p.pour) drawPour(g, aF, aB, time);
+  if (p.palm) drawPalms(g, aF, aB);
   if (p.weed) { const q = aF[0], w = aF[1]; for (let i = 0; i < 4; i++) { box(g, q - 5 + i * 3, w + 5, 1, 6 + ((time * 10 + i) % 5 | 0), i % 2 ? C.w1 : C.w2); } if (Math.floor(time * 8) % 2) box(g, q, w + 14, 1, 2, C.wet); if (Math.floor(time * 6) % 2) box(g, q - 3, w + 16, 1, 1, C.wet); }
   if (p.clod) { ell(g, aF[0] + 3, aF[1] - 3, 6, 5, C.p1); ell(g, aF[0] + 2, aF[1] - 4, 4, 3, C.p2); box(g, aF[0] + 1, aF[1] - 6, 2, 1, C.p3); box(g, aF[0] + 4, aF[1] - 1, 2, 2, C.p0); box(g, aF[0] + 6, aF[1] + 3, 1, 3, C.wet); }
   if (p.planks) { g.save(); g.translate(1, -54); g.rotate(-0.15);
     box(g, -27, -3, 54, 6, C.board); box(g, -27, -3, 54, 1, C.boardL); box(g, -27, 2, 54, 2, C.boardD); for (let i = -25; i < 26; i += 14) { box(g, i, -3, 1, 6, C.boardD); box(g, i + 3, -1, 1, 1, C.boardD); }
     box(g, -27, 3, 6, 3, C.boardD); box(g, 20, 3, 5, 5, C.boardD); box(g, -22, 4, 1, 5, C.p1); box(g, 12, 4, 1, 6, C.w1);   /* torn ends, a stump of post, weed + peat dripping */
     g.restore(); }
+  if (p.post) drawPost(g, p, aF, aB, time);
+  if (p.spray) drawSpray(g, time);
+  if (p.pinned) drawPinned(g, top, time);
   if (p.grip) { for (const a of [aF, aB]) { box(g, a[0] - 5, a[1] - 3, 12, 3, C.board); box(g, a[0] - 5, a[1] - 3, 12, 1, C.boardL); box(g, a[0] - 3, a[1] - 5, 2, 2, C.boardD); } }
   if (p.splinter) for (let i = 0; i < 8; i++) { const a = i * 0.78 + time * 4; box(g, Math.cos(a) * 24, -8 - Math.abs(Math.sin(a)) * 22, 4, 2, i % 3 ? C.board : C.boardL); }
   /* the water he stands in: a broken foam ring at the surface, drips off his belly */
@@ -126,7 +198,7 @@ function drawTroll(g, name, p, flash, time, ph, sinkK) {
 }
 
 /* the animation index a pose's own motion uses: flail / weed / splinter / spit / the foam ring all move on 8 steps a second, so the cache stays small */
-const animated = p => p.flail || p.weed || p.splinter || p.mouth || p.wreck;
+const animated = p => p.flail || p.weed || p.splinter || p.mouth || p.wreck || p.spray;
 export const TROLL_ANCHOR = { ax: 100, ay: 92, w: 200, h: 112 };
 export function trollSprite(name, pose, time, ph, flash, sinkK = 0) {
   const k = animated(pose) || true ? Math.floor(time * 6) % 8 : 0, sk = Math.max(0, Math.min(40, Math.round(sinkK / 2) * 2)), key = `${name}|${k}|${ph > 1 ? 2 : 1}|${flash ? 1 : 0}|${sk}`;

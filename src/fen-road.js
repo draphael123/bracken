@@ -39,7 +39,14 @@ export const BUNDLES = [[107, 17], [153, 17], [371, 17], [391, 17]];
 export const ROAD = 18, WATER = 19, BED = 23;   /* the boardwalk's row, the water's surface row, the bed's first row */
 /* THE ARENA: the troll's crossing at the Stockade's gate. Three ROTTEN sections (arena sags: a longer hold, so you can stand on one and lure him) and
    the two stretches he RIPS in his phase two (src/bog-troll.js): islands 407-418, 422-433, 437-450, every rotten section on one of them */
-export const ARENA = { x0: 407, x1: 450, gate: 405, exit: 448, wallR: 451, trigger: 411, boss: 428, rot: [[413, 4], [427, 4], [441, 4]], rip: [[419, 421], [434, 436]] };
+export const ARENA = { x0: 407, x1: 450, gate: 405, exit: 448, wallR: 451, trigger: 411, boss: 428, rot: [[413, 4], [427, 4], [441, 4]], rip: [[419, 421], [434, 436]],
+  /* (claude/bogtroll2, Daniel 11-01 "THE ROAD SHOULD NOT REPAIR"): the crossing stands between two PEAT BANKS (407-409, 446-450) and the water runs 410-445 under it. Nothing floats back:
+     each burst wrecks its section for good, and the crews' PLANK BUNDLES on the banks (a stock that refills slowly: never a soft-lock) rebuild it - LAY THE ROAD at a broken edge, and a
+     freshly laid plank SAGS like a rotten section (the next lure). THE PROPS: the crossing's torches, warning boards and pennants stand on their own boards and topple into the fen when
+     those boards go (src/fen-road-hands.js) */
+  bankL: [407, 409], bankR: [446, 450], water0: 410, water1: 445,
+  bundles: [[408, 17, { stock: 3, refill: 6 }], [447, 17, { stock: 3, refill: 6 }]],
+  props: [['torch', 414], ['torch', 428], ['torch', 442], ['warn', 420], ['warn', 435], ['pennant', 424], ['pennant', 438], ['torch', 411], ['torch', 445]] };
 
 export function buildFenRoad({ painter, T, TS }) {
   const W = 452, H = 28, L = painter(W, H);
@@ -76,7 +83,7 @@ export function buildFenRoad({ painter, T, TS }) {
      hut at its west wall - a pocket off the route), out by the steps at its east end */
   floor(37, 38, 20); floor(39, 52, 22); floor(51, 52, 20);
   for (let x = 41; x <= 48; x++) for (let y = 22; y <= 24; y++) set(x, y, T.AIR); set(47, 24, T.SOLID); set(48, 23, T.SOLID); set(48, 24, T.SOLID);   /* the pit, three rows deeper and six wide (no jump clears it), a cut step at its east wall to climb out by */
-  ent('sprig', 41, 21, { face: -1 }); ent('shield', 50, 21, { face: -1 }); ent('spit', 53, 17, { face: -1 });   /* the cutters in the trench; a spitter on its east lip lobbing in */
+  ent('sprig', 42, 24, { face: -1 }); ent('shield', 50, 21, { face: -1 }); ent('spit', 53, 17, { face: -1 });   /* the cutters in the trench (claude/bogtroll2: the sprig down in the pit, not over it - tools/foe-footing.mjs); a spitter on its east lip lobbing in */
   coins([44, 24], [45, 24], [46, 24]); deco('rock', 40, 21, { v: 1 });
   plat(39, 19, 3); ent('silver', 40, 18);   /* the cutter's shelf: up out of the trench's west end, a silver (off the route) */
   /* THE FIRST LASHING: the crew stands on the far side of a bowed section. Strike the lashing on its post as they cross: it goes under with them */
@@ -88,7 +95,7 @@ export function buildFenRoad({ painter, T, TS }) {
   floor(71, 84, ROAD);
   sign(72, 17, 'A LOOKOUT ON STILTS. HIS HORN CALLS HIS CREW. GO LOW: A SWEEP OR A SLIDE CUTS A STILT.');
   deco('bothy', 82, 17, { v: 0 });
-  ent('stiltwalker', 79, 17, { face: -1, horn: true, beat: 3, pack: [{ dx: 48, y: ROAD * TS, t: 'sprig' }, { dx: 56, y: ROAD * TS, t: 'sprig' }] });
+  ent('stiltwalker', 76, 17, { face: -1, horn: true, beat: 2, pack: [{ dx: 64, y: ROAD * TS, t: 'sprig' }, { dx: 72, y: ROAD * TS, t: 'sprig' }] });   /* (claude/bogtroll2) his beat clear of the bothy (Daniel 11-01: he stood in it) - tools/foe-footing.mjs */
   coins([75, 16], [77, 16]);
   /* out over the water again: two bowed sections in a row under a bowman on the lookout walk (a fight while the rule runs, A5) */
   water(85, 98); planks(85, 98); sag('c', 88, 3); sag('d', 93, 3);
@@ -102,7 +109,7 @@ export function buildFenRoad({ painter, T, TS }) {
   sign(105, 17, 'THE ROAD IS BROKEN. E TAKES A PLANK FROM THE CREW\'S BUNDLE; E AT THE EDGE LAYS IT.');
   /* (claude/fenroad2) THE FIRST PEAT HOLE (the plank TAUGHT): the road stops over a bog that sucks you down; the crew's bundle on the bank, nothing hunting you */
   hole('p1', 111, 7);
-  floor(118, 124, ROAD); ent('sprig', 119, 17, { face: -1 }); ent('shield', 122, 17, { face: -1 });
+  floor(118, 124, ROAD); ent('sprig', 119, 17, { face: -1 }); ent('shield', 123, 17, { face: -1 });
   deco('timber', 121, 17, { v: 0 }); coins([113, 16], [114, 15], [116, 16]);
   /* a second lashing, under a bowman on a stilt deck over it */
   water(125, 150); planks(125, 150); sag('e', 136, 4); lash(133, 'e');
@@ -138,7 +145,7 @@ export function buildFenRoad({ painter, T, TS }) {
   sag('h1', 216, 2, { hold: 1.4 }); plat(219, 17, 3); sag('h1b', 223, 2, { row: 17, hold: 1.4 }); sag('h2', 226, 2, { row: 17, hold: 1.4 });
   block(228, 231, 16, BED - 1); block(232, 234, 14, BED - 1); block(235, 237, 12, BED - 1); block(238, 240, 10, BED - 1);   /* THE LOOKOUT CRIBS: four timber cribs stepping up out of the fen to the lookout walk (the art lane draws them as lashed log cribs) */
   /* the lookout walk: the high deck, and the horn lookout on its post. His horn calls a bowman and a spitter onto the decks round him */
-  plat(241, 8, 10); ent('stiltwalker', 248, 7, { face: -1, horn: true, beat: 2, pack: [{ dx: 88, y: 10 * TS, t: 'archer' }, { dx: -168, y: 10 * TS, t: 'spit' }] });
+  plat(241, 8, 10); ent('stiltwalker', 246, 7, { face: -1, horn: true, beat: 2, pack: [{ dx: 88, y: 10 * TS, t: 'archer' }, { dx: -136, y: 10 * TS, t: 'spit' }] });
   coins([244, 7], [246, 7], [250, 7]);
   plat(252, 10, 3);
   plat(255, 12, 3); plat(258, 14, 2); sag('h3', 261, 2, { row: 16, hold: 1.4 }); plat(266, 16, 3); ent('spit', 267, 15, { face: -1 }); sag('h5', 271, 2, { row: 17, hold: 1.4 }); plat(274, 17, 2);
@@ -175,15 +182,16 @@ export function buildFenRoad({ painter, T, TS }) {
 
   // ================= 5. THE TROLL'S CROSSING (405-451): THE BOG TROLL (src/bog-troll.js) =================
   ent('gate', ARENA.exit, 17);   /* THE STOCKADE'S GATE at the crossing's east end: it opens when the troll falls (gateAfterBoss) - you arrive at it */
-  water(407, 450); planks(407, 450);
+  water(ARENA.water0, ARENA.water1); planks(ARENA.water0, ARENA.water1);
+  block(ARENA.bankL[0], ARENA.bankL[1], ROAD, H - 1); block(ARENA.bankR[0], ARENA.bankR[1], ROAD, H - 1);   /* (claude/bogtroll2) the crossing's two peat banks, a crews' bundle on each */
   ARENA.rot.forEach(([x0, w], i) => sag('rot' + i, x0, w, { arena: true }));
-  coins([407, 22], [408, 22], [409, 22], [410, 22]);   /* the troll's hoard on the bed under the crossing's first boards (the pocket pays) */
+  coins([419, 22], [420, 22], [421, 22], [422, 22]);   /* the troll's hoard on the bed under the first stretch he rips (the pocket pays) */
   block(ARENA.wallR, ARENA.wallR, 0, H - 1);
   ent('bogtroll', ARENA.boss, 17, { face: -1 });
 
   return {
     W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: 17 }, pools, falls: [], moversExtra: movers, fenroad: true, gateAfterBoss: true, reachDoors: [{ x0: 192, x1: 193, y0: 13, y1: ROAD }],   /* THE BARRICADE: every hero can strike its lashing (src/reachcore.js: the full fill has it down, the plain fill keeps it) */
-    reachSpans, bundles: BUNDLES.map(b => b.slice()),   /* (claude/fenroad2) THE BROKEN ROAD: every hero carries a plank and lays it (the full fill has each hole laid, the plain fill not); the crews' bundles */
+    reachSpans, bundles: [...BUNDLES, ...ARENA.bundles].map(b => b.slice()),   /* (claude/fenroad2) THE BROKEN ROAD: every hero carries a plank and lays it (the full fill has each hole laid, the plain fill not); the crews' bundles */
     waterHurts: true, noStack: true, sagCells, machineCells: [...sagCells, ...machine].map(([x, y]) => y * W + x),
     sections: SECTIONS.map(([name, x0, x1]) => ({ id: name.toLowerCase().replace(/[^a-z]+/g, '-').replace(/^-|-$/g, ''), name, x0, x1 })),
     music: 'fenroad', duskStart: undefined,
@@ -193,6 +201,7 @@ export function buildFenRoad({ painter, T, TS }) {
     ambient: [{ x0: 0, x1: 99999, kind: 'rain' }],
     tints: [[0, 104, [150, 140, 100], 0.10], [105, 210, [140, 120, 90], 0.10], [211, 310, [110, 140, 130], 0.14], [311, 404, [150, 110, 80], 0.14], [405, 451, [90, 110, 80], 0.16]],
     arena: { x0: ARENA.x0 * TS, x1: ARENA.x1 * TS, floor: ROAD * TS, trigger: ARENA.trigger * TS, wallL: ARENA.gate + 1, wallR: ARENA.wallR, boss: 'bogtroll', music: 'boss3', tint: '#4a6a3a', tintA: 0.12, fx: 'motes',
-      water: WATER * TS, bed: BED * TS, rip: ARENA.rip, rot: ARENA.rot.map(([x0, w], i) => ({ id: 'rot' + i, x0, w })) },
+      water: WATER * TS, bed: BED * TS, rip: ARENA.rip, rot: ARENA.rot.map(([x0, w], i) => ({ id: 'rot' + i, x0, w })),
+      w0: ARENA.water0 * TS, w1: (ARENA.water1 + 1) * TS, water0: ARENA.water0, water1: ARENA.water1, props: ARENA.props.map(([k, col]) => ({ k, col })) },   /* (claude/bogtroll2) the open water he swims in; the props that stand on the crossing's boards */
   };
 }

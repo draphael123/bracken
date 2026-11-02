@@ -87,6 +87,10 @@ function layout(L, T) {
   const INT = new Set(['sign', 'lashing', 'check', 'crewgap', 'broken', 'sag', 'rotten', 'gate', 'deco', 'undertow', 'shrine', 'bogtroll', 'silver']);
   for (const e of L.ents || []) { if (!INT.has(e.t)) continue; for (let d = -1; d <= 1; d++) { const x = Math.round(e.x) + d; if (x >= 0 && x < W) busy[x] = 1; } }
   for (const b of L.bundles || []) for (let d = -3; d <= 3; d++) { const x = b[0] + d; if (x >= 0 && x < W) busy[x] = 1; }
+  /* (claude/bogtroll2, Daniel 11-01 "the signs + torches float"): nothing is set on boards that can go - a bowed section, a crew gap, a peat hole, the whole crossing (its own props stand on
+     their boards and topple with them: src/fen-road-hands.js drawProp) */
+  for (const e of L.ents || []) if ((e.t === 'sag' || e.t === 'rotten' || e.t === 'crewgap' || e.t === 'broken') && e.w) for (let d = -1; d <= e.w; d++) { const x = Math.round(e.x) + d; if (x >= 0 && x < W) busy[x] = 1; }
+  if (L.arena) for (let x = Math.floor(L.arena.x0 / 16) - 1; x <= Math.floor(L.arena.x1 / 16) + 1; x++) if (x >= 0 && x < W) busy[x] = 1;
   const free = (x, n) => { for (let i = 0; i < n; i++) { const q = x + i; if (q < 1 || q >= W - 1 || busy[q]) return false; if (at(q, ROAD - 1) !== T.AIR || at(q, ROAD - 2) !== T.AIR) return false; const t = at(q, ROAD); if (t !== T.PLANK && t !== T.SOLID) return false; } return true; };
   const take = (x, n) => { for (let i = -1; i <= n; i++) if (x + i >= 0 && x + i < W) busy[x + i] = 1; };
   const MIX = [
@@ -117,5 +121,25 @@ export function drawSites(g, L, cx, cy, time, T) {
     if (o.k === 'banner') { const s = banner(), sw = Math.round(Math.sin(time * 1.6 + o.x) * 1); g.drawImage(s, X - ox + sw * 0, yb - oh); Rr(g, '#4a0e0e', X - 4 + 8 + sw, yb - oh + 19, 1, 1); continue; }
     if (!SPR[o.k]) throw new Error("site kind " + o.k); const s = SPR[o.k](); g.drawImage(s, X - ox, yb - s.height); }
 }
+/* (claude/bogtroll2) A PROP OF THE CROSSING (src/fen-road-hands.js): k = 'torch' (a lamp post), 'warn' (a goblin warning board: a red X on a stake), 'pennant'; yb = the road's top, wy = the water's
+   (screen px); fall 0..1 = toppling into the fen to the side (it tips, slides off the broken board and sinks to the waterline - a torch's flame goes out half way) */
+export function drawProp(g, k, x, yb, wy, time, fall = 0, side = 1, seed = 0) {
+  const s = k === 'torch' ? lampPost(false) : k === 'pennant' ? banner() : warnBoard(), [ox] = k === 'torch' ? OFF.lamp : k === 'pennant' ? OFF.banner : [6, 24];
+  if (!fall) { g.drawImage(s, x - ox, yb - s.height); if (k === 'torch') { const fl = 0.6 + 0.25 * Math.sin(time * 6 + seed) * Math.sin(time * 2.3 + seed * 0.1); glow(g, x - ox + 14.5, yb - s.height + 9, 9, 0.16 * fl); } return; }
+  const a = Math.min(1.45, fall * 2.4) * side, drop = Math.max(0, fall - 0.35) / 0.65 * (wy - yb + s.height * 0.5);
+  g.save(); g.beginPath(); g.rect(x - 80, yb - 200, 160, wy - yb + 200); g.clip(); g.translate(Math.round(x + side * fall * 10), Math.round(yb + drop)); g.rotate(a); g.drawImage(s, -ox, -s.height); g.restore();
+  if (fall > 0.4) { const wx = x + side * 12, q = (fall - 0.4) / 0.6;   /* (claude/bogtroll2art) where it went in: a ring spreading, a crown of droplets thrown up (a torch's flame dies in a hissing steam cloud) */
+    g.globalAlpha = 0.7 * (1 - fall); Rr(g, '#e6efe6', wx - 8 - q * 4, wy - 1, 16 + q * 8, 1); Rr(g, '#9fb3a6', wx - 6 - q * 3, wy, 12 + q * 6, 1); g.globalAlpha = 1;
+    for (let i = 0; i < 6; i++) { const u = Math.min(1, q * 1.6), ang = (i - 2.5) * 0.45, hx = wx + Math.sin(ang) * u * 12, hy = wy - Math.cos(ang) * u * 11 + u * u * 9; if (u < 1) { g.globalAlpha = 1 - u * 0.6; P(g, i & 1 ? '#f2f8f0' : '#cfe0d0', Math.round(hx), Math.round(hy)); P(g, '#9fb3a6', Math.round(hx), Math.round(hy) + 1); g.globalAlpha = 1; } }
+    if (k === 'torch') steam(g, wx, wy, q); }
+}
+/* a steam puff cluster: grey-white blobs rising and spreading from (x, y) while q runs 0..1 */
+export function steam(g, x, y, q) { for (let i = 0; i < 5; i++) { const u = Math.min(1, q * 1.2 + i * 0.05), px = x + (i - 2) * 3 + Math.round(Math.sin(i * 2.3 + q * 5) * 2), py = y - 3 - u * (12 + i * 2), r = 1 + Math.floor(u * 3);
+  g.globalAlpha = Math.max(0, 0.85 * (1 - q) * (1 - u * 0.4)); Rr(g, '#eef2ee', px - r, py - r, 2 * r + 1, 2 * r); Rr(g, '#b8c0bc', px - r + 1, py, 2 * r - 1, r); } g.globalAlpha = 1; }
+const warnBoard = () => once('warnB', () => { const [c, g] = canvas(14, 26); Rr(g, '#2a1e12', 6, 8, 3, 18); Rr(g, '#5a4630', 6, 8, 1, 18); P(g, '#2a2014', 7, 14); P(g, '#2a2014', 8, 19);   /* the stake, black with age */
+  Rr(g, '#3a2c1c', 1, 1, 12, 10); Rr(g, '#745c3e', 1, 1, 12, 8); Rr(g, '#947a52', 2, 1, 10, 1); Rr(g, '#2a1e12', 1, 5, 12, 1); Rr(g, '#2a1e12', 1, 10, 12, 1);   /* two nailed planks, a lit top edge */
+  for (let i = 0; i < 7; i++) { Rr(g, '#c24a3c', 3 + i, 2 + i, 2, 1); Rr(g, '#c24a3c', 10 - i, 2 + i, 2, 1); } for (let i = 0; i < 7; i++) { P(g, '#8f2f28', 3 + i, 3 + i); P(g, '#8f2f28', 11 - i, 3 + i); }   /* a fat red X, shaded */
+  P(g, '#c4c0ac', 2, 2); P(g, '#c4c0ac', 12, 2); P(g, '#c4c0ac', 2, 9); P(g, '#c4c0ac', 12, 9);   /* nail heads */
+  Rr(g, '#c9b27c', 5, 12, 4, 1); Rr(g, '#8e7a52', 5, 13, 1, 3); Rr(g, '#8f2f28', 8, 12, 2, 4); return outline(c, '#120c08'); });   /* a tied rag + rope */
 /* bake every sprite now (the level's load) */
 export function warm() { lampPost(false); lampPost(true); sawhorse(); barrel(); lean(); driver(); stackB(); brazier(); net(); skullStake(); banner(); stakes(); for (let v = 0; v < 4; v++) pilings(v); lantern(); }
