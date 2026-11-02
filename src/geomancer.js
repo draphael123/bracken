@@ -26,6 +26,7 @@ export const GEO = {
   /* (claude/ults, Daniel 11-01) AVALANCHE = THE ULTIMATE (UP+C at a FULL board, cap stones standing): every stone ERUPTS as a pillar (eruptT s: launches the common foe in its column, a blow x erupt) and then ROLLS down the room as a boulder (sp px/s, life s, one bounce).
      Each stone hits a BOSS or a mini for swordDmg x boss (a common foe x roll, and is bowled over); the stones are consumed - the board is rebuilt by hand. No cooldown: the cost is the three stones. */
   avalanche: { erupt: 0.9, eruptT: 0.5, roll: 2.0, boss: 3.0, bossStagger: 0.7, sp: 230, life: 3.8, bounces: 1, r: 9, launchVy: -380, reach: 22 },
+  bigBodyGrace: 0.4,
   cap: 3, life: 4, lifeLong: 6, archLife: 6, crack: 1.0, rise: 0.12,
   pillarH: 2, wallH: 2, perfect: 0.2, wallHp: 3,
   /* FAULT LINE (her held X from round 3, Daniel, 2026-09-24 - it replaces UPHEAVAL). Upheaval bet on a SPOT and the foe walked off it;
@@ -96,8 +97,10 @@ export function makeGeomancer(api) {
     const c = cellBox(tx, ty); return !bodies().some(b => api.overlap(c, b));
   }
   function refreshTiles() { api.resolveTiles(); const spr = api.tileSpr; if (spr) for (const p of pieces) for (const c of p.cells) spr[c.i] = null; }
+  /* (claude/geotune) a standing stone is not eaten by a BOSS that walks onto it (its walk ignores tiles): only a ram or the gnaw breaks it - so a board of three can stand beside a boss */
+  const smallBodies = () => [heroBox(), ...(api.players || []).filter(q => q !== api.P && !q.dead && q.hp > 0).map(q => api.box(q)), ...foes().filter(e => !(api.lcBig(e) || e.maxHp || e.mini)).map(api.box)];
   function crumble(p, why) {
-    if (p.gone) return; p.gone = true;
+    if (p.gone) return; p.gone = true; stats.cr = stats.cr || {}; stats.cr[why] = (stats.cr[why] || 0) + 1;
     const g = grid(); for (const c of p.cells) if (p.grid[c.i] === p.tile) p.grid[c.i] = c.was;   /* RULE 5: only ever the grid it was written into (and always put back, whichever grid is live) */
     pieces = pieces.filter(q => q !== p); if (p.grid === g) refreshTiles();
     const cx = (p.x0 + p.x1) / 2, cy = (p.y0 + p.y1) / 2;
@@ -182,6 +185,7 @@ export function makeGeomancer(api) {
   function faultPillar(fl) { fl.spiked = true; const P = api.P, PL = GEO.tiers.pillar, e = fl.first && fl.first.alive ? fl.first : null, fy = Math.floor(fl.gy / TS);
     const x = e ? (api.lcBig(e) ? e.x - fl.dir * ((e.w || 12) / 2 + 6) : e.x) : fl.x0 + fl.dir * fl.max;
     const r = erupt(Math.floor(x / TS), fy, PL.h + (tal('tall') ? 1 : 0), 'pillar', { noHero: true, mul: PL.mul });
+    stats.pf = stats.pf || []; if (stats.pf.length < 14) stats.pf.push([Math.round(x), fy, e ? 1 : 0, r.piece ? 1 : 0, Math.round(P.x), grid()[(fy - 1) * api.LW + Math.floor(x / TS)]]);
     stats.pillars++; if (r.piece) stats.steps++; if (api.refund) api.refund(PL.refund); api.shakeCam(4); api.ringAt(x, fl.gy - 20, 18, GEO.tiers.cols[3], 0.35); api.dust(x, fl.gy, 10); }
   function faultHits(fl) {
     const lo = fl.dir > 0 ? fl.x0 - 2 : fl.x0 - fl.len, hi = fl.dir > 0 ? fl.x0 + fl.len : fl.x0 + 2;
@@ -425,11 +429,11 @@ export function makeGeomancer(api) {
     const P = api.P, g = grid();
     /* the grid changed under us (a new level, a reload): what stood in the old one is gone with it (RULE 5) */
     if (pieces.some(p => p.grid !== g)) for (const p of [...pieces]) if (p.grid !== g) crumble(p, 'silent');
-    P.tremor = boardFill();   /* (claude/geoid) the meter shows the board */
+    P.tremor = boardFill(); { const n = standing(); stats.maxStand = Math.max(stats.maxStand || 0, n); if (n >= cap()) stats.fullT = (stats.fullT || 0) + dt; }   /* (claude/geotune) board stats for the tune */
     footBreak(dt);
     for (const p of [...pieces]) { p.age += dt;
       if (p.age >= p.life) { crumble(p, 'time'); continue; }   /* RULE 2 */
-      const bs = bodies(); if (p.cells.some(c => bs.some(b => api.overlap(cellBox(c.tx, c.ty), b)) && p.tile !== T().ONEWAY)) crumble(p, 'body');   /* RULE 4 */ }
+      const bs = p.age > GEO.bigBodyGrace ? smallBodies() : bodies(); if (p.cells.some(c => bs.some(b => api.overlap(cellBox(c.tx, c.ty), b)) && p.tile !== T().ONEWAY)) crumble(p, 'body');   /* RULE 4 */ }
     /* the wall and a shot: a wall raised on the beat throws it back (STONEFACE); anything else is stopped in the stone */
     for (const s of api.seeds) { if (s.dead || s.reflected) continue; const w = pieces.find(p => p.kind === 'wall' && s.x > p.x0 - 3 && s.x < p.x1 + 3 && s.y > p.y0 - 3 && s.y < p.y1 + 3); if (!w) continue;
       if (tal('returnFire') && api.time - w.born < 0.5) { api.reflectSeed(s); api.number((w.x0 + w.x1) / 2, w.y0 - 14, 'THROWN BACK', STONE.rune); }

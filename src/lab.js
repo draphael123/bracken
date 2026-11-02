@@ -1891,6 +1891,7 @@ async function runbossLab(BK, opts) {
         if(pl.talk&&(P.labTalkF===undefined||f-P.labTalkF>12)){BK.press('talk');P.labTalkF=f;}
         if(pl.atk&&P.atk<0){P.face=pl.face||P.face;if(pl.up)k.up=true;BK.press('atk');swings++;}
         if(hqOpen(boss)&&!wasOpen)opened++;wasOpen=hqOpen(boss);
+        if(h==='geomancer'&&pl&&!pl.block&&!pl.dodge&&!pl.jump&&P.ground&&!k.atk&&boss.mode!==undefined&&ULT_BOT(BK,P,h,Math.abs(boss.x-P.x),boss.y-P.y)){P.face=Math.sign(boss.x-P.x)||P.face;k.left=k.right=k.jump=false;k.up=true;k.block=true;}   /* (claude/geotune) AVALANCHE (UP+C at a full board): the bespoke boss hands never spent it, so the bot measured a geomancer with no ultimate */
         const was=P.hp,m0=boss.mode;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(m0,Math.max(0,was-P.hp));if(opts.onFrame)await opts.onFrame({boss,P,f,h,lvl:lvId,open:hqOpen(boss),why:pl.why});if(f%600===599)await yieldNow();continue;
       }
       if(boss.t==='grubbag'){
@@ -1946,6 +1947,7 @@ async function runbossLab(BK, opts) {
         if(pl.down&&!P.ground)k.down=true;
         if(pl.atk&&P.atk<0){P.face=pl.face||P.face;BK.press('atk');swings++;}
         if(bbOpen(boss)&&!wasOpen)opened++;wasOpen=bbOpen(boss);
+        if(h==='geomancer'&&pl&&!pl.block&&!pl.dodge&&!pl.jump&&P.ground&&!k.atk&&boss.mode!==undefined&&ULT_BOT(BK,P,h,Math.abs(boss.x-P.x),boss.y-P.y)){P.face=Math.sign(boss.x-P.x)||P.face;k.left=k.right=k.jump=false;k.up=true;k.block=true;}   /* (claude/geotune) AVALANCHE (UP+C at a full board): the bespoke boss hands never spent it, so the bot measured a geomancer with no ultimate */
         const was=P.hp,m0=boss.mode;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(m0,Math.max(0,was-P.hp));if(opts.onFrame)await opts.onFrame({boss,P,f,h,lvl:lvId,open:bbOpen(boss),why:pl.why});if(f%600===599)await yieldNow();continue;
       }
       if(boss.t==='oldtusker'){
@@ -1979,6 +1981,7 @@ async function runbossLab(BK, opts) {
         else if(!geoPine&&pl.atk&&P.atk<0){P.face=pl.face||P.face;BK.press('atk');swings++;}
         if(h==='geomancer'&&!geoOpen&&!geoPine&&k.atk&&P.charge>0&&geoCrackGo(BK,false))k.atk=false;   /* (claude/chargetiers) a wind this branch no longer wants (k.atk is kept between its frames) goes at the FAULT LINE - where the full wind used to let itself go, not on into the pillar */
         if(otOpen(boss)&&!wasOpen)opened++;wasOpen=otOpen(boss);
+        if(h==='geomancer'&&pl&&!pl.block&&!pl.dodge&&!pl.jump&&P.ground&&!k.atk&&boss.mode!==undefined&&ULT_BOT(BK,P,h,Math.abs(boss.x-P.x),boss.y-P.y)){P.face=Math.sign(boss.x-P.x)||P.face;k.left=k.right=k.jump=false;k.up=true;k.block=true;}   /* (claude/geotune) AVALANCHE (UP+C at a full board): the bespoke boss hands never spent it, so the bot measured a geomancer with no ultimate */
         const was=P.hp,m0=boss.mode;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(m0,Math.max(0,was-P.hp));if(opts.onFrame)await opts.onFrame({boss,P,f,h,lvl:lvId,open:otOpen(boss),why:pl.why});if(f%600===599)await yieldNow();continue;
       }
       if(boss.t==='tombking'){
