@@ -15,32 +15,38 @@
 //     swing - but you can jump and climb) the swarms and hornets near you GO QUIET; E sets it down (it smoulders where it stands a while); ATTACK THROWS IT
 //     (the told arc) and where it breaks the SMOKE STAYS a few seconds - a quiet patch you climb through.
 //
-// SEVEN NAMED AREAS (A10c: a shrine closes each area's exam; one before the boss). Columns; rows: smaller is higher. The route climbs from the forest floor
-// (row 66) to the brood hall (row 22), drops down the trunk and finishes at the marsh's edge.
+// NINE NAMED AREAS (A10c: a shrine closes each area's exam; one before the boss). Columns; rows: smaller is higher. The route climbs from the forest floor
+// (row 66) to the brood hall (row 22), drops down the trunk and finishes at the marsh's edge. (claude/hornetsnest2, Daniel 10-30 + 11-02: +100 columns for the ACT I DEMO - the
+// SAGGING GALLERY and the HONEY WELL - and the Hornet Queen's FOG: scratch/plan-hornetsnest2-1102.md.)
 //      0-79   THE PINE'S FOOT       TEACH  the smoke stand + a lone swarm over a root step (carry the pot through), THE FIRST COMB (cut it: the step up onto the
 //                                          buttress root - REQUIRED), a sticky comb bridge over a root hollow under a hornet, a comb dropped on a drone   shrine 78
 //     80-168  THE PAPER GATE        TEST   up the nest's mouth (comb rungs) with a swarm in its throat (carry the pot up), THE COMB BRIDGE (cut it over the
 //                                          waste pit - REQUIRED), a waxed floor under darting hornets; EXAM: THE NEST-GUARD under the comb ledge, a swarm at
 //                                          his back                                                                                                        shrine 167
-//    169-247  THE COMB STAIR        REMIX  (A14) the real platforming: the nest's core climbed on comb shelves - a THROWN pot up to the swarm's ledge, a sticky
+//    169-218  THE SAGGING GALLERY   REMIX  (new) wax + comb + smoke over a honey SUMP: three SAGGING COMBS (they count out and come back), a wax pillar, honey DRIPS on the
+//                                          gaps, THE BRIDGE COMB cut from the pillar (REQUIRED); a fall is a climb back out (stairs west and east of the pillar)
+//    219-297  THE COMB STAIR        REMIX  (A14) the real platforming: the nest's core climbed on comb shelves - a THROWN pot up to the swarm's ledge, a sticky
 //                                          span under a hornet, THE CHAIN (two combs that stack into a stair - REQUIRED); EXAM: the last chain under a swarm
-//                                          and two hornets (REQUIRED)                                                                                       shrine 240
-//    248-294  THE BROOD CELLS       TEACH THE BOSS  her brood: cells that PULSE before they hatch (smash a pulsing cell, or its drones come); her door
-//    295-332  THE BROOD HALL        BOSS      src/hornet-queen.js, BOTH PHASES: P1 comb perches (bait the dive into one: her sting sticks), smoke pots, comb that falls,
-//                                             her brood; THE HALL TEARS at half - P2 honey floods the floor (sticky), the torn combs hang (cut one: a step out of the
-//                                             honey, or a weight on her), THE LAST COMB in the vault (drop it on her: the big pin)
-//    333-353  THE FALLING NEST      DESCENT   (after her death) the nest tears loose: down beside the trunk on comb ledges that give way, falling comb told by its
-//                                             ring, a bramble at the foot                                                                                 shrine 351
-//    354-419  THE MARSH EDGE        WAY OUT   out through the great pine's roots to the marsh: reeds, the first shallow water, a hornet or two that fled the nest; the gate
+//                                          and two hornets (REQUIRED)                                                                                       shrine 290
+//    298-347  THE HONEY WELL        REMIX  (new) down the west side on comb shelves, across a sticky bed, UP the east side on pendant comb rungs under honey drips;
+//                                          THE OVERHANG (REQUIRED): the rung at row 27 and the next at row 22 are five rows apart - cut the comb hung over the rung
+//    348-394  THE BROOD CELLS       TEACH THE BOSS  her brood: cells that PULSE before they hatch (smash a pulsing cell, or its drones come); her door; the sign
+//                                          that teaches the fog                                                                                             shrine 392
+//    395-432  THE BROOD HALL        BOSS      src/hornet-queen.js, BOTH PHASES: P1 comb perches (bait the dive into one: her sting sticks), SMOKE POTS (a pot thrown on her,
+//                                             or her dive through a full stand, FOGS HER TO THE FLOOR), comb that falls, her brood; THE HALL TEARS at half - P2 honey
+//                                             floods the floor (sticky), the torn combs hang (cut one: a step out of the honey, or a weight on her), THE LAST COMB
+//    433-453  THE FALLING NEST      DESCENT   (after her death) the nest tears loose: down beside the trunk on comb ledges that give way, falling comb told by its
+//                                             ring, a bramble at the foot                                                                                 shrine 451
+//    454-519  THE MARSH EDGE        WAY OUT   out through the great pine's roots to the marsh: reeds, the first shallow water, a hornet or two that fled the nest; the gate
 // Every number is a FINAL column (tools/hornets-nest.mjs pins the beats).
 export const NEST = { W: 520, H: 72, FL: 66 };
 export const NEST_RULE = 'FRESH COMB IS STICKY. CUT A HANGING COMB AND IT DROPS - A STEP OR A BRIDGE. CARRY A SMOKE POT AND THE SWARM GOES QUIET.';
 export const SECTIONS = [["THE PINE'S FOOT", 0, 79], ['THE PAPER GATE', 80, 168], ['THE SAGGING GALLERY', 169, 218], ['THE COMB STAIR', 219, 297], ['THE HONEY WELL', 298, 347], ['THE BROOD CELLS', 348, 394], ['THE BROOD HALL', 395, 432], ['THE FALLING NEST', 433, 453], ['THE MARSH EDGE', 454, 519]];
 /* each verb's arc in COLUMNS - TAUGHT, TESTED, REMIXED, EXAMINED (tools/hornets-nest.mjs reads these) */
 export const ARCS = {
-  comb: { teach: [30, 46], test: [112, 128], remix: [199, 207], exam: [335, 340], boss: [395, 432] },     /* the first comb step; the bridge; the chain; the last chain; her torn combs and THE LAST COMB */
-  wax: { teach: [56, 70], test: [141, 158], remix: [169, 218], boss: [395, 432] },                          /* the sticky bridge; the waxed floor; the stair's shelves; her perches */
-  smoke: { teach: [3, 26], test: [82, 92], remix: [170, 218], exam: [264, 276], boss: [395, 432] },        /* the lone swarm; the gate's throat; THROWN up to the ledge; the exam swarm; her daze */
+  comb: { teach: [30, 46], test: [112, 128], remix: [[199, 207], [246, 264]], exam: [[264, 276], [335, 338]], boss: [395, 432] },   /* remix / exam are lists once a verb has two: the gallery's bridge + the chain; the last chain + the well's overhang */     /* the first comb step; the bridge; the chain; the last chain; her torn combs and THE LAST COMB */
+  wax: { teach: [56, 70], test: [141, 158], remix: [[169, 218], [219, 347]], boss: [395, 432] },                          /* the sticky bridge; the waxed floor; the stair's shelves; her perches */
+  smoke: { teach: [3, 26], test: [82, 92], remix: [[170, 218], [230, 254]], exam: [264, 276], boss: [395, 432] },        /* the lone swarm; the gate's throat; THROWN up to the ledge; the exam swarm; her daze */
   brood: { teach: [350, 392], boss: [395, 432] },                                                          /* the pulsing cells, then hers */
 };
 /* THE BROOD HALL: her one arena, both phases (src/hornet-queen.js) */
@@ -166,7 +172,7 @@ export function buildHornetsNest({ painter, T, TS }) {
      4 s) carry you over it, a wax pillar rests you, honey DRIPS fall on the gaps between, and a BRIDGE COMB (REQUIRED: cut it from the pillar) spans the last gap to the exit ledge. */
   OX = 0;
   air(169, 218, 14, 31);
-  air(171, 204, 32, 43); waxed(171, 204, 44);                 /* the sump (its bed is fresh comb) */
+  air(171, 204, 32, 43); waxed(176, 189, 44);                 /* the sump (its middle bed is fresh comb: sticky, never death - the stairs at either end are plain footing) */
   for (let i = 0; i < 5; i++) block(171 + i, 171 + i, 34 + 2 * i, 43);   /* the west knuckle stair: tops 42, 40, 38, 36, 34 - two rows a hop, up and out to the floor at 32 */
   block(190, 196, 30, 43); waxed(190, 196, 30);               /* the wax PILLAR mid-sump: top row 30 (rest, coins) */
   for (let i = 0; i < 6; i++) block(202 - i, 202 - i, 42 - 2 * i, 43);   /* the pillar's east knuckle stair (tops 42 .. 32, then the pillar at 30): a fall into the pocket east of the pillar climbs back out onto it */
@@ -183,13 +189,13 @@ export function buildHornetsNest({ painter, T, TS }) {
   hornet(176, 22, { squad: 'gallery' }); hornet(185, 23, { squad: 'gallery' });   /* two hornets patrol over the sagging combs (a pot carried quiets them) */
   stinger(194, 29, { squad: 'gallery' });                     /* the pillar's stinger */
   drone(209, 29, { squad: 'gallery' });                       /* a comb drone on the exit ledge */
-  drip(180, 14, 2.6, 0); drip(185, 14, 2.6, 1.3); drip(201, 14, 2.6, 0.65); drip(209, 14, 2.6, 1.95);   /* honey from the paper roof: over the second and third combs, the gap (it lands on the bridge once cut), the ledge */
+  drip(180, 22, 2.6, 0); drip(185, 22, 2.6, 1.3); drip(201, 22, 2.6, 0.65); drip(209, 22, 2.6, 1.95);   /* honey from the paper roof on a string, its nub six rows over the footing (the camera shows ~11 rows: the bead swells in view): over the second and third combs, the gap (it lands on the bridge once cut), the ledge */
   coins([211, 28], [212, 28]);   /* (a level holds exactly three silvers: the new sections pay in gold) */
 
   // ================= 3b. THE HONEY WELL (298-347): REMIX - a hanging-comb + honey-drip CLIMB (final columns) =================
   /* a tall well in the nest's core: in at the stair's wall top (row 8), DOWN the west side on easy comb shelves, across a sticky bed, UP the east side on comb PENDANT RUNGS (oneway, four wide, three rows
      apart) under honey drips, out at the nursery's floor (row 10). The OVERHANG is REQUIRED: the rung at row 27 and the next footing at row 22 are five rows apart - cut the comb hung over the rung and it lands as the step. */
-  air(298, 347, 4, 47); waxed(298, 347, 48);
+  air(298, 347, 4, 47); waxed(320, 347, 48);   /* (the east half of the bed is fresh comb - sticky - from the smoke stand to the first rung; the west half is plain floor) */
   for (let i = 0, y = 12; y <= 42; i++, y += 5) { if (i === 0) shelf(298, 303, y); else if (i % 2) shelf(304, 308, y); else shelf(299, 303, y); }   /* the west shelves (r12 .. r42), alternating: coins are the read */
   coins([301, 10], [306, 15], [301, 20], [306, 25], [301, 30], [306, 35], [301, 40]);
   const RUNG = [[45, 1], [42, 0], [39, 1], [36, 0], [33, 1], [30, 0], [27, 1], [22, 0], [19, 1], [16, 0], [13, 1]];   /* [row, side]: side 1 = 335-338 (east), 0 = 330-333 (a one-column gap between: three rows up and one across is every hero's jump) */

@@ -57,9 +57,9 @@ try {
       load(); const N = BK.nestHands(); const D = () => N.drips(); out.dn = D().length;
       BK.tp(185, 27); BK.P.face = 1; BK.sim(5); const log = {}; let hits0 = N.read().n.dripHit, hp0 = BK.P.hp; BK.god = false; BK.P.inv = 0;
       const sw = new Map(); let minTell = 9, falls = 0, struck = 0;
-      let sy = 0; for (let i = 0; i < FR * 14; i++) { sy = Math.max(sy, BK.P.syrupT || 0); BK.P.x = 185 * 16 + 8; BK.P.y = 28 * 16; BK.P.vx = 0; BK.P.vy = 0; BK.sim(1);
+      let sy = 0, minHp = hp0; for (let i = 0; i < FR * 14; i++) { sy = Math.max(sy, BK.P.syrupT || 0); minHp = Math.min(minHp, BK.P.hp); BK.P.x = 185 * 16 + 8; BK.P.y = 28 * 16; BK.P.vx = 0; BK.P.vy = 0; BK.sim(1);
         D().forEach((d, k) => { const prev = sw.get(k) || { st: 'wait', t: 0 }; if (d.st === 'swell') sw.set(k, { st: 'swell', t: prev.st === 'swell' ? prev.t + 1 : 1 }); else { if (prev.st === 'swell' && d.st === 'fall') { minTell = Math.min(minTell, prev.t / FR); falls++; } sw.set(k, { st: d.st, t: 0 }); } }); }
-      out.f = { minTell, falls, hit: N.read().n.dripHit - hits0, hpLost: hp0 - BK.P.hp, syrup: sy };
+      out.f = { minTell, falls, hit: N.read().n.dripHit - hits0, hpLost: hp0 - minHp, syrup: sy };
     }
     out.errors = (window.__errs || []).length; return out; })()`, 600000);
   console.log(JSON.stringify(r));

@@ -52,7 +52,7 @@ export function makeNestHands(ctx) {
     combs = (Lv.combs || []).map(c => ({ ...c, st: 'hang', y: c.row * TS, vy: 0, cells: null })); honey = []; splashes = [];
     const hs = Lv.hallSmokers || [];
     stands = (Lv.smokers || []).map(([x, row]) => ({ x: x * TS + 8, y: (row + 1) * TS, hall: hs.some(h => h[0] === x && h[1] === row), st: 'full', t: 0 }));   /* (claude/hornetsnest2) the hall's two stands are finite (a pot taken or burst regrows in SMOKE.regrow s); the level's never run out */
-    drips = (Lv.drips || []).map(d => ({ ...d, st: 'wait', t: (d.phase || 0) % d.every, y: 0, vy: 0, s: 0 }));
+    drips = (Lv.drips || []).map(d => { let ty = d.y0 - 1; while (ty >= 0 && !ctx.footAt(d.x, ty)) ty--; return { ...d, top: ty + 1, st: 'wait', t: (d.phase || 0) % d.every, y: 0, vy: 0, s: 0 }; });   /* (top: the row it hangs from - its honey string is drawn up to it) */
     cells = (Lv.broodCells || []).map(c => ({ x: c.x * TS + 8, y: (c.y + 1) * TS, st: 'idle', t: 0 }));
     pots = []; clouds = []; arc = null; near = null; inited = Lv;
   };
@@ -239,7 +239,9 @@ export function makeNestHands(ctx) {
     /* THE SMOKE STANDS: a clay pot on a tripod of sticks, smouldering */
     for (const s of stands) { const x = R(s.x - cx), y = R(s.y - cy); if (x < -30 || x > VW + 30) continue; if (s.hall && s.st === 'empty') HNP.standEmpty(g, x, y, time, s.t < 1 ? 1 - s.t : 0); else HNP.stand(g, x, y, time); }   /* (a hall stand whose pot is taken or burst: the bare tripod, its smoke thickening over the last second) */
     /* HONEY DRIPS (greybox): the bead swelling at the comb's foot, then the glossy drop falling */
-    for (const d of drips) { const px = d.x * TS + 8, x = R(px - cx), y = R(d.y0 * TS - cy); if (x < -20 || x > VW + 20 || d.st === 'wait') continue;
+    for (const d of drips) { const px = d.x * TS + 8, x = R(px - cx), y = R(d.y0 * TS - cy); if (x < -20 || x > VW + 20) continue;
+      if (d.top < d.y0 - 1) { g.globalAlpha = 0.55; g.fillStyle = '#c47a14'; g.fillRect(x, R(d.top * TS - cy), 1, y - R(d.top * TS - cy)); g.globalAlpha = 1; }   /* the honey string from the comb or the roof it hangs from */
+      if (d.st === 'wait') { g.fillStyle = '#a8600a'; g.fillRect(x - 1, y - 2, 3, 3); g.fillStyle = '#e0a020'; g.fillRect(x - 1, y, 3, 2); continue; }   /* its nub, waiting */
       if (d.st === 'swell') { const k = Math.min(1, d.s / DRIP.tell), r = 1 + k * 2.2; g.fillStyle = '#a8600a'; g.fillRect(x, y - 1, 1, 2); g.fillStyle = '#e0a020'; g.beginPath(); g.arc(x + 0.5, y + 2 + k * 2, r, 0, 7); g.fill(); g.fillStyle = Math.floor(time * 14) % 2 ? '#fff4b0' : '#ffd36b'; g.fillRect(x - 1, y + 1 + k * 2, 1, 1); }
       else if (d.st === 'fall') HNHY.glob(g, px - cx, d.y - cy, d.vy, time); }
     /* THE BROOD CELLS: a capped wax pocket; pulsing, it swells, reddens and cracks */

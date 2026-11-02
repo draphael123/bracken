@@ -4,7 +4,7 @@
 import { openPage, ROOT } from './cdp.mjs';
 import { mkdirSync, writeFileSync } from 'fs';
 import { join } from 'path';
-const out = join(ROOT, 'work/claude/lane-done'); mkdirSync(out, { recursive: true });
+const out = process.env.OUT || join(ROOT, 'work/claude/lane-done'); mkdirSync(out, { recursive: true });   /* OUT=<dir> sends the shots elsewhere (claude/hornetsnest2: scratch/lane-reports/hornetsnest2-shots) */
 const ONLY = process.env.ONLY ? process.env.ONLY.split(',') : null;
 const SPOTS = [['stinger', 96, 33], ['foot', 4, 65], ['gallery-in', 172, 31], ['gallery-pillar', 193, 29], ['gallery-ledge', 208, 29], ['well-in', 300, 11], ['well-bed', 320, 47], ['well-rungs', 336, 44], ['well-overhang', 337, 26], ['well-exit', 343, 9], ['hall', 410, 21], ['edge-roots', 460, 65], ['edge-water', 472, 65], ['edge-gate', 505, 65]];
 const pg = await openPage({ audio: false, fonts: false });
@@ -30,7 +30,7 @@ try {
       load(); BK.tp(401, 21); BK.sim(120); const e = BK.boss, N = BK.nestHands(), S = BK.hornetQueenHands().show(); if (e) { S.ward = 0; e.ward = 0; e.smokeCd = 0; e.mode = 'hover'; e.modeT = 9; e.x = S.G.h.mid; e.y = S.G.h.floor - 70; BK.P.x = S.G.h.mid - 60; BK.P.y = S.G.h.floor; BK.sim(1);
         N.lob(e.x, e.y - 8, 0, 0); BK.sim(8); snap('fog-hit'); BK.sim(15); snap('fog-fall'); BK.sim(60); snap('fog-grounded'); BK.sim(140); snap('fog-stun-end');
         const st = N.stands().find(s => s.hall); e.smokeCd = 0; e.mode = 'skim'; e.modeT = 9; e.x = st.x + 2; e.y = st.y - 4; BK.sim(30); snap('fog-burst'); BK.sim(600); snap('fog-stand-empty'); BK.sim(260); snap('fog-stand-regrown'); }
-      load(); BK.tp(185, 28); BK.P.face = 1; BK.sim(5); const dr = () => BK.nestHands().drips().find(d => d.st === 'swell'); let g = 0; for (; g < 800 && !dr(); g++) BK.sim(1); BK.sim(40); snap('fog-drip-swell', 3); for (let k = 0; k < 400 && !BK.nestHands().drips().some(d => d.st === 'fall'); k++) BK.sim(1); BK.sim(8); snap('fog-drip-fall', 3);
+      load(); BK.tp(185, 28); BK.P.face = 1; BK.sim(300); { const D = BK.nestHands().drips(), d = D.find(q => q.x === 185); BK.P.x = 183 * 16; for (const q of D) q.t = 0; d.st = 'swell'; d.s = 0.5; BK.sim(1); snap('fog-drip-swell', 3); d.st = 'fall'; d.y = d.y0 * 16 + 4 + 60; d.vy = 150; BK.P.x = 189 * 16; BK.sim(2); snap('fog-drip-fall', 3); }
     }
     /* HER HALL: P1, the tear, P2 (honey, the torn combs, the last comb), a pin, her death and THE FALLING NEST */
     if (!ONLY || ONLY.some(n => /^q2-/.test(n))) {
