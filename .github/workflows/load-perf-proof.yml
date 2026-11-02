@@ -3942,6 +3942,7 @@ jobs:
         with:
           ref: 1a576c3f4511b6856df9fb4738df5aaae9987e81
           path: sprite-publication-standing-game
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with: {node-version: '24.11.1'}
       - name: Exact Task3 original9document startup and native first publication comparisons
