@@ -1,5 +1,5 @@
 {
-  "time": "2026-11-02T00:49:50.684Z",
+  "time": "2026-11-02T01:00:50.591Z",
   "status": "Prepared approved limited API component; original Game tree unchanged, cloud native and ordinary-publication contracts required",
   "sourceGame": "62d9c02c102decc69ceaef4e1ec593a23170f1ff",
   "sourceTree": "d6f20846727ec42b3cca651d1b061136d9c6d2f1",
@@ -74,15 +74,17 @@
   "adoption": false,
   "overallWorkComplete": false,
   "cloudHold": {
-    "status": "held-at-user-request",
+    "status": "ended-after-fresh-human-resume",
     "reason": "Native GitHub connection failed. User requested skipping this step for now and working on other pieces.",
     "userAnswer": "Can we just skip this for now. Work on the other piecs",
-    "noNetworkRetryOrCloudDispatch": true,
+    "noNetworkRetryOrCloudDispatch": false,
     "initialLocalCommit": "81430ed8d65e730b3f77a98e508a5a7c95bb1e0b",
     "lastVerifiedRemote": "9b8b263d9d3acc62dbba818d4ebc64f5b8c15e92",
     "pushFailure": "github.com:443 connection failed after24193ms",
     "oneReadOnlyRecovery": "Bounded gh read timed out at12000ms",
-    "connectorWriteDenied": "403 Resource not accessible by integration;no retry or permission change"
+    "connectorWriteDenied": "403 Resource not accessible by integration;no retry or permission change",
+    "endedAt": "2026-11-02T01:00:50.591Z",
+    "priorScopeHistorical": true
   },
   "actualTask3Preparation": "Prepared separately outside Game branches;its complete4file source has no inherited Game or native pass.",
   "receiverRepair": {
@@ -97,5 +99,12 @@
     "freshCloudContractsPrepared": 8,
     "cloudExecuted": false,
     "noOriginalTestChanged": true
+  },
+  "cloudResume": {
+    "receipt": "outputs/receipts/sprite-publication-cloud-resume-nov01.json",
+    "time": "2026-11-02T01:00:50.591Z",
+    "readOnlyConnectivityVerified": true,
+    "firstFreshComponentRunPermitted": true,
+    "noGameAdoptionOrOriginalAssertionWaiver": true
   }
 }
