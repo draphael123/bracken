@@ -1,0 +1,120 @@
+{
+  "time": "2026-11-02T16:04:11.979Z",
+  "scope": "Prepared native kernel source only, no Game/private variants integrated",
+  "originalPrimitiveSha256": "5cc06bca828f39ba3b9a0c4d8106645eb179654a3230f884a66b995ea675b8ce",
+  "snapshotAdapterSha256": "3d564629aeb5d7c63792c01782fe2a6bf850077fa934c137e94ff6a1773e424c",
+  "catalogueSha256": "cbd25b1b0970dd9e84b7df5626180ea2abe93f208ca91b9ba835721bb3c78fe1",
+  "originalPrimitiveExactUndo": true,
+  "primitiveChanges": [
+    "Node-safe factory wrapper with original import-time capture in browser",
+    "Expose only owned scratch for captured-intrinsic teardown without calling dynamic WeakRef methods after an observer change"
+  ],
+  "allExistingAssertionsToRemainUnchanged": true,
+  "noLocalCandidateOrGameExecution": true,
+  "noCloudOccurrenceYet": true,
+  "backendSha256": "2efa6209c7ba0fe873729290d512df30893dce8fbd7183955997cca8751d97ee",
+  "sourceReview": {
+    "automaticDrainImplementedFor": [
+      "Foreign output setter/prototype before assignment, including earlier outstanding entries",
+      "Unknown receiver/property lookup and argument callback before original call"
+    ],
+    "stillRequiresExplicitClosedCallerProof": [
+      "Only backend-created ordinary dense R arrays can enter the fast path",
+      "R painting, palette reads, callbacks and output writes must be classified before private variants are integrated",
+      "The conservative callObserver always drains; it must not be silently bypassed for a performance claim",
+      "Initial native/prototype/Node/GPU fallbacks and captured owner/lifetime behavior need actual fresh native cases"
+    ],
+    "noNativeOrGamePassYet": true
+  },
+  "preCloudSourceCorrections": [
+    {
+      "reason": "Completion must not call a possibly replaced global String; index keys now use primitive concatenation."
+    },
+    {
+      "reason": "A foreign method getter can inspect prior outputs before invocation. Drain before receiver/callee lookup, not just before the call."
+    },
+    {
+      "reason": "Accept explicit native Symbol method/getter names in the full intrinsic guard;anonymous Proxy/bound function strings stay rejected."
+    },
+    {
+      "reason": "Use character10 for the cloud receipt terminator. Two source-text/AST correction attempts stopped before any candidate/test execution;their preparation scripts remain retained."
+    }
+  ],
+  "sourceFiles": [
+    {
+      "path": "tools/private-r-native-nov02/backend.js",
+      "sha256": "2efa6209c7ba0fe873729290d512df30893dce8fbd7183955997cca8751d97ee"
+    },
+    {
+      "path": "tools/private-r-native-nov02/snapshot.js",
+      "sha256": "3d564629aeb5d7c63792c01782fe2a6bf850077fa934c137e94ff6a1773e424c"
+    },
+    {
+      "path": "tools/private-r-native-nov02/catalogue.js",
+      "sha256": "d998e3bf8cefecacd00eeb664c9a8b34b093082e8d8706c78abafbd353e884be"
+    },
+    {
+      "path": "tools/private-r-native-nov02/native-page.mjs",
+      "sha256": "b7e12eee8711cd651e7ccab1684c6eb4e626ad3ee2b494ffaff66c0dcbb3fd61"
+    },
+    {
+      "path": "tools/private-r-native-nov02/px-reference.js",
+      "sha256": "140576730b72fd2ff09be7687e9dc38ff99bc0f7ef7ab1a7aa5f2f6e6bf6cd1b"
+    },
+    {
+      "path": "tools/private-r-native-nov02/snapshot-proof.json",
+      "sha256": "70ab94f8aba82a33b0755ca77fe57e531a09c607cbabf1d7c07ab26a9e4938ba"
+    },
+    {
+      "path": "tools/private-r-native-component-nov02.mjs",
+      "sha256": "111638f28578140776c560953e159d2f2ce3a54778c84aa85c69b71892c23aaf"
+    },
+    {
+      "path": "tools/private-r-native-node-nov02.mjs",
+      "sha256": "757ea686594ee119e989b916eb6bbf82b56ce27d9eebcf6ee5ebc991ed87c66d"
+    },
+    {
+      "path": "tools/private-r-protocol-nov02/catalogue.js",
+      "sha256": "cbd25b1b0970dd9e84b7df5626180ea2abe93f208ca91b9ba835721bb3c78fe1"
+    }
+  ],
+  "originalRunnerSha256": "b5f3d3cb4ff889525be67f58512961ba40bee6bc0a4e22fc825edcbafc88c8b6",
+  "originalSnapshotPageSha256": "5e855fb70de5861e7ebcb804198fa8686c0390f73115acdd25c39a7f6cc1a2f5",
+  "originalSnapshotAssertions": 504,
+  "originalSnapshotLifecycleAssertions": 19,
+  "newKernelCases": 51,
+  "nodeFallback": true,
+  "originalPxPrefixUnchanged": true,
+  "pxAppendix": "\nexport function withStartupBakeOwnership(build){const previous=OWN;OWN=null;try{return build();}finally{OWN=previous;}}\n",
+  "privateGameVariantsImplemented": false,
+  "noAmbientPrivateFlag": true,
+  "noPublicConstructorsChanged": true,
+  "no50LiveExpressionsChanged": true,
+  "noGameCandidateOrAdoption": true,
+  "openIntegrationProof": [
+    "Explicit six-group private producers/consumers are not integrated or proved by this kernel.",
+    "Foreign or mutable source callbacks must be classified before any private variant.",
+    "Only backend-created dense arrays qualify. No claim that all eligible Game inputs meet this contract.",
+    "GPU option uses original eager fallback;this is not a fresh full Game GPU proof.",
+    "No actual resident-memory reduction,timing,loading,campaign,layout,full425 or40FPS proof.",
+    "Catalogue/facade reads and Map/Set/prototype observer hooks need call-site guards before any internal private lookup;the current kernel does not integrate those Game consumers."
+  ],
+  "preparationErrors": [
+    {
+      "time": "2026-11-02T16:04:11.817Z",
+      "phase": "Before any browser/test/fixture execution",
+      "actualWorkingTreePxSha256": "9d3feee0d3a14e186f3259e7b7a1279b579989a0461de55d594f676f525533ae",
+      "expectedCanonicalGitPxSha256": "e9a358b9170944e0dfae6d1b8c82d7b664562e0b2b0ab7f2538236e34214db1d",
+      "cause": "Windows worktree CRLF versus frozen Git LF. Git diff is empty and exact LF-to-CRLF equivalence was verified.",
+      "repair": "Use the exact immutable Git blob for the tool-only reference prefix;Game bytes remain untouched.",
+      "componentOrGameAssertionVerdict": false
+    }
+  ],
+  "newToolLineEndingNormalization": {
+    "onlyNewTools": true,
+    "originalPrimitiveLineEnding": "LF",
+    "exactUndo": "Unwrap factory,remove ownedScratch getter,restore export,and restore original line endings.",
+    "originalGameAndFixtureBytesUnchanged": true
+  },
+  "catalogueShimReexportsExactParentSha256": "cbd25b1b0970dd9e84b7df5626180ea2abe93f208ca91b9ba835721bb3c78fe1"
+}

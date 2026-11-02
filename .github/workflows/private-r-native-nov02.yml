@@ -1,0 +1,63 @@
+name: Private R native kernel compatibility November2
+on:
+  push:
+    branches: [codex/load-perf]
+    paths:
+      - 'tools/private-r-native-nov02/**'
+      - 'tools/private-r-native-component-nov02.mjs'
+      - 'tools/private-r-native-node-nov02.mjs'
+      - '.github/workflows/private-r-native-nov02.yml'
+permissions: {contents: read}
+jobs:
+  node:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0}
+      - uses: actions/setup-node@v4
+        with: {node-version: '24.11.1'}
+      - name: Immutable source identity, syntax, and Node fallback
+        run: |
+          test -z "$(git diff 62d9c02c HEAD -- src index.html)"
+          mkdir -p "$PRIVATE_R_NATIVE_OUT"
+          git rev-parse HEAD HEAD:src > "$PRIVATE_R_NATIVE_OUT/source.txt"
+          sha256sum tools/private-r-native-nov02/* tools/private-r-native-component-nov02.mjs tools/private-r-native-node-nov02.mjs .github/workflows/private-r-native-nov02.yml > "$PRIVATE_R_NATIVE_OUT/source-sha256.txt"
+          cp tools/private-r-native-nov02/source-proof.json "$PRIVATE_R_NATIVE_OUT/source-proof.json"
+          node --check tools/private-r-native-nov02/backend.js
+          node --check tools/private-r-native-nov02/snapshot.js
+          node --check tools/private-r-native-nov02/native-page.mjs
+          node --check tools/private-r-native-component-nov02.mjs
+          node tools/private-r-native-node-nov02.mjs
+        env:
+          PRIVATE_R_NATIVE_OUT: ${{ runner.temp }}/private-r-native-node-nov02
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: private-r-native-node-nov02
+          path: ${{ runner.temp }}/private-r-native-node-nov02/
+          if-no-files-found: error
+  native:
+    needs: node
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0}
+      - uses: actions/setup-node@v4
+        with: {node-version: '24.11.1'}
+      - name: Preserve frozen admission, native GC, and 1536MB browser guard
+        run: git worktree add --detach "$PRIVATE_R_NATIVE_REFERENCE" 62d9c02c102decc69ceaef4e1ec593a23170f1ff
+        env:
+          PRIVATE_R_NATIVE_REFERENCE: ${{ runner.temp }}/private-r-native-reference
+      - name: All 504 original pixel and 19 lifecycle assertions plus 51 new kernel cases
+        run: node tools/private-r-native-component-nov02.mjs
+        env:
+          PRIVATE_R_NATIVE_OUT: ${{ runner.temp }}/private-r-native-component-nov02
+          PRIVATE_R_NATIVE_REFERENCE: ${{ runner.temp }}/private-r-native-reference
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: private-r-native-component-nov02
+          path: ${{ runner.temp }}/private-r-native-component-nov02/
+          if-no-files-found: error
