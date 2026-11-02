@@ -58,6 +58,21 @@ function standSprite() { return once('stand', () => { const [c, g] = canvas(26, 
 export function stand(g, x, y, time) { x = Math.round(x); y = Math.round(y); g.drawImage(standSprite(), x - 13, y - 30);
   g.globalAlpha = 0.5 + 0.3 * Math.sin(time * 5 + x); R(g, '#ff8a3a', x - 2, y - 11, 4, 1); g.globalAlpha = 1;
   smokeCurl(g, x, y - 29, time, 4); }
+/* (claude/hornetsnest2art) a hall stand whose pot is taken or burst: the bare tripod - sooted sticks, the empty cradle of cord, a heap of ash round a last ember or two. regrow 0..1 over the last second
+   = the embers flare, the smoke thickens and the pot comes back */
+function standBareSprite() { return once('standbare', () => { const [c, g] = canvas(26, 30);
+  for (let q = 0; q < 17; q++) { const sh = q > 7 ? PAPER[0] : PAPER[1]; R(g, sh, 13 - q * 0.45, 29 - q, 2, 1); R(g, sh, 12 + q * 0.45, 29 - q, 2, 1); R(g, q > 7 ? PAPER[1] : PAPER[2], 12, 29 - q, 1, 1); }   /* sticks, scorched near the top */
+  R(g, PAPER[0], 11, 12, 4, 2); R(g, '#c9b27c', 11, 12, 4, 1); R(g, PAPER[1], 12, 10, 2, 3);   /* the lashing */
+  /* the empty cradle: a cord sling hanging from the fork, its loop swinging free */
+  R(g, '#a8896a', 12, 14, 1, 3); R(g, '#a8896a', 13, 14, 1, 3); R(g, PAPER[3], 9, 17, 1, 2); R(g, PAPER[3], 16, 17, 1, 2); R(g, '#a8896a', 10, 19, 6, 1); R(g, PAPER[2], 10, 20, 1, 1); R(g, PAPER[2], 15, 20, 1, 1); R(g, PAPER[0], 11, 21, 4, 1);
+  /* soot on the fork and a heap of grey ash at the foot with two live embers in it */
+  R(g, '#16100a', 10, 12, 1, 5); R(g, '#16100a', 15, 12, 1, 5);
+  R(g, '#3a3834', 6, 27, 14, 2); R(g, '#6a6862', 7, 26, 12, 1); R(g, '#9a968c', 9, 26, 5, 1); R(g, '#1c1a18', 6, 29, 14, 1); R(g, '#ff6a2a', 11, 27, 2, 1); R(g, '#ffc860', 11, 27, 1, 1); R(g, '#c8421a', 15, 27, 1, 1);
+  return c; }); }
+export function standEmpty(g, x, y, time, regrow = 0) { x = Math.round(x); y = Math.round(y); g.drawImage(standBareSprite(), x - 13, y - 30);
+  g.globalAlpha = 0.35 + 0.35 * Math.sin(time * 3.1 + x) + regrow * 0.5; R(g, '#ff8a3a', x - 2, y - 3, 2, 1); g.globalAlpha = 1;   /* the last embers breathing (and flaring as the pot comes back) */
+  if (regrow <= 0) { for (let k = 0; k < 2; k++) { const ph = (time * 0.3 + k / 2) % 1; g.globalAlpha = 0.28 * (1 - ph); puff(g, x - 1 + Math.sin(time + k * 3) * 2, y - 5 - ph * 14, 2 + ph * 2, 0.9, '#9a9ea6'); } g.globalAlpha = 1; }   /* a thread of grey smoke off the ash */
+  if (regrow > 0) { g.globalAlpha = regrow; g.drawImage(potSprite(), x - 6, y - 24); g.globalAlpha = 1; smokeCurl(g, x, y - 26, time, 4 + Math.round(regrow * 3)); } }
 /* ---------------- the pot in hand / set down / in flight ---------------- */
 function potSprite() { return once('pot', () => { const [c, g] = canvas(13, 13);
   R(g, CLAY[0], 3, 3, 8, 8); R(g, CLAY[0], 2, 5, 10, 4); R(g, CLAY[2], 3, 4, 7, 7); R(g, CLAY[2], 2, 6, 9, 3); R(g, CLAY[3], 3, 5, 2, 5); R(g, CLAY[1], 9, 6, 2, 4); R(g, CLAY[4], 3, 6, 1, 2);

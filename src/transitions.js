@@ -6,8 +6,8 @@
    BEATS (what main.js does for each id):
        open   the way opens in the level you just won (open.col: those tiles go to air in a spill of dust) - the world, letterbox bars sliding in
        walk   every hero is walked (kinematically, so it works for every hero and every seat) to the level's edge: the path out of the arena
-       shore  the scene `scene` takes over: the heroes walk onto the jetty and step aboard
-       ride   the vehicle carries them (parallax, mist): the last level recedes, the next appears
+       shore  (only when `scene` is set) the scene takes over: the heroes walk onto the jetty and step aboard
+       ride   (only when `scene` is set) the vehicle carries them (parallax, mist): the last level recedes, the next appears
        fade   to black; the next level then loads and (arrive.ferry) begins with the heroes stepping OFF the same vehicle
    The CLEAR IS CREDITED BEFORE THE CUTSCENE (main.js calls winLevel first, then begins this), so quitting or skipping loses nothing.
    SKIP: any button or tap, once MIN_SKIP seconds in (a hero still mashing attack as the boss falls does not skip it), jumps to a short fade;
@@ -17,10 +17,12 @@
 export const MIN_SKIP = 0.8;
 export const FADE_SKIP = 0.3;
 export const TABLE = [
-  { from: 'wood', to: 'marsh', scene: 'ferry',
-    beats: [{ id: 'open', dur: 1.5 }, { id: 'walk', dur: 2.4, max: 3.6 }, { id: 'shore', dur: 3.3 }, { id: 'ride', dur: 7.5 }, { id: 'fade', dur: 0.7 }],
+  /* (claude/hornetsnest2) THE LUMBER TRAIL -> THE HORNET'S NEST: a WALK-OUT, no ferry (scene null: no shore / ride beats). The old wood -> marsh ferry row is gone (smallfix5 had turned it off: the road runs through the nest; the ferry
+     scene's art stays in src/transitions-art.js for the day the nest -> marsh crossing gets one). */
+  { from: 'wood', to: 'hornetsnest', scene: null,
+    beats: [{ id: 'open', dur: 1.5 }, { id: 'walk', dur: 2.4, max: 3.6 }, { id: 'fade', dur: 0.7 }],
     open: { col: 549, rows: [3, 8], lintel: 2 },        /* OLD TUSKER's clearing: the fence-gate at the east edge (the Wood's last column) gives way - rows 3-8 of col 549 go to air, a lintel stays */
-    arrive: { ferry: true, walk: 1.7 } },                /* the Marsh begins with the heroes stepping OFF the ferry, 1.7 s of walk, then control */
+    arrive: { ferry: false, walk: 1.2 } },               /* the nest begins in the old pines: the heroes walk in from the left for 1.2 s, then control (no ferry to step off) */
 ];
 export const entryFor = (from, to) => TABLE.find(e => e.from === from && (to === undefined || e.to === to)) || null;
 
