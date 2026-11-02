@@ -27,7 +27,7 @@ export const JUICE = {
   landShake: 0.5,
   landRumble: { heavy: { ms: 70, mag: 0.3 }, finish: { ms: 90, mag: 0.4 } },
   landRumbleGap: 0.25,
-  parryStop: 0.09,
+  parryStop: 0.08,
   openMul: 1.25,         /* a boss's opening hit: a little more freeze */
   bossMul: 0.8,           /* and a boss is not stopped dead by every touch (the old rule, kept) */
   heavyDamage: 18,        /* the same number as COMBAT.staggerDamage: a blow this big is a heavy one whoever swung it */
