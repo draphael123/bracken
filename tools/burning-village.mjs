@@ -198,7 +198,8 @@ try {
   /* 5. THE PYROMANCER */
   {boot();const A=BK.L.arena;BK.god=true;BK.tp(Math.round(A.trigger/16)+1,Math.round(A.floor/16)-1);BK.sim(150);const b=BK.boss;
    const G=()=>BK.village().G(),sqLit=()=>G().cells.filter(c=>c.square&&c.s===2).length;
-   // his attacks heat him
+  // (batch138) // his attacks heat him
+  //   -- the OLD Pyromancer (heat bar, vent, overheat); claude/pyroboss2 replaced the fight (ward / spent / conflagration), covered by tools/pyro-duel.mjs and tools/village-water.mjs
    b.heat=0;b.cd=0;BK.P.x=b.x-120;let h0=b.heat;for(let i=0;i<400&&b.heat===h0;i++)BK.sim(1);const rose=b.heat-h0;
    // left alone near the top, he vents: no opening, the square clears
    b.heat=90;b.calmT=0;b.mode='stalk';b.cd=99;BK.sim(90);const litHot=sqLit();   /* held hot (struck a moment ago, no attack due): the square burns */
@@ -312,11 +313,16 @@ try {
   assert.ok(r.gob.swing > 0, 'its swing does: ' + JSON.stringify(r.gob));
   assert.ok(r.gob.lit > 0, 'and the straw it walks on catches');
 
-  assert.ok(r.pyro.rose >= 8, 'his attacks heat him: ' + r.pyro.rose);
-  assert.ok(r.pyro.alone.litHot > 0, 'hot, the square burns: ' + JSON.stringify(r.pyro.alone));
-  assert.equal(r.pyro.alone.open, 0, 'left alone he vents and does not open: ' + JSON.stringify(r.pyro.alone));
-  assert.ok(r.pyro.alone.heat < 20 && r.pyro.alone.litAfter === 0, 'the vent clears the square: ' + JSON.stringify(r.pyro.alone));
-  assert.ok(r.pyro.struck.open > 2, 'struck while hot he overheats and OPENS: ' + JSON.stringify(r.pyro.struck));
+  // (batch138) assert.ok(r.pyro.rose >= 8, 'his attacks heat him: ' + r.pyro.rose);
+  //   -- the OLD Pyromancer (heat bar, vent, overheat); claude/pyroboss2 replaced the fight (ward / spent / conflagration), covered by tools/pyro-duel.mjs and tools/village-water.mjs
+  // (batch138) assert.ok(r.pyro.alone.litHot > 0, 'hot, the square burns: ' + JSON.stringify(r.pyro.alone));
+  //   -- the OLD Pyromancer (heat bar, vent, overheat); claude/pyroboss2 replaced the fight (ward / spent / conflagration), covered by tools/pyro-duel.mjs and tools/village-water.mjs
+  // (batch138) assert.equal(r.pyro.alone.open, 0, 'left alone he vents and does not open: ' + JSON.stringify(r.pyro.alone));
+  //   -- the OLD Pyromancer (heat bar, vent, overheat); claude/pyroboss2 replaced the fight (ward / spent / conflagration), covered by tools/pyro-duel.mjs and tools/village-water.mjs
+  // (batch138) assert.ok(r.pyro.alone.heat < 20 && r.pyro.alone.litAfter === 0, 'the vent clears the square: ' + JSON.stringify(r.pyro.alone));
+  //   -- the OLD Pyromancer (heat bar, vent, overheat); claude/pyroboss2 replaced the fight (ward / spent / conflagration), covered by tools/pyro-duel.mjs and tools/village-water.mjs
+  // (batch138) assert.ok(r.pyro.struck.open > 2, 'struck while hot he overheats and OPENS: ' + JSON.stringify(r.pyro.struck));
+  //   -- the OLD Pyromancer (heat bar, vent, overheat); claude/pyroboss2 replaced the fight (ward / spent / conflagration), covered by tools/pyro-duel.mjs and tools/village-water.mjs
 
   assert.equal(r.store.shut, false, 'before the village, silver only');
   assert.equal(r.store.open, true, 'after it, coins too');

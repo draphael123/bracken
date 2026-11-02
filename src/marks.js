@@ -508,7 +508,7 @@ export const ANSWER = {
   'fogknight|lashTell': 'jump', 'fogknight|surgeTell': 'jump', 'fogknight|spearTell': 'dodge', 'fogknight|sinkTell': 'dodge', 'fogknight|plungeTell': 'dodge', 'fogwraith|smotherTell': 'block',   /* (claude/towpath2) */
   'honeyhornet|dripTell': 'block', 'honeyhornet|ramTell': 'block',   /* (claude/hornetsnest2) the glob a shield turns (or step off its line); the ram a shield turns (it reels), or jump it */
   'swarm|rise': 'dodge', 'hornetqueen|aim': 'dodge', 'hornetqueen|sweepTell': 'jump', 'hornetqueen|buzzTell': 'dodge', 'hornetqueen|volleyTell': 'block', 'hornetqueen|cloakTell': 'dodge',   /* (claude/hornetsnest) walk out of a swarm (it is slow); leave her stoop late (or block it); jump her sweep; off the red rings; block the stingers; keep off the cloak */
-  'stiltwalker|jabTell': 'block', 'stiltwalker|stabTell': 'block', 'stiltwalker|stompTell': 'dodge', 'leech|rear': 'jump', 'bogtroll|burstTell': 'dodge', 'bogtroll|dragTell': 'jump', 'bogtroll|hurlTell': 'dodge', 'bogtroll|ripTell': 'dodge', 'bogtroll|waveTell': 'jump', 'bogtroll|pileTell': 'dodge', 'bogtroll|pileWind': 'dodge',   /* (claude/fenroad) the gaff jab is a yellow ! (parry it; it is HIGH, so a duck goes under it too: src/told-attacks.js SIG duck) */
+  'stiltwalker|jabTell': 'block', 'stiltwalker|stabTell': 'block', 'stiltwalker|stompTell': 'dodge', 'leech|rear': 'jump', 'bogtroll|burstTell': 'dodge', 'bogtroll|dragTell': 'jump', 'bogtroll|hurlTell': 'dodge', 'bogtroll|ripTell': 'dodge', 'bogtroll|waveTell': 'jump', 'bogtroll|pileTell': 'dodge', /* (claude/fenroad) the gaff jab is a yellow ! (parry it; it is HIGH, so a duck goes under it too: src/told-attacks.js SIG duck) */
   'oldtusker|chargeTell': 'jump', 'oldtusker|turn': 'jump', 'oldtusker|sweepTell': 'block', 'oldtusker|rootTell': 'dodge', 'oldtusker|stompTell': 'jump',   /* (claude/oldtusker) */
   'drone|burstTell': 'dodge',   /* (claude/sporewood2) the drone swells, then bursts where it hangs: out of its reach */
   'mother|lashTell': 'jump', 'mother|crushTell': 'dodge', 'mother|bloomTell': 'dodge', 'mother|broodTell': 'block',   /* (claude/sporewood2) THE MOTHER CAP 2 */
@@ -724,7 +724,7 @@ export const HEIGHT = {
   'gar|lungeTell': 'low',
   'goat|charge': 'low',
   'gobmage|boltTell': 'high', 'gobmage|runeTell': 'low', 'gobmage|lobTell': 'low',   /* (claude/pyroboss2) the fire mage's lob comes down on you */
-  'pyromancer|riseTell': 'low', 'pyromancer|conflagTell': 'low', 'pyromancer|chargeBigTell': 'low',   /* (claude/pyroboss2) the dash and the eruptions run the floor; the blast where the ring is */
+  'pyromancer|cutTell': 'high', 'pyromancer|chargeTell': 'high', 'pyromancer|riseTell': 'low', 'pyromancer|conflagTell': 'low', 'pyromancer|chargeBigTell': 'low',   /* (claude/pyroboss2) the dash and the eruptions run the floor; the blast where the ring is */
   'gobpriest|bellTell': 'low', 'gobpriest|censerTell': 'low',
   'gqueen|hallLeapTell': 'low', 'gqueen|ringTell': 'low',   /* (release 10-29) the bell's grate crush is on the floor: a ground blow, like her quake */
   'lampreeve|lungeTell': 'low',   /* (claude/weakboss: the pole comes level at your middle - a duck is still in it) */
@@ -796,7 +796,7 @@ export const HEIGHT = {
   'fogknight|cutTell': 'low', 'fogknight|lungeTell': 'low', 'fogknight|stepTell': 'low', 'fogknight|lashTell': 'low', 'fogknight|surgeTell': 'low', 'fogknight|spearTell': 'low', 'fogknight|sinkTell': 'low', 'fogknight|plungeTell': 'low', 'fogwraith|smotherTell': 'high',   /* (claude/towpath2) */   /* (claude/towpath; batch82 integ: stance, double and shroud say no mark - no told blow, no height) */
   'honeyhornet|dripTell': 'low', 'honeyhornet|ramTell': 'low',   /* (claude/hornetsnest2) the glob from over you, the ram at your chest: nothing goes over a duck */
   'swarm|rise': 'low', 'hornetqueen|aim': 'low', 'hornetqueen|sweepTell': 'low', 'hornetqueen|buzzTell': 'low', 'hornetqueen|volleyTell': 'low', 'hornetqueen|cloakTell': 'low',   /* (claude/hornetsnest) none of it goes over a duck */
-  'stiltwalker|jabTell': 'high', 'stiltwalker|stabTell': 'low', 'stiltwalker|stompTell': 'low', 'leech|rear': 'low', 'bogtroll|burstTell': 'low', 'bogtroll|dragTell': 'low', 'bogtroll|hurlTell': 'low', 'bogtroll|ripTell': 'low', 'bogtroll|waveTell': 'low', 'bogtroll|pileTell': 'low', 'bogtroll|pileWind': 'low',   /* (claude/fenroad) the gaff comes down at the head and shoulders (a ducked hero is under it); the stiltless knife at the knees */
+  'stiltwalker|jabTell': 'high', 'stiltwalker|stabTell': 'low', 'stiltwalker|stompTell': 'low', 'leech|rear': 'low', 'bogtroll|burstTell': 'low', 'bogtroll|dragTell': 'low', 'bogtroll|hurlTell': 'low', 'bogtroll|ripTell': 'low', 'bogtroll|waveTell': 'low', 'bogtroll|pileTell': 'low', /* (claude/fenroad) the gaff comes down at the head and shoulders (a ducked hero is under it); the stiltless knife at the knees */
   'oldtusker|chargeTell': 'low', 'oldtusker|turn': 'low', 'oldtusker|sweepTell': 'low', 'oldtusker|rootTell': 'low', 'oldtusker|stompTell': 'low',   /* (claude/oldtusker) all of him is on the ground */
   'drone|burstTell': 'low',
   'mother|lashTell': 'low', 'mother|crushTell': 'high', 'mother|bloomTell': 'low', 'mother|broodTell': 'low',   /* (claude/sporewood2) THE MOTHER CAP 2: the lash along her floor, the crush down from the dark */

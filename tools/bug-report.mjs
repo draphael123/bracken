@@ -36,7 +36,8 @@ try {
     /* the pause menu's row opens the board */
     const of=window.fetch; window.fetch=function(...a){reqs.push(String(a[0])); return of.apply(this,a);}; const ox=XMLHttpRequest.prototype.open; XMLHttpRequest.prototype.open=function(m,u){reqs.push(String(u)); return ox.apply(this,arguments);}; if(navigator.sendBeacon){const ob=navigator.sendBeacon.bind(navigator); navigator.sendBeacon=(u,d)=>{reqs.push(String(u)); return ob(u,d);};}
     BK.press('pause'); BK.sim(2); if(BK.state!=='menu')F('pause did not open the menu: '+BK.state);
-    const PR=${JSON.stringify(PAUSE_ROWS)}; press('down',PR.indexOf('Report a bug')); press('confirm');
+    /* (batch138) Swap hero is hidden in a level (swapMenuOk), so it is not a row the down-presses pass */
+    const PR=${JSON.stringify(PAUSE_ROWS.filter(k => k !== 'Swap hero'))}; press('down',PR.indexOf('Report a bug')); press('confirm');
     const board=()=>document.getElementById('bugboard'); if(!board()){F('the Report a bug row did not open the board');return out;}
     const inp=document.getElementById('bugnote'); if(!inp)F('no note box'); inp.value='it fell through the floor at the first bridge';
     board().querySelector('button.go').click(); for(let i=0;i<40&&!document.getElementById('bugcode');i++) await new Promise(r=>setTimeout(r,50));

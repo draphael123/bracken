@@ -365,8 +365,8 @@ try {
   assert.ok(r.mage.open > 2, 'the gathering is the window: ' + r.mage.open);
 
   assert.equal(r.pyro.alone.open, 0, 'left alone while hot, he vents and opens nothing: ' + JSON.stringify(r.pyro.alone));
-  assert.equal(r.pyro.mode, 'overheat', 'struck while hot, he overheats: ' + JSON.stringify(r.pyro));
-  assert.ok(r.pyro.open > 2, 'the overheat is the window: ' + r.pyro.open);
+  /* (batch138) the Pyromancer was rebuilt (claude/pyroboss2): struck while hot he wards and a blow into it leaves him SPENT (1.5 open); the overheat is gone */ assert.equal(r.pyro.mode, 'spent', 'struck while hot, his ward is spent: ' + JSON.stringify(r.pyro));
+  assert.ok(r.pyro.open >= 1, 'the spent beat is the window: ' + r.pyro.open);
 
   assert.notEqual(r.graveWarden.solid.mode, 'kneel', 'a dig that misses on solid floor opens nothing: ' + JSON.stringify(r.graveWarden));
   assert.equal(r.graveWarden.grave.mode, 'kneel', 'a dig into an open grave puts him on his knees: ' + JSON.stringify(r.graveWarden));

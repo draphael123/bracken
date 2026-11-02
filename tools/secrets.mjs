@@ -54,7 +54,7 @@ ok(PAUSE_ROWS.includes('Secrets') && PAUSE_ROWS.slice(0, 5).join() === 'Resume,M
 const pg = await openPage({ port: +process.env.PORT || portFor(8), audio: false, fonts: false });
 try {
   const r = await pg.evalp(`(async()=>{
-    const { LEVELS } = await import('/src/level.js'); const PR = (await import('/src/ui-hud.js')).PAUSE_ROWS;
+    const { LEVELS } = await import('/src/level.js'); const PR = (await import('/src/ui-hud.js')).PAUSE_ROWS.filter(k => k !== 'Swap hero');   /* (batch138) the pause menu hides Swap hero on a level: it is offered on the map, in a shop and at the inn */
     BK.manualSimulation = true; const out = {}; const TS = 16, idx = id => LEVELS.findIndex(l => l.id === id);
     const wipe = () => { for (const l of LEVELS) delete BKT.PROG[l.id]; for (const k of ['lostBanners','fieldOpen','fieldPathDrawn','votive','churchOpen','secretTold','secretNew','bossDown']) delete BKT.PROG[k]; BKT.PROG.bannerMig = 1; BKT.PROG.churchMig = 1; BKT.PROG.heroes = { knight: true }; };
     const fresh = () => { BK.setHero('knight'); BK.reset({ fresh: true }); wipe(); for (const id of ['fair','fields','burial','witchlight','waymeet']) BKT.PROG[id] = { cleared: true, medal: 1, best: 400 }; };

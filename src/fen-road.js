@@ -185,6 +185,7 @@ export function buildFenRoad({ painter, T, TS }) {
   water(ARENA.water0, ARENA.water1); planks(ARENA.water0, ARENA.water1);
   block(ARENA.bankL[0], ARENA.bankL[1], ROAD, H - 1); block(ARENA.bankR[0], ARENA.bankR[1], ROAD, H - 1);   /* (claude/bogtroll2) the crossing's two peat banks, a crews' bundle on each */
   ARENA.rot.forEach(([x0, w], i) => sag('rot' + i, x0, w, { arena: true }));
+  coins([410, 22], [411, 22], [412, 22], [413, 22]);   /* (batch138) the bed's west end under the bank is a dead end (tools/deadends.mjs): a cache of four within its last six tiles pays it */
   coins([419, 22], [420, 22], [421, 22], [422, 22]);   /* the troll's hoard on the bed under the first stretch he rips (the pocket pays) */
   block(ARENA.wallR, ARENA.wallR, 0, H - 1);
   ent('bogtroll', ARENA.boss, 17, { face: -1 });

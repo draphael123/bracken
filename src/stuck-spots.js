@@ -457,7 +457,7 @@ export const STUCK = {
     /* (claude/stockade2) THE WATCHTOWERS: the horn the gate wants, the barred gate itself, the rope up the first tower and the ropes out of the pit (the horn's state rides on the piles: src/stockade-hands.js props) */
     /* (claude/stockade3-1101) THE FORK: a horn opens the gate (loud), or its logs' peg drops them as a stair onto the gate walk (quiet) - 'way' is either, 'pass' the gate open or the stair down */
     { id: 'sk-horn-gate', zone: [443, 0, 486, 20], steps: [
-      { done: ['logpile', 484, 7, 'way'], at: [480, 19], glint: 'stall', line: 'NO HORN? STRIKE THE PEG UNDER THE GALLOWS: THE LOGS MAKE A STAIR' },
+      { done: ['logpile', 484, 7, 'way'], at: [480, 19], glint: 'stall', line: 'NO HORN? STRIKE THE PEG UNDER THE GALLOWS: A STAIR OF LOGS' },
       { when: ['logpile', 484, 7, 'held'], done: ['logpile', 484, 7, 'pass'], at: [486, 16], glint: 'stall', line: 'THE BARRED GATE OPENS ONLY TO THEIR OWN HORN' } ] },
     { id: 'sk-tower-1', zone: [487, 4, 499, 20], at: [500, 17], glint: 'stall', line: 'THE ROPE UP THE FIRST TOWER IS THE WAY ON' },
     { id: 'sk-pit', zone: [498, 22, 552, 25], ats: [[500, 22], [518, 22], [535, 22]], glint: 'stall', line: 'A ROPE UP EACH TOWER LEADS OUT OF THE PIT' },

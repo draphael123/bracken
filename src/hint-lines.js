@@ -20,6 +20,8 @@ import { VH_SAY } from './village-hands.js'; import { PB_SAY } from './pyro-boss
 import { GORM_SAY } from './gorm.js'; import { RB_SAY } from './royal-boar.js';   /* (claude/gorm2) KING GORM 2's and THE ROYAL BOAR's lines, said as variables */ import { STK_SAY } from './stockade-hands.js'; import { KW_SAY } from './kingswood-hands.js';   /* (claude/kingswood2) KINGSWOOD 2's ropes, logs and procession lines, said as variables */   /* (claude/stockade2) THE STOCKADE 2's horn, piles, gate, exam and war-tower lines, said as variables */ import { PO_SAY } from './potion-hands.js'; 
 import { LP3_SAY } from './lamplit-fire.js'; import { WK_SAY } from './wickling.js';   /* (claude/lamplit3) THE LAMPLIT STREET 3's fire lines and THE WICKLING's, said as variables */   /* (claude/pyramidboss) THE COFFIN KING's lines, said as variables */
 export const CALL_LINES = new Set([
+  /* (batch138) THE PYROMANCER 2's and THE GOBLIN FIRE MAGE's words, said as literals in main.js and fire-mage-hands.js: they teach how his fire is put out, so they go in the hint box */
+  'DOUSED', 'SPENT', 'HE STOKES', 'HIS MARKS BURN', 'CONFLAGRATION', 'HIS STAFF RELIGHTS', 'HIS FIRE CATCHES ON THE GRASS', 'GOBLIN FIRE MAGE: WATER PUTS HIS STAFF OUT',
   /* (claude/bossheal 10-30) THE ARENA HEAL: a boss wakes or a mini's room shuts and every hero is restored to full (main.js arenaHeal) */
   'RESTORED',
   /* batch126 pre-gate 10-28: lines main.js says that the hint box now shows (the Hurricane's storm call, the sea bell rung), routed as hint-shown requires */

@@ -36984,7 +36984,7 @@ window.BK = { setView: m => setView(m), env: () => ({ hurt: (e, d, x) => hurtEne
   healths: () => healths, acorns: () => acorns,   /* the hearts and coins lying about, the dead-end stashes among them: BK.collectLab({ stash: true }) goes for those */
   /* THE AUDITS (tools/audit-hitboxes.mjs, audit-feel.mjs, audit-input.mjs, audit-contact.mjs, audit-audio.mjs): read-only. log is an array while a
      tool listens (damagePlayer and hurtEnemy write to it), else null; the rest are the numbers a blow leaves behind, the hero's live reach, his set, the particles */
-  log: null, blowRec: null, shakeCam: (n, k, tag) => shakeCam(n, k, tag), get shake() { return shake; }, get kick() { return kick; }, attackBox: () => attackBox(), boxOf: q => box(q), get hurtKnock() { return hurtKnock; }, get heroSet() { return K; }, swap: SWAPUI, shopLife: SHOPLIFE,   /* (claude/hubpolish) tools/hero-swap.mjs, tools/shop-life.mjs, tools/textfit.mjs */
+  log: null, blowRec: null, shakeCam: (n, k, tag) => shakeCam(n, k, tag), get shake() { return shake; }, get kick() { return kick; }, attackBox: () => attackBox(), boxOf: q => box(q), get hurtKnock() { return hurtKnock; }, get heroSet() { return K; }, swap: SWAPUI, shopLife: SHOPLIFE,   /* (claude/hubpolish) tools/hero-swap.mjs, tools/hero-swap.mjs, tools/textfit.mjs */
   parts: () => parts, bossBodies: () => bossBodies, get PROP() { return PROP; }, get FLYERS() { return FLYERS; }, get HAS_HURT() { return HAS_HURT; }, get EHP() { return EHP; },
 };
 /* THE HOIST, for the harnesses: the decks (each with its state in .hs), a way to put n loads in one's basket, and the Reeve's cut */

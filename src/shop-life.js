@@ -9,7 +9,7 @@
 //   A PURCHASE   the store screen sees the coins go and fires a beat: the keeper's head nods, the coin clinks (the game's own), a ring of light pops round the item, and the
 //                keeper says a line; back in the room he nods once more and says thanks.
 // EVERYTHING HERE IS A HANDFUL OF RECTANGLES ON A CLOCK: no canvas is made after the first frame, no gradient, no array; it does nothing outside a shop room.
-// This file has no game in it (tools/shop-life.mjs holds it without a page): main.js passes the camera, the clock and where the keeper and the hero stand.
+// This file has no game in it (tools/hero-swap.mjs holds it without a page): main.js passes the camera, the clock and where the keeper and the hero stand.
 
 export const SHOP_IDS = ['shop', 'shopCrag', 'shopSea', 'shopWell'];
 /* what each keeper says. Short: a box of at most ~34 letters over his head (the textfit tool measures them). Rotated in order, never the same twice running. */
