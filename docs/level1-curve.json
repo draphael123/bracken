@@ -624,17 +624,17 @@
   "lostPct": 209
  },
  "hornetsnest": {
-  "hash": "9fc71270a96e",
+  "hash": "e4452c9761e8",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 16,
+  "hits": 15,
   "deaths": 0,
-  "kills": 40,
+  "kills": 48,
   "lifts": 88,
   "walked": 100,
   "bare": true,
-  "lostPct": 77
+  "lostPct": 69
  },
  "palisadewood": {
   "hash": "344234fcd689",

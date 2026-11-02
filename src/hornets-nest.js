@@ -186,7 +186,7 @@ export function buildHornetsNest({ painter, T, TS }) {
   hang('gallery', 195, 206, 26, 1, { bridge: true });
   sign(191, 29, 'THE COMB OVER THE GAP IS WIDER THAN THE GAP. CUT IT FROM THE PILLAR: IT LANDS ACROSS.');
   coins([207, 28], [210, 28]);
-  hornet(176, 22, { squad: 'gallery' }); hornet(185, 23, { squad: 'gallery' });   /* two hornets patrol over the sagging combs (a pot carried quiets them) */
+  hornet(176, 22, { squad: 'gallery' }); hornet(185, 23, { squad: 'gallery' }); hornet(199, 24, { squad: 'gallery' });   /* (the curve tune: a third over the bridge gap) */   /* two hornets patrol over the sagging combs (a pot carried quiets them) */
   stinger(194, 29, { squad: 'gallery' });                     /* the pillar's stinger */
   drone(209, 29, { squad: 'gallery' });                       /* a comb drone on the exit ledge */
   drip(180, 22, 2.6, 0); drip(185, 22, 2.6, 1.3); drip(201, 22, 2.6, 0.65); drip(209, 22, 2.6, 1.95);   /* honey from the paper roof on a string, its nub six rows over the footing (the camera shows ~11 rows: the bead swells in view): over the second and third combs, the gap (it lands on the bridge once cut), the ledge */
@@ -209,6 +209,7 @@ export function buildHornetsNest({ painter, T, TS }) {
   sign(336, 26, 'THE NEXT COMB IS TOO HIGH. CUT THE ONE HUNG OVER YOU: IT LANDS AS THE STEP.');
   hornet(312, 16, { squad: 'well' }); hornet(318, 30, { squad: 'well' });
   fat(340, 37, { squad: 'well' });                            /* the fat honey hornet at row 38 east: its globs on the rungs */
+  stinger(306, 26, { squad: 'well' }); stinger(343, 9, { squad: 'well' });   /* (the curve tune: a stinger on the west shelves, one guarding the exit shelf) */
   swarm(333, 24, { squad: 'well' });                          /* the swarm by the overhang: a pot carried up (or lobbed) quiets it */
   shelf(311, 314, 33); coins([312, 32], [313, 32]);   /* a dead-end pendant off the west shelves: a purse of gold (the level's three silvers are the old ones) */
   drip(336, 40, 2.6, 0); drip(331, 37, 2.6, 0.9); drip(337, 34, 2.6, 1.7); drip(332, 31, 2.6, 0.5); drip(336, 20, 2.6, 1.3);   /* honey from the rungs above: each lands on the rung under it (staggered: a route is always open) */
