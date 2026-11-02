@@ -3,14 +3,15 @@
 // the fist drawn back / into the oak, the horn raised / at his lips, the claws drawn back / lunging; seated: the sceptre levelled for the charge, the claws, the horn, the fright of the flee). HIS LOOK STAYS: the
 // same green jowls, crown and fur-trimmed robe; his old frames (stand, walk, kneel, held, litter idle) are still the baked ones from src/chars.js bakeKingBig.
 // What is drawn at run time over a frame is only what MOVES: flames set on the club / limb tips (TIPS), the sweep's streak, the horn's rings, dust, the told marks.
-import { UP, SEAT, BEARER, TIPS, upFrame, seatFrame } from './gorm_frames.js';
+import { UP, UPR, SEAT, BEARER, TIPS, upFrame, seatFrame, potProp, sceptreProp } from './gorm_frames.js';
+export { potProp, sceptreProp };   /* (claude/gorm3art) the thrown pot and sceptre sprites, drawn by src/gorm-hands.js */
 import * as FX from './gorm_fx.js';
 import * as KP from './kingswood_props.js';
 import { canvas, flipX, whiten } from '../px.js';
 const R = Math.round;
 const f = (g, c, x, y, w, h) => { g.fillStyle = c; g.fillRect(R(x), R(y), R(w), R(h)); };
 /* the move -> [sheet, frame, prop]: 'seat' / 'up' are his baked sheets; 'seat2' / 'up2' are the poses of this pass (frames by name) */
-const MARKS = { chargeTell: '!!', grabTell: '!!', sweepTell: '!', hornTell: '', limbTell: '', clubHiTell: '!', clubLoTell: '!!', logTell: '!!', quakeTell: '!!', shakeTell: '!!' };
+const MARKS = { chargeTell: '!!', grabTell: '!!', sweepTell: '!', hornTell: '', limbTell: '', clubHiTell: '!', clubLoTell: '!!', logTell: '!!', quakeTell: '!!', shakeTell: '!!', potTell: '!!', sceptreTell: '!!', burnChargeTell: '!!', rageTell: '' };
 export const POSES = {
   carried: ['seat2', 'idle'], chargeTell: ['seat2', 'chargeTell', 'rock'], charge: ['seat2', 'charge'], grabTell: ['seat2', 'grabTell'], grab: ['seat2', 'grab'], hornTell: ['seat2', 'hornTell', 'hornUp'], horn: ['seat2', 'horn', 'hornBlow'],
   held: ['seat2', 'held'], fleeTell: ['seat2', 'fleeTell', 'bearers'], fleeCarried: ['seat2', 'fleeCarried', 'bearers'], sleep: ['seat2', 'idle'], wake: ['seat2', 'wake'],
@@ -19,11 +20,15 @@ export const POSES = {
   limbTell: ['up2', 'limbTell', 'limbTear'], clubHiTell: ['up2', 'clubHiTell', 'clubFire'], clubHi: ['up2', 'clubHi', 'clubHiArc'], clubLoTell: ['up2', 'clubLoTell', 'clubFire'], clubLo: ['up2', 'clubLo', 'clubLoArc'],
   logTell: ['up2', 'logTell', 'logFeet'], log: ['up2', 'log', 'kick'], quakeTell: ['up2', 'quakeTell', 'crouch'], quakeAir: ['up2', 'quakeAir', 'air'], quake: ['up2', 'quake', 'flop'],
   toOak: ['up2', 'stand'], throneSleep: ['up2', 'throneSleep', 'stump'], throneWake: ['up2', 'throneWake', 'stump'], shakeTell: ['up2', 'shakeTell', 'fistBack'], shake: ['up2', 'shake', 'punch'], downed: ['up2', 'downed', 'downed'], stung: ['up2', 'stung', 'stung'],
+  /* (claude/gorm3art: each its OWN baked frame now - src/redraw/gorm_frames.js; the run-time prop is only what moves: the fuse flame, the streaks, the dust) THE PITCH POT (on the litter / afoot), THE SCEPTRE THROW, THE ENRAGE, THE BURNING CHARGE */
+  potTell: ['seat2', 'potTell', 'potFuse'], pot: ['seat2', 'pot', 'potThrow'], potTellUp: ['up2', 'potTellUp', 'potFuse'], potUp: ['up2', 'potUp', 'potThrow'],
+  sceptreTell: ['up2', 'sceptreTell', 'slungClub'], sceptreOut: ['up2', 'sceptreOut', 'slungClub'], sceptreCatch: ['up2', 'sceptreCatch', 'catchIt'],
+  rageTell: ['up2', 'rageTell', 'rageRise'], burnChargeTell: ['up2', 'burnChargeTell', 'ramLimb'], burnCharge: ['up2', 'bc0', 'ramRun'], burnChargeEnd: ['up2', 'burnChargeEnd', 'skid'],
 };
 export function poseOf(e) {
   const up = e.phase >= 2 || e.stage === 'glade';
   let k = e.mode;
-  if (up && (k === 'grabTell' || k === 'grab' || k === 'hornTell' || k === 'horn' || k === 'held')) k = { grabTell: 'grabTellUp', grab: 'grabUp', hornTell: 'hornTellUp', horn: 'hornUp', held: 'heldUp' }[k];
+  if (up && (k === 'grabTell' || k === 'grab' || k === 'hornTell' || k === 'horn' || k === 'held' || k === 'potTell' || k === 'pot')) k = { grabTell: 'grabTellUp', grab: 'grabUp', hornTell: 'hornTellUp', horn: 'hornUp', held: 'heldUp', potTell: 'potTellUp', pot: 'potUp' }[k];
   if (e.stage === 'glade' && (e.mode === 'sleep' || e.mode === 'wake')) k = e.mode === 'sleep' ? 'throneSleep' : 'throneWake';
   return POSES[k] || (up ? POSES.walk : POSES.carried);
 }
@@ -46,7 +51,10 @@ export function drawGorm(g, e, cx, cy, time, api) {
   const st = walked(e), afoot = sheet === 'up2' && fr0 === 'stand' && !prop;
   if (afoot) { const club = e.stage === 'glade' && e.club, moving = Math.abs(e.vx || 0) > 6 && st.still < 6, i = Math.floor(st.d / STRIDE) % 6;
     if (club) { fr0 = moving ? 'wc' + i : 'walkClub'; prop = 'walkClub'; } else fr0 = moving ? 'walk' + i : 'stand'; }
-  const set = sheet === 'seat' ? api.SPR.king : sheet === 'up' ? api.SPR.kingUp : sheet === 'seat2' ? SEAT.set : UP.set;
+  if (prop === 'ramRun') fr0 = 'bc' + (Math.floor(st.d / 10) & 3);   /* (claude/gorm3art) the charge's run cycle, timed by the ground he covers like his walk */
+  /* ENRAGED: the scorched set with the cracked crown - from the crack (1 s into the 2 s transition) to the end of the fight */
+  const enr = e.rage && e.alive && (e.mode !== 'rageTell' || (e.rageT || 0) >= 0.9);
+  const set = sheet === 'seat' ? api.SPR.king : sheet === 'up' ? api.SPR.kingUp : sheet === 'seat2' ? SEAT.set : enr ? UPR.set : UP.set;
   const fr = typeof fr0 === 'string' ? (sheet === 'seat2' ? seatFrame(fr0) : upFrame(fr0)) : fr0;
   const litter = (lx, ly) => g.drawImage(api.PROP.palanquin, R(lx) - 48, R(ly) - 36, 96, 45);
   /* the ward (B3): a pale shell round him while the hangings glance off */
@@ -66,6 +74,7 @@ export function drawGorm(g, e, cx, cy, time, api) {
   }
   if (e.mode === 'rise' && e.stage !== 'glade') scatter(g, x, y, e);   /* (claude/gormfinish) the litter breaks: the four bearers drop the poles and bolt */
   overProp(g, e, prop, x, y, face, time, fr0);
+  if (e.rage && e.alive) rageFire(g, e, x, y, face, time);   /* (claude/gorm3) ENRAGED: he burns with his oak, the crown cracked */
   /* B10: the read over him - gold motes while the crown turns blades, a green ring and a timer bar while he is open */
   if (api.bossActive && e.alive && e.mode !== 'sleep') { const hx = R(x), hy = R(y - (e.h || 45)) - 8, op = e.mode === 'held' || e.mode === 'downed' || e.mode === 'stung' || e.open > 0;
     if (op) { const left = e.mode === 'held' || e.mode === 'downed' || e.mode === 'stung' ? Math.max(0, e.modeT) / (e.mode === 'held' ? 3.2 : e.mode === 'downed' ? 3.5 : 4) : e.open / 4;
@@ -91,6 +100,14 @@ function scatter(g, x, y, e) {
     const c = set[dir < 0 ? 'L' : 'R'][fr], ax = dir < 0 ? c.width - set.ax : set.ax;
     g.save(); g.globalAlpha = a; g.drawImage(c, R(x + dx + dir * run) - ax, R(y + 9) - set.ay - (go > 0 && (ph + k) & 1 ? 1 : 0)); g.restore(); }
 }
+/* (claude/gorm3, art claude/gorm3art) ENRAGED: flames on his shoulders and crown (growing through the 2 s transition); the cracked crown and the burning robe are in the baked frames (UPR) */
+function rageFire(g, e, x, y, face, time) {
+  const top = y - (e.h || 60), k = e.mode === 'rageTell' ? Math.min(1, (e.rageT || 0) / 1.6) : 1, big = k > 0.6 ? 'M' : 'S';
+  /* (gorm3art) on his shoulders and above the crown - never over the face */
+  FX.flame(g, x - 32, y - 38, big, time, 11); FX.flame(g, x + 32, y - 38, big, time, 17); if (k > 0.4) FX.flame(g, x + 2, top - 10, 'S', time, 23); if (k > 0.8) FX.flame(g, x - 18, y - 6, 'S', time, 29);
+  FX.glow(g, x, y - 36, 44, 0.18 * k);
+  /* (the crown's crack and the scorched robe are baked into the ENRAGED frames now) */
+}
 function arc(g, x, y, face, r, y0, y1, col) {
   g.save(); g.strokeStyle = col;
   for (let k = 0; k < 3; k++) { g.globalAlpha = 0.62 - k * 0.18; g.lineWidth = 3 - k; g.beginPath(); g.ellipse(R(x), R((y0 + y1) / 2), r - k * 5, Math.max(2, Math.abs(y1 - y0) / 2 + 3 - k), 0, face > 0 ? -1.2 + k * 0.25 : Math.PI - 1.2 + k * 0.25, face > 0 ? 1.2 : Math.PI + 1.2); g.stroke(); }
@@ -113,6 +130,18 @@ function overProp(g, e, prop, x, y, face, time, fr0) {
     case 'flop': for (let k = -2; k <= 2; k++) FX.smoke(g, x + k * 22, y - 6 - Math.abs(k), Math.min(1, 0.15 + 0.1 * Math.abs(k)), 1); break;
     case 'punch': for (let k = 0; k < 5; k++) { const a = (k / 5) * 2 - 1; f(g, '#ffd36b', x + face * (96 + (k % 2) * 3), top + 30 + a * 14, 2, 2); } break;
     case 'downed': for (let k = 0; k < 3; k++) { const a = time * 5 + k * 2.1, sx = x + R(Math.cos(a) * 18), sy = top + 18 + R(Math.sin(a) * 3); f(g, '#ffd36b', sx, sy - 1, 1, 3); f(g, '#ffd36b', sx - 1, sy, 3, 1); } break;
+    /* (claude/gorm3art) THE PITCH POT: the lit pot and its hand are in the frame; here the fuse's flame and glow (the windup), and the smoke where it left his hand (the release) */
+    case 'potFuse': { const t = TIPS[fr0]; if (t) { FX.flame(g, x + face * t[0][0], y + t[0][1] + 2, 'S', time, 7); FX.glow(g, x + face * t[0][0], y + t[0][1] + 6, 20, 0.3); } break; }
+    case 'potThrow': for (let k = 0; k < 3; k++) FX.smoke(g, x + face * (28 + k * 9), top - 4 - k * 5, 0.3 + k * 0.2, 0.7); break;
+    /* THE SCEPTRE THROW: the club slung on his back still burns over his shoulder (the windup and the empty-handed release); the catch: a gold flash at the open hand */
+    case 'slungClub': { const t = TIPS[fr0]; if (t) { for (let i = 0; i < t.length; i++) FX.flame(g, x + face * t[i][0], y + t[i][1] + 2, i === 0 ? 'M' : 'S', time, i * 3 + 5); } if (e.mode === 'sceptreTell' && Math.floor(time * 10) % 2) f(g, '#fff6c8', x - face * 74, y - 78, 2, 2); break; }
+    case 'catchIt': { const t = TIPS[fr0]; if (t) FX.flame(g, x + face * t[0][0], y + t[0][1] + 2, 'M', time, 5); const hx = x + face * 62, hy = y - 62, r = 4 + Math.floor(time * 30) % 4; g.save(); g.globalAlpha = 0.6; g.strokeStyle = '#fff6c8'; g.beginPath(); g.arc(R(hx), R(hy), r, 0, 6.283); g.stroke(); g.restore(); break; }
+    /* THE ENRAGE: gold chips fly off the cracking crown */
+    case 'rageRise': for (let k = 0; k < 4; k++) { const t = (time * 2 + k / 4) % 1; f(g, '#ffd36b', x + (k - 1.5) * 6 + face * t * 10, top - 4 - t * 16, 2, 1); } break;
+    /* THE BURNING CHARGE: the flaming limb is in the frame; flames at its tips, dust off his heels (the windup); flames streaming back (the run); the skid */
+    case 'ramLimb': fire(g, fr0, x, y, face, time, true); for (let k = 0; k < 3; k++) FX.smoke(g, x - face * (20 + k * 10), y - 4 - k * 2, (time * 2 + k * 0.3) % 1, 0.6); break;
+    case 'ramRun': fire(g, fr0, x, y, face, time, true); for (let k = 0; k < 3; k++) FX.flame(g, x - face * (34 + k * 14), y - 14 + k * 2, 'S', time, k * 3 + 2); break;   /* (streaming off the limb's tail, clear of his body) */
+    case 'skid': fire(g, fr0, x, y, face, time, false); for (let k = 0; k < 4; k++) FX.smoke(g, x + face * (24 + k * 8), y - 4, (time * 2 + k * 0.25) % 1, 0.8); break;
     case 'stung': for (let k = 0; k < 10; k++) { const a = time * (4 + k % 3) + k; f(g, k % 3 ? '#e0b040' : '#1a0e08', x + R(Math.cos(a) * 30), top + 10 + R(Math.sin(a * 1.3) * 22), 2, 1); } break;
   }
 }
@@ -128,4 +157,4 @@ export function cardSet(PROP) {
 }
 export const deadSet = () => ({ set: UP.set, frame: upFrame('downed') });
 /* bake everything now (the level's load) */
-export function warm() { void UP.set; void SEAT.set; void BEARER.R; }
+export function warm() { void UP.set; void SEAT.set; void BEARER.R; void UPR.set; potProp(0); sceptreProp(0); }   /* (gorm3art) + the ENRAGED set and the two thrown props */

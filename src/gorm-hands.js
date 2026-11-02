@@ -50,7 +50,7 @@ export function makeGormHands(ctx) {
     S = { said: keepSaid, ropes: [], act: -1, fileT: 0, ord: 0, arrows: [], rocks: [], took: 0, rockCd: 0, near: null, arc: null,
       run: { on: false, fireX: 0, t: 0, done: !!(persist && persist.runDone), lit: [], armed: false, surged: false, surgeT: 0 }, branches: (g.run.branches || []).map(b => ({ ...b, state: 'hang', t: 0 })),
       hangs: (g.glade.hangs || []).map(d => ({ d, state: 'hang', y: d.y0, vy: 0, lx: d.x, resetT: 0, hitK: false, heroHit: false, turn: 0 })),
-      cones: [], logs: [], waves: [], swarms: [], n: { arrows: 0, arrowHits: 0, rocks: 0, knocked: 0, cut: 0, caught: 0, boars: 0, penned: 0, branch: 0, branchHits: 0, lit: 0, fireT: 0, cones: 0, logs: 0, quakes: 0, hangDrops: 0, held2: 0, downed: 0, stung: 0, glance: 0, fightAt: undefined } };
+      cones: [], logs: [], waves: [], swarms: [], pots: [], pitch: [], sceptres: [], trail: [], lane: null, n: { pots: 0, potHits: 0, sceptres: 0, sceptreHits: 0, charges: 0, trailT: 0, arrows: 0, arrowHits: 0, rocks: 0, knocked: 0, cut: 0, caught: 0, boars: 0, penned: 0, branch: 0, branchHits: 0, lit: 0, fireT: 0, cones: 0, logs: 0, quakes: 0, hangDrops: 0, held2: 0, downed: 0, stung: 0, glance: 0, fightAt: undefined } };
     /* the hall's ropes: one to each boss cage, by column */
     const cages = ctx.props().filter(p => p.t === 'dropcage' && p.boss).sort((a, b) => a.x - b.x);
     g.hall.ropes.forEach((r, i) => { const cage = cages.find(c => Math.abs(c.x - r.x) < 10); if (cage) S.ropes.push({ i, cage, x: r.x, pegs: r.pegs, pegY: g.hall.floor, deck: r.deck, archers: r.archers, free: false }); });
@@ -63,7 +63,8 @@ export function makeGormHands(ctx) {
   /* the King, set down on his stump throne in the glade, asleep until you come (bossStart wakes him there) */
   function toGlade(e) { const gl = L().glade, g = G(); e.fleeT = 0;   /* (claude/kingsfix2, Daniel's playtest: THE GLADE WAS EMPTY on the first arrival) his flee clock is also main.js's generic 'foe flees, then is gone' timer: left running it walked him west and removed him a few seconds after the bearers set him down - a shrine respawn built a fresh King, so he was there the second time */
   e.stage = 'glade'; e.phase = 4; e.mode = 'sleep'; e.modeT = 0; e.x = g.glade.stumpX; e.y = gl.floor; e.vx = 0; e.vy = 0; e.h = 60; e.w = 68; e.open = 0; e.ward = 0; e.hidden = false;
-    e.maxHp = e.maxHp2 || Math.round((e.maxHp || GORM.hp1) * GORM.hp2 / GORM.hp1); e.hp = e.maxHp; e.huntN = 0; e.clubT = 1.5; e.logT = 6; e.quakeT = 9; e.shakeT = 11; e.face = -1; if (ctx.bossActive()) { e.mode = 'wake'; e.modeT = 1.6; } }
+    e.maxHp = e.maxHp2 || Math.round((e.maxHp || GORM.hp1) * GORM.hp2 / GORM.hp1); e.hp = e.maxHp; e.huntN = 0; e.clubT = 1.5; e.logT = 6; e.quakeT = 9; e.shakeT = 11; e.face = -1;
+    e.rage = false; e.rageSaved = false; e.rageBoar = false; e.lastHorn = false; e.rageT = 0; e.burnT = undefined; e.sceptreT = GORM.sceptre.first; e.club = true; if (S) { S.sceptres = []; S.trail = []; S.lane = null; } ctx.drainStop('gormtrail'); ctx.music && ctx.music(false);   /* (claude/gorm3) a fresh glade: no rage, the music down again */ if (ctx.bossActive()) { e.mode = 'wake'; e.modeT = 1.6; } }
 
   /* ---------------- THE HALL ---------------- */
   const hallOn = () => { const e = ctx.boss(); return !!(e && e.t === 'king' && e.alive && e.stage === 'court' && ctx.bossActive()); };
@@ -177,7 +178,7 @@ export function makeGormHands(ctx) {
     persist = { stage: 'flee', runDone: false }; S.n.p1At = Math.round(ctx.time() * 10) / 10;
     for (const q of bows()) { q.alive = false; ctx.burst(q.x, q.y - 6, 6, ['#c9b27c', '#8a5a32'], 40, 0.4); }
     for (const q of ctx.enemies()) if (q.alive && q.t === 'royalboar' && q.called) { q.mode = 'bolt'; q.modeT = 2; }
-    S.arrows = []; S.act = -1;
+    S.arrows = []; S.act = -1; S.pots = []; S.pitch = []; ctx.drainStop('gormpitch');
     ctx.endFight(); L().arena = L().glade;   /* his hall is done: the arena is his glade now (nothing wakes him in the hall again) */
     if (P && !P.dead) { P.hp = P.maxHp; if (P.hpShown !== undefined) P.hpShown = P.maxHp; P.st = P.maxSt || P.st; say(P.x, P.y - 40, 'healed', '#8fd160'); ctx.sfx.heal && ctx.sfx.heal(); }
     say(e.x, e.y - e.h - 30, 'torch', '#ff6b5c'); ctx.sfx.roar && ctx.sfx.roar(); ctx.sfx.hornBlast && ctx.sfx.hornBlast(); ctx.shake(8); ctx.zoom(1.12, 0.5);
@@ -306,13 +307,60 @@ export function makeGormHands(ctx) {
     if (!gladeOn()) { S.cones = []; S.logs = []; S.waves = []; }
   }
 
+  /* ---------------- (claude/gorm3) KING GORM 3: THE PITCH POT (P1), THE SCEPTRE (P2), THE BURNING CHARGE'S LANE AND FIRE TRAIL (rage) ---------------- */
+  /* THE PITCH POT: lobbed from his hand to where the perched hero stood at the release (on that surface) - the red ring there for the whole flight */
+  H.pot = (e, P) => { const PT = GORM.pot, x0 = e.x + (e.face || 1) * 18, y0 = e.y - (e.h || 45) - 4, tx = P.x, ty = P.y, dx = tx - x0, dy = ty - y0;
+    const T = Math.max(PT.tMin, Math.min(PT.tMax, Math.hypot(dx, dy) / 260)), vx = dx / T, vy = dy / T - 0.5 * PT.g * T;
+    S.pots.push({ x: x0, y: y0, vx, vy, t: T, T, tx, ty, spin: 0 }); S.n.pots++;
+    if (once('potHint')) ctx.hint('UP ON THE DECKS HE LOBS A PITCH POT AT YOU: STEP OFF THE RED RING. AT A HERO ON HIS FLOOR HE NEVER THROWS IT.'); };
+  function potsStep(dt) {
+    const P = ctx.P(), PT = GORM.pot; if (!hallOn()) { S.pots = []; S.pitch = []; }
+    for (const q of S.pots) { q.vy += PT.g * dt; q.x += q.vx * dt; q.y += q.vy * dt; q.t -= dt; q.spin += dt * 12;
+      if (Math.random() < dt * 24) ctx.part({ x: q.x, y: q.y - 4, vx: (Math.random() - 0.5) * 20, vy: -30, life: 0.3, max: 0.3, col: Math.random() < 0.5 ? '#ff9a5c' : '#ffd36b', size: 1, grav: -20 });
+      if (q.t > 0) continue;
+      q.dead = true; ctx.burst(q.tx, q.ty - 4, 14, ['#ff9a5c', '#ffd36b', '#3a2416', '#7a4a2a'], 90, 0.6); ctx.sfx.crack && ctx.sfx.crack(); ctx.sfx.conflag && ctx.sfx.conflag(); ctx.shake(3);
+      if (P && !P.dead && Math.abs(P.x - q.tx) < PT.r && P.y > q.ty - 24 && P.y < q.ty + 10) { const res = ctx.damage(q.tx, PT.dmg, { name: 'A PITCH POT' }); if (res === 'hit') S.n.potHits++; }
+      if (ctx.solidPx(q.tx, q.ty + 2, true)) S.pitch.push({ x0: q.tx - PT.patch / 2, x1: q.tx + PT.patch / 2, y: q.ty, t: PT.patchT }); }
+    S.pots = S.pots.filter(q => !q.dead); S.pitch = S.pitch.filter(z => (z.t -= dt) > 0);
+    let on = false; if (P && !P.dead && P.ground) for (const z of S.pitch) if (P.x > z.x0 && P.x < z.x1 && Math.abs(P.y - z.y) < 4) { on = true; break; }
+    if (on) { ctx.drain('gormpitch', PT.drain, { name: GORM_SAY.pitch, die: 'BURNED IN HIS HALL', tick: '#ff9a5c' }); if (once('pitchSay')) ctx.number(P.x, P.y - 34, GORM_SAY.pitch, '#ff9a5c'); }
+    else ctx.drainStop('gormpitch');
+  }
+  /* THE SCEPTRE: a boomerang - out along the floor LOW (feet: jump it), up at the far end, back HIGH (the head: duck it; a shield turns the high pass). One hit a pass */
+  const scPos = s => { const SC = GORM.sceptre, u = Math.min(1, s.t / s.T), k = u < 0.4 ? 0 : u > 0.6 ? 1 : (u - 0.4) / 0.2, sm = k * k * (3 - 2 * k);
+    return { x: s.x0 + s.dir * s.R * Math.sin(Math.PI * u), y: s.floor - (SC.lowY + (SC.highY - SC.lowY) * sm), u }; };
+  H.sceptre = (x0, dir, R0) => { const gl = L().glade; const s = { x0, dir, R: R0, t: 0, T: GORM.sceptre.t, floor: gl.floor, low: false, high: false, spin: 0 }; const p = scPos(s); s.x = p.x; s.y = p.y; S.sceptres.push(s); S.n.sceptres++;
+    if (once('sceptreHint')) ctx.hint('HIS SCEPTRE FLIES OUT LOW - JUMP IT - AND COMES BACK HIGH - DUCK IT (A SHIELD TURNS THE HIGH PASS).'); };
+  H.sceptreOut = () => S.sceptres.length > 0;
+  function sceptreStep(dt) {
+    const P = ctx.P(), SC = GORM.sceptre;
+    for (const s of S.sceptres) { s.t += dt; const p = scPos(s); s.x = p.x; s.y = p.y; s.u = p.u; s.spin += dt * 22;
+      if (P && !P.dead && Math.abs(P.x - p.x) < 9) { const out = p.u < 0.5;
+        if (out && !s.low && P.y > p.y - 3 && P.y - 20 < p.y) { s.low = true; const res = ctx.damage(p.x - s.dir * 10, SC.dmg, { unblockable: true, up: true, name: 'THE SCEPTRE' }); if (res === 'hit') S.n.sceptreHits++; }
+        else if (!out && !s.high && !P.ducking && P.y > p.y && P.y - 20 < p.y) { s.high = true; const res = ctx.damage(p.x + s.dir * 10, SC.dmg, { name: 'THE SCEPTRE' }); if (res === 'hit') S.n.sceptreHits++; } }
+      if (s.t >= s.T) s.dead = true; }
+    S.sceptres = S.sceptres.filter(s => !s.dead); if (!gladeOn()) S.sceptres = [];
+  }
+  /* THE BURNING CHARGE: its lane drawn on the floor while he lowers the limb; behind him as he runs, the floor burns (16-px segments, each fades after trailT) */
+  H.lane = (x, dir) => { const gl = L().glade; S.lane = { x0: x, x1: dir > 0 ? gl.x1 - 40 : gl.x0 + 40, y: gl.floor, t: GORM.rage.chargeTell + 0.3 }; S.n.charges++; };
+  H.trail = (x, y) => { const k = Math.floor(x / TS), z = S.trail.find(q => q.k === k); S.lane = null; if (z) { z.t = GORM.rage.trailT; return; } S.trail.push({ k, x0: k * TS, x1: (k + 1) * TS, y, t: GORM.rage.trailT }); };
+  function trailStep(dt) {
+    const P = ctx.P(); if (S.lane && (S.lane.t -= dt) <= 0) S.lane = null; S.trail = S.trail.filter(z => (z.t -= dt) > 0); if (!gladeOn()) { S.trail = []; S.lane = null; }
+    let on = false; if (P && !P.dead && P.ground) for (const z of S.trail) if (P.x > z.x0 - 2 && P.x < z.x1 + 2 && Math.abs(P.y - z.y) < 4) { on = true; break; }
+    if (on) { S.n.trailT += dt; ctx.drain('gormtrail', GORM.rage.trailDrain, { name: GORM_SAY.trail, die: 'BURNED IN HIS GLADE', tick: '#ff9a5c' }); if (once('trailSay')) ctx.number(P.x, P.y - 34, GORM_SAY.trail, '#ff9a5c'); }
+    else ctx.drainStop('gormtrail');
+  }
+
   /* ---------------- EVERY FRAME ---------------- */
   H.update = dt => {
     if (!S) return; S.clankT = Math.max(0, (S.clankT || 0) - dt);
     if (hallOn() && S.n.fightAt === undefined) S.n.fightAt = Math.round(ctx.time() * 10) / 10;
     { const Pp = ctx.P(); if (Pp && S.n.fightAt !== undefined && S.n.p1At === undefined) { if (S.lastHp !== undefined && Pp.hp < S.lastHp) S.n.p1Taken = (S.n.p1Taken || 0) + (S.lastHp - Pp.hp) / Pp.maxHp; if (S.lastFl !== undefined && (Pp.flasks || 0) < S.lastFl) S.n.p1Drinks = (S.n.p1Drinks || 0) + 1; S.lastHp = Pp.hp; S.lastFl = Pp.flasks || 0; } }   /* (claude/kingsfix2 measuring: what P1 cost the hero) */
-    hallStep(dt); arrowsStep(dt); rocksStep(dt); runStep(dt); hangStep(dt); gladeFx(dt);
+    hallStep(dt); arrowsStep(dt); rocksStep(dt); runStep(dt); hangStep(dt); gladeFx(dt); potsStep(dt); sceptreStep(dt); trailStep(dt);
     const e = king(), lv = L();
+    if (typeof window !== 'undefined' && S.n.fightAt !== undefined) window.__gormN = S.n;   /* (claude/gorm3 measuring: tools/boss-run.mjs reads it after the fight) */
+    if (S.n.fightAt !== undefined && e && e.alive) S.n.lastT = Math.round(ctx.time() * 10) / 10;   /* (claude/gorm3 measuring: the last moment he stood) */
+    if (e && e.rage && S.n.rageAt === undefined) S.n.rageAt = Math.round(ctx.time() * 10) / 10;   /* (claude/gorm3 measuring: when the rage came) */
     if (e && e.stage === 'glade' && ctx.bossActive() && S.n.p2At === undefined) S.n.p2At = Math.round(ctx.time() * 10) / 10;
     if (e && e.stage === 'glade' && ctx.bossActive()) lv.oakBurn = Math.min(1, 0.55 + 0.45 * (1 - e.hp / Math.max(1, e.maxHp)));
   };
@@ -329,11 +377,22 @@ export function makeGormHands(ctx) {
     run: { on: S.run.on, done: S.run.done, fireX: S.run.fireX, armed: S.run.armed }, persist: persist ? { ...persist } : null, zones: zones().map(z => ({ x0: z.x0, x1: z.x1, y: z.y, on: z.on })),
     branches: S.branches.map(b => ({ x: b.x, y: b.y, state: b.state })),
     hangs: S.hangs.map(h => ({ kind: h.d.kind, x: h.d.x, lx: h.lx, pegs: h.d.pegs.slice(), state: h.state, roll: h.d.roll || 0 })), cones: S.cones.map(c => ({ x: c.x, t: c.t, state: c.state })),
-    logs: S.logs.map(l => ({ x: l.x, dir: l.dir })), waves: S.waves.map(w => ({ x: w.x, dir: w.dir })), swarms: S.swarms.map(s => ({ x: s.x, t: s.t })), n: { ...S.n } } : null;
+    logs: S.logs.map(l => ({ x: l.x, dir: l.dir })), waves: S.waves.map(w => ({ x: w.x, dir: w.dir })), swarms: S.swarms.map(s => ({ x: s.x, t: s.t })),
+    pots: S.pots.map(q => ({ x: q.x, y: q.y, tx: q.tx, ty: q.ty, t: q.t })), pitch: S.pitch.map(z => ({ x0: z.x0, x1: z.x1, y: z.y, t: z.t })), sceptres: S.sceptres.map(s => ({ x: s.x, y: s.y, u: s.u || 0, dir: s.dir, x0: s.x0, R: s.R })),
+    trail: S.trail.map(z => ({ x0: z.x0, x1: z.x1, y: z.y, t: z.t })), lane: S.lane ? { ...S.lane } : null, n: { ...S.n } } : null;
 
   /* ---------------- DRAWING (claude/gorm2art: painted; src/redraw/gorm_fx.js flames / smoke, gorm_glade.js the glade and the wood, kingswood_oak.js the great oak, gorm_hall.js the hall's decks and heaps) ---------------- */
   const R = Math.round, f = (g, c, x, y, w, h) => { g.fillStyle = c; g.fillRect(R(x), R(y), R(w), R(h)); };
   const flame = (g, x, y, h, time, seed) => FX.flame(g, x, y, h >= 14 ? 'L' : h >= 9 ? 'M' : 'S', time, seed);
+  /* (claude/gorm3art, painted: the sprites are src/redraw/gorm_frames.js potProp / sceptreProp) THE PITCH POT: a squat black-glazed clay pot tumbling, its rag fuse alight (the flame follows the fuse). THE SCEPTRE: a gilt rod, a ruby orb, turning in a gold streak */
+  function drawPot(g, x, y, spin, time, seed) {
+    const p = GPZ.potProp(spin); g.drawImage(p.c, x - p.ax, y - p.ay);
+    flame(g, x + p.fx, y + p.fy + 2, 8, time, seed); FX.glow(g, x + p.fx, y + p.fy + 3, 16, 0.28);
+  }
+  function drawSceptre(g, x, y, spin, dir) {
+    g.save(); g.globalAlpha = 0.35; g.strokeStyle = '#ffd36b'; g.lineWidth = 2; g.beginPath(); g.arc(x, y, 9, spin, spin + 2.4); g.stroke(); g.restore();   /* the gold streak */
+    const p = GPZ.sceptreProp(spin); g.drawImage(p.c, x - p.ax, y - p.ay);
+  }
   /* THE GREAT OAK OF THE GLADE (behind the tiles): its long boughs (every hanging hangs from one), THE SAME TREE as the skyline's oak (kingswood_oak.js: the trunk, the King's door, the crown - burning by L.oakBurn),
      the hunting lodge and the stump throne; ash and smoke drift off the burning half (capped) */
   H.drawBack = (g, cx, cy, VW, VH, time) => {
@@ -380,6 +439,13 @@ export function makeGormHands(ctx) {
     /* (claude/kingsfix2) THE BOUGH BRIDGE's limbs burn: a flame at each end of every limb that holds, tall and white-hot while it counts down (the crack and the count are the game's: drawCrumbles) */
     for (const c of (lv.crumbles || [])) { if (c.kind !== 'bough' || c.st === 'down' || c.gone) continue; const x0 = R(c.x0 * TS - cx), x1 = R((c.x1 + 1) * TS - cx), y = R(c.row * TS - cy); if (x1 < -20 || x0 > VW + 20) continue; const cnt = c.st === 'count';
       FX.flame(g, x0 + 6, y + 1, cnt ? 'M' : 'S', time, c.x0); FX.flame(g, x1 - 6, y + 1, cnt ? 'M' : 'S', time, c.x1 + 5); if (cnt || (c.x0 & 1)) FX.flame(g, (x0 + x1) / 2, y + 1, 'S', time, c.x0 + 11); }
+    /* (claude/gorm3) the burning pitch where a pot burst (P1) and the fire trail behind his burning charge (rage): a bed of flame that sinks as it fades */
+    for (const z of S.pitch.concat(S.trail)) { const x0 = R(z.x0 - cx), x1 = R(z.x1 - cx), y = R(z.y - cy); if (x1 < -20 || x0 > VW + 20) continue; const pitch = S.pitch.includes(z);
+      g.save(); g.globalAlpha = Math.min(1, z.t / 0.8);
+      /* (claude/gorm3art) what burns: a glossy black pool of pitch (the pot's patch) / scorched, cracked floor with live coals (the charge's trail) under the flames */
+      if (pitch) { f(g, '#0e0a10', x0 + 1, y - 1, x1 - x0 - 2, 3); f(g, '#1c1626', x0 + 3, y - 1, x1 - x0 - 6, 1); f(g, '#3a3648', x0 + 5, y - 1, 3, 1); f(g, '#0a0810', x0 - 1, y + 1, x1 - x0 + 2, 1); }
+      else { f(g, '#1a0e08', x0, y - 1, x1 - x0, 2); for (let q = x0 + 2; q < x1 - 1; q += 5) f(g, (q + z.x0) % 3 ? '#e0601a' : '#ff9a3c', q, y - 1, 2, 1); f(g, '#2a1410', x0 + 1, y + 1, x1 - x0 - 2, 1); }
+      FX.bed(g, x0, x1, y, time); g.restore(); }
     /* THE GLADE: what hangs in the oak (ropes from the boughs, the pegs), the marks, the logs, the hive */
     const gl = lv.glade; if (gl) { const gOn = gladeOn();
       for (const h of S.hangs) for (const [pk, pgx] of h.d.pegs.entries()) { const d = h.d, px = R(d.x - cx), py = R(d.top - cy), gx = R(pgx - cx), gy = R(d.pegY - cy), lx = R(h.lx - cx), ly = R(h.y - cy); if (Math.max(px, gx, lx) < -60 || Math.min(px, gx, lx) > VW + 60) continue;
@@ -416,7 +482,14 @@ export function makeGormHands(ctx) {
       if (S.run.on && S.run.t < 4 && ctx.text) ctx.text('THE WOOD BURNS: RUN EAST', VW / 2, 34, Math.floor(time * 4) % 2 ? '#ff9a5c' : '#fff6e0', 'center');
       FX.embers(g, cx, cy, VW, VH, time, FX.EMBER_CAP, 40); } }
     else if (persist && !S.run.done && VW) FX.embers(g, cx, cy, VW, VH, time, 12, 28);
+    /* (claude/gorm3) THE PITCH POTS: the red ring where each will land (all through its flight), the lit pot spinning on its arc */
+    for (const q of S.pots) { const k = 0.5 + 0.5 * Math.sin(time * 20), rx = R(q.tx - cx), ry = R(q.ty - cy); GG.mark(g, rx, ry, k, true);
+      g.save(); g.globalAlpha = 0.45 + 0.4 * (1 - q.t / q.T); g.strokeStyle = '#ff4a3c'; g.lineWidth = 1; g.beginPath(); g.ellipse(rx + 0.5, ry - 1.5, GORM.pot.r, 5, 0, 0, 6.283); g.stroke(); g.restore();
+      drawPot(g, R(q.x - cx), R(q.y - cy), q.spin, time, q.tx); }
     if (L().glade) {
+      /* (claude/gorm3) THE SCEPTRE in the air (a spinning gilt rod with a gold streak); THE BURNING CHARGE's lane (red dashes along the floor while he lowers the limb) */
+      for (const s of S.sceptres) drawSceptre(g, R(s.x - cx), R(s.y - cy), s.spin, s.dir * (s.u < 0.5 ? 1 : -1));
+      if (S.lane) { const a = Math.min(S.lane.x0, S.lane.x1), b = Math.max(S.lane.x0, S.lane.x1), y = R(S.lane.y - cy) - 2; g.save(); g.globalAlpha = 0.5 + 0.35 * Math.sin(time * 14); g.fillStyle = '#ff4a3c'; for (let x = a; x < b; x += 8) g.fillRect(R(x - cx), y, 4, 2); g.restore(); }
       for (const c of S.cones) { const x = R(c.x - cx), y = R(c.y - cy); if (c.state === 'tell') { const k = 0.5 + 0.5 * Math.sin(time * 20); GG.mark(g, x, y, k, true);
           if (c.t < 0.5) { const yy = y - 20 - 160 * (c.t / 0.5); g.drawImage(GG.cone(), x - 4, yy - 8); flame(g, x, yy - 6, 6, time, c.x); } }
         else { const yy = y - 20 * (c.t / 0.25); g.drawImage(GG.cone(), x - 4, yy - 8); flame(g, x, yy - 6, 8, time, c.x); } }

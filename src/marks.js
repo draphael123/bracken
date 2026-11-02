@@ -77,7 +77,7 @@ export const QUIET = new Set(['updateLance|pennantTell',   /* (claude/stormhold3
 // the creature calls where it calls one. 'type|mode' -> '!' | '!!' | '' ('draw' is the archer's bow, e.draw > 0.3).
 export const BY_HAND = {
   'grubbag|lobTell':'!','grubbag|flingTell':'!','grubbag|belchTell':'!!','grubbag|sweepTell':'!','grubbag|greaseTell':'!!','grubbag|bellTell':'!','grubbag|grabTell':'!!','butcher|raise':'!!','butcher|wind':'!','attendant|aim':'!','attendant|bashTell':'!',   /* (claude/kitchengate2) LORD GRUBBAG reworked (seated: lob, fling, belch, sweep; P2 grease, bell; P3 grab) and THE ATTENDANT (src/kitchen-hands.js: his plate, his tray) */   /* (claude/kitchengate) LORD GRUBBAG (src/grubbag.js, by hand: a module-file boss): the belch's ring, the slam's plates and the grab no shield turns; the food's rings are moved off (a yellow !: a block holds a drumstick), the fork a shield holds, the gravy jumped. THE BUTCHER (src/kitchen-hands.js): the cleaver unblockable, the hack blockable */
-  'king|chargeTell':'!!','king|grabTell':'!!','king|sweepTell':'!','king|hornTell':'','king|limbTell':'','king|clubHiTell':'!','king|clubLoTell':'!!','king|logTell':'!!','king|quakeTell':'!!','king|shakeTell':'!!',   /* (claude/gorm2) KING GORM 2 (src/gorm-king.js, by hand: a module-file boss the audit cannot follow): the litter's charge and the hand nothing turns; the sceptre's sweep and the HIGH branch a shield turns; the LOW branch, the rolled log, the quake's crest and the cones off the oak no shield is in; the horn and the torn limb throw nothing themselves (the boar is its own creature) */
+  'king|chargeTell':'!!','king|grabTell':'!!','king|sweepTell':'!','king|hornTell':'','king|limbTell':'','king|clubHiTell':'!','king|clubLoTell':'!!','king|logTell':'!!','king|quakeTell':'!!','king|shakeTell':'!!','king|potTell':'!!','king|sceptreTell':'!!','king|burnChargeTell':'!!','king|rageTell':'',   /* (claude/gorm2) KING GORM 2 (src/gorm-king.js, by hand: a module-file boss the audit cannot follow): the litter's charge and the hand nothing turns; the sceptre's sweep and the HIGH branch a shield turns; the LOW branch, the rolled log, the quake's crest and the cones off the oak no shield is in; the horn and the torn limb throw nothing themselves (the boar is its own creature) */
   'royalboar|tell':'!',   /* THE ROYAL BOAR (src/royal-boar.js): its charge a shield turns (it stands dazed) */
   'thief|swipeTell':'!!','spitcap|spitTell':'!','sapper|shoveTell':'!','drone|burstTell':'!!','drone|puffTell':'!',   /* (claude/sporewood2) THE DRONE swells, then bursts where it hangs: no shield turns a burst */   /* (claude/sweepact12: the new told attacks of the inline families - updateEnemies, not an update* function) */
   'galeharpy|galeTell':'!',   /* (claude/rookery2) THE GALE HARPY (src/gale-harpy.js, by hand: a module foe): her gust a shield BRACES (half the shove, no lift) - yellow */
@@ -277,7 +277,7 @@ export const MARK = {
   'huntmaster|hoistTell': '!!', 'huntmaster|hornTell': '', 'huntmaster|leapTell': '', 'huntmaster|netTell': '!!', 'huntmaster|snareTell': '!!', 'huntmaster|splitTell': '!!',
   'huntmaster|volleyTell': '!', 'husk|ekClawTell': '!', 'husk|ekGraspTell': '!!', 'husk|grabTell': '!', 'husk|riseTell': '', 'imp|throwTell': '!',
   'javelin|grabTell': '!!', 'javelin|raise': '!!', 'javelin|slashTell': '!', 'javelin|windUp': '!', 'jelly|biteTell': '!', 'jelly|castTell': '!',
-  'jelly|dive': '!', 'jelly|hookTell': '!', 'jelly|swellTell': '!', 'king|chargeTell': '!!', 'king|clubHiTell': '!', 'king|clubLoTell': '!!',
+  'jelly|dive': '!', 'jelly|hookTell': '!', 'jelly|swellTell': '!', 'king|chargeTell': '!!', 'king|clubHiTell': '!', 'king|potTell': '!!', 'king|sceptreTell': '!!', 'king|burnChargeTell': '!!', 'king|rageTell': '', 'king|clubLoTell': '!!',
   'king|grabTell': '!!', 'king|hornTell': '', 'king|limbTell': '', 'king|logTell': '!!', 'king|quakeTell': '!!', 'king|shakeTell': '!!',
   'king|sweepTell': '!', 'kiterider|kickTell': '!', 'kiterider|swoopTell': '!', 'kite|dropTell': '!', 'kraken|biteTell': '!!', 'kraken|geyserTell': '!!',
   'kraken|grabTell': '!!', 'kraken|hurlTell': '!!', 'kraken|jetTell': '!!', 'kraken|lookTell': '', 'kraken|lungeTell': '!!', 'kraken|orbTell': '!',
@@ -683,7 +683,7 @@ export const HEIGHT = {
   'assassin|markTell': 'low', 'assassin|stabTell': 'low',
   'grandmother|staffTell': 'low', 'grandmother|fireballTell': 'low', 'grandmother|jarTell': 'low', 'grandmother|stirTell': 'low', 'grandmother|lashTell': 'low', 'grandmother|trapTell': 'low',   /* (claude/underleaf3) her staff across your shins, the rest on the floor */
   'bellman|swingTell': 'low', 'grandmother|lureTell': 'low', 'grandmother|knellTell': 'low', 'grandmother|jabTell': 'low',   /* (claude/underleaf2) the handbell at your chest, her lash and jab low, the knell along the boards: no duck takes any of them */
-  'royalboar|tell': 'low', 'king|clubHiTell': 'high', 'king|sweepTell': 'high', 'king|clubLoTell': 'low', 'badger|chargeTell': 'low',
+  'royalboar|tell': 'low', 'king|clubHiTell': 'high', 'king|sweepTell': 'high', 'king|clubLoTell': 'low', 'king|sceptreTell': 'low', 'king|burnChargeTell': 'low', 'king|potTell': 'low', 'badger|chargeTell': 'low',
   'bale|rollTell': 'low',
   'bannerbearer|poleTell': 'low',
   'bellguard|hookTell': 'low', 'bellguard|knellTell': 'low',

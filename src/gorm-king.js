@@ -23,6 +23,16 @@ export function updateGorm(e, dt, c) {
   if (e.mode === 'held') { e.vx = 0; if (e.modeT <= 0) { e.mode = e.phase >= 2 ? 'walk' : 'carried'; e.modeT = 0.6; e.stagger = 0; e.open = GORM.openT; c.number(e.x, e.y - e.h - 16, GORM_SAY.open, '#8fd160'); c.sfx.sting && c.sfx.sting(); } return; }
   e.hornT -= dt; e.grabT -= dt; e.chargeT -= dt; e.sweepT -= dt;
   const boarUp = c.enemies().some(q => q.alive && q.t === 'royalboar' && q.called);
+  /* (claude/gorm3) THE PITCH POT: the perch clock - a hero over his floor (a deck, a plank, a ladder) counts up; the moment he is back on the floor it is 0 (never thrown at the ground) */
+  const PT = GORM.pot, up = perched(P, floor); e.potT = (e.potT === undefined ? PT.first : e.potT) - dt;
+  if (!up && (P.dead || P.ground || P.climb)) e.perchT = 0; else if (up) e.perchT = (e.perchT || 0) + dt;
+  const potReady = () => e.potT <= 0 && e.perchT >= PT.perch && !P.dead;
+  const potTell = () => { e.mode = 'potTell'; e.modeT = PT.tell; e.face = Math.sign(d) || e.face; c.number(e.x, e.y - e.h - 18, GORM_SAY.pot, '#ff6b5c'); c.sfx.fuse ? c.sfx.fuse() : c.sfx.charge && c.sfx.charge(); c.sfx.kingLaugh && c.sfx.kingLaugh(); };
+  if (e.mode === 'potTell') { e.face = Math.sign(d) || e.face;
+    if (e.modeT <= 0) { e.mode = 'pot'; e.modeT = 0.45; e.potT = PT.every;
+      if (perched(P, floor)) { G.pot(e, P); c.sfx.throwWhoosh && c.sfx.throwWhoosh(); } else { e.potT = PT.every * 0.5; c.sfx.effort && c.sfx.effort(); } }   /* he is down again: no throw (never at the ground) - the pot goes back to the bearer */
+    if (e.phase >= 2) settle(e, dt, c, 0); else e.y = floor - 9; return; }
+  if (e.mode === 'pot') { if (e.modeT <= 0) { e.mode = e.phase >= 2 ? 'walk' : 'carried'; e.modeT = 0.5; } if (e.phase >= 2) settle(e, dt, c, 0); else e.y = floor - 9; return; }
   const grab = () => { const reach = GORM.grabReach; if (!P.dead && Math.sign(P.x - e.x) === e.face && ad > 8 && ad < reach && P.y > e.y - 30 && P.y <= floor + 4) { const res = c.damage(e.x, c.dmg.grab, { unblockable: true, name: 'THE KING\'S HAND' }); if (res === 'hit') { P.vx = e.face * GORM.hurlVx; P.vy = GORM.hurlVy; P.hurt = 0.7; P.ground = false; P.block = false; c.sfx.throwWhoosh && c.sfx.throwWhoosh(); c.sfx.bellow && c.sfx.bellow(); c.shake(6); c.zoom(1.12, 0.3); c.number(P.x, P.y - 30, GORM_SAY.hurled, '#ff6b6b'); } } };
   const horn = () => { e.mode = 'hornTell'; e.modeT = GORM.hornTell; e.face = Math.sign(d) || e.face; c.number(e.x, e.y - e.h - 18, GORM_SAY.horn, '#ffd36b'); c.sfx.hornDraw && c.sfx.hornDraw(); };
   if (e.mode === 'hornTell') { if (e.modeT <= 0) { e.mode = 'horn'; e.modeT = 0.7; e.hornT = GORM.hornEvery; c.sfx.hornBlast && c.sfx.hornBlast(); c.ring(e.x, e.y - e.h, 60, '#ffd36b', 0.5); G.callBoar(A, true); c.number(e.x, e.y - e.h - 30, GORM_SAY.boar, '#ff9a5c'); } if (e.phase >= 2) settle(e, dt, c, 0); else e.y = floor - 9; return; }
@@ -37,6 +47,7 @@ export function updateGorm(e, dt, c) {
     if (e.mode === 'grabTell') { e.face = Math.sign(d) || e.face; if (e.modeT <= 0) { e.mode = 'grab'; e.modeT = 0.35; e.grabT = GORM.grabEvery; grab(); } return; }
     if (e.mode === 'grab') { if (e.modeT <= 0) { e.mode = 'carried'; e.modeT = 0.6; } return; }
     if (e.mode === 'carried' && e.modeT <= 0 && !P.dead) {
+      if (potReady()) { potTell(); return; }
       if (e.hornT <= 0 && !boarUp) { horn(); return; }
       if (e.chargeT <= 0 && ad > 60 && Math.abs(P.y - floor) < 40) { e.mode = 'chargeTell'; e.modeT = GORM.chargeTell; e.chargeT = GORM.chargeEvery; c.number(e.x, e.y - 40, '!!', '#ff6b6b'); c.sfx.kingLaugh && c.sfx.kingLaugh(); return; }
       if (e.grabT <= 0 && ad > 8 && ad < GORM.grabReach && P.y > e.y - 30 && P.y <= floor + 4) { e.mode = 'grabTell'; e.modeT = GORM.grabTell; c.number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); c.sfx.charge && c.sfx.charge(); return; } }
@@ -50,7 +61,8 @@ export function updateGorm(e, dt, c) {
   if (e.mode === 'rise') { if (e.modeT <= 0) { e.mode = 'walk'; e.modeT = 0.4; e.h = 60; } }
   else if (e.mode === 'walk') { e.face = Math.sign(d) || e.face; want = ad > 30 ? e.face * GORM.walkV : 0;
     if (e.modeT <= 0 && !P.dead) {
-      if (e.hornT <= 0 && !boarUp) { horn(); want = 0; }
+      if (potReady()) { potTell(); want = 0; }
+      else if (e.hornT <= 0 && !boarUp) { horn(); want = 0; }
       else if (e.sweepT <= 0 && ad < GORM.sweepReach && Math.abs(P.y - e.y) < 50) { e.mode = 'sweepTell'; e.modeT = GORM.sweepTell; c.number(e.x, e.y - e.h - 12, '!', '#ffd36b'); c.sfx.charge && c.sfx.charge(); want = 0; }
       else if (e.grabT <= 0 && ad > 24 && ad < 100 && Math.abs(P.y - e.y) < 30) { e.mode = 'grabTell'; e.modeT = GORM.grabTell; c.number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); c.sfx.charge && c.sfx.charge(); want = 0; } } }
   else if (e.mode === 'grabTell') { if (e.modeT <= 0) { e.mode = 'grab'; e.modeT = 0.35; e.grabT = GORM.grabEvery; grab(); } }
@@ -61,6 +73,8 @@ export function updateGorm(e, dt, c) {
   else e.mode = 'walk';
   settle(e, dt, c, want);
 }
+/* (claude/gorm3) is the hero PERCHED over his floor (on a deck / plank, or up a ladder)? - the pitch pot's one condition */
+export function perched(P, floor) { return !!P && !P.dead && (P.ground || P.climb) && P.y < floor - GORM.pot.up; }
 /* gravity and the walk (his feet on the floor; the arena's walls hold him) */
 function settle(e, dt, c, want) { const A = c.arena(); e.vy = Math.min(300, (e.vy || 0) + 1000 * dt); if (e.stagger > 0 && e.mode !== 'sweep') want = 0;
   e.vx = (e.vx || 0) + (want - (e.vx || 0)) * Math.min(1, dt * 6); const r = c.moveBody(e, e.vx * dt, e.vy * dt); if (r && r.ground) e.vy = 0; e.x = Math.max(A.x0 + 30, Math.min(A.x1 - 30, e.x)); }
@@ -74,22 +88,49 @@ function glade(e, dt, c, A, floor, P, d, ad, G) {
     if (e.mode === 'stung' && Math.random() < dt * 6) e.face = -e.face;
     if (e.modeT <= 0) { const was = e.mode; e.mode = 'walk'; e.modeT = 0.8; e.stagger = 0; e.club = true; if (was === 'held') { e.open = GORM.openT; c.number(e.x, e.y - e.h - 16, GORM_SAY.open, '#8fd160'); } }
     settle(e, dt, c, 0); return; }
-  for (const k of ['clubT', 'logT', 'quakeT', 'shakeT']) e[k] = (e[k] === undefined ? 2 : e[k]) - dt;
-  const T = GORM, pend = e.huntN < T.huntAt.length && e.hp <= e.maxHp * T.huntAt[e.huntN];
+  /* (claude/gorm3) ENRAGED his cooldowns run faster (the tells do not: still readable) */
+  const RG = GORM.rage, SC = GORM.sceptre, rate = e.rage ? RG.tempo : 1;
+  for (const k of ['clubT', 'logT', 'quakeT', 'shakeT']) e[k] = (e[k] === undefined ? 2 : e[k]) - dt * rate;
+  e.sceptreT = (e.sceptreT === undefined ? SC.first : e.sceptreT) - dt * rate; if (e.rage) e.burnT = (e.burnT === undefined ? RG.chargeFirst : e.burnT) - dt;
+  const T = GORM, pend = e.huntN < T.huntAt.length && e.hp <= e.maxHp * T.huntAt[e.huntN], rageNow = !e.rage && e.hp <= e.maxHp * T.rageAt;
   const tell = (m, t, word, col) => { e.mode = m; e.modeT = t; if (word) c.number(e.x, e.y - e.h - 14, word, col || '#ffd36b'); c.sfx.charge && c.sfx.charge(); };
   switch (e.mode) {
-    case 'walk': e.face = Math.sign(d) || e.face; want = ad > 34 ? e.face * T.walkV2 : 0;
+    case 'walk': e.face = Math.sign(d) || e.face; want = ad > 34 ? e.face * T.walkV2 * (e.rage ? RG.walk : 1) : 0;
+      if (e.rage && !e.rageBoar && !P.dead && e.mode === 'walk') { e.rageBoar = true; e.lastHorn = true; e.face = Math.sign(d) || e.face; tell('hornTell', T.hornTell, GORM_SAY.lastBoar, '#ff6b5c'); c.sfx.hornDraw && c.sfx.hornDraw(); want = 0; break; }   /* (claude/gorm3) the horn calls ONE LAST BOAR (no hounds) */
       if (e.modeT <= 0 && !P.dead) {
-        if (pend) { e.face = Math.sign(d) || e.face; tell('hornTell', T.hornTell, GORM_SAY.hunt, '#ff9a5c'); c.sfx.hornDraw && c.sfx.hornDraw(); want = 0; }
+        if (rageNow) { e.rage = true; e.rageT = 0; tell('rageTell', RG.tellT, GORM_SAY.rage, '#ff6b5c'); c.sfx.crack && c.sfx.crack(); c.sfx.warCry ? c.sfx.warCry() : c.sfx.roar && c.sfx.roar(); c.shake(8); c.zoom(1.14, 0.6); c.music && c.music(true); want = 0; }   /* (claude/gorm3) ENRAGE: the crown cracks, he catches fire from the oak, the music lifts */
+        else if (pend) { e.face = Math.sign(d) || e.face; tell('hornTell', T.hornTell, GORM_SAY.hunt, '#ff9a5c'); c.sfx.hornDraw && c.sfx.hornDraw(); want = 0; }
+        else if (e.rage && e.burnT <= 0 && ad > 70) { e.face = e.cdir = Math.sign(d) || e.face; tell('burnChargeTell', RG.chargeTell, GORM_SAY.burnCharge, '#ff6b5c'); c.sfx.trollDragTell ? c.sfx.trollDragTell() : c.sfx.roar && c.sfx.roar(); c.sfx.conflag && c.sfx.conflag(); G.lane && G.lane(e.x, e.cdir); want = 0; }
         else if (e.clubT <= 0 && ad < T.clubReach + 8 && Math.abs(P.y - e.y) < 60) { e.hi = (e.hiN || 0) % 3 !== 2 ? Math.random() < 0.5 : !e.hi; e.hiN = (e.hiN || 0) + 1;
           tell(e.hi ? 'clubHiTell' : 'clubLoTell', T.clubTell, e.hi ? GORM_SAY.high : GORM_SAY.low, e.hi ? '#ffd36b' : '#ff9a5c'); want = 0; }
+        else if (e.sceptreT <= 0 && ad > SC.minD && ad < SC.maxD && Math.abs(P.y - e.y) < 60) { e.face = Math.sign(d) || e.face; tell('sceptreTell', SC.tell, GORM_SAY.sceptre, '#ff6b5c'); c.sfx.swingUp ? c.sfx.swingUp() : c.sfx.charge && c.sfx.charge(); want = 0; }   /* (claude/gorm3) THE SCEPTRE THROW */
         else if (e.logT <= 0 && ad > 80) { e.face = Math.sign(d) || e.face; tell('logTell', T.logTell, GORM_SAY.logroll, '#ff9a5c'); want = 0; }
         else if (e.quakeT <= 0 && ad < 150) { tell('quakeTell', T.quakeTell, GORM_SAY.quake, '#ff9a5c'); want = 0; }
         else if (e.shakeT <= 0) { e.mode = 'toOak'; e.modeT = 4; } }
       break;
     case 'toOak': { const gd = c.gormData().glade, side = e.x < gd.trunkX ? -1 : 1, at = gd.trunkX + side * 40; e.face = Math.sign(at - e.x) || e.face; want = Math.abs(at - e.x) > 6 ? e.face * T.walkV2 * 1.2 : 0;
       if (Math.abs(at - e.x) <= 6 || e.modeT <= 0) { e.face = Math.sign(gd.trunkX - e.x) || 1; tell('shakeTell', T.shakeTell, GORM_SAY.shake, '#ff9a5c'); want = 0; } break; }
-    case 'hornTell': if (e.modeT <= 0) { e.mode = 'horn'; e.modeT = 0.8; e.huntN++; c.sfx.hornBlast && c.sfx.hornBlast(); c.ring(e.x, e.y - e.h, 70, '#ffd36b', 0.5); G.callBoar(A, false); G.hounds(A, 2); } break;
+    case 'hornTell': if (e.modeT <= 0) { e.mode = 'horn'; e.modeT = 0.8; c.sfx.hornBlast && c.sfx.hornBlast();
+        if (e.lastHorn) { e.lastHorn = false; c.ring(e.x, e.y - e.h, 70, '#ff6b5c', 0.5); G.callBoar(A, false); }   /* (claude/gorm3) the rage's one last boar */
+        else { e.huntN++; c.ring(e.x, e.y - e.h, 70, '#ffd36b', 0.5); G.callBoar(A, false); G.hounds(A, 2); } } break;
+    /* (claude/gorm3) ENRAGE: 2 s told, no blow - the crown cracks, the fire takes him (e.rageT drives the draw), then the horn (the one last boar) */
+    case 'rageTell': e.rageT = (e.rageT || 0) + dt; if (Math.random() < dt * 30) c.part({ x: e.x + (Math.random() - 0.5) * 40, y: e.y - e.h + Math.random() * 30, vx: (Math.random() - 0.5) * 40, vy: -60 - Math.random() * 40, life: 0.5, max: 0.5, col: Math.random() < 0.5 ? '#ff9a5c' : '#ffd36b', size: 2, grav: -40 });
+      if (e.modeT <= 0) { e.mode = 'walk'; e.modeT = 0; c.number(e.x, e.y - e.h - 22, GORM_SAY.rageFire, '#ff9a5c'); } break;
+    /* (claude/gorm3) THE SCEPTRE THROW: out low, back high; he stands empty-handed while it flies, then catches it */
+    case 'sceptreTell': e.face = Math.sign(d) || e.face;
+      if (e.modeT <= 0) { const gl = A, R0 = Math.max(SC.rMin, Math.min(SC.rMax, ad + SC.over)), lim = e.face > 0 ? gl.x1 - 14 - e.x : e.x - gl.x0 - 14, R1 = Math.max(60, Math.min(R0, lim));
+        e.mode = 'sceptreOut'; e.modeT = SC.t + 0.6; e.sceptreT = SC.every; e.club = false; G.sceptre(e.x + e.face * 16, e.face, R1); c.sfx.throwWhoosh && c.sfx.throwWhoosh(); c.shake(2); } break;
+    case 'sceptreOut': if (!G.sceptreOut() || e.modeT <= 0) { e.mode = 'sceptreCatch'; e.modeT = SC.catchT; c.sfx.hookCatch ? c.sfx.hookCatch() : c.sfx.thud && c.sfx.thud(); } break;
+    case 'sceptreCatch': if (e.modeT <= 0) { e.mode = 'walk'; e.modeT = 0.6; e.club = true; } break;
+    /* (claude/gorm3) RAGE-ONLY: THE BURNING CHARGE - the flaming limb lowered like a ram, the glade's length, a fire trail behind him */
+    case 'burnChargeTell': e.face = e.cdir || e.face; if (Math.random() < dt * 20) c.dust(e.x - e.face * 20, floor, 1);
+      if (e.modeT <= 0) { e.mode = 'burnCharge'; e.modeT = 3.5; e.chargeHit = false; c.sfx.bellow && c.sfx.bellow(); c.sfx.rattle && c.sfx.rattle(1); } break;
+    case 'burnCharge': { e.face = e.cdir; const nx = e.x + e.cdir * RG.chargeV * dt, lo = A.x0 + 40, hi = A.x1 - 40; e.x = Math.max(lo, Math.min(hi, nx)); G.trail(e.x - e.cdir * 26, floor);
+      if (Math.random() < dt * 30) c.part({ x: e.x - e.cdir * 30, y: floor - 4, vx: -e.cdir * 60, vy: -40, life: 0.35, max: 0.35, col: Math.random() < 0.5 ? '#ff9a5c' : '#c9b27c', size: 2, grav: 200 });
+      if (!e.chargeHit && !P.dead && Math.abs(P.x - e.x) < 30 && P.y > floor - RG.hitY && P.y <= floor + 4) { e.chargeHit = true; const res = c.damage(e.x, GORM.rage.dmg, { unblockable: true, up: true, name: 'THE BURNING CHARGE' }); if (res === 'hit') { P.vx = e.cdir * 280; P.vy = -200; P.ground = false; c.number(P.x, P.y - 24, GORM_SAY.runDown, '#ff6b6b'); } c.shake(5); }
+      if (e.x <= lo || e.x >= hi || e.modeT <= 0) { e.mode = 'burnChargeEnd'; e.modeT = RG.endT; e.burnT = RG.chargeEvery; c.shake(6); c.sfx.heavy && c.sfx.heavy(); c.sfx.crack && c.sfx.crack(); c.dust(e.x + e.cdir * 30, floor, 10); }
+      e.vx = 0; return; }
+    case 'burnChargeEnd': if (e.modeT <= 0) { e.mode = 'walk'; e.modeT = 0.6; } break;
     case 'horn': if (e.modeT <= 0) { e.mode = 'walk'; e.modeT = 1.2; } break;
     case 'clubHiTell': case 'clubLoTell': e.face = Math.sign(d) || e.face;
       if (e.modeT <= 0) { const hi = e.mode === 'clubHiTell'; e.mode = hi ? 'clubHi' : 'clubLo'; e.modeT = 0.35; e.clubT = T.clubEvery; c.sfx.slash && c.sfx.slash(); c.sfx.fireWhoosh && c.sfx.fireWhoosh(); c.shake(3);

@@ -48,7 +48,8 @@ const warpCents = k => -Math.pow(k, 1.4) * 160;
 function warpLfo() { if (warpLfoG || !ac) return warpLfoG; warpLfoG = ac.createGain(); warpLfoG.gain.value = 0; for (const [hz, a] of [[0.55, 1], [0.17, 0.6]]) { const o = ac.createOscillator(), g = ac.createGain(); o.frequency.value = hz; g.gain.value = a; o.connect(g); g.connect(warpLfoG); o.start(); } return warpLfoG; }
 /* (claude/lance5) THE STORM over the Long Bridge lifts THE QUEEN'S LANCE's track a tone (main.js music.storm, his P2+): every loop copy, and the ones queued after */
 let stormCents = 0;
-function stormAttach(s) { if (stormCents && s && s.detune) { try { s.detune.value = stormCents; } catch {} } }
+let liftRate = 1;   /* (claude/gorm3) THE RAGE LIFT: a boss's enrage plays his track a little faster (and so a little higher) - music.lift(on) */
+function stormAttach(s) { if (stormCents && s && s.detune) { try { s.detune.value = stormCents; } catch {} } if (liftRate !== 1 && s && s.playbackRate) { try { s.playbackRate.value = liftRate; } catch {} } }
 function warpAttach(s, name) { stormAttach(s); if (!ac || name !== 'harvestfair' || !s.detune || !warpLive()) return; try { s.detune.value = warpCents(warpK); const lf = warpLfo(); lf.connect(s.detune); s.__warped = true; s.addEventListener('ended', () => { try { lf.disconnect(s.detune); } catch {} }); } catch {} }
 function stopMusic() { for (const s of musicSrcs) { try { s.stop(); } catch {} } musicSrcs = []; musicSrc = null; if (musicTimer) clearTimeout(musicTimer); musicTimer = null; musicGen++; }
 const clips = {}; // name -> [AudioBuffer]
@@ -702,7 +703,7 @@ function fadeUnloadedTrack() {
 let heardHook = null;
 export function setHeardHook(fn) { heardHook = fn; }
 export const music = {
-  play(name) { if (heardHook) heardHook(name);   /* the whole name: 'archmage:undead' is its own Sound Test entry and unlocks on its own */
+  play(name) { liftRate = 1; if (heardHook) heardHook(name);   /* the whole name: 'archmage:undead' is its own Sound Test entry and unlocks on its own */
     if (!musicKnown(name)) { if (!trackWarned.has('?' + name)) { trackWarned.add('?' + name); console.warn('Music track ' + name + ' is not a known track; playing the theme instead of silence'); } name = 'theme'; }   /* (claude/smallfix6) a level whose music key is missing or mis-spelt plays the theme, never nothing */
     wantTrack = name; silenced = false; if (ac) { trackTries[name] = 0; resumeAudio(); } if (name === 'theatre' && currentTrack !== 'theatre') thAct = 0; if (!ac) return;   /* (the theatre's act starts again with its track: claude/theatre3) */
     if (trackBuf[name]) { if (currentTrack === name && !musicSrcs.length) currentTrack = null; playFile(name); return; }   /* (a track marked as playing with no copy left running - timers throttled in a hidden tab - is started again) */
@@ -723,6 +724,8 @@ export const music = {
   get on() { return musicOn; },
   get track() { return currentTrack; },
   get want() { return wantTrack; },   /* the track asked for last (null: stopped) - what is meant to be playing, loaded or not, sound on or not */
+  lift(on) { const k = on ? 1.06 : 1; if (k === liftRate) return; liftRate = k; if (!ac) return; for (const s of musicSrcs) { try { if (s.playbackRate) s.playbackRate.setTargetAtTime(k, ac.currentTime, 0.4); } catch {} }
+    if (on && musicGain && musicOn) { noise(1.2, 0.14, 900, 0.7, 0, musicGain); [110, 164.8, 220].forEach((f, i) => tone('sawtooth', f, f * 1.5, 0.9, 0.05, i * 0.06, musicGain)); } },   /* (claude/gorm3) KING GORM's ENRAGE: the track lifts (x1.06) under a told stinger (a low swell up a fifth) */
   storm(on) { const c = on ? 200 : 0; if (c === stormCents) return; stormCents = c; if (!ac) return; for (const s of musicSrcs) { try { if (s.detune) s.detune.setTargetAtTime(c, ac.currentTime, 0.5); } catch {} } },
   muffle(on) { if (!!on === muffled) return; muffled = !!on; applyMusicFilter(); },
   lowHealth(on) { if (!!on === lowHp) return; lowHp = !!on; applyMusicFilter(); },
