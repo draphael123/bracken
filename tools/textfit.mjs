@@ -168,6 +168,11 @@ async function pageTextFit(input) {
         for (let i = 0; i < n; i++) frame('store ' + back + ' [' + h + '] tab' + tb + ' #' + i, () => { BK.state = 'store'; BK.ui.storeBack = back; BK.ui.storeTab = tb; BK.ui.storeI = i; }, { settle: 20 }); } }
     await yieldNow(); }
 
+  /* (claude/hubpolish) THE SWAP HERO PANEL: every cell selected in turn (the unlock line of each locked hero, the name and level of each owned one), with every hero as the active one and with a fixed 3 heroes owned / all owned */
+  if (want('store')) for (const own of [3, 9]) for (const h of [HEROES[0], HEROES[HEROES.length - 1]]) { BK.setHero(h); BK.state = 'store'; BK.ui.storeTab = 0; BK.swap.close(true); BK.swap.open(); const n = 9;
+    for (let i = 0; i < n; i++) frame('swap own' + own + ' [' + h + '] #' + i, () => { BK.state = 'store'; if (!BK.swap.isOpen) BK.swap.open(); BK.swap.index = i; }, { settle: 5 });
+    BK.swap.close(true); await yieldNow(); }
+
   if (want('tree')) for (const h of HEROES) for (const tab of [0,1]) { BK.setHero(h); BK.state = 'store'; BK.ui.storeTab = BK.ui.skillsTab; BK.ui.treeTab=tab; const n = BK.ui.treeRows();
     for (let i = 0; i < n; i++) frame('tree [' + h + '] tab'+tab+' #' + i, () => { BK.state = 'store'; BK.ui.storeTab = BK.ui.skillsTab; BK.ui.treeI = i; });
     await yieldNow(); }

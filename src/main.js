@@ -264,6 +264,8 @@ import * as MCARD from './map-card.js';   /* THE MAP CARD'S POSTCARD (claude/uis
 import * as OP from './opening-panels.js';   /* THE FIRST-RUN OPENING (claude/uiscreens): four illustrated panels before the first hero pick */
 import * as TC from './title-card.js';   /* THE PRESS ANY KEY CARD (claude/uiscreens): the wood closed over the picture, the fronds part, the knight walks in */
 import * as FA from './flask-art.js';   /* (claude/flasks2art) the drink frames, the flask bottles and icons */
+import * as HSWP from './hero-swap.js';   /* (claude/hubpolish) THE SWAP HERO PANEL */
+import { makeShopLife } from './shop-life.js';   /* (claude/hubpolish) THE SHOPS ARE ALIVE */
 import { LS } from './loading-screen.js';   /* THE LOADING SCREEN (claude/loadbar): a true progress bar and the hero's dance over every slow load */
 import { isCallout, calloutText } from './hint-lines.js';   /* THE HINT LINES THAT WERE NEVER SHOWN (claude/hintsweep) */
 import * as AIC from './ai-companion.js';   /* AI COMPANIONS (claude/aicompanions, brief-aicompanions.md 10-14): linked / default, the four behaviours, the catch-up, the lighter scaling - the pure half; allyTick below is the hands */
@@ -1099,7 +1101,7 @@ const skillsOwned = () => skillsFor(hero()).filter(n => n.active && (PROG.skillO
 const skillAt = index => { const id = equipped(PROG, hero(), heroLevel())[index]; if (skillFor(hero(), id)?.active) return id; if (trialLend) return [...trialLend].filter(k => skillFor(hero(), k)?.active)[index] || null; return null; };
 const skillNow = () => skillAt(0), skill2Now = () => skillAt(1);
 const skillPress = k => [P.fRelease || (throwPress && !(isReaper() && (P.harvest >= 100 || P.fHeld > 0))), skill2Press, skill3Press, skill4Press].some((pressed,i) => pressed && skillAt(i) === k);
-applySkin(); LS.heroReady(K); await LS.step('hero');   /* the hero first, so the loading screen has his dance to show */
+applySkin(); LS.heroReady(K); LS.emptyReady(() => { try { return !PROG.heroPicked && !heroLevel() && !Object.values(PROG).some(v => v && typeof v === 'object' && v.cleared); } catch { return false; } });   /* (Daniel 11-01) a new game: an empty fire */ await LS.step('hero');   /* the hero first, so the loading screen has his dance to show */
 const SPR = { mother: bakeMotherIcon(), sprig: bakeSprig(), shield: bakeShield(), spit: bakeSpitter(), wasp: bakeWasp(), seed: bakeSeed(), thorn: bakeThornback(), queen: bakeQueen(), archer: bakeArcher(), frog: bakeFrog(), hopper: bakeHopper('green'), hopper_yellow: bakeHopper('yellow'), hopper_blue: bakeHopper('blue'), sapper: bakeSapper(), bomb: bakeBomb(), brute: bakeBrute(), hound: bakeHound(), dog: bakeHound({ h: '#e8e0d0', H: '#3a3040', e: '#2a2230' }), fox: bakeFox(), chief: bakeChief(), sporeling: bakeSporeling(), lurker: bakeLurker(), drone: bakeDrone(), shaman: bakeShaman(), spitcap: bakeSpitcap(), weaver: bakeWeaver(), thief: bakeThief(), pike: bakePike(), folk: bakeFolk(false), folk2: bakeFolk(true), master: null, king: null }; await LS.step('art1');
 /* THE HEXED FIELDS' creatures, its family and its two big ones */ { try { SPR.scarecrow = FF.bakeScarecrow(); SPR.rook = FF.bakeRook(); SPR.farmhand = FF.bakeFarmhand(); SPR.pumpkin = FF.bakePumpkin(); SPR.marshlight = FF.bakeMarshlight(); SPR.haunt = FF.bakeHaunt(); SPR.boo = FF.bakeBoo(); const fg = FF.bakeFarmGhosts(); SPR.ghostfarmer = fg.farmer; SPR.ghostwife = fg.wife; SPR.ghostchild = fg.child; SPR.ploughman = SK.bakePloughman(); SPR.strawking = SK.bakeStrawKing(); SPR.ploughHead = SK.bakePloughHead(); } catch (err) { console.error('the fields art', err); } }
 /* THE MAGE'S FOLLY: what got loose in the tower, the mini, the boss and his familiar, and the apprentice */ { try { SPR.topiary = MF.bakeTopiary(); SPR.armour = MF.bakeArmour(); SPR.piece = MF.bakePiece(); SPR.broom = MF.bakeBroom(); SPR.mimic = MF.bakeMimic(); SPR.imp = MF.bakeImp(); SPR.turret = MF.bakeTurret(); SPR.homunculus = MF.bakeHomunculus(); SPR.archmage = MF.bakeArchmage(); SPR.undeadmage=bakeUndeadMage(); SPR.magechase=SPR.undeadmage; SPR.familiar = MF.bakeFamiliar(); SPR.familiarSmall=smallerFamiliar(SPR.familiar); SPR.apprentice = MF.bakeApprentice(); SPR.tome = bakeTome(); } catch (err) { console.error('the tower art', err); } }
@@ -2624,7 +2626,7 @@ function drainPool(pr) { const p = (L.pools || []).find(p => p.x0 === pr.pool); 
 
 function loadLevel(i) { for (const _ of loadLevelG(i)); if (P) CM.clearCommit(P); }   /* synchronous, as it always was: BK.load, the labs and the tools */
 /* THE PLAYER'S OWN LOADS (map to wood, restart, a trial) go through the loading screen: fast ones run straight through as before, slow ones show the bar and the dancing hero (LS.drive) */
-const loadThen = (i, cont) => LS.drive(loadLevelG(i), cont, { heroes: [K, players && players[1] && players[1].set] });
+const loadThen = (i, cont) => LS.drive(loadLevelG(i), cont, { heroes: [K] });
 /* THE SAME LOAD AS A GENERATOR, for the loading screen (src/loading-screen.js drive()): it yields a step id after each stage and does no work of its own between them */
 function* loadLevelG(i) {
   BUG.evlog('load ' + ((LEVELS[i] || {}).id || i));
@@ -5825,10 +5827,44 @@ function drawSkills() {   /* the SKILLS tab of the one store: the loadout on F a
  const rkN=n&&n.active&&PROG.skillOwned[h]?.[n.id]?skillRank(PROG,h,n.id):0,rankHelp=rkN&&rkN<RANK_MAX?'Z: RANK '+(rkN+1)+' FOR '+rankPrice(n,rkN+1)+' GOLD'+(lv<rankLevel(n,rkN+1)?' AT LV '+rankLevel(n,rkN+1):''):null;
  const help=treeMsgT>0?treeMsg:!loadoutSafe()?STORE_HELP.skillsLook:rankHelp?rankHelp:treeBranch===1?STORE_HELP.passives:STORE_HELP.skills;text(fitName(help,VW-22,6),VW/2,VH-10,UI.gold,'center',6);
 }
-function updateStore(dt) {
+/* ====== (claude/hubpolish, Daniel 11-01) THE SWAP HERO PANEL: src/hero-swap.js draws and walks it; these are the facts it asks for ======
+   Open it with F (the pad's throw, a tap on SWAP HERO) in the store, H on the map and in the store's SKILLS tab, the pause menu's Swap hero (the map, a shop room, the inn). A swap is
+   the store's own (setEquip + applySkin + applyUpgrades), so every hero keeps his own level, skills and charm; a hero another seat plays is refused. */
+const swapWhy = k => { if (!k || !k.id) return ''; const lock = lockOf(k, PROG, featDone); if (lock) return (lock + (k.silver ? ' (OR ' + k.price + ' SILVER)' : '')).toUpperCase();
+  const lv = k.coinNeeds && LEVELS.find(l => l.id === k.coinNeeds);
+  return k.silver ? ('BUY HIM AT THE STORE: ' + k.price + ' SILVER' + (k.coinPrice && lv ? ', OR ' + k.coinPrice + ' GOLD AFTER ' + String(lv.name).toUpperCase() : '')) : ('BUY HIM AT THE STORE: ' + k.price + ' GOLD'); };
+function swapHeroTo(id) {
+  if (!(PROG.heroes && PROG.heroes[id]) && !godMode()) return null;
+  if (players && players.slice(1).some(p => p.hero === id)) return { no: 'ANOTHER SEAT PLAYS HIM' };
+  setEquip('hero', id); applySkin(); applyUpgrades(); if (P) P.hp = Math.min(P.hp, P.maxHp);
+  if (players && players[0]) { players[0].hero = id; players[0].set = K; }
+  saveProgress(); SFX.equip(); return (HERO_SHORT[id] || String(id).toUpperCase()) + ' IS YOURS NOW';
+}
+const swapIdle = id => preview('hero:' + id + ':' + PROG.skin + ':' + PROG.sword + ':g' + gearNow(id), () => heroSet(PROG.skin, PROG.sword, 'idle', id, gearNow(id)));
+const SHOPLIFE = makeShopLife();
+const shopIdNow = () => (L && L.shop && LEVELS[levelIndex] && LEVELS[levelIndex].id) || 'shop';
+const SWAPUI = HSWP.makeSwap({ g: () => g, VW: () => VW, VH: () => VH, time: () => time, text: (s, x, y, c, a, z) => text(s, x, y, c, a, z), panel: (x, y, w, h) => panel(x, y, w, h), hit: (x, y, w, h, fn) => TCH.hit(x, y, w, h, fn),
+  sfx: k => { const f = SFX[k]; if (f) f(); }, active: () => hero(),
+  lines: (s, cx, y, w, c) => wrap(s, w, 6).slice(0, 2).forEach((ln, i) => text(ln, cx, y + i * 8, c, 'center', 6)),
+  rows: () => PICK.map(id => { const k = HEROES.find(h => h.id === id) || { id }, owned = !!(PROG.heroes && PROG.heroes[id]) || godMode(); return { id, name: k.name || String(id).toUpperCase(), owned, level: owned ? heroLevel(id) : 0, why: owned ? '' : swapWhy(k) }; }),
+  frame: id => { try { return swapIdle(id).R.idle[0]; } catch { return null; } },
+  icon: id => { try { const sid = equipped(PROG, id, heroLevel(id))[0]; return sid && skillFor(id, sid) && skillFor(id, sid).active ? skillIcon(sid) : null; } catch { return null; } },
+  choose: swapHeroTo });
+/* one frame of the panel's input (the caller returns after it): the arrows walk it, confirm takes the hero, ESC closes it; what is said after a swap goes where that screen speaks */
+function swapFrame(dt) {
+  SWAPUI.input({ left: leftPress, right: rightPress, confirm: confirmPress, back: pausePress }, dt);
+  const said = SWAPUI.took(); if (said) { if (state === 'store') { storeMsg = said.toLowerCase(); storeMsgT = 2.5; } else { hintMsg = said; hintT = 2; } }
+  leftPress = rightPress = confirmPress = pausePress = upPress = downPress = throwPress = swapPress = false;
+}
+const swapMenuOk = () => menuFrom !== 'play' || !!(L && (L.shop || L.tavern));
+/* THE BUY BEAT: a purchase is the gold or the silver going down in this frame of the store */
+function updateStore(dt) { const c0 = PROG.coins | 0, s0 = PROG.silverSpent | 0; updateStore0(dt); if (state === 'store' && ((PROG.coins | 0) < c0 || (PROG.silverSpent | 0) > s0)) SHOPLIFE.bought(time); }
+function updateStore0(dt) {
   if (PROG.refundNote) { storeMsg = PROG.refundNote + ' gold refunded from older training'; storeMsgT = 4; PROG.refundNote = 0; saveProgress(); }
   storeMsgT = Math.max(0, storeMsgT - dt);
   const tab = STORE_TABS[storeTab];
+  if (SWAPUI.isOpen) { swapFrame(dt); return; }
+  if (swapPress || (throwPress && !tab.talent)) { swapPress = throwPress = false; if (SWAPUI.open()) return; }   /* (claude/hubpolish) F or H: the swap hero panel */
   /* THE TABS: TAB or E (LB on a pad) the next, Q (RB) the one before - the settings' own keys. LEFT and RIGHT turn the tabs too, except on SKILLS, where they switch ACTIVES / PASSIVES. */
   const step = mapPress || talkPress ? 1 : talentsPress ? -1 : !tab.talent && rightPress ? 1 : !tab.talent && leftPress ? -1 : 0;
   if (step) { storeTab = stepStoreTab(storeTab, step); storeI = 0; storeMsgT = 0; SFX.ui(); return; }
@@ -5875,10 +5911,13 @@ const skinPreview = (k, icon = false) => preview('skin:' + hero() + ':' + k.id +
 const preview = (key, make) => previewCache[key] || (previewCache[key] = make());
 const weaponPreview = (k, icon = false) => preview('weapon:' + hero() + ':' + PROG.skin + ':' + k.id + ':' + icon, () => heroSet(PROG.skin, k.id, icon ? 'weaponIcon' : 'atk'));
 function drawStore() {
+  if (SWAPUI.isOpen) { g.fillStyle = '#0a0810'; g.fillRect(0, 0, VW, VH); return; }   /* (claude/hubpolish) the swap hero panel has the screen: nothing of the store shows through it */
   if (storeBack === 'map') { g.drawImage(MAPC, 0, 0); g.fillStyle = 'rgba(10,14,12,0.75)'; g.fillRect(0, 0, VW, VH); } else { g.fillStyle = '#0a0810'; g.fillRect(0, 0, VW, VH); }
   const x = 3, y = 2, w = VW - 6, h = VH - 4;
   panel(x, y, w, h, UI.border, 'ledger');
   text('THE STORE', x + 8, y + 4, UI.title, 'left', TYPE.head);
+  if (!STORE_TABS[storeTab].talent) { const lab = (touchOn || padLast ? '' : 'F ') + 'SWAP HERO', bw = inkW(lab, 6) + 8, bx = x + 8 + textW('THE STORE', TYPE.head) + 8;   /* (claude/hubpolish) one press, or one tap, to change hero from any tab */
+    g.fillStyle = 'rgba(60,90,60,0.75)'; g.fillRect(bx, y + 3, bw, 10); g.strokeStyle = 'rgba(168,224,110,0.6)'; g.strokeRect(bx + 0.5, y + 3.5, bw - 1, 9); text(lab, bx + 4, y + 5, '#e8f4d8', 'left', 6); TCH.hit(bx, y + 2, bw, 12, () => SWAPUI.open()); }
   { const gold = String(PROG.coins), silv = String(silverAvail());
     const gx = x + w - 10 - textW(gold, 8), sx0 = gx - 22 - textW(silv, 8);
     if (storeKeyLast !== storeTab + ':' + storeI) { storeKeyLast = storeTab + ':' + storeI; storePage = 0; }
@@ -5965,7 +6004,9 @@ function drawStore() {
       bl.slice(pg * per, pg * per + per).forEach((ln, i) => text(ln, pvX + 5, ty + i * BODY_LH, locked ? '#ff9a5c' : UI.text, 'left', 6));
       if (pages > 1) text(moreKey() + ' MORE ' + (pg + 1) + '/' + pages, pvX + pvW - 5, pvY + pvH - 10, UI.sel, 'right', 6);
     } else storePages = 1; }
-  text(storeMsgT > 0 ? storeMsg : fitName(loadoutSafe() ? STORE_HELP.buy : STORE_HELP.look, w - 16, 6), VW / 2, y + h - 10, storeMsgT > 0 ? UI.title : UI.dim, 'center', 6);
+  { const bark = storeMsgT > 0 ? '' : SHOPLIFE.storeLine(time, shopIdNow()), set = SPR.keeper, head = set && (Array.isArray(set.R) ? set.R[0] : set.R);   /* (claude/hubpolish) the keeper's head at the foot of the page: he nods when you buy and says a line every while */
+    SHOPLIFE.candles(g, x + 4, x + w - 5, y + 2, time); if (head) SHOPLIFE.storeHead(g, head, x + 7, y + h - 14, time); SHOPLIFE.pop(g, pvX + pvW / 2, pvY + 30, time);
+    text(storeMsgT > 0 ? fitName(storeMsg, w - 44, 6) : fitName(bark || (loadoutSafe() ? STORE_HELP.buy : STORE_HELP.look), w - 44, 6), VW / 2 + 8, y + h - 10, storeMsgT > 0 ? UI.title : bark ? '#c9b892' : UI.dim, 'center', 6); }
 }
 
 // ---------- bestiary ----------
@@ -6448,7 +6489,7 @@ let menuKind = 'pause';
 // one line each, so nobody has to guess what a switch does
 const SETTING_TIPS = {
   'Unlock everything': 'all open and free; save untouched', 'Unlock all levels': 'every level open on the map; heroes, gear and medals as earned', 'God mode': 'never hurt or tired. no medals',
-  'Skills': 'abilities and loadout (Q)', 'Level card': 'what each level gave you', 'Store': 'buy and equip anything (V on the map)', 'Difficulty': 'how hard foes hit and last', 'Game speed': 'slow the whole game down, or speed it up (50-200%)', 'Jump assist': 'a longer coyote step off ledges',
+  'Skills': 'abilities and loadout (Q)', 'Level card': 'what each level gave you', 'Store': 'buy and equip anything (V on the map)', 'Swap hero': 'change who you play (H on the map)', 'Difficulty': 'how hard foes hit and last', 'Game speed': 'slow the whole game down, or speed it up (50-200%)', 'Jump assist': 'a longer coyote step off ledges',
   'Iron Knight': 'one life, one run, for the medal', 'Block': 'hold the key or toggle it', 'Text speed': 'how fast talk fills', 'Transitions': 'the cutscene between levels: ALWAYS / FIRST TIME / NEVER (any button skips)', 'Hints': 'help boxes and nudges: NONE / LOW / MEDIUM / HIGH',
   'Swap Z / X': 'which key jumps', 'Rumble': 'gamepad rumble',
   'Map': 'where you have been (TAB)', 'Way-on arrow': 'an arrow on the way: STUCK = after 10s',
@@ -6471,7 +6512,8 @@ const SETTING_TIPS = {
 };
 let settingsTab = 'gameplay';   /* which tab Settings is on (kept for the session) */
 const TAVERN_MENU_HIDE = ['Map', 'Level card', 'Hero trial', 'Back to shrine', 'Restart level'];   /* (claude/tavernname) the inn's pause menu: the level-only rows are not offered; Return to map walks out of the door */
-const menuItems = () => menuKind === 'pause' || menuKind === 'map' ? (bossSelectFight ? PAUSE_ITEMS.filter(k => k !== 'Quit to title').map(k => k === 'Return to map' ? 'Quit to Boss Select' : k) : (L && L.tavern && menuFrom === 'play' ? PAUSE_ITEMS.filter(k => !TAVERN_MENU_HIDE.includes(k)) : PAUSE_ITEMS)) : tabRows(settingsTab, menuFrom);
+const menuItems = () => menuItems0().filter(k => k !== 'Swap hero' || swapMenuOk());
+const menuItems0 = () => menuKind === 'pause' || menuKind === 'map' ? (bossSelectFight ? PAUSE_ITEMS.filter(k => k !== 'Quit to title').map(k => k === 'Return to map' ? 'Quit to Boss Select' : k) : (L && L.tavern && menuFrom === 'play' ? PAUSE_ITEMS.filter(k => !TAVERN_MENU_HIDE.includes(k)) : PAUSE_ITEMS)) : tabRows(settingsTab, menuFrom);
 const isHeader = isHeaderTab;
 const MENU_ROWS = 10;
 let menuBarY = null, menuI = 0, menuFrom = 'play', selI = 0, menuMsg = '', menuMsgT = 0, bestI = 0, bestTab = 0, bestPage = 0, bestPages = 1;
@@ -6528,6 +6570,7 @@ function menuConfirm() {
   else if (k === 'Skills') openStore('menu', 'skills');
   else if (k === 'Level card') openCard('menu', true);
   else if (k === 'Store') openStore('menu', 'heroes');
+  else if (k === 'Swap hero') { if (!SWAPUI.open()) SFX.buzz(); }
   else if (k === 'Hero') { state = 'herocard'; SFX.uiSel(); }
   else if (k === 'Secrets') { menuKind = 'secrets'; SFX.uiSel(); }   /* (claude/secrets) the journal: found X of Y per act */
   else if ((k === 'Return to map' || k === 'Quit to title') && menuFrom === 'play' && !(menuMsg === 'press again to leave this level' && menuMsgT > 0)) { menuMsg = 'press again to leave this level'; menuMsgT = 2.5; SFX.ui(); }   /* leaving a level you are in asks once */
@@ -6804,6 +6847,7 @@ let jumpPress = false, atkPress = false, dodgePress = false, pausePress = false,
 const isKey = (e, names) => names.includes(e.key) || names.includes(e.code);
 // A LIST TAKES A CHOICE FROM A KEY THAT IS NOT A DIRECTION. Z, ENTER, SPACE or X: never up, which moves it.
 const menuTake = () => confirmPress || atkPress;
+let swapPress = false;   /* (claude/hubpolish) H in a menu or on the map: the swap hero panel (in a wood H is the dance and nothing reads this) */
 const KEYS = {
   jump: ['z', 'Z', ' ', 'Space', 'ArrowUp', 'w', 'W', 'k', 'K'], atk: ['x', 'X', 'j', 'J', 'Enter'], block: ['c', 'C', 'l', 'L'], dodge: ['v', 'V', 'Shift'],
   throw: ['f', 'F', 'b', 'B'], grab: ['i', 'I'], skill2: ['g', 'G', 'n', 'N'], talk: ['e', 'E', 't', 'T'], flask: ['u', 'U', '1'], stance: ['2'],
@@ -6845,6 +6889,7 @@ addEventListener('keydown', e => {
   if (state !== 'play' && state !== 'talk') { if (e.key === 'ArrowUp') upPress = true; if (e.key === 'ArrowDown') downPress = true; if (e.key === 'ArrowLeft') leftPress = true; if (e.key === 'ArrowRight') rightPress = true; }   /* the menus keep the arrows, whatever the wood's keys were rebound to */
   if (isKey(e, ['z', 'Z', 'Enter', ' ', 'Space'])) confirmPress = true;
   if (isKey(e, KEYS.pause)) pausePress = true;
+  if (isKey(e, KEYS.dance)) swapPress = true;
   if (isKey(e, KEYS.talents)) talentsPress = true;
   if (isKey(e, KEYS.map)) mapPress = true;
   if (isKey(e, KEYS.dance)) keys.dance = true;
@@ -7261,6 +7306,16 @@ function tavSetWeapon(p, id) {
   if (p.n === 1) { PROG.sword = id; applySkin(); players[0].set = K; saveProgress(); }
   else { p.sword = id; seatBake(p); partyToWant(); }
 }
+/* (claude/hubpolish) THE WARDROBE CARD'S ROSTER STRIP: a small portrait for every hero (the ones the seat can take lit, the rest greyed), the seat's own with a gold pip */
+function tavStrip(x, y, w, cur, p) {
+  const n = PICK.length, cw = Math.floor(w / n), can = p ? tavHeroes(p) : [];
+  PICK.forEach((id, k) => { const cx = x + k * cw, ok = can.includes(id), me = id === cur;
+    g.fillStyle = me ? 'rgba(70,104,60,0.8)' : 'rgba(34,30,46,0.7)'; g.fillRect(cx, y, cw - 1, 22);
+    let f = null; try { f = swapIdle(id).R.idle[0]; } catch { /* not baked yet */ }
+    if (f) { const b = HSWP.bbox(f), s = Math.min(1, 20 / b.h), dw = Math.min(b.w, Math.floor((cw - 2) / s)); g.save(); g.globalAlpha = ok ? 1 : 0.3; if (!ok) g.filter = 'grayscale(1)';
+      g.drawImage(f, b.x + ((b.w - dw) >> 1), b.y, dw, b.h, Math.round(cx + (cw - 1 - dw * s) / 2), Math.round(y + 21 - b.h * s), Math.round(dw * s), Math.round(b.h * s)); g.restore(); }
+    if (me) { g.fillStyle = '#ffd36b'; g.fillRect(cx + (cw >> 1) - 2, y, 4, 2); } });
+}
 TAVO = makeTavern({ TS, L: () => L, PROG: () => PROG, save: () => saveProgress(), players: () => players, time: () => time, tagOf: p => PARTY.tagOf(p),
   number: (x, y, s) => callout(String(s)), text:   /* (the inn's words go in the hint box: words do not float in play, src/hint-lines.js) */ (s, x, y, c, a, z) => text(s, x, y, c, a, z), board: (x, y, w, h) => board(x, y, w, h, UI.border, 'rgba(16,13,24,0.94)'),
   hint: (m, t) => hintSay('tip', t, m), sfx: k => { const f = k === 'bell' ? (SFX.seaBell || SFX.golemChime) : SFX[k]; if (f) f(); },
@@ -7269,7 +7324,7 @@ TAVO = makeTavern({ TS, L: () => L, PROG: () => PROG, save: () => saveProgress()
   leave: p => { burst(p.x, p.y - 8, 10, ['#e8e0d0', '#8a8f80'], 40, 0.4); callout(PARTY.tagOf(p) + ' LEAVES THE PARTY'); if (p.src && p.src.kind === 'online') ONL.dropGuest(p.src.gid, 'LEFT THE PARTY'); else seatDrop(p); TAVO.door(); },
   openOnline: () => ONL.open(), openParty: () => partyBoardOpen(), openSaves: () => openCoopHelp('play', SAVES_PAGE),   /* (claude/coopclarity) THE SAVES SIGN: one page of the co-op guide */ practice: () => { partyToWant(); rush = null; setView('normal'); practiceFromInn = true; practiceI = Math.max(0, HEROES.findIndex(h => h.id === hero())); state = 'practice'; SFX.uiSel(); },
   down: p => asPlayer(p, () => goDown({ name: 'THE SPARRING BELL', red: false, rule: '' })), roomCode: () => ONL.code(),
-  heroesFor: tavHeroes, setHero: tavSetHero, weapons: tavWeapons, weaponOf: tavWeaponOf, setWeapon: tavSetWeapon,
+  heroStrip: (x, y, w, cur, p) => tavStrip(x, y, w, cur, p), heroesFor: tavHeroes, setHero: tavSetHero, weapons: tavWeapons, weaponOf: tavWeaponOf, setWeapon: tavSetWeapon,
   heroName: h => HERO_SHORT[h] || String(h).toUpperCase(), weaponName: id => (SWORDS.find(s => s.id === id) || { name: String(id).toUpperCase() }).name });
 /* the touch USE button reads the station a phone player stands at */
 VERB_HOOKS.push(c => { if (!TAVO || !TAVO.on() || !c.P) return null; const s = TAVO.stationNear(c.P); return s ? { verb: s.id === 'door' && c.P.n > 1 ? 'LEAVE' : s.verb, key: 'talk' } : null; });
@@ -7295,7 +7350,7 @@ Object.assign(SETTING_TIPS, TCH.tips);
 {
   if (touchOn && !SET.touchInit) { SET.touchInit = 1; if (SET.parts === 'normal' && SET.parallax === 'full') TCH.applyLite(true); saveSettings(); } }   /* A PHONE'S FIRST RUN: lighter particles and fewer backdrop layers, unless the player had already chosen */
 const drawTouch = () => TCH.draw();
-function clearPresses() { grabPress = false; jumpPress = atkPress = dodgePress = pausePress = anyPress = upPress = downPress = leftPress = rightPress = confirmPress = throwPress = skill2Press = skill3Press = skill4Press = talkPress = talentsPress = mapPress = flaskPress = false; stancePress = false; jumpUpKey = false;
+function clearPresses() { swapPress = false; grabPress = false; jumpPress = atkPress = dodgePress = pausePress = anyPress = upPress = downPress = leftPress = rightPress = confirmPress = throwPress = skill2Press = skill3Press = skill4Press = talkPress = talentsPress = mapPress = flaskPress = false; stancePress = false; jumpUpKey = false;
   if (players) for (const p of players) if (p !== players[0] && p.press) p.press = {}; }   /* the other hands are one-shot too, and are emptied on the same beat */
 
 // ---------- collision ----------
@@ -32045,6 +32100,8 @@ function update(dt) {
   if (state !== 'play' || !isPyro()) SFX.jet(false);
   music.muffle(state === 'menu' || state === 'talk' || state === 'herocard' || state === 'bestiary' || (state === 'store' && !!(L && L.shop)));
   music.lowHealth(state === 'play' && !P.dead && P.hp > 0 && P.hp <= 25);
+  if (SWAPUI.isOpen && state !== 'store') { swapFrame(dt); return; }   /* (claude/hubpolish) the swap hero panel over the map or the pause menu */
+  if (swapPress && state === 'map' && !map.walking && !mapPanel.open) { swapPress = false; if (SWAPUI.open()) return; }
   if (state === 'editor') {
     if (!edDoc) { state = 'title'; return; }
     const sp = (keys.block ? 460 : 200) * dt; // hold block to fly
@@ -34079,7 +34136,9 @@ function drawWorld(cx, cy, showPlayer) {
   for (const pr of props) if (pr.t === 'npc' && pr.x > cx - 40 && pr.x < cx + VW + 40) { { const set = SPR[pr.kind] || SPR.shepherd, near = Math.abs(P.x - pr.x) < 90, ph = time + (pr.anim || 0) * 3, c0 = Array.isArray(set.R) ? set.R[0] : set.R, breathe = Math.sin(ph * 2.1) > 0.55 ? 1 + 1 / c0.height : 1;
         const face = near ? (P.x < pr.x ? -1 : 1) : (Math.floor(ph / 3.3) % 2 ? 1 : -1);
         const jig = P.dance > 0 && Math.abs(P.x - pr.x) < 110 && talkTo !== pr;   /* AND THE TOWN DANCES WITH YOU: anyone friendly nearby picks up the beat */
-        drawSet(set, null, talkTo === pr ? Math.floor(time * 3) % 2 : 0, pr.x - cx, pr.y - cy - (jig ? Math.round(Math.abs(Math.sin(P.dance * 4.2 * Math.PI + pr.x)) * 4) : 0), jig ? (Math.floor(P.dance * 2.1 + (pr.anim || 0)) % 2 ? 1 : -1) : face, false, 1, breathe); } if (talkTo !== pr && !P.dead && state === 'play' && Math.abs(P.x - pr.x) < 24 && Math.abs(P.y - pr.y) < 24) text(talkGlyph(), pr.x - cx, pr.y - 28 - cy + Math.round(Math.sin(time * 5)), '#ffe6a0', 'center', 6); }
+        drawSet(set, null, talkTo === pr || pr.barkOn ? Math.floor(time * 3) % 2 : 0, pr.x - cx, pr.y - cy - (pr.nodY | 0) - (jig ? Math.round(Math.abs(Math.sin(P.dance * 4.2 * Math.PI + pr.x)) * 4) : 0), jig ? (Math.floor(P.dance * 2.1 + (pr.anim || 0)) % 2 ? 1 : -1) : face, false, 1, breathe); } if (talkTo !== pr && !P.dead && state === 'play' && Math.abs(P.x - pr.x) < 24 && Math.abs(P.y - pr.y) < 24) text(talkGlyph(), pr.x - cx, pr.y - 28 - cy + Math.round(Math.sin(time * 5)), '#ffe6a0', 'center', 6); }
+  if (L && L.shop) { const kp = props.find(q => q.t === 'npc' && q.kind === 'keeper'); if (kp) SHOPLIFE.drawRoom(g, { cx, cy, time, id: shopIdNow(), room: L, kx: kp.x, ky: kp.y, px: P.x, floor: kp.y, VW, text, textW: (s, z) => inkW(s, z), keeper: kp }); }   /* (claude/hubpolish) the keeper's loops, his lines, the sign, the wares, the light */
+  if (L && L.tavern) { const pl = (players || [P]).reduce((a, p) => Math.abs(p.x - 30 * TS) < Math.abs(a - 30 * TS) ? p.x : a, 1e9); SHOPLIFE.drawTavern(g, { cx, cy, time, bx: 30 * TS + 8, by: 20 * TS, hx: 14 * TS + 8, px: pl, floor: 20 * TS, VW, text, textW: (s, z) => inkW(s, z) }); }   /* (claude/hubpolish) the inn: dust in the firelight, the barkeep's line */
   /* THE BEER GARDEN. They drink, they sway, they laugh: every one of them on its own clock, and never off its bench */
   for (const pr of props) if (pr.t === 'guest' && !(L && L.tavern) && SPR.guests && pr.x > cx - 30 && pr.x < cx + VW + 30) { const set = SPR.guests[pr.v % SPR.guests.length], ph = (time + pr.anim) % 7, fr = ph > 4.2 && ph < 5.1 ? 1 : ph > 5.4 && ph < 6.5 ? 2 : 0;
     const sway = pr.v >= 3 ? Math.round(Math.sin((time + pr.anim) * 1.6)) : 0;
@@ -36713,6 +36772,7 @@ function render() {
   if (REC.on || REC.msgT > 0) REC.draw(g, text, VW);
   if (SET.fps) { g.fillStyle = 'rgba(10,8,20,0.6)'; g.fillRect(2, VH - 12, 118, 10); text(perf.fps + ' FPS  UPDATE ' + perf.u.toFixed(1) + 'MS  DRAW ' + perf.r.toFixed(1) + 'MS', 4, VH - 10, perf.fps < 50 ? '#ff6b6b' : '#8fd160', 'left', 6); }
   trnDrawOverlay();   /* (claude/transwm) the letterbox, the skip hint */
+  if (SWAPUI.isOpen) SWAPUI.draw();   /* (claude/hubpolish) over the store, the map or the pause menu */
   drawTransition();
   if(saveBlocked){g.fillStyle='rgba(35,10,14,0.98)';g.fillRect(0,VH-28,VW,28);text('SAVE PROTECTED - CHANGES WILL NOT SAVE',VW/2,VH-25,'#ff9a5c','center',6);text(fitName(saveBlocked,VW-12,6),VW/2,VH-14,UI.text,'center',6);}
   else if(saveFail){g.fillStyle='rgba(35,10,14,0.98)';g.fillRect(0,VH-28,VW,28);text(saveFail,VW/2,VH-25,'#ff9a5c','center',6);text(fitName(saveFail.includes('FULL')?'FREE SPACE: ERASE AN OLD SAVE. IT RETRIES EVERY SAVE':'THE BROWSER REFUSED THE WRITE. IT RETRIES EVERY SAVE',VW-12,6),VW/2,VH-14,UI.text,'center',6);}
@@ -36918,7 +36978,7 @@ window.BK = { setView: m => setView(m), env: () => ({ hurt: (e, d, x) => hurtEne
   healths: () => healths, acorns: () => acorns,   /* the hearts and coins lying about, the dead-end stashes among them: BK.collectLab({ stash: true }) goes for those */
   /* THE AUDITS (tools/audit-hitboxes.mjs, audit-feel.mjs, audit-input.mjs, audit-contact.mjs, audit-audio.mjs): read-only. log is an array while a
      tool listens (damagePlayer and hurtEnemy write to it), else null; the rest are the numbers a blow leaves behind, the hero's live reach, his set, the particles */
-  log: null, blowRec: null, shakeCam: (n, k, tag) => shakeCam(n, k, tag), get shake() { return shake; }, get kick() { return kick; }, attackBox: () => attackBox(), boxOf: q => box(q), get hurtKnock() { return hurtKnock; }, get heroSet() { return K; },
+  log: null, blowRec: null, shakeCam: (n, k, tag) => shakeCam(n, k, tag), get shake() { return shake; }, get kick() { return kick; }, attackBox: () => attackBox(), boxOf: q => box(q), get hurtKnock() { return hurtKnock; }, get heroSet() { return K; }, swap: SWAPUI, shopLife: SHOPLIFE,   /* (claude/hubpolish) tools/hero-swap.mjs, tools/shop-life.mjs, tools/textfit.mjs */
   parts: () => parts, bossBodies: () => bossBodies, get PROP() { return PROP; }, get FLYERS() { return FLYERS; }, get HAS_HURT() { return HAS_HURT; }, get EHP() { return EHP; },
 };
 /* THE HOIST, for the harnesses: the decks (each with its state in .hs), a way to put n loads in one's basket, and the Reeve's cut */
