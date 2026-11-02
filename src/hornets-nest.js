@@ -84,7 +84,7 @@ export function buildHornetsNest({ painter, T, TS }) {
   const stinger = (x, y, o = {}) => ent('spit', x, y, { cnSkin: 'stinger', face: -1, ...o });   /* THE STINGER HORNET: the spitter's machine under a NEST HORNET on the comb - it curls its abdomen (a yellow !) and flicks venom (a hornet, not a mage) */
 
   /* (claude/hornetsnest2) A HONEY DRIP (src/hornets-nest-hands.js L.drips): a bead swells under the comb at (x, row) - row is the AIR tile under the comb it hangs from - then falls to the first footing */
-  const drip = (x, row, every = 2.6, phase = 0) => drips.push({ x: x + OX, row, every, phase });
+  const drip = (x, row, every = 2.6, phase = 0) => drips.push({ x: x + OX, y0: row, every, phase });
   const cell = (x, y) => cells.push({ x: x + OX, y });
   const crumble = (x0, x1, row) => { shelf(x0, x1, row); crumbles.push({ x0: x0 + OX, x1: x1 + OX, row, count: 2, kind: 'comb' }); };
 
@@ -184,7 +184,7 @@ export function buildHornetsNest({ painter, T, TS }) {
   stinger(194, 29, { squad: 'gallery' });                     /* the pillar's stinger */
   drone(209, 29, { squad: 'gallery' });                       /* a comb drone on the exit ledge */
   drip(180, 14, 2.6, 0); drip(185, 14, 2.6, 1.3); drip(201, 14, 2.6, 0.65); drip(209, 14, 2.6, 1.95);   /* honey from the paper roof: over the second and third combs, the gap (it lands on the bridge once cut), the ledge */
-  ent('silver', 211, 29);
+  coins([211, 28], [212, 28]);   /* (a level holds exactly three silvers: the new sections pay in gold) */
 
   // ================= 3b. THE HONEY WELL (298-347): REMIX - a hanging-comb + honey-drip CLIMB (final columns) =================
   /* a tall well in the nest's core: in at the stair's wall top (row 8), DOWN the west side on easy comb shelves, across a sticky bed, UP the east side on comb PENDANT RUNGS (oneway, four wide, three rows
@@ -204,7 +204,7 @@ export function buildHornetsNest({ painter, T, TS }) {
   hornet(312, 16, { squad: 'well' }); hornet(318, 30, { squad: 'well' });
   fat(340, 37, { squad: 'well' });                            /* the fat honey hornet at row 38 east: its globs on the rungs */
   swarm(333, 24, { squad: 'well' });                          /* the swarm by the overhang: a pot carried up (or lobbed) quiets it */
-  shelf(311, 314, 20); ent('silver', 312, 19); coins([313, 19]);   /* a dead-end pendant off the west shelves: a silver */
+  shelf(311, 314, 33); coins([312, 32], [313, 32]);   /* a dead-end pendant off the west shelves: a purse of gold (the level's three silvers are the old ones) */
   drip(336, 40, 2.6, 0); drip(331, 37, 2.6, 0.9); drip(337, 34, 2.6, 1.7); drip(332, 31, 2.6, 0.5); drip(336, 20, 2.6, 1.3);   /* honey from the rungs above: each lands on the rung under it (staggered: a route is always open) */
 
   OX = 50;   /* the comb stair, laid as columns 169-247, stands at 219-297 now (the gallery is in front of it, the well behind it) */

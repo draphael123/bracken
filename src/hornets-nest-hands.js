@@ -145,7 +145,7 @@ export function makeNestHands(ctx) {
     for (const d of drips) {
       const px = d.x * TS + 8; if (!heroes.some(pp => Math.abs(pp.x - px) < DRIP.near)) { if (d.st !== 'wait') { d.st = 'wait'; d.t = 0; } continue; }   /* (only the drips near a hero run: mobile perf) */
       if (d.st === 'wait') { d.t += dt; if (d.t >= d.every - DRIP.tell) { d.st = 'swell'; d.s = 0; if (ctx.sfx.drip) ctx.sfx.drip(); } }
-      else if (d.st === 'swell') { d.s += dt; if (d.s >= DRIP.tell && falling < DRIP.max) { d.st = 'fall'; d.y = d.row * TS + 4; d.vy = 0; falling++; W.n.dripFell++; } }
+      else if (d.st === 'swell') { d.s += dt; if (d.s >= DRIP.tell && falling < DRIP.max) { d.st = 'fall'; d.y = d.y0 * TS + 4; d.vy = 0; falling++; W.n.dripFell++; } }
       else if (d.st === 'fall') {
         d.vy = Math.min(520, d.vy + DRIP.g * dt); const dy = d.vy * dt, n = Math.max(1, Math.ceil(dy / 4)); let landed = false;
         for (let i = 0; i < n && !landed; i++) { d.y += dy / n;
@@ -215,7 +215,7 @@ export function makeNestHands(ctx) {
   };
   W.props = () => combs.map(c => ({ t: 'comb', id: c.id, x: ((c.x0 + c.x1) >> 1) * TS + 8, y: (c.row + c.rows) * TS, on: c.st !== 'hang' }));   /* the shared guide (src/stuck-guide.js): a comb is done once it is cut */
   W.read = () => ({ combs: combs.map(c => ({ id: c.id, st: c.st, x0: c.x0, x1: c.x1, row: c.row, rows: c.rows, y: c.y, land: c.st === 'down' ? Math.round(c.y / TS) : landRow(c) })),
-    stands: W.stands(), drips: drips.map(d => ({ x: d.x, row: d.row, st: d.st, y: d.y })), held: W.held(), pots: pots.map(q => ({ state: q.state, x: q.x, y: q.y })), clouds: clouds.map(c => ({ x: c.x, y: c.y, r: c.r, t: c.t })),
+    stands: W.stands(), drips: drips.map(d => ({ x: d.x, y0: d.y0, st: d.st, y: d.y })), held: W.held(), pots: pots.map(q => ({ state: q.state, x: q.x, y: q.y })), clouds: clouds.map(c => ({ x: c.x, y: c.y, r: c.r, t: c.t })),
     cells: cells.map(k => ({ x: k.x, y: k.y, st: k.st })), n: { ...W.n } });
   /* ---------- DRAWING (GREYBOX: the art lane draws the comb, the wax, the stands, the pot, the smoke and the cells - these are the shapes and the reads) ---------- */
   const rc = (g, x, y, w, h, c) => { g.fillStyle = c; g.fillRect(R(x), R(y), R(w), R(h)); };
@@ -239,7 +239,7 @@ export function makeNestHands(ctx) {
     /* THE SMOKE STANDS: a clay pot on a tripod of sticks, smouldering */
     for (const s of stands) { const x = R(s.x - cx), y = R(s.y - cy); if (x < -30 || x > VW + 30) continue; if (s.hall && s.st === 'empty') HNP.standEmpty(g, x, y, time, s.t < 1 ? 1 - s.t : 0); else HNP.stand(g, x, y, time); }   /* (a hall stand whose pot is taken or burst: the bare tripod, its smoke thickening over the last second) */
     /* HONEY DRIPS (greybox): the bead swelling at the comb's foot, then the glossy drop falling */
-    for (const d of drips) { const px = d.x * TS + 8, x = R(px - cx), y = R(d.row * TS - cy); if (x < -20 || x > VW + 20 || d.st === 'wait') continue;
+    for (const d of drips) { const px = d.x * TS + 8, x = R(px - cx), y = R(d.y0 * TS - cy); if (x < -20 || x > VW + 20 || d.st === 'wait') continue;
       if (d.st === 'swell') { const k = Math.min(1, d.s / DRIP.tell), r = 1 + k * 2.2; g.fillStyle = '#a8600a'; g.fillRect(x, y - 1, 1, 2); g.fillStyle = '#e0a020'; g.beginPath(); g.arc(x + 0.5, y + 2 + k * 2, r, 0, 7); g.fill(); g.fillStyle = Math.floor(time * 14) % 2 ? '#fff4b0' : '#ffd36b'; g.fillRect(x - 1, y + 1 + k * 2, 1, 1); }
       else if (d.st === 'fall') HNHY.glob(g, px - cx, d.y - cy, d.vy, time); }
     /* THE BROOD CELLS: a capped wax pocket; pulsing, it swells, reddens and cracks */
