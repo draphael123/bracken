@@ -40,9 +40,11 @@ import { LEVELS as LVS } from '../src/level.js';
 }
 
 /* one FRESH page per scenario: King Gorm's hands keep their phase across a level load, so a second fight in the same page starts mid-way (scenario order leaked) */
+/* HARD STOP (claude/restamp, 11-02): this tool hung twice and leaked headless Chrome. A watchdog ends it after 15 minutes, every page is awaited shut in finally, and the tool exits explicitly (a lingering server / socket handle can no longer keep it alive). */
+let livePg = null; const dog = setTimeout(async () => { console.error('gorm-unlock: WATCHDOG, 15 min, closing the browser and exiting'); try { await Promise.race([livePg && livePg.close(), new Promise(r => setTimeout(r, 5000))]); } catch {} process.exit(1); }, 15 * 60 * 1000);
 const r = {}, pgErrors = [];
 for (const SC of ['1', '2a', '2b', '2c', '2d', '2e', '3']) {
-  const pg = await openPage({ port: portFor(7) });
+  const pg = livePg = await openPage({ port: portFor(7) });
   try {
   Object.assign(r, await pg.evalp(`(async()=>{
     const SC = '${SC}';
@@ -86,7 +88,7 @@ for (const SC of ['1', '2a', '2b', '2c', '2d', '2e', '3']) {
     }
     return out;
   })()`, 900000)); pgErrors.push(...pg.errors);
-  } finally { pg.close(); }
+  } finally { try { await pg.close(); } catch {} livePg = null; }
 }
 try {
   console.log(JSON.stringify(r));
@@ -105,4 +107,5 @@ try {
   assert.deepEqual(r.newStockadeKept, { open: true, locked: false }, 'burningOpen is saved per slot');
   assert.deepEqual(pgErrors, []);
   console.log('The Burning Village opens on King Gorm beaten in one life: clean opens, a fall in either phase or the burning wood does not, a retry can, old saves keep it, a Stockade clear alone does not.');
-} finally { /* pages are closed per scenario */ }
+} catch (e) { console.error(e && e.stack || e); clearTimeout(dog); process.exit(1); }
+clearTimeout(dog); process.exit(0);
