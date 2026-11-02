@@ -1,0 +1,46 @@
+{
+  "time": "2026-11-02T14:44:02.606Z",
+  "scope": "Abstract private R publication protocol only;no native backend/Game integration or timing proof",
+  "parentHelperSha256": "65261b1db2a21daf1787a45e4c45af03eebda1b299c897cbbbd2106a171d66f1",
+  "candidateHelperSha256": "cbd25b1b0970dd9e84b7df5626180ea2abe93f208ca91b9ba835721bb3c78fe1",
+  "exactUndo": true,
+  "edits": [
+    {
+      "before": "function resolve(token,owner){const r=token&&typeof token==='object'&&tokenRecords.get(token);if(!r)return token;if(!r.built){const value=owner(r.build);r.value=value;r.built=true;r.build=null;}return r.value;}",
+      "after": "function resolve(token,owner){const h=privateRHandle(token);if(h)return owner(()=>materializePrivateRRecord(h));const r=token&&typeof token==='object'&&tokenRecords.get(token);if(!r)return token;if(!r.built){const value=r.partial?owner(()=>materializePrivateRRecord(r.partial)):owner(r.build);r.value=value;r.built=true;r.build=null;r.privateBuild=null;r.partial=null;}return r.value;}"
+    },
+    {
+      "before": "const set=function(value){if(this!==target)",
+      "after": "const set=function(value){value=privateRToken(value);if(this!==target)"
+    },
+    {
+      "before": "for(const key of keys(target)){const d=own(target,key);if(d&&'value'in d&&tokenRecords.has(d.value)){if(!d.configurable||!d.writable){define(target,key,{...d,value:resolve(d.value,state.owner)});continue;}install(target,key,d.value,d,state);}}",
+      "after": "for(const key of keys(target)){const d=own(target,key);if(d&&'value'in d){const value=privateRToken(d.value);if(tokenRecords.has(value)){if(!d.configurable||!d.writable){define(target,key,{...d,value:resolve(value,state.owner)});continue;}install(target,key,value,d,state);}}}"
+    },
+    {
+      "before": "const state=catalogues.get(target);if(!state)return Reflect.set(target,key,value,receiver);",
+      "after": "const state=catalogues.get(target);if(!state){const h=privateRHandle(value);return Reflect.set(target,key,h?materializePrivateRRecord(h):value,receiver);}const h=privateRHandle(value);value=h&&(state.published||Reflect.getPrototypeOf(target)!==Object.prototype)?materializePrivateRRecord(h):privateRToken(value);"
+    }
+  ],
+  "extensionSha256": "d0bd864354df53942803f395989a13e093664a17eb78fff64b0372f84431f97d",
+  "extensionBytes": 5321,
+  "noAmbientPrivateFlag": true,
+  "noOriginalGameSourceChanged": true,
+  "allOriginal39ContractsMustRemain": true,
+  "noNativeOrMemoryOrLayoutOrFpsProof": true,
+  "preparationCorrections": [
+    {
+      "beforeAnyTest": true,
+      "previousHelperSha256": "fc8c65c1b8f86371fd3e25aabeec25a8fe166acbe98a7aa1f7cc60b65fd7c1cd",
+      "reason": "Keep failed bounded eviction queued;preflight complete pack before in-place replacement;capture private registry intrinsics so future observers cannot inspect private queues. No Game or fixture was executed."
+    },
+    {
+      "beforeAnyTest": true,
+      "reason": "Preserve exact original full-builder callback identity for legacy ownership callbacks;only the new R materialization path uses its explicit wrapper."
+    }
+  ],
+  "preAnalysisImportError": {
+    "reason": "Inline source preparation used a work-file relative Acorn path;corrected to ./work/js-source-analysis before any helper/test import or candidate write.",
+    "noGameHelperOrTestExecuted": true
+  }
+}

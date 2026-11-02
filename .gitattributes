@@ -17,3 +17,9 @@ tools/private-hero-source-nov01/candidate-main.js -text
 tools/private-hero-source-nov01/candidate-chars.js -text
 tools/private-hero-source-nov01/candidate-px.js -text
 tools/private-hero-source-nov01/private-hero-derived.js -text
+
+tools/private-r-protocol-nov02/catalogue.js -text
+
+tools/private-r-prior-contracts-nov02.mjs -text
+
+tools/private-r-contracts-nov02.mjs -text

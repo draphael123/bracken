@@ -1,0 +1,45 @@
+name: Abstract private R publication protocol November2
+on:
+  push:
+    branches: [codex/load-perf]
+    paths:
+      - 'tools/private-r-protocol-nov02/**'
+      - 'tools/private-r-contracts-nov02.mjs'
+      - 'tools/private-r-prior-contracts-nov02.mjs'
+      - '.github/workflows/private-r-protocol-nov02.yml'
+permissions: {contents: read}
+jobs:
+  node:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0}
+      - uses: actions/setup-node@v4
+        with: {node-version: '24.11.1'}
+      - name: Source identity and syntax
+        run: |
+          test -z "$(git diff 62d9c02c HEAD -- src index.html)"
+          mkdir -p "$PUBLICATION_OUT"
+          git rev-parse HEAD HEAD:src > "$PUBLICATION_OUT/source.txt"
+          sha256sum tools/private-r-protocol-nov02/catalogue.js tools/private-r-protocol-nov02/source-proof.json tools/private-r-contracts-nov02.mjs tools/private-r-prior-contracts-nov02.mjs .github/workflows/private-r-protocol-nov02.yml > "$PUBLICATION_OUT/source-sha256.txt"
+          cp tools/private-r-protocol-nov02/source-proof.json "$PUBLICATION_OUT/source-proof.json"
+          node --check tools/private-r-protocol-nov02/catalogue.js
+          node --check tools/private-r-prior-contracts-nov02.mjs
+          node --check tools/private-r-contracts-nov02.mjs
+        env:
+          PUBLICATION_OUT: ${{ runner.temp }}/private-r-protocol-nov02
+      - name: All original 39 publication assertions unchanged
+        run: node tools/private-r-prior-contracts-nov02.mjs
+        env:
+          PUBLICATION_OUT: ${{ runner.temp }}/private-r-protocol-nov02
+      - name: New 26 abstract R publication cases
+        run: node tools/private-r-contracts-nov02.mjs
+        env:
+          PUBLICATION_OUT: ${{ runner.temp }}/private-r-protocol-nov02
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: private-r-protocol-nov02
+          path: ${{ runner.temp }}/private-r-protocol-nov02/
+          if-no-files-found: error
