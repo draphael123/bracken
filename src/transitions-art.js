@@ -8,7 +8,7 @@
    drawArrivalFerry: the ferry the Marsh begins on, in WORLD space (moored: post, rope, lantern). drawWayGate: the Wood's east gate in WORLD space (rails that fall, a header that stays).
    drawBars: the letterbox with a film-edge line. Everything static is baked ONCE (per viewport size) and blitted; the per-frame work is a few drawImage calls, a handful of 1 px
    rects and two or three gradients. Every loop is bounded and hashed, never random. No dialogue: this file never writes text. */
-import { FERRY, sceneScroll, heroOnScene, ferryX } from './transitions.js';
+import { FERRY, sceneScroll, heroOnScene, ferryX, ROAD, roadScroll, roadGrowth, roadHero, SMOKE, smokeHero, smokeRise, smokeGlow } from './transitions.js';
 import { canvas, outline } from './px.js';
 import { BARK, CUT, NEEDLE, logPileSprite, drawStump } from './redraw/lumber_trail_art.js';
 import { OAK, BOARD, CORD, CORD_D } from './redraw/marsh2_art.js';
@@ -133,9 +133,15 @@ function jetty(VW) {
     for (let x = 0; x < bx1; x++) { const dy = (x > bx1 - 7 ? Math.round((x - (bx1 - 7)) * 0.7) : 0); R(g, '#4e6a28', x, JT - 1 + dy, 1, 5); R(g, '#7a9a3a', x, JT - 1 + dy, 1, 2); if (hash(x) > 0.55) P(g, '#a8c050', x, JT - 2 + dy); if (hash(x + 3) > 0.9) P(g, '#d9a63a', x, JT - 2 + dy); }
     for (const x of [10, 30, 58]) { R(g, BARK[2], gx(x - 40), JT + 4, 2, 9); R(g, BARK[3], gx(x - 40) + 2, JT + 11, 7, 2); R(g, BARK[1], gx(x - 40) + 8, JT + 12, 4, 2); P(g, BARK[4], gx(x - 40), JT + 4); }   /* roots gripping the bank */
     for (const x of [-34, -3, 32]) for (let b = 0; b < 5; b++) for (let i = 0; i < 7; i++) P(g, NEEDLE[(b + 3) % 3 + 2], gx(x) + (b - 2) * 2 + Math.round((b - 2) * i * 0.3), JT - 1 - i - (b % 2));   /* fern fronds */
+    if (bank === 'wood') {
     g.drawImage(logPileSprite(), gx(-38), JT - 34);                       /* the woodsmen's log pile (the Lumber Trail's own) */
     drawStump(g, gx(12), JT + 1, 1);                                      /* and a stump */
     R(g, BARK[1], gx(12) - 4, JT - 21, 3, 7); R(g, '#8a929a', gx(12) - 6, JT - 24, 5, 4); R(g, '#c4ccd4', gx(12) - 6, JT - 24, 5, 1);   /* an axe left in it */
+    } else {   /* THE NEST'S BANK (claude/demotransitions): no woodsmen here - a smoke pot still smouldering by the stump, a scrap of grey nest paper. GREYBOX-PLUS: the art lane draws the nest's marsh edge */
+      drawStump(g, gx(12), JT + 1, 1);
+      R(g, '#3a3026', gx(-24), JT - 8, 9, 8); R(g, '#5a4a36', gx(-24), JT - 8, 9, 2); R(g, '#1b1626', gx(-21), JT - 11, 3, 3); R(g, '#9aa0a6', gx(-22), JT - 17, 2, 6); R(g, '#c9ced0', gx(-20), JT - 21, 2, 4);   /* the pot, and its curl */
+      R(g, '#b8b2a0', gx(-6), JT - 3, 8, 3); R(g, '#8e8878', gx(-4), JT - 5, 5, 2); R(g, '#d6d0be', gx(-5), JT - 3, 3, 1);   /* a scrap of nest paper */
+    }
     /* the jetty: bog-oak piles (lit left), a plank deck, rope lashings, a sagging rope rail, reed bundles */
     const x0 = gx(24), x1 = jx1 + 40;
     for (let x = x0 + 10; x <= x1 - 2; x += 30) { R(g, OAK[1], x - 1, JT - 9, 5, 34); R(g, OAK[3], x, JT - 9, 3, 34); R(g, OAK[4], x, JT - 9, 1, 34); R(g, CORD, x - 1, JT - 7, 5, 1); R(g, CORD_D, x - 1, JT - 6, 5, 1); R(g, CORD, x - 1, JT + 6, 5, 1); R(g, CORD_D, x - 1, JT + 7, 5, 1); P(g, OAK[5], x, JT - 10); }
@@ -148,7 +154,7 @@ function jetty(VW) {
     const lg = x1 - 38; R(g, OAK[2], lg, JT - 26, 3, 27); R(g, OAK[4], lg, JT - 26, 1, 27); R(g, OAK[3], lg, JT - 26, 11, 2); R(g, OAK[1], lg + 8, JT - 26, 2, 5); R(g, '#1b1626', lg + 7, JT - 20, 4, 1); R(g, '#ffd36b', lg + 7, JT - 19, 4, 4); R(g, '#fff2b0', lg + 8, JT - 18, 2, 2); R(g, '#1b1626', lg + 7, JT - 15, 4, 1);
     const mp = jx1 + 40 - 2; R(g, OAK[1], mp - 1, JT - 16, 6, 22); R(g, OAK[3], mp, JT - 16, 4, 22); R(g, OAK[4], mp, JT - 16, 1, 22); for (let i = 0; i < 4; i++) { R(g, CORD, mp - 1, JT - 14 + i * 2, 6, 1); R(g, CORD_D, mp - 1, JT - 13 + i * 2, 6, 1); } P(g, OAK[5], mp + 1, JT - 17);
   });
-  JET = { VW, jx1, spr, JT: 34, lanternAt: [jx1 + 40 - 38 + 9, 34 - 18] };
+  JET = { VW, bank, jx1, spr, JT: 34, lanternAt: [jx1 + 40 - 38 + 9, 34 - 18] };
   return JET;
 }
 /* THE MARSH FERRY (w wide deck): two lashed bog-oak logs with pale round ends, a plank deck, cord lashings, reed-bundle prow and stern, posts, a coil, a barrel.
@@ -190,7 +196,7 @@ export function drawFerryScene(env, s) {
   const { g, VW, VH, time, n, reduce } = env, calm = !!reduce;
   const wl = Math.round(VH * 0.62), scroll = sceneScroll(s, calm), P_ = FERRY.parallax, sway = calm ? 0 : Math.sin(time * 1.6) * 1.2;
   const prog = clamp01((s - FERRY.poleAt) / 8), kk = smooth((s - FERRY.poleAt - 0.8) / 6.4);   /* the crossing: 0 at the push-off, 1 at the Marsh; kk is the Wood->Marsh grade */
-  const L = layers(VW, VH, wl), J = jetty(VW);
+  const L = layers(VW, VH, wl), J = jetty(VW, env.bank || 'wood');
   /* SKY: the Wood's gold morning, grading to the Marsh's cool grey-green; the sun low left, a pale day-moon rising right (the Marsh's night piece), a light shaft that fades out */
   g.drawImage(L.skyA, 0, 0); if (kk > 0.01) { g.globalAlpha = kk; g.drawImage(L.skyB, 0, 0); g.globalAlpha = 1; }
   if (kk > 0.25) { g.globalAlpha = smooth((kk - 0.25) / 0.6) * 0.7; g.drawImage(moonSprite(), Math.round(VW * 0.8), Math.round(VH * 0.13)); g.globalAlpha = 1; }
@@ -301,27 +307,37 @@ export function drawArrivalFerry(env, cx, cy, floorY, time, mooredAt) {
 /* THE WOOD'S EAST GATE, in WORLD space (the clearing's last column): from the start of the open beat it is a lashed pine gate (five rails, two posts, a brace, a rope and iron strap) over the
    tiles; at tOpen 0.25 s it gives way: the rails fall one after another and settle, the posts topple across the path (what the hero hops), the header beam stays with its rope ends swinging, and
    the way beyond is lit - a warm spill of morning along the floor. o: { col, rows: [r0, r1] }; t: seconds since the open beat began; opened: the tiles are already air. */
+/* THE GATE'S LOOK per open.kind (claude/demotransitions): pine = the Lumber Trail's lashed pine; bog = the Marsh's bog-oak palisade with reed cord; palisade = the goblins' weathered wall; leaf = Underleaf's living hedge-gate;
+   light = no wall at all (the arena just ends): only the spill of light beyond is drawn. GREYBOX-PLUS: recoloured rails, the art lane draws each its own. */
+const GATE_PAL = {
+  pine: { bark: BARK, cut: CUT, cord: CORD, cordD: CORD_D },
+  bog: { bark: [OAK[0], OAK[1], OAK[2], OAK[3], OAK[4], OAK[5]], cut: ['#d4dcc4', '#b2bea4', '#8e9e86', '#6a7a64', '#4a5a46'], cord: CORD, cordD: CORD_D },
+  palisade: { bark: ['#14110d', '#241d16', '#3a3026', '#574a3a', '#76674f', '#968565'], cut: ['#d8cfae', '#b8ab82', '#8e7f58', '#665a3c', '#463c28'], cord: '#9a8a60', cordD: '#6e6040' },
+  leaf: { bark: ['#16200e', '#25361a', '#38541f', '#4f7a2a', '#6d9c3a', '#94c254'], cut: ['#ecf4bc', '#cfdc8a', '#aab864', '#7f9040', '#58682c'], cord: '#d9c58a', cordD: '#a08c58' },
+};
 const RAILS = 5;
-function gateRail(g, len, lit) {
-  R(g, BARK[0], 0, 0, len, 13); R(g, BARK[3], 1, 1, len - 2, 5); R(g, BARK[5], 1, 1, len - 2, 1); R(g, BARK[2], 1, 6, len - 2, 5); R(g, BARK[1], 1, 10, len - 2, 2);
-  R(g, CUT[1], 0, 2, 2, 9); R(g, CUT[3], 0, 5, 2, 1); R(g, CUT[1], len - 2, 2, 2, 9); R(g, CUT[3], len - 2, 5, 2, 1);
-  for (let k = 0; k < 3; k++) P(g, BARK[1], 4 + Math.round(hash(k + len) * (len - 9)), 3 + (k & 1) * 3);
-  if (lit) R(g, CORD, 5, 0, 2, 13);
+function gateRail(g, len, lit, pal) {
+  R(g, pal.bark[0], 0, 0, len, 13); R(g, pal.bark[3], 1, 1, len - 2, 5); R(g, pal.bark[5], 1, 1, len - 2, 1); R(g, pal.bark[2], 1, 6, len - 2, 5); R(g, pal.bark[1], 1, 10, len - 2, 2);
+  R(g, pal.cut[1], 0, 2, 2, 9); R(g, pal.cut[3], 0, 5, 2, 1); R(g, pal.cut[1], len - 2, 2, 2, 9); R(g, pal.cut[3], len - 2, 5, 2, 1);
+  for (let k = 0; k < 3; k++) P(g, pal.bark[1], 4 + Math.round(hash(k + len) * (len - 9)), 3 + (k & 1) * 3);
+  if (lit) R(g, pal.cord, 5, 0, 2, 13);
 }
 export function drawWayGate(env, o, cx, cy, t, opened, time, reduce) {
   const { g } = env, X0 = o.col * 16 - cx, GX = X0 - 12, Y0 = o.rows[0] * 16 - cy, Hh = (o.rows[1] - o.rows[0] + 1) * 16, floor = Y0 + Hh;
   if (X0 > env.VW + 40 || X0 < -60) return;
-  const T0 = 0.25, falling = opened || t >= T0, tau = t - T0;
-  const rails = once('gateRails', () => { const r = []; for (let i = 0; i < RAILS; i++) { const [c, gg] = canvas(30, 13); gateRail(gg, 30, i % 2 === 0); r.push(c); } return r; });
+  const T0 = 0.25, falling = opened || t >= T0, tau = t - T0, bare = kind === 'light';   /* bare: no wall to open - only the spill of light */
+  if (bare && !falling) return;
+  const rails = once('gateRails' + kind, () => { const r = []; for (let i = 0; i < RAILS; i++) { const [c, gg] = canvas(30, 13); gateRail(gg, 30, i % 2 === 0, pal); r.push(c); } return r; });
+  if (!bare) {
   /* the header beam (stays): a squared pine across the top with two rope ends hanging, swinging after the gate has gone */
-  const hb = Y0 - 3; R(g, BARK[0], GX - 7, hb - 1, 40, 9); R(g, BARK[3], GX - 6, hb, 38, 4); R(g, BARK[5], GX - 6, hb, 38, 1); R(g, BARK[1], GX - 6, hb + 4, 38, 3); R(g, CUT[1], GX - 7, hb, 2, 7); R(g, CUT[1], GX + 31, hb, 2, 7);
-  for (const [rx, ph] of [[GX - 2, 0], [GX + 26, 1.7]]) { const sw = falling && !reduce ? Math.round(Math.sin(time * 2.4 + ph) * Math.min(2, tau * 3)) : 0; for (let i = 0; i < 11; i++) P(g, i % 3 === 2 ? CORD_D : CORD, rx + Math.round(sw * i / 10), hb + 7 + i); R(g, CORD, rx - 1 + sw, hb + 18, 3, 2); }
+  const hb = Y0 - 3; R(g, pal.bark[0], GX - 7, hb - 1, 40, 9); R(g, pal.bark[3], GX - 6, hb, 38, 4); R(g, pal.bark[5], GX - 6, hb, 38, 1); R(g, pal.bark[1], GX - 6, hb + 4, 38, 3); R(g, pal.cut[1], GX - 7, hb, 2, 7); R(g, pal.cut[1], GX + 31, hb, 2, 7);
+  for (const [rx, ph] of [[GX - 2, 0], [GX + 26, 1.7]]) { const sw = falling && !reduce ? Math.round(Math.sin(time * 2.4 + ph) * Math.min(2, tau * 3)) : 0; for (let i = 0; i < 11; i++) P(g, i % 3 === 2 ? pal.cordD : pal.cord, rx + Math.round(sw * i / 10), hb + 7 + i); R(g, pal.cord, rx - 1 + sw, hb + 18, 3, 2); }
   if (!falling) {
     /* the shut gate: posts, rails with their ends cut and lashed, a diagonal brace, an iron strap at each hinge */
     const jx = t > 0.1 && !reduce ? Math.round(Math.sin(t * 90) * (t - 0.1) * 5) : 0;   /* a shiver just before it goes */
-    for (const px of [GX - 4, GX + 20]) { R(g, BARK[0], px + jx, Y0 + 2, 6, Hh); R(g, BARK[3], px + 1 + jx, Y0 + 2, 4, Hh); R(g, BARK[5], px + 1 + jx, Y0 + 2, 1, Hh); R(g, BARK[1], px + 4 + jx, Y0 + 2, 1, Hh); R(g, CUT[1], px + jx, Y0 + 2, 6, 2); }
+    for (const px of [GX - 4, GX + 20]) { R(g, pal.bark[0], px + jx, Y0 + 2, 6, Hh); R(g, pal.bark[3], px + 1 + jx, Y0 + 2, 4, Hh); R(g, pal.bark[5], px + 1 + jx, Y0 + 2, 1, Hh); R(g, pal.bark[1], px + 4 + jx, Y0 + 2, 1, Hh); R(g, pal.cut[1], px + jx, Y0 + 2, 6, 2); }
     for (let i = 0; i < RAILS; i++) g.drawImage(rails[i], GX - 4 + jx, Y0 + 8 + i * 17);
-    for (let i = 0; i < 28; i++) P(g, BARK[1], GX + 1 + Math.round(i * 0.5) + jx, Y0 + 14 + Math.round(i * 3)); for (let i = 0; i < 28; i++) P(g, BARK[4], GX + 2 + Math.round(i * 0.5) + jx, Y0 + 14 + Math.round(i * 3));   /* the brace */
+    for (let i = 0; i < 28; i++) P(g, pal.bark[1], GX + 1 + Math.round(i * 0.5) + jx, Y0 + 14 + Math.round(i * 3)); for (let i = 0; i < 28; i++) P(g, pal.bark[4], GX + 2 + Math.round(i * 0.5) + jx, Y0 + 14 + Math.round(i * 3));   /* the brace */
     for (const y of [Y0 + 16, Y0 + Hh - 22]) { R(g, '#3c424a', GX - 4 + jx, y, 6, 3); R(g, '#7d868f', GX - 4 + jx, y, 6, 1); P(g, '#a8b0b8', GX - 3 + jx, y + 1); }
     return;
   }
@@ -336,7 +352,8 @@ export function drawWayGate(env, o, cx, cy, t, opened, time, reduce) {
   /* the posts topple east across the path (a trunk to hop), pivoting about their feet */
   for (const [px, dly, fin] of [[GX - 4, 0.12, 1.42], [GX + 20, 0.22, 1.5]]) {
     const ta = Math.max(0, tau - dly), a = fin * (1 - Math.pow(1 - Math.min(1, ta / 0.7), 2.4)), fall = ta > 0.7 ? Math.max(0, Math.sin(Math.min(1, (ta - 0.7) * 6) * Math.PI)) * 1.2 * Math.max(0, 1 - (ta - 0.7) * 3) : 0;
-    g.save(); g.translate(Math.round(px + 3), Math.round(floor - 1 - fall)); g.rotate(a); R(g, BARK[0], -3, -Hh - 1, 6, Hh + 1); R(g, BARK[3], -2, -Hh, 4, Hh); R(g, BARK[5], -2, -Hh, 1, Hh); R(g, BARK[1], 1, -Hh, 1, Hh); R(g, CUT[1], -3, -Hh - 1, 6, 2); g.restore();
+    g.save(); g.translate(Math.round(px + 3), Math.round(floor - 1 - fall)); g.rotate(a); R(g, pal.bark[0], -3, -Hh - 1, 6, Hh + 1); R(g, pal.bark[3], -2, -Hh, 4, Hh); R(g, pal.bark[5], -2, -Hh, 1, Hh); R(g, pal.bark[1], 1, -Hh, 1, Hh); R(g, pal.cut[1], -3, -Hh - 1, 6, 2); g.restore();
+  }
   }
   /* the way beyond, lit: a warm spill of morning along the floor and up the gap, and motes drifting in it */
   const lit = smooth((tau - 0.05) / 1.1);
@@ -349,4 +366,129 @@ export function drawWayGate(env, o, cx, cy, t, opened, time, reduce) {
   /* the dust of it going, rising and spreading from the floor */
   if (tau < 1.6) for (let i = 0; i < 7; i++) { const k = tau / 1.6, r = 6 + k * 18 + i * 1.5, dx = (i - 3) * 6 + k * (i - 3) * 6, dy = -k * (14 + i * 3);
     g.fillStyle = 'rgba(190,172,132,' + ((1 - k) * 0.35).toFixed(3) + ')'; g.beginPath(); g.ellipse(Math.round(GX + 8 + dx), Math.round(floor - 4 + dy), r, r * 0.55, 0, 0, 6.2832); g.fill(); }
+}
+
+/* =====================================================================================================================================================================================================
+   THE ROAD SCENE (scene 'road', claude/demotransitions): FEN ROAD -> THE STOCKADE. The laid boardwalk runs on, the world slides under the party, and the goblins' STOCKADE stands up on the skyline:
+   a smudge in the haze at first (its horn towers and torch glows), then a wall of sharpened points that fills the right of the screen as they come up to it. Reuses the ferry's marsh kit (haze strip, reeds,
+   bog-oak piles and cord, the boardwalk's own planks, mist). GREYBOX-PLUS: the skyline sprite is baked from rects, the art lane redraws it. env: as drawFerryScene. */
+const stockadeSkyline = () => once('stockadeSky', () => mk(420, 100, g => {
+  const base = 99, wood = ['#1c150f', '#2e241a', '#463826', '#65513a', '#86704e'];
+  /* the wall: sharpened logs, uneven, the sunny side (left of each) lighter, bound with a rope band */
+  for (let x = 0; x < 420; x += 5) {
+    const h = 30 + Math.round(hash(x * 0.37) * 7);
+    R(g, wood[1], x, base - h, 5, h); R(g, wood[2], x + 1, base - h + 3, 3, h - 3); R(g, wood[4], x + 1, base - h + 3, 1, h - 3); R(g, wood[0], x + 4, base - h + 2, 1, h - 2);
+    R(g, wood[1], x + 1, base - h - 2, 3, 2); R(g, wood[1], x + 2, base - h - 4, 1, 2); P(g, wood[4], x + 2, base - h - 3);
+  }
+  R(g, CORD_D, 0, base - 18, 420, 1); R(g, CORD_D, 0, base - 8, 420, 1);
+  /* the gate in the middle: two squat posts, a dark way between, an iron-strapped lintel, a torch each side */
+  R(g, wood[0], 188, base - 40, 44, 40); R(g, '#0a0709', 197, base - 32, 26, 32); R(g, wood[3], 186, base - 42, 48, 5); R(g, wood[4], 186, base - 42, 48, 1); R(g, '#3c424a', 186, base - 37, 48, 1);
+  for (const tx of [192, 226]) { R(g, wood[0], tx, base - 36, 2, 8); R(g, '#ff9a30', tx - 1, base - 40, 4, 4); R(g, '#ffe08a', tx, base - 39, 2, 2); }
+  /* the horn towers: stilted legs, a platform with a rail, a hide roof, the horn jutting out, a torch */
+  const tower = (x, th) => {
+    R(g, wood[1], x, base - th, 3, th); R(g, wood[1], x + 16, base - th, 3, th); R(g, wood[2], x + 1, base - th, 1, th); R(g, wood[2], x + 17, base - th, 1, th);
+    for (let i = 0; i < 3; i++) R(g, wood[1], x + 3, base - th + 8 + i * 8, 13, 1);
+    R(g, wood[3], x - 4, base - th - 3, 27, 4); R(g, wood[4], x - 4, base - th - 3, 27, 1); R(g, wood[0], x - 4, base - th, 27, 1);
+    R(g, wood[1], x - 2, base - th - 11, 23, 8); R(g, wood[0], x - 2, base - th - 11, 1, 8); R(g, '#0a0709', x + 3, base - th - 8, 13, 5);   /* the lookout's shelter, dark inside */
+    for (let i = 0; i < 6; i++) R(g, '#4a3a2c', x - 4 + i, base - th - 14 + i, 27 - i * 2, 1);                                        /* hide roof */
+    for (let i = 0; i < 9; i++) P(g, '#cfc6a8', x + 22 + i, base - th - 9 - Math.round(i * i * 0.07));                              /* the horn: a pale curve out to the right */
+    R(g, '#e8dcb0', x + 30, base - th - 11, 2, 3);
+    R(g, '#ff9a30', x - 2, base - th - 15, 3, 3); P(g, '#ffe08a', x - 1, base - th - 14);
+  };
+  tower(12, 46); tower(300, 54); tower(372, 40);
+}));
+export function drawRoadScene(env, s) {
+  const { g, VW, VH, time, n, reduce } = env, calm = !!reduce;
+  const wl = Math.round(VH * 0.56), rt = wl + 34, scroll = roadScroll(s, calm), gr = roadGrowth(s), P_ = ROAD.parallax, L = layers(VW, VH, wl);
+  /* SKY: the fen's cool grey going to a smoky amber at the horizon; it warms and darkens a little as the wall comes up */
+  g.drawImage(L.skyB, 0, 0); g.fillStyle = 'rgba(214,150,84,' + (0.10 + gr * 0.16).toFixed(3) + ')'; g.fillRect(0, wl - 60, VW, 60);
+  /* FAR: the haze of the fen's reed flats (slow), then THE STOCKADE: grows from a smudge, hazy at first, sharper and darker as it comes up */
+  { const k = 0.34 + 0.98 * gr, w = Math.round(420 * k), h = Math.round(100 * k), xc = VW * (0.80 - 0.14 * gr), baseY = wl + 3 + Math.round(16 * gr), sky = stockadeSkyline();
+    const farX = -Math.round(scroll * P_.far) % 700; for (let x = farX; x < VW + 700; x += 700) g.drawImage(marshStrip(), x, wl - 70 + 3);
+    g.globalAlpha = 0.52 + 0.48 * gr; g.drawImage(sky, Math.round(xc - w / 2), baseY - h, w, h); g.globalAlpha = 1;
+    g.fillStyle = 'rgba(176,196,190,' + (0.36 * (1 - gr)).toFixed(3) + ')'; g.fillRect(Math.round(xc - w / 2), baseY - h, w, h);   /* the haze lies on it, thinner as it nears (a wash; the art lane bakes it) */
+    for (const fx of [0.05, 0.71, 0.89]) { const lx = Math.round(xc - w / 2 + fx * w + 6 * k), ly = Math.round(baseY - h + (fx === 0.05 ? 38 : 30) * k), fl = calm ? 1 : 0.85 + Math.sin(time * 9 + fx * 20) * 0.12;
+      g.globalAlpha = (0.35 + 0.55 * gr) * fl; g.drawImage(halo(16, '255,170,70'), lx - 16, ly - 16); g.globalAlpha = 1; }
+    if (!calm) for (let i = 0; i < 3; i++) { for (let j = 0; j < 7; j++) { const u = ((time * 0.07 + j / 7 + i * 0.31) % 1), x = xc - w / 2 + (0.2 + i * 0.28) * w + Math.sin(u * 4 + i) * 6 + u * 10 * k, y = baseY - h * 0.9 - u * 34 * k;
+      g.fillStyle = 'rgba(86,76,70,' + ((1 - u) * 0.22).toFixed(3) + ')'; g.beginPath(); g.ellipse(Math.round(x), Math.round(y), 3 + u * 7 * k, 2 + u * 4 * k, 0, 0, 6.2832); g.fill(); } } }
+  /* the flats between: dark teal water with the reed stands' reflections and drifting glints */
+  { const fl = g.createLinearGradient(0, wl, 0, VH); fl.addColorStop(0, '#46605a'); fl.addColorStop(0.5, '#2c4640'); fl.addColorStop(1, '#14221f'); g.fillStyle = fl; g.fillRect(0, wl + 2, VW, VH - wl);
+    for (let i = 0; i < 16; i++) { const y = wl + 5 + i * 5 + (i % 2), x = ((hash(i + 9) * VW * 1.6 - scroll * (0.5 + i * 0.05) - (calm ? 0 : time * (4 + i % 3))) % (VW + 40) + VW + 40) % (VW + 40) - 20;
+      g.fillStyle = i % 4 === 3 ? 'rgba(10,22,20,0.28)' : 'rgba(226,236,222,' + (0.10 + (i % 3) * 0.04).toFixed(2) + ')'; g.fillRect(Math.round(x), y, 12 + (i % 4) * 7, 1); } }
+  /* MID: reed stands along the far side (parallax 0.5) */
+  { const mid = scroll * P_.mid, sway = calm ? 0 : Math.sin(time * 1.6) * 1.2;
+    for (let i = 0; i < 24; i++) { const px = i * 31 + 14 - mid + (i % 3) * 6; if (px < -30 || px > VW + 30) continue; const sp = reedSprite(20 + (i % 3) * 5, i % 4, false), bx = Math.round(px - 13), top = Math.floor(sp.height * 0.5);
+      g.drawImage(sp, 0, 0, sp.width, top, bx + Math.round(sway * 0.8), wl + 8 - sp.height + 7, sp.width, top); g.drawImage(sp, 0, top, sp.width, sp.height - top, bx, wl + 8 - sp.height + 7 + top, sp.width, sp.height - top); } }
+  /* THE BOARDWALK: weathered boards (18 px, a joint each), the bog-oak piles every 72 px going down into the water, a rope rail with a lamp-post every 144 px; the lamps are lit */
+  { const bw = 18, off = scroll % bw, bt = rt;
+    for (let x = -bw - off; x < VW + bw; x += bw) { const k = Math.round((x + scroll) / bw), tone = hash(k) > 0.6 ? 2 : 3; R(g, BOARD[tone - 2], x, bt, bw - 1, 5); R(g, BOARD[tone], x, bt, bw - 1, 2); R(g, BOARD[4], x, bt, bw - 1, 1); R(g, BOARD[0], x + bw - 1, bt, 1, 5); P(g, '#2a2f36', x + 3, bt + 2); P(g, '#2a2f36', x + bw - 5, bt + 2); }
+    R(g, OAK[1], 0, bt + 5, VW, 2);
+    const pOff = scroll % 72; for (let x = -72 - pOff; x < VW + 72; x += 72) { R(g, OAK[1], x, bt + 5, 5, 30); R(g, OAK[3], x + 1, bt + 5, 3, 30); R(g, OAK[4], x + 1, bt + 5, 1, 30); R(g, CORD, x, bt + 8, 5, 1); }
+    const lOff = scroll % 144; for (let x = -144 - lOff, i = 0; x < VW + 144; x += 144, i++) { const lx = x + 36; R(g, OAK[2], lx, bt - 28, 3, 28); R(g, OAK[4], lx, bt - 28, 1, 28); R(g, OAK[3], lx, bt - 28, 12, 2);
+      R(g, OUT, lx + 9, bt - 25, 4, 6); R(g, '#ffd36b', lx + 10, bt - 24, 2, 4); g.globalAlpha = 0.75 + (calm ? 0 : Math.sin(time * 6 + i) * 0.1); g.drawImage(halo(16, '255,214,120'), lx + 11 - 16, bt - 22 - 16); g.globalAlpha = 1;
+      for (let j = 0; j <= 20; j++) P(g, j % 7 === 3 ? CORD_D : CORD, lx + 3 + j * 6, bt - 12 + Math.round(Math.sin(j / 20 * Math.PI) * 3)); } }
+  /* THE PARTY on the boards: in from the left, then walking in place, every seat its own skin */
+  for (let i = 0; i < n; i++) { const h = roadHero(i, n, s, VW); env.drawHero(i, h.x, rt, 1, 'run', Math.floor(time * 12) + i * 2); }
+  /* NEAR: tall reeds in front (parallax 1.3), the fen's mist over the water */
+  { const near = scroll * P_.near, sway = calm ? 0 : Math.sin(time * 1.6) * 1.2;
+    for (let i = 0; i < 9; i++) { const px = ((i * 71 + 30 - near) % (VW + 90) + VW + 90) % (VW + 90) - 30; const sp = reedSprite(30 + (i % 3) * 8, 4 + (i % 4), true), top = Math.floor(sp.height * 0.45), bx = Math.round(px - 13), by = VH + 3 - sp.height + (i % 2) * 3, sw = Math.round(sway * 1.6);
+      g.drawImage(sp, 0, 0, sp.width, top, bx + sw, by, sp.width, top); g.drawImage(sp, 0, top, sp.width, sp.height - top, bx, by + top, sp.width, sp.height - top); }
+    const drift = scroll * 0.5 + (calm ? 0 : time * 4); for (let b = 0; b < 2; b++) { const mb = mistBand(b), off = Math.round((drift * (b ? 1.4 : 0.8)) % MISTW); g.globalAlpha = (b ? 0.28 : 0.38); for (let x = -off; x < VW; x += MISTW) g.drawImage(mb, x, wl - 6 + b * 22); }
+    g.globalAlpha = 1; }
+  /* the grade: warmer and darker as the walls come up; the scene fades in out of the dark the walk left on */
+  g.fillStyle = 'rgba(60,30,14,' + (0.06 + gr * 0.16).toFixed(3) + ')'; g.fillRect(0, 0, VW, VH);
+  const a = s < 0.45 ? 1 - s / 0.45 : 0; if (a > 0) { g.fillStyle = 'rgba(8,6,14,' + (a * a).toFixed(3) + ')'; g.fillRect(0, 0, VW, VH); }
+}
+
+/* =====================================================================================================================================================================================================
+   THE SMOKE SCENE (scene 'smoke', claude/demotransitions): KINGSWOOD -> THE BURNING VILLAGE. King Gorm is down. The party walks out along the court road, onto a rise, and STOPS: on the horizon three columns of smoke
+   stand up out of the far hills, the sky below them going to ember, ash and sparks drifting in on the wind. At the road's edge, left behind them: his fallen standard and a dented crown. GREYBOX-PLUS (an art lane follows):
+   the hills, the tree line and the plumes are drawn here from rects, ellipses and the shared halo sprites. */
+const smokeSky = (VW, wl) => once('smokeSky' + VW + 'x' + wl, () => { const [c, g] = canvas(VW, wl), gr = g.createLinearGradient(0, 0, 0, wl); gr.addColorStop(0, '#1b2638'); gr.addColorStop(0.55, '#3b3a52'); gr.addColorStop(1, '#8c5a48'); g.fillStyle = gr; g.fillRect(0, 0, VW, wl); return c; });
+const smokeEmber = (VW, wl) => once('smokeEmber' + VW + 'x' + wl, () => { const [c, g] = canvas(VW, wl), gr = g.createLinearGradient(0, 0, 0, wl); gr.addColorStop(0, 'rgba(120,40,30,0)'); gr.addColorStop(0.6, 'rgba(214,92,44,0.55)'); gr.addColorStop(1, 'rgba(255,170,72,0.95)'); g.fillStyle = gr; g.fillRect(0, 0, VW, wl); return c; });
+const huntTrees = k => once('huntTrees' + k, () => mk(540, 72, g => {
+  const c = k ? ['#243428', '#18241c', '#0e1810'] : ['#1a2820', '#101a14', '#0a120c'];
+  for (let i = 0; i < 30; i++) { const x = 6 + i * 18 + Math.round(hash(i + k * 40) * 9), h = 26 + Math.round(hash(i + 3 + k * 40) * 24); pine(g, x, 70 + k, h, c[0], c[1], c[2], false); }
+}, false));
+function smokePlume(g, bx, by, hMax, rise, time, seed, calm) {
+  const N = 18, hh = hMax * rise; if (hh < 2) return;
+  for (let j = 0; j < N; j++) {
+    const u = ((j / N) + (calm ? 0.3 : time * 0.045) + hash(seed * 7 + j) * 0.04) % 1, y = by - u * hh, x = bx + Math.sin(u * 5 + seed * 2) * u * 16 + u * u * 26, r = 3 + u * 15, base = u < 0.18;
+    g.fillStyle = base ? 'rgba(214,104,48,' + Math.max(0, (0.22 - u) * 1.8).toFixed(3) + ')' : 'rgba(' + (52 + ((1 - u) * 30 | 0)) + ',' + (44 + ((1 - u) * 16 | 0)) + ',' + (46 + ((1 - u) * 10 | 0)) + ',' + ((1 - u) * 0.55 * Math.min(1, u * 8)).toFixed(3) + ')';
+    g.beginPath(); g.ellipse(Math.round(x), Math.round(y), r, r * 0.8, 0, 0, 6.2832); g.fill();
+  }
+}
+export function drawSmokeScene(env, s) {
+  const { g, VW, VH, time, n, reduce } = env, calm = !!reduce, wl = Math.round(VH * 0.60), rt = wl + 26, rise = smokeRise(s), glow = smokeGlow(s);
+  g.drawImage(smokeSky(VW, wl), 0, 0); g.globalAlpha = glow; g.drawImage(smokeEmber(VW, wl), 0, 0); g.globalAlpha = 1;
+  /* the fire on the horizon: three halos low over the far hills at the right, and the plumes standing up out of them (taller and darker as the village burns) */
+  [0.70, 0.80, 0.90].forEach((f, i) => { g.globalAlpha = glow * (0.55 + (calm ? 0 : Math.sin(time * 5 + i * 2) * 0.08)); g.drawImage(halo(60, '255,120,50'), Math.round(VW * f) - 60, wl - 60); g.globalAlpha = 1; });
+  /* the far hills (static, a dark blue-green with a rim of ember along the fire side) */
+  { const hy = x => wl - 14 - Math.round(Math.sin(x * 0.021 + 1) * 9 + Math.sin(x * 0.057) * 4), hs = g.createLinearGradient(0, wl - 30, 0, wl + 2); hs.addColorStop(0, '#202c2a'); hs.addColorStop(1, '#111a18'); g.fillStyle = hs;
+    g.beginPath(); g.moveTo(0, wl + 2); for (let x = 0; x <= VW; x += 8) g.lineTo(x, hy(x)); g.lineTo(VW, wl + 2); g.fill();
+    g.fillStyle = 'rgba(255,150,70,' + (0.35 * glow).toFixed(3) + ')'; g.beginPath(); g.moveTo(VW * 0.6, hy(VW * 0.6) + 1); for (let x = Math.round(VW * 0.6); x <= VW; x += 8) g.lineTo(x, hy(x) - 1); for (let x = VW; x >= Math.round(VW * 0.6); x -= 8) g.lineTo(x, hy(x) + 1); g.fill(); }
+  smokePlume(g, Math.round(VW * 0.70), wl - 8, 120, rise, time, 1, calm); smokePlume(g, Math.round(VW * 0.80), wl - 8, 150, rise * 0.95, time, 2, calm); smokePlume(g, Math.round(VW * 0.90), wl - 8, 105, rise * 0.9, time, 3, calm);
+  /* the wood: two tree lines, the far one lit red at its edge, drifting left very slowly */
+  { for (let k = 0; k < 2; k++) { const spr = huntTrees(k), d = calm ? 0 : -Math.round((time * (k ? 2.4 : 1.2)) % 540); for (let x = d; x < VW + 540; x += 540) g.drawImage(spr, x, wl - 54 + k * 14 + 8); }
+    g.globalAlpha = 0.25 * glow; g.fillStyle = '#ff7a30'; g.fillRect(Math.round(VW * 0.55), wl - 4, VW, 3); g.globalAlpha = 1; }
+  /* the ground: the court road, a dirt bed with two ruts and gold leaves; dark grass either side, the ember light on it from the right */
+  { const gg = g.createLinearGradient(0, wl, 0, VH); gg.addColorStop(0, '#1d2a1a'); gg.addColorStop(1, '#0b120a'); g.fillStyle = gg; g.fillRect(0, wl + 2, VW, VH - wl);
+    R(g, '#4a3a28', 0, rt - 2, VW, 14); R(g, '#5c4a34', 0, rt - 2, VW, 2); R(g, '#33281c', 0, rt + 4, VW, 1); R(g, '#33281c', 0, rt + 8, VW, 1);
+    for (let i = 0; i < 40; i++) { const x = Math.round(hash(i + 11) * VW), y = rt + 11 + Math.round(hash(i + 12) * Math.max(1, VH - rt - 14)); R(g, i % 3 ? '#2a3c1c' : '#5a4a1c', x, y, 2 + (i % 3), 1); }
+    for (let i = 0; i < 14; i++) { const x = Math.round(hash(i + 31) * VW), y = rt - 1 + Math.round(hash(i + 33) * 11); P(g, i % 2 ? '#d9a63a' : '#c9782a', x, y); }
+    const ex = g.createLinearGradient(VW * 0.35, 0, VW, 0); ex.addColorStop(0, 'rgba(255,120,50,0)'); ex.addColorStop(1, 'rgba(255,120,50,' + (0.3 * glow).toFixed(3) + ')'); g.fillStyle = ex; g.fillRect(0, rt - 2, VW, VH - rt); }
+  /* GORM'S STANDARD, fallen at the road's edge: a snapped pole, the torn red cloth, and the dented crown beside it */
+  { const bx = Math.round(VW * 0.10), by = rt + 9;
+    for (let i = 0; i < 34; i++) { P(g, i % 2 ? '#4a2f19' : '#6a4425', bx + i, by - Math.round(i * 0.12)); P(g, '#2e1c0f', bx + i, by + 1 - Math.round(i * 0.12)); }
+    for (let i = 0; i < 14; i++) R(g, i % 4 === 3 ? '#5c1c18' : '#8c2a24', bx + 4 + i, by + 1 - Math.round(i * 0.1), 1, 3 + ((i * 5) % 4));
+    R(g, '#e0b040', bx + 44, by - 2, 8, 3); R(g, '#a8801c', bx + 44, by, 8, 1); for (let i = 0; i < 4; i++) R(g, '#e0b040', bx + 44 + i * 2, by - 4 - (i & 1), 1, 2); P(g, '#fff1b0', bx + 46, by - 2); }
+  /* THE PARTY: in from the left over 2.4 s, then stood on the rise, looking right - every seat its own skin */
+  for (let i = 0; i < n; i++) { const h = smokeHero(i, n, s, VW); env.drawHero(i, h.x, rt + 7, 1, h.walking ? 'run' : 'idle', h.walking ? Math.floor(time * 12) + i * 2 : Math.floor(time * 4.5) + i); }
+  /* ash and sparks, blown in from the right on the wind (more as it burns) */
+  { const cnt = Math.round(10 + 22 * glow); for (let i = 0; i < cnt; i++) { const sp = 12 + hash(i + 3) * 22, x = (((hash(i) * (VW + 60)) - (calm ? 0 : time * sp)) % (VW + 60) + VW + 60) % (VW + 60) - 20, y = (((hash(i + 7) * VH) + (calm ? 0 : time * (4 + hash(i + 9) * 9) * (i % 2 ? 1 : -1))) % VH + VH) % VH;
+      const spark = i % 3 === 0; g.fillStyle = spark ? 'rgba(255,' + (150 + (i * 13) % 80) + ',70,' + (0.8 * glow).toFixed(2) + ')' : 'rgba(150,140,136,' + (0.5 * glow).toFixed(2) + ')'; g.fillRect(Math.round(x), Math.round(y), spark ? 1 : 2, 1); } }
+  /* near: dark bracken fronds along the bottom edge */
+  for (let i = 0; i < 12; i++) { const x = Math.round(i * (VW / 11) + (hash(i + 5) - 0.5) * 20), h = 12 + Math.round(hash(i + 2) * 12); for (let k = 0; k < 5; k++) { const lean = (k - 2) * 2; for (let y = 0; y < h - Math.abs(k - 2) * 2; y++) P(g, y % 5 === 4 ? '#0e1a0c' : '#07100a', x + Math.round(lean * y / 5), VH + 2 - y); } }
+  g.fillStyle = 'rgba(40,10,10,' + (0.10 * glow).toFixed(3) + ')'; g.fillRect(0, 0, VW, VH);
+  const a = s < 0.45 ? 1 - s / 0.45 : 0; if (a > 0) { g.fillStyle = 'rgba(8,6,14,' + (a * a).toFixed(3) + ')'; g.fillRect(0, 0, VW, VH); }
 }

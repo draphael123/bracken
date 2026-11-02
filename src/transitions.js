@@ -17,14 +17,50 @@
 export const MIN_SKIP = 0.8;
 export const FADE_SKIP = 0.3;
 export const TABLE = [
-  /* (claude/hornetsnest2) THE LUMBER TRAIL -> THE HORNET'S NEST: a WALK-OUT, no ferry (scene null: no shore / ride beats). The old wood -> marsh ferry row is gone (smallfix5 had turned it off: the road runs through the nest; the ferry
-     scene's art stays in src/transitions-art.js for the day the nest -> marsh crossing gets one). */
-  { from: 'wood', to: 'hornetsnest', scene: null,
+  /* (claude/demotransitions, Daniel 11-02) EVERY CONNECTED DEMO LEVEL HAS A ROW. Kinds of row:
+       WALK-OUT   scene null: [open,] walk, fade. The boss falls, the way out opens (a gate / wall in the arena's last column, OUTSIDE the fight - tiles go to air AFTER the kill, no fairness change; open.kind picks the
+                  gate's look, 'light' = no wall to open, only the spill of light beyond), the party walks out, fade, the next level ARRIVES from the left (arrive.walk).
+       GATE-END   a level that ends at an exit gate (L.gateAfterBoss: Hornet's Nest, Fen Road, Rootway) starts its row when the party walks INTO the gate: no open beat, the gate is the way.
+       SCENE      on top of the walk: 'ferry' (Hornet's Nest -> Marsh: the jetty, the ferryman), 'road' (Fen Road -> Stockade: the laid road to the walls), 'smoke' (Kingswood -> Burning Village:
+                  Gorm falls, smoke on the horizon). Scene beats carry sc: true (the ferry's are shore + ride). when: the row plays only if PROG has those flags (entryFor's ctx).
+     walk.to: the column the party walks to (default: the level's last column + 1 tile). */
+  { from: 'wood', to: 'hornetsnest', scene: null,   /* (claude/hornetsnest2) THE LUMBER TRAIL -> THE HORNET'S NEST: a WALK-OUT, no ferry */
     beats: [{ id: 'open', dur: 1.5 }, { id: 'walk', dur: 2.4, max: 3.6 }, { id: 'fade', dur: 0.7 }],
     open: { col: 549, rows: [3, 8], lintel: 2 },        /* OLD TUSKER's clearing: the fence-gate at the east edge (the Wood's last column) gives way - rows 3-8 of col 549 go to air, a lintel stays */
     arrive: { ferry: false, walk: 1.2 } },               /* the nest begins in the old pines: the heroes walk in from the left for 1.2 s, then control (no ferry to step off) */
+  { from: 'hornetsnest', to: 'marsh', scene: 'ferry', bank: 'nest',   /* THE HORNET'S NEST -> MARSH WOOD: the nest's gate at the marsh edge, then the FERRY (the old wood -> marsh scene, back where the road really crosses) */
+    beats: [{ id: 'walk', dur: 1.4, max: 2.4 }, { id: 'shore', dur: 3.3, sc: true }, { id: 'ride', dur: 7.5, sc: true }, { id: 'fade', dur: 0.7 }],
+    arrive: { ferry: true, walk: 1.7 } },
+  { from: 'marsh', to: 'fenroad', scene: null,        /* THE FROG falls: the bog-oak palisade at the marsh's east edge (cols 781-782, the two last) gives way onto the Fen Road's causeway */
+    beats: [{ id: 'open', dur: 1.5 }, { id: 'walk', dur: 2.4, max: 3.6 }, { id: 'fade', dur: 0.7 }],
+    open: { col: 781, w: 2, rows: [12, 17], kind: 'bog' }, arrive: { ferry: false, walk: 1.3 } },
+  { from: 'fenroad', to: 'stockade', scene: 'road',  /* THE BOG TROLL's gate, then THE LAID ROAD: the boardwalk runs on to the stockade's walls on the skyline */
+    beats: [{ id: 'walk', dur: 1.2, max: 2.2 }, { id: 'road', dur: 8.2, sc: true }, { id: 'fade', dur: 0.8 }],
+    arrive: { ferry: false, walk: 1.5 } },
+  { from: 'stockade', to: 'spore', scene: null,       /* THE CHIEFTAIN falls: the camp's back gate stands open (no wall in the arena: only the light beyond), the party walks down into the fungus */
+    beats: [{ id: 'open', dur: 1.3 }, { id: 'walk', dur: 2.4, max: 3.6 }, { id: 'fade', dur: 0.7 }],
+    open: { col: 616, rows: [14, 19], kind: 'light' }, arrive: { ferry: false, walk: 1.3 } },
+  { from: 'spore', to: 'rootway', scene: null,        /* THE MOTHER falls: the knot opens on the root-way (no wall: light) */
+    beats: [{ id: 'open', dur: 1.3 }, { id: 'walk', dur: 2.4, max: 3.6 }, { id: 'fade', dur: 0.7 }],
+    open: { col: 470, rows: [9, 14], kind: 'light' }, arrive: { ferry: false, walk: 1.3 } },
+  { from: 'rootway', to: 'underleaf', scene: null,    /* THE HUNTMASTER's gate (gate end): through it, out of the roots into the leaf village */
+    beats: [{ id: 'walk', dur: 1.6, max: 3.0 }, { id: 'fade', dur: 0.7 }], arrive: { ferry: false, walk: 1.3 } },
+  { from: 'underleaf', to: 'palisadewood', scene: null,   /* THE GRANDMOTHER's hedge-gate (col 563) parts */
+    beats: [{ id: 'open', dur: 1.5 }, { id: 'walk', dur: 2.4, max: 3.6 }, { id: 'fade', dur: 0.7 }],
+    open: { col: 563, rows: [24, 29], kind: 'leaf' }, arrive: { ferry: false, walk: 1.3 } },
+  { from: 'palisadewood', to: 'kings', scene: null,   /* THE BATTERING BEAST is down: the goblins' own wall (col 502) is breached - the road through it runs on to the king's wood */
+    beats: [{ id: 'open', dur: 1.5 }, { id: 'walk', dur: 2.4, max: 3.6 }, { id: 'fade', dur: 0.7 }],
+    open: { col: 502, rows: [19, 24], kind: 'palisade' }, arrive: { ferry: false, walk: 1.3 } },
+  { from: 'kings', to: 'burning', scene: 'smoke', when: { burningOpen: true },   /* KING GORM falls (a clean fight: the spur is OPEN): the court road, and SMOKE on the horizon - the village is burning */
+    beats: [{ id: 'walk', dur: 1.6, max: 2.8 }, { id: 'smoke', dur: 8.0, sc: true }, { id: 'fade', dur: 0.8 }],
+    walk: { to: 478 }, arrive: { ferry: false, walk: 1.4 } },
+  { from: 'kings', to: 'scree', scene: null, when: { burningOpen: false },   /* GORM fell the party in a life (the spur stays shut): the plain walk-out onto the road to the Scree Path (beyond the demo) */
+    beats: [{ id: 'walk', dur: 2.0, max: 3.0 }, { id: 'fade', dur: 0.7 }], walk: { to: 478 }, arrive: { ferry: false, walk: 1.3 } },
 ];
-export const entryFor = (from, to) => TABLE.find(e => e.from === from && (to === undefined || e.to === to)) || null;
+/* the row for a level. ctx: the flags a row's `when` asks for ({ burningOpen: bool }); a row with no when always matches. */
+export const entryFor = (from, to, ctx = {}) => TABLE.find(e => e.from === from && (to === undefined || e.to === to) && (!e.when || Object.keys(e.when).every(k => !!e.when[k] === !!ctx[k]))) || null;
+/* a scene beat (shore, ride, road, smoke...) is one that carries sc, or the ferry's own two */
+export const isSceneBeat = b => !!b && (b.sc === true || b.id === 'shore' || b.id === 'ride');
 
 /* IS IT PLAYED? flag: ?trans=1 (or BK.trans.force) - plays always, every replay. mode: 'always' | 'first' | 'never' (the settings choice, default 'first').
    `live` is false until the art pass merges: with it false only the flag plays it. */
@@ -98,3 +134,30 @@ export function heroOnScene(i, n, s, VW) {
 }
 /* the ferry's own x on the screen: it sits at the jetty's end, then the screen follows it (so it stays put and the world slides: its x does not change) */
 export const ferryX = VW => VW * FERRY.dockAt;
+
+/* ------------------------------------------------------------- THE ROAD SCENE (scene 'road': FEN ROAD -> THE STOCKADE; claude/demotransitions). Pure, so a node check can pin it.
+   s: seconds since the scene began. The party walks the laid boardwalk (the world slides under them), and the stockade's walls on the skyline grow from a smudge to a wall of points and horns. */
+const clamp01 = v => Math.max(0, Math.min(1, v));
+const smooth = v => { v = clamp01(v); return v * v * (3 - 2 * v); };
+export const ROAD = { dur: 8.2, inT: 1.5, v: 58, rampT: 1.4, parallax: { far: 0.12, mid: 0.5, near: 1.3 } };
+export function roadScroll(s, reduce = false) {
+  const v = reduce ? ROAD.v * 0.4 : ROAD.v, a = v / ROAD.rampT, t = Math.max(0, s - 0.3);
+  return t < ROAD.rampT ? 0.5 * a * t * t : 0.5 * v * ROAD.rampT + v * (t - ROAD.rampT);
+}
+/* the stockade's growth, 0 (a smudge on the skyline) .. 1 (the wall fills the screen's right): eased over the whole scene */
+export const roadGrowth = s => smooth(s / ROAD.dur);
+/* hero i of n: in from the left edge over 1.5 s, then walking in place at the same stations (the road moves, not them) */
+export function roadHero(i, n, s, VW) {
+  const to = VW * 0.34 + i * 13, from = -24 - i * 14, e = smooth(s / ROAD.inT);
+  return { x: from + (to - from) * e, walking: true, settled: s >= ROAD.inT };
+}
+
+/* ------------------------------------------------------------- THE SMOKE SCENE (scene 'smoke': KINGSWOOD -> THE BURNING VILLAGE). Gorm is down; the party walks out along the court road and STOPS on the rise: smoke on the horizon, the sky going to ember. */
+export const SMOKE = { dur: 8.0, inT: 2.4, stopX: 0.30 };
+export function smokeHero(i, n, s, VW) {
+  const to = VW * SMOKE.stopX + i * 13, from = -24 - i * 14, k = clamp01(s / SMOKE.inT), e = smooth(k);
+  return { x: from + (to - from) * e, walking: s < SMOKE.inT - 0.1 };
+}
+/* how tall the columns have grown (0..1) and how red the sky has gone (0..1): the plumes rise first, the glow follows */
+export const smokeRise = s => smooth((s - 1.2) / 5.2);
+export const smokeGlow = s => smooth((s - 2.0) / 5.0);

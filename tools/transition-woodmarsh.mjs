@@ -18,7 +18,7 @@ const WN = TRM.entryFor('wood');
 ok('the table has the wood -> hornetsnest WALK-OUT row (scene null, open / walk / fade, no ferry) and no wood -> marsh row', WN && WN.to === 'hornetsnest' && WN.scene === null && WN.beats.map(b => b.id).join() === 'open,walk,fade' && !WN.arrive.ferry && WN.arrive.walk >= 1 && WN.open.col === 549 && !TRM.entryFor('wood', 'marsh'));
 { const tl = TRM.start(WN), seen = [TRM.phase(tl)]; let guard = 0; while (!tl.done && guard++ < 5000) for (const e of TRM.step(tl, 1 / 60, { ready: true })) seen.push(e);
   ok('the walk-out runs open, walk, fade, done (about 4 s)', seen.join() === 'open,walk,fade,done' && tl.t > 2.5 && tl.t < 7, seen.join() + ' ' + tl.t.toFixed(1));
-  ok('main.js: trnSceneS returns 0 for a timeline with no shore / ride beat (a null scene: beats[-1] would crash)', src.includes("if (sh < 0 || ri < 0) return 0;")); }
+  ok('main.js: trnSceneS sums the scene beats and is 0 for a timeline with none (a walk-out has no scene; claude/demotransitions made it generic)', src.includes('function trnSceneS(tl) { let t = 0, inS = false;') && src.includes('if (!TRM.isSceneBeat(bt)) { if (inS) break; continue; }')); }
 ok('the beats are open, walk, shore, ride, fade in that order', E && E.beats.map(b => b.id).join() === 'open,walk,shore,ride,fade');
 ok('the way opens in the wood\'s last column (the clearing\'s east gate)', E && E.open.col === 549 && E.open.rows[0] < E.open.rows[1]);
 ok('the ferry leaves the jetty and is on the water 8-10 s (shore after pole-off + ride)', (() => { const sh = E.beats.find(b => b.id === 'shore').dur, ri = E.beats.find(b => b.id === 'ride').dur, on = sh - TRM.FERRY.poleAt + ri; return on >= 8 && on <= 10; })());
