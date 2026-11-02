@@ -31,7 +31,33 @@
     "kernelCanvasPairs": 528,
     "realCases": 10,
     "realNativeCanvasComparisons": 6996,
-    "noWholeGameResultInherited": true
+    "noWholeGameResultInherited": true,
+    "controller": "00a141edbd4f3346a7b6ad8ab6ba3013a8d78527",
+    "sourceManifest": "tools/private-r-integration-regexp-nov02/source-files.json",
+    "sourceFiles": {
+      "chars.js": "eefe6b2d70e25ecfb37373789973857ea6f43ba84c5ac4236d4497b5e54cfb61",
+      "private-r-backend.js": "1da39fb60008a201f3147361239abc78401e14f45568ce6c8320dd046e897215",
+      "private-r-integration.js": "b5aee8e5494867197a09b607ef5b66bbe44eea490d65d9fd9f00c3483b978396",
+      "private-r-snapshot.js": "3d564629aeb5d7c63792c01782fe2a6bf850077fa934c137e94ff6a1773e424c",
+      "px.js": "700fef3fa23ac97f6794e92465a8026863ad2b1ca2b355ba13071ed170359804",
+      "redraw/canal_foes_art.js": "6d3fb4f12556402727241e326a3712037db232ceb90d66ebb7361c8565ffd25a",
+      "redraw/caravan_bandits.js": "6ef595893c88a3a908a7548ea4ecb4a96e44c4884e5564fa1441a221c633859f",
+      "redraw/church_art.js": "6f9f2d25a9d0c77c1a4882841a5f8d3a455575c5c11dee1c32549a3dc3a1beab",
+      "redraw/desert_foes.js": "b8822ea7565f525e329d2c339e40c37a5cbb3da39958ab90144cf200fe76a3fc",
+      "redraw/desert_foes2.js": "648eb3f5bc8ec95cfc7e07a92f403470381431b5941f18e557b6ba2f22026c48",
+      "redraw/foes1.js": "e81853c7ab0ff2bac316f1db69bd47a35080b0d7a9b02f2e4788a563f8a086b3",
+      "redraw/ksar_art.js": "997c00f31351c808b469e844b7f971fac8b0c029b1d24dd1c828c41a62f9cd7d",
+      "redraw/mage_foes.js": "69ce4f119b9f9e03a6905edf79305132f855f99896339beec2678212d3396457",
+      "redraw/monastery.js": "f5a8b99dab234863f84600315815d7945c87df5946d5fa4f9b4a8f4ccf1e4987",
+      "redraw/mystic_art.js": "3b186559aabe09265d916c4b809202bb27c39c3db3664bbccb2a858a01b40064",
+      "redraw/redgorge_art.js": "635b5a7e795e8ffc0fae984213c20db28bb15b8d7f33edb5c546cb668e7455b3",
+      "redraw/rootway_art.js": "e41a5fff51934cc51386887dc005134080969a22eb96551c05ac92fa835abf39",
+      "redraw/shore.js": "e67941358b0ca100d34089868be3559fcb26a20726f414e96f0cd3bf1993dacf",
+      "redraw/undercrown_skins.js": "58b637b40d6768673f9287b127830a91d39dc957c4b7666176f935f720499198",
+      "redraw/variety_skins.js": "992f5468f2dd2bba5c5495b72ea76fc5cbe55cbc2b61b8c3e6e1ffd303b25bc6",
+      "sprite-publication.js": "f254580b1cb613ca06c994d365fc2036c2c9bc312ba8f1a715951d67caf47dee"
+    },
+    "all21ExactNewDependenciesMatched": true
   },
   "originalAssertionsAndSettings": {
     "pixelSnapshotFunctionByteExact": true,
@@ -90,7 +116,7 @@
   "overallWorkComplete": false,
   "runner": {
     "file": "tools/private-r-standing-cold-nov02.mjs",
-    "sha256": "950f0afc36b9d675298163ddaab9eb48a8c1368fe51a00986a1b6950b9f593da",
+    "sha256": "a8c3b0c9060ce8af2796f0c48b162f1a73a1fba73bbe6614d0b5c815ec785f12",
     "parentRunner": "tools/sprite-publication-standing-cold-nov01.mjs",
     "parentTextSha256": "93cd36f08734367f987f0670eddab6bfc1b0a2a7416680af17d0ac486c799ba6",
     "exactSourceUndoBeforeCanonicalNewAdapterLineEndings": true,
@@ -137,7 +163,8 @@
       }
     ],
     "unchangedNativeSnapshotAndAfterPublicationAssertions": true,
-    "onlySourceSelectionAndSupplementalObservationsChanged": true
+    "onlySourceSelectionAndSupplementalObservationsChanged": true,
+    "additionalNativeDependencyAssertion": "const nativeFiles=JSON.parse(execFileSync('git',['show',proof.nativeQualification.controller+':'+proof.nativeQualification.sourceManifest],{cwd:control,maxBuffer:32<<20}));assert.equal(nativeFiles.files.length,21);for(const f of nativeFiles.files){assert.equal(manifest.candidate.find(x=>x.file==='src/'+f.file)?.sha256,f.sha256,'Native qualification source changed '+f.file);assert.equal(proof.nativeQualification.sourceFiles[f.file],f.sha256);} "
   },
   "observerSha256": "1fd3f342aecb70e384ec8288f8cbed6d68ed6e4ea780bb2489a3a6fc64ee83c0",
   "singleStrictRuntimeProfileResolutionOnly": true,
