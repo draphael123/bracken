@@ -28178,7 +28178,7 @@ function updateBloodBolts(dt) {
     for (const e of enemies) { if (!e.alive || e.harmless || e.gone > 0 || b.hit.has(e)) continue;
       if (Math.abs(e.x - b.x) < e.w / 2 + 5 && b.y > e.y - e.h - 5 && b.y < e.y + 5) {
         b.hit.add(e); if (e.guardT > 0) e.guardT = 0;
-        hurtAs('heavy', e, b.dmg, b.x - Math.sign(b.vx) * 10, false); markFoe(e);   /* the planted blade's bolts are its held blow */
+        hurtAs('shot', e, b.dmg, b.x - Math.sign(b.vx) * 10, false); markFoe(e);   /* the planted blade's bolts: a volley of ticks takes the LIGHT hit-stop, not the heavy 117 ms each (batch138, demoimpact report) */
         if (e.alive) { e.bleed = Math.max(e.bleed || 0, 2); e.bleedN = Math.max(e.bleedN || 0, 1); if (tal('sunder')) e.sunder = 2.5; }
         burst(b.x, b.y, 6, ['#c0283a', '#ff6b6b', '#3a0a10'], 70, 0.4); b.life = Math.min(b.life, 0.02); break; } }
     if (isSolid(Math.floor(b.x / TS), Math.floor(b.y / TS))) { burst(b.x, b.y, 4, ['#a01a2a', '#3a0a10'], 40, 0.3); b.life = 0; } }
