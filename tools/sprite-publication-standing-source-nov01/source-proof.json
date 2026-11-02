@@ -1,0 +1,65 @@
+{
+  "time": "2026-11-02T01:15:52.721Z",
+  "sourceGame": "dc02ecc059959b795f76dee47665b54f349d4e2f",
+  "sourceTree": "9d8acbb7f3182c1d29ac71f4a3b0227224446718",
+  "originalController": "1a576c3f4511b6856df9fb4738df5aaae9987e81",
+  "manifestSha256": "86249a8ba8ba05299d9dd998db4a842c56df6a95b7da8b39542c90cc430d1b47",
+  "candidateHashes": {
+    "src/main.js": "235253b0152463a51a6dae4dda7ca0f6c286e9c0ec791cc6e367dd4f86fb4ce7",
+    "src/px.js": "140576730b72fd2ff09be7687e9dc38ff99bc0f7ef7ab1a7aa5f2f6e6bf6cd1b",
+    "src/sprite-publication.js": "65261b1db2a21daf1787a45e4c45af03eebda1b299c897cbbbd2106a171d66f1",
+    "src/puppeteer-hands.js": "def29ae7f0ea4c55ab29e3652a351d0d03c90a4c1c5f7f83ee39692c21c3061f"
+  },
+  "nativeQualification": {
+    "receipt": "outputs/receipts/sprite-publication-component-nov01.json",
+    "run": 41370232716,
+    "controller": "de69ad35611238faab1248bd9994a49dfd29f130",
+    "helper": "65261b1db2a21daf1787a45e4c45af03eebda1b299c897cbbbd2106a171d66f1",
+    "nodeCases": 39,
+    "nativeCases": 154,
+    "rng": 0,
+    "noWholeGameResultInherited": true
+  },
+  "originalSnapshotFunctionSha256": "89e31693c6ae1ef5740fbb64a65c20ba5df927fa3d173955e3ad37b7810ee14a",
+  "contextObserverSha256": "ba3f88d37f1339c18373d97029460af6ba1a1f9bc62f142d6530026227fd27be",
+  "strictProfileSha256": "9d38b09c585f0054e40125c63b2435e61e8cd6f5cc53e6011edf62178c8c2184",
+  "expectedFreshDocuments": 9,
+  "variants": [
+    "before",
+    "candidate",
+    "return"
+  ],
+  "rounds": 3,
+  "originalSnapshotAssertionsAndSettingsUnchanged": true,
+  "sameUiInAllControls": true,
+  "settings": {
+    "startupGame": [
+      320,
+      180
+    ],
+    "DPR": 1,
+    "audioFiles": false,
+    "originalFonts": true,
+    "nativeGc": true,
+    "rendererMb": 1536,
+    "admissionMb": 4352,
+    "snapshotDeadlineMs": 120000,
+    "outerMinutes": 15
+  },
+  "qualification": {
+    "originalStartupGuidePercent": 5,
+    "additionalMaterialStartupPercent": 10,
+    "allPairedTrialsFasterThanBothControls": true,
+    "maximumControlDriftPercent": 15,
+    "maximumThroughFirstPublicationRegressionPercent": 5,
+    "allFirstPublicationCostsReported": true,
+    "noTimingOrAssertionRerun": true
+  },
+  "notFiveArenaFpsOrLayoutProof": true,
+  "noGameSourceAdoption": true,
+  "allThreeMismatches": [
+    "mummer6SUCCESSFUL hits versus2..5",
+    "tower-collapse/Tome rebound at200frames",
+    "offscreen mage sampling"
+  ]
+}
