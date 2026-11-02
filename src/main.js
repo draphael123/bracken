@@ -157,7 +157,7 @@ import * as BAR from './barriers.js';   /* THE BARRIERS BY REGION (claude/barrie
 import * as EG from './exit-gates.js';   /* THE EXIT GATES BY REGION (claude/exitgates): art only */
 const EGSFX = { light: () => SFX.lightFull(), open: () => SFX.gateOpen() };
 import * as SV from './survival.js'; import * as SKK from './skill-k.js';   /* (claude/lategamea) the one skill damage rule: swordDmg x k x amul */  import * as F2 from './flasks2.js';   /* FLASKS 2 (claude/flasks2, Daniel 10-08): the flask row, the drink, the store's FLASKS tab, the finds and objectives */   /* SURVIVAL (claude/survival, Daniel 10-07): the flask, dry shrines, % hazards and the exams' deadly spikes - the numbers live there */
-import { JUICE, blowClass, takenClass, blockClass, stopFor, shakeAdd, safeKnock, weaponOf } from './juice.js';   /* THE JUICE TABLE: one row per weight class, read by every landed blow and every blow the hero takes (tools/juice.mjs) */
+import { JUICE, HEAVY_TAGS, blowClass, takenClass, blockClass, stopFor, shakeAdd, safeKnock, weaponOf } from './juice.js';   /* THE JUICE TABLE: one row per weight class, read by every landed blow and every blow the hero takes (tools/juice.mjs) */
 import { LEGACY_NODES, growthNodes, SKILLS, importProgress, exportProgress, loadProgress, migrateProgress, growthAt, skillScale, slotsAt, skillFor, skillsFor, equipped, buySkill, equipSkill, passiveOn, passiveLadder, passivesArriving, CARD, CARD_CAP, CARD_FULL, PERKS, RESPEC_SILVER, skillRank, rankUp, rankPrice, rankLevel, RANK_MAX, RANK_MUL, cardOf, evenCard, picksSpent, picksOwed, milestonesOwed, perkOffer, perkOn, perkRank, thrOn, thrNext, THRESH, MINOR_PERKS, ALL_HERO_PERKS, PYRO_CARDS, HERO_PERK_MAX, levelsToPerk, nextMilestone, techniquesArriving, pickCard, pickMilestone, respecCard, coopOpen, DEFAULT_HEROES, MAX_SLOTS } from './progression.js';
 import * as TR from './title-region.js';   /* THE TITLE BY REGION (claude/titleregion): which region the last-played slot has reached */
 import { depthsOf, gateOf } from './campaign-order.js'; import { roadEndId, roadTally } from './ending.js';   /* CATCH-UP XP: how deep a level sits is the level a hero is expected to be in it */
@@ -7626,17 +7626,23 @@ function parryBurst() { const x = P.x + P.face * 10, y = P.y - 9;
 function hitstop(t) { if (SET.hitstop) stop = Math.max(stop, t); }
 // every blow used to hold the frame for the same three hundredths of a second, whatever it was. Weight it:
 // a tap is a tap, a heavy blow leans on it, and the blow that kills something leans hardest of all.
-function blowStop(e, dmg) {
+function blowStop(e, dmg, tag) {
   /* THE FREEZE IS THE TABLE'S (src/juice.js): ~40 ms for a tap, ~90 ms for a heavy blow, a third cut, a dash cut or a break, and a boss opening a little more. Only ever asked on a LANDED blow (hurtEnemy0's hit branch), and 0 for a blow that did nothing. The same for every hero. */
-  const cls = blowKind(e, dmg), open = !!(e && e.maxHp && (e.open > 0 || e.broken > 0));
+  const cls = blowKind(e, dmg, tag), open = !!(e && e.maxHp && (e.open > 0 || e.broken > 0));
   const wpn = weaponOf(hero()); hitstop(stopFor(cls, { boss: !!(e && e.maxHp), opening: open, dmg }) * (wpn ? wpn.stop : 1));   /* (claude/foepass) WEAPON WEIGHT: a greatsword lands heavier (src/juice.js WEAPON) */
   if (wpn && dmg > 0 && !SET.reduceMotion) shakeCam(cls === 'light' ? 0.8 : 1.6, (P.face || 1) * wpn.kick);
 }
 /* WHICH WEIGHT A BLOW IS: a held heavy blow, the run's third cut, a dash cut, a poise-break or a big number is heavy; anything else a tap */
-const blowKind = (e, dmg) => IMPACT === 'heavy' ? 'heavy' : IMPACT === 'light' ? (dmg >= JUICE.heavyDamage ? 'heavy' : 'light') : blowClass({ dmg, heavy: !!(P.heavy || P.combo === 3 || P.dash > 0 || P.dashAtk > 0 || (e && e.broken > 0)) });   /* (claude/pyrokit) IMPACT: a cast that names its own class (hurtFire) is that class, whatever she is doing with the staff */
+const blowKind = (e, dmg, tag) => IMPACT === 'heavy' ? 'heavy' : IMPACT === 'light' ? (dmg >= JUICE.heavyDamage ? 'heavy' : 'light') : blowClass({ dmg, heavy: !!(P.heavy || P.combo === 3 || P.dash > 0 || P.dashAtk > 0 || (e && e.broken > 0) || (!!tag && HEAVY_TAGS.some(t => blowHas(tag, t)))) });   /* (claude/demoimpact) THE BLOW'S OWN TAG: hurtAs('heavy'|'dash') - a skill's heavy land - is the heavy class whatever the hero is doing; 'shot' stays light */ /* (claude/pyrokit) IMPACT: a cast that names its own class (hurtFire) is that class, whatever she is doing with the staff */
 /* the foe's recoil on the SCREEN only (it moves nothing): thrown out the frame it is hit, eased back over a seventh of a second */
 const recoilX = e => e.rec > 0 ? (e.recD || 1) * (e.recA || 0) * (e.rec / 0.14) * (e.rec / 0.14) : 0;
-function shakeCam(n, k = 0, tag = '') { const a = SET.reduceMotion || SET.shakeMode === 'off' || (SET.shakeMode !== 'full' && tag !== 'hurt') ? 0 : SET.shakeAmt > 0 ? SET.shakeAmt : 1; if (a > 0) { shake = shakeAdd(shake, n, { amount: a }); kick = Math.max(-8, Math.min(8, kick + k * a)); } }   /* SHAKE MODE (SET.shakeMode, tools/shake-mode.mjs): ON HIT (the default) lets through only a shake tagged 'hurt' - the hero taking a blow, going down or dying - FULL lets every one through; ONE SHAKE BUDGET (src/juice.js SHAKE_CAP): shakes top each other up, never stack past the cap; reduce-motion is none at all */
+function shakeCam(n, k = 0, tag = '') { const a = SET.reduceMotion || SET.shakeMode === 'off' || (SET.shakeMode !== 'full' && tag !== 'hurt' && tag !== 'land') ? 0 : SET.shakeAmt > 0 ? SET.shakeAmt : 1; if (a > 0) { shake = shakeAdd(shake, n, { amount: a }); kick = Math.max(-8, Math.min(8, kick + k * a)); } }   /* SHAKE MODE (SET.shakeMode, tools/shake-mode.mjs): ON HIT (the default) lets through only a shake tagged 'hurt' - the hero taking a blow, going down or dying - FULL lets every one through; ONE SHAKE BUDGET (src/juice.js SHAKE_CAP): shakes top each other up, never stack past the cap; reduce-motion is none at all */
+/* (claude/demoimpact) A LANDED HEAVY / FINISH BLOWS SHAKE: FULL mode gives the whole row (as before); the default ON HIT gives JUICE.landShake of it, tagged land (a light blow gives none); OFF and reduce-motion give none (shakeCam) */
+
+function landShake(cls, n, k) { if (SET.shakeMode === 'full') shakeCam(n, k); else if (cls !== 'light') shakeCam(n * JUICE.landShake, k * JUICE.landShake, 'land'); }
+/* and a short weak pad buzz on it (JUICE.landRumble; none on a light blow; SET.rumble gates it inside rumble()); a DOT or a volley does not buzz the pad every tick */
+let landRumbleAt = -9;
+function landRumble(cls) { const r = JUICE.landRumble[cls]; if (!r || time - landRumbleAt < JUICE.landRumbleGap) return; landRumbleAt = time; rumble(r.ms, r.mag); }
 function squash(sx, sy, t = 0.12) { P.sqX = sx; P.sqY = sy; P.sqT = t; }
 function zoomKick(amt, t = 0.14) { if (SET.shake && SET.shakeMode === 'full' && !SET.reduceMotion) { zoomAmt = Math.max(zoomAmt, amt); zoomT = Math.max(zoomT, t); } }
 /* A DODGE IS UNTOUCHABLE FOR AS LONG AS ITS OWN GRACE LASTS, not for as long as it lasts. P.dodgeInv is set at the
@@ -7809,8 +7815,8 @@ function damagePlayer0(fromX, dmg, { up = false, unblockable = false, pierce = f
     if (beat) RP.parried(rpFoe(fromX, who));
     if (f) { if (!beat) { f.stagger = Math.max(f.stagger || 0, (f.maxHp ? 0.2 : 0.4) * (tal('standFast') ? 2 : 1)); f.flash = 0.2; } if (!f.maxHp && !f.mini && !f.elite) f.vx = Math.sign(f.x - P.x) * 150;
       if (tal('counterpoise')) { f.sunder = 2.5; number(f.x, f.y - (f.h || 16) - 22, 'OPENED UP', '#8fd160'); } }   /* COUNTERPOISE */
-    deflectPays(P.x + P.face * 12, P.y - 10);
-    sparks(P.x + P.face * 12, P.y - 10, P.face, 9); number(P.x, P.y - 28, 'TURNED IT', '#ffd36b'); parryBurst();
+    deflectPays(P.x + P.face * 12, P.y - 10, beat);
+    sparks(P.x + P.face * 12, P.y - 10, P.face, 9); number(P.x, P.y - 28, beat ? 'PARRY' : 'TURNED IT', '#ffd36b'); parryBurst();
     return 'blocked';
   }
   /* THE GEOMANCER'S RUNE-WARD (round 3): the Knight's rules, sidegraded - a yellow blow from the front or from overhead costs her wind (a
@@ -8535,13 +8541,13 @@ function deflectSwat() {
   }
 }
 /* WHAT A TURN PAYS, wherever along the shaft it was turned: the bar, the beat, and the clock every answer sets. */
-function deflectPays(x, y) {
+function deflectPays(x, y, beat = true) {
   parries++; blocks++; trialEvent('parry');
   P.parryT = 0.22; P.inv = Math.max(P.inv || 0, 0.1);   /* a breath of grace, so one sweep is not beaten by two blows in the same frame */
   gainVigil(12 * (tal('standFast') ? 2 : 1));   /* STAND FAST: a turned blow pays the bar double */
   if (tal('everReady')) P.deflectRec = 0;   /* EVER READY: a sweep that TURNED something is back in her hands at once */
-  SFX.parry(); SFX.shaftTurn(); hitstop(0.07); zoomKick(1.03, 0.16); shakeCam(2, -P.face * 2);
-  ringAt(x, y, 14, '#dff0d8', 0.26);
+  SFX.parry(); SFX.shaftTurn(); hitstop(beat ? JUICE.parryStop : 0.07); zoomKick(1.03, 0.16); shakeCam(2, -P.face * 2);   /* (claude/demoimpact) ON THE BEAT it is a parry at the mid pack's freeze (was 70 ms, the floor); off the beat it stays the short turn */
+  ringAt(x, y, beat ? 18 : 14, '#dff0d8', 0.26);
   deflectLesson();
 }
 /* SAID IN WORDS TWICE AND THEN LEFT ALONE, as the tip's lesson is */
@@ -9089,7 +9095,7 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow, tag = blow) { const raw0 = dmg,
     e.alive = false; if (e.t === 'swarm' && e.onHero) { SWX.drainOff(e, e.onHero); e.onHero = null; }   /* (claude/hornetsnest) a swarm cut down while it was on him takes its sting with it (the drain was left running) */ if(e.ambushLeader)e.defeated=true; kills++; xpKill(e); startle(e); pirateSpoils(e); reaperRites(e); leaveBody(e); if (L.hush && !e.quiet) noiseAt(e.x, e.y, e.maxHp ? 200 : HEAVY.has(e.t) ? 150 : 116, null); if (isPyro() && (tal('conflagration') || prk('pspread')) && e.burn > 0) { const spr = Math.max(tal('conflagration') ? 46 : 0, prk('pspread') ? 30 + 10 * prk('pspread') : 0); for (const q of enemies) if (q.alive && q !== e && !q.harmless && Math.abs(q.x - e.x) < spr && Math.abs(q.y - e.y) < 34) { q.burn = Math.max(q.burn || 0, 2.4); flame(q.x, q.y - q.h / 2, 4, 4, 40, 2); } ringAt(e.x, e.y - e.h / 2, 30, '#ff9a5c', 0.3); } // CONFLAGRATION
     if (!P.ground && !P.plunge && !P.dead && !e.maxHp) { P.vy = Math.min(P.vy, -210); P.canCut = true; squash(0.88, 1.18, 0.1); } // KILLED IT IN THE AIR: up you go (never DOWN from a pogo already thrown this frame: her fire finishing a head she just came up off cut the 330 to 210)
     if (isPaladin() && tal('wrath')) gainLight(10);   /* WRATH */ killFlash = 0.05; rumble(70, 0.35); ringAt(e.x, e.y - e.h / 2, e.t === 'queen' || e.t === 'frog' || e.t === 'chief' ? 40 : 16, COLS[e.t] ? COLS[e.t][0] : '#fff6e0'); { const cry = SFX.dieOf(voiceOf(e)); if (cry) cry(); else SFX.kill(); } if (e.t === 'shield' || e.t === 'queen' || e.t === 'frog' || e.t === 'chief') SFX.heavy(); // every creature dies in its own voice
-    { const big = e.t === 'queen' || e.t === 'frog' || e.t === 'chief' || e.t === 'king' || e.t === 'ram' || e.t === 'master'; hitstop(big ? 0.25 : stopFor('finish')); SFX.hitFinish(); shakeCam(big ? 8 : JUICE.finish.shake, dir * JUICE.finish.kick); zoomKick(big ? 1.18 : 1.07, big ? 0.5 : 0.14); if (big) killFlash = 0.09; }
+    { const big = e.t === 'queen' || e.t === 'frog' || e.t === 'chief' || e.t === 'king' || e.t === 'ram' || e.t === 'master'; hitstop(big ? 0.25 : stopFor('finish')); SFX.hitFinish(); landShake('finish', big ? 8 : JUICE.finish.shake, dir * JUICE.finish.kick); landRumble('finish'); zoomKick(big ? 1.18 : 1.07, big ? 0.5 : 0.14); if (big) killFlash = 0.09; }
     burst(e.x, e.y - e.h / 2, e.t === 'queen' ? 40 : 12, COLS[e.t], 100, 0.6);
     sparks(e.x, e.y - e.h / 2, dir, 6);
     spawnCorpse(e, dir); beastSlain(e.cnSkin || e.t);
@@ -9125,7 +9131,7 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow, tag = blow) { const raw0 = dmg,
     if (glance) { /* IT GLANCED: no cry, no stop worth the name, no hurt pose, no flinch and no shove - it did not feel that, and it shows */ }
     else {
     const voice = SFX.hurtOf(voiceOf(e)), staleNow = e.amStaleAt === time; if (staleNow && SFX.hitDull) SFX.hitDull(); else if (voice) voice(); else SFX.hit();   /* (claude/difficulty) A STALE BLOW is heard duller (no word) */ // every creature is hurt in its own voice if (e.t === 'thorn' || e.t === 'sprig' || e.t === 'archer' || e.t === 'sapper' || e.t === 'shield' || e.t === 'brute' || e.t === 'chief') SFX.hit();
-    if (!P.jetHit) { const jc = blowKind(e, dmg), JR = JUICE[jc]; if (jc === 'heavy' && !staleNow) SFX.hitHeavy(); blowStop(e, dmg, false); shakeCam(JR.shake, dir * JR.kick); e.flash = Math.max(e.flash, JR.flash); e.sq = Math.max(e.sq || 0, JR.squash); e.rec = 0.14; e.recD = dir; e.recA = JR.recoil; }   /* a flame ticking over them does not stop the world ten times a second */
+    if (!P.jetHit) { const jc = blowKind(e, dmg, tag), JR = JUICE[jc]; if (jc === 'heavy' && !staleNow) SFX.hitHeavy(); blowStop(e, dmg, tag); landShake(jc, JR.shake, dir * JR.kick); landRumble(jc); e.flash = Math.max(e.flash, JR.flash); e.sq = Math.max(e.sq || 0, JR.squash); e.rec = 0.14; e.recD = dir; e.recA = JR.recoil; }   /* a flame ticking over them does not stop the world ten times a second */
     sparks(e.x - dir * 2, e.y - e.h / 2, dir, Math.max(1, Math.round((P.heavy ? 9 : 5) * (staleNow ? AM.STALE.dimSparks : 1))));   /* (claude/difficulty) and seen dimmer */
     if (P.heavy) { ringAt(e.x, e.y - e.h / 2, 16, '#fff6e0', 0.22); impactAt(e.x, e.y - e.h / 2, 'steel'); }
     e.hurtT = HAS_HURT.has(e.t) && !(e.t === 'masthead' && windingUp(e)) && !(e.t === 'prince' && (windingUp(e) || e.mode === 'buried' || e.mode === 'rise' || e.mode === 'cut')) ? 0.2 : 0;

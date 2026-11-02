@@ -38,6 +38,7 @@ try {
     const events = {
       land: () => { BK.P.y -= 10; BK.P.ground = false; BK.P.vy = 430; BK.sim(3); },
       plunge: () => { BK.P.y -= 10; BK.P.ground = false; BK.P.plunge = true; BK.P.vy = 430; BK.sim(3); },
+      lightfoe: () => { const f = BK.spawnFoe({ t: 'brute', x: spot[0] + 1, y: spot[1], face: -1 })[0]; f.hp = f.maxHpx = 9999; BK.sim(2); BK.P.hp = BK.P.maxHp; BK.combat2().strike(f, 'light', 3); },
       foehit: () => { const f = BK.spawnFoe({ t: 'brute', x: spot[0] + 1, y: spot[1], face: -1 })[0]; f.hp = f.maxHpx = 9999; BK.sim(2); BK.P.hp = BK.P.maxHp; BK.combat2().strike(f, 'heavy', 20); },
       slam: () => BK.shakeCam(10, 4),
       hurt: () => BK.damagePlayer(spot[0] * 16 - 30, 10, { unblockable: true }),
@@ -60,7 +61,8 @@ try {
 console.log(JSON.stringify(r));
 if (r.err) bad.push(r.err);
 else {
-  for (const k of ['land', 'plunge', 'foehit', 'slam']) must(r.hit[k] === 0, `ON HIT: ${k} shook the camera (${r.hit[k]})`);
+  for (const k of ['land', 'plunge', 'lightfoe', 'slam']) must(r.hit[k] === 0, `ON HIT: ${k} shook the camera (${r.hit[k]})`);
+  must(r.hit.foehit > 0 && r.hit.foehit <= r.full.foehit * 0.6, `ON HIT (claude/demoimpact): a landed HEAVY blow gives a small shake (JUICE.landShake of the row), got ${r.hit.foehit} vs full ${r.full.foehit}`);
   must(r.hit.hurt > 0, 'ON HIT: taking damage did not shake the camera');
   for (const k of ['land', 'plunge', 'foehit', 'slam', 'hurt']) must(r.full[k] > 0, `FULL: ${k} did not shake (${r.full[k]})`);
   must(r.full.slam === 10 && r.low.slam === 5, `FULL strength: a 10 shake is ${r.full.slam} at full and ${r.low.slam} at LOW (want 10 / 5)`);

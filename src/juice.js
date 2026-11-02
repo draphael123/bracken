@@ -20,7 +20,15 @@ export const JUICE = {
   /* THE SHIELD TAKING ONE */
   block:  { stop: 0.050, shake: 1.5, kick: 2,   sfx: 'block' },
   blockHeavy: { stop: 0.080, shake: 3, kick: 2, sfx: 'blockHeavy' },
-  openMul: 1.25,          /* a boss's opening hit: a little more freeze */
+  /* (claude/demoimpact, Daniel 11-02) THE DEMO IMPACT PASS: what a landed heavy / finish / skill blow does in the DEFAULT shake mode ('hit'), and the parry floor.
+     landShake: the fraction of the row's shake + kick a landed heavy / finish blow gives in 'hit' mode (FULL mode is unchanged: the whole row; OFF and reduce-motion: none).
+     landRumble: a short weak pad buzz on a landed heavy / finish blow (none on a light one; the Rumble setting gates it); landRumbleGap: the least seconds between two (a DOT does not buzz the pad).
+     parryStop: the least freeze of any hero's on-the-beat parry (the Blood Knight's own 200 ms reference parry is above it and untouched). */
+  landShake: 0.5,
+  landRumble: { heavy: { ms: 70, mag: 0.3 }, finish: { ms: 90, mag: 0.4 } },
+  landRumbleGap: 0.25,
+  parryStop: 0.08,
+  openMul: 1.25,         /* a boss's opening hit: a little more freeze */
   bossMul: 0.8,           /* and a boss is not stopped dead by every touch (the old rule, kept) */
   heavyDamage: 18,        /* the same number as COMBAT.staggerDamage: a blow this big is a heavy one whoever swung it */
   heavyTaken: 20,         /* a blow this big on the hero is a heavy one */
@@ -29,7 +37,9 @@ export const JUICE = {
 export const SHAKE_CAP = 10;
 export const SHAKE_TOPUP = 0.3;   /* a second shake while one is running adds this fraction of the smaller one, then hits the cap */
 
-export const blowClass = ({ dmg = 0, heavy = false, kill = false } = {}) => kill ? 'finish' : (heavy || dmg >= JUICE.heavyDamage) ? 'heavy' : 'light';
+/* the hurtAs() tags that name a HEAVY blow whoever swung it (a skill's dash / heavy land): 'shot' (arrows, bolts, embers) stays light */
+export const HEAVY_TAGS = ['heavy', 'dash'];
+export const blowClass =({ dmg = 0, heavy = false, kill = false } = {}) => kill ? 'finish' : (heavy || dmg >= JUICE.heavyDamage) ? 'heavy' : 'light';
 export const takenClass = dmg => dmg >= JUICE.heavyTaken ? 'hurtHeavy' : 'hurt';
 export const blockClass = dmg => dmg >= JUICE.heavyTaken ? 'blockHeavy' : 'block';
 
