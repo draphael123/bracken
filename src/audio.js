@@ -1313,6 +1313,7 @@ Object.assign(SFX, {
   // ---- the moor and the town ----
   caw() { if (!gate('caw', 0.35)) return; tone('sawtooth', vary(820), 560, 0.16, 0.1); noise(0.14, 0.12, 1500, 1); tone('sawtooth', vary(760), 520, 0.14, 0.08, 0.2); noise(0.12, 0.1, 1400, 1, 0.2); },
   hornBlast() { pad('sawtooth', 146, 164, 1.35, 0.15, 0, 900, 0.12); pad('sawtooth', 147.5, 166, 1.35, 0.1, 0.01, 700, 0.12); pad('square', 73, 82, 1.3, 0.05, 0, 400, 0.15); noise(0.5, 0.08, 700, 0.5); },
+  gormRage() { file('roar', 0.7, 0.55) || tone('sawtooth', 90, 200, 0.7, 0.3); tone('sawtooth', 62, 38, 0.9, 0.22, 0.05); noise(0.5, 0.3, 180, 0.6, 0.03); pad('sawtooth', 110, 98, 1.1, 0.1, 0.25, 700, 0.12); pad('square', 55, 49, 1.1, 0.05, 0.25, 400, 0.15); },   /* KING GORM IN HIS RAGE (smallfix9, owed by gorm3art): the roar pitched down with a bellow under it, then a low brass stinger on the tail - existing parts only */
   baleBump() { if (!gate('bale', 0.12)) return; noise(0.08, 0.1, 520, 0.6); tone('sine', 110, 60, 0.07, 0.06); },
   baleBurst() { for (let i = 0; i < 6; i++) noise(0.05, 0.18, 2600 + (i % 3) * 700, 0.9, i * 0.03); tone('sine', 140, 60, 0.12, 0.14); noise(0.4, 0.08, 1800, 0.4, 0.1); },
   sweepPop() { tone('square', 170, 110, 0.08, 0.1); noise(0.28, 0.16, 650, 0.5); [720, 800, 660].forEach((f, i) => tone('square', f, f * 0.9, 0.05, 0.05, 0.12 + i * 0.07)); },
