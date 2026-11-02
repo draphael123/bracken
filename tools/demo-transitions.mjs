@@ -117,7 +117,7 @@ if (process.argv.includes('--browser')) {
   try {
     for (const e of TRM.TABLE) {
       const key = e.from + '>' + e.to, fl = e.from === 'kings' && e.to === 'scree';
-      const shots = SHOTS ? (e.scene ? [{ n: 'a', ph: e.beats.find(TRM.isSceneBeat).id, pt: 1.6 }, { n: 'b', ph: e.beats.find(TRM.isSceneBeat).id, pt: e.beats.find(TRM.isSceneBeat).dur * 0.5 }, { n: 'c', ph: e.beats.find(TRM.isSceneBeat).id, pt: e.beats.find(TRM.isSceneBeat).dur * 0.9 }].concat(e.scene === 'ferry' ? [{ n: 'd', ph: 'ride', pt: 4.5 }, { n: 'e', ph: 'ride', pt: 7.0 }] : []) : e.open ? [{ n: 'a', ph: 'open', pt: 1.25 }, { n: 'b', ph: 'walk', pt: 1.2 }] : [{ n: 'a', ph: 'walk', pt: 0.4 }]) : null;
+      const shots = SHOTS ? (e.scene ? [{ n: 'a', ph: e.beats.find(TRM.isSceneBeat).id, pt: 1.6 }, { n: 'b', ph: e.beats.find(TRM.isSceneBeat).id, pt: e.beats.find(TRM.isSceneBeat).dur * 0.5 }, { n: 'c', ph: e.beats.find(TRM.isSceneBeat).id, pt: e.beats.find(TRM.isSceneBeat).dur * 0.9 }].concat(e.scene === 'ferry' ? [{ n: 'd', ph: 'ride', pt: 4.5 }, { n: 'e', ph: 'ride', pt: 7.0 }] : []) : e.open ? (process.env.DT_GATES ? [{ n: 'g', ph: 'open', pt: 0.15 }, { n: 'h', ph: 'open', pt: 0.6 }] : []).concat([{ n: 'a', ph: 'open', pt: 1.25 }, { n: 'b', ph: 'walk', pt: 1.2 }]) : [{ n: 'a', ph: 'walk', pt: 0.4 }]) : null;
       const w = await watch(e.from, { tag: 'full', direct: fl, burning: e.when ? e.when.burningOpen : undefined, shots });
       const a = w.base, z = w.end;
       ok(key + ': the boss falls' + (fl ? '' : '') + (fl ? ' (begun off the table)' : '') + ' and the transition PLAYS (state win, TRN set)', a.tr, JSON.stringify(a).slice(0, 300));
