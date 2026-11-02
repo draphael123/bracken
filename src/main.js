@@ -29678,7 +29678,8 @@ HNS = makeNestHands({ L: () => L, P: () => P, players: () => (players && players
   shoveHero: (pp, y, d) => asPlayer(pp, () => { P.y = y; P.vy = Math.min(P.vy || 0, 0); if (d > 0) damagePlayer(P.x, d, { unblockable: true, noKnock: true, name: 'A FALLING COMB' }); }),
   spawnHornet: (x, y) => { enemies.push({ t: 'wasp', x, y, hx: x, hy: y, vx: 0, vy: 0, w: 8, h: 6, hp: EHP.wasp, face: -1, alive: true, dying: 0, anim: Math.random() * 6, flash: 0, stagger: 0, sting: true, mode: 'hover', modeT: 0, cd: 1.2, cnSkin: 'hornet' }); burst(x, y, 6, COLS.hornet, 50, 0.4); },
   arrows: () => (players && players.length ? players : [P]).flatMap(pp => pp.rgArrows || []),
-  onQueen: (x, y) => !!(HQH && HQH.potHits(x, y)) });
+  dripHit: (pp, d) => asPlayer(pp, () => { if (!P.dead) damagePlayer(P.x, d, { unblockable: true, noKnock: true, name: 'A HONEY DRIP' }); }),   /* (claude/hornetsnest2) the nest's honey drips: a bead that falls on you */
+  onQueen: (x, y, q) => !!(HQH && HQH.potHits(x, y, q)) });
 /* (claude/hornetsnest2) THE FAT HONEY HORNET's world (src/honey-hornet.js is pure): its ram and its globs strike through damagePlayer (a shield turns them); a glob splashes into a
    STICKY PATCH (the nest's honey: src/hornets-nest-hands.js addHoney); smoke (the nest's) makes it drowsy */
 const HHX = { heroes: () => (players && players.length ? players : [P]), calm: (x, y) => !!(HNS && HNS.on() && HNS.calm(x, y)), sfx: SFX,
@@ -31752,7 +31753,8 @@ function trnOpenWay() {
   SFX.crumble(); if (SFX.gateLift) SFX.gateLift(); shakeCam(6); rumble(120, 0.8);
 }
 /* the scene clock: seconds since the shore beat began (0 before it) */
-function trnSceneS(tl) { const sh = tl.beats.findIndex(b => b.id === 'shore'), ri = tl.beats.findIndex(b => b.id === 'ride'); if (tl.i < sh) return 0;
+function trnSceneS(tl) { const sh = tl.beats.findIndex(b => b.id === 'shore'), ri = tl.beats.findIndex(b => b.id === 'ride'); if (sh < 0 || ri < 0) return 0;   /* (claude/hornetsnest2) a walk-out has no scene (scene: null): no shore / ride beat to read */
+  if (tl.i < sh) return 0;
   if (tl.i === sh) return tl.pt; if (tl.i === ri) return tl.beats[sh].dur + tl.pt; return tl.beats[sh].dur + tl.beats[ri].dur; }
 function trnUpdate(dt) {
   const tr = TRN; if (tr.loading) return;
@@ -31783,7 +31785,7 @@ function trnArriveBegin(entry) {
   if (!entry.arrive) return;
   trnArrive = { entry, t: 0, dur: entry.arrive.walk, ferry: !!entry.arrive.ferry, done: false, floorY: (L.START.y + 1) * TS };
   players.forEach((p, i) => { p.x = 12 + i * 12; p.y = trnArrive.floorY; p.vx = 0; p.vy = 0; p.face = 1; p.inv = 0; });
-  camX = 0; camY = P.y - 100; transT = 1; transKind = 'fade'; ambient.set('water');
+  camX = 0; camY = P.y - 100; transT = 1; transKind = 'fade'; ambient.set(entry.arrive.ferry ? 'water' : 'forest');
 }
 function trnArriveTick(dt) {
   const A = trnArrive; if (!A || A.done) return;

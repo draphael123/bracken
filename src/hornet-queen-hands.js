@@ -18,7 +18,7 @@ import { HALL_P2 } from './hornets-nest.js';
 import * as HNHL from './redraw/hornets_nest_hall.js';   /* (claude/hornets2art) the honey hall: the tear, the flood, the royal comb, the pin */   /* (claude/hornetsnest2) the hall's P2 combs, to bake at the level's load */
 const { HQ } = HQM;
 const SOUND = { aim: s => (s.buzz || s.tell)(), held: s => (s.tell || s.buzz)(), dive: s => (s.charge || s.whoosh || s.tell)(), stuck: s => { (s.thud || s.heavy)(); (s.crack || s.thud)(); },
-  winded: s => (s.thud || s.heavy)(), dazed: s => (s.puff || s.thud)(), thrash: s => (s.queenShriek || s.roar)(), sweepTell: s => (s.buzz || s.tell)(), sweep: s => (s.charge || s.whoosh)(),
+  winded: s => (s.thud || s.heavy)(), dazed: s => (s.puff || s.thud)(), fall: s => { (s.thud || s.heavy)(); (s.puff || s.thud)(); }, thrash: s => (s.queenShriek || s.roar)(), sweepTell: s => (s.buzz || s.tell)(), sweep: s => (s.charge || s.whoosh)(),
   buzz: s => { (s.buzzSwell || (() => {}))(); (s.buzz || s.tell)(); }, buzzDrop: s => { (s.crack || s.thud)(); (s.heavy || s.thud)(); }, chunk: s => (s.thud || s.stone)(), brood: s => { (s.buzzSwell || (() => {}))(); (s.buzz || s.tell)(); }, hatch: s => (s.chitter || s.buzz)(),
   tear: s => (s.queenShriek || s.roar)(), torn: s => { (s.crack || s.thud)(); (s.heavy || s.thud)(); }, volleyTell: s => (s.buzz || s.tell)(), volley: s => (s.spit || s.throwWhoosh)(), cloakTell: s => { (s.buzzSwell || (() => {}))(); (s.buzz || s.tell)(); }, cloak: s => { (s.buzzCloak || (() => {}))(); (s.chitter || s.buzz)(); },
   scatter: s => (s.puff || s.buzz)(), pinned: s => { (s.heavy || s.thud)(); (s.crack || s.thud)(); }, cut: s => (s.crack || s.thud)(), clank: s => (s.clank || s.thud)() };
@@ -32,7 +32,8 @@ export const POSE = {   /* (claude/hornetsnestart: the abdomen's angle reads as 
   circle: { tilt: 0.1, abd: -0.15, wing: 'blur' }, rejoin: { tilt: -0.1, abd: -0.2, wing: 'blur' }, enter: { tilt: 0.3, abd: -0.1, wing: 'back' },
   aim: { tilt: -0.1, abd: -1.3, wing: 'blur', sting: true }, dive: { tilt: 1.0, abd: -2.3, wing: 'back', sting: true }, skim: { tilt: -0.5, abd: -0.4, wing: 'blur' },
   stuck: { tilt: 0.15, abd: -1.6, wing: 'beat', sting: true }, winded: { tilt: 0.2, abd: -0.6, wing: 'droop', y: 2 }, dazed: { tilt: -0.2, abd: -0.5, wing: 'droop', y: 2, stars: true },
-  thrash: { tilt: -0.4, abd: 0.4, wing: 'beat' }, sweepTell: { tilt: -0.1, abd: 0.15, wing: 'blur', head: 3 }, sweep: { tilt: 0.05, abd: 0.3, wing: 'back' },
+  fogfall: { tilt: 1.25, abd: -0.9, wing: 'fold' }, thrash: { tilt: -0.4, abd: 0.4, wing: 'beat' },   /* (claude/hornetsnest2) THE FOG DROPS HER: tumbling, nose down, wings folded (GREYBOX - the art lane draws the tumble) */
+  sweepTell: { tilt: -0.1, abd: 0.15, wing: 'blur', head: 3 }, sweep: { tilt: 0.05, abd: 0.3, wing: 'back' },
   buzzTell: { tilt: -1.1, abd: -0.3, wing: 'wide' }, buzz: { tilt: -1.0, abd: -0.4, wing: 'wide' }, tearTell: { tilt: -1.3, abd: -0.6, wing: 'wide', legs: true },
   volleyTell: { tilt: -0.1, abd: -2.2, wing: 'blur', sting: true }, volley: { tilt: 0.1, abd: -2.7, wing: 'blur', sting: true }, cloakTell: { tilt: -0.3, abd: -0.4, wing: 'wide' },
   tear: { tilt: -1.4, abd: -0.7, wing: 'wide', legs: true }, pinned: { tilt: 0, abd: -0.2, wing: 'fold', lying: true }, away: { tilt: 0, abd: 0, wing: 'blur' },
@@ -88,6 +89,8 @@ export function makeHornetQueenHands(ctx) {
       music: ph => { BOSS_PHASE.hornetqueen = ph; }, say: m => ctx.hint && ctx.hint(m),
       mark: m => ctx.number(e.x, e.y - HQ.markH, m, m === '!' ? '#ffd36b' : '#ff6b6b'),
       dust: (x, y, n) => ctx.dust(x, y, n),
+      strike: (x, y) => { const N = NEST(); if (N && N.burstNear) N.burstNear(x, y - 7, 14, 7); },   /* (claude/hornetsnest2) a comb chunk or a stinger that lands on a hall stand's pot bursts it */
+      splash: (x, y) => { ctx.burst(x, y - 4, 14, ['#ffd36b', '#fff4b0', '#c47a14', '#e0a020'], 110, 0.7); },
       fx: (k, x, y) => { if (k === 'open') { ctx.ring(x, y - 10, 30, '#ffd36b'); ctx.burst(x, y - 12, 12, ['#e8a030', '#ffd070', '#c8d8e8'], 90, 0.6); } else if (k === 'ward') ctx.ring(x, y - 10, 32, '#c8d8e8'); },
       hit: (bx, d, name, o = {}) => { for (const pp of ctx.players) ctx.asPlayer(pp, () => { const P = ctx.hero(); if (!ctx.upright(pp) || P.dead) return;
           if (!ctx.overlap({ l: bx[0], r: bx[1], t: bx[2], b: bx[3] }, ctx.box(P)) || keyed(pp, o.key || name)) return;
@@ -113,8 +116,17 @@ export function makeHornetQueenHands(ctx) {
     if (!S || !e.alive) return; const w = world(e);
     if (e.mode === 'wake' && !S.woke && S.stage === 1) { S.woke = true; e.modeT = 1.6; ctx.number(e.x, e.y - 60, HQ_SAY_WAKE, '#ffd36b'); SOUND.thrash(ctx.sfx); ctx.shake(5); }
     mirrorCombs();
-    /* THE SMOKE UNDER HER: a cloud, a set-down pot or a carried one (src/hornets-nest-hands.js) - she is dazed (P2: her cloak goes first) */
-    if (HQM.feelsSmoke(e) && !(S.ward > 0) && ctx.smokeUnder) { const sm = ctx.smokeUnder(e.x, e.y, HQ.dazed.r, HQ.dazed.h); if (sm && !(e.smokeCd > 0)) { if (HQM.dazed(e, S, w)) e.smokeCd = HQ.dazed.cd; } else if (sm && !(e.fanSaid > 0)) { e.fanSaid = 2.5; ctx.number(e.x, e.y - HQ.h - 16, HQM.HQ_SAY.smokeOff, '#c8d0d8'); } }   /* (a daze leaves her wary of smoke a while: she fans it off, told) */
+    /* THE FOG GROUNDS HER (claude/hornetsnest2, src/hornet-queen.js dazed): (a) a pot that breaks ON her (potHits), (b) her BODY inside a fog cloud HQ.dazed.inFog s - any flying mode, (c) the old low rule: a carried or
+       set-down pot under her in a dive / skim / sweep / circle. Her own dive onto a full hall stand (or a set-down pot) bursts it (burstNear) - the fog is where she is. After a grounding she is wary of fog (smokeCd): a cloud she
+       flies into is fanned off, told once; in P2 the first fog on a cloaked queen strips the cloak, the next grounds her */
+    { const N = NEST(), cy = e.y - HQ.h / 2;
+      if (N && N.burstNear && S.stage !== 'down' && e.mode !== 'sleep' && e.mode !== 'away' && N.burstNear(e.x, cy, HQ.w / 2, HQ.h / 2) && !S.told.burst) { S.told.burst = 1; ctx.number(e.x, e.y - HQ.h - 34, HQM.HQ_SAY.burst, '#8fd160'); ctx.hint && ctx.hint(HQM.HQ_SAY.burst); }
+      const cl = N && N.fogAt && S.stage !== 'down' ? N.fogAt(e.x, cy) : null;
+      if (cl && !HQM.hqOpen(e) && e.mode !== 'thrash' && (S.ward > 0 || e.smokeCd > 0)) { e.fogT = 0; if (cl.t > 1.0) cl.t = 1.0; if (!cl.fanned) { cl.fanned = 1; ctx.number(e.x, e.y - HQ.h - 16, HQM.HQ_SAY.smokeOff, '#c8d0d8'); } }   /* (fanned off, told once per cloud; her own grounding's fog is left to thin) */
+      else if (cl && !HQM.hqOpen(e)) { e.fogT = (e.fogT || 0) + dt; if (e.fogT >= HQ.dazed.inFog) { e.fogT = 0; HQM.dazed(e, S, w); } }
+      else e.fogT = 0; }
+    if (HQM.feelsSmoke(e) && !(S.ward > 0) && ctx.smokeUnder) { const sm = ctx.smokeUnder(e.x, e.y, HQ.dazed.r, HQ.dazed.h); if (sm && !(e.smokeCd > 0)) HQM.dazed(e, S, w); else if (sm && !(e.fanSaid > 0)) { e.fanSaid = 2.5; ctx.number(e.x, e.y - HQ.h - 16, HQM.HQ_SAY.smokeOff, '#c8d0d8'); } }   /* (the old low rule; a grounding leaves her wary of smoke a while: she fans it off, told) */
+    if (S.told.rule && !S.told.pot) { S.potT = (S.potT || 0) + dt; if (S.potT > 4.5) { S.told.pot = 1; ctx.hint && ctx.hint(HQM.HQ_SAY.pot); } }   /* TEACH ONCE (ii): the first wake in the hall, a few seconds after the rule line */
     e.fanSaid = Math.max(0, (e.fanSaid || 0) - dt);
     e.smokeCd = Math.max(0, (e.smokeCd || 0) - dt);
     HQM.stepQueen(e, S, dt, heroes(), w);
@@ -130,11 +142,15 @@ export function makeHornetQueenHands(ctx) {
   H.strike = hb => { if (!S || !hb || !ctx.bossActive) return; const e = live(); if (!e) return;
     if (S.stage === 1) for (const c of S.cells) { if (c.st !== 'idle' && c.st !== 'pulse') continue; if (hb.l < c.x + 8 && hb.r > c.x - 8 && hb.t < c.y && hb.b > c.y - 14) { c.st = 'broken'; c.t = HQ.brood.every * 2; S.n.smashed++; ctx.burst(c.x, c.y - 6, 12, ['#e0b040', '#fff1a0', '#c06040'], 70, 0.6); SOUND.cut(ctx.sfx); } } };
   /* A THROWN SMOKE POT that meets her (src/hornets-nest-hands.js onQueen): it breaks on her - and the cloud it leaves is under her */
-  H.potHits = (x, y) => { const e = live(); if (!e || !ctx.bossActive || !S || S.stage === 'down') return false; return Math.abs(x - e.x) < HQ.w / 2 + 4 && y > e.y - HQ.h - 4 && y < e.y + 6; };
+  H.potHits = (x, y, q) => { const e = live(); if (!e || !ctx.bossActive || !S || S.stage === 'down') return false;
+    if (!(Math.abs(x - e.x) < HQ.w / 2 + 4 && y > e.y - HQ.h - 4 && y < e.y + 6)) return false;
+    if (q && e.mode !== 'sleep' && e.mode !== 'away') {   /* (claude/hornetsnest2) a THROWN pot that breaks on her grounds her at once, any height - unless she is warded, wary (smokeCd) or already open: then she fans it */
+      if (S.ward > 0 || e.smokeCd > 0) { if (!(e.fanSaid > 0)) { e.fanSaid = 2.5; ctx.number(e.x, e.y - HQ.h - 16, HQM.HQ_SAY.smokeOff, '#c8d0d8'); } } else HQM.dazed(e, S, world(e)); }
+    return true; };
   /* A BLOW ON HER (B15; src/hornet-queen.js takeBlow) - the turned share clanks and says why */
   H.take = (e, dmg, fromX, pl) => { if (!S) return dmg; const [d, word] = HQM.takeBlow(e, S, dmg, pl); S.dmgBy = S.dmgBy || {}; const mk = (S.ward > 0 ? 'ward' : e.mode) + (S.stage === 2 ? '2' : ''); S.dmgBy[mk] = (S.dmgBy[mk] || 0) + d;   /* (what each of her states gave: a tool's ledger) */
     if (word && d > 0) { e.chipHit = ctx.time(); e.guardFx = 0.25; e.guardWord = word; ctx.sfx.clank && ctx.sfx.clank(); const sd = Math.sign(ctx.hero().x - e.x) || 1; ctx.sparks(e.x + sd * 12, e.y - 12, sd, 4);
-      if (!S.told.shell && word === HQM.HQ_SAY.shell) { S.told.shell = 1; ctx.hint && ctx.hint('HER SHELL TURNS A CUT. BAIT HER DIVE INTO A COMB PERCH, SMOKE UNDER HER, OR COME DOWN ON HER FROM ABOVE.'); } }
+      if (!S.told.shell && word === HQM.HQ_SAY.shell) { S.told.shell = 1; ctx.hint && ctx.hint('HER SHELL TURNS A CUT. BAIT HER DIVE INTO A COMB PERCH, THROW A POT AT HER, OR COME DOWN ON HER FROM ABOVE.'); } }
     return d; };
   H.barName = e => 'THE HORNET QUEEN' + (HQM.hqOpen(e) ? '  ' + (HQM.OPEN_NAME[e.mode] || 'OPEN') : S && S.ward > 0 ? '  WARDED' : S && S.cloak > 0 ? '  CLOAKED' : S && S.stage === 2 ? '  THE HONEY HALL' : '');
   /* HER DEATH: the fight stops; THE FALLING NEST begins (main.js hqDown: the checkpoint at the hall's torn east side, the road on to the gate) */
@@ -155,11 +171,12 @@ export function makeHornetQueenHands(ctx) {
     /* a perch her buzz (or the tear) has set shaking: it drips and trembles (the tell) */
     for (const p of S.perches) if (p.st === 'shake') { const x0 = p.x0p - cx, y = p.y - cy; for (let k = 0; k < 4; k++) rect(g, x0 + 4 + k * 18 + Math.sin(time * 30 + k) * 1.5, y + 2, 2, 3 + ((time * 8 + k) % 4), '#ff9a5c'); } };
   H.drawBoss = (g, e, cx, cy, time) => { if (!S || e.mode === 'away') return; e.guardFx = Math.max(0, (e.guardFx || 0) - 1 / 60);
-    const f = e.face || 1, x = e.x - cx, y = e.y - cy - HQ.h / 2, p = POSE[e.mode] || POSE.hover, flash = (e.hurtT || 0) > 0 || (e.flash || 0) > 0.06;
+    const f = e.face || 1, x = e.x - cx, y = e.y - cy - HQ.h / 2, p = (e.mode === 'dazed' && e.fall ? POSE.fogfall : POSE[e.mode]) || POSE.hover, flash = (e.hurtT || 0) > 0 || (e.flash || 0) > 0.06;
     if (S.stage !== 'down') { const fl = S.G.h.floor; g.globalAlpha = 0.25; ell(g, x, fl - cy - 1, 14, 2.5, '#10060a'); g.globalAlpha = 1; }
     if (S.cloak > 0) HQA.cloak(g, x, y, time);
     const at = HQA.drawQueen(g, x, y + (p.y || 0), f, p, time, flash);
     HQA.queenFx(g, { mode: e.mode, x, y, f, time, tip: at.tip, head: at.head, vx: (e.vx || 0) * f, vy: e.vy || 0, held: !!e.held });
+    if (e.mode === 'dazed') HNP.smokeCurl(g, x + f * 6, y + 2, time, e.fall ? 5 : 3);   /* the fog round her head (and the trail she falls through) */
     if (e.mode === 'aim' && e.held && Math.floor(time * 6) % 2) rect(g, x - f * 14, y + 10, 3, 3, '#ffd36b');
     if ((e.smokeCd || 0) > 0) { g.globalAlpha = 0.5; for (let k = 0; k < 3; k++) { const ph = (time * 2 + k / 3) % 1; rect(g, x + (k - 1) * 10, y - 12 - ph * 14, 4, 2, '#c8d0d8'); } g.globalAlpha = 1; } };   /* wary of smoke: her wings fan it off (the read of her smoke cooldown) */
   H.drawOver = (g, cx, cy, time) => { if (!S) return; const e = live(), X = v => R(v - cx), Y = v => R(v - cy), blink = Math.floor(time * 12) % 2 ? '#ff6b6b' : '#fff6e0';

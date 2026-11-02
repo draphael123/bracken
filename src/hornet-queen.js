@@ -36,7 +36,7 @@ export const HQ = {
   dive: { aim: [0.9, 0.72], held: 0.55, heldEvery: 3, speed: [250, 285], v0: 60, acc: 950, aimH: 96, dmg: 46, half: 9, skim: 0.4, chip: 0.5 },   /* chip: a plain block of the stoop STAGGERS her but jars a share of it through (a parry takes it clean) */   /* the stoop STARTS SLOW and gathers (v0 -> speed at acc): from her aim height a stoop takes ~0.3 s - leave as it gathers */
   stuck: { t: [3.0, 2.6], mul: 1.5 },
   winded: { t: 1.7, mul: 2 },
-  dazed: { t: 2.5, mul: 1.5, r: 30, h: 56, cd: 7 },   /* the smoke under her: within r across, h below her; after a daze she will not feel smoke again for cd s (no chain-lock) */
+  dazed: { t: [3.0, 2.6], mul: 1.5, r: 30, h: 56, g: 900, cd: 8, cdCloak: 2, rFog: 56, tFog: 4.0, inFog: 0.25 },   /* (claude/hornetsnest2) THE FOG GROUNDS HER: a pot that breaks ON her, or her body 0.25 s inside a hall fog cloud (rFog / tFog: src/hornets-nest-hands.js SMOKE.hallR / hallT), in ANY flying mode, folds her wings and she FALLS (g px/s^2) to the floor; the stun t (P1, P2) starts ON LANDING, then the thrash and the ward. After a grounding she is wary of fog for cd s (a cloud she flies into is fanned off: no chain-lock); in P2 the first fog on a cloaked queen only strips the cloak (then cdCloak). r / h: the old low rule (a carried or set-down pot under her in a dive / sweep / circle) stays */
   ward: 2.6, thrash: 0.5,
   sweep: { tell: 0.65, speed: 165, y: 13, dmg: 36, half: 12, chip: 0.65 },   /* a plain block JARS (half comes through) and she sweeps on; a PARRY staggers her; or jump her */
   buzz: { tell: 1.1, every: 3, n: 3, dmg: 38, r: 14, fall: 0.8, spread: 58, cool: 9 },
@@ -48,12 +48,12 @@ export const HQ = {
   pin: { t: 3.8, mul: 2, cap: 0.22, capLast: 0.3, last: 4.4, heroDmg: 8 },   /* a pin is worth at most cap of her (the blow that empties it, she heaves free: told); THE LAST COMB: capLast, held `last` s */
   descent: { every: 1.6, tell: 1.0, dmg: 26, r: 14 },   /* (her death) THE FALLING NEST: comb chunks down the trunk, each told by a red ring on the ledge it hits */
 };
-export const HQ_SAY = { wake: 'THE HORNET QUEEN', rule: 'HER STING STICKS IN COMB. SMOKE UNDER HER, AND SHE FALLS.', stuck: 'STUCK IN THE COMB', pull: 'SHE PULLS UP',
-  winded: 'STAGGERED', dazed: 'THE SMOKE DAZES HER', held: 'HELD...', buzz: 'THE COMB SHAKES', perch: 'THE PERCH GIVES WAY', brood: 'HER BROOD STIRS', hatch: 'HER BROOD HATCHES',
+export const HQ_SAY = { wake: 'THE HORNET QUEEN', rule: "HER STING STICKS IN COMB. A POT'S FOG DROPS HER.", stuck: 'STUCK IN THE COMB', pull: 'SHE PULLS UP',
+  winded: 'STAGGERED', dazed: 'THE FOG DROPS HER', burst: 'SHE BURST A POT - THE FOG DROPS HER', pot: 'HER POTS: E TAKES ONE, ATTACK THROWS IT. THE FOG GROUNDS HER.', held: 'HELD...', buzz: 'THE COMB SHAKES', perch: 'THE PERCH GIVES WAY', brood: 'HER BROOD STIRS', hatch: 'HER BROOD HATCHES',
   tear: 'SHE TEARS AT THE VAULT', torn: 'THE HALL TEARS: HONEY!', p2: 'THE HORNET QUEEN  THE HONEY HALL', rule2: 'HONEY FLOODS THE FLOOR. CUT A HANGING COMB: A STEP OUT OF THE HONEY - OR, AS SHE PASSES UNDER, A WEIGHT ON HER.',
   pinned: 'PINNED', last: 'THE LAST COMB COMES DOWN', ward: 'SHE SHAKES FREE', volley: 'STINGERS', cloak: 'THE SWARM CLOAKS HER', cloakOff: 'THE SMOKE SCATTERS HER SWARM',
   shell: 'HARD SHELL', cloaked: 'CLOAKED', warded: 'WARDED', jarred: 'JARRED: PARRY HER, OR JUMP HER', smokeOff: 'SHE FANS THE SMOKE AWAY', nest: 'THE NEST TEARS LOOSE: DOWN THE TRUNK!' };
-export const OPEN_NAME = { stuck: 'STUCK', winded: 'STAGGERED', dazed: 'DAZED', pinned: 'PINNED' };
+export const OPEN_NAME = { stuck: 'STUCK', winded: 'STAGGERED', dazed: 'GROUNDED', pinned: 'PINNED' };
 export const hqOpen = e => !!e && (e.mode === 'stuck' || e.mode === 'winded' || e.mode === 'dazed' || e.mode === 'pinned');
 const TELLS = new Set(['aim', 'sweepTell', 'buzzTell', 'volleyTell', 'cloakTell', 'tearTell']);
 export const hqTelling = e => TELLS.has(e.mode);
@@ -153,7 +153,7 @@ function stepP1(e, S, dt, P, w, hs) {
         if (!S.told.floor) { S.told.floor = 1; w.say('THE FLOOR DOES NOT HOLD HER STING. STAND ON A COMB PERCH AS SHE DIVES, THEN LEAVE.'); } }
       return; }
     case 'skim': e.x += e.vx * dt; e.y += e.vy * dt; if (e.modeT <= 0) { e.mode = 'rise'; e.modeT = 0.6; } return;
-    case 'stuck': case 'winded': case 'dazed': e.vx = 0; e.vy = 0; if (e.mode === 'dazed' && e.y < floor) e.y = Math.min(floor, e.y + 160 * dt); if (e.modeT <= 0) openEnd(e, S, w); return;
+    case 'stuck': case 'winded': case 'dazed': e.vx = 0; if (e.mode === 'dazed' && e.fall) { fogFall(e, S, dt, w); return; } e.vy = 0; if (e.mode === 'dazed' && e.y < floor) e.y = Math.min(floor, e.y + 160 * dt); if (e.modeT <= 0) openEnd(e, S, w); return;
     case 'thrash': if (e.modeT <= 0) { S.ward = HQ.ward; e.ward = S.ward; w.fx('ward', e.x, e.y); w.number(e.x, e.y - HQ.h - 18, HQ_SAY.ward, '#c8d8e8'); e.mode = 'rise'; e.modeT = 0.5; } return;
     case 'sweepTell': hoverTo(e, e.face > 0 ? H.x0 + 18 : H.x1 - 18, floor - HQ.sweep.y, 220, dt); if (e.modeT <= 0) { e.mode = 'sweep'; e.modeT = 2.6; e.vx = e.face * HQ.sweep.speed; e.vy = 0; w.sound('sweep'); } return;
     case 'sweep': { e.y += (floor - HQ.sweep.y - e.y) * Math.min(1, dt * 6); e.x += e.vx * dt;
@@ -204,11 +204,24 @@ function stuck(e, S, w, heap) { e.mode = 'stuck'; e.modeT = HQ.stuck.t[S.stage =
   w.sound('stuck'); w.shake(5); w.fx('open', e.x, e.y); w.number(e.x, e.y - HQ.h - 18, HQ_SAY.stuck, '#8fd160'); }
 function winded(e, S, w) { if (e.mode !== 'dive' && e.mode !== 'sweep') return; e.mode = 'winded'; e.modeT = HQ.winded.t; e.openT0 = e.modeT; e.vx = 0; e.vy = 0; S.n.winded++; S.act++;
   e.y = Math.min(e.y, S.G.h.floor); w.sound('winded'); w.fx('open', e.x, e.y); w.number(e.x, e.y - HQ.h - 18, HQ_SAY.winded, '#8fd160'); }
+/* (claude/hornetsnest2) THE FOG GROUNDS HER (any flying mode): returns true when it took (a cloak stripped, or she drops) */
 export function dazed(e, S, w) {
   if (S.ward > 0 || hqOpen(e) || e.mode === 'thrash' || e.mode === 'tearTell' || e.mode === 'tear' || e.mode === 'wake' || e.mode === 'enter' || e.mode === 'away' || e.mode === 'sleep') return false;
-  if (S.stage === 2 && S.cloak > 0) { S.cloak = 0; e.cloak = 0; S.n.cloakOff++; w.number(e.x, e.y - HQ.h - 18, HQ_SAY.cloakOff, '#c8d0d8'); w.sound('scatter'); return true; }
-  e.mode = 'dazed'; e.modeT = HQ.dazed.t; e.openT0 = e.modeT; e.vx = 0; e.vy = 0; S.n.dazed++; S.act++;
+  if (S.stage === 2 && S.cloak > 0) { S.cloak = 0; e.cloak = 0; S.n.cloakOff++; e.smokeCd = HQ.dazed.cdCloak; w.number(e.x, e.y - HQ.h - 18, HQ_SAY.cloakOff, '#c8d0d8'); w.sound('scatter'); return true; }
+  const stun = HQ.dazed.t[S.stage === 2 ? 1 : 0];
+  e.mode = 'dazed'; e.fall = 1; e.modeT = stun; e.openT0 = stun; e.vx = 0; e.vy = 0; e.smokeCd = HQ.dazed.cd; e.fogT = 0; S.n.dazed++; S.act++;
   w.sound('dazed'); w.fx('open', e.x, e.y); w.number(e.x, e.y - HQ.h - 18, HQ_SAY.dazed, '#8fd160'); return true;
+}
+/* where a falling queen lands: the hall's floor, or a perch / a comb cut down into the honey under her (their top) */
+function fallFloor(e, S) { let y = S.G.h.floor;
+  for (const p of S.perches) if (p.st !== 'gone' && e.x > p.x0p && e.x < p.x1p && p.y >= e.y - 2 && p.y < y) y = p.y;
+  for (const c of S.combs || []) if (c.st === 'down' && e.x > c.x0p && e.x < c.x1p && c.y >= e.y - 2 && c.y < y) y = c.y;
+  return y; }
+/* THE DROP: wings folded, she falls; the stun starts on landing (the timer is held full while she falls: she is OPEN all the way down) */
+function fogFall(e, S, dt, w) {
+  const D = HQ.dazed, stun = D.t[S.stage === 2 ? 1 : 0], fl = fallFloor(e, S);
+  e.vy = (e.vy || 0) + D.g * dt; e.y += e.vy * dt; e.modeT = stun; e.openT0 = stun;
+  if (e.y >= fl) { e.y = fl; e.vy = 0; e.fall = 0; w.sound('fall'); w.shake(4); w.dust(e.x, fl, 10); if (S.stage === 2 && w.splash) w.splash(e.x, fl); S.n.grounded = (S.n.grounded || 0) + 1; }
 }
 /* ---------- HER DEATH: THE FALLING NEST - the nest tears loose and comb comes down the trunk at the hero, each chunk told by a red ring on the ledge it will hit ---------- */
 export function stepEscape(S, dt, hs, w) {
@@ -226,13 +239,13 @@ function stepChunks(S, dt, hs, w) {
     if (c.st === 'told') { if (c.esc) { c.t -= dt; if (c.t <= 0) c.st = 'fall'; } continue; }
     if (c.st !== 'fall') continue;
     c.vy = Math.min(520, c.vy + 900 * dt); c.y += c.vy * dt;
-    if (c.y >= c.floorY) { c.st = 'done'; w.dust(c.x, c.floorY, 8); w.sound('chunk');
+    if (c.y >= c.floorY) { c.st = 'done'; w.dust(c.x, c.floorY, 8); w.sound('chunk'); if (!c.esc && w.strike) w.strike(c.x, c.floorY);
       w.hit([c.x - HQ.buzz.r, c.x + HQ.buzz.r, c.floorY - 26, c.floorY + 2], c.esc ? HQ.descent.dmg : HQ.buzz.dmg, c.esc ? 'falling comb' : 'comb', { key: c.key }); } }
   S.chunks = S.chunks.filter(c => c.st !== 'done');
 }
 function stepStingers(S, dt, hs, w) {
   for (const s of S.stingers) { s.x += s.vx * dt; s.y += s.vy * dt; s.life -= dt;
-    if (s.y >= S.G.h.floor - 1) s.life = 0;
+    if (s.y >= S.G.h.floor - 1) { s.life = 0; if (w.strike) w.strike(s.x, S.G.h.floor); }
     w.hit([s.x - 3, s.x + 3, s.y - 3, s.y + 3], HQ.volley.dmg, 'stinger', { key: s.key, blockable: true, onBlock: () => { s.life = 0; } }); }
   S.stingers = S.stingers.filter(s => s.life > 0);
 }
@@ -267,7 +280,7 @@ function stepP2(e, S, dt, P, w, hs) {
       return; }
     case 'skim': e.x += e.vx * dt; e.y += e.vy * dt; if (e.modeT <= 0) back(e, S); return;
     case 'rejoin': { const t = loopAt(S, S.loop.th); hoverTo(e, t.x, t.y, 200, dt); if (Math.hypot(t.x - e.x, t.y - e.y) < 8 || e.modeT <= 0) { e.mode = 'circle'; e.modeT = HQ.circle.lap * HQ.circle.laps[Math.random() < 0.5 ? 0 : 1]; } return; }
-    case 'stuck': case 'winded': case 'dazed': e.vx = 0; e.vy = 0; if ((e.mode === 'dazed' || e.mode === 'winded') && e.y < floor) e.y = Math.min(floor, e.y + 160 * dt); if (e.modeT <= 0) openEnd(e, S, w); return;
+    case 'stuck': case 'winded': case 'dazed': e.vx = 0; if (e.mode === 'dazed' && e.fall) { fogFall(e, S, dt, w); return; } e.vy = 0; if ((e.mode === 'dazed' || e.mode === 'winded') && e.y < floor) e.y = Math.min(floor, e.y + 160 * dt); if (e.modeT <= 0) openEnd(e, S, w); return;
     case 'pinned': e.vx = 0; e.vy = 0; if (e.modeT <= 0) { openEnd(e, S, w); S.pinned = null; } return;
     case 'thrash': if (e.modeT <= 0) { S.ward = HQ.ward; e.ward = S.ward; w.fx('ward', e.x, e.y); w.number(e.x, e.y - HQ.h - 18, HQ_SAY.ward, '#c8d8e8'); back(e, S); } return;
     case 'volleyTell': e.vx = 0; e.vy = 0; if (P) e.face = Math.sign(P.x - e.x) || e.face; if (e.modeT <= 0) { e.mode = 'volley'; e.modeT = 0.45; w.sound('volley'); w.number(e.x, e.y - HQ.h - 14, HQ_SAY.volley, '#ffd36b');

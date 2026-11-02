@@ -58,6 +58,10 @@ function standSprite() { return once('stand', () => { const [c, g] = canvas(26, 
 export function stand(g, x, y, time) { x = Math.round(x); y = Math.round(y); g.drawImage(standSprite(), x - 13, y - 30);
   g.globalAlpha = 0.5 + 0.3 * Math.sin(time * 5 + x); R(g, '#ff8a3a', x - 2, y - 11, 4, 1); g.globalAlpha = 1;
   smokeCurl(g, x, y - 29, time, 4); }
+/* (claude/hornetsnest2, GREYBOX - the art lane draws it) a hall stand whose pot is taken or burst: the bare tripod; regrow 0..1 over the last second = the smoke thickening and the pot coming back */
+function standBareSprite() { return once('standbare', () => { const [c, g] = canvas(26, 30); g.drawImage(standSprite(), 0, 0); g.clearRect(5, 10, 16, 18); for (let q = 6; q < 17; q++) { R(g, PAPER[1], 13 - q * 0.45, 29 - q, 2, 1); R(g, PAPER[1], 12 + q * 0.45, 29 - q, 2, 1); } R(g, PAPER[0], 11, 12, 4, 2); return c; }); }
+export function standEmpty(g, x, y, time, regrow = 0) { x = Math.round(x); y = Math.round(y); g.drawImage(standBareSprite(), x - 13, y - 30);
+  if (regrow > 0) { g.globalAlpha = regrow; g.drawImage(potSprite(), x - 6, y - 24); g.globalAlpha = 1; smokeCurl(g, x, y - 26, time, 4 + Math.round(regrow * 3)); } }
 /* ---------------- the pot in hand / set down / in flight ---------------- */
 function potSprite() { return once('pot', () => { const [c, g] = canvas(13, 13);
   R(g, CLAY[0], 3, 3, 8, 8); R(g, CLAY[0], 2, 5, 10, 4); R(g, CLAY[2], 3, 4, 7, 7); R(g, CLAY[2], 2, 6, 9, 3); R(g, CLAY[3], 3, 5, 2, 5); R(g, CLAY[1], 9, 6, 2, 4); R(g, CLAY[4], 3, 6, 1, 2);
