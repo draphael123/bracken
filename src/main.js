@@ -23919,7 +23919,7 @@ function cvTile(x, y, t) {
   return true;
 }
 function caravanReset() {
-  if (L && (L.caravanCrumbles || L.kwoodCrumbles) && L.crumbles && L.crumbles.length) { if (grid0) keepCrumbleReset(); else crumbleInit(L); }   /* (claude/kingsfix2: and KINGSWOOD's burning boughs) (claude/caravan2) THE SLABS on the quicksand are whole again on every attempt */
+  if (L && (L.caravanCrumbles || L.kwoodCrumbles || L.hornetsNest) && L.crumbles && L.crumbles.length) { if (grid0) keepCrumbleReset(); else crumbleInit(L); }   /* (claude/kingsfix2: and KINGSWOOD's burning boughs) (claude/caravan2) THE SLABS on the quicksand are whole again on every attempt */
   dwClearStones();   /* (claude/caravan2) the Dune Worm's ledges go back under the sand on every attempt */
   CV = null; if (!L || !L.caravan) return;
   const ws = props.filter(p => p.t === 'awningwinch');   /* the camp's, and THE HOLLOW WINCH (the worm's trap) */
@@ -23969,7 +23969,7 @@ function updateCaravan(dt) {
   /* (claude/ksar2) THE SUN v2 (src/sun-hands.js): the meter for every hero, and the DRAIN straight off the bar - no blow, no flinch, no mercy window -
      a share of max health a second that grows with the meter; the sizzle and the '-n' once a beat; the step-out warning */
   if (state === 'play' && SUNH) { SUNH.update(dt); const r = SUNH.last; CV.shaded = r ? r.shaded : true; CV.swim = r ? r.swim : 0; CV.stage = r ? r.stage : 0; }
-  if (L.caravanCrumbles && L.crumbles && L.crumbles.length && state === 'play') updateCrumbles(dt);   /* (claude/caravan2) THE SLABS lying on the quicksand: stand on one and it cracks, three beats, and goes in (src/tower-collapse.js) */
+  if ((L.caravanCrumbles || L.hornetsNest) && L.crumbles && L.crumbles.length && state === 'play') updateCrumbles(dt);   /* (claude/caravan2) THE SLABS lying on the quicksand: stand on one and it cracks, three beats, and goes in (src/tower-collapse.js) */
   /* QUICKSAND: it holds you and slows you; a jump heaves you up it, and at the surface a jump takes you out */
   for (const pp of players) asPlayer(pp, () => { if (P.dead) return;
     if (P.onMover) { P.qsDepth = 0; return; }   /* (claude/caravan2) on a wagon bed lying on the quicksand you are on the bed, not in the sand - until it goes under */
