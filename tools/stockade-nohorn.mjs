@@ -13,7 +13,7 @@ const TS = 16, fails = [];
 const check = (ok, msg) => { if (!ok) fails.push(msg); };
 const lv = LEVELS.find(l => l.id === 'stockade'); const L = lv.build();
 const gate = L.stockade.gate, spare = L.stockade.spare;
-const blower = L.ents.find(e => e.t === 'archer' && e.stk && e.stk.drops);
+const blower = L.ents.find(e => e.t === 'archer' && e.stk && e.stk.drops && e.stk.dozing);   /* (claude/stockade3-1101: the Watchpost blower drops a horn too now - this is the walk's dozer) */
 check(!!blower, 'no dropping blower on the walk');
 check(!!spare, 'L.stockade.spare (the spare horn\'s post) is missing');
 if (blower && spare) {

@@ -28,6 +28,19 @@
                         takes BOTH lashings (the tower falls), at one peg that lashing. Kegs chain each other and the level's barrels.
      THE LOOKOUT        L.stockade.lookouts: a horn tower on lashed stakes (the kennels). A blast (or fire) that takes its stilts brings the
                         whole lookout down: the blower on it falls with it, silenced.
+   (claude/stockade3-1101, Daniel 11-01: "the level and the boss should better use the level's mechanics" - scratch/brief-stockade3-1101.md)
+     THE CLEAT          a pile may be tied off LOW (ent `cleat: dx`, a floor peg dx tiles from its drop): strike the cleat, not the lashing - the
+                        pile can hang anywhere over a floor (the gate's mouth, the hall's rafters) and still be cut from the floor, out from under it.
+     THE RAMP           a pile with `ramp: [[du, row], ..]` lands as a STEP-HEAP: those cells (du off its column) become lashed logs you stand on
+                        (T.PLANK, one-way). A ramp pile STAYS DOWN for the run (like the opened gate) - drop it early for the climb, or save it for
+                        the crush. THE BARRED GATE's pile is one: the loud way (the horn opens the gate, the crew run under it, cut) or the quiet
+                        way (cut it first, climb the logs onto the gate walk, and over the crew while they sleep).
+     THE CRANKS         a horn blown by a crank gate: its crew wind it open from inside for their own horn (the barred gate is not the only one).
+     HE HEARS YOUR HORN the Chieftain, on his feet and between blows, turns to your horn: HE HEARS THE HORN - he walks to the nearest hung hall
+                        pile by where you blew it (or stands, turned to the sound) and looks up for CHIEF_LURE.look s. Struck, he breaks off; a
+                        blow within CHIEF_LURE.cd of the last lure he ignores (told). THE HALL PILES (ents `hall: true`): two over the floor, each
+                        cut at its cleat; one that lands on him CRUSHES him (planted, x2, the quarter cap) - once an attempt each. His war horn's
+                        crew come in at the doors under them: a crew crushed under a hall pile is told and drips you a little health (once a pile).
    Lines are said through ctx.number with STK_SAY (routed by src/hint-lines.js, tools/hint-shown.mjs). */
 import * as SA from './redraw/stockade2_art.js';   /* (claude/stockade2art) the drawn pieces: piles, horn, gate, supports, the war tower */
 export const STK_SAY = {
@@ -37,8 +50,16 @@ export const STK_SAY = {
   chiefHorn: 'HIS WAR HORN: SILENCE IT', silenced: 'SILENCED: CUT HIM', sounded: 'HIS CREW COMES', answered: 'HORN ANSWERS HORN', pulled: 'YOUR HORN SENDS HIS CREW HOME',
   keg: 'POWDER: STRIKE IT BACK', kicked: 'IT ROLLS', blasted: 'BLASTED: CUT HIM', powderTower: 'THE POWDER TAKES THE LASHINGS', lookout: 'THE LOOKOUT COMES DOWN',
   dropped: 'HE DROPS THE HORN', hornOut: 'THE HORN SOUNDS',
+  ramp: 'THE LOGS MAKE A STAIR', crank: 'THEY OPEN IT TO THEIR HORN', hears: 'HE HEARS THE HORN', ignores: 'HE IGNORES IT', sees: 'HE SEES YOU',
+  crushedHim: 'CRUSHED: CUT HIM', fodder: 'CRUSHED: +HEALTH', hallHorn: 'A HORN HANGS BY THE DOOR: E BLOWS IT',
   needHorn: 'A HORN OPENS THE GATE', spare: 'THE SPARE HORN: E BLOWS IT',   /* (claude/smallfix6) the told backup: no horn at the gate, a spare hangs on the gate tower's post */
 };
+/* (claude/stockade3-1101) HE HEARS YOUR HORN: walk (px/s) to the pile, look up for look (s; look2 in his second wind), cd between lures (s), near: a hero this close and
+   he sees you; reach: a hall pile this far (px) from where you blew is the one he walks to. CRUSH: open (s) under the logs, hit: the knock (of his max), drip: what a
+   crushed crew gives back (of yours) */
+export const CHIEF_LURE = { walk: 84, walk2: 96, look: 1.7, look2: 1.3, stand: 0.8, cd: 10, near: 24, reach: 8 * 16, maxWalk: 3.2 };
+export const CRUSH = { open: 2.8, hit: 0.04, drip: 0.1 };
+const LURE_MODES = new Set(['walk', 'landed', 'toRack', 'rainLoose', 'sweep', 'kegThrow']);
 export const LURE = { r: 15 * 16, ry: 11 * 16, t: 6, cd: 2.4, near: 40, spread: 9, speed: 70, crewSpeed: 125 };
 export const PILE = { creak: 0.35, half: 26, dmgHero: 14, shake: 4 };
 export const GATE = { r: 16 * 16, delay: 0.5 };
@@ -61,11 +82,15 @@ export function makeStockadeHands(ctx) {
   const storeFrom = L => { const A0 = L.arena, bs = (L.ents || []).filter(e => e.t === 'barrel' && A0 && e.x * 16 > A0.x0 - 40 * 16 && e.x * 16 < A0.x0), grp = bs.filter(b => bs.some(o => o !== b && Math.abs(o.x - b.x) <= 3));
     return grp.length >= 2 ? { x: (grp.reduce((a, b) => a + b.x, 0) / grp.length) * 16 + 8, floor: (grp[0].y + 1) * 16, scorch: 0, n: 0, chainT: 0 } : null; };   /* (claude/chief3) his powder kegs in the hall, the crew his horn called, the lookouts on stakes */
   const on = () => !!(ctx.L && ctx.L.stockade);
-  /* per level load (not per death): the horn you took stays yours, the gate you opened stays open */
-  function load() { Lk = ctx.L; S = ctx.L.stockade; held = false; gateOpen = false; gateAge = 0; tookSaid = false; seenArea = -1; reset(); }
+  let rampDown = new Set(), cranks = [], lst = {};   /* (claude/stockade3-1101) the ramp piles down this run; the crank gates opening to a horn; the lure's counts */
+  /* per level load (not per death): the horn you took stays yours, the gate you opened stays open, a ramp pile you dropped stays down */
+  function load() { Lk = ctx.L; S = ctx.L.stockade; held = false; gateOpen = false; gateAge = 0; tookSaid = false; seenArea = -1; rampDown = new Set(); lst = { lure: 0, ignored: 0, crushed: 0, fodder: 0, ramp: 0, crank: 0 }; reset(); }
   function reset() {
-    if (!on()) return; if (Lk !== ctx.L) { Lk = ctx.L; S = ctx.L.stockade; held = false; gateOpen = false; tookSaid = false; seenArea = -1; }
-    piles = (ctx.L.ents || []).filter(e => e.t === 'logpile').map(e => ({ id: e.id, x: e.x * TS + 8, y: (e.y + 1) * TS, floor: floorUnder(e.x, e.y + 2), st: 'hung', t: 0, by: 0, vy: 0 }));
+    if (!on()) return; if (Lk !== ctx.L) { Lk = ctx.L; S = ctx.L.stockade; held = false; gateOpen = false; tookSaid = false; seenArea = -1; rampDown = new Set(); lst = { lure: 0, ignored: 0, crushed: 0, fodder: 0, ramp: 0, crank: 0 }; }
+    piles = (ctx.L.ents || []).filter(e => e.t === 'logpile').map(e => { const floor = e.floor !== undefined ? e.floor * TS : floorUnder(e.x, e.y + 2), p = { id: e.id, x: e.x * TS + 8, y: (e.y + 1) * TS, floor, st: 'hung', t: 0, by: 0, vy: 0, tx: e.x,
+      cleat: e.cleat !== undefined ? (e.x + e.cleat) * TS + 8 : undefined, ramp: e.ramp || null, hall: !!e.hall, beam: !!(e.hall || e.beam), drip: false };   /* floor: a pile that lands on a walk (one-way boards) names its row */
+      if (p.ramp && rampDown.has(p.id)) { p.st = 'down'; p.by = floor; layRamp(p); } return p; });   /* (claude/stockade3-1101) a ramp pile dropped this run is still down, its stair still laid */
+    cranks = [];
     pickups = []; hintCd = 0; if (S && S.spare && !held) pickups.push({ x: S.spare.x, y: S.spare.y, vy: 0, spare: true });   /* (claude/smallfix6) THE SPARE HORN: hung on the gate tower's post until ANY horn is yours - a hero who walked past the dozing blower is never shut out */
     rings = []; cd = 0; gateT = 0; examOn = false; banner = null; kegs = []; crew = []; fx = []; store = storeFrom(ctx.L); st = { horn: 0, sil: 0, snd: 0, keg: 0, kick: 0, blast: 0, ptower: 0 };
     looks = ((S && S.lookouts) || []).map(o => ({ ...o, down: false }));
@@ -74,6 +99,9 @@ export function makeStockadeHands(ctx) {
     if (W && !T0) tower = null;
   }
   function floorUnder(tx, ty) { for (let y = ty; y < ctx.L.H; y++) if (ctx.solidAt(tx, y)) return y * TS; return ctx.L.H * TS; }
+  /* (claude/stockade3-1101) THE RAMP: a ramp pile's step-heap, laid where the map has air (one-way logs: walked through, stood on) */
+  const rampCells = p => (p.ramp || []).map(([du, row]) => [p.tx + du, row]);
+  function layRamp(p) { const c = rampCells(p).filter(([x, y]) => !ctx.solidAt(x, y) && !ctx.oneWay(x, y)); if (c.length) ctx.setCells(c, ctx.T.PLANK); }
   const hero = () => ctx.P();
 
   /* ---- THE HORN ---- */
@@ -87,7 +115,9 @@ export function makeStockadeHands(ctx) {
     const P = hero(); if (!held || cd > 0 || !P || P.dead) return false;
     cd = LURE.cd; ctx.sfx.hornBlast && ctx.sfx.hornBlast(); ctx.shake(2);
     rings.push({ x: P.x, y: P.y - 14, t: 0 }, { x: P.x, y: P.y - 14, t: -0.18 }, { x: P.x, y: P.y - 14, t: -0.36 });
-    const pile = piles.filter(p => p.st === 'hung' && Math.abs(p.x - P.x) < 6 * TS && p.y >= P.y - 3 * TS).sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0];
+    /* (claude/stockade3-1101) a pile tied off at a cleat is blown for from the floor under it: near the pile OR its cleat, at any height over you */
+    const pd = p => Math.min(Math.abs(p.x - P.x), p.cleat !== undefined ? Math.abs(p.cleat - P.x) : 1e9);
+    const pile = piles.filter(p => p.st === 'hung' && !p.hall && pd(p) < 6 * TS && (p.cleat !== undefined || p.y >= P.y - 3 * TS)).sort((a, b) => pd(a) - pd(b))[0];
     const at = pile ? pile.x : P.x; let n = 0;
     for (const e of ctx.enemies()) {
       if (!e.alive || e.dying > 0 || e.maxHp || e.mini || e.elite || e.harmless || !LURED.has(e.t)) continue;
@@ -95,17 +125,43 @@ export function makeStockadeHands(ctx) {
       e.lureT = LURE.t; e.lureX = at + (((n++ % 3) - 1) * LURE.spread); e.cook = false; e.gateGuard = e.gateGuard && !gateOpen ? 'out' : false; e.emote = 'shock'; e.emoteT = 0.6; e.seenP = true;
     }
     if (S && S.gate && !gateOpen && Math.abs(S.gate.x * TS + 8 - P.x) < GATE.r) gateT = GATE.delay;
+    /* (claude/stockade3-1101) THE CRANK GATES open to their own horn too: the crew inside wind it (the barred gate is not the only one) */
+    for (const pr of ctx.props()) if (pr.t === 'crank' && !pr.open && pr.wall !== undefined && Math.abs(pr.wall * TS + 8 - P.x) < GATE.r && Math.abs(pr.y - P.y) < 8 * TS && !cranks.some(c => c.pr === pr)) cranks.push({ pr, t: GATE.delay });
     /* (claude/hookpolish) YOUR HORN PULLS HIS CREW AWAY: the war horn has already called them in - your captured horn is the louder call. Every crew goblin
        in the hall turns and runs BACK TO THE DOOR IT CAME IN BY (a hall's crates can't stop a runner going home) and stands there looking up for LURE.t (it notices you
        if you come near, or if struck). He stands alone. */
     { const cb = ctx.boss(), A = ctx.L.arena; let pulled = 0;
       if (cb && cb.alive && cb.t === 'chief' && A) { let fx = 0;
-        for (const e of ctx.enemies()) { if (!e.alive || e.dying > 0 || !e.chiefCrew) continue; fx = e.x < (A.x0 + A.x1) / 2 ? A.x0 + 40 : A.x1 - 40; e.lureT = LURE.t; e.lureSp = LURE.crewSpeed; e.lureX = fx; e.emote = 'shock'; e.emoteT = 0.6; e.seenP = true; pulled++; }
+        for (const e of ctx.enemies()) { if (!e.alive || e.dying > 0 || !e.chiefCrew) continue; fx = e.x < (A.x0 + A.x1) / 2 ? A.x0 + 40 : A.x1 - 40; { const hp = piles.find(p => p.hall && p.st === 'hung' && (p.x < (A.x0 + A.x1) / 2) === (fx < (A.x0 + A.x1) / 2)); if (hp) fx = hp.x; }   /* (claude/stockade3-1101) home is under the hall's logs while they hang: his crew are fodder */ e.lureT = LURE.t; e.lureSp = LURE.crewSpeed; e.lureX = fx; e.emote = 'shock'; e.emoteT = 0.6; e.seenP = true; pulled++; }
         if (pulled) say(cb.x, cb.y - cb.h - 24, 'pulled', '#8fd160'); } }
     /* (claude/chief3) HORN ANSWERS HORN: blown while the Chieftain winds his, his crew do not know which call to answer - nobody comes */
     const ch = ctx.boss(); if (ch && (ch.mode === 'horn' || ch.mode === 'towerHorn') && Math.abs(ch.x - P.x) < LURE.r && !ch.hornAnswered) { ch.hornAnswered = true; say(ch.x, ch.y - ch.h - 22, 'answered', '#8fd160'); }
+    else if (ch) chiefLure(ch, P);
     say(P.x, P.y - 30, 'blow');
     return true;
+  }
+  /* (claude/stockade3-1101) HE HEARS YOUR HORN: on his feet, between blows, off cooldown - he turns to it and goes to the hall pile by where you blew it */
+  const lureable = ch => !!ch && ch.alive && !chiefUp(ch) && LURE_MODES.has(ch.mode) && !ch.towerGo && !(tower && (tower.st === 'run'));
+  function chiefLure(ch, P) {
+    if (!lureable(ch)) return false;
+    if (ch.lureCd > 0) { lst.ignored++; say(ch.x, ch.y - ch.h - 22, 'ignores', '#ff9a5c'); return false; }
+    const A = ctx.L.arena, cd = p => Math.min(Math.abs(p.x - P.x), p.cleat !== undefined ? Math.abs(p.cleat - P.x) : 1e9);
+    const pile = piles.filter(p => p.hall && p.st === 'hung' && cd(p) < CHIEF_LURE.reach).sort((a, b) => cd(a) - cd(b))[0];
+    ch.mode = 'lured'; ch.lureCd = CHIEF_LURE.cd; ch.lureHp = ch.hp; ch.vx = 0; ch.lureLook = false; ch.lureN = (ch.lureN || 0) + 1; lst.lure++;
+    ch.lureX = pile ? Math.max(A.x0 + 14, Math.min(A.x1 - 14, pile.x)) : ch.x; ch.modeT = pile ? CHIEF_LURE.maxWalk : 0; ch.lurePile = pile ? pile.id : null;
+    if (!pile) ch.face = Math.sign(P.x - ch.x) || ch.face;
+    ctx.number(ch.x, ch.y - ch.h - 12, '?', '#ffd36b'); say(ch.x, ch.y - ch.h - 22, 'hears', '#ffd36b'); ctx.sfx.chiefBark && ctx.sfx.chiefBark();
+    return true;
+  }
+  /* his lured beat (chiefStep): the walk to the pile, the look up; a blow, or a hero at his elbow, and he sees you */
+  function chiefLured(e, dt) {
+    const P = hero(), p2 = e.phase === 2;
+    if (e.hp < e.lureHp || (e.lureLook && P && !P.dead && Math.abs(P.x - e.x) < CHIEF_LURE.near && Math.abs(P.y - e.y) < 24)) {   /* (on his way to the sound he walks past you; stood looking up, a hero at his elbow is seen) */ e.mode = 'walk'; e.modeT = 0.25; e.vx = 0; say(e.x, e.y - e.h - 22, 'sees', '#ff9a5c'); return; }
+    e.vy = Math.min(400, (e.vy || 0) + 1000 * dt); e.anim = (e.anim || 0) + dt; e.modeT -= dt;
+    if (!e.lureLook) {   /* (the dais is two rows of stone: walked into, he steps up onto it and off - never stuck short of the logs) */ const d = e.lureX - e.x; e.vx = Math.abs(d) > 4 ? Math.sign(d) * (p2 ? CHIEF_LURE.walk2 : CHIEF_LURE.walk) : 0; if (e.vx) e.face = Math.sign(e.vx);
+      if (!e.vx || e.modeT <= 0) { e.lureLook = true; e.vx = 0; e.modeT = e.lurePile ? (p2 ? CHIEF_LURE.look2 : CHIEF_LURE.look) : CHIEF_LURE.stand; } }
+    else { e.vx = 0; if (e.modeT <= 0) { e.mode = 'walk'; e.modeT = 0.3; e.lureLook = false; } }
+    const r = ctx.moveBody(e, e.vx * dt, e.vy * dt); if (r && r.ground) e.vy = 0; if (r && r.hitX && r.ground && !e.lureLook && e.vx) e.vy = -340;
   }
   function interact(P) { if (!on() || !held) return false; return blow(); }
 
@@ -157,14 +213,26 @@ export function makeStockadeHands(ctx) {
     /* the piles */
     const hb = ctx.atkBox();
     for (const p of piles) {
-      if (p.st === 'hung' && hb && ctx.overlap(hb, { l: p.x - 9, r: p.x + 9, t: p.y - 22, b: p.y }) && ctx.hitOnce(p)) { p.st = 'creak'; p.t = PILE.creak; ctx.sfx.crack && ctx.sfx.crack(); }
+      /* (claude/stockade3-1101) a pile tied off low is cut at its CLEAT on the floor; the rest at the lashing by the walk */
+      const cut = p.cleat !== undefined ? { l: p.cleat - 7, r: p.cleat + 7, t: p.floor - 18, b: p.floor } : { l: p.x - 9, r: p.x + 9, t: p.y - 22, b: p.y };
+      if (p.st === 'hung' && hb && ctx.overlap(hb, cut) && ctx.hitOnce(p)) { p.st = 'creak'; p.t = PILE.creak; ctx.sfx.crack && ctx.sfx.crack(); if (p.cleat !== undefined) ctx.sparks(p.cleat, p.floor - 8, (P && P.face) || 1, 4); }
       else if (p.st === 'creak') { p.t -= dt; if (p.t <= 0) { p.st = 'fall'; p.by = p.y; p.vy = 60; ctx.sfx.throwWhoosh && ctx.sfx.throwWhoosh(); } }
       else if (p.st === 'fall') { p.vy += 1300 * dt; p.by += p.vy * dt;
-        if (p.by >= p.floor) { p.by = p.floor; p.st = 'down'; ctx.shake(PILE.shake); ctx.sfx.heavy && ctx.sfx.heavy(); ctx.dust(p.x, p.floor, 14); let n = 0;
-          for (const e of ctx.enemies()) if (e.alive && !e.maxHp && !e.mini && Math.abs(e.x - p.x) < PILE.half && e.y > p.floor - 40 && e.y <= p.floor + 4) { ctx.hurt(e, 999, p.x); n++; }
+        if (p.by >= p.floor) { p.by = p.floor; p.st = 'down'; ctx.shake(PILE.shake); ctx.sfx.heavy && ctx.sfx.heavy(); ctx.dust(p.x, p.floor, 14); let n = 0, crew = 0;
+          for (const e of ctx.enemies()) if (e.alive && !e.maxHp && !e.mini && Math.abs(e.x - p.x) < PILE.half && e.y > p.floor - 40 && e.y <= p.floor + 4) { if (e.chiefCrew) crew++; ctx.hurt(e, 999, p.x); n++; }
           if (P && !P.dead && Math.abs(P.x - p.x) < PILE.half - 6 && P.y > p.floor - 30 && P.y <= p.floor + 4) ctx.damage(p.x, PILE.dmgHero, { name: 'THE LOGS' });
-          if (n) say(p.x, p.floor - 40, 'crushed', '#8fd160'); } }
+          /* (claude/stockade3-1101) THE HALL PILES: on him - CRUSHED and open; on his crew - told, and a drip of health (once a pile) */
+          const ch = ctx.boss(); let him = false;
+          if (p.hall && ch && !chiefUp(ch) && !['toTower', 'towerClimb', 'towerFall', 'sleep', 'wake', 'leap'].includes(ch.mode) && Math.abs(ch.x - p.x) < PILE.half + ch.w / 2 && Math.abs(ch.y - p.floor) < 8) { crushChief(ch, p); him = true; }
+          if (p.hall && crew && !p.drip && P && !P.dead) { p.drip = true; lst.fodder += crew; ctx.heal(Math.round(P.maxHp * CRUSH.drip)); say(P.x, P.y - 34, 'fodder', '#8fd160'); }
+          if (p.ramp) { rampDown.add(p.id); layRamp(p); lst.ramp++; say(p.x, p.floor - 52, 'ramp', '#ffd36b'); }
+          if (n && !him) say(p.x, p.floor - 40, 'crushed', '#8fd160'); p.pinned = crew || (n && !him ? n : 0); } }
     }
+    /* (claude/stockade3-1101) the crank gates their horn opened */
+    for (const c of cranks) { c.t -= dt; if (c.t <= 0 && !c.pr.open) { ctx.openCrank(c.pr); lst.crank++; say(c.pr.wall * TS + 8, c.pr.y - 48, 'crank', '#8fd160'); } }
+    cranks = cranks.filter(c => c.t > 0 && !c.pr.open);
+    /* (claude/stockade3-1101) THE HALL'S HORN: a fight begun without one (boss select, practice) is handed the horn that hangs by the hall door */
+    if (!held && ctx.boss() && piles.some(p => p.hall)) { held = true; if (P) say(P.x, P.y - 30, 'hallHorn'); }
     /* the exam */
     if (S && S.exam && !examOn && P && !P.dead) { const tx = P.x / TS, ty = P.y / TS, z = S.exam;
       if (tx >= z.x0 && tx <= z.x1 + 1 && ty >= z.y0 && ty <= z.y1) { examOn = true; say(P.x, P.y - 30, 'exam', '#ff9a5c'); ctx.sfx.hornDraw && ctx.sfx.hornDraw();
@@ -245,6 +313,13 @@ export function makeStockadeHands(ctx) {
     say(e.x, e.y - e.h - 24, 'sounded', '#ff9a5c');
     for (let i = 0; i < n; i++) { const left = i % 2 === 0, x = left ? A.x0 + 48 : A.x1 - 48;   /* (in at the doors, past the fire strips his second wind lights) */ const q = ctx.spawnFoe(HORN.crew[i] || 'sprig', x, A.floor, left ? 1 : -1); if (q) { q.chiefCrew = true; crew.push(q); fx.push(SA.newBlast(x + (left ? -14 : 14), A.floor, 0, 'door')); } }   /* (claude/chief3art) the doors flung open: firelight and dust */
   }
+  /* (claude/stockade3-1101) CRUSHED: the logs knock him down where he stands - his 'planted' read (x2, the quarter cap), as SILENCED and BLASTED */
+  function crushChief(ch, p) {
+    const m = ch.maxHp || 1; ch.hp = Math.max(1, ch.hp - Math.round(m * CRUSH.hit)); ctx.number(ch.x, ch.y - ch.h - 4, String(Math.round(m * CRUSH.hit)), '#ffffff');
+    if (ch.mode === 'horn') ch.hornCd = ch.phase === 2 ? HORN.every2 : HORN.every;
+    ch.mode = 'planted'; ch.modeT = CRUSH.open; ch.openHp0 = ch.hp; ch.vx = 0; ch.stagger = Math.max(ch.stagger || 0, 0.3); ch.poseKind = 'crushed'; ch.crushN = (ch.crushN || 0) + 1; lst.crushed++;
+    ctx.shake(6); say(ch.x, ch.y - ch.h - 12, 'crushedHim', '#8fd160');
+  }
   function chiefCap(e, dmg) {
     const m = e.maxHp || 1; let d = Math.min(dmg, Math.max(1, Math.round(m * CAP.blow)));
     if (e.mode === 'planted' && e.openHp0 !== undefined) d = Math.min(d, Math.max(1, Math.round(e.hp - (e.openHp0 - m * CAP.window))));
@@ -278,6 +353,8 @@ export function makeStockadeHands(ctx) {
     /* (claude/chief3) HIS WAR HORN and HIS POWDER on the ground: from a walk, the horn when it is due, a keg in his club at range */
     if (e.mode === 'sleep' || e.mode === 'wake') return false;
     if (e.hornCd === undefined) { e.hornCd = HORN.first; e.kegCd = KEG.first; }
+    if (e.lureCd > 0) e.lureCd -= dt;   /* (claude/stockade3-1101) HE HEARS YOUR HORN: his lured beat, and the cooldown before he answers it again */
+    if (e.mode === 'lured') { if (e.towerGo) { e.mode = 'walk'; e.modeT = 0; } else { chiefLured(e, dt); return true; } }
     const up = chiefUp(e) || ['toTower', 'towerFall', 'towerHorn', 'towerKeg'].includes(e.mode);
     if (!up) { e.hornCd -= dt; e.kegCd -= dt; }
     { const P = hero(), gm = e.mode;
@@ -325,14 +402,28 @@ export function makeStockadeHands(ctx) {
   /* ---- drawing (claude/stockade2art: src/redraw/stockade2_art.js) ---- */
   function drawWorld(g, cx, cy, time) {
     if (!on()) return;
-    for (const p of piles) SA.drawPile(g, p, cx, cy, time);
+    for (const p of piles) { drawTie(g, p, cx, cy, time); if (p.ramp && p.st === 'down') drawRamp(g, p, cx, cy); else SA.drawPile(g, p, cx, cy, time); if (p.st === 'down' && p.pinned) SA.drawPinned(g, p.x - cx, p.floor - cy, p.pinned); }
     for (const k of pickups) if (!k.got) { if (k.spare) { const px = Math.round(k.x - cx), py = Math.round(k.y - cy); g.fillStyle = '#3a2a1a'; g.fillRect(px - 1, py - 30, 3, 30); g.fillRect(px - 4, py - 30, 9, 2); g.fillStyle = '#6b4a2a'; g.fillRect(px, py - 30, 1, 30); SA.drawHornPickup(g, { x: k.x, y: k.y - 14 }, cx, cy, time); } else SA.drawHornPickup(g, k, cx, cy, time); }   /* (the spare hangs from a hook on its post) */
+    if (S && S.gate) SA.drawGateWalk(g, Lk, cx, cy);
     if (S && S.gate) SA.drawGate(g, S.gate, cx, cy, { open: gateOpen, age: gateAge, lifting: gateT > 0 ? 1 - gateT / GATE.delay : 0 }, time);
     for (const e of ctx.enemies()) if (e.alive && e.dozing) SA.drawZs(g, Math.round(e.x - cx), Math.round(e.y - e.h - cy), time);   /* the dozing blower's Zs */
     if (tower) SA.drawWarTower(g, tower, cx, cy, time);
     for (const lo of looks) if (lo.down) { if (lo.at === undefined) lo.at = time; SA.drawLookFall(g, lo, cx, cy, time - lo.at); }   /* (claude/chief3art) the lookout's stilts topple, its deck breaks and drops, then the heap stays */
     for (const k of kegs) drawKeg(g, k, cx, cy, time);
   }
+  /* (claude/stockade3-1101, GREYBOX - the art lane's turn) THE CLEAT: a peg on the floor and the rope from it up to the pile (glinting while the pile hangs; brighter
+     while the Chieftain stands under a hall pile); a hall pile's beam across the rafters over it */
+  function drawTie(g, p, cx, cy, time) {   /* (claude/stockade3art) the rafter beam, the gallows jib and the peg are SA's drawn pieces */
+    const px = Math.round(p.x - cx), py = Math.round(p.y - cy), live = p.st === 'hung' || p.st === 'creak';
+    if (p.beam && live) SA.drawBeam(g, px, py, p.hall);
+    if (p.ramp && !p.hall) SA.drawJib(g, px, py);
+    if (p.cleat === undefined) return;
+    const qx = Math.round(p.cleat - cx), qy = Math.round(p.floor - cy);
+    const ch = ctx.boss(), under = p.hall && ch && Math.abs(ch.x - p.x) < PILE.half + ch.w / 2;
+    SA.drawCleat(g, qx, qy, p.ramp && !p.hall ? px - 1 : px, p.ramp && !p.hall ? py - 26 : py - 28, live, under, time);
+  }
+  /* THE RAMP: the step-heap of logs a ramp pile lands as - log ends on every cell it laid */
+  function drawRamp(g, p, cx, cy) { SA.drawStair(g, rampCells(p), cx, cy); }
   /* (claude/chief3art) behind the props: the powder store's rack, tarp, spare kegs and sacks */
   function drawBack(g, cx, cy, time) { if (!on() || !store) return; SA.drawStoreBack(g, store.x, store.floor, store.scorch, cx, cy); }
   /* (claude/chief3art) a camp barrel in the Stockade IS a powder keg: its hoops and red burst, a cord that burns down, a roll */
@@ -353,14 +444,18 @@ export function makeStockadeHands(ctx) {
       SA.drawHornBar(g, x, y, k, e.mode === 'horn' ? (e.hornHits || 0) : 0, e.mode === 'horn' ? HORN.hits : 0, time);
       if (k >= HORN_BLOW_AT) SA.drawChiefFx(g, 'blow', x, fy, f, k, time);
     }
-    if (e.mode === 'planted' && e.poseKind) SA.drawChiefFx(g, e.poseKind, x, fy, f, 0, time);
+    if (e.mode === 'planted' && e.poseKind === 'crushed') { SA.drawCrushLogs(g, x, fy, f); SA.drawCrushFx(g, x, fy, f, time); }
+    else if (e.mode === 'planted' && e.poseKind) SA.drawChiefFx(g, e.poseKind, x, fy, f, 0, time);
+    /* (claude/stockade3-1101) HE HEARS THE HORN: a '?' over him while he looks for it (greybox - the art lane's turn) */
+    if (e.mode === 'lured') SA.drawLureMark(g, x, top - 22, f, time);
     if (e.mode === 'kegTell' || e.mode === 'towerKeg') { const kx = x + f * 9, ky = fy - 44; SA.drawPowderKeg(g, kx, ky, 0, 1, time); SA.drawFuseBar(g, kx, ky - 22, 1, time); }   /* the keg in both hands, overhead (his frame 25) */
   }
   /* the Chieftain's frame on the tower (src/main.js): the climb, the hold-on, the deck's wait / aim / loose, the fall - or -1 (his own frame) */
   function chiefFrame(e) {
     if (!tower) return -1; const m = e.mode;
     /* (claude/chief3art) the silenced / blasted openings are his own poses (24 choked, 27 sat down scorched) while the opening lasts */
-    if (m !== 'planted') e.poseKind = null; else if (e.poseKind === 'silenced') return 24; else if (e.poseKind === 'blasted') return 27;
+    if (m !== 'planted') e.poseKind = null; else if (e.poseKind === 'silenced') return 24; else if (e.poseKind === 'crushed') return 29; else if (e.poseKind === 'blasted') return 27;   /* (claude/stockade3-1101: CRUSHED sits him down under the logs - the art lane draws its own pose) */
+    if (m === 'lured' && e.lureLook) return 28;   /* (claude/stockade3art) HE HEARS THE HORN: head thrown back, a hand cupped at his ear */
     if (m === 'towerClimb') return Math.floor((e.anim || 0) * 6) % 2 ? 15 : 16;
     if (m === 'towerFall') return 19;
     if (m === 'tower' || m === 'towerAim' || m === 'towerLoose') return tower.sway > 0 ? 17 : m === 'towerAim' ? 18 : m === 'towerLoose' ? 20 : 21;
@@ -379,12 +474,12 @@ export function makeStockadeHands(ctx) {
     if (banner) { const a = Math.min(1, banner.t / 0.4, (2.6 - banner.t) / 0.3); g.globalAlpha = Math.max(0, a); ctx.text(banner.name, Math.round(ctx.VW() / 2), 30, '#e8dcc0', 'center', 8); g.globalAlpha = 1; }
   }
   /* for the bots and the checks */
-  const read = () => ({ held, gateOpen, examOn, piles: piles.map(p => ({ id: p.id, x: p.x, y: p.y, st: p.st })), pickups: pickups.filter(k => !k.got).map(k => ({ x: k.x, y: k.y })), cd,
+  const read = () => ({ held, gateOpen, examOn, piles: piles.map(p => ({ id: p.id, x: p.x, y: p.y, st: p.st, floor: p.floor, cleat: p.cleat, hall: p.hall, ramp: !!p.ramp })), rampDown: [...rampDown], lure: { ...lst }, chiefLureable: lureable(ctx.boss()), pickups: pickups.filter(k => !k.got).map(k => ({ x: k.x, y: k.y })), cd,
     tower: tower ? { x: tower.x, deck: tower.deck, foot: tower.foot, st: tower.st, pegs: tower.pegs.map(p => ({ x: p.x, cut: p.cut })) } : null, banner: banner && banner.name,
-    kegs: kegs.filter(k => !k.dead).map(k => ({ x: k.x, y: k.y, st: k.st, fuse: k.fuse, kicked: !!k.kicked })), crew: crew.filter(q => q.alive).length, stats: { ...st }, looks: looks.map(l => ({ x0: l.x0, x1: l.x1, down: l.down })) });
+    kegs: kegs.filter(k => !k.dead).map(k => ({ x: k.x, y: k.y, st: k.st, fuse: k.fuse, kicked: !!k.kicked })), crew: crew.filter(q => q.alive).length, stats: { ...st, lure: lst.lure || 0, crush: lst.crushed || 0, fod: lst.fodder || 0 }, looks: looks.map(l => ({ x0: l.x0, x1: l.x1, down: l.down })) });
   /* for the shared guide (src/stuck-guide.js `is`): the horn, the gate, the war tower */
   const state = n => n === 'stkHorn' ? (held ? 'held' : 'none') : n === 'stkGate' ? (gateOpen ? 'open' : 'shut') : n === 'stkTower' ? (tower ? tower.st : 'none') : '';
   /* and as props the guide's done / when read: each pile carries the horn's and the gate's state (the static tool finds the piles in L.ents) */
-  const props = () => piles.map(p => ({ t: 'logpile', x: p.x, y: p.y, held, gateOpen, down: p.st !== 'hung' }));
-  return { on, state, props, reset, load, update, hold, interact, blow, drawWorld, drawBack, drawBarrel, drawOver, chiefPhase2, chiefStep, chiefUp, chiefFrame, towerTake, read, give: () => { held = true; }, blast, chiefHit, chiefCap, throwKeg };
+  const props = () => piles.map(p => ({ t: 'logpile', x: p.x, y: p.y, held, gateOpen, down: p.st !== 'hung', way: held || gateOpen || piles.some(q => q.ramp && q.st === 'down'), pass: gateOpen || piles.some(q => q.ramp && q.st === 'down') }));   /* (claude/stockade3-1101) way: the barred gate has an answer - a horn, the gate open, or its pile down as a stair */
+  return { on, state, props, reset, load, update, hold, interact, blow, drawWorld, drawBack, drawBarrel, drawOver, chiefPhase2, chiefStep, chiefUp, chiefFrame, towerTake, read, give: () => { held = true; }, lureChief: () => { const ch = ctx.boss(), P = hero(); return ch && P ? chiefLure(ch, P) : false; }, lureable: () => lureable(ctx.boss()), blast, chiefHit, chiefCap, throwKeg };
 }

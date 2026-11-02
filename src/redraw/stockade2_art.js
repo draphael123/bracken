@@ -98,6 +98,7 @@ export function stkTile(t, x, y, at, T, L) {
   if (t === T.SOLID) { for (const b of L.stkTowers || []) if (x >= b.x0 && x <= b.x1 && y > b.top && y <= b.floor) return towerCell(x - b.x0, b.x1 - b.x0 + 1, y - b.top - 1, b.floor - b.top); }
   else if (t === T.NET) { const p = L.stkPit; if (p && y === p.row && x >= p.x0 && x <= p.x1) return pitCell(x); }
   else if (t === T.PALISADE) return lookTile(L, x, y);   /* (claude/chief3art) the kennel lookout's lashed stilts */
+  else if (t === T.PLANK) return stkWalkTile(L, x, y);   /* (claude/stockade3art) the gate walk and the gallows deck */
   else if (t === T.PORT) { const gt = L.stockade && L.stockade.gate; if (gt && x === gt.x && y >= gt.y0 && y <= gt.y1) return gateCell(y - gt.y0, gt.y1 - gt.y0 + 1); }
   return null;
 }
@@ -508,4 +509,132 @@ function storeScorch() { return once('storeScorch', () => { const [c, g] = canva
 export function drawStoreBack(g, x, floor, scorch, cx, cy) {
   const X = R(x - cx - ST_W / 2), Y = R(floor - cy - ST_H); if (X < -ST_W - 40 || X > 440) return;
   g.drawImage(storeSprite(), X, Y); if (scorch > 0) { g.globalAlpha = scorch * 0.85; g.drawImage(storeScorch(), X, Y); g.globalAlpha = 1; }
+}
+
+/* ================================================================ STOCKADE 3 (claude/stockade3art): the log verbs' rigging, the stair, the gate walk, the Chieftain crushed */
+/* a rope run (any slope), outlined either side, twisted light and dark */
+function ropeRun(g, ax, ay, bx, by, pale) {
+  const n = Math.max(1, Math.max(Math.abs(bx - ax), Math.abs(by - ay)));
+  for (let i = 0; i <= n; i++) { const t = i / n, x = R(ax + (bx - ax) * t), y = R(ay + (by - ay) * t);
+    g.fillStyle = ST.o; g.fillRect(x - 1, y, 1, 1); g.fillRect(x + 2, y, 1, 1); g.fillStyle = (i >> 1) & 1 ? (pale ? ST.r2 : ST.r1) : (pale ? ST.r1 : ST.r0); g.fillRect(x, y, 2, 1); }
+}
+/* THE PEG (a belay post): a stone-footed log post, an iron collar, two horn cleats at the head and the rope made fast round them.
+   (qx, qy) = the peg's foot on the floor; (tx, ty) = where its rope goes (the pile's beam); hung = the rope is on; under = the Chieftain stands under the logs (brighter glint) */
+function pegSprite(cut) {
+  return once('cleat' + cut, () => { const [c, g] = canvas(20, 24);
+    rect(g, 4, 20, 12, 4, ST.o); rect(g, 5, 21, 10, 3, ST.stone); rect(g, 5, 21, 10, 1, ST.stoneHi); px(g, 9, 22, ST.o); px(g, 12, 23, ST.o);   /* the footing stones */
+    logV(g, 7, 4, 6, 18, 3);                                                                                                                        /* the post */
+    rect(g, 7, 13, 6, 3, ST.o); rect(g, 7, 14, 6, 1, ST.ironHi); rect(g, 7, 15, 6, 1, ST.ironLo); px(g, 9, 14, ST.ironLo);                          /* the iron collar */
+    for (const [x, w] of [[3, 5], [12, 5]]) { rect(g, x, 3, w, 4, ST.o); rect(g, x + (x < 7 ? 0 : 1), 4, w - 1, 2, ST.w3); rect(g, x + (x < 7 ? 0 : 1), 4, w - 1, 1, ST.w5); }   /* the cleat horns */
+    rect(g, 6, 2, 8, 3, ST.o); rect(g, 7, 3, 6, 1, ST.w4);                                                                                          /* the head */
+    if (!cut) { rect(g, 4, 4, 12, 2, ST.o); rect(g, 5, 4, 10, 1, ST.r1); rect(g, 5, 5, 10, 1, ST.r0); for (let x = 6; x < 15; x += 3) px(g, x, 4, ST.r2); rect(g, 8, 7, 4, 2, ST.r1); rect(g, 8, 7, 4, 1, ST.r2); px(g, 11, 8, ST.r0); }   /* the rope made fast round both horns */
+    else { rect(g, 5, 4, 10, 2, ST.r0); rect(g, 8, 6, 2, 8, ST.r1); px(g, 9, 13, ST.r0); rect(g, 11, 6, 2, 5, ST.r1); px(g, 12, 10, ST.r0); px(g, 8, 14, ST.r2); }   /* the lashing cut: two frayed tails hang */
+    return c; });
+}
+export function drawCleat(g, qx, qy, tx, ty, hung, under, time) {
+  const X = R(qx), Y = R(qy);
+  g.drawImage(pegSprite(!hung), X - 10, Y - 24);
+  if (hung) { ropeRun(g, X, Y - 20, R(tx), R(ty), under);
+    const k = 0.5 + 0.5 * Math.sin(time * (under ? 12 : 5)); g.globalAlpha = (under ? 0.6 : 0.3) + 0.4 * k; g.fillStyle = ST.gold; g.fillRect(X - 6, Y - 18, 12, 2); g.fillRect(X - 1, Y - 24, 2, 12); g.globalAlpha = 1; }
+}
+/* THE RAFTER BEAM a pile hangs from (the hall's, the yard's): a heavy lashed beam, iron end straps and a hanging ring; hall = the broad one with a red hide tab */
+function beamSprite(hall) {
+  return once('beam' + hall, () => { const w = hall ? 58 : 44, [c, g] = canvas(w, 18);
+    logH(g, 0, 4, w, 7, 2); rect(g, 0, 6, w, 1, ST.w3);
+    lash(g, 3, 4, 4); lash(g, w - 7, 4, 4); lash(g, w / 2 - 12, 4, 3); lash(g, w / 2 + 9, 4, 3);
+    for (const x of [1, w - 5]) { rect(g, x, 3, 4, 9, ST.o); rect(g, x + 1, 4, 2, 7, ST.iron); rect(g, x + 1, 4, 2, 1, ST.ironHi); }              /* iron end straps */
+    brace(g, 5, 4, 1, 0, 2); brace(g, w - 7, 4, w - 3, 0, 2);
+    if (hall) { rect(g, w / 2 - 3, 11, 6, 2, ST.o); rect(g, w / 2 - 2, 11, 4, 1, ST.red); }                                                          /* a red hide tab: the Chieftain's own hall */
+    circle(g, w / 2, 14, 3, ST.o); circle(g, w / 2, 14, 2, ST.ironHi); circle(g, w / 2, 14, 1, ST.o);                                                /* the hanging ring */
+    return c; });
+}
+export function drawBeam(g, px0, py, hall) { const s = beamSprite(!!hall); g.drawImage(s, R(px0) - s.width / 2, py - 36); }
+/* THE GALLOWS JIB on a gate pile's deck end: a post and a jib beam over the logs, a knee brace, a sheave, the rope down to the pile */
+export function drawJib(g, px0, py) {
+  const X = R(px0), Y = R(py);
+  logV(g, X + 9, Y - 52, 6, 52, 5); lash(g, X + 8, Y - 14, 8); lash(g, X + 8, Y - 38, 8);
+  brace(g, X + 9, Y - 34, X - 1, Y - 47, 2);
+  logH(g, X - 18, Y - 52, 34, 6, 4); lash(g, X - 14, Y - 52, 3); lash(g, X + 6, Y - 52, 3);
+  circle(g, X - 10, Y - 46, 3, ST.o); circle(g, X - 10, Y - 46, 2, ST.ironHi); px(g, X - 10, Y - 46, ST.o);                                         /* the sheave under the jib's end */
+  ropeRun(g, X - 10, Y - 44, X - 1, Y - 26, false);
+}
+/* THE LOG STAIR: a dropped pile laid as a step-heap. Each cell: a lengthwise log on top (where open to the air), end-on logs under, a lashing across */
+function stairCell(top, seed) {
+  return once('stair' + top + (seed & 3), () => { const [c, g] = canvas(16, 16);
+    rect(g, 0, 0, 16, 16, ST.o);
+    if (top) { logH(g, 0, 0, 16, 7, seed); rect(g, 0, 7, 16, 2, ST.w0); logEnd(g, 4, 12, 4, seed); logEnd(g, 12, 12, 4, seed + 1); rect(g, 7, 9, 2, 6, ST.o);
+      rect(g, 6, 0, 4, 8, ST.r0); rect(g, 6, 0, 4, 1, ST.r1); rect(g, 7, 0, 1, 8, ST.r1); px(g, 7, 3, ST.r2); }                               /* the rope's turn over the top log */
+    else { logEnd(g, 4, 4, 4, seed); logEnd(g, 12, 4, 4, seed + 1); logEnd(g, 4, 12, 4, seed + 2); logEnd(g, 12, 12, 4, seed + 3); }
+    rect(g, 0, 0, 1, 16, ST.w1); return c; });
+}
+function chipSprite() { return once('chips', () => { const [c, g] = canvas(14, 5); rect(g, 0, 3, 5, 2, ST.w1); px(g, 0, 3, ST.w4); rect(g, 6, 2, 3, 3, ST.o); px(g, 7, 3, ST.w5); rect(g, 10, 3, 4, 1, ST.r1); px(g, 12, 4, ST.r0); return c; }); }
+export function drawStair(g, cells, cx, cy) {
+  if (!cells.length) return;
+  const set = new Set(cells.map(([x, y]) => x + ',' + y));
+  for (const [x, y] of cells) { const top = !set.has(x + ',' + (y - 1)); g.drawImage(stairCell(top, x * 3 + y), R(x * TS - cx), R(y * TS - cy)); }
+  const [x0, y0] = cells.reduce((a, b) => (b[1] > a[1] || (b[1] === a[1] && b[0] < a[0]) ? b : a), cells[0]);   /* the lashing's cut end and chips at the foot */
+  g.drawImage(chipSprite(), R(x0 * TS - cx) - 12, R((y0 + 1) * TS - cy) - 5);
+}
+/* A pile that crushed a crew: boots and a green hand under the heap's edge (n = how many) */
+export function drawPinned(g, x, by, n) {
+  if (!n) return;
+  const X = R(x), Y = R(by);
+  rect(g, X - 27, Y - 5, 6, 3, ST.o); rect(g, X - 26, Y - 4, 4, 1, ST.w2); rect(g, X - 28, Y - 2, 3, 2, ST.o); px(g, X - 27, Y - 1, ST.w4);   /* a boot */
+  rect(g, X + 21, Y - 4, 7, 4, ST.o); rect(g, X + 22, Y - 3, 5, 2, '#5f8f3a'); px(g, X + 27, Y - 3, '#5f8f3a'); px(g, X + 26, Y - 4, '#8fd160'); px(g, X + 24, Y - 4, '#8fd160');   /* a hand */
+  if (n > 1) { rect(g, X - 19, Y + 1, 5, 2, ST.o); rect(g, X - 18, Y, 3, 2, ST.boneLo); }                                                            /* another boot, a bone */
+}
+/* THE GATE WALK / the gallows deck: a plank catwalk over a timber stringer (a tile; l / r = a plank neighbour) */
+function walkTile(l, r, seed) {
+  return once('walk' + l + r + (seed & 3), () => { const [c, g] = canvas(16, 16);
+    rect(g, 0, 0, 16, 5, ST.o); rect(g, 0, 1, 16, 3, ST.w3); rect(g, 0, 1, 16, 1, ST.w5); rect(g, 0, 4, 16, 1, ST.w1);                                  /* the boards */
+    rect(g, 5 + (seed & 3), 1, 1, 4, ST.w0); rect(g, 12 - (seed & 1), 1, 1, 4, ST.w0); px(g, 2, 2, ST.w0); px(g, 9, 3, ST.w0);                             /* joints, nails */
+    rect(g, 0, 5, 16, 7, ST.o); rect(g, 0, 6, 16, 5, ST.w2); rect(g, 0, 6, 16, 1, ST.w4); rect(g, 0, 10, 16, 1, ST.w1);                                  /* the stringer under */
+    for (let x = 3 + (seed & 3); x < 14; x += 6) px(g, x, 8, ST.w1);
+    if (!l) { rect(g, 0, 5, 3, 7, ST.o); rect(g, 1, 6, 1, 5, ST.w5); circle(g, 2, 8, 3, ST.o); circle(g, 2, 8, 2, ST.w5); px(g, 2, 8, ST.w3); lash(g, 4, 5, 3); }
+    if (!r) { rect(g, 13, 5, 3, 7, ST.o); rect(g, 14, 6, 1, 5, ST.w1); circle(g, 13, 8, 3, ST.o); circle(g, 13, 8, 2, ST.w5); px(g, 13, 8, ST.w3); lash(g, 9, 5, 3); }
+    return c; });
+}
+/* the tile hook for a PLANK: the gate walk (the row over the barred gate, from the gate's left post to the run's end) and the gallows deck (the gate tower's deck) - or null */
+export function stkWalkTile(L, x, y) {
+  if (!L.grid) return null;
+  const gt = L.stockade && L.stockade.gate, run = row => { let a = x, b = x; while (L.grid[row * L.W + a - 1] === T.PLANK) a--; while (L.grid[row * L.W + b + 1] === T.PLANK) b++; return [a, b]; };
+  if (gt && y === gt.y0 - 1 && x >= gt.x - 1) { const [a, b] = run(y); if (a <= gt.x - 1) return walkTile(x > a, x < b, x); }
+  const tw = (L.stkTowers || [])[0]; if (tw && y === tw.top && x >= tw.x0 - 1 && x <= tw.x1 + 3) { const [a, b] = run(y); return walkTile(x > a, x < b, x); }
+  return null;
+}
+export function drawGateWalk(g, L, cx, cy) {
+  const gt = L.stockade && L.stockade.gate; if (!gt) return;
+  const y = gt.y0 - 1, a = gt.x - 1; let b = a; while (L.grid[y * L.W + b + 1] === T.PLANK) b++;
+  if (R(a * TS - cx) > 440 || R((b + 1) * TS - cx) < -40) return;
+  const top = R(y * TS - cy), X0 = R(a * TS - cx), X1 = R((b + 1) * TS - cx), gx = R(gt.x * TS - cx);
+  /* the lintel: the gate's header beam under the walk, braced out, a skull hung on it */
+  rect(g, gx - 6, top + 12, 28, 6, ST.o); rect(g, gx - 5, top + 13, 26, 4, ST.w3); rect(g, gx - 5, top + 13, 26, 1, ST.w5); rect(g, gx - 5, top + 16, 26, 1, ST.w1); lash(g, gx - 3, top + 13, 3); lash(g, gx + 14, top + 13, 3);
+  brace(g, gx - 5, top + 18, gx - 14, top + 12, 2); brace(g, gx + 21, top + 18, gx + 30, top + 12, 2);
+  rect(g, gx + 4, top + 19, 5, 5, ST.o); rect(g, gx + 5, top + 20, 3, 3, ST.bone); px(g, gx + 5, top + 21, ST.o); px(g, gx + 7, top + 21, ST.o);
+  /* end posts: a lashed post at each end of the walk, a skull on its spike, a red pennon */
+  for (const [x, s] of [[X0 + 1, 1], [X1 - 7, -1]]) { logV(g, x, top - 18, 6, 30, x); lash(g, x - 1, top - 10, 8); rect(g, x + 1, top - 22, 4, 4, ST.o); rect(g, x + 2, top - 21, 2, 2, ST.bone);
+    rect(g, x + (s > 0 ? 6 : -6), top - 16, 6, 4, ST.o); rect(g, x + (s > 0 ? 6 : -5), top - 15, 5, 2, ST.red); px(g, x + (s > 0 ? 6 : -5), top - 15, ST.redLo); }
+}
+/* THE CHIEFTAIN CRUSHED: the logs that pin him, laid over his sprite (x, fy = his feet, f = facing) - a log across his shoulders, logs heaped on his lap, splinters */
+export function drawCrushLogs(g, x, fy, f) {
+  g.save(); g.translate(x, fy); g.scale(f < 0 ? -1 : 1, 1);
+  logH(g, -17, -43, 32, 7, 5); lash(g, -12, -43, 3); lash(g, 6, -43, 3);                      /* the log he holds up on his fists */
+  for (const [lx, ly, v] of [[-6, -9, 0], [4, -9, 1], [-1, -16, 2]]) logEnd(g, lx, ly, 5, v);   /* the heap: logs' ends over his lap */
+  logH(g, -16, -5, 28, 5, 3); rect(g, 8, -3, 10, 2, ST.r1); px(g, 12, -2, ST.r0);               /* one more rolled across his legs, the lashing's end beside it */
+  for (const [x2, y2] of [[-19, -8], [15, -12], [17, -3], [-14, -46]]) { rect(g, x2, y2, 3, 2, ST.w4); px(g, x2, y2, ST.w5); }
+  g.restore();
+}
+/* the Chieftain's dust and stars while CRUSHED (sawdust-grey, not the keg's black smoke) */
+export function drawCrushFx(g, x, y, f, time) {
+  for (let i = 0; i < 5; i++) { const q = ((time * 0.8 + i / 5) % 1); g.globalAlpha = (1 - q) * 0.8; disc(g, x + Math.sin(i * 2.7 + time * 2) * 9 - f * 2, y - 8 - q * 22, 2 + Math.round(q * 3), i & 1 ? '#b8a888' : '#8a7a5a'); } g.globalAlpha = 1;
+  drawStars(g, x - f * 3, y - 40, time);
+}
+/* HE HEARS THE HORN: a gold '?' of drawn pixels (not a font glyph) bobbing over his head, and sound-ticks at the side he is turned to */
+export function drawLureMark(g, x, y, f, time) {
+  const b = R(Math.sin(time * 6) * 1.5), X = R(x), Y = R(y) + b, q = [[1, 0], [2, 0], [3, 0], [0, 1], [4, 1], [4, 2], [3, 3], [2, 4], [2, 5]];   /* a question mark on a 2-px grid */
+  for (const [dx, dy] of q) rect(g, X - 6 + dx * 2 - 1, Y + dy * 2 - 1, 4, 4, ST.o);
+  rect(g, X - 3, Y + 11, 4, 4, ST.o);
+  for (const [dx, dy] of q) rect(g, X - 6 + dx * 2, Y + dy * 2, 2, 2, ST.gold);
+  rect(g, X - 2, Y + 12, 2, 2, ST.gold); rect(g, X - 6 + 2 * 2, Y + 2, 2, 1, '#fff0b0');
+  g.globalAlpha = 0.5 + 0.4 * Math.sin(time * 9); g.fillStyle = ST.gold; g.fillRect(R(x) + f * 17, Y + 20, 1, 3); g.fillRect(R(x) + f * 20, Y + 18, 1, 5); g.globalAlpha = 1;
 }

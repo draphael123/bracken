@@ -386,6 +386,9 @@ function theStockade() {
     /* (a pike and an archer stood up here, over the horn tower: two ideas on one stretch, and the level's rule is the horn. The
        gantry is the climb to the silver now, and the tower is the only thing watching the road) */
     ent('silver', 55, 9);
+    /* (claude/stockade3-1101) THE LURE AND THE LOGS, TAUGHT SAFE: from the gantry's far end, his horn pulls the two at the cook fire under the logs lashed there */
+    ent('sign', 62, 11, { text: 'E BLOWS HIS HORN: THEY RUN TO THE SOUND. BLOW IT HERE, THEN CUT THE LOGS.' }); ent('logpile', 64, 11, { id: 'pile-0' });
+    ent('sprig', 60, 19, { face: 1, stk: { cook: true } }); ent('sprig', 67, 19, { face: -1, stk: { cook: true } }); ent('deco', 63, 19, { kind: 'cookSpit' });
     coins([47, 11], [50, 11], [56, 9], [59, 9], [63, 11], [65, 11]); }
   // one guard at the armoury gate with its elite (the brute at 292 and the one at the tunnel mouth went: THE STOCKADE was level three and one of the densest levels in the game)
   ent('shield', 223, 19, { face: -1 });   /* base coordinates: 307 in the built level */
@@ -393,7 +396,7 @@ function theStockade() {
   // ---- 2. Watchpost: a horn on the tower. Silence it first. ----
   block(54, 56, 14, 19); plat(53, 13, 5); ent('towertop', 55, 13); ent('coin', 57, 12);
   plat(46, 17, 3); plat(50, 14, 2); plat(59, 16, 2); plat(58, 13, 2); // two ways up
-  ent('archer', 55, 12, { face: -1, horn: true });
+  ent('archer', 55, 12, { face: -1, horn: true, stk: { drops: true } });   /* (claude/stockade3-1101) THE FIRST HORN YOU TAKE: silence the level's first blower and his horn is yours - the rule turns into the verb in the first area (the Watchtowers' dozer is the second chance) */
   ent('check', 45, 19);
   ent('sign', 44, 19, { text: 'HE PUTS DOWN HIS BOW TO BLOW THE HORN. SILENCE HIM BEFORE IT SOUNDS, OR THE CAMP COMES.' });   /* THE RULE, said at the first tower: the horn's wind-up is drawn over him now (drawHornTell in main.js) */
   coins([47, 15], [51, 12], [64, 18]);
@@ -422,6 +425,8 @@ function theStockade() {
   ent('check', 131, 19);
   ent('sign', 133, 19, { text: 'THE YARD IS A WEAPON: FREE THE FOX, TIP THE BRAZIER, ROLL THE BARREL.' });
   ent('hound', 136, 19, { face: -1 }); ent('cage', 139, 19, { kind: 'fox' });
+  /* (claude/stockade3-1101) THE YARD'S EXAM: logs on a beam over the yard, tied off at a peg - horn the yard under them (the ambush), strike the peg */
+  ent('logpile', 144, 13, { id: 'pile-y', cleat: -3, beam: true }); ent('sign', 142, 19, { text: 'LOGS HANG OVER THE YARD. HORN THEM UNDER, STRIKE THE PEG.' });
   ent('sprig', 144, 19, { face: -1 }); ent('brazier', 150, 19); ent('sprig', 153, 19, { face: 1 }); ent('hound', 157, 19, { face: -1 }); ent('sprig', 159, 19, { face: -1 });
   ent('barrel', 162, 19); ent('shield', 165, 19, { face: -1 }); ent('crank', 167, 19, { wall: 170 }); ent('brazier', 169, 19); // tip it into the stakes and the wall burns
   pal(170, 15, 19);
@@ -481,12 +486,14 @@ function theStockade() {
   plat(327, 18, 2); plat(329, 16, 3); plat(333, 14, 2); plat(334, 12, 2); plat(334, 10, 4);   /* (claude/stockade2: the step at 336,12 moved two left - his war tower stands on the dais under it) */ plat(338, 11, 3); plat(342, 9, 5);
   plat(360, 18, 2); plat(356, 16, 3); plat(353, 14, 2); plat(350, 12, 2); plat(350, 10, 4); plat(347, 11, 3);
   ent('archer', 344, 9, { face: -1, horn: true, rafters: true });   /* THE RULE, IN THE BOSS: a blower up the escape-gate climb. Reach him before the Chieftain's second wind, or he calls a sapper wave down on you */
-  ent('brazier', 354, 19); ent('torch', 328, 19); ent('torch', 361, 19);
-  ent('rack', 331, 19, { kind: 'club' }); ent('rack', 358, 19, { kind: 'bow' }); block(336, 339, 18, 19); coins([337, 17]); // the racks he swaps at, and a stone dais his club and sword cannot reach
+  ent('brazier', 351, 19); ent('torch', 328, 19);   /* (claude/stockade3-1101: the brazier from 354 - the right hall pile hangs there now) */ ent('torch', 361, 19);
+  ent('rack', 346, 19, { kind: 'club' }); ent('rack', 349, 19, { kind: 'bow' });   /* (claude/stockade3-1101: from 331 / 358 - the hall piles and their pegs stand by the doors now; his racks by his throne) */ block(336, 339, 18, 19); coins([337, 17]); // the racks he swaps at, and a stone dais his club and sword cannot reach
   ent('deco', 331, 19, { kind: 'banner', v: 0 }); ent('deco', 358, 19, { kind: 'banner', v: 1 }); ent('deco', 344, 19, { kind: 'boneThrone' });
   ent('deco', 334, 19, { kind: 'skullPile', v: 0 }); ent('deco', 351, 19, { kind: 'skullPile', v: 1 });
   ent('deco', 338, 8, { kind: 'hangCage', hang: true });   /* (a tree's bough hung in the Chieftain's hall, among its racks: it went - level review, 2026-09-24) */ ent('deco', 349, 8, { kind: 'hangCage', hang: true });
   ent('chief', 343, 19);
+  /* (claude/stockade3-1101) THE HALL PILES: logs on the rafters over the floor by each door (where his crew come in), each tied off at a peg on the floor - horn him under one and strike its peg */
+  ent('logpile', 333, 12, { id: 'hall-l', cleat: -3, hall: true }); ent('logpile', 354, 12, { id: 'hall-r', cleat: 3, hall: true });   /* each peg on the DOOR side of its logs: he comes to the sound from the middle of the hall and never walks past you to reach them */
 
   const ret = {
     W: L.W, H: L.H, grid: L.grid, ents: L.ents, START: { x: 3, y: 19 }, pools: [], falls: [], moversExtra: movers,
@@ -527,6 +534,8 @@ function theStockade() {
   W2.R.interiors = (W2.R.interiors || []).concat([[192, 223, 18, 21, 'earth']]);
   W2.ent('torch', 197, 13); W2.ent('torch', 213, 13); W2.ent('archer', 199, 13, { face: -1 }); W2.ent('archer', 216, 13, { face: -1 }); W2.ent('thorn', 221, 13, { face: -1 });   /* the wall walk is its archers */
   W2.coins([195, 12], [202, 12], [209, 12], [214, 12], [219, 12]);
+  /* (claude/stockade3-1101) THE KENNELS' EXAM FROM ABOVE: logs lashed in the wall walk's breach over the ditch - from the walk, horn the ditch's crew under them and cut */
+  W2.ent('logpile', 205, 13, { id: 'pile-k' });
   // THE DITCH'S BRAMBLES ARE A THROW TARGET: the hound and the brute stand two tiles off either edge of the spike
   // bed, close enough that a heavy blow or a dash sends either one into it (combat-variety-brief #8) - they used
   // to stand five tiles off, which asked for a blow harder than most heroes throw at 203/214 range.
@@ -583,14 +592,18 @@ function stockadeWatchtowers(R3) {
   ent('check', 30, 19);                                            /* THE SHRINE: the horn is yours and the yard is quiet - the gate and the towers are the exam ahead */
 
   // ---- THE BARRED GATE: the gate tower, its pile over the gate's mouth, and the crew behind ----
-  ent('sign', 34, 19, { text: 'THE GATE IS BARRED FROM INSIDE. THEY OPEN IT ONLY FOR THEIR OWN HORN.' });
+  ent('sign', 34, 19, { text: 'THE GATE OPENS ONLY TO THEIR HORN. OR STRIKE THE PEG: THE LOGS MAKE A STAIR.' });
   ent('sign', 40, 19, { text: 'A HORN OPENS THE GATE. A SPARE HANGS ON THE POST.', stuck: true });   /* (claude/smallfix6, Daniel 11-01: walk past the blower and you were shut out) THE TOLD BACKUP: a spare horn on the gate tower's post, owed only while you hold none (src/stockade-hands.js) */
-  col(35, 9, 19, T.NET); block(36, 38, 9, 19); run(35, 41, 8, T.PLANK); ent('towertop', 37, 8);   /* the gate tower: a rope up its face, its deck four rows over the walk (out of a jump from it: the way on is the yard floor) */
-  ent('logpile', 41, 7, { id: 'pile-2' });
-  col(43, 1, 12, T.PALISADE); col(43, 13, 19, T.PORT);            /* THE BARRED GATE (src/stockade-hands.js opens it to a horn) */
+  /* (claude/stockade3-1101) THE FORK. The gate tower is a gallows on stilts now (the yard floor runs under it; no rope - its deck would drop you on the gate walk past the
+     stair) and the gate's logs hang from its deck end over the gate's mouth, tied off at a PEG on the floor under the gallows. LOUD: blow the horn - the gate opens to
+     their own horn, the crew run out under the logs - strike the peg: CRUSHED. QUIET: strike the peg FIRST - the logs land as a stair against the gate - climb onto
+     THE GATE WALK and over the crew while they sleep, onto tower one's rope. One pile: drop it early for the stair or save it for the crush (a stair pile stays down) */
+  block(36, 38, 9, 14); run(35, 41, 8, T.PLANK); ent('towertop', 37, 8);
+  ent('logpile', 41, 7, { id: 'pile-2', cleat: -4, ramp: [[-1, 19], [0, 19], [1, 19], [0, 18], [1, 18], [1, 17]] });
+  col(43, 15, 19, T.PORT); run(42, 56, 14, T.PLANK);              /* THE BARRED GATE (src/stockade-hands.js opens it to a horn), a door under THE GATE WALK - six rows over the floor (out of a jump AND a mantle onto the gate's top), three over the stair's top */
   ent('brute', 46, 19, { face: -1, stk: { gateGuard: true } }); ent('hound', 48, 19, { face: -1, stk: { gateGuard: true } });   /* (a pike held the line here and held the hands with it: the crew run at the horn, and a hound runs best) */
   ent('sprig', 50, 19, { face: -1, stk: { gateGuard: true } }); ent('sprig', 52, 19, { face: -1, stk: { gateGuard: true } });
-  ent('torch', 45, 19); coins([39, 7], [47, 18], [51, 18]);
+  ent('torch', 45, 19); coins([47, 18], [51, 18], [46, 13], [50, 13], [54, 13]);   /* (claude/stockade3-1101: the gallows deck's coin is the gate walk's now - the quiet way's pay) */
 
   // ---- THE THREE TOWERS: the exam over the stake pit ----
   block(55, 109, 26, 27); run(55, 109, 25, T.NET);                 /* the pit: a net over the stakes catches you, and each chamber has its rope back up */
@@ -610,6 +623,9 @@ function stockadeWatchtowers(R3) {
   block(89, 91, 8, 25); run(88, 93, 7, T.PLANK); ent('towertop', 90, 7); col(92, 8, 24, T.NET);
   ent('archer', 93, 6, { face: -1, horn: true, stk: { exam: 3, packOnly: true }, pack: [{ dx: 6, y: 11, t: 'brute' }, { dx: 9, y: 11, t: 'sprig' }] });
   coins([60, 8], [67, 10], [79, 6], [85, 6], [91, 5], [71, 1], [73, 1]);
+  /* (claude/stockade3-1101) THE EXAM'S LAST WORD: logs at tower three's deck end over the walk down - if its horn sounds, horn its pack under them and cut (they land on the walk) */
+  ent('logpile', 94, 6, { id: 'pile-3', floor: 12 });
+  coins([57, 21], [57, 22], [57, 23], [57, 24]);   /* (claude/stockade3-1101) the foot of tower one's rope: the gate walk is a way on up it now, so its foot is a longer pocket - and pays (tools/deadends.mjs) */
   /* the walk down off tower three to the hall's outer wall and the lift */
   run(94, 109, 12, T.PLANK); for (const u of [97, 103]) post(u, 12, 25);
   block(110, 123, 12, 27); coins([100, 11], [106, 11], [114, 11]);
@@ -634,16 +650,16 @@ function stockadeWatchtowers(R3) {
   const R = WT.done();
   R.routeSupports = (R.routeSupports || []).concat(posts);
   R.stkKit = true; R.stkPit = { row: 25, x0: X(55), x1: X(109) };   /* (claude/stockade2art) the lashed-timber tower bodies and the netted stake pit's stakes (src/redraw/stockade2_art.js stkTile) */
-  R.stkTowers = [[36, 38, 8, 19], [58, 60, 10, 25], [72, 74, 10, 25], [89, 91, 7, 25]].map(([a, b, top, floor]) => ({ x0: X(a), x1: X(b), top, floor }));
-  R.watchtowers = (R.watchtowers || []).concat([[36, 38, 8, 19], [58, 60, 10, 25], [72, 74, 4, 25], [89, 91, 7, 25]].map(([a, b, top, floor]) => ({ x0: X(a), x1: X(b), top, floor })));
+  R.stkTowers = [[36, 38, 8, 14], [58, 60, 10, 25], [72, 74, 10, 25], [89, 91, 7, 25]].map(([a, b, top, floor]) => ({ x0: X(a), x1: X(b), top, floor }));
+  R.watchtowers = (R.watchtowers || []).concat([[36, 38, 8, 14], [58, 60, 10, 25], [72, 74, 4, 25], [89, 91, 7, 25]].map(([a, b, top, floor]) => ({ x0: X(a), x1: X(b), top, floor })));
   /* the gate is barred as laid (T.PORT) and opened by the horn, which every hero can blow: the reach fill has it open (src/reachcore.js reachDoors) */
-  R.reachDoors = (R.reachDoors || []).concat([{ x0: X(43), x1: X(43), y0: 13, y1: 19 }]);
+  R.reachDoors = (R.reachDoors || []).concat([{ x0: X(43), x1: X(43), y0: 15, y1: 19 }]);
   /* (claude/chief3) THE LOOKOUT ON STAKES: its box (stilts, deck and the ledges up it) and its stilts, off its blower's own final column */
   const lookouts = R.ents.filter(e => e.t === 'archer' && e.stk && e.stk.lookout).map(e => ({ x0: e.x - 5, x1: e.x + 4, y0: 14, y1: 19, sx0: e.x - 1, sx1: e.x + 1, sy0: 15, sy1: 19 }));
   const chief = R.ents.find(e => e.t === 'chief'), twx = (chief.x - 5) * TS;   /* HIS WAR TOWER: on the dais (final 588-591), its deck five rows over the hall floor, a lashing to a peg four tiles out either side */
   R.stockade = {
     tower: { x: twx, deck: 15 * TS, base: 18 * TS, foot: 20 * TS, pegs: [twx - 4 * TS, twx + 4 * TS] },
-    gate: { x: X(43), y0: 13, y1: 19 },
+    gate: { x: X(43), y0: 15, y1: 19 },
     spare: { x: X(39) * TS + 8, y: 20 * TS },
     exam: { x0: X(56), x1: X(62), y0: 0, y1: 24, end: X(110), draw: [6.5, 10, 13.5] },
     lookouts,
