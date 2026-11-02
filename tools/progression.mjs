@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import{LEGACY_NODES,SKILLS,HERO_IDS,migrateProgress,loadProgress,importProgress,exportProgress,buySkill,equipSkill,equipped,slotsAt,growthAt}from'../src/progression.js';
 import{xpFloor}from'../src/xp.js';
 const memory=()=>{const m=new Map();return{getItem:k=>m.has(k)?m.get(k):null,setItem:(k,v)=>m.set(k,v),removeItem:k=>m.delete(k),m};};
-assert.equal(LEGACY_NODES.length,181);assert.equal(new Set(LEGACY_NODES.map(n=>n.hero+'/'+n.id)).size,181);assert(LEGACY_NODES.every(n=>['baseline','growth','skill'].includes(n.destination)));
+assert.equal(LEGACY_NODES.length,180);assert.equal(new Set(LEGACY_NODES.map(n=>n.hero+'/'+n.id)).size,180);assert(LEGACY_NODES.every(n=>['baseline','growth','skill'].includes(n.destination)));
 for(let version=1;version<=6;version++)for(const hero of HERO_IDS.filter(h=>LEGACY_NODES.some(n=>n.hero===h))){   /* a hero with no talent history (THE GEOMANCER, 2026-09-24) has no old save to migrate */
  const learned=LEGACY_NODES.filter(n=>n.hero===hero&&n.destination==='skill'&&n.active),talents=Object.fromEntries(learned.map(n=>[n.id,true]));
  const raw=JSON.stringify({hero,heroes:{[hero]:true},xpVersion:1,xp:{[hero]:xpFloor(12)},coins:83,silverSpent:3,items:{heart:true},done:{[hero]:{wood:1}},talentVersion:version,talents:{[hero]:talents},skill:learned[0].id,skill2:learned[1]?.id,skin:'tide',inventory:{token:1}});
@@ -22,4 +22,4 @@ const p=migrateProgress(null).progress,n=SKILLS.filter(n=>n.hero==='knight'&&n.a
 assert.deepEqual([0,1,7,8,15,16,23,24,29,30,99].map(slotsAt),[1,1,1,1,1,1,1,1,1,2,2]);   /* ONE SLOT, A SECOND AT LEVEL 30, TWO AT MOST (Daniel 2026-11-01) */for(const h of HERO_IDS)for(let lv=0;lv<30;lv++){assert(growthAt(h,lv+1).hp>growthAt(h,lv).hp);assert(growthAt(h,lv+1).stamina>growthAt(h,lv).stamina);}
 /* THE DEATH COST (2026-09-29): an older save has no deathCost, and comes out with everything it holds banked - tools/death-cost.mjs holds the rest */
 {const o=migrateProgress(JSON.stringify({hero:'knight',xp:{knight:xpFloor(5)},coins:77,progressionVersion:2})).progress;assert.deepEqual(o.deathCost,{v:1,carried:{xp:{},purse:0},bundle:null});assert.equal(o.coins,77);assert.equal(o.xp.knight,xpFloor(5));}
-console.log('Progression: all 181 node destinations, 36 legacy hero/version fixtures, exact refunds, preserved ownership, backups, rollback, corrupt saves, import idempotence and loadout gates pass.');
+console.log('Progression: all 180 node destinations, 36 legacy hero/version fixtures, exact refunds, preserved ownership, backups, rollback, corrupt saves, import idempotence and loadout gates pass.');

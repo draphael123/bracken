@@ -21,7 +21,7 @@ export const SHAPE = {
   // reaper
   harvestMoon: 'zone', graveTide: 'spikes', summonSkeleton: 'summon', unholyGround: 'zone', gravecall: 'bolt', bidden: 'hook', scytheThrown: 'bolt', deathGrip: 'hook',   /* (claude/bkkit2) BLOODWORMS 'summon' (they crawl to the post), BLOOD BOLT, DRAIN */
   // warden
-  skewer: 'thrust', setSpears: 'spikes', harrier: 'leap', wheel: 'spin', javelin: 'bolt', poleSpring: 'leap', fullStretch: 'aura', spearDance: 'flurry', rainOfSpears: 'rain',
+  skewer: 'thrust', setSpears: 'spikes', harrier: 'leap', wheel: 'spin', javelin: 'bolt', fullStretch: 'aura', spearDance: 'flurry', rainOfSpears: 'rain',
   // geomancer
   stoneStep: 'pillar', boulder: 'roll', spikeRow: 'spikes', archway: 'arch', stoneWall: 'wall', entomb: 'entomb', faultLine: 'quake', golem: 'summon', avalanche: 'rain',
   // the late actives (claude/herokit)

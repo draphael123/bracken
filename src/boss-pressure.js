@@ -38,3 +38,24 @@ export const dmgFactor = (act, mini, e) => (e && DIAL_EXEMPT.has(e.t) ? 1 : pres
    chain that still runs after the dial (difficulty x tier), so the ceiling is read on what lands. DIAL_EXEMPT bosses never reach this (dmgFactor is 1). */
 export const BLOW_CAP = 0.45;
 export function capBoost(before, boosted, maxHp, fin = 1) { if (!(boosted > before) || !(maxHp > 0)) return boosted; const lim = Math.max(1, Math.round(BLOW_CAP * maxHp / (fin > 0 ? fin : 1))); return boosted <= lim ? boosted : Math.max(before, lim); }
+
+/* ==== THE ANTI-KITE CLOCK (claude/wardenid, Daniel 10-31 Q7: replaces the DUEL_HERO.warden/pyro/lance rows and serves the Ranger and the Pyromancer) ====
+   WHY: a kiter beats a duel boss because the boss has no answer to range, and the old fix was a hidden row (the boss hits THAT hero 2.8x harder). The fix lives in the boss
+   instead, for every hero alike: a boss that has not been within a MELEE reach of the hero for KITE.after seconds runs his own idle clock faster - the gap-closer (his walk) and
+   his cooldowns shorten by up to KITE.max - so standing off forever buys a boss who arrives sooner and strikes sooner. NO extra hp. His tells, openings, wards, phase changes and
+   poise break are as authored (the same FROZEN modes and the same windup test as the act's gap dial); B10-B15 untouched. The hero's reach counts: `near` is the gap between
+   the two bodies' edges, so the Warden poking at the end of her spear (the tip, ~44 px) is IN contact and never trips it; only a hero who stays out of reach does. */
+export const KITE = { near: 58, after: 5, rate: 0.12, max: 1.45 };   /* px edge to edge; s of no contact before it starts; extra clock per s after that; the ceiling */
+export function idleNow(e, winding) {
+  if (!e || winding) return false;
+  if (e.open > 0 || e.broken > 0 || e.stagger > 0 || e.warded > 0 || e.ward > 0) return false;
+  return !(typeof e.mode === 'string' && FROZEN.test(e.mode));
+}
+/* called once a frame per boss/mini: `gap` is the edge-to-edge distance to the hero (px, <= 0 inside him); returns the clock multiplier (1 = none) */
+export function kiteBoost(e, dt, gap, winding) {
+  if (!e) return 1;
+  if (!(gap > KITE.near)) { e.kiteT = 0; return 1; }
+  e.kiteT = (e.kiteT || 0) + dt;
+  if (!idleNow(e, winding)) return 1;
+  return 1 + Math.min(KITE.max - 1, Math.max(0, e.kiteT - KITE.after) * KITE.rate);
+}

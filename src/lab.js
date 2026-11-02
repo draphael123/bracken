@@ -3077,6 +3077,8 @@ async function runbossLab(BK, opts) {
         else if (!(Z.frenzyT > 0) && P.ground && !tell && !rushing && ad > 110 && ad < 230 && Math.abs(boss.y - P.y) < 28 && P.atk < 0 && P.st >= 36 && !(P.hurt > 0) && !(P.dodge > 0) && !(Z.braceRec > 0) && !(Z.takeUp)
           && f - (P.labBzPounceAt ?? -999) > 1500 && f - (P.labBzFrenzied ?? -999) > 40) {
           P.labBzPounceAt = f; P.labBzDir = Math.sign(d) || P.face; P.labBzCoil = 38; BK.unpress(); P.labJump = 0; strike = false; k.left = k.right = false; k.down = true; } }
+      // (claude/wardenid) A FULL REACH BAND IS FOR SPENDING: UP+C with a foe in the long spear's range, between committed swings, never into a tell.
+      if (h==='warden' && (P.vigil||0)>=100 && !(P.wReachT>0) && !tell && !rushing && ad<150 && Math.abs(boss.y-P.y)<30 && P.ground && !P.cWas && P.atk<0) { P.face=Math.sign(d)||P.face; k.up=true; k.block=true; }
       // A BANKED PYRE IS FOR SPENDING: release the full heat meter toward a clear target between committed swings.
       if (h==='pyro' && P.full && !tell && !rushing && ad<140 && Math.abs(boss.y-P.y)<30 && !P.plunge && !P.cWas && P.atk<0) { P.face=Math.sign(d)||P.face; k.block=true; }
       /* A HAND CAUGHT ON A SPRING DOES NOT KNOW IT: nothing here has ever asked a bouncer a question, so a knockback that lands

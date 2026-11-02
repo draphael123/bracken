@@ -38,6 +38,7 @@ try {
       if(kind==='tip'){for(let d=30;d<=44&&!st.done;d+=2)for(let k=0;k<2&&!st.done;k++){const e=F()[0];P.x=e.x-e.w/2-d;P.face=1;P.vx=0;BK.sim(12);__fresh();BK.press('atk');run(30);}}
       else if(kind==='runthrough'){while(!st.done&&tries++<6){const e=F()[0];P.x=e.x-30;P.face=1;P.vx=0;BK.sim(20);__fresh();K.atk=true;run(45);K.atk=false;run(50);}}
       else if(kind==='third'&&h==='geomancer'){while(!st.done&&tries++<6){const e=F()[0];P.x=e.x-16;P.face=1;P.vx=0;BK.sim(10);__fresh();for(let n=0;n<3;n++){BK.press('atk');run(14);}run(30);}}   /* (claude/geoid) THE STONE FIST: three jabs in a run */
+      else if(kind==='third'&&h==='warden'){while(!st.done&&tries++<8){const e=F()[0];for(let j=0;j<3;j++){P.x=e.x-e.w/2-34;P.face=1;P.vx=0;BK.sim(3);__fresh();BK.press('atk');run(14);}run(50);}}   /* (claude/wardenid) the third jab is the long thrust: three jabs, stood at the point */
       else if(kind==='fault'){while(!st.done&&tries++<6){const e=F()[0];P.x=e.x-24;P.face=1;P.vx=0;BK.sim(10);__fresh();K.atk=true;run(45);K.atk=false;run(60);}}   /* (a full wind: the crack runs 160 px, through both straw men five tiles apart) */
       else if(kind==='pin'){while(!st.done&&tries++<8){const e=F()[tries%2]||F()[0];BK.sim(20);P.x=e.x;P.y=e.y-(e.h||8)-30;P.vx=0;P.vy=40;P.ground=false;P.face=1;__fresh();K.down=true;BK.press('atk');
           let f=0;while(!P.pinning&&f++<60)BK.sim(1);K.down=false;run(10);BK.press('jump');run(40);}}
@@ -47,7 +48,7 @@ try {
           let f=0;while(!P.ground&&f++<200&&!(P.vy<-200))BK.sim(1);K.down=false;run(120);}}   /* (claude/plunges) HAMMER OF DAWN and AXE SPIN: dropped onto the straw */
       else if(kind==='board'){while(!st.done&&tries++<8){const e=F()[tries%2]||F()[0];BK.sim(20);P.x=e.x;P.y=e.y-(e.h||8)-40;P.vx=0;P.vy=40;P.ground=false;P.face=1;__fresh();K.down=true;BK.press('atk');
           let f=0;while(!P.riding&&f++<120)BK.sim(1);K.down=false;run(10);BK.press('jump');run(40);}}   /* BOARDING: onto a goblin, then off it */
-      else if(kind==='meter'){run(10);__fresh();if(h==='geomancer'||h==='knight'||h==='ranger')K.up=true;__tapC();K.up=false;run(90);}   /* (claude/ults: the ULTIMATE is UP+C with the meter full - her AVALANCHE, his SHIELD CHARGE, her GREAT ARROW) */
+      else if(kind==='meter'){run(10);__fresh();if(h==='geomancer'||h==='knight'||h==='ranger'||h==='warden')K.up=true;__tapC();K.up=false;run(90);}   /* (claude/ults: the ULTIMATE is UP+C with the meter full - her AVALANCHE, his SHIELD CHARGE, her GREAT ARROW, her REACH) */
       else if(kind==='twinsmite'||kind==='radiancePlus'){while(!st.done&&tries++<4){const e=F()[0];P.x=e.x-14;P.face=1;P.vx=0;run(20);__fresh();__tapC();run(60);}}   /* (claude/paladin4) the empowered tiers: filled for him, tapped beside the straw */
       else if(kind==='pray'){K.down=true;run(60*5);K.down=false;run(5);}   /* (claude/paladin4) PRAYER: down and still until a pip comes */
       /* (claude/heropassa) HERO PASS A's stations: THE SHIELD BASH into his wind-up, VALIANT STRIKE (the bar filled) on the shield, THE COUNTER-THRUST (deflect on his flash, then X),

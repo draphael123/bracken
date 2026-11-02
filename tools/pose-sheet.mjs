@@ -17,7 +17,7 @@ const OTHERS = process.argv[3] === 'others';
 const actives = h => [...new Set(SKILLS.filter(s => s.active && s.hero === h).map(s => s.id))];
 const MOVES = OTHERS ? Object.fromEntries(['paladin', 'pyro', 'pirate', 'reaper'].map(h => [h, actives(h)])) : {
   knight: ['risingCut', 'lunge', 'shieldThrow', 'warCry', 'groundSlam', 'whirlwind', 'disarm', 'ironclad', 'swordOfRealm'],
-  warden: ['skewer', 'setSpears', 'harrier', 'wheel', 'javelin', 'poleSpring', 'fullStretch', 'spearDance', 'rainOfSpears'],
+  warden: ['skewer', 'setSpears', 'harrier', 'wheel', 'javelin', 'fullStretch', 'spearDance', 'rainOfSpears'],
 };
 const STEM = OTHERS ? 'docs/pose2-' : 'docs/pose-', BASE = OTHERS ? 'master 341cb78' : 'master 313e0da', BRANCH = OTHERS ? 'claude/poses2' : 'claude/poses';
 const AT = [3, 9, 16];                     /* frames after the press */
