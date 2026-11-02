@@ -1,5 +1,5 @@
 {
-  "time": "2026-11-01T23:53:57.276Z",
+  "time": "2026-11-02T00:49:50.684Z",
   "status": "Prepared approved limited API component; original Game tree unchanged, cloud native and ordinary-publication contracts required",
   "sourceGame": "62d9c02c102decc69ceaef4e1ec593a23170f1ff",
   "sourceTree": "d6f20846727ec42b3cca651d1b061136d9c6d2f1",
@@ -13,7 +13,7 @@
   "design": "An ordinary private catalogue uses private per-field accessors. Reading the public SPR accessor completes all pending fields and republishes the same ordinary catalogue as a native writable data property. No proxy,blank canvas,private handle or alternate image type is published.",
   "explicitDescriptorConsequences": [
     "Before first read,the public SPR property is an accessor rather than writable data.",
-    "Reflect.set on a frozen holder before first read can throw TypeError instead of returning false;the frozen value remains protected. This is recorded explicitly as an accessor consequence,not claimed exact."
+    "Before first access,Reflect.set failure paths can throw TypeError instead of returning false because the public property is an accessor. This includes frozen holder and rejected receiver writes;protected values/descriptors remain unchanged. After first read,ordinary data semantics are required."
   ],
   "required": {
     "nativeGraphs": 154,
@@ -25,7 +25,7 @@
     "evalDeadlineMs": 240000,
     "outerJobMinutes": 15,
     "nativePixelsContextsMetadataDescriptorsAliasesFreshnessOwnership": true,
-    "newHelperNodeContracts": 31,
+    "newHelperNodeContracts": 39,
     "explicitDescriptorConsequences": 2
   },
   "noOriginalAssertionOrLimitChange": true,
@@ -84,5 +84,18 @@
     "oneReadOnlyRecovery": "Bounded gh read timed out at12000ms",
     "connectorWriteDenied": "403 Resource not accessible by integration;no retry or permission change"
   },
-  "actualTask3Preparation": "Prepared separately outside Game branches;its complete4file source has no inherited Game or native pass."
+  "actualTask3Preparation": "Prepared separately outside Game branches;its complete4file source has no inherited Game or native pass.",
+  "receiverRepair": {
+    "priorHelperSha256": "9f5b1e34590b530268dd71cfd9cb833774d9105bdddfa1ededa7ea9a8be61bf8",
+    "helperSha256": "65261b1db2a21daf1787a45e4c45af03eebda1b299c897cbbbd2106a171d66f1",
+    "change": "Only derived-receiver setter branch;preserve receiver descriptors and reject nonwritable or accessor receiver properties. Writable nonconfigurable data values remain writable with original flags.",
+    "sourceDerivedCounterexamples": [
+      "Old configurable read-only receiver is overwritten,where original ordinary writable base property rejects the write.",
+      "Old writable nonconfigurable receiver can be rejected because the setter tries to force configurable/enumerable flags."
+    ],
+    "oldSourceSnapshot": "tools/sprite-publication-source-nov01/receiver-before.js",
+    "freshCloudContractsPrepared": 8,
+    "cloudExecuted": false,
+    "noOriginalTestChanged": true
+  }
 }

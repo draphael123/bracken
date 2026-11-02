@@ -34,7 +34,7 @@ export function installSpritePublicationBoundary(api,key,target){
  const original=own(api,key);if(!original||!('value'in original)||original.value!==target||!original.configurable||!original.writable)throw TypeError('ordinary writable publication boundary required');
  let overwritten=false,replacement;
  const get=function(){if(overwritten)return replacement;const value=exposeSpriteCatalogue(target),d=own(api,key);if(d?.get===get&&d.configurable)define(api,key,{...original,value});return value;};
- const set=function(value){if(this!==api){if(!define(this,key,{value,writable:true,enumerable:true,configurable:true}))throw TypeError('publication receiver write');return;}const d=own(api,key);if(Object.isFrozen(api))throw TypeError('frozen publication write');overwritten=true;replacement=value;if(d?.get===get&&d.configurable)define(api,key,{...original,value});};
+ const set=function(value){if(this!==api){const receiverDescriptor=own(this,key);if(receiverDescriptor){if(!('value'in receiverDescriptor)||!receiverDescriptor.writable||!define(this,key,{value}))throw TypeError('publication receiver write');}else if(!define(this,key,{value,writable:true,enumerable:true,configurable:true}))throw TypeError('publication receiver write');return;}const d=own(api,key);if(Object.isFrozen(api))throw TypeError('frozen publication write');overwritten=true;replacement=value;if(d?.get===get&&d.configurable)define(api,key,{...original,value});};
  if(!define(api,key,{get,set,enumerable:original.enumerable,configurable:true}))throw TypeError('publication installation');
  return api;
 }

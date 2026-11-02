@@ -25,7 +25,7 @@ jobs:
           node --check tools/sprite-publication-native-nov01.mjs
           mkdir -p "$PUBLICATION_OUT"
           git rev-parse HEAD HEAD:src > "$PUBLICATION_OUT/source.txt"
-          sha256sum tools/sprite-publication-source-nov01/catalogue.js tools/sprite-publication-node-nov01.mjs tools/sprite-publication-native-nov01.mjs > "$PUBLICATION_OUT/source-sha256.txt"
+          sha256sum tools/sprite-publication-source-nov01/catalogue.js tools/sprite-publication-source-nov01/receiver-before.js tools/sprite-publication-source-nov01/plan.json tools/sprite-publication-node-nov01.mjs tools/sprite-publication-native-nov01.mjs > "$PUBLICATION_OUT/source-sha256.txt"
         env:
           PUBLICATION_OUT: ${{ runner.temp }}/sprite-publication-node-nov01
       - run: node tools/sprite-publication-node-nov01.mjs
