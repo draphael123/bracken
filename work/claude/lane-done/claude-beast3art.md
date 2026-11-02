@@ -20,3 +20,16 @@ Fight shots (look-walk, volley-horn, volley-arrows, volley-lost, wall-tell, wall
 ## CHECKS
 tools/palisadewood.mjs green; tools/palisadeart.mjs green (level hash 344234fcd689, B16 frames distinct, console clean); tools/hornsman.mjs green; MI_ONLY=batteringbeast mark-integrity: no marked windup seen in 40 s (not a validation - owed to the tune lane); boss sanity palisadewood practiced knight n=3: 0/3 (deaths 78/107/96 s, boss left 26/1/26%) - no page errors; art did not touch tuning, compare to r6 (knight 2/6).
 NOT RUN: textfit, boss-openings, mash, level-reach (page, not needed for art; the lane numerals are ctx.text size 7 over the plate).
+
+## BRANCH
+claude/beast3art, worktree bracken-beast3art (sha in git log; last commit "beast3art: ...").
+
+## NOTES FOR THE TUNE LANE
+- No timing/hitbox change. Lane sign plates + pennants are drawn over the lane (visual only); the lanes are still BB.order's 44 px.
+- Fight length unchanged by art; the knight is still the weak hero (0/3 here, 2/6 at r6): look at him + paladin first.
+- Frames now bake 2 flutter steps for every pose (memory +~35 small canvases, negligible).
+- Re-run mark-integrity with a longer MI_SECS (orderTell/wallTell never appeared in 40 s) and boss-openings/mash/textfit as the lane noted.
+
+## QUESTIONS (rec built)
+1. The camera clamps at the east wall, so the slam's head impact sits at the screen edge; the flash is drawn at his shoulder so it can be seen. Rec: keep.
+2. Hornsman fall/reel carry no new SFX. Rec: leave (sound lane if wanted).
