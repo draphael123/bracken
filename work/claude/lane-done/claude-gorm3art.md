@@ -20,3 +20,5 @@ Not run: full art suite, other heroes.
 1. Pre-crack first second of rageTell uses the plain-crown frame, then snaps to the cracked set. Rec: keep (reads as the crack).
 2. Burning charge frames are busy with flames over the limb; trim FX if Daniel finds it too much.
 3. A real roar/stinger sound for the rage is still owed.
+
+Branch claude/gorm3art @ fa7bcc32
