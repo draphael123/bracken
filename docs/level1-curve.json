@@ -52,17 +52,17 @@
   "lostPct": 82
  },
  "kings": {
-  "hash": "f2a3b79f1cad",
+  "hash": "892e32310112",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 25,
-  "deaths": 3,
+  "hits": 22,
+  "deaths": 2,
   "kills": 36,
-  "lifts": 83,
+  "lifts": 87,
   "walked": 100,
   "bare": true,
-  "lostPct": 169
+  "lostPct": 171
  },
  "scree": {
   "hash": "1e7b6c7c6795",
@@ -351,17 +351,17 @@
   "lostPct": 733
  },
  "burning": {
-  "hash": "342eb49d3ea1",
+  "hash": "33d70f47433a",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 42,
+  "hits": 50,
   "deaths": 3,
-  "kills": 50,
-  "lifts": 92,
+  "kills": 49,
+  "lifts": 88,
   "walked": 100,
   "bare": true,
-  "lostPct": 178
+  "lostPct": 165
  },
  "witchlight": {
   "hash": "7fcd84c38afa",
@@ -533,17 +533,17 @@
   "lostPct": 622
  },
  "rootway": {
-  "hash": "e7a8a8c9c301",
+  "hash": "518a4d6672cc",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 40,
-  "deaths": 3,
-  "kills": 35,
-  "lifts": 89,
+  "hits": 39,
+  "deaths": 2,
+  "kills": 34,
+  "lifts": 91,
   "walked": 100,
   "bare": true,
-  "lostPct": 151
+  "lostPct": 140
  },
  "church": {
   "hash": "e7d86029ed16",
@@ -611,17 +611,17 @@
   "lostPct": 421
  },
  "fenroad": {
-  "hash": "6fd503034e2b",
+  "hash": "fa0d4facf968",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 32,
+  "hits": 33,
   "deaths": 3,
-  "kills": 38,
-  "lifts": 81,
+  "kills": 34,
+  "lifts": 83,
   "walked": 100,
   "bare": true,
-  "lostPct": 209
+  "lostPct": 233
  },
  "hornetsnest": {
   "hash": "ad6ec4c9664a",
@@ -637,30 +637,30 @@
   "lostPct": 88
  },
  "palisadewood": {
-  "hash": "344234fcd689",
+  "hash": "691a500a873f",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 18,
-  "deaths": 2,
-  "kills": 69,
+  "hits": 14,
+  "deaths": 1,
+  "kills": 74,
   "lifts": 92,
   "walked": 100,
   "bare": true,
-  "lostPct": 171
+  "lostPct": 110
  },
  "kitchengate": {
-  "hash": "305bf291fd7d",
+  "hash": "69431e8dfcec",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
   "hits": 45,
-  "deaths": 3,
-  "kills": 36,
-  "lifts": 64,
+  "deaths": 2,
+  "kills": 34,
+  "lifts": 66,
   "walked": 100,
   "bare": true,
-  "lostPct": 195
+  "lostPct": 211
  },
  "rookery": {
   "hash": "c1a7a9bb03c6",
