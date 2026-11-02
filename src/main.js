@@ -688,7 +688,7 @@ const menuTrack = () => (PROG.menu && PROG.music && PROG.music[PROG.menu]) ? PRO
 const BZ_WIN = { coinPrice: 800, coinNeeds: 'warcairn', coinBoss: true, feat: 'boss:warcairn', featName: 'beat the Berserker Chieftain at the War Cairn' };
 const HEROES = [
   { id: 'knight', name: 'THE KNIGHT', price: 10, silver: true, desc: 'the shield is his sword. 100 health. a PERFECT GUARD (raise C as the blow lands) is a link on the chain of three, and the cut that answers it carries the links: one opens a guard, two shoves, three is THE FINISHER. a turned blow keeps the chain; a blow that lands drops a link. three links, UP+C on the ground is his ULTIMATE, THE SHIELD CHARGE - a screen-long rush behind the shield, through every foe in the way, ending in a slam. HOLD X, the sword up over the shield, and let go: THE HEAVY CUT, one weight, and it breaks a guard (no shield while it is up). the third swing of a run is THE SHIELD BASH. X early in a dodge: THE SHOULDER CHARGE, and a guard is thrown wide. his plunge is a POGO: off a foe he bounces, on the ground it rings out both ways' },
-  { id: 'pyro', name: 'THE PYROMANCER', price: 10, silver: true, coinPrice: 800, coinNeeds: 'burning', desc: 'staff and fire, no shield. tap C: THE FLAME WARD, a dome of fire for a moment - tapped as a blow lands it is a parry, after that a block, and it burns whatever touches it. it cannot be held, and it needs a breath before the next. hold C: THE HELD FIREBALL, three steps - the longer the hold the bigger and further, and the big one explodes; she walks slowly while it is on the staff. her fire leaves BURN MARKS. hold down, still: STOKE, the heat bar fills. a full bar and C: CONFLAGRATION, every marked foe erupts at once, and a boss stands scorched open. the hotter she runs the harder her fire lands. 88 health, quicker on foot, a lighter blow. the plunge is THE FIRE STOMP: her boots do nothing, only the firedrop ahead of her and the landing ring burn. X early in a dodge: THE FLAMING SLIDE. at level 10 she learns one more: THE JET or THE EMBER SHOT, on UP + C' },   /* (claude/pyrokit) */
+  { id: 'pyro', name: 'THE PYROMANCER', price: 10, silver: true, coinPrice: 800, coinNeeds: 'burning', desc: 'staff and fire, no shield. tap C: THE FLAME WARD, a dome of fire for a moment - tapped as a blow lands it is a parry, after that a block, and it burns whatever touches it. it cannot be held, and it needs a breath before the next. hold C: THE HELD FIREBALL, three steps - the longer the hold the bigger and further, and the big one explodes; she walks slowly while it is on the staff. LIVING BOMB, always on: her hits light flame pips over a foe, and the third makes it burst and light the foes beside it. hold down, still: STOKE, the heat bar fills. a full bar and UP + C: METEOR FALL, a told meteor that lights everything it hits to the bursting point. the hotter she runs the harder her fire lands. 88 health, quicker on foot, a lighter blow. the plunge is THE FIRE STOMP: her boots do nothing, only the firedrop ahead of her and the landing ring burn. X early in a dodge: THE FLAMING SLIDE. at level 10 she learns one more: THE JET or THE EMBER SHOT, on UP + C' },   /* (claude/pyrokit) */
   { id: 'reaper', name: 'THE BLOOD KNIGHT', price: 10, silver: true, coinPrice: 800, coinNeeds: 'unburied', coinBoss: true, feat: 'boss:unburied', featName: p => SC.featWords('reaper', p, 'beat the Blood Knight in the Unburied Field'), desc: "a two-handed sword, and 95 health. HE FIGHTS ON BORROWED BLOOD. A blow that lands on him leaves most of it as BLOOD DEBT, a red part of his health bar that drains away in five seconds - and every blow of his that lands drinks some of it back (more from a bleeding foe). X is THE RED RHYTHM: a rising cut, a hook that pulls a foe a step in, and THE BLOOD LASH, whose blood whips out past the steel and bleeds what it finds - and every cut that lands feeds his ward. HOLD X for THE FIVE-TIER HEAVY, and let go when the blade glows deep enough: REND, SUNDER (it cracks a guard), the CRIMSON CRESCENT (a wave of blood runs on), EXSANGUINATE (a lunge) and BLOOD MOON (a slam and a geyser) - a long hold reaches all five, and BLOOD DEBT spent into the last two makes them hit harder and drinks some of it back. every heavy bleeds what it lands on. DOWN+C is the BLOOD PRICE: he opens a vein - the health goes on the bar as debt - and his blade cuts harder for six seconds. THE BLOOD STEP is his dodge: a short crimson step, untouchable for a moment, and a step taken right through a blow bleeds some of his debt away (once a second). CROUCH is his low guard, the blade planted before him; kneel AS any blow lands and BLOOD SPIKES tear out of the ground at the one who threw it, and all his debt comes back. HOLD C for the BLOOD WARD: a blow on its face is stopped, but a third of it is paid in his own blood, and that blood fills the ward. LET GO for a BLOOD NOVA that hurts, marks and heals the blood back - and let go in time, because a FULL ward struck again BREAKS and he reels. Let go (or just tap C) AS a blow lands and he THROWS IT BACK: the foe reels open for a heavy riposte, and all his debt comes back with it. The blood he wins back fills VITAE, and HOLDING F on full VITAE is CRIMSON FRENZY: for five seconds every blow drinks back all of itself and his cuts come faster. Buy skills with coins and equip them in Skills & Loadout: THE RED HOST tree is his blood magic - BLOODWORMS, BLOOD BOLT, DRAIN and RED GROUND - paid in his own blood, on the bar as debt, and won back when it lands. F is his first equipped skill; G is the skill he has equipped beside it; HOLD F on full VITAE for Crimson Frenzy. the plunge drives the blade down into a BLOOD BURST. X early in a dodge: THE GREATSWORD RUSH, through small foes, and a guard is thrown wide." },
   { id: 'pirate', name: 'THE FREEBOOTER', price: 10, silver: true, desc: "cutlass and pistol, no shield. 90 health, quick, and the lightest blow in the wood - but a run of FIVE. HOLD X and he levels the pistol: it goes through any guard and nothing blocks it, and then it is EMPTY. A kill seats the next ball, so does a parry, and failing both it loads itself in eight seconds: his powder is whatever the fight is worth. tap C: THE HOOK CATCH, a quarter-second snap of the grapnel that blocks a blow and catches what is thrown at him - caught on the beat it snags the weapon (the foe reels), flings an arrow back at the archer, seats the pistol, and the next ball is instant and point-blank; a heavy blow breaks through it and shoves him. HOLD C: THE HOOK, a line onto rigging, a rail or a net - or onto a foe, to haul him in and shake a coin loose. RUM is a skill bought with coins: it mends him and then makes him reckless. the plunge is THE BOOT, a boarding stomp. X early in a dodge: THE BOARDING LUNGE, through small foes, and a guard is thrown wide." },
   { id: 'paladin', name: 'THE PALADIN', price: 10, silver: true, coinPrice: 800, coinNeeds: 'church', coinBoss: true, feat: 'boss:church', featName: p => SC.featWords('paladin', p, 'beat the Paladin in the Lit Church'), desc: 'maul and holy light. slower and heavier, 120 health. blows landing and blows turned build CONVICTION, five pips (a perfect guard: two). tap C spends it: SMITE 1, TWIN SMITE 2, RADIANCE 3, RADIANCE+ 4, SUNFALL 5; UP+C throws the HAMMER (three). every spend lights his HALLOWED AURA, holy ground that walks with him: in it he hits harder and mends, and foes burn. hold X: VERDICT, a sigil on each foe ahead, then the light strikes them - more Conviction, a faster and harder verdict. hold C: the LIGHT-WARD, all round him - press ahead to walk behind it and shove - and over a partner in his aura. kneel to PRAY for Conviction. his dodge is the SANCTUARY STEP; the plunge is DAWNFALL. X early in a dodge: THE SHIELDLESS CHARGE, through small foes, and a guard is thrown wide. the dead take double' },
@@ -700,7 +700,7 @@ const HEROES = [
 /* THE LOOP, IN ONE SENTENCE A HERO: what the pick screen and the hero card say under the name - how this hero is PLAYED,
    not what he carries. Every clause is checked against the code, so none of it is a talent's promise: the knight's perfect
    guard (the shield raised as the blow lands) opens the foe, and a doubled RIPOSTE on the next swing is a talent; the
-   pyromancer's heat is her FIRE's damage (heatDmg) and not the staff's, and a full bar BANKS into CONFLAGRATION (claude/pyrokit; it was THE PYRE, and that stopped
+   pyromancer's heat is her FIRE's damage (heatDmg) and not the staff's, and a full bar BANKS into METEOR FALL (claude/pyrokit2; CONFLAGRATION before, THE PYRE before that, and that stopped
    overheating her); the paladin's aegis roots him until MOVING FORTRESS is taken, so it is a wall he plants; the pistol
    is reloaded by gold picked up (reloadPistol); the ward and the nova are DK_KEYS in fewer words. Two lines of forty-five
    at size 6: that is the hero card's plate (270 px, six a character), and the pick screen is wider. */
@@ -2586,7 +2586,7 @@ const TRIAL_SAY = { host: 'BLOOD WON BACK', kneel: 'UNDER THE BLADE', quiver: 'T
 Object.assign(TRIAL_NAME, { kbash: 'THE SHIELD BASH', valiant: 'THE FINISHER', counter: 'THE COUNTER-THRUST', plant: 'THE WALL PLANT', snatch: 'ARROW SNATCH', kdraw: 'KNEELING DRAW' });   /* (claude/heropassa) HERO PASS A's yard steps */
 Object.assign(TRIAL_SAY, { kbash: 'INTERRUPTED', valiant: 'THROUGH THE GUARD', counter: 'BACK TO THE POINT', plant: 'PLANTED', snatch: 'CAUGHT', kdraw: 'FROM THE KNEE' });
 function trialSay(msg, col, st) { st = st || ((L && L.trial) || []).find(q => P.x / TS >= q.x0 - 1 && P.x / TS < q.gate + 1); if (!st) return; st.said = msg; st.saidCol = col || '#8fd160'; st.saidT = time + 1.5; }
-function trialName(k) { if (k === 'heavyblow' && hero() === 'knight') return 'THE HEAVY CUT'; if (k === 'third' && isWarden()) return 'THE LONG THRUST'; if (k === 'meter' && isWarden()) return "WARDEN'S REACH"; if (k === 'meter') return hero() === 'knight' ? 'THE SHIELD CHARGE' : isPyro() ? 'CONFLAGRATION' : isPirate() ? 'THE BLACK FLAG' : isReaper() ? 'CRIMSON FRENZY' : isWarden() ? 'THE PHALANX' : isGeo() ? 'THE AVALANCHE' : isBz() ? 'THE FRENZY' : isRg() ? 'HUNTER\'S FOCUS' : 'JUDGEMENT'; return TRIAL_NAME[k] || 'THAT'; }
+function trialName(k) { if (k === 'heavyblow' && hero() === 'knight') return 'THE HEAVY CUT'; if (k === 'third' && isWarden()) return 'THE LONG THRUST'; if (k === 'meter' && isWarden()) return "WARDEN'S REACH"; if (k === 'meter') return hero() === 'knight' ? 'THE SHIELD CHARGE' : isPyro() ? 'METEOR FALL' : isPirate() ? 'THE BLACK FLAG' : isReaper() ? 'CRIMSON FRENZY' : isWarden() ? 'THE PHALANX' : isGeo() ? 'THE AVALANCHE' : isBz() ? 'THE FRENZY' : isRg() ? 'HUNTER\'S FOCUS' : 'JUDGEMENT'; return TRIAL_NAME[k] || 'THAT'; }
 function fillMeter(n) { if (isPaladin()) P.light = Math.max(P.light || 0, n); else if (hero() === 'knight') P.links = Math.max(P.links || 0, n >= 100 ? KC.max : Math.round(n / 34)); else if (isPirate()) P.plunder = Math.max(P.plunder || 0, n); else if (isReaper()) P.harvest = Math.max(P.harvest || 0, n); else if (isWarden()) P.vigil = Math.max(P.vigil || 0, n); else if (isGeo()) { if (GEO) GEO.fillBoard(); } else if (isBz()) P.rage = Math.max(P.rage || 0, n); else if (isRg()) P.rgFocus = Math.max(P.rgFocus || 0, n); }
 /* THE SKILLS A TRIAL LENDS. The F and G step cannot ask for keys a hero has nothing on, so a trial lends him skills out of his own
    tree until he has two, one from each of two branches where it can. Left out: the tree's RISING CUT (UP+X is the rising cut people mean) and VENT, which is nothing with no heat in her */
@@ -4743,7 +4743,7 @@ function seatLevelUp(n) { const mh = P.maxHp; applyUpgrades(); P.hp = Math.min(P
 const fightLive = () => !!(bossActive || miniActive || ambushLive() || eliteList.some(e => e.elite && OKD.isKnightT(e.t) && !e.paid && (!e.alive || (P && Math.abs(P.x - e.x) < 192 && Math.abs(P.y - e.y) < 80))));   /* a Warden's level-up waits until his gate and purse settle; nearby Wardens still fighting hold the card too */
 /* WHAT A LEVEL-UP SAYS: the growth, the heal and the passives, trimmed until it is two lines of the hint (textfit's rule) */
 function levelUpLine(h, n, from) { const before = grow(h, from), after = grow(h, n), got = passivesArriving(h, from, n);
-  const slot2 = from < SECOND_SLOT_LEVEL && n >= SECOND_SLOT_LEVEL ? ' A SECOND SKILL SLOT.' : '', pas = (got.length ? (got.length > 1 ? ' PASSIVES: ' + got[0].name + ' +' + (got.length - 1) + ' MORE.' : ' PASSIVE: ' + got[0].name + '.') : '') + slot2;   /* (Daniel 11-01: level 30 opens the second skill slot - said in the level-up line) */
+  const slot2 = from < SECOND_SLOT_LEVEL && n >= SECOND_SLOT_LEVEL ? ' A SECOND SKILL SLOT.' : '', pas = (got.length ? (got.length > 1 ? ' PASSIVES: ' + got[0].name + ' +' + (got.length - 1) + ' MORE.' : ' PASSIVE: ' + got[0].name + '.') : '') + slot2 + (h === 'pyro' && ((from < 25 && n >= 25) || (from < 40 && n >= 40)) ? ' LIVING BOMB GROWS.' : '');   /* (Daniel 11-01: level 30 opens the second skill slot - said in the level-up line) (claude/pyrokit2: and LIVING BOMB's two growth steps) */
   const head = 'LEVEL ' + n + (n - from > 1 ? ' (+' + (n - from) + ')' : '');
   const owe = picksOwed(PROG, h, n) + milestonesOwed(PROG, h, n).length;   /* THE CARD (LEVELING): the growth is a pick now, so the line says there is one to make */
   const tries = [head + ': ' + (owe ? (owe > 1 ? owe + ' CARDS' : 'A CARD') + ' TO CHOOSE. ' : '+' + (after.hp - before.hp) + ' HEALTH. ') + 'FULLY HEALED.' + pas, head + '. FULLY HEALED.' + pas, head + '. FULLY HEALED.' + slot2];
@@ -7502,7 +7502,7 @@ function hudMeterLabel() {
   const blink = Math.floor(time * 4) % 2;
   { const u = (state === 'play' || state === 'talk') ? ultCue(hero(), blink) : null; if (u) return u; }   /* (claude/ults) ONE cue for every hero: ULT READY: UP+C */
   if (hero() === 'knight') { if (lcOn()) return { s: 'CHARGE!', col: '#ffd36b' }; return (P.links || 0) >= KC.max ? { s: 'SHIELD CHARGE: UP+C', col: blink ? '#ffd36b' : '#fff6c8' } : null; }
-  if (isPyro()) return P.full ? { s: 'CONFLAGRATION: C', col: blink ? '#ffd36b' : '#fff6c8' } : null;   /* (claude/pyrokit: it was PYRE: C) */
+  if (isPyro()) return P.full ? { s: 'METEOR FALL: UP + C', col: blink ? '#ffd36b' : '#fff6c8' } : null;   /* (claude/pyrokit2: it was CONFLAGRATION: C, and PYRE before) */
   if (isPaladin()) { const p = pipsOf(P);   /* (PALADIN 3) what a tap of C spends now */
     if (p >= HG.conv.pips) return { s: 'SUNFALL: C', col: blink ? '#ffd36b' : '#fff6c8' };
     if (p >= 4) return { s: 'RADIANCE+: C  THROW: UP+C', col: '#fff6c8' }; if (p >= 3) return { s: 'RADIANCE: C  THROW: UP+C', col: '#ffd36b' }; if (p >= 2) return { s: 'TWIN SMITE: C', col: '#ffe6a0' }; if (p >= 1) return { s: 'SMITE: C', col: '#e8c870' };
@@ -8732,7 +8732,7 @@ function hurtEnemy(e, dmg, fromX, plunge) { const tag = BLOW, blow = brRoomBlow(
   /* WHOSE BLOW IT WAS. During a hero's pass P is that hero, so the damage and the kill go on HIS tally; outside a
      pass there is only ever one hero to mean. A burn or a bleed is booked to whoever lit it, which is right, and a
      creature killed by the room while a hero stands near it pays him the compliment, which is a friendly tally. */
-  if (alive0 && hp0 > e.hp && !e.harmless && dmg > 0) { gainHeat(P.jetHit ? HEAT.jet : HEAT.hit); if (isPyro()) e.heatOwner = P; if (isBz() && BZK) BZK.dealt(e, hp0 - e.hp, !e.alive); if (!e.alive && RGK) RGK.killed(e); }   /* (claude/ranger: a marked kill - THE KILL, BLOOD TRAIL) */   /* (THE BERSERKER: what landed is rage - a chipped boss gives little - and a kill in a frenzy heals) */   /* a miss or an invulnerable shell warms nothing */
+  if (alive0 && hp0 > e.hp && !e.harmless && dmg > 0) { gainHeat(P.jetHit ? HEAT.jet : HEAT.hit); if (isPyro()) { e.heatOwner = P; pyBlowStack(e, tag); } if (isBz() && BZK) BZK.dealt(e, hp0 - e.hp, !e.alive); if (!e.alive && RGK) RGK.killed(e); }   /* (claude/ranger: a marked kill - THE KILL, BLOOD TRAIL) */   /* (THE BERSERKER: what landed is rage - a chipped boss gives little - and a kill in a frenzy heals) */   /* a miss or an invulnerable shell warms nothing */
   if(e===boss&&hp0>e.hp&&window.BK&&BK.bossBlows){const k=(blow||tag||'?')+':'+mode0;BK.bossBlows[k]=(BK.bossBlows[k]||0)+Math.min(hp0,hp0-e.hp);}   /* (claude/marsh2) a lab hook: whose blows took a boss's health, in what mode of his (tools set BK.bossBlows={}) */
   if(e===boss&&hp0>e.hp){e.damageLedger=e.damageLedger||{plunge:0,other:0};e.damageLedger[plunge||blowHas(blow,'plunge')?'plunge':'other']+=Math.min(hp0, hp0-e.hp);}
   if (P.score) { P.score.dmg += Math.max(0, hp0 - e.hp); if (alive0 && !e.alive) P.score.kills++; }
@@ -10684,7 +10684,7 @@ function updatePlayer(dt) {
     const cDown = keys.block && !P.cWas; P.cWas = !!keys.block;
     const free = !stunned && !dodging && !P.plunge && !thrown;
     const cardC = cDown && keys.up && (pyroCard('jet') || pyroCard('ember'));   /* UP + C: the card's verb, never the ward (the conflict matrix: tools/pyro-kit.mjs) */
-    if (P.full && cDown && free && !attacking && !cardC) castConflagration();
+    if (P.full && cDown && keys.up && free && !attacking) castMeteorFall();   /* (Daniel 11-01: every hero's ultimate is UP + C at a full meter; a plain C stays the ward / the fireball, and a card's UP + C waits for the bar to be spent) */
     else if (cardC && free && !attacking) { P.cMode = 'card'; P.cHeld = 0; }
     else if (cDown && free && !attacking) { P.cMode = 'fb'; P.cHeld = 0; P.fbStepWas = 0; if (FWARD) FWARD.raise(); }   /* THE PRESS IS THE WARD; the hold that follows charges the ball (a ward on its cooldown never stops a charge) */
     if (P.cMode === 'card') {
@@ -10696,6 +10696,7 @@ function updatePlayer(dt) {
     else { P.fbHold = 0; P.cHeld = 0; }
     if (P.infernoT > 0) { P.infernoT -= dt; P.heat = 100; if (P.infernoT <= 0) { P.infernoT = 0; P.heat = 0; number(P.x, P.y - 30, 'BURNT OUT', '#9aa39a'); SFX.puff(); } }   /* INFERNO: full, and nothing drains it, and then it is all gone */
     else coolHeat(dt);
+    pyBombTick(dt);   /* LIVING BOMB: the fuses, and METEOR FALL in the air */
     if (P.full && P.heat < 100) P.full = false;
     if (P.jetWas && !P.jet && !P.dead) P.jetRecover = 0.22; P.jetWas = P.jet;   /* PUTTING IT OUT TAKES A MOMENT: a beat rooted before she moves, dashes or lights it again */
     if ((P.ground || P.swim) && ((P.jet && !tal('jetWalk')) || P.jetRecover > 0)) P.rootT = Math.max(P.rootT || 0, 0.05);   /* WALKING FLAME: she can walk with it lit */
@@ -29238,7 +29239,7 @@ function coolHeat(dt) {
   if (P.heatGrace > 0 || (P.full && P.fullT > 0)) return;
   const floor = tal('pilot') ? Math.min(P.heat, 33) : 0; P.heat = Math.max(floor, P.heat - HEAT.drain * (1 - 0.12 * prk('pheat')) * dt);
 }
-function gainHeat(n) { if (!isPyro() || P.dead) return; P.heatGrace = HEAT.grace; if (P.full || P.infernoT > 0) return; P.heat = Math.min(100, (P.heat || 0) + n * Math.max(HEAT.varietyFloor, varietyMul())); if (P.heat >= 100) bankHeat(); }
+function gainHeat(n) { if (!isPyro() || P.dead || PY_NOHEAT) return; P.heatGrace = HEAT.grace; if (P.full || P.infernoT > 0) return; P.heat = Math.min(100, (P.heat || 0) + n * Math.max(HEAT.varietyFloor, varietyMul())); if (P.heat >= 100) bankHeat(); }
 /* THE RISING CUT and THE LOW SWEEP. Up with the swing carries the blade from the floor to over the head and throws a small
    creature into the air for the air cut or the plunge to finish; down with it runs along the ground, under a raised shield,
    and takes the feet from whatever stands there. Each hero does it with what they carry. */
@@ -30696,41 +30697,89 @@ function bankHeat() { if (P.full || P.infernoT > 0) return; meterReady('#ff9a5c'
   if (tal('inferno')) { P.infernoT = 6; P.heat = 100; number(P.x, P.y - 34, 'INFERNO', '#ff9a5c'); SFX.heatFull(); shakeCam(4); ringAt(P.x, P.y - 10, 30, '#ff6b2c', 0.45); return; }   /* INFERNO: no pyre to bank - six seconds of fire instead */
   P.full = true; P.fullT = tal('blaze') ? 10 : 5; SFX.heatFull(); ringAt(P.x, P.y - 10, 18, '#ffd36b', 0.3); burst(P.x, P.y - 10, 10, ['#ffd36b', '#fff6c8'], 50, 0.4, -40, 1); }
 /* ==== THE PYRO KIT (claude/pyrokit, Daniel 10-30 20:50-20:52 + 10-31; scratch/brief-pyrokit-1101.md) ====
-   THE PYRE is gone. Her C: TAP = THE FLAME WARD (src/flame-ward.js), HOLD = THE HELD FIREBALL (three steps, the ward folds into it), a FULL bar's press
-   = CONFLAGRATION (every foe her fire has BURN-MARKED erupts at once). DOWN held still = STOKE (the bar fills). THE JET and THE EMBER SHOT left the base kit:
+   THE PYRE is gone. Her C: TAP = THE FLAME WARD (src/flame-ward.js), HOLD = THE HELD FIREBALL (five steps, the ward folds into it), a FULL bar's UP + C
+   = METEOR FALL (claude/pyrokit2; it was CONFLAGRATION). LIVING BOMB (pips over a foe, the third bursts it) is her passive from level 1. DOWN held still = STOKE (the bar fills). THE JET and THE EMBER SHOT left the base kit:
    they are her L10 milestone CARDS (src/progression.js PYRO_CARDS), on UP + C; a save from before keeps both (migratePyroKit).
    ALL OF IT SCALES WITH HER STAFF (ability-balance-1101: flat fire was irrelevant by L25): damage = swordDmg() x k x heatMul() (heat is her fire's damage).
    IMPACT (impact-matrix-1101 outlier #3): the ward's parry, fireball steps 2-3 and every eruption carry an EXPLICIT heavy hit-stop class (IMPACT, read by
    blowKind); step 1 and the ward's contact are light with fire on impact; the jet card's ticks get a small flash + flame + crackle of their own. */
 const PYRO_KIT = {
-  fb: { steps: [0.35, 0.9, 1.5],      // THE HELD FIREBALL: C held this long = step 1 / 2 / 3 (step 1 = FW_K.fold: the ward folds into it)
-        k: [0, 0.9, 1.6, 2.4],         // x swordDmg x heat, the ball's direct hit (the big one must not out-damage the staff per second: 2.4 x1.4 / 1.5 s+ < a staff chain)
-        boomK: 1.2, boomR: 34,         // step 3 EXPLODES (on a foe, on stone or at the end of its flight): everything else in boomR takes boomK
-        cost: [0, 18, 26, 34],         // stamina at the release
-        burn: [0, 1.4, 1.8, 2.4],      // s of burn on a small foe
+  fb: { steps: [FW_K.fold, 0.9, 1.5, 2.0, 2.5], // THE HELD FIREBALL: C held this long = step 1 / 2 / 3 (step 1 = FW_K.fold = 0.18 s, claude/pyrocontrols: a tap shorter than that is the ward, held longer it charges; the ward folds into it)
+        k: [0, 0.9, 1.6, 2.4, 3.3, 4.6],         // x swordDmg x heat, the ball's direct hit (the big one must not out-damage the staff per second: 2.4 x1.4 / 1.5 s+ < a staff chain)
+        boomK: [0, 0, 0, 1.2, 1.6, 2.2], boomR: [0, 0, 0, 34, 42, 54],         // step 3 EXPLODES (on a foe, on stone or at the end of its flight): everything else in boomR takes boomK
+        cost: [0, 18, 26, 34, 42, 50],         // stamina at the release
+        burn: [0, 1.4, 1.8, 2.4, 2.8, 3.2],      // s of burn on a small foe
         readyMax: 4,                   // s she can hold a full ball READY before it goes by itself
         slow: 0.5,                     // her walk while the ball is on the staff (x her run)
         inFlight: 2 },                 // balls of hers in the air at once
   stoke: 14,                           // STOKE: heat/s while she crouches still (full from empty in ~7 s); a hit locks it for stokeLock s
   stokeLock: 0.6, stokeIn: 0.15,       // ...and it starts this long into the crouch (a duck under a blow is not a stoke)
-  cf: { markLife: 6,                   // CONFLAGRATION: a burn mark lasts this long (refreshed by every fire hit)
-        kFoe: 4, kSplash: 1.5, splashR: 36,   // a marked foe erupts: x swordDmg x heat (1.4 at a full bar), and splashes its neighbours
-        kMini: 4, capMini: 0.2,        // a marked MINI: the same blow, at most 20% of him (the brief's 15-25%)
-        kBoss: 6, capBoss: 0.05,       // a marked BOSS: one big hit, at most 5% of him - x1.5 inside the opening it opens = 7.5% (<= 8%)
-        open: 2.5,                     // ...and SCORCHED OPEN: the shared parry opening (src/riposte.js rpOpenT: no chip, x1.5), this long
-        kNone: 1.5, noneR: 34 },       // NOTHING MARKED: a small burst round her, so a press is never wasted
+  lb: { need: 3, life: 6,              // LIVING BOMB (claude/pyrokit2, Daniel 11-01 11:17): a foe bursts on its 3rd pip; pips fade 6 s after the last
+        gap: 0.18, gapSkill: 0.5,      // a foe takes no second pip from her blows this soon (sword/ball/ward), nor from a skill's ticks this soon
+        noStack: 2,                    // a foe that just burst builds no pips for this long
+        fuse: 0.1, fuseChain: 0.16,    // the beat between the third pip and the burst; a chained burst waits a little longer so a chain READS
+        R: [46, 66, 84, 84],           // the burst's reach for the pip it passes on: base / L14 (CINDER SPREAD, wider) / L25 (bigger blast) / L40
+        spread: [1, 1, 1, 2],          // pips each neighbour gets: L40 = two
+        capPct: [0.03, 0.03, 0.03, 0.045],   // a BOSS or MINI: a burst takes at most this share of his max health (L40 = stronger boss blast)
+        staggerEvery: 3, stagger: 0.5, // ...and only every 3rd burst on him staggers (never in a ward or a break: the resist floor)
+        burn: 1.5 },
+  mf: { range: 230, ground: 90,        // METEOR FALL (the full bar's C): the target is the most-pipped foe in front within range, then the nearest; none = 90 px ahead
+        tell: 0.9, R: 56,              // the red ring and the whistle last this long; the blast reaches R (plus half the foe)
+        capPct: 0.04, capMini: 0.10,   // a BOSS takes at most 4% of him (the knight's LAST CHARGE is 3 sword blows on a boss; the old Conflagration 5%), a mini 10%
+        burn: 3 },
 };
 let IMPACT = null;   /* an explicit hit-stop class for the blow being dealt (blowKind reads it) - set only around one hurtAs by hurtFire */
 const pyroCard = id => isPyro() && (PROG.pyroBoth === true || perkOn(PROG, 'pyro', id === 'jet' ? 'pjet' : 'pember'));   /* THE L10 CARDS (src/progression.js PYRO_CARDS): taken, or a pre-kit save's both */
-const pyroMarked = e => !!e && e.pyMarkAt !== undefined && time - e.pyMarkAt < PYRO_KIT.cf.markLife;
-function burnMark(e) { if (e && e.alive) e.pyMarkAt = time; }   /* (not markFoe: that is the Blood Knight's) */
+/* ==== LIVING BOMB (claude/pyrokit2, Daniel 11-01 11:17): HER CORE PASSIVE FROM LEVEL 1. Her blows add PIPS (e.pyStk, three small flames over the foe): a staff cut, a tapped ball, a ward's contact or a
+   parry = 1; a charged ball step 3+ = 2; a skill's tick = 1 (at most one in 0.5 s). The third pip lights the fuse and the foe BURSTS (swordDmg x K.livingBomb x amul x heat) and every foe near it gets a pip
+   (two from L40) - so a pack goes up one after another. A foe that just burst builds no pips for 2 s. A boss or mini takes a smaller, CAPPED burst, and only every 3rd one staggers him. Pips replace the
+   old BURN MARKS (pyMarkAt, the CONFLAGRATION eruption); the meter's spender is METEOR FALL, which gives everything in its blast THREE pips. Growth by level: L14 CINDER SPREAD (the L14 passive, same id) = a wider
+   spread, L25 a bigger blast, L40 two pips to each neighbour and a stronger boss blast. */
+const pyStacks = e => (!!e && e.pyStk > 0 && time - (e.pyStkAt ?? -99) < PYRO_KIT.lb.life) ? e.pyStk : 0;
+const pyroMarked = e => pyStacks(e) > 0;   /* (the old name: tools and the old call sites read "marked" = has a pip) */
+const lbTier = () => { const lv = heroLevel(); return lv >= 40 ? 3 : lv >= 25 ? 2 : (lv >= 14 || tal('conflagration')) ? 1 : 0; };
+let FIRE_BLOW = false, PY_NOHEAT = false;   /* FIRE_BLOW: hurtFire is dealing the blow (it gives its own pips); PY_NOHEAT: a burst or a meteor is dealing it (they never refill the bar) */
+function pyStack(e, n = 1, src = 'hit') {
+  const L = PYRO_KIT.lb; if (!e || !e.alive || e.harmless || n <= 0 || e.pyFuse !== undefined || time < (e.pyNoStk || 0)) return;
+  const bypass = src === 'spread' || src === 'meteor';
+  if (!bypass && time - (e.pyGapAt ?? -99) < (src === 'skill' ? L.gapSkill : L.gap)) return;
+  if (time - (e.pyStkAt ?? -99) > L.life) e.pyStk = 0;
+  e.pyGapAt = time; e.pyStkAt = time; e.pyStk = Math.min(L.need, (e.pyStk || 0) + n);
+  SFX.bombPip(e.pyStk); { const cy = e.y - (e.h || 16) / 2; burst(e.x, cy - (e.h || 16) / 2, 3, ['#ffd36b', '#ff9a5c'], 30, 0.25, -20, 1); }
+  if (e.pyStk >= L.need) e.pyFuse = time + (bypass ? L.fuseChain : L.fuse);
+}
+const burnMark = e => pyStack(e, 1, 'mark');   /* (not markFoe: that is the Blood Knight's) the ward's parry and the card's ember/jet still call this: it is one pip now */
+/* the generic hook (hurtEnemy): a blow of hers that took health and was not a fireball/ward/burst gives a pip - the staff (untagged or a swing tag) is a melee pip, a shot is a skill's */
+function pyBlowStack(e, tag) { if (FIRE_BLOW || BURN_TICK || PY_NOHEAT || !HERO_HAND || !isPyro() || P.dead) return; const t = Array.isArray(tag) ? tag : [tag];
+  if (t.includes('throw') || t.includes('reflect')) return; pyStack(e, 1, t.includes('shot') ? 'skill' : 'melee'); }
+/* THE BURST: the pips go (and pass on to the neighbours first, so even a kill carries the fire), then the blow - capped on a boss or a mini, every 3rd one staggers him */
+function pyDetonate(e) {
+  const L = PYRO_KIT.lb, t = lbTier(), big = !!e.maxHp, h = e.h || 16, cy = e.y - h / 2;
+  e.pyFuse = undefined; e.pyStk = 0; e.pyNoStk = time + L.noStack;
+  for (const q of enemies) if (q !== e && q.alive && !q.harmless && Math.abs(q.x - e.x) < L.R[t] + (q.w || 12) / 2 && Math.abs((q.y - (q.h || 16) / 2) - cy) < L.R[t]) pyStack(q, L.spread[t], 'spread');
+  PA.fx('erupt', e.x, e.y + 2, time, { v: big ? 2 : h > 22 ? 1 : 0 }); ringAt(e.x, cy, 18 + t * 8, '#ff6b2c', 0.25); ringAt(e.x, cy, 10 + t * 5, '#fff6c8', 0.18); flame(e.x, cy, 10 + 2 * t, 10, 80, 3); burst(e.x, cy, 14, ['#fff6c8', '#ffd36b', '#ff9a5c', '#ff6b2c'], 100, 0.45, 40, 2);
+  SFX.bombBoom(); hitstop(big ? 0.06 : 0.04); shakeCam(big ? 4 : 2.5);
+  if (!e.alive) return;
+  const sw = swordDmg(), hm = heatMul();
+  let dmg = Math.round(sw * (big ? SKK.K.livingBombBig : SKK.K.livingBomb) * amul('livingBomb') * hm);
+  if (big) { dmg = Math.min(dmg, Math.max(1, Math.round(L.capPct[t] * e.maxHp))); e.pyBombN = (e.pyBombN || 0) + 1; }
+  PY_NOHEAT = true; try { hurtFire(e, dmg, P.x, { burn: big ? 0 : L.burn, cls: 'heavy', tag: ['heavy', 'shot'], stacks: 0 }); } finally { PY_NOHEAT = false; }
+  if (big && e.alive && e.pyBombN % L.staggerEvery === 0 && !(e.rpWardT > 0) && !(e.broken > 0)) { e.stagger = Math.max(e.stagger || 0, L.stagger); e.flash = 0.2; ringAt(e.x, cy, 26, '#ffd36b', 0.3); }   /* only the 3rd, 6th... burst on a boss/mini staggers him (not in a ward or a break) */
+}
+/* every frame (the pyro block of updatePlayer): the fuses that have burned down, and the meteor in the air */
+function pyBombTick(dt) {
+  if (P.dead) { pyMeteor = null; return; }
+  for (const e of enemies) if (e.pyFuse !== undefined && time >= e.pyFuse) pyDetonate(e);
+  meteorTick(dt);
+}
 /* HER FIRE LANDS: marked first (a kill still counts as fire), the blow at its class, the burn */
-function hurtFire(e, dmg, fromX, { burn = 0, cls = null, tag = 'shot', burnOnly = false } = {}) { if (!e || !e.alive) return; burnMark(e);
-  const jh = P.jetHit; IMPACT = cls; if (burnOnly) P.jetHit = true;   /* burnOnly (the ward's CONTACT): a burn, not a blow - as the jet's: no flinch, no stagger, no poise, no stop of its own (the ward gives its own) - so the ward never knocks a foe out of the swing it is about to parry */
-  try { hurtAs(tag, e, Math.max(1, Math.round(dmg)), fromX, false); } finally { IMPACT = null; P.jetHit = jh; }
+function hurtFire(e, dmg, fromX, { burn = 0, cls = null, tag = 'shot', burnOnly = false, stacks = 1 } = {}) { if (!e || !e.alive) return;
+  const jh = P.jetHit, hp0 = e.hp; IMPACT = cls; FIRE_BLOW = true; if (burnOnly) P.jetHit = true;   /* burnOnly (the ward's CONTACT): a burn, not a blow - as the jet's: no flinch, no stagger, no poise, no stop of its own (the ward gives its own) - so the ward never knocks a foe out of the swing it is about to parry */
+  try { hurtAs(tag, e, Math.max(1, Math.round(dmg)), fromX, false); } finally { IMPACT = null; FIRE_BLOW = false; P.jetHit = jh; }
+  if (stacks > 0 && e.alive && e.hp < hp0) pyStack(e, stacks, 'fire');   /* LIVING BOMB: a blow that took health leaves its pip(s) */
   if (burn > 0 && e.alive && !e.maxHp) e.burn = Math.max(e.burn || 0, burn); if (e.alive) e.heatOwner = P;
   flame(e.x, e.y - (e.h || 12) / 2, 4, 5, 50, 2); }
-const fbStepOf = t => t >= PYRO_KIT.fb.steps[2] ? 3 : t >= PYRO_KIT.fb.steps[1] ? 2 : t >= PYRO_KIT.fb.steps[0] ? 1 : 0;
+const fbStepOf = t => t >= PYRO_KIT.fb.steps[4] ? 5 : t >= PYRO_KIT.fb.steps[3] ? 4 : t >= PYRO_KIT.fb.steps[2] ? 3 : t >= PYRO_KIT.fb.steps[1] ? 2 : t >= PYRO_KIT.fb.steps[0] ? 1 : 0;
 /* THE HELD FIREBALL, every frame C is down in 'fb' mode: the clock, the steps told (a ring and a tick each), the fold, the drop, the release */
 function fbTick(dt, keys, free, attacking) {
   const F = PYRO_KIT.fb, st0 = fbStepOf(P.cHeld || 0);
@@ -30738,10 +30787,10 @@ function fbTick(dt, keys, free, attacking) {
   if (!free || attacking || P.hurt > 0 || P.dead) { if (st0 > 0) fbFizzle(); P.cMode = null; P.cHeld = 0; P.fbHold = 0; return; }   /* A DODGE, A HIT OR A SWING DROPS IT */
   P.cHeld = (P.cHeld || 0) + dt; const st = fbStepOf(P.cHeld);
   if (st >= 1 && P.fwUp && FWARD) FWARD.fold();   /* never ward and ball on one frame */
-  if (st > (P.fbStepWas || 0)) { P.fbStepWas = st; SFX.fbStep(st); const tip = fbTip(); ringAt(tip.x, tip.y, 5 + 4 * st, st === 3 ? '#fff6c8' : '#ffd36b', 0.22); burst(tip.x, tip.y, 3 + 3 * st, ['#ff9a5c', '#ffd36b', '#fff6c8'], 30 + 15 * st, 0.3, -30, 1); if (st === 3) number(P.x, P.y - 30, 'READY', '#fff6c8'); }
+  if (st > (P.fbStepWas || 0)) { P.fbStepWas = st; SFX.fbStep(st); const tip = fbTip(); ringAt(tip.x, tip.y, 5 + 4 * st, st === 3 ? '#fff6c8' : '#ffd36b', 0.22); burst(tip.x, tip.y, 3 + 3 * st, ['#ff9a5c', '#ffd36b', '#fff6c8'], 30 + 15 * st, 0.3, -30, 1); if (st === 5) number(P.x, P.y - 30, 'READY', '#fff6c8'); else if (st >= 4) number(P.x, P.y - 30, 'ALMOST', '#ffd36b'); }
   P.fbHold = st;
-  if (st === 3 && Math.random() < dt * 20) { const tip = fbTip(); parts.push({ fire: true, x: tip.x + (Math.random() - 0.5) * 8, y: tip.y + (Math.random() - 0.5) * 8, vx: (Math.random() - 0.5) * 20, vy: -30, life: 0.3, max: 0.3, col: Math.random() < 0.5 ? '#ffd36b' : '#ff9a5c', size: 1, grav: -30 }); }
-  if (P.cHeld >= F.steps[2] + F.readyMax) { castFireball(3); P.cMode = null; P.cHeld = 0; P.fbHold = 0; }   /* held READY too long: it goes */
+  if (st >= 3 && Math.random() < dt * 20 * (st - 2)) { const tip = fbTip(); parts.push({ fire: true, x: tip.x + (Math.random() - 0.5) * 8, y: tip.y + (Math.random() - 0.5) * 8, vx: (Math.random() - 0.5) * 20, vy: -30, life: 0.3, max: 0.3, col: Math.random() < 0.5 ? '#ffd36b' : '#ff9a5c', size: 1, grav: -30 }); }
+  if (P.cHeld >= F.steps[4] + F.readyMax) { castFireball(5); P.cMode = null; P.cHeld = 0; P.fbHold = 0; }   /* held READY too long: it goes */
 }
 const fbTip = () => ({ x: P.x + P.face * PA.TIP.hold[0], y: P.y + PA.TIP.hold[1] });   /* where the ball sits on the staff: the head of F.holdStand / F.holdWalk's staff (src/pyro-art.js TIP) */
 function fbFizzle() { SFX.emberFizzle(); const tip = fbTip(); smoke(tip.x, tip.y, 3, 5); number(P.x, P.y - 24, 'DROPPED', '#9aa39a'); }
@@ -30754,17 +30803,19 @@ function castFireball(step) { noteVerb('cast');
   const tip = fbTip();
   embers.push(step === 1 ? { fb: 1, r: 3, x: tip.x, y: P.y - 12, vx: P.face * 150, vy: -45, grav: 110, life: tal('skip') ? 3 : 1.8, hit: new Set() }   /* THE SMALL ONE: the old tap ember, lobbed */
     : step === 2 ? { fb: 2, r: 5, x: tip.x, y: P.y - 13, vx: P.face * 215, vy: -18, grav: 36, life: 1.6, hit: new Set() }   /* THE MEDIUM ONE: travels flatter and further */
-    : { fb: 3, r: 8, x: tip.x, y: P.y - 14, vx: P.face * 150, vy: 0, grav: 0, life: 1.5, hit: new Set() });   /* THE BIG ONE: slow, straight, EXPLODES */
+    : step === 3 ? { fb: 3, r: 8, x: tip.x, y: P.y - 14, vx: P.face * 150, vy: 0, grav: 0, life: 1.5, hit: new Set() }   /* THE BIG ONE: slow, straight, EXPLODES */
+    : step === 4 ? { fb: 4, r: 10, x: tip.x, y: P.y - 15, vx: P.face * 140, vy: 0, grav: 0, life: 1.5, hit: new Set() }   /* (claude/pyrocontrols, Daniel 11-01: five steps) THE BIGGER ONE */
+    : { fb: 5, r: 13, x: tip.x, y: P.y - 16, vx: P.face * 130, vy: 0, grav: 0, life: 1.6, hit: new Set() });   /* THE BIGGEST: slower, wider, the great explosion */
   if (step === 1 && tal('twin')) embers.push({ fb: 1, r: 3, x: tip.x, y: P.y - 12, vx: P.face * 105, vy: -150, grav: 110, life: tal('skip') ? 2.4 : 1.2, hit: new Set() });   /* TWIN EMBER: a high one after the low */
   SFX.fbCast(step); burst(tip.x, tip.y, 4 + 4 * step, ['#ff9a5c', '#ffd36b', '#fff6c8'], 40 + 20 * step, 0.3, 0, 1);
-  if (step === 3) { P.vx -= P.face * 70; hitstop(0.05); streaks(tip.x, tip.y, 8, ['#fff6c8', '#ffd36b', '#ff9a5c'], 200); }
+  if (step >= 3) { P.vx -= P.face * (40 + 15 * step); hitstop(0.03 + 0.01 * step); streaks(tip.x, tip.y, 8, ['#fff6c8', '#ffd36b', '#ff9a5c'], 200); }
 }
 /* THE BIG ONE GOES OFF: a ring of fire; everything in it but the one it struck burns and is marked */
 function fbBoom(b, struck) {
   const F = PYRO_KIT.fb, sw = swordDmg(), hm = heatMul(); b.life = 0; if (b.boomed) return; b.boomed = true;
   PA.fx('blast', b.x, b.y, time); burst(b.x, b.y, 20, ['#fff6c8', '#ffd36b', '#ff9a5c', '#ff6b2c'], 110, 0.5, 60, 2); flame(b.x, b.y, 12, 10, 80, 3); smoke(b.x, b.y - 4, 4, 8);
-  SFX.fbBoom(); hitstop(0.09); shakeCam(4); zoomKick(1.05, 0.15);
-  for (const e of enemies) if (e.alive && !e.harmless && e !== struck && !b.hit.has(e) && Math.abs(e.x - b.x) < F.boomR + (e.w || 12) / 2 && Math.abs(e.y - (e.h || 16) / 2 - b.y) < F.boomR) { b.hit.add(e); hurtFire(e, sw * F.boomK * hm, b.x, { burn: 2, cls: 'heavy' }); flinch(e); }
+  SFX.fbBoom(); hitstop(0.09 + 0.01 * (b.fb - 3)); shakeCam(4 + (b.fb - 3) * 1.5); zoomKick(1.05 + 0.01 * (b.fb - 3), 0.15);
+  for (const e of enemies) if (e.alive && !e.harmless && e !== struck && !b.hit.has(e) && Math.abs(e.x - b.x) < F.boomR[b.fb] + (e.w || 12) / 2 && Math.abs(e.y - (e.h || 16) / 2 - b.y) < F.boomR[b.fb]) { b.hit.add(e); hurtFire(e, sw * F.boomK[b.fb] * hm, b.x, { burn: 2, cls: 'heavy' }); flinch(e); }
   let gy = Math.floor(b.y / TS); for (let k = 0; k < 4 && !isSolid(Math.floor(b.x / TS), gy) && !isOneWay(tileAt(Math.floor(b.x / TS), gy)); k++) gy++;
   if (isSolid(Math.floor(b.x / TS), gy) || isOneWay(tileAt(Math.floor(b.x / TS), gy))) for (const dx of [-10, 10]) fires.push({ x: b.x + dx, y: gy * TS, life: 1.4, delay: Math.abs(dx) / 160, own: true });
   for (const pr of props) if ((pr.t === 'minerlamp' || pr.t === 'lantern') && !pr.lit && Math.abs(pr.x - b.x) < 40 && Math.abs(pr.y - b.y) < 40) { pr.lit = true; pr.hits = 0; SFX.spark(); }
@@ -30772,9 +30823,9 @@ function fbBoom(b, struck) {
 /* A FIREBALL STRIKES e (updateEmbers): the step's blow, its class, the burn, the mark - and the big one goes off */
 function fbHit(b, e) {
   const F = PYRO_KIT.fb, rk = e.t === 'ram' && !ramOpen(e) ? RLD.RAM.frontMul : 1; if (rk < 1) { SFX.clank(); number(e.x, e.y - e.h - 8, 'HIS HIDE TURNS IT', '#9aa39a'); }
-  hurtFire(e, swordDmg() * F.k[b.fb] * heatMul() * rk, b.x, { burn: F.burn[b.fb], cls: b.fb >= 2 ? 'heavy' : 'light', tag: b.fb === 3 ? ['heavy', 'shot'] : 'shot' });
+  hurtFire(e, swordDmg() * F.k[b.fb] * heatMul() * rk, b.x, { burn: F.burn[b.fb], cls: b.fb >= 2 ? 'heavy' : 'light', tag: b.fb >= 3 ? ['heavy', 'shot'] : 'shot', stacks: b.fb >= 3 ? 2 : 1 });   /* LIVING BOMB: a charged ball (step 3+) = 2 pips */
   flinch(e); if (e.t === 'dummy') trialEvent('ember'); if (b.fb < 3) PA.fx('pop', b.x, b.y, time);
-  if (b.fb === 3) fbBoom(b, e);
+  if (b.fb >= 3) fbBoom(b, e);
 }
 /* STOKE: down held still on the ground, nothing else asked of her, not hit - the bar fills, the staff glows. A move, a hit or any other key breaks it */
 function stokeTick(dt, keys, ok) {
@@ -30786,43 +30837,53 @@ function stokeTick(dt, keys, ok) {
   if (Math.random() < dt * 22) { const tip = fbTip(); parts.push({ fire: true, x: tip.x + (Math.random() - 0.5) * 6, y: P.y - 10 + (Math.random() - 0.5) * 4, vx: (Math.random() - 0.5) * 10, vy: -30 - Math.random() * 30, life: 0.45, max: 0.45, col: Math.random() < 0.5 ? '#ffd36b' : '#ff9a5c', size: 1, grav: -30 }); }
   if (P.heat >= 100) { bankHeat(); P.stokeT = 0; }
 }
-/* CONFLAGRATION: the full bar. Every marked foe on screen erupts at once; a boss takes one big hit and stands SCORCHED OPEN; nothing marked = a small burst round her */
-function castConflagration() { trialEvent('meter'); noteVerb('cast');
-  const C = PYRO_KIT.cf, sw = swordDmg(), hm = heatMul();   /* (heat read before the bar empties: a full bar is x1.4) */
+/* METEOR FALL: the full bar's C (it was CONFLAGRATION). One big meteor on the most-pipped foe in front (else the ground ahead): a red ring on the ground and a falling whistle for PYRO_KIT.mf.tell,
+   then it lands - everything in the blast takes swordDmg x K.meteorFall x amul x heat (a boss or mini a capped share) and is lit to THREE pips, so the pack bursts one after another. The ring is fixed
+   where it was called: a foe that walks out of it is spared (that is the tell). The heat gone with the press is not refilled by its own blows (PY_NOHEAT). */
+let pyMeteor = null;
+function castMeteorFall() { trialEvent('meter'); noteVerb('cast');
+  const M = PYRO_KIT.mf, hm = heatMul();   /* (heat read before the bar empties: a full bar is x1.4) */
   P.full = false; P.heat = 0; P.fullT = 0; P.cMode = null; P.cHeld = 0; P.fbHold = 0; P.blastT = 0.34; P.atk = -1; P.jet = false;
-  const seen = e => e.x > camX - 24 && e.x < camX + VW + 24 && e.y > camY - 24 && e.y - (e.h || 16) < camY + VH + 24;
-  const marked = enemies.filter(e => e.alive && !e.harmless && pyroMarked(e) && seen(e));
-  SFX.conflag(); SFX.pyreBoom(); hitstop(0.11); zoomKick(1.1, 0.25); shakeCam(6); if (SET.flashes) killFlash = Math.max(killFlash, 0.04);
-  if (SET.numbers) PA.fx('word', P.x, P.y - 34, time, { txt: 'CONFLAGRATION' }); else number(P.x, P.y - 34, 'CONFLAGRATION', '#ffd36b'); PA.fx('blast', P.x, P.y - 10, time); ringAt(P.x, P.y - 10, 26, '#fff6c8', 0.35); flame(P.x, P.y - 10, 12, 10, 80, 3); P.cfT = 0.5;
-  if (!marked.length) { number(P.x, P.y - 24, 'NOTHING MARKED', '#9aa39a'); ringAt(P.x, P.y - 8, C.noneR, '#ff9a5c', 0.35);
-    for (const e of enemies) if (e.alive && !e.harmless && Math.abs(e.x - P.x) < C.noneR + (e.w || 12) / 2 && Math.abs(e.y - P.y) < 40) hurtFire(e, sw * C.kNone * hm, P.x, { burn: 1.5, cls: 'heavy' });
-    P.heat = 0; return 0; }
-  const splashed = new Set(marked);
-  for (const e of marked) { e.pyMarkAt = undefined; conflagErupt(e, sw, hm, splashed); }
-  P.heat = 0;   /* the spender never refills itself: its own eruptions give no heat back */
-  return marked.length;
+  let best = null, bx = P.x + P.face * M.ground, by = P.y;
+  for (const e of enemies) { if (!e.alive || e.harmless) continue; const dx = (e.x - P.x) * P.face; if (dx < -6 || dx > M.range || Math.abs(e.y - P.y) > 90) continue;
+    if (!best || pyStacks(e) > pyStacks(best) || (pyStacks(e) === pyStacks(best) && Math.abs(e.x - P.x) < Math.abs(best.x - P.x))) best = e; }
+  if (best) { bx = best.x; by = best.y; }
+  pyMeteor = { x: bx, y: by, t0: time, hm, tell: M.tell };
+  SFX.meteorWhistle(); if (SET.numbers) PA.fx('word', P.x, P.y - 34, time, { txt: 'METEOR FALL' });
+  ringAt(P.x, P.y - 10, 22, '#ffd36b', 0.3); flame(P.x, P.y - 10, 8, 8, 60, 3); shakeCam(2);
+  return best ? 1 : 0;
 }
-function conflagErupt(e, sw, hm, splashed) {
-  const C = PYRO_KIT.cf, h = e.h || 16, cy = e.y - h / 2, isBoss = e === boss, isMini = !isBoss && !!e.maxHp;
-  PA.fx('erupt', e.x, e.y + 2, time, { v: isBoss ? 2 : (isMini || h > 22) ? 1 : 0 }); ringAt(e.x, cy, 36, '#ff6b2c', 0.25); flame(e.x, cy, 14, 12, 90, 3); burst(e.x, cy, 18, ['#fff6c8', '#ffd36b', '#ff9a5c', '#ff6b2c'], 110, 0.5, 40, 2); streaks(e.x, cy, 8, ['#fff6c8', '#ffd36b'], 200);
-  if (isBoss) {
-    if (!(e.rpWardT > 0) && !(e.broken > 0)) { e.rpOpenT = e.rpOpenMax = C.open; e.stagger = Math.max(e.stagger || 0, 0.6); e.flash = 0.25; number(e.x, e.y - h - 18, 'SCORCHED OPEN', '#ffd36b'); ringAt(e.x, cy, 30, '#ffd36b', 0.5); }
-    else number(e.x, e.y - h - 18, 'WARDED', '#d8e2ee');
-    hurtFire(e, Math.min(sw * C.kBoss * hm, Math.max(1, C.capBoss * (e.maxHp || e.hp))), P.x, { cls: 'heavy', tag: ['heavy', 'shot'] }); return; }
-  if (isMini) { hurtFire(e, Math.min(sw * C.kMini * hm, Math.max(1, C.capMini * e.maxHp)), P.x, { burn: 2.5, cls: 'heavy', tag: ['heavy', 'shot'] }); return; }
-  hurtFire(e, sw * C.kFoe * hm, P.x, { burn: 2.5, cls: 'heavy' });
-  for (const q of enemies) if (q.alive && !q.harmless && !splashed.has(q) && Math.abs(q.x - e.x) < C.splashR + (q.w || 12) / 2 && Math.abs((q.y - (q.h || 16) / 2) - cy) < C.splashR) { splashed.add(q); hurtFire(q, sw * C.kSplash * hm, e.x, { burn: 1.5, cls: 'heavy' }); }
+function meteorTick(dt) { const m = pyMeteor; if (!m) return; const age = time - m.t0;
+  if (age < 0) { pyMeteor = null; return; }
+  if (age < m.tell) return;
+  pyMeteor = null;
+  const M = PYRO_KIT.mf, sw = swordDmg(), cy = m.y - 10;
+  PA.fx('bigblast', m.x, m.y - 8, time, { sc: 1.9 }); PA.fx('blast', m.x, m.y - 8, time); ringAt(m.x, m.y - 8, M.R, '#ff6b2c', 0.4); ringAt(m.x, m.y - 8, M.R * 0.6, '#fff6c8', 0.25);
+  burst(m.x, m.y - 8, 34, ['#fff6c8', '#ffd36b', '#ff9a5c', '#ff6b2c'], 150, 0.7, 70, 3); flame(m.x, m.y - 8, 18, 14, 100, 4); streaks(m.x, m.y - 8, 14, ['#fff6c8', '#ffd36b', '#ff9a5c'], 260); smoke(m.x, m.y - 12, 8, 12);
+  SFX.meteorBoom(); hitstop(0.12); zoomKick(1.1, 0.28); shakeCam(8); if (SET.flashes) killFlash = Math.max(killFlash, 0.05);
+  const hits = enemies.filter(e => e.alive && !e.harmless && Math.abs(e.x - m.x) < M.R + (e.w || 12) / 2 && Math.abs((e.y - (e.h || 16) / 2) - cy) < M.R + (e.h || 16) / 2);
+  PY_NOHEAT = true;
+  try { for (const e of hits) { const big = !!e.maxHp, isBoss = e === boss;
+      let dmg = Math.round(sw * SKK.K.meteorFall * amul('meteorFall') * m.hm);
+      if (big) dmg = Math.min(dmg, Math.max(1, Math.round((isBoss ? M.capPct : M.capMini) * e.maxHp)));
+      hurtFire(e, dmg, m.x, { burn: big ? 0 : M.burn, cls: 'heavy', tag: ['heavy', 'shot'], stacks: 0 });
+      if (e.alive) pyStack(e, PYRO_KIT.lb.need, 'meteor'); } }
+  finally { PY_NOHEAT = false; }
+  P.heat = 0;   /* the spender never refills itself */
 }
 /* DRAWN (greybox until the art pass): THE BALL on the staff growing a ring a step, READY pulsing white; THE STOKE glow at the staff; THE BURN MARKS
    on her marked foes (a small flame brand over the head, blinking in its last second and a half) */
 function drawPyroKit(g, cx, cy) {   /* (claude/pyroarttune) the art pass: src/pyro-art.js draws the ball, the crown, the brand and the effects below */
   PA.drawFx(g, cx, cy, time, SET.flashes && !SET.reduceMotion);
   if (P.dead) return;
-  if (P.cMode === 'fb' && P.fbHold > 0) { const tip = fbTip(), st = P.fbHold, F = PYRO_KIT.fb, lo = F.steps[st - 1], hi = st < 3 ? F.steps[st] : lo, prog = st < 3 ? Math.max(0, Math.min(1, ((P.cHeld || 0) - lo) / (hi - lo))) : 0;
+  if (P.cMode === 'fb' && P.fbHold > 0) { const tip = fbTip(), st = P.fbHold, F = PYRO_KIT.fb, lo = F.steps[st - 1], hi = st < 5 ? F.steps[st] : lo, prog = st < 5 ? Math.max(0, Math.min(1, ((P.cHeld || 0) - lo) / (hi - lo))) : 0;
     PA.held(g, Math.round(tip.x - cx), Math.round(tip.y - cy), st, prog, time); }
   if (P.stoking) PA.stoke(g, Math.round(P.x + P.face * PA.TIP.stoke[0] - cx), Math.round(P.y + PA.TIP.stoke[1] - cy), P.heat || 0, time);
-  for (const e of enemies) { if (!e.alive || !pyroMarked(e)) continue; const left = PYRO_KIT.cf.markLife - (time - e.pyMarkAt);
-    PA.brand(g, Math.round(e.x - cx), Math.round(e.y - (e.h || 16) - cy) - 2, time, left); }
+  for (const e of enemies) { if (!e.alive) continue; const n = pyStacks(e); if (!n) continue; const left = PYRO_KIT.lb.life - (time - e.pyStkAt);
+    PA.pips(g, Math.round(e.x - cx), Math.round(e.y - (e.h || 16) - cy) - 3, n, time, e.pyFuse !== undefined, left); }
+  if (pyMeteor) { const m = pyMeteor, age = time - m.t0, p = Math.max(0, Math.min(1, age / m.tell)), gx = Math.round(m.x - cx), gy = Math.round(m.y - cy);
+    PA.meteorRing(g, gx, gy, PYRO_KIT.mf.R, p, time);
+    const fall = (age - (m.tell - 0.45)) / 0.45; if (fall > 0) { const k = Math.min(1, fall); PA.meteorBody(g, Math.round(gx + 34 * (1 - k * k)), Math.round(gy - 6 - 210 * (1 - k * k)), time); } }
 }
 function pyreBurst(b) {
   if (b.done) return; b.done = true; b.life = 0;
@@ -30880,16 +30941,16 @@ function updateEmbers(dt) {
     for (const pr of props) if (pr.t === 'puffball' && !pr.popped && Math.abs(pr.x - b.x) < 9 && Math.abs(pr.y - 6 - b.y) < 9) { pr.popped = true; clouds2.push({ x: pr.x, y: pr.y - 6, r: 12, life: 1.5 }); burst(pr.x, pr.y - 6, 10, ['#e8e0d0', '#c8bcb0'], 60, 0.5); b.life = 0; }
     for (const e of enemies) { if (!e.alive || e.harmless || b.hit.has(e)) continue; if (b.plunge && isPyro() && firedropSpares(e, P)) continue;   /* the head she is coming down on: her boots, not her fire (src/pogo-chain.js) */
       if (Math.abs(e.x - b.x) < e.w / 2 + 5 + (b.r || 0) && b.y > e.y - e.h - 5 - (b.r || 0) && b.y < e.y + 5 + (b.r || 0)) { b.hit.add(e); const big = !!e.maxHp, lit = (e.burn || 0) > 0;
-        if (b.fb) { if (e.t === 'gill' || e.t === 'heart' || e.t === 'drone') { SFX.clank(); if (b.fb === 3) fbBoom(b, null); } else { fbHit(b, e); if (tal('stoke') && lit) { CM.refund(P, 17); gainHeat(6); number(P.x, P.y - 26, 'STOKED', '#ffd36b'); } if (tal('wildfire') && lit && !b.leapt) wildfireLeap(b, e); } b.life = 0; burst(b.x, b.y, 6 + 4 * b.fb, ['#ff9a5c', '#ffd36b', '#ff6b2c'], 60 + 20 * b.fb, 0.4, 100, 2); break; }   /* (claude/pyrokit) THE HELD FIREBALL: fbHit (scaled, classed, marked); the big one explodes */
+        if (b.fb) { if (e.t === 'gill' || e.t === 'heart' || e.t === 'drone') { SFX.clank(); if (b.fb >= 3) fbBoom(b, null); } else { fbHit(b, e); if (tal('stoke') && lit) { CM.refund(P, 17); gainHeat(6); number(P.x, P.y - 26, 'STOKED', '#ffd36b'); } if (tal('wildfire') && lit && !b.leapt) wildfireLeap(b, e); } b.life = 0; burst(b.x, b.y, 6 + 4 * b.fb, ['#ff9a5c', '#ffd36b', '#ff6b2c'], 60 + 20 * b.fb, 0.4, 100, 2); break; }   /* (claude/pyrokit) THE HELD FIREBALL: fbHit (scaled, classed, marked); the big one explodes */
         if (e.t === 'gill' || e.t === 'heart' || e.t === 'drone') { SFX.clank(); } else {   /* (claude/sporewood2: THE MOTHER CAP 2 takes her fire at her hide's share) */ const rk = e.t === 'ram' && !ramOpen(e) ? RLD.RAM.frontMul : 1; if (rk < 1) { SFX.clank(); number(e.x, e.y - e.h - 8, 'HIS HIDE TURNS IT', '#9aa39a'); } if (!b.plunge && !b.cone) burnMark(e); hurtAs(b.plunge ? 'plunge' : b.cone ? ['heavy', 'shot'] : 'shot', e, b.plunge || b.cone ? Math.max(1, Math.round(heatDmg(b.plunge ? (big ? 3 : 4) : (big ? 2 : 3)) * (b.plunge ? 1 + 0.075 * LV_GROW() : 1) * rk)) : Math.max(1, Math.round(swordDmg() * (big ? 0.3 : 0.45) * heatMul() * rk)), b.x, false);   /* (claude/pyrokit) THE EMBER SHOT (card) scales with the staff: x0.45 (x0.3 on a big one) x heat - it was heatDmg(3)/(2), flat */   /* the firedrop is her plunge, the bellows her held blow */ if (!big) e.burn = Math.max(e.burn || 0, 1.4); flinch(e); if (e.t === 'dummy') trialEvent(b.plunge ? 'firedrop' : b.cone ? 'heavyblow' : 'ember'); if (tal('stoke') && lit && !b.plunge && !b.cone) { CM.refund(P, 17); gainHeat(6); number(P.x, P.y - 26, 'STOKED', '#ffd36b'); } if (tal('wildfire') && lit && !b.leapt) wildfireLeap(b, e); } b.life = 0; burst(b.x, b.y, 8, ['#ff9a5c', '#ffd36b', '#ff6b2c'], 60, 0.4, 100, 2);
       if (tal('scatter')) { for (const q of enemies) if (q.alive && q !== e && !q.harmless && Math.abs(q.x - b.x) < 30 && Math.abs(q.y - b.y) < 26) { hurtEnemy(q, 6, b.x, false); flame(q.x, q.y - q.h / 2, 3, 3, 30, 1); } ringAt(b.x, b.y, 22, '#ff9a5c', 0.25); } // SCATTER
       break; } }
     const tx = Math.floor(b.x / TS), ty = Math.floor(b.y / TS);
-    if (b.life > 0 && isSolid(tx, ty) && b.fb === 3) fbBoom(b, null);   /* (claude/pyrokit) the big one goes off on stone */
+    if (b.life > 0 && isSolid(tx, ty) && b.fb >= 3) fbBoom(b, null);   /* (claude/pyrokit) the big one goes off on stone */
     else if (b.life > 0 && isSolid(tx, ty) && tal('skip') && !b.bounced && !b.plunge && !(b.fb > 1) && b.vy > 0 && !isSolid(tx, ty - 1)) { b.bounced = true; b.y = ty * TS - 3; b.vy = -170; fires.push({ x: b.x, y: ty * TS, life: 0.9, delay: 0, own: true }); flame(b.x, b.y, 4, 3, 45, 2); SFX.crack(); } // SKIPPING EMBER
     else if (b.life > 0 && isSolid(tx, ty)) { b.life = 0; const fy = isSolid(tx, ty) && !isSolid(tx, ty - 1) ? ty * TS : Math.floor((b.y - b.vy * dt) / TS) * TS + TS; if (b.vy > 0) fires.push({ x: b.x, y: fy, life: 1.2, delay: 0, own: true }); burst(b.x, b.y, 6, ['#ff9a5c', '#ffd36b'], 50, 0.35, 100, 1); flame(b.x, b.y, 5, 4, 60, 3); ringAt(b.x, b.y, 10, '#ff9a5c', 0.2); SFX.crack(); }
   }
-  for (const b of embers) if (b.fb === 3 && b.life <= 0 && !b.boomed) fbBoom(b, null);   /* ...and at the end of its flight */
+  for (const b of embers) if (b.fb >= 3 && b.life <= 0 && !b.boomed) fbBoom(b, null);   /* ...and at the end of its flight */
   embers = embers.filter(b => b.life > 0);
 }
 // ---------- talk: signs. One press opens the words; the world waits until they close. ----------
@@ -33977,7 +34038,7 @@ function drawWorld(cx, cy, showPlayer) {
     g.fillStyle = '#ffd36b'; g.beginPath(); g.arc(x + b.dir, y, 5, 0, Math.PI * 2); g.fill();
     g.fillStyle = '#fff6c8'; g.beginPath(); g.arc(x + b.dir * 2, y - 1, 2.5, 0, Math.PI * 2); g.fill(); }
   for (const b of embers) { if (b.fb) { PA.ball(g, Math.round(b.x - cx), Math.round(b.y - cy), b.fb, b.vx, time); continue; }   /* (claude/pyroarttune) the held fireball's three sizes, with tails (src/pyro-art.js) */
-    const r = b.fb ? [0, 4, 6, 9][b.fb] : 4; g.fillStyle = '#ff6b2c'; g.beginPath(); g.arc(Math.round(b.x - cx), Math.round(b.y - cy), r, 0, 7); g.fill(); g.fillStyle = '#ffd36b'; g.beginPath(); g.arc(Math.round(b.x - cx) - 1, Math.round(b.y - cy) - 1, Math.max(2, Math.round(r * 0.55)), 0, 7); g.fill(); if (b.fb === 3) { g.fillStyle = '#fff6c8'; g.beginPath(); g.arc(Math.round(b.x - cx) - 1, Math.round(b.y - cy) - 1, 3, 0, 7); g.fill(); } }   /* (claude/pyrokit) the held fireball's three sizes (greybox: the art pass) */
+    const r = b.fb ? [0, 4, 6, 9, 11, 14][b.fb] : 4; g.fillStyle = '#ff6b2c'; g.beginPath(); g.arc(Math.round(b.x - cx), Math.round(b.y - cy), r, 0, 7); g.fill(); g.fillStyle = '#ffd36b'; g.beginPath(); g.arc(Math.round(b.x - cx) - 1, Math.round(b.y - cy) - 1, Math.max(2, Math.round(r * 0.55)), 0, 7); g.fill(); if (b.fb >= 3) { g.fillStyle = '#fff6c8'; g.beginPath(); g.arc(Math.round(b.x - cx) - 1, Math.round(b.y - cy) - 1, 3, 0, 7); g.fill(); } }   /* (claude/pyrokit) the held fireball's three sizes (greybox: the art pass) */
   for (const b of bombs) if (b.flask) g.drawImage(UW_FLASK, Math.round(b.x - 3 - cx), Math.round(b.y - 8 - cy)); else if (b.dyn) { g.drawImage(DF2_CHARGE, Math.round(b.x - 5 - cx), Math.round(b.y - 6 - cy)); if (Math.random() < 0.5) { g.fillStyle = Math.random() < 0.5 ? '#fff2a0' : '#ff9a3a'; g.fillRect(Math.round(b.x + 4 - cx), Math.round(b.y - 8 - cy), 1, 1); }
     if (b.vy === 0) { g.strokeStyle = Math.floor(time * (b.fuse < 0.5 ? 16 : 8)) % 2 ? '#ff6b6b' : '#fff6e0'; g.lineWidth = 1; g.beginPath(); g.arc(Math.round(b.x - cx), Math.round(b.y - 2 - cy), DYN.ring, Math.PI, Math.PI * 2); g.stroke(); } }   /* THE DYNAMITE BANDIT's stick on the ground: the red ring is the blast (claude/desertfoes) */
   else if (b.barrel) { g.save(); g.translate(Math.round(b.x - cx), Math.round(b.y - 7 - cy)); g.rotate(time * 7); g.drawImage(PROP.barrel, -6, -7); g.restore(); } else drawSet(SPR.bomb, null, 0, b.x - cx, b.y - 2 - cy, 1, Math.floor(time * 10) % 2 === 0 && b.fuse < 0.5);
@@ -36676,7 +36737,7 @@ window.BK = { setView: m => setView(m), env: () => ({ hurt: (e, d, x) => hurtEne
   tileSpr: () => tileSpr, resolve: () => resolveTiles(), respawn: () => respawn(), tileArt: () => ({ TILE, LEDGE_SETS }),   /* for tools/*.mjs: what picture a tile actually drew, by identity, not by eye */
   /* THE BOT HAS TO BE ABLE TO SEE A WIND-UP. It is the same predicate the yellow ! and the red !! are
      drawn from, so a bot reading it is reading exactly what a player is shown and nothing more. */
-  ward: () => FWARD ? FWARD.read() : null, wardReset: () => FWARD && FWARD.resetStats(), pyroKit: () => ({ cMode: P.cMode || null, cHeld: P.cHeld || 0, fbHold: P.fbHold || 0, stoking: !!P.stoking, heat: P.heat || 0, full: !!P.full, jet: !!P.jet, cards: { jet: pyroCard('jet'), ember: pyroCard('ember') }, balls: embers.filter(b => b.fb).map(b => ({ fb: b.fb, x: b.x, y: b.y, vx: b.vx })), embers: embers.length, K: PYRO_KIT, W: FW_K }), pyroMarked: e => pyroMarked(e), pyroMark: e => burnMark(e), conflag: () => castConflagration(), pyroCard: id => pyroCard(id), wardenBrace: () => WBR ? WBR.read() : null,   /* (claude/pyrokit: tools/pyro-kit.mjs, tools/ember-flare.mjs) */ crouchA: () => CA ? CA.read() : null, crouchAReset: () => CA && CA.resetStats(),   /* THE CROUCH TWISTS, PART A (tools/crouch-a.mjs) */   /* THE EMBER WARD (tools/ember-flare.mjs) */
+  ward: () => FWARD ? FWARD.read() : null, wardReset: () => FWARD && FWARD.resetStats(), pyroKit: () => ({ cMode: P.cMode || null, cHeld: P.cHeld || 0, fbHold: P.fbHold || 0, stoking: !!P.stoking, heat: P.heat || 0, full: !!P.full, jet: !!P.jet, cards: { jet: pyroCard('jet'), ember: pyroCard('ember') }, balls: embers.filter(b => b.fb).map(b => ({ fb: b.fb, x: b.x, y: b.y, vx: b.vx })), embers: embers.length, K: PYRO_KIT, W: FW_K }), pyroMarked: e => pyroMarked(e), pyStacks: e => pyStacks(e), pyStack: (e, n) => pyStack(e, n, 'lab'), pyroMark: e => burnMark(e), render: () => render(), conflag: () => castMeteorFall(), meteorFall: () => castMeteorFall(), meteorNow: () => pyMeteor ? { ...pyMeteor } : null, lbTier: () => lbTier(), pyroCard: id => pyroCard(id), wardenBrace: () => WBR ? WBR.read() : null,   /* (claude/pyrokit: tools/pyro-kit.mjs, tools/ember-flare.mjs) */ crouchA: () => CA ? CA.read() : null, crouchAReset: () => CA && CA.resetStats(),   /* THE CROUCH TWISTS, PART A (tools/crouch-a.mjs) */   /* THE EMBER WARD (tools/ember-flare.mjs) */
   crouchB: () => CRB ? CRB.read() : null, holy: () => HGR ? HGR.read() : null, holyHands: () => HGR, holyHurt: (p, x, d, o) => asPlayer(p, () => damagePlayer(x, d, o)),   /* (claude/paladin2) tools/paladin-kit.mjs: a blow on either hero */ lanternEater: () => LEH ? LEH.read() : null, lanternEaterHands: () => LEH, gangLeader: () => GLH ? GLH.read() : null, gangLeaderHands: () => GLH, frogCourt: () => (FKC && boss && boss.t === 'frog' && L.arena && L.arena.frogChase ? { ...FKC.show(), chase: true, st: boss.st, tst: boss.tst, phase: boss.phase, royal: L.arena.royal.map(r => ({ x0: r.x0, x1: r.x1, cx: r.cx, top: L.arena.floor })), bank: [L.arena.x0, L.arena.lanes[0].x0], lanes: L.arena.lanes.map(q => ({ x0: q.x0, x1: q.x1 })),
     pads: movers.filter(m => m.kind === 'pad' && m.x > L.arena.x0 && m.x < L.arena.x1).map((m, i) => ({ id: i, x: m.x + m.w / 2, w: m.w, y: m.y0, sink: m.sink, firm: !!m.firm, slap: m.slapT > 0, shuf: !!m.shufTo, on: P.onMover === m })), reel: !!P.frogReel, tongueMax: tongue ? tongue.max : FROGK.tongue.max[(boss.phase || 1) >= 2 ? 1 : 0] } : null),   /* (claude/marsh2) THE BULLFROG KING's court for the lab's hands and tools/marsh2-beats.mjs */ bzchiefHands: () => BZH, warCairnHands: () => WCH, /* (claude/warcairn) */ hawkMistressHands: () => HMH, fogKnightHands: () => FKH, championHands: () => CHH, flotilla2: () => FL2H, flotilla3: () => F3H, champion: () => (CHH ? CHH.read() : null), admiralHands: () => ADH, h3: () => (H3H && H3H.on() ? H3H : null), h3read: () => (H3H && H3H.on() ? H3H.read() : null), cap3: () => ({ tiers: capTiers(), nets: (capArena() || {}).nets || [], plats: capTiers().concat((capArena() || {}).plats || []), lines: i => capLinesOn(i), rodX: capRodX(), inCol: x => capInCol(x), tierAt: y => capTierAt(y), nearTier: (y, e) => capNearTier(y, e), dry: (e, i) => capDry(e, i), net: (a, b, x) => capNetJoin(a, b, x), CAP2, CAP3, rod: H3H ? H3H.bossRodState() : null, told: k => (H3H ? H3H.rodTold(k) : false), seaY: H3H ? H3H.seaY() : 0 }),   /* (claude/hurricane3) THE HURRICANE 3 and THE CAPTAIN 3, for tools/hurricane3.mjs and the lab */ admiral: () => (ADH ? ADH.read() : null), fogKnight: () => (FKH ? FKH.read() : null), towpathHands: () => TPH, paladinHands: () => PBH, deaconHands: () => DCH, paladin: () => (PBH ? PBH.read() : null), hourglassKingHands: () => HGK, buriedCityHands: () => BCH, scarabMotherHands: () => SMH, scarabMother: () => (SMH ? SMH.read() : null), tombKingHands: () => TKH, oldTuskerHands: () => OTH, shriekSistersHands: () => SSH, batteringBeast: () => (BBH ? BBH.read() : null), batteringBeastHands: () => BBH, grubbagHands: () => GBH, grubbag: () => (GBH ? GBH.read() : null), kitchen: () => KGH, kitchenRead: () => (KGH ? KGH.read() : null), nestHands: () => HNS, hornetQueenHands: () => HQH, /* (claude/hornetsnest) */ bogTrollHands: () => BTH, fenRoadHands: () => FRH, fenRoad: () => (FRH ? FRH.read() : null), fenPlanks: () => (FPK ? FPK.read() : null), fenPlanksHands: () => FPK, oldTusker: () => (OTH ? OTH.read() : null), tombKing: () => (TKH ? TKH.read() : null), sealedPyramidHands: () => PYH, sealedPyramidRead: () => (PYH ? PYH.read() : null), lesserDjinn: () => LDH, wickerMan: () => WMH, skyroad: () => SKY, minecart: () => MCH, forgeRails: () => FGR, drillHands: () => GDH, rocEyrie: () => ROCE, rootway: () => RWH, kwood: () => KWH, rookery: () => RKH, pwood: () => PWH, sporewood: () => SWH, motherCap: () => (MC2H ? MC2H.read() : null), motherCapHands: () => MC2H, huntmaster: () => HNH, snares: () => SNR, pods: () => HPD, cisternQueen: () => CQH ? CQH.read() : null, cisternQueenHands: () => CQH, colossusHands: () => COH, djinn: () => DJH ? DJH.read() : null, djinnHands: () => DJH, gorgeCrab: () => GCH ? GCH.read() : null, gorgeCrabHands: () => GCH, matriarch: () => MTH ? MTH.read() : null, matriarchHands: () => MTH, puppeteer: () => PUPH ? PUPH.read() : null, puppeteerHands: () => PUPH, crouchBReset: () => CRB && CRB.resetStats(), crouchHint: () => CRH ? CRH.read() : null, crouchHintReset: () => CRH && CRH.reset(),   /* (claude/crouchfix) */   /* THE CROUCH TWISTS (tools/crouch-b.mjs) */
   telling: e => !!e && windingUp(e), markOf: e => markOf(e), markShown: e => !!e && windingUp(e) ? markOf(e) : '',

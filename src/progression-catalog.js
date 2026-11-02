@@ -637,7 +637,7 @@ export const LEGACY_NODES = [
     "col": 2,
     "name": "CINDER SPREAD",
     "max": 1,
-    "desc": "a burning foe that dies sets light to whatever stands near it",
+    "desc": "LIVING BOMB spreads wider: a bursting foe passes its flame to everything in a bigger ring (grows again at levels 25 and 40)",
     "parent": "scatter",
     "active": false,
     "cap": false,

@@ -3717,10 +3717,10 @@ function trialYard(hero) {
       ['valiant', 1, 'OR SPEND THE THREE LINKS ON THE FINISHER: TURN HIS CUT ON THE BEAT, THEN X. IT GOES THROUGH ANY GUARD.', [['swornsword', 18]], 'LB ON THE BEAT, THEN X'],   /* (claude/heropassa) VALIANT STRIKE: the bar filled for it (the fill line below) */   /* a line of straw men inside one charge's run (13 tiles), so the step is the thing itself: it carries through */
       SKILL],
     pyro: [
-      ['ember', 3, 'THE FIREBALL: HOLD C, LET GO. HOLD LONGER AND IT GROWS. HIT THE STRAW MAN THREE TIMES.', [['dummy', 18]], 'HOLD LB, LET GO'],   /* (claude/pyrokit: the trial key stays 'ember') */
+      ['ember', 3, 'THE FIREBALL: HOLD C, LET GO. HOLD LONGER AND IT GROWS. THREE HITS BURST THE STRAW MAN.', [['dummy', 18]], 'HOLD LB, LET GO'],   /* (claude/pyrokit: the trial key stays 'ember') */
       ['dodge', 2, 'NO SHIELD: YOU LIVE BY THE DODGE. TAP A WAY TWICE, OR V: THE EMBER BLINK. TWICE.', [], 'B, OR THE STICK TWICE'],   /* (claude/heropassa) */
       ['third', 2, 'THE STAFF: X THREE TIMES IN A RUN. THE THIRD BLOW LANDS HEAVY AND SHOVES. LAND TWO.', [['dummy', 16], ['dummy', 20]], 'X, X, X'],
-      ['meter', 1, 'HOLD DOWN STILL: STOKE FILLS YOUR HEAT. FULL, TAP C: CONFLAGRATION. MARKED FOES ERUPT.', [['dummy', 14], ['dummy', 18]], 'HOLD DOWN, THEN LB'],   /* (claude/pyrokit) */
+      ['meter', 1, 'HOLD DOWN STILL: STOKE FILLS YOUR HEAT. FULL, UP + C: METEOR FALL. IT LIGHTS THEM ALL.', [['dummy', 14], ['dummy', 18]], 'HOLD DOWN, THEN UP + LB'],   /* (claude/pyrokit) */
       ['firedrop', 2, 'THE FIREDROP: JUMP, THEN DOWN+X. HIT A STRAW MAN FROM ABOVE TWICE.', [['dummy', 14], ['dummy', 19]], 'A, THEN DOWN+X'],
       ['heavyblow', 2, 'HOLD X FOR THE BELLOWS: A CONE THAT THROWS DOWN AND BURNS. LAND IT TWICE.', [['dummy', 14], ['dummy', 20]], 'HOLD X'],
       ['flash', 2, 'THE WARD: TAP C AS HIS SWORD FLASHES WHITE. CAUGHT ON THE BEAT, HE REELS. TWICE.', [['swornsword', 18]], 'TAP LB AS IT FLASHES'],   /* (claude/pyrokit: her block; the roll through still counts) */
