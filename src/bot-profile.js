@@ -66,7 +66,7 @@ export const TYPICAL_SKILLS = {   /* each hero's damaging actives, best first (t
   knight: ['swordOfRealm', 'groundSlam', 'lunge', 'whirlwind', 'disarm', 'shieldThrow'],
   warden: ['rainOfSpears', 'spearDance', 'javelin', 'setSpears', 'skewer', 'wheel', 'harrier'],
   pyro: ['meteor', 'fireWall', 'wisp', 'vent', 'flameRing', 'cinderStep'],
-  paladin: ['lightLance', 'holyCharge', 'hammerLeap'] /* (claude/paladin2: CONSECRATE is his C now, not a slot) */, pirate: [], reaper: ['soulReap', 'boneArmor', 'gravecall', 'summonSkeleton', 'bidden', 'unholyGround'] /* (claude/dkhero) BLOOD MAIL (L14) and BLOODLETTING (L20): the lab's skill hands cast them for a v2 profile; (claude/bkkit2) and THE RED HOST before them - BLOOD BOLT (L8), BLOODWORMS (L1), DRAIN (L8), RED GROUND (L4) */, geomancer: [], berserker: [], ranger: [],
+  paladin: ['lightLance', 'holyCharge', 'hammerLeap'] /* (claude/paladin2: CONSECRATE is his C now, not a slot) */, pirate: ['broadside', 'powderKeg', 'boarding', 'grapeshot', 'heavySeas', 'keelhaul'] /* (claude/botbuilt 2: K x hits, skill-k.js; blackSpot and rum are buffs, left out) */, reaper: ['soulReap', 'boneArmor', 'gravecall', 'summonSkeleton', 'bidden', 'unholyGround'] /* (claude/dkhero) BLOOD MAIL (L14) and BLOODLETTING (L20): the lab's skill hands cast them for a v2 profile; (claude/bkkit2) and THE RED HOST before them - BLOOD BOLT (L8), BLOODWORMS (L1), DRAIN (L8), RED GROUND (L4) */, geomancer: ['boulder', 'spikeRow', 'golem', 'faultLine'] /* (stoneStep/entomb are utility; AVALANCHE is the ult hand's) */, berserker: ['bzCleave', 'bzStorm', 'bzRampage', 'bzSpin'] /* (the rest are buffs) */, ranger: ['rgVolley', 'rgHawk', 'rgRain', 'rgBearTrap', 'rgLeap'] /* (rgSmoke/rgRefill/rgHeart/rgWildHunt are utility or buffs) */,
 };
 export const TYPICAL_PERKS = ['iron', 'heart', 'arcane', 'light', 'lungs', 'focus'];
 export function typicalCard(lv) { const n = Math.max(0, Math.min(50, Math.floor(lv || 0))), v = Math.round(n * 0.45), m = Math.round(n * 0.35), e = Math.max(0, n - v - m), ms = {};
@@ -83,11 +83,17 @@ export function typicalWalkCard(h, lv, ownAt = n => null) { const c = typicalCar
 /* RANGE of a skill for the hands, px from the hero to the boss's near edge: a cast at range, or a blow in his face */
 export const SKILL_RANGE = { shieldThrow: 150, javelin: 170, harrier: 150, rainOfSpears: 140, meteor: 150, wisp: 140, fireWall: 90, vent: 60, lightLance: 240,
   swordOfRealm: 70, groundSlam: 50, lunge: 80, whirlwind: 40, disarm: 40, spearDance: 50, setSpears: 60, skewer: 50, wheel: 45, flameRing: 50, cinderStep: 50, holyCharge: 90, consecrate: 40, boneArmor: 160, soulReap: 110,
-  gravecall: 180, summonSkeleton: 150, bidden: 90, unholyGround: 36 };   /* (claude/bkkit2) THE RED HOST: the bolt from range, the worms near, DRAIN inside its hold, the pool under the boss */
+  gravecall: 180, summonSkeleton: 150, bidden: 90, unholyGround: 36,
+  /* (claude/botbuilt 2, derived from each skill's code in src/main.js / berserker.js / ranger.js / geomancer.js: reach to the boss's near edge) */
+  hammerLeap: 100 /* lands ~140 px on, a 42 px blast */, grapeshot: 70 /* reach 74+8/tal */, broadside: 170 /* beam <= 210 px */, keelhaul: 100 /* hook <= 130 */, boarding: 90 /* hook 80+14/tal, dash 420 */, heavySeas: 140 /* lateFoes 160 */, powderKeg: 80 /* keg 44 ahead, blast 52 */,
+  bzSpin: 30 /* r 36 */, bzCleave: 50 /* box 62 */, bzRampage: 110 /* 300 px/s x 0.45 s */, bzStorm: 140 /* hatchets 260 px/s arcing, 1.1 s */,
+  rgVolley: 200 /* arrows 420 px/s, g 520 */, rgHawk: 200 /* quarry 220 */, rgRain: 90 /* lands 80 ahead, r 32 */, rgBearTrap: 60 /* set 48 ahead */, rgLeap: 40 /* hops back, plunge arrow */,
+  boulder: 200 /* rolls 190 px/s 3.2 s */, spikeRow: 85 /* five spikes 20..80 ahead */, golem: 150 /* strikes within 200 */, faultLine: 110 /* splits 130 */, entomb: 60 /* seal reach 72 */ };   /* (claude/bkkit2) THE RED HOST: the bolt from range, the worms near, DRAIN inside its hold, the pool under the boss */
 
 /* (claude/botbuilt) PARRY_TELLS: per boss (the foe's .t), the windups that are NOT named *Tell but a player parries all the same. The regex /Tell$/ in src/lab.js humanGuard
    missed them (the Hornet Queen's stoop is mode 'dive', her wind-up 'aim'). A value is a function (boss, P) -> seconds until the blow lands, or 1 = the mode's own clock (modeT).
    Read only by a profile with tellTable (person, or any profile +tells); 'human' and 'legacy' read the regex alone, so no standing row moves. Add a boss here when the census of its modes finds a parry windup the regex cannot see. */
+/* (claude/botbuilt 2) CENSUS of the Act I demo bosses (old tusker, hornet queen, bullfrog, bog troll, gorm, berserker chieftain, pyromancer): every windup but the Hornet Queen's stoop is already a *Tell mode the regex sees. Ambiguous, left OUT: bog troll pileWind (post swing; a roll-under, not a parry), chieftain coil (pounce wind-up; blow = the landing), hornet queen aim (not a hit). rootway/spore/palisade/underleaf bosses keep their modes in hands files, not censused. */
 export const PARRY_TELLS = {
   hornetqueen: { dive: (b, P) => (b.vy || 0) > 0 ? Math.max(0, (P.y - b.y)) / Math.max(60, b.vy) : 99 },   /* the stoop lands where her feet-line meets the hero: distance over her fall speed (src/hornet-queen-plan.js uses the same eta) */
 };
