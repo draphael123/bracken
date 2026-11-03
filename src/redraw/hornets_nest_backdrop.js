@@ -2,10 +2,10 @@
 // Outside, the shared round-canopy forest is gone: this is a PINE wood (a golden-green sky under a dense canopy, far pines in haze, mid trunks, drifting pollen and needles) and over
 // the first screens THE ANCIENT PINE itself stands behind the foot of the climb - a trunk as wide as a house, its root-flare in the roots you climb, the nest hung off it.
 // Inside (cols 80-332) is the nest: the back wall is wasp paper in scalloped shells (parchment at THE PAPER GATE, ochre in THE COMB STAIR, red-brown at THE BROOD CELLS), with great
-// comb curtains hanging in it and honey-lit pools of light; THE BROOD HALL has its own ribbed vault and the royal cell. By the falling nest and the great pine it is the wood again,
+// comb curtains hanging in it and resin-lit pools of light; THE BROOD HALL has its own ribbed vault and the royal cell. By the falling nest and the great pine it is the wood again,
 // warmer toward the evening, the nest pine's trunk rising and the torn nest hanging over.
 //   drawBackdrop(g, cx, cy, VW, VH, L, time, dY, full)   sky, far + mid pines, the ancient pine, the nest's inner wall and its lights, the hall's vault
-//   drawNear(g, cx, cy, VW, VH, L, time, dY)             near boughs, drifting pollen and needles outside; floating wax motes, dripping honey and the odd hornet inside
+//   drawNear(g, cx, cy, VW, VH, L, time, dY)             near boughs, drifting pollen and needles outside; floating paper flecks, dripping resin and the odd hornet inside
 //   drawAmbientHornets - the far hornets that cross the wall (a speck on a loop)
 // Every static picture is baked ONCE; a frame is a few dozen drawImage calls.
 import { canvas, mulberry } from '../px.js';
@@ -26,7 +26,7 @@ export const NEST_X0 = 80, NEST_X1 = 432, HALL = { x0: 395, x1: 432, y0: 3, y1: 
 const SKY = { foot: ['#6f9a62', '#b5cf8a', '#e8e2a0'], fall: ['#7f9a58', '#d2c47c', '#f0d890'], pine: ['#7a8f46', '#d8b860', '#f2c878'] };
 const HONEY_WALLS = [[171, 204, 32, 43], [298, 347, 4, 47]];
 const skyAt = tx => { if (tx < 440) return SKY.foot; if (tx < 454) return SKY.fall; return SKY.pine; };
-const WALL = [['#251712', '#34221a', '#46301f', '#573d28'], ['#281509', '#38200f', '#4a2e16', '#5c3c1e'], ['#2c0e0a', '#421810', '#582416', '#6e301c']];
+const WALL = [['#251712', '#34221a', '#46301f', '#573d28'], ['#211c16', '#2f281f', '#403729', '#52483a'], ['#2c0e0a', '#421810', '#582416', '#6e301c']];
 
 /* ------------------------------------------------------------------ baked pieces ------------------------------------------------------------------ */
 /* a conifer: stacked drooping boughs (tiers) on a trunk; lit left, dark right */
@@ -59,18 +59,24 @@ function ancientPine() { return once('ancient', () => { const PAD = 130, TW = 17
       const col = (xx + 200) % 9; if (col === 0) s = Math.max(0, s - 2); else if (col === 1 && s < 4) s++; if (cut === 0) s = Math.max(0, s - 2); else if (cut === 1) s = Math.min(5, s + 1);
       if (hash(x, y) % 9 === 0) s = Math.max(0, s - 1); else if (hash(x, y) % 13 === 0) s = Math.min(5, s + 1);
       R(g, mix(BARK[Math.max(0, Math.min(5, s + 1))], '#6a8a5e', y < 520 ? 0.12 : 0.04), x, y, 1, 1); } }
-  for (let i = 0; i < 22; i++) { const x = cxm + (r() - 0.5) * 110, y = 60 + r() * (H - 300); R(g, '#e8b24a', x, y, 2, 3); R(g, '#fff0a0', x, y, 1, 1); }   /* resin beads */
+  for (let i = 0; i < 22; i++) { const x = cxm + (r() - 0.5) * 110, y = 60 + r() * (H - 300); R(g, '#d09040', x, y, 2, 3); R(g, '#f0c07a', x, y, 1, 1); }   /* resin beads */
+  /* SEEPS: the bark has split and the tree is weeping - a dark crack, an amber run down from it that thickens, a pooled bead at its foot (a fleck caught in the run) */
+  for (let i = 0; i < 14; i++) { const x = Math.round(cxm + (r() - 0.5) * 120), y = Math.round(i < 8 ? H - 330 + r() * 190 : 80 + r() * (H - 420)), crack = 8 + Math.floor(r() * 8), run = 18 + Math.floor(r() * 40);
+    R(g, '#1a0a05', x, y, 1, crack); R(g, '#2a1408', x + 1, y + 2, 1, crack - 4);
+    for (let q = 0; q < run; q++) { const w = q > run - 5 ? 3 : 2; R(g, '#8a4a14', x - 1, y + crack + q, w + 1, 1); R(g, q % 4 === 0 ? '#c9782a' : '#b8641e', x, y + crack + q, w, 1); if (q % 7 === 2) R(g, '#f0c07a', x, y + crack + q, 1, 1); }
+    R(g, '#8a4a14', x - 2, y + crack + run, 6, 2); R(g, '#d98a38', x - 1, y + crack + run, 4, 1); R(g, '#f0c07a', x, y + crack + run, 1, 1); if (i % 3 === 0) R(g, '#1a0a05', x + 1, y + crack + 6, 1, 1); }
   return gpu(c); }); }
-/* a hanging comb CURTAIN for the nest's back wall: a tapering mass of hex cells hung from the ceiling, dark with an amber lit left edge and a dripping tip */
+/* a hanging comb CURTAIN for the nest's back wall: a tapering mass of hex cells hung from the ceiling, dark paper with a pale lit left edge and a dripping tip */
 function curtain(seed, zi) { return once('curt' + seed + '_' + zi, () => { const r = mulberry(seed * 13 + zi), w = 40 + (r() * 36 | 0), h = 150 + (r() * 130 | 0), [c, g] = canvas(w, h), P = PAPER[zi];
   const hex = (u, v) => { const row = Math.floor(v / 5), cu = (((u + (row & 1) * 4) % 8) + 8) % 8, cv = v % 5; if (cv === 0) return cu >= 1 && cu <= 6 ? 1 : 0; if (cu === 0 || cu === 7) return 1; return cv === 1 && cu < 4 ? 3 : 2; };
   for (let y = 0; y < h; y++) { const t = y / h, ww = w * (0.5 + 0.5 * Math.pow(1 - t, 0.6)) / 2 + Math.sin(y / 9 + seed) * 2, x0 = Math.round(w / 2 - ww), x1 = Math.round(w / 2 + ww);
     for (let x = x0; x < x1; x++) { const k = hex(x, y); const lit = (x - x0) < 3 ? 1 : 0, edge = x1 - x < 3;
-      R(g, k === 1 ? '#1a0e06' : k === 3 ? COMB[2] : lit ? COMB[2] : edge ? '#3a2410' : mix('#3a2410', COMB[1], 0.3 + (hash(x, y) % 4) * 0.06), x, y, 1, 1); }
+      const bnd = [COMB[1], COMB[2], COMB[3]][(Math.floor(y / 6) + Math.round(Math.sin(x / 4 + seed) * 1.2) + 9) % 3];   /* scalloped growth bands */
+      R(g, k === 1 ? '#17140f' : k === 3 ? COMB[2] : lit ? COMB[2] : edge ? '#2c2822' : mix('#2c2822', bnd, 0.3 + (hash(x, y) % 4) * 0.06), x, y, 1, 1); }
     if (y > h - 18 && y < h - 2) { /* the drips */ } }
-  for (let k = 0; k < 3; k++) { const dx = Math.round(w * (0.3 + 0.2 * k)); R(g, COMB[3], dx, h - 14 + k * 3, 1, 12 - k * 3); R(g, COMB[4], dx, h - 3 - k * 2, 1, 2); }
+  for (let k = 0; k < 3; k++) { const dx = Math.round(w * (0.3 + 0.2 * k)); R(g, '#d08a2a', dx, h - 14 + k * 3, 1, 12 - k * 3); R(g, '#f6aa50', dx, h - 3 - k * 2, 1, 2); }
   void P; return gpu(c); }); }
-/* a soft round glow for the honey lights */
+/* a soft round glow for the resin lights */
 function glow(r0, col) { return once('glow' + r0 + col, () => { const [c, g] = canvas(r0 * 2, r0 * 2), gr = g.createRadialGradient(r0, r0, 0, r0, r0, r0), [R_, G_, B_] = rgbOf(col);
   gr.addColorStop(0, `rgba(${R_},${G_},${B_},0.55)`); gr.addColorStop(0.5, `rgba(${R_},${G_},${B_},0.2)`); gr.addColorStop(1, `rgba(${R_},${G_},${B_},0)`); g.fillStyle = gr; g.fillRect(0, 0, r0 * 2, r0 * 2); return gpu(c); }); }
 /* the nest's back wall: wasp paper in broad scalloped shells, dark, hex comb showing through in patches; 192 x 192, tiles */
@@ -80,7 +86,7 @@ function wallTile(zi) { return once('wall' + zi, () => { const S = 192, [c, g] =
     if (hash(x >> 1, y >> 1) % 21 === 0 && q > 1 && q < 12) s = Math.min(3, s + 1);
     const col = W[Math.min(3, s)], [r_, g_, b_] = rgbOf(col), i = (y * S + x) * 4; d[i] = r_; d[i + 1] = g_; d[i + 2] = b_; d[i + 3] = 255; }
   g.putImageData(img, 0, 0);
-  /* torn paper: three patches of comb cells (honey-dim) */
+  /* torn paper: three patches of comb cells (resin-dim) */
   const r = mulberry(901 + zi); for (let n = 0; n < 4; n++) { const px0 = (r() * (S - 60) | 0) + 8, py0 = (r() * (S - 50) | 0) + 6, pw = 36 + (r() * 22 | 0), ph = 26 + (r() * 18 | 0);
     for (let y = 0; y < ph; y++) for (let x = 0; x < pw; x++) { const ex = Math.min(x, pw - 1 - x), ey = Math.min(y, ph - 1 - y); if (ex < 2 + (hash(x, y) % 3) || ey < 2) continue; const row = Math.floor(y / 5), cu = (((x + (row & 1) * 4) % 8) + 8) % 8, cv = y % 5;
       const wall = cv === 0 ? cu >= 1 && cu <= 6 : cu === 0 || cu === 7; R(g, wall ? '#140a05' : mix(P[0], COMB[1], cv === 1 ? 0.55 : 0.32), px0 + x, py0 + y, 1, 1); } }
@@ -100,7 +106,7 @@ function hallVault() { return once('hall', () => { const w = (HALL.x1 - HALL.x0 
   g.fillStyle = '#ffe9a0'; g.beginPath(); g.arc(rx, ry, 7, 0, 7); g.fill(); void P; void r; return gpu(c); }); }
 
 /* ------------------------------------------------------------------ the frame ------------------------------------------------------------------ */
-const LIGHTS = [];   /* [world x, world y, radius, colour index] - the honey lights of the wall, laid by hash over the nest's width */
+const LIGHTS = [];   /* [world x, world y, radius, colour index] - the resin lights of the wall, laid by hash over the nest's width */
 for (let i = 0; i < 58; i++) LIGHTS.push([NEST_X0 * TS + 60 + i * 100 + (hash(i, 5) % 50), 40 + (hash(i, 9) % 560), 70 + 20 * (hash(i, 3) % 3), hash(i, 7) % 3]);   /* (three radii only: each is a baked glow) */
 /* WARM: every picture baked at the level's load (a first draw in play, mid-fight, was a hitch) */
 export function warm() { warmEdge(); ancientPine(); farStrip(0); midStrip(0); midStrip(1); for (let z = 0; z < 3; z++) { wallTile(z); for (let i = 0; i < 5; i++) curtain(i, z); } hallVault(); for (const r of [70, 90, 110]) for (const c of ['#ffc860', '#ffb040', '#ff8a3a']) glow(r, c); for (const c of ['#fff0a0']) glow(150, c); glow(130, '#ff9a3a'); glow(70, '#ffc860'); }
@@ -134,18 +140,18 @@ export function drawBackdrop(g, cx, cy, VW, VH, L, time, dY, full) {
     /* the combs hanging in the wall (parallax 0.62), dim */
     { const kk = 0.62, per = 210, i0 = Math.floor((cx * kk - 120) / per) - 1, i1 = Math.floor((cx * kk + VW) / per) + 1;
       for (let i = i0; i <= i1; i++) { const h = hash(i, 17); if (h % 4 === 0) continue; const sp = curtain(h % 5, z), wx = i * per + (h % 70) - Math.round(cx * kk), wy = -10 - Math.round(cy * kk) + (h % 5) * 40; if (wy + 300 < 0 || wy > VH) continue; g.globalAlpha = 0.9; g.drawImage(sp, wx, wy); } g.globalAlpha = 1; }
-    /* (claude/hornetsnest2art) THE SUMP and THE HONEY WELL: a wall of capped, honey-filled and empty cells (world-anchored), stained with honey toward the bed. [col0, col1, row0, row1] */
+    /* (claude/hornetsnest2art) THE SUMP and THE SAP WELL: a wall of capped, resin-filled and empty cells (world-anchored), stained with resin toward the bed. [col0, col1, row0, row1] */
     if (L && L.hornetsNest) for (const [c0, c1, r0, r1] of HONEY_WALLS) hiveWall(g, c0, c1, r0, r1, cx, cy, VW, VH);
     /* shade the back wall a step so the footing reads in front of it; deeper rows (the roots) darker */
     g.fillStyle = 'rgba(8,4,2,0.24)'; g.fillRect(0, 0, VW, VH);
-    /* the HONEY LIGHTS: warm pools on the wall, breathing */
+    /* the RESIN LIGHTS: warm pools on the wall, breathing */
     if (!(globalThis.__hnDbg && globalThis.__hnDbg.lights)) { g.globalCompositeOperation = 'source-over'; for (const [lx, ly, lr, ci] of LIGHTS) { const x = lx - Math.round(cx * 0.9), y = ly - Math.round(cy * 0.9); if (x < -lr || x > VW + lr || y < -lr || y > VH + lr) continue;
-      g.globalAlpha = (ci === 2 ? 0.3 : 0.22) * (0.8 + 0.2 * Math.sin(time * (0.7 + ci * 0.25) + lx)); g.drawImage(glow(lr, ci === 0 ? '#ffc860' : ci === 1 ? '#ffb040' : '#ff8a3a'), x - lr, y - lr); }
+      g.globalAlpha = (ci === 2 ? 0.3 : 0.22) * (0.8 + 0.2 * Math.sin(time * (0.7 + ci * 0.25) + lx)); g.drawImage(glow(lr, ci === 0 ? '#f0d8a8' : ci === 1 ? '#e8c080' : '#ff9a4a'), x - lr, y - lr); }
     g.globalCompositeOperation = 'source-over'; g.globalAlpha = 1; }
     /* THE BROOD HALL: the vault and the royal cell, world-anchored */
     if (!(globalThis.__hnDbg && globalThis.__hnDbg.vault)) { const hx0 = HALL.x0 * TS - cx, hy0 = (HALL.y0 - 1) * TS - cy; if (hx0 < VW && hx0 + 36 * TS > 0) { if (!(globalThis.__hnDbg && globalThis.__hnDbg.vimg)) g.drawImage(hallVault(), hx0, hy0); g.globalCompositeOperation = 'source-over'; g.globalAlpha = 0.5 + 0.12 * Math.sin(time * 1.3); if (!(globalThis.__hnDbg && globalThis.__hnDbg.vglow)) g.drawImage(glow(130, '#ff9a3a'), hx0 + 18 * TS - 130, hy0 + 4 * TS - 100); g.globalCompositeOperation = 'source-over'; g.globalAlpha = 1; } }
     g.restore();
-    /* the nest's mouth, seen from outside, is lit: a honey glow at the doorway (cols 82-90, rows 50-53) */
+    /* the nest's mouth, seen from outside, is lit: a resin glow at the doorway (cols 82-90, rows 50-53) */
     { const mx = 86 * TS - cx, my = 52 * TS - cy; if (mx > -100 && mx < VW + 100) { g.globalCompositeOperation = 'source-over'; g.globalAlpha = 0.5; g.drawImage(glow(70, '#ffc860'), mx - 70, my - 70); g.globalCompositeOperation = 'source-over'; g.globalAlpha = 1; } }
   }
 }
@@ -153,10 +159,10 @@ export function drawBackdrop(g, cx, cy, VW, VH, L, time, dY, full) {
 export function drawNear(g, cx, cy, VW, VH, L, time, dY) {
   cx = Math.round(cx); cy = Math.round(cy);
   const inside = cx + VW / 2 > NEST_X0 * TS && cx + VW / 2 < (NEST_X1 + 1) * TS;
-  /* floating motes: pollen outside (green-gold), wax flecks and ember-gold inside; a handful, drifting up */
+  /* floating motes: pollen outside (green-gold), paper flecks inside; a handful, drifting up */
   for (let i = 0; i < 26; i++) { const sp = 6 + (i % 5) * 3, x = ((i * 97 + time * (inside ? 4 : 9) * (i % 2 ? 1 : -0.6) - cx * (0.25 + (i % 4) * 0.12)) % (VW + 40) + VW + 40) % (VW + 40) - 20,
     y = ((i * 53 - time * sp - cy * (0.2 + (i % 3) * 0.1) + dY * 0) % (VH + 20) + VH + 20) % (VH + 20) - 10;
-    g.globalAlpha = 0.5 + 0.4 * Math.sin(time * 1.7 + i); g.fillStyle = inside ? (i % 3 ? '#ffd36b' : '#f0e0b0') : (i % 3 ? '#fff4b0' : '#cfe8a0'); g.fillRect(Math.round(x), Math.round(y), i % 5 ? 1 : 2, 1); }
+    g.globalAlpha = 0.5 + 0.4 * Math.sin(time * 1.7 + i); g.fillStyle = inside ? (i % 3 ? '#d6cbb0' : '#f0e8d0') : (i % 3 ? '#fff4b0' : '#cfe8a0'); g.fillRect(Math.round(x), Math.round(y), i % 5 ? 1 : 2, 1); }
   g.globalAlpha = 1;
   if (inside) {
     /* far hornets crossing the wall: dark specks with a flicker of wing, on a long loop */

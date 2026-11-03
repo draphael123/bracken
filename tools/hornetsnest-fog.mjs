@@ -1,11 +1,11 @@
-// tools/hornetsnest-fog.mjs - THE FOG DROPS THE HORNET QUEEN, and the nest's new honey drips, in the page (claude/hornetsnest2; scratch/plan-hornetsnest2-1102.md A + B).
+// tools/hornetsnest-fog.mjs - THE FOG DROPS THE HORNET QUEEN, and the nest's new resin drips, in the page (claude/hornetsnest2; scratch/plan-hornetsnest2-1102.md A + B).
 //   A1a  a THROWN pot that breaks on her in 'aim' at hover height -> mode dazed (grounded) within 0.3 s, then she FALLS to the floor; the stun (3.0 s) starts ON LANDING
 //   A1b  her BODY in a fog cloud for 0.25 s (any flying mode) grounds her
 //   A4   a second pot inside the 8 s wary window does NOT ground her (she fans it); after the window it does
 //   A5   P2: the first fog on a cloaked queen strips the cloak only; the next pot (after 2 s) grounds her
 //   A7   her dive through a FULL hall stand bursts the pot -> fog -> grounded; the stand is full again at 9 s
 //   A3   resist floor: nothing she wears (flying, grounded, warded) takes a blow below 0.4x
-//   B    HONEY DRIPS: every drip's bead swells >= 0.6 s before it falls; a hero under one is struck once (10 dmg) and held (syrup)
+//   B    RESIN DRIPS: every drip's bead swells >= 0.6 s before it falls; a hero under one is struck once (10 dmg) and held (syrup)
 //   node tools/hornetsnest-fog.mjs
 import { openPage } from './cdp.mjs';
 const rows = []; const ok = (name, pass, why = '') => { rows.push({ name, pass: !!pass, why }); console.log((pass ? 'ok   ' : 'FAIL ') + name + (pass ? '' : '  ' + why)); };
@@ -53,7 +53,7 @@ try {
       for (const stage of [1, 2]) for (const ward of [0, 1]) for (const cloak of [0, 1]) for (const m of modes) { S.stage = stage; S.ward = ward; S.cloak = cloak * 5; e.mode = m; e.hp = e.maxHp; const d = HQM.takeBlow(e, S, 100, false)[0]; if (d / 100 < min) min = d / 100; }
       out.e = { min };
     }
-    { /* B: honey drips */
+    { /* B: resin drips */
       load(); const N = BK.nestHands(); const D = () => N.drips(); out.dn = D().length;
       BK.tp(185, 27); BK.P.face = 1; BK.sim(5); const log = {}; let hits0 = N.read().n.dripHit, hp0 = BK.P.hp; BK.god = false; BK.P.inv = 0;
       const sw = new Map(); let minTell = 9, falls = 0, struck = 0;
@@ -75,7 +75,7 @@ try {
   ok('A7: her body through a full stand BURSTS the pot (the stand empties, a fog at it), and the fog grounds her', r.d1.stand === 'empty' && r.d1.clouds >= 1 && r.d1.burst >= 1 && r.d2.mode === 'dazed' && r.d2.grounded === 1, JSON.stringify([r.d1, r.d2]));
   ok('A8: the burst stand regrows its pot ~9 s on', r.d3.regrow !== null && r.d3.regrow > 8 && r.d3.regrow < 10, JSON.stringify(r.d3));
   ok('A3: the resist floor: nothing she wears takes a blow below 0.4x (min ' + r.e.min + ')', r.e.min >= 0.4, JSON.stringify(r.e));
-  ok('B: 9 honey drips in the level', r.dn === 9, String(r.dn));
+  ok('B: 9 resin drips in the level', r.dn === 9, String(r.dn));
   ok('B: every bead swells >= 0.6 s before it falls (told), and a hero under one is struck and held', r.f.falls >= 3 && r.f.minTell >= 0.6 && r.f.hit >= 1 && r.f.hpLost > 0 && r.f.syrup > 0, JSON.stringify(r.f));
   ok('no page errors', pg.errors.length === 0, JSON.stringify(pg.errors.slice(0, 3)));
 } finally { pg.close(); }

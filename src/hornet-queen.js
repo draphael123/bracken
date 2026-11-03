@@ -24,13 +24,13 @@
 //        overhead shakes: red rings on the floor where it falls, and a perch that shakes and drips goes down with it; never the two wall perches).
 //        HER BROOD: a cell in the hall's walls PULSES (told) every HQ.brood.every s - smash it, or a FEW drones hatch (HQ.brood.n, at most HQ.brood.cap alive).
 //     THE HALL TEARS (55%): she rears up into the vault (a red !!, the inner perches shake and drip) and rips it: the inner perches tear loose and HANG on their
-//        stalks, the royal comb sags out of the vault (THE LAST COMB) and HONEY FLOODS THE FLOOR (sticky: the hall's floor holds your feet, like fresh comb).
-//     P2 THE HONEY HALL (55-0%): she CIRCLES the hall - low and fast across its middle, high and back (her loop is drawn: a dotted shadow on the honey). THE DIVE again
+//        stalks, the royal comb sags out of the vault (THE LAST COMB) and RESIN FLOODS THE FLOOR (sticky: the hall's floor holds your feet, like fresh comb).
+//     P2 THE RESIN HALL (55-0%): she CIRCLES the hall - low and fast across its middle, high and back (her loop is drawn: a dotted shadow on the resin). THE DIVE again
 //        (it sticks in any comb: the wall perches, a comb you cut down), THE STINGER VOLLEY (NEW: she stops in the air, abdomen curled under, a yellow !: a fan of
 //        darts - step between them or block), THE SWARM CLOAK (a buzz, a red !!: a cloud of her hornets closes round her - x0.4 and its touch stings - until smoke
-//        under her scatters it). THE RULE: CUT A HANGING COMB - it drops: a STEP out of the honey (the cut combs are dry footing), or, cut as she passes under it,
+//        under her scatters it). THE RULE: CUT A HANGING COMB - it drops: a STEP out of the resin (the cut combs are dry footing), or, cut as she passes under it,
 //        a WEIGHT ON HER (PINNED). From a cut comb you reach THE LAST COMB.
-//   ADDS: only her brood in P1 (Daniel 10-22: "few, told, capped") - none in P2 (the honey drowns the cells).
+//   ADDS: only her brood in P1 (Daniel 10-22: "few, told, capped") - none in P2 (the resin drowns the cells).
 export const HQ = {
   hp: 430, w: 30, h: 22, markH: 40, p1End: 0.55,
   shell: 0.5, cloak: 0.4, above: 1, wardMul: 0.4,
@@ -43,8 +43,8 @@ export const HQ = {
   sweep: { tell: 0.65, speed: 165, y: 13, dmg: 36, half: 12, chip: 0.65 },   /* a plain block JARS (half comes through) and she sweeps on; a PARRY staggers her; or jump her */
   buzz: { tell: 1.1, every: 3, n: 3, dmg: 38, r: 14, fall: 0.8, spread: 58, cool: 9 },
   brood: { every: 14, pulse: 3.2, n: 2, cap: 2 },
-  tear: { tell: 1.4, rip: 0.9 },   /* THE HALL TEARS: the told rear-up (the inner perches shake), then the rip (the perches hang, the last comb sags, the honey comes) */
-  circle: { lap: 7, low: 26, high: 150, edge: 30, laps: [0.5, 0.9], lift: 6 },   /* a lap of her loop (s): low across the middle (her back a hand under a hanging comb's foot), high and back; lift: px she keeps over a cut comb lying in the honey */
+  tear: { tell: 1.4, rip: 0.9 },   /* THE HALL TEARS: the told rear-up (the inner perches shake), then the rip (the perches hang, the last comb sags, the resin comes) */
+  circle: { lap: 7, low: 26, high: 150, edge: 30, laps: [0.5, 0.9], lift: 6 },   /* a lap of her loop (s): low across the middle (her back a hand under a hanging comb's foot), high and back; lift: px she keeps over a cut comb lying in the resin */
   volley: { tell: 0.75, n: 5, spread: 1.0, speed: 215, dmg: 30 },
   cloakT: { tell: 0.9, t: 10, touch: 16 },
   pin: { t: 3.8, mul: 2, cap: 0.22, capLast: 0.3, last: 4.4, heroDmg: 8 },   /* a pin is worth at most cap of her (the blow that empties it, she heaves free: told); THE LAST COMB: capLast, held `last` s */
@@ -52,14 +52,14 @@ export const HQ = {
 };
 export const HQ_SAY = { wake: 'THE HORNET QUEEN', rule: "HER STING STICKS IN COMB. A POT'S FOG DROPS HER.", stuck: 'STUCK IN THE COMB', pull: 'SHE PULLS UP',
   winded: 'STAGGERED', dazed: 'THE FOG DROPS HER', burst: 'SHE BURST A POT - THE FOG DROPS HER', pot: 'HER POTS: E TAKES ONE, ATTACK THROWS IT. THE FOG GROUNDS HER.', held: 'HELD...', buzz: 'THE COMB SHAKES', perch: 'THE PERCH GIVES WAY', brood: 'HER BROOD STIRS', hatch: 'HER BROOD HATCHES',
-  tear: 'SHE TEARS AT THE VAULT', torn: 'THE HALL TEARS: HONEY!', p2: 'THE HORNET QUEEN  THE HONEY HALL', rule2: 'HONEY FLOODS THE FLOOR. CUT A HANGING COMB: A STEP OUT OF THE HONEY - OR, AS SHE PASSES UNDER, A WEIGHT ON HER.',
+  tear: 'SHE TEARS AT THE VAULT', torn: 'THE HALL TEARS: RESIN!', p2: 'THE HORNET QUEEN  THE RESIN HALL', rule2: 'RESIN FLOODS THE FLOOR. CUT A HANGING COMB: A STEP OUT OF THE RESIN - OR, AS SHE PASSES UNDER, A WEIGHT ON HER.',
   pinned: 'PINNED', last: 'THE LAST COMB COMES DOWN', ward: 'SHE SHAKES FREE', volley: 'STINGERS', cloak: 'THE SWARM CLOAKS HER', cloakOff: 'THE SMOKE SCATTERS HER SWARM',
   shell: 'HARD SHELL', cloaked: 'CLOAKED', warded: 'WARDED', jarred: 'JARRED: PARRY HER, OR JUMP HER', smokeOff: 'SHE FANS THE SMOKE AWAY', nest: 'THE NEST TEARS LOOSE: DOWN THE TRUNK!' };
 export const OPEN_NAME = { stuck: 'STUCK', winded: 'STAGGERED', dazed: 'GROUNDED', pinned: 'PINNED' };
 export const hqOpen = e => !!e && (e.mode === 'stuck' || e.mode === 'winded' || e.mode === 'dazed' || e.mode === 'pinned');
 const TELLS = new Set(['aim', 'sweepTell', 'buzzTell', 'volleyTell', 'cloakTell', 'tearTell']);
 export const hqTelling = e => TELLS.has(e.mode);
-/* THE HALL (px). A1: the brood hall (L.arena; its p2: the hall's torn combs, THE LAST COMB and the honey's span, in columns); X: the falling nest (L.descent) */
+/* THE HALL (px). A1: the brood hall (L.arena; its p2: the hall's torn combs, THE LAST COMB and the resin's span, in columns); X: the falling nest (L.descent) */
 export function geom(A1, X, TS = 16) {
   const p2 = A1.p2 || {};
   const comb = c => ({ id: c.id, x0: c.x0, x1: c.x1, row: c.row, rows: c.rows, x0p: c.x0 * TS, x1p: (c.x1 + 1) * TS, y: c.row * TS, last: !!c.last });
@@ -77,12 +77,12 @@ export function newFight(G) {
     combs: [], pinUsed: {},   /* (P2) the hall's hanging / falling / cut combs, mirrored each frame from the nest's hands: [{ id, x0p, x1p, y, rows, st: 'hang'|'fall'|'down', last }] */
     loop: { th: Math.PI, dir: 1, lapT: 0, laps: 0 }, cloak: 0, purse: Infinity };
 }
-/* ---------- WHERE SHE FLIES IN P2: her loop over the honey. th in [0, 2pi): low across the middle (th = 3pi/2), high at the far side (th = pi/2) ---------- */
-/* a comb cut down into the honey stands up out of it: she keeps HQ.circle.lift over its top */
+/* ---------- WHERE SHE FLIES IN P2: her loop over the resin. th in [0, 2pi): low across the middle (th = 3pi/2), high at the far side (th = pi/2) ---------- */
+/* a comb cut down into the resin stands up out of it: she keeps HQ.circle.lift over its top */
 export const heapTop = (S, x) => { let y = Infinity; for (const c of S.combs || []) if (c.st === 'down' && x > c.x0p - 12 && x < c.x1p + 12) y = Math.min(y, c.y); return y; };
 export function loopAt(S, th, dir = S.loop.dir) { const P = S.G.h, C = HQ.circle, aw = (P.x1 - P.x0) / 2 - C.edge, k = (1 + Math.sin(th)) / 2, x = P.mid + dir * aw * Math.cos(th);
   return { x, y: Math.min(P.floor - C.low - (C.high - C.low) * k * k, heapTop(S, x) - C.lift) }; }
-/* where she will be in `t` seconds if she keeps to the loop (the bot's and the player's read of her flight: the shadow on the honey shows it) */
+/* where she will be in `t` seconds if she keeps to the loop (the bot's and the player's read of her flight: the shadow on the resin shows it) */
 export function loopAhead(S, t) { const w = 2 * Math.PI / HQ.circle.lap; return loopAt(S, S.loop.th + w * t); }
 /* is she (or a point of her loop) under a hanging comb c - inside its columns, below its foot? */
 export const underComb = (c, q) => q.x > c.x0p - 8 && q.x < c.x1p + 8 && q.y - HQ.h >= c.y + c.rows * 16 - 6;
@@ -114,7 +114,7 @@ export function stepQueen(e, S, dt, hs, w) {
 const hoverTo = (e, tx, ty, sp, dt) => { e.vx += (Math.max(-sp, Math.min(sp, (tx - e.x) * 3)) - (e.vx || 0)) * Math.min(1, dt * 4); e.vy += (Math.max(-sp, Math.min(sp, (ty - e.y) * 3)) - (e.vy || 0)) * Math.min(1, dt * 4); e.x += e.vx * dt; e.y += e.vy * dt; };
 /* an opening ends: a short thrash, then the told ward */
 const openEnd = (e, S, w) => { e.mode = 'thrash'; e.modeT = HQ.thrash; e.vx = 0; e.vy = 0; w.sound('thrash'); };
-/* the comb a stoop meets on its way down (vy > 0): a standing perch, or (P2) a comb cut down into the honey - its top y, or null */
+/* the comb a stoop meets on its way down (vy > 0): a standing perch, or (P2) a comb cut down into the resin - its top y, or null */
 function combUnder(e, S, dt) {
   for (const q of S.perches) if (q.st !== 'gone' && q.y > (e.diveY0 ?? -1e9) + 8 && e.x > q.x0p - 2 && e.x < q.x1p + 2 && e.y >= q.y && e.y - e.vy * dt < q.y + 4) return { y: q.y, heap: false };   /* (a perch she stoops FROM is not one she stoops INTO) */
   for (const c of S.combs) if (c.st === 'down' && c.y > (e.diveY0 ?? -1e9) + 8 && e.x > c.x0p - 2 && e.x < c.x1p + 2 && e.y >= c.y && e.y - e.vy * dt < c.y + 4) return { y: c.y, heap: true };
@@ -214,7 +214,7 @@ export function dazed(e, S, w) {
   e.mode = 'dazed'; e.fall = 1; e.modeT = stun; e.openT0 = stun; e.vx = 0; e.vy = 0; e.smokeCd = HQ.dazed.cd; e.fogT = 0; S.n.dazed++; S.act++;
   w.sound('dazed'); w.fx('open', e.x, e.y); w.number(e.x, e.y - HQ.h - 18, HQ_SAY.dazed, '#8fd160'); return true;
 }
-/* where a falling queen lands: the hall's floor, or a perch / a comb cut down into the honey under her (their top) */
+/* where a falling queen lands: the hall's floor, or a perch / a comb cut down into the resin under her (their top) */
 function fallFloor(e, S) { let y = S.G.h.floor;
   for (const p of S.perches) if (p.st !== 'gone' && e.x > p.x0p && e.x < p.x1p && p.y >= e.y - 2 && p.y < y) y = p.y;
   for (const c of S.combs || []) if (c.st === 'down' && e.x > c.x0p && e.x < c.x1p && c.y >= e.y - 2 && c.y < y) y = c.y;
@@ -251,7 +251,7 @@ function stepStingers(S, dt, hs, w) {
     w.hit([s.x - 3, s.x + 3, s.y - 3, s.y + 3], HQ.volley.dmg, 'stinger', { key: s.key, blockable: true, onBlock: () => { s.life = 0; } }); }
   S.stingers = S.stingers.filter(s => s.life > 0);
 }
-/* ---------- P2: THE HONEY HALL ---------- */
+/* ---------- P2: THE RESIN HALL ---------- */
 /* A FALLING COMB THAT MEETS HER: PINNED (once a comb). THE LAST COMB is the big one */
 function combsOnHer(e, S, w) {
   for (const c of S.combs) { if (c.st !== 'fall' || S.pinUsed[c.id]) continue;
@@ -278,7 +278,7 @@ function stepP2(e, S, dt, P, w, hs) {
       if (e.mode !== 'dive') return;
       if (e.vy > 0) { const p = combUnder(e, S, dt); if (p) { e.y = p.y; stuck(e, S, w, p.heap); return; } }
       if (e.y >= floor || e.modeT <= 0) { e.y = Math.min(e.y, floor); e.mode = 'skim'; e.modeT = HQ.dive.skim; e.vx *= 0.25; e.vy = -90; w.dust(e.x, floor, 6); w.number(e.x, e.y - 20, HQ_SAY.pull, '#9aa39a');
-        if (!S.told.floor2) { S.told.floor2 = 1; w.say('THE HONEY DOES NOT HOLD HER STING - COMB DOES: A WALL PERCH, OR A COMB YOU CUT DOWN.'); } }
+        if (!S.told.floor2) { S.told.floor2 = 1; w.say('THE RESIN DOES NOT HOLD HER STING - COMB DOES: A WALL PERCH, OR A COMB YOU CUT DOWN.'); } }
       return; }
     case 'skim': e.x += e.vx * dt; e.y += e.vy * dt; if (e.modeT <= 0) back(e, S); return;
     case 'rejoin': { const t = loopAt(S, S.loop.th); hoverTo(e, t.x, t.y, 200, dt); if (Math.hypot(t.x - e.x, t.y - e.y) < 8 || e.modeT <= 0) { e.mode = 'circle'; e.modeT = HQ.circle.lap * HQ.circle.laps[Math.random() < 0.5 ? 0 : 1]; } return; }

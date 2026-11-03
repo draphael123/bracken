@@ -1,10 +1,10 @@
-// hornets_nest_sag.js - THE HORNET'S NEST 2's HONEY WORKS, drawn (claude/hornetsnest2art; SONNET over the greybox claude/hornetsnest2). ART ONLY: every box, count and timing is the hands'
+// hornets_nest_sag.js - THE HORNET'S NEST 2's RESIN WORKS, drawn (claude/hornetsnest2art; SONNET over the greybox claude/hornetsnest2). ART ONLY: every box, count and timing is the hands'
 // (src/hornets-nest-hands.js, tower-collapse.js); this draws what they say.
-//   sagComb(g, c, cx, cy, time, text)     a SAGGING COMB (L.crumbles kind 'comb'): whole = honey strings and a heavy lip; counting = the belly bows down, wax stretches, drops pinch off; down = a faint
+//   sagComb(g, c, cx, cy, time, text)     a SAGGING COMB (L.crumbles kind 'comb'): whole = resin strings and a heavy lip; counting = the belly bows down, paper stretches, drops pinch off; down = a faint
 //                                         ghost that fills back in as the comb regrows
-//   drip(g, d, tell, time, glob)          a HONEY DRIP: the string off the comb or roof, the waiting nub, the bead swelling on its neck (the neck thins, pinches off), then the glob falls
-//   bed(g, x, y, w, time)                 the sticky BED (sump, well): a glossy honey skin over the wax tiles, a sheen sliding across, bubbles rising and popping
-//   hiveWall(g, c0, c1, r0, r1, cx, cy, VW, VH) the capped-cell wall of the sump and the well (world-anchored pattern, honey-stained toward the bed)
+//   drip(g, d, tell, time, glob)          a RESIN DRIP: the string off the comb or roof, the waiting nub, the bead swelling on its neck (the neck thins, pinches off), then the glob falls
+//   bed(g, x, y, w, time)                 the sticky BED (sump, well): a glossy resin skin over the paper tiles, a sheen sliding across, bubbles rising and popping
+//   hiveWall(g, c0, c1, r0, r1, cx, cy, VW, VH) the capped-cell wall of the sump and the well (world-anchored pattern, resin-stained toward the bed)
 //   bloom(g, x, y, r, age)                a smoke pot BURSTING: the flash, the ring and the clay shards in a cloud's first third of a second
 import { canvas } from '../px.js';
 import { COMB, WAX } from './hornets_nest_tiles.js';
@@ -15,7 +15,7 @@ const hash = (a, b) => { let h = (Math.imul(a | 0, 73856093) ^ Math.imul(b | 0, 
 const R = (g, c, x, y, w, h) => { g.fillStyle = c; g.fillRect(Math.round(x), Math.round(y), Math.max(1, Math.round(w)), Math.max(1, Math.round(h))); };
 const TS = 16;
 
-/* ---------------- a honey string: 1 px, two golds, a thicker knot every so often, a glint that slides down it ---------------- */
+/* ---------------- a resin string: 1 px, two golds, a thicker knot every so often, a glint that slides down it ---------------- */
 function string(g, x, y0, y1, time, seed) {
   for (let y = y0; y < y1; y++) { const knot = (y + seed) % 9 === 0; R(g, (y + seed) % 3 ? H[2] : H[3], x, y, 1, 1); if (knot) { R(g, H[1], x - 1, y, 1, 1); R(g, H[3], x + 1, y, 1, 1); } }
   const gy = y0 + ((time * 9 + seed * 3) % Math.max(4, y1 - y0)); if (gy < y1) R(g, H[5], x, gy, 1, 1);
@@ -27,15 +27,15 @@ export function sagComb(g, c, cx, cy, time, text) {
   if (c.st === 'down') {   /* the gap: a ghost of the comb that grows back in (it is back in `back` s) */
     const p = Math.min(1, (c.downT || 0) / (c.back || 4)); g.globalAlpha = 0.1 + 0.2 * p; g.strokeStyle = WAX[3]; g.setLineDash([3, 3]); g.strokeRect(x + 0.5, y + 0.5, w - 1, rows * TS - 1); g.setLineDash([]);
     g.globalAlpha = 0.05 + 0.22 * p * p; g.fillStyle = WAX[2]; g.fillRect(x + 1, y + Math.round((1 - p) * (rows * TS - 2)) + 1, w - 2, Math.round(p * (rows * TS - 2))); g.globalAlpha = 1;
-    for (let k = 0; k < 3; k++) { const ph = (time * 0.7 + k / 3 + c.x0 * 0.31) % 1; g.globalAlpha = 0.7 * (1 - ph); R(g, H[4], x + 4 + ((hash(c.x0, k) % Math.max(1, w - 8))), y + rows * TS - 2 - ph * 10, 1, 1); } g.globalAlpha = 1;   /* wax seeping up as it knits */
+    for (let k = 0; k < 3; k++) { const ph = (time * 0.7 + k / 3 + c.x0 * 0.31) % 1; g.globalAlpha = 0.7 * (1 - ph); R(g, H[4], x + 4 + ((hash(c.x0, k) % Math.max(1, w - 8))), y + rows * TS - 2 - ph * 10, 1, 1); } g.globalAlpha = 1;   /* pulp seeping up as it knits */
     return; }
   const counting = c.st === 'count', k = counting ? Math.min(1, 1 - c.t / c.count) : 0, hot = counting && c.t < 1, jig = hot ? Math.round(Math.sin(time * 50)) : 0, X = x + jig;
   const depth = counting ? Math.round(1 + 8 * (k < 0.5 ? k * 1.2 : 0.6 + (k - 0.5) * 0.8)) : 1;   /* how far the belly bows below the shelf */
-  /* the belly: a bowed lip of wax hanging under the shelf (the tile above is the comb tile; this is the weight of it) */
+  /* the belly: a bowed lip of paper hanging under the shelf (the tile above is the comb tile; this is the weight of it) */
   for (let i = 1; i < w - 1; i++) { const u = Math.sin(Math.PI * (i + 0.5) / w), d = Math.max(1, Math.round(depth * (0.35 + 0.65 * u)));
     for (let j = 0; j < d; j++) { const lastRow = j === d - 1, hex = ((i + (j >> 1) % 2 * 3) % 6) === 0;
       R(g, lastRow ? COMB[0] : hex ? COMB[1] : j === 0 ? COMB[2] : (counting && k > 0.5 && j > d - 3) ? '#c8681e' : COMB[2 + (hash(i, j) % 5 === 0 ? 1 : 0)], X + i, bot + j, 1, 1); }
-    if (counting && d > 3 && hash(i + c.x0, 5) % 4 === 0) R(g, H[4], X + i, bot + d - 2, 1, 1); }   /* wax glistening where it stretches */
+    if (counting && d > 3 && hash(i + c.x0, 5) % 4 === 0) R(g, H[4], X + i, bot + d - 2, 1, 1); }   /* paper stretching thin and pale where it sags */
   /* strings and beads hanging off the lip; they lengthen as it sags */
   const n = Math.max(2, Math.round(w / 14));
   for (let s = 0; s < n; s++) { const sx = X + 3 + Math.round(((s + 0.5) / n) * (w - 6)) + (hash(c.x0, s) % 3) - 1, u = Math.sin(Math.PI * (sx - x + 0.5) / w), base = bot + Math.max(1, Math.round(depth * (0.35 + 0.65 * u))), len = 2 + (hash(c.x0 + s, 2) % 4) + Math.round(k * (4 + (s % 3) * 2));
@@ -43,14 +43,14 @@ export function sagComb(g, c, cx, cy, time, text) {
   if (!counting) {   /* whole: a few seams on its face and a warm sheen along the lip */
     g.globalAlpha = 0.5; for (let q = 5; q < w - 4; q += 9 + (hash(c.x0, q) % 6)) R(g, COMB[0], x + q, y + 2 + (hash(q, c.x0) % 3), 1, 3); g.globalAlpha = 1;
     return; }
-  /* counting: the top glows (amber, red in the last second), wax bleeding off the ends, drops pinching off the belly */
+  /* counting: the top glows (amber, red in the last second), paper peeling off the ends, drops pinching off the belly */
   g.globalAlpha = 0.14 + 0.3 * k; R(g, hot ? '#ff6b6b' : '#ffb070', X, y, w, 3); g.globalAlpha = 1;
   for (let i = 0; i < 3; i++) { const ph = (time * (0.9 + 1.8 * k) + i / 3 + c.x0 * 0.17) % 1, dx = Math.round((0.2 + 0.3 * i + (hash(c.x0, i + 8) % 20) / 100) * w), u = Math.sin(Math.PI * (dx + 0.5) / w), by = bot + Math.max(1, Math.round(depth * (0.35 + 0.65 * u))) + 4 + Math.round(k * 4);
     g.globalAlpha = 1 - ph * ph; R(g, H[3], X + dx, by + ph * 16, 2, 2 + Math.round(ph * 2)); R(g, H[5], X + dx, by + ph * 16, 1, 1); g.globalAlpha = 1; }
   if (text) { const nn = Math.max(1, Math.ceil(c.t)), col = nn >= 3 ? '#ffd36b' : nn === 2 ? '#ff9a5c' : '#ff6b6b', pop = 1 + Math.max(0, (c.t % 1) - 0.8) * 2; text(String(nn), Math.round(x + w / 2), Math.round(y - 22 - 4 * pop), col, 'center', nn === 1 ? 16 : 12); }
 }
 
-/* ---------------- a HONEY DRIP ---------------- */
+/* ---------------- a RESIN DRIP ---------------- */
 /* the nub hanging under the comb/roof (3 px dark socket, amber, a gold tip): baked */
 const nubSprite = () => once('dripnub', () => { const [c, g] = canvas(5, 5); R(g, H[0], 1, 0, 3, 1); R(g, H[1], 1, 1, 3, 1); R(g, H[3], 2, 1, 1, 1); R(g, H[2], 2, 2, 1, 2); R(g, H[4], 2, 3, 1, 1); R(g, H[0], 2, 4, 1, 1); return c; });
 /* the bead at step s (0..7): a drop growing on a thinning neck */
@@ -73,11 +73,12 @@ export function drip(g, d, X, Y, tell, time, glob, topY, cy) {
     glob(g, X, d.y - cy, d.vy, time); }
 }
 
-/* ---------------- the sticky BED: the honey skin ---------------- */
+/* ---------------- the sticky BED: the resin skin ---------------- */
 export function bed(g, x, y, w, time) {
   x = Math.round(x); y = Math.round(y);
-  g.globalAlpha = 0.86; R(g, H[3], x, y, w, 1); R(g, H[2], x, y + 1, w, 2); R(g, H[1], x, y + 3, w, 1); g.globalAlpha = 1;   /* the skin on the wax tiles' top */
+  g.globalAlpha = 0.86; R(g, H[3], x, y, w, 1); R(g, H[2], x, y + 1, w, 2); R(g, H[1], x, y + 3, w, 1); g.globalAlpha = 1;   /* the skin on the paper tiles' top */
   R(g, H[0], x, y + 4, w, 1);
+  for (let f = 0; f < w / 30; f++) { const fx = x + 4 + (hash(x, f + 60) % Math.max(1, w - 8)); R(g, '#2a1408', fx, y + 1 + (f % 2), f % 3 === 0 ? 2 : 1, 1); }   /* bark flecks caught under the skin */
   /* the sheen: pale lozenges sliding across, each its own pace */
   for (let i = 0; i < w / 20; i++) { const sp = 7 + (i % 3) * 3, px_ = ((time * sp + i * 41 + hash(x, i)) % (w + 16)) - 8; if (px_ < 0 || px_ > w - 6) continue; R(g, H[5], x + px_, y, 5, 1); R(g, H[4], x + px_ + 1, y + 1, 3, 1); }
   /* bubbles: a dome swelling, a ring, a pop */
@@ -89,22 +90,22 @@ export function bed(g, x, y, w, time) {
 }
 
 /* ---------------- the capped-cell wall ---------------- */
-/* 96 x 64: 8 cells x 8 courses (cell 12 x 8, every other course shifted 6): capped (a pale lid), honey-filled (amber, glinting) or empty (dark); wax walls between */
+/* 96 x 64: 8 cells x 8 courses (cell 12 x 8, every other course shifted 6): capped (a pale lid), resin-filled (amber, glinting) or empty (dark); paper walls between */
 const wallPat = () => once('hivewall', () => { const [c, g] = canvas(96, 64);
-  R(g, '#2a1808', 0, 0, 96, 64);
+  R(g, '#241f18', 0, 0, 96, 64);
   for (let row = 0; row < 8; row++) for (let col = -1; col < 9; col++) {
-    const ox = col * 12 + (row & 1) * 6, oy = row * 8, h = hash(col & 7, row), kind = h % 7 < 3 ? 'cap' : h % 7 < 5 ? 'honey' : 'void';
+    const ox = col * 12 + (row & 1) * 6, oy = row * 8, h = hash(col & 7, row), kind = h % 7 < 3 ? 'cap' : h % 7 < 5 ? 'resin' : 'void';
     const body = (cx_, cy_, ww, hh, color) => { R(g, color, cx_ + 1, cy_, ww - 2, hh); R(g, color, cx_, cy_ + 1, ww, hh - 2); };
-    body(ox + 1, oy + 1, 10, 6, '#4a300c');   /* the wax wall round it */
-    if (kind === 'cap') { body(ox + 2, oy + 2, 8, 4, '#8a6420'); R(g, '#a8741e', ox + 3, oy + 2, 6, 1); R(g, '#c8921e', ox + 3, oy + 3, 2, 1); R(g, '#5a3c0c', ox + 3, oy + 5, 6, 1); R(g, '#3a2208', ox + 5, oy + 3, 2, 1); }
-    else if (kind === 'honey') { body(ox + 2, oy + 2, 8, 4, '#a8600a'); R(g, '#d8901a', ox + 2, oy + 3, 8, 2); R(g, '#f0b434', ox + 3, oy + 3, 3, 1); R(g, '#ffd36b', ox + 3, oy + 3, 1, 1); R(g, '#6a3a06', ox + 3, oy + 5, 6, 1); }
-    else { body(ox + 2, oy + 2, 8, 4, '#150a04'); R(g, '#2a1808', ox + 3, oy + 2, 6, 1); R(g, '#3a2208', ox + 3, oy + 5, 4, 1); } }
+    body(ox + 1, oy + 1, 10, 6, '#463e32');   /* the paper wall round it */
+    if (kind === 'cap') { body(ox + 2, oy + 2, 8, 4, '#8a8272'); R(g, '#a89c82', ox + 3, oy + 2, 6, 1); R(g, '#c9bfa6', ox + 3, oy + 3, 2, 1); R(g, '#5c5246', ox + 3, oy + 5, 6, 1); R(g, '#3a3228', ox + 5, oy + 3, 2, 1); }
+    else if (kind === 'resin') { body(ox + 2, oy + 2, 8, 4, '#905010'); R(g, '#ba7020', ox + 2, oy + 3, 8, 2); R(g, '#e38a23', ox + 3, oy + 3, 3, 1); R(g, '#f6aa50', ox + 3, oy + 3, 1, 1); R(g, '#5b320a', ox + 3, oy + 5, 6, 1); }
+    else { body(ox + 2, oy + 2, 8, 4, '#12100c'); R(g, '#241f18', ox + 3, oy + 2, 6, 1); R(g, '#322c22', ox + 3, oy + 5, 4, 1); } }
   return c; });
 /* the whole wall of one chamber, baked ONCE (a pattern fill + a gradient every frame cost ~20 fps at a phone's 4x CPU); a frame is one blit of what is on screen. [c0, c1, r0, r1] = the chamber's columns / rows */
 const wallSprite = (c0, c1, r0, r1) => once('hivewall' + [c0, c1, r0, r1], () => { const w = (c1 - c0 + 1) * TS, h = (r1 - r0 + 1) * TS, [c, g] = canvas(w, h, true); g.imageSmoothingEnabled = false;
   const pat = g.createPattern(wallPat(), 'repeat'); pat.setTransform(new DOMMatrix().translate(-((c0 * TS) % 96), -((r0 * TS) % 64))); g.fillStyle = pat; g.fillRect(0, 0, w, h);
-  /* honey-stained toward the bed (a gradient up the wall from the floor) */
-  const top = Math.max(0, h - 160), gr = g.createLinearGradient(0, top, 0, h); gr.addColorStop(0, 'rgba(216,144,26,0)'); gr.addColorStop(1, 'rgba(240,180,52,0.34)'); g.fillStyle = gr; g.fillRect(0, top, w, h - top);
+  /* resin-stained toward the bed (a gradient up the wall from the floor) */
+  const top = Math.max(0, h - 160), gr = g.createLinearGradient(0, top, 0, h); gr.addColorStop(0, 'rgba(186,112,32,0)'); gr.addColorStop(1, 'rgba(227,138,35,0.34)'); g.fillStyle = gr; g.fillRect(0, top, w, h - top);
   return c; });
 export function hiveWall(g, c0, c1, r0, r1, cx, cy, VW, VH) {
   const wx = c0 * TS - cx, wy = r0 * TS - cy, w = (c1 - c0 + 1) * TS, h = (r1 - r0 + 1) * TS, x0 = Math.max(0, wx), y0 = Math.max(0, wy), x1 = Math.min(VW, wx + w), y1 = Math.min(VH, wy + h); if (x1 <= x0 || y1 <= y0) return;

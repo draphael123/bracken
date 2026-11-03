@@ -1,7 +1,7 @@
 // src/hornet-queen-plan.js - THE HORNET QUEEN 2's BOT (claude/hornetsnest; ONE ARENA since claude/hornetsnest2; src/lab.js drives a hero with it). What a player reads - her
-// tells a reaction late, the red rings, the stingers, her loop's shadow on the honey, the hanging combs and their plumb lines - and her RULES: in the hall, stand on a comb
+// tells a reaction late, the red rings, the stingers, her loop's shadow on the resin, the hanging combs and their plumb lines - and her RULES: in the hall, stand on a comb
 // perch as she dives and leave late (a shield takes the dive: STAGGERED); smoke under her when she comes low (a carried pot) for the no-shield heroes; smash a pulsing cell.
-// When the hall tears: cut a torn comb down out of the honey (as she passes under it, it pins her), stand on it and bait her stoop into it, and from its inner end cut THE
+// When the hall tears: cut a torn comb down out of the resin (as she passes under it, it pins her), stand on it and bait her stoop into it, and from its inner end cut THE
 // LAST COMB as she comes under it.
 // s = { P: { x, y, vy, face, ground, atk, held }, e, S, reach, shield, dodge, t, rng, mem, v2, stands: [{ x, y }], rest }
 import { HQ, OPEN_NAME, hqOpen, loopAhead, underComb } from './hornet-queen.js';
@@ -85,11 +85,11 @@ function hallPlan(s, out, mem, t, seenFor, roll, swing, inReach, jumpTo) {
   if (lowNear && !onPerch) { out.gx = (lowNear.x0p + lowNear.x1p) / 2 + (lowNear.x0p < H.mid ? 22 : -22); out.why = 'by a perch'; return out; }
   out.gx = P.x; out.why = 'wait'; void dx; return out;
 }
-/* THE HONEY HALL (P2): the hall has torn - honey on the floor, torn combs hanging over her low pass, THE LAST COMB in the vault */
+/* THE RESIN HALL (P2): the hall has torn - resin on the floor, torn combs hanging over her low pass, THE LAST COMB in the vault */
 function honeyPlan(s, out, mem, t, seenFor, roll, swing, inReach, jumpTo) {
   const { P, e, S, reach } = s, H = S.G.h, floor = H.floor, half = HQ.w / 2, side = Math.sign(P.x - e.x) || 1, dx = Math.abs(e.x - P.x);
   const tellKey = 'a' + S.act + e.mode, seen = seenFor(tellKey), miss = s.v2 ? false : roll(tellKey + 'm', PLAN.miss);
-  /* COMB FOOTING (dry, and her stoop sticks in it): the wall perches still up, and every comb cut down into the honey */
+  /* COMB FOOTING (dry, and her stoop sticks in it): the wall perches still up, and every comb cut down into the resin */
   const foots = [...S.perches.filter(p => p.st !== 'gone').map(p => ({ x0p: p.x0p, x1p: p.x1p, y: p.y, id: p.id })), ...S.combs.filter(c => c.st === 'down').map(c => ({ x0p: c.x0p, x1p: c.x1p, y: c.y, id: c.id, heap: true }))];
   const onFoot = P.ground ? foots.find(f => Math.abs(P.y - f.y) < 3 && P.x > f.x0p - 2 && P.x < f.x1p + 2) : null;
   const nearFoot = foots.slice().sort((a, b) => Math.abs((a.x0p + a.x1p) / 2 - P.x) - Math.abs((b.x0p + b.x1p) / 2 - P.x))[0];
@@ -127,7 +127,7 @@ function honeyPlan(s, out, mem, t, seenFor, roll, swing, inReach, jumpTo) {
     out.gx = sd.x; if (P.ground && P.y < sd.y - 10 && Math.abs(sd.x - P.x) < 30) { out.drop = true; out.why = 'her cloak: down to the pot'; return out; }
     if (Math.abs(sd.x - P.x) < 8 && P.ground && Math.abs(sd.y - P.y) < 10) out.talk = true; out.why = 'her cloak: take a smoke pot'; return out; }
   if (S.ward > 0 || e.mode === 'thrash') { if (inReach()) { swing(); out.gx = P.x; out.why = 'a cut through her ward'; return out; } }
-  /* E. THE LAST COMB: from the inner end of a torn comb cut down into the honey, cut it as she comes under it */
+  /* E. THE LAST COMB: from the inner end of a torn comb cut down into the resin, cut it as she comes under it */
   if (last) { const heaps = S.combs.filter(c => c.st === 'down' && !c.last && (Math.abs(c.x1p - last.x0p) < 24 || Math.abs(c.x0p - last.x1p) < 24));
     const hp = heaps.sort((a, b) => Math.abs((a.x0p + a.x1p) / 2 - P.x) - Math.abs((b.x0p + b.x1p) / 2 - P.x))[0];
     if (hp) { const spot = hp.x1p <= last.x0p + 4 ? hp.x1p - 5 : hp.x0p + 5, on = P.ground && Math.abs(P.y - hp.y) < 3;
@@ -136,11 +136,11 @@ function honeyPlan(s, out, mem, t, seenFor, roll, swing, inReach, jumpTo) {
       if (willPass(last, 0.12, 0.42) && !roll('lc' + Math.floor(t * 2), PLAN.missCut)) { out.atk = P.atk < 0; out.up = true; out.why = 'cut the last comb: she comes under'; return out; }
       if (inReach() && e.mode === 'circle') { swing(); out.why = 'a cut as she passes'; return out; }
       out.why = 'by the last comb: wait for her pass'; return out; } }
-  /* F. A TORN COMB: under it, cut it as she passes under (a pin), or - waited long enough - for the step out of the honey */
+  /* F. A TORN COMB: under it, cut it as she passes under (a pin), or - waited long enough - for the step out of the resin */
   if (torn.length) { const c = torn.slice().sort((a, b) => Math.abs((a.x0p + a.x1p) / 2 - P.x) - Math.abs((b.x0p + b.x1p) / 2 - P.x))[0], spot = (c.x0p + c.x1p) / 2;
     if (Math.abs(P.x - spot) > 8 || !P.ground || P.y < floor - 3) { out.gx = spot; if (P.ground && P.y < floor - 3) out.drop = true; out.why = 'under the torn comb'; mem.cutWait = t; return out; }
     out.gx = spot; out.face = P.face; if (mem.cutWait === undefined) mem.cutWait = t;
-    if ((willPass(c, 0.02, 0.22) && !roll('tc' + Math.floor(t * 2), PLAN.missCut)) || t - mem.cutWait > PLAN.cutWait) { out.atk = P.atk < 0; out.up = true; out.why = 'cut the torn comb' + (t - mem.cutWait > PLAN.cutWait ? ': a step out of the honey' : ': she comes under'); return out; }
+    if ((willPass(c, 0.02, 0.22) && !roll('tc' + Math.floor(t * 2), PLAN.missCut)) || t - mem.cutWait > PLAN.cutWait) { out.atk = P.atk < 0; out.up = true; out.why = 'cut the torn comb' + (t - mem.cutWait > PLAN.cutWait ? ': a step out of the resin' : ': she comes under'); return out; }
     if (inReach() && e.mode === 'circle') { swing(); out.why = 'a cut as she passes'; return out; }
     out.why = 'under the torn comb: wait for her pass'; return out; }
   /* G. SMOKE for the no-shield heroes: a pot from the stand under a wall perch */
@@ -149,6 +149,6 @@ function honeyPlan(s, out, mem, t, seenFor, roll, swing, inReach, jumpTo) {
     if (Math.abs(sd.x - P.x) < 8 && P.ground && Math.abs(sd.y - P.y) < 10) out.talk = true; out.why = 'take a smoke pot'; return out; }
   /* H. under her low pass on comb: cut her as she passes */
   if (inReach()) { swing(); out.gx = P.x; out.why = 'a cut as she passes'; return out; }
-  if (nearFoot && !onFoot) return onTo(nearFoot, 'onto comb, out of the honey');
+  if (nearFoot && !onFoot) return onTo(nearFoot, 'onto comb, out of the resin');
   out.gx = P.x; out.why = 'on comb: wait for her pass'; void miss; return out;
 }

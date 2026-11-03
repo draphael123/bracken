@@ -492,11 +492,11 @@
   "bare": true
  },
  "hornetsnest": {
-  "hash": "e4452c9761e8",
+  "hash": "9381ecb8e4f9",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 14,
+  "hits": 13,
   "deaths": 0,
   "kills": 49,
   "lifts": 86,

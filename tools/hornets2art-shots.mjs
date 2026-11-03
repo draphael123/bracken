@@ -1,4 +1,4 @@
-// tools/hornets2art-shots.mjs - THE HORNET'S NEST 2 ART PASS for eyes (claude/hornets2art): the fat honey hornet's poses close up, the glob and the sticky patch, the hall's P2 (the tear,
+// tools/hornets2art-shots.mjs - THE HORNET'S NEST 2 ART PASS for eyes (claude/hornets2art): the amber hornet's poses close up, the glob and the sticky patch, the hall's P2 (the tear,
 // the flood, the torn combs, THE LAST COMB, the queen pinned), the stinger, the transitions (old pines, the marsh edge, the far pine on the neighbours), the map landmark.
 // TAG=after PORT=<port> node tools/hornets2art-shots.mjs  ->  work/claude/lane-done/hornets2art-<TAG>-<name>.png   (ONLY=a,b limits the named shots; HERO=knight|warden|pyro)
 import { openPage, ROOT } from './cdp.mjs';
@@ -16,7 +16,7 @@ try {
     const snap = (name, z = 2, crop) => { if (!want(name)) return; BK.step(1); const b = BK.buf; const [dx, dy, cw, ch] = crop || [-b.width / 2, -b.height / 2, b.width, b.height]; const c = document.createElement('canvas'); c.width = cw * z; c.height = ch * z; const g = c.getContext('2d'); g.imageSmoothingEnabled = false; const hx = crop ? Math.round(BK.P.x - BK.cam[0]) : b.width / 2, hy = crop ? Math.round(BK.P.y - BK.cam[1]) : b.height / 2; g.drawImage(b, hx + dx, hy + dy, cw, ch, 0, 0, c.width, c.height); shots.push([name, c.toDataURL('image/png')]); };
     const at = (col, row, face = 1) => { const P = BK.P; P.x = col * 16 + 8; P.y = (row + 1) * 16; P.vx = P.vy = 0; P.face = face; BK.sim(50); };
     for (const [n, c, r] of ${JSON.stringify(SPOTS)}) { if (!want(n)) continue; load(); at(c, r); snap(n); }
-    /* THE FAT HONEY HORNET in play, close: the cells chamber's (col 104) */
+    /* THE AMBER HORNET in play, close: the cells chamber's (col 104) */
     if (!ONLY || ONLY.some(n => /^hh-/.test(n))) {
       const hh = () => BK.enemies().find(e => e.alive && e.t === 'honeyhornet');
       const prep = () => { load(); at(100, 33); BK.enemies().forEach(e => { if (e.alive && e.t !== 'honeyhornet') e.alive = false; }); BK.sim(260); return hh(); };
@@ -36,11 +36,11 @@ try {
       load(); at(96, 33); BK.sim(200); const st = () => BK.enemies().filter(e => e.alive && e.t === 'spit').sort((a, b) => Math.abs(a.x - BK.P.x) - Math.abs(b.x - BK.P.x))[0];
       let e = st(); if (e) { BK.step(2); const c = [e.x - BK.P.x - 40, e.y - BK.P.y - 36, 80, 56]; snap('stinger-idle', 8, c); e.mouth = 1; e.mouthT = 1; BK.step(1); snap('stinger-flick', 8, c); }
     }
-    /* HER HALL: P1, the tear (told, then ripped), P2 (the flood, the torn combs, THE LAST COMB), a pin, a comb landing in the honey, her death */
+    /* HER HALL: P1, the tear (told, then ripped), P2 (the flood, the torn combs, THE LAST COMB), a pin, a comb landing in the resin, her death */
     if (!ONLY || ONLY.some(n => /^q2-/.test(n))) {
       load(); BK.tp(301, 21); BK.sim(90); const E = () => BK.boss; snap('q2-p1');
       const e = E(); if (e) { e.hp = Math.ceil(e.maxHp * 0.55); e.mode = 'hover'; e.modeT = 0.2; for (let k = 0; k < 400 && e.mode !== 'tearTell'; k++) BK.sim(1); for (let k = 0; k < 200 && e.modeT > 0.9; k++) BK.sim(1); snap('q2-tearTell'); for (let k = 0; k < 200 && e.modeT > 0.25; k++) BK.sim(1); snap('q2-tearTell2');
-        for (let k = 0; k < 400 && e.mode !== 'tear'; k++) BK.sim(1); BK.sim(12); snap('q2-tear'); const QH0 = BK.hornetQueenHands(); for (let k = 0; k < 600 && QH0.show().stage !== 2; k++) BK.sim(1); BK.sim(60); BK.P.x = 309 * 16; BK.P.y = 22 * 16; BK.sim(10); snap('q2-honey');
+        for (let k = 0; k < 400 && e.mode !== 'tear'; k++) BK.sim(1); BK.sim(12); snap('q2-tear'); const QH0 = BK.hornetQueenHands(); for (let k = 0; k < 600 && QH0.show().stage !== 2; k++) BK.sim(1); BK.sim(60); BK.P.x = 309 * 16; BK.P.y = 22 * 16; BK.sim(10); snap('q2-resin');
         const N = BK.nestHands(); N.cut('tornW'); BK.sim(24); snap('q2-splash'); BK.sim(100); BK.P.x = 306 * 16 + 4; BK.P.y = 20 * 16; BK.sim(20); snap('q2-heap');
         e.mode = 'dazed'; e.modeT = 9; e.x = 313 * 16; e.y = 22 * 16; BK.sim(2); N.cut('last'); BK.sim(20); snap('q2-lastfall'); for (let k = 0; k < 200 && e.mode !== 'pinned'; k++) BK.sim(1); BK.sim(30); snap('q2-pinLast');
         e.hp = 1; e.mode = 'pinned'; BK.P.x = e.x - 20; BK.P.y = 22 * 16; BK.P.face = 1; for (let k = 0; k < 30 && e.alive; k++) { BK.press('atk'); BK.sim(10); } BK.sim(200); if (BK.cardClose) try { BK.cardClose(); } catch (x) {} BK.state = 'play'; BK.sim(5); snap('q2-dead'); }
