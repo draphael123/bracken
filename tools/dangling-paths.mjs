@@ -38,6 +38,7 @@ const ROOT = fileURLToPath(new URL('..', import.meta.url));
 /* KNOWN HOLES. Each one is a path a tracked file points at that no clone has, with why. Delete a line the moment the
    file is committed - the tool tells you when that happens. A list that only ever grows is a way of not fixing it. */
 const MISSING = new Map([
+  ['src/warden-brace.js', 'REMOVED ON PURPOSE (claude/herofeel, batch140): the spear-haft brace turned any yellow blow with no timing (the Warden was 85% pooled on the demo bosses) and was replaced by the javelin throw (src/warden-throw.js). src/warden-throw.js and the heroblocksb / herofeel lane reports cite it as history.'],
   ['src/bandit-king.js', 'REMOVED ON PURPOSE (claude/welltown3, Daniel 10-02): THE BANDIT KING became THE GANG LEADER, a mini (src/gang-leader.js), and the Well Town boss is THE CISTERN QUEEN (src/cistern-queen.js). Only the old lane report cites it.'],
   ['src/bandit-king-hands.js', 'REMOVED ON PURPOSE with src/bandit-king.js (claude/welltown3): his hands went with him. Only the old lane report cites it.'],
   ['tools/kings2-beats.mjs', 'REPLACED ON PURPOSE (claude/kingswood2): tools/kingswood2.mjs holds the rebuilt Hunting Wood; the old grafted wood beats check was never committed. tools/kingswood2.mjs and the kings lane reports cite it as history.'],
