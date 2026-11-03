@@ -2067,6 +2067,9 @@ Object.assign(SFX, {
   geoBounce() { tone('square', vary(260), 130, 0.08, 0.1); noise(0.08, 0.18, 1500, 0.9); tone('sine', 120, 60, 0.18, 0.2); },
   geoQuake() { noise(0.9, 0.34, 170, 0.4); tone('sine', 55, 30, 0.9, 0.34); noise(0.5, 0.14, 700, 0.6, 0.2); },
   geoShard() { noise(0.12, 0.14, 2200, 1.1); tone('square', vary(900), 300, 0.05, 0.05); },
+  /* (claude/geopop) PLACEHOLDER HOOKS for the ART+SFX lane (GEO.pop.feel): geoPlant = the knee stone coming up under the fist, geoBlast = DETONATE. Synth now; REC below layers the repo's CC0 r_thud / r_rumble under them. The lane swaps in the real layers (bd_stone / crack2 / golemShatter) */
+  geoPlant() { tone('sine', vary(80), 40, 0.16, 0.3); noise(0.1, 0.18, 900, 0.7); tone('triangle', vary(240), 110, 0.07, 0.1); },
+  geoBlast() { tone('sine', 62, 28, 0.55, 0.42); noise(0.5, 0.3, 260, 0.5); noise(0.18, 0.2, 1400, 0.8, 0.02); tone('sawtooth', vary(90), 40, 0.3, 0.1); },
   /* (claude/chargetiers) HER THREE-TIER STAVE, HEARD: a stone note that goes DOWN a tier as the earth wakes (a struck slab: A, E, low A), a grind of grit under it, a deep heave on T3 */
   geoTier(n = 1) { n = Math.max(1, Math.min(3, n | 0)); const f = [0, 440, 330, 220][n];
     tone('triangle', f, f * 0.97, 0.18 + 0.05 * n, 0.06 + 0.015 * n); bell(f * 2, 0.25 + 0.06 * n, 0.03 + 0.01 * n); noise(0.12 + 0.05 * n, 0.06 + 0.03 * n, 500 - 80 * n, 0.7);
@@ -2235,7 +2238,7 @@ const REC = {
   mageRuneTell: { p: 'r_spellT', v: 0.34 }, mageBoltTell: { p: 'r_spell', v: 0.3, r: 1.3 }, priestCenserTell: { p: 'r_chain', v: 0.3, r: 1.1 }, wqSickleTell: { p: 'r_charge', v: 0.3, r: 1.3 }, wqLashTell: { p: 'r_dodge', v: 0.3, r: 1.4, layer: 1 },
   sting: { p: 'r_sting', v: 0.4 }, medal: { p: 'r_medal', v: 0.38 }, check: { p: 'r_check', v: 0.38 }, win: { p: 'r_win', v: 0.42 }, levelStart: { p: 'r_levelStart', v: 0.4 }, bossDown: { p: 'r_bossDown', v: 0.4, layer: 1 }, judgement: { p: 'r_bossDown', v: 0.3, r: 0.8, layer: 1 },
   zap: { p: 'r_zap', v: 0.3 }, spark: { p: 'r_zap', v: 0.22, r: 1.6 }, stormZap: { p: 'r_zap', v: 0.3, r: 0.85 }, mageBolt: { p: 'r_spell', v: 0.38 },
-  golemShatter: { p: 'r_stones', v: 0.5, layer: 1 }, rumble: { p: 'r_rumble', v: 0.5, layer: 1 }, geoQuake: { p: 'r_rumble', v: 0.5, layer: 1 }, pyreBoom: { p: 'r_fire', v: 0.4, layer: 1 },
+  golemShatter: { p: 'r_stones', v: 0.5, layer: 1 }, rumble: { p: 'r_rumble', v: 0.5, layer: 1 }, geoQuake: { p: 'r_rumble', v: 0.5, layer: 1 }, geoPlant: { p: 'r_thud', v: 0.5, r: 0.8, layer: 1 }, geoBlast: { p: 'r_rumble', v: 0.55, r: 0.9, layer: 1 }, pyreBoom: { p: 'r_fire', v: 0.4, layer: 1 },
   ropeHaul: { p: 'r_creak', v: 0.35, r: 0.9 }, gateDrop: { p: 'r_gate', v: 0.5 }, gateLift: { p: 'r_chain', v: 0.4, r: 0.8 }, gateOpen: { p: 'r_door', v: 0.4 },
   mend: { p: 'r_chime', v: 0.3, r: 0.9, layer: 1 }, aegis: { p: 'r_chime', v: 0.25, r: 1.3 },
   rattle: { p: 'r_rattle', v: v => 0.28 * (v ?? 1) }, haft: { p: 'r_haft', v: 0.35 }, tipRing: { p: 'r_ring', v: 0.25, r: 1.2 }, braceSet: { p: 'r_latch', v: 0.35 },

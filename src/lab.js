@@ -262,6 +262,8 @@ export const ULT_BOT = (BK, P, h, ad, dy) => { if (P.cWas || !(P.ground || P.swi
   if (h === 'geomancer') { const G = BK.geo && BK.geo(); return !!G && G.avalancheReady() && ad < 220 && Math.abs(dy) < 40; }
   if (h === 'ranger') { const R = BK.rgk && BK.rgk(); return !!R && R.greatReady() && ad > 50 && ad < 300 && Math.abs(dy) < 30; }
   return false; };
+/* (claude/geopop e) DOWN+C: the geomancer blows her board when two or more stones stand and a foe is in the radius of one (an AVALANCHE at a full board is spent first - ULT_BOT) */
+export const DET_BOT = (BK, P, h) => { if (h !== 'geomancer' || P.cWas || !(P.ground || P.swim) || P.atk >= 0 || P.charge > 0 || P.blastT > 0) return false; const G = BK.geo && BK.geo(); return !!G && !!G.detonateWorth && G.detonateWorth(); };
 export const LAST_CHARGE = (P, ad, dy) => (P.links || 0) >= 3 && P.ground && !P.cWas && !(P.lcBrace > 0) && !(P.lcLeft > 0) && ad < 140 && Math.abs(dy) < 24;
 
 /* THE KEY VERB. The family table in main.js (FAMILY, read through BK.keyOf) says what each common body wants: the right tool lands half
@@ -425,6 +427,7 @@ function labBotFrame(BK, h, e, f) {
   }
   { const fire = fireAt(BK, P.x, P.y); if (fire && !(h === 'pyro')) { const away = Math.sign(P.x - fire.x) || -Math.sign(d) || 1; k.left = away < 0; k.right = away > 0; k.atk = false; k.block = false; } }   /* (her own fire does not burn her) */
   if (h === 'knight' && !threat && !k.atk && !(P.charge > 0) && LAST_CHARGE(P, ad, e.y - P.y)) { k.left = false; k.right = false; k.up = true; k.block = true; }
+  if (h === 'geomancer' && !threat && !k.atk && !(k.up && k.block) && DET_BOT(BK, P, h)) { k.left = false; k.right = false; k.up = false; k.down = true; k.block = true; }   /* (claude/geopop) DOWN+C: DETONATE (the ultimate below overrides it at a full board) */
   if ((h === 'geomancer' || h === 'ranger') && !threat && !k.atk && ULT_BOT(BK, P, h, ad, e.y - P.y)) { P.face = Math.sign(d) || P.face; k.left = false; k.right = false; k.up = true; k.block = true; }   /* (claude/ults) UP+C at a full meter */
   { const sn = snatchNow(BK, h); if (sn) { P.face = Math.sign(sn.x - P.x) || P.face; k.block = !P.cWas; k.up = false; k.down = false; } }   /* (claude/heropassa) ARROW SNATCH */
   return { defend, swing };
@@ -1893,6 +1896,7 @@ async function runbossLab(BK, opts) {
         if(pl.atk&&P.atk<0){P.face=pl.face||P.face;if(pl.up)k.up=true;BK.press('atk');swings++;}
         if(hqOpen(boss)&&!wasOpen)opened++;wasOpen=hqOpen(boss);
         if(h==='geomancer'&&pl&&!pl.block&&!pl.dodge&&!pl.jump&&P.ground&&!k.atk&&boss.mode!==undefined&&ULT_BOT(BK,P,h,Math.abs(boss.x-P.x),boss.y-P.y)){P.face=Math.sign(boss.x-P.x)||P.face;k.left=k.right=k.jump=false;k.up=true;k.block=true;}   /* (claude/geotune) AVALANCHE (UP+C at a full board): the bespoke boss hands never spent it, so the bot measured a geomancer with no ultimate */
+        if(h==='geomancer'&&pl&&!pl.block&&!pl.dodge&&!pl.jump&&P.ground&&!k.atk&&!(k.up&&k.block)&&boss.mode!==undefined&&DET_BOT(BK,P,h)){k.left=k.right=k.jump=k.up=false;k.down=true;k.block=true;}   /* (claude/geopop) DOWN+C: DETONATE at >= 2 stones with the boss in a stone's radius */
         const was=P.hp,m0=boss.mode;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(m0,Math.max(0,was-P.hp));if(opts.onFrame)await opts.onFrame({boss,P,f,h,lvl:lvId,open:hqOpen(boss),why:pl.why});if(f%600===599)await yieldNow();continue;
       }
       if(boss.t==='grubbag'){
@@ -1949,6 +1953,7 @@ async function runbossLab(BK, opts) {
         if(pl.atk&&P.atk<0){P.face=pl.face||P.face;BK.press('atk');swings++;}
         if(bbOpen(boss)&&!wasOpen)opened++;wasOpen=bbOpen(boss);
         if(h==='geomancer'&&pl&&!pl.block&&!pl.dodge&&!pl.jump&&P.ground&&!k.atk&&boss.mode!==undefined&&ULT_BOT(BK,P,h,Math.abs(boss.x-P.x),boss.y-P.y)){P.face=Math.sign(boss.x-P.x)||P.face;k.left=k.right=k.jump=false;k.up=true;k.block=true;}   /* (claude/geotune) AVALANCHE (UP+C at a full board): the bespoke boss hands never spent it, so the bot measured a geomancer with no ultimate */
+        if(h==='geomancer'&&pl&&!pl.block&&!pl.dodge&&!pl.jump&&P.ground&&!k.atk&&!(k.up&&k.block)&&boss.mode!==undefined&&DET_BOT(BK,P,h)){k.left=k.right=k.jump=k.up=false;k.down=true;k.block=true;}   /* (claude/geopop) DOWN+C: DETONATE at >= 2 stones with the boss in a stone's radius */
         const was=P.hp,m0=boss.mode;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(m0,Math.max(0,was-P.hp));if(opts.onFrame)await opts.onFrame({boss,P,f,h,lvl:lvId,open:bbOpen(boss),why:pl.why});if(f%600===599)await yieldNow();continue;
       }
       if(boss.t==='oldtusker'){
@@ -1983,6 +1988,7 @@ async function runbossLab(BK, opts) {
         if(h==='geomancer'&&!geoOpen&&!geoPine&&k.atk&&P.charge>0&&geoCrackGo(BK,false))k.atk=false;   /* (claude/chargetiers) a wind this branch no longer wants (k.atk is kept between its frames) goes at the FAULT LINE - where the full wind used to let itself go, not on into the pillar */
         if(otOpen(boss)&&!wasOpen)opened++;wasOpen=otOpen(boss);
         if(h==='geomancer'&&pl&&!pl.block&&!pl.dodge&&!pl.jump&&P.ground&&!k.atk&&boss.mode!==undefined&&ULT_BOT(BK,P,h,Math.abs(boss.x-P.x),boss.y-P.y)){P.face=Math.sign(boss.x-P.x)||P.face;k.left=k.right=k.jump=false;k.up=true;k.block=true;}   /* (claude/geotune) AVALANCHE (UP+C at a full board): the bespoke boss hands never spent it, so the bot measured a geomancer with no ultimate */
+        if(h==='geomancer'&&pl&&!pl.block&&!pl.dodge&&!pl.jump&&P.ground&&!k.atk&&!(k.up&&k.block)&&boss.mode!==undefined&&DET_BOT(BK,P,h)){k.left=k.right=k.jump=k.up=false;k.down=true;k.block=true;}   /* (claude/geopop) DOWN+C: DETONATE at >= 2 stones with the boss in a stone's radius */
         const was=P.hp,m0=boss.mode;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(m0,Math.max(0,was-P.hp));if(opts.onFrame)await opts.onFrame({boss,P,f,h,lvl:lvId,open:otOpen(boss),why:pl.why});if(f%600===599)await yieldNow();continue;
       }
       if(boss.t==='tombking'){
@@ -3079,6 +3085,7 @@ async function runbossLab(BK, opts) {
       if (valiantWall && !tell && !rushing && P.ground && ad <= reach + 4 && !cutGo) { P.face = Math.sign(d) || P.face; k.left = k.right = false; k.block = false; k.atk = true; }
       { const sn = snatchNow(BK, h); if (sn) { P.face = Math.sign(sn.x - P.x) || P.face; k.block = !P.cWas; } }   /* (claude/heropassa) ARROW SNATCH */
       if (h === 'knight' && !valiantWall && open && !tell && !rushing && !k.block && LAST_CHARGE(P, ad, boss.y - P.y)) { P.face = Math.sign(d) || P.face; k.left = false; k.right = false; k.jump = false; k.up = true; k.block = true; }
+      if (h === 'geomancer' && !tell && !rushing && !k.block && DET_BOT(BK, P, h)) { k.left = false; k.right = false; k.jump = false; k.up = false; k.down = true; k.block = true; }   /* (claude/geopop) DOWN+C: DETONATE (the ultimate below overrides it at a full board) */
       if ((h === 'geomancer' || h === 'ranger') && !tell && !rushing && !k.block && ULT_BOT(BK, P, h, ad, boss.y - P.y)) { P.face = Math.sign(d) || P.face; k.left = false; k.right = false; k.jump = false; k.up = true; k.block = true; }   /* (claude/ults) UP+C at a full meter */
       /* (claude/bztune) THE BERSERKER'S OWN KEYS. FRENZY IS DOWN+C at a full bar (a plain C there is TAKE IT, which the beat-taps already use);
          the bar is spent as a player spends it - near the boss, between his tells. THE POUNCE: coiled (DOWN held 0.4 s) then DOWN let go with a way held,
