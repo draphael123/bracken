@@ -9,9 +9,11 @@
            node tools/restamp.mjs --all                    every campaign level whose row is STALE (hash differs), or MISSING where the gate needs one
            add --dry  (list what is due, run nothing)   --boss (also re-run boss/mini mash rows)   --only=pilot,curve,mash,boss   --no-verify
    One headless browser at a time (each part is a child node process; >= 1500 MB free RAM is checked before each, BROWSER-HOLD.flag aborts; no waiting - it stops and
-   says what is left). Prints old -> new per row; a jump over 15% (and 3+ in absolute terms) is flagged WARN: look at it, do not just commit it. Ends by re-running the
+   says what is left). Prints old -> new per row; a jump over 15% (and 3+ in absolute terms) is flagged WARN: look at it, do not just commit it. (claude/botstats) A WARN jump on a pilot/curve row is RE-RUN ONCE on a second seed block (--seed=2; --no-rerun to skip): both readings are printed, and when they disagree by more than their noise the row is written as the mean of the two (curve rows keep every per-run value) and labelled NOISY +/-x; a jump both seeds agree on is a real WARN.
+   Ends by re-running the
    no-browser checks (level-quality <id>, curve-gate, mash-gate) unless --no-verify. Exit 1 if a part failed or a verify check is red; WARN alone exits 0. */
-import { readFileSync, existsSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync } from 'node:fs';
+import { runStats, disagree } from './rate-stats.mjs';
 import { spawn, spawnSync } from 'node:child_process';
 import { freemem } from 'node:os';
 import { fileURLToPath } from 'node:url';
@@ -72,7 +74,23 @@ for (let i = 0; i < due.length; i++) { const t = due[i];
   const before = rd(FILE[t.part])[t.id]; console.log('restamp: [' + (i + 1) + '/' + due.length + '] ' + t.id + ' ' + t.part + ' (' + freeMb() + ' MB free)');
   const r = await run(cmdOf(t)), after = rd(FILE[t.part])[t.id], errLine = /\bERR\b|Error:|no such level/i.test(r.out) ? r.out.split('\n').filter(l => /\bERR\b|Error:|no such level/i.test(l)).slice(0, 2).join(' | ') : '';
   if (r.code !== 0 || !after || after.hash !== hash[t.id]) { failed++; console.log('  FAILED ' + t.id + ' ' + t.part + ' (exit ' + r.code + (after && after.hash !== hash[t.id] ? ', row not re-stamped' : '') + ') ' + errLine + '\n' + r.out.split('\n').slice(-6).join('\n')); continue; }
-  done++; const d = diffRow(t.part, t.id, before, after);
+  done++; const w0 = warns.length; let d = diffRow(t.part, t.id, before, after);
+  if (d.some(x => / WARN$/.test(x)) && (t.part === 'pilot' || t.part === 'curve') && !has('no-rerun') && !(flag('BROWSER-HOLD.flag')) && freeMb() >= MIN_MB) {
+    const nWarn = w0, A = after, dA = d.slice(); console.log('  WARN jump: re-running once on a second seed block (--seed=2)');
+    const r2 = await run(cmdOf(t).concat(['--seed=2'])), B = rd(FILE[t.part])[t.id];
+    if (r2.code !== 0 || !B || B.hash !== hash[t.id]) { console.log('  rerun FAILED (exit ' + r2.code + '); the first reading stands'); if (A) { const all = rd(FILE[t.part]); all[t.id] = A; writeFileSync(FILE[t.part], JSON.stringify(all, null, 1) + '\n'); } }
+    else {
+      const num = k => (A[k] !== undefined && B[k] !== undefined) ? Math.round((A[k] + B[k]) / 2) : B[k], sa = runStats(A.lostRuns || []), sb = runStats(B.lostRuns || []);
+      console.log('    reading 1 (seed 1): ' + dA.join('; ')); console.log('    reading 2 (seed 2): ' + diffRow(t.part, t.id, before, B).join('; '));
+      const noisy = A.lostRuns && B.lostRuns ? disagree(sa, sb) : Math.abs((A.hits ?? 0) - (B.hits ?? 0)) > Math.max(3, 0.15 * Math.abs(A.hits ?? 0));
+      const M = { ...B }; for (const k of ['hits', 'deaths', 'kills', 'lifts', 'walked']) M[k] = num(k);
+      if (A.lostRuns && B.lostRuns) { const lr = A.lostRuns.concat(B.lostRuns), st = runStats(lr); Object.assign(M, { lostPct: Math.round(st.mean), lostRuns: lr, lostSd: st.sd, lostSe: st.se, deathsRuns: (A.deathsRuns || []).concat(B.deathsRuns || []), hitsRuns: (A.hitsRuns || []).concat(B.hitsRuns || []), runs: lr.length, seed: [A.seed, B.seed] });
+        M.deaths = Math.round((A.deaths + B.deaths) / 2); M.hits = Math.round((A.hits + B.hits) / 2); }
+      const all = rd(FILE[t.part]); all[t.id] = M; writeFileSync(FILE[t.part], JSON.stringify(all, null, 1) + '\n');
+      warns.length = nWarn; d = diffRow(t.part, t.id, before, M); const real = d.some(x => / WARN$/.test(x));
+      console.log('    ' + (noisy ? 'NOISY +/-' + (A.lostRuns ? Math.round(Math.abs(sa.mean - sb.mean) / 2) + ' (lostPct ' + sa.mean + ' vs ' + sb.mean + '; row written as the mean of both)' : 'the two seeds disagree; row written as the mean of both') : 'the two seeds AGREE: the jump is real') + (real ? ' - still a WARN vs the old row' : ' - within the old row reach after averaging'));
+    }
+  }
   console.log('  ' + (before ? 'hash ' + before.hash + ' -> ' + after.hash : 'NEW row, hash ' + after.hash) + (d.length ? '\n    ' + d.join('\n    ') : '\n    (numbers unchanged)')); changes.push(...d);
 }
 console.log('\nrestamp summary: ' + done + '/' + due.length + ' row(s) re-stamped, ' + failed + ' failed' + (left.length ? ', ' + left.length + ' NOT RUN (' + left.map(t => t.id + ':' + t.part).join(', ') + ')' : '') + ', ' + warns.length + ' WARN jump(s) over ' + WARN_PCT + '%' + (warns.length ? ': ' + warns.join('; ') + ' - a human should look before committing' : ''));
