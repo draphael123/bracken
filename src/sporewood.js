@@ -134,7 +134,7 @@ export function buildSporewood({ painter, T, TS }) {
   lantern(108, 30);                                                                 /* LANTERN ONE, on the first step: the teach */
   glow(114, 33); foe('brute', 114, 33, 'hollowSteps', { face: -1 }); foe('spitcap', 111, 33, 'hollowSteps', { face: -1 });   /* (platwins1: the terrace's heavy and spitcap, moved down off the climb) */
   /* the first LURKER, by the second lantern: strike the lantern and its light dazzles him out of his cap (a sign at the point of use) */
-  lantern(120, 37); foe('lurker', 125, 37, 'hollowA'); foe('brute', 128, 37, 'hollowA', { face: -1 }); foe('shield', 134, 37, 'hollowB', { face: -1 });   /* (a guard at the dark bud's lantern: light it under his blade) */
+  lantern(120, 37); foe('lurker', 125, 37, 'hollowA'); foe('brute', 128, 37, 'hollowA', { face: -1 }); foe('shield', 135, 37, 'hollowB', { face: -1 });   /* (a guard at the dark bud's lantern: light it under his blade) */
   sign(118, 37, "LURKERS HIDE AMONG THE CAPS. A LANTERN'S LIGHT DAZZLES THEM OUT.");
   plank(118, 127, 35);                                                              /* a root shelf over the hollow floor (well short of the dark bud's wall) */
   coins([122, 36], [127, 36], [131, 36]);
@@ -179,7 +179,7 @@ export function buildSporewood({ painter, T, TS }) {
   bud(208, 26, { rise: 16, lean: 112, growT: 1.6 }); sign(204, 27, 'THIS CAP LEANS. STOP ON IT AT THE EDGE AND IT CARRIES YOU ACROSS.');
   coins([207, 24], [212, 22], [215, 22]); foe('archer', 230, 21, 'stalk3', { face: -1 });   /* (a goblin forager's bow over the crossing - the Stockade's, come down into the fungus) */
   /* stalk two: a bud under a spore drop against stalk three's wall (four rows) */
-  ground(218, 221, 26); bud(220, 26); drip(221, 2.7); foe('shield', 219, 25, 'stalk2', { face: -1 });
+  ground(218, 221, 26); bud(220, 26); drip(221, 2.7); foe('shield', 218, 25, 'stalk2', { face: -1 });
   ground(222, 232, 22); stair(232, 22, 40);
   foe('spitcap', 227, 21, 'stalk3', { face: -1 }); foe('brute', 224, 21, 'stalk3', { face: -1 });   /* (where the bud sets you down) */   /* the spitcap on the lip over the bud */
   coins([224, 20], [229, 20]); plank(224, 229, 19);
@@ -190,7 +190,7 @@ export function buildSporewood({ painter, T, TS }) {
   air(233, 235, 27, 42); air(239, 240, 27, 42); deco(232, 21, 'warnPost', 0); deco(241, 21, 'warnPost', 1);
   sign(229, 21, 'THE BOUNCE STALK THROWS YOU UP TO THE HIGH STALK. NO FLOOR UNDER IT: MISS AND YOU FALL.'); sign(248, 21, 'THE CAP LADDER: NO FLOOR UNDER IT. THE BOG KEEPS WHAT FALLS IN.');
   ground(241, 251, 22);
-  foe('drone', 247, 17, 'highStalk', { perch: true }); foe('brute', 243, 21, 'highStalk', { face: -1 }); foe('lurker', 248, 21, 'highStalk'); lantern(244, 21);   /* (its lantern: strike it and the lurker is dazzled out of its cap) */ drip(244, 2.8);   /* (where the bounce throws you: a heavy, the gap at your back) */
+  foe('drone', 247, 17, 'highStalk', { perch: true }); foe('sporeling', 242, 21, 'highStalk', { face: -1 }); foe('sporeling', 246, 21, 'highStalk', { face: -1 });   /* (claude/demofoes 11-03: the cap-brute chain 192-286 was four heavies in 62 columns; the high stalk's heavy is a sporeling pair now) */  foe('lurker', 248, 21, 'highStalk'); lantern(244, 21);   /* (its lantern: strike it and the lurker is dazzled out of its cap) */ drip(244, 2.8);   /* (where the bounce throws you: a heavy, the gap at your back) */
   mend(245, 21); puff(247, 21);
   /* THE HIGH SILVER: a cap hung high over the bog (on a stalk of its own), reached off the spring spore of the puffball under it - or a plunged bounce */
   plank(246, 249, 16); ent('silver', 248, 15); coins([246, 15], [249, 15]);
@@ -204,7 +204,7 @@ export function buildSporewood({ painter, T, TS }) {
   air(252, 258, 23, 42); deco(251, 21, 'warnPost', 0); deco(259, 21, 'warnPost', 1);
   ground(259, 264, 22);
   bud(263, 22); drip(264, 2.9); ground(265, 274, 18);
-  foe('spitcap', 268, 17, 'ladder', { face: -1 }); foe('brute', 266, 17, 'ladder', { face: -1 }); foe('shield', 272, 17, 'ladder', { face: -1 }); foe('archer', 274, 17, 'ladder', { face: -1 }); plank(266, 272, 15);
+  foe('spitcap', 268, 17, 'ladder', { face: -1 }); foe('sporeling', 266, 17, 'ladder', { face: -1 }); foe('sporeling', 270, 17, 'ladder', { face: -1 });   /* (claude/demofoes 11-03: the ladder's heavy -> a sporeling pair; the brutes keep 192, 224 and 286) */  foe('shield', 272, 17, 'ladder', { face: -1 }); foe('archer', 274, 17, 'ladder', { face: -1 }); plank(266, 272, 15);
   sign(261, 21, 'THE CAP LADDER: LEAN, GROW, BOUNCE.');
   air(275, 282, 0, 22); ground(275, 282, 23); for (const x of [276, 279, 282]) spring(x, 23);
   ground(283, 300, 19); plank(284, 292, 16); foe('brute', 286, 18, 'ladderTop', { face: -1 });   /* (where the well throws you: a heavy on the lip) */
@@ -257,7 +257,7 @@ export function buildSporewood({ painter, T, TS }) {
   air(381, 386, 6, 8); spring(380, 9); ent('silver', 385, 8); coins([382, 8], [384, 8]); glow(383, 8);   /* the knot's cellar: the third silver; a bounce cap under the door to spring back out */
   /* her approach: gill pods, skulls, her roots across the way; the last fight before her door - a BRUTE (the weighty one) and a sporeling */
   for (const [x, k, v] of [[382, 'sporePod', 1], [389, 'skullPile', 0], [393, 'rootDecor', 2], [398, 'sporePod', 0], [402, 'skullPile', 1]]) deco(x, 4, k, v);
-  foe('brute', 400, 4, 'knotDoor', { face: -1 }); foe('shield', 402, 4, 'knotDoor', { face: -1 });
+  foe('brute', 400, 4, 'knotDoor', { face: -1 }); foe('shield', 403, 4, 'knotDoor', { face: -1 });
   /* HER APPROACH'S FALL (claude/sporewood2tune): the last stretch before her door breaks in a REAL GAP, seven wide, no floor, a pillar of THREE bounce caps in it (integ117: three, not two - the paladin's thrown carry fell 23 px short of the far lip over a two-cap pillar) - hop on, be thrown over. A heavy waits where it throws you. Told: the post each side, the sign */
   air(392, 398, 5, 42); ground(394, 396, 5); spring(394, 5); spring(395, 5); spring(396, 5); deco(391, 4, 'warnPost', 0); deco(399, 4, 'warnPost', 1);
   sign(388, 4, 'THE ROOT BREAKS HERE. HOP ONTO THE BOUNCE CAPS: THEY THROW YOU OVER. MISS AND YOU FALL.');

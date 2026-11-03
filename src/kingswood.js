@@ -95,7 +95,7 @@ export function buildKingswood({ painter, T, TS }) {
   ground(92, 104, 31);
   plank(96, 99, 28); foe('archer', 97, 27, 'gatehouse', { face: 1, perch: true }); deco(99, 30, 'banner', 0);
   rope('captainCage', { x: 102, top: 20, hang: 25, cleat: [95, 30], load: 'cage' });
-  foe('brute', 102, 30, 'gatehouse', { face: -1 }); foe('shield', 99, 30, 'gatehouse', { face: -1 });
+  foe('brute', 102, 30, 'gatehouse', { face: -1 }); foe('shield', 100, 30, 'gatehouse', { face: -1 });
   ent('lever', 93, 30, { ram: 105 }); ent('ram', 105, 26, { hang: true });       /* the gatehouse's ram: the lever swings it through whatever stands under the arch */
   sign(93, 30, 'THE GATE CAPTAIN HOLDS THE ROAD. HIS CAGE HANGS OVER HIM; THE LEVER SWINGS THE RAM.');
   ground(105, 107, 34);                                                            /* the dip at his back (three deep: a knock-back costs the climb) */
@@ -251,7 +251,8 @@ export function buildKingswood({ painter, T, TS }) {
   coins([520, 9], [528, 9], [536, 10]);
   /* the road again: a torch goblin pair, a fallen trunk to hop */
   ground(542, 559, 14);
-  foe('sprig', 549, 13, 'run2', { face: -1, kw: { torch: true } }); foe('sprig', 555, 13, 'run2', { face: -1, kw: { torch: true } });
+  /* (claude/demofoes 11-03, Daniel's fire-foe pick: the escape was six sprigs and nothing else - an ember wisp drifts where the first torch goblin was, a burning goblin walks the road behind it; the other torch goblins (507, 584, 620) keep the told beats) */
+  foe('emberwisp', 549, 13, 'run2', { perch: true }); foe('burngob', 553, 13, 'run2', { face: -1 });
   block(557, 558, 13, 13);
   /* (claude/kingsfix2) THE BOUGH BRIDGE (560-599, the escape's one more told beat; Daniel 10-23): the floor under it is ALL burning ground, and the way over it is a road of
      BOUGHS THAT BURN THROUGH - six cracked limbs a gap apart, each one goes a beat after you stand on it (src/tower-collapse.js, the crack and the dust tell it; it is back
@@ -270,7 +271,7 @@ export function buildKingswood({ painter, T, TS }) {
   plank(571 + SH, 575 + SH, 10); plank(578 + SH, 582 + SH, 9); plank(582 + SH, 584 + SH, 14); plank(582 + SH, 584 + SH, 12);   /* (a bough ladder up the ravine's east wall: a fall is a climb out of the fire) */
   foe('sprig', 580 + SH, 8, 'ravine', { face: -1, kw: { torch: true }, perch: true });
   ground(585 + SH, 600 + SH, 10);
-  foe('sprig', 589 + SH, 9, 'ravine', { face: -1 });
+  foe('burngob', 589 + SH, 9, 'ravine', { face: -1 });   /* (claude/demofoes 11-03: was a plain sprig - a burning goblin holds the ravine's far lip) */
   coins([573 + SH, 9], [580 + SH, 8], [587 + SH, 9]);
   sign(492, 13, 'THE WOOD BURNS BEHIND YOU. RUN EAST, UP INTO THE BOUGHS OVER THE BURNING GROUND.');
   ent('check', 595 + SH, 9);                                                       /* SHRINE: the wood is behind you - his glade below */
