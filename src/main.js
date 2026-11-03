@@ -7512,6 +7512,9 @@ function dipUnderfoot(tier) { if (!L || P.onMover || P.swim) return; const ty = 
   for (const tx of new Set([Math.floor((P.x - 4) / TS), Math.floor((P.x + 4) / TS)])) { const i = ty * LW + tx; if (WR.dippable(L.grid[i], T, sf)) idx.push(i); }
   if (!idx.length) return; if (creakT <= 0 && (tier > 0 || fxRand() < 0.5)) { creakT = 0.6; SFX.creak(); }
   if (SET.reduceMotion) return; WR.dipLand(WRD, idx, tier ? 0.2 : 0.14); P.dipT = tier ? 0.2 : 0.14; }
+/* (claude/jabart) THE STONE FIST'S KNOCK-UP, SEEN: grit off the foe's feet, a ring at the point of the blow, and rock chips thrown up that arc over and fall - the foe's own flight is the geomancer's (fistHit) */
+function geoFistFx(e) { if (!e || !e.alive || !(e.launchedT > time)) return; const x = e.x, y = e.y, h = e.h || 16; dust(x, y, 8); ringAt(x, y - 2, 14, '#e8a83a', 0.3); ringAt(P.x + P.face * 22, P.y - 12, 12, '#fff0c0', 0.2);
+  for (let i = 0; i < 9; i++) parts.push({ x: x + (Math.random() - 0.5) * 10, y: y - h * 0.3, vx: (Math.random() - 0.5) * 60 + P.face * 14, vy: -130 - Math.random() * 90, life: 0.8, max: 0.8, col: i % 3 === 0 ? '#e8a83a' : i % 3 === 1 ? '#8c8a7e' : '#c9b27c', size: i % 2 ? 2 : 1, grav: 260 }); }
 function dust(x, y, n = 4) { for (let i = 0; i < n; i++) parts.push({ x: x + (Math.random() - 0.5) * 8, y, vx: (Math.random() - 0.5) * 40, vy: -20 - Math.random() * 20, life: 0.3, max: 0.3, col: '#c9b27c', size: 2, grav: 60 }); }
 /* THE PICKUPS ARE BIGGER. A key or a quest item is why you went down that side passage, and at ten pixels it
    was the size of a coin lying on the floor. Each small icon is drawn at twice its size, baked once, pixel for pixel. */
@@ -9608,6 +9611,8 @@ const guardedFoe = e => (e.guardT || 0) > 0 || (e.rxGuard || 0) > 0 || (e.raHigh
 function knightRider(e) {
   if (!e || P.dead) return;
   if (P.kBash3 && !P.swingRiposte && !P.heavy) {   /* THE THIRD JAB: the shield bash */
+    if (e.alive && P.bashFxAt !== time) { P.bashFxAt = time; const bx = P.x + P.face * 23, by = P.y - 11;   /* (claude/jabart) THE SHIELD BASH LANDS, SEEN AND HEARD: a steel flash at the rim, a ring, sparks and dust off the heel, and the heavier clank (art/feel only) */
+      impactAt(bx, by, 'steel'); ringAt(bx, by, 16, '#fff6e0', 0.26); sparks(bx, by, P.face, 9); dust(P.x + P.face * 6, P.y, 6); shakeCam(3, P.face * 2); (SFX.stompClank || SFX.clank)(); }
     if (e.alive && lcBig(e)) { poiseLeanK(e, 16); e.flash = Math.max(e.flash || 0, 0.12); number(e.x, e.y - e.h - 18, 'BRACED', '#c9d1dc'); }
     else if (e.alive && guardedFoe(e) && !(e.broken > 0)) { e.broken = 0.9; e.guardT = 0; e.rxGuard = 0; e.raHigh = 0; e.vx = 0; number(e.x, e.y - (e.h || 16) - 24, 'GUARD BROKEN', '#ffd36b'); SFX.clank(); sparks(e.x, e.y - (e.h || 16) / 2, P.face, 7); }
     return; }
@@ -11641,7 +11646,7 @@ else if (P.stepHeld > 0 && !P.swim) { P.stepHeld = Math.max(0, P.stepHeld - dt);
       if ((e.t === 'shield' || e.t === 'merrowbrute') && front && !throughGuard(e) && !(e.broken > 0) &&!(e.elite && e.mode === 'elDazed')) {   /* (a shield captain turned or run into a wall has his shield flung wide; the merrow brute's clam shell does the same job) */
         guardTurned(e); SFX.clank(); hitstop(0.05); P.vx = e.face * 170; P.vy = Math.min(P.vy, -70); P.ground = false; e.stagger = 0.4; P.atk = 0.22; shakeCam(2, e.face * 2);
         sparks(e.x + e.face * 8, e.y - 8, e.face, 7);
-      } else { heroCut(e); swordEffect(e); if (isReaper()) dkLanded(e); if (isGeo() && GEO && P.heavySwing && !P.heavy && !P.swingKind && !P.plunge && !dashStriking() && e.alive) GEO.fistHit(e);   /* (claude/geoid) THE STONE FIST: her third jab knocks up */ if (dashStriking()) dashStrikeHit(e); if (P.swingKind && e.alive && e.glancedAt !== time) swingKindHit(e);   /* a glancing sweep trips nothing, a glancing rise lifts nothing */
+      } else { heroCut(e); swordEffect(e); if (isReaper()) dkLanded(e); if (isGeo() && GEO && P.heavySwing && !P.heavy && !P.swingKind && !P.plunge && !dashStriking() && e.alive) { GEO.fistHit(e); geoFistFx(e); }   /* (claude/geoid) THE STONE FIST: her third jab knocks up */ if (dashStriking()) dashStrikeHit(e); if (P.swingKind && e.alive && e.glancedAt !== time) swingKindHit(e);   /* a glancing sweep trips nothing, a glancing rise lifts nothing */
         if (P.heavy && e.alive) { // a heavy blow moves whatever it lands on, and SUNDER leaves it open
           const ram = (P.bashing && tal('bash') ? 2 : 1) * (P.bashing ? 1 + 0.15 * prk('kbash') : 1);   /* BULL RUSH: the charge's bash staggers twice as long */
           if (!e.maxHp && !(P.bashing && e.mini)) { e.stagger = Math.max(e.stagger || 0, 0.6 * ram); e.vx = P.face * 200; e.vy = Math.min(e.vy || 0, -40); }
@@ -35073,6 +35078,8 @@ function drawWorld(cx, cy, showPlayer) {
       else if (P.charge > 0 && isRg() && P.rgKneel && (K.R.rgKneelDraw || K.R.crouch)) { const kw = Math.min(1, P.charge / heavyWind()); key = K.R.rgKneelDraw ? 'rgKneelDraw' : 'crouch'; frame = K.R.rgKneelDraw ? (kw >= 0.78 ? 2 : kw >= 0.38 ? 1 : 0) : 0; }   /* (claude/heropassa) THE KNEELING DRAW: down on one knee (greybox: her crouch; art lane: rgKneelDraw, three beats of the draw) */
       else if (P.charge > 0) { const kw = Math.min(1, P.charge / heavyWind());   /* THE WIND-UP has its own frames where a hero has them: hers load the lunge, the knight's brace behind the shield */
         key = K.R.windup ? 'windup' : K.R.brace ? 'brace' : 'heavy'; frame = K.R.windup ? (kw >= 0.78 ? 2 : kw >= 0.38 ? 1 : 0) : 0; }   /* (the last beat is drawn BEFORE the bar fills, or the coil is never seen: a full wind fires itself the frame it arrives) */
+      else if (P.atk >= 0 && P.kBash3 && !P.swingRiposte && !P.swingKind && !P.heavy && P.ground && hero() === 'knight' && K.R.kBash3) { key = 'kBash3'; frame = P.atk < 0.04 ? 0 : P.atk < 0.10 ? 1 : P.atk < 0.16 ? 2 : P.atk < 0.24 ? 3 : 4; }   /* (claude/jabart) THE THIRD JAB IS THE SHIELD BASH, and it is DRAWN as one: cocked, the step, the kite shoved out at arm's length, the ring (chars.js F.kBash3) - it was the sword thrust */
+      else if (P.atk >= 0 && isGeo() && P.heavySwing && !P.swingRiposte && !P.swingKind && !P.heavy && !P.plunge && P.ground && K.R.gFist) { key = 'gFist'; frame = P.atk < 0.05 ? 0 : P.atk < 0.10 ? 1 : P.atk < 0.18 ? 2 : P.atk < 0.25 ? 3 : 4; }   /* (claude/jabart) THE STONE FIST, DRAWN: the rock gauntlet gathering, forming, thrown, crumbling (chars.js F.gFist) - it was the staff spin */
       else if (P.atk >= 0 && P.swingRiposte && K.R.ripo && P.ground && !P.swingKind) { key = 'ripo'; frame = RP.ripoFrame(P); }   /* (claude/riposteart) THE RIPOSTE STRIKE out of the parry: the step-in, the cut or thrust with its gold flash, the follow-through - each hero's own weapon */
       else if (P.atk >= 0 && CA && CA.atkPose(K.R)) { [key, frame] = CA.atkPose(K.R); }   /* THE SHIELD TRIP and THE LOW POKE, from the crouch (src/crouch-a.js) */
       else if (P.atk >= 0) { const pose = attackPose(hero(), P, K.R); key = pose.key; frame = pose.frame; }
@@ -35109,7 +35116,7 @@ function drawWorld(cx, cy, showPlayer) {
       else if (CRB && CRB.pose(K.R)) { [key, frame] = CRB.pose(K.R); }
       else if (CRC && CRC.pose(K.R)) { [key, frame] = CRC.pose(K.R); }   /* THE COIL and THE WHETSTONE (src/crouch-c.js) */   /* KNEEL / SENSE / HARVEST (src/crouch-b.js): the crouch at work */
       else if (P.ducking || (keys.down && Math.abs(P.vx) < 10)) { key = 'crouch'; const ca = CA && P.ducking ? CA.crouchPose(K.R) : null; if (ca) [key, frame] = ca; }   /* the pose is the hurt box: crouched is DUCK_H tall (src/duck.js) */
-      else if (P.flourishT > 0 && !P.swingRiposte && K.R.atkC && Math.abs(P.vx) < 10 && P.ground) { key = 'atkC'; frame = 3; }
+      else if (P.flourishT > 0 && !P.swingRiposte && K.R.atkC && Math.abs(P.vx) < 10 && P.ground) { key = 'atkC'; frame = 3; if (P.kBash3 && hero() === 'knight' && K.R.kBash3) { key = 'kBash3'; frame = 3; } else if (isGeo() && P.heavySwing && !P.swingKind && K.R.gFist) { key = 'gFist'; frame = 3; } }   /* (claude/jabart: the shield bash and the stone fist hold THEIR OWN last beat, not the thrust's) */
       else if (P.skidT > 0 && K.R.skid) key = 'skid';
       else if (Math.abs(P.vx) < 40 && landPose(P, K.R)) { [key, frame] = landPose(P, K.R); }   /* impact, settle, stand where the hero has three (hero-poses.js) */
       else if (P.fidgetT > 0 && K.R.fidget && Math.abs(P.vx) <= 10) { key = 'fidget'; frame = Math.max(0, Math.min(K.R.fidget.length - 1, K.R.fidget.length - Math.ceil(P.fidgetT / 0.1))); }   /* left standing, each of them has a small business of their own (the clock is in update) */
