@@ -38,3 +38,6 @@ NOT RUN: full suite, textfit, perf, mark-integrity, any gate.
 3. Stale pilot/curve rows (14) pre-existing: REC one restamp lane after BATCH139 (wood curve first).
 4. updates.json date: REC set to the actual ship day.
 5. Burning Pyromancer 57%: REC leave (inside noise of 60).
+
+## FINISH (geotune merge)
+Merged claude/geotune (conflict only in tools/boss-run.mjs, resolved). A11 windcaller red fixed: anti-kite clock was shortening the howl and the fall (src/main.js windingUp + kite skip). Geomancer restamp: no gated rows use her; docs/geomancer/pilots.json refreshed. Hornet Queen pooled 78% -> 76% with BOSS_TRIM dmg 2.0 (still >70, Ranger 12/12). All 12 listed checks green (page crashes retried). Full detail: scratch\lane-reports\batch139-integ.md.
