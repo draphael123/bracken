@@ -757,6 +757,11 @@ const RG_TEACH = { shot: ['rgShotTold', 'TAP X: QUICK SHOT. HOLD X: DRAW. THE BO
 let rgTaughtIn = '';
 function rgTeach(k) { const t = RG_TEACH[k]; if (!t || state !== 'play' || !L || L.trial || (PROG[t[0]] || 0) >= 2 || rgTaughtIn === levelIndex + ':' + k) return; rgTaughtIn = levelIndex + ':' + k; PROG[t[0]] = (PROG[t[0]] || 0) + 1; hintSay('mechanic', 5, typeof t[1] === 'function' ? t[1]() : t[1]); }
 let rgStanceCue = 0;   /* (claude/rangerhud) the stance line follows her first arrow by a few seconds, once a save (twice at most), so it never lands on top of the draw line */
+/* ==== THE GEOMANCER'S WARD, IN WORDS (claude/georead, Daniel 11-02): the beat is the whole payoff of her C and nothing said so. A plain block says where the beat is (twice a save); a perfect one says what it paid ==== */
+const GEO_TEACH = { warded: ['geoWardTold', 'TAP C THE MOMENT A BLOW LANDS: A PERFECT WARD BOUNCES IT AND POWERS YOU UP.'],
+  perfect: ['geoBeatTold', 'ON THE BEAT: BOUNCED BACK. YOUR NEXT BLOWS HIT HARDER FOR A FEW SECONDS.'] };
+
+function geoTeach(k) { const t = GEO_TEACH[k]; if (!t || state !== 'play' || !L || (PROG[t[0]] || 0) >= 2) return; PROG[t[0]] = (PROG[t[0]] || 0) + 1; if (k === 'perfect') PROG.geoWardTold = 2; hintSay('mechanic', 5, t[1]); }
 let bzTaughtIn = '';
 function bzTeach(k) { const t = BZ_TEACH[k]; if (!t || state !== 'play' || !L || L.trial || (PROG[t[0]] || 0) >= 2 || bzTaughtIn === levelIndex + ':' + k || state !== 'play') return; bzTaughtIn = levelIndex + ':' + k; PROG[t[0]] = (PROG[t[0]] || 0) + 1; hintSay('mechanic', 5, t[1]); }
 const TBR = { knight: ['BLADEMASTER', 'SENTINEL', 'VANGUARD'], pyro: ['EMBERCALLER', 'FLAMEKEEPER', 'ASHWALKER'], paladin: ['LIGHTBRINGER', 'BASTION', 'EARTHBREAKER'], pirate: ['GUNNER', 'PLUNDERER', 'DUELIST'], reaper: ['BLOOD', 'THE RED HOST', 'WARD'], warden: ['SPEARHEAD', 'THE DEFLECT', 'SKIRMISHER'], geomancer: ['EARTH', 'WARD', 'TREMOR'], berserker: ['FURY', 'STEEL', 'HIDE'], ranger: ['THE BOW', 'THE HUNT', 'THE WILD'] };
@@ -29621,7 +29626,7 @@ function rangerKit(dt, canAct, tired) {
    handed over by name. ==== */
 const geoTal = () => ({ fourth: tal('geoFourth'), lasting: tal('geoLasting'), tall: tal('geoTall'), hardLand: tal('geoHardLand'), returnFire: tal('geoReturn'),
   shrapnel: tal('geoShrapnel'), bulwark: tal('geoBulwark'), rumble: tal('geoRumble'), wideQuake: tal('geoWideQuake'), aftershock: tal('geoAftershock') });   /* (claude/ults: rumble = the AVALANCHE boulders roll half as far again, wideQuake = they hit half again as hard) */
-GEO = makeGeomancer({ get boss() { return boss; }, refund: n => CM.refund(P, n), tierNow: () => geoTierNow(),   /* (claude/chargetiers: THE RISING PILLAR gives her wind back as it rises) */ get P() { return P; }, get players() { return players; }, get L() { return L; }, get enemies() { return enemies; }, get seeds() { return seeds; }, get time() { return time; },
+GEO = makeGeomancer({ teach: k => geoTeach(k), get boss() { return boss; }, refund: n => CM.refund(P, n), tierNow: () => geoTierNow(),   /* (claude/chargetiers: THE RISING PILLAR gives her wind back as it rises) */ get P() { return P; }, get players() { return players; }, get L() { return L; }, get enemies() { return enemies; }, get seeds() { return seeds; }, get time() { return time; },
   T, TS, get LW() { return LW; }, get LH() { return LH; }, get tileSpr() { return tileSpr; },
   isSolid: (x, y) => isSolid(x, y), tileAt: (x, y) => tileAt(x, y), isOneWay: t => isOneWay(t), resolveTiles: () => resolveTiles(), moveBody: (b, dx, dy, d) => moveBody(b, dx, dy, d),
   hurtAs: (b, e, d, x, pl) => hurtAs(b, e, d, x, pl), floorFoe: (e, s) => floorFoe(e, s), lcBig: e => lcBig(e), knockSkip: e => KNOCK_SKIP.has(e.t), box: b => box(b), overlap: (a, b) => overlap(a, b),
