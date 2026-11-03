@@ -157,7 +157,7 @@ async function pageTextFit(input) {
     for (const h of (input.talkHeroes || HEROES)) for (const [l, i] of campaign) { try { toPlay(i, h); } catch (e) { issues.push({ type: 'ERROR', screen: 'talk ' + l.id, s: 'load: ' + e.message, n: 1 }); continue; }
       for (const t of TL.talkers()) { const key = t.lines.join('|') + '|' + t.name; if (done.has(key)) continue; done.add(key);
         const lines = t.lines.filter(Boolean);
-        for (let p = 0; p < lines.length; p++) frame('talk ' + l.id + ' ' + t.kind + '@' + t.x + ',' + t.y + ' [' + h + '] page ' + (p + 1) + '/' + lines.length, () => { BK.state = 'play'; TL.talk(lines, t.name); if (TL.talking) TL.talking.i = p; }, { cover: q => q.size === 8 && lines[p].includes(q.s.trim()) });
+        for (let p = 0; p < lines.length; p++) frame('talk ' + l.id + ' ' + t.kind + '@' + t.x + ',' + t.y + ' [' + h + '] page ' + (p + 1) + '/' + lines.length, () => { BK.state = 'play'; TL.talk(lines, t.name); if (TL.talking) TL.talking.i = p; }, { cover: q => q.size === 8 && q.s.trim().length >= 4 && lines[p].includes(q.s.trim()) });
         BK.state = 'play'; }
       await yieldNow(); } }
 
@@ -273,7 +273,7 @@ async function pageTextFit(input) {
   if (want('arena')) { const ai = lvm.LEVELS.findIndex(l => l.id === 'arena_yard'), done = new Set();
     for (const h of ['knight', 'warden', 'pyro', 'paladin', 'pirate', 'reaper', 'geomancer', 'berserker', 'ranger']) { try { toPlay(ai, h); } catch (e) { issues.push({ type: 'ERROR', screen: 'arena ' + h, s: 'load: ' + e.message, n: 1 }); continue; }
       for (const t of TL.talkers()) { const key = t.lines.join('|') + '|' + t.name; if (done.has(key)) continue; done.add(key); const lines = t.lines.filter(Boolean);
-        for (let p = 0; p < lines.length; p++) frame('arena sign @' + t.x + ' [' + h + '] page ' + (p + 1) + '/' + lines.length, () => { BK.state = 'play'; TL.talk(lines, t.name); if (TL.talking) TL.talking.i = p; }, { cover: q => q.size === 8 && lines[p].includes(q.s.trim()) }); BK.state = 'play'; }
+        for (let p = 0; p < lines.length; p++) frame('arena sign @' + t.x + ' [' + h + '] page ' + (p + 1) + '/' + lines.length, () => { BK.state = 'play'; TL.talk(lines, t.name); if (TL.talking) TL.talking.i = p; }, { cover: q => q.size === 8 && q.s.trim().length >= 4 && lines[p].includes(q.s.trim()) }); BK.state = 'play'; }
       BK.yard().open(BK.players()[0]); const pages = BK.yard().Y.st.board.pages.length;
       for (let k = 0; k < pages; k++) frame('arena board [' + h + '] page ' + (k + 1) + '/' + pages, () => { BK.state = 'play'; if (!BK.yard().Y.st.board) BK.yard().open(BK.players()[0]); BK.yard().Y.st.board.page = k; }, { settle: 2 });
       BK.yard().Y.st.board = null; await yieldNow(); } }
