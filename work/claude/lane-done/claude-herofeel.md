@@ -19,10 +19,10 @@ GREEN: heroblocks-b warden (tap = deflect, no throw; tiers 1-2-3 on the hold; a 
 NOT RUN: full suite; textfit (the three hero-card descs grew: run it); heroblocks-b ranger + shots; geo-board; hero-trials; restamp.
 tools/hint-shown.mjs is RED on 18 number() literals (AVALANCHE, KNOCKED UP, MARKED ...) that are not this lane's (absent from the base ledger as well). My new texts are routed (HEAVY THROW, PIN THROW, KNOCKED BACK, JAVELIN DROPPED, ARROW RECALL, NO ARROWS OUT added to MOVE_WORDS; the 4 dead warden-brace ledger lines deleted).
 
-## WIN RATES (WITH flasks, human profile, practiced) - PARTIAL, the run was still going when I ended
-Before (scratch\lane-reports\heroestune.md): ranger 88% pooled, warden 85%, geomancer 65%. Per boss (ranger / warden): wood 6/6 6/6, hornetsnest 6/6 6/6, marsh 4/6 4/6, kings 6/6 6/6.
-After: started `node tools/boss-rates.mjs wood,hornetsnest,marsh,kings --ways=practiced --heroes=ranger,warden --seeds=6 --jobs=1` (~1.5 min a fight, ~70 min): log scratch\lane-reports\herofeel\r1.log, json r1.json (node PID 33456 is mine; it ends by itself). When this was written: wood ranger 6/6 (wins 58-136 s), wood warden 2/3. No dial was tuned from numbers: the only balance changes are the ranger trims above and the warden's new kit (the javelin replaces a near-free block).
-OWED (read r1 first): if warden pooled stays > 70: lower WTH.dmg [0.9, 1.5, 2.0] or raise WTH.cost, or drop the bot default (+x_wardJav_0); if ranger stays > 70: refill 12 s or recall stamina up. Then the geomancer re-check (Tusker / Beast / Hornet) and the pooled Hornet Queen re-measure (5 heroes n=6, was 76% at n=29): NOT run.
+## WIN RATES (WITH flasks, human profile, practiced, n=6 a cell) - FINISHED (48 fights, 27 min; log herofeel1.log)
+Before (heroestune.md): ranger 88% pooled, warden 85%. Per boss ranger/warden: wood 6/6 6/6, hornetsnest 6/6 6/6, marsh 4/6 4/6, kings 6/6 6/6.
+After: wood 6/6 4/6 (83%), hornetsnest 6/6 4/6 (83%), marsh 2/6 4/6 (50%), kings 5/6 4/6 (75%). POOLED: WARDEN 16/24 = 67% (was 85: IN BAND), RANGER 19/24 = 79% (was 88: still +9 over the 70 target, but marsh is 2/6, so it is bossy-noisy). No dial tuned further.
+OWED: a second ranger round (rec: refill 11 -> 12 s or recall stamina 0.45 -> 0.5, then re-run wood/hornet/kings n=6); geomancer re-check (Tusker/Beast/Hornet) and the pooled Hornet Queen re-measure (5 heroes n=6) were NOT run.
 
 ## ART / SOUND OWED (placeholders in)
 Warden: a real wind pose, a throw / release pose, a javelin-in-flight sprite (now F.javThrow frame 0 + a drawn line), tier tells (fbStep tones reused), a pin-in-wall prop. Ranger: a recall pose (reuses the rgSnare kneel), a cord-yank / arrow-return FX, a SNARE skill icon (placeholder pixels), remove the dead stance key row in Settings. Geomancer: the air-up arc is a stroked arc + generic shard wedges; earthfall spikes reuse drawSpike (a real shockwave burst + dust ring). Rookery: the updrafts are the level's existing flue art.
