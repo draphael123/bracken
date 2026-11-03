@@ -27,6 +27,7 @@ const CSS = `
 #fbform button.fbrate.on{background:#3a2a16;border-color:#ffd36b;color:#ffd36b}
 #fbform textarea{box-sizing:border-box;width:100%;height:70px;resize:none;font:16px/1.3 "Silkscreen","Press Start 2P",sans-serif;text-transform:none;letter-spacing:0;background:#0b0912;color:#e8dcc0;border:2px solid #8a6a3a;padding:6px;margin:3px 0;-webkit-user-select:text;user-select:text}
 #fbform textarea:focus{border-color:#ffd36b;outline:none}
+#fbform button:focus,#fbform button.kf,#fbform button.fbchip:focus,#fbform button.fbrate:focus,#fbform button.fbchip.on:focus,#fbform button.fbrate.on:focus{border-color:#ffd36b;color:#ffd36b;background:#3a2a16;box-shadow:0 0 0 2px #ffd36b;outline:none}
 #fbform .fbcount{font-size:9px;color:#8a8f80;text-align:right}
 #fbform .fbmsg{min-height:15px}
 `;
@@ -133,6 +134,8 @@ export function open(snapshot, afterClose) {
   snapFn = snapshot; onClose = afterClose || null; padPrev = {};
   if (!document.getElementById(CSSID)) { const s = document.createElement('style'); s.id = CSSID; s.textContent = CSS; document.head.appendChild(s); }
   box = UI.board(ID); const F = facts(snapFn);
+  box.root.addEventListener('focusin', e => { for (const x of box.root.querySelectorAll('.kf')) x.classList.remove('kf'); if (e.target && e.target.classList) e.target.classList.add('kf'); });
+  box.root.addEventListener('focusout', e => { if (e.target && e.target.classList) e.target.classList.remove('kf'); });   /* the focus ring is a class too: a window without OS focus still shows where the pad is */
   const rate = UI.row(...[1, 2, 3, 4, 5].map(n => { const b = UI.el('button.fbrate', String(n), () => { draft.rating = n; for (const x of rate.children) { x.classList.toggle('on', +x.dataset.n === n); x.setAttribute('aria-checked', +x.dataset.n === n ? 'true' : 'false'); } say(''); }); b.type = 'button'; b.dataset.n = n; b.setAttribute('role', 'radio'); b.setAttribute('aria-checked', draft.rating === n ? 'true' : 'false'); if (draft.rating === n) b.classList.add('on'); return b; }));
   const likeRow = UI.row(...CFG.FEEDBACK_TOPICS.map(t => chip(t, draft.liked))), badRow = UI.row(...CFG.FEEDBACK_TOPICS.map(t => chip(t, draft.bad)));
   const ta = UI.el('textarea'); ta.id = 'fbtext'; ta.maxLength = CFG.FEEDBACK_MAX_CHARS; ta.value = draft.text; ta.placeholder = 'anything else? (optional)'; ta.spellcheck = true; ta.autocomplete = 'off'; ta.setAttribute('aria-label', 'Your feedback');
