@@ -30440,7 +30440,7 @@ const UP_SLASH = { grace: 0.05, groundLeap: false,
   air: { knight: { w: 13, top: 44, lean: 3 }, warden: { w: 9, top: 50, lean: 2 }, pyro: { w: 12, top: 46, lean: 3 }, paladin: { w: 13, top: 44, lean: 3 },
     pirate: { w: 12, top: 42, lean: 3 }, reaper: { w: 16, top: 48, lean: 3 }, geomancer: { w: 12, top: 46, lean: 3 }, berserker: { w: 12, top: 42, lean: 3 } } };
 /* THE AIR UP-SLASH: up + attack in the air (past the jump's first 0.18 s, where the rising cut still rides it). No lift, no hang: a blow over his head */
-function airUpCut() { P.swingKind = 'airUp'; noteVerb('rise'); const c = specialCol();
+function airUpCut() { P.swingKind = 'airUp'; noteVerb('rise'); const c = specialCol(); if (isGeo() && GEO) GEO.upAir();   /* (claude/herofeel) the geomancer's air up-slash flings a fan of three stone shards up */
   if (isPaladin()) { P.arc2 = false; P.arcT = HG.arc.float; if (P.vy > -40) P.vy = -40; kitPose(P, 'rise', 0.3); for (let i = 0; i < 12; i++) { const a = -Math.PI + i / 11 * Math.PI * 2; parts.push({ x: P.x + Math.cos(a) * 16, y: P.y - 20 + Math.sin(a) * 16, vx: 0, vy: -10, life: 0.28, max: 0.28, col: i % 2 ? '#ffd36b' : '#fff6c8', size: 1, grav: 0 }); } SFX.lightFull(); }   /* (PALADIN 3) HEAVEN'S ARC: a full overhead whirl - a golden ring of light, two hits, a slight float */
   if (isReaper()) { reapingRiseFx(); return; }   /* (claude/dkfeel) death magic: grave-green flame and soul wisps, not the shared sparks */
   for (let i = 0; i < 5; i++) parts.push({ x: P.x + P.face * (8 - i * 4), y: P.y - 20 - Math.sin(i / 4 * Math.PI) * 18, vx: 0, vy: -40, life: 0.2, max: 0.2, col: c[i % c.length], size: 1, grav: 0 }); }

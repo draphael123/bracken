@@ -79,8 +79,8 @@ try {
     const flatEarth = () => BK.geo().pieces().filter(q => q.kind === 'earthfall');
     { const spot = boot('geomancer'); const g0 = BK.L.grid.slice(); const p = P(); drop(spot[0] * 16 + 8, spot[1] * 16 - 70, 1); settle(() => p.ground, 200); BK.sim(2);
       out.earth.spikes = BK.geo().spikes().length; out.earth.pieces = BK.geo().pieces().length; out.earth.same = BK.L.grid.every((v, i) => v === g0[i]); out.earth.tagged = plungeTagged(); BK.sim(40); out.earth.spikesGone = BK.geo().spikes().length; out.earth.restored = BK.L.grid.every((v, i) => v === g0[i]); }
-    { const spot = boot('geomancer'); const [e] = BK.spawnFoe({ t: 'sprig', x: spot[0] + 2, y: spot[1] }); const [far] = BK.spawnFoe({ t: 'sprig', x: spot[0] + 7, y: spot[1] }); BK.sim(10); const hp0 = e.hp, hpF = far.hp; const p = P(); drop(spot[0] * 16 + 8, spot[1] * 16 - 70, 1); settle(() => p.ground, 200); BK.sim(6);
-      out.earth.nearFoe = { hit: hp0 - e.hp, down: (e.broken || 0) > 0 || (e.floored || 0) > BK.time, far: hpF - far.hp }; }
+    { const spot = boot('geomancer'); const [e] = BK.spawnFoe({ t: 'sprig', x: spot[0] + 2, y: spot[1] }); const [far] = BK.spawnFoe({ t: 'sprig', x: spot[0] + 7, y: spot[1] }); e.hp = 5000; far.hp = 5000; BK.sim(10); const hp0 = e.hp, hpF = far.hp; const p = P(); drop(spot[0] * 16 + 8, spot[1] * 16 - 70, 1); settle(() => p.ground, 200); BK.sim(6);
+      out.earth.nearFoe = { hit: hp0 - e.hp, tagged: plungeTagged(), down: (e.broken || 0) > 0 || (e.floored || 0) > BK.time, far: hpF - far.hp }; }
     { const spot = boot('geomancer'); const [e] = BK.spawnFoe({ t: 'sprig', x: spot[0], y: spot[1] }); BK.sim(10); const hp0 = e.hp; over(e); settle(() => P().vy < -200, 120); BK.sim(4);
       out.earth.onHead = { hit: hp0 - e.hp, piece: flatEarth().length, pogo: Math.round(P().vy) }; }
     { const spot = boot('geomancer'); const p = P(); drop(spot[0] * 16 + 8, spot[1] * 16 - 70, 1); settle(() => p.ground, 200); BK.sim(6);
@@ -124,7 +124,7 @@ if (B.brute.rode || B.brute.pogo > -300) bad.push('BOARDING: a brute must be str
 /* EARTHFALL */
 if (E.pieces !== 0 || E.spikes < 4 || !E.same) bad.push('EARTHFALL: the shockwave bursts spikes either side and writes NO stone (' + JSON.stringify({ p: E.pieces, s: E.spikes, same: E.same }) + ')');
 if (E.spikesGone !== 0 || !E.restored) bad.push('EARTHFALL: the spikes crumble at once and the level is untouched (' + JSON.stringify({ g: E.spikesGone, r: E.restored }) + ')');
-if (!(E.nearFoe.hit > 0) || !E.tagged || !E.nearFoe.down || E.nearFoe.far !== 0) bad.push('EARTHFALL: the wave hits (tag plunge) and knocks down the foe within ~2.5 tiles, and not the far one (' + JSON.stringify([E.nearFoe, E.tagged]) + ')');
+if (!(E.nearFoe.hit > 0) || !E.nearFoe.tagged || !E.nearFoe.down || E.nearFoe.far !== 0) bad.push('EARTHFALL: the wave hits (tag plunge) and knocks down the foe within ~2.5 tiles, and not the far one (' + JSON.stringify(E.nearFoe) + ')');
 if (E.onHead.piece !== 0 || E.onHead.pogo > -300) bad.push('EARTHFALL: on a head she still pogoes, and no step rises (' + JSON.stringify(E.onHead) + ')');
 if (E.reach.fresh !== E.reach.base || E.reach.piece !== 0) bad.push('EARTHFALL: the reach fill must see the level without her stone (' + JSON.stringify(E.reach) + ')');
 /* AXE SPIN */
