@@ -50,3 +50,7 @@ BURROW (ground): now the KNIGHT'S numbers: 0.24 s long, pace 230 (the knight's s
 GIFs (after\): air-geomancer-dash.gif next to air-knight.gif; ground-geomancer-burrow.gif next to ground-knight.gif. Telemetry after\after-dash-telemetry.json, after-burrow-telemetry.json.
 Checks: one-dodge.mjs, hero-pass.mjs (asserts updated: shrug -> shared dash/grace), geomancer.mjs - see result lines in the final reply / below.
 Q: with speed+duration matched exactly the burrow is 38.7 px vs the knight's 43.1 (-10%); the +21% from earlier is gone. Rec: accept (Daniel said match exactly); for equal distance raise pace to 255.
+
+### Burrow pace 255 (coordinator, final)
+Burrow pace 230 -> 255, same 0.24 s, grace 0.14 s: distance 43.3 px vs the knight's 43.1 px (15 steps both). ground-geomancer-burrow.gif recaptured (after\). Supersedes the 38.7 px figure above.
+Final checks on this tip: one-dodge PASS; geomancer.mjs PASS; hero-pass PASS (run before the pace change, which only touches the burrow's pace - not rerun).
