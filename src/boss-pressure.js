@@ -26,7 +26,7 @@ export const DIAL_EXEMPT = new Set(['cisternqueen', 'hourglassking', 'matriarch'
 export function pressureOf(act, mini) { const r = PRESSURE[act] || PRESSURE[5]; return mini ? r.mini : r; }
 /* the dt factor for one boss this frame: 1 unless his clock is a gap's */
 /* (claude/jointtune139, Daniel 11-02: the demo reads ABOVE the band, hero trims do not move it -> raise BOSS dials) PER-BOSS TRIM on top of the act's row, by e.t: { gap, dmg } (1 = none) */
-export const BOSS_TRIM = { hornetqueen: { gap: 1.2, dmg: 1.8 }, oldtusker: { gap: 1.15, dmg: 1.65 }, batteringbeast: { dmg: 0.85 } };   /* r3 (n=6 baselines hornet 93, tusker 87, beast 43; r1 -> 80/83/53; r2 1.8 + 1.8 + 0.8 -> 67/60/73) */
+export const BOSS_TRIM = { hornetqueen: { gap: 1.2, dmg: 1.8 }, oldtusker: { gap: 1.15, dmg: 1.65 }, batteringbeast: { dmg: 0.85 }, king: { dmg: 0.95 } };   /* r3 (n=6 baselines hornet 93, tusker 87, beast 43; r1 -> 80/83/53; r2 1.8 + 1.8 + 0.8 -> 67/60/73) */
 const trim = e => (e && BOSS_TRIM[e.t]) || null;
 export function gapFactor(e, act, mini, winding) {
   const g0 = pressureOf(act, mini).gap, tg = trim(e), g = tg && tg.gap && g0 > 1 ? g0 * tg.gap : g0; if (!(g > 1) || !e || winding || DIAL_EXEMPT.has(e.t)) return 1;
