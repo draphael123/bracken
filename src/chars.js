@@ -3450,6 +3450,13 @@ function wardenKitPoses(F, sh, WIDE) {
   F.javThrow = [KF({ dx: -2, legs: 'wide', sho: 1, arm: [X, Y, X - 6, Y - 5], arm2: [OFF[0], OFF[1], OFF[0] + 5, OFF[1] - 1], plume: 1 }),
     KF({ wide: 4, dx: 2, legs: 'runC', arm: [X, Y, X + 7, Y - 4], plume: 2, bits: [o(8, -5, C), o(9, -5, W)] }),
     KF({ dx: 2, dy: 1, legs: 'wide', arm: [X, Y, X + 4, Y + 5], arm2: [OFF[0], OFF[1], OFF[0] - 4, OFF[1] + 3], plume: 2 })];
+  /* JAVELIN WIND-UP (claude/wardenart; drawn from her BARE set, the spear itself is drawn by main.js wthDraw so it can ride the hand and shake):
+     one frame per hold tier. 1 the throwing arm drawn back and the off hand pointing down the line; 2 the arm back and up behind
+     the head, the feet set wide and the weight dropped on the back leg; 3 the whole of her coiled low, the arm cocked to the limit
+     behind the shoulder, the off arm out, the shoulders hitched and a glint at the hand */
+  F.javWind = [KF({ dx: -1, legs: 'wide', sho: 1, arm: [X, Y, X - 5, Y - 3], arm2: [OFF[0], OFF[1], OFF[0] + 6, OFF[1] - 3], plume: 1 }),
+    KF({ wide: 3, dx: -3, dy: 1, legs: 'wide', sho: 1, arm: [X, Y, X - 8, Y - 6], arm2: [OFF[0], OFF[1], OFF[0] + 8, OFF[1] - 4], plume: 1 }),
+    KF({ wide: 5, dx: -5, dy: 2, legs: 'crouch', sho: 2, hy: 1, arm: [X, Y, X - 10, Y - 8], arm2: [OFF[0], OFF[1], OFF[0] + 9, OFF[1] - 5], plume: 2, bits: [o(-9, -9, W), o(-10, -9, C)] })];
   /* SET THE SPEARS: down on one knee (LEGS.kneel), the spear raised in both hands point-DOWN over the turf, driven in, and
      leant on while the row comes up away from her. Her Vigil's plant (blast) stands and holds the point UP: this is the knee */
   F.plant = [KF({ wide: WIDE, dy: 2, legs: 'kneel', arm: [X, Y, X + 3, Y - 6], arm2: [OFF[0], OFF[1], X + 2, Y - 4], spear: [X + 3, Y - 12, X + 4, Y + 1], plume: 1 }),
