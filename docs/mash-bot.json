@@ -9961,7 +9961,7 @@
   }
  },
  "hornetsnest": {
-  "hash": "e4452c9761e8",
+  "hash": "12ed507e4ffb",
   "boss": {
    "boss": "hornetqueen",
    "wins": 0,
@@ -10062,7 +10062,7 @@
    ]
   },
   "carried": {
-   "from": "53a0b5f53724",
+   "from": "e4452c9761e8",
    "parts": [
     "boss"
    ]
