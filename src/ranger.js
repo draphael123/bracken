@@ -386,9 +386,9 @@ export function makeRanger(api) {
   function startRecall(p) { if (!p.ground || p.rgRecall || p.rgCd > 0) return false; ensure(p);
     if (!(p.rgArrows || []).some(a => recallable(p, a))) { api.number(p.x, p.y - 26, 'NO ARROWS OUT', '#9aa39a'); return false; }
     if (!api.spend(Math.round((p.maxSt || 100) * RG.recall.stFrac))) { api.tired(); return false; }
-    p.rgRecall = { t: 0, yanked: false }; p.rgNock = null; p.charge = 0; stats.recalls = (stats.recalls || 0) + 1; p.vx = 0; api.kitPose(p, 'rgSnare', 0.3); api.SFX.rgSnare && api.SFX.rgSnare(); return true; }
+    p.rgRecall = { t: 0, yanked: false, hp: p.hp }; p.rgNock = null; p.charge = 0; stats.recalls = (stats.recalls || 0) + 1; p.vx = 0; api.kitPose(p, 'rgSnare', 0.3); api.SFX.rgSnare && api.SFX.rgSnare(); return true; }
   function recallStep(p, dt) { const R = p.rgRecall; if (!R) return;
-    if (p.dead || p.hurt > 0) { p.rgRecall = null; api.SFX.rgSnap && api.SFX.rgSnap(); return; }   /* a blow lands on her and breaks the kneel; what she already called keeps flying */
+    if (p.dead || p.hurt > 0 || p.hp < R.hp) { p.rgRecall = null; api.SFX.rgSnap && api.SFX.rgSnap(); return; }   /* a blow lands on her and breaks the kneel; what she already called keeps flying */
     R.t += dt; p.vx = 0; p.rgNock = null; p.charge = 0; api.kitPose(p, 'rgSnare', 0.1);
     if (!R.yanked && R.t >= RG.recall.yank) { R.yanked = true; let n = 0; for (const a of p.rgArrows) if (recallable(p, a)) { a.state = 'recall'; a.foe = null; a.t = 0; a.hit = new Set(); n++; }
       api.number(p.x, p.y - 28, 'ARROW RECALL', '#c8e89a'); api.SFX.rgSnap && api.SFX.rgSnap(); api.shakeCam(2); api.streaks(p.x, p.y - 8, 6, ['#e8dcb0', '#c8e89a'], 90); stats.recalled = (stats.recalled || 0) + n; }

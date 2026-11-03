@@ -47,7 +47,7 @@ try {
     { __rg(); __tap(); BK.sim(20); __tap(); BK.sim(60); const q1=R().q, xs=R().arrows.map(a=>a.x); K.right=true; for(let i=0;i<120&&R().arrows.length;i++)BK.sim(1); K.right=false; BK.sim(5);
       out.quiver={q1,stuck:xs.length,after:R().q,left:R().arrows.length,picked:R().stats.picked};
       __rg(); P().rgQ=0; const f=__foe(60); BK.sim(1); __tap(); out.quiver.emptyAtk=P().atk>=0; out.quiver.emptyArrows=R().arrows.length; f.alive=false;
-      BK.sim(2); P().rgQ=0; P().rgRefT=0; BK.sim(Math.round(60*8.3)); out.quiver.trickle=R().q; }
+      BK.sim(2); P().rgQ=0; P().rgRefT=0; BK.sim(Math.round(60*11.3)); out.quiver.trickle=R().q; }
     /* CROUCH TO RESTOCK: a quick duck does not, a held still one does (1 arrow per ~1.3 s after 0.4 s), moving cancels and resets the delay */
     { __rg(); P().rgQ=0; P().rgRefT=0; K.down=true; BK.sim(18); const duck=!!P().ducking, quick=R().q; K.down=false; BK.sim(6);
       K.down=true; BK.sim(60); const at1s=R().q; BK.sim(60); const at2s=R().q; BK.sim(340); const full=R().q; K.down=false; BK.sim(3);
@@ -103,7 +103,7 @@ try {
     /* (claude/herofeel) ARROW RECALL */
     { __rg(); const q0=R().q; __tap(); BK.sim(80); const out0=R().arrows.filter(a=>a.state==='lie'||a.state==='stuck').length, q1=R().q; P().st=P().maxSt; const st0=P().st; K.down=true; __c(); BK.sim(2); K.down=false;
       out.rc={out0,q0,q1,rooted:!!P().rgRecall,spent:Math.round(st0-P().st),max:Math.round(P().maxSt)}; K.right=true; const x0=P().x; BK.sim(20); K.right=false; out.rc.moved=Math.round(Math.abs(P().x-x0)); BK.sim(120); out.rc.q2=R().q; out.rc.left=R().arrows.filter(a=>a.state==='lie'||a.state==='stuck').length; out.rc.free=!P().rgRecall;
-      __rg(); __tap(); BK.sim(80); P().st=P().maxSt; K.down=true; __c(); BK.sim(2); K.down=false; P().inv=0; BKT.damagePlayer(P().x+10,5,{}); BK.sim(3); out.rcHit={broke:!P().rgRecall,still:R().arrows.filter(a=>a.state==='lie'||a.state==='stuck').length};
+      __rg(); __tap(); BK.sim(80); P().st=P().maxSt; K.down=true; __c(); BK.sim(2); K.down=false; P().inv=0; const hpA=P().hp, rs=BKT.damagePlayer(P().x+10,5,{}); BK.sim(14); out.rcHit={rs:String(rs),lost:hpA-P().hp,hurt:P().hurt,broke:!P().rgRecall,still:R().arrows.filter(a=>a.state==='lie'||a.state==='stuck').length};
       __rg(); P().st=P().maxSt; K.down=true; __c(); BK.sim(2); K.down=false; out.rcNone={rooted:!!P().rgRecall,spent:Math.round(P().maxSt-P().st)}; }
     /* backflip, and a shot in it */
     { __rg(); const x0=P().x; BK.press('dodge'); BK.sim(3); out.flip={face:P().face,vx:Math.round(P().vx),vy:Math.round(P().vy),flip:R().flip}; __tap(); out.flip.shots=G().read().stats.flipShots; BK.sim(40); out.flip.moved=Math.round(P().x-x0);
@@ -127,7 +127,7 @@ try {
   ok(r.draw.land >= 125 && r.draw.land <= 185 && r.draw.land > r.quick.land + 40, 'draw: a full draw should land 125-185 px out, well past a tap: ' + r.draw.land);
   ok(r.quiver.stuck === 2 && r.quiver.left === 0 && r.quiver.after === r.quiver.q1 + 2 && r.quiver.picked === 2, 'quiver: walking over the stuck arrows should take them back: ' + JSON.stringify(r.quiver));
   ok(r.quiver.emptyAtk && r.quiver.emptyArrows === 0, 'quiver: empty, X should be the knife: ' + JSON.stringify(r.quiver));
-  ok(r.quiver.trickle === 1, 'quiver: one arrow should trickle back in ~8 s: ' + r.quiver.trickle);
+  ok(r.quiver.trickle === 1, 'quiver: one arrow should trickle back in ~11 s (claude/herofeel: slower): ' + r.quiver.trickle);
   ok(r.restock.duck && r.restock.quick === 0, 'restock: a quick duck (0.3 s) must not restock: ' + JSON.stringify(r.restock));
   ok(r.restock.at1s === 0 || r.restock.at1s === 1, 'restock: about one arrow in the first second after the delay: ' + JSON.stringify(r.restock));
   ok(r.restock.at2s >= 1 && r.restock.at2s <= 2 && r.restock.full === r.restock.max, 'restock: crouching still fills the quiver, one arrow per ~1.3 s: ' + JSON.stringify(r.restock));

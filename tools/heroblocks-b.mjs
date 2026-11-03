@@ -30,9 +30,9 @@ try {
       { __set('warden',[]);BK.keys.block=true;BK.sim(4);BK.keys.block=false;BK.sim(2);o.tap={hold:W().hold,spears:W().spears.length,deflect:+(P().deflectT||0).toFixed(2),rec:W().rec}; }
       { __set('warden',[]);__hold(8);o.early={hold:W().hold};__hold(16);o.t1={hold:W().hold};__hold(30);o.t2={hold:W().hold};__hold(40);o.t3={hold:W().hold}; BK.keys.block=false;BK.sim(2); }
       { __set('warden',[]);__hold(40);o.noBrace=__hit(14,12,{});o.noBraceFlag=!!P().wBrace; BK.keys.block=false;BK.sim(2); }
-      { const [g]=__set('warden',[['goat',60]]);g.face=-1;g.hp=g.hp0=5000;__hold(24);const hp0=g.hp;BK.keys.block=false;BK.sim(14);o.hit1={dmg:hp0-g.hp,knock:g.knock||0,pinned:g.pinned||0,spears:W().spears.length}; BK.sim(80);o.back={spears:W().spears.length}; }
-      { const [g]=__set('warden',[['goat',70]]);g.hp=g.hp0=5000;const x0=g.x;__hold(52);o.t2wind={hold:W().hold};const hp0=g.hp;BK.keys.block=false;BK.sim(14);o.hit2={dmg:hp0-g.hp,moved:Math.round(g.x-x0),stag:+(g.stagger||0).toFixed(2),pinned:g.pinned||0,rec:W().rec}; }
-      { const [g]=__set('warden',[['goat',70]]);g.hp=g.hp0=5000;__hold(100);o.t3wind={hold:W().hold};const hp0=g.hp;BK.keys.block=false;BK.sim(14);o.hit3={dmg:hp0-g.hp,pinned:+(g.pinned||0).toFixed(2)}; }
+      { const [g]=__set('warden',[['sprig',60]]);g.face=-1;g.hp=g.hp0=5000;__hold(24);const hp0=g.hp;BK.keys.block=false;BK.sim(14);o.hit1={dmg:hp0-g.hp,knock:g.knock||0,pinned:g.pinned||0,spears:W().spears.length}; BK.sim(80);o.back={spears:W().spears.length}; }
+      { const [g]=__set('warden',[['sprig',70]]);g.hp=g.hp0=5000;g.speed=0;const x0=g.x;__hold(52);o.t2wind={hold:W().hold};const hp0=g.hp;BK.keys.block=false;BK.sim(14);o.hit2={dmg:hp0-g.hp,moved:Math.round(g.x-x0),stag:+(g.stagger||0).toFixed(2),pinned:g.pinned||0,rec:W().rec}; }
+      { const [g]=__set('warden',[['sprig',70]]);g.hp=g.hp0=5000;g.speed=0;__hold(100);o.t3wind={hold:W().hold};const hp0=g.hp;BK.keys.block=false;BK.sim(14);o.hit3={dmg:hp0-g.hp,pinned:+(g.pinned||0).toFixed(2)}; }
       { __set('warden',[]);P().st=1;__hold(24);BK.keys.block=false;BK.sim(3);o.tired={spears:W().spears.length}; }
       { __set('warden',[]);__hold(24);P().hurt=0.3;BK.sim(2);o.dropped={hold:W().hold};BK.keys.block=false;BK.sim(2); }
       return o;})()`);

@@ -10944,6 +10944,7 @@ function updatePlayer(dt) {
     const free = !stunned && !dodging && !P.plunge && !attacking && !(P.blastT > 0) && !(P.charge > 0);
     GEO.guard(!!keys.block && !P.ultHold, free && !P.ultHold && (P.ground || P.swim) && !thrown && CM.guardOk(P), dt, (keys.right ? 1 : 0) - (keys.left ? 1 : 0));   /* (claude/ults) UP+C at a FULL board is AVALANCHE (the ultimate input above); the held C that rode on it is not a ward */
   }
+  if (P.rgRecall && (P.hurt > 0 || P.dead || stunned)) P.rgRecall = null;   /* (claude/herofeel) a blow on her breaks the ARROW RECALL kneel at once (the arrows already called keep flying) */
   if (isRg() && RGK) RGK.update(dt, P.ultHold ? Object.assign(Object.create(keys), { block: false }) : keys, { stunned, dodging, attacking, guardOk: CM.guardOk(P) });   /* (claude/ranger) HER C: the bow-bash (her parry), DOWN+C the snare, UP+C the mark - and her arrows, her quiver's trickle, the nock let go (src/ranger.js) */
   if (isBz() && BZK) BZK.update(dt, keys, { stunned, dodging, attacking, guardOk: CM.guardOk(P) });   /* (WEIGHT: no brace while EXHAUSTED - it is a guard) */   /* THE BERSERKER'S C: the brace; full rage, THE FRENZY; UP+C the axe throw - and his rage, frenzy and thrown axe (src/berserker.js) */
   if (hero() === 'knight') { // C held = the shield. THREE LINKS and UP + C on the ground is THE SHIELD CHARGE (the ultimate input above).
