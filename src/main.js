@@ -7534,7 +7534,6 @@ const MOVE_WORD_GAP = 0.6, moveWordAt = {};
 /* THE HINT LINES THAT WERE NEVER SHOWN (src/hint-lines.js): a teaching line number() would drop is drawn in the hint box instead - one line, 1.8 s, the same text no more than once in 4 s, and never over a longer hint being read. */
 let calloutMsg = ''; const calloutAt = {};
 function callout(txt) { const s = calloutText(txt), tier = HINTS.takeStall() ? 'stall' : 'tip'; if (time - (calloutAt[s] ?? -9) < 4 || (hintT > 0.4 && hintMsg !== calloutMsg)) return; if (!hintGate(tier, s)) return; calloutAt[s] = time; calloutMsg = hintMsg = s; hintT = 1.8; }
-const MOVE_NUM = /^(?:GREAT ARROW|STEADY|FAR) xd|^CHAIN d$/, isMoveWord = t => MOVE_WORDS.has(t) || MOVE_NUM.test(t);   /* (rel139fix) a move word with a number on its tail floats too */
 function number(x, y, txt, col) { if (SET.colorSafe) col = col === '#ff6b6b' ? '#5aa8ff' : col === '#ff9a5c' ? '#c080ff' : col; if (!SET.numbers && typeof txt === 'number') return;
   if (typeof txt === 'string' && /[A-Z]/.test(txt)) { if (isCallout(txt) && !moveWord(txt)) { if (state === 'play' && !(L && L.trial)) callout(txt); return; }   /* (a teaching line: drawn in the hint box, claude/hintsweep) */
     if (!SET.numbers || !moveWord(txt) || (L && L.trial) || time - (moveWordAt[txt] ?? -9) < MOVE_WORD_GAP) return; moveWordAt[txt] = time; }

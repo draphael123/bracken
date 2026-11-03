@@ -1,6 +1,17 @@
 [
   {
     "date": "2026-11-04",
+    "batch": 140,
+    "lines": [
+      "Warden: a javelin throw replaces the spear brace",
+      "Ranger: SNARE is a skill you buy, DOWN+C recalls your arrow",
+      "Geomancer: an up-air fan and an earthfall shockwave",
+      "Gale Spires: updrafts so the gorge pockets cannot trap you",
+      "Told warnings on more boss moves, and fairer Hornet Queen and Potion Master fights"
+    ]
+  },
+  {
+    "date": "2026-11-04",
     "batch": 139,
     "lines": [
       "Hornet's Nest combs now sag, and the Hornet Queen and Battering Beast have new art",

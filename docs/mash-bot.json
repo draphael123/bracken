@@ -1667,7 +1667,7 @@
   }
  },
  "moor": {
-  "hash": "c0db471769a0",
+  "hash": "de1117f80360",
   "boss": {
    "boss": "windcaller",
    "wins": 0,
@@ -1768,21 +1768,21 @@
    ]
   },
   "carried": {
-   "from": "c68232482978",
+   "from": "c0db471769a0",
    "parts": [
     "boss"
    ]
   },
   "level": {
    "knight": {
-    "deaths": 3,
+    "deaths": 5,
     "minHpPct": 0,
-    "hpLostPct": 391,
-    "hits": 24,
+    "hpLostPct": 507,
+    "hits": 30,
     "walked": 100,
-    "lifts": 61,
-    "held": 29,
-    "duels": 2,
+    "lifts": 59,
+    "held": 32,
+    "duels": 3,
     "boardLifts": 1,
     "rides": 1,
     "pulls": 0,
@@ -1790,19 +1790,19 @@
      "wheel": 1
     },
     "machines": true,
-    "frames": 20697,
-    "kills": 5,
+    "frames": 21013,
+    "kills": 4,
     "heroLevel": 13
    },
    "warden": {
-    "deaths": 4,
+    "deaths": 6,
     "minHpPct": 0,
-    "hpLostPct": 472,
-    "hits": 33,
+    "hpLostPct": 662,
+    "hits": 42,
     "walked": 100,
-    "lifts": 50,
-    "held": 6,
-    "duels": 2,
+    "lifts": 60,
+    "held": 38,
+    "duels": 5,
     "boardLifts": 1,
     "rides": 1,
     "pulls": 0,
@@ -1810,19 +1810,19 @@
      "wheel": 1
     },
     "machines": true,
-    "frames": 19482,
-    "kills": 11,
+    "frames": 25819,
+    "kills": 9,
     "heroLevel": 13
    },
    "pyro": {
-    "deaths": 5,
+    "deaths": 6,
     "minHpPct": 0,
-    "hpLostPct": 515,
-    "hits": 34,
+    "hpLostPct": 621,
+    "hits": 39,
     "walked": 100,
-    "lifts": 54,
-    "held": 6,
-    "duels": 2,
+    "lifts": 53,
+    "held": 9,
+    "duels": 3,
     "boardLifts": 1,
     "rides": 1,
     "pulls": 0,
@@ -1830,8 +1830,8 @@
      "wheel": 1
     },
     "machines": true,
-    "frames": 19763,
-    "kills": 8,
+    "frames": 21525,
+    "kills": 11,
     "heroLevel": 13
    }
   }
