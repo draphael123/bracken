@@ -30355,7 +30355,7 @@ function wthTick(dt, keys, free) {
   if (!free || P.hurt > 0 || P.dead || wardJav || !(P.ground || P.swim) || (P.wReachT > 0)) { if (st0 > 0) { SFX.emberFizzle && SFX.emberFizzle(); number(P.x, P.y - 24, 'JAVELIN DROPPED', '#9aa39a'); } drop(); return; }
   P.wthHeld = (P.wthHeld || 0) + dt; const st = wthTier(P.wthHeld);
   if (st > (P.wthStepWas || 0)) { P.wthStepWas = st; SFX.fbStep(st); const tx = P.x + P.face * 12; ringAt(tx, P.y - 12, 5 + 4 * st, st === 3 ? '#fff6c8' : '#dff0d8', 0.22); burst(tx, P.y - 12, 3 + 3 * st, ['#dff0d8', '#8fd160', '#fff6c8'], 30 + 15 * st, 0.3, -20, 1); if (st === 2) number(P.x, P.y - 30, 'HEAVY THROW', '#8fd160'); else if (st === 3) number(P.x, P.y - 30, 'PIN THROW', '#fff6c8'); }
-  P.wthHold = st; if (st > 0) kitPose(P, 'javThrow', 0.07);   /* the arm back, held (a placeholder wind pose) */
+  P.wthHold = st;   /* (claude/wardenart) the wind-up is drawn by the draw: javWind frame per tier + the spear drawn back (wthDraw) */
 }
 function wthThrow(tier) {
   if (P.dead || P.asleep > 0) return;
@@ -30391,6 +30391,16 @@ function updateWthSpears(dt) {
   wthSpears = wthSpears.filter(j => j.st !== 'gone');
 }
 function wthDraw(cx, cy) {
+  if (isWarden() && (P.wthHold || 0) > 0 && !P.dead) {   /* (claude/wardenart) THE WIND-UP: the spear drawn back in the throwing hand, level and pointing down the line, shaking and glowing harder with every tier */
+    const t = P.wthHold, f = P.face, sh = t === 3 ? Math.round(Math.sin(time * 60)) : 0, hx = Math.round(P.x - cx) - f * (4 + 2 * t) + sh, hy = Math.round(P.y - cy) - 12 - t, len = [14, 18, 22][t - 1];
+    const x0 = hx - f * 7, x1 = hx + f * (len - 7), pulse = 0.5 + 0.5 * Math.sin(time * (8 + 6 * t));
+    g.fillStyle = '#1c120a'; g.fillRect(Math.min(x0, x1) - 1, hy - 1, Math.abs(x1 - x0) + 2, t >= 2 ? 4 : 3);   /* a dark edge so the shaft reads against the wood and the sky */
+    g.fillStyle = '#a8703c'; g.fillRect(Math.min(x0, x1), hy, Math.abs(x1 - x0), t >= 2 ? 2 : 1); g.fillStyle = '#d9a766'; g.fillRect(Math.min(x0, x1), hy, Math.abs(x1 - x0), 1);
+    g.fillStyle = '#c9b27c'; g.fillRect(x1 - f * 3 - (f > 0 ? 0 : 1), hy - 1, 2, 3);   /* the collar */
+    g.fillStyle = t === 3 ? '#fff6c8' : '#dff0d8'; g.fillRect(x1 + (f > 0 ? 0 : -3), hy - 1, 4, 3); g.fillStyle = '#ffffff'; g.fillRect(x1 + f * 3 - (f > 0 ? 0 : 1), hy, 1, 1);
+    g.save(); g.globalCompositeOperation = 'lighter'; g.globalAlpha = (0.15 + 0.12 * t) * (0.6 + 0.4 * pulse); g.fillStyle = t === 3 ? '#fff6c8' : '#8fd160';
+    g.fillRect(Math.min(x0, x1), hy - 1, Math.abs(x1 - x0), 3); if (t >= 2) { g.globalAlpha = 0.18 * pulse + 0.1 * t; g.fillRect(x1 - f * 4 - (f > 0 ? 0 : 6), hy - 3, 10, 7); } g.restore();
+    if (t >= 2) { g.fillStyle = '#dff0d8'; for (let i = 0; i < t; i++) { const k = (time * 3 + i / 3) % 1; g.globalAlpha = 1 - k; g.fillRect(x1 + f * (5 + k * 8), hy - 2 + i * 2 - 1, 1, 1); } g.globalAlpha = 1; } }
   for (const j of wthSpears) { const x = Math.round(j.x - cx), y = Math.round(j.y - cy), dir = j.st === 'back' ? -j.dir : j.dir, ex = x - dir * 20;
     g.strokeStyle = '#8a5a32'; g.lineWidth = 1; g.beginPath(); g.moveTo(x + 0.5, y + 0.5); g.lineTo(ex + 0.5, y + 0.5); g.stroke();
     g.fillStyle = j.tier === 3 ? '#fff6c8' : '#dff0d8'; g.fillRect(x - 1 + (dir > 0 ? 0 : -1), y - 1, 3, 3); g.fillStyle = '#ffffff'; g.fillRect(x + dir, y, 1, 1);
@@ -35073,7 +35083,7 @@ function drawWorld(cx, cy, showPlayer) {
       else if (P.castT > 0 && K.R.cast) { key = 'cast'; frame = P.castT > 0.1 ? 0 : 1; }   /* any hero with cast frames: a list of four left the Warden out, so SKEWER's castT drew nothing (her own pose, hero-poses.js, now plays first) */
       else if (isWarden() && P.vaultT > 0 && K.R.vault) { key = 'vault'; frame = P.vaultT > 0.21 ? 1 : 0; }   /* up on the shaft, and coming down off it */
       else if (isRg() && P.rgGuard && K.R.rgGuard) { key = 'rgGuard'; frame = Math.floor(P.anim * 2) % 2; }   /* (claude/heroblocksb) THE BOW GUARD: the bow brought up across her front in both hands (chars.js F.rgGuard) */
-      else if (isWarden() && (P.wthHold || 0) > 0 && K.R.javThrow) { key = 'javThrow'; frame = 0; }   /* (claude/herofeel) the javelin wound: the arm back, the shaft laid along it (chars.js F.javThrow frame 0 - a PLACEHOLDER wind pose) */   /* (claude/heroblocksb) THE SPEAR-HAFT BRACE: the heel driven in, the point levelled, both hands on the haft (chars.js F.block) */
+      else if (isWarden() && (P.wthHold || 0) > 0 && K.R.javWind) { key = 'javWind'; frame = P.wthHold - 1; }   /* (claude/herofeel) the javelin wound: the arm back, the shaft laid along it (chars.js F.javThrow frame 0 - a PLACEHOLDER wind pose) */   /* (claude/heroblocksb) THE SPEAR-HAFT BRACE: the heel driven in, the point levelled, both hands on the haft (chars.js F.block) */
       else if (isWarden() && (P.deflectT || 0) > 0 && K.R.deflect) { key = 'deflect'; frame = P.deflectT > DEF_LIVE * 0.5 ? 0 : 1; }   /* THE DEFLECT: the shaft crossing her body, then swept out to the point */
       else if (isPaladin() && P.bulwark && P.aegis && K.R.bulwark) { key = 'bulwark'; frame = Math.floor(time * 6) % 4; }   /* (PALADIN 3 ART) BULWARK ADVANCE: walking behind the aegis */
       else if (P.block || P.jet || P.aegis || P.warding || P.geoGuard || (isPirate() && P.parryW > 0) || (isBz() && (P.braceT > 0 || P.braceRec > 0))) { key = isBz() && K.R.bzTake ? 'bzTake' : 'block'; frame = Math.floor(P.anim * 2) % 2; }
@@ -35124,7 +35134,7 @@ function drawWorld(cx, cy, showPlayer) {
       const br = 1;   /* at rest he breathes in the frames themselves now: a sub-pixel stretch on top of them only shimmered */
       const hs = isReaper() ? 1.22 : 1, shadowed = false;   /* the Blood Knight is the biggest of them (claude/bloodstep: and when he steps he is whole and red-misted, no longer a shadow: src/hero-pass.js 'shade' fx) */
       const fy = P.flip ? P.y - P.h : P.y, fs = P.flip ? -1 : 1;   /* THE MAGE'S FOLLY: the room turned over draws him feet to the ceiling */
-      const KD = ((hero() === 'knight' && thrown) || (isWarden() && wardJav) || (isBz() && P.bzAxe)) && K.bare ? K.bare : K;   /* (THE BERSERKER with his off axe thrown: one axe) */   /* (and the Warden with her JAVELIN out) */   /* SHIELD THROW: while it is out of his hand he is drawn without it - the cue that it is gone */
+      const KD = ((hero() === 'knight' && thrown) || (isWarden() && (wardJav || (P.wthHold || 0) > 0 || P.wReachT > 0)) || (isBz() && P.bzAxe)) && K.bare ? K.bare : K;   /* (claude/wardenart) and bare-handed while the javelin winds (wthDraw draws the spear) and through the ULTIMATE (the ghost spear is the spear) */   /* (THE BERSERKER with his off axe thrown: one axe) */   /* (and the Warden with her JAVELIN out) */   /* SHIELD THROW: while it is out of his hand he is drawn without it - the cue that it is gone */
       P.lastKey = key; P.lastFrame = frame;   /* remembered for the audits (tools/audit-hitboxes.mjs), as e.lastFrame is for a creature */
       drawWarm('rim', KD, key, frame, P.x - cx, fy - cy + dY * fs, dFace, sx * (2 - br) * hs, sy * br * hs * fs, swimRot, P.x, P.y - 10);
       drawSet(KD, key, frame, P.x - cx, fy - cy + dY * fs, dFace, false, sx * (2 - br) * hs, sy * br * hs * fs, shadowed ? 0.55 : 1, swimRot);
