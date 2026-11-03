@@ -595,8 +595,14 @@ function loadTrack(name) {
     for (let attempt = 0; attempt < 3; attempt++) {
       try {
         const ctl = typeof AbortController !== 'undefined' ? new AbortController() : null, to = ctl ? setTimeout(() => ctl.abort(), MUSIC_RETRY.timeoutMs) : null;
-        let r, ab; try { r = await fetch(TRACKS[name], ctl ? { priority: 'high', signal: ctl.signal } : { priority: 'high' });   /* (claude/marsh3) a music file goes ahead of the boot's 867 sound clips (see initAudio) */
-          if (!r.ok) throw new Error('HTTP ' + r.status); ab = await r.arrayBuffer(); } finally { if (to) clearTimeout(to); }
+        let r, ab; let kick = () => {}; try { r = await fetch(TRACKS[name], ctl ? { priority: 'high', signal: ctl.signal } : { priority: 'high' });   /* (claude/marsh3) a music file goes ahead of the boot's 867 sound clips (see initAudio) */
+          if (!r.ok) throw new Error('HTTP ' + r.status);
+          /* (claude/smallfix11) THE TIMEOUT IS A STALL TIMEOUT: it re-arms on every chunk that arrives. It used to be 20 s for the WHOLE file, so a 2 MB track (THE HORNET'S NEST) on a slow line was aborted
+             at 20 s, restarted from zero, aborted again, and after the third the synth stood in (trackFailed) for about a minute until a retry landed. A slow download that is moving is left to finish. */
+          if (r.body && r.body.getReader && ctl) { clearTimeout(to); let to2 = null; const rd = r.body.getReader(), parts = []; let n = 0; kick = () => { clearTimeout(to2); to2 = setTimeout(() => ctl.abort(), MUSIC_RETRY.timeoutMs); }; kick();
+            try { for (;;) { const { done, value } = await rd.read(); if (done) break; parts.push(value); n += value.length; kick(); } } finally { clearTimeout(to2); }
+            const all = new Uint8Array(n); let o = 0; for (const p of parts) { all.set(p, o); o += p.length; } ab = all.buffer; }
+          else ab = await r.arrayBuffer(); } finally { if (to) clearTimeout(to); }
         const b = await ac.decodeAudioData(ab);
         trackBuf[name] = b; trackEnd[name] = audibleEnd(b); trackFailed[name] = false; trackTries[name] = 0;
         if (wantTrack === name) playFile(name); else addLayer(wantTrack);
@@ -606,8 +612,8 @@ function loadTrack(name) {
         if (attempt < 2) await new Promise(r => setTimeout(r, 250 * (1 << attempt)));
       }
     }
-    trackFailed[name] = true;   /* (claude/marsh3) three tries and no file: now the synth may stand in for it */
     trackTries[name] = (trackTries[name] || 0) + 1;   /* (claude/smallfix6) and ask again later while it is still the track wanted */
+    if (trackTries[name] >= MUSIC_RETRY.max) trackFailed[name] = true;   /* (claude/smallfix11) the synth stands in only once the whole retry budget (10 rounds of 3 tries) is spent, not after the first three tries (~60 s on a slow line: Daniel 11-03, THE HORNET'S NEST) */
     if (trackTries[name] < MUSIC_RETRY.max) setTimeout(() => { if (wantTrack === name && !trackBuf[name] && !trackPending[name]) loadTrack(name); }, MUSIC_RETRY.ms);
   })().finally(() => { trackPending[name] = false; });
 }
