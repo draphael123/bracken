@@ -247,7 +247,8 @@ import { bakeBuriedPrince, bakeCourtier, bakeSarcophagus, bakeCrownSpin, PRINCE_
 import * as LNA from './lance-art.js';
 import * as SHA from './stormhold-art.js'; import * as LSA from './lance-storm-art.js';   /* (claude/lance5art) THE STORM over the Long Bridge: sky, teeth, updraft, gust, skewer column, pivot ring, the torn pennant (src/lance-storm-art.js) */
 import { bakePaladinBoss, bakeLancer, bakeLancerHorse, bakeGuests, bakeBarkeep, bakeDrunk, bakeTownSpikes } from './redraw/waymeet.js';
-import { LEVELS, T, TS, CUSTOM, eliteGate, FRESH_TWIN, LOST_BANNERS, ROAD_OPEN } from './level.js';
+import { LEVELS, T, TS, CUSTOM, eliteGate, FRESH_TWIN, LOST_BANNERS, ROAD_OPEN, trialSteps } from './level.js';
+import { makeArenaYard, gradeOf } from './arena-yard.js'; import * as MVB from './move-board.js';   /* (claude/arenayard, Daniel 11-03) THE ARENA YARD: the one shared practice yard + its move board */
 import { floodReach } from './reachcore.js';
 import { updateMageChase, drawRingDoor, inSpiral, newStairFx, updateStairFx, drawStairFx, drawOrrery, drawReel as drawStairReel, ORRERY as STAIR_ORRERY } from './spiral-chase.js';
 /* FALLING TOWER 3 (claude/fallingtower3): THE CHASE through the rooms under his stair (the Undead Archmage's fight, Daniel 10-27) and THE CRACKED PILLARS (the level's verb) */
@@ -1604,7 +1605,7 @@ function creditTurn(fromX) {
 }
 var PTK = null;   /* (claude/partnerthrow) the partner-throw hands, made below the knock-into helper */
 const TVA_REPLACED = new Set(['hearth', 'longTable', 'bench', 'counter', 'caskRack', 'mugShelf', 'kegStack', 'hallWindow']);   /* (claude/tavernart) the greybox furniture the inn's room paints itself (src/redraw/tavern_backdrop.js) */
-var TAVO = null;   /* (claude/tavern) THE TAVERN's stations (src/tavern.js makeTavern), made beside the online host's api */
+var TAVO = null, YARD = null;   /* (claude/tavern) THE TAVERN's stations (src/tavern.js makeTavern), made beside the online host's api */
 let partyCam = { wide: false, t: 0 };   /* (claude/tavern) the shared camera's step out (src/party.js camStep) */
 players = [P]; P.n = 1; P.hero = PROG.hero || 'knight'; P.press = {}; P.score = freshScore();
 let coopFall = false;      /* a down clock ran out: read once, after the passes */
@@ -3267,6 +3268,7 @@ function spawnEnt(e) {
   if (e.cnSkin === 'spitscorpion') for (let i = n0; i < enemies.length; i++) { enemies[i].w = 14; enemies[i].h = 10; }   /* (claude/underwell) THE SPITTING SCORPION: the slinger's machine in a scorpion's body (low and long) */
   if (e.lesson) for (let i = n0; i < enemies.length; i++) enemies[i].lesson = e.lesson;   /* a lesson's foe (the wood's swordsman): slow, and his sword flashes */
   if (e.trainer || e.lx0) for (let i = n0; i < enemies.length; i++) Object.assign(enemies[i], { trainer: e.trainer, lx0: e.lx0 * TS + 8, lx1: e.lx1 * TS + 8, leapT: 1.5, trialSt: (L.trial || []).find(q => q.x0 + 1 === e.lx0) || null });   /* A TRIAL'S MAN: he never goes down and he keeps to his own yard */
+  if (e.yardZone || e.yardTell || e.yardPace) for (let i = n0; i < enemies.length; i++) Object.assign(enemies[i], { yardZone: e.yardZone, yardTell: e.yardTell, yardPace: e.yardPace });   /* (claude/arenayard) a station's dummy: asleep unless somebody is in the station (src/arena-yard.js hold); the flash dummy flashes, the slow one tells longer */
 }
 function spawnEntitiesTail() {
   if (TGM) TGM.reset();   /* (claude/monastery2) no block, toll or note of the last attempt at the guardian is left: the grid goes back as built below */
@@ -4680,7 +4682,7 @@ function startGame() { mapSpurLit = null;
      shop and the rush are one hero's business, so they run alone and the pair are put back together on the next wood.
      Nothing is ever armed in single player, so players stays one long and this line is the only thing that happened. */
   if (coopWant && L && !L.trial && !L.shop && !rushOn()) partyStart(); else if (coop()) coopEnd();   /* (claude/tavern) the whole party: up to four seats (coopWant.seats) */
-  if (TAVO) TAVO.reset();
+  if (TAVO) TAVO.reset(); if (YARD) YARD.st.board = null;
   dcStart(); for (const p of players) { p.score = freshScore(); if (p.prof) p.prof.woodBase = CS.earnedOf(p.prof.led); }   /* the card's tally is THIS wood's; p.total is the run's, and winLevel adds this to it */
   state = 'play'; levelTime = 0; deaths = 0; gormFell = false; P.phoenixUsed = false; kills = 0; got = 0; lives = SET.iron ? 3 : Infinity; pogoCount = 0; parries = 0; blocks = 0; dodges = 0; hitsTaken = 0;
   for (const a of acorns) a.got = false; { const sv = (PROG[LEVELS[levelIndex].id] || {}).silver || 0; for (const s of silvers) s.got = !!(sv & (1 << s.i)); } for (const s of shrines) s.lit = false; collectedCrates.clear(); healCrates.clear(); healths = []; destroyed = new Set(); cutBridges = new Set(); marks = new Set(); straysGot = new Set(); strayLast = null; resetPools();
@@ -5891,7 +5893,7 @@ function updateStore0(dt) {
   if (confirmPress && items.length) { const coop0 = coopOpen(PROG);   /* (the first extra hero bought opens CO-OP: said below) */
     const k = items[storeI], owned = k.consumable ? false : (k.id === 'none' || owns(tab, k.id)), lock = lockOf(k, PROG, featDone);
     if (k.practice === 'trial') { startTrial(hero()); return; }   /* THE GUIDED YARD, from the store as well as the pause menu */
-    if (k.practice) { const i = LEVELS.findIndex(l => l.id === 'trial_open'); if (i >= 0) { rush = null; loadThen(i, () => { introSeen = true; startGame(); SFX.uiSel(); }); } return; }
+    if (k.practice) { yardEnter(false); return; }
     if (owned && tab.key) { setEquip(tab.key, k.id); if (tab.key === 'menu') music.play(menuTrack()); if (tab.key === 'hero') { applySkin(); applyUpgrades(); P.hp = Math.min(P.hp, P.maxHp); } applySkin(); saveProgress(); SFX.equip(); storeMsg = k.passive ? k.name + ' is always on' : k.name + ' equipped' + (tab.key === 'charm' ? ' (worn)' : ''); storeMsgT = 2;
       if (tab.key === 'hero' && heroLevel(k.id) === 0) { storeMsg = k.name + ' starts at nothing: no levels, no skills, no charm. Walk a wood with him and he grows.'; storeMsgT = 5.5; }
       else if (tab.key === 'hero' && !(PROG.tried && PROG.tried[k.id])) { storeMsg = k.name + ' equipped. HIS TRIAL IS IN THE PAUSE MENU: A PRACTICE YARD FOR EVERY VERB HE HAS.'; storeMsgT = 5; } }
@@ -6588,6 +6590,7 @@ function menuConfirm() {
   else if (k === 'Hero') { state = 'herocard'; SFX.uiSel(); }
   else if (k === 'Secrets') { menuKind = 'secrets'; SFX.uiSel(); }   /* (claude/secrets) the journal: found X of Y per act */
   else if ((k === 'Return to map' || k === 'Quit to title') && menuFrom === 'play' && !(menuMsg === 'press again to leave this level' && menuMsgT > 0)) { menuMsg = 'press again to leave this level'; menuMsgT = 2.5; SFX.ui(); }   /* leaving a level you are in asks once */
+  else if (k === 'Return to map' && L && L.arenaYard) { yardLeave(); }   /* (claude/arenayard) out of the yard: back to the inn it was entered from, else the map */
   else if (k === 'Return to map' && L && L.tavern) { tavernToMap(); }   /* (claude/tavernname) out of the inn's door, to the map */
   else if (k === 'Return to map' && rushOn()) { rush = null; setView('normal'); state = 'map'; gotoLevelNode(levelIndex); music.play(menuTrack()); SFX.menuClose(); }
   else if (k === 'Return to map') { setView('normal'); state = 'map'; gotoLevelNode(levelIndex); music.play(menuTrack()); SFX.menuClose(); }
@@ -7336,11 +7339,59 @@ TAVO = makeTavern({ TS, L: () => L, PROG: () => PROG, save: () => saveProgress()
   p1Key: () => (touchOn ? 'TAP' : padLast ? 'UP' : String((KEYS.talk && KEYS.talk[0]) || 'e').toUpperCase()), p1Press: () => pressRead(), eatTalk: () => { talkPress = false; },
   toMap: () => tavernToMap('THE PARTY IS WITH YOU'), takeRoad: () => tavernToMap(coop() ? 'THE PARTY TAKES THE ROAD: ' + players.length : 'ALONE ON THE ROAD'),
   leave: p => { burst(p.x, p.y - 8, 10, ['#e8e0d0', '#8a8f80'], 40, 0.4); callout(PARTY.tagOf(p) + ' LEAVES THE PARTY'); if (p.src && p.src.kind === 'online') ONL.dropGuest(p.src.gid, 'LEFT THE PARTY'); else seatDrop(p); TAVO.door(); },
-  openOnline: () => ONL.open(), openParty: () => partyBoardOpen(), openSaves: () => openCoopHelp('play', SAVES_PAGE),   /* (claude/coopclarity) THE SAVES SIGN: one page of the co-op guide */ practice: () => { partyToWant(); rush = null; setView('normal'); practiceFromInn = true; practiceI = Math.max(0, HEROES.findIndex(h => h.id === hero())); state = 'practice'; SFX.uiSel(); },
+  openOnline: () => ONL.open(), openParty: () => partyBoardOpen(), openSaves: () => openCoopHelp('play', SAVES_PAGE),   /* (claude/coopclarity) THE SAVES SIGN: one page of the co-op guide */ practice: () => { partyToWant(); rush = null; setView('normal'); practiceFromInn = false; yardEnter(true); },   /* (claude/arenayard) THE PRACTICE DOOR goes straight into the Arena Yard with the party; the old hero trials are its TRIALS DOOR */
   down: p => asPlayer(p, () => goDown({ name: 'THE SPARRING BELL', red: false, rule: '' })), roomCode: () => ONL.code(),
   heroStrip: (x, y, w, cur, p) => tavStrip(x, y, w, cur, p), heroesFor: tavHeroes, setHero: tavSetHero, weapons: tavWeapons, weaponOf: tavWeaponOf, setWeapon: tavSetWeapon,
   heroName: h => HERO_SHORT[h] || String(h).toUpperCase(), weaponName: id => (SWORDS.find(s => s.id === id) || { name: String(id).toUpperCase() }).name });
 /* the touch USE button reads the station a phone player stands at */
+/* ===== (claude/arenayard, Daniel 11-03) THE ARENA YARD: the one shared practice yard (src/arena-yard.js; plan scratch/plan-arenayard-1103.md) ===== */
+let yardFromInn = false, yardPrev = { parries: 0, rp: 0 };
+const yardIndex = () => LEVELS.findIndex(l => l.id === 'arena_yard');
+/* INTO THE YARD: from the inn's practice door (with the party) or the title / store / pause (alone, back to the map) */
+function yardEnter(fromInn) { const i = yardIndex(); if (i < 0) return false; yardFromInn = !!fromInn; rush = null; practiceOverlay = false; loadThen(i, () => { introSeen = true; startGame(); SFX.uiSel(); }); return true; }
+function yardLeave() { setView('normal'); if (YARD) YARD.st.board = null; if (yardFromInn) { partyToWant(); yardFromInn = false; enterTavern(); } else tavernToMap(); }
+const yardSkills = () => { const nm = id => { if (!id) return ''; const k = skillFor(hero(), id); return k ? k.name : ((ABILITIES.find(a => a.id === id) || {}).name || ''); }; return [nm(skillNow()), slotsAt(heroLevel()) >= 2 ? nm(skill2Now()) : '']; };
+/* THE MOVE BOARD for one player: his hero's loop, a line for every move his old trial taught (trialSteps), the two skills he has equipped */
+function yardBoardOpen(p) {
+  const b = asPlayer(p, () => { const h = hero(); return MVB.boardLines(h, { steps: trialSteps(h) || [], loop: HERO_LOOP[h] || '', skills: yardSkills(), name: (HEROES.find(q => q.id === h) || { name: String(h).toUpperCase() }).name, pad: !!padLast }); });
+  const pages = MVB.boardPages(b, (t, w) => wrap(t, w, 6), VW - 28 - 22);
+  YARD.st.board = { p, b, pages, page: 0 }; YARD.st.stats.boards++; hintT = 0; UIH.toastClear(toastQ); SFX.uiSel();
+}
+function yardHands(pp) {
+  if (!YARD || !YARD.st.board || YARD.st.board.p !== pp) return;
+  const bd = YARD.st.board, pr = pressRead();
+  if (pp.dead || pp.down > 0 || !L || !L.arenaYard) { YARD.st.board = null; return; }
+  if (pr.right && bd.page < bd.pages.length - 1) { bd.page++; SFX.ui(); } if (pr.left && bd.page > 0) { bd.page--; SFX.ui(); }
+  if (pr.talk || pr.up || pr.atk || pr.dodge || pr.jump) { YARD.st.board = null; SFX.menuClose(); }
+  for (const k in pr) pr[k] = false; pressWrite(pr);
+  for (const k of ['left', 'right', 'up', 'down', 'jump', 'atk', 'dodge', 'block', 'throw']) keys[k] = false;
+}
+function drawYardBoard() { const bd = YARD.st.board; if (!bd) return; MVB.drawBoard({ b: bd.b, pages: bd.pages, page: bd.page, VW, VH, panel, text, wrap, fitText, UI }); }
+/* A KIT THAT TAKES AN ARROW OUT OF THE AIR (the ward melts it, the hook flings it, the snatch pockets it) never reaches damagePlayer: grade it here, the frame it dies or turns */
+const yardGuarding = q => !!(q.block || q.warding || q.parryW > 0 || q.deflectT > 0 || q.fwUp || q.aegis || q.rgGuard || q.braceT > 0 || q.parryT > 0 || q.geoGuard || q.geoGuardAt > time - 0.5 || q.geoWardRose);   /* a hero with a guard, ward, deflect or catch up: an arrow that dies on a hero who had none just missed */
+function yardWatch() {
+  if (!YARD || !L || !L.arenaYard) return;
+  const moved = parries > yardPrev.parries || RP.stats.parries > yardPrev.rp; yardPrev = { parries, rp: RP.stats.parries };
+  if (YARD.st.gradedT === time) return;
+  for (const sd of seeds) { const ow = sd.owner; if (!ow || !ow.yardZone || sd.yGraded || !(sd.dead || sd.reflected)) continue;
+    let who = null, bd = 64; for (const q of players) { if (q.dead || q.down > 0 || !yardGuarding(q)) continue; const d = Math.abs(q.x - sd.x) + Math.abs((q.y - 8) - sd.y) * 0.6; if (d < bd) { bd = d; who = q; } }
+    if (!who) continue; sd.yGraded = true; YARD.grade(moved || sd.reflected ? 'PERFECT' : 'GOOD', who); }
+}
+/* PLACEHOLDER ART (the ART lane draws the arena set over these ids): an oak rail between stations, the move board, the trials door, the leave gate */
+function drawYardProps(cx, cy) {
+  const fy = 22 * TS - cy;
+  for (const c of [12, 29, 45, 56, 70, 90, 108, 126]) { const x = c * TS - cx; if (x < -20 || x > VW + 20) continue; g.fillStyle = '#5e4630'; g.fillRect(x - 6, fy - 12, 2, 12); g.fillRect(x + 6, fy - 12, 2, 12); g.fillRect(x - 6, fy - 10, 14, 2); g.fillRect(x - 6, fy - 5, 14, 2); }
+  const sx = c => c * TS + 8 - cx;
+  { const x = sx(8); g.fillStyle = '#3a2a1c'; g.fillRect(x - 12, fy - 26, 24, 18); g.fillStyle = '#7a5a38'; g.fillRect(x - 11, fy - 25, 22, 16); g.fillStyle = '#e8e2cc'; g.fillRect(x - 8, fy - 21, 16, 2); g.fillRect(x - 8, fy - 17, 12, 2); g.fillRect(x - 8, fy - 13, 14, 2); g.fillStyle = '#3a2a1c'; g.fillRect(x - 8, fy - 8, 2, 8); g.fillRect(x + 6, fy - 8, 2, 8); }
+  { const x = sx(3); g.fillStyle = '#2a2018'; g.fillRect(x - 9, fy - 30, 18, 30); g.fillStyle = '#ffd36b'; g.fillRect(x - 6, fy - 26, 12, 26); g.fillStyle = '#4a3020'; g.fillRect(x - 5, fy - 24, 10, 24); }
+  { const x = sx(11); g.fillStyle = '#5e4630'; g.fillRect(x - 10, fy - 30, 3, 30); g.fillRect(x + 7, fy - 30, 3, 30); g.fillRect(x - 10, fy - 30, 20, 3); g.fillStyle = '#8fd160'; g.fillRect(x - 7, fy - 27, 14, 1); }
+  if (YARD) for (const p of players) { const s = YARD.st.near.get(p); if (s && !(YARD.st.board && YARD.st.board.p === p)) text('UP: ' + YARD.VERB[s], p.x - cx, p.y - cy - 34 + Math.round(Math.sin(time * 5) * 2), '#ffd36b', 'center', 6); }
+}
+YARD = makeArenaYard({ TS, L: () => L, players: () => players, time: () => time, nums: (x, y, txt, col) => nums.push({ x, y, txt, col, life: 0.9, vy: -38 }),   /* (the grade words float even where SET.numbers is off: they are the yard's whole point) */
+  hint: (m, t) => hintSay('tip', t, m), sfx: k => { try { (SFX[k] || SFX.ui)(); } catch {} },
+  pressOf: p => (p.n === 1 ? pressRead() : p.press || {}), eatTalk: p => { if (p.n === 1) talkPress = false; else if (p.press) p.press.talk = false; },
+  openBoard: p => yardBoardOpen(p), openTrials: () => { practiceOverlay = true; practiceI = Math.max(0, YARDS().findIndex(h => h.id === hero())); state = 'practice'; SFX.uiSel(); }, leave: () => yardLeave() });
+VERB_HOOKS.push(c => { if (YARD && YARD.on() && c.P) { const s = YARD.spotNear(c.P); if (s) return { verb: YARD.VERB[s], key: 'talk' }; } return null; });
 VERB_HOOKS.push(c => { if (!TAVO || !TAVO.on() || !c.P) return null; const s = TAVO.stationNear(c.P); return s ? { verb: s.id === 'door' && c.P.n > 1 ? 'LEAVE' : s.verb, key: 'talk' } : null; });
 /* THE PARTY'S MARKS in the world (before the heroes): each hero's floor ring and his tag over his head, in his colour; the leash's rope and its puffs */
 /* TWO PASSES: 'back' (before the heroes) is the ring's far half and the leash rope; 'front' (after the near layer, which paints over the floor line in
@@ -7701,7 +7752,16 @@ function rumble(ms, mag) { if (!SET.rumble) return; try { const gps = navigator.
 function sndAt(x, y, big) { const dx = x - (camX + VW / 2), dy = y - (camY + VH / 2), d = Math.hypot(dx, dy * 1.3), near = VW * 0.55;
   return { pan: Math.max(-0.7, Math.min(0.7, dx / (VW * 0.75))), v: d <= near ? 1 : Math.max(big ? 0.6 : 0.18, 1 - (d - near) / (VW * 0.9)) }; }
 // the player's own sounds are never placed: whatever hurts them, the cry is theirs
-function damagePlayer(fromX, dmg, o) { const was = emitNow(); emitAt(null); try { const hp0 = P.hp, r = damagePlayer0(fromX, dmg, o); if (REC.on) REC.hurt(o, hp0 - P.hp, r); if (P.hp < hp0) P.fpHurtAt = time;   /* (claude/foepass) when he last lost health: a told attack answered unhurt (src/told-attacks.js judge) */ if (r === 'blocked') TCH.buzz(P.parryT > 0.2 ? 'parry' : 'block'); else if (P.hp < hp0) TCH.buzz('hit');
+/* (claude/arenayard) THE YARD'S SAFETY: a trial (L.trial) or the Arena Yard (L.arenaYard, which must NOT be a trial: co-op) never hurts, never bills a price, never drinks a flask */
+const yardSafe = () => !!(L && (L.trial || L.arenaYard));
+const yardSnap = () => ({ parries, rpParries: RP.stats.parries, fwParryAt: P.fwParryAt, parryT: P.parryT || 0 });
+/* GRADE one blow from one of the yard's attacking dummies: PERFECT / GOOD / HIT from the game's own counters (src/arena-yard.js gradeOf). Arrows grade here when they reach damagePlayer, and in yardWatch when a kit takes them out of the air */
+function yardGrade(sn, r, o) {
+  if (!YARD) return; const src = (o && o.who) || updFoe; if (!src || !src.yardZone) return;
+  const now = { parries, rpParries: RP.stats.parries, fwParryAt: P.fwParryAt, parryT: P.parryT || 0, geoBeat: P.geoBeatT === time, retSince: P.retSince ?? 9 };
+  const g = gradeOf(r, sn, now); if (g) { YARD.st.gradedT = time; YARD.grade(g, P); }
+}
+function damagePlayer(fromX, dmg, o) { const was = emitNow(); emitAt(null); try { const hp0 = P.hp, ysn = L && L.arenaYard ? yardSnap() : null, r = damagePlayer0(fromX, dmg, o); if (ysn) yardGrade(ysn, r, o); if (REC.on) REC.hurt(o, hp0 - P.hp, r); if (P.hp < hp0) P.fpHurtAt = time;   /* (claude/foepass) when he last lost health: a told attack answered unhurt (src/told-attacks.js judge) */ if (r === 'blocked') TCH.buzz(P.parryT > 0.2 ? 'parry' : 'block'); else if (P.hp < hp0) TCH.buzz('hit');
   if (r === 'blocked') creditTurn(fromX);   /* and whether that was a blow turned for the PARTNER (the co-op block) */
   if (r === 'hit' && o && o.who && o.who.elite && EK) EK.landed(o.who);   /* (ELITES2) VENOMOUS: his blow that lands poisons */
   /* THE AUDITS' EAR (tools/audit-*.mjs): when a tool has set BK.log to an array, every blow on the hero is written down with the line it came from. Off (null) in play; it changes nothing. */
@@ -7893,7 +7953,7 @@ function damagePlayer0(fromX, dmg, { up = false, unblockable = false, pierce = f
     dmg = Math.ceil(dmg / 2); P.hurt = CM.STAM.breakStagger; P.guardTired = CM.STAM.breakTired; CM.exhaust(P);   /* WEIGHT: a broken guard staggers 0.9 s, stays down 1.2 s, and the bar is EXHAUSTED */
     number(P.x, P.y - 22, 'GUARD BREAK', '#ffd36b');
   }
-  if (L && L.trial) { P.inv = 0.8; P.hurt = 0.2; flash = 0.08; SFX.pHurt(); P.vx = (Math.sign(P.x - fromX) || -P.face) * 120; P.vy = -120; P.ground = false; return 'hit'; } // a trial never hurts
+  if (yardSafe()) { P.inv = 0.8; P.hurt = 0.2; flash = 0.08; SFX.pHurt(); P.vx = (Math.sign(P.x - fromX) || -P.face) * 120; P.vy = -120; P.ground = false; return 'hit'; } // a trial never hurts
   dmg = Math.max(1, Math.round(dmg * diffNow().take * DFM.df('take') * (1 + 0.28 * hitTierOf(curId(), who || updFoe)) * coopTake()));   /* (claude/difficulty) the mode's damage taken (Normal x1) */   /* (IRON HIDE: a milestone perk) */   /* AND TWICE AS HARD: the other half of the co-op rule, on the one line every blow that ever lands on a hero comes through */
   /* (claude/lategamea) THE PERMANENT MITIGATION CHAIN passes through SV.mitigationMul's soft floor (x0.6): IRON HIDE, IRON CHARM, RINGMAIL, PLATE, WARDED PLATE */
   dmg = Math.max(1, Math.round(dmg * SV.mitigationMul([perk('iron') ? 0.9 : 1, PROG.charm === 'iron' ? 0.8 : 1, PROG.items.mail ? 0.9 : 1, PROG.items.plate ? 0.9 : 1, PROG.items.mail2 ? 0.9 : 1]) * (isPyro() && tal('heatShield') && (P.heat || 0) >= 50 ? 0.75 : 1)));
@@ -7957,7 +8017,7 @@ function damagePlayer0(fromX, dmg, { up = false, unblockable = false, pierce = f
 const flaskHud = { flashT: 0, spillT: 0, last: -1, spills: [], glowT: 0, levelDrinks: 0 };   /* the HUD row's flash and shake, the knocked-away flasks, the rising glow, this wood's drinks */
 const drinkT0 = () => P.drinkDur || SV.FLASK.drinkT, swallowT0 = () => P.swallowAt || SV.FLASK.swallowAt;
 function tryDrink() {
-  if (state !== 'play' || !P || P.dead || P.down > 0 || (L && L.trial) || P.drinkT > 0) return false;
+  if (state !== 'play' || !P || P.dead || P.down > 0 || yardSafe() || P.drinkT > 0) return false;
   if (!((P.flasks | 0) > 0)) { SFX.buzz(); number(P.x, P.y - 30, 'NO FLASKS', '#9aa39a'); return false; }
   if (P.hp >= P.maxHp) { SFX.buzz(); number(P.x, P.y - 30, 'FULL', '#9aa39a'); return false; }
   if (!(P.ground || P.carpet || P.swim) || P.climb || P.plunge || P.hurt > 0 || P.asleep > 0 || P.dodge > 0 || CM.committed(P) || P.carry || P.ptC) { SFX.buzz(); return false; }   /* (claude/ft2art: the carpet HOVERS, still - the Archmage's whole fight is flown, and a flask that only worked on foot made 'with flasks' dry there) */
@@ -8040,7 +8100,7 @@ function hintSay(tier, t, msg) { if (tier === 'mechanic' && L && L.chase3 && bos
 const stanceKeyName = () => TCH.on ? 'THE BOW BUTTON' : padLast ? CTL.labelFor(SET.binds, 'pad1', 'stance', 1) : String(KEYS.stance[0] || '2').toUpperCase();   /* (claude/rangerhud) the key her swap answers to, whichever hand is in use */
 const flaskKeyName = () => padLast ? 'LT' : TCH.on ? 'FLASK' : String(KEYS.flask[0] || 'U').toUpperCase();
 /* HURT, WITH A FLASK HELD, AND NEVER DRUNK ONE: say how, twice a save */
-function drinkHint() { if ((PROG.drinkTold || 0) >= 2 || P.dead || !((P.flasks | 0) > 0) || P.hp > P.maxHp * 0.5 || hintT > 0.5 || state !== 'play' || (L && L.trial)) return; PROG.drinkTold = (PROG.drinkTold || 0) + 1; hintSay('mechanic', 4.5, SV.LINES.drink.replace('KEY', flaskKeyName())); }
+function drinkHint() { if ((PROG.drinkTold || 0) >= 2 || P.dead || !((P.flasks | 0) > 0) || P.hp > P.maxHp * 0.5 || hintT > 0.5 || state !== 'play' || yardSafe()) return; PROG.drinkTold = (PROG.drinkTold || 0) + 1; hintSay('mechanic', 4.5, SV.LINES.drink.replace('KEY', flaskKeyName())); }
 function returnToShrine() {
   if (P.dead || rushOn()) return false;
   const hpWas = P.hp, flWas = P.flasks, lifeWas = lifeN; respawn(); lifeN = lifeWas; P.hp = P.hpShown = Math.max(1, Math.min(P.maxHp, hpWas)); P.flasks = flWas | 0;   /* (survival2) R is not a new life: no shrine gives a flask back for it, and a broken shrine's extra stays */   /* (claude/survival) NOT A FREE HEAL: the shrines are dry now, so going back to one carries your health and flasks with you */
@@ -9725,7 +9785,7 @@ const boneDmg = () => Math.max(1, Math.round(swordDmg() * (SKK.K.boneMin + SKK.K
    BLOODWORMS = summonSkeleton, BLOOD BOLT = gravecall, RED GROUND = unholyGround, DRAIN = bidden. ==== */
 let bkWorms = [], bkBolts = [], bkDrains = [];
 const HOST = () => BKIT.BLOOD.host;
-const hostFree = () => !!(L && L.trial) || SET.invincible;   /* (a trial never hurts: the price is shown, not taken) */
+const hostFree = () => yardSafe() || SET.invincible;   /* (a trial never hurts: the price is shown, not taken) */
 function hostPay(pct) { const paid = BKIT.payBlood(P, pct, hostFree()); P.bkHostPaid = (P.bkHostPaid || 0) + paid; if (paid > 0 && !hostFree()) number(P.x, P.y - 34, '-' + paid, '#c0283a'); hostTeach(); return paid; }
 /* a bite of it landed for hero o: n of o's debt comes back (never above where he was) */
 function hostGive(o, n, e) { if (!o || !(o.bd > 0) || !(n > 0) || !(o.hp > 0)) return 0; const hp0 = o.hp, r = BKIT.debtReclaim(o, n);
@@ -11879,7 +11939,7 @@ function breathTake(n, src) {
   if (P.dead || !(n > 0)) return;
   P.hp = Math.max(0, P.hp - n); if (P.drinkT > 0) P.drinkHp = P.hp;
   if (P.hp <= 0) die({ name: (src && src.die) || 'DROWNED', red: false, rule: '' }); }
-const BRD = makeDrains({ players: () => [P], take: (pp, n, src) => breathTake(n, src), god: () => !!(SET.invincible || (window.BK && window.BK.god) || (L && L.trial)),
+const BRD = makeDrains({ players: () => [P], take: (pp, n, src) => breathTake(n, src), god: () => !!(SET.invincible || (window.BK && window.BK.god) || yardSafe()),
   onBeat: (pp, n, src) => { if (src && src.id === 'water') { SFX.splash(); burst(pp.x, pp.y - 6, 6, ['#e6efe6', '#9fb3a6', '#2a3a38'], 50, 0.4, 200, 1); } else if (src && src.id === 'foul') SFX.hiss(); else SFX.gaspTick && SFX.gaspTick(); number(pp.x, pp.y - 30, '-' + n, src && src.tick ? src.tick : '#8fd4ff'); } });
 /* (claude/deadwater, Daniel 10-18) DEADLY WATER IS A QUIET DRAIN TOO (A13): while a hero is in a lethal / poison / foul pool it takes WATER_DRAIN of his MAX health a second (0.11 base = ~9% a real second at Normal after the difficulty chain: a short dip hurts, ~11 s kills), straight off the bar on the same shared
    drain as the breath - NO knockback, NO stagger, NO shove, NO hand-back; he swims and climbs out as in any other pool. The red tick and the splash/hiss are the drain's beat. */
@@ -20217,17 +20277,18 @@ function updateRoadman(e, dt) {
   if (e.t === 'swornsword') {
     // THE PARRY LESSON. One blow, a long tell, and he is wide open for a second and a half if you take it
     // on the beat - which is the only way this town teaches it, because nothing here explains anything.
+    const yt = L.trial || e.yardTell;   /* (claude/arenayard) the Arena Yard's flash dummy flashes and reads the beat like a trial's; its slow one (e.yardPace) only tells longer */
     switch (e.mode) {
       case 'cutTell': want = 0;
-        if ((L.trial || e.lesson) && !e.glint && e.modeT <= (e.lesson && hero() === 'knight' ? RIPOSTE.beat : isPyro() ? FW_K.perfect * 0.8 /* (claude/pyrokit) THE FLAME WARD: tapped as it flashes, the blow lands inside the ward's parry beat */ : L.trial && isGeo() ? GEO_K.ward.raise + GEO_K.ward.perfect : L.trial && (isBz() || isRg()) ? RP_K.tap : L.trial && isReaper() ? WARD_BEAT * 0.8 : PAL_BEAT)   /* (claude/berserker2: HIS YARD flashes on his beat - TAKE IT raised as it flashes is the parry, not an absorb) */) { e.glint = 1;   /* (THE GEOMANCER'S YARD: her ward takes GEO.ward.raise to rise and is perfect for GEO.ward.perfect after, so the flash comes that much before the blow: pressed as it flashes, it is up on the beat) */   /* THE WOOD'S LESSON (e.lesson): his sword flashes too, and for a knight at HIS beat - a reaction's length before the blow, so raising the shield as it flashes is a perfect guard */ ringAt(e.x + e.face * 12, e.y - e.h + 4, 9, '#ffffff', 0.3); burst(e.x + e.face * 12, e.y - e.h + 4, 8, ['#ffffff', '#fff3b0'], 90, 0.3); SFX.tell ? SFX.tell(false) : SFX.clank(); }   /* IN A TRIAL HIS SWORD FLASHES as the Paladin's does: the beat, drawn and heard */
+        if ((yt || e.lesson) && !e.glint && e.modeT <= ((e.lesson || e.yardTell) && hero() === 'knight' ? RIPOSTE.beat : isPyro() ? FW_K.perfect * 0.8 /* (claude/pyrokit) THE FLAME WARD: tapped as it flashes, the blow lands inside the ward's parry beat */ : yt && isGeo() ? GEO_K.ward.raise + GEO_K.ward.perfect : yt && (isBz() || isRg()) ? RP_K.tap : yt && isReaper() ? WARD_BEAT * 0.8 : PAL_BEAT)   /* (claude/berserker2: HIS YARD flashes on his beat - TAKE IT raised as it flashes is the parry, not an absorb) */) { e.glint = 1;   /* (THE GEOMANCER'S YARD: her ward takes GEO.ward.raise to rise and is perfect for GEO.ward.perfect after, so the flash comes that much before the blow: pressed as it flashes, it is up on the beat) */   /* THE WOOD'S LESSON (e.lesson): his sword flashes too, and for a knight at HIS beat - a reaction's length before the blow, so raising the shield as it flashes is a perfect guard */ ringAt(e.x + e.face * 12, e.y - e.h + 4, 9, '#ffffff', 0.3); burst(e.x + e.face * 12, e.y - e.h + 4, 8, ['#ffffff', '#fff3b0'], 90, 0.3); SFX.tell ? SFX.tell(false) : SFX.clank(); }   /* IN A TRIAL HIS SWORD FLASHES as the Paladin's does: the beat, drawn and heard */
         if (e.modeT <= 0) { e.mode = 'cut'; e.modeT = 0.22; SFX.slash(); e.vx = e.face * 70;
           if (!P.dead && Math.sign(d) === e.face && ad < 32 && dy < 22) {
             const res = damagePlayer(e.x, DMG.swornCut);
-            const beat = L.trial && (isGeo() ? res === 'blocked' && P.geoBeatT === time : isReaper() ? res === 'blocked' && (P.retSince ?? 9) < 0.02 : palOpened(res)); if (beat) trialEvent('flash'); else if (L.trial && res === 'blocked') trialSay(isReaper() ? 'WARDED ONLY: LET GO AS IT FLASHES' : 'TOO EARLY: RAISE IT AS IT FLASHES', '#ff9a5c');   /* (claude/foepass) THE DEATH KNIGHT'S BEAT IS THE WARD LET GO (wardReturn), not a ward held: his flash comes at WARD_BEAT x0.8 so a release AT it is on the beat */   /* the Death Knight's beat is his roll: a ward only stops it */
+            const beat = yt && (isGeo() ? res === 'blocked' && P.geoBeatT === time : isReaper() ? res === 'blocked' && (P.retSince ?? 9) < 0.02 : palOpened(res)); if (beat) trialEvent('flash'); else if (yt && res === 'blocked') trialSay(isReaper() ? 'WARDED ONLY: LET GO AS IT FLASHES' : 'TOO EARLY: RAISE IT AS IT FLASHES', '#ff9a5c');   /* (claude/foepass) THE DEATH KNIGHT'S BEAT IS THE WARD LET GO (wardReturn), not a ward held: his flash comes at WARD_BEAT x0.8 so a release AT it is on the beat */   /* the Death Knight's beat is his roll: a ward only stops it */
             if (answered(res) || beat) { e.mode = 'reel'; e.modeT = 1.4; e.stagger = 1.4; e.cd = 1.6; e.vx = -e.face * 120;
               number(e.x, e.y - e.h - 12, 'OPEN', '#8fd160'); SFX.clank(); }
             else if (res === 'blocked') { e.mode = 'rest'; e.modeT = 0.7; e.cd = 1.1; e.vx = -e.face * 40; } }
-          else if (L.trial && isPyro() && P.dodge > 0 && ad < 64 && dy < 22) { trialEvent('flash'); e.mode = 'reel'; e.modeT = 1.4; e.stagger = 1.4; e.cd = 1.6; } }   /* rolled clean through it on the beat */
+          else if (yt && isPyro() && P.dodge > 0 && ad < 64 && dy < 22) { trialEvent('flash'); e.mode = 'reel'; e.modeT = 1.4; e.stagger = 1.4; e.cd = 1.6; } }   /* rolled clean through it on the beat */
         break;
       case 'cut': want = 0; if (e.modeT <= 0) { e.mode = 'rest'; e.modeT = 0.5; e.cd = 1.2; } break;
       case 'reel': want = 0; if (e.modeT <= 0) { e.mode = 'walk'; e.stagger = 0; } break;
@@ -20235,7 +20296,7 @@ function updateRoadman(e, dt) {
       default: e.mode = 'walk';
         if (near && e.stagger <= 0) { const wf = faceHim();
           want = wf === e.face && ad > 22 ? e.face * e.speed : 0;
-          if (ad < 30 && wf === e.face && e.cd <= 0) { e.mode = 'cutTell'; e.modeT = L.trial || e.lesson ? 0.9 : 0.55; e.glint = 0; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.charge(); } }
+          if (ad < 30 && wf === e.face && e.cd <= 0) { e.mode = 'cutTell'; e.modeT = (yt || e.lesson ? 0.9 : 0.55) * (e.yardPace || 1); e.glint = 0; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.charge(); } }
         else want = e.face * e.speed * 0.35;
     }
   } else if (e.t === 'hedgeknight') {
@@ -24019,7 +24080,7 @@ function caravanReset() {
   CV = { zones: shadeZones(L), winch: ws.find(p => !p.hollow) || null, winches: ws, swim: 0, burnT: 0, shaded: false, storm: null, stormNow: null, gustAcc: 0 };
   if (!SUNH) SUNH = makeSunHands({ get players() { return players; }, hero: () => P, asPlayer: (p, fn) => asPlayer(p, fn), TS, sfx: SFX, VW: () => VW, VH: () => VH, calm: () => !!SET.reduceMotion,
     shaded: pp => !CV || state !== 'play' || cvShaded(pp.x, pp.y, pp.h || 14, pp.probe), zones: () => (CV ? CV.zones.filter(z => z[1] - z[0] < 60 * TS).concat(cvCanopies()) : []),
-    drain: n => sunDrain(n), god: () => !!(SET.invincible || (window.BK && window.BK.god) || (L && L.trial)), number: (x, y, t, c) => number(x, y, t, c), part: p => parts.push(p),
+    drain: n => sunDrain(n), god: () => !!(SET.invincible || (window.BK && window.BK.god) || yardSafe()), number: (x, y, t, c) => number(x, y, t, c), part: p => parts.push(p),
     standable: (tx, ty) => isSolid(tx, ty) || isOneWay(tileAt(tx, ty)), solid: (tx, ty) => isSolid(tx, ty) });
   SUNH.reset();   /* (claude/ksar2) every hero cool, the drawn shade's footprints measured again */
   for (const w of ws) { w.k = 1; w.out = 1; w.cd = 0; }
@@ -27735,7 +27796,7 @@ function wardFoe(fromX) { const f = nearFoe(fromX); if (f) return f;
 function wardStop(dmg, fromX) {
   const cap = wardCap();
   if ((P.wardG || 0) >= cap - 0.5) { wardBreak(fromX); return 'broken'; }
-  const blood = L && L.trial ? 0 : Math.max(1, Math.round(dmg * WARD_PRICE * diffNow().take * (1 + 0.28 * hitTierOf(curId())) * coopTake()));   /* a trial never hurts */
+  const blood = yardSafe() ? 0 : Math.max(1, Math.round(dmg * WARD_PRICE * diffNow().take * (1 + 0.28 * hitTierOf(curId())) * coopTake()));   /* a trial never hurts */
   if (blood >= P.hp) return 'bled';
   if (!SET.invincible) BKIT.guardPay(P, blood); P.bkPayAt = time; P.wardDmg = (P.wardDmg || 0) + blood; if (blood > 0) number(P.x, P.y - 20, '-' + blood + ' DEBT', '#c0283a');   /* (claude/heroblocksa) THE BLOOD-PAID GUARD: all of what the ward costs lies on the bar as DEBT (a win-back, not a loss), and the bar flashes where it was paid */
   P.wardG = Math.min(cap, (P.wardG || 0) + (8 + dmg * 0.9) * (1 + 0.12 * prk('dward')));
@@ -28177,7 +28238,7 @@ function bkPerfectStep() { const B = BKIT.BLOOD.step; P.bkPerfectAt = time; P.bk
   number(P.x, P.y - 34, r > 0 ? '+' + Math.round(r) : 'BLOOD STEP', '#ff4a5a'); SFX.bloodDraw(); ringAt(P.x, P.y - 12, 14, '#ff4a5a', 0.22);
   for (let i = 0; i < 9; i++) parts.push({ x: P.x + (Math.random() - 0.5) * 8, y: P.y - 6 - Math.random() * 16, vx: -P.face * (10 + Math.random() * 50), vy: -50 - Math.random() * 50, life: 0.45, max: 0.45, col: Math.random() < 0.5 ? '#c0283a' : '#ff6b6b', size: Math.random() < 0.4 ? 2 : 1, grav: 220 }); }
 /* BLOOD PRICE (DOWN+C, on his knee): he opens a vein - the price goes on the bar as BLOOD DEBT - and his blade is BLOOD-EDGED a while */
-function bkPrice() { const B = BKIT.BLOOD.price, free = !!(L && L.trial) || SET.invincible;   /* (a trial never hurts: the price is shown, not taken) */
+function bkPrice() { const B = BKIT.BLOOD.price, free = yardSafe() || SET.invincible;   /* (a trial never hurts: the price is shown, not taken) */
   if ((P.bkPriceCd || 0) > 0) return false;
   if (!free && P.hp <= 1) { number(P.x, P.y - 30, 'NO BLOOD LEFT TO PAY', '#7a1020'); SFX.buzz(); return false; }
   const paid = BKIT.payPrice(P, free); if (!(paid > 0)) return false;
@@ -28769,6 +28830,7 @@ function updateEnemies(dt) {
       if (e.knock <= 0 && !(r && r.ground) && (e.knockAir = (e.knockAir || 0) + dt) < 1.5) e.knock = 0.001;   /* still in the air when the throw runs out: it keeps falling, into whatever is under it */
       if (e.knock > 0) continue; e.knockAir = 0; }
     if(e.salvage){updateSalvageCaptain(e,dt,{P,A:L.mini,active:miniActive&&miniIntroT<=0,pinDamage:Math.round(DMG.bosunPin*SALVAGE_HIT),cargoDamage:Math.round(24*SALVAGE_HIT),shotDamage:Math.round(16*SALVAGE_HIT),   /* (claude/sweep2) cargo 18->24, shot 12->16, all x SALVAGE_HIT */ hit:(x,dmg,hard)=>damagePlayer(x,dmg,{unblockable:hard,who:e}),answered:res=>res==='blocked'||answered(res),seed:s=>seeds.push(s),say:(msg,hard)=>number(e.x,e.y-e.h-20,msg,hard?'#ff6b6b':'#ffd36b'),sound:k=>SFX[k]()});continue;}
+    if (e.yardZone && YARD) YARD.hold(e);   /* (claude/arenayard) */
     if (e.trainer) { if (e.lx1) e.x = Math.max(e.lx0, Math.min(e.lx1, e.x)); if (e.trainer === 'still' || (e.trialSt && e.trialSt.done)) { if (e.trainer !== 'still') { e.mode = 'walk'; e.modeT = 0; } e.vx = 0; e.face = Math.sign(P.x - e.x) || e.face; e.vy = Math.min(400, (e.vy || 0) + 1000 * dt); const r0 = moveBody(e, 0, e.vy * dt, false); if (r0 && r0.ground) e.vy = 0; e.anim = (e.anim || 0) + dt; continue; } }   /* THE TRIAL'S STILL MEN face you and take it; the drills fight on below */
     if (e.rallyT > 0) { e.rallyT -= dt; if (!windingUp(e) && e.modeT > 0) e.modeT -= dt * 0.6; if (e.cd > 0) e.cd -= dt * 0.6; }   /* RALLIED: it gets to the next blow sooner (never through the tell itself: that stays as long as it was) */
     if (e.wallT > 0) e.wallT -= dt;
@@ -29380,6 +29442,7 @@ function updateEnemies(dt) {
     burst(s.x, s.y, 14, ['#c9a0ff', '#9a5aa8', '#e8e0f0'], 80, 0.7); SFX.puff(); }
   for (const s of seeds) if (s.drunkLob && !s.landed && s.vy > 0 && s.y >= s.ty - 2 && Math.abs(s.x - s.tx) < 24) { s.landed = true; s.dead = true; drunkLand(s); }   /* THE DRUNK'S THROW comes down ON ITS RING, ledge or road, not on whatever rock is under the ledge */
   updateGlass(dt);
+  if (YARD && L.arenaYard) yardWatch();   /* (claude/arenayard) grade an arrow a kit took out of the air, before it is pruned */
   seeds = seeds.filter(s => !s.dead);
   if (bossMusicT > 0) { bossMusicT -= dt; if (bossMusicT <= 0 && bossActive) music.play(L.arena.music || 'boss'); }
   updateRain(dt); updateVines(dt); updateRocks(dt); updateEscape(dt); updateAir(dt);
@@ -29536,7 +29599,7 @@ BZK = makeBerserker({ get P() { return P; }, get enemies() { return enemies; }, 
   /* (claude/berserker2) TAKE IT: the shared tap beat, a block's stamina, the guard break, and what a blow is scaled by on its way to him (the chip is a tenth of it) */
   tap: () => RP_K.tap * DFM.df('parry'), blockCost: d => CM.blockCost(d, 0), canPay: c => P.st >= c, pay: c => { P.st -= c; P.stDelay = ST.delay; },
   guardBreak: () => { P.st = 0; P.stFlash = 0.5; SFX.guardBreak(); SFX.gasp(); shakeCam(5, -P.face * 4); hitstop(0.1); P.hurt = CM.STAM.breakStagger; P.guardTired = CM.STAM.breakTired; CM.exhaust(P); number(P.x, P.y - 22, 'GUARD BREAK', '#ffd36b'); },
-  takeScale: () => diffNow().take * (1 + 0.28 * hitTierOf(curId())) * coopTake(),   /* (claude/riposte: his AXE BRACE is the shared parry) */ inTrial: () => !!(L && L.trial),
+  takeScale: () => diffNow().take * (1 + 0.28 * hitTierOf(curId())) * coopTake(),   /* (claude/riposte: his AXE BRACE is the shared parry) */ inTrial: () => yardSafe(),
   poiseLean: (e, n) => { const m = poiseMax(e); if (!m || !e.alive || e.broken > 0 || e.poiseCd > 0) return; e.poise = Math.min(m, (e.poise || 0) + n); e.poiseT = 2.5; if (e.poise >= m) addPoise(e, 1, P.x, false); } });
 /* THE CROUCH TWISTS, PART C (src/crouch-c.js): the berserker WORKING UP - crouched and still, his rage fills and the growl draws them in */
 CRC = makeCrouchC({ get P() { return P; }, get L() { return L; }, get enemies() { return enemies; }, get parts() { return parts; }, get time() { return time; }, get levelIndex() { return levelIndex; }, get PROG() { return PROG; },
@@ -32349,7 +32412,7 @@ function update(dt) {
         else if (k === 'CONTINUE') { loadSlot(slot); applySkin(); applyUpgrades(); mapToSaved(); state = 'map'; }
         else if (k === 'NEW GAME' || k === 'CHOOSE A SAVE') { state = 'slots'; slotI = slot; slotMsg = ''; eraseAsk = -1; fixAsk = -1; }
         else if (k === 'BOSS RUSH') { loadSlot(slot); applySkin(); applyUpgrades(); rushStart(); }
-        else if (k === 'PRACTICE') { rush = null; practiceFromInn = false; loadSlot(slot); applySkin(); applyUpgrades(); practiceI = Math.max(0, HEROES.findIndex(h => h.id === hero())); state = 'practice'; }
+        else if (k === 'PRACTICE') { rush = null; practiceFromInn = false; loadSlot(slot); applySkin(); applyUpgrades(); yardEnter(false); }   /* (claude/arenayard) straight into the Arena Yard */
         else if (k === 'BOSS SELECT') bossSelectOpen('title');
         else if (k === 'LOCAL CO-OP') { loadSlot(slot); applySkin(); applyUpgrades(); mapToSaved(); enterTavern(); }   /* (claude/tavern) CO-OP LIVES IN THE TAVERN now: friends walk in there (a pad's JUMP) */
         else if (k === 'ONLINE CO-OP') { loadSlot(slot); applySkin(); applyUpgrades(); mapToSaved(); enterTavern(() => ONL.open()); }   /* ONLINE CO-OP (src/online.js): the tavern, with its invite board's room card up - host (the same co-op gate) or join with a code */
@@ -32469,6 +32532,7 @@ function update(dt) {
      EACH HERO BUFFERS HIS OWN PRESSES AND HOLDS HIS OWN SWING. In single player asPlayer calls straight through, so
      this is the two lines it always was, in the order it always ran them. */
   for (const pp of players) asPlayer(pp, () => {
+    yardHands(pp);   /* (claude/arenayard) the move board eats its reader's keys */
     tavHands(pp);   /* (claude/tavern) FIRST: a joiner walking in is walked by the room, a hero at the wardrobe has his keys taken by its card (before a double tap could read as a roll) */
     const ptSaved = ptPass();   /* (claude/partnerthrow) GRAB / THROW / WIGGLE: the press is read here, before the buffers; a held or thrown partner's hands are masked for the pass */
     /* CARRY & THROW (src/throwables.js, 2026-09-28): ATTACK throws whatever is carried, the way the hero faces, and is
@@ -32502,7 +32566,7 @@ function update(dt) {
      A press is read once (the first sub-step); a hitstop or a screen change ends the frame's remaining sub-steps; the camera and the weather run once, on world time. */
   const sub = wdtAll > dt * 1.0001 ? Math.ceil(wdtAll / dt - 1e-6) : 1, stateIn = state;
   for (let si = 0; si < sub; si++) { const wdt = wdtAll / sub; if (si) { clearPresses(); if (stop > 0 || state !== stateIn) break; }
-  updateMovers(wdt); danceAfterBoss(); for (const pp of players) asPlayer(pp, () => ptMasked(pp, () => { if (!PTK.before(pp, wdt)) { HERO_HAND = true; try { updatePlayer(wdt); } finally { HERO_HAND = false; } } PTK.after(pp, wdt); })); coopWatch(); if (TAVO) TAVO.tick(wdt); PTK.tick(wdt); updateEnemies(wdt); tokenPost(TK, enemies, tkApi, wdt); P = players[0]; emitAt(null); updateWisp(wdt); updateSlide(wdt); updateOverhangs(wdt); updateChase(wdt); updateStairs(wdt); updateFlood(wdt); traceBeams(wdt); updateProps(wdt); updateVillage(wdt); if (L.timber) updateTimber(wdt, attackBox()); if (L.ballast) updateBallast(wdt); if (L.hoists) updateHoists(wdt); if (L.deep) updateDeep(wdt); updateBreathCue(wdt); if (L.hush) updateHush(wdt); updateCrystal(wdt); updateSpans(wdt); updatePyres(wdt); updateCorpses(wdt); updateShots(wdt); updateParticles(wdt); }
+  updateMovers(wdt); danceAfterBoss(); for (const pp of players) asPlayer(pp, () => ptMasked(pp, () => { if (!PTK.before(pp, wdt)) { HERO_HAND = true; try { updatePlayer(wdt); } finally { HERO_HAND = false; } } PTK.after(pp, wdt); })); coopWatch(); if (TAVO) TAVO.tick(wdt); if (YARD) YARD.tick(wdt); PTK.tick(wdt); updateEnemies(wdt); tokenPost(TK, enemies, tkApi, wdt); P = players[0]; emitAt(null); updateWisp(wdt); updateSlide(wdt); updateOverhangs(wdt); updateChase(wdt); updateStairs(wdt); updateFlood(wdt); traceBeams(wdt); updateProps(wdt); updateVillage(wdt); if (L.timber) updateTimber(wdt, attackBox()); if (L.ballast) updateBallast(wdt); if (L.hoists) updateHoists(wdt); if (L.deep) updateDeep(wdt); updateBreathCue(wdt); if (L.hush) updateHush(wdt); updateCrystal(wdt); updateSpans(wdt); updatePyres(wdt); updateCorpses(wdt); updateShots(wdt); updateParticles(wdt); }
   updateWeather(dt); updateCamera(dt * Math.max(1, SET.speed || 1));
   updatePolish(dt); fogMark(dt);
   flash = Math.max(0, flash - dt);
@@ -34907,7 +34971,7 @@ function drawWorld(cx, cy, showPlayer) {
      one knee, he goes over, and he fades where he fell. Every hero has hurt and crouch, so every hero falls. */
   /* EACH HERO IN HIS OWN PASS. The hundred lines below are the same hundred lines, with P, the hero he is and his
      baked frames set to whoever is being painted. One in the list and asPlayer calls straight through. */
-  if (TAVO) TAVO.draw(g, cx, cy, time); drawPartyMarks(cx, cy);   /* (claude/tavern) the inn's stations, and each hero's floor ring + tag */
+  if (TAVO) TAVO.draw(g, cx, cy, time); if (L && L.arenaYard) drawYardProps(cx, cy); drawPartyMarks(cx, cy);   /* (claude/tavern) the inn's stations, and each hero's floor ring + tag */
   for (const pDraw of players) asPlayer(pDraw, () => {
   if (showPlayer && P.down > 0 && K && K.R) drawDowned(cx, cy);   /* on the floor, with his clock and his partner's ring */
   if (showPlayer && P.dead > 0 && K && K.R) { const k = 1.2 - P.dead, hs = isReaper() ? 1.22 : 1;
@@ -35748,8 +35812,9 @@ function drawHeroCard() { // who you are right now: the numbers behind the bars
     text('Q  SKILLS AND LOADOUT', VW / 2, y + h - 24, UI.gold, 'center', 6);
     text('Z  TAKE THIS HERO TRIAL', VW / 2, y + h - 14, UI.sel, 'center', 6); }
 }
-let practiceI = 0, practiceFromInn = false;   /* (claude/tavernfix) the Practice list was opened from the inn's gate: leaving it goes back there */
-const practiceLeave = () => { if (practiceFromInn) { practiceFromInn = false; enterTavern(); } else state = 'title'; SFX.menuClose(); };
+let practiceI = 0, practiceFromInn = false, practiceOverlay = false;   /* (claude/arenayard) practiceOverlay: the list was opened over the live Arena Yard by its TRIALS DOOR - ESC goes back to the yard */
+   /* (claude/tavernfix) the Practice list was opened from the inn's gate: leaving it goes back there */
+const practiceLeave = () => { if (practiceOverlay) { practiceOverlay = false; state = 'play'; SFX.menuClose(); return; } if (practiceFromInn) { practiceFromInn = false; enterTavern(); } else state = 'title'; SFX.menuClose(); };
 const YARD_DRILLS = {
   knight: 'shield, the beat, dash attack, rise and sweep',
   pyro: 'ember, the pyre, dash attack, rise and sweep',
@@ -35760,10 +35825,10 @@ const YARD_DRILLS = {
   geomancer: 'stone fist, fault line, the ward on the beat, stonefall, avalanche',
   berserker: 'the chain, the cross-chop, the brace, the axe, frenzy',
   ranger: 'the shot, the draw, the bash, the snare, the focus',
-  open: 'straw men, steps, a gap, a wall, two guards',
+  open: 'every verb on one lawn: straw men, a gap, a wall, a guard, a swordsman who flashes, an archer',
 };
 // the open yard is not a hero: it is the fourth row, and it takes whoever you are in as you are
-const YARDS = () => HEROES.concat([{ id: 'open', name: 'THE OPEN YARD', free: true }]);
+const YARDS = () => [{ id: 'open', name: 'THE ARENA YARD', free: true }].concat(HEROES);   /* (claude/arenayard) the shared yard sits first; the ten trials are its door */
 function updatePractice() {
   const rows = YARDS();
   if (practiceI >= rows.length) practiceI = 0;
@@ -35772,7 +35837,7 @@ function updatePractice() {
   if (pausePress) { practiceLeave(); return; }
   if (menuTake()) {
     const h = rows[practiceI]; practiceFromInn = false;   /* (going INTO a yard: the way back out is that yard's own) */
-    if (h.free) { const i = LEVELS.findIndex(l => l.id === 'trial_open'); if (i >= 0) { rush = null; loadThen(i, () => { introSeen = true; startGame(); SFX.uiSel(); }); } return; }
+    if (h.free) { const ov = practiceOverlay; if (ov) { practiceOverlay = false; state = 'play'; return; } yardEnter(false); return; }   /* (claude/arenayard) from the yard's own door the top row is just 'back to the yard' */
     if (!(PROG.heroes && PROG.heroes[h.id])) { SFX.buzz(); menuMsg = 'not yours yet'; menuMsgT = 2; return; }
     PROG.hero = h.id; applySkin(); applyUpgrades(); saveProgress();
     if (!startTrial(h.id)) { SFX.buzz(); menuMsg = 'no yard for her yet'; menuMsgT = 2; }   /* she is equipped either way: the yard is a later phase */
@@ -36753,7 +36818,8 @@ function render() {
       g.strokeStyle = tc.col || 'rgba(255,211,107,0.7)'; g.lineWidth = 1; g.beginPath(); g.roundRect(hbx + 0.5, hby + 0.5, bw - 1, bh - 1, 4); g.stroke();
       lines.forEach((ln, i) => text(ln, hbx + bw / 2, hby + 4 + i * BODY_LH, tc.col || '#ffd36b', 'center', 6)); g.globalAlpha = 1; } }
     else { hintT = 0; UIH.toastClear(toastQ); }
-    if (state === 'play') drawRealmBanner(xpRow + rgRow, cy);   /* THE UNDEAD ARCHMAGE'S REALMS: the opening in plain words (claude/archfix) */
+    if (state === 'play') drawRealmBanner(xpRow + rgRow, cy);
+    if (YARD && YARD.st.board && state === 'play') drawYardBoard();   /* (claude/arenayard) THE MOVE BOARD, over everything the HUD drew (co-op does not pause) */   /* THE UNDEAD ARCHMAGE'S REALMS: the opening in plain words (claude/archfix) */
     if (state === 'play' && L.alarmT > 0) { const k = Math.min(1, L.alarmT / 14), lab = 'THE WATCH IS UP', w = lab.length * 6 + 10;
       g.fillStyle = 'rgba(60,16,16,0.85)'; g.fillRect(VW / 2 - w / 2, 46, w, 11); g.globalAlpha = 0.2 + 0.2 * Math.sin(time * 8); g.fillStyle = '#c9463d'; g.fillRect(VW / 2 - w / 2, 46, w, 11); g.globalAlpha = 1;
       g.strokeStyle = '#ff6b6b'; g.lineWidth = 1; g.strokeRect(VW / 2 - w / 2 + 0.5, 46.5, w - 1, 10); text(lab, VW / 2, 49, '#ffd0d0', 'center', 6);
@@ -37215,6 +37281,7 @@ window.BK = { setView: m => setView(m), env: () => ({ hurt: (e, d, x) => hurtEne
   parts: () => parts, bossBodies: () => bossBodies, get PROP() { return PROP; }, get FLYERS() { return FLYERS; }, get HAS_HURT() { return HAS_HURT; }, get EHP() { return EHP; },
 };
 /* THE HOIST, for the harnesses: the decks (each with its state in .hs), a way to put n loads in one's basket, and the Reeve's cut */
+window.BK.yard = () => ({ Y: YARD, seeds: () => seeds, enter: fromInn => yardEnter(fromInn), leave: () => yardLeave(), inn: () => yardFromInn, open: p => yardBoardOpen(p || players[0]), nums: () => nums, practiceOverlay: () => practiceOverlay, state: () => state });   /* (claude/arenayard) tools/arena-yard.mjs */
 window.BK.hvr = () => (HVR && HVR.on() ? HVR.read() : null); window.BK.hvrHands = () => HVR;   /* (claude/hanging3) the ropes, for the tools and the bot */
 window.BK.hoists = () => hoistDecks(); window.BK.hoistLoad = (m, n) => { hoistOf(m).load += (n || 1); return hoistOf(m).load; }; window.BK.cutHoist = m => cutHoist(m);
 /* the Hints level, for tools/hintlevel.mjs: set it as the menu row does, say a line through the gate, read the gate's tally */

@@ -194,10 +194,10 @@ if (PAGE.length) {
       ok(tb.wood.length === 3 && tb.coop && tb.wood.slice(1).join() === tb.seats.map(s => s.split(':').slice(0, 3).join(':')).join(), '...and the next wood starts with all three, each on his own pad: ' + tb.wood.join(' '));
       /* the door, P1: out to the map with the party; practice */
       const dp = await E(`(async()=>{BK.coopEnd();await BK.tavern.enter();BK.sim(10);BK.tavern.join({kind:'pad',pad:3});BK.sim(80);const a=__P(1);__at(a,${STATIONS[0].x});BK.sim(3);__talk(a);BK.sim(1);const o={st:BK.state,seats:BK.tavern.seats().length};
-        await BK.tavern.enter();BK.sim(5);o.back=BK.players().length;const b=__P(1);__at(b,${STATIONS.find(s => s.id === 'practice').x});BK.sim(3);__talk(b);o.pr=BK.state;BK.state='play';return o;})()`);
+        await BK.tavern.enter();BK.sim(5);o.back=BK.players().length;const b=__P(1);__at(b,${STATIONS.find(s => s.id === 'practice').x});BK.sim(3);__talk(b);for(let i=0;i<300&&!(BK.L&&BK.L.arenaYard);i++){BK.sim(1);await new Promise(r=>setTimeout(r,5));}o.pr=BK.L&&BK.L.arenaYard?'arena_yard':BK.state;o.party=BK.players().length;BK.state='play';return o;})()`);
       ok(dp.st === 'map' && dp.seats === 1, 'THE DOOR, for player one: out to the map, the party with him: ' + JSON.stringify(dp));
       ok(dp.back === 2, '...and back into the inn the party comes in with him: ' + dp.back);
-      ok(dp.pr === 'practice', 'THE PRACTICE DOOR opens the practice yards: ' + dp.pr);
+      ok(dp.pr === 'arena_yard' && dp.party === 2, 'THE PRACTICE DOOR goes straight into the Arena Yard (claude/arenayard), the party with him: ' + dp.pr + ' ' + dp.party);
       const seen = await E('BK.tavern.debug().stations.filter(s=>!s.seen).map(s=>s.id)');
       ok(seen.length === 0, 'every station used once: no glint left: ' + seen.join(','));
       const touchVerb = await E(`(()=>{BK.state='play';const a=__P(1);__at(a,${STATIONS.find(s => s.id === 'table').x});BK.sim(2);return BK.touchVerb?BK.touchVerb():null;})()`).catch(() => null);
@@ -234,9 +234,9 @@ if (PAGE.length) {
       /* PRACTICE, from the inn: leaving it goes back to the inn with the party; from the title it still goes to the title */
       await E('__fresh()');
       const esc = "(async()=>{document.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',code:'Escape',bubbles:true}));BK.step(1);for(let i=0;i<200&&!(BK.state==='play'&&BK.L&&BK.L.tavern);i++)await new Promise(r=>setTimeout(r,50));return {st:BK.state,tav:!!(BK.L&&BK.L.tavern),n:BK.players().length};})()";
-      const pr = await E("(()=>{BK.tavern.join({kind:'pad',pad:3});BK.sim(90);const b=__P(1);__at(b," + STATIONS.find(s => s.id === 'practice').x + ");BK.sim(3);__talk(b);BK.sim(1);return BK.state;})()");
-      const back = await E(esc);
-      ok(pr === 'practice' && back.st === 'play' && back.tav && back.n === 2, 'PRACTICE entered from the inn: ESC returns to the INN with the party: ' + pr + ' ' + JSON.stringify(back));
+      const pr = await E("(async()=>{BK.tavern.join({kind:'pad',pad:3});BK.sim(90);const b=__P(1);__at(b," + STATIONS.find(s => s.id === 'practice').x + ");BK.sim(3);__talk(b);for(let i=0;i<300&&!(BK.L&&BK.L.arenaYard);i++){BK.sim(1);await new Promise(r=>setTimeout(r,5));}return BK.L&&BK.L.arenaYard?'arena_yard':BK.state;})()");
+      const back = await E("(async()=>{BK.yard().leave();for(let i=0;i<300&&!(BK.L&&BK.L.tavern);i++){BK.sim(1);await new Promise(r=>setTimeout(r,5));}return {st:BK.state,tav:!!(BK.L&&BK.L.tavern),n:BK.players().length};})()");   /* (claude/arenayard) PRACTICE is the Arena Yard now; its gate out (and the pause menu's Return to map) goes back to the inn */
+      ok(pr === 'arena_yard' && back.st === 'play' && back.tav && back.n === 2, 'PRACTICE entered from the inn is the Arena Yard: its gate out returns to the INN with the party: ' + pr + ' ' + JSON.stringify(back));
       const t0 = await E("(()=>{BK.coopEnd();BK.load(0);BK.state='practice';BK.step(1);return BK.state;})()");
       const t1 = await E("(()=>{document.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',code:'Escape',bubbles:true}));BK.step(1);return BK.state;})()");
       ok(t0 === 'practice' && t1 === 'title', 'PRACTICE entered any other way: ESC still goes to the title: ' + t0 + ' -> ' + t1);

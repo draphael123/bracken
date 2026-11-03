@@ -22,6 +22,7 @@
 //   pick      THE HERO PICK, with each of its cards selected in turn: every hero's name under its card, and the words for the selected one
 //   card      THE LEVEL-UP CARD (LEVELING): every hero's stat card, a milestone, a full card with every perk, the respec line, and the co-op lock
 //   practice  THE PRACTICE YARDS list, each row selected in turn
+//   arena     (claude/arenayard) THE ARENA YARD: every sign in it, every page of its move board for every hero
 //   bossjump  THE HIDDEN BOSS LIST (SHIFT+B on the title): each row selected in turn, and every hero on the hero line
 //   bossselect  THE SAVE'S BOSS LIST: locked and beaten rows, records, and every owned hero
 //   trial     THE TRIAL PROMPT after a hero is taken ("TAKE THE TRIAL FIRST?"), for every hero
@@ -39,7 +40,7 @@ import { FIRST as CROUCH_FIRST } from '../src/crouch-hint.js';
 
 const OUT = process.env.OUT || join(ROOT, 'audits', 'readability');
 const args = process.argv.slice(2), strict = args.includes('--strict');
-const SCOPES = ['hints', 'talk', 'bestiary', 'store', 'tree', 'pick', 'trial', 'erase', 'opening', 'press', 'title', 'mapcard', 'death', 'results', 'card', 'levelcard', 'slots', 'ending', 'practice', 'party', 'bossjump', 'bossselect', 'menu', 'secrets', 'settings', 'soundtest', 'credits', 'whatsnew', 'hud', 'worldplates', 'plates', 'bossfix', 'boss'];   /* the order they run in */
+const SCOPES = ['hints', 'talk', 'bestiary', 'store', 'tree', 'pick', 'trial', 'erase', 'opening', 'press', 'title', 'mapcard', 'death', 'results', 'card', 'levelcard', 'slots', 'ending', 'practice', 'arena', 'party', 'bossjump', 'bossselect', 'menu', 'secrets', 'settings', 'soundtest', 'credits', 'whatsnew', 'hud', 'worldplates', 'plates', 'bossfix', 'boss'];   /* the order they run in */
 const SCOPE_TIMEOUT_S = +process.env.TEXTFIT_SCOPE_TIMEOUT || 480;
 const only = (args.find(a => !a.startsWith('--')) || '').split(',').filter(Boolean);
 
@@ -115,6 +116,8 @@ async function pageTextFit(input) {
       if (b && !hidden) report('OVERDRAWN', screen, t, { bar: [Math.round(b.x0), Math.round(b.y0), Math.round(b.w), Math.round(b.h)], text: [t.x0, t.y0, t.w, t.h] }); }
     for (let a = 0; a < texts.length; a++) for (let b = a + 1; b < texts.length; b++) { const A = texts[a], B = texts[b];
       if (A.s === B.s && Math.abs(A.x0 - B.x0) <= 1 && Math.abs(A.y0 - B.y0) <= 1) continue;
+      /* (claude/arenayard) THE MOVE BOARD is drawn over the live world in play (co-op does not pause): a word the board's opaque plate covers whole is not a word the board's words collide with */
+      if (/^arena board/.test(screen) && [[A, B], [B, A]].some(([u, o]) => u.i < o.i && rec.some(q => q.kind === 'rect' && q.m === 'board' && q.i > u.i && q.i < o.i && q.x0 <= u.x0 + 1 && q.x0 + q.w >= u.x0 + u.w - 1 && q.y0 <= u.y0 + 1 && q.y0 + q.h >= u.y0 + u.h - 1))) continue;
       const ix = Math.min(A.x0 + A.w, B.x0 + B.w) - Math.max(A.x0, B.x0), iy = Math.min(A.y0 + A.h, B.y0 + B.h) - Math.max(A.y0, B.y0);
       if (ix > 1 && iy > 1) report('COLLIDE', screen, A, { other: B.s, otherAt: B.at }); }
     for (const c of rec.filter(r => r.kind === 'cut')) report('TRUNCATED', screen, c, { out: c.out, maxW: c.maxW });
@@ -264,8 +267,17 @@ async function pageTextFit(input) {
     for (const n of [4, 3, 2]) { BK.aiComp.arm(['geomancer', 'berserker', 'reaper'].slice(0, n - 1), ['support', 'balanced', 'defensive'].slice(0, n - 1), n - 1); frame('map party x' + n, () => { BK.state = 'map'; BK.PROG.xp = BK.PROG.xp || {}; }, { settle: 3 }); }
     BK.coopEnd(); BK.state = 'title'; await yieldNow(); }
   if (want('practice')) { const PR = window.BK.PROG; PR.heroes = PR.heroes || {};
-    for (let i = 0; i < 8; i++) frame('practice #' + i, () => { BK.state = 'practice'; BK.ui.practiceI = i; }, { settle: 20 });
+    for (let i = 0; i < 10; i++) frame('practice #' + i, () => { BK.state = 'practice'; BK.ui.practiceI = i; }, { settle: 20 });
     await yieldNow(); }
+  /* (claude/arenayard) THE ARENA YARD: every sign in it (the talk pages) and every page of THE MOVE BOARD, for every hero (it reads the hero at the board) */
+  if (want('arena')) { const ai = lvm.LEVELS.findIndex(l => l.id === 'arena_yard'), done = new Set();
+    for (const h of ['knight', 'warden', 'pyro', 'paladin', 'pirate', 'reaper', 'geomancer', 'berserker', 'ranger']) { try { toPlay(ai, h); } catch (e) { issues.push({ type: 'ERROR', screen: 'arena ' + h, s: 'load: ' + e.message, n: 1 }); continue; }
+      for (const t of TL.talkers()) { const key = t.lines.join('|') + '|' + t.name; if (done.has(key)) continue; done.add(key); const lines = t.lines.filter(Boolean);
+        for (let p = 0; p < lines.length; p++) frame('arena sign @' + t.x + ' [' + h + '] page ' + (p + 1) + '/' + lines.length, () => { BK.state = 'play'; TL.talk(lines, t.name); if (TL.talking) TL.talking.i = p; }, { cover: q => q.size === 8 && lines[p].includes(q.s.trim()) }); BK.state = 'play'; }
+      BK.yard().open(BK.players()[0]); const pages = BK.yard().Y.st.board.pages.length;
+      for (let k = 0; k < pages; k++) frame('arena board [' + h + '] page ' + (k + 1) + '/' + pages, () => { BK.state = 'play'; if (!BK.yard().Y.st.board) BK.yard().open(BK.players()[0]); BK.yard().Y.st.board.page = k; }, { settle: 2 });
+      BK.yard().Y.st.board = null; await yieldNow(); } }
+
   /* THE HIDDEN BOSS LIST (SHIFT+B on the title, docs/PLAYTEST.md): every row selected in turn (every boss and mini name against its wood's name), and every hero's name on the hero line */
   if (want('bossjump')) { const n = BK.bossJump.table().length;
     for (let i = 0; i < n; i++) frame('bossjump #' + i, () => { BK.state = 'bossjump'; BK.bossJump.cursor = i; BK.bossJump.hero = 'knight'; }, { settle: 20 });

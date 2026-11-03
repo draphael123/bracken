@@ -47,6 +47,7 @@ import { applyMarsh3 } from './marsh3.js'; import { applyFrogCourt } from './fro
 import { buildFenRoad, FEN_RULE } from './fen-road.js'; import { buildHornetsNest, NEST_RULE } from './hornets-nest.js';   /* (claude/hornetsnest) THE HORNET'S NEST: a spur off THE LUMBER TRAIL - up the paper nest in the great pine, THE HORNET QUEEN 2 at its top and at the pine's foot */   /* (claude/fenroad) THE FEN ROAD: the goblins' half-built boardwalk between MARSH WOOD and THE STOCKADE, and THE BOG TROLL under it */   /* (claude/marsh3) MARSH WOOD 3: the reed run, the boom, the night pads (+226 columns before the mud flats) */
 import { lanceLookouts } from './lance-support.js';   /* THE QUEEN'S LANCE: the two end lookouts his bowmen come to (docs/briefs/lance-support.md) */   /* THE SUNKEN CARAVAN: the desert's first level (src/draft/sunken-caravan.js is its geometry) */
 import { highcrownTwo } from './highcrown2.js';
+import { buildArenaYard } from './arena-yard.js';   /* (claude/arenayard, Daniel 11-03) THE ARENA YARD: the one shared practice yard (src/arena-yard.js) */
 import { buildWarCairn, WC_RULE } from './war-cairn.js';   /* (claude/warcairn) THE WAR CAIRN: the Berserker's told spur off HIGHCROWN (scratch/brief-crownpath-1028.md) */   /* (claude/highcrown2) HIGHCROWN 2: the pieces laid after the cuts, in the cut level's columns */
 /* THE LUMBER TRAIL's rule (claude/lumbertrail): src/order-chapters.js TWISTS.timber quotes it */
 export const RULE_WOOD = 'FOUR STROKES FELL A MARKED PINE, AND IT FALLS THE WAY IT LEANS: ACROSS A GAP, UP A CLIFF, OR ON WHOEVER STANDS UNDER IT.';
@@ -3702,7 +3703,8 @@ function openYard() {
 // THE TRIALS. A practice yard for each hero: stations in a row, each with a sign that says what to do, straw men
 // to do it to, and a gate that lifts when it is done. Nothing in a trial can hurt you. The gate at the far end
 // is the way out. (L.trial: the stations - where each starts, its gate, what counts, how many.)
-function trialYard(hero) {
+/* (claude/arenayard) THE STEPS A HERO'S YARD TEACHES, hoisted out of trialYard so THE MOVE BOARD (src/move-board.js) reads the same table: [kind, n, text, things, pad, kinds]. Pure. */
+export function trialSteps(hero) {
   /* THE DEATH KNIGHT'S C, IN ONE PLACE. His C is being reworked into THE BLOOD WARD: these two steps are the only lines
      of his yard that speak of it, so the rework changes his words (and what counts) here and nowhere else. */
   const REAPER_C = {
@@ -3719,7 +3721,7 @@ function trialYard(hero) {
   const SWEEP = ['sweep', 2, 'DOWN+X: THE LOW SWEEP GOES UNDER A RAISED SHIELD AND TRIPS HIM. TRIP THEM TWICE.', [['shield', 14], ['shield', 20]], 'DOWN+X'];
   const SKILL = ['skill', 2, 'F AND G: SKILLS FROM THE TALENT TREE (Q). YOU KEEP ONE SLOT, A SECOND FROM LEVEL 30; THE YARD LENDS TWO. USE BOTH.', [['dummy', 14], ['sprig', 20]], 'Y, THEN RT', ['skillF', 'skillG']];
   const MARKS = ['tellY', 'tellR'];   /* the marks step wants one of each */
-  const ST = {
+  return {
     knight: [
       ['hit', 3, 'THE SWING. X STRIKES. HIT THE STRAW MAN THREE TIMES.', [['dummy', 16], ['dummy', 20]], 'X'],
       ['third', 2, 'THE THIRD CUT: X THREE TIMES IN A RUN. THE THIRD IS THE SHIELD BASH: IT SHOVES AND BREAKS A GUARD. LAND TWO.', [['dummy', 16], ['dummy', 20]], 'X, X, X'],
@@ -3848,6 +3850,9 @@ function trialYard(hero) {
       ['meter', 1, 'BLOWS FILL RAGE. FULL: HOLD DOWN, TAP C, THE FRENZY.', [['dummy', 14], ['sprig', 20]], 'DOWN + LB WITH A FULL BAR'],
       SKILL],
   }[hero];
+}
+function trialYard(hero) {
+  const ST = trialSteps(hero);
   const SW = 26, W = 8 + ST.length * SW + 26, H = 24; const L = painter(W, H);
   const { block, ent, set } = L;
   block(0, W - 1, 20, H - 1); block(0, 1, 0, 19); block(W - 2, W - 1, 0, 19);
@@ -8170,6 +8175,8 @@ LEVELS.push({ id: 'kitchengate', name: 'THE KITCHEN GATE', sub: "up through the 
    own line. A TOLD SPUR off HIGHCROWN (spurOf 'crown'): it opens when Highcrown opens (needs what Highcrown needs; src/main.js levelLocked also reads PROG.crownOpen). Nothing on
    the main road needs it. Its boss: THE BERSERKER CHIEFTAIN (src/bzchief.js) - beating him sells THE BERSERKER (classFor) */
 LEVELS.push({ id: 'warcairn', name: 'THE WAR CAIRN', sub: 'the clan that holds the peak', rule: WC_RULE, build: () => buildWarCairn({ painter, T, TS }), needs: ROAD_OPEN.undercrown ? 'kitchengate' : 'storm', spurOf: 'crown', classFor: 'berserker' });
+/* THE ARENA YARD (claude/arenayard, Daniel 11-03): APPENDED (saves count levels by index). Replaces the open yard as the default training stop; trial_open stays for the tools that use it as a test bed. NO `trial` flag (that turns co-op off): src/arena-yard.js */
+LEVELS.push({ id: 'arena_yard', name: 'THE ARENA YARD', sub: 'every verb, straw that hits back', build: () => buildArenaYard({ painter, T }), hidden: true });
 
 /* THE MIX. A level that is one creature is one question asked forty times. Some of each crowd is swapped for a
    creature from elsewhere, standing on the same spot, so the second half of a level asks something the first did
