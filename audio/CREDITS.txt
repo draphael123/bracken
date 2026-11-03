@@ -307,6 +307,7 @@ THE LIT CHURCH (2026-10-17, claude/musicchurch, Daniel's picks and download OK; 
 THE SCREE PATH (2026-10-08, claude/scree2, Daniel approved the download):
 - mountain.ogg = "Mountain Theme Loop" (mountain_in_game.ogg) by beardalaxy, CC0 (public domain; credited all the same, the author appreciates it) - https://opengameart.org/content/mountain-theme-loop - THE SCREE PATH's level track.
   Changes: gain +3.5 dB with a -2 dBFS limiter, re-encoded to OGG Vorbis q5 (stereo, loop untouched).
+  (claude/scree3, 2026-11: the level now plays musMountain.ogg = MintoDog's "8bit Action Stage Select", CC0, already in the repo - the 12.3 s mountain.ogg repeated too fast; mountain.ogg stays for the Sound Test.)
 - ramlord.ogg = "Heavy Boss Battle 1" by MintoDog, CC0 - https://opengameart.org/node/183631 - the Ram Lord (see BOSSES above).
 
 THE WINCHMASTER (2026-10-08, claude/winch5; Daniel approved the download):

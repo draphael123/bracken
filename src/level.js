@@ -1324,7 +1324,7 @@ function screePath() {
 
   const ret = {
     W: L.W, H: L.H, grid: L.grid, ents: L.ents, START: { x: 3, y: 19 }, pools: [], falls: [], moversExtra: movers,
-    duskStart: -1, duskLen: 1, music: 'mountain', night: false, glowNight: false,
+    duskStart: -1, duskLen: 1, music: 'musMountain', night: false, glowNight: false,   /* (claude/scree3, Daniel 11-01 "the music doesn't totally fit": beardalaxy's 12.3 s 'mountain' loop repeated every dozen seconds; MintoDog's 32 s stage-select 'musMountain' (in the repo, CC0, benched since the windcaller took its own) plays here - one word to put 'mountain' back) */
     palette: { sky: 'crag', far: 'crag', mid: 'crag', near: 'crag', dress: 'crag', haze: 'rgba(140,90,150,0.14)', grass: '#8a8a3a', grassL: '#c9b84a', grassD: '#5a5a2a', dirt: '#6a5642', dirtL: '#80694e', dirtD: '#3e3226',   /* (claude/scree2: warm earth, not the cold blue-grey) */ canopy: ['#4a4458', '#5e5870', '#6a4a7a', '#a07ab8'] },
     stone, scree, slide: { x0: 184 * TS, x1: 252 * TS, speed: 118 },
     weather: [{ x0: 0, x1: 99999, kind: 'wind' }],
@@ -1339,7 +1339,7 @@ function screePath() {
   GA.R.ropes = [{ x0: 279 * TS + 8, y0: 6 * TS + 4, x1: 305 * TS + 8, y1: 6 * TS + 4, posts: [[279 * TS + 8, 6 * TS + 4, 19 * TS], [305 * TS + 8, 6 * TS + 4, 19 * TS]] }]; // the ropeway cable the swing hangs from
   GA.R.moversExtra.push({ kind: 'lift', ropeway: true, x: 272 * TS, y: 18 * TS, y0: 18 * TS, y1: 12 * TS, w: 32, h: 8, speed: 30 });
   GA.plat(276, 12, 2);
-  GA.block(279, 283, 19, 23); GA.ent('deco', 281, 18, { kind: 'mill' }); // the mill stands on an arch: the gorge floor runs under it
+  GA.block(279, 283, 19, 25); GA.ent('deco', 281, 18, { kind: 'mill' }); // the mill stands on a rock stack that goes down to the gorge floor (claude/scree3: it was an arch hung in the air over a 2-tile gap - the gorge bottom is two pockets now, each with its own rope ladder out)
   for (let i = 0; i < 4; i++) GA.R.moversExtra.push({ kind: 'wheel', px: 281 * TS + 8, py: 19 * TS - 58, r: 42, phase: i * Math.PI / 2, period: 7, x: 0, y: 0, w: 22, h: 6 });
   GA.plat(285, 12, 3);
   GA.R.moversExtra.push({ kind: 'swing', px: 291 * TS, py: 6 * TS, arm: 100, x: 0, y: 0, w: 48, h: 8, period: 3.4, phase: 1.5 });
