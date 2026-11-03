@@ -8,6 +8,7 @@
 //   arrows   the archer's arrows against each hero (hold C, tap C): what the kit did to them (the report's table), GOOD or PERFECT shown, never a hurt hero
 //   zone     a dummy is asleep while nobody is in its station and wakes when somebody is; the archer is silent two stations away
 //   coop     two and four seats start a party IN the yard (players.length), each reads his OWN board, a seat in a station is graded and unhurt
+//   geo      (claude/geopop) the geomancer's straw-row sign says the fist plants a stone (every other hero reads the normal one); her run in the yard: 3 combos -> 3 stones -> DOWN+C: the yard counts DETONATED
 //   entry    the inn's practice door -> the yard (with the party), the gate out -> the inn; the title / store entry -> the yard, out -> the map; the trials door -> the list
 // node tools/arena-yard.mjs [build,board,safe,perfect,arrows,zone,coop,entry]   (PORT from the environment; ONE=knight,warden narrows the hero loops)
 import { openPage, ROOT } from './cdp.mjs';
@@ -15,7 +16,7 @@ import { writeFileSync, readFileSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { stepLine, boardLines, boardPages } from '../src/move-board.js';
 
-const ALL = ['build', 'board', 'safe', 'perfect', 'arrows', 'zone', 'coop', 'entry'];   /* + 'shots' (SHOT=1): one screenshot per station into scratch/lane-reports/arenayard */
+const ALL = ['build', 'board', 'safe', 'perfect', 'arrows', 'zone', 'coop', 'geo', 'entry'];   /* + 'shots' (SHOT=1): one screenshot per station into scratch/lane-reports/arenayard */
 const WANT = process.argv[2] ? process.argv[2].split(',') : ALL;
 const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log('  FAIL ' + m); } else console.log('  ok   ' + m); };
 const main = readFileSync(join(ROOT, 'src/main.js'), 'utf8');
@@ -185,6 +186,17 @@ try {
     }
     const armed = await E(`(()=>{BK.coopArm('warden',false);BK.load(__IDX);BK.start();BK.sim(40);const n=BK.players().length;BK.coopArm(null);return {n};})()`);
     ok(armed.n === 2, 'a party armed before the start comes in with two seats (the real startGame path)');
+  }
+
+  if (WANT.includes('geo')) {
+    console.log('geo');
+    const s = await E(`(()=>{const L=__LV[__IDX].build();const straw=L.ents.find(e=>e.t==='sign'&&/THIRD CUT/.test(e.text));return {straw:straw&&straw.text,geo:straw&&straw.geomancer,other:L.ents.filter(e=>e.t==='sign'&&e!==straw&&e.geomancer).length}})()`);
+    ok(s.straw && /THIRD CUT/.test(s.straw) && /FIST PLANTS A STONE/.test(s.geo) && /DOWN\+C/.test(s.geo) && s.other === 0, 'the straw row: a geo-only sign (the fist plants a stone, DOWN+C), the normal text for every other hero: ' + JSON.stringify(s));
+    const r = await E(`(()=>{__go('geomancer');const p=BK.players()[0],G=BK.geo(),Y=__Y().Y;BK.P.hp=BK.P.maxHp=9999;__stand(p,13,1);BK.sim(20);const d0=Y.st.stats.detonated||0,hp0=BK.P.hp;let stood=[],f=0;
+      for(let c=0;c<6&&G.standing()<3;c++){__stand(p,13,1);for(let n=0;n<3;n++){BK.press('atk');BK.sim(30);}stood.push(G.standing());BK.sim(130);}
+      const three=G.standing();BK.sim(30);const K=BK.keys;__stand(p,13,1);K.down=true;K.block=true;BK.sim(3);K.block=false;K.down=false;BK.sim(40);
+      return {stood,three,after:G.standing(),detonated:(Y.st.stats.detonated||0)-d0,hpSame:BK.P.hp===hp0,dets:G.tierStats().detonates}})()`);
+    ok(r.three === 3 && r.after === 0 && r.detonated === 1 && r.dets === 1 && r.hpSame, 'the geo run in the yard: combos plant 3 stones, DOWN+C blows them, the yard counts DETONATED, nobody hurt: ' + JSON.stringify(r));
   }
 
   if (WANT.includes('entry')) {

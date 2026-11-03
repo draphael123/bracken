@@ -720,7 +720,7 @@ const HERO_LOOP = {
   warden: 'THE POINT PAYS, NOT THE HAFT: KEEP THEM OUT THERE. TAP C TURNS A BLOW; HOLD C WINDS THE JAVELIN THROW.',
   berserker: 'BLOWS TAKEN ON THE AXES ARE RAGE (HOLD C). FULL: DOWN+C FOR FRENZY. FIVE CHOPS: CROSS-CHOP.',
   ranger: 'FAR SHOTS HIT HARDER. FULL FOCUS, UP+C: GREAT ARROW. LET GO IN THE STEADY WINDOW. TAP C: BASH. HOLD C: GUARD.',
-  geomancer: 'SHE BUILDS THE BATTLEFIELD. THIRD JAB PLANTS A STONE; DOWN+C BLOWS THEM ALL. THREE UP, UP+C: AVALANCHE.',   /* the deflect, not the old brace; 504 px, two lines on the card's 270 (the brace wording took three) */
+  geomancer: 'THIRD JAB PLANTS A STONE. DOWN+C BLOWS THEM ALL. THREE UP, UP+C: AVALANCHE.',   /* 404 px: two lines at 270 AND at the picker's 212 (the plan's longer 'SHE BUILDS THE BATTLEFIELD' wording is 545 px = three lines; measured 11-04, claude/geopop) */
 };
 // THE TALENT TREES. Every hero has three trees side by side, and a hero has the points for ONE of them: a point for every
 // wood cleared the first time, and never more than thirty. A tree costs twenty-four to fill. The bottom of each tree is its
