@@ -1,7 +1,7 @@
 // hornets_nest_tiles.js - THE HORNET'S NEST's TILE KIT (claude/hornetsnestart, SONNET over the greybox claude/hornetsnest). ART ONLY: the grid is read for how a cell is DRAWN, never changed.
 //   PAPER   the nest's walls and floors: a wasp's chewed-wood paper laid in overlapping scalloped shells (parchment at the gate, ochre in the comb stair, red-brown at the brood),
 //           honeycomb showing through where the paper is torn, a resin-lit rim on every exposed face, drips under a ceiling
-//   COMB    every footing the hornets built: a gold hex-cell slab (shelves, perches, the falling nest's ledges - cracked), fresh WAX (the sticky floors: glossy, pale, beaded)
+//   COMB    every footing the hornets built: a grey-tan PAPER hex-cell slab (growth-band scallops) (shelves, perches, the falling nest's ledges - cracked), fresh PAPER (the sticky floors: pale, chewed-pulp, beaded)
 //   BARK    the ancient pine: its buttress roots, the trunk the nest hangs from (plated bark, deep furrows, resin), the boughs (a limb with needle clusters)
 //   DUFF    the forest floor: a litter of pine needles over dark earth, and the nest's shadow floor (darker, mushroomed with old paper)
 // Made from px.js primitives, 16x16, baked lazily and memoised.   hnTile(t, x, y, at, T, L) -> a canvas for one cell, or null (the game's own kit draws it)
@@ -14,11 +14,12 @@ const rnd = (a, b, m) => (hash(a, b) >>> 0) % m;
 const tile = fn => { const [c, g] = canvas(16, 16); for (let y = 0; y < 16; y++) for (let x = 0; x < 16; x++) { const col = fn(x, y); if (col) { g.fillStyle = col; g.fillRect(x, y, 1, 1); } } return c; };
 export const PAPER = [
   ['#201a14', '#352c20', '#4f4230', '#6c5b44', '#8a7760', '#aa9878'],   /* THE PAPER GATE: grey parchment */
-  ['#241810', '#3c2a18', '#5a3f22', '#7a5a2e', '#9a7a3e', '#bc9a56'],   /* THE COMB STAIR: ochre */
+  ['#221e18', '#3a342a', '#554d3e', '#766b58', '#9a8d74', '#bfb18f'],   /* THE COMB STAIR: tan paper (was ochre; kept low-chroma so amber resin reads against it) */
   ['#2a1410', '#45221a', '#643424', '#85472f', '#a65e3e', '#c88056'],   /* THE BROOD: red-brown */
 ];
-export const COMB = ['#2e1c08', '#6a4410', '#a8741e', '#e0a838', '#f6cc5c', '#fff1a0'];   /* dark seam, shade, body, lit, bright, glint */
-export const WAX = ['#8a6420', '#c8962c', '#ecc258', '#fbe38c', '#fff6c8'];                 /* fresh wax: shade .. bead */
+export const COMB = ['#2a241c', '#5c5246', '#8e8272', '#b9ad95', '#d8ccb0', '#f1e9d2'];   /* PAPER comb (11-03: was wax gold): dark seam, shade, body, lit, bright, cream glint */
+export const WAX = ['#6e6454', '#9c917c', '#c3b89f', '#ddd3ba', '#f1ead6'];                 /* fresh paper (the sticky floors' pale chewed-pulp skin): shade .. cream */
+export const BAND = ['#8a8272', '#a89c82', '#c9bfa6'];   /* growth-band tints: grey, tan, cream (alternating scallops) */
 export const BARK = ['#130d0a', '#221812', '#37271c', '#523a28', '#6f4f34', '#8e6a46'];
 export const NEEDLE = ['#222f10', '#38491a', '#506a26', '#728c34', '#9eb44c'];
 export const DRY = ['#5a3c1c', '#7c5a2a', '#a07e3c'];
@@ -44,14 +45,14 @@ function paperTile(x, y, at, T, L) {
   const key = 'pa' + zi + '_' + (x & 7) + '_' + (y & 7) + (eU ? 'u' : '') + (eD ? 'd' : '') + (eL ? 'l' : '') + (eR ? 'r' : '') + (wx ? 'w' : '') + (outer ? 'o' : '');
   return once(key, () => tile((px, py) => {
     const P = PAPER[outer ? 0 : zi], u = x * 16 + px, v = y * 16 + py;
-    /* the exposed floor: a comb floor (gold hex cells, a lit lip), or fresh wax on a waxed run */
+    /* the exposed floor: a comb floor (grey-tan paper hex cells, a lit lip), or fresh paper on a pulp run */
     if (eU && py < 5) { if (wx) return waxTop(u, py, eL && px < 1, eR && px > 14);
       if (eL && px === 0 || eR && px === 15) return py < 1 ? null : COMB[0];
       if (py === 0) return rnd(u, 7, 6) === 0 ? COMB[5] : COMB[4];
-      const h = hexAt(u, v); return h === 1 ? COMB[1] : h === 3 ? COMB[4] : h === 2 ? (py === 1 ? COMB[4] : COMB[3]) : COMB[2]; }
+      const h = hexAt(u, v); return h === 1 ? COMB[1] : h === 3 ? COMB[4] : h === 2 ? (py === 1 ? COMB[4] : BAND[(py + Math.round(Math.sin(u / 3.3) * 1.3) + 9) % 3]) : COMB[2]; }
     if (eU && py === 5) return COMB[0];
     /* a ceiling: the shell hangs its scalloped lip and a bead of resin */
-    if (eD && py > 12) { const sc = Math.round(1.4 * Math.sin(u / 2.6)); if (py - 13 > 1 + sc) { if (py === 15 && rnd(x, y, 5) === 0 && (px === 4 || px === 11)) return COMB[3]; return null; } return py - 13 >= 1 + sc ? P[0] : P[1]; }
+    if (eD && py > 12) { const sc = Math.round(1.4 * Math.sin(u / 2.6)); if (py - 13 > 1 + sc) { if (py === 15 && rnd(x, y, 5) === 0 && (px === 4 || px === 11)) return '#d08a2a'; return null; } return py - 13 >= 1 + sc ? P[0] : P[1]; }
     /* the shells: overlapping scallops 8 high, each one lit on its top edge, dark under its lip */
     const k = Math.floor((v + 2) / 8), r = (v + 2) % 8, off = Math.round(1.3 * Math.sin((u + k * 7) / 3.1)), rr = r + off;
     let s = 2 + (hash(k, (u >> 4) + (k & 1) * 3) % 3 === 0 ? 1 : 0) + (hash(k, u >> 3) % 5 === 0 ? -1 : 0);
@@ -68,7 +69,7 @@ function paperTile(x, y, at, T, L) {
     return col;
   }));
 }
-/* fresh wax: pale, glossy, sticky - a lip with beads; ends rounded */
+/* fresh paper: pale, chewed-pulp, sticky - a lip with beads; ends rounded */
 function waxTop(u, py, endL, endR) { if (endL || endR) return py < 1 ? null : WAX[0];
   if (py === 0) return rnd(u, 3, 7) === 0 ? WAX[4] : WAX[3]; if (py === 1) return rnd(u, 5, 5) === 0 ? WAX[4] : WAX[2];
   if (py === 2) return WAX[2]; if (py === 3) return WAX[1]; if (py === 4) return rnd(u, 9, 4) === 0 ? WAX[2] : WAX[0]; return WAX[0]; }
@@ -78,16 +79,17 @@ function combShelf(x, y, at, T, L, cracked) {
   const l = at(x - 1, y) === T.ONEWAY, r = at(x + 1, y) === T.ONEWAY, wx = L._hnWax && L._hnWax.has(y * L.W + x);
   return once('cs' + (cracked ? 'c' : '') + (wx ? 'w' : '') + (l ? 1 : 0) + (r ? 1 : 0) + (x & 3) + (y & 1), () => tile((px, py) => {
     const u = x * 16 + px, cap = !l && px < 2, capR = !r && px > 13;
-    if (py > 6) { if (py === 7 && !cap && !capR && rnd(u, y, 6) === 0) return COMB[3];   /* a drip of resin under it */
-      if (py === 8 && !cap && !capR && rnd(u, y, 6) === 0 && rnd(u, y, 12) < 4) return COMB[2]; return null; }
+    if (py > 6) { if (py === 7 && !cap && !capR && rnd(u, y, 6) === 0) return '#d08a2a';   /* a drip of resin under it */
+      if (py === 8 && !cap && !capR && rnd(u, y, 6) === 0 && rnd(u, y, 12) < 4) return '#a8641a'; return null; }
     if ((cap && (px === 0 && (py < 1 || py > 5))) || (capR && (px === 15 && (py < 1 || py > 5)))) return null;
     if (py === 6) return COMB[0];
     if (cap && px === 0 || capR && px === 15) return COMB[0];
     if (wx) { if (py === 0) return rnd(u, 3, 7) === 0 ? WAX[4] : WAX[3]; if (py === 1) return WAX[2]; if (py === 2) return WAX[1]; }
     if (py === 0) return rnd(u, 7, 6) === 0 ? COMB[5] : COMB[4];
-    const h = hexAt(u, py + 1 + (y & 1) * 2); let c = h === 1 ? COMB[1] : h === 3 ? COMB[4] : h === 2 ? COMB[3] : COMB[2];
+    const h = hexAt(u, py + 1 + (y & 1) * 2); const bd = (py + Math.round(Math.sin(u / 3.3) * 1.3) + 9) % 3;   /* the scalloped growth bands: grey / tan / cream, a wavy stripe along the shelf */
+    let c = h === 1 ? COMB[1] : h === 3 ? COMB[4] : h === 2 ? BAND[bd] : COMB[2];
     if (py === 5) c = COMB[1];
-    if (cracked) { const cr = (u * 7 + py * 3) % 23; if (cr === 0 || (cr === 11 && py > 1 && py < 5)) return COMB[0]; if (py === 5 || py === 4) c = COMB[0] === c ? c : COMB[1]; if (rnd(u, py, 9) === 0) return null; }
+    if (cracked) { const cr = (u * 7 + py * 3) % 23; if (cr === 0 || (cr === 11 && py > 1 && py < 5)) return COMB[0]; if (py === 5 || py === 4) c = COMB[0] === c ? c : COMB[1]; if (rnd(u, py, 9) === 0 || (py === 5 && rnd(u, y, 4) === 0)) return null; }   /* torn paper edge */
     return c;
   }));
 }

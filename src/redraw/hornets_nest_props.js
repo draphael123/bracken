@@ -4,7 +4,7 @@
 //   stand(g, x, y, time)              a resin-tapper's SMOKE STAND: a tripod of sticks, a clay pot with a pierced lid, red ember slits, smoke curling off it
 //   pot(g, x, y, time, lit)           the clay pot in a hand, set down, or in the air (a bail handle, an ember slit, a trail of smoke)
 //   cloud(g, x, y, r, k, time)        a SMOKE CLOUD: layered grey puffs, lighter at the heart, drifting, with ember specks; k = its fade (0..1)
-//   cell(g, x, y, st, kk, time)       a BROOD CELL in the wall: a capped wax pocket (idle) that swells, glows and cracks (pulse, kk = how far gone) and the torn rim (broken / hatched)
+//   cell(g, x, y, st, kk, time)       a BROOD CELL in the wall: a capped paper pocket (idle) that swells, glows and cracks (pulse, kk = how far gone) and the torn rim (broken / hatched)
 //   glintDrips(g, x, y, w, time)      the resin drips off a comb's under-edge
 import { canvas } from '../px.js';
 import { COMB, WAX } from './hornets_nest_tiles.js';
@@ -19,16 +19,17 @@ const CLAY = ['#2a1a10', '#5a3420', '#8a5030', '#b0703e', '#d09a5a'];
 /* ---------------- a comb: baked per (w, h, set) ---------------- */
 function slabSprite(w, h, set) { return once('slab' + w + 'x' + h + (set ? 's' : 'f'), () => {
   const PAD = 14, [c, g] = canvas(w + 4, h + PAD + 4), top = 0, H = h;   /* the stalk is drawn above by the caller; the sprite holds the comb and its drip room */
-  const pal = set ? ['#1e1206', '#4a300c', '#7a5014', '#a8741e', '#c8921e', '#e0b040'] : ['#2e1c08', '#6a4410', '#b07a20', '#e0a838', '#f6cc5c', '#fff1a0'];
+  const pal = set ? ['#1c1812', '#463e32', '#6c6556', '#837a66', '#9c927c', '#c0b69c'] : ['#2a241c', '#5c5246', '#8a8272', '#a89c82', '#d4c9ae', '#faf3de'], bands = set ? ['#6c6556', '#837a66', '#8e846e'] : ['#8a8272', '#a89c82', '#c9bfa6'];   /* PAPER comb (11-03): grey / tan / cream growth bands */
   /* the mass: rounded corners, a wider top than its bottom (it hangs) */
   for (let y = 0; y < H; y++) { const t = y / Math.max(1, H - 1), inset = Math.round((1 - Math.min(1, y / 4)) * 2 + Math.pow(t, 3) * 3 + (y > H - 3 ? 2 : 0));
     for (let x = inset; x < w - inset; x++) {
+      if (y > H - 3 && hash(x, y + 9) % 3 === 0) continue;   /* a torn paper edge along the underside */
       const row = Math.floor((y + 1) / 4), cu = (((x + (row & 1) * 3) % 6) + 6) % 6, cv = (y + 1) % 4;
       const wall = cv === 0 ? cu >= 1 && cu <= 4 : (cv !== 3 && (cu === 0 || cu === 5)) || (cv === 3 && (cu === 0 || cu === 5));
       const lit = x - inset < 2 || (cv === 1 && cu === 1);
-      let col = wall ? pal[1] : lit ? pal[4] : pal[3 - (t > 0.7 ? 1 : 0)];
+      let col = wall ? pal[1] : lit ? pal[4] : bands[(y + Math.round(Math.sin(x / 3.3) * 1.3) + 9 + (t > 0.7 ? 1 : 0)) % 3];
       if (!wall && hash(x, y) % 17 === 0) col = pal[5];      /* a glint */
-      if (!wall && (hash(x >> 1, y >> 2) % 7 === 0)) col = pal[2];   /* a capped (waxed-over) cell: duller */
+      if (!wall && (hash(x >> 1, y >> 2) % 7 === 0)) col = pal[2];   /* a capped (papered-over) cell: duller */
       if (y === 0 || x === inset || x === w - inset - 1 || y === H - 1) col = pal[0];
       if (y === 1 && x > inset && x < w - inset - 1) col = pal[5];
       if (set && ((x * 5 + y * 3) % 31 === 0 || (x * 3 - y * 7 + 200) % 37 === 0)) col = pal[0];   /* cracks */
@@ -42,7 +43,7 @@ export function slab(g, x, y, w, h, set, time) {
 /* the paper stalk a hanging comb hangs from: a tapering neck of paper, ribbed. x mid, y from the top of the comb up to `len` */
 export function stalk(g, mid, y, len) { for (let q = 0; q < len; q++) { const t = q / Math.max(1, len), hw = 2 + Math.round(t * 2) + (q % 5 === 0 ? 1 : 0); R(g, PAPER[(q >> 2) & 1 ? 2 : 1], mid - hw, y - q - 1, hw * 2, 1); R(g, PAPER[3], mid - hw, y - q - 1, 1, 1); R(g, PAPER[0], mid + hw - 1, y - q - 1, 1, 1); } }
 export function glintDrips(g, x, y, w, time) { for (let xx = 5; xx < w - 3; xx += 9) { const ph = (time * 0.7 + xx * 0.137) % 1, len = 2 + Math.round(Math.sin(ph * 3.1) * 3 * (ph < 0.8 ? ph : 1.6 - ph) + 2);
-  R(g, COMB[3], x + xx, y, 1, len); if (ph > 0.65) R(g, COMB[5], x + xx, y + len, 1, 1); } }
+  R(g, '#d08a2a', x + xx, y, 1, len); if (ph > 0.65) R(g, '#f6aa50', x + xx, y + len, 1, 1); } }
 
 /* ---------------- the smoke stand ---------------- */
 function standSprite() { return once('stand', () => { const [c, g] = canvas(26, 30);
@@ -102,12 +103,12 @@ function cellSprite(st, step) { return once('cell' + st + step, () => { const [c
     for (const [x, w, h] of [[4, 3, 6], [9, 2, 8], [14, 3, 5], [18, 2, 7]]) { R(g, COMB[0], x, base - h - 1, w + 2, h + 1); R(g, COMB[2], x + 1, base - h, w, h); R(g, COMB[4], x + 1, base - h, 1, h - 1); }   /* torn cap shards */
     R(g, '#3a0e08', 8, base - 6, 8, 2); R(g, '#7a2a18', 9, base - 6, 6, 1); return c; }
   const sw = step * 0.5, ww = 12 + Math.round(sw * 3), hh = 15 + Math.round(sw * 4), x0 = CX - ww / 2, y0 = base - hh;
-  R(g, COMB[0], x0 - 1, y0 + 2, ww + 2, hh - 2); R(g, COMB[0], x0 + 1, y0, ww - 2, 2);   /* the wax rim */
+  R(g, COMB[0], x0 - 1, y0 + 2, ww + 2, hh - 2); R(g, COMB[0], x0 + 1, y0, ww - 2, 2);   /* the paper rim */
   const pulse = step > 0;
   for (let y = 0; y < hh - 2; y++) { const t = y / hh, inset = t < 0.2 ? Math.round((0.2 - t) * 10) : 0;
     for (let x = inset; x < ww - inset; x++) { const lit = x < 3, dark = x > ww - 4;
-      let col = pulse ? (lit ? '#ffb06a' : dark ? '#9a2a1a' : '#e0583a') : (lit ? '#fbe38c' : dark ? '#b88a2c' : '#ecc258');
-      if (hash(x, y) % 19 === 0) col = pulse ? '#ffd9a0' : '#fff6c8';
+      let col = pulse ? (lit ? '#ffb06a' : dark ? '#9a2a1a' : '#e0583a') : (lit ? '#e6dcc2' : dark ? '#8a8272' : '#c9bfa6');
+      if (hash(x, y) % 19 === 0) col = pulse ? '#ffd9a0' : '#f6f0dc';
       R(g, col, x0 + x, y0 + 1 + y, 1, 1); } }
   /* the capped seam, a swelling of the larva behind: a dark curl, glowing when it pulses */
   R(g, COMB[1], x0 + 2, y0 + 3, ww - 4, 1); R(g, pulse ? '#5a0e08' : COMB[2], CX - 2, y0 + 5, 4, hh - 9); R(g, pulse ? '#ff7a3a' : '#f8e8b0', CX - 1, y0 + 6, 2, hh - 11);
@@ -120,11 +121,11 @@ export function cell(g, x, y, st, kk, time) { x = Math.round(x); y = Math.round(
     R(g, '#ff6b6b', x - 8, y + 2, 16 * kk, 2); return; }
   g.drawImage(cellSprite('idle', 0), x - 12, y - 24); }
 
-/* ---------------- the supports: a comb shelf stands on a WAX PILLAR (L.routeSupports; the greybox's wooden posts are not drawn here) ---------------- */
+/* ---------------- the supports: a comb shelf stands on a PAPER PILLAR (L.routeSupports; the greybox's wooden posts are not drawn here) ---------------- */
 function pillarSprite(h) { return once('pil' + h, () => { const w = 11, [c, g] = canvas(w, h + 2);
   for (let y = 0; y < h; y++) { const t = y / Math.max(1, h - 1), hw = 2.6 + Math.pow(t, 3) * 2.6 + (y < 4 ? 1.4 - y * 0.3 : 0), x0 = Math.round(5.5 - hw), x1 = Math.round(5.5 + hw);
     for (let x = x0; x < x1; x++) { const row = Math.floor(y / 4), cu = (((x + (row & 1) * 3) % 6) + 6) % 6, cv = y % 4, wall = cv === 0 ? cu >= 1 && cu <= 4 : (cv !== 3 && (cu === 0 || cu === 5)) || (cv === 3 && (cu === 0 || cu === 5));
-      const edge = x === x0 || x === x1 - 1; let col = edge ? COMB[0] : wall ? COMB[1] : (x - x0 < 3 ? COMB[3] : x1 - x < 3 ? COMB[1] : COMB[2]); if (!edge && !wall && hash(x, y) % 13 === 0) col = COMB[4]; R(g, col, x, y, 1, 1); } }
+      const edge = x === x0 || x === x1 - 1; let col = edge ? COMB[0] : wall ? COMB[1] : (x - x0 < 3 ? COMB[4] : x1 - x < 3 ? COMB[1] : ['#8a8272', '#a89c82', '#c9bfa6'][(Math.floor((y + Math.round(Math.sin(x * 0.9) * 1.2) + 9) / 3)) % 3]);   /* scalloped growth bands up the pillar */ if (!edge && !wall && hash(x, y) % 13 === 0) col = COMB[4]; R(g, col, x, y, 1, 1); } }
   R(g, COMB[0], 1, h - 1, 9, 2); R(g, COMB[1], 2, h - 2, 7, 1);   /* the foot, spread on the floor */
   return c; }); }
 export function posts(g, L, cx, cy) { for (const p of L.routeSupports || []) { if (L.grid && !L.grid[p.y * L.W + p.x]) continue;   /* (claude/hornetsnest2) a perch torn loose (her buzz, the hall's tear) takes its pillar with it */ const x = Math.round(p.x * 16 + 6 - cx), y = Math.round(p.y * 16 + 6 - cy), bottom = Math.round(p.bottom * 16 - cy); if (x < -8 || x > g.canvas.width + 8 || y > g.canvas.height + 4 || bottom < -4) continue;

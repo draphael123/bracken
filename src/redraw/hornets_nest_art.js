@@ -2,7 +2,7 @@
 // (main.js reads frames by index; the machine, hitbox and timings are untouched) but is drawn fresh as the nest's own creature, in hard inked pixels, and dies in its own skin (reskinSet):
 //   hornet        the river wasp's machine (sting: true - a told ! dart from its post): a big nest hornet, banded abdomen and sting, red eye          - 4 frames (3 wing beats, hurt)         16 x 11
 //   combdrone     the sprig's machine (a walker with a told bite): a stout comb-worker walking on its legs, abdomen banded - walk x4, look, tell (rears, jaws wide), bite (lunges), hurt  16 x 12
-//   nestguard     the shieldbearer's machine (guards his front, a slow turn, a told shove): a soldier hornet standing upright behind a WAX PLATE of hex comb - 8 frames  16 x 16
+//   nestguard     the shieldbearer's machine (guards his front, a slow turn, a told shove): a soldier hornet standing upright behind a PAPER PLATE of hex comb - 8 frames  16 x 16
 //   (the venom spitter is gone: claude/hornetsnest2, Daniel 10-23 - it read as a mage; the nest's heavy is THE AMBER HORNET, src/redraw/honey_hornet_art.js)
 // bakeNestSkins(SPR) -> { hornet, combdrone, nestguard } (each { R, L, white, ax, ay, w, h } like every foe sheet; the SPR argument is read for the anchors only)
 import { canvas, flipX, whiten, outline } from '../px.js';
@@ -69,7 +69,7 @@ function droneFrame(kind, k) { return g => {
   else if (kind === 'bite') { px(g, '#f0e4c8', hx + 2.4, hy + 1); px(g, '#f0e4c8', hx + 2.4, hy + 2); }
   else px(g, '#f0e4c8', hx + 2, hy + 1.8);
   line(g, INK, hx + 0.5, hy - 2.2, hx + 2.6, hy - 3.9 - (kind === 'look' ? 1 : 0)); px(g, AM[3], hx + 2.8, hy - 4 - (kind === 'look' ? 1 : 0)); }; }
-/* ---------------- THE NEST-GUARD (16 x 16): a soldier hornet upright behind a wax plate ---------------- */
+/* ---------------- THE NEST-GUARD (16 x 16): a soldier hornet upright behind a paper plate ---------------- */
 function guardFrame(kind, k) { return g => {
   const step = kind === 'walk' ? (k & 1) : 0, leg = kind === 'walk' ? (k === 1 ? 1 : k === 3 ? -1 : 0) : 0, tell = kind === 'tell', shove = kind === 'shove', turn = kind === 'turn', low = kind === 'low', lean = shove ? 2 : tell ? -1.5 : 0, bob = step ? 0 : 0;
   /* legs */
@@ -81,7 +81,7 @@ function guardFrame(kind, k) { return g => {
   const hx = 8 + lean + (turn ? 1 : 0), hy = 3.8 + bob; blob(g, hx, hy, 2.6, 2.5, (dx, dy) => sh(CH, dx, dy)); eye(g, hx + 1.2, hy - 0.2, true);
   line(g, AM[1], hx - 2, hy - 2, hx - 0.5, hy - 3.6); line(g, AM[2], hx - 0.5, hy - 3.6, hx + 1.5, hy - 3); px(g, AM[3], hx - 0.5, hy - 3.8);   /* the crest */
   px(g, '#f0e4c8', hx + 2.6, hy + 1.6); if (tell) { px(g, '#f0e4c8', hx + 3, hy + 2.6); px(g, '#ff6b6b', hx + 1, hy - 5); px(g, '#ff6b6b', hx + 1, hy - 6.4); }
-  /* the plate: a tall hexagonal wax shield on his forward arm, cells on its face; it swings with the move */
+  /* the plate: a tall hexagonal paper shield on his forward arm, cells on its face; it swings with the move */
   const pxx = shove ? 11.5 : tell ? 8 : turn ? 8.5 : low ? 10.5 : 10.5, pyy = low ? 7.5 : 5.2, pw = turn ? 3 : 4.4, ph = low ? 5 : 8.2;
   blob(g, pxx + pw / 2, pyy + ph / 2, pw / 2 + 0.4, ph / 2, (dx, dy, x, y) => { const rim = dx * dx + dy * dy > 0.62; if (rim) return CREAM[0]; const cell = ((x + ((y >> 1) & 1) * 2) % 3 === 0) || (y % 2 === 0 && dy < 2); return cell && (x + y) % 2 ? CREAM[1] : sh(CREAM, dx * 0.6, dy * 0.6); });
   if (!turn) px(g, CREAM[3], pxx + 1, pyy + 1.5); px(g, '#6a4a1c', pxx + pw / 2, pyy + ph / 2 - 1);   /* the boss of the plate */

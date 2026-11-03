@@ -109,22 +109,22 @@ export function tornStalks(g, c, x, y, w, cx, cy, time) {
 
 /* ---- THE ROYAL COMB (THE LAST COMB): baked per (w, h, set) ---- */
 function royalSprite(w, h, set) { return once('royal' + w + 'x' + h + (set ? 's' : 'f'), () => {
-  const PAD = 18, [c, g] = canvas(w + 4, h + PAD + 4), pal = set ? ['#2a1604', '#7a4c0e', '#c88a1e', '#e8b434', '#f6d060', '#fff0b0'] : ['#3a1e06', '#9a5e0e', '#e8a824', '#ffd24a', '#fff0a0', '#ffffff'];
+  const PAD = 18, [c, g] = canvas(w + 4, h + PAD + 4), pal = set ? ['#1e1a14', '#463e32', '#7a6e5c', '#9c9078', '#b8ab90', '#d4c9ae'] : ['#2a241c', '#5c5246', '#a89e86', '#d0c4a8', '#e8dec6', '#fbf6e6'];
   for (let y = 0; y < h; y++) { const t = y / Math.max(1, h - 1), inset = Math.round((1 - Math.min(1, y / 5)) * 3 + Math.pow(t, 3) * 4 + (y > h - 3 ? 2 : 0));
     for (let x = inset; x < w - inset; x++) { const row = Math.floor((y + 1) / 4), cu = (((x + (row & 1) * 3) % 6) + 6) % 6, cv = (y + 1) % 4, wall = cv === 0 ? cu >= 1 && cu <= 4 : (cv !== 3 && (cu === 0 || cu === 5)) || (cv === 3 && (cu === 0 || cu === 5));
       let col = wall ? pal[1] : (x - inset < 2 || (cv === 1 && cu === 1)) ? pal[4] : pal[3 - (t > 0.75 ? 1 : 0)];
-      if (!wall && hash(x, y) % 15 === 0) col = pal[5]; if (y === 0 || x === inset || x === w - inset - 1 || y === h - 1) col = pal[0]; if (y === 1 && x > inset && x < w - inset - 1) col = pal[5]; if (y === 2 && x > inset + 1 && x < w - inset - 2) col = '#fff6d0';   /* a pale wax lip */
+      if (!wall && hash(x, y) % 15 === 0) col = pal[5]; if (y === 0 || x === inset || x === w - inset - 1 || y === h - 1) col = pal[0]; if (y === 1 && x > inset && x < w - inset - 1) col = pal[5]; if (y === 2 && x > inset + 1 && x < w - inset - 2) col = '#f6f0dc';   /* a pale paper lip */
       if (set && ((x * 5 + y * 3) % 37 === 0 || (x * 3 - y * 7 + 220) % 41 === 0)) col = pal[0];
       R(g, col, x, y, 1, 1); } }
   /* jewelled queen cells set in the face: a dark gold ring, a red-orange glowing core */
   const jewel = (jx, jy, r) => { for (let yy = -r; yy <= r; yy++) for (let xx = -r; xx <= r; xx++) { const d = Math.abs(xx) * 0.8 + Math.abs(yy) * 0.9; if (d > r) continue; R(g, d > r - 1 ? pal[0] : d > r - 2.2 ? pal[2] : '#ff7a2a', jx + xx, jy + yy, 1, 1); } R(g, '#ffd8a0', jx - 1, jy - 1, 1, 1); R(g, '#fff6e0', jx - 1, jy - 2, 1, 1); };
   const n = Math.max(3, Math.floor(w / 40)); for (let k = 0; k < n; k++) { const jx = Math.round((k + 0.5) * w / n); if (Math.abs(jx - w / 2) < 22) continue; jewel(jx, Math.round(h * 0.52), 6); }
-  /* the crown medallion at the middle: a gold hex ring and a crown cut into it */
+  /* the crown medallion at the middle: a hex ring and a crown cut into it */
   { const mx = Math.round(w / 2), my = Math.round(h * 0.5), r = Math.min(15, h / 2 - 2); for (let yy = -r; yy <= r; yy++) for (let xx = -r; xx <= r; xx++) { const d = Math.max(Math.abs(xx) * 0.87 + Math.abs(yy) * 0.5, Math.abs(yy)); if (d > r) continue; R(g, d > r - 1.2 ? pal[0] : d > r - 3 ? pal[5] : '#a8581a', mx + xx, my + yy, 1, 1); }
     for (const [dx, dy, ww, hh] of [[-6, 2, 13, 3], [-6, -3, 2, 5], [-1, -5, 2, 7], [4, -3, 2, 5]]) R(g, '#3a1e06', mx + dx, my + dy, ww, hh);   /* the crown: a band with three points */
     for (const dx of [-6, -1, 4]) R(g, '#ffe27a', mx + dx, my + (dx === -1 ? -5 : -3), 2, 1); }
-  /* three capped queen cells hanging from its underside (peanut-shaped, pale wax) */
-  if (!set) for (const fx of [0.2, 0.5, 0.8]) { const qx = Math.round(w * fx), top = h - 1; for (let yy = 0; yy < 14; yy++) { const ww = Math.round(3.4 + 1.8 * Math.sin(Math.min(1, yy / 13) * Math.PI) + (yy > 8 ? -0.5 : 0.4)); for (let xx = -ww; xx <= ww; xx++) R(g, Math.abs(xx) >= ww ? pal[0] : xx < -ww + 2 ? '#fff6c8' : yy > 9 ? '#d8b048' : '#ecc860', qx + xx, top + yy, 1, 1); } R(g, pal[1], qx - 2, top + 5, 5, 1); }
+  /* three capped queen cells hanging from its underside (peanut-shaped, pale paper) */
+  if (!set) for (const fx of [0.2, 0.5, 0.8]) { const qx = Math.round(w * fx), top = h - 1; for (let yy = 0; yy < 14; yy++) { const ww = Math.round(3.4 + 1.8 * Math.sin(Math.min(1, yy / 13) * Math.PI) + (yy > 8 ? -0.5 : 0.4)); for (let xx = -ww; xx <= ww; xx++) R(g, Math.abs(xx) >= ww ? pal[0] : xx < -ww + 2 ? '#f6f0dc' : yy > 9 ? '#b8aa90' : '#d4c8aa', qx + xx, top + yy, 1, 1); } R(g, pal[1], qx - 2, top + 5, 5, 1); }
   return gpu(c); }); }
 export function royal(g, x, y, w, h, set, time) {
   x = Math.round(x); y = Math.round(y);

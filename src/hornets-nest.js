@@ -163,7 +163,7 @@ export function buildHornetsNest({ painter, T, TS }) {
   shelf(157, 162, 29); waxed(157, 162, 29); block(155, 156, 31, 31);   /* the comb ledge three rows over the floor, a knuckle of wax up to it */
   ent('shield', 158, 31, { face: -1, cnSkin: 'nestguard', elite: true, gate: 165 });   /* he holds the chamber's way on: a gate across it until he falls (the shrine past it) */
   swarm(163, 28, { squad: 'guard' });
-  sign(143, 31, 'THE NEST-GUARD: WAX PLATE TURNS THE FRONT: GO ROUND, OR DROP ON HIM.');
+  sign(143, 31, 'THE NEST-GUARD: PAPER PLATE TURNS THE FRONT: GO ROUND, OR DROP ON HIM.');
   ent('check', 168, 31);
 
   // ================= 3a. THE SAGGING GALLERY (169-218): REMIX - wax + comb + smoke over a resin sump (claude/hornetsnest2; written in FINAL columns, OX = 0) =================
