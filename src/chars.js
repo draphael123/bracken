@@ -4720,7 +4720,7 @@ const pad = (rows, w) => rows.map(r => r + '.'.repeat(Math.max(0, w - r.length))
 
 // THE SWORN SWORD - a kettle hat with a brim wider than his shoulders, mail to the knee, a kite shield up
 // at his front and an arming sword. He is slow and he tells you everything: he is the parry lesson.
-export function bakeSwornSword() {
+export function bakeSwornSword(X = {}) {   /* X: a reskin of the SAME frames (claude/arenastraw): pal = letters over WM, head = the first rows, blade = the sword layers' steel letter */
   const W = 14;
   const base = pad([
     '.....ssss.....',      /* the dome */
@@ -4743,7 +4743,7 @@ export function bakeSwornSword() {
      now bridge the shoulder to the grip on every layer that carries one, so no frame reads as a shield
      that walks by itself. A red feather (q) off the back of the dome gives the kettle hat a little pride. */
   const set = (r, i, c) => r.slice(0, i) + c + r.slice(i + 1);
-  base[0] = set(base[0], 9, 'q'); base[1] = set(base[1], 11, 'q');   /* the feather */
+  if (X.head) X.head.forEach((r, i) => { base[i] = r; }); else { base[0] = set(base[0], 9, 'q'); base[1] = set(base[1], 11, 'q'); }   /* the feather */
   /* the shield on his near arm, and the sword low behind him */
   const guard = pad([
     '..............', '..............', '..............', '..............', '..............', '..............',
@@ -4761,14 +4761,16 @@ export function bakeSwornSword() {
     '..............', '..............', '..............', '..............', '..............', '..............',
     '..............', '..........mmmm', '..........sss.'], W);
   swordOut[7] = set(swordOut[7], 9, 'f'); swordOut[8] = set(swordOut[8], 9, 'u');   /* the arm thrown out with the cut */
+  if (X.blade) for (const r of [swordLow, swordUp, swordOut]) r.forEach((row, i) => { r[i] = row.replace(/s/g, X.blade); });
+  const wsp = X.pal ? rows => outline(fromGrid(rows, Object.assign({}, WM, X.pal), 1), OUT) : wspr;
   const stepB = pad([], 0);
   const legsB = ['....vvvvvv....', '...vv....vv...', '...vv.....vv..', '..VV.......VV.'];
   const withLegs = (b, legs) => b.slice(0, 11).concat(legs);
-  const walk1 = wspr(lay(base, lay(guard, swordLow)));
-  const walk2 = wspr(lay(withLegs(base, legsB), lay(guard, swordLow)));
-  const tell = wspr(lay(base, lay(guard, swordUp)));
-  const cut = wspr(lay(withLegs(base, legsB), lay(guard, swordOut)));
-  const rest = wspr(lay(base, guard));
+  const walk1 = wsp(lay(base, lay(guard, swordLow)));
+  const walk2 = wsp(lay(withLegs(base, legsB), lay(guard, swordLow)));
+  const tell = wsp(lay(base, lay(guard, swordUp)));
+  const cut = wsp(lay(withLegs(base, legsB), lay(guard, swordOut)));
+  const rest = wsp(lay(base, guard));
   /* A WALK IN FOUR: the two steps between the two he had (5, 6); and HURT, the brim knocked back and the shield flung up (7) */
   const legsC = ['...vvvvvvvv...', '....vv..vv....', '....vv...vv...', '...VV.....VV..'];
   const legsD = ['...vvvvvvvv...', '...vv..vv.....', '..vv....vv....', '.VV.....VV....'];
@@ -4776,9 +4778,9 @@ export function bakeSwornSword() {
   const shiftR = rows => rows.map(r => ('.' + r).slice(0, W));
   const guardUp = pad(['..............', '..............', '..............', '..............', '.ss...........', 'sSSs..........', 'sSszs.........', 'sSSs..........', 'sSSs..........', '.ss...........'], W);
   guardUp[3] = set(guardUp[3], 4, 'u'); guardUp[4] = set(guardUp[4], 3, 'f'); guardUp[5] = set(guardUp[5], 4, 'u'); guardUp[7] = set(guardUp[7], 4, 'u');   /* the shield arm, knocked up with the rest of him */
-  const walk3 = wspr(lay(withLegs(base, legsC), lay(guard, swordLow)));
-  const walk4 = wspr(lay(withLegs(base, legsD), lay(guard, swordLow)));
-  const hurt = wspr(lay(withLegs(shiftR(base), legsHurt), guardUp));
+  const walk3 = wsp(lay(withLegs(base, legsC), lay(guard, swordLow)));
+  const walk4 = wsp(lay(withLegs(base, legsD), lay(guard, swordLow)));
+  const hurt = wsp(lay(withLegs(shiftR(base), legsHurt), guardUp));
   return pack([walk1, walk2, tell, cut, rest, walk3, walk4, hurt], 7, 15, 10, 14);
 }
 

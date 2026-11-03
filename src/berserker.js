@@ -150,8 +150,8 @@ export function makeBerserker(api) {
     const cost = api.blockCost(dmg);
     if (!api.canPay(cost)) { stats.takeBroken++; p.braceT = 0; api.guardBreak(); return 'half'; }
     api.pay(cost);
-    const chip = Math.max(1, Math.round(dmg * BZ.take.chip * api.takeScale())), hp0 = p.hp;
-    p.hp = selfFloor(p.hp, chip); if (hp0 - p.hp < chip) stats.floored++;   /* HE NEVER KILLS HIMSELF: the chip leaves him at one */
+    const chip = api.inTrial && api.inTrial() ? 0 : Math.max(1, Math.round(dmg * BZ.take.chip * api.takeScale())), hp0 = p.hp;   /* (claude/arenayard) a yard never hurts: the chip is shown, not taken */
+    if (chip > 0) p.hp = selfFloor(p.hp, chip); if (hp0 - p.hp < chip) stats.floored++;   /* HE NEVER KILLS HIMSELF: the chip leaves him at one */
     stats.chip += hp0 - p.hp; stats.taken++; stats.braced++; stats.absorbed += Math.max(0, dmg - chip);
     gain(p, Math.min(BZ.rage.absorbCap, Math.max(0, dmg - chip) * BZ.rage.absorb), 'taken'); p.braceHit = true;
     p.vx = -p.face * 50;
