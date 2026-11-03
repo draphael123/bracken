@@ -2161,7 +2161,7 @@ async function runbossLab(BK, opts) {
         else if(pl.jump&&P.ground){BK.press('jump');P.labJump=16;}
         if(P.labJump>0){P.labJump--;k.jump=true;}
         if(pl.down&&P.ground)k.down=true;
-        if(pl.block)k.block=true;
+        if(pl.block&&!(h==='knight'&&pl.beat>0.08))k.block=true;   /* (claude/rel139fix) the knight raises it in the last 0.08 s of the told blow: a PERFECT GUARD is a link */
         if(!pl.down&&!pl.block&&pl.gx!=null&&Math.abs(pl.gx-P.x)>4)k[pl.gx>P.x?'right':'left']=true;else if(!k.left&&!k.right)P.face=pl.face||P.face;
         if(pl.atk&&P.atk<0&&!pl.down){P.face=pl.face||P.face;BK.press('atk');swings++;}
         const was=P.hp,m0=boss.mode;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(m0,Math.max(0,was-P.hp));if(opts.onFrame)await opts.onFrame({boss,P,f,h,lvl:lvId,open:boss.open>0,why:pl.why});if(f%600===599)await yieldNow();continue;
