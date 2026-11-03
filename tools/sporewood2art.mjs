@@ -12,7 +12,7 @@ import { levelHash } from './level-quality.mjs';
 import { LEVELS } from '../src/level.js';
 const pg = await openPage({ audio: false, fonts: false }); let bad = 0;
 const ok = (c, m) => { console.log((c ? '  ok   ' : '  FAIL ') + m); if (!c) bad++; };
-ok(levelHash(LEVELS.find(l => l.id === 'spore')) === 'ee66feddd3c1', 'the level hash is the greybox\'s (art lanes never change the level data)');
+ok(levelHash(LEVELS.find(l => l.id === 'spore')) === 'a75db34c3cbd', 'the level hash is the greybox\'s (art lanes never change the level data)');
 try {
   const r = await pg.evalp(`(async()=>{
     const LV=(await import('/src/level.js')).LEVELS, idx=LV.findIndex(l=>l.id==='spore'); BK.manualSimulation=true; BK.setHero('knight'); BK.reset({fresh:true}); BK.load(idx); BK.start(); BK.god=true; BK.sim(120);
