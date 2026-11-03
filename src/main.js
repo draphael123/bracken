@@ -10457,6 +10457,11 @@ const PYRO_STAFF = { reach: 32, top: 15, bot: 3, live: [0.04, 0.18], swing: 0.3,
    strikes over his head (at his floor, the ceiling) and an up-slash under his feet */
 function attackBox() { const b = attackBox0(); if (b && P.finisher && P.atk >= 0) { if (P.face > 0) b.r += 12; else b.l -= 12; }   /* (claude/knightid) THE FINISHER is a LONG cut */
   if (!b || !(MG && P.flip)) return b; const c2 = 2 * P.y - P.h; return { l: b.l, r: b.r, t: c2 - b.b, b: c2 - b.t }; }
+/* (claude/smallfix12) RANGER vs WINDLASS: is a strikable gadget (the Fog Canal's props: windlass, paddle, capstan, horn, post; the Underwell's windlass) within the knife's reach ahead of p? */
+function gadgetInKnifeReach(p, reach) { const hit = (x, y, lo, hi) => { const dx = (x - p.x) * p.face; return dx > -8 && dx < reach + 10 && y >= p.y - hi - 4 && y <= p.y - lo + 4; };
+  if (typeof CANAL !== 'undefined' && CANAL && CANAL.props) for (const q of CANAL.props) if (q.t !== 'lamp' && hit(q.x, q.y, -2, 24)) return true;
+  if (L && L.ents) for (const q of L.ents) if (q.t === 'qwindlass' && hit(q.x * TS + 8, (q.y + 1) * TS, 0, 26)) return true;
+  return false; }
 function attackBox0() {
   if (CA && (P.caTrip || P.caPoke) && P.swingKind === 'sweep') { const b = CA.box(); if (b) return b === 'none' ? null : b; }   /* THE SHIELD TRIP and THE LOW POKE (src/crouch-a.js) */
   if (dashStriking()) { const D = DASH_STRIKE[hero()];   /* THE DASH ATTACK: the blade (or the point) out in front the whole of the run, cut to the art (chars.js dashAtk) */
@@ -29654,7 +29659,8 @@ RGK = makeRanger({ boltHome: s => sendBoltHome(s, 'snatch'), get P() { return P;
   hurtAs: (b, e, d, x, pl) => hurtAs(b, e, d, x, pl), swordDmg: () => swordDmg(), amul: k => amul(k), number: (x, y, t, c) => number(x, y, t, c), sparks: (x, y, d, n) => sparks(x, y, d, n), dust: (x, y, n) => dust(x, y, n),
   ringAt: (x, y, r, c, l) => ringAt(x, y, r, c, l), shakeCam: (n, k) => shakeCam(n, k), hitstop: t => hitstop(t), zoomKick: (a, b) => zoomKick(a, b), streaks: (...a) => streaks(...a),
   kitPose: (p, k, t) => kitPose(p, k, t), meterReady: c => meterReady(c), trialEvent: k => trialEvent(k), teach: k => rgTeach(k), teachShot: () => rgTeach('shot'), noteVerb: v => noteVerb(v),
-  parried: f => RP.parried(f), noteParry: () => { noteVerb('parry'); parries++; }, tap: () => RP_K.tap * DFM.df('parry'), finishNear: () => enemies.some(e => finishReady(e, P, e === boss || bossActive || miniActive)),   /* (claude/riposte: her BOW-BASH on the beat is the shared parry) */
+  parried: f => RP.parried(f), noteParry: () => { noteVerb('parry'); parries++; }, tap: () => RP_K.tap * DFM.df('parry'), finishNear: () => enemies.some(e => finishReady(e, P, e === boss || bossActive || miniActive)),
+  gadgetNear: (p, reach) => gadgetInKnifeReach(p, reach),   /* (claude/smallfix12) */   /* (claude/riposte: her BOW-BASH on the beat is the shared parry) */
   poiseLean: (e, n) => { const m = poiseMax(e); if (!m || !e.alive || e.broken > 0 || e.poiseCd > 0) return; e.poise = Math.min(m, (e.poise || 0) + n); e.poiseT = 2.5; if (e.poise >= m) addPoise(e, 1, P.x, false); } });
 HPK = makeHeroPass({ get P() { return P; }, get enemies() { return enemies; }, get parts() { return parts; }, get time() { return time; }, get boss() { return boss; }, TS, SFX, CM,
   hero: () => hero(), tal: k => tal(k), spend: c => spend(c), tired: () => { P.stFlash = 0.35; }, stDelay: () => ST.delay, blocked: () => { blocks++; },
