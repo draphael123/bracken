@@ -30394,7 +30394,8 @@ function wthDraw(cx, cy) {
   if (isWarden() && (P.wthHold || 0) > 0 && !P.dead) {   /* (claude/wardenart) THE WIND-UP: the spear drawn back in the throwing hand, level and pointing down the line, shaking and glowing harder with every tier */
     const t = P.wthHold, f = P.face, sh = t === 3 ? Math.round(Math.sin(time * 60)) : 0, hx = Math.round(P.x - cx) - f * (4 + 2 * t) + sh, hy = Math.round(P.y - cy) - 12 - t, len = [14, 18, 22][t - 1];
     const x0 = hx - f * 7, x1 = hx + f * (len - 7), pulse = 0.5 + 0.5 * Math.sin(time * (8 + 6 * t));
-    g.strokeStyle = '#8a5a32'; g.lineWidth = 1; g.beginPath(); g.moveTo(x0 + 0.5, hy + 0.5); g.lineTo(x1 + 0.5, hy + 0.5); g.stroke();
+    g.fillStyle = '#1c120a'; g.fillRect(Math.min(x0, x1) - 1, hy - 1, Math.abs(x1 - x0) + 2, t >= 2 ? 4 : 3);   /* a dark edge so the shaft reads against the wood and the sky */
+    g.fillStyle = '#a8703c'; g.fillRect(Math.min(x0, x1), hy, Math.abs(x1 - x0), t >= 2 ? 2 : 1); g.fillStyle = '#d9a766'; g.fillRect(Math.min(x0, x1), hy, Math.abs(x1 - x0), 1);
     g.fillStyle = '#c9b27c'; g.fillRect(x1 - f * 3 - (f > 0 ? 0 : 1), hy - 1, 2, 3);   /* the collar */
     g.fillStyle = t === 3 ? '#fff6c8' : '#dff0d8'; g.fillRect(x1 + (f > 0 ? 0 : -3), hy - 1, 4, 3); g.fillStyle = '#ffffff'; g.fillRect(x1 + f * 3 - (f > 0 ? 0 : 1), hy, 1, 1);
     g.save(); g.globalCompositeOperation = 'lighter'; g.globalAlpha = (0.15 + 0.12 * t) * (0.6 + 0.4 * pulse); g.fillStyle = t === 3 ? '#fff6c8' : '#8fd160';
