@@ -40,3 +40,13 @@ New tool: tools/geododge-capture.mjs (node tools/geododge-capture.mjs before|aft
 1. Is the ground dodge +21% (36 -> 44 px, now equal to the knight's 43) right? Rec: yes. For +25% set burrow pace 226.
 2. Is "shrug keeps half her momentum, 0.30 s" enough, or should the air dodge actually dash (like every other hero) and drop the stone shrug? Rec: keep the shrug (it is her kit identity from heropassa); only if Daniel still dislikes it, give her a real half-distance air dash that keeps the shrug's first-blow guard. Not built.
 3. I only had telemetry + frame GIFs (could not view GIFs myself); please eyeball before\air-geomancer.gif vs after\air-geomancer.gif - if the pose gShrug (hunched, stave across shoulders) is what reads odd, that is an art pass, not a numbers one.
+
+## AIR DASH + BURROW 11-03 (supersedes the stone-shrug fix and the "+21% ground" numbers above)
+Daniel: "the only hero without an air dash" -> the STONE SHRUG is retired. Faster burrow like the knight's.
+AIR DASH: hero-pass.mjs start() returns for the Geomancer in the air, so she takes the SHARED air-dodge path (grace, dash in it so X early is the dash attack, dash streaks and afterimages back, one air use / SLIPSTREAM). Only her pace is her own: 215 (knight 265) because she is heavy. ROLL_LEN geomancer 0.33 s (kept).
+- before (shrug): 15 px / 0.40 s, no grace. after: 51 px / 0.33 s, grace 0.26 s (shared), vs knight 64 px / 0.30 s. (Streaks/afterimage gating from the first pass was reverted.)
+BURROW (ground): now the KNIGHT'S numbers: 0.24 s long, pace 230 (the knight's step pace; measured peak 212 both), grace 0.14 s (the knight's step inv), no bleed, no knock-up, no extra recovery (she may act the moment she surfaces; the existing 0.2 s ROLLING STONE X window is kept). Sink = first frame (<7% of it), surface = last frame (>93%), the hump between.
+- distance on open floor: knight 43.1 px, burrow 38.7 px (before this pass 44 px with the longer 0.33 s version; original 36.4). Duration 15 steps, same as the knight.
+GIFs (after\): air-geomancer-dash.gif next to air-knight.gif; ground-geomancer-burrow.gif next to ground-knight.gif. Telemetry after\after-dash-telemetry.json, after-burrow-telemetry.json.
+Checks: one-dodge.mjs, hero-pass.mjs (asserts updated: shrug -> shared dash/grace), geomancer.mjs - see result lines in the final reply / below.
+Q: with speed+duration matched exactly the burrow is 38.7 px vs the knight's 43.1 (-10%); the +21% from earlier is gone. Rec: accept (Daniel said match exactly); for equal distance raise pace to 255.

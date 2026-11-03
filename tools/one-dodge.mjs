@@ -55,7 +55,7 @@ try {
   t(r.gFloor.burrow && r.gFloor.dash === 0, 'the Geomancer burrows on the floor: ' + JSON.stringify(r.gFloor));
   /* (claude/heropassa, DESIGN CHANGE - brief-heroidentity item 1 + the audit's rec: her AIR dodge is THE STONE SHRUG now, not a plain dash: she does not move, no grace, the first blow in it
      is shrugged off - src/hero-pass.js, held by tools/hero-pass.mjs. Was: 'in the air her dodge is a plain dash' (dash > 0)) */
-  t(!r.gAir.ground && r.gAir.dodge > 0 && !r.gAir.burrow && r.gAir.dash === 0 && r.gAir.inv === 0, 'in the air her dodge is the STONE SHRUG (no dash, no grace): ' + JSON.stringify(r.gAir));
+  t(!r.gAir.ground && r.gAir.dodge > 0 && !r.gAir.burrow && r.gAir.dash > 0 && r.gAir.inv > 0, 'in the air her dodge is the shared AIR DASH (DAN 11-03): ' + JSON.stringify(r.gAir));
   assert.deepEqual(pg.errors, []);
   if (fail.length) { console.log(fail.join('\n')); process.exit(1); }
   console.log('one dodge: the double tap and the button are one move - grace, direction, one cost, once in the air, the dash attack and the jump out of it; the Warden steps and the Geomancer burrows');

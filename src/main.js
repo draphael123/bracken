@@ -11105,11 +11105,11 @@ function updatePlayer(dt) {
       if (P.swim) { const ay = (keys.down ? 1 : 0) - (keys.up ? 1 : 0); P.vy = ay * 190; burst(P.x - P.face * 6, P.y - 8, 8, ['#e8f4f0', '#bfe6f5'], 60, 0.45, -30, 1); } // A SWIMMING DODGE: aim it up or down with the stroke
       else if (airDodge) { P.airDashN = (P.airDashN || 0) + 1; P.dashedAir = P.airDashN >= (tal('airDash') ? 2 : 1); P.airRolled = true;   /* SLIPSTREAM: a second before you land */
         P.vy = (tal('airRoll') || (isPirate() && tal('swash'))) ? Math.min(P.vy, -80) : Math.min(P.vy, 40);   /* AIR ROLL / SWASHBUCKLE: the one in the air lifts you; without it, it holds the fall level, as the dash did */
-        if (!isGeo()) streaks(P.x, P.y - 8, 5, ["#fff6e0", "#c9d1dc"], 90); }
+        streaks(P.x, P.y - 8, 5, ['#fff6e0', '#c9d1dc'], 90); }
       P.dodge = CM.ROLL_LEN[hero()] || 0.3; P.dodgeCd = 0.5; P.stepHeld = back && !P.swim && !airDodge ? P.dodge : 0;   /* WEIGHT: heavy heroes roll heavier - the paladin 0.30 s (it was 0.26) */   /* (her back-step on her feet holds its pace: STEP_PACE) */
       P.dodgeMax = P.dodge; P.dodgeInv = Math.min(P.dodge, CM.STAM.rollInv);   /* WEIGHT (Daniel 10-02, Q3): the first 0.20 s is untouchable, the TAIL is not */
       const burrow = isGeo() && P.ground && !P.swim && !(GS < 0);   /* (batch82 integ: witchfix turned the hero over on the real updatePlayer, so the ceiling dodge is this one: the ordinary roll - there is no floor above her head to dig down into) */
-      if (burrow) { P.geoBurrow = { dir }; P.dodgeInv = Math.min(P.dodge, CM.STAM.rollInv * P.dodge / 0.30); burst(P.x, P.y - 2, 10, ['#5e4e38', '#8a7a5e', '#8c8a7e'], 70, 0.4, 120, 1); SFX.geoThud && SFX.geoThud(); }   /* HER DODGE IS BURROW: down into the floor (geoBurrowStep) */
+      if (burrow) { P.geoBurrow = { dir }; P.dodge = P.dodgeMax = 0.24; P.dodgeInv = Math.min(0.14, CM.STAM.rollInv); burst(P.x, P.y - 2, 10, ['#5e4e38', '#8a7a5e', '#8c8a7e'], 70, 0.4, 120, 1); SFX.geoThud && SFX.geoThud(); }   /* HER DODGE IS BURROW: down into the floor (geoBurrowStep) */
       /* TWO SMALL STEPS, THEN THE WAIT: the second comes the moment the first is over, and only the third is made to wait */
       if (isWarden()) { const quick = time - (P.stepAt || -9) < STEP_PAIR && (P.stepN || 0) < 2;
         P.stepN = quick ? (P.stepN || 0) + 1 : 1; P.stepAt = time;
@@ -11120,7 +11120,7 @@ function updatePlayer(dt) {
       P.dashCd = P.dodgeCd;   /* (one cooldown: the lab's hands still read the dash's name for it) */
       /* THE WARDEN STEPS. She does not roll through a blow, she gives ground with the point still up - so whatever she just left
          is back at the end of the spear by the time she lands. Tapped forward, the same step goes in, and a jump out of it vaults. */
-      P.vx = dir * (perk('stride') ? 1.12 : 1) * (isPaladin() ? 230 : isPyro() ? 300 : isPirate() ? (285 + ((P.rum || 0) > 0 ? 90 : 0)) : isReaper() ? 265 * (tal('longPassing') ? 1.5 : 1) : isWarden() ? (back ? (P.stepHeld ? STEP_PACE : 175) : 265) * (1 + 0.15 * tal('lightFoot')) : burrow ? 220 : isBz() ? BZ_K.roll.speed : 265);   /* (THE BERSERKER's shoulder roll: short, and it knocks the small aside - berserker.js rollStep) */   /* the dash's pace (RUM: longer; LONG PASSING: half again; LIGHT FOOT: her step either way) */
+      P.vx = dir * (perk('stride') ? 1.12 : 1) * (isPaladin() ? 230 : isPyro() ? 300 : isPirate() ? (285 + ((P.rum || 0) > 0 ? 90 : 0)) : isReaper() ? 265 * (tal('longPassing') ? 1.5 : 1) : isWarden() ? (back ? (P.stepHeld ? STEP_PACE : 175) : 265) * (1 + 0.15 * tal('lightFoot')) : burrow ? 230 : isGeo() ? (airDodge ? 215 : 265) : isBz() ? BZ_K.roll.speed : 265);   /* (THE BERSERKER's shoulder roll: short, and it knocks the small aside - berserker.js rollStep) */   /* the dash's pace (RUM: longer; LONG PASSING: half again; LIGHT FOOT: her step either way) */
       if (flipB && RGK) { P.vx = dir * RGK.flip(dir); P.dash = 0; P.dashDur = 0; }   /* THE BACKFLIP: up and over, facing what she left - X in it is a shot, not a dash attack */
       P.block = false; dodges++; noteVerb('dodge');
       if (!back && !burrow && !P.swim) { streaks(P.x, P.y - 9, -dir, isPyro() ? ['#ffd36b', '#ff9a5c'] : isPaladin() ? ['#ffe6a0', '#c9d1dc'] : ['#fff6e0', '#c9d1dc'], 110); dust(P.x - dir * 6, P.y, 3); }
@@ -11144,7 +11144,7 @@ function updatePlayer(dt) {
   }
   if (dodging && isPyro() && tal('phoenixTrail') && Math.abs(P.x - (P.trailX ?? -99)) > 12) { P.trailX = P.x; fires.push({ x: P.x, y: P.y, life: 1.4, delay: 0, own: true }); }   /* PHOENIX TRAIL: the roll leaves its fire behind */
   /* (TUMBLING CUT used to set dashLate here, which the dash strike never read after it came to him: it is in dashCutNow now) */
-  if (dodging) { P.dodge -= dt; P.dodgeInv = Math.max(0, (P.dodgeInv ?? P.dodge) - dt); if (!isReaper() && !P.geoBurrow && !(P.shrugT > 0)) ghosts.push({ x: P.x, y: P.y, face: P.face, life: isWarden() ? 0.3 : 0.22, frame: Math.floor(Math.max(0, P.dodge) * 14) % 2, step: isWarden() }); }   /* HER STEP IS NOT A ROLL AND MUST NOT LOOK LIKE ONE: see the draw */
+  if (dodging) { P.dodge -= dt; P.dodgeInv = Math.max(0, (P.dodgeInv ?? P.dodge) - dt); if (!isReaper() && !P.geoBurrow) ghosts.push({ x: P.x, y: P.y, face: P.face, life: isWarden() ? 0.3 : 0.22, frame: Math.floor(Math.max(0, P.dodge) * 14) % 2, step: isWarden() }); }   /* HER STEP IS NOT A ROLL AND MUST NOT LOOK LIKE ONE: see the draw */
   if (P.geoBurrow) geoBurrowStep(dt);   /* (and the Geomancer's is under the floor: no after-images, a trail in the dirt) */
   if (HPK) HPK.update(dt, keys, { dodging });   /* (claude/heropassa) the dodges' clocks, THE SHIELD BASH, THE WALL PLANT's foothold */
   // THE PYROMANCER, ALIGHT: a trail of embers, and anything she passes through takes fire
@@ -30227,7 +30227,7 @@ PUPH = makePuppeteerHands({ get P() { return P; }, get L() { return L; }, get pl
    up inside rock or a foe (A12): if the spot is taken she is put at the nearest clear footing, ahead first. (Walking a ceiling, and in
    the water, it is the old roll: there is no floor to go into.) */
 function geoBurrowStep(dt) { const B = P.geoBurrow;
-  if (P.dodge > 0 && !P.dead) { P.vy = 0; const d = Math.sign(P.vx) || B.dir, ty = Math.floor((P.y + 1) / TS), lead = P.x + P.vx * dt + d * (P.w / 2 - 1), tx = Math.floor(lead / TS);
+  if (P.dodge > 0 && !P.dead) { P.vy = 0; /* (DAN 11-03: the knight pace 230, 0.24 s, 0.14 s grace; no bleed) */ const d = Math.sign(P.vx) || B.dir, ty = Math.floor((P.y + 1) / TS), lead = P.x + P.vx * dt + d * (P.w / 2 - 1), tx = Math.floor(lead / TS);
     if (!(isSolid(tx, ty) || isOneWay(tileAt(tx, ty)))) { P.vx = 0; if (!B.stopped) { B.stopped = true; P.dodge = Math.min(P.dodge, 0.06); } }   /* the floor ends: she comes up here */
     if (Math.random() < dt * 40) parts.push({ x: P.x + (Math.random() - 0.5) * 8, y: P.y - 1, vx: -P.vx * 0.15, vy: -20 - Math.random() * 30, life: 0.3, max: 0.3, col: Math.random() < 0.5 ? '#8a7a5e' : '#5e4e38', size: 1, grav: 200 });   /* THE TRAIL: the floor heaving over her */
     return; }
@@ -35023,7 +35023,7 @@ function drawWorld(cx, cy, showPlayer) {
       if (P.fly) { const kx = Math.round(P.x - cx) - 4, ky = Math.round(P.y - cy) - 58; g.strokeStyle = '#e8dcc0'; g.lineWidth = 1; g.beginPath(); g.moveTo(Math.round(P.x - cx) + 0.5, Math.round(P.y - cy) - 14); g.lineTo(kx + 0.5, ky + 20); g.stroke(); drawBigKite(kx, ky, time); }
       if (P.fly && !(P.atk >= 0)) { key = 'jump'; frame = 1; }
       else if (P.hurt > 0) { key = 'hurt'; frame = P.hurt > 0.18 ? 0 : 1; }
-      else if (P.dodge > 0 && P.geoBurrow && K.R.burrow) { const el = 1 - P.dodge / (P.dodgeMax || 0.3); key = 'burrow'; frame = el < 0.25 ? 0 : el < 0.82 ? 1 : 2; }   /* BURROW: sink, a hump of earth with her hood in it, and up out of it */
+      else if (P.dodge > 0 && P.geoBurrow && K.R.burrow) { const el = 1 - P.dodge / (P.dodgeMax || 0.3); key = 'burrow'; frame = el < 0.07 ? 0 : el < 0.93 ? 1 : 2; }   /* BURROW: sink, a hump of earth with her hood in it, and up out of it */
       else if (P.dodge > 0 && POSE_DASH[P.kPoseK] && kitPoseFrame(P, K.R)) { [key, frame] = kitPoseFrame(P, K.R); }   /* HOLY CHARGE and CINDER STEP are dodges with a body of their own, not the roll (hero-poses.js) */
       else if (P.dodge > 0 && HPK && HPK.poseKey(P) && kitPoseFrame(P, K.R)) { [key, frame] = kitPoseFrame(P, K.R); }   /* (claude/heropassa) EACH HERO'S OWN DODGE has its body (hero-poses.js POSE_ALIAS: greybox frames until the art pass) */
       else if (P.dodge > 0 && P.rgFlip && isRg()) { const dm = P.dodgeMax || 0.3; key = K.R.rgFlip ? 'rgFlip' : 'roll'; frame = Math.floor((dm - P.dodge) / dm * 4) * (K.R.rgFlip ? 1 : (P.face > 0 ? -1 : 1)); }   /* (claude/ranger) THE BACKFLIP: the roll turned the other way over (art lane: rgFlip) */

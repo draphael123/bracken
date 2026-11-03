@@ -74,7 +74,7 @@ try {
     t(r.flash.front >= 0.5 && r.flash.dz && r.flash.behind < 0.3, 'pirate: the powder flash dazzles what is in front, not what is behind: ' + JSON.stringify(r.flash));
     t(r.reaper.max === 0.2 && r.reaper.dist >= 45 && r.reaper.dist <= 110 && r.wake === 1, 'reaper: the shadow-step is short and leaves the wake: ' + JSON.stringify([r.reaper, r.wake]));
     t(r.geomancer.dash === 0 && r.geomancer.dodge > 0, 'geomancer: on the floor her dodge is still the burrow: ' + JSON.stringify(r.geomancer));
-    t(r.shrug.dash === 0 && r.shrug.inv === 0 && r.shrug.first === 'blocked' && r.shrug.firstLost === 0 && r.shrug.secondLost > 0, 'geomancer: the stone shrug in the air shrugs one blow, no grace, no dash: ' + JSON.stringify(r.shrug));
+    t(r.shrug.dash > 0 && r.shrug.inv > 0 && r.shrug.inv <= 0.26 + 1e-6 && r.shrug.shrugT === 0, 'geomancer (DAN 11-03): in the air she has the SHARED AIR DASH - a dash, the shared grace, no stone shrug: ' + JSON.stringify(r.shrug));
     t(r.kAir.dodge > 0 && r.kAir.dash > 0 && r.kAir.max > 0.25, 'knight: in the air the shared air dodge is untouched: ' + JSON.stringify(r.kAir));
     t(r.barge.shoved, 'berserker: the barge shoves a small foe: ' + JSON.stringify(r.barge));
     t(r.ranger.dodge > 0, 'ranger: her backflip is untouched: ' + JSON.stringify(r.ranger));
