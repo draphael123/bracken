@@ -1315,6 +1315,7 @@ function screePath() {
   // loose scree is stacked against the west wall (313): his crash always shakes rock down (updateRam, main.js),
   // and a ram baited into THIS wall buries himself deeper for it - a caused opening, not a waited one.
   ent('sign', 307, 7, { text: 'HIS HORNS TURN STEEL: GO ROUND HIM. WHEN HE STANDS UNDER AN OVERHANG, KNOCK OUT ITS PROP.' });   /* (claude/scree2: the reworked Ram Lord - src/ram-lord.js) */
+  ent('sign', 305, 7, { text: 'HE HORNS THE CLIFF AND A BOULDER ROLLS: JUMP IT. HIS BOULDERS KNOCK THE PROPS TOO.' });   /* (claude/scree3: the boulder butt) */
   ent('deco', 313, 8, { kind: 'foldGate' }); ent('deco', 341, 8, { kind: 'foldGate' });
   ent('deco', 313, 8, { kind: 'cairn' }); ent('deco', 341, 8, { kind: 'cairn' });
   for (const x of [314, 315, 316]) ent('deco', x, 8, { kind: 'stone', v: x % 3 }); // THE SCREE BANK: banked loose stone against the west wall

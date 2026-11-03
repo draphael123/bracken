@@ -33,11 +33,11 @@ const ctx = {
   damagePlayer: () => 'hit', number: noop, dust: noop, sparks: noop, shakeCam: noop, zoomKick: noop,
   SFX: new Proxy({}, { get: () => noop }),
   DMG: new Proxy({}, { get: () => 10 }),
-  RLD, bossActive: false, ramCtx: () => ({ say: noop, sfx: noop }),   /* (claude/scree2) the charge runs outside a live fight here: no overhang step */
+  RLD, bossActive: false, ramCtx: () => ({ say: noop, sfx: noop, hurtE: noop, hitstop: noop }),   /* (claude/scree2) the charge runs outside a live fight here: no overhang step */
 };
 /* claude/bosswave1 made the daze a module const above updateRam: read its real values from main.js so the slice can see them */
-const dz = /const RAM_DAZE = ([\d.]+), RAM_DAZE_TAKE = ([\d.]+)/.exec(main); assert(dz, 'RAM_DAZE consts found in main.js');
-ctx.RAM_DAZE = +dz[1]; ctx.RAM_DAZE_TAKE = +dz[2];
+/* claude/scree3: the daze is RLD.RAM.open now (the wall and the cliff read one profile) */
+assert(/RLD\.openIn\(e, ramCtx\(e, dt\), 'crash'\)/.test(main), 'the wall crash opens through the shared RAM.open profile');
 vm.createContext(ctx);
 vm.runInContext(src, ctx);
 
@@ -50,10 +50,11 @@ const run = (face, bank) => {
   for (let t = 0; t < 3 && e.mode === 'charge'; t += 1 / 60) ctx.updateRam.call(ctx, e, 1 / 60);
   return e;
 };
-const atBank = run(-1, -1);   // charges toward x0, and x0 is the banked wall
-const plain = run(1, -1);     // charges toward x1, the OTHER wall - same bank flag, opposite side
+const r0 = rocks.length; const atBank = run(-1, -1); const rBank = rocks.length - r0;   // charges toward x0, and x0 is the banked wall
+const r1 = rocks.length; const plain = run(1, -1); const rPlain = rocks.length - r1;     // charges toward x1, the OTHER wall - same bank flag, opposite side
 assert.equal(atBank.mode, 'crash', 'the ram crashes when he reaches a wall');
 assert.equal(plain.mode, 'crash', 'and the other wall still crashes him too');
-assert(atBank.modeT > plain.modeT, 'the banked wall bakes in a longer daze than an ordinary wall crash: ' + atBank.modeT.toFixed(2) + ' vs ' + plain.modeT.toFixed(2));
+assert.equal(atBank.modeT, plain.modeT, 'the banked wall opens the SAME window as an ordinary wall crash (claude/scree3: the cliff and the wall hit him the same): ' + atBank.modeT.toFixed(2) + ' vs ' + plain.modeT.toFixed(2));
+assert(rBank > rPlain, 'but the banked wall keeps the bigger SHOW: more rock (' + rBank + ' vs ' + rPlain + ')');
 const rocksAt = (e, before) => rocks.length - before;
-console.log('ram-bank  fold ' + tiles + ' tiles, bank on ' + (A.bank > 0 ? 'x1' : 'x0') + '; a wall crash daze ' + plain.modeT.toFixed(2) + 's, the banked wall ' + atBank.modeT.toFixed(2) + 's - a caused opening, not a waited one.');
+console.log('ram-bank  fold ' + tiles + ' tiles, bank on ' + (A.bank > 0 ? 'x1' : 'x0') + '; a wall crash daze ' + plain.modeT.toFixed(2) + 's, the banked wall ' + atBank.modeT.toFixed(2) + 's (same window, more rock: ' + rBank + ' vs ' + rPlain + ') - a caused opening, not a waited one.');
