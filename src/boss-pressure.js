@@ -17,7 +17,7 @@ export const PRESSURE = {
   5: { gap: 1.6, dmg: 1.9, mini: { gap: 1.5, dmg: 1.8 } },   /* curvefix 10-18: was 1.3/1.5 mini 1.35/1.55 */
 };   /* v3 (10-13 evening): v2 measured act medians 78/56/56/50/22 (minis 78/100/89/89/78) - interpolated toward 60-70 (minis 75-85) off the v0/v1/v2 response curve */
 /* the modes whose clock is NEVER scaled (told, open, ward, phase change, down): everything else of a boss's runs the dial's gap */
-const FROZEN = /Tell$|^(sleep|wake|phase|dead|dying|stuck|downed|stun|stunned|open|broken|ward|warded|reel|reeling|intro|rest0)$/;
+const FROZEN = /Tell$|^(sleep|wake|phase|dead|dying|stuck|downed|stun|stunned|open|opened|floated|broken|ward|warded|reel|reeling|intro|rest0)$/;
 /* BOSSES THAT ARE TUNED INTO THE BAND BY THEIR OWN REWORK LANE take NO dial (factor 1): they would be double-tuned. Coordinator 10-13: the Cistern Queen (claude/cqueenrework,
    67% with flasks at blows x2.9), the Hourglass King (claude/bc3tune, 61%); later the Matriarch, the Hawk-Mistress and the Glass Colossus when their lanes land (listed now so the dial
    never stacks on them). Remove a name here once a later re-measure shows the boss outside the band again. */
