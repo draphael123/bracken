@@ -103,7 +103,7 @@ export function bell(g, x, fy, swing, time) {
 }
 
 /* ---------------------------------------------------------------- THE PRACTICE GATE ---------------------------------------------------------------- */
-export function gate(g, x, fy, time) {
+export function gate(g, x, fy, time, text) {
   const L = x - 9, T = fy - 77, k = 0.5 + 0.5 * Math.sin(time * 2), f = Math.floor(time * 6) & 1;
   for (let j = 0; j < 77; j += 2) { g.globalAlpha = Math.max(0.2, 0.62 + 0.18 * k - j / 130); R(g, L, T + j, 18, 2, j < 30 ? '#ffe9a8' : '#e0b868'); }                                  /* the yards beyond: light, strongest high in the opening */
   g.globalAlpha = 1;
@@ -114,6 +114,12 @@ export function gate(g, x, fy, time) {
   const lx = x - 28, ly = fy - 66;                                                                                                                                              /* the lamp on its bracket */
   R(g, lx + 3, ly - 2, 8, 2, TP.fe2); R(g, lx + 9, ly, 1, 4, TP.fe1); R(g, lx + 8, ly + 3, 4, 2, TP.fe1); R(g, lx + 7, ly + 5, 6, 7, '#3a2a14'); R(g, lx + 8, ly + 6, 4, 5, TP.f3); R(g, lx + 9, ly + 7 + f, 2, 3 - f, TP.f4); R(g, lx + 7, ly + 12, 6, 1, TP.fe1);
   GLOW(g, lx + 10, ly + 8, 26, 18, '#ffd36b', 0.05);
+  /* (claude/yardswap, Daniel 11-03) THE ARENA YARD BOARD: a painted sign hung over the arch on two chains - the door says what it is */
+  if (text) { const bw = 54, bx = x - bw / 2, by = T - 19;
+    R(g, bx + 6, by + 12, 1, 8, TP.fe1); R(g, bx + bw - 7, by + 12, 1, 8, TP.fe1);
+    R(g, bx, by, bw, 13, TP.o3); R(g, bx, by, bw, 1, TP.o6); R(g, bx, by + 12, bw, 1, TP.o1); R(g, bx, by, 1, 13, TP.o5); R(g, bx + bw - 1, by, 1, 13, TP.o1);
+    R(g, bx + 2, by + 2, bw - 4, 9, '#2a3a20'); R(g, bx + 2, by + 2, bw - 4, 1, '#3e5530');
+    text('ARENA YARD', x, by + 4, '#ffe9a8', 'center', 6); }
 }
 
 /* ---------------------------------------------------------------- THE HAY TARGET ---------------------------------------------------------------- */

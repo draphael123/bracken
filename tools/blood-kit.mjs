@@ -71,7 +71,7 @@ const near = (a, b, e = 0.6) => Math.abs(a - b) <= e;
   ok(/\{ id: 'reaper', name: 'THE BLOOD KNIGHT'/.test(main), 'the hero is not THE BLOOD KNIGHT');
   ok(/\{ t: 'bloodknight', name: 'THE BLOOD KNIGHT'/.test(main), 'the bestiary boss is not THE BLOOD KNIGHT');
   ok(/'THE BLOOD KNIGHT  OPEN' : 'THE BLOOD KNIGHT'/.test(main), 'the boss bar is not THE BLOOD KNIGHT');
-  ok(/"THE BLOOD KNIGHT'S TRIAL"/.test(level), 'the trial is not THE BLOOD KNIGHT\'S TRIAL');
+  ok(!/DEATH KNIGHT'S TRIAL/.test(level), 'the retired trial row still says THE DEATH KNIGHT\'S TRIAL');   /* (claude/yardswap) hero trial yards are gone; the row is retired and builds the Arena Yard */
   ok(!/['"`][^'"`\n]*DEATH KNIGHT[^'"`\n]*['"`]/.test(main.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, '')), 'a string in main.js still says DEATH KNIGHT');
   ok(/bkReclaimAll\('THROWN BACK'\)/.test(main), 'the ward-release parry does not reclaim the debt');
 }
@@ -175,9 +175,10 @@ try {
     { const { o } = cast('bidden', null); BK.sim(5); o.drains = H().drains; out.drainNone = o; }
     { const { o, h0 } = cast('unholyGround', null, () => { const n0 = D().enemies.length; D().spawn({ t: 'brute', x: spot.x, y: spot.y }); const e = D().enemies[n0]; e.x = P().x + 20; e.y = P().y; e.hp = e.maxHp = 400; e.mode = 'idle'; out._pf = e; });
       const e = out._pf; delete out._pf; BK.sim(50); const h = H(); Object.assign(o, { pools: h.pools, hold: h.poolHold, foeHurt: 400 - e.hp, bleed: (e.bleed || 0) > 0, wade: (e.bkPoolT || 0) > 0, back: +(h.back - h0.back).toFixed(2) }); out.pool = o; e.alive = false; }
-    /* 9. (claude/bkkit2) HIS YARD's tree step is THE RED HOST: with nothing learned, BLOODWORMS is lent on F, its price is shown (not taken), and three bites open the gate */
-    { for (const k in BK.keys) BK.keys[k] = false; BK.setHero('reaper'); BK.reset({ fresh: true }); BKT.PROG.skillOwned.reaper = {}; BKT.PROG.loadouts.reaper = []; BK.applyUpgrades(); BK.load(LEVELS.findIndex(l => l.id === 'trial_reaper')); BK.state = 'play'; BK.god = false; BK.sim(30);
-      const si = BK.L.trial.findIndex(q => q.kind === 'host'), st = BK.L.trial[si]; if (st) { BK.tp(st.x0 + 3, 19); P().vx = 0; P().face = 1; BK.sim(20); P().harvest = 0; const hp0 = P().hp; BK.press('throw'); for (let f = 0; f < 600 && !st.done; f++) BK.sim(1); out.trial = { si, done: !!st.done, got: st.got || 0, n: st.n, hpTaken: hp0 - P().hp, lent: BKT.skillAt(0) }; } else out.trial = { si }; }
+    /* 9. (claude/yardswap, Daniel 11-03) THE HERO TRIAL IS GONE, and its RED HOST step (a lent BLOODWORMS, price shown not taken) with it. In the ARENA YARD a blow from straw costs him NO HEALTH (yardSafe) and his board names his blood moves. OWED: the lent-skill step had no Arena Yard twin (a hero there plays his own loadout). */
+    { for (const k in BK.keys) BK.keys[k] = false; BK.setHero('reaper'); BK.reset({ fresh: true }); BKT.PROG.skillOwned.reaper = {}; BKT.PROG.loadouts.reaper = []; BK.applyUpgrades(); BK.load(LEVELS.findIndex(l => l.id === 'arena_yard')); BK.start(); BK.state = 'play'; BK.god = false; BK.sim(30);
+      const Y = BK.yard(); Y.open(BK.players()[0]); const bd = Y.Y.st.board; const txt = bd ? bd.b.lines.map(l => l.text).join(' | ') : ''; Y.Y.st.board = null;
+      out.trial = { arena: !!BK.L.arenaYard, board: txt.length, blood: /BLOOD|VITAE|WARD|FRENZY/i.test(txt) }; }
     return out; })()`, 240000);
   console.log(JSON.stringify(R, null, 1));
   if (R.err) bad.push(R.err); else {
@@ -216,7 +217,7 @@ try {
     ok(R.drainNone.cd === 0 && R.drainNone.drains === 0, 'DRAIN with nothing in reach was spent: ' + JSON.stringify(R.drainNone));
     ok(R.pool.paid > 0 && R.pool.pools === 1 && R.pool.hold && R.pool.foeHurt > 0 && R.pool.bleed && R.pool.wade && R.pool.back > 0, 'RED GROUND was not paid in blood, or did not hold his debt, bite, bleed and slow a foe in it and win a drop back: ' + JSON.stringify(R.pool));
     void pct;
-    ok(R.trial && R.trial.done && R.trial.lent === 'summonSkeleton' && R.trial.hpTaken <= 0, 'the yard RED HOST step was not lent BLOODWORMS on F, took health, or was not done by three bites: ' + JSON.stringify(R.trial));
+    ok(R.trial && R.trial.arena && R.trial.blood, 'the Blood Knight in the Arena Yard: the yard did not load, or his move board names none of his blood moves: ' + JSON.stringify(R.trial));
     /* (claude/bkblood) */
     ok(R.vitae.got > 0 && R.vitae.drinks >= 1 && R.vitae.sprays >= 2 && R.vitae.kind === 'sparks' /* a straw man is wood: sparks, no blood */ && R.vitae.noDebt === 0 && R.vitae.kill === 0, 'VITAE did not fill from reclaimed blood only (or a drink / blood spray was missing; a kill or a cut with no debt filled it): ' + JSON.stringify(R.vitae));
     ok(R.vitae.beats >= 1, 'no heartbeat while he owed: ' + JSON.stringify(R.vitae));

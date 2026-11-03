@@ -5,7 +5,7 @@
 // There is one now, and this file is its rules with no game in them, so tools/store.mjs can hold them without a page:
 //
 //   TABS     HEROES, SKINS, WEAPONS, CHARMS, SKILLS (the old tree and its loadout on F and G, with its live previews), then the
-//            three the walk-in store also carried: SMITH, MUSIC, PRACTICE.
+//            three the walk-in store also carried: SMITH, MUSIC, PRACTICE (the practice tab went with the practice yard, claude/yardswap 11-03: the Arena Yard is the tavern door / the title row).
 //   ENTRIES  every way in: the map (V for the store, Q for the skills tab), the wood (Q, skills tab), the pause menu (Store,
 //            Skills) and the keeper's counter in a walk-in shop room. All of them call openStore() in main.js, and every one of
 //            them is refused in a fight: not at a boss, not in a mini-boss room, not in a live ambush, not with a foe on you.
@@ -30,7 +30,6 @@ export const TABS = [
   { id: 'smith',    name: 'SMITH' },
   { id: 'flasks',   name: 'FLASKS' },   /* (claude/flasks2) the flask's count, potency and perks: src/flasks2.js */
   { id: 'music',    name: 'MUSIC' },
-  { id: 'practice', name: 'PRACTICE' },
 ];
 export const TAB_IDS = TABS.map(t => t.id);
 

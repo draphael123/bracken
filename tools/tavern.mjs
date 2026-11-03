@@ -68,6 +68,10 @@ if (WANT.includes('pure')) {
   const { LEVELS, T } = await import('../src/level.js');
   const lv = LEVELS.find(l => l.id === 'tavern'), L = lv && lv.build();
   ok(!!lv && lv.hidden && L.tavern && L.openYard, 'THE TAVERN is a hidden level, flagged tavern (no death cost: openYard)');
+  { /* (claude/yardswap, Daniel 11-03) the training entry is the ARENA YARD: the door says so; no practice-yard / hero-trial wording left on the room's stations */
+    const pd = STATIONS.find(s => s.id === 'practice');
+    ok(pd && pd.name === 'THE ARENA YARD' && pd.verb === 'TRAIN' && /ARENA YARD/.test(pd.first), 'the training door is THE ARENA YARD (verb TRAIN): ' + JSON.stringify(pd && [pd.name, pd.verb]));
+    ok(!STATIONS.some(s => /PRACTICE YARD|HERO TRIAL|OPEN YARD/i.test(s.name + ' ' + s.verb + ' ' + s.first)), 'no station speaks of a practice yard, a hero trial or the open yard'); }
   if (L) {
     const at = (x, y) => L.grid[y * L.W + x];
     ok(xs.every(x => x > ROOM.wallL && x < ROOM.wallR && at(x, ROOM.FLOOR) === T.SOLID && at(x, ROOM.FLOOR - 1) === T.AIR), 'every station stands on the inn floor inside its walls');
@@ -197,7 +201,7 @@ if (PAGE.length) {
         await BK.tavern.enter();BK.sim(5);o.back=BK.players().length;const b=__P(1);__at(b,${STATIONS.find(s => s.id === 'practice').x});BK.sim(3);__talk(b);for(let i=0;i<300&&!(BK.L&&BK.L.arenaYard);i++){BK.sim(1);await new Promise(r=>setTimeout(r,5));}o.pr=BK.L&&BK.L.arenaYard?'arena_yard':BK.state;o.party=BK.players().length;BK.state='play';return o;})()`);
       ok(dp.st === 'map' && dp.seats === 1, 'THE DOOR, for player one: out to the map, the party with him: ' + JSON.stringify(dp));
       ok(dp.back === 2, '...and back into the inn the party comes in with him: ' + dp.back);
-      ok(dp.pr === 'arena_yard' && dp.party === 2, 'THE PRACTICE DOOR goes straight into the Arena Yard (claude/arenayard), the party with him: ' + dp.pr + ' ' + dp.party);
+      ok(dp.pr === 'arena_yard' && dp.party === 2, 'THE ARENA YARD DOOR goes straight into the Arena Yard (claude/arenayard), the party with him: ' + dp.pr + ' ' + dp.party);
       const seen = await E('BK.tavern.debug().stations.filter(s=>!s.seen).map(s=>s.id)');
       ok(seen.length === 0, 'every station used once: no glint left: ' + seen.join(','));
       const touchVerb = await E(`(()=>{BK.state='play';const a=__P(1);__at(a,${STATIONS.find(s => s.id === 'table').x});BK.sim(2);return BK.touchVerb?BK.touchVerb():null;})()`).catch(() => null);
@@ -231,15 +235,15 @@ if (PAGE.length) {
       ok(m1 === 'map' && m3 === 'map' && m4 === 'map', 'the door takes the party to the map: ' + [m1, m3, m4]);
       ok(c4.blue >= c1.blue + 4 && c4.rose >= c1.rose + 4, 'four seats: the blue (P3) and rose (P4) pips are on the map under the token: ' + JSON.stringify(c1) + ' -> ' + JSON.stringify(c4));
       ok(c3.blue >= c1.blue + 4 && c3.rose === c1.rose, 'three seats: P3 blue is there and P4 rose is not: ' + JSON.stringify(c3));
-      /* PRACTICE, from the inn: leaving it goes back to the inn with the party; from the title it still goes to the title */
+      /* THE ARENA YARD DOOR, from the inn: leaving it goes back to the inn with the party; from the title it still goes to the title */
       await E('__fresh()');
       const esc = "(async()=>{document.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',code:'Escape',bubbles:true}));BK.step(1);for(let i=0;i<200&&!(BK.state==='play'&&BK.L&&BK.L.tavern);i++)await new Promise(r=>setTimeout(r,50));return {st:BK.state,tav:!!(BK.L&&BK.L.tavern),n:BK.players().length};})()";
       const pr = await E("(async()=>{BK.tavern.join({kind:'pad',pad:3});BK.sim(90);const b=__P(1);__at(b," + STATIONS.find(s => s.id === 'practice').x + ");BK.sim(3);__talk(b);for(let i=0;i<300&&!(BK.L&&BK.L.arenaYard);i++){BK.sim(1);await new Promise(r=>setTimeout(r,5));}return BK.L&&BK.L.arenaYard?'arena_yard':BK.state;})()");
       const back = await E("(async()=>{BK.yard().leave();for(let i=0;i<300&&!(BK.L&&BK.L.tavern);i++){BK.sim(1);await new Promise(r=>setTimeout(r,5));}return {st:BK.state,tav:!!(BK.L&&BK.L.tavern),n:BK.players().length};})()");   /* (claude/arenayard) PRACTICE is the Arena Yard now; its gate out (and the pause menu's Return to map) goes back to the inn */
-      ok(pr === 'arena_yard' && back.st === 'play' && back.tav && back.n === 2, 'PRACTICE entered from the inn is the Arena Yard: its gate out returns to the INN with the party: ' + pr + ' ' + JSON.stringify(back));
-      const t0 = await E("(()=>{BK.coopEnd();BK.load(0);BK.state='practice';BK.step(1);return BK.state;})()");
-      const t1 = await E("(()=>{document.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',code:'Escape',bubbles:true}));BK.step(1);return BK.state;})()");
-      ok(t0 === 'practice' && t1 === 'title', 'PRACTICE entered any other way: ESC still goes to the title: ' + t0 + ' -> ' + t1);
+      ok(pr === 'arena_yard' && back.st === 'play' && back.tav && back.n === 2, 'THE ARENA YARD DOOR from the inn: its gate out returns to the INN with the party: ' + pr + ' ' + JSON.stringify(back));
+      const t0 = await E("(async()=>{BK.coopEnd();BK.yard().enter(false);for(let i=0;i<400&&!(BK.L&&BK.L.arenaYard&&BK.state==='play');i++){BK.sim(1);await new Promise(r=>setTimeout(r,5));}return BK.L&&BK.L.arenaYard?'arena_yard':BK.state;})()");   /* (claude/yardswap) the old practice list screen is gone: the yard entered from the title / pause / store (not the inn) leaves to the MAP */
+      const t1 = await E("(()=>{BK.yard().leave();return BK.state;})()");
+      ok(t0 === 'arena_yard' && t1 === 'map', 'the Arena Yard entered any other way (title / pause / store): its gate out goes to the map: ' + t0 + ' -> ' + t1);
     }
 
 

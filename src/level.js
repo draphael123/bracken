@@ -3666,44 +3666,9 @@ function highcrownWhole() {
   return highcrownTwo(R, { T, TS, painter });
 }
 
-function openYard() {
-  const W = 120, H = 30; const L = painter(W, H);
-  const { block, plat, ent, coins, set } = L;
-  block(0, W - 1, 22, H - 1); block(0, 1, 0, 21); block(W - 2, W - 1, 0, 21);          // the yard, walled
-  ent('sign', 4, 21, { text: 'THE OPEN YARD. NOTHING HERE HURTS OR ENDS. ESC TO RETURN TO THE MAP.' });
-  ent('torch', 8, 21); ent('torch', 112, 21);
-  // ---- the straw men: one on the floor, one on a table, one over the pit ----
-  for (const x of [16, 22, 28]) ent('dummy', x, 21);
-  ent('sign', 14, 21, { text: 'STRAW MEN STAND FOR ANYTHING. X X X IS A THIRD CUT; A DODGE, THEN X, IS A DASH ATTACK.' });
-  // ---- the steps: every height worth jumping, in a row you can read ----
-  plat(36, 19, 4); plat(43, 17, 4); plat(50, 15, 4); plat(57, 13, 4);
-  ent('sign', 34, 21, { text: 'THE STEPS GO UP TWO ROWS AT A TIME. DOWN+JUMP ON A LEDGE TO DROP THROUGH.' });
-  coins([37, 18], [44, 16], [51, 14], [58, 12]);
-  ent('dummy', 52, 14);
-  // ---- the gap: wide enough that a walk will not do it ----
-  for (let x = 64; x <= 71; x++) for (let y = 22; y < H; y++) set(x, y, T.AIR);
-  block(64, 71, 28, H - 1);                                                             // a floor at the bottom of it, so nothing is lost
-  ent('sign', 62, 21, { text: 'THE GAP. A JUMP WILL NOT CROSS IT. TAP A WAY TWICE TO DODGE, OR COME AT IT OFF THE STEPS.' });
-  ent('dummy', 68, 27);                                                                 // and one at the bottom to plunge onto
-  // ---- the wall: a climb, and a ledge to plunge off ----
-  block(78, 79, 8, 21); for (let y = 9; y <= 20; y++) { set(78, y, T.NET); set(79, y, T.NET); }
-  plat(80, 8, 6);
-  ent('sign', 74, 21, { text: 'CLIMB THE WALL AND PLUNGE: DOWN AND SWING IN THE AIR. LAND ON STRAW TO BOUNCE.' });
-  for (const x of [86, 90, 94]) ent('dummy', x, 21);
-  coins([81, 7], [84, 7]);
-  // ---- and two guards, which is the only thing in here you cannot simply hit ----
-  ent('shield', 102, 21, { face: -1 }); ent('soldier', 108, 21, { face: -1 });
-  ent('sign', 98, 21, { text: 'A GUARD TURNS A LIGHT BLOW. HOLD X, OR DOWN+X UNDER IT. UP+X THROWS HIM UP.' });
-  return {
-    W, H, grid: L.grid, ents: L.ents, START: { x: 6, y: 21 }, pools: [], falls: [], moversExtra: [], interiors: [],
-    trial: [], openYard: true, duskStart: -1, duskLen: 1, music: 'select', reachExact: true, noCoin: true,
-    palette: { sky: 'autumn', near: 'autumn', dress: 'wood', haze: 'rgba(200,120,80,0.12)', grass: '#6a8a3a', grassL: '#9ac050', grassD: '#3a5a24', dirt: '#4a3020', dirtL: '#5e3f2a', dirtD: '#2c1a10' },
-  };
-}
 
-// THE TRIALS. A practice yard for each hero: stations in a row, each with a sign that says what to do, straw men
-// to do it to, and a gate that lifts when it is done. Nothing in a trial can hurt you. The gate at the far end
-// is the way out. (L.trial: the stations - where each starts, its gate, what counts, how many.)
+/* (claude/yardswap, Daniel 11-03) THE HERO TRIALS AND THE OPEN YARD ARE GONE: the Arena Yard (src/arena-yard.js) is the one training ground. What survives of the trials is the TABLE of steps each hero's yard taught -
+   trialSteps, below - because THE MOVE BOARD (src/move-board.js) reads it for the hero's move list. The LEVELS rows trial_open / trial_* are kept as RETIRED rows (see retiredYard) so level indices and old ids never shift. */
 /* (claude/arenayard) THE STEPS A HERO'S YARD TEACHES, hoisted out of trialYard so THE MOVE BOARD (src/move-board.js) reads the same table: [kind, n, text, things, pad, kinds]. Pure. */
 export function trialSteps(hero) {
   /* THE DEATH KNIGHT'S C, IN ONE PLACE. His C is being reworked into THE BLOOD WARD: these two steps are the only lines
@@ -3851,29 +3816,6 @@ export function trialSteps(hero) {
       ['meter', 1, 'BLOWS FILL RAGE. FULL: HOLD DOWN, TAP C, THE FRENZY.', [['dummy', 14], ['sprig', 20]], 'DOWN + LB WITH A FULL BAR'],
       SKILL],
   }[hero];
-}
-function trialYard(hero) {
-  const ST = trialSteps(hero);
-  const SW = 26, W = 8 + ST.length * SW + 26, H = 24; const L = painter(W, H);
-  const { block, ent, set } = L;
-  block(0, W - 1, 20, H - 1); block(0, 1, 0, 19); block(W - 2, W - 1, 0, 19);
-  const trial = [];
-  ST.forEach(([kind, n, text, things, pad, kinds], i) => { const x0 = 4 + i * SW, gate = x0 + SW - 2;
-    if (kind === 'heavyblow' && hero === 'pirate') L.coins([x0 + 8, 18], [x0 + 11, 18], [x0 + 16, 18], [x0 + 19, 18]);   // his powder, lying about
-    ent('sign', x0 + 2, 19, { text }); ent('torch', x0 + 6, 19);
-    for (const [t, dx] of things) { if (t === 'archer') { block(x0 + dx - 2, x0 + dx + 2, 18, 19); ent('archer', x0 + dx, 17, { face: -1, lx0: x0 + 1, lx1: gate - 1 }); } else if (t === 'dummy') ent('dummy', x0 + dx, 19);
-      else ent(t, x0 + dx, 19, { face: -1, trainer: t === 'swornsword' || t === 'hedgeknight' ? 'drill' : 'still', lx0: x0 + 1, lx1: gate - 1 }); }   /* a drill fights you (it cannot hurt you here); a still one stands and takes it */
-    for (let y = 14; y <= 19; y++) set(gate, y, T.PORT); block(gate, gate, 0, 13);
-    trial.push({ x0, gate, kind, n, text, pad, kinds, fill: kind === 'mend' ? 60 : kind === 'hammer' || kind === 'sanctify' ? 60 : kind === 'smite' ? 20 : kind === 'twinsmite' ? 40 : kind === 'radiancePlus' ? 80 : kind === 'judgement' || (kind === 'meter' && hero !== 'pyro') ? 100 : 0 }); });
-  for (const q of trial) if (q.kind === 'valiant') q.fill = 100;   /* (claude/knightid) THE FINISHER's station: three links, as the meter's */
-  const xe = 4 + ST.length * SW;
-  ent('sign', xe + 2, 19, { text: 'THE TRIAL IS DONE. THE GATE AHEAD RETURNS YOU TO THE MAP.' });
-  ent('gate', xe + 14, 19);
-  return {
-    W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: 19 }, pools: [], falls: [], moversExtra: [], interiors: [], trial,
-    duskStart: -1, duskLen: 1, music: 'select', reachExact: true,
-    palette: { sky: 'autumn', near: 'autumn', dress: 'wood', haze: 'rgba(200,120,80,0.12)', grass: '#6a8a3a', grassL: '#9ac050', grassD: '#3a5a24', dirt: '#4a3020', dirtL: '#5e3f2a', dirtD: '#2c1a10' },
-  };
 }
 
 // THE HIGH STORE: the same trade in a stone cellar under the crags.
@@ -8035,6 +7977,8 @@ export const LOST_BANNERS = { fields: [538, 3], burial: [293, 55], witchlight: [
    needs 'storm', Highcrown needs it, no hidden/secret/kill count, a node on the road between the two (src/main.js CRAG_NODES), and a save that had
    Highcrown open keeps it (src/main.js progDefaults, PROG.crownOpen). Every check that asks about the Undercrown's road reads this flag. */
 export const ROAD_OPEN = { undercrown: true };
+/* (claude/yardswap, Daniel 11-03) A RETIRED TRAINING YARD: the row stays (LEVELS is an append log - indices never shift, and an old id in a save, a bookmark or a tool must never be a hole), but it BUILDS THE ARENA YARD. */
+const retiredYard = id => ({ id, name: 'THE ARENA YARD', sub: 'the old yard is gone: this is the Arena Yard', build: () => buildArenaYard({ painter, T }), hidden: true, retired: 'arena_yard' });
 export const LEVELS = [
   { id: 'wood', name: 'THE LUMBER TRAIL', sub: 'down the woodsmen\'s trail through bracken wood, to the hive', rule: RULE_WOOD, build: () => buildLumberTrail({ painter, T, TS }) },   /* (claude/lumbertrail) BRACKEN WOOD becomes THE LUMBER TRAIL: one rule, one sentence - what main.js fellStroke/fellLay do (src/felling.js) */
   { id: 'marsh', name: 'MARSH WOOD', sub: 'water and the frog', rule: 'PADS SINK. THE CHANNEL IS DEEP: PAY THE FERRYMAN OR DRAIN IT.', build: marshWood, needs: 'hornetsnest' },   /* (claude/hornetsnest2, Daniel 10-23: THE HORNET'S NEST is MAIN ROAD level 2 - the Lumber Trail -> the nest -> here; a save past the trail keeps this open: src/main.js progDefaults nestRoadMig, PROG.marshOpen) */
@@ -8054,12 +7998,12 @@ export const LEVELS = [
   { id: 'lamplit', name: 'THE LAMPLIT STREET', sub: 'the city under it', rule: 'THE LAMPS ARE AIR.', build: theLamplitStreet, needs: 'hurricane' },
   { id: 'underleaf', name: 'UNDERLEAF', sub: "the potion master's leaf village", rule: UL3_RULE, build: () => buildUnderleaf3({ painter, T, TS, knightRow }), needs: 'rootway' },   /* (claude/underleaf4, Daniel 10-25 08:00: ROAD MOVE - Sporewood -> Rootway -> UNDERLEAF -> Palisade Wood (act I); Kingswood -> Scree -> Hanging. Was needs 'scree' (claude/underorder 10-24); old saves keep it open: PROG.underleaf4Mig in src/main.js) */   /* (claude/underleaf3, Daniel 10-15: UNDERLEAF 3 - THE GRANDMOTHER'S VILLAGE + HER POTIONS, src/underleaf3.js + src/potion-hands.js; the hush is retired from it. The old builder underleaf() stays below, unused, for the art lane's reference) */   /* (claude/underleafroad, Daniel 10-08: a MAIN-ROAD level now - Kingswood -> UNDERLEAF -> THE SCREE PATH. It was `hidden: true, secret: true, needsTime: { id: 'kings', t: 180 }`: only on level select, after Gorm in under three minutes. ARRAY position unchanged (saves count levels by index); the road is the `needs` chain) */
   { id: 'shop', name: 'THE STORE', sub: 'ask the keeper', build: theShop, hidden: true },
-  { id: 'trial_open', name: 'THE OPEN YARD', sub: 'straw men, ledges and room', build: openYard, hidden: true },
-  { id: 'trial_knight', name: "THE KNIGHT'S TRIAL", sub: 'sword, shield and plunge', build: () => trialYard('knight'), hidden: true },
-  { id: 'trial_pyro', name: "THE PYROMANCER'S TRIAL", sub: 'ember, jet and heat', build: () => trialYard('pyro'), hidden: true },
-  { id: 'trial_paladin', name: "THE PALADIN'S TRIAL", sub: 'maul, aegis and light', build: () => trialYard('paladin'), hidden: true },
-  { id: 'trial_pirate', name: "THE FREEBOOTER'S TRIAL", sub: 'cutlass, pistol and hook', build: () => trialYard('pirate'), hidden: true },
-  { id: 'trial_reaper', name: "THE BLOOD KNIGHT'S TRIAL", sub: 'greatsword and blood', build: () => trialYard('reaper'), hidden: true },
+  retiredYard('trial_open'),   /* (claude/yardswap) was: 'THE OPEN YARD', sub: 'straw men, ledges and room' */
+  retiredYard('trial_knight'),   /* (claude/yardswap) was: "THE KNIGHT'S TRIAL", sub: 'sword, shield and plunge' */
+  retiredYard('trial_pyro'),   /* (claude/yardswap) was: "THE PYROMANCER'S TRIAL", sub: 'ember, jet and heat' */
+  retiredYard('trial_paladin'),   /* (claude/yardswap) was: "THE PALADIN'S TRIAL", sub: 'maul, aegis and light' */
+  retiredYard('trial_pirate'),   /* (claude/yardswap) was: "THE FREEBOOTER'S TRIAL", sub: 'cutlass, pistol and hook' */
+  retiredYard('trial_reaper'),   /* (claude/yardswap) was: "THE BLOOD KNIGHT'S TRIAL", sub: 'greatsword and blood' */
   { id: 'shopCrag', name: 'THE HIGH STORE', sub: 'ask the keeper', build: theShopCrag, hidden: true },
   { id: 'shopSea', name: 'THE CHANDLER', sub: 'ask the keeper', build: theShopSea, hidden: true },
   { id: 'deep', name: 'THE DEEP', sub: 'the trench the tribute went into', rule: 'YOU ARE TOO LIGHT TO BE DOWN HERE.', build: theDeep, needs: 'lamplit' },
@@ -8103,10 +8047,10 @@ export const LEVELS = [
   { id: 'caravan', arc: 'the desert', name: 'THE SUNKEN CARAVAN', sub: 'the road the storm buried', rule: 'THE SUN IS OUT HERE. SHADE IS LIFE.', build: () => buildCaravan({ T, TS }), needs: 'fallingtower' },
   { id: 'custom', name: 'YOUR WOOD', sub: 'made by hand', build: () => CUSTOM.build(), hidden: true },
   /* (2026-09-24, POLISH) the Warden's and the Geomancer's yards, APPENDED: LEVELS is an append log (map nodes and saves count by index) */
-  { id: 'trial_warden', name: "THE WARDEN'S TRIAL", sub: 'point, shaft and pin', build: () => trialYard('warden'), hidden: true },
-  { id: 'trial_geomancer', name: "THE GEOMANCER'S TRIAL", sub: 'stone fist, fault line, shield and avalanche', build: () => trialYard('geomancer'), hidden: true },
-  { id: 'trial_berserker', name: "THE BERSERKER'S TRIAL", sub: 'flurry, take it and frenzy', build: () => trialYard('berserker'), hidden: true },
-  { id: 'trial_ranger', name: "THE RANGER'S TRIAL", sub: 'the shot, the bash and the mark', build: () => trialYard('ranger'), hidden: true },   /* (claude/ranger) APPENDED: LEVELS is an append log */
+  retiredYard('trial_warden'),   /* (claude/yardswap) was: "THE WARDEN'S TRIAL", sub: 'point, shaft and pin' */
+  retiredYard('trial_geomancer'),   /* (claude/yardswap) was: "THE GEOMANCER'S TRIAL", sub: 'stone fist, fault line, shield and avalanche' */
+  retiredYard('trial_berserker'),   /* (claude/yardswap) was: "THE BERSERKER'S TRIAL", sub: 'flurry, take it and frenzy' */
+  retiredYard('trial_ranger'),   /* (claude/yardswap) was: "THE RANGER'S TRIAL", sub: 'the shot, the bash and the mark' */
   /* THE HARVEST FAIR (claude/fair1, L1: greybox + the facing mechanic): the road inland's second stop, between WAYMEET and THE HEXED FIELDS (the Fields
      need it now). APPENDED, like every level since the log began, so no index and no save moves; its place on the road is its `needs` and its map node */
   { id: 'fair', name: 'THE HARVEST FAIR', sub: 'abandoned mid-festival, as the sun goes down', rule: "DON'T TURN YOUR BACK ON THEM.", build: () => buildHarvestFair({ painter, T, TS }), needs: 'theatre' },   /* (claude/theatre: the playhouse stands between Waymeet and the fair now) */

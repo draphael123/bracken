@@ -1,14 +1,14 @@
 // tools/arena-yard.mjs - THE ARENA YARD (claude/arenayard, Daniel 11-03; plan scratch/plan-arenayard-1103.md).
 // One shared yard (level 'arena_yard'), NO `trial` flag (co-op works), dummies that hit for nothing but read as hits, PERFECT / GOOD / HIT from the
 // game's own parry counting, a move board that reads the hero standing at it. Checks, in ONE browser (headless, simulated frames, no real time):
-//   build    the level: arenaYard + openYard, no `trial`, the stations and their men; the swornswords carry the zone / tell / pace flags; trial_open is untouched
+//   build    the level: arenaYard + openYard, no `trial`, the stations and their men; the swornswords carry the zone / tell / pace flags; the ten old trial_* / trial_open rows are RETIRED (they build this yard)
 //   board    src/move-board.js pure (stepLine / boardLines / boardPages), then the real board for EVERY hero: lines for each trial step, pages fit
 //   safe     every hero stands in the slow, the flash and the archer stations 10 s with no input: hp never moves, the HIT word is shown, nothing ends him
 //   perfect  the flash dummy, the beat answered by each hero's own input: knight / pyro / warden / ranger (and the rest, reported): PERFECT is shown
 //   arrows   the archer's arrows against each hero (hold C, tap C): what the kit did to them (the report's table), GOOD or PERFECT shown, never a hurt hero
 //   zone     a dummy is asleep while nobody is in its station and wakes when somebody is; the archer is silent two stations away
 //   coop     two and four seats start a party IN the yard (players.length), each reads his OWN board, a seat in a station is graded and unhurt
-//   entry    the inn's practice door -> the yard (with the party), the gate out -> the inn; the title / store entry -> the yard, out -> the map; the trials door -> the list
+//   entry    the inn's practice door -> the yard (with the party), the gate out -> the inn; the title row ARENA YARD / the hero card / the store -> the yard, out -> the map; NO trials door, NO practice list (claude/yardswap, Daniel 11-03)
 // node tools/arena-yard.mjs [build,board,safe,perfect,arrows,zone,coop,entry]   (PORT from the environment; ONE=knight,warden narrows the hero loops)
 import { openPage, ROOT } from './cdp.mjs';
 import { writeFileSync, readFileSync, mkdirSync } from 'node:fs';
@@ -46,14 +46,14 @@ try {
     const r = await E(`(()=>{const i=__IDX;const L=__LV[i].build();const c={};for(const e of L.ents)c[e.t]=(c[e.t]||0)+1;
       return {i,id:__LV[i].id,hidden:!!__LV[i].hidden,last:i===__LV.findIndex(l=>l.id==='arena_yard'),arenaYard:!!L.arenaYard,openYard:!!L.openYard,trial:L.trial===undefined?'undef':typeof L.trial,W:L.W,H:L.H,c,
         sw:L.ents.filter(e=>e.t==='swornsword').map(e=>({x:e.x,z:e.yardZone,tell:!!e.yardTell,pace:e.yardPace||1,tr:e.trainer})),ar:L.ents.filter(e=>e.t==='archer').map(e=>({x:e.x,tr:e.trainer,z:e.yardZone})),
-        open:__LV.find(l=>l.id==='trial_open').build().trial!==undefined, trialIds:__LV.filter(l=>/^trial_/.test(l.id)).length};})()`);
+        retired:__LV.filter(l=>l.retired).map(l=>{const b=l.build();return {id:l.id,yard:!!b.arenaYard,trial:b.trial!==undefined,hidden:!!l.hidden};}),trialIds:__LV.filter(l=>/^trial_/.test(l.id)).length};})()`);
     ok(r.id === 'arena_yard' && r.hidden, 'LEVELS has arena_yard, hidden (not on the road)');
     ok(r.arenaYard && r.openYard && r.trial === 'undef', 'arenaYard + openYard set and NO `trial` (a truthy trial turns co-op off)');
     ok(r.W === 164 && r.H === 30, 'the yard is 164 x 30');
     ok(r.c.dummy >= 7 && r.c.sign >= 9 && r.c.shield === 1 && r.c.soldier === 1 && r.c.swornsword === 2 && r.c.archer === 1, 'the stations hold their men: ' + JSON.stringify({ d: r.c.dummy, sign: r.c.sign, sw: r.c.swornsword, ar: r.c.archer }));
     ok(r.sw.length === 2 && r.sw.every(s => s.z && s.tr === 'drill') && r.sw.filter(s => s.tell).length === 1 && r.sw.some(s => s.pace > 1 && !s.tell), 'two swornswords: a slow one (longer tell, no flash) and a flash one, each zoned and a drill');
     ok(r.ar.length === 1 && r.ar[0].tr === 'drill' && r.ar[0].z, 'the archer never goes down, shoots, and is zoned');
-    ok(r.open && r.trialIds === 10, 'the old open yard (trial: []) and the nine hero trials are untouched');
+    ok(r.trialIds === 10 && r.retired.length === 10 && r.retired.every(x => x.yard && !x.trial && x.hidden), 'the old open yard and the nine hero trials are RETIRED rows (index kept, hidden): each one builds the Arena Yard, none a trial: ' + JSON.stringify(r.retired.filter(x => !x.yard || x.trial)));
   }
 
   if (WANT.includes('board')) {
@@ -200,13 +200,22 @@ try {
       BK.yard().leave();for(let i=0;i<400&&at()!=='inn';i++){BK.sim(1);await new Promise(r=>setTimeout(r,5));}out.backToInn=at();
       BK.yard().enter(false);for(let i=0;i<400&&at()!=='yard';i++){BK.sim(1);await new Promise(r=>setTimeout(r,5));}out.fromTitle=at();out.innFlag2=BK.yard().inn();
       BK.sim(20);
-      // the trials door opens the old list over the yard; ESC goes back to the yard
-      const p=BK.players()[0];__stand(p,3,1);BK.sim(5);BK.press('talk');BK.sim(3);out.door=BK.yard().state();out.overlay=BK.yard().practiceOverlay();
+      // (claude/yardswap) there is NO trials door any more: UP where it stood (col 3) does nothing
+      const p=BK.players()[0];__stand(p,3,1);BK.sim(5);BK.press('talk');BK.sim(3);out.door=BK.yard().state();out.nearDoor=BK.yard().Y.spotNear(p);
+      // the title row ARENA YARD, the hero card's Z and the pause row all lead here (and there is no PRACTICE row)
+      BK.yard().leave();for(let i=0;i<400&&BK.state==='play';i++){BK.sim(1);await new Promise(r=>setTimeout(r,5));}
+      BK.state='title';const top=BK.ui.titleTop();out.titleRow=top.indexOf('ARENA YARD')>=0;out.oldRow=top.includes('PRACTICE');BK.ui.titleI=top.indexOf('ARENA YARD');BK.ui.pressCard=false;BK.press('confirm');
+      for(let i=0;i<400&&at()!=='yard';i++){BK.sim(1);await new Promise(r=>setTimeout(r,5));}out.fromTitleRow=at();
+      BK.yard().leave();for(let i=0;i<400&&BK.state==='play';i++){BK.sim(1);await new Promise(r=>setTimeout(r,5));}
+      BK.state='herocard';BK.press('confirm');for(let i=0;i<400&&at()!=='yard';i++){BK.sim(1);await new Promise(r=>setTimeout(r,5));}out.fromHeroCard=at();
       return out;})()`);
     ok(r.inn === 'inn' && r.fromInn === 'yard' && r.innFlag === true, 'the inn\'s practice door goes straight into the Arena Yard');
     ok(r.backToInn === 'inn', 'the yard\'s gate out goes back to the inn when it was entered from the inn');
     ok(r.fromTitle === 'yard' && r.innFlag2 === false, 'the title / store entry goes straight into the yard, not from the inn');
-    ok(r.door === 'practice' && r.overlay === true, 'UP at the trials door opens the practice list over the yard (state ' + r.door + ')');
+    ok(r.door === 'play' && r.nearDoor === null, 'no trials door: UP where it stood does nothing (state ' + r.door + ')');
+    ok(r.titleRow && !r.oldRow && r.fromTitleRow === 'yard', 'the title row is ARENA YARD (no PRACTICE) and it goes straight into the yard: ' + r.fromTitleRow);
+    ok(r.fromHeroCard === 'yard', "the hero card's Z goes to the Arena Yard: " + r.fromHeroCard);
+    ok(!/startTrial|hasTrial|updatePractice|drawPractice|YARD_DRILLS/.test(main) && /k !== 'Arena Yard' || !(L && L.arenaYard)/.test(main) && !/id: 'practice', name: 'PRACTICE'/.test(readFileSync(join(ROOT, 'src/store.js'), 'utf8')), 'main.js has no trial / practice-list code left, the pause row is hidden inside the yard, the store has no PRACTICE tab');
   }
 
   if (WANT.includes('shots')) {

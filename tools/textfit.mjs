@@ -21,7 +21,7 @@
 //   plates    every boss and mini's plate at the foot of the screen, in its fight (only the band under VH - 40): in the suite
 //   pick      THE HERO PICK, with each of its cards selected in turn: every hero's name under its card, and the words for the selected one
 //   card      THE LEVEL-UP CARD (LEVELING): every hero's stat card, a milestone, a full card with every perk, the respec line, and the co-op lock
-//   practice  THE PRACTICE YARDS list, each row selected in turn
+//   practice  THE TRAINING ENTRIES (claude/yardswap: the old PRACTICE YARDS list is gone): the title with ARENA YARD selected, and every hero's hero card (its Z line)
 //   arena     (claude/arenayard) THE ARENA YARD: every sign in it, every page of its move board for every hero
 //   bossjump  THE HIDDEN BOSS LIST (SHIFT+B on the title): each row selected in turn, and every hero on the hero line
 //   bossselect  THE SAVE'S BOSS LIST: locked and beaten rows, records, and every owned hero
@@ -267,8 +267,9 @@ async function pageTextFit(input) {
     for (const n of [4, 3, 2]) { BK.aiComp.arm(['geomancer', 'berserker', 'reaper'].slice(0, n - 1), ['support', 'balanced', 'defensive'].slice(0, n - 1), n - 1); frame('map party x' + n, () => { BK.state = 'map'; BK.PROG.xp = BK.PROG.xp || {}; }, { settle: 3 }); }
     BK.coopEnd(); BK.state = 'title'; await yieldNow(); }
   if (want('practice')) { const PR = window.BK.PROG; PR.heroes = PR.heroes || {};
-    for (let i = 0; i < 10; i++) frame('practice #' + i, () => { BK.state = 'practice'; BK.ui.practiceI = i; }, { settle: 20 });
-    await yieldNow(); }
+    frame('title ARENA YARD row', () => { BK.state = 'title'; BK.ui.titleOpts = false; BK.ui.titleI = Math.max(0, BK.ui.titleTop().indexOf('ARENA YARD')); }, { settle: 20 });
+    for (const h of HEROES.concat(['geomancer', 'berserker', 'ranger'])) { BK.setHero(h); frame('hero card [' + h + '] (Z to the Arena Yard)', () => { BK.state = 'herocard'; }, { settle: 5 }); }
+    BK.state = 'title'; await yieldNow(); }
   /* (claude/arenayard) THE ARENA YARD: every sign in it (the talk pages) and every page of THE MOVE BOARD, for every hero (it reads the hero at the board) */
   if (want('arena')) { const ai = lvm.LEVELS.findIndex(l => l.id === 'arena_yard'), done = new Set();
     for (const h of ['knight', 'warden', 'pyro', 'paladin', 'pirate', 'reaper', 'geomancer', 'berserker', 'ranger']) { try { toPlay(ai, h); } catch (e) { issues.push({ type: 'ERROR', screen: 'arena ' + h, s: 'load: ' + e.message, n: 1 }); continue; }

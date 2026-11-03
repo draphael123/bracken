@@ -73,16 +73,16 @@ try {
         for (; k < 400; k++) { if (f.mode === 'pounceTell') seen = true; if (seen && f.mode !== 'pounceTell') { BK.press('jump'); K.jump = true; BK.sim(12); K.jump = false; BK.sim(40); break; } BK.sim(1); }
         got = F.FPS.overreach - o0; BK.god = true; }
       out.told = { tries, watched: F.FPS.toldWatch - w0, overreach: F.FPS.overreach - o0 }; }
-    /* ---- THE DEATH KNIGHT'S YARD: the ward let go on the flash ---- */
-    for (const early of [false, true]) { for (const k in K) K[k] = false; BK.manualSimulation = true; BK.setHero('reaper'); BK.reset({ fresh: true }); BK.load(LEVELS.findIndex(l => l.id === 'trial_reaper')); BK.state = 'play'; BK.god = false; BK.sim(30);
-      const si = BK.L.trial.findIndex(q => q.kind === 'flash'), st = BK.L.trial[si], d0 = F.dkReturns(); BK.tp(st.x0 + 3, 19); P.vx = 0; P.face = 1; BK.sim(20);
-      const foe = () => BK.enemies().filter(e => e.alive && e.x > st.x0 * 16 && e.x < st.gate * 16).sort((a, b) => a.x - b.x)[0];
+    /* ---- THE ARENA YARD'S FLASH STATION (was THE DEATH KNIGHT'S TRIAL YARD, claude/yardswap): the ward let go on the flash is a PERFECT and a RETURN; one let go as the tell starts is not ---- */
+    for (const early of [false, true]) { for (const k in K) K[k] = false; BK.manualSimulation = true; BK.setHero('reaper'); BK.reset({ fresh: true }); BK.load(LEVELS.findIndex(l => l.id === 'arena_yard')); BK.start(); BK.state = 'play'; BK.god = false; BK.sim(30);
+      const Y = BK.yard().Y, d0 = F.dkReturns(), p0 = Y.st.stats.perfect; BK.tp(113, 21); P.vx = 0; P.face = 1; BK.sim(20);
+      const foe = () => BK.enemies().filter(e => e.alive && e.t === 'swornsword' && e.yardTell)[0];
       let cuts = 0, was = '';
-      for (let f = 0; f < 60 * 40 && !st.done && cuts < 6; f++) { const e = foe(); P.hp = P.maxHp; P.st = P.maxSt; if (!e) { BK.sim(1); continue; } P.face = Math.sign(e.x - P.x) || 1; const gap = Math.abs(e.x - P.x); K.right = gap > 26 && e.x > P.x; K.left = gap > 26 && e.x < P.x;
+      for (let f = 0; f < 60 * 40 && cuts < 6; f++) { const e = foe(); P.hp = P.maxHp; P.st = P.maxSt; if (!e) { BK.sim(1); continue; } P.face = Math.sign(e.x - P.x) || 1; const gap = Math.abs(e.x - P.x); K.right = gap > 26 && e.x > P.x; K.left = gap > 26 && e.x < P.x;
         if (e.mode === 'cutTell') { if (was !== 'cutTell') cuts++; K.block = early ? e.modeT > 0.6 : !e.glint; } else K.block = false;
         was = e.mode; BK.sim(1); }
       for (const k in K) K[k] = false;
-      out['reaper' + (early ? 'Early' : '')] = { got: st.got || 0, n: st.n, done: !!st.done, returns: F.dkReturns() - d0, cuts }; }
+      out['reaper' + (early ? 'Early' : '')] = { got: Y.st.stats.perfect - p0, returns: F.dkReturns() - d0, cuts }; }
     return out; })()`, 900000);
   assert.deepEqual(pg.errors, [], 'page errors');
 } finally { pg.close(); }
@@ -105,7 +105,7 @@ must(R.lead_stockade.none || (R.lead_stockade.heroVx < 30 || R.lead_stockade.lea
 must(!R.lead_stockade.none, 'LEAD: the archer on the Stockade never loosed');
 must(R.lead_wood.none || Math.abs(R.lead_wood.lead) < 12, 'LEAD: in the Wood the archer led his shot (' + JSON.stringify(R.lead_wood) + ')');
 must(R.told.watched >= 1 && R.told.overreach >= 1, 'TOLD: a hound pounce jumped over did not overreach (' + JSON.stringify(R.told) + ')');
-must(R.reaper.done && R.reaper.returns >= 2, 'THE DEATH KNIGHT\'S YARD: the ward let go on the flash did not pass the station (' + JSON.stringify(R.reaper) + ')');
-must(!R.reaperEarly.got, 'THE DEATH KNIGHT\'S YARD: a ward let go as the tell started was counted as the beat (' + JSON.stringify(R.reaperEarly) + ')');
+must(R.reaper.got >= 1 && R.reaper.returns >= 2, 'THE ARENA YARD flash station: the ward let go on the flash was not a PERFECT + a return (' + JSON.stringify(R.reaper) + ')');
+must(!R.reaperEarly.got, 'THE ARENA YARD flash station: a ward let go as the tell started was graded PERFECT (' + JSON.stringify(R.reaperEarly) + ')');
 assert.deepEqual(bad, [], 'the foe pass in the page:\n  ' + bad.join('\n  '));
 console.log('foe pass in the page: stale mashes never break, varied runs do; the finisher pays ' + R.refund.hp + ' hp + wind; a plunge finishes; the four affixes; pursuit and the lead on a live level only; a jumped pounce overreaches; the Death Knight\'s yard teaches the ward let go.');

@@ -46,7 +46,7 @@ import * as U from '../src/ui-hud.js';
   const sh = U.sunStatus({ shaded: true, stg: 0 }), h1 = U.sunStatus({ stg: 1 }), h2 = U.sunStatus({ stg: 2 });
   assert.equal(U.statusChange(null, sh), null, 'standing in shade at the start says nothing'); assert.equal(U.statusChange(sh, sh), null, 'no change, no toast');
   assert(/BITES/.test(U.statusChange(null, h1)) && /HOTTER/.test(U.statusChange(h1, h2)), 'the bite and each stage up are said once'); assert(/LETS GO/.test(U.statusChange(h2, sh)), 'and the shade after the sun'); assert.equal(U.statusChange(h2, h1), null, 'a stage down is silent');
-  for (const old of ['Resume', 'Map', 'Skills', 'Level card', 'Store', 'Hero', 'Co-op', 'Co-op guide', 'Hero trial', 'Back to shrine', 'Restart level', 'Return to map', 'Music volume', 'Effects vol', 'Settings', 'Quit to title']) assert(U.PAUSE_ROWS.includes(old), 'the pause row ' + old + ' is kept');
+  for (const old of ['Resume', 'Map', 'Skills', 'Level card', 'Store', 'Hero', 'Co-op', 'Co-op guide', 'Arena Yard', 'Back to shrine', 'Restart level', 'Return to map', 'Music volume', 'Effects vol', 'Settings', 'Quit to title']) assert(U.PAUSE_ROWS.includes(old), 'the pause row ' + old + ' is kept');
   assert.deepEqual(U.PAUSE_ROWS.slice(0, 5), ['Resume', 'Map', 'Skills', 'Settings', 'Return to map'], 'the first screen is what a player pauses for'); }
 
 /* ---- 3. and 4. in the page ---- */

@@ -22,7 +22,7 @@ ok(/THE TAVERN IS FULL: FOUR TO A PARTY/.test(main), 'the full-party callout say
 for (const k of ['Resume', 'Settings', 'Co-op', 'Return to map', 'Quit to title']) ok(PAUSE_ROWS.includes(k), 'the pause rows include ' + k);
 const hide = (main.match(/const TAVERN_MENU_HIDE = (\[[^\]]*\])/) || [])[1];
 const H = hide ? JSON.parse(hide.replace(/'/g, '"')) : [];
-ok(H.length >= 5 && ['Map', 'Level card', 'Hero trial', 'Back to shrine', 'Restart level'].every(k => H.includes(k)), 'the inn hides the level-only rows: ' + H.join(','));
+ok(H.length >= 5 && ['Map', 'Level card', 'Arena Yard', 'Back to shrine', 'Restart level'].every(k => H.includes(k)), 'the inn hides the level-only rows: ' + H.join(','));
 ok(!['Resume', 'Settings', 'Co-op', 'Return to map', 'Quit to title'].some(k => H.includes(k)), 'the inn never hides Resume / Settings / Co-op / Return to map / Quit to title');
 ok(/L && L\.tavern && menuFrom === 'play' \? PAUSE_ITEMS\.filter\(k => !TAVERN_MENU_HIDE\.includes\(k\)\)/.test(main), 'menuItems filters the pause rows in the inn only');
 ok(/k === 'Return to map' && L && L\.tavern\) \{ tavernToMap\(\); \}/.test(main), 'Return to map in the inn walks out to the map (tavernToMap)');
