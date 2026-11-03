@@ -288,7 +288,7 @@ export function makeKitchenHands(ctx) {
     /* THE RECIPE PAGES, THE SPICE VAULT's grate */
     (lv.kgPages || []).forEach(([px, py], i) => { if (S.pages.has(i)) return; const x = R(px * TS + 8 - cx), y = R((py + 1) * TS - cy) - 8 + Math.sin(time * 2 + i) * 2; if (x < -20 || x > VW + 20) return; KA.drawPage(g, x, R(y), i, time); });
     if (lv.kgVault && !S.vaultOpen) { const v = lv.kgVault, x = R(v.x0 * TS - cx), y = R(v.y0 * TS - cy); KA.drawVault(g, x, y, (v.x1 - v.x0 + 1) * TS, S.pages.size);
-      ctx.text && ctx.text(S.pages.size + '/3', x + TS, y - 8, '#e8dcb0', 'center', 5); }
+      if (ctx.text && x + TS > 10 && x + TS < VW - 10 && y - 8 > 0 && y - 8 < VH - 8) ctx.text(S.pages.size + '/3', x + TS, y - 8, '#e8dcb0', 'center', 5); }   /* (claude/smallfix12: only while its count is on the screen - textfit OFFSCREEN) */
     /* THE ATTENDANTS' PLATES in the air, and the ring each will land on */
     { const blink = Math.floor(time * 12) % 2 ? '#ff6b6b' : '#fff6e0'; for (const e of ctx.enemies()) { if (e.t !== 'attendant' || !e.plates) continue; for (const q of e.plates) { const p = H.plateAt(q); KA.drawPlate(g, p.x - cx, p.y - cy, p.k * 9); g.strokeStyle = blink; g.strokeRect(R(q.tx - cx) - 11, R(q.ty - cy) - 3, 22, 3); } } }
     /* THE AREA BANNER */

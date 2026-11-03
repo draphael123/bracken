@@ -233,7 +233,8 @@ export function makeRanger(api) {
 
   /* ---- X, PRESSED (main.js: her X before the swing). Returns true when the press is hers (a shot is nocked or loosed); false: it is the knife ---- */
   function pointBlank(p) { for (const e of api.enemies) { if (!e.alive || e.harmless || e.gone > 0 || e.turncoat) continue; const dx = (e.x - p.x) * p.face, hw = (e.w || 12) / 2;
-    if (dx > -hw && dx - hw < RG.knife.reach && Math.abs((e.y - (e.h || 16) / 2) - (p.y - 10)) < (e.h || 16) / 2 + 10) return true; } return false; }
+    if (dx > -hw && dx - hw < RG.knife.reach && Math.abs((e.y - (e.h || 16) / 2) - (p.y - 10)) < (e.h || 16) / 2 + 10) return true; }
+    return !!(api.gadgetNear && api.gadgetNear(p, RG.knife.reach)); }   /* (claude/smallfix12) a STRIKABLE GADGET (a windlass, a paddle, a capstan...) in knife reach is point-blank too: plain X knifes it even with arrows */
   function press(p, aim) { ensure(p);
     if (p.rgCd > 0) return 'eat';                                         /* (her hands are busy: the press is spent, nothing comes out) */
     if (p.rgStance === 'knife') return false;                              /* KNIFE STANCE (Daniel 10-15): X is the knife, the bow stays on her back */
