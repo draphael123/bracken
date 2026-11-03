@@ -13,7 +13,7 @@ export const SHAPE = {
   risingCut: 'rise', lunge: 'dash', shieldThrow: 'boomerang', warCry: 'ring', groundSlam: 'quake', whirlwind: 'spin',
   disarm: 'mark', ironclad: 'aura', swordOfRealm: 'waves',
   // pyromancer
-  vent: 'burst', emberFlare: 'flare', meteor: 'sky', wisp: 'wisp', flameRing: 'ring', fireWall: 'wall', cinderStep: 'dash',
+  vent: 'burst', emberFlare: 'flare', meteor: 'lance', wisp: 'wisp', flameRing: 'ring', fireWall: 'wall', cinderStep: 'dash',
   // paladin
   consecrate: 'zone', lightLance: 'thrust', holyCharge: 'dash', divineShield: 'aura', blessedHammer: 'spiral', hammerLeap: 'leap',
   // freebooter
@@ -35,7 +35,7 @@ export const shapeOf = id => SHAPE[id] || 'cast';
 
 /* how each shape reads on the post: [hit window in fx progress, push in px] (0 push = it flinches in place) */
 const HIT = { thrust: [.12, .5, 5], dash: [.35, .7, 6], boomerang: [.3, .5, 3], ring: [.15, .6, 7], quake: [.2, .7, 3], spin: [.2, .7, 4], mark: [.2, .9, 0], aura: [2, 2, 0],
-  flare: [.4, .85, 0], waves: [.2, .9, 4], burst: [.1, .5, 6], sky: [.55, .9, 4], wisp: [.4, .9, 2], wall: [.2, .6, 2], zone: [.1, .95, 0], spiral: [.25, .8, 3], leap: [.5, .7, 5], cone: [.1, .4, 5],
+  flare: [.4, .85, 0], waves: [.2, .9, 4], burst: [.1, .5, 6], lance: [.4, .9, 4], wisp: [.4, .9, 2], wall: [.2, .6, 2], zone: [.1, .95, 0], spiral: [.25, .8, 3], leap: [.5, .7, 5], cone: [.1, .4, 5],
   hook: [.35, .7, -14], hands: [.1, .9, 0], summon: [.6, .9, 3], bolt: [.4, .6, 5], spikes: [.3, .8, 0], flurry: [.1, .9, 2], rain: [.3, .9, 0], pillar: [2, 2, 0],
   roll: [.4, .7, 7], arch: [2, 2, 0], entomb: [.2, .9, 0], rise: [.15, .6, 0], cast: [.2, .5, 3] };
 
@@ -121,7 +121,9 @@ const FX = {
       if (S.p > .3 && S.p < .62) { const k = (S.p - .3) / .32; ringAt(S.g, cx, cy, 5 + k * 17, S.c1, fade(k)); ringAt(S.g, cx, cy, 3 + k * 11, '#fff', fade(k) * .8); sparks(S.g, cx + 16, cy - 4, k, S.c2, 6, 12); }
       if (S.p > .4 && S.p < .95) for (let i = 0; i < 3; i++) band(S.g, px - 3 + i * 3, S.gy - 26 - Math.round(((S.c * 22 + i * 5) % 8)), 2, 3, i % 2 ? S.c1 : S.c2, .8); } },
   burst(S, ph) { if (ph !== 'over' || S.p <= 0) return; ringAt(S.g, S.hx, S.gy - 12, 4 + S.p * 40, S.c1, fade(S.p)); sparks(S.g, S.hx, S.gy - 14, S.p, S.c2, 10, 34); },
-  sky(S, ph, px) { if (ph !== 'over' || S.p <= 0) return; const q = clamp(S.p / .55); if (q < 1) { band(S.g, px - 3 + (1 - q) * 14, S.y + 4 + q * (S.gy - S.y - 16), 6, 6, S.c1); band(S.g, px + (1 - q) * 14 + 1, S.y + 2 + q * (S.gy - S.y - 22), 3, 5, S.c2, .7); } else { ringAt(S.g, px, S.gy - 2, 4 + (S.p - .55) * 60, S.c1, fade(S.p - .3)); sparks(S.g, px, S.gy - 8, (S.p - .55) / .45, S.c2, 8, 16); } },
+  lance(S, ph, px) { if (ph !== 'over' || S.p <= 0) return; const q = clamp((S.p - .08) / .32), x0 = S.hx + 14, xx = x0 + (px - x0 - 4) * q, yy = S.gy - 14;
+    if (q > 0 && q < 1) { for (let i = 3; i >= 1; i--) band(S.g, xx - i * 6 - 4, yy, 5, 2, S.c2, .6 - i * .13); band(S.g, xx - 6, yy - 1, 12, 4, S.c1); band(S.g, xx - 4, yy, 9, 2, '#fff'); }
+    else if (q >= 1) { ringAt(S.g, px, yy, 3 + (S.p - .4) * 40, S.c1, fade(S.p - .3)); sparks(S.g, px, yy, (S.p - .4) / .6, S.c2, 8, 16); } },
   wisp(S, ph) { if (ph !== 'over' || S.p <= 0) return; const q = clamp((S.p - .1) / .4), xx = S.hx + 10 + (S.dx - S.hx - 10) * q * .8 + Math.cos(S.c * 7) * 2, yy = S.gy - 26 + q * 6 + Math.sin(S.c * 7) * 3;
     band(S.g, xx - 2, yy - 2, 5, 5, S.c1); band(S.g, xx - 1, yy - 1, 3, 3, '#fff'); band(S.g, xx - 6, yy, 3, 2, S.c2, .5); },
   wall(S, ph) { if (S.p <= 0) return; const q = clamp(S.p / .2), up = S.p < .8 ? 1 : 1 - (S.p - .8) / .2, hh = 26 * ease(q) * up; if (ph === 'under') for (let i = 0; i < 3; i++) band(S.g, S.hx + 20 + i * 5, S.gy - hh, 4, hh, i % 2 ? S.c1 : S.c2); },

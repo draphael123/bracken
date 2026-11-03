@@ -1031,11 +1031,16 @@ const RG_ICONS = {   /* (claude/rangerart) redrawn: the same nine, with the arro
 };
 const skillIcon = k => k === 'groundSlam' ? SLAM_ICON : k === 'shieldThrow' ? SHIELD_ICON : k === 'risingCut' ? RISE_ICON : RG_ICONS[k] || BZ_ICONS[k] || PYRO_ICONS[k] || GEO_ICONS[k] || PAL_ICONS[k] || MORE_ICONS[k] || LATE_ICONS[k] || FLAME_ICON;
 let wisp = null; // the pyromancer's flame familiar
-let meteors = [], fireRings = [], lanceBeams = [], moons = []; // METEOR, RING OF FIRE, SPEAR OF LIGHT in flight, and the HARVEST MOON standing where he planted it
+let meteors = [], fireRings = [], lanceBeams = [], moons = []; // FIRE LANCE (id meteor), RING OF FIRE, SPEAR OF LIGHT in flight, and the HARVEST MOON standing where he planted it
 function updateSkillFx(dt) {
-  for (const m of meteors) { m.t += dt; const k = Math.min(1, m.t / 0.7); m.x = m.x0 + (m.tx - m.x0) * k; m.y = m.y0 + (m.ty - m.y0) * k * k; if (Math.random() < dt * 60) parts.push({ x: m.x, y: m.y, vx: (Math.random() - 0.5) * 30, vy: -20, life: 0.35, max: 0.35, col: Math.random() < 0.5 ? '#ffd36b' : '#ff6b2c', size: 2, grav: 0, fire: true });
-    if (k >= 1 && !m.done) { m.done = true; const dmg = Math.round((20 + (P.heat || 0) * 0.15) * amul('meteor'));   /* (claude/herokit) 26 + 0.2 x heat: -25%, the probe's one outlier (7.6 damage a stamina); (claude/archmage4, Daniel approved: ~20% more and 38 stamina) the blow is unchanged; it leaves ONE ground fire, not two - the ground fires were half its probe damage: 223 -> 167, 4.4 a stamina (was 7.2) */ shakeCam(6); zoomKick(1.06, 0.18); ringAt(m.tx, m.ty - 8, 44, '#ff9a5c', 0.4); burst(m.tx, m.ty - 6, 26, ['#ff9a5c', '#ffd36b', '#ff6b2c'], 110, 0.6, 0, 2); SFX.heavy(); SFX.puff(); smoke(m.tx, m.ty - 8, 5, 8);
-      for (const e of enemies) if (e.alive && !e.harmless && Math.abs(e.x - m.tx) < 44 && Math.abs((e.y - e.h / 2) - (m.ty - 10)) < 40) { hurtEnemy(e, e.maxHp ? Math.round(dmg * 0.6) : dmg, m.tx, false); if (!e.maxHp) { e.burn = Math.max(e.burn || 0, 2); flinch(e); } }
+  /* FIRE LANCE (the skill id stays 'meteor': saves, the tree, the bots): a lance of flame thrown from the hand in a straight line at the nearest foe ahead. It flies through thin terrain (walls never eat it);
+     with nothing ahead it bursts ~90 px out, or on the first solid tile. The blow is the old METEOR's: 20 + 0.15 heat, 0.6x on a boss, a 44 px burst, one ground fire. */
+  for (const m of meteors) { m.t += dt; if (m.t < m.delay) continue; const step = 560 * dt, dx = m.tx - m.x, dy = m.ty0 - m.y, d = Math.hypot(dx, dy) || 1;
+    m.x += dx / d * Math.min(step, d); m.y += dy / d * Math.min(step, d); m.trail.push({ x: m.x, y: m.y }); if (m.trail.length > 7) m.trail.shift();
+    if (Math.random() < dt * 60) parts.push({ x: m.x, y: m.y, vx: (Math.random() - 0.5) * 30, vy: -14, life: 0.3, max: 0.3, col: Math.random() < 0.5 ? '#ffd36b' : '#ff6b2c', size: 2, grav: 0, fire: true });
+    const open = !m.foe && isSolid(Math.floor(m.x / TS), Math.floor(m.y / TS));
+    if ((d <= step || open) && !m.done) { m.done = true; const ix = m.x, iy = m.y; const dmg = Math.round((20 + (P.heat || 0) * 0.15) * amul('meteor'));   /* (claude/herokit) 26 + 0.2 x heat: -25%; (claude/archmage4, Daniel approved: ~20% more and 38 stamina) the blow is unchanged; ONE ground fire, not two */ shakeCam(4); zoomKick(1.04, 0.14); ringAt(ix, iy, 30, '#ff9a5c', 0.3); burst(ix, iy, 20, ['#ff9a5c', '#ffd36b', '#ff6b2c'], 110, 0.5, 0, 2); SFX.heavy(); SFX.lanceCrack(); smoke(ix, iy, 3, 6);
+      for (const e of enemies) if (e.alive && !e.harmless && Math.abs(e.x - ix) < 44 && Math.abs((e.y - e.h / 2) - iy) < 40) { hurtEnemy(e, e.maxHp ? Math.round(dmg * 0.6) : dmg, ix, false); if (!e.maxHp) { e.burn = Math.max(e.burn || 0, 2); flinch(e); } }
       fires.push({ x: m.tx, y: m.ty, life: 2, delay: 0, own: true }); } }
   meteors = meteors.filter(m => !m.done);
   for (const r of fireRings) { r.r += 230 * dt; if (Math.random() < dt * 60) { const a = Math.random() * 6.28; parts.push({ x: r.x + Math.cos(a) * r.r, y: r.y + Math.sin(a) * r.r * 0.6, vx: 0, vy: -30, life: 0.3, max: 0.3, col: Math.random() < 0.5 ? '#ffd36b' : '#ff6b2c', size: 2, grav: 0, fire: true }); }
@@ -1054,8 +1059,9 @@ function updateSkillFx(dt) {
   moons = moons.filter(m => m.t > 0);
 }
 function drawSkillFx(cx, cy) {
-  for (const m of meteors) { const x = Math.round(m.x - cx), y = Math.round(m.y - cy); g.fillStyle = '#ff6b2c'; g.beginPath(); g.arc(x, y, 6, 0, 7); g.fill(); g.fillStyle = '#ffd36b'; g.beginPath(); g.arc(x, y, 4, 0, 7); g.fill(); g.fillStyle = '#fff6c8'; g.fillRect(x - 1, y - 2, 3, 3);
-    g.globalAlpha = 0.35; g.fillStyle = 'rgba(10,8,20,1)'; g.beginPath(); g.ellipse(Math.round(m.tx - cx), Math.round(m.ty - cy) - 1, 12, 3, 0, 0, 7); g.fill(); g.globalAlpha = 1; } // its shadow on the ground
+  for (const m of meteors) { if (m.t < m.delay) continue; const sx = Math.round(m.x - cx), sy = Math.round(m.y - cy), n = m.trail.length;   // a flat javelin of flame and a short trail behind it; nothing from above
+    for (let i = 0; i < n; i++) { const q = m.trail[i]; g.globalAlpha = 0.15 + 0.5 * (i + 1) / n; g.fillStyle = i % 2 ? '#ff6b2c' : '#ffd36b'; g.fillRect(Math.round(q.x - cx) - 2, Math.round(q.y - cy) - 1, 4, 3); } g.globalAlpha = 1;
+    g.fillStyle = '#ff6b2c'; g.fillRect(sx - 7, sy - 2, 14, 5); g.fillStyle = '#ffd36b'; g.fillRect(sx - 5, sy - 1, 12, 3); g.fillStyle = '#fff6c8'; g.fillRect(sx - 1, sy, 8, 1); g.fillStyle = '#ff6b2c'; g.fillRect(sx + 7, sy - 1, 2, 3); }
   for (const r of fireRings) { g.globalAlpha = Math.max(0, 1 - r.r / 86); g.strokeStyle = '#ff9a5c'; g.lineWidth = 3; g.beginPath(); g.ellipse(Math.round(r.x - cx), Math.round(r.y - cy), r.r, r.r * 0.6, 0, 0, 7); g.stroke(); g.strokeStyle = '#ffd36b'; g.lineWidth = 1; g.stroke(); g.globalAlpha = 1; }
   for (const b of lanceBeams) { if (b.spear) { drawSpear(b, cx, cy); continue; } const k = b.t / 0.3, x0 = Math.round(b.x0 - cx), y = Math.round(b.y - cy), x1 = x0 + b.dir * b.len; g.globalAlpha = k; g.fillStyle = '#ffd36b'; g.fillRect(Math.min(x0, x1), y - 3, Math.abs(x1 - x0), 6); g.fillStyle = '#fff6c8'; g.fillRect(Math.min(x0, x1), y - 1, Math.abs(x1 - x0), 2); g.globalAlpha = 1; }
   for (const m of moons) { const x = Math.round(m.x - cx), y = Math.round(m.y - cy), a = time * 2.4, k = Math.min(1, m.t);
@@ -10597,9 +10603,9 @@ function updatePlayer(dt) {
   if (isReaper() && skillPress('soulReap') && cdReady('soulReap') && canAct()) { if (spend(34)) { cdSet('soulReap'); P.castT = 0.35; kitPose(P, 'reap', 0.45); let n = 0;
     for (const e of lateFoes(130)) { hurtEnemy(e, Math.round(swordDmg() * SKK.K.soulReap * amul('soulReap')), P.x, false); markFoe(e); if (e.alive) { e.bleed = Math.max(e.bleed || 0, 2.5); e.bleedN = Math.max(e.bleedN || 0, 1); } if (n < 3) { P.hp = Math.min(P.maxHp, P.hp + Math.round(P.maxHp * 0.02)); n++; } }
     gainHarvest(8 * n); ringAt(P.x, P.y - 10, 130, '#c0283a', 0.45); ringAt(P.x, P.y - 10, 70, '#ff9aa6', 0.4); shakeCam(4); SFX.squelch(); SFX.heavy(); 0; } else tired(); }
-  // METEOR: fire out of the sky onto the nearest foe ahead
-  if (isPyro() && skillPress('meteor') && cdReady('meteor') && canAct()) { if (spend(38)) { cdSet('meteor');  let tx = P.x + P.face * 90, best = 220; for (const e of enemies) if (e.alive && !e.harmless && Math.sign(e.x - P.x) === P.face && Math.abs(e.x - P.x) < best && Math.abs(e.y - P.y) < 120) { best = Math.abs(e.x - P.x); tx = e.x; }
-      const txT = Math.floor(tx / TS); let gy = Math.floor((P.y - 8) / TS); for (let k = 0; k < 16 && !isSolid(txT, gy) && !isOneWay(tileAt(txT, gy)); k++) gy++; meteors.push({ x: tx - P.face * 50, y: camY - 20, x0: tx - P.face * 50, y0: camY - 20, tx, ty: gy * TS, t: 0 }); P.castT = 0.3; kitPose(P, 'meteor', 0.4); SFX.stormChant(); } else tired(); }
+  // FIRE LANCE (id 'meteor'): a straight lance of flame from the hand at the nearest foe ahead
+  if (isPyro() && skillPress('meteor') && cdReady('meteor') && canAct()) { if (spend(38)) { cdSet('meteor');  let tx = P.x + P.face * 90, ty0 = P.y - 14, best = 220, foe = null; for (const e of enemies) if (e.alive && !e.harmless && Math.sign(e.x - P.x) === P.face && Math.abs(e.x - P.x) < best && Math.abs(e.y - P.y) < 120) { best = Math.abs(e.x - P.x); tx = e.x; ty0 = e.y - e.h / 2; foe = e; }
+      const txT = Math.floor(tx / TS); let gy = Math.floor((P.y - 8) / TS); for (let k = 0; k < 16 && !isSolid(txT, gy) && !isOneWay(tileAt(txT, gy)); k++) gy++; const hx = P.x + P.face * 17, hy = P.y - 13; meteors.push({ x: hx, y: hy, tx, ty0, ty: gy * TS, t: 0, delay: 0.1, foe, trail: [] }); P.castT = 0.3; kitPose(P, 'meteor', 0.4); SFX.lanceWhoosh(); } else tired(); }
   // RING OF FIRE
   if (isPyro() && skillPress('flameRing') && cdReady('flameRing') && canAct()) { if (spend(25)) { cdSet('flameRing');  fireRings.push({ x: P.x, y: P.y - 8, r: 6, hit: new Set() }); SFX.puff(); SFX.heavy(); P.castT = 0.25; kitPose(P, 'ring', 0.35); } else tired(); }
   // SPEAR OF LIGHT: straight ahead to the first wall, through everything

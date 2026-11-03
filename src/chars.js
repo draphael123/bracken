@@ -1868,9 +1868,9 @@ function pyroKitPoses(F, up) {
   F.cinder = [P({ lean: 3, sit: 2, trail: 4, hemW: 13, feet: [[8, 18], [17, 18]], staff: [5, 16, 22, 8, 'back'], arm: [17, 11, 20, 12], cowl: 1, sparks: trailS.slice(0, 2) }),
     P({ lean: 4, sit: 3, trail: 5, hemW: 14, feet: [[7, 18], [19, 18]], staff: [4, 17, 23, 9, 'back'], arm: [17, 12, 21, 12], cowl: 1, flick: 1, sparks: trailS }),
     P({ lean: -2, sit: 1, trail: -1, hemW: 12, feet: [[10, 18], [16, 18]], staff: [15, 17, 20, 3], arm: [16, 11, 18, 11], cowl: 2, sparks: [[6, 18, 'r']] })];
-  /* METEOR: the staff swung up; then held straight up over the cowl in both hands, the fire at its head calling the sky down */
-  F.meteor = [P({ lean: 1, staff: [11, 14, 24, 2], arm: [16, 10, 20, 7], arm2: [11, 10, 16, 8], cowl: 2 }),
-    P({ dy: -1, staff: [15, 15, 16, -7], arm: [16, 10, 16, 2], arm2: [11, 10, 15, 3], cowl: 2, bell: 1, flare: [16, -8, true] })];
+  /* FIRE LANCE (id 'meteor'): the staff drawn back at the hip with the flame gathering; then thrown level out ahead in both hands, the lance leaving the tip */
+  F.meteor = [P({ lean: -2, sit: 1, staff: [4, 14, 14, 12, 'back'], arm: [15, 11, 12, 12], arm2: [11, 11, 9, 12], cowl: 1, sparks: [[7, 11, 'y']] }),
+    P({ lean: 3, trail: 2, sit: 1, feet: [[8, 18], [18, 18]], staff: [13, 11, 28, 10], arm: [17, 10, 24, 10], arm2: [13, 10, 20, 10], cowl: 1, flare: [29, 10, true], flick: 1, sparks: [[31, 8, 'y'], [30, 12, 'r']] })];
   /* RING OF FIRE: the staff lifted high in both hands; then driven straight down into the ground before her, and the ring coming
      off its foot along the floor both ways */
   F.ring = [P({ dy: -1, staff: [15, 10, 17, -5], arm: [16, 10, 16, 3], arm2: [11, 10, 15, 4], cowl: 0 }),
