@@ -414,6 +414,7 @@ function labBotFrame(BK, h, e, f) {
     else if (h === 'pirate') { if (f % 12 === 0) k.block = true; }
     else if (DEFLECTS(h)) { if (HARD_TELLS.has(e.t + '|' + e.mode)) { if (f % 14 === 0) BK.press('dodge'); } else k.block = ON_THE_BEAT(e) && DEFLECT_TAP(f); }
     else if (knightBashNow(BK, h, e, ad)) { k.up = true; k.block = !P.cWas; }   /* (claude/heropassa) THE SHIELD BASH: the blow punched out of its wind-up */
+    else if (h === 'knight' && typeof e.modeT === 'number' && e.modeT > 0.08 && e.modeT < 5) { /* (claude/rel139fix) THE GUARD CHAIN: the shield goes up in the last 0.08 s of the told blow - a PERFECT GUARD is a link; held from the start of the tell it is only a plain block and the chain never grows */ }
     else k.block = true;
   } else if (reloadCrouchNow(BK, h, e)) { k.down = true; }   /* THE FREEBOOTER DUCKS AND RELOADS, well out of the cutlass's reach */
   else {
@@ -2160,7 +2161,7 @@ async function runbossLab(BK, opts) {
         else if(pl.jump&&P.ground){BK.press('jump');P.labJump=16;}
         if(P.labJump>0){P.labJump--;k.jump=true;}
         if(pl.down&&P.ground)k.down=true;
-        if(pl.block)k.block=true;
+        if(pl.block&&!(h==='knight'&&pl.beat>0.08))k.block=true;   /* (claude/rel139fix) the knight raises it in the last 0.08 s of the told blow: a PERFECT GUARD is a link */
         if(!pl.down&&!pl.block&&pl.gx!=null&&Math.abs(pl.gx-P.x)>4)k[pl.gx>P.x?'right':'left']=true;else if(!k.left&&!k.right)P.face=pl.face||P.face;
         if(pl.atk&&P.atk<0&&!pl.down){P.face=pl.face||P.face;BK.press('atk');swings++;}
         const was=P.hp,m0=boss.mode;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(m0,Math.max(0,was-P.hp));if(opts.onFrame)await opts.onFrame({boss,P,f,h,lvl:lvId,open:boss.open>0,why:pl.why});if(f%600===599)await yieldNow();continue;

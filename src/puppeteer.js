@@ -582,7 +582,7 @@ function planOf(s) {
     if (k === 'reach' && Math.abs((p.reachY || A.gallery) - P.y) < 6 && (!tell || p.modeT < 0.35)) { out.down = true; out.atk = false; out.why = 'duck the reach'; return out; }
     if (!near(p, r + 16)) continue;
     if ((k === 'slam' || k === 'kick') && (!tell || p.modeT < 0.18) && P.ground) { out.jump = true; out.why = 'jump the ' + k; return out; }
-    if ((k === 'jab' || k === 'swat') && s.shield && (!tell || p.modeT < (k === 'jab' ? 0.2 : 0.35))) { out.block = true; out.atk = false; out.face = Math.sign(p.x - P.x) || 1; out.why = 'block the ' + k; return out; }
+    if ((k === 'jab' || k === 'swat') && s.shield && (!tell || p.modeT < (k === 'jab' ? 0.2 : 0.35))) { out.block = true; out.beat = tell ? p.modeT : 0; out.atk = false; out.face = Math.sign(p.x - P.x) || 1; out.why = 'block the ' + k; return out; }   /* (claude/rel139fix) beat = seconds to the blow, for a shield raised on the beat (the knight's perfect guard) */
     if (tell && p.modeT < (k === 'jab' ? 0.25 : 0.45) && k !== 'slam' && k !== 'kick') { out.gx = clampX(p.x + (P.x < p.x ? -1 : 1) * (r + 22)); out.atk = false; out.why = 'back off the ' + k; return out; } }
   /* ---- 3. THE LEVER IS FREE: up the batten ---- */
   if (slackNow(e, show) && seenFor('slack|' + show.n.slack)) { if (onGal) { out.gx = clampX(e.x - (reach - 10)); out.face = 1; out.why = 'to him'; return out; } return climb(out, P, show.batten, s); }
