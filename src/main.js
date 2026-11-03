@@ -7497,7 +7497,7 @@ function settleNums() {
   for (const m of plain) for (let pass = 0; pass < 2; pass++) for (const t of live) { const bt = numBox(t), bm = numBox(m); if (!boxHit(bt, bm)) continue;
     m.x = m.x >= t.x ? bt[0] + bt[2] + bm[2] / 2 + 1 : bt[0] - bm[2] / 2 - 1; }
 }
-const tellQ = []; let hudRects = [], talkOverHud = false;
+const tellQ = []; let hudRects = [], talkOverHud = false; const wordRects = [];   /* (redclean 11-02) boxes of the tell words a hands module drew this frame (the Admiral's OPEN: RELOADING at the view edge): drawTells keeps its marks off them */
 /* THE MIDDLE OF THE TOP, clear of the HUD plate: a plate wide enough for BLOOD SURGE: C reaches past the middle, so the clock and the counts step right of it */
 const topMid = w => Math.max(VW / 2, (hudRects[0] ? hudRects[0][0] + hudRects[0][2] : 0) + 3 + w / 2);
 /* THE MARKS, BAKED ONCE. The yellow ! and the red !! are the whole defence language, and as the popup face's thin glyph with a
@@ -7550,6 +7550,7 @@ function drawTells() {
   for (const t of tellQ) { const w = t.txt === '!!' ? 16 : 8;
     let x = Math.round(Math.max(w / 2 + 2, Math.min(VW - w / 2 - 2, t.x))), y = Math.round(Math.max(4, Math.min(VH - 14, plateTop - 16, t.y)));
     for (let pass = 0; pass < 3; pass++) for (const r of hudRects) if (boxHit(tbox(x, y, t.txt), r)) y = r[1] + r[3] + 3;   /* off every plate at the top: the HUD, the clock, the counts, the quest */
+    for (const r of wordRects) if (boxHit(tbox(x, y, t.txt), r)) y = Math.max(4, r[1] - (t.txt === '!!' ? 19 : 11));   /* and off a tell word, set just above it */
     { const same = drawn.find(d => d.txt === t.txt && Math.abs(d.x - x) < w && boxHit(tbox(x, y, t.txt), tbox(d.x, d.y, d.txt)));
       if (same) { if (t.lane && !same.lane) { g.globalAlpha = t.a; lane(t, same.x, same.y); same.lane = t.lane; } continue; } }   /* the ! off the wind-up and the ! the foe called are one mark (and the lane goes on it, whichever came first) */
     const clash = drawn.find(d => boxHit(tbox(x, y, t.txt), tbox(d.x, d.y, d.txt))); if (clash) x = clash.x + (x >= clash.x ? 1 : -1) * ((w + clash.w) / 2 + 2);
@@ -7564,7 +7565,7 @@ function drawTells() {
       if (window.__textRec) textRec('text', { s: t.txt, x0: x - st.cx + 1, y0: y, w: st.w, h: st.h, size: TYPE.popup, tiny: true, align: 'center', alpha: g.globalAlpha, style: 'mark' }); }   /* (the clutter tool reads the marks as strings) */
     lane(t, x, y);
     drawn.push({ txt: t.txt, x, y, w, lane: t.lane || '' }); }
-  g.globalAlpha = 1; tellQ.length = 0; tellsDrawn = drawn;
+  g.globalAlpha = 1; tellQ.length = 0; wordRects.length = 0; tellsDrawn = drawn;
 }
 /* THE BOSS BAR'S NAME, on its plate: the plate is as wide as the name, and a name too long for the screen drops a size before it is ever cut */
 /* lift: rows added over the health bar for a meter of the boss's own (the Pyromancer's heat): the plate grows up by that much and the
@@ -30038,12 +30039,12 @@ FKH = makeFogKnightHands({ get L() { return L; }, get players() { return players
   damagePlayer: (...a) => damagePlayer(...a), asPlayer: (p, fn) => asPlayer(p, fn), upright: p => upright(p), overlap: (a, b) => overlap(a, b), box: b => box(b), attackBox: () => attackBox(), music: n => { if (bossActive) music.play(n); },
   lanternOf: pp => (TPH ? TPH.lanternOf(pp) : null), gutter: pp => { if (TPH) TPH.guttered(pp); }, isPyro: () => isPyro(), lock: id => (TPH ? TPH.lock(id) : null), lamps: () => (TPH && TPH.state() ? TPH.state().lamps : []), lightAt: (x, y) => (TPH && TPH.on() ? TPH.lightAt(x, y) : 0), turned: (e, x, w) => BR.turned(e, x, w) });
 CHH = makeChampionHands({ get L() { return L; }, get players() { return players; }, get boss() { return boss; }, get bossActive() { return bossActive; }, TS, EHP, sfx: SFX, hero: () => P, heroId: () => hero(), time: () => time,
-  number: (x, y, t, c) => number(x, y, t, c), text: (s, x, ...a) => text(s, Math.max(textW(s, 5) / 2 + 4, Math.min(VW - textW(s, 5) / 2 - 4, x)), ...a),   /* (batch101 integ: a tell word at the view's edge is pulled in so it is whole - textfit OFFSCREEN) */ burst: (...a) => burst(...a), shake: n => shakeCam(n), ring: (x, y, r, c) => ringAt(x, y, r, c, 0.5), hitstop: t => hitstop(t),
+  number: (x, y, t, c) => number(x, y, t, c), text: (s, x, ...a) => { const cxw = Math.max(textW(s, 5) / 2 + 4, Math.min(VW - textW(s, 5) / 2 - 4, x)); wordRects.push([cxw - textW(s, 5) / 2, a[0], textW(s, 5), 8]); return text(s, cxw, ...a); },   /* (batch101 integ: a tell word at the view's edge is pulled in so it is whole - textfit OFFSCREEN) */ burst: (...a) => burst(...a), shake: n => shakeCam(n), ring: (x, y, r, c) => ringAt(x, y, r, c, 0.5), hitstop: t => hitstop(t),
   damagePlayer: (...a) => damagePlayer(...a), asPlayer: (p, fn) => asPlayer(p, fn), upright: p => upright(p), overlap: (a, b) => overlap(a, b), box: b => box(b), music: n => { if (bossActive) music.play(n); },
   cellSet: (x, y, t) => cellSet(x, y, t), grid0: (x, y) => grid0[y * LW + x], resolve: () => resolveTiles(), turned: (e, x, w, o) => BR.turned(e, x, w, o), props: () => props,
   hazard: (pp, x, y) => asPlayer(pp, () => { damagePlayer(P.x, DMG.splash, { unblockable: true, pct: SV.HAZARD.pct }); if (!P.dead && P.hp > 0) { P.x = x; P.y = y; P.vx = 0; P.vy = 0; P.onMover = null; P.climb = false; P.swim = false; P.inv = Math.max(P.inv || 0, 0.8); } }) });   /* THE ADMIRAL'S CHAMPION (claude/flotilla2) */
 ADH = makeAdmiralHands({ sparks: (...a) => sparks(...a), get L() { return L; }, get players() { return players; }, get boss() { return boss; }, get bossActive() { return bossActive; }, TS, EHP, sfx: SFX, hero: () => P, heroId: () => hero(), time: () => time,
-  number: (x, y, t, c) => number(x, y, t, c), text: (s, x, ...a) => text(s, Math.max(textW(s, 5) / 2 + 4, Math.min(VW - textW(s, 5) / 2 - 4, x)), ...a),   /* (batch101 integ: a tell word at the view's edge is pulled in so it is whole - textfit OFFSCREEN) */ burst: (...a) => burst(...a), shake: n => shakeCam(n), ring: (x, y, r, c) => ringAt(x, y, r, c, 0.5), hitstop: t => hitstop(t),
+  number: (x, y, t, c) => number(x, y, t, c), text: (s, x, ...a) => { const cxw = Math.max(textW(s, 5) / 2 + 4, Math.min(VW - textW(s, 5) / 2 - 4, x)); wordRects.push([cxw - textW(s, 5) / 2, a[0], textW(s, 5), 8]); return text(s, cxw, ...a); },   /* (batch101 integ: a tell word at the view's edge is pulled in so it is whole - textfit OFFSCREEN) */ burst: (...a) => burst(...a), shake: n => shakeCam(n), ring: (x, y, r, c) => ringAt(x, y, r, c, 0.5), hitstop: t => hitstop(t),
   damagePlayer: (...a) => damagePlayer(...a), asPlayer: (p, fn) => asPlayer(p, fn), upright: p => upright(p), overlap: (a, b) => overlap(a, b), box: b => box(b), music: n => { if (bossActive) music.play(n); },
   cellSet: (x, y, t) => cellSet(x, y, t), grid0: (x, y) => grid0[y * LW + x], resolve: () => resolveTiles(), turned: (e, x, w, o) => BR.turned(e, x, w, o), props: () => props,
   hazard: (pp, x, y) => asPlayer(pp, () => { damagePlayer(P.x, DMG.splash, { unblockable: true, pct: SV.HAZARD.pct }); if (!P.dead && P.hp > 0) { P.x = x; P.y = y; P.vx = 0; P.vy = 0; P.onMover = null; P.climb = false; P.swim = false; P.inv = Math.max(P.inv || 0, 0.8); } }) });   /* THE ADMIRAL (claude/flotilla3) */
@@ -35212,6 +35213,7 @@ function drawWorld(cx, cy, showPlayer) {
   if (killFlash > 0 && SET.flashes && !SET.reduceMotion) { g.fillStyle = 'rgba(255,255,255,' + (killFlash * 9) + ')'; g.fillRect(0, 0, VW, VH); }
   if (SET.flashes && !SET.reduceMotion && isReaper()) { const k = Math.max(1 - (time - (P.bkParryAt ?? -9)) / BKIT.BLOOD.parry.flash, 1 - (time - (P.bkSpikeWashAt ?? -9)) / BKIT.BLOOD.spike.flash); if (k > 0 && k <= 1) {   /* (claude/bkkit2: and BLOOD SPIKE's) */ const e = Math.round(18 + 10 * k);   /* (claude/bkfeel) THE PARRY'S CRIMSON WASH: the screen breathes red and the edges close in, fading over BLOOD.parry.flash */
     g.fillStyle = 'rgba(150,8,24,' + (0.2 * k).toFixed(3) + ')'; g.fillRect(0, 0, VW, VH); g.fillStyle = 'rgba(60,0,8,' + (0.45 * k).toFixed(3) + ')'; g.fillRect(0, 0, VW, e); g.fillRect(0, VH - e, VW, e); g.fillRect(0, 0, e, VH); g.fillRect(VW - e, 0, e, VH); } }
+  const numBoxes = [];   /* (redclean 11-02) numbers already set this frame: two pushed under the HUD plate landed on one spot (textfit witchlight: -20 over +20) */
   for (const n of nums) { if (isTell(n)) { tellQ.push({ txt: n.txt, x: n.x - cx, y: n.y - cy, col: n.col, a: Math.min(1, n.life * 3) }); continue; }   /* the tells go on after everything: drawTells() */
     const nx = n.x - cx, ny = n.y - cy, nw = inkW(String(n.txt), TYPE.popup); if (nx + nw / 2 < 0 || nx - nw / 2 > VW || ny + 8 < 0 || ny > VH) continue;   /* a number off a target off the screen is not shown; one half on is kept on */
     g.globalAlpha = Math.min(1, n.life * 3); let px = Math.round(Math.max(nw / 2 + 1, Math.min(VW - nw / 2 - 1, nx))); let py = Math.round(Math.max(1, Math.min(VH - 9, ny)));
@@ -35220,6 +35222,8 @@ function drawWorld(cx, cy, showPlayer) {
       const left = Math.floor(t.x - tw / 2 - nw / 2 - 3), right = Math.ceil(t.x + tw / 2 + nw / 2 + 3);
       px = left >= nw / 2 + 1 ? left : right <= VW - nw / 2 - 1 ? right : px;   /* keep the number beside a windup mark, never on its answer */ }
     for (let pass = 0; pass < 3; pass++) for (const r of hudRects) if (boxHit([px - nw / 2, py, nw, 8], r)) py = r[1] + r[3] + 1;   /* a damage number never lands on the HUD plate (the -20 over LV 0 x3 in the Witchlight): it is set just under the plate, as the tells are */
+    for (let pass = 0; pass < 3; pass++) if (numBoxes.some(q => boxHit([px - nw / 2, py, nw, 8], q))) py += 9;   /* a number sets down below the one already there, not on it */
+    numBoxes.push([px - nw / 2, py, nw, 8]);
     text(String(n.txt), px, Math.min(VH - 9, py), n.col, 'center', TYPE.popup, 'outline'); }
   g.globalAlpha = 1; g.__world = false;
 }
@@ -35801,7 +35805,7 @@ function drawWhatsNew() {
   if (!rs.length) text('nothing to report yet', VW / 2, top + 6, UI.dim, 'center', 6);
   let yy = top;
   for (let i = wnScroll; i < rs.length && yy + RH <= y + h - 22; i++) { const r = rs[i]; if (r.cont && i === wnScroll) continue; if (r.more && yy + RH * 2 > y + h - 22) break;   /* (claude/bloodknight) never half a wrapped line at an edge (textfit CLIPPED once the list grew) */ if (r.kind === 'head') { if (r.gap && i > wnScroll && yy + RH * 2 <= y + h - 22) yy += 2; text(r.s, x + 12, yy, '#8fd160', 'left', 6); } else text(r.s, x + 12, yy, UI.text, 'left', 6); yy += RH; }
-  if (wnScroll > 0) text('^', x + w - 10, top, UI.dim, 'right', 6);
+  if (wnScroll > 0) text('^', x + w - 10, top - 8, UI.dim, 'right', 6);   /* (redclean 11-02) in the gap under the title, not over the first row's last word (textfit whatsnew scroll 99) */
   if (wnScroll < wnLimit) text('v', x + w - 10, y + h - 21, UI.dim, 'right', 6);   /* (integ111) was y+h-30, inside the last text row: it collided with the Paladin line once the list grew; now in the gap above the footer */
   text(wnScroll < wnLimit ? 'UP/DOWN scroll  Z more  ESC back' : 'UP/DOWN scroll  Z or ESC back', VW / 2, y + h - 14, UI.dim, 'center', 6);
 }
