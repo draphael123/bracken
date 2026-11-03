@@ -1,0 +1,44 @@
+name: Red Gorge raster candidate original checks
+on:
+  push:
+    branches: [codex/load-perf]
+    paths:
+      - tools/redgorge-band-raster-nov03/**
+      - .github/workflows/redgorge-band-raster-nov03.yml
+permissions: {contents: read}
+jobs:
+  safety:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix: {scope: [memory, publicApi]}
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0}
+      - uses: actions/checkout@v4
+        with:
+          ref: 1a576c3f4511b6856df9fb4738df5aaae9987e81
+          path: sprite-publication-safety-game
+          fetch-depth: 0
+      - uses: actions/checkout@v4
+        with:
+          ref: 1a576c3f4511b6856df9fb4738df5aaae9987e81
+          path: sprite-publication-original-tools
+      - uses: actions/setup-node@v4
+        with: {node-version: '24.11.1'}
+      - name: Exact Task3 source with original standalone memory API gear and co-op fixtures
+        run: node tools/redgorge-band-raster-nov03/check.mjs
+        env:
+          PRIVATE_HERO_GAME: sprite-publication-safety-game
+          PRIVATE_HERO_ORIGINAL_TOOLS: sprite-publication-original-tools
+          PRIVATE_HERO_SAFETY_SCOPE: ${{ matrix.scope }}
+          PRIVATE_HERO_SAFETY_OUT: ${{ runner.temp }}/redgorge-band-raster-${{ matrix.scope }}-nov03
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: redgorge-band-raster-${{ matrix.scope }}-nov03
+          path: ${{ runner.temp }}/redgorge-band-raster-${{ matrix.scope }}-nov03/
+          if-no-files-found: error
+
+
