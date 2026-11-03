@@ -1,0 +1,18 @@
+# RED CLEANUP 11-02 (sonnet) - claude/redclean on BATCH139 (ded47924) + 1 commit
+| red | cause | fix | commit | check |
+|---|---|---|---|---|
+| textfit page-crash flake | short scopes shared one page that grew (bestiary 343 + store 828 screens) until Inspector.targetCrashed; long scopes (boss/plates/talk/levelcard) had outgrown their batch sizes; a boot beside a busy page missed its 15 s wait | page reopened after every short scope; long-scope batches halved (boss 4->3, plates 6->4, talk 12->6, levelcard 10->6); a scope whose page CRASHES is rerun once on a fresh page (says so; a second crash or any other error still fails); openPage tried 3x. Same levels, same checks, nothing weakened | ce807b5c | node --check OK. Full textfit run OWED (RAM; ~ 20+ min, machine had < 1.5 GB free most of the run) |
+| visible-supports-strict | NOT a bug: report-only by design (tool header + brief 10-26 part 2f). Its findings (hanging 15, spire 32 overhangs, etc.) are ART backlog; --strict exits 1 on them. | none | - | see Q1 |
+| fire-room warden bot | could not reproduce: `PORT=8241 node tools/fire-room.mjs --heroes=warden` PASSES alone (grace 0, 1 FIREBOLT only, 9 dodges, no floor/wall catch). batch138 also lists fire-room as "passed alone (load flake)". Load flake under the gate. | none | - | green alone once (warden). Not run twice. |
+| canal windlass bot | PARTLY REPRODUCED: `canal-tunnel-route.mjs --heroes=warden --plan=both` -> seeds 1 and 3 reach her arena; seed 2 (ride, DIM) FAILS "up onto the gallery at 340,17 (her 339)" after 103 s; every warden run piles up guard frames (3489 / 770 / 2537, windlass spot 294,15). | NOT FIXED (cause unconfirmed). Strong suspect: the bot holds k.block every frame while any *Tell foe is within 72 px (tick(), line 65) and the Warden's block is now the spear-haft BRACE (heroblocksb, hold C): she walks slowly, stamina does not regenerate while it is up, and a still-held C re-raises it after WB.hold - so the bot roots/drains the warden at the windlass and on the lock ledge. The other heroes' guards do not do this. | - | Two re-runs of seed 2 were killed by RAM: one page CRASH (Inspector.targetCrashed), then free RAM 1186 MB < 1500 -> OWED. |
+
+## OWED (run when RAM >= 1500 MB free, alone, PORT=8241)
+1. `node tools/canal-tunnel-route.mjs --heroes=warden --plan=ride --seeds=2 --dbg` (seed 2 = the red); control: `--heroes=knight` same args. If knight is green, apply the fix below.
+2. `node tools/textfit.mjs` (full) - expect no crash; if one scope crashes the retry line prints.
+3. fire-room --heroes=warden a second time.
+Candidate bot fix (test-side, behaviour-preserving for a human): in tick(), for hero warden raise the guard only for a told blow that is actually closing (tell foe within 72 px AND facing her) and drop the key as soon as the tell ends / for at most ~0.6 s per tell, as a player would tap-brace - or skip the guard when the bot is mid-walk toward the windlass. Do NOT touch the warden's brace numbers (combat).
+
+## QUESTIONS (rec first)
+1. visible-supports-strict: rec leave report-only until the art backlog clears; stop listing it as a gate red (it should be dropped from the "known reds" line, as the 10-26 brief intended).
+2. fire-room: rec treat as a load flake (green alone, flagged in batch138 too); no code change. If it reds in GATE139 alone-rerun, that is the signal to dig.
+3. canal windlass: rec accept the bot-side guard fix above once the control run confirms warden-only; if the stuck is actually the brace slowing the real player at the windlass, that is a game question (warden brace walk speed) - STOP, combat number, ask Daniel.
