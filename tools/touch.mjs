@@ -173,9 +173,10 @@ try {
     await E('BK.ui.storeOpen("map", "heroes")'); await sleep(900);
     ok(await E('BK.state') === 'store', 'the store did not open');
     const hs = await E('BK.touch.hitBoxes()'), nt = await E('BK.ui.tabs()'); ok(hs.length >= nt + 1, 'the store drew ' + hs.length + ' tap boxes (' + nt + ' tabs + item rows)');
-    await gameTap(2); ok(await E('BK.ui.storeTab') === 2, 'a tap on the third store tab did not open it (' + await E('BK.ui.storeTab') + ')');
+    const sw = 1;   /* (rel139fix, claude/hubpolish) a SWAP HERO pill is the first tap box on every tab but SKILLS, so the tabs follow it */
+    await gameTap(2 + sw); ok(await E('BK.ui.storeTab') === 2, 'a tap on the third store tab did not open it (' + await E('BK.ui.storeTab') + ')');
     await sleep(400);
-    if ((await E('BK.ui.items()')) > 1) { await gameTap(nt + 1); ok(await E('BK.ui.storeI') === 1, 'a tap on the second store row did not pick it (' + await E('BK.ui.storeI') + ')'); }
+    if ((await E('BK.ui.items()')) > 1) { await gameTap(nt + 1 + sw); ok(await E('BK.ui.storeI') === 1, 'a tap on the second store row did not pick it (' + await E('BK.ui.storeI') + ')'); }
     await pill('back'); ok(await E('BK.state') !== 'store', 'BACK did not leave the store');
   });
   await section('persist', async () => {
