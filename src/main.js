@@ -4673,7 +4673,7 @@ function partyNextLevel() {
   return k >= 0 && k !== levelIndex && LEVELS[k] && !nodeLocked(NODES.find(n => n.kind === 'level' && n.level === k) || {}) && !levelLocked(LEVELS[k]) ? k : -1;
 }
 function partyGoNext(k) { gotoLevelNode(k); saveProgress(); selI = k; SFX.uiSel(); selectStart(); }
-function startGame() {
+function startGame() { mapSpurLit = null;
   trnArrive = null;   /* (claude/transwm) a fresh start: no ferry left from the last arrival (trnArriveBegin sets it again after this) */
   /* A CO-OP RUN IS ARMED ON THE PICK SCREEN AND BEGINS HERE, on whatever wood is started from the map. A trial, a
      shop and the rush are one hero's business, so they run alone and the pair are put back together on the next wood.
@@ -5432,6 +5432,7 @@ function drawMap() {
   g.__world = true;   /* the map has its own camera: a label off the edge of the buffer is off the edge of the MAP, not a bug */
   g.save(); g.translate(0, -Math.round(mapCamY));
   g.drawImage(MAPC, 0, 0);
+  if (mapSpurLit) { const n = NODES.find(n => n.id === mapSpurLit.id); if (n) { mapSpurLit.t += 0.016; const pu = 0.5 + 0.5 * Math.sin(time * 5), by = n.y - 26 + Math.round(Math.sin(time * 4) * 2); g.save(); g.globalAlpha = 0.25 + 0.3 * pu; g.fillStyle = '#ff9a30'; g.beginPath(); g.arc(n.x, n.y, 12 + pu * 6, 0, 6.2832); g.fill(); g.globalAlpha = 0.6; g.strokeStyle = '#ffd36b'; g.lineWidth = 1; g.beginPath(); g.arc(n.x, n.y, 9 + pu * 3, 0, 6.2832); g.stroke(); g.restore(); g.fillStyle = '#ffd36b'; g.fillRect(n.x - 1, by, 3, 6); g.fillRect(n.x - 1, by + 8, 3, 2); text('NEW', n.x + 1, by - 10, '#ffd36b', 'center'); } }
   if (PROG.storeHint) { const n = NODES.find(n => n.kind === 'store'); if (n) { const by = n.y - 26 + Math.round(Math.sin(time * 4) * 2); g.fillStyle = '#ffd36b'; g.fillRect(n.x - 1, by, 3, 6); g.fillRect(n.x - 1, by + 8, 3, 2); text('NEW', n.x + 1, by - 10, '#ffd36b', 'center'); } }
   // river sparkle (the river is on the wood sheet)
   g.fillStyle = 'rgba(230,245,255,0.8)'; for (let i = 0; i < 8; i++) { const t = (time * 0.4 + i * 0.13) % 1; const pts = [[VW - 34, WOOD_Y], [VW - 58, 40 + WOOD_Y], [VW - 26, 82 + WOOD_Y], [VW - 70, 122 + WOOD_Y], [VW - 44, VH + WOOD_Y]]; const k = Math.min(3, Math.floor(t * 4)); const a = pts[k], b = pts[k + 1]; const u = t * 4 - k; if (Math.sin(time * 3 + i) > 0.4) g.fillRect(Math.round(a[0] + (b[0] - a[0]) * u) - 1 + (i & 1), Math.round(a[1] + (b[1] - a[1]) * u), 2, 1); }
@@ -11637,7 +11638,7 @@ else if (P.stepHeld > 0 && !P.swim) { P.stepHeld = Math.max(0, P.stepHeld - dt);
       if (isPirate()) piratePurse(true); coinCombo = coinComboT > 0 ? coinCombo + 1 : 0; coinComboT = 1.2; SFX.coinUp(Math.min(coinCombo, 10)); if (a.crate) collectedCrates.add(a.crate); burst(a.x, a.y, 6, ['#ffd36b', '#fff6c8'], 40, 0.35, -40, 1); flyCoins.push({ x: a.x - camX, y: a.y - 5 - camY, t: 0 }); }
   }
   dcTouch(); shrineBreakTick(dt); for (const s of shrines) if (!s.broken && shrineLights(s, P.x, P.y, P.swim)) { if (s.life !== lifeN) { s.life = lifeN; shrineFill(); } if (s.lit) continue; s.lit = true; s.litN = ++litSeq; checkpoint = { x: s.x, y: s.y }; creditAll(false);   /* (claude/coopprogress) A CHECKPOINT: every seat on his own save is credited (what is still unbanked waits) */ if (tal('phoenixTrail')) P.phoenixUsed = false; SFX.sting(); burst(s.x, s.y - 22, 14, ['#ffd36b', '#fff6c8', '#8fd160'], 50, 0.9, -30, 1); number(s.x, s.y - 40, 'SHRINE', '#ffd36b'); BUG.evlog('shrine lit @' + (s.x / TS).toFixed(0) + ',' + (s.y / TS).toFixed(0)); }
-  if (gate && (!L.arena || escape || L.sandWalk || L.gateOpen) && Math.abs(gate.x - P.x) < 12 && Math.abs(gate.y - P.y) < 30 && state === 'play' && atGate()) { escape = null; if (bossSelectFight) bossSelectQuit(); else winLevel(); }   /* atGate: in co-op the wood is not finished until BOTH of them are standing in it. L.sandWalk: the Falling Tower does not end on the kill any more - the second door puts you on the sand and the GATE ends it (src/sanctum.js) */
+  if (gate && (!L.arena || escape || L.sandWalk || L.gateOpen) && Math.abs(gate.x - P.x) < 12 && Math.abs(gate.y - P.y) < 30 && state === 'play' && atGate()) { escape = null; if (bossSelectFight) bossSelectQuit(); else { winLevel(); trnBegin(); } }   /* (claude/demotransitions) a GATE-END level (Hornet's Nest, Fen Road, Rootway) starts its walk-out when the party walks into the gate */   /* atGate: in co-op the wood is not finished until BOTH of them are standing in it. L.sandWalk: the Falling Tower does not end on the kill any more - the second door puts you on the sand and the GATE ends it (src/sanctum.js) */
   // boss arena trigger
   if (L.arena && boss && boss.alive && !bossActive && P.x > L.arena.trigger - 100 * TS) music.preload(L.arena.music || 'boss');   /* (claude/marsh3) 100 tiles out, not 40: six seconds of walking was less than a 1.4 MB boss track takes on a slow line (tools/music-priority.mjs) */
   // A mini arena needs a HEIGHT as well as a width: the Hanging Village stacks eight floors at the same x,
@@ -32085,13 +32086,13 @@ function trnEnv() {
 }
 function trnBegin() {
   if (TRN || !L || !LEVELS[levelIndex] || rushOn() || bossSelectFight || edTesting || L.trial || L.shop) return false;
-  const entry = TRM.entryFor(LEVELS[levelIndex].id); if (!entry) return false;
+  const entry = TRM.entryFor(LEVELS[levelIndex].id, undefined, { burningOpen: !!PROG.burningOpen }); if (!entry) return false;   /* (claude/demotransitions) a row may ask for flags (Kingswood: the spur open or shut) */
   const to = LEVELS.findIndex(l => l.id === entry.to); if (to < 0) return false;
-  if (LEVELS[to].needs !== LEVELS[levelIndex].id) return false;   /* (claude/smallfix5) the table's target must be the NEXT level on the road: the Lumber Trail's ferry carried the party to MARSH WOOD past THE HORNET'S NEST (marsh needs hornetsnest). No row, no cutscene: the normal win card, then the road */
+  if (LEVELS[to].needs !== LEVELS[levelIndex].id && !(LEVELS[to].opensOn && LEVELS[to].opensOn.level === LEVELS[levelIndex].id)) return false;   /* (claude/demotransitions) or a SPUR that hangs off this level (Kingswood -> the Burning Village) */   /* (claude/smallfix5) the table's target must be the NEXT level on the road: the Lumber Trail's ferry carried the party to MARSH WOOD past THE HORNET'S NEST (marsh needs hornetsnest). No row, no cutscene: the normal win card, then the road */
   const key = entry.from + '>' + entry.to;
   if (!TRM.policy({ off: trnOff(), mode: TRM.modeOf(SET.transitions), seen: !!(PROG.transSeen && PROG.transSeen[key]) })) return false;
   PROG.transSeen = PROG.transSeen || {}; PROG.transSeen[key] = 1; saveProgress();
-  const target = LW * TS + 16;
+  const target = entry.walk && entry.walk.to ? entry.walk.to * TS : LW * TS + 16;   /* (claude/demotransitions) walk.to: a column (Kingswood's arena is mid-level) */
   TRN = { entry, to, tl: TRM.start(entry, { reduce: SET.reduceMotion }), opened: false, loading: false, target, scene: false,
     pos: players.map(p => ({ x: p.x, y: p.y, hop: 0, v: 0, face: 1, arrived: false, speed: TRM.walkSpeed(Math.max(0, target - p.x)) })) };
   BUG.evlog('transition ' + key); slowT = 0; stop = 0;
@@ -32099,13 +32100,14 @@ function trnBegin() {
 }
 function trnOpenWay() {
   const o = TRN.entry.open; if (!o) return;
-  for (let r = o.rows[0]; r <= o.rows[1]; r++) { const i = r * LW + o.col; if (L.grid[i] === T.SOLID) { L.grid[i] = T.AIR; tileSpr[i] = null; } burst(o.col * TS + 8, r * TS + 8, 5, ['#8a7a5a', '#c9b98a', '#5e4a30', '#3b5a2a'], 70, 0.7, 120, 2); }
+  if (o.kind === 'light') { for (let r = o.rows[0]; r <= o.rows[1]; r += 2) burst(o.col * TS + 8, r * TS + 8, 3, ['#ffe9a8', '#fff6d0'], 40, 1.0, -10, 1); if (SFX.gateLift) SFX.gateLift(); return; }   /* (claude/demotransitions) no wall in this arena: only the light beyond */
+  for (let c = o.col; c < o.col + (o.w || 1); c++) for (let r = o.rows[0]; r <= o.rows[1]; r++) { const i = r * LW + c; if (L.grid[i] === T.SOLID) { L.grid[i] = T.AIR; tileSpr[i] = null; } burst(c * TS + 8, r * TS + 8, 5, ['#8a7a5a', '#c9b98a', '#5e4a30', '#3b5a2a'], 70, 0.7, 120, 2); }
   SFX.crumble(); if (SFX.gateLift) SFX.gateLift(); shakeCam(6); rumble(120, 0.8);
 }
 /* the scene clock: seconds since the shore beat began (0 before it) */
-function trnSceneS(tl) { const sh = tl.beats.findIndex(b => b.id === 'shore'), ri = tl.beats.findIndex(b => b.id === 'ride'); if (sh < 0 || ri < 0) return 0;   /* (claude/hornetsnest2) a walk-out has no scene (scene: null): no shore / ride beat to read */
-  if (tl.i < sh) return 0;
-  if (tl.i === sh) return tl.pt; if (tl.i === ri) return tl.beats[sh].dur + tl.pt; return tl.beats[sh].dur + tl.beats[ri].dur; }
+function trnSceneS(tl) { let t = 0, inS = false;   /* (claude/demotransitions) any run of scene beats (the ferry's shore + ride, the road, the smoke); a walk-out has none: 0 */
+  for (let k = 0; k < tl.beats.length; k++) { const bt = tl.beats[k]; if (!TRM.isSceneBeat(bt)) { if (inS) break; continue; } inS = true; if (k < tl.i) t += bt.dur; else if (k === tl.i) t += tl.pt; }
+  return t; }
 function trnUpdate(dt) {
   const tr = TRN; if (tr.loading) return;
   const tl = tr.tl, ph = TRM.phase(tl);
@@ -32118,7 +32120,7 @@ function trnUpdate(dt) {
   const entered = TRM.step(tl, dt, { press: anyPress, ready });
   if (tl.skipped && !tr.skipNoted) { tr.skipNoted = true; BUG.evlog('transition skipped'); }
   for (const e of entered) {
-    if (e === 'shore') { tr.scene = true; ambient.set('water'); if (SFX.step) SFX.step(); }
+    if (!tr.scene && e !== 'fade' && e !== 'done' && TRM.isSceneBeat(tl.beats[tl.i])) { tr.scene = true; ambient.set(tr.entry.scene === 'smoke' ? 'forest' : 'water'); if (SFX.step) SFX.step(); }   /* (claude/demotransitions) the first scene beat, whatever the scene */
     if (e === 'ride') { if (SFX.pole) SFX.pole(); if (SFX.creak) SFX.creak(); SFX.splash(); }
     if (e === 'done') { trnFinish(); return; }
   }
@@ -32126,26 +32128,34 @@ function trnUpdate(dt) {
     if ((TRM.phase(tl) === 'open' || TRM.phase(tl) === 'walk') && tr.entry.open) { const gx = Math.max(0, Math.min(LW * TS - VW + 56, (tr.entry.open.col + 1) * TS - VW * 0.72)); camX = cx0 + (gx - cx0) * Math.min(1, dt * 9); } }   /* (claude/transwmart) while the way opens and the heroes walk out the camera holds the gate (the input is locked): they run in from the left and hop the fallen rails */
   else if (TRM.phase(tl) === 'ride' && Math.floor(trnSceneS(tl) * 0.9) !== Math.floor((trnSceneS(tl) - dt) * 0.9) && SFX.pole) SFX.pole();
 }
+let mapSpurLit = null;   /* (Daniel 11-02) the kings > burning row ends ON THE MAP: the spur node pulses until a level starts */
 function trnFinish() {
   const tr = TRN, entry = tr.entry; tr.loading = true;
+  if (entry.endOnMap) { TRN = null; trnArrive = null; setView('normal'); state = 'map'; gotoLevelNode(levelIndex); const k = NODES.findIndex(n => n.id === entry.to); if (k >= 0) { map.node = k; map.seg = NODE_AT[k]; map.t = 0; map.walking = 0; PROG.mapNode = k; PROG.mapNodeId = NODES[k].id; mapSpurLit = { id: entry.to, t: 0 }; } music.play(menuTrack()); transT = 1; transKind = 'fade'; return; }
   loadThen(tr.to, () => { TRN = null; startGame(); trnArriveBegin(entry); });
 }
 /* THE ARRIVAL: the next level begins with the heroes standing on the ferry at its start; they step off (their hands are taken), the bars slide out, control returns */
 function trnArriveBegin(entry) {
   if (!entry.arrive) return;
-  trnArrive = { entry, t: 0, dur: entry.arrive.walk, ferry: !!entry.arrive.ferry, done: false, floorY: (L.START.y + 1) * TS };
-  players.forEach((p, i) => { p.x = 12 + i * 12; p.y = trnArrive.floorY; p.vx = 0; p.vy = 0; p.face = 1; p.inv = 0; });
-  camX = 0; camY = P.y - 100; transT = 1; transKind = 'fade'; ambient.set(entry.arrive.ferry ? 'water' : 'forest');
+  trnArrive = { entry, t: 0, dur: entry.arrive.walk, ferry: !!entry.arrive.ferry, done: false, floorY: (L.START.y + 1) * TS, x0: 12, goal: 92 };
+  if (!entry.arrive.ferry) {   /* (claude/demotransitions) NOT every level's first columns are open (the Palisade Wood, Kingswood, Underleaf start behind a boundary wall): start at the leftmost column of the OPEN, FLOORED run that leads to the level's start, and walk a few tiles in */
+    const sy = L.START.y; let cx = Math.min(L.START.x, LW - 1);
+    while (cx > 0 && !isSolid(cx - 1, sy) && !isSolid(cx - 1, sy - 1) && isSolid(cx - 1, sy + 1)) cx--;
+    trnArrive.x0 = cx * TS + 8; trnArrive.goal = Math.max(92, trnArrive.x0 + 36);
+  }
+  players.forEach((p, i) => { p.x = trnArrive.x0 + i * 12; p.y = trnArrive.floorY; p.vx = 0; p.vy = 0; p.face = 1; p.inv = 0; });
+  camX = 0; camY = P.y - 100; transT = 1; transKind = 'fade'; if (entry.arrive.ferry) ambient.set('water');   /* (claude/demotransitions) any other arrival keeps the ambience startGame set for its own level */
 }
 function trnArriveTick(dt) {
   const A = trnArrive; if (!A || A.done) return;
   A.t += dt;
   if (A.t >= A.dur || (anyPress && A.t > 0.35)) { A.done = true; return; }
-  players.forEach((p, i) => asPlayer(p, () => { for (const k of Object.keys(keys)) keys[k] = false; keys.right = P.x < 92 + i * 12; jumpPress = atkPress = dodgePress = upPress = downPress = leftPress = rightPress = throwPress = skill2Press = skill3Press = skill4Press = talkPress = flaskPress = grabPress = false; P.jbuf = 0; P.abuf = 0; P.dbuf = 0; }));
+  players.forEach((p, i) => asPlayer(p, () => { for (const k of Object.keys(keys)) keys[k] = false; keys.right = P.x < A.goal + i * 12; jumpPress = atkPress = dodgePress = upPress = downPress = leftPress = rightPress = throwPress = skill2Press = skill3Press = skill4Press = talkPress = flaskPress = grabPress = false; P.jbuf = 0; P.abuf = 0; P.dbuf = 0; }));
 }
 function trnDrawScene() {
   const tr = TRN, tl = tr.tl, env = trnEnv(), s = trnSceneS(tl);
-  TRA.drawFerryScene(env, s);
+  env.bank = tr.entry.bank || 'wood';
+  if (tr.entry.scene === 'road') TRA.drawRoadScene(env, s); else if (tr.entry.scene === 'smoke') TRA.drawSmokeScene(env, s); else TRA.drawFerryScene(env, s);   /* (claude/demotransitions) */
   if (TRM.phase(tl) === 'fade') { const k = Math.min(1, tl.pt / tl.beats[tl.i].dur); g.fillStyle = 'rgba(5,4,10,' + (k * k).toFixed(3) + ')'; g.fillRect(0, 0, VW, VH); }
 }
 function trnDrawWorldOver(cx, cy) {
@@ -36473,7 +36483,7 @@ function render() {
   else if (state === 'title' || state === 'slots' || state === 'bossjump') drawTitle(cx, cy);
   else if (state === 'map') { drawMap(); for (const p of parts) { g.globalAlpha = Math.min(1, p.life / p.max * 2); g.fillStyle = p.col; g.fillRect(Math.round(p.x - camX), Math.round(p.y - camY), p.size, p.size); } g.globalAlpha = 1; }
   else if (state === 'editor') drawEditor();
-  else if (state === 'win' && TRN && TRN.scene && !TRN.loading && (TRM.phase(TRN.tl) === 'shore' || TRM.phase(TRN.tl) === 'ride' || (TRM.phase(TRN.tl) === 'fade' && !TRN.tl.skipped))) trnDrawScene();   /* (claude/transwm) scene 'ferry' */
+  else if (state === 'win' && TRN && TRN.scene && !TRN.loading && (TRM.isSceneBeat(TRN.tl.beats[TRN.tl.i]) || (TRM.phase(TRN.tl) === 'fade' && !TRN.tl.skipped))) trnDrawScene();   /* (claude/transwm) scenes: 'ferry' / (claude/demotransitions) 'road', 'smoke' */
   else if (state === 'store') { drawStore(); for (const p of parts) { g.globalAlpha = Math.min(1, p.life / p.max * 2); g.fillStyle = p.col; g.fillRect(Math.round(p.x - camX), Math.round(p.y - camY), p.size, p.size); } g.globalAlpha = 1; }
   else {
     const z = (zoomT > 0 ? zoomAmt : 1) * (1 + bossZoom), tilt = seaTilt();
@@ -36990,6 +37000,7 @@ window.BK = { setView: m => setView(m), env: () => ({ hurt: (e, d, x) => hurtEne
   xpSim: () => xpSim(), gainXp: n => gainXp(n), cardOpen: (back, review) => openCard(back || 'map', review), cardTake: i => cardTake(i), cardClose: () => closeCard(), cardRespec: () => cardRespec(), cardNow: () => cardNow(), cardOwed: h => cardOwed(h || hero()), get cardUi() { return cardUi; }, grow: (h, lv) => grow(h || hero(), lv === undefined ? heroLevel(h) : lv), heroXp: h => heroXp(h), xpStart: () => xpStart(), xpWin: () => winLevel(), mage: v2 => mageAdvice(v2), archCfg: () => ARCH, mg: () => MG, straw: () => strawAdvice(), fld: () => FLD, krak: v2 => krakenAdvice(!!v2), krakCargo: v => (KRK_CARGO = v !== false), krakInk: () => krakenInkSpans(boss),   /* tools/kraken-rework.mjs: the stretches the ink holds this frame */ krakRing: i => { const pr = props.filter(q => q.t === 'knell').sort((a, b) => a.x - b.x)[i]; if (pr) causeBell(pr); return pr ? pr.x : null; },   /* tools/kraken-rework.mjs: strike knell bell i (0 the tower's, 1 the shrine's) as a blade would */   /* the lab's two routes: with the cargo worked, and with it walked past */ get tide() { return CT; }, get krs() { return KRS; }, noteVerb: v => noteVerb(v), varietyMul: () => varietyMul(),   /* the variety meter, for the labs */
   hide: HIDE, P, god: false, keys, SET, PROG, SPR, carpet: () => P.carpet, towerFloors: () => L.towerFloors, board: () => { if (L.carpetAt) { P.x = L.carpetAt.x; P.y = L.carpetAt.y; } },   /* THE FALLING TOWER, for tools/tower-ascent.mjs */
   get view() { return { x: camX, y: camY, buf, VW, VH, z: (zoomT > 0 ? zoomAmt : 1) * (1 + bossZoom), tilt: seaTilt() }; },   /* z and tilt: a frame drawn scaled or rolled does not line up with the tiles */ /* the camera and the unscaled frame, for crops in tests */
+  mapSpurLit: () => (mapSpurLit ? mapSpurLit.id : null), get map() { return map; },
   trans: { get tr() { return TRN; }, get arrive() { return trnArrive; }, force: v => { trnForce = v === null || v === undefined ? null : !!v; }, begin: () => trnBegin(), textW: str => textW(str, 6), levelId: () => LEVELS[levelIndex].id, press: () => { anyPress = true; }, TRM, TRA },   /* (claude/transwm) tools/transition-woodmarsh.mjs */
   step(n = 1) { for (let i = 0; i < n; i++) { update(STEP); clearPresses(); } render(); },
   draw1() { render(); },   /* (claude/tunnelfix) one frame drawn, nothing updated: tools/no-hidden-hits.mjs draws it twice (a foe in, a foe out) and compares */
