@@ -57,14 +57,14 @@ export function buildArenaYard({ painter, T }) {
   ent('shield', 82, gy, { face: -1, trainer: 'still', lx0: 74, lx1: 86 }); ent('soldier', 86, gy, { face: -1, trainer: 'still', lx0: 74, lx1: 87 });
   // ---- the slow swinger and the flash: a straw swordsman each, awake only while somebody stands in the station ----
   ent('swornsword', 102, gy, { face: -1, trainer: 'drill', lx0: 94, lx1: 105, yardZone: [92, 106], yardPace: 2.0 });
-  ent('swornsword', 120, gy, { face: -1, trainer: 'drill', lx0: 112, lx1: 123, yardZone: [110, 124], yardTell: true });
+  ent('swornsword', 120, gy, { face: -1, trainer: 'drill', lx0: 112, lx1: 123, yardZone: [110, 124], yardTell: true, cnSkin: 'strawflash' });
   // ---- the archer: on a stand, facing the way you came; he never goes down and shoots only while somebody is in his station ----
   block(150, 154, gy - 1, gy);
   ent('archer', 152, gy - 2, { face: -1, trainer: 'drill', lx0: 140, lx1: 158, yardZone: [128, 160] });
   ent('sign', 160, gy, { text: 'THE YARD ENDS HERE. BACK TO THE GATE FOR THE BOARD, THE TRIALS AND THE WAY OUT.' });
   return {
     W, H, grid: L.grid, ents: L.ents, START: { x: SPOTS.start, y: gy }, pools: [], falls: [], moversExtra: [], interiors: [],
-    openYard: true, arenaYard: { stations: STATIONS, spots: SPOTS, floor: AY.FLOOR, gate: [2, 13] }, duskStart: -1, duskLen: 1, music: 'select', reachExact: true, noCoin: true,
+    reskin: { swornsword: 'strawsword', archer: 'strawbow' }, openYard: true, arenaYard: { stations: STATIONS, spots: SPOTS, floor: AY.FLOOR, gate: [2, 13] }, duskStart: -1, duskLen: 1, music: 'select', reachExact: true, noCoin: true,
     palette: { set: 'arena', sky: 'autumn', near: 'none', noFg: true, noNear: true, dress: 'arena', haze: 'rgba(200,120,80,0.12)', grass: '#6a8a3a', grassL: '#9ac050', grassD: '#3a5a24', dirt: '#34302a', dirtL: '#524c44', dirtD: '#24201c' },
   };
 }
