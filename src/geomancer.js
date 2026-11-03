@@ -25,7 +25,7 @@ export const GEO = {
   fist: { mul: 1.2, knockVy: -300, lock: 2, stagger: 0.3 },
   /* (claude/ults, Daniel 11-01) AVALANCHE = THE ULTIMATE (UP+C at a FULL board, cap stones standing): every stone ERUPTS as a pillar (eruptT s: launches the common foe in its column, a blow x erupt) and then ROLLS down the room as a boulder (sp px/s, life s, one bounce).
      Each stone hits a BOSS or a mini for swordDmg x boss (a common foe x roll, and is bowled over); the stones are consumed - the board is rebuilt by hand. No cooldown: the cost is the three stones. */
-  avalanche: { erupt: 0.9, eruptT: 0.5, roll: 2.0, boss: 5.0, bossStagger: 0.7, sp: 230, life: 3.8, bounces: 1, r: 9, launchVy: -380, reach: 22 },
+  avalanche: { erupt: 0.9, eruptT: 0.5, roll: 2.0, boss: 8.0, bossStagger: 0.7, sp: 230, life: 3.8, bounces: 1, r: 9, launchVy: -380, reach: 22 },
   bigBodyGrace: 0.4,
   cap: 3, life: 4, lifeLong: 6, archLife: 6, crack: 1.0, rise: 0.12,
   pillarH: 2, wallH: 2, perfect: 0.2, wallHp: 3,
