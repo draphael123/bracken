@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {LEGACY_NODES,SKILLS} from '../src/progression.js';
 const s=readFileSync(new URL('../src/main.js',import.meta.url),'utf8');
-assert.equal(LEGACY_NODES.length,181);
+assert.equal(LEGACY_NODES.length,180);
 /* PRICE FOLLOWS LEVEL, from ONE table (2026-09-23), FOR WHAT IS SOLD. The actives moved to a ladder spaced every two or three hero
    levels up to 20 (Daniel), and an ability's price is whatever its unlock level costs - never a number of its own.
    PASSIVES ARE NOT SOLD (hero-kits 1b, 2026-09-24): they arrive one a level from 1 to 24, so their level is on no price ladder. Their

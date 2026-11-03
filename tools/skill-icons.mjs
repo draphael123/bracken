@@ -31,7 +31,7 @@ try {
     prep(); BK.keys.block = true; BK.sim(20); const holdHook = !!BK.P.hookT || BK.P.hookCd > 0; BK.keys.block = false; BK.sim(2); BK.god = false;
     return { total: SKILLS.length, actives: actives.length, dup, fell, missing, extra, wrong, rows, tapParry, tapHook, holdHook };
   })()`);
-  assert.equal(r.actives, 77); assert.equal(r.rows.length + r.missing.length, 187);   /* (claude/bkkit2: the Blood Knight's BIDDEN became DRAIN, an active - one passive fewer, one active more) */   /* (claude/paladin2: the paladin's CONSECRATE and BLESSED HAMMER are base kit now - two actives became passives) */   /* (THE BERSERKER: nine actives, twenty-one passives) */
+  assert.equal(r.actives, 76); assert.equal(r.rows.length + r.missing.length, 186);   /* (claude/wardenid: POLE SPRING dropped, 77 -> 76 actives, -1 total) */    /* (claude/bkkit2: the Blood Knight's BIDDEN became DRAIN, an active - one passive fewer, one active more) */   /* (claude/paladin2: the paladin's CONSECRATE and BLESSED HAMMER are base kit now - two actives became passives) */   /* (THE BERSERKER: nine actives, twenty-one passives) */
   assert.deepEqual(r.fell, [], 'actives that fall to the default flame icon');
   assert.deepEqual(r.dup, [], 'actives that share an icon');
   assert.deepEqual(r.missing, [], 'passives with no row in src/skill-glyphs.js');
@@ -49,7 +49,7 @@ try {
   const desc = id => { const i = cat.indexOf('"id": "' + id + '",'); assert.ok(i >= 0, 'no skill ' + id); const j = cat.indexOf('"desc": "', i); return cat.slice(j + 9, cat.indexOf('"', j + 9)); };
   const pirate = card('pirate'); assert.ok(/tap C: THE HOOK CATCH/.test(pirate) && /HOLD C: THE HOOK/.test(pirate), 'the pirate card does not say tap = hook catch, hold = hook');
   assert.ok(!/hold C: RUM/i.test(pirate) && !/tap C: THE HOOK(?! CATCH)/i.test(pirate), 'the pirate card gives C the old jobs (rum is a bought skill, the hook is a hold)');
-  const knight = card('knight'); assert.ok(!/third cuts fill RESOLVE/i.test(knight) && /heavy cuts fill RESOLVE/i.test(knight), 'RESOLVE is filled by blocks and HEAVY cuts');
+  const knight = card('knight'); assert.ok(!/RESOLVE/i.test(knight) && /PERFECT GUARD/.test(knight) && /THE HEAVY CUT/.test(knight), 'the knight card names the guard chain and the heavy cut, and no RESOLVE bar (claude/knightid: the bar is gone; no cut fills anything)');
   const dk = card('reaper'); assert.ok(!/TAP F for the equipped/i.test(dk), 'the death knight card gives F the equipped skill; F is summon and G is the equipped skill'); assert.ok(/G is the skill he has equipped/i.test(dk));
   assert.ok(!/shield/i.test(desc('holyCharge')), 'the Paladin has no shield: HOLY CHARGE cannot lead with one');
   assert.ok(!/holy fire/i.test(desc('consecrate')), 'CONSECRATE only burns the dead');
