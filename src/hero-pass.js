@@ -68,7 +68,7 @@ export const HP = {
   pyro: { blink: { t: 0.16, inv: 0.12, speed: 375, hide: [0.03, 0.13] } },
   pirate: { flash: { r: 46, dazzle: 0.6, elite: 0.3, boss: 0.12 } },
   reaper: { step: { t: 0.2, inv: 0.14, speed: 350 } },
-  geomancer: { shrug: { t: 0.4 } },
+  geomancer: { shrug: { t: 0.3, carry: 0.5 } },
   warden: { hop: { lift: 5 }, plant: { st: 10, life: 2.2, w: 14, reach: 8, cd: 0.3 }, counter: { to: 34 } },
 };
 /* THE WARDEN'S TIP, UP TO 2x (Daniel 10-15 ~12:40): x1.6 at the point rising to x2.0 at full extension (TIP_AT + ramp px; DEEP SET reaches it in
@@ -96,7 +96,7 @@ export function makeHeroPass(api) {
     const p = P(), h = H(); p.kStepG = 0; p.wHopT = 0; p.blinkT = 0; p.shrugT = 0; p.ownDodge = h !== 'warden';
     if (h === 'paladin' || h === 'ranger' || p.swim) return;   /* (PALADIN 4's SANCTUARY STEP is his branch in main.js; the Ranger's backflip is hers) */
     if (h === 'geomancer') { if (!air) return;   /* on the floor: THE BURROW */
-      const S = HP.geomancer.shrug; p.dodge = p.dodgeMax = S.t; p.dodgeInv = 0; p.dash = 0; p.dashDur = 0; p.shrugT = S.t; p.vx *= 0.25; stats.shrugs++;
+      const S = HP.geomancer.shrug; p.dodge = p.dodgeMax = S.t; p.dodgeInv = 0; p.dash = 0; p.dashDur = 0; p.shrugT = S.t; p.vx *= S.carry; stats.shrugs++;
       api.kitPose(p, 'gShrug', S.t); api.SFX.stone && api.SFX.stone(); api.ringAt(p.x, p.y - 10, 14, '#c8bca8', 0.25);
       api.burst(p.x, p.y - 10, 8, ['#8c8a7e', '#c8bca8', '#5e4e38'], 50, 0.35, 60, 1); api.number(p.x, p.y - 26, 'STONE SHRUG', '#c8bca8'); return; }
     if (air) return;   /* everyone else keeps the shared air dodge */
