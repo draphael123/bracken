@@ -440,7 +440,7 @@ export function makeGeomancer(api) {
     api.burst(e.x, e.y - (e.h || 16) / 2, 8, [STONE.base, STONE.hi, STONE.lo], 90, 0.35); api.shakeCam(3, P.face * 2); api.SFX.geoThud && api.SFX.geoThud(); }
   /* (claude/geopop a) THE KNEE STONE. One cell, on the first free floor column plantFrom..plantTo tiles ahead (floorRow + freeCell: never inside a body, never in a gate's reach). A full board gets none (nothing is evicted,
      a ready AVALANCHE is never stolen); plantCd s between plants. No damage and no launch: the blow itself is the fist's, timing is unchanged. */
-  let plantAt = -9, det = null, detCd = -9, decals = [];
+  let lastDet = null, plantAt = -9, det = null, detCd = -9, decals = [];
   function fistPlant() { const P = api.P, F = GEO.fist;
     if (standing() >= cap() || api.time - plantAt < F.plantCd) return false;
     for (let k = F.plantFrom; k <= F.plantTo; k++) { const tx = Math.floor(P.x / TS) + P.face * k, fy = floorRow(tx, Math.floor((P.y - 1) / TS), 2); if (fy === null || !freeCell(tx, fy - 1)) continue;
@@ -472,7 +472,7 @@ export function makeGeomancer(api) {
         if (e.alive && !isBig(e) && liftable(e) && !down.has(e)) { down.add(e); if (api.floorFoe(e, D.knockDown)) api.number(e.x, e.y - (e.h || 16) - 14, 'KNOCKED DOWN', STONE.rune); } }
       const f = foes().filter(e => !e.harmless && !e.turncoat).sort((a, b) => Math.abs(a.x - cx) - Math.abs(b.x - cx))[0], d = f ? Math.sign(f.x - cx) || P.face : P.face, sd = dmg(D.shardMul, 'geoDetonate');
       for (let i = 0; i < D.shards; i++) { const dir = i === 1 ? -d : d, up = i === 2; shards.push({ x: cx, y: cy - 2, vx: dir * (up ? 110 : 250), vy: up ? -230 : -30, life: 0.55, hit: new Set(), dmg: sd, det: tag }); } }
-    stats.detonates = (stats.detonates || 0) + 1; stats.detonated = (stats.detonated || 0) + struck; api.trialEvent && api.trialEvent('meter');
+    lastDet = { blasts: Math.max(0, ...blasts.values()), tag }; stats.detonates = (stats.detonates || 0) + 1; stats.detonated = (stats.detonated || 0) + struck; api.trialEvent && api.trialEvent('meter');
     api.yardSay && api.yardSay('DETONATED x' + stats.detonates, '#ffd36b'); }
   /* ENTOMB: a blow on the tomb cracks it and lands half as hard again; the third crack breaks it open (hurtEnemy asks) */
   function tombHit(e, d) { const tb = e.geoTomb; if (!tb) return d; tb.cracks++; api.sparks(e.x, e.y - (e.h || 16) / 2, 0, 5);
@@ -508,6 +508,7 @@ export function makeGeomancer(api) {
     if (P.atk < 0) P.geoPlantDone = false;
     else if (P.atk >= 0.17 && !P.geoPlantDone && P.heavySwing && !P.heavy && !P.swingKind && !P.plunge && GEO.pop.fistPlant) { P.geoPlantDone = true; fistPlant(); }
     /* (claude/geopop e) DETONATE: the slam is told for GEO.detonate.tell s, then every stone goes */
+    if (detCd > api.time + GEO.detonate.cd + 0.01) detCd = -9; if (plantAt > api.time) plantAt = -9;   /* (a new game restarts the clock: a cd stamped on the old one is void) */
     if (det) { det.t += dt; if (det.t >= GEO.detonate.tell) detFire(); }
     for (const c of decals) c.t -= dt; if (decals.length) decals = decals.filter(c => c.t > 0);
     /* a foe her stone threw into the air lands (the end spike of a full FAULT LINE, a step that lifted it) - THROWN DOWN makes it land hard */
@@ -561,7 +562,7 @@ export function makeGeomancer(api) {
       const under = Math.floor((G.y + 1) / TS), gx = Math.floor(G.x / TS); if (!api.isSolid(gx, under) && !api.isOneWay(api.tileAt(gx, under))) { G.vy = Math.min(500, G.vy + 900 * dt); G.y += G.vy * dt; if (G.y > api.LH * TS) G.life = 0; } else { G.vy = 0; G.y = under * TS; }
       if (G.life <= 0) { api.burst(G.x, G.y - 10, 14, [STONE.base, STONE.hi, STONE.moss], 70, 0.6); api.SFX.geoCrumble(); golem = null; } }
   }
-  function clear() { for (const p of [...pieces]) crumble(p, 'silent'); pieces = []; rollers = []; erupts = []; shards = []; falls = []; spikes = []; faults = []; golem = null; det = null; decals = []; }
+  function clear() { for (const p of [...pieces]) crumble(p, 'silent'); pieces = []; rollers = []; erupts = []; shards = []; falls = []; spikes = []; faults = []; golem = null; det = null; decals = []; detCd = -9; plantAt = -9; }   /* (claude/geopop: a death, a retry or a new room starts the 5 s and the 3 s clean) */
 
   /* ==== DRAWN IN THE WORLD. A piece is rough grey stone with moss on its crown and a faint amber rune; it grinds up out of the
      ground over GEO.rise, and for its last GEO.crack seconds it CRACKS - dark lines spreading through it, and a shiver at the end. */
@@ -724,6 +725,6 @@ export function makeGeomancer(api) {
     g.fillStyle = STONE.hi; g.fillRect(x - Math.round(r / 2), y - r + 1, Math.max(2, r - 1), 1);
     const a = spin || 0; g.fillStyle = STONE.lo; g.fillRect(Math.round(x + Math.cos(a) * r * 0.5), Math.round(y + Math.sin(a) * r * 0.5), 2, 2); g.fillStyle = STONE.moss; g.fillRect(Math.round(x + Math.cos(a + 2.5) * r * 0.6), Math.round(y + Math.sin(a + 2.5) * r * 0.6), 2, 1); }
 
-  return { upAir, UP_AIR, tierStats: () => ({ ...stats, tiers: stats.tiers.slice() }), resetTierStats: () => { stats.tiers = [0, 0, 0, 0]; stats.pillars = stats.steps = stats.shardHits = stats.rams = stats.gnaws = stats.topples = stats.fists = 0; }, earthfall, baseGrid, update, draw, clear, avalanche, avalancheReady, topple: avalanche, erupts: () => erupts, fistHit, fillBoard, standing, fistPlant, detonate, detonateReady, detonateWorth, detonating: () => !!det, detCd: () => detCd, plantAt: () => plantAt, decals: () => decals, boardFill, faultHeavy, faultPath, guard, wardTakes, wardUp, wardPerfect, empowered, raiseWall, wallTakes, rollStone, quake, gainTremor, tombHit, kit,
+  return { upAir, UP_AIR, tierStats: () => ({ ...stats, tiers: stats.tiers.slice() }), resetTierStats: () => { stats.tiers = [0, 0, 0, 0]; stats.pillars = stats.steps = stats.shardHits = stats.rams = stats.gnaws = stats.topples = stats.fists = 0; }, earthfall, baseGrid, update, draw, clear, avalanche, avalancheReady, topple: avalanche, erupts: () => erupts, fistHit, fillBoard, standing, fistPlant, detonate, detonateReady, detonateWorth, detonating: () => !!det, detCd: () => detCd, plantAt: () => plantAt, decals: () => decals, lastDet: () => lastDet ? { blasts: lastDet.blasts, shards: Math.max(0, ...lastDet.tag.sh.values()) } : null, boardFill, faultHeavy, faultPath, guard, wardTakes, wardUp, wardPerfect, empowered, raiseWall, wallTakes, rollStone, quake, gainTremor, tombHit, kit,
     shieldDrawn: () => shieldDrawn, spunAt: () => spunAt, pieces: () => pieces, rollers: () => rollers, falls: () => falls, spikes: () => spikes, shards: () => shards, faults: () => faults, golem: () => golem, freeCell, erupt, place, crumble };
 }
