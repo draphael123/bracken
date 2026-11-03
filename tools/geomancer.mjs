@@ -192,35 +192,38 @@ try {
     window.__stone=(tx)=>BK.geo().erupt(tx,22,1,'pillar',{noHero:true,hurt:false,noLaunch:true});
     window.__on=(G)=>G.pieces().filter(p=>p.capped&&!p.gone).length;
     return 1})()`);
-  out.pop = {};
-  out.pop.plant = await pg.evalp(`(()=>{const P=()=>BK.P,G=()=>BK.geo();__geo([]);const px=Math.floor(P().x/16),f0=G().tierStats().fistPlants||0;
+  out.pop = {}; await pg.evalp(`(()=>{window.__g2=()=>{if(BK.geo())BK.geo().clear();__geo([]);};return 1})()`);
+  out.pop.plant = await pg.evalp(`(()=>{const P=()=>BK.P,G=()=>BK.geo();__g2();const px=Math.floor(P().x/16),f0=G().tierStats().fistPlants||0;
     __combo();const n1=G().standing(),p1=G().pieces()[0],d1=p1?Math.round(p1.cells[0].tx-px):null;
     __combo();const n2=G().standing();                         /* inside plantCd: no second plant */
     BK.sim(60*3);P().face=1;__combo();const n3=G().standing();   /* after plantCd: the next */
     return {n1,d1,n2,n3,stats:(G().tierStats().fistPlants||0)-f0}})()`);
-  out.pop.full = await pg.evalp(`(()=>{const P=()=>BK.P,G=()=>BK.geo();__geo([]);const tx=Math.floor(P().x/16);[tx+8,tx+11,tx+14].forEach(__stone);BK.sim(2);const ids=G().pieces().slice(),f0=G().tierStats().fistPlants||0;
+  out.pop.full = await pg.evalp(`(()=>{const P=()=>BK.P,G=()=>BK.geo();__g2();const tx=Math.floor(P().x/16);[tx+8,tx+11,tx+14].forEach(__stone);BK.sim(2);const ids=G().pieces().slice(),f0=G().tierStats().fistPlants||0;
     __combo();BK.sim(5);return {n:G().standing(),same:G().pieces().length===ids.length&&ids.every(p=>G().pieces().includes(p)),plants:(G().tierStats().fistPlants||0)-f0}})()`);
-  out.pop.noshatter = await pg.evalp(`(()=>{const P=()=>BK.P,G=()=>BK.geo();__geo([]);const tx=Math.floor(P().x/16);__stone(tx+1);BK.sim(2);const p=G().pieces()[0];
+  out.pop.noshatter = await pg.evalp(`(()=>{const P=()=>BK.P,G=()=>BK.geo();__g2();const tx=Math.floor(P().x/16);__stone(tx+1);BK.sim(2);const p=G().pieces()[0];
     BK.press('atk');BK.sim(30);BK.press('atk');BK.sim(30);BK.press('atk');BK.sim(30);return {had:!!p,stands:!!p&&!p.gone&&G().pieces().includes(p)}})()`);
-  out.pop.body = await pg.evalp(`(()=>{const P=()=>BK.P,G=()=>BK.geo();__geo([]);const es=[40,56,72].map(dx=>{const e=__pfoe(dx);e.mini=true;return e;});BK.sim(2);es.forEach((e,i)=>e.px=BK.P.x+[40,56,72][i]);
+  out.pop.body = await pg.evalp(`(()=>{const P=()=>BK.P,G=()=>BK.geo();__g2();const es=[40,56,72].map(dx=>{const e=__pfoe(dx);e.mini=true;return e;});BK.sim(2);es.forEach((e,i)=>e.px=BK.P.x+[40,56,72][i]);
     let inside=false;BK.press('atk');for(let i=0;i<30;i++){BK.sim(1);__pin(es);inside=inside||__inside();}BK.press('atk');for(let i=0;i<30;i++){BK.sim(1);__pin(es);inside=inside||__inside();}BK.press('atk');for(let i=0;i<40;i++){BK.sim(1);__pin(es);inside=inside||__inside();}
     return {planted:G().standing(),inside}})()`);
-  out.pop.det0 = await pg.evalp(`(()=>{const P=()=>BK.P,G=()=>BK.geo(),K=BK.keys;__geo([]);const d0=G().tierStats().detonates||0;K.down=true;K.block=true;let ward=false,det=false;for(let i=0;i<20;i++){BK.sim(1);ward=ward||!!P().geoGuard;det=det||G().detonating();}K.down=false;K.block=false;BK.sim(10);
+  out.pop.det0 = await pg.evalp(`(()=>{const P=()=>BK.P,G=()=>BK.geo(),K=BK.keys;__g2();const d0=G().tierStats().detonates||0;K.down=true;K.block=true;let ward=false,det=false;for(let i=0;i<20;i++){BK.sim(1);ward=ward||!!P().geoGuard;det=det||G().detonating();}K.down=false;K.block=false;BK.sim(10);
     return {ward,det,dets:(G().tierStats().detonates||0)-d0}})()`);
-  out.pop.det2 = await pg.evalp(`(()=>{const P=()=>BK.P,G=()=>BK.geo(),K=BK.keys;__geo([]);const px=Math.floor(P().x/16),d0=G().tierStats().detonates||0;const e=__pfoe(100);BK.sim(2);e.px=BK.P.x+100;__stone(px+4);__stone(px+5);BK.sim(2);const n0=G().standing(),hp0=e.hp;
+  out.pop.det2 = await pg.evalp(`(()=>{const P=()=>BK.P,G=()=>BK.geo(),K=BK.keys;__g2();const px=Math.floor(P().x/16),d0=G().tierStats().detonates||0;const e=__pfoe(100);BK.sim(2);e.px=BK.P.x+100;__stone(px+4);__stone(px+5);BK.sim(2);const n0=G().standing(),hp0=e.hp;
     K.down=true;K.block=true;BK.sim(2);K.block=false;let ward=false,tell=G().detonating();for(let i=0;i<30;i++){BK.sim(1);__pin([e]);ward=ward||!!P().geoGuard;}
     const hurt=hp0-e.hp,left=G().standing(),cd=Math.round((G().detCd()-BK.time)*10)/10;
     __stone(px+4);__stone(px+5);BK.sim(2);K.block=true;BK.sim(2);K.block=false;BK.sim(10);const again=(G().tierStats().detonates||0)-d0,second=G().standing();
     K.down=false;return {n0,tell,hurt,left,cd,ward,dets:1*(again>=1),again,second}})()`);
-  out.pop.cap = await pg.evalp(`(()=>{const P=()=>BK.P,G=()=>BK.geo(),K=BK.keys;const run=(txs)=>{__geo([]);const px=Math.floor(P().x/16);const e=__pfoe(110);e.w=44;BK.sim(2);e.px=BK.P.x+110;e.x=e.px;const fc=Math.floor(e.px/16);
+  out.pop.cap = await pg.evalp(`(()=>{const P=()=>BK.P,G=()=>BK.geo(),K=BK.keys;const run=(txs)=>{__g2();const px=Math.floor(P().x/16);const e=__pfoe(110);e.w=44;BK.sim(2);e.px=BK.P.x+110;e.x=e.px;const fc=Math.floor(e.px/16);
       txs.forEach(d=>__stone(fc+d));BK.sim(2);const n0=G().standing(),hp0=e.hp;K.down=true;K.block=true;BK.sim(2);K.block=false;for(let i=0;i<40;i++){BK.sim(1);__pin([e]);}K.down=false;return {n0,hurt:hp0-e.hp,left:G().standing(),cap:G().lastDet()}};
     return {one:run([-3]),three:run([-3,2,3])}})()`);
-  out.pop.ult = await pg.evalp(`(()=>{const P=()=>BK.P,G=()=>BK.geo(),K=BK.keys;__geo([]);const px=Math.floor(P().x/16),d0=G().tierStats().detonates||0;[px+3,px+6,px+9].forEach(__stone);BK.sim(2);const n0=G().standing();
+  out.pop.ult = await pg.evalp(`(()=>{const P=()=>BK.P,G=()=>BK.geo(),K=BK.keys;__g2();const px=Math.floor(P().x/16),d0=G().tierStats().detonates||0;[px+3,px+6,px+9].forEach(__stone);BK.sim(2);const n0=G().standing();
     K.up=true;K.block=true;BK.sim(2);K.block=false;K.up=false;const er=G().erupts().length;BK.sim(5);return {n0,er,left:G().standing(),dets:(G().tierStats().detonates||0)-d0,det:G().detonating()}})()`);
   out.pop.switches = await pg.evalp(`(()=>{const P=()=>BK.P,G=()=>BK.geo(),K=BK.keys,POP=BK.geoK.pop;const r={};
-    POP.fistPlant=false;__geo([]);__combo();r.plant=G().standing();POP.fistPlant=true;
-    POP.detonate=false;__geo([]);const px=Math.floor(P().x/16),d0=G().tierStats().detonates||0;__stone(px+3);__stone(px+5);BK.sim(2);K.down=true;K.block=true;BK.sim(3);K.block=false;K.down=false;BK.sim(20);r.det=G().standing();r.dets=(G().tierStats().detonates||0)-d0;POP.detonate=true;
+    POP.fistPlant=false;__g2();__combo();r.plant=G().standing();POP.fistPlant=true;
+    POP.detonate=false;__g2();const px=Math.floor(P().x/16),d0=G().tierStats().detonates||0;__stone(px+3);__stone(px+5);BK.sim(2);K.down=true;K.block=true;BK.sim(3);K.block=false;K.down=false;BK.sim(20);r.det=G().standing();r.dets=(G().tierStats().detonates||0)-d0;POP.detonate=true;
     r.flags=Object.keys(POP).sort().join();return r})()`);
+  out.pop.bot = await pg.evalp(`(async()=>{const {DET_BOT}=await import('/src/lab.js');const P=()=>BK.P,G=()=>BK.geo(),r={};const run=(stones,foe)=>{__g2();const px=Math.floor(P().x/16);let e=null;if(foe){e=__pfoe(100);BK.sim(2);e.px=BK.P.x+100;}stones.forEach(d=>__stone(px+d));BK.sim(2);if(e){e.x=e.px;}return DET_BOT(BK,P(),'geomancer');};
+    r.one=run([4],true);r.two=run([4,5],true);r.twoNoFoe=run([4,5],false);r.three=run([3,4,5],true);r.other=(__g2(),DET_BOT(BK,P(),'knight'));
+    __g2();const px=Math.floor(P().x/16);const e=__pfoe(100);BK.sim(2);e.px=BK.P.x+100;__stone(px+4);__stone(px+5);BK.sim(2);BK.keys.down=true;BK.keys.block=true;BK.sim(2);BK.keys.down=false;BK.keys.block=false;BK.sim(30);r.spent=G().standing();r.afterCd=(__stone(px+4),__stone(px+5),BK.sim(2),DET_BOT(BK,P(),'geomancer'));return r})()`);
   out.pop.boss = await pg.evalp(`(async()=>{const {LEVELS}=await import('/src/level.js');const G=()=>BK.geo(),P=()=>BK.P,r={};
     const into=()=>{const A=BK.L.arena;BK.tp(Math.round(A.trigger/16)+(A.reverse?-1:1),Math.round(A.floor/16)-1);BK.sim(120);};
     BK.manualSimulation=true;BK.SET.speed=1;BK.setHero('geomancer');BK.reset({fresh:true});BKT.setHeroLevel('geomancer',20);BK.applyUpgrades();BK.load(LEVELS.findIndex(l=>l.id==='wood'));BK.state='play';BK.start&&BK.start();BK.sim(30);BK.god=true;
@@ -302,6 +305,7 @@ try {
     assert(O.cap.three.cap.blasts === 2 && O.cap.three.cap.shards === 3 && O.cap.one.cap.blasts === 1, 'POP e: PER-FOE CAP - one foe in all three stones\' radius takes 2 blasts and 3 shards (2 x 1.0 + 3 x 0.4 = 3.2x sword), not 3 and 9 (' + J + ')');
     assert(O.ult.n0 === 3 && O.ult.er >= 3 && O.ult.left === 0 && O.ult.dets === 0 && !O.ult.det, 'POP e: UP+C at 3 stones is still AVALANCHE, not a detonate (' + J + ')');
     assert(O.switches.plant === 0 && O.switches.det === 2 && O.switches.dets === 0 && O.switches.flags === 'bossStone,detonate,feel,fistPlant', 'POP: the kill switches turn fistPlant and detonate off (' + J + ')');
+    assert(!O.bot.one && O.bot.two && !O.bot.twoNoFoe && !O.bot.three && !O.bot.other && !O.bot.afterCd, 'POP e: the bot learns DOWN+C - at >= 2 stones with a foe in a stone\'s radius, not at 1, not with no foe, not at a full board (that is the AVALANCHE), not in the 5 s cd (' + J + ')');
     assert(O.boss.before === 0 && O.boss.active && O.boss.first === 1, 'POP b: a boss start leaves ONE stone standing (' + J + ')');
     assert(O.boss.cleared === 0 && O.boss.retryActive && O.boss.retry === 1, 'POP b: and again after a retry (' + J + ')');
     assert(O.boss.off === 0, 'POP b: bossStone off = no stone (' + J + ')'); }
