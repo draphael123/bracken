@@ -51,7 +51,8 @@ import { LEVELS } from '../src/level.js';
 import { depthsOf, gateOf } from '../src/campaign-order.js';
 import { pacing } from './pacing.mjs';
 import { campaignLevel, levelOverride } from './boss-level.mjs';
-import { openRetry, diffJs } from './boss-run.mjs';   /* (claude/difficulty) --difficulty= */
+import { openRetry, diffJs } from './boss-run.mjs';
+import { recycler } from './page-recycle.mjs';   /* (claude/botmem) each slot's page is replaced every ~6 walks (one BK.load each) and a walk whose page memguard killed is rerun once, labelled */   /* (claude/difficulty) --difficulty= */
 import { beatenBeforeIn, tonicsAt, charmAt } from '../src/campaign-kit.js';
 import { ACTS, actOf } from '../src/foe-react.js';
 import { CART_PILOT, ROUTE_PLAN } from './cart-pilot.mjs';   /* (claude/deeprails2) THE DEEP RAILS is ridden, not walked: its hands are the cart pilot's */
@@ -287,13 +288,12 @@ export function walkJs(c) { return `(async()=>{const c=${JSON.stringify(c)},h=c.
     duels,subs:subLog,dets:dets.map(d=>({kind:d.kind,a:d.a,gi:d.gi,tries:d.tries||0,done:!!d.done,dbg:d.dbg,log:d.log,n:d.nodes.length})),eyes:perc?perc.stats():null,casts:SKH?SKH.casts():null};
   }finally{Math.random=rnd0;}})()`; }
 export async function runWalks(cfgs, { jobs = 1, onRow = null } = {}) {
-  const queue = cfgs.slice(), out = [], pages = [await openRetry()];
-  for (let i = 1; i < Math.min(jobs, cfgs.length); i++) pages.push(await openRetry());
+  const queue = cfgs.slice(), out = [], rcs = Array.from({ length: Math.max(1, Math.min(jobs, cfgs.length)) }, () => recycler({ open: openRetry }));
   const worker = async i => { for (;;) { const c = queue.shift(); if (!c) return; let row;
-    try { await pages[i].reload(); await pages[i].evalp(diffJs()); row = await pages[i].evalp(walkJs(c), 1800000); const errs = pages[i].errors.splice(0); if (errs.length) row.pageErrors = errs.slice(0, 3); }
-    catch (e) { row = { id: c.id, hero: c.hero, seed: c.seed, err: String(e.message).slice(0, 160) }; try { pages[i].close(); } catch {} pages[i] = await openRetry(); }
+    try { row = await rcs[i].run(async pg => { await pg.reload(); await pg.evalp(diffJs()); const r = await pg.evalp(walkJs(c), 1800000); const errs = pg.errors.splice(0); if (errs.length) r.pageErrors = errs.slice(0, 3); return r; }, 1); }
+    catch (e) { row = { id: c.id, hero: c.hero, seed: c.seed, err: String(e.message).slice(0, 160), ...(e.infraKilled ? { infraKilled: true } : {}) }; await rcs[i].reset(); }
     out.push(row); if (onRow) onRow(row, out); } };
-  try { await Promise.all(pages.map((_, i) => worker(i))); } finally { for (const p of pages) try { p.close(); } catch {} }
+  try { await Promise.all(rcs.map((_, i) => worker(i))); } finally { for (const r of rcs) try { await r.close(); } catch {} }
   return out;
 }
 /* a death to the level itself (deep water, a fall, spikes, fire) and not to a foe: the hands' platforming is part of that count */
@@ -324,6 +324,7 @@ if (process.argv[1] && /level-walk\.mjs$/.test(process.argv[1])) {
   const args = process.argv.slice(2), opt = (k, d) => { const a = args.find(x => x.startsWith('--' + k + '=')); return a ? a.slice(k.length + 3) : d; };
   const ids = args.filter(a => !a.startsWith('-')).flatMap(a => a.split(',')).filter(Boolean); if (opt('difficulty', '')) process.env.DIFFICULTY = opt('difficulty', '');   /* (claude/difficulty) */
   if (!ids.length) { console.log('usage: PORT=8708 node tools/level-walk.mjs <id>[,<id>..] [--heroes=knight,warden,pyro] [--seeds=2] [--frames=36000] [--stuck=1500] [--jobs=1] [--json=out.json]'); process.exit(2); }
+  if (args.includes('--lite')) process.env.BRACKEN_LITE = '1';   /* (claude/botmem) opt-in smaller browser */
   const heroes = opt('heroes', 'knight,warden,pyro').split(','), seeds = +opt('seeds', 2), jobs = Math.max(1, +opt('jobs', 1)), OUT = opt('json', '');
   const o = { level: levelOverride() ?? undefined, frames: +opt('frames', 36000), stuck: +opt('stuck', 1500), deaths: +opt('deaths', 8), profile: opt('profile', 'human+first'), skills: opt('skills', '1') !== '0', strict: args.includes('--strict'), reachHero: args.includes('--reach-hero'), dk: args.includes('--dk'), legacy: opt('legacy', '') ? opt('legacy').split(',') : [], nofoes: opt('nofoes', '') ? opt('nofoes').split('-').map(Number) : null, trace: opt('trace', '') ? opt('trace').split('-').map(Number) : null, traceFrom: +opt('tracefrom', 0), traceN: +opt('tracen', 400), from: opt('from', '') ? +opt('from') : null, setup: opt('setup', ''), duel: opt('duel', '1') !== '0', fight: opt('fight', '1') !== '0', subs: opt('subs', '1') !== '0', mini: opt('mini', '1') !== '0' };
   if (opt('coop', null) !== null) { o.coop = +opt('coop'); o.coopAi = args.includes('--coop-ai'); }   /* (claude/coopbalance) --coop=N seats (the others the co-op AI hands, counted as people unless --coop-ai) */
