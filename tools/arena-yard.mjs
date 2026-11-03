@@ -33,7 +33,7 @@ try {
   await E(`(async()=>{const {LEVELS}=await import('/src/level.js');window.__LV=LEVELS;window.__IDX=LEVELS.findIndex(l=>l.id==='arena_yard');
     const AYm=await import('/src/arena-yard.js');window.__AY=AYm;
     const clearK=()=>{for(const k in BK.keys)BK.keys[k]=false;};
-    window.__go=(h,extra)=>{clearK();BK.setHero(h);BK.reset({fresh:true});BK.applyUpgrades();BK.load(__IDX);BK.start();BK.god=false;if(extra)extra();BK.sim(30);};
+    window.__go=(h,extra)=>{BK.manualSimulation=true;clearK();BK.setHero(h);BK.reset({fresh:true});BK.applyUpgrades();BK.load(__IDX);BK.start();BK.god=false;if(extra)extra();BK.sim(30);};
     window.__Y=()=>BK.yard();
     window.__foe=t=>BK.enemies().filter(e=>e.t===t).sort((a,b)=>a.x-b.x);
     window.__fresh=()=>{for(const p of BK.players()){p.st=p.maxSt;}};
@@ -190,9 +190,10 @@ try {
   if (WANT.includes('entry')) {
     console.log('entry');
     const r = await E(`(async()=>{const out={};
+      BK.manualSimulation=false;await new Promise(r=>setTimeout(r,800));   /* the entry paths run the REAL (async) loads, one at a time */
       const rows=await import('/src/level.js');
       BK.setHero('knight');BK.reset({fresh:true});BK.applyUpgrades();
-      const at=()=>BK.L?(BK.L.arenaYard?'yard':BK.L.tavern?'inn':BK.L.trial?'trial':'other'):'none';
+      const LSm=(await import('/src/loading-screen.js')).LS;const at=()=>BK.L&&BK.state==='play'&&!LSm.state.busy?(BK.L.arenaYard?'yard':BK.L.tavern?'inn':BK.L.trial?'trial':'other'):'none';   /* (play and the loading screen idle: a load still finishing its bake is not there yet - the next load must not overlap it) */
       await BK.tavern.enter();BK.sim(30);out.inn=at();
       BK.tavern.use('practice',1);for(let i=0;i<400&&at()!=='yard';i++){BK.sim(1);await new Promise(r=>setTimeout(r,5));}out.fromInn=at();out.innFlag=BK.yard().inn();
       BK.sim(20);out.players=BK.players().length;
