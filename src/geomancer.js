@@ -40,7 +40,7 @@ export const GEO = {
      crack is half that (mul0/mulK), and the full wind's spike is the big hit (spikeMul), so a foe at its tip takes about what it did
      and a crowd along it takes half. */
   wind: 0.5,
-  fault: { len0: 22, lenK: 138, speed: 520, mul0: 1.0, mulK: 0.4, fullAt: 0.98, spikeMul: 1.6, spikeVy: -360, spikeVyTall: -440, linger: 0.35 },
+  fault: { len0: 22, lenK: 138, speed: 520, mul0: 0.8, mulK: 0.35, fullAt: 0.98, spikeMul: 1.6, spikeVy: -360, spikeVyTall: -440, linger: 0.35 },
   /* (claude/chargetiers, Daniel 10-21 "each tier a DIFFERENT move ... the pillar ... should ease her stamina wall") THE THREE-TIER STAVE. at = s of WIND (past HEAVY_START, x her
      wind's quickness) each tier arrives at - T2 is the old full wind; let go BEFORE T1 and it is the short crack it always was (it hits what touches her).
        T1 STONE SHARD   a shard of stone flung flat ahead at chest height (shard: px/s, its own blow) - it reaches what the crack cannot: a flyer, a shooter on a ledge; HALF the

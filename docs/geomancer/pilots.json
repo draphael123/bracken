@@ -142,89 +142,84 @@
    {
     "id": "wood",
     "stats": {
-     "size": "528x28",
-     "reached": "82%",
-     "foes": 53,
-     "threat": 90,
-     "kinds": 10,
-     "checks": 12,
-     "worstGap": 65,
-     "haz": 12,
-     "thr100": 17,
-     "index": 71,
+     "size": "550x28",
+     "reached": "100%",
+     "foes": 62,
+     "threat": 115,
+     "kinds": 12,
+     "checks": 5,
+     "worstGap": 109,
+     "haz": 2,
+     "thr100": 20.9,
+     "index": 84,
      "fell": 0,
-     "walked": "41%",
+     "walked": "7%",
      "deaths": 0,
-     "kills": 14,
+     "kills": 0,
      "hp": 95,
-     "hits": 2
+     "hits": 0
     },
     "findings": [
-     "1 ASSISTED: a silver is outside the fill",
-     "1 ASSISTED: a checkpoint is outside the fill",
-     "1 ASSISTED: THE GATE is outside the fill",
-     "1 ASSISTED: a checkpoint is outside the fill",
-     "1 ASSISTED: 29 coins outside the fill",
-     "2 STUCK: a plain run could not get past 1 place(s)",
-     "2 BRUTAL: the bot died 0 times and still only got 41% of the way"
+     "1 ASSISTED: 3 coins outside the fill",
+     "1 UNWEIGHED: no threat weight for \"pushblock\"",
+     "2 STUCK: the bot reached 7% and was neither killed nor lifted: it swims, rides and opens doors, but not well - look by hand"
     ]
    },
    {
     "id": "marsh",
     "stats": {
-     "size": "502x28",
-     "reached": "6%",
-     "foes": 50,
-     "threat": 86,
-     "kinds": 11,
-     "checks": 10,
-     "worstGap": 62,
+     "size": "783x28",
+     "reached": "5%",
+     "foes": 73,
+     "threat": 133,
+     "kinds": 12,
+     "checks": 6,
+     "worstGap": 150,
      "haz": 0,
-     "thr100": 17.1,
-     "index": 70,
+     "thr100": 16.9,
+     "index": 77,
      "fell": 0,
-     "walked": "13%",
-     "deaths": 3,
-     "kills": 5,
+     "walked": "10%",
+     "deaths": 1,
+     "kills": 3,
      "hp": 95,
-     "hits": 18
+     "hits": 4
     },
     "findings": [
-     "1 ASSISTED: a checkpoint is outside the fill",
-     "1 ASSISTED: a checkpoint is outside the fill",
-     "1 ASSISTED: the relic is outside the fill",
+     "2 FLOAT: sign stands on nothing",
+     "2 FLOAT: sign stands on nothing",
+     "2 FLOAT: sign stands on nothing",
      "1 ASSISTED: a checkpoint is outside the fill",
      "1 ASSISTED: a checkpoint is outside the fill",
      "1 ASSISTED: a silver is outside the fill",
      "1 ASSISTED: a checkpoint is outside the fill",
-     "1 ASSISTED: a checkpoint is outside the fill"
+     "1 ASSISTED: a silver is outside the fill"
     ]
    },
    {
     "id": "stockade",
     "stats": {
-     "size": "494x28",
-     "reached": "95%",
-     "foes": 32,
-     "threat": 84,
-     "kinds": 11,
-     "checks": 11,
-     "worstGap": 57,
+     "size": "618x28",
+     "reached": "98%",
+     "foes": 56,
+     "threat": 135,
+     "kinds": 12,
+     "checks": 6,
+     "worstGap": 109,
      "haz": 2,
-     "thr100": 16.9,
-     "index": 70,
+     "thr100": 21.8,
+     "index": 85,
      "fell": 0,
-     "walked": "29%",
+     "walked": "23%",
      "deaths": 0,
-     "kills": 4,
+     "kills": 6,
      "hp": 95,
      "hits": 1
     },
     "findings": [
-     "1 ASSISTED: 21 coins outside the fill",
-     "2 RUNTIMEFLOAT: sprig floating",
+     "1 ASSISTED: 5 coins outside the fill",
      "2 STUCK: a plain run could not get past 1 place(s)",
-     "2 BRUTAL: the bot died 0 times and still only got 29% of the way"
+     "2 BRUTAL: the bot died 0 times and still only got 23% of the way"
     ]
    }
   ],
@@ -232,88 +227,85 @@
    {
     "id": "wood",
     "stats": {
-     "size": "528x28",
-     "reached": "82%",
-     "foes": 53,
-     "threat": 90,
-     "kinds": 10,
-     "checks": 12,
-     "worstGap": 65,
-     "haz": 12,
-     "thr100": 17,
-     "index": 71,
+     "size": "550x28",
+     "reached": "100%",
+     "foes": 62,
+     "threat": 115,
+     "kinds": 12,
+     "checks": 5,
+     "worstGap": 109,
+     "haz": 2,
+     "thr100": 20.9,
+     "index": 84,
      "fell": 0,
-     "walked": "41%",
+     "walked": "15%",
      "deaths": 0,
-     "kills": 15,
-     "hp": 100,
-     "hits": 1
+     "kills": 1,
+     "hp": 69,
+     "hits": 2
     },
     "findings": [
-     "1 ASSISTED: a silver is outside the fill",
-     "1 ASSISTED: a checkpoint is outside the fill",
-     "1 ASSISTED: THE GATE is outside the fill",
-     "1 ASSISTED: a checkpoint is outside the fill",
-     "1 ASSISTED: 29 coins outside the fill",
+     "1 ASSISTED: 3 coins outside the fill",
+     "1 UNWEIGHED: no threat weight for \"pushblock\"",
      "2 STUCK: a plain run could not get past 1 place(s)",
-     "2 BRUTAL: the bot died 0 times and still only got 41% of the way"
+     "2 BRUTAL: the bot died 0 times and still only got 15% of the way"
     ]
    },
    {
     "id": "marsh",
     "stats": {
-     "size": "502x28",
-     "reached": "6%",
-     "foes": 50,
-     "threat": 86,
-     "kinds": 11,
-     "checks": 10,
-     "worstGap": 62,
+     "size": "783x28",
+     "reached": "5%",
+     "foes": 73,
+     "threat": 133,
+     "kinds": 12,
+     "checks": 6,
+     "worstGap": 150,
      "haz": 0,
-     "thr100": 17.1,
-     "index": 70,
+     "thr100": 16.9,
+     "index": 77,
      "fell": 0,
-     "walked": "14%",
-     "deaths": 3,
-     "kills": 5,
-     "hp": 87,
-     "hits": 19
+     "walked": "10%",
+     "deaths": 1,
+     "kills": 2,
+     "hp": 100,
+     "hits": 4
     },
     "findings": [
-     "1 ASSISTED: a checkpoint is outside the fill",
-     "1 ASSISTED: a checkpoint is outside the fill",
-     "1 ASSISTED: the relic is outside the fill",
+     "2 FLOAT: sign stands on nothing",
+     "2 FLOAT: sign stands on nothing",
+     "2 FLOAT: sign stands on nothing",
      "1 ASSISTED: a checkpoint is outside the fill",
      "1 ASSISTED: a checkpoint is outside the fill",
      "1 ASSISTED: a silver is outside the fill",
      "1 ASSISTED: a checkpoint is outside the fill",
-     "1 ASSISTED: a checkpoint is outside the fill"
+     "1 ASSISTED: a silver is outside the fill"
     ]
    },
    {
     "id": "stockade",
     "stats": {
-     "size": "494x28",
-     "reached": "95%",
-     "foes": 32,
-     "threat": 84,
-     "kinds": 11,
-     "checks": 11,
-     "worstGap": 57,
+     "size": "618x28",
+     "reached": "98%",
+     "foes": 56,
+     "threat": 135,
+     "kinds": 12,
+     "checks": 6,
+     "worstGap": 109,
      "haz": 2,
-     "thr100": 16.9,
-     "index": 70,
+     "thr100": 21.8,
+     "index": 85,
      "fell": 0,
-     "walked": "29%",
+     "walked": "23%",
      "deaths": 0,
      "kills": 4,
-     "hp": 100,
-     "hits": 1
+     "hp": 87,
+     "hits": 3
     },
     "findings": [
-     "1 ASSISTED: 21 coins outside the fill",
+     "1 ASSISTED: 5 coins outside the fill",
      "2 STUCK: a plain run could not get past 1 place(s)",
-     "2 BRUTAL: the bot died 0 times and still only got 29% of the way"
+     "2 BRUTAL: the bot died 0 times and still only got 23% of the way"
     ]
    }
   ]
@@ -321,43 +313,43 @@
  "boss": [
   {
    "lvl": "wood",
-   "boss": "queen",
+   "boss": "oldtusker",
    "h": "knight",
-   "outcome": "win",
-   "killed": true,
-   "secs": 75,
-   "hpLeftPct": 0,
-   "takenPerMin": 138
+   "outcome": "timeout",
+   "killed": false,
+   "secs": 120,
+   "hpLeftPct": 30,
+   "takenPerMin": 88
   },
   {
    "lvl": "wood",
-   "boss": "queen",
+   "boss": "oldtusker",
    "h": "warden",
-   "outcome": "win",
-   "killed": true,
-   "secs": 88.5,
-   "hpLeftPct": 0,
-   "takenPerMin": 85
+   "outcome": "timeout",
+   "killed": false,
+   "secs": 120,
+   "hpLeftPct": 6,
+   "takenPerMin": 19
   },
   {
    "lvl": "wood",
-   "boss": "queen",
+   "boss": "oldtusker",
    "h": "geomancer",
-   "outcome": "win",
-   "killed": true,
-   "secs": 43.5,
-   "hpLeftPct": 0,
-   "takenPerMin": 68
+   "outcome": "timeout",
+   "killed": false,
+   "secs": 120,
+   "hpLeftPct": 3,
+   "takenPerMin": 64
   },
   {
    "lvl": "kings",
    "boss": "king",
    "h": "knight",
-   "outcome": "win",
-   "killed": true,
-   "secs": 23.6,
-   "hpLeftPct": 0,
-   "takenPerMin": 36
+   "outcome": "timeout",
+   "killed": false,
+   "secs": 120,
+   "hpLeftPct": 34,
+   "takenPerMin": 116
   },
   {
    "lvl": "kings",
@@ -365,9 +357,9 @@
    "h": "warden",
    "outcome": "win",
    "killed": true,
-   "secs": 18.7,
+   "secs": 96.1,
    "hpLeftPct": 0,
-   "takenPerMin": 0
+   "takenPerMin": 74
   },
   {
    "lvl": "kings",
@@ -375,39 +367,39 @@
    "h": "geomancer",
    "outcome": "win",
    "killed": true,
-   "secs": 34.6,
+   "secs": 89.1,
    "hpLeftPct": 0,
-   "takenPerMin": 0
+   "takenPerMin": 130
   },
   {
    "lvl": "spire",
    "boss": "abbot",
    "h": "knight",
-   "outcome": "win",
-   "killed": true,
-   "secs": 80,
-   "hpLeftPct": 0,
-   "takenPerMin": 83
+   "outcome": "timeout",
+   "killed": false,
+   "secs": 120,
+   "hpLeftPct": 86,
+   "takenPerMin": 152
   },
   {
    "lvl": "spire",
    "boss": "abbot",
    "h": "warden",
-   "outcome": "win",
-   "killed": true,
-   "secs": 60.6,
-   "hpLeftPct": 0,
-   "takenPerMin": 37
+   "outcome": "timeout",
+   "killed": false,
+   "secs": 120,
+   "hpLeftPct": 69,
+   "takenPerMin": 95
   },
   {
    "lvl": "spire",
    "boss": "abbot",
    "h": "geomancer",
-   "outcome": "win",
-   "killed": true,
-   "secs": 58,
-   "hpLeftPct": 0,
-   "takenPerMin": 0
+   "outcome": "timeout",
+   "killed": false,
+   "secs": 120,
+   "hpLeftPct": 88,
+   "takenPerMin": 127
   }
  ]
 }
