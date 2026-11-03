@@ -83,7 +83,7 @@ try {
       const reset = keep => { e.x = home; e.y = fy; e.vx = 0; e.alive = true; if (!keep) e.hp = e.hp0 || e.hp; e.st = null; H.reset(); BK.P.x = standX; BK.P.y = fy; BK.P.vx = 0; BK.P.vy = 0; BK.P.face = 1; for (let i = 0; i < 120 && !e.st; i++) BK.sim(1); e.st.throwCd = 0.2; };
       /* ONE THROW: how = 'timed' (a held blade begun as the fire reaches his reach), 'mash' (a blade begun every time the last one ends), 'flare' (the pyromancer's down) */
       const throwAs = (how, keep) => { reset(keep); BK.god = false; BK.P.hp = BK.P.maxHp; BK.P.inv = 0; const hp0 = BK.P.hp; let pressed = 0, ret = false, caught = false, burned = false, idle = 0, saw = false;
-        for (let i = 0; i < 60 * 6; i++) { BK.P.inv = 0; none(); hold(); const b = H.balls[0]; if (b) saw = true;
+        for (let i = 0; i < 60 * 8; i++) { BK.P.inv = 0; none(); hold();   /* (8 s, not 6: claude/geotune's fist launches a foe and it sits ~1.7 s before it acts - the fire is still told, thrown and struck back on the same beats) */ const b = H.balls[0]; if (b) saw = true;
           if (how === 'mash') { if (BK.P.atk < 0) { BK.press('atk'); pressed++; } }
           else if (how === 'flare') { if (b && !b.ret && !pressed && b.x - BK.P.x <= 40) { K.block = true; pressed = 1; } }   /* (claude/pyrokit: the flare is THE FLAME WARD now - a one-frame tap of C as the fire comes; the 0.45 s ward meets it) */
           else if (b && !b.ret && !pressed && b.x - BK.P.x <= 28 && b.x - BK.P.x >= 12) { BK.press('atk'); pressed++; }
