@@ -10459,7 +10459,7 @@
   }
  },
  "rookery": {
-  "hash": "c1a7a9bb03c6",
+  "hash": "5d6586808301",
   "boss": {
    "boss": "shrieksisters",
    "wins": 0,
@@ -10560,19 +10560,19 @@
    ]
   },
   "carried": {
-   "from": "3c07c53af25a",
+   "from": "c1a7a9bb03c6",
    "parts": [
     "boss"
    ]
   },
   "level": {
    "knight": {
-    "deaths": 1,
+    "deaths": 2,
     "minHpPct": 0,
-    "hpLostPct": 120,
-    "hits": 10,
+    "hpLostPct": 220,
+    "hits": 13,
     "walked": 100,
-    "lifts": 35,
+    "lifts": 37,
     "held": 0,
     "duels": 0,
     "boardLifts": 0,
@@ -10580,17 +10580,17 @@
     "pulls": 0,
     "ridden": {},
     "machines": true,
-    "frames": 9870,
-    "kills": 3,
+    "frames": 9967,
+    "kills": 5,
     "heroLevel": 14
    },
    "warden": {
     "deaths": 1,
     "minHpPct": 0,
-    "hpLostPct": 176,
-    "hits": 12,
+    "hpLostPct": 114,
+    "hits": 9,
     "walked": 100,
-    "lifts": 36,
+    "lifts": 37,
     "held": 0,
     "duels": 0,
     "boardLifts": 0,
@@ -10598,17 +10598,17 @@
     "pulls": 0,
     "ridden": {},
     "machines": true,
-    "frames": 9864,
+    "frames": 9974,
     "kills": 5,
     "heroLevel": 14
    },
    "pyro": {
     "deaths": 1,
     "minHpPct": 0,
-    "hpLostPct": 110,
+    "hpLostPct": 151,
     "hits": 9,
     "walked": 100,
-    "lifts": 36,
+    "lifts": 34,
     "held": 0,
     "duels": 0,
     "boardLifts": 0,
@@ -10616,8 +10616,8 @@
     "pulls": 0,
     "ridden": {},
     "machines": true,
-    "frames": 9746,
-    "kills": 8,
+    "frames": 9669,
+    "kills": 5,
     "heroLevel": 14
    }
   }
