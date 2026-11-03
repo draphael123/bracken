@@ -542,6 +542,7 @@ export const SFX = {
   gaspTick() { if (!gate('gaspTick', 0.4)) return; tone('sine', 420, 230, 0.16, 0.045); tone('triangle', 260, 150, 0.2, 0.025); },   /* (claude/underwater) OUT OF BREATH: a soft, low tick of a gasp - not a hurt sound, there is no blow behind it */
   breathIn() { if (!gate('breathIn', 0.5)) return; tone('sine', 220, 520, 0.12, 0.07); noise(0.18, 0.05, 900, 1.2); for (let i = 0; i < 3; i++) tone('sine', 640 + i * 170, 980 + i * 210, 0.05, 0.035, 0.1 + i * 0.05); },   /* THE DEEP: a lungful taken back after a held breath - a gulp, and the bubbles off it */
   laugh() { file('laugh', 0.3, 1.4); },
+  cheer() { noise(0.9, 0.1, 1700, 0.7); noise(0.7, 0.08, 900, 0.8, 0.12); for (let i = 0; i < 5; i++) tone('sawtooth', 240 + i * 37, 300 + i * 41, 0.55, 0.012, i * 0.05); tone('triangle', 520, 700, 0.5, 0.03, 0.08); },   /* (claude/arenayardart) THE CROWD ROARS on a PERFECT: a swell of hush and voices */
   sting() { [659, 784, 988, 1319, 1568].forEach((f, i) => tone('triangle', f, f, 0.35, 0.16, i * 0.07)); },
   thunder() { noise(1.2, 0.5, 120, 0.4); tone('sine', 60, 30, 1.0, 0.35); },
   croak() { tone('sawtooth', 70, 110, 0.35, 0.28); tone('square', 140, 90, 0.3, 0.1, 0.05); },

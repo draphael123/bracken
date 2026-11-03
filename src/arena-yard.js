@@ -35,6 +35,9 @@ export function buildArenaYard({ painter, T }) {
   for (const s of STATIONS) ent('sign', s.at, gy, { text: s.sign });
   for (const x of [20, 40, 64, 80, 100, 118, 136, 156]) ent('torch', x, gy);
   for (const x of BARRIERS) ent('deco', x, gy, { kind: 'arenaBarrier', v: x % 2 });
+  for (const x of [12, 29, 56, 90, 126]) ent('deco', x, gy, { kind: 'pennonPole', v: x & 1 });   /* (claude/arenayardart) arena dressing, deco only: pennon poles on the rails, practice racks, two braziers */
+  for (const x of [15, 75, 97, 114, 133]) ent('deco', x, gy, { kind: 'weaponRack' });
+  for (const x of [6, 142]) ent('deco', x, gy, { kind: 'brazier' });
   ent('deco', SPOTS.board, gy, { kind: 'moveBoard' }); ent('deco', SPOTS.door, gy, { kind: 'trialsDoor' }); ent('deco', SPOTS.leave, gy, { kind: 'leaveGate' });
   // ---- the straw row: three men on the floor ----
   for (const x of [18, 22, 26]) ent('dummy', x, gy);
@@ -61,8 +64,8 @@ export function buildArenaYard({ painter, T }) {
   ent('sign', 160, gy, { text: 'THE YARD ENDS HERE. BACK TO THE GATE FOR THE BOARD, THE TRIALS AND THE WAY OUT.' });
   return {
     W, H, grid: L.grid, ents: L.ents, START: { x: SPOTS.start, y: gy }, pools: [], falls: [], moversExtra: [], interiors: [],
-    openYard: true, arenaYard: { stations: STATIONS, spots: SPOTS }, duskStart: -1, duskLen: 1, music: 'select', reachExact: true, noCoin: true,
-    palette: { sky: 'autumn', near: 'autumn', dress: 'wood', haze: 'rgba(200,120,80,0.12)', grass: '#6a8a3a', grassL: '#9ac050', grassD: '#3a5a24', dirt: '#4a3020', dirtL: '#5e3f2a', dirtD: '#2c1a10' },
+    openYard: true, arenaYard: { stations: STATIONS, spots: SPOTS, floor: AY.FLOOR, gate: [2, 13] }, duskStart: -1, duskLen: 1, music: 'select', reachExact: true, noCoin: true,
+    palette: { set: 'arena', sky: 'autumn', near: 'none', noFg: true, noNear: true, dress: 'arena', haze: 'rgba(200,120,80,0.12)', grass: '#6a8a3a', grassL: '#9ac050', grassD: '#3a5a24', dirt: '#34302a', dirtL: '#524c44', dirtD: '#24201c' },
   };
 }
 
@@ -102,7 +105,7 @@ export function makeArenaYard(api) {
   function grade(g, p, foeX) {
     if (!g) return; const G = GRADE[g]; st.stats[g.toLowerCase()]++; st.last = { g, t: api.time() };
     api.nums(p.x, p.y - 38, G.txt, G.col);
-    if (g === 'PERFECT') { st.cheer = 1; st.cheerAt = api.time(); api.sfx('sting'); }
+    if (g === 'PERFECT') { st.cheer = 1; st.cheerAt = api.time(); api.sfx('cheer'); api.sfx('sting'); }
   }
   function tick(dt) {
     if (!on()) { st.board = null; return; } st.cheer = Math.max(0, st.cheer - dt);

@@ -109,6 +109,7 @@ import * as PM from './puppeteer.js'; import { makePuppeteerHands } from './pupp
 import { makeGuardian, TG as TGN } from './temple-guardian.js'; let TGM = null;   /* THE TEMPLE GUARDIAN, reworked (claude/monastery2): bells and its own blocks stagger it, bigger, off the x0.05 chip */
 import * as MCA from './redraw/minecart_art.js'; import * as LEM from './lantern-eater.js'; import { makeLanternEaterHands } from './lantern-eater-hands.js'; import { bakeCard as bakeLanternEaterCard } from './redraw/lanterneater_art.js'; let LEH = null;   /* THE LANTERN-EATER (claude/lanterneater, Daniel 10-07): THE FOG CANAL's boss on the raft - src/lantern-eater.js the fight, src/lantern-eater-hands.js its hands, src/redraw/lanterneater_art.js the art. (JENNY GREENTEETH, the boss before it, is benched unwired in src/benched/ - saved for a future mini) */
 import { makeWellTownHands } from './well-town-hands.js'; import * as WTA from './redraw/welltown_art.js'; let WTH = null;   /* THE WELL TOWN (claude/welltown): its hands (the skin, mud, fire, the windlass, the dry cistern, the water-thief) */ import * as GLM from './gang-leader.js'; import { bakeGangLeader } from './redraw/gang_leader_art.js'; import * as CQG from './cistern-queen.js'; import { makeCisternQueenHands } from './cistern-queen-hands.js'; import { venomIcon, drawVenomIcon } from './venom-hud.js';   /* (claude/welltown-polish) THE VENOM ICON under the stamina bar: a drop a stack */ import * as CQA from './redraw/cistern_queen_art.js'; let GLH = null, CQH = null; import * as DJG from './djinn.js'; import { makeDjinnHands } from './djinn-hands.js'; import * as DJA from './redraw/djinn_art.js'; let DJH = null;   /* (claude/welltown5) THE DJINN OF THE GREAT WELL, the town's boss (src/djinn.js the fight, src/djinn-hands.js its hands); the Queen is benched, still wired */   /* (claude/welltown3) THE GANG LEADER, the courtyard's mini (src/gang-leader.js), and THE CISTERN QUEEN, the town's boss (src/cistern-queen.js the fight, src/cistern-queen-hands.js its hands) */
+import * as ART_AR from './redraw/arena_tiles.js'; import * as ARB from './redraw/arena_backdrop.js'; import * as ARP from './redraw/arena_props.js';   /* (claude/arenayardart) THE ARENA SET: sand, ashlar, oak, the crowd stand and its props (src/redraw/arena_*.js) */
 import * as WTT from './redraw/welltown_tiles.js'; import * as WTB from './redraw/welltown_backdrop.js'; import * as TVT from './redraw/tavern_tiles.js'; import * as TVB from './redraw/tavern_backdrop.js'; import * as TVA from './tavern-art.js';   /* (claude/tavernart) THE CROSSROADS INN's art: its tile kit, its room (wall, fire, window, tables, bar, yard) and its stations, rings and tags */   /* THE WELL TOWN's tile kit and backdrop (claude/welltown3-art) */
 import * as ZL from './zipline.js';   /* (stormhold4) */ import * as HL from './haul-lines.js'; import * as BGATE from './bell-gate.js';   /* THE ZIP LINE (src/zipline.js) */
 import { makeGuide, NUDGE as STUCK_NUDGE } from './stuck-guide.js'; let STK = null;   /* THE SHARED GLINT + STALL NUDGE + WAY-ARROW FEED (claude/stuckfix, src/stuck-guide.js; the route list is src/stuck-spots.js) */
@@ -1388,6 +1389,7 @@ function resolveTiles() {
     if (L.hornetsNest && (t === T.SOLID || t === T.ONEWAY || t === T.SPIKE)) { const ts = HNT.hnTile(t, x, y, tileAt, T, L); if (ts) { tileSpr[y * LW + x] = ts; tileDeep[y * LW + x] = 0; continue; } }   /* (claude/hornetsnestart) THE HORNET'S NEST's kit: paper shells, comb footing, wax, bark, needle litter (src/redraw/hornets_nest_tiles.js) */
     if (L.lumberKit && L.fellSet && L.fellSet.has(y * LW + x)) { tileSpr[y * LW + x] = null; tileDeep[y * LW + x] = 0; continue; }   /* (claude/lumbertrailart) a felled pine's ramp/plank cells are its trunk (drawn as the trunk), never stepped log stubs */
     if (L.lumberKit && (t === T.SOLID || t === T.ONEWAY)) { const ts = LTT.lumberTile(t, x, y, tileAt, T, L); if (ts) { tileSpr[y * LW + x] = ts; tileDeep[y * LW + x] = solidish(x, y) ? groundDeep[y * LW + x] : 0; continue; } }   /* (claude/lumbertrailart) THE LUMBER TRAIL's tile kit: stumps, corduroy, rock, gravel, the camp's yard, log stacks, the hollow log, log decks */
+    if (L.arenaYard && (t === T.SOLID || t === T.ONEWAY || t === T.NET)) { const ts = ART_AR.arenaTile(t, x, y, tileAt, T, L); if (ts) { tileSpr[y * LW + x] = ts; tileDeep[y * LW + x] = 0; continue; } }   /* (claude/arenayardart) THE ARENA SET's sand, ashlar, oak planks and climbing net */
     if (L.tavern && t === T.SOLID) { const ts = TVT.tavernTile(t, x, y, tileAt, T, L); if (ts) { tileSpr[y * LW + x] = ts; continue; } }   /* THE CROSSROADS INN's own floor, cellar, ceiling and corner posts (claude/tavernart, src/redraw/tavern_tiles.js) */
     if (L.frogCourt && t === T.SOLID) { const ts = FCA.tile(t, x, y, tileAt, T, L); if (ts) { tileSpr[y * LW + x] = ts; tileDeep[y * LW + x] = 0; continue; } }   /* (claude/frogking2art) the three ROYAL PADS (giant leaves on stems) */
     if (L.marsh3 && (t === T.SOLID || t === T.PORT)) { const ts = M3A.tile(t, x, y, tileAt, T, L); if (ts) { tileSpr[y * LW + x] = ts; tileDeep[y * LW + x] = 0; continue; } }   /* (claude/marsh3art) the reed stands and the log boom */
@@ -7377,14 +7379,10 @@ function yardWatch() {
     let who = null, bd = 64; for (const q of players) { if (q.dead || q.down > 0 || !yardGuarding(q)) continue; const d = Math.abs(q.x - sd.x) + Math.abs((q.y - 8) - sd.y) * 0.6; if (d < bd) { bd = d; who = q; } }
     if (!who) continue; sd.yGraded = true; YARD.grade(moved || sd.reflected ? 'PERFECT' : 'GOOD', who); }
 }
-/* PLACEHOLDER ART (the ART lane draws the arena set over these ids): an oak rail between stations, the move board, the trials door, the leave gate */
+/* THE ARENA SET's props (src/redraw/arena_props.js): the rails, racks, pennon poles, braziers, the move board, the trials door and the gate out; a prop a hero stands at brightens */
 function drawYardProps(cx, cy) {
-  const fy = 22 * TS - cy;
-  for (const c of [12, 29, 45, 56, 70, 90, 108, 126]) { const x = c * TS - cx; if (x < -20 || x > VW + 20) continue; g.fillStyle = '#5e4630'; g.fillRect(x - 6, fy - 12, 2, 12); g.fillRect(x + 6, fy - 12, 2, 12); g.fillRect(x - 6, fy - 10, 14, 2); g.fillRect(x - 6, fy - 5, 14, 2); }
-  const sx = c => c * TS + 8 - cx;
-  { const x = sx(8); g.fillStyle = '#3a2a1c'; g.fillRect(x - 12, fy - 26, 24, 18); g.fillStyle = '#7a5a38'; g.fillRect(x - 11, fy - 25, 22, 16); g.fillStyle = '#e8e2cc'; g.fillRect(x - 8, fy - 21, 16, 2); g.fillRect(x - 8, fy - 17, 12, 2); g.fillRect(x - 8, fy - 13, 14, 2); g.fillStyle = '#3a2a1c'; g.fillRect(x - 8, fy - 8, 2, 8); g.fillRect(x + 6, fy - 8, 2, 8); }
-  { const x = sx(3); g.fillStyle = '#2a2018'; g.fillRect(x - 9, fy - 30, 18, 30); g.fillStyle = '#ffd36b'; g.fillRect(x - 6, fy - 26, 12, 26); g.fillStyle = '#4a3020'; g.fillRect(x - 5, fy - 24, 10, 24); }
-  { const x = sx(11); g.fillStyle = '#5e4630'; g.fillRect(x - 10, fy - 30, 3, 30); g.fillRect(x + 7, fy - 30, 3, 30); g.fillRect(x - 10, fy - 30, 20, 3); g.fillStyle = '#8fd160'; g.fillRect(x - 7, fy - 27, 14, 1); }
+  const near = new Set(); if (YARD) for (const p of players) { const s = YARD.st.near.get(p); if (s) near.add(s); }
+  ARP.drawArenaProps(g, L.ents, cx, cy, VW, VH, time, { near, cheer: YARD ? YARD.st.cheer : 0 });
   if (YARD) for (const p of players) { const s = YARD.st.near.get(p); if (s && !(YARD.st.board && YARD.st.board.p === p)) text('UP: ' + YARD.VERB[s], p.x - cx, p.y - cy - 34 + Math.round(Math.sin(time * 5) * 2), '#ffd36b', 'center', 6); }
 }
 YARD = makeArenaYard({ TS, L: () => L, players: () => players, time: () => time, nums: (x, y, txt, col) => nums.push({ x, y, txt, col, life: 0.9, vy: -38 }),   /* (the grade words float even where SET.numbers is off: they are the yard's whole point) */
@@ -9286,7 +9284,7 @@ function surface() { // what is underfoot, for the step and the landing
   if (L.dark || (L.stone || []).some(z => tx >= z[0] && tx <= z[1] && ty >= z[2] && ty <= z[3]) || pal.hall) return 'stone';
   if (dress === 'crag') return pal.set ? 'stone' : 'gravel';   /* the crag outside its paved zones: scree and shingle (a built crag - Stormhold's village set - stays stone) */
   if (dress === 'ship') return 'wood';   /* a deck */
-  if (pal.set === 'desert' || dress === 'desert' || L.sandWalk || dress === 'shore' || pal.set === 'shore') return 'sand';
+  if (pal.set === 'desert' || pal.set === 'arena' || dress === 'desert' || L.sandWalk || dress === 'shore' || pal.set === 'shore') return 'sand';
   if (dress === 'marsh') return 'mud';
   if (dress === 'village' || dress === 'camp' || dress === 'fair' || dress === 'battlefield') return 'dirt';
   if (dress === 'canal') return 'stone';
@@ -32178,7 +32176,7 @@ function updateParticles(dt) {
   fireflies = fireflies.filter(f => f.life > 0 && f.x > camX - 20 && f.x < camX + VW + 20);
   const autumn = L.palette && L.palette.near === 'autumn';
   /* nothing on THE UNBURIED FIELD has leaves to drop (look pass 2026-09-24): what comes down over it is ash off the old fires, and an ember now and then */
-  const leafCols = L.glasssea ? ['#e6fff6', '#9ae8d0', '#ffffff', '#b8f4e0', '#8af0ff'] : L.palette && L.palette.dress === 'battlefield' ? ['#8a8278', '#6a625c', '#a8a098', '#b0603a'] : autumn ? ['#d9782a', '#c9463d', '#e0b040', '#f0a040', '#8a3a1a'] : ['#8fd160', '#e0b040', '#c9463d', '#5aa33e'];
+  const leafCols = L.arenaYard ? ['#e6cc96', '#cfae78', '#f6e6b8', '#d2cab0'] : L.glasssea ? ['#e6fff6', '#9ae8d0', '#ffffff', '#b8f4e0', '#8af0ff'] : L.palette && L.palette.dress === 'battlefield' ? ['#8a8278', '#6a625c', '#a8a098', '#b0603a'] : autumn ? ['#d9782a', '#c9463d', '#e0b040', '#f0a040', '#8a3a1a'] : ['#8fd160', '#e0b040', '#c9463d', '#5aa33e'];
   if (SET.ambient && SET.weather && Math.random() < dt * (autumn ? 9 : 2.5)) leaves.push({ x: camX + Math.random() * (VW + 60) - 30, y: camY - 6, t: Math.random() * 6, life: 9, col: leafCols[(Math.random() * leafCols.length) | 0] });
   for (const l of leaves) { l.t += dt; l.life -= dt; l.y += 22 * dt; l.x += Math.sin(l.t * 2.2) * 18 * dt + 6 * dt; }
   leaves = leaves.filter(l => l.life > 0 && l.y < camY + VH + 10);
@@ -33840,6 +33838,7 @@ function drawWorld(cx, cy, showPlayer) {
   else if (dk > 0) { g.globalAlpha = dk; g.drawImage(BG.skyDusk, 0, 0, 1, VH, 0, 0, VW, VH); g.drawImage(BG.sun, Math.round(VW * 0.7 - cx * 0.03), Math.round(70 - dk * 30 + bgDY(cy) * 0.1)); g.globalAlpha = 1; }
   drawStormClouds(cx, cy); // the weather itself: banks of it at their own speeds, lit from underneath when the sky goes
   if (!L.night && (!(L.weather || []).length || !weatherAt().includes('rain'))) for (const c of clouds) { const x = Math.round(c.x - cx * 0.1), y = Math.round(c.y + bgDY(cy) * 0.05); g.globalAlpha = 0.85; g.drawImage(CLOUD[c.k], ((x % (VW + 160)) + VW + 160) % (VW + 160) - 80, y); g.globalAlpha = 1; }
+  if (L.arenaYard) ARB.drawArenaBack(g, cx, cy, VW, VH, time, { floor: L.arenaYard.floor * TS, cheer: YARD ? YARD.st.cheer : 0, gate: L.arenaYard.gate ? [L.arenaYard.gate[0] * TS, L.arenaYard.gate[1] * TS] : null });   /* (claude/arenayardart) THE ARENA SET's sky, far towers and CROWD STAND (it cheers on a PERFECT: YARD.st.cheer), src/redraw/arena_backdrop.js */
   if (L.sealedpyramid) SPB.drawBackdrop(g, cx, cy, VW, VH, L, time, bgDY(cy));   /* THE SEALED PYRAMID's face: far pyramids and THE APEX with its gilded capstone (claude/spart, src/redraw/sealed_pyramid_backdrop.js) */
   if (L.hornetsNest) HNB.drawBackdrop(g, cx, cy, VW, VH, L, time, bgDY(cy), SET.parallax === 'full');   /* (claude/hornetsnestart) THE HORNET'S NEST's own pine wood, the ancient pine, the nest's paper wall and honey lights, the brood hall's vault (src/redraw/hornets_nest_backdrop.js) */
   if (curId() === 'wood' || curId() === 'marsh') HNB.drawNeighbourPine(g, cx, cy, VW, VH, curId(), bgDY(cy), time);   /* (claude/hornetsnest2) the great pine and its paper nest on the horizon: past the Lumber Trail's clearing (the road climbs on to it), behind MARSH WOOD's start (you came down it) */
@@ -33861,7 +33860,7 @@ function drawWorld(cx, cy, showPlayer) {
     { const gr = g.createLinearGradient(0, 0, 0, VH); gr.addColorStop(0, 'rgba(0,0,0,0.42)'); gr.addColorStop(0.5, 'rgba(0,0,0,0)'); gr.addColorStop(1, 'rgba(0,0,0,0.25)');
       g.fillStyle = gr; g.fillRect(0, 0, VW, VH); }                 /* and the dark closes over the top of it */
   } // under the mountain there is only more mountain
-  else if (SET.parallax !== 'off' && !L.colosseum && !L.sealedpyramid && !L.hornetsNest) { if (L.fields) drawFieldsTower(cx, cy);   /* THE ARCHMAGE'S TOWER, behind the far hills: nearer and brighter the further you go */
+  else if (SET.parallax !== 'off' && !L.colosseum && !L.sealedpyramid && !L.hornetsNest && !L.arenaYard) { if (L.fields) drawFieldsTower(cx, cy);   /* THE ARCHMAGE'S TOWER, behind the far hills: nearer and brighter the further you go */
   /* THE FLOTILLA'S HARBOUR is laid for where her camera lives (a deck twenty rows down a forty-row level), not for the bottom of the
      level: the port's horizon a little over the middle of the frame, the moored hulls under it, and each layer's life laid on it */
   if (L.palette && L.palette.far === 'harbour') { const dY = bgDY(cy);
@@ -33911,7 +33910,7 @@ function drawWorld(cx, cy, showPlayer) {
   if (WCH && WCH.on() && SET.parallax !== 'off') WCH.drawFar(g, cx, cy, VW, VH, time);   /* (claude/warcairnart) HIGHCROWN far below and THE GREAT CAIRN ahead on the skyline */
   if (MRH && MRH.on() && SET.parallax !== 'off') MRH.drawFar(g, cx, cy, VW, VH, time);   /* GALE MOOR: the goblins' windmill frame on the horizon */
   if (L.oreRoad && SET.parallax !== 'off') drawOreBackdrop(g, VW, VH, cx, time, cy);   /* THE ORE ROAD: her castle on its peak, and the far pylons marching to it */   /* THE WITCHLIGHT STAIR: its tower stands in front of the far hills, behind the near ones */
-  if (BG.nearTrees && !L.colosseum && !L.rootway && !L.lumberKit && !L.fenroad && !L.hornetsNest && !L.pwood && !L.rookery && !(L.ul3 && SET.parallax !== 'off') && !(L.sporewood2 && SET.parallax !== 'off')) { g.globalAlpha = 0.85; drawLayer(BG.nearTrees, 0.45, VH - 300, cx, cy); g.globalAlpha = 1; }
+  if (BG.nearTrees && !L.arenaYard && !L.colosseum && !L.rootway && !L.lumberKit && !L.fenroad && !L.hornetsNest && !L.pwood && !L.rookery && !(L.ul3 && SET.parallax !== 'off') && !(L.sporewood2 && SET.parallax !== 'off')) { g.globalAlpha = 0.85; drawLayer(BG.nearTrees, 0.45, VH - 300, cx, cy); g.globalAlpha = 1; }
   if (L.palette && L.palette.near === 'harbour') HB.drawHarbourLayer(g, 'near', BG.near, 0.55, VH - 265, cx, bgDY(cy), time, VW, VH);
   else if (L.hornetsNest) { if (SET.parallax !== 'off') HNB.drawNear(g, cx, cy, VW, VH, L, time, bgDY(cy)); }   /* (claude/hornetsnestart) pollen and boughs outside; wax motes, far hornets and the nest's close warm edge inside */
   else if (L.fenroad) { if (SET.parallax !== 'off') FNB.drawNear(g, cx, cy, VW, VH, L, time, bgDY(cy)); }
