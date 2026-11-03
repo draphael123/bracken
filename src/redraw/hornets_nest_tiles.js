@@ -1,6 +1,6 @@
 // hornets_nest_tiles.js - THE HORNET'S NEST's TILE KIT (claude/hornetsnestart, SONNET over the greybox claude/hornetsnest). ART ONLY: the grid is read for how a cell is DRAWN, never changed.
 //   PAPER   the nest's walls and floors: a wasp's chewed-wood paper laid in overlapping scalloped shells (parchment at the gate, ochre in the comb stair, red-brown at the brood),
-//           honeycomb showing through where the paper is torn, a honey-lit rim on every exposed face, drips under a ceiling
+//           honeycomb showing through where the paper is torn, a resin-lit rim on every exposed face, drips under a ceiling
 //   COMB    every footing the hornets built: a gold hex-cell slab (shelves, perches, the falling nest's ledges - cracked), fresh WAX (the sticky floors: glossy, pale, beaded)
 //   BARK    the ancient pine: its buttress roots, the trunk the nest hangs from (plated bark, deep furrows, resin), the boughs (a limb with needle clusters)
 //   DUFF    the forest floor: a litter of pine needles over dark earth, and the nest's shadow floor (darker, mushroomed with old paper)
@@ -50,7 +50,7 @@ function paperTile(x, y, at, T, L) {
       if (py === 0) return rnd(u, 7, 6) === 0 ? COMB[5] : COMB[4];
       const h = hexAt(u, v); return h === 1 ? COMB[1] : h === 3 ? COMB[4] : h === 2 ? (py === 1 ? COMB[4] : COMB[3]) : COMB[2]; }
     if (eU && py === 5) return COMB[0];
-    /* a ceiling: the shell hangs its scalloped lip and a bead of honey */
+    /* a ceiling: the shell hangs its scalloped lip and a bead of resin */
     if (eD && py > 12) { const sc = Math.round(1.4 * Math.sin(u / 2.6)); if (py - 13 > 1 + sc) { if (py === 15 && rnd(x, y, 5) === 0 && (px === 4 || px === 11)) return COMB[3]; return null; } return py - 13 >= 1 + sc ? P[0] : P[1]; }
     /* the shells: overlapping scallops 8 high, each one lit on its top edge, dark under its lip */
     const k = Math.floor((v + 2) / 8), r = (v + 2) % 8, off = Math.round(1.3 * Math.sin((u + k * 7) / 3.1)), rr = r + off;
@@ -78,7 +78,7 @@ function combShelf(x, y, at, T, L, cracked) {
   const l = at(x - 1, y) === T.ONEWAY, r = at(x + 1, y) === T.ONEWAY, wx = L._hnWax && L._hnWax.has(y * L.W + x);
   return once('cs' + (cracked ? 'c' : '') + (wx ? 'w' : '') + (l ? 1 : 0) + (r ? 1 : 0) + (x & 3) + (y & 1), () => tile((px, py) => {
     const u = x * 16 + px, cap = !l && px < 2, capR = !r && px > 13;
-    if (py > 6) { if (py === 7 && !cap && !capR && rnd(u, y, 6) === 0) return COMB[3];   /* a drip of honey under it */
+    if (py > 6) { if (py === 7 && !cap && !capR && rnd(u, y, 6) === 0) return COMB[3];   /* a drip of resin under it */
       if (py === 8 && !cap && !capR && rnd(u, y, 6) === 0 && rnd(u, y, 12) < 4) return COMB[2]; return null; }
     if ((cap && (px === 0 && (py < 1 || py > 5))) || (capR && (px === 15 && (py < 1 || py > 5)))) return null;
     if (py === 6) return COMB[0];
@@ -127,7 +127,9 @@ function barkTile(x, y, at, T, big) {
     let s = 3; if (col === 0) s = 0; else if (col === 1) s = 4; else if (col === wv - 1) s = 2;
     const cut = (v + hash(plate, 7) % 24) % 24; if (cut === 0) s = 0; else if (cut === 1 && col > 0) s = Math.min(5, s + 1);
     if (hash(u, v) % 10 === 0) s = Math.max(1, s - 1); else if (hash(u, v) % 14 === 0) s = Math.min(5, s + 1);
-    if (hash(plate, v >> 3) % 17 === 0 && col === 2 && (v & 7) < 2) return '#e8b24a';   /* a bead of resin */
+    if (hash(plate, v >> 3) % 17 === 0 && col === 2 && (v & 7) < 2) return '#d09040';   /* a bead of resin */
+    /* a SEEP (nestresin): the bark has split and the pine weeps - a dark crack, then an amber run down two columns of the plate, a pooled bead at its foot (the pine's resin, where the nest's resin comes from) */
+    if (hash(plate, 11) % 10 === 0 && (col === 2 || col === 3)) { const run = (v + hash(plate, 12) % 128) % 128; if (run < 5) return '#1a0a05'; if (run < 52) return col === 2 ? '#b8641e' : '#7a3e12'; if (run < 56) return col === 2 ? '#f0c07a' : '#d98a38'; if (run === 30 && col === 3) return '#1a0a05'; }
     return BARK[s];
   }));
 }

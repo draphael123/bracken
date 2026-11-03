@@ -1421,7 +1421,7 @@ export function bakeHiveBg(seed) {
   for (let i = 0; i < 5; i++) { const x = 20 + ((rnd() * 80) | 0); rect(g, x, 88, 2, 4 + ((rnd() * 5) | 0), '#e0b040'); px(g, x, 93 + ((rnd() * 3) | 0), '#ffe080'); }
   return outline(c, OUT);
 }
-export function bakeHoneyDrip() { return [0, 1, 2].map(f => { const [c, g] = canvas(4, 12); rect(g, 1, 0, 2, 4 + f * 3, '#e0b040'); ellipse(g, 2, 4 + f * 3, 2, 2.5, '#ffd36b', '#e0b040'); px(g, 1, 3 + f * 3, '#fff0a0'); return c; }); }
+export function bakeHoneyDrip() { return [0, 1, 2].map(f => { const [c, g] = canvas(4, 12); rect(g, 1, 0, 2, 4 + f * 3, '#d38830'); ellipse(g, 2, 4 + f * 3, 2, 2.5, '#f6aa50', '#d38830'); px(g, 1, 3 + f * 3, '#f8c47b'); return c; }); }
 // The court: stone frog statues, mossy, and lily lanterns that glow on the water.
 export function bakeFrogStatue(seed) {
   const rnd = mulberry(seed); const [c, g] = canvas(22, 28);
@@ -1956,7 +1956,7 @@ export function bakeCharms() {
 
 
 // ---------- The lower woods: quest items, the woodsman's cabin, the felled pine, the sluice, the siege engine, the puffball nest ----------
-export function bakeHoneyPot() { const [c, g] = canvas(12, 12); rect(g, 3, 4, 6, 6, '#c9a83a'); rect(g, 2, 5, 8, 4, '#e0b040'); rect(g, 4, 2, 4, 3, '#b8a888'); rect(g, 3, 3, 6, 1, '#e8dcc0'); px(g, 3, 6, '#fff6c8'); px(g, 4, 6, '#fff6c8'); return outline(c); }
+export function bakeHoneyPot() { const [c, g] = canvas(12, 12); rect(g, 3, 4, 6, 6, '#8a4a14'); rect(g, 2, 5, 8, 4, '#b8641e'); rect(g, 4, 2, 4, 3, '#a89070'); rect(g, 3, 3, 6, 1, '#c8b896'); px(g, 3, 6, '#f0c07a'); px(g, 4, 6, '#f0c07a'); px(g, 8, 4, '#d98a38'); px(g, 8, 9, '#d98a38'); px(g, 7, 7, '#2a1408'); return outline(c); }   /* (nestresin) a RESIN POT: a clay pot of sap, a run of amber over its lip, a bark fleck caught in the crust */
 export function bakeCoffer() { const [c, g] = canvas(14, 11); rect(g, 2, 4, 10, 5, C.wood); rect(g, 2, 2, 10, 3, C.woodL); rect(g, 2, 4, 10, 1, C.woodD); rect(g, 6, 2, 2, 7, '#7c8797'); px(g, 6, 5, '#e0b040'); px(g, 7, 5, '#e0b040'); return outline(c); }
 export function bakeBrightCap() { const [c, g] = canvas(12, 13); rect(g, 5, 7, 2, 5, '#e8e0d0'); ellipse(g, 6, 5, 4.5, 3.5, '#7fe0e8', '#4aa0b0'); px(g, 4, 3, '#ffffff'); px(g, 5, 3, '#ffffff'); px(g, 8, 5, '#fff6c8'); return outline(c); }
 export function bakeQuestIcon() { const [c, g] = canvas(10, 10); rect(g, 2, 1, 6, 8, '#e8dcc0'); rect(g, 1, 1, 2, 8, '#c9b27c'); rect(g, 7, 1, 2, 8, '#c9b27c'); for (const y of [3, 5, 7]) rect(g, 3, y, 4, 1, '#8a5a32'); return c; }

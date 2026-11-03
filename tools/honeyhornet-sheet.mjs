@@ -1,4 +1,4 @@
-// tools/honeyhornet-sheet.mjs - THE FAT HONEY HORNET's SHEET (claude/hornetsnest2): every pose of HONEY_POSE (src/honey-hornet.js), baked, labelled, at 4x, and its card.
+// tools/honeyhornet-sheet.mjs - THE AMBER HORNET's SHEET (claude/hornetsnest2): every pose of HONEY_POSE (src/honey-hornet.js), baked, labelled, at 4x, and its card.
 // PORT=<port> node tools/honeyhornet-sheet.mjs  ->  work/claude/lane-done/hornetsnest2-honeyhornet-sheet.png
 import { openPage, ROOT } from './cdp.mjs';
 import { mkdirSync, writeFileSync } from 'fs';

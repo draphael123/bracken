@@ -1,11 +1,11 @@
-// src/redraw/hornets_nest_hall.js - THE HONEY HALL (the Hornet Queen's P2), drawn (claude/hornets2art; SONNET over the greybox rects). ART ONLY: every box, timing and number is the
+// src/redraw/hornets_nest_hall.js - THE RESIN HALL (the Hornet Queen's P2), drawn (claude/hornets2art; SONNET over the greybox rects). ART ONLY: every box, timing and number is the
 // hands' (src/hornets-nest-hands.js, src/hornet-queen-hands.js); this draws what they say.
 //   TEAR      the vault ripped open over the royal cell: a ragged hole with the daylight of the pines through it, torn-paper rims and flaps, a beam of light down to the flood
-//   FLOOD     the honey on the floor: a rolling glossy skin that climbs the walls a little, bubbles, sticky threads, drips falling from the tear's lip to ring on it
-//   STALKS    the torn combs and THE LAST COMB hang from the tear on ropes of ragged paper sheathed in honey
+//   FLOOD     the resin on the floor: a rolling glossy skin that climbs the walls a little, bubbles, sticky threads, drips falling from the tear's lip to ring on it
+//   STALKS    the torn combs and THE LAST COMB hang from the tear on ropes of ragged paper sheathed in resin
 //   ROYAL     THE LAST COMB: the royal comb - a halo, a crown medallion, jewelled queen cells, three capped queen cells hanging under it
-//   SPLASH    a comb dropping into the honey: a crown of drops and rings across the flood
-//   PIN       the queen under the comb: the comb drawn back over her hindquarters, honey squeezed out round it, a ring of stars
+//   SPLASH    a comb dropping into the resin: a crown of drops and rings across the flood
+//   PIN       the queen under the comb: the comb drawn back over her hindquarters, resin squeezed out round it, a ring of stars
 import { canvas } from '../px.js';
 
 const memo = new Map(); const once = (k, fn) => { if (!memo.has(k)) memo.set(k, fn()); return memo.get(k); };
@@ -62,40 +62,40 @@ export function flood(g, x0, x1, floorY, cx, cy, time, VW = 640) {
   const xs = Math.max(Math.round(x0 - cx), -4), xe = Math.min(Math.round(x1 - cx), VW + 4), fy = Math.round(floorY - cy);
   for (let x = xs; x < xe; x++) { const wx = x + cx, h = Math.round(crest(wx, time)) + 3, edgeUp = Math.max(0, 5 - Math.min(wx - x0, x1 - wx) / 2.5);   /* a meniscus climbs the walls */
     const top = fy - h - Math.round(edgeUp), slope = crest(wx + 1, time) - crest(wx - 1, time);
-    R(g, '#8a4c08', x, fy - 2, 1, 2);
-    R(g, '#b86c10', x, top + 3, 1, Math.max(1, fy - 2 - top - 3));
-    R(g, '#d88a1a', x, top + 1, 1, 2);
-    R(g, slope < -0.18 ? '#fff0a0' : slope > 0.22 ? '#f0b434' : '#f8c24a', x, top, 1, 1); }
+    R(g, '#76410d', x, fy - 2, 1, 2);
+    R(g, '#9e5a16', x, top + 3, 1, Math.max(1, fy - 2 - top - 3));
+    R(g, '#ba6e20', x, top + 1, 1, 2);
+    R(g, slope < -0.18 ? '#f8c47b' : slope > 0.22 ? '#e38a23' : '#ed9835', x, top, 1, 1); }
   for (let k = 0; k < 6; k++) { const bx0 = x0 + 40 + k * ((x1 - x0 - 80) / 5), ph = (time * 0.3 + k * 0.37) % 1, x = bx0 - cx + Math.sin(ph * 6 + k) * 3; if (x < -4 || x > VW + 4) continue;
-    const y = fy - 2 - ph * 6; if (ph < 0.85) { R(g, '#ffe08a', x, y - 3, 2, 1); R(g, '#fff4b0', x, y - 4, 1, 1); } else { R(g, '#fff4b0', x - 2, fy - 8, 1, 1); R(g, '#fff4b0', x + 2, fy - 8, 1, 1); } }
+    const y = fy - 2 - ph * 6; if (ph < 0.85) { R(g, '#f7b86b', x, y - 3, 2, 1); R(g, '#f8c882', x, y - 4, 1, 1); } else { R(g, '#f8c882', x - 2, fy - 8, 1, 1); R(g, '#f8c882', x + 2, fy - 8, 1, 1); } }
   for (let s = 0; s < 5; s++) { const sx = x0 + 70 + s * ((x1 - x0 - 140) / 4) - cx; if (sx < -4 || sx > VW + 4) continue; const len = 4 + (hash(s, 33) % 4) + Math.round(Math.sin(time * 1.3 + s * 1.7) * 1.2);
-    const ty = fy - Math.round(crest(sx + cx, time)) - 3 - len; g.globalAlpha = 0.7; R(g, '#ffd36b', sx, ty, 1, len); R(g, '#fff4b0', sx, ty, 1, 1); g.globalAlpha = 1; }
+    const ty = fy - Math.round(crest(sx + cx, time)) - 3 - len; g.globalAlpha = 0.7; R(g, '#f6aa50', sx, ty, 1, len); R(g, '#f8c882', sx, ty, 1, 1); g.globalAlpha = 1; }
 }
 /* a thin film over whoever stands in it (drawn in FRONT of the heroes: they wade) */
 export function floodFront(g, x0, x1, floorY, cx, cy, time, VW = 640) {
   const xs = Math.max(Math.round(x0 - cx), -4), xe = Math.min(Math.round(x1 - cx), VW + 4), fy = Math.round(floorY - cy);
-  g.globalAlpha = 0.5; for (let x = xs; x < xe; x++) { const h = Math.round(crest(x + cx + 3, time + 0.4) * 0.45) + 1; R(g, '#d88a1a', x, fy - h - 1, 1, h + 1); R(g, '#f8c24a', x, fy - h - 1, 1, 1); } g.globalAlpha = 1;
+  g.globalAlpha = 0.5; for (let x = xs; x < xe; x++) { const h = Math.round(crest(x + cx + 3, time + 0.4) * 0.45) + 1; R(g, '#ba6e20', x, fy - h - 1, 1, h + 1); R(g, '#ed9835', x, fy - h - 1, 1, 1); } g.globalAlpha = 1;
 }
 /* the drips off the tear's lip: a strand grows, a bulb swells and lets go, falls and rings the flood */
 export function drips(g, floorY, cx, cy, time, VW = 640, open = 1) {
   if (open < 0.9) return;
   for (let k = 0; k < 7; k++) { const wx = TEAR.cx - 118 + k * 39 + (hash(k, 4) % 12), lipY = TEAR.y1 - 4 + ((k % 3) * 5), x = Math.round(wx - cx); if (x < -4 || x > VW + 4) continue;
     const per = 3.4 + (k % 3) * 0.7, ph = ((time + k * 0.91) % per) / per, grow = Math.min(1, ph / 0.42), L = 7 + grow * 24, y0 = Math.round(lipY - cy), sl = Math.round(L * (ph < 0.5 ? 1 : 0.35));
-    R(g, '#c47a14', x, y0, 2, sl); R(g, '#f8c24a', x, y0, 1, sl);
-    if (ph < 0.5) { R(g, '#ffd36b', x - 1, y0 + L, 4, 3); R(g, '#fff4b0', x, y0 + L, 1, 1); }                     /* the bulb */
-    else if (ph < 0.72) { const fall = (ph - 0.5) / 0.22, fy2 = y0 + L + fall * fall * (floorY - cy - (y0 + L) - 6); R(g, '#ffd36b', x, fy2, 3, 4); R(g, '#fff4b0', x, fy2, 1, 2); R(g, '#c47a14', x + 1, fy2 - 5, 1, 4); }
-    else if (ph < 0.88) { const r = (ph - 0.72) / 0.16, fy = Math.round(floorY - cy); g.globalAlpha = 1 - r; g.strokeStyle = '#ffe08a'; g.beginPath(); g.ellipse(x + 1, fy - 5, 2 + r * 10, 1 + r * 1.5, 0, 0, 7); g.stroke(); g.globalAlpha = 1; } }
+    R(g, '#a8621a', x, y0, 2, sl); R(g, '#ed9835', x, y0, 1, sl);
+    if (ph < 0.5) { R(g, '#f6aa50', x - 1, y0 + L, 4, 3); R(g, '#f8c882', x, y0 + L, 1, 1); }                     /* the bulb */
+    else if (ph < 0.72) { const fall = (ph - 0.5) / 0.22, fy2 = y0 + L + fall * fall * (floorY - cy - (y0 + L) - 6); R(g, '#f6aa50', x, fy2, 3, 4); R(g, '#f8c882', x, fy2, 1, 2); R(g, '#a8621a', x + 1, fy2 - 5, 1, 4); }
+    else if (ph < 0.88) { const r = (ph - 0.72) / 0.16, fy = Math.round(floorY - cy); g.globalAlpha = 1 - r; g.strokeStyle = '#f7b86b'; g.beginPath(); g.ellipse(x + 1, fy - 5, 2 + r * 10, 1 + r * 1.5, 0, 0, 7); g.stroke(); g.globalAlpha = 1; } }
 }
 
-/* ---- the stalks: ragged ropes of paper sheathed in honey, from the tear's lip to the comb ---- */
+/* ---- the stalks: ragged ropes of paper sheathed in resin, from the tear's lip to the comb ---- */
 function stalk(g, ax, ay, bx, by, hw, time, seed) {
   const n = Math.max(2, Math.round(by - ay));
   for (let q = 0; q < n; q++) { const t = q / n, x = lerp(ax, bx, t) + Math.sin(t * 6 + seed) * 2 * (1 - t) + (hash(q, seed) % 3 === 0 ? 1 : 0), w = hw + (t > 0.85 ? Math.round((t - 0.85) * 18) : 0), y = ay + q;
     R(g, PAPERS[1], x - w, y, w * 2, 1); R(g, q % 6 < 3 ? PAPERS[3] : PAPERS[2], x - w + 1, y, w * 2 - 2, 1); R(g, PAPERS[4], x - w + 1, y, 1, 1);
-    if (q % 5 < 2) R(g, '#c47a14', x + w - 2, y, 2, 1); if (q % 9 === 0) R(g, '#f8c24a', x + w - 2, y, 1, 1); }
-  /* the honey runs down it: a glint travelling, a bead hanging at its foot */
-  const ph = (time * 0.5 + seed * 0.13) % 1, gy = ay + ph * n; R(g, '#fff0a0', lerp(ax, bx, ph) + hw - 2, gy, 1, 3);
-  R(g, '#ffd36b', bx + hw - 1, by + 1, 2, 3); R(g, '#c47a14', bx + hw, by + 3, 1, 3);
+    if (q % 5 < 2) R(g, '#a8621a', x + w - 2, y, 2, 1); if (q % 9 === 0) R(g, '#ed9835', x + w - 2, y, 1, 1); }
+  /* the resin runs down it: a glint travelling, a bead hanging at its foot */
+  const ph = (time * 0.5 + seed * 0.13) % 1, gy = ay + ph * n; R(g, '#f8c47b', lerp(ax, bx, ph) + hw - 2, gy, 1, 3);
+  R(g, '#f6aa50', bx + hw - 1, by + 1, 2, 3); R(g, '#a8621a', bx + hw, by + 3, 1, 3);
   /* the torn top: frayed wisps flaring out into the lip */
   for (let f = -2; f <= 2; f++) { const L = 5 + (hash(f + seed, 5) % 6); for (let q = 0; q < L; q++) R(g, q % 3 === 0 ? PAPERS[5] : PAPERS[3], ax + f * 2 + Math.round(f * q * 0.35), ay - q, 1, 1); }
 }
@@ -130,24 +130,24 @@ export function royal(g, x, y, w, h, set, time) {
   x = Math.round(x); y = Math.round(y);
   if (!set) { g.globalAlpha = 0.22 + 0.08 * Math.sin(time * 2.2); g.drawImage(puffLight(), x + w / 2 - 150, y + h / 2 - 60, 300, 120); g.globalAlpha = 1; }
   g.drawImage(royalSprite(w, h, set), x - 2, y);
-  if (!set) { /* the jewels glint and the honey runs off the cells under it */
+  if (!set) { /* the jewels glint and the resin runs off the cells under it */
     for (let k = 0; k < 4; k++) { const ph = (time * 0.7 + k * 0.26) % 1; if (ph < 0.25) R(g, '#ffffff', x + 12 + ((k * 61) % (w - 24)), y + 4 + ((k * 17) % (h - 10)), 1 + (ph < 0.12 ? 1 : 0), 1); }
     for (const fx of [0.2, 0.5, 0.8]) { const ph = (time * 0.6 + fx * 3) % 1, qx = x + Math.round(w * fx); R(g, '#ffd36b', qx, y + h + 13 + Math.round(ph * 10), 1, 2 + (ph > 0.6 ? 1 : 0)); } }
 }
 /* bake the hall's pictures at the level's load (a first draw in the fight was a hitch) */
 export function warmHall(combs) { tearSprite(); beamSprite(); puffLight(); for (const c of combs) if (c.last) for (const set of [false, true]) royalSprite((c.x1 - c.x0 + 1) * 16, c.rows * 16, set); }
 
-/* ---- a comb dropping into the honey: a crown of drops and rings; age 0..1 over ~0.9 s ---- */
+/* ---- a comb dropping into the resin: a crown of drops and rings; age 0..1 over ~0.9 s ---- */
 export function splash(g, x, y, w, age, time) {
   const k = age, fade = 1 - k; g.globalAlpha = Math.min(1, fade * 1.6);
   for (let d = 0; d < 16; d++) { const side = d % 2 ? 1 : -1, fromEdge = x + side * (w / 2 - 4 - (d % 4) * 5), v = 30 + (hash(d, 5) % 70), dx = side * v * k * 0.9 + ((hash(d, 8) % 9) - 4) * k * 4, dy = -(v * 1.7 * k - 95 * k * k);
-    R(g, d % 3 ? '#ffd36b' : '#fff4b0', fromEdge + dx, y - 4 + dy, d % 4 === 0 ? 3 : 2, d % 4 === 0 ? 3 : 2); R(g, '#c47a14', fromEdge + dx, y - 4 + dy + 2, 1, 1); }
-  g.strokeStyle = '#ffe08a'; for (let r = 0; r < 2; r++) { const rk = Math.max(0, k - r * 0.18); if (rk <= 0) continue; g.globalAlpha = Math.min(1, fade * 1.2) * 0.8; g.beginPath(); g.ellipse(x, y - 3, w / 2 + rk * 60, 2 + rk * 3, 0, 0, 7); g.stroke(); }
+    R(g, d % 3 ? '#f6aa50' : '#f8c882', fromEdge + dx, y - 4 + dy, d % 4 === 0 ? 3 : 2, d % 4 === 0 ? 3 : 2); R(g, '#a8621a', fromEdge + dx, y - 4 + dy + 2, 1, 1); }
+  g.strokeStyle = '#f7b86b'; for (let r = 0; r < 2; r++) { const rk = Math.max(0, k - r * 0.18); if (rk <= 0) continue; g.globalAlpha = Math.min(1, fade * 1.2) * 0.8; g.beginPath(); g.ellipse(x, y - 3, w / 2 + rk * 60, 2 + rk * 3, 0, 0, 7); g.stroke(); }
   g.globalAlpha = 1; void time;
 }
-/* ---- the pin: the comb drawn back over the queen's hindquarters (drawComb paints it, clipped to x0..x1 over its rows), honey squeezed from under it, stars ---- */
+/* ---- the pin: the comb drawn back over the queen's hindquarters (drawComb paints it, clipped to x0..x1 over its rows), resin squeezed from under it, stars ---- */
 export function pinOver(g, drawComb, clipX0, clipX1, topY, botY, time, sideX) {
   g.save(); g.beginPath(); g.rect(Math.round(clipX0), Math.round(topY - 4), Math.round(clipX1 - clipX0), Math.round(botY - topY + 10)); g.clip(); drawComb(); g.restore();
-  for (let k = 0; k < 3; k++) { const ph = (time * 1.4 + k / 3) % 1; R(g, '#ffd36b', sideX + (k - 1) * 4 + ph * 3, botY - 3 - ph * 5, 2, 2); R(g, '#c47a14', sideX + (k - 1) * 4 + ph * 3, botY - 1, 2, 1); }
-  for (let k = 0; k < 3; k++) { const an = time * 5 + k * 2.1; R(g, '#fff0a0', sideX + Math.cos(an) * 12, topY - 8 + Math.sin(an) * 3, 2, 2); }
+  for (let k = 0; k < 3; k++) { const ph = (time * 1.4 + k / 3) % 1; R(g, '#f6aa50', sideX + (k - 1) * 4 + ph * 3, botY - 3 - ph * 5, 2, 2); R(g, '#a8621a', sideX + (k - 1) * 4 + ph * 3, botY - 1, 2, 1); }
+  for (let k = 0; k < 3; k++) { const an = time * 5 + k * 2.1; R(g, '#f8c47b', sideX + Math.cos(an) * 12, topY - 8 + Math.sin(an) * 3, 2, 2); }
 }

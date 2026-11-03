@@ -1,8 +1,8 @@
-// src/honey-hornet.js - THE FAT HONEY HORNET (claude/hornetsnest2; scratch/brief-hornetsnest2-1023.md item 4, Daniel 10-23: "NEW FOE - THE FAT HONEY HORNET, reusable in
-// later wood/garden levels"). THE HORNET'S NEST's heavy flyer: a hornet gone fat on the nest's honey, slow, its swollen abdomen plated like a beetle's back.
+// src/honey-hornet.js - THE AMBER HORNET (claude/hornetsnest2; scratch/brief-hornetsnest2-1023.md item 4, Daniel 10-23: "NEW FOE - THE AMBER HORNET, reusable in
+// later wood/garden levels"). THE HORNET'S NEST's heavy flyer: a hornet gone fat on the nest's resin, slow, its swollen abdomen plated like a beetle's back.
 //   ent('honeyhornet', x, y) - the cell it keeps its beat in. PURE: main.js gives it X (below) and runs it; src/redraw/honey_hornet_art.js draws its sheet.
 //   IT KEEPS A SLOW BEAT over its post, a deep drone. A hero near (HONEY.wake) and it comes for him, by turns:
-//   THE DRIP (told): it hangs over you, its honey sac swells and drips (a yellow !) - then it lets go a HONEY GLOB. The glob falls; it stings a little where it hits,
+//   THE DRIP (told): it hangs over you, its resin sac swells and drips (a yellow !) - then it lets go a RESIN GLOB. The glob falls; it stings a little where it hits,
 //     and where it SPLASHES it leaves a STICKY PATCH a few seconds (the nest's own rule: fresh comb holds your feet - X.glob lays it). Step off its line.
 //   THE RAM (told): it drops to your height beside you, LEANS BACK with a wind-up buzz (a yellow !: a shield turns it) and RAMS straight along its line. A ram
 //     taken on a shield knocks it reeling (open a moment). Jump it, or block it.
@@ -19,8 +19,8 @@ export const HONEY = {
   armour: 0.5, drowsy: 3.0, drowsyK: 2, sink: 150, rise: 40,
 };
 export const HONEY_SAY = { drip: '!', ram: '!', armour: 'ARMOURED', drowsy: 'DROWSY: IT SINKS', reel: 'IT REELS', rouse: 'IT ROUSES' };
-export const HONEY_HINT = { drowsy: 'SMOKE MAKES A FAT HONEY HORNET DROWSY: IT SINKS TO THE GROUND AND LIES OPEN. ITS PLATED BACK TURNS A CUT - STRIKE ITS HEAD.',
-  armour: 'A FAT HONEY HORNET\'S ABDOMEN IS PLATED: A CUT FROM BEHIND GLANCES OFF. STRIKE ITS HEAD - AFTER ITS RAM, OR SMOKE IT DOWN.' };
+export const HONEY_HINT = { drowsy: 'SMOKE MAKES AN AMBER HORNET DROWSY: IT SINKS TO THE GROUND AND LIES OPEN. ITS PLATED BACK TURNS A CUT - STRIKE ITS HEAD.',
+  armour: 'AN AMBER HORNET\'S ABDOMEN IS PLATED: A CUT FROM BEHIND GLANCES OFF. STRIKE ITS HEAD - AFTER ITS RAM, OR SMOKE IT DOWN.' };
 /* THE POSE IDS (the art lane's contract, src/redraw/honey_hornet_art.js): 0-1 FLY (two wing beats) 2 DRIP TELL (the sac swollen, a bead hanging) 3 DROP (the sac let go)
    4 RAM TELL (leaning back, wings wide) 5 RAM (stretched along its line, wings swept back) 6 REEL (knocked crooked, after a blocked ram / its recover) 7 DROWSY (down on the
    ground, wings folded, the sac flat) 8 HURT 9 DEAD (on its back, legs up: the corpse) */
@@ -53,7 +53,7 @@ export function stepHoneyHornet(e, dt, X) {
       break; }
     case 'ram': {   /* THE RAM: straight along its line; it strikes what it meets (a shield turns it, and it reels) */
       e.x += e.vx * dt; if (X.solidAt(e.x + e.face * Hc.w / 2, e.y - Hc.h / 2)) { e.x -= e.vx * dt; e.modeT = 0; }
-      X.hit(e, { l: e.x - Hc.w / 2 - 2, r: e.x + Hc.w / 2 + 2, t: e.y - Hc.h - 2, b: e.y + 6 }, Hc.ramDmg, { blockable: true, key: 'hr' + e.ramKey, name: 'A FAT HONEY HORNET',
+      X.hit(e, { l: e.x - Hc.w / 2 - 2, r: e.x + Hc.w / 2 + 2, t: e.y - Hc.h - 2, b: e.y + 6 }, Hc.ramDmg, { blockable: true, key: 'hr' + e.ramKey, name: 'AN AMBER HORNET',
         onBlock: () => { e.mode = 'reel'; e.modeT = Hc.reel; e.vx = -e.face * 60; X.mark(e, HONEY_SAY.reel, '#8fd160'); } });
       if (e.mode !== 'ram') break;
       if (e.modeT <= 0) { e.mode = 'recover'; e.modeT = Hc.recover; e.vx *= 0.2; e.cd = Hc.ramCd; e.next = 'drip'; }
@@ -80,7 +80,7 @@ const clearDrop = (e, T, X) => { for (let y = Math.min(e.y, T.y - HONEY.hover) +
 /* THE GLOBS: they fall; they sting a hero they meet and splash at his feet, or splash where they land - a sticky patch either way */
 function stepGlobs(e, dt, X) {
   for (const g of e.globs) { g.vy = Math.min(420, g.vy + HONEY.globG * dt); g.y += g.vy * dt;
-    for (const H of X.heroes()) { if (H.dead || g.done) continue; if (Math.abs(H.x - g.x) < HONEY.globR + 5 && g.y > H.y - 26 && g.y < H.y + 2) { X.hit(e, { l: g.x - HONEY.globR, r: g.x + HONEY.globR, t: g.y - HONEY.globR, b: g.y + HONEY.globR }, HONEY.globDmg, { blockable: true, key: 'hg' + Math.round(g.x) + '.' + Math.round(g.vy), name: 'A HONEY GLOB' }); g.done = true; X.glob(g.x, H.ground === false ? X.floorAt(g.x, g.y) : H.y); } }
+    for (const H of X.heroes()) { if (H.dead || g.done) continue; if (Math.abs(H.x - g.x) < HONEY.globR + 5 && g.y > H.y - 26 && g.y < H.y + 2) { X.hit(e, { l: g.x - HONEY.globR, r: g.x + HONEY.globR, t: g.y - HONEY.globR, b: g.y + HONEY.globR }, HONEY.globDmg, { blockable: true, key: 'hg' + Math.round(g.x) + '.' + Math.round(g.vy), name: 'A RESIN GLOB' }); g.done = true; X.glob(g.x, H.ground === false ? X.floorAt(g.x, g.y) : H.y); } }
     if (!g.done && X.solidAt(g.x, g.y)) { g.done = true; X.glob(g.x, Math.floor(g.y / 16) * 16); }
     if (g.y > 4000) g.done = true; }
   e.globs = e.globs.filter(g => !g.done);

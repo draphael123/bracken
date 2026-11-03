@@ -534,7 +534,7 @@ export const STUCK = {
     { id: 'hn-first', zone: [25, 60, 41, 66], at: [37, 62], done: ['comb', 37, 63, 'on'], line: 'THE COMB HANGING BY THE ROOT IS YOUR STEP UP: CUT IT DOWN' },
     { id: 'hn-bridge', zone: [104, 29, 117, 34], at: [121, 30], done: ['comb', 121, 31, 'on'], line: 'THE COMB OVER THE GAP IS THE BRIDGE: CUT IT DOWN' },
     { id: 'hn-gallery', zone: [188, 24, 197, 30], at: [200, 26], done: ['comb', 200, 27, 'on'], line: 'THE COMB OVER THE GAP IS THE BRIDGE: CUT IT DOWN FROM THE PILLAR' },   /* (claude/hornetsnest2) the Sagging Gallery's bridge */
-    { id: 'hn-well', zone: [333, 21, 340, 27], at: [336, 23], done: ['comb', 336, 24, 'on'], line: 'THE NEXT COMB IS TOO HIGH: CUT THE ONE HUNG OVER YOU, IT LANDS AS THE STEP' },   /* the Honey Well's overhang */
+    { id: 'hn-well', zone: [333, 21, 340, 27], at: [336, 23], done: ['comb', 336, 24, 'on'], line: 'THE NEXT COMB IS TOO HIGH: CUT THE ONE HUNG OVER YOU, IT LANDS AS THE STEP' },   /* the sap well's overhang */
     { id: 'hn-chain', zone: [247, 15, 258, 20], steps: [{ at: [256, 16], done: ['comb', 256, 18, 'on'], line: 'TWO COMBS OVER THE LEDGE: CUT THE LOW ONE DOWN FOR A STEP' }, { at: [257, 14], done: ['comb', 257, 14, 'on'], line: 'FROM THE FALLEN COMB, CUT THE HIGH ONE DOWN ONTO IT' }] },
     { id: 'hn-last', zone: [264, 9, 272, 14], steps: [{ at: [270, 10], done: ['comb', 270, 12, 'on'], line: 'THE HIGH WALL: CUT THE LOW COMB DOWN FOR A STEP' }, { at: [271, 8], done: ['comb', 271, 8, 'on'], line: 'FROM THE FALLEN COMB, CUT THE HIGH ONE DOWN ONTO IT' }] },
     { id: 'hn-torn', zone: [426, 18, 432, 22], at: [434, 21], glint: 'stall', line: 'THE NEST TORE LOOSE: THE WAY ON IS DOWN THE TRUNK' },

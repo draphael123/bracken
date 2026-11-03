@@ -4,7 +4,7 @@ import { openPage, ROOT } from './cdp.mjs';
 import { readFileSync, writeFileSync, existsSync } from 'fs';
 import { join } from 'path';
 const dir = join(ROOT, 'work/claude/lane-done');
-const SETS = { hall: ['q2-honey', 'q2-pinLast', 'q2-tearTell', 'q2-tear'], world: ['foot', 'edge-water', 'edge-gate', 'edge-roots'], foes: ['honeyhornet-sheet', 'stinger', 'hh-drop', 'hh-dead'] };
+const SETS = { hall: ['q2-resin', 'q2-pinLast', 'q2-tearTell', 'q2-tear'], world: ['foot', 'edge-water', 'edge-gate', 'edge-roots'], foes: ['honeyhornet-sheet', 'stinger', 'hh-drop', 'hh-dead'] };
 const pg = await openPage({ audio: false, fonts: false });
 try {
   for (const [set, names] of Object.entries(SETS)) {

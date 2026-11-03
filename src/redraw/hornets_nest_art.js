@@ -3,7 +3,7 @@
 //   hornet        the river wasp's machine (sting: true - a told ! dart from its post): a big nest hornet, banded abdomen and sting, red eye          - 4 frames (3 wing beats, hurt)         16 x 11
 //   combdrone     the sprig's machine (a walker with a told bite): a stout comb-worker walking on its legs, abdomen banded - walk x4, look, tell (rears, jaws wide), bite (lunges), hurt  16 x 12
 //   nestguard     the shieldbearer's machine (guards his front, a slow turn, a told shove): a soldier hornet standing upright behind a WAX PLATE of hex comb - 8 frames  16 x 16
-//   (the venom spitter is gone: claude/hornetsnest2, Daniel 10-23 - it read as a mage; the nest's heavy is THE FAT HONEY HORNET, src/redraw/honey_hornet_art.js)
+//   (the venom spitter is gone: claude/hornetsnest2, Daniel 10-23 - it read as a mage; the nest's heavy is THE AMBER HORNET, src/redraw/honey_hornet_art.js)
 // bakeNestSkins(SPR) -> { hornet, combdrone, nestguard } (each { R, L, white, ax, ay, w, h } like every foe sheet; the SPR argument is read for the anchors only)
 import { canvas, flipX, whiten, outline } from '../px.js';
 

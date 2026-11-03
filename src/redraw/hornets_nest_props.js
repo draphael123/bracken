@@ -1,11 +1,11 @@
 // hornets_nest_props.js - THE HORNET'S NEST's PROPS, drawn (claude/hornetsnestart; SONNET over the greybox). ART ONLY: every size, box and timing is the hands' (src/hornets-nest-hands.js); this
 // draws what they say.
 //   slab(g, x, y, w, h, set, time)    a COMB: a mass of hex cells on a paper stalk - fresh (gold, glossy, dripping) while it hangs and falls, SET (dull amber, cracked, a crumbled rim) once landed
-//   stand(g, x, y, time)              a honey-hunter's SMOKE STAND: a tripod of sticks, a clay pot with a pierced lid, red ember slits, smoke curling off it
+//   stand(g, x, y, time)              a resin-tapper's SMOKE STAND: a tripod of sticks, a clay pot with a pierced lid, red ember slits, smoke curling off it
 //   pot(g, x, y, time, lit)           the clay pot in a hand, set down, or in the air (a bail handle, an ember slit, a trail of smoke)
 //   cloud(g, x, y, r, k, time)        a SMOKE CLOUD: layered grey puffs, lighter at the heart, drifting, with ember specks; k = its fade (0..1)
 //   cell(g, x, y, st, kk, time)       a BROOD CELL in the wall: a capped wax pocket (idle) that swells, glows and cracks (pulse, kk = how far gone) and the torn rim (broken / hatched)
-//   glintDrips(g, x, y, w, time)      the honey drips off a comb's under-edge
+//   glintDrips(g, x, y, w, time)      the resin drips off a comb's under-edge
 import { canvas } from '../px.js';
 import { COMB, WAX } from './hornets_nest_tiles.js';
 

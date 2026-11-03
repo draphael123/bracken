@@ -1,17 +1,17 @@
-// src/redraw/honey_hornet_art.js - THE FAT HONEY HORNET's SHEET (claude/hornetsnest2 greybox-plus -> claude/hornets2art the REAL REDRAW: hard pixels, inked, in the nest's palette).
+// src/redraw/honey_hornet_art.js - THE AMBER HORNET's SHEET (claude/hornetsnest2 greybox-plus -> claude/hornets2art the REAL REDRAW: hard pixels, inked, in the nest's palette).
 // HONEY_POSE in src/honey-hornet.js is the contract: 0-1 fly, 2 drip tell, 3 drop, 4 ram tell, 5 ram, 6 reel, 7 drowsy, 8 hurt, 9 dead.
-//   It is a hornet gone fat on the nest's honey: a small chestnut thorax (with a plated shoulder) and head (a hot red compound eye, pale mandibles) in front of a HUGE swollen abdomen.
+//   It is a hornet gone fat on the nest's resin: a small chestnut thorax (with a plated shoulder) and head (a hot red compound eye, pale mandibles) in front of a HUGE swollen abdomen.
 //   THE ARMOUR is the read: the top of the abdomen is four overlapping lacquered chestnut PLATES, each with a bright rim on its leading edge, a dark seam behind it and a glint - like a
-//   beetle's back - over a belly of amber banded black; a cut from behind lands on them (HONEY.armour). Under the tail a honey SAC that swells before a drip; two pairs of short wings
+//   beetle's back - over a belly of amber banded black; a cut from behind lands on them (HONEY.armour). Under the tail a resin SAC that swells before a drip; two pairs of short wings
 //   that look too small for it. Facing right, its feet (or the bottom of its hover box) at the anchor.
 //   Per pose: the DRIP (sac swollen, a bead hanging, the head tipped down at you), the DROP (the sac let go, a glob falling), the RAM TELL (leaning back, wings a wide blur, the eye blazing,
 //   dust pulled off the floor), the RAM (stretched, wings swept back, a SMEAR of speed streaks behind it), the REEL (crooked, dazed stars of ichor), DROWSY (down on the ground, wings
-//   folded, eye shut, antennae drooping, a bead of honey at its mouth, a puddle under it), HURT (squint, the plates flashing), DEAD (on its back, legs curled, eye crossed, honey leaking).
+//   folded, eye shut, antennae drooping, a bead of resin at its mouth, a puddle under it), HURT (squint, the plates flashing), DEAD (on its back, legs curled, eye crossed, resin leaking).
 //   bakeHoneyHornetSheet(canvas, flipX, whiten, HONEY) -> { R, L, white: { R, L }, ax, ay, w, h, card }
 const W = 44, H = 34, AX = 22, AY = 31;
-const INK = '#1a0c06', CH = ['#2a140a', '#4a2410', '#6e3a16', '#94521e'], AM = ['#7a4206', '#b8700f', '#e09a22', '#f8c24a', '#fff0a0'];
-const PL = ['#120806', '#2a160c', '#4a2c16', '#74481e'], PLRIM = '#f0c878', PLGLINT = '#fff2c8';
-const WING = ['#8aa4bc', '#c4d4e4', '#eef4fa'], HONEYC = ['#a8600a', '#e0a020', '#ffd36b', '#fff4b0'];
+const INK = '#1a0c06', CH = ['#2a140a', '#4a2410', '#6e3a16', '#804d20'], AM = ['#69390b', '#9e5a15', '#c37825', '#ed9835', '#f8c47b'];
+const PL = ['#120806', '#2a160c', '#4a2c16', '#65401f'], PLRIM = '#d49444', PLGLINT = '#f4d8a0';
+const WING = ['#8aa4bc', '#c4d4e4', '#eef4fa'], HONEYC = ['#905010', '#c27825', '#f6aa50', '#f8c882'];
 const px = (g, c, x, y) => { g.fillStyle = c; g.fillRect(Math.round(x), Math.round(y), 1, 1); };
 function blob(g, cx, cy, rx, ry, a, shade) { const R0 = Math.max(rx, ry) + 1, c = Math.cos(a), s = Math.sin(a);
   for (let y = Math.floor(cy - R0); y <= Math.ceil(cy + R0); y++) for (let x = Math.floor(cx - R0); x <= Math.ceil(cx + R0); x++) {
@@ -26,7 +26,7 @@ function drawHornet(g, p, step) {
   const t = p.tilt || 0, cx = AX + (p.dx || 0), cy = AY - 12 - (p.lift ?? 4);
   g.save();
   /* the SMEAR (behind everything): streaks along its line of travel, longest at the abdomen's height */
-  if (p.smear) { for (const [dy, len, a] of [[-6, 11, 0.55], [-2, 15, 0.8], [2, 13, 0.7], [6, 9, 0.5]]) { g.globalAlpha = a * 0.75; line(g, '#fff0c8', cx - 12 - len, cy + dy + 1, cx - 13, cy + dy + 1); g.globalAlpha = a * 0.5; line(g, '#e8b860', cx - 13 - len * 0.7, cy + dy + 2, cx - 14, cy + dy + 2); } g.globalAlpha = 1; }
+  if (p.smear) { for (const [dy, len, a] of [[-6, 11, 0.55], [-2, 15, 0.8], [2, 13, 0.7], [6, 9, 0.5]]) { g.globalAlpha = a * 0.75; line(g, '#f9c98e', cx - 12 - len, cy + dy + 1, cx - 13, cy + dy + 1); g.globalAlpha = a * 0.5; line(g, '#dc974b', cx - 13 - len * 0.7, cy + dy + 2, cx - 14, cy + dy + 2); } g.globalAlpha = 1; }
   /* wings (behind): short for the body - a blur in flight, wide on the ram's tell, swept back on the ram, folded flat when drowsy */
   if (!p.dead) { const base = { blur: -1.9, wide: -1.45, back: -2.75, fold: -3.0, reel: -1.2 }[p.wing] ?? -1.9, osc = p.wing === 'blur' ? (step ? 0.5 : -0.3) : p.wing === 'wide' ? (step ? 0.35 : -0.35) : 0;
     for (const [hind, L] of [[1, 10], [0, 14]]) { const a = t + base + osc + hind * 0.35, pv = [cx + 4 + Math.cos(t) * 2, cy - 4], wx = pv[0] + Math.cos(a) * L / 2, wy = pv[1] + Math.sin(a) * L / 2;
@@ -48,7 +48,10 @@ function drawHornet(g, p, step) {
     const k = -(dx * 0.3 + dy * 0.9) / RY, s = (u + 1) / 2, band = (s > 0.18 && s < 0.29) || (s > 0.44 && s < 0.55) || (s > 0.7 && s < 0.8), sh = k > 0.4 ? 3 : k > 0 ? 2 : k > -0.5 ? 1 : 0;
     return band ? (sh > 2 ? '#4a2810' : '#24120a') : AM[sh]; });
   for (let k = 0; k < 4; k++) { const pu = -0.78 + k * 0.5 + 0.12, bx = ax + Math.cos(aa) * pu * RX + Math.sin(aa) * RY * 0.62, by = ay + Math.sin(aa) * pu * RX - Math.cos(aa) * RY * 0.62; px(g, PLGLINT, bx, by); px(g, PLRIM, bx + 1, by + 1); }   /* a glint on each plate */
-  /* the HONEY SAC under the tail: swelling before a drip (a vein of amber through it), a bead hanging off it */
+  /* RESIN-COATED: it has been bathing in the pines' sap - amber runs over two plate edges (a darker rim, a bright bead at the foot), and bits are stuck in the glaze: a bark fleck, a gnat's wing */
+  if (!p.dead) { for (const k of [0, 2]) { const pu = -0.78 + k * 0.5 + 0.12, bx = Math.round(ax + Math.cos(aa) * pu * RX + Math.sin(aa) * RY * 0.62) + 2, by = Math.round(ay + Math.sin(aa) * pu * RX - Math.cos(aa) * RY * 0.62) + 1; px(g, '#8a4a14', bx, by); px(g, '#c9782a', bx, by + 1); px(g, '#8a4a14', bx + 1, by + 1); px(g, '#e8a850', bx, by + 2); }
+    px(g, '#1a0c06', Math.round(ax + 3), Math.round(ay - 4)); px(g, '#c4d4e4', Math.round(ax - 4), Math.round(ay + 2)); }
+  /* the RESIN SAC under the tail: swelling before a drip (a vein of amber through it), a bead hanging off it */
   { const sx = ax - Math.cos(aa) * 9, sy = ay + 5, r = 2 + (p.sac || 0) * 3.2; blob(g, sx, sy, r, r * 0.9, 0, (u, v) => (v < -0.4 && u < 0 ? HONEYC[3] : v < -0.1 ? HONEYC[2] : u > 0.3 ? HONEYC[0] : HONEYC[1]));
     if (p.sac > 0.5) { px(g, HONEYC[3], sx - 1, sy - 1); px(g, HONEYC[2], sx, sy + r + 1); px(g, HONEYC[2], sx, sy + r + 2); px(g, HONEYC[1], sx, sy + r + 3); px(g, HONEYC[3], sx, sy + r + 2); }
     if (p.drop) { px(g, HONEYC[2], sx, sy + r + 3); px(g, HONEYC[2], sx + 1, sy + r + 3); px(g, HONEYC[1], sx, sy + r + 4); px(g, HONEYC[1], sx, sy + r + 5); px(g, HONEYC[3], sx, sy + r + 3); } }
@@ -64,14 +67,14 @@ function drawHornet(g, p, step) {
   else if (p.hurt) { line(g, '#fff', hx + 1, hy - 1, hx + 3, hy - 2); px(g, '#ff6a4a', hx + 2, hy - 1); }                                                                          /* squinting */
   else { blob(g, hx + 1.6, hy - 0.8, 1.9, 2.1, 0, (u, v) => (p.hot ? (v > 0.2 ? '#ff6a2a' : '#ffb060') : (u > 0.1 && v > -0.2 ? '#e8341c' : '#b0200c'))); px(g, '#ffd0a0', hx + 1, hy - 2); px(g, '#ff9a6a', hx + 2, hy - 1); }   /* the compound eye */
   line(g, '#f0e0c0', hx + 3, hy + 2, hx + 5, hy + 3); if (p.open || p.drop) px(g, '#f0e0c0', hx + 4, hy + 4);   /* mandibles */
-  if (p.sleep) { line(g, CH[0], hx + 1, hy - 3, hx + 3, hy - 5); line(g, CH[0], hx + 3, hy - 5, hx + 4, hy - 3); px(g, HONEYC[2], hx + 4, hy + 4); px(g, HONEYC[1], hx + 4, hy + 5); }   /* antennae drooped, a bead of honey at its mouth */
+  if (p.sleep) { line(g, CH[0], hx + 1, hy - 3, hx + 3, hy - 5); line(g, CH[0], hx + 3, hy - 5, hx + 4, hy - 3); px(g, HONEYC[2], hx + 4, hy + 4); px(g, HONEYC[1], hx + 4, hy + 5); }   /* antennae drooped, a bead of resin at its mouth */
   else { line(g, CH[0], hx + 1, hy - 3, hx + 4, hy - 7); line(g, CH[0], hx + 4, hy - 7, hx + 6, hy - 7); px(g, AM[3], hx + 6, hy - 7); }
   /* legs: tucked in flight (a jointed pair of them), out on the ground */
   for (const [lx, k] of [[-1, 0], [2, 1], [5, 2]]) { const bx = cx + lx, by = cy + 3, out = p.lying ? 2 : 0; line(g, CH[0], bx, by, bx + (k - 1) * 2 - 1, by + 3 + out); px(g, CH[1], bx + (k - 1) * 2 - 1, by + 3 + out); }
   if (p.dead) for (const lx of [-4, 0, 4]) { line(g, CH[0], cx + lx, cy - 7, cx + lx + 1, cy - 11); line(g, CH[0], cx + lx + 1, cy - 11, cx + lx + 3, cy - 11); }   /* the legs up, curled */
   g.restore();
 }
-/* the honey puddle under a creature on the floor (drowsy, dead) and the dust the ram's tell pulls up */
+/* the resin puddle under a creature on the floor (drowsy, dead) and the dust the ram's tell pulls up */
 function puddle(g, cx, wd) { for (let x = -wd; x <= wd; x++) { const h = Math.round(1.6 * Math.sqrt(Math.max(0, 1 - (x * x) / (wd * wd)))); for (let y = 0; y <= h; y++) px(g, y === h ? HONEYC[3] : y === 0 ? HONEYC[0] : HONEYC[1], cx + x, AY - 1 + (1 - y) + 1); } px(g, HONEYC[3], cx - 3, AY - 1); px(g, HONEYC[3], cx + 2, AY - 1); }
 function dustPuffs(g, cx) { for (const [dx, dy, c] of [[-9, 0, '#e8d8b0'], [-6, 1, '#c8b890'], [3, 0, '#e8d8b0'], [-12, 1, '#c8b890'], [8, 1, '#c8b890']]) { g.globalAlpha = 0.75; px(g, c, cx + dx, AY + dy - 1); px(g, c, cx + dx + 1, AY + dy - 2); g.globalAlpha = 1; } }
 const POSES = [
