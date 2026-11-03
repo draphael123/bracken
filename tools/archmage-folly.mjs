@@ -44,7 +44,7 @@ try {
     let lost = 0;
     /* one frame, the hero's health kept topped up and what he lost counted (no god mode: god mode turns every blow away) */
     const step = (n = 1) => { for (let i = 0; i < n; i++) { const p = BK.P; p.dead = 0; const was = p.hp; BK.sim(1); lost += Math.max(0, was - BK.P.hp); BK.P.hp = BK.P.maxHp; BK.P.dead = 0; calledMax = Math.max(calledMax, called().length); for (const q of called()) if (q._hp0 === undefined) { q._hp0 = q.hp; calledHps.push(q.hp); } } };
-    const quiet = e => { e.T = Object.assign(e.T || {}, { ward: 99, blink: 99, bolt: 99, rend: 99, room: 99, pair: 99, cast: 99 }); };
+    const quiet = e => { e.kiteT = -999; /* (rel139fix) the ANTI-KITE clock (claude/wardenid, src/boss-pressure.js KITE) speeds a boss whose hero stays out of reach; this check stands off to read his rewrites, so it is switched off here (tools/warden-id.mjs holds the clock) */ e.T = Object.assign(e.T || {}, { ward: 99, blink: 99, bolt: 99, rend: 99, room: 99, pair: 99, cast: 99 }); };
     const fresh = () => { BK.setHero('knight'); BK.reset({ fresh: true }); BK.load(LEVELS.findIndex(l => l.id === 'mage')); BK.state = 'play'; BK.god = false; BK.sim(30);
       const A = BK.L.arena; BK.look(A.trigger / TS + 2, A.floor / TS - 1); for (let i = 0; i < 900 && !(BK.bossActive && BK.boss && BK.boss.mode === 'idle'); i++) step(1);
       const e = BK.boss; quiet(e); return { A, e }; };
