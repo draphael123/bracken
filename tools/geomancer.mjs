@@ -143,6 +143,8 @@ try {
       const foe={inFoe:e.alive&&pb.l<eb.r&&pb.r>eb.l&&pb.t<eb.b&&pb.b>eb.t,rock:solidIn(),hurt:hp0-p.hp,under,ground:p.ground,gap:Math.round(Math.abs(e.x-p.x)),run:Math.round(run)};
       __geo([]);P().face=1;BK.press('dodge');BK.sim(1);let f=0;while(P().dodge>0.05&&f++<40)BK.sim(1);BK.press('atk');BK.sim(12);const stone=BK.geo().rollers().length;
       return {pit,foe,stone}})()`);
+  /* (claude/herofeel) THE UP-AIR: the airborne UP+X is an instant staff arc and a FAN of three stone shards flung up (about -60/-90/-120), no cell placed; the ground UP+X is unchanged */
+  out.upair = await pg.evalp(`(()=>{__geo([]);const g0=Array.from(BK.L.grid),P=BK.P;P.ground=false;P.vy=-120;P.y-=40;P.st=P.maxSt;BK.keys.up=true;BK.press('atk');BK.sim(2);BK.keys.up=false;const sh=BK.geo().shards().filter(s=>s.fan).map(s=>({vx:Math.round(s.vx),vy:Math.round(s.vy)})),im={swk:P.swingKind,atk:P.atk,gr:P.ground,abuf:P.abuf,up:P.abufUp,st:P.st,uc:BK.geo().tierStats().upAir};const same=g0.every((v,i)=>v===BK.L.grid[i]);BK.sim(60);return {sh,im,same,pieces:BK.geo().pieces().length,after:BK.geo().shards().filter(s=>s.fan).length}})()`);
   out.wall = await pg.evalp(`(async()=>{__geo(['stoneWall']);BK.P.cds={};BK.press('throw');BK.sim(4);const kinds=BK.geo().pieces().map(p=>p.kind);
       const {migrateProgress}=await import('/src/progression.js');let mig;try{const r=migrateProgress(JSON.stringify({...JSON.parse(JSON.stringify(BKT.PROG)),skillOwned:{geomancer:{lodestone:true}},loadouts:{geomancer:['lodestone']}}),[]);mig={own:Object.keys(r.progress.skillOwned.geomancer),lo:r.progress.loadouts.geomancer};}catch(e){mig={err:String(e.message||e)};}
       return {kinds,mig}})()`);
@@ -179,6 +181,7 @@ try {
   out.oldSave = await pg.evalp(`(()=>{__geo([]);const PR=BKT.PROG;delete PR.xp.geomancer;delete PR.skillOwned.geomancer;delete PR.loadouts.geomancer;BK.applyUpgrades();
     for(const k of ['atk','block','throw','skill2','jump'])BK.press(k);BK.sim(60);BK.state='map';BK.sim(2);BK.state='play';return {hp:BK.P.maxHp,lv:BKT.heroLevel('geomancer')}})()`);
   console.log(JSON.stringify(out));
+  assert(out.upair.sh.length === 3 && out.upair.sh.every(q => q.vy < 0) && out.upair.sh.some(q => q.vx > 50) && out.upair.sh.some(q => q.vx < -50) && out.upair.sh.some(q => Math.abs(q.vx) < 30) && out.upair.same && out.upair.pieces === 0, 'UP-AIR: three shards fanned up, no cell placed (' + JSON.stringify(out.upair) + ')');
   assert.equal(out.cap.three, 3, 'THE CAP: never more than three pieces stand at once (' + out.cap.three + ')');
   assert.equal(out.cap.four, 4, 'THE FOURTH STONE: four (' + out.cap.four + ')');
   assert(out.crumble.raised >= 2 && out.crumble.left === out.crumble.raised, 'every piece STANDS (no timer) (' + JSON.stringify(out.crumble) + ')');

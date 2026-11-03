@@ -32,12 +32,12 @@ import * as SKK from './skill-k.js';   /* (claude/lategamea) the one skill damag
 export const RG = {
   hp: 110, dmg: 16,                                  /* base health (src/progression.js) and the knife's / an arrow's base damage (main.js swordDmg) */
   run: 1.04,                                          /* x RUN on foot: light and quick */
-  quiver: { n: 5, refill: 8, fletch: 4, pick: 11, life: 30, lost: 3 },   /* arrows; s an arrow trickles back (FLETCHER: fletch); px she picks one up from; s a loosed arrow lies before it is lost */
+  quiver: { n: 5, refill: 12, fletch: 5, pick: 11, life: 30, lost: 3 },   /* arrows; s an arrow trickles back (FLETCHER: fletch); px she picks one up from; s a loosed arrow lies before it is lost */
   quick: { vx: 270, vy: -40, g: 720, dmg: 0.6, st: 4, rec: 0.2 },        /* THE QUICK SHOT: ~70 px (measured in the page) before it is at her feet; a tap's damage */
   draw: { wind: 0.55, vx0: 340, vx1: 420, vy: -55, g: 520, dmg0: 0.9, dmg1: 1.7, st: 9, hold: 3, rec: 0.24, heavyAt: 0.5, slow: 0.35 },   /* THE DRAW: wind s to full; a full one lands ~150 px out (half a screen at most; the SWEET SPOT, ~1/3 of one, is where it pays) */
   rise: { vx: 110, airVx: 20, vy: -390, g: 560, dmg: 1.0 },   /* THE RISING SHOT, steeply up (in the air, nearly straight up) */
   down: { vy: 470, hop: -175, dmg: 1.05, st: 7 },      /* THE DOWNWARD SHOT (her plunge) and the hop it gives her */
-  pierce: { vx: 520, range: 240, dmg: 2.0 },          /* THE PIERCING SHOT (T2): flat, through everything in the line (claude/chargetiers: 1.9 -> 2.0, a tier over the LONG SHOT's 1.7) */
+  pierce: { vx: 520, range: 240, dmg: 1.7 },          /* THE PIERCING SHOT (T2): flat, through everything in the line (claude/chargetiers: 1.9 -> 2.0, a tier over the LONG SHOT's 1.7) */
   /* (claude/rangerid, Daniel 10-31 Q6/Q9) NO TIER LADDER: ONE DRAW, ONE STEADY WINDOW. at = s of DRAW (past HEAVY_START, x the wind's quickness) the full draw (T1, the LONG SHOT) and the STEADY WINDOW
      (breath held, reticle still: T2, the STEADY SHOT) open at; win = s the window stays open (+ focusWin on a FULL HUNTER'S FOCUS - focus is no longer spent, it deepens the window);
      let go in it and the arrow is EMPOWERED: it pierces the whole line and its DISTANCE BONUS is doubled. Held PAST it the hand shakes (RG.shaky: the shot loses its aim) and, auto s later, it goes by itself. */
@@ -58,6 +58,8 @@ export const RG = {
   guard: { hold: 0.24, proj: 0.4, melee: 1.0, drain: 0.8, breakTired: 1.2, minProj: 2 },   /* (claude/heroblocksb) THE BOW GUARD (HOLD C): s held before it is raised; x the shield's block cost for a projectile (stopped dead) and for a blade (half the blow); x the shared hold drain; s she cannot guard after it breaks; least wind an arrow costs */
   bash: { t: 0.22, rec: 0.18, st: 8, reach: 17, push: 210, dmg: 0.45, beat: 1 },   /* THE BOW-BASH: s up, s after; the shove; beat x the shared tap beat */
   flip: { vx: 175, vy: -235, high: 1.25, shots: 1 },  /* THE BACKFLIP: off the ground; HIGH FLIP x high */
+  /* (claude/herofeel, Daniel 11-02 21:17) ARROW RECALL, her new DOWN+C: she kneels and yanks the cords. COSTS A LOT (stFrac of her bar) and ROOTS her kneeling `root` s - no walk, roll or jump; a hit during it still lands, and if it lands before the yank (`yank` s) the recall is lost (arrows already called keep flying). Stuck arrows within `range` px fly back to the quiver at `speed`, nicking each foe they pass for `dmg` x a sword cut. */
+  recall: { stFrac: 0.5, root: 1.5, yank: 0.45, range: 128, speed: 480, dmg: 0.3 },
   snare: { st: 12, life: 14, hold: 1.6, eliteHold: 0.8, bossLean: 22, dmg: 0.5, cd: 0.7, toothed: 4 / 3 },
   /* (claude/heropassa, Daniel 10-15 interview) ARROW SNATCH: the bow-bash ON THE BEAT against a PROJECTILE catches it - nothing taken, +1 arrow to her quiver; with the quiver
      full it is FLUNG BACK the way it came as her riposte arrow (a free arrow, the 'riposte' tag). r: px from her middle it is caught at. KNEELING DRAW: crouched still for
@@ -88,7 +90,7 @@ export function makeRanger(api) {
   const refillT = () => (T().fletch ? RG.quiver.fletch : RG.quiver.refill) / RG.perk.quiver;
   const isFree = p => !p.dead && !(p.asleep > 0);
   /* ---- THE QUIVER ---- */
-  function ensure(p) { if (p.rgQ === undefined) p.rgQ = maxQ(); if (!p.rgArrows) p.rgArrows = []; if (!p.rgSnares) p.rgSnares = []; }
+  function ensure(p) { p.rgStance = 'bow'; if (p.rgQ === undefined) p.rgQ = maxQ(); if (!p.rgArrows) p.rgArrows = []; if (!p.rgSnares) p.rgSnares = []; }
   const arrows = () => { const p = P(); ensure(p); return p.rgQ; };
   function takeArrow(p) { ensure(p); if (p.rgQ <= 0) { stats.empty++; return false; } p.rgQ--; p.rgRefT = 0; return true; }
   function giveArrow(p, n = 1, why) { ensure(p); const was = p.rgQ; p.rgQ = Math.min(maxQ(), p.rgQ + n); if (p.rgQ > was && why) { api.ringAt(p.x, p.y - 16, 8, '#e8dcb0', 0.18); } return p.rgQ - was; }
@@ -109,7 +111,8 @@ export function makeRanger(api) {
       const d = dx + Math.abs(e.y - p.y) * 0.5; if (d < bd) { bd = d; best = e; } } return best; }
 
   /* ---- HER STANCE (Daniel 10-15): BOW (X shoots; an empty quiver is the knife) or KNIFE (X is always the knife). Kept through deaths and levels ---- */
-  function toggleStance(p) { ensure(p); p.rgStance = p.rgStance === 'knife' ? 'bow' : 'knife'; p.rgNock = null;
+  function toggleStance(p) { ensure(p); p.rgStance = 'bow'; return 'bow'; }   /* (claude/herofeel, Daniel 11-02: the bow/knife swap is GONE - X auto-knifes point-blank or empty, nothing to swap; kept as a no-op for old callers) */
+  function toggleStanceOld(p) { ensure(p); p.rgStance = p.rgStance === 'knife' ? 'bow' : 'knife'; p.rgNock = null;
     api.number(p.x, p.y - 26, p.rgStance === 'knife' ? 'KNIFE' : 'BOW', p.rgStance === 'knife' ? '#c9d4e0' : '#e8dcb0'); api.SFX.rgPick && api.SFX.rgPick();
     api.kitPose(p, p.rgStance === 'knife' ? 'rgSling' : 'rgBowUp', 0.26); p.rgStanceAt = api.time; return p.rgStance; }   /* (claude/rangerhud) the swap has a body: the bow slung to her back and the knife drawn, or the bow swung round */
   const bowReady = () => { const p = P(); ensure(p); return p.rgQ > 0 && p.rgStance !== 'knife'; };   /* (main.js: a held X is her draw only then - else the knife's heavy) */
@@ -149,6 +152,7 @@ export function makeRanger(api) {
   function stepArrows(p, dt) { if (!p.rgArrows || !p.rgArrows.length) return;
     const TS = api.TS;
     for (const a of p.rgArrows) { a.t += dt;
+      if (a.state === 'recall') { recallFly(p, a, dt); continue; }   /* (claude/herofeel) ARROW RECALL: flying home through the foes between */
       if (a.state === 'fly') {
         const steps = Math.max(1, Math.ceil(Math.max(Math.abs(a.vx), Math.abs(a.vy)) * dt / 4));   /* (swept in short steps: a fast arrow never jumps a foe or a wall) */
         for (let s = 0; s < steps && a.state === 'fly'; s++) { const h = dt / steps; a.vy += a.g * h; a.x += a.vx * h; a.y += a.vy * h;
@@ -365,19 +369,37 @@ export function makeRanger(api) {
     if (p.rgMarkE && !markOn(p.rgMarkE)) p.rgMarkE = null;
     nockStep(p, dt, !!keys.atk);
     const cDown = keys.block && !p.cWas; p.cWas = !!keys.block;
-    const free = !ctx.stunned && !p.plunge && !(p.rgBashT > 0) && !p.dead && !(ctx.dodging && !p.rgFlip);
+    const free = !ctx.stunned && !p.plunge && !(p.rgBashT > 0) && !p.dead && !p.rgRecall && !(ctx.dodging && !p.rgFlip);
     if (p.rgGreat) greatStep(p, dt, ctx);
     if (cDown && free && keys.up) { if (!focusFull(p) && (!p.rgFocusSaid || api.time - p.rgFocusSaid > 1.2)) { p.rgFocusSaid = api.time; api.number(p.x, p.y - 26, 'FOCUS ' + Math.floor(p.rgFocus || 0) + '%: SWEET-SPOT HITS FILL IT', '#9aa39a'); } }   /* UP+C is THE GREAT ARROW (main.js's ultimate input fires it at a full Focus before this runs); below full it only says why */
-    else if (cDown && free && keys.down && p.ground) setSnare(p);                                /* DOWN+C: THE SNARE */
+    else if (cDown && free && keys.down && p.ground) startRecall(p);                              /* DOWN+C: ARROW RECALL (claude/herofeel; the snare is a store skill now) */
     else if (cDown && free && !ctx.dodging) { if (ctx.guardOk === false) p.stFlash = 0.35; else bash(p); }   /* C: THE BOW-BASH (WINDED: none) */
     guardStep(p, dt, keys, ctx);   /* (claude/heroblocksb) HOLD C: THE BOW GUARD */
-    bashStep(p); stepArrows(p, dt); snareStep(p, dt);
+    recallStep(p, dt); bashStep(p); stepArrows(p, dt); snareStep(p, dt);
     /* THE DRAW ROOTS HER (SOFT STEP: a slow walk; AIR DRAW: the fall slows while she holds it) */
     if (p.charge > 0) { if (p.ground || p.swim) { if (!t.softStep) p.vx = 0; else p.vx *= RG.draw.slow; } else if (t.airDraw && p.vy > 40) p.vy = 40; }
   }
 
   /* ---- HER NINE BOUGHT ACTIVES (main.js rangerKit presses them through skillPress / cdReady / spend, like everyone's) ---- */
+  /* ---- ARROW RECALL (DOWN+C): see RG.recall ---- */
+  const recallable = (p, a) => (a.state === 'lie' || a.state === 'stuck' || a.state === 'foe') && Math.abs(a.x - p.x) <= RG.recall.range && Math.abs(a.y - p.y) <= RG.recall.range;
+  function startRecall(p) { if (!p.ground || p.rgRecall || p.rgCd > 0) return false; ensure(p);
+    if (!(p.rgArrows || []).some(a => recallable(p, a))) { api.number(p.x, p.y - 26, 'NO ARROWS OUT', '#9aa39a'); return false; }
+    if (!api.spend(Math.round((p.maxSt || 100) * RG.recall.stFrac))) { api.tired(); return false; }
+    p.rgRecall = { t: 0, yanked: false, hp: p.hp }; p.rgNock = null; p.charge = 0; stats.recalls = (stats.recalls || 0) + 1; p.vx = 0; api.kitPose(p, 'rgSnare', 0.3); api.SFX.rgSnare && api.SFX.rgSnare(); return true; }
+  function recallStep(p, dt) { const R = p.rgRecall; if (!R) return;
+    if (p.dead || p.hurt > 0 || p.hp < R.hp) { p.rgRecall = null; api.SFX.rgSnap && api.SFX.rgSnap(); return; }   /* a blow lands on her and breaks the kneel; what she already called keeps flying */
+    R.t += dt; p.vx = 0; p.rgNock = null; p.charge = 0; api.kitPose(p, 'rgSnare', 0.1);
+    if (!R.yanked && R.t >= RG.recall.yank) { R.yanked = true; let n = 0; for (const a of p.rgArrows) if (recallable(p, a)) { a.state = 'recall'; a.foe = null; a.t = 0; a.hit = new Set(); n++; }
+      api.number(p.x, p.y - 28, 'ARROW RECALL', '#c8e89a'); api.SFX.rgSnap && api.SFX.rgSnap(); api.shakeCam(2); api.streaks(p.x, p.y - 8, 6, ['#e8dcb0', '#c8e89a'], 90); stats.recalled = (stats.recalled || 0) + n; }
+    if (R.t >= RG.recall.root) p.rgRecall = null; }
+  function recallFly(p, a, dt) { const dx = p.x - a.x, dy = (p.y - 8) - a.y, d = Math.hypot(dx, dy) || 1, st = Math.min(d, RG.recall.speed * dt); a.x += dx / d * st; a.y += dy / d * st; a.vx = dx / d * RG.recall.speed; a.vy = dy / d * RG.recall.speed; a.ang = Math.atan2(a.vy, a.vx);
+    for (const e of api.enemies) { if (!e.alive || e.harmless || e.gone > 0 || e.turncoat || a.hit.has(e) || !api.overlap({ l: a.x - ARROW_HIT, r: a.x + ARROW_HIT, t: a.y - ARROW_HIT, b: a.y + ARROW_HIT }, api.box(e))) continue;
+      a.hit.add(e); api.hurtAs('shot', e, Math.max(1, Math.round(dmgBase() * RG.recall.dmg)), a.x - Math.sign(a.vx || 1) * 10, false); api.sparks(a.x, a.y, Math.sign(a.vx) || 1, 3); stats.recallHits = (stats.recallHits || 0) + 1; }
+    if (d < 10) { a.state = 'gone'; if (giveArrow(p, 1, 'recall')) api.SFX.rgPick && api.SFX.rgPick(); } }
   const kit = {
+    /* (claude/herofeel) THE SNARE, now a STORE skill (progression-catalog rgSetSnare): the same RG.snare numbers, set from the skill slot (main.js pays the wind) */
+    snare() { const p = P(); if (!p.ground) return false; ensure(p); const n = T().snares ? 2 : 1; while (p.rgSnares.length >= n) p.rgSnares.shift(); p.rgSnares.push({ x: p.x, y: p.y, life: RG.snare.life, sprung: 0, held: null }); stats.snares++; api.kitPose(p, 'rgSnare', 0.3); api.SFX.rgSnare && api.SFX.rgSnare(); api.teach('snare'); return true; },
     /* (claude/rangerid, Daniel 10-31 Q9) VOLLEY: 6 s apart (main.js CD_MAX.rgVolley) and TWO ARROWS FROM THE QUIVER - two of its three arrows are hers to pick up again, the third is free. Short of two arrows it does not go */
     volley() { const p = P(); if ((p.rgQ | 0) < RG.volleyCost) return false; for (let i = 0; i < RG.volleyCost; i++) takeArrow(p); stats.volleys++; api.kitPose(p, 'rgVolleyPose', 0.3); let n = 0; for (const [k, vy] of [[0.92, -95], [1, -55], [1.06, -18]]) loose(p, { kind: 'skill', vx: p.face * RG.draw.vx1 * k, vy, g: RG.draw.g, dmg: dmgBase() * SKK.K.rgVolley * api.amul('rgVolley'), tag: 'shot', free: n++ === 2 }); api.SFX.rgLoose && api.SFX.rgLoose(2); return true; },
     hawk() { const p = P(), e = quarry(p, 220); api.kitPose(p, 'rgHawkPose', 0.35); p.rgHawk = { x: p.x, y: p.y - 22, e, t: 0, strikes: 0, back: false }; api.SFX.rgHawk && api.SFX.rgHawk(); },
@@ -476,7 +498,7 @@ export function makeRanger(api) {
         for (const [sx, sy] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) { g.fillRect(x + sx * rr - (sx > 0 ? 3 - o : o), y + sy * rr - (o && sy > 0 ? 0 : 0), 4, 1); g.fillRect(x + sx * rr, y + sy * rr - (sy > 0 ? 3 : 0), 1, 4); }
         g.fillRect(x - rr - 3, y, 3, 1); g.fillRect(x + rr + 1, y, 3, 1); g.fillRect(x, y - rr - 3, 1, 3); g.fillRect(x, y + rr + 1, 1, 3); }
       g.fillStyle = '#ffd0c0'; g.fillRect(x, y, 1, 1); if (k) { g.fillRect(x - 1, y, 1, 1); g.fillRect(x + 1, y, 1, 1); g.fillRect(x, y - 1, 1, 1); g.fillRect(x, y + 1, 1, 1); } } }
-  function clear() { const p = P(); p.rgArrows = []; p.rgSnares = []; p.rgTraps = []; p.rgHawk = null; p.rgRain = null; p.rgNock = null; p.rgBashT = 0; p.rgGuard = false; p.rgHeld = 0; p.rgFlip = null; p.rgWildT = 0; p.rgQ = maxQ(); p.rgRefT = 0; p.rgRsT = 0; p.rgRsE = 0; }
+  function clear() { const p = P(); p.rgArrows = []; p.rgSnares = []; p.rgRecall = null; p.rgTraps = []; p.rgHawk = null; p.rgRain = null; p.rgNock = null; p.rgBashT = 0; p.rgGuard = false; p.rgHeld = 0; p.rgFlip = null; p.rgWildT = 0; p.rgQ = maxQ(); p.rgRefT = 0; p.rgRsT = 0; p.rgRsE = 0; }
   const read = () => { const p = P(); ensure(p); return { stance: p.rgStance || 'bow', q: p.rgQ, max: maxQ(), focus: +(p.rgFocus || 0).toFixed(1), nock: !!p.rgNock, bashUp: bashUp(p), onBeat: onBeat(p), flip: !!p.rgFlip, cd: +(p.rgCd || 0).toFixed(3),
     arrows: p.rgArrows.map(a => ({ kind: a.kind, state: a.state, x: Math.round(a.x), y: Math.round(a.y), tag: a.tag, rip: a.rip, vy: Math.round(a.vy), free: !!a.free, emp: !!a.emp })), snares: (p.rgSnares || []).map(s => ({ x: Math.round(s.x), sprung: s.sprung > 0 })),
     refT: +(p.rgRefT || 0).toFixed(2), wildT: p.rgWildT || 0, stats: { ...stats } }; };

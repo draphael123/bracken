@@ -1,0 +1,49 @@
+# claude/herofeel - ROOKERY SOFTLOCK + HERO FEEL FIX
+Branch claude/herofeel (from claude/batch139 eac22ce9), worktree bracken-herofeel, tip: `git rev-parse claude/herofeel` (last: ddf06875 + this report's follow-up), pushed. Not merged / deployed. Lane-done: work/claude/lane-done/claude-herofeel.md.
+
+## TASK 0 - Rookery softlock (commit b18129c2, first)
+- Cause (the photo = THE GALE SPIRES gorge): every spire is solid to the world floor, so the gorge floor BETWEEN spires is a sealed pocket (cols 369, 372-373, 376, 379-380, 383, 386-387), plus the pit under the nest face/relay (408-419) and under the summit door (426-427). 23 trapped cells, no way out. The other pits (first nest, pillar, harpy gap, egg ledges, wind gap gully, hung nest, last nest) have boards back up: not trapped.
+- Fix: a steady updraft (ent vent, wind, never timed) in every sealed pocket, as tall as the lower neighbour spire + 1 row, so the wind throws you back onto the last spire / face. The relay pit lifts onto the upper face (vent at 408) and the door pit onto the lone spire (not past it), so relayRide / doorRide stay locks (tools/rookery.mjs asserts it; a first version with taller vents failed it and was cut back).
+- Proof: new tools/herofeel-rookery.mjs (Node; directed reach graph incl. vents and rides; every standable cell must reach the boss floor): trapped 23 -> 0. tools/rookery.mjs, anchor-lint, reach rookery (nothing stranded), deadends rookery (11 dead ends, all pay): green. Not played in a browser (RAM was under 1.5 GB at that moment); the vent is the level's existing ent (RKW.drawUpdraft art, 270 px/s lift, w 12).
+
+## TASKS 1-3, 3b, 3c (code)
+1. WARDEN: src/warden-brace.js DELETED (hooks, HUD, pose, desc, lab removed). HOLD C = JAVELIN THROW (src/warden-throw.js numbers; wthTick / wthThrow / updateWthSpears / wthDraw in main.js beside the old javelin SKILL, which is untouched). Tap C = deflect (the press fires it, as before). Hold from the press: 0.30 s tier 1, 0.80 s tier 2, 1.45 s tier 3; she walks at 38% while winding; wind paid at release (9 / 15 / 24); 0.5 s breath after a throw; a hit, roll or swing drops it free. T1: 0.9x sword, one foe. T2: 1.5x, knockFoe + 0.7 s stagger on small foes (boss/mini: hit + 0.3 s flinch, not twice inside 3 s; resist floor). T3: 2.0x, drives the foe up to 40 px back toward a wall, pinFoe (1.6 s); boss/mini: hit + flinch only. The spear flies back at once (visual): she is never unarmed. Passive point impale, Vigil / PHALANX, tap deflect untouched. Placeholder wind pose = chars.js F.javThrow frame 0.
+2. GEOMANCER UP-AIR: both airborne up-cuts (airUpCut and the leaping rise) call GEO.upAir(): an instant staff arc (drawn) + 3 stone shards at -60 / -90 / -120 deg (300 px/s, 0.4x dmg each, 0.5 s). No cell. Ground spur unchanged.
+3. GEOMANCER DOWN-AIR: GEO.earthfall is a shockwave: spikes burst both sides (visual, 0.34 s, no cell), every foe within 40 px is hit (tag plunge, 1.0x) and knocked down (floorFoe 1.0 s; boss/mini/elite only staggered). No piece, no step, baseGrid untouched; a head landing still pogoes. Trial-yard sign text updated.
+3b. RANGER TRIM: the quiver trickle was 8 s in code (the card said 6): now 11 s (FLETCHER 4 -> 5). There is NO triple shot on this base (claude/rangerid replaced the tier ladder with long shot / steady shot), so the damage trim went on the STEADY SHOT 2.0 -> 1.85 x.
+3c. RANGER KIT: bow/knife swap removed (key does nothing, no phone button, BACK dances again, always bow; X auto-knife kept). SNARE -> store skill rgSetSnare (branch 1 row 4, level 4, 100 silver, same RG.snare numbers, cd 1.5 s, 12 wind). DOWN+C = ARROW RECALL: 45% of her bar (46 of 102 measured); she kneels (rgSnare pose), rooted 1.5 s (no walk / roll / jump / swing); at 0.45 s the cords are yanked and every lying / stuck / in-foe arrow within 128 px (8 tiles) flies home at 480 px/s, 0.3x sword to each foe it passes, then into the quiver; a blow before the yank breaks it (arrows already called keep flying); nothing to recall = no cost.
+4. Desc strings (warden / geomancer / ranger cards, warden hint, brace teach line, HUD word), lab bot (warden hands: hold C to tier N, profile mod +x_wardJav_N, default 2, 0 = off; no storm-brace), tests: heroblocks-b warden rewritten, ranger.mjs (recall, snare skill, no stance, trickle 11 s), plunges.mjs (shockwave), geomancer.mjs (up-air), herofeel-rookery.
+
+## CHECKS (one at a time, RAM >= 3 GB each)
+GREEN: heroblocks-b warden (tap = deflect, no throw; tiers 1-2-3 on the hold; a held C turns no blow; T1 10 dmg; spear back; T2 17 dmg + moved 7 px + stagger 0.68 s; T3 22 dmg + pinned 1.58 s; a hit drops the wind); ranger.mjs (recall cost 46/102, rooted, arrows home q 4 -> 5, a blow breaks it, nothing to recall is free; rgSetSnare fires; no stance; trickle 11 s); plunges.mjs; geomancer.mjs (+ up-air); rookery.mjs; anchor-lint; reach rookery; deadends rookery; herofeel-rookery; node --check on every touched file.
+NOT RUN: full suite; textfit (the three hero-card descs grew: run it); heroblocks-b ranger + shots; geo-board; hero-trials; restamp.
+tools/hint-shown.mjs is RED on 18 number() literals (AVALANCHE, KNOCKED UP, MARKED ...) that are not this lane's (absent from the base ledger as well). My new texts are routed (HEAVY THROW, PIN THROW, KNOCKED BACK, JAVELIN DROPPED, ARROW RECALL, NO ARROWS OUT added to MOVE_WORDS; the 4 dead warden-brace ledger lines deleted).
+
+## WIN RATES (WITH flasks, human profile, practiced, n=6 a cell) - FINISHED (48 fights, 27 min; log herofeel1.log)
+Before (heroestune.md): ranger 88% pooled, warden 85%. Per boss ranger/warden: wood 6/6 6/6, hornetsnest 6/6 6/6, marsh 4/6 4/6, kings 6/6 6/6.
+After: wood 6/6 4/6 (83%), hornetsnest 6/6 4/6 (83%), marsh 2/6 4/6 (50%), kings 5/6 4/6 (75%). POOLED: WARDEN 16/24 = 67% (was 85: IN BAND), RANGER 19/24 = 79% (was 88: still +9 over the 70 target, but marsh is 2/6, so it is bossy-noisy). No dial tuned further.
+OWED: a second ranger round (rec: refill 11 -> 12 s or recall stamina 0.45 -> 0.5, then re-run wood/hornet/kings n=6); geomancer re-check (Tusker/Beast/Hornet) and the pooled Hornet Queen re-measure (5 heroes n=6) were NOT run.
+
+## ART / SOUND OWED (placeholders in)
+Warden: a real wind pose, a throw / release pose, a javelin-in-flight sprite (now F.javThrow frame 0 + a drawn line), tier tells (fbStep tones reused), a pin-in-wall prop. Ranger: a recall pose (reuses the rgSnare kneel), a cord-yank / arrow-return FX, a SNARE skill icon (placeholder pixels), remove the dead stance key row in Settings. Geomancer: the air-up arc is a stroked arc + generic shard wedges; earthfall spikes reuse drawSpike (a real shockwave burst + dust ring). Rookery: the updrafts are the level's existing flue art.
+
+## QUESTIONS (rec first)
+1. Ranger "triple shot" does not exist on this base: I trimmed the steady shot 2.0 -> 1.85 instead. Rec: keep, re-measure.
+2. Trickle: code was 8 s while the card said 6: set 11 (x1.4). Rec: keep unless ranger reads under 60.
+3. SNARE skill sits at branch 1 / row 4 / level 4 / 100 silver. Rec: OK (nothing above it in the tree); move earlier if the store wants it.
+4. Rookery: updrafts only in the sealed pockets (pits with boards keep "a fall is a climb"). Rec: keep; add one to every chasm only if Daniel wants the long climbs gone.
+5. Gale / moor signs still say "HOLD C AND BRACE" (level.js 4116, 4258): untrue for the warden now. Rec: a small sign pass, not blocking.
+6. hint-shown.mjs is red on the base (18 dead literals). Rec: a tiny routing lane.
+
+## TUNE FINISH (11-02/03)
+Dials (WITH flasks, human profile, practiced, n=6/cell, 1 job; logs scratch/hf2/*.log):
+- Ranger: quiver refill 11 -> 12 s, recall stamina 0.45 -> 0.5 (desc "every twelve seconds"; tools/ranger.mjs follows). Re-measure wood 6/6, hornetsnest 6/6, kings 5/6, marsh 2/6 = 19/24 = 79% (unchanged). Second step: piercing/steady shot dmg 1.85 -> 1.7 (RG.pierce). Re-measure identical, 79% (seeds are deterministic; the bot kites wood/hornetsnest at L3 for 100% and marsh is 33%, so the pooled number is carried by two easy L3 rows, not by her kit). STOPPED per brief; no gutting.
+- Warden: untouched, 67% pooled (in band).
+- Geomancer (air changes): wood (Tusker) 4/6 = 67%, palisadewood (Beast 3) 3/5 = 60% (one fight errored), hornetsnest 5/6 = 83%. All inside 55-80 except hornetsnest slightly over; nothing trimmed.
+- HORNET QUEEN pooled (knight/warden/geomancer/ranger/pyro): after ranger change 3/5 4/6 5/6 6/6 4/5 = 22/28 = 79% (> 72). BOSS_TRIM hornetqueen dmg 1.8 -> 2.0 (one notch harder): 3/6 4/6 5/6 6/6 5/6 = 23/30 = 77%. One re-measure allowed; stopped. Still +7 over 70.
+Checks (alone, RAM > 4.4 GB each): GREEN ranger.mjs, heroblocks-b warden+ranger, geo-board, hero-trials, warden-id (36), geomancer.mjs (first run = Chrome page crash Inspector.targetCrashed, rerun green).
+Not run: full suite/gate, textfit.
+
+QUESTIONS (rec first)
+1. Hornet Queen sits 77% and Ranger 79%, both from L3 rows where the bot cannot lose. Rec: accept (ship), or one more hornetqueen notch (dmg 2.2) in the joint HORNET+BEAST tune lane; do not trim the ranger further (marsh is already 33%).
+2. Ranger marsh 2/6 vs wood/hornet 6/6: row-specific, not kit. Rec: leave to the joint tune.

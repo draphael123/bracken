@@ -3811,7 +3811,7 @@ function trialYard(hero) {
       ['fault', 2, 'FAULT LINE: HOLD X TILL THE STAVE NAMES IT, LET GO. CATCH BOTH IN ONE CRACK.', [['dummy', 12], ['dummy', 17]], 'HOLD X, LET GO'],
       ['flash', 2, 'THE WARD: TAP C AS HIS SWORD FLASHES. IT RISES ON THE BEAT AND EMPOWERS YOU. TWICE.', [['swornsword', 18]], 'TAP LB AS IT FLASHES'],
       ['tells', 2, 'ONE YELLOW ! : THE WARD TAKES IT. TWO RED !! : IT BREAKS THROUGH, SO GET CLEAR. DO BOTH.', [['hedgeknight', 18]], 'TAP LB FOR !    B OR A FOR !!', MARKS],
-      ['stonefall', 2, 'EARTHFALL: JUMP, THEN DOWN+X BETWEEN THEM. A STONE RISES AND HITS. LAND IT TWICE.', [['dummy', 13], ['dummy', 17]], 'A, THEN DOWN+X'],
+      ['stonefall', 2, 'EARTHFALL: JUMP, THEN DOWN+X BETWEEN THEM. THE LANDING IS A SHOCKWAVE. LAND IT TWICE.', [['dummy', 13], ['dummy', 17]], 'A, THEN DOWN+X'],
       ['meter', 1, 'STONES STAND UNTIL BROKEN. THREE UP, UP+C: THE AVALANCHE. RAISED FOR YOU HERE.', [['dummy', 12], ['sprig', 18]], 'UP + LB WITH THREE STONES UP'],
       SKILL],
     /* THE BERSERKER'S YARD (claude/berserker, 2026-10-04): his verbs. THE CHAIN (the run goes on only while the chops land, so it is taught on
@@ -4113,7 +4113,7 @@ function galeMoor() {
   ent('vent', o + 37, 13, { period: 4, on: 2.2, h: 150, wind: true, w: 20 });
   ent('flagpost', o + 12, 13); ent('flagpost', o + 36, 13); ent('harpy', o + 44, 5);
   ent('sign', o - 6, 13, { text: 'A TAILWIND CARRIES YOU OVER WHAT NO JUMP CROSSES. GO AS IT BLOWS, NOT BEFORE.' });
-  ent('sign', o + 10, 13, { text: 'WIND FROM AHEAD OVER THE POSTS. CROSS IN THE STILL, OR CROUCH OR HOLD C AND BRACE ON ONE.' });
+  ent('sign', o + 10, 13, { text: 'WIND FROM AHEAD OVER THE POSTS. CROSS IN THE STILL, OR CROUCH OR HOLD C AND BRACE ON ONE.', warden: 'WIND FROM AHEAD OVER THE POSTS. CROSS IN THE STILL, OR CROUCH BEHIND ONE.' });   /* (claude/smallfix10) the warden's hold C is a javelin wind-up now, not a brace */
   coins([o + 2, 11], [o + 4, 10], [o + 6, 11], [o + 17, 12], [o + 21, 12], [o + 25, 12], [o + 40, 7], [o + 37, 8]);
   ent('troll', o + 52, 13, { elite: true });   /* the crag troll on the gallery's far floor, the thorns behind you */
   ent('check', o + 45, 13);
@@ -4255,7 +4255,7 @@ function galeMoor() {
   ent('flagpost', o + 4, 12); ent('flagpost', o + 15, 6); ent('flagpost', o + 33, 6); ent('flagpost', o + 47, 6);
   ent('deco', o + 18, 6, { kind: 'cairn' });
   ent('sign', o + 2, 12, { text: 'THE GALE STAIR. THIS UPDRAFT BLOWS ONLY IN THE GUST: RIDE IT UP AND OVER.' });
-  ent('sign', o + 13, 6, { text: 'A GALE HARPY BEATS HER WINGS AT YOU: HIT HER AS SHE DRAWS THEM BACK, OR HOLD C AND BRACE.' });
+  ent('sign', o + 13, 6, { text: 'A GALE HARPY BEATS HER WINGS AT YOU: HIT HER AS SHE DRAWS THEM BACK, OR HOLD C AND BRACE.', warden: 'A GALE HARPY BEATS HER WINGS: HIT HER AS SHE DRAWS THEM BACK, OR HOLD C AND LET GO.' });
   ent('sign', o + 37, 6, { text: 'THE GUST BLOWS BACK OVER THE STONES. BRACE ON ONE, HOP IN THE STILL.' });
   coins([o + 7, 9], [o + 9, 5], [o + 16, 5], [o + 25, 4], [o + 28, 4], [o + 27, 11], [o + 41, 5], [o + 44, 5], [o + 47, 5]);
 

@@ -256,6 +256,12 @@ export function buildRookery({ painter, T, TS }) {
   ground(426, 427, 30);                                                            /* the gorge floor under the summit's face */
   ride('doorRide', { mount: [423, 10], roost: [418, 4], path: [[425, 6], [427, 2], [430, 2]], land: [432, 4] });
   coins([423, 10], [430, 4]);
+  /* (claude/herofeel, Daniel 11-02 live, a photo: stuck in the gorge) THE GORGE'S UPDRAFTS. Every spire stands on the gorge floor, so the floor between two spires is a sealed pocket: a fall off the
+     spires, the nest face or the relay landed in one with no way out. THE WIND NOW LIFTS YOU BACK UP: a steady updraft (never timed: a pit is never dead air) in each pocket, as tall as the
+     lower neighbour spire plus a row, throws you up to the last spire / face top you stood on (tools/herofeel-rookery.mjs proves no pocket is left) */
+  const lift = (x, topRow) => ent('vent', x, r(29), { wind: true, period: 100, on: 100, h: (r(30) - r(topRow)) * TS, w: 12, lift: 270 });   /* topRow: the row the column reaches (the rows here are the level's) */
+  for (const [x, top] of [[369, 7], [372, 8], [373, 8], [376, 8], [379, 10], [380, 10], [383, 10], [386, 13], [387, 13], [408, -1], [426, 10], [427, 10]]) lift(x, top);
+
   ground(428, W - 1, 5);                                                           /* THE SUMMIT'S DOOR */
   ent('check', 362 + EXT, r(4));                                                    /* SHRINE FOUR: the summit's door */
   sign(366 + EXT, 4, "THE SHRIEK SISTERS: BAIT A DIVE ONTO THE CRACKED ROCK. SHE LIES STUNNED IN IT.");
