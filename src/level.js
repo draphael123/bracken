@@ -3811,7 +3811,7 @@ function trialYard(hero) {
       ['fault', 2, 'FAULT LINE: HOLD X TILL THE STAVE NAMES IT, LET GO. CATCH BOTH IN ONE CRACK.', [['dummy', 12], ['dummy', 17]], 'HOLD X, LET GO'],
       ['flash', 2, 'THE WARD: TAP C AS HIS SWORD FLASHES. IT RISES ON THE BEAT AND EMPOWERS YOU. TWICE.', [['swornsword', 18]], 'TAP LB AS IT FLASHES'],
       ['tells', 2, 'ONE YELLOW ! : THE WARD TAKES IT. TWO RED !! : IT BREAKS THROUGH, SO GET CLEAR. DO BOTH.', [['hedgeknight', 18]], 'TAP LB FOR !    B OR A FOR !!', MARKS],
-      ['stonefall', 2, 'EARTHFALL: JUMP, THEN DOWN+X BETWEEN THEM. THE LANDING IS A SHOCKWAVE THAT HITS BOTH. LAND IT TWICE.', [['dummy', 13], ['dummy', 17]], 'A, THEN DOWN+X'],
+      ['stonefall', 2, 'EARTHFALL: JUMP, THEN DOWN+X BETWEEN THEM. THE LANDING IS A SHOCKWAVE. LAND IT TWICE.', [['dummy', 13], ['dummy', 17]], 'A, THEN DOWN+X'],
       ['meter', 1, 'HER STONES STAND UNTIL BROKEN. THREE UP: UP+C IS THE AVALANCHE, EVERY STONE ERUPTS AND ROLLS. THEY ARE RAISED FOR YOU HERE.', [['dummy', 12], ['sprig', 18]], 'UP + LB WITH THREE STONES UP'],
       SKILL],
     /* THE BERSERKER'S YARD (claude/berserker, 2026-10-04): his verbs. THE CHAIN (the run goes on only while the chops land, so it is taught on
