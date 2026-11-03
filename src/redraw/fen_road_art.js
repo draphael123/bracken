@@ -174,6 +174,12 @@ export function addSupports(L, T) {
   }
   return L;
 }
+/* (claude/floatfix) THE PILES IN FRONT OF THE WATER: the deck runs at the water line and the water pass is drawn over everything behind it, so the piles under it were a dark smudge in dark water and the boards read as floating. After the water pass the submerged part is laid over it again, seen through it. */
+export function drawPilesFront(g, L, cx, cy) {
+  const w = g.canvas.width; g.save(); g.globalAlpha = 0.78;
+  for (const p of L.routeSupports || []) { if (p.kind !== 'fenpile' || p.x * 16 - cx < -80 || p.x * 16 - cx > w + 16) continue; drawPile(g, p, cx, cy); }
+  g.restore();
+}
 /* one pile: the bent under a board - a log with a cap beam under the deck, hemp lashings, a green waterline, wet and dark below it; p = { x, y (the board's row), bottom } in tiles */
 export function drawPile(g, p, cx, cy) {
   const x = Math.round(p.x * 16 + 6 - cx), y0 = Math.round(p.y * 16 + 5 - cy), y1 = Math.round(p.bottom * 16 - cy), wl = Math.round(WATER * 16 - cy);

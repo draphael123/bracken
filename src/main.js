@@ -34044,7 +34044,7 @@ function drawWorld(cx, cy, showPlayer) {
   if (L.zipLines && L.zipLines.length) ZL.drawZips(g, L, cx, cy, VW, VH, time, P);
   if (L.mangonel) HL.drawHaul(g, L, cx, cy, VW, time);   /* (stormhold4) the haul lines' hemp, a parted line, THE MANGONEL and its stones (src/haul-lines.js) */   /* THE ZIP LINES: rope, poles, a handle at each end, the glint (src/zipline.js) */
   drawShards(cx, cy);
-  drawWater(cx, cy, false);
+  drawWater(cx, cy, false); if (L.fenroad) FRA.drawPilesFront(g, L, cx, cy);   /* (claude/floatfix) the road's piles seen through the water */
   if (FRH && FRH.on()) FRH.drawWorld(g, cx, cy, time); if (FPK && FPK.on()) FPK.draw(g, cx, cy, time); if (HNS && HNS.on()) HNS.draw(g, cx, cy, time);   /* (claude/hornetsnest) the wax, the combs and their plumb lines, the smoke stands, the brood cells */   /* (claude/fenroad2) the bundles, the planks, the ghost plank over a broken edge, the told arc */   /* THE FEN ROAD (claude/fenroad): the bowed sections, their lashings, the crew's laid boards, the arm, the Stockade's gate */
   if (L.marsh2Kit) { const sp = props.find(q => q.t === 'sluice' && q.pool === 350 * TS), pl = (L.pools || []).find(q => q.sluiceHouse); M2A.drawFront(g, L, cx, cy, time, { open: !!(sp && sp.open), draining: !!(pl && pl.draining && pl.yTo !== undefined && pl.y < pl.yTo - 3), pool: pl }); }   /* (claude/marsh2art) the culvert's leaf, the jet when the gate is broken, the whirlpool while the basin falls */
   if (H2A.on()) H2A.drawBack(g, cx, cy, time);   /* THE HURRICANE DECK 2 (claude/hurricane2art): masts, yards, stays, breaches, deckhouse roofs, the powder store's seams (src/hurricane2-art.js) */
