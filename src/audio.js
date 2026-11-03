@@ -333,6 +333,9 @@ export const SFX = {
      falling whistle that lasts the whole tell (meteorWhistle) and lands as the biggest boom she has (meteorBoom) */
   bombPip(n = 1) { if (!gate('bombPip', 0.04)) return; const f = [0, 640, 860, 1180][n] || 640; tone('triangle', f, f * 1.25, 0.07, 0.06); crackle(1, 0.02); },
   bombBoom() { if (!gate('bombBoom', 0.05)) return; noise(0.3, 0.3, 700, 0.5); tone('sine', 110, 38, 0.34, 0.3); noise(0.14, 0.16, 2600, 0.7, 0.02); crackle(5, 0.05); },
+  /* FIRE LANCE (the 'meteor' skill id): a fast rising whoosh as it leaves the hand, and a short dry crack where it lands */
+  lanceWhoosh() { tone('sawtooth', 220, 780, 0.2, 0.08); noise(0.22, 0.12, 2600, 0.8); },
+  lanceCrack() { noise(0.12, 0.3, 3400, 0.6); tone('square', 520, 120, 0.12, 0.14); crackle(5, 0.08); },
   meteorWhistle() { tone('sine', 1700, 340, 0.92, 0.1); tone('triangle', 1720, 360, 0.92, 0.04, 0.02); noise(0.9, 0.04, 3200, 0.9); },
   meteorBoom() { noise(0.6, 0.46, 420, 0.4); tone('sine', 66, 22, 0.9, 0.46); tone('sawtooth', 90, 40, 0.5, 0.16); noise(0.3, 0.26, 2200, 0.7, 0.05); crackle(14, 0.1); },
   conflag() { noise(0.4, 0.3, 900, 0.5); tone('sawtooth', 90, 260, 0.35, 0.16); tone('sine', 60, 24, 0.8, 0.4, 0.12); noise(0.3, 0.24, 2400, 0.7, 0.14); crackle(10, 0.1); },

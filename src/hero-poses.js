@@ -57,7 +57,7 @@ export const POSE_BEATS = {
   wisp: [0.1, 0.25],           /* WISP: the flame cupped low in the palm, lifted up and let go, and watched */
   wall: [0.08, 0.2],           /* FIRE WALL: the staff up behind her, brought down along the ground ahead, and held there */
   cinder: [0.1, 0.22],         /* CINDER STEP: a low flat dash with the embers coming off the hem, and the pull-up */
-  meteor: [0.12],              /* METEOR: the staff swung up, then held high with the fire at its head calling the sky */
+  meteor: [0.12],              /* FIRE LANCE (id meteor): the staff drawn back at the hip, then thrown level */
   ring: [0.1],                 /* RING OF FIRE: the staff lifted in both hands, and driven butt-first into the ground */
   /* THE FREEBOOTER */
   spot: [0.1, 0.3],            /* THE BLACK SPOT: the cutlass point levelled at him, the spot on it, and the blade taken back */
