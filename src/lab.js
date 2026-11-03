@@ -414,6 +414,7 @@ function labBotFrame(BK, h, e, f) {
     else if (h === 'pirate') { if (f % 12 === 0) k.block = true; }
     else if (DEFLECTS(h)) { if (HARD_TELLS.has(e.t + '|' + e.mode)) { if (f % 14 === 0) BK.press('dodge'); } else k.block = ON_THE_BEAT(e) && DEFLECT_TAP(f); }
     else if (knightBashNow(BK, h, e, ad)) { k.up = true; k.block = !P.cWas; }   /* (claude/heropassa) THE SHIELD BASH: the blow punched out of its wind-up */
+    else if (h === 'knight' && typeof e.modeT === 'number' && e.modeT > 0.08 && e.modeT < 5) { /* (claude/rel139fix) THE GUARD CHAIN: the shield goes up in the last 0.08 s of the told blow - a PERFECT GUARD is a link; held from the start of the tell it is only a plain block and the chain never grows */ }
     else k.block = true;
   } else if (reloadCrouchNow(BK, h, e)) { k.down = true; }   /* THE FREEBOOTER DUCKS AND RELOADS, well out of the cutlass's reach */
   else {
