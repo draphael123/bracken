@@ -18,7 +18,8 @@ try {
     /* stomp: tell, then release */
     b.hp = b.maxHp; b.x = mid; b.y = A.floor; P.x = mid + 100; P.y = A.floor; b.ward = 0; b.mode = 'stampTell'; b.modeT = 0.5; b.vx = 0;
     frames(30, () => { b.vx = 0; }); snap('stomp-1-tell');
-    frames(30, () => { b.vx = 0; P.x = mid + 100; }); snap('stomp-2-release');
+    for (let i = 0; i < 90 && !(b.rl.fx && b.rl.fx.length); i++) frames(1, () => { b.vx = 0; P.x = mid + 100; });   /* the release frame: the crack, the ring and the ridge start (claude/scree3art: shots taken by the fx's own age) */
+    frames(3, () => { b.vx = 0; P.x = mid + 100; }); snap('stomp-2-release'); frames(6, () => { b.vx = 0; P.x = mid + 100; }); snap('stomp-2b-ring');
     frames(22, () => { b.vx = 0; P.x = mid + 100; }); snap('stomp-3-waves');
     frames(14, () => { b.vx = 0; P.x = mid + 100; b.mode = 'pace'; b.modeT = 99; }); snap('stomp-4-fading');
     /* boulder: tell at the east wall, then the boulder rolling */

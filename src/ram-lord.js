@@ -1,4 +1,5 @@
 import { drawArm, drawSlab, drawProp } from './scree-lip.js';
+import { boulderFrame, boulderSocket, shardRidge, stompCrack, dustRing, DUST_N } from './scree-art.js';
 // ram-lord.js - THE RAM LORD, REWORKED (claude/scree2; scratch/brief-scree2.md item 3, Daniel 10-08: "the boss could be better").
 // A BEAST DUELIST (design-standard B11) WITH A RULE OPENING (B1). Header, as B11 asks: HE IS A DUELIST - always hittable, guarding by angle.
 //   HIS HORNS GUARD HIS FRONT: a blow from the front at his height is turned (clank + GO ROUND, src/boss-read.js); from behind, from the flank or from
@@ -79,7 +80,7 @@ export function stepLip(L, c, floor, glowNow, onDown) {
       for (let i = 0; i < 6; i++) { const x = L.z0 + (L.z1 - L.z0) * (i + 0.5) / 6; c.rock(x, floor - 120 - Math.random() * 20, { delay: 0, tx: x, lip: true }); } } }
   else if (L.state === 'fall') { L.t -= dt; if (L.t <= 0) { L.state = 'spent'; L.t = LIP.rearm; c.shake(9); c.sfx('heavy'); for (let i = 0; i < 5; i++) c.dust(L.z0 + (L.z1 - L.z0) * i / 4, floor, 6);
       onDown(L); if (!c.P.dead && inZone(L, c.P.x) && Math.abs(c.P.y - floor) < 30) c.hurtP(L.x + L.side * 30, LIP.rock, { up: true, name: 'THE OVERHANG' }); } }
-  else if (L.state === 'spent') { L.t -= dt; if (L.t <= 0) { L.state = 'armed'; L.hitBy = false; c.say(L.x, floor - 44, 'THE CLIFF LOOSENS AGAIN', '#ffd36b'); } }
+  else if (L.state === 'spent') { L.t -= dt; if (L.t <= 0) { L.state = 'armed'; L.hitBy = false; c.sfx('creak'); c.say(L.x, floor - 44, 'THE CLIFF LOOSENS AGAIN', '#ffd36b'); } }
   if (!c.hb && !c.bb) L.hitBy = false;   /* one swing, one prop */
 }
 /* A LEVEL OVERHANG (the 'overhang' ent at column x, standing on row `row`'s floor, its line running `side` from the prop) */
@@ -122,7 +123,7 @@ export function boulderStep(e, c) {
    (main.js: a hero is hit when its feet are below the wave's y - 4, so a jump of 5 px clears it; stones that pop above it are grit, not hit). x/y the wave on screen. */
 export function drawRamWave(g, x, y, dir, wx, t) {
   const sd = Math.floor(wx / 6);
-  for (let i = -9; i <= 9; i += 3) { const h = 3 + ((i * 7 + sd) & 1) + (i === 0 ? 1 : 0); g.fillStyle = '#5a4632'; g.fillRect(x + i - 1, y - h, 4, h); g.fillStyle = (i / 3 + sd) & 1 ? '#a8865a' : '#c8a070'; g.fillRect(x + i - 1, y - h, 3, 1); g.fillStyle = '#3e3024'; g.fillRect(x + i - 1, y - 1, 4, 1); }
+  g.drawImage(shardRidge(sd), x - 12, y - 7);   /* the baked ridge (scree-art.js): 5 px at most above the foot, the wave's real hit height */
   for (let k = 0; k < 4; k++) { const ph = (t * 5 + k * 0.25 + sd * 0.13) % 1, px = x - dir * (8 + k * 7) + ((k * 5) % 3), py = y - 1 - Math.sin(ph * Math.PI) * (6 + k % 3 * 2); g.globalAlpha = 0.85 - ph * 0.5; g.fillStyle = k % 2 ? '#d8b888' : '#8a6a48'; g.fillRect(Math.round(px), Math.round(py), 2, 2); }   /* grit popping off the ridge, in its wake */
   g.globalAlpha = 1;
 }
@@ -132,21 +133,18 @@ function drawStompFx(g, S, cx, cy, floor, t) {
   if (!S.fx) return; S.fx = S.fx.filter(f => t - f.t0 < 1.3);
   for (const f of S.fx) { const a = t - f.t0, x = Math.round(f.x - cx), y = Math.round(floor - cy);
     if (a < 0.06 && f.big) { g.globalAlpha = 0.5; g.fillStyle = '#fff6e0'; g.beginPath(); g.ellipse(x, y - 2, 34, 9, 0, 0, Math.PI * 2); g.fill(); }   /* the flash, one frame */
-    const rk = Math.min(1, a / 0.35); if (rk < 1) { g.globalAlpha = 0.7 * (1 - rk); g.strokeStyle = '#d8b888'; g.lineWidth = 2; g.beginPath(); g.ellipse(x, y - 1, 46 * rk, 11 * rk, 0, 0, Math.PI * 2); g.stroke(); }   /* the dust ring */
-    g.globalAlpha = Math.max(0, 1 - a / 1.2);   /* the crack: 3-4 jagged lines from the hoof */
-    for (let k = 0; k < (f.big ? 4 : 3); k++) { let px = x, py = y - 1; const dirx = (k % 2 ? 1 : -1) * (1 + (k >> 1) * 0.6), len = f.big ? 5 : 4; g.strokeStyle = k % 2 ? '#3e3024' : '#7a6046'; g.lineWidth = 1; g.beginPath(); g.moveTo(px, py);
-      for (let s = 0; s < len; s++) { px += dirx * (4 + ((f.sd + k * 13 + s * 7) % 4)); py += ((f.sd + k * 5 + s * 3) % 3) - 1; g.lineTo(px, py); } g.stroke(); }
+    /* the crack: a baked decal (scree-art.js stompCrack) that opens out from the hoof in 0.12 s, then fades over 1.2 s; the leap's landing gets the smaller one */
+    const open = Math.min(1, a / 0.12), hw = Math.max(2, Math.round(32 * open)), cw = f.big ? 1 : 0.72, cwid = Math.round(hw * cw);
+    g.globalAlpha = Math.max(0, Math.min(1, (1.2 - a) / 0.7)); g.drawImage(stompCrack(f.sd), 32 - cwid, 0, cwid * 2, 10, x - cwid, y - 5, cwid * 2, 10); g.globalAlpha = 1;
+    const rk = Math.min(1, a / 0.35); if (rk < 1) { g.globalAlpha = 0.85 * (1 - rk * rk); g.drawImage(dustRing(Math.floor(rk * DUST_N)), x - 52, y - 16); }   /* the dust ring: baked puffs, 0 -> 46 px */
   }
   g.globalAlpha = 1;
 }
-/* THE BOULDER, drawn (placeholder, code-drawn: the art lane replaces it with a sprite): an ochre stone with a lit crown, turning */
+/* THE BOULDER, drawn: a baked lumpy ochre rock (scree-art.js boulderFrame) turning with B.rot, its shadow under it; the 24 px sprite is centred on the hitbox's disc (r 10) */
 function drawBoulder(g, B, cx, cy, floor, t) {
   const x = Math.round(B.x - cx), y = Math.round(B.y - cy), r = RAM.boulder.r;
   g.globalAlpha = 0.4; g.fillStyle = '#0a0814'; g.beginPath(); g.ellipse(x, Math.round(floor - cy) - 1, r - 1, 3, 0, 0, Math.PI * 2); g.fill(); g.globalAlpha = 1;
-  g.fillStyle = '#3e3024'; g.beginPath(); g.arc(x, y, r + 1, 0, 7); g.fill(); g.fillStyle = '#7a6046'; g.beginPath(); g.arc(x, y, r - 1, 0, 7); g.fill();
-  g.fillStyle = '#a8865a'; g.beginPath(); g.arc(x - 2, y - 3, r - 4, Math.PI * 0.9, Math.PI * 1.9); g.fill();
-  g.strokeStyle = '#3e3024'; g.lineWidth = 1; for (let k = 0; k < 3; k++) { const a = B.rot + k * 2.1; g.beginPath(); g.moveTo(x + Math.cos(a) * 2, y + Math.sin(a) * 2); g.lineTo(x + Math.cos(a + 0.3) * (r - 1), y + Math.sin(a + 0.3) * (r - 1)); g.stroke(); }
-  g.fillStyle = '#c8a070'; g.fillRect(x + Math.round(Math.cos(B.rot) * 4) - 1, y + Math.round(Math.sin(B.rot) * 4) - 1, 2, 2);
+  g.drawImage(boulderFrame(B.rot), x - 12, y - 12);
 }
 /* THE WARD after an opening (B3): told, and drawn */
 export function ward(e, c) { e.ward = RAM.wardT; c.say(e.x, e.y - e.h - 14, 'HE SHAKES IT OFF: WARDED', '#c9d1dc'); c.sfx('snort'); }
@@ -169,7 +167,7 @@ export function drawLip(g, L, floor, cx, cy, t) {
     else { g.fillStyle = '#4a3e3a'; g.fillRect(lipX0, fy - 58, lipW, 3); }   /* the scar where it came away */
     /* THE PROP: a dry-stone pillar under it, cracked; gold while he is in the fall line */
     if (up) { const gl = L.glow > 0 || L.state === 'creak';   /* THE PROP: a dry-stone pier, its stones in courses, wider at the foot, a crack up its middle */
-      drawProp(g, px, fy);
+      drawProp(g, px, fy, L.state === 'creak' ? (L.t > LIP.creak * 0.5 ? 'knock0' : 'knock1') : gl ? 'glint' : 'armed', L.side);   /* THE CHOCK CAIRN (scree-lip.js): armed / glint (the wedge gold) / the blow's two frames */
       if (gl) { const k = 0.5 + 0.5 * Math.sin(t * 12); g.globalAlpha = 0.5 + 0.5 * k; g.strokeStyle = '#ffd36b'; g.lineWidth = 1; g.strokeRect(px - 8, fy - LIP.propH - 2, 16, LIP.propH + 2); g.fillStyle = '#fff6c8'; g.fillRect(px - 1, fy - 22, 2, 2);
         /* HE IS ABOUT TO BE STUNNED (claude/ramtune2): the fall line is a bright band on the floor, a pulsing gold ring round the prop and a bouncing gold arrow over it, and grit + pebbles drop through the line while the slab shakes */
         const z0 = Math.round(Math.min(L.z0, L.z1) - cx), zw = Math.round(Math.abs(L.z1 - L.z0));
@@ -178,7 +176,9 @@ export function drawLip(g, L, floor, cx, cy, t) {
         const ab = fy - LIP.propH - 14 - Math.round(k * 4); g.globalAlpha = 1; g.fillStyle = '#ffd36b'; g.beginPath(); g.moveTo(px - 6, ab - 8); g.lineTo(px + 6, ab - 8); g.lineTo(px, ab); g.closePath(); g.fill(); g.fillRect(px - 2, ab - 15, 4, 8); g.strokeStyle = '#3a2a10'; g.lineWidth = 1; g.strokeRect(px - 2.5, ab - 15.5, 5, 8);
         for (let i = 0; i < 8; i++) { const ph = (t * 1.7 + i * 0.37) % 1, dx = z0 + ((i * 53 + 11) % Math.max(1, zw)), dy = fy - 56 + ph * 54; g.globalAlpha = 0.95 - ph * 0.5; g.fillStyle = i % 2 ? '#d8c8a8' : '#8a7a6a'; const sz = i % 3 === 0 ? 2 : 1; g.fillRect(dx, Math.round(dy), sz, sz); }
         g.globalAlpha = 1; } }
-    else { g.fillStyle = '#7a6a62'; g.fillRect(px - 7, fy - 5, 14, 5); g.fillStyle = '#5a4a58'; g.fillRect(px - 6, fy - 2, 12, 2); }   /* the prop's rubble */
+    else { const p = L.state === 'spent' ? 1 - Math.max(0, L.t) / LIP.rearm : 0, st = L.state === 'spent' && p > 0.66 ? 'rearm2' : L.state === 'spent' && p > 0.33 ? 'rearm1' : 'spent';   /* the prop's rubble, the stones settling back up over LIP.rearm */
+      drawProp(g, px, fy, st, L.side);
+      if (st !== 'spent') for (let q = 0; q < 4; q++) { const ph = (t * 1.6 + q * 0.27) % 1; g.globalAlpha = 0.9 - ph * 0.7; g.fillStyle = q % 2 ? '#d8c8a8' : '#8a7a6a'; g.fillRect(px - 7 + q * 5 + (q % 2), Math.round(fy - 20 + ph * 18), 1, 2); } g.globalAlpha = 1; }
   }
 }
 /* THE SHARED READ (B10): open = a GOLD ring and a timer bar; warded = a pale shell; P3's horn sweep tell = a red arc both ways */
@@ -189,8 +189,10 @@ export function drawRamRead(g, e, cx, cy, t) {
   if (e.mode === 'stampTell') { const k = 0.5 + 0.5 * Math.sin(t * 22), fy = Math.round(e.y - cy) - 1;   /* THE STOMP, told: a red ground ellipse at his true hit radius (30 px), dust lifting at the hooves */
     g.globalAlpha = 0.18 + 0.2 * k; g.fillStyle = '#ff4a3a'; g.beginPath(); g.ellipse(x, fy, 30, 7, 0, 0, Math.PI * 2); g.fill(); g.globalAlpha = 0.55 + 0.35 * k; g.strokeStyle = '#ff6b4a'; g.lineWidth = 2; g.beginPath(); g.ellipse(x, fy, 30, 7, 0, 0, Math.PI * 2); g.stroke();
     for (let q = 0; q < 6; q++) { const ph = (t * 3 + q * 0.17) % 1; g.globalAlpha = 0.7 * (1 - ph); g.fillStyle = '#c8a888'; g.fillRect(x + (q % 2 ? 1 : -1) * (6 + (q >> 1) * 6), Math.round(fy - ph * 12), 2, 2); } g.globalAlpha = 1; }
-  if (e.mode === 'boulderTell' && e.bl) { const B = e.bl, bx = Math.round(B.wallX - cx), by = Math.round(B.floor - cy) - 70, sh = Math.round(Math.sin(t * 50) * 1.5);   /* THE BOULDER SHAKES LOOSE in the cliff lip above the wall, grit trickling */
-    g.fillStyle = '#3e3024'; g.beginPath(); g.arc(bx + sh, by, 11, 0, 7); g.fill(); g.fillStyle = '#7a6046'; g.beginPath(); g.arc(bx + sh, by, 9, 0, 7); g.fill(); g.fillStyle = '#a8865a'; g.fillRect(bx + sh - 5, by - 6, 4, 2);
+  if ((e.mode === 'boulderTell' || e.mode === 'boulderButt') && e.bl) { const B = e.bl, K = RAM.boulder, side = B.wall || 1, by = Math.round(B.floor - cy) - 70, dist = side > 0 ? 38 : 22, face = Math.round(B.wallX + side * dist - cx);   /* the pillar's inner face: 38 px past boulderStart's x at the east wall (the arena edge sits a tile short of it), 22 at the west */   /* THE BOULDER WORKS LOOSE OF THE PILLAR: a rock lodged in the wall's own face (a socket round it, grit trickling) - not hung in the sky. At the butt it slides out to where it falls from (boulderStart's x) */
+    const tell = e.mode === 'boulderTell', sh = tell ? Math.round(Math.sin(t * 50) * 1.2) : 0, slide = tell ? 0 : Math.min(1, 1 - e.modeT / K.release), bx = Math.round(face - side * (2 + (dist - 2) * slide));
+    g.save(); g.beginPath(); g.rect(side > 0 ? face : face - 16, by - 16, 16, 32); g.clip(); g.drawImage(boulderSocket(), face + side * 4 - 16, by - 16); g.restore();   /* the hollow, cut to the pillar's own 16 px */
+    g.drawImage(boulderFrame(0), bx - 12 + sh, by - 12);   /* the rock, whole, lodged half in it: it slides out of the hollow at the butt */
     for (let q = 0; q < 6; q++) { const ph = (t * 2.2 + q * 0.19) % 1; g.globalAlpha = 0.9 - ph * 0.6; g.fillStyle = q % 2 ? '#d8c8a8' : '#8a7a6a'; g.fillRect(bx - 8 + q * 3, Math.round(by + 10 + ph * 50), 1, 2); } g.globalAlpha = 1; }
   if (ramOpenMode(e)) { const k = 0.5 + 0.5 * Math.sin(t * 10); g.globalAlpha = 0.45 + 0.4 * k; g.strokeStyle = '#ffd36b'; g.lineWidth = 2; g.beginPath(); g.ellipse(x, y - 2, 28 + k * 3, 7, 0, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1;
     const T0 = e.openT0 || 3, fr = Math.max(0, Math.min(1, e.modeT / T0)); g.fillStyle = 'rgba(0,0,0,0.6)'; g.fillRect(x - 16, y - e.h - 12, 32, 3); g.fillStyle = '#ffd36b'; g.fillRect(x - 16, y - e.h - 12, Math.round(32 * fr), 3); }
