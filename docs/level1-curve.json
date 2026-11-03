@@ -65,17 +65,17 @@
   "lostPct": 171
  },
  "scree": {
-  "hash": "1e7b6c7c6795",
+  "hash": "e58f5bbb8028",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 34,
-  "deaths": 6,
-  "kills": 37,
-  "lifts": 147,
+  "hits": 43,
+  "deaths": 8,
+  "kills": 39,
+  "lifts": 126,
   "walked": 100,
   "bare": true,
-  "lostPct": 276
+  "lostPct": 387
  },
  "hanging": {
   "hash": "9142ce6eeb62",
