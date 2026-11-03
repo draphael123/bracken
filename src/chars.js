@@ -146,7 +146,7 @@ const KITE = ['.SSS.', 'SswwS', 'SwywS', 'SyyyS', 'SwywS', 'SwwwS', '.SwS.', '..
    The rule this serves is the one the greatsword learned: the blow may not reach where the art never went. */
 let SPEARLESS = false;
 let ONEAXE = false;   /* THE BERSERKER's BARE set (his off axe is thrown): every frame, the lead axe only */   /* baking the Warden's BARE set (her JAVELIN is out of her hands): every frame, no spear */
-function knightFrame({ legs = 'stand', dy = 0, dx = 0, sword = null, arm = null, plume = 0, shield = false, legsDy = 0, staff = null, maul = null, glow = null, cutlass = null, pistol = null, hook = null, scythe = null, greatsword = null, spear = null, wide = 0, hy = 0, sho = 0, bits = null, kite = null, top = 0, arm2 = null, stave = null, axe = null, axe2 = null, nock = null, butt = 8 }) {   /* (butt: how far the war hammer's haft runs past the hand - 8, or less where the butt stands on the floor: batch97 integ, crouch-feet) */
+function knightFrame({ legs = 'stand', dy = 0, dx = 0, sword = null, arm = null, plume = 0, shield = false, legsDy = 0, staff = null, maul = null, glow = null, cutlass = null, pistol = null, hook = null, scythe = null, greatsword = null, spear = null, wide = 0, hy = 0, sho = 0, bits = null, kite = null, shx = 0, top = 0, arm2 = null, stave = null, axe = null, axe2 = null, nock = null, butt = 8 }) {   /* (butt: how far the war hammer's haft runs past the hand - 8, or less where the butt stands on the floor: batch97 integ, crouch-feet) */
   const [c, g] = canvas(W + wide, H + top); g.translate(0, top);
   const BZ = BODY_REF === BZ_BODY, rgo = BZ ? [[BX + dx + 4, top + BY + dy + hy + 3, '#ff2a1a'], [BX + dx + 5, top + BY + dy + hy + 3, '#c01c14']] : null;   /* (claude/bzart) his RAGE overlay: red eyes and veins, laid over him by drawSet while his rage is up */
   if (GEAR >= 1) gearCape(g, BX + dx, BY + dy, legs, plume, GEAR >= 4);   /* (tier 1+: behind everything, the body covers all but the strip at his back) */
@@ -334,7 +334,7 @@ function knightFrame({ legs = 'stand', dy = 0, dx = 0, sword = null, arm = null,
   }
   if (glow) { const [gx, gy] = glow; px(g, gx + dx, gy + dy, '#fff6c8'); px(g, gx + dx - 1, gy + dy, KP.y); px(g, gx + dx + 1, gy + dy, KP.y); px(g, gx + dx, gy + dy - 1, KP.y); px(g, gx + dx, gy + dy + 1, KP.y); }
   if (shield) { // kite shield held out front, covering the torso: steel rim, oak face, gold boss
-    const sx = BX + 9 + dx, sy = BY + 4 + dy;
+    const sx = BX + 9 + dx + shx, sy = BY + 4 + dy;   /* (shx: the kite shoved out at the arm's length - the third jab, claude/jabart) */
     const rows = ['.SSSSS.', 'SwwwwwS', 'SwwywwS', 'SwyyywS', 'SwwywwS', 'SwwwwwS', 'SwwwwwS', '.SwwwS.', '.SwwwS.', '..SwS..', '...S...'];
     rows.forEach((r, yy) => { for (let xx = 0; xx < r.length; xx++) { const k = r[xx]; if (k !== '.') px(g, sx + xx, sy + yy, k === 'S' ? KP.S : k === 'w' ? KP.w : KP.y); } });
     px(g, sx + 1, sy + 1, KP.s); px(g, sx + 2, sy + 1, KP.s); px(g, sx + 1, sy + 2, KP.s);
@@ -765,6 +765,15 @@ function knightKitPoses(F, KF, sh) {
   F.kBash = [KF({ top, dx: -3, dy: 1, legs: 'wide', shield: true, sword: [X - 6, Y + 3, X - 12, Y + 7], plume: 1 }),
     KF({ top, wide: 8, dx: 5, dy: 1, legs: 'runC', sho: 1, shield: true, sword: [X - 3, Y + 3, X - 10, Y + 6], plume: 2, bits: [...[4, 5, 6, 7, 8, 9, 10, 11, 12, 13].map(y => [16, y, RIM]), [19, 8, W], [18, 8, W], [20, 8, C], [19, 7, C], [19, 9, C], [21, 8, G], [20, 5, C], [20, 11, C], [22, 6, G], [22, 10, G], [18, 3, C], [18, 13, C]] }),
     KF({ top, wide: 8, dx: 3, legs: 'wide', shield: true, sword: [X - 4, Y + 3, X - 10, Y + 7], plume: 1, bits: [[18, 6, C], [18, 10, C], [19, 8, G], [17, 4, STEEL], [17, 12, STEEL]] })];
+  /* THE SHIELD BASH AS THE THIRD JAB (claude/jabart, Daniel 11-03 14:49: 'does not look like a shield bash at all' - the third jab drew the sword thrust). Four beats on the jab's own clock (.04/.10/.16/.24):
+     COCK - the whole kite hauled into his chest, weight on the back foot, the sword held back behind him; STEP - the lead boot driven in, the kite already leaving, the steel streaked back along his flank; BASH - shoulder dropped in, the kite shoved out flat
+     at the full length of the arm (a steel arm bar showing between body and oak), a star of white and gold where the oak met the foe, dust off the heel; RING - the kite still out, the shock ringing off the rim, dust at the lead boot */
+  { const ARM = n => [...Array(n).keys()].flatMap(i => [[10 + i, 7, STEEL], [10 + i, 8, '#8a98ac']]), TR = [[-2, 7, STEEL], [-3, 7, STEEL], [-4, 7, '#8a98ac'], [-3, 10, STEEL], [-4, 10, '#8a98ac'], [-5, 10, '#8a98ac']];
+    F.kBash3 = [KF({ top, dx: -3, dy: 1, legs: 'wide', shx: -1, shield: true, sword: [X - 6, Y + 3, X - 12, Y + 7], plume: 1 }),
+      KF({ top, wide: 6, dx: 3, dy: 1, legs: 'runC', shx: 3, shield: true, sword: [X - 4, Y + 3, X - 11, Y + 6], plume: 2, bits: [...ARM(2), ...TR, [-4, 16, D], [-6, 16, D]] }),
+      KF({ top, wide: 14, dx: 5, dy: 1, legs: 'runC', sho: 1, shx: 7, shield: true, sword: [X - 3, Y + 3, X - 10, Y + 6], plume: 2, bits: [...ARM(6), ...[3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14].map(y => [23, y, RIM]), [24, 8, W], [25, 8, W], [23, 8, W], [26, 8, C], [24, 7, C], [24, 9, C], [27, 8, G], [25, 6, C], [25, 10, C], [26, 5, G], [26, 11, G], [24, 3, C], [24, 13, C], [28, 6, G], [28, 10, G], [29, 8, G], [-2, 16, D], [-4, 15, D], [-5, 16, D], [-1, 17, D]] }),
+      KF({ top, wide: 10, dx: 3, dy: 1, legs: 'wide', shx: 4, shield: true, sword: [X - 4, Y + 3, X - 10, Y + 7], plume: 1, bits: [...ARM(3), [20, 5, C], [20, 11, C], [21, 8, G], [19, 3, STEEL], [19, 13, STEEL], [14, 16, D], [16, 16, D], [18, 15, D], [12, 17, D]] }),
+      KF({ top, dx: 1, legs: 'wide', shield: true, sword: [X - 4, Y + 3, X - 10, Y + 7], plume: 0 })]; }
   /* VALIANT STRIKE (a full bar, the heavy cut): the blade taken up over the helm in both hands with a flame of gold standing along it; thrown through with the gold dragged out behind the edge and a white core; and
      the follow-through, the steel still lit down to the point and gold falling off it */
   const auraAt = (x0, y0, x1, y1, k) => [...hpLn(x0 + 1, y0 - 1, x1 + 1, y1 - 1, (i, n) => i % 2 ? G : C), ...hpLn(x0 - 1, y0 + 1, x1 - 1, y1 + 1, G, 2), ab(x1 + 1, y1 - 2, W), ab(x1, y1 - 3, C), ab(x1 + 2, y1 - 3, G), ...(k ? [ab(x1 + 3, y1 - 1, G), ab(x0 - 2, y0 - 3, C)] : [])];
@@ -5877,6 +5886,26 @@ function geoKitPoses(F, sh) {
       KF({ wide: 8, dx: 2, legs: 'wide', arm: [X, Y, X + 6, Y - 2], arm2: [OFF[0], OFF[1], X + 3, Y - 1], stave: [X - 3, Y, X + 13, Y - 3], plume: 1, bits: [o(18, -4, M), o(19, -4, D), o(17, -5, A)] })];
     F.gPillar = [KF({ wide: 4, dx: 1, dy: 2, legs: 'wide', arm: [X, Y, X + 5, Y - 1], arm2: [OFF[0], OFF[1], X + 4, Y + 1], stave: [X + 7, Y + 9, X + 6, Y - 9], plume: 2, bits: [o(6, 9, D), o(10, 9, D), o(8, 8, E)] }),
       KF({ dy: -1, legs: 'wide', sho: 1, arm: [X, Y, X + 6, Y - 6], arm2: [OFF[0], OFF[1], X + 5, Y - 7], stave: [X - 6, Y + 8, X - 2, Y - 10, 'back'], plume: 2, bits: [o(8, -9, E), o(7, -10, G), o(12, 6, M), o(12, 2, D)] })]; }
+  /* THE STAFF SWUNG DOWN (the second of her run; claude/jabart, Daniel 11-03 14:49: the butt-jab 'almost looks like a spear' - a long shaft driven level with no head to it). Now it is her HEAVY STAFF swung, GEODE FIRST: HEFT - the staff laid back
+     over her shoulder, the amber geode high behind her head; OVER - it comes up and over, nearly upright, the geode over her; SWING - brought down through the front on the diagonal, both hands on the shaft and the geode leading, glowing, with the
+     stone's arc behind it and sparks where it lands at chest height; FOLLOW - the head dropped low and forward, grit off the boot. The head is always the high end until the strike, which is what a spear never does. */
+  F.atkB = [KF({ dx: -2, dy: 1, legs: 'wide', arm: [X, Y, X - 1, Y - 6], arm2: [OFF[0], OFF[1], X - 4, Y - 5], stave: [X + 5, Y - 2, X - 9, Y - 17], plume: 1, bits: [o(-10, -19, '#fff0c0'), o(-8, -19, A), o(-11, -17, A)] }),
+    KF({ wide: 12, dx: 1, dy: -1, legs: 'runC', sho: 1, arm: [X, Y, X + 3, Y - 7], arm2: [OFF[0], OFF[1], X, Y - 3], stave: [X - 3, Y + 2, X + 5, Y - 18], plume: 2, bits: [o(7, -20, '#fff0c0'), o(8, -18, A), o(2, -22, M), o(-3, -19, M)] }),
+    KF({ wide: 14, dx: 3, dy: 1, legs: 'runC', arm: [X, Y, X + 4, Y - 6], arm2: [OFF[0], OFF[1], X, Y - 10], stave: [X - 3, Y - 13, X + 14, Y + 2], plume: 2, bits: [o(17, 2, '#ffffff'), o(19, -1, '#fff0c0'), o(19, 2, A), o(20, 0, A), o(17, 4, D), o(13, -6, '#ffc860'), o(9, -11, '#ffc860')] }),
+    KF({ wide: 14, dx: 2, dy: 1, legs: 'wide', arm: [X, Y, X + 3, Y + 1], arm2: [OFF[0], OFF[1], X - 1, Y - 2], stave: [X - 5, Y - 4, X + 13, Y + 7], plume: 0, bits: [o(14, 10, D), o(16, 10, D), o(12, 10, M), o(18, 9, D), o(17, 7, A)] }),
+    F.atk[4]];
+  /* THE STONE FIST (her third jab; claude/jabart, Daniel 11-03 14:49: 'I don't even see the stone fist at all' - the third jab drew the staff spin). The staff is tucked behind her in the off hand (the geode still burning over her shoulder) and the lead hand is a
+     ROCK GAUNTLET: GATHER - the lead fist drawn back to the hip with grit and amber stones closing round it; FORM - the first plates of rock shut over the hand as it comes forward; PUNCH - the arm thrown out at full length, a great grey fist as big as her head
+     with the amber heart cracking through it, a white flash on the knuckles, grit off the heel; CRUMBLE - the rock coming apart off the hand in chips, dust at the boot. A diagonal amber crack runs through every gauntlet - it is the read at 1x. */
+  { const HI = '#b9b6a4', S = '#5f5d54', Z = '#ffb23a', W = '#ffffff';
+    const blk = (rows, ox, oy) => rows.flatMap((r, yy) => [...r].map((ch, xx) => ch === '.' ? null : o(ox + xx, oy + yy, { H: HI, M, S, A: Z, W }[ch])).filter(Boolean));
+    const BIG = ['.HHMMMM..', 'HHMMMMSS.', 'HMMAAMMSS', 'MMAAMMMSS', 'MMMAMMMSS', 'HMMMMMSS.', '.SMMMSS..', '..SSSS...'], MID = ['.HMMM.', 'HMAMMS', 'MAAMMS', 'MMAMSS', '.MMSS.'], SM = ['.HM.', 'MAMS', '.MS.'];
+    const BR = ['HMMMMM', 'MMSSSS'], behind = (up, tilt = 0) => ({ stave: [X - 9, Y + 8, X - 8 + tilt, Y - 12 + up, 'back'] });
+    F.gFist = [KF({ dx: -3, dy: 1, legs: 'wide', arm: [X, Y, X - 4, Y + 3], arm2: [OFF[0], OFF[1], X - 8, Y - 2], ...behind(0), plume: 1, bits: [...blk(SM, -8, 1), o(-9, -1, D), o(-5, 6, M), o(-3, -2, Z), o(-10, 4, D), o(-2, 7, M)] }),
+      KF({ wide: 8, dx: 2, legs: 'runC', arm: [X, Y, X + 6, Y + 1], arm2: [OFF[0], OFF[1], X - 6, Y - 2], ...behind(0), plume: 2, bits: [...blk(MID, 5, -2), o(4, 6, D), o(2, -4, M), o(-2, 10, D), o(-3, 9, D)] }),
+      KF({ wide: 16, dx: 4, dy: 1, legs: 'runC', sho: 1, arm: [X, Y, X + 11, Y - 1], arm2: [OFF[0], OFF[1], X - 6, Y - 3], ...behind(0, 1), plume: 2, bits: [...blk(BR, 4, -3), ...blk(BIG, 10, -5), o(20, -2, W), o(21, -3, W), o(22, -1, '#fff0c0'), o(21, 1, '#fff0c0'), o(23, -2, Z), o(20, -6, '#fff0c0'), o(22, 3, Z), o(5, -2, D), o(4, 0, D), o(3, 2, D), o(-1, 10, D), o(-3, 9, D), o(-4, 10, M), o(1, 11, D)] }),
+      KF({ wide: 12, dx: 3, dy: 1, legs: 'wide', arm: [X, Y, X + 9, Y + 1], arm2: [OFF[0], OFF[1], X - 6, Y - 2], ...behind(0), plume: 0, bits: [...blk(BR, 3, -2), ...blk(MID, 9, -2), o(16, 5, M), o(15, 8, D), o(18, 7, M), o(14, 11, D), o(17, 10, D), o(12, 10, D), o(4, 10, D), o(6, 11, D), o(-1, 10, D)] }),
+      F.atk[4]]; }
   /* EARTHFALL (B16, claude/plunges - her plunge has its OWN windup and release). The windup: the stave lifted point-down high over her head in both hands, the geode blazing; then the fall with it driven down
      under her, the butt first and grit streaming up. The release (earthHit, played as she lands): the butt of the stave in the ground, her weight on it and the grit flung off it; then her coming up off it. */
   F.earthWind = [KF({ dy: -1, sho: 1, hy: -1, legs: 'jump2', arm: [X, Y, X + 2, Y - 9], arm2: [OFF[0], OFF[1], X - 2, Y - 9], stave: [X, Y - 17, X + 1, Y + 1], plume: 2, bits: [o(-3, -19, A), o(3, -19, A)] }),
