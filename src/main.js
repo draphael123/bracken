@@ -26687,13 +26687,14 @@ const DECO_AIR = new Set(['hallWindow', 'window', 'gunport', 'sternWindows', 'gr
   'hammock', 'washing', 'bunting', 'pennant', 'crowNest', 'hiveBg', 'bough', 'cobweb',
   'lilyLantern', 'buoy', 'lanternBuoy', 'ubLances', 'ubBallistaHang', 'ubGlow',   /* (the field's lance hedge stands on the stake line's notch: it stays where the level put it) */ /* slung between two things, bolted to a wall, or riding the water */
   'airBell']);   /* AN AIR BELL IS WHERE YOU BREATHE: set down on the bed it moved the air with it, and seven of the Deep's twelve had no bed near enough and were gone. It stays where the level put it, moored to the bed by a chain (moorOf) */
-const decoHangs = e => !!e.hang || (HUNG_DECO.has(e.kind) && e.kind !== 'banner' && e.kind !== 'hangCage' && e.kind !== 'spire');   /* a banner, a cage and a spire each come standing too */
+const decoHangs = e => !e.stand && (!!e.hang || (HUNG_DECO.has(e.kind) && e.kind !== 'banner' && e.kind !== 'hangCage' && e.kind !== 'spire'));   /* (claude/floatfix) e.stand: the level's art draws it STANDING (a root tangle, a bone-chime pole): it is not hung, so it is never left out for want of a roof */   /* a banner, a cage and a spire each come standing too */
 const decoStands = e => !decoHangs(e) && !DECO_AIR.has(e.kind);
 const STANDS_T = new Set(['sign', 'check', 'brazier', 'lantern', 'bell', 'seabell', 'sluice', 'capstan', 'pump', 'winch']);
 function groundEnts() {
   const gnd = (x, y) => { const t = tileAt(x, y); return isSolid(x, y) || (isOneWay(t) && t !== T.NET); };   /* a keg does not sit on a rope */
   const settle = (x, y0) => { let y = y0, n = 0; while (gnd(x, y) && n++ < 3) y--; if (gnd(x, y)) return null; n = 0; while (!gnd(x, y + 1) && n++ < 3) y++; return gnd(x, y + 1) ? y : null; };
   L.ents = L.ents.filter(e => {
+    if (e.stand && e.hang) e.hang = false;   /* (claude/floatfix) stand: the art draws it standing - see decoHangs */
     const dec = e.t === 'deco'; if (dec ? !decoStands(e) : (!STANDS_T.has(e.t) || e.perch)) return true;
     let y = settle(e.x, e.y); if (y !== null) { e.y = y; return true; }
     for (let dx = 1; dx <= 3; dx++) for (const sx of [e.x - dx, e.x + dx]) { y = settle(sx, e.y); if (y !== null) { e.x = sx; e.y = y; return true; } }

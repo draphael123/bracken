@@ -160,15 +160,15 @@ export const FEN_KINDS = new Set(['fenpile']);
 export function addSupports(L, T) {
   if (!L || !L.grid || !L.fenroad) return L;
   const W = L.W, H = L.H, g = L.grid; L.routeSupports = L.routeSupports || [];
-  const near = (x0, x1, y) => L.routeSupports.some(p => p.x >= x0 - 1 && p.x <= x1 + 1 && p.y >= y - 1 && p.y <= y + 1 && p.bottom > y + 3);
+  const near = (x, y) => L.routeSupports.some(p => Math.abs(p.x - x) <= 2 && p.y >= y - 1 && p.y <= y + 1 && p.bottom > y + 3);   /* (claude/floatfix) PER COLUMN: one old post anywhere in a 35-board run used to excuse the whole run (the road at 317-351 had two piles and 22 bare boards over open water) */
   for (let y = 0; y < H - 1; y++) for (let x = 0; x < W;) {
     const t = g[y * W + x];
     if (t === T.AIR || t === T.NET || g[(y + 1) * W + x] !== T.AIR) { x++; continue; }
     let x1 = x; while (x1 + 1 < W && g[y * W + x1 + 1] !== T.AIR && g[y * W + x1 + 1] !== T.NET && g[(y + 1) * W + x1 + 1] === T.AIR) x1++;
     let air = 0; while (y + 1 + air < H && g[(y + 1 + air) * W + x] === T.AIR) air++;
-    if (air >= 3 && (t === T.PLANK || t === T.ONEWAY || t === T.SOLID) && !near(x, x1, y)) {
+    if (air >= 3 && (t === T.PLANK || t === T.ONEWAY || t === T.SOLID)) {
       const xs = []; for (let q = x; q <= x1; q += 4) xs.push(q); if (xs[xs.length - 1] !== x1) xs.push(x1);
-      for (const px of xs) { let b = y + 1; while (b < H && g[b * W + px] === T.AIR) b++; L.routeSupports.push({ x: px, y, bottom: Math.min(b, H), kind: 'fenpile', fen: true }); }
+      for (const px of xs) { if (near(px, y)) continue; let b = y + 1; while (b < H && g[b * W + px] === T.AIR) b++; const nx = xs[xs.indexOf(px) + 1]; L.routeSupports.push({ x: px, y, bottom: Math.min(b, H), kind: 'fenpile', fen: true, ...(nx !== undefined && nx - px <= 5 ? { brace: nx - px } : {}) }); }
     }
     x = x1 + 1;
   }
@@ -183,11 +183,13 @@ export function drawPile(g, p, cx, cy) {
   Rr(g, OAK[3], x - 4, y0, 12, 2); Rr(g, OAK[5], x - 4, y0, 12, 1); Rr(g, OAK[0], x - 4, y0 + 2, 12, 1);
   /* the log: lit left, dark right, 4 px wide */
   for (let yy = ya + 3; yy < yb; yy++) { const under = yy >= wl, dk = (yy + p.x) % 7 === 0;
-    P(g, under ? OAK[3] : OAK[5], x, yy); P(g, under ? OAK[2] : OAK[4], x + 1, yy); P(g, dk ? OAK[0] : under ? OAK[1] : OAK[2], x + 2, yy); P(g, OAK[0], x + 3, yy); }
+    P(g, under ? OAK[4] : OAK[5], x, yy); P(g, under ? OAK[3] : OAK[4], x + 1, yy); P(g, dk ? OAK[0] : under ? OAK[2] : OAK[2], x + 2, yy);   /* (claude/floatfix) the log under the water a step lighter: at the road's level the pile was a dark shadow in dark water and the deck read as floating */ P(g, OAK[0], x + 3, yy); }
   Rr(g, ROPE, x - 1, y0 + 3, 6, 1); Rr(g, ROPE_D, x - 1, y0 + 4, 6, 1);                                          /* the hemp lashing under the cap */
   if (y1 - y0 > 28) { Rr(g, ROPE, x - 1, y0 + 14, 6, 1); Rr(g, ROPE_D, x - 1, y0 + 15, 6, 1); }
   /* a brace to the next bent every other pile: a leaning pole */
   if (side && y1 - y0 > 20) { for (let k = 0; k < 14; k++) { P(g, OAK[3], x + 4 + k, y0 + 6 + (k >> 1)); P(g, OAK[2], x + 4 + k, y0 + 7 + (k >> 1)); } }
+  /* (claude/floatfix) a bent: the X-brace to the next pile (p.brace columns on), the way the road's tile trestles are braced - a deck on piles reads as held, not as boards on the water */
+  if (p.brace && y1 - y0 > 14) { const bw = p.brace * 16 - 4, bh = Math.min(26, y1 - y0 - 8); for (let k = 0; k <= bw; k++) { const d = Math.round(k * bh / bw); P(g, OAK[3], x + 2 + k, y0 + 5 + d); P(g, OAK[1], x + 2 + k, y0 + 6 + d); P(g, OAK[3], x + 2 + k, y0 + 5 + bh - d); P(g, OAK[1], x + 2 + k, y0 + 6 + bh - d); } Rr(g, OAK[3], x - 1, y0 + 5 + bh, bw + 7, 2); Rr(g, OAK[1], x - 1, y0 + 7 + bh, bw + 7, 1); }
   /* the waterline: weed collared round the pile, a pale tide mark */
   if (wl > ya && wl < yb) { Rr(g, MOSS[1], x - 1, wl - 2, 6, 3); Rr(g, MOSS[2], x, wl - 2, 2, 1); P(g, MOSS[0], x + 4, wl + 1); P(g, MOSS[3], x - 1, wl - 3); P(g, MOSS[3], x + 4, wl - 3); }
   /* the foot, sunk into the peat bed: a splayed driven end */

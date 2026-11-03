@@ -129,7 +129,8 @@ const slopeGateName = () => slopeGate() || 'nothing (no guard found)';
 function slopesPainted(L) { const g = slopeGate(); if (!g) return false; try { return !!new Function('L', 'return !!(' + g + ')')(L); } catch { return true; /* a guard that reads more than L: assume it reaches everything */ } }
 
 /* A HASH OF THE LEVEL'S DATA: the pilot cache (docs/level1-pilot.json) is stamped with it, so a level edit makes the cached pilot row stale. */
-export function levelHash(lv) { const L = built(lv); return createHash('sha1').update(JSON.stringify([L.W, L.H, Array.from(L.grid), L.ents.filter(e => !e.stuck && e.t !== 'lostbanner'), L.moversExtra || null, L.ambushes || null])).digest('hex').slice(0, 12); }
+/* (claude/floatfix) the ent key `stand` (draw it standing, never hang or drop it) is art, not level data: it is left out, so adding it moves no stamp */
+export function levelHash(lv) { const L = built(lv); return createHash('sha1').update(JSON.stringify([L.W, L.H, Array.from(L.grid), L.ents.filter(e => !e.stuck && e.t !== 'lostbanner'), L.moversExtra || null, L.ambushes || null], (k, v) => k === 'stand' ? undefined : v)).digest('hex').slice(0, 12); }
 export const PILOT_FILE = fileURLToPath(new URL('../docs/level1-pilot.json', import.meta.url));
 export const MASH_FILE = fileURLToPath(new URL('../docs/mash-bot.json', import.meta.url));
 export const CURVE_FILE = fileURLToPath(new URL('../docs/level1-curve.json', import.meta.url));   /* (claude/combat2) the level-1 knight pilot over EVERY campaign level: the measured difficulty curve (tools/rule-fights.mjs) */

@@ -47,7 +47,7 @@ export function buildRootway({ painter, T, TS }) {
   const foe = (t, x, y, squad, o) => ent(t, x, y, Object.assign({ squad }, SKINS[t] ? { cnSkin: SKINS[t] } : {}, o || {}));
   const glow = (x, y) => ent('glow', x, y);
   const coins = (...pts) => pts.forEach(([x, y]) => ent('coin', x, y));
-  const deco = (x, y, kind, v) => ent('deco', x, y, { kind, v: v || 0 });
+  const deco = (x, y, kind, v) => ent('deco', x, y, { kind, v: v || 0, ...(kind === 'rootDecor' || kind === 'boneChime' ? { stand: true } : {}) });   /* (claude/floatfix) the Rootway's root clumps and bone-chime posts STAND (rootway_world.js): set as hung they were left out for want of a roof */
   const tag = (x, y) => ent('stray', x, y, { kind: 'tag' });            /* A TROPHY TAG: the quest (L.quest) - the hunters' bone tags */
   const caps = [], hoists = [], decor = [], vaultDoors = [], zips = [], podCaps = [], jaws = [], nets = [];   /* (claude/rootway2: the spore pods' caps, the jaw traps and the nets - src/hunt-pods.js, src/snares.js) */
   /* A TROPHY LINE (src/zipline.js, claude/ziproot): from the deck at column x0 (standing row top) down to column x1 (landing floor row endRow); the rope hangs 12 px over the feet at each end */

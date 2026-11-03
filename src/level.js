@@ -29,6 +29,7 @@ import {hauntedCoast} from './haunted-coast.js';
 import {stormShipPolish} from './storm-ship.js';
 import {polishCoastAndTown} from './coast-town.js';
 import {addIslandPosts} from './island-posts.js';
+import {addDemoSupports} from './demo-supports.js';   /* (claude/floatfix) the hidden arena_yard is not run through addIslandPosts: its stair gets its risers here */
 import {crabTrench,underwaterKeep} from './deep-split.js';
 import {stormwreckHarbor,burialCaverns} from './additional-areas.js';
 import { singleAmbush } from './ambush.js';
@@ -491,7 +492,7 @@ function theStockade() {
   ent('rack', 346, 19, { kind: 'club' }); ent('rack', 349, 19, { kind: 'bow' });   /* (claude/stockade3-1101: from 331 / 358 - the hall piles and their pegs stand by the doors now; his racks by his throne) */ block(336, 339, 18, 19); coins([337, 17]); // the racks he swaps at, and a stone dais his club and sword cannot reach
   ent('deco', 331, 19, { kind: 'banner', v: 0 }); ent('deco', 358, 19, { kind: 'banner', v: 1 }); ent('deco', 344, 19, { kind: 'boneThrone' });
   ent('deco', 334, 19, { kind: 'skullPile', v: 0 }); ent('deco', 351, 19, { kind: 'skullPile', v: 1 });
-  ent('deco', 338, 8, { kind: 'hangCage', hang: true });   /* (a tree's bough hung in the Chieftain's hall, among its racks: it went - level review, 2026-09-24) */ ent('deco', 349, 8, { kind: 'hangCage', hang: true });
+  ent('deco', 338, 8, { kind: 'hangCage', hang: true, stand: true });   /* (a tree's bough hung in the Chieftain's hall, among its racks: it went - level review, 2026-09-24) */ ent('deco', 349, 8, { kind: 'hangCage', hang: true, stand: true });   /* (claude/floatfix) the hall's two cages STAND now (a gibbet on its post on the hall's boards): hung they had no rock over them and were left out, so the hall's racks read as having lost something */
   ent('chief', 343, 19);
   /* (claude/stockade3-1101) THE HALL PILES: logs on the rafters over the floor by each door (where his crew come in), each tied off at a peg on the floor - horn him under one and strike its peg */
   ent('logpile', 333, 12, { id: 'hall-l', cleat: -3, hall: true }); ent('logpile', 354, 12, { id: 'hall-r', cleat: 3, hall: true });   /* each peg on the DOOR side of its logs: he comes to the sound from the middle of the hall and never walks past you to reach them */
@@ -8528,7 +8529,7 @@ const GOBLIN_CAMP = {
   /* (claude/kingswood2) kings: the old camp props (by the old columns) went with the old wood - KINGSWOOD 2 places its own court props */
   storm: [['warnPost', 58, 35, 0], ['gobPennant', 155, 33, 1], ['cookSpit', 203, 33], ['lootHeap', 249, 33, 0], ['skullTotem', 629, 29, 1]],   /* (stormhold4: the totem moved +180 with the gatehouse) */   /* (claude/stormhold3) the outer works: a warning on the road, a pennant at the stables, a spit in the bailey, the takings by the inner gate, a totem at the Lance's gatehouse */
   crown: [['gobPennant', 353, 7, 3], ['ragBanner', 385, 7, 2], ['cauldron', 375, 63], ['trophyRack', 388, 31, 1], ['clothStrip', 393, 10, 3, true], ['warStandard', 407, 19, 1]],   /* (claude/highcrown2: the cut level's columns - the road's two went with the road, the kitchen floor's with the floor; the trophies hang on the high gallery now) */   /* the keep's own moved 220 right with the siege lines, the crag walk and the bakehouse yard grown in front of it, and 84 more with the armoury */
-  underleaf: [['boneChime', 30, 21, 0], ['idol', 59, 29, 1], ['cookSpit', 106, 21], ['boneChime', 174, 21, 1], ['idol', 296, 22, 0], ['cauldron', 342, 15], ['boneChime', 398 + 86, 23, 1]],   /* (claude/underleaf3) her village's own: bone charms, the household gods, her old hearth's pot - by UNDERLEAF 3's columns */
+  underleaf: [['boneChime', 30, 21, 0, 'stand'], ['idol', 59, 29, 1], ['cookSpit', 106, 21], ['boneChime', 174, 21, 1, 'stand'], ['idol', 296, 22, 0], ['cauldron', 342, 15], ['boneChime', 398 + 86, 23, 1, 'stand']],   /* (claude/underleaf3) her village's own: bone charms, the household gods, her old hearth's pot - by UNDERLEAF 3's columns */
   undercrown: [['stakeFence', 80, 28, 0], ['skullTotem', 42, 111, 1], ['boneChime', 26, 88, 0, true], ['ragBanner', 58, 122, 0], ['clothStrip', 20, 88, 2, true], ['warnPost', 26, 140, 0], ['lootHeap', 52, 140, 1], ['cauldron', 68, 140]],
 };
 /* WHAT HANGS FROM THE ROCK, and how tall it is. The sprinkler finds floor; one of these wants a roof over that floor
@@ -8546,7 +8547,7 @@ export const FRESH_BED = { rushes: 'riverStone', driftwood: 'riverStone' };
 export const SEA_ONLY = new Set(['crab', 'siren', 'angler', 'urchin', 'puffer', 'jelly', 'lamprey', 'manta', 'merrowspear', 'merrowbrute', 'merrowcaller']);   /* the merrow are the reef's tribe: they come up with the sea, from Saltreach on */
 function dressLevel(L, id) {
   const set = DRESS[id]; if (!set) return L;
-  for (const [kind, x, y, v, hang] of GOBLIN_CAMP[id] || []) L.ents.push(Object.assign({ t: 'deco', x, y, kind, v: v || 0 }, hang ? { hang: true } : {}));
+  for (const [kind, x, y, v, hang] of GOBLIN_CAMP[id] || []) L.ents.push(Object.assign({ t: 'deco', x, y, kind, v: v || 0 }, hang === 'stand' ? { stand: true } : hang ? { hang: true } : {}));   /* (claude/floatfix) 'stand': a kind the engine hangs by name (boneChime, rootDecor) that this level's art draws as a standing post / clump */
   const W = L.W, H = L.H, g = L.grid, rnd = mulberryL(id.length * 977 + id.charCodeAt(0));
   const at = (x, y) => (x < 0 || y < 0 || x >= W || y >= H) ? T.SOLID : g[y * W + x];
   const rooms = [L.arena, L.mini].filter(Boolean).map(A => [A.x0 / TS - 2, A.x1 / TS + 2, (A.y0 !== undefined ? A.y0 / TS : A.floor / TS - 16) - 1, A.floor / TS + 1]);
@@ -8586,7 +8587,7 @@ function dressLevel(L, id) {
       if (!top || !clear(x, top) || !clear(x, top - 2)) continue;   /* clear where it HANGS too, and over it: the floor under a bell is not the bell */
       L.ents.push({ t: 'deco', x, y: top, kind, v, hang: true, dressed: true }); placed.push([x, y]); continue; }
     if (TALL_ROWS[kind]) { let room = true; for (let dy = 3; dy < TALL_ROWS[kind] && room; dy++) if (at(x, y - dy) !== T.AIR) room = false; if (!room) continue; }
-    L.ents.push({ t: 'deco', x, y, kind, v, dressed: true }); placed.push([x, y]);
+    L.ents.push({ t: 'deco', x, y, kind, v, dressed: true, ...(kind === 'rootDecor' && (id === 'spore' || id === 'rootway') ? { stand: true } : {}) }); placed.push([x, y]);   /* (claude/floatfix) the Spore Wood's and the Rootway's rootDecor is a standing clump: the sprinkler set it on a floor and the engine then hung it and left it out */
   }
   // AND THEN TAKE BACK ANYTHING THE LEVEL HAS SINCE BUILT OVER. The sprinkler only lays dressing on open
   // ground, but a level can stack crates or raise a palisade on that ground afterwards, and the skull pile
@@ -8861,6 +8862,7 @@ function bankBridgeProps(L) {
 for (const lv of LEVELS) if (!lv.hidden || lv.secret) { const b = lv.build, id = lv.id; lv.build = () => { const L = b(); if (REVIEW[id]) REVIEW[id](L); return vaultSilver(polishTower(hauntedCoast(stormShipPolish(polishCoastAndTown(bankBridgeProps(dressLevel(payDeadEnds(sprinkleCoins(silverTrim(checkpoints(elites(garrison(ambushRooms(L, id), id), id)))), id), id)),id,T),id,T),id,T),id,T), id); }; }
 /* A BOARD WITH NOTHING UNDER IT GETS A POST: the built places stand their loose boards on routeSupports posts (src/island-posts.js; tools/solid-islands.mjs) */
 for (const lv of LEVELS) if (!lv.hidden || lv.secret) { const b = lv.build, id = lv.id; lv.build = () => addIslandPosts(b(), id, T); }
+for (const lv of LEVELS) if (lv.hidden && !lv.secret && lv.id === 'arena_yard') { const b = lv.build, id = lv.id; lv.build = () => addDemoSupports(b(), id, T); }   /* (claude/floatfix) */
 // The editor puts its document here. Nothing else writes to it, and with no editor open it hands
 // back an empty room, so LEVELS is always safe to build.
 export const CUSTOM = { build: () => ({ W: 40, H: 28, grid: new Uint8Array(40 * 28), ents: [], START: { x: 3, y: 19 }, pools: [], falls: [], moversExtra: [], interiors: [], palette: {}, duskStart: -1, duskLen: 1 }) };

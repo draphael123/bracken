@@ -6,6 +6,7 @@
    What it cannot reach (open sky or a deep void under the board) stays in tools/solid-islands.mjs's table for the level's own lane. */
 import { addForestSupports } from './forest-supports.js'; import { marshSupports } from './redraw/marsh2_art.js';
 import { addAnchorPosts } from './anchor-posts.js';
+import { addDemoSupports } from './demo-supports.js';   /* (claude/floatfix) the 12 demo levels: a post under every loose stretch of a deck */
 import { addSpireSupports } from './spire-supports.js'; import { addSupports as addFenSupports } from './redraw/fen_road_art.js';
 export const MAX_DROP = 16;
 const HOVER = 6;
@@ -36,7 +37,7 @@ export function islandsOf(L, T) {
   return out;
 }
 
-export function addIslandPosts(L, id, T) { const r = addIslandPostsBase(L, id, T); addAnchorPosts(r, id, T); if (id === 'marsh' && r && r.marsh2Kit) marshSupports(r, T); if (id === 'fenroad' && r) addFenSupports(r, T); return r; }   /* (claude/fenroadart) THE FEN ROAD's bents under every run the posts above left bare (bowed sections, the landing) */   /* (claude/marsh2art) the marsh's posts reach the bed or the world's floor, drawn as bog-oak stilts (src/redraw/marsh2_art.js) */
+export function addIslandPosts(L, id, T) { const r = addIslandPostsBase(L, id, T); addAnchorPosts(r, id, T); addDemoSupports(r, id, T); if (id === 'marsh' && r && r.marsh2Kit) marshSupports(r, T); if (id === 'fenroad' && r) addFenSupports(r, T); return r; }   /* (claude/fenroadart) THE FEN ROAD's bents under every run the posts above left bare (bowed sections, the landing) */   /* (claude/marsh2art) the marsh's posts reach the bed or the world's floor, drawn as bog-oak stilts (src/redraw/marsh2_art.js) */
 function addIslandPostsBase(L, id, T) {
   addForestSupports(L, id, T, islandsOf);   /* the forest and crag levels: their own kit (src/forest-supports.js) */
   if (id === 'spire') addSpireSupports(L, T);   /* THE MONASTERY: scaffold posts under its boards, masonry piers under its floors (claude/screefix, src/spire-supports.js) */

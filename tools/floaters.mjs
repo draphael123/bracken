@@ -21,7 +21,7 @@ const MAIN = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
 const setOf = name => { const m = MAIN.match(new RegExp('const ' + name + ' = new Set\\(\\[([\\s\\S]*?)\\]\\);')); return new Set(m ? [...m[1].matchAll(/'(\w+)'/g)].map(x => x[1]) : []); };
 const HUNG_DECO = setOf('HUNG_DECO'), DECO_AIR = setOf('DECO_AIR'), STANDS_T = setOf('STANDS_T');
 if (!HUNG_DECO.size || !DECO_AIR.size || !STANDS_T.size) { console.log('the grounding rule cannot be read out of src/main.js (HUNG_DECO, DECO_AIR, STANDS_T)'); process.exit(1); }
-const decoHangs = e => !!e.hang || (HUNG_DECO.has(e.kind) && e.kind !== 'banner' && e.kind !== 'hangCage' && e.kind !== 'spire');   /* as decoHangs in main.js */
+const decoHangs = e => !e.stand && (!!e.hang || (HUNG_DECO.has(e.kind) && e.kind !== 'banner' && e.kind !== 'hangCage' && e.kind !== 'spire'));   /* (claude/floatfix) e.stand: the level's art draws it STANDING (a root tangle, a bone-chime pole): it is not hung, so it is never left out for want of a roof */   /* as decoHangs in main.js */
 const decoStands = e => !decoHangs(e) && !DECO_AIR.has(e.kind);
 const SOLID = new Set([T.SOLID, T.CRATE, T.PALISADE, T.PORT, T.CLIMB, T.SOFT, T.ICE, T.WEB]);
 const LEDGE = new Set([T.ONEWAY, T.REED, T.PLANK, T.BOUNCER, T.SHELF, T.RAIL, T.CRYST]);   /* a net is no floor: a keg does not sit on a rope */

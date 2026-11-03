@@ -145,7 +145,7 @@ export function buildKingswood({ painter, T, TS }) {
 
   // ================= 3. THE CAGE GROVE (206-306): REMIX - the drop turned on the court, and his fight taught =================
   sign(208, 25, 'THE CAGE GROVE. THE KING HANGS HIS CATCH IN THE BOUGHS.');
-  deco(210, 25, 'hangCage', 0, { hang: true }); deco(232, 22, 'hangCage', 1, { hang: true });
+  deco(210, 25, 'hangCage', 0, { hang: true, stand: true }); deco(232, 22, 'hangCage', 1, { hang: true, stand: true });   /* (claude/floatfix) stand: the cage grove's cages are set on its floor as gibbets (hung they had no bough of rock over them and were left out); hang stays so the level hash does not move */
   /* THE BOUGH PLATE (his hall's shape, taught): a plate on a bough, its cage hung beside it over the road; the patrol walks under it */
   plank(214, 220, 23); ent('plate', 218, 22, { cage: 223 }); ent('dropcage', 223, 19);
   sign(213, 25, 'STAND ON A PLATE AND ITS CAGE FALLS. THE KING HAS FIVE IN HIS HALL.');
@@ -177,7 +177,7 @@ export function buildKingswood({ painter, T, TS }) {
   plank(287, 292, 7); ent('plate', 289, 6, { cage: 295 }); ent('dropcage', 295, 4);
   foe('brute', 295, 10, 'warden', { face: -1 }); foe('wasp', 292, 4, 'warden', { perch: true });
   sign(281, 10, 'THE CAGE-WARDEN. HIS PLATE IS ON THE BOUGH OVER HIM.');
-  deco(298, 10, 'hangCage', 0, { hang: true }); coins([288, 6], [291, 6], [298, 9]);
+  deco(298, 10, 'hangCage', 0, { hang: true, stand: true }); coins([288, 6], [291, 6], [298, 9]);
   /* the fall at his back: the canopy ends over the grove floor */
   ground(301, 303, 30); ground(304, 312, 12);
   for (const y of [27, 24, 21, 18, 15]) plank(301, 303, y);                       /* (and a ladder of boughs back up the gap: a fall costs the climb, not the run) */
@@ -198,7 +198,7 @@ export function buildKingswood({ painter, T, TS }) {
   rope('procLog', { x: 354, top: 3, hang: 11, cleat: [349, 9], load: 'log', roll: 1, rollMax: 30 });
   ent('plate', 366, 9, { cage: 370 }); ent('dropcage', 370, 11);
   ent('lever', 374, 13, { ram: 380 }); ent('ram', 380, 9, { hang: true });       /* the arch's ram: it swings across the road at the boughs' end */
-  deco(326, 9, 'banner', 1, { hang: true }); deco(344, 9, 'banner', 0, { hang: true }); deco(362, 9, 'banner', 1, { hang: true });
+  deco(326, 9, 'banner', 1, { hang: true, stand: true }); deco(344, 9, 'banner', 0, { hang: true, stand: true }); deco(362, 9, 'banner', 1, { hang: true, stand: true });   /* (claude/floatfix) the gallery's banners stand on its boards on a pole (hung they had no rock over them and were never drawn) */
   coins([324, 9], [330, 9], [341, 9], [347, 9], [359, 9], [365, 9]);
   ent('silver', 335, 7);                                                           /* SILVER TWO: in the crotch of the boughs, over the march */
   /* THE COURT (marchers: src/kingswood-hands.js; e.kw is copied onto the foe): out of the view from the trigger, front to back */

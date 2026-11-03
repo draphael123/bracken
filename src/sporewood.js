@@ -66,7 +66,7 @@ export function buildSporewood({ painter, T, TS }) {
   const sign = (x, y, text, o) => ent('sign', x, y, { text, ...(o || {}) });
   const foe = (t, x, y, squad, o) => ent(t, x, y, Object.assign({ squad }, o || {}));
   const coins = (...pts) => pts.forEach(([x, y]) => ent('coin', x, y));
-  const deco = (x, y, kind, v, o) => ent('deco', x, y, { kind, v: v || 0, ...(o || {}) });
+  const deco = (x, y, kind, v, o) => ent('deco', x, y, { kind, v: v || 0, ...(kind === 'rootDecor' ? { stand: true } : {}), ...(o || {}) });   /* (claude/floatfix) SPOREWOOD 2's rootDecor is a root tangle that STANDS (sporewood2_world.js): it was set as hung and left out for want of a roof, seven times */
   const glow = (x, y) => ent('glow', x, y);
   const lantern = (x, y) => ent('glowbud', x, y, { lantern: true });              /* A LANTERN CAP: main.js's glowbud (strike: it lights for 14 s and wakes the buds near it) */
   const mend = (x, y) => ent('mendpuff', x, y);                                       /* A MEND PUFF (src/sporewood-hands.js) */
