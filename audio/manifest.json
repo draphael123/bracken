@@ -1255,5 +1255,18 @@
   "audio/sfx/step_wood_4.ogg",
   "audio/sfx/step_wood_5.ogg",
   "audio/sfx/step_wood_6.ogg"
+ ],
+ "crack_rock": [
+  "audio/sfx/crack2_3.ogg",
+  "audio/sfx/crack2_4.ogg",
+  "audio/sfx/crack2_5.ogg"
+ ],
+ "stone_geo": [
+  "audio/sfx/stone2_0.ogg",
+  "audio/sfx/stone2_1.ogg",
+  "audio/sfx/stone2_2.ogg",
+  "audio/sfx/stone2_3.ogg",
+  "audio/sfx/stone2_4.ogg",
+  "audio/sfx/stone2_5.ogg"
  ]
 }
