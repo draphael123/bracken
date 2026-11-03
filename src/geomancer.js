@@ -62,7 +62,7 @@ export const GEO = {
      pierce it, a blow does not push her back, and a PERFECT guard throws a shot back the way it came and EMPOWERS her for `emp` s -
      her blows `empMul` as hard and TREMOR filling `empTremor` times as fast, the runes on her alight so it reads. `hold`: a tap
      keeps it up this long after it has risen (a tap on the beat is a guard). `lock`: after it breaks, how long before it will rise. */
-  ward: { raise: 0.1, perfect: 0.1, hold: 0.15, hitSt: 12, holdSt: 14, lock: 0.6, emp: 3, empMul: 1.25, empTremor: 2 },
+  ward: { raise: 0.1, perfect: 0.1, hold: 0.15, hitSt: 15, holdSt: 14, lock: 0.6, emp: 3, empMul: 1.25, empTremor: 2 },
   tremor: { wall: 18, perfect: 28, launch: 14, shot: 6 },
   launchVy: -330, heroLaunchVy: -430, stepVy: -400,
   quakeR: 200, quakeWideMul: 1.5,
