@@ -11,7 +11,7 @@ try {
   const r = await pg.evalp(`(async()=>{
   const {LEVELS}=await import('/src/level.js');BK.manualSimulation=true;BK.SET.speed=1;const out={};
   const boot=()=>{BK.setHero('knight');BK.reset({fresh:true});BK.load(LEVELS.findIndex(l=>l.id==='causeway'));BK.state='play';BK.god=true;
-    const A=BK.L.arena;BK.tp(Math.round(A.trigger/16)+1,Math.round(A.floor/16)-1);BK.sim(700);BK.god=false;BK.P.maxHp=BK.P.hp=999;const e=BK.boss;hush(e);return e;};
+    const A=BK.L.arena;BK.tp(Math.round(A.trigger/16)+1,Math.round(A.floor/16)-1);if(BK.boss)BK.boss.kiteT=-1e6;/* (rel139fix) the ANTI-KITE clock (claude/wardenid) speeds a boss whose hero stands off; the road must start clear, so it is held off while he wakes */BK.sim(700);BK.god=false;BK.P.maxHp=BK.P.hp=999;const e=BK.boss;hush(e);return e;};
   /* HUSH: he stands and does nothing of his own (every clock of his far off), so each part is forced and watched alone */
   const hush=e=>{e.mode=e.stage>=3?'stride3':e.stage===2?'stride2':'stride';e.modeT=999;for(const k in e.T)e.T[k]=999;for(const a of e.arms)if(a.st==='hold'||a.st==='grab'||a.st==='reach')a.st='idle';};
   const TS=16,stand=(x)=>{const P=BK.P;P.x=x;P.y=BK.L.arena.floor;P.vx=P.vy=0;P.inv=0;P.dodge=0;};
