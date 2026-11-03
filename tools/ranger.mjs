@@ -47,7 +47,7 @@ try {
     { __rg(); __tap(); BK.sim(20); __tap(); BK.sim(60); const q1=R().q, xs=R().arrows.map(a=>a.x); K.right=true; for(let i=0;i<120&&R().arrows.length;i++)BK.sim(1); K.right=false; BK.sim(5);
       out.quiver={q1,stuck:xs.length,after:R().q,left:R().arrows.length,picked:R().stats.picked};
       __rg(); P().rgQ=0; const f=__foe(60); BK.sim(1); __tap(); out.quiver.emptyAtk=P().atk>=0; out.quiver.emptyArrows=R().arrows.length; f.alive=false;
-      BK.sim(2); P().rgQ=0; P().rgRefT=0; BK.sim(Math.round(60*11.3)); out.quiver.trickle=R().q; }
+      BK.sim(2); P().rgQ=0; P().rgRefT=0; BK.sim(Math.round(60*12.3)); out.quiver.trickle=R().q; }
     /* CROUCH TO RESTOCK: a quick duck does not, a held still one does (1 arrow per ~1.3 s after 0.4 s), moving cancels and resets the delay */
     { __rg(); P().rgQ=0; P().rgRefT=0; K.down=true; BK.sim(18); const duck=!!P().ducking, quick=R().q; K.down=false; BK.sim(6);
       K.down=true; BK.sim(60); const at1s=R().q; BK.sim(60); const at2s=R().q; BK.sim(340); const full=R().q; K.down=false; BK.sim(3);
@@ -127,7 +127,7 @@ try {
   ok(r.draw.land >= 125 && r.draw.land <= 185 && r.draw.land > r.quick.land + 40, 'draw: a full draw should land 125-185 px out, well past a tap: ' + r.draw.land);
   ok(r.quiver.stuck === 2 && r.quiver.left === 0 && r.quiver.after === r.quiver.q1 + 2 && r.quiver.picked === 2, 'quiver: walking over the stuck arrows should take them back: ' + JSON.stringify(r.quiver));
   ok(r.quiver.emptyAtk && r.quiver.emptyArrows === 0, 'quiver: empty, X should be the knife: ' + JSON.stringify(r.quiver));
-  ok(r.quiver.trickle === 1, 'quiver: one arrow should trickle back in ~11 s (claude/herofeel: slower): ' + r.quiver.trickle);
+  ok(r.quiver.trickle === 1, 'quiver: one arrow should trickle back in ~12 s (claude/herofeel: slower): ' + r.quiver.trickle);
   ok(r.restock.duck && r.restock.quick === 0, 'restock: a quick duck (0.3 s) must not restock: ' + JSON.stringify(r.restock));
   ok(r.restock.at1s === 0 || r.restock.at1s === 1, 'restock: about one arrow in the first second after the delay: ' + JSON.stringify(r.restock));
   ok(r.restock.at2s >= 1 && r.restock.at2s <= 2 && r.restock.full === r.restock.max, 'restock: crouching still fills the quiver, one arrow per ~1.3 s: ' + JSON.stringify(r.restock));
@@ -157,7 +157,7 @@ try {
   ok(has(r.bash.ripTag, 'riposte') && has(r.bash.ripTag, 'shot'), 'bash: the arrow after the parry should be the riposte: ' + JSON.stringify(r.bash.ripTag));
   ok(r.bash.lateLost > 0 && r.bash.redLost > 0, 'bash: off the beat, or a red blow, should land: ' + JSON.stringify(r.bash));
   ok(r.snare.n === 1 && r.snare.snared === 1 && r.snare.stagger > 1, 'snare: the skill sets a snare that holds a foe: ' + JSON.stringify(r.snare));
-  ok(r.rc.out0 >= 1 && r.rc.rooted && r.rc.spent >= Math.round(r.rc.max * 0.4) && r.rc.moved < 3, 'recall: DOWN+C costs ~45% of the bar and roots her: ' + JSON.stringify(r.rc));
+  ok(r.rc.out0 >= 1 && r.rc.rooted && r.rc.spent >= Math.round(r.rc.max * 0.45) && r.rc.moved < 3, 'recall: DOWN+C costs ~50% of the bar and roots her: ' + JSON.stringify(r.rc));
   ok(r.rc.q2 > r.rc.q1 && r.rc.left === 0 && r.rc.free, 'recall: the stuck arrows fly back to the quiver and the root ends: ' + JSON.stringify(r.rc));
   ok(r.rcHit.broke && r.rcHit.still >= 1, 'recall: a blow before the yank breaks it, the arrows stay: ' + JSON.stringify(r.rcHit));
   ok(!r.rcNone.rooted && r.rcNone.spent === 0, 'recall: nothing to recall costs and roots nothing: ' + JSON.stringify(r.rcNone));
