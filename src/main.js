@@ -79,7 +79,7 @@ import { BELL_LOCK_MAX, bellLock } from './bell-lock.js';
 import {bakeBellcrab,bakeBellguard,bakeBellcrabOut,bakeBellShell,BELL,BELL_OUT_F,bellOutFrame} from './bellcrab.js';
 import * as DH from './deep-holds.js';
 import * as WN from './whatsnew.js';   /* WHAT'S NEW on the title board (docs/updates.json) */
-import * as BUG from './bug-report.js'; import * as BUGUI from './bug-report-ui.js'; import { BUILD } from './build.js';   /* REPORT A BUG: a pasteable code (src/bug-report.js, tools/bug-decode.mjs); the console tap is installed by the first import below */
+import * as BUG from './bug-report.js'; import * as BUGUI from './bug-report-ui.js'; import * as FBF from './feedback-form.js'; import { BUILD } from './build.js';   /* REPORT A BUG: a pasteable code (src/bug-report.js, tools/bug-decode.mjs); the console tap is installed by the first import below */
 import * as SAFE from './save-safety.js';   /* A SAVE IS NEVER LOST IN SILENCE: corrupt slots, backups, a full disk (src/save-safety.js) */
 import { creditPages, CC_BY, FONT_CREDITS, FONT_LICENCE } from './credits.js';   /* THE MUSIC CREDITS page: every outside composer, the CC-BY tracks with their licence */
 import { LANCE4, LANCE_SAY, LANCE_WORD, bellStrike, bellStep, bellHas, ropeFray, ropeTick, underRope, drawLanceBell, drawBellGate, drawRopeCut, gateHas, gateCatch, gateStep, drawLanceGate } from './lance-support.js';   /* THE QUEEN'S LANCE (claude/lance4): his numbers, his bells and ropes; the bridge gate's (Highcrown's hall bell keeps it) */
@@ -6526,7 +6526,7 @@ const SETTING_TIPS = {
   'Iron Knight': 'one life, one run, for the medal', 'Block': 'hold the key or toggle it', 'Text speed': 'how fast talk fills', 'Transitions': 'the cutscene between levels: ALWAYS / FIRST TIME / NEVER (any button skips)', 'Hints': 'help boxes and nudges: NONE / LOW / MEDIUM / HIGH',
   'Swap Z / X': 'which key jumps', 'Rumble': 'gamepad rumble',
   'Map': 'where you have been (TAB)', 'Way-on arrow': 'an arrow on the way: STUCK = after 10s',
-  'Co-op': 'a friend on a pad, or the game', 'Party': 'add, retune or dismiss an AI partner', 'Co-op guide': 'how a second player joins', 'Report a bug': 'a code to paste to the developer',
+  'Co-op': 'a friend on a pad, or the game', 'Party': 'add, retune or dismiss an AI partner', 'Co-op guide': 'how a second player joins', 'Report a bug': 'a code to paste to the developer', 'Give feedback': 'rate the demo and tell us what you think',
   'Music': 'the soundtrack on or off', 'Music volume': 'the soundtrack', 'Effects vol': 'swings, hits and voices', 'Ambience vol': 'wind, water, the wood',
   'UI volume': 'menu clicks', 'Sound FX': 'recorded clips or the synth', 'Character voices': 'grunts and cries',
   'Camera': 'close, or wide for more of the room', 'Look down': 'hold down to look below you', 'Look ahead': 'the camera leads where you run', 'HUD': 'minimal bars, or the plate',
@@ -6618,6 +6618,7 @@ function menuConfirm() {
   else if (k === 'Co-op guide') openCoopHelp('menu');
   else if (k === 'Party') { partyBoardOpen(); SFX.uiSel(); }   /* (claude/partypersist) the party board from the pause menu: add, retune or dismiss an AI partner without a trip to the inn */
   else if (k === 'Report a bug') openBugReport();
+  else if (k === 'Give feedback') openFeedback();
   else if (k === 'Reset controls') { if (menuMsg === 'press again to reset every key and button' && menuMsgT > 0) { CTL.resetAll(SET.binds); applyBinds(); saveSettings(); menuMsg = 'every key and button is back to its default'; menuMsgT = 3; SFX.ui(); } else { menuMsg = 'press again to reset every key and button'; menuMsgT = 3; SFX.ui(); } }
   else if (k === 'Quit to title') { setView('normal'); state = 'title'; music.play(menuTrack()); SFX.uiSel(); }
   else if (k === 'Erase this save') { if (menuMsg === 'press again to confirm' && menuMsgT > 0) { eraseSlot(slot); saveProgress(); menuMsg = 'save ' + (slot + 1) + ' cleared'; SFX.crack(); } else { menuMsg = 'press again to confirm'; SFX.ui(); } menuMsgT = 2.5; }
@@ -6993,6 +6994,7 @@ function tavernPadJoin(gps, claimed) {
 }
 function pollGamepad() {
   const gps = padsNow();
+  if (FBF.isOpen()) { const g0 = gps[0]; if (g0) pad.prev = padState(g0, 'pad1'); return; }   /* (claude/feedback) the feedback form owns the pad while it is up: the game under it sees no press */
   const used = padRawTick(gps);   /* the tab shoulders and a button being chosen for an action */
   /* (claude/tavern) THE PARTY'S HANDS, up to four: an online seat takes its guest's keys (src/online.js, by guest id); a local seat bound to a pad takes that
      pad; a local seat with no pad named takes the next free pad in seat order (today's rule: player two the first pad); PLAYER ONE takes the first pad left */
@@ -11737,7 +11739,7 @@ const rushUnlocked = () => godMode() || !!q.get('rush') || !!((PROG.crown || {})
    level (6 rows), so the sub-list never changes its shape. titleOpts is true while the sub-list is up; every tool that wants SETTINGS / SOUND TEST / CONTROLS goes through OPTIONS. */
 let titleOpts = false;
 const titleTop = () => { const base = readSlot(slot) ? ['CONTINUE', 'CHOOSE A SAVE'] : ['NEW GAME', 'CHOOSE A SAVE'];
-  return base.concat(['LOCAL CO-OP', 'ONLINE CO-OP'], rushUnlocked() && !MODES_PARKED ? ['BOSS RUSH'] : [], ['PRACTICE', 'BOSS SELECT'], MODES_PARKED ? [] : ['THE EDITOR'], ["WHAT'S NEW", 'OPTIONS', 'CREDITS']); };
+  return base.concat(['LOCAL CO-OP', 'ONLINE CO-OP'], rushUnlocked() && !MODES_PARKED ? ['BOSS RUSH'] : [], ['PRACTICE', 'BOSS SELECT'], MODES_PARKED ? [] : ['THE EDITOR'], ["WHAT'S NEW", 'OPTIONS', 'GIVE FEEDBACK', 'CREDITS']); };
 /* REPORT A BUG (pause menu and title OPTIONS): the facts the code carries - never the save (src/bug-report.js). The board is DOM (src/bug-report-ui.js). */
 function bugSnapshot() {
   const up = WN.getUpdates()[0] || {}, inLv = !!(L && LEVELS[levelIndex]) && (state === 'play' || state === 'talk' || state === 'win' || state === 'gameover' || state === 'victory' || (state === 'menu' && menuFrom === 'play')), lv = inLv ? LEVELS[levelIndex] : null, S = {};
@@ -11747,6 +11749,8 @@ function bugSnapshot() {
     hp: pl ? [Math.round(pl.hp), pl.maxHp] : [0, 0], fl: pl ? pl.flasks : 0, sl: slot, dfl: lv ? diffOf(lv.id) : '', dev: { w: innerWidth, h: innerHeight, r: +(devicePixelRatio || 1).toFixed(2), t: touchOn ? 1 : 0, ua: String(navigator.userAgent).replace(/^Mozilla\/5\.0 /, '').slice(0, 90) }, set: S };
 }
 function openBugReport() { SFX.uiSel(); BUGUI.open(bugSnapshot, () => {}); }
+/* GIVE FEEDBACK (title, pause menu, end-of-demo card): the in-game form (src/feedback-form.js; the destination is src/feedback-config.js). Sends only what is typed + build, level, hero. */
+function openFeedback() { SFX.uiSel(); FBF.open(bugSnapshot, () => {}); }
 const titleItems = () => titleOpts ? ['SETTINGS', 'SOUND TEST', 'CONTROLS', 'REPORT A BUG', 'BACK'] : titleTop();
 /* THE EDITOR AND THE BOSS RUSH ARE PARKED, NOT DELETED (Daniel, 2026-09-23): "we need to work on the core game before working on
    these modes." They leave the title menu and every line of their code stays. `?modes=1` brings both back for testing. Do not add
@@ -32450,6 +32454,7 @@ function update(dt) {
         else if (k === 'BACK') { titleOpts = false; titleI = Math.max(0, titleTop().indexOf('OPTIONS')); }
         else if (k === 'SETTINGS') openMenu('title');
         else if (k === 'REPORT A BUG') openBugReport();
+        else if (k === 'GIVE FEEDBACK') openFeedback();
         else if (k === 'SOUND TEST') { state = 'soundtest'; soundI = 0; soundCat = 0; soundFrom = 'title'; }
         else if (k === 'CONTROLS') { controlsFrom = 'title'; state = 'controls'; }
         else if (k === 'CREDITS') { creditsPage = 0; state = 'credits'; }
