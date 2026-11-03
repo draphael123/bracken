@@ -5,7 +5,7 @@
      first      a FIRST ATTEMPT: the same, but it has not seen his tells or his opening (profile '+first')
      built      practiced, with a TYPICAL build: the card a player picks (health and damage first, milestone perks) and his best skills
                 in the slots his level has (src/bot-profile.js typicalCard / TYPICAL_SKILLS), cast by the lab's skill hands
-   ("bare" is practiced: the floor.)
+   ("bare" is practiced: the floor.)  (claude/botbuilt, Daniel 11-03 Q2) built now runs the SAME n as practiced (--built-seeds still overrides) and the table prints a built-minus-bare column: the band is read on the built way as a one-off report, bare is the printed floor, NO automatic retune. Every built row carries the cast counts (casts.ult = ultimates fired) and a !!BUILD-GAP flag when the hero's kit has a skill with no SKILL_RANGE entry or no typical skills at all.
      PORT=8644 node tools/boss-rates.mjs <level>[:mini][,<level>[:mini]..] | --all  [--ways=practiced,first,built] [--seeds=6] [--first-seeds=N]
         [--built-seeds=N] [--adaptive [--cap=20] [--step=6]] [--band-way=practiced] [--heroes=knight,warden,pyro] [--profile=human] [--secs=240] [--jobs=2] [--out=file.json] [--level=N]
    --all: every live boss and mini (BOSS_ROWS below). --jobs: pages run side by side (each its own headless Chrome). Prints a row a fight
@@ -20,7 +20,7 @@ const rowsArg = args.includes('--all') ? BOSS_ROWS : args.filter(a => !a.startsW
 const heroes = opt('heroes', 'knight,warden,pyro').split(','), seeds = +opt('seeds', 6), secs = +opt('secs', 240), jobs = Math.max(1, +opt('jobs', 2));
 const ways = opt('ways', 'practiced,first,built').split(','), prof = opt('profile', STANDARD), OUT = opt('out', ''), flasks = opt('flasks', process.env.BOSS_FLASKS || 'kit');   /* (claude/flasks2) kit: the campaign kit's flasks (B6); bare: one flask at 35% (the old rows) */
 if (opt('difficulty', '')) process.env.DIFFICULTY = opt('difficulty', '');   /* (claude/difficulty) --difficulty=easy|normal|master (default normal) */
-const seedsOf = { practiced: seeds, first: +opt('first-seeds', Math.max(2, Math.ceil(seeds / 2))), built: +opt('built-seeds', Math.max(2, Math.ceil(seeds / 2))) };
+const seedsOf = { practiced: seeds, first: +opt('first-seeds', Math.max(2, Math.ceil(seeds / 2))), built: +opt('built-seeds', seeds) };
 const fights = [];
 for (const r of rowsArg) for (const way of ways) for (const h of heroes) for (let s = 1 + (+process.env.SEED0 || 0); s <= (+process.env.SEED0 || 0) + seedsOf[way]; s++) fights.push({ r, way, h, s, profile: prof, flasks });
 const t0 = Date.now();
@@ -46,9 +46,13 @@ export function summarize(rows) {
   return Object.values(by);
 }
 console.log('\nBOSS RATES  profile ' + prof + '  flasks ' + flasks + '  difficulty ' + (process.env.DIFFICULTY || 'normal') + '  (' + out.length + ' fights, ' + Math.round((Date.now() - t0) / 60000) + ' min)');
+const gapSeen = new Set(); for (const x of out) if (x.gaps && (x.gaps.noRange.length || x.gaps.empty)) gapSeen.add(x.hero + (x.gaps.empty ? ': no typical skills (casts nothing but its ultimate)' : '') + (x.gaps.noRange.length ? ': no SKILL_RANGE for ' + x.gaps.noRange.join(',') : ''));
 console.log('row'.padEnd(18) + 'L'.padStart(3) + '  ' + ways.map(w => (w + ' ' + heroes.map(h => h.slice(0, 2)).join('/') + ' (rate [95%] n)').padEnd(46)).join('') + 'band');
 for (const B of summarize(out)) { const cells = ways.map(w => { const W = B.ways[w] || {}; let tw = 0, tn = 0; const per = heroes.map(h => { const H = W[h] || { w: 0, n: 0 }; tw += H.w; tn += H.n; return H.w + '/' + H.n; });
     return (per.join(' ') + ' = ' + fmtRate(tw, tn)).padEnd(46); });
   const W = B.ways[BAND_WAY] || {}, tw = heroes.reduce((s, h) => s + ((W[h] || {}).w || 0), 0), tn = heroes.reduce((s, h) => s + ((W[h] || {}).n || 0), 0), pct = tn ? 100 * tw / tn : null, bd = bandOf(B.row), [lo, hi] = bd;
   const zero = heroes.filter(h => W[h] && W[h].n && !W[h].w), bv = bandVerdict(tw, tn, bd), st = pct === null ? '' : (bv.v === 'IN' ? 'IN BAND' : bv.v === 'LOW' ? 'LOW (' + BAND_WAY + ' ' + Math.round(pct - lo) + ')' : bv.v === 'HIGH' ? 'HIGH (' + BAND_WAY + ' +' + Math.round(pct - hi) + ')' : 'UNSURE, ' + bv.note + (bv.need ? ', ~' + bv.need + ' fights to clear the edge' : '') + (tn >= CAP * heroes.length ? ' [cap reached]' : ''));
-  console.log(B.row.padEnd(18) + String(B.lvl).padStart(3) + '  ' + cells.join('') + st + (zero.length ? '  zero: ' + zero.join(',') : '')); }
+  console.log(B.row.padEnd(18) + String(B.lvl).padStart(3) + '  ' + cells.join('') + st + (zero.length ? '  zero: ' + zero.join(',') : '') + (() => { const a = B.ways.practiced, b = B.ways.built; if (!a || !b) return ''; const tot = W2 => heroes.reduce((s, h) => ({ w: s.w + ((W2[h] || {}).w || 0), n: s.n + ((W2[h] || {}).n || 0) }), { w: 0, n: 0 }), A = tot(a), Bt = tot(b); return A.n && Bt.n ? '  built-bare ' + (Math.round(100 * Bt.w / Bt.n - 100 * A.w / A.n) >= 0 ? '+' : '') + Math.round(100 * Bt.w / Bt.n - 100 * A.w / A.n) + ' pts' : ''; })()); }
+const casts = {}; for (const x of out) if (x.way === 'built' && x.casts) { const c = casts[x.hero] = casts[x.hero] || { fights: 0 }; c.fights++; for (const k in x.casts) c[k] = (c[k] || 0) + x.casts[k]; }
+if (Object.keys(casts).length) console.log('BUILT CASTS (summed over the built fights): ' + Object.entries(casts).map(([h, c]) => h + ' ' + JSON.stringify(c)).join('  '));
+for (const g of gapSeen) console.log('!!BUILD-GAP ' + g);
