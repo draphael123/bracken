@@ -305,6 +305,7 @@ export function buildKingswood({ painter, T, TS }) {
     arena, mini, kwood: true, hoists, glade, gorm, lastArena: glade, crumbles, kwoodCrumbles: true,
     reachDoors: [{ x0: 410, x1: 410, y0: 4, y1: 13 }],   /* THE COURT GATE: its plate is on the road's step before it (the fill counts it open) */
     procession: { id: 'court', trigger: 318, exit: 316, dir: -1 },
+    reskin: { shield: 'kingsshield', pike: 'courthalberd', brute: 'royalbrute' },   /* (claude/kingsreskin) GORM'S HOUSEHOLD: the court's shield, pike and brute in crimson and gold - art, names and cards only (src/redraw/kings_court_foes.js), so the level's hash is the greybox's */
     calm: [[0, W - 1, 0, H - 1]],   /* placed wholly by hand: nothing sprinkled */
     checkRun: 240,                  /* (claude/kingsfix2: the escape is 40 columns longer - shrine four's door to the wood's shrine is 221 columns: no shrine in the run, as before) five shrines, one closing each area's exam (A10c): src/level.js checkpoints() must not fill between them */
     sections: SECTIONS.map(([name, x0, x1]) => ({ id: name.toLowerCase().replace(/[^a-z]+/g, '-'), name, x0, x1 })),
