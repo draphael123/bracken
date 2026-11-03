@@ -446,6 +446,7 @@ export function makeGeomancer(api) {
   function fistPlant() { const P = api.P, F = GEO.fist;
     if (standing() >= cap() || api.time - plantAt < F.plantCd) return false;
     for (let k = F.plantFrom; k <= F.plantTo; k++) { const tx = Math.floor(P.x / TS) + P.face * k, fy = floorRow(tx, Math.floor((P.y - 1) / TS), 2); if (fy === null || !freeCell(tx, fy - 1)) continue;
+      if (pieces.some(q => !q.gone && q.cells.some(c => c.tx === tx))) continue;   /* a column that already holds a stone of hers is not free: plants never stack */
       const r = erupt(tx, fy, 1, 'pillar', { noHero: true, hurt: false, noLaunch: true }); if (!r.piece) continue; r.piece.knee = true;   /* (claude/geopop c) drawn as her squat KNEE STONE (drawKneeStone) */
       plantAt = api.time; stats.fistPlants = (stats.fistPlants || 0) + 1; api.shakeCam(1, P.face);
       if (GEO.pop.feel) { if (api.SFX.geoPlant) api.SFX.geoPlant(); api.burst(tx * TS + 8, fy * TS - 4, 6, [STONE.base, STONE.hi, STONE.lo], 80, 0.35, 300); api.ringAt(tx * TS + 8, fy * TS - 2, 12, STONE.rune, 0.2); blowPulse(); }

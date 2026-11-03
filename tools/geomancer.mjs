@@ -205,6 +205,8 @@ try {
   out.pop.body = await pg.evalp(`(()=>{const P=()=>BK.P,G=()=>BK.geo();__g2();const es=[40,56,72].map(dx=>{const e=__pfoe(dx);e.mini=true;return e;});BK.sim(2);es.forEach((e,i)=>e.px=BK.P.x+[40,56,72][i]);
     let inside=false;BK.press('atk');for(let i=0;i<30;i++){BK.sim(1);__pin(es);inside=inside||__inside();}BK.press('atk');for(let i=0;i<30;i++){BK.sim(1);__pin(es);inside=inside||__inside();}BK.press('atk');for(let i=0;i<40;i++){BK.sim(1);__pin(es);inside=inside||__inside();}
     return {planted:G().standing(),inside}})()`);
+  out.pop.stack = await pg.evalp(`(()=>{const P=()=>BK.P,G=()=>BK.geo();__g2();const px=Math.floor(P().x/16);__stone(px+2);__stone(px+3);BK.sim(2);__combo();const d=G().pieces().map(p=>p.cells[0].tx-px).sort();
+    __g2();__stone(px+2);__stone(px+3);BK.sim(2);const es=[__pfoe(64)];es[0].mini=true;BK.sim(2);es[0].px=BK.P.x+64;BK.sim(60*4);es[0].px=BK.P.x+64;__combo(es);return {d,n:G().standing()}})()`);
   out.pop.det0 = await pg.evalp(`(()=>{const P=()=>BK.P,G=()=>BK.geo(),K=BK.keys;__g2();const d0=G().tierStats().detonates||0;K.down=true;K.block=true;let ward=false,det=false;for(let i=0;i<20;i++){BK.sim(1);ward=ward||!!P().geoGuard;det=det||G().detonating();}K.down=false;K.block=false;BK.sim(10);
     return {ward,det,dets:(G().tierStats().detonates||0)-d0}})()`);
   out.pop.det2 = await pg.evalp(`(()=>{const P=()=>BK.P,G=()=>BK.geo(),K=BK.keys;__g2();const px=Math.floor(P().x/16),d0=G().tierStats().detonates||0;const e=__pfoe(100);BK.sim(2);e.px=BK.P.x+100;__stone(px+4);__stone(px+5);BK.sim(2);const n0=G().standing(),hp0=e.hp;
@@ -298,6 +300,7 @@ try {
     assert(O.full.n === 3 && O.full.same && O.full.plants === 0, 'POP a: at a full board the fist plants nothing and evicts nothing (' + J + ')');
     assert(O.noshatter.had && O.noshatter.stands, 'POP a: the fist no longer shatters a board stone it stood next to (' + J + ')');
     assert(O.body.planted === 0 && !O.body.inside, 'POP a: never inside a body - three foes on the three columns, no plant, nobody buried (' + J + ')');
+    assert(O.stack.d.length >= 2 && new Set(O.stack.d).size === O.stack.d.length && O.stack.n === 2, 'POP a: a plant skips a column that already holds a stone - no stacking (' + J + ')');
     assert(O.det0.ward && !O.det0.det && O.det0.dets === 0, 'POP e: DOWN+C with 0 stones raises the ward and detonates nothing (' + J + ')');
     assert(O.det2.n0 === 2 && O.det2.tell && O.det2.left === 0 && O.det2.dets === 1 && O.det2.hurt > 0 && !O.det2.ward, 'POP e: DOWN+C with 2 stones tells then spends BOTH, hurts the foe in the radius, never raises the ward (' + J + ')');
     assert(O.det2.cd >= 3.9 && O.det2.cd <= 5.1 && O.det2.again === 1 && O.det2.second === 2, 'POP e: the cd is 5 s - a second DOWN+C inside it fires nothing and leaves the new stones (' + J + ')');
