@@ -1,0 +1,36 @@
+name: Per-sprite game map and native equivalence
+on:
+  push:
+    branches: [codex/load-perf]
+    paths:
+      - tools/per-sprite-game-nov03/**
+      - .github/workflows/per-sprite-game-nov03.yml
+permissions: {contents: read}
+jobs:
+  first-map:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0}
+      - uses: actions/checkout@v4
+        with:
+          ref: 1a576c3f4511b6856df9fb4738df5aaae9987e81
+          path: reference-game
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with: {node-version: '24.11.1'}
+      - name: Compare first map and full catalogue in 18 fresh documents
+        run: |
+          test -z "$(git diff 62d9c02c HEAD -- src index.html)"
+          node tools/per-sprite-game-nov03/compare.mjs
+        env:
+          PUBLICATION_STANDING_GAME: reference-game
+          PUBLICATION_STANDING_OUT: ${{ runner.temp }}/per-sprite-game-nov03
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: per-sprite-game-nov03
+          path: ${{ runner.temp }}/per-sprite-game-nov03/
+          if-no-files-found: error
+
