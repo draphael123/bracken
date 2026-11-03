@@ -5,6 +5,7 @@
 import { spawn } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
+import { infraWhy } from './infra-kill.mjs';
 import { launchBrowser } from './browser-profile.mjs';
 import { browserExecutable } from './cdp.mjs';
 import { budgetFor, killTree } from './check-guard.mjs';
@@ -124,8 +125,15 @@ export async function runPool(rows, { ROOT, jobs, maxBrowsers, portFor, onDone =
       let env = job.env;
       if (browserSlot !== null) { if (!shared.has(browserSlot)) shared.set(browserSlot, await startBrowser());
         env = { ...env, BRACKEN_BROWSER_PORT: String(shared.get(browserSlot).port) }; }
-      const result = await execute({ ...job, env }, ROOT, portFor(slot));
-      if (browserSlot !== null) await clearContexts(shared.get(browserSlot).port);
+      let result = await execute({ ...job, env }, ROOT, portFor(slot));
+      if (browserSlot !== null) await clearContexts(shared.get(browserSlot).port).catch(() => {});
+      /* (claude/botmem) a check whose page the machine killed is rerun ONCE on a fresh context, labelled; killed twice = INFRA-KILLED (a FAIL, but a machine death to rerun, not a code red) */
+      const why = result.ok ? null : infraWhy(result.out, Date.now() - result.ms);
+      if (why) { console.log('[infra-retry] ' + job.name + ': ' + why + ' - rerunning once');
+        if (browserSlot !== null && shared.get(browserSlot).run.exited) { try { await shared.get(browserSlot).run.close(); } catch {} shared.set(browserSlot, await startBrowser()); env = { ...env, BRACKEN_BROWSER_PORT: String(shared.get(browserSlot).port) }; }
+        const t1 = Date.now(); result = await execute({ ...job, env }, ROOT, portFor(slot)); result.infraRetry = why;
+        if (browserSlot !== null) await clearContexts(shared.get(browserSlot).port).catch(() => {});
+        if (result.ok) result.last = '[infra-retry ok after: ' + why + '] ' + result.last; else if (infraWhy(result.out, t1)) { result.infra = true; result.last = 'INFRA-KILLED twice (machine, not code - rerun alone): ' + result.last; } }
       return result; }
     catch (e) { return { name: job.name, ok: false, ms: 0, last: e.message, out: [e.stack || String(e)] }; }
     finally { if (browserSlot !== null) browserSlots.delete(browserSlot); } };

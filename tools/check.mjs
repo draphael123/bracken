@@ -204,6 +204,7 @@ import { fileURLToPath } from 'url';
 
 import { portFor, newRunTag } from './ports.mjs';
 import { runPool } from './check-pool.mjs';
+import { infraWhy } from './infra-kill.mjs';   /* (claude/botmem) a check whose page memguard killed is rerun once, labelled */
 const ROOT = fileURLToPath(new URL('..', import.meta.url));   /* not .pathname: a space in the folder name arrives as %20 */
 /* A SUBSET, FOR THE BUILD LOOP. `npm run check` with no arguments is the GATE and is unchanged - all of it, and the
    only thing that may be called green. `npm run check -- tower,tome,elites` runs just the checks whose names contain
@@ -248,12 +249,19 @@ const peakBetween = (t0, t1) => { let tot = 0, max = 0, any = false;
   return any ? { tot, max } : null; };
 const live = (name, ok, ms) => { const t1 = Date.now(), pk = peakBetween(t1 - ms, t1); PEAKS.set(name, pk);
   console.log('[live] ' + (ok ? 'ok  ' : 'FAIL') + ' ' + name + ' ' + (ms / 1000).toFixed(1) + 's' + (pk ? ' peak-rss total=' + pk.tot + 'MB biggest-process=' + pk.max + 'MB' : ' peak-rss n/a')); };
-const runSync = (name, cmd, args, env) => {
+const runSyncOnce = (name, cmd, args, env) => {
   const t0 = Date.now(), r = spawnSync(process.execPath, [join(ROOT, 'tools/check-guard.mjs'), name, cmd, ...args], { cwd: ROOT, encoding: 'utf8', env: env ? { ...process.env, ...env } : process.env });   /* (claude/smallfix4) every check runs under a wall-clock budget: tools/check-guard.mjs kills only its own process tree and prints 'FAIL <name> TIMEOUT' */
   const out = ((r.stdout || '') + (r.stderr || '')).trim().split('\n');
   const ms = Date.now() - t0; live(name, r.status === 0, ms);
   return { name, ok: r.status === 0, ms, last: out[out.length - 1] || '', out };
 };
+/* (claude/botmem) A CHECK WHOSE PAGE THE MACHINE KILLED (memguard cap/floor: 'page CRASHED', connection closed) IS RERUN ONCE, LABELLED [infra-retry]; killed twice it is reported
+   INFRA-KILLED (still a FAIL line and a non-zero exit - a check that did not run proves nothing - but named as a machine death to rerun, not a code red) */
+const runSync = (name, cmd, args, env) => { const t0 = Date.now(), r = runSyncOnce(name, cmd, args, env); if (r.ok) return r;
+  const why = infraWhy(r.out, t0); if (!why) return r;
+  console.log('[infra-retry] ' + name + ': ' + why + ' - rerunning once'); const t1 = Date.now(), r2 = runSyncOnce(name, cmd, args, env); r2.infraRetry = why;
+  if (r2.ok) r2.last = '[infra-retry ok after: ' + why + '] ' + r2.last; else if (infraWhy(r2.out, t1)) { r2.infra = true; r2.last = 'INFRA-KILLED twice (machine, not code - rerun alone): ' + r2.last; }
+  return r2; };
 const run = (name, cmd, args, env) => JOBS === 1 ? runSync(name, cmd, args, env) : { name, cmd, args, env };
 const files = [];
 const walk = d => { for (const f of readdirSync(join(ROOT, d))) { const p = join(d, f); if (statSync(join(ROOT, p)).isDirectory()) walk(p); else if (/\.(m?js)$/.test(f)) files.push(p); } };
@@ -356,7 +364,8 @@ for (const r of results) { if (!r.ok) failed++; console.log((r.ok ? ' ok  ' : 'F
    and a long check name can fill the old padding exactly; indent every diagnostic line and always leave a real separator
    before the time. Parallel hands print each check's WHOLE buffered answer here, one check at a time. */
 for (const r of results) if (JOBS > 1 || !r.ok) { console.log('\n---- ' + r.name + ' ----'); console.log((JOBS > 1 ? r.out : r.out.slice(-30)).map(line => '  ' + line).join('\n')); }
-console.log(failed ? '\n' + failed + ' check(s) failed.'
+const infraN = results.filter(r => !r.ok && r.infra).length;
+console.log(failed ? '\n' + failed + ' check(s) failed' + (infraN ? ' (' + infraN + ' of them INFRA-KILLED: the machine took the page twice - rerun those alone, they are not code reds)' : '') + '.'
   : SUBSET ? '\n' + results.length + ' of ' + (results.length + skipped) + ' checks pass - ' + (SHARD ? 'SHARD ' + SHARD.join('/') : 'A SUBSET (' + WANT.join(', ') + ')') + ', NOT THE SUITE.'
       + '\nRun `npm run check` with no arguments before a commit that matters, and before any deploy.'
   : '\nall checks pass.');

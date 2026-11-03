@@ -156,13 +156,14 @@ const pageSrc = `(() => {
     } finally { done(); } };
 })()`;
 
-const { openPage } = await import('./cdp.mjs');
 const rows = [], cache = existsSync(MASH_FILE) ? JSON.parse(readFileSync(MASH_FILE, 'utf8')) : {};
 const wantLevels = has('all') ? LEVELS.filter(l => !/^(shop|trial_|custom)/.test(l.id)).map(l => l.id) : free.flatMap(x => x.split(','));
 const modeLevel = has('level') || has('all'), modeBoss = !has('level') || has('all');
 if (!wantLevels.length) { console.log('usage: node tools/mash-bot.mjs [--level] <id>[,<id>..] | --all  [--write] [--l1] [--probe] [--assert <id>]'); process.exit(2); }
 const lvOf = id => Math.max(1, depth[id] ?? 1);
-let pg = await openPage({ audio: false, fonts: false }); await pg.evalp(pageSrc); await pg.evalp(diffJs());
+if (has('lite')) process.env.BRACKEN_LITE = '1';   /* (claude/botmem) opt-in smaller browser (cdp.mjs LITE_ARGS) */
+const { recycler } = await import('./page-recycle.mjs'), infraKilled = [];
+const rc = recycler({ init: async p => { await p.evalp(pageSrc); await p.evalp(diffJs()); } });   /* (claude/botmem) a fresh page every ~6 BK.loads; one labelled rerun if memguard killed the page */
 try {
   for (const id of wantLevels) {
     const lv = LEVELS.find(l => l.id === id); if (!lv) { console.log(id + ': no such level'); continue; }
@@ -170,8 +171,8 @@ try {
     if (modeBoss) for (const mini of [false, true, 2].filter(m => m ? !has('arena-only') : !has('mini-only'))) {   /* (claude/forgemaster: 2 = a level's second mini) */
       const variants = [{ lvl: lvOf(id), n: seeds, tag: 'expected' }].concat(has('l1') ? [{ lvl: 0, n: 1, tag: 'l1' }] : []), res = [];
       for (const v of variants) for (const hero of heroes) for (let seed = 1; seed <= v.n; seed++) {
-        let r; try { r = await pg.evalp(`__mashBoss(${JSON.stringify({ id, hero, seed, mini, lvl: v.lvl, secs, probe: has('probe') && hero === 'knight' && seed === 1 && v.tag === 'expected' })})`, 1200000); }
-        catch (e) { console.log(id + ' ' + hero + ' ERR ' + e.message.slice(0, 120)); pg.close(); pg = await openPage({ audio: false, fonts: false }); await pg.evalp(pageSrc); await pg.evalp(diffJs()); continue; }
+        let r; try { r = await rc.run(pg => pg.evalp(`__mashBoss(${JSON.stringify({ id, hero, seed, mini, lvl: v.lvl, secs, probe: has('probe') && hero === 'knight' && seed === 1 && v.tag === 'expected' })})`, 1200000)); }
+        catch (e) { console.log(id + ' ' + hero + (e.infraKilled ? ' ' : ' ERR ') + e.message.slice(0, 120)); if (e.infraKilled) infraKilled.push(id + ' ' + hero + '#' + seed); await rc.reset(); continue; }
         if (r.skipped) { if (!res.length && !(mini && r.skipped === 'no mini')) console.log(id + (mini ? ' mini' : ' boss') + ': ' + r.skipped); break; }
         const row = { id, mini, hero, seed, tag: v.tag, ...r }; res.push(row); rows.push(row);
         console.log(id + (mini === 2 ? ' MINI2' : mini ? ' MINI' : ' BOSS') + ' ' + v.tag + ' L' + v.lvl + ' ' + hero + '#' + seed + ': ' + r.out.toUpperCase() + ' ' + r.secs + 's, hero lost ' + r.hpLostPct + '%, boss left ' + r.bossLeftPct + '%, ' + r.landed + '/' + r.swings + ' blows' + (r.chip && r.chip.length ? ', chip ' + r.chip.map(c => 'x' + c.mul + (c.open ? '(open)' : '')).join(' ') : '')); }
@@ -181,8 +182,8 @@ try {
       const P = pacing(lv), way = []; for (const [x, y] of P.route) { const l = way[way.length - 1]; if (!l || Math.abs(x - l[0]) >= 8 || Math.abs(y - l[1]) >= 6) way.push([x, y]); }
       const lres = {};
       for (const hero of (has('quick') ? ['knight'] : heroes)) {   /* (claude/mashmachines) all three starter-era heroes, --all too; --quick is knight only */
-        let r; try { r = await pg.evalp(`__mashLevel(${JSON.stringify({ id, hero, seed: 1, mini: false, lvl: lvOf(id), way, steps: 120000, tall: !!P.tall, machines: !has('no-machines'), debug: has('debug') })})`, 1800000); }
-        catch (e) { console.log(id + ' LEVEL ' + hero + ' ERR ' + e.message.slice(0, 120)); pg.close(); pg = await openPage({ audio: false, fonts: false }); await pg.evalp(pageSrc); await pg.evalp(diffJs()); continue; }
+        let r; try { r = await rc.run(pg => pg.evalp(`__mashLevel(${JSON.stringify({ id, hero, seed: 1, mini: false, lvl: lvOf(id), way, steps: 120000, tall: !!P.tall, machines: !has('no-machines'), debug: has('debug') })})`, 1800000)); }
+        catch (e) { console.log(id + ' LEVEL ' + hero + (e.infraKilled ? ' ' : ' ERR ') + e.message.slice(0, 120)); if (e.infraKilled) infraKilled.push(id + ' LEVEL ' + hero); await rc.reset(); continue; }
         lres[hero] = r; rows.push({ id, level: true, hero, ...r });
         console.log(id + ' LEVEL L' + r.heroLevel + ' ' + hero + ': lowest hp ' + r.minHpPct + '%, hp lost ' + r.hpLostPct + '%, deaths ' + r.deaths + ', walked ' + r.walked + '% of waypoints, ' + r.rides + ' rides ' + JSON.stringify(r.ridden || {}) + ', ' + r.pulls + ' pulls, ' + r.boardLifts + ' boarding lifts, ' + r.lifts + ' lifts' + (r.held ? ' (' + r.held + ' HELD: put back by a room it could not finish)' : '') + ', ' + r.hits + ' blows taken' + (r.dbg ? '\n   ' + r.dbg.join('\n   ') : '')); }
       if (Object.keys(lres).length) entry.level = lres;
@@ -190,5 +191,6 @@ try {
   }
   if (WRITE) { writeFileSync(MASH_FILE, JSON.stringify(cache, null, 1) + '\n'); console.log('wrote docs/mash-bot.json'); }
   if (OUT) { writeFileSync(OUT, JSON.stringify(rows)); console.log('wrote raw rows to ' + OUT); }
-  console.log('errors', JSON.stringify(pg.errors.slice(0, 3)));
-} finally { pg.close(); }
+  console.log('errors', JSON.stringify(rc.errors().slice(0, 3)), 'pages', JSON.stringify(rc.stats()));
+  if (infraKilled.length) console.log('INFRA-KILLED (memguard took the page twice - NOT a red, rerun these): ' + infraKilled.join(', '));
+} finally { await rc.close(); }

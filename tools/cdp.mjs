@@ -9,12 +9,18 @@ import { existsSync, readFileSync } from 'fs';
 import { launchBrowser } from './browser-profile.mjs';
 import { join } from 'path';
 import { fileURLToPath } from 'url';
+import { killedByGuard, INFRA_RE } from './infra-kill.mjs';
+import { basename } from 'path';
 import { PORT_BASE } from './ports.mjs';   /* a port block per checkout, so two worktrees do not fight over 5892 (tools/ports.mjs) */
 
 export const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const BROWSERS = ['C:/Program Files/Google/Chrome/Application/chrome.exe', 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe',
   '/usr/bin/google-chrome', '/usr/bin/chromium', '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'];
 const sleep = ms => new Promise(r => setTimeout(r, ms));
+/* (claude/botmem) THE LITE FLAG SET, OPT-IN: openPage({ lite: true }). A smaller browser for tools that read game STATE and never pixels or text layout (boss rates, level pilot,
+   mash bot, level walk pass it with --lite or BRACKEN_LITE=1). NEVER used by pixel/textfit checks: --enable-low-end-device-mode and the 640x360 window can change raster paths and canvas size. Ignored when the browser is borrowed from the suite (its flags are fixed at launch). */
+export const LITE_ARGS = ['--disable-gpu', '--in-process-gpu', '--disable-extensions', '--disable-sync', '--disable-background-networking', '--disable-component-update', '--disable-default-apps',
+  '--disable-breakpad', '--disable-domain-reliability', '--no-default-browser-check', '--metrics-recording-only', '--disable-features=Translate,MediaRouter,OptimizationHints', '--enable-low-end-device-mode', '--window-size=640,360'];
 export const browserExecutable = () => [process.env.BRACKEN_BROWSER, ...BROWSERS].filter(Boolean).find(p => existsSync(p));
 
 /* A suite worker may lend us a browser it already paid to start. Each openPage gets a NEW Chrome browser context, not
@@ -42,6 +48,7 @@ async function borrowedTarget(port) {
 }
 
 export async function openPage(opts = {}) {
+  const t00 = Date.now();
   const PORT = +(process.env.PORT || opts.port || PORT_BASE), URL0 = 'http://localhost:' + PORT + '/';
   const up = async () => { try { const r = await fetch(URL0, {signal:AbortSignal.timeout(2000)}); return r.ok; } catch { return false; } };
   let server = null;
@@ -54,7 +61,7 @@ export async function openPage(opts = {}) {
   const exe = browserExecutable(); if (!exe && !borrowedPort) throw new Error('no Chrome or Edge found (set BRACKEN_BROWSER to its executable)');
   /* THE PROFILE IS THROWN AWAY: browser-profile.mjs makes it, kills the browser tree and removes it on close, on a failed start and on exit */
   const borrowed = !!borrowedPort;
-  const run = borrowed ? null : launchBrowser(exe, ['--headless=new', '--remote-debugging-port=auto', '--mute-audio', '--no-first-run', '--window-size=1280,720', '--autoplay-policy=no-user-gesture-required', ...(process.env.CI ? ['--no-sandbox'] : []), ...(opts.args || []), 'about:blank'], 'look');
+  const run = borrowed ? null : launchBrowser(exe, ['--headless=new', '--remote-debugging-port=auto', '--mute-audio', '--no-first-run', '--window-size=1280,720', '--autoplay-policy=no-user-gesture-required', ...(process.env.CI ? ['--no-sandbox'] : []), ...(opts.lite ? LITE_ARGS : []), ...(opts.args || []), 'about:blank'], 'look');
   const dbg = borrowed ? +borrowedPort : await run.devtoolsPort();
   let loan = null;
   try {
@@ -116,6 +123,8 @@ export async function openPage(opts = {}) {
     }
     if (!ready) throw new Error('the fresh lab page did not initialize');
   };
-  return { evalp, send, errors, PORT, browserPort: dbg, dbg, reload, close() { try { ws.close(); } catch {} if (server) server.kill(); return loan ? loan.close() : run.close(); } };
+  /* (claude/botmem) killedByGuard(): the memguard2 kill-log entry for THIS page's profile (or null); dead: why the page stopped answering; infra: either */
+  const profName = run ? basename(run.prof) : '';
+  return { evalp, send, errors, PORT, browserPort: dbg, dbg, reload, get dead() { return deadWhy; }, killedByGuard: () => profName ? killedByGuard({ profile: profName, sinceMs: t00 }) : null, get infra() { return !!(deadWhy && INFRA_RE.test(deadWhy)) || !!(profName && killedByGuard({ profile: profName, sinceMs: t00 })); }, close() { try { ws.close(); } catch {} if (server) server.kill(); return loan ? loan.close() : run.close(); } };
   } catch (e) { if (server) server.kill(); if (loan) await loan.close(); if (run) await run.close(); throw e; }
 }
