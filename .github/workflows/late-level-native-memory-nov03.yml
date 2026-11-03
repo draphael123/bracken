@@ -1,0 +1,35 @@
+name: Late-level native allocation attribution
+on:
+  push:
+    branches: [codex/load-perf]
+    paths:
+      - tools/late-level-native-memory-nov03.mjs
+      - .github/workflows/late-level-native-memory-nov03.yml
+permissions: {contents: read}
+jobs:
+  native-attribution:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/checkout@v4
+        with:
+          ref: 1a576c3f4511b6856df9fb4738df5aaae9987e81
+          path: native-memory-infra-game
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.11.1'
+      - name: Late-level allocator and Wood return samples under original limits
+        run: node tools/late-level-native-memory-nov03.mjs
+        env:
+          FIXED_ART_GAME: native-memory-infra-game
+          FIXED_ART_LOADER_OUT: ${{ runner.temp }}/late-level-native-memory-nov03
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: late-level-native-memory-nov03
+          path: ${{ runner.temp }}/late-level-native-memory-nov03/
+          if-no-files-found: error
