@@ -64,7 +64,7 @@ export function buildArenaYard({ painter, T }) {
   ent('sign', 160, gy, { text: 'THE YARD ENDS HERE. BACK TO THE GATE FOR THE BOARD, THE TRIALS AND THE WAY OUT.' });
   return {
     W, H, grid: L.grid, ents: L.ents, START: { x: SPOTS.start, y: gy }, pools: [], falls: [], moversExtra: [], interiors: [],
-    reskin: { swornsword: 'strawsword', archer: 'strawbow' }, openYard: true, arenaYard: { stations: STATIONS, spots: SPOTS, floor: AY.FLOOR, gate: [2, 13] }, duskStart: -1, duskLen: 1, music: 'select', reachExact: true, noCoin: true,
+    reskin: { swornsword: 'strawsword', archer: 'strawbow' }, openYard: true, arenaYard: { stations: STATIONS, spots: SPOTS, floor: AY.FLOOR, gate: [2, 13] }, duskStart: -1, duskLen: 1, music: 'arenayard', reachExact: true, noCoin: true,
     palette: { set: 'arena', sky: 'autumn', near: 'none', noFg: true, noNear: true, dress: 'arena', haze: 'rgba(200,120,80,0.12)', grass: '#6a8a3a', grassL: '#9ac050', grassD: '#3a5a24', dirt: '#34302a', dirtL: '#524c44', dirtD: '#24201c' },
   };
 }
