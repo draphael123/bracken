@@ -31,7 +31,8 @@ try {
     prep(); BK.keys.block = true; BK.sim(20); const holdHook = !!BK.P.hookT || BK.P.hookCd > 0; BK.keys.block = false; BK.sim(2); BK.god = false;
     return { total: SKILLS.length, actives: actives.length, dup, fell, missing, extra, wrong, rows, tapParry, tapHook, holdHook };
   })()`);
-  assert.equal(r.actives, 77);  /* (claude/herofeel, batch140: the Ranger SNARE became a store skill, one active more) */ assert.equal(r.rows.length + r.missing.length, 186);   /* (claude/wardenid: POLE SPRING dropped, 77 -> 76 actives, -1 total) */    /* (claude/bkkit2: the Blood Knight's BIDDEN became DRAIN, an active - one passive fewer, one active more) */   /* (claude/paladin2: the paladin's CONSECRATE and BLESSED HAMMER are base kit now - two actives became passives) */   /* (THE BERSERKER: nine actives, twenty-one passives) */
+  /* (claude/smallfix12) the counts DERIVE from the catalog (SKILLS): no hard 77 / 186 to go stale each time a skill is added or dropped. What is pinned is that every passive is either a row or reported missing, and that the catalog is not empty. */
+  assert.ok(r.actives > 0 && r.total > r.actives, 'the catalog gave no actives or no passives'); assert.equal(r.rows.length + r.missing.length, r.total - r.actives, 'every passive is a table row or reported missing');
   assert.deepEqual(r.fell, [], 'actives that fall to the default flame icon');
   assert.deepEqual(r.dup, [], 'actives that share an icon');
   assert.deepEqual(r.missing, [], 'passives with no row in src/skill-glyphs.js');
@@ -56,5 +57,5 @@ try {
   for (const id of ['deepPockets', 'noQuarter']) assert.ok(!/purse/i.test(desc(id)) && /PLUNDER bar/.test(desc(id)), id + ' fills the plunder bar, not a purse');
   assert.ok(/STONE WALL/.test(desc('geoBulwark')), 'BULWARK also lets a smashed STONE WALL hold once');
   assert.deepEqual(pg.errors, []);
-  console.log('skill-icons: ' + r.actives + ' actives each their own, ' + r.rows.length + ' passives each in the table, descriptions match the code');
+  console.log('skill-icons: ' + r.actives + ' actives each their own, ' + r.rows.length + ' passives each in the table (' + r.total + ' skills in the catalog), descriptions match the code');
 } finally { pg.close(); }
