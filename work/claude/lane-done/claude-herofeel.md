@@ -34,3 +34,16 @@ Warden: a real wind pose, a throw / release pose, a javelin-in-flight sprite (no
 4. Rookery: updrafts only in the sealed pockets (pits with boards keep "a fall is a climb"). Rec: keep; add one to every chasm only if Daniel wants the long climbs gone.
 5. Gale / moor signs still say "HOLD C AND BRACE" (level.js 4116, 4258): untrue for the warden now. Rec: a small sign pass, not blocking.
 6. hint-shown.mjs is red on the base (18 dead literals). Rec: a tiny routing lane.
+
+## TUNE FINISH (11-02/03)
+Dials (WITH flasks, human profile, practiced, n=6/cell, 1 job; logs scratch/hf2/*.log):
+- Ranger: quiver refill 11 -> 12 s, recall stamina 0.45 -> 0.5 (desc "every twelve seconds"; tools/ranger.mjs follows). Re-measure wood 6/6, hornetsnest 6/6, kings 5/6, marsh 2/6 = 19/24 = 79% (unchanged). Second step: piercing/steady shot dmg 1.85 -> 1.7 (RG.pierce). Re-measure identical, 79% (seeds are deterministic; the bot kites wood/hornetsnest at L3 for 100% and marsh is 33%, so the pooled number is carried by two easy L3 rows, not by her kit). STOPPED per brief; no gutting.
+- Warden: untouched, 67% pooled (in band).
+- Geomancer (air changes): wood (Tusker) 4/6 = 67%, palisadewood (Beast 3) 3/5 = 60% (one fight errored), hornetsnest 5/6 = 83%. All inside 55-80 except hornetsnest slightly over; nothing trimmed.
+- HORNET QUEEN pooled (knight/warden/geomancer/ranger/pyro): after ranger change 3/5 4/6 5/6 6/6 4/5 = 22/28 = 79% (> 72). BOSS_TRIM hornetqueen dmg 1.8 -> 2.0 (one notch harder): 3/6 4/6 5/6 6/6 5/6 = 23/30 = 77%. One re-measure allowed; stopped. Still +7 over 70.
+Checks (alone, RAM > 4.4 GB each): GREEN ranger.mjs, heroblocks-b warden+ranger, geo-board, hero-trials, warden-id (36), geomancer.mjs (first run = Chrome page crash Inspector.targetCrashed, rerun green).
+Not run: full suite/gate, textfit.
+
+QUESTIONS (rec first)
+1. Hornet Queen sits 77% and Ranger 79%, both from L3 rows where the bot cannot lose. Rec: accept (ship), or one more hornetqueen notch (dmg 2.2) in the joint HORNET+BEAST tune lane; do not trim the ranger further (marsh is already 33%).
+2. Ranger marsh 2/6 vs wood/hornet 6/6: row-specific, not kit. Rec: leave to the joint tune.

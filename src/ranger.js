@@ -32,12 +32,12 @@ import * as SKK from './skill-k.js';   /* (claude/lategamea) the one skill damag
 export const RG = {
   hp: 110, dmg: 16,                                  /* base health (src/progression.js) and the knife's / an arrow's base damage (main.js swordDmg) */
   run: 1.04,                                          /* x RUN on foot: light and quick */
-  quiver: { n: 5, refill: 11, fletch: 5, pick: 11, life: 30, lost: 3 },   /* arrows; s an arrow trickles back (FLETCHER: fletch); px she picks one up from; s a loosed arrow lies before it is lost */
+  quiver: { n: 5, refill: 12, fletch: 5, pick: 11, life: 30, lost: 3 },   /* arrows; s an arrow trickles back (FLETCHER: fletch); px she picks one up from; s a loosed arrow lies before it is lost */
   quick: { vx: 270, vy: -40, g: 720, dmg: 0.6, st: 4, rec: 0.2 },        /* THE QUICK SHOT: ~70 px (measured in the page) before it is at her feet; a tap's damage */
   draw: { wind: 0.55, vx0: 340, vx1: 420, vy: -55, g: 520, dmg0: 0.9, dmg1: 1.7, st: 9, hold: 3, rec: 0.24, heavyAt: 0.5, slow: 0.35 },   /* THE DRAW: wind s to full; a full one lands ~150 px out (half a screen at most; the SWEET SPOT, ~1/3 of one, is where it pays) */
   rise: { vx: 110, airVx: 20, vy: -390, g: 560, dmg: 1.0 },   /* THE RISING SHOT, steeply up (in the air, nearly straight up) */
   down: { vy: 470, hop: -175, dmg: 1.05, st: 7 },      /* THE DOWNWARD SHOT (her plunge) and the hop it gives her */
-  pierce: { vx: 520, range: 240, dmg: 1.85 },          /* THE PIERCING SHOT (T2): flat, through everything in the line (claude/chargetiers: 1.9 -> 2.0, a tier over the LONG SHOT's 1.7) */
+  pierce: { vx: 520, range: 240, dmg: 1.7 },          /* THE PIERCING SHOT (T2): flat, through everything in the line (claude/chargetiers: 1.9 -> 2.0, a tier over the LONG SHOT's 1.7) */
   /* (claude/rangerid, Daniel 10-31 Q6/Q9) NO TIER LADDER: ONE DRAW, ONE STEADY WINDOW. at = s of DRAW (past HEAVY_START, x the wind's quickness) the full draw (T1, the LONG SHOT) and the STEADY WINDOW
      (breath held, reticle still: T2, the STEADY SHOT) open at; win = s the window stays open (+ focusWin on a FULL HUNTER'S FOCUS - focus is no longer spent, it deepens the window);
      let go in it and the arrow is EMPOWERED: it pierces the whole line and its DISTANCE BONUS is doubled. Held PAST it the hand shakes (RG.shaky: the shot loses its aim) and, auto s later, it goes by itself. */
@@ -59,7 +59,7 @@ export const RG = {
   bash: { t: 0.22, rec: 0.18, st: 8, reach: 17, push: 210, dmg: 0.45, beat: 1 },   /* THE BOW-BASH: s up, s after; the shove; beat x the shared tap beat */
   flip: { vx: 175, vy: -235, high: 1.25, shots: 1 },  /* THE BACKFLIP: off the ground; HIGH FLIP x high */
   /* (claude/herofeel, Daniel 11-02 21:17) ARROW RECALL, her new DOWN+C: she kneels and yanks the cords. COSTS A LOT (stFrac of her bar) and ROOTS her kneeling `root` s - no walk, roll or jump; a hit during it still lands, and if it lands before the yank (`yank` s) the recall is lost (arrows already called keep flying). Stuck arrows within `range` px fly back to the quiver at `speed`, nicking each foe they pass for `dmg` x a sword cut. */
-  recall: { stFrac: 0.45, root: 1.5, yank: 0.45, range: 128, speed: 480, dmg: 0.3 },
+  recall: { stFrac: 0.5, root: 1.5, yank: 0.45, range: 128, speed: 480, dmg: 0.3 },
   snare: { st: 12, life: 14, hold: 1.6, eliteHold: 0.8, bossLean: 22, dmg: 0.5, cd: 0.7, toothed: 4 / 3 },
   /* (claude/heropassa, Daniel 10-15 interview) ARROW SNATCH: the bow-bash ON THE BEAT against a PROJECTILE catches it - nothing taken, +1 arrow to her quiver; with the quiver
      full it is FLUNG BACK the way it came as her riposte arrow (a free arrow, the 'riposte' tag). r: px from her middle it is caught at. KNEELING DRAW: crouched still for
