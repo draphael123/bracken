@@ -21,7 +21,7 @@ import { boulderFrame, boulderSocket, shardRidge, stompCrack, dustRing, DUST_N }
 //     a cracked ring and an ochre rock-shard ridge (drawRamWave, stompFx).
 // main.js wires it (updateRam calls ramStep; the hit code asks ramGuard; the draw asks drawRamLips/drawRamRead). tools/ram-lord.mjs is its check.
 export const RAM = {
-  hp: 6000,             // (was 360 on the chip; a duelist's blows land - and a fight is ~90-150 s)
+  hp: 7200,             // (claude/scree3tune 11-03: 6000 -> 6600 -> 7200 (+20%; 89% -> 78% -> see lane report), CRACK parity + boulder left it 89% with flasks, n=18; was 360 on the chip; a duelist's blows land - and a fight is ~90-150 s)
   open: { impact: 300, t: 3.2, mul: 6, cap: 0.25 },   /* ONE OPENING for the cliff's rock (stun) and the wall slam (crash): CRACK for impact at once, then t seconds of blows x mul, ended early at cap of his blood */
   boulder: { tell: 0.85, release: 0.25, headIn: 0.7, r: 10, h: 20, sp: [150, 175, 190], back: 0.6, weight: 0.15, cd: 6, minAd: 60, wallMax: 175, knock: 200, shove: 120 },   /* the boulder butt */
   stunT: 3.2, stunMul: 6, crashMul: 6,   /* (Daniel 10-24: x8 measured 92% with flasks -> x6; claude/scree3: both openings read RAM.open) */ wardT: 2, frontMul: 0.4, burnMul: 0.4, paceExtra: [0.1, 0.05, 0],   /* burnMul: a burn tick outside his openings (off the chip, the pyro's fire ran whole: 4/4 in 34-48 s) */

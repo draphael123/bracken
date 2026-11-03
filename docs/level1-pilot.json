@@ -204,14 +204,14 @@
   "bare": true
  },
  "scree": {
-  "hash": "e58f5bbb8028",
+  "hash": "bc7a99c1a942",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 41,
-  "deaths": 7,
-  "kills": 42,
-  "lifts": 127,
+  "hits": 33,
+  "deaths": 5,
+  "kills": 43,
+  "lifts": 132,
   "walked": 100,
   "bare": true
  },

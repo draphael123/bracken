@@ -1304,7 +1304,7 @@ function screePath() {
 
   // ---- 5b. THE GULLY: the last of the open hill before the fold. ----
   ent('deco', 299, 8, { kind: 'cairn' }); ent('deco', 304, 7, { kind: 'stone', v: 1 });
-  ent('harpy', 295, 2); ent('goat', 293, 8, { face: -1 });
+  ent('goat', 293, 8, { face: -1 });   /* (claude/scree3tune: the harpy at 295,2 is cut - a diver on top of the goat + rockgoblin squad + the sentry above it was 2 of the pilot's 8 deaths; the squad is the exam) */
   coins([296, 7], [302, 6]);
   // the Ram Lord's stile: a lip of rock one step up outside the fold gate. The goats can't take a step, the harpies don't come this far: a quiet place to stand before the fight.
   block(300, 311, 8, 8); ent('check', 308, 7);
@@ -1367,7 +1367,7 @@ function screePath() {
   G.ent('deco', 181, 13, { kind: 'stone', v: 0 }); G.ent('deco', 186, 13, { kind: 'cairn' }); G.ent('deco', 205, 13, { kind: 'stone', v: 2 }); G.ent('deco', 211, 13, { kind: 'cairn' });
   G.ent('rockfall', 193, 5, { every: 3.6 }); G.ent('harpy', 187, 8); G.ent('harpy', 212, 9);
   G.R.stone.push([200, 200, 13, 13], [208, 208, 13, 13]); G.block(200, 200, 13, 13); G.block(208, 208, 13, 13);
-  G.ent('goat', 203, 13, { face: -1 }); G.ent('goat', 206, 13, { face: 1 }); G.ent('sprig', 184, 13, { face: -1 }); G.ent('troll', 209, 13, { face: -1 });
+  G.ent('goat', 203, 13, { face: -1 });   /* (claude/scree3tune: ONE goat at the slide's foot, not a pair flanking the troll - two charges 3 tiles apart were an unreadable double hit) */ G.ent('sprig', 184, 13, { face: -1 }); G.ent('troll', 209, 13, { face: -1 });
   G.plat(202, 11, 2); G.plat(205, 9, 3); G.coins([206, 8]); // a perch over the goat pen
   // THE RIDGE ROAD: from the loft, a high line of ledges over the cairn field and the whole scree slope, harpies all the way, the miller's silver at the end
   for (const [x, y, n] of [[161, 5, 2], [165, 4, 3], [170, 3, 3], [176, 4, 3], [182, 3, 3], [188, 4, 3], [194, 3, 4], [200, 4, 3], [206, 3, 3], [212, 4, 3], [218, 5, 3], [224, 6, 3], [230, 7, 3], [236, 8, 3], [242, 9, 3], [248, 10, 3], [254, 11, 3], [260, 12, 3], [266, 13, 3], [272, 14, 3], [278, 15, 3], [284, 16, 3]]) G.plat(x, y, n);
@@ -8611,7 +8611,7 @@ const AMBUSH = {
   scree: [{ name: 'THE GOAT TRACK', row: 13, wallL: 173, wallR: 202, check: [168, 13],
     /* ambush-listed: 7 distinct foes listed for a 4-foe room; troll/goat/sprig/harpy was already the built room's own pick (AMBUSH_CAPTAINS.scree
        ='troll'), kept as-is; shield/archer/rockgoblin/the duplicate goat are cut here (say so) rather than left to vanish silently. */
-    waves: [[['troll', 180], ['goat', 178], ['sprig', 191], ['harpy', 185, 8]]] }],
+    waves: [[['troll', 180], ['goat', 178], ['sprig', 191]]] }],   /* (claude/scree3tune: the harpy is cut from THE GOAT TRACK - a diver over an elite troll's swat + the goat's charge was 4 of the pilot's 8 deaths; troll + goat + sprig is still the exam) */
   hanging: [{ name: 'THE CLIFF HALL', row: 65, wallL: 43, wallR: 69, y0: 56, check: false,
     /* THE CUTTER HAS A ROPE NOW (2026-09-28, coordinator follow-up on claude/hanging2): 'bridge: 50' names the room's own L.bridges span
        (50-56, row 66, in hangingVillage() below), the same rule at work mid-fight, not just on the road or in the boss.
