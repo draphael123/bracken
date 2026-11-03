@@ -4255,7 +4255,7 @@ function galeMoor() {
   ent('flagpost', o + 4, 12); ent('flagpost', o + 15, 6); ent('flagpost', o + 33, 6); ent('flagpost', o + 47, 6);
   ent('deco', o + 18, 6, { kind: 'cairn' });
   ent('sign', o + 2, 12, { text: 'THE GALE STAIR. THIS UPDRAFT BLOWS ONLY IN THE GUST: RIDE IT UP AND OVER.' });
-  ent('sign', o + 13, 6, { text: 'A GALE HARPY BEATS HER WINGS AT YOU: HIT HER AS SHE DRAWS THEM BACK, OR HOLD C AND BRACE.', warden: 'A GALE HARPY BEATS HER WINGS AT YOU: HIT HER AS SHE DRAWS THEM BACK, OR HOLD C AND LET GO A JAVELIN.' });
+  ent('sign', o + 13, 6, { text: 'A GALE HARPY BEATS HER WINGS AT YOU: HIT HER AS SHE DRAWS THEM BACK, OR HOLD C AND BRACE.', warden: 'A GALE HARPY BEATS HER WINGS: HIT HER AS SHE DRAWS THEM BACK, OR HOLD C AND LET GO.' });
   ent('sign', o + 37, 6, { text: 'THE GUST BLOWS BACK OVER THE STONES. BRACE ON ONE, HOP IN THE STILL.' });
   coins([o + 7, 9], [o + 9, 5], [o + 16, 5], [o + 25, 4], [o + 28, 4], [o + 27, 11], [o + 41, 5], [o + 44, 5], [o + 47, 5]);
 
