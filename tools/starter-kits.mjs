@@ -4,7 +4,7 @@
 //   wheel, javelin, harrier (the POLE-VAULT, claude/wardenid: POLE SPRING merged into it), fullStretch, spearDance, rain   THE WARDEN'S SIX: each does the one thing its card says
 //   disarm, ironclad, realm   THE KNIGHT'S THREE: a shield stripped stops turning his cut; hit in iron he keeps swinging;
 //           the realm's light hurts, and a boss is never hit by a wave for more than its cap
-//   heavy   THE HEAVY CUT (hold X): no shield while the sword is up; let go early and it is a chop, held long it knocks the foe down
+//   heavy   THE HEAVY CUT (hold X): no shield while the sword is up; one weight, 0.5 s, breaks a guard (claude/knightid: no chop and knockdown tiers)
 //           (its sworn sword stands where it is put, speed 0: since the attack tokens (combat pass), a foe on a long cooldown - the
 //           cd=99 that keeps him from swinging here - steps back out to the waiting ring, 58 px, past the chop's 26 px reach)
 import assert from 'node:assert/strict';
@@ -53,10 +53,10 @@ try {
   if (o.spearDance) assert(o.spearDance.hits >= 5, 'SPEAR DANCE lands its thrusts on a foe stood at the point (' + o.spearDance.hits + ' of 6)');
   if (o.rain) assert(o.rain.pinned, 'RAIN OF SPEARS pins what it comes down on');
   if (out.heavy) { const { chop, held } = out.heavy;
-    assert.equal(chop.st, 1, 'held a third of a second, the heavy cut comes down as the CHOP (stage ' + chop.st + ')');
-    assert(chop.hp > 0 && chop.moved < 16, 'and it is a cut where he stands, not a charge across the floor (moved ' + chop.moved + ' px)');
-    assert.equal(held.st, 3, 'held past a second it comes down as the KNOCKDOWN (stage ' + held.st + ')');
-    assert(held.floored, 'and what it lands on goes down on its back');
+    assert.equal(chop.st, 0, 'held a third of a second, it is still no heavy cut: the heavy is ONE fixed weight at 0.5 s (claude/knightid; stage ' + chop.st + ')');
+    assert(chop.moved < 16, 'and it is a cut where he stands, not a charge across the floor (moved ' + chop.moved + ' px)');
+    assert.equal(held.st, 2, 'held past half a second it comes down as THE HEAVY CUT, the one weight (stage 2 = the guard-break) (stage ' + held.st + ')');
+    assert(held.hp > 0 && held.moved < 16, 'and it lands where he stands (hp ' + held.hp + ', moved ' + held.moved + ' px)');
     assert(!held.guard, 'and the shield never came up while the sword was raised, though C was held'); }
   if (out.rise) { const r = out.rise;
     assert(r.top >= 40, 'the bought rising cut must carry the foe up with him (it rose ' + r.top + 'px)');
