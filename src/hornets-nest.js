@@ -207,9 +207,9 @@ export function buildHornetsNest({ painter, T, TS }) {
   sign(318, 47, 'UP THE EAST WALL ON THE PENDANT COMBS. A DRIP SWELLS, THEN FALLS. WATCH THE ONE ABOVE YOU.');
   sign(300, 11, 'DOWN THE WEST SIDE, THEN UP THE EAST. THE COMB WALL BELOW IS STICKY.');
   sign(336, 26, 'THE NEXT COMB IS TOO HIGH. CUT THE ONE HUNG OVER YOU: IT LANDS AS THE STEP.');
-  hornet(312, 16, { squad: 'well' }); hornet(318, 30, { squad: 'well' });
+  hornet(312, 16, { squad: 'well', perch: true }); hornet(318, 30, { squad: 'well', perch: true });
   fat(340, 37, { squad: 'well' });                            /* the fat honey hornet at row 38 east: its globs on the rungs */
-  stinger(306, 26, { squad: 'well' }); stinger(343, 9, { squad: 'well' });   /* (the curve tune: a stinger on the west shelves, one guarding the exit shelf) */
+  stinger(306, 26, { squad: 'well', perch: true }); stinger(343, 9, { squad: 'well', perch: true });   /* (the curve tune: a stinger on the west shelves, one guarding the exit shelf) */
   swarm(333, 24, { squad: 'well' });                          /* the swarm by the overhang: a pot carried up (or lobbed) quiets it */
   shelf(311, 314, 33); coins([312, 32], [313, 32]);   /* a dead-end pendant off the west shelves: a purse of gold (the level's three silvers are the old ones) */
   drip(336, 40, 2.6, 0); drip(331, 37, 2.6, 0.9); drip(337, 34, 2.6, 1.7); drip(332, 31, 2.6, 0.5); drip(336, 20, 2.6, 1.3);   /* honey from the rungs above: each lands on the rung under it (staggered: a route is always open) */
