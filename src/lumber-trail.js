@@ -73,7 +73,7 @@ export function buildLumberTrail({ painter, T, TS }) {
   deck(59, 19, 3); coins([59, 18], [61, 18]);   /* a log crib by the road */
   deck(66, 18, 3);
   sign(66, 20, 'A RAISED SHIELD TURNS A CUT. HOLD X AND LET GO: THE SHIELD CHARGE GOES THROUGH IT.', { sink: 6, pyro: 'A RAISED SHIELD TURNS A CUT. HOLD X: THE BELLOWS GO THROUGH IT.', paladin: 'A RAISED SHIELD TURNS A CUT. HOLD X: THE OVERHEAD GOES THROUGH IT.', pirate: 'A RAISED SHIELD TURNS A CUT. HOLD X: THE PISTOL GOES THROUGH ANY GUARD.', reaper: 'A RAISED SHIELD TURNS A CUT. HOLD X: THE PLANTED BLADE GOES THROUGH ANY GUARD.', warden: 'A RAISED SHIELD TURNS A CUT. HOLD X: THE SHAFT GOES ROUND IT, BOTH SIDES AT ONCE.' });
-  ent('sprig', 71, 19, { face: -1 }); ent('shield', 78, 18, { face: -1 }); ent('thorn', 88, 17, { face: -1 });   /* the skid road's guard: the heavy cut, met on the slope */
+  ent('sprig', 71, 19, { face: -1 }); ent('shield', 78, 18, { face: -1 }); ent('thorn', 62, 21, { face: -1 });   /* (claude/demofoes 11-03: the thorn was 88, three cols from the spitter at 85 and ten from the shield at 78 - three new foes in one clump; he charges down the flat of the skid road's foot now, met alone before the shield lesson) */   /* the skid road's guard: the heavy cut, met on the slope */
   lessons.push({ kind: 'heavyblow', x0: 65, x1: 86 });
   deck(76, 16, 4); coins([76, 15], [78, 15]);
   deck(84, 15, 4); ent('spit', 85, 14, { face: -1 });   /* the spitter on the log crib over the top of the slope */
@@ -101,7 +101,7 @@ export function buildLumberTrail({ painter, T, TS }) {
   coins([134, 19], [138, 19], [142, 19]);
   block(147, 165, 22, 27); for (let x = 152; x <= 156; x++) for (let y = 22; y <= 23; y++) set(x, y, T.AIR);   /* the far bank: a sawdust hollow two rows down, the crew in it, and a marked pine leaning over it */
   fell('sett');
-  ent('sprig', 153, 23, { face: -1 }); ent('sprig', 155, 23, { face: -1 }); ent('lurker', 156, 23, { face: -1 });   /* the down attack: three bunched in the hollow - come down among them off the decks */
+  ent('sprig', 154, 23, { face: -1 }); ent('sprig', 155, 23, { face: -1 }); ent('lurker', 156, 23, { face: -1 });   /* the down attack: three bunched in the hollow - come down among them off the decks */
   lessons.push({ kind: 'down', x0: 147, x1: 162 });
   coins([160, 20]); deck(158, 19, 4); coins([150, 18], [152, 18], [158, 18], [159, 18]);   /* perches over the crew: come down among them */
   block(163, 165, 21, 27); block(166, 175, 19, 27); block(176, 205, 17, 27);   /* the bank steps up off the ford: a stump, then the bank */
@@ -125,7 +125,7 @@ export function buildLumberTrail({ painter, T, TS }) {
   ent('cage', 233, 18, { kind: 'bird' }); ent('lurker', 235, 18, { face: -1 });
   coins([229, 17], [232, 16], [236, 17]);
   /* THE LOG STACKS: step up, and a spitter on the top stack */
-  block(240, 243, 15, 16); block(244, 246, 13, 16); ent('spit', 245, 12, { face: -1 }); coins([241, 14], [245, 11]);
+  block(240, 243, 15, 16); block(244, 246, 13, 16); ent('spit', 246, 12, { face: -1 }); coins([241, 14], [245, 11]);
   deck(249, 13, 3); coins([249, 12], [250, 12]);
   /* THE BRIAR MAUL (src/order-chapters.js ORDER_AT.wood: the Thorn Chapter's knight, the camp's exam) stands in the yard at 254 and holds his gate at 260 */
   ent('thorn', 258, 16, { face: -1 });
@@ -155,7 +155,7 @@ export function buildLumberTrail({ painter, T, TS }) {
   sign(329, 10, 'THIS PINE LEANS OUT OVER THE HOLLOW. FELL IT ON THE GOBLINS BELOW.');
   ent('shield', 331, 10, { face: -1 });   /* the crew's lookout on the lip, by the pine: the hollow at his back */
   floor(335, 352, 17); deck(336, 14, 3);
-  ent('sprig', 338, 16, { face: -1 }); ent('shield', 341, 16, { face: -1 }); ent('sprig', 343, 16, { face: -1 }); ent('badger', 346, 16, { face: -1, cnSkin: 'boar' });
+  ent('sprig', 338, 16, { face: -1 }); ent('shield', 341, 16, { face: -1 }); ent('sprig', 344, 16, { face: -1 }); ent('badger', 346, 16, { face: -1, cnSkin: 'boar' });
   coins([348, 15], [350, 15]);
   /* THE HOLLOW LOG: a fallen giant across the hollow. Over the top for coins and moths, or through the hollow for quiet */
   block(350, 351, 14, 16);
@@ -185,7 +185,7 @@ export function buildLumberTrail({ painter, T, TS }) {
   /* THE HELM PIT: shields on stumps over a thorn bed - plunge the helm, land behind, cut */
   sign(440, 12, 'SHIELD GOBLINS HIDE BEHIND IRON. PLUNGE THE HELM, LAND BEHIND, CUT.', { pyro: 'SHIELD GOBLINS HIDE BEHIND IRON. ARC A FIREBALL OVER, OR FIREDROP THE HELM.', paladin: 'SHIELD GOBLINS HIDE BEHIND IRON. HAMMERFALL THE HELM, LAND BEHIND, STRIKE.' });
   block(442, 451, 17, 27); spikes(442, 451, 16);
-  for (const x of [443, 448]) { block(x, x + 3, 13, 16); ent('shield', x + 1, 12, { face: -1 }); }   /* (four wide: room to land behind him) */   /* two stumps level with the banks, a shield goblin on each: no way round him, the thorns either side */
+  for (const x of [443, 448]) { block(x, x + 3, 13, 16); ent('shield', x === 443 ? x : x + 1, 12, { face: -1 }); }   /* (claude/demofoes: the first helm stood in a sprinkled trunk at 444; he holds the stump's edge now, three tiles of room behind him) */   /* (four wide: room to land behind him) */   /* two stumps level with the banks, a shield goblin on each: no way round him, the thorns either side */
   block(452, 470, 13, 27);
   ent('cage', 455, 12, { kind: 'bird' }); deck(454, 10, 3);
   deck(459, 10, 3); coins([459, 9], [460, 9], [461, 9]); deck(465, 10, 3);

@@ -164,7 +164,7 @@ export function buildUnderleaf3({ painter, T, TS, knightRow }) {
   foe('rockgoblin', 239, 30, { face: -1, herb: 'jarthrower' });
   ground(241, 271, G);
   board(244, 247, 27); board(251, 254, 27); board(258, 261, 27);
-  foe('sprig', 249, 29); foe('thief', 253, 29);
+  foe('sprig', 248, 29); foe('thief', 253, 29);   /* (claude/demofoes 11-03: the sprig was 249, in a sprinkled fence) */
   /* THE HEDGES' EXAM: a thorn-beast captain and his gatherers before the third hedge - burn him, burn it */
   brew(256, 29, 'red');
   foe('brute', 264, 29, { elite: true, squad: 'thornexam', thornCoat: true }); foe('sprig', 261, 29, { squad: 'thornexam' }); foe('sprig', 267, 29, { squad: 'thornexam' });
@@ -236,6 +236,8 @@ export function buildUnderleaf3({ painter, T, TS, knightRow }) {
   ground(458, 458, 24);                                                                    /* the bank's foot: the way down to her great leaf */
   coins([423, 13], [424, 13], [429, 7], [430, 7], [440, 5], [442, 5], [444, 5], [448, 6]);
   ent('check', 456, 6);
+  /* (claude/demofoes 11-03, Daniel's audit pass) THE THIN SPOTS: Underleaf was the quietest level of the chain (2.0 foes a screen, 43% one AI, two brutes). Four more of her own roster (herb-reskinned: jar-thrower, thief, thornbeast, leaf archer) on open ground in the long gaps - none in the vine gully or the bubble shafts (platforming puzzles over thorns). */
+  foe('thief', 167, 29); foe('brute', 129, 33, { thornCoat: true }); foe('archer', 209, 25); foe('rockgoblin', 281, 26, { herb: 'jarthrower' });
 
   XO = 86;   /* (claude/underleaf4) the rest is the old level, shifted right */
   // ================= 5. HER GREAT LEAF (372-427): EXAM - burn, grow, float, back to back =================

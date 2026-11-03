@@ -106,7 +106,7 @@ export function buildPalisadeWood({ painter, T, TS }) {
   prop('edgeExamCrew', { x: 90, top: 27, cleat: [83, 31], load: 'crew', walk: [86, 94, 27] });
   foe('sprig', 89, 26, 'felling', { face: -1, perch: true });
   foe('brute', 92, 31, 'felling', { face: -1 }); foe('shield', 88, 31, 'felling', { face: -1 });
-  plank(96, 100, 28); foe('archer', 98, 27, 'felling', { face: -1, perch: true });
+  plank(96, 100, 28); foe('hound', 103, 31, 'felling', { face: -1 });   /* (claude/demofoes 11-03: was an archer on the plank - three archers fewer, pikes and hounds on the floor) */
   sign(81, 31, 'THE FELLING CREW. THEIR WALKWAY HANGS OVER THEM.');
   coins([85, 30], [97, 27], [100, 27]); deco(101, 31, 'gobPennant', 0);
   ent('check', 102, 31);                                                           /* SHRINE ONE: the felled edge's exam is behind you */
@@ -132,7 +132,7 @@ export function buildPalisadeWood({ painter, T, TS }) {
   plank(147, 149, 39); plank(151, 153, 36); plank(147, 149, 33);
   ground(155, 168, 32);
   air(155, 160, 39, 41); ent('silver', 159, 41); crop(157, 41, 'nuts');             /* SILVER ONE: THE WOODCUTTERS' HOLLOW (off the pit's floor - off the road) */
-  plank(156, 158, 30); plank(160, 164, 28); foe('archer', 162, 27, 'farTower', { face: -1, perch: true });
+  plank(156, 158, 30); plank(160, 164, 28); foe('hound', 160, 31, 'farTower', { face: -1 });   /* (claude/demofoes 11-03: was an archer on the plank - the archer was the demo's most-repeated beat (14 perches); the far tower's third is a hound on the floor) */
   foe('shield', 157, 31, 'farTower', { face: -1 }); foe('pike', 163, 31, 'farTower', { face: -1 });
   ground(166, 168, 30);                                                            /* (a step up to the upper yard: two, then one) */   /* (the bridge sets you down in front of the shield) */
   coins([150, 30], [152, 30], [158, 31]);
@@ -144,7 +144,7 @@ export function buildPalisadeWood({ painter, T, TS }) {
   /* THE YARD GATE (the area's exam): a setter and a shield hold it, an archer on the scaffold over the gate; a stake stack racked over them rolls through them */
   prop('yardExamStakes', { x: 183, top: 21, hang: 25, cleat: [179, 28], load: 'stakes', roll: 1, rollMax: 13 });
   setter(186, 28, 'yardGate'); foe('shield', 190, 28, 'yardGate', { face: -1 });
-  plank(193, 197, 25); foe('archer', 195, 24, 'yardGate', { face: -1, perch: true });
+  plank(193, 197, 25); foe('pike', 194, 28, 'yardGate', { face: -1 });   /* (claude/demofoes 11-03: was an archer on the plank; a pike on the yard floor now) */
   block(198, 199, 27, 28);                                                         /* the gatepost the stakes split on */
   sign(176, 28, 'THE YARD GATE. ITS STAKES ARE RACKED OVER THE GUARD.');
   coins([181, 27], [188, 27], [194, 24]); deco(200, 26, 'gobPennant', 1);
@@ -190,7 +190,7 @@ export function buildPalisadeWood({ painter, T, TS }) {
   foe('sprig', 290, 7, 'wallEnd', { face: -1, perch: true });
   foe('brute', 291, 12, 'wallEnd', { face: -1 }); setter(287, 12, 'wallEnd');
   plank(295, 298, 9); foe('archer', 297, 8, 'wallEnd', { face: -1, perch: true });
-  foe('hornsman', 295, 8, 'wallEndHorn', { face: -1 });   /* (claude/palisadefoe) THE HORNSMAN, TAUGHT: the crew's handler on the end scaffold beside the archer - his horn hurries the archer over the brute's fight (src/hornsman.js) */
+  foe('hornsman', 277, 12, 'tower', { face: -1 });   /* (claude/demofoes 11-03: was at 295 inside the wall-end exam clump (sprig, brute, setter, archer) - his debut gets a clean teach on the floor under the tower archer (274); the exam keeps its four) */ /* (was)    /* (claude/palisadefoe) THE HORNSMAN, TAUGHT: the crew's handler on the end scaffold beside the archer - his horn hurries the archer over the brute's fight (src/hornsman.js) */
   sign(282, 12, "THE WALL'S END. ITS CREW STANDS OVER THE BRUTE.");
   coins([286, 11], [294, 11]);
   ent('check', 299, 12);                                                           /* SHRINE THREE: the wall top is behind you */

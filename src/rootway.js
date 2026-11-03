@@ -71,7 +71,7 @@ export function buildRootway({ painter, T, TS }) {
   ground(1, 30, 42);
   sign(5, 41, "THE ROOTWAY. UP OUT OF THE FUNGUS, INTO THE GOBLINS' WOOD.");
   glow(8, 41); deco(11, 41, 'sporePod'); glow(18, 41); deco(24, 41, 'tinyCap', 1);
-  foe('sporeling', 14, 41, 'cellarA', { face: -1 }); foe('spitcap', 21, 41, 'cellarA', { face: -1 }); foe('weaver', 18, 41, 'cellarA', { face: -1 });   /* (FIX PASS: a weaver in the first squad - Sporewood's own, heavier than fodder) */
+  foe('spitcap', 21, 41, 'cellarA', { face: -1 });   /* (claude/demofoes 11-03, audit: the opening was 8 foes of 6 types in 50 columns, at the density ceiling; the sporeling (14) and the weaver (18) went - the spring-cap and hoist teaches read clean, and the weaver is met first at 84) */
   coins([12, 39], [16, 39]);
   plank(5, 13, 39); plank(16, 23, 39); coins([8, 38], [20, 38]);                  /* root shelves over the cellar floor (a second height) */
   set(20, 41, T.BOUNCER); coins([20, 36], [20, 33]); sign(9, 41, 'A SPRING CAP. LAND ON IT AND IT THROWS YOU UP: HOLD JUMP FOR HIGHER.');   /* (claude/rootway2) SPOREWOOD's SPRING CAP, taught safe under the cellar roof: up through the root shelf, a coin column */
