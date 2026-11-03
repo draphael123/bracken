@@ -3717,12 +3717,12 @@ function trialYard(hero) {
   const DASH = ['dashatk', 2, 'DODGE AT HIM (TAP A WAY TWICE, OR V) AND X AT ONCE: THE ATTACK CARRIES YOU THROUGH. TWICE.', [['dummy', 15], ['dummy', 21]], 'B, THEN X AT ONCE'];
   const RISE = ['rise', 2, 'UP+X: THE RISING CUT LAUNCHES A SMALL FOE. CUT IT AGAIN WHILE IT HANGS. LAUNCH TWO.', [['sprig', 14], ['sprig', 19]], 'UP+X'];
   const SWEEP = ['sweep', 2, 'DOWN+X: THE LOW SWEEP GOES UNDER A RAISED SHIELD AND TRIPS HIM. TRIP THEM TWICE.', [['shield', 14], ['shield', 20]], 'DOWN+X'];
-  const SKILL = ['skill', 2, 'F AND G: SKILLS FROM THE TALENT TREE (Q). YOU KEEP ONE SLOT, A SECOND FROM LEVEL 30; THE YARD LENDS TWO. USE BOTH.', [['dummy', 14], ['sprig', 20]], 'Y, THEN RT', ['skillF', 'skillG']];
+  const SKILL = ['skill', 2, 'F AND G: TREE SKILLS (Q). ONE SLOT, A SECOND AT 30; THE YARD LENDS TWO.', [['dummy', 14], ['sprig', 20]], 'Y, THEN RT', ['skillF', 'skillG']];
   const MARKS = ['tellY', 'tellR'];   /* the marks step wants one of each */
   const ST = {
     knight: [
       ['hit', 3, 'THE SWING. X STRIKES. HIT THE STRAW MAN THREE TIMES.', [['dummy', 16], ['dummy', 20]], 'X'],
-      ['third', 2, 'THE THIRD CUT: X THREE TIMES IN A RUN. THE THIRD IS THE SHIELD BASH: IT SHOVES AND BREAKS A GUARD. LAND TWO.', [['dummy', 16], ['dummy', 20]], 'X, X, X'],
+      ['third', 2, 'THE THIRD CUT: X THREE TIMES. THE THIRD, THE SHIELD BASH, BREAKS A GUARD.', [['dummy', 16], ['dummy', 20]], 'X, X, X'],
       ['block', 3, 'THE SHIELD. HOLD C TO RAISE IT, AND FACE THE ARCHER. TURN THREE OF HIS ARROWS.', [['archer', 22]], 'HOLD LB'],
       ['dodge', 2, 'THE SHIELD-STEP: TAP A WAY TWICE, OR V. THE SHIELD STAYS UP. STEP TWICE.', [], 'B, OR THE STICK TWICE'],   /* (claude/heropassa) */
       ['flash', 2, 'THE BEAT: RAISE C AS HIS SWORD FLASHES WHITE, AND HE REELS OPEN. TURN HIS CUT TWICE.', [['swornsword', 18]], 'LB AS THE SWORD FLASHES'],
@@ -3731,8 +3731,8 @@ function trialYard(hero) {
       ['pogo', 3, 'THE PLUNGE: JUMP, THEN DOWN+X. BOUNCE OFF THE STRAW MEN THREE TIMES.', [['dummy', 12], ['dummy', 16], ['dummy', 20]], 'A, THEN DOWN+X'],
       ['heavyblow', 2, 'THE HEAVY CUT: HOLD X, LET GO. ONE WEIGHT, AND IT BREAKS A GUARD. LAND IT TWICE.', [['dummy', 14], ['dummy', 20]], 'HOLD X, LET GO'],
       DASH, RISE, SWEEP,
-      ['meter', 1, 'A PERFECT GUARD IS A LINK; THREE LINKS, UP+C: THE SHIELD CHARGE. RUN IT THROUGH ALL THREE STRAW MEN.', [['dummy', 9], ['dummy', 12], ['dummy', 15]], 'UP + LB WITH THREE LINKS'],
-      ['valiant', 1, 'OR SPEND THE THREE LINKS ON THE FINISHER: TURN HIS CUT ON THE BEAT, THEN X. IT GOES THROUGH ANY GUARD.', [['swornsword', 18]], 'LB ON THE BEAT, THEN X'],   /* (claude/heropassa) VALIANT STRIKE: the bar filled for it (the fill line below) */   /* a line of straw men inside one charge's run (13 tiles), so the step is the thing itself: it carries through */
+      ['meter', 1, 'PERFECT GUARD = A LINK. THREE, UP+C: THE SHIELD CHARGE. HIT ALL THREE.', [['dummy', 9], ['dummy', 12], ['dummy', 15]], 'UP + LB WITH THREE LINKS'],
+      ['valiant', 1, 'OR SPEND THREE LINKS ON THE FINISHER: TURN HIS CUT, THEN X. NO GUARD HOLDS.', [['swornsword', 18]], 'LB ON THE BEAT, THEN X'],   /* (claude/heropassa) VALIANT STRIKE: the bar filled for it (the fill line below) */   /* a line of straw men inside one charge's run (13 tiles), so the step is the thing itself: it carries through */
       SKILL],
     pyro: [
       ['ember', 3, 'THE FIREBALL: HOLD C, LET GO. HOLD LONGER AND IT GROWS. THREE HITS BURST THE STRAW MAN.', [['dummy', 18]], 'HOLD LB, LET GO'],   /* (claude/pyrokit: the trial key stays 'ember') */
@@ -3798,8 +3798,8 @@ function trialYard(hero) {
       ['runthrough', 2, 'HOLD X, LET GO: THE RUN-THROUGH LUNGES THROUGH A LINE. SKEWER BOTH STRAW MEN AT ONCE, TWICE.', [['dummy', 14], ['dummy', 17]], 'HOLD X, LET GO'],
       ['pin', 2, 'THE PIN: JUMP, THEN DOWN+X. THE POINT GOES THROUGH AND HOLDS IT. Z PULLS FREE. PIN TWO.', [['sprig', 13], ['sprig', 19]], 'A, THEN DOWN+X'],
       ['plant', 1, 'THE WALL PLANT: JUMP AT THE GATE, HOLD INTO IT, TAP C. THE SPEAR GOES IN: STAND ON IT.', [], 'A, HOLD INTO IT, LB'],   /* (claude/heropassa) */
-      ['third', 2, 'THE THIRD THRUST OF A RUN IS THE LONG ONE: 3 JABS, THE LAST REACHES FURTHER AND DRIVES THEM BACK. TWICE.', [['dummy', 18]], 'X X X, STANDING AT THE POINT'],
-      ['meter', 1, "TIP HITS FILL THE REACH BAND. FULL, UP+C: WARDEN'S REACH, SIX SECONDS OF A HUGE SPEAR. IT IS FILLED FOR YOU HERE.", [['dummy', 14], ['sprig', 20]], 'UP AND LB WITH A FULL BAND'],
+      ['third', 2, 'THE THIRD JAB OF A RUN REACHES FARTHEST AND DRIVES THEM BACK. TWICE.', [['dummy', 18]], 'X X X, STANDING AT THE POINT'],
+      ['meter', 1, "TIP HITS FILL THE REACH BAND. FULL, UP+C: WARDEN'S REACH. FILLED FOR YOU HERE.", [['dummy', 14], ['sprig', 20]], 'UP AND LB WITH A FULL BAND'],
       SKILL],
     /* THE GEOMANCER'S YARD (2026-09-24, POLISH): she BUILDS SOMETHING IN ITS WAY. FAULT LINE (round 3: the held X is a crack along the
        floor, a LINE - so the station stands two straw men in a row and asks for both in one crack; it was UPHEAVAL's pillar),
@@ -3812,7 +3812,7 @@ function trialYard(hero) {
       ['flash', 2, 'THE WARD: TAP C AS HIS SWORD FLASHES. IT RISES ON THE BEAT AND EMPOWERS YOU. TWICE.', [['swornsword', 18]], 'TAP LB AS IT FLASHES'],
       ['tells', 2, 'ONE YELLOW ! : THE WARD TAKES IT. TWO RED !! : IT BREAKS THROUGH, SO GET CLEAR. DO BOTH.', [['hedgeknight', 18]], 'TAP LB FOR !    B OR A FOR !!', MARKS],
       ['stonefall', 2, 'EARTHFALL: JUMP, THEN DOWN+X BETWEEN THEM. A STONE RISES AND HITS. LAND IT TWICE.', [['dummy', 13], ['dummy', 17]], 'A, THEN DOWN+X'],
-      ['meter', 1, 'HER STONES STAND UNTIL BROKEN. THREE UP: UP+C IS THE AVALANCHE, EVERY STONE ERUPTS AND ROLLS. THEY ARE RAISED FOR YOU HERE.', [['dummy', 12], ['sprig', 18]], 'UP + LB WITH THREE STONES UP'],
+      ['meter', 1, 'STONES STAND UNTIL BROKEN. THREE UP, UP+C: THE AVALANCHE. RAISED FOR YOU HERE.', [['dummy', 12], ['sprig', 18]], 'UP + LB WITH THREE STONES UP'],
       SKILL],
     /* THE BERSERKER'S YARD (claude/berserker, 2026-10-04): his verbs. THE CHAIN (the run goes on only while the chops land, so it is taught on
        straw that takes them; claude/berserker2: a FLURRY of five, the fifth THE CROSS-CHOP), THE DOUBLE CHOP (his held X), TAKE IT on the beat (C: the crossed axes, a parry on the beat, rage off it), the marks
@@ -3823,7 +3823,7 @@ function trialYard(hero) {
        and HUNTER'S FOCUS (filled for her: UP+C marks the straw) */
     ranger: [
       ['hit', 3, 'TAP X: A QUICK SHOT. IT IS SHORT AND IT DROPS. HIT THE STRAW MAN THREE TIMES.', [['dummy', 13]], 'X'],
-      ['heavyblow', 2, 'HOLD X: DRAW. AT A FULL DRAW THE BOW GOES STILL: LET GO THEN, A STEADY SHOT. FAR HITS HARD. LAND TWO ON THE FAR ONE.', [['dummy', 22]], 'HOLD X, LET GO'],
+      ['heavyblow', 2, 'HOLD X: DRAW. AT A FULL DRAW THE BOW GOES STILL: LET GO, A STEADY SHOT. HIT THE FAR ONE.', [['dummy', 22]], 'HOLD X, LET GO'],
       ['third', 1, 'KNIFE THREE IN A RUN (STAND CLOSE). THE THIRD IS A PUSH KICK: IT SHOVES THEM OUT TO RANGE.', [['dummy', 11]], 'X x3'],   /* (claude/rangerid, Daniel 11-01) her distinct third jab */
       ['quiver', 3, 'YOUR ARROWS STICK WHERE THEY LAND AND GLINT. WALK OVER THEM: TAKE THREE BACK.', [['dummy', 12]], 'WALK OVER THEM'],
       ['flash', 2, 'THE BOW-BASH: TAP C AS HIS SWORD FLASHES. HE REELS, THROWN BACK OUT TO RANGE. TWICE.', [['swornsword', 18]], 'TAP LB AS IT FLASHES'],

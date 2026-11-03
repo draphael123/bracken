@@ -178,7 +178,7 @@ export function buildHornetsNest({ painter, T, TS }) {
   for (let i = 0; i < 6; i++) block(202 - i, 202 - i, 42 - 2 * i, 43);   /* the pillar's east knuckle stair (tops 42 .. 32, then the pillar at 30): a fall into the pocket east of the pillar climbs back out onto it */
   block(205, 212, 30, 31);                                    /* the exit ledge (top 30), two rows over the floor beyond; the sump's bed runs under it */
   smoke(170, 31);                                             /* the gallery's stand at the sill: carry the pot over the sagging combs and the hornets go quiet (you cannot swing - the honest trade) */
-  sign(169, 31, 'THE GALLERY SAGS. EACH COMB COUNTS ITSELF DOWN WHEN YOU STAND ON IT - AND COMES BACK. THE SUMP BELOW IS STICKY, NOT DEADLY.');
+  sign(169, 31, 'THE GALLERY SAGS: EACH COMB COUNTS DOWN UNDER YOU, THEN COMES BACK. THE SUMP IS STICKY.');
   crumble(172, 175, 30); crumble(178, 181, 28); crumble(184, 187, 30);   /* the sagging combs: a hop apart (gaps 1, 2, 2: every hero's jump), rows 30, 28, 30 */
   coins([173, 28], [179, 26], [185, 28], [192, 28], [194, 28]);
   /* THE BRIDGE COMB (REQUIRED): an eight-wide gap east of the pillar, a comb hung over it three rows over the pillar's footing and wider than the gap - a rising cut from the pillar, or a thrown
@@ -204,7 +204,7 @@ export function buildHornetsNest({ painter, T, TS }) {
   coins([332, 40], [337, 37], [332, 28], [332, 14], [337, 11]);
   hang('well', 335, 338, 22, 2, { exam: true });              /* the OVERHANG (REQUIRED): foot three rows over the row-27 rung - cut it, it lands there as the step */
   smoke(326, 47);                                             /* a stand on the sticky bed: carry or lob a pot up at the swarm by the overhang */
-  sign(318, 47, 'UP THE EAST WALL ON THE PENDANT COMBS. THE HONEY DRIPS ARE TOLD: A BEAD SWELLS, THEN FALLS. WATCH THE ONE ABOVE YOU.');
+  sign(318, 47, 'UP THE EAST WALL ON THE PENDANT COMBS. A DRIP SWELLS, THEN FALLS. WATCH THE ONE ABOVE YOU.');
   sign(300, 11, 'DOWN THE WEST SIDE, THEN UP THE EAST. THE COMB WALL BELOW IS STICKY.');
   sign(336, 26, 'THE NEXT COMB IS TOO HIGH. CUT THE ONE HUNG OVER YOU: IT LANDS AS THE STEP.');
   hornet(312, 16, { squad: 'well' }); hornet(318, 30, { squad: 'well' });
