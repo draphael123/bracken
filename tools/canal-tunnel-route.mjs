@@ -70,9 +70,10 @@ try {
         if (TRACE && P().x > TRACE[0] * TS && P().x < TRACE[1] * TS && frames % 6 === 0) D('t', frames, (P().x / TS).toFixed(1), (P().y / TS).toFixed(1), Math.round(P().hp), onBarge() ? 'ON' : 'off', P().ground ? 'g' : 'air', P().climb ? 'climb' : '', 'leg' + P().legging, 'end' + P().deckEnd, 'hurt' + (+(P().hurt || 0)).toFixed(2), 'atk' + P().atk, Object.keys(k).filter(q => k[q]).join('+'), (B().x / TS).toFixed(1), B().holdWhy, 'lv' + (+(B().lv || 0)).toFixed(1), 'want' + C().leg, C().legBy, C().pend || '');
         if (!P().dead && P().hp > 0 && P().hp < P().maxHp * 0.35 && !SUICIDE) { P().hp = P().maxHp; heals++; }   /* THE CARELESS HAND'S FLASK: the subject is the barge, not the fight - a heal under 35% (counted), so a plain-swinging bot is not killed by the brood over and over */
         if (ARMED !== null && deaths() > ARMED) throw new Died(); } };
+      /* (claude/wardenid: her point has a reach band - inside the haft, at 14 px, it only shoves; a player stands at the tip, ~30 px) */
       const fight = (o = {}) => { const e = BK.enemies().filter(q => q.alive && !q.harmless && !(SPARE && q.elite) && !q.waiting && !(q.t === 'grindylow' && !q.aboard && q.mode !== 'stranded') && Math.abs(q.x - P().x) < (o.r || 48) && Math.abs(q.y - P().y) < (q.t === 'willowisp' ? 34 : 16)).sort((a, b) => Math.abs(a.x - P().x) - Math.abs(b.x - P().x))[0];
         if (!e) return false; clear();
-        for (let j = 0; j < 24 && Math.abs(e.x - P().x) > 14 && e.alive; j++) { clear(); if (onBarge() && (P().x < B().x + 12 || P().x > B().x + B().w - 12)) break; k[e.x > P().x ? 'right' : 'left'] = true; tick(1); }
+        for (let j = 0; j < 24 && Math.abs(e.x - P().x) > ${hero === 'warden' ? 30 : 14} && e.alive; j++) { clear(); if (onBarge() && (P().x < B().x + 12 || P().x > B().x + B().w - 12)) break; k[e.x > P().x ? 'right' : 'left'] = true; tick(1); }
         clear(); P().face = Math.sign(e.x - P().x) || P().face; BK.press('atk'); tick(8); clear(); tick(4);
         e.routeSwings = (e.routeSwings || 0) + 1; if (e.routeSwings > 50) { e.alive = false; log.push({ name: 'a ' + e.t + ' the hand could not cut down, taken out', ok: true, at: [Math.floor(P().x / TS), Math.floor(P().y / TS)], bx: Math.round(B().x / TS), hp: Math.round(P().hp), s: +(frames / 60).toFixed(1) }); }
         return true; };
