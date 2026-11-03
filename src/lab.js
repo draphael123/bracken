@@ -1505,7 +1505,7 @@ async function runbossLab(BK, opts) {
         { const Gq=BK.greed;if(P.dwNear)swing=false;if(Gq&&swing&&m!=='stunned'&&Gq.count(boss)>=Gq.limit(boss)-1)swing=false;   /* a blow short of his greed, as a player counts it; and out of the ring when it closes */
           if(Gq&&boss.greedT>0&&Math.abs(dx)<(Gq.reach||60)+(boss.w||30)/2+18){gx=boss.x-side*((Gq.reach||60)+(boss.w||30)/2+30);swing=false;} }
         const S=cv&&cv.stormNow;if(S&&S.phase==='gust'&&P.ground&&!real&&!(m==='swallow'||m==='swallowTell'||m==='lunge'||m==='lungeTell')&&!swing){brace=true;}
-        if(brace&&(h==='knight'||h==='paladin'||h==='reaper'||h==='warden'||h==='pirate'))k.block=true;
+        if(brace&&(h==='knight'||h==='paladin'||h==='reaper'||h==='pirate'))k.block=true;   /* (claude/herofeel: the warden's held C is the JAVELIN now, no brace) */
         if(gx!==null&&!k.block&&Math.abs(gx-P.x)>4){gx=Math.max(A.x0+10,Math.min(A.x1-10,gx));k[gx>P.x?'right':'left']=true;}
         if(P.labJump>0){P.labJump--;k.jump=true;}
         if(swing&&!k.block&&P.atk<0&&Math.abs(dx)<=reach&&Math.abs(boss.y-P.y)<70){P.face=side;if(dx>0)k.left=false;else k.right=false;BK.press('atk');swings++;}
@@ -3098,6 +3098,10 @@ async function runbossLab(BK, opts) {
       if (h==='pyro' && LABP.pyroCharge) { const pk = BK.pyroKit ? BK.pyroKit() : null, want = Math.max(1, Math.min(5, Math.round(LABP.pyroCharge))), open = BK.bossOpen ? !!BK.bossOpen(boss) : false;
         if (P.labCh) { if (tell || rushing || P.hurt > 0 || P.dodge > 0 || !open || f - P.labCh > 260 || (pk && pk.fbHold >= want)) { k.block = false; P.labCh = 0; P.labChAt = f; } else { k.block = true; k.left = k.right = k.atk = k.jump = k.down = false; P.face = Math.sign(d) || P.face; } }
         else if (open && !P.full && !tell && !rushing && ad >= 70 && ad < 200 && Math.abs(boss.y - P.y) < 30 && P.ground && !P.plunge && !P.cWas && P.atk < 0 && !(P.hurt > 0) && P.st >= 60 && f - (P.labChAt ?? -999) > 60) { P.labCh = f; P.face = Math.sign(d) || P.face; k.block = true; k.left = k.right = k.atk = k.jump = k.down = false; } }
+      /* (claude/herofeel, Daniel 11-02) THE WARDEN BOT'S JAVELIN (profile mod +x_wardJav_N, N = the tier it holds to, 0 = off; default 2, the heavy throw): in a real opening, with room and no tell, it holds C to tier N and lets go. The deflect stays a tap (DEFLECT_TAP); a tell drops the hold at once. There is no brace any more. */
+      if (h==='warden' && (LABP.wardJav===undefined || LABP.wardJav>0)) { const wk = BK.wth ? BK.wth() : null, want = Math.max(1, Math.min(3, Math.round(LABP.wardJav===undefined ? 2 : LABP.wardJav))), open = BK.bossOpen ? !!BK.bossOpen(boss) : false;
+        if (P.labWj) { if (tell || rushing || P.hurt > 0 || P.dodge > 0 || !open || f - P.labWj > 200 || (wk && wk.hold >= want)) { k.block = false; P.labWj = 0; P.labWjAt = f; } else { k.block = true; k.left = k.right = k.atk = k.jump = k.down = false; P.face = Math.sign(d) || P.face; } }
+        else if (open && !tell && !rushing && ad >= 60 && ad < 150 && Math.abs(boss.y - P.y) < 30 && P.ground && !P.plunge && !P.cWas && P.atk < 0 && !(P.hurt > 0) && P.st >= 40 && !(P.vigil >= 100) && !(P.wthRec > 0) && f - (P.labWjAt ?? -999) > 60) { P.labWj = f; P.face = Math.sign(d) || P.face; k.block = true; k.left = k.right = k.atk = k.jump = k.down = false; } }
       /* A HAND CAUGHT ON A SPRING DOES NOT KNOW IT: nothing here has ever asked a bouncer a question, so a knockback that lands
          one on T.BOUNCER bounces it straight up forever - no swing starts (every one of them wants P.ground or P.swim), and every
          bounce touches down for the one frame that resets a simple "has it been airborne" counter before launching it again, so

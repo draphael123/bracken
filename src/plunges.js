@@ -8,7 +8,7 @@
 //                          the landing (main.js dawnfall: a small burst, his aura lit 2 s, +1 Conviction on a hit). The spike SAFE landing is DROPPED
 //   FREEBOOTER BOARDING    CONTROL: lands on a foe's back and RIDES it ~1.5 s, steering it through the knock-into rules, then leaps off
 //                          with a second jump. Never a boss, a mini, an elite or a brute: those he just strikes (and pogos off)
-//   GEOMANCER  EARTHFALL   TERRAIN: a stone spike rises where she lands - a hit, and a one-tile step for a few seconds that never blocks
+//   GEOMANCER  EARTHFALL   (claude/herofeel) the landing is a SHOCKWAVE: spikes burst either side, hit + knock down foes within ~2.5 tiles, then crumble at once (no stone left)
 //                          a route or a gate and that no reach tool counts as a way
 //   BERSERKER  AXE SPIN    SHRED: both axes spun on one target - five quick hits that stack REND fast (the 4th cracks it as a heavy)
 // The numbers and the pure rules live here (so tools/plunges.mjs can read them without a page); main.js owns the world and calls them.
@@ -34,7 +34,10 @@ export const BOARD = {
   col: '#bfe6f5', rope: '#c9b27c',
 };
 export const EARTH = {
-  mul: 1.0,           // the spike's blow, x a sword cut
+  mul: 1.0,           // the shockwave's blow, x a sword cut (claude/herofeel: the landing is a SHOCKWAVE now - spikes burst either side, hit + knock down within `wave` px, then crumble at once; no stone is left standing)
+  wave: 40,           // px either side of her the shockwave reaches (2.5 tiles)
+  spikes: 3,          // the visual spikes each side
+  down: 1.0,          // s a small foe lies on its back (floorFoe)
   life: 3.5,          // s the step stands (GEO.life is 4: this one is shorter, it is a step, not a wall), cracking for its last second
   h: 1,               // one tile high
   reach: 44,          // px: a foe this near the landing is where the spike rises; otherwise it rises one tile AHEAD of her
@@ -97,14 +100,14 @@ export const WORDS = ['DAWNFALL', 'HAMMER OF DAWN', 'GUARD BROKEN', 'SAFE LANDIN
 export const HINT = {
   paladin: 'HAMMER OF DAWN: THE SLAM BREAKS A GUARD AND RATTLES THE BIGGEST POISE. ITS LIGHT KEEPS THE SPIKES OFF YOU WHERE YOU LAND.',
   pirate: 'BOARDING: LAND ON A SMALL FOE AND RIDE IT. STEER IT INTO SPIKES, A DROP OR WATER. JUMP TO LEAP OFF.',
-  geomancer: 'EARTHFALL: A STONE SPIKE RISES WHERE YOU LAND AND HITS. IT STANDS A FEW SECONDS AS A STEP.',
+  geomancer: 'EARTHFALL: THE LANDING IS A SHOCKWAVE. SPIKES BURST EITHER SIDE, HIT AND KNOCK DOWN WHAT IS NEAR, THEN CRUMBLE.',
   berserker: 'AXE SPIN: LAND ON A FOE AND THE AXES SHRED IT. EVERY CUT STACKS REND: THE FOURTH CRACKS IT.',
 };
 /* the controls card / moves list row: [label, what it is for] per hero (src/controls.js cardRows reads the label) */
 export const ROW = {
   paladin: ['dawn hammer', 'HAMMER OF DAWN: ONE HEAVY SLAM THAT BREAKS A GUARD AND POISE'],
   pirate: ['boarding', 'BOARDING: RIDE A SMALL FOE AND STEER IT INTO A HAZARD'],
-  geomancer: ['earthfall', 'EARTHFALL: A STONE SPIKE THAT HITS AND STANDS AS A STEP'],
+  geomancer: ['earthfall', 'EARTHFALL: A SHOCKWAVE THAT KNOCKS DOWN WHAT IS NEAR'],
   berserker: ['axe spin', 'AXE SPIN: SHRED ONE FOE, STACKING REND'],
 };
 export const NEW_PLUNGE = new Set(Object.keys(ROW));

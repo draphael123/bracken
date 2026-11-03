@@ -1,11 +1,9 @@
 // tools/heroblocks-b.mjs - HERO BLOCKS B (claude/heroblocksb, Daniel 10-30 22:15): what the two new holds promise, in the running page.
-//   warden   HOLD C is THE SPEAR-HAFT BRACE (src/warden-brace.js): a tap is still only the deflect (no brace); held past WB.hold the haft is planted;
-//            a yellow blow from the FRONT is turned at MORE wind than a shield (WB.chip x the knight's cost) and nothing is taken; a red blow, a bolt, and a
-//            blow from behind are not turned; a charge that runs onto it is IMPALED (broken); out of wind the haft breaks (half the blow); C let go lifts it
+//   warden   HOLD C is THE JAVELIN THROW (src/warden-throw.js; the hold-C brace was removed claude/herofeel): a tap is the deflect; held, three tiers (quick / heavy knock-back / pin); the spear comes back at once
 //   ranger   HOLD C is THE BOW GUARD (src/ranger.js): a tap is still the bash (no guard); held past RG.guard.hold the bow is up; a PROJECTILE from the front
 //            is stopped DEAD for a few points of wind; a blade from the front costs HALF; a red blow, a bolt, and a blow from behind are not turned;
 //            out of wind it breaks (the whole blow); the tap bash's arrow snatch is untouched
-//   shots    (SHOTS=1) screens of the brace, an impaled charger and the guard stopping an arrow -> work/heroblocksb-shots/
+//   shots    (SHOTS=1) screens of the javelin wind and the guard stopping an arrow -> work/heroblocksb-shots/
 // Run: node tools/heroblocks-b.mjs [warden,ranger,shots]
 import { openPage } from './cdp.mjs';
 import { writeFileSync, mkdirSync } from 'fs';
@@ -27,37 +25,26 @@ try {
     window.__hit=(dx,dmg,o)=>{const P=BK.P;P.inv=0;P.hurt=0;const hp0=P.hp,st0=P.st,res=BKT.damagePlayer(P.x+dx,dmg,o||{});return {res,lost:hp0-P.hp,paid:Math.round((st0-P.st)*10)/10};};
     return 1;})()`);
 
-  if (WANT.includes('warden')) {
-    const r = await pg.evalp(`(()=>{const o={},P=()=>BK.P;
-      { __set('warden',[]);BK.keys.block=true;BK.sim(3);BK.keys.block=false;BK.sim(2);o.tap={brace:!!P().wBrace,held:P().wbHeld||0,deflect:+(P().deflectT||0).toFixed(2)}; }   /* a tap is the deflect, never the brace */
-      { __set('warden',[]);__hold(8);o.early={brace:!!P().wBrace};__hold(10);o.hold={brace:!!P().wBrace}; BK.sim(30);const s=P().st;BK.sim(30);o.drain=+(s-P().st).toFixed(1);o.stillUp=!!P().wBrace; }
-      { __set('warden',[]);__hold(40);o.front=__hit(14,12,{});o.stAfter=Math.round(P().st); }
-      { __set('knight',[]);BK.keys.block=true;BK.sim(40);P().blockT=1;o.knightCost=__hit(14,12,{}); BK.keys.block=false; }
-      { __set('warden',[]);__hold(40);o.behind=__hit(-14,12,{}); }
-      { __set('warden',[]);__hold(40);o.red=__hit(14,12,{unblockable:true}); }
-      { __set('warden',[]);__hold(40);o.bolt=__hit(14,12,{pierce:true}); }
-      { __set('warden',[]);__hold(40);P().st=2;o.broke=__hit(14,20,{});o.brokeBrace=!!P().wBrace;o.tired=P().guardTired; }
-      { __set('warden',[]);__hold(40);__let();o.released={brace:!!P().wBrace,hit:__hit(14,12,{})}; }
-      { __set('warden',[]);__hold(40);BK.press('atk');BK.sim(2);o.swing={brace:!!P().wBrace,atk:P().atk};BK.sim(60);o.reraise={brace:!!P().wBrace}; BK.keys.block=false; }
-      { /* a yellow charge runs onto the braced point: the goat's own AI charges the braced warden and is spitted (nothing is set by hand) */
-        __set('warden',[]);__hold(40);BK.spawnEnt({t:'goat',x:(P().x+110)/16,y:21});const g=BK.enemies().at(-1);g.hp=g.hp0=5000;let f=0,seen=false,mx=0;while(f++<120&&g.alive){BK.sim(1);if(g.pointHit>0)seen=true;mx=Math.max(mx,g.broken||0);}
-        o.charge={impaled:seen,broken:+mx.toFixed(2),f,hp:P().hp===P().maxHp,hurt:P().maxHp-P().hp}; }
-      { /* the same charge landing as a blow on the haft (not stopped by the watch): the blow is turned AND the charger is impaled */
-        const [g]=__set('warden',[['goat',20]]);__hold(40);g.mode='charge';g.vx=-260;g.face=-1;g.pointHit=0;const hp0=P().hp,res=BKT.damagePlayer(g.x,12,{who:g});o.chargeBlow={res,lost:hp0-P().hp,impaled:g.pointHit>0}; }
-      { /* a red charge is not on the list and not turned */
-        const [g]=__set('warden',[['goat',20]]);__hold(40);g.mode='charge';g.vx=-260;g.pointHit=0;const hp0=P().hp,res=BKT.damagePlayer(g.x,12,{who:g,unblockable:true});o.redCharge={res,lost:hp0-P().hp,impaled:g.pointHit>0}; }
+  if (WANT.includes('warden')) {   /* (claude/herofeel) HOLD C is the JAVELIN THROW now (src/warden-throw.js); the hold-C brace is gone */
+    const r = await pg.evalp(`(()=>{const o={},P=()=>BK.P,W=()=>BK.wth();
+      { __set('warden',[]);BK.keys.block=true;BK.sim(4);BK.keys.block=false;BK.sim(2);o.tap={hold:W().hold,spears:W().spears.length,deflect:+(P().deflectT||0).toFixed(2),rec:W().rec}; }
+      { __set('warden',[]);__hold(8);o.early={hold:W().hold};__hold(16);o.t1={hold:W().hold};__hold(30);o.t2={hold:W().hold};__hold(40);o.t3={hold:W().hold}; BK.keys.block=false;BK.sim(2); }
+      { __set('warden',[]);__hold(40);o.noBrace=__hit(14,12,{});o.noBraceFlag=!!P().wBrace; BK.keys.block=false;BK.sim(2); }
+      { const [g]=__set('warden',[['goat',60]]);g.face=-1;g.hp=g.hp0=5000;__hold(24);const hp0=g.hp;BK.keys.block=false;BK.sim(14);o.hit1={dmg:hp0-g.hp,knock:g.knock||0,pinned:g.pinned||0,spears:W().spears.length}; BK.sim(80);o.back={spears:W().spears.length}; }
+      { const [g]=__set('warden',[['goat',70]]);g.hp=g.hp0=5000;const x0=g.x;__hold(52);o.t2wind={hold:W().hold};const hp0=g.hp;BK.keys.block=false;BK.sim(14);o.hit2={dmg:hp0-g.hp,moved:Math.round(g.x-x0),stag:+(g.stagger||0).toFixed(2),pinned:g.pinned||0,rec:W().rec}; }
+      { const [g]=__set('warden',[['goat',70]]);g.hp=g.hp0=5000;__hold(100);o.t3wind={hold:W().hold};const hp0=g.hp;BK.keys.block=false;BK.sim(14);o.hit3={dmg:hp0-g.hp,pinned:+(g.pinned||0).toFixed(2)}; }
+      { __set('warden',[]);P().st=1;__hold(24);BK.keys.block=false;BK.sim(3);o.tired={spears:W().spears.length}; }
+      { __set('warden',[]);__hold(24);P().hurt=0.3;BK.sim(2);o.dropped={hold:W().hold};BK.keys.block=false;BK.sim(2); }
       return o;})()`);
-    t(!r.tap.brace && r.tap.deflect > 0, 'warden: a tap is the deflect and no brace: ' + JSON.stringify(r.tap));
-    t(!r.early.brace && r.hold.brace && r.stillUp && r.drain > 0, 'warden: held, the haft is planted, stays up and costs wind: ' + JSON.stringify([r.hold, r.drain, r.stillUp]));
-    t(r.front.res === 'blocked' && r.front.lost === 0, 'warden: a yellow blow from the front is turned, nothing taken: ' + JSON.stringify(r.front));
-    t(r.front.paid >= r.knightCost.paid * 1.3, 'warden: the haft costs MORE wind than the knight\'s shield: ' + JSON.stringify([r.front, r.knightCost]));
-    t(r.behind.lost > 0 && r.red.lost > 0 && r.bolt.lost > 0, 'warden: behind, red and a bolt are not turned: ' + JSON.stringify([r.behind, r.red, r.bolt]));
-    t(r.broke.lost > 0 && r.broke.lost < 20 && !r.brokeBrace && r.tired > 0, 'warden: out of wind the haft breaks (half the blow, no brace, tired): ' + JSON.stringify([r.broke, r.brokeBrace, r.tired]));
-    t(!r.released.brace && r.released.hit.lost > 0, 'warden: C let go lifts the haft: ' + JSON.stringify(r.released));
-    t(!r.swing.brace && r.reraise.brace, 'warden: a swing drops the brace and the held C raises it again: ' + JSON.stringify([r.swing, r.reraise]));
-    t(r.charge.impaled && r.charge.broken > 0, 'warden: a yellow charge that runs onto the braced point is impaled: ' + JSON.stringify(r.charge));
-    t(r.chargeBlow.res === 'blocked' && r.chargeBlow.impaled, 'warden: a charge landing on the haft is turned AND impaled: ' + JSON.stringify(r.chargeBlow));
-    t(r.redCharge.lost > 0 && !r.redCharge.impaled, 'warden: a red charge runs through: ' + JSON.stringify(r.redCharge));
+    t(r.tap.spears === 0 && r.tap.hold === 0 && r.tap.deflect > 0, 'warden: a tap is the deflect and no throw: ' + JSON.stringify(r.tap));
+    t(r.early.hold === 0 && r.t1.hold === 1 && r.t2.hold === 2 && r.t3.hold === 3, 'warden: the wind climbs three tiers on the hold: ' + JSON.stringify([r.early, r.t1, r.t2, r.t3]));
+    t(r.noBrace.lost > 0 && !r.noBraceFlag, 'warden: nothing braces any more - a held C turns no blow: ' + JSON.stringify([r.noBrace, r.noBraceFlag]));
+    t(r.hit1.dmg > 0 && r.hit1.pinned === 0, 'warden: tier 1 is a quick throw, one hit, no pin: ' + JSON.stringify(r.hit1));
+    t(r.back.spears === 0, 'warden: the spear comes back at once: ' + JSON.stringify(r.back));
+    t(r.t2wind.hold === 2 && r.hit2.dmg > r.hit1.dmg && r.hit2.moved > 6 && r.hit2.stag > 0 && r.hit2.pinned === 0, 'warden: tier 2 is a HEAVY throw - more damage, knocked back, staggered, not pinned: ' + JSON.stringify([r.t2wind, r.hit2]));
+    t(r.t3wind.hold === 3 && r.hit3.pinned > 0.3, 'warden: tier 3 pins the first foe: ' + JSON.stringify([r.t3wind, r.hit3]));
+    t(r.tired.spears === 0, 'warden: out of wind the throw is dropped: ' + JSON.stringify(r.tired));
+    t(r.dropped.hold === 0, 'warden: a hit drops the wind: ' + JSON.stringify(r.dropped));
     console.log('warden', JSON.stringify(r));
   }
 
@@ -88,8 +75,8 @@ try {
   }
 
   if (WANT.includes('shots')) {
-    await pg.evalp(`(()=>{__set('warden',[]);__hold(40);BK.sim(4);return 1})()`); await shot('warden-brace');
-    await pg.evalp(`(()=>{const [g]=__set('warden',[['goat',70]]);g.speed=0;__hold(40);g.mode='charge';g.modeT=2;g.vx=-260;g.face=-1;let f=0;while(f++<60&&!(g.pointHit>0)&&g.alive)BK.sim(1);BK.sim(3);return 1})()`); await shot('warden-impaled-goat');
+    await pg.evalp(`(()=>{__set('warden',[]);__hold(60);BK.sim(4);return 1})()`); await shot('warden-javelin-wind');
+    await pg.evalp(`(()=>{const [g]=__set('warden',[['goat',70]]);g.speed=0;__hold(100);BK.keys.block=false;BK.sim(8);return 1})()`); await shot('warden-javelin-pin');
     await pg.evalp(`(()=>{__set('ranger',[]);__hold(40);BK.sim(2);return 1})()`); await shot('ranger-bow-guard');
     await pg.evalp(`(()=>{__set('ranger',[]);__hold(40);BK.seeds().length=0;BK.seeds().push({x:BK.P.x+40,y:BK.P.y-9,vx:-260,vy:0,g:0,life:3,arrow:true,dmg:10});BK.sim(8);return 1})()`); await shot('ranger-arrow-stopped');
   }

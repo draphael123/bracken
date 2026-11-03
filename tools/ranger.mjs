@@ -16,7 +16,8 @@
 //             and more damage on one foe than the piercing shot; each tier costs its own wind; held at T3 RG.tiers.hold s it goes by itself; the stand / knee poses and looses exist
 //   bash      C is the BOW-BASH: tapped AS a yellow blow lands it is HER PARRY (nothing taken, the riposte window, the foe thrown back out to range)
 //             and her next arrow is the RIPOSTE ('riposte' tag: B14's parry key); off the beat the blow lands; a RED one is never parried
-//   snare     DOWN+C sets a snare at her feet: a common foe that walks into it is HELD
+//   snare     (claude/herofeel: a STORE skill now, rgSetSnare, same numbers) a snare at her feet: a common foe that walks into it is HELD
+//   recall    (claude/herofeel) DOWN+C is ARROW RECALL: nearly half her bar, ROOTED ~1.5 s (no walk), a blow before the yank breaks it; stuck arrows within 8 tiles fly back to the quiver
 //   flip      the dodge is a BACKFLIP: away from what she faces, she does not turn, up off the ground - and X in it is a shot
 //   roll      a way held toward her face: an ordinary forward roll
 //   skills    every one of her nine actives fires when bought and slotted (cooldown set)
@@ -98,12 +99,17 @@ try {
       __rg(); const f=__foe(14,'sprig',5000); BK.sim(1); __c(); BK.sim(18); P().inv=0; hp0=P().hp; BKT.damagePlayer(f.x,10,{who:f}); out.bash.lateLost=hp0-P().hp;
       __rg(); const g=__foe(14,'sprig',5000); BK.sim(1); __c(); P().inv=0; hp0=P().hp; BKT.damagePlayer(g.x,10,{who:g,unblockable:true}); out.bash.redLost=hp0-P().hp; g.alive=false; f.alive=false; }
     /* snare */
-    { __rg(); K.down=true; __c(); BK.sim(2); K.down=false; out.snare={n:R().snares.length}; const e=__foe(0,'sprig',5000); e.cd=0; BK.sim(4); out.snare.stagger=+(e.stagger||0).toFixed(2); out.snare.snared=G().read().stats.snared; e.alive=false; }
+    { __rg(); G().kit.snare(); BK.sim(2); out.snare={n:R().snares.length}; const e=__foe(0,'sprig',5000); e.cd=0; BK.sim(4); out.snare.stagger=+(e.stagger||0).toFixed(2); out.snare.snared=G().read().stats.snared; e.alive=false; }
+    /* (claude/herofeel) ARROW RECALL */
+    { __rg(); const q0=R().q; __tap(); BK.sim(80); const out0=R().arrows.filter(a=>a.state==='lie'||a.state==='stuck').length, q1=R().q; P().st=P().maxSt; const st0=P().st; K.down=true; __c(); BK.sim(2); K.down=false;
+      out.rc={out0,q0,q1,rooted:!!P().rgRecall,spent:Math.round(st0-P().st),max:Math.round(P().maxSt)}; K.right=true; const x0=P().x; BK.sim(20); K.right=false; out.rc.moved=Math.round(Math.abs(P().x-x0)); BK.sim(120); out.rc.q2=R().q; out.rc.left=R().arrows.filter(a=>a.state==='lie'||a.state==='stuck').length; out.rc.free=!P().rgRecall;
+      __rg(); __tap(); BK.sim(80); P().st=P().maxSt; K.down=true; __c(); BK.sim(2); K.down=false; P().inv=0; BKT.damagePlayer(P().x+10,5,{}); BK.sim(3); out.rcHit={broke:!P().rgRecall,still:R().arrows.filter(a=>a.state==='lie'||a.state==='stuck').length};
+      __rg(); P().st=P().maxSt; K.down=true; __c(); BK.sim(2); K.down=false; out.rcNone={rooted:!!P().rgRecall,spent:Math.round(P().maxSt-P().st)}; }
     /* backflip, and a shot in it */
     { __rg(); const x0=P().x; BK.press('dodge'); BK.sim(3); out.flip={face:P().face,vx:Math.round(P().vx),vy:Math.round(P().vy),flip:R().flip}; __tap(); out.flip.shots=G().read().stats.flipShots; BK.sim(40); out.flip.moved=Math.round(P().x-x0);
       __rg(); K.right=true; BK.press('dodge'); BK.sim(3); out.flip.fwdVx=Math.round(P().vx); out.flip.fwdFlip=R().flip; K.right=false; BK.sim(30); }
     /* skills */
-    const IDS=['rgVolley','rgHawk','rgLeap','rgBearTrap','rgRain','rgSmoke','rgRefill','rgHeart','rgWildHunt']; out.skills={};
+    const IDS=['rgVolley','rgHawk','rgLeap','rgSetSnare','rgBearTrap','rgRain','rgSmoke','rgRefill','rgHeart','rgWildHunt']; out.skills={};
     for(const id of IDS){__rg([id],24);__foe(40);BK.sim(2);P().st=P().maxSt;if(id==='rgRefill')P().rgQ=0;const st=P().st,q=R().q;BK.press('throw');BK.sim(3);out.skills[id]={cd:+((P().cds||{})[id]||0).toFixed(1),spent:Math.round(st-P().st),q:R().q-q};BK.sim(90);}
     /* art */
     const set=BKT.heroSet('bracken','steel',false,'ranger');const need=['idle','run','jump','fall','land','takeoff','apex','skid','climb','atk','atkB','atkC','air','plunge','hurt','crouch','slide','block','dashAtk','cast','fidget','dance','dance2','dance3','follow','slump','swim','tread','roll','rise','sweep','airUp','windup','heavy','blast','parry','ripo',
@@ -150,21 +156,22 @@ try {
   ok(r.bash.res === 'blocked' && r.bash.lost === 0 && r.bash.ripT > 0 && r.bash.foeVx > 150 && r.bash.parries === 1, 'bash: C on the beat should parry and throw the foe back out: ' + JSON.stringify(r.bash));
   ok(has(r.bash.ripTag, 'riposte') && has(r.bash.ripTag, 'shot'), 'bash: the arrow after the parry should be the riposte: ' + JSON.stringify(r.bash.ripTag));
   ok(r.bash.lateLost > 0 && r.bash.redLost > 0, 'bash: off the beat, or a red blow, should land: ' + JSON.stringify(r.bash));
-  ok(r.snare.n === 1 && r.snare.snared === 1 && r.snare.stagger > 1, 'snare: DOWN+C should set a snare that holds a foe: ' + JSON.stringify(r.snare));
+  ok(r.snare.n === 1 && r.snare.snared === 1 && r.snare.stagger > 1, 'snare: the skill sets a snare that holds a foe: ' + JSON.stringify(r.snare));
+  ok(r.rc.out0 >= 1 && r.rc.rooted && r.rc.spent >= Math.round(r.rc.max * 0.4) && r.rc.moved < 3, 'recall: DOWN+C costs ~45% of the bar and roots her: ' + JSON.stringify(r.rc));
+  ok(r.rc.q2 > r.rc.q1 && r.rc.left === 0 && r.rc.free, 'recall: the stuck arrows fly back to the quiver and the root ends: ' + JSON.stringify(r.rc));
+  ok(r.rcHit.broke && r.rcHit.still >= 1, 'recall: a blow before the yank breaks it, the arrows stay: ' + JSON.stringify(r.rcHit));
+  ok(!r.rcNone.rooted && r.rcNone.spent === 0, 'recall: nothing to recall costs and roots nothing: ' + JSON.stringify(r.rcNone));
   ok(r.flip.face === 1 && r.flip.vx < 0 && r.flip.vy < 0 && r.flip.flip && r.flip.shots === 1 && r.flip.moved < -20, 'flip: the dodge should be a backflip she can shoot in: ' + JSON.stringify(r.flip));
   ok(r.flip.fwdVx > 0 && !r.flip.fwdFlip, 'flip: a way held toward her face should roll forward: ' + JSON.stringify(r.flip));
   for (const [id, s] of Object.entries(r.skills)) ok(s.cd > 0 && (s.spent > 0 || (id === 'rgRefill' && s.q > 0)), 'skill ' + id + ' did not fire: ' + JSON.stringify(s));
   ok(!r.art.missing.length, 'art: missing keys ' + r.art.missing);
   ok(r.art.skinDiff > 0 && r.art.skinDiff < 40, 'art: a weapon skin changed ' + r.art.skinDiff + ' pixels of her idle (only the bow should change)');
-  /* (Daniel 10-15) HER STANCE: KNIFE makes X (tap and hold) the knife and keeps the quiver; BOW again shoots. UP+C below full focus says why, and marks nothing */
+  /* (claude/herofeel, Daniel 11-02) THE STANCE SWAP IS GONE: the old key and toggleStance leave her in BOW; a tap looses an arrow. UP+C below full focus says why, and marks nothing */
   const s = await pg.evalp(`(()=>{const P=()=>BK.P,K=BK.keys,R=()=>BK.rg(),G=()=>BK.rgk(),out={};
-    __rg(); __foe(60); out.st0=G().stance(); G().toggleStance(); out.st1=G().stance(); const q0=R().q; __tap(); BK.sim(20); out.tapQ=R().q-q0; out.tapArrows=R().arrows.length;
-    K.atk=true; BK.press('atk'); BK.sim(70); K.atk=false; BK.sim(30); out.holdQ=R().q-q0; out.holdArrows=R().arrows.length;
-    G().toggleStance(); out.st2=G().stance(); BK.sim(30); __tap(); BK.sim(5); out.bowArrows=R().arrows.length;
+    __rg(); __foe(60); out.st0=G().stance(); G().toggleStance(); out.st1=G().stance(); BK.press('stance'); BK.sim(2); out.st2=G().stance(); const q0=R().q; __tap(); BK.sim(20); out.tapQ=q0-R().q;
     __rg(); __foe(60); P().rgFocus=40; K.up=true; __c(); BK.sim(2); K.up=false; out.marks=G().read().stats.marks; out.said=!!P().rgFocusSaid; return out;})()`);
-  ok(s.st0 === 'bow' && s.st1 === 'knife' && s.st2 === 'bow', 'stance: she starts in BOW and toggles KNIFE / BOW: ' + JSON.stringify(s));
-  ok(s.tapQ === 0 && s.tapArrows === 0 && s.holdQ === 0 && s.holdArrows === 0, 'stance: in KNIFE a tap and a held X loose no arrow and spend none: ' + JSON.stringify(s));
-  ok(s.bowArrows === 1, 'stance: back in BOW a tap looses an arrow: ' + JSON.stringify(s));
+  ok(s.st0 === 'bow' && s.st1 === 'bow' && s.st2 === 'bow', 'stance: there is no swap - she is always in BOW: ' + JSON.stringify(s));
+  ok(s.tapQ === 1, 'stance: a tap looses an arrow: ' + JSON.stringify(s));
   ok(s.marks === 0 && s.said, 'UP+C below full focus marks nothing and says why: ' + JSON.stringify(s));
   assert.deepEqual(pg.errors, []);
 } finally { pg.close(); }

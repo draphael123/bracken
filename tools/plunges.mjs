@@ -75,19 +75,14 @@ try {
       out.board.ledge = { leapt, vy: Math.round(P().vy), secs: 0 }; }
     for (const t of ['brute']) { const spot = boot('pirate'); const [e] = BK.spawnFoe({ t, x: spot[0], y: spot[1] }); BK.sim(10); over(e); let best = 0; for (let i = 0; i < 70; i++) { BK.sim(1); if (P().vy < best) best = P().vy; if (P().riding) break; }
       out.board[t] = { rode: !!P().riding, pogo: Math.round(best) }; }
-    /* ====== EARTHFALL ====== */
+    /* ====== EARTHFALL (claude/herofeel: the landing is a SHOCKWAVE - spikes either side, hit + knock down within ~2.5 tiles, no stone left) ====== */
     const flatEarth = () => BK.geo().pieces().filter(q => q.kind === 'earthfall');
-    { const spot = boot('geomancer'); const g0 = BK.L.grid.slice(); const p = P(); drop(spot[0] * 16 + 8, spot[1] * 16 - 70, 1); settle(() => p.ground, 200); BK.sim(6);
-      const pcs = flatEarth(), q = pcs[0], e1 = out.earth; e1.n = pcs.length; e1.cells = q ? q.cells.length : 0; e1.col = q ? q.cells[0].tx : null; e1.heroCol = Math.floor(p.x / 16); e1.row = q ? q.cells[0].ty : null; e1.floorRow = spot[1];
-      e1.solid = q ? BK.L.grid[q.cells[0].i] === T.SOLID : false; e1.base = q ? BK.geo().baseGrid()[q.cells[0].i] : null; e1.tagged = plungeTagged(); e1.life = q ? q.life : null;
-      let t = 0; const tt0 = BK.time; settle(() => flatEarth().length === 0, 600); e1.gone = flatEarth().length === 0; e1.secs = +(BK.time - tt0).toFixed(2) + 0; e1.restored = BK.L.grid.every((v, i) => v === g0[i]); }
-    { const spot = boot('geomancer'); const [e] = BK.spawnFoe({ t: 'sprig', x: spot[0] + 3, y: spot[1] }); BK.sim(10); const hp0 = e.hp; const p = P(); drop(spot[0] * 16 + 8, spot[1] * 16 - 70, 1); settle(() => p.ground, 200); BK.sim(6);
-      out.earth.nearFoe = { hit: hp0 - e.hp, tagged: plungeTagged(), piece: flatEarth().length }; }
+    { const spot = boot('geomancer'); const g0 = BK.L.grid.slice(); const p = P(); drop(spot[0] * 16 + 8, spot[1] * 16 - 70, 1); settle(() => p.ground, 200); BK.sim(2);
+      out.earth.spikes = BK.geo().spikes().length; out.earth.pieces = BK.geo().pieces().length; out.earth.same = BK.L.grid.every((v, i) => v === g0[i]); out.earth.tagged = plungeTagged(); BK.sim(40); out.earth.spikesGone = BK.geo().spikes().length; out.earth.restored = BK.L.grid.every((v, i) => v === g0[i]); }
+    { const spot = boot('geomancer'); const [e] = BK.spawnFoe({ t: 'sprig', x: spot[0] + 2, y: spot[1] }); const [far] = BK.spawnFoe({ t: 'sprig', x: spot[0] + 7, y: spot[1] }); BK.sim(10); const hp0 = e.hp, hpF = far.hp; const p = P(); drop(spot[0] * 16 + 8, spot[1] * 16 - 70, 1); settle(() => p.ground, 200); BK.sim(6);
+      out.earth.nearFoe = { hit: hp0 - e.hp, down: (e.broken || 0) > 0 || (e.floored || 0) > BK.time, far: hpF - far.hp }; }
     { const spot = boot('geomancer'); const [e] = BK.spawnFoe({ t: 'sprig', x: spot[0], y: spot[1] }); BK.sim(10); const hp0 = e.hp; over(e); settle(() => P().vy < -200, 120); BK.sim(4);
       out.earth.onHead = { hit: hp0 - e.hp, piece: flatEarth().length, pogo: Math.round(P().vy) }; }
-    { const spot = boot('geomancer'); const p = P(); set(spot[0] + 2, spot[1] - 2, T.PORT); set(spot[0] + 2, spot[1] - 1, T.PORT); drop(spot[0] * 16 + 8, spot[1] * 16 - 70, 1); settle(() => p.ground, 200); BK.sim(6); out.earth.gate = flatEarth().length; }
-    { const spot = boot('geomancer'); const p = P(); for (let dx = -3; dx <= 5; dx++) set(spot[0] + dx, spot[1] - 3, T.SOLID); drop(spot[0] * 16 + 8, spot[1] * 16 - 30, 1); settle(() => p.ground, 200); BK.sim(6); out.earth.ceiling = flatEarth().length; }
-    { const spot = boot('geomancer'); const p = P(); drop(spot[0] * 16 + 8, spot[1] * 16 - 70, 1); settle(() => p.ground, 200); BK.sim(6); p.x = (spot[0] + 4) * 16; BK.sim(4); drop(p.x, spot[1] * 16 - 70, 1); settle(() => p.ground, 200); BK.sim(6); out.earth.second = flatEarth().length; }
     { const spot = boot('geomancer'); const p = P(); drop(spot[0] * 16 + 8, spot[1] * 16 - 70, 1); settle(() => p.ground, 200); BK.sim(6);
       const { floodReach } = await import('/src/reachcore.js'); const fresh = LEVELS.find(l => l.id === 'stockade').build();
       const sz = L => { const r = floodReach(L, T, { rides: true }); return r.footing.size; };
@@ -127,16 +122,11 @@ if (!(B.spikes.into.spikes >= 1) || !B.spikes.said.includes('INTO THE SPIKES')) 
 if (!B.ledge.leapt) bad.push('BOARDING: riding off a ledge must leap off');
 if (B.brute.rode || B.brute.pogo > -300) bad.push('BOARDING: a brute must be struck and pogoed off, not ridden (' + JSON.stringify(B.brute) + ')');
 /* EARTHFALL */
-if (E.n !== 1 || E.cells !== 1) bad.push('EARTHFALL: one one-tile spike expected (' + E.n + '/' + E.cells + ')');
-if (E.col !== E.heroCol + 1 || E.row !== E.floorRow) bad.push('EARTHFALL: not one tile ahead on the floor (' + JSON.stringify({ c: E.col, h: E.heroCol, r: E.row, f: E.floorRow }) + ')');
-if (!E.solid || E.base !== 0) bad.push('EARTHFALL: the stone is not real level, or the base grid still has it (' + E.solid + '/' + E.base + ')');
-if (!E.gone || !E.restored || E.secs < 2.5 || E.secs > 4.6) bad.push('EARTHFALL: it must stand ~3.5 s and give the level back exactly (' + JSON.stringify({ g: E.gone, r: E.restored, s: E.secs }) + ')');
-if (!(E.nearFoe.hit > 0) || !E.nearFoe.tagged || E.nearFoe.piece !== 1) bad.push('EARTHFALL: the spike must hit the foe by her (tag plunge) and stand (' + JSON.stringify(E.nearFoe) + ')');
-if (E.onHead.piece !== 1 || E.onHead.pogo > -300) bad.push('EARTHFALL: on a head she still pogoes and the step rises (' + JSON.stringify(E.onHead) + ')');
-if (E.gate !== 0) bad.push('EARTHFALL: a spike rose by a gate');
-if (E.ceiling !== 0) bad.push('EARTHFALL: a spike rose under a ceiling');
-if (E.second !== 1) bad.push('EARTHFALL: one at a time (' + E.second + ')');
-if (E.reach.fresh !== E.reach.base || E.reach.piece !== 1) bad.push('EARTHFALL: the reach fill must see the level without her stone (' + JSON.stringify(E.reach) + ')');
+if (E.pieces !== 0 || E.spikes < 4 || !E.same) bad.push('EARTHFALL: the shockwave bursts spikes either side and writes NO stone (' + JSON.stringify({ p: E.pieces, s: E.spikes, same: E.same }) + ')');
+if (E.spikesGone !== 0 || !E.restored) bad.push('EARTHFALL: the spikes crumble at once and the level is untouched (' + JSON.stringify({ g: E.spikesGone, r: E.restored }) + ')');
+if (!(E.nearFoe.hit > 0) || !E.tagged || !E.nearFoe.down || E.nearFoe.far !== 0) bad.push('EARTHFALL: the wave hits (tag plunge) and knocks down the foe within ~2.5 tiles, and not the far one (' + JSON.stringify([E.nearFoe, E.tagged]) + ')');
+if (E.onHead.piece !== 0 || E.onHead.pogo > -300) bad.push('EARTHFALL: on a head she still pogoes, and no step rises (' + JSON.stringify(E.onHead) + ')');
+if (E.reach.fresh !== E.reach.base || E.reach.piece !== 0) bad.push('EARTHFALL: the reach fill must see the level without her stone (' + JSON.stringify(E.reach) + ')');
 /* AXE SPIN */
 if (!S.spun || S.hits !== 5) bad.push('AXE SPIN: five cuts expected (' + S.hits + ')');
 if (S.rends !== 5 || S.cracks !== 1) bad.push('AXE SPIN: REND must stack five and crack on the fourth, out of a frenzy (' + S.rends + '/' + S.cracks + ')');

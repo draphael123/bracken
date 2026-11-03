@@ -28,7 +28,7 @@ export const SHAPE = {
   flashover: 'burst', firestorm: 'ring', dawnburst: 'ring', holyWrath: 'aura', powderKeg: 'burst', heavySeas: 'waves', boneArmor: 'aura', soulReap: 'ring',
   // berserker (claude/berserker): the roar, the spin, the harden, the long cleave, the charge, the shrug, the stand, the frenzy, the hatchets
   // ranger (claude/ranger): the fan, the hawk, the leap back, the trap, the rain, the smoke, the refill, the long arrow, the hunt
-  rgVolley: 'cone', rgHawk: 'mark', rgLeap: 'leap', rgBearTrap: 'spikes', rgRain: 'rain', rgSmoke: 'zone', rgRefill: 'aura', rgHeart: 'bolt', rgWildHunt: 'mark',
+  rgVolley: 'cone', rgHawk: 'mark', rgLeap: 'leap', rgBearTrap: 'spikes', rgSetSnare: 'zone', rgRain: 'rain', rgSmoke: 'zone', rgRefill: 'aura', rgHeart: 'bolt', rgWildHunt: 'mark',
   bzRoar: 'ring', bzSpin: 'spin', bzHarden: 'aura', bzCleave: 'thrust', bzRampage: 'dash', bzShrug: 'aura', bzStand: 'aura', bzUnchained: 'burst', bzStorm: 'cone',
 };
 export const shapeOf = id => SHAPE[id] || 'cast';
