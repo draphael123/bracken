@@ -32,3 +32,36 @@ GREEN: tools/geo-board.mjs, tools/hero-trials.mjs (all 9 yards), tools/geomancer
 2. swordDmg 23 is a big jump from 14 (common foes die faster for her too). Rec accept for the demo; the alternative of boss-only damage needs a hero-vs-boss multiplier that does not exist.
 3. Tusker stays the geomancer's hardest boss (her hands wind a 0.5 s crack in his reach). Rec leave; a Tusker-specific plan lane could lift it to ~65%.
 4. RULE 4 relaxation (stones stand under a walking boss) is a design edit to geoid rule 4: rec confirm with Daniel.
+
+## FOLLOW-UP (11-02, after Daniel approved: stones survive a boss walking over them)
+Tip: see `git rev-parse claude/geotune` (pushed). Not merged/deployed. Logs: scratch\lane-reports\geotune-fu\.
+
+### 1. Base blow: stays 23 (14 -> 23 was NOT the early-content cause)
+Geomancer practiced, flasks, human profile, normal. Old Tusker is the limiter and falls with the blow:
+| swordDmg (avalanche.boss 6.5-8.0) | Old Tusker | Beast 3 |
+|---|---|---|
+| 19 (aval 6.5) | 5/12 = 42% | 6/12 = 50% |
+| 21 (aval 8.0, fault 1.0) | 9/24 = 38% | 9/12 = 75% |
+| 22 (aval 8.0, fault 1.0) | 10/22 = 45% | 9/12 = 75% |
+| 23 (aval 8.0, fault 1.0) | 13/24 = 54% | 4/6 = 67% |
+| 23 final (aval 8.0, fault 0.8/0.35) | 5/6 (n=6 check) | 4/6 = 67% |
+No blow under 23 reaches >=55% on Tusker (trend ~ +7 pts per +1 blow); Beast stays 50-75% either way. Avalanche damage at 8.0 helps Beast, not Tusker (he is melee-reach: she dies at ~136 taken with him at 35-40%).
+Early content at 23: Marsh (Frog King) 3/6 = 50%, Fen Road 6/6, Stockade 6/6 (n=6). Fen/Stockade are 100% at every blow tried: that is those bosses being easy for her (and Fen/Stockade need their own boss-lane read across heroes), not her blow. Lowering the blow would only cost Tusker.
+FINAL CHANGES: avalanche.boss 5.0 -> 8.0 (kept the Avalanche lean; Beast 75%). Fault mul0/mulK: tried 1.0/0.4, REVERTED to 0.8/0.35 (it pushed tools/geomancer.mjs FAULT LINE spike test red: the test foe dies before the spike launches it; and showed no Tusker gain). swordDmg 23, ward cost 15/14, perfect 0.10 unchanged.
+
+### 2. Hornet Queen pooled, 5 heroes (n=6 each, flasks)
+Before (jointtune139 trim 1.2/1.8, geomancer re-measured on this tip n=11): knight 3/6, warden 4/6, ranger 6/6, pyro 5/6, geo 10/11 = 28/35 = 80% (HIGH).
+BOSS_TRIM hornetqueen { gap 1.2, dmg 1.8 } -> { gap 1.3, dmg 2.2 }: knight 2/6, ranger 6/6, geo 5/6 = 13/18.
+FINAL { gap 1.3, dmg 2.4 } (src/boss-pressure.js): knight 2/6, warden 2/6, ranger 6/6, pyro 3/6, geo 5/5 (one errored) = 18/29 = 62% (in band). Last 6-fight geomancer check on the final tip: 5/6 (83%, noisy; pooled stays in band). Ranger stays 6/6 (the high one).
+
+### 3. Restamp + tests
+- restamp --level hornetsnest (Queen trim moved gameplay): pilot/curve/mash re-stamped, hash e4452c9761e8 unchanged; WARN curve hits 10->13, lostPct 55->67 (same known-noisy row as jointtune139); level-quality hornetsnest / curve-gate / mash-gate green.
+- docs/geomancer/pilots.json: only the `walk` part regenerated (the fight/boss parts of tools/geomancer-pilots.mjs crash the headless page on this PC: Inspector.targetCrashed at 1-3 GB free; OWED, it is a report not a gate). Walk numbers moved because the early levels have changed since the old stamp, not from this lane.
+- restamp --all --dry: only the pre-existing stale rows (wood/spore/kings/hanging/spire/moor/flotilla/causeway/oreroad/underwell/rootway/minecart), none geomancer-related.
+- GREEN on the final tip: tools/geo-board.mjs, tools/hero-trials.mjs, tools/geomancer.mjs, tools/hornets-nest.mjs (267).
+- NOT RUN: full suite, textfit, perf, mark-integrity.
+
+### Questions (rec built)
+1. Tusker is her floor (~50-55% at 23, falls ~7 pts per blow). Rec keep 23; a Tusker-specific lane (her crack inside his reach) is the way to lower the blow later.
+2. Fen Road / Stockade are 6/6 for her at any blow: rec read them across all heroes in their own boss lanes, do not tune her for them.
+3. Run geomancer-pilots.mjs fight/boss on a roomier PC (page crash) when convenient.
