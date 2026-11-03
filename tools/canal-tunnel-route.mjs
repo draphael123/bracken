@@ -87,7 +87,8 @@ try {
       const settle = () => { for (let j = 0; j < 90 && !P().ground && !P().climb; j++) { clear(); tick(1); } };
       const hop = (dir, o = {}) => { settle(); clear(); if (dir) k[dir > 0 ? 'right' : 'left'] = true; k.jump = true; BK.press('jump'); for (let j = 0; j < 70; j++) { tick(1); if (j > (o.hold || 24)) k.jump = false; if (j > (o.carry || 99)) k.left = k.right = false; if (j > 4 && (P().ground || P().climb)) break; } clear(); tick(3); };
       const ledgeUp = row => { for (let a = 0; a < 4 && !(P().ground && Math.round(P().y / TS) === row && !onBarge()); a++) { while (fight({ r: 36 })) {} hop(0); } return P().ground && Math.round(P().y / TS) === row; };
-      const strike = d => { settle(); clear(); P().face = d; BK.press('atk'); tick(12); clear(); tick(6); };
+      const strike = d => { settle(); clear(); P().face = d; const rgBow = ${JSON.stringify(hero)} === 'ranger' && BK.rgk && BK.rgk().stance() === 'bow'; if (rgBow) BK.rgk().toggleStance();   /* (redclean 11-02) THE RANGER'S BOW looses an arrow, which strikes nothing: a gadget wants her KNIFE (stance key), as a player swaps for it; then back to the bow */
+        BK.press('atk'); tick(12); clear(); tick(6); if (rgBow) BK.rgk().toggleStance(); };
       /* down through the board you stand on, onto her deck (she glides under you when you are off her in the tunnel) */
       const dropOn = (max = 60 * 14) => { for (let t = 0; t < max && !onBarge(); t++) { const b = B(); clear(); if (fight({ r: 30 })) continue;
           if (P().ground && P().x > b.x + 10 && P().x < b.x + b.w - 10 && P().y < b.y - 8) { k.down = true; k.jump = true; BK.press('jump'); tick(2); clear(); tick(24); } else tick(1); } clear(); tick(4); return onBarge(); };

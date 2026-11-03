@@ -32,7 +32,9 @@
 //   node tools/textfit.mjs --strict         exit 1 on any OVERFLOW, OFFSCREEN, CLIPPED, TRUNCATED, COVERS, COLLIDE or SMUDGE (LONGHINT only reports)
 import { readFileSync, writeFileSync, mkdirSync } from 'fs';
 import { join } from 'path';
-import { openPage, ROOT } from './cdp.mjs';
+import { openPage as openPage1, ROOT } from './cdp.mjs';
+/* (redclean 11-02) a page is reopened after every short scope now, and one boot beside a busy page missed Input.dispatchKeyEvent (15 s): a boot gets three tries */
+const openPage = async () => { let e0; for (let i = 0; i < 3; i++) { try { return await openPage1(); } catch (e) { e0 = e; await new Promise(r => setTimeout(r, 3000)); } } throw e0; };
 import { FIRST as CROUCH_FIRST } from '../src/crouch-hint.js';
 
 const OUT = process.env.OUT || join(ROOT, 'audits', 'readability');
@@ -78,7 +80,7 @@ async function pageTextFit(input) {
   const yieldNow = () => new Promise(r => setTimeout(r, 0));
   /* THE PLATES: every filled or stroked rectangle drawn while recording */
   const orig = {};
-  for (const m of ['fillRect', 'roundRect', 'strokeRect']) { orig[m] = G[m]; G[m] = function (x, y, w, h, ...rest) { const r = (m === 'fillRect' && typeof this.fillStyle !== 'string') ? null : window.__textRec;   /* (batch97 integ: a GRADIENT or pattern fill is a soft glow - a lamp's bloom, a sun - not a plate a word can overflow; fillRect of a flat colour still records) */ if (r && Math.abs(w) >= 6 && Math.abs(h) >= 6) r.push({ kind: 'rect', m, x0: Math.min(x, x + w), y0: Math.min(y, y + h), w: Math.abs(w), h: Math.abs(h) });
+  for (const m of ['fillRect', 'roundRect', 'strokeRect']) { orig[m] = G[m]; G[m] = function (x, y, w, h, ...rest) { const r = (m === 'fillRect' && (typeof this.fillStyle !== 'string' || (this.globalAlpha * (/^rgba(.*,s*([d.]+))$/.exec(this.fillStyle) ? +RegExp.$1 : 1)) < 0.25)) ? null : window.__textRec;   /* (redclean 11-02: a flat fill under 25% effective alpha is a tint - a lantern's 38 px halo square under a boss tell word read as a 'plate' the word overflowed: flotilla OPEN: RELOADING, hurricane THE MAINMAST TOP) */   /* (batch97 integ: a GRADIENT or pattern fill is a soft glow - a lamp's bloom, a sun - not a plate a word can overflow; fillRect of a flat colour still records) */ if (r && Math.abs(w) >= 6 && Math.abs(h) >= 6) r.push({ kind: 'rect', m, x0: Math.min(x, x + w), y0: Math.min(y, y + h), w: Math.abs(w), h: Math.abs(h) });
     else if (r && m === 'fillRect' && Math.abs(w) >= 12 && Math.abs(h) >= 1 && this.globalAlpha >= 0.3) r.push({ kind: 'bar', x0: Math.min(x, x + w), y0: Math.min(y, y + h), w: Math.abs(w), h: Math.abs(h) });   /* a METER: too thin to be a plate, wide enough to lie across a word (OVERDRAWN) */
     return orig[m].call(this, x, y, w, h, ...rest); }; }
   const report = (type, screen, t, extra = {}) => { const key = type + '|' + t.s + '|' + t.at + '|' + (extra.other || ''); if (seenIssue.has(key)) { const it = issues.find(q => q.key === key); if (it) it.n++; return; }
@@ -421,9 +423,9 @@ async function main() {
   for (const sc of SCOPES) if (want(sc)) { if (sc === 'talk') for (const h of HEROES) units.push({ sc, heroes: [h], label: 'talk[' + h + ']' }); else units.push({ sc, label: sc }); }
   /* RECYCLE THE PAGE EVERY BATCH OF LOADS (10-16 leakfix): BK.load leaks ~40-65 MB of NATIVE memory per call (not the JS heap), so one page doing a whole
      scope's loads (talk: 37 per hero, boss/plates: ~48) grew past 3 GB (a boss level costs ~250 MB: 90 drawn frames each; a talk load ~60 MB). The long scopes now run in batches of
-     levels - boss 4, plates 6, talk 12, or TEXTFIT_BATCH for all - which keeps a page near 2 GB, and the
+     levels - boss 4, plates 6, talk 12, or TEXTFIT_BATCH for all - which keeps a page near 2 GB (redclean 11-02: halved - the levels have grown; talk[knight] batch 4/5 of 12 crashed twice in a row, and nearly every long scope had crashed once), and the
      page is closed and reopened between batches. Same levels, same checks, same order in the report; each batch's issues and shots are merged below like any other part. */
-  const BATCH_OF = { boss: 4, plates: 6, talk: 12, levelcard: 10 }, BATCHED = Object.keys(BATCH_OF), batchOf = sc => Math.max(1, +process.env.TEXTFIT_BATCH || BATCH_OF[sc]);
+  const BATCH_OF = { boss: 3, plates: 4, talk: 6, levelcard: 6 }, BATCHED = Object.keys(BATCH_OF), batchOf = sc => Math.max(1, +process.env.TEXTFIT_BATCH || BATCH_OF[sc]);
   let allIds = await pg.evalp("import('/src/level.js').then(m => m.LEVELS.filter(l => (!l.hidden || l.secret) && l.id !== 'custom').map(l => l.id))", 60000);
   if (input.levels) allIds = allIds.filter(id => input.levels.includes(id));
   for (let k = units.length - 1; k >= 0; k--) { const u = units[k]; if (!BATCHED.includes(u.sc) || allIds.length <= batchOf(u.sc)) continue;
@@ -435,17 +437,21 @@ async function main() {
   for (const h of HEROES) { const us = units.filter(u => u.sc === 'talk' && u.heroes[0] === h); if (us.length) jobs.push(us); }
   units.filter(u => u.sc === 'bossfix').forEach(u => jobs.push([u]));
   const rest = units.filter(u => !LONG.includes(u.sc)); if (rest.length) jobs.unshift(rest);
+  /* (redclean 11-02) the SHORT scopes share one page, and that page grew until it crashed (Inspector.targetCrashed) a few scopes in (it died at 'opening', 12 s into a scope that passes alone: bestiary 343 + store 828 screens had baked first). The page is now reopened after every scope of that job; each scope sets its own state (toPlay / BK.state), none leans on a previous one. */
+  for (const u of rest) u.recycle = true;
   /* TWO pages, not five (10-16 leakfix): every page is its own headless Chrome and a talk page grows to 1.5-3 GB of baked level canvases, so five
      at once peaked near 9 GB on a 16 GB PC (the 14:53 hang). Scopes are independent pages with their own timers; fewer at a time only makes the whole run longer. */
   const nPages = Math.max(1, Math.min(jobs.length, +process.env.TEXTFIT_PAGES || 2));
   const pages = [{ p: pg }]; for (let k = 1; k < nPages; k++) pages.push({ p: await openPage() });   /* (one after another: four boots at once starve each other past the page's own 30 s wait) */
   const closeAll = async () => { for (const slot of pages) { try { await slot.p.close(); } catch {} } };
+  /* (redclean 11-02) A scope whose page CRASHES (Inspector.targetCrashed, the browser dying under memory pressure from other work on the PC) is run again on a fresh page (up to three tries), and says so; a scope that crashes three times, or any other failure, still fails the run. Every scope is deterministic and sets its own state, so a rerun is the same measurement. */
+  const onCrashRetry = async (slot, run) => { for (let go = 1; ; go++) { try { return await run(slot.p); } catch (e) { if (!/CRASHED|targetCrashed/.test(e.message) || go >= 3) throw e; console.log('  (page crashed - ' + e.message.slice(0, 60) + ' - rerunning this scope on a fresh page, try ' + (go + 1) + ' of 3)'); try { await slot.p.close(); } catch {} slot.p = await openPage(); } } };
   const results = new Map(), queue = jobs.slice(); let shotBudget = 120;
   const worker = async slot => { for (let job; (job = queue.shift());) for (const [ui, u] of job.entries()) { const ts = Date.now(); let part, p = slot.p;
-    try { part = await p.evalp('(' + pageTextFit.toString() + ')(' + JSON.stringify({ ...input, only: [u.sc], talkHeroes: u.heroes, levels: u.levels || input.levels, maxShots: shotBudget }) + ')', SCOPE_TIMEOUT_S * 1000); }
+    try { part = await onCrashRetry(slot, p => p.evalp('(' + pageTextFit.toString() + ')(' + JSON.stringify({ ...input, only: [u.sc], talkHeroes: u.heroes, levels: u.levels || input.levels, maxShots: shotBudget }) + ')', SCOPE_TIMEOUT_S * 1000).then(async part => { part.urls = []; for (const sh of part.shots) part.urls.push(await p.evalp('window.__textfitShots[' + sh.k + '].png')); return part; })); p = slot.p; }
     catch (e) { console.error('\nTEXTFIT SCOPE "' + u.label + '" FAILED after ' + Math.round((Date.now() - ts) / 1000) + 's (limit ' + SCOPE_TIMEOUT_S + 's; TEXTFIT_SCOPE_TIMEOUT changes it): ' + e.message);
       await closeAll(); process.exit(1); }
-    part.urls = []; for (const sh of part.shots) part.urls.push(await p.evalp('window.__textfitShots[' + sh.k + '].png')); shotBudget = Math.max(0, shotBudget - part.shots.length);
+    shotBudget = Math.max(0, shotBudget - part.shots.length);
     results.set(u, part); console.log('  scope ' + u.label.padEnd(14) + String(part.stats.frames).padStart(6) + ' screens  ' + ((Date.now() - ts) / 1000).toFixed(1) + 's');
     if (u.recycle && (ui < job.length - 1 || queue.length)) { try { await p.close(); } catch {} slot.p = await openPage(); } } };
   await Promise.all(pages.map(worker));
