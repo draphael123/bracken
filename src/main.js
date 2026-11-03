@@ -156,7 +156,7 @@ import { COMBAT, HEAL, COMMON_BLOWS, chainCost, impactPause, hitStagger } from '
 import * as BAR from './barriers.js';   /* THE BARRIERS BY REGION (claude/barriers): the gate, the boss seal, the lock plate - art only */
 import * as EG from './exit-gates.js';   /* THE EXIT GATES BY REGION (claude/exitgates): art only */
 const EGSFX = { light: () => SFX.lightFull(), open: () => SFX.gateOpen() };
-import * as SV from './survival.js'; import * as SKK from './skill-k.js';   /* (claude/lategamea) the one skill damage rule: swordDmg x k x amul */  import * as F2 from './flasks2.js';   /* FLASKS 2 (claude/flasks2, Daniel 10-08): the flask row, the drink, the store's FLASKS tab, the finds and objectives */   /* SURVIVAL (claude/survival, Daniel 10-07): the flask, dry shrines, % hazards and the exams' deadly spikes - the numbers live there */
+import * as JF from './jump-feel.js'; import * as SV from './survival.js'; import * as SKK from './skill-k.js';   /* (claude/lategamea) the one skill damage rule: swordDmg x k x amul */  import * as F2 from './flasks2.js';   /* FLASKS 2 (claude/flasks2, Daniel 10-08): the flask row, the drink, the store's FLASKS tab, the finds and objectives */   /* SURVIVAL (claude/survival, Daniel 10-07): the flask, dry shrines, % hazards and the exams' deadly spikes - the numbers live there */
 import { JUICE, HEAVY_TAGS, blowClass, takenClass, blockClass, stopFor, shakeAdd, safeKnock, weaponOf } from './juice.js';   /* THE JUICE TABLE: one row per weight class, read by every landed blow and every blow the hero takes (tools/juice.mjs) */
 import { LEGACY_NODES, growthNodes, SKILLS, importProgress, exportProgress, loadProgress, migrateProgress, growthAt, skillScale, slotsAt, skillFor, skillsFor, equipped, SECOND_SLOT_LEVEL, buySkill, equipSkill, passiveOn, passiveLadder, passivesArriving, CARD, CARD_CAP, CARD_FULL, PERKS, RESPEC_SILVER, skillRank, rankUp, rankPrice, rankLevel, RANK_MAX, RANK_MUL, cardOf, evenCard, picksSpent, picksOwed, milestonesOwed, perkOffer, perkOn, perkRank, thrOn, thrNext, THRESH, MINOR_PERKS, ALL_HERO_PERKS, PYRO_CARDS, HERO_PERK_MAX, levelsToPerk, nextMilestone, techniquesArriving, techOn, upgRank, milestoneName, isTechLevel, isUpgradeLevel, techniqueById, pickCard, pickMilestone, respecCard, coopOpen, DEFAULT_HEROES, MAX_SLOTS } from './progression.js';
 import * as TR from './title-region.js';   /* THE TITLE BY REGION (claude/titleregion): which region the last-played slot has reached */
@@ -7661,7 +7661,11 @@ function landShake(cls, n, k) { if (SET.shakeMode === 'full') shakeCam(n, k); el
 /* and a short weak pad buzz on it (JUICE.landRumble; none on a light blow; SET.rumble gates it inside rumble()); a DOT or a volley does not buzz the pad every tick */
 let landRumbleAt = -9;
 function landRumble(cls) { const r = JUICE.landRumble[cls]; if (!r || time - landRumbleAt < JUICE.landRumbleGap) return; landRumbleAt = time; rumble(r.ms, r.mag); }
-function squash(sx, sy, t = 0.12) { P.sqX = sx; P.sqY = sy; P.sqT = t; }
+function squash(sx, sy, t = 0.12) { P.sqX = sx; P.sqY = sy; P.sqT = t; P.jfPend = null; }
+/* (claude/jumpfeel) THE PER-HERO JUMP FEEL (src/jump-feel.js): visual only. The launch is the same tick it always was; the press squash is drawn for ONE frame and the stretch follows. */
+function jfLaunch() { const [sx, sy] = JF.stretchOf(hero()); if (SET.reduceMotion) { squash(sx, sy, 0.1); return; } const [ax, ay] = JF.antOf(hero()); squash(ax, ay, 0.12); P.jfPend = { sx, sy }; }
+function jfLand(sx, sy, t) { const [a, b, c] = JF.landOf(hero(), sx, sy, t); squash(a, b, SET.reduceMotion ? t : c); }
+function jfPuff(x, y, n, dir = 0) { n = Math.max(1, Math.round(n * Math.min(1, partScale()))); for (let i = 0; i < n; i++) parts.push({ x: x + (fxRand() - 0.5) * 8, y, vx: (fxRand() - 0.5) * 36 + dir * (10 + fxRand() * 24), vy: -16 - fxRand() * 18, life: 0.26, max: 0.26, col: '#c9b27c', size: 2, grav: 60 }); }
 function zoomKick(amt, t = 0.14) { if (SET.shake && SET.shakeMode === 'full' && !SET.reduceMotion) { zoomAmt = Math.max(zoomAmt, amt); zoomT = Math.max(zoomT, t); } }
 /* A DODGE IS UNTOUCHABLE FOR AS LONG AS ITS OWN GRACE LASTS, not for as long as it lasts. P.dodgeInv is set at the
    start of every one of them (the roll's whole length for everybody else, STEP_INV for the Warden's back-step), so a
@@ -10746,6 +10750,7 @@ function updatePlayer(dt) {
   if (P.skReady) for (const k in P.skReady) P.skReady[k] = Math.max(0, P.skReady[k] - dt * 1.6);
   hushT = Math.max(0, hushT - dt);
   for (const k of ['inv', 'grace', 'skidT', 'throwCd', 'slamCd', 'hurt', 'abuf', 'dbuf', 'plungeRec', 'dashRec', 'drop', 'dodgeCd', 'stFlash', 'sqT', 'stDelay', 'landT', 'guardTired', 'dipT']) P[k] = Math.max(0, P[k] - dt);
+  if (P.jfPend) { const jp = P.jfPend; squash(jp.sx, jp.sy, 0.1); }   /* (claude/jumpfeel) the frame after the press squash: the stretch */
   for (const k of ['emptySaid', 'parryW', 'parryCd', 'hookCd', 'rum', 'boardT']) if (P[k] > 0) P[k] = Math.max(0, P[k] - dt);
   P.atkRec = Math.max(0, (P.atkRec || 0) - dt); if (!(P.atkRec > 0)) P.recSwing = false; CM.holdPresses(P, { dbuf: 0.12, jbuf: 0.12, abuf: 0.15 });   /* WEIGHT: the recovery runs down, and a press made while committed is HELD for the window */
   if (isPirate() && P.boardT > 0 && P.boardHit) { for (const e of enemies) { if (!e.alive || e.harmless || P.boardHit.has(e)) continue;
@@ -11201,7 +11206,7 @@ else if (P.stepHeld > 0 && !P.swim) { P.stepHeld = Math.max(0, P.stepHeld - dt);
     else { P.vy = JUMPV * (PROG.charm === 'feather' ? 1.09 : 1); P.ground = false; P.coyote = 0; P.jbuf = 0;
       // WHAT THE ROPE GAVE YOU, YOU KEEP: leaving a swing or a raft at speed used to drop you to a walking pace
       if (P.onMover && P.onMover.dx) { const carry = P.onMover.dx * 60; P.vx += Math.max(-190, Math.min(190, carry)); if (Math.abs(carry) > 60) streaks(P.x, P.y - 10, -Math.sign(carry), ['#fff6e0', '#c9d1dc'], 80); }
-      P.onMover = null; P.canCut = true; P.jumpT = time; SFX.pJump(); dust(P.x, P.y, 3); squash(0.8, 1.2, 0.1); }
+      P.onMover = null; P.canCut = true; P.jumpT = time; SFX.pJump(); dust(P.x, P.y, 3); jfLaunch(); jfPuff(P.x, P.y, JF.takeoffDust(hero(), P.vx), P.vx > 40 ? -1 : P.vx < -40 ? 1 : 0); }
   }
   /* THE GRACE IS COUNTED AFTER IT IS ASKED FOR. Coyote time and the jump buffer used to tick down with every other timer at the
      top of this function, before the jump above had read them, so each lost a frame: the 0.12 s buffer held six frames, not
@@ -11427,8 +11432,8 @@ else if (P.stepHeld > 0 && !P.swim) { P.stepHeld = Math.max(0, P.stepHeld - dt);
     } else { const fallH = P.y - (P.airTopY ?? P.y), tier = fallH >= BIG_DROP ? 2 : prevVy > 250 ? 1 : 0, heavy = tier > 0, fellFar = P.y - (P.airTopY ?? P.y) >= EARTHSHAKER_DROP; /* fellFar is EARTHSHAKER's alone: heavy still sets every hero's landing (lag, dust, thud) as before */ if (fellFar && isPaladin() && tal('earthshaker')) { for (const d of [-1, 1]) pwaves.push({ x: P.x + d * 8, y: P.y, dir: d, life: 0.9, sp: 200, hit: new Set() }); shakeCam(4); SFX.hammerfall(); ringAt(P.x, P.y - 2, 22, '#ffd36b', 0.25); } // EARTHSHAKER
       /* LANDINGS BY HEIGHT (Daniel 10-12, claude/feelplatform): a hop is a PUFF (a little dust, a shallow squash); a drop is what it always was (dust, thud, shake, a ring, the three landing frames);
          a BIG drop (BIG_DROP, five tiles and more) is a DUST RING + a deeper thump + a stronger shake + a longer crouch-recover. Nothing here locks the controls (landT clears on the next press, above). */
-      dust(P.x, P.y, tier === 2 ? 11 : heavy ? 9 : 4); SFX.pLand(surface(), tier); if (L.hush) noiseAt(P.x, P.y, groundVol() * (heavy ? 2.1 : 1.15), null);
-      squash(tier === 2 ? 1.5 : heavy ? 1.4 : 1.15, tier === 2 ? 0.52 : heavy ? 0.6 : 0.86, tier === 2 && !SET.reduceMotion ? 0.2 : 0.1); P.landT = tier === 2 ? 0.2 : heavy ? 0.16 : 0.07; P.landArt = P.landArtMax = tier === 2 ? 0.34 : heavy ? 0.26 : 0.16;
+      dust(P.x, P.y, tier === 2 ? 11 : heavy ? 9 : 4); { const hd = JF.hopDust(hero(), prevVy, tier); jfPuff(P.x - 6, P.y, hd, -1); jfPuff(P.x + 6, P.y, hd, 1); } SFX.pLand(surface(), tier); if (L.hush) noiseAt(P.x, P.y, groundVol() * (heavy ? 2.1 : 1.15), null);
+      jfLand(tier === 2 ? 1.5 : heavy ? 1.4 : 1.15, tier === 2 ? 0.52 : heavy ? 0.6 : 0.86, tier === 2 && !SET.reduceMotion ? 0.2 : 0.1); P.landT = tier === 2 ? 0.2 : heavy ? 0.16 : 0.07; P.landArt = P.landArtMax = tier === 2 ? 0.34 : heavy ? 0.26 : 0.16;
       if (heavy) { SFX.thud(); shakeCam(tier === 2 ? 3.5 : 2); if (prevVy > 250) hitstop(0.035); ringAt(P.x, P.y - 1, tier === 2 ? 20 : 12, '#c9b27c', 0.2); }
       if (tier === 2 && !SET.reduceMotion) { dustRing(P.x, P.y, 14); SFX.thud(); }
       scatterPebbles(P.x, P.y, tier); dipUnderfoot(tier); }
