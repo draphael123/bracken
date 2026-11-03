@@ -63,7 +63,7 @@ check('refund is exact', () => {
   assert.equal(r.passiveReceipt.refund, PAID); assert.equal(r.passiveReceipt.sourceChecksum, PR.checksum(RAW));
   for (const [h, id] of BOUGHT.concat(MAPPED)) assert.equal(p.skillOwned[h][id], true, h + '/' + id + ' was taken away');
   for (const h of HERO_IDS) for (const id of p.loadouts[h] || []) assert(!id || skillFor(h, id).active, h + ' still slots ' + id);
-  assert.deepEqual(p.loadouts.knight, [null, 'risingCut'], 'the ability keeps its key'); assert.deepEqual(p.loadouts.pyro, ['vent']);
+  assert.deepEqual(p.loadouts.knight, ['risingCut'], 'the ability is kept, and with one skill slot until level 30 (Daniel 11-01) it takes the first'); assert.deepEqual(p.loadouts.pyro, ['vent']);
   assert.equal(p.progressionNotice, (OLD.progressionNotice || 0) + PAID, 'the notice adds to one not yet shown'); assert.equal(p.passiveNotice, 1);
   assert.deepEqual(p.progressionReceipt, OLD.progressionReceipt, 'the version-1 receipt is history and stays as it was');
   const again = migrateProgress(JSON.stringify(p)); assert.equal(again.changed, false); assert.equal(again.progress.coins, p.coins);

@@ -15,6 +15,6 @@ const pg=await openPage({audio:false,fonts:false});try{
  assert.equal(entry.state,'fight');assert.equal(entry.leader.t,'thorn');assert(!entry.player.dead);assert.equal(entry.player.y,288);assert(entry.leader.x-entry.player.x>100);
  if(process.env.REED_SCREEN){await pg.evalp(`BK.step(120)`);const d=await pg.evalp(`document.querySelector('canvas').toDataURL('image/png')`);writeFileSync(process.env.REED_SCREEN,Buffer.from(d.split(',')[1],'base64'));}
  const lab=await pg.evalp(`BK.ambushLab({levels:['marsh'],reps:1})`);
- assert.equal(lab.rows.length,6);assert(lab.rows.every(r=>r.opened));assert.deepEqual(pg.errors,[]);
+ assert.equal(lab.rows.length,6);assert(lab.rows.every(r=>r.opened),JSON.stringify(lab.rows));assert.deepEqual(pg.errors,[]);
  console.log(JSON.stringify({entry,healthMode:'refilled timing lab; not a normal-health survival test',rows:lab.rows}));
 }finally{pg.close();}
