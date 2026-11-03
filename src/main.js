@@ -965,7 +965,7 @@ const MORE_ICONS = {
   lunge: pixIcon(['..........', '..........', 's.........', '..........', 'ss..b.....', '....bswwww', 'sss.ysswww', '....bswwww', 'ss..b.....', '..........', 's.........', '..........']),
   warCry: pixIcon(['..........', '...o......', '..o...o...', '.o.rr..o..', 'o.rwwr..o.', 'o.rRRr..o.', 'o.rwwr..o.', '.o.rr..o..', '..o...o...', '...o......', '..........', '..........']),
   whirlwind: pixIcon(['...ssss...', '..s....w..', '.s......w.', 's...yy...w', 's..y..y..w', 's..y..y..s', 'w...yy...s', '.w......s.', '..w....s..', '...wwss...', '..........', '..........']),
-  meteor: pixIcon(['.o........', '..o.......', '...oo.....', '....oyy...', '.....ywwy.', '....oywwyo', '.....oyyo.', '......oo..', '..........', 'ssssssssss', 'bbbbbbbbbb', '..........']),
+  meteor: pixIcon(['..........', '..........', '..o....oo.', '.oyoooooyy', 'oyywwwwwwy', '.oyoooooyy', '..o....oo.', '..........', '..........', '..........', '..........', '..........']),   /* FIRE LANCE: a flame lance flying level */
   flameRing: pixIcon(['...oooo...', '..o.yy.o..', '.oy....yo.', 'oy......yo', 'o...ww...o', 'o...ww...o', 'oy......yo', '.oy....yo.', '..o.yy.o..', '...oooo...', '..........', '..........']),
   lightLance: pixIcon(['..........', '..........', '...y......', '..yy......', 'yyywwwwwww', 'ywwwwwwwww', 'yyywwwwwww', '..yy......', '...y......', '..........', '..........', '..........']),
   divineShield: pixIcon(['...yyyy...', '..y....y..', '.y..ss..y.', 'y..ssss..y', 'y...ss...y', 'y..ssss..y', 'y..s..s..y', '.y......y.', '..y....y..', '...yyyy...', '..........', '..........']),
