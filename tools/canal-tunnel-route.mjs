@@ -85,7 +85,7 @@ try {
           tick(1); }
         clear(); tick(2); return Math.abs(P().x - goal) <= (o.tol || 4) + 3; };
       const settle = () => { for (let j = 0; j < 90 && !P().ground && !P().climb; j++) { clear(); tick(1); } };
-      const hop = (dir, o = {}) => { settle(); clear(); if (dir) k[dir > 0 ? 'right' : 'left'] = true; k.jump = true; BK.press('jump'); for (let j = 0; j < 70; j++) { tick(1); if (j > (o.hold || 24)) k.jump = false; if (j > (o.carry || 99)) k.left = k.right = false; if (j > 4 && (P().ground || P().climb)) break; } clear(); tick(3); };
+      const hop = (dir, o = {}) => { settle(); clear(); for (let j = 0; j < 90 && (P().atk >= 0 || P().atkRec > 0); j++) { clear(); tick(1); }   /* (a player lets the thrust finish before the jump: the warden's long thrust recovers longer) */ clear(); if (dir) k[dir > 0 ? 'right' : 'left'] = true; k.jump = true; BK.press('jump'); for (let j = 0; j < 70; j++) { tick(1); if (j > (o.hold || 24)) k.jump = false; if (j > (o.carry || 99)) k.left = k.right = false; if (j > 4 && (P().ground || P().climb)) break; } clear(); tick(3); };
       const ledgeUp = row => { for (let a = 0; a < 4 && !(P().ground && Math.round(P().y / TS) === row && !onBarge()); a++) { while (fight({ r: 36 })) {} hop(0); } return P().ground && Math.round(P().y / TS) === row; };
       const strike = d => { settle(); clear(); P().face = d; const rgBow = ${JSON.stringify(hero)} === 'ranger' && BK.rgk && BK.rgk().stance() === 'bow'; if (rgBow) BK.rgk().toggleStance();   /* (redclean 11-02) THE RANGER'S BOW looses an arrow, which strikes nothing: a gadget wants her KNIFE (stance key), as a player swaps for it; then back to the bow */
         BK.press('atk'); tick(12); clear(); tick(6); if (rgBow) BK.rgk().toggleStance(); };
