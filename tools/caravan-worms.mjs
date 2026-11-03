@@ -34,7 +34,7 @@ try {
           if (phase === 'stand') { if (Math.abs(P().x - (w.x * TS + 8)) > 6 && !r.tell) k[(w.x * TS + 8) > P().x ? 'right' : 'left'] = true; }   /* walk in to its middle, then stand: the first dome is taken standing */
           else if (s.mode === 'lungeTell') { if (dodgeT <= 0) { dodgeT = 22; dodgeDir = Math.sign(P().x - worm.x) || 1; }   /* a step and a bit off the dome: its strike is a tile wide */ }
           if (dodgeT > 0) { dodgeT--; k[dodgeDir > 0 ? 'right' : 'left'] = true; }
-          else if (phase === 'fight' && (s.mode === 'exposed' || s.mode === 'lunge' || s.mode === 'burrow')) { if (Math.abs(dx) > 14) k[dx > 0 ? 'right' : 'left'] = true; else { P().face = Math.sign(dx) || 1; if (P().atk < 0) BK.press('atk'); } }
+          else if (phase === 'fight' && (s.mode === 'exposed' || s.mode === 'lunge' || s.mode === 'burrow')) { if (Math.abs(dx) > ${hero === 'warden' ? 36 : 14}) k[dx > 0 ? 'right' : 'left'] = true;   /* (claude/wardenid: her point has a reach band - inside the haft she only shoves; a player stands at the tip) */ else { P().face = Math.sign(dx) || 1; if (P().atk < 0) BK.press('atk'); } }
           else if (phase === 'fight' && (s.mode === 'lurk' || s.mode === 'deep') && Math.abs(P().x - (w.x * TS + 8)) > 10) k[(w.x * TS + 8) > P().x ? 'right' : 'left'] = true;   /* knocked off its sand: back onto it */
           const hp0 = P().hp; BK.sim(1); if (P().hp < hp0) { r.took += hp0 - P().hp; if (phase === 'stand') { r.firstHit = true; phase = 'fight'; } }
           if (phase === 'stand' && f > 60 * 12) phase = 'fight';
