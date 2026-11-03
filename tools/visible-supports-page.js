@@ -91,8 +91,10 @@ function routeInk(p, L) {
   drawRouteSupports(c.getContext('2d'), { routeSupports: [p] }, p.x * 16 - 8, p.y * 16);
   const d = c.getContext('2d').getImageData(0, 0, w, h).data, mask = new Uint8Array(w * h);
   for (let j = 0; j < mask.length; j++) mask[j] = +(d[j * 4 + 3] > 128);
-  let top = 0; while (top < Math.min(16, h) && !mask.subarray(top * w, (top + 1) * w).some(Boolean)) top++;
-  if (top >= Math.min(16, h)) return 'its drawn post never reaches the deck';
+  let top = 0; while (top < h && !mask.subarray(top * w, (top + 1) * w).some(Boolean)) top++;
+  /* (redclean 11-02) the deck tile is rows 0-15 of this sheet. A post that starts AT row 16 (a church / monastery pier hangs from the deck's underside: drawChurchSupport starts at (y+1)*16) abuts the deck and holds it; only a GAP (first ink below row 16) or no ink at all is a post that never reaches the deck. It was 'no ink in rows 0-15', which failed every pier that starts flush under the deck. */
+  if (top > 16 || top >= h) return 'its drawn post never reaches the deck';
+  top = Math.min(top, 16);
   const row = Math.min(L.H - 1, p.bottom), grounded = p.bottom >= L.H || L.grid[row * L.W + p.x] !== T.AIR;
   return inspect(mask.subarray(top * w), w, h - top, grounded);
 }
