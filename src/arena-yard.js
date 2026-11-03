@@ -98,7 +98,10 @@ export function makeArenaYard(api) {
   const VERB = { board: 'YOUR MOVES', door: 'THE TRIALS', leave: 'LEAVE' };
   const FIRST = { board: 'THE MOVE BOARD: EVERY MOVE THIS HERO HAS. LEFT / RIGHT TURN THE PAGE.', door: 'THE TRIALS DOOR: THE OLD HERO TRIALS, ONE HERO AT A TIME.', leave: 'THE GATE OUT: BACK TO THE INN OR THE MAP.' };
   /* hold an attacking dummy asleep while nobody is in its station: its cooldown (and an archer's draw) never runs out */
-  function hold(e) {
+  function hold(e, dt) {
+    /* (claude/arenafinish) THE ARCHER STAYS ON HIS MARK: a parry that shoves him (the Blood Knight's return, a bind) leaves him a few px off, and his lobbed arrows then land short of the stand -
+       ungradeable. Once he is no longer reeling he walks back to where he was placed. */
+    if (e.t === 'archer' && e.yardZone) { if (e.homeX === undefined) e.homeX = e.x; else if (!(e.stagger > 0) && !(e.rpHold > 0) && Math.abs(e.homeX - e.x) > 0.5) e.x += Math.sign(e.homeX - e.x) * Math.min(Math.abs(e.homeX - e.x), 60 * (dt || 1 / 60)); }
     if (!e.yardZone || zoneAwake(e.yardZone, api.players(), TS)) return;
     e.cd = Math.max(e.cd || 0, 0.5); e.timer = Math.max(e.timer || 0, 0.5); if (e.t === 'archer') e.draw = 0;
   }

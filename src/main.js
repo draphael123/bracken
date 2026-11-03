@@ -28829,7 +28829,7 @@ function updateEnemies(dt) {
       if (e.knock <= 0 && !(r && r.ground) && (e.knockAir = (e.knockAir || 0) + dt) < 1.5) e.knock = 0.001;   /* still in the air when the throw runs out: it keeps falling, into whatever is under it */
       if (e.knock > 0) continue; e.knockAir = 0; }
     if(e.salvage){updateSalvageCaptain(e,dt,{P,A:L.mini,active:miniActive&&miniIntroT<=0,pinDamage:Math.round(DMG.bosunPin*SALVAGE_HIT),cargoDamage:Math.round(24*SALVAGE_HIT),shotDamage:Math.round(16*SALVAGE_HIT),   /* (claude/sweep2) cargo 18->24, shot 12->16, all x SALVAGE_HIT */ hit:(x,dmg,hard)=>damagePlayer(x,dmg,{unblockable:hard,who:e}),answered:res=>res==='blocked'||answered(res),seed:s=>seeds.push(s),say:(msg,hard)=>number(e.x,e.y-e.h-20,msg,hard?'#ff6b6b':'#ffd36b'),sound:k=>SFX[k]()});continue;}
-    if (e.yardZone && YARD) YARD.hold(e);   /* (claude/arenayard) */
+    if (e.yardZone && YARD) YARD.hold(e, dt);   /* (claude/arenayard) */
     if (e.trainer) { if (e.lx1) e.x = Math.max(e.lx0, Math.min(e.lx1, e.x)); if (e.trainer === 'still' || (e.trialSt && e.trialSt.done)) { if (e.trainer !== 'still') { e.mode = 'walk'; e.modeT = 0; } e.vx = 0; e.face = Math.sign(P.x - e.x) || e.face; e.vy = Math.min(400, (e.vy || 0) + 1000 * dt); const r0 = moveBody(e, 0, e.vy * dt, false); if (r0 && r0.ground) e.vy = 0; e.anim = (e.anim || 0) + dt; continue; } }   /* THE TRIAL'S STILL MEN face you and take it; the drills fight on below */
     if (e.rallyT > 0) { e.rallyT -= dt; if (!windingUp(e) && e.modeT > 0) e.modeT -= dt * 0.6; if (e.cd > 0) e.cd -= dt * 0.6; }   /* RALLIED: it gets to the next blow sooner (never through the tell itself: that stays as long as it was) */
     if (e.wallT > 0) e.wallT -= dt;
