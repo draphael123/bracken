@@ -329,6 +329,12 @@ export const SFX = {
   fbCast(n = 1) { noise(0.12 + 0.06 * n, 0.16 + 0.04 * n, 1600 - 250 * n, 0.6); tone('triangle', 420 - 60 * n, 140, 0.12 + 0.05 * n, 0.08 + 0.03 * n); crackle(2 + n, 0.02); },
   fbBoom() { noise(0.45, 0.4, 560, 0.45); tone('sine', 72, 28, 0.6, 0.36); noise(0.2, 0.18, 2400, 0.7, 0.04); crackle(7, 0.06); },
   stoke() { if (!gate('stoke', 0.22)) return; noise(0.12, 0.05, 1100, 0.6); crackle(2, 0.02); },
+  /* PYRO KIT 2 (claude/pyrokit2): a pip lighting is a small rising tick (bombPip n = 1-3), the foe going up is a short fat thump with crackle (bombBoom), the meteor is a
+     falling whistle that lasts the whole tell (meteorWhistle) and lands as the biggest boom she has (meteorBoom) */
+  bombPip(n = 1) { if (!gate('bombPip', 0.04)) return; const f = [0, 640, 860, 1180][n] || 640; tone('triangle', f, f * 1.25, 0.07, 0.06); crackle(1, 0.02); },
+  bombBoom() { if (!gate('bombBoom', 0.05)) return; noise(0.3, 0.3, 700, 0.5); tone('sine', 110, 38, 0.34, 0.3); noise(0.14, 0.16, 2600, 0.7, 0.02); crackle(5, 0.05); },
+  meteorWhistle() { tone('sine', 1700, 340, 0.92, 0.1); tone('triangle', 1720, 360, 0.92, 0.04, 0.02); noise(0.9, 0.04, 3200, 0.9); },
+  meteorBoom() { noise(0.6, 0.46, 420, 0.4); tone('sine', 66, 22, 0.9, 0.46); tone('sawtooth', 90, 40, 0.5, 0.16); noise(0.3, 0.26, 2200, 0.7, 0.05); crackle(14, 0.1); },
   conflag() { noise(0.4, 0.3, 900, 0.5); tone('sawtooth', 90, 260, 0.35, 0.16); tone('sine', 60, 24, 0.8, 0.4, 0.12); noise(0.3, 0.24, 2400, 0.7, 0.14); crackle(10, 0.1); },
   /* THE CROUCH TWISTS, PART B (src/crouch-b.js). THE PRAYER: a low sung fifth, soft, swelling on each beat and rising a little as his light
      fills, a small bell over it once the bar is half full. THE EARTH SENSE: her ear to the ground is a low thud and a hum out through the
@@ -1334,6 +1340,7 @@ Object.assign(SFX, {
   // ---- the moor and the town ----
   caw() { if (!gate('caw', 0.35)) return; tone('sawtooth', vary(820), 560, 0.16, 0.1); noise(0.14, 0.12, 1500, 1); tone('sawtooth', vary(760), 520, 0.14, 0.08, 0.2); noise(0.12, 0.1, 1400, 1, 0.2); },
   hornBlast() { pad('sawtooth', 146, 164, 1.35, 0.15, 0, 900, 0.12); pad('sawtooth', 147.5, 166, 1.35, 0.1, 0.01, 700, 0.12); pad('square', 73, 82, 1.3, 0.05, 0, 400, 0.15); noise(0.5, 0.08, 700, 0.5); },
+  gormRage() { file('roar', 0.7, 0.55) || tone('sawtooth', 90, 200, 0.7, 0.3); tone('sawtooth', 62, 38, 0.9, 0.22, 0.05); noise(0.5, 0.3, 180, 0.6, 0.03); pad('sawtooth', 110, 98, 1.1, 0.1, 0.25, 700, 0.12); pad('square', 55, 49, 1.1, 0.05, 0.25, 400, 0.15); },   /* KING GORM IN HIS RAGE (smallfix9, owed by gorm3art): the roar pitched down with a bellow under it, then a low brass stinger on the tail - existing parts only */
   baleBump() { if (!gate('bale', 0.12)) return; noise(0.08, 0.1, 520, 0.6); tone('sine', 110, 60, 0.07, 0.06); },
   baleBurst() { for (let i = 0; i < 6; i++) noise(0.05, 0.18, 2600 + (i % 3) * 700, 0.9, i * 0.03); tone('sine', 140, 60, 0.12, 0.14); noise(0.4, 0.08, 1800, 0.4, 0.1); },
   sweepPop() { tone('square', 170, 110, 0.08, 0.1); noise(0.28, 0.16, 650, 0.5); [720, 800, 660].forEach((f, i) => tone('square', f, f * 0.9, 0.05, 0.05, 0.12 + i * 0.07)); },

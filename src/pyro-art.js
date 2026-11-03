@@ -109,10 +109,31 @@ export function brandSprite(f, hot) { return once('m' + f + (hot ? 'h' : ''), ()
 export function brand(g, x, y, now, left) { if (left < 1.5 && Math.floor(now * 8) % 2) return; const f = Math.floor(now * 6) % 2;
   blit(g, brandSprite(f, left < 1.5), x, y, false); if (left > 1.5) px(g, x - 3 + Math.floor(now * 9) % 7, y - 11 - (Math.floor(now * 9) % 3), C.yl, 0.8); }
 
+/* ---------------------------------------------------------------- LIVING BOMB: THE PIPS (claude/pyrokit2) - three small flames over a foe's head, lit one by one; on the third they flash white (the fuse) */
+const PIP_LIT = ['..o..', '.ora.', 'orayo', 'orayo', '.ooo.'], PIP_OFF = ['.....', '..o..', '.o.o.', '..o..', '.....'];
+function pipSprite(kind) { return once('pip' + kind, () => { const [c, g] = mk(5, 5, 2, 5); const rows = kind === 'off' ? PIP_OFF : PIP_LIT;
+  rows.forEach((row, y) => { for (let x = 0; x < 5; x++) { const k = row[x]; if (k === '.') continue; px(g, x, y, kind === 'off' ? C.dk : kind === 'hot' ? (k === 'y' ? C.wh : k === 'o' ? C.rd : C.cr) : k === 'o' ? C.dk : k === 'r' ? C.rd : k === 'a' ? C.am : C.yl, kind === 'off' ? 0.55 : 1); } }); return c; }); }
+/* (x, y) = just above the foe's head; n = pips lit (0-3); hot = the fuse is burning; left = seconds the stacks have to live (they gutter in the last 1.2 s) */
+export function pips(g, x, y, n, now, hot, left = 9) { if (left < 1.2 && Math.floor(now * 9) % 2) return;
+  for (let i = 0; i < 3; i++) { const lit = i < n, bob = lit ? Math.round(Math.sin(now * 8 + i * 1.7)) : 0; blit(g, pipSprite(!lit ? 'off' : hot ? 'hot' : 'on'), x - 6 + i * 6, y + bob, false); }
+  if (hot) disc(g, x, y - 3, 8, C.cr, 0.18 + 0.14 * (Math.floor(now * 24) % 2)); }
+/* ---------------------------------------------------------------- METEOR FALL: THE RING (the tell) and THE METEOR */
+function ellipsePx(g, cx, cy, rx, ry, col, a = 1, skip = null) { g.globalAlpha = a; g.fillStyle = col; const n = Math.max(16, Math.ceil(rx * 6.3)); let lx = 1e9, ly = 1e9;
+  for (let i = 0; i < n; i++) { const an = i / n * Math.PI * 2; if (skip && skip(an, i)) continue; const x = cx + Math.round(Math.cos(an) * rx), y = cy + Math.round(Math.sin(an) * ry); if (x === lx && y === ly) continue; lx = x; ly = y; g.fillRect(x, y, 1, 1); } g.globalAlpha = 1; }
+/* the red ring on the ground where it will land: a flattened ring pulsing red, a gold ring closing in (p = 0..1 of the tell), tick marks up from the rim */
+export function meteorRing(g, x, y, R, p, now) { const ry = Math.max(5, Math.round(R * 0.3)), pulse = Math.floor(now * 9) % 2;
+  ellipsePx(g, x, y, R, ry, pulse ? C.rd : C.or, 0.95); ellipsePx(g, x, y, R - 1, ry - 1, C.rd, 0.55); ellipsePx(g, x, y, R + 1, ry + 1, C.dk, 0.5);
+  const q = Math.max(0.12, 1 - p); ellipsePx(g, x, y, Math.round(R * q), Math.max(2, Math.round(ry * q)), p > 0.7 ? C.cr : C.yl, 0.95);
+  for (let i = 0; i < 8; i++) { const an = i * Math.PI / 4 + 0.39, tx = x + Math.round(Math.cos(an) * R), ty = y + Math.round(Math.sin(an) * ry); for (let k = 1; k <= 3 + Math.round(p * 5); k++) px(g, tx, ty - k, k > 4 ? C.am : C.rd, 1 - k * 0.1); } }
+/* the rock itself, falling from the upper right: dark core, fire skin, a long tail up behind it */
+export function meteorBody(g, x, y, now) { for (let i = 1; i <= 22; i++) { const a = 1 - i / 24; px(g, x + i * 1.5 + Math.round(Math.sin(now * 20 + i) * 1), y - i * 2.8, i < 8 ? C.yl : i < 15 ? C.or : C.rd, a); px(g, x + i * 1.5 + 1, y - i * 2.8, i < 6 ? C.cr : C.rd, a * 0.7); }
+  disc(g, x, y, 10, C.or, 0.25); disc(g, x, y, 7, C.dk); disc(g, x, y, 6, C.rd); disc(g, x - 1, y - 1, 4, C.or); disc(g, x - 1, y - 1, 2, C.yl); px(g, x - 2, y - 2, C.cr);
+  for (let k = 0; k < 6; k++) px(g, x + Math.round((hash(k + Math.floor(now * 14)) - 0.3) * 18), y + Math.round((hash(k * 5 + Math.floor(now * 14)) - 0.5) * 14), k % 2 ? C.yl : C.am); }
+
 /* ---------------------------------------------------------------- EFFECTS: parry star, block ring, contact spark, blast, eruption, word */
 const FX = [];
 export const fxClear = () => { FX.length = 0; };
-export function fx(type, x, y, now, o = {}) { if (FX.length > 48) FX.shift(); FX.push({ type, x, y, t0: now, ...o, life: { parry: 0.32, block: 0.24, spark: 0.18, blast: 0.44, erupt: 0.52, word: 1.15, pop: 0.22, land: 0.5, fizzle: 0.55 }[type] || 0.3 }); }
+export function fx(type, x, y, now, o = {}) { if (FX.length > 48) FX.shift(); FX.push({ type, x, y, t0: now, ...o, life: { parry: 0.32, block: 0.24, spark: 0.18, blast: 0.44, erupt: 0.52, word: 1.15, pop: 0.22, land: 0.5, fizzle: 0.55, bigblast: 0.62 }[type] || 0.3 }); }
 
 function starSprite(f) { return once('s' + f, () => {
   const S = 71, c0 = 35, [c, g] = mk(S, S, c0, c0), R = [6, 14, 22, 28, 32][f], cols = [C.wh, C.cr, C.yl, C.am, C.or][f];
@@ -165,7 +186,9 @@ const GLYPH = {
   C: ['.###.', '#...#', '#....', '#....', '#....', '#...#', '.###.'], O: ['.###.', '#...#', '#...#', '#...#', '#...#', '#...#', '.###.'], N: ['#...#', '##..#', '##..#', '#.#.#', '#..##', '#..##', '#...#'],
   F: ['#####', '#....', '#....', '####.', '#....', '#....', '#....'], L: ['#....', '#....', '#....', '#....', '#....', '#....', '#####'], A: ['.###.', '#...#', '#...#', '#####', '#...#', '#...#', '#...#'],
   G: ['.###.', '#...#', '#....', '#.###', '#...#', '#...#', '.###.'], R: ['####.', '#...#', '#...#', '####.', '#.#..', '#..#.', '#...#'], T: ['#####', '..#..', '..#..', '..#..', '..#..', '..#..', '..#..'],
-  I: ['.###.', '..#..', '..#..', '..#..', '..#..', '..#..', '.###.'] };
+  I: ['.###.', '..#..', '..#..', '..#..', '..#..', '..#..', '.###.'],
+  M: ['#...#', '##.##', '#.#.#', '#.#.#', '#...#', '#...#', '#...#'], E: ['#####', '#....', '#....', '####.', '#....', '#....', '#####'],
+  V: ['#...#', '#...#', '#...#', '#...#', '#...#', '.#.#.', '..#..'], B: ['####.', '#...#', '#...#', '####.', '#...#', '#...#', '####.'] };
 export function wordSprite(txt) { return once('w' + txt, () => {
   const n = txt.length, W = n * 6 - 1 + 4, H = 7 + 4, [c, g] = mk(W, H, W >> 1, H - 1), G = [C.wh, C.cr, C.yl, C.yl, C.am, C.or, C.rd];
   for (let i = 0; i < n; i++) { const gl = GLYPH[txt[i]]; if (!gl) continue; for (let y = 0; y < 7; y++) for (let x = 0; x < 5; x++) if (gl[y][x] === '#') {
@@ -183,6 +206,7 @@ export function drawFx(g, cx, cy, now, flashes = true) {
     else if (f.type === 'blast') blit(g, blastSprite(Math.min(4, Math.floor(p * 5))), x, y, false);
     else if (f.type === 'land') { const fi = Math.min(5, Math.floor(p * 6)); blit(g, blastSprite(Math.min(4, Math.floor(p * 5))), x, y - 6, false); blit(g, eruptSprite(0, fi), x - 14, y + 2, false); blit(g, eruptSprite(0, fi), x + 14, y + 2, false); }   /* PHOENIX RISE's landing: the burst, a flame column off each side */
     else if (f.type === 'fizzle') fizzleDraw(g, x, y, p);
+    else if (f.type === 'bigblast') { const s = blastSprite(Math.min(4, Math.floor(p * 5))), sc = f.sc || 1.9; g.drawImage(s, Math.round(x - s.ox * sc), Math.round(y - s.oy * sc), Math.round(s.width * sc), Math.round(s.height * sc)); }
     else if (f.type === 'erupt') blit(g, eruptSprite(f.v || 0, Math.min(5, Math.floor(p * 6))), x, y, false);
     else if (f.type === 'word') { const s = wordSprite(f.txt), rise = Math.round(Math.min(1, age / 0.5) * 10), jit = age < 0.12 && flashes ? (Math.floor(age * 60) % 2 ? 1 : -1) : 0;
       g.globalAlpha = p > 0.78 ? 1 - (p - 0.78) / 0.22 : 1; blit(g, s, x + jit, y - rise, false); g.globalAlpha = 1; }

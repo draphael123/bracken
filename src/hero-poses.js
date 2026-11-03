@@ -99,6 +99,7 @@ export const POSE_BEATS = {
   rgShot: [0.07], rgAirShot: [0.07], rgLoose: [0.1], rgRise: [0.08], rgDown: [0.08], rgBash: [0.06], rgSnare: [0.12], rgMark: [0.12], rgSling: [0.1], rgBowUp: [0.1], rgHawkPose: [0.14], rgLeapPose: [0.16],
   ripo: [0.06, 0.14],          /* (claude/ranger) THE RIPOSTE STRIKE when it is an ARROW (hers): the step-in, the loose, the follow-through - played off the pose clock, not the swing */
   rgVolleyPose: [0.12], rgTrapPose: [0.12], rgRainPose: [0.14], rgSmokePose: [0.12], rgRefillPose: [0.16], rgHeartPose: [0.18], rgHuntPose: [0.16],
+  rgGreat: [0.17, 0.17, 0.16], rgGreatLoose: [0.1, 0.2],   /* (claude/ults) THE GREAT ARROW: the rooted draw (three beats = RG.great.draw) and the loose */
 };
 /* A POSE THAT FOLLOWS THE BODY, not a clock: the frame is chosen from the hero's own state, and null ends it early (HAMMER LEAP
    plays his arc - maul up on the rise, over at the top, down on the drop - for as long as he is off the ground, and no longer) */

@@ -20,7 +20,7 @@ import { KEY_ROWS } from './boss-read.js';
 import * as MART from './redraw/sporewood2_mother.js'; import { drawCloud as drawSporeCloud, halo as foxHalo } from './redraw/sporewood2_world.js'; import { GLOW as FOX } from './redraw/sporewood2_pal.js';   /* (claude/sporewood2art) her baked frames, one per windup and release, and her floor effects */
 export const MC = {
   hp: 1150,                                   /* her bar (tuned with flasks, campaign level: see the lane report) */
-  take: 0.4, openMul: 2, openT: 3.5, wardT: 3.0, wind: 0.7,
+  take: 0.4, heroTake: { pyro: 0.6 }, heroOpen: { pyro: 1.6 }, openMul: 2, openT: 3.5, wardT: 3.0, wind: 0.7,
   idle: [1.15, 0.85],                        /* the breath between her moves, P1 / P2 */
   knotW: 16, knotUp: 132, knotDn: 104,       /* her knot: half its width; from how high over her floor to how low a plunge counts */
   knotY: 118,                                /* the knot's centre over her floor (L.knot) */
@@ -56,8 +56,8 @@ export function makeMotherCap(ctx) {
   H.isOpen = e => !!e && e.mode === 'open';
 
   /* ---------- A BLOW'S SHARE (B15): open x2; warded or sealed 0.4 with a told clank ---------- */
-  H.take = (e, fromX, tag) => { if (e.mode === 'open') return { mul: MC.openMul };
-    if (e.ward > 0) return { mul: MC.take, word: MC_SAY.ward }; return { mul: MC.take, word: MC_SAY.above, key: true }; };
+  H.take = (e, fromX, tag) => { if (e.mode === 'open') return { mul: MC.openMul * ((MC.heroOpen && MC.heroOpen[ctx.hero ? ctx.hero() : ""]) || 1) };
+    const hk = (MC.heroTake && MC.heroTake[ctx.hero ? ctx.hero() : ""]) || 1; if (e.ward > 0) return { mul: MC.take, word: MC_SAY.ward }; return { mul: MC.take * hk, word: MC_SAY.above, key: true }; };
 
   /* ---------- THE OPENING ---------- */
   function open(e, p) {

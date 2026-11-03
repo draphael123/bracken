@@ -25,6 +25,7 @@ export const K_FLAT = {
   boneMin: 0.15, boneSpan: 0.2,              // blood knight legacy skeleton: was FLAT 5 + 0..5
   shieldThrowFar: 0.45, shieldThrowNear: 0.3, shieldThrowBack: 0.18,   // knight was FLAT 13 (ranged foe) / 9 / 5 on the return
 };
+export const K_WARDEN_REACH = { perHit: 1.0, final: 2.5 };   // (claude/wardenid) WARDEN'S REACH, the ultimate: every hit is a max tip hit at swordDmg x 1.0 x amul; the closing thrust is swordDmg x 2.5
 export const K_LINEAR = {
   whirlwind: 0.5,        // knight   was 1.1 per cut (x2 cuts); cd 4 -> 5 (CD_MAX). Brief k 0.7 measured 89% of an L35 brute in ONE cast (both cuts); 0.5 = ~64% (10-31 browser run)
   rainOfSpears: 0.9,     // warden   was 1.3 per spear
@@ -38,4 +39,9 @@ export const PYRO_TODO = {   // flat today; convert to swordDmg x k when claude/
   flashover: 'FLAT 34 burning / 8 else', firestorm: 'FLAT 6 + ignite', ember: 'heatDmg(3)', jet: 'heatDmg(1) per tick', burn: '2 per 0.3 s', PYRE: 'FLAT 42 + 16 splash',
   heldFireball: 'pyrokit lane (must be swordDmg x k)', conflagration: 'pyrokit lane (must be swordDmg x k)',
 };
-export const K = { ...K_FLAT, ...K_LINEAR };
+export const K_PYRO = {   // (claude/pyrokit2, Daniel 11-01 11:17) LIVING BOMB and METEOR FALL: swordDmg x k x amul x heat, nothing flat
+  livingBomb: 1.2,       // a foe's third pip: it bursts for this (the brief's ~1.2x sword)
+  livingBombBig: 0.7,    // ...a boss or a mini takes this instead, and never more than the cap in main.js PYRO_KIT.lb.capPct of him (the stacks come every ~3 hits: a full 1.2 would be a +40% boss damage rider)
+  meteorFall: 3.0,       // the meter spender: one big hit on everything in the blast (a full bar x1.4 heat = 4.2 sword per foe, then the chain of bursts ~1.7 each), in line with the knight's LAST CHARGE (2.5 sword through a pack, 3 on a boss) and the old CONFLAGRATION (4.0 x 1.4 a marked foe); a boss or mini is capped (PYRO_KIT.mf.capPct)
+};
+export const K = { ...K_FLAT, ...K_LINEAR, ...K_PYRO };

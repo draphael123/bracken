@@ -5350,7 +5350,12 @@ function rgKitPoses(F, h) {
     F.rgLoose2 = [KF({ wide: 12, legs: 'wide', ...aimed(null, lvl), arm2: [OFF[0], OFF[1], X - 7, Y - 3], plume: 2, bits: [...ln(9, -3, 17, -3, (i, n) => i === n ? W2 : i % 2 ? G2 : G2L)] }),
       KF({ legs: 'wide', ...aimed(null, lvl), arm2: [OFF[0], OFF[1], X - 5, Y - 1], plume: 1, bits: [o(15, -3, G2), o(17, -3, G2L)] })];
     F.rgLoose3 = [KF({ wide: 12, dx: -1, dy: 1, legs: 'wide', ...aimed(null, { stave: [X + 7, Y + 7, X + 6, Y - 15], arm: [X, Y, X + 6, Y - 4] }), arm2: [OFF[0], OFF[1], X - 7, Y + 1], plume: 2, bits: [o(13, -5, AM), o(15, -6, AML), o(13, -3, AM), o(16, -3, W2), o(13, -1, AM), o(15, 0, AML)] }),
-      KF({ dx: -1, legs: 'wide', ...aimed(null, cant), arm2: [OFF[0], OFF[1], X - 4, Y + 2], plume: 1, bits: [o(15, -4, AM), o(17, -3, AML)] })]; }
+      KF({ dx: -1, legs: 'wide', ...aimed(null, cant), arm2: [OFF[0], OFF[1], X - 4, Y + 2], plume: 1, bits: [o(15, -4, AM), o(17, -3, AML)] })];
+    /* THE GREAT ARROW (claude/ults, UP+C at a full Focus): ROOTED in a wide braced stance, the bow upright and level, the string drawn back past the ear to the full length of the arm and a great gold-headed shaft laid along it - it LENGTHENS over the three beats and the head burns brighter; then the LOOSE - the draw hand flung back, a gold streak the length of the frame out of the bow. Greybox: the art lane redraws. */
+    { const GD = '#ffd36b', GL = '#fff3b0', GS = '#c9a24a', big = (n, hot) => [...ln(5, -3, 5 + n, -3, (i, m) => i === m ? (hot ? GL : GD) : i % 3 === 0 ? W2 : GS), o(6 + n, -3, GL), o(6 + n, -4, GD), o(6 + n, -2, GD), o(7 + n, -3, hot ? GL : GD)];
+      F.rgGreat = [KF({ dy: 1, legs: 'wide', wide: 8, sho: 1, ...aimed(-4, lvl), plume: 2, bits: big(7, 0) }), KF({ dy: 1, legs: 'wide', wide: 10, sho: 1, ...aimed(-6, lvl), plume: 2, bits: big(11, 0) }), KF({ dy: 1, legs: 'wide', wide: 12, sho: 1, ...aimed(-8, lvl), plume: 1, bits: [...big(14, 1), o(4, -6, GD), o(9, -7, GL), o(15, -6, GD)] })];
+      F.rgGreatLoose = [KF({ wide: 16, dx: -1, legs: 'wide', ...aimed(null, lvl), arm2: [OFF[0], OFF[1], X - 8, Y - 2], plume: 2, bits: [...ln(9, -3, 26, -3, (i, n) => i === n ? GL : i % 2 ? GD : GL), o(8, -5, GD), o(8, -1, GD)] }), KF({ wide: 8, legs: 'wide', ...aimed(null, lvl), arm2: [OFF[0], OFF[1], X - 5, Y - 1], plume: 1, bits: [o(15, -3, GD), o(18, -3, GL)] })]; }
+  }
   riposteKit(F, 'ranger', KF, { X, Y, OFF, aimed, knife });
 }
 /* ==== THE GEOMANCER (2026-09-24, docs/briefs/geomancer.md). A hood and a stone mantle, and (round 3) a TALL STAFF with an amber geode.

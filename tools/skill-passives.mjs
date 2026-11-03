@@ -11,10 +11,10 @@ for(const [h,id]of[['knight','flurry'],['pyro','heatShield'],['paladin','sanctua
  if(h==='pyro'){BK.P.heat=60;const hp=BK.P.hp;BKT.damagePlayer(BK.P.x-30,40,{unblockable:true});value=hp-BK.P.hp;}
  if(h==='paladin'){const hp=BK.P.hp;BK.keys.block=true;BK.sim(60);BK.keys.block=false;value=BK.P.hp-hp;}
  if(h==='pirate'){const hp=BK.P.hp;BKT.acorns().push({x:BK.P.x,y:BK.P.y-6,got:false,ph:0});BK.sim(3);value=BK.P.hp-hp;}
- if(h==='reaper'){BKT.PROG.skillOwned[h].summonSkeleton=true;BKT.PROG.loadouts[h]=[null,'summonSkeleton'];BK.press('skill2');BK.sim(1);value=BK.P.cds.summonSkeleton;}
+ if(h==='reaper'){BKT.PROG.skillOwned[h].summonSkeleton=true;BKT.PROG.loadouts[h]=['summonSkeleton'];BK.press('throw');BK.sim(1);value=BK.P.cds.summonSkeleton;}
  if(h==='berserker'){BK.P.rage=60;BK.P.bzFightT=-99;BK.sim(60);value=BK.P.rage;}   /* SLOW TO COOL: out of a fight his rage drains half as fast */
  if(h==='ranger'){value=BK.rg().max;}   /* (claude/ranger) DEEP QUIVER: one more arrow in her quiver */
- if(h==='geomancer'){BK.P.tremor=0;BK.geo().gainTremor(10);value=BK.P.tremor;}   /* RUMBLE: the same ten of TREMOR is fifteen */
+ if(h==='geomancer'){value=BK.geoK.avalanche.life*(BKT.tal('geoRumble')?1.5:1);}   /* RUMBLE (claude/ults): the AVALANCHE boulders roll half as far again */
  if(h==='warden'){const e={x:BK.P.x+30,y:BK.P.y,w:8,h:14,alive:true,t:'sprig'};value=BKT.tipPay(e);}
  values.push(+value.toFixed(3));}node.level=lv0;
  rows.push({hero:h,id,baseline:values[0],equipped:values[1]});}

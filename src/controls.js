@@ -16,7 +16,7 @@
 // reserved: they cannot be bound. A key shared by two actions is FLAGGED (both rows go red and the screen says which), not refused.
 //
 // The card (cardRows) is the one place the hero-by-hero button words live: it used to be a fixed table in main.js with the Pyromancer's
-// C listed as 'block'. (claude/pyrokit) Her C IS a block now: TAP = THE FLAME WARD, HOLD = THE HELD FIREBALL, a full bar = CONFLAGRATION; her down
+// C listed as 'block'. (claude/pyrokit) Her C IS a block now: TAP = THE FLAME WARD, HOLD = THE HELD FIREBALL, a full bar's UP + C = METEOR FALL (claude/pyrokit2); her down
 // held still is STOKE; UP + C is her L10 card (THE JET / THE EMBER SHOT). The rebind screen's C row says so for her (blockLabel).
 
 export const KB_ACTIONS = [
@@ -151,17 +151,18 @@ const first = (binds, prof, action) => labelFor(binds, prof, action, 1);
 /* ============================== THE PER-HERO CONTROLS CARD ==============================
    Rows are [what, keys, pad]. The words are the hero's; the keys are whatever the player has bound (tokens: the first key of the action). */
 const HEROES_C = {
-  knight:     ['block', tk => 'HOLD ' + tk.c + (tk.toggle ? ' (TOGGLE)' : '')],
+  knight:     ['shield', tk => 'HOLD ' + tk.c + (tk.toggle ? ' (TOGGLE)' : '') + ': ON THE BEAT = A LINK'],   /* (claude/knightid) the guard chain */
   pyro:       ['fire ward', tk => 'TAP ' + tk.c + ' WARD, HOLD FIREBALL'],   /* (claude/pyrokit) */
   paladin:    ['conviction', tk => 'TAP ' + tk.c + ' SPEND, HOLD AEGIS'],   /* (PALADIN 3) the tap spends Conviction by tier */
   pirate:     ['hook / catch', tk => 'TAP ' + tk.c + ' CATCH, HOLD HOOK'],   /* (claude/heroblocksa) the tap is the HOOK CATCH (src/hook-catch.js) */
   reaper:     ['blood ward', tk => 'HOLD ' + tk.c + ', LET GO: NOVA'],
-  warden:     ['deflect', tk => 'TAP ' + tk.c + ' DEFLECT, HOLD BRACE'],   /* (claude/heroblocksb) hold = the spear-haft brace; the full-vigil tap is still the phalanx (the hint line) */
-  geomancer:  ['rune-ward', tk => 'HOLD ' + tk.c + '  (SHE IS PLANTED)'],
+  warden:     ['deflect', tk => 'TAP ' + tk.c + ' DEFLECT, HOLD BRACE'],   /* (claude/heroblocksb) hold = the spear-haft brace; (claude/wardenid) the third jab is the long thrust (the hint line) */
+  geomancer:  ['rune-ward', tk => 'HOLD ' + tk.c + '  (SHE IS PLANTED)'],   /* (claude/ults) the ultimate is the shared row below */
   berserker:  ['take it', tk => 'HOLD ' + tk.c + ' (FULL: DOWN+' + tk.c + ' FRENZY)'],
   ranger:     ['bash / guard', tk => 'TAP ' + tk.c + ' BASH, HOLD GUARD'],   /* (claude/heroblocksb) hold = the bow guard; the bash on the beat is still her parry */
 };
 import { ROW as PLUNGE_ROW } from './plunges.js';
+import { ultRow } from './ultimate.js';
 export function cardRows({ hero = 'knight', binds = emptyBinds(), prof = 'pad1', swapZX = false, blockToggle = false } = {}) {
   const kb = a => labelFor(binds, 'kb', a), pd = a => labelFor(binds, prof, a), k1 = a => first(binds, 'kb', a);
   const swapped = swapZX && !isCustom(binds, 'kb', 'jump') && !isCustom(binds, 'kb', 'atk');
@@ -176,21 +177,22 @@ export function cardRows({ hero = 'knight', binds = emptyBinds(), prof = 'pad1',
     [hero === 'ranger' ? 'shoot / knife' : 'swing', atkKeys, pd('atk')],
     [hero === 'ranger' ? 'down shot' : (PLUNGE_ROW[hero] || ['plunge'])[0], k1('down') + '+SWING IN AIR', pd('down') + '+' + pd('atk')],
     [hero === 'knight' ? 'heavy cut' : hero === 'geomancer' ? 'fault line' : hero === 'berserker' ? 'double chop' : hero === 'ranger' ? 'draw' : 'heavy blow', hero === 'geomancer' || hero === 'ranger' ? 'HOLD SWING, LET GO' : hero === 'knight' ? 'HOLD SWING, LET GO' : 'HOLD SWING', 'HOLD ' + pd('atk')],
-    hero === 'berserker' ? ['cross-chop', 'SWING x5 IN A RUN', pd('atk') + ' x5'] : hero === 'ranger' ? ['snare', k1('down') + '+' + tk.c + ' ON GROUND', pd('down') + '+' + pd('block')] : ['third cut', 'SWING x3 IN A RUN', pd('atk') + ' x3'],   /* (claude/ranger: no run of three - her row is the snare) */   /* (claude/berserker2: his flurry runs five) */
+    hero === 'berserker' ? ['cross-chop', 'SWING x5 IN A RUN', pd('atk') + ' x5'] : hero === 'geomancer' ? ['stone fist', 'SWING x3: KNOCKS UP', pd('atk') + ' x3'] : hero === 'ranger' ? ['push kick', 'KNIFE x3 IN A RUN', pd('atk') + ' x3'] : [hero === 'knight' ? 'shield bash' : 'third cut', hero === 'knight' ? 'SWING x3: BREAKS A GUARD' : 'SWING x3 IN A RUN', pd('atk') + ' x3'],   /* (claude/ranger: no run of three - her row is the snare) */   /* (claude/berserker2: his flurry runs five) */
     [hero === 'ranger' ? 'rising shot' : 'rising cut', k1('up') + '+SWING', pd('up') + '+' + pd('atk')],
     ['low sweep', k1('down') + '+SWING', pd('down') + '+' + pd('atk')],
     /* THE CROUCH: every hero ducks (src/duck.js); the Pyromancer's held still is also STOKE (claude/pyrokit: the EMBER FLARE left down for the ward on C) */
-    hero === 'berserker' ? ['pounce', 'HOLD ' + k1('down') + ', A WAY, LET GO', 'HOLD ' + pd('down')] : [hero === 'pyro' ? 'stoke' : 'crouch', 'HOLD ' + k1('down') + ' (STILL)', 'HOLD ' + pd('down')],   /* (claude/berserker2: his crouch coils, and lets go as THE POUNCE) */
+    hero === 'berserker' ? ['pounce', 'HOLD ' + k1('down') + ', A WAY, LET GO', 'HOLD ' + pd('down')] : [hero === 'pyro' ? 'stoke' : 'crouch', 'HOLD ' + k1('down') + ' (STILL)' + (hero === 'ranger' ? ', +' + tk.c + ' SNARE' : ''), 'HOLD ' + pd('down')],   /* (claude/berserker2: his crouch coils, and lets go as THE POUNCE) */
     ['slide', 'HOLD ' + k1('down') + ' ON A SLOPE', 'HOLD ' + pd('down')],   /* THE BUTT-SLIDE (src/slide.js): down on any slope, feet first; it wins over the weak guard there */
-    ...(hero === 'pyro' ? [['full bar', tk.c + ': CONFLAGRATION', pd('block')]] : []),   /* (claude/pyrokit; the L10 card's UP + C row is the PAUSE > LEVEL CARD's words, not a 13th row here) */
+    ...(hero === 'pyro' ? [['full bar', 'UP + ' + tk.c + ': METEOR FALL', pd('block')]] : []),   /* (claude/pyrokit; the L10 card's UP + C row is the PAUSE > LEVEL CARD's words, not a 13th row here) */
+    ...(ultRow(hero, k1('up'), tk.c, pd('up'), pd('block')) ? [ultRow(hero, k1('up'), tk.c, pd('up'), pd('block'))] : []),   /* (claude/ults) ONE ULTIMATE ROW for every hero that has one: UP + C with the meter full (src/ultimate.js) */   /* (claude/knightid) the spender; a perfect guard, then X, is the riposte whose rider is the link count */   /* (claude/pyrokit; the L10 card's UP + C row is the PAUSE > LEVEL CARD's words, not a 13th row here) */
     [cRow[0], cRow[1](tk), pd('block')],
     ...(hero === 'paladin' ? [['hammer throw', k1('up') + '+' + tk.c + '  (THREE PIPS)', pd('up') + '+' + pd('block')], ['tap ' + tk.c + ' spends', 'SMITE 1-2 RADIANCE 3-4 SUN 5', pd('block')]] : []),   /* (claude/paladin2) THE LIGHT SPENT */
     ...(hero === 'berserker' ? [['axe throw', k1('up') + '+' + tk.c + '  (PICK IT UP)', pd('up') + '+' + pd('block')]] : []),   /* THE BERSERKER's off axe (src/berserker.js throwAxe) */
-    ...(hero === 'ranger' ? [['mark', k1('up') + '+' + tk.c + '  (FOCUS FULL)', pd('up') + '+' + pd('block')], ['bow / knife', kb('stance') + ': BOW / KNIFE', pd('stance')]] : []),   /* THE RANGER's focus, spent (src/ranger.js spendMark) */
+    ...(hero === 'ranger' ? [['bow / knife', kb('stance') + ': BOW / KNIFE', pd('stance')]] : []),   /* THE RANGER's stance swap (her UP+C is the shared ultimate row above) */
     ['dodge', hero === 'ranger' ? k1('dodge') + ': BACKFLIP, OR TAP A WAY TWICE' : hero === 'warden' ? k1('dodge') + ' BACK, OR TAP A WAY TWICE' : 'TAP A WAY TWICE, OR ' + kb('dodge'), pd('dodge')],
     ['', 'TELLS ARE TIMED FOR ONE PRESS', pd('dodge')],
-    hero === 'reaper' ? ['summon', kb('throw') + '  (HOLD, FULL: SURGE)', pd('throw')] : ['skill', kb('throw') + ' (equipped)', pd('throw')],
-    hero === 'reaper' ? ['his skill', kb('skill2') + ' (CHOSEN)', pd('skill2')] : ['skill two', kb('skill2') + ' (equipped)', pd('skill2')],
+    hero === 'reaper' ? ['summon', kb('throw') + '  (HOLD, FULL: SURGE)', pd('throw')] : ['skill', kb('throw') + ' (THE ONE EQUIPPED)', pd('throw')],
+    ['skill two', kb('skill2') + ' (FROM LEVEL 30)', pd('skill2')],   /* (Daniel 11-01) ONE slot from the start, a second at level 30 */
     ['talk', kb('talk') + ' (signs, folk)', pd('talk')],
     ['flask', kb('flask') + ' (A BLOW SPILLS IT)', pd('flask')],
     ['grab', kb('grab') + ' (CO-OP: LIFT, THROW)', pd('grab')],   /* (claude/partnerthrow) */

@@ -18,7 +18,7 @@ const SHOTS = [
   ['scaffolds', 208, 25, ''], ['wall-ramp-after', 209, 19, knock('wallRamp')], ['wall-top', 232, 12, ''], ['unbuilt-span', 247, 12, ''],
   ['gatehouse', 322, 24, ''], ['gate-passage', 340, 24, ''],
   ['beast-walk', 0, 0, boss('walk')], ['beast-chargeTell', 0, 0, boss('chargeTell', 0.8)], ['beast-charge', 0, 0, boss('charge', 3)], ['beast-sweepTell', 0, 0, boss('sweepTell', 0.6)],
-  ['beast-sweep', 0, 0, boss('sweep', 0.3)], ['beast-volleyTell', 0, 0, boss('volleyTell', 0.8)], ['beast-trampleTell', 0, 0, boss('trampleTell', 0.8)], ['beast-stuck', 0, 0, boss('stuck', 3)],
+  ['beast-sweep', 0, 0, boss('sweep', 0.3)], ['beast-volleyTell', 0, 0, boss('volleyTell', 0.8)], ['beast-orderTell', 0, 0, boss('orderTell', 0.8)], ['beast-stuck', 0, 0, boss('stuck', 3)],
   ['beast-loose', 0, 0, boss('loose', 3)],
 ].filter(s => !only || only.has(s[0]));
 const pg = await openPage({ audio: false, fonts: false });

@@ -11,6 +11,7 @@
 import { canvas, mulberry } from '../px.js';
 import { PAPER, COMB, BARK, NEEDLE } from './hornets_nest_tiles.js';
 import { warmEdge } from './hornets_nest_edge.js';
+import { hiveWall } from './hornets_nest_sag.js';
 
 const TS = 16, memo = new Map(); const once = (k, fn) => { if (!memo.has(k)) memo.set(k, fn()); return memo.get(k); };
 /* the big baked pictures are drawn every frame: a CPU-side bake canvas has to be uploaded to the graphics card each time it is drawn (a 576 x 320 vault cost ~12 ms a frame headless), so each one is copied ONCE onto a GPU canvas */
@@ -20,10 +21,11 @@ const R = (g, c, x, y, w, h) => { g.fillStyle = c; g.fillRect(Math.round(x), Mat
 const hx = n => Math.max(0, Math.min(255, Math.round(n))).toString(16).padStart(2, '0');
 const rgbOf = h => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
 const mix = (a, b, t) => { const A = rgbOf(a), B = rgbOf(b); return '#' + hx(A[0] + (B[0] - A[0]) * t) + hx(A[1] + (B[1] - A[1]) * t) + hx(A[2] + (B[2] - A[2]) * t); };
-export const NEST_X0 = 80, NEST_X1 = 332, HALL = { x0: 295, x1: 332, y0: 3, y1: 22 };
+export const NEST_X0 = 80, NEST_X1 = 432, HALL = { x0: 395, x1: 432, y0: 3, y1: 22 };   /* (claude/hornetsnest2: +100 columns) */
 /* the sky by place: [top, mid, low] over the pines. foot = a green-gold morning; fall = the nest tearing loose (warmer); pine = the late gold under the great pine */
 const SKY = { foot: ['#6f9a62', '#b5cf8a', '#e8e2a0'], fall: ['#7f9a58', '#d2c47c', '#f0d890'], pine: ['#7a8f46', '#d8b860', '#f2c878'] };
-const skyAt = tx => { if (tx < 200) return SKY.foot; if (tx < 340) return SKY.foot; if (tx < 354) return SKY.fall; return SKY.pine; };
+const HONEY_WALLS = [[171, 204, 32, 43], [298, 347, 4, 47]];
+const skyAt = tx => { if (tx < 440) return SKY.foot; if (tx < 454) return SKY.fall; return SKY.pine; };
 const WALL = [['#251712', '#34221a', '#46301f', '#573d28'], ['#281509', '#38200f', '#4a2e16', '#5c3c1e'], ['#2c0e0a', '#421810', '#582416', '#6e301c']];
 
 /* ------------------------------------------------------------------ baked pieces ------------------------------------------------------------------ */
@@ -99,10 +101,10 @@ function hallVault() { return once('hall', () => { const w = (HALL.x1 - HALL.x0 
 
 /* ------------------------------------------------------------------ the frame ------------------------------------------------------------------ */
 const LIGHTS = [];   /* [world x, world y, radius, colour index] - the honey lights of the wall, laid by hash over the nest's width */
-for (let i = 0; i < 40; i++) LIGHTS.push([NEST_X0 * TS + 60 + i * 100 + (hash(i, 5) % 50), 40 + (hash(i, 9) % 560), 70 + 20 * (hash(i, 3) % 3), hash(i, 7) % 3]);   /* (three radii only: each is a baked glow) */
+for (let i = 0; i < 58; i++) LIGHTS.push([NEST_X0 * TS + 60 + i * 100 + (hash(i, 5) % 50), 40 + (hash(i, 9) % 560), 70 + 20 * (hash(i, 3) % 3), hash(i, 7) % 3]);   /* (three radii only: each is a baked glow) */
 /* WARM: every picture baked at the level's load (a first draw in play, mid-fight, was a hitch) */
 export function warm() { warmEdge(); ancientPine(); farStrip(0); midStrip(0); midStrip(1); for (let z = 0; z < 3; z++) { wallTile(z); for (let i = 0; i < 5; i++) curtain(i, z); } hallVault(); for (const r of [70, 90, 110]) for (const c of ['#ffc860', '#ffb040', '#ff8a3a']) glow(r, c); for (const c of ['#fff0a0']) glow(150, c); glow(130, '#ff9a3a'); glow(70, '#ffc860'); }
-const zoneOfCol = tx => tx < 169 ? 0 : tx < 248 ? 1 : 2;
+const zoneOfCol = tx => tx < 169 ? 0 : tx < 348 ? 1 : 2;
 export function drawBackdrop(g, cx, cy, VW, VH, L, time, dY, full) {
   cx = Math.round(cx); cy = Math.round(cy);
   const tx = Math.floor((cx + VW / 2) / TS), sk = skyAt(tx);
@@ -116,22 +118,24 @@ export function drawBackdrop(g, cx, cy, VW, VH, L, time, dY, full) {
     /* far pines in haze (0.12), mid trunks (0.32) */
     if (full !== false) { const fs = farStrip(0), x = -(Math.round(cx * 0.12) % 768); for (let X = x; X < VW; X += 768) g.drawImage(fs, X, Math.round(VH - 230 + dY * 0.05)); }
     g.fillStyle = 'rgba(200,226,190,0.18)'; g.fillRect(0, 0, VW, VH);
-    { const ms = midStrip(tx > 340 ? 1 : 0), x = -(Math.round(cx * 0.32) % 768); g.globalAlpha = 0.9; for (let X = x; X < VW; X += 768) g.drawImage(ms, X, Math.round(VH - 360 + dY * 0.18)); g.globalAlpha = 1; }
+    { const ms = midStrip(tx > 440 ? 1 : 0), x = -(Math.round(cx * 0.32) % 768); g.globalAlpha = 0.9; for (let X = x; X < VW; X += 768) g.drawImage(ms, X, Math.round(VH - 360 + dY * 0.18)); g.globalAlpha = 1; }
     /* THE ANCIENT PINE: world-anchored behind the foot (cols 68-79 and its flare); the nest hangs off its right side */
     { const ap = ancientPine(), x = 71 * TS - 218 - cx, y = 72 * TS - 1152 - cy; if (x < VW && x + 436 > 0) g.drawImage(ap, x, y); }
     /* the light through the canopy: slow shafts (screen-anchored, two) */
     for (let i = 0; i < 3; i++) { const sx = ((i * 233 + 60 - cx * 0.06) % (VW + 200) + VW + 200) % (VW + 200) - 100, a = 0.07 + 0.03 * Math.sin(time * 0.4 + i * 2); g.globalAlpha = a; g.fillStyle = '#fff4b0'; g.beginPath(); g.moveTo(sx, 0); g.lineTo(sx + 34, 0); g.lineTo(sx - 46, VH); g.lineTo(sx - 120, VH); g.closePath(); g.fill(); g.globalAlpha = 1; }
   }
-  /* THE NEST'S INNER WALL: world columns 80..332 */
+  /* THE NEST'S INNER WALL: world columns 80..432 */
   const sx0 = NEST_X0 * TS - cx, sx1 = (NEST_X1 + 1) * TS - cx;
   if (sx1 > 0 && sx0 < VW) {
     g.save(); g.beginPath(); g.rect(Math.max(0, sx0), 0, Math.min(VW, sx1) - Math.max(0, sx0), VH); g.clip();
     const k = 0.78, z = zoneOfCol(tx), wallAt = zz => { const pat = once('wpat' + zz, () => g.createPattern(gpu(wallTile(zz)), 'repeat')); pat.setTransform(new DOMMatrix().translate(-Math.round(cx * k), -Math.round(cy * k))); return pat; };
     g.fillStyle = wallAt(z); g.fillRect(0, 0, VW, VH);
-    for (const e of [169, 248]) { const d = (tx - e) / 14; if (d > -1 && d < 1) { const al = d < 0 ? 0.5 + 0.5 * d : 0.5 - 0.5 * d; if (al > 0.01) { g.globalAlpha = al; g.fillStyle = wallAt(d < 0 ? zoneOfCol(e - 1) : zoneOfCol(e)); g.fillRect(0, 0, VW, VH); g.globalAlpha = 1; } } }
+    for (const e of [169, 348]) { const d = (tx - e) / 14; if (d > -1 && d < 1) { const al = d < 0 ? 0.5 + 0.5 * d : 0.5 - 0.5 * d; if (al > 0.01) { g.globalAlpha = al; g.fillStyle = wallAt(d < 0 ? zoneOfCol(e - 1) : zoneOfCol(e)); g.fillRect(0, 0, VW, VH); g.globalAlpha = 1; } } }
     /* the combs hanging in the wall (parallax 0.62), dim */
     { const kk = 0.62, per = 210, i0 = Math.floor((cx * kk - 120) / per) - 1, i1 = Math.floor((cx * kk + VW) / per) + 1;
       for (let i = i0; i <= i1; i++) { const h = hash(i, 17); if (h % 4 === 0) continue; const sp = curtain(h % 5, z), wx = i * per + (h % 70) - Math.round(cx * kk), wy = -10 - Math.round(cy * kk) + (h % 5) * 40; if (wy + 300 < 0 || wy > VH) continue; g.globalAlpha = 0.9; g.drawImage(sp, wx, wy); } g.globalAlpha = 1; }
+    /* (claude/hornetsnest2art) THE SUMP and THE HONEY WELL: a wall of capped, honey-filled and empty cells (world-anchored), stained with honey toward the bed. [col0, col1, row0, row1] */
+    if (L && L.hornetsNest) for (const [c0, c1, r0, r1] of HONEY_WALLS) hiveWall(g, c0, c1, r0, r1, cx, cy, VW, VH);
     /* shade the back wall a step so the footing reads in front of it; deeper rows (the roots) darker */
     g.fillStyle = 'rgba(8,4,2,0.24)'; g.fillRect(0, 0, VW, VH);
     /* the HONEY LIGHTS: warm pools on the wall, breathing */

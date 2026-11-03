@@ -8,7 +8,8 @@
 //   rise      UP+X: the rising shot, steeply up, tagged 'rise' (B14's FROM BELOW)
 //   down      DOWN+X in the air: the downward shot, straight down, tagged 'plunge' (B14's FROM ABOVE), and a hop UP off it
 //   focus     an arrow that lands from the SWEET SPOT fills HUNTER'S FOCUS; one point-blank does not
-//   mark      focus full + UP+C MARKS the quarry ahead: its blows land RG.mark.mul harder; the focus is spent
+//   mark      a marked quarry's blows land RG.mark.mul harder (a steady shot that lands marks it; UP+C is the GREAT ARROW, tested under 'great')
+//   great     (claude/ults) focus full + UP+C: a rooted draw (no move, the world not slowed), then one arrow through three straws, harder the further it flew; focus spent; a hurt draw breaks and keeps the focus
 //   pierce    (claude/chargetiers) held to T2 the draw is the PIERCING SHOT: through two foes in a line; on a full focus it is FOCUSED (the focus spent)
 //   tiers     (claude/chargetiers) THE THREE-TIER DRAW: BK.rg().tier climbs 1-2-3 on the hold (each arrival its own pose: rgDraw2/rgDraw3), let go at T1 a LONG SHOT
 //             (the focus kept), T2 a PIERCING SHOT, T3 a TRIPLE SHOT (Daniel 10-22: a tight flat 3-arrow FAN, each arrow strong, one arrow of her quiver, nothing held)
@@ -39,7 +40,7 @@ try {
     /* quick */
     { __rg(); const q0=R().q, x0=P().x; __tap(); const a=last(); BK.sim(60); out.quick={q0,q1:R().q,kind:a.kind,tag:a.tag,state:last().state,land:Math.round(last().x-x0)}; }
     /* draw: rooted (right held), held at full and not loosed by itself, then let go */
-    { __rg(); K.atk=true; BK.press('atk'); K.right=true; BK.sim(12); const c0=P().charge>0, xd=P().x; BK.sim(58); const x0=xd; out.draw={c0,charge:+(P().charge||0).toFixed(2),moved:Math.round(P().x-xd),flying:R().arrows.length};
+    { __rg(); K.atk=true; BK.press('atk'); K.right=true; BK.sim(12); const c0=P().charge>0, xd=P().x; BK.sim(32); const x0=xd; out.draw={c0,charge:+(P().charge||0).toFixed(2),moved:Math.round(P().x-xd),flying:R().arrows.length};
       K.right=false; K.atk=false; BK.sim(2); const a=last(); BK.sim(80); Object.assign(out.draw,{kind:a.kind,tag:a.tag,land:Math.round(last().x-x0),full:G().read().stats.full}); }
     /* quiver: walk over the arrows to take them back; empty = knife; the trickle */
     { __rg(); __tap(); BK.sim(20); __tap(); BK.sim(60); const q1=R().q, xs=R().arrows.map(a=>a.x); K.right=true; for(let i=0;i<120&&R().arrows.length;i++)BK.sim(1); K.right=false; BK.sim(5);
@@ -63,22 +64,34 @@ try {
     /* focus: the sweet spot fills it, point-blank does not */
     { __rg(); const f=__foe(90,'sprig',5000); BK.sim(1); K.atk=true; BK.press('atk'); BK.sim(50); K.atk=false; BK.sim(40); out.focus={sweet:+(P().rgFocus||0).toFixed(1),hit:G().read().stats.hits}; f.alive=false;
       __rg(); const g=__foe(34,'sprig',5000); BK.sim(1); __tap(); BK.sim(30); out.focus.close=+(P().rgFocus||0).toFixed(1); out.focus.closeHit=G().read().stats.hits; g.alive=false; }
-    /* mark: full focus, UP+C, then the same shot on a marked and an unmarked foe */
-    { __rg(); const f=__foe(70,'sprig',5000); BK.sim(1); P().rgFocus=100; K.up=true; __c(); BK.sim(2); K.up=false; out.mark={on:(f.rgMarkT||0)>BK.time,focus:P().rgFocus};
+    /* mark (claude/ults: UP+C is the GREAT ARROW now; a mark is a STEADY SHOT that lands, or set here): the same shot on a marked and an unmarked foe */
+    { __rg(); const f=__foe(70,'sprig',5000); BK.sim(1); f.rgMarkT=BK.time+10; out.mark={on:(f.rgMarkT||0)>BK.time,focus:0};
       BK.sim(10); let hp0=f.hp; __tap(); BK.sim(40); const marked=hp0-f.hp; f.rgMarkT=0; BK.sim(25); hp0=f.hp; __tap(); BK.sim(40); out.mark.marked=marked; out.mark.plain=hp0-f.hp; f.alive=false; }
+    /* great arrow (claude/ults; sprigs, not straw men: a straw man heals to full every frame, so only a live foe shows the damage): UP+C at a full focus - rooted draw, one arrow through three straws, harder the further it flew; a hurt draw breaks and keeps the focus */
+    { __rg(); BK.props().length=0; const a=__foe(60,'sprig',9000), b=__foe(140,'sprig',9000), c2=__foe(230,'sprig',9000); BK.sim(1); P().rgFocus=100; const x0=P().x, ha=a.hp, hb=b.hp, hc=c2.hp; K.up=true; __c(); BK.sim(2); K.up=false;
+      const drawing=G().greatDrawing(); BK.sim(8); K.right=true; BK.sim(6); K.right=false; const rooted=Math.abs(P().x-x0)<0.5, fMid=P().rgFocus; BK.sim(90);
+      out.great={drawing,rooted,fMid,focus:P().rgFocus,da:ha-a.hp,db:hb-b.hp,dc:hc-c2.hp}; a.alive=b.alive=c2.alive=false; }
+    { __rg(); const f=__foe(120,'dummy',9000); BK.sim(1); P().rgFocus=100; K.up=true; __c(); BK.sim(2); K.up=false; BK.sim(5); P().hurt=0.3; BK.sim(3); out.greatBreak={focus:P().rgFocus,untouched:f.hp===9000,drawing:G().greatDrawing()}; f.alive=false; }
     /* pierce (claude/chargetiers): the hold to T2 through two in a line; on a full focus it is FOCUSED and spends it */
     { __rg(); const a=__foe(60,'dummy',5000), b=__foe(80,'dummy',5000); BK.sim(1); P().rgFocus=100; const ha=a.hp, hb=b.hp; K.atk=true; BK.press('atk'); BK.sim(80); K.atk=false; BK.sim(30);
       out.pierce={hits:G().read().stats.hits,focus:P().rgFocus,n:G().read().stats.pierces,focused:G().read().stats.focused}; a.alive=b.alive=false; }
-    /* (claude/chargetiers) THE THREE TIERS: the climb and its poses, each shot, the wind each costs, the fan (three arrows, one from the quiver, more damage than the pierce), a mini hit not held, the auto-loose */
-    { const T=G().RG.tiers, hold=n=>{K.atk=true;BK.press('atk');BK.sim(n);}, rel=()=>{K.atk=false;BK.sim(2);}; out.tiers={};
-      __rg(); P().rgFocus=100; const seen=[], keys=[]; K.atk=true; BK.press('atk'); for(let i=0;i<120;i++){BK.step(1);const t=R().tier;if(t&&!seen.includes(t))seen.push(t);if(t>=2&&!keys.includes(P().lastKey))keys.push(P().lastKey);} out.tiers.at=R().tierAt; out.tiers.seen=seen; out.tiers.keys=keys; rel(); out.tiers.t3kind=last().kind; BK.sim(40);
-      __rg(); P().rgFocus=100; hold(50); out.tiers.t1tier=R().tier; rel(); out.tiers.t1={kind:last().kind,focus:P().rgFocus,t1:G().read().stats.tier1}; BK.sim(40);
-      __rg(); hold(80); out.tiers.t2tier=R().tier; rel(); out.tiers.t2={kind:last().kind,t2:G().read().stats.tier2,focused:G().read().stats.focused}; BK.sim(40);
-      for(const [n,nf] of [[50,1],[80,2],[115,3]]){__rg();P().st=100;const st0=P().st;hold(n);P().st=st0;rel();out.tiers['st'+nf]=Math.round(st0-P().st);BK.sim(40);}
-      __rg(); const q0=P().rgQ; const f=__foe(90,'sprig',5000); f.h=28; BK.sim(1); const hp3=f.hp; hold(114); BK.step(1); out.tiers.t3tier=R().tier; out.tiers.key3=P().lastKey; K.atk=false; BK.step(3); out.tiers.looseKey=P().lastKey; const ar=R().arrows.filter(a=>a.kind==='fan'); out.tiers.fan={kinds:ar.length,vys:ar.map(a=>Math.round(a.vy)).sort((a,b)=>a-b),free:ar.filter(a=>a.free).length,rgQ:q0-P().rgQ,looseKey:out.tiers.looseKey}; BK.sim(22); out.tiers.fan.hits=G().read().stats.fanHits; out.tiers.fan.lost=hp3-f.hp; out.tiers.fan.pinned=+(f.pinned||0); f.alive=false; BK.sim(30);
-      __rg(); { const g=__foe(90,'sprig',5000); g.h=28; BK.sim(1); const hp2=g.hp; hold(80); rel(); BK.sim(25); out.tiers.pierceLost=hp2-g.hp; g.alive=false; BK.sim(10); }
-      __rg(); const bz=__foe(90,'sprig',5000); bz.mini=true; BK.sim(1); const hpb=bz.hp; hold(115); rel(); BK.sim(25); out.tiers.big={pinned:+(bz.pinned||0).toFixed(2),lost:hpb-bz.hp}; bz.alive=false; BK.sim(10);
-      __rg(); K.atk=true; BK.press('atk'); let fired=-1; for(let i=0;i<400;i++){BK.sim(1);if(R().arrows.length&&fired<0)fired=i;} K.atk=false; BK.sim(2); out.tiers.auto={fired,kind:(R().arrows[0]||{}).kind}; BK.sim(20); }
+    /* (claude/rangerid, Daniel 10-31 Q6) NO LADDER: one draw, one STEADY WINDOW (T2, empowered), shaky past it, auto-loose; the distance bonus; the volley; the push kick */
+    { const hold=n=>{K.atk=true;BK.press('atk');BK.sim(n);}, rel=()=>{K.atk=false;BK.sim(2);}; out.tiers={};
+      __rg(); { const seen=[]; K.atk=true; BK.press('atk'); for(let i=0;i<130;i++){BK.step(1);const t=R().tier;if(t&&!seen.includes(t))seen.push(t);if(R().shaky&&out.tiers.shakyAt===undefined)out.tiers.shakyAt=i;} out.tiers.at=R().tierAt; out.tiers.winEnd=R().winEnd; out.tiers.seen=seen; rel(); BK.sim(40); }
+      __rg(); hold(44); out.tiers.t1tier=R().tier; rel(); out.tiers.t1={kind:last().kind,emp:!!last().emp}; BK.sim(40);
+      __rg(); hold(60); out.tiers.t2tier=R().tier; rel(); out.tiers.t2={kind:last().kind,emp:!!last().emp,n:G().read().stats.steady}; BK.sim(40);
+      __rg(); hold(100); rel(); out.tiers.shaky={kind:last().kind,emp:!!last().emp,n:G().read().stats.shaky}; BK.sim(40);
+      __rg(); P().rgFocus=100; hold(80); out.tiers.focusTier=R().tier; rel(); BK.sim(40);
+      for(const [n,nf] of [[44,1],[60,2]]){__rg();P().st=100;const st0=P().st;hold(n);P().st=st0;rel();out.tiers['st'+nf]=Math.round(st0-P().st);BK.sim(40);}
+      __rg(); K.atk=true; BK.press('atk'); let fired=-1; for(let i=0;i<400;i++){BK.sim(1);if(R().arrows.length&&fired<0)fired=i;} K.atk=false; BK.sim(2); out.tiers.auto={fired,kind:(R().arrows[0]||{}).kind,shaky:G().read().stats.shaky}; BK.sim(20);
+      /* the distance bonus: near x0.8, mid x1.0, far x1.6, a steady shot doubles what is over x1 */
+      out.dist={d:G().distMul(10),m:G().distMul(70),f:G().distMul(280),e:+G().distMul(280,true).toFixed(2),eh:+G().distMul(175,true).toFixed(2)};
+      /* the volley: two arrows from the quiver, six seconds apart (CD_MAX.rgVolley) */
+      __rg(['rgVolley'],24); { const q0=R().q; __foe(40); BK.sim(2); P().st=P().maxSt; BK.press('throw'); BK.sim(3); const a1=R().arrows.length, q1=R().q, cd=+((P().cds||{}).rgVolley||0).toFixed(1); BK.sim(60); BK.press('throw'); BK.sim(3); out.volley={q0,q1,a1,cd,vol:G().read().stats.volleys}; BK.sim(400); BK.press('throw'); BK.sim(3); out.volley.vol2=G().read().stats.volleys; }
+      __rg(['rgVolley'],24); P().rgQ=1; __foe(40); BK.sim(2); P().st=P().maxSt; BK.press('throw'); BK.sim(3); out.volley.short=G().read().stats.volleys;
+      /* the push kick: the third knife cut in a run shoves a common foe out to range; a boss-class foe is only staggered */
+      __rg(); { const f=__foe(12,'sprig',5000); BK.sim(1); P().x=Math.round(P().x); out.kick={}; for(let i=0;i<3;i++){ f.x=P().x+14; f.vx=0; f.knock=0; f.stagger=0; K.atk=true;BK.press('atk');BK.sim(2);K.atk=false; BK.sim(i<2?16:3); if(i==1) out.kick.kicks2=G().read().stats.kicks; } BK.sim(15); out.kick.kicks=G().read().stats.kicks; out.kick.moved=Math.round(f.x-P().x); f.alive=false; }
+      __rg(); { const m=__foe(12,'sprig',5000); m.mini=true; BK.sim(1); P().x=Math.round(P().x); for(let i=0;i<3;i++){ m.x=P().x+14; m.vx=0; m.stagger=0; K.atk=true;BK.press('atk');BK.sim(2);K.atk=false; BK.sim(i<2?16:3); } BK.sim(15); out.kick.miniMoved=Math.round(m.x-P().x); out.kick.miniKicks=G().read().stats.kicks; m.alive=false; } }
     /* bash: the parry on the beat, the riposte arrow, off the beat, red */
     { __rg(); const e=__foe(14,'sprig',5000); BK.sim(1); P().st=P().maxSt; __c(); let hp0=P().hp; const res=BKT.damagePlayer(e.x,10,{who:e}); out.bash={res,lost:hp0-P().hp,ripT:+(P().riposteT||0).toFixed(2),foeVx:Math.round(e.vx),parries:G().read().stats.parries};
       BK.sim(20); e.alive=false; __tap(); const a=last(); out.bash.ripTag=a.tag; BK.sim(30);
@@ -95,7 +108,7 @@ try {
     /* art */
     const set=BKT.heroSet('bracken','steel',false,'ranger');const need=['idle','run','jump','fall','land','takeoff','apex','skid','climb','atk','atkB','atkC','air','plunge','hurt','crouch','slide','block','dashAtk','cast','fidget','dance','dance2','dance3','follow','slump','swim','tread','roll','rise','sweep','airUp','windup','heavy','blast','parry','ripo',
       'rgSling','rgBowUp','rgShot','rgAirShot','rgLoose','rgRise','rgDown','rgBash','rgSnare','rgMark','rgHawkPose','rgLeapPose','rgVolleyPose','rgTrapPose','rgRainPose','rgSmokePose','rgRefillPose','rgHeartPose','rgHuntPose',
-      'rgDraw2','rgDraw3','rgKneelDraw2','rgKneelDraw3','rgLoose2','rgLoose3'];   /* (claude/chargetiers: the three-tier draw's own bodies) */
+      'rgDraw2','rgDraw3','rgKneelDraw2','rgKneelDraw3','rgLoose2','rgLoose3','rgGreat','rgGreatLoose'];   /* (claude/chargetiers: the three-tier draw's own bodies) */
     const gold=BKT.heroSet('bracken','ember',false,'ranger');const diff=(a,b)=>{const A=a.getContext('2d').getImageData(0,0,a.width,a.height).data,B=b.getContext('2d').getImageData(0,0,b.width,b.height).data;let n=0;for(let i=0;i<A.length;i+=4){if(A[i]!==B[i]||A[i+1]!==B[i+1]||A[i+2]!==B[i+2])n++;}return n;};
     out.art={missing:need.filter(k=>!set.R[k]),skinDiff:diff(set.R.idle[0],gold.R.idle[0])};
     return out;})()`);
@@ -118,20 +131,22 @@ try {
   ok(r.down.kind === 'down' && has(r.down.tag, 'plunge') && r.down.vy < 0 && !r.down.plunge, 'down: DOWN+X in the air should shoot down (plunge tag) and hop her up: ' + JSON.stringify(r.down));
   ok(r.down.hit > 0, 'down: the downward shot should land on a foe under her: ' + r.down.hit);
   ok(r.focus.sweet > 0 && r.focus.close === 0 && r.focus.closeHit > 0, 'focus: the sweet spot should fill it and point-blank should not: ' + JSON.stringify(r.focus));
-  ok(r.mark.on && r.mark.focus === 0 && r.mark.marked > r.mark.plain * 1.2, 'mark: UP+C on full focus should mark (and its blows land harder): ' + JSON.stringify(r.mark));
-  ok(r.pierce.hits === 2 && r.pierce.focus === 0 && r.pierce.n === 1 && r.pierce.focused === 1, 'pierce: the draw held to T2 should go through both (FOCUSED on a full focus): ' + JSON.stringify(r.pierce));
-  { const t = r.tiers;   /* (claude/chargetiers) THE THREE-TIER DRAW */
-    ok(t.seen.join() === '1,2,3' && t.at[0] < t.at[1] && t.at[1] < t.at[2] && t.at[1] - t.at[0] >= 0.4 && t.at[2] - t.at[1] >= 0.4, 'tiers: the hold climbs T1, T2, T3 at least 0.4 s apart: ' + JSON.stringify(t));
-    ok(t.keys.includes('rgDraw2') && t.keys.includes('rgDraw3'), 'tiers: T2 and T3 held each show their own draw pose: ' + JSON.stringify(t.keys));
-    ok(t.t1tier === 1 && t.t1.kind === 'draw' && t.t1.focus === 100 && t.t1.t1 === 1, 'tiers: let go at T1 a LONG SHOT, the focus kept: ' + JSON.stringify(t.t1));
-    ok(t.t2tier === 2 && t.t2.kind === 'pierce' && t.t2.t2 === 1 && t.t2.focused === 0, 'tiers: let go at T2 a PIERCING SHOT (no focus: not focused): ' + JSON.stringify(t.t2));
-    ok(t.t3tier === 3 && t.fan.kinds === 3 && t.fan.vys[0] < 0 && t.fan.vys[2] > 0 && t.fan.vys[1] === 0 && t.fan.looseKey === 'rgLoose3' && t.key3 === 'rgDraw3', 'tiers: let go at T3 a TRIPLE SHOT, three flat arrows in a tight fan: ' + JSON.stringify(t.fan) + ' ' + t.key3);
-    ok(t.fan.rgQ === 1 && t.fan.free === 2, 'tiers: the fan costs ONE arrow of her quiver (the flankers are free): ' + JSON.stringify(t.fan));
-    ok(t.fan.hits === 3 && t.fan.pinned === 0 && t.fan.lost > t.pierceLost * 1.4, 'tiers: all three land on a 28 px foe at 90 px, hold nothing, and out-damage the piercing shot (' + t.fan.lost + ' vs ' + t.pierceLost + '): ' + JSON.stringify(t.fan));
-    ok(t.big.lost > 0 && !(t.big.pinned > 0), 'tiers: a mini-like foe takes the fan and is never held: ' + JSON.stringify(t.big));
-    ok(t.st1 < t.st2 && t.st2 < t.st3, 'tiers: each tier costs more wind: ' + [t.st1, t.st2, t.st3]);
-    ok(t.auto.fired > 0 && t.auto.kind === 'fan', 'tiers: held at T3 it goes by itself, a triple shot: ' + JSON.stringify(t.auto));
-    ok(t.t3kind === 'fan', 'tiers: the climb ends in a fan: ' + t.t3kind); }
+  ok(r.great.drawing && r.great.rooted && r.great.fMid === 100 && r.great.focus === 0 && r.great.da > 0 && r.great.db > r.great.da && r.great.dc > r.great.db, 'great arrow: a rooted draw, focus spent as it leaves, through all three straws, more the further it flew: ' + JSON.stringify(r.great));
+  ok(r.greatBreak.focus === 100 && r.greatBreak.untouched && !r.greatBreak.drawing, 'great arrow: a draw that is hurt breaks and keeps the focus: ' + JSON.stringify(r.greatBreak));
+  ok(r.mark.on && r.mark.marked > r.mark.plain * 1.2, 'mark: a marked foe takes harder blows: ' + JSON.stringify(r.mark));
+  ok(r.pierce.hits === 2 && r.pierce.focus === 100 && r.pierce.n === 1, 'pierce: the steady shot should go through both and a full focus is KEPT (it only widens the window): ' + JSON.stringify(r.pierce));
+  { const t = r.tiers;   /* (claude/rangerid) ONE DRAW, ONE STEADY WINDOW */
+    ok(t.seen.join() === '1,2' && t.at.length === 2 && t.at[0] < t.at[1] && t.winEnd - t.at[1] >= 0.35 && t.winEnd - t.at[1] <= 0.45, 'tiers: the hold climbs the full draw (1) then the steady window (2, ~0.4 s) and no third: ' + JSON.stringify(t));
+    ok(t.shakyAt > 0, 'tiers: held past the window the hand shakes: ' + JSON.stringify(t.shakyAt));
+    ok(t.t1tier === 1 && t.t1.kind === 'draw' && !t.t1.emp, 'tiers: let go at the full draw a LONG SHOT: ' + JSON.stringify(t.t1));
+    ok(t.t2tier === 2 && t.t2.kind === 'pierce' && t.t2.emp && t.t2.n === 1, 'tiers: let go inside the steady window an EMPOWERED piercing shot: ' + JSON.stringify(t.t2));
+    ok(t.shaky.kind === 'draw' && !t.shaky.emp && t.shaky.n === 1, 'tiers: let go past the window a SHAKY long shot: ' + JSON.stringify(t.shaky));
+    ok(t.focusTier === 2, 'tiers: a full focus keeps the window open longer (still steady at 1.5 s): ' + t.focusTier);
+    ok(t.st1 < t.st2, 'tiers: the steady shot costs more wind: ' + [t.st1, t.st2]);
+    ok(t.auto.fired > 0 && t.auto.kind === 'draw' && t.auto.shaky >= 1, 'tiers: held on it goes by itself, shaky: ' + JSON.stringify(t.auto)); }
+  ok(r.dist.d === 0.8 && r.dist.m === 1 && Math.abs(r.dist.f - 1.6) < 1e-6 && Math.abs(r.dist.e - 2.2) < 1e-6 && r.dist.eh > r.dist.eh * 0 + 1.2, 'distance bonus: x0.8 point-blank, x1.0 mid, x1.6 far; a steady shot doubles the part over x1: ' + JSON.stringify(r.dist));
+  ok(r.volley.q1 === r.volley.q0 - 2 && r.volley.a1 >= 3 && r.volley.cd >= 5.5 && r.volley.vol === 1 && r.volley.vol2 === 2 && r.volley.short === 0, 'volley: two arrows from the quiver, a 6 s wait (a second press inside it does nothing, after it goes), none with one arrow: ' + JSON.stringify(r.volley));
+  ok(r.kick.kicks2 === 0 && r.kick.kicks === 1 && r.kick.moved >= 35 && r.kick.miniMoved <= 20 && r.kick.miniKicks === 1, 'kick: only the THIRD knife cut kicks; a common foe is shoved out to range, a mini is only staggered, not thrown: ' + JSON.stringify(r.kick));
   ok(r.bash.res === 'blocked' && r.bash.lost === 0 && r.bash.ripT > 0 && r.bash.foeVx > 150 && r.bash.parries === 1, 'bash: C on the beat should parry and throw the foe back out: ' + JSON.stringify(r.bash));
   ok(has(r.bash.ripTag, 'riposte') && has(r.bash.ripTag, 'shot'), 'bash: the arrow after the parry should be the riposte: ' + JSON.stringify(r.bash.ripTag));
   ok(r.bash.lateLost > 0 && r.bash.redLost > 0, 'bash: off the beat, or a red blow, should land: ' + JSON.stringify(r.bash));

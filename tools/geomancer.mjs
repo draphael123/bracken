@@ -1,7 +1,7 @@
 // tools/geomancer.mjs — THE GEOMANCER'S STONE NEVER TRAPS AND NEVER STAYS (docs/briefs/geomancer.md, A12 and C1). Played through
 // her real input in the real page:
 //   cap       five pieces raised as fast as she can: never more than three stand (four with THE FOURTH STONE)
-//   crumble   every piece is gone after its life, and the level's grid is byte-for-byte what it was before she touched it
+//   crumble   (claude/geoid, Daniel 10-31 Q3: the board) her stone STANDS - seven seconds on every piece is still up - until the room is left (clear), and then the level's grid is byte-for-byte what it was before she touched it
 //   lift      stone that comes up under a small foe LIFTS it onto its top (nothing is ever inside the rock), and stone that comes up
 //             under a boss stops short under it (the eruption STONE STEP uses)
 //   body      a foe that turns up inside standing stone (spawned, thrown) crumbles that stone the next frame
@@ -64,7 +64,7 @@ try {
   out.cap = await pg.evalp(`(()=>{const run=n=>{let most=0;for(let k=0;k<n;k++){BK.tp(5+k*5,21);BK.sim(3);BK.P.face=1;__raise();BK.sim(4);most=Math.max(most,BK.geo().pieces().length);}return most;};
     __geo([]);const three=run(5);__geo([],true,0,24);return {three,four:run(6)}})()`);
   out.crumble = await pg.evalp(`(()=>{__geo([]);const g0=Array.from(BK.L.grid);__raise();BK.sim(3);__raise();BK.sim(5);const n=BK.geo().pieces().length;
-    for(let i=0;i<60*7;i++){BK.sim(1);}   /* seven seconds: BEDROCK (level 8, on at 20) makes a piece stand six */const g1=Array.from(BK.L.grid);return {raised:n,left:BK.geo().pieces().length,same:g0.every((v,i)=>v===g1[i])}})()`);
+    for(let i=0;i<60*7;i++){BK.sim(1);}   /* seven seconds: it STANDS (claude/geoid) */const left=BK.geo().pieces().length;BK.geo().clear();const g1=Array.from(BK.L.grid);return {raised:n,left,same:g0.every((v,i)=>v===g1[i])}})()`);
   out.lift = await pg.evalp(`(()=>{const up=e=>BK.geo().erupt(Math.floor(e.x/16),22,2,'step',{hurt:false,noHero:true});   /* (the eruption STONE STEP uses: stone out of the floor under a body) */
     __geo([]);BK.spawnEnt({t:'sprig',x:(BK.P.x+66)/16,y:21});const e=BK.enemies().at(-1);e.hp=e.hp0=5000;e.cd=99;BK.sim(2);const y0=e.y;
     up(e);let inside=false,top=0;for(let i=0;i<40;i++){BK.sim(1);inside=inside||__inside();top=Math.max(top,y0-e.y);}
@@ -159,7 +159,7 @@ try {
       for(let x=3;x<W-3&&tried<24;x+=5){let fy=-1;for(let y=2;y<H-1;y++){const t=L.grid[y*W+x];if(t===0&&L.grid[(y+1)*W+x]===1&&L.grid[(y-1)*W+x]===0){fy=y;break;}}if(fy<0)continue;
         tried++;BK.tp(x,fy);BK.P.vx=0;BK.P.vy=0;BK.sim(3);if(!BK.P.ground)continue;BK.P.st=BK.P.maxSt;BK.P.face=tried%2?1:-1;__raise();BK.keys.atk=true;BK.sim(36);BK.keys.atk=false;BK.sim(2);BK.P.cds={};BK.press('throw');BK.sim(2);
         raised+=BK.geo().pieces().length;for(let f=0;f<60*8;f++){BK.sim(1);if(f%6===0&&__inside())inside++;}}
-      rows.push({id,tried,raised,inside,same:g0.every((v,k)=>v===L.grid[k]),left:BK.geo().pieces().length});}
+      const standing=BK.geo().pieces().length;BK.geo().clear();rows.push({id,tried,raised,inside,same:g0.every((v,k)=>v===L.grid[k]),left:BK.geo().pieces().length,standing});}
     return rows})()`);
   /* HER STAFF, off the baked pixels of her own set */
   out.staff = await pg.evalp(`(()=>{__geo([]);const R=BK.heroSet.R,AMBER=new Set(['e8a83a','ffc860','fff0c0','d08a24','b8741c']),HOOD='353735';
@@ -181,7 +181,7 @@ try {
   console.log(JSON.stringify(out));
   assert.equal(out.cap.three, 3, 'THE CAP: never more than three pieces stand at once (' + out.cap.three + ')');
   assert.equal(out.cap.four, 4, 'THE FOURTH STONE: four (' + out.cap.four + ')');
-  assert(out.crumble.raised >= 2 && out.crumble.left === 0, 'every piece crumbles on its own (' + JSON.stringify(out.crumble) + ')');
+  assert(out.crumble.raised >= 2 && out.crumble.left === out.crumble.raised, 'every piece STANDS (no timer) (' + JSON.stringify(out.crumble) + ')');
   assert(out.crumble.same, 'and the level is exactly what it was');
   assert(out.lift.rose >= 20 && !out.lift.inside, 'stone under a small foe LIFTS it, never buries it (' + JSON.stringify(out.lift) + ')');
   assert(!out.lift.bossInside, 'and stone under a boss stops short under it');
@@ -229,7 +229,7 @@ try {
   assert(B.stone >= 1, 'BURROW: X as she surfaces kicks the ROLLING STONE (' + B.stone + ')');
   assert(!out.body.none && !out.body.stood && !out.body.inside, 'stone a foe turns up inside crumbles at once (' + JSON.stringify(out.body) + ')');
   assert(out.reload.had >= 1 && out.reload.after === 0 && out.reload.same, 'a level left takes its stone with it (' + JSON.stringify(out.reload) + ')');
-  for (const r of out.levels) { assert(r.tried >= 5 && r.raised > 0, r.id + ': she raised stone there (' + JSON.stringify(r) + ')'); assert.equal(r.inside, 0, r.id + ': nobody was ever inside her rock'); assert(r.same && r.left === 0, r.id + ': and eight seconds on the level is exactly as it was: no route blocked'); }
+  for (const r of out.levels) { assert(r.tried >= 5 && r.raised > 0, r.id + ': she raised stone there (' + JSON.stringify(r) + ')'); assert.equal(r.inside, 0, r.id + ': nobody was ever inside her rock'); assert(r.standing <= 4 && r.same && r.left === 0, r.id + ': at most the cap stands, and leaving the room puts the level exactly as it was: no route blocked'); }
   assert(out.drawn.walk === 0 && out.drawn.idle === 0, 'her shield is not drawn while she walks or stands (' + JSON.stringify(out.drawn) + ')');
   assert(out.drawn.up >= 20, 'and it is drawn while she guards (' + JSON.stringify(out.drawn) + ')');
   for (const [k, r] of Object.entries(out.staff.rows)) assert(r.above >= 4 && r.top <= r.hood - 3 && r.tip, 'her staff: the amber geode stands over her hood in ' + k + ' (' + JSON.stringify(r) + ')');

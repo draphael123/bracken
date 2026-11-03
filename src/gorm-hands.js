@@ -181,7 +181,7 @@ export function makeGormHands(ctx) {
     S.arrows = []; S.act = -1; S.pots = []; S.pitch = []; ctx.drainStop('gormpitch');
     ctx.endFight(); L().arena = L().glade;   /* his hall is done: the arena is his glade now (nothing wakes him in the hall again) */
     if (P && !P.dead) { P.hp = P.maxHp; if (P.hpShown !== undefined) P.hpShown = P.maxHp; P.st = P.maxSt || P.st; say(P.x, P.y - 40, 'healed', '#8fd160'); ctx.sfx.heal && ctx.sfx.heal(); }
-    say(e.x, e.y - e.h - 30, 'torch', '#ff6b5c'); ctx.sfx.roar && ctx.sfx.roar(); ctx.sfx.hornBlast && ctx.sfx.hornBlast(); ctx.shake(8); ctx.zoom(1.12, 0.5);
+    say(e.x, e.y - e.h - 30, 'torch', '#ff6b5c'); (ctx.sfx.gormRage || ctx.sfx.roar) && (ctx.sfx.gormRage || ctx.sfx.roar)(); ctx.sfx.hornBlast && ctx.sfx.hornBlast(); ctx.shake(8); ctx.zoom(1.12, 0.5);
     S.run.on = true; S.run.done = false; S.run.t = 0; S.run.fireX = A.x0 - 24; S.run.armed = false;
     L().oakBurn = 0.4;
     ctx.hint('THE COURT HAS FIRED THE WOOD AND CARRIES THE KING TO HIS OAK. RUN EAST - THE FIRE FOLLOWS YOU.');

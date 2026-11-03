@@ -24,7 +24,7 @@
 
 export const DC = {
   hp: 1150, w: 14, h: 40, markH: 58,
-  heroHp: { knight: 1.35, warden: 0.85 },   /* (claude/church3) the duel per hero (the Paladin's pattern): the shield hero turns his hook and jab */
+  heroHp: { knight: 1 },   /* (claude/church3) the duel per hero (the Paladin's pattern): the shield hero turns his hook and jab */
   walk: 66, keep: 48, turn: 0.45, gap: [0.4, 0.32],
   light: { max: 100, start: 85, regen: 2.2, drain: 6, drainHeavy: 11, lampDim: 18, refill: 60 },
   guardTake: 0.4, gropeT: 3.0, gropeMul: 1.8, gropeCap: 0.18, wardT: 3.0, reelT: 0.7,

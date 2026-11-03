@@ -14,7 +14,7 @@ import { COL_PLAN as RT_COL } from './glass-colossus.js'; import { PLAN as RT_FO
 import { PLAN as RT_HAWK } from './hawk-mistress.js'; import { PLAN as RT_HOUR } from './hourglass-king.js'; import { PLAN as RT_HUNT } from './huntmaster.js'; import { PLAN as RT_LANT } from './lantern-eater.js';
 import { PLAN as RT_PAL } from './paladin-boss.js'; import { PLAN as RT_PUP } from './puppeteer.js'; import { PLAN as RT_MAT } from './raptor-matriarch.js'; import { PLAN as RT_SCARAB } from './scarab-mother.js'; import { ROC_LAG as RT_ROC } from './roc-eyrie.js';
 import { gbPlan, gbOpen, PLAN as RT_GB } from './grubbag.js'; import { bzcPlan, bzcOpen } from './bzchief.js';   /* THE BERSERKER CHIEFTAIN (claude/warcairn): the bot reads his tells, the hatchet, the split - and works the drums in his frenzy - off his own module */   /* LORD GRUBBAG THE GLUTTON (claude/kitchengate): the bot reads his tells, the rings, the belch's waves, the gravy, the grab - and works the pie oven - off his own module */
-import { bbPlan, bbOpen, PLAN as RT_BB } from './battering-beast.js';   /* THE BATTERING BEAST (claude/palisadewood): the bot reads his tells, the stakes' rings, the waves and the clearing's scaffolds off his own module */
+import { bbPlan, bbOpen, PLAN as RT_BB } from './battering-beast.js';   /* THE BATTERING BEAST (claude/palisadewood): the bot reads his tells, the stakes' rings, the volley lanes, the timbers and the clearing's scaffolds off his own module */
 import { hqPlan } from './hornet-queen-plan.js'; import { hqOpen } from './hornet-queen.js';   /* THE HORNET QUEEN 2 (claude/hornetsnest): the bot reads her tells, the rings, the stingers, her loop and works her rules */ import { otPlan, otOpen, PLAN as RT_OT, OT as OT_K, underLine as OT_UNDER } from './old-tusker.js'; import { btPlan, btOpen } from './bog-troll.js'; const OT_W = OT_K.w; const GEO_FELL = false;   /* THE BOG TROLL (claude/fenroad): the bot reads the bubbles, the bulge, his tells and the rings off his own module, and works the lure */   /* OLD TUSKER (claude/oldtusker): the bot reads his tells, the clods, the waves and the clearing's pines off his own module */
 import { ssPlan, ssOpen, PLAN as RT_SS } from './shriek-sisters.js';   /* THE SHRIEK SISTERS (claude/rookery): the bot reads the red lines (and their lock), the rocks' rings, the marks, the wave, the snatch off their own module */
 const PLAN_CLOCKS = [RT_SS, RT_GB, RT_BB, RT_OT, RT_QUEEN, RT_DJINN, RT_DRILL, RT_FOREMAN, RT_COL, RT_FOG, RT_GANG, RT_CRAB, RT_HAWK, RT_HOUR, RT_HUNT, RT_LANT, RT_PAL, RT_PUP, RT_MAT, RT_SCARAB];
@@ -84,10 +84,9 @@ const RG_KNEEL = 0.17, RG_DRAW_ST = 12;   /* s knelt before the bot draws (src/r
    ON A BOSS (rgBossTier, his openings - the rotation and the mixed heavy): the TRIPLE SHOT is the most one draw does, so it is wound while he is NOT broken and for a long window (broken over 2.2 s); a short one, the quicker PIERCING
    SHOT spends the window on damage. let go = the hold has reached the wanted tier (plus a frame) */
 const rgRead = BK => { try { return BK.rg ? BK.rg() : null; } catch { return null; } };
-export function rgFoeTier(BK, e) { if (e && (e.maxHp || e.mini || e === BK.boss)) return rgBossTier(BK, e); const P = BK.P, fam = BK.keyOf ? (BK.keyOf(e) || {}).family : null;
-  if (e.alive && (e.elite || fam === 'plate' || fam === 'shell' || fam === 'beast')) return 3;
-  const line = BK.enemies().filter(q => q.alive && !q.harmless && (q.x - P.x) * P.face > 0 && Math.abs(q.x - P.x) < 240 && Math.abs(q.y - P.y) < 20).length; return line >= 2 ? 2 : 1; }
-export const rgBossTier = (BK, b) => b && b.broken > 2.2 ? 3 : 2;   /* the fan only in a long window; otherwise the quicker pierce (10-22: 3 on every opening took the marsh 12 -> 3 of 12) */
+/* (claude/rangerid, Daniel 10-31 Q6) NO TIER LADDER: the hands let go INSIDE THE STEADY WINDOW (tier 2) on two draws in three, and on the plain full draw (tier 1, the long shot) on the third - a human does not hit the window every time. */
+export function rgFoeTier(BK, e) { return Math.floor((BK.time || 0) * 10) % 3 === 0 ? 1 : 2; }
+export const rgBossTier = (BK, b) => Math.floor((BK && BK.time || 0) * 10) % 3 === 0 ? 1 : 2;
 function rgLetGo(BK, want) { const r = rgRead(BK), P = BK.P; if (!r || !r.tierAt || !(P.charge > 0)) return false; return (P.atkHeld || 0) >= r.tierAt[want - 1] + 1 / 60; }
 /* (claude/chargetiers) THE BERSERKER'S HANDS USE HIS RAGE WIND-UP (src/berserker.js BZ.tiers; main.js BK.bz().tier / tierAt). ON A LEVEL FOE (bzFoeTier): two or more foes within
    the cleave's reach on BOTH sides of him -> THE WHIRL; an ELITE, or a plate/shell/beast, or three or more near -> the GROUND-SPLITTER (it floors the small ones and leans
@@ -252,13 +251,18 @@ export const HELD = e => (e.broken || 0) > 0.3 || (e.pinned || 0) > 0.3;
    A bot that plants its feet to wind a heavy or stands off to shoot was measured standing in one for four ticks of it in the Stockade's room */
 export const fireAt = (BK, x, y) => BK.fires ? BK.fires().find(q => !(q.delay > 0) && Math.abs(q.x - x) < 14 && y > q.y - 14 && y <= q.y + 2) : null;
 export const ON_THE_BEAT = e => !(typeof e.modeT === 'number' && e.modeT > 0.2 && e.modeT < 5);
-/* THE KNIGHT SPENDS HIS BAR. A full RESOLVE is THE LAST CHARGE on a tap of C with his feet under him - so the bot taps it (C not
+/* THE KNIGHT SPENDS HIS CHAIN. THREE LINKS is THE SHIELD CHARGE on a tap of C with his feet under him - so the bot taps it (C not
    already held, or it is not a tap) when the foe is in front of him, inside a charge's run and on his level. A bot that never
    spent it would measure a knight who never charges. */
 /* THE KNIGHT'S HELD SWING IS THE HEAVY CUT (2026-09-23): it comes down when it is LET GO, at whatever stage it reached, and never by
    itself until 1.8 s - so a bot that held X until something fired stood there with the sword up. The bot lets go at the chop, or at the guard-break on anything with a bar. */
-export const KNIGHT_CUT = 0.72, knightCutAt = e => e && (e.maxHp || e.elite || e.mini) ? KNIGHT_CUT : 0.32;   /* a thing with a bar (a duelist, an elite, a boss) is worth the guard-break; the rest take the chop, which is sooner (measured: fightLab, 2026-09-23) */
-export const LAST_CHARGE = (P, ad, dy) => (P.resolve || 0) >= 100 && P.ground && !P.cWas && !(P.lcBrace > 0) && !(P.lcLeft > 0) && ad < 140 && Math.abs(dy) < 24;
+export const KNIGHT_CUT = 0.56, knightCutAt = e => KNIGHT_CUT;   /* (claude/knightid) ONE fixed heavy cut: it comes down at 0.5 s (the guard-break), so the bot holds a hair past it for everything */   /* a thing with a bar (a duelist, an elite, a boss) is worth the guard-break; the rest take the chop, which is sooner (measured: fightLab, 2026-09-23) */
+/* (claude/ults) ONE ULTIMATE INPUT: UP + C. The knight's charge needs links; the geomancer's AVALANCHE a full board; the ranger's GREAT ARROW a full Focus and a foe in her line (she roots for the draw) */
+export const ULT_BOT = (BK, P, h, ad, dy) => { if (P.cWas || !(P.ground || P.swim) || P.atk >= 0 || P.charge > 0 || P.rgGreat) return false;
+  if (h === 'geomancer') { const G = BK.geo && BK.geo(); return !!G && G.avalancheReady() && ad < 220 && Math.abs(dy) < 40; }
+  if (h === 'ranger') { const R = BK.rgk && BK.rgk(); return !!R && R.greatReady() && ad > 50 && ad < 300 && Math.abs(dy) < 30; }
+  return false; };
+export const LAST_CHARGE = (P, ad, dy) => (P.links || 0) >= 3 && P.ground && !P.cWas && !(P.lcBrace > 0) && !(P.lcLeft > 0) && ad < 140 && Math.abs(dy) < 24;
 
 /* THE KEY VERB. The family table in main.js (FAMILY, read through BK.keyOf) says what each common body wants: the right tool lands half
    as hard again and the wrong one GLANCES. A bot that only cut and blocked was left chipping at plate and bouncing off shields - and it
@@ -419,7 +423,8 @@ function labBotFrame(BK, h, e, f) {
     if (!k.left && !k.right && !(P.charge > 0) && !(swing && s.verb === 'sweep' && (h === 'knight' || h === 'warden'))) { if (h === 'pirate' && s.verb === 'heavy' && ad < s.want - 8) k[d > 0 ? 'left' : 'right'] = true; else if (ad > s.want + 2) k[d > 0 ? 'right' : 'left'] = true; else if (s.verb === 'plunge' && !P.ground && ad > 3) k[d > 0 ? 'right' : 'left'] = true; }
   }
   { const fire = fireAt(BK, P.x, P.y); if (fire && !(h === 'pyro')) { const away = Math.sign(P.x - fire.x) || -Math.sign(d) || 1; k.left = away < 0; k.right = away > 0; k.atk = false; k.block = false; } }   /* (her own fire does not burn her) */
-  if (h === 'knight' && !threat && !k.atk && !(P.charge > 0) && LAST_CHARGE(P, ad, e.y - P.y)) { k.left = false; k.right = false; k.block = true; }
+  if (h === 'knight' && !threat && !k.atk && !(P.charge > 0) && LAST_CHARGE(P, ad, e.y - P.y)) { k.left = false; k.right = false; k.up = true; k.block = true; }
+  if ((h === 'geomancer' || h === 'ranger') && !threat && !k.atk && ULT_BOT(BK, P, h, ad, e.y - P.y)) { P.face = Math.sign(d) || P.face; k.left = false; k.right = false; k.up = true; k.block = true; }   /* (claude/ults) UP+C at a full meter */
   { const sn = snatchNow(BK, h); if (sn) { P.face = Math.sign(sn.x - P.x) || P.face; k.block = !P.cWas; k.up = false; k.down = false; } }   /* (claude/heropassa) ARROW SNATCH */
   return { defend, swing };
 }
@@ -1875,7 +1880,7 @@ async function runbossLab(BK, opts) {
         k.left=k.right=k.up=k.down=k.jump=k.block=false;if(!(P.labRotHold>0))k.atk=false;   /* (claude/labkeys) the attack key let go too, unless the rotation holds it */
         const QH=BK.hornetQueenHands(),S=QH&&QH.show(),NH=BK.nestHands&&BK.nestHands();
         if(f===0||!P.labHqMem)P.labHqMem={};
-        const pl=S?hqPlan({v2:!!LABP.v2,hero:h,rest:!!P.labRest,P:{x:P.x,y:P.y,vy:P.vy,face:P.face,ground:P.ground,atk:P.atk,held:!!(P.carry&&P.carry.t==='smokepot')},e:boss,S,reach:LAB_REACH[h],shield:SHIELDED(h)&&(h!=='geomancer'||P.st>=30),dodge:!(h==='warden'&&!LABP.v2),t:f/60,rng:Math.random,mem:P.labHqMem,stands:NH&&NH.on()?NH.stands():[],adds:BK.enemies().filter(q=>q.alive&&q!==boss&&q.t==='wasp').map(q=>({x:q.x,y:q.y}))}):{gx:null,face:P.face};
+        const pl=S?hqPlan({v2:!!LABP.v2,hero:h,rest:!!P.labRest,P:{x:P.x,y:P.y,vy:P.vy,face:P.face,ground:P.ground,atk:P.atk,held:!!(P.carry&&P.carry.t==='smokepot')},e:boss,S,reach:LAB_REACH[h],shield:SHIELDED(h)&&(h!=='geomancer'||P.st>=30),dodge:!(h==='warden'&&!LABP.v2),t:f/60,rng:Math.random,mem:P.labHqMem,stands:NH&&NH.on()?NH.stands().filter(s=>s.st!=='empty'):[],adds:BK.enemies().filter(q=>q.alive&&q!==boss&&q.t==='wasp').map(q=>({x:q.x,y:q.y}))}):{gx:null,face:P.face};
         if(pl.dodge&&P.ground&&(P.labDodgeF===undefined||f-P.labDodgeF>30)){if(pl.gx!=null)k[pl.gx>P.x?'right':'left']=true;if(h==='warden'&&LABP.v2&&pl.gx!=null)P.face=pl.gx>P.x?-1:1;BK.press('dodge');P.labDodgeF=f;}
         if(pl.jump&&P.ground){if(P.labJumpF===undefined||f-P.labJumpF>14){BK.press('jump');P.labJumpF=f;P.labJump=16;}}
         if(P.labJump>0){P.labJump--;k.jump=true;}
@@ -1926,8 +1931,8 @@ async function runbossLab(BK, opts) {
         const was=P.hp,m0=boss.mode;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(m0,Math.max(0,was-P.hp));if(opts.onFrame)await opts.onFrame({boss,P,f,h,lvl:lvId,open:ssO,why:pl.why});if(f%600===599)await yieldNow();continue;
       }
       if(boss.t==='batteringbeast'){
-        /* THE BATTERING BEAST (claude/palisadewood): src/battering-beast.js bbPlan reads what a player sees - his tells a reaction late, the stakes' rings, the trample's
-           waves, the scaffolds' fall lines - and works THE RULE: a prop knocked so the wreck lies between him and you (or on him), his charge rams it and sticks; in phase
+        /* THE BATTERING BEAST (claude/palisadewood): src/battering-beast.js bbPlan reads what a player sees - his tells a reaction late, the stakes' rings, the volley order's
+           lanes (and its Hornsman), the rolling timbers, the scaffolds' fall lines - and works THE RULE: a prop knocked so the wreck lies between him and you (or on him), his charge rams it and sticks; in phase
            two a jump at the buckle while he is open. It rests inside its own branch */
         k.left=k.right=k.up=k.down=k.jump=k.block=false;if(!(P.labRotHold>0))k.atk=false;   /* (claude/labkeys) the attack key let go too, unless the rotation holds it */
         const BH=BK.batteringBeastHands(),S=BH&&BH.show();
@@ -3066,10 +3071,11 @@ async function runbossLab(BK, opts) {
       if (f % 30 === 0 && boss.y < P.y - 12 && strike && ad < reach + 20) { BK.press('jump'); if(boss.t==='herald')P.labJump=18; }   /* a boss standing a tile up (the roc in the glass) is cut from a hop */
       /* THE LAST CHARGE, spent as a player spends it: at the boss while he is in front of the knight, open, and not winding up or rushing him */
       /* (claude/heropassa) VALIANT STRIKE: a full RESOLVE against a duelist's wall is spent on a heavy cut (it goes through the wall), not on the last charge */
-      const valiantWall = h === 'knight' && (P.resolve || 0) >= 100 && BK.bossWall && BK.bossWall(boss);
+      const valiantWall = false;   /* (claude/knightid) VALIANT is the riposte FINISHER now (three links): nothing to spend on a heavy cut */
       if (valiantWall && !tell && !rushing && P.ground && ad <= reach + 4 && !cutGo) { P.face = Math.sign(d) || P.face; k.left = k.right = false; k.block = false; k.atk = true; }
       { const sn = snatchNow(BK, h); if (sn) { P.face = Math.sign(sn.x - P.x) || P.face; k.block = !P.cWas; } }   /* (claude/heropassa) ARROW SNATCH */
-      if (h === 'knight' && !valiantWall && open && !tell && !rushing && !k.block && LAST_CHARGE(P, ad, boss.y - P.y)) { P.face = Math.sign(d) || P.face; k.left = false; k.right = false; k.jump = false; k.block = true; }
+      if (h === 'knight' && !valiantWall && open && !tell && !rushing && !k.block && LAST_CHARGE(P, ad, boss.y - P.y)) { P.face = Math.sign(d) || P.face; k.left = false; k.right = false; k.jump = false; k.up = true; k.block = true; }
+      if ((h === 'geomancer' || h === 'ranger') && !tell && !rushing && !k.block && ULT_BOT(BK, P, h, ad, boss.y - P.y)) { P.face = Math.sign(d) || P.face; k.left = false; k.right = false; k.jump = false; k.up = true; k.block = true; }   /* (claude/ults) UP+C at a full meter */
       /* (claude/bztune) THE BERSERKER'S OWN KEYS. FRENZY IS DOWN+C at a full bar (a plain C there is TAKE IT, which the beat-taps already use);
          the bar is spent as a player spends it - near the boss, between his tells. THE POUNCE: coiled (DOWN held 0.4 s) then DOWN let go with a way held,
          a gap-closer used from range, a few times a fight (not a spam). TAKE IT stays on the beat taps above. */
@@ -3081,8 +3087,10 @@ async function runbossLab(BK, opts) {
         else if (!(Z.frenzyT > 0) && P.ground && !tell && !rushing && ad > 110 && ad < 230 && Math.abs(boss.y - P.y) < 28 && P.atk < 0 && P.st >= 36 && !(P.hurt > 0) && !(P.dodge > 0) && !(Z.braceRec > 0) && !(Z.takeUp)
           && f - (P.labBzPounceAt ?? -999) > 1500 && f - (P.labBzFrenzied ?? -999) > 40) {
           P.labBzPounceAt = f; P.labBzDir = Math.sign(d) || P.face; P.labBzCoil = 38; BK.unpress(); P.labJump = 0; strike = false; k.left = k.right = false; k.down = true; } }
-      // A BANKED PYRE IS FOR SPENDING: release the full heat meter toward a clear target between committed swings.
-      if (h==='pyro' && P.full && !tell && !rushing && ad<140 && Math.abs(boss.y-P.y)<30 && !P.plunge && !P.cWas && P.atk<0) { P.face=Math.sign(d)||P.face; k.block=true; }
+      // (claude/wardenid) A FULL REACH BAND IS FOR SPENDING: UP+C with a foe in the long spear's range, between committed swings, never into a tell.
+      if (h==='warden' && (P.vigil||0)>=100 && !(P.wReachT>0) && !tell && !rushing && ad<150 && Math.abs(boss.y-P.y)<30 && P.ground && !P.cWas && P.atk<0) { P.face=Math.sign(d)||P.face; k.up=true; k.block=true; }
+      // A BANKED METEOR FALL IS FOR SPENDING (claude/pyrokit2; it was the Pyre, then Conflagration): release the full heat meter toward a clear target between committed swings.
+      if (h==='pyro' && P.full && !tell && !rushing && ad<140 && Math.abs(boss.y-P.y)<30 && !P.plunge && !P.cWas && P.atk<0) { P.face=Math.sign(d)||P.face; k.up=true; k.block=true; }   /* (UP + C, Daniel 11-01) */
       /* (claude/pyrocontrols, Daniel 11-01: TAP = ward, HOLD = charge) THE PYRO BOT'S CHARGE (profile mod +x_pyroCharge_N, N = the step it holds to; off by default so the standing rates keep their baseline): in a real opening, with room and no tell, it holds C up to step N and lets go. The ward stays a tap (emberPlan above); a tell drops the hold at once. */
       if (h==='pyro' && LABP.pyroCharge) { const pk = BK.pyroKit ? BK.pyroKit() : null, want = Math.max(1, Math.min(5, Math.round(LABP.pyroCharge))), open = BK.bossOpen ? !!BK.bossOpen(boss) : false;
         if (P.labCh) { if (tell || rushing || P.hurt > 0 || P.dodge > 0 || !open || f - P.labCh > 260 || (pk && pk.fbHold >= want)) { k.block = false; P.labCh = 0; P.labChAt = f; } else { k.block = true; k.left = k.right = k.atk = k.jump = k.down = false; P.face = Math.sign(d) || P.face; } }

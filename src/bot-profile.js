@@ -54,11 +54,11 @@ export function profileOf(p) {
 /* THE BUILD a player carries at a level (claude/bot2 #3). 'bare' = the even card and no skills (the lab's floor, as BKT.setHeroLevel
    leaves him). 'typical' = a card leaning on health and damage as players pick (45% vigor, 35% might, 20% endurance), the milestone perks a
    fighter takes (iron hide, great heart, mastery...), and the loadout he would have bought by then: his best damaging skills unlocked at
-   that level, as many as his slots hold (two, three from L16), at rank one. Gold is flush from the eighth wood on (scratch/audit-econ.md),
+   that level, as many as his slots hold (ONE, two from L30: Daniel 11-01), at rank one. Gold is flush from the eighth wood on (scratch/audit-econ.md),
    so "affordable" is "unlocked". */
 export const TYPICAL_SKILLS = {   /* each hero's damaging actives, best first (tools/skill-balance-probe.mjs: damage per cast) */
   knight: ['swordOfRealm', 'groundSlam', 'lunge', 'whirlwind', 'disarm', 'shieldThrow'],
-  warden: ['rainOfSpears', 'spearDance', 'javelin', 'setSpears', 'poleSpring', 'skewer', 'wheel', 'harrier'],
+  warden: ['rainOfSpears', 'spearDance', 'javelin', 'setSpears', 'skewer', 'wheel', 'harrier'],
   pyro: ['meteor', 'fireWall', 'wisp', 'vent', 'flameRing', 'cinderStep'],
   paladin: ['lightLance', 'holyCharge', 'hammerLeap'] /* (claude/paladin2: CONSECRATE is his C now, not a slot) */, pirate: [], reaper: ['soulReap', 'boneArmor', 'gravecall', 'summonSkeleton', 'bidden', 'unholyGround'] /* (claude/dkhero) BLOOD MAIL (L14) and BLOODLETTING (L20): the lab's skill hands cast them for a v2 profile; (claude/bkkit2) and THE RED HOST before them - BLOOD BOLT (L8), BLOODWORMS (L1), DRAIN (L8), RED GROUND (L4) */, geomancer: [], berserker: [], ranger: [],
 };
@@ -76,5 +76,5 @@ export function typicalWalkCard(h, lv, ownAt = n => null) { const c = typicalCar
   return c; }
 /* RANGE of a skill for the hands, px from the hero to the boss's near edge: a cast at range, or a blow in his face */
 export const SKILL_RANGE = { shieldThrow: 150, javelin: 170, harrier: 150, rainOfSpears: 140, meteor: 150, wisp: 140, fireWall: 90, vent: 60, lightLance: 240,
-  swordOfRealm: 70, groundSlam: 50, lunge: 80, whirlwind: 40, disarm: 40, spearDance: 50, setSpears: 60, poleSpring: 60, skewer: 50, wheel: 45, flameRing: 50, cinderStep: 50, holyCharge: 90, consecrate: 40, boneArmor: 160, soulReap: 110,
+  swordOfRealm: 70, groundSlam: 50, lunge: 80, whirlwind: 40, disarm: 40, spearDance: 50, setSpears: 60, skewer: 50, wheel: 45, flameRing: 50, cinderStep: 50, holyCharge: 90, consecrate: 40, boneArmor: 160, soulReap: 110,
   gravecall: 180, summonSkeleton: 150, bidden: 90, unholyGround: 36 };   /* (claude/bkkit2) THE RED HOST: the bolt from range, the worms near, DRAIN inside its hold, the pool under the boss */

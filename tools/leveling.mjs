@@ -62,10 +62,12 @@ check('card', () => {
 check('early milestones', () => {
   assert.deepEqual(PR.MILESTONES_MINOR, [5, 10, 15, 20]); assert.deepEqual(PR.MILESTONES, [5, 10, 15, 20, 25, 30, 35, 40, 45, 50]);
   for (const h of PR.HERO_IDS) { const c = { card: { [h]: { v: 0, e: 0, m: 0, ms: {} } } };
-    for (const n of PR.MILESTONES) { const o = PR.perkOffer(c, h, n); assert.equal(o.length, 3, h + ' L' + n + ' offers ' + o.length); assert.equal(new Set(o.map(k => k.id)).size, 3, h + ' L' + n + ' repeats');
+    for (const n of PR.MILESTONES) { const o = PR.perkOffer(c, h, n); if (PR.hasKit(h) && n >= 25) { assert.equal(o.length, 3, h + ' L' + n + ' kit card ' + o.length); assert(o[0].tech && o[0].rec, h + ' L' + n + ' leads with the technique'); continue; }   /* (claude/knightid: a kit hero's L25+ card is the TECH card: tools/tech-cards.mjs) */
+      assert.equal(o.length, 3, h + ' L' + n + ' offers ' + o.length); assert.equal(new Set(o.map(k => k.id)).size, 3, h + ' L' + n + ' repeats');
       assert.equal(o.filter(k => k.own).length, 1, h + ' L' + n + ' has no hero option'); assert(PR.HERO_PERKS[h].some(k => k.id === o[2].id), h + ' L' + n + ' own is not his');
       if (h === 'pyro' && n === 10 && PR.PYRO_CARDS) assert(o.slice(0, 2).every(k => PR.PYRO_CARDS.some(m => m.id === k.id)), h + ' L' + n + ' hand leads with the two verb cards (claude/pyrokit: THE JET / THE EMBER SHOT)'); else if (PR.isMinor(n)) assert(o.every(k => k.minor) && o.slice(0, 2).every(k => PR.MINOR_PERKS.some(m => m.id === k.id)), h + ' L' + n + ' minor hand has a major perk'); else assert(o.slice(0, 2).every(k => PR.PERKS.some(m => m.id === k.id)), h + ' L' + n + ' major hand has a minor perk'); }
     /* take the first two of every hand: each generic once, the hero's own stacks to HERO_PERK_MAX over the ten milestones, two per hero */
+    if (PR.hasKit(h)) { assert.equal(PR.HERO_PERKS[h].length, 2, h + ' needs two options'); continue; }   /* (a kit hero's own perk ranks are tools/tech-cards.mjs's) */
     const own = {}; for (const n of PR.MILESTONES) { const o = PR.perkOffer(c, h, n); assert.equal(PR.pickMilestone(c, h, n, o[2].id, 50), null); if (o[2].own) own[o[2].id] = (own[o[2].id] || 0) + 1; }
     assert.deepEqual(Object.values(own), h === 'pyro' ? [5, 4] : [5, 5], h + ' own ranks ' + JSON.stringify(own)); assert.equal(PR.perkRank(c, h, PR.HERO_PERKS[h][0].id), 5); assert.equal(PR.milestonesOwed(c, h, 50).length, 0);
     assert.equal(PR.HERO_PERKS[h].length, 2, h + ' needs two options'); }
@@ -73,7 +75,7 @@ check('early milestones', () => {
   /* the hero's own is a different hand per hero, and every id of every hero is unique */
   assert.equal(new Set(PR.ALL_HERO_PERKS.map(k => k.id)).size, 18);   /* (berserkerport: two a hero, eight heroes; claude/ranger: nine) */
   assert.equal(PR.levelsToPerk(0), 5); assert.equal(PR.levelsToPerk(7), 3); assert.equal(PR.levelsToPerk(20), 5); assert.equal(PR.levelsToPerk(49), 1); assert.equal(PR.levelsToPerk(50), null);
-  assert.deepEqual(PR.techniquesArriving('knight', 0, 50), []); assert.deepEqual(PR.TECH_LEVELS, [10, 20, 30]);   /* the technique hook: empty, ready, and L20/L30 untouched */
+  assert.deepEqual(PR.techniquesArriving('pyro', 0, 50), []); assert.deepEqual(PR.TECH_LEVELS, [25, 30, 35, 40, 45, 50]);   /* the technique hook: a hero with no kit offers none (claude/knightid: the knight's six are tools/tech-cards.mjs) */
 });
 check('stat thresholds', () => {
   const card = (v, e, m) => ({ card: { knight: { v, e, m, ms: {} } } });
@@ -117,13 +119,20 @@ check('soft cap', () => {
   assert.equal(XP.xpSoftCap(40, 14, d), 20); assert.equal(XP.xpSoftCap(40, 20, d), 8); assert.equal(XP.xpSoftCap(1, 20, d), 1); assert.equal(XP.xpSoftCap(0, 20, d), 0);
 });
 
-check('slots', () => {
-  assert.deepEqual([0, 7, 8, 15, 16, 23, 24, 50].map(PR.slotsAt), [2, 2, 2, 2, 3, 3, 3, 3]); assert.equal(PR.MAX_SLOTS, 3);
-  const p = PR.migrateProgress(null).progress, n = PR.skillsFor('knight').find(s => s.active); p.coins = 9999; p.skillOwned.knight = { [n.id]: true };
-  assert.equal(PR.equipSkill(p, 'knight', n.id, 2, 15, true), 'Slot is locked'); assert.equal(PR.equipSkill(p, 'knight', n.id, 3, 50, true), 'Slot is locked'); assert.equal(PR.equipSkill(p, 'knight', n.id, 2, 16, true), null);
-  assert.equal(PR.equipped(p, 'knight', 15).length, 2); assert.equal(PR.equipped(p, 'knight', 16)[2], n.id); assert.equal(PR.equipped(p, 'knight', 50).length, 3);
-  const four = PR.skillsFor('warden').filter(s => s.active).slice(0, 4).map(s => s.id), old = PR.migrateProgress(JSON.stringify({ progressionVersion: 2, hero: 'warden', heroes: { warden: true }, xp: { warden: XP.xpFloor(20) }, skillOwned: { warden: Object.fromEntries(four.map(id => [id, true])) }, loadouts: { warden: four } })).progress;
-  assert.deepEqual(old.loadouts.warden, four.slice(0, 3), 'a four-slot save was not cut to three'); assert(four.every(id => old.skillOwned.warden[id]), 'the fourth ability was lost, not just unslotted');
+check('slots', () => {   // ONE SLOT, A SECOND AT LEVEL 30, TWO AT MOST (Daniel 2026-11-01; it was 2 + a third at 16)
+  assert.deepEqual([0, 1, 7, 8, 15, 16, 23, 29, 30, 31, 50].map(PR.slotsAt), [1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2]); assert.equal(PR.MAX_SLOTS, 2); assert.equal(PR.SECOND_SLOT_LEVEL, 30);
+  const p = PR.migrateProgress(null).progress, n = PR.skillsFor('knight').find(s => s.active), m = PR.skillsFor('knight').filter(s => s.active)[1]; p.coins = 9999; p.skillOwned.knight = { [n.id]: true, [m.id]: true };
+  assert.match(PR.equipSkill(p, 'knight', n.id, 1, 29, true), /level 30/, 'the second slot opens at 30'); assert.equal(PR.equipSkill(p, 'knight', n.id, 2, 50, true), 'Slot is locked'); assert.equal(PR.equipSkill(p, 'knight', n.id, 0, 1, true), null); assert.equal(PR.equipSkill(p, 'knight', m.id, 1, 30, true), null);
+  assert.equal(PR.equipped(p, 'knight', 29).length, 1); assert.equal(PR.equipped(p, 'knight', 29)[0], n.id); assert.equal(PR.equipped(p, 'knight', 30)[1], m.id); assert.equal(PR.equipped(p, 'knight', 50).length, 2);
+  // OLD SAVES (a two-, three- and four-slot save): the first equipped ability stays first, the rest are unequipped but still owned; a hero at 30+ keeps two
+  const act = PR.skillsFor('warden').filter(s => s.active).slice(0, 4).map(s => s.id), mk = (xpLv, lo) => PR.migrateProgress(JSON.stringify({ progressionVersion: 2, hero: 'warden', heroes: { warden: true }, xp: { warden: XP.xpFloor(xpLv) }, skillOwned: { warden: Object.fromEntries(act.map(id => [id, true])) }, loadouts: { warden: lo } })).progress;
+  let old = mk(20, act); assert.deepEqual(old.loadouts.warden, [act[0]], 'a four-slot L20 save was not cut to its one'); assert(act.every(id => old.skillOwned.warden[id]), 'an extra ability was lost, not just unslotted');
+  old = mk(20, [null, act[1]]); assert.deepEqual(old.loadouts.warden, [act[1]], 'a save with only its second slot filled lost its skill'); assert.deepEqual(PR.equipped(old, 'warden', 20), [act[1]]);
+  old = mk(12, [act[0], act[1], act[2]]); assert.deepEqual(old.loadouts.warden, [act[0]]);
+  old = mk(31, act); assert.deepEqual(old.loadouts.warden, act.slice(0, 2), 'a hero past 30 keeps two'); old = mk(31, [null, act[1]]); assert.deepEqual(old.loadouts.warden, [null, act[1]], 'the slots of a 30+ hero stay where they were');
+  old = mk(5, []); assert.deepEqual(old.loadouts.warden, []); old = mk(5, [act[0]]); assert.deepEqual(old.loadouts.warden, [act[0]]);
+  assert.deepEqual(PR.migrateProgress(JSON.stringify(old)).progress.loadouts.warden, old.loadouts.warden, 'migrating twice changed the loadout');
+  for (const lo of [[null], [null, null], [act[0], null, act[2]]]) { assert.doesNotThrow(() => mk(10, lo), 'a loadout ' + JSON.stringify(lo) + ' crashed the load'); }
 });
 
 check('heroes for silver', () => {

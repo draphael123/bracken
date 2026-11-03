@@ -20,9 +20,9 @@ export const WINDOW = 0.06;   /* s: the last four frames of a recovery are the c
 export const COMMIT = {   /* WEIGHT-T (10-04): the brief's numbers x0.6, measured against the human-speed bot (see the lane report) */
   pirate:    { light: 0.06, third: 0.084, up: 0.06, heavy: 0 },      /* his held blow is the pistol: PISTOL_BLAST, not a swing */
   knight:    { light: 0.084, third: 0.12, up: 0.084, heavy: 0.15 },   /* the heavy cut */
-  warden:    { light: 0.084, third: 0.12, up: 0.084, heavy: 0.132 },  /* the run-through */
+  warden:    { light: 0.084, third: 0.30, up: 0.084, heavy: 0.132 },  /* the run-through; (claude/wardenid) THIRD 0.12 -> 0.30: the LONG THRUST recovers slowly - the price of its reach (src/warden-id.js) */
   pyro:      { light: 0.084, third: 0.12, up: 0.084, heavy: 0.15 },   /* the bellows */
-  geomancer: { light: 0.096, third: 0.132, up: 0.096, heavy: 0.168 }, /* the fault line */
+  geomancer: { light: 0.096, third: 0.192, up: 0.096, heavy: 0.168 }, /* the fault line; (claude/geoid) THE STONE FIST, her third jab, recovers a beat longer (+0.06): the price of the knock-up */
   paladin:   { light: 0.102, third: 0.132, up: 0.102, heavy: 0.18 },
   reaper:    { light: 0.102, third: 0.132, up: 0.102, heavy: 0.18 },
   ranger:    { light: 0.072, third: 0.108, up: 0.072, heavy: 0.144 },  /* (claude/ranger) THE KNIFE: quick and light (her shots set their own beat, src/ranger.js rgCd) */

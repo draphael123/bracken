@@ -25,16 +25,40 @@ const FROZEN = /Tell$|^(sleep|wake|phase|dead|dying|stuck|downed|stun|stunned|op
 export const DIAL_EXEMPT = new Set(['cisternqueen', 'hourglassking', 'matriarch', 'hawkmistress', 'colossus', 'greatdrill', 'foremancart', 'tombking', 'scarabmother', 'fogknight', 'champion', 'admiral', 'paladinboss', 'deacon']);   /* (claude/church2) THE PALADIN, the hero as the boss, and THE DEACON (LIT CHURCH 2 mini): tuned into their bands by their own lane (3-seed sanity) - no dial */ /* (dr4art merge) the Deep Rails 4 boss pair: dr4tune measured them 69% / 81% with flasks BEFORE the dial existed, so they are self-tuned */
 export function pressureOf(act, mini) { const r = PRESSURE[act] || PRESSURE[5]; return mini ? r.mini : r; }
 /* the dt factor for one boss this frame: 1 unless his clock is a gap's */
+/* (claude/jointtune139, Daniel 11-02: the demo reads ABOVE the band, hero trims do not move it -> raise BOSS dials) PER-BOSS TRIM on top of the act's row, by e.t: { gap, dmg } (1 = none) */
+export const BOSS_TRIM = { hornetqueen: { gap: 1.2, dmg: 1.8 }, oldtusker: { gap: 1.15, dmg: 1.65 }, batteringbeast: { dmg: 0.85 } };   /* r3 (n=6 baselines hornet 93, tusker 87, beast 43; r1 -> 80/83/53; r2 1.8 + 1.8 + 0.8 -> 67/60/73) */
+const trim = e => (e && BOSS_TRIM[e.t]) || null;
 export function gapFactor(e, act, mini, winding) {
-  const g = pressureOf(act, mini).gap; if (!(g > 1) || !e || winding || DIAL_EXEMPT.has(e.t)) return 1;
+  const g0 = pressureOf(act, mini).gap, tg = trim(e), g = tg && tg.gap && g0 > 1 ? g0 * tg.gap : g0; if (!(g > 1) || !e || winding || DIAL_EXEMPT.has(e.t)) return 1;
   if (e.open > 0 || e.broken > 0 || e.stagger > 0 || e.warded > 0 || e.ward > 0) return 1;
   if (typeof e.mode === 'string' && FROZEN.test(e.mode)) return 1;
   return g;
 }
-export const dmgFactor = (act, mini, e) => (e && DIAL_EXEMPT.has(e.t) ? 1 : pressureOf(act, mini).dmg);
+export const dmgFactor = (act, mini, e) => (e && DIAL_EXEMPT.has(e.t) ? 1 : pressureOf(act, mini).dmg * ((trim(e) || {}).dmg || 1));
 /* (claude/oneshotcap) THE ONE-BLOW CEILING ON THE DIAL'S BOOST: the dial's x(dmg) must never turn one blow of a boss or mini into more than BLOW_CAP of the hero's max hp on the bar
    (tools/blow-census.mjs found 5 of 58 rows over 45% of the lowest-hp hero at campaign level: Lanterneater's Snap, the Owl, the Ploughman, the Lamp-Reeve and the Serjeant minis).
    It caps only what the dial ADDED: a blow that is already over the ceiling as tuned (before the dial) is left at that tuned number, so un-dialled numbers stay as authored. `fin` is the
    chain that still runs after the dial (difficulty x tier), so the ceiling is read on what lands. DIAL_EXEMPT bosses never reach this (dmgFactor is 1). */
 export const BLOW_CAP = 0.45;
 export function capBoost(before, boosted, maxHp, fin = 1) { if (!(boosted > before) || !(maxHp > 0)) return boosted; const lim = Math.max(1, Math.round(BLOW_CAP * maxHp / (fin > 0 ? fin : 1))); return boosted <= lim ? boosted : Math.max(before, lim); }
+
+/* ==== THE ANTI-KITE CLOCK (claude/wardenid, Daniel 10-31 Q7: replaces the DUEL_HERO.warden/pyro/lance rows and serves the Ranger and the Pyromancer) ====
+   WHY: a kiter beats a duel boss because the boss has no answer to range, and the old fix was a hidden row (the boss hits THAT hero 2.8x harder). The fix lives in the boss
+   instead, for every hero alike: a boss that has not been within a MELEE reach of the hero for KITE.after seconds runs his own idle clock faster - the gap-closer (his walk) and
+   his cooldowns shorten by up to KITE.max - so standing off forever buys a boss who arrives sooner and strikes sooner. NO extra hp. His tells, openings, wards, phase changes and
+   poise break are as authored (the same FROZEN modes and the same windup test as the act's gap dial); B10-B15 untouched. The hero's reach counts: `near` is the gap between
+   the two bodies' edges, so the Warden poking at the end of her spear (the tip, ~44 px) is IN contact and never trips it; only a hero who stays out of reach does. */
+export const KITE = { near: 58, after: 5, rate: 0.12, max: 1.45 };   /* px edge to edge; s of no contact before it starts; extra clock per s after that; the ceiling */
+export function idleNow(e, winding) {
+  if (!e || winding) return false;
+  if (e.open > 0 || e.broken > 0 || e.stagger > 0 || e.warded > 0 || e.ward > 0) return false;
+  return !(typeof e.mode === 'string' && FROZEN.test(e.mode));
+}
+/* called once a frame per boss/mini: `gap` is the edge-to-edge distance to the hero (px, <= 0 inside him); returns the clock multiplier (1 = none) */
+export function kiteBoost(e, dt, gap, winding) {
+  if (!e) return 1;
+  if (!(gap > KITE.near)) { e.kiteT = 0; return 1; }
+  e.kiteT = (e.kiteT || 0) + dt;
+  if (!idleNow(e, winding)) return 1;
+  return 1 + Math.min(KITE.max - 1, Math.max(0, e.kiteT - KITE.after) * KITE.rate);
+}
