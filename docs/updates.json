@@ -1,5 +1,16 @@
 [
   {
+    "date": "2026-11-05",
+    "batch": 141,
+    "lines": [
+      "New Arena Yard: practice every move on straw dummies that grade your parries",
+      "Pyromancer: Meteor becomes the Fire Lance; Knight cuts harder",
+      "Geomancer: longer dodge, stone pips on your staff; Warden and Hornet Nest art",
+      "Kingswood fire foes, and Gorm now keeps a crimson-and-gold court",
+      "A GIVE FEEDBACK button on the title and pause menus"
+    ]
+  },
+  {
     "date": "2026-11-04",
     "batch": 140,
     "lines": [
@@ -48,7 +59,7 @@
     "lines": [
       "Shriek Sisters reworked: one hunts while two roost, and a grab drags you off the stair",
       "The Rookery is tuned for all three heroes and its fight runs longer",
-      "Late game: sea guards plant a plate, scouts haul harpoons, zombies clinch, shields brace",
+      "Late game: sea guards plant plates, harpoon scouts, clinching zombies",
       "Late-game packs and affixes now scale by act, so the sea and the desert bite harder",
       "Platforming fixes: spore, fair, caravan, theatre, church, rootway and more jump cleaner"
     ]

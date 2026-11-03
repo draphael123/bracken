@@ -46,6 +46,7 @@ import { chainOf } from './campaign-order.mjs';
 /* Named, with a reason each. THE ORE ROAD IS BEING REWORKED and must leave this list when it lands. */
 const GRANDFATHERED = {
   harbor: 'shelved on purpose - the only level in LEVELS with no map node.',
+  burning: 'claude/demofoes (11-03) foreshadows the burngob + ember wisp in the Kingswood burning-wood escape, so the Burning Village (boss: the Pyromancer) brings no foe the player has not met. OPEN QUESTION for Daniel (rec: accept for the demo cut, give it a new foe post-demo).',
 };   /* PALISADEWOOD LEFT THIS LIST when THE HORNSMAN landed (claude/palisadefoe, 10-25: the siege crew's handler promoted from a boss add to a level foe). */ /* THE UNDERWATER KEEP LEFT THIS LIST when THE LEADFOOT landed (docs/briefs/keep-leadfoot.md; he was removed on 2026-09-25 and THE DROWNED KNIGHT, docs/briefs/keep-rework-2.md, is its new foe now), which is the tool working as written: the stale check above is what put him on the board. */ /* HIGHCROWN LEFT IT TOO, when THE TEMPERER landed (docs/briefs/crown-temperer.md). */
 
 const src = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
@@ -60,7 +61,7 @@ assert.ok(EHP.size > 80, 'only ' + EHP.size + ' creatures read out of EHP: the p
    leaves them wherever the array put them - so campaign-order.mjs reads all three gates. */
 const rows = [];
 for (const lv of LEVELS) {
-  if (/^(shop|trial|custom|tavern)/.test(lv.id)) continue;
+  if (/^(shop|trial|custom|tavern|arena_yard)/.test(lv.id)) continue;   /* (rel141: the Arena Yard is hidden, gate-less, off the road - a yard like the trial yards) */
   let L; try { L = lv.build(); } catch { continue; }
   const roster = new Set((L.ents || []).filter(e => e && e.t && EHP.has(e.t)).map(e => e.t));
   for (const r of (L.garrison || [])) if (Array.isArray(r) && EHP.has(r[0])) roster.add(r[0]);
