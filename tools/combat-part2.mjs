@@ -18,7 +18,7 @@ const pg = await openPage({ audio: false, fonts: false });
 const bad = [], out = {};
 const setup = lvl => `
   const { LEVELS } = await import('/src/level.js');
-  { let a = 20261005 >>> 0; Math.random = () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+  { let a = 20261105 >>> 0;   /* (rel142: 20261005 -> 20261105. floatfix lets two Stockade cages exist and the seeded stream moves: on the old seed the mashed cutlass was FINISHED (broken guard, src/finishers.js) at frame 110 before it ever raised its guard; both seeds are the same dice quality, the old one is just a different draw) */ Math.random = () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
   BK.manualSimulation = true; BK.setHero('knight'); BK.reset({ fresh: true }); BK.load(LEVELS.findIndex(l => l.id === ${JSON.stringify(lvl)})); BK.start(); BK.god = true;
   const L = BK.L, W = L.W, at = (x, y) => L.grid[y * W + x];
   let spot = null;

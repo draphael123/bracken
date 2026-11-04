@@ -26694,7 +26694,7 @@ function groundEnts() {
   const gnd = (x, y) => { const t = tileAt(x, y); return isSolid(x, y) || (isOneWay(t) && t !== T.NET); };   /* a keg does not sit on a rope */
   const settle = (x, y0) => { let y = y0, n = 0; while (gnd(x, y) && n++ < 3) y--; if (gnd(x, y)) return null; n = 0; while (!gnd(x, y + 1) && n++ < 3) y++; return gnd(x, y + 1) ? y : null; };
   L.ents = L.ents.filter(e => {
-    if (e.stand && e.hang) e.hang = false;   /* (claude/floatfix) stand: the art draws it standing - see decoHangs */
+    if (e.t === 'deco' && e.stand && e.hang) e.hang = false;   /* (claude/floatfix) stand: the art draws it standing - see decoHangs (claude/rel142: DECOS only - a foe row's own stand/hang flags are its own) */
     const dec = e.t === 'deco'; if (dec ? !decoStands(e) : (!STANDS_T.has(e.t) || e.perch)) return true;
     let y = settle(e.x, e.y); if (y !== null) { e.y = y; return true; }
     for (let dx = 1; dx <= 3; dx++) for (const sx of [e.x - dx, e.x + dx]) { y = settle(sx, e.y); if (y !== null) { e.x = sx; e.y = y; return true; } }
