@@ -55,6 +55,8 @@ const tapRow = async name => { const rows = await E('BK.ui.menuRows()'), i = row
   const off = Math.max(0, Math.min(rows.length - 1 - 9, Math.max(0, i - 1) - 9 + 2)), vis = rows.slice(1 + off, 1 + off + 9).filter(r => r[0] !== '-'); await gameTap(6 + vis.indexOf(name)); };
 const idle = async () => { for (let i = 0; i < 120; i++) { if (!(await E("import('/src/loading-screen.js').then(m => !!m.LS.busy)"))) return; await sleep(250); } };   // a level load in flight (from a tap) must land before the harness loads another
 const toPlay = async (id = 'wood') => { await idle(); await E(`(async () => { const { LEVELS } = await import('/src/level.js'); BK.manualSimulation = true; BK.load(LEVELS.findIndex(l => l.id === ${JSON.stringify(id)})); BK.state = 'play'; BK.sim(120); })()`, 180000); };
+/* (claude/touchrows) the title is a paged list on touch: tapItem pages (taps the MORE row) until the named row is on screen, then taps it */
+const tapTitleItem = async (name) => { for (let k = 0; k < 8; k++) { const items = await E('BK.ui.titleItems()'), w = await E('BK.ui.titleWin()'), idx = items.indexOf(name), p = w.rows.findIndex(r => r.idx === idx); if (p >= 0) { await gameTap(p); return; } await gameTap(w.rows.length - 1); } throw new Error('title row ' + name + ' never came on screen'); };
 const gameTap = async (i) => { const hs = await E('BK.touch.hitBoxes()'); const h = hs[i]; if (!h) throw new Error('no tap box #' + i + ' (' + hs.length + ' drawn)'); const [cx, cy] = await E(`BK.touch.gameToClient(${h.x + h.w / 2}, ${h.y + h.h / 2})`); await tap(cx, cy); await sleep(250); };
 const pill = async (press) => { const d = await dbg(); const p = d.pills.find(q => q.k === 'pill:' + press); if (!p) throw new Error('no ' + press + ' pill in state ' + (await E('BK.state'))); await tap(...rectMid(p)); await sleep(300); };
 
@@ -77,18 +79,17 @@ try {
   await section('title', async () => {
     await sleep(1500);
     const items = await E('BK.ui.titleItems()'), hits = await E('BK.touch.hitBoxes()');
-    ok(hits.length === items.length && items.length > 0, 'the title drew ' + hits.length + ' tap boxes for ' + items.length + ' items');
+    const tw = await E('BK.ui.titleWin()'); ok(hits.length === tw.rows.length && items.length > 0 && !items.includes('GIVE FEEDBACK') && !items.includes('CREDITS'), 'the title drew ' + hits.length + ' tap boxes for ' + tw.rows.length + ' window rows of ' + items.length + ' items (GIVE FEEDBACK / CREDITS fold under OPTIONS on touch)');
     notes.push('title items: ' + items.join(', '));
     // every box is a real size for a thumb (at least 30 CSS px tall) and on screen
     const th = await E('BK.touch.hitBoxes().map(h => { const [x0, y0] = BK.touch.gameToClient(h.x, h.y), [x1, y1] = BK.touch.gameToClient(h.x + h.w, h.y + h.h); return { w: x1 - x0, h: y1 - y0, x: x0, y: y0 }; })');
-    ok(th.every(r => r.h >= 12 && r.x >= 0 && r.x + r.w <= 844 && r.y >= 0 && r.y + r.h <= 390), 'a title tap box is off screen or sliver-thin: ' + JSON.stringify(th[0]));
+    ok(th.every(r => r.h >= 43 && r.x >= 0 && r.x + r.w <= 844 && r.y >= 0 && r.y + r.h <= 390), 'a title tap box is off screen or sliver-thin: ' + JSON.stringify(th[0]));
     ok(!items.includes('SETTINGS') && !items.includes('SOUND TEST') && !items.includes('CONTROLS'), 'SETTINGS / SOUND TEST / CONTROLS sit under OPTIONS, not on the title: ' + items.join('|'));
-    const oi = items.indexOf('OPTIONS'); ok(oi >= 0, 'no OPTIONS on the title');
-    await gameTap(oi);
+    ok(items.includes('OPTIONS'), 'no OPTIONS on the title');
+    await tapTitleItem('OPTIONS');
     const sub = await E('BK.ui.titleItems()'), subHits = await E('BK.touch.hitBoxes()');
-    ok(sub.includes('SETTINGS') && subHits.length === sub.length, 'the OPTIONS list drew ' + subHits.length + ' tap boxes for ' + sub.join('|'));
-    const i = sub.indexOf('SETTINGS'); ok(i >= 0, 'no SETTINGS under OPTIONS');
-    await gameTap(i);
+    ok(sub.includes('SETTINGS') && sub.includes('GIVE FEEDBACK') && sub.includes('CREDITS') && subHits.length >= 3, 'the OPTIONS list drew ' + subHits.length + ' tap boxes for ' + sub.join('|'));
+    await tapTitleItem('SETTINGS');
     ok(await E('BK.state') === 'menu', 'a tap on SETTINGS did not open Settings (state ' + await E('BK.state') + ')');
   });
   await section('settings-tabs', async () => {
