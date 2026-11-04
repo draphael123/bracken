@@ -121,7 +121,7 @@ function slopeArt() { if (SLOPE_ART) return SLOPE_ART; const why = [];
   return SLOPE_ART = { ok: !why.length, why: why.join('; ') }; }
 /* THE TRACKS src/audio.js COMPOSES ITSELF (no file): the names its synth plays, read off its own source (`wantTrack === 'name'`) */
 let SYNTH = null;
-/* a track key may point at a differently named file (smallfix13: admiral -> audio/fleetlord.ogg): read the src/audio.js table entries `key: './audio/file.ogg'` */
+/* a track key may point at a differently named file (smallfix13: admiral -> audio/fleetlord.ogg): read the src/audio.js table entries `key: './audio/<name>.ogg'` */
 let TABLE = null;
 function trackTableFiles(k) { if (!TABLE) { const src = readFileSync(new URL('../src/audio.js', import.meta.url), 'utf8'); TABLE = new Map(); for (const m of src.matchAll(/\b([a-z0-9]+): '\.\/(audio\/[^']+)'/g)) if (!TABLE.has(m[1])) TABLE.set(m[1], m[2]); } return TABLE.has(k) ? [TABLE.get(k)] : []; }
 function synthTracks() { if (SYNTH) return SYNTH; const src = readFileSync(new URL('../src/audio.js', import.meta.url), 'utf8'); SYNTH = new Set([...src.matchAll(/wantTrack === '([a-z0-9]+)'/g)].map(m => m[1])); for (const b of Object.keys(BOSS_SYNTH_BASE)) SYNTH.add(b); return SYNTH; }   /* + the boss themes src/boss-music.js composes (a 'name:variant' plays the base's theme) */
