@@ -33838,14 +33838,17 @@ function drawStormworks(cx, cy) {
   const B = (tx, ty, w, h, c) => { g.fillStyle = c; g.fillRect(Math.round(tx * TS - cx), Math.round(ty * TS - cy), w, h); };
   const wall = (x0, x1, y0, base, dk) => { const w = (x1 - x0 + 1) * TS; B(x0, y0, w, (34 - y0) * TS, base); for (let x = 0; x < w; x += 5) B(x0 + x / TS, y0, 1, (34 - y0) * TS, dk); B(x0, 33.5, w, 8, '#33334a'); for (let x = 0; x < w; x += 9) B(x0 + x / TS, 33.5, 1, 8, '#22222e'); };
   // THE STABLES (156-176): a plank back wall, a post at every stall, half doors with iron straps, straw, a slate lean-to over the lofts
-  wall(156, 176, 29, '#2a2332', '#1c1824');
-  for (let x = 156; x <= 176; x += 4) { B(x, 28.5, 4, 5.5 * TS, '#4a3a30'); B(x, 28.5, 1, 5.5 * TS, '#6a5444'); }
+  wall(156, 176, 28, '#2a2332', '#1c1824');   /* (claude/stormvis) the wall rises to the lean-to's eave (row 28): it stopped at 29 and the roof floated a row above it */
+  for (let x = 156; x <= 176; x += 4) { B(x, 28, 4, 6 * TS, '#4a3a30'); B(x, 28, 1, 6 * TS, '#6a5444'); }
   for (let x = 157; x < 176; x += 4) { B(x, 31.5, 3 * TS - 4, 2.5 * TS, '#3a2c28'); B(x, 31.5, 3 * TS - 4, 2, '#5a4a40'); B(x, 32.2, 3 * TS - 4, 1, '#7a8494'); B(x + 0.2, 33.6, 8, 2, '#c9a85a'); B(x + 1.6, 33.7, 5, 1, '#e8c878'); }
-  for (let x = 156; x <= 176.5; x += 1) { const k = Math.floor(x) % 2; B(x, 27, TS, 4, k ? '#2c3248' : '#363e58'); B(x, 27, TS, 1, '#5a6488'); B(x + 0.25, 27.5, 2, 2, '#1c2030'); B(x, 28, TS, 1, '#161824'); }
-  B(155.5, 27.4, 22 * TS, 3, '#161824');
+  for (let x = 156; x <= 176.5; x += 1) { const k = Math.floor(x) % 2; B(x, 28, TS, 4, k ? '#2c3248' : '#363e58'); B(x, 28, TS, 1, '#5a6488'); B(x + 0.25, 28.25, 2, 2, '#1c2030'); }   /* (claude/stormvis2) the stables slate lies ON the wall top (row 28); it floated a row above with sky between */
+  B(155.5, 28.25, 22 * TS, 3, '#161824');
   // THE SMITHY (179-197): sooty ashlar behind the forge, a chimney that smokes, the lean-to's slate roof, a hanging row of tongs
-  wall(179, 197, 27, '#26262e', '#1a1a22'); B(182, 22, 2 * TS + 6, 6 * TS, '#2e2e3a'); B(182, 22, 4, 6 * TS, '#4a4a5c'); B(182, 21.4, 2 * TS + 10, 6, '#161824');
-  for (let x = 180; x <= 190; x += 1) { B(x, 24.4, TS, 4, Math.floor(x) % 2 ? '#2c3248' : '#363e58'); B(x, 24.4, TS, 1, '#5a6488'); } B(179.5, 25.4, 11 * TS, 3, '#161824');
+  wall(179, 197, 27, '#26262e', '#1a1a22'); B(182, 21.7, 2 * TS + 6, 6.3 * TS, '#2e2e3a'); B(182, 21.7, 4, 6.3 * TS, '#4a4a5c'); B(181.8, 21.4, 2 * TS + 10, 7, '#161824');   /* (claude/stormvis) the cap sits ON the chimney (it hung 4 px clear of it) */
+  /* (claude/stormvis) THE LEAN-TO'S ROOF is the plank you walk: plat(182, 28, 7) and the rope span from 189. It was drawn at row 24.4 with its eave at 25.4, three rows above the walkway and with nothing under it: two long beams floating in the sky. Now the slate lies on row 28 (x 182-188), with a dark eave under it, rafters back to the wall and a post at each end down to the yard */
+  for (let x = 182; x <= 188; x += 1) { B(x, 28, TS, 4, Math.floor(x) % 2 ? '#2c3248' : '#363e58'); B(x, 28, TS, 1, '#5a6488'); } B(181.6, 28.25, 7.8 * TS, 3, '#161824');
+  for (const x of [182.2, 188.2]) { B(x, 28.45, 3, 5.1 * TS, '#4a3a30'); B(x, 28.45, 1, 5.1 * TS, '#6a5444'); }
+  for (let x = 183; x < 188; x += 1.5) B(x, 28.45, 2, 1.2 * TS, '#161824');
   for (let k = 0; k < 6; k++) { const ph = (time * 0.5 + k * 0.17) % 1; g.globalAlpha = 0.35 * (1 - ph); g.fillStyle = '#7a7a8a'; const sx = Math.round(183 * TS + 12 - cx + Math.sin(ph * 5 + k) * 6 + ph * 14), sy = Math.round(21 * TS - cy - ph * 40); g.fillRect(sx, sy, 3 + Math.round(ph * 3), 3 + Math.round(ph * 3)); } g.globalAlpha = 1;
   for (const x of [191.2, 192.4, 193.6]) { B(x, 29.2, 1, 9, '#6a7080'); B(x - 0.1, 29.9 + 0.4, 3, 1, '#8590a0'); }
 }
