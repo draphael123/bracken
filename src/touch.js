@@ -320,7 +320,8 @@ export function createTouch(env) {
     const each = (e, f) => { e.preventDefault(); lastTouchAt = performance.now(); for (const t of e.changedTouches) { const [px, py] = toDisp(t); f(t.identifier, px, py); } };
     disp.addEventListener('touchstart', e => { rect = null; env.initAudio(); if (env.touched) env.touched(); each(e, startTouch); }, { passive: false });
     disp.addEventListener('touchmove', e => each(e, moveTouch), { passive: false });
-    const end = e => { e.preventDefault(); for (const t of e.changedTouches) endTouch(t.identifier); };
+    const end = e => { e.preventDefault(); if (e.type === 'touchend') env.initAudio();   /* iOS Safari unlocks WebAudio on touchend, not touchstart */
+      for (const t of e.changedTouches) endTouch(t.identifier); };
     /* A BLUETOOTH PAD (Android Chrome exposes it after its first button press): say so, and the touch layer steps aside while the pad is the hand in use */
     addEventListener('gamepadconnected', () => { padSeen = true; banner = { text: 'CONTROLLER CONNECTED', until: clk + 3.5 }; });
     addEventListener('gamepaddisconnected', () => { try { padSeen = !![...(navigator.getGamepads ? navigator.getGamepads() : [])].some(Boolean); } catch { padSeen = false; } banner = { text: padSeen ? 'CONTROLLER CHANGED' : 'CONTROLLER DISCONNECTED', until: clk + 2.5 }; });
