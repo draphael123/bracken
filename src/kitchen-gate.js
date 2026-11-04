@@ -359,7 +359,7 @@ export function buildKitchenGate({ painter, T, TS }) {
   /* THE MEAT-HOOK RAILS (src/zipline.js, chain-driven east, hatch -> platter): the LOWER taken from the line under the hatch (its rope 20 px over the line's top), its red stretch
      the hop onto the UPPER, which climbs over the trench and ENDS OVER HIS PLATTER (its end lets you drop on it: THE THIRD OPENING, src/grubbag.js platterDrop) */
   const PXC = c => (M(Math.floor(c)) + (c - Math.floor(c))) * TS;
-  const railB = { x0: PXC(A0 + 12), y0: (FL - 6) * 16 - 20, x1: PXC(A1 - 17.5), y1: 262, hooks: true, speed: 200, meat: true, dir: 1, arena: true, id: 'kg-arena-b', platter: true };
+  const railB = { x0: PXC(A0 + 12), y0: (FL - 6) * 16 - 20, x1: PXC(A1 - 17), y1: 262, hooks: true, speed: 200, meat: true, dir: 1, arena: true, id: 'kg-arena-b', platter: true };
   const railA = { x0: PXC(A0 + 7.5), y0: 300, x1: PXC(A0 + 16.5), y1: 300, hooks: true, speed: 200, meat: true, dir: 1, arena: true, id: 'kg-arena-a', upOnly: true, npc: true, hop: [PXC(A0 + 11.5), PXC(A0 + 14.5)], hopRush: [PXC(A0 + 10), PXC(A0 + 13)], hand: railB };
   zipLines.push(railA, railB);
   sign(A0 - 1, FL - 1, 'CLIMB THE SHELVES. UP ON THE HOOK. DROP ON HIS PLATTER.');
