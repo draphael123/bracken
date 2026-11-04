@@ -24,7 +24,7 @@ const A = L.arena, W = L.W, at = (x, y) => L.grid[y * W + x];
 console.log('== LEVEL');
 ok(!L.ents.some(e => e.t === 'qpillar'), 'no cracked pillar (qpillar) in her hall');
 ok(!L.ents.some(e => e.t === 'rod'), 'no roof lightning rod (the roof phase is retired)');
-ok(!L.ents.some(e => e.t === 'weight' && e.gq), 'no chandelier weight is hers to cut (chandeliers are scenery: no gq flag)');
+ok(!L.ents.some(e => e.t === 'weight' && e.gq && !e.scenery), 'no chandelier weight is hers to cut (every gq chandelier is scenery)');
 { const wn = L.ents.find(e => e.t === 'winch' && e.bossGate && e.bell);
   ok(!!wn && at(wn.gate, wn.gy0) === T.AIR, 'her hall bell + its grate (winch bossGate) stay, the grate up'); }
 const E = L.gqEscape;
