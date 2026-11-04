@@ -101,7 +101,7 @@ export const musicSynthWould = () => !!ac && !currentTrack && !silenced && !(TRA
 export function setUiVolume(v) { if (uiGain) uiGain.gain.value = Math.max(0, Math.min(1, v)); }
 export function setReverb(v) { if (!revGain) return; const want = v > 0.08; if (want !== revOn) { revOn = want; try { if (want) sfxGain.connect(conv); else sfxGain.disconnect(conv); } catch {} } revGain.gain.setTargetAtTime(want ? Math.max(0, Math.min(0.5, v)) : 0, ac.currentTime, 0.3); } // the convolver runs only in the halls and galleries that need it
 export function setAmbientVolume(v) { ambVol = Math.max(0, Math.min(1, v)); if (ac && ambKind) ambGain.gain.setTargetAtTime(ambTarget(ambKind), ac.currentTime, 0.3); }
-const ambTarget = kind => (kind === 'rookery' ? 0.26 : kind === 'forest' || kind === 'hornetpines' ? 0.3 : kind === 'rain' ? 0.09 : kind === 'water' ? 0.16 : kind === 'wind' ? 0.24 : kind === 'town' ? 0.34 : kind === 'shore' ? 0.3 : kind === 'ship' ? 0.32 : kind === 'cave' ? 0.36 : kind === 'mineworks' ? 0.3 : kind === 'deep' ? 0.34 : kind === 'drip' ? 0.3 : kind === 'tavern' ? 0.32 : kind === 'hold' ? 0.36 : kind === 'hall' ? 0.22 : kind === 'fire' ? 0.28 : kind === 'blaze2' ? 0.32 : kind === 'blaze3' ? 0.38 : kind === 'crowd' ? 0.3 : kind === 'barn' ? 0.22 : kind === 'fair' ? 0.3 : kind === 'fairlot' ? 0.2 : kind === 'battlefield' ? 0.26 : kind === 'cistern' ? 0.3 : kind === 'canyon' ? 0.28 : kind === 'highair' ? 0.26 : kind === 'rootway' ? 0.27 : kind === 'court' ? 0.28 : kind === 'palisade' ? 0.27 : kind === 'glassday' ? 0.2 : kind === 'glassnight' ? 0.22 : kind === 'ksar' ? 0.24 : kind === 'foothills' ? 0.26 : kind === 'towpath' ? 0.26 : kind === 'litchurch' ? 0.24 : kind === 'buriedcity' ? 0.3 : 0.14) * ambVol;
+const ambTarget = kind => (kind === 'rookery' ? 0.26 : kind === 'forest' || kind === 'hornetpines' ? 0.3 : kind === 'rain' ? 0.09 : kind === 'water' ? 0.16 : kind === 'wind' ? 0.24 : kind === 'town' ? 0.34 : kind === 'shore' ? 0.3 : kind === 'ship' ? 0.32 : kind === 'cave' || kind === 'hornetdeep' ? 0.36 : kind === 'mineworks' ? 0.3 : kind === 'deep' ? 0.34 : kind === 'drip' ? 0.3 : kind === 'tavern' ? 0.32 : kind === 'hold' ? 0.36 : kind === 'hall' ? 0.22 : kind === 'fire' ? 0.28 : kind === 'blaze2' ? 0.32 : kind === 'blaze3' ? 0.38 : kind === 'crowd' ? 0.3 : kind === 'barn' ? 0.22 : kind === 'fair' ? 0.3 : kind === 'fairlot' ? 0.2 : kind === 'battlefield' ? 0.26 : kind === 'cistern' ? 0.3 : kind === 'canyon' ? 0.28 : kind === 'highair' ? 0.26 : kind === 'rootway' ? 0.27 : kind === 'court' ? 0.28 : kind === 'palisade' ? 0.27 : kind === 'glassday' ? 0.2 : kind === 'glassnight' ? 0.22 : kind === 'ksar' ? 0.24 : kind === 'foothills' ? 0.26 : kind === 'towpath' ? 0.26 : kind === 'litchurch' ? 0.24 : kind === 'buriedcity' ? 0.3 : 0.14) * ambVol;
 function applyMusicFilter() { if (!musicLP) return; const f = muffled ? 480 : lowHp ? 1500 : 20000; musicLP.frequency.setTargetAtTime(f, ac.currentTime, 0.18); }
 
 // ---------- where a sound comes from ----------
@@ -825,19 +825,22 @@ function startSynth() { nextT = ac.currentTime + 0.1; step = 0; if (timer) clear
 function stopAmb() { for (const n of ambNodes) { try { n.stop(); } catch {} } ambNodes = []; if (ambShotTimer) { clearInterval(ambShotTimer); ambShotTimer = null; } }
 // EVERY PLACE HAS ITS OWN AIR. The wood had a recording and everything else was filtered noise - and a level
 // with no zone got the wood's birds, so the town, the ships and the mine all had birdsong in them.
-const AMB_FILE = { hornetpines: 'ambForest', forest: 'ambForest', wind: 'ambWind', town: 'ambTown', shore: 'ambShore', ship: 'ambShip', cave: 'ambCave', deep: 'ambDeep', drip: 'ambDrip', tavern: 'ambTown', hold: 'ambShip', hall: 'ambCave' };
+const AMB_FILE = { hornetpines: 'ambForest', hornetdeep: 'ambCave', forest: 'ambForest', wind: 'ambWind', town: 'ambTown', shore: 'ambShore', ship: 'ambShip', cave: 'ambCave', deep: 'ambDeep', drip: 'ambDrip', tavern: 'ambTown', hold: 'ambShip', hall: 'ambCave' };
 /* INDOORS IS THE SAME AIR THROUGH A WALL: the town behind the inn's shutters, the sea through a hull, the wood through a trunk */
 /* (claude/hornets2art) THE OLD PINES' DISTANT HUM: the wood's own bed with, under it, the far drone of the nest ahead - two sawtooth voices a few Hz apart (they beat), through a band round the wasp's pitch, swelling and sagging on slow breaths with a quick wing flutter on top. All synth, never loud enough to cover a tell. */
-const AMB_EXTRA = { hornetpines() {
-    const hum = ac.createGain(); hum.gain.value = 0.05; const bp = ac.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 330; bp.Q.value = 1.6; const lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 700;
+let nestK = 0, nestHumG = null;   /* (claude/nestpolish) how deep in the nest the camera is, 0 (the pines) .. 1 (the brood hall): the hum's gain follows it (ambient.depth) */
+const nestHumLevel = () => 0.05 + 0.2 * nestK;
+const nestHum = () => {
+    const hum = ac.createGain(); hum.gain.value = nestHumLevel(); nestHumG = hum; const bp = ac.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 330; bp.Q.value = 1.6; const lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 700;
     for (const f of [112, 117.5, 224]) { const o = ac.createOscillator(); o.type = 'sawtooth'; o.frequency.value = f; const og = ac.createGain(); og.gain.value = f > 200 ? 0.25 : 1; o.connect(og); og.connect(bp); o.start(); ambNodes.push(o); }
     bp.connect(lp); lp.connect(hum); hum.connect(ambGain);
-    lfoOn(hum.gain, 0.13, 0.03); lfoOn(hum.gain, 6.5, 0.008); lfoOn(bp.frequency, 0.07, 60); } };
+    lfoOn(hum.gain, 0.13, 0.03); lfoOn(hum.gain, 6.5, 0.008); lfoOn(bp.frequency, 0.07, 60); };
+const AMB_EXTRA = { hornetpines: nestHum, hornetdeep: nestHum };   /* (claude/nestpolish) hornetdeep = the cave's air (inside the paper) with the same hum, louder the deeper you are */
 const AMB_LP = { tavern: 1300, hold: 600, hall: 800 };
 // AND THE THINGS THAT HAPPEN IN IT: a gull over the shore, the timbers of a ship working, a hammer two streets
 // away and somebody calling, a drip in the dark. [pool, volume, lowpass, one in how many seconds]
 const AMB_SHOTS = { shore: [['amb_gull', 0.22, 0, 5]], ship: [['amb_creak', 0.3, 1800, 3], ['amb_gull', 0.14, 0, 9]],
-  town: [['amb_hammer', 0.12, 1200, 4], ['vo_hum_alert', 0.05, 900, 11]], cave: [['drip', 0, 0, 3]], drip: [['drip', 0, 0, 2]],
+  town: [['amb_hammer', 0.12, 1200, 4], ['vo_hum_alert', 0.05, 900, 11]], cave: [['drip', 0, 0, 3]], hornetdeep: [['drip', 0, 0, 3]], drip: [['drip', 0, 0, 2]],
   tavern: [['vo_hum_alert', 0.08, 1600, 5], ['sfx:fuse', 0, 0, 3]], hold: [['amb_creak', 0.4, 1200, 2]], hall: [['drip', 0, 0, 4]] };
 
 /* IDENTITY PASS 0 (claude/identity0): THREE SYNTH BEDS, no files. FIRE for the burning village, the camps and the forge halls (a low roar and a
@@ -1231,6 +1234,7 @@ export const ambient = {
     start();
   },
   get kind() { return ambKind; },
+  depth(k) { k = Math.max(0, Math.min(1, +k || 0)); if (k === nestK) return; nestK = k; if (ac && nestHumG && (ambKind === 'hornetdeep' || ambKind === 'hornetpines')) nestHumG.gain.setTargetAtTime(nestHumLevel(), ac.currentTime, 1.2); },   /* (claude/nestpolish) THE NEST's depth (main.js each frame): the hum under the paper swells toward the brood hall */
   creep(k) { creepK = Math.max(0, Math.min(1, +k || 0)); creepAt = performance.now(); },   /* THE HARVEST FAIR's depth (0 gate .. 1 green), told by main.js each frame: the fair bed goes wrong with it (below) */
   bell: bellScatter,
 };
