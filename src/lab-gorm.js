@@ -1,6 +1,5 @@
 // src/lab-gorm.js - KING GORM 2 PLAYED (claude/gorm2): the boss lab's hands for his three acts, as a player plays them. Nothing is dropped or
-// killed for the bot (the old lab dropped his plate-cages for it when he walked under one): it takes a rock off a heap, stands where the told
-// arc's ring goes gold on a bowman and throws it UP; it stands at a free rope's peg on the side away from him, lets him come in under the cage
+// killed for the bot (the old lab dropped his plate-cages for it when he walked under one): it stands at a free rope's peg on the side away from him, lets him come in under the cage
 // and cuts the peg; in his glade it goes to the peg of whatever hangs nearest him (the log trap whenever he is downhill of it) and cuts it there.
 // It answers his told moves the way their words say: the boar's lane is jumped, his hand is backed out of, the HIGH branch is ducked, the LOW
 // one and the quake's crest and a rolling log are jumped, a cone's red ring is stepped off. Reaction comes from the profile (src/bot-profile.js)
@@ -28,8 +27,7 @@ export function gormHands(c) {
     for (const q of G.bows) if (q.aim && q.aim.t < 0.45 && Math.abs(P.x - q.aim.tx) < 18) return { goal: P.x + (P.x >= q.aim.tx ? 34 : -34), strike: false };
     if (open) return { goal: e.x, strike: true };
     /* (claude/kingsfix2: every rope is free at any moment) the rope of the cage he is nearest: stand at its peg on the side away from him, let him come in under it and cut it.
-       A held rock is set down - the archers are pressure the bot does not hunt. */
-    if (G.held) { BK.press('talk'); return { goal: null, strike: false }; }
+       The archers are pressure the bot does not hunt. */
     const live = G.ropes.filter(r => !r.dropped && !r.spent && r.free).sort((p, q) => Math.abs(p.x - e.x) - Math.abs(q.x - e.x))[0];
     if (live) { const pg = live.pegs.slice().sort((p, q) => Math.abs(q - e.x) - Math.abs(p - e.x))[0], side = Math.sign(live.x - pg) || 1;
       if (Math.abs(e.x - live.x) < 36 && Math.abs(P.x - pg) < 16 && P.ground) { P.face = Math.sign(pg - P.x) || side; if (P.atk < 0 && f % 4 === 0) BK.press('atk'); return { goal: P.x, strike: false }; }

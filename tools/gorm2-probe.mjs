@@ -1,7 +1,7 @@
 // tools/gorm2-probe.mjs - KING GORM 2 in the page, quickly (claude/gorm2). A smoke test of his three acts with the game's own hands, not a playtest
 // (the rates are tools/boss-rates.mjs kings; the burning wood's walk is tools/level-walk.mjs kings --from=470 --setup="BK.gorm().flee()"):
-//   THE HALL: he wakes on his litter; the court files two rafter archers onto the live rope's deck and they loose told arrows; E at a heap takes a rock,
-//   the told arc's ring goes gold on a bowman from the floor, and the rock thrown UP knocks him off his deck; the rope is free once both are down;
+//   THE HALL: he wakes on his litter; the court files two rafter archers onto the live rope's deck and they loose told arrows (no rocks since 11-03: the test cuts them down as the scaffold does);
+//   the rope is free at any moment;
 //   a real blow on its peg drops the cage on him: HELD; his blade-take outside an opening is the B15 0.4.
 //   THE FLEE: his P1 bar empties through hurtEnemy: no death - the flee, the hero healed, the fire lit behind him; the King set down in his glade.
 //   THE BURNING WOOD: the fire comes after a hero standing still and drains him (no stagger); a death keeps P1 beaten (he waits in his glade).
@@ -19,10 +19,6 @@ try {
     out.wake = { active: BK.bossActive, stage: b.stage, mode: b.mode };
     let G = BK.gorm(); out.bows = G.bows.length; out.act = G.act;
     for (let i = 0; i < 900 && !BK.gorm().n.arrows; i++) { keep(); step(1); } G = BK.gorm(); out.arrows = G.n.arrows;
-    /* a rock off the heap, the arc gold on a bowman, thrown up */
-    const heap = G.heaps.slice().sort((a, c) => Math.abs(a - P.x) - Math.abs(c - P.x))[0]; P.x = heap; P.y = 224; P.vx = 0; step(4); BK.press('talk'); step(3); out.held = BK.gorm().held;
-    const bw = BK.gorm().bows[0]; out.aim = null; if (bw) for (const off of [-96, -88, -80, -72, 72, 80, 88, 96]) { P.x = bw.x + off; P.face = off < 0 ? 1 : -1; BK.keys.up = true; step(2); const a = BK.gorm().aim(); if (a === 'high') { out.aim = off; break; } }
-    BK.press('atk'); for (let i = 0; i < 200 && BK.gorm().n.knocked < 1; i++) { keep(); step(1); } BK.keys.up = false; out.knocked = BK.gorm().n.knocked;
     for (const q of BK.enemies().filter(e => e.gormBow && e.alive)) BKT.hurtEnemy(q, 999, q.x, false); step(10);
     G = BK.gorm(); const live = G.ropes.find(q => q.i === G.act); out.free = !!(live && live.free);
     if (live) { b.x = live.x; b.mode = b.phase >= 2 ? 'walk' : 'carried'; b.modeT = 3; b.grabT = 9; b.chargeT = 9; b.hornT = 9; b.ward = 0; b.open = 0; P.x = live.pegs[0] - 10; P.y = 224; P.face = 1; P.vx = 0; step(2); BK.press('atk'); for (let i = 0; i < 90 && b.mode !== 'held'; i++) step(1); }
@@ -49,9 +45,6 @@ try {
   ok(r.wake.active && r.wake.stage === 'court', 'THE HALL: he wakes on his litter (' + r.wake.mode + ')');
   ok(r.bows === 2, 'the court files two rafter archers onto the live rope\'s deck');
   ok(r.arrows > 0, 'they loose told arrows');
-  ok(r.held, 'E at a heap takes a rock');
-  ok(r.aim !== null, 'the told arc goes gold on a bowman from the floor (' + r.aim + ' px off)');
-  ok(r.knocked >= 1, 'the rock thrown UP knocks him off his deck');
   ok(r.free, 'both down: the rope is free');
   ok(r.heldMode === 'held', 'a real blow on its peg drops the cage on him: HELD (' + r.heldMode + ')');
   ok(r.chip >= 6 && r.chip <= 10, 'outside an opening a blade lands at 0.4 (20 -> ' + r.chip + ')');

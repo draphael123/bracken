@@ -227,8 +227,8 @@ export function buildKingswood({ painter, T, TS }) {
   for (const c of [14, 26, 40]) plank(ax(c), ax(c) + 2, 8);
   for (const c of [9, 18, 27, 36, 45]) plank(ax(c), ax(c) + 5, 5);
   /* (claude/gorm2) five cages under the decks, each on a ROYAL ROPE tied off to TWO PEGS on the floor, three tiles either side of it. Two RAFTER ARCHERS file onto the deck of the live one
-     and hold its rope (src/gorm-hands.js): bring them down (the scaffold, or a ROCK from a heap) and its peg drops the cage - on his head, HELD (x2). Three heaps of the
-     court's cobbles at the hall's two ends (E takes one, UP lobs it to a deck). The plates are gone (Daniel 10-22: the cages move from plates to ropes) */
+     and hold its rope (src/gorm-hands.js): bring them down (the scaffold) and its peg drops the cage - on his head, HELD (x2). (The cobble heaps and the rock throw were removed 11-03, Daniel.)
+     The plates are gone (Daniel 10-22: the cages move from plates to ropes) */
   const HALL_CAGES = [12, 21, 30, 39, 48];
   for (const c of HALL_CAGES) ent('dropcage', ax(c), 7, { boss: true });
   coins([ax(10), 10], [ax(23), 10], [ax(36), 10], [ax(15), 7], [ax(27), 7], [ax(41), 7], [ax(11), 4], [ax(20), 4], [ax(29), 4], [ax(38), 4], [ax(47), 4]);
@@ -289,7 +289,7 @@ export function buildKingswood({ painter, T, TS }) {
   const glade = { x0: G0 * TS, x1: G1 * TS, floor: 14 * TS, trigger: (G0 + 6) * TS, wallL: G0 - 1, wallR: G1 + 1, boss: 'king', music: 'gorm', tint: '#d9583c', tintA: 0.14, fx: 'embers', glade: true };
   /* (claude/gorm2) KING GORM 2's data (src/gorm-hands.js): his hall's ropes, decks, archers' marks and heaps; the burning wood's fire line, burning floors and branches; the glade's oak and hangings */
   const gorm = {
-    hall: { x0: A0 * TS, x1: A1 * TS, floor: 14 * TS, order: [1, 3, 0, 4, 2], heaps: [ax(3), ax(53)].map(c => c * TS + 8),
+    hall: { x0: A0 * TS, x1: A1 * TS, floor: 14 * TS, order: [1, 3, 0, 4, 2],
       ropes: HALL_CAGES.map(c => ({ x: ax(c) * TS + 8, pegs: [(ax(c) - 3) * TS + 8, (ax(c) + 3) * TS + 8], deck: [ax(c - 3) * TS, (ax(c + 2) + 1) * TS, 5 * TS], archers: [ax(c - 2) * TS + 8, ax(c + 1) * TS + 8] })) },
     run: { x0: 490 * TS, fireMax: (588 + SH) * TS, cpX: (593 + SH) * TS, surgeAt: 559 * TS, burn: [[512, 541, 14], [568, 569, 14], [574, 575, 14], [580, 581, 14], [586, 587, 14], [592, 593, 14], [598, 599, 14], [569 + SH, 584 + SH, 16]],
       branches: [[496, 14], [503, 14], [510, 14], [519, 10], [528, 10], [537, 11], [545, 14], [553, 14], [566, 11], [575, 12], [583, 9], [590, 10], [579 + SH, 9], [591 + SH, 10]].map(([x, y]) => ({ x: x * TS + 8, y: y * TS })) },

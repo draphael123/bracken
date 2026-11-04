@@ -1,4 +1,4 @@
-import {breathCapacity} from './deepair.js'; import { gormHands, gormSkipRun } from './lab-gorm.js';   /* (claude/gorm2) KING GORM 2 played: his hall's rocks and ropes, his glade's hangings, the escape skipped to his glade */ import { motherHands } from './lab-mother.js';   /* (claude/sporewood2) THE MOTHER CAP 2 played */
+import {breathCapacity} from './deepair.js'; import { gormHands, gormSkipRun } from './lab-gorm.js';   /* (claude/gorm2) KING GORM 2 played: his hall's ropes, his glade's hangings, the escape skipped to his glade */ import { motherHands } from './lab-mother.js';   /* (claude/sporewood2) THE MOTHER CAP 2 played */
 import { AMBUSH_TARGET } from './ambush.js';
 import { mulberry } from './px.js'; import { committed, COMMIT, artLim, artRate, ROLL_COST } from './commit.js';   /* bossLab seeds Math.random for the row it is about to fight - see the note over the loop in runbossLab */
 // src/lab.js — THE FIGHT LAB and THE BOSS LAB.

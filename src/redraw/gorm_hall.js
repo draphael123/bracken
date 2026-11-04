@@ -36,17 +36,7 @@ export function padlock() {
     rect(g, 0, 7, 2, 2, '#7a7a86'); rect(g, 10, 7, 2, 2, '#7a7a86'); rect(g, 0, 7, 12, 1, '#4a4a54');   /* the chain links */
     return outline(c, OUT); });
 }
-/* a cobble heap: a dozen round stones, lit from the top left */
-export function heap() {
-  return once('heap', () => { const [c, g] = canvas(40, 22);
-    const st = [[4, 14, 10, 7], [14, 15, 11, 6], [25, 14, 10, 7], [8, 9, 10, 6], [19, 9, 11, 6], [13, 4, 9, 6], [28, 8, 7, 6]];
-    st.forEach(([x, y, w, h], i) => { rect(g, x, y + 1, w, h - 1, '#2a2430'); rect(g, x + 1, y, w - 2, h, '#2a2430'); rect(g, x + 1, y + 1, w - 2, h - 2, i % 2 ? '#7a6a50' : '#8a7a5a'); rect(g, x + 2, y + 1, w - 4, 1, '#c0aa6a'); rect(g, x + 1, y + h - 2, w - 2, 1, '#5a4a38'); if (i % 3 === 0) rect(g, x + w - 4, y + 2, 2, 1, '#6a8a40'); });
-    return outline(c, OUT); });
-}
-export function rock() {
-  return once('rock', () => { const [c, g] = canvas(8, 8); circle(g, 4, 4, 3.4, '#2a2430'); circle(g, 4, 4, 2.6, '#7a6a50'); rect(g, 2, 2, 3, 1, '#c0aa6a'); rect(g, 3, 5, 3, 1, '#5a4a38'); return c; });
-}
 export function arrow() {
   return once('arrow', () => { const [c, g] = canvas(16, 5); rect(g, 2, 2, 11, 1, '#8a5a32'); rect(g, 2, 2, 11, 1, '#c9a060'); rect(g, 12, 1, 3, 3, '#9a9aa6'); rect(g, 13, 2, 3, 1, '#e8eef8'); rect(g, 0, 0, 2, 2, '#e8e0d0'); rect(g, 0, 3, 2, 2, '#e8e0d0'); rect(g, 2, 1, 2, 1, '#c9463d'); rect(g, 2, 3, 2, 1, '#c9463d'); return c; });
 }
-export function warm() { padlock(); heap(); rock(); arrow(); }
+export function warm() { padlock(); arrow(); }

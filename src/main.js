@@ -31429,7 +31429,6 @@ function updateProps(dt) {
   if (talkPress && state === 'play' && !P.dead && WRK && WRK.on() && WRK.interact(P)) talkPress = false;
   if (talkPress && state === 'play' && !P.dead && OWK && OWK.on() && OWK.interact(P)) talkPress = false;   /* (claude/oreroadminor) E takes a rock off a pile (or sets one down) */
     /* (claude/winch5) THE WINCHMASTER: E takes a rock off his skip (or sets one down) */   /* THE BANDIT KSAR: E rings a gong, takes a keg or a flask, sets one down, hauls the winch, opens the strongroom */
-  if (talkPress && state === 'play' && !P.dead && GMH && GMH.on() && GMH.interact(P)) talkPress = false;   /* (claude/gorm2) KING GORM's hall: E takes a rock off a heap (or sets one down) */
   if (talkPress && state === 'play' && !P.dead && BCH && BCH.on() && BCH.interact(P)) talkPress = false;
   if (talkPress && state === 'play' && !P.dead && PYH && PYH.on() && PYH.interact(P)) talkPress = false;   /* THE SEALED PYRAMID: E at the sealed tomb's door */
   if (talkPress && state === 'play' && !P.dead && HGK && HGK.on() && HGK.interact(P)) talkPress = false;   /* (claude/buriedcity3) E at THE GREAT HOURGLASS (phase three) */
