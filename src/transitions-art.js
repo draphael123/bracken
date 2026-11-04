@@ -8,7 +8,7 @@
    drawArrivalFerry: the ferry the Marsh begins on, in WORLD space (moored: post, rope, lantern). drawWayGate: the Wood's east gate in WORLD space (rails that fall, a header that stays).
    drawBars: the letterbox with a film-edge line. Everything static is baked ONCE (per viewport size) and blitted; the per-frame work is a few drawImage calls, a handful of 1 px
    rects and two or three gradients. Every loop is bounded and hashed, never random. No dialogue: this file never writes text. */
-import { FERRY, sceneScroll, heroOnScene, ferryX, ROAD, roadScroll, roadGrowth, roadHero, SMOKE, smokeHero, smokeRise, smokeGlow } from './transitions.js';
+import { FERRY, sceneScroll, heroOnScene, ferryX, ROAD, roadScroll, roadGrowth, roadHero, SMOKE, smokeHero, smokeStance, smokePan, smokeRise, smokeGlow } from './transitions.js';
 import { canvas, outline } from './px.js';
 import { BARK, CUT, NEEDLE, logPileSprite, drawStump } from './redraw/lumber_trail_art.js';
 import { OAK, BOARD, CORD, CORD_D } from './redraw/marsh2_art.js';
@@ -583,7 +583,7 @@ export function drawRoadScene(env, s) {
 
 /* =====================================================================================================================================================================================================
    THE SMOKE SCENE (scene 'smoke', claude/demotransitions): KINGSWOOD -> THE BURNING VILLAGE. King Gorm is down. The party walks out along the court road, onto a rise, and STOPS: on the horizon three columns of smoke
-   stand up out of the far hills, the sky below them going to ember, ash and sparks drifting in on the wind. At the road's edge, left behind them: his fallen standard and a dented crown. GREYBOX-PLUS (an art lane follows):
+   stand up out of the far hills, the sky below them going to ember, ash and sparks drifting in on the wind. REDONE claude/kingscene (Daniel 11-04: a short cinematic beat, see drawSmokeScene):
    the hills, the tree line and the plumes are drawn here from rects, ellipses and the shared halo sprites. */
 const smokeSky = (VW, wl) => once('smokeSky' + VW + 'x' + wl, () => { const [c, g] = canvas(VW, wl), gr = g.createLinearGradient(0, 0, 0, wl); gr.addColorStop(0, '#1b2638'); gr.addColorStop(0.55, '#3b3a52'); gr.addColorStop(1, '#8c5a48'); g.fillStyle = gr; g.fillRect(0, 0, VW, wl); return c; });
 const smokeEmber = (VW, wl) => once('smokeEmber' + VW + 'x' + wl, () => { const [c, g] = canvas(VW, wl), gr = g.createLinearGradient(0, 0, 0, wl); gr.addColorStop(0, 'rgba(120,40,30,0)'); gr.addColorStop(0.6, 'rgba(214,92,44,0.55)'); gr.addColorStop(1, 'rgba(255,170,72,0.95)'); g.fillStyle = gr; g.fillRect(0, 0, VW, wl); return c; });
@@ -643,62 +643,64 @@ function flames(g, x, y, w, time, calm, seed) {
   for (let i = -w; i <= w; i += 2) { const ph = hash(seed * 5 + i) * 6.28, hgt = (5 + hash(seed + i * 0.7) * 6) * (1 - Math.abs(i) / (w + 2) * 0.6) * (calm ? 1 : 0.8 + Math.sin(time * 9 + ph) * 0.3), hx = Math.round(x + i + (calm ? 0 : Math.sin(time * 6 + ph) * 0.8));
     R(g, '#c83a14', hx, y - hgt, 2, hgt); R(g, '#ff7a20', hx, y - hgt * 0.75, 2, hgt * 0.75); if (hgt > 5) R(g, '#ffc040', hx, y - hgt * 0.4, 1, hgt * 0.4); P(g, '#fff0a0', hx, y - 1); }
 }
-/* GORM'S FALLEN STANDARD and CROWN, baked: the snapped pole with a jagged break and its gilded boar-head spear-point, the red cloth torn and mud-spattered with a gold boar and a gold border, a scorch on it; beside it the crown, one point bent, two gems */
-const gormStandard = () => once('gormStandard', () => mk(92, 36, g => {
-  const py = x => 24 - Math.round(x * 0.2), GR = 33;                                                                               /* the pole leans: its snapped foot on the ground, its head up on a stone */
-  for (let x = 2; x < 56; x++) { R(g, '#2e1c0f', x, py(x), 1, 3); R(g, x % 4 === 0 ? '#8a5a30' : '#6a4425', x, py(x), 1, 2); }
-  for (const [x, dy] of [[1, 1], [2, -1], [0, 2], [3, 0]]) { P(g, '#d8c498', x, py(x) + dy); P(g, '#a8946a', x + 1, py(x) + dy + 1); }              /* the splintered break */
-  R(g, '#a8801c', 55, py(55) - 1, 3, 5); R(g, '#e0b040', 56, py(56) - 1, 2, 5);                                                    /* the gilt collar */
-  for (let i = 0; i < 8; i++) R(g, i < 2 ? '#e0b040' : '#c8cfd8', 58 + i, py(58) + 1 - (i >> 2), 1, Math.max(1, 3 - (i >> 1)));   /* the spear-point */
-  P(g, '#fff6c8', 59, py(59)); P(g, '#ffffff', 60, py(60) + 1);
-  R(g, '#3a3a36', 50, py(50) + 3, 10, GR - py(50) - 3); R(g, '#5a5a52', 50, py(50) + 3, 10, 1); R(g, '#24241f', 57, py(50) + 4, 3, GR - py(50) - 4);   /* the stone it rests on */
-  const cx0 = 12, cw = 36;                                                                                                         /* the cloth hangs off the pole to the ground, torn */
-  for (let x = cx0; x < cx0 + cw; x++) { const top = py(x) + 2, taper = x > cx0 + cw - 8 ? (x - (cx0 + cw - 8)) * 2 : 0, tear = hash(x * 2.3) > 0.6 ? 2 : 0, bot = GR - tear - taper, fold = ((x - cx0) % 9) < 3;
-    R(g, fold ? '#5c1c18' : '#8c2a24', x, top, 1, bot - top); if (!fold && (x - cx0) % 9 === 5) R(g, '#a63830', x, top + 1, 1, Math.max(0, bot - top - 4)); R(g, '#e0b040', x, top, 1, 1);
-    P(g, x % 3 === 0 ? '#e0b040' : '#a8801c', x, bot - 1); }                                                                         /* the gold edge, the gold fringe */
-  const mx = cx0 + 15, my = py(mx) + 8;                                                                                            /* the boar: body, hump, snout, eye, tusk */
-  R(g, '#e0b040', mx, my, 9, 4); R(g, '#e0b040', mx + 2, my - 1, 4, 1); R(g, '#e0b040', mx + 9, my + 1, 2, 2); P(g, '#1b1626', mx + 8, my + 1); P(g, '#f4ecd0', mx + 9, my + 3); P(g, '#a8801c', mx + 1, my + 3); R(g, '#a8801c', mx + 2, my + 4, 1, 2); R(g, '#a8801c', mx + 6, my + 4, 1, 2);
-  R(g, '#241a14', cx0 + 3, py(cx0 + 3) + 7, 5, 3); R(g, '#1c1410', cx0 + 25, py(cx0 + 25) + 5, 4, 4); P(g, '#1c1410', cx0 + 8, py(cx0 + 8) + 9);   /* scorch + mud */
-  /* the crown on the road beside it: a gold band, five points (the fourth knocked askew), a red gem and a green one, a dent */
-  const kx = 70, ky = 28;
+/* GORM'S CROWN, baked: a gold band, five points (the fourth knocked askew), a red gem and a green one, a dent. (The red standard heap and the grey stump of the first cut are gone, Daniel 11-04:
+   the scene is one clean beat - the hero picks the crown up and holds it.) */
+const gormCrown = () => once('gormCrown', () => mk(16, 12, g => {
+  const kx = 1, ky = 5;
   R(g, '#a8801c', kx, ky + 3, 14, 3); R(g, '#e0b040', kx, ky + 2, 14, 3); R(g, '#fff1b0', kx + 1, ky + 2, 5, 1); R(g, '#7a5a14', kx, ky + 5, 14, 1);
   for (let i = 0; i < 5; i++) { const px = kx + i * 3 + (i === 3 ? 1 : 0), bent = i === 3; R(g, '#e0b040', px, ky - (bent ? 1 : 3) + 2, 2, bent ? 2 : 4); P(g, '#fff1b0', px, ky - (bent ? 1 : 3) + 2); P(g, '#a8801c', px + 1, ky - (bent ? 0 : 3) + 2); if (bent) { P(g, '#e0b040', px + 2, ky); P(g, '#a8801c', px + 3, ky + 1); } }
   R(g, '#d03a3a', kx + 3, ky + 3, 2, 2); P(g, '#ff9a8a', kx + 3, ky + 3); R(g, '#3ac870', kx + 9, ky + 3, 2, 2); P(g, '#b8ffd0', kx + 9, ky + 3); P(g, '#7a5a14', kx + 12, ky + 3); P(g, '#7a5a14', kx + 5, ky + 1);
 }));
+const lerp = (a, b, k) => a + (b - a) * k;
+/* THE SMOKE BEAT (claude/kingscene): env as drawFerryScene. s = seconds into the scene. Part 1 (to ~2.4 s): the party walks onto the court road, the leader stoops and takes up the crown and raises it, looks back at the wood.
+   Part 2: the horn, the smoke standing up, the leader turns, and the camera pans right (parallax layers) while the village grows from a far smudge on its hill to a burning town that fills the frame. Reduce-motion: no pan - one dip to dark. */
 export function drawSmokeScene(env, s) {
   const { g, VW, VH, time, n, reduce } = env, calm = !!reduce, wl = Math.round(VH * 0.60), rt = wl + 26, rise = smokeRise(s), glow = smokeGlow(s);
+  const p = smokePan(s, calm), cam = p * SMOKE.panPx, st = smokeStance(s, calm);
   g.drawImage(smokeSky(VW, wl), 0, 0); g.globalAlpha = glow; g.drawImage(smokeEmber(VW, wl), 0, 0); g.globalAlpha = 1;
-  /* the fire on the horizon: three halos low over the far hills at the right (taller + darker plumes as the village burns) */
-  [0.70, 0.80, 0.90].forEach((f, i) => { g.globalAlpha = glow * (0.55 + (calm ? 0 : Math.sin(time * 5 + i * 2) * 0.08)); g.drawImage(halo(60, '255,120,50'), Math.round(VW * f) - 60, wl - 60); g.globalAlpha = 1; });
-  /* the far hills (static, a dark blue-green with a rim of ember along the fire side) */
-  const hy = x => wl - 14 - Math.round(Math.sin(x * 0.021 + 1) * 9 + Math.sin(x * 0.057) * 4);
+  /* the far hills (a dark blue-green with a rim of ember along the fire side), sliding at 15% of the camera */
+  const hx = cam * 0.15, hy = x => wl - 14 - Math.round(Math.sin((x + hx) * 0.021 + 1) * 9 + Math.sin((x + hx) * 0.057) * 4);
   { const hs = g.createLinearGradient(0, wl - 30, 0, wl + 2); hs.addColorStop(0, '#202c2a'); hs.addColorStop(1, '#111a18'); g.fillStyle = hs;
-    g.beginPath(); g.moveTo(0, wl + 2); for (let x = 0; x <= VW; x += 8) g.lineTo(x, hy(x)); g.lineTo(VW, wl + 2); g.fill();
-    g.fillStyle = 'rgba(255,150,70,' + (0.35 * glow).toFixed(3) + ')'; g.beginPath(); g.moveTo(VW * 0.6, hy(VW * 0.6) + 1); for (let x = Math.round(VW * 0.6); x <= VW; x += 8) g.lineTo(x, hy(x) - 1); for (let x = VW; x >= Math.round(VW * 0.6); x -= 8) g.lineTo(x, hy(x) + 1); g.fill(); }
-  /* the far tree row (drifting left very slowly), THEN the village on its hill, the fire and the smoke, THEN the near row over their feet */
-  const trees = k => { const spr = huntTrees(k), d = calm ? 0 : -Math.round((time * (k ? 2.4 : 1.2)) % 540); for (let x = d; x < VW + 540; x += 540) g.drawImage(spr, x, wl - 54 + k * 14 + 8); };
-  trees(0);
-  { const vs = villageLine(), vx = Math.round(VW * 0.80 - vs.width / 2), vy = wl - 8 - vs.height + 1; g.globalAlpha = 0.55 + 0.45 * glow; g.drawImage(vs, vx, vy); g.globalAlpha = 1;
-    const roofs = [[vx + 27, vy + 22, 5, 1], [vx + 67, vy + 22, 7, 2], [vx + 105, vy + 26, 4, 3], [vx + 84, vy + 4, 3, 4], [vx + 48, vy + 28, 4, 5]], on = glow;
-    if (on > 0.1) { g.globalAlpha = Math.min(1, on * 1.2); for (const [fx, fy, fw, sd] of roofs) flames(g, fx, fy, fw, time, calm, sd); g.globalAlpha = 1; }
-    smokePlume(g, vx + 28, vy + 18, 120, rise, time, 1, calm); smokePlume(g, vx + 68, vy + 18, 150, rise * 0.95, time, 2, calm); smokePlume(g, vx + 105, vy + 20, 105, rise * 0.9, time, 3, calm); }
-  trees(1); g.globalAlpha = 0.25 * glow; g.fillStyle = '#ff7a30'; g.fillRect(Math.round(VW * 0.55), wl - 4, VW, 3); g.globalAlpha = 1;
-  /* the ground: the court road, a dirt bed with two ruts and gold leaves; dark grass either side, the ember light on it from the right */
+    g.beginPath(); g.moveTo(0, wl + 2); for (let x = 0; x <= VW; x += 8) g.lineTo(x, hy(x)); g.lineTo(VW, wl + 2); g.fill(); }
+  /* the far tree row (35% of the camera), THEN the village on its hill, THEN the near row over its feet */
+  const trees = (k, par) => { const spr = huntTrees(k), d = -Math.round((cam * par + (calm ? 0 : time * (k ? 2.4 : 1.2))) % 540); for (let x = d; x < VW + 540; x += 540) g.drawImage(spr, x, wl - 54 + k * 14 + 8); };
+  trees(0, 0.35);
+  /* THE VILLAGE: one sprite scaled up (width 0.46 -> 1.0 of the screen as the camera comes on), foot dropping from the horizon to the near hill; flames and plumes drawn in its own space */
+  { const vs = villageLine(), k = (VW * lerp(0.46, 1.0, p)) / vs.width, cxv = VW * lerp(0.78, 0.5, p), foot = lerp(wl - 8, wl + 12, p), tx = cxv - vs.width * k / 2, ty = foot - 35 * k;
+    g.save(); g.translate(Math.round(tx), Math.round(ty)); g.scale(k, k);
+    g.fillStyle = '#10171a'; g.fillRect(-6, 35, vs.width + 12, 60);                                                                   /* its hill */
+    g.fillStyle = 'rgba(255,150,70,' + (0.4 * glow).toFixed(3) + ')'; g.fillRect(-6, 35, vs.width + 12, 1);
+    g.globalAlpha = 0.55 + 0.45 * glow; g.drawImage(vs, 0, 0); g.globalAlpha = 1;
+    const roofs = [[27, 22, 5, 1], [67, 22, 7, 2], [105, 26, 4, 3], [84, 4, 3, 4], [48, 28, 4, 5], [10, 24, 3, 6], [123, 24, 4, 7]];
+    if (glow > 0.1) { g.globalAlpha = Math.min(1, glow * 1.2); for (const [fx, fy, fw, sd] of roofs) flames(g, fx, fy, fw, time, calm, sd); g.globalAlpha = 1; }
+    smokePlume(g, 28, 18, 70, rise, time, 1, calm); smokePlume(g, 68, 18, 90, rise * 0.95, time, 2, calm); smokePlume(g, 105, 20, 62, rise * 0.9, time, 3, calm);
+    g.restore();
+    /* the halos of the fire on the sky, on the roofs */
+    for (const [lx, ly] of [[28, 18], [68, 18], [105, 22]]) { const r = Math.round(46 + 15 * k); g.globalAlpha = glow * (0.55 + (calm ? 0 : Math.sin(time * 5 + lx) * 0.08)); g.drawImage(halo(60, '255,120,50'), Math.round(tx + lx * k) - r, Math.round(ty + ly * k) - r, r * 2, r * 2); g.globalAlpha = 1; } }
+  trees(1, 0.9); g.globalAlpha = 0.25 * glow; g.fillStyle = '#ff7a30'; g.fillRect(Math.round(VW * 0.55), wl - 4, VW, 3); g.globalAlpha = 1;
+  /* the ground: the court road, a dirt bed with two ruts and gold leaves; dark grass either side, the ember light on it from the right (the details slide with the camera) */
   { const gg = g.createLinearGradient(0, wl, 0, VH); gg.addColorStop(0, '#1d2a1a'); gg.addColorStop(1, '#0b120a'); g.fillStyle = gg; g.fillRect(0, wl + 2, VW, VH - wl);
     R(g, '#4a3a28', 0, rt - 2, VW, 14); R(g, '#5c4a34', 0, rt - 2, VW, 2); R(g, '#33281c', 0, rt + 4, VW, 1); R(g, '#33281c', 0, rt + 8, VW, 1);
-    for (let i = 0; i < 40; i++) { const x = Math.round(hash(i + 11) * VW), y = rt + 11 + Math.round(hash(i + 12) * Math.max(1, VH - rt - 14)); R(g, i % 3 ? '#2a3c1c' : '#5a4a1c', x, y, 2 + (i % 3), 1); }
-    for (let i = 0; i < 14; i++) { const x = Math.round(hash(i + 31) * VW), y = rt - 1 + Math.round(hash(i + 33) * 11); P(g, i % 2 ? '#d9a63a' : '#c9782a', x, y); }
+    const W = VW + 60, sl = x => (((x - cam) % W) + W) % W - 30;
+    for (let i = 0; i < 40; i++) { const x = Math.round(sl(hash(i + 11) * W)), y = rt + 11 + Math.round(hash(i + 12) * Math.max(1, VH - rt - 14)); R(g, i % 3 ? '#2a3c1c' : '#5a4a1c', x, y, 2 + (i % 3), 1); }
+    for (let i = 0; i < 14; i++) { const x = Math.round(sl(hash(i + 31) * W)), y = rt - 1 + Math.round(hash(i + 33) * 11); P(g, i % 2 ? '#d9a63a' : '#c9782a', x, y); }
     const ex = g.createLinearGradient(VW * 0.35, 0, VW, 0); ex.addColorStop(0, 'rgba(255,120,50,0)'); ex.addColorStop(1, 'rgba(255,120,50,' + (0.3 * glow).toFixed(3) + ')'); g.fillStyle = ex; g.fillRect(0, rt - 2, VW, VH - rt); }
-  /* GORM'S STANDARD, fallen at the road's edge: the snapped pole, the torn red cloth with its gold boar, and the dented crown, a glint on it now and then */
-  { const sp = gormStandard(), bx = Math.round(VW * 0.0) + 2, by = rt - 23; g.globalAlpha = 0.4; g.fillStyle = '#05080a'; g.fillRect(bx + 2, by + 33, 82, 3); g.globalAlpha = 1; g.drawImage(sp, bx, by);
-    const tw = calm ? 0.6 : Math.max(0, Math.sin(time * 1.7)) ** 6; if (tw > 0.05) { g.globalAlpha = tw; g.fillStyle = '#fff8d0'; g.fillRect(bx + 77, by + 26, 1, 3); g.fillRect(bx + 76, by + 27, 3, 1); g.globalAlpha = 1; } }
-  /* THE PARTY: in from the left over 2.4 s, then stood on the rise, looking right - every seat its own skin */
-  for (let i = 0; i < n; i++) { const h = smokeHero(i, n, s, VW); env.drawHero(i, h.x, rt + 7, 1, h.walking ? 'run' : 'idle', h.walking ? Math.floor(time * 12) + i * 2 : Math.floor(time * 4.5) + i); }
+  /* THE PARTY: in from the left; the leader (seat 0, the front) takes up THE CROWN lying on the road ahead of him and holds it high; the others stand behind. After the pan starts they walk on in place. */
+  const lead = smokeHero(0, n, s, VW), feet = rt + 7, cw0 = lead.x + 9;
+  for (let i = n - 1; i >= 0; i--) { const h = smokeHero(i, n, s, VW), walk = i === 0 ? st.walking : (h.walking || st.walking), face = i === 0 ? st.face : (s >= SMOKE.backAt && s < SMOKE.turnAt + 0.15 * i ? -1 : 1), bend = i === 0 ? Math.round(st.stoop * 3) : 0;
+    env.drawHero(i, h.x, feet + bend, face, walk ? 'run' : 'idle', walk ? Math.floor(time * 12) + i * 2 : Math.floor(time * 4.5) + i); }
+  { const cs = gormCrown(), gx = cw0 - 7, gy = feet - 8, hxh = lead.x + (st.face > 0 ? 3 : -3) - 8, hyh = feet - 40 + (calm ? 0 : Math.round(Math.sin(time * 3) * 1)), k = st.crown;   /* from the road to above his head */
+    const cx = Math.round(lerp(gx, hxh, k)), cy = Math.round(lerp(gy, hyh, k) - Math.sin(k * Math.PI) * 6);
+    if (k < 1) { g.globalAlpha = 0.4 * (1 - k); g.fillStyle = '#05080a'; g.fillRect(gx + 1, feet - 1, 14, 2); g.globalAlpha = 1; }
+    g.globalAlpha = Math.min(1, 0.35 * glow + 0.5 * k + 0.35); g.drawImage(halo(24, '255,200,90'), cx + 8 - 24, cy + 6 - 24); g.globalAlpha = 1;   /* the gold takes the fire */
+    g.drawImage(cs, cx, cy);
+    const tw = calm ? 0.6 : Math.max(0, Math.sin(time * 1.9)) ** 6; if (tw > 0.05 && k > 0.2) { g.globalAlpha = tw; g.fillStyle = '#fff8d0'; g.fillRect(cx + 11, cy + 4, 1, 3); g.fillRect(cx + 10, cy + 5, 3, 1); g.globalAlpha = 1; } }
   /* ash and sparks, blown in from the right on the wind (more as it burns) */
-  { const cnt = Math.round(10 + 22 * glow); for (let i = 0; i < cnt; i++) { const sp = 12 + hash(i + 3) * 22, x = (((hash(i) * (VW + 60)) - (calm ? 0 : time * sp)) % (VW + 60) + VW + 60) % (VW + 60) - 20, y = (((hash(i + 7) * VH) + (calm ? 0 : time * (4 + hash(i + 9) * 9) * (i % 2 ? 1 : -1))) % VH + VH) % VH;
+  { const cnt = Math.round(10 + 26 * glow); for (let i = 0; i < cnt; i++) { const sp = 12 + hash(i + 3) * 22, x = (((hash(i) * (VW + 60)) - (calm ? 0 : time * sp)) % (VW + 60) + VW + 60) % (VW + 60) - 20, y = (((hash(i + 7) * VH) + (calm ? 0 : time * (4 + hash(i + 9) * 9) * (i % 2 ? 1 : -1))) % VH + VH) % VH;
       const spark = i % 3 === 0; g.fillStyle = spark ? 'rgba(255,' + (150 + (i * 13) % 80) + ',70,' + (0.8 * glow).toFixed(2) + ')' : 'rgba(150,140,136,' + (0.5 * glow).toFixed(2) + ')'; g.fillRect(Math.round(x), Math.round(y), spark ? 1 : 2, 1); } }
-  /* near: dark bracken fronds along the bottom edge */
-  for (let i = 0; i < 12; i++) { const x = Math.round(i * (VW / 11) + (hash(i + 5) - 0.5) * 20), h = 12 + Math.round(hash(i + 2) * 12); for (let k = 0; k < 5; k++) { const lean = (k - 2) * 2; for (let y = 0; y < h - Math.abs(k - 2) * 2; y++) P(g, y % 5 === 4 ? '#0e1a0c' : '#07100a', x + Math.round(lean * y / 5), VH + 2 - y); } }
+  /* near: dark bracken fronds along the bottom edge (they slide fastest) */
+  for (let i = 0; i < 12; i++) { const x = Math.round((((i * (VW / 11) + (hash(i + 5) - 0.5) * 20 - cam * 1.3) % (VW + 40)) + VW + 40) % (VW + 40)) - 20, h = 12 + Math.round(hash(i + 2) * 12); for (let k = 0; k < 5; k++) { const lean = (k - 2) * 2; for (let y = 0; y < h - Math.abs(k - 2) * 2; y++) P(g, y % 5 === 4 ? '#0e1a0c' : '#07100a', x + Math.round(lean * y / 5), VH + 2 - y); } }
   g.fillStyle = 'rgba(40,10,10,' + (0.10 * glow).toFixed(3) + ')'; g.fillRect(0, 0, VW, VH);
+  if (calm) { const d = Math.max(0, 1 - Math.abs(s - (SMOKE.panAt + 0.25)) / 0.25); if (d > 0) { g.fillStyle = 'rgba(5,4,10,' + (d * 0.9).toFixed(3) + ')'; g.fillRect(0, 0, VW, VH); } }   /* reduce-motion: the cut to the village is one dip to dark */
   const a = s < 0.45 ? 1 - s / 0.45 : 0; if (a > 0) { g.fillStyle = 'rgba(8,6,14,' + (a * a).toFixed(3) + ')'; g.fillRect(0, 0, VW, VH); }
 }
