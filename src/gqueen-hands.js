@@ -30,7 +30,7 @@ export function makeGQueenHands(ctx) {
   let persist = null, hallSnap = null;
   H.persist = () => persist;
   H.load = () => { S = null; persist = null; const A = L() && L().arena; hallSnap = A && A.boss === 'gqueen' ? { ...A } : null; };
-  const fresh = () => ({ crown: null, rocks: [], portals: [], cast: null, stunUntil: 0, stunGuardUntil: 0, stuns: 0, said: new Set(), esc: null, coll: new Map(), slate: new Map() });
+  const fresh = () => ({ crown: null, rocks: [], portals: [], cast: null, stunUntil: 0, stunGuardUntil: 0, stuns: 0, said: new Set(), rid: 0, esc: null, coll: new Map(), slate: new Map() });
   /* her hall's arena as it was built (a portal step turns L.arena into the tower top's; a death turns it back) */
   function restoreHall() {
     const A = L().arena; if (!A || !hallSnap) return;
@@ -295,7 +295,7 @@ export function makeGQueenHands(ctx) {
   /* the hall portals' (and the escape's) fan of shards: three, +-14 deg, at the spot given, yellow and blockable; a parry only clanks here (nobody to send it back to) */
   function fan(px, py, tx, ty, esc) {
     const pc = G.portal, base = Math.atan2(ty - py, tx - px);
-    for (let k = 0; k < pc.fan; k++) { const a = base + (k - (pc.fan - 1) / 2) * pc.spread * Math.PI / 180; S.rocks.push({ x: px, y: py, vx: Math.cos(a) * pc.v, vy: Math.sin(a) * pc.v, t: 0, dead: false, home: false, cast: null, esc: !!esc }); }
+    for (let k = 0; k < pc.fan; k++) { const a = base + (k - (pc.fan - 1) / 2) * pc.spread * Math.PI / 180; S.rocks.push({ x: px, y: py, vx: Math.cos(a) * pc.v, vy: Math.sin(a) * pc.v, t: 0, dead: false, home: false, cast: null, esc: !!esc, id: 'r' + (++S.rid) }); }
     ctx.burst(px, py, 8, ['#b28cff', '#e8dcff', '#8a8a9c'], 60, 0.4); sfx('crack');
   }
 
@@ -305,7 +305,7 @@ export function makeGQueenHands(ctx) {
   function launchCrown(e, P0) {
     const c = G.crown, dir = sign(P0.x - e.x);
     e.face = dir; e.crownOut = true;
-    S.crown = { x: e.x + dir * 24, y: P0.y - c.dy, x0: e.x + dir * 24, vx: dir * c.out, dir, state: 'out', t: 0, hit: false, pass: 1, home: false };
+    S.crown = { x: e.x + dir * 24, y: P0.y - c.dy, x0: e.x + dir * 24, vx: dir * c.out, dir, state: 'out', t: 0, hit: false, pass: 1, home: false, id: 'c' + (++S.rid) };
     sfx('throwWhoosh');
   }
   function crownStep(dt) {
@@ -371,7 +371,7 @@ export function makeGQueenHands(ctx) {
       if (t >= p.fireAt) {
         p.fired = true; p.firedAt = t; p.state = 'fired';
         const base = Math.atan2(p.aimY - p.y, p.aimX - p.x);
-        for (let k = 0; k < pc.fan; k++) { const a = base + (k - (pc.fan - 1) / 2) * pc.spread * Math.PI / 180; S.rocks.push({ x: p.x, y: p.y, vx: Math.cos(a) * pc.v, vy: Math.sin(a) * pc.v, t: 0, dead: false, home: false, cast: S.cast }); }
+        for (let k = 0; k < pc.fan; k++) { const a = base + (k - (pc.fan - 1) / 2) * pc.spread * Math.PI / 180; S.rocks.push({ x: p.x, y: p.y, vx: Math.cos(a) * pc.v, vy: Math.sin(a) * pc.v, t: 0, dead: false, home: false, cast: S.cast, id: 'r' + (++S.rid) }); }
         ctx.burst(p.x, p.y, 8, ['#b28cff', '#e8dcff', '#8a8a9c'], 60, 0.4); sfx('crack');
       } else if (Math.random() < dt * 26) ctx.part({ x: p.x + (Math.random() - 0.5) * 10, y: p.y + (Math.random() - 0.5) * 16, vx: 0, vy: -10, life: 0.3, max: 0.3, col: '#b28cff', size: 1, grav: 0, glow: true });
     }
@@ -534,13 +534,16 @@ export function makeGQueenHands(ctx) {
   H.shots = () => {
     if (!S) return [];
     const out = [];
-    if (S.crown && S.crown.state !== 'floor') out.push({ x: S.crown.x, y: S.crown.y, vx: S.crown.vx, vy: 0, kind: 'crown', home: !!S.crown.home });
-    for (const r of S.rocks) if (!r.dead) out.push({ x: r.x, y: r.y, vx: r.vx, vy: r.vy, kind: 'rock', home: !!r.home });
+    if (S.crown && S.crown.state !== 'floor') out.push({ id: S.crown.id, x: S.crown.x, y: S.crown.y, vx: S.crown.vx, vy: 0, kind: 'crown', home: !!S.crown.home });
+    for (const r of S.rocks) if (!r.dead) out.push({ id: r.id, x: r.x, y: r.y, vx: r.vx, vy: r.vy, kind: 'rock', home: !!r.home });
+    const st = S.roof && S.roof.storm; if (st && st.x !== undefined) { const w = Math.PI * 2 / G.roof.orbitTurn; out.push({ id: 's' + Math.floor(st.ang / (Math.PI * 2)), x: st.x, y: st.y, vx: -Math.sin(st.ang) * G.roof.orbitR * w, vy: Math.cos(st.ang) * G.roof.orbitR * 0.55 * w, kind: 'storm', home: false }); }
     return out;
   };
   H.stage = () => { const e = q(); return e && e.stage ? e.stage : 'hall'; };
   H.portals = () => (S ? S.portals.map(p => ({ x: p.x, y: p.y, state: p.state })) : []);
-  H.read = () => S ? { crown: S.crown ? { ...S.crown } : null, rocks: S.rocks.length, portals: S.portals.length, stunUntil: S.stunUntil, stuns: S.stuns } : null;
+  H.read = () => S ? { crown: S.crown ? { ...S.crown } : null, rocks: S.rocks.length, portals: S.portals.length, stunUntil: S.stunUntil, stuns: S.stuns, persist: persist ? { ...persist } : null,
+    esc: S.esc ? { on: S.esc.on, fireOn: S.esc.fireOn, checked: S.esc.checked } : null,
+    roof: S.roof ? { ambushX: S.roof.ambushX, geysers: S.roof.geysers.map(g => ({ x: g.x, at: g.at })), storm: !!S.roof.storm, adds: [...S.roof.adds] } : null } : null;
   H.test = { toss: () => { const e = q(); if (e && S) { e.mode = 'crownTossTell'; e.modeT = 0.01; } }, stun: (d, p) => stun(q(), d, p || 0) };
   return H;
 }
