@@ -1,0 +1,34 @@
+{
+  "time": "2026-11-04T18:37:45.492Z",
+  "status": "Prepared separate source only; native compatibility and materiality unproved.",
+  "sourceGame": "dc02ecc059959b795f76dee47665b54f349d4e2f",
+  "controller": "6e74c2514fd2a504c20d1f39da61ff72bf989200",
+  "originalPxSha256": "e9a358b9170944e0dfae6d1b8c82d7b664562e0b2b0ab7f2538236e34214db1d",
+  "candidatePxSha256": "64d36a87a48dc16f333c7b313f9b412696a9a92485e828d2a053276b4084ed5c",
+  "helperSha256": "3a9deb6b990b6d6dbb4a41a2a488abdaa411fc866cf12eb0d0104463bd4e559d",
+  "originalByteUndoExact": true,
+  "originalLineEndings": "LF",
+  "publicConstructorsAndAll50LiveExpressionsUnchanged": true,
+  "noOtherPrototypeCombined": true,
+  "distinction": "Old round-row source scanned every bounding coordinate with the original membership test. This distinct solver uses two monotone binary searches per row with that exact same floating-point inequality, retaining original loops for unqualified inputs. No sqrt approximation, ImageData, scratch canvas, allocation sharing, eviction or laziness.",
+  "evidence": {
+    "historicalSource": "62d9c02c102decc69ceaef4e1ec593a23170f1ff",
+    "sameOriginalPxSha256": "9d3feee0d3a14e186f3259e7b7a1279b579989a0461de55d594f676f525533ae",
+    "profile": "work/task5-cold-boot-profile-oct26/profile.cpuprofile",
+    "profileSha256": "effa3fc5a6dae9c346dd577171f051c174d586b252016e2c38a8e4bcad304cc7",
+    "circleSelfMs": 244.837,
+    "ellipseSelfMs": 134.251,
+    "limits": "Historical self CPU attribution selects a different algorithm; not current-source invocation coverage, avoidable time, native memory bytes or a gain."
+  },
+  "priorRejected": "outputs/receipts/round-row-startup-oct26.json remains unadopted with mixed controls; no unchanged old source retiming or inherited pass.",
+  "requiredBeforeDispatch": [
+    "Review numeric monotonicity, native context/path/state/clip exactness, coercion and foreign observer fallbacks.",
+    "Retain original768native geometry/context cases and add CPU-path geometry/edge/ULP/coercion/proxy/native capability cases plus Node fallback.",
+    "Measure actual eligible calls, exact outputs, predicate reduction and full controlled startup/loading/memory on the new source before original gates."
+  ],
+  "rendererMb": 1536,
+  "admissionMb": 4352,
+  "dispatched": false,
+  "adopted": false,
+  "overallWorkComplete": false
+}
