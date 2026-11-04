@@ -3,7 +3,19 @@ const sameValue=Object.is,apply=Reflect.apply,own=Reflect.getOwnPropertyDescript
 const get=WeakMap.prototype.get,put=WeakMap.prototype.set,has=WeakMap.prototype.has;
 const lookup=(m,k)=>apply(get,m,[k]),remember=(m,k,v)=>apply(put,m,[k,v]),contains=(m,k)=>apply(has,m,[k]);
 const O=Object,A=Array,OP=Object.prototype,AP=Array.prototype,FP=Function.prototype,fnText=own(FP,'toString').value;
-const native=f=>typeof f==='function'&&/^function\s+(?:(?:get|set)\s+)?(?:[\w$]+|\[Symbol\.[\w$]+\])\s*\([^)]*\)\s*\{\s*\[native code\]\s*\}$/.test(apply(fnText,f,[]));
+const native=f=>{
+  if(typeof f!=='function')return false;
+  const text=apply(fnText,f,[]);
+  const part=(at,word)=>{if(at+word.length>text.length)return false;for(let n=0;n<word.length;n++)if(text[at+n]!==word[n])return false;return true;};
+  const word=c=>c!==undefined&&(c>='a'&&c<='z'||c>='A'&&c<='Z'||c>='0'&&c<='9'||c==='_'||c==='$');
+  if(!part(0,'function '))return false;
+  let at=9;
+  if(part(at,'get ')||part(at,'set '))at+=4;
+  if(part(at,'[Symbol.')){at+=8;const start=at;while(at<text.length&&word(text[at]))at++;if(at===start||text[at]!==']')return false;at++;}
+  else{const start=at;while(at<text.length&&word(text[at]))at++;if(at===start)return false;}
+  const end='() { [native code] }';
+  return at+end.length===text.length&&part(at,end);
+};
 const realm = globalThis;
 const intrinsicBinding = key => { const d = own(realm, key); if (!d) return undefined; if (d.get) return native(d.get) ? apply(d.get, realm, []) : undefined; return d.value; };
 const documentType = intrinsicBinding('Document'), canvasType = intrinsicBinding('HTMLCanvasElement'), contextType = intrinsicBinding('CanvasRenderingContext2D');

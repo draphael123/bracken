@@ -6,6 +6,7 @@ import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { OUT, openFixedArtPage } from './baseline-memory-profile-page-oct30.mjs';
 import { runSkyroadSpanCases } from './skyroad-mass-spans-cases-nov04.mjs';
+import { runSkyroadSpanContracts } from './skyroad-span-contract-cases-nov04.mjs';
 
 assert(process.env.CI);
 for (const name of ['BRACKEN_RENDERER_MB', 'BRACKEN_RECYCLE_MB', 'BRACKEN_LAB_GC']) assert.equal(process.env[name], undefined);
@@ -51,6 +52,8 @@ try {
   assert.equal(receipt.rng, 0);
   assert.deepEqual(pg.errors, []);
   assert.deepEqual(pg.paletteErrors, []);
+  receipt.contracts = await pg.evalp('(' + runSkyroadSpanContracts.toString() + ')(' + JSON.stringify(manifest) + ')', 240000);
+  assert(receipt.contracts.complete && receipt.contracts.contractRows.length === 32 && receipt.contracts.rng === 0);
   receipt.status = 'Native factory compatibility complete. Actual Game benefit and original gates remain required.';
 } catch (error) {
   receipt.complete = false;

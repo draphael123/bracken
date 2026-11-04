@@ -1,10 +1,10 @@
 {
-  "time": "2026-11-04T15:51:29.872Z",
+  "time": "2026-11-04T16:08:57.401Z",
   "status": "Prepared source only. Native qualification pending.",
   "source": "6e74c2514fd2a504c20d1f39da61ff72bf989200",
   "originalSha256": "da71fbb10dbae92735a882adc166e3715d02eaa1573521da609d290a09029001",
   "candidateSha256": "09a7b17de805afc95dd197b4f9919457dab96f94d12921ed2218573ff3b68833",
-  "helperSha256": "342c8ef64e4bb114568cb5750c03e548bd5be475b7d8c543a8080f4c51c84332",
+  "helperSha256": "e9b3dbbcb3dd95cf958ed3d1a362c28e02ad7dd6b442bb461b68605c6d60dcdc",
   "sourceGuardSha256": "622670c5bcded9d574498b4f924e1481a47e013e23379cbd04c077b104579495",
   "originalByteUndoExact": true,
   "originalLineEndings": "LF",
@@ -40,7 +40,12 @@
     "receipt": "outputs/receipts/skyroad-guard-diagnosis-plan-nov04.json",
     "originalFailureRun": 41859537354,
     "originalHelperSha256": "40547a4fa0466748c5d7a45b86d760b4c0aac75cb72ba219195edce58efff45a",
-    "scope": "Exactly eight native RegExp get/set accessors in their actual four descriptor slots. General native function recognizer unchanged. Full descriptor/prototype/identity watches retained. Forty-eight new foreign/bound/Proxy before/after-import fallback cases."
+    "scope": "Exactly eight native RegExp get/set accessors in their actual four descriptor slots. General native function recognizer unchanged. Full descriptor/prototype/identity watches retained. Forty-eight new foreign/bound/Proxy before/after-import fallback cases.",
+    "sideEffectCorrection": "A canonical native-text parser with no RegExp calls. Accepts only empty native parameter lists, canonical spaces, original word/Symbol names; its accepted native set must exactly match the previous recognizer on all actual watched browser descriptors. General backend and all original helpers unchanged.",
+    "additionalNativeContracts": 32,
+    "primarySource": "https://github.com/tc39/proposal-regexp-legacy-features",
+    "predecessorController": "b2783990a80505415d2760aa72b20198b30fb7bb",
+    "predecessorManifestSha256": "274c80216fe75a627dab24ab29ee52fcb451152b8e18429ca8db416f4c38ebed"
   },
   "fixturesSha256": "e6a8d60e18e34c9fdd874412ac5c005efb12c148fff12f06098a655e3cd24c32",
   "allOriginalFamilyCases": 4928,
