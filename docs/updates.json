@@ -1,6 +1,17 @@
 [
   {
     "date": "2026-11-05",
+    "batch": 142,
+    "lines": [
+      "Geomancer: DOWN+C detonates your stones, Stone Skin when you crouch, and a rising uppercut",
+      "Wasps and hornets wear glossy shells, and the Hornet Queen is redrawn",
+      "The Arena Yard is the one training ground, and the tavern has a Duel Pit",
+      "Floating platforms fixed: posts, braces and masonry under the decks",
+      "The Hornet's Nest looks cleaner, with no sliding leaf trim"
+    ]
+  },
+  {
+    "date": "2026-11-05",
     "batch": 141,
     "lines": [
       "New Arena Yard: practice every move on straw dummies that grade your parries",
