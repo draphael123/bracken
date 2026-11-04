@@ -7,3 +7,4 @@ export const CARD_LINES = [
   'THANK YOU FOR PLAYING. THE ROAD GOES ON IN THE FULL GAME.',
   'YOUR HERO CARRIES OVER: SAVE YOUR PROGRESS HERE, THEN USE SETTINGS > IMPORT SAVE IN THE FULL GAME.',
 ];
+export const MAP_CAPTION = 'THE ROAD CONTINUES...';   /* the demo map's plate: the locked road past Kingswood */

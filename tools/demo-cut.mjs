@@ -63,6 +63,9 @@ const PINNED = [
   [/^DS\.DEMO\) DSV\.tag\(PROG, LEVELS\)/, 'progDefaults: tag a demo save'],
   [/^DS\.demoEndsHere\(LEVELS\[levelIndex\]\.id\) \? -1 : partyNextLevel\(\)/, 'win card: no party-next past Gorm'],
   [/^DS\.demoEndsHere\(LEVELS\[levelIndex\]\.id\) && !bossSelectFight/, 'win card: the end card'],
+  [/^DS\.DEMO \? \['knight'/, 'hero pick: the five demo heroes'],
+  [/^DS\.DEMO \? HEROES\.filter/, 'store: the HEROES rows are the demo five'],
+  [/^DS\.DEMO\) DEND\.mapCaption/, 'map: the road-continues caption'],
   [/^DS\.DEMO\b/, 'title: no boss rush'],
 ];
 const left = uses.slice();

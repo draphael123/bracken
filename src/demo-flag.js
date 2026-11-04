@@ -7,6 +7,7 @@ import { DEMO_IDS } from './demo-slots.js';
 export const DEMO_BUILD = false;   /* the trimmed itch build flips this one line */
 export const flagFrom = (search, build = false) => !!build || /[?&]demo=1(?:&|#|$)/.test(search || '');
 export const DEMO = flagFrom(typeof location !== 'undefined' ? location.search : '', DEMO_BUILD);
+export const DEMO_HEROES = new Set(['knight', 'warden', 'geomancer', 'ranger', 'pyro']);   /* the four free starters + the Pyromancer (the Burning Village's duel): the pick, the store and co-op show these five; the rest wait in the full game */
 export const DEMO_LAST = 'kings';   /* the last boss of the slice: King Gorm's wood */
 /* a campaign level is OUT of the slice when it is not one of the 12 and is a real stop on the road (a hidden shop / trial / tavern with no road of its own stays reachable from the slice) */
 export const outOfSlice = lv => !!lv && !DEMO_IDS.has(lv.id) && (!lv.hidden || !!lv.secret);
