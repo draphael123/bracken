@@ -64,7 +64,7 @@ function hornetFrame(beat, hurt) { return (g, layer) => {
     put(g, HP.Kd, 9, 7 + dy); put(g, HP.Kd, 10, 7 + dy);                                                                     /* the pinched waist */
     /* the thorax: a red-brown barrel, a gloss on top, an amber scutellum */
     for (let y = 4; y <= 9; y++) for (let x = 11; x <= 14; x++) { if ((x === 11 || x === 14) && (y === 4 || y === 9)) continue; put(g, y === 4 ? HP.Cl : y >= 8 ? HP.Cd : HP.C, x, y + dy); }
-    put(g, HP.Cl, 12, 5 + dy); put(g, HP.Al, 13, 4 + dy); put(g, HP.A, 12, 4 + dy); put(g, HP.A, 12, 8 + dy); put(g, HP.Ad, 13, 8 + dy);
+    put(g, '#f2b890', 12, 5 + dy); put(g, HP.Cl, 11, 6 + dy); put(g, HP.Al, 13, 4 + dy); put(g, HP.A, 12, 4 + dy); put(g, HP.A, 12, 8 + dy); put(g, HP.Ad, 13, 8 + dy);
     put(g, HP.Kd, 15, 7 + dy);                                                                                              /* the neck */
     /* the head: red-brown, a big dark eye with a glint, an amber face patch */
     for (let y = 5; y <= 10; y++) for (let x = 16; x <= 21; x++) { if ((x === 16 || x === 21) && (y === 5 || y === 10)) continue; put(g, y === 5 ? HP.Cl : y >= 9 ? HP.Cd : HP.C, x, y + dy); }

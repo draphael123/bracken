@@ -12,6 +12,7 @@ const W = 112, H = 84, OX = 56, OY = 42, memo = new Map();
 const INK = '#1a0c06';
 const CH = ['#2a140a', '#4a2410', '#6e3a16', '#94521e', '#b8702a'];             /* the thorax: chestnut, dark to lit */
 const AM = ['#9a5a08', '#dc9214', '#f8b82c', '#ffd850', '#fff2a8'];              /* the abdomen's amber */
+const SHL = ['#1c0806', '#3a1210', '#5c1c12', '#82301a', '#a84a26', '#f2b890', '#fff2e0'];   /* (claude/queengloss) the glossy shell: dark red-brown lacquer, then specular */
 const WING = ['#8aa4bc', '#b4c8dc', '#d8e6f2', '#f4f9fd'];
 const GOLD = ['#a8741e', '#ffd36b', '#fff0a0'];
 const EYE = ['#6a0a0a', '#e8341c', '#ff8a5a', '#ffe0c0'];
@@ -60,14 +61,20 @@ function bake(p, step) {
     for (let i = 0; i < sl; i++) { const k = i / sl; px(g, k < 0.7 ? '#f4ecd8' : '#ffffff', tx - ax * i, ty - ay * i); if (k < 0.45) px(g, '#c8b890', tx - ax * i, ty - ay * i + 1); }
     px(g, '#3a2a18', tx, ty); c._tip = [OX + tx - ax * sl, OY + ty - ay * sl]; if (lying) c._tip = [OX + tx, OY + ty]; }
   /* the thorax: a chestnut barrel with an amber fur fringe along its back and a pale collar */
-  blob(g, th[0], th[1], 8, 6.4, t, (u, v, dx, dy, x, y) => { const k = lit(dx, dy, 8); let sh = k > 0.55 ? 4 : k > 0.15 ? 3 : k > -0.3 ? 2 : k > -0.65 ? 1 : 0;
+  blob(g, th[0], th[1], 8, 6.4, t, (u, v, dx, dy, x, y) => { const k = lit(dx, dy, 8), r2 = u * u + v * v;   /* (claude/queengloss) GLOSSY HARD SHELL: dark red-brown lacquer in four hard bands, a dark crisp rim, a plate seam, a specular streak; no noise */
     if (v < -0.62 && u > -0.5 && u < 0.5) return AM[2];   /* a hard amber stripe on the back, no fur (claude/waspart) */
     if (u > 0.78) return '#e8c878';                                       /* the collar */
-    if (hash(x, y) % 9 === 0) sh = Math.min(4, sh + 1); return CH[sh]; });
+    if (r2 > 0.8) return SHL[0];                                           /* the crisp plate edge */
+    if (Math.abs(u + 0.12) < 0.1 && v > -0.55) return SHL[0];             /* the seam between the shield and the back plate */
+    if (v > -0.5 && v < -0.22 && u > -0.7 && u < 0.05 && Math.abs(u + 0.12) >= 0.1) return u < -0.3 ? SHL[5] : SHL[6];   /* the specular streak, long and hard */
+    if (v > -0.5 && v < -0.22 && u > 0.12 && u < 0.4) return SHL[5];
+    const sh = k > 0.5 ? 4 : k > 0.1 ? 3 : k > -0.3 ? 2 : 1; return SHL[sh]; });
   px(g, CH[0], th[0] - 2, th[1] + 2);
   /* the head: chestnut, a big red eye, pale mandibles, a gold crown, two antennae */
   { const [hx, hy] = head0, hr = 5.6;
-    blob(g, hx, hy, hr, hr - 0.4, t, (u, v, dx, dy, x, y) => { const k = lit(dx, dy, hr); const sh = k > 0.5 ? 4 : k > 0.1 ? 3 : k > -0.35 ? 2 : 1; return CH[Math.min(4, sh)]; });
+    blob(g, hx, hy, hr, hr - 0.4, t, (u, v, dx, dy, x, y) => { const k = lit(dx, dy, hr);   /* (claude/queengloss) the head capsule: the same hard lacquer, dark rim, one crisp glint on the crown side */
+      if (u * u + v * v > 0.74) return SHL[0]; if (v < -0.28 && v > -0.62 && u > -0.7 && u < -0.05) return SHL[6]; if (v < -0.28 && v > -0.62 && u >= -0.05 && u < 0.25) return SHL[5];
+      return SHL[k > 0.45 ? 4 : k > 0.05 ? 3 : k > -0.35 ? 2 : 1]; });
     const [ex, ey] = rot(2.4, -0.8, t); blob(g, hx + ex, hy + ey, 2.9, 3.5, t, (u, v, dx, dy) => { const kk = lit(dx, dy, 3); return kk > 0.45 ? EYE[3] : kk > 0.05 ? EYE[2] : kk > -0.4 ? EYE[1] : EYE[0]; });
     const [mx, my] = rot(5, 3.5, t); line(g, '#f0e4c8', hx + mx - 1, hy + my - 1, hx + mx + 3, hy + my + 3); line(g, '#c8b890', hx + mx - 2, hy + my, hx + mx + 1, hy + my + 4); line(g, '#f0e4c8', hx + mx - 2, hy + my + 3, hx + mx + 2, hy + my + 1); px(g, '#8a7a58', hx + mx + 3, hy + my + 4);   /* two heavy crossing jaws */
     /* the crown: a gold band and three points, set on the head */

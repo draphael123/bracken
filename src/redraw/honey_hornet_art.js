@@ -9,6 +9,7 @@
 //   folded, eye shut, antennae drooping, a bead of resin at its mouth, a puddle under it), HURT (squint, the plates flashing), DEAD (on its back, legs curled, eye crossed, resin leaking).
 //   bakeHoneyHornetSheet(canvas, flipX, whiten, HONEY) -> { R, L, white: { R, L }, ax, ay, w, h, card }
 const W = 58, H = 34, AX = 34, AY = 31;   /* (claude/nestbugs) wider: the abdomen is now behind a pinched waist */
+const SHL = ['#1c0806', '#3a1210', '#5c1c12', '#82301a', '#a84a26', '#f2b890', '#fff2e0'];   /* (claude/queengloss) glossy red-brown shell, as the queen's */
 const INK = '#1a0c06', CH = ['#2a140a', '#4a2410', '#6e3a16', '#804d20'], AM = ['#69390b', '#9e5a15', '#c37825', '#ed9835', '#f8c47b'];
 const PL = ['#120806', '#2a160c', '#4a2c16', '#65401f'], PLRIM = '#d49444', PLGLINT = '#f4d8a0';
 const WING = ['#8aa4bc', '#c4d4e4', '#eef4fa'], HONEYC = ['#905010', '#c27825', '#f6aa50', '#f8c882'];
@@ -65,10 +66,10 @@ function drawHornet(g, p, step, layer = 'body') {   /* (claude/nestbugs) layer '
   if (BODY) { const tx = ax - Math.cos(aa) * (RX + 0.5), ty = ay - Math.sin(aa) * (RX + 0.5) + 1; line(g, '#f0e8d0', tx, ty, tx - Math.cos(aa) * 5, ty - Math.sin(aa) * 5 + 2); px(g, '#fff', tx - Math.cos(aa) * 5, ty - Math.sin(aa) * 5 + 2);   /* a LONG sting */
     const wx = ax + Math.cos(aa) * (RX - 0.5), wy = ay + Math.sin(aa) * (RX - 0.5); line(g, PL[0], wx, wy + 0.5, cx - 2, cy);   /* the PINCHED WAIST: a one-pixel stalk between abdomen and thorax */ }
   /* the THORAX with its plated shoulder (the same lacquer as the back: a small rimmed scale), the HEAD (compound eye, pale mandibles), the antennae */
-  if (BODY) blob(g, cx + 2, cy - 1, 4, 4.4, t, (u, v, dx, dy) => (-(dx * 0.4 + dy * 0.9) / 5 > 0.3 ? CH[3] : v > 0.4 ? CH[0] : CH[2]));
+  if (BODY) blob(g, cx + 2, cy - 1, 4, 4.4, t, (u, v, dx, dy) => { const k = -(dx * 0.4 + dy * 0.9) / 5; return u * u + v * v > 0.8 ? SHL[0] : (v < -0.2 && v > -0.55 && u > -0.6 && u < 0.2) ? SHL[6] : k > 0.35 ? SHL[4] : k > -0.05 ? SHL[3] : k > -0.4 ? SHL[2] : SHL[1]; });   /* (claude/queengloss) hard glossy shell, not fuzz */
   if (BODY) blob(g, cx + 1, cy - 4, 2.8, 1.8, t, (u, v) => (u > 0.5 ? PLRIM : v < -0.2 ? PL[3] : PL[2])); px(g, PLGLINT, cx, cy - 5);   /* the pauldron */
   const hx = cx + 10 + Math.cos(t) * 2 + (p.head || 0), hy = cy - 1 + Math.sin(t) * 3 + (p.sleep ? 2 : 0);
-  if (BODY) blob(g, hx, hy, 3.6, 3.4, t, (u, v) => (v > 0.5 ? CH[1] : CH[2]));
+  if (BODY) blob(g, hx, hy, 3.6, 3.4, t, (u, v) => (u * u + v * v > 0.78 ? SHL[0] : (v < -0.3 && v > -0.65 && u < 0 && u > -0.7) ? SHL[5] : v > 0.45 ? SHL[1] : v > -0.1 ? SHL[2] : SHL[3]));
   if (!BODY) { /* thin parts below */ }
   else if (p.sleep) { line(g, INK, hx + 0.5, hy - 1, hx + 3, hy - 1); px(g, '#e8d8b0', hx + 1, hy); px(g, '#e8d8b0', hx + 2, hy); }   /* the eye shut: a dark lid line */
   else if (p.dead) { px(g, '#e8341c', hx + 1, hy - 2); px(g, '#e8341c', hx + 3, hy); px(g, '#e8341c', hx + 3, hy - 2); px(g, '#e8341c', hx + 1, hy); px(g, '#ff9a6a', hx + 2, hy - 1); }   /* crossed out */
