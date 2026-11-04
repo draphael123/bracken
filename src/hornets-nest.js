@@ -186,9 +186,10 @@ export function buildHornetsNest({ painter, T, TS }) {
   hang('gallery', 195, 206, 26, 1, { bridge: true });
   sign(191, 29, 'THE COMB OVER THE GAP IS WIDER THAN THE GAP. CUT IT FROM THE PILLAR: IT LANDS ACROSS.');
   coins([207, 28], [210, 28]);
-  hornet(176, 22, { squad: 'gallery' }); hornet(185, 23, { squad: 'gallery' }); hornet(199, 24, { squad: 'gallery' });   /* (the curve tune: a third over the bridge gap) */   /* two hornets patrol over the sagging combs (a pot carried quiets them) */
-  stinger(194, 29, { squad: 'gallery' });                     /* the pillar's stinger */
-  drone(209, 29, { squad: 'gallery' });                       /* a comb drone on the exit ledge */
+  /* (claude/nestpolish, the platforming rule: no fight INSIDE a section) the gallery's hornets keep its two ENDS - the sill (a hornet over the stand at 170, so a carried pot still quiets it) and the exit floor (two hornets, the stinger, the drone) - and the sagging combs, the pillar and the bridge are clear */
+  hornet(166, 24, { squad: 'gallery' }); hornet(214, 23, { squad: 'gallery' }); hornet(217, 24, { squad: 'gallery' });   /* (the curve tune kept its three: one at the sill, two at the exit) */
+  stinger(215, 31, { squad: 'gallery' });                     /* the exit floor's stinger (was the pillar's) */
+  drone(217, 31, { squad: 'gallery' });                       /* a comb drone on the exit floor (was the exit ledge) */
   drip(180, 22, 2.6, 0); drip(185, 22, 2.6, 1.3); drip(201, 22, 2.6, 0.65); drip(209, 22, 2.6, 1.95);   /* resin from the paper roof on a string, its nub six rows over the footing (the camera shows ~11 rows: the bead swells in view): over the second and third combs, the gap (it lands on the bridge once cut), the ledge */
   coins([211, 28], [212, 28]);   /* (a level holds exactly three silvers: the new sections pay in gold) */
 
@@ -207,10 +208,11 @@ export function buildHornetsNest({ painter, T, TS }) {
   sign(318, 47, 'UP THE EAST WALL ON THE PENDANT COMBS. A DRIP SWELLS, THEN FALLS. WATCH THE ONE ABOVE YOU.');
   sign(300, 11, 'DOWN THE WEST SIDE, THEN UP THE EAST. THE COMB WALL BELOW IS STICKY.');
   sign(336, 26, 'THE NEXT COMB IS TOO HIGH. CUT THE ONE HUNG OVER YOU: IT LANDS AS THE STEP.');
-  hornet(312, 16, { squad: 'well', perch: true }); hornet(318, 30, { squad: 'well', perch: true });
-  fat(340, 37, { squad: 'well' });                            /* the amber hornet at row 38 east: its globs on the rungs */
-  stinger(306, 26, { squad: 'well', perch: true }); stinger(343, 9, { squad: 'well', perch: true });   /* (the curve tune: a stinger on the west shelves, one guarding the exit shelf) */
-  swarm(333, 24, { squad: 'well' });                          /* the swarm by the overhang: a pot carried up (or lobbed) quiets it */
+  /* (claude/nestpolish, the platforming rule) the well's foes keep its ENDS: the lip (two hornets and a stinger over the stair's wall top, west) and the exit shelf (the stinger, the amber hornet and the swarm over the nursery's floor, east); the shelves, the bed, the rungs and the overhang are clear */
+  hornet(293, 6, { squad: 'well' }); hornet(296, 8, { squad: 'well' });
+  fat(352, 8, { squad: 'well' });                             /* the amber hornet: at the nursery's door, its globs on the exit shelf */
+  stinger(291, 9, { squad: 'well' }); stinger(343, 9, { squad: 'well', perch: true });   /* (the curve tune: a stinger at the lip, one guarding the exit shelf) */
+  swarm(349, 8, { squad: 'well' });                           /* the swarm at the exit: a pot carried up (or lobbed) quiets it */
   shelf(311, 314, 33); coins([312, 32], [313, 32]);   /* a dead-end pendant off the west shelves: a purse of gold (the level's three silvers are the old ones) */
   drip(336, 40, 2.6, 0); drip(331, 37, 2.6, 0.9); drip(337, 34, 2.6, 1.7); drip(332, 31, 2.6, 0.5); drip(336, 20, 2.6, 1.3);   /* resin from the rungs above: each lands on the rung under it (staggered: a route is always open) */
 
