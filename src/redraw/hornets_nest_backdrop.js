@@ -10,7 +10,7 @@
 // Every static picture is baked ONCE; a frame is a few dozen drawImage calls.
 import { canvas, mulberry } from '../px.js';
 import { PAPER, COMB, BARK, NEEDLE } from './hornets_nest_tiles.js';
-import { warmEdge } from './hornets_nest_edge.js';
+import { warmEdge, scrap } from './hornets_nest_edge.js';
 import { hiveWall } from './hornets_nest_sag.js';
 
 const TS = 16, memo = new Map(); const once = (k, fn) => { if (!memo.has(k)) memo.set(k, fn()); return memo.get(k); };
@@ -26,6 +26,9 @@ export const NEST_X0 = 80, NEST_X1 = 432, HALL = { x0: 395, x1: 432, y0: 3, y1: 
 const SKY = { foot: ['#6f9a62', '#b5cf8a', '#e8e2a0'], fall: ['#7f9a58', '#d2c47c', '#f0d890'], pine: ['#7a8f46', '#d8b860', '#f2c878'] };
 const HONEY_WALLS = [[171, 204, 32, 43], [298, 347, 4, 47]];
 const skyAt = tx => { if (tx < 440) return SKY.foot; if (tx < 454) return SKY.fall; return SKY.pine; };
+/* (claude/nestpolish) THE NEST DEEPENS: how far in the camera is, 0 at the paper gate (col 80) .. 1 at the brood hall (col 395); and the grey-tan paper layer that thickens over the wall with it */
+const depthOf = tx => Math.max(0, Math.min(1, (tx - 80) / 315));
+const WALL_G = ['#2a2724', '#3a352d', '#4e473a', '#655b49'];
 const WALL = [['#251712', '#34221a', '#46301f', '#573d28'], ['#211c16', '#2f281f', '#403729', '#52483a'], ['#2c0e0a', '#421810', '#582416', '#6e301c']];
 
 /* ------------------------------------------------------------------ baked pieces ------------------------------------------------------------------ */
@@ -80,14 +83,14 @@ function curtain(seed, zi) { return once('curt' + seed + '_' + zi, () => { const
 function glow(r0, col) { return once('glow' + r0 + col, () => { const [c, g] = canvas(r0 * 2, r0 * 2), gr = g.createRadialGradient(r0, r0, 0, r0, r0, r0), [R_, G_, B_] = rgbOf(col);
   gr.addColorStop(0, `rgba(${R_},${G_},${B_},0.55)`); gr.addColorStop(0.5, `rgba(${R_},${G_},${B_},0.2)`); gr.addColorStop(1, `rgba(${R_},${G_},${B_},0)`); g.fillStyle = gr; g.fillRect(0, 0, r0 * 2, r0 * 2); return gpu(c); }); }
 /* the nest's back wall: wasp paper in broad scalloped shells, dark, hex comb showing through in patches; 192 x 192, tiles */
-function wallTile(zi) { return once('wall' + zi, () => { const S = 192, [c, g] = canvas(S, S), W = WALL[zi], P = PAPER[zi], img = g.getImageData(0, 0, S, S), d = img.data;
+function wallTile(zi, grey) { return once('wall' + zi + (grey ? 'g' : ''), () => { const S = 192, [c, g] = canvas(S, S), W = grey ? WALL_G : WALL[zi], P = PAPER[zi], img = g.getImageData(0, 0, S, S), d = img.data;
   for (let y = 0; y < S; y++) for (let x = 0; x < S; x++) { const band = 14, k = Math.floor(y / band), rr = y % band, off = Math.round(2.2 * Math.sin((x + k * 29) * 2 * Math.PI / 64 + k)), q = rr + off;
     let s = 1 + (hash(k, Math.floor(x / 24)) % 3 === 0 ? 1 : 0); if (q >= 12) s = 0; else if (q <= 1) s = 2; else if (hash(x, y) % 11 === 0) s = Math.max(0, s - 1);
     if (hash(x >> 1, y >> 1) % 21 === 0 && q > 1 && q < 12) s = Math.min(3, s + 1);
     const col = W[Math.min(3, s)], [r_, g_, b_] = rgbOf(col), i = (y * S + x) * 4; d[i] = r_; d[i + 1] = g_; d[i + 2] = b_; d[i + 3] = 255; }
   g.putImageData(img, 0, 0);
   /* torn paper: three patches of comb cells (resin-dim) */
-  const r = mulberry(901 + zi); for (let n = 0; n < 4; n++) { const px0 = (r() * (S - 60) | 0) + 8, py0 = (r() * (S - 50) | 0) + 6, pw = 36 + (r() * 22 | 0), ph = 26 + (r() * 18 | 0);
+  const r = mulberry(901 + zi + (grey ? 40 : 0)); for (let n = 0; n < 4; n++) { const px0 = (r() * (S - 60) | 0) + 8, py0 = (r() * (S - 50) | 0) + 6, pw = 36 + (r() * 22 | 0), ph = 26 + (r() * 18 | 0);
     for (let y = 0; y < ph; y++) for (let x = 0; x < pw; x++) { const ex = Math.min(x, pw - 1 - x), ey = Math.min(y, ph - 1 - y); if (ex < 2 + (hash(x, y) % 3) || ey < 2) continue; const row = Math.floor(y / 5), cu = (((x + (row & 1) * 4) % 8) + 8) % 8, cv = y % 5;
       const wall = cv === 0 ? cu >= 1 && cu <= 6 : cu === 0 || cu === 7; R(g, wall ? '#140a05' : mix(P[0], COMB[1], cv === 1 ? 0.55 : 0.32), px0 + x, py0 + y, 1, 1); } }
   return c; }); }
@@ -109,7 +112,7 @@ function hallVault() { return once('hall', () => { const w = (HALL.x1 - HALL.x0 
 const LIGHTS = [];   /* [world x, world y, radius, colour index] - the resin lights of the wall, laid by hash over the nest's width */
 for (let i = 0; i < 58; i++) LIGHTS.push([NEST_X0 * TS + 60 + i * 100 + (hash(i, 5) % 50), 40 + (hash(i, 9) % 560), 70 + 20 * (hash(i, 3) % 3), hash(i, 7) % 3]);   /* (three radii only: each is a baked glow) */
 /* WARM: every picture baked at the level's load (a first draw in play, mid-fight, was a hitch) */
-export function warm() { warmEdge(); ancientPine(); farStrip(0); midStrip(0); midStrip(1); for (let z = 0; z < 3; z++) { wallTile(z); for (let i = 0; i < 5; i++) curtain(i, z); } hallVault(); for (const r of [70, 90, 110]) for (const c of ['#ffc860', '#ffb040', '#ff8a3a']) glow(r, c); for (const c of ['#fff0a0']) glow(150, c); glow(130, '#ff9a3a'); glow(70, '#ffc860'); }
+export function warm() { warmEdge(); ancientPine(); farStrip(0); midStrip(0); midStrip(1); wallTile(1, true); for (let z = 0; z < 3; z++) { wallTile(z); for (let i = 0; i < 5; i++) curtain(i, z); } hallVault(); for (const r of [70, 90, 110]) for (const c of ['#ffc860', '#ffb040', '#ff8a3a']) glow(r, c); for (const c of ['#fff0a0']) glow(150, c); glow(130, '#ff9a3a'); glow(70, '#ffc860'); }
 const zoneOfCol = tx => tx < 169 ? 0 : tx < 348 ? 1 : 2;
 export function drawBackdrop(g, cx, cy, VW, VH, L, time, dY, full) {
   cx = Math.round(cx); cy = Math.round(cy);
@@ -139,7 +142,11 @@ export function drawBackdrop(g, cx, cy, VW, VH, L, time, dY, full) {
     for (const e of [169, 348]) { const d = (tx - e) / 14; if (d > -1 && d < 1) { const al = d < 0 ? 0.5 + 0.5 * d : 0.5 - 0.5 * d; if (al > 0.01) { g.globalAlpha = al; g.fillStyle = wallAt(d < 0 ? zoneOfCol(e - 1) : zoneOfCol(e)); g.fillRect(0, 0, VW, VH); g.globalAlpha = 1; } } }
     /* the combs hanging in the wall (parallax 0.62), dim */
     { const kk = 0.62, per = 210, i0 = Math.floor((cx * kk - 120) / per) - 1, i1 = Math.floor((cx * kk + VW) / per) + 1;
-      for (let i = i0; i <= i1; i++) { const h = hash(i, 17); if (h % 4 === 0) continue; const sp = curtain(h % 5, z), wx = i * per + (h % 70) - Math.round(cx * kk), wy = -10 - Math.round(cy * kk) + (h % 5) * 40; if (wy + 300 < 0 || wy > VH) continue; g.globalAlpha = 0.9; g.drawImage(sp, wx, wy); } g.globalAlpha = 1; }
+      const dk = depthOf(tx), skipN = Math.round(6 - 5 * dk);   /* (claude/nestpolish) few combs hang in the wall near the gate, most of it deep in */
+      for (let i = i0; i <= i1; i++) { const h = hash(i, 17); if (h % 8 < skipN) continue; const sp = curtain(h % 5, z), wx = i * per + (h % 70) - Math.round(cx * kk), wy = -10 - Math.round(cy * kk) + (h % 5) * 40; if (wy + 300 < 0 || wy > VH) continue; g.globalAlpha = 0.9; g.drawImage(sp, wx, wy); } g.globalAlpha = 1; }
+    /* (claude/nestpolish) THE PAPER THICKENS: a second, grey-tan layer of paper shells over the wall (a different parallax, so it moves against the first), nothing at the gate, dense inside; the resin hall keeps its own vault */
+    { const dk = depthOf(tx), al = (dk < 0.05 ? 0 : 0.05 + 0.34 * dk) * (tx >= HALL.x0 - 6 ? Math.max(0, 1 - (tx - (HALL.x0 - 6)) / 6) : 1);
+      if (al > 0.01) { const pat = once('wpatg', () => g.createPattern(gpu(wallTile(1, true)), 'repeat')); pat.setTransform(new DOMMatrix().translate(-Math.round(cx * 0.9) + 60, -Math.round(cy * 0.9) + 40)); g.globalAlpha = al; g.fillStyle = pat; g.fillRect(0, 0, VW, VH); g.globalAlpha = 1; } }
     /* (claude/hornetsnest2art) THE SUMP and THE SAP WELL: a wall of capped, resin-filled and empty cells (world-anchored), stained with resin toward the bed. [col0, col1, row0, row1] */
     if (L && L.hornetsNest) for (const [c0, c1, r0, r1] of HONEY_WALLS) hiveWall(g, c0, c1, r0, r1, cx, cy, VW, VH);
     /* shade the back wall a step so the footing reads in front of it; deeper rows (the roots) darker */
@@ -160,14 +167,20 @@ export function drawNear(g, cx, cy, VW, VH, L, time, dY) {
   cx = Math.round(cx); cy = Math.round(cy);
   const inside = cx + VW / 2 > NEST_X0 * TS && cx + VW / 2 < (NEST_X1 + 1) * TS;
   /* floating motes: pollen outside (green-gold), paper flecks inside; a handful, drifting up */
-  for (let i = 0; i < 26; i++) { const sp = 6 + (i % 5) * 3, x = ((i * 97 + time * (inside ? 4 : 9) * (i % 2 ? 1 : -0.6) - cx * (0.25 + (i % 4) * 0.12)) % (VW + 40) + VW + 40) % (VW + 40) - 20,
+  const dkn = depthOf(Math.floor((cx + VW / 2) / TS)), nMotes = inside ? 8 + Math.round(22 * dkn) : 26;   /* (claude/nestpolish) sparse paper flecks at the gate, a blizzard of them deep in */
+  for (let i = 0; i < nMotes; i++) { const sp = 6 + (i % 5) * 3, x = ((i * 97 + time * (inside ? 4 : 9) * (i % 2 ? 1 : -0.6) - cx * (0.25 + (i % 4) * 0.12)) % (VW + 40) + VW + 40) % (VW + 40) - 20,
     y = ((i * 53 - time * sp - cy * (0.2 + (i % 3) * 0.1) + dY * 0) % (VH + 20) + VH + 20) % (VH + 20) - 10;
     g.globalAlpha = 0.5 + 0.4 * Math.sin(time * 1.7 + i); g.fillStyle = inside ? (i % 3 ? '#d6cbb0' : '#f0e8d0') : (i % 3 ? '#d8c08a' : '#cfe8a0'); g.fillRect(Math.round(x), Math.round(y), i % 5 ? 1 : 2, 1); }
   g.globalAlpha = 1;
+  /* (claude/nestpolish) the first sightings: a few curled scraps of paper drifting down the screen as you near the gate (cols 30-120), most at the mouth, none inside */
+  { const tc = (cx + VW / 2) / TS, ns = tc < 30 || tc > 120 ? 0 : tc < 80 ? 3 : 2;
+    for (let i = 0; i < ns; i++) { const x = ((i * 131 + 40 - time * (3 + i) - cx * 0.45) % (VW + 40) + VW + 40) % (VW + 40) - 20, y = ((i * 79 + time * (4 + i * 1.5)) % (VH + 20) + VH + 20) % (VH + 20) - 10; scrap(g, x, y, i + 1, time); } }
+  const farWasps = nW => { for (let i = 0; i < nW; i++) { const per = 14 + i * 3.7, t = ((time + i * 5.3) % per) / per, x = Math.round(-30 + t * (VW + 60)), y = Math.round(60 + ((i * 71) % 170) + Math.sin(time * 2 + i * 3) * 8 + Math.sin(t * 9 + i) * 14);
+      g.globalAlpha = 0.5; g.fillStyle = '#1a0e06'; g.fillRect(x, y, 3, 2); g.fillStyle = '#e8b030'; g.fillRect(x + 1, y, 1, 1); g.fillStyle = '#e8eef4'; if (Math.floor(time * 24 + i) & 1) g.fillRect(x, y - 1, 2, 1); g.globalAlpha = 1; } };
+  { const tc = (cx + VW / 2) / TS; if (!inside && tc > 50 && tc <= 80) farWasps(1 + (tc > 68 ? 1 : 0)); }   /* (claude/nestpolish) a wasp or two by the mouth, before the paper begins */
   if (inside) {
     /* far hornets crossing the wall: dark specks with a flicker of wing, on a long loop */
-    for (let i = 0; i < 5; i++) { const per = 14 + i * 3.7, t = ((time + i * 5.3) % per) / per, x = Math.round(-30 + t * (VW + 60)), y = Math.round(60 + ((i * 71) % 170) + Math.sin(time * 2 + i * 3) * 8 + Math.sin(t * 9 + i) * 14);
-      g.globalAlpha = 0.5; g.fillStyle = '#1a0e06'; g.fillRect(x, y, 3, 2); g.fillStyle = '#e8b030'; g.fillRect(x + 1, y, 1, 1); g.fillStyle = '#e8eef4'; if (Math.floor(time * 24 + i) & 1) g.fillRect(x, y - 1, 2, 1); g.globalAlpha = 1; }
+    farWasps(2 + Math.round(5 * dkn));   /* (claude/nestpolish) two at the gate, seven in the brood's wall */
     /* an edge vignette: the nest is close and warm */
     const gr = g.createRadialGradient(VW / 2, VH / 2, VH * 0.55, VW / 2, VH / 2, VH * 1.05); gr.addColorStop(0, 'rgba(10,4,0,0)'); gr.addColorStop(1, 'rgba(10,4,0,0.32)'); g.fillStyle = gr; g.fillRect(0, 0, VW, VH);
   } else {

@@ -32191,6 +32191,8 @@ function updateWeather(dt) {
   // ambient bed by zone, and the music ducks while something winds up nearby
   let amb = 'forest', ambBell = false; for (const z of (L.ambient || [])) if (camX + VW / 2 >= z.x0 && camX + VW / 2 < z.x1) { amb = z.kind; ambBell = !!z.bell; }
   { const st = state === 'play' && L && lanceStormOn(); if (st) amb = 'rain'; music.storm(st || (state === 'play' && frogP2On())); }   /* (claude/lance5) THE STORM: the rain's bed, and his track lifted a tone (src/audio.js music.storm) */
+  if (L.hornetsNest && amb === 'cave') amb = 'hornetdeep';   /* (claude/nestpolish) inside the paper: the cave's air with the nest's hum, louder the deeper you are */
+  if (L.hornetsNest) ambient.depth(((camX + VW / 2) / TS - 60) / 335);
   if (L.hornetsNest && amb === 'forest' && camX + VW / 2 < 80 * TS) amb = 'hornetpines';   /* (claude/hornets2art) the old pines: the wood's air with the nest's far hum under it (src/audio.js AMB_EXTRA) */
   /* THE SECOND LAYER: step inside a room and the place goes behind a wall - the inn's common room, a ship's hold, a hollow trunk */
   { const tx = P.x / TS, ty = P.y / TS, room = !L.colosseum && (L.interiors || []).find(([x0, x1, y0, y1]) => tx >= x0 && tx <= x1 + 1 && ty >= y0 && ty <= y1 + 1.5);
