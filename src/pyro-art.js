@@ -71,12 +71,27 @@ export function ballSprite(size, f, tail) {   /* the ball moving RIGHT (tail to 
   });
 }
 /* a ball in flight: size 1 / 2 / 3, vx its heading */
-export function ball(g, x, y, size, vx, now) { blit(g, ballSprite(size, Math.floor(now * 14) % 2, true), x, y, vx < 0); }
+/* (claude/pyrocharge) a sprite scaled to a radius: the ball grows smoothly while held, so its size is not one of the five */
+const blitS = (g, s, x, y, flip, sc) => { if (!s) return; if (!sc || Math.abs(sc - 1) < 0.04) return blit(g, s, x, y, flip); const w = Math.round(s.width * sc), h = Math.round(s.height * sc), ox = Math.round(s.ox * sc), oy = Math.round(s.oy * sc);
+  g.save(); g.imageSmoothingEnabled = false; if (flip) { g.translate(Math.round(x), Math.round(y)); g.scale(-1, 1); g.drawImage(s, -(ox + 1), -oy, w, h); } else g.drawImage(s, Math.round(x) - ox, Math.round(y) - oy, w, h); g.restore(); };
+/* THE LITTLE SUN: nested discs white-hot to red, a dithered grain, flame tongues all round that lick and turn, a pulsing halo */
+export function sun(g, x, y, r, now) {
+  const f = Math.floor(now * 10), pu = f % 3;
+  disc(g, x, y, r + 7 + pu, C.am, 0.12); disc(g, x, y, r + 3, C.or, 0.28);
+  disc(g, x, y, r, C.or); disc(g, x, y, Math.round(r * 0.84), C.am); disc(g, x, y, Math.round(r * 0.64), C.yl); disc(g, x, y, Math.round(r * 0.42), C.cr); disc(g, x, y, Math.round(r * 0.2), C.wh);
+  for (let i = 0; i < r * 5; i++) { const an = hash(i * 7 + f) * 6.283, d = hash(i * 3 + f * 5) * r * 0.95; px(g, x + Math.cos(an) * d, y + Math.sin(an) * d, hash(i + f) < 0.5 ? C.cr : C.am, 0.8); }
+  const N = Math.max(14, Math.round(r * 0.7)); for (let i = 0; i < N; i++) { const an = i / N * 6.283 + now * 0.6, L = 3 + Math.floor(hash(i * 13 + f) * (r * 0.28));
+    for (let k = 0; k < L; k++) px(g, x + Math.cos(an) * (r + 1 + k), y + Math.sin(an) * (r + 1 + k), k > L * 0.6 ? C.or : k > L * 0.3 ? C.am : C.yl); }
+  ringPx(g, x, y, r + 1, C.cr, 0.8);
+}
+export function ball(g, x, y, size, vx, now, r) {
+  if (size === 6) return sun(g, x, y, r || 44, now);
+  blitS(g, ballSprite(size, Math.floor(now * 14) % 2, true), x, y, vx < 0, r && size >= 2 ? r / BALL_R[size] : 1); }
 /* THE BALL ON THE STAFF: step 1-3, prog 0-1 toward the next step (0 at step 3). It swells before it grows, and at 3 it is READY: a white pulse, rings, embers circling. */
-export function held(g, x, y, step, prog, now) {
-  if (step < 1) return; const r = BALL_R[step], f = Math.floor(now * 12) % 2;
+export function held(g, x, y, step, prog, now, rr) {
+  if (step < 1) return; if (step === 6) return sun(g, x, y - 6, rr || 44, now); const r = rr || BALL_R[step], f = Math.floor(now * 12) % 2;
   disc(g, x, y, r + 3, C.am, 0.14 + 0.1 * prog);
-  blit(g, ballSprite(step, f, false), x, y, false);
+  blitS(g, ballSprite(step, f, false), x, y, false, r / BALL_R[step]);
   if (step < 5 && prog > 0.55) ringPx(g, x, y, r + 2, C.yl, 0.2 + 0.7 * (prog - 0.55) / 0.45);                                       /* the swell: the next size is coming */
   if (step === 3 || step === 4) ringPx(g, x, y, r + 3, step === 4 ? C.cr : C.yl, 0.35 + 0.2 * (step - 3));   /* loaded, not yet ready */
   if (step === 5) { const pu = Math.floor(now * 10) % 2; ringPx(g, x, y, r + 3 + pu, C.cr, 0.75 - 0.3 * pu); ringPx(g, x, y, r + 6 + pu * 2, C.yl, 0.3); disc(g, x, y, r - 3, C.wh, 0.35 * pu); }

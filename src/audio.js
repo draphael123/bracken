@@ -328,6 +328,9 @@ export const SFX = {
   wardParry() { if (!gate('wardParry', 0.08)) return; noise(0.34, 0.28, 1400, 0.5); tone('sawtooth', 180, 720, 0.22, 0.1); tone('sine', 90, 40, 0.3, 0.22); bell(1568, 0.45, 0.08, 0.02); bell(2093, 0.3, 0.05, 0.06); crackle(6, 0.04); },
   fbStep(n = 1) { if (!gate('fbStep', 0.05)) return; const f = [0, 520, 700, 940, 1120, 1320][n] || 520; tone('triangle', f, f * 1.5, 0.08, 0.07); noise(0.08, 0.1, 1800 + 600 * n, 0.8); crackle(1 + n, 0.02); },
   fbCast(n = 1) { noise(0.12 + 0.06 * n, 0.16 + 0.04 * n, 1600 - 250 * n, 0.6); tone('triangle', 420 - 60 * n, 140, 0.12 + 0.05 * n, 0.08 + 0.03 * n); crackle(2 + n, 0.02); },
+  sunStep() { noise(0.5, 0.2, 900, 0.5); tone('sawtooth', 110, 440, 0.6, 0.12); tone('triangle', 660, 1320, 0.5, 0.1); crackle(6, 0.03); },   /* (claude/pyrocharge) the ball becomes THE LITTLE SUN: a rising swell */
+  sunCast() { noise(0.9, 0.3, 500, 0.4); tone('sine', 90, 35, 0.9, 0.3); tone('sawtooth', 330, 90, 0.7, 0.12); crackle(10, 0.04); },   /* ...let go: a long low whoomp */
+  sunBoom() { noise(1.1, 0.5, 380, 0.4); tone('sine', 55, 22, 1.2, 0.45); tone('sawtooth', 880, 110, 0.6, 0.1); noise(0.5, 0.3, 3000, 0.8, 0.05); crackle(16, 0.07); },   /* ...and the great blast */
   fbBoom() { noise(0.45, 0.4, 560, 0.45); tone('sine', 72, 28, 0.6, 0.36); noise(0.2, 0.18, 2400, 0.7, 0.04); crackle(7, 0.06); },
   stoke() { if (!gate('stoke', 0.22)) return; noise(0.12, 0.05, 1100, 0.6); crackle(2, 0.02); },
   /* PYRO KIT 2 (claude/pyrokit2): a pip lighting is a small rising tick (bombPip n = 1-3), the foe going up is a short fat thump with crackle (bombBoom), the meteor is a
