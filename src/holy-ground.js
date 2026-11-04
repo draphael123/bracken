@@ -34,6 +34,7 @@ export const HG = {
      UP+C the HAMMER THROW, 5 = SUNFALL (the finisher). Every spend lights the HALLOWED AURA: his holy ground at his feet, travelling with him, base + perPip s a pip */
   conv: { pip: 20, pips: 5, block: 20, parry: 40 },
   aura: { r: 34, base: 2, perPip: 0.8 },
+  smite3: { windRate: 0.8, stagger: 0.8, bossStagger: 0.3, bossChip: 0.35, poise: 10, conv: 0.5 },   // (claude/palsmite, Daniel 11-04) THE COMBO FINISHER SMITE (the third hammer swing): wind-up pace x0.8, a normal foe staggered 0.8 s (was 1.2), a boss 0.3 s + chip x0.35 of a blow + 10 poise, +0.5 pip of Conviction a swing
   smiteQ: { cost: 20, mul: 1.6, reach: 28, stagger: 0.5 },       // SMITE (1 pip): a quick holy strike in front of him
   burst: { cost: 60, r: 56, dmg: 14, stagger: 0.7 },             // RADIANCE (3 pips): a burst of light all round him
   verdict: { every: 0.5, max: 4, reach: 110, dy: 60, mul: 1.15, hold: 2.4 },   // VERDICT (hold X): a sigil a beat on the nearest foes ahead, then light strikes them all
