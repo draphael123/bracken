@@ -624,17 +624,65 @@
   "lostPct": 233
  },
  "hornetsnest": {
-  "hash": "0523739b4e62",
+  "hash": "cbade46ed6c3",
   "hero": "knight",
   "steps": 30000,
-  "runs": 3,
-  "hits": 12,
+  "runs": 12,
+  "hits": 41,
   "deaths": 0,
-  "kills": 47,
-  "lifts": 86,
+  "kills": 120,
+  "lifts": 185,
   "walked": 100,
   "bare": true,
-  "lostPct": 56
+  "seed": [
+   1,
+   2
+  ],
+  "lostPct": 84,
+  "lostRuns": [
+   102,
+   110,
+   75,
+   66,
+   48,
+   95,
+   95,
+   64,
+   80,
+   85,
+   105,
+   85
+  ],
+  "lostSd": 18.6,
+  "lostSe": 5.4,
+  "deathsRuns": [
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0
+  ],
+  "hitsRuns": [
+   7,
+   9,
+   6,
+   6,
+   4,
+   8,
+   6,
+   5,
+   7,
+   7,
+   9,
+   7
+  ]
  },
  "palisadewood": {
   "hash": "8c1d63865e73",

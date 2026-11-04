@@ -31,3 +31,19 @@ NOTE: I ran tools/hornetsnest-fog.mjs (one headless browser, short) twice before
 1. Join the Gallery and the Well into real lint sections by adding one beat each (a crumble hop on the sump bridge / two hops on the sticky bed)? Rec: not before the demo; do it the week of 11-16 with the boss-tune.
 2. Keep the soft glow on ALL level stands (0.7) or hall only? Rec: all (it teaches the pot before the Queen).
 3. Hint wording ok ('THROW AT HER...')? Rec: keep.
+
+## RESUME 11-04 (merged master 9ff9bd70 into the branch; HQ numbers: claude/bosstune has no commit on origin yet, measured with the current numbers)
+Evidence dir: scratch/lane-reports/nestpolish-shots/ (np-*.png from tools/nestpolish-shots.mjs; logs). Browsers: one at a time, RAM >= 3.5 GB free each time.
+
+| # | Item | Status |
+|---|------|--------|
+| 1 | Smoke pots glow + THROW AT HER hint + bot lob | READY. Glow seen in np-pots.png (warm halo on all stands). Hint line NOT seen on a frame: the harness's own 'CATCHING UP: L1' banner re-fires every 4.5 s and wins the single hint slot (a real player at the hall is not catching up); the hint path is node-tested (hornets-nest.mjs 270 ok). Bot lob: lab n=6 practiced, human profile, L3: knight 2/6, warden 2/6 = 33% (lob-rates.log). MASTER, same settings: knight 3/6, warden 2/6 = 42% (master-rates.log). Difference is noise at n=12; no regression seen, but no gain either - the pot heroes' rate is bosstune's to tune with the HQ numbers. |
+| 2 | Hornets to section edges | READY (done last time; walker + pilot ran on it, see 5). |
+| 3 | Queen fall tumble / crash / dust / still | READY. np-fall.png: 12 frames, 4 tumble frames (tilting, flung), crash flat with wings splayed + dust, then the stillness. Stun clock untouched. |
+| 4 | Nest deepens | READY. np-depth.png (outside forest -> sill/gallery -> well -> resin hall): paper layer + combs + wasps read deeper. Perf (hornetsnest-perf.mjs, 4x CPU phone): gallery 54.4, well rungs 44.4, well overhang 54.9 fps, all >= 40 (perf.txt). Ambient hum depth: node-checked only (audio was off in the headless pages). |
+| 5 | Pacing / medals / restamp | READY (restamped, MEDALS UNCHANGED). Walker (knight / warden, L3, human+first): to the boss in 270 s / 562 s (master: 287 / 416 s); both STUCK at 335,18 (the well overhang) on master too, so only 69% of the route is measured. The Queen fight (~60-90 s) + the fall (~30 s) on top of an extrapolated ~390-815 s fits the standing MEDALS 440/630/920 - left as is. Restamp: pilot / curve / mash rows rewritten, level-quality + curve-gate + mash-gate green. WARN jumps flagged by restamp: pilot kills 48->58, hits 16->20; curve kills 47->120, lifts 86->185, lostPct 56->84. I measured MASTER's curve unwritten: kills 93, lifts 174, lostPct 67 - so the old stored row was already stale and my edits move it only a little (lostPct +17 within sd 27). |
+
+Skipped: textfit (full-suite-sized tool; the new hint is ~90 chars, shorter than the 150-char pot hint through the same banner). Queen ~90% pooled w/ 40% floor: NOT touched (bosstune's numbers). Falling-comb openings: untouched.
+New tool: tools/nestpolish-shots.mjs (OUT=<dir> node ... -> np-depth / np-pots / np-fall).
+Side note: I ran tools/level1-pilot.mjs --curve (without --write) on the MAIN checkout for a baseline and it wrote docs/level1-curve.json there; I restored the committed content (git diff is empty apart from a CRLF warning). Coordinator: if git status in bracken/ shows that file M, it is line endings only.
+Questions: (1) Fix the walker STUCK at 335,18 (overhang) so the well is measurable? Rec: yes, a walker lane, not demo-blocking. (2) Put the one-time pot hint also on the first pot pick-up inside the hall if the catch-up banner is up? Rec: no.
