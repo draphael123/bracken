@@ -3890,7 +3890,7 @@ function theShopCrag() {
 
 /* THE TAVERN (claude/tavern, co-op phase 2, Daniel 10-12): WAYMEET'S CROSSROADS INN, co-op's home - one warm room (src/tavern.js has its stations,
    their places and the furniture it draws; this paints the room and its dressing). The fire, the long tables and Waymeet's own drinkers (the beer
-   garden's guests), the bar, a window onto the road; the training yard at the back; the arena pit roped off. No foe, no hazard, no coin. */
+   garden's guests), the bar, a window onto the road; the training yard at the back; the duel pit roped off. No foe, no hazard, no coin. */
 function theTavern() {
   const R = TAV.ROOM, F = R.FLOOR, s = R.FLOOR - 1; const L = painter(R.W, R.H);
   const { block, floor, ent } = L;
@@ -4912,7 +4912,7 @@ function theFlotilla() {
        fisherman's chain and HIS BENCH STOPS where it is) | THE LONG GAP 209-224 | 2. THE HULK 225-288 (grey planks go through) | THE RIGGING RUN 289-388 (her
        yards and lashings over the harbour, rocking apart and together with the hulls) | 3. THE POWDER SHIP 389-539 (STRIKE A DECK GUN'S BREECH: the round
        shot opens her copper doors, blows the keg on her crate hatch, and clears whatever stands down its line - THE KEY the boss is put down with) |
-       THE LASHINGS 540-591 (the Powder Ship's stern lashed to 4. THE FLAGSHIP's waist: THE ADMIRAL'S CHAMPION, src/admirals-champion.js) | the flagship 592-603.
+       THE LASHINGS 540-591 (the Powder Ship's stern lashed to 4. THE FLAGSHIP's waist: THE ADMIRAL'S CHAMPION, src/fleetlord-champion.js) | the flagship 592-603.
      NO FLOATING WOOD (brief item 2): the crates that rode the swell in mid-air are gone - every crossing is a spar off a hull, a line from a mast, or a yard on
      its stays (the yards are src/flotilla2.js 'yard' movers, drawn with their lines; the benches are 'bench' movers, drawn with their rowers). */
   const W = 604, H = 40; const L = painter(W, H);
@@ -5165,7 +5165,7 @@ function theFlotilla() {
   ent('check', 535, 24);   /* the shrine before the boss's lashing (A10c: +1 before the boss) */
   ent('sign', 537, 24, { text: "THE ADMIRAL WAITS ON THE LASHINGS. IN A GUN'S LINE, ONE SHOT BLOWS HIS IRON OFF." });
 
-  // ================= THE LASHINGS: the Powder Ship's stern lashed to the Flagship's waist (src/admirals-champion.js CH_STAGE: 52 columns, a duel's room) =================
+  // ================= THE LASHINGS: the Powder Ship's stern lashed to the Flagship's waist (src/fleetlord-champion.js CH_STAGE: 52 columns, a duel's room) =================
   const AS = 540, AR = 25, S = { W: 52, gap: [24, 26], guns: [3, 48], him: 40 };
   block(567, 601, 25, 37); hullZones.push([567, 601, 25, 37]);
   air(AS + S.gap[0], AS + S.gap[1], AR, 37);   /* the lashing: foul harbour between the hulls */

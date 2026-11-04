@@ -41,7 +41,7 @@ export const GUARD = {
   lance: 'wall',          // THE QUEEN'S LANCE: plate and shield on his front - round him or over him; committed (planted, thrusting, reeling) he is open
   closedhelm: 'wall',     // THE WAYMEET PALADIN: his ward faces you - round him or over him; his sword met on the beat still breaks it (x2)
   captain: 'wall',        // THE SALVAGE CAPTAIN: on his own wave the sea is in front of him - cut him from behind it or from above; beached he is open
-  /* (claude/flotilla2) THE QUARTERMASTER is benched (src/benched/quartermaster.js): her 'wall' row went with her. THE ADMIRAL'S CHAMPION is not on GUARD - his plate takes every angle at x0.5 in his own take (src/admirals-champion.js) */
+  /* (claude/flotilla2) THE QUARTERMASTER is benched (src/benched/quartermaster.js): her 'wall' row went with her. THE ADMIRAL'S CHAMPION is not on GUARD - his plate takes every angle at x0.5 in his own take (src/fleetlord-champion.js) */
 };
 export const ROLL_SOON = 'TOO SOON';   /* (claude/sweep2) the Waymeet Paladin: a roll that started before the last beat of his swing passes through and opens nothing */
 export const ANGLE = { mul: 0.5, wall: 1, front: 0.4 };   /* (claude/keyscore, B15) THE DUELIST'S WALL (GUARD 'wall'): round or over it a blow lands WHOLE (wall); into it at his height ANGLE.front (0.4: somewhat resistant, never invulnerable) */

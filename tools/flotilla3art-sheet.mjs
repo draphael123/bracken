@@ -5,7 +5,7 @@ import { mkdirSync } from 'fs';
 import { join } from 'path';
 install();
 const out = process.argv[2] || 'work/claude/shots/flotilla3art/sheets', which = process.argv[3] || 'all'; mkdirSync(out, { recursive: true });
-const A = await import('../src/redraw/admiral_art.js');
+const A = await import('../src/redraw/fleetlord_art.js');
 const S = 3;
 function sheet(cells, cols, CW, CH, bg) { const rows = Math.ceil(cells.length / cols), cv = newCanvas(cols * CW * S, rows * CH * S), g = cv.getContext('2d');
   cells.forEach((fn, i) => { const c = newCanvas(CW, CH), q = c.getContext('2d'); q.fillStyle = bg || '#6a5a8a'; q.fillRect(0, 0, CW, CH); q.fillStyle = '#8a6a48'; q.fillRect(0, CH - 14, CW, 14); q.fillStyle = '#b09468'; q.fillRect(0, CH - 14, CW, 1); fn(q, CW, CH);

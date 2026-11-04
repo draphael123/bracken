@@ -3,7 +3,7 @@
 // HE IS: a huge, salt-crusted, LIVING plate knight (about 70 px with the crest): a barrel breastplate, broad round pauldrons, a closed sallet with a crest of salt, a sea-green
 // surcoat in rags, barnacled greaves, and a warm eye in the slit (he is not drowned: the act has the drowned already). P1 he carries the boarding greatsword; P2 he tears the anchor off
 // the rail and swings it on its chain.
-// EVERY MOVE HAS ITS OWN WINDUP AND ITS OWN RELEASE (B16). The pose keys (the contract with src/admirals-champion-hands.js):
+// EVERY MOVE HAS ITS OWN WINDUP AND ITS OWN RELEASE (B16). The pose keys (the contract with src/fleetlord-champion-hands.js):
 //   walk / recover / sleep / wake / card (the bestiary card)
 //   P1  comboTell (the blade drawn back over the shoulder, back arched)  -> combo (swung across, the crescent)     -> comboRec (down in front, leaning on it)
 //       slamTell (two hands, the blade over the helm, up on his toes)    -> slam (struck down, the deck splinters)  -> stuck (OPEN: hauling at the buried blade) -> slamRec (wrenched free)

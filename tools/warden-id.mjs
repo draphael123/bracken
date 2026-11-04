@@ -7,14 +7,14 @@ import { SKILLS, LEGACY_NODES } from '../src/progression-catalog.js';
 import { migrateProgress } from '../src/progression.js';
 import { xpFloor } from '../src/xp.js';
 import * as FB from '../src/flotilla-boss.js';
-import * as AC from '../src/admirals-champion.js';
+import * as AC from '../src/fleetlord-champion.js';
 import { COMMIT } from '../src/commit.js';
 import { KITE, kiteBoost, idleNow } from '../src/boss-pressure.js';
 let n = 0; const ok = (c, m) => { n++; if (!c) { console.error('FAIL', m); process.exitCode = 1; } else console.log('ok  ', m); };
 const src = f => fs.readFileSync(new URL('../src/' + f, import.meta.url), 'utf8');
 /* 1. HANDICAP ROWS: every warden multiplier in a boss file is 1.0 (absent) */
 ok(FB.tuneOf('warden').in === 1 && FB.tuneOf('warden').out === 1, 'flotilla TUNE: warden 1 / 1');
-ok(AC.tuneOf('warden').in === 1 && AC.tuneOf('warden').out === 1, 'admirals-champion TUNE: warden 1 / 1');
+ok(AC.tuneOf('warden').in === 1 && AC.tuneOf('warden').out === 1, 'fleetlord-champion TUNE: warden 1 / 1');
 for (const f of ['bzchief.js', 'paladin-boss.js', 'deacon.js', 'lance-support.js', 'great-drill.js', 'grubbag.js']) ok(!/warden\s*:\s*[0-9.]+/.test(src(f)), f + ': no warden row');
 const main = src('main.js');
 ok(!/const DUEL_HERO = [^\n]*warden\s*:/.test(main), 'main.js DUEL_HERO: no warden row');

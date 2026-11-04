@@ -1,5 +1,5 @@
 // ===== BENCHED (claude/flotilla2, 2026-10-17): UNWIRED - THE QUARTERMASTER, the old boss of THE FLOTILLA. Saved as text for a future mini (a deck-climbing duelist). =====
-// Daniel 10-16 (interview, scratch/brief-flotilla2.md '!! 10-16'): the Flotilla's boss becomes THE ADMIRAL'S CHAMPION (src/admirals-champion.js); THE QUARTERMASTER IS CUT.
+// Daniel 10-16 (interview, scratch/brief-flotilla2.md '!! 10-16'): the Flotilla's boss becomes THE ADMIRAL'S CHAMPION (src/fleetlord-champion.js); THE QUARTERMASTER IS CUT.
 // Nothing imports this file. It is her fight exactly as src/main.js ran it (claude/keyscore's B13/B15 duelist: her EN GARDE wall, the cannon breaking her deck guard,
 // her climb deck to deck cutting the lines, and the main deck falling away in her last phase), lifted out of main.js verbatim - so it still names main.js globals
 // (L, P, LW, TS, SFX, DMG, number, parts, seeds, tileSpr, isSolid, damagePlayer...). To bring her back, wire her as she was (git log -S updateQuarter -- src/main.js:

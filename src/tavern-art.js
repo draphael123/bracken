@@ -7,7 +7,7 @@
 //   THE SPARRING BELL a brass bell on a post with a pull rope: at rest, and swinging with a clapper and ringing arcs
 //   THE PRACTICE GATE the light behind the stone arch, the oak leaves ajar, its lamp
 //   THE HAY TARGET   the painted rings on the yard floor
-//   THE ARENA PIT    a sanded pit set into the floor behind a rope on brass-capped posts, the COMING SOON board (a glint sweeps it) and the empty stage board for VERSUS
+//   THE DUEL PIT    a sanded pit set into the floor behind a rope on brass-capped posts, the COMING SOON board (a glint sweeps it) and the empty stage board for VERSUS
 //   THE GLINT        a first-visit mark over an unused station: a bobbing gold plate and a four-frame sparkle
 //   THE DUMMIES      the yard's two straw men: a sack head, and a dented pot helm (SPR-shaped sets)
 //   THE RING + TAG   each hero's floor ring in his colour (pixels, two halves, a shimmer) and the name plate over his head
@@ -129,7 +129,7 @@ export function target(g, x, fy, time) {
   for (const dx of [-17, 17]) P(g, x + dx, cy, '#4a3418');
 }
 
-/* ---------------------------------------------------------------- THE ARENA PIT ---------------------------------------------------------------- */
+/* ---------------------------------------------------------------- THE DUEL PIT ---------------------------------------------------------------- */
 export function arena(g, x, fy, time, text) {
   const cy = fy + 2;
   ELL(g, x, cy + 1, 25, 4, TP.o1); ELL(g, x, cy, 24, 3, TP.o4); ELL(g, x, cy, 22, 3, TP.o2);                                                                          /* the kerb of the pit, a ring of oak */

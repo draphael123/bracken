@@ -2,7 +2,7 @@
 // non-integer-scaled pixel sprites, no smooth clouds; dither ordered 2x2 at region edges only; a label never overlaps its node or another label; the info panel never covers
 // what it describes nor its neighbours and never cuts its blurb". This lint holds the map to it:
 //   1. STATIC (src/main.js drawMap / drawMapLife / drawMapPanel, src/art.js's map bakers): no ctx.arc / ellipse / rotate / setLineDash call, no fractional drawSet scale, no
-//      canvas gradient, no random speckle in the snow band (the map draws discs and rings with src/map-pixel.js, whole pixels);
+//      canvas gradient, no random speckle in the snow band (the map draws discs and rings with src/map-dots.js, whole pixels);
 //   2. LABELS (src/map-plates.js, the game's own layout): no board over any node's box, signpost or landmark critter, none over its own node or sign, none over another board,
 //      none further than FAR from its node, and the info card for every node hides none of the boards or nodes it must keep clear (and counts what else it still lies over);
 //   3. THE CARD: its blurb is one whole line that fits, for every level (src/map-blurbs.js), and the card is at most 30% of the screen's height;

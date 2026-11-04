@@ -1,4 +1,4 @@
-// src/admirals-champion.js - THE ADMIRAL'S CHAMPION, THE FLOTILLA's boss (claude/flotilla2, the OPUS greybox, 2026-10-17; scratch/brief-flotilla2.md '!! 10-16':
+// src/fleetlord-champion.js - THE ADMIRAL'S CHAMPION, THE FLOTILLA's boss (claude/flotilla2, the OPUS greybox, 2026-10-17; scratch/brief-flotilla2.md '!! 10-16':
 // Daniel's interview - the Quartermaster is CUT (benched, src/benched/quartermaster.js) and the fleet's last word is its CHAMPION: a Salt & Sanctuary
 // 'Sodden Knight'-style duel, but LIVING - the act already has the Sunken Crew, the Drowned King and the drowned knights).
 //
@@ -28,7 +28,7 @@
 //                                               it or hold a line) and THE HULLS ROCK APART: the lashing gap opens a tile each side, then they come together
 //     THE LEAP (as phase one)
 // FIERCER IN PHASE TWO: quicker between blows (CH.gap). Every tell at least half a second.
-// PURE: no DOM, no main.js. The world is a context `c` (src/admirals-champion-hands.js binds it). chPlan is the boss lab's HUMAN bot (src/lab.js).
+// PURE: no DOM, no main.js. The world is a context `c` (src/fleetlord-champion-hands.js binds it). chPlan is the boss lab's HUMAN bot (src/lab.js).
 
 /* (tune) THE PER-HERO TUNE: { in: x what his blows take off this hero, out: x what this hero's blows take off him }. The bot gaps are fixed first (the bowman's backflips and
    knife openings in chPlan); this is what is left. Heroes not listed are 1 / 1. */

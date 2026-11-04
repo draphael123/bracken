@@ -99,7 +99,7 @@ assert.ok(/BR\.keyOf\(e\)\) BR\.drawKey\(g, e, cx, cy, time\);/.test(main), 'mai
 assert.ok(/const kt = tag && \(e === boss \|\| e\.xpRole === 'mini'\) \? BR\.takes\(e, tag, fromX\) : null; if \(kt\) \{ if \(kt\.ok\) e\.keyHit = time; else if \(!GB\.openOf\(e\)\) BR\.turnedKey\(e, fromX, kt\.key\); \}/.test(main), 'hurtEnemy0 asks the key once, before the per-boss ladder');
 /* 5. B13, THE DUELIST'S WALL (claude/keyscore): the four waiting rooms are always hittable, guarded by angle */
 {
-  for (const t of ['lance', 'closedhelm', 'captain']) {   /* (claude/flotilla2: the Quartermaster is benched - THE ADMIRAL'S CHAMPION is not a wall duelist: his plate takes every angle at x0.5, tools/admirals-champion.mjs) */
+  for (const t of ['lance', 'closedhelm', 'captain']) {   /* (claude/flotilla2: the Quartermaster is benched - THE ADMIRAL'S CHAMPION is not a wall duelist: his plate takes every angle at x0.5, tools/fleetlord-champion.mjs) */
     assert.strictEqual(GUARD[t], 'wall', t + ': his front is a wall (B11), not a flat NO');
     const e = { t, x: 100, y: 200, w: 24, h: 40, face: 1, alive: true };
     assert.ok(BR.beats(e, 60, false) && BR.beats(e, 140, true) && !BR.beats(e, 140, false), t + ': beaten from behind or from above, turned from the front at his height'); }

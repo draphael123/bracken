@@ -1,5 +1,5 @@
 /* tools/admiral.mjs - THE ADMIRAL and THE FLOTILLA 3 keep their promises (claude/flotilla3; scratch/brief-flotilla3-1018.md C + D and the APPROVED review
-   scratch/review-flotilla-1018.md). The Flotilla's checks moved here from tools/admirals-champion.mjs (the Champion is off the Flotilla, registered for the Keep).
+   scratch/review-flotilla-1018.md). The Flotilla's checks moved here from tools/fleetlord-champion.mjs (the Champion is off the Flotilla, registered for the Keep).
    PURE (node): his moves' marks/answers/heights agree with src/marks.js; every tell >= 0.5 s; B15 + Daniel's armour exception - every awake mode takes > 0, armoured
      the chip is 0.15 / 0.25 / 0.35 by plates left (never under 0.15), bare >= 1 outside openings, openings x1 armoured / x1.6 bare; his plate holds him over AD.floor;
      a round shot on his line passes under, in his ward glances, otherwise A PLATE goes (staggered OPEN) - three plates, then bare, then a ball knocks him FLAT; his keg

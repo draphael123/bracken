@@ -12,7 +12,7 @@
 //   WARDROBE      that player's own card: HERO, WEAPON (a weapon skin), COLOUR (his ring, tag and plate) and RING (the floor ring on/off, for everyone).
 //   TRAINING YARD the back of the room: straw dummies; the PARTNER DRILLS board (THROW into the hay target, REVIVE off the sparring bell, TEAM HIT on
 //                 one dummy) with a chalk tally; the ARENA YARD door (station id 'practice': the one training ground; the hero trials and the open yard are gone, claude/yardswap).
-//   ARENA PIT     roped off, signed COMING SOON (versus is a later lane, brief-versus.md).
+//   DUEL PIT     roped off, signed COMING SOON (versus is a later lane, brief-versus.md).
 // FIRST VISIT: every station glints (a sparkle and a bobbing mark) until it has been used once (PROG.tavern.seen), and the first time a player comes
 // near one a line says what it does. NOTHING HERE HURTS OR ENDS: no death cost, a down clock that runs out just stands you up.
 //
@@ -32,7 +32,7 @@ export const STATIONS = [
   { id: 'drills', x: 45, name: 'PARTNER DRILLS', verb: 'DRILLS', first: 'PARTNER DRILLS: THROW YOUR PARTNER INTO THE HAY, LIFT HIM OFF THE BELL, STRIKE A DUMMY TOGETHER.' },
   { id: 'bell', x: 48, name: 'THE SPARRING BELL', verb: 'RING', first: 'THE SPARRING BELL: RING IT AND A PARTNER GOES DOWN - STAND ON HIM TO LIFT HIM.' },
   { id: 'practice', x: 58, name: 'THE ARENA YARD', verb: 'TRAIN', first: 'THE ARENA YARD: THE TRAINING GROUND. EVERY MOVE, STRAW THAT HITS BACK, NOTHING THAT ENDS YOU.' },
-  { id: 'arena', x: 62, name: 'THE ARENA PIT', verb: 'ARENA', first: 'THE ARENA PIT: FRIENDS AGAINST FRIENDS. COMING SOON.' },
+  { id: 'arena', x: 62, name: 'THE DUEL PIT', verb: 'DUEL', first: 'THE DUEL PIT: FRIENDS AGAINST FRIENDS. COMING SOON.' },
 ];
 export const DUMMIES = [51, 54];   /* the straw men, in tiles */
 export const TARGET = { x: 56, r: 22 };   /* the hay target on the yard floor: its centre (tile) and how near (px) a thrown partner lands for a BULLSEYE */
@@ -54,7 +54,7 @@ export const TAVERN_ART = [
   ['dummies', 'two tavern straw dummies (sack heads, a dented pot helm) - the training yard\'s own, not the open yard\'s'],
   ['target', 'THE HAY TARGET: a ring of hay bales on the yard floor with a painted bullseye'],
   ['practice', 'THE ARENA YARD DOOR: an arched yard gate with a hung ARENA YARD board and the arena\' light behind it'],
-  ['arena', 'THE ARENA PIT: a sunken sanded pit behind a rope on posts, a COMING SOON board and a stage board beside it (empty frame for the VERSUS lane)'],
+  ['arena', 'THE DUEL PIT: a sunken sanded pit behind a rope on posts, a COMING SOON board and a stage board beside it (empty frame for the VERSUS lane)'],
   ['dressing', 'the warm room: the fireplace (lit, a cauldron), long tables with benches and Waymeet\'s drinkers, the bar with casks and the barkeep, a window onto the road (day/night), hanging lanterns, a hearth glow light'],
   ['glint', 'the first-visit glint (a 4-frame sparkle) and the bobbing ! over an unused station'],
   ['rings', 'the floor ring under each hero (an ellipse in his colour, 2 frames of shimmer) and the name tag plate (P1..P4)'],
@@ -91,7 +91,7 @@ export function makeTavern(api) {
     if (s.id === 'drills') { api.hint(DRILL_IDS.map(k => DRILLS[k].name + ': ' + DRILLS[k].line).join('.  '), 7); return; }
     if (s.id === 'bell') { ringBell(p); return; }
     if (s.id === 'practice') { api.practice(); return; }
-    if (s.id === 'arena') { say(p, 'COMING SOON', '#ff9a5c'); api.hint('THE ARENA PIT IS ROPED OFF: FRIENDS AGAINST FRIENDS IS COMING SOON.', 4); api.sfx('ui'); if (wasNew) api.sfx('sting'); return; }
+    if (s.id === 'arena') { say(p, 'COMING SOON', '#ff9a5c'); api.hint('THE DUEL PIT IS ROPED OFF: FRIENDS AGAINST FRIENDS IS COMING SOON.', 4); api.sfx('ui'); if (wasNew) api.sfx('sting'); return; }
   }
   /* THE SPARRING BELL: a partner goes DOWN (the nearest other upright player); alone, it says it wants a partner */
   function ringBell(p) {

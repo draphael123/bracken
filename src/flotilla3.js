@@ -15,7 +15,7 @@
 //   THE KEG ROLLER's keg (the powder monkey's machine, cnSkin 'kegroller'): he rolls it lit down the deck at you; STRIKE IT and it rolls back at him.
 // main.js calls: on, clear, update(dt), strike(hb), ownsFoe(e), spawnFoe(base, e), updateFoe(e, dt), takeFoe(e, dmg, blow), drawFoe(g, e, cx, cy, time), rollKeg(e),
 //   drawBack(g, cx, cy, time), drawOver(g, cx, cy, time), read().
-import * as ART from './redraw/admiral_art.js';
+import * as ART from './redraw/fleetlord_art.js';
 import * as WD from './redraw/flotilla3_world.js';
 const R = Math.round;
 export const F3 = {

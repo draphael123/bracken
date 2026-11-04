@@ -1,6 +1,6 @@
 // src/flotilla-boss.js (was admiral.js: ad blockers block that filename) - THE ADMIRAL, THE FLOTILLA's boss (claude/flotilla3, the OPUS greybox, 2026-10-25; scratch/brief-flotilla3-1018.md part C, folded with the
 // APPROVED review scratch/review-flotilla-1018.md - Daniel 10-18 10:18 'all recs'). He replaces THE ADMIRAL'S CHAMPION in the Flotilla's boss slot; the Champion
-// stays registered (src/admirals-champion.js) for THE UNDERWATER KEEP's mini slot (brief part B, with KEEP 2).
+// stays registered (src/fleetlord-champion.js) for THE UNDERWATER KEEP's mini slot (brief part B, with KEEP 2).
 //
 // WHO HE IS: a real PIRATE admiral - captain's coat, tricorn, cutlass and a BRACE OF PISTOLS - bolted into SALVAGED SHIP ARMOUR: three iron HULL PLATES riveted
 //   over the coat (CHEST, BACK, PAULDRONS). He holds THE LASHINGS: the Powder Ship's stern lashed to his FLAGSHIP's waist, a gap of foul harbour between.
@@ -16,7 +16,7 @@
 //                            HIS LINE (his grapnel line cut), THE AXE IN THE DECK (phase two), KNOCKED FLAT (a ball or a keg on him bare: capped, AD.flatCap).
 //   BARE (phase two)         x1 outside his openings (a duelist: always hittable, B11).
 //   THE WARD (B3)            after every blown plate / knockdown a told AD.wardT s grey ring: a ball glances off, a blade lands at the chip (or 0.4 bare).
-// HIS MOVES (B17: seven told answers; B16: each its own windup + release pose - src/redraw/admiral_art.js; one windup at a time):
+// HIS MOVES (B17: seven told answers; B16: each its own windup + release pose - src/redraw/fleetlord_art.js; one windup at a time):
 //   PHASE ONE - THE ARMOURED ADMIRAL:
 //     THE CUTLASS       (! a shield turns it)        two cuts and a step; the recovery after is his
 //     BRACE OF PISTOLS  (!! roll it / jump it)       he levels a pistol (the aim line drawn, then it locks): BANG; the second; then a SLOW RELOAD = AN OPENING
@@ -28,7 +28,7 @@
 //     gap unless you walk against it; the Hurricane's ROLL stays the Hurricane's - review Q6). His new move:
 //     THE BOARDING FLURRY (! a shield turns the cutlass) four quick cuts of cutlass and boarding axe, then THE AXE (!! step out): missed, it bites the deck - OPEN
 //     (and the cutlass, the pistols, the keg, the broadside and the grapnel all stay: the guns still knock him FLAT, bare)
-// PURE: no DOM, no main.js. The world is a context `c` (src/admiral-hands.js binds it). adPlan is the boss lab's HUMAN bot (src/lab.js).
+// PURE: no DOM, no main.js. The world is a context `c` (src/fleetlord-hands.js binds it). adPlan is the boss lab's HUMAN bot (src/lab.js).
 
 /* (tune) THE PER-HERO TUNE: { in: x what his blows take off this hero, out: x what this hero's blows take off him }. Heroes not listed are 1 / 1. */
 export const TUNE = { knight: { in: 1, out: 1 }, pyro: { in: 1.3, out: 0.85 }, pirate: { in: 1.1, out: 1.0 }, paladin: { in: 1.45, out: 0.42 }, reaper: { in: 1.1, out: 0.8 }, geomancer: { in: 1, out: 1 }, ranger: { in: 1, out: 1 }, berserker: { in: 1.3, out: 0.8 } };   /* (claude/flotilla4) re-tuned for the doubled openings + hp 5200 (r3 n=12: knight/paladin/berserker/reaper 12/12, warden 2/12) */

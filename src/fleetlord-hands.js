@@ -1,15 +1,15 @@
-// src/admiral-hands.js - THE ADMIRAL's HANDS (claude/flotilla3, the greybox). src/flotilla-boss.js is the fight (pure: his plates, his two phases, his cycles, his blows,
+// src/fleetlord-hands.js - THE ADMIRAL's HANDS (claude/flotilla3, the greybox). src/flotilla-boss.js is the fight (pure: his plates, his two phases, his cycles, his blows,
 // the pistol shots, the keg, the broadside's cells, the grapnel line, the list, the bot's reading); this binds it to the world: his told blows on the heroes (keyed once
 // a blow; a shield turns only the yellow cutlass and flurry), THE LIST's slide, THE LASHING's harbour (a hero who goes in is HAULED OUT, the Champion's rule kept),
 // THE DECK GUNS' round shot on him (src/main.js updateBalls calls onBall: A PLATE BLOWN), a blow on his KEG (struck back at him) or on his GRAPNEL LINE (cut: he drops),
 // every blow on him (take: the armour CHIPS - Daniel's approved 0.15x - and his plate holds him above AD.floor until the guns have it off), and the drawing (GREYBOX:
-// src/redraw/admiral_art.js until the ART pass).
+// src/redraw/fleetlord_art.js until the ART pass).
 // THE SHARED READ (B10): OPEN = a gold ring and a timer bar (STAGGERED / RELOADING / SOAKED / THE AXE IN THE DECK / KNOCKED FLAT); WARDED = a grey ring and the word;
 // a blow on his iron CLANKS, throws sparks and says IRON PLATE through src/boss-read.js - and still lands (never silent, never nothing).
 // main.js calls: spawnBoss, owns, on, update, take, onBall, strike, drawBoss, drawOver, drawDead, barName, end, read, show, clear.
 import * as ADM from './flotilla-boss.js';
 import { canvas } from './px.js';
-import * as ART from './redraw/admiral_art.js';
+import * as ART from './redraw/fleetlord_art.js';
 const { AD } = ADM;
 
 const SOUND = { tell: s => s.tell && s.tell(false), tellHard: s => s.tell && s.tell(true), slash: s => (s.foeSlash || s.slash)(), slam: s => (s.whoosh || s.slash)(), open: s => (s.bell || s.clank)(),
@@ -117,7 +117,7 @@ export function makeAdmiralHands(ctx) {
     keg: S.keg ? { x: R(S.keg.x), back: S.keg.back, fuse: +S.keg.fuse.toFixed(2) } : null, lanes: S.lanes ? { hit: S.lanes.hit.slice(), fired: S.lanes.fired } : null, swing: S.swing ? R(S.swing.x1) : null, list: S.list,
     shots: S.shots.length, hurt: { ...(S.hurt || {}) }, landedOn: (S.landedOn || []).slice(), G: S.G };
 
-  /* ---------- DRAWING (GREYBOX: src/redraw/admiral_art.js) ---------- */
+  /* ---------- DRAWING (GREYBOX: src/redraw/fleetlord_art.js) ---------- */
   const TELL_T = { cutTell: AD.cutTell, pistolTell: AD.pistolTell, pistol2Tell: AD.pistol2Tell, kegTell: AD.kegTell, whistleTell: AD.whistleTell, grapTell: AD.grapTell, listTell: AD.listTell, flurryTell: AD.flurryTell, axeTell: AD.axeTell, wake: 1.6,
     cut: AD.cutT, cutRec: AD.cutRec, kegRec: AD.kegRec, whistleRec: AD.laneT + AD.whistleRec, swing: AD.swingT, landRec: AD.landRec, flurry: AD.flurryT, flurryGap: AD.flurryNext, axe: AD.axeSwingT, axeRec: AD.axeRec,
     reload: AD.reloadT, stagger: AD.staggerT, soaked: AD.soakedT, axeStuck: AD.axeT, flat: AD.flatT, climb: 1.0 };

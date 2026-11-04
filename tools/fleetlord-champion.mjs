@@ -1,4 +1,4 @@
-/* tools/admirals-champion.mjs - THE ADMIRAL'S CHAMPION and THE FLOTILLA 2 keep their promises (claude/flotilla2; scratch/brief-flotilla2.md '!! 10-16').
+/* tools/fleetlord-champion.mjs - THE ADMIRAL'S CHAMPION and THE FLOTILLA 2 keep their promises (claude/flotilla2; scratch/brief-flotilla2.md '!! 10-16').
    It REPLACES what pinned THE QUARTERMASTER (benched, src/benched/quartermaster.js), rule for rule: her deck-guard-broken-by-a-gun became his KNOCKDOWN by a gun
    (B14), her 0.4 front (B15) became his plate at x0.5 (never nothing), her told moves became his seven, and boss-navigation's three decks became his two hulls.
    PURE (node): his moves' marks/answers/heights agree with src/marks.js; every tell >= 0.5 s; one move list a phase (the anchor changes his whole hand);
@@ -10,11 +10,11 @@
    PAGE (headless, every hero): a real blow on his guard lands (> 0) and clanks HIS PLATE; a real blow (the ranger: her knife's low sweep, DOWN+X) on the deck gun's breech with him in its line knocks him FLAT and a
      blow then pays ~4x the plate's; a ball in his ward glances off; a real swing at a rower's chain stops his bench; a gun blows the keg on the crate hatch open; a gun
      opens a copper door.
-   node tools/admirals-champion.mjs [--pure]   (PORT for the page) */
+   node tools/fleetlord-champion.mjs [--pure]   (PORT for the page) */
 import assert from 'node:assert/strict';
 import { readFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import * as AC from '../src/admirals-champion.js';
+import * as AC from '../src/fleetlord-champion.js';
 import { BY_HAND, ANSWER, HEIGHT } from '../src/marks.js';
 import { LEVELS, T } from '../src/level.js';
 const { CH, MOVES, CYCLES } = AC;
@@ -60,7 +60,7 @@ const nul = () => {}, W0 = { number: nul, sound: nul, shake: nul, fx: nul, mark:
 /* (claude/flotilla3) THE CHAMPION LEFT THE FLOTILLA: THE ADMIRAL holds it (src/flotilla-boss.js) and its level and page checks moved to tools/admiral.mjs. The Champion stays
    registered (his fight, hands, art, music) for THE UNDERWATER KEEP's mini slot (scratch/brief-flotilla3-1018.md part B, with KEEP 2): his pure table and stub fight are checked
    here; his level and page rows below come back when the Keep places him (re-point idx and the arena). */
-if (!LEVELS.some(l => { try { const B = l.build(); return B.arena && B.arena.boss === 'champion' || B.mini && B.mini.boss === 'champion'; } catch { return false; } })) { console.log(fails ? fails + ' FAILED' : 'admirals-champion (pure): ok - no level places him yet (the Keep, KEEP 2); the flotilla is tools/admiral.mjs'); process.exit(fails ? 1 : 0); }
+if (!LEVELS.some(l => { try { const B = l.build(); return B.arena && B.arena.boss === 'champion' || B.mini && B.mini.boss === 'champion'; } catch { return false; } })) { console.log(fails ? fails + ' FAILED' : 'fleetlord-champion (pure): ok - no level places him yet (the Keep, KEEP 2); the flotilla is tools/admiral.mjs'); process.exit(fails ? 1 : 0); }
 /* ---------- THE LEVEL ---------- */
 const lv = LEVELS.find(l => l.id === 'flotilla'), L = lv.build();
 ok(lv.rule === 'FOUR HULLS LASHED TOGETHER: THE WAY PAST IS OVER THEM, NOT THROUGH.', 'the rule line is kept (the brief)');
@@ -90,7 +90,7 @@ for (const l of LEVELS) { const B = l.build(); ok(!B.ents.some(e => e.t === 'qua
 ok(existsSync(ROOT + 'src/benched/quartermaster.js'), 'the Quartermaster is benched in src/benched/quartermaster.js');
 for (const f of ['src/main.js', 'src/lab.js', 'src/level.js', 'index.html']) ok(!readFileSync(ROOT + f, 'utf8').includes('benched/quartermaster'.replace('/', '/') + "'") , f + ' imports the benched Quartermaster');
 
-if (process.argv.includes('--pure') || fails) { console.log(fails ? fails + ' FAILED' : 'admirals-champion (pure): ok'); process.exit(fails ? 1 : 0); }
+if (process.argv.includes('--pure') || fails) { console.log(fails ? fails + ' FAILED' : 'fleetlord-champion (pure): ok'); process.exit(fails ? 1 : 0); }
 
 /* ---------- PAGE ---------- */
 const { openPage } = await import('./cdp.mjs');
@@ -134,4 +134,4 @@ for (const [h, o] of Object.entries(R.heroes)) {
 ok(R.world.rower.freed && R.world.rower.halted && R.world.rower.still, 'a real swing at a rower\'s chain frees him and his bench stops where it is: ' + JSON.stringify(R.world.rower));
 ok(R.world.hatch.keg === true && R.world.hatch.crates.every(t => t === T.AIR), 'the gun blows the keg on the crate hatch open: ' + JSON.stringify(R.world.hatch));
 ok(R.world.door === true, 'a gun opens a copper door');
-console.log(fails ? fails + ' FAILED' : 'admirals-champion: ok (' + Object.keys(R.heroes).join(', ') + ')'); process.exit(fails ? 1 : 0);
+console.log(fails ? fails + ' FAILED' : 'fleetlord-champion: ok (' + Object.keys(R.heroes).join(', ') + ')'); process.exit(fails ? 1 : 0);

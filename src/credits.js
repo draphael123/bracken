@@ -57,6 +57,7 @@ export const CC_BY = [   /* [MUSIC_CREDITS key, track, composer, licence, the li
   ['glasssea', 'Eastern Arctic Dubstep', 'Vishwa Jay', 'CC0', 'https://opengameart.org/node/97673', ['"Eastern Arctic Dubstep" Vishwa Jay', '(VishwaJai on OpenGameArt.org)', 'CC0: public domain, credited all the same', 'opengameart.org/node/97673']],
   ['redgorge', 'Old Road', 'Kevin MacLeod', 'CC-BY 4.0', 'http://creativecommons.org/licenses/by/4.0/', ['"Old Road" Kevin MacLeod (incompetech.com)', 'Licensed under Creative Commons:', 'By Attribution 4.0 License', 'http://creativecommons.org/licenses/by/4.0/']],
   ['kraken', 'The Kraken / Ready Cannons and Fire', 'Leonardo Paz (leohpaz)', 'CC-BY 4.0', 'https://creativecommons.org/licenses/by/4.0/', ['"The Kraken" and "Ready Cannons and Fire"', 'by Leonardo Paz (leohpaz), Ocean music pack', '(OpenGameArt.org) Licensed under CC-BY 4.0', 'opengameart.org/content/ocean-music-pack']],   /* THE KRAKEN's fight (claude/musickraken, Daniel's pick 10-17); "Ready Cannons and Fire" is reserved for KRAKEN 3's raft phase */
+  ['unburied', 'March of the Wizards', 'Aureolus_Omicron', 'CC-BY 4.0', 'https://creativecommons.org/licenses/by/4.0/', ['"March of the Wizards"', 'by Aureolus_Omicron (OpenGameArt.org)', 'Licensed under CC-BY 4.0', 'opengameart.org/content/march-of-the-wizards']],   /* THE UNBURIED FIELD's track (licence audit 11-03: it was in CREDITS.txt but not on this page) */
   ['voices-lr', 'Voices Sound Effects Library', 'Little Robot Sound Factory', 'CC-BY 3.0', 'https://creativecommons.org/licenses/by/3.0/', ['"Voices Sound Effects Library"', 'by Little Robot Sound Factory', 'Licensed under CC-BY 3.0', 'www.littlerobotsoundfactory.com']],   /* (claude/audiovoices 10-18) the berserker's orc growls, the Death Knight's evil voices, the undead, demons, beasts and little things (audio/sfx/vo/ob_ dk_ ev_ zb_ dm_ di_ sc_, and wd_ rg_ effort) */
 ];
 /* the one composer a few credit lines spell two ways (MUSIC_CREDITS is kept short to fit the Sound Test row) */
@@ -76,12 +77,17 @@ export const FONT_CREDITS = [['Press Start 2P', 'Cody "CodeMan38" Boisclair', 'd
 export const FONT_LICENCE = 'SIL OFL 1.1 (OFL): scripts.sil.org/OFL';
 /* THE RECORDED SOUND EFFECTS (claude/sfx, Daniel 10-11): CC0 packs, credited as a courtesy beside the composers - the exact packs and links are in audio/CREDITS.txt */
 /* (claude/shipfix: the other CC0 authors audio/CREDITS.txt names - voices, grunts, ambience, one-shots and two chiptune loops - are on the page too; HaelDB's page lists both CC0 and OGA-BY 3.0, checked 2026-10-13, and it is used under CC0) */
-export const SFX_CREDIT_NAMES = ['Kenney', 'rubberduck', 'StumpyStrust', 'artisticdude', 'HaelDB', 'cicifyre', 'thebardofblasphemy', 'Badre-Eddine', 'Ogrebane', 'Rango Mango', 'wolfwoot', 'ArcadeParty', 'Exewin', 'StarNinjas', 'RandomMind', 'Zane Little Music', 'jasinski', 'Independent.nu', 'qubodup', 'Dan Knoflicek', 'Galacti-Chron', 'TinyWorlds', 'Fantozzi', 'Corsica_S'];
+export const SFX_CREDIT_NAMES = ['Kenney', 'rubberduck', 'StumpyStrust', 'artisticdude', 'HaelDB', 'cicifyre', 'thebardofblasphemy', 'Badre-Eddine', 'Ogrebane', 'Rango Mango', 'wolfwoot', 'ArcadeParty', 'Exewin', 'StarNinjas', 'RandomMind', 'Zane Little Music', 'jasinski', 'Independent.nu', 'qubodup', 'Dan Knoflicek', 'Galacti-Chron', 'TinyWorlds', 'Fantozzi', 'Corsica_S', 'JaggedStone', 'SketchMan3', 'TheOuterLinux'];   /* (licence audit 11-03, CC0 courtesy: JaggedStone's cave and deep ambience, SketchMan3's wind loop, TheOuterLinux's Bald Mountain arrangement) */
 export const CCBY_PER = 2;
+export const CC_BY_CHANGES = 'TRACKS TRIMMED AND LOOPED FOR THE GAME.';   /* (licence audit 11-03: CC-BY 4.0 wants a note that the work was modified) */
+export const PEERJS_CREDIT = 'ONLINE CO-OP USES PEERJS (MIT): PEERJS.COM';   /* (licence audit 11-03, courtesy) */
+const isBy = it => /^CC-BY/.test(it[3]);   /* the page header was 'CREDIT REQUIRED (CC-BY)' over the CC0 rows too: now two sections (licence audit A3) */
 export const CREDIT_ROWS = 8;
 export function creditPages(credits) {
   const names = [...new Set([...composers(credits), ...SFX_CREDIT_NAMES])].sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase())), per = CREDIT_ROWS * 2, pages = [];
-  for (let i = 0; i < CC_BY.length; i += CCBY_PER) pages.push({ kind: 'ccby', items: CC_BY.slice(i, i + CCBY_PER), last: i + CCBY_PER >= CC_BY.length });
+  const by = CC_BY.filter(isBy), zero = CC_BY.filter(it => !isBy(it));
+  for (let i = 0; i < by.length; i += CCBY_PER) pages.push({ kind: 'ccby', items: by.slice(i, i + CCBY_PER), last: false });
+  for (let i = 0; i < zero.length; i += CCBY_PER) pages.push({ kind: 'cc0', items: zero.slice(i, i + CCBY_PER), last: i + CCBY_PER >= zero.length });
   for (let i = 0; i < names.length; i += per) pages.push({ kind: 'names', names: names.slice(i, i + per) });
   pages.push({ kind: 'fonts' });
   return pages;

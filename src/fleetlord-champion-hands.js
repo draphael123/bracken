@@ -1,4 +1,4 @@
-// src/admirals-champion-hands.js - THE ADMIRAL'S CHAMPION's HANDS (claude/flotilla2, the greybox). src/admirals-champion.js is the fight (pure: his two phases, his
+// src/fleetlord-champion-hands.js - THE ADMIRAL'S CHAMPION's HANDS (claude/flotilla2, the greybox). src/fleetlord-champion.js is the fight (pure: his two phases, his
 // cycles, his blows, the knockdown, the tilt, the bot's reading); this binds it to the world: his told blows on the heroes (keyed once a blow; a shield turns only
 // the yellow combo), THE CHAIN HOOK's haul, THE TILT's slide (a hero on a net or in the air is not on the deck), THE LASHING's gap (the hulls rock apart: the
 // edge column of each hull opens over the harbour, then closes again once nobody is in it), THE DECK GUNS' round shot on him (src/main.js updateBalls calls
@@ -6,7 +6,7 @@
 // THE SHARED READ (design standard B10): OPEN = a gold ring and a timer bar (KNOCKED FLAT / THE BLADE IS IN THE DECK); WARDED = a grey ring and the word; a blow on
 // his plate CLANKS, flashes and says HIS PLATE through src/boss-read.js - and still lands at CH.plate (never silent, never nothing).
 // main.js calls: spawnBoss, owns, on, update, take, onBall, drawBoss, drawOver, drawDead, barName, end, read, show, clear.
-import * as ACM from './admirals-champion.js';
+import * as ACM from './fleetlord-champion.js';
 import { BOSS_PHASE } from './boss-music.js';
 import { canvas } from './px.js';
 import * as ART from './redraw/champion_art.js';

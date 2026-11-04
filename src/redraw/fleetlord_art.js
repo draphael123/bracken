@@ -1,4 +1,4 @@
-// admiral_art.js - THE ADMIRAL, THE HAND-DRAWN SHEET (claude/flotilla3art; the greybox of claude/flotilla3 is replaced, the API and the pose keys are kept - the contract with src/admiral-hands.js).
+// fleetlord_art.js - THE ADMIRAL, THE HAND-DRAWN SHEET (claude/flotilla3art; the greybox of claude/flotilla3 is replaced, the API and the pose keys are kept - the contract with src/fleetlord-hands.js).
 // Pure drawing on a 2d context g at (x, y) = his feet on screen; f = facing (+1 right). o = { mode, p (the move's progress 0..1), flash, ward, off: [plate indices gone],
 // list (the flagship's list, phase two) }.
 // HE IS: a pirate admiral about 50 px tall with the hat - a long oxblood coat with gold frogging and gold cuffs, tall black boots, a black tricorn laced in gold with a red plume, a grey

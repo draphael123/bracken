@@ -1,4 +1,4 @@
-// src/map-pixel.js - THE WORLD MAP AT ONE PIXEL SCALE (claude/mapscale, art-direction fix 3; docs/style-guide "Pixel scale").
+// src/map-dots.js - THE WORLD MAP AT ONE PIXEL SCALE (claude/mapscale, art-direction fix 3; docs/style-guide "Pixel scale").
 // The map is drawn on the 320x180 buffer, shown at 4x: ONE map pixel is one buffer pixel, and everything on it - the hero token, the
 // store's hut, the landmark critters, the node discs, the clouds, the labels - is built from whole pixels of that size. This file holds the
 // pure helpers that keep it so: hard-edged discs and rings (no ctx.arc, which anti-aliases), an ordered 2x2 dither mask, an
