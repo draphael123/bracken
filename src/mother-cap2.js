@@ -19,7 +19,7 @@
 import { KEY_ROWS } from './boss-read.js';
 import * as MART from './redraw/sporewood2_mother.js'; import { drawCloud as drawSporeCloud, halo as foxHalo } from './redraw/sporewood2_world.js'; import { GLOW as FOX } from './redraw/sporewood2_pal.js';   /* (claude/sporewood2art) her baked frames, one per windup and release, and her floor effects */
 export const MC = {
-  hp: 1600,                                   /* her bar (tuned with flasks, campaign level: see the lane report) */
+  hp: 1450,                                   /* her bar (tuned with flasks, campaign level: see the lane report) */
   take: 0.4, heroTake: { pyro: 0.6 }, heroOpen: { pyro: 1.6 }, openMul: 2, openT: 3.5, wardT: 3.0, wind: 0.7,
   idle: [1.15, 0.85],                        /* the breath between her moves, P1 / P2 */
   knotW: 16, knotUp: 132, knotDn: 104,       /* her knot: half its width; from how high over her floor to how low a plunge counts */
