@@ -352,8 +352,28 @@ export function makeGQueenHands(ctx) {
   };
 
   /* ---------------- DRAW ---------------- */
+  /* the escape's picture (placeholders until the art lane): the floor on fire, flames on the rafters, the two hall portals, the roof shrine, HER PORTAL */
+  function portalDraw(g, x, y, t, k, col) {
+    g.save(); g.translate(Math.round(x), Math.round(y));
+    g.fillStyle = '#2a1a3a'; g.beginPath(); g.ellipse(0, 0, 6 + 4 * k, 11 + 5 * k, 0, 0, 6.3); g.fill();
+    g.strokeStyle = col; g.lineWidth = 2; g.beginPath(); g.ellipse(0, 0, 6 + 4 * k, 11 + 5 * k, t * 3, 0, 5); g.stroke();
+    g.strokeStyle = '#e8dcff'; g.lineWidth = 1; g.beginPath(); g.ellipse(0, 0, 3 + 2 * k, 7 + 3 * k, -t * 4, 0, 4); g.stroke(); g.restore();
+  }
+  function escapeDraw(g, cx, cy, t) {
+    const E = L().gqEscape, A = L().arena, esc = S.esc; if (!E || !esc || !esc.on) return;
+    if (esc.fireOn) { g.globalAlpha = 0.85; for (let x = A.x0; x < A.x1; x += 9) { const h = 4 + 5 * (0.5 + 0.5 * Math.sin(t * 9 + x * 0.37)), fx = Math.round(x - cx), fy = Math.round(A.floor - cy);
+      g.fillStyle = '#ff6b2c'; g.fillRect(fx, fy - h, 5, h); g.fillStyle = '#ffd36b'; g.fillRect(fx + 1, fy - h * 0.55, 3, h * 0.55); } g.globalAlpha = 1; }
+    for (const tier of E.tiers) for (let x = tier.x0; x <= tier.x1; x += 3) { const h = 2 + 3 * (0.5 + 0.5 * Math.sin(t * 11 + x * 1.3)); g.fillStyle = '#ff9a5c'; g.fillRect(Math.round(x * TS + 4 - cx), Math.round(tier.row * TS - h - cy), 3, h); }
+    for (const hp of E.hallPortals) portalDraw(g, hp.x * TS + 8 - cx, hp.y * TS + 8 - cy, t, esc.cueT > 0 ? 1 : 0.4, esc.cueT > 0 ? '#fff6c8' : '#b28cff');
+    portalDraw(g, E.portal.x * TS + 8 - cx, E.portal.y * TS + 2 - cy, t, 0.5 + 0.5 * Math.sin(t * 3), '#b28cff');
+    const bx = Math.round(E.check.x * TS + 8 - cx), by = Math.round((E.check.y + 1) * TS - cy);   // the roof shrine: a brazier, lit once you have been there
+    g.fillStyle = '#3a3a44'; g.fillRect(bx - 4, by - 8, 8, 8); if (esc.checked) { const h = 5 + 4 * (0.5 + 0.5 * Math.sin(t * 12)); g.fillStyle = '#ffd36b'; g.fillRect(bx - 3, by - 8 - h, 6, h); g.fillStyle = '#ff6b2c'; g.fillRect(bx - 2, by - 8 - h * 0.6, 4, h * 0.6); }
+    if (esc.step) { const k = Math.min(1, (t - esc.step.t0) / G.esc.step); portalDraw(g, E.portal.x * TS + 8 - cx, E.portal.y * TS + 2 - cy, t, 1 + k, '#fff6c8'); }
+  }
   H.drawWorld = (g, cx, cy, t) => {
     if (!S) return;
+    escapeDraw(g, cx, cy, t);
+    if (S.fleeP && !(S.fleeP.done && t - S.fleeP.done > 0.6)) portalDraw(g, S.fleeP.x - cx, S.fleeP.y - cy, t, 0.8, '#b28cff');
     const c = S.crown;
     if (c) {
       const x = Math.round(c.x - cx), y = Math.round(c.y - cy);
