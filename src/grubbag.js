@@ -460,8 +460,12 @@ function gbPlan0(s) {
   /* (claude/kitchengate4) 11b. THE HOOK ROUTE: the drop is ready and he is himself - up on the line under the lower hook, UP to take it (then 0a flies it). Weighed per move of his
      (mem.hook, a roll) so it never starves the bombs, the chillies or the dishes */
   if (RA && S.cd.drop <= 0 && S.ward <= 0 && !gbOpen(e) && e.mode !== 'gulp' && !S.items.some(q => q.kind !== 'dish' && q.state !== 'fall')) { if (mem.hookAct !== S.act) { mem.hookAct = S.act; mem.hook = (S.made + 1) % GB.line.bombEvery !== 0 && rng() < (s.v2 ? 0.45 : 0.3); mem.hopK = undefined; }   /* (never when the next item out is a bomb) */
-    if (mem.hook) { const spot = Math.max(B.x0 + 10, RA.x0 + 18);
-      if (!onB) return toBelt(spot, 'to the hook');
+    if (mem.hook) { const PA = G.plats[1], PB = G.plats[2], ctr = p => (p.x0 + p.x1) / 2, on = p => P.ground && Math.abs(P.y - p.y) < 3 && P.x >= p.x0 - 2 && P.x <= p.x1 + 2;   /* (claude/grubhook) THE CLIMB: the line -> the low shelf -> the high shelf -> UP on the hook above it */
+      if (PA && PB) { if (on(PB)) { const hx = RB ? RB.x0 + 4 : ctr(PB); if (Math.abs(P.x - hx) < 12) { out.up = true; out.gx = P.x; out.why = 'take the hook (UP)'; return out; } out.gx = hx; out.why = 'under the hook'; return out; }
+        if (on(PA)) { const gx = ctr(PB); if (Math.abs(P.x - (PB.x0 - 6)) < 10 || (P.x >= PA.x1 - 14)) return jump('up to the high shelf', ctr(PB)); out.gx = PA.x1 - 10; out.why = 'to the high shelf'; return out; }
+        if (!onB) return toBelt(ctr(PA), 'to the shelves');
+        if (Math.abs(P.x - ctr(PA)) < 12) return jump('up to the low shelf', ctr(PA)); out.gx = bx(ctr(PA)); out.why = 'under the low shelf'; return out; }
+      const spot = Math.max(B.x0 + 10, RA.x0 + 18); if (!onB) return toBelt(spot, 'to the hook');
       if (Math.abs(P.x - spot) < 14) { out.up = true; out.gx = P.x; out.why = 'take the hook (UP)'; return out; }
       out.gx = bx(spot); out.why = 'under the hook'; return out; } }
   /* 12. NOTHING ON: chip him while he sits (well fed), or wait on the line */

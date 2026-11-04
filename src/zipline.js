@@ -50,6 +50,7 @@ export function findCatch(L, P, up, downHeld) {
     if (z.cut > 0) continue;   /* (claude/lance4) a parted line holds nobody until it is re-strung */
     if (z === P.zipSkip && (!up || rel)) continue;   /* the rope he just kicked off, or dropped from: not by touch until he has landed or gone away from it */
     if (!up && (P.ground || downHeld || z.snap || z.raid || z.upOnly)) continue;   /* (claude/kitchengate4) upOnly: a rope taken only on purpose (LORD GRUBBAG's lower hook over the line's foot: a jump up onto the line must not snatch it) */   /* (claude/ksar2) a RAIDER LINE (src/ksar-hands.js) is taken on purpose too: a jump up the tower's stair must not catch it */   /* by touch only in the air, and never a frayed one: that is taken on purpose (UP) */
+    if (z.npc) continue;   /* (claude/grubhook) a rail only foes ride (LORD GRUBBAG attendants lower hook): no hero takes it */
     if (!inReach(z, P)) continue;
     const d = Math.abs(lineY(z, P.x) - (P.y - 12)); if (d < bd) { bd = d; best = z; }
   }
