@@ -1,0 +1,62 @@
+{
+  "time": "2026-11-04T23:19:50.906Z",
+  "sourceGame": "dc02ecc059959b795f76dee47665b54f349d4e2f",
+  "sourceTree": "9d8acbb7f3182c1d29ac71f4a3b0227224446718",
+  "originalController": "1a576c3f4511b6856df9fb4738df5aaae9987e81",
+  "nativeQualification": {
+    "controller": "4a9ef43fbebf40da11e7bdbc0146332bf6c875d7",
+    "cases": 102,
+    "resultReceipt": "outputs/receipts/hero-padding-native-result-nov04.json",
+    "resultSha256": "fa2c5bb2984a279b94b2d0f697d041bc350633deb58fb6fe06cbc6cd641283f7",
+    "actualRetiredInputs": 2864,
+    "primaryRun": 41931094983,
+    "caseScope": "102distinct cases across separately retained101-case interrupted occurrence and one missing-case closure;14additional contracts separately pass. No single102-case run pass.",
+    "primaryCompletedCases": 101,
+    "coverageReceipt": "outputs/receipts/hero-padding-native-coverage-nov04.json",
+    "coverageReceiptSha256": "782ff5e10b2e5ce7dcb085c652d3683121ed464311d33fe0d630a450d2bcf955",
+    "coverageOccurrences": [
+      {
+        "file": "outputs/receipts/hero-padding-native-result-nov04.json",
+        "sha256": "fa2c5bb2984a279b94b2d0f697d041bc350633deb58fb6fe06cbc6cd641283f7"
+      },
+      {
+        "file": "outputs/receipts/hero-padding-missing-contract-result-nov04.json",
+        "sha256": "601567e608374a2eb9530e6a09199303a1ab2642c0e2ef81567d828be0e77804"
+      },
+      {
+        "file": "outputs/receipts/hero-padding-contract-supplement-result-nov04.json",
+        "sha256": "46e6d98f9bebdf5a5773729fe8eaf513d266a30e6c4cbb2773d3758f72f64a15"
+      }
+    ],
+    "priorMemoryInterruption": {
+      "run": 41931094983,
+      "rendererMb": 1557,
+      "limitMb": 1536,
+      "verdict": "Unknown/interrupted; unchanged and not reclassified",
+      "completedCases": 101,
+      "missingCase": "before-root-proxyContext"
+    },
+    "missingCaseClosure": {
+      "run": 41932512884,
+      "case": "before-root-proxyContext",
+      "peakRendererMb": 1331,
+      "originalSnapshotCaseBodySourceGuardUnchanged": true
+    }
+  },
+  "nodeQualification": {
+    "run": 41929927811,
+    "cases": 3,
+    "resultSha256": "ea853ad56ed36a18b43beab2f4d85548f0c5fa00b37987e7a41c7e68697e640c"
+  },
+  "originalSnapshotFunctionSha256": "89e31693c6ae1ef5740fbb64a65c20ba5df927fa3d173955e3ad37b7810ee14a",
+  "contextObserverSha256": "ba3f88d37f1339c18373d97029460af6ba1a1f9bc62f142d6530026227fd27be",
+  "strictProfileSha256": "9d38b09c585f0054e40125c63b2435e61e8cd6f5cc53e6011edf62178c8c2184",
+  "scope": "Separate original Task3 main/shared UI and four-file Knight pre-padding scratch retirement only. No curve/publication/private-R/Skyroad/other candidate combination. All9fresh before/candidate/return documents and complete full-SPR native/context/metadata/alias comparisons retained.",
+  "materialPolicy": "Predeclared>=10percent median opening-through-publication improvement versus BOTH controls OR>=32MB median renderer reduction at BOTH postboot/post-full-readback checkpoints versus BOTH controls. Timing and memory return drift<=10percent; all9 exact documents and actual retired>0 in all3candidate documents. Original3second sampled peaks retained as supplementary data, not allocation cause or instantaneous maximum. No new claim or cleaner retiming if guide fails.",
+  "rendererMb": 1536,
+  "admissionMb": 4352,
+  "allPublicConstructorsAnd50LiveExpressionsUnchanged": true,
+  "adopted": false,
+  "overallWorkComplete": false,
+  "manifestSha256": "5a677af463815a22a05d298263802bcde48d0ada8bc91718d445d1449c7a0a92"
+}
