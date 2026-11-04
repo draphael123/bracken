@@ -329,7 +329,7 @@ export function createTouch(env) {
     document.addEventListener('visibilitychange', () => { if (document.hidden) releaseAll(); else wake(); });
     /* THE SCREEN STAYS ON while the game is open (a thumb on a stick is not a screen touch the phone counts as idle for long): the Screen Wake Lock, asked for on a touch
        and again when the page comes back (the browser drops it when the page is hidden). Silently nothing where it is not offered. */
-    let wl = null; const wake = () => { try { if (navigator.wakeLock && !wl && !document.hidden) navigator.wakeLock.request('screen').then(l => { wl = l; l.addEventListener('release', () => { wl = null; }); }).catch(() => {}); } catch {} };
+    let wl = null; const wake = () => { try { if (navigator.wakeLock && !wl && !document.hidden && !((document.permissionsPolicy || document.featurePolicy) && !(document.permissionsPolicy || document.featurePolicy).allowsFeature('screen-wake-lock'))) navigator.wakeLock.request('screen').then(l => { wl = l; l.addEventListener('release', () => { wl = null; }); }).catch(() => {}); } catch {} };
     disp.addEventListener('touchend', wake, { passive: true });
   }
 
