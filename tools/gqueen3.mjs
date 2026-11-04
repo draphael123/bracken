@@ -6,9 +6,9 @@
 //            every new mode has its MARK / ANSWER / HEIGHT row; the flee full-heals (hp, stamina, flasks); the stun guard is >= 1.0 s; the pillar / plate / chandelier-pin machinery is gone.
 //   node tools/gqueen3.mjs        (GQ_ROOT=<checkout> runs it against another checkout: the plan's "prove it RED on master")
 import { readFileSync, existsSync } from 'node:fs';
-import { pathToFileURL } from 'node:url';
+import { pathToFileURL, fileURLToPath } from 'node:url';
 import path from 'node:path';
-const ROOT = process.env.GQ_ROOT ? path.resolve(process.env.GQ_ROOT) : path.resolve(new URL('..', import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1'));
+const ROOT = process.env.GQ_ROOT ? path.resolve(process.env.GQ_ROOT) : path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const rd = f => existsSync(path.join(ROOT, f)) ? readFileSync(path.join(ROOT, f), 'utf8') : '';
 const imp = f => import(pathToFileURL(path.join(ROOT, f)).href);
 const TS = 16;

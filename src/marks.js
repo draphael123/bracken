@@ -249,7 +249,7 @@ export const MARK = {
   'gangleader|throwTell': '!', 'gangleader|whirlTell': '!!', 'gargoyle|breathTell': '!', 'gargoyle|diveTell': '!!', 'gargoyle|fireballTell': '!', 'gargoyle|flareTell': '!!',
   'gar|lungeTell': '!', 'goat|charge': '!', 'goat|ekButtTell': '!', 'goat|ekStampTell': '!!', 'gobmage|boltTell': '!', 'gobmage|lobTell': '!',
   'gobmage|runeTell': '!!', 'gobpriest|bellTell': '!', 'gobpriest|censerTell': '!', 'gobpriest|riteTell': '', 'gorgecrab|boulderTell': '!!', 'gorgecrab|crushTell': '!!',
-  'gorgecrab|pinchTell': '!', 'gorgecrab|scuttleTell': '!!', 'gqueen|chandTell': '!!', 'gqueen|crownTell': '!', 'gqueen|crownTossTell': '!', 'gqueen|decreeTell': '!', 'gqueen|gDropTell': '!!',
+  'gorgecrab|pinchTell': '!', 'gorgecrab|scuttleTell': '!!', 'gqueen|chandTell': '!!', 'gqueen|crownTell': '!', 'gqueen|crownTossTell': '!', 'gqueen|portalTell': '!', 'gqueen|decreeTell': '!', 'gqueen|gDropTell': '!!',
   'gqueen|gLeapTell': '', 'gqueen|hallLeapTell': '!!', 'gqueen|leapTell': '!!', 'gqueen|ringTell': '!!', 'gqueen|sceptreTell': '!', 'gqueen|shadowTell': '!!',
   'gqueen|slamTell': '!!', 'gqueen|slateTell': '!', 'gqueen|sweepTell': '!!', 'grandmother|broodTell': '', 'grandmother|feelTell': '!', 'grandmother|fireTell': '!',
   'grandmother|fireballTell': '!!', 'grandmother|jabTell': '!', 'grandmother|jarTell': '!!', 'grandmother|knellTell': '!!', 'grandmother|lashTell': '!', 'grandmother|listenTell': '',
@@ -444,6 +444,7 @@ export const ANSWER = {
   'gobmage|boltTell': 'block', 'gobmage|runeTell': 'dodge', 'gobmage|lobTell': 'block',   /* (claude/pyroboss2) the fire mage's lob: a shield takes it - and step off the patch it leaves */
   'pyromancer|cutTell': 'block', 'pyromancer|chargeTell': 'block', 'pyromancer|chargeBigTell': 'dodge', 'pyromancer|riseTell': 'jump', 'pyromancer|conflagTell': 'dodge',   /* (claude/pyroboss2) THE PYROMANCER 2: or strike the charge (it fizzles); out of the red ring; over the burning dash; off the marks */
   'gobpriest|bellTell': 'block', 'gobpriest|censerTell': 'block',
+  'gqueen|portalTell': 'block',   // (claude/gqueen3) HER PORTALS: a fan of rock shards at where you stand - PARRY one (a stun), or roll through
   'gqueen|crownTossTell': 'block',   // (claude/gqueen3) HER CROWN: a boomerang at chest height - PARRY it (she is STUNNED), or duck it
   'gqueen|ringTell': 'dodge',   // (claude/highcrown2) SHE RINGS HER BELL: the grate's column glows - step off it
   'gqueen|hallLeapTell': 'jump',   // THE GOBLIN QUEEN'S QUAKE (a boss: her row is her fight's, claude/gqueen2): she lands and it runs the floor - jump it
@@ -728,7 +729,7 @@ export const HEIGHT = {
   'gobmage|boltTell': 'high', 'gobmage|runeTell': 'low', 'gobmage|lobTell': 'low',   /* (claude/pyroboss2) the fire mage's lob comes down on you */
   'pyromancer|cutTell': 'high', 'pyromancer|chargeTell': 'high', 'pyromancer|riseTell': 'low', 'pyromancer|conflagTell': 'low', 'pyromancer|chargeBigTell': 'low',   /* (claude/pyroboss2) the dash and the eruptions run the floor; the blast where the ring is */
   'gobpriest|bellTell': 'low', 'gobpriest|censerTell': 'low',
-  'gqueen|hallLeapTell': 'low', 'gqueen|ringTell': 'low', 'gqueen|crownTossTell': 'high',   /* (release 10-29) the bell's grate crush is on the floor: a ground blow, like her quake */
+  'gqueen|hallLeapTell': 'low', 'gqueen|ringTell': 'low', 'gqueen|crownTossTell': 'high', 'gqueen|portalTell': 'low',   /* (release 10-29) the bell's grate crush is on the floor: a ground blow, like her quake */
   'lampreeve|lungeTell': 'low',   /* (claude/weakboss: the pole comes level at your middle - a duck is still in it) */
   'lampreeve|flaskTell': 'low', 'tollmaster|scalesLowTell': 'low', 'tollmaster|scalesHighTell': 'high', 'tollmaster|sealTell': 'low',   /* (claude/lamplit2) the flask and the seal break on the boards; the scales swung LOW skim them, swung HIGH pass at a standing head */
   'ploughman|chargeTell': 'low', 'ploughman|furrowTell': 'low', 'ploughman|headTell': 'low', 'ploughman|goadTell': 'low',

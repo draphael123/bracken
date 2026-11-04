@@ -92,6 +92,70 @@ export function makeGQueenHands(ctx) {
       }
     }
   }
+  /* ---------------- THE PORTAL CAST (rock shards) ---------------- */
+  /* tell 1.0 s (the sceptre up), then 2 portals (3 in P1b) open at fixed hall-wall anchors at least 90 px from you; each glows 0.9 s with three faint fan lines, and they fire 0.35 s apart: a fan
+     of three rock shards (+-14 deg) at the spot you stand on AT THE MOMENT IT FIRES, 210 px/s, yellow, blockable. A PARRIED shard homes on her (320 px/s): STUNNED 2.2 s; at most ONE stun a cast,
+     and a return after that only clanks (1%). */
+  function anchors() {
+    const A = L().arena, out = [];
+    for (const wx of [A.x0 + 4, A.x1 - 4]) for (const r of G.portal.rows) if (r % 2 === 0) out.push({ x: wx, y: r * TS + 8 });
+    return out;
+  }
+  function openPortals(e, n) {
+    const P0 = ctx.P(), pc = G.portal;
+    let pool = anchors().map(a => ({ ...a, d: Math.hypot(a.x - P0.x, a.y - (P0.y - 8)) }));
+    let ok = pool.filter(a => a.d >= pc.minDist);
+    if (ok.length < n) ok = pool.sort((a, b) => b.d - a.d).slice(0, n);
+    const picks = [];
+    while (picks.length < n && ok.length) picks.push(ok.splice(Math.floor(Math.random() * ok.length), 1)[0]);
+    const t0 = now();
+    S.portals = picks.map((a, i) => ({ x: a.x, y: a.y, state: 'glow', t0, fireAt: t0 + pc.glow + i * pc.gap, fired: false, aimX: P0.x, aimY: P0.y - 8 }));
+    S.cast = { n: picks.length, stunned: false, at: t0 };
+    sfx('portalOpen'); sfx('callerChant');
+    return pc.glow + (picks.length - 1) * pc.gap + 0.7;
+  }
+  function portalStep(dt) {
+    const P0 = ctx.P(), pc = G.portal, t = now();
+    for (const p of S.portals) {
+      if (p.fired) { if (t - p.firedAt > 0.35) p.dead = true; continue; }
+      p.aimX = P0.x; p.aimY = P0.y - 8;   /* the faint fan lines follow you until it fires */
+      if (t >= p.fireAt) {
+        p.fired = true; p.firedAt = t; p.state = 'fired';
+        const base = Math.atan2(p.aimY - p.y, p.aimX - p.x);
+        for (let k = 0; k < pc.fan; k++) { const a = base + (k - (pc.fan - 1) / 2) * pc.spread * Math.PI / 180; S.rocks.push({ x: p.x, y: p.y, vx: Math.cos(a) * pc.v, vy: Math.sin(a) * pc.v, t: 0, dead: false, home: false, cast: S.cast }); }
+        ctx.burst(p.x, p.y, 8, ['#b28cff', '#e8dcff', '#8a8a9c'], 60, 0.4); sfx('crack');
+      } else if (Math.random() < dt * 26) ctx.part({ x: p.x + (Math.random() - 0.5) * 10, y: p.y + (Math.random() - 0.5) * 16, vx: 0, vy: -10, life: 0.3, max: 0.3, col: '#b28cff', size: 1, grav: 0, glow: true });
+    }
+    S.portals = S.portals.filter(p => !p.dead);
+  }
+  function rockStep(dt) {
+    const e = q(), P0 = ctx.P(), pc = G.portal;
+    for (const r of S.rocks) {
+      if (r.dead) continue;
+      r.t += dt;
+      if (Math.random() < dt * 24) ctx.part({ x: r.x, y: r.y, vx: 0, vy: 0, life: 0.2, max: 0.2, col: r.home ? '#fff6c8' : '#b28cff', size: 1, grav: 0, glow: true });
+      if (r.home) {
+        const dx = e.x - r.x, dy = (e.y - 36) - r.y, dd = Math.hypot(dx, dy) || 1, sp = pc.home * dt;
+        if (dd <= sp + 12) {
+          r.dead = true;
+          if (!(r.cast && r.cast.stunned) && stun(e, pc.stun, pc.stunHp, GQ_SAY.crowned)) { /* stunned: the shard is spent */ }
+          else { e.hp -= Math.round(e.maxHp * pc.clankHp); e.flash = 0.25; ctx.number(e.x, e.y - 60, GQ_SAY.clank, '#c9c9d6'); sfx('clank'); if (e.hp <= 0) ctx.hurt(e, 1, e.x); }
+          continue;
+        }
+        r.x += dx / dd * sp; r.y += dy / dd * sp; continue;
+      }
+      r.x += r.vx * dt; r.y += r.vy * dt;
+      if (r.t > 4 || ctx.solid(Math.floor(r.x / TS), Math.floor(r.y / TS))) { r.dead = true; ctx.dust(r.x, r.y, 3); continue; }
+      if (!P0.dead && ctx.overlap({ l: r.x - pc.r, r: r.x + pc.r, t: r.y - pc.r, b: r.y + pc.r }, ctx.hurtBox())) {
+        r.dead = true;
+        const h = gqHit(r.x - sign(r.vx) * 12, pc.dmg, e, 'A PORTAL SHARD');
+        if (h.parried) { r.dead = false; r.home = true; ctx.ring(r.x, r.y, 12, '#fff6c8', 0.25); sfx('clank'); }
+        else { ctx.burst(r.x, r.y, 5, ['#b28cff', '#8a8a9c'], 50, 0.3); }
+      }
+    }
+    S.rocks = S.rocks.filter(r => !r.dead);
+  }
+
   /* she is bare-headed and only walks (no other attack) until the crown is back on: the fetch after a plain block */
   function fetchStep(e) {
     const c = S.crown;
@@ -117,6 +181,14 @@ export function makeGQueenHands(ctx) {
         else if (e.modeT <= 0) { S.crown = null; e.crownOut = false; e.mode = 'rec'; e.modeT = 0.5; }
         return 0;
       case 'crownFetch': return fetchStep(e);
+      case 'portalTell':
+        e.face = sign(P0.x - e.x) || e.face;
+        if (Math.random() < dt * 30) ctx.part({ x: e.x + e.face * 10 + (Math.random() - 0.5) * 10, y: e.y - 66 - Math.random() * 10, vx: 0, vy: -24, life: 0.4, max: 0.4, col: '#b28cff', size: 2, grav: 0, glow: true });
+        if (e.modeT <= 0) { e.mode = 'portalCast'; e.modeT = openPortals(e, e.phase >= 2 ? G.portal.n2 : G.portal.n); }
+        return 0;
+      case 'portalCast':
+        if (e.modeT <= 0) { e.mode = 'rec'; e.modeT = 0.5; }
+        return 0;
       case 'stunned':
         e.vx = 0;
         if (Math.random() < dt * 12) ctx.part({ x: e.x + (Math.random() - 0.5) * 30, y: e.y - 60 - Math.random() * 8, vx: 0, vy: -16, life: 0.5, max: 0.5, col: '#ffd36b', size: 2, grav: 0, glow: true });
@@ -132,15 +204,18 @@ export function makeGQueenHands(ctx) {
     if ((e.crownCd ?? 3) <= 0 && ad > 60) {
       e.crownCd = p2 ? G.crown.cd2 : G.crown.cd; e.mode = 'crownTossTell'; e.modeT = G.crown.tell; ctx.number(e.x, e.y - e.h - 12, '!', '#ffd36b'); sfx('callerChant'); return true;
     }
+    if ((e.portalCd ?? 6) <= 0 && ad > 40) {
+      e.portalCd = p2 ? G.portal.cd2 : G.portal.cd; e.mode = 'portalTell'; e.modeT = G.portal.tell; ctx.number(e.x, e.y - e.h - 12, '!', '#ffd36b'); sfx('callerChant'); return true;
+    }
     return false;
   };
-  H.tick = (e, dt) => { if (!S) return; e.crownCd = (e.crownCd ?? 3) - dt; };
+  H.tick = (e, dt) => { if (!S) return; e.crownCd = (e.crownCd ?? 3) - dt; e.portalCd = (e.portalCd ?? 6) - dt; };
 
   /* ---------------- PER FRAME ---------------- */
   H.update = dt => {
     if (!S) return;
-    if (!ctx.bossActive() || !q()) { S.crown = null; return; }
-    crownStep(dt);
+    if (!ctx.bossActive() || !q()) { S.crown = null; S.rocks = []; S.portals = []; return; }
+    crownStep(dt); portalStep(dt); rockStep(dt);
   };
 
   /* ---------------- DRAW ---------------- */
@@ -154,6 +229,17 @@ export function makeGQueenHands(ctx) {
       g.beginPath(); g.moveTo(-5, 0); g.lineTo(-5, -4); g.lineTo(-2, -1); g.lineTo(0, -5); g.lineTo(2, -1); g.lineTo(5, -4); g.lineTo(5, 0); g.fill();
       g.fillStyle = '#c9463d'; g.fillRect(-1, 0, 2, 2); g.restore();
     }
+    for (const p of S.portals) {
+      const x = Math.round(p.x - cx), y = Math.round(p.y - cy), k = p.fired ? 1 : Math.min(1, (t - p.t0) / G.portal.glow);
+      g.save(); g.translate(x, y);
+      if (!p.fired) { g.globalAlpha = 0.18 + 0.2 * k; g.strokeStyle = '#e8dcff'; g.lineWidth = 1;
+        for (let j = 0; j < G.portal.fan; j++) { const a = Math.atan2(p.aimY - p.y, p.aimX - p.x) + (j - (G.portal.fan - 1) / 2) * G.portal.spread * Math.PI / 180; g.beginPath(); g.moveTo(0, 0); g.lineTo(Math.cos(a) * 150, Math.sin(a) * 150); g.stroke(); }
+        g.globalAlpha = 1; }
+      g.fillStyle = '#2a1a3a'; g.beginPath(); g.ellipse(0, 0, 5 + 5 * k, 9 + 6 * k, 0, 0, 6.3); g.fill();
+      g.strokeStyle = p.fired ? '#fff6c8' : '#b28cff'; g.lineWidth = 2; g.beginPath(); g.ellipse(0, 0, 5 + 5 * k, 9 + 6 * k, t * 3, 0, 5); g.stroke();
+      g.restore();
+    }
+    for (const r of S.rocks) { const x = Math.round(r.x - cx), y = Math.round(r.y - cy); g.fillStyle = r.home ? '#fff6c8' : '#8a8a9c'; g.fillRect(x - 3, y - 3, 6, 6); g.fillStyle = r.home ? '#ffd36b' : '#b28cff'; g.fillRect(x - 1, y - 1, 2, 2); }
     const e = q();
     if (e && e.mode === 'stunned') { for (let k = 0; k < 3; k++) { const a = t * 4 + k * 2.09; g.fillStyle = '#ffd36b'; g.fillRect(Math.round(e.x - cx + Math.cos(a) * 16), Math.round(e.y - 64 - cy + Math.sin(a) * 4), 2, 2); } }
     if (e && e.mode === 'crownTossTell') { const k = 0.5 + 0.5 * Math.sin(t * 30); g.globalAlpha = 0.5 + 0.4 * k; g.fillStyle = '#fff6c8'; g.fillRect(Math.round(e.x - cx + e.face * 6) - 1, Math.round(e.y - 60 - cy), 3, 3); g.globalAlpha = 1; }
