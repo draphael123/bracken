@@ -1,0 +1,67 @@
+{
+  "time": "2026-11-04T23:40:11.519Z",
+  "status": "One bounded alternative Map/function-scope ownership inspection after full heap snapshot exceeded1536MBbefore producing any chunk.",
+  "hypothesis": "Persistent levelTileMemo recipes keep their first successful factory closure. Check actual heap retaining paths for unnecessary captured drawing resources; absence of a path or native backing sizes stays Unknown. Do not prune or evict any recipe.",
+  "sourceGame": "dc02ecc059959b795f76dee47665b54f349d4e2f",
+  "sourceTree": "9d8acbb7f3182c1d29ac71f4a3b0227224446718",
+  "originalController": "1a576c3f4511b6856df9fb4738df5aaae9987e81",
+  "pageSha256": "b72df7f028206994f628e82d6e93bef9bb7e780b52a32a7528b14480cd99c092",
+  "manifestSha256": "28e881ef3f9773cd2f598ce799a7b6d6b0b4216c6a3f27cd1e01339247e6725b",
+  "memoSourceSha256": "ccb3f9fe046e38a19aa53e1019f8f8cb1f537c595fdb79d7a4563a5c4c84d394",
+  "nativeProtocolReference": "https://chromedevtools.github.io/devtools-protocol/tot/Runtime/",
+  "scope": {
+    "freshDocuments": 1,
+    "levels": [
+      "wood",
+      "redgorge",
+      "wood"
+    ],
+    "heapSnapshots": [],
+    "snapshotBytesBound": 100663296,
+    "oneSnapshotTimeoutMs": 180000,
+    "game": [
+      320,
+      180
+    ],
+    "display": [
+      2402,
+      1082
+    ],
+    "viewport": [
+      915,
+      412
+    ],
+    "dpr": 2.625,
+    "cpu": 4,
+    "time": 0,
+    "noSimulation": true,
+    "original64LevelOrFiveArenaSubstitute": false,
+    "noNativeMethodWrappersOrGameSourceEdits": true,
+    "noEvictionOrReadbackFlush": true,
+    "noFailedOriginalAssertionOrTimingReplayed": true,
+    "inspections": [
+      "wood-after-redgorge"
+    ],
+    "mapsBound": 512,
+    "entriesPerMap": 16,
+    "functionScopesPerEntry": 4,
+    "metadataBytesBound": 33554432,
+    "inspectorRetainsRemoteObjectsTemporarily": true,
+    "objectGroupReleasedInFinally": true,
+    "noFullHeapGraphOrNativeByteAttribution": true
+  },
+  "heapSnapshotMayCollectAndPerturbMemory": true,
+  "heapSelfSizesAreNotNativeRendererAllocatedBytes": true,
+  "rendererMb": 1536,
+  "admissionMb": 4352,
+  "allOriginalChecksStillRequired": true,
+  "adopted": false,
+  "overallWorkComplete": false,
+  "priorFailure": {
+    "run": 41934791999,
+    "receipt": "outputs/receipts/tile-recipe-retaining-graph-result-nov04.json",
+    "peakRendererMb": 1666,
+    "snapshotChunks": 0,
+    "retained": true
+  }
+}
