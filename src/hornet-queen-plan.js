@@ -7,6 +7,14 @@
 import { HQ, OPEN_NAME, hqOpen, loopAhead, underComb } from './hornet-queen.js';
 export const PLAN = { react: 0.25, miss: 0.12, missCut: 0.15, leave: 0.2, cutWait: 5 };
 export function hqPlan(s) { const out = hqPlan0(s); if (globalThis.__hqWhy) { const k = out.why.replace(/ \(.*/, ''); globalThis.__hqWhy[k] = (globalThis.__hqWhy[k] || 0) + 1; } return out; }
+/* (claude/nestpolish) THE LOB: UP + ATTACK throws a carried pot on its HIGH arc (105 px/s out, 325 up, g 620: ~85 px up, ~110 px out). Does that arc meet her body now? */
+export const LOB = { vx: 105, vy: -325, g: 620 };
+export function lobHits(P, e) { const f = P.face || 1, hx = P.x + f * 6, hy = P.y - 18, hw = HQ.w / 2 + 3;
+  for (let t = 0.05; t < 1.3; t += 0.03) { const x = hx + f * LOB.vx * t, y = hy + LOB.vy * t + 0.5 * LOB.g * t * t; if (Math.abs(x - e.x) < hw && y > e.y - HQ.h - 3 && y < e.y + 3) return true; if (y > P.y + 40) break; } return false; }
+function lobPlan(s, out) { const { P, e, S } = s; if (!P.held || (e.smokeCd || 0) > 0 || S.ward > 0 || e.mode === 'sleep' || e.mode === 'away' || hqOpen(e)) return null;
+  const face = Math.sign(e.x - P.x) || P.face; const Q = { x: P.x, y: P.y, face };
+  if (lobHits(Q, e)) { out.face = face; out.gx = P.x; out.up = true; out.atk = P.atk < 0; out.why = 'lob the pot at her'; return out; }
+  return null; }
 function hqPlan0(s) {
   const { P, e, S, reach } = s, out = { gx: null, face: P.face, atk: false, jump: false, dodge: false, block: false, down: false, up: false, talk: false, why: '' };
   const mem = s.mem || {}, rng = s.rng || Math.random, t = s.t || 0;
@@ -37,6 +45,7 @@ function hallPlan(s, out, mem, t, seenFor, roll, swing, inReach, jumpTo) {
   const lowNear = low.slice().sort((a, b) => Math.abs((a.x0p + a.x1p) / 2 - P.x) - Math.abs((b.x0p + b.x1p) / 2 - P.x))[0];
   const tellKey = 'a' + S.act + e.mode, seen = seenFor(tellKey), miss = s.v2 ? false : roll(tellKey + 'm', PLAN.miss);
   const smoker = !s.shield;   /* the no-shield heroes carry smoke: it is their opening (her dive at a carried pot) */
+  { const lb = lobPlan(s, out); if (lb) return lb; }   /* (claude/nestpolish) a pot in hand and her body on its arc: throw it - the fog grounds her */
   /* A. HER OPENINGS: strike her. On a perch: up onto it beside her (or a jump attack from below) */
   if (hqOpen(e)) {
     if (P.held) { out.talk = true; out.why = 'set the pot down: she is open'; return out; }
@@ -96,6 +105,7 @@ function honeyPlan(s, out, mem, t, seenFor, roll, swing, inReach, jumpTo) {
   const hanging = S.combs.filter(c => c.st === 'hang'), last = hanging.find(c => c.last), torn = hanging.filter(c => !c.last);
   const willPass = (c, t0, t1) => { if (e.mode !== 'circle') return false; for (let k = t0; k <= t1 + 1e-6; k += 0.04) if (underComb(c, loopAhead(S, k))) return true; return false; };
   const onTo = (f, why) => { const gx = Math.max(f.x0p + 6, Math.min(f.x1p - 6, P.x)); if (P.ground && P.y > f.y + 4 && Math.abs(P.x - gx) < 30) return jumpTo(gx, false, why); out.gx = gx; out.why = why; return out; };
+  { const lb = lobPlan(s, out); if (lb) return lb; }   /* (claude/nestpolish) the lob, in the resin hall too */
   /* A. A POT IN HAND: under her low pass (the smoke takes her), or set down when she is open */
   if (P.held) { if (hqOpen(e)) { out.talk = true; out.why = 'set the pot down: she is open'; return out; }
     if (e.mode === 'aim' || e.mode === 'dive') { out.gx = P.x; out.why = 'her dive meets the smoke'; return out; }
