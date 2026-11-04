@@ -32882,7 +32882,7 @@ function drawNear(cx) {
     for (let tx = tx0; tx <= tx0 + Math.ceil(VW / TS); tx += 2) { nn++; for (let k = 0; k < 3; k++) if (isSolid(tx, ty0 + k)) { nt++; break; } for (let k = 0; k < 3; k++) if (isSolid(tx, ty1 - k)) { nb++; break; } }
     wantTop = nt / nn > 0.25 ? 1 : 0; wantBot = nb / nn > 0.25 ? 1 : 0; }
   /* (claude/hnlook, Daniel 11-03: 'when you move, this area in the Hornet's Nest looks weird') INSIDE THE NEST THERE IS NO LEAF OR GRASS: the shared near layer (a leaf lip over the lens at 1.35x, grass blades along the foot at 1.5x) was hung over the paper hall and slid past the walls and pillars faster than anything else in the frame. The nest paints its own near layer (src/redraw/hornets_nest_backdrop.js drawNear: paper flecks, far hornets); here the shared one eases out as the camera enters it and back in at the mouth. */
-  if (L.hornetsNest && cx + VW / 2 > 80 * TS && cx + VW / 2 < 433 * TS) wantTop = wantBot = 0;
+  if (L.hornetsNest) { wantTop = 0; if (cx + VW / 2 > 80 * TS && cx + VW / 2 < 433 * TS) wantBot = 0; } /* Daniel 11-03: leaf lip off across the WHOLE level (it fought the nest boughs outside the hall too); grass stays outside the nest */
   const snap = Math.abs(camY - NEAR_A.cy) > VH * 0.5 || Math.abs(cx - NEAR_A.cx) > VW * 0.5, ek = snap ? 1 : 0.12; NEAR_A.cy = camY; NEAR_A.cx = cx;
   NEAR_A.top += (wantTop - NEAR_A.top) * ek; NEAR_A.bot += (wantBot - NEAR_A.bot) * ek;
   if (NEAR_A.top > 0.02) { g.globalAlpha = 0.9 * NEAR_A.top; lay(n.top, 1.35, -8); }
