@@ -56,7 +56,34 @@ export const TABLE = [
     walk: { to: 478 }, endOnMap: true, arrive: null },   /* (Daniel 11-02 17:53) NOT auto-loaded: after the smoke the party ends on the WORLD MAP with the spur node lit (the player chooses to go) */
   { from: 'kings', to: 'scree', scene: null, when: { burningOpen: false },   /* GORM fell the party in a life (the spur stays shut): the plain walk-out onto the road to the Scree Path (beyond the demo) */
     beats: [{ id: 'walk', dur: 2.0, max: 3.0 }, { id: 'fade', dur: 0.7 }], walk: { to: 478 }, arrive: { ferry: false, walk: 1.3 } },
+
+  /* ============================================================ ACT II: THE CRAGS - the MAIN ROAD (claude/act2tr; scratch/brief-act2transitions-1104.md, Daniel APPROVED 11-04). Side paths (Burning Village, The War Cairn) have NO rows.
+     LANE A = rows 1-6 below (scree > hanging ... skyroad > oreroad). LANE B appends rows 7-11 (oreroad > minecart ... kitchengate > crown) + the S1/S2 scenes, LANE C row 12 (crown > longwater, S3), here, IN ROAD ORDER, and adds its
+     letter to ACT2_BUILT in tools/demo-transitions.mjs (until then that check reports the row as pending, after it a missing row is RED). Open kinds new in lane A (drawn by TRA.drawWayGate, greybox-plus: recoloured rails, lane C draws real ones):
+       cairn / ledge  BARE kinds (BARE_KINDS: no wall in the arena to open - the level just runs on; main.js throws dust + light, and an open.fill bridges a pit)    rope = a rope-bridge gate    bell = the monastery's great doors    crumble = stone that falls */
+  { from: 'scree', to: 'hanging', scene: null,        /* 1. THE RAM LORD falls: the goat track runs on east over the open scree (no wall in the arena): two cairns rise out of the dust at col 634 and the party walks on to the cliff gate */
+    beats: [{ id: 'open', dur: 1.4 }, { id: 'walk', dur: 2.4, max: 3.6 }, { id: 'fade', dur: 0.7 }],
+    open: { col: 634, rows: [3, 8], kind: 'cairn' }, walk: { to: 640 }, arrive: { ferry: false, walk: 1.3 } },
+  { from: 'hanging', to: 'spire', scene: null,       /* 2. THE OWL REEVE falls: the village's last hoist-rope gate (col 109, the east end) lets go and a rope way runs on up the cliff */
+    beats: [{ id: 'open', dur: 1.5 }, { id: 'walk', dur: 2.4, max: 3.6 }, { id: 'fade', dur: 0.7 }],
+    open: { col: 109, rows: [14, 19], kind: 'rope' }, arrive: { ferry: false, walk: 1.3 } },
+  { from: 'spire', to: 'moor', scene: null,          /* 3. THE FALSE ABBOT falls: the hall's great doors (col 95) swing out onto the high moor. Built against TODAY's arena - MONASTERY 3 (11-16) re-points this one row (col/rows) and its test */
+    beats: [{ id: 'open', dur: 1.6 }, { id: 'walk', dur: 2.4, max: 3.6 }, { id: 'fade', dur: 0.7 }],
+    open: { col: 95, rows: [24, 29], kind: 'bell' }, arrive: { ferry: false, walk: 1.3 } },
+  { from: 'moor', to: 'rookery', scene: null,        /* 4. THE WINDCALLER falls: the wind drops (no wall: the summit's far lip) and a stone ledge path shows - open.fill closes the 3-tile pit at cols 739-741 so the walk has a floor */
+    beats: [{ id: 'open', dur: 1.4 }, { id: 'walk', dur: 2.4, max: 3.6 }, { id: 'fade', dur: 0.7 }],
+    open: { col: 751, rows: [8, 12], kind: 'ledge', fill: { col: 739, w: 3, rows: [13, 15] } }, arrive: { ferry: false, walk: 1.3 } },
+  { from: 'rookery', to: 'skyroad', scene: null,     /* 5. THE SHRIEK SISTERS fall: the eyrie's last wall (col 487) crumbles to a ledge */
+    beats: [{ id: 'open', dur: 1.5 }, { id: 'walk', dur: 2.4, max: 3.6 }, { id: 'fade', dur: 0.7 }],
+    open: { col: 487, rows: [5, 10], kind: 'crumble' }, arrive: { ferry: false, walk: 1.3 } },
+  { from: 'skyroad', to: 'oreroad', scene: null,     /* 6. THE ROC falls (GATE-END, L.gateAfterBoss: the gate at col 456 is walked INTO - no open beat): through it, out of the sky and down into the Ore Road's drum-house yard */
+    beats: [{ id: 'walk', dur: 1.6, max: 3.0 }, { id: 'fade', dur: 0.7 }], arrive: { ferry: false, walk: 1.3 } },
 ];
+/* open kinds with NO wall in the arena to open (the level just runs on): main.js throws dust + light and does not hop; art draws a spill (+ the root-arch for 'light', two cairns for the rest) */
+export const BARE_KINDS = ['light', 'cairn', 'ledge'];
+export const isBareKind = k => BARE_KINDS.includes(k);
+/* the dust a falling gate throws, per open.kind (default: the Wood's earth + pine) */
+export const DUST = { rope: ['#8a7048', '#c8b480', '#5e4a2c'], bell: ['#6a5238', '#c89a48', '#2e2218'], crumble: ['#7a828c', '#b4bcc4', '#4a5058'] };
 /* the row for a level. ctx: the flags a row's `when` asks for ({ burningOpen: bool }); a row with no when always matches. */
 export const entryFor = (from, to, ctx = {}) => TABLE.find(e => e.from === from && (to === undefined || e.to === to) && (!e.when || Object.keys(e.when).every(k => !!e.when[k] === !!ctx[k]))) || null;
 /* a scene beat (shore, ride, road, smoke...) is one that carries sc, or the ferry's own two */

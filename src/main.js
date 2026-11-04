@@ -32260,8 +32260,9 @@ function trnBegin() {
 }
 function trnOpenWay() {
   const o = TRN.entry.open; if (!o) return;
-  if (o.kind === 'light') { for (let r = o.rows[0]; r <= o.rows[1]; r += 2) burst(o.col * TS + 8, r * TS + 8, 3, ['#ffe9a8', '#fff6d0'], 40, 1.0, -10, 1); if (SFX.gateLift) SFX.gateLift(); return; }   /* (claude/demotransitions) no wall in this arena: only the light beyond */
-  for (let c = o.col; c < o.col + (o.w || 1); c++) for (let r = o.rows[0]; r <= o.rows[1]; r++) { const i = r * LW + c; if (L.grid[i] === T.SOLID) { L.grid[i] = T.AIR; tileSpr[i] = null; } burst(c * TS + 8, r * TS + 8, 5, ['#8a7a5a', '#c9b98a', '#5e4a30', '#3b5a2a'], 70, 0.7, 120, 2); }
+  if (o.fill) { const f = o.fill; for (let c = f.col; c < f.col + (f.w || 1); c++) for (let r = f.rows[0]; r <= f.rows[1]; r++) { const i = r * LW + c, nb = r * LW + f.col - 1; if (L.grid[i] === T.AIR) { L.grid[i] = T.SOLID; tileSpr[i] = tileSpr[nb]; if (tileDeep) tileDeep[i] = tileDeep[nb]; burst(c * TS + 8, r * TS + 8, 3, ['#8a8a8a', '#b4b4b4'], 40, 0.5, 60, 1); } } }   /* (claude/act2tr) a PIT on the way out (Gale Moor's, cols 739-741) is bridged by a ledge copied from the floor beside it: the walk has ground */
+  if (TRM.isBareKind(o.kind)) { for (let r = o.rows[0]; r <= o.rows[1]; r += 2) burst(o.col * TS + 8, r * TS + 8, 3, ['#ffe9a8', '#fff6d0'], 40, 1.0, -10, 1); if (SFX.gateLift) SFX.gateLift(); return; }   /* (claude/demotransitions) no wall in this arena: only the light beyond (claude/act2tr: light, cairn, ledge) */
+  for (let c = o.col; c < o.col + (o.w || 1); c++) for (let r = o.rows[0]; r <= o.rows[1]; r++) { const i = r * LW + c; if (L.grid[i] === T.SOLID) { L.grid[i] = T.AIR; tileSpr[i] = null; } burst(c * TS + 8, r * TS + 8, 5, TRM.DUST[o.kind] || ['#8a7a5a', '#c9b98a', '#5e4a30', '#3b5a2a'], 70, 0.7, 120, 2); }
   SFX.crumble(); if (SFX.gateLift) SFX.gateLift(); shakeCam(6); rumble(120, 0.8);
 }
 /* the scene clock: seconds since the shore beat began (0 before it) */
@@ -32274,7 +32275,7 @@ function trnUpdate(dt) {
   if (ph === 'open' && !tr.opened && tl.pt >= 0.25) { tr.opened = true; trnOpenWay(); }
   let ready = true;
   if (ph === 'walk') {
-    players.forEach((p, i) => { const q2 = tr.pos[i]; if (!q2 || q2.arrived) return; const w = TRM.walkStep(q2.x, tr.target, dt, q2.speed); q2.x = w.x; q2.v = w.v; q2.arrived = w.arrived; q2.hop = TRM.hopY(q2.x, tr.entry.open ? tr.entry.open.col : -9, TS); if (!w.arrived) ready = false; });
+    players.forEach((p, i) => { const q2 = tr.pos[i]; if (!q2 || q2.arrived) return; const w = TRM.walkStep(q2.x, tr.target, dt, q2.speed); q2.x = w.x; q2.v = w.v; q2.arrived = w.arrived; q2.hop = TRM.hopY(q2.x, tr.entry.open && !TRM.isBareKind(tr.entry.open.kind) ? tr.entry.open.col : -9, TS); if (!w.arrived) ready = false; });
     if (players[0] && tr.pos[0]) { P.x = tr.pos[0].x; P.vx = tr.pos[0].v * 0.6; P.face = 1; }
   }
   const entered = TRM.step(tl, dt, { press: anyPress, ready });

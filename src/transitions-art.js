@@ -8,7 +8,7 @@
    drawArrivalFerry: the ferry the Marsh begins on, in WORLD space (moored: post, rope, lantern). drawWayGate: the Wood's east gate in WORLD space (rails that fall, a header that stays).
    drawBars: the letterbox with a film-edge line. Everything static is baked ONCE (per viewport size) and blitted; the per-frame work is a few drawImage calls, a handful of 1 px
    rects and two or three gradients. Every loop is bounded and hashed, never random. No dialogue: this file never writes text. */
-import { FERRY, sceneScroll, heroOnScene, ferryX, ROAD, roadScroll, roadGrowth, roadHero, SMOKE, smokeHero, smokeRise, smokeGlow } from './transitions.js';
+import { FERRY, sceneScroll, heroOnScene, ferryX, ROAD, roadScroll, roadGrowth, roadHero, SMOKE, smokeHero, smokeRise, smokeGlow, isBareKind } from './transitions.js';
 import { canvas, outline } from './px.js';
 import { BARK, CUT, NEEDLE, logPileSprite, drawStump } from './redraw/lumber_trail_art.js';
 import { OAK, BOARD, CORD, CORD_D } from './redraw/marsh2_art.js';
@@ -346,7 +346,17 @@ const GATE_PAL = {
   bog: { bark: [OAK[0], OAK[1], OAK[2], OAK[3], OAK[4], OAK[5]], cut: ['#d4dcc4', '#b2bea4', '#8e9e86', '#6a7a64', '#4a5a46'], cord: CORD, cordD: CORD_D, reed: [RDS[0], RDS[2], RDS[3], '#9a9a52', '#c4b872'] },   /* the Marsh's bog oak, and bundled reed stems green -> dry straw */
   palisade: { bark: ['#14110d', '#241d16', '#3a3026', '#574a3a', '#76674f', '#968565'], cut: ['#d8cfae', '#b8ab82', '#8e7f58', '#665a3c', '#463c28'], cord: '#9a8a60', cordD: '#6e6040' },
   leaf: { bark: ['#16200e', '#25361a', '#38541f', '#4f7a2a', '#6d9c3a', '#94c254'], cut: ['#ecf4bc', '#cfdc8a', '#aab864', '#7f9040', '#58682c'], cord: '#d9c58a', cordD: '#a08c58' },
+  /* ACT II (claude/act2tr, GREYBOX-PLUS: the default pine rails and header in a new colour; the art lane draws each its own): rope = weathered hemp-wrapped planks (the Hanging Village's hoist gate); bell = the monastery's dark oak with bronze bands;
+     crumble = grey cliff stone (the Rookery's last wall). The BARE kinds (cairn, ledge) have no rails: two cairns (below) and the light beyond. */
+  rope: { bark: ['#1c140c', '#2e2214', '#4a3820', '#6b5430', '#8e7444', '#b09a62'], cut: ['#e4d4a0', '#c4b078', '#9a8654', '#6e5e38', '#4a3e24'], cord: '#c8b480', cordD: '#8a7848' },
+  bell: { bark: ['#120e0c', '#221a16', '#3a2c22', '#54402e', '#74583c', '#9a7a50'], cut: ['#f0d890', '#d4aa58', '#a87c34', '#7a5a24', '#523c18'], cord: '#c89a48', cordD: '#8a6a2c' },
+  crumble: { bark: ['#121418', '#22262c', '#383e46', '#505860', '#6e7882', '#92a0aa'], cut: ['#d8dee4', '#b4bcc4', '#8e98a2', '#646e78', '#444c54'], cord: '#8a94a0', cordD: '#5e6670' },
 };
+/* a waymark CAIRN (kinds cairn / ledge): five stacked stones, grey with a lit top edge - the goat track's marker; they rise out of the dust when the way is told open */
+const cairnSprite = () => once('cairn', () => mk(18, 24, g => {
+  const ST = ['#2a2c30', '#4a4e54', '#6c7178', '#9aa0a6'];
+  for (const [x, y, w, h] of [[1, 17, 16, 6], [3, 12, 12, 5], [4, 8, 9, 4], [6, 5, 6, 3], [7, 2, 4, 3]]) { R(g, ST[0], x, y, w, h); R(g, ST[1], x + 1, y + 1, w - 2, h - 1); R(g, ST[2], x + 1, y + 1, w - 3, Math.max(1, h - 3)); R(g, ST[3], x + 1, y + 1, w - 3, 1); }
+}));
 const RAILS = 5;
 /* one rail (len x 13) in the gate's look. pine: the lashed pine log. palisade: a panel of sharpened-log stakes side by side. bog: a bundle of reed stems with cord wraps. leaf: living hedge (leaf clumps, a few flowers + berries). */
 function gateRail(g, len, lit, pal, kind) {
@@ -418,10 +428,11 @@ export function drawWayGate(env, o, cx, cy, t, opened, time, reduce) {
   const kind = o.kind || 'pine', pal = GATE_PAL[kind] || GATE_PAL.pine, { g } = env, wc = Math.max(1, o.w || 1), GL = 30 + (wc - 1) * 16, XW = (wc - 1) * 16;   /* GL: the gate's length (the rails), XW: the extra width of a 2+ tile gap */
   const X0 = o.col * 16 - cx, GX = X0 - 12, Y0 = o.rows[0] * 16 - cy, Hh = (o.rows[1] - o.rows[0] + 1) * 16, floor = Y0 + Hh;
   if (X0 > env.VW + 40 || X0 < -60) return;
-  const T0 = 0.25, falling = opened || t >= T0, tau = t - T0, bare = kind === 'light';   /* bare: no wall to open - the root-arch grows in instead */
+  const T0 = 0.25, falling = opened || t >= T0, tau = t - T0, bare = isBareKind(kind);   /* bare: no wall to open - the root-arch grows in instead */
   if (bare && !falling) return;
   const rails = once('gateRails' + kind + GL, () => { const r = []; for (let i = 0; i < RAILS; i++) { const [c, gg] = canvas(GL, 13); gateRail(gg, GL, i % 2 === 0, pal, kind); r.push(c); } return r; });
-  if (bare) { const a = opened ? 1 : smooth(tau / 0.7), spr = rootArch(); g.globalAlpha = a; g.drawImage(spr, Math.round(X0 + 8 - 35), Math.round(floor - spr.height + 1)); g.globalAlpha = 1; }
+  if (bare && kind === 'light') { const a = opened ? 1 : smooth(tau / 0.7), spr = rootArch(); g.globalAlpha = a; g.drawImage(spr, Math.round(X0 + 8 - 35), Math.round(floor - spr.height + 1)); g.globalAlpha = 1; }
+  else if (bare) { const a = opened ? 1 : smooth(tau / 0.7), spr = cairnSprite(), rise = (1 - a) * 14; g.globalAlpha = a; for (const dx of [-16, 22]) g.drawImage(spr, Math.round(X0 + dx), Math.round(floor - spr.height + 1 + rise)); g.globalAlpha = 1; }   /* (claude/act2tr) two cairns either side of the way */
   if (!bare) {
   /* the header (stays): pine = a squared beam with rope ends; palisade = a crest of sharpened stakes; bog = a lashed reed bundle; leaf = a hedge arch with hanging vines */
   const hb = Y0 - 3, HL = 40 + XW;

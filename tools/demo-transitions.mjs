@@ -5,7 +5,7 @@
      node tools/demo-transitions.mjs --browser      adds the page, one run per row: the boss falls (or the party walks into the gate), the clear is credited and SAVED first, the way opens (tiles go to air), the walk, the scene, the fade,
                                                     the next level loads and the party ARRIVES at its start (solid footing, clear of walls, unhurt, control returns); a skip mid-scene; 4 seats; reduce-motion; console clean
      node tools/demo-transitions.mjs --browser --shots=<dir>   also writes pictures per row (the scenes at three moments)
-   Exit 1 on any red row. */
+   ACT II (claude/act2tr): rows scree>hanging ... skyroad>oreroad + a derived-road check (the ACT2_* block below; lanes B/C add their letter to ACT2_BUILT). Exit 1 on any red row. */
 import { readFileSync, mkdirSync, writeFileSync, readdirSync } from 'node:fs';
 import * as TRM from '../src/transitions.js';
 const rows = []; const ok = (name, pass, why = '') => { rows.push({ name, pass: !!pass, why }); console.log((pass ? 'ok   ' : 'FAIL ') + name + (pass ? '' : '  ' + why)); };
@@ -32,7 +32,7 @@ for (const e of TRM.TABLE) {
   ok(key + ': a scene row has scene beats and a scene name, a walk-out has neither', !!e.scene === hasScene, JSON.stringify([e.scene, hasScene]));
   ok(key + ': the walk is capped (max) and short; the whole row is ' + TRM.length(e).toFixed(1) + ' s (a walk-out <= 6 s, a scene <= 15 s)', e.beats.find(b => b.id === 'walk').max >= e.beats.find(b => b.id === 'walk').dur && TRM.length(e) <= (hasScene ? 15 : 6), TRM.length(e).toFixed(1));
   if (e.endOnMap) ok(key + ': it ENDS ON THE MAP (endOnMap, no arrival): the spur is chosen by the player, not auto-loaded', e.endOnMap === true && !e.arrive && e.to === 'burning'); else ok(key + ': it arrives walking in from the left for 1-3 s' + (e.arrive.ferry ? ' off the ferry' : ''), e.arrive && e.arrive.walk >= 1 && e.arrive.walk <= 3 && (e.scene === 'ferry') === !!e.arrive.ferry);
-  if (e.open) ok(key + ': the way opens in the arena\'s last column(s) - ' + (e.open.kind || 'pine') + (e.open.w ? ' x' + e.open.w : ''), e.open.rows[0] < e.open.rows[1] && ['pine', 'bog', 'palisade', 'leaf', 'light', undefined].includes(e.open.kind) && (e.open.w || 1) <= 3);
+  if (e.open) ok(key + ': the way opens in the arena\'s last column(s) - ' + (e.open.kind || 'pine') + (e.open.w ? ' x' + e.open.w : ''), e.open.rows[0] < e.open.rows[1] && ['pine', 'bog', 'palisade', 'leaf', 'light', 'cairn', 'ledge', 'rope', 'bell', 'crumble', undefined].includes(e.open.kind) && (e.open.w || 1) <= 3);
   /* a skip at ANY moment lands in the same place: the timeline reaches done, with fade once, never stuck (soft-lock) */
   let worst = 0, bad = '';
   for (let t = 0.05; t < TRM.length(e) + 1; t += 0.11) {
@@ -51,6 +51,56 @@ for (const e of TRM.TABLE) {
   const spur = /opensOn: \{ level: '([a-z]+)'/.exec((levelSrc.match(new RegExp("id: '" + e.to + "'[^\\n]*\\n?[^\\n]*opensOn: \\{ level: '[a-z]+'")) || [''])[0]);
   ok(e.from + '>' + e.to + ': level.js has ' + e.to + ' needing ' + e.from + (spur ? ' (or a spur: opensOn ' + spur[1] + ')' : ''), (m && m[1] === e.from) || (spur && spur[1] === e.from), m ? m[1] : 'no needs found');
 }
+/* ---- ACT II: THE CRAGS - the main road, scree to longwater (claude/act2tr, brief-act2transitions-1104). Side paths excluded. ----
+   LANES: A built rows 1-6 (scree>hanging ... skyroad>oreroad), B owns 7-11 (oreroad>minecart ... kitchengate>crown) and C row 12 (crown>longwater, the hand-off). When a lane merges it ADDS ITS LETTER TO ACT2_BUILT below: from then
+   on a missing row of that lane is RED (until then it reports "pending"). Every row that exists is checked against the BUILT levels, so a level/arena edit that moves a wall, a floor or a start fails loud here. */
+const ACT2_BUILT = ['A'];
+const ACT2_EXPECT = [['scree', 'hanging', 'A'], ['hanging', 'spire', 'A'], ['spire', 'moor', 'A'], ['moor', 'rookery', 'A'], ['rookery', 'skyroad', 'A'], ['skyroad', 'oreroad', 'A'],
+  ['oreroad', 'minecart', 'B'], ['minecart', 'storm', 'B'], ['storm', 'undercrown', 'B'], ['undercrown', 'kitchengate', 'B'], ['kitchengate', 'crown', 'B'], ['crown', 'longwater', 'C']];
+{ const { LEVELS, T } = await import('../src/level.js');
+  const isSpur = l => !!(l.spurOf || l.opensOn);
+  /* the chain, derived from the road itself (needs:), never a hand list: a road change fails here */
+  const chain = ['scree']; for (let g = 0; g < 40 && chain[chain.length - 1] !== 'longwater'; g++) { const nx = LEVELS.filter(l => l.needs === chain[chain.length - 1] && !isSpur(l)); if (nx.length !== 1) break; chain.push(nx[0].id); }
+  ok('ACT II chain derived from needs: (spurs left out) is scree > ... > longwater, 12 pairs', chain.join('>') === ACT2_EXPECT.map(x => x[0]).concat('longwater').join('>'), chain.join('>'));
+  const spurIds = new Set(LEVELS.filter(isSpur).map(l => l.id));
+  ok('no row touches a SPUR (Burning Village is act I\'s and the only one; the War Cairn, the Church, the Unburied Field have none)', TRM.TABLE.every(e => e.to === 'burning' ? e.from === 'kings' : !spurIds.has(e.from) && !spurIds.has(e.to)), [...spurIds].join());
+  ok('no row for the side paths: kitchengate>warcairn, crown>warcairn, any mini or tower', !rowOf('kitchengate', 'warcairn') && !rowOf('crown', 'warcairn') && !TRM.TABLE.some(e => /tower|mini|warcairn/.test(e.to + e.from)));
+  const solidT = t => t === T.SOLID || t === T.CRATE || t === T.PALISADE || t === T.PORT || t === T.CLIMB || t === T.SOFT || t === T.ICE || t === T.WEB;   /* main.js isSolid */
+  const levels = {}; const lv = id => levels[id] || (levels[id] = LEVELS.find(l => l.id === id).build());
+  const artKinds = new Set([...artSrc.matchAll(/^  ([a-z]+): \{ bark:/gm)].map(m => m[1]));   /* GATE_PAL's keys */
+  for (const [a, b, lane] of ACT2_EXPECT) {
+    const key = a + '>' + b, e = rowOf(a, b);
+    if (!e) { ok(key + ': ' + (ACT2_BUILT.includes(lane) ? 'HAS A ROW (lane ' + lane + ' is built)' : 'pending (lane ' + lane + ' not merged yet)'), !ACT2_BUILT.includes(lane)); continue; }
+    ok(key + ': row exists, an Act II walk-out (scene ' + (e.scene || 'none') + '), no spur flag', !e.when && !e.endOnMap && !!e.arrive);
+    const L = lv(a), A = L.arena, W = L.W, H = L.grid.length / W, at = (c, r) => (c < 0 || r < 0 || c >= W || r >= H ? 1 : L.grid[r * W + c]), floorRow = Math.round(A.floor / 16);
+    let fr = floorRow, c0 = Math.ceil(A.wallR);   /* the walk is east of the arena's own wall: from wallR to the walk target (or the level's end) */
+    const target = e.walk && e.walk.to ? e.walk.to : W - 1;
+    if (L.gateAfterBoss) { const g = L.ents.find(x => x.t === 'gate'); ok(key + ': GATE-END: the level has L.gateAfterBoss + a gate ent, the row has no open beat', !!g && !e.open && e.beats[0].id === 'walk'); if (g) { fr = g.y + 1; c0 = g.x; } }
+    else ok(key + ': a WALK-OUT: the arena ends the level on the boss (no gateAfterBoss), the row opens a way (open beat first)', !!A.boss && !!e.open && e.beats[0].id === 'open');
+    const o = e.open;
+    if (o) {
+      const cells = []; for (let c = o.col; c < o.col + (o.w || 1); c++) for (let r = o.rows[0]; r <= o.rows[1]; r++) cells.push([c, r]);
+      ok(key + ': the opening (' + o.kind + ') is inside the level, east of the arena\'s wall (col ' + o.col + ' >= wallR ' + A.wallR + '), and its bottom is the arena floor (row ' + (o.rows[1] + 1) + ' = ' + floorRow + ')', o.col >= A.wallR && o.col + (o.w || 1) <= W && o.rows[0] >= 0 && o.rows[1] + 1 === floorRow, JSON.stringify([o.col, A.wallR, W, o.rows[1] + 1, floorRow]));
+      if (TRM.isBareKind(o.kind)) ok(key + ': ' + o.kind + ' is a BARE kind - there really is no wall in those cells (all air)', cells.every(([c, r]) => at(c, r) === T.AIR));
+      else ok(key + ': ' + o.kind + ' opens a REAL wall - every cell of the gap is solid in the built level (it goes to air only after the kill)', cells.every(([c, r]) => at(c, r) === T.SOLID), cells.filter(([c, r]) => at(c, r) !== T.SOLID).slice(0, 4).join(' '));
+      ok(key + ': the art knows the kind (' + o.kind + ' in GATE_PAL or BARE_KINDS)', artKinds.has(o.kind) || TRM.isBareKind(o.kind), [...artKinds].join());
+      ok(key + ': the dust is told (open.kind in DUST) or it is a bare kind', !!TRM.DUST[o.kind] || TRM.isBareKind(o.kind));
+    }
+    if (o && o.fill) { const f = o.fill, cells = []; for (let c = f.col; c < f.col + (f.w || 1); c++) for (let r = f.rows[0]; r <= f.rows[1]; r++) cells.push([c, r]);
+      ok(key + ': open.fill bridges a PIT - its cells are air, the tile beside (col ' + (f.col - 1) + ') and the tiles under are solid, the top row is the floor row', cells.every(([c, r]) => at(c, r) === T.AIR) && f.rows[0] === floorRow && f.rows.every(r => solidT(at(f.col - 1, r))) && Array.from({ length: f.w || 1 }, (_, i) => solidT(at(f.col + i, f.rows[1] + 1))).every(Boolean), JSON.stringify(f)); }
+    /* the walk: floor under every column from the arena wall to the target, and the two body rows clear (except the opening's own cells, which are air by then) */
+    const inOpen = (c, r) => o && c >= o.col && c < o.col + (o.w || 1) && r >= o.rows[0] && r <= o.rows[1];
+    const inFill = (c, r) => o && o.fill && c >= o.fill.col && c < o.fill.col + (o.fill.w || 1) && r >= o.fill.rows[0] && r <= o.fill.rows[1];
+    const bad = []; for (let c = c0; c <= Math.min(W - 1, Math.max(c0, target)); c++) { if (!(solidT(at(c, fr)) || inFill(c, fr))) bad.push('floor@' + c); for (const r of [fr - 1, fr - 2]) if (solidT(at(c, r)) && !inOpen(c, r)) bad.push('body@' + c + ',' + r); }
+    ok(key + ': the walk from col ' + c0 + ' to ' + Math.min(W - 1, target) + ' has floor under every column and clear air above (no pit, no wall, no rock but the opening)', bad.length === 0, bad.slice(0, 6).join(' '));
+    /* the ARRIVAL (main.js trnArriveBegin, replayed on the built level): x0 = the leftmost column of the open floored run that leads to START; four seats 12 px apart; walk to goal; foot solid, body clear, no spike */
+    { const N = lv(b), s = N.START, sy = s.y; let cx = Math.min(s.x, N.W - 1); const nat = (c, r) => (c < 0 || r < 0 || c >= N.W || r >= N.grid.length / N.W ? 1 : N.grid[r * N.W + c]);
+      while (cx > 0 && !solidT(nat(cx - 1, sy)) && !solidT(nat(cx - 1, sy - 1)) && solidT(nat(cx - 1, sy + 1))) cx--;
+      const x0 = cx * 16 + 8, goal = Math.max(92, x0 + 36), cA = Math.floor(x0 / 16), cB = Math.floor((goal + 36) / 16), w = [];
+      for (let c = cA; c <= cB; c++) { if (!solidT(nat(c, sy + 1)) || nat(c, sy + 1) === T.SPIKE) w.push('foot@' + c); if (solidT(nat(c, sy)) || solidT(nat(c, sy - 1))) w.push('body@' + c); if (nat(c, sy) === T.SPIKE) w.push('spike@' + c); }
+      ok(key + ': the ARRIVAL in ' + b + ' (start col ' + s.x + ', run from col ' + cA + ' to ' + cB + ', 4 seats) stands on solid footing in clear air, no spike', w.length === 0 && !!e.arrive.walk && e.arrive.walk >= 1 && e.arrive.walk <= 3, w.slice(0, 6).join(' ')); }
+  }
+}
 /* ---- the scenes' maths ---- */
 { const VW = 320;
   ok('ROAD: the world slides monotonically after a short ramp; the stockade grows 0 -> 1 over the scene; reduce-motion slows the slide', TRM.roadScroll(0) === 0 && TRM.roadScroll(3) < TRM.roadScroll(4) && TRM.roadScroll(7) > TRM.roadScroll(6) && TRM.roadGrowth(0) === 0 && Math.abs(TRM.roadGrowth(TRM.ROAD.dur) - 1) < 1e-9 && TRM.roadScroll(6, true) < TRM.roadScroll(6) * 0.6);
@@ -60,7 +110,7 @@ for (const e of TRM.TABLE) {
 /* ---- the source wiring ---- */
 ok('main.js: a GATE-END level starts the transition at the gate (winLevel then trnBegin)', /else \{ winLevel\(\); trnBegin\(\); \} \}/.test(src));
 ok('main.js: trnBegin passes the spur flag to the table and lets a SPUR (opensOn.level) through the needs check', src.includes("TRM.entryFor(LEVELS[levelIndex].id, undefined, { burningOpen: !!PROG.burningOpen })") && src.includes('LEVELS[to].opensOn.level === LEVELS[levelIndex].id'));
-ok('main.js: the walk target honours walk.to; the way opens across open.w columns; kind light has no wall', src.includes('entry.walk.to * TS') && src.includes('o.col + (o.w || 1)') && src.includes("o.kind === 'light'"));
+ok('main.js: the walk target honours walk.to; the way opens across open.w columns; kind light has no wall', src.includes('entry.walk.to * TS') && src.includes('o.col + (o.w || 1)') && src.includes('TRM.isBareKind(o.kind)') && src.includes('o.fill') && src.includes('TRM.DUST[o.kind]'));
 ok('main.js: the scene is drawn by kind (ferry / road / smoke) and for every scene beat; the arrival keeps its level\'s own ambience unless it is a ferry', src.includes('TRA.drawRoadScene(env, s)') && src.includes('TRA.drawSmokeScene(env, s)') && src.includes('TRM.isSceneBeat(TRN.tl.beats[TRN.tl.i])') && src.includes("if (entry.arrive.ferry) ambient.set('water');"));
 ok('the art is dialogue-free (no text() in transitions-art.js)', !/\btext\(/.test(artSrc.replace(/\/\*[^]*?\*\//g, '')));
 ok('NEW FILES have no ad-block-looking names (admiral, ads, banner, track, analytics...)', !readdirSync(new URL('.', import.meta.url)).concat(readdirSync(new URL('../src/', import.meta.url))).some(n => /(^|[-_.])(ad|ads|admiral|banner|track|tracker|analytics|pixel|beacon)([-_.]|$)/i.test(n) && /demo-transitions|transitions/.test(n)));
@@ -93,7 +143,7 @@ if (process.argv.includes('--browser')) {
     out.minX = 1e9; out.shotAt = [];
     for (let f = 0; f < 4000 && BK.trans.tr; f++) {
       const tr = BK.trans.tr, tl = tr.tl, ph = BK.trans.TRM.phase(tl);
-      if (open && tr.opened && !opened) { opened = true; out.openedTiles = []; for (let c = open.col; c < open.col + (open.w || 1); c++) for (let r = open.rows[0]; r <= open.rows[1]; r++) out.openedTiles.push(BK.L.grid[r * BK.L.W + c]); out.wallWas = true; }
+      if (open && tr.opened && !opened) { opened = true; out.openedTiles = []; for (let c = open.col; c < open.col + (open.w || 1); c++) for (let r = open.rows[0]; r <= open.rows[1]; r++) out.openedTiles.push(BK.L.grid[r * BK.L.W + c]); out.wallWas = true; if (open.fill) { out.fillTiles = []; for (let c = open.fill.col; c < open.fill.col + (open.fill.w || 1); c++) for (let r = open.fill.rows[0]; r <= open.fill.rows[1]; r++) out.fillTiles.push(BK.L.grid[r * BK.L.W + c]); } }
       if (MODE.skipAt && !skipped && ph === MODE.skipAt && tl.pt > 1.0) { BK.trans.press(); skipped = true; out.skipPhase = ph; }
       if (MODE.shots && !skipped) { const want = MODE.shots.find(w => !out.shotAt.includes(w.n) && w.ph === ph && tl.pt >= w.pt); if (want) { BK.step(1); out.shotAt.push(want.n); out.pending = want.n; out.pendingReady = true; return Object.assign(out, { stoppedFor: want.n, f }); } }
       BK.sim(1);
@@ -124,7 +174,8 @@ if (process.argv.includes('--browser')) {
       if (!a.tr) continue;
       ok(key + ': it is the ' + (e.scene || 'walk-out') + ' row into ' + e.to, a.to === e.to && (a.scene || null) === (e.scene || null), JSON.stringify([a.to, a.scene]));
       if (!fl) ok(key + ': the clear is CREDITED and SAVED before the cutscene', a.cleared && a.saved, JSON.stringify([a.cleared, a.saved]));
-      if (e.open && e.open.kind !== 'light') ok(key + ': the way OPENED - every tile of the gap is air after the open beat', a.openedTiles && a.openedTiles.length > 0 && a.openedTiles.every(v => v === 0), JSON.stringify(a.openedTiles));
+      if (e.open && !TRM.isBareKind(e.open.kind)) ok(key + ': the way OPENED - every tile of the gap is air after the open beat', a.openedTiles && a.openedTiles.length > 0 && a.openedTiles.every(v => v === 0), JSON.stringify(a.openedTiles));
+      if (e.open && e.open.fill) ok(key + ': the PIT on the way out is BRIDGED (open.fill: every cell is solid after the open beat) so the walk has a floor', a.fillTiles && a.fillTiles.length > 0 && a.fillTiles.every(v => v === 1), JSON.stringify(a.fillTiles));
       if (e.endOnMap) { const mp = await ev(`(()=>{ for (let i = 0; i < 30; i++) BK.sim(1); return { state: BK.state, node: BK.map ? BK.map.node : null, lit: BK.mapSpurLit ? BK.mapSpurLit() : null, trn: !!BK.trans.tr }; })()`);
         ok(key + ': the transition ends ON THE MAP with the Burning Village node selected and LIT (no level loaded)', z.done && (mp.state === 'map' || mp.state === 'card') && !mp.trn && mp.lit === e.to, JSON.stringify([z, mp]).slice(0, 260)); await ev('(()=>{ if (BK.state === "card") BK.cardClose(); for (let i = 0; i < 20; i++) BK.sim(1); return 0; })()'); await shot('after-kings-map-lit'); continue; }
       ok(key + ': the transition ends, the next level (' + e.to + ') is loaded', z.done && z.lvl === e.to, JSON.stringify(z).slice(0, 200));
@@ -139,7 +190,8 @@ if (process.argv.includes('--browser')) {
       ok(key + ': after the arrival walk control is back (state play, arrival done), nobody fell, nobody was hurt, nobody died', arr.state === 'play' && arr.arriveDone && !arr.fell && arr.alive && arr.hp1.every((h, i) => h >= arr.hp0[i] - 0.001), JSON.stringify([arr.state, arr.arriveDone, arr.afterY, arr.hp0, arr.hp1]));
     }
     /* a skip in the middle of each scene and in a walk-out lands in the SAME state as a full watch: the next level, the party in it, the clear credited */
-    for (const [from, tag, at] of [['hornetsnest', 'skip-ride', 'ride'], ['fenroad', 'skip-road', 'road'], ['kings', 'skip-smoke', 'smoke'], ['marsh', 'skip-walk', 'walk'], ['underleaf', 'skip-open', 'open'], ['palisadewood', 'skip-walk', 'walk']]) {
+    for (const [from, tag, at] of [['hornetsnest', 'skip-ride', 'ride'], ['fenroad', 'skip-road', 'road'], ['kings', 'skip-smoke', 'smoke'], ['marsh', 'skip-walk', 'walk'], ['underleaf', 'skip-open', 'open'], ['palisadewood', 'skip-walk', 'walk'],
+      /* ACT II (claude/act2tr): a skip in the open beat of a bare kind, a real wall, and in the gate-end walk */ ['scree', 'skip-open', 'open'], ['moor', 'skip-open', 'open'], ['hanging', 'skip-walk', 'walk'], ['skyroad', 'skip-walk', 'walk']]) {
       const e = TRM.entryFor(from, undefined, { burningOpen: true });
       const w = await watch(from, { tag, skipAt: at, burning: from === 'kings' ? true : undefined });
       if (e.endOnMap) { const mp = await ev(`(()=>{ for (let i = 0; i < 30; i++) BK.sim(1); return { state: BK.state, lit: BK.mapSpurLit ? BK.mapSpurLit() : null }; })()`); ok(from + ' > ' + e.to + ': a SKIP in the ' + at + ' beat ends on the map with the spur lit', w.end.done && w.base.skipPhase === at && (mp.state === 'map' || mp.state === 'card') && mp.lit === e.to, JSON.stringify([w.end, mp]).slice(0, 260)); continue; }
@@ -148,7 +200,8 @@ if (process.argv.includes('--browser')) {
       ok(from + ': after the skip the state is play, the arrival done, the party alive, the clear credited', st.state === 'play' && st.alive && st.cleared && st.a, JSON.stringify(st));
     }
     /* four seats, reduce motion, ?trans off, the setting NEVER */
-    for (const [from, tag, m] of [['fenroad', '4seats', { seats: 4 }], ['hornetsnest', '3seats', { seats: 3 }], ['kings', 'reduce', { reduce: true, burning: true }], ['fenroad', 'reduce', { reduce: true }], ['hornetsnest', 'reduce', { reduce: true }]]) {
+    for (const [from, tag, m] of [['fenroad', '4seats', { seats: 4 }], ['hornetsnest', '3seats', { seats: 3 }], ['kings', 'reduce', { reduce: true, burning: true }], ['fenroad', 'reduce', { reduce: true }], ['hornetsnest', 'reduce', { reduce: true }],
+      ['rookery', '4seats', { seats: 4 }], ['spire', '3seats', { seats: 3 }], ['moor', 'reduce', { reduce: true }]]) {
       const e = TRM.entryFor(from, undefined, { burningOpen: true });
       const w = await watch(from, { tag, ...m });
       if (e.endOnMap) { ok(from + ' > ' + e.to + ' (' + tag + '): the transition plays through to the map' + (m.reduce ? ' and reduce-motion' : ''), w.base.tr && w.end.done, JSON.stringify([w.base.tr, w.end]).slice(0, 200)); continue; }
