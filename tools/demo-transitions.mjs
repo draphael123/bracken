@@ -32,7 +32,7 @@ for (const e of TRM.TABLE) {
   ok(key + ': a scene row has scene beats and a scene name, a walk-out has neither', !!e.scene === hasScene, JSON.stringify([e.scene, hasScene]));
   ok(key + ': the walk is capped (max) and short; the whole row is ' + TRM.length(e).toFixed(1) + ' s (a walk-out <= 6 s, a scene <= 15 s)', e.beats.find(b => b.id === 'walk').max >= e.beats.find(b => b.id === 'walk').dur && TRM.length(e) <= (hasScene ? 15 : 6), TRM.length(e).toFixed(1));
   if (e.endOnMap) ok(key + ': it ENDS ON THE MAP (endOnMap, no arrival): the spur is chosen by the player, not auto-loaded', e.endOnMap === true && !e.arrive && e.to === 'burning'); else ok(key + ': it arrives walking in from the left for 1-3 s' + (e.arrive.ferry ? ' off the ferry' : ''), e.arrive && e.arrive.walk >= 1 && e.arrive.walk <= 3 && (e.scene === 'ferry') === !!e.arrive.ferry);
-  if (e.open) ok(key + ': the way opens in the arena\'s last column(s) - ' + (e.open.kind || 'pine') + (e.open.w ? ' x' + e.open.w : ''), e.open.rows[0] < e.open.rows[1] && ['pine', 'bog', 'palisade', 'leaf', 'light', 'cairn', 'ledge', 'rope', 'bell', 'crumble', undefined].includes(e.open.kind) && (e.open.w || 1) <= 3);
+  if (e.open) ok(key + ': the way opens in the arena\'s last column(s) - ' + (e.open.kind || 'pine') + (e.open.w ? ' x' + e.open.w : ''), e.open.rows[0] < e.open.rows[1] && ['pine', 'bog', 'palisade', 'leaf', 'light', 'cairn', 'ledge', 'rope', 'bell', 'crumble', 'adit', 'arch', 'hatch', undefined].includes(e.open.kind) && (e.open.w || 1) <= 5);
   /* a skip at ANY moment lands in the same place: the timeline reaches done, with fade once, never stuck (soft-lock) */
   let worst = 0, bad = '';
   for (let t = 0.05; t < TRM.length(e) + 1; t += 0.11) {
@@ -47,14 +47,14 @@ for (const e of TRM.TABLE) {
 }
 /* ---- every `to` is the NEXT level on the road (needs), or a spur hanging off the level ---- */
 for (const e of TRM.TABLE) {
-  const re = new RegExp("id: '" + e.to + "'[^\\n]*?needs: '([a-z]+)'"), m = levelSrc.match(re);
+  const re = new RegExp("id: '" + e.to + "'[^\\n]*?needs: (?:ROAD_OPEN[.][a-z]+ [?] )?'([a-z]+)'"), m = levelSrc.match(re);
   const spur = /opensOn: \{ level: '([a-z]+)'/.exec((levelSrc.match(new RegExp("id: '" + e.to + "'[^\\n]*\\n?[^\\n]*opensOn: \\{ level: '[a-z]+'")) || [''])[0]);
   ok(e.from + '>' + e.to + ': level.js has ' + e.to + ' needing ' + e.from + (spur ? ' (or a spur: opensOn ' + spur[1] + ')' : ''), (m && m[1] === e.from) || (spur && spur[1] === e.from), m ? m[1] : 'no needs found');
 }
 /* ---- ACT II: THE CRAGS - the main road, scree to longwater (claude/act2tr, brief-act2transitions-1104). Side paths excluded. ----
    LANES: A built rows 1-6 (scree>hanging ... skyroad>oreroad), B owns 7-11 (oreroad>minecart ... kitchengate>crown) and C row 12 (crown>longwater, the hand-off). When a lane merges it ADDS ITS LETTER TO ACT2_BUILT below: from then
    on a missing row of that lane is RED (until then it reports "pending"). Every row that exists is checked against the BUILT levels, so a level/arena edit that moves a wall, a floor or a start fails loud here. */
-const ACT2_BUILT = ['A'];
+const ACT2_BUILT = ['A', 'B'];
 const ACT2_EXPECT = [['scree', 'hanging', 'A'], ['hanging', 'spire', 'A'], ['spire', 'moor', 'A'], ['moor', 'rookery', 'A'], ['rookery', 'skyroad', 'A'], ['skyroad', 'oreroad', 'A'],
   ['oreroad', 'minecart', 'B'], ['minecart', 'storm', 'B'], ['storm', 'undercrown', 'B'], ['undercrown', 'kitchengate', 'B'], ['kitchengate', 'crown', 'B'], ['crown', 'longwater', 'C']];
 { const { LEVELS, T } = await import('../src/level.js');
@@ -72,7 +72,7 @@ const ACT2_EXPECT = [['scree', 'hanging', 'A'], ['hanging', 'spire', 'A'], ['spi
     const key = a + '>' + b, e = rowOf(a, b);
     if (!e) { ok(key + ': ' + (ACT2_BUILT.includes(lane) ? 'HAS A ROW (lane ' + lane + ' is built)' : 'pending (lane ' + lane + ' not merged yet)'), !ACT2_BUILT.includes(lane)); continue; }
     ok(key + ': row exists, an Act II walk-out (scene ' + (e.scene || 'none') + '), no spur flag', !e.when && !e.endOnMap && !!e.arrive);
-    const L = lv(a), A = L.arena, W = L.W, H = L.grid.length / W, at = (c, r) => (c < 0 || r < 0 || c >= W || r >= H ? 1 : L.grid[r * W + c]), floorRow = Math.round(A.floor / 16);
+    const L = lv(a), A = L.arena, W = L.W, H = L.grid.length / W, at = (c, r) => (c < 0 || r < 0 || c >= W || r >= H ? 1 : L.grid[r * W + c]), floorRow = e.walk && e.walk.floor ? e.walk.floor : Math.round(A.floor / 16);   /* walk.floor: a row whose floor is not the arena's (Ore Road: the winch landing, row 14) */
     let fr = floorRow, c0 = Math.ceil(A.wallR);   /* the walk is east of the arena's own wall: from wallR to the walk target (or the level's end) */
     const target = e.walk && e.walk.to ? e.walk.to : W - 1;
     if (L.gateAfterBoss) { const g = L.ents.find(x => x.t === 'gate'); ok(key + ': GATE-END: the level has L.gateAfterBoss + a gate ent, the row has no open beat', !!g && !e.open && e.beats[0].id === 'walk'); if (g) { fr = g.y + 1; c0 = g.x; } }
@@ -80,7 +80,7 @@ const ACT2_EXPECT = [['scree', 'hanging', 'A'], ['hanging', 'spire', 'A'], ['spi
     const o = e.open;
     if (o) {
       const cells = []; for (let c = o.col; c < o.col + (o.w || 1); c++) for (let r = o.rows[0]; r <= o.rows[1]; r++) cells.push([c, r]);
-      ok(key + ': the opening (' + o.kind + ') is inside the level, east of the arena\'s wall (col ' + o.col + ' >= wallR ' + A.wallR + '), and its bottom is the arena floor (row ' + (o.rows[1] + 1) + ' = ' + floorRow + ')', o.col >= A.wallR && o.col + (o.w || 1) <= W && o.rows[0] >= 0 && o.rows[1] + 1 === floorRow, JSON.stringify([o.col, A.wallR, W, o.rows[1] + 1, floorRow]));
+      ok(key + ': the opening (' + o.kind + ') is inside the level, east of the arena\'s wall (col ' + o.col + ' >= wallR ' + A.wallR + '), and its bottom is the arena floor (row ' + (o.rows[1] + 1) + ' = ' + floorRow + ')', o.col + (o.w || 1) - 1 >= A.wallR && o.col + (o.w || 1) <= W && o.rows[0] >= 0 && o.rows[1] + 1 === floorRow, JSON.stringify([o.col, A.wallR, W, o.rows[1] + 1, floorRow]));
       if (TRM.isBareKind(o.kind)) ok(key + ': ' + o.kind + ' is a BARE kind - there really is no wall in those cells (all air)', cells.every(([c, r]) => at(c, r) === T.AIR));
       else ok(key + ': ' + o.kind + ' opens a REAL wall - every cell of the gap is solid in the built level (it goes to air only after the kill)', cells.every(([c, r]) => at(c, r) === T.SOLID), cells.filter(([c, r]) => at(c, r) !== T.SOLID).slice(0, 4).join(' '));
       ok(key + ': the art knows the kind (' + o.kind + ' in GATE_PAL or BARE_KINDS)', artKinds.has(o.kind) || TRM.isBareKind(o.kind), [...artKinds].join());

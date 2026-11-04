@@ -78,12 +78,28 @@ export const TABLE = [
     open: { col: 487, rows: [5, 10], kind: 'crumble' }, arrive: { ferry: false, walk: 1.3 } },
   { from: 'skyroad', to: 'oreroad', scene: null,     /* 6. THE ROC falls (GATE-END, L.gateAfterBoss: the gate at col 456 is walked INTO - no open beat): through it, out of the sky and down into the Ore Road's drum-house yard */
     beats: [{ id: 'walk', dur: 1.6, max: 3.0 }, { id: 'fade', dur: 0.7 }], arrive: { ferry: false, walk: 1.3 } },
+  /* LANE B (claude/act2tr, 11-04) rows 7-11. The 3 BIG SCENES are LANE C: rows 8 and 9 below are plain placeholders marked TODO-LANE-C (the scene replaces the row's beats and arrive; nothing else changes). */
+  { from: 'oreroad', to: 'minecart', scene: null,    /* 7. THE WINCHMASTER falls: the winch landing's east wall (cols 524-528, the level's last five) gives way as an adit gate onto the Deep Rails' mouth. walk.floor 14: the landing's top (the arena's own floor row 18 is the shaft under the buckets) - heroes are set on it for the walk */
+    beats: [{ id: 'open', dur: 1.5 }, { id: 'walk', dur: 2.4, max: 3.6 }, { id: 'fade', dur: 0.7 }],
+    open: { col: 524, w: 5, rows: [9, 13], kind: 'adit' }, walk: { floor: 14 }, arrive: { ferry: false, walk: 1.3 } },
+  { from: 'minecart', to: 'storm', scene: null,       /* 8. THE GOBLIN CAPTAIN falls (GATE-END, L.gateAfterBoss: the drill-stage gate at col 1410 is walked INTO - no open beat). TODO-LANE-C: S1 'daylight' (the last cart rolls out of the mountain into dawn, ~8 s) replaces the walk+fade; until then this plain walk-out */
+    beats: [{ id: 'walk', dur: 1.6, max: 3.0 }, { id: 'fade', dur: 0.7 }], arrive: { ferry: false, walk: 1.3 } },
+  { from: 'storm', to: 'undercrown', scene: null,     /* 9. THE QUEEN'S LANCE falls: the Long Bridge's end wall (cols 796-797, the last two) gives way. TODO-LANE-C: S2 'the bridge gives' (stones fall away, the party drops into the Undercrown, arrive.drop) replaces this plain walk-out; the crumble look is a placeholder */
+    beats: [{ id: 'open', dur: 1.5 }, { id: 'walk', dur: 2.4, max: 3.6 }, { id: 'fade', dur: 0.7 }],
+    open: { col: 796, w: 2, rows: [26, 29], kind: 'crumble' }, arrive: { ferry: false, walk: 1.3 } },
+  { from: 'undercrown', to: 'kitchengate', scene: null,   /* 10. THE BURIED PRINCE falls: the bay beyond the fight (cols 76-98) ends at a bricked arch in the hall's east wall (col 99): it gives way onto the service stair; the party walks to the arch and fades */
+    beats: [{ id: 'open', dur: 1.5 }, { id: 'walk', dur: 2.4, max: 3.6 }, { id: 'fade', dur: 0.7 }],
+    open: { col: 99, rows: [162, 166], kind: 'arch' }, walk: { to: 99 }, arrive: { ferry: false, walk: 1.3 } },
+  { from: 'kitchengate', to: 'crown', scene: null,    /* 11. LORD GRUBBAG falls: the serving line's far door (cols 600-601, the last two) swings out onto the gatehouse passage - a dish hatch */
+    beats: [{ id: 'open', dur: 1.5 }, { id: 'walk', dur: 2.4, max: 3.6 }, { id: 'fade', dur: 0.7 }],
+    open: { col: 600, w: 2, rows: [17, 21], kind: 'hatch' }, arrive: { ferry: false, walk: 1.3 } },
 ];
 /* open kinds with NO wall in the arena to open (the level just runs on): main.js throws dust + light and does not hop; art draws a spill (+ the root-arch for 'light', two cairns for the rest) */
 export const BARE_KINDS = ['light', 'cairn', 'ledge'];
 export const isBareKind = k => BARE_KINDS.includes(k);
 /* the dust a falling gate throws, per open.kind (default: the Wood's earth + pine) */
-export const DUST = { rope: ['#8a7048', '#c8b480', '#5e4a2c'], bell: ['#6a5238', '#c89a48', '#2e2218'], crumble: ['#7a828c', '#b4bcc4', '#4a5058'] };
+export const DUST = { rope: ['#8a7048', '#c8b480', '#5e4a2c'], bell: ['#6a5238', '#c89a48', '#2e2218'], crumble: ['#7a828c', '#b4bcc4', '#4a5058'],
+  adit: ['#6a4a34', '#b08050', '#2a1e16'], arch: ['#4a5248', '#8a9488', '#1e2420'], hatch: ['#8a5a30', '#e8b868', '#3a2412'] };   /* (lane B) adit: ore-brown timbers; arch: the crypt's grey-green brick; hatch: the kitchen's warm oak */
 /* the row for a level. ctx: the flags a row's `when` asks for ({ burningOpen: bool }); a row with no when always matches. */
 export const entryFor = (from, to, ctx = {}) => TABLE.find(e => e.from === from && (to === undefined || e.to === to) && (!e.when || Object.keys(e.when).every(k => !!e.when[k] === !!ctx[k]))) || null;
 /* a scene beat (shore, ride, road, smoke...) is one that carries sc, or the ferry's own two */

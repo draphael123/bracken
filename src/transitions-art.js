@@ -351,6 +351,10 @@ const GATE_PAL = {
   rope: { bark: ['#1c140c', '#2e2214', '#4a3820', '#6b5430', '#8e7444', '#b09a62'], cut: ['#e4d4a0', '#c4b078', '#9a8654', '#6e5e38', '#4a3e24'], cord: '#c8b480', cordD: '#8a7848' },
   bell: { bark: ['#120e0c', '#221a16', '#3a2c22', '#54402e', '#74583c', '#9a7a50'], cut: ['#f0d890', '#d4aa58', '#a87c34', '#7a5a24', '#523c18'], cord: '#c89a48', cordD: '#8a6a2c' },
   crumble: { bark: ['#121418', '#22262c', '#383e46', '#505860', '#6e7882', '#92a0aa'], cut: ['#d8dee4', '#b4bcc4', '#8e98a2', '#646e78', '#444c54'], cord: '#8a94a0', cordD: '#5e6670' },
+  /* LANE B (greybox-plus, recoloured rails): adit = the winch landing's ore-brown timbers; arch = the royal crypt's bricked arch (grey-green stone); hatch = the kitchen's warm oak serving door */
+  adit: { bark: ['#140e0a', '#261a12', '#42301e', '#62482c', '#86643c', '#ae8450'], cut: ['#f0c890', '#d09858', '#a06c34', '#744c20', '#4c3014'], cord: '#9a8a70', cordD: '#6a5c46' },
+  arch: { bark: ['#0e1210', '#1c2420', '#2e3a34', '#445248', '#60725f', '#84987e'], cut: ['#cfdccb', '#a8b8a4', '#7e9080', '#586a5a', '#3a4a3c'], cord: '#7a8a76', cordD: '#4e5c4c' },
+  hatch: { bark: ['#1a0e08', '#321c10', '#522e1a', '#7a4a28', '#a0683a', '#c88e52'], cut: ['#fbe4b0', '#e8c078', '#c08a46', '#8c5e2a', '#5a3a18'], cord: '#d8b070', cordD: '#9a7a44' },
 };
 /* a waymark CAIRN (kinds cairn / ledge): five stacked stones, grey with a lit top edge - the goat track's marker; they rise out of the dust when the way is told open */
 const cairnSprite = () => once('cairn', () => mk(18, 24, g => {

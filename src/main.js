@@ -32254,7 +32254,7 @@ function trnBegin() {
   PROG.transSeen = PROG.transSeen || {}; PROG.transSeen[key] = 1; saveProgress();
   const target = entry.walk && entry.walk.to ? entry.walk.to * TS : LW * TS + 16;   /* (claude/demotransitions) walk.to: a column (Kingswood's arena is mid-level) */
   TRN = { entry, to, tl: TRM.start(entry, { reduce: SET.reduceMotion }), opened: false, loading: false, target, scene: false,
-    pos: players.map(p => ({ x: p.x, y: p.y, hop: 0, v: 0, face: 1, arrived: false, speed: TRM.walkSpeed(Math.max(0, target - p.x)) })) };
+    pos: players.map(p => ({ x: p.x, y: entry.walk && entry.walk.floor ? entry.walk.floor * TS : p.y, hop: 0, v: 0, face: 1, arrived: false, speed: TRM.walkSpeed(Math.max(0, target - p.x)) })) };
   BUG.evlog('transition ' + key); slowT = 0; stop = 0;
   return true;
 }
