@@ -828,18 +828,16 @@ window.BKT = { fieldsState: () => FLD, cqState: () => (CQH && CQH.show ? CQH.sho
   lampHands: () => ({ oil: oilSlicks, wax: tollWax, airRooms, TOLL, REEVE, WICK_DRY, WICK_WET, drowned: pr => lampDrowned(pr), nearAir: (x, y) => nearAir(x, y) }),   /* (claude/lamplit2) tools/lamplit2.mjs */
   damagePlayer: (x, d, o) => damagePlayer(x, d, o), hurtEnemy: (e, d, x, pl) => hurtEnemy(e, d, x, pl), hurtAs: (b, e, d, x, pl) => hurtAs(b, e, d, x, pl), number: (x, y, t, c) => number(x, y, t, c), get guide() { return STK; }, get hintNow() { return { t: hintT, msg: hintMsg }; }, respawn: () => respawn(), fullHp: e => fullHp(e), risen: () => risen, bodies: () => bodies, acorns: () => acorns, heavyWind: () => heavyWind(),
   treeNodes: () => treeNodes(), get treeI() { return treeI; }, set treeI(v) { treeI = v; }, get treeMsg() { return treeMsg; }, get treeResetT() { return treeResetT; }, get talentsBackT() { return talentsBackT; }, get talentsBackWho() { return talentsBackWho; }, novas: () => novas, wardCap: () => wardCap(), raiseCue: () => raiseCue(), raisePips: () => raisePips(), heroSet: (s, w, p, h, t) => heroSet(s, w, p, h, t), regear: () => regear(), gearNow: h => gearNow(h), get gearHidden() { return SET.gear === false; }, set gearHidden(v) { SET.gear = v ? false : true; }, skinIds: () => SKINS.map(k => k.id) };   /* for the labs and the harnesses */
-/* THE PRACTICE YARD, from the store: a portal into the straw men and plain platforms, for trying a hero without a wood to lose */
-const PRACTICE = [{ id: 'heroTrial', name: "THE HERO'S TRIAL", price: 0, practice: 'trial', desc: 'the guided yard for the hero you are, a gate a verb: the dash attack, rising cut and low sweep too.' }, { id: 'practiceYard', name: 'THE PRACTICE YARD', price: 0, practice: true, desc: 'step through the portal into a yard of straw men and plain platforms. nothing there can kill you. pause to leave.' }];
 /* THE FLASKS TAB (claude/flasks2, src/flasks2.js): COUNT, POTENCY, PERKS. A line's gate is a feat 'flask:<id>' (featDone asks src/flasks2.js reqDone);
    a HIDDEN line not yet found is '???' (storeItems) */
 const FLASK_ROWS = F2.FLASK_ITEMS.map(k => ({ ...k, desc: k.group + ': ' + k.desc, ...(k.req ? { feat: 'flask:' + k.id, featName: k.hidden ? 'find something hidden out in the woods' : k.req.name } : {}) }));
-const STORE_TABS = [{ id: 'heroes', name: 'HEROES', items: HEROES, key: 'hero', owned: 'heroes' }, { id: 'skins', name: 'SKINS', items: SKINS, key: 'skin', owned: 'skins' }, { id: 'weapons', name: 'WEAPONS', items: SWORDS, key: 'sword', owned: 'swords' }, { id: 'charms', name: 'CHARMS', items: CHARMS, key: 'charm', owned: 'charms' }, { id: 'skills', name: 'SKILLS', items: [], key: null, owned: 'talents', talent: true }, { id: 'smith', name: 'SMITH', items: UPGRADES, key: null, owned: 'items' }, { id: 'flasks', name: 'FLASKS', items: FLASK_ROWS, key: null, owned: 'flaskItems', flasks: true }, { id: 'music', name: 'MUSIC', items: MENU_MUSIC, key: 'menu', owned: 'music' }, { id: 'practice', name: 'PRACTICE', items: PRACTICE, key: null, owned: 'items' }];   /* THE ONE STORE's tabs, in src/store.js's order (tools/store.mjs holds the two together) */
+const STORE_TABS = [{ id: 'heroes', name: 'HEROES', items: HEROES, key: 'hero', owned: 'heroes' }, { id: 'skins', name: 'SKINS', items: SKINS, key: 'skin', owned: 'skins' }, { id: 'weapons', name: 'WEAPONS', items: SWORDS, key: 'sword', owned: 'swords' }, { id: 'charms', name: 'CHARMS', items: CHARMS, key: 'charm', owned: 'charms' }, { id: 'skills', name: 'SKILLS', items: [], key: null, owned: 'talents', talent: true }, { id: 'smith', name: 'SMITH', items: UPGRADES, key: null, owned: 'items' }, { id: 'flasks', name: 'FLASKS', items: FLASK_ROWS, key: null, owned: 'flaskItems', flasks: true }, { id: 'music', name: 'MUSIC', items: MENU_MUSIC, key: 'menu', owned: 'music' }];   /* THE ONE STORE's tabs, in src/store.js's order (tools/store.mjs holds the two together) */
 function setEquip(key, id) { PROG[key] = id; if (key === 'charm') { PROG.charmOf = PROG.charmOf || {}; PROG.charmOf[hero()] = id; } }   /* a charm is worn by a hero: the next hero starts bare */
 const NO_CHARM = { id: 'none', name: 'NONE', desc: 'nothing worn', price: 0 };   /* the first line of CHARMS: take the charm off */
 const storeItems = tab => tab.flasks ? tab.items.map(k => F2.shownAsHidden(k, PROG) && !godMode() ? { ...k, name: '???', desc: k.group + ': ???', hiddenRow: true } : k) : (tab.key === 'charm' ? [NO_CHARM].concat(tab.items) : tab.items).filter(k => !k.hero || k.hero === hero());
 const SKILLS_TAB = STORE_TABS.findIndex(t => t.talent);
 /* WHAT A LINE OF THE STORE IS TO YOU RIGHT NOW: equipped, owned, locked (by its own gate: src/store.js lockOf), buyable, or an entrance */
-const storeRowState = (tab, k) => tab.talent ? 'skills' : k.practice ? 'enter' : k.consumable ? ((PROG.flaskUp || 0) >= k.max ? 'owned' : 'buy')
+const storeRowState = (tab, k) => tab.talent ? 'skills' : k.consumable ? ((PROG.flaskUp || 0) >= k.max ? 'owned' : 'buy')
   : (k.id === 'none' || owns(tab, k.id)) ? (tab.key && (PROG[tab.key] === k.id || (k.id === 'none' && (!PROG[tab.key] || PROG[tab.key] === 'none'))) ? 'equipped' : 'owned') : lockOf(k, PROG, featDone) ? 'locked' : 'buy';
 const skinById = id => SKINS.find(k => k.id === id) || SKINS[0];
 const swordById = id => SWORDS.find(k => k.id === id) || SWORDS[0];
@@ -4714,7 +4712,7 @@ function startActCard() {
 }
 /* ---------- XP (src/xp.js) ----------
    A kill pays by its weight, the first finish of a wood pays a share of what the wood holds, and a quest pays once. Only the campaign's
-   woods pay, the secret ones with them: the rush, the trials, the practice yard, the store and the editor pay nothing. */
+   woods pay, the secret ones with them: the rush, the Arena Yard, the store and the editor pay nothing. */
 let levelXp = 0, xpRun = 0, xpBoost = 0, lvAtStart = 0, lvUpT = 0, lvUpN = 0, lvHealOwed = null;
 /* THE LEVEL A HERO IS EXPECTED TO BE IN THIS WOOD: how deep it sits on the gate chain (src/campaign-order.js), which src/xp.js is
    fitted to. Below it, the wood pays XP_CATCHUP times (xpCatchUp, which stops at the curve). */
@@ -5906,11 +5904,9 @@ function updateStore0(dt) {
   if (items.length && downPress) { storeI = (storeI + 1) % items.length; SFX.ui(); }
   if (confirmPress && items.length) { const coop0 = coopOpen(PROG);   /* (the first extra hero bought opens CO-OP: said below) */
     const k = items[storeI], owned = k.consumable ? false : (k.id === 'none' || owns(tab, k.id)), lock = lockOf(k, PROG, featDone);
-    if (k.practice === 'trial') { startTrial(hero()); return; }   /* THE GUIDED YARD, from the store as well as the pause menu */
-    if (k.practice) { yardEnter(false); return; }
     if (owned && tab.key) { setEquip(tab.key, k.id); if (tab.key === 'menu') music.play(menuTrack()); if (tab.key === 'hero') { applySkin(); applyUpgrades(); P.hp = Math.min(P.hp, P.maxHp); } applySkin(); saveProgress(); SFX.equip(); storeMsg = k.passive ? k.name + ' is always on' : k.name + ' equipped' + (tab.key === 'charm' ? ' (worn)' : ''); storeMsgT = 2;
       if (tab.key === 'hero' && heroLevel(k.id) === 0) { storeMsg = k.name + ' starts at nothing: no levels, no skills, no charm. Walk a wood with him and he grows.'; storeMsgT = 5.5; }
-      else if (tab.key === 'hero' && !(PROG.tried && PROG.tried[k.id])) { storeMsg = k.name + ' equipped. HIS TRIAL IS IN THE PAUSE MENU: A PRACTICE YARD FOR EVERY VERB HE HAS.'; storeMsgT = 5; } }
+      else if (tab.key === 'hero' && !(PROG.tried && PROG.tried[k.id])) { storeMsg = k.name + ' equipped. THE ARENA YARD (THE TAVERN DOOR, OR ARENA YARD ON THE TITLE) SHOWS EVERY MOVE HE HAS.'; storeMsgT = 5; } }
     else if (owned) { SFX.ui(); storeMsg = 'already yours'; storeMsgT = 1.5; }
     else if (lock) { SFX.buzz(); storeMsg = lock; storeMsgT = 2; }   /* every lock is the item's own: a level cleared or a feat done (src/store.js lockOf) */
     else if (!loadoutSafe()) { SFX.buzz(); storeMsg = 'buy at a shrine, the map or a shop'; storeMsgT = 2.5; }   /* coins are spent where they are safe: the carried ones are at risk between shrines (src/death-cost.js) */
@@ -5929,13 +5925,6 @@ let storePage = 0, storePages = 1, storeKeyLast = '', treePage = 0, treePages = 
 const morePress = () => SET.swapZX ? dodgePress : atkPress, moreKey = () => SET.swapZX ? 'V' : 'X';
 /* A NAME TOO LONG FOR ITS ROOM loses its THE first, and is only cut if it still will not go */
 function fitName(s, maxW, size = 6) { if (inkW(s, size) <= maxW) return s; const t = String(s).replace(/^THE /, ''); if (inkW(t, size) <= maxW) return t; const o = t.split(' OF ')[0]; if (o !== t && inkW(o, size) <= maxW) return o; return fitText(t, maxW, size); }   /* (batch70 textfit: DJINN OF THE GREAT WELL is DJINN where the whole name does not fit) */
-/* the portal on the practice card: a stone arch with the yard's light in it */
-const PORTAL_ICON = (() => { const [c, g2] = canvas(12, 14);
-  g2.fillStyle = '#3a3448'; g2.fillRect(2, 0, 8, 13); g2.fillRect(0, 3, 12, 10);
-  g2.fillStyle = '#5a5070'; g2.fillRect(3, 1, 6, 1); g2.fillRect(1, 4, 1, 8); g2.fillRect(10, 4, 1, 8);
-  g2.fillStyle = '#4fa0c8'; g2.fillRect(3, 2, 6, 10); g2.fillRect(2, 4, 8, 8);
-  g2.fillStyle = '#9fe6f0'; g2.fillRect(4, 3, 4, 8); g2.fillStyle = '#c9a0ff'; g2.fillRect(5, 5, 2, 4); g2.fillStyle = '#fff6e0'; g2.fillRect(5, 6, 1, 1);
-  g2.fillStyle = '#6a5a44'; g2.fillRect(0, 12, 12, 2); return c; })();
 // a skin, shown on the hero you are playing: the pyromancer in its robes, the paladin in its plate and tabard
 const skinPreview = (k, icon = false) => preview('skin:' + hero() + ':' + k.id + ':' + PROG.sword + ':' + icon, () => heroSet(k.id, PROG.sword, icon ? 'icon' : 'idle'));
 const preview = (key, make) => previewCache[key] || (previewCache[key] = make());
@@ -5972,7 +5961,7 @@ function drawStore() {
   const iconOf = k => k.id === 'none' ? null
     : tab.key === 'skin' ? skinPreview(k, true).R.idle[0]
     : tab.key === 'sword' ? weaponPreview(k, true).R.atk[1]
-    : k.practice ? PORTAL_ICON : tab.flasks ? (k.hiddenRow ? PROP.flaskIcons.hidden : PROP.flaskIcons[k.id] || TONIC_ICON) : k.id === 'tonic' ? TONIC_ICON : (k.id === 'heart' || k.id === 'vigour') ? PROP.heart : k.id === 'shieldThrow' ? SHIELD_ICON : k.id === 'groundSlam' ? SLAM_ICON : k.id === 'risingCut' ? RISE_ICON
+    : tab.flasks ? (k.hiddenRow ? PROP.flaskIcons.hidden : PROP.flaskIcons[k.id] || TONIC_ICON) : k.id === 'tonic' ? TONIC_ICON : (k.id === 'heart' || k.id === 'vigour') ? PROP.heart : k.id === 'shieldThrow' ? SHIELD_ICON : k.id === 'groundSlam' ? SLAM_ICON : k.id === 'risingCut' ? RISE_ICON
     : k.active ? skillIcon(k.id)   /* EVERY HERO'S ABILITIES SHOW THEIR OWN ICON IN THE STORE (Daniel, 2026-09-26: "can the store have icons for the abilities") - it only knew the Pyromancer's set, so the rest showed a bolt */
     : PYRO_ICONS[k.id] ? PYRO_ICONS[k.id] : GEO_ICONS[k.id] ? GEO_ICONS[k.id]
     : PROP.charm[k.id] ? PROP.charm[k.id] : PROP.bolt;
@@ -5992,8 +5981,8 @@ function drawStore() {
     // the thing drawn was "60 GOLD", so the name was cut to leave room for two characters and then ran into
     // seven - which is how THE ADVENTURE BEGINS ended up lying across its own price.
     /* A PRICE IS A NUMBER AND ITS COIN: the words GOLD and SILVER took seven letters off every name in the row */
-    const priced = !k.practice && !eq && !owned && !locked && k.price > 0, ic = priced ? (k.silver ? PROP.silver[0] : PROP.coin[0]) : null, icw = ic ? ic.width + 2 : 0;
-    const bg = k.practice ? 'ENTER' : eq ? 'EQUIPPED' : owned ? 'OWNED' : locked ? 'LOCKED' : k.price === 0 ? 'FREE' : String(k.price);
+    const priced = !eq && !owned && !locked && k.price > 0, ic = priced ? (k.silver ? PROP.silver[0] : PROP.coin[0]) : null, icw = ic ? ic.width + 2 : 0;
+    const bg = eq ? 'EQUIPPED' : owned ? 'OWNED' : locked ? 'LOCKED' : k.price === 0 ? 'FREE' : String(k.price);
     rowName(bg, icw);
     if (ic) g.drawImage(ic, listX + listW - 3 - ic.width, yy + 2 - (ic.height >> 1));
     text(bg, listX + listW - 4 - icw, yy, eq ? UI.sel : owned ? UI.dim : locked ? '#6a6a7a' : ((k.silver ? (silverAvail() >= k.price || (coinRoute(k) && PROG.coins >= k.coinPrice)) : PROG.coins >= k.price) ? (k.silver ? UI.silver : UI.gold) : '#ff6b6b'), 'right', 6);
@@ -6025,7 +6014,7 @@ function drawStore() {
       // what it costs, or what you already have
       const cost = k.consumable ? (PROG.flaskUp || 0) + ' OF ' + k.max + ' MADE'
         : tab.key === 'hero' && (eq || owned) ? (eq ? 'EQUIPPED  L' : 'OWNED  L') + heroLevel(k.id)   /* a hero carries his own level now: the card has to say which */
-        : k.practice ? 'Z TO STEP THROUGH' : eq ? 'EQUIPPED' : owned ? 'OWNED' : locked ? 'LOCKED' : k.price === 0 ? 'FREE' : k.price + (k.silver ? ' SILVER' : ' GOLD') + (coinRoute(k) ? ' OR ' + k.coinPrice + ' GOLD' : '');
+        : eq ? 'EQUIPPED' : owned ? 'OWNED' : locked ? 'LOCKED' : k.price === 0 ? 'FREE' : k.price + (k.silver ? ' SILVER' : ' GOLD') + (coinRoute(k) ? ' OR ' + k.coinPrice + ' GOLD' : '');
       text(cost, mx, ty, eq || owned ? UI.sel : locked ? '#ff9a5c' : k.silver ? UI.silver : UI.gold, 'center', 6); ty += 11;
       const body = body0;   /* (integ118) the same words the squeeze above measured, with the hidden-path line a secret hero carries: they were wrapped there and never drawn (textfit CLIPPED) */
       /* THE WHOLE OF WHAT IT DOES, A PAGE AT A TIME: a hero's description ran to thirty lines and the panel showed the first eight */
@@ -6544,8 +6533,8 @@ const SETTING_TIPS = {
   '@TABS': 'LEFT/RIGHT or TAB: change tab',
 };
 let settingsTab = 'gameplay';   /* which tab Settings is on (kept for the session) */
-const TAVERN_MENU_HIDE = ['Map', 'Level card', 'Hero trial', 'Back to shrine', 'Restart level'];   /* (claude/tavernname) the inn's pause menu: the level-only rows are not offered; Return to map walks out of the door */
-const menuItems = () => menuItems0().filter(k => k !== 'Swap hero' || swapMenuOk());
+const TAVERN_MENU_HIDE = ['Map', 'Level card', 'Arena Yard', 'Back to shrine', 'Restart level'];   /* (claude/tavernname) the inn's pause menu: the level-only rows are not offered; Return to map walks out of the door */
+const menuItems = () => menuItems0().filter(k => k !== 'Swap hero' || swapMenuOk()).filter(k => k !== 'Arena Yard' || !(L && L.arenaYard));   /* (claude/yardswap) the row is the way IN: not offered inside the yard */
 const menuItems0 = () => menuKind === 'pause' || menuKind === 'map' ? (bossSelectFight ? PAUSE_ITEMS.filter(k => k !== 'Quit to title').map(k => k === 'Return to map' ? 'Quit to Boss Select' : k) : (L && L.tavern && menuFrom === 'play' ? PAUSE_ITEMS.filter(k => !TAVERN_MENU_HIDE.includes(k)) : PAUSE_ITEMS)) : tabRows(settingsTab, menuFrom);
 const isHeader = isHeaderTab;
 const MENU_ROWS = 10;
@@ -6622,7 +6611,7 @@ function menuConfirm() {
   else if (k === 'Reset controls') { if (menuMsg === 'press again to reset every key and button' && menuMsgT > 0) { CTL.resetAll(SET.binds); applyBinds(); saveSettings(); menuMsg = 'every key and button is back to its default'; menuMsgT = 3; SFX.ui(); } else { menuMsg = 'press again to reset every key and button'; menuMsgT = 3; SFX.ui(); } }
   else if (k === 'Quit to title') { setView('normal'); state = 'title'; music.play(menuTrack()); SFX.uiSel(); }
   else if (k === 'Erase this save') { if (menuMsg === 'press again to confirm' && menuMsgT > 0) { eraseSlot(slot); saveProgress(); menuMsg = 'save ' + (slot + 1) + ' cleared'; SFX.crack(); } else { menuMsg = 'press again to confirm'; SFX.ui(); } menuMsgT = 2.5; }
-  else if (k === 'Hero trial') { state = 'play'; startTrial(hero()); }
+  else if (k === 'Arena Yard') { state = 'play'; yardEnter(false); }   /* (claude/yardswap, Daniel 11-03) the old HERO TRIAL row: the Arena Yard is the one training ground */
   else if (k === 'Back to shrine') { if (menuFrom !== 'play') { menuMsg = 'not in a level'; menuMsgT = 2; SFX.buzz(); } else { state = 'play'; returnToShrine(); SFX.uiSel(); } }
   else if (k === 'Restart level') { if (menuFrom !== 'play') { menuMsg = 'not in a level'; menuMsgT = 2; SFX.buzz(); } else if (menuMsg === 'press again to restart' && menuMsgT > 0) { loadThen(levelIndex, () => { startGame(); SFX.uiSel(); }); } else { menuMsg = 'press again to restart'; menuMsgT = 2.5; SFX.ui(); } }
   else menuAdjust(1);
@@ -6681,10 +6670,8 @@ function heroBanner(h, x, y, w, hh, sel) {
   g.globalAlpha = 1;
 }
 const PICK = ['knight', 'warden', 'geomancer', 'ranger', 'berserker', 'pyro', 'paladin', 'pirate', 'reaper'];   /* (claude/ranger, Daniel 10-12: THE RANGER is the fourth free starter; the berserker is bought) */   /* (THE BERSERKER, 2026-10-04: the fourth default) */   /* the three starters first: the knight, THE WARDEN and THE GEOMANCER (Daniel 2026-09-24: she is free from the start too) */
-/* A HERO MAY HAVE NO YARD YET (the Warden's is a later phase), so this says whether it went, and every caller has
+/* (claude/yardswap: the hero trials are gone; this is the Arena Yard.) A YARD MAY NOT LOAD, so yardEnter says whether it went, and every caller has
    somewhere to send you when it did not - a screen that waits for a trial that cannot load is a dead end. */
-function startTrial(h) { const i = LEVELS.findIndex(l => l.id === 'trial_' + h); if (i < 0) return false; rush = null; PROG.tried = PROG.tried || {}; PROG.tried[h] = true; saveProgress(); loadThen(i, () => { introSeen = true; startGame(); SFX.uiSel(); }); return true; }
-const hasTrial = h => LEVELS.some(l => l.id === 'trial_' + h);
 /* A NEW GAME CHOOSES ONE OF THE DEFAULT HEROES (LEVELING, Daniel 2026-10-03: src/progression.js DEFAULT_HEROES). The others are bought for silver in
    the store, and the first one bought opens co-op. */
 /* THE PICK SHOWS EVERY HERO (claude/heroroster, Daniel 10-12): the four free starters and every hero the DEVICE ROSTER holds (ROSTER: a hero bought in any slot) are open; the rest stand there as BLACK SILHOUETTES,
@@ -6696,12 +6683,12 @@ function updateHeroPick() {
   if (heroPick.stage === 'pick') { const PICK = NEW_PICK; if (heroPick.i >= PICK.length) heroPick.i = 0;
     if (leftPress) { heroPick.i = (heroPick.i + PICK.length - 1) % PICK.length; heroPickAt = time; SFX.ui(); } if (rightPress) { heroPick.i = (heroPick.i + 1) % PICK.length; heroPickAt = time; SFX.ui(); }
     if (confirmPress && !heroOpen(PICK[heroPick.i])) { SFX.deny(); heroDenyAt = time; }
-    else if (confirmPress) { const h = PICK[heroPick.i]; PROG.heroes = { [h]: true }; PROG.hero = h; PROG.heroPicked = true; applySkin(); applyUpgrades(); saveProgress(); SFX.equip(); SFX.sting(); if (hasTrial(h)) heroPick.stage = 'trial'; else state = 'map'; if (openingHeroDue) { openingHeroDue = false; opening = { i: OP.HERO_PANEL, t: 0, post: true }; state = 'opening'; } } }
-  else { if (confirmPress) { if (!startTrial(hero())) { state = 'map'; SFX.ui(); } } else if (atkPress || pausePress) { state = 'map'; SFX.ui(); } }
+    else if (confirmPress) { const h = PICK[heroPick.i]; PROG.heroes = { [h]: true }; PROG.hero = h; PROG.heroPicked = true; applySkin(); applyUpgrades(); saveProgress(); SFX.equip(); SFX.sting(); heroPick.stage = 'trial'; if (openingHeroDue) { openingHeroDue = false; opening = { i: OP.HERO_PANEL, t: 0, post: true }; state = 'opening'; } } }
+  else { if (confirmPress) { if (!yardEnter(false)) { state = 'map'; SFX.ui(); } } else if (atkPress || pausePress) { state = 'map'; SFX.ui(); } }
 }
 function drawHeroPick() { const PICK = NEW_PICK;
   g.fillStyle = '#0e0c16'; g.fillRect(0, 0, VW, VH);
-  if (heroPick.stage === 'trial') { const H = HEROES.find(k => k.id === hero()); text(H.name, VW / 2, VH / 2 - 30, UI.title, 'center', 12); text('TAKE THE TRIAL FIRST?', VW / 2, VH / 2, UI.text, 'center'); wrap('a short practice yard for this hero. nothing in it can hurt you.', VW - 32, 6).forEach((ln, i) => text(ln, VW / 2, VH / 2 + 14 + i * BODY_LH, UI.dim, 'center', 6));   /* (one 64-letter line ran off both sides: two lines; textfit trial) */
+  if (heroPick.stage === 'trial') { const H = HEROES.find(k => k.id === hero()); text(H.name, VW / 2, VH / 2 - 30, UI.title, 'center', 12); text('SEE THE ARENA YARD FIRST?', VW / 2, VH / 2, UI.text, 'center'); wrap('the training yard: every move this hero has, and straw that cannot hurt you.', VW - 32, 6).forEach((ln, i) => text(ln, VW / 2, VH / 2 + 14 + i * BODY_LH, UI.dim, 'center', 6));   /* (one 64-letter line ran off both sides: two lines; textfit trial) */
     text('Z  YES        X  STRAIGHT TO THE MAP', VW / 2, VH / 2 + 38, UI.sel, 'center', 6); return; }
   const LINES = { knight: ['sword and shield', 'HOLD X: THE HEAVY CUT', '100 health'],
     pyro: ['staff and fire, no shield', 'TAP C: THE FLAME WARD', '88 health', 'HARDER'],   /* (claude/pyrokit) */
@@ -7358,7 +7345,7 @@ TAVO = makeTavern({ TS, L: () => L, PROG: () => PROG, save: () => saveProgress()
   p1Key: () => (touchOn ? 'TAP' : padLast ? 'UP' : String((KEYS.talk && KEYS.talk[0]) || 'e').toUpperCase()), p1Press: () => pressRead(), eatTalk: () => { talkPress = false; },
   toMap: () => tavernToMap('THE PARTY IS WITH YOU'), takeRoad: () => tavernToMap(coop() ? 'THE PARTY TAKES THE ROAD: ' + players.length : 'ALONE ON THE ROAD'),
   leave: p => { burst(p.x, p.y - 8, 10, ['#e8e0d0', '#8a8f80'], 40, 0.4); callout(PARTY.tagOf(p) + ' LEAVES THE PARTY'); if (p.src && p.src.kind === 'online') ONL.dropGuest(p.src.gid, 'LEFT THE PARTY'); else seatDrop(p); TAVO.door(); },
-  openOnline: () => ONL.open(), openParty: () => partyBoardOpen(), openSaves: () => openCoopHelp('play', SAVES_PAGE),   /* (claude/coopclarity) THE SAVES SIGN: one page of the co-op guide */ practice: () => { partyToWant(); rush = null; setView('normal'); practiceFromInn = false; yardEnter(true); },   /* (claude/arenayard) THE PRACTICE DOOR goes straight into the Arena Yard with the party; the old hero trials are its TRIALS DOOR */
+  openOnline: () => ONL.open(), openParty: () => partyBoardOpen(), openSaves: () => openCoopHelp('play', SAVES_PAGE),   /* (claude/coopclarity) THE SAVES SIGN: one page of the co-op guide */ practice: () => { partyToWant(); rush = null; setView('normal'); yardEnter(true); },   /* (claude/yardswap) THE INN'S ARENA YARD DOOR (station id 'practice') goes straight into the Arena Yard with the party; the hero trials are gone */
   down: p => asPlayer(p, () => goDown({ name: 'THE SPARRING BELL', red: false, rule: '' })), roomCode: () => ONL.code(),
   heroStrip: (x, y, w, cur, p) => tavStrip(x, y, w, cur, p), heroesFor: tavHeroes, setHero: tavSetHero, weapons: tavWeapons, weaponOf: tavWeaponOf, setWeapon: tavSetWeapon,
   heroName: h => HERO_SHORT[h] || String(h).toUpperCase(), weaponName: id => (SWORDS.find(s => s.id === id) || { name: String(id).toUpperCase() }).name });
@@ -7367,7 +7354,7 @@ TAVO = makeTavern({ TS, L: () => L, PROG: () => PROG, save: () => saveProgress()
 let yardFromInn = false, yardPrev = { parries: 0, rp: 0 };
 const yardIndex = () => LEVELS.findIndex(l => l.id === 'arena_yard');
 /* INTO THE YARD: from the inn's practice door (with the party) or the title / store / pause (alone, back to the map) */
-function yardEnter(fromInn) { const i = yardIndex(); if (i < 0) return false; yardFromInn = !!fromInn; rush = null; practiceOverlay = false; loadThen(i, () => { introSeen = true; startGame(); SFX.uiSel(); }); return true; }
+function yardEnter(fromInn) { const i = yardIndex(); if (i < 0) return false; yardFromInn = !!fromInn; rush = null; PROG.tried = PROG.tried || {}; PROG.tried[hero()] = true; saveProgress(); loadThen(i, () => { introSeen = true; startGame(); SFX.uiSel(); }); return true; }
 function yardLeave() { setView('normal'); if (YARD) YARD.st.board = null; if (yardFromInn) { partyToWant(); yardFromInn = false; enterTavern(); } else tavernToMap(); }
 const yardSkills = () => { const nm = id => { if (!id) return ''; const k = skillFor(hero(), id); return k ? k.name : ((ABILITIES.find(a => a.id === id) || {}).name || ''); }; return [nm(skillNow()), slotsAt(heroLevel()) >= 2 ? nm(skill2Now()) : '']; };
 /* THE MOVE BOARD for one player: his hero's loop, a line for every move his old trial taught (trialSteps), the two skills he has equipped */
@@ -7405,7 +7392,7 @@ function drawYardProps(cx, cy) {
 YARD = makeArenaYard({ TS, L: () => L, players: () => players, time: () => time, nums: (x, y, txt, col) => nums.push({ x, y, txt, col, life: 0.9, vy: -38 }),   /* (the grade words float even where SET.numbers is off: they are the yard's whole point) */
   hint: (m, t) => hintSay('tip', t, m), sfx: k => { try { (SFX[k] || SFX.ui)(); } catch {} },
   pressOf: p => (p.n === 1 ? pressRead() : p.press || {}), eatTalk: p => { if (p.n === 1) talkPress = false; else if (p.press) p.press.talk = false; },
-  openBoard: p => yardBoardOpen(p), openTrials: () => { practiceOverlay = true; practiceI = Math.max(0, YARDS().findIndex(h => h.id === hero())); state = 'practice'; SFX.uiSel(); }, leave: () => yardLeave() });
+  openBoard: p => yardBoardOpen(p), leave: () => yardLeave() });
 VERB_HOOKS.push(c => { if (YARD && YARD.on() && c.P) { const s = YARD.spotNear(c.P); if (s) return { verb: YARD.VERB[s], key: 'talk' }; } return null; });
 VERB_HOOKS.push(c => { if (!TAVO || !TAVO.on() || !c.P) return null; const s = TAVO.stationNear(c.P); return s ? { verb: s.id === 'door' && c.P.n > 1 ? 'LEAVE' : s.verb, key: 'talk' } : null; });
 /* THE PARTY'S MARKS in the world (before the heroes): each hero's floor ring and his tag over his head, in his colour; the leash's rope and its puffs */
@@ -11757,7 +11744,7 @@ const rushUnlocked = () => godMode() || !!q.get('rush') || !!((PROG.crown || {})
    level (6 rows), so the sub-list never changes its shape. titleOpts is true while the sub-list is up; every tool that wants SETTINGS / SOUND TEST / CONTROLS goes through OPTIONS. */
 let titleOpts = false;
 const titleTop = () => { const base = readSlot(slot) ? ['CONTINUE', 'CHOOSE A SAVE'] : ['NEW GAME', 'CHOOSE A SAVE'];
-  return base.concat(['LOCAL CO-OP', 'ONLINE CO-OP'], rushUnlocked() && !MODES_PARKED ? ['BOSS RUSH'] : [], ['PRACTICE', 'BOSS SELECT'], MODES_PARKED ? [] : ['THE EDITOR'], ["WHAT'S NEW", 'OPTIONS', 'GIVE FEEDBACK', 'CREDITS']); };
+  return base.concat(['LOCAL CO-OP', 'ONLINE CO-OP'], rushUnlocked() && !MODES_PARKED ? ['BOSS RUSH'] : [], ['ARENA YARD', 'BOSS SELECT'], MODES_PARKED ? [] : ['THE EDITOR'], ["WHAT'S NEW", 'OPTIONS', 'GIVE FEEDBACK', 'CREDITS']); };
 /* REPORT A BUG (pause menu and title OPTIONS): the facts the code carries - never the save (src/bug-report.js). The board is DOM (src/bug-report-ui.js). */
 function bugSnapshot() {
   const up = WN.getUpdates()[0] || {}, inLv = !!(L && LEVELS[levelIndex]) && (state === 'play' || state === 'talk' || state === 'win' || state === 'gameover' || state === 'victory' || (state === 'menu' && menuFrom === 'play')), lv = inLv ? LEVELS[levelIndex] : null, S = {};
@@ -32463,11 +32450,11 @@ function update(dt) {
       if (downPress) { titleI = (titleI + 1) % items.length; SFX.ui(); }
       if (menuTake()) {
         const k = items[titleI]; SFX.uiSel(); music.play(menuTrack());
-        if (['CONTINUE', 'BOSS RUSH', 'PRACTICE', 'LOCAL CO-OP', 'ONLINE CO-OP'].includes(k) && ['corrupt', 'newer'].includes(slotHealthOf(slot).state)) { state = 'slots'; slotI = slot; slotMsg = 'save ' + (slot + 1) + ' is damaged - Z to fix it'; slotMsgT = 5; eraseAsk = -1; fixAsk = -1; }
+        if (['CONTINUE', 'BOSS RUSH', 'ARENA YARD', 'LOCAL CO-OP', 'ONLINE CO-OP'].includes(k) && ['corrupt', 'newer'].includes(slotHealthOf(slot).state)) { state = 'slots'; slotI = slot; slotMsg = 'save ' + (slot + 1) + ' is damaged - Z to fix it'; slotMsgT = 5; eraseAsk = -1; fixAsk = -1; }
         else if (k === 'CONTINUE') { loadSlot(slot); applySkin(); applyUpgrades(); mapToSaved(); state = 'map'; }
         else if (k === 'NEW GAME' || k === 'CHOOSE A SAVE') { state = 'slots'; slotI = slot; slotMsg = ''; eraseAsk = -1; fixAsk = -1; }
         else if (k === 'BOSS RUSH') { loadSlot(slot); applySkin(); applyUpgrades(); rushStart(); }
-        else if (k === 'PRACTICE') { rush = null; practiceFromInn = false; loadSlot(slot); applySkin(); applyUpgrades(); yardEnter(false); }   /* (claude/arenayard) straight into the Arena Yard */
+        else if (k === 'ARENA YARD') { rush = null; loadSlot(slot); applySkin(); applyUpgrades(); yardEnter(false); }   /* (claude/arenayard) straight into the Arena Yard */
         else if (k === 'BOSS SELECT') bossSelectOpen('title');
         else if (k === 'LOCAL CO-OP') { loadSlot(slot); applySkin(); applyUpgrades(); mapToSaved(); enterTavern(); }   /* (claude/tavern) CO-OP LIVES IN THE TAVERN now: friends walk in there (a pad's JUMP) */
         else if (k === 'ONLINE CO-OP') { loadSlot(slot); applySkin(); applyUpgrades(); mapToSaved(); enterTavern(() => ONL.open()); }   /* ONLINE CO-OP (src/online.js): the tavern, with its invite board's room card up - host (the same co-op gate) or join with a code */
@@ -32508,7 +32495,6 @@ function update(dt) {
     if (pausePress) { state = 'title'; SFX.ui(); }
     return;
   }
-  if (state === 'practice') { updatePractice(); return; }
   if (state === 'controls') { if (confirmPress) openRebind('controls'); else if (pausePress) { state = controlsFrom; SFX.menuClose(); } return; }
   if (state === 'rebind') { updateRebind(dt); return; }
   if (state === 'coophelp') { updateCoopHelp(); return; }
@@ -32516,7 +32502,7 @@ function update(dt) {
   if (state === 'heropick') { updateHeroPick(); return; }
   if (state === 'card') { updateCard(dt); return; }
   if (state === 'coop') { updateCoopPick(); return; }
-  if (state === 'herocard') { if (confirmPress) startTrial(hero()); else if (pausePress) { state = 'menu'; SFX.menuClose(); } return; }
+  if (state === 'herocard') { if (confirmPress) yardEnter(false); else if (pausePress) { state = 'menu'; SFX.menuClose(); } return; }
   if (state === 'bossjump') { updateBossJump(); return; }
   if (state === 'bossselect') { updateBossSelect(); return; }
   if (state === 'whatsnew') { const step = 5;
@@ -35871,63 +35857,7 @@ function drawHeroCard() { // who you are right now: the numbers behind the bars
   { const tr = 'level ' + heroLevel() + ' (' + (xpFloor(heroLevel() + 1) - heroXp()) + ' xp to next)   passives ' + passiveLadder(hero()).filter(n => passiveOn(PROG, hero(), n.id, heroLevel())).length + '/' + passiveLadder(hero()).length + '   flasks ' + (P.flasks | 0) + '/' + SV.flaskMax(PROG);
     text(tr, VW / 2, y + h - 34, '#8fd160', 'center', 6);
     text('Q  SKILLS AND LOADOUT', VW / 2, y + h - 24, UI.gold, 'center', 6);
-    text('Z  TAKE THIS HERO TRIAL', VW / 2, y + h - 14, UI.sel, 'center', 6); }
-}
-let practiceI = 0, practiceFromInn = false, practiceOverlay = false;   /* (claude/arenayard) practiceOverlay: the list was opened over the live Arena Yard by its TRIALS DOOR - ESC goes back to the yard */
-   /* (claude/tavernfix) the Practice list was opened from the inn's gate: leaving it goes back there */
-const practiceLeave = () => { if (practiceOverlay) { practiceOverlay = false; state = 'play'; SFX.menuClose(); return; } if (practiceFromInn) { practiceFromInn = false; enterTavern(); } else state = 'title'; SFX.menuClose(); };
-const YARD_DRILLS = {
-  knight: 'shield, the beat, dash attack, rise and sweep',
-  pyro: 'ember, the pyre, dash attack, rise and sweep',
-  paladin: 'conviction: smite, radiance, sunfall, the hammer, verdict, the aegis',
-  pirate: 'parry, black flag, dash attack, rise and sweep',
-  reaper: 'rhythm, blood price, grave kneel, ward, blood surge, dash attack, rise and sweep',
-  warden: 'the point, the deflect, run-through and the pin',
-  geomancer: 'stone fist, fault line, the ward on the beat, stonefall, avalanche',
-  berserker: 'the chain, the cross-chop, the brace, the axe, frenzy',
-  ranger: 'the shot, the draw, the bash, the snare, the focus',
-  open: 'every verb on one lawn: straw men, a gap, a wall, a guard, a swordsman who flashes, an archer',
-};
-// the open yard is not a hero: it is the fourth row, and it takes whoever you are in as you are
-const YARDS = () => [{ id: 'open', name: 'THE ARENA YARD', free: true }].concat(HEROES);   /* (claude/arenayard) the shared yard sits first; the ten trials are its door */
-function updatePractice() {
-  const rows = YARDS();
-  if (practiceI >= rows.length) practiceI = 0;
-  if (upPress) { practiceI = (practiceI + rows.length - 1) % rows.length; SFX.ui(); }
-  if (downPress) { practiceI = (practiceI + 1) % rows.length; SFX.ui(); }
-  if (pausePress) { practiceLeave(); return; }
-  if (menuTake()) {
-    const h = rows[practiceI]; practiceFromInn = false;   /* (going INTO a yard: the way back out is that yard's own) */
-    if (h.free) { const ov = practiceOverlay; if (ov) { practiceOverlay = false; state = 'play'; return; } yardEnter(false); return; }   /* (claude/arenayard) from the yard's own door the top row is just 'back to the yard' */
-    if (!(PROG.heroes && PROG.heroes[h.id])) { SFX.buzz(); menuMsg = 'not yours yet'; menuMsgT = 2; return; }
-    PROG.hero = h.id; applySkin(); applyUpgrades(); saveProgress();
-    if (!startTrial(h.id)) { SFX.buzz(); menuMsg = 'no yard for her yet'; menuMsgT = 2; }   /* she is equipped either way: the yard is a later phase */
-  }
-}
-function drawPractice() {
-  // SIX ROWS WHERE THERE USED TO BE FOUR. The list was laid out at a fixed 22 pixels a row from a fixed top,
-  // which fitted the knight, the pyromancer, the paladin and the yard - and then the Freebooter and the
-  // Reaper arrived and the last two rows went straight through the two lines of footer. The row height comes
-  // out of the space that is actually left now, and every string in here is measured before it is drawn.
-  g.fillStyle = 'rgba(10,14,12,0.82)'; g.fillRect(0, 0, VW, VH);
-  const x = 8, y = 8, w = VW - 16, h = VH - 16; panel(x, y, w, h, UI.border, 'wood');
-  text('THE PRACTICE YARDS', VW / 2, y + 5, UI.title, 'center', TYPE.head);
-  text(fitText('every verb he has, and nothing that can hurt you', w - 12, 6), VW / 2, y + 17, UI.dim, 'center', 6);
-  const rows = YARDS(), top = y + 27, foot = 20;                       /* two lines of footer at the bottom */
-  const rowH = Math.max(12, Math.min(22, Math.floor((h - (top - y) - foot) / rows.length)));   /* (nine rows with THE BERSERKER: 13 a row, one line each, or the open yard sat on the footer) */
-  const twoLine = rowH >= 19;                                          /* room for the drill under the name? */
-  rows.forEach((hr, i) => {
-    const owned = hr.free || !!(PROG.heroes && PROG.heroes[hr.id]), sel = i === practiceI, yy = top + i * rowH;
-    if (sel) { g.fillStyle = 'rgba(143,209,96,0.14)'; g.fillRect(x + 4, yy - 2, w - 8, rowH - 2); g.fillStyle = UI.sel; g.fillRect(x + 4, yy - 2, 2, rowH - 2); }
-    const badge = !owned ? ['NOT YOURS YET', '#5a5f5a'] : hr.free ? ['NO GATES', '#c9b27c']
-      : heroLevel(hr.id) === 0 ? ['L0  NEW', '#c9b27c'] : (PROG.tried && PROG.tried[hr.id]) ? ['WALKED  L' + heroLevel(hr.id), UI.sel] : ['L' + heroLevel(hr.id), UI.dim];
-    const bw = textW(badge[0], 6);
-    text(badge[0], x + w - 8, yy + (twoLine ? 0 : 1), badge[1], 'right', 6);
-    text(fitText(hr.name, w - 24 - bw, 8), x + 12, yy, owned ? (sel ? UI.title : UI.text) : '#5a5f5a', 'left');
-    if (twoLine) text(fitText(YARD_DRILLS[hr.id] || '', w - 24, 6), x + 12, yy + 10, owned ? UI.dim : '#4a4f4a', 'left', 6);
-  });
-  text('A HERO YARD EQUIPS THAT HERO', VW / 2, y + h - 19, '#c9b27c', 'center', 6);
-  text(fitText(touchOn ? 'TAP a row   BACK to leave' : 'ARROWS move   Z or X enter   ESC back', w - 12, 6), VW / 2, y + h - 10, UI.dim, 'center', 6);
+    text('Z  TO THE ARENA YARD', VW / 2, y + h - 14, UI.sel, 'center', 6); }
 }
 function drawControls() {
   g.fillStyle = 'rgba(10,14,12,0.75)'; g.fillRect(0, 0, VW, VH);
@@ -36371,7 +36301,7 @@ function drawTitle(cx, cy) {
 // SCREEN TRANSITIONS. Every change of screen comes up out of the dark instead of cutting, and a level opens
 // on an iris round the knight. Opening a pause menu or a talk box is not a change of screen.
 let transT = 0, transKind = 'fade', transPrev = null, transLast = 0, menuSince = 0;
-const OVERLAY_STATES = new Set(['menu', 'talk', 'controls', 'rebind', 'coophelp', 'soundtest', 'credits', 'whatsnew', 'bossjump', 'herocard', 'practice', 'win', 'gameover']);
+const OVERLAY_STATES = new Set(['menu', 'talk', 'controls', 'rebind', 'coophelp', 'soundtest', 'credits', 'whatsnew', 'bossjump', 'herocard', 'win', 'gameover']);
 function drawTransition() {
   const dt = Math.min(1, Math.max(0, time - transLast)); transLast = time;
   if (state !== transPrev) {
@@ -37035,7 +36965,6 @@ function render() {
   if (state === 'controls') drawControls();
   if (state === 'rebind') CTL.drawRebind(uiCtx(), rebindS, SET.binds);
   if (state === 'coophelp') drawCoopHelp(uiCtx(), coopHelpPage, coopHelpPages());
-  if (state === 'practice') drawPractice();
   if (state === 'herocard') drawHeroCard();
   if (state === 'opening') { TCH.hit(0, 0, VW, VH, () => { confirmPress = true; }); OP.drawPanelText(g, text, UI, opening.i, opening.t, VW, VH, touchOn, openingHeroLine()); }
   if (state === 'heropick') drawHeroPick();
@@ -37301,7 +37230,6 @@ window.BK = { setView: m => setView(m), env: () => ({ hurt: (e, d, x) => hurtEne
     get treeTab() { return treeBranch; }, set treeTab(v) { treeBranch = v === 1 ? 1 : 0; treeI = 0; treePage = 0; },
     get bestI() { return bestI; }, set bestI(v) { bestI = v; },
     get bestTab() { return bestTab; }, set bestTab(v) { bestTab = v; },
-    get practiceI() { return practiceI; }, set practiceI(v) { practiceI = v; },
     get slotI() { return slotI; }, set slotI(v) { slotI = v; }, get opening() { return opening; }, openingStart, get pressCard() { return pressCard; }, set pressCard(v) { pressCard = !!v; if (v) pressAt = null; }, get deathRecap() { return deathRecap; }, get winPrevBest() { return winPrevBest; }, get heroPickI() { return heroPick.i; }, set heroPickI(v) { heroPick = { i: v, stage: 'pick' }; }, get heroPickStage() { return heroPick.stage; }, set heroPickStage(v) { heroPick.stage = v; }, get fixAsk() { return fixAsk; }, set fixAsk(v) { fixAsk = v; fixI = 0; }, get fixI() { return fixI; }, titleItems: () => titleItems(), titleTop: () => titleTop(), get eraseAsk() { return eraseAsk; }, set eraseAsk(v) { eraseAsk = v; eraseYes = false; },   /* (tools/textfit.mjs 'pick': every card of the hero pick, selected in turn) */
     get titleI() { return titleI; }, set titleI(v) { titleI = v; }, titleItems: () => titleItems(), titleRegion: () => titleRegion(), titleTrack: () => titleTrack(), titleTop: () => titleTop(), get titleOpts() { return titleOpts; }, set titleOpts(v) { titleOpts = !!v; },
     get menuI() { return menuI; }, set menuI(v) { menuI = v; },
@@ -37342,7 +37270,7 @@ window.BK = { setView: m => setView(m), env: () => ({ hurt: (e, d, x) => hurtEne
   parts: () => parts, bossBodies: () => bossBodies, get PROP() { return PROP; }, get FLYERS() { return FLYERS; }, get HAS_HURT() { return HAS_HURT; }, get EHP() { return EHP; },
 };
 /* THE HOIST, for the harnesses: the decks (each with its state in .hs), a way to put n loads in one's basket, and the Reeve's cut */
-window.BK.yard = () => ({ Y: YARD, seeds: () => seeds, enter: fromInn => yardEnter(fromInn), leave: () => yardLeave(), inn: () => yardFromInn, open: p => yardBoardOpen(p || players[0]), nums: () => nums, practiceOverlay: () => practiceOverlay, state: () => state });   /* (claude/arenayard) tools/arena-yard.mjs */
+window.BK.yard = () => ({ Y: YARD, seeds: () => seeds, enter: fromInn => yardEnter(fromInn), leave: () => yardLeave(), inn: () => yardFromInn, open: p => yardBoardOpen(p || players[0]), nums: () => nums, state: () => state });   /* (claude/arenayard) tools/arena-yard.mjs */
 window.BK.hvr = () => (HVR && HVR.on() ? HVR.read() : null); window.BK.hvrHands = () => HVR;   /* (claude/hanging3) the ropes, for the tools and the bot */
 window.BK.hoists = () => hoistDecks(); window.BK.hoistLoad = (m, n) => { hoistOf(m).load += (n || 1); return hoistOf(m).load; }; window.BK.cutHoist = m => cutHoist(m);
 /* the Hints level, for tools/hintlevel.mjs: set it as the menu row does, say a line through the gate, read the gate's tally */

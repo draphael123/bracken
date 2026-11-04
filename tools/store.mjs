@@ -165,9 +165,9 @@ for(const [name,old] of Object.entries(SEEDS)){
   if(!open(how)){rec.problems.push(how+': did not open');continue;}
   const R=BK.ui.storeRows();rec.entries[how]=JSON.stringify(R);
   /* EVERYTHING IT OWNED is owned, and what it wore is worn; EVERYTHING IT COULD BUY is buyable; what was locked is locked */
-  for(const t of R){const tabName=t.id==='skills'?null:t.id;if(!tabName)continue;const ownedKey={heroes:'heroes',skins:'skins',weapons:'swords',charms:'charms',smith:'items',flasks:'flaskItems',music:'music',practice:null}[t.id];
+  for(const t of R){const tabName=t.id==='skills'?null:t.id;if(!tabName)continue;const ownedKey={heroes:'heroes',skins:'skins',weapons:'swords',charms:'charms',smith:'items',flasks:'flaskItems',music:'music'}[t.id];
    for(const k of t.rows){const had=ownedKey&&old[ownedKey]&&old[ownedKey][k.id];const wearKey={heroes:'hero',skins:'skin',weapons:'sword',charms:'charm',music:'menu'}[t.id];
-    if(k.id==='none'||(t.id==='smith'&&k.id==='tonic')||t.id==='practice')continue;
+    if(k.id==='none'||(t.id==='smith'&&k.id==='tonic'))continue;
     if(had&&!(k.state==='owned'||k.state==='equipped'))rec.problems.push(how+': '+t.id+'/'+k.id+' was owned, shows '+k.state);
     if(had&&wearKey&&old[wearKey]===k.id&&k.state!=='equipped')rec.problems.push(how+': '+t.id+'/'+k.id+' was worn, shows '+k.state);
     if(!had&&(k.state==='owned'||k.state==='equipped')&&!(t.id==='skins'&&k.id==='bracken')&&!(t.id==='weapons'&&k.id==='steel')&&!(t.id==='music'&&k.id==='select')&&!(t.id==='heroes'&&k.id==='knight'))rec.problems.push(how+': '+t.id+'/'+k.id+' shows '+k.state+' but the save never owned it');

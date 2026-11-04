@@ -11,7 +11,7 @@
 //   CAMPAIGN TABLE  the map table: TAKE THE ROAD - the party, as it stands in the room, goes to the map armed for the next wood.
 //   WARDROBE      that player's own card: HERO, WEAPON (a weapon skin), COLOUR (his ring, tag and plate) and RING (the floor ring on/off, for everyone).
 //   TRAINING YARD the back of the room: straw dummies; the PARTNER DRILLS board (THROW into the hay target, REVIVE off the sparring bell, TEAM HIT on
-//                 one dummy) with a chalk tally; the PRACTICE door (the game's Practice yards live here now).
+//                 one dummy) with a chalk tally; the ARENA YARD door (station id 'practice': the one training ground; the hero trials and the open yard are gone, claude/yardswap).
 //   ARENA PIT     roped off, signed COMING SOON (versus is a later lane, brief-versus.md).
 // FIRST VISIT: every station glints (a sparkle and a bobbing mark) until it has been used once (PROG.tavern.seen), and the first time a player comes
 // near one a line says what it does. NOTHING HERE HURTS OR ENDS: no death cost, a down clock that runs out just stands you up.
@@ -31,7 +31,7 @@ export const STATIONS = [
   { id: 'wardrobe', x: 40, name: 'THE WARDROBE', verb: 'DRESS', first: 'THE WARDROBE: YOUR HERO, YOUR WEAPON, YOUR COLOUR AND THE FLOOR RINGS.' },
   { id: 'drills', x: 45, name: 'PARTNER DRILLS', verb: 'DRILLS', first: 'PARTNER DRILLS: THROW YOUR PARTNER INTO THE HAY, LIFT HIM OFF THE BELL, STRIKE A DUMMY TOGETHER.' },
   { id: 'bell', x: 48, name: 'THE SPARRING BELL', verb: 'RING', first: 'THE SPARRING BELL: RING IT AND A PARTNER GOES DOWN - STAND ON HIM TO LIFT HIM.' },
-  { id: 'practice', x: 58, name: 'THE PRACTICE YARDS', verb: 'PRACTICE', first: 'THE PRACTICE YARDS: THE HERO TRIALS AND THE OPEN YARD, THROUGH THIS DOOR.' },
+  { id: 'practice', x: 58, name: 'THE ARENA YARD', verb: 'TRAIN', first: 'THE ARENA YARD: THE TRAINING GROUND. EVERY MOVE, STRAW THAT HITS BACK, NOTHING THAT ENDS YOU.' },
   { id: 'arena', x: 62, name: 'THE ARENA PIT', verb: 'ARENA', first: 'THE ARENA PIT: FRIENDS AGAINST FRIENDS. COMING SOON.' },
 ];
 export const DUMMIES = [51, 54];   /* the straw men, in tiles */
@@ -53,7 +53,7 @@ export const TAVERN_ART = [
   ['bell', 'THE SPARRING BELL: a small brass bell on a post with a pull rope (rest / swinging frames)'],
   ['dummies', 'two tavern straw dummies (sack heads, a dented pot helm) - the training yard\'s own, not the open yard\'s'],
   ['target', 'THE HAY TARGET: a ring of hay bales on the yard floor with a painted bullseye'],
-  ['practice', 'THE PRACTICE DOOR: an arched yard gate with the practice yards\' light behind it'],
+  ['practice', 'THE ARENA YARD DOOR: an arched yard gate with a hung ARENA YARD board and the arena\' light behind it'],
   ['arena', 'THE ARENA PIT: a sunken sanded pit behind a rope on posts, a COMING SOON board and a stage board beside it (empty frame for the VERSUS lane)'],
   ['dressing', 'the warm room: the fireplace (lit, a cauldron), long tables with benches and Waymeet\'s drinkers, the bar with casks and the barkeep, a window onto the road (day/night), hanging lanterns, a hearth glow light'],
   ['glint', 'the first-visit glint (a 4-frame sparkle) and the bobbing ! over an unused station'],
@@ -174,7 +174,7 @@ export function makeTavern(api) {
     TA.saves(g, at('saves'), fy, time, api.text);
     TA.tally(g, at('drills'), fy, DRILL_IDS.map(k => t.drills[k] | 0));
     TA.bell(g, at('bell'), fy, st.bellT, time);
-    TA.gate(g, at('practice'), fy, time);
+    TA.gate(g, at('practice'), fy, time, api.text);
     TA.target(g, X(TARGET.x), fy, time);
     TA.arena(g, at('arena'), fy, time, api.text);
     TA.mirror(g, at('wardrobe'), fy, time);

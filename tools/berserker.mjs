@@ -125,19 +125,9 @@ try {
       'bzFlurryL','bzFlurryR','bzCross','bzAirSpin','bzPlunge','bzTake','bzCoil','bzPounce','bzPLand','bzWhet'];
     const gold=BKT.heroSet('bracken','ember',false,'berserker');const diff=(a,b)=>{const A=a.getContext('2d').getImageData(0,0,a.width,a.height).data,B=b.getContext('2d').getImageData(0,0,b.width,b.height).data;let n=0;for(let i=0;i<A.length;i+=4){if(A[i]!==B[i]||A[i+1]!==B[i+1]||A[i+2]!==B[i+2])n++;}return n;};
     out.art={missing:need.filter(k=>!set.R[k]),bare:!!set.bare,bareMissing:need.filter(k=>!(set.bare&&set.bare.R[k])),skinDiff:diff(set.R.idle[0],gold.R.idle[0])};
-    /* yard: his trial loads, and the take-it-on-the-beat, the axe and the frenzy stations can be finished through his real input */
-    { const {LEVELS}=window.__LV;for(const k in BK.keys)BK.keys[k]=false;BK.setHero('berserker');BK.reset({fresh:true});BK.applyUpgrades();const i=LEVELS.findIndex(l=>l.id==='trial_berserker');out.yard={found:i>=0};
-      if(i>=0){BK.load(i);BK.state='play';BK.god=false;BK.sim(30);const T=BK.L.trial;out.yard.kinds=T.map(s=>s.kind);
-        const go=st=>{BK.tp(st.x0+3,19);P().vx=0;P().face=1;BK.sim(30);P().st=P().maxSt;};
-        const foes=st=>BK.enemies().filter(e=>e.alive&&e.x>st.x0*16&&e.x<st.gate*16).sort((a,b)=>a.x-b.x);
-        let st=T.find(s=>s.kind==='axe');go(st);for(let t=0;t<4&&!st.done;t++){P().face=1;P().st=P().maxSt;K.up=true;K.block=true;BK.sim(2);K.up=K.block=false;BK.sim(60);
-          for(let f=0;f<240&&Z().oneHanded;f++){const a=Z().axe;if(!a)break;K.right=P().x<a.x-2;K.left=P().x>a.x+2;BK.sim(1);}K.left=K.right=false;BK.tp(st.x0+3,19);BK.sim(20);}
-        out.yard.axe=!!st.done;out.yard.axeDbg={hits:Z().stats.axeHits,throws:Z().stats.throws,got:st.got||0,px:Math.round(P().x)};
-        st=T.find(s=>s.kind==='meter');go(st);BK.sim(10);const rg=P().rage;K.down=true;K.block=true;BK.sim(2);K.block=false;K.down=false;BK.sim(30);out.yard.meter=!!st.done;out.yard.meterRage=Math.round(rg);
-        st=T.find(s=>s.kind==='flash');go(st);const e=foes(st)[0];let glintAt=-1,pressed=0;
-        for(let f=0;f<60*60&&!st.done;f++){P().face=Math.sign(e.x-P().x)||1;P().st=P().maxSt;const gap=Math.abs(e.x-P().x);K.right=gap>30&&e.x>P().x;K.left=gap>30&&e.x<P().x;
-          if(e.mode==='cutTell'&&e.glint){if(glintAt<0)glintAt=f;if(!pressed&&f-glintAt>=3){K.block=true;BK.sim(1);K.block=false;pressed=1;continue;}}else{glintAt=-1;pressed=0;}BK.sim(1);}
-        K.left=K.right=false;out.yard.flash=!!st.done;}}
+    /* yard (claude/yardswap, Daniel 11-03: the hero trial is gone): he trains in the ARENA YARD - it loads for him, and his MOVE BOARD names the axe throw and the frenzy (the steps his trial used to teach) */
+    { const {LEVELS}=window.__LV;for(const k in BK.keys)BK.keys[k]=false;BK.setHero('berserker');BK.reset({fresh:true});BK.applyUpgrades();const i=LEVELS.findIndex(l=>l.id==='arena_yard');out.yard={found:i>=0};
+      if(i>=0){BK.load(i);BK.start();BK.state='play';BK.god=false;BK.sim(30);const Y=BK.yard();Y.open(BK.players()[0]);const bd=Y.Y.st.board;const txt=bd?bd.b.lines.map(l=>l.text).join(' | '):'';out.yard.board=txt.length;out.yard.axe=/AXE/i.test(txt);out.yard.meter=/FRENZY|RAGE/i.test(txt);out.yard.flash=/AXES|FLASH|PARRY|TAKE IT/i.test(txt);Y.Y.st.board=null;out.yard.arena=!!BK.L.arenaYard;}}
     return out;})()`, 600000);
   console.log(JSON.stringify(r));
   const F = r.flurry;
@@ -186,7 +176,7 @@ try {
   ok(Pp.stops >= 1 && !Pp.pastBrute && Pp.bruteLost > 0, 'pounce: a big foe should stop it dead: ' + JSON.stringify(Pp));
   ok(!Pp.pit.dead && Pp.pit.ground && Pp.pit.y === 0 && Pp.pit.dx < 48 && (Pp.pit.shortened + Pp.pit.refused) >= 1, 'pounce: a pit ahead - it should be shortened or refused, never into it: ' + JSON.stringify(Pp));
   ok(r.whet.rage > 5 && r.whet.whet && r.whet.capped <= 50 && r.whet.capped >= 45, 'whetstone: stood calm his rage should creep up to half a bar and no further: ' + JSON.stringify(r.whet));
-  ok(r.yard.found && r.yard.axe && r.yard.meter && r.yard.flash, 'his yard: ' + JSON.stringify(r.yard));
+  ok(r.yard.found && r.yard.arena && r.yard.axe && r.yard.meter && r.yard.flash, 'his Arena Yard board (was his trial yard): ' + JSON.stringify(r.yard));
   for (const [id, s] of Object.entries(r.skills)) ok(s.cd > 0 && s.spent > 0, 'skill ' + id + ' did not fire: ' + JSON.stringify(s));
   ok(!r.art.missing.length && r.art.bare && !r.art.bareMissing.length, 'art: missing keys ' + r.art.missing + ' / bare ' + r.art.bareMissing);
   ok(r.art.skinDiff > 0 && r.art.skinDiff < 40, 'art: a weapon skin changed ' + r.art.skinDiff + ' pixels of his idle (only the axe heads should change)');

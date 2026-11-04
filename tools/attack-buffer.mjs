@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';import{openPage}from'./cdp.mjs';
 const pg=await openPage({audio:false,fonts:false});
 try{const r=await pg.evalp(`(async()=>{
- BK.manualSimulation=true;BK.SET.speed=1;const {LEVELS}=await import('/src/level.js'),yard=LEVELS.findIndex(l=>l.id==='trial_open');const rows=[];
+ BK.manualSimulation=true;BK.SET.speed=1;const {LEVELS}=await import('/src/level.js'),yard=LEVELS.findIndex(l=>l.id==='arena_yard');const rows=[];
  const prepare=h=>{for(const k in BK.keys)BK.keys[k]=false;BK.setHero(h);BK.load(yard);BK.state='play';BK.enemies().forEach(e=>e.alive=false);BK.tp(10,21);BK.sim(30);BK.reset();BK.P.st=BK.P.maxSt;};
  const rate=h=>h==='reaper'?.34:h==='paladin'?.56:h==='pirate'?1.35:1;
  for(const h of ['knight','warden','pyro','paladin','pirate','reaper']){

@@ -4,7 +4,7 @@ const pg=await openPage({audio:false,fonts:false});
 try {
   const rows=await pg.evalp(`(async()=>{
     BK.manualSimulation=true; const {LEVELS}=await import('/src/level.js'); const rows=[];
-    const yard=LEVELS.findIndex(l=>l.id==='trial_open');
+    const yard=LEVELS.findIndex(l=>l.id==='arena_yard');
     for(const hero of ['knight','warden','pyro','paladin','pirate','reaper','geomancer','berserker','ranger']) for(const face of [-1,1]) for(const kind of ['rise','sweep']){
       BK.setHero(hero);BK.load(yard);BK.state='play';BK.enemies().forEach(e=>e.alive=false);BK.tp(10,21);BK.sim(30);BK.reset();
       const p=BK.P; p.face=face;p.st=p.maxSt;if(hero==='ranger'&&kind==='rise')p.rgQ=0;/* (claude/ranger) HER UP+X is the RISING SHOT (an arrow: tools/ranger.mjs); with an empty quiver it is the knife's rising cut, and that is the swing held to it here */BK.keys[kind==='rise'?'up':'down']=true;if(kind==='sweep'&&(hero==='knight'||hero==='warden'))BK.keys[face>0?'right':'left']=true;/* crouched STILL, their X is the shield trip / the low poke (src/crouch-a.js): the low sweep is down + X on the move */BK.press('atk');

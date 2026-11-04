@@ -20,7 +20,7 @@ let R;
 try {
   R = await pg.evalp(`(async()=>{
     const { LEVELS } = await import('/src/level.js'); BK.manualSimulation = true; BK.SET.speed = 1;
-    const yard = LEVELS.findIndex(l => l.id === 'trial_open'), out = {};
+    const yard = LEVELS.findIndex(l => l.id === 'arena_yard'), out = {};
     const key = (k, on) => window.dispatchEvent(new KeyboardEvent(on ? 'keydown' : 'keyup', { key: k, bubbles: true }));
     const none = () => { for (const k in BK.keys) BK.keys[k] = false; };
     for (const hero of ${JSON.stringify(HEROES)}) {

@@ -14,7 +14,7 @@
 //
 // Nothing here can be farmed. A foe put back by a death, a shrine or a second walk of a finished wood pays a fifth
 // (XP_AGAIN); anything summoned in a fight (a brood, a court, the pieces of a suit) pays nothing, because nothing
-// placed it; and the boss rush, the trials, the practice yard and the store pay nothing at all.
+// placed it; and the boss rush, the Arena Yard and the store pay nothing at all.
 import { THREAT } from './threat.js';
 
 export const XP_PER_THREAT = 4;            /* a sprig is 4, a brute 14, a troll 16 */

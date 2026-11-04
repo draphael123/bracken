@@ -21,10 +21,10 @@ export const STATIONS = [
   { id: 'archer', x0: 128, x1: 160, name: 'THE ARCHER', sign: 'HIS ARROWS: GUARD, PARRY OR DEFLECT THEM. YOUR BOARD SAYS HOW.', at: 128, grade: true },
 ];
 /* the three things you walk up to and press UP at (the move board's plate is read in main.js; these are columns) */
-export const SPOTS = { door: 3, start: 5, board: 8, leave: 11 };
+export const SPOTS = { start: 5, board: 8, leave: 11 };   /* (claude/yardswap) the TRIALS DOOR (col 3) is gone with the hero trials */
 export const BARRIERS = [12, 29, 45, 56, 70, 90, 108, 126];   /* deco only: an oak rail between stations (no collision) */
 /* the art ids the ART lane keeps (plan section 2): tiles, deco kinds, backdrop */
-export const YARD_ART = { palette: 'arena', deco: ['arenaBarrier', 'weaponRack', 'pennonPole', 'brazier', 'moveBoard', 'trialsDoor', 'leaveGate'], skins: ['strawSword', 'strawBow'] };
+export const YARD_ART = { palette: 'arena', deco: ['arenaBarrier', 'weaponRack', 'pennonPole', 'brazier', 'moveBoard', 'leaveGate'], skins: ['strawSword', 'strawBow'] };
 export const GRADE = { PERFECT: { txt: 'PERFECT', col: '#ffd36b' }, GOOD: { txt: 'GOOD', col: '#fff6e0' }, HIT: { txt: 'HIT', col: '#ff6b6b' } };
 
 /* the level: painter + tile ids handed in by level.js (the way src/lumber-trail.js is). Returns the level object. */
@@ -39,7 +39,7 @@ export function buildArenaYard({ painter, T }) {
   for (const x of [12, 29, 56, 90, 126]) ent('deco', x, gy, { kind: 'pennonPole', v: x & 1 });   /* (claude/arenayardart) arena dressing, deco only: pennon poles on the rails, practice racks, two braziers */
   for (const x of [15, 75, 97, 114, 133]) ent('deco', x, gy, { kind: 'weaponRack' });
   for (const x of [6, 142]) ent('deco', x, gy, { kind: 'brazier' });
-  ent('deco', SPOTS.board, gy, { kind: 'moveBoard' }); ent('deco', SPOTS.door, gy, { kind: 'trialsDoor' }); ent('deco', SPOTS.leave, gy, { kind: 'leaveGate' });
+  ent('deco', SPOTS.board, gy, { kind: 'moveBoard' }); ent('deco', SPOTS.leave, gy, { kind: 'leaveGate' });
   // ---- the straw row: three men on the floor ----
   for (const x of [18, 22, 26]) ent('dummy', x, gy);
   // ---- the steps: one-way planks 19/17/15/13, a man on the top ----
@@ -62,7 +62,7 @@ export function buildArenaYard({ painter, T }) {
   // ---- the archer: on a stand, facing the way you came; he never goes down and shoots only while somebody is in his station ----
   block(150, 154, gy - 1, gy);
   ent('archer', 152, gy - 2, { face: -1, trainer: 'drill', lx0: 140, lx1: 158, yardZone: [128, 160] });
-  ent('sign', 160, gy, { text: 'THE YARD ENDS HERE. BACK TO THE GATE FOR THE BOARD, THE TRIALS AND THE WAY OUT.' });
+  ent('sign', 160, gy, { text: 'THE YARD ENDS HERE. BACK TO THE GATE FOR THE BOARD AND THE WAY OUT.' });
   return {
     W, H, grid: L.grid, ents: L.ents, START: { x: SPOTS.start, y: gy }, pools: [], falls: [], moversExtra: [], interiors: [],
     reskin: { swornsword: 'strawsword', archer: 'strawbow' }, openYard: true, arenaYard: { stations: STATIONS, spots: SPOTS, floor: AY.FLOOR, gate: [2, 13] }, duskStart: -1, duskLen: 1, music: 'arenayard', reachExact: true, noCoin: true,
@@ -84,20 +84,20 @@ export const stationAt = col => STATIONS.find(s => col >= s.x0 && col <= s.x1) |
 /* an attacking dummy sleeps unless a living player is inside its zone [x0, x1] (columns): a list of {x, dead, down} and the tile size */
 export function zoneAwake(zone, ps, TS) { if (!zone) return true; return ps.some(p => p && !p.dead && !(p.down > 0) && p.x >= zone[0] * TS && p.x < (zone[1] + 1) * TS); }
 
-/* THE RUNTIME. api: { L, players, time, TS, number(x,y,txt,col), hint(msg, secs), sfx(k), pressOf(p), eatTalk(p), openBoard(p), openTrials(), leave(), nums } */
+/* THE RUNTIME. api: { L, players, time, TS, number(x,y,txt,col), hint(msg, secs), sfx(k), pressOf(p), eatTalk(p), openBoard(p), leave(), nums } */
 export function makeArenaYard(api) {
-  const st = { cheer: 0, cheerAt: -9, saidFirst: new Set(), stats: { perfect: 0, good: 0, hit: 0, boards: 0, doors: 0, leaves: 0 }, last: null, near: new Map() };
+  const st = { cheer: 0, cheerAt: -9, saidFirst: new Set(), stats: { perfect: 0, good: 0, hit: 0, boards: 0, leaves: 0 }, last: null, near: new Map() };
   const on = () => !!api.L() && !!api.L().arenaYard;
   const TS = api.TS;
   const spotX = c => c * TS + TS / 2;
-  /* the nearest thing a hero can use: the board, the trials door, the leave gate */
+  /* the nearest thing a hero can use: the board, the leave gate */
   function spotNear(p) {
     if (!p || p.dead || p.down > 0 || !p.ground) return null;
-    for (const [id, c] of [['board', SPOTS.board], ['door', SPOTS.door], ['leave', SPOTS.leave]]) if (Math.abs(spotX(c) - p.x) < 20 && Math.abs(p.y - (AY.FLOOR) * TS) < 28) return id;
+    for (const [id, c] of [['board', SPOTS.board], ['leave', SPOTS.leave]]) if (Math.abs(spotX(c) - p.x) < 20 && Math.abs(p.y - (AY.FLOOR) * TS) < 28) return id;
     return null;
   }
-  const VERB = { board: 'YOUR MOVES', door: 'THE TRIALS', leave: 'LEAVE' };
-  const FIRST = { board: 'THE MOVE BOARD: EVERY MOVE THIS HERO HAS. LEFT / RIGHT TURN THE PAGE.', door: 'THE TRIALS DOOR: THE OLD HERO TRIALS, ONE HERO AT A TIME.', leave: 'THE GATE OUT: BACK TO THE INN OR THE MAP.' };
+  const VERB = { board: 'YOUR MOVES', leave: 'LEAVE' };
+  const FIRST = { board: 'THE MOVE BOARD: EVERY MOVE THIS HERO HAS. LEFT / RIGHT TURN THE PAGE.', leave: 'THE GATE OUT: BACK TO THE INN OR THE MAP.' };
   /* hold an attacking dummy asleep while nobody is in its station: its cooldown (and an archer's draw) never runs out */
   function hold(e, dt) {
     /* (claude/arenafinish) THE ARCHER STAYS ON HIS MARK: a parry that shoves him (the Blood Knight's return, a bind) leaves him a few px off, and his lobbed arrows then land short of the stand -
@@ -118,7 +118,7 @@ export function makeArenaYard(api) {
       const s = spotNear(p); st.near.set(p, s);
       if (s && !st.saidFirst.has(s)) { st.saidFirst.add(s); api.hint(FIRST[s], 5); }
       const pr = api.pressOf(p);
-      if (s && pr.talk) { api.eatTalk(p); st.stats[s === 'board' ? 'boards' : s === 'door' ? 'doors' : 'leaves']++; if (s === 'board') api.openBoard(p); else if (s === 'door') api.openTrials(); else api.leave(p); }
+      if (s && pr.talk) { api.eatTalk(p); st.stats[s === 'board' ? 'boards' : 'leaves']++; if (s === 'board') api.openBoard(p); else api.leave(p); }
     }
   }
   return { st, on, tick, hold, grade, spotNear, spotX, VERB, FIRST };

@@ -40,7 +40,7 @@ const FONT = '"Silkscreen", "Press Start 2P"';   /* the body face of the strict 
 /* states where a tap anywhere means "go on" (a card, a line of talk, a result): there is nothing to aim at */
 const TAP_ANY = new Set(['talk', 'win', 'victory', 'gameover', 'rushover', 'rushwin', 'credits', 'whatsnew', 'coophelp', 'herocard']);
 /* states where a held stick direction repeats like a held key (the lists that do not repeat themselves) */
-const REPEAT = new Set(['menu', 'store', 'title', 'slots', 'bestiary', 'soundtest', 'heropick', 'coop', 'practice', 'bossselect', 'controls', 'rebind']);
+const REPEAT = new Set(['menu', 'store', 'title', 'slots', 'bestiary', 'soundtest', 'heropick', 'coop', 'bossselect', 'controls', 'rebind']);
 /* what the pill buttons say in a state with no play buttons: [the press, the label] - the first is the main one */
 const ACTIONS = {
   map: [['confirm', 'ENTER'], ['dodge', 'STORE'], ['atk', 'BEASTS'], ['map', 'LEVELS'], ['throw', 'TAVERN'], ['skill2', 'ONLINE']],   /* (ONLINE CO-OP: opens the online board, as G does; claude/tavern: F / TAVERN goes to the inn) */
