@@ -133,7 +133,8 @@ export function makeTavern(api) {
     st.bellT = Math.max(0, st.bellT - dt); st.doorT = Math.max(0, st.doorT - dt);
     for (const p of api.players()) {
       const s = stationNear(p); st.near.set(p, s);
-      if (s && !st.saidFirst.has(s.id) && !seen(s.id)) { st.saidFirst.add(s.id); api.hint(s.first, 5); }
+      if (s && s.id === 'store') markSeen(s.id);   /* (the STORE plank says it: no first-visit hint, no glint - they sat over the prompt) */
+      else if (s && !st.saidFirst.has(s.id) && !seen(s.id)) { st.saidFirst.add(s.id); api.hint(s.first, 5); }
       const pr = p.n === 1 ? api.p1Press() : p.press || {};
       if (s && pr.talk && !st.cardFor.has(p)) { if (p.n === 1) api.eatTalk(); else pr.talk = false; use(s, p); }
       /* THE THROW DRILL: a partner who was flying (src/partner-throw.js ptF) and has landed - where? */
@@ -183,7 +184,7 @@ export function makeTavern(api) {
     TA.arena(g, at('arena'), fy, time, api.text);
     TA.mirror(g, at('wardrobe'), fy, time);
     /* THE GLINTS: a bobbing gold plate and a sparkle over every station not used yet */
-    for (const s of STATIONS) if (!seen(s.id)) TA.glint(g, X(s.x), fy - 56, time, s.x);
+    for (const s of STATIONS) if (s.id !== 'store' && !seen(s.id)) TA.glint(g, X(s.x), fy - 56, time, s.x);
     /* THE PROMPT over the station a player stands at: his key and the verb, in his colour */
     for (const p of api.players()) { const s = st.near.get(p); if (!s || st.cardFor.has(p)) continue; const lab = keyFor(p) + ' ' + (s.id === 'door' && p.n !== 1 ? 'LEAVE PARTY' : s.verb);
       api.text(lab, X(s.x), fy - 60 - (p.n - 1) * 8, colourOf(api.PROG().tavern, p.n).c, 'center', 6); }

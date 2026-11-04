@@ -19,7 +19,7 @@ try {
     else { await pg.send('Emulation.clearDeviceMetricsOverride', {}); await pg.send('Emulation.setTouchEmulationEnabled', { enabled: false }); }
     await goto((touch ? '&touch=1' : '') + (demo ? '&demo=1' : ''));
     await E(`(async()=>{BK.manualSimulation=true;BK.SET.speed=1;BK.coopEnd();BK.reset({fresh:true});BK.tavern.record(null);BK.tavern.p1Pad(null);await BK.tavern.enter();BK.sim(10);
-      const p=BK.players()[0];for(let i=0;i<60;i++){p.x=${sx}*16+8;p.y=20*16;p.vx=p.vy=0;BK.sim(1);}BKT.PROG.coins=5000;BK.step(12);for(let i=0;i<30;i++){p.x=${sx}*16+8;p.y=20*16;p.vx=p.vy=0;BK.sim(1);}BK.step(2);return 1;})()`);
+      const p=BK.players()[0];for(let i=0;i<60;i++){p.x=${sx}*16+8;p.y=20*16;p.vx=p.vy=0;BK.sim(1);}BKT.PROG.coins=5000;BK.step(12);for(let i=0;i<30;i++){p.x=${sx}*16+8;p.y=20*16;p.vx=p.vy=0;BK.sim(1);}BK.sim(660);for(let i=0;i<30;i++){p.x=${sx}*16+8;p.y=20*16;p.vx=p.vy=0;BK.sim(1);}BK.step(2);return 1;})()`);
     const near = await E('BK.tavern.debug().near'); ok(near.some(n => n.s === "store"), "standing at the bar: the nearest station is the store " + JSON.stringify(near) + await E('JSON.stringify([BK.players()[0].x,BK.players()[0].ground,BK.players()[0].dead,BK.players()[0].down,BK.players()[0].walkIn,BK.players()[0].ptH,BK.players()[0].ptF])'));
     await shot(tag + '-1-bar');
     const x0 = await E('BK.players()[0].x');
