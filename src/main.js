@@ -36966,7 +36966,7 @@ function render() {
     const since = pressCard ? 0 : Math.max(0, time - titleSince), e = easeOutBack(Math.min(1, since / 0.7));
     if (pressAt !== null && !pressCard && time - pressAt < 0.4) TC.drawPressText(g, text, UI, time, VW, VH, Math.max(0, 1 - (time - pressAt) / 0.4), touchOn);
     const sway = Math.sin(time * 0.9) * 1.2, ly = Math.round(2 - (1 - e) * 70 + sway);
-    const lw = 192, lh = 38, tcx = Math.round(VW / 2), lx = Math.round(tcx - lw / 2);
+    const lw = 192, lh = 38, lx = touchOn ? 4 : Math.round(Math.round(VW / 2) - lw / 2), tcx = lx + (lw >> 1);   /* (claude/touchrows) on touch the tall board covers the sign right of x178: the sign stands left of it so the whole tagline shows */
     g.drawImage(PROP.plank, 0, 0, PROP.plank.width, PROP.plank.height, lx, ly, lw, lh);
     text('THORNROAD', tcx, ly + 4, UI.gold, 'center', 22);   /* (one call: the face draws its own shadow, and a second THORNROAD 2px off it is what textfit calls a collision) */
     // a glint runs along the letters every few seconds
