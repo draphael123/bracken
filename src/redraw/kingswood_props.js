@@ -34,9 +34,19 @@ function leafClump(g, cx, cy, r, seed) {
   for (let i = 0; i < r; i++) { const h = hash(seed + 7, i); f(g, '#f6c060', cx + ((h % 100) / 100 - 0.5) * r * 2, cy - r * 0.4 + ((h >> 7) % 100) / 100 * r * 0.5, 2, 1); }
 }
 /* the limb: from a leaf mass up and to the side, bent down to the pulley and out past it, a short twig. py = the pulley's screen y, side = which way the leaves are */
-export function drawBough(g, pxx, py, side, seed, time) {
-  const rise = Math.min(py + 8, 70 + (seed % 3) * 12), run = side * (26 + (seed % 4) * 8);
+/* where the limb's far end is, relative to the pulley (px): the caller reads the floor under it to stand a trunk there */
+export function boughRun(py, side, seed) { return { run: side * (26 + (seed % 4) * 8), rise: Math.min(py + 8, 70 + (seed % 3) * 12) }; }
+/* (claude/floatfix2) a bough from nothing was a floating limb: the leaves at its end are a TREE now - a trunk down to the floor (floorY, screen px; none = no ground under it) with its flare of roots */
+function drawTrunk(g, x, y0, floorY, seed) {   /* the colours of the wood's own far trunks (kingswood backdrop), so it reads as one of them stood in front */
+  const w = 12, x0 = Math.round(x - w / 2); if (floorY - y0 < 8) return;
+  f(g, '#2a1c16', x0 - 1, y0, w + 2, floorY - y0); f(g, '#4a3426', x0, y0, w, floorY - y0); f(g, '#5e4634', x0, y0, 2, floorY - y0); f(g, '#382618', x0 + w - 3, y0, 3, floorY - y0);
+  for (let y = y0 + 6 + (seed % 5); y < floorY - 4; y += 9 + (y % 4)) f(g, '#2a1c16', x0 + 3 + (y % 3), y, 3, 2);   /* bark ridges */
+  f(g, '#2a1c16', x0 - 5, floorY - 3, w + 10, 3); f(g, '#4a3426', x0 - 4, floorY - 3, w + 8, 2); f(g, '#4a3426', x0 - 2, floorY - 6, w + 4, 3);   /* the flare of its roots */
+}
+export function drawBough(g, pxx, py, side, seed, time, floorY) {
+  const { run, rise } = boughRun(py, side, seed);
   const topX = pxx + run, topY = py - rise;
+  if (floorY != null) drawTrunk(g, topX, topY + 6, floorY, seed);
   /* the slanting limb (thick at the top, thinning at the pulley): a stack of 2 px rows */
   for (let y = 0; y <= rise; y += 2) { const t = y / rise, x = pxx + run * (1 - t) * (1 - t * 0.15), w = 9 - t * 4;
     f(g, '#3a1c12', x - w / 2 - 1, py - rise + y, w + 2, 2); f(g, '#74382a', x - w / 2, py - rise + y, w, 2); f(g, '#c07644', x - w / 2, py - rise + y, 2, 2); if (y % 8 === 0) f(g, '#52241e', x + 1, py - rise + y, 2, 2); }

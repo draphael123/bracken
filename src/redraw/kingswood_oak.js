@@ -84,6 +84,7 @@ export function drawOak(g, cx, cy, VW, VH, L, time, dY) {
   /* the cages hung in its boughs and the court's pennants: they sway */
   for (let i = 0; i < OAK_HANG.length; i++) { const [bx, by] = OAK_HANG[i], sw = Math.sin(time * 1.3 + i) * 1.6 * sc, x = gx + bx * sc, y = gy + by * sc, l = (10 + (i % 3) * 5) * sc;
     R(g, '#2a1a10', x, y, Math.max(1, sc), l);
+    R(g, '#3a2418', x - 5 * sc, y - 3 * sc, 11 * sc, 3 * sc); R(g, '#5a3a24', x - 5 * sc, y - 3 * sc, 11 * sc, Math.max(1, sc * 0.8)); R(g, '#2a1a10', x - sc, y - 2 * sc, 3 * sc, 3 * sc);   /* (claude/floatfix2) the chain hangs from a bough stub, not from the sky */
     if (i % 2 === 0) { R(g, '#1e1e26', x - 4 * sc + sw, y + l, 9 * sc, 9 * sc); R(g, '#4a4a54', x - 3 * sc + sw, y + l + sc, 7 * sc, 7 * sc); R(g, '#14100e', x - 2 * sc + sw, y + l + 2 * sc, 5 * sc, 5 * sc); R(g, '#9a9aa6', x - 4 * sc + sw, y + l, 9 * sc, Math.max(1, sc * 0.7)); }
     else { R(g, '#a83a2a', x + sw, y + l, 6 * sc, 4 * sc); R(g, '#e0b040', x + sw, y + l, 6 * sc, Math.max(1, sc * 0.7)); R(g, '#6a1e18', x + sw + 4 * sc, y + l + 2 * sc, 2 * sc, 3 * sc); } }
   g.globalAlpha = 1;

@@ -79,7 +79,9 @@ function dropOf(L, T, x, y, max) {
 /* a post over a pool of water goes down into it (its foot is under the surface, on the bed the map does not draw) */
 function poolFoot(L, x, y) { const q = (L.pools || []).find(p => x * 16 + 8 >= p.x0 && x * 16 + 8 < p.x1 && p.y > y * 16); return q ? Math.floor(q.y / 16) + 2 : -1; }
 
+import { findSlots, DEMO_IDS } from './demo-slots.js';
 export function addDemoSupports(L, id, T) {
+  if (L && L.grid && DEMO_IDS.has(id)) { L.demoSlots = findSlots(L, T); L.demoStyle = id; }   /* (claude/floatfix2) a window through the terrain is backed with masonry (src/demo-slots.js) */
   const cfg = DEMO_KIT[id]; if (!cfg || !L || !L.grid) return L;
   if (!L.routeSupports) L.routeSupports = [];
   const W = L.W, have = new Set(L.routeSupports.map(p => p.x + ',' + p.y)), unfixed = L.demoFloats = [];

@@ -18,6 +18,7 @@ import { pathToFileURL } from 'url';
 import { readFileSync } from 'node:fs';
 import { LEVELS, T } from '../src/level.js';
 import { runsOf as runsOfL, floating, DECK_W, REACH } from '../src/demo-supports.js';
+import { findSlots, hovers, slotAt } from '../src/demo-slots.js';
 
 export const DEMO = ['wood', 'hornetsnest', 'marsh', 'fenroad', 'stockade', 'spore', 'rootway', 'underleaf', 'palisadewood', 'kings', 'burning', 'arena_yard'];
 /* id -> [{ x0, x1, y, why }]: runs that float on purpose, each with a reason a player can read on screen. The ratchet is the length of the list. */
@@ -29,6 +30,17 @@ export const ALLOW = {
   burning: [{ x0: 340, x1: 341, y: 16, why: BARN }, { x0: 343, x1: 357, y: 16, why: BARN }, { x0: 359, x1: 375, y: 16, why: BARN }, { x0: 377, x1: 380, y: 16, why: BARN },
     { x0: 327, x1: 357, y: 20, why: BARN }, { x0: 359, x1: 393, y: 20, why: BARN }],
 };
+
+/* HOVER (claude/floatfix2, Daniel's photo of the Royal Road's stump): solid stone with only open void under it all the way to the map's bottom edge (a block bridging over a dip) must either sit
+   over a backed slot (src/demo-slots.js paints the masonry behind a roofed dip, so the sky is not seen through the terrain) or be allowed here with the drawn reason a player can read. A group = a run of
+   columns at one row. WINDOW: every roofed slot (1-4 wide, 3+ tall, stone either side, open to the map edge) must be backed (L.demoSlots). */
+export const HOVER_ALLOW = { fenroad: [{ x0: 195, x1: 200, y: 22, why: 'a timber trestle road over the water: the braced piles (drawn in the water by fen_road_art) stand under it, the tiles are the deck boards' }] };
+export function hoverGroups(L) {
+  const by = new Map(); for (const h of hovers(L, T)) { if (slotAt(L, h.x, h.y + 1)) continue; (by.get(h.y) || by.set(h.y, []).get(h.y)).push(h.x); }
+  const out = []; for (const [y, xs] of by) { xs.sort((a, b) => a - b); let cur = null; for (const x of xs) { if (cur && x === cur.x1 + 1) cur.x1 = x; else out.push(cur = { x0: x, x1: x, y }); } }
+  return out;
+}
+export function windowFindings(L) { const have = L.demoSlots || []; return findSlots(L, T).filter(s => !have.some(h => h.x0 === s.x0 && h.x1 === s.x1 && h.y0 === s.y0)); }
 
 export const runsOf = L => runsOfL(L, T);
 
@@ -63,7 +75,7 @@ export function levels(ids) { return DEMO.filter(id => !ids.length || ids.includ
 
 function main() {
   const ids = process.argv.slice(2), list = ids.length > 0;
-  let bad = 0; const rows = [];
+  let bad = 0, nSlots = 0, nHover = 0, nHoverAllowed = 0; const rows = [];
   for (const { id, lv } of levels(ids)) {
     if (!lv) { console.log('  ' + id + ': not a level'); bad++; continue; }
     const L = lv.build(), f = findings(L), allow = ALLOW[id] || [];
@@ -73,6 +85,13 @@ function main() {
     for (const d of dc.dropped) { console.log('  ' + id.padEnd(13) + 'DROPPED ' + d + ' (the engine leaves it out: it never draws)'); bad++; }
     if (dc.moved.length !== sd[0]) { console.log('  ' + id.padEnd(13) + 'SET DOWN ' + dc.moved.length + ' prop(s), ratchet ' + sd[0] + (dc.moved.length > sd[0] ? ': a prop is placed off its floor - put it on the floor in the data' : ': fewer now - lower SET_DOWN') + ' [' + dc.moved.join(' ') + ']'); bad++; }
     else if (list && dc.moved.length) console.log('  ' + id.padEnd(13) + 'set down (allowed, ' + sd[1].slice(0, 40) + '...): ' + dc.moved.join(' '));
+    const win = windowFindings(L), hv = hoverGroups(L), hAllow = HOVER_ALLOW[id] || [];
+    const hLeft = hv.filter(h => !hAllow.some(a => a.y === h.y && h.x0 <= a.x1 && h.x1 >= a.x0)), hStale = hAllow.filter(a => !hv.some(h => h.y === a.y && h.x0 <= a.x1 && h.x1 >= a.x0));
+    for (const w of win) { console.log('  ' + id.padEnd(13) + 'WINDOW @' + w.x0 + '-' + w.x1 + ',' + w.y0 + '-' + w.y1 + ' a roofed dip open to the map edge shows the sky through the terrain: it has no masonry behind it'); bad++; }
+    for (const h of hLeft) { console.log('  ' + id.padEnd(13) + 'HOVER @' + h.x0 + '-' + h.x1 + ',' + h.y + ' stone over open void to the map edge, not over a backed slot'); bad++; }
+    for (const a of hStale) { console.log('  ' + id.padEnd(13) + 'STALE hover allowance @' + a.x0 + '-' + a.x1 + ',' + a.y + ': it is held now - remove the entry'); bad++; }
+    for (const a of hAllow) if (!a.why || a.why.length < 12) { console.log('  ' + id + ': hover allowance has no readable reason'); bad++; }
+    nSlots += (L.demoSlots || []).length; nHover += hv.length; nHoverAllowed += hv.length - hLeft.length;
     rows.push([id, f.length, allow.length, left.length, stale.length, dc.dropped.length, dc.moved.length]);
     for (const a of allow) if (!a.why || a.why.length < 12) { console.log('  ' + id + ': allowance @' + a.x0 + '-' + a.x1 + ',' + a.y + ' has no readable reason'); bad++; }
     bad += left.length + stale.length;
@@ -83,6 +102,7 @@ function main() {
   }
   console.log('level          found  allowed  LEFT  stale  dropped  set-down');
   for (const [id, n, a, l, s, d, m] of rows) console.log(id.padEnd(14) + String(n).padStart(5) + String(a).padStart(9) + String(l).padStart(6) + String(s).padStart(7) + String(d).padStart(9) + String(m).padStart(10));
+  console.log('windows backed ' + nSlots + ' (ratchet: every roofed dip has masonry behind it), hover groups ' + nHover + ' (allowed ' + nHoverAllowed + ', the rest sit over a backed slot)');
   console.log(bad ? 'demo-floats: ' + bad + ' floating run(s) / stale entries' : 'ok  demo-floats: every deck in the 12 demo levels is held (or allowed with a reason) and no decoration is silently dropped');
   process.exit(bad ? 1 : 0);
 }

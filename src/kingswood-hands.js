@@ -167,7 +167,8 @@ export function makeKingswoodHands(ctx) {
       if (Math.max(px, ccx, lxs) < -80 || Math.min(px, ccx, lxs) > VW + 80) continue;
       const up = h.state === 'hang';
       /* EVERY PULLEY HANGS FROM A BOUGH */
-      KP.drawBough(g, px, py, ((hash(d.id) & 1) ? 1 : -1), hash(d.id) % 997, time); KP.drawPulley(g, px, py, time);
+      { const sd = (hash(d.id) & 1) ? 1 : -1, sg = hash(d.id) % 997, br = KP.boughRun(py, sd, sg), tcol = Math.floor((px + br.run + cx) / TS); let ty = Math.floor((py + cy) / TS) + 1; while (ty < lv.H && ty < d.top + 22 && !ctx.solidAt(tcol, ty)) ty++;
+        KP.drawBough(g, px, py, sd, sg, time, ctx.solidAt(tcol, ty) ? R(ty * TS - cy) + 1 : null); }   /* (claude/floatfix2) the limb grows from a trunk that stands on the road */ KP.drawPulley(g, px, py, time);
       if (h.state === 'gone') { if (d.load === 'log') KP.drawSplitLog(g, lxs, ly, loadW(d), h.goneT || 0); KP.drawPeg(g, ccx, ccy, false, false, time); continue; }
       KP.drawPeg(g, ccx, ccy, up, up && !d.boss && !d.locked, time);
       if (up) { KP.ropeLine(g, px, py + 3, ccx, ccy - 13, 3);
