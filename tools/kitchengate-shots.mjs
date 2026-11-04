@@ -35,6 +35,8 @@ const SHOTS = [
   ['gb-bellTell', 0, 0, gb('bellTell', 0.6, "S.ph=2;")], ['gb-bell', 0, 0, gb('bell', 0.3, "S.ph=2;S.rush=5;")],
   ['gb-grabTell', 0, 0, gb('grabTell', 0.5)], ['gb-grab', 0, 0, gb('grab', 0.28, "b.handX=b.x-250;")],
   ['gb-eat', 0, 0, gb('eat', 0.4, "b.eating={kind:'dish'};")], ['gb-gulp', 0, 0, gb('gulp', 0.3, "b.eating={kind:'bomb'};")],
+  ['gh-arena', 0, 0, gb('sit', 1, "BK.tp("+oldCol(396)+",21);")],
+  ['gh-hook-sweep', 0, 0, gb('sweepTell', 0.5, "{const RB=S.G.rails.find(z=>z.platter);if(S.G.plats[2]){BK.P.x=RB.x0+40;BK.P.y=RB.y0+RB.slope*40+12;BK.P.zip=RB;S.sweeps.push({x:S.G.belt.x1-90,key:'s',dmg:1});}else{BK.tp("+oldCol(397)+",20);S.sweeps.push({x:S.G.belt.x1-90,key:'s',dmg:1});}}")],
   ['gb-stun', 0, 0, gb('stun', 3)], ['gb-hot', 0, 0, gb('hot', 3)], ['gb-ward', 0, 0, gb('recover', 0.4, "S.ward=2;")],
 ].map(s => s[1] ? [s[0], oldCol(s[1]), s[2], s[3]] : s);
 /* (claude/kitchengate3) THE HANGING LARDER and THE CARVERY, in their own (real) columns: the rooms, a hop in the air, the haul line ridden, the carving line, the flue's glow and flame, the door */
