@@ -85,7 +85,7 @@ ok(hands.length > 0, 'src/gqueen-hands.js exists');
   ok(/\.hp\s*=\s*[^;]*maxHp/.test(sp) && /\.st\s*=/.test(sp) && /flaskMax/.test(sp), 'the flee FULLY HEALS: hp, stamina and flasks (SV.flaskMax)');
   ok(/persist\s*=/.test(handsCode), 'the escape persists across a death (persist, as King Gorm)'); }
 { const sg = /stunGuard:\s*([0-9.]+)/.exec(hands); ok(!!sg && +sg[1] >= 1.0, 'the stun guard is >= 1.0 s (' + (sg ? sg[1] : 'missing') + ')'); }
-for (const f of ['gqPillar', 'drawQPillar', 'gqPillarsStand', 'gqChip', 'gqShatter', 'drawGqPlate', 'gqChandsHang']) ok(!new RegExp('function ' + f + '\\b').test(main), 'the ' + f + ' machinery is gone from main.js');
+for (const f of ['gqPillar', 'drawQPillar', 'gqPillarsStand', 'gqChip', 'gqShatter', 'drawGqPlate', 'gqChandsHang']) ok(!new RegExp('function ' + f).test(main), 'the ' + f + ' machinery is gone from main.js');
 ok(!/case 'chandTell'/.test(main) && !/gqPin\(e, pr\.x, 'chandelier'/.test(main), 'the chandelier pin is gone');
 ok(/GQH\.hit|makeGQueenHands/.test(main), 'main.js wires GQH (the hands)');
 const ck = rd('tools/check.mjs');

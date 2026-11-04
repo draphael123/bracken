@@ -561,7 +561,7 @@ Object.assign(EHP, {
 Object.assign(EHP, { burieddead: 950 });   /* (claude/retune2) THE REFIT RETUNE's health, after sweep2's block so it wins (merge care: its own line) - before -> after in work/claude/lane-done/claude-retune2.md */
 EHP.king = GORM.hp1;   /* (claude/gorm2: P1 of three acts - was 1170 for the whole fight, claude/curvec4a; P2 is GORM.hp2 / hp1 of it) */
 EHP.mother = MC2K.hp;   /* (claude/sporewood2) THE MOTHER CAP 2: her bar is her own now (the heart node is gone) */
-EHP.gqueen = 3300;   /* (claude/curvec4a; claude/highcrown2: 1450 -> 3300 - B15 lets 0.4 of a blade through her plate, so she is a longer fight: 90-150 s with flasks) */
+EHP.gqueen = 2400;   /* (claude/gqueen3: 3300 -> 2400 - the HALL is bar 1 of three stages; the TOWER TOP is bar 2, GQ3.hp2 = 1600) */   /* (claude/curvec4a; claude/highcrown2: 1450 -> 3300 - B15 lets 0.4 of a blade through her plate, so she is a longer fight: 90-150 s with flasks) */
 EHP.lance = 4650;   /* (claude/lance5: 4850 -> 4650 with the storm rework - see scratch/lane-reports/lance5.md) */   /* (claude/lance4tune: 4500 -> 4850 with per-hero tuning - LANCE4.heroDmg (a hero's blows on him) and DUEL_HERO.lance (his blows on the hero): n=108 human+flasks L18 k/w/p 61% / 61% / 69% = 64%, wins 90-150 s mostly; HP alone was a cliff for the knight (4500: 83% -> 4600+: 21-38%) while pyro stayed 88%) */   /* (claude/lance4: 3000 -> 4500 - on foot with his bells and ropes the bot won 94% at 3000, 89% at 4000, 83% at 4300, 56% at 4600 (n=18 each); a first cut toward 60-70% and 90-150 s, the tune lane owns the band) */   /* (claude/stormhold3: 2800 -> 3000, the rework in band) */   /* (claude/curvec4a) */
 EHP.windcaller = 1000;   /* (claude/windcaller4, Daniel 10-26: "lower his health a little") 1300 -> 1000 (-23%): the loop (three blows, he falls) and the still-only attacks set the fight's length now. */ /* (claude/moorpyro) 1400 -> 1150: the pyromancer can open him now (fire sends his bolt home); the knight still loses most fights to his thorns. (claude/moorpass) 1150 -> 1300: the summit room pass (stone under the east ledge, his fall clear of the strip, the Last Charge pulls up at thorns) and every hero his own way to send the bolt home */
 
@@ -11774,6 +11774,7 @@ const bossTitle = b => {
   const nm = row ? row.name : 'THE ' + String(b.t || 'beast').toUpperCase();   /* never another boss's name */
   if (b.t === 'troll' && b.hill) return 'THE HILL TROLL';
   if (b.t === 'golem') return nm + (b.open > 0 ? '  STAGGERED' : b.ward > 0 ? '  WARDED' : '  STONE');
+  if (b.t === 'gqueen' && b.mode === 'stunned') return nm + '  STUNNED';
   if (b.phase >= 3 && b.t === 'gqueen') return nm + '  THE CROWN';
   return nm;
 };
@@ -22509,12 +22510,12 @@ function updateGobMage(e, dt) {
    charge any more: she HOLDS COURT, and you bring her hall down on her. Two windows: PINNED (a pillar you broke while she held court beside
    it, or her own chandelier), and in her second round HER PLATE OFF - chipped by a chandelier on her or a blow to her back while she points,
    and gone for the rest of that round once it breaks. */
-const gqOpen = e => e.mode === 'pinned' || (e.phase === 2 && !!e.plateOff);
+const gqOpen = e => e.mode === 'pinned' || e.mode === 'stunned' || e.stage === 'roof';   /* (claude/gqueen3) the grate pins her; a PARRIED crown or shard STUNS her; on the tower top she takes every blow whole */
 const GQC = { hold: 3.5, holdOff: 2.6, volley: 1.15, totter: 1.7, blows: 3, plate: 6, chandChip: 2, backChip: 1, beside: 100, reach: 150,
   ringTell: 0.9, ringHold: 3.5, ringCd: 8, ringNear: 64,   /* (claude/highcrown2) SHE RINGS HER OWN BELL: the tell, how long the grate stays down, her cooldown, how near the grate you must be */
   leapCd: 4.5, leapCdOff: 2.2, courtCd: 6, courtCdOff: 3.6, air: 0.75, airOff: 0.6, quakeR: 70 };
 let sceptres = []; // her sceptre in flight: out along the floor, back at head height
-const GQ_FRAME = { crownTell: 2, crownRain: 8, pinned: 10, gLeapTell: 6, gLeap: 11, gPerch: 3, gDropTell: 6, gDrop: 11, shadowTell: 2, shadow: 2, sleep: 0, wake: 0, court: 0, point: 1, throw: 2, topple: 10, rise: 3, stand: e => Math.abs(e.vx) > 6 ? 4 + Math.floor(e.anim * 5) % 2 : 3, slamTell: 6, slam: 7, slamRec: 7, sweepTell: 3, sweep: 8, rec: e => (e.ringRelT || 0) > time ? 16 : 8,   /* (claude/highcrown2bell) the 0.8 s after she rings: the release pose */
+const GQ_FRAME = { crownTossTell: 2, crownToss: 8, crownFetch: e => Math.abs(e.vx) > 6 ? 4 + Math.floor(e.anim * 5) % 2 : 3, stunned: 10, crownTell: 2, crownRain: 8, pinned: 10, gLeapTell: 6, gLeap: 11, gPerch: 3, gDropTell: 6, gDrop: 11, shadowTell: 2, shadow: 2, sleep: 0, wake: 0, court: 0, point: 1, throw: 2, topple: 10, rise: 3, stand: e => Math.abs(e.vx) > 6 ? 4 + Math.floor(e.anim * 5) % 2 : 3, slamTell: 6, slam: 7, slamRec: 7, sweepTell: 3, sweep: 8, rec: e => (e.ringRelT || 0) > time ? 16 : 8,   /* (claude/highcrown2bell) the 0.8 s after she rings: the release pose */
   hallLeapTell: 6, hallLeap: 11, quake: 7, chandTell: 2, ringTell: 15, decreeTell: 6, decree: 7, sceptreTell: 2, sceptreWait: 3, ceilTell: 6, ceil: 11, roofWait: 3, roof: e => Math.abs(e.vx) > 6 ? 4 + Math.floor(e.anim * 5) % 2 : 3, slateTell: 12, slate: 12, leapTell: 6, leap: 11, land: 7, struck: 13 };
 /* A CRACKED, LOAD-BEARING PILLAR (docs/briefs/queen-pillars.md). Drums of grey stone, a capital pressed up into the ceiling, a dark split zig-zagging
    down the shaft and chips out of it; the crack opens at each of a hero's blows, and after the third it rocks on its base (docs/briefs/goblin-queen-court.md).
@@ -22693,7 +22694,7 @@ function updateGQueen(e, dt) {
   const A = L.arena, hall = A.floor, roof = A.roof; gqBellFx(e, dt);
   if (e.phase > 1 && e.hp < e.maxHp * 0.15) { if (!e.enraged) { e.enraged = true; SFX.bellow(); shakeCam(8); flash = Math.max(flash, 0.25); } dt *= 1.3; if (Math.random() < dt * 30) parts.push({ x: e.x + (Math.random() - 0.5) * 30, y: e.y - 56 - Math.random() * 10, vx: 0, vy: -40, life: 0.4, max: 0.4, col: '#ff6b2c', size: 2, grav: 0, fire: true }); } // THE CROWN BURNS
   e.modeT -= dt; e.anim += dt; e.hitT = Math.max(0, e.hitT - dt);
-  e.chipCd = Math.max(0, (e.chipCd || 0) - dt); e.plateHit = Math.max(0, (e.plateHit || 0) - dt); e.shatterT = Math.max(0, (e.shatterT || 0) - dt);
+  if (GQH) GQH.tick(e, dt); e.chipCd = Math.max(0, (e.chipCd || 0) - dt); e.plateHit = Math.max(0, (e.plateHit || 0) - dt); e.shatterT = Math.max(0, (e.shatterT || 0) - dt);
   e.crownT = Math.max(0, (e.crownT ?? 5) - dt);
   if (e.enraged && e.crownT <= 0 && (e.mode === 'stand' || e.mode === 'roof')) {
     e.crownReturn = e.mode; e.mode = 'crownTell'; number(e.x, e.y-e.h-12, '!', '#ffd36b'); e.modeT = 0.85; e.crownT = 9; e.crownX = P.x;
@@ -22769,6 +22770,7 @@ function updateGQueen(e, dt) {
         const off = e.phase === 2 && e.plateOff, court = e.courtT <= 0 ? gqCourtSpot(e) : null, hop = e.phase <= 2 && e.hLeapT <= 0 && ad > (off ? 30 : 70);
         const bell = e.phase >= 2 && (e.ringT ?? 4) <= 0 ? gqBell() : null, bgx = bell ? bell.gate * TS + 8 : 0;
         if (bell && !(bell.open > 0) && Math.abs(P.x - bgx) < GQC.ringNear && Math.abs(e.x - bgx) > 50) { e.ringT = GQC.ringCd; e.mode = 'ringTell'; e.modeT = GQC.ringTell; e.ringX = bgx; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); SFX.callerChant(); bell.swingT = GQC.ringTell; }
+        else if (GQH && GQH.choose(e, ad)) { /* the crown toss / the portal cast: src/gqueen-hands.js set her mode */ }
         else if (e.phase >= 3 && (e.shadowT ?? 3) <= 0 && ad > 50) { e.shadowT = 7; e.mode = 'shadowTell'; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); e.modeT = 0.5; SFX.callerChant(); }
         else if (court) { e.courtT = off ? GQC.courtCdOff : GQC.courtCd; e.hLeapT = Math.max(e.hLeapT, 1.5); gqAim(e, court.x, court.p, true); e.mode = 'hallLeapTell'; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); e.modeT = off ? 0.5 : 0.6; SFX.charge(); }
         else if (hop) { e.hLeapT = off ? GQC.leapCdOff : GQC.leapCd; gqAim(e, gqHopX(e, off), null, false); e.mode = 'hallLeapTell'; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); e.modeT = off ? 0.5 : 0.6; SFX.charge(); }
@@ -22846,6 +22848,7 @@ function updateGQueen(e, dt) {
     case 'leapTell': e.face = Math.sign(e.tx - e.x) || e.face; if (e.modeT <= 0) { const T0 = 0.75; e.vx = (e.tx - e.x) / T0; e.vy = (e.ty - e.y) / T0 - 0.5 * 1000 * T0; e.mode = 'leap'; e.modeT = 1.6; e.airT = 0; SFX.leap(); } break;
     case 'leap': e.airT += dt; if ((e.onGround && e.airT > 0.15) || e.modeT <= 0) { e.mode = 'land'; e.modeT = 0.45; e.vx = 0; SFX.heavy(); shakeCam(5); dust(e.x, e.y, 10); if (!P.dead && ad < 46 && Math.abs(P.y - e.y) < 30) damagePlayer(e.x, DMG.gqSlam, { up: true, unblockable: true }); } break;
     case 'land': want = 0; if (e.modeT <= 0) { e.mode = 'roof'; e.modeT = 0.4; } break;
+    default: { const gw = GQH ? GQH.mode(e, dt) : undefined; if (gw !== undefined) want = gw; break; }   /* (claude/gqueen3) the crown toss, the fetch, the stun: src/gqueen-hands.js */
     case 'struck': want = 0; if (Math.random() < dt * 20) parts.push({ x: e.x + (Math.random() - 0.5) * 24, y: e.y - 40 - Math.random() * 20, vx: 0, vy: -30, life: 0.3, max: 0.3, col: '#dfe8ff', size: 1, grav: 0 }); if (e.modeT <= 0) { e.mode = 'roof'; e.modeT = 0.6; } break;
   }
   if (!physics) return;
@@ -34454,7 +34457,7 @@ function drawWorld(cx, cy, showPlayer) {
   if (L.arena && L.arena.flavour) APL.drawFlavour(g, { A: L.arena, L, boss, bossActive, cx, cy, VW, VH, time, TS, fld: FLD });   /* (claude/arenapolish) the arena's own dressing, under the veil */
   if (bossActive && L.arena && L.arena.tint && SET.tint !== 'off') { const tn = APL.tintNow(aplTint, L.arena, boss, time, { moon: FLD && FLD.moon, cq: CQH && CQH.show ? CQH.show() : null }); g.globalAlpha = tn.a * (SET.tint === 'half' ? 0.5 : 1); g.fillStyle = tn.c; g.fillRect(0, 0, VW, VH); g.globalAlpha = 1; }   /* (claude/arenapolish) the veil follows the phase (src/arena-polish.js tintNow); an arena with no tintFn / phaseTints draws its fixed tint exactly as before */
   drawEscape(cx, cy);
-  if (GMH && GMH.on()) GMH.drawWorld(g, cx, cy, time);   /* (claude/gorm2) KING GORM 2: the hall's ropes, pegs, heaps and told arrows; the burning wood; the glade's hangings */
+  if (GMH && GMH.on()) GMH.drawWorld(g, cx, cy, time); if (GQH && GQH.on()) GQH.drawWorld(g, cx, cy, time);   /* (claude/gorm2) KING GORM 2: the hall's ropes, pegs, heaps and told arrows; the burning wood; the glade's hangings */
   drawVillage(cx, cy);   /* THE BURNING VILLAGE's straw, char, doors, troughs and beams, under the flames */
   if (HUH && L.hush) HUH.drawWorld(g, cx, cy, time);   /* UNDERLEAF 2: the pots, the streets' gates, alarms and caches, the toll, the key's nail, her bell-pulls and rugs */
   if (POH && POH.on()) POH.drawWorld(g, cx, cy, time);   /* UNDERLEAF 3: her shelves and jars, the seed beds and their vines, the thorn hedges, the float wells, her cauldron */
