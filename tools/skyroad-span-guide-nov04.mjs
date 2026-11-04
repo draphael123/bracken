@@ -15,6 +15,7 @@ const hashes=()=>Object.fromEntries(walk(game+'/tools').sort().map(f=>[path.rela
 const tools=hashes();assert.equal(Object.keys(tools).length,921);
 const manifest=JSON.parse(fs.readFileSync(new URL('./skyroad-span-guide-nov04/manifest.json',import.meta.url)));
 fs.mkdirSync(OUT,{recursive:true});assert(!fs.existsSync(OUT+'/receipt.json'));
+fs.writeFileSync(OUT+'/original-tool-hashes.json',JSON.stringify(tools,null,2)+'\n');
 const r={time:new Date().toISOString(),controller:execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),proof:manifest.proof,
  status:'Running controlled Skyroad mass-span guide',rows:[],rounds:3,variants:['before','after','return'],levels:['skyroad'],loads:['first','repeat'],
  rendererMb:1536,admissionMb:4352,complete:false,adopted:false,overallWorkComplete:false,
@@ -26,7 +27,12 @@ async function rendererPids(pg){
  const ws=new WebSocket(v.webSocketDebuggerUrl);await new Promise((res,rej)=>{ws.onopen=res;ws.onerror=rej;});
  try{return await new Promise((res,rej)=>{const t=setTimeout(()=>rej(Error('Process inventory timeout')),10000);ws.onmessage=e=>{const v=JSON.parse(e.data);if(v.id===1){clearTimeout(t);v.error?rej(Error(v.error.message)):res(v.result.processInfo.filter(p=>p.type==='renderer').map(p=>p.id));}};ws.send(JSON.stringify({id:1,method:'SystemInfo.getProcessInfo'}));});}finally{ws.close();}
 }
-const memory=pids=>Math.max(0,...pids.map(pid=>{const v=/RssAnon:\s+(\d+)/.exec(fs.readFileSync('/proc/'+pid+'/status','utf8'));assert(v);return Math.round(+v[1]/1024);}));
+async function memory(pg){
+ const pids=await rendererPids(pg),live=[],departed=[];
+ for(const pid of pids){try{const raw=fs.readFileSync('/proc/'+pid+'/status','utf8'),match=/RssAnon:\s+(\d+)/.exec(raw);assert(match,'Renderer memory field missing');live.push({pid,rendererMb:Math.round(+match[1]/1024)});}catch(error){if(error.code==='ENOENT')departed.push(pid);else throw error;}}
+ assert(live.length>0,'At least one live owned renderer measurement required; never replace missing memory with zero');
+ return {rendererMb:Math.max(...live.map(x=>x.rendererMb)),live,departed};
+}
 save();
 try{
  for(let round=1;round<=3;round++)for(const variant of r.variants){
@@ -39,7 +45,7 @@ try{
    await pg.evalp('('+installLabRenderClock.toString()+')(BK)');
    await pg.evalp("(()=>{BK.manualSimulation=true;BK.setHero('knight');BK.reset({fresh:true});let seed=1919,rng=0;Math.random=()=>{rng++;seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};window.__spanRng=()=>({rng,seed});})()");
    for(const load of r.loads){
-    const memoryBeforeMb=memory(pids);
+    const memoryBeforeSnapshot=await memory(pg),memoryBeforeMb=memoryBeforeSnapshot.rendererMb;
     const row=await pg.evalp(`(async()=>{
      const {LEVELS}=await import('/src/level.js');const i=LEVELS.findIndex(x=>x.id==='skyroad');if(i<0)throw Error('Original Skyroad missing');
      const helper=${variant==='after'}?await import('/src/skyroad-opaque-rows.js'):null;
@@ -49,7 +55,8 @@ try{
      return {loadMs,firstFrameMs,readyMs:loadMs+firstFrameMs,activation:helper?Object.fromEntries(Object.keys(after).map(k=>[k,after[k]-prior[k]])):null,
       exact:{...__spanRng(),time:BK.time,p:['x','y','vx','vy','hp','st','dead','ground','face'].map(k=>BK.P[k]),enemies:BK.enemies().map(e=>[e.t,e.x,e.y,e.hp,e.alive,e.mode,e.modeT]),frame:await hash(BK.view.buf),display:await hash(document.getElementById('c'))}};
     })()`,180000);
-    r.rows.push({round,variant,load,admission,memoryBeforeMb,memoryAfterMb:memory(pids),freshStartupReadyMs:pg.freshStartupReadyMs,...row});save();
+    const memoryAfterSnapshot=await memory(pg);
+    r.rows.push({round,variant,load,admission,memoryBeforeMb,memoryAfterMb:memoryAfterSnapshot.rendererMb,memoryBeforeSnapshot,memoryAfterSnapshot,freshStartupReadyMs:pg.freshStartupReadyMs,...row});save();
    }
    assert.deepEqual(pg.errors,[]);assert.deepEqual(pg.paletteErrors,[]);
    assert(pg.paletteServed.includes('/src/main.js')&&pg.paletteServed.includes('/src/puppeteer-hands.js'));
