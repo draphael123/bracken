@@ -259,7 +259,7 @@ import { ascentStep as chase3AscentStep, ascentLeg as chase3AscentLeg, ascentBan
 import { supportsUpdate, supportsReset, drawSupports } from './tower-supports.js';
 import { drawActs as drawMageActs } from './archmage-acts.js';   /* (claude/archmage3) THE UNDEAD ARCHMAGE's ward, and his phase changes, drawn */   /* THE SPIRAL STAIR: the Falling Tower's chase up to the Undead Archmage's carpet (Daniel, 2026-09-29) */
 import { villageLandmarks, woodLandmarks } from './landmarks.js';
-import { initAudio, SFX, music, ambient, ready as audioReady, setVolume, setSfxFiles, setVoices, setMusicVolume, SFX_NAMES, MUSIC_NAMES, MUSIC_CREDITS, MUSIC_CREDITS_ROW, AMBIENT_NAMES, setHeroVoice, emitAt, emitNow, debugAudio, setUiVolume, setReverb, setAmbientVolume, setHeardHook } from './audio.js';
+import { hasTrackFile, initAudio, SFX, music, ambient, ready as audioReady, setVolume, setSfxFiles, setVoices, setMusicVolume, SFX_NAMES, MUSIC_NAMES, MUSIC_CREDITS, MUSIC_CREDITS_ROW, AMBIENT_NAMES, setHeroVoice, emitAt, emitNow, debugAudio, setUiVolume, setReverb, setAmbientVolume, setHeardHook } from './audio.js';
 import { SHOP_START, tabIndex as storeTabIndex, stepTab as stepStoreTab, refusal as storeRefusalOf, mayBuy, lockOf, BUY_HINT, STORE_HELP } from './store.js';   /* THE ONE STORE's rules (claude/onestore) */
 import { drawAbilityPreview } from './ability-preview.js';   /* THE LIVE ABILITY PREVIEW in the skills store (17a): pure draw, no game state */
 import { createTouch } from './touch.js'; import { interactVerb, VERB_HOOKS, ctxButton, CTX_HOOKS } from './touch-interact.js';   /* THE PHONE'S HANDS (claude/mobile): the stick, the buttons, the contextual action button, tap menus */
@@ -2175,6 +2175,7 @@ const MEDALS = { hornetsnest: [440, 630, 920],   /* (claude/hornetsnest2: +100 c
 const medalFor = (id, t) => { const m = MEDALS[id] || [300, 450, 660]; return t <= m[0] ? 3 : t <= m[1] ? 2 : t <= m[2] ? 1 : 0; };
 const MEDAL_NAME = ['', 'BRONZE', 'SILVER', 'GOLD'], MEDAL_COL = ['#5a5a5a', '#b87333', '#c9d1dc', '#ffd34a'];
 let lives = Infinity, bannerT = 0, soundI = 0, soundCat = 0;
+const soundMusic = () => DS.DEMO ? MUSIC_NAMES.filter(hasTrackFile) : MUSIC_NAMES;   /* (smallfix14) the demo's Sound Test lists only the tracks that ship in it (the itch build cuts TRACKS) */
 // WHERE THE SOUND TEST WAS OPENED FROM (Daniel, 2026-09-27): a main-menu entry point straight off the title, next to
 // the existing one inside Settings. Back ('pause') has to land wherever it was opened - the title screen itself for
 // the new entry, the Settings list (as it always has) for the old one - so this remembers which door it came in.
@@ -32549,7 +32550,7 @@ function update(dt) {
     if (pausePress) { state = 'title'; SFX.menuClose(); }
     return; }
   if (state === 'soundtest') {
-    const cats = [SFX_NAMES(), MUSIC_NAMES, AMBIENT_NAMES]; const list = cats[soundCat];
+    const cats = [SFX_NAMES(), soundMusic(), AMBIENT_NAMES]; const list = cats[soundCat];
     if (leftPress) { soundCat = (soundCat + 2) % 3; soundI = 0; SFX.ui(); }
     if (rightPress) { soundCat = (soundCat + 1) % 3; soundI = 0; SFX.ui(); }
     if (upPress) { soundI = (soundI + list.length - 1) % list.length; SFX.ui(); }
@@ -35980,7 +35981,7 @@ function drawSoundTest() {
   g.fillStyle = 'rgba(10,14,12,0.75)'; g.fillRect(0, 0, VW, VH);
   const x = 24, y = 6, w = VW - 48, h = VH - 12; panel(x, y, w, h, UI.border, 'iron');
   text('SOUND TEST', VW / 2, y + 6, UI.title, 'center', TYPE.head);
-  const cats = ['EFFECTS', 'MUSIC', 'AMBIENCE'], lists = [SFX_NAMES(), MUSIC_NAMES, AMBIENT_NAMES], list = lists[soundCat];
+  const cats = ['EFFECTS', 'MUSIC', 'AMBIENCE'], lists = [SFX_NAMES(), soundMusic(), AMBIENT_NAMES], list = lists[soundCat];
   cats.forEach((c, i) => { const sel = i === soundCat; text((sel ? '< ' : '') + c + (sel ? ' >' : ''), x + w / 2 + (i - 1) * 84, y + 18, sel ? '#8fd160' : UI.dim, 'center'); });
   /* MUSIC keeps three rows spare at the foot of its list: one gap, then a row of its own for the credit line below
      (a full width to itself - no need to fight the page indicator for room), before the same two footer lines every

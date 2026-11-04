@@ -591,6 +591,7 @@ const trackWarned = new Set(), trackFailed = {}, trackTries = {};
 export const MUSIC_RETRY = { ms: 4000, max: 10, timeoutMs: 20000 };
 const MUSIC_SYNTH_ONLY = new Set(['waymeet', 'greenteeth']);   /* played by the step synth with no file (schedule below) */
 /* does music.play(name) know this name? a track with a file, a boss synth voicing, a listed song or one of the two town synths */
+export const hasTrackFile = name => !!TRACKS[name];   /* (smallfix14) the demo build cuts TRACKS to the shipped files: the Sound Test lists only these in the demo */
 export const musicKnown = name => !!name && (!!TRACKS[name] || !!bossSynthOf(name) || MUSIC_SYNTH_ONLY.has(name) || MUSIC_NAMES.includes(name));
 function loadTrack(name) {
   if (!ac || !TRACKS[name] || trackBuf[name] || trackPending[name]) return;
