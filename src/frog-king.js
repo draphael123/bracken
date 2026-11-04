@@ -27,7 +27,7 @@
 import * as M2A from './redraw/marsh2_art.js';
 
 export const FK = {
-  hp: 650,                         /* (claude/frogking3, Daniel 11-01: "way too much health" - the Hornet Queen before him is 430) 1500 -> 650: a second boss is a step up, not 3.5x */
+  hp: 900,                         /* (claude/frogking3, Daniel 11-01: "way too much health" - the Hornet Queen before him is 430) 1500 -> 650: a second boss is a step up, not 3.5x */
   p2At: 0.5,                       /* HIS POND STIRS */
   drainAt: -1,                     /* (claude/firsthour's plug drain is retired: the court is open water from the start) */
   quota: [0.10, 0.10],             /* the share of him one royal pad is worth before he leaps on, per phase */

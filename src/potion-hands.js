@@ -21,7 +21,7 @@ import * as CTW from './carry-throw.js';
 import * as UW from './redraw/underleaf3_world.js'; import * as UG from './redraw/underleaf3_gran.js'; import * as UB from './redraw/underleaf3_backdrop.js'; import * as UD from './redraw/underleaf3_dress.js'; import * as UT from './redraw/underleaf3_tiles.js';   /* (claude/underleafart) her jars, shelves, beds, hedges, wells, bubbles, marks and cauldron, drawn */
 
 export const JAR = { brew: 0.8, burnR: 40, bedR: 30, snare: 1.6, snareR: 28, hover: 2.4, rise: 92, riseMax: 7 * 16, foeFloat: 2.6, foeRise: 34, bubbleR: 13, fireLife: 2.6, hedgeBurn: 0.45, coatR: 34 };
-export const GM = { hp: 1600, ward: 0.4, openMul: 2, float: 3.2, open1: 3.2, open2: 3.2, purse: 0.11, after: 3, p2: 2 / 3, p3: 1 / 3,
+export const GM = { hp: 1500, ward: 0.4, openMul: 2, float: 3.2, open1: 4.0, open2: 4.0, purse: 0.14, after: 3, p2: 2 / 3, p3: 1 / 3,
   brood: 2, broodFirst: 6, broodCd: 14, broodHp: 1, broodBite: 0.6, broodTell: 1.0,
   walk: 34, walk2: 46, walk3: 40, sweepAt: 48, sweepCd: 2.6, sweepTell: 0.55, lashAt: 96, lashCd: 4.5, lashTell: 0.7,
   fireCd: 4.8, fireTell: 0.85, fireN: 2, fireR: 20, fireFly: 0.9, trapCd: 5.5, trapTell: 0.8, trapSpd: 38, trapLife: 4.5, trapLift: 1.1, trapRise: 34, trapR: 11,
