@@ -650,17 +650,65 @@
   "lostPct": 124
  },
  "kitchengate": {
-  "hash": "69431e8dfcec",
+  "hash": "bcbe3ce05dd0",
   "hero": "knight",
   "steps": 30000,
-  "runs": 3,
-  "hits": 45,
-  "deaths": 2,
-  "kills": 34,
-  "lifts": 66,
+  "runs": 12,
+  "hits": 85,
+  "deaths": 4,
+  "kills": 74,
+  "lifts": 124,
   "walked": 100,
   "bare": true,
-  "lostPct": 211
+  "seed": [
+   1,
+   2
+  ],
+  "lostPct": 169,
+  "lostRuns": [
+   243,
+   133,
+   208,
+   130,
+   137,
+   147,
+   163,
+   218,
+   129,
+   188,
+   163,
+   165
+  ],
+  "lostSd": 37.9,
+  "lostSe": 10.9,
+  "deathsRuns": [
+   1,
+   0,
+   0,
+   0,
+   1,
+   1,
+   1,
+   1,
+   0,
+   1,
+   1,
+   1
+  ],
+  "hitsRuns": [
+   18,
+   12,
+   16,
+   13,
+   12,
+   12,
+   13,
+   17,
+   13,
+   15,
+   14,
+   15
+  ]
  },
  "rookery": {
   "hash": "5d6586808301",
