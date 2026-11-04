@@ -11764,7 +11764,7 @@ const rushUnlocked = () => godMode() || !!q.get('rush') || !!((PROG.crown || {})
    level (6 rows), so the sub-list never changes its shape. titleOpts is true while the sub-list is up; every tool that wants SETTINGS / SOUND TEST / CONTROLS goes through OPTIONS. */
 let titleOpts = false;
 const titleTop = () => { const base = readSlot(slot) ? ['CONTINUE', 'CHOOSE A SAVE'] : ['NEW GAME', 'CHOOSE A SAVE'];
-  return base.concat(['LOCAL CO-OP', 'ONLINE CO-OP'], rushUnlocked() && !MODES_PARKED && !DS.DEMO ? ['BOSS RUSH'] : [], ['ARENA YARD', 'BOSS SELECT'], MODES_PARKED || DS.DEMO ? [] : ['THE EDITOR'], ["WHAT'S NEW", 'OPTIONS', 'GIVE FEEDBACK', 'CREDITS']); };
+  return base.concat(['LOCAL CO-OP', 'ONLINE CO-OP'], rushUnlocked() && !MODES_PARKED && !DS.DEMO ? ['BOSS RUSH'] : [], ['ARENA YARD', 'BOSS SELECT'], MODES_PARKED || DS.DEMO ? [] : ['THE EDITOR'], touchOn ? ["WHAT'S NEW", 'OPTIONS'] : ["WHAT'S NEW", 'OPTIONS', 'GIVE FEEDBACK', 'CREDITS']); };   /* (claude/touchrows) ON TOUCH GIVE FEEDBACK and CREDITS live under OPTIONS: two fewer rows for a thumb */
 /* REPORT A BUG (pause menu and title OPTIONS): the facts the code carries - never the save (src/bug-report.js). The board is DOM (src/bug-report-ui.js). */
 function bugSnapshot() {
   const up = WN.getUpdates()[0] || {}, inLv = !!(L && LEVELS[levelIndex]) && (state === 'play' || state === 'talk' || state === 'win' || state === 'gameover' || state === 'victory' || (state === 'menu' && menuFrom === 'play')), lv = inLv ? LEVELS[levelIndex] : null, S = {};
@@ -11791,7 +11791,17 @@ function demoEndOpen() {
     map: () => { DEND.close(); state = 'map'; gotoLevelNode(levelIndex); saveProgress(); SFX.menuClose(); },
     menu: () => { DEND.close(); setView('normal'); state = 'title'; music.play(menuTrack()); SFX.uiSel(); } });
 }
-const titleItems = () => titleOpts ? ['SETTINGS', 'SOUND TEST', 'CONTROLS', 'REPORT A BUG', 'BACK'] : titleTop();
+const titleItems = () => titleOpts ? ['SETTINGS', 'SOUND TEST', 'CONTROLS', 'REPORT A BUG'].concat(touchOn ? ['GIVE FEEDBACK', 'CREDITS'] : [], ['BACK']) : titleTop();
+/* (claude/touchrows, Daniel 11-04) THE TOUCH TITLE IS A PAGED LIST: every row is >= 44 CSS px tall (a thumb), so only a few fit the 180 px picture; the rest are a page away (an UP row and a DOWN row,
+   drawn as rows too, 44 px each). titleWin turns (item count, slot count, the selected item, the first shown item) into what each slot holds. Keys and pads still walk the whole list: the window follows. */
+let titleOff = 0;
+function titleSlots() { const css = Math.max(0.5, S / (DPR || 1)); let rh = Math.max(11, Math.ceil(44 / css)); const room = Math.max(40, VH - 54); let n = Math.floor(room / rh); if (n < 3) { n = 3; rh = Math.floor(room / 3); } return { rh, n: Math.min(12, n) }; }
+function titleWin(len, slots, sel, off) {
+  const lay = o => { const up = o > 0 ? 1 : 0, left = len - o; if (left <= slots - up) return { up, down: 0, c: left }; return { up, down: 1, c: slots - up - 1 }; };
+  off = Math.max(0, Math.min(len - 1, off));
+  for (let k = 0; k < 40; k++) { const l = lay(off); if (sel < off) off = sel; else if (sel >= off + l.c) off = sel - l.c + 1; else break; }
+  const l = lay(off), rows = []; if (l.up) rows.push({ arrow: -1 }); for (let i = 0; i < l.c; i++) rows.push({ idx: off + i }); if (l.down) rows.push({ arrow: 1 });
+  return { off, c: l.c, rows }; }
 /* THE EDITOR AND THE BOSS RUSH ARE PARKED, NOT DELETED (Daniel, 2026-09-23): "we need to work on the core game before working on
    these modes." They leave the title menu and every line of their code stays. `?modes=1` brings both back for testing. Do not add
    new bosses, tiles or terrain to either while this is true. */
@@ -36960,14 +36970,14 @@ function render() {
     const since = pressCard ? 0 : Math.max(0, time - titleSince), e = easeOutBack(Math.min(1, since / 0.7));
     if (pressAt !== null && !pressCard && time - pressAt < 0.4) TC.drawPressText(g, text, UI, time, VW, VH, Math.max(0, 1 - (time - pressAt) / 0.4), touchOn);
     const sway = Math.sin(time * 0.9) * 1.2, ly = Math.round(2 - (1 - e) * 70 + sway);
-    const lw = 192, lh = 38, tcx = Math.round(VW / 2), lx = Math.round(tcx - lw / 2);
+    const lw = 192, lh = 38, lx = touchOn ? 4 : Math.round(Math.round(VW / 2) - lw / 2), tcx = lx + (lw >> 1);   /* (claude/touchrows) on touch the tall board covers the sign right of x178: the sign stands left of it so the whole tagline shows */
     g.drawImage(PROP.plank, 0, 0, PROP.plank.width, PROP.plank.height, lx, ly, lw, lh);
     text('THORNROAD', tcx, ly + 4, UI.gold, 'center', 22);   /* (one call: the face draws its own shadow, and a second THORNROAD 2px off it is what textfit calls a collision) */
     // a glint runs along the letters every few seconds
     { const k = ((time - titleSince) % 5.5) / 0.7; if (k > 0 && k < 1) { g.save(); g.beginPath(); g.rect(lx + 6, ly + 3, lw - 12, lh - 6); g.clip(); const sx = lx - 20 + k * (lw + 40); g.globalCompositeOperation = 'lighter'; g.globalAlpha = 0.35; g.fillStyle = '#fff6c8'; g.beginPath(); g.moveTo(sx, ly); g.lineTo(sx + 10, ly); g.lineTo(sx - 4, ly + lh); g.lineTo(sx - 14, ly + lh); g.closePath(); g.fill(); g.restore(); } }
     { const a = Math.max(0, Math.min(1, (since - 0.5) / 0.4)); g.globalAlpha = a; g.fillStyle = 'rgba(20,12,8,0.6)'; g.fillRect(lx + 10, ly + 25, lw - 20, 10); text('a road, a crown, a mountain', tcx, ly + 27, UI.text, 'center', 6); g.globalAlpha = 1; }
     // the menu: a board on two posts, standing on the road to the right of the camp
-    { const items = titleItems(), n = Math.max(items.length, titleTop().length), RH = Math.min(11, Math.floor(96 / n)), mw = 126, mx = VW - mw - 16, mh = n * RH + 20, my = VH - 22 - 8 - mh;
+    { const items = titleItems(), TS_ = touchOn ? titleSlots() : null, n = TS_ ? Math.min(TS_.n, Math.max(items.length, titleTop().length, 7)) : Math.max(items.length, titleTop().length), RH = TS_ ? TS_.rh : Math.min(11, Math.floor(96 / n)), mw = 126, mx = VW - mw - 16, mh = n * RH + 20, my = VH - 22 - 8 - mh;
       const slide = easeOutBack(Math.min(1, Math.max(0, (since - 0.25) / 0.5))); const ox = Math.round((1 - slide) * 160);   /* (160: at 140 a sliver of the board showed at the right edge while the press card was up) */
       const bx = mx + ox, by0 = my + mh;
       for (const px of [bx + 12, bx + mw - 17]) { const ph = VH - 22 - by0 + 2;
@@ -36976,9 +36986,17 @@ function render() {
       g.fillStyle = '#2a1a0e'; g.fillRect(bx, my, mw, mh); g.fillStyle = '#5c3a1d'; g.fillRect(bx + 1, my + 1, mw - 2, mh - 2); g.fillStyle = '#8a6a3a'; g.fillRect(bx + 1, my + 1, mw - 2, 1);
       g.fillStyle = '#14101e'; g.fillRect(bx + 3, my + 3, mw - 6, mh - 6); g.fillStyle = '#2a1a0e'; g.fillRect(bx + 3, my + 3, mw - 6, 1); g.fillRect(bx + 3, my + 3, 1, mh - 6);
       g.fillStyle = '#c9b27c'; for (const [nx, ny] of [[2, 2], [mw - 3, 2], [2, mh - 3], [mw - 3, mh - 3]]) g.fillRect(bx + nx, my + ny, 1, 1);   /* the four nails */
-      const y0 = my + 7, want = y0 + titleI * RH; titleBarY = titleBarY === null ? want : titleBarY + (want - titleBarY) * 0.3;
-      g.fillStyle = 'rgba(143,209,96,0.16)'; g.fillRect(bx + 5, Math.round(titleBarY) - 1, mw - 10, RH - 1); g.fillStyle = UI.sel; g.fillRect(bx + 5, Math.round(titleBarY) - 1, 2, RH - 1);
-      items.forEach((k, i) => { TCH.hit(bx + 4, y0 + i * RH - 1, mw - 8, RH, () => { titleI = i; confirmPress = true; initAudio(); }); const sel = i === titleI, yy = y0 + i * RH, a = Math.max(0, Math.min(1, (since - 0.45 - i * 0.07) / 0.2));
+      const TW = TS_ ? titleWin(items.length, n, titleI, titleOff) : null; if (TW) titleOff = TW.off;
+      const rows = TW ? TW.rows : items.map((k, i) => ({ idx: i })), slotOf = rows.findIndex(r => r.idx === titleI), TOFF = TS_ ? Math.max(0, (RH - 8) >> 1) : 0;
+      const y0 = my + 7, want = y0 + Math.max(0, slotOf) * RH; titleBarY = titleBarY === null ? want : titleBarY + (want - titleBarY) * 0.3;
+      if (slotOf >= 0) { g.fillStyle = 'rgba(143,209,96,0.16)'; g.fillRect(bx + 5, Math.round(titleBarY) - 1, mw - 10, RH - 1); g.fillStyle = UI.sel; g.fillRect(bx + 5, Math.round(titleBarY) - 1, 2, RH - 1); }
+      rows.forEach((row, p) => { if (row.arrow) { const ay = y0 + p * RH, up = row.arrow < 0, mid = bx + (mw >> 1);   /* the page rows: a triangle and MORE, a whole thumb tall */
+          TCH.hit(bx + 4, ay - 1, mw - 8, RH, () => { const step = Math.max(1, TW.c); titleOff = Math.max(0, titleOff + row.arrow * step); if (titleOff < 2) titleOff = 0; titleI = Math.min(items.length - 1, titleOff); SFX.ui(); initAudio(); });
+          g.globalAlpha = 0.9; g.fillStyle = 'rgba(143,209,96,0.10)'; g.fillRect(bx + 5, ay - 1, mw - 10, RH - 1); g.fillStyle = UI.sel; const ty = ay + (RH >> 1);
+          for (let r = 0; r < 4; r++) g.fillRect(mid - 24 + r, ty + (up ? 2 - r : r - 2), 7 - 2 * r, 1);
+          text(up ? 'PREVIOUS' : 'MORE', mid - 14, ay + TOFF, UI.sel, 'left', 6); g.globalAlpha = 1; return; }
+        const i = row.idx, k = items[i];
+        TCH.hit(bx + 4, y0 + p * RH - 1, mw - 8, RH, () => { titleI = i; confirmPress = true; initAudio(); }); const sel = i === titleI, yy = y0 + p * RH + TOFF, a = Math.max(0, Math.min(1, (since - 0.45 - i * 0.07) / 0.2));
         g.globalAlpha = a; text(k, bx + 17 + (sel ? 2 : 0), yy, sel ? UI.title : UI.dim, 'left'); if (k === "WHAT'S NEW" && WN.newestDate()) { text(WN.shortDate(WN.newestDate()), bx + mw - 19, yy + 1, sel ? UI.gold : UI.dim, 'right', 6); if (WN.hasNew()) { g.fillStyle = SET.reduceMotion || Math.floor(time * 2) % 2 ? '#ff9a5c' : '#ffd36b'; g.fillRect(bx + mw - 14, yy + 1, 4, 4); } } g.globalAlpha = 1;
         if (sel) { const bob = Math.round(Math.sin(time * 6) * 1.5), cxs = bx + 9 + bob; g.fillStyle = '#c9d1dc'; g.fillRect(cxs, yy + 3, 5, 1); g.fillStyle = '#e0b040'; g.fillRect(cxs + 5, yy + 1, 1, 5); g.fillStyle = '#7a4a2a'; g.fillRect(cxs + 6, yy + 3, 2, 1); } });
       // what waits in the save you would continue
@@ -37276,7 +37294,7 @@ window.BK = { setView: m => setView(m), env: () => ({ hurt: (e, d, x) => hurtEne
     get bestI() { return bestI; }, set bestI(v) { bestI = v; },
     get bestTab() { return bestTab; }, set bestTab(v) { bestTab = v; },
     get slotI() { return slotI; }, set slotI(v) { slotI = v; }, get opening() { return opening; }, openingStart, get pressCard() { return pressCard; }, set pressCard(v) { pressCard = !!v; if (v) pressAt = null; }, get deathRecap() { return deathRecap; }, get winPrevBest() { return winPrevBest; }, get heroPickI() { return heroPick.i; }, set heroPickI(v) { heroPick = { i: v, stage: 'pick' }; }, get heroPickStage() { return heroPick.stage; }, set heroPickStage(v) { heroPick.stage = v; }, get fixAsk() { return fixAsk; }, set fixAsk(v) { fixAsk = v; fixI = 0; }, get fixI() { return fixI; }, titleItems: () => titleItems(), titleTop: () => titleTop(), get eraseAsk() { return eraseAsk; }, set eraseAsk(v) { eraseAsk = v; eraseYes = false; },   /* (tools/textfit.mjs 'pick': every card of the hero pick, selected in turn) */
-    get titleI() { return titleI; }, set titleI(v) { titleI = v; }, titleItems: () => titleItems(), titleRegion: () => titleRegion(), titleTrack: () => titleTrack(), titleTop: () => titleTop(), get titleOpts() { return titleOpts; }, set titleOpts(v) { titleOpts = !!v; },
+    get titleI() { return titleI; }, set titleI(v) { titleI = v; }, titleItems: () => titleItems(), titleWin: () => { const it = titleItems(), ts = titleSlots(); return touchOn ? { ...titleWin(it.length, Math.min(ts.n, Math.max(it.length, titleTop().length, 7)), titleI, titleOff), rh: ts.rh, css: S / (DPR || 1) } : null; }, titleRegion: () => titleRegion(), titleTrack: () => titleTrack(), titleTop: () => titleTop(), get titleOpts() { return titleOpts; }, set titleOpts(v) { titleOpts = !!v; },
     get menuI() { return menuI; }, set menuI(v) { menuI = v; },
     get menuKind() { return menuKind; }, set menuKind(v) { menuKind = v; }, mapOpen: () => mapOpen('pause'), mapLook: (tx, ty) => { const G = mapGeom(); mapPX = tx - G.vw / 2; mapPY = ty - G.vh / 2; mapClamp(G); }, get map() { return { fog, fogW, fogH, x: mapPX, y: mapPY, geom: L ? mapGeom() : null }; }, wayTarget: () => wayTarget(), get wayLast() { return wayLast; }, set wayLast(v) { wayLast = v; }, get wayWhy() { return wayWhy; }, wayRank: (x, y) => wayRank(x, y), keyDoorsOf: () => props.filter(k => k.t === 'key' && !k.got).map(k => ({ kind: k.kind, key: [k.x, k.y], doors: keyDoors(k).map(d => [d.x, d.y]) })),
     openMenu: from => openMenu(from), pollPad: () => pollGamepad(), get settingsTab() { return settingsTab; }, set settingsTab(v) { settingsTab = v; }, menuRows: () => menuItems(), settings: () => SET, readSettings: raw => readSettings(raw),   /* (tools/settings-tabs.mjs) */
