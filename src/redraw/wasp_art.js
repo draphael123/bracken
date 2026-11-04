@@ -8,23 +8,23 @@
 // bakeWasp() / bakeHornet(ax, ay, w, h) -> { R, L, white: { R, L }, ax, ay, w, h }
 import { canvas as mkCanvas, outline as ink, flipX as flip, whiten as whit } from '../px.js';
 
-const INK = '#1a0c06', WING = ['#8ea6bf', '#d6e4f2', '#ffffff'], LEG = '#241810';
-const put = (g, c, x, y) => { g.fillStyle = c; g.fillRect(Math.round(x), Math.round(y), 1, 1); };
-const line = (g, c, x0, y0, x1, y1) => { const n = Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0), 1); for (let i = 0; i <= n; i++) put(g, c, x0 + (x1 - x0) * i / n, y0 + (y1 - y0) * i / n); };
+export const INK = '#1a0c06', WING = ['#8ea6bf', '#d6e4f2', '#ffffff'], LEG = '#241810';
+export const put = (g, c, x, y) => { g.fillStyle = c; g.fillRect(Math.round(x), Math.round(y), 1, 1); };
+export const line = (g, c, x0, y0, x1, y1) => { const n = Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0), 1); for (let i = 0; i <= n; i++) put(g, c, x0 + (x1 - x0) * i / n, y0 + (y1 - y0) * i / n); };
 /* a column run: x, from y0 to y1, shaded top (lit) -> belly (dark) by the palette [lit, mid, dark] */
-const col = (g, x, y0, y1, pal, dy = 0) => { for (let y = y0; y <= y1; y++) put(g, y === y0 && y1 - y0 > 1 ? pal[0] : y === y1 ? pal[2] : pal[1], x, y + dy); };
+export const col = (g, x, y0, y1, pal, dy = 0) => { for (let y = y0; y <= y1; y++) put(g, y === y0 && y1 - y0 > 1 ? pal[0] : y === y1 ? pal[2] : pal[1], x, y + dy); };
 /* a narrow wing: a tapered blade from (x0, y0) to (x1, y1), pale, a darker leading edge, a bright tip */
-function blade(g, x0, y0, x1, y1, wd, alpha = 1) {
+export function blade(g, x0, y0, x1, y1, wd, alpha = 1) {
   g.globalAlpha = alpha; const n = Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0), 1), nx = -(y1 - y0), ny = x1 - x0, nl = Math.hypot(nx, ny) || 1;
   for (let i = 0; i <= n; i++) { const t = i / n, w = wd * (1 - t * 0.65), cx = x0 + (x1 - x0) * t, cy = y0 + (y1 - y0) * t;
     for (let k = 0; k <= Math.round(w); k++) { const o = k - w / 2; put(g, k === 0 ? WING[0] : (t > 0.55 ? WING[2] : WING[1]), cx + nx / nl * o, cy + ny / nl * o); } }
   g.globalAlpha = 1;
 }
 /* the flicker: fore / hind wing tips relative to the shoulder, per beat; 3 = the hurt droop */
-const BEATS = [{ f: [-7, -5], h: [-4, -5], ghost: 0 }, { f: [-9, -1], h: [-7, 0], ghost: 1 }, { f: [-3, -7], h: [-6, -6], ghost: 0 }, { f: [-7, 2], h: [-5, 3], ghost: 0 }];
+export const BEATS = [{ f: [-7, -5], h: [-4, -5], ghost: 0 }, { f: [-9, -1], h: [-7, 0], ghost: 1 }, { f: [-3, -7], h: [-6, -6], ghost: 0 }, { f: [-7, 2], h: [-5, 3], ghost: 0 }];
 /* one frame: draw(g, layer) is called for 'body' then (after the ink) 'thin'; (ox, oy) is where the design's (0, 0) sits on the canvas */
-function bake(w, h, ox, oy, fns) { return fns.map(fn => { const [c, g] = mkCanvas(w, h); g.translate(ox, oy); fn(g, 'body'); g.setTransform(1, 0, 0, 1, 0, 0); ink(c, INK); g.translate(ox, oy); fn(g, 'thin'); g.setTransform(1, 0, 0, 1, 0, 0); return c; }); }
-const pack = (R, ax, ay, bw, bh) => ({ R, L: R.map(flip), white: { R: R.map(c => whit(c)), L: R.map(c => flip(whit(c))) }, ax, ay, w: bw, h: bh });
+export function bake(w, h, ox, oy, fns) { return fns.map(fn => { const [c, g] = mkCanvas(w, h); g.translate(ox, oy); fn(g, 'body'); g.setTransform(1, 0, 0, 1, 0, 0); ink(c, INK); g.translate(ox, oy); fn(g, 'thin'); g.setTransform(1, 0, 0, 1, 0, 0); return c; }); }
+export const pack = (R, ax, ay, bw, bh) => ({ R, L: R.map(flip), white: { R: R.map(c => whit(c)), L: R.map(c => flip(whit(c))) }, ax, ay, w: bw, h: bh });
 
 /* ---------------- THE WASP: 19 x 14 canvas, design offset (1, 2). Facing right: head x 13-16, neck 12, thorax 9-11, WAIST 7-8, abdomen 2-6, stinger 0-1 ---------------- */
 const WP = { Yl: '#fff0a0', Y: '#f6cf2a', Yd: '#c28f10', K: '#1e1a14', Kl: '#4c4838', Kd: '#0e0c08', S: '#f0e8d0', M: '#e0d09a' };
