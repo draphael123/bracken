@@ -9,7 +9,7 @@ import { canvas } from '../px.js';
 const memo = new Map(); const once = (k, fn) => { if (!memo.has(k)) memo.set(k, fn()); return memo.get(k); };
 const hash = (a, b) => { let h = (Math.imul(a | 0, 73856093) ^ Math.imul(b | 0, 19349663)) >>> 0; h = Math.imul(h ^ (h >>> 13), 1274126177) >>> 0; return h ^ (h >>> 16); };
 const R = (g, c, x, y, w, h) => { g.fillStyle = c; g.fillRect(Math.round(x), Math.round(y), Math.max(1, Math.round(w)), Math.max(1, Math.round(h))); };
-export const HONEY_PAL = ['#5b320a', '#905010', '#ba7020', '#e38a23', '#f6aa50', '#f8c882'];
+export const HONEY_PAL = ['#2a1408', '#4a2a0e', '#6a4014', '#8a5a1e', '#a87a34', '#c9a46a'];
 
 /* ---------------- a glob (11 x 14): a teardrop, dark rim, gold body, a white glint; stretched by speed ---------------- */
 function globSprite(stretch) { return once('glob' + stretch, () => { const [c, g] = canvas(11, 16 + stretch);
