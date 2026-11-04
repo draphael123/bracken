@@ -79,5 +79,5 @@ export function hide() { if (box) box.root.style.display = 'none'; }
 export function close() { if (box) { box.remove(); box = null; } H = null; }
 export const test = { open, close, isOpen, hide, show, step };
 export const KEEP_FILE = CFG.KEEP_FILE;
-/* THE MAP CAPTION (batch143, demoend Q4): a plate under the map's header while the demo is on - the road is longer than the demo. Pure canvas, no DOM; text/textW are main.js's own. */
-export function mapCaption(g, text, textW, VW, time) { const s = CFG.MAP_CAPTION, w = Math.ceil(textW(s, 6)) + 10; g.fillStyle = 'rgba(21,16,34,0.82)'; g.fillRect(Math.round((VW - w) / 2), 21, w, 10); g.fillStyle = 'rgba(217,194,140,0.5)'; g.fillRect(Math.round((VW - w) / 2), 31, w, 1); text(s, VW / 2, 23, Math.sin(time * 2.2) > -0.4 ? '#ffd36b' : '#c9b27c', 'center', 6); }
+/* THE MAP CAPTION (batch143, demoend Q4): a plate under the map's header while the cursor is on Kingswood (the end of the demo road) or on any shut node - the road is longer than the demo. Pure canvas, no DOM; text/textW are main.js's own. */
+export function mapCaption(g, text, textW, VW, time, nodeId, shut) { if (nodeId !== 'kings' && !shut) return; const s = CFG.MAP_CAPTION, w = Math.ceil(textW(s, 6)) + 10; g.fillStyle = 'rgba(21,16,34,0.82)'; g.fillRect(Math.round((VW - w) / 2), 21, w, 10); g.fillStyle = 'rgba(217,194,140,0.5)'; g.fillRect(Math.round((VW - w) / 2), 31, w, 1); text(s, VW / 2, 23, Math.sin(time * 2.2) > -0.4 ? '#ffd36b' : '#c9b27c', 'center', 6); }

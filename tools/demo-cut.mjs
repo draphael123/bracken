@@ -72,6 +72,13 @@ const left = uses.slice();
 for (const [re, why] of PINNED) { const k = left.findIndex(u => re.test(u.t)); assert.ok(k >= 0, 'pinned use missing: ' + why + ' | have: ' + uses.map(u => u.t).join(' || ')); left.splice(k, 1); }
 assert.equal(left.length, 0, 'an unpinned use of the demo flag in src/main.js (add it to tools/demo-cut.mjs on purpose): ' + left.map(u => 'L' + (u.i + 1) + ' ' + u.t).join(' | '));
 console.log('ok  OFF     flag off = nothing locked, untagged saves import as the same string, ' + uses.length + ' pinned uses of the flag in main.js');
+/* ---- MENUS + CAPTION (batch143, demoend Q4) ---- */
+assert.deepEqual([...F.DEMO_HEROES].sort(), ['geomancer', 'knight', 'pyro', 'ranger', 'warden'], 'the demo shows five heroes: the four free starters + the Pyromancer (her duel is in the Burning Village)');
+{ const { mapCaption } = await import('../src/demo-end.js'), { MAP_CAPTION } = await import('../src/demo-end-config.js'); const drawn = [];
+  const g = { fillStyle: '', fillRect() {} }, say = (...a) => drawn.push(a[0]), w = s => s.length * 6;
+  mapCaption(g, say, w, 320, 0, 'wood', false); assert.equal(drawn.length, 0, 'no caption on an open wood');
+  mapCaption(g, say, w, 320, 0, 'kings', false); assert.deepEqual(drawn, [MAP_CAPTION], 'the caption shows at Kingswood, the end of the demo road'); assert.equal(MAP_CAPTION, 'THE ROAD CONTINUES...'); }
+console.log('ok  MENUS   five demo heroes (pick + store rows), the map caption at Kingswood');
 /* ---- NAMES ---- */
 const NEW_FILES = ['src/demo-flag.js', 'src/demo-save.js', 'src/demo-end.js', 'src/demo-end-config.js', 'tools/demo-cut.mjs', 'tools/demo-save-carry.mjs'];
 const ADBLOCK = /(^|[^a-z])(ad|ads|adv|advert|admiral|banner|sponsor|track|tracker|tracking|analytics|beacon|pixel|promo|popup|affiliate|click|stats)([^a-z]|$)/i;
