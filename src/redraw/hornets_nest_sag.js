@@ -34,7 +34,7 @@ export function sagComb(g, c, cx, cy, time, text) {
   /* the belly: a bowed lip of paper hanging under the shelf (the tile above is the comb tile; this is the weight of it) */
   for (let i = 1; i < w - 1; i++) { const u = Math.sin(Math.PI * (i + 0.5) / w), d = Math.max(1, Math.round(depth * (0.35 + 0.65 * u)));
     for (let j = 0; j < d; j++) { const lastRow = j === d - 1, hex = ((i + (j >> 1) % 2 * 3) % 6) === 0;
-      R(g, lastRow ? COMB[0] : hex ? COMB[1] : j === 0 ? COMB[2] : (counting && k > 0.5 && j > d - 3) ? '#c8681e' : COMB[2 + (hash(i, j) % 5 === 0 ? 1 : 0)], X + i, bot + j, 1, 1); }
+      R(g, lastRow ? COMB[0] : hex ? COMB[1] : j === 0 ? COMB[2] : (counting && k > 0.5 && j > d - 3) ? '#6a4014' : COMB[2 + (hash(i, j) % 5 === 0 ? 1 : 0)], X + i, bot + j, 1, 1); }
     if (counting && d > 3 && hash(i + c.x0, 5) % 4 === 0) R(g, H[4], X + i, bot + d - 2, 1, 1); }   /* paper stretching thin and pale where it sags */
   /* strings and beads hanging off the lip; they lengthen as it sags */
   const n = Math.max(2, Math.round(w / 14));
@@ -44,10 +44,10 @@ export function sagComb(g, c, cx, cy, time, text) {
     g.globalAlpha = 0.5; for (let q = 5; q < w - 4; q += 9 + (hash(c.x0, q) % 6)) R(g, COMB[0], x + q, y + 2 + (hash(q, c.x0) % 3), 1, 3); g.globalAlpha = 1;
     return; }
   /* counting: the top glows (amber, red in the last second), paper peeling off the ends, drops pinching off the belly */
-  g.globalAlpha = 0.14 + 0.3 * k; R(g, hot ? '#ff6b6b' : '#ffb070', X, y, w, 3); g.globalAlpha = 1;
+  g.globalAlpha = 0.14 + 0.3 * k; R(g, hot ? '#ff6b6b' : '#b88a4a', X, y, w, 3); g.globalAlpha = 1;
   for (let i = 0; i < 3; i++) { const ph = (time * (0.9 + 1.8 * k) + i / 3 + c.x0 * 0.17) % 1, dx = Math.round((0.2 + 0.3 * i + (hash(c.x0, i + 8) % 20) / 100) * w), u = Math.sin(Math.PI * (dx + 0.5) / w), by = bot + Math.max(1, Math.round(depth * (0.35 + 0.65 * u))) + 4 + Math.round(k * 4);
     g.globalAlpha = 1 - ph * ph; R(g, H[3], X + dx, by + ph * 16, 2, 2 + Math.round(ph * 2)); R(g, H[5], X + dx, by + ph * 16, 1, 1); g.globalAlpha = 1; }
-  if (text) { const nn = Math.max(1, Math.ceil(c.t)), col = nn >= 3 ? '#ffd36b' : nn === 2 ? '#ff9a5c' : '#ff6b6b', pop = 1 + Math.max(0, (c.t % 1) - 0.8) * 2; text(String(nn), Math.round(x + w / 2), Math.round(y - 22 - 4 * pop), col, 'center', nn === 1 ? 16 : 12); }
+  if (text) { const nn = Math.max(1, Math.ceil(c.t)), col = nn >= 3 ? '#b8914f' : nn === 2 ? '#ff9a5c' : '#ff6b6b', pop = 1 + Math.max(0, (c.t % 1) - 0.8) * 2; text(String(nn), Math.round(x + w / 2), Math.round(y - 22 - 4 * pop), col, 'center', nn === 1 ? 16 : 12); }
 }
 
 /* ---------------- a RESIN DRIP ---------------- */
@@ -98,14 +98,14 @@ const wallPat = () => once('hivewall', () => { const [c, g] = canvas(96, 64);
     const body = (cx_, cy_, ww, hh, color) => { R(g, color, cx_ + 1, cy_, ww - 2, hh); R(g, color, cx_, cy_ + 1, ww, hh - 2); };
     body(ox + 1, oy + 1, 10, 6, '#463e32');   /* the paper wall round it */
     if (kind === 'cap') { body(ox + 2, oy + 2, 8, 4, '#8a8272'); R(g, '#a89c82', ox + 3, oy + 2, 6, 1); R(g, '#c9bfa6', ox + 3, oy + 3, 2, 1); R(g, '#5c5246', ox + 3, oy + 5, 6, 1); R(g, '#3a3228', ox + 5, oy + 3, 2, 1); }
-    else if (kind === 'resin') { body(ox + 2, oy + 2, 8, 4, '#905010'); R(g, '#ba7020', ox + 2, oy + 3, 8, 2); R(g, '#e38a23', ox + 3, oy + 3, 3, 1); R(g, '#f6aa50', ox + 3, oy + 3, 1, 1); R(g, '#5b320a', ox + 3, oy + 5, 6, 1); }
+    else if (kind === 'resin') { body(ox + 2, oy + 2, 8, 4, '#4a2a0e'); R(g, '#6a4014', ox + 2, oy + 3, 8, 2); R(g, '#8a5a1e', ox + 3, oy + 3, 3, 1); R(g, '#a87a34', ox + 3, oy + 3, 1, 1); R(g, '#2a1408', ox + 3, oy + 5, 6, 1); }
     else { body(ox + 2, oy + 2, 8, 4, '#12100c'); R(g, '#241f18', ox + 3, oy + 2, 6, 1); R(g, '#322c22', ox + 3, oy + 5, 4, 1); } }
   return c; });
 /* the whole wall of one chamber, baked ONCE (a pattern fill + a gradient every frame cost ~20 fps at a phone's 4x CPU); a frame is one blit of what is on screen. [c0, c1, r0, r1] = the chamber's columns / rows */
 const wallSprite = (c0, c1, r0, r1) => once('hivewall' + [c0, c1, r0, r1], () => { const w = (c1 - c0 + 1) * TS, h = (r1 - r0 + 1) * TS, [c, g] = canvas(w, h, true); g.imageSmoothingEnabled = false;
   const pat = g.createPattern(wallPat(), 'repeat'); pat.setTransform(new DOMMatrix().translate(-((c0 * TS) % 96), -((r0 * TS) % 64))); g.fillStyle = pat; g.fillRect(0, 0, w, h);
   /* resin-stained toward the bed (a gradient up the wall from the floor) */
-  const top = Math.max(0, h - 160), gr = g.createLinearGradient(0, top, 0, h); gr.addColorStop(0, 'rgba(186,112,32,0)'); gr.addColorStop(1, 'rgba(227,138,35,0.34)'); g.fillStyle = gr; g.fillRect(0, top, w, h - top);
+  const top = Math.max(0, h - 160), gr = g.createLinearGradient(0, top, 0, h); gr.addColorStop(0, 'rgba(60,34,10,0)'); gr.addColorStop(1, 'rgba(60,34,10,0.4)'); g.fillStyle = gr; g.fillRect(0, top, w, h - top);
   return c; });
 export function hiveWall(g, c0, c1, r0, r1, cx, cy, VW, VH) {
   const wx = c0 * TS - cx, wy = r0 * TS - cy, w = (c1 - c0 + 1) * TS, h = (r1 - r0 + 1) * TS, x0 = Math.max(0, wx), y0 = Math.max(0, wy), x1 = Math.min(VW, wx + w), y1 = Math.min(VH, wy + h); if (x1 <= x0 || y1 <= y0) return;

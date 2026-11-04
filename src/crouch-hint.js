@@ -10,7 +10,7 @@ export const FIRST = {
   pirate: 'HOLD DOWN WHEN EMPTY TO RELOAD TWICE AS FAST.',
   paladin: 'KNEEL BY A HOLY LIGHT TO FILL YOUR LIGHT.',
   pyro: 'HOLD DOWN, STILL: STOKE YOUR HEAT.',   /* (claude/pyrokit) */
-  geomancer: 'HOLD DOWN: STONE SKIN. BLOWS GLANCE OFF.',   /* (claude/geocrouch: STONE SKIN is her crouch; the old EARTH SENSE line is FIRST_SENSE, said only with GEO.pop.skin false) */
+  geomancer: 'TAP DOWN: RECALL YOUR STONES TO YOUR FEET.',   /* (claude/geofix, Daniel 11-04: STONE SKIN and EARTH SENSE are retired) */   /* (claude/geocrouch: STONE SKIN is her crouch; the old EARTH SENSE line is FIRST_SENSE, said only with GEO.pop.skin false) */
   reaper: 'DOWN: A LOW GUARD. KNEEL AS ANY BLOW LANDS: BLOOD SPIKE.',   /* (claude/bkkit2: any blow on the beat) */   /* (claude/bloodknight: the harvest is gone; DOWN+C is BLOOD PRICE) */
   berserker: 'DOWN TO COIL, A WAY, LET GO: POUNCE. FULL: DOWN+C.',
   ranger: 'HOLD DOWN AND TAP C: A SNARE AT YOUR FEET.',   /* (claude/ranger) */
@@ -25,7 +25,7 @@ export function makeCrouchHint(api) {
   const stats = { told: 0, waited: 0 };
   let downT = 0, waiting = null, waitT = 0;
   const seen = () => (api.PROG.crouchFirst || (api.PROG.crouchFirst = {}));
-  const skinOn = () => !!(api.geoSkin && api.geoSkin());
+  const skinOn = () => true;   /* (claude/geofix) the geomancer's line is always FIRST.geomancer now (the sense line is retired) */
   function say(h) { seen()[h] = 1; stats.told++; waiting = null; api.hint(h === 'geomancer' && !skinOn() ? FIRST_SENSE : FIRST[h]); }
   function update(dt) {
     const p = api.P, h = api.hero(); if (!FIRST[h]) return;

@@ -320,7 +320,8 @@ export function createTouch(env) {
     const each = (e, f) => { e.preventDefault(); lastTouchAt = performance.now(); for (const t of e.changedTouches) { const [px, py] = toDisp(t); f(t.identifier, px, py); } };
     disp.addEventListener('touchstart', e => { rect = null; env.initAudio(); if (env.touched) env.touched(); each(e, startTouch); }, { passive: false });
     disp.addEventListener('touchmove', e => each(e, moveTouch), { passive: false });
-    const end = e => { e.preventDefault(); for (const t of e.changedTouches) endTouch(t.identifier); };
+    const end = e => { e.preventDefault(); if (e.type === 'touchend') env.initAudio();   /* iOS Safari unlocks WebAudio on touchend, not touchstart */
+      for (const t of e.changedTouches) endTouch(t.identifier); };
     /* A BLUETOOTH PAD (Android Chrome exposes it after its first button press): say so, and the touch layer steps aside while the pad is the hand in use */
     addEventListener('gamepadconnected', () => { padSeen = true; banner = { text: 'CONTROLLER CONNECTED', until: clk + 3.5 }; });
     addEventListener('gamepaddisconnected', () => { try { padSeen = !![...(navigator.getGamepads ? navigator.getGamepads() : [])].some(Boolean); } catch { padSeen = false; } banner = { text: padSeen ? 'CONTROLLER CHANGED' : 'CONTROLLER DISCONNECTED', until: clk + 2.5 }; });
@@ -329,7 +330,7 @@ export function createTouch(env) {
     document.addEventListener('visibilitychange', () => { if (document.hidden) releaseAll(); else wake(); });
     /* THE SCREEN STAYS ON while the game is open (a thumb on a stick is not a screen touch the phone counts as idle for long): the Screen Wake Lock, asked for on a touch
        and again when the page comes back (the browser drops it when the page is hidden). Silently nothing where it is not offered. */
-    let wl = null; const wake = () => { try { if (navigator.wakeLock && !wl && !document.hidden) navigator.wakeLock.request('screen').then(l => { wl = l; l.addEventListener('release', () => { wl = null; }); }).catch(() => {}); } catch {} };
+    let wl = null; const wake = () => { try { if (navigator.wakeLock && !wl && !document.hidden && !((document.permissionsPolicy || document.featurePolicy) && !(document.permissionsPolicy || document.featurePolicy).allowsFeature('screen-wake-lock'))) navigator.wakeLock.request('screen').then(l => { wl = l; l.addEventListener('release', () => { wl = null; }); }).catch(() => {}); } catch {} };
     disp.addEventListener('touchend', wake, { passive: true });
   }
 

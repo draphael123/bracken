@@ -12,7 +12,7 @@ const W = 58, H = 34, AX = 34, AY = 31;   /* (claude/nestbugs) wider: the abdome
 const SHL = ['#1c0806', '#3a1210', '#5c1c12', '#82301a', '#a84a26', '#f2b890', '#fff2e0'];   /* (claude/queengloss) glossy red-brown shell, as the queen's */
 const INK = '#1a0c06', CH = ['#2a140a', '#4a2410', '#6e3a16', '#804d20'], AM = ['#69390b', '#9e5a15', '#c37825', '#ed9835', '#f8c47b'];
 const PL = ['#120806', '#2a160c', '#4a2c16', '#65401f'], PLRIM = '#d49444', PLGLINT = '#f4d8a0';
-const WING = ['#8aa4bc', '#c4d4e4', '#eef4fa'], HONEYC = ['#905010', '#c27825', '#f6aa50', '#f8c882'];
+const WING = ['#8aa4bc', '#c4d4e4', '#eef4fa'], HONEYC = ['#4a2a0e', '#6a4014', '#a87a34', '#c9a46a'];
 const px = (g, c, x, y) => { g.fillStyle = c; g.fillRect(Math.round(x), Math.round(y), 1, 1); };
 function blob(g, cx, cy, rx, ry, a, shade) { const R0 = Math.max(rx, ry) + 1, c = Math.cos(a), s = Math.sin(a);
   for (let y = Math.floor(cy - R0); y <= Math.ceil(cy + R0); y++) for (let x = Math.floor(cx - R0); x <= Math.ceil(cx + R0); x++) {

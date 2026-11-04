@@ -13,3 +13,4 @@ docs/*
 /audits
 src/benched
 /*.md
+/dist-itch

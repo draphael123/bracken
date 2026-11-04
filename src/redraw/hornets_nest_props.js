@@ -44,7 +44,7 @@ export function slab(g, x, y, w, h, set, time) {
 /* the paper stalk a hanging comb hangs from: a tapering neck of paper, ribbed. x mid, y from the top of the comb up to `len` */
 export function stalk(g, mid, y, len) { for (let q = 0; q < len; q++) { const t = q / Math.max(1, len), hw = 2 + Math.round(t * 2) + (q % 5 === 0 ? 1 : 0); R(g, PAPER[(q >> 2) & 1 ? 2 : 1], mid - hw, y - q - 1, hw * 2, 1); R(g, PAPER[3], mid - hw, y - q - 1, 1, 1); R(g, PAPER[0], mid + hw - 1, y - q - 1, 1, 1); } }
 export function glintDrips(g, x, y, w, time) { for (let xx = 5; xx < w - 3; xx += 9) { const ph = (time * 0.7 + xx * 0.137) % 1, len = 2 + Math.round(Math.sin(ph * 3.1) * 3 * (ph < 0.8 ? ph : 1.6 - ph) + 2);
-  R(g, '#d08a2a', x + xx, y, 1, len); if (ph > 0.65) R(g, '#f6aa50', x + xx, y + len, 1, 1); } }
+  R(g, '#7a4e1a', x + xx, y, 1, len); if (ph > 0.65) R(g, '#a87a34', x + xx, y + len, 1, 1); } }
 
 /* ---------------- the smoke stand ---------------- */
 function standSprite() { return once('stand', () => { const [c, g] = canvas(26, 30);
