@@ -101,6 +101,10 @@ const holdAt = GEO.wall.holdAt;
 { const src = readFileSync(join(ROOT, 'src/geomancer.js'), 'utf8');
   ok(/function recall\(\) \{ const P = api\.P, own = pieces\.filter\(p => p\.capped && !p\.gone\)/.test(src), 'recall no longer reads only capped pieces');
   const W = world(); const p = W.G.raiseWall(); ok(!!p && p.capped === true && !p.held && p.life === Infinity, 'the legacy raiseWall() is not a plain board stone any more (tools/geo-board.mjs builds its board with it)'); }
+/* the draw runs (timer strip, shake, hold glint) against a mock 2D context: no throw, and the strip's fillRects are there */
+{ const W = world(), calls = []; const g = new Proxy({}, { get: (t, k) => k === 'createLinearGradient' || k === 'createRadialGradient' ? () => ({ addColorStop() {} }) : (...a) => { calls.push(k); }, set: () => true });
+  let err = null; try { W.holdFor(0.2); W.G.draw(g, 0, 0); W.holdFor(0.1); W.G.draw(g, 0, 0); W.step(120, false); W.G.draw(g, 0, 0); W.step(150, false); W.G.draw(g, 0, 0); W.step(10, false); W.G.draw(g, 0, 0); } catch (e) { err = e; }
+  ok(!err, 'GEO.draw threw with a wall standing / falling: ' + (err && err.stack ? String(err.stack).slice(0, 300) : err)); ok(calls.filter(c => c === 'fillRect').length > 20, 'the draw drew nothing'); }
 /* wiring in main.js / the texts */
 { const main = readFileSync(join(ROOT, 'src/main.js'), 'utf8');
   ok(/spend: n => spend\(n\), blockedAt/.test(main) && /stoneWall: tal\('stoneWall'\)/.test(main), 'main.js does not give the kit spend() and the TALL WALL upgrade');
