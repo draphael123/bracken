@@ -126,7 +126,7 @@ export function makeNestHands(ctx) {
     const top = landRow(c); c.y = top * TS; c.vy = 0; c.st = 'down'; c.cells = [];
     const stacked = (() => { for (let x = c.x0; x <= c.x1; x++) if (combs.some(o => o !== c && o.st === 'down' && o.cells && o.cells.some(([cx, cy]) => cx === x && cy === top + c.rows))) return true; return false; })();
     for (let y = top; y < top + c.rows; y++) for (let x = c.x0; x <= c.x1; x++) { ctx.cellSet(x, y, ctx.T.ONEWAY); c.cells.push([x, y]); }
-    if (c.hq && honey.some(h => h.kind === 'flood')) { splashes.push({ x: (c.x0 + c.x1 + 1) * TS / 2, y: (top + c.rows) * TS, w: (c.x1 - c.x0 + 1) * TS, t: 0 }); ctx.burst((c.x0 + c.x1 + 1) * TS / 2, (top + c.rows) * TS - 6, c.last ? 22 : 12, ['#ffd36b', '#fff4b0', '#c47a14', '#e0a020'], 110, 0.7); ctx.sfx.squelch && ctx.sfx.squelch(); }   /* (claude/hornets2art) a comb dropped into the resin: it splashes */
+    if (c.hq && honey.some(h => h.kind === 'flood')) { splashes.push({ x: (c.x0 + c.x1 + 1) * TS / 2, y: (top + c.rows) * TS, w: (c.x1 - c.x0 + 1) * TS, t: 0 }); ctx.burst((c.x0 + c.x1 + 1) * TS / 2, (top + c.rows) * TS - 6, c.last ? 22 : 12, ['#b8914f', '#d8c08a', '#6a4014', '#8a5a1e'], 110, 0.7); ctx.sfx.squelch && ctx.sfx.squelch(); }   /* (claude/hornets2art) a comb dropped into the resin: it splashes */
     W.n.landed++; ctx.sfx.thud && ctx.sfx.thud(); ctx.dust((c.x0 + c.x1 + 1) * TS / 2, (top + c.rows) * TS, 10);
     if (stacked) ctx.number((c.x0 + c.x1 + 1) * TS / 2, top * TS - 10, NEST_SAY.stacked, '#ffd36b');
     const box = { l: c.x0 * TS, r: (c.x1 + 1) * TS, t: top * TS, b: (top + c.rows) * TS };
@@ -150,8 +150,8 @@ export function makeNestHands(ctx) {
       else if (d.st === 'fall') {
         d.vy = Math.min(520, d.vy + DRIP.g * dt); const dy = d.vy * dt, n = Math.max(1, Math.ceil(dy / 4)); let landed = false;
         for (let i = 0; i < n && !landed; i++) { d.y += dy / n;
-          for (const pp of heroes) { if (pp.x + 5 > px - DRIP.hw && pp.x - 5 < px + DRIP.hw && pp.y > d.y - 2 && pp.y - 22 < d.y) { W.n.dripHit++; if (ctx.dripHit) ctx.dripHit(pp, DRIP.dmg); pp.syrupT = Math.max(pp.syrupT || 0, DRIP.syrup); ctx.burst(px, d.y, 6, ['#e0a020', '#ffd36b', '#a8600a'], 50, 0.5); ctx.number(pp.x, pp.y - 34, NEST_SAY.drip, '#e0b040'); landed = true; break; } }
-          if (!landed && ctx.solidPx(px, d.y + 2, true)) { const row = Math.floor((d.y + 2) / TS); W.addHoney(px - 10, px + 10, row, DRIP.splash, 'glob'); ctx.burst(px, d.y, 5, ['#e0a020', '#ffd36b', '#a8600a'], 40, 0.4); landed = true; }
+          for (const pp of heroes) { if (pp.x + 5 > px - DRIP.hw && pp.x - 5 < px + DRIP.hw && pp.y > d.y - 2 && pp.y - 22 < d.y) { W.n.dripHit++; if (ctx.dripHit) ctx.dripHit(pp, DRIP.dmg); pp.syrupT = Math.max(pp.syrupT || 0, DRIP.syrup); ctx.burst(px, d.y, 6, ['#8a5a1e', '#b8914f', '#4a2a0e'], 50, 0.5); ctx.number(pp.x, pp.y - 34, NEST_SAY.drip, '#e0b040'); landed = true; break; } }
+          if (!landed && ctx.solidPx(px, d.y + 2, true)) { const row = Math.floor((d.y + 2) / TS); W.addHoney(px - 10, px + 10, row, DRIP.splash, 'glob'); ctx.burst(px, d.y, 5, ['#8a5a1e', '#b8914f', '#4a2a0e'], 40, 0.4); landed = true; }
           if (d.y > Lv.H * TS) landed = true; }
         if (landed) { d.st = 'wait'; d.t = 0; falling--; } } } };
   /* ---------- ONE FRAME ---------- */

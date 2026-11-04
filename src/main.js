@@ -21600,7 +21600,7 @@ function updateCrumbles(dt){
   else if(v.t==='tick'){SFX.crack();shakeCam(v.n===1?3:2);dust(mx,my+TS*c.rows,v.n===1?12:7);if(v.n===1&&SFX.rumble)SFX.rumble();}
   else if(v.t==='fall'&&c.kind==='bough'){re=true;SFX.crack();SFX.rumble&&SFX.rumble();shakeCam(4);for(let x=c.x0;x<=c.x1;x++)burst(x*TS+8,my+6,4,['#ff9a3c','#ffd36b','#47291b','#2c1a12'],80,.9,380,2);}   /* (claude/kingsfix2) a limb of the burning wood goes: splinters and embers */
   else if(v.t==='fall'&&c.kind==='awning'){re=true;SFX.puff();for(let x=c.x0;x<=c.x1;x++)burst(x*TS+8,my+4,4,['#b8382c','#ece0c4','#7a2418'],70,.8,300,2);}   /* (claude/fairfix5) a TEARING awning rips: canvas scraps, not stone */
-  else if(v.t==='fall'&&c.kind==='comb'&&L.hornetsNest){re=true;SFX.squelch&&SFX.squelch();SFX.crack();shakeCam(3);for(let x=c.x0;x<=c.x1;x++)burst(x*TS+8,my+8,4,['#b9ad95','#d08a2a','#8e8272','#5c5246'],60,.9,380,2);}   /* (claude/hornetsnest2art) a SAGGING COMB lets go: torn paper and resin, not stone (11-03: paper nest) */
+  else if(v.t==='fall'&&c.kind==='comb'&&L.hornetsNest){re=true;SFX.squelch&&SFX.squelch();SFX.crack();shakeCam(3);for(let x=c.x0;x<=c.x1;x++)burst(x*TS+8,my+8,4,['#b9ad95','#7a4e1a','#8e8272','#5c5246'],60,.9,380,2);}   /* (claude/hornetsnest2art) a SAGGING COMB lets go: torn paper and resin, not stone (11-03: paper nest) */
   else if(v.t==='fall'){re=true;SFX.stone();shakeCam(5);for(let x=c.x0;x<=c.x1;x++)burst(x*TS+8,my+8,3,['#8a8e9c','#5c6070','#b8b4a8'],60,.9,420,2);}
   else if(v.t==='back'){re=true;SFX.clank&&SFX.clank();dust(mx,my,8);}}
  if(re)resolveTiles();
@@ -30072,7 +30072,7 @@ const HHX = { heroes: () => (players && players.length ? players : [P]), calm: (
   solidAt: (x, y) => { const tx = Math.floor(x / TS), ty = Math.floor(y / TS); return isSolid(tx, ty) || isOneWay(tileAt(tx, ty)) || tileAt(tx, ty) === T.PLANK; },
   hit: (e, b, d, o = {}) => { for (const pp of (players && players.length ? players : [P])) asPlayer(pp, () => { if (P.dead || !upright(pp)) return; if (!overlap(b, box(P))) return; const k = 'hhk' + (o.key || ''); P.hhKeys = P.hhKeys || new Set(); if (P.hhKeys.has(k)) return; P.hhKeys.add(k); if (P.hhKeys.size > 40) P.hhKeys.clear();
       const res = damagePlayer(e.x, d, { who: e, name: o.name || 'AN AMBER HORNET', unblockable: !o.blockable }); if (res === 'blocked' && o.onBlock) o.onBlock(); }); },
-  glob: (x, y) => { if (HNS && HNS.on()) HNS.addHoney(x - 14, x + 14, Math.round(y / TS), HHM.HONEY.patch); burst(x, y - 2, 6, ['#e0a020', '#ffd36b', '#a8600a'], 50, 0.5); SFX.squelch && SFX.squelch(); },
+  glob: (x, y) => { if (HNS && HNS.on()) HNS.addHoney(x - 14, x + 14, Math.round(y / TS), HHM.HONEY.patch); burst(x, y - 2, 6, ['#8a5a1e', '#b8914f', '#4a2a0e'], 50, 0.5); SFX.squelch && SFX.squelch(); },
   mark: (e, txt, col) => number(e.x, e.y - HHM.HONEY.h - 12, txt, col),
   hint: (k, msg) => { HHX.said = HHX.said || {}; if (HHX.said[k]) return; HHX.said[k] = 1; hintSay('mechanic', 6, msg); } };
 function drawHoneyFx(e, cx, cy) { const fl = HHX.floorAt(e.x, e.y); g.globalAlpha = 0.22; g.fillStyle = '#10060a'; g.beginPath(); g.ellipse(Math.round(e.x - cx), Math.round(fl - cy) - 1, 9, 2, 0, 0, 7); g.fill(); g.globalAlpha = 1;
