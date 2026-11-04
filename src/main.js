@@ -5450,7 +5450,9 @@ function drawMap() {
   g.__world = true;   /* the map has its own camera: a label off the edge of the buffer is off the edge of the MAP, not a bug */
   g.save(); g.translate(0, -Math.round(mapCamY));
   g.drawImage(MAPC, 0, 0);
-  if (mapSpurLit) { const n = NODES.find(n => n.id === mapSpurLit.id); if (n) { mapSpurLit.t += 0.016; const pu = 0.5 + 0.5 * Math.sin(time * 5), by = n.y - 26 + Math.round(Math.sin(time * 4) * 2); g.save(); g.globalAlpha = 0.25 + 0.3 * pu; MPX.fillDisc(g, n.x, n.y, Math.round(12 + pu * 6), '#ff9a30'); g.globalAlpha = 0.6; MPX.strokeRing(g, n.x, n.y, Math.round(9 + pu * 3), '#ffd36b');   /* (rel139fix: whole pixels, the canvas arc anti-aliases - tools/map-scale.mjs) */ g.restore(); g.fillStyle = '#ffd36b'; g.fillRect(n.x - 1, by, 3, 6); g.fillRect(n.x - 1, by + 8, 3, 2); text('NEW', n.x + 1, by - 10, '#ffd36b', 'center'); } }
+  if (mapSpurLit) { const n = NODES.find(n => n.id === mapSpurLit.id); if (n) { mapSpurLit.t += 0.016;
+    { const jn = NODES.find(m => !m.spur && m.level >= 0 && LEVELS[m.level].id === junctionId(LEVELS[n.level])); if (jn) { const dx = n.x - jn.x, dy = n.y - jn.y, len = Math.hypot(dx, dy) || 1, reach = Math.min(len, mapSpurLit.t * 70);   /* (claude/kingscene) THE SPUR'S PATH LIT: ember dots run out from the junction to the village and stay, pulsing */
+      for (let d = 6, k = 0; d < reach; d += 5, k++) { g.globalAlpha = 0.45 + 0.55 * Math.max(0, Math.sin(time * 4 - k * 0.7)); g.fillStyle = k % 3 ? '#ff9a30' : '#ffd36b'; g.fillRect(Math.round(jn.x + dx * d / len) - 1, Math.round(jn.y + dy * d / len) - 1, 2, 2); } g.globalAlpha = 1; } } const pu = 0.5 + 0.5 * Math.sin(time * 5), by = n.y - 26 + Math.round(Math.sin(time * 4) * 2); g.save(); g.globalAlpha = 0.25 + 0.3 * pu; MPX.fillDisc(g, n.x, n.y, Math.round(12 + pu * 6), '#ff9a30'); g.globalAlpha = 0.6; MPX.strokeRing(g, n.x, n.y, Math.round(9 + pu * 3), '#ffd36b');   /* (rel139fix: whole pixels, the canvas arc anti-aliases - tools/map-scale.mjs) */ g.restore(); g.fillStyle = '#ffd36b'; g.fillRect(n.x - 1, by, 3, 6); g.fillRect(n.x - 1, by + 8, 3, 2); text('NEW', n.x + 1, by - 10, '#ffd36b', 'center'); } }
   if (PROG.storeHint) { const n = NODES.find(n => n.kind === 'store'); if (n) { const by = n.y - 26 + Math.round(Math.sin(time * 4) * 2); g.fillStyle = '#ffd36b'; g.fillRect(n.x - 1, by, 3, 6); g.fillRect(n.x - 1, by + 8, 3, 2); text('NEW', n.x + 1, by - 10, '#ffd36b', 'center'); } }
   // river sparkle (the river is on the wood sheet)
   g.fillStyle = 'rgba(230,245,255,0.8)'; for (let i = 0; i < 8; i++) { const t = (time * 0.4 + i * 0.13) % 1; const pts = [[VW - 34, WOOD_Y], [VW - 58, 40 + WOOD_Y], [VW - 26, 82 + WOOD_Y], [VW - 70, 122 + WOOD_Y], [VW - 44, VH + WOOD_Y]]; const k = Math.min(3, Math.floor(t * 4)); const a = pts[k], b = pts[k + 1]; const u = t * 4 - k; if (Math.sin(time * 3 + i) > 0.4) g.fillRect(Math.round(a[0] + (b[0] - a[0]) * u) - 1 + (i & 1), Math.round(a[1] + (b[1] - a[1]) * u), 2, 1); }
@@ -32314,6 +32316,7 @@ function trnUpdate(dt) {
     if (e === 'ride') { if (SFX.pole) SFX.pole(); if (SFX.creak) SFX.creak(); SFX.splash(); }
     if (e === 'done') { trnFinish(); return; }
   }
+  if (tr.entry.scene === 'smoke' && tr.scene && !tr.horned && !tl.skipped && TRM.phase(tl) === 'smoke' && trnSceneS(tl) >= TRM.SMOKE.hornAt) { tr.horned = true; SFX.hornBlast(); if (!SET.reduceMotion) shakeCam(2); }   /* (claude/kingscene) THE GOBLIN WAR HORN, from the burning village, as the crown is lifted and the smoke stands up (the Stockade's horn) */
   if (!tr.scene || TRM.phase(tl) === 'fade') { updateParticles(dt); updateCorpses(dt); updateWeather(dt); const cx0 = camX; updateCamera(dt);
     if ((TRM.phase(tl) === 'open' || TRM.phase(tl) === 'walk') && tr.entry.open) { const gx = Math.max(0, Math.min(LW * TS - VW + 56, (tr.entry.open.col + 1) * TS - VW * 0.72)); camX = cx0 + (gx - cx0) * Math.min(1, dt * 9); } }   /* (claude/transwmart) while the way opens and the heroes walk out the camera holds the gate (the input is locked): they run in from the left and hop the fallen rails */
   else if (TRM.phase(tl) === 'ride' && Math.floor(trnSceneS(tl) * 0.9) !== Math.floor((trnSceneS(tl) - dt) * 0.9) && SFX.pole) SFX.pole();
@@ -32356,9 +32359,10 @@ function trnDrawWorldOver(cx, cy) {
   if (trnArrive && trnArrive.ferry) TRA.drawArrivalFerry(trnEnv(), cx, cy, trnArrive.floorY, time);
 }
 function trnDrawOverlay() {
-  if (TRN && !TRN.loading) { const tl = TRN.tl; TRA.drawBars(g, VW, VH, TRM.barIn(tl.t));
+  if (TRN && !TRN.loading) { const tl = TRN.tl; TRA.drawBars(g, VW, VH, TRM.barIn(tl.t, TRN.entry.bar || TRM.BAR));
     TCH.hit(0, 0, VW, VH, () => { anyPress = true; initAudio(); });
-    if (TRM.canSkip(tl)) { g.globalAlpha = Math.min(0.75, (tl.t - TRM.MIN_SKIP) * 1.5); text(touchOn ? 'TAP: SKIP' : 'ANY BUTTON: SKIP', VW - 6, VH - 15, '#d9d2b8', 'right', 6); g.globalAlpha = 1; } }
+    if (TRN.entry.scene === 'smoke' && (TRM.phase(tl) === 'smoke' || TRM.phase(tl) === 'fade')) { const wa = TRM.smokeWord(trnSceneS(tl)) * (TRM.phase(tl) === 'fade' ? 1 - Math.min(1, tl.pt / tl.beats[tl.i].dur) : 1); if (wa > 0.02) { const ln = fitText('THE VILLAGE BURNS', VW - 40, 10), wy = Math.round(VH * 0.6) + 7; g.globalAlpha = wa; text(ln, Math.round(VW * 0.56), wy, '#ffd9a0', 'center', 10); g.globalAlpha = 1; } }   /* (claude/kingscene) the one line of the beat, over the pan; the art file writes no text */
+    if (TRM.canSkip(tl)) { const thin = !!TRN.entry.bar; g.globalAlpha = Math.min(thin ? 0.45 : 0.75, (tl.t - TRM.MIN_SKIP) * 1.5); text(touchOn ? 'TAP: SKIP' : 'ANY BUTTON: SKIP', VW - 6, VH - (thin ? 13 : 15), '#d9d2b8', 'right', thin ? 5 : 6); g.globalAlpha = 1; } }
   else if (TRN) { g.fillStyle = '#05040a'; g.fillRect(0, 0, VW, VH); }
   else if (trnArrive && !trnArrive.done && trnArrive.ferry) TRA.drawBars(g, VW, VH, TRM.barOut(trnArrive.t, trnArrive.dur));
 }
