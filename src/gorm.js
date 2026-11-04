@@ -4,13 +4,13 @@
 //   - ONE new foe, THE ROYAL BOAR (src/royal-boar.js): called by his hunting horn in P1 and P2, and placed in the Hunting Stands' meadow;
 //   - hiding from the procession pays nothing extra; the sign at 4,40 moves two tiles right.
 // This file is the NUMBERS (one table, the tune lane's) and the few pure helpers the hands, the King's AI and the tools share.
-// The hands are src/gorm-hands.js (the hall's ropes, archers and rocks; the burning wood; the glade's hangings), the King's AI is src/gorm-king.js.
+// The hands are src/gorm-hands.js (the hall's ropes and archers; the burning wood; the glade's hangings), the King's AI is src/gorm-king.js.
 //
 // THE FIGHT, IN ONE BREATH (B1: the boss is the level's rule personified - WHAT HANGS OVER IT CAN BE DROPPED ON IT):
 //   P1 THE COURT (his hall): carried on his litter (charge, the hand), then on his feet (the sceptre sweep, the hand); THE HUNTING HORN calls a
 //      ROYAL BOAR down the hall (jump it, or drop a cage on it). His five BIG cages hang on ropes (claude/kingsfix2, Daniel 10-23: P1 a little too hard): EVERY rope is
 //      free at ANY moment - strike its peg OR anywhere along the rope when he is under the cage, no lock. TWO RAFTER ARCHERS on the live deck loose slow told arrows (pressure;
-//      a ROCK from the heaps knocks one down). Caged he bleeds (x2), then he is open (x1.25). Outside that every blade lands at 0.4 (B15).
+//      an archer is cut down from the scaffold). Caged he bleeds (x2), then he is open (x1.25). Outside that every blade lands at 0.4 (B15).
 //   THE ESCAPE (his bar empties): the court TORCHES the wood and his bearers carry him off; you are FULLY HEALED and RUN: the fire behind you,
 //      burning branches on marked spots, the burning ground under the canopy, torch goblins lighting the road ahead; (claude/kingsfix2) 40 columns longer: THE BOUGH BRIDGE
 //      (six limbs that burn through a beat after you stand on them, the fire SURGES as it begins), tremors, more branches, a denser ember field. A checkpoint at the end.
@@ -38,7 +38,6 @@ export const GORM = {
   walkV: 44, walkV2: 54,
   archers: { hp: 1, every: 4.2, tell: 1.0, v: 150, g: 260, dmg: 10, fileIn: 2.4, firstFile: 1.4 },
   cageReset: 5,          /* a cage that MISSED him goes back up after this (its rope stays free: its archers are down) */
-  rock: { every: 0.6, vx: 70, vy: -470, mid: { vx: 150, vy: -300 }, low: { vx: 120, vy: -150 }, g: 640 },
   /* THE ESCAPE: the fire behind you (px a world-second; the hero runs ~89) */
   run: { grace: 2.4, v: 50, vMax: 150, lead: 340, surgeV: 60, surgeT: 3, tremEvery: 4.5, drain: 0.2, groundDrain: 0.12, branchTell: 0.9, branchDmg: 14, torchTell: 0.8, torchBurn: 6, torchReach: 110 },
   /* P2: THE KING'S GLADE */
@@ -61,12 +60,12 @@ export const GORM = {
 export const GORM_SAY = {
   wake: 'KING GORM UNDERLEAF', litter: 'THE LITTER BREAKS. HE STANDS', horn: 'THE HUNTING HORN', boar: 'THE ROYAL BOAR', penned: 'PENNED',
   locked: 'ITS ARCHERS HOLD THE ROPE', free: 'THE ROPE IS FREE: STRIKE THE PEG', file: 'THE COURT\'S BOWS FILE IN', knocked: 'KNOCKED DOWN',
-  caught: 'CAUGHT', open: 'HIS HEAD IS UP. HE IS OPEN', warded: 'WARDED', rock: 'A ROCK: ATTACK THROWS IT, UP LOBS',
+  caught: 'CAUGHT', open: 'HIS HEAD IS UP. HE IS OPEN', warded: 'WARDED',
   torch: 'THE COURT TORCHES THE WOOD', healed: 'YOU CATCH YOUR BREATH', run: 'RUN', burning: 'THE FIRE HAS YOU', branch: 'A BURNING BRANCH',
   lit: 'HE LIGHTS THE ROAD', surge: 'THE FIRE SURGES: RUN', glade: "THE KING'S GLADE", limb: 'HE TEARS A BURNING LIMB FROM THE OAK', high: 'HIGH: DUCK', low: 'LOW: JUMP',
   hunt: 'THE ROYAL HUNT', shake: 'THE CANOPY SHAKES', logroll: 'A BURNING LOG', quake: 'BELLY QUAKE: JUMP', downed: 'KNOCKED DOWN', stung: 'STUNG',
   hive: 'THE HIVE BURSTS', cagefall: 'THE CAGE FALLS', logfall: 'THE LOG ROLLS',
-  backUp: 'THE CAGES GO BACK UP', lashed: 'LASHED: NOT THIS ONE', dropRock: 'A BLOW: YOU DROP THE ROCK', throwBows: 'THROW IT AT THE BOWS', fireDies: 'THE FIRE DIES AT THE GLADE',
+  backUp: 'THE CAGES GO BACK UP', lashed: 'LASHED: NOT THIS ONE', fireDies: 'THE FIRE DIES AT THE GLADE',
   groundBurns: 'THE GROUND BURNS: UP INTO THE BOUGHS', hurled: 'HURLED', runDown: 'RUN DOWN', turned: 'TURNED', bolts: 'IT BOLTS', held: 'HELD',
   /* (claude/gorm3) KING GORM 3 */
   pot: 'PITCH POT', pitch: 'BURNING PITCH', sceptre: 'LOW OUT, HIGH BACK', caughtIt: 'CAUGHT IT', rage: 'THE CROWN CRACKS', rageFire: 'HE BURNS WITH HIS OAK',

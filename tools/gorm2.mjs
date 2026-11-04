@@ -1,8 +1,8 @@
 // tools/gorm2.mjs - KING GORM 2: THE COURT, THE BURNING WOOD, THE KING'S GLADE (claude/gorm2; Node, no page). The shape of the fight, checked on the
 // level's data and on his hands and AI run in a fake world:
 //   THE HALL: five cages on ropes (no plates), each tied off at two pegs on the hall floor three tiles either side; each cage's deck under its
-//     archers' marks; two heaps of cobbles on the floor; THE LOCK: a rope is held while its archers live and free once they are down, and only
-//     the live rope's peg drops a cage; a rock thrown up from the floor reaches a deck (the told arc lands on it).
+//     archers' marks; no rock heaps (removed 11-03); no lock: a rope is free at any moment, and only
+//     a rope's peg or the rope itself drops a cage.
 //   THE FLEE: his P1 bar emptying spares him (stage 'flee'), heals the hero to full, lights the fire behind him, keeps P1 beaten through a death
 //     (persist) and puts the King in his glade; the fire hurries when the hero is far ahead and never passes the glade's shrine.
 //   THE BURNING WOOD: its burning floors lie on ground under boughs a jump reaches; its branches hang over a floor or a bough; torch goblins on
@@ -30,8 +30,7 @@ const cages = L.ents.filter(e => e.t === 'dropcage' && e.boss);
 ok(cages.length === 5 && G.hall.ropes.every(r => cages.some(c => Math.abs(c.x * TS + 8 - r.x) < 2)), 'each rope holds one of his five cages');
 ok(G.hall.ropes.every(r => r.pegs.length === 2 && r.pegs.every(p => solid(Math.floor(p / TS), 14) && !stand(Math.floor(p / TS), 13)) && Math.abs(r.pegs[0] - r.x) === 48 && Math.abs(r.pegs[1] - r.x) === 48), 'each rope is tied off at two pegs on the hall floor, three tiles either side of its cage');
 ok(G.hall.ropes.every(r => r.archers.every(a => oneway(Math.floor(a / TS), 5) && a > r.deck[0] && a < r.deck[1])), "each rope's two archers stand its deck (row 5, over the cage)");
-ok(G.hall.heaps.length >= 2 && G.hall.heaps.every(h => solid(Math.floor(h / TS), 14)), 'heaps of cobbles on the hall floor: ' + G.hall.heaps.map(h => Math.floor(h / TS)).join(' '));
-{ const Rk = GORM.rock, apex = Rk.vy * Rk.vy / (2 * Rk.g), rise = (14 * TS - 18) - 5 * TS; ok(apex > rise + 12, 'a rock lobbed UP from the floor clears the decks (apex ' + Math.round(apex) + ' px, the decks ' + rise + ' px over the hand)'); }
+ok(!G.hall.heaps && !GORM.rock, 'no rock heaps in his hall and no rock throw (Daniel 11-03: why rocks in the hall)');
 ok(/sign\(6, 39, "THE ROYAL ROAD/.test(readFileSync(new URL('../src/kingswood.js', import.meta.url), 'utf8')), "the ROYAL ROAD sign stands two tiles right of the control prompt (Daniel 10-22: col 6, was 4)");
 
 console.log('THE BURNING WOOD');

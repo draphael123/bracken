@@ -4,8 +4,7 @@
 // multiplier on him), drawBack (THE GREAT OAK of the glade, behind the tiles), drawWorld (everything else), drawKing (his poses), read / skipTo (tools).
 //
 // THE HALL (P1): five cages on ROPES (src/kingswood.js L.gorm.hall). One rope is LIVE at a time: two RAFTER ARCHERS file onto its deck and hold it -
-//   LOCKED while either lives (a blow on the peg clanks: ITS ARCHERS HOLD THE ROPE). Cut them down (the scaffold) or knock them off (a ROCK from a heap:
-//   E takes one, ATTACK throws, UP lobs - the told arc's ring goes gold on a bowman). Then the PEG on the floor drops the cage: on his head he is HELD.
+//   LOCKED while either lives (a blow on the peg clanks: ITS ARCHERS HOLD THE ROPE). Cut them down (the scaffold; no rocks since 11-03, Daniel: the heaps are gone). Then the PEG on the floor drops the cage: on his head he is HELD.
 //   A cage that caught him is spent and the next rope goes live (a new pair files in); one that missed comes back up, its rope still free.
 //   The archers loose SLOW TOLD ARROWS: a yellow '!' over the bow and the arc drawn to where it will land, a second before it flies.
 // THE BURNING WOOD (the escape): his bar empties - the court torches the wood, his bearers carry him off, you are FULLY HEALED. A wall of fire follows you
@@ -15,7 +14,6 @@
 //   BEEHIVE, each on a rope to a peg on the floor. Drop them on him: HELD (x2) / KNOCKED DOWN (x1.75) / STUNG (x1.5); then a told WARD (B3) for 3 s.
 import { GORM, GORM_SAY, fireStep } from './gorm.js';
 import { newRoyalBoar } from './royal-boar.js';
-import * as CT from './carry-throw.js';
 import * as KP from './redraw/kingswood_props.js';
 import * as GPZ from './redraw/gorm_poses.js';
 import * as FX from './redraw/gorm_fx.js';
@@ -23,7 +21,6 @@ import * as GG from './redraw/gorm_glade.js';
 import * as GH from './redraw/gorm_hall.js';
 import * as KO from './redraw/kingswood_oak.js';
 import * as KWA from './redraw/kingswood_areas.js';
-CT.addKind('courtrock', { aims: { low: GORM.rock.low, mid: GORM.rock.mid, high: { vx: GORM.rock.vx, vy: GORM.rock.vy } }, g: GORM.rock.g, r: 3, ring: 9, dots: 16 });
 
 export function makeGormHands(ctx) {
   const TS = ctx.TS, H = {};
@@ -47,10 +44,10 @@ export function makeGormHands(ctx) {
     const lv = L(); if (!lv || !lv.gorm) { S = null; return; }
     if (!warmed) { warmed = true; warm(); }
     const g = lv.gorm, keepSaid = S ? S.said : new Set();
-    S = { said: keepSaid, ropes: [], act: -1, fileT: 0, ord: 0, arrows: [], rocks: [], took: 0, rockCd: 0, near: null, arc: null,
+    S = { said: keepSaid, ropes: [], act: -1, fileT: 0, ord: 0, arrows: [],
       run: { on: false, fireX: 0, t: 0, done: !!(persist && persist.runDone), lit: [], armed: false, surged: false, surgeT: 0 }, branches: (g.run.branches || []).map(b => ({ ...b, state: 'hang', t: 0 })),
       hangs: (g.glade.hangs || []).map(d => ({ d, state: 'hang', y: d.y0, vy: 0, lx: d.x, resetT: 0, hitK: false, heroHit: false, turn: 0 })),
-      cones: [], logs: [], waves: [], swarms: [], pots: [], pitch: [], sceptres: [], trail: [], lane: null, n: { pots: 0, potHits: 0, sceptres: 0, sceptreHits: 0, charges: 0, trailT: 0, arrows: 0, arrowHits: 0, rocks: 0, knocked: 0, cut: 0, caught: 0, boars: 0, penned: 0, branch: 0, branchHits: 0, lit: 0, fireT: 0, cones: 0, logs: 0, quakes: 0, hangDrops: 0, held2: 0, downed: 0, stung: 0, glance: 0, fightAt: undefined } };
+      cones: [], logs: [], waves: [], swarms: [], pots: [], pitch: [], sceptres: [], trail: [], lane: null, n: { pots: 0, potHits: 0, sceptres: 0, sceptreHits: 0, charges: 0, trailT: 0, arrows: 0, arrowHits: 0, cut: 0, caught: 0, boars: 0, penned: 0, branch: 0, branchHits: 0, lit: 0, fireT: 0, cones: 0, logs: 0, quakes: 0, hangDrops: 0, held2: 0, downed: 0, stung: 0, glance: 0, fightAt: undefined } };
     /* the hall's ropes: one to each boss cage, by column */
     const cages = ctx.props().filter(p => p.t === 'dropcage' && p.boss).sort((a, b) => a.x - b.x);
     g.hall.ropes.forEach((r, i) => { const cage = cages.find(c => Math.abs(c.x - r.x) < 10); if (cage) S.ropes.push({ i, cage, x: r.x, pegs: r.pegs, pegY: g.hall.floor, deck: r.deck, archers: r.archers, free: false }); });
@@ -86,7 +83,7 @@ export function makeGormHands(ctx) {
         gormBow: true, rope: r.i, shotT: GORM.archers.firstFile + k * GORM.archers.every / 2, deckY: y, noGr: false });
       ctx.burst(ax, y - 6, 8, ['#c9b27c', '#8a5a32'], 60, 0.4); }
     const e = king(); say(r.x, r.deck[2] - 34, 'file', '#ff9a5c'); ctx.sfx.hornDraw && ctx.sfx.hornDraw();
-    if (once('ropeHint')) ctx.hint('STRIKE ANY CAGE ROPE OR PEG WHEN HE IS UNDER IT, AT ANY MOMENT. THE ARCHERS ARE ONLY PRESSURE (E AT A HEAP TAKES A ROCK TO KNOCK ONE DOWN).');
+    if (once('ropeHint')) ctx.hint('STRIKE ANY CAGE ROPE OR PEG WHEN HE IS UNDER IT, AT ANY MOMENT. THE ARCHERS ARE ONLY PRESSURE: CUT THEM DOWN FROM THE SCAFFOLD IF THEY BOTHER YOU.');
     return e; }
   function hallStep(dt) {
     const e = ctx.boss(), on = hallOn();
@@ -119,41 +116,6 @@ export function makeGormHands(ctx) {
       if (P && !P.dead && Math.abs(P.x - a.x) < 6 && a.y > P.y - (P.h || 18) && a.y < P.y + 2) { a.dead = true; const res = ctx.damage(a.x - Math.sign(a.vx) * 10, A.dmg, { name: 'A RAFTER ARCHER' }); if (res === 'hit') S.n.arrowHits++; } }
     S.arrows = S.arrows.filter(a => !a.dead);
   }
-  /* ---------------- ROCKS ---------------- */
-  const heldRock = P => (P && P.carry && P.carry.t === 'courtrock' ? P.carry : null);
-  const heapNear = P => { if (!P || P.dead || !P.ground || P.carry || !hallOn()) return null; return (G().hall.heaps || []).find(x => Math.abs(P.x - x) < 16 && Math.abs(P.y - G().hall.floor) < 6) ?? null; };
-  const rockTarget = (x, y) => bows().find(q => x > q.x - 8 && x < q.x + 8 && y > q.y - 16 && y < q.y + 6) || null;
-  const handAt = P => ({ x: P.x + (P.face || 1) * 6, y: P.y - 18 });
-  const arcFor = (P, aim) => { const h = handAt(P), a = CT.KINDS.courtrock.aims[aim], v = { vx: (P.face || 1) * a.vx, vy: a.vy };
-    return CT.predictArc('courtrock', h.x, h.y, v, (px, py, f) => ctx.solidPx(px, py, f), { stopAt: rockTarget, maxT: 2.6 }); };
-  H.aimAt = () => { const P = ctx.P(); if (!heldRock(P)) return null; for (const aim of ['high', 'mid', 'low']) { const r = arcFor(P, aim); if (r.land && r.land.hit) return aim; } return null; };
-  H.interact = P => {
-    if (!H.on() || !S || !P || P.dead) return false;
-    const h = heldRock(P); if (h) { P.carry = null; h.state = 'gone'; return true; }
-    const hx = heapNear(P); if (hx === null || S.rockCd > 0) return false;
-    const q = { t: 'courtrock', thrKind: 'courtrock', state: 'held', holder: P, x: P.x, y: P.y - 18, vx: 0, vy: 0, hurtWas: P.hurt > 0, launch: PP => CT.launchOf('courtrock', PP, ctx.keys()) };
-    S.rocks.push(q); P.carry = q; S.took++; S.rockCd = GORM.rock.every; ctx.sfx.stone && ctx.sfx.stone();
-    if (once('rockSay')) say(P.x, P.y - 34, 'rock'); return true; };
-  function rocksStep(dt) {
-    const P = ctx.P(); S.rockCd = Math.max(0, S.rockCd - dt);
-    for (const q of S.rocks) {
-      if (q.state === 'held') { const Hh = q.holder; if (!Hh || Hh.dead || Hh.carry !== q || !hallOn()) { if (Hh && Hh.carry === q) Hh.carry = null; q.state = 'gone'; continue; }
-        const h = handAt(Hh); q.x = h.x; q.y = h.y;
-        if (Hh.hurt > 0 && !q.hurtWas) { Hh.carry = null; q.state = 'gone'; ctx.number(Hh.x, Hh.y - 34, GORM_SAY.dropRock, '#ff9a5c'); continue; }
-        q.hurtWas = Hh.hurt > 0; continue; }
-      if (q.state === 'fly') { if (!q.counted) { q.counted = true; S.n.rocks++; } const px = q.x, py = q.y; CT.stepArc(q, dt, GORM.rock.g); q.t0 = (q.t0 || 0) + dt;
-        const tg = rockTarget(q.x, q.y); if (tg) { q.state = 'gone'; S.n.knocked++; say(tg.x, tg.y - 20, 'knocked', '#8fd160'); tg.knockedOff = true; ctx.hurt(tg, 999, q.x); continue; }
-        const e = king(); if (e && Math.abs(q.x - e.x) < e.w / 2 && q.y > e.y - e.h && q.y < e.y) { q.state = 'gone'; ctx.sfx.clank && ctx.sfx.clank(); if (once('rockKing')) ctx.number(e.x, e.y - e.h - 10, GORM_SAY.throwBows, '#c9d1dc'); continue; }
-        if (ctx.solidPx(q.x + Math.sign(q.vx) * 3, py, false) && !ctx.solidPx(px, py, false)) { q.state = 'gone'; ctx.burst(px, py, 6, ['#7a6a50', '#b09a5a'], 50, 0.4); continue; }
-        if (q.vy < 0 && ctx.solidPx(q.x, q.y - 3, false)) q.vy = 0;
-        if (q.vy >= 0 && ctx.solidPx(q.x, q.y + 3, true)) { q.state = 'gone'; ctx.burst(q.x, q.y, 6, ['#7a6a50', '#b09a5a'], 50, 0.4); ctx.sfx.stone && ctx.sfx.stone(); continue; }
-        if (q.t0 > 4) q.state = 'gone'; } }
-    S.rocks = S.rocks.filter(q => q.state !== 'gone');
-    S.near = heapNear(P);
-    if (S.near !== null && once('heapHint')) ctx.hint('E TAKES A ROCK FROM THE HEAP. ATTACK THROWS IT - UP LOBS IT TO THE DECKS. A ROCK KNOCKS A RAFTER ARCHER DOWN.');
-    S.arc = heldRock(P) && !P.dead ? arcFor(P, CT.aimOf('courtrock', P.face || 1, ctx.keys()).aim) : null;
-  }
-
   /* (claude/kingsfix2) ANYWHERE ALONG THE ROPE: the line from its pulley (on the deck) down to a peg is as good as the peg - a blow that crosses it parts it */
   const ropeHit = (hb, r, pegX) => { const x0 = r.x, y0 = r.deck[2] + 21, x1 = pegX, y1 = r.pegY - 13; for (let k = 0; k <= 14; k++) { const t = k / 14, qx = x0 + (x1 - x0) * t, qy = y0 + (y1 - y0) * t; if (ctx.overlap(hb, { l: qx - 3, r: qx + 3, t: qy - 3, b: qy + 3 })) return true; } return false; };
   /* the big cage (main.js calls it for a hall cage, `pr.big`): the sprite of the glade's cages, hung from its pulley, the straw spilled when it has come down */
@@ -356,7 +318,7 @@ export function makeGormHands(ctx) {
     if (!S) return; S.clankT = Math.max(0, (S.clankT || 0) - dt);
     if (hallOn() && S.n.fightAt === undefined) S.n.fightAt = Math.round(ctx.time() * 10) / 10;
     { const Pp = ctx.P(); if (Pp && S.n.fightAt !== undefined && S.n.p1At === undefined) { if (S.lastHp !== undefined && Pp.hp < S.lastHp) S.n.p1Taken = (S.n.p1Taken || 0) + (S.lastHp - Pp.hp) / Pp.maxHp; if (S.lastFl !== undefined && (Pp.flasks || 0) < S.lastFl) S.n.p1Drinks = (S.n.p1Drinks || 0) + 1; S.lastHp = Pp.hp; S.lastFl = Pp.flasks || 0; } }   /* (claude/kingsfix2 measuring: what P1 cost the hero) */
-    hallStep(dt); arrowsStep(dt); rocksStep(dt); runStep(dt); hangStep(dt); gladeFx(dt); potsStep(dt); sceptreStep(dt); trailStep(dt);
+    hallStep(dt); arrowsStep(dt); runStep(dt); hangStep(dt); gladeFx(dt); potsStep(dt); sceptreStep(dt); trailStep(dt);
     const e = king(), lv = L();
     if (typeof window !== 'undefined' && S.n.fightAt !== undefined) window.__gormN = S.n;   /* (claude/gorm3 measuring: tools/boss-run.mjs reads it after the fight) */
     if (S.n.fightAt !== undefined && e && e.alive) S.n.lastT = Math.round(ctx.time() * 10) / 10;   /* (claude/gorm3 measuring: the last moment he stood) */
@@ -372,8 +334,7 @@ export function makeGormHands(ctx) {
     if (!S) return false; const e = king(); if (!e) return false; e.maxHp2 = e.maxHp2 || Math.round((e.maxHp || GORM.hp1) * GORM.hp2 / GORM.hp1);
     persist = { stage: 'flee', runDone: false }; toGlade(e); L().arena = L().glade; S.run.armed = true; S.run.on = false; S.run.done = false; L().oakBurn = 0.4; return true; };
   H.read = () => S ? { act: S.act, ropes: S.ropes.map(r => ({ i: r.i, x: r.x, pegs: r.pegs.slice(), free: !ropeLocked(r) && !r.cage.dropped && !r.cage.spent, dropped: r.cage.dropped, spent: !!r.cage.spent, landed: r.cage.landed })),
-    bows: bows().map(q => ({ x: q.x, y: q.y, rope: q.rope, aim: q.aim ? { t: q.aim.t, tx: q.aim.tx, ty: q.aim.ty } : null })), arrows: S.arrows.map(a => ({ x: a.x, y: a.y, vx: a.vx, vy: a.vy })), rocks: S.rocks.map(q => ({ x: Math.round(q.x), y: Math.round(q.y), vx: Math.round(q.vx), vy: Math.round(q.vy), state: q.state })),
-    heaps: G().hall.heaps.slice(), arc: S.arc ? { n: S.arc.pts.length, land: S.arc.land ? { x: Math.round(S.arc.land.x), y: Math.round(S.arc.land.y), hit: !!S.arc.land.hit } : null } : null, held: !!heldRock(ctx.P()), heapNear: S.near, aim: H.aimAt(),
+    bows: bows().map(q => ({ x: q.x, y: q.y, rope: q.rope, aim: q.aim ? { t: q.aim.t, tx: q.aim.tx, ty: q.aim.ty } : null })), arrows: S.arrows.map(a => ({ x: a.x, y: a.y, vx: a.vx, vy: a.vy })),
     run: { on: S.run.on, done: S.run.done, fireX: S.run.fireX, armed: S.run.armed }, persist: persist ? { ...persist } : null, zones: zones().map(z => ({ x0: z.x0, x1: z.x1, y: z.y, on: z.on })),
     branches: S.branches.map(b => ({ x: b.x, y: b.y, state: b.state })),
     hangs: S.hangs.map(h => ({ kind: h.d.kind, x: h.d.x, lx: h.lx, pegs: h.d.pegs.slice(), state: h.state, roll: h.d.roll || 0 })), cones: S.cones.map(c => ({ x: c.x, t: c.t, state: c.state })),
@@ -408,7 +369,7 @@ export function makeGormHands(ctx) {
   };
   H.drawWorld = (g, cx, cy, time) => {
     if (!S || !H.on()) return; const VW = ctx.VW(), VH = ctx.VH(), P = ctx.P(), lv = L(), gd = G();
-    /* THE HALL: each rope's DECK dressed (a hunters' blind with a windlass), the ropes, the pegs (locked: a padlock and lashing; free: the gold glint), the heaps, the told arrows, the rocks */
+    /* THE HALL: each rope's DECK dressed (a hunters' blind with a windlass), the ropes, the pegs (locked: a padlock and lashing; free: the gold glint), the told arrows */
     const fight = hallOn();
     for (const r of S.ropes) { const dx0 = R(r.deck[0] - cx), dx1 = R(r.deck[1] - cx); if (dx1 > -30 && dx0 < VW + 30) g.drawImage(GH.deck(r.deck[1] - r.deck[0], r.x - r.deck[0]), dx0 - 8, R(r.deck[2] - cy) - GH.DECK_H); }
     for (const r of S.ropes) for (const pgx of r.pegs) { const px = R(r.x - cx), py = R(r.deck[2] + 16 - cy), gx = R(pgx - cx), gy = R(r.pegY - cy); if (Math.max(px, gx) < -60 || Math.min(px, gx) > VW + 60) continue;
@@ -419,10 +380,6 @@ export function makeGormHands(ctx) {
         if (locked) { g.drawImage(GH.padlock(), gx - 6, gy - 36);
           if (fight && first && S.act === r.i) { g.save(); g.globalAlpha = 0.5 + 0.3 * Math.sin(time * 6); g.strokeStyle = '#ff9a5c'; g.lineWidth = 1; g.strokeRect(R(r.deck[0] - cx) - 2, R(r.deck[2] - cy) - 22, R(r.deck[1] - r.deck[0]) + 4, 24); g.restore(); } }
         else if (fight && first) { g.fillStyle = 'rgba(255,233,160,0.5)'; for (let y = R(c.y0 - cy) + 2; y < gy; y += 5) g.fillRect(R(c.x - cx), y, 1, 2); } } }
-    for (const hx of gd.hall.heaps) { const x = R(hx - cx), y = R(gd.hall.floor - cy); if (x < -30 || x > VW + 30) continue;
-      g.drawImage(GH.heap(), x - 20, y - 21);
-      if (fight && S.near === hx && !heldRock(P) && ctx.text) ctx.text('E: A ROCK', x, y - 26, '#ffd36b', 'center');
-      else if (fight && !heldRock(P)) { const k = 0.5 + 0.5 * Math.sin(time * 5 + hx); g.save(); g.globalAlpha = 0.35 + 0.35 * k; g.strokeStyle = '#ffd36b'; g.beginPath(); g.ellipse(x + 0.5, y - 6, 15 + k * 2, 6, 0, 0, 6.283); g.stroke(); g.restore(); } }
     /* THE BURNING WOOD: the burning ground, the branches (marked), the lit patches */
     for (const z of zones()) { const x0 = R(z.x0 - cx), x1 = R(z.x1 - cx), y = R(z.y - cy); if (x1 < -20 || x0 > VW + 20) continue;
       if (z.tell) { g.save(); g.globalAlpha = 0.35 + 0.35 * Math.sin(time * 18); f(g, '#ff9a5c', x0, y - 2, x1 - x0, 2); FX.flame(g, (x0 + x1) / 2, y, 'S', time, z.x0); g.restore(); continue; }
@@ -461,16 +418,13 @@ export function makeGormHands(ctx) {
           else { g.drawImage(GG.hive(false), lx - 13, ly - 28 + 6); GG.bees(g, lx, ly - 12, 4, 12, time); } } }
     }
   };
-  /* THE TOLD LAYER (after the foes, over the dark pass: main.js calls it where the winch rocks draw): the rafter archers' drawn arcs and their arrows, the rock in the air and its
-     told arc, the wall of fire, the cones' marks, the rolling logs, the quake's crest, the swarm */
+  /* THE TOLD LAYER (after the foes, over the dark pass: main.js calls it where the winch rocks draw): the rafter archers' drawn arcs and their arrows, the wall of fire, the cones' marks, the rolling logs, the quake's crest, the swarm */
   H.drawFront = (g, cx, cy, time) => {
     if (!S || !H.on()) return; const VW = ctx.VW(), VH = ctx.VH(), P = ctx.P();
     for (const q of bows()) if (q.aim) { g.save(); g.fillStyle = '#ff4a3c'; const pts = q.aim.pts, n = pts.length, k = 1 - q.aim.t / GORM.archers.tell;
       for (let i = 1; i < n; i++) { if (i / n > 0.25 + k) break; g.globalAlpha = 0.6 + 0.4 * (i / n); g.fillRect(R(pts[i][0] - cx) - 1, R(pts[i][1] - cy) - 1, 3, 3); }
       g.globalAlpha = 0.6; g.strokeStyle = '#ff6b5c'; g.beginPath(); g.ellipse(R(q.aim.tx - cx) + 0.5, R(q.aim.ty + 6 - cy), 8, 3, 0, 0, 6.283); g.stroke(); g.restore(); }
     for (const a of S.arrows) { const x = R(a.x - cx), y = R(a.y - cy), an = Math.atan2(a.vy, a.vx); g.save(); g.translate(x, y); g.rotate(an); g.drawImage(GH.arrow(), -9, -2); g.restore(); }
-    for (const q of S.rocks) { const x = R(q.x - cx), y = R(q.y - cy); g.drawImage(GH.rock(), x - 4, y - 4); }
-    if (S.arc) CT.drawArc(g, S.arc, cx, cy, time, S.arc.land && S.arc.land.hit ? '#ffd36b' : '#eef2fa');
     if (persist && (S.run.on || S.run.armed) && !S.run.done) { const fx = R(S.run.fireX - cx); if (fx > -80) {
       /* the wall of fire: everything behind it is burning (a red wash), the wall itself a baked column of flame in three frames, a bed of flame along the floor, smoke over it, sparks off it */
       const fl = R(G().hall.floor - cy), frames = GG.fireWall(VH), wk = Math.floor(time * 9) % 3;
