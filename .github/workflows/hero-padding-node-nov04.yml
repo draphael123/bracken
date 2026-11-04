@@ -1,10 +1,11 @@
 name: Hero padding original Node fallback checks
 on:
+  workflow_dispatch:
   push:
     branches: [codex/load-perf]
     paths:
-      - tools/hero-padding-native-nov04/**
-      - .github/workflows/hero-padding-node-nov04.yml
+      - tools/hero-padding-native-nov04/node-*.json
+      - tools/hero-padding-native-nov04/node-*.mjs
 permissions: {contents: read}
 jobs:
   safety:

@@ -4,16 +4,16 @@ import path from 'node:path';
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { OUT, openFixedArtPage } from './baseline-memory-profile-page-oct30.mjs';
-import { runHeroPaddingCase } from './hero-padding-native-nov04/cases.mjs';
+import { OUT, openFixedArtPage } from '../baseline-memory-profile-page-oct30.mjs';
+import { runHeroPaddingCase } from './cases.mjs';
 
 
 assert(process.env.CI);
 for (const name of ['BRACKEN_RENDERER_MB', 'BRACKEN_RECYCLE_MB', 'BRACKEN_LAB_GC']) assert.equal(process.env[name], undefined);
-const data = new URL('./hero-padding-native-nov04/', import.meta.url);
+const data = new URL('./', import.meta.url);
 const manifestBytes = fs.readFileSync(new URL('manifest.json', data));
 const manifest = JSON.parse(manifestBytes);
-const fixtureBytes = fs.readFileSync(new URL('./retile-repaired-native-source-oct31/fixtures.json', import.meta.url));
+const fixtureBytes = fs.readFileSync(new URL('../retile-repaired-native-source-oct31/fixtures.json', import.meta.url));
 const fixtures = JSON.parse(fixtureBytes);
 const sha = bytes => createHash('sha256').update(bytes).digest('hex');
 assert.equal(sha(fixtureBytes), 'e6a8d60e18e34c9fdd874412ac5c005efb12c148fff12f06098a655e3cd24c32');
@@ -35,7 +35,7 @@ process.env.BRACKEN_PROCESS_LOG = OUT + '/component.processes.jsonl';
 const receipt = { time: new Date().toISOString(), status: 'Running native factory compatibility',
   controller: execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(),
   sourceProof: manifest.proof, manifestSha256: sha(manifestBytes), fixturesSha256: sha(fixtureBytes),
-  casesSha256: sha(fs.readFileSync(new URL('./hero-padding-native-nov04/cases.mjs', import.meta.url))),
+  casesSha256: sha(fs.readFileSync(new URL('./cases.mjs', import.meta.url))),
   rendererMb: 1536, admissionMb: 4352, complete: false, adopted: false, overallWorkComplete: false };
 const save = () => fs.writeFileSync(OUT + '/receipt.json', JSON.stringify(receipt, null, 2) + '\n');
 save();

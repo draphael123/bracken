@@ -3,7 +3,9 @@ on:
   push:
     branches: [codex/load-perf]
     paths:
-      - tools/hero-padding-native-nov04/**
+      - tools/hero-padding-native-nov04/manifest.json
+      - tools/hero-padding-native-nov04/cases.mjs
+      - tools/hero-padding-native-nov04/component.mjs
       - .github/workflows/hero-padding-native-nov04.yml
 permissions: {contents: read}
 jobs:
