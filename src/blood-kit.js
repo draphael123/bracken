@@ -41,9 +41,9 @@ export const BLOOD = {
   lash: { reach: 24, top: 22, bot: 6, from: 0.15, bleed: 2 },
   /* (claude/bkblood) VITAE - his meter (it was BLOOD SURGE's harvest bar, filled by kills and blocks): it fills ONLY from the health he reclaims - aggression after being
      hit. `per` of his max health reclaimed fills it. FULL + HOLD F = CRIMSON FRENZY (it is his ULT 1 for the three-ultimates system, brief-herometers-1015 !! 10-23) */
-  vitae: { per: 0.35 },   /* (claude/bkrework: was 0.6 - 57 hp reclaimed filled it; now 33 hp at 95 max) */
+  vitae: { per: 0.35, gain: { cut: 4, third: 6, heavy: [0, 6, 8, 10, 12, 14], parry: 20, ward: 3 } },   /* (claude/bkrework: was 0.6 - 57 hp reclaimed filled it; now 33 hp at 95 max) */
   /* (claude/bkrework, plan sec 2) VITAE ALSO FILLS FROM HIS OFFENCE: a landed rhythm cut +cut, the BLOOD LASH / DEBT DRAIN third cut +third, a held heavy +heavy[tier], a CRIMSON PARRY / BLOOD SPIKE +parry, a blow the ward holds +ward. No drain. */
-  gain: { cut: 4, third: 6, heavy: [0, 6, 8, 10, 12, 14], parry: 20, ward: 3 },
+
   /* (claude/bkrework, plan sec 3) RED REQUIEM (UP+C at full VITAE, grounded; replaces CRIMSON FRENZY): windup s told (helm flare + toll), then the greatsword is driven into the ground: a blood GEYSER column + a ring (ring px).
      Damage swordDmg x k (src/skill-k.js 'redRequiem'). A common foe: stagger s + bleed s. A BOSS / mini: no stagger, no stun (resist floor) - HEMORRHAGE only. HEMORRHAGE hemT s on every foe hit: his blows on it deal hemMul and reclaim hemReclaim (all of the blow),
      and his debt does not drain while it is on any foe; a damage multiplier ONLY (never breaks a guard or lowers a boss below its floor). UNFLINCHING to light blows for the hemT s (no i-frames, no swing speed-up). */
@@ -68,7 +68,7 @@ export const BLOOD = {
   moon: { reach: 58, mul: 0.9 },
   /* (claude/bkfeel) DEBT EMPOWERS T4/T5: min = the debt (of max hp) that makes the blow BLOOD-FED (said, and the deeper glow); heal = of the spent debt that comes back into him when the
      empowered blow LANDS (never above where he was before the hits, as every reclaim) */
-  empower: { min: 0.03, heal: 0.5 },
+  empower: { min: 0.03, heal: 0.75 },
   /* (claude/bkfeel) THE WARD-RELEASE PARRY'S WEIGHT (Daniel 10-21 "make his PARRY feel more impactful - the Warden's feels good"): stop = the freeze (s; the Warden's deflect 0.07, the
      knight's perfect guard 0.09), slow = the crimson held breath after it (s of the world at slowT's 0.3 speed), flash = the crimson wash (s), push = px the foe stumbles back (it stays in the
      greatsword's reach: the old 240 px/s shove was zeroed by the shared parry reel the next frame), stagger = s it reels, window = s his riposte waits (the shared 0.6 is short for a greatsword;
@@ -141,7 +141,8 @@ export function debtStep(p, dt, { freeze = false, dead = false } = {}) {
   if ((p.bdHold || 0) > 0) { p.bdHold -= dt; return; }
   p.bd = Math.max(0, p.bd - (p.bdRate || p.bd / D.drainT) * dt);
 }
-export function debtAdd(p, n) { const D = BLOOD.debt; if (!(n > 0)) return; p.bd = (p.bd || 0) + n; debtClamp(p); p.bdHold = D.hold; p.bdRate = p.bd / Math.max(0.1, D.drainT - D.hold); }
+export function debtAdd(p, n) { const D = BLOOD.debt; if (!(n > 0)) return; p.bkAnswered = false;   /* (claude/bkrework) a new debt re-arms THE ANSWER */
+  p.bd = (p.bd || 0) + n; debtClamp(p); p.bdHold = D.hold; p.bdRate = p.bd / Math.max(0.1, D.drainT - D.hold); }
 export function debtClamp(p) { const D = BLOOD.debt; p.bd = Math.max(0, Math.min(p.bd || 0, D.cap * p.maxHp, Math.max(0, p.maxHp - p.hp))); }
 /* a landed blow of his that did `dmg`: part of the segment comes back as health. Returns the health given. */
 export function debtReclaim(p, n) { if (!(p.bd > 0) || !(n > 0) || !(p.hp > 0)) return 0; const r = Math.min(p.bd, n, Math.max(0, p.maxHp - p.hp)); p.hp += r; p.bd -= r; p.bdLast = p.hp;
@@ -150,7 +151,7 @@ export function debtReclaim(p, n) { if (!(p.bd > 0) || !(n > 0) || !(p.hp > 0)) 
 /* (claude/bkblood) what a landed blow of `dmg` wins back: x debt.reclaim, x bleed.hitMul on a bleeding foe, all of it in a CRIMSON FRENZY */
 export const reclaimOf = (dmg, o = {}) => Math.max(BLOOD.debt.reclaimMin, dmg * reclaimWeight(o) * (o.bleeding ? BLOOD.bleed.hitMul : 1));
 /* (claude/bkrework) the share of a blow that comes back: o.hem (a foe in HEMORRHAGE) all of it; else by weight o.weight 'light' | 'third' | 'heavy' (or a number); the old flat 0.5 when none is given */
-export const reclaimWeight = (o = {}) => o.hem ? BLOOD.requiem.hemReclaim : typeof o.weight === 'number' ? o.weight : o.weight ? (BLOOD.debt.reclaimW[o.weight] ?? BLOOD.debt.reclaim) : BLOOD.debt.reclaim;
+export const reclaimWeight = (o = {}) => o.hem ? BLOOD.requiem.hemReclaim : typeof o.weight === 'number' ? o.weight : o.weight ? (BLOOD.reclaimW[o.weight] ?? BLOOD.debt.reclaim) : BLOOD.debt.reclaim;
 /* (claude/bkrework) VITAE a landed blow is worth: kind 'cut' | 'third' | 'heavy' (tier) | 'parry' | 'ward' (the plan's table; 0 for anything else) */
 export function vitaeGain(kind, tier = 0) { const G = BLOOD.vitae.gain; if (kind === 'heavy') return G.heavy[Math.max(0, Math.min(5, tier | 0))] || 0; return G[kind] || 0; }
 /* (claude/bkblood) VITAE: the meter points (0-100) `hp` reclaimed health is worth on a max health of maxHp */

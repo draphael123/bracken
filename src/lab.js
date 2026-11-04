@@ -261,6 +261,7 @@ export const KNIGHT_CUT = 0.56, knightCutAt = e => KNIGHT_CUT;   /* (claude/knig
 export const ULT_BOT = (BK, P, h, ad, dy) => { if (P.cWas || !(P.ground || P.swim) || P.atk >= 0 || P.charge > 0 || P.rgGreat) return false;
   if (h === 'geomancer') { const G = BK.geo && BK.geo(); return !!G && G.avalancheReady() && ad < 220 && Math.abs(dy) < 40; }
   if (h === 'ranger') { const R = BK.rgk && BK.rgk(); return !!R && R.greatReady() && ad > 50 && ad < 300 && Math.abs(dy) < 30; }
+  if (h === 'reaper') return (P.harvest || 0) >= 100 && !((P.bkReqT || 0) > 0) && !((P.bkReqWind || 0) > 0) && !(P.hurt > 0) && ad < 90 && Math.abs(dy) < 40;   /* (claude/bkrework) RED REQUIEM: a foe in the ring (110 px), close enough that the geyser lands */
   return false; };
 /* (claude/geopop e) DOWN+C: the geomancer blows her board when two or more stones stand and a foe is in the radius of one (an AVALANCHE at a full board is spent first - ULT_BOT) */
 export const DET_BOT = (BK, P, h) => { if (h !== 'geomancer' || P.cWas || !(P.ground || P.swim) || P.atk >= 0 || P.charge > 0 || P.blastT > 0) return false; const G = BK.geo && BK.geo(); return !!G && !!G.detonateWorth && G.detonateWorth(); };
@@ -404,7 +405,6 @@ function labBotFrame(BK, h, e, f) {
   const d = e.x - P.x, ad = Math.abs(d); if (!(P.dash > 0) && !(P.rush > 0)) P.face = Math.sign(d) || P.face;
   const threat = threatOf(e) && !HELD(e) && ad < 70 && Math.abs(e.y - P.y) < 50;
   k.left = false; k.right = false; k.block = false; k.atk = false; k.up = false; k.down = false; k.jump = false;
-  if (h === 'reaper') { k.throw = P.harvest >= 100; if (k.throw && !(P.fHeld > 0)) BK.press('throw'); }   /* HOLD F on a full bar: the surge */
   if (duckNow(BK, h, e)) { defend = 1; k.down = true; BK.unpress(); }   /* THE DUCK: a high blow goes over (duckNow) */
   else if (emberPlan(BK, h, e)) { defend = 1; k.block = wardTap(BK, h, e); BK.unpress(); }   /* (claude/pyrokit) THE FLAME WARD: stood still for a yellow windup and tapped in its last beat (emberPlan) */
   else if (lowGuardNow(BK, h, e) || setSpearNow(BK, h, e)) { defend = 1; k.down = true; BK.unpress(); }   /* THE KNIGHT'S LOW GUARD, THE WARDEN'S SET SPEAR (src/crouch-a.js) */
@@ -428,7 +428,7 @@ function labBotFrame(BK, h, e, f) {
   { const fire = fireAt(BK, P.x, P.y); if (fire && !(h === 'pyro')) { const away = Math.sign(P.x - fire.x) || -Math.sign(d) || 1; k.left = away < 0; k.right = away > 0; k.atk = false; k.block = false; } }   /* (her own fire does not burn her) */
   if (h === 'knight' && !threat && !k.atk && !(P.charge > 0) && LAST_CHARGE(P, ad, e.y - P.y)) { k.left = false; k.right = false; k.up = true; k.block = true; }
   if (h === 'geomancer' && !threat && !k.atk && !(k.up && k.block) && DET_BOT(BK, P, h)) { k.left = false; k.right = false; k.up = false; k.down = true; k.block = true; }   /* (claude/geopop) DOWN+C: DETONATE (the ultimate below overrides it at a full board) */
-  if ((h === 'geomancer' || h === 'ranger') && !threat && !k.atk && ULT_BOT(BK, P, h, ad, e.y - P.y)) { P.face = Math.sign(d) || P.face; k.left = false; k.right = false; k.up = true; k.block = true; }   /* (claude/ults) UP+C at a full meter */
+  if ((h === 'geomancer' || h === 'ranger' || h === 'reaper') && !threat && !k.atk && ULT_BOT(BK, P, h, ad, e.y - P.y)) { P.face = Math.sign(d) || P.face; k.left = false; k.right = false; k.up = true; k.block = true; }   /* (claude/ults) UP+C at a full meter */
   { const sn = snatchNow(BK, h); if (sn) { P.face = Math.sign(sn.x - P.x) || P.face; k.block = !P.cWas; k.up = false; k.down = false; } }   /* (claude/heropassa) ARROW SNATCH */
   return { defend, swing };
 }
@@ -2282,8 +2282,7 @@ async function runbossLab(BK, opts) {
       k.left = false; k.right = false; k.block = false; k.up = false; k.down = false; k.jump = false; k.atk = false;
       if (h === 'paladin' && f < holdC) k.block = true;
       if (h === 'reaper' && f < dkHold) k.block = true;
-      if (h === 'reaper') { k.throw = false;   /* with a full bar and the boss close, HOLD F for the surge (claude/bkkit2: SUMMON THRALL is gone - his RED HOST spells are cast by the skill hands, src/lab-perceive.js, like every hero's) */
-        if (P.harvest >= 100 && ad < 110 && !(boss.mode && /Tell$/.test(boss.mode))) { k.throw = true; if (!(P.fHeld > 0)) BK.press('throw'); } }
+      if (h === 'reaper') { k.throw = false; }   /* (claude/bkrework) the full VITAE bar is spent on UP+C: RED REQUIEM, ULT_BOT below (HOLD F is inert; his RED HOST spells are cast by the skill hands, src/lab-perceive.js) */
       let goal = null, strike = false, princeT = null, lampT = null, fgA = null; P.labSwimY = undefined;
       /* HER DRONES, while two of them are up: the nearest one, and the queen's own openings come first */
       const swarm = boss.t === 'queen' ? BK.enemies().filter(q => q.alive && q.t === 'wasp' && q.drone) : [];
@@ -3086,7 +3085,7 @@ async function runbossLab(BK, opts) {
       { const sn = snatchNow(BK, h); if (sn) { P.face = Math.sign(sn.x - P.x) || P.face; k.block = !P.cWas; } }   /* (claude/heropassa) ARROW SNATCH */
       if (h === 'knight' && !valiantWall && open && !tell && !rushing && !k.block && LAST_CHARGE(P, ad, boss.y - P.y)) { P.face = Math.sign(d) || P.face; k.left = false; k.right = false; k.jump = false; k.up = true; k.block = true; }
       if (h === 'geomancer' && !tell && !rushing && !k.block && DET_BOT(BK, P, h)) { k.left = false; k.right = false; k.jump = false; k.up = false; k.down = true; k.block = true; }   /* (claude/geopop) DOWN+C: DETONATE (the ultimate below overrides it at a full board) */
-      if ((h === 'geomancer' || h === 'ranger') && !tell && !rushing && !k.block && ULT_BOT(BK, P, h, ad, boss.y - P.y)) { P.face = Math.sign(d) || P.face; k.left = false; k.right = false; k.jump = false; k.up = true; k.block = true; }   /* (claude/ults) UP+C at a full meter */
+      if ((h === 'geomancer' || h === 'ranger' || h === 'reaper') && !tell && !rushing && !k.block && ULT_BOT(BK, P, h, ad, boss.y - P.y)) { P.face = Math.sign(d) || P.face; k.left = false; k.right = false; k.jump = false; k.up = true; k.block = true; }   /* (claude/ults) UP+C at a full meter */
       /* (claude/bztune) THE BERSERKER'S OWN KEYS. FRENZY IS DOWN+C at a full bar (a plain C there is TAKE IT, which the beat-taps already use);
          the bar is spent as a player spends it - near the boss, between his tells. THE POUNCE: coiled (DOWN held 0.4 s) then DOWN let go with a way held,
          a gap-closer used from range, a few times a fight (not a spam). TAKE IT stays on the beat taps above. */
