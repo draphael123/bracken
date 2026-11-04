@@ -164,6 +164,7 @@ import * as TR from './title-region.js';   /* THE TITLE BY REGION (claude/titler
 import { depthsOf, gateOf } from './campaign-order.js'; import { roadEndId, roadTally } from './ending.js';   /* CATCH-UP XP: how deep a level sits is the level a hero is expected to be in it */
 import { GROUND_KITS } from './dressing.js';
 import { lightSupport } from './fixtures.js';
+import * as DS from './demo-flag.js'; import * as DSV from './demo-save.js'; import * as DEND from './demo-end.js';   /* (claude/demoend) THE DEMO FLAG (?demo=1), a demo save's tag and the END CARD: all inert with the flag off (tools/demo-cut.mjs) */
 import * as DSL from './demo-slots.js';   /* (claude/floatfix2) a window through the terrain is backed with masonry */
 import * as HNT from './redraw/hornets_nest_tiles.js'; import * as HNB from './redraw/hornets_nest_backdrop.js'; import * as HNPR from './redraw/hornets_nest_props.js'; import * as HNHY from './redraw/hornets_nest_honey.js'; import { bakeMapNest } from './redraw/hornets_nest_map.js';   /* (claude/hornetsnestart) THE HORNET'S NEST's tile kit and backdrop */ import * as FRA from './redraw/fen_road_art.js'; import * as FNB from './redraw/fen_backdrop.js'; import * as FPA from './redraw/fen_planks_art.js'; import * as HPL from './redraw/hero_plank_poses.js';   /* (claude/fenroad2art) THE FEN ROAD's own backdrop */ import * as M3A from './redraw/marsh3_art.js';   /* (claude/marsh3art) MARSH WOOD 3's reed stands, current rafts, log boom, winch, night (src/redraw/marsh3_art.js) */
 import * as LPD from './redraw/lilypad.js';   /* (claude/marsh3) the readable lily pads: rim, water edge, two tints, the sinking tell, the night's marsh lights */
@@ -416,7 +417,7 @@ const slotKeys = () => Array.from({ length: SLOTS }, (_, j) => slotKey(j));
 let saveFail = '';   /* the last write that did not land ('SAVE FAILED - STORAGE FULL'), '' once one does: a banner shows it and every save retries */
 let ROSTER = HR.STARTERS.slice(), rosterReady = false;   /* THE DEVICE-LEVEL HERO ROSTER (claude/heroroster, src/hero-roster.js): every hero any slot has ever owned, on this device */
 function rosterNote() { if (!rosterReady) return; try { ROSTER = HR.addHeroes(localStorage, ROSTER, Object.keys(PROG.heroes || {}).filter(h => PROG.heroes[h])).heroes; } catch {} }
-function progDefaults() { DFM.setSaveMode(PROG.mode);   /* (claude/difficulty) the save's mode (PROG.mode: story / normal / master; ?difficulty= overrides) */ if (!PROG.heroes) PROG.heroes = { knight: true }; if (!PROG.hero) PROG.hero = 'knight'; if (!PROG.music) PROG.music = { select: true }; if (!PROG.music.select) PROG.music.select = true; PROG.coins = PROG.coins || 0; PROG.hedgeHint = PROG.hedgeHint || 0; if (!PROG.deathCost) PROG.deathCost = freshDeathCost(); PROG.skins = PROG.skins || { bracken: true }; PROG.skin = PROG.skin || 'bracken'; PROG.swords = PROG.swords || { steel: true }; PROG.sword = PROG.sword || 'steel'; PROG.items = PROG.items || {}; PROG.charms = PROG.charms || {}; PROG.done = PROG.done || {}; PROG.charmOf = PROG.charmOf || {};
+function progDefaults() { if (DS.DEMO) DSV.tag(PROG, LEVELS);   /* (claude/demoend) a save the demo plays is TAGGED (demoSave): the full game's IMPORT SAVE reads the tag (src/demo-save.js) */ DFM.setSaveMode(PROG.mode);   /* (claude/difficulty) the save's mode (PROG.mode: story / normal / master; ?difficulty= overrides) */ if (!PROG.heroes) PROG.heroes = { knight: true }; if (!PROG.hero) PROG.hero = 'knight'; if (!PROG.music) PROG.music = { select: true }; if (!PROG.music.select) PROG.music.select = true; PROG.coins = PROG.coins || 0; PROG.hedgeHint = PROG.hedgeHint || 0; if (!PROG.deathCost) PROG.deathCost = freshDeathCost(); PROG.skins = PROG.skins || { bracken: true }; PROG.skin = PROG.skin || 'bracken'; PROG.swords = PROG.swords || { steel: true }; PROG.sword = PROG.sword || 'steel'; PROG.items = PROG.items || {}; PROG.charms = PROG.charms || {}; PROG.done = PROG.done || {}; PROG.charmOf = PROG.charmOf || {};
   if (!PROG.perHero) { PROG.perHero = 1;                     /* the save's progress belongs to whoever was carrying it */
     const h = PROG.hero || 'knight', d = PROG.done[h] = PROG.done[h] || {};
     for (const lv of LEVELS) if (!lv.hidden && PROG[lv.id] && PROG[lv.id].cleared) d[lv.id] = 1;
@@ -2179,7 +2180,7 @@ let lives = Infinity, bannerT = 0, soundI = 0, soundCat = 0;
 // the new entry, the Settings list (as it always has) for the old one - so this remembers which door it came in.
 let soundFrom = 'menu';
 let wnScroll = 0, wnLimit = 0; WN.loadUpdates();   /* WHAT'S NEW: the first row shown, and the last first-row (set by the drawing) */
-let creditsPage = 0;   /* the title's CREDITS: which page (src/credits.js) */
+let creditsPage = 0, demoCreditsBack = false;   /* the title's CREDITS: which page (src/credits.js) */
 let stop = 0, shake = 0, kick = 0, camX = 0, camY = 0, flash = 0, killFlash = 0, introSeen = false, earned = 0;
 /* THE HERO'S FEET, DOWN THE SCREEN (look-and-feel review, 2026-09-26): on flat ground the follow camera used to hold them at
    58% down the buffer, so about 40% of every ordinary screen was fill under the floor and the backdrop - where the polish
@@ -4974,7 +4975,7 @@ function secretFound(id, n) { const s = SC.byId(id); if (!s) return; const tt = 
 /* THE LIT CHURCH'S ROAD OPENS ON WAYMEET'S THREE VOTIVE LAMPS (claude/towpathchurch, src/votive-hands.js): PROG.votive[id] per lamp, PROG.churchOpen once all burn (or the old Towpath medal / a cleared church: progDefaults' churchMig) */
 const votiveOwned = () => VOTIVE_IDS.filter(id => (PROG.votive || {})[id]).length;
 const votiveLocked = lv => !!lv.votiveLamps && votiveOwned() < VOTIVE_N && !PROG.churchOpen && !(PROG[lv.id] && PROG[lv.id].cleared);
-const levelLocked = lv => !godMode() && !SET.allLevels && (!!lv.locked || (votiveLocked(lv) && !q.get('unlock')) || (bannersLocked(lv) && !q.get('unlock')) || (lv.needs && !(PROG[lv.needs] && PROG[lv.needs].cleared) && !(PROG[lv.id] && PROG[lv.id].cleared) && !(lv.id === 'crown' && PROG.crownOpen) && !(lv.id === 'warcairn' && PROG.crownOpen) && !(lv.id === 'marsh' && PROG.marshOpen) && !(lv.id === 'skyroad' && PROG.skyOpen) && !(lv.id === 'hanging' && PROG.hangingOpen) && !(lv.id === 'kings' && PROG.kingsOpen) && !(lv.id === 'palisadewood' && PROG.palisadeOpen) && !(lv.id === 'underleaf' && PROG.underleafOpen) && !q.get('unlock')) || (opensLocked(lv) && !q.get('unlock')) || ((timeLocked(lv) || killLocked(lv)) && !q.get('unlock')));
+const levelLocked = lv => (DS.DEMO && DS.demoLocked(lv)) || (!godMode() && !SET.allLevels && (!!lv.locked || (votiveLocked(lv) && !q.get('unlock')) || (bannersLocked(lv) && !q.get('unlock')) || (lv.needs && !(PROG[lv.needs] && PROG[lv.needs].cleared) && !(PROG[lv.id] && PROG[lv.id].cleared) && !(lv.id === 'crown' && PROG.crownOpen) && !(lv.id === 'warcairn' && PROG.crownOpen) && !(lv.id === 'marsh' && PROG.marshOpen) && !(lv.id === 'skyroad' && PROG.skyOpen) && !(lv.id === 'hanging' && PROG.hangingOpen) && !(lv.id === 'kings' && PROG.kingsOpen) && !(lv.id === 'palisadewood' && PROG.palisadeOpen) && !(lv.id === 'underleaf' && PROG.underleafOpen) && !q.get('unlock')) || (opensLocked(lv) && !q.get('unlock')) || ((timeLocked(lv) || killLocked(lv)) && !q.get('unlock'))));   /* (claude/demoend) the demo locks every wood past Kingswood, whatever the save, the setting or ?unlock says */
 
 // ---------- world map ----------
 // Five sheets stacked into one tall canvas: the Desert on top, then the road inland, the coast, the crags, the wood at the
@@ -6589,7 +6590,7 @@ function menuConfirm() {
   else if (k === 'Settings') { menuKind = 'settings'; menuI = 1; SFX.uiSel(); }
   else if (k === 'Back') { if (menuFrom === 'play') { menuKind = 'pause'; menuI = PAUSE_ITEMS.indexOf('Settings'); SFX.menuClose(); } else { state = menuFrom; SFX.menuClose(); } }
   else if(k==='Export save'){ const raw=saveBlocked?localStorage.getItem(slotKey(slot)):exportProgress(PROG);if(!raw){menuMsg='No saved data to export';menuMsgT=4;return;}const url=URL.createObjectURL(new Blob([raw],{type:'application/json'})),a=document.createElement('a');a.href=url;a.download='bracken-slot-'+(slot+1)+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);menuMsg='Save exported';menuMsgT=4; }
-  else if(k==='Import save'){const input=document.createElement('input');input.type='file';input.accept='.json,application/json';input.onchange=async()=>{const file=input.files[0];if(!file)return;try{if(file.size>8000000)throw Error('Save file is too large');importProgress(localStorage,slotKey(slot),await file.text(),LEVELS.filter(l=>!l.hidden).map(l=>l.id));loadSlot(slot);applySkin();applyUpgrades();menuMsg='Imported; previous save backed up';}catch(error){menuMsg=error.message;}menuMsgT=8;};input.click(); }
+  else if(k==='Import save'){const input=document.createElement('input');input.type='file';input.accept='.json,application/json';input.onchange=async()=>{const file=input.files[0];if(!file)return;try{if(file.size>8000000)throw Error('Save file is too large');importProgress(localStorage,slotKey(slot),DSV.prepareImport(await file.text(),LEVELS),LEVELS.filter(l=>!l.hidden).map(l=>l.id));loadSlot(slot);applySkin();applyUpgrades();menuMsg='Imported; previous save backed up';}catch(error){menuMsg=error.message;}menuMsgT=8;};input.click(); }
   else if (k === 'Skills') openStore('menu', 'skills');
   else if (k === 'Level card') openCard('menu', true);
   else if (k === 'Store') openStore('menu', 'heroes');
@@ -6982,7 +6983,7 @@ function tavernPadJoin(gps, claimed) {
 }
 function pollGamepad() {
   const gps = padsNow();
-  if (FBF.isOpen()) { const g0 = gps[0]; if (g0) pad.prev = padState(g0, 'pad1'); return; }   /* (claude/feedback) the feedback form owns the pad while it is up: the game under it sees no press */
+  if (FBF.isOpen() || DEND.isOpen()) { const g0 = gps[0]; if (g0) pad.prev = padState(g0, 'pad1'); return; }   /* (claude/feedback) the feedback form owns the pad while it is up: the game under it sees no press */
   const used = padRawTick(gps);   /* the tab shoulders and a button being chosen for an action */
   /* (claude/tavern) THE PARTY'S HANDS, up to four: an online seat takes its guest's keys (src/online.js, by guest id); a local seat bound to a pad takes that
      pad; a local seat with no pad named takes the next free pad in seat order (today's rule: player two the first pad); PLAYER ONE takes the first pad left */
@@ -11747,7 +11748,7 @@ const rushUnlocked = () => godMode() || !!q.get('rush') || !!((PROG.crown || {})
    level (6 rows), so the sub-list never changes its shape. titleOpts is true while the sub-list is up; every tool that wants SETTINGS / SOUND TEST / CONTROLS goes through OPTIONS. */
 let titleOpts = false;
 const titleTop = () => { const base = readSlot(slot) ? ['CONTINUE', 'CHOOSE A SAVE'] : ['NEW GAME', 'CHOOSE A SAVE'];
-  return base.concat(['LOCAL CO-OP', 'ONLINE CO-OP'], rushUnlocked() && !MODES_PARKED ? ['BOSS RUSH'] : [], ['ARENA YARD', 'BOSS SELECT'], MODES_PARKED ? [] : ['THE EDITOR'], ["WHAT'S NEW", 'OPTIONS', 'GIVE FEEDBACK', 'CREDITS']); };
+  return base.concat(['LOCAL CO-OP', 'ONLINE CO-OP'], rushUnlocked() && !MODES_PARKED && !DS.DEMO ? ['BOSS RUSH'] : [], ['ARENA YARD', 'BOSS SELECT'], MODES_PARKED || DS.DEMO ? [] : ['THE EDITOR'], ["WHAT'S NEW", 'OPTIONS', 'GIVE FEEDBACK', 'CREDITS']); };
 /* REPORT A BUG (pause menu and title OPTIONS): the facts the code carries - never the save (src/bug-report.js). The board is DOM (src/bug-report-ui.js). */
 function bugSnapshot() {
   const up = WN.getUpdates()[0] || {}, inLv = !!(L && LEVELS[levelIndex]) && (state === 'play' || state === 'talk' || state === 'win' || state === 'gameover' || state === 'victory' || (state === 'menu' && menuFrom === 'play')), lv = inLv ? LEVELS[levelIndex] : null, S = {};
@@ -11759,6 +11760,21 @@ function bugSnapshot() {
 function openBugReport() { SFX.uiSel(); BUGUI.open(bugSnapshot, () => {}); }
 /* GIVE FEEDBACK (title, pause menu, end-of-demo card): the in-game form (src/feedback-form.js; the destination is src/feedback-config.js). Sends only what is typed + build, level, hero. */
 function openFeedback() { SFX.uiSel(); FBF.open(bugSnapshot, () => {}); }
+/* (claude/demoend) THE END CARD (the DEMO flag only): after King Gorm's win card. KEEP YOUR PROGRESS writes the same file SETTINGS > EXPORT SAVE does (the demo tagged it: src/demo-save.js),
+   so the full game's SETTINGS > IMPORT SAVE takes it. GIVE FEEDBACK is the title's form; CREDITS is the title's page (ESC brings the card back). */
+function demoKeep() {
+  let raw = null; try { saveProgress(); raw = saveBlocked ? localStorage.getItem(slotKey(slot)) : exportProgress(PROG); } catch {}
+  if (!raw) return 'NOTHING TO SAVE YET.';
+  try { const url = URL.createObjectURL(new Blob([raw], { type: 'application/json' })), a = document.createElement('a'); a.href = url; a.download = DEND.KEEP_FILE; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 1000); }
+  catch { return 'THE FILE WOULD NOT SAVE HERE. TRY OPTIONS > SETTINGS > EXPORT SAVE.'; }
+  return 'SAVED. KEEP THE FILE: IT IS YOUR PROGRESS.';
+}
+function demoEndOpen() {
+  state = 'demoend'; music.play(menuTrack()); saveProgress(); SFX.uiSel(); BUG.evlog('demo end card');
+  DEND.open({ keep: demoKeep, feedback: () => openFeedback(), credits: () => { DEND.hide(); creditsPage = 0; demoCreditsBack = true; state = 'credits'; SFX.uiSel(); },
+    map: () => { DEND.close(); state = 'map'; gotoLevelNode(levelIndex); saveProgress(); SFX.menuClose(); },
+    menu: () => { DEND.close(); setView('normal'); state = 'title'; music.play(menuTrack()); SFX.uiSel(); } });
+}
 const titleItems = () => titleOpts ? ['SETTINGS', 'SOUND TEST', 'CONTROLS', 'REPORT A BUG', 'BACK'] : titleTop();
 /* THE EDITOR AND THE BOSS RUSH ARE PARKED, NOT DELETED (Daniel, 2026-09-23): "we need to work on the core game before working on
    these modes." They leave the title menu and every line of their code stays. `?modes=1` brings both back for testing. Do not add
@@ -11824,7 +11840,7 @@ function bossJumpGo(row, h) {
   camX = P.x - VW / 2; camY = P.y - 100;
 }
 let bossSelectFrom = 'title', bossSelectI = 0, bossSelectHero = 'knight', bossSelectWait = 0;
-const bossSelectList = () => bossSelectRows(bossTable(), PROG);
+const bossSelectList = () => bossSelectRows(DS.DEMO ? bossTable().filter(r => !DS.demoLocked(LEVELS[r.li])) : bossTable(), PROG);   /* (claude/demoend) the demo lists only its own bosses */
 const bossSelectHeroes = () => HEROES.filter(h => PROG.heroes?.[h.id]);
 function bossSelectOpen(from = 'title') {
   if (from === 'title') { loadSlot(slot); applySkin(); applyUpgrades(); }
@@ -32247,6 +32263,7 @@ function trnBegin() {
   if (TRN || !L || !LEVELS[levelIndex] || rushOn() || bossSelectFight || edTesting || L.trial || L.shop) return false;
   const entry = TRM.entryFor(LEVELS[levelIndex].id, undefined, { burningOpen: !!PROG.burningOpen }); if (!entry) return false;   /* (claude/demotransitions) a row may ask for flags (Kingswood: the spur open or shut) */
   const to = LEVELS.findIndex(l => l.id === entry.to); if (to < 0) return false;
+  if (DS.DEMO && DS.demoLocked(LEVELS[to])) return false;   /* (claude/demoend) the demo's last wood walks out to nothing: Gorm's win card, then the END CARD */
   if (LEVELS[to].needs !== LEVELS[levelIndex].id && !(LEVELS[to].opensOn && LEVELS[to].opensOn.level === LEVELS[levelIndex].id)) return false;   /* (claude/demotransitions) or a SPUR that hangs off this level (Kingswood -> the Burning Village) */   /* (claude/smallfix5) the table's target must be the NEXT level on the road: the Lumber Trail's ferry carried the party to MARSH WOOD past THE HORNET'S NEST (marsh needs hornetsnest). No row, no cutscene: the normal win card, then the road */
   const key = entry.from + '>' + entry.to;
   if (!TRM.policy({ off: trnOff(), mode: TRM.modeOf(SET.transitions), seen: !!(PROG.transSeen && PROG.transSeen[key]) })) return false;
@@ -32513,6 +32530,8 @@ function update(dt) {
     if (pausePress || atkPress) { state = 'title'; SFX.menuClose(); }
     return; }
   if (state === 'credits') { const n = creditPages(MUSIC_CREDITS).length;
+    const demoBack = demoCreditsBack && (pausePress || (creditsPage === n - 1 && (rightPress || downPress || confirmPress)));   /* (claude/demoend) CREDITS from the END CARD: back to the card (ESC, or onward past the last page: a tap-only phone gets out too) */
+    if (demoBack) { demoCreditsBack = false; state = 'demoend'; DEND.show(); SFX.menuClose(); return; }
     if (leftPress || upPress) { creditsPage = (creditsPage + n - 1) % n; SFX.ui(); } if (rightPress || downPress || confirmPress) { creditsPage = (creditsPage + 1) % n; SFX.ui(); }
     if (pausePress) { state = 'title'; SFX.menuClose(); }
     return; }
@@ -32560,8 +32579,10 @@ function update(dt) {
     return;
   }
   if (state === 'win' && TRN) { trnUpdate(dt); return; }   /* (claude/transwm) */
-  if (state === 'win') { if (bossSelectFight && (confirmPress || pausePress)) { bossSelectQuit(); return; } for (const pp of players) if (pp.dance > 0) pp.dance += dt;   /* a hero dancing when the wood is won keeps dancing behind the plate */ if (Math.random() < dt * 14 && leaves.length < 90) leaves.push({ x: camX + Math.random() * (VW + 60) - 30, y: camY - 6, t: Math.random() * 6, life: 9, col: ['#ffd36b', '#fff6c8', '#8fd160', '#ffe6a0', '#d0648a'][(Math.random() * 5) | 0] }); const nextK = partyNextLevel(); if (nextK >= 0 && confirmPress) { partyGoNext(nextK); return; }   /* (claude/partypersist) CO-OP: Z carries the whole party straight on down the road (ESC is the map) */
-    if (confirmPress || (nextK >= 0 && pausePress)) { if (campaignDone()) { state = 'victory'; saveProgress(); SFX.win(); music.play('ending'); BUG.evlog('end of the road'); } else { state = 'map'; gotoLevelNode(leadOn(levelIndex)); saveProgress(); music.play(menuTrack()); } } updateParticles(dt); updateCorpses(dt); updateWeather(dt); updateCamera(dt); return; }
+  if (state === 'win') { if (bossSelectFight && (confirmPress || pausePress)) { bossSelectQuit(); return; } for (const pp of players) if (pp.dance > 0) pp.dance += dt;   /* a hero dancing when the wood is won keeps dancing behind the plate */ if (Math.random() < dt * 14 && leaves.length < 90) leaves.push({ x: camX + Math.random() * (VW + 60) - 30, y: camY - 6, t: Math.random() * 6, life: 9, col: ['#ffd36b', '#fff6c8', '#8fd160', '#ffe6a0', '#d0648a'][(Math.random() * 5) | 0] }); const nextK = DS.demoEndsHere(LEVELS[levelIndex].id) ? -1 : partyNextLevel(); if (nextK >= 0 && confirmPress) { partyGoNext(nextK); return; }   /* (claude/partypersist) CO-OP: Z carries the whole party straight on down the road (ESC is the map) */
+    if (confirmPress || (nextK >= 0 && pausePress)) { if (DS.demoEndsHere(LEVELS[levelIndex].id) && !bossSelectFight && !rushOn()) { demoEndOpen(); } else if (campaignDone()) { state = 'victory'; saveProgress(); SFX.win(); music.play('ending'); BUG.evlog('end of the road'); } else { state = 'map'; gotoLevelNode(leadOn(levelIndex)); saveProgress(); music.play(menuTrack()); } } updateParticles(dt); updateCorpses(dt); updateWeather(dt); updateCamera(dt); return; }
+  /* (claude/demoend) THE DEMO'S END CARD (src/demo-end.js, a DOM board) holds until a button is taken */
+  if (state === 'demoend') { updateParticles(dt); return; }
   /* THE VICTORY CARD holds until it is dismissed: the end of a campaign is the one screen nobody should have to race */
   if (state === 'victory') { if (confirmPress || pausePress) { state = 'map'; gotoLevelNode(levelIndex); saveProgress(); music.play(menuTrack()); } updateParticles(dt); return; }
   if (state === 'talk') { if (!talk) { state = 'play'; return; } if (pausePress || dodgePress) closeTalk(); else if (talkPress || confirmPress || atkPress) { talk.i++; if (talk.i >= talk.lines.length) closeTalk(); else { SFX.text(); if (talk.who && talk.who.t === 'npc') talk.who.lineI = talk.i; } } return; }
@@ -36975,6 +36996,7 @@ function render() {
   if (state === 'card') drawCard();
   if (state === 'coop') drawCoopPick();
   if (state === 'victory') drawVictory();
+  if (state === 'demoend') { g.fillStyle = 'rgba(8,6,14,0.94)'; g.fillRect(0, 0, VW, VH); }   /* (claude/demoend) the END CARD is DOM (src/demo-end.js); the canvas behind it is a dark page */
   if (state === 'rushover' || state === 'rushwin') {
     const won = state === 'rushwin', col = won ? '#ffd36b' : '#ff6b6b';
     g.fillStyle = won ? 'rgba(24,20,8,0.8)' : 'rgba(30,8,10,0.78)'; g.fillRect(32, 34, VW - 64, 112);
