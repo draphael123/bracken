@@ -1,0 +1,133 @@
+{
+  "time": "2026-11-04T18:09:14.652Z",
+  "status": "Source preparation only. No implementation pass, native proof or Game dispatch.",
+  "parentNativeRun": 41864651192,
+  "parentGameFailure": 41876809745,
+  "parentHelperSha256": "e9b3dbbcb3dd95cf958ed3d1a362c28e02ad7dd6b442bb461b68605c6d60dcdc",
+  "sourceGame": "dc02ecc059959b795f76dee47665b54f349d4e2f",
+  "originalTileSha256": "da71fbb10dbae92735a882adc166e3715d02eaa1573521da609d290a09029001",
+  "files": {
+    "src/skyroad-opaque-rows.js": "9ef0a177e0c7a50ec8eae23789a21b4b6c408bd1fe3d6075c8132a2b14a01c16",
+    "src/redraw/skyroad_tiles.js": "733a937b71aae0d4a857821ae7b1bfe7cccba691ae51ff0c52472869cb3d9dcd",
+    "src/level-tile-cache.js": "43778c2ade337cf4083dbffefee05e34deb8a697f8b34d9bacc624d935a3a4a7"
+  },
+  "helperEdits": [
+    {
+      "before": "const browser = native(documentType) && native(canvasType) && native(contextType) && !!hostDocument;",
+      "after": "const browser = native(documentType) && native(canvasType) && native(contextType) && !!hostDocument && !!own(canvasType,'prototype')?.value && !!own(contextType,'prototype')?.value;"
+    },
+    {
+      "before": "const get=WeakMap.prototype.get,put=WeakMap.prototype.set,has=WeakMap.prototype.has;",
+      "after": "const get=WeakMap.prototype.get,put=WeakMap.prototype.set,has=WeakMap.prototype.has;\nconst describe=own(Object,'getOwnPropertyDescriptors')?.value;"
+    },
+    {
+      "before": "const stable=()=>{if(!pristine)return false;",
+      "after": "// Only native functions or the non-replaceable prototype of an exact named native\n// constructor can be classified without invoking Proxy traps. No constructor lookup\n// through an object or inherited PropertyDescriptor getter is used.\nconst dataValue=d=>d&&own(d,'value')?.value;\nconst batchNames=['Object','Array','Function','Number','WeakMap','WeakRef','Map','Set','String','RegExp','HTMLCanvasElement','CanvasRenderingContext2D','HTMLElement','Element','Node','EventTarget','HTMLDocument','Document'];\nconst batchable=w=>{\n  if(!w.full)return false;\n  if(typeof w.object==='function'&&native(w.object))return true;\n  let constructor;\n  for(let i=0;i<w.names.length;i++)if(w.names[i]==='constructor')constructor=dataValue(w.descriptors[i]);\n  if(typeof constructor!=='function')return false;\n  const text=apply(fnText,constructor,[]);let accepted=false;\n  for(let i=0;i<batchNames.length;i++)if(text==='function '+batchNames[i]+'() { [native code] }')accepted=true;\n  if(!accepted)return false;\n  const d=own(constructor,'prototype');\n  return !!d&&d.configurable===false&&d.writable===false&&dataValue(d)===w.object;\n};\nconst stable=()=>{if(!pristine)return false;"
+    },
+    {
+      "before": "for(let j=0;j<w.names.length;j++)if(!same(own(w.object,w.names[j]),w.descriptors[j]))return false;}return true;};",
+      "after": "const all=w.batch?describe(w.object):null;if(all){const allKeys=keys(all);if(allKeys.length!==w.names.length)return false;for(let j=0;j<allKeys.length;j++)if(allKeys[j]!==w.names[j])return false;}for(let j=0;j<w.names.length;j++)if(!same(all?all[w.names[j]]:own(w.object,w.names[j]),w.descriptors[j]))return false;}return true;};"
+    },
+    {
+      "before": "const rowStats = {",
+      "after": "if(pristine&&native(describe)){for(let i=0;i<watched.length;i++)watched[i].batch=batchable(watched[i]);}\n\nconst rowStats = {"
+    },
+    {
+      "before": "own(CP, 'canvas').get",
+      "after": "own(CP, 'canvas')?.get"
+    },
+    {
+      "before": "own(CP, 'getContextAttributes').value",
+      "after": "own(CP, 'getContextAttributes')?.value"
+    },
+    {
+      "before": "own(CP, 'fillRect').value",
+      "after": "own(CP, 'fillRect')?.value"
+    },
+    {
+      "before": "own(CP, 'fillStyle').set",
+      "after": "own(CP, 'fillStyle')?.set"
+    },
+    {
+      "before": "own(CP, 'globalAlpha').get",
+      "after": "own(CP, 'globalAlpha')?.get"
+    },
+    {
+      "before": "own(CP, 'globalCompositeOperation').get",
+      "after": "own(CP, 'globalCompositeOperation')?.get"
+    },
+    {
+      "before": "export function watchOpaquePalette(palette) {",
+      "after": "const requiredCaps=()=>browser&&native(contextCanvas)&&native(contextAttributes)&&native(fillRectangle)&&native(fillStyle)&&native(alpha)&&native(composition)&&native(dims?.width?.get)&&native(dims?.height?.get);\n\nexport function makeOpaqueMemoOwner() {\n  let trusted=pristine&&requiredCaps();\n  const disabled={taint(){},beforeConstruct(){},beforeOperation(){},beforeBuild(){},paintPermit(){return false;}};\n  if(!trusted)return disabled;\n  const methodNames=['has','get','set','clear'];\n  const mapDescriptors=methodNames.map(name=>own(Map.prototype,name));\n  const initialMapPrototype=Map.prototype,mapBinding=own(globalThis,'Map');\n  const setAdd=own(Set.prototype,'add'),setHas=own(Set.prototype,'has').value;\n  function taint(){trusted=false;}\n  function methods(name){\n    if(!trusted)return false;\n    if(proto(initialMapPrototype)!==OP){taint();return false;}\n    for(let i=0;i<methodNames.length;i++)if((!name||methodNames[i]===name)&&!same(own(initialMapPrototype,methodNames[i]),mapDescriptors[i])){taint();return false;}\n    return true;\n  }\n  return {\n    taint,\n    beforeConstruct(registry){\n      if(!same(own(globalThis,'Map'),mapBinding)||!methods()||!same(own(Set.prototype,'add'),setAdd)||!stable()){taint();return;}\n      // Native Set brand checking cannot call a Proxy trap or foreign getter.\n      // Never inspect a registry that failed that check.\n      try{apply(setHas,registry,[null]);}catch{taint();return;}\n      if(proto(registry)!==Set.prototype||keys(registry).length)taint();\n    },\n    beforeOperation(name){methods(name);},\n    beforeBuild(){if(trusted&&!stable())taint();},\n    paintPermit(){return trusted&&requiredCaps()&&stable();}\n  };\n}\n\nexport function watchOpaquePalette(palette) {"
+    },
+    {
+      "before": "export function makeOpaqueRows(g, zone, y, x, base, lit) {",
+      "after": "export function makeOpaqueRows(g, zone, y, x, base, lit, permit) {"
+    },
+    {
+      "before": "if (!browser || !stable() || typeof zone",
+      "after": "if (!permit || !requiredCaps() || !stable() || typeof zone"
+    }
+  ],
+  "tileEdits": [
+    {
+      "before": "import { levelTileMemo } from '../level-tile-cache.js';",
+      "after": "import { privateOwnedTileMemo } from '../level-tile-cache.js';"
+    },
+    {
+      "before": "makeOpaqueRows, watchOpaquePalette",
+      "after": "makeOpaqueRows, watchOpaquePalette, makeOpaqueMemoOwner"
+    },
+    {
+      "before": "const once = levelTileMemo();",
+      "after": "const memoOwner = makeOpaqueMemoOwner();\nconst once = privateOwnedTileMemo(memoOwner);"
+    },
+    {
+      "before": "const beds = zone => once(",
+      "after": "const beds = (zone, permit = false) => once("
+    },
+    {
+      "before": "  return out; });",
+      "after": "  return out; }, permit);"
+    },
+    {
+      "before": "const rockPx = (zone, absY, base, lit) => { const b = beds(zone)[absY]",
+      "after": "const rockPx = (zone, absY, base, lit, permit = false) => { const b = beds(zone, permit)[absY]"
+    },
+    {
+      "before": "rows.paint(pxl, py, rockPx(zone, ay, base + fl, lit));",
+      "after": "rows.paint(pxl, py, rockPx(zone, ay, base + fl, lit, permit));"
+    },
+    {
+      "before": "function rockFillMass(g, zone, y, x, base, lit, rr) {",
+      "after": "function rockFillMass(g, zone, y, x, base, lit, rr, permit) {"
+    },
+    {
+      "before": "makeOpaqueRows(g, zone, y, x, base, lit);",
+      "after": "makeOpaqueRows(g, zone, y, x, base, lit, permit);"
+    },
+    {
+      "before": "    const [c, g] = canvas(16, 16), r = mulberry(hash(x & 7, y) + 41 + zone);",
+      "after": "    const permit = memoOwner.paintPermit();\n    const [c, g] = canvas(16, 16), r = mulberry(hash(x & 7, y) + 41 + zone);"
+    },
+    {
+      "before": "rockFillMass(g, zone, y, x, d <= 2 ? 3 : 2, false, r);",
+      "after": "rockFillMass(g, zone, y, x, d <= 2 ? 3 : 2, false, r, permit);"
+    }
+  ],
+  "originalHelperUndoExact": true,
+  "parentTileUndoExact": true,
+  "originalPublicCachePrefixExact": true,
+  "cpuTarget": "Whole-Game profile8472samples: descriptor validation1560.314ms inclusive14.410percent. This is sampled attribution, not a measured saving.",
+  "mechanism": "Batch only full descriptor snapshots on demonstrably non-Proxy native objects. Every original watched prototype,key,order and descriptor identity/flag remains checked; Proxy/unproved records retain the original per-field path. Optional native capabilities fail closed.",
+  "ownership": "Dedicated private memo observes relevant native Map operations before invoking them, permanently taints before an observer can retain a private map, and validates full native closure before a factory can expose its private returned arrays. Public levelTileMemo/levelTileCache remain byte-identical. A per-call paint permit is captured before native canvas allocation. Ownership does not renew after a foreign observer restores a method.",
+  "remaining": [
+    "Close callback/array/prototype/constructor/reset and permit contracts in source review.",
+    "Cloud full4928native/672public/4928Node matrices and all prior fallback/native contracts plus descriptor trace and private memo escape cases on new exact source.",
+    "Fresh controlled Game benefit/exactness and every original required gate. Prior e9 compatibility/memory numbers cannot be backfilled."
+  ],
+  "rendererMb": 1536,
+  "admissionMb": 4352,
+  "adopted": false,
+  "overallWorkComplete": false
+}
