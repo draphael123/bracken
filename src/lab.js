@@ -781,13 +781,13 @@ export function parryAt(BK, h, tti) {
   if (h === 'pirate') { k.block = tti <= GQ_PIRATE && !P.cWas; return true; }
   return false;
 }
-export function parryShot(BK, h, q) {
+export function parryShot(BK, h, q, force) {   /* force: the page tool (tools/gqueen3-page.mjs) always tries */
   const P = BK.P, k = BK.keys; if (!q || q.home || !P || P.dead) return false;
   const sp = Math.hypot(q.vx || 0, q.vy || 0); if (sp < 1) return false;
   const dx = P.x - q.x, dy = (P.y - 9) - q.y; if ((q.vx || 0) * dx <= 0) return false;   /* flying away from the hands */
   const tti = (Math.hypot(dx, dy) - 8) / sp;
   if (q.id !== undefined && P.labGqId !== q.id) { P.labGqId = q.id; P.labGqTry = (GUARDR ? GUARDR() : Math.random()) < (LABP.parryTry ?? 0.7); }
-  if (!P.labGqTry) return false;
+  if (!force && !P.labGqTry) return false;
   P.face = Math.sign(q.x - P.x) || P.face; k.left = k.right = false;
   return parryAt(BK, h, tti);
 }
