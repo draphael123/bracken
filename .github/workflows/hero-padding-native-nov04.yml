@@ -1,0 +1,44 @@
+name: Hero padding native ownership qualification
+on:
+  push:
+    branches: [codex/load-perf]
+    paths:
+      - tools/hero-padding-native-nov04/**
+      - .github/workflows/hero-padding-native-nov04.yml
+permissions: {contents: read}
+jobs:
+  native:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      matrix:
+        group: [tier0, tier1, tier2, tier3, tier4, contracts, before-root, before-helper, after-helper, gpu]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          ref: 1a576c3f4511b6856df9fb4738df5aaae9987e81
+          path: span-game
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.11.1'
+      - name: Full original native graph snapshot, original scopes and observer captures
+        run: node --import ./tools/private-hero-profile-guard-preload-nov01.mjs tools/hero-padding-native-nov04/component.mjs
+        env:
+          HERO_PADDING_GROUP: ${{ matrix.group }}
+          FIXED_ART_GAME: span-game
+          FIXED_ART_LOADER_OUT: ${{ runner.temp }}/hero-padding-native-${{ matrix.group }}-nov04
+          BRACKEN_GUARD_GAME: span-game
+          BRACKEN_GUARD_PROFILE: tools/browser-profile.mjs
+          BRACKEN_GUARD_PROFILE_SHA256: 9d38b09c585f0054e40125c63b2435e61e8cd6f5cc53e6011edf62178c8c2184
+          BRACKEN_GUARD_READBACK: ${{ runner.temp }}/skyroad-spans-strict-profile.jsonl
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: hero-padding-native-${{ matrix.group }}-nov04
+          path: |
+            ${{ runner.temp }}/hero-padding-native-${{ matrix.group }}-nov04/
+            ${{ runner.temp }}/skyroad-spans-strict-profile.jsonl
+          if-no-files-found: error
