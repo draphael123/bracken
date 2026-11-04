@@ -4,20 +4,20 @@
     "batch": 142,
     "lines": [
       "Geomancer: DOWN+C detonates stones, crouch for Stone Skin, a rising uppercut",
-      "Wasps and hornets wear glossy shells, and the Hornet Queen is redrawn",
-      "The Arena Yard is the one training ground, and the tavern has a Duel Pit",
+      { "s": "Wasps and hornets wear glossy shells, and the Hornet Queen is redrawn", "lv": ["hornetsnest"] },
+      { "s": "The Arena Yard is the one training ground, and the tavern has a Duel Pit", "lv": ["arena_yard","tavern"] },
       "Floating platforms fixed: posts, braces and masonry under the decks",
-      "The Hornet's Nest looks cleaner, with no sliding leaf trim"
+      { "s": "The Hornet's Nest looks cleaner, with no sliding leaf trim", "lv": ["hornetsnest"] }
     ]
   },
   {
     "date": "2026-11-05",
     "batch": 141,
     "lines": [
-      "New Arena Yard: practice every move on straw dummies that grade your parries",
+      { "s": "New Arena Yard: practice every move on straw dummies that grade your parries", "lv": ["arena_yard"] },
       "Pyromancer: Meteor becomes the Fire Lance; Knight cuts harder",
-      "Geomancer: longer dodge, stone pips on your staff; Warden and Hornet Nest art",
-      "Kingswood fire foes, and Gorm now keeps a crimson-and-gold court",
+      { "s": "Geomancer: longer dodge, stone pips on your staff; Warden and Hornet Nest art", "lv": ["hornetsnest"] },
+      { "s": "Kingswood fire foes, and Gorm now keeps a crimson-and-gold court", "lv": ["kings"] },
       "A GIVE FEEDBACK button on the title and pause menus"
     ]
   },
@@ -29,17 +29,17 @@
       "Ranger: SNARE is a skill you buy, DOWN+C recalls your arrow",
       "Geomancer: an up-air fan and an earthfall shockwave",
       "Gale Spires: updrafts so the gorge pockets cannot trap you",
-      "Told warnings on more boss moves, and fairer Hornet Queen and Potion Master fights"
+      { "s": "Told warnings on more boss moves, and fairer Hornet Queen and Potion Master fights", "lv": ["hornetsnest","underleaf"] }
     ]
   },
   {
     "date": "2026-11-04",
     "batch": 139,
     "lines": [
-      "Hornet's Nest combs now sag, and the Hornet Queen and Battering Beast have new art",
-      "Hornet Queen, Old Tusker and Battering Beast are re-tuned for a fairer fight",
-      "King Gorm's rage now roars, and his fight is re-tuned",
-      "After Gorm, the road ends on the map with the Burning Village lit",
+      { "s": "Hornet's Nest combs now sag, and the Hornet Queen and Battering Beast have new art", "lv": ["hornetsnest","palisadewood"] },
+      { "s": "Hornet Queen, Old Tusker and Battering Beast are re-tuned for a fairer fight", "lv": ["hornetsnest","wood","palisadewood"] },
+      { "s": "King Gorm's rage now roars, and his fight is re-tuned", "lv": ["kings"] },
+      { "s": "After Gorm, the road ends on the map with the Burning Village lit", "lv": ["kings","burning"] },
       "Starter-hero fixes: Ranger Great Arrow, Knight riposte timing"
     ]
   },
@@ -47,9 +47,9 @@
     "date": "2026-11-02",
     "batch": 138,
     "lines": [
-      "New Bog Troll fight, and the Goblin Chieftain at the Stockade gets a full art pass",
-      "The Pyromancer duel is rebuilt: new fire tells you can read, and a buckets-and-ward fight",
-      "King Gorm has new art and sound, and his enrage lifts the music",
+      { "s": "New Bog Troll fight, and the Goblin Chieftain at the Stockade gets a full art pass", "lv": ["fenroad","stockade"] },
+      { "s": "The Pyromancer duel is rebuilt: new fire tells you can read, and a buckets-and-ward fight", "lv": ["burning"] },
+      { "s": "King Gorm has new art and sound, and his enrage lifts the music", "lv": ["kings"] },
       "Hits land heavier: weightier hit-stop, shake and pad rumble on big blows",
       "Hub polish: new loading screen, one-panel hero swap, shops with life"
     ]
@@ -59,20 +59,20 @@
     "batch": 137,
     "lines": [
       "BRACKEN is now THORNROAD: new title and loading screen, and a new road-and-goblins opening",
-      "Burning Village opens when you beat King Gorm without dying; co-op shares the credit",
-      "Frog King has less health; Pyromancer: tap C to ward, hold C to build a fireball",
-      "Fixes: Stockade horn soft-lock, late music, Palisade Wood steps; the map road runs past it"
+      { "s": "Burning Village opens when you beat King Gorm without dying; co-op shares the credit", "lv": ["kings","burning"] },
+      { "s": "Frog King has less health; Pyromancer: tap C to ward, hold C to build a fireball", "lv": ["marsh"] },
+      { "s": "Fixes: Stockade horn soft-lock, late music, Palisade Wood steps; the map road runs past it", "lv": ["stockade","palisadewood"] }
     ]
   },
   {
     "date": "2026-11-01",
     "batch": 136,
     "lines": [
-      "Shriek Sisters reworked: one hunts while two roost, and a grab drags you off the stair",
-      "The Rookery is tuned for all three heroes and its fight runs longer",
+      { "s": "Shriek Sisters reworked: one hunts while two roost, and a grab drags you off the stair", "lv": ["rookery"] },
+      { "s": "The Rookery is tuned for all three heroes and its fight runs longer", "lv": ["rookery"] },
       "Late game: sea guards plant plates, harpoon scouts, clinching zombies",
       "Late-game packs and affixes now scale by act, so the sea and the desert bite harder",
-      "Platforming fixes: spore, fair, caravan, theatre, church, rootway and more jump cleaner"
+      { "s": "Platforming fixes: spore, fair, caravan, theatre, church, rootway and more jump cleaner", "lv": ["spore","fair","caravan","theatre","church","rootway"] }
     ]
   },
   {
@@ -83,7 +83,7 @@
       "Freebooter: tap C to catch a blow on the hook and snag the weapon, or fling a bolt back",
       "Warden: hold C to brace the spear haft; Ranger: hold C to guard with the bow",
       "Blood Knight: blood paid to block builds as debt, three blocks power up the next blow",
-      "Lance 4 loads lighter; the Great Drill is kinder in phase 3 and the Forge room is shorter",
+      { "s": "Lance 4 loads lighter; the Great Drill is kinder in phase 3 and the Forge room is shorter", "lv": ["storm","minecart"] },
       "Late game: stat picks halve past 16 per stat, flasks heal at most 150, skills hit fairer"
     ]
   },
@@ -91,9 +91,9 @@
     "date": "2026-10-31",
     "batch": 134,
     "lines": [
-      "Lord Grubbag: a coal trench, meat-hook rails and a second helping for each dish",
+      { "s": "Lord Grubbag: a coal trench, meat-hook rails and a second helping for each dish", "lv": ["kitchengate"] },
       "Gate bells lock for 1 second at most, so you can ring them again sooner",
-      "The Lumber Trail leads on to the Hornet Nest again (no ferry skipping past it)",
+      { "s": "The Lumber Trail leads on to the Hornet Nest again (no ferry skipping past it)", "lv": ["wood","hornetsnest"] },
       "The Undead Mage realm now speaks in the hint box"
     ]
   },
@@ -101,50 +101,50 @@
     "date": "2026-10-31",
     "batch": 133,
     "lines": [
-      "Lance 4 fights on foot: no horse, three tempos of attack, a thrust, a sweep or a charge",
-      "Ring the gate bells to bring his charge down on him: pinned under the portcullis",
-      "Cut the signal ropes in the second phase to whip him; the great bell ends the third",
-      "Stormhold is longer and tougher: gate towers, signal ropes and a gatehouse hoarding"
+      { "s": "Lance 4 fights on foot: no horse, three tempos of attack, a thrust, a sweep or a charge", "lv": ["storm"] },
+      { "s": "Ring the gate bells to bring his charge down on him: pinned under the portcullis", "lv": ["storm"] },
+      { "s": "Cut the signal ropes in the second phase to whip him; the great bell ends the third", "lv": ["storm"] },
+      { "s": "Stormhold is longer and tougher: gate towers, signal ropes and a gatehouse hoarding", "lv": ["storm"] }
     ]
   },
   {
     "date": "2026-10-30",
     "batch": 132,
     "lines": [
-      "False Abbot: a camera pan shows the basket, a glow and ghost chair mark the ride down",
+      { "s": "False Abbot: a camera pan shows the basket, a glow and ghost chair mark the ride down", "lv": ["spire"] },
       "Hop from one zip-line to the next: only the rope you just left is locked out",
       "Every boss and mini-boss fight now starts with your health restored",
-      "Shrines moved closer to the boss doors in Sporewood, Hornet Nest and Underwell",
-      "New shrines before the Kingswood hound and the Minecart foreman and Great Drill"
+      { "s": "Shrines moved closer to the boss doors in Sporewood, Hornet Nest and Underwell", "lv": ["spore","hornetsnest","underwell"] },
+      { "s": "New shrines before the Kingswood hound and the Minecart foreman and Great Drill", "lv": ["kings","minecart"] }
     ]
   },
   {
     "date": "2026-10-30",
     "batch": 131,
     "lines": [
-      "The Archmage falls: ride his carpet back up the broken tower, burst into his sky",
-      "The tower comes down around you: a collapse front, a falling bell, a harder Undead Mage",
+      { "s": "The Archmage falls: ride his carpet back up the broken tower, burst into his sky", "lv": ["fallingtower"] },
+      { "s": "The tower comes down around you: a collapse front, a falling bell, a harder Undead Mage", "lv": ["fallingtower"] },
       "The realms come apart: broken floors, a lower ceiling, a surging mire, three ice lances",
-      "Two War-Runner berserkers on the War Cairn are tougher elites: swift and unstoppable",
-      "Fix: a death on the War Cairn no longer leaves its drum gates open",
-      "The War Cairn puts back its bridge, slabs and fallen stones when you respawn"
+      { "s": "Two War-Runner berserkers on the War Cairn are tougher elites: swift and unstoppable", "lv": ["warcairn"] },
+      { "s": "Fix: a death on the War Cairn no longer leaves its drum gates open", "lv": ["warcairn"] },
+      { "s": "The War Cairn puts back its bridge, slabs and fallen stones when you respawn", "lv": ["warcairn"] }
     ]
   },
   {
     "date": "2026-10-30",
     "batch": 130,
     "lines": [
-      "The False Abbot punishes the wrong blow: ride his basket down to throw him out",
-      "The Kitchen Gate is longer: hop between meat-hook rails, ride the haul line, time the flue",
-      "The Shriek Sisters strike heavy, medium or light; the Rookery stair is longer"
+      { "s": "The False Abbot punishes the wrong blow: ride his basket down to throw him out", "lv": ["spire"] },
+      { "s": "The Kitchen Gate is longer: hop between meat-hook rails, ride the haul line, time the flue", "lv": ["kitchengate"] },
+      { "s": "The Shriek Sisters strike heavy, medium or light; the Rookery stair is longer", "lv": ["rookery"] }
     ]
   },
   {
     "date": "2026-10-29",
     "batch": 129,
     "lines": [
-      "The War Cairn: climb to the clan, beat the Berserker Chieftain, win the Berserker",
-      "Strike war drums to open gates; the Berserker is bought after beating him",
+      { "s": "The War Cairn: climb to the clan, beat the Berserker Chieftain, win the Berserker", "lv": ["warcairn"] },
+      { "s": "Strike war drums to open gates; the Berserker is bought after beating him", "lv": ["warcairn"] },
       "The Blood Knight lashes, drinks and frenzies: new blood art and a Vitae drop"
     ]
   },
@@ -152,43 +152,43 @@
     "date": "2026-10-29",
     "batch": 128,
     "lines": [
-      "The Archmage falls: the Falling Tower is a chase down four rooms and back up",
-      "Break the pillars and ride the collapse: new tower rooms, bookcases, columns and a rug",
-      "His fall, landing and floor-tear are drawn; the tower rooms are painted"
+      { "s": "The Archmage falls: the Falling Tower is a chase down four rooms and back up", "lv": ["fallingtower"] },
+      { "s": "Break the pillars and ride the collapse: new tower rooms, bookcases, columns and a rug", "lv": ["fallingtower"] },
+      { "s": "His fall, landing and floor-tear are drawn; the tower rooms are painted", "lv": ["fallingtower"] }
     ]
   },
   {
     "date": "2026-10-29",
     "batch": 127,
     "lines": [
-      "The False Abbot is a new fight: make the house answer the blow",
-      "Lord Grubbag sits and the Kitchen Gate is reworked: knock the dishes off the line",
-      "The Windcaller is a harder duel: ride the gale updraft, climb the new Gale Stair",
+      { "s": "The False Abbot is a new fight: make the house answer the blow", "lv": ["spire"] },
+      { "s": "Lord Grubbag sits and the Kitchen Gate is reworked: knock the dishes off the line", "lv": ["kitchengate"] },
+      { "s": "The Windcaller is a harder duel: ride the gale updraft, climb the new Gale Stair", "lv": ["moor"] },
       "Arena polish: new lights and weather across five levels",
-      "The Scree has loose cliffs to knock down on the road"
+      { "s": "The Scree has loose cliffs to knock down on the road", "lv": ["scree"] }
     ]
   },
   {
     "date": "2026-10-29",
     "batch": 126,
     "lines": [
-      "The Rookery is rebuilt: ride the harpies up the crag, and meet the Gale Harpy",
-      "The Shriek Sisters fight is reworked: a cornered opening, and the Snatch",
-      "Highcrown is rebuilt around a tall keep hall; the Goblin Queen rings her own bell",
-      "The Flotilla has Powder Monkeys, and the Admiral gets longer openings and more health",
-      "Boss polish: the Chieftain's horn pulls his crew away; the Dune Worm keeps the sun on"
+      { "s": "The Rookery is rebuilt: ride the harpies up the crag, and meet the Gale Harpy", "lv": ["rookery"] },
+      { "s": "The Shriek Sisters fight is reworked: a cornered opening, and the Snatch", "lv": ["rookery"] },
+      { "s": "Highcrown is rebuilt around a tall keep hall; the Goblin Queen rings her own bell", "lv": ["crown"] },
+      { "s": "The Flotilla has Powder Monkeys, and the Admiral gets longer openings and more health", "lv": ["flotilla"] },
+      { "s": "Boss polish: the Chieftain's horn pulls his crew away; the Dune Worm keeps the sun on", "lv": ["stockade","caravan"] }
     ]
   },
   {
     "date": "2026-10-28",
     "batch": 125,
     "lines": [
-      "The Deep Rails: a smelter floor, a loader who kicks ore carts, and the Forgemaster",
-      "Stormhold is rebuilt as the Outer Works: a barbican, murder holes and a dry moat",
-      "The Queen's Lance is a plate-armoured champion on a charger, with new tells to learn",
-      "The Hurricane Deck is rebuilt: the waist floods, the sea rises, the Captain holds the mast",
-      "Ore Road: dark stretches with lamps to light, rocks to throw and carts to shove",
-      "King Gorm walks and steps now; the Ram Lord is a tougher fight"
+      { "s": "The Deep Rails: a smelter floor, a loader who kicks ore carts, and the Forgemaster", "lv": ["minecart"] },
+      { "s": "Stormhold is rebuilt as the Outer Works: a barbican, murder holes and a dry moat", "lv": ["storm"] },
+      { "s": "The Queen's Lance is a plate-armoured champion on a charger, with new tells to learn", "lv": ["storm"] },
+      { "s": "The Hurricane Deck is rebuilt: the waist floods, the sea rises, the Captain holds the mast", "lv": ["hurricane"] },
+      { "s": "Ore Road: dark stretches with lamps to light, rocks to throw and carts to shove", "lv": ["oreroad"] },
+      { "s": "King Gorm walks and steps now; the Ram Lord is a tougher fight", "lv": ["kings","scree"] }
     ]
   },
   {
@@ -196,7 +196,7 @@
     "batch": 124,
     "lines": [
       "Fixed: the game no longer stalls at 14% loading when an ad blocker is on",
-      "The Admiral's fight is unchanged - only a file was renamed",
+      { "s": "The Admiral's fight is unchanged - only a file was renamed", "lv": ["flotilla"] },
       "If it still stalls, reload once to drop the old copy"
     ]
   },
@@ -204,31 +204,31 @@
     "date": "2026-10-27",
     "batch": 123,
     "lines": [
-      "New level: the Kitchen Gate, and Lord Grubbag the Glutton with his belly flop",
-      "New level: the Rookery, a harpy crag climb, with the Shriek Sisters at the top",
-      "The Sisters dive in chains, drop boulders, shock-shriek and grab: learn each tell",
-      "The Flotilla is remade: deck guns, a captured sloop and the Admiral in hull plate",
+      { "s": "New level: the Kitchen Gate, and Lord Grubbag the Glutton with his belly flop", "lv": ["kitchengate"] },
+      { "s": "New level: the Rookery, a harpy crag climb, with the Shriek Sisters at the top", "lv": ["rookery"] },
+      { "s": "The Sisters dive in chains, drop boulders, shock-shriek and grab: learn each tell", "lv": ["rookery"] },
+      { "s": "The Flotilla is remade: deck guns, a captured sloop and the Admiral in hull plate", "lv": ["flotilla"] },
       "New pirates: pistoleers, keg rollers, plated bosuns and grapnel boarders",
-      "New music for the Kitchen Gate, Lord Grubbag, the Rookery and the Sisters"
+      { "s": "New music for the Kitchen Gate, Lord Grubbag, the Rookery and the Sisters", "lv": ["kitchengate","rookery"] }
     ]
   },
   {
     "date": "2026-10-26",
     "batch": 122,
     "lines": [
-      "The Palisade Wood is reworked: a siege Battering Beast, the Breach, and the Hornsman",
-      "Underleaf is reworked: the Potion Master and potion platforming, now after the Rootway",
-      "The Hanging Village is polished: new rope bridges, boughs and posts",
-      "The road: Rootway, Underleaf, Palisade Wood, Kingswood, Scree Path, Hanging Village"
+      { "s": "The Palisade Wood is reworked: a siege Battering Beast, the Breach, and the Hornsman", "lv": ["palisadewood"] },
+      { "s": "Underleaf is reworked: the Potion Master and potion platforming, now after the Rootway", "lv": ["underleaf","rootway"] },
+      { "s": "The Hanging Village is polished: new rope bridges, boughs and posts", "lv": ["hanging"] },
+      { "s": "The road: Rootway, Underleaf, Palisade Wood, Kingswood, Scree Path, Hanging Village", "lv": ["rootway","underleaf","palisadewood","kings","scree","hanging"] }
     ]
   },
   {
     "date": "2026-10-25",
     "batch": 121,
     "lines": [
-      "The road changes: Kingswood, then the Scree Path, then Underleaf, then the Hanging Village",
-      "Underleaf now belongs to act II",
-      "The Pyromancer duel is tougher: more health and less time to rest between his attacks",
+      { "s": "The road changes: Kingswood, then the Scree Path, then Underleaf, then the Hanging Village", "lv": ["kings","scree","underleaf","hanging"] },
+      { "s": "Underleaf now belongs to act II", "lv": ["underleaf"] },
+      { "s": "The Pyromancer duel is tougher: more health and less time to rest between his attacks", "lv": ["burning"] },
       "Old saves carry over: levels you cleared stay cleared"
     ]
   },
@@ -236,28 +236,28 @@
     "date": "2026-10-25",
     "batch": 120,
     "lines": [
-      "New level: the Palisade Wood, an autumn forest before Kingswood, with the Battering Beast",
-      "Underleaf rebuilt: the Grandmother's jars, and a new Grandmother fight",
-      "Burning Village: water waves, a soaking, and falling debris",
-      "Hanging Village: cut ropes to ride them, and the Owl Reeve now fights on ropes"
+      { "s": "New level: the Palisade Wood, an autumn forest before Kingswood, with the Battering Beast", "lv": ["palisadewood"] },
+      { "s": "Underleaf rebuilt: the Grandmother's jars, and a new Grandmother fight", "lv": ["underleaf"] },
+      { "s": "Burning Village: water waves, a soaking, and falling debris", "lv": ["burning"] },
+      { "s": "Hanging Village: cut ropes to ride them, and the Owl Reeve now fights on ropes", "lv": ["hanging"] }
     ]
   },
   {
     "date": "2026-10-24",
     "batch": 119,
     "lines": [
-      "The Ram Lord on the Scree Path is easier: bigger openings to hit him",
-      "A clear warning shows when the Ram Lord can be stunned",
-      "Three new spore-cap platforming gauntlets in the Sporewood"
+      { "s": "The Ram Lord on the Scree Path is easier: bigger openings to hit him", "lv": ["scree"] },
+      { "s": "A clear warning shows when the Ram Lord can be stunned", "lv": ["scree"] },
+      { "s": "Three new spore-cap platforming gauntlets in the Sporewood", "lv": ["spore"] }
     ]
   },
   {
     "date": "2026-10-24",
     "batch": 118,
     "lines": [
-      "The Hornet's Nest is now level 2, before the Marsh",
-      "The Queen fights in one hall: resin floods it, drop combs on her",
-      "New foe: the Amber Hornet",
+      { "s": "The Hornet's Nest is now level 2, before the Marsh", "lv": ["hornetsnest"] },
+      { "s": "The Queen fights in one hall: resin floods it, drop combs on her", "lv": ["hornetsnest"] },
+      { "s": "New foe: the Amber Hornet", "lv": ["hornetsnest"] },
       "Co-op: every player carries flasks, fairer scaling",
       "Secrets: hidden paths show your progress once found"
     ]
@@ -266,31 +266,31 @@
     "date": "2026-10-23",
     "batch": 117,
     "lines": [
-      "Sporewood rebuilt: spores help you now (bounce caps, lantern caps, mend puffs)",
-      "Six new areas in Sporewood",
-      "The Mother Cap returns: plunge her knot to open her. She has a face now",
+      { "s": "Sporewood rebuilt: spores help you now (bounce caps, lantern caps, mend puffs)", "lv": ["spore"] },
+      { "s": "Six new areas in Sporewood", "lv": ["spore"] },
+      { "s": "The Mother Cap returns: plunge her knot to open her. She has a face now", "lv": ["spore"] },
       "The Ranger switches BOW and KNIFE on any controller; arrows show under the XP bar",
-      "The Blood Knight is fairer against the Crusader at Waymeet"
+      { "s": "The Blood Knight is fairer against the Crusader at Waymeet", "lv": ["waymeet"] }
     ]
   },
   {
     "date": "2026-10-23",
     "batch": 116,
     "lines": [
-      "The Hornet's Nest: a new side path off the Lumber Trail - climb a giant paper nest",
-      "Cut comb to make steps, and carry smoke pots to quiet the swarms",
-      "The Hornet Queen returns: perch dives, smoke, a falling nest and the great pine",
-      "New music for the Nest and her fight",
-      "King Gorm: bigger cages you can drop any time, and a longer burning escape",
-      "Gorm now waits for you in the glade (bug fix)"
+      { "s": "The Hornet's Nest: a new side path off the Lumber Trail - climb a giant paper nest", "lv": ["hornetsnest"] },
+      { "s": "Cut comb to make steps, and carry smoke pots to quiet the swarms", "lv": ["hornetsnest"] },
+      { "s": "The Hornet Queen returns: perch dives, smoke, a falling nest and the great pine", "lv": ["hornetsnest"] },
+      { "s": "New music for the Nest and her fight", "lv": ["hornetsnest"] },
+      { "s": "King Gorm: bigger cages you can drop any time, and a longer burning escape", "lv": ["kings"] },
+      { "s": "Gorm now waits for you in the glade (bug fix)", "lv": ["kings"] }
     ]
   },
   {
     "date": "2026-10-23",
     "batch": 115,
     "lines": [
-      "Kingswood rebuilt: the King's Hunting Wood",
-      "King Gorm's new fight: a burning wood escape and the King's Glade",
+      { "s": "Kingswood rebuilt: the King's Hunting Wood", "lv": ["kings"] },
+      { "s": "King Gorm's new fight: a burning wood escape and the King's Glade", "lv": ["kings"] },
       "Ranger's third charge tier is now TRIPLE SHOT",
       "Berserker and Geomancer charge in three tiers",
       "Blood Knight dodge is now the BLOOD STEP",
@@ -301,9 +301,9 @@
     "date": "2026-10-22",
     "batch": 114,
     "lines": [
-      "The Fen Road rebuilt: lay planks to finish the road",
-      "Stilt-walkers stomp, bog leeches bite",
-      "A new swamp look for the Fen Road",
+      { "s": "The Fen Road rebuilt: lay planks to finish the road", "lv": ["fenroad"] },
+      { "s": "Stilt-walkers stomp, bog leeches bite", "lv": ["fenroad"] },
+      { "s": "A new swamp look for the Fen Road", "lv": ["fenroad"] },
       "Ranger bow charges in three tiers",
       "Co-op shows every player hero and level"
     ]
@@ -312,19 +312,19 @@
     "date": "2026-10-22",
     "batch": 113,
     "lines": [
-      "Stockade looks better, no more stray glow blobs",
-      "The Chieftain is tougher",
-      "Frog King: the royal pads are bigger",
-      "New Fen Road music"
+      { "s": "Stockade looks better, no more stray glow blobs", "lv": ["stockade"] },
+      { "s": "The Chieftain is tougher", "lv": ["stockade"] },
+      { "s": "Frog King: the royal pads are bigger", "lv": ["marsh"] },
+      { "s": "New Fen Road music", "lv": ["fenroad"] }
     ]
   },
   {
     "date": "2026-10-21",
     "batch": 112,
     "lines": [
-      "The Chieftain winds a war horn, throws kegs",
-      "Stockade barrels are a level verb now",
-      "Frog King: a chase across royal lily pads",
+      { "s": "The Chieftain winds a war horn, throws kegs", "lv": ["stockade"] },
+      { "s": "Stockade barrels are a level verb now", "lv": ["stockade"] },
+      { "s": "Frog King: a chase across royal lily pads", "lv": ["marsh"] },
       "Rafts come back when you fall in the water",
       "Blood Knight: Blood Bolt, Drain, Bloodworms",
       "Blood Spike on any blow; a pool of blood"
@@ -334,21 +334,21 @@
     "date": "2026-10-21",
     "batch": 111,
     "lines": [
-      "THE FEN ROAD: Bog Troll, goblin stilt-walkers",
+      { "s": "THE FEN ROAD: Bog Troll, goblin stilt-walkers", "lv": ["fenroad"] },
       "Blood Knight: Red Host names, darker boss, poses",
-      "Windcaller: every hero can send his bolt home",
-      "Windcaller: fairer thorns on the summit",
-      "Unburied Field: cairn climb fixed, blocks push",
-      "Old Tusker stays dazed longer"
+      { "s": "Windcaller: every hero can send his bolt home", "lv": ["moor"] },
+      { "s": "Windcaller: fairer thorns on the summit", "lv": ["moor"] },
+      { "s": "Unburied Field: cairn climb fixed, blocks push", "lv": ["unburied"] },
+      { "s": "Old Tusker stays dazed longer", "lv": ["wood"] }
     ]
   },
   {
     "date": "2026-10-21",
     "batch": 110,
     "lines": [
-      "A ferry cutscene carries you wood to marsh",
+      { "s": "A ferry cutscene carries you wood to marsh", "lv": ["wood","marsh"] },
       "AI PARTNER seat: play co-op with a bot ally",
-      "Old Tusker rams felled trunks, not standing pines",
+      { "s": "Old Tusker rams felled trunks, not standing pines", "lv": ["wood"] },
       "Blood Knight: heavier parry, five-tier heavy",
       "Acts I-II foes told; bosses retuned",
       "Save slots are now called SAVE 1-5"
@@ -358,12 +358,12 @@
     "date": "2026-10-20",
     "batch": 109,
     "lines": [
-      "OLD TUSKER: a great boar boss in a felling clearing",
-      "Fell a marked pine on him. Boars replace badgers",
+      { "s": "OLD TUSKER: a great boar boss in a felling clearing", "lv": ["wood"] },
+      { "s": "Fell a marked pine on him. Boars replace badgers", "lv": ["wood"] },
       "Pine moths + kite goblins replace the wasps",
-      "MARSH 3: Reed Run, the Boom, the Night Pads",
+      { "s": "MARSH 3: Reed Run, the Boom, the Night Pads", "lv": ["marsh"] },
       "Readable lily pads, centred raft sign",
-      "The Frog King music now plays on time"
+      { "s": "The Frog King music now plays on time", "lv": ["marsh"] }
     ]
   },
   {
@@ -381,19 +381,19 @@
     "date": "2026-10-20",
     "batch": 107,
     "lines": [
-      "Lumber Trail: felled bridges and trees stay",
-      "Lumber Trail look finished: new forest floor",
-      "Hornet nests gone from the Lumber Trail",
-      "New Lumber Trail music: Enchanted Festival"
+      { "s": "Lumber Trail: felled bridges and trees stay", "lv": ["wood"] },
+      { "s": "Lumber Trail look finished: new forest floor", "lv": ["wood"] },
+      { "s": "Hornet nests gone from the Lumber Trail", "lv": ["wood"] },
+      { "s": "New Lumber Trail music: Enchanted Festival", "lv": ["wood"] }
     ]
   },
   {
     "date": "2026-10-19",
     "batch": 106,
     "lines": [
-      "Marsh Wood reworked: drain the village",
-      "The Frog King rebuilt: three phases",
-      "New music: Marsh, Frog King, Chieftain",
+      { "s": "Marsh Wood reworked: drain the village", "lv": ["marsh"] },
+      { "s": "The Frog King rebuilt: three phases", "lv": ["marsh"] },
+      { "s": "New music: Marsh, Frog King, Chieftain", "lv": ["marsh","stockade"] },
       "The Tavern, settings inside, PARTY BOARD",
       "Co-op saves: guests level their own hero",
       "Later acts hit harder: foes in acts III-V"

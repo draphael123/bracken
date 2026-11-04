@@ -346,6 +346,10 @@ async function pageTextFit(input) {
   /* WHAT'S NEW (title menu, docs/updates.json): the top of the list, a middle page and the end */
   if (want('whatsnew')) { toPlay(0, 'knight'); await BK.WN.loadUpdates();
     for (const sc of [0, 6, 99]) frame('whatsnew scroll ' + sc, () => { BK.state = 'whatsnew'; BK.wnScroll = sc; }, { settle: 20 });
+    /* (claude/wnseed) THE 2ND TAB, LEVELS & BOSSES: all levels at the top / middle / end, then each unlocked level's own filter (the chip carries the level's name) */
+    for (const sc of [0, 6, 99]) frame('whatsnew levels scroll ' + sc, () => { BK.state = 'whatsnew'; BK.wnTab = 1; BK.wnFilter = ''; BK.wnScroll = sc; }, { settle: 20 });
+    for (const id of BK.wnHist().map(h => h.id)) frame('whatsnew levels filter ' + id, () => { BK.state = 'whatsnew'; BK.wnTab = 1; BK.wnFilter = id; BK.wnScroll = 0; }, { settle: 20 });
+    BK.wnTab = 0; BK.wnFilter = '';
     BK.state = 'title'; await yieldNow(); }
   /* THE CREDITS (title menu, src/credits.js): the CC-BY page and every page of composers */
   if (want('credits')) { toPlay(0, 'knight');
