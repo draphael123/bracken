@@ -24,7 +24,7 @@
 //   burrow    HER DODGE IS BURROW: from the floor toward a pit she comes up at the last solid cell, on her feet, never across it;
 //             onto a foe standing where she would come up, she comes up clear of it and never inside rock; a blow along the ground
 //             while she is under does not land; and X as she surfaces kicks the ROLLING STONE
-//   wall      STONE WALL, bought at level 9 in LODESTONE's place: pressed, it raises a wall piece in front of her; and a save that
+//   wall      (claude/stonewall) HOLD C (past 0.28 s) raises the STONE WALL piece in front of her; the bought STONE WALL (level 9, LODESTONE's place) is its passive upgrade; and a save that
 //             bought LODESTONE loads, owning STONE WALL in the same loadout slot
 //   dodges    BURROW IS THE FLOOR'S ONLY: swimming her dodge is the ordinary swimming dash (it fires, and never burrows); in the air
 //             nothing burrows (she has no air roll of her own); and the ceiling-walk dodge (magePlayer) has no burrow in it
@@ -152,7 +152,7 @@ try {
       return {pit,foe,stone}})()`);
   /* (claude/herofeel) THE UP-AIR: the airborne UP+X is an instant staff arc and a FAN of three stone shards flung up (about -60/-90/-120), no cell placed; the ground UP+X is unchanged */
   out.upair = await pg.evalp(`(()=>{__geo([]);const g0=Array.from(BK.L.grid),P=BK.P;P.ground=false;P.vy=-120;P.y-=40;P.st=P.maxSt;BK.keys.up=true;BK.press('atk');BK.sim(2);BK.keys.up=false;const sh=BK.geo().shards().filter(s=>s.fan).map(s=>({vx:Math.round(s.vx),vy:Math.round(s.vy)})),im={swk:P.swingKind,atk:P.atk,gr:P.ground,abuf:P.abuf,up:P.abufUp,st:P.st,uc:BK.geo().tierStats().upAir};const same=g0.every((v,i)=>v===BK.L.grid[i]);BK.sim(60);return {sh,im,same,pieces:BK.geo().pieces().length,after:BK.geo().shards().filter(s=>s.fan).length}})()`);
-  out.wall = await pg.evalp(`(async()=>{__geo(['stoneWall']);BK.P.cds={};BK.press('throw');BK.sim(4);const kinds=BK.geo().pieces().map(p=>p.kind);
+  out.wall = await pg.evalp(`(async()=>{__geo(['stoneWall']);BK.P.cds={};BK.P.st=BK.P.maxSt;BK.keys.block=true;BK.sim(30);BK.keys.block=false;BK.sim(2);const kinds=BK.geo().pieces().map(p=>p.kind);
       const {migrateProgress}=await import('/src/progression.js');let mig;try{const r=migrateProgress(JSON.stringify({...JSON.parse(JSON.stringify(BKT.PROG)),skillOwned:{geomancer:{lodestone:true}},loadouts:{geomancer:['lodestone']}}),[]);mig={own:Object.keys(r.progress.skillOwned.geomancer),lo:r.progress.loadouts.geomancer};}catch(e){mig={err:String(e.message||e)};}
       return {kinds,mig}})()`);
   out.dodges = await pg.evalp(`(()=>{const P=()=>BK.P;__geo([]);const L=BK.L;L.pools=L.pools||[];L.pools.push({x0:2*16,x1:40*16,y:17*16,shallow:false,swim:true,depth:0,bottom:22*16});BK.tp(10,20);BK.sim(40);

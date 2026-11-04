@@ -15,7 +15,7 @@ import { LEVELS } from '../src/level.js';
 import { openPage } from './cdp.mjs';
 const fails = [], ok = (c, m) => { if (!c) fails.push(m); console.log((c ? '  ok   ' : '  FAIL ') + m); };
 const HEROES = ['knight', 'warden', 'pyro', 'paladin', 'pirate', 'reaper', 'geomancer'];
-const SKILL = { knight: 'lunge', warden: 'skewer', pyro: 'flameRing', paladin: 'lightLance', pirate: 'grapeshot', reaper: 'scytheThrown', geomancer: 'stoneWall' };
+const SKILL = { knight: 'lunge', warden: 'skewer', pyro: 'flameRing', paladin: 'lightLance', pirate: 'grapeshot', reaper: 'scytheThrown', geomancer: 'boulder' };
 /* each hero's C: what it raises, and whether it is a hold or a tap */
 const GUARD = { knight: ['hold', 'block'], warden: ['tap', 'deflectT'], pyro: ['tap', 'fwUp'], paladin: ['hold', 'aegis'], reaper: ['hold', 'warding'], pirate: ['tap', 'parryW'], geomancer: ['hold', 'geoGuard'] };
 const sections = [];

@@ -18,6 +18,7 @@
 //   5. A level that is left or reloaded takes its pieces with it: a piece only ever restores the grid it was written into.
 // The kit is bound to main.js through `api` (makeGeomancer) - main.js owns the world, the input and the tal() reads; this owns
 // what she makes in it.
+import { K_GEO } from './skill-k.js';   /* (claude/stonewall) the wall's shard blow: swordDmg x K_GEO.geoWallShard */
 import { EARTH as EARTH_FALL, earthSpot } from './plunges.js';   /* (claude/plunges) EARTHFALL, her plunge: a stone spike that hits and stands a few seconds as a step */
 export const GEO = {
   /* (claude/geoid) THE BOARD: stone = how foes break her stone; fist = THE STONE FIST (her third jab); topple = UP+C */
@@ -28,7 +29,7 @@ export const GEO = {
        bossStone  one stone stands at every boss start (incl. a retry): main.js bossStart -> fillBoard(1)
        detonate   DOWN+C blows every stone of hers at once (below)
        feel       the heavier-feel layers (ART+SFX lane: sample keys with synth fallbacks) */
-  pop: { fistPlant: true, bossStone: true, detonate: true, feel: true, upper: true, skin: false, recall: true },
+  pop: { wall: true, fistPlant: true, bossStone: true, detonate: true, feel: true, upper: true, skin: false, recall: true },
   /* (claude/geofix, Daniel 11-04) RECALL THE STONES (a TAP of DOWN; STONE SKIN is retired - pop.skin false, and EARTH SENSE stays retired): every standing stone of hers tears out of the floor and slides back along it
      to her feet at sp px/s, bowling over what it passes (a common foe: swordDmg x dmg + knocked down for down s; a boss or a mini: x bossDmg + a stagger, once per stone), then re-plants in a free cell beside her.
      cd s between recalls; tap = the longest a DOWN press may last and still be a tap (main.js: no other button during it). */
@@ -50,6 +51,12 @@ export const GEO = {
   bigBodyGrace: 0.4,
   cap: 3, life: 4, lifeLong: 6, archLife: 6, crack: 1.0, rise: 0.12,
   pillarH: 2, wallH: 2, perfect: 0.2, wallHp: 3,
+  /* (claude/stonewall, Daniel 11-03 12:06 + plan-stonewall-1103.md, all 5 recs approved) THE STONE WALL (HOLD C). TAP C is the quick beat ward exactly as before; a C still held at holdAt s (> the tap's raise+hold 0.25) drops the ward silently
+     and raises ONE wall in the first column in front of her: life s (it falls by itself), hp blows (a yellow blow from the far side / a boss or elite shot costs 1; a common shot is free; a RED blow smashes it), cost wind, cd s COUNTED FROM WHEN IT FALLS.
+     UNCAPPED: it never counts as one of her three stones (no pips, no AVALANCHE fuel, no recall, no detonate). It is hero-passable like all her stone (claude/geofix) but SOLID to foes and every shot - so it is the stone that stops projectiles a few seconds.
+     STRUCK by one of HER blows it bursts: shardN shards forward (away from her; shardNHeavy for a held-X tier / the fist), each swordDmg x shardK, at most shardCap of them on one foe; the burst ends the wall (the cd starts). RECALL (tap DOWN) ignores it.
+     The bought STONE WALL skill (id kept) is now a passive UPGRADE: a taller wall (upH extra cells) that stands upLife s longer. Can't rise (cd, no wind, no floor in 2 rows, swimming, airborne) = the held rune-ward as before (hold C never does nothing). */
+  wall: { holdAt: 0.28, life: 3.5, hp: 3, cost: 20, cd: 2.5, shardN: 5, shardNHeavy: 7, shardK: K_GEO.geoWallShard, shardCap: 3, upH: 1, upLife: 1.5 },
   /* FAULT LINE (her held X from round 3, Daniel, 2026-09-24 - it replaces UPHEAVAL). Upheaval bet on a SPOT and the foe walked off it;
      this is a LINE. She slams the stave and a crack races along the floor ahead of her (speed px/s), hitting everything along it once.
      THE CHARGE SETS THE LENGTH AND THE DAMAGE: len0 + lenK * wound px (22 at the quickest release, which covers a foe touching her -
@@ -96,7 +103,7 @@ const STONE = { base: '#7c7a6e', hi: '#a8a696', lo: '#5e5c54', dark: '#44423a', 
 const EARTH = { base: '#6e4c30', hi: '#8c6844', lo: '#4c3420' };   /* the packed soil her ward is bound in (the earth shield) */
 
 export function makeGeomancer(api) {
-  let pipSig = '', pipChange = -9, pipLast = -9, pieces = [], rollers = [], shards = [], falls = [], spikes = [], faults = [], golem = null, spurFx = null, shieldDrawn = false, spunAt = -9;   /* (spunAt: when the draw last set a stone round her geode - tools/geomancer.mjs `staff`) */   /* (shieldDrawn: whether the last draw put her shield on screen - tools/geomancer.mjs `drawn`) */
+  let pipSig = '', pipChange = -9, pipLast = -9, pieces = [], rollers = [], shards = [], falls = [], spikes = [], faults = [], golem = null, spurFx = null, shieldDrawn = false, spunAt = -9, wallReadyAt = -9;   /* (spunAt: when the draw last set a stone round her geode - tools/geomancer.mjs `staff`) */   /* (shieldDrawn: whether the last draw put her shield on screen - tools/geomancer.mjs `drawn`) */
   const TS = api.TS;
   const stats = { tiers: [0, 0, 0, 0], pillars: 0, steps: 0, shardHits: 0, rams: 0, gnaws: 0, topples: 0, fists: 0 };   /* (claude/chargetiers) the three-tier stave: tiers let go (1 shard, 2 fault, 3 pillar), pillars risen, of them steps that stood, shards that landed */
   const T = () => api.T;
@@ -124,6 +131,7 @@ export function makeGeomancer(api) {
     if (p.gone) return; p.gone = true; stats.cr = stats.cr || {}; stats.cr[why] = (stats.cr[why] || 0) + 1;
     const g = grid(); for (const c of p.cells) if (p.grid[c.i] === p.tile) p.grid[c.i] = c.was;   /* RULE 5: only ever the grid it was written into (and always put back, whichever grid is live) */
     pieces = pieces.filter(q => q !== p); if (p.grid === g) refreshTiles();
+    if (p.kind === 'wall' && p.held && why !== 'silent') wallReadyAt = api.time + GEO.wall.cd;   /* (claude/stonewall) the cooldown is counted FROM WHEN IT FALLS: at most ~58% uptime, never permanent cover */
     const cx = (p.x0 + p.x1) / 2, cy = (p.y0 + p.y1) / 2;
     api.burst(cx, cy, 10 + p.cells.length * 3, [STONE.base, STONE.hi, STONE.lo, STONE.moss], 70, 0.6);
     if (why !== 'silent') api.SFX.geoCrumble && api.SFX.geoCrumble();
@@ -133,9 +141,9 @@ export function makeGeomancer(api) {
   function place(kind, cells, tile, opt = {}) {
     cells = cells.filter(([tx, ty]) => freeCell(tx, ty)); if (!cells.length) return null;
     const own = pieces.filter(q => q.capped);
-    if (!opt.free) while (own.length >= cap()) crumble(own.shift(), 'cap');   /* RULE 3 (EARTHFALL's step is OUTSIDE the cap: it is a plunge's, not one of her three) */
+    if (!opt.free && !opt.uncapped) while (own.length >= cap()) crumble(own.shift(), 'cap');   /* RULE 3 (EARTHFALL's step is OUTSIDE the cap: it is a plunge's, not one of her three) */
     const g = grid(), t = api.time;
-    const p = { kind, tile, grid: g, born: t, age: 0, life: opt.life || lifeOf(kind), crack: GEO.crack, capped: !opt.free, earth: !!opt.free, hp: GEO.wallHp + (opt.free ? 0 : tal('lasting') ? 1 : 0), cells: [],
+    const p = { kind, tile, grid: g, born: t, age: 0, life: opt.life || lifeOf(kind), crack: GEO.crack, capped: !opt.free && !opt.uncapped, earth: !!opt.free, hp: opt.hp ?? (GEO.wallHp + (opt.free ? 0 : tal('lasting') ? 1 : 0)), cells: [],
       x0: Infinity, y0: Infinity, x1: -Infinity, y1: -Infinity };
     for (const [tx, ty] of cells) { const i = ty * api.LW + tx; p.cells.push({ i, tx, ty, was: g[i] }); g[i] = tile;
       p.x0 = Math.min(p.x0, tx * TS); p.x1 = Math.max(p.x1, tx * TS + TS); p.y0 = Math.min(p.y0, ty * TS); p.y1 = Math.max(p.y1, ty * TS + TS); }
@@ -217,6 +225,7 @@ export function makeGeomancer(api) {
     stats.pillars++; if (r.piece) stats.steps++; if (api.refund) api.refund(PL.refund); api.shakeCam(4); api.ringAt(x, fl.gy - 20, 18, GEO.tiers.cols[3], 0.35); api.dust(x, fl.gy, 10); }
   function faultHits(fl) {
     const lo = fl.dir > 0 ? fl.x0 - 2 : fl.x0 - fl.len, hi = fl.dir > 0 ? fl.x0 + fl.len : fl.x0 + 2;
+    if (!fl.wallHit && GEO.pop.wall !== false) for (const p of pieces) if (p.kind === 'wall' && p.held && !p.gone) { const wx = (p.x0 + p.x1) / 2; if (wx >= lo - 2 && wx <= hi + 2 && fl.gy >= p.y0 && fl.gy <= p.y1 + 2) { fl.wallHit = true; burstWall(p, GEO.wall.shardNHeavy); break; } }   /* (claude/stonewall) the crack reaching her wall bursts it */
     for (const e of foes()) { if (e.harmless || e.turncoat || fl.hit.has(e)) continue; const b = api.box(e);
       if (b.r < lo || b.l > hi || e.y < fl.gy - 10 || b.t > fl.gy) continue;   /* on the floor it runs through (a flyer over it is missed) */
       fl.hit.add(e); fl.struck++; if (!fl.first) fl.first = e; api.hurtAs('heavy', e, fl.dmg, fl.x0, false); api.sparks(e.x, e.y - (e.h || 16) / 2, fl.dir, 5);
@@ -238,18 +247,34 @@ export function makeGeomancer(api) {
   /* RAISE WALL - her C until THE ROCK SHIELD replaced it, and from 2026-09-24 the bought STONE WALL (level 9, where LODESTONE was):
      a wall rises in the first column wholly in front of her. It stops a yellow blow and a shot, a blow on the beat bounces off it, and a
      red one smashes through (wallTakes). Held to THE CAP and the grid rules by tools/geomancer.mjs */
-  function raiseWall() {
-    const P = api.P, f = P.face, tx = f > 0 ? Math.ceil((P.x + P.w / 2) / TS) : Math.floor((P.x - P.w / 2) / TS) - 1;
-    api.SFX.geoThud && api.SFX.geoThud(); api.kitPose(P, 'gWall', 0.34);
-    const fy = floorRow(tx, Math.floor((P.y - 1) / TS), 2); if (fy === null) { api.dust(P.x + f * 10, P.y, 3); return null; }
+  const stoneCellAt = (tx, ty) => pieces.some(p => !p.gone && p.cells.some(c => c.tx === tx && c.ty === ty));
+  const wallStanding = () => pieces.find(p => p.kind === 'wall' && p.held && !p.gone);
+  const wallReady = () => GEO.pop.wall !== false && !wallStanding() && api.time >= wallReadyAt;
+  const wallCdLeft = () => wallStanding() ? GEO.wall.cd : Math.max(0, wallReadyAt - api.time);   /* the C icon's cooldown (the wall's own clock; the art lane draws it) */
+  /* o.held: the HOLD of C (the wall's own life, cost and cooldown; null = it could not rise, nothing spent, and the ward carries on). No o: the old uncapped-life wall (the retired bought skill's cast, kept for the tools) */
+  function raiseWall(o = {}) {
+    const P = api.P, f = P.face, W = GEO.wall, up = o.held && tal('stoneWall'), tx = f > 0 ? Math.ceil((P.x + P.w / 2) / TS) : Math.floor((P.x - P.w / 2) / TS) - 1;
+    if (o.held) { if (!wallReady()) return null; if (!P.ground || P.swim) return null; if (!(P.st >= W.cost)) return null; }
+    const fy = floorRow(tx, Math.floor((P.y - 1) / TS), 2);
+    if (fy === null) { api.dust(P.x + f * 10, P.y, 3); if (o.held && !P.geoWallFizz) { P.geoWallFizz = true; api.number(P.x, P.y - 24, 'NO GROUND FOR IT', '#9aa39a'); } return null; }
+    if (!o.held) { api.SFX.geoThud && api.SFX.geoThud(); api.kitPose(P, 'gWall', 0.34); }
     /* a small foe stood in that column is shoved out the far side of it, never walled in */
     for (const e of foes()) { const b = api.box(e); if (!api.overlap(cellBox(tx, fy - 1), b) && !api.overlap(cellBox(tx, fy - 2), b)) continue;
       if (!liftable(e)) continue; const nx = f > 0 ? (tx + 1) * TS + e.w / 2 + 1 : tx * TS - e.w / 2 - 1; api.moveBody(e, nx - e.x, 0, false); }
-    const cells = []; for (let k = 1; k <= GEO.wallH; k++) { if (!freeCell(tx, fy - k)) break; cells.push([tx, fy - k]); }
-    const p = cells.length ? place('wall', cells, T().SOLID) : null;
-    if (p) { p.face = f; api.SFX.geoRise && api.SFX.geoRise(); api.dust(tx * TS + 8, fy * TS, 6); }
+    const cells = []; for (let k = 1; k <= GEO.wallH + (up ? W.upH : 0); k++) { if (!freeCell(tx, fy - k)) break; cells.push([tx, fy - k]); }
+    if (!cells.length) return null;
+    if (o.held && !api.spend(W.cost)) return null;
+    for (const q of pieces.filter(q => q.kind === 'wall' && !q.gone)) crumble(q, 'silent');   /* ONE WALL AT A TIME */
+    const p = place('wall', cells, T().SOLID, o.held ? { life: W.life + (up ? W.upLife : 0), uncapped: true, hp: W.hp + (tal('lasting') ? 1 : 0) } : {});
+    if (p) { p.face = f; p.held = !!o.held; if (o.held) { api.kitPose(P, 'gWall', 0.34); api.SFX.geoThud && api.SFX.geoThud(); } api.SFX.geoRise && api.SFX.geoRise(); api.dust(tx * TS + 8, fy * TS, 6); stats.walls = (stats.walls || 0) + 1;
+      if (o.held && (stats.wallSaid = (stats.wallSaid || 0) + 1) <= 3) api.number(P.x + f * 14, p.y0 - 12, 'STONE WALL', STONE.rune); }   /* (taught: the name, the first three raises) */
     return p;
   }
+  /* the first of her own blows to strike a wall bursts it: n shards fly on, away from her */
+  function burstWall(p, n) { if (!p || p.gone || p.kind !== 'wall') return; const P = api.P, W = GEO.wall, cx = (p.x0 + p.x1) / 2, cy = (p.y0 + p.y1) / 2, d = Math.sign(cx - P.x) || P.face, share = { n: W.shardCap, m: new Map() }, dm = dmg(W.shardK);
+    stats.wallBursts = (stats.wallBursts || 0) + 1; crumble(p, 'shatter');
+    for (let i = 0; i < n; i++) shards.push({ x: cx + d * 4, y: cy + (i - (n - 1) / 2) * 3, vx: d * (240 + i * 26), vy: -50 + i * 22, life: 0.55, hit: new Set(), dmg: dm, cap: share, flinch: 0.3 });
+    api.SFX.geoShard && api.SFX.geoShard(); api.number(cx, p.y0 - 12, 'SHATTERED', STONE.hi); api.hitstop(0.05); api.shakeCam(4, d * 2); }
   /* THE WALL IN A BLOW'S WAY (damagePlayer). A yellow blow from the far side stops on it - raised on the beat, the attacker's
      weapon bounces off and it staggers; a RED blow smashes straight through (red still means move), unless BULWARK takes it once. */
   function wallTakes(fromX, unblockable, foe) {
@@ -280,10 +305,15 @@ export function makeGeomancer(api) {
   /* up while C is held (and for `hold` once it has risen, so a tap on the beat is a guard); `turn` is the way she is pressing, so she
      can turn on the planted stave; dt pays for holding it */
   function guard(want, can, dt = 0, turn = 0) { const P = api.P;
+    if (!want) { P.geoWallLatch = false; P.geoWallTried = false; P.geoWallFizz = false; }   /* (claude/stonewall) a new press, a new try */
+    if (P.geoWallLatch) return;   /* the wall rose: a C still held is not a ward */
     if (!can || (P.geoWardLock || 0) > api.time || (!P.geoGuard && !(P.st > 0))) { if (P.geoGuard) P.geoGuard = false; return; }
     if (want && !P.geoGuard) { P.geoGuard = true; P.geoGuardAt = api.time; api.SFX.geoThud && api.SFX.geoThud(); api.dust(P.x + P.face * 8, P.y, 3); }   /* the stave planted: the thud */
     else if (P.geoGuard && !want && api.time - P.geoGuardAt >= WD.raise + WD.hold) P.geoGuard = false;
     if (!P.geoGuard) return;
+    /* (claude/stonewall) STILL HELD at holdAt: the ward drops silently (no lock) and the wall rises; if it cannot, the ward carries on as it always did */
+    if (want && !P.geoWallTried && GEO.pop.wall !== false && api.time - P.geoGuardAt >= GEO.wall.holdAt) { P.geoWallTried = true;
+      if (raiseWall({ held: true })) { P.geoGuard = false; P.geoWallLatch = true; P.geoWardRose = false; return; } }
     P.rootT = Math.max(P.rootT || 0, 0.05); P.vx = 0; if (turn) P.face = turn;   /* ROOTED: the stave is in the ground */
     if (wardUp() && !P.geoWardRose) { P.geoWardRose = true; api.SFX.geoRise && api.SFX.geoRise(); } else if (!wardUp()) P.geoWardRose = false;   /* (the grind of it coming up) */
     if (api.time - P.geoGuardAt > WD.raise + WD.perfect) { P.st -= WD.holdSt * dt; P.stDelay = Math.max(P.stDelay || 0, 0.5);   /* holding it costs, as his does: the beat itself is free */
@@ -314,7 +344,7 @@ export function makeGeomancer(api) {
     P.st -= WD.hitSt; P.stDelay = Math.max(P.stDelay || 0, 0.5); gainTremor(GEO.tremor.wall); api.shakeCam(2); api.number(x, y - 14, 'WARDED', STONE.hi); api.teach && api.teach('warded');   /* (claude/georead) the first plain block says where the beat is */
     return 'blocked'; }
   /* THE THIRD BLOW (the spin) shatters any stone piece it hits and sprays it forward as shards */
-  function shatter(p, dir) { crumble(p, 'shatter'); burstShards((p.x0 + p.x1) / 2, (p.y0 + p.y1) / 2, dir, 5); api.number((p.x0 + p.x1) / 2, p.y0 - 12, 'SHATTERED', STONE.hi); api.hitstop(0.05); api.shakeCam(4, dir * 2); }
+  function shatter(p) { burstWall(p, GEO.wall.shardN); }   /* (claude/stonewall: it was the fist's spin on any piece; a wall's burst is burstWall now) */
   function burstShards(x, y, dir, n) {
     let d = dir; if (!d) { const f = foes().filter(e => !e.harmless).sort((a, b) => Math.abs(a.x - x) - Math.abs(b.x - x))[0]; d = f ? Math.sign(f.x - x) || 1 : api.P.face; }
     for (let i = 0; i < n; i++) shards.push({ x, y: y + (i - n / 2) * 3, vx: d * (240 + i * 26), vy: -50 + i * 22, life: 0.55, hit: new Set() });
@@ -347,6 +377,7 @@ export function makeGeomancer(api) {
      EARTH_FALL.wave px is hit (the plunge's own blow, tag 'plunge') and KNOCKED DOWN (floorFoe: a boss / mini / elite is only staggered). No piece, no step: baseGrid() and the reach fill have nothing of it to take out. */
   function earthfall(o = {}) {
     const P = api.P, R = EARTH_FALL.wave, fy = floorRow(Math.floor(P.x / TS), Math.floor((P.y - 1) / TS), 3), gy = fy === null ? P.y : fy * TS;
+    if (GEO.pop.wall !== false) for (const p of [...pieces]) if (p.kind === 'wall' && p.held && !p.gone && Math.abs((p.x0 + p.x1) / 2 - P.x) <= R && Math.abs(p.y1 - gy) <= 4) burstWall(p, GEO.wall.shardN);   /* (claude/stonewall) EARTHFALL's spikes burst a wall within their reach */
     for (const d of [-1, 1]) for (let i = 1; i <= EARTH_FALL.spikes; i++) spikes.push({ x: P.x + d * (6 + i * 11), gy, t: -0.05 * (i - 1), hit: new Set(), dmg: 0, h: 34 - 6 * i, w: 7, vis: true, end: 0.34 });   /* told by the spikes, hit by the wave below */
     api.dust(P.x - 10, gy, 6); api.dust(P.x + 10, gy, 6); api.shakeCam(4); api.SFX.geoRise && api.SFX.geoRise();
     const hit = [];
@@ -378,7 +409,7 @@ export function makeGeomancer(api) {
       else for (let k = -1; k <= 1; k++) cells.push([tx0 + k, fy - 4]);   /* no gap: an arch over her, a shelter */
       const p = place('arch', cells, T().SOLID); if (p) { api.dust((p.x0 + p.x1) / 2, p.y1, 8); api.number((p.x0 + p.x1) / 2, p.y0 - 12, a !== null && b !== null ? 'A BRIDGE' : 'AN ARCH', STONE.hi); } },
     /* STONE WALL (level 9, in LODESTONE's place from 2026-09-24): her old C, bought back - RAISE WALL, below */
-    stoneWall() { return raiseWall(); },
+    stoneWall() { return raiseWall(); },   /* (claude/stonewall: the bought STONE WALL is a passive upgrade of the held wall now; this stays for the tools) */
     entomb() { const P = api.P; api.kitPose(P, 'gTomb', 0.36); api.SFX.geoThud();
       const e = foes().filter(q => !q.harmless && !q.turncoat && (q.x - P.x) * P.face > -6 && Math.abs(q.x - P.x) < 72 && Math.abs(q.y - P.y) < 40).sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0];
       if (!e) { api.number(P.x + P.face * 30, P.y - 24, 'NOTHING TO SEAL', '#9aa39a'); return; }
@@ -572,7 +603,7 @@ export function makeGeomancer(api) {
     /* the wall and a shot: a wall raised on the beat throws it back (STONEFACE); anything else is stopped in the stone */
     for (const s of api.seeds) { if (s.dead || s.reflected) continue; const w = pieces.find(p => p.kind === 'wall' && s.x > p.x0 - 3 && s.x < p.x1 + 3 && s.y > p.y0 - 3 && s.y < p.y1 + 3); if (!w) continue;
       if (tal('returnFire') && api.time - w.born < 0.5) { api.reflectSeed(s); api.number((w.x0 + w.x1) / 2, w.y0 - 14, 'THROWN BACK', STONE.rune); }
-      else { s.dead = true; api.sparks(s.x, s.y, -Math.sign(s.vx) || 1, 4); } gainTremor(GEO.tremor.shot); }
+      else { s.dead = true; api.sparks(s.x, s.y, -Math.sign(s.vx) || 1, 4); const own = s.owner || s.from; if (w.held && own && (own.maxHp || own.mini || own.elite) && --w.hp <= 0) crumble(w, 'broken'); } gainTremor(GEO.tremor.shot); }   /* (claude/stonewall) a common foe's shot is free; a boss's or an elite's costs the wall a point */
     /* THE WARD MEETS A SHOT, on its face or its lip (so one dropping on her from above is met too). Raised on the beat, it is thrown back
        the way it came (and the beat empowers her); with STONEFACE, EVERY shot it meets is thrown back; otherwise it dies on the stone
        for the wind a blow costs - and with no wind for it, it is let through to her, where damagePlayer breaks the ward (GUARD BREAK) */
@@ -582,8 +613,9 @@ export function makeGeomancer(api) {
         const beat = wardPerfect();
         if (beat || tal('returnFire')) { api.reflectSeed(s); api.number(s.x, s.y - 14, 'THROWN BACK', STONE.rune); if (beat) wardParry(null); gainTremor(GEO.tremor.shot); }
         else if (P.st >= WD.hitSt) { s.dead = true; P.st -= WD.hitSt; P.stDelay = Math.max(P.stDelay || 0, 0.5); api.sparks(s.x, s.y, -Math.sign(s.vx) || 1, 4); api.SFX.geoBounce(); gainTremor(GEO.tremor.shot); } } }
-    /* THE THIRD BLOW: the spin shatters what it touches */
-    if (P.atk >= 0.17 && P.atk < 0.2 && P.heavySwing && !P.heavy && pieces.length && !(P.hitSet && P.hitSet.size)) {   /* (claude/geoid) THE STONE FIST breaks one of her own stones only when it found nothing else to hit; (claude/geopop, Daniel 11-03) NOW ONLY A WALL - the board stones are the fist's to plant, never to break */ const b = api.attackBox(); if (b) for (const p of [...pieces]) if (p.kind === 'wall' && api.overlap(b, { l: p.x0, r: p.x1, t: p.y0, b: p.y1 })) shatter(p, P.face); }
+    /* (claude/stonewall) STRIKE THE WALL: the first of HER blows (a jab, the stone fist, the up-air arc) whose box finds her wall bursts it - n shards forward (a held tier / the fist: more). Her board stones are never burst by a blow (the ram and the gnaw break them) */
+    if (GEO.pop.wall !== false && P.atk >= 0 && api.isGeo() && !P.dead && P.geoWallBurstT !== P.lastSwingT) { const w = pieces.find(p => p.kind === 'wall' && p.held && !p.gone); if (w) { const b = api.attackBox();
+      if (b && api.overlap(b, { l: w.x0, r: w.x1, t: w.y0, b: w.y1 })) { P.geoWallBurstT = P.lastSwingT; burstWall(w, P.heavySwing || P.heavy ? GEO.wall.shardNHeavy : GEO.wall.shardN); } } }
     /* (claude/geopop a) THE FIST PLANTS A KNEE STONE: on the fist's active frame, hit or whiff, one stone (1 cell) rises on the first free floor column 2-4 tiles ahead. Not at a full board, not within plantCd s */
     if (P.atk < 0) P.geoPlantDone = false;
     else if (P.atk >= 0.17 && !P.geoPlantDone && P.heavySwing && !P.heavy && !P.swingKind && !P.plunge && GEO.pop.fistPlant) { P.geoPlantDone = true; fistPlant(); }
@@ -610,9 +642,9 @@ export function makeGeomancer(api) {
         else { r.life = 0; api.shakeCam(3); } }
       if (r.life <= 0) api.burst(r.x, r.y - r.r, 10, [STONE.base, STONE.hi, STONE.lo], 70, 0.5); }
     rollers = rollers.filter(r => r.life > 0); stepErupts(dt); stepRecalls(dt); stepCollapse(dt);
-    for (const s of shards) { s.life -= dt; s.vy += (s.g ?? 300) * dt; s.x += s.vx * dt; s.y += s.vy * dt; if (api.isSolid(Math.floor(s.x / TS), Math.floor(s.y / TS))) s.life = 0;
-      for (const e of foes()) { if (s.life <= 0 || e.harmless || e.turncoat || s.hit.has(e)) continue; if (s.det && (s.det.sh.get(e) || 0) >= GEO.detonate.perFoeShards) continue; if (!api.overlap({ l: s.x - 2, r: s.x + 2, t: s.y - 2, b: s.y + 2 }, api.box(e))) continue;
-        s.hit.add(e); if (s.det) s.det.sh.set(e, (s.det.sh.get(e) || 0) + 1); api.hurtAs('shot', e, s.dmg || dmg(0.6), s.x - Math.sign(s.vx) * 10, false); s.life = 0; api.sparks(s.x, s.y, Math.sign(s.vx), 3); if (s.big && e.alive) { e.stagger = Math.max(e.stagger || 0, api.lcBig(e) ? 0.1 : 0.3); stats.shardHits++; } } }   /* (claude/chargetiers: the STONE SHARD's own blow and check) */
+    for (const s of shards) { s.life -= dt; s.vy += (s.g ?? 300) * dt; s.x += s.vx * dt; s.y += s.vy * dt; if (api.isSolid(Math.floor(s.x / TS), Math.floor(s.y / TS)) && !(s.cap && stoneCellAt(Math.floor(s.x / TS), Math.floor(s.y / TS)))) s.life = 0;   /* (claude/stonewall: a wall's shards fly through HER stone - the fist plants a knee stone in their path on the same frame) */
+      for (const e of foes()) { if (s.life <= 0 || e.harmless || e.turncoat || s.hit.has(e)) continue; if (s.det && (s.det.sh.get(e) || 0) >= GEO.detonate.perFoeShards) continue; if (s.cap && (s.cap.m.get(e) || 0) >= s.cap.n) continue; if (!api.overlap({ l: s.x - 2, r: s.x + 2, t: s.y - 2, b: s.y + 2 }, api.box(e))) continue;
+        s.hit.add(e); if (s.det) s.det.sh.set(e, (s.det.sh.get(e) || 0) + 1); if (s.cap) s.cap.m.set(e, (s.cap.m.get(e) || 0) + 1); if (s.flinch && !api.lcBig(e) && !e.maxHp && !e.mini) e.stagger = Math.max(e.stagger || 0, s.flinch);   /* (claude/stonewall: a wall's shard: <= shardCap on one foe, a 0.3 s flinch on a common foe, never a boss or a mini) */ api.hurtAs('shot', e, s.dmg || dmg(0.6), s.x - Math.sign(s.vx) * 10, false); s.life = 0; api.sparks(s.x, s.y, Math.sign(s.vx), 3); if (s.big && e.alive) { e.stagger = Math.max(e.stagger || 0, api.lcBig(e) ? 0.1 : 0.3); stats.shardHits++; } } }   /* (claude/chargetiers: the STONE SHARD's own blow and check) */
     shards = shards.filter(s => s.life > 0);
     for (const f of falls) { if (f.st === 'wait') { f.delay -= dt; if (f.foe && f.foe.alive) f.x += (f.foe.x - f.x) * Math.min(1, dt * 10); if (f.delay <= 0) f.st = 'fall'; continue; }
       if (f.st === 'fall') { f.y += 560 * dt; if (f.y >= f.gy) { f.y = f.gy; f.st = 'done'; f.life = 0.4; api.dust(f.x, f.gy, 6); api.shakeCam(2); api.SFX.geoThud();
@@ -703,10 +735,10 @@ export function makeGeomancer(api) {
         g.fillStyle = i === 0 ? STONE.hi : i === 1 ? STONE.base : STONE.lo; if (i < 2) { g.fillRect(x, y, 2, 2); g.fillStyle = STONE.dark; g.fillRect(x, y + 2, 2, 1); } else g.fillRect(x, y, 1, 1);
         spunAt = api.time; } }
     /* (claude/geopop c) THE GEODE GLOW: an additive amber halo (r 5-7) on the staff tip - dim with no stone standing, brighter with 1, 2, 3, and a flash that fades over 0.3 s on every blow she lands (and through the detonate's tell) */
-    if (GEO.pop.feel && api.isGeo() && !P.dead && !P.geoBurrow && api.staffTip) { const tip = api.staffTip(); if (tip) { const n = Math.min(3, standing()), pul = Math.max(0, 1 - (api.time - glowAt) / 0.3), tk = det ? Math.min(1, det.t / GEO.detonate.tell) : 0, R = Math.min(7, Math.round(5 + n * 0.5 + pul * 1.5 + tk * 2)), a = Math.min(0.95, 0.14 + 0.1 * n + 0.5 * pul + 0.4 * tk), tx = Math.round(tip.x - cx), ty = Math.round(tip.y - cy);
+    if (GEO.pop.feel && api.isGeo() && !P.dead && !P.geoBurrow && api.staffTip) { const tip = api.staffTip(); if (tip) { const n = Math.min(3, standing()), pul = Math.max(0, 1 - (api.time - glowAt) / 0.3), tk = det ? Math.min(1, det.t / GEO.detonate.tell) : 0, hk = P.geoGuard && !P.geoWallTried && api.time - P.geoGuardAt >= 0.2 ? 1 : 0, R = Math.min(8, Math.round(5 + n * 0.5 + pul * 1.5 + tk * 2 + hk * 2)), a = Math.min(0.95, 0.14 + 0.1 * n + 0.5 * pul + 0.4 * tk + 0.4 * hk)   /* (claude/stonewall: hk = the amber hold-to-wall glint from 0.2 s held: hold is not tap) */, tx = Math.round(tip.x - cx), ty = Math.round(tip.y - cy);
       g.save(); g.globalCompositeOperation = 'lighter'; g.fillStyle = STONE.rune; g.globalAlpha = a * 0.55; disc(g, tx, ty, R); g.globalAlpha = a * 0.8; disc(g, tx, ty, Math.max(2, R - 3)); g.fillStyle = '#fff0c0'; g.globalAlpha = a; disc(g, tx, ty, 1); g.restore(); } }
-    for (const p of pieces) { const k = Math.min(1, p.age / GEO.rise), left = p.life - p.age, crackK = p.life === Infinity ? Math.min(1, Math.max(0, (p.hp0 - p.hp) / Math.max(1, p.hp0)) * 1.25) : left < p.crack ? 1 - left / p.crack : 0;   /* (claude/geoid) a standing stone cracks by hp: whole, cracked, about to go */
-      const jit = left < 0.25 || (p.life === Infinity && p.hp <= 1 && p.hp0 > 1) ? (Math.floor(api.time * 40) % 2 ? 1 : -1) : 0, rise = Math.round((1 - k) * (p.y1 - p.y0)), set = new Set(p.cells.map(c => c.i));
+    for (const p of pieces) { const k = Math.min(1, p.age / GEO.rise), left = p.life - p.age, crackK = p.life === Infinity || p.held ? Math.min(1, Math.max(0, (p.hp0 - p.hp) / Math.max(1, p.hp0)) * 1.25) : left < p.crack ? 1 - left / p.crack : 0;   /* (claude/geoid) a standing stone cracks by hp: whole, cracked, about to go */
+      const jit = left < (p.held ? 0.8 : 0.25) || ((p.life === Infinity || p.held) && p.hp <= 1 && p.hp0 > 1) ? (Math.floor(api.time * 40) % 2 ? 1 : -1) : 0, rise = Math.round((1 - k) * (p.y1 - p.y0)), set = new Set(p.cells.map(c => c.i));
       g.save(); g.beginPath(); g.rect(Math.round(p.x0 - cx) - 2, Math.round(p.y0 - cy) - 4, p.x1 - p.x0 + 4, p.y1 - p.y0 + 4); g.clip();
       for (const c of p.cells) { const x = Math.round(c.tx * TS - cx) + jit, y = Math.round(c.ty * TS - cy) + rise;
         const top = !set.has(c.i - api.LW), bot = !set.has(c.i + api.LW);
@@ -714,6 +746,9 @@ export function makeGeomancer(api) {
           if (crackK > 0) { g.fillStyle = STONE.crack; g.fillRect(x + 5, y + 1, 1, 4); g.fillRect(x + 10, y + 2, 1, 3); } continue; }
         if (p.knee && GEO.pop.feel && p.cells.length === 1) drawKneeStone(g, x, y, c.i % 11, crackK); else drawStoneCell(g, x, y, top, bot, c.i % 11, crackK, top); }
       g.restore();
+      if (p.held && p.life !== Infinity) { const f = Math.max(0, 1 - p.age / p.life), x = Math.round(p.x0 - cx), y = Math.round(p.y0 - cy) - 3, W = p.x1 - p.x0, sw = Math.floor((W - 2) / 3), low = f < 0.34;   /* (claude/stonewall) THE TIMER: three segments on its top edge draining left to right (placeholder art) */
+        g.fillStyle = 'rgba(14,12,8,0.75)'; g.fillRect(x, y - 1, W, 4); for (let i = 0; i < 3; i++) { const fi = Math.max(0, Math.min(1, f * 3 - i)); g.fillStyle = 'rgba(90,86,70,0.6)'; g.fillRect(x + 1 + i * (sw + 1), y, sw, 2);
+          if (fi > 0) { g.fillStyle = low && (Math.floor(api.time * 8) & 1) ? '#ff6b6b' : low ? '#e88a3a' : f < 0.67 ? '#e8c060' : '#e8e4d0'; g.fillRect(x + 1 + i * (sw + 1), y, Math.max(1, Math.round(sw * fi)), 2); } } }
       if (p.bulwarked) { g.globalAlpha = 0.5; g.fillStyle = STONE.rune; g.fillRect(Math.round(p.x0 - cx), Math.round(p.y0 - cy) - 2, p.x1 - p.x0, 1); g.globalAlpha = 1; }
       if (det && p.capped) { const k = Math.min(1, det.t / GEO.detonate.tell), x = Math.round(p.x0 - cx), y = Math.round(p.y0 - cy), w = p.x1 - p.x0, h = p.y1 - p.y0, jt = k > 0.5 ? (Math.floor(api.time * 50) % 2 ? 1 : -1) : 0;   /* (claude/geopop e/c) THE TELL: the stone pulses amber, cracks widen, motes lift off it and it shudders as the slam comes down */
         g.save(); g.globalCompositeOperation = 'lighter'; g.globalAlpha = (0.22 + 0.4 * k) * (0.8 + 0.2 * Math.sin(api.time * 40)); g.fillStyle = STONE.rune; g.fillRect(x + jt, y, w, h); g.globalAlpha = 0.28 * k; g.fillStyle = '#fff0c0'; g.fillRect(x + jt + 4, y + 3, w - 8, Math.max(1, h - 8)); g.restore();
@@ -851,6 +886,6 @@ export function makeGeomancer(api) {
     g.fillStyle = STONE.hi; g.fillRect(x - Math.round(r / 2), y - r + 1, Math.max(2, r - 1), 1);
     const a = spin || 0; g.fillStyle = STONE.lo; g.fillRect(Math.round(x + Math.cos(a) * r * 0.5), Math.round(y + Math.sin(a) * r * 0.5), 2, 2); g.fillStyle = STONE.moss; g.fillRect(Math.round(x + Math.cos(a + 2.5) * r * 0.6), Math.round(y + Math.sin(a + 2.5) * r * 0.6), 2, 1); }
 
-  return { upAir, UP_AIR, collapsing: () => col, recall, recallReady, recalls: () => recalls, stoneAt: (tx, ty) => { const g = grid(); for (const p of pieces) if (!p.gone && p.grid === g) for (const c of p.cells) if (c.tx === tx && c.ty === ty) return true; return false; }, hasStones: () => pieces.length > 0, tierStats: () => ({ ...stats, tiers: stats.tiers.slice() }), resetTierStats: () => { stats.tiers = [0, 0, 0, 0]; stats.pillars = stats.steps = stats.shardHits = stats.rams = stats.gnaws = stats.topples = stats.fists = 0; }, earthfall, baseGrid, update, draw, clear, avalanche, avalancheReady, topple: avalanche, erupts: () => erupts, fistHit, fillBoard, standing, fistPlant, blowPulse, detonate, detonateReady, detonateWorth, detonating: () => !!det, detCd: () => detCd, plantAt: () => plantAt, decals: () => decals, lastDet: () => lastDet ? { blasts: lastDet.blasts, shards: Math.max(0, ...lastDet.tag.sh.values()) } : null, boardFill, faultHeavy, faultPath, guard, wardTakes, wardUp, wardPerfect, empowered, raiseWall, wallTakes, rollStone, quake, gainTremor, tombHit, kit,
+  return { raiseWall, burstWall, wallReady, wallCdLeft, wallStanding, upAir, UP_AIR, collapsing: () => col, recall, recallReady, recalls: () => recalls, stoneAt: (tx, ty) => { const g = grid(); for (const p of pieces) if (!p.gone && p.grid === g) for (const c of p.cells) if (c.tx === tx && c.ty === ty) return true; return false; }, hasStones: () => pieces.length > 0, tierStats: () => ({ ...stats, tiers: stats.tiers.slice() }), resetTierStats: () => { stats.tiers = [0, 0, 0, 0]; stats.pillars = stats.steps = stats.shardHits = stats.rams = stats.gnaws = stats.topples = stats.fists = 0; }, earthfall, baseGrid, update, draw, clear, avalanche, avalancheReady, topple: avalanche, erupts: () => erupts, fistHit, fillBoard, standing, fistPlant, blowPulse, detonate, detonateReady, detonateWorth, detonating: () => !!det, detCd: () => detCd, plantAt: () => plantAt, decals: () => decals, lastDet: () => lastDet ? { blasts: lastDet.blasts, shards: Math.max(0, ...lastDet.tag.sh.values()) } : null, boardFill, faultHeavy, faultPath, guard, wardTakes, wardUp, wardPerfect, empowered, raiseWall, wallTakes, rollStone, quake, gainTremor, tombHit, kit,
     shieldDrawn: () => shieldDrawn, spunAt: () => spunAt, pieces: () => pieces, rollers: () => rollers, falls: () => falls, spikes: () => spikes, shards: () => shards, faults: () => faults, golem: () => golem, freeCell, erupt, place, crumble };
 }
