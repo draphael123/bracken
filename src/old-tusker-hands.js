@@ -26,6 +26,24 @@ const R = Math.round;
 const rect = (g, x, y, w, h, col) => { g.fillStyle = col; g.fillRect(R(x), R(y), R(w), R(h)); };
 const ell = (g, x, y, rx, ry, col, rot = 0) => { g.fillStyle = col; g.beginPath(); g.ellipse(R(x), R(y), Math.max(1, rx), Math.max(1, ry), rot, 0, 7); g.fill(); };
 /* THE POSE A MODE WEARS (local px, facing right, his feet at 0,0): head [dx, dy, rot], rump (px the hind end rides up), legs, tusk angle, eye, lying - windup and release are never the same picture */
+/* (claude/geofix) THE SPLINTERED SHOCKWAVE: the stomp's wave as a low band of cracked earth racing along the floor - a heaved ridge that falls away behind its tip, a jagged crack down the middle of its wake, a bright leading edge (the jump cue: cream core, gold shoulder,
+   it blinks) and dirt clods, wood chips and long pale splinters thrown up out of it and tumbling back. Drawn from the wave's own x / dir / life, nothing else: the hit is still +-OT.stomp.w on the floor. x, fy = the wave tip and the floor in screen px. */
+function drawShock(g, q, x, fy, time) { const d = q.dir, seed = (q.key.charCodeAt(2) || 0) * 3 + (q.key.length > 3 ? 7 : 0), fade = Math.min(1, q.life / 0.35), blink = Math.floor(time * 16) % 2;
+  g.globalAlpha = fade;
+  rect(g, x - d * 46, fy - 1, 46, 2, '#3a2414');   /* the scar it cuts in the floor: a dark band, with a lighter lip over it */
+  for (let i = 0; i < 12; i++) { const bx = x - d * (i * 4 + 2), hgt = Math.max(2, 9 - Math.floor(i * 0.65)) + (i % 3 === 1 ? 1 : 0);   /* the heaved ridge: tall at the tip, settling away, in broken blocks of earth */
+    rect(g, bx - 2, fy - hgt, 4, hgt, i % 2 ? '#6a4a2a' : '#80603a'); rect(g, bx - 2, fy - hgt, 4, 1, '#b08a58'); if (i % 3 === 0) rect(g, bx - 1, fy - hgt + 2, 1, hgt - 2, '#2e1c10'); }
+  for (let i = 0; i < 9; i++) { const kx = x - d * (6 + i * 5 + ((seed + i * 3) % 3)); rect(g, kx, fy - 3 + (i % 2), 1, 3, '#24160c'); rect(g, kx + d, fy - 1, 2, 1, '#24160c'); }   /* the cracks: kinked dark seams across the ridge */
+  for (let i = 0; i < 20; i++) { const a = ((time * 3.4 + i * 0.137 + seed * 0.07) % 1), rise = Math.sin(a * Math.PI), px = x - d * (2 + a * 38 + (i % 5) * 2), py = fy - 4 - rise * (8 + (i % 4) * 4), k = i % 5;
+    if (k === 0) rect(g, px, py, 2, 2, '#5a3c22');                    /* a clod of dirt */
+    else if (k === 1) { rect(g, px, py, 3, 2, '#c89a5a'); rect(g, px, py, 1, 1, '#e6c88a'); }   /* a wood chip */
+    else if (k === 2) { if (i & 4) rect(g, px, py, 1, 5, '#f0dcac'); else rect(g, px, py, 5, 1, '#f0dcac'); }   /* a long pale splinter, end on / flat */
+    else if (k === 3) { rect(g, px, py, 1, 3, '#d9bc84'); rect(g, px + 1, py + 2, 2, 1, '#8e6a40'); }
+    else rect(g, px, py, 1, 1, '#8c6844'); }
+  g.globalAlpha = fade * 0.45; rect(g, x + d * 1, fy - 3, d * 10 > 0 ? 10 : -10 + 0, 3, '#ffb040'); g.globalAlpha = fade;   /* a streak of light on the floor ahead of the tip */
+  rect(g, x - 3, fy - 13, 6, 13, '#ff9a30'); rect(g, x - 2, fy - 14, 4, 14, blink ? '#fff6d8' : '#ffe08a'); rect(g, x - 1, fy - 16, 2, 4, '#fff6d8');   /* the leading edge: a bright blade, taller than anything else on it, blinking: the jump cue */
+  rect(g, x + d * 3, fy - 9, 1, 9, '#ffd36b'); rect(g, x - 4, fy - 1, 8, 1, '#fff0c0');
+  g.globalAlpha = 1; }
 export const POSE = {
   sleep: { lying: true, eye: 'shut' }, wake: { head: [0, 2, 0.15], legs: 'stand', rump: -2 },
   walk: { head: [0, 0, 0], legs: 'walk' }, recover: { head: [0, 2, 0.1], legs: 'stand' },
@@ -135,7 +153,7 @@ export function makeOldTuskerHands(ctx) {
     const blink = Math.floor(time * 12) % 2 ? '#ff6b6b' : '#fff6e0';
     for (const c of S.clods) { const q = OTM.clodAt(c, G.floorY); ell(g, X(q.x), Y(q.y), 4, 3, '#4a3020'); rect(g, X(q.x) - 1, Y(q.y) - 2, 2, 1, '#2e5a34');
       g.strokeStyle = blink; g.beginPath(); g.ellipse(X(c.tx), Y(G.floorY) - 1, OT.root.r, 3, 0, 0, 7); g.stroke(); }
-    for (const q of S.waves) for (let k = 0; k < 3; k++) rect(g, X(q.x) - q.dir * k * 6 - 3, Y(G.floorY) - 5 - (k % 2) * 3, 6, 5, k ? '#6a4a2a' : '#8e6a40');
+    for (const q of S.waves) drawShock(g, q, X(q.x), Y(G.floorY), time);   /* (claude/geofix, Daniel 11-04) THE SPLINTERED SHOCKWAVE (art only: same hitbox OT.stomp.w, speed and life) */
     if (e.mode === 'chargeTell' || e.mode === 'turn') { const st = OTM.chargeStop(S, e.x, e.face || 1); g.globalAlpha = 0.35; g.fillStyle = '#ff6b6b'; for (let q = Math.min(e.x, st.x); q < Math.max(e.x, st.x); q += 10) g.fillRect(X(q), Y(G.floorY) - 1, 6, 1); g.globalAlpha = 1;
       if (st.pine) { const ex = X(OTM.trunkEnd(st.pine, e.face || 1)), ey = Y(G.floorY), on = Math.floor(time * 10) % 2; g.fillStyle = on ? '#ff6b6b' : '#ffd36b'; g.fillRect(ex - 1, ey - 18, 2, 16); g.fillRect(ex - (e.face || 1) * 4 - 2, ey - 14, 4, 2); g.fillRect(ex - (e.face || 1) * 4 - 2, ey - 8, 4, 2); } }   /* (claude/tuskerfix) his run line ends on the TRUNK he will ram: a blinking impact mark at its end */
     /* (claude/tuskerfix) THE WALL READ: a felled trunk lying in the fight wears gold end-caps (his charge rams it, his walk stops at it) */
