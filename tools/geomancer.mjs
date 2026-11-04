@@ -37,6 +37,13 @@
 //             every key of her set keeps the frame count it had before the staff (FRAMES, below; THE MEND's gMend is gone with the
 //             mend); and while she casts - C held - the draw sets stones going round the geode, and walking it does not.
 //             PROVED RED FIRST on the standing-stone stave: 0 amber pixels over the hood in the standing frame, no tip, no stones.
+//   pop       (claude/geopop, Daniel 11-03 17:24: the POPULARITY PASS; GEO.pop = { fistPlant, bossStone, detonate, feel })
+//             (a) the THIRD JAB PLANTS a knee stone 2-4 tiles ahead (hit or whiff): at <3 stones it does, at 3 it does NOT (nothing evicted), a second fist inside plantCd (3 s) does not, a third
+//                 after it does, never inside a body (three foes on the three columns: no plant, nobody buried); and the fist no longer shatters a board stone it stood next to
+//             (b) a real boss start (the Wood Troll's) leaves ONE stone standing (standing() == 1), and again after a retry (respawn, then the arena again)
+//             (e) DOWN+C with 0 stones is the WARD (nothing detonates); with 2 stones BOTH are consumed, the cd is 5 s (a second DOWN+C does not fire), the foe in the radius is hurt, and the press
+//                 never raised a ward; one foe in all three stones' radius takes the per-foe cap (2 blasts + 3 shards, not 3 + 9): ~2.3x one stone's, never ~3x; UP+C at 3 stones is still AVALANCHE
+//             the kill switches: each GEO.pop flag false turns its piece off
 //   levels    in three real early levels, at every 5th tile of floor she can stand on: wall, fault line and step raised, and every frame
 //             no living body is inside her rock and, eight seconds on, the level's grid is exactly what it was (no route blocked)
 // PROVED RED FIRST (2026-09-24): with the body test taken out of freeCell and RULE 4 disabled in src/geomancer.js, `lift` and `body`
@@ -47,7 +54,7 @@ import { openPage } from './cdp.mjs';
 /* HER SET'S FRAME COUNTS, key by key, as they were before the staff (master 52cfebb, less THE MEND's gMend): the staff redraws every
    frame and must not add or drop one */
 /* dance 8 -> 12 (2026-09-29, claude/dances: Daniel asked for a dance per hero; hers is the stones orbiting her staff) */
-const STAFF_FRAMES = {"gWind3":2, "gShard":2, "gPillar":2, /* (claude/chargetiers: the three-tier stave) */ "idle":8, "run":6, "jump":2, "fall":2, "land":3, "takeoff":1, "apex":1, "skid":1, "climb":2, "atk":5, "plunge":1, "hurt":2, "crouch":1, "slide":2, "airUp":5, "sense":2, "block":2, "dashAtk":3, "atkB":5, "atkC":5, "air":5, "cast":2, "fidget":15, "dance":12, "dance2":33, "dance3":23, "follow":2, "slump":2, "swim":4, "tread":4, "roll":4, "burrow":3, "rise":5, "sweep":5, "heavy":3, "windup":3, "blast":2, "gStep":2, "gHeave":3, "gSpikes":2, "gArch":2, "gWall":3, "gTomb":2, "gFault":2, "gGolem":2, "gAval":2, "gShrug":2, "drink":5, "parry":2, "ripo":3, "earthWind":2, "earthHit":2}   /* (claude/riposteart: the parry catch and the riposte strike, one pose each for every hero - the two keys are new by design; claude/plunges: EARTHFALL replaced the STONEFALL ring - its windup and release poses, new by design) */;
+const STAFF_FRAMES = {"gWind3":2, "gShard":2, "gPillar":2, "gFist":5, /* (claude/jabart: the stone fist's pose) */ /* (claude/chargetiers: the three-tier stave) */ "idle":8, "run":6, "jump":2, "fall":2, "land":3, "takeoff":1, "apex":1, "skid":1, "climb":2, "atk":5, "plunge":1, "hurt":2, "crouch":1, "slide":2, "airUp":5, "sense":2, "block":2, "dashAtk":3, "atkB":5, "atkC":5, "air":5, "cast":2, "fidget":15, "dance":12, "dance2":33, "dance3":23, "follow":2, "slump":2, "swim":4, "tread":4, "roll":4, "burrow":3, "rise":5, "sweep":5, "heavy":3, "windup":3, "blast":2, "gStep":2, "gHeave":3, "gSpikes":2, "gArch":2, "gWall":3, "gTomb":2, "gFault":2, "gGolem":2, "gAval":2, "gShrug":2, "drink":5, "parry":2, "ripo":3, "earthWind":2, "earthHit":2}   /* (claude/riposteart: the parry catch and the riposte strike, one pose each for every hero - the two keys are new by design; claude/plunges: EARTHFALL replaced the STONEFALL ring - its windup and release poses, new by design) */;
 const pg = await openPage({ audio: false, fonts: false });
 try {
   await pg.evalp(`(async()=>{const {xpFloor}=await import('/src/xp.js');
@@ -178,6 +185,53 @@ try {
     K.right=true;for(let i=0;i<30;i++){BK.step(1);walk+=d();}K.right=false;for(let i=0;i<30;i++){BK.step(1);idle+=d();}
     BK.P.st=BK.P.maxSt;K.block=true;for(let i=0;i<30;i++){BK.step(1);up+=d();}K.block=false;BK.step(10);return {walk,idle,up}})()`);
   /* A SAVE FROM BEFORE HER (version 1 migrated, or a version 2 made before she existed): no XP, nothing owned, no loadout for her */
+  /* (claude/geopop) THE POPULARITY PASS */
+  await pg.evalp(`(()=>{ window.__pfoe=(dx,o={})=>{BK.spawnEnt({t:'sprig',x:(BK.P.x+dx)/16,y:21});const e=BK.enemies().at(-1);e.hp=e.hp0=o.hp||99999;e.cd=99;e.biteCd=99;e.y=352;e.px=e.x;return e;};
+    window.__pin=es=>es.forEach(e=>{if(e.px!==undefined){e.x=e.px;e.vx=0;}});
+    window.__combo=(es=[])=>{for(let n=1;n<=3;n++){BK.press('atk');for(let i=0;i<30;i++){BK.sim(1);__pin(es);}}};
+    window.__stone=(tx)=>BK.geo().erupt(tx,22,1,'pillar',{noHero:true,hurt:false,noLaunch:true});
+    window.__on=(G)=>G.pieces().filter(p=>p.capped&&!p.gone).length;
+    return 1})()`);
+  out.pop = {}; await pg.evalp(`(()=>{window.__g2=()=>{if(BK.geo())BK.geo().clear();__geo([]);};return 1})()`);
+  out.pop.plant = await pg.evalp(`(()=>{const P=()=>BK.P,G=()=>BK.geo();__g2();const px=Math.floor(P().x/16),f0=G().tierStats().fistPlants||0;
+    __combo();const n1=G().standing(),p1=G().pieces()[0],d1=p1?Math.round(p1.cells[0].tx-px):null;
+    __combo();const n2=G().standing();                         /* inside plantCd: no second plant */
+    BK.sim(60*3);P().face=1;__combo();const n3=G().standing();   /* after plantCd: the next */
+    return {n1,d1,n2,n3,stats:(G().tierStats().fistPlants||0)-f0}})()`);
+  out.pop.full = await pg.evalp(`(()=>{const P=()=>BK.P,G=()=>BK.geo();__g2();const tx=Math.floor(P().x/16);[tx+8,tx+11,tx+14].forEach(__stone);BK.sim(2);const ids=G().pieces().slice(),f0=G().tierStats().fistPlants||0;
+    __combo();BK.sim(5);return {n:G().standing(),same:G().pieces().length===ids.length&&ids.every(p=>G().pieces().includes(p)),plants:(G().tierStats().fistPlants||0)-f0}})()`);
+  out.pop.noshatter = await pg.evalp(`(()=>{const P=()=>BK.P,G=()=>BK.geo();__g2();const tx=Math.floor(P().x/16);__stone(tx+1);BK.sim(2);const p=G().pieces()[0];
+    BK.press('atk');BK.sim(30);BK.press('atk');BK.sim(30);BK.press('atk');BK.sim(30);return {had:!!p,stands:!!p&&!p.gone&&G().pieces().includes(p)}})()`);
+  out.pop.body = await pg.evalp(`(()=>{const P=()=>BK.P,G=()=>BK.geo();__g2();const es=[40,56,72].map(dx=>{const e=__pfoe(dx);e.mini=true;return e;});BK.sim(2);es.forEach((e,i)=>e.px=BK.P.x+[40,56,72][i]);
+    let inside=false;BK.press('atk');for(let i=0;i<30;i++){BK.sim(1);__pin(es);inside=inside||__inside();}BK.press('atk');for(let i=0;i<30;i++){BK.sim(1);__pin(es);inside=inside||__inside();}BK.press('atk');for(let i=0;i<40;i++){BK.sim(1);__pin(es);inside=inside||__inside();}
+    return {planted:G().standing(),inside}})()`);
+  out.pop.stack = await pg.evalp(`(()=>{const P=()=>BK.P,G=()=>BK.geo();__g2();const px=Math.floor(P().x/16);__stone(px+2);__stone(px+3);BK.sim(2);__combo();const d=G().pieces().map(p=>p.cells[0].tx-px).sort();
+    __g2();__stone(px+2);__stone(px+3);BK.sim(2);const es=[__pfoe(64)];es[0].mini=true;BK.sim(2);es[0].px=BK.P.x+64;BK.sim(60*4);es[0].px=BK.P.x+64;__combo(es);return {d,n:G().standing()}})()`);
+  out.pop.det0 = await pg.evalp(`(()=>{const P=()=>BK.P,G=()=>BK.geo(),K=BK.keys;__g2();const d0=G().tierStats().detonates||0;K.down=true;K.block=true;let ward=false,det=false;for(let i=0;i<20;i++){BK.sim(1);ward=ward||!!P().geoGuard;det=det||G().detonating();}K.down=false;K.block=false;BK.sim(10);
+    return {ward,det,dets:(G().tierStats().detonates||0)-d0}})()`);
+  out.pop.det2 = await pg.evalp(`(()=>{const P=()=>BK.P,G=()=>BK.geo(),K=BK.keys;__g2();const px=Math.floor(P().x/16),d0=G().tierStats().detonates||0;const e=__pfoe(100);BK.sim(2);e.px=BK.P.x+100;__stone(px+4);__stone(px+5);BK.sim(2);const n0=G().standing(),hp0=e.hp;
+    K.down=true;K.block=true;BK.sim(2);K.block=false;let ward=false,tell=G().detonating();for(let i=0;i<30;i++){BK.sim(1);__pin([e]);ward=ward||!!P().geoGuard;}
+    const hurt=hp0-e.hp,left=G().standing(),cd=Math.round((G().detCd()-BK.time)*10)/10;
+    __stone(px+4);__stone(px+5);BK.sim(2);K.block=true;BK.sim(2);K.block=false;BK.sim(10);const again=(G().tierStats().detonates||0)-d0,second=G().standing();
+    K.down=false;return {n0,tell,hurt,left,cd,ward,dets:1*(again>=1),again,second}})()`);
+  out.pop.cap = await pg.evalp(`(()=>{const P=()=>BK.P,G=()=>BK.geo(),K=BK.keys;const run=(txs)=>{__g2();const px=Math.floor(P().x/16);const e=__pfoe(110);e.w=44;BK.sim(2);e.px=BK.P.x+110;e.x=e.px;const fc=Math.floor(e.px/16);
+      txs.forEach(d=>__stone(fc+d));BK.sim(2);const n0=G().standing(),hp0=e.hp;K.down=true;K.block=true;BK.sim(2);K.block=false;for(let i=0;i<40;i++){BK.sim(1);__pin([e]);}K.down=false;return {n0,hurt:hp0-e.hp,left:G().standing(),cap:G().lastDet()}};
+    return {one:run([-3]),three:run([-3,2,3])}})()`);
+  out.pop.ult = await pg.evalp(`(()=>{const P=()=>BK.P,G=()=>BK.geo(),K=BK.keys;__g2();const px=Math.floor(P().x/16),d0=G().tierStats().detonates||0;[px+3,px+6,px+9].forEach(__stone);BK.sim(2);const n0=G().standing();
+    K.up=true;K.block=true;BK.sim(2);K.block=false;K.up=false;const er=G().erupts().length;BK.sim(5);return {n0,er,left:G().standing(),dets:(G().tierStats().detonates||0)-d0,det:G().detonating()}})()`);
+  out.pop.switches = await pg.evalp(`(()=>{const P=()=>BK.P,G=()=>BK.geo(),K=BK.keys,POP=BK.geoK.pop;const r={};
+    POP.fistPlant=false;__g2();__combo();r.plant=G().standing();POP.fistPlant=true;
+    POP.detonate=false;__g2();const px=Math.floor(P().x/16),d0=G().tierStats().detonates||0;__stone(px+3);__stone(px+5);BK.sim(2);K.down=true;K.block=true;BK.sim(3);K.block=false;K.down=false;BK.sim(20);r.det=G().standing();r.dets=(G().tierStats().detonates||0)-d0;POP.detonate=true;
+    r.flags=Object.keys(POP).sort().join();return r})()`);
+  out.pop.bot = await pg.evalp(`(async()=>{const {DET_BOT}=await import('/src/lab.js');const P=()=>BK.P,G=()=>BK.geo(),r={};const run=(stones,foe)=>{__g2();const px=Math.floor(P().x/16);let e=null;if(foe){e=__pfoe(100);BK.sim(2);e.px=BK.P.x+100;}stones.forEach(d=>__stone(px+d));BK.sim(2);if(e){e.x=e.px;}return DET_BOT(BK,P(),'geomancer');};
+    r.one=run([4],true);r.two=run([4,5],true);r.twoNoFoe=run([4,5],false);r.three=run([3,4,5],true);r.other=(__g2(),DET_BOT(BK,P(),'knight'));
+    __g2();const px=Math.floor(P().x/16);const e=__pfoe(100);BK.sim(2);e.px=BK.P.x+100;__stone(px+4);__stone(px+5);BK.sim(2);BK.keys.down=true;BK.keys.block=true;BK.sim(2);BK.keys.down=false;BK.keys.block=false;BK.sim(30);r.spent=G().standing();r.afterCd=(__stone(px+4),__stone(px+5),BK.sim(2),DET_BOT(BK,P(),'geomancer'));return r})()`);
+  out.pop.boss = await pg.evalp(`(async()=>{const {LEVELS}=await import('/src/level.js');const G=()=>BK.geo(),P=()=>BK.P,r={};
+    const into=()=>{const A=BK.L.arena;BK.tp(Math.round(A.trigger/16)+(A.reverse?-1:1),Math.round(A.floor/16)-1);BK.sim(120);};
+    BK.manualSimulation=true;BK.SET.speed=1;BK.setHero('geomancer');BK.reset({fresh:true});BKT.setHeroLevel('geomancer',20);BK.applyUpgrades();BK.load(LEVELS.findIndex(l=>l.id==='wood'));BK.state='play';BK.start&&BK.start();BK.sim(30);BK.god=true;
+    r.before=G().standing();into();r.active=!!BK.bossActive;r.first=G().standing();r.mode=BK.boss&&BK.boss.mode;
+    BK.god=false;BK.respawn();BK.sim(30);r.cleared=G().standing();BK.god=true;into();r.retry=G().standing();r.retryActive=!!BK.bossActive;
+    BK.geoK.pop.bossStone=false;BK.respawn();BK.sim(30);into();r.off=G().standing();BK.geoK.pop.bossStone=true;return r})()`);
   out.oldSave = await pg.evalp(`(()=>{__geo([]);const PR=BKT.PROG;delete PR.xp.geomancer;delete PR.skillOwned.geomancer;delete PR.loadouts.geomancer;BK.applyUpgrades();
     for(const k of ['atk','block','throw','skill2','jump'])BK.press(k);BK.sim(60);BK.state='map';BK.sim(2);BK.state='play';return {hp:BK.P.maxHp,lv:BKT.heroLevel('geomancer')}})()`);
   console.log(JSON.stringify(out));
@@ -239,6 +293,25 @@ try {
   { const FRAMES = STAFF_FRAMES, got = out.staff.counts; for (const k of Object.keys(FRAMES)) assert.equal(got[k], FRAMES[k], 'her ' + k + ' keeps its ' + FRAMES[k] + ' frames (' + got[k] + ')');
     assert.deepEqual(Object.keys(got).filter(k => !(k in FRAMES)), [], 'no new keys on her set (' + JSON.stringify(got) + ')'); }
   assert(out.staff.cast >= 15 && out.staff.walk === 0, 'stones orbit the geode while she casts, and not while she walks (' + JSON.stringify({ cast: out.staff.cast, walk: out.staff.walk }) + ')');
+  { const O = out.pop, J = JSON.stringify(O);   /* (claude/geopop) */
+    assert(O.plant.n1 === 1 && O.plant.d1 >= 2 && O.plant.d1 <= 4, 'POP a: the third jab plants ONE knee stone 2-4 tiles ahead (' + J + ')');
+    assert(O.plant.n2 === 1, 'POP a: a second fist inside plantCd (3 s) plants nothing (' + J + ')');
+    assert(O.plant.n3 === 2 && O.plant.stats === 2, 'POP a: after plantCd the next fist plants again (' + J + ')');
+    assert(O.full.n === 3 && O.full.same && O.full.plants === 0, 'POP a: at a full board the fist plants nothing and evicts nothing (' + J + ')');
+    assert(O.noshatter.had && O.noshatter.stands, 'POP a: the fist no longer shatters a board stone it stood next to (' + J + ')');
+    assert(O.body.planted === 0 && !O.body.inside, 'POP a: never inside a body - three foes on the three columns, no plant, nobody buried (' + J + ')');
+    assert(O.stack.d.length >= 2 && new Set(O.stack.d).size === O.stack.d.length && O.stack.n === 2, 'POP a: a plant skips a column that already holds a stone - no stacking (' + J + ')');
+    assert(O.det0.ward && !O.det0.det && O.det0.dets === 0, 'POP e: DOWN+C with 0 stones raises the ward and detonates nothing (' + J + ')');
+    assert(O.det2.n0 === 2 && O.det2.tell && O.det2.left === 0 && O.det2.dets === 1 && O.det2.hurt > 0 && !O.det2.ward, 'POP e: DOWN+C with 2 stones tells then spends BOTH, hurts the foe in the radius, never raises the ward (' + J + ')');
+    assert(O.det2.cd >= 3.9 && O.det2.cd <= 5.1 && O.det2.again === 1 && O.det2.second === 2, 'POP e: the cd is 5 s - a second DOWN+C inside it fires nothing and leaves the new stones (' + J + ')');
+    assert(O.cap.one.n0 === 1 && O.cap.three.n0 === 3 && O.cap.three.left === 0 && O.cap.one.hurt > 0 && O.cap.three.hurt > O.cap.one.hurt, 'POP e: both runs spent their stones and hurt the foe, three harder than one (' + J + ')');
+    assert(O.cap.three.cap.blasts === 2 && O.cap.three.cap.shards === 3 && O.cap.one.cap.blasts === 1, 'POP e: PER-FOE CAP - one foe in all three stones\' radius takes 2 blasts and 3 shards (2 x 1.0 + 3 x 0.4 = 3.2x sword), not 3 and 9 (' + J + ')');
+    assert(O.ult.n0 === 3 && O.ult.er >= 3 && O.ult.left === 0 && O.ult.dets === 0 && !O.ult.det, 'POP e: UP+C at 3 stones is still AVALANCHE, not a detonate (' + J + ')');
+    assert(O.switches.plant === 0 && O.switches.det === 2 && O.switches.dets === 0 && O.switches.flags === 'bossStone,detonate,feel,fistPlant', 'POP: the kill switches turn fistPlant and detonate off (' + J + ')');
+    assert(!O.bot.one && O.bot.two && !O.bot.twoNoFoe && !O.bot.three && !O.bot.other && !O.bot.afterCd, 'POP e: the bot learns DOWN+C - at >= 2 stones with a foe in a stone\'s radius, not at 1, not with no foe, not at a full board (that is the AVALANCHE), not in the 5 s cd (' + J + ')');
+    assert(O.boss.before === 0 && O.boss.active && O.boss.first === 1, 'POP b: a boss start leaves ONE stone standing (' + J + ')');
+    assert(O.boss.cleared === 0 && O.boss.retryActive && O.boss.retry === 1, 'POP b: and again after a retry (' + J + ')');
+    assert(O.boss.off === 0, 'POP b: bossStone off = no stone (' + J + ')'); }
   assert(out.oldSave.hp > 0, 'a save that never had her plays her (' + JSON.stringify(out.oldSave) + ')');
   assert.deepEqual(pg.errors, []);
   console.log('geomancer: FAULT LINE hits what touches her at once, runs ' + H.open.len + ' px full, stops at a pit and a wall, hits all three in its line and launches at the end; the cap holds (3, 4 with the passive), every piece crumbles and gives the grid back, nothing is ever buried, and ' + out.levels.length + ' real levels end as they began');

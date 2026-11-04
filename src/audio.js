@@ -2063,10 +2063,17 @@ Object.assign(SFX, {
      turned off the face of a wall raised on the beat. */
   geoThud() { tone('sine', vary(95), 38, 0.22, 0.34); tone('triangle', vary(190), 90, 0.1, 0.12); noise(0.1, 0.2, 260, 0.6); },
   geoRise() { noise(0.26, 0.2, 480, 0.8); tone('sawtooth', vary(66), vary(132), 0.24, 0.07); tone('sine', 80, 50, 0.2, 0.16); },
-  geoCrumble() { noise(0.34, 0.16, 1100, 0.5); tone('square', vary(170), 60, 0.1, 0.1); noise(0.2, 0.1, 380, 0.7, 0.08); },
+  geoCrumble() { if (file('stone_geo', 0.55, 0.85)) { noise(0.16, 0.06, 380, 0.7); return; }   /* (claude/geopop c) a stone coming apart = the rubberduck stone2 takes (CC0, audio/CREDITS.txt), a low grit under; the synth below is the fallback */
+    noise(0.34, 0.16, 1100, 0.5); tone('square', vary(170), 60, 0.1, 0.1); noise(0.2, 0.1, 380, 0.7, 0.08); },
   geoBounce() { tone('square', vary(260), 130, 0.08, 0.1); noise(0.08, 0.18, 1500, 0.9); tone('sine', 120, 60, 0.18, 0.2); },
   geoQuake() { noise(0.9, 0.34, 170, 0.4); tone('sine', 55, 30, 0.9, 0.34); noise(0.5, 0.14, 700, 0.6, 0.2); },
   geoShard() { noise(0.12, 0.14, 2200, 1.1); tone('square', vary(900), 300, 0.05, 0.05); },
+  /* (claude/geopop) PLACEHOLDER HOOKS for the ART+SFX lane (GEO.pop.feel): geoPlant = the knee stone coming up under the fist, geoBlast = DETONATE. Synth now; REC below layers the repo's CC0 r_thud / r_rumble under them. The lane swaps in the real layers (bd_stone / crack2 / golemShatter) */
+  /* (claude/geopop c) THE HEAVIER FEEL, layered from CC0 takes already on disk (no new files; credits in audio/CREDITS.txt): geoFist = bd_stone + a 70 Hz sub-thump; geoPlant = crack2 (rock breaks) + r_thud; geoBlast = r_rumble + crack2 + golemShatter's r_stones + a low sub.
+     The synth under each is the fallback while the clips load / SFX files are off, and the sub-thump is synth always (it is the weight). */
+  geoFist() { const r = file('bd_stone', 0.6, 0.8); tone('sine', 70, 36, 0.26, 0.4); if (!r) { noise(0.1, 0.2, 300, 0.6); tone('triangle', vary(150), 70, 0.1, 0.12); } },
+  geoPlant() { const a = file('crack_rock', 0.5, 0.85), b = file('r_thud', 0.55, 0.78); tone('sine', vary(80), 40, 0.16, 0.26); if (!a && !b) { noise(0.1, 0.18, 900, 0.7); tone('triangle', vary(240), 110, 0.07, 0.1); } },
+  geoBlast() { const a = file('r_rumble', 0.55, 0.85), b = file('crack_rock', 0.6, 0.8), c = file('r_stones', 0.5, 0.9); tone('sine', 62, 28, 0.55, 0.42); if (!a && !b && !c) { noise(0.5, 0.3, 260, 0.5); noise(0.18, 0.2, 1400, 0.8, 0.02); tone('sawtooth', vary(90), 40, 0.3, 0.1); } },
   /* (claude/chargetiers) HER THREE-TIER STAVE, HEARD: a stone note that goes DOWN a tier as the earth wakes (a struck slab: A, E, low A), a grind of grit under it, a deep heave on T3 */
   geoTier(n = 1) { n = Math.max(1, Math.min(3, n | 0)); const f = [0, 440, 330, 220][n];
     tone('triangle', f, f * 0.97, 0.18 + 0.05 * n, 0.06 + 0.015 * n); bell(f * 2, 0.25 + 0.06 * n, 0.03 + 0.01 * n); noise(0.12 + 0.05 * n, 0.06 + 0.03 * n, 500 - 80 * n, 0.7);

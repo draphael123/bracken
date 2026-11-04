@@ -10,7 +10,8 @@ export const AY = { W: 164, H: 30, FLOOR: 22, START: 5 };
 /* the stations, by column: x0..x1 is the zone an attacking dummy is awake in (every other dummy is held asleep while no living player is inside) */
 export const STATIONS = [
   { id: 'gate', x0: 2, x1: 11, name: 'THE GATE', sign: 'THE ARENA YARD. NOTHING HERE ENDS YOU. UP AT THE BOARD: YOUR MOVES.', at: 4 },
-  { id: 'straw', x0: 13, x1: 28, name: 'THE STRAW ROW', sign: 'X X X: THE THIRD CUT. DODGE THEN X: DASH ATTACK.', at: 14 },
+  { id: 'straw', x0: 13, x1: 28, name: 'THE STRAW ROW', sign: 'X X X: THE THIRD CUT. DODGE THEN X: DASH ATTACK.', at: 14,
+    signBy: { geomancer: 'X X X: THE FIST PLANTS A STONE. THREE UP? DOWN+C: BLOW THEM ALL.' } },   /* (claude/geopop d) a sign speaks to the hero reading it (main.js: e[hero()] || e.text); the yard counts STONES n/3, then DETONATED xN, in GRADE gold */
   { id: 'steps', x0: 30, x1: 44, name: 'THE STEPS', sign: 'JUMP. DOWN+JUMP ON A PLANK DROPS THROUGH.', at: 30 },
   { id: 'gap', x0: 46, x1: 55, name: 'THE GAP', sign: 'THE GAP: DODGE OVER, OR PLUNGE THE STRAW BELOW.', at: 46 },
   { id: 'climb', x0: 57, x1: 68, name: 'THE CLIMB', sign: 'CLIMB, THEN DOWN+X IN THE AIR: THE PLUNGE.', at: 57 },
@@ -32,7 +33,7 @@ export function buildArenaYard({ painter, T }) {
   const { block, plat, ent, coins, set } = L;
   const gy = F - 1;                                                       // the row a thing stands on (the floor's top is row 22)
   block(0, W - 1, F, H - 1); block(0, 1, 0, F - 1); block(W - 2, W - 1, 0, F - 1);   // the yard, walled
-  for (const s of STATIONS) ent('sign', s.at, gy, { text: s.sign });
+  for (const s of STATIONS) ent('sign', s.at, gy, { text: s.sign, ...(s.signBy || {}) });
   for (const x of [20, 40, 64, 80, 100, 118, 136, 156]) ent('torch', x, gy);
   for (const x of BARRIERS) ent('deco', x, gy, { kind: 'arenaBarrier', v: x % 2 });
   for (const x of [12, 29, 56, 90, 126]) ent('deco', x, gy, { kind: 'pennonPole', v: x & 1 });   /* (claude/arenayardart) arena dressing, deco only: pennon poles on the rails, practice racks, two braziers */
