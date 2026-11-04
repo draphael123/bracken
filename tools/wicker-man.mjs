@@ -72,6 +72,7 @@ try {
   for (const h of HEROES) {
     await pg.reload();
     R.push(await pg.evalp(`(async()=>{ const { LEVELS } = await import('/src/level.js'); BK.manualSimulation = true; const h = ${JSON.stringify(h)};
+      /* (claude/rel142) the Geomancer's KNEE STONE (GEO.pop.fistPlant: her fist plants a stone 2-4 tiles ahead, claude/geopop) is solid and would stand between her and the fire: this check is the wicker's rules, so her plant is off here (the stone is her own shield, not a wicker rule) */ if (h === 'geomancer') (await import('/src/geomancer.js')).GEO.pop.fistPlant = false;
       const P0 = BKT.PROG; BKT.setHeroLevel(h, ${LVL}); P0.skillOwned[h] = {}; P0.loadouts[h] = []; if (P0.talents) P0.talents[h] = {};
       const fi = LEVELS.findIndex(l => l.id === 'fair'), K = BK.keys, none = () => { for (const k of ['left', 'right', 'up', 'down', 'jump', 'block', 'atk']) K[k] = false; };
       BK.setHero(h); BK.reset({ fresh: true }); BK.load(fi); BK.start ? BK.start() : (BK.state = 'play'); BK.god = true; BK.sim(5); none();
