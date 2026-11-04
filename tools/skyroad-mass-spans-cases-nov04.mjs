@@ -201,6 +201,35 @@ export async function runSkyroadSpanCases(manifest, fixtures) {
       compare(x, y, 'observer:' + method, fallbackRows);
       x.width = 0; x.height = 0; y.width = 0; y.height = 0;
     }
+    // The eight exact RegExp legacy accessors are recognized by descriptor position.
+    // Foreign, bound and Proxy replacements must still force the original path,
+    // both when present at capture and when installed afterward.
+    for (const name of ['$&', '$+', '$`', "$'"]) for (const kind of ['get', 'set']) {
+      for (const mode of ['foreign', 'bound', 'proxy']) for (const phase of ['before-import', 'after-import']) {
+        const descriptor = Object.getOwnPropertyDescriptor(RegExp, name);
+        check(typeof descriptor[kind] === 'function', 'Original native legacy accessor exists');
+        let calls = 0;
+        const replacement = mode === 'bound' ? descriptor[kind].bind(RegExp) : mode === 'proxy' ?
+          new Proxy(descriptor[kind], {}) : function (...args) { calls++; return Reflect.apply(descriptor[kind], this, args); };
+        let a, b, h, x, y;
+        try {
+          if (phase === 'before-import') Object.defineProperty(RegExp, name, { ...descriptor, [kind]: replacement });
+          const before = await loadUnit(manifest.baseline);
+          const after = await loadUnit(manifest.candidate);
+          a = await before('src/redraw/skyroad_tiles.js');
+          b = await after('src/redraw/skyroad_tiles.js');
+          h = await after('src/skyroad-opaque-rows.js');
+          if (phase === 'after-import') Object.defineProperty(RegExp, name, { ...descriptor, [kind]: replacement });
+          x = a.__test.massTile(0, 5, 15, 6);
+          y = b.__test.massTile(0, 5, 15, 6);
+        } finally { Object.defineProperty(RegExp, name, descriptor); }
+        const label = 'legacy-accessor:' + name + ':' + kind + ':' + mode + ':' + phase;
+        check(calls === 0, label + ' never invokes unused accessor');
+        check(h.readOpaqueRowStats().optimized === 0 && h.readOpaqueRowStats().fallback === 1, label + ' fallback activated');
+        compare(x, y, label, fallbackRows);
+        x.width = 0; x.height = 0; y.width = 0; y.height = 0;
+      }
+    }
     const px = await B('src/px.js');
     const [gpu] = px.canvas(16, 16, true);
     const prior = helper.readOpaqueRowStats();
