@@ -1,0 +1,38 @@
+{
+  "time": "2026-11-04T15:32:37.753Z",
+  "status": "Prepared source only. Native qualification pending.",
+  "source": "6e74c2514fd2a504c20d1f39da61ff72bf989200",
+  "originalSha256": "da71fbb10dbae92735a882adc166e3715d02eaa1573521da609d290a09029001",
+  "candidateSha256": "09a7b17de805afc95dd197b4f9919457dab96f94d12921ed2218573ff3b68833",
+  "helperSha256": "40547a4fa0466748c5d7a45b86d760b4c0aac75cb72ba219195edce58efff45a",
+  "sourceGuardSha256": "622670c5bcded9d574498b4f924e1481a47e013e23379cbd04c077b104579495",
+  "originalByteUndoExact": true,
+  "originalLineEndings": "LF",
+  "actualEligibilityRun": 41854865213,
+  "actualSkyroadMassContexts": 2677,
+  "scope": "Skyroad massTile opaque base loop only. Same ordered rockPx evaluations and full original tint/overlay/RNG calls. Native consecutive horizontal spans replace single-pixel native fills on a fresh private context only.",
+  "distinction": "No ImageData buffer, private pack, deferred tile backing, cache eviction, identity sharing or Red Gorge band painter. Prior ImageData tile and Red Gorge outcomes remain source-specific and unadopted.",
+  "safety": "Complete descriptor/prototype identity watches plus pristine exported palette graph. Primitive finite inputs and native CPU context required. Foreign observers, palette changes, Node and GPU paths retain original rockFill.",
+  "limits": "Caller counts establish actual use, not native recording bytes or a saving. Fresh original native comparisons, explicit optimized/fallback activation and useful controlled benefit are required before Game safety or broader gates.",
+  "edits": [
+    {
+      "before": "import { levelTileMemo } from '../level-tile-cache.js';",
+      "after": "import { levelTileMemo } from '../level-tile-cache.js';\nimport { makeOpaqueRows, watchOpaquePalette } from '../skyroad-opaque-rows.js';"
+    },
+    {
+      "before": "export const CLOUDC = '#aab4d4';",
+      "after": "watchOpaquePalette(ZONE);\nexport const CLOUDC = '#aab4d4';"
+    },
+    {
+      "before": "function tint(g, y, col, a)",
+      "after": "function rockFillMass(g, zone, y, x, base, lit, rr) {\n  const rows = makeOpaqueRows(g, zone, y, x, base, lit);\n  if (!rows) return rockFill(g, zone, y, x, base, lit, rr);\n  for (let py = 0; py < 16; py++) {\n    const ay = y * 16 + py;\n    for (let pxl = 0; pxl < 16; pxl++) {\n      const fl = ((hash(x * 16 + pxl, y * 2 + (py >> 3)) >> 3) % 13) === 0 ? -1 : 0;\n      rows.paint(pxl, py, rockPx(zone, ay, base + fl, lit));\n    }\n  }\n  rows.finish();\n}\nfunction tint(g, y, col, a)"
+    },
+    {
+      "before": "    rockFill(g, zone, y, x, d <= 2 ? 3 : 2, false, r);",
+      "after": "    rockFillMass(g, zone, y, x, d <= 2 ? 3 : 2, false, r);"
+    }
+  ],
+  "noDispatchYet": true,
+  "adopted": false,
+  "overallWorkComplete": false
+}
