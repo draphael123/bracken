@@ -10,13 +10,14 @@ export const FIRST = {
   pirate: 'HOLD DOWN WHEN EMPTY TO RELOAD TWICE AS FAST.',
   paladin: 'KNEEL BY A HOLY LIGHT TO FILL YOUR LIGHT.',
   pyro: 'HOLD DOWN, STILL: STOKE YOUR HEAT.',   /* (claude/pyrokit) */
-  geomancer: 'HOLD DOWN: WHAT HIDES IN THE GROUND SHOWS.',
+  geomancer: 'HOLD DOWN: STONE SKIN. BLOWS GLANCE OFF.',   /* (claude/geocrouch: STONE SKIN is her crouch; the old EARTH SENSE line is FIRST_SENSE, said only with GEO.pop.skin false) */
   reaper: 'DOWN: A LOW GUARD. KNEEL AS ANY BLOW LANDS: BLOOD SPIKE.',   /* (claude/bkkit2: any blow on the beat) */   /* (claude/bloodknight: the harvest is gone; DOWN+C is BLOOD PRICE) */
   berserker: 'DOWN TO COIL, A WAY, LET GO: POUNCE. FULL: DOWN+C.',
   ranger: 'HOLD DOWN AND TAP C: A SNARE AT YOUR FEET.',   /* (claude/ranger) */
 };
+export const FIRST_SENSE = 'HOLD DOWN: WHAT HIDES IN THE GROUND SHOWS.';
 /* the flags the twists' own teaching lines leave: a hero who has one has been told */
-const TOLD = { knight: 'crouchTold_knight', warden: 'crouchTold_warden', pirate: 'crouchTold_pirate', paladin: 'kneelTold', geomancer: 'senseTold', reaper: 'spikeTold', berserker: 'pounceTold' };   /* (claude/berserker2: his crouch is THE COIL now; WORKING UP moved to his idle whetstone, workTold) */
+const TOLD = { knight: 'crouchTold_knight', warden: 'crouchTold_warden', pirate: 'crouchTold_pirate', paladin: 'kneelTold', geomancer: 'senseTold' /* (EARTH SENSE only; STONE SKIN's line is said once, below) */, reaper: 'spikeTold', berserker: 'pounceTold' };   /* (claude/berserker2: his crouch is THE COIL now; WORKING UP moved to his idle whetstone, workTold) */
 export const SETTLE = 0.2;   // down and stood this long before it counts as a crouch (a drop-through or a stumble is not)
 export const GIVE_UP = 12;   // a hint waiting longer than this goes into the queue anyway
 
@@ -24,11 +25,12 @@ export function makeCrouchHint(api) {
   const stats = { told: 0, waited: 0 };
   let downT = 0, waiting = null, waitT = 0;
   const seen = () => (api.PROG.crouchFirst || (api.PROG.crouchFirst = {}));
-  function say(h) { seen()[h] = 1; stats.told++; waiting = null; api.hint(FIRST[h]); }
+  const skinOn = () => !!(api.geoSkin && api.geoSkin());
+  function say(h) { seen()[h] = 1; stats.told++; waiting = null; api.hint(h === 'geomancer' && !skinOn() ? FIRST_SENSE : FIRST[h]); }
   function update(dt) {
     const p = api.P, h = api.hero(); if (!FIRST[h]) return;
     if (seen()[h]) return;
-    if (TOLD[h] && (api.PROG[TOLD[h]] || 0) >= 1) { seen()[h] = 1; return; }
+    if (TOLD[h] && (h !== 'geomancer' || !skinOn()) && (api.PROG[TOLD[h]] || 0) >= 1) { seen()[h] = 1; return; }
     if (api.L && api.L.trial) return;
     downT = p.ducking && !p.dead ? downT + dt : 0;
     if (!waiting && downT >= SETTLE) { waiting = h; waitT = 0; }

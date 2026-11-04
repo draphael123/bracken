@@ -7841,6 +7841,8 @@ function damagePlayer0(fromX, dmg, { up = false, unblockable = false, pierce = f
   /* THE KNIGHT'S LOW GUARD (src/crouch-a.js): crouched, the shield low in front of him turns what did not go over him - no step back */
   if (CA && hero() === 'knight') { const w = CA.takes(fromX, dmg, unblockable && !low, who || updFoe, pierce);   /* (claude/ksar) a LOW red blow - the Hawk-Mistress's whip along the floor - wraps a standing shield, but one set low turns it */ if (w === 'blocked') { blocks++; trialEvent('block'); return 'blocked'; } if (w === 'half') dmg = Math.ceil(dmg / 2); }
   if (isReaper()) { const w = dkKneelTakes(fromX, dmg, unblockable, who || updFoe, low); if (w === 'blocked') return 'blocked'; if (w === 'half') dmg = Math.max(1, Math.ceil(dmg / 2)); }   /* (claude/bkkit2: a blow that is not low but lands ON THE BEAT was spiked above, before the duck) */   /* (claude/dk2b) GRAVE KNEEL: the planted blade turns a LOW blow */
+  let skinR = null;   /* (claude/geocrouch) STONE SKIN (src/crouch-b.js takes): a yellow blow lands x0.5 (x0.75 from a boss or a mini), throws her nowhere and does not stand her up; the third cracks it; a red one breaks it and lands whole */
+  if (isGeo() && CRB && P.ducking && !spare) { skinR = CRB.takes(fromX, dmg, { unblockable, pierce, pct, src: who || updFoe }); if (skinR && skinR.mul !== 1) dmg = Math.max(1, Math.round(dmg * skinR.mul)); }
   { const sd = Math.sign(fromX - P.x) || P.face;
     let g2 = null, gd = 1e9;
     for (const r of risen) { if (r.life <= 0 || r.kind === 'wisp' || !(r.hp > 0)) continue;
@@ -7998,13 +8000,13 @@ function damagePlayer0(fromX, dmg, { up = false, unblockable = false, pierce = f
   if (isBz() && BZK) dmg = BZK.lethal(dmg, pct > 0 ? 0 : (P.bzSur || 0));
   if (spare && dmg >= P.hp) dmg = Math.max(0, Math.ceil(P.hp) - 1);   /* (claude/ft4b) a spared blow leaves one */   /* LAST STAND / UNBOWED hold him at one - and HIS OWN COST never kills him: the frenzy's surcharge (claude/berserker2) */
   if (window.BK && window.BK.hitLog) { const q = who || updFoe; window.BK.hitLog.push([Math.round(time * 10) / 10, q ? q.t + " " + (q.mode || "") : "?", blow || name || "?", Math.round(dmg), Math.round(P.hp - dmg), "blk" + (P.block ? 1 : 0), "st" + Math.round(P.st), "atk" + P.atk, "x" + Math.round(P.x - (q ? q.x : 0)), "prev" + P.labDkPrev, "gt" + (P.guardTired || 0), "str" + (q ? q.strLeft : ""), "blkT" + (P.blockT || 0).toFixed(2), "kw" + (typeof knightWinding !== "undefined" ? knightWinding : "")]); }
-  P.hp -= dmg; if (hero() === 'knight') dropLink('LINK BROKEN'); RP.hitReset(P); if (isBz() && BZK) BZK.took(dmg);   /* (claude/riposte: a blow taken resets the mix-up chain) */ P.inv = (armoured ? 0.55 : 0.8) + (perk('grit') ? 0.15 : 0); P.hurt = armoured ? 0 : Math.max(P.hurt, 0.35);
+  P.hp -= dmg; if (hero() === 'knight') dropLink('LINK BROKEN'); RP.hitReset(P); if (isBz() && BZK) BZK.took(dmg);   /* (claude/riposte: a blow taken resets the mix-up chain) */ P.inv = (armoured ? 0.55 : 0.8) + (perk('grit') ? 0.15 : 0); P.hurt = armoured || (skinR && skinR.stay) ? 0 : Math.max(P.hurt, 0.35);
   if (!armoured) { P.atk = -1; P.atkRec = 0; P.plunge = false; if (dashStriking()) endDashStrike(false); } P.block = false; impactAt(P.x, P.y - 9, 'red');
   // a blow that lands puts out whatever you were carrying: the fire in your hand is the first thing to go
   if (P.wick > 0) { P.wick = 0; number(P.x, P.y - 34, 'THE FIRE GOES OUT', '#6a7a7a'); SFX.puff(); }
   if (P.candle > 0) { P.candle = 0; number(P.x, P.y - 34, 'THE FIRE GOES OUT', '#6a7a7a'); SFX.puff(); }   /* and the Burial Caverns' candle flame (src/burial-expansion.js) */
   const dir = Math.sign(P.x - fromX) || -P.face;
-  if (noKnock) { }                                          /* NO BLOW BEHIND IT: running out of air hurts where you are, it does not throw you */
+  if (noKnock || (skinR && skinR.noKnock)) { }                                          /* NO BLOW BEHIND IT: running out of air hurts where you are, it does not throw you */
   else if (armoured) { P.vx = dir * 60; }                       /* he rocks, he does not fly: the arc has to finish */
   else { const hcK = P.hcShove ? HC.shove : 1; P.hcShove = false; P.vx = P.ground ? safeKnock(dir * 150 * hcK, dx => knockLandsSafe(P.x + dx, P.y)) : dir * 150 * hcK; P.vy = up ? -230 : -170; P.ground = false; }   /* THE THROW NEVER TAKES HIM OFF A LEDGE INTO A PIT: a shorter throw, or none, when the landing is a drop, spikes or deadly water (src/juice.js safeKnock) */
   if (isPirate() && (P.rum || 0) > 0) dmg = Math.round(dmg * 1.25);   // and he feels it more
@@ -29699,7 +29701,7 @@ function rangerKit(dt, canAct, tired) {
    handed over by name. ==== */
 const geoTal = () => ({ fourth: tal('geoFourth'), lasting: tal('geoLasting'), tall: tal('geoTall'), hardLand: tal('geoHardLand'), returnFire: tal('geoReturn'),
   shrapnel: tal('geoShrapnel'), bulwark: tal('geoBulwark'), rumble: tal('geoRumble'), wideQuake: tal('geoWideQuake'), aftershock: tal('geoAftershock') });   /* (claude/ults: rumble = the AVALANCHE boulders roll half as far again, wideQuake = they hit half again as hard) */
-GEO = makeGeomancer({ teach: k => geoTeach(k), get boss() { return boss; }, refund: n => CM.refund(P, n), tierNow: () => geoTierNow(),   /* (claude/chargetiers: THE RISING PILLAR gives her wind back as it rises) */ get P() { return P; }, get players() { return players; }, get L() { return L; }, get enemies() { return enemies; }, get seeds() { return seeds; }, get time() { return time; },
+GEO = makeGeomancer({ teach: k => geoTeach(k), get boss() { return boss; }, get parts() { return parts; }, refund: n => CM.refund(P, n), tierNow: () => geoTierNow(),   /* (claude/chargetiers: THE RISING PILLAR gives her wind back as it rises) */ get P() { return P; }, get players() { return players; }, get L() { return L; }, get enemies() { return enemies; }, get seeds() { return seeds; }, get time() { return time; },
   T, TS, get LW() { return LW; }, get LH() { return LH; }, get tileSpr() { return tileSpr; },
   isSolid: (x, y) => isSolid(x, y), tileAt: (x, y) => tileAt(x, y), isOneWay: t => isOneWay(t), resolveTiles: () => resolveTiles(), moveBody: (b, dx, dy, d) => moveBody(b, dx, dy, d),
   hurtAs: (b, e, d, x, pl) => hurtAs(b, e, d, x, pl), floorFoe: (e, s) => floorFoe(e, s), lcBig: e => lcBig(e), knockSkip: e => KNOCK_SKIP.has(e.t), box: b => box(b), overlap: (a, b) => overlap(a, b),
@@ -29737,7 +29739,7 @@ function emberTeach() { if ((PROG.emberTold || 0) >= 2 || emberTaughtIn === leve
   hintSay('mechanic', 5, 'YELLOW MARK: TAP C AS IT LANDS. THE WARD PARRIES IT AND FEEDS HEAT. AN EMPTY WARD ROOTS YOU.'); }   /* (claude/pyrokit: the flame ward; it was the down-held flare) */
 /* THE CROUCH TWISTS, PART B (src/crouch-b.js): main.js owns the world, the save and the keys; the module owns what the paladin's, the
    geomancer's and the death knight's duck does besides duck. Called from updatePlayer (update), the hero's pose pick and draw, and a respawn (clear) */
-CRB = makeCrouchB({ get P() { return P; }, get L() { return L; }, get enemies() { return enemies; }, get bodies() { return bodies; }, get parts() { return parts; }, get time() { return time; }, get levelIndex() { return levelIndex; },
+CRB = makeCrouchB({ skinOn: () => !!GEO_K.pop.skin, get P() { return P; }, get L() { return L; }, get enemies() { return enemies; }, get bodies() { return bodies; }, get parts() { return parts; }, get time() { return time; }, get levelIndex() { return levelIndex; },
   PROG, TS, SFX, hero: () => hero(), hint: m => hintSay('mechanic', 5, m), number: (x, y, t, c) => number(x, y, t, c), ringAt: (x, y, r, c, l) => ringAt(x, y, r, c, l), dust: (x, y, n) => dust(x, y, n),
   shrines: () => shrines, props: () => props, deco: () => deco, extraHoly: () => (LCH && LCH.on() ? LCH.holyLights() : VTH && VTH.on() ? VTH.holyLights() : []),   /* (claude/crouchfix) THE HOLY LIGHTS the paladin kneels at (src/crouch-b.js HOLY) */
   shakeCam: (n, k) => shakeCam(n, k), burst: (...a) => burst(...a), meterReady: c => meterReady(c),
@@ -29752,7 +29754,7 @@ HGR = makeHolyGround({ time: () => time, g: () => g, parts: p => parts.push(p),
   healers: c => players.filter(p => !p.dead),
   tethers: c => (coop() && c.owner && c.owner.hero === 'paladin' && c.owner.aegis && !c.owner.dead && (c.owner.st || 0) > 0) ? players.filter(p => p !== c.owner && !p.dead && HGR.inside(c, p)).map(p => ({ a: c.owner, b: p })) : [],   /* (claude/palart) the aegis's tether to each partner it covers */
   heal: (b, n, c) => { const own = b === c.owner; b.hp = Math.min(b.maxHp, b.hp + b.maxHp * n * (own && tal('litany') ? 2 : 1)); if (own && tal('mercy')) b.st = Math.min(b.maxSt, b.st + 8 * n / HG.heal); } });   /* LITANY: twice the mend; MERCY: wind back in it */
-CRH = makeCrouchHint({ get P() { return P; }, get L() { return L; }, PROG, hero: () => hero(), hint: m => hintSay('mechanic', 5, m), quiet: () => !(hintT > 0) && !toastQ.cur && !toastQ.wait.length });
+CRH = makeCrouchHint({ get P() { return P; }, get L() { return L; }, PROG, hero: () => hero(), hint: m => hintSay('mechanic', 5, m), quiet: () => !(hintT > 0) && !toastQ.cur && !toastQ.wait.length, geoSkin: () => !!GEO_K.pop.skin });
 /* THE TEMPLE GUARDIAN (src/temple-guardian.js, claude/monastery2): main.js owns the world; the module owns its fight, its blocks and the bells' note */
 TGM = makeGuardian({ get L() { return L; }, get P() { return P; }, players: () => players, enemies: () => enemies, props: () => props, boss: () => boss, TS, T, LW: () => LW, grid: () => L.grid, spr: () => tileSpr,
   rubble: () => mo().rubble, resolveTiles: () => resolveTiles(), isSolid: (x, y) => isSolid(x, y), isOneWay: t => isOneWay(t), tileAt: (x, y) => tileAt(x, y), waves: () => waves, seeds: () => seeds,

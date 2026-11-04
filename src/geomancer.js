@@ -22,13 +22,15 @@ import { EARTH as EARTH_FALL, earthSpot } from './plunges.js';   /* (claude/plun
 export const GEO = {
   /* (claude/geoid) THE BOARD: stone = how foes break her stone; fist = THE STONE FIST (her third jab); topple = UP+C */
   stone: { chargeSp: 140, gnaw: 1.1, openT: 1.0, ramStagger: 0.8 },
-  fist: { mul: 1.2, knockVy: -300, lock: 2, stagger: 0.3, plantCd: 3.0, plantFrom: 2, plantTo: 4 },
+  fist: { mul: 1.2, knockVy: -300, lock: 2, stagger: 0.3, plantCd: 3.0, plantFrom: 2, plantTo: 4, kvx: 25, kvxUpper: 8, spike: { h: 30, w: 9, rise: 0.06, sink: 0.25, end: 0.55 } },
   /* (claude/geopop, Daniel 11-03 17:24: ALL 8 RECS) THE POPULARITY PASS. KILL SWITCHES - any one can be set false at the cut without a revert:
        fistPlant  the stone fist plants a knee stone 2-4 tiles ahead (no plant at a full board; fist.plantCd s between plants)
        bossStone  one stone stands at every boss start (incl. a retry): main.js bossStart -> fillBoard(1)
        detonate   DOWN+C blows every stone of hers at once (below)
        feel       the heavier-feel layers (ART+SFX lane: sample keys with synth fallbacks) */
-  pop: { fistPlant: true, bossStone: true, detonate: true, feel: true },
+  pop: { fistPlant: true, bossStone: true, detonate: true, feel: true, upper: true, skin: true },
+  /* (claude/geocrouch, Daniel 11-03) upper: jab 3 is a rising UPPERCUT - a stone spike erupts under the foe it hits (drawing only; a whiff raises it at the knee-stone's cell) and the knock-up goes straight up (kvx fist.kvxUpper, commons only); false = the old 25.
+     skin: the crouch is STONE SKIN (SKIN, src/crouch-b.js); false = EARTH SENSE as it was. */
   /* DETONATE (DOWN+C, one or more stones standing): tell s of the slam (the stones glow and crack), then every stone goes off - a shockwave of r px (swordDmg x mul) and
      'shards' radial shards (x shardMul). PER FOE: at most perFoeBlasts blasts and perFoeShards shards (2 x 1.0 + 3 x 0.4 = 3.2x sword). A common foe is knocked down, a boss / mini
      takes the damage and no stagger of ours. All the stones are spent, no refund; cd s. Walls (the 11-09 STONE WALL) are uncapped and ignored in v1. shake = camera by stones standing. */
@@ -434,17 +436,25 @@ export function makeGeomancer(api) {
      a boss or a mini only reels. Narrower than the spin it replaces (forward only), lighter (GEO.fist.mul) and a beat slower to recover (commit.js) */
   function fistHit(e) {
     const P = api.P, F = GEO.fist, can = !e.maxHp && !e.mini && !api.knockSkip(e) && !e.noGrav && !(e.pinned > 0);
-    if (can && !(e.liftImm > api.time)) { e.slammed = false; e.bounced = false; e.knockAir = 0; e.knock = 0.7; e.kvx = P.face * 25; e.kvy = F.knockVy * (api.lcBig(e) ? 0.5 : 1); e.launchedT = api.time + 1.2; e.liftImm = api.time + F.lock; e.geoAirT = api.time;
+    if (can && !(e.liftImm > api.time)) { e.slammed = false; e.bounced = false; e.knockAir = 0; e.knock = 0.7; e.kvx = P.face * (GEO.pop.upper ? F.kvxUpper : F.kvx); e.kvy = F.knockVy * (api.lcBig(e) ? 0.5 : 1); e.launchedT = api.time + 1.2; e.liftImm = api.time + F.lock; e.geoAirT = api.time;
       api.number(e.x, e.y - (e.h || 16) - 8, 'KNOCKED UP', STONE.rune); stats.fists++; }
     else if (e.alive) e.stagger = Math.max(e.stagger || 0, F.stagger);
+    if (GEO.pop.upper) fistSpike(e.x, e.y);   /* (claude/geocrouch) the uppercut raises a spike under the foe it hit */
     api.burst(e.x, e.y - (e.h || 16) / 2, 8, [STONE.base, STONE.hi, STONE.lo], 90, 0.35); api.shakeCam(3, P.face * 2); if (GEO.pop.feel && api.SFX.geoFist) api.SFX.geoFist(); else api.SFX.geoThud && api.SFX.geoThud(); blowPulse(); }   /* (claude/geopop c) bd_stone + the 70 Hz sub-thump; the geode pulses */
   /* (claude/geopop a) THE KNEE STONE. One cell, on the first free floor column plantFrom..plantTo tiles ahead (floorRow + freeCell: never inside a body, never in a gate's reach). A full board gets none (nothing is evicted,
      a ready AVALANCHE is never stolen); plantCd s between plants. No damage and no launch: the blow itself is the fist's, timing is unchanged. */
+  /* (claude/geocrouch) THE UPPERCUT'S SPIKE: DRAWING ONLY (the shared `spikes` list with vis: no damage, no stagger, no cell, never solid) - a jagged stone fang one tile wide and two tall, up out of the floor under the foe in GEO.fist.spike.rise s,
+     held, down again in .sink s; a dust ring and grit thrown straight up. (x, y): the foe's feet, or the knee-stone's cell on a whiff. */
+  function fistSpike(x, y) { const P = api.P, S = GEO.fist.spike, tx = Math.floor(x / TS), fy = floorRow(tx, Math.floor((y - 6) / TS), 3), gy = fy === null ? y : fy * TS;
+    spikes.push({ x, gy, t: 0, hit: new Set(), dmg: 0, h: S.h, w: S.w, vis: true, end: S.end, rise: S.rise, sink: S.sink }); stats.fistSpikes = (stats.fistSpikes || 0) + 1;
+    api.dust(x, gy, 6); api.ringAt(x, gy - 1, 12, STONE.hi, 0.25);
+    for (let i = 0; i < 6; i++) api.parts && api.parts.push({ x: x + (Math.random() - 0.5) * 12, y: gy - 2, vx: (Math.random() - 0.5) * 40, vy: -180 - Math.random() * 40, life: 0.5, max: 0.5, col: i % 3 === 0 ? STONE.hi : i % 3 === 1 ? STONE.base : STONE.lo, size: i % 2 ? 2 : 1, grav: 520 }); }
   let lastDet = null, plantAt = -9, det = null, detCd = -9, decals = [], glowAt = -9;
   /* (claude/geopop c) the geode pulses on every landed blow of hers (main.js geoBlowFx, fistHit) */
   function blowPulse() { glowAt = api.time; }
   function fistPlant() { const P = api.P, F = GEO.fist;
     if (standing() >= cap() || api.time - plantAt < F.plantCd) return false;
+    if (GEO.pop.upper && !(P.hitSet && P.hitSet.size)) { for (let k = F.plantFrom; k <= F.plantTo; k++) { const tx = Math.floor(P.x / TS) + P.face * k, fy = floorRow(tx, Math.floor((P.y - 1) / TS), 2); if (fy !== null && freeCell(tx, fy - 1)) { fistSpike(tx * TS + 8, fy * TS); break; } } }   /* (claude/geocrouch) a WHIFFED uppercut raises its spike at the knee-stone's cell: 'the fist raised it' */
     for (let k = F.plantFrom; k <= F.plantTo; k++) { const tx = Math.floor(P.x / TS) + P.face * k, fy = floorRow(tx, Math.floor((P.y - 1) / TS), 2); if (fy === null || !freeCell(tx, fy - 1)) continue;
       if (pieces.some(q => !q.gone && q.cells.some(c => c.tx === tx))) continue;   /* a column that already holds a stone of hers is not free: plants never stack */
       const r = erupt(tx, fy, 1, 'pillar', { noHero: true, hurt: false, noLaunch: true }); if (!r.piece) continue; r.piece.knee = true;   /* (claude/geopop c) drawn as her squat KNEE STONE (drawKneeStone) */
@@ -670,7 +680,7 @@ export function makeGeomancer(api) {
     else if (api.isGeo() && P.swingKind === 'rise' && P.atk >= 0) { const k = P.atk < 0.06 ? P.atk / 0.06 : P.atk < 0.2 ? 1 : Math.max(0, 1 - (P.atk - 0.2) / 0.1), h = Math.round(34 * k);
       if (h > 0) { const x = Math.round(P.x + P.face * 16 - cx), y = Math.round(P.y - cy); drawSpike(g, x, y, h, 7); } }
     for (const s of spikes) { if (s.t < 0) { g.globalAlpha = 0.6; g.fillStyle = STONE.dark; g.fillRect(Math.round(s.x - cx) - 3, Math.round(s.gy - cy) - 1, 7, 1); g.globalAlpha = 1; continue; }
-      const fin = s.end || 0.6, k = s.t < 0.07 ? s.t / 0.07 : s.t < fin - 0.2 ? 1 : Math.max(0, 1 - (s.t - (fin - 0.2)) / 0.2); drawSpike(g, Math.round(s.x - cx), Math.round(s.gy - cy), Math.round((s.h || 26) * k), s.w || 6); }
+      const fin = s.end || 0.6, rs = s.rise || 0.07, sk = s.sink || 0.2, k = s.t < rs ? s.t / rs : s.t < fin - sk ? 1 : Math.max(0, 1 - (s.t - (fin - sk)) / sk); drawSpike(g, Math.round(s.x - cx), Math.round(s.gy - cy), Math.round((s.h || 26) * k), s.w || 6); }
     for (const fl of faults) { const x0 = Math.round(fl.x0 - cx), y = Math.round(fl.gy - cy), n = Math.floor(fl.len / 6);
       if (fl.heavy) { const fade = Math.min(1, fl.life / FL.linger); g.globalAlpha = Math.max(0.25, fade);   /* HER CRACK: a jagged dark seam with a lit lip, broken rock kicked up at the tip as it runs */
         for (let i = 0; i < n; i++) { const x = x0 + fl.dir * i * 6, j = (i * 7) % 3 - 1; g.fillStyle = STONE.crack; g.fillRect(Math.min(x, x + fl.dir * 6), y - 1 + (j > 0 ? 1 : 0), 6, 1); if (j < 0) g.fillRect(x, y - 2, 1, 2);

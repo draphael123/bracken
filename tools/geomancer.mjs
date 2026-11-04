@@ -54,7 +54,7 @@ import { openPage } from './cdp.mjs';
 /* HER SET'S FRAME COUNTS, key by key, as they were before the staff (master 52cfebb, less THE MEND's gMend): the staff redraws every
    frame and must not add or drop one */
 /* dance 8 -> 12 (2026-09-29, claude/dances: Daniel asked for a dance per hero; hers is the stones orbiting her staff) */
-const STAFF_FRAMES = {"gWind3":2, "gShard":2, "gPillar":2, "gFist":5, /* (claude/jabart: the stone fist's pose) */ /* (claude/chargetiers: the three-tier stave) */ "idle":8, "run":6, "jump":2, "fall":2, "land":3, "takeoff":1, "apex":1, "skid":1, "climb":2, "atk":5, "plunge":1, "hurt":2, "crouch":1, "slide":2, "airUp":5, "sense":2, "block":2, "dashAtk":3, "atkB":5, "atkC":5, "air":5, "cast":2, "fidget":15, "dance":12, "dance2":33, "dance3":23, "follow":2, "slump":2, "swim":4, "tread":4, "roll":4, "burrow":3, "rise":5, "sweep":5, "heavy":3, "windup":3, "blast":2, "gStep":2, "gHeave":3, "gSpikes":2, "gArch":2, "gWall":3, "gTomb":2, "gFault":2, "gGolem":2, "gAval":2, "gShrug":2, "drink":5, "parry":2, "ripo":3, "earthWind":2, "earthHit":2}   /* (claude/riposteart: the parry catch and the riposte strike, one pose each for every hero - the two keys are new by design; claude/plunges: EARTHFALL replaced the STONEFALL ring - its windup and release poses, new by design) */;
+const STAFF_FRAMES = {"gWind3":2, "gShard":2, "gPillar":2, "gFist":5, "gSkin":2, /* (claude/geocrouch: STONE SKIN pose) */ /* (claude/jabart: the stone fist pose) */ /* (claude/chargetiers: the three-tier stave) */ "idle":8, "run":6, "jump":2, "fall":2, "land":3, "takeoff":1, "apex":1, "skid":1, "climb":2, "atk":5, "plunge":1, "hurt":2, "crouch":1, "slide":2, "airUp":5, "sense":2, "block":2, "dashAtk":3, "atkB":5, "atkC":5, "air":5, "cast":2, "fidget":15, "dance":12, "dance2":33, "dance3":23, "follow":2, "slump":2, "swim":4, "tread":4, "roll":4, "burrow":3, "rise":5, "sweep":5, "heavy":3, "windup":3, "blast":2, "gStep":2, "gHeave":3, "gSpikes":2, "gArch":2, "gWall":3, "gTomb":2, "gFault":2, "gGolem":2, "gAval":2, "gShrug":2, "drink":5, "parry":2, "ripo":3, "earthWind":2, "earthHit":2}   /* (claude/riposteart: the parry catch and the riposte strike, one pose each for every hero - the two keys are new by design; claude/plunges: EARTHFALL replaced the STONEFALL ring - its windup and release poses, new by design) */;
 const pg = await openPage({ audio: false, fonts: false });
 try {
   await pg.evalp(`(async()=>{const {xpFloor}=await import('/src/xp.js');
@@ -193,6 +193,12 @@ try {
     window.__on=(G)=>G.pieces().filter(p=>p.capped&&!p.gone).length;
     return 1})()`);
   out.pop = {}; await pg.evalp(`(()=>{window.__g2=()=>{if(BK.geo())BK.geo().clear();__geo([]);};return 1})()`);
+  /* (claude/geocrouch) THE UPPERCUT: the third jab's spike is DRAWING ONLY (a vis spike: no damage), under the foe it hit or at the knee stone's cell on a whiff, and the knock-up goes straight up (kvx 8 on a common foe; 25 with GEO.pop.upper off) */
+  out.pop.upper = await pg.evalp(`(()=>{const P=()=>BK.P,G=()=>BK.geo(),K=BK.geoK;const run=(withFoe,on)=>{__g2();K.pop.upper=on;P().face=1;P().x=P().x;const px=Math.floor(P().x/16);let e=null;if(withFoe){e=__pfoe(20);}
+      let kvx=0,sp=null,n=0,maxSp=0,dmgSp=0,nonVis=0;for(let nj=1;nj<=3;nj++){BK.press('atk');for(let i=0;i<30;i++){BK.sim(1);if(e){e.x=e.px;if(Math.abs(e.kvx||0)>Math.abs(kvx)&&e.launchedT>BK.time)kvx=e.kvx;}
+        for(const s of G().spikes()){if(s.vis&&s.rise){sp=sp||{x:s.x,gy:s.gy,dmg:s.dmg,h:s.h};}if(!s.vis)nonVis++;dmgSp+=s.dmg||0;} maxSp=Math.max(maxSp,G().spikes().filter(s=>s.vis&&s.rise).length);}}
+      const r={kvx,sp,maxSp,dmgSp,nonVis,px:P().x,ex:e&&e.x,plantTx:(G().pieces()[0]&&G().pieces()[0].cells[0].tx)||null};K.pop.upper=true;return r;};
+    return {hit:run(true,true),whiff:run(false,true),hitOld:run(true,false),whiffOld:run(false,false)}})()`);
   out.pop.plant = await pg.evalp(`(()=>{const P=()=>BK.P,G=()=>BK.geo();__g2();const px=Math.floor(P().x/16),f0=G().tierStats().fistPlants||0;
     __combo();const n1=G().standing(),p1=G().pieces()[0],d1=p1?Math.round(p1.cells[0].tx-px):null;
     __combo();const n2=G().standing();                         /* inside plantCd: no second plant */
@@ -294,6 +300,11 @@ try {
     assert.deepEqual(Object.keys(got).filter(k => !(k in FRAMES)), [], 'no new keys on her set (' + JSON.stringify(got) + ')'); }
   assert(out.staff.cast >= 15 && out.staff.walk === 0, 'stones orbit the geode while she casts, and not while she walks (' + JSON.stringify({ cast: out.staff.cast, walk: out.staff.walk }) + ')');
   { const O = out.pop, J = JSON.stringify(O);   /* (claude/geopop) */
+    { const U = O.upper;
+      assert(U.hit.sp && U.hit.maxSp >= 1 && Math.abs(U.hit.sp.x - U.hit.ex) <= 6 && U.hit.dmgSp === 0 && U.hit.nonVis === 0, 'UPPERCUT: a spike (drawing only, no damage) rises under the foe the third jab hit (' + J + ')');
+      assert(U.hit.kvx > 0 && U.hit.kvx <= 9, 'UPPERCUT: the knock-up on a common foe goes straight up - kvx 8, not 25 (' + J + ')');
+      assert(U.whiff.sp && U.whiff.plantTx && Math.abs(U.whiff.sp.x - (U.whiff.plantTx * 16 + 8)) <= 2 && U.whiff.dmgSp === 0, 'UPPERCUT: a whiffed jab 3 raises its spike at the knee-stone cell (' + J + ')');
+      assert(!U.hitOld.sp && U.hitOld.kvx >= 20 && !U.whiffOld.sp, 'UPPERCUT: GEO.pop.upper off = no spike and the old kvx 25 (' + J + ')'); }
     assert(O.plant.n1 === 1 && O.plant.d1 >= 2 && O.plant.d1 <= 4, 'POP a: the third jab plants ONE knee stone 2-4 tiles ahead (' + J + ')');
     assert(O.plant.n2 === 1, 'POP a: a second fist inside plantCd (3 s) plants nothing (' + J + ')');
     assert(O.plant.n3 === 2 && O.plant.stats === 2, 'POP a: after plantCd the next fist plants again (' + J + ')');
@@ -307,7 +318,7 @@ try {
     assert(O.cap.one.n0 === 1 && O.cap.three.n0 === 3 && O.cap.three.left === 0 && O.cap.one.hurt > 0 && O.cap.three.hurt > O.cap.one.hurt, 'POP e: both runs spent their stones and hurt the foe, three harder than one (' + J + ')');
     assert(O.cap.three.cap.blasts === 2 && O.cap.three.cap.shards === 3 && O.cap.one.cap.blasts === 1, 'POP e: PER-FOE CAP - one foe in all three stones\' radius takes 2 blasts and 3 shards (2 x 1.0 + 3 x 0.4 = 3.2x sword), not 3 and 9 (' + J + ')');
     assert(O.ult.n0 === 3 && O.ult.er >= 3 && O.ult.left === 0 && O.ult.dets === 0 && !O.ult.det, 'POP e: UP+C at 3 stones is still AVALANCHE, not a detonate (' + J + ')');
-    assert(O.switches.plant === 0 && O.switches.det === 2 && O.switches.dets === 0 && O.switches.flags === 'bossStone,detonate,feel,fistPlant', 'POP: the kill switches turn fistPlant and detonate off (' + J + ')');
+    assert(O.switches.plant === 0 && O.switches.det === 2 && O.switches.dets === 0 && O.switches.flags === 'bossStone,detonate,feel,fistPlant,skin,upper', 'POP: the kill switches turn fistPlant and detonate off (' + J + ')');
     assert(!O.bot.one && O.bot.two && !O.bot.twoNoFoe && !O.bot.three && !O.bot.other && !O.bot.afterCd, 'POP e: the bot learns DOWN+C - at >= 2 stones with a foe in a stone\'s radius, not at 1, not with no foe, not at a full board (that is the AVALANCHE), not in the 5 s cd (' + J + ')');
     assert(O.boss.before === 0 && O.boss.active && O.boss.first === 1, 'POP b: a boss start leaves ONE stone standing (' + J + ')');
     assert(O.boss.cleared === 0 && O.boss.retryActive && O.boss.retry === 1, 'POP b: and again after a retry (' + J + ')');

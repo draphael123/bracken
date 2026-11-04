@@ -6,7 +6,10 @@
 //     one, none at all), or he is not the plain duck there; the bot does not kneel at one or walk to one four tiles off,
 //     it fills while he stands or walks, the pose is not his kneel, the kneel is not the duck (hurt box DUCK_H, the armour's high swing
 //     still goes over), or he is not EXPOSED (a topiary's low swipe must still find him, and the hit must break the prayer)
-//   - THE GEOMANCER: down held does not show a buried dead man inside SENSE.R (and one outside it is shown), it wakes or hurts him (a
+//   - THE GEOMANCER (claude/geocrouch: STONE SKIN is her crouch; EARTH SENSE below is tested with GEO.pop.skin = false): the skin does not set after SKIN.settle, a yellow blow does not land at SKIN.mulCommon (SKIN.mulBoss from a
+//     boss / mini), throws her or stands her up, the third blow does not crack it (she stands, it re-forms SKIN.reform s later), a RED blow does not land whole and break it, the stamina does not come back SKIN.regenMul times as fast,
+//     the pose is not gSkin, a high swing does not go over her, or releasing down / a jump leaves the skin up
+//   - THE GEOMANCER, EARTH SENSE (GEO.pop.skin = false): down held does not show a buried dead man inside SENSE.R (and one outside it is shown), it wakes or hurts him (a
 //     sense is information only), it does not show a breakable wall inside SENSE.R, something is shown while she stands, what she found
 //     is gone before SENSE.after has run or still there well after it, or the pose is not her sense
 //   - THE BLOOD KNIGHT (claude/bloodknight): crouched over the body of what he killed he gets ANY health or blood (the harvest is gone), he is
@@ -20,7 +23,7 @@
 import assert from 'node:assert/strict';
 import { openPage } from './cdp.mjs';
 import { DUCK_H } from '../src/duck.js';
-import { KNEEL, SENSE } from '../src/crouch-b.js';
+import { KNEEL, SENSE, SKIN } from '../src/crouch-b.js';
 import { HG } from '../src/holy-ground.js';   /* (claude/paladin4) PRAYER: anywhere at KNEEL.rate, x HG.pray.holyMul by a holy light */
 
 const bad = [];
@@ -80,7 +83,7 @@ try {
     out.palHigh = fight('armour', 2, 6, { light: 0, pre: () => holy(0), stopAt: k => false });
 
     // ================= THE GEOMANCER =================
-    setUp('geomancer');
+    setUp('geomancer'); BK.geoK.pop.skin = false;   /* (claude/geocrouch) EARTH SENSE is the crouch behind the switch; STONE SKIN is tested below */
     { home(); const P = BK.P, r = {};
       const [near] = BK.spawnFoe({ t: 'zombie', x: spot[0] + 5.5, y: spot[1], face: -1, buried: true });
       const [mid] = BK.spawnFoe({ t: 'zombie', x: spot[0] + 7.5, y: spot[1] - 0, face: -1, buried: true });   /* 7.5 tiles: past the old six-tile sense, inside the eight-tile one */
@@ -97,6 +100,41 @@ try {
       for (let k = 0; k < 60; k++) { hold(); BK.sim(1); } r.seenLate = C().seen.length; r.nearModeEnd = near.mode;
       BK.L.walls.splice(BK.L.walls.indexOf(wall), 1); none(); out.geo = r; }
     out.geoHigh = fight('armour', 2, 6, { stopAt: k => false });
+    BK.geoK.pop.skin = true;
+
+    // ================= THE GEOMANCER: STONE SKIN (claude/geocrouch) =================
+    setUp('geomancer'); BK.geoK.pop.skin = true;
+    { const P = BK.P, r = {}; const blow = (d, o = {}) => { P.inv = 0; const hp0 = P.hp; BK.holyHurt(P, P.x + 24, d, o); const lost = hp0 - P.hp; P.hp = P.maxHp; return lost; };
+      const big = (e, on) => { e.maxHp = on ? 200 : undefined; return e; };
+      const foe = () => BK.spawnFoe({ t: 'sprig', x: spot[0] + 12, y: spot[1], face: -1 })[0];
+      const fresh = () => { home(); P.hp = P.maxHp; P.st = P.maxSt; P.skinHits = 0; P.skinHitAt = -99; P.skinReformT = 0; P.inv = 0; };
+      const down = n => { K.down = true; for (let k = 0; k < n; k++) { hold(); BK.sim(1); } };
+      const SET = Math.round(${SKIN.settle} * 60);
+      // the blows she is measured against: standing, then down but not yet set
+      fresh(); K.down = false; BK.sim(10); hold(); r.baseY = blow(20); r.baseR = blow(20, { unblockable: true });
+      fresh(); { const early = foe(); down(SET - 5); r.earlyUp = C().skin.up; r.earlyLost = blow(20, { who: early }); early.alive = false; }
+      fresh(); down(SET + 4); r.up = C().skin.up; r.box = box(); BK.step(2); r.pose = P.lastKey;
+      // a yellow blow from a common foe: half, no throw, she stays down and the skin stays
+      { const e = foe(); r.yLost = blow(20, { who: e }); BK.sim(15); r.yVx = Math.abs(P.vx); r.yDuck = !!P.ducking;   /* (past the hit-stop) */ r.yUp = C().skin.up; r.yHits = C().skin.hits; r.yHurt = P.hurt || 0; e.alive = false; }
+      // the third cracks it: she stands, it re-forms in SKIN.reform s
+      { const e = foe(); blow(20, { who: e }); r.afterTwo = { up: C().skin.up, hits: C().skin.hits }; BK.sim(15); r.twoDuck = !!P.ducking; blow(20, { who: e }); BK.sim(15); r.crack = { up: C().skin.up, hits: C().skin.hits, reform: C().skin.reform, ducking: !!P.ducking, cracks: C().stats.cracks, vx: Math.abs(P.vx) }; e.alive = false;
+        P.hurt = 0; P.inv = 0; down(Math.round((${SKIN.reform} - 0.5) * 60)); r.mid = { up: C().skin.up, reform: C().skin.reform }; down(30 + SET + 8); r.reformed = { up: C().skin.up, hits: C().skin.hits, reform: C().skin.reform }; none(); }
+      // a boss or a mini: three quarters
+      fresh(); down(SET + 4); { const e = big(foe(), true); r.bLost = blow(20, { who: e }); e.alive = false; }
+      // a RED blow: whole, thrown, and it breaks the skin
+      fresh(); down(SET + 4); { const e = foe(); r.redLost = blow(20, { who: e, unblockable: true }); BK.sim(3); r.red = { up: C().skin.up, reform: C().skin.reform, breaks: C().stats.breaks, vx: Math.abs(P.vx), ducking: !!P.ducking }; e.alive = false; }
+      // a hazard's share is not the skin's business
+      fresh(); down(SET + 4); r.hazUp0 = C().skin.up; { BK.holyHurt(P, P.x + 24, 5, { pct: 0.1, unblockable: true }); P.hp = P.maxHp; r.hazHits = C().skin.hits; }
+      // the stamina comes back SKIN.regenMul times as fast
+      { const gain = on => { fresh(); BK.geoK.pop.skin = on; P.winded = false; down(SET + 4); P.st = P.maxSt * 0.2; P.stDelay = 0; const s0 = P.st; down(12); const g = P.st - s0; K.down = false; return g; };
+        r.regenOn = gain(true); r.regenOff = gain(false); BK.geoK.pop.skin = true; }
+      // the exits: release down; a jump
+      fresh(); down(SET + 4); K.down = false; hold(); BK.sim(2); r.exitRelease = C().skin.up;
+      fresh(); down(SET + 4); BK.press('jump'); BK.sim(3); r.exitJump = C().skin.up; none(); BK.sim(40);
+      // let go of down after two blows: the count is kept for a while (no fresh skin by tapping down)
+      fresh(); down(SET + 4); { const e = foe(); blow(20, { who: e }); blow(20, { who: e }); e.alive = false; } K.down = false; hold(); BK.sim(20); down(SET + 6); r.kept = { up: C().skin.up, hits: C().skin.hits }; none();
+      out.skin = r; }
+    out.skinHigh = fight('armour', 2, 6, { stopAt: k => false });
 
     // ================= THE DEATH KNIGHT =================
     setUp('reaper');
@@ -129,7 +167,7 @@ try {
       home(); holy(-64); BK.P.light = 10; { const x0 = BK.P.x; out.bot.palWalk = { planned: drive('paladin', 420), light: Math.round(BK.P.light), walked: Math.round(BK.P.x - x0) }; }
       home(); BK.P.light = 10; out.bot.palNone = { planned: drive('paladin', 120), light: Math.round(BK.P.light) };
       home(); holy(0); BK.P.light = 10; BK.spawnFoe({ t: 'topiary', x: spot[0] + 3, y: spot[1], face: -1 }); out.bot.palNear = { planned: drive('paladin', 30), light: Math.round(BK.P.light) };
-      setUp('geomancer'); home(); out.bot.geo = { planned: drive('geomancer', 60), senses: C().stats.senses };
+      setUp('geomancer'); home(); out.bot.geo = { planned: drive('geomancer', 60), senses: C().stats.senses + C().stats.skins };   /* (claude/geocrouch) the look is a skin set, or a sense with the switch off */
       setUp('reaper'); home(); { const [s] = BK.spawnFoe({ t: 'sprig', x: spot[0] + 3, y: spot[1], face: -1 }); s.hp = 1; BK.combat2().strike(s, 'light', 99); BK.sim(20); }
       BK.P.hp = BK.P.maxHp - 30; BK.P.harvest = 0; const x0 = BK.P.x; out.bot.dk = { planned: drive('reaper', 150), harvests: C().stats.harvests, walked: Math.round(BK.P.x - x0) }; }
     // ================= OTHER HEROES: the plain duck, and nothing more =================
@@ -187,6 +225,31 @@ if (!(Math.abs(rate - HOLYRATE) < 2)) bad.push(`paladin: his light filled ${rate
   if (!(G.seenAfter >= 2)) bad.push(`geomancer: what she found was gone before the after-glow (${SENSE.after} s) ran (${G.seenAfter} left)`);
   if (G.seenLate) bad.push(`geomancer: ${G.seenLate} still shown well after the after-glow`);
   if (R.geoHigh.lost > 0 || !(R.geoHigh.ducked > 0)) bad.push(`geomancer: the armour's high swing did not go over her sensing (lost ${R.geoHigh.lost})`);
+  // ---- THE GEOMANCER: STONE SKIN ----
+  { const S = R.skin, near = (a, b, t = 1) => Math.abs(a - b) <= t;
+    if (SKIN.settle !== 0.15 || SKIN.mulCommon !== 0.5 || SKIN.mulBoss !== 0.75 || SKIN.hp !== 3 || SKIN.reform !== 3.0 || SKIN.regenMul !== 1.5) bad.push('skin: the numbers are not the approved plan: ' + JSON.stringify(SKIN));
+    if (S.earlyUp) bad.push('skin: set before SKIN.settle (' + SKIN.settle + ' s)');
+    if (!S.earlyUp && !near(S.earlyLost, S.baseY, 1)) bad.push('skin: a blow before the skin set did not land whole (' + S.earlyLost + ' vs ' + S.baseY + ' standing)');
+    if (!S.up) bad.push('skin: down held past SKIN.settle did not set the skin');
+    if (S.box !== DUCK_H) bad.push('skin: the stone skin is not the duck (hurt box ' + S.box + ')');
+    if (S.pose !== 'gSkin') bad.push("skin: skinned, she is drawn as '" + S.pose + "', not her stone-skin pose");
+    if (!near(S.yLost, S.baseY * SKIN.mulCommon, 1.5) || !(S.yLost < S.baseY)) bad.push('skin: a yellow blow from a common foe cost ' + S.yLost + ' (standing ' + S.baseY + ', want ~' + S.baseY * SKIN.mulCommon + ')');
+    if (S.yVx > 5) bad.push('skin: a blow on the skin threw her (vx ' + S.yVx + '); no knock-back');
+    if (!S.yDuck || !S.yUp || S.yHurt > 0) bad.push('skin: a yellow blow stood her up out of the skin: ' + JSON.stringify({ duck: S.yDuck, up: S.yUp, hurt: S.yHurt }));
+    if (S.yHits !== 1) bad.push('skin: one blow counted ' + S.yHits + ' hits');
+    if (!S.afterTwo.up || S.afterTwo.hits !== 2 || !S.twoDuck) bad.push('skin: two blows (the yellow one above and this) should leave the skin up and her down: ' + JSON.stringify({ afterTwo: S.afterTwo, duck: S.twoDuck }));
+    if (S.crack.up || S.crack.ducking || S.crack.cracks !== 1 || !near(S.crack.reform, SKIN.reform, 0.4) || S.crack.vx > 5) bad.push('skin: the third blow should crack it, stand her, start the ' + SKIN.reform + ' s re-form and throw her nowhere: ' + JSON.stringify(S.crack));
+    if (S.mid.up || !(S.mid.reform > 0)) bad.push('skin: it re-formed before SKIN.reform s: ' + JSON.stringify(S.mid));
+    if (!S.reformed.up || S.reformed.hits !== 0) bad.push('skin: it did not re-form SKIN.reform s after the crack: ' + JSON.stringify(S.reformed));
+    if (!near(S.bLost, S.baseY * SKIN.mulBoss, 1.5) || !(S.bLost > S.yLost)) bad.push('skin: a blow from a boss / mini cost ' + S.bLost + ' (standing ' + S.baseY + ', want ~' + S.baseY * SKIN.mulBoss + ', more than a common foe\'s ' + S.yLost + ')');
+    if (!near(S.redLost, S.baseR, 1)) bad.push('skin: a RED blow did not land whole (' + S.redLost + ' vs ' + S.baseR + ' standing)');
+    if (S.red.up || S.red.breaks !== 1 || !(S.red.reform > 0)) bad.push('skin: a RED blow did not break the skin: ' + JSON.stringify(S.red));
+    if (!S.hazUp0 || S.hazHits) bad.push('skin: a hazard share counted as a blow on the skin: ' + JSON.stringify({ up: S.hazUp0, hits: S.hazHits }));
+    if (!(S.regenOn > 0) || !near(S.regenOn / S.regenOff, SKIN.regenMul, 0.15)) bad.push('skin: the stamina did not come back ' + SKIN.regenMul + 'x as fast (' + S.regenOn.toFixed(2) + ' vs ' + S.regenOff.toFixed(2) + ')');
+    if (S.exitRelease) bad.push('skin: releasing down left the skin up'); if (S.exitJump) bad.push('skin: a jump left the skin up');
+    if (S.kept.hits !== 2) bad.push('skin: tapping down again gave a fresh skin (its blows should still count): ' + JSON.stringify(S.kept));
+    if (R.skinHigh.lost > 0 || !(R.skinHigh.ducked > 0)) bad.push("skin: the armour's high swing did not go over her skinned (lost " + R.skinHigh.lost + ")");
+    console.log('skin', JSON.stringify(S)); }
   // ---- THE DEATH KNIGHT ----
   const D = R.dk;
   if (!D.killed || !(D.bodies > 0)) bad.push(`blood knight: the sprig he killed left no body (${D.bodies})`);

@@ -36,7 +36,7 @@ import { join } from 'path';
 import { openPage as openPage1, ROOT } from './cdp.mjs';
 /* (redclean 11-02) a page is reopened after every short scope now, and one boot beside a busy page missed Input.dispatchKeyEvent (15 s): a boot gets three tries */
 const openPage = async () => { let e0; for (let i = 0; i < 3; i++) { try { return await openPage1(); } catch (e) { e0 = e; await new Promise(r => setTimeout(r, 3000)); } } throw e0; };
-import { FIRST as CROUCH_FIRST } from '../src/crouch-hint.js';
+import { FIRST as CROUCH_FIRST, FIRST_SENSE as CROUCH_FIRST_SENSE } from '../src/crouch-hint.js';
 
 const OUT = process.env.OUT || join(ROOT, 'audits', 'readability');
 const args = process.argv.slice(2), strict = args.includes('--strict');
@@ -61,7 +61,8 @@ function hints() {
     for (const m of line.matchAll(/hintSay\('\w+', [\d.]+, /g)) { const e = exprAt(line, m.index + m[0].length); if (!/'/.test(e)) continue; for (const v of new Set([build(e, true), build(e, false)])) out.push({ at: 'main.js:' + (k + 1), s: v }); }   /* (claude/hintlevel) every hint box line goes through hintSay(tier, seconds, text) now */
     for (const m of line.matchAll(/tombHint\('\w+', /g)) { const e = exprAt(line, m.index + m[0].length); for (const v of new Set([build(e, true), build(e, false)])) out.push({ at: 'main.js:' + (k + 1), s: v }); }
   });
-  for (const [h, s] of Object.entries(CROUCH_FIRST)) out.push({ at: 'crouch-hint.js:' + h, s });   /* (claude/crouchfix) the first-crouch hint of each hero */
+  for (const [h, s] of Object.entries(CROUCH_FIRST)) out.push({ at: 'crouch-hint.js:' + h, s });
+  out.push({ at: 'crouch-hint.js:geomancer-sense', s: CROUCH_FIRST_SENSE });   /* (claude/geocrouch) the old EARTH SENSE line, still said behind GEO.pop.skin = false */   /* (claude/crouchfix) the first-crouch hint of each hero */
   return out.filter(h => h.s && h.s !== '9');
 }
 
