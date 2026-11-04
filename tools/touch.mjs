@@ -56,7 +56,7 @@ const tapRow = async name => { const rows = await E('BK.ui.menuRows()'), i = row
 const idle = async () => { for (let i = 0; i < 120; i++) { if (!(await E("import('/src/loading-screen.js').then(m => !!m.LS.busy)"))) return; await sleep(250); } };   // a level load in flight (from a tap) must land before the harness loads another
 const toPlay = async (id = 'wood') => { await idle(); await E(`(async () => { const { LEVELS } = await import('/src/level.js'); BK.manualSimulation = true; BK.load(LEVELS.findIndex(l => l.id === ${JSON.stringify(id)})); BK.state = 'play'; BK.sim(120); })()`, 180000); };
 /* (claude/touchrows) the title is a paged list on touch: tapItem pages (taps the MORE row) until the named row is on screen, then taps it */
-const tapTitleItem = async (name) => { for (let k = 0; k < 8; k++) { const items = await E('BK.ui.titleItems()'), w = await E('BK.ui.titleWin()'), idx = items.indexOf(name), p = w.rows.findIndex(r => r.idx === idx); if (p >= 0) { await gameTap(p); return; } await gameTap(w.rows.length - 1); } throw new Error('title row ' + name + ' never came on screen'); };
+const tapTitleItem = async (name) => { for (let k = 0; k < 8; k++) { const items = await E('BK.ui.titleItems()'), w = await E('BK.ui.titleWin()'), idx = items.indexOf(name), p = w.rows.findIndex(r => r.idx === idx); if (p >= 0) { await gameTap(p); return; } await gameTap(w.rows[0].arrow === -1 && idx < w.rows.find(r => r.idx !== undefined).idx ? 0 : w.rows.length - 1); } throw new Error('title row ' + name + ' never came on screen'); };
 const gameTap = async (i) => { const hs = await E('BK.touch.hitBoxes()'); const h = hs[i]; if (!h) throw new Error('no tap box #' + i + ' (' + hs.length + ' drawn)'); const [cx, cy] = await E(`BK.touch.gameToClient(${h.x + h.w / 2}, ${h.y + h.h / 2})`); await tap(cx, cy); await sleep(250); };
 const pill = async (press) => { const d = await dbg(); const p = d.pills.find(q => q.k === 'pill:' + press); if (!p) throw new Error('no ' + press + ' pill in state ' + (await E('BK.state'))); await tap(...rectMid(p)); await sleep(300); };
 
@@ -134,9 +134,9 @@ try {
   });
   await section('save-slots', async () => {
     await sleep(600);
-    if (await E('BK.ui.titleOpts')) { const sub = await E('BK.ui.titleItems()'); await gameTap(sub.indexOf('BACK')); await sleep(300); }   /* (Back out of Settings lands on the OPTIONS list; BACK on that list is the title) */
+    if (await E('BK.ui.titleOpts')) { const sub = await E('BK.ui.titleItems()'); await tapTitleItem('BACK'); await sleep(300); }   /* (Back out of Settings lands on the OPTIONS list; BACK on that list is the title) */
     const items = await E('BK.ui.titleItems()'), i = items.findIndex(k => k === 'NEW GAME' || k === 'CHOOSE A SAVE'); ok(i >= 0, 'no save item on the title: ' + items.join('|'));
-    await gameTap(i);
+    await tapTitleItem(items[i]);
     ok(await E('BK.state') === 'slots', 'a tap on ' + items[i] + ' did not open the save slots (' + await E('BK.state') + ')');
     await sleep(300);
     const hs = await E('BK.touch.hitBoxes()'); ok(hs.length === 5, 'the slot screen drew ' + hs.length + ' tap boxes, not 5');
