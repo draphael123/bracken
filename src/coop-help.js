@@ -12,7 +12,7 @@ export const COOP_HELP_PAGES = ({ downT = 20, reviveT = 1.5 } = {}) => [
     ['#', 'PLAYER ONE  keyboard, or the first pad'],
     ['#', 'PLAYER TWO  a gamepad, or an ALLY the game plays'],
     ['', 'TURN IT ON: title screen > LOCAL CO-OP, or the pause menu > Co-op, then pick the second hero. Z takes a pad player, X asks for the ally instead.'],
-    ['', 'Start any wood from the map and the pair go in together. Shops, trials and the rush are one hero at a time.'],
+    ['', 'Start any wood from the map and the pair go in together. Shops and the rush are one hero at a time. The Arena Yard takes the whole party.'],
     ['', 'With two pads plugged in, the second one takes player one, so both of you can sit back. Pause > Co-op turns it off again.'],
   ] },
   { title: 'THE SECOND PLAYER', lines: [

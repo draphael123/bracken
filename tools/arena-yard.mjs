@@ -212,7 +212,7 @@ try {
     ok(r.inn === 'inn' && r.fromInn === 'yard' && r.innFlag === true, 'the inn\'s practice door goes straight into the Arena Yard');
     ok(r.backToInn === 'inn', 'the yard\'s gate out goes back to the inn when it was entered from the inn');
     ok(r.fromTitle === 'yard' && r.innFlag2 === false, 'the title / store entry goes straight into the yard, not from the inn');
-    ok(r.door === 'play' && r.nearDoor === null, 'no trials door: UP where it stood does nothing (state ' + r.door + ')');
+    ok(r.door !== 'practice' && r.nearDoor === null, 'no trials door: UP where it stood opens no list, and no use-spot is there (state ' + r.door + ', the gate sign may talk)');
     ok(r.titleRow && !r.oldRow && r.fromTitleRow === 'yard', 'the title row is ARENA YARD (no PRACTICE) and it goes straight into the yard: ' + r.fromTitleRow);
     ok(r.fromHeroCard === 'yard', "the hero card's Z goes to the Arena Yard: " + r.fromHeroCard);
     ok(!/startTrial|hasTrial|updatePractice|drawPractice|YARD_DRILLS/.test(main) && /k !== 'Arena Yard' || !(L && L.arenaYard)/.test(main) && !/id: 'practice', name: 'PRACTICE'/.test(readFileSync(join(ROOT, 'src/store.js'), 'utf8')), 'main.js has no trial / practice-list code left, the pause row is hidden inside the yard, the store has no PRACTICE tab');

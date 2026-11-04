@@ -267,7 +267,7 @@ async function pageTextFit(input) {
     for (const n of [4, 3, 2]) { BK.aiComp.arm(['geomancer', 'berserker', 'reaper'].slice(0, n - 1), ['support', 'balanced', 'defensive'].slice(0, n - 1), n - 1); frame('map party x' + n, () => { BK.state = 'map'; BK.PROG.xp = BK.PROG.xp || {}; }, { settle: 3 }); }
     BK.coopEnd(); BK.state = 'title'; await yieldNow(); }
   if (want('practice')) { const PR = window.BK.PROG; PR.heroes = PR.heroes || {};
-    frame('title ARENA YARD row', () => { BK.state = 'title'; BK.ui.titleOpts = false; BK.ui.titleI = Math.max(0, BK.ui.titleTop().indexOf('ARENA YARD')); }, { settle: 20 });
+    frame('title ARENA YARD row', () => { BK.state = 'title'; BK.ui.pressCard = false; BK.ui.titleOpts = false; BK.ui.titleI = Math.max(0, BK.ui.titleTop().indexOf('ARENA YARD')); }, { settle: 120 });
     for (const h of HEROES.concat(['geomancer', 'berserker', 'ranger'])) { BK.setHero(h); frame('hero card [' + h + '] (Z to the Arena Yard)', () => { BK.state = 'herocard'; }, { settle: 5 }); }
     BK.state = 'title'; await yieldNow(); }
   /* (claude/arenayard) THE ARENA YARD: every sign in it (the talk pages) and every page of THE MOVE BOARD, for every hero (it reads the hero at the board) */

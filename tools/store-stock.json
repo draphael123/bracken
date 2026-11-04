@@ -485,24 +485,5 @@
     "feat": null
    }
   ]
- },
- {
-  "id": "practice",
-  "rows": [
-   {
-    "id": "heroTrial",
-    "price": 0,
-    "silver": false,
-    "needs": null,
-    "feat": null
-   },
-   {
-    "id": "practiceYard",
-    "price": 0,
-    "silver": false,
-    "needs": null,
-    "feat": null
-   }
-  ]
  }
 ]
