@@ -190,6 +190,9 @@ if (PAGE.length) {
         const r1=one(tx-140);const r2=one(tx-140+(tx-r1.land));return {r1,r2,tx,bulls:BK.tavern.debug().tavern.drills.throw};})()`);
       ok(tw.r1.held && tw.r1.fl, 'THE THROW DRILL: P1 grabs P2 and throws him (' + JSON.stringify(tw.r1) + ')');
       ok(Math.abs(tw.r2.land - tw.tx) <= TARGET.r && tw.bulls >= 1, '...landed in the hay target it counts a BULLSEYE: land ' + Math.round(tw.r2.land) + ' vs ' + tw.tx + ', bullseyes ' + tw.bulls);
+      /* THE BAR STORE (claude/tavshop): the barkeep is the trader - USE opens the one store, ESC comes back to the same spot, the party stays */
+      const bs = await E(`(()=>{const a=__P(1);__at(a,${STATIONS.find(s => s.id === 'store').x});BK.sim(3);const x0=a.x,n0=BK.players().length;__talk(a);BK.sim(2);const o={st:BK.state,back:BK.ui.storeBack};BK.press('pause');BK.sim(2);o.after=BK.state;o.same=Math.abs(a.x-x0)<3;o.n=BK.players().length===n0;return o;})()`);
+      ok(bs.st === 'store' && bs.back === 'play' && bs.after === 'play' && bs.same && bs.n, 'THE BAR STORE: USE opens the store, ESC returns to the same spot, the party stays: ' + JSON.stringify(bs));
       /* the table: the party takes the road, and the next wood starts with all of them */
       const tb = await E(`(async()=>{BK.tavern.join({kind:'pad',pad:4});BK.sim(80);const a=__P(1);__at(a,${STATIONS.find(s => s.id === 'table').x});for(const q of BK.players())if(q!==a){q.x=a.x+30;}BK.sim(3);__talk(a);BK.sim(2);
         const o={st:BK.state,seats:BK.tavern.seats().map(s=>s.hero+':'+(s.src&&s.src.kind)+':'+(s.src&&s.src.pad))};

@@ -81,6 +81,17 @@ export function saves(g, x, fy, time, text) {
   text('SAVES', x, T + 5, '#e8f0e8', 'center', 6); R(g, L + 5, T + 13, 18, 1, '#8fd160'); if (Math.floor(time * 2) & 1) P(g, L + 24, T + 4, '#fff');
 }
 
+/* ---------------------------------------------------------------- THE BAR STORE (claude/tavshop) ---------------------------------------------------------------- */
+/* a plank hung on two short chains over the counter at the barkeep: STORE in gold, a coin pip that glints */
+export function store(g, x, fy, time, text) {
+  const L = x - 17, T = fy - 86;
+  R(g, L + 4, T - 8, 1, 8, TP.br1); R(g, L + 29, T - 8, 1, 8, TP.br1);   /* the chains */
+  R(g, L, T, 34, 15, TP.o3); R(g, L, T, 34, 1, TP.o6); R(g, L, T + 14, 34, 1, TP.o1); R(g, L, T, 1, 15, TP.o5); R(g, L + 33, T, 1, 15, TP.o1);
+  R(g, L + 2, T + 2, 30, 11, '#2a2418'); R(g, L + 2, T + 2, 30, 1, '#5a4a32');
+  text('STORE', x, T + 5, '#ffd36b', 'center', 6);
+  if (Math.floor(time * 2) & 1) P(g, L + 29, T + 4, '#fff');
+}
+
 /* ---------------------------------------------------------------- THE DRILLS TALLY ---------------------------------------------------------------- */
 export function tally(g, x, fy, counts) {
   const L = x - 14, T = fy - 40, cols = ['#ffd36b', '#8fd160', '#6bb8ff'];
