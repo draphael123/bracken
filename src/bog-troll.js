@@ -26,7 +26,7 @@
 //     section (his next lure). Pinned under the wreck he is STUCK: the beams and boards came down on his head (drawn over his shoulders, stars).
 //   NO ADDS (no summons in the brief).
 export const BT = {
-  hp: 680, w: 40, h: 56, markH: 60, up: 26, under: 84,   // up: his feet under the boards when he stands waist-deep (px below the road); under: where he swims
+  hp: 800, w: 40, h: 56, markH: 60, up: 26, under: 84,   // up: his feet under the boards when he stands waist-deep (px below the road); under: where he swims
   rest: [0.5, 0.4], hide: 0.4, wardMul: 0.4, p2: 0.5,
   sink: 0.45, swim: [0.6, 0.5], swimV: 180,
   burst: { track: 0.6, lock: 0.65, t: 0.3, r: 18, h: 40, dmg: 24, kick: -300, rise: 0.5 },

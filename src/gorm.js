@@ -22,8 +22,8 @@
 //      the red ring where it lands, a short burning-pitch patch; never at the ground). P2 THE SCEPTRE THROW (a boomerang: out LOW - jump; back HIGH - duck).
 //      ENRAGE at 25% of P2 (the crown cracks, he catches fire from his oak, the music lifts, one last boar; faster): RAGE-ONLY THE BURNING CHARGE (a fire trail).
 export const GORM = {
-  hp1: 1000,              /* P1's bar (the old fight's 590 was one bar for the whole of him); P2's bar is hp2 / hp1 of whatever the game scaled hp1 to */
-  hp2: 1400,
+  hp1: 1250,              /* P1's bar (the old fight's 590 was one bar for the whole of him); P2's bar is hp2 / hp1 of whatever the game scaled hp1 to */
+  hp2: 1750,
   chip: 0.4,             /* B15: outside an opening a blade lands at 0.4 (boss-greed GREED.chipBy.king) */
   take: { held: 2, open: 1.25, downed: 1.75, stung: 1.5 },
   p1take: { held: 1.4, open: 1.0 },   /* (claude/kingsfix2) P1 ONLY: with every rope free at any moment his hall needs a little less per opening (P2's take is unchanged) */
