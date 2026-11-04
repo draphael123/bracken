@@ -11,7 +11,7 @@ import { canvas, outline, whiten } from '../px.js';
 const W = 112, H = 84, OX = 56, OY = 42, memo = new Map();
 const INK = '#1a0c06';
 const CH = ['#2a140a', '#4a2410', '#6e3a16', '#94521e', '#b8702a'];             /* the thorax: chestnut, dark to lit */
-const AM = ['#8a4c08', '#c47a14', '#eea52a', '#ffd25a', '#fff0a0'];              /* the abdomen's amber */
+const AM = ['#9a5a08', '#dc9214', '#f8b82c', '#ffd850', '#fff2a8'];              /* the abdomen's amber */
 const WING = ['#8aa4bc', '#b4c8dc', '#d8e6f2', '#f4f9fd'];
 const GOLD = ['#a8741e', '#ffd36b', '#fff0a0'];
 const EYE = ['#6a0a0a', '#e8341c', '#ff8a5a', '#ffe0c0'];
@@ -29,7 +29,7 @@ const lit = (dx, dy, R0) => -(dx * 0.45 + dy * 0.9) / R0;   /* light from above 
 function wingPair(g, pivot, tilt, kind, step, hind, far) {
   const base = { fold: -2.95, blur: -1.95, wide: -1.55, back: -2.7, beat: -1.75, droop: 2.3, splay: 2.55 }[kind] ?? -2;
   const osc = kind === 'blur' ? (step - 1) * 0.55 : kind === 'wide' ? (step - 1) * 0.45 : kind === 'beat' ? (step - 1) * 0.95 : kind === 'splay' ? (step - 1) * 0.14 : 0;
-  const L = (hind ? 17 : 24) * (kind === 'wide' ? 1.15 : 1), Wd = hind ? 3.6 : 4.8, a = tilt + base + osc + (hind ? 0.32 : 0) + (far ? -0.1 : 0);
+  const L = (hind ? 17 : 24) * (kind === 'wide' ? 1.15 : 1), Wd = hind ? 2.2 : 3.0, a = tilt + base + osc + (hind ? 0.32 : 0) + (far ? -0.1 : 0);
   const cx = pivot[0] + Math.cos(a) * L / 2, cy = pivot[1] + Math.sin(a) * L / 2, ghost = kind === 'blur' || kind === 'wide';
   g.globalAlpha = ghost ? 0.62 : 1;
   blob(g, cx, cy, L / 2, Wd, a, (u, v, dx, dy, x, y) => { /* a wing in motion is drawn thinner (see-through), not dithered */
@@ -44,34 +44,32 @@ function bake(p, step) {
   const pivotW = rot(-1, -6, t), head0 = rot(11 + (p.head || 0), -1.5, t), th = [0, 0];
   /* the far wings, then the far legs */
   wingPair(g, pivotW, t, p.wing, step, false, true); wingPair(g, pivotW, t, p.wing, step, true, true);
-  const legs = (sh) => { for (const [lx, k] of [[-4, 0], [1, 1], [6, 2]]) { const sp = p.legs ? 1 : 0, [bx, by] = rot(lx, 5, t), kx = bx + (k - 1) * 3 + (sh ? 1 : -1) * (sp ? 3 : 1), ky = by + (sp ? 5 : 6), fx = kx + (k - 1) * 2 + (sp ? (k - 1) * 3 : 1), fy = ky + (sp ? -2 : 5);
-    line(g, sh ? CH[1] : CH[0], bx, by, kx, ky); line(g, sh ? CH[1] : CH[0], kx, ky, fx, fy); px(g, INK, fx, fy); } };
-  legs(false);
+  const legs = (sh, gg = g) => { for (const [lx, k] of [[-4, 0], [1, 1], [6, 2]]) { const sp = p.legs ? 1 : 0, [bx, by] = rot(lx, 5, t), kx = bx + (k - 1) * 3 + (sh ? 1 : -1) * (sp ? 3 : 1), ky = by + (sp ? 6 : 9), fx = kx + (k - 1) * 2 + (sp ? (k - 1) * 3 : 1), fy = ky + (sp ? -2 : 8);
+    line(gg, sh ? '#5a2c12' : '#3a1c0c', bx, by, kx, ky); line(gg, sh ? '#5a2c12' : '#3a1c0c', kx, ky, fx, fy); px(gg, sh ? '#d8b888' : '#8a6a48', fx, fy); } };   /* (claude/waspart) the legs are drawn AFTER the ink (below): long thin dangling hairlines, not a fat inked block */
   /* the abdomen: an egg of amber with four black bands, tapering to the sting; its axis points away from the thorax at angle a (+pi) */
-  { const len = 28, ry = 8.5, ax = Math.cos(a), ay = Math.sin(a), P0 = rot(-8, 1.5, t), acx = P0[0] - ax * (len / 2 - 1), acy = P0[1] - ay * (len / 2 - 1);   /* the axis, pointing forward (toward the thorax); the tail is the other way */
+  { const len = 30, ry = 8.2, ax = Math.cos(a), ay = Math.sin(a), P0 = rot(-11, 2, t), acx = P0[0] - ax * (len / 2 - 1), acy = P0[1] - ay * (len / 2 - 1);   /* the axis, pointing forward (toward the thorax); the tail is the other way */
     blob(g, acx, acy, len / 2, ry, a, (u, v, dx, dy, x, y) => {
-      const s = (u + 1) / 2, hw = Math.sqrt(Math.max(0, 1 - (2 * s - 1) * (2 * s - 1))) * (0.7 + 0.3 * s);   /* its profile: fat at the front, drawn to a point behind */
+      const s = (u + 1) / 2, e = s / 0.86, hw = s > 0.86 ? 0.15 : e < 0.7 ? Math.pow(e / 0.7, 0.85) : 0.15 + 0.85 * Math.sqrt(Math.max(0, 1 - Math.pow((e - 0.7) / 0.3, 2)));   /* its profile (claude/waspart): a thin PETIOLE at the front (the pinched waist), a swelling, then drawn to a POINT behind */
       if (Math.abs(v) > hw + 0.04) return null;
-      const band = (s > 0.16 && s < 0.28) || (s > 0.4 && s < 0.52) || (s > 0.64 && s < 0.74) || (s > 0.86 && s < 0.93);
+      const band = (s > 0.1 && s < 0.22) || (s > 0.32 && s < 0.46) || (s > 0.56 && s < 0.68) || (s > 0.76 && s < 0.86);
       let k = lit(dx, dy, ry); const sh = k > 0.55 ? 4 : k > 0.2 ? 3 : k > -0.2 ? 2 : k > -0.6 ? 1 : 0;
-      if (band) return sh > 3 ? '#4a2810' : sh > 1 ? '#2a160a' : '#140a04'; if (hash(x, y) % 23 === 0) return AM[Math.min(4, sh + 1)];
+      if (s > 0.86) return sh > 2 ? CH[3] : CH[1]; if (band) return sh > 3 ? '#4a3a1c' : sh > 1 ? '#221408' : '#100804'; if (sh === 4 && v < -0.2 && (u * 13) % 3 < 0.6) return '#ffffff'; /* a lacquered glint */
       return AM[sh]; });
     /* the sting out of the tail: a pale spike, longer when it is bared */
     const tipD = len / 2 + 1, tx = acx - ax * tipD, ty = acy - ay * tipD, sl = p.sting ? 9 : 4;
     for (let i = 0; i < sl; i++) { const k = i / sl; px(g, k < 0.7 ? '#f4ecd8' : '#ffffff', tx - ax * i, ty - ay * i); if (k < 0.45) px(g, '#c8b890', tx - ax * i, ty - ay * i + 1); }
     px(g, '#3a2a18', tx, ty); c._tip = [OX + tx - ax * sl, OY + ty - ay * sl]; if (lying) c._tip = [OX + tx, OY + ty]; }
   /* the thorax: a chestnut barrel with an amber fur fringe along its back and a pale collar */
-  blob(g, th[0], th[1], 9, 7.4, t, (u, v, dx, dy, x, y) => { const k = lit(dx, dy, 8); let sh = k > 0.55 ? 4 : k > 0.15 ? 3 : k > -0.3 ? 2 : k > -0.65 ? 1 : 0;
-    if (v < -0.55 && hash(x, y) % 3 === 0) return AM[2 + (hash(x, y) % 2)];   /* fur on the shoulders */
+  blob(g, th[0], th[1], 8, 6.4, t, (u, v, dx, dy, x, y) => { const k = lit(dx, dy, 8); let sh = k > 0.55 ? 4 : k > 0.15 ? 3 : k > -0.3 ? 2 : k > -0.65 ? 1 : 0;
+    if (v < -0.62 && u > -0.5 && u < 0.5) return AM[2];   /* a hard amber stripe on the back, no fur (claude/waspart) */
     if (u > 0.78) return '#e8c878';                                       /* the collar */
     if (hash(x, y) % 9 === 0) sh = Math.min(4, sh + 1); return CH[sh]; });
   px(g, CH[0], th[0] - 2, th[1] + 2);
-  legs(true);
   /* the head: chestnut, a big red eye, pale mandibles, a gold crown, two antennae */
-  { const [hx, hy] = head0, hr = 6;
+  { const [hx, hy] = head0, hr = 5.6;
     blob(g, hx, hy, hr, hr - 0.4, t, (u, v, dx, dy, x, y) => { const k = lit(dx, dy, hr); const sh = k > 0.5 ? 4 : k > 0.1 ? 3 : k > -0.35 ? 2 : 1; return CH[Math.min(4, sh)]; });
     const [ex, ey] = rot(2.4, -0.8, t); blob(g, hx + ex, hy + ey, 2.9, 3.5, t, (u, v, dx, dy) => { const kk = lit(dx, dy, 3); return kk > 0.45 ? EYE[3] : kk > 0.05 ? EYE[2] : kk > -0.4 ? EYE[1] : EYE[0]; });
-    const [mx, my] = rot(5.5, 3.5, t); line(g, '#f0e4c8', hx + mx - 1, hy + my - 1, hx + mx + 2, hy + my + 1); line(g, '#c8b890', hx + mx - 1, hy + my, hx + mx + 1, hy + my + 2); px(g, '#f0e4c8', hx + mx + 2, hy + my + 2);
+    const [mx, my] = rot(5, 3.5, t); line(g, '#f0e4c8', hx + mx - 1, hy + my - 1, hx + mx + 3, hy + my + 3); line(g, '#c8b890', hx + mx - 2, hy + my, hx + mx + 1, hy + my + 4); line(g, '#f0e4c8', hx + mx - 2, hy + my + 3, hx + mx + 2, hy + my + 1); px(g, '#8a7a58', hx + mx + 3, hy + my + 4);   /* two heavy crossing jaws */
     /* the crown: a gold band and three points, set on the head */
     const [kx, ky] = rot(-1, -hr + 0.6, t); line(g, GOLD[0], hx + kx - 4, hy + ky + 0.5, hx + kx + 4, hy + ky + 0.5);
     for (const [dx, h2] of [[-4, 3], [0, 5], [4, 3]]) { const [qx, qy] = rot(dx, -h2, t); line(g, GOLD[1], hx + kx + dx, hy + ky + 0.5, hx + kx + qx, hy + ky + qy); px(g, GOLD[2], hx + kx + qx, hy + ky + qy); }
@@ -82,6 +80,7 @@ function bake(p, step) {
   wingPair(g, pivotW, t, p.wing, step, true, false); wingPair(g, pivotW, t, p.wing, step, false, false);
   g.restore();
   const tip = c._tip, head = c._head; outline(c, INK);
+  { const g2 = c.getContext('2d'); g2.save(); g2.translate(OX, OY); if (lying) g2.rotate(Math.PI / 2 * 0.9); legs(false, g2); legs(true, g2); g2.restore(); }
   return { c, ox: OX, oy: OY, tip, head };
 }
 const keyOf = (p, step, flash) => [p.tilt || 0, p.abd || 0, p.wing, p.head || 0, p.legs ? 1 : 0, p.sting ? 1 : 0, p.lying ? 1 : 0, step, flash ? 1 : 0].join('|');
@@ -133,8 +132,8 @@ export function cloak(g, x, y, time) { g.globalAlpha = 0.32; g.fillStyle = '#2a1
 /* one of her hornets (a 5-px mote) */
 export function mote(g, x, y, dir, t) { const o = dir > 0 ? 1 : -1; x = Math.round(x); y = Math.round(y);
   g.globalAlpha *= 0.5; g.fillStyle = '#1a0c06'; g.fillRect(x - 2, y + 1, 5, 1); g.globalAlpha /= 0.5;
-  const seq = o > 0 ? ['#1a0c06', '#e8a418', '#1a0c06', '#e8a418', '#1a0c06'] : ['#1a0c06', '#e8a418', '#1a0c06', '#e8a418', '#1a0c06']; for (let k = 0; k < 5; k++) { g.fillStyle = seq[k]; g.fillRect(x - 2 + k, y, 1, 1); }
-  g.fillStyle = '#e8a418'; g.fillRect(x - o * 0, y - 1, 2, 1); g.fillStyle = '#d4dce8'; if (Math.floor(t * 22) & 1) { g.fillRect(x - 1, y - 2, 2, 1); g.fillRect(x, y - 3, 1, 1); } else g.fillRect(x - 1, y - 2, 3, 1); }
+  const seq = ['#1a0c06', '#f6cf2a', '#1a0c06', '#f6cf2a', '#1a0c06']; for (let k = 0; k < 5; k++) { g.fillStyle = seq[k]; g.fillRect(x - 2 + k, y, 1, 1); }
+  g.fillStyle = '#f6cf2a'; g.fillRect(x - o * 0, y - 1, 2, 1); g.fillStyle = '#d4dce8'; if (Math.floor(t * 22) & 1) { g.fillRect(x - 1, y - 2, 2, 1); g.fillRect(x, y - 3, 1, 1); } else g.fillRect(x - 1, y - 2, 3, 1); }
 /* a STINGER DART in flight: a pale barbed spike with a dark ring and a venom bead, along its way (vx, vy) */
 export function dart(g, x, y, vx, vy, time) { const sp = Math.hypot(vx, vy) || 1, ux = vx / sp, uy = vy / sp;
   for (let i = 0; i < 5; i++) px(g, i < 2 ? '#fff6c8' : i < 4 ? '#f0e8d0' : '#8a7a58', x - ux * i, y - uy * i);

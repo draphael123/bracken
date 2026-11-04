@@ -6,6 +6,7 @@
 //   (the venom spitter is gone: claude/hornetsnest2, Daniel 10-23 - it read as a mage; the nest's heavy is THE AMBER HORNET, src/redraw/honey_hornet_art.js)
 // bakeNestSkins(SPR) -> { hornet, combdrone, nestguard } (each { R, L, white, ax, ay, w, h } like every foe sheet; the SPR argument is read for the anchors only)
 import { canvas, flipX, whiten, outline } from '../px.js';
+import * as WASPART from './wasp_art.js';
 
 const INK = '#1a0c06', CH = ['#3a1c0c', '#6a3a18', '#9c5c28', '#cc8444'], AM = ['#a05a0a', '#d88a1c', '#f6b436', '#ffe070'], BLK = '#1a0c06', WING = ['#9ab0c6', '#dce8f4', '#ffffff'];
 const CREAM = ['#8a6a2c', '#d8b050', '#f6dc88', '#fff6c8'], VEN = ['#2c5a14', '#5ea02a', '#9ed84a', '#d8f890'], EYE = ['#6a0a0a', '#e8341c', '#ffa070'];
@@ -90,7 +91,7 @@ function guardFrame(kind, k) { return g => {
 export function bakeNestSkins(SPR) {
   const keep = n => ({ w: SPR[n].w, h: SPR[n].h });
   return {
-    hornet: sheet([hornetFrame(0), hornetFrame(1), hornetFrame(2), hornetFrame(0, true)], 16, 11, SPR.wasp.ax, SPR.wasp.ay, keep('wasp')),
+    hornet: WASPART.bakeHornet(SPR.wasp.ax + 4, SPR.wasp.ay + 5, SPR.wasp.w, SPR.wasp.h),   /* (claude/waspart) a REAL HORNET (26 x 18, same box): src/redraw/wasp_art.js */
     combdrone: sheet([droneFrame('walk', 0), droneFrame('walk', 1), droneFrame('walk', 2), droneFrame('walk', 3), droneFrame('look'), droneFrame('tell'), droneFrame('bite'), droneFrame('hurt')], 16, 12, SPR.sprig.ax, SPR.sprig.ay, keep('sprig')),
     stinger: sheet([stingerFrame(0), stingerFrame(1), stingerFrame(1, true)], 16, 16, SPR.spit.ax, SPR.spit.ay, keep('spit')),   /* (claude/hornetsnest2) the nest's ranged hornet */
     nestguard: sheet([guardFrame('walk', 0), guardFrame('walk', 1), guardFrame('walk', 2), guardFrame('walk', 3), guardFrame('turn'), guardFrame('tell'), guardFrame('shove'), guardFrame('low')], 16, 16, SPR.shield.ax, SPR.shield.ay, keep('shield')),

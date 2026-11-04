@@ -8,6 +8,7 @@
 // shore.js's pack(): R (facing right), L (the flip), white.{R,L} (the hit flash), ax, ay, w, h. px.js primitives only.
 import { canvas, px, rect, fillPoly, line, ellipse, circle, outline, flipX, whiten } from '../px.js';
 import { OUT } from '../art.js';
+import * as WASPART from './wasp_art.js';
 const pack = (R, ax, ay, w, h) => ({ R, L: R.map(flipX), white: { R: R.map(c => whiten(c)), L: R.map(c => flipX(whiten(c))) }, ax, ay, w, h });
 const frames = (W, H, list) => list.map(fn => { const [c, g] = canvas(W, H); fn(g); outline(c, OUT); return c; });
 
@@ -169,15 +170,7 @@ export function bakePetrelV2() {
 
 /* ================= THE WASP (14x9 -> 16x11; ax 8 ay 8, box 10x7) =================
    old: 0-2 buzz, 3 hurt. (Its sting tell is in main.js's own glyph.) redrawn: a readable abdomen, bands, a stinger that SHOWS, wings a blur */
-export function bakeWaspV2() {
-  const W = 16, H = 11, C = { y: '#f0c030', yD: '#b88a18', k: '#1e1a14', w: '#e8f0ff', wD: '#b8c8e0', sting: '#2a2014', eye: '#8a2a2a' };
-  const wasp = (g, wing, extra) => { ellipse(g, 5, 6, 3.4, 2.4, C.y); rect(g, 3, 4, 1, 5, C.k); rect(g, 6, 4, 1, 5, C.k); line(g, 1, 7, 0, 8, C.sting);   // abdomen, banded, the sting out behind
-    ellipse(g, 9, 5, 1.8, 1.6, C.yD); circle(g, 12, 4, 1.8, C.k); px(g, 13, 4, C.eye); line(g, 12, 2, 14, 0, C.k);
-    const wy = [0, 1, 2][wing]; fillPoly(g, [[8, 4], [5, wy], [10, wy + 1]], C.w); if (wing !== 1) fillPoly(g, [[9, 4], [8, wy + 1], [12, wy + 1]], C.wD);
-    for (let k = 0; k < 3; k++) line(g, 8 + k, 6, 7 + k * 2, 9, C.k); extra && extra(g); };
-  const F = frames(W, H, [0, 1, 2].map(k => g => wasp(g, k)).concat([g => wasp(g, 1, g => { px(g, 13, 3, '#ffffff'); px(g, 3, 2, C.yD); })]));
-  return pack(F, 8, 8, 10, 7);
-}
+export function bakeWaspV2() { return WASPART.bakeWasp(); }   /* (claude/waspart, Daniel 11-03: it read as a BEE) a REAL WASP: pinched waist, pointed banded abdomen + stinger, narrow wings, dangling legs - src/redraw/wasp_art.js; same frames, anchor and box */
 
 /* ================= THE SNUFFER (14x14 -> 16x16; ax 7 ay 15, box 10x14) =================
    old: 0 stand, 1 walk, 2 SNUFF TELL (the snuffer's cup raised to a lamp), 3 SWIPE (tell and blow). new: 4 walk (other step), 5 hurt */

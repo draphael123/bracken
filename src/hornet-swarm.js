@@ -66,7 +66,7 @@ export const swarmFrame = e => e.hurtT > 0 ? SWARM_POSE.hurt : SWARM_POSE[e.mode
 /* HOW MANY HORNETS ARE DRAWN in the cloud (a cut thins it) */
 export const swarmCount = e => Math.max(4, Math.round(18 * Math.max(0, e.hp) / (e.maxHp || SWARM.hp)));
 /* ---------- GREYBOX: the cloud is drawn live (drawSwarm, a dot a hornet); the sheet (5 poses) is for the bestiary card and the art lane's contract ---------- */
-const COL = { body: '#e8a418', bodyD: '#3a2410', band: '#1a1006', wing: '#d4dce8', red: '#ff5a3a', grey: '#9aa0a8', greyD: '#6a7078', out: '#1b1626' };
+const COL = { body: '#f6cf2a', bodyD: '#3a2410', band: '#1a1006', wing: '#d4dce8', red: '#ff5a3a', grey: '#9aa0a8', greyD: '#6a7078', out: '#1b1626' };
 /* ONE HORNET of the cloud (art pass, claude/hornetsnestart): a 5 x 3 body - a dark head, an amber thorax, a banded abdomen with its sting - with two wing-flecks that beat. dir = which way it flies. */
 function mote(g, px, py, dir, col, bandCol, beat, tint) {
   /* head (dark) - thorax (col, 2) - abdomen (band, col) : 5 px long, 1 high, a shadow under it, wings a flick above */
