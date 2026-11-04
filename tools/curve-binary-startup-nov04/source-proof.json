@@ -1,0 +1,36 @@
+{
+  "time": "2026-11-04T18:48:42.008Z",
+  "sourceGame": "dc02ecc059959b795f76dee47665b54f349d4e2f",
+  "sourceTree": "9d8acbb7f3182c1d29ac71f4a3b0227224446718",
+  "originalController": "1a576c3f4511b6856df9fb4738df5aaae9987e81",
+  "nativeQualification": {
+    "run": 41889536552,
+    "controller": "75fb30045f7e6e05905006bf61017ead65f4e67b",
+    "manifestSha256": "990feef59be1a3f5701185b954fa047310ac3b743373b3eb1c30bbb91b1e541c",
+    "receiptSha256": "63182e42525befbf0e2fff042eeb0598e0de35d2671acab2e122c684e98972eb",
+    "frozenGPU": 768,
+    "additionalCPU": 768,
+    "edgeCases": 144,
+    "fallbackCases": 39,
+    "stats": {
+      "attempts": 1719,
+      "optimized": 176,
+      "fallback": 1543,
+      "boundingCoordinates": 86638,
+      "predicateChecks": 23738,
+      "paintedPixels": 59546,
+      "spans": 2688
+    }
+  },
+  "originalSnapshotFunctionSha256": "89e31693c6ae1ef5740fbb64a65c20ba5df927fa3d173955e3ad37b7810ee14a",
+  "contextObserverSha256": "ba3f88d37f1339c18373d97029460af6ba1a1f9bc62f142d6530026227fd27be",
+  "strictProfileSha256": "9d38b09c585f0054e40125c63b2435e61e8cd6f5cc53e6011edf62178c8c2184",
+  "scope": "Separate original Task3 main/sharedUI plus qualified Px circle/ellipse binary solver only. No publication/private-R/Skyroad/other source combination. Original9fresh before/candidate/return startup documents, full-SPR/native context/metadata/alias/stat snapshots and original clock/nativeGC/audio/fonts/view/DPR retained.",
+  "materialPolicy": "Predeclared>=10percent median opening-through-publication improvement OR>=32MB median renderer reduction at postboot/post-full-native-readback checkpoints; both timing and memory return drift<=10percent. Preserve all rows and loading costs; exact all9native/readback documents and actual optimized>100 required before any broader original gate.",
+  "rendererMb": 1536,
+  "admissionMb": 4352,
+  "allPublicConstructorsAnd50LiveExpressionsUnchanged": true,
+  "adopted": false,
+  "overallWorkComplete": false,
+  "manifestSha256": "de70b44119c9d0ef806351edeace8c2821033cff953bf59b1cdc885ae0bf555d"
+}
