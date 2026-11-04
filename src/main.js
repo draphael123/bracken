@@ -32254,7 +32254,7 @@ function trnBegin() {
   PROG.transSeen = PROG.transSeen || {}; PROG.transSeen[key] = 1; saveProgress();
   const target = entry.walk && entry.walk.to ? entry.walk.to * TS : LW * TS + 16;   /* (claude/demotransitions) walk.to: a column (Kingswood's arena is mid-level) */
   TRN = { entry, to, tl: TRM.start(entry, { reduce: SET.reduceMotion }), opened: false, loading: false, target, scene: false,
-    pos: players.map(p => ({ x: p.x, y: entry.walk && entry.walk.floor ? entry.walk.floor * TS : p.y, hop: 0, v: 0, face: 1, arrived: false, speed: TRM.walkSpeed(Math.max(0, target - p.x)) })) };
+    pos: players.map(p => ({ x: p.x, y: entry.walk && entry.walk.floor && !entry.walk.follow ? entry.walk.floor * TS : p.y, hop: 0, v: 0, face: 1, arrived: false, speed: TRM.walkSpeed(Math.max(0, target - p.x)) })) };
   BUG.evlog('transition ' + key); slowT = 0; stop = 0;
   return true;
 }
@@ -32275,13 +32275,13 @@ function trnUpdate(dt) {
   if (ph === 'open' && !tr.opened && tl.pt >= 0.25) { tr.opened = true; trnOpenWay(); }
   let ready = true;
   if (ph === 'walk') {
-    players.forEach((p, i) => { const q2 = tr.pos[i]; if (!q2 || q2.arrived) return; const w = TRM.walkStep(q2.x, tr.target, dt, q2.speed); q2.x = w.x; q2.v = w.v; q2.arrived = w.arrived; q2.hop = TRM.hopY(q2.x, tr.entry.open && !TRM.isBareKind(tr.entry.open.kind) ? tr.entry.open.col : -9, TS); if (!w.arrived) ready = false; });
+    players.forEach((p, i) => { const q2 = tr.pos[i]; if (!q2 || q2.arrived) return; const w = TRM.walkStep(q2.x, tr.target, dt, q2.speed); q2.x = w.x; q2.v = w.v; q2.arrived = w.arrived; if (tr.entry.walk && tr.entry.walk.follow) { let ty = Math.floor(q2.y / TS) - 3; const tx = Math.floor(q2.x / TS); while (ty < 400 && !isSolid(tx, ty)) ty++; q2.y += (ty * TS - q2.y) * Math.min(1, dt * 14); } q2.hop = TRM.hopY(q2.x, tr.entry.open && !TRM.isBareKind(tr.entry.open.kind) ? tr.entry.open.col : -9, TS); if (!w.arrived) ready = false; });
     if (players[0] && tr.pos[0]) { P.x = tr.pos[0].x; P.vx = tr.pos[0].v * 0.6; P.face = 1; }
   }
   const entered = TRM.step(tl, dt, { press: anyPress, ready });
   if (tl.skipped && !tr.skipNoted) { tr.skipNoted = true; BUG.evlog('transition skipped'); }
   for (const e of entered) {
-    if (!tr.scene && e !== 'fade' && e !== 'done' && TRM.isSceneBeat(tl.beats[tl.i])) { tr.scene = true; ambient.set(tr.entry.scene === 'smoke' ? 'forest' : 'water'); if (SFX.step) SFX.step(); }   /* (claude/demotransitions) the first scene beat, whatever the scene */
+    if (!tr.scene && e !== 'fade' && e !== 'done' && TRM.isSceneBeat(tl.beats[tl.i])) { tr.scene = true; ambient.set(TRN_AMBIENT[tr.entry.scene] || 'water'); if (SFX.step) SFX.step(); }   /* (claude/demotransitions) the first scene beat, whatever the scene */
     if (e === 'ride') { if (SFX.pole) SFX.pole(); if (SFX.creak) SFX.creak(); SFX.splash(); }
     if (e === 'done') { trnFinish(); return; }
   }
@@ -32305,7 +32305,8 @@ function trnArriveBegin(entry) {
     trnArrive.x0 = cx * TS + 8; trnArrive.goal = Math.max(92, trnArrive.x0 + 36);
   }
   players.forEach((p, i) => { p.x = trnArrive.x0 + i * 12; p.y = trnArrive.floorY; p.vx = 0; p.vy = 0; p.face = 1; p.inv = 0; });
-  camX = 0; camY = P.y - 100; transT = 1; transKind = 'fade'; if (entry.arrive.ferry) ambient.set('water');   /* (claude/demotransitions) any other arrival keeps the ambience startGame set for its own level */
+  camX = 0; camY = P.y - 100; transT = 1; transKind = 'fade'; if (entry.arrive.ferry) ambient.set('water');
+  if (entry.arrive.drop) { for (let i = 0; i < 12; i++) burst(trnArrive.x0 + (i - 4) * 7, trnArrive.floorY - 2, 2, ['#8a8a96', '#b4b4c0', '#4a4a56'], 60, 0.7, 120, 2); SFX.thud && SFX.thud(); shakeCam(5); }   /* (lane C) S2 lands on the ledge: dust and a thud (shake is none under reduce-motion) */   /* (claude/demotransitions) any other arrival keeps the ambience startGame set for its own level */
 }
 function trnArriveTick(dt) {
   const A = trnArrive; if (!A || A.done) return;
@@ -32313,10 +32314,17 @@ function trnArriveTick(dt) {
   if (A.t >= A.dur || (anyPress && A.t > 0.35)) { A.done = true; return; }
   players.forEach((p, i) => asPlayer(p, () => { for (const k of Object.keys(keys)) keys[k] = false; keys.right = P.x < A.goal + i * 12; jumpPress = atkPress = dodgePress = upPress = downPress = leftPress = rightPress = throwPress = skill2Press = skill3Press = skill4Press = talkPress = flaskPress = grabPress = false; P.jbuf = 0; P.abuf = 0; P.dbuf = 0; }));
 }
+const TRN_AMBIENT = { smoke: 'forest', daylight: 'mineworks', drop: 'wind', descent: 'water' };   /* (lane C) the scene's own air: 'water' stays the default (ferry, road) */
+/* (claude/act2tr lane C) the ONE LINE of a cinematic beat (entry.caption: { text, at }): fades in over the scene, thin-bar rows, fades with the fade beat; the art file writes no text */
+function trnDrawCaption(tr, s) {
+  const cp = tr.entry.caption; if (!cp) return; const tl = tr.tl; let a = TRM.captionAlpha(tr.entry, s) * (TRM.phase(tl) === 'fade' ? 1 - Math.min(1, tl.pt / tl.beats[tl.i].dur) : 1); if (a < 0.02) return;
+  const ln = fitText(cp.text, VW - 40, 10), wy = VH - (tr.entry.bar || TRM.BAR) - 22; g.globalAlpha = a; text(ln, Math.round(VW / 2) + 1, wy + 1, '#05040a', 'center', 10); text(ln, Math.round(VW / 2), wy, '#ffd9a0', 'center', 10); g.globalAlpha = 1;
+}
 function trnDrawScene() {
   const tr = TRN, tl = tr.tl, env = trnEnv(), s = trnSceneS(tl);
   env.bank = tr.entry.bank || 'wood';
-  if (tr.entry.scene === 'road') TRA.drawRoadScene(env, s); else if (tr.entry.scene === 'smoke') TRA.drawSmokeScene(env, s); else TRA.drawFerryScene(env, s);   /* (claude/demotransitions) */
+  if (tr.entry.scene === 'road') TRA.drawRoadScene(env, s); else if (tr.entry.scene === 'smoke') TRA.drawSmokeScene(env, s); else if (tr.entry.scene === 'daylight') TRA.drawDaylightScene(env, s); else if (tr.entry.scene === 'drop') TRA.drawDropScene(env, s); else if (tr.entry.scene === 'descent') TRA.drawDescentScene(env, s); else TRA.drawFerryScene(env, s);
+  trnDrawCaption(tr, s);   /* (claude/demotransitions) */
   if (TRM.phase(tl) === 'fade') { const k = Math.min(1, tl.pt / tl.beats[tl.i].dur); g.fillStyle = 'rgba(5,4,10,' + (k * k).toFixed(3) + ')'; g.fillRect(0, 0, VW, VH); }
 }
 function trnDrawWorldOver(cx, cy) {
@@ -32324,14 +32332,14 @@ function trnDrawWorldOver(cx, cy) {
   if (TRN && !TRN.loading) { const tr = TRN, tl = tr.tl; players.forEach((p, i) => { const q2 = tr.pos[i]; if (!q2) return; const walking = q2.v > 5, set = (i > 0 && p.set) || K, air = q2.hop < -2 && set.R && set.R.jump;   /* the hop over the settled gate uses the hero's own jump frames */
     drawSet(set, air ? 'jump' : walking ? 'run' : 'idle', air ? 0 : walking ? Math.floor(time * 13) : Math.floor(time * 4.5), Math.round(q2.x - cx), Math.round(q2.y - cy + q2.hop), q2.face, false); });
     if (TRM.phase(tl) === 'fade') { const k = Math.min(1, tl.pt / tl.beats[tl.i].dur); g.fillStyle = 'rgba(5,4,10,' + (k * k).toFixed(3) + ')'; g.fillRect(0, 0, VW, VH); } }
-  if (trnArrive && trnArrive.ferry) TRA.drawArrivalFerry(trnEnv(), cx, cy, trnArrive.floorY, time);
+  if (trnArrive && trnArrive.ferry) { if (trnArrive.entry.arrive.raft) TRA.drawArrivalRaft(trnEnv(), cx, cy, trnArrive.floorY, time); else TRA.drawArrivalFerry(trnEnv(), cx, cy, trnArrive.floorY, time); }
 }
 function trnDrawOverlay() {
-  if (TRN && !TRN.loading) { const tl = TRN.tl; TRA.drawBars(g, VW, VH, TRM.barIn(tl.t));
+  if (TRN && !TRN.loading) { const tl = TRN.tl; TRA.drawBars(g, VW, VH, TRM.barIn(tl.t, TRN.entry.bar || TRM.BAR));
     TCH.hit(0, 0, VW, VH, () => { anyPress = true; initAudio(); });
     if (TRM.canSkip(tl)) { g.globalAlpha = Math.min(0.75, (tl.t - TRM.MIN_SKIP) * 1.5); text(touchOn ? 'TAP: SKIP' : 'ANY BUTTON: SKIP', VW - 6, VH - 15, '#d9d2b8', 'right', 6); g.globalAlpha = 1; } }
   else if (TRN) { g.fillStyle = '#05040a'; g.fillRect(0, 0, VW, VH); }
-  else if (trnArrive && !trnArrive.done && trnArrive.ferry) TRA.drawBars(g, VW, VH, TRM.barOut(trnArrive.t, trnArrive.dur));
+  else if (trnArrive && !trnArrive.done && trnArrive.ferry) TRA.drawBars(g, VW, VH, TRM.barOut(trnArrive.t, trnArrive.dur, trnArrive.entry.bar || TRM.BAR));
 }
 /* (claude/actcards) THE BOSS-KILL BEAT. Every boss death sets bossWon; the first frame it is up this runs once (bossBeat stays set, cleared only by a level load). Stinger always; slow-mo + camera push unless reduce-motion or ?nobeat=1. */
 function startBossBeat() {

@@ -78,21 +78,26 @@ export const TABLE = [
     open: { col: 487, rows: [5, 10], kind: 'crumble' }, arrive: { ferry: false, walk: 1.3 } },
   { from: 'skyroad', to: 'oreroad', scene: null,     /* 6. THE ROC falls (GATE-END, L.gateAfterBoss: the gate at col 456 is walked INTO - no open beat): through it, out of the sky and down into the Ore Road's drum-house yard */
     beats: [{ id: 'walk', dur: 1.6, max: 3.0 }, { id: 'fade', dur: 0.7 }], arrive: { ferry: false, walk: 1.3 } },
-  /* LANE B (claude/act2tr, 11-04) rows 7-11. The 3 BIG SCENES are LANE C: rows 8 and 9 below are plain placeholders marked TODO-LANE-C (the scene replaces the row's beats and arrive; nothing else changes). */
+  /* LANE B (claude/act2tr, 11-04) rows 7-11; LANE C then made rows 8, 9 and 12 the three BIG SCENES (daylight, drop, descent: thin bars, one caption line, arrive into the next level). */
   { from: 'oreroad', to: 'minecart', scene: null,    /* 7. THE WINCHMASTER falls: the winch landing's east wall (cols 524-528, the level's last five) gives way as an adit gate onto the Deep Rails' mouth. walk.floor 14: the landing's top (the arena's own floor row 18 is the shaft under the buckets) - heroes are set on it for the walk */
     beats: [{ id: 'open', dur: 1.5 }, { id: 'walk', dur: 2.4, max: 3.6 }, { id: 'fade', dur: 0.7 }],
     open: { col: 524, w: 5, rows: [9, 13], kind: 'adit' }, walk: { floor: 14 }, arrive: { ferry: false, walk: 1.3 } },
-  { from: 'minecart', to: 'storm', scene: null,       /* 8. THE GOBLIN CAPTAIN falls (GATE-END, L.gateAfterBoss: the drill-stage gate at col 1410 is walked INTO - no open beat). TODO-LANE-C: S1 'daylight' (the last cart rolls out of the mountain into dawn, ~8 s) replaces the walk+fade; until then this plain walk-out */
-    beats: [{ id: 'walk', dur: 1.6, max: 3.0 }, { id: 'fade', dur: 0.7 }], arrive: { ferry: false, walk: 1.3 } },
-  { from: 'storm', to: 'undercrown', scene: null,     /* 9. THE QUEEN'S LANCE falls: the Long Bridge's end wall (cols 796-797, the last two) gives way. TODO-LANE-C: S2 'the bridge gives' (stones fall away, the party drops into the Undercrown, arrive.drop) replaces this plain walk-out; the crumble look is a placeholder */
-    beats: [{ id: 'open', dur: 1.5 }, { id: 'walk', dur: 2.4, max: 3.6 }, { id: 'fade', dur: 0.7 }],
-    open: { col: 796, w: 2, rows: [26, 29], kind: 'crumble' }, arrive: { ferry: false, walk: 1.3 } },
+  { from: 'minecart', to: 'storm', scene: 'daylight',   /* 8. THE GOBLIN CAPTAIN falls (GATE-END, L.gateAfterBoss: the drill-stage gate at col 1410 is walked INTO - no open beat). LANE C: S1 'daylight' - the last cart rolls out of the mountain into dawn, Stormhold across the gorge (5.6 s, thin bars, one line) */
+    beats: [{ id: 'walk', dur: 1.6, max: 3.0 }, { id: 'daylight', dur: 5.6, sc: true }, { id: 'fade', dur: 0.8 }],
+    bar: 12, caption: { text: 'OUT OF THE MOUNTAIN', at: 3.4 }, arrive: { ferry: false, walk: 1.3 } },
+  { from: 'storm', to: 'undercrown', scene: 'drop',    /* 9. THE QUEEN'S LANCE falls: the Long Bridge's end wall (cols 796-797, the last two) gives way, then LANE C's S2 'the bridge gives': the deck cracks, the stones fall away and the party drops through grey light into the dark under the castle (5.2 s); the Undercrown's arrival ledge takes them (arrive.drop: dust + a thud, no real fall) */
+    beats: [{ id: 'open', dur: 1.5 }, { id: 'walk', dur: 2.4, max: 3.6 }, { id: 'drop', dur: 5.2, sc: true }, { id: 'fade', dur: 0.7 }],
+    open: { col: 796, w: 2, rows: [26, 29], kind: 'crumble' }, bar: 12, caption: { text: 'THE BRIDGE GIVES', at: 1.7 }, arrive: { ferry: false, walk: 1.4, drop: true } },
   { from: 'undercrown', to: 'kitchengate', scene: null,   /* 10. THE BURIED PRINCE falls: the bay beyond the fight (cols 76-98) ends at a bricked arch in the hall's east wall (col 99): it gives way onto the service stair; the party walks to the arch and fades */
     beats: [{ id: 'open', dur: 1.5 }, { id: 'walk', dur: 2.4, max: 3.6 }, { id: 'fade', dur: 0.7 }],
     open: { col: 99, rows: [162, 166], kind: 'arch' }, walk: { to: 99 }, arrive: { ferry: false, walk: 1.3 } },
   { from: 'kitchengate', to: 'crown', scene: null,    /* 11. LORD GRUBBAG falls: the serving line's far door (cols 600-601, the last two) swings out onto the gatehouse passage - a dish hatch */
     beats: [{ id: 'open', dur: 1.5 }, { id: 'walk', dur: 2.4, max: 3.6 }, { id: 'fade', dur: 0.7 }],
     open: { col: 600, w: 2, rows: [17, 21], kind: 'hatch' }, arrive: { ferry: false, walk: 1.3 } },
+  /* LANE C row 12: THE ACT II -> III HAND-OFF (Highcrown, the mountain, to the Long Water). THE GOBLIN QUEEN falls in the Banquet Hall: its east wall (cols 603-608, the level's last six, rows 12-17) is the broken castle gate and gives way onto the mountain stair; the party walks out (walk.follow: y follows the dais steps, the hall's floor is row 20 and the dais row 18), then S3 'the long descent' (6.6 s): the camera pulls up and back (the castle small on its peak), a river-raft carries them down into broad grey water; the Long Water's first bank takes the raft (arrive.raft). The Codex ACT VIDEO (once per save, before the 'ACT III' card) is the PLAYER lane's: this scene stays as the replay / fallback */
+  { from: 'crown', to: 'longwater', scene: 'descent',
+    beats: [{ id: 'open', dur: 1.4 }, { id: 'walk', dur: 2.0, max: 3.4 }, { id: 'descent', dur: 6.6, sc: true }, { id: 'fade', dur: 0.8 }],
+    open: { col: 603, w: 6, rows: [12, 17], kind: 'crumble' }, walk: { floor: 18, follow: true }, bar: 12, caption: { text: 'DOWN TO THE SEA', at: 4.2 }, arrive: { ferry: true, raft: true, walk: 1.8 } },
 ];
 /* open kinds with NO wall in the arena to open (the level just runs on): main.js throws dust + light and does not hop; art draws a spill (+ the root-arch for 'light', two cairns for the rest) */
 export const BARE_KINDS = ['light', 'cairn', 'ledge'];
@@ -148,8 +153,8 @@ export const length = entry => entry.beats.reduce((n, b) => n + b.dur, 0);
 
 /* LETTERBOX BARS (px of each bar, 0..BAR): slide in over the first 0.5 s of the transition, stay through the scenes, slide out over the arrival */
 export const BAR = 22;
-export const barIn = t => BAR * Math.min(1, Math.max(0, t / 0.5));
-export const barOut = (t, dur) => BAR * Math.min(1, Math.max(0, (dur - t) / 0.6));
+export const barIn = (t, bar = BAR) => bar * Math.min(1, Math.max(0, t / 0.5));   /* bar: a row may carry a thinner one (entry.bar: the cinematic beats) */
+export const barOut = (t, dur, bar = BAR) => bar * Math.min(1, Math.max(0, (dur - t) / 0.6));
 
 /* THE WALK: every hero to `target` x (px) at a speed that finishes in about `want` seconds from wherever he is: never slower than WALK_MIN (a hero beside the exit
    still walks), never faster than WALK_MAX (a long way is a run, not a blur). Returns the new x and the speed used. */
@@ -204,3 +209,28 @@ export function smokeHero(i, n, s, VW) {
 /* how tall the columns have grown (0..1) and how red the sky has gone (0..1): the plumes rise first, the glow follows */
 export const smokeRise = s => smooth((s - 1.2) / 5.2);
 export const smokeGlow = s => smooth((s - 2.0) / 5.0);
+
+/* ------------------------------------------------------------- LANE C: THE THREE BIG SCENES OF ACT II (claude/act2tr). Pure maths, so a node check can pin it. s = seconds since the scene began; every one takes reduce (no camera whip, slower, a dissolve instead of a pull).
+   S1 'daylight' (MINECART -> STORMHOLD): the party is on the last cart in the tunnel (timbers and torch flecks go by), the mouth ahead grows, the cart rolls OUT into dawn: the gorge, Stormhold across it, the Long Bridge up out of the haze. */
+export const DAYLIGHT = { dur: 5.6, inT: 0.9, v: 84, rampT: 1.1, litAt: 1.4, outAt: 2.9, wordAt: 3.4 };
+export function daylightScroll(s, reduce = false) { const v = reduce ? DAYLIGHT.v * 0.45 : DAYLIGHT.v, a = v / DAYLIGHT.rampT, t = Math.max(0, s - 0.1); return t < DAYLIGHT.rampT ? 0.5 * a * t * t : 0.5 * v * DAYLIGHT.rampT + v * (t - DAYLIGHT.rampT); }
+export const daylightLight = s => smooth((s - DAYLIGHT.litAt) / 1.8);   /* the mouth ahead: 0 dark .. 1 full */
+export const daylightOut = s => smooth((s - DAYLIGHT.outAt) / 0.8);   /* 0 inside the mountain .. 1 out in the dawn */
+export const daylightTown = s => smooth((s - DAYLIGHT.outAt) / 2.4);   /* Stormhold and the Long Bridge come up out of the haze */
+export function daylightHero(i, n, s, VW) { const to = VW * 0.20 + 12 + i * 13, from = -24 - i * 14, e = smooth(s / DAYLIGHT.inT); return { x: from + (to - from) * e, walking: s < DAYLIGHT.inT - 0.1 }; }
+/* S2 'drop' (STORM -> UNDERCROWN): the Lance's last blow cracks the Long Bridge. */
+export const DROP = { dur: 5.2, crackAt: 0.3, breakAt: 1.5, g: 330, vT: 250, wordAt: 1.7 };
+export const dropCrack = s => smooth((s - DROP.crackAt) / 1.1);
+/* how far the world has scrolled UP since the deck went (px): free fall to a terminal speed. reduce: a gentle, slow fall */
+export function dropFall(s, reduce = false) { const t = s - DROP.breakAt; if (t <= 0) return 0; const g = reduce ? DROP.g * 0.4 : DROP.g, vT = reduce ? DROP.vT * 0.45 : DROP.vT, tt = vT / g; return t < tt ? 0.5 * g * t * t : 0.5 * vT * tt + vT * (t - tt); }
+export const dropDark = s => smooth((s - 1.8) / 3.0);   /* the grey light goes out as they fall under the castle */
+export function dropHero(i, n, s, VW) { return { x: VW * 0.34 + i * 13 + (s > DROP.breakAt ? Math.sin(i * 2.1 + s * 2) * 1.5 : 0), sink: 36 * smooth(dropFall(s) / 70) }; }
+/* S3 'descent' (CROWN -> LONG WATER, THE ACT HAND-OFF): out of the broken gate onto the stair, the camera pulls up and back (the castle small on its peak), a raft takes them down into broad water. */
+export const DESCENT = { dur: 6.6, inT: 1.2, pullAt: 1.9, pullDur: 2.4, raftAt: 3.3, v: 66, rampT: 1.3, wordAt: 4.2 };
+export const descentPull = (s, reduce = false) => (reduce ? (s >= DESCENT.pullAt + 0.3 ? 1 : 0) : smooth((s - DESCENT.pullAt) / DESCENT.pullDur));
+export const descentDip = (s, reduce = false) => { if (!reduce) return 0; const d = Math.abs(s - (DESCENT.pullAt + 0.3)); return d < 0.3 ? 1 - d / 0.3 : 0; };   /* reduce-motion: the pull is a quick dip to dark, never a slide */
+export const descentWater = s => smooth((s - DESCENT.raftAt) / 1.6);   /* the river widens into the sea under them */
+export function descentScroll(s, reduce = false) { const v = reduce ? DESCENT.v * 0.4 : DESCENT.v, a = v / DESCENT.rampT, t = Math.max(0, s - DESCENT.raftAt - 0.2); return t < DESCENT.rampT ? 0.5 * a * t * t : 0.5 * v * DESCENT.rampT + v * (t - DESCENT.rampT); }
+export function descentHero(i, n, s, VW) { const to = VW * 0.30 + i * 13, from = -24 - i * 14, e = smooth(s / DESCENT.inT); return { x: from + (to - from) * e, walking: s < DESCENT.inT - 0.1 }; }
+/* the caption's opacity (0..1) for a row that carries one (entry.caption: { text, at }) */
+export const captionAlpha = (entry, s) => (entry.caption ? smooth((s - entry.caption.at) / 0.6) : 0);

@@ -9,6 +9,7 @@
    drawBars: the letterbox with a film-edge line. Everything static is baked ONCE (per viewport size) and blitted; the per-frame work is a few drawImage calls, a handful of 1 px
    rects and two or three gradients. Every loop is bounded and hashed, never random. No dialogue: this file never writes text. */
 import { FERRY, sceneScroll, heroOnScene, ferryX, ROAD, roadScroll, roadGrowth, roadHero, SMOKE, smokeHero, smokeRise, smokeGlow, isBareKind } from './transitions.js';
+import { DROP, dropCrack, dropFall, dropDark, dropHero, daylightScroll, daylightLight, daylightOut, daylightTown, daylightHero, descentPull, descentDip, descentWater, descentScroll, descentHero } from './transitions.js';   /* (lane C) the three Act II scenes' maths */
 import { canvas, outline } from './px.js';
 import { BARK, CUT, NEEDLE, logPileSprite, drawStump } from './redraw/lumber_trail_art.js';
 import { OAK, BOARD, CORD, CORD_D } from './redraw/marsh2_art.js';
@@ -716,4 +717,140 @@ export function drawSmokeScene(env, s) {
   for (let i = 0; i < 12; i++) { const x = Math.round(i * (VW / 11) + (hash(i + 5) - 0.5) * 20), h = 12 + Math.round(hash(i + 2) * 12); for (let k = 0; k < 5; k++) { const lean = (k - 2) * 2; for (let y = 0; y < h - Math.abs(k - 2) * 2; y++) P(g, y % 5 === 4 ? '#0e1a0c' : '#07100a', x + Math.round(lean * y / 5), VH + 2 - y); } }
   g.fillStyle = 'rgba(40,10,10,' + (0.10 * glow).toFixed(3) + ')'; g.fillRect(0, 0, VW, VH);
   const a = s < 0.45 ? 1 - s / 0.45 : 0; if (a > 0) { g.fillStyle = 'rgba(8,6,14,' + (a * a).toFixed(3) + ')'; g.fillRect(0, 0, VW, VH); }
+}
+
+/* =====================================================================================================================================================================================================
+   LANE C (claude/act2tr): THE THREE BIG SCENES OF ACT II - GREYBOX-PLUS (rects, gradients, the existing halo + hero sprites; an ART lane redraws them with real kits). No text in this file (the caption is main.js's).
+   S1 drawDaylightScene (minecart > storm): in the tunnel on the last cart, torch flecks and timbers going by, the mouth ahead a growing white-gold coin, then OUT: dawn, the gorge, Stormhold across it, the Long Bridge up out of the haze.
+   S2 drawDropScene (storm > undercrown): the Long Bridge cracks, the deck lets go, the world scrolls UP past the falling party: the castle's underside, torch windows, ash, the grey light going out.
+   S3 drawDescentScene (crown > longwater, THE ACT HAND-OFF): out of the broken gate onto the stair, the pull up and back (the castle small on its peak), the raft on the river widening into sea-grey water.
+   drawArrivalRaft: the raft the Long Water begins on (world space, beached on its first bank). Everything is hashed, bounded, and calm under reduce-motion. */
+const grad = (g, y0, y1, stops) => { const gr = g.createLinearGradient(0, y0, 0, y1); stops.forEach(([k, c]) => gr.addColorStop(k, c)); return gr; };
+const lerpC = (a, b, k) => 'rgb(' + a.map((v, i) => Math.round(v + (b[i] - v) * k)).join(',') + ')';
+/* a mine cart (body, rim, two wheels, ore heap) with its left edge at x and its rails at y */
+function cart(g, x, y, w) {
+  R(g, '#2a2630', x + 6, y - 4, 7, 5); R(g, '#2a2630', x + w - 13, y - 4, 7, 5); R(g, '#6a6a74', x + 8, y - 3, 3, 3); R(g, '#6a6a74', x + w - 11, y - 3, 3, 3);   /* wheels */
+  R(g, '#3a3640', x, y - 20, w, 17); R(g, '#5a5662', x, y - 20, w, 2); R(g, '#1e1a24', x, y - 4, w, 1); R(g, '#4a4654', x + 2, y - 18, 1, 13); R(g, '#4a4654', x + w - 3, y - 18, 1, 13);
+  for (let i = 0; i < 5; i++) R(g, i % 2 ? '#8a5a34' : '#b07a48', x + 10 + i * 9, y - 22 - (i % 3), 6, 3);   /* the last of the ore */
+}
+/* ------------------------------------------------------------------ S1 */
+export function drawDaylightScene(env, s) {
+  const { g, VW, VH, time, n, reduce } = env, calm = !!reduce, rl = Math.round(VH * 0.68), sc = daylightScroll(s, calm), out = daylightOut(s), lit = daylightLight(s), tw = daylightTown(s);
+  const cx = Math.round(VW * 0.20);
+  /* OUTSIDE (fades in as the cart leaves the mouth): dawn sky, a far range, the gorge, Stormhold across it, the Long Bridge out of the haze */
+  if (out > 0.01) { g.globalAlpha = out;
+    g.fillStyle = grad(g, 0, rl, [[0, '#6a7aa2'], [0.55, '#d8a888'], [1, '#f4d09a']]); g.fillRect(0, 0, VW, rl + 2);
+    g.globalAlpha = out * 0.8; g.drawImage(halo(70, '255,226,160'), Math.round(VW * 0.72) - 70, rl - 96); g.globalAlpha = out;
+    const far = x => rl - 34 - Math.round(Math.sin(x * 0.03 + 2) * 12 + Math.sin(x * 0.011) * 10); g.fillStyle = '#7a7a98'; g.beginPath(); g.moveTo(0, rl); for (let x = 0; x <= VW; x += 8) g.lineTo(x, far(x)); g.lineTo(VW, rl); g.fill();
+    /* Stormhold on the far rim (grows out of the haze), its towers and lit windows; the Long Bridge a low dark line from its gate down to the cart's side */
+    const k = 0.4 + 0.6 * tw, bx = Math.round(VW * 0.74), by = rl - 12;
+    g.globalAlpha = out * (0.35 + 0.65 * tw); const tower = (dx, w, h) => { R(g, '#34385a', bx + dx - Math.round(w * k / 2), by - Math.round(h * k), Math.round(w * k), Math.round(h * k)); R(g, '#4a4e74', bx + dx - Math.round(w * k / 2), by - Math.round(h * k), Math.max(1, Math.round(k * 2)), Math.round(h * k)); R(g, '#34385a', bx + dx - Math.round(w * k / 2) - 1, by - Math.round(h * k) - 2, Math.round(w * k) + 2, 2); };
+    tower(-34, 14, 30); tower(-14, 18, 46); tower(8, 12, 36); tower(28, 20, 28); R(g, '#34385a', bx - 44 * k, by - 10 * k, 90 * k, 10 * k);
+    for (let i = 0; i < 7; i++) P(g, '#ffd36b', bx - 36 * k + hash(i + 4) * 70 * k, by - (6 + hash(i + 8) * 38) * k);
+    g.globalAlpha = out * tw; R(g, '#2a2a46', Math.round(VW * 0.40), rl - 3, Math.round(VW * 0.34), 2); for (let i = 0; i < 9; i++) R(g, '#2a2a46', Math.round(VW * 0.42 + i * VW * 0.036), rl - 1, 2, 4);   /* the Long Bridge's deck and piers */
+    g.globalAlpha = out;
+    /* the gorge under the trestle: dark, a pale river at the bottom */
+    g.fillStyle = grad(g, rl + 2, VH, [[0, '#4a4658'], [0.5, '#262432'], [1, '#14121c']]); g.fillRect(0, rl + 2, VW, VH - rl);
+    for (let i = 0; i < 10; i++) { const y = rl + 20 + i * 5; g.fillStyle = 'rgba(226,230,236,0.10)'; g.fillRect(Math.round(((hash(i + 3) * VW * 1.4) - sc * 0.3 - (calm ? 0 : time * 6)) % VW + VW) % VW, y, 10 + i % 4 * 6, 1); }
+    g.globalAlpha = 1; }
+  /* INSIDE (the tunnel): black rock, timber arches going by at the cart's speed, torch flecks, and ahead the mouth */
+  if (out < 0.99) { g.globalAlpha = 1 - out; g.fillStyle = '#0a080e'; g.fillRect(0, 0, VW, VH);
+    for (let x = -((sc * 1.0) % 64) - 64; x < VW + 64; x += 64) { const k = Math.round((x + sc) / 64);
+      R(g, '#3a2a1e', x, 12, 6, rl - 10); R(g, '#3a2a1e', x + 40, 12, 6, rl - 10); R(g, '#4a3626', x - 2, 10, 50, 5); R(g, '#5a4430', x, 12, 1, rl - 10);
+      if (k % 2 === 0) { g.globalAlpha = (1 - out) * (0.55 + (calm ? 0 : Math.sin(time * 7 + k) * 0.12)); g.drawImage(halo(18, '255,170,70'), x + 3 - 18, rl - 40 - 18); g.globalAlpha = 1 - out; R(g, '#ffd36b', x + 2, rl - 42, 2, 3); } }
+    /* the mouth ahead: a coin of light on the right that grows as the cart rolls */
+    const mr = 6 + lit * 110, mx = VW * 0.93 + lit * 20, my = rl - 34; const rg = g.createRadialGradient(mx, my, 0, mx, my, mr); rg.addColorStop(0, 'rgba(255,244,214,' + (0.4 + 0.6 * lit).toFixed(3) + ')'); rg.addColorStop(0.55, 'rgba(255,214,150,' + (0.3 * lit).toFixed(3) + ')'); rg.addColorStop(1, 'rgba(255,200,120,0)'); g.fillStyle = rg; g.fillRect(0, 0, VW, VH);
+    g.globalAlpha = 1; }
+  /* the rails (ties go by, the rail line catching the light), then the cart and the party on it */
+  { const tie = 22, off = sc % tie; g.fillStyle = out > 0.5 ? '#3a2e28' : '#2a2018'; for (let x = -tie - off; x < VW + tie; x += tie) g.fillRect(Math.round(x), rl + 1, 14, 3);
+    R(g, '#8a8a98', 0, rl - 1, VW, 1); R(g, '#5a5a68', 0, rl, VW, 1); R(g, '#1a1620', 0, rl + 4, VW, 1);
+    if (out > 0.4) { g.globalAlpha = (out - 0.4) / 0.6; for (let x = -tie - off; x < VW + tie; x += tie * 2) R(g, '#241e2a', Math.round(x) + 5, rl + 4, 3, VH - rl); g.globalAlpha = 1; } }   /* the trestle's posts show once they are over the gorge */
+  const bob = calm ? 0 : Math.round(Math.sin(time * 14) * 0.6); cart(g, cx, rl - 1 + bob, 80);
+  const up = 10 * smooth((s - 0.3) / 0.6);   /* they climb aboard as they come in, then stand on the cart's floor */
+  for (let i = 0; i < n; i++) { const h = daylightHero(i, n, s, VW); env.drawHero(i, h.x, rl - 1 - up + bob, 1, h.walking ? 'run' : 'idle', h.walking ? Math.floor(time * 12) + i * 2 : Math.floor(time * 4.5) + i); }
+  if (up > 8) { R(g, '#3a3640', cx, rl - 12 + bob, 80, 9); R(g, '#5a5662', cx, rl - 12 + bob, 80, 2); R(g, '#1e1a24', cx, rl - 4 + bob, 80, 1); }   /* the cart's front panel, over their legs */
+  /* the flash as they come out, a fine warm grade, and the fade in out of the dark the walk left on */
+  { const f = Math.sin(Math.PI * out) * (calm ? 0.12 : 0.3); if (f > 0.01) { g.fillStyle = 'rgba(255,240,200,' + f.toFixed(3) + ')'; g.fillRect(0, 0, VW, VH); }
+    g.fillStyle = 'rgba(60,30,14,' + (0.05 * out).toFixed(3) + ')'; g.fillRect(0, 0, VW, VH);
+    const a = s < 0.45 ? 1 - s / 0.45 : 0; if (a > 0) { g.fillStyle = 'rgba(8,6,14,' + (a * a).toFixed(3) + ')'; g.fillRect(0, 0, VW, VH); } }
+}
+/* ------------------------------------------------------------------ S2 */
+export function drawDropScene(env, s) {
+  const { g, VW, VH, time, n, reduce } = env, calm = !!reduce, crack = dropCrack(s), fall = dropFall(s, calm), dark = dropDark(s);
+  const by = Math.round(VH * 0.60);   /* the deck's top, before it goes */
+  const sy = y => Math.round(y - fall);   /* the world scrolls UP as they fall */
+  /* the storm sky, the castle's shoulder on the right (above the fall: it leaves the top of the screen) */
+  g.fillStyle = grad(g, 0, VH, [[0, '#4a5468'], [0.6, '#8a94a4'], [1, '#a8b0bc']]); g.fillRect(0, 0, VW, VH);
+  for (let i = 0; i < 6; i++) { const x = Math.round(hash(i + 2) * VW), y = sy(18 + hash(i + 9) * 60); g.fillStyle = 'rgba(46,54,70,0.35)'; g.fillRect(x - 40, y, 90, 8); }
+  /* the castle's underside: a masonry wall under the bridge going down a long way, torch windows and iron brackets, bands of shadow */
+  { const top = sy(by + 6); R(g, '#2c2e3c', 0, top, VW, VH * 8); for (let y = by + 6; y < by + 1500; y += 14) { const yy = sy(y); if (yy < -14 || yy > VH + 14) continue; const row = Math.round(y / 14); R(g, row % 2 ? '#34364a' : '#262838', 0, yy, VW, 1); for (let x = (row % 2) * 12; x < VW; x += 24) R(g, '#202230', x, yy, 1, 14); }
+    for (let i = 0; i < 40; i++) { const wy = sy(by + 70 + i * 52 + hash(i) * 14), wx = Math.round(30 + hash(i + 40) * (VW - 60)); if (wy < -20 || wy > VH + 20) continue;
+      R(g, '#14121c', wx - 5, wy, 10, 16); R(g, '#3a3a4e', wx - 6, wy - 1, 12, 1); g.globalAlpha = 0.6 + (calm ? 0 : Math.sin(time * 6 + i) * 0.15); g.drawImage(halo(22, '255,160,60'), wx - 22, wy + 6 - 22); g.globalAlpha = 1; R(g, '#ffb050', wx - 2, wy + 7, 4, 6); } }
+  /* the Long Bridge: its piers go down under the deck (they scroll away); the deck is a band that CRACKS from the middle and, at breakAt, goes in pieces */
+  { for (let i = 0; i < 5; i++) { const x = Math.round(VW * (0.1 + i * 0.2)); R(g, '#3a3c50', x, sy(by + 6), 12, 400); R(g, '#4a4c64', x, sy(by + 6), 2, 400); }
+    const whole = s < DROP.breakAt, seg = 8, cell = VW / seg;
+    for (let i = 0; i < seg; i++) { const x0 = Math.round(i * cell), mid = Math.abs(i + 0.5 - seg / 2) / (seg / 2);   /* mid 0 at the crack, 1 at the ends */
+      if (whole) { R(g, '#6a6e84', x0, by, Math.ceil(cell), 8); R(g, '#8a8ea4', x0, by, Math.ceil(cell), 2); R(g, '#4a4c64', x0, by + 8, Math.ceil(cell), 4); R(g, '#2a2c3c', x0 + Math.ceil(cell) - 1, by, 1, 12); }
+      else { const t = s - DROP.breakAt, dl = mid * 0.5, tt = Math.max(0, t - dl), rot = (i % 2 ? 1 : -1) * Math.min(6, tt * 6); const ry = Math.round(by + 0.5 * 330 * 0.8 * tt * tt - fall * 0.35 + rot);
+        if (ry < VH + 20) { g.globalAlpha = Math.max(0, 1 - tt * 0.5); R(g, '#6a6e84', x0, ry, Math.ceil(cell) - 1, 8); R(g, '#8a8ea4', x0, ry, Math.ceil(cell) - 1, 2); R(g, '#3a3c50', x0 + 2, ry + 8, Math.ceil(cell) - 5, 4); g.globalAlpha = 1; } } }
+    if (whole) { const cxp = Math.round(VW * 0.5), len = Math.round(crack * 34); g.fillStyle = '#14121c'; let x = cxp, y = by;
+      for (let j = 0; j < len; j++) { const dx = Math.round((hash(j + 5) - 0.5) * 4), dy = j % 3 === 0 ? 1 : 0; x += dx; y += dy; g.fillRect(x, Math.min(by + 7, y), 1, 1); if (j % 4 === 0) { g.fillRect(x - 1, Math.min(by + 7, y), 1, 1); } }
+      for (let j = 0; j < Math.round(crack * 18); j++) g.fillRect(cxp + Math.round((hash(j + 70) - 0.5) * 90 * crack), by + (j % 2) * 3 + 1, 1 + (j % 3), 1); }   /* the cracks race out along the deck */
+    /* loose stones: they float up past the party as the camera falls faster than they do */
+    if (!whole) for (let i = 0; i < 16; i++) { const tt = Math.max(0, s - DROP.breakAt - hash(i + 20) * 0.3), x = Math.round(VW * (0.1 + hash(i + 30) * 0.8)), ry = Math.round(by + 4 + 0.5 * 330 * 0.45 * tt * tt - fall * 0.8 + (i % 4) * 10); if (ry > -8 && ry < VH + 8) { R(g, '#5a5e74', x, ry, 3 + i % 4, 3 + i % 3); R(g, '#8a8ea4', x, ry, 3 + i % 4, 1); } } }
+  /* THE PARTY: stand on the deck, then drop (a jump frame held, a little sway); the camera keeps them near the middle */
+  for (let i = 0; i < n; i++) { const h = dropHero(i, n, s, VW), falling = s > DROP.breakAt, y = by + 1 + (falling ? h.sink : 0); env.drawHero(i, h.x, y, 1, falling ? 'jump' : 'idle', falling ? 0 : Math.floor(time * 4.5) + i); }
+  /* ash and torch flecks rising past (they are what shows the speed); dust off the deck at the break */
+  if (!calm) for (let i = 0; i < 26; i++) { const sp = 0.6 + hash(i + 3) * 1.1, x = Math.round(hash(i) * VW + Math.sin(time * 1.3 + i) * 4), y = Math.round(((hash(i + 7) * VH * 2 - fall * sp) % (VH + 12) + (VH + 12)) % (VH + 12)) - 6; g.fillStyle = i % 4 === 0 ? 'rgba(255,170,80,0.7)' : 'rgba(190,190,200,0.45)'; g.fillRect(x, y, i % 4 === 0 ? 1 : 2, 1); }
+  { const k = s > DROP.breakAt && s < DROP.breakAt + 0.5 ? 1 - (s - DROP.breakAt) / 0.5 : 0; if (k > 0) { g.fillStyle = 'rgba(214,210,200,' + (0.35 * k).toFixed(3) + ')'; g.fillRect(0, by - 6, VW, 18); } }
+  g.fillStyle = 'rgba(4,3,8,' + (0.85 * dark).toFixed(3) + ')'; g.fillRect(0, 0, VW, VH);   /* the grey light goes out */
+  const a = s < 0.4 ? 1 - s / 0.4 : 0; if (a > 0) { g.fillStyle = 'rgba(8,6,14,' + (a * a).toFixed(3) + ')'; g.fillRect(0, 0, VW, VH); }
+}
+/* ------------------------------------------------------------------ S3 */
+/* a castle on a peak, scaled k, its base centre at (x, y): curtain wall, two towers, a keep, lit windows, the broken gate a dark gap in the wall */
+function peakCastle(g, x, y, k, time, calm) {
+  const u = v => Math.max(1, Math.round(v * k)), S = '#3a3250', S2 = '#544a70';
+  R(g, S, x - u(60), y - u(34), u(120), u(34)); R(g, S2, x - u(60), y - u(34), u(120), u(2)); R(g, S, x - u(74), y - u(56), u(26), u(56)); R(g, S, x + u(48), y - u(60), u(26), u(60)); R(g, S, x - u(22), y - u(84), u(44), u(50));
+  R(g, S2, x - u(74), y - u(56), u(3), u(56)); R(g, S2, x - u(22), y - u(84), u(3), u(50)); R(g, '#241e36', x - u(74), y - u(60), u(26), u(4)); R(g, '#241e36', x + u(48), y - u(64), u(26), u(4)); R(g, '#241e36', x - u(22), y - u(88), u(44), u(4));
+  R(g, '#0e0a18', x + u(34), y - u(26), u(16), u(26));   /* the broken gate */
+  for (let i = 0; i < 6; i++) { g.globalAlpha = calm ? 0.9 : 0.7 + Math.sin(time * 3 + i) * 0.2; R(g, '#ffb860', x - u(66) + (i % 3) * u(8) + (i > 2 ? u(80) : 0), y - u(44) - (i % 2) * u(14), Math.max(1, u(3)), Math.max(1, u(4))); g.globalAlpha = 1; }
+  R(g, '#5a5470', x - u(2), y - u(112), Math.max(1, u(2)), u(24)); R(g, '#8a2a2a', x, y - u(112), u(10), u(6));   /* the banner on the keep, torn */
+}
+export function drawDescentScene(env, s) {
+  const { g, VW, VH, time, n, reduce } = env, calm = !!reduce, pull = descentPull(s, calm), wat = descentWater(s), rsc = descentScroll(s, calm);
+  const wl = Math.round(VH * (0.46 + 0.14 * pull));   /* the horizon sinks as the camera pulls up and back */
+  /* the sky: the mountain's storm grey, going to the sea's pale grey as the water takes over */
+  g.fillStyle = grad(g, 0, wl, [[0, lerpC([90, 96, 128], [116, 134, 156], wat)], [0.7, lerpC([176, 150, 140], [190, 202, 208], wat)], [1, lerpC([224, 188, 150], [214, 224, 226], wat)]]); g.fillRect(0, 0, VW, wl + 2);
+  g.globalAlpha = 0.5; g.drawImage(halo(80, '255,236,200'), Math.round(VW * 0.78) - 80, wl - 90); g.globalAlpha = 1;
+  /* THE MOUNTAIN: a big dark slope with the castle on its peak. At pull 0 it fills the upper-left (the stair is the foot of it); the pull shrinks it and moves it up and left */
+  { const k = 1.05 - 0.78 * pull, px = Math.round(VW * (0.62 - 0.30 * pull)), py = Math.round(wl + 6 + 40 * (1 - pull) + 70 * pull * 0.0), baseY = wl + Math.round(30 * (1 - pull)) + 4;
+    g.fillStyle = '#2c2a44'; g.beginPath(); g.moveTo(px - 230 * k, baseY); g.lineTo(px - 10 * k, baseY - 128 * k); g.lineTo(px + 20 * k, baseY - 128 * k); g.lineTo(px + 260 * k, baseY); g.closePath(); g.fill();
+    g.fillStyle = '#3a3858'; g.beginPath(); g.moveTo(px - 60 * k, baseY - 80 * k); g.lineTo(px - 10 * k, baseY - 128 * k); g.lineTo(px + 20 * k, baseY - 128 * k); g.lineTo(px + 40 * k, baseY - 96 * k); g.closePath(); g.fill();
+    peakCastle(g, px, baseY - 124 * k, k * 0.5, time, calm);
+    g.fillStyle = 'rgba(200,200,214,0.18)'; g.fillRect(0, baseY - 20, VW, 24); }   /* haze at the foot */
+  /* the far shore of the sea: a pale line that comes up as the water widens */
+  if (wat > 0.02) { g.globalAlpha = wat * 0.7; R(g, '#9aa8b0', 0, wl - 1, VW, 2); g.globalAlpha = wat * 0.4; R(g, '#c8d2d6', 0, wl - 3, VW, 2); g.globalAlpha = 1; }
+  /* THE GROUND under them: the stair (stone steps going down to the right) until the river takes the screen; the river (stream, banks narrowing away) then the broad water */
+  const gy = Math.round(VH * 0.76);
+  { g.fillStyle = grad(g, wl, VH, [[0, lerpC([66, 62, 80], [96, 126, 138], wat)], [1, lerpC([30, 28, 42], [44, 64, 76], wat)]]); g.fillRect(0, wl + 2, VW, VH - wl);
+    for (let i = 0; i < 18; i++) { const y = wl + 6 + i * 6 + (i % 2), x = ((hash(i + 9) * VW * 1.6 - rsc * (0.4 + i * 0.05) - (calm ? 0 : time * (5 + i % 3))) % (VW + 40) + VW + 40) % (VW + 40) - 20; g.fillStyle = 'rgba(' + (wat > 0.5 ? '226,236,240' : '190,186,200') + ',' + (0.08 + wat * 0.1 + (i % 3) * 0.03).toFixed(2) + ')'; g.fillRect(Math.round(x), y, 12 + (i % 4) * 7, 1); }
+    const stair = 1 - smooth(wat * 1.6);   /* the stair under their feet: gone by the time the raft is afloat */
+    if (stair > 0.02) { g.globalAlpha = stair; R(g, '#4a4660', 0, gy, VW, VH - gy); for (let x = 0; x < VW; x += 18) { R(g, '#5e5a78', x, gy + (x / 18 % 2) * 2, 18, 3); R(g, '#2a2638', x + 17, gy, 1, VH - gy); } R(g, '#6e6a88', 0, gy, VW, 1); g.globalAlpha = 1; } }
+  /* THE RAFT: lashed logs under the party, afloat once the water is up; the party walks out onto the stair, then stands to the pole */
+  { const rx = Math.round(VW * 0.26), ry = Math.round(gy + (VH * 0.80 - gy) * smooth(wat * 1.2)), bob = calm ? 0 : Math.sin(time * 2.2) * 1.2 * wat;
+    if (wat > 0.05) { g.globalAlpha = Math.min(1, wat * 2); for (let i = 0; i < 4; i++) { R(g, i % 2 ? '#6a4a2c' : '#7a5834', rx, Math.round(ry + 1 + i * 3 + bob), 82, 3); R(g, '#9a7448', rx, Math.round(ry + 1 + i * 3 + bob), 82, 1); } R(g, '#2a1e14', rx + 18, Math.round(ry + bob), 2, 12); R(g, '#2a1e14', rx + 60, Math.round(ry + bob), 2, 12); R(g, '#c8b480', rx + 18, Math.round(ry + 3 + bob), 44, 1);
+      if (!calm) { g.fillStyle = 'rgba(236,244,246,0.5)'; for (let i = 0; i < 5; i++) g.fillRect(rx - 6 - i * 7 + Math.round(((time * 20 + i * 5) % 8)), Math.round(ry + 13 + (i % 2) + bob), 5, 1); } g.globalAlpha = 1; }
+    for (let i = 0; i < n; i++) { const h = descentHero(i, n, s, VW), onR = wat > 0.3, y = Math.round((onR ? ry : gy) + bob) + 1; env.drawHero(i, onR ? Math.max(h.x, rx + 14 + i * 13) : h.x, y, 1, h.walking ? 'run' : 'idle', h.walking ? Math.floor(time * 12) + i * 2 : Math.floor(time * 4.5) + i); } }
+  /* near rocks along the bank that slide away, mist, the dip (reduce) and the fade in */
+  if (wat > 0.05) { g.globalAlpha = 0.5 * (1 - wat * 0.6); for (let i = 0; i < 5; i++) { const x = ((i * 97 - rsc * 1.3) % (VW + 80) + VW + 80) % (VW + 80) - 40; R(g, '#2a2638', Math.round(x), VH - 10 - (i % 2) * 3, 26 + (i % 3) * 8, 14); } g.globalAlpha = 1; }
+  g.fillStyle = 'rgba(210,216,222,' + (0.10 + 0.12 * wat).toFixed(3) + ')'; g.fillRect(0, wl - 6, VW, 30);
+  { const d = descentDip(s, calm); if (d > 0.01) { g.fillStyle = 'rgba(8,6,14,' + d.toFixed(3) + ')'; g.fillRect(0, 0, VW, VH); } }
+  const a = s < 0.4 ? 1 - s / 0.4 : 0; if (a > 0) { g.fillStyle = 'rgba(8,6,14,' + (a * a).toFixed(3) + ')'; g.fillRect(0, 0, VW, VH); }
+}
+/* THE RAFT the Long Water begins on: world space, beached at the start of the first bank (the party steps off it). cx, cy: the camera; floorY: the bank's top (px). */
+export function drawArrivalRaft(env, cx, cy, floorY, time) {
+  const { g } = env, x = 2 - cx, y = Math.round(floorY - cy);
+  for (let i = 0; i < 3; i++) { R(g, i % 2 ? '#6a4a2c' : '#7a5834', x, y - 1 + i * 3, 88, 3); R(g, '#9a7448', x, y - 1 + i * 3, 88, 1); }
+  R(g, '#2a1e14', x + 80, y - 12, 2, 12); R(g, '#c8b480', x + 66, y - 9, 16, 1);
+  R(g, '#5a4228', x + 86, y - 26, 2, 22);   /* the pole, left leaning on the bank */
 }
