@@ -28,10 +28,10 @@ ok(!L.ents.some(e => e.t === 'weight' && e.gq && !e.scenery), 'no chandelier wei
 { const wn = L.ents.find(e => e.t === 'winch' && e.bossGate && e.bell);
   ok(!!wn && at(wn.gate, wn.gy0) === T.AIR, 'her hall bell + its grate (winch bossGate) stay, the grate up'); }
 const E = L.gqEscape;
-ok(!!E && Array.isArray(E.tiers) && E.tiers.length === 5, 'L.gqEscape: five burning tiers T1..T5');
+ok(!!E && Array.isArray(E.tiers) && E.tiers.length >= 5, 'L.gqEscape: five burning tiers T1..T5 (+ T6, the step inside the hole)');
 if (E) {
   const x0 = A.wallL + 1, x1 = A.wallR - 1;
-  ok(E.tiers.every(t => t.x0 >= x0 && t.x1 <= x1 && t.row >= 10 && t.row <= 17), 'every tier is inside her hall (cols ' + x0 + '-' + x1 + ', rows 10-17)');
+  ok(E.tiers.every(t => t.x0 >= x0 && t.x1 <= x1 && t.row >= 9 && t.row <= 17), 'every tier is inside her hall (cols ' + x0 + '-' + x1 + ', rows 9-17; T6 is the step in the hole)');
   ok(E.tiers.filter(t => t.collapse).length === 1, 'exactly one tier collapses (T4)');
   ok(A.hole && A.hole.y1 <= 9 && at(A.hole.x0, A.hole.y0) === T.SOLID, 'the hole is roof stone until the flee opens it (rows 8-9)');
   ok(!!E.check && !!E.start && !!E.portal && E.hallPortals && E.hallPortals.length === 2, 'escapeStart on T1, a roof shrine, her portal, two hall portals');
@@ -47,8 +47,9 @@ ok(!!RA && RA.boss === 'gqueen' && RA.music === 'gqjudge' && RA.x1 - RA.x0 >= 40
 if (RA && E) {
   const { floodReach } = await imp('src/reachcore.js'), { HERO_MOVE_IDS } = await imp('src/hero-move.js');
   /* the level as the flee lays it: the tiers, the hole */
-  const g2 = new Uint8Array(L.grid); for (const t of E.tiers) for (let x = t.x0; x <= t.x1; x++) g2[t.row * W + x] = T.ONEWAY;
+  const g2 = new Uint8Array(L.grid);
   for (let y = A.hole.y0; y <= A.hole.y1; y++) for (let x = A.hole.x0; x <= A.hole.x1; x++) g2[y * W + x] = T.AIR;
+  for (const t of E.tiers) for (let x = t.x0; x <= t.x1; x++) g2[t.row * W + x] = T.ONEWAY;
   const L2 = { ...L, grid: g2 }, fl = Math.round(A.floor / TS) - 1, start = [A.wallL + 4, fl];
   const marks = [[E.tiers[0].x0 + 1, E.tiers[0].row - 1], ...E.tiers.map(t => [Math.floor((t.x0 + t.x1) / 2), t.row - 1]), [E.check.x, E.check.y], [E.portal.x, E.portal.y]];
   for (const hero of [null, ...HERO_MOVE_IDS]) {
@@ -57,7 +58,7 @@ if (RA && E) {
     ok(!miss.length, (hero || 'any hero') + ': the floor reaches every tier, the roof shrine and her portal' + (miss.length ? ' - MISSING ' + miss.map(m => m.join(',')).join(' ') : ''));
   }
   /* SEALED: from the tower top's portal exit nothing walkable leads west of its wall; from the level, nothing leads east of col 609 */
-  const R1 = floodReach(L, T, { rides: true, seeds: [[RA.exit.x, RA.exit.y]] }), west = [...R1.seen].filter(k => +k.split(',')[0] < RA.wallL);
+  const R1 = floodReach({ ...L, START: { x: RA.exit.x, y: RA.exit.y } }, T, { rides: true }), west = [...R1.seen].filter(k => +k.split(',')[0] < RA.wallL);
   ok(west.length === 0, 'the tower top is sealed: nothing walkable from its portal exit leads west of col ' + RA.wallL);
   const R2 = floodReach(L2, T, { rides: true, seeds: [start] }), east = [...R2.seen].filter(k => +k.split(',')[0] > E.portal.x + 2);
   ok(east.length === 0, 'the main level never walks onto the tower top (only her portal does)');
@@ -81,7 +82,7 @@ ok(hands.length > 0, 'src/gqueen-hands.js exists');
   for (const m of modes) { const k = 'gqueen|' + m; ok(!!mk.MARK[k] && mk.ANSWER[k] !== undefined && !!mk.HEIGHT[k], k + ' has its MARK, ANSWER and HEIGHT rows'); }
   ok(mk.QUIET.has('updateGQueen|fleeTell'), 'fleeTell is QUIET (no blow)');
   for (const dead of ['chandTell', 'gLeapTell', 'gDropTell', 'leapTell', 'slateTell', 'shadowTell']) ok(!mk.MARK['gqueen|' + dead] && !mk.HEIGHT['gqueen|' + dead], 'the dead row gqueen|' + dead + ' is gone'); }
-{ const sp = fnBody(handsCode, 'spare') || (/H\.spare = [\s\S]*?\n  };/.exec(handsCode) || [''])[0];
+{ const sp = ((/H\.spare = [\s\S]*?\n  };/.exec(handsCode) || [''])[0]) + fnBody(handsCode, 'fullHeal');
   ok(/\.hp\s*=\s*[^;]*maxHp/.test(sp) && /\.st\s*=/.test(sp) && /flaskMax/.test(sp), 'the flee FULLY HEALS: hp, stamina and flasks (SV.flaskMax)');
   ok(/persist\s*=/.test(handsCode), 'the escape persists across a death (persist, as King Gorm)'); }
 { const sg = /stunGuard:\s*([0-9.]+)/.exec(hands); ok(!!sg && +sg[1] >= 1.0, 'the stun guard is >= 1.0 s (' + (sg ? sg[1] : 'missing') + ')'); }

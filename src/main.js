@@ -9181,7 +9181,8 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow, tag = blow) { const raw0 = dmg,
   if (dmg > 0 && e.alive && tal('bleed') && !isPyro() && !isPaladin()) { e.bleed = 3; e.bleedN = tal('bleed'); } // OPEN WOUND
   if (dmg > 0 && e.alive && isReaper() && tal('rend') && (e.mark || 0) > 0) { e.bleed = Math.max(e.bleed || 0, 3); e.bleedN = Math.max(e.bleedN || 0, 2); } // REND: the mark is a wound waiting for the blade
   if (e.hp <= 0 && e.t === 'king' && e.stage === 'glade' && !e.rage && !e.rageSaved && e.alive) { e.hp = 1; e.rageSaved = true; }   /* (claude/gorm3) HE ALWAYS ENRAGES: a blow that would end him before his rage leaves him a sliver ONCE - the rage plays when his opening ends (the told transition is the fight's last act) */
-  if (e.hp <= 0 && e.t === 'king' && GMH && GMH.spare(e)) e.flash = 0.3;   /* (claude/gorm2) HIS P1 BAR EMPTIES: no death - the court torches the wood and his bearers carry him off (src/gorm-hands.js spare) */
+  if (e.hp <= 0 && e.t === 'king' && GMH && GMH.spare(e)) e.flash = 0.3;
+  if (e.hp <= 0 && e.t === 'gqueen' && GQH && GQH.spare(e)) e.flash = 0.3;   /* (claude/gqueen3) HER P1 BAR EMPTIES: no death - she flees through a portal, you are FULLY HEALED, the hall burns (src/gqueen-hands.js spare) */   /* (claude/gorm2) HIS P1 BAR EMPTIES: no death - the court torches the wood and his bearers carry him off (src/gorm-hands.js spare) */
   if (e.hp <= 0) {
     if (e.t === 'husk') {   /* THE BELLY GOES. Killing one at arm's length costs you the same poison the green water carries. */
       SFX.puff(); burst(e.x, e.y - 12, 16, ['#a6e04a', '#5c8a24', '#7c9a4a'], 90, 0.7, 40, 2); clouds2.push({ x: e.x, y: e.y - 12, r: 26, life: 1.6 });
@@ -11735,7 +11736,7 @@ else if (P.stepHeld > 0 && !P.swim) { P.stepHeld = Math.max(0, P.stepHeld - dt);
   // and without y0/y1 the Weaver's fight started while you were three tiers below her.
   if (L.mini && !miniActive && !miniDone && (L.mini.reverse?P.x < L.mini.trigger && P.x > L.mini.x0+24:P.x > L.mini.trigger && P.x < L.mini.x1 - 24) && (P.ground || (L.mini.swim && P.swim))
     && (L.mini.y0 === undefined || (P.y > L.mini.y0 && P.y < L.mini.y1))) { const mb = miniOne(); if (mb) { bossSelectBegin('mini'); miniActive = true; arenaHeal(); miniIntroT = 1.6; if (mb.t === 'forgemaster') { mb.mode = 'wake'; mb.modeT = 1.6; SFX.forgeHammer(); } if (mb.t === 'greathound') { mb.mode = 'idle'; mb.modeT = 1.2; } if (mb.t === 'scarabmother') { mb.mode = 'wake'; mb.modeT = 1.8; SFX.roar && SFX.roar(); } if (mb.t === 'gravewarden') { mb.mode = 'wake'; mb.modeT = 1.4; SFX.heavy(); SFX.seaBell ? SFX.seaBell() : SFX.clank(); } if (mb.t === 'hedgewarden') { mb.mode = 'wake'; mb.modeT = 1.2; SFX.rattle(); } if (mb.t === 'sexton') { mb.mode = 'wake'; mb.modeT = 1.3; (SFX.seaBell || SFX.golemChime)(); } if (mb.t === 'berserker') { mb.mode = 'wake'; mb.modeT = 0.8; SFX.roar(); } if (mb.t === 'suncatcher' || mb.t === 'golem') { mb.mode = 'wake'; mb.modeT = 1.6; SFX.golemChime(); } if (miniZooms(mb.t)) setView('zoom'); music.play(L.mini.music || 'minicharge'); setWallAt(L.mini.wallL, true, L.mini.floor); arenaShut(L.mini, mb); camLock = { x0: L.mini.x0, x1: L.mini.x1 }; number(mb.x, mb.y - 30, miniName(), '#ffd36b'); ({ greathound: SFX.bark, troll: SFX.snort, spider: SFX.hiss, sailer: SFX.puff, suncatcher: SFX.golemChime, golem: SFX.golemChime }[mb.t] || SFX.roar)(); if (mb.t !== 'suncatcher' && mb.t !== 'golem') SFX.roar(); shakeCam(4); zoomKick(1.08, 0.3); } }
-  if (L.arena && boss && boss.alive && !bossActive && (L.arena.reverse?P.x < L.arena.trigger && P.x>L.arena.x0:P.x > L.arena.trigger) && (L.arena.y0 !== undefined ? P.y > L.arena.y0 && P.y <= L.arena.floor + 4 : P.ground && Math.abs(P.y - L.arena.floor) < 48)) bossStart(); // the floor check keeps a tall level's lower tiers from waking the boss
+  if (L.arena && boss && boss.alive && !bossActive && !(GQH && GQH.hold()) && (L.arena.reverse?P.x < L.arena.trigger && P.x>L.arena.x0:P.x > L.arena.trigger) && (L.arena.y0 !== undefined ? P.y > L.arena.y0 && P.y <= L.arena.floor + 4 : P.ground && Math.abs(P.y - L.arena.floor) < 48)) bossStart(); // the floor check keeps a tall level's lower tiers from waking the boss
 }
 
 // ---------- boss: the Hornet Queen ----------
@@ -11771,7 +11772,8 @@ const bossTitle = b => {
   const nm = row ? row.name : 'THE ' + String(b.t || 'beast').toUpperCase();   /* never another boss's name */
   if (b.t === 'troll' && b.hill) return 'THE HILL TROLL';
   if (b.t === 'golem') return nm + (b.open > 0 ? '  STAGGERED' : b.ward > 0 ? '  WARDED' : '  STONE');
-  if (b.t === 'gqueen' && b.mode === 'stunned') return nm + '  STUNNED';
+  if (b.t === 'gqueen' && b.mode === 'stunned') return nm + (b.stage === 'roof' ? '  THE TOWER TOP  STUNNED' : '  STUNNED');
+  if (b.t === 'gqueen' && b.stage === 'roof') return nm + '  THE TOWER TOP';
   if (b.phase >= 3 && b.t === 'gqueen') return nm + '  THE CROWN';
   return nm;
 };
@@ -22512,7 +22514,7 @@ const GQC = { hold: 3.5, holdOff: 2.6, volley: 1.15, totter: 1.7, blows: 3, plat
   ringTell: 0.9, ringHold: 3.5, ringCd: 8, ringNear: 64,   /* (claude/highcrown2) SHE RINGS HER OWN BELL: the tell, how long the grate stays down, her cooldown, how near the grate you must be */
   leapCd: 4.5, leapCdOff: 2.2, courtCd: 6, courtCdOff: 3.6, air: 0.75, airOff: 0.6, quakeR: 70 };
 let sceptres = []; // her sceptre in flight: out along the floor, back at head height
-const GQ_FRAME = { portalTell: 2, portalCast: 15, crownTossTell: 2, crownToss: 8, crownFetch: e => Math.abs(e.vx) > 6 ? 4 + Math.floor(e.anim * 5) % 2 : 3, stunned: 10, pinned: 10, sleep: 0, wake: 0, court: 0, point: 1, throw: 2, topple: 10, rise: 3, stand: e => Math.abs(e.vx) > 6 ? 4 + Math.floor(e.anim * 5) % 2 : 3, slamTell: 6, slam: 7, slamRec: 7, sweepTell: 3, sweep: 8, rec: e => (e.ringRelT || 0) > time ? 16 : 8,   /* (claude/highcrown2bell) the 0.8 s after she rings: the release pose */
+const GQ_FRAME = { fleeTell: 2, gone: 0, portalTell: 2, portalCast: 15, crownTossTell: 2, crownToss: 8, crownFetch: e => Math.abs(e.vx) > 6 ? 4 + Math.floor(e.anim * 5) % 2 : 3, stunned: 10, pinned: 10, sleep: 0, wake: 0, court: 0, point: 1, throw: 2, topple: 10, rise: 3, stand: e => Math.abs(e.vx) > 6 ? 4 + Math.floor(e.anim * 5) % 2 : 3, slamTell: 6, slam: 7, slamRec: 7, sweepTell: 3, sweep: 8, rec: e => (e.ringRelT || 0) > time ? 16 : 8,   /* (claude/highcrown2bell) the 0.8 s after she rings: the release pose */
   hallLeapTell: 6, hallLeap: 11, quake: 7, ringTell: 15, decreeTell: 6, decree: 7, sceptreTell: 2, sceptreWait: 3 };
 let HALLWIN = null;
 function bakeHallWindow() { const [c, g2] = canvas(18, 30); g2.fillStyle = '#1b1626'; g2.fillRect(0, 6, 18, 24); g2.beginPath(); g2.arc(9, 8, 9, Math.PI, 0); g2.fill(); g2.fillStyle = '#2a3050'; g2.fillRect(2, 8, 14, 20); g2.beginPath(); g2.arc(9, 8, 7, Math.PI, 0); g2.fill(); g2.fillStyle = '#3a4270'; for (let k = 0; k < 6; k++) g2.fillRect(3 + (k * 5) % 12, 10 + k * 3, 1, 4); g2.fillStyle = '#5a6270'; g2.fillRect(8, 2, 2, 26); g2.fillRect(2, 16, 14, 2); return c; }
@@ -22578,6 +22580,23 @@ function gqRegrow(pr) { const A = L.arena, G = A && A.gallery; if (!G) return;
   for (const [i, t0] of pr.saved) { L.grid[i] = t0; tileSpr[i] = null; destroyed.delete(i); if (A.taken) A.taken.delete(i); }
   pr.saved.clear(); pr.broken = false; pr.hp = 4; pr.shake = 0.3; resolveTiles(); SFX.stone(); SFX.clank();
   for (let x = pr.sx0; x <= pr.sx1; x++) parts.push({ x: x * TS + 8, y: G.row * TS + 6, vx: 0, vy: -24, life: 0.6, max: 0.6, col: '#c9b27c', size: 2, grav: 0 }); }
+/* (claude/gqueen3) THE ESCAPE'S LAYOUT, laid at the flee (and again on a retry): the hole through her hall's roof opens, and the burning rafters (L.gqEscape.tiers, src/highcrown2.js) are laid as one-ways. Everything taken goes
+   in arena.taken, everything laid in arena.laid: resetCastle puts the hall back as it was. */
+function gqEscapeLay() { const A = L.arena, E = L.gqEscape; if (!A || !E || A.escLaid) return; A.escLaid = true;
+  const keep = A.taken || (A.taken = new Map()), laid = A.laid || (A.laid = []), H0 = A.hole;
+  if (H0) for (let ty = H0.y0; ty <= H0.y1; ty++) for (let tx = H0.x0; tx <= H0.x1; tx++) { const i = ty * LW + tx; if (L.grid[i] !== T.AIR) { if (!keep.has(i)) keep.set(i, L.grid[i]); L.grid[i] = T.AIR; tileSpr[i] = null; destroyed.add(i); } }
+  for (const t of E.tiers) for (let x = t.x0; x <= t.x1; x++) { const i = t.row * LW + x; if (L.grid[i] === T.AIR) { L.grid[i] = T.ONEWAY; grid0[i] = T.ONEWAY; tileSpr[i] = null; laid.push(i); } }
+  L.routeSupports = (L.routeSupports || []).filter(p => !p.gqEsc).concat(E.supports.map(p => ({ ...p, gqEsc: true })));
+  resolveTiles(); SFX.crack(); SFX.rumble(); shakeCam(8); flash = Math.max(flash, 0.2);
+  for (let k = 0; k < 20; k++) parts.push({ x: (A.hole.x0 + Math.random() * (A.hole.x1 - A.hole.x0 + 1)) * TS, y: A.hole.y1 * TS + 8, vx: (Math.random() - 0.5) * 120, vy: 40 + Math.random() * 80, life: 1.2, max: 1.2, col: Math.random() < 0.5 ? '#5a5a68' : '#ff9a5c', size: 3, grav: 500 });
+}
+/* one row of the escape's tiles: 'drop' (gone: a burning rafter or a roof slate under a foot), 'lay' (a dropped rafter laid again), 'restore' (a slate put back as it was) */
+function gqTiles(row, x0, x1, how) { const A = L.arena; if (!A) return; const keep = A.taken || (A.taken = new Map()), laid = A.laid || (A.laid = []);
+  for (let x = x0; x <= x1; x++) { const i = row * LW + x;
+    if (how === 'drop') { if (L.grid[i] !== T.AIR) { if (!keep.has(i) && !laid.includes(i)) keep.set(i, L.grid[i]); L.grid[i] = T.AIR; tileSpr[i] = null; } }
+    else if (how === 'lay') { if (L.grid[i] === T.AIR) { L.grid[i] = T.ONEWAY; grid0[i] = T.ONEWAY; tileSpr[i] = null; if (!laid.includes(i)) laid.push(i); } }
+    else if (how === 'restore') { const t0 = keep.get(i); if (t0 !== undefined) { L.grid[i] = t0; tileSpr[i] = null; keep.delete(i); } } }
+  resolveTiles(); }
 function gqCeiling(q) { // she goes up through her own roof, and what she brings down is the way after her
   const A = L.arena, H0 = A.hole; if (!H0 || A.holeOpen) return; A.holeOpen = true;
   const keep = A.taken || (A.taken = new Map()), laid = A.laid || (A.laid = []);
@@ -26385,7 +26404,7 @@ function resetCastle() {
   for (const pr of props) if (pr.t === 'support') { pr.broken = false; pr.hp = 4; pr.regrowT = 0; pr.creakT = 0; if (pr.saved) pr.saved.clear(); } // and her pillars stand again
   for (const e of (L.ents || [])) if (e.t === 'winch' && !e.drop) for (let ty = e.gy0; ty <= e.gy1; ty++) { const i = ty * LW + e.gate; if (L.grid[i] === T.AIR) { L.grid[i] = T.PORT; tileSpr[i] = portSpr(ty + e.gate); } }
   // the Queen's hall goes back as it was: gallery floor, roof and all, and the rubble she brought down is gone
-  if (L.arena && L.arena.boss === 'gqueen') { const A = L.arena; L.galleryDown = false; L.windowsOut = false; A.holeOpen = false;
+  if (L.arena && L.arena.boss === 'gqueen') { const A = L.arena; L.galleryDown = false; L.windowsOut = false; A.holeOpen = false; A.escLaid = false; L.routeSupports = (L.routeSupports || []).filter(p => !p.gqEsc);   /* (claude/gqueen3) the escape's rafters + chains go with the rest */
     for (const i of (A.laid || [])) { L.grid[i] = T.AIR; grid0[i] = T.AIR; tileSpr[i] = null; } A.laid = [];
     for (const [i, t0] of (A.taken || new Map())) { L.grid[i] = t0; tileSpr[i] = null; destroyed.delete(i); } A.taken = new Map(); }
   resolveTiles();
@@ -28747,7 +28766,7 @@ function updateEnemies(dt) {
     if (e.t === 'golem') { const live = e.mini ? miniActive : bossActive; if (live) beastSeen('golem'); if (live || e.mode === 'sleep') updateGolem(e, dt); continue; }
     if (e.t === 'king') { if (bossActive) beastSeen('king'); if (bossActive || e.mode === 'sleep') updateGorm(e, dt, GKC); continue; }
     if (e.t === 'herald') { if (bossActive) beastSeen('herald'); if (bossActive || e.mode === 'sleep') updateHerald(e, dt); continue; }
-    if (e.t === 'gqueen') { if (bossActive) beastSeen('gqueen'); if (bossActive || e.mode === 'sleep') updateGQueen(e, dt); continue; }
+    if (e.t === 'gqueen') { if (GQH && GQH.step(e, dt)) continue; if (bossActive) beastSeen('gqueen'); if (bossActive || e.mode === 'sleep') updateGQueen(e, dt); continue; }
     if (e.t === 'roc' && ROCE && ROCE.on()) { if (bossActive) { beastSeen('roc'); ROCE.update(e, dt); } continue; }   /* THE ROC on her EYRIE (THE SKY ROAD, src/roc-eyrie.js) */
     if (e.t === 'roc') { if (bossActive) beastSeen('roc'); if (bossActive || e.mode === 'sleep') updateRoc(e, dt); continue; }
     if (e.t === 'suncatcher') { const live = e.mini ? miniActive : bossActive; if (live) beastSeen('suncatcher'); if (live || e.mode === 'sleep') updateSuncatcher(e, dt); continue; }
@@ -29796,7 +29815,11 @@ GMH = makeGormHands({ get L() { return L; }, TS, T, sfx: SFX, music: on => music
   moveBody: (e, dx, dy) => moveBody(e, dx, dy, false), overlap: (a, b) => overlap(a, b), text: (s, x, y, c, a) => text(s, x, y, c, a), hint: m => hintSay('mechanic', 6, m), spawn: e => { enemies.push(e); return e; }, ehp: t => EHP[t] || 10 });
 GQH = makeGQueenHands({ get L() { return L; }, TS, T, sfx: SFX, P: () => P, enemies: () => enemies, boss: () => boss, bossActive: () => bossActive, props: () => props, time: () => time,
   number: (x, y, t, c) => number(x, y, t, c), burst: (...a) => burst(...a), dust: (x, y, n) => dust(x, y, n), part: o => parts.push(o), shake: n => shakeCam(n), zoom: (s, t) => zoomKick(s, t), ring: (x, y, r, c, l) => ringAt(x, y, r, c, l),
-  damage: (x, d, o) => damagePlayer(x, d, o), parries: () => RP.stats.parries, hurt: (e, d, x) => hurtEnemy(e, d, x, false), solid: (tx, ty) => isSolid(tx, ty), overlap: (a, b) => overlap(a, b), hurtBox: () => duckBox(P) });
+  damage: (x, d, o) => damagePlayer(x, d, o), parries: () => RP.stats.parries, hurt: (e, d, x) => hurtEnemy(e, d, x, false), solid: (tx, ty) => isSolid(tx, ty), overlap: (a, b) => overlap(a, b), hurtBox: () => duckBox(P),
+  endFight: () => { bossActive = false; camLock = null; setView('normal'); if (L.arena) { setWall(L.arena.wallL, false); setWall(L.arena.wallR, false); } },
+  shutWest: () => { const A = L.arena; if (A) setWallAt(A.wallL, true, A.floor); }, layEscape: () => gqEscapeLay(), tiles: (row, x0, x1, how) => gqTiles(row, x0, x1, how), spawnEnt: e => spawnEnt(e),
+  setCheckpoint: (x, y) => { checkpoint = { x, y }; }, flaskMax: () => SV.flaskMax(PROG), music: n => music.play(n), hint: m => hintSay('mechanic', 6, m),
+  enterRoof: () => { Object.assign(L.arena, L.arenaRoof); bossStart(); } });
 GKC = { arena: () => L.arena, P: () => P, hands: GMH, enemies: () => enemies, gormData: () => L.gorm, number: (x, y, t, c) => number(x, y, t, c), sfx: SFX, shake: n => shakeCam(n), zoom: (s, t) => zoomKick(s, t), dust: (x, y, n) => dust(x, y, n), burst: (...a) => burst(...a), part: o => parts.push(o),
   ring: (x, y, r, c, l) => ringAt(x, y, r, c, l), damage: (x, d, o) => damagePlayer(x, d, o), moveBody: (e, dx, dy) => moveBody(e, dx, dy, false), dmg: { grab: DMG.gormGrab, litter: DMG.litter, sweep: DMG.gormSweep, club: DMG.gormClub }, music: on => music.lift && music.lift(on) };
 RBC = { P: () => P, TS, solid: (tx, ty) => isSolid(tx, ty), oneWay: (tx, ty) => isOneWay(tileAt(tx, ty)), moveBody: (e, dx, dy) => moveBody(e, dx, dy, false), damage: (x, d, o) => damagePlayer(x, d, o), number: (x, y, t, c) => number(x, y, t, c),
