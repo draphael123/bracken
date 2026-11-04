@@ -121,6 +121,9 @@ function slopeArt() { if (SLOPE_ART) return SLOPE_ART; const why = [];
   return SLOPE_ART = { ok: !why.length, why: why.join('; ') }; }
 /* THE TRACKS src/audio.js COMPOSES ITSELF (no file): the names its synth plays, read off its own source (`wantTrack === 'name'`) */
 let SYNTH = null;
+/* a track key may point at a differently named file (smallfix13: admiral -> audio/fleetlord.ogg): read the src/audio.js table entries `key: './audio/file.ogg'` */
+let TABLE = null;
+function trackTableFiles(k) { if (!TABLE) { const src = readFileSync(new URL('../src/audio.js', import.meta.url), 'utf8'); TABLE = new Map(); for (const m of src.matchAll(/\b([a-z0-9]+): '\.\/(audio\/[^']+)'/g)) if (!TABLE.has(m[1])) TABLE.set(m[1], m[2]); } return TABLE.has(k) ? [TABLE.get(k)] : []; }
 function synthTracks() { if (SYNTH) return SYNTH; const src = readFileSync(new URL('../src/audio.js', import.meta.url), 'utf8'); SYNTH = new Set([...src.matchAll(/wantTrack === '([a-z0-9]+)'/g)].map(m => m[1])); for (const b of Object.keys(BOSS_SYNTH_BASE)) SYNTH.add(b); return SYNTH; }   /* + the boss themes src/boss-music.js composes (a 'name:variant' plays the base's theme) */
 let GATE_SRC = null;
 function slopeGate() { if (GATE_SRC !== null) return GATE_SRC; const src = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8'), m = src.match(/if \(([^\n]*?) && cvTile\(x, y, t\)\) continue;/);
@@ -231,7 +234,7 @@ export function measure(lv) {
   const borrowedFrom = music ? usedBy(music).concat(STOCK_MUSIC[music] ? ['STOCK (' + STOCK_MUSIC[music].split(':')[0] + ')'] : []) : [];
   const arenaBorrowed = arenaMusic && arenaMusic !== music && !BOSS_POOL.includes(arenaMusic) ? usedBy(arenaMusic).concat(STOCK_MUSIC[arenaMusic] ? ['STOCK'] : []) : [];
   const shared = SHARED_MUSIC.includes(music);
-  const real = t => !!t && (existsSync(new URL('../audio/' + t + '.ogg', import.meta.url)) || existsSync(new URL('../audio/' + t + '.mp3', import.meta.url)) || synthTracks().has(splitTrack(t)[0]));
+  const real = t => !!t && (trackTableFiles(splitTrack(t)[0]).some(f => existsSync(new URL('../' + f, import.meta.url))) || existsSync(new URL('../audio/' + t + '.ogg', import.meta.url)) || existsSync(new URL('../audio/' + t + '.mp3', import.meta.url)) || synthTracks().has(splitTrack(t)[0]));
   const trackFile = real(music), arenaReal = !arenaMusic || real(arenaMusic);
 
   // ---- 5. SECRETS, CHECKPOINTS, ENCOUNTERS, DENSITY ----
