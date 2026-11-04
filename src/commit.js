@@ -152,6 +152,6 @@ export function staminaTick(P, dt, { extra = 1, hold = false, hero = null } = {}
   if (P.windUsedT > 0) P.windUsedT = Math.max(0, P.windUsedT - dt);
   if (paused && !(busy > 0)) { P.stDelay = Math.max(P.stDelay || 0, delayOf()); P.regenOff = true; return; }
   if (P.stDelay > 0 || hold) { P.regenOff = true; return; }
-  if (P.st < P.maxSt) P.st = Math.min(P.maxSt, P.st + STAM.regen * staminaOf(P).regenMul * (P.winded ? STAM.windedMul : 1) * (paused ? busy : 1) * extra * dt);
+  if (P.st < P.maxSt) P.st = Math.min(P.maxSt, P.st + STAM.regen * staminaOf(P).regenMul * (P.skinRegen || 1) * (P.winded ? STAM.windedMul : 1) * (paused ? busy : 1) * extra * dt);
   if (P.winded && P.st >= STAM.windedTo * P.maxSt) P.winded = false;
 }

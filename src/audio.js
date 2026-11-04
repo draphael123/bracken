@@ -2073,6 +2073,10 @@ Object.assign(SFX, {
      The synth under each is the fallback while the clips load / SFX files are off, and the sub-thump is synth always (it is the weight). */
   geoFist() { const r = file('bd_stone', 0.6, 0.8); tone('sine', 70, 36, 0.26, 0.4); if (!r) { noise(0.1, 0.2, 300, 0.6); tone('triangle', vary(150), 70, 0.1, 0.12); } },
   geoPlant() { const a = file('crack_rock', 0.5, 0.85), b = file('r_thud', 0.55, 0.78); tone('sine', vary(80), 40, 0.16, 0.26); if (!a && !b) { noise(0.1, 0.18, 900, 0.7); tone('triangle', vary(240), 110, 0.07, 0.1); } },
+  /* (claude/geocrouch) STONE SKIN, from the repo's own CC0 takes (no new files): geoSkinSet = the mantle going to stone (r_thud low under a soft sub), geoGlance = a blow glancing off (bd_stone clink, high and short), geoSkinCrack = it splits (crack_rock + stone_geo) */
+  geoSkinSet() { const a = file('r_thud', 0.4, 0.7); tone('sine', vary(70), 44, 0.28, 0.22); noise(0.08, 0.08, 500, 0.6); if (!a) tone('triangle', vary(130), 80, 0.1, 0.08); },
+  geoGlance() { const a = file('bd_stone', 0.5, 1.15); tone('triangle', vary(1250), 800, 0.08, 0.1); if (!a) noise(0.05, 0.14, 2200, 0.7); },
+  geoSkinCrack() { const a = file('crack_rock', 0.55, 0.9), b = file('stone_geo', 0.5, 0.95); tone('sine', 82, 38, 0.3, 0.3); if (!a && !b) { noise(0.16, 0.22, 1400, 0.7); tone('triangle', vary(210), 90, 0.1, 0.12); } },
   geoBlast() { const a = file('r_rumble', 0.55, 0.85), b = file('crack_rock', 0.6, 0.8), c = file('r_stones', 0.5, 0.9); tone('sine', 62, 28, 0.55, 0.42); if (!a && !b && !c) { noise(0.5, 0.3, 260, 0.5); noise(0.18, 0.2, 1400, 0.8, 0.02); tone('sawtooth', vary(90), 40, 0.3, 0.1); } },
   /* (claude/chargetiers) HER THREE-TIER STAVE, HEARD: a stone note that goes DOWN a tier as the earth wakes (a struck slab: A, E, low A), a grind of grit under it, a deep heave on T3 */
   geoTier(n = 1) { n = Math.max(1, Math.min(3, n | 0)); const f = [0, 440, 330, 220][n];
