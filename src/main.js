@@ -5597,7 +5597,7 @@ function drawMap() {
      walked and the medals in the game, so a player who beat the Undercrown was still told 17 woods and 51
      medals. They join the count the moment you have set foot in one, which is also when it stops being a
      spoiler to say they exist. */
-  { const real = LEVELS.filter(lv => !lv.hidden || (lv.secret && PROG[lv.id])); const cl = real.filter(lv => PROG[lv.id] && PROG[lv.id].cleared).length;
+  { const real = LEVELS.filter(lv => (!lv.hidden || (lv.secret && PROG[lv.id])) && !DS.demoLocked(lv));   /* (smallfix14) the demo counts its own slice (12 woods, 36 medals), not the full game's totals */ const cl = real.filter(lv => PROG[lv.id] && PROG[lv.id].cleared).length;
     const md = real.reduce((n, lv) => n + ((PROG[lv.id] && PROG[lv.id].medal) || 0), 0), mdMax = real.length * 3;
     const hn2 = mapCamY < INLAND_Y - 60 ? 'THE DESERT' : mapCamY < COAST_Y - 60 ? 'THE ROAD INLAND' : mapCamY < CRAG_Y - 60 ? 'THE COAST' : mapCamY < WOOD_Y - 60 ? 'THE CRAGS' : 'THE WOOD', hdrW = inkW(hn2, inkW(hn2, 8) <= 90 ? 8 : 6), hx = Math.max(92, Math.round(6 + hdrW + 10));   /* (the counters start after the region's name: THE ROAD INLAND ran under the flag) */
     g.drawImage(FLAG, hx, 4); text(cl + '/' + real.length, hx + 12, 7, UI.dim, 'left', 6);
