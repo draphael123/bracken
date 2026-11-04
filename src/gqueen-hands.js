@@ -290,7 +290,7 @@ export function makeGQueenHands(ctx) {
       if (h.parried) { R0.storm = null; R0.stormAt = now() + cc.stormRegrow; ctx.ring(x, y, 16, '#fff6c8', 0.3); stun(e, cc.stormStun, cc.stormHp, GQ_SAY.crowned); }
     }
   }
-  H.test.roof = () => S && S.roof;
+  H.test = H.test || {}; H.test.roof = () => S && S.roof;
   H.test.begin = () => { const e = q(); if (e && S) roofBegin(e); };
   /* the hall portals' (and the escape's) fan of shards: three, +-14 deg, at the spot given, yellow and blockable; a parry only clanks here (nobody to send it back to) */
   function fan(px, py, tx, ty, esc) {
@@ -544,6 +544,6 @@ export function makeGQueenHands(ctx) {
   H.read = () => S ? { crown: S.crown ? { ...S.crown } : null, rocks: S.rocks.length, portals: S.portals.length, stunUntil: S.stunUntil, stuns: S.stuns, persist: persist ? { ...persist } : null,
     esc: S.esc ? { on: S.esc.on, fireOn: S.esc.fireOn, checked: S.esc.checked } : null,
     roof: S.roof ? { ambushX: S.roof.ambushX, geysers: S.roof.geysers.map(g => ({ x: g.x, at: g.at })), storm: !!S.roof.storm, adds: [...S.roof.adds] } : null } : null;
-  H.test = { toss: () => { const e = q(); if (e && S) { e.mode = 'crownTossTell'; e.modeT = 0.01; } }, stun: (d, p) => stun(q(), d, p || 0) };
+  Object.assign(H.test = H.test || {}, { toss: () => { const e = q(); if (e && S) { e.mode = 'crownTossTell'; e.modeT = 0.01; } }, stun: (d, p) => stun(q(), d, p || 0) });
   return H;
 }

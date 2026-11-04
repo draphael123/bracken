@@ -93,4 +93,86 @@ const ck = rd('tools/check.mjs');
 ok(!/'queen-court'|'queen-chandelier'/.test(ck) || /superseded/i.test(ck), 'queen-court / queen-chandelier are retired from check.mjs (they assert pillars and a plate)');
 ok(/'gqueen3'/.test(ck), 'tools/gqueen3.mjs is registered in check.mjs');
 
+
+/* ================= HANDS (a fake world: no page) ================= */
+console.log('== HANDS (src/gqueen-hands.js in a fake world)');
+{
+  const { makeGQueenHands, GQ3 } = await imp('src/gqueen-hands.js');
+  const make = (opt = {}) => {
+    const Lw = LEVELS.find(l => l.id === 'crown').build(), W = Lw.W;
+    const st = { time: 0, parries: 0, mode: opt.mode || 'hit', dmg: [], called: [], active: true, tiles: [], spawned: [], checkpoint: null };
+    const P = { x: 9150, y: 320, hp: 50, maxHp: 100, st: 5, maxSt: 20, flasks: 0, dead: false, ground: true, vy: 0, vx: 0, face: 1, inv: 0 };
+    const e = { t: 'gqueen', alive: true, x: 9300, y: 320, w: 68, h: 52, hp: 2400, maxHp: 2400, mode: 'stand', modeT: 0, face: -1, phase: 1, anim: 0, vx: 0, vy: 0, crownCd: 99, portalCd: 99 };
+    const noop = () => {};
+    const ctx = { L: Lw, TS: 16, T, sfx: new Proxy({}, { get: () => noop }), P: () => P, boss: () => e, bossActive: () => st.active, enemies: () => [e], props: () => [], time: () => st.time,
+      number: noop, burst: noop, dust: noop, part: noop, shake: noop, zoom: noop, ring: noop,
+      damage: (x, d, o) => { st.dmg.push({ x, d, o: o || {} }); if (st.mode === 'parry') st.parries++; return st.mode === 'hit' ? 'hit' : 'blocked'; }, parries: () => st.parries,
+      hurt: (en, d) => { en.hp -= d; if (en.hp <= 0) H.spare(en); }, solid: (tx, ty) => Lw.grid[ty * W + tx] === T.SOLID, overlap: (a, b) => a.l < b.r && a.r > b.l && a.t < b.b && a.b > b.t,
+      hurtBox: () => ({ l: P.x - 5, r: P.x + 5, t: P.y - (st.ducking ? 8 : 14), b: P.y }),
+      endFight: () => { st.active = false; st.called.push('endFight'); }, shutWest: () => st.called.push('shutWest'), layEscape: () => st.called.push('layEscape'), tiles: (r, a, b, how) => st.tiles.push([r, a, how]),
+      spawnEnt: o => st.spawned.push(o), setCheckpoint: (x, y) => { st.checkpoint = { x, y }; }, flaskMax: () => 3, music: n => st.called.push('music:' + n), hint: noop, enterRoof: () => { Object.assign(Lw.arena, Lw.arenaRoof); st.called.push('enterRoof'); }, wave: () => st.called.push('wave'), ducking: () => !!st.ducking };
+    const H = makeGQueenHands(ctx); H.load(); H.reset();
+    /* main.js's own frame: modeT counts down, her mode is asked, the hands update */
+    const step = (n, dt = 1 / 60) => { for (let i = 0; i < n; i++) { st.time += dt; e.modeT -= dt; e.anim += dt; H.tick(e, dt); if (!(H.step(e, dt))) { const w = e.stage === 'roof' ? H.roofStep(e, dt) : H.mode(e, dt); if (w !== undefined) e.vx = 0; } H.update(dt); } };
+    return { H, st, P, e, ctx, step, Lw };
+  };
+  /* 1. a parried crown stuns her: home, then STUNNED 3.5 s and 4% */
+  { const w = make({ mode: 'parry' }); w.P.x = 9150; w.e.mode = 'crownTossTell'; w.e.modeT = 0.8; w.step(60 * 3);
+    ok(w.e.mode === 'stunned' || w.H.read().stuns === 1, 'a PARRIED crown flies home and STUNS her (stuns ' + w.H.read().stuns + ')');
+    ok(w.e.hp === 2400 - Math.round(2400 * GQ3.crown.stunHp), 'the stun costs her ' + GQ3.crown.stunHp * 100 + '% (hp ' + w.e.hp + ')');
+    const g2 = w.H.test.stun(1, 0); ok(g2 === false, 'no stunlock: a second stun inside the guard is refused'); }
+  /* 2. a plain block only knocks it down: she walks to fetch it, never open */
+  { const w = make({ mode: 'blocked' }); w.P.x = 9150; w.e.mode = 'crownTossTell'; w.e.modeT = 0.8; let fetch = false; for (let i = 0; i < 60 * 4; i++) { w.step(1); if (w.e.mode === 'crownFetch') fetch = true; }
+    ok(fetch && w.e.mode !== 'stunned' && w.H.read().stuns === 0, 'a plain BLOCK knocks the crown to the floor and she fetches it (no stun)'); }
+  /* 3. ducked, it goes over; jumped, the same */
+  { const w = make({ mode: 'hit' }); w.st.ducking = true; w.P.x = 9150; w.e.mode = 'crownTossTell'; w.e.modeT = 0.8; w.step(60 * 4);
+    ok(w.st.dmg.length === 0 && w.e.mode !== 'crownToss', 'a DUCKED crown (chest height) goes over the hero both ways'); }
+  /* 4. a plain hit lands once a pass, 16, yellow */
+  { const w = make({ mode: 'hit' }); w.P.x = 9150; w.e.mode = 'crownTossTell'; w.e.modeT = 0.8; w.step(60 * 4);
+    ok(w.st.dmg.length >= 1 && w.st.dmg.length <= 2 && w.st.dmg.every(d => d.d === GQ3.crown.dmg && !d.o.unblockable && !d.o.pierce), 'the crown hits once a pass for ' + GQ3.crown.dmg + ', yellow (' + w.st.dmg.length + ' hits)'); }
+  /* 5. the portal cast: two portals, a fan of three each, one stun a cast, the rest only clank */
+  { const w = make({ mode: 'parry' }); w.P.x = 9020; w.e.x = 9300; w.e.mode = 'portalTell'; w.e.modeT = 1.0; let seen = 0; for (let i = 0; i < 60 * 6; i++) { w.step(1); seen = Math.max(seen, w.H.portals().length); }
+    ok(seen === 2, 'the P1a cast opens TWO portals (' + seen + ')'); ok(w.H.read().stuns === 1, 'a parried shard stuns her ONCE a cast (' + w.H.read().stuns + ')');
+    ok(w.e.hp < 2400 - Math.round(2400 * GQ3.portal.stunHp) + 1 && w.e.hp >= 2400 - Math.round(2400 * 0.2), 'the other parried shards only clank (hp ' + w.e.hp + ')'); }
+  { const w = make({ mode: 'hit' }); w.e.phase = 2; w.P.x = 9020; w.e.mode = 'portalTell'; w.e.modeT = 1.0; let seen = 0; for (let i = 0; i < 60 * 3; i++) { w.step(1); seen = Math.max(seen, w.H.portals().length); }
+    ok(seen === 3, 'the P1b cast opens THREE portals (' + seen + ')'); ok(w.st.dmg.every(d => d.d === GQ3.portal.dmg && !d.o.unblockable), 'a shard is 10, yellow'); }
+  /* 6. the flee: no death, FULL HEAL (hp, stamina, flasks), the fight ends, the hall is laid, escapeStart is the checkpoint */
+  { const w = make(); w.e.hp = 0; const r = w.H.spare(w.e);
+    ok(r === true && w.e.alive && w.e.hp === GQ3.hp2 && w.e.stage === 'flee', 'a lethal P1 blow is SPARED: she lives, at her phase-two bar (' + w.e.hp + ')');
+    ok(w.P.hp === w.P.maxHp && w.P.st === w.P.maxSt && w.P.flasks === 3, 'the flee FULLY HEALS: hp ' + w.P.hp + ', stamina ' + w.P.st + ', flasks ' + w.P.flasks);
+    ok(['endFight', 'shutWest', 'layEscape'].every(k => w.st.called.includes(k)), 'the fight ends, the west door stays shut, the hall is laid');
+    ok(w.st.checkpoint && w.st.checkpoint.x === w.Lw.gqEscape.start.x * 16 + 8, 'escapeStart (on T1) is the checkpoint');
+    w.step(60 * 2); ok(w.e.stage === 'escape' && w.e.hidden === true, 'she steps into her portal: hidden, stage escape');
+    ok(w.H.persist() && w.H.persist().stage === 'escape', 'the stage persists across a death');
+    /* a death: reset puts her back in the escape, the hall laid again, never P1 */
+    w.e.stage = undefined; w.e.hidden = false; w.e.mode = 'sleep'; w.st.called.length = 0; w.H.reset();
+    ok(w.e.stage === 'escape' && w.e.hidden && w.st.called.includes('layEscape') && w.H.hold(), 'after a death the hall is laid again and she is NOT in it (P1 is never refought)');
+    /* the fire floor: a gentle tick, a push up, never a kill (spare) */
+    w.P.x = 9300; w.P.y = w.Lw.arena.floor; w.P.ground = true; w.st.dmg.length = 0; w.step(60 * 3);
+    ok(w.st.dmg.some(d => d.d === GQ3.esc.fire && d.o.spare), 'the burning floor ticks ' + GQ3.esc.fire + ' and never kills (spare)');
+    ok(w.P.vy < 0, 'and pushes the hero up');
+    /* the burning rafter T4 goes under a foot, tile by tile, and comes back */
+    const T4 = w.Lw.gqEscape.tiers.find(t => t.collapse); w.P.x = (T4.x0 + 3) * 16 + 8; w.P.y = T4.row * 16; w.P.ground = true; w.st.tiles.length = 0; w.step(60 * 1);
+    ok(w.st.tiles.some(t => t[2] === 'drop' && t[0] === T4.row), 'a burning rafter goes under a foot (0.6 s a tile)'); w.P.x = 0; w.step(60 * 8);
+    ok(w.st.tiles.some(t => t[2] === 'lay'), 'and is laid again');
+    /* the shrine, then her portal */
+    const E = w.Lw.gqEscape; w.P.x = E.check.x * 16 + 8; w.P.y = (E.check.y + 1) * 16; w.step(2);
+    ok(w.st.checkpoint.x === E.check.x * 16 + 8 && w.H.persist().stage === 'roof', 'the roof shrine is the new checkpoint (a death now returns here)');
+    w.P.x = E.portal.x * 16 + 8; w.step(60); ok(w.st.called.includes('enterRoof') && w.e.stage === 'roof' && w.e.hp === GQ3.hp2, 'her portal: the tower top, her second bar (' + w.e.hp + ')');
+    ok(Math.abs(w.P.x - (w.Lw.arenaRoof.exit.x * 16 + 8)) < 2, 'the hero is set down at the island portal exit'); }
+  /* 7. phase two: lash high / low, the geyser, the ambush, the storm, the guards */
+  { const mk = () => { const w = make({ mode: 'hit' }); w.e.stage = 'roof'; w.e.phase = 3; w.e.maxHp = w.e.hp = GQ3.hp2; Object.assign(w.Lw.arena, w.Lw.arenaRoof); w.H.test.begin(); w.e.x = 10000; w.e.y = w.Lw.arena.floor; w.P.x = 9950; w.P.y = w.Lw.arena.floor; w.P.face = 1; w.e.crownCd = w.e.portalCd = 99; return w; };
+    { const w = mk(); w.e.mode = 'lashHighTell'; w.e.modeT = 0.7; w.step(60); ok(w.st.dmg.length === 1 && w.st.dmg[0].d === GQ3.roof.lashDmg && w.st.dmg[0].o.unblockable, 'the HIGH lash lands on a hero who does not duck (red, 18)'); }
+    { const w = mk(); w.st.ducking = true; w.e.mode = 'lashHighTell'; w.e.modeT = 0.7; w.step(60); ok(w.st.dmg.length === 0, 'the HIGH lash goes over a ducked hero'); }
+    { const w = mk(); w.P.y = w.Lw.arena.floor - 20; w.P.ground = false; w.e.mode = 'lashLowTell'; w.e.modeT = 0.7; w.step(60); ok(w.st.dmg.length === 0, 'the LOW lash goes under a jumping hero'); }
+    { const w = mk(); w.e.mode = 'lashLowTell'; w.e.modeT = 0.7; w.step(60); ok(w.st.dmg.length === 1, 'the LOW lash lands on a hero on the floor'); }
+    { const w = mk(); w.P.x = 9900; w.e.mode = 'roofStand'; w.e.modeT = 0; w.H.test.roof().geyserCd = 0; w.H.test.roof().ambushCd = 99; w.step(2); w.step(60 * 3);
+      ok(w.st.dmg.some(d => d.d === GQ3.roof.geyserDmg) || w.H.test.roof().geysers.length === 0, 'the rubble geyser erupts down its marked line (' + w.st.dmg.map(d => d.d).join(',') + ')'); }
+    { const w = mk(); w.e.mode = 'ambushTell'; w.e.modeT = GQ3.roof.ambushTell; w.H.test.roof().ambushX = w.P.x - 46; w.step(60 * 1.2); ok(w.st.dmg.some(d => d.d === GQ3.roof.ambushDmg && !d.o.unblockable), 'the ambush: she steps out behind you into a YELLOW sweep (a parry pays)'); }
+    { const w = mk(); w.st.mode = 'parry'; w.e.hp = Math.round(GQ3.hp2 * 0.25); w.e.x = 9980; w.H.test.roof().storm = { ang: Math.PI, hitAt: 0 }; w.P.x = 9980 - GQ3.roof.orbitR; w.P.y = w.e.y - 30 + 0.0; w.step(60 * 2);
+      ok(w.e.mode === 'stunned' && w.H.test.roof().storm === null, 'a parried storm crown breaks into her: STUNNED, the storm ends'); }
+    { const w = mk(); w.e.hp = Math.round(GQ3.hp2 * 0.65); w.e.mode = 'roofStand'; w.e.modeT = 9; w.step(60 * 2); ok(w.st.spawned.length === 2 && w.st.spawned.map(s => s.t).join() === 'soldier,javelin', 'at 66% two guards come up a hatch (a soldier and a javelin)'); }
+  }
+}
+
 console.log(fails ? 'FAIL gqueen3 (' + fails + ')' : 'ok  gqueen3'); process.exit(fails ? 1 : 0);
