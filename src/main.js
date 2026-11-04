@@ -33827,8 +33827,8 @@ function drawStormworks(cx, cy) {
   wall(156, 176, 28, '#2a2332', '#1c1824');   /* (claude/stormvis) the wall rises to the lean-to's eave (row 28): it stopped at 29 and the roof floated a row above it */
   for (let x = 156; x <= 176; x += 4) { B(x, 28, 4, 6 * TS, '#4a3a30'); B(x, 28, 1, 6 * TS, '#6a5444'); }
   for (let x = 157; x < 176; x += 4) { B(x, 31.5, 3 * TS - 4, 2.5 * TS, '#3a2c28'); B(x, 31.5, 3 * TS - 4, 2, '#5a4a40'); B(x, 32.2, 3 * TS - 4, 1, '#7a8494'); B(x + 0.2, 33.6, 8, 2, '#c9a85a'); B(x + 1.6, 33.7, 5, 1, '#e8c878'); }
-  for (let x = 156; x <= 176.5; x += 1) { const k = Math.floor(x) % 2; B(x, 27, TS, 4, k ? '#2c3248' : '#363e58'); B(x, 27, TS, 1, '#5a6488'); B(x + 0.25, 27.5, 2, 2, '#1c2030'); B(x, 28, TS, 1, '#161824'); }
-  B(155.5, 27.4, 22 * TS, 3, '#161824');
+  for (let x = 156; x <= 176.5; x += 1) { const k = Math.floor(x) % 2; B(x, 28, TS, 4, k ? '#2c3248' : '#363e58'); B(x, 28, TS, 1, '#5a6488'); B(x + 0.25, 28.25, 2, 2, '#1c2030'); }   /* (claude/stormvis2) the stables slate lies ON the wall top (row 28); it floated a row above with sky between */
+  B(155.5, 28.25, 22 * TS, 3, '#161824');
   // THE SMITHY (179-197): sooty ashlar behind the forge, a chimney that smokes, the lean-to's slate roof, a hanging row of tongs
   wall(179, 197, 27, '#26262e', '#1a1a22'); B(182, 21.7, 2 * TS + 6, 6.3 * TS, '#2e2e3a'); B(182, 21.7, 4, 6.3 * TS, '#4a4a5c'); B(181.8, 21.4, 2 * TS + 10, 7, '#161824');   /* (claude/stormvis) the cap sits ON the chimney (it hung 4 px clear of it) */
   /* (claude/stormvis) THE LEAN-TO'S ROOF is the plank you walk: plat(182, 28, 7) and the rope span from 189. It was drawn at row 24.4 with its eave at 25.4, three rows above the walkway and with nothing under it: two long beams floating in the sky. Now the slate lies on row 28 (x 182-188), with a dark eave under it, rafters back to the wall and a post at each end down to the yard */
