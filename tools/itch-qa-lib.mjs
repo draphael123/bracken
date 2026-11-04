@@ -60,6 +60,7 @@ export async function startSession({ siteDir, cache = false, iframe = '960x540',
   const click = async (x, y) => { await send('Input.dispatchMouseEvent', { type: 'mousePressed', x, y, button: 'left', clickCount: 1 }); await send('Input.dispatchMouseEvent', { type: 'mouseReleased', x, y, button: 'left', clickCount: 1 }); };
   await send('Runtime.enable'); await send('Page.enable'); await send('Log.enable'); await send('Network.enable');
   await send('Page.addScriptToEvaluateOnNewDocument', { source: HOOKS });
+  if (!metrics) await send('Emulation.setDeviceMetricsOverride', { width: 1000, height: 600, deviceScaleFactor: 1, mobile: false });   /* headless's own window leaves a 978x486 viewport: the 540-tall frame would be cut off */
   if (metrics) { await send('Emulation.setDeviceMetricsOverride', { width: metrics.w, height: metrics.h, deviceScaleFactor: metrics.dpr || 2, mobile: true }); await send('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 5 }); }
   const waitState = async (want, ms = 60000) => { const t0 = Date.now(); let st = null; while (Date.now() - t0 < ms) { st = await ev('typeof window.BK === "object" ? BK.state : null').catch(() => null); if (st === want) return { st, secs: (Date.now() - t0) / 1000 }; await sleep(200); } return { st, secs: (Date.now() - t0) / 1000 }; };
   const close = async () => { try { ws.close(); } catch { /* gone */ } await run.close(); game.close(); host.close(); };
