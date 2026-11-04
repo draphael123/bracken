@@ -18,7 +18,7 @@ import { bbPlan, bbOpen, PLAN as RT_BB } from './battering-beast.js';   /* THE B
 import { hqPlan } from './hornet-queen-plan.js'; import { hqOpen } from './hornet-queen.js';   /* THE HORNET QUEEN 2 (claude/hornetsnest): the bot reads her tells, the rings, the stingers, her loop and works her rules */ import { otPlan, otOpen, PLAN as RT_OT, OT as OT_K, underLine as OT_UNDER } from './old-tusker.js'; import { btPlan, btOpen } from './bog-troll.js'; const OT_W = OT_K.w; const GEO_FELL = false;   /* THE BOG TROLL (claude/fenroad): the bot reads the bubbles, the bulge, his tells and the rings off his own module, and works the lure */   /* OLD TUSKER (claude/oldtusker): the bot reads his tells, the clods, the waves and the clearing's pines off his own module */
 import { ssPlan, ssOpen, PLAN as RT_SS } from './shriek-sisters.js';   /* THE SHRIEK SISTERS (claude/rookery): the bot reads the red lines (and their lock), the rocks' rings, the marks, the wave, the snatch off their own module */
 const PLAN_CLOCKS = [RT_SS, RT_GB, RT_BB, RT_OT, RT_QUEEN, RT_DJINN, RT_DRILL, RT_FOREMAN, RT_COL, RT_FOG, RT_GANG, RT_CRAB, RT_HAWK, RT_HOUR, RT_HUNT, RT_LANT, RT_PAL, RT_PUP, RT_MAT, RT_SCARAB];
-import { profileOf, SKILL_RANGE } from './bot-profile.js'; import { makePerception, makeSkillHands } from './lab-perceive.js';   /* (claude/bot2) WHO THE BOT IS (opts.profile; 'legacy' = the old bot, the default) and ITS EYES */
+import { profileOf, SKILL_RANGE, PARRY_TELLS } from './bot-profile.js'; import { makePerception, makeSkillHands } from './lab-perceive.js';   /* (claude/bot2) WHO THE BOT IS (opts.profile; 'legacy' = the old bot, the default) and ITS EYES */
 import { CHARGE_TELL } from './crouch-a.js';   /* THE CROUCH TWISTS, PART A (claude/croucha): what the warden sets her spear against */
 import { FLIGHTS as SPIRAL_FLIGHTS, pendSafe as spiralPendSafe } from './spiral-chase.js';
 import { boneGaps as mageBoneGaps, MAGE as UMAGE, orbitWorlds as mageOrbitWorlds, reflectable as mageReflectable } from './undead-mage.js';   /* (claude/archmage2b) the Undead Archmage's bone storm, for the carpet bot */   /* THE SPIRAL STAIR's flights, for chaseClimb (undead4) */
@@ -775,11 +775,14 @@ function rollWhenDue(BK, press0) {
 function humanGuard(BK, h, boss) {
   const P = BK.P, k = BK.keys; if (!LABP.v2 || !(LABP.parryTry > 0) || !P || !boss || !k.block || P.block || P.atkHeld > 0 || P.charge > 0) return;
   if (h !== 'knight' && h !== 'paladin' && h !== 'geomancer') return;
-  const m = boss.mode; if (!m || !/Tell$/.test(m) || m === 'stanceTell' || HARD_TELLS.has(boss.t + '|' + m) || typeof boss.modeT !== 'number') return;
+  /* (claude/botbuilt) LABP.tellTable (person, or +tells): PARRY_TELLS names the windups the /Tell$/ regex cannot see (the Hornet Queen's stoop); clk is the clock of the blow (its eta, or the mode's own). Every other profile: ent is undefined, clk is boss.modeT, the line is as it was. */
+  const m = boss.mode, ent = (LABP.tellTable && PARRY_TELLS[boss.t]) ? PARRY_TELLS[boss.t][m] : undefined, clk = typeof ent === 'function' ? ent(boss, P) : boss.modeT; if (!m || !(/Tell$/.test(m) || ent) || m === 'stanceTell' || HARD_TELLS.has(boss.t + '|' + m) || typeof clk !== 'number') return;
   if (!GUARDR) return;
-  if (P.labGuardM !== m || boss.modeT > (P.labGuardT ?? -1) + 0.05) { P.labGuardM = m; P.labGuardTry = GUARDR() < LABP.parryTry; P.labGuardUp = false; if (GSTATS) { GSTATS.tells++; if (P.labGuardTry) GSTATS.tried++; } }   /* a NEW tell: the mode changed or its clock went UP */
-  P.labGuardT = boss.modeT;
-  if (P.labGuardTry) { if (boss.modeT > (LABP.parryLead ?? 0.09)) k.block = false; else if (!P.labGuardUp) { P.labGuardUp = true; if (GSTATS) GSTATS.raised = (GSTATS.raised || 0) + 1; } }
+  if (P.labGuardM !== m || clk > (P.labGuardT ?? -1) + 0.05) { P.labGuardM = m; P.labGuardTry = GUARDR() < LABP.parryTry; P.labGuardUp = false; P.labGuardOff = 0;
+    if (LABP.guardSd) { if (P.labGuardTry && LABP.guardLapse && GUARDR() < LABP.guardLapse) { P.labGuardTry = false; if (GSTATS) GSTATS.lapses = (GSTATS.lapses || 0) + 1; } P.labGuardOff = (LABP.guardMean || 0) + LABP.guardSd * Math.sqrt(-2 * Math.log(1 - GUARDR())) * Math.cos(2 * Math.PI * GUARDR()); }   /* PERSON: a guard that lands a little late/early, and the odd tell with no guard at all */
+    if (GSTATS) { GSTATS.tells++; if (P.labGuardTry) GSTATS.tried++; } }   /* a NEW tell: the mode changed or its clock went UP */
+  P.labGuardT = clk;
+  if (P.labGuardTry) { if (clk > (LABP.parryLead ?? 0.09) - (P.labGuardOff || 0)) k.block = false; else if (!P.labGuardUp) { P.labGuardUp = true; if (GSTATS) GSTATS.raised = (GSTATS.raised || 0) + 1; } }
 }
 /* (claude/difficulty) THE BOT ROTATES (src/anti-mash.js, Daniel 10-15): inside one of his openings a player who has landed the same plain CUT twice
    knows a third pays less (STALE.pay) and that a heavy fills his break bar fast - so the hands wind a HEAVY instead of the third cut. Any branch's
