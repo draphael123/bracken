@@ -170,7 +170,8 @@ import * as HNT from './redraw/hornets_nest_tiles.js'; import * as HNB from './r
 import * as LPD from './redraw/lilypad.js';   /* (claude/marsh3) the readable lily pads: rim, water edge, two tints, the sinking tell, the night's marsh lights */
 import * as M2A from './redraw/marsh2_art.js'; import * as FCA from './redraw/frog_court_art.js'; /* (claude/frogking2art) THE CROAKING COURT's art: royal pads, reeds, lanterns, the stir, the leap's splash, the tongue */ /* (claude/marsh2art) MARSH WOOD 2's sluice house, dam, mud bed, stilt walks (src/redraw/marsh2_art.js) */ import { bakeFrog } from './redraw/frogking.js'; import { FK as FROGK, makeFrogCourt, stationAt as frogStationAt, nextStation as frogNextStation } from './frog-king.js'; let FKC = null;   /* (claude/marsh2) THE BULLFROG KING REWORKED: his numbers, his court (the flies, the ripples, the tipped pads, the ride) and the bot's hands */
 import * as LWP from './lw_props.js';
-import { kitPose, kitPoseFrame, airPose, landPose, POSE_DASH } from './hero-poses.js';   /* EVERY ABILITY HAS A BODY: the pose an active plays while it fires */
+import { kitPose, kitPoseFrame, airPose, landPose, POSE_DASH } from './hero-poses.js';
+import { legsPose, CHARGE_KEYS as CF_KEYS } from './charge-legs.js';   /* (claude/chargefeet) THE HELD CHARGE WALKS: the pose's upper body over the run cycle's legs */   /* EVERY ABILITY HAS A BODY: the pose an active plays while it fires */
 import { bakeGeomancer, withWeapon, withGear } from './chars.js';
 import { bakeBellman } from './chars.js'; import { makeHushHands, BELLMAN as HUSH_BELL, GRAN as HUSH_GRAN, LINES as HUSH_LINES } from './hush-hands.js'; let HUH = null;   /* UNDERLEAF 2 (claude/underleaf2): sound is a verb - the pots, the quiet kill, the streets' alarms, gates and caches, the toll, THE BELLMAN, the Grandmother's rules (src/hush-hands.js) */
 import * as UL3T from './redraw/underleaf3_tiles.js'; import * as UL3B from './redraw/underleaf3_backdrop.js'; import * as UL3D from './redraw/underleaf3_dress.js'; import * as UL3W from './redraw/underleaf3_world.js'; import * as UL3F from './redraw/underleaf3_foes.js'; import * as UL3G from './redraw/underleaf3_gran.js';   /* (claude/underleafart) UNDERLEAF 3's tile kit */
@@ -9580,7 +9581,7 @@ ultRegister('ranger', { name: 'GREAT ARROW', ready: () => !!RGK && RGK.greatRead
 function lastCharge() {
   trialEvent('meter'); P.links = 0; P.linkT = 0; P.linkKeep = 0; P.lcBrace = LC_BRACE; P.lcLeft = 0; P.lcDir = P.face; P.lcHit = new Set();
   P.block = false; P.atk = -1; P.heavy = false; P.heavySwing = false; P.bashing = false; P.charge = 0; P.atkHeld = 0; P.chargeFull = false; P.rush = 0; P.rushRec = 0; P.vx = 0;
-  SFX.lcCry(); zoomKick(1.05, 0.3); shakeCam(2); ringAt(P.x, P.y - 10, 30, '#ffd36b', LC_BRACE + 0.15); ringAt(P.x + P.face * 8, P.y - 10, 12, '#fff6c8', 0.3);
+  SFX.lcCry(); zoomKick(1.05, 0.3); shakeCam(2); dust(P.x - P.face * 3, P.y, 6); chips(P.x + P.face * 8, P.y - 2, P.face, 4, ['#8a8272', '#c9b27c'], 80, 520, 1); impactAt(P.x + P.face * 9, P.y - 10, 'steel');
   number(P.x, P.y - 34, 'THE SHIELD CHARGE', '#ffd36b'); }
 function updateLastCharge(dt, stunned) {
   if (!lcOn()) return;
@@ -9589,13 +9590,13 @@ function updateLastCharge(dt, stunned) {
   if (P.swim) P.vy = 0;   /* THE WATER VERSION: the sea holds him level, brace and charge, and the charge is a straight line through it */   /* knocked out of it, or off his feet: the bar is gone and there is no slam */
   P.face = dir; P.abuf = 0; P.jbuf = 0; P.dbuf = 0;
   if (P.lcBrace > 0) { P.vx = 0; P.lcBrace -= dt;   /* THE BRACE: the tell. He stands behind the shield and the light gathers on it */
-    if (Math.random() < dt * 40) parts.push({ x: P.x + dir * (7 + Math.random() * 4), y: P.y - 4 - Math.random() * 14, vx: -dir * 20, vy: -30, life: 0.3, max: 0.3, col: Math.random() < 0.5 ? '#ffd36b' : '#fff6c8', size: 1, grav: -20 });
+    if (Math.random() < dt * 40) parts.push({ x: P.x + dir * (7 + Math.random() * 4), y: P.y - 4 - Math.random() * 14, vx: -dir * 20, vy: -30, life: 0.3, max: 0.3, col: Math.random() < 0.5 ? '#c9b27c' : '#8a8272', size: 1, grav: 60 });   /* grit kicked up by the set heels, not light gathering */
     if (P.lcBrace <= 0) { P.lcBrace = 0; P.lcLeft = LC_DIST + (tal('bash') ? 4 * TS : 0); P.vx = dir * LC_SPEED;   /* BULL RUSH: four tiles further */ SFX.lcRoll(); SFX.shieldScrape(); shakeCam(6, dir * 4); zoomKick(1.08, 0.25); dust(P.x - dir * 4, P.y, 6); streaks(P.x - dir * 4, P.y - 10, 8, ['#ffd36b', '#fff6c8'], 160); }
     return; }
   P.lcLeft -= LC_SPEED * dt; P.vx = dir * LC_SPEED;
   /* THE TRAIL: a gold afterimage of him every other frame or so, and gold streaks thrown off behind */
-  if (Math.random() < dt * 34) ghosts.push({ x: P.x, y: P.y, face: dir, life: 0.16, frame: Math.floor(time * 18) % 2, gold: true });
-  for (let i = 0; i < 2; i++) if (Math.random() < dt * 40) parts.push({ x: P.x - dir * (4 + Math.random() * 6), y: P.y - 3 - Math.random() * 16, vx: -dir * (60 + Math.random() * 80), vy: 0, life: 0.2, max: 0.2, col: Math.random() < 0.5 ? '#ffd36b' : '#fff6c8', size: 1, grav: 0, streak: true });
+  if (Math.random() < dt * 34) ghosts.push({ x: P.x, y: P.y, face: dir, life: 0.12, frame: Math.floor(time * 18) % 2 });
+  for (let i = 0; i < 2; i++) if (Math.random() < dt * 40) parts.push({ x: P.x - dir * (4 + Math.random() * 6), y: P.y - 3 - Math.random() * 16, vx: -dir * (60 + Math.random() * 80), vy: 0, life: 0.3, max: 0.3, col: Math.random() < 0.5 ? '#c9b27c' : '#8a8272', size: 1, grav: 120 });   /* the dust and grit his boots throw back */
   if (Math.random() < dt * 30) dust(P.x - dir * 5, P.y, 1);
   const lead = P.x + dir * (P.w / 2 + 2), lx = Math.floor(lead / TS);
   if (isSolid(lx, Math.floor((P.y - 4) / TS)) || isSolid(lx, Math.floor((P.y - P.h + 2) / TS))) { SFX.clank(); sparks(lead, P.y - 10, -dir, 9); impactAt(lead, P.y - 10, 'steel'); lcSlam(dir, false); return; }   /* A WALL: iron on stone, and the slam is into it */
@@ -9633,7 +9634,7 @@ function knightRider(e) {
 /* the FINISHER's second blow, and the chain's idle clock, run beside the guard (updatePlayer: chainTick) */
 function finisherTick(dt) { if (!P.finQ || !P.finQ.length) return; for (const q of P.finQ) q.t -= dt;
   const due = P.finQ.filter(q => q.t <= 0); P.finQ = P.finQ.filter(q => q.t > 0);
-  for (const q of due) { const e = q.e; if (!e.alive || P.dead || Math.abs(e.x - P.x) > 70) continue; lcStrike(e, KC.finEcho, Math.sign(e.x - P.x) || P.face); ringAt(e.x, e.y - (e.h || 16) / 2, 20, '#ffd36b', 0.3); } }
+  for (const q of due) { const e = q.e; if (!e.alive || P.dead || Math.abs(e.x - P.x) > 70) continue; lcStrike(e, KC.finEcho, Math.sign(e.x - P.x) || P.face); impactAt(e.x, e.y - (e.h || 16) / 2, 'steel'); } }
 /* ONE BLOW OF IT. Struck through hurtEnemy with the hero set up as a heavy swing for the length of the call, so everything that asks
    whether a blow was heavy hears yes - SUNDER, EXECUTION, the parry's OPENED UP, the stagger bar, the knock into the level - and put
    back straight after, so the swing pass never sees a swing. No guard check stands in front of it: a raised shield is broken, not met. */
@@ -9641,7 +9642,7 @@ function lcStrike(e, mul, dir) {
   const was = { heavy: P.heavy, hs: P.heavySwing, atk: P.atk, bash: P.bashing }, hp0 = e.hp, big = lcBig(e), from = P.x - dir * 10;
   P.heavy = true; P.heavySwing = true; P.atk = 0.05; P.bashing = true;
   try { hurtEnemy(e, Math.round(swordDmg() * mul), from, false); } finally { P.heavy = was.heavy; P.heavySwing = was.hs; P.atk = was.atk; P.bashing = was.bash; }
-  SFX.shieldSlam(); sparks(e.x - dir * 4, e.y - e.h / 2, dir, big ? 14 : 8); impactAt(e.x - dir * 4, e.y - e.h / 2, 'steel'); streaks(e.x - dir * 4, e.y - e.h / 2, 6, ['#ffd36b', '#fff6c8'], 150);
+  SFX.shieldSlam(); sparks(e.x - dir * 4, e.y - e.h / 2, dir, big ? 14 : 8); impactAt(e.x - dir * 4, e.y - e.h / 2, 'steel'); chips(e.x - dir * 4, e.y - e.h / 2, dir, 6, ['#c9d1dc', '#8a8272'], 150, 520, 1);
   if (!e.alive) return;
   if (big) {   /* rocked where it stands, and a great bite out of its stagger bar */
     e.stagger = Math.max(e.stagger || 0, 0.45 * (tal('bash') ? 1.6 : 1) * (1 + 0.15 * prk('kbash'))); const m = poiseMax(e);   /* BULL RUSH: rocked longer */
@@ -9652,18 +9653,20 @@ function lcStrike(e, mul, dir) {
     if (tal('sunder')) { e.sunder = 2.5; number(e.x, e.y - e.h - 18, 'SUNDERED', '#ffd36b'); }
     hitstop(0.04); shakeCam(4, dir * 3); }
 }
+/* (claude/chargefeet, Daniel 11-04: 'make it PHYSICAL if it looks like magic') THE KNIGHT'S IMPACTS ARE IRON AND EARTH: a ring of dust along the floor, chips of stone and pebbles thrown up and falling, sparks off the steel and a short white flash on the face of the shield - never a glowing ring. Art only. */
+function ironImpact(x, y, floorY, dir, big) { dustRing(x, floorY, big ? 18 : 10); chips(x, floorY - 2, 1, big ? 8 : 5, ['#8a8272', '#c9b27c', '#5c4a32', '#e8dcc0'], big ? 150 : 110, 520, 1); chips(x, floorY - 2, -1, big ? 8 : 5, ['#8a8272', '#c9b27c', '#5c4a32', '#e8dcc0'], big ? 150 : 110, 520, 1); sparks(x, y, dir, big ? 9 : 6); impactAt(x, y, 'steel'); }
 /* THE SLAM IT ENDS IN: the shield driven into the ground in front of him. A ring of forty pixels that rocks and shoves whatever is
    near and hurts it only a little - it is the full stop, not the sentence. What the charge already struck is not struck again. */
 function lcSlam2() {   /* THE LONG CHARGE (L50): a second, wider slam a beat after the first - k 0.9 on everything within 90 px (the AoE ceiling is 1.00) */
   const x = P.x + P.lc2Dir * 10, y = P.y - 10, dmg = Math.max(2, Math.round(swordDmg() * 0.9 * amul('kcharge2')));
-  SFX.lcSlam(); shakeCam(8, P.lc2Dir * 3); hitstop(0.06); ringAt(x, y, 90, '#ffd36b', 0.5); ringAt(x, y, 50, '#fff6c8', 0.35); dust(x, P.y, 14); impactAt(x, y, 'steel');
+  SFX.lcSlam(); shakeCam(8, P.lc2Dir * 3); hitstop(0.06); ironImpact(x, y, P.y, P.lc2Dir, true); ironImpact(x + 36, y, P.y, 1, true); ironImpact(x - 36, y, P.y, -1, true); dust(x, P.y, 14);
   for (const e of enemies) { if (!e.alive || e.harmless || e.gone > 0 || e.turncoat || Math.abs(e.x - x) > 90 || Math.abs((e.y - (e.h || 16) / 2) - y) > 70) continue; hurtEnemy(e, dmg, x - (Math.sign(e.x - x) || 1) * 12, false); if (e.alive && !lcBig(e)) { e.stagger = Math.max(e.stagger || 0, 0.5); e.vx = (Math.sign(e.x - x) || 1) * 120; } } }
 function lcSlam(dir, big) {
   if (tech('kcharge2')) { P.lc2T = 0.28; P.lc2Dir = dir; }
   P.lcBrace = 0; P.lcLeft = 0; P.vx = big ? -dir * 60 : 0; P.rushRec = 0.3;
   const x = P.x + dir * 10, y = P.y - 10, dmg = Math.max(2, Math.round(swordDmg() * 0.4));
   SFX.lcSlam(); shakeCam(big ? 10 : 7, dir * 4); zoomKick(big ? 1.12 : 1.08, 0.3); hitstop(big ? 0.14 : 0.08); rumble(160, 0.7);
-  ringAt(x, y, LC_RING, '#ffd36b', 0.45); ringAt(x, y, LC_RING / 2, '#fff6c8', 0.3); dust(x, P.y, 12); impactAt(x, y, 'steel'); streaks(x, y, 12, ['#ffd36b', '#fff6c8'], 200);
+  ironImpact(x, y, P.y, dir, big); dust(x, P.y, 12);
   for (const e of enemies) {
     if (!e.alive || e.harmless || e.gone > 0 || e.turncoat || Math.abs(e.x - x) > LC_RING || Math.abs((e.y - (e.h || 16) / 2) - y) > LC_RING * 0.75) continue;
     const d = Math.sign(e.x - x) || dir;
@@ -9696,6 +9699,7 @@ function heavyCut(stage) {
 /* WHAT EACH STAGE DOES TO WHAT IT LANDS ON, after the heavy blow has done everything a heavy blow does (the swing pass) */
 function cutHit(e) {
   const st = P.cutStage || 0, big = lcBig(e); if (st < 2 || !e.alive) return;
+  dust(e.x, e.y, 6); chips(e.x - P.face * 3, e.y - (e.h || 16) / 2, P.face, 7, ['#c9d1dc', '#fff6e0', '#8a8272'], 160, 520, 1); shakeCam(3, P.face * 2); hitstop(0.04);   /* (claude/chargefeet) WEIGHT: the cut lands with grit, a shake and a beat of stillness; the damage is the same */
   if (big) { e.stagger = Math.max(e.stagger || 0, st === 3 ? 0.5 : 0.3); const m = poiseMax(e);
     if (m && !(e.broken > 0) && !(e.poiseCd > 0)) { e.poise = Math.min(m, (e.poise || 0) + m * (st === 3 ? 0.35 : 0.25)); if (e.poise >= m) addPoise(e, 1, P.x, false); }
     hitstop(0.1); return; }
@@ -30884,11 +30888,11 @@ function startSwing() { P.dkFed = false; P.dkDrained = false; P.bkLashSaid = fal
   if (P.heavySwing && P.combo >= 6 && hero() === 'knight' && tal('unbroken')) number(P.x, P.y - 32, 'UNBROKEN ' + P.combo, '#fff6e0');
   P.kRip = 0; P.kBash3 = false; P.counterThrust = false; P.finisher = false; P.valiant = false; P.kOpen = false; P.finEcho = null;
   if (hero() === 'knight' && !P.heavy) {   /* THE GUARD CHAIN's riders on the cut out of a perfect guard; the THIRD JAB is the shield bash (Daniel 11-01 07:42) */
-    if (ripHeavy) { const lk = Math.min(KC.max, P.links | 0); P.kRip = lk; if (lk >= 1) P.kOpen = true; if (lk >= KC.max) { P.finisher = true; P.valiant = true; P.finEcho = new Set(); P.links = 0; P.linkT = 0; P.linkKeep = 0; SFX.parry(); number(P.x, P.y - 44, 'FINISHER', '#ffd36b'); ringAt(P.x + P.face * 12, P.y - 14, 26, '#ffd36b', 0.4); zoomKick(1.05, 0.2); }
+    if (ripHeavy) { const lk = Math.min(KC.max, P.links | 0); P.kRip = lk; if (lk >= 1) P.kOpen = true; if (lk >= KC.max) { P.finisher = true; P.valiant = true; P.finEcho = new Set(); P.links = 0; P.linkT = 0; P.linkKeep = 0; SFX.parry(); number(P.x, P.y - 44, 'FINISHER', '#ffd36b'); dust(P.x - P.face * 2, P.y, 8); chips(P.x - P.face * 4, P.y - 2, -P.face, 5, ['#8a8272', '#c9b27c'], 90, 520, 1); if (P.ground) P.vx = P.face * 150; zoomKick(1.05, 0.2); }   /* (claude/chargefeet) PHYSICAL: he plants his heel and LUNGES into the cut - the dust behind him, the step forward - not a ring of light (reach and damage are the same boxes) */
       if (tech('kcounter')) { P.counterThrust = true; P.kOpen = true; } }
     else if (P.heavySwing) { P.kBash3 = true; kitPose(P, 'kBash', 0.26); } }
   P.swingMul = (P.heavySwing ? (isGeo() ? GEO_K.fist.mul : P.wLong ? WID.long.mul : 1.5) + 0.25 * tal('thirdCut') : 1) * (rip && P.ripSrc !== 'parry' ? 2 : 1) * (P.finisher ? 1.15 : 1) * (P.counterThrust ? 2.0 / 1.5 : 1);   /* a COUNTER-THRUST (L25) is k 2.0 against the third cut's 1.5 */   /* (claude/riposte) a PARRY's riposte pays x2 on the foe it opened (src/riposte.js payoff); the RIPOSTE talent's plain block still doubles the swing */
-  if (rip) { P.riposteT = 0; P.riposteHeavy = false; P.ripSrc = null; ringAt(P.x + P.face * 10, P.y - 10, 12, '#ffd36b', 0.2); }
+  if (rip) { P.riposteT = 0; P.riposteHeavy = false; P.ripSrc = null; if (hero() === 'knight') impactAt(P.x + P.face * 10, P.y - 10, 'steel'); else ringAt(P.x + P.face * 10, P.y - 10, 12, '#ffd36b', 0.2); }
   if (rip && !ripHeavy) { P.ripostes = (P.ripostes || 0) + 1; SFX.riposte(); number(P.x, P.y - 30, 'RIPOSTE', '#ffd36b'); }   /* (claude/riposte) every hero's riposte cut says so */
   if (ripHeavy) { P.ripostes = (P.ripostes || 0) + 1; SFX.riposte(); number(P.x, P.y - 30, 'RIPOSTE', '#ffd36b'); ringAt(P.x + P.face * 12, P.y - 11, 22, '#fff6c8', 0.25); streaks(P.x + P.face * 12, P.y - 12, 7, ['#ffffff', '#ffd36b'], 190); zoomKick(1.03, 0.14); }
   if (isRg() && P.heavySwing && !P.heavy && !rip) { P.swingMul = RG_K.kick.mul; kitPose(P, 'rgBash', 0.26); if (P.ground || P.swim) P.vx = P.face * RG_K.kick.step; }   /* (claude/rangerid, Daniel 11-01) HER THIRD JAB IS THE PUSH KICK: a lighter cut that shoves the foe out to range (RGK.kickHit, heroCut) */
@@ -33571,9 +33575,9 @@ function drawCutArc(cx, cy) {
   if (hero() !== 'knight' || !P.heavy || !P.cutStage || P.dead || P.atk < 0.02 || P.atk > 0.26) return false;
   const k = Math.min(1, (P.atk - 0.02) / 0.18), f = P.face, x = Math.round(P.x - cx) + f * 3, y = Math.round(P.y - cy) - 12, col = CUT_COL[P.cutStage];
   const A0 = -1.9, head = A0 + 3.1 * k, fade = P.atk > 0.2 ? 1 - (P.atk - 0.2) / 0.06 : 1;
-  g.save(); g.globalCompositeOperation = 'lighter';
+  g.save(); g.globalCompositeOperation = 'source-over';   /* (claude/chargefeet) a smear of STEEL the blade drew - blended normally, grey and white - not an additive gold arc of light */
   for (let i = 0; i < 4; i++) { const tail = Math.max(A0, head - 1.3 - i * 0.35); if (head <= tail) continue;
-    g.globalAlpha = (SET.reduceMotion ? 0.35 : 1) * fade * [0.9, 0.6, 0.35, 0.2][i]; g.strokeStyle = i === 0 ? '#ffffff' : i === 1 ? '#fff6e0' : col; g.lineWidth = [1.5, 2.5, 4, 6][i] + (P.cutStage - 1) * 0.5;
+    g.globalAlpha = (SET.reduceMotion ? 0.35 : 1) * fade * [0.9, 0.6, 0.35, 0.2][i]; g.strokeStyle = i === 0 ? '#ffffff' : i === 1 ? '#dfe6ee' : '#8f9bab'; g.lineWidth = [1.5, 2, 3, 4][i] + (P.cutStage - 1) * 0.5;
     g.beginPath(); if (f > 0) g.ellipse(x, y, 24 - i, 22 - i, 0, tail, head); else g.ellipse(x, y, 24 - i, 22 - i, 0, Math.PI - head, Math.PI - tail); g.stroke(); }
   g.restore(); return true; }
 /* THE AIR UP-SLASH SMEAR (claude/airupart; combat3 drew one thin arc): a crisp tapered crescent the blade's tip drew, front to back over his head - a
@@ -35208,6 +35212,7 @@ function drawWorld(cx, cy, showPlayer) {
       const hs = isReaper() ? 1.22 : 1, shadowed = false;   /* the Blood Knight is the biggest of them (claude/bloodstep: and when he steps he is whole and red-misted, no longer a shadow: src/hero-pass.js 'shade' fx) */
       const fy = P.flip ? P.y - P.h : P.y, fs = P.flip ? -1 : 1;   /* THE MAGE'S FOLLY: the room turned over draws him feet to the ceiling */
       const KD = ((hero() === 'knight' && thrown) || (isWarden() && (wardJav || (P.wthHold || 0) > 0 || P.wReachT > 0)) || (isBz() && P.bzAxe)) && K.bare ? K.bare : K;   /* (claude/wardenart) and bare-handed while the javelin winds (wthDraw draws the spear) and through the ULTIMATE (the ghost spear is the spear) */   /* (THE BERSERKER with his off axe thrown: one axe) */   /* (and the Warden with her JAVELIN out) */   /* SHIELD THROW: while it is out of his hand he is drawn without it - the cue that it is gone */
+      if (CF_KEYS.has(key) && (P.charge > 0 || knightWinding()) && !(P.atk >= 0 && P.heavy) && P.ground && !P.swim && !P.climb && !P.dead && !(P.dodge > 0) && Math.abs(P.vx) > 10 && !(P.dance > 0) && !(P.drinkT > 0) && K.R.run && (!K.bare || K.bare.R[key])) { const cf = legsPose(K, key, frame, Math.floor(P.anim * 13) % 6); if (cf && (!K.bare || legsPose(K.bare, key, frame, 0))) { key = cf[0]; frame = cf[1]; } }   /* (claude/chargefeet, Daniel 11-04) WALKING UNDER THE HELD CHARGE: the legs play the run cycle, the upper body keeps the pose; stood still, the planted stance stays (src/charge-legs.js) */
       P.lastKey = key; P.lastFrame = frame;   /* remembered for the audits (tools/audit-hitboxes.mjs), as e.lastFrame is for a creature */
       drawWarm('rim', KD, key, frame, P.x - cx, fy - cy + dY * fs, dFace, sx * (2 - br) * hs, sy * br * hs * fs, swimRot, P.x, P.y - 10);
       drawSet(KD, key, frame, P.x - cx, fy - cy + dY * fs, dFace, false, sx * (2 - br) * hs, sy * br * hs * fs, shadowed ? 0.55 : 1, swimRot);
