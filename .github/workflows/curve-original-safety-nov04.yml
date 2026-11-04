@@ -1,0 +1,42 @@
+name: Binary curves original ten safety checks
+on:
+  push:
+    branches: [codex/load-perf]
+    paths:
+      - tools/curve-original-safety-nov04/**
+      - .github/workflows/curve-original-safety-nov04.yml
+permissions: {contents: read}
+jobs:
+  safety:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix: {scope: [memory, publicApi]}
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0}
+      - uses: actions/checkout@v4
+        with:
+          ref: 1a576c3f4511b6856df9fb4738df5aaae9987e81
+          path: sprite-publication-safety-game
+          fetch-depth: 0
+      - uses: actions/checkout@v4
+        with:
+          ref: 1a576c3f4511b6856df9fb4738df5aaae9987e81
+          path: sprite-publication-original-tools
+      - uses: actions/setup-node@v4
+        with: {node-version: '24.11.1'}
+      - name: Exact binary-curve source with all original ten standalone safety fixtures
+        run: node tools/curve-original-safety-nov04/check.mjs
+        env:
+          PRIVATE_HERO_GAME: sprite-publication-safety-game
+          PRIVATE_HERO_ORIGINAL_TOOLS: sprite-publication-original-tools
+          PRIVATE_HERO_SAFETY_SCOPE: ${{ matrix.scope }}
+          PRIVATE_HERO_SAFETY_OUT: ${{ runner.temp }}/curve-original-safety-${{ matrix.scope }}-nov04
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: curve-original-safety-${{ matrix.scope }}-nov04
+          path: ${{ runner.temp }}/curve-original-safety-${{ matrix.scope }}-nov04/
+          if-no-files-found: error
