@@ -32361,7 +32361,7 @@ function trnDrawWorldOver(cx, cy) {
 function trnDrawOverlay() {
   if (TRN && !TRN.loading) { const tl = TRN.tl; TRA.drawBars(g, VW, VH, TRM.barIn(tl.t, TRN.entry.bar || TRM.BAR));
     TCH.hit(0, 0, VW, VH, () => { anyPress = true; initAudio(); });
-    if (TRN.entry.scene === 'smoke' && (TRM.phase(tl) === 'smoke' || TRM.phase(tl) === 'fade')) { const wa = TRM.smokeWord(trnSceneS(tl)) * (TRM.phase(tl) === 'fade' ? 1 - Math.min(1, tl.pt / tl.beats[tl.i].dur) : 1); if (wa > 0.02) { const ln = fitText('THE VILLAGE BURNS', VW - 40, 10), wy = Math.round(VH * 0.5 - 4); g.globalAlpha = wa; text(ln, Math.round(VW * 0.56), wy, '#ffd9a0', 'center', 10); g.globalAlpha = 1; } }   /* (claude/kingscene) the one line of the beat, over the pan; the art file writes no text */
+    if (TRN.entry.scene === 'smoke' && (TRM.phase(tl) === 'smoke' || TRM.phase(tl) === 'fade')) { const wa = TRM.smokeWord(trnSceneS(tl)) * (TRM.phase(tl) === 'fade' ? 1 - Math.min(1, tl.pt / tl.beats[tl.i].dur) : 1); if (wa > 0.02) { const ln = fitText('THE VILLAGE BURNS', VW - 40, 10), wy = Math.round(VH * 0.6) + 7; g.globalAlpha = wa; text(ln, Math.round(VW * 0.56), wy, '#ffd9a0', 'center', 10); g.globalAlpha = 1; } }   /* (claude/kingscene) the one line of the beat, over the pan; the art file writes no text */
     if (TRM.canSkip(tl)) { const thin = !!TRN.entry.bar; g.globalAlpha = Math.min(thin ? 0.45 : 0.75, (tl.t - TRM.MIN_SKIP) * 1.5); text(touchOn ? 'TAP: SKIP' : 'ANY BUTTON: SKIP', VW - 6, VH - (thin ? 13 : 15), '#d9d2b8', 'right', thin ? 5 : 6); g.globalAlpha = 1; } }
   else if (TRN) { g.fillStyle = '#05040a'; g.fillRect(0, 0, VW, VH); }
   else if (trnArrive && !trnArrive.done && trnArrive.ferry) TRA.drawBars(g, VW, VH, TRM.barOut(trnArrive.t, trnArrive.dur));
