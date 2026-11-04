@@ -15,7 +15,7 @@ Branch claude/batch143, worktree bracken-batch143. Not merged, not deployed, not
 
 ## Checks (all node unless noted)
 GREEN: demo-cut, demo-save-carry, itch-build-check (NEW, registered in check.mjs: build to temp, <1000 files, index at root, no src/, no ad-block word, zip CRC/central-dir parse, repo untouched), modulepreload, comments, homepaths, deploy-surface, demo-floats, shop-gates, node --check main.js. Windows Expand-Archive/ZipFile opens the zip (922 entries).
-RED (pre-existing): dangling-paths = tools/level-quality.mjs:124 audio/file.ogg + queengloss prior_queen_set.js citations (not from this lane).
+RED (pre-existing): dangling-paths = tools/level-quality.mjs:124 the audio table key form + queengloss prior_queen_set.js citations (not from this lane).
 Browser (1 headless each, 6 GB free): tools/itch-embed-page.mjs (NEW, by hand, not in suite) on the unpacked build in a 960x540 CROSS-SITE iframe (localhost host page, 127.0.0.1 game, itch's allow list): see scratch report.
 Not run: full suite, boss rates, touch/phone, Safari/iOS/Firefox, the real itch sandbox.
 
