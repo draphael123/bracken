@@ -59,7 +59,7 @@ export const GB = {
   line: { v: 34, every: [5.6, 5.0, 4.5], bombEvery: 4, first: 2.2, fuse: 5.6, batV: 250, blast: 34, blastDmg: 12, knockV: 120 },
   hungry: { t: 6, mul: 0.7, cd: 0.8 },
   stove: { cool: 12, box: 16 },
-  bz: { hurt: 1.5 }, dmgMul: 2.9,
+  bz: { hurt: 1.5 }, dmgMul: 3.4,   /* (claude/grubhook) 2.9 -> 3.4: the hook climb is an easier belt escape (built rates 63% -> 81%); HP untouched (Daniel 11-04) */
   heroMul: { knight: 1, pyro: 1.8 },   /* (claude/kitchengate4tune) his blows on each hero (as DUEL_HERO / LANCE4.heroDmg): n=12 human+flasks, knight 82% warden 50% pyro 100% at 1 each -> the pyro stands off the line, the warden misses flings */
 };
 export const GB_SAY = { wake: 'LORD GRUBBAG THE GLUTTON', rule: 'THE SERVING LINE FEEDS HIM: KNOCK THE DISHES OFF. LET THE BOMBS AND THE CHILLIES REACH HIM.', p2: 'MORE! FASTER!', p3: 'HE REACHES FOR YOU',
