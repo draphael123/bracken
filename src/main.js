@@ -10465,6 +10465,10 @@ function attackBox() { const b = attackBox0(); if (b && P.finisher && P.atk >= 0
 function gadgetInKnifeReach(p, reach) { const hit = (x, y, lo, hi) => { const dx = (x - p.x) * p.face; return dx > -8 && dx < reach + 10 && y >= p.y - hi - 4 && y <= p.y - lo + 4; };
   if (typeof CANAL !== 'undefined' && CANAL && CANAL.props) for (const q of CANAL.props) if (q.t !== 'lamp' && hit(q.x, q.y, -2, 24)) return true;
   if (L && L.ents) for (const q of L.ents) if (q.t === 'qwindlass' && hit(q.x * TS + 8, (q.y + 1) * TS, 0, 26)) return true;
+  /* (claude/lance6proof) THE QUEEN'S LANCE: a bell, a signal rope's post and a STUCK volley spear in knife reach are point-blank too - the ranger's tap would shoot an arrow past them (she could neither ring a tower bell nor send his spear back) */
+  for (const q of props) if (q.t === 'lancebell' && hit(q.x, q.y, 0, 26)) return true;
+  if (L && L.zipLines) for (const z of L.zipLines) if (z.signal !== undefined && z.post && hit(z.post[0], z.post[1], 0, 24)) return true;
+  if (boss && boss.t === 'lance' && boss.lz) for (const sp of boss.lz.spears) if (sp.stuck > 0 && hit(sp.x, sp.y, 0, 26)) return true;
   return false; }
 function attackBox0() {
   if (CA && (P.caTrip || P.caPoke) && P.swingKind === 'sweep') { const b = CA.box(); if (b) return b === 'none' ? null : b; }   /* THE SHIELD TRIP and THE LOW POKE (src/crouch-a.js) */
