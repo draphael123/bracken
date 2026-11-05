@@ -39,7 +39,7 @@ function wing(g, r, sx, sy, s, el, P0, fold, shade, F) {
     feather(g, Math.round(ox), Math.round(oy), A(base + d), Math.round(P.wlen * (0.42 + 0.12 * Math.sin(Math.PI * (1 - t) * 0.9 + 0.5))), 3.4 + (P.cov > 3 ? 0.8 : 0), i % 2 ? c0 : c1, P.dark, bars);
   }
   for (let k = 0; k < nPri; k++) {                                                  /* primaries, fanned from the wrist */
-    const kk = k / Math.max(1, nPri - 1), ang = base + (-0.12 + kk * 0.95) * tr + (fold ? 0.55 : 0), lenk = P.wlen * (0.78 - 0.34 * kk) * (fold ? 0.92 : 1);
+    const kk = k / Math.max(1, nPri - 1), ang = base + (-0.12 + kk * 0.95) * tr + (fold ? 0.55 : 0) + (F && F.tip ? F.tip * (0.35 + kk) : 0), lenk = P.wlen * (0.78 - 0.34 * kk) * (fold ? 0.92 : 1);
     feather(g, wx - s * 2, wy, A(ang), Math.round(lenk * (1 - wr * 0.3)), 3.4 + (P.cov > 3 ? 0.8 : 0), k % 2 ? c0 : c1, P.dark, bars);
   }
   const th = P.cov > 3 ? 8 : 6;                                                      /* the arm: leading edge, lit along its top */
@@ -61,7 +61,7 @@ export const WOMAN = true;
 const LAY = (P, sp) => ({ sh: sp ? -13 : -25, hip: sp ? -6 : -13, sw: P.sw || 7, ww: P.ww || 4.5 });
 function hairLocks(g, P, p, role, hx, hy, r0) {   /* long hair: a mass behind the head, then locks streaming back and down past the shoulders to the waist; a scream throws it out and up */
   const up = p.beak || p.rings || p.cone || p.sac ? 1 : 0, dk = P.hairD, md = P.hair, lt = P.hairL, len = role === 'snatcher' ? 24 : 27;
-  for (let k = 0; k < 7; k++) { const a = up ? Math.PI * (0.98 + k * 0.045) : Math.PI * (0.5 + k * 0.05) + 0.12; feather(g, hx - 2 - (up ? 1 : k * 0.9 - 1), hy + (up ? 1 : 4), a, len + (k % 3) * 2 - (up ? 8 : 0) - (up ? 0 : 4), 3.6, k % 2 ? dk : md, lt); }
+  for (let k = 0; k < 7; k++) { const a = (up ? Math.PI * (0.98 + k * 0.045) : Math.PI * (0.5 + k * 0.05) + 0.12) - (p.lag || 0) * (up ? 0.1 : 0.17) * (1 + k * 0.12); feather(g, hx - 2 - (up ? 1 : k * 0.9 - 1), hy + (up ? 1 : 4), a, len + (k % 3) * 2 - (up ? 8 : 0) - (up ? 0 : 4), 3.6, k % 2 ? dk : md, lt); }
   ellipse(g, hx - 3, hy + 2, r0 + 1.5, r0 + 2.5, dk); ellipse(g, hx - 3.5, hy + 3, r0, r0 + 1.5, md); ellipse(g, hx - 5, hy, 2, r0 - 1, lt);
 }
 function face(g, P, p, role, hx, hy, r0) {
@@ -83,9 +83,9 @@ function face(g, P, p, role, hx, hy, r0) {
 function body(g, P, p, role, F) {
   const bd = P.bod || P.body, bl = P.bodL || P.light, bk = P.bodD || P.dark, sp = !!p.sprawl, L = LAY(P, sp), { sh, hip, sw, ww } = L, ch = p.chest ? 1 : 0;
   /* TAIL feathers (the diver's long fork, the others' short fan) hang behind the skirt */
-  if (!sp) for (let k = 0; k < P.tail; k++) { const a = Math.PI / 2 + (k - (P.tail - 1) / 2) * 0.22; feather(g, -1, hip + 2, a, role === 'diver' ? 17 : 12, 2.6, k % 2 ? P.dark : P.body, P.hi); }
+  if (!sp) for (let k = 0; k < P.tail; k++) { const a = Math.PI / 2 + (k - (P.tail - 1) / 2) * 0.22 - (p.lag || 0) * 0.09; feather(g, -1, hip + 2, a, role === 'diver' ? 17 : 12, 2.6, k % 2 ? P.dark : P.body, P.hi); }
   /* the FEATHER SKIRT over the hips: rows of feather tips, wider at the hip, ragged below */
-  const sk0 = hip - 1, sk1 = sp ? hip + 2 : hip + 6;
+  const lg = p.lag || 0, sk0 = hip - 1, sk1 = (sp ? hip + 2 : hip + 6) + (lg > 0 ? 1 : lg < 0 ? -1 : 0);
   fillPoly(g, [[-ww - 1, sk0], [ww + 1, sk0], [ww + 3, sk1 - 2], [-ww - 3, sk1 - 2]], bd);
   for (let x = -ww - 3; x <= ww + 2; x += 2) { const dd = (x & 2) ? 2 : 3; R(g, x, sk1 - 2, 2, dd, (x >> 1) & 1 ? bl : bd); R(g, x, sk1 - 2 + dd - 1, 1, 1, bk); }
   for (let x = -ww - 1; x <= ww; x += 3) R(g, x, sk0 + 1, 1, 3, bk);
@@ -156,9 +156,9 @@ const rubble = g => { const C = ['#5e594f', '#8a8478', '#b4ae9f', '#ece8dc']; fo
 const featsOf = (role, gifts) => ({ diverCrest: role === 'diver' || /D/.test(gifts), fan: role === 'shrieker' || /S/.test(gifts), sac: role === 'shrieker' || /S/.test(gifts), bag: /N/.test(gifts), big: role === 'snatcher' || /N/.test(gifts) });
 function bake(role, pose, ph, rockOn, gifts = '') {
   const key = role + '|' + pose.__n + '|' + ph + '|' + (rockOn ? 'r' : '') + '|' + gifts; if (memo.has(key)) return memo.get(key);
-  const F = featsOf(role, gifts), P = ROLE[role], [c, g] = canvas(CW, CH), r = mulberry(role.length * 31 + pose.__n.length);
+  const F = { ...featsOf(role, gifts), tip: pose.tip || 0 }, P = ROLE[role], [c, g] = canvas(CW, CH), r = mulberry(role.length * 31 + pose.__n.length);
   g.save(); g.translate(AX, AY); g.scale(P.size, P.size); g.translate(0, 0);
-  const sp = !!pose.sprawl, beat = pose.flap ? (ph - 1.5) * 0.28 : 0, el = -(pose.wing || 0) - beat, fold = !!pose.fold;
+  const sp = !!pose.sprawl, beat = pose.beat !== undefined ? pose.beat : pose.flap ? (ph - 1.5) * 0.28 : 0, el = -(pose.wing || 0) - beat, fold = !!pose.fold;
   const SHY = sp ? -12 : -24, SX = (P.sw || 7) - 1;   /* (claude/harpyart2) the wing-arms leave the SHOULDERS: x = +-(shoulder half-width - 1), y = shoulder height */
   /* THE ARMS ARE THE WINGS: the far (left) one in shade behind her, then the body, then the near (right) one over the torso, then the head over both (the raised wing never hides the face), then the legs */
   if (fold) { wing(g, r, pose.tuck ? -SX + 1 : -SX, SHY + 3, -1, pose.tuck ? -1.3 : 2.45 + beat * 0.3, P, true, true, F); }
@@ -174,14 +174,60 @@ function bake(role, pose, ph, rockOn, gifts = '') {
   g.restore();
   outline(c, OUT);
   const w = whiten(c), set = { c, w, hd: [h.hx * P.size, h.hy * P.size] };
+  if (memo.size > 320) { let n = 0; for (const k of memo.keys()) { memo.delete(k); if (++n > 80) break; } }   /* (the animator bakes a frame per wing step: keep the newest ~240) */
   memo.set(key, set); return set;
 }
 /* a pose gets a stable name from its content (the hands' POSE table is plain objects) */
 const NAMES = new Map();
 function named(p) { if (!p.__n) { const k = JSON.stringify(p); if (!NAMES.has(k)) NAMES.set(k, 'p' + NAMES.size); Object.defineProperty(p, '__n', { value: NAMES.get(k), enumerable: false }); } return p; }
-export function drawSister(g, role, p, flash, time, rocks, gifts) {
-  named(p); const ph = p.flap ? [0, 1, 2, 3, 2, 1][Math.floor(time * 13 + (p.flapOff || 0)) % 6] : 1, set = bake(role, p, ph, rocks !== false, gifts || '');
-  g.save(); g.rotate(p.pitch || 0); g.drawImage(flash ? set.w : set.c, -AX, -AY); g.restore();
+/* ===== (claude/harpyanim) THE SISTERS IN MOTION (Daniel 11-05: "their animations were very stiff and janky").
+   The poses are still the hands' POSE table (B16: every told move its own windup and release - unchanged, and no timing here moves a hitbox or a tell). What changed is how she GETS from one pose to the next:
+   - each sister keeps a small state (her hands pass the body `b`): wing angle, body pitch and head are SPRING-DAMPED toward the pose she is told to wear - a slow, critically damped ease into a tell (the wind-up builds and HOLDS),
+     a stiff under-damped spring into a release (the strike snaps, overshoots a hair, settles), so no pose is a pop;
+   - the FLAP is a real cycle: a fast down-beat (40% of the stroke) and a slower up-stroke, the body LIFTS on the down-beat (a draw-time offset) and sinks on the up-stroke, a slow hover sine over it, and
+     the hair, the skirt hem, the tail and the wing tips LAG the body (a follow-through of ~2 frames: a rising body trails its hair, a falling one lifts it);
+   - a blow kicks her: an impulse into the wing and pitch springs and a 3 px recoil that rings out in ~0.25 s; a stunned sister flutters (a wing twitch, a nodding head); a telling sister trembles 1 px;
+   - the death flails (the wings beat wildly as she falls).
+   Everything that is baked is quantised (wing 0.07 rad, head 1 px, lag -2..2) and memoised with a cap, so the per-frame cost is one drawImage and, rarely, one bake. No pose without a body (`inst`) is animated: the card and the sheets stay as they were. */
+const AMP = 0.55, FLAP_HZ = 2.7, WSTEP = 0.07;
+const easeIO = t => t * t * (3 - 2 * t);
+const waveOf = u => u < 0.4 ? 1 - 2 * easeIO(u / 0.4) : -1 + 2 * easeIO((u - 0.4) / 0.6);   /* +1 = wings up, -1 = down: the down-beat takes 40% of the stroke, the up-stroke 60% */
+const liftOf = u => { const s = Math.sin(Math.PI * ((u - 0.1 + 1) % 1)); return s * s; };      /* 0..1: the body is highest just after the down-beat, lowest at the top of the up-stroke */
+export const SNAP_POSES = ['dive', 'scream', 'wave', 'snatch', 'gust', 'shock', 'echo', 'rake', 'grab', 'drop', 'pebble', 'jar', 'land', 'tear'];   /* (the hands tag these POSE entries .snap: the release poses) */
+function spring(st, k, tgt, dt, w, z) {   /* a damped spring on st[k] (value) / st[k + 'V'] (velocity), semi-implicit, sub-stepped */
+  const n = Math.max(1, Math.ceil(dt / 0.008)), h = dt / n; let x = st[k], v = st[k + 'V'] || 0;
+  for (let i = 0; i < n; i++) { v += (w * w * (tgt - x) - 2 * z * w * v) * h; x += v * h; } st[k] = x; st[k + 'V'] = v; }
+const STATES = new WeakMap();
+export function animate(inst, p, flash, time) {
+  let st = STATES.get(inst);
+  const hd = p.head || [8, -2], tw = p.wing || 0, tp = p.pitch || 0;
+  if (!st) { st = { t: time, wing: tw, pitch: tp, hx: hd[0], hy: hd[1], amp: 0, lagV: 0, lift: 0, kick: 0, flash: false, name: p.__n }; STATES.set(inst, st); }
+  const dt = Math.max(0, Math.min(0.05, time - st.t)); st.t = time;
+  const snap = !!p.snap, w = snap ? 70 : p.flap ? 24 : 20, z = snap ? 0.5 : 1;   /* a release is a stiff, slightly under-damped spring; everything else eases */
+  if (flash && !st.flash) { st.kick = 1; st.wingV = (st.wingV || 0) - 7; st.pitchV = (st.pitchV || 0) - 4; }
+  st.flash = !!flash; st.kick = Math.max(0, st.kick - dt / 0.26);
+  if (dt > 0) { spring(st, 'wing', tw, dt, w, z); spring(st, 'pitch', tp, dt, snap ? 60 : 16, snap ? 0.55 : 1); spring(st, 'hx', hd[0], dt, w * 0.8, 0.9); spring(st, 'hy', hd[1], dt, w * 0.8, 0.9); }
+  const ta = p.flap ? AMP * (p.talon === 'clutch' ? 1.2 : 1) : p.dead && !p.sprawl ? 0.7 : 0; st.amp += (ta - st.amp) * (1 - Math.exp(-dt / 0.09));
+  const hz = p.dead ? 3.6 : p.talon === 'clutch' ? 3.4 : FLAP_HZ, u = ((time * hz + (p.flapOff || 0) * 0.23) % 1 + 1) % 1;
+  const wave = waveOf(u), amp = st.amp, lift = liftOf(u) * (p.flap ? 1 : 0) * Math.min(1, amp / AMP);
+  const vel = dt > 0 ? (lift - st.lift) / dt : 0; st.lift = lift; st.lagV += (vel - st.lagV) * (1 - Math.exp(-dt / 0.05));
+  const lag = Math.max(-2, Math.min(2, Math.round(st.lagV / 6)));
+  const calm = !p.flap && !p.dead && !p.stars;
+  let beat = -amp * wave, wing = st.wing + st.kick * -0.5;
+  if (p.stars) { const q = Math.sin(time * 10.5) * Math.max(0, Math.sin(time * 2.3)); wing += 0.13 * q; }          /* a stunned sister: the wings twitch in bursts */
+  const dazeY = p.stars ? Math.round(Math.sin(time * 3.1)) : 0;                                                       /* ... and the head nods */
+  const tip = Math.max(-0.4, Math.min(0.4, -(st.lagV / 22))) * (amp > 0.05 ? 1 : 0);                                  /* the wing tips trail the arm: bent up on the down-beat, down on the up-stroke */
+  const q = { ...p, wing: Math.round(wing / WSTEP) * WSTEP, head: [Math.round(st.hx), Math.round(st.hy) + dazeY], beat: Math.round(beat / WSTEP) * WSTEP, flap: false, lag, tip: Math.round(tip * 5) / 5, snap: undefined };
+  delete q.snap; delete q.__n;
+  const hover = p.flap ? Math.sin(time * 2.1) * 1.2 : 0;                                                              /* a slow hover sine under the beat */
+  const trem = p.eye === 'red' && calm && !snap ? (Math.floor(time * 24) % 2 ? 1 : 0) : 0;                               /* a held tell trembles 1 px (it never gets shorter or quieter) */
+  return { q: named(q), dx: -3 * st.kick + trem, dy: -lift * 1.9 + hover - 1.6 * st.kick, pitch: st.pitch };
+}
+export function drawSister(g, role, p, flash, time, rocks, gifts, inst) {
+  named(p);
+  const A = inst ? animate(inst, p, flash, time) : null, qp = A ? A.q : p, ph = !A && p.flap ? [0, 1, 2, 3, 2, 1][Math.floor(time * 13 + (p.flapOff || 0)) % 6] : 1, set = bake(role, qp, ph, rocks !== false, gifts || '');
+  g.save(); if (A) g.translate(Math.round(A.dx), Math.round(A.dy));
+  g.save(); g.rotate(A ? A.pitch : p.pitch || 0); g.drawImage(flash ? set.w : set.c, -AX, -AY); g.restore();
   /* the live bits: the dizzy stars, the scream's rings, the wave's cone */
   if (p.stars) for (let k = 0; k < 3; k++) { const a = time * 5 + k * 2.1; R(g, Math.round(4 + Math.cos(a) * 11), Math.round(-33 + Math.sin(a) * 4), 3, 3, '#ffe9a0'); R(g, Math.round(5 + Math.cos(a) * 11), Math.round(-34 + Math.sin(a) * 4), 1, 1, '#ffffff'); }
   const [hx0, hy0] = p.head || [8, -2], hx = Math.round(set.hd[0]) + 13, hy = Math.round(set.hd[1]) + 1;
@@ -192,6 +238,7 @@ export function drawSister(g, role, p, flash, time, rocks, gifts) {
   if (p.blast) for (let k = 0; k < 3; k++) { const a = (time * 4 + k / 3) % 1; g.strokeStyle = 'rgba(255,236,170,' + (0.9 - a * 0.9).toFixed(2) + ')'; g.lineWidth = 2 - (k === 2 ? 1 : 0); g.beginPath(); g.arc(hx + 2, hy + 4, 6 + a * 30, -0.7, 0.7); g.stroke(); } g.lineWidth = 1;
   if (p.down) { const k = (time * 3) % 1; g.strokeStyle = 'rgba(255,90,74,' + (1 - k).toFixed(2) + ')'; g.beginPath(); g.arc(hx + 4, hy + 8, 4 + k * 16, 0.5, 2.0); g.stroke(); }
   if (p.cone) { g.fillStyle = 'rgba(255,211,107,0.35)'; g.beginPath(); g.moveTo(hx + 4, hy + 4); g.lineTo(hx + 36, hy - 12); g.lineTo(hx + 36, hy + 22); g.closePath(); g.fill(); }
+  g.restore();
 }
 /* the three, small, for the bestiary card: a grid of the roles in a telling pose and at rest */
 export const SHEET = (POSE) => { const out = {}, ms = ['hover', 'diveTell', 'dive', 'stuck', 'screamTell', 'scream', 'swoop', 'waveTell', 'pick', 'carry', 'dropTell', 'drop', 'snatchTell', 'snatch', 'tear', 'land', 'chainTell', 'jar', 'rakeTell', 'rake', 'shockTell', 'shock', 'echoTell', 'echo', 'grabTell', 'grab', 'lift', 'hold'];

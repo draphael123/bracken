@@ -15,7 +15,7 @@
 import * as SSM from './shriek-sisters.js';
 import { BOSS_PHASE } from './boss-music.js';
 import { canvas, flipX, whiten } from './px.js';
-import { drawSister } from './redraw/shriek_sisters_art.js';
+import { drawSister, SNAP_POSES } from './redraw/shriek_sisters_art.js';
 import { drawHang } from './redraw/rookery_hang.js';
 import { drawArena, drawWind } from './redraw/rookery_arena_art.js';
 import { bakeSummitSlab, bakeSummitRubble, bakeSummitStone, bakeSummitEcho, bakeBoulder, bakeSummitLip } from './redraw/rookery_world.js';   /* (claude/rookerypolish) the summit's slabs, rubble and stones in the Sisters' Crag stone */
@@ -95,6 +95,14 @@ export const POSE = {
   markTell: { wing: -1.1, pitch: -0.3, head: [4, -8], beak: true, sac: true, eye: 'red' },
   gustTell: { wing: -1.6, pitch: -0.25, head: [7, -3], talon: 'spread', eye: 'red' }, gust: { wing: 0.4, pitch: 0.25, head: [12, 0], beak: true, talon: 'spread' },
 };
+for (const k of SNAP_POSES) if (POSE[k]) POSE[k].snap = true;   /* (claude/harpyanim) the release poses spring in stiffly; the rest ease (src/redraw/shriek_sisters_art.js animate) */
+/* (claude/harpyanim) THE TURN: when she swings round to the other side she does not flip in one frame - a 0.1 s, two-frame turn (the old side squeezed to 40%, then the new side at 70%); a flip within 0.35 s of the last is instant (so a jittering face never shimmers) */
+function turnScale(b, face, time) {
+  if (b.__tf === undefined) { b.__tf = face; b.__tfT = -9; b.__tfP = face; b.__tfAt = -9; }
+  if (face !== b.__tf) { const quick = time - b.__tfAt < 0.35; b.__tfAt = time; b.__tfT = quick ? -9 : time; b.__tfP = b.__tf; b.__tf = face; }
+  const k = (time - b.__tfT) / 0.1; if (k < 0 || k >= 1) return face;
+  return k < 0.5 ? b.__tfP * 0.4 : face * 0.7; }
+export const _turnScale = turnScale;
 /* HOW LONG she has been in this mode (s). The hands note the mode change as it happens; poseOf reads it */
 const modeAge = (b, s, time) => { if (b.__m !== s.mode) { b.__m = s.mode; b.__t0 = time; } return time - b.__t0; };
 /* (claude/rookery2art) the pose a sister wears NOW: her mode, how long she has been in it, a blow just landed (hurt), her height (a downed bird in the air falls) */
@@ -326,7 +334,7 @@ export function makeShriekSistersHands(ctx) {
       g.lineWidth = 2; for (let q = 0; q < 2; q++) { const ph = ((time * 1.6 + q * 0.5) % 1); g.globalAlpha = (1 - ph) * (0.35 + 0.4 * tk); g.strokeStyle = '#b8202c'; g.beginPath(); g.arc(bx, by - 10, 14 + ph * 20 * sc, 0, Math.PI * 2); g.stroke(); } g.lineWidth = 1; g.globalAlpha = 1; }
     if (tc === 'medium') { g.globalAlpha = 0.35 + 0.45 * tk; g.strokeStyle = '#ffb04a'; g.beginPath(); g.arc(bx, by - 10, 28 - 12 * tk, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1; }
     const lit = tc === 'light' && tAge < 0.14;
-    g.save(); g.translate(bx, by); if (arot) { g.translate(0, -18); g.rotate(arot); g.translate(0, 18); } g.scale((s.face || -1) * sc, sc); drawSister(g, b.role, p, flash || lit, time, b.role === 'snatcher' ? undefined : false, S.p2 === b.role ? giftsOf(S.dead) : ''); g.restore();
+    g.save(); g.translate(bx, by); if (arot) { g.translate(0, -18); g.rotate(arot); g.translate(0, 18); } g.scale(turnScale(b, s.face || -1, time) * sc, sc); drawSister(g, b.role, p, flash || lit, time, b.role === 'snatcher' ? undefined : false, S.p2 === b.role ? giftsOf(S.dead) : '', b); g.restore();
     if (b.__landT !== undefined) RA.landBurst(g, bx, R(S.G.floorY - cy), nowT - b.__landT);
     if (tc === 'light' && tAge < 0.3) { const k = 1 - tAge / 0.3, L = Math.round(3 + 7 * k), hx = bx + (s.face || -1) * 8, hy = by - 24; g.globalAlpha = 0.5 + 0.5 * k; g.fillStyle = '#ffffff';
       g.fillRect(hx - L, hy, L * 2 + 1, 1); g.fillRect(hx, hy - L, 1, L * 2 + 1); g.fillRect(hx - 1, hy - 1, 3, 3); g.globalAlpha = 1; } };
@@ -334,11 +342,11 @@ export function makeShriekSistersHands(ctx) {
   const drawDeaths = (g, x, y, fy, time) => { for (const r of ROLES) { const d = bodies[r] && bodies[r].__death; if (!d) continue; const age = ctx.time() - d.t0; if (age < 0 || age > DEATH.T) continue;
     const sx = x(d.x), fl = fy; let sy = y(d.y), rot = 0, pn = 'dead1', gx = 0; const fall = age - DEATH.struck;
     if (age < DEATH.struck) { sy -= Math.round(Math.sin(age / DEATH.struck * Math.PI) * 7); rot = -0.25 * (age / DEATH.struck); }
-    else if (fall < DEATH.fall) { pn = 'dead2'; const t = fall; sy = Math.min(fl, sy + Math.round(60 * t + 340 * t * t * 0.5)); rot = -d.face * 0 + 2.6 * (t / DEATH.fall); gx = -d.face * Math.round(22 * t); if (sy >= fl && t > 0.3) { pn = 'dead3'; rot = 0; } }
+    else if (fall < DEATH.fall) { pn = 'dead2'; const t = fall, y0 = sy, dist = Math.max(1, fl - y0), tL = Math.min(DEATH.fall, (-60 + Math.sqrt(3600 + 680 * dist)) / 340); sy = Math.min(fl, y0 + Math.round(60 * t + 340 * t * t * 0.5)); rot = -0.25 + (Math.PI * 2 + 0.25) * Math.min(1, t / Math.max(0.2, tL)); gx = -d.face * Math.round(22 * t); if (sy >= fl && t > 0.3) { pn = 'dead3'; rot = 0; } }
     else { pn = 'dead3'; sy = fl; gx = -d.face * 18; }
     const a = age > DEATH.T - 0.55 ? Math.max(0, (DEATH.T - age) / 0.55) : 1; g.globalAlpha = a;
     if (pn === 'dead3') { g.globalAlpha = a * 0.28; g.fillStyle = '#10060a'; g.fillRect(sx + gx - 14, fl - 2, 28, 2); g.globalAlpha = a; }
-    g.save(); g.translate(sx + gx, sy); g.scale(d.face * d.sc, d.sc); g.translate(0, -15); g.rotate(rot); g.translate(0, 15); drawSister(g, r, POSE[pn], false, time, r === 'snatcher' ? undefined : false, d.g); g.restore();
+    g.save(); g.translate(sx + gx, sy); g.scale(d.face * d.sc, d.sc); g.translate(0, -15); g.rotate(rot); g.translate(0, 15); drawSister(g, r, POSE[pn], false, time, r === 'snatcher' ? undefined : false, d.g, d); g.restore();
     g.fillStyle = COL[r].light; for (let k = 0; k < 7; k++) { const t2 = (age * 0.9 + k * 0.17) % 1.3, fx = sx + gx + Math.round(Math.sin(age * 4 + k * 1.9) * (10 + k * 2)), fy2 = Math.round(sy - 30 + t2 * 44 + k * 2); if (fy2 < fl) { g.fillRect(fx, fy2, 3, 1); g.fillRect(fx + 1, fy2 - 1, 1, 1); } }
     g.globalAlpha = 1; } };
   H.drawOver = (g, cx, cy, time) => { const Ar = A(); if (!S || !Ar) return; drawWind(g, g.canvas.width, g.canvas.height, time);   /* (claude/rookery2art) the summit's wind */

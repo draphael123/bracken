@@ -4,6 +4,7 @@
 // Same frame contract as every harpy (src/gale-harpy.js galeFrame): 0 hover (wings raised), 1 hover (wings down), 2 THE BEAT (wings thrown forward and down, body leaned back), 3 BROKEN
 // (the tumble: wings crumpled, feathers loose, dizzy), 4 THE TELL (wings flung straight back and wide, chest out, beak open, red eyes), 5 HURT. Facing right; flipped for left.
 import { canvas, rect as R, line as line0, fillPoly, ellipse, circle, outline, flipX, whiten } from '../px.js';
+import { NFLAP, flapOpts, carryOpts, TRANSITIONS } from '../harpy-motion.js';   /* (claude/harpyanim) the flap cycle and the transition frames' options */
 const OUT = '#1b1626';
 const C = { b: '#7ea4b0', B: '#4c6e7e', d: '#2c4654', l: '#b4d0d8', h: '#e8f2f4', ruff: '#f0ece0', ruffD: '#c8c0ac', face: '#ece0cc', faceD: '#bba890', beak: '#f0cc58', beakD: '#a8842c', talon: '#e8dcb0', leg: '#d4bc70', eye: '#ffe27a', red: '#ff4a2a', plume: '#dce8ee', hair: '#1c2e3a', hairL: '#4a6a7c' };
 const W = 54, H = 44, AX = 29, AY = 40, OX = 10, OY = 14;   /* (claude/harpyart2: 44x32 -> 54x44, the feet stay at (AX, AY): the woman is taller) */
@@ -37,13 +38,13 @@ function bird(g, o) {
   /* legs: bird legs under the skirt (hanging when she stands, trailing when she lies along the air), thighs feathered, a hock, three forward toes and a hind claw */
   for (const dx of [-1.8, 1.6]) {
     const t0 = pt(dx, 5.5), trail = tilt > 0.7 || o.carry, L = o.legIn ? 4 : 9;
-    const ex = trail ? t0[0] - Math.sin(Math.min(tilt, 1.4)) * L * 0.9 : t0[0] + dx * 0.3, ey = trail ? t0[1] + Math.cos(Math.min(tilt, 1.4)) * L * 0.6 + 2 : Math.max(t0[1] + L, o.legIn ? 0 : t0[1] + L);
+    const dl = (o.drag || 0) * 1.4, ex = trail ? t0[0] - Math.sin(Math.min(tilt, 1.4)) * L * 0.9 : t0[0] + dx * 0.3, ey = (trail ? t0[1] + Math.cos(Math.min(tilt, 1.4)) * L * 0.6 + 2 : Math.max(t0[1] + L, o.legIn ? 0 : t0[1] + L)) + dl;
     line(g, t0[0], t0[1], ex, ey, C.leg, 2); R(g, Math.round(ex) - 1, Math.round(ey), 4, 1, C.talon); R(g, Math.round(ex) + 2, Math.round(ey) + 1, 1, 1, C.talon); R(g, Math.round(ex) - 1, Math.round(ey) + 1, 1, 1, C.talon); R(g, Math.round(ex) - 2, Math.round(ey) - 1, 1, 1, C.talon);
   }
   /* the feather skirt over the hips: a bell of overlapping feathers, ragged at the hem */
-  const sk = [pt(-3.4, -1.5), pt(3.2, -1.5), pt(4.4, 5.5), pt(-4.6, 5.5)]; fillPoly(g, sk, C.b);
-  fillPoly(g, [pt(-2, -1.5), pt(2.6, -1.5), pt(3.2, 5), pt(-2.4, 5)], C.l);
-  for (let k = -4; k <= 4; k += 2) { const p = rp(k, 5.5); R(g, p[0], p[1], 2, 2, k & 2 ? C.b : C.B); }
+  const dr = (o.drag || 0) * 1.2, sk = [pt(-3.4, -1.5), pt(3.2, -1.5), pt(4.4, 5.5 + dr), pt(-4.6, 5.5 + dr)]; fillPoly(g, sk, C.b);   /* (claude/harpyanim) o.drag: a rising body trails its hem down, a falling one lifts it */
+  fillPoly(g, [pt(-2, -1.5), pt(2.6, -1.5), pt(3.2, 5 + dr), pt(-2.4, 5 + dr)], C.l);
+  for (let k = -4; k <= 4; k += 2) { const p = rp(k, 5.5 + dr); R(g, p[0], p[1], 2, 2, k & 2 ? C.b : C.B); }
   /* the torso: a waist, a bodice of feathers with a cream ruff at the breast, a sash, the bare round of the shoulder */
   const tor = [pt(-2.4, -9.5), pt(3.2, -9.5), pt(3.9, -6.5), pt(2.8, -3), pt(2.1, -1.2), pt(-2.1, -1.2), pt(-2.6, -5)]; fillPoly(g, tor, C.l);
   fillPoly(g, [pt(-2.2, -9), pt(0.6, -9), pt(0.6, -2), pt(-1.6, -2)], C.b);
@@ -75,12 +76,18 @@ const FR = [
   /* 4 THE TELL: wings flung straight back and wide, chest out, beak open, red eyes */ { tilt: 0.12, cy: 14, wing: [-2.95, 9, -3.05, 0.95, 8, 15], chest: true, beak: true, eye: 'red', plume: -0.15 },
   /* 5 HURT */ { tilt: -0.1, wing: [-2.2, 7, -1.8, 1.3, 7, 11], hurt: true, beak: true, legIn: true },
 ];
+/* (claude/harpyanim) THE FULL FRAME TABLE, every harpy: 0-5 as ever (hover up / down, beat or dive, downed, tell or aim, hurt), 6 / 7 = the carrier's SIT / CARRY (the others keep a hover there), 8-15 THE FLAP (8 frames:
+   up-stroke, down-stroke with the body lift, hair / hem / tail lagging), 16-23 the carrier's small-beat CARRY cycle (the others repeat the flap), 24-31 the transitions (src/harpy-motion.js F): gather, clap-in, glide, flare, dive-in, two daze twitches, the tell's quiver partner.
+   baseOpts = the hover options a species' flap takes (its own tail, tilt); the species' tell / dive options feed the transitions. */
+export const framesOf = (six, six67, over = {}) => [...six, six67[0] || six[0], six67[1] || six[1],
+  ...Array.from({ length: NFLAP }, (_, i) => flapOpts(i, over.flap || {})), ...Array.from({ length: NFLAP }, (_, i) => (six67[1] ? carryOpts(i, over.carry || {}) : flapOpts(i, over.flap || {}))),
+  { ...TRANSITIONS.GATHER, ...(over.gather || {}) }, { ...TRANSITIONS.CLAP_IN, ...(over.clap || {}) }, TRANSITIONS.GLIDE, TRANSITIONS.FLARE, TRANSITIONS.DIVE_IN, TRANSITIONS.DAZE_A, TRANSITIONS.DAZE_B, { ...TRANSITIONS.TELL_B, ...(over.tellB || {}) }];
 let SET = null;
 export function bakeGaleHarpy() {
   if (SET) return SET;
-  const R0 = FR.map((o, i) => {
+  const R0 = framesOf(FR, []).map((o, i) => {
     const [c, g] = canvas(W, H); g.save(); g.translate(OX, OY); bird(g, o); g.restore();
-    if (i === 3) { for (const [x, y] of [[10, 16], [38, 20], [16, 36], [36, 34]]) { R(g, x, y, 3, 1, C.h); R(g, x + 1, y - 1, 1, 1, C.l); } for (const [x, y] of [[23, 12], [30, 11], [26, 15]]) { R(g, x, y, 2, 2, '#ffe9a0'); R(g, x, y, 1, 1, '#fff'); } }   /* loose feathers and the tumble's stars */
+    if (i === 3 || o.tumble) { for (const [x, y] of [[10, 16], [38, 20], [16, 36], [36, 34]]) { R(g, x, y, 3, 1, C.h); R(g, x + 1, y - 1, 1, 1, C.l); } for (const [x, y] of [[23, 12], [30, 11], [26, 15]]) { R(g, x, y, 2, 2, '#ffe9a0'); R(g, x, y, 1, 1, '#fff'); } }   /* loose feathers and the tumble's stars */
     outline(c, OUT); return c;
   });
   const w0 = R0.map(c => whiten(c));
@@ -106,8 +113,8 @@ export function bakeGustHarpy() {
   if (GSET) return GSET;
   const keep = { ...C }; Object.assign(C, STORM);
   try {
-    const R0 = FR_GUST.map((o, i) => { const [c, g] = canvas(W, H); g.save(); g.translate(OX, OY); bird(g, o); g.restore();
-      if (i === 3) { for (const [x, y] of [[10, 17], [38, 21], [16, 37], [36, 35]]) { R(g, x, y, 3, 1, C.h); R(g, x + 1, y - 1, 1, 1, C.l); } }
+    const R0 = framesOf(FR_GUST, [], { flap: { tail: 2.15 } }).map((o, i) => { const [c, g] = canvas(W, H); g.save(); g.translate(OX, OY); bird(g, o); g.restore();
+      if (i === 3 || o.tumble) { for (const [x, y] of [[10, 17], [38, 21], [16, 37], [36, 35]]) { R(g, x, y, 3, 1, C.h); R(g, x + 1, y - 1, 1, 1, C.l); } }
       if (i === 2) { for (const y of [20, 25, 30]) R(g, 40 + (y % 3), y, 5, 1, C.h); }
       outline(c, OUT); return c; });
     const w0 = R0.map(c => whiten(c)); GSET = { R: R0, L: R0.map(flipX), white: { R: w0, L: w0.map(flipX) }, ax: AX, ay: AY, w: 14, h: 9 };
@@ -129,7 +136,7 @@ export function bakeCarrierHarpy() {
   if (CSET) return CSET;
   const keep = { ...C }; Object.assign(C, CRAGP);
   try {
-    const R0 = FR_CARRIER.map(o => { const [c, g] = canvas(W, H); g.save(); g.translate(OX, OY); bird(g, o); g.restore();
+    const R0 = framesOf(FR_CARRIER.slice(0, 6), [FR_CARRIER[6], FR_CARRIER[7]]).map(o => { const [c, g] = canvas(W, H); g.save(); g.translate(OX, OY); bird(g, o); g.restore();
       if (o.sit) { const sx = 25, sy = 22;   /* sitting: the saddle-cloth over her shoulders and back, a girth strap round the bodice, a glint */
         R(g, sx, sy, 6, 8, '#7a2a2a'); R(g, sx, sy, 6, 1, '#e0b040'); R(g, sx, sy + 7, 6, 1, '#e0b040'); R(g, sx + 1, sy + 2, 4, 1, '#a04040'); R(g, sx - 1, sy + 4, 10, 1, '#4a3220'); px0(g, sx + 4, sy + 2, '#fff1a0'); R(g, sx - 2, sy + 6, 2, 3, '#7a2a2a'); }
       if (o.carry) { const sx = 30, sy = 24;   /* carrying: flat along her back, the cloth streaming behind her */
@@ -159,8 +166,8 @@ export function bakeWomanHarpy(kind) {
   if (WSETS[kind]) return WSETS[kind];
   const keep = { ...C }; Object.assign(C, WPAL[kind] || WPAL.moor);
   try {
-    const R0 = FR_W.map((o, i) => { const [c, g] = canvas(W, H); g.save(); g.translate(OX, OY); bird(g, { ...o, crest: !!C.crest }); g.restore();
-      if (i === 3) { for (const [x, y] of [[10, 16], [38, 20], [16, 36], [36, 34]]) { R(g, x, y, 3, 1, C.h); R(g, x + 1, y - 1, 1, 1, C.l); } for (const [x, y] of [[23, 12], [30, 11], [26, 15]]) { R(g, x, y, 2, 2, '#ffe9a0'); R(g, x, y, 1, 1, '#fff'); } }
+    const R0 = framesOf(FR_W, []).map((o, i) => { const [c, g] = canvas(W, H); g.save(); g.translate(OX, OY); bird(g, { ...o, crest: !!C.crest }); g.restore();
+      if (i === 3 || o.tumble) { for (const [x, y] of [[10, 16], [38, 20], [16, 36], [36, 34]]) { R(g, x, y, 3, 1, C.h); R(g, x + 1, y - 1, 1, 1, C.l); } for (const [x, y] of [[23, 12], [30, 11], [26, 15]]) { R(g, x, y, 2, 2, '#ffe9a0'); R(g, x, y, 1, 1, '#fff'); } }
       outline(c, OUT); return c; });
     const w0 = R0.map(c => whiten(c)); WSETS[kind] = { R: R0, L: R0.map(flipX), white: { R: w0, L: w0.map(flipX) }, ax: AX, ay: AY, w: 14, h: 7 };
   } finally { Object.assign(C, keep); }
