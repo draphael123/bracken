@@ -43,6 +43,7 @@ import { sweepFront as wqSweepFront } from './wicker-queen.js';   /* (claude/fai
 import { WINCH as WM_K, winchFloors } from './winchmaster.js';   /* THE WINCHMASTER's phase three (claude/winch4): his reaches and the floors he fights on, read off his own module (winchFloors reads OR.ARENA) */   /* THE MARK TABLE: every red !! in it is a tell the bot steps out of, never guards */
 
 // LAB_REACH is each hero's real reach (attackBox in main.js): how far the blow actually lands.
+const DK_REACH = { warden: 26, pyro: 70 };   /* (claude/skytune) how far off a bolt the demon-king hands start a cut: a bolt is a small target, a polearm's LAB_REACH is its longest tip */
 export const LAB_REACH = { knight: 22, pyro: 30, paladin: 20, pirate: 20, reaper: 29, warden: 40, geomancer: 24, berserker: 18, ranger: 16 };   /* (claude/ranger: her KNIFE lands 17 out; with arrows in the quiver the hands stand off at RANGER_STAND - rgReach below) */   /* (claude/berserker2: THE FLURRY lands 19 out - shorter than his old chop's 21) */   /* (berserker: his chop lands its head 19-21 out: he has almost no reach) */   /* (geomancer: the stone of her stave lands 21-26 out) */   /* her point lands at 44: the bot stands just inside it, where the TIP zone is */
 /* LAB_STAND, THE HAND'S CHOSEN DISTANCE (BOT BUG A, Daniel, 2026-09-25: "stands one pixel outside its own reach").
    It used to be a second, independently hand-set table - close to LAB_REACH for six heroes, but off by only 2 px
@@ -1871,20 +1872,19 @@ async function runbossLab(BK, opts) {
         k.left=k.right=k.up=k.down=k.jump=k.block=k.atk=false;
         const KH=BK.demonKing,F=KH&&KH.f();
         if(f===0||!P.labDkMem)P.labDkMem={ch:{},rd:{}};
-        const pl=F?dkPlan(F,{x:P.x,y:P.y},LAB_REACH[h]+(h==='pyro'?40:6)):{swing:null,parry:null,duck:false,jump:false,stepTo:null,hit:false};
+        const pl=F?dkPlan(F,{x:P.x,y:P.y},DK_REACH[h]||(LAB_REACH[h]+6)):{swing:null,parry:null,duck:false,jump:false,stepTo:null,hit:false};
         const mem=P.labDkMem;let guard=false;
-        if(pl.swing!=null){ if(mem.ch[pl.swing]===undefined){const r=Math.random();mem.ch[pl.swing]=r<0.65?'swing':r<0.9?'guard':'miss';}
-          const bq=F.bolts.find(q=>q.id===pl.swing);
-          if(mem.ch[pl.swing]==='swing'&&P.atk<0&&!P.labRest&&bq){P.face=bq.x>=P.x?1:-1;BK.press('atk');swings++;}
-          else if(mem.ch[pl.swing]==='guard'&&bq){P.face=bq.x>=P.x?1:-1;guard=true;} }
         const readIt=key=>{if(mem.rd[key]===undefined)mem.rd[key]=Math.random()<0.85;return mem.rd[key];};
-        const key=(F?F.mode:'')+(F?Math.floor(F.t/2):0);
-        if((pl.duck||pl.jump)&&!readIt(key)){}
-        else { if(pl.duck&&P.ground)k.down=true; if(pl.jump&&P.ground&&(P.labJumpF===undefined||f-P.labJumpF>14)){BK.press('jump');P.labJumpF=f;P.labJump=16;} }
+        const key=(F?F.mode:'')+(F?Math.floor(F.t/2):0), dodging=(pl.duck||pl.jump)&&readIt(key), told=F&&/^(swoop|whip)/.test(F.mode)&&readIt(key);   /* told: from the tell on a read player keeps his hands still (a swing in the wind-up is a swing in the way) */   /* a read swoop/whip: no swing while ducking (a duck is not a duck mid-cut) */
+        if(pl.swing!=null&&!told){ if(mem.ch[pl.swing]===undefined){const r=Math.random();mem.ch[pl.swing]=r<0.65?'swing':r<0.9?'guard':'miss';}
+          const bq=F.bolts.find(q=>q.id===pl.swing);
+          if(mem.ch[pl.swing]==='swing'&&P.atk<0&&bq){P.face=bq.x>=P.x?1:-1;BK.press('atk');swings++;}
+          else if(mem.ch[pl.swing]==='guard'&&bq){P.face=bq.x>=P.x?1:-1;guard=true;} }
+        if(dodging) { if(pl.duck&&P.ground)k.down=true; if(pl.jump&&P.ground&&(P.labJumpF===undefined||f-P.labJumpF>14)){BK.press('jump');P.labJumpF=f;P.labJump=16;} }
         if(P.labJump>0){P.labJump--;k.jump=true;}
         if(pl.stepTo!=null&&(!F.rings.length||readIt('b'+Math.floor(F.t/3)))&&Math.abs(pl.stepTo-P.x)>3)k[pl.stepTo>P.x?'right':'left']=true;
         if(guard)k.block=SHIELDED(h)?true:DEFLECTS(h)?DEFLECT_TAP(f):(f%30<4);
-        if(pl.hit&&F){ P.face=F.x>=P.x?1:-1; if(P.atk<0&&!P.labRest){BK.press('atk');swings++;} }
+        if(pl.hit&&F&&!told){ P.face=F.x>=P.x?1:-1; if(P.atk<0){BK.press('atk');swings++;} }
         if(F&&F.open!==undefined&&F.open&&!wasOpen)opened++;const op=!!(F&&(F.mode==='downed'));if(op&&!wasOpen)opened++;wasOpen=op;
         const was=P.hp,m0=boss.mode;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(m0,Math.max(0,was-P.hp));
         if(F&&F.beaten){boss.alive=false;}
