@@ -80,12 +80,12 @@ export function tideStep(kit, dt) {
       }
       if (!(S.hold > 0 && S.ph === 'low')) S.t -= dt;   /* low water stays low while the sluice holds */
       while (S.t <= 0) {
-        const nx = TIDE.next[S.ph]; S.ph = nx; S.t += dur(T, nx); S.toll = 0;
+        const nx = TIDE.next[S.ph]; S.ph = nx; S.t += dur(T, nx); S.toll = 0; S.wd = dur(T, nx);
         ev.push({ t: 'phase', id: S.id, ph: nx }); if (nx === 'turn' || nx === 'warn') ev.push({ t: 'turn', id: S.id, to: nx === 'warn' ? 'in' : 'out' });
       }
-      if (S.ph === 'warn') { const d = dur(T, 'warn'), n = Math.min(TIDE.tolls, 1 + Math.floor((d - S.t) / (d / TIDE.tolls))); if (n > S.toll) { S.toll = n; ev.push({ t: 'toll', id: S.id, n }); for (const v of S.verbs) if (v.t === 'bell') v.swing = 1; } }
+      if (S.ph === 'warn') { const d = S.wd || dur(T, 'warn'), n = Math.min(TIDE.tolls, 1 + Math.floor((d - S.t) / (d / TIDE.tolls))); if (n > S.toll) { S.toll = n; ev.push({ t: 'toll', id: S.id, n }); for (const v of S.verbs) if (v.t === 'bell') v.swing = 1; } }
       if (S.ph === 'turn' && !S.toll) { S.toll = 1; ev.push({ t: 'toll', id: S.id, n: 1, turn: true }); }
-      S.k = kIn(S.ph, S.t, dur(T, S.ph));
+      S.k = kIn(S.ph, S.t, S.ph === 'warn' ? S.wd || dur(T, 'warn') : dur(T, S.ph));
     } else {   /* A CHAMBER: it fills or drains at its own rate toward what its lever says, and that is the whole of its cycle */
       const want = S.ph === 'high' ? 1 : 0, sp = 1 / Math.max(0.5, (T.cycle && T.cycle.rise || 3) / (T.rate || 1));
       const k0 = S.k; S.k = want > S.k ? Math.min(want, S.k + sp * dt) : Math.max(want, S.k - sp * dt);
@@ -110,7 +110,7 @@ export function tideStrike(kit, hb) {
     if (!(hb.l < x + 11 && hb.r > x - 11 && hb.t < y - 4 && hb.b > y - 30)) continue;
     v.swing = 1; v.cool = v.t === 'lever' ? 0.6 : v.t === 'bell' ? 4 : 1.2;
     if (v.t === 'bell' && S.T.mode !== 'manual') {   /* CALL IT IN: at low water the warn starts now (short, still three strokes); later in the cycle it is only a bell */
-      if (S.ph === 'low') { S.ph = 'warn'; S.t = Math.max(TIDE.minTell, Math.min(TIDE.bellWarn, dur(S.T, 'warn'))); S.toll = 0; S.bellWarn = S.t; S.hold = 0; }
+      if (S.ph === 'low') { S.ph = 'warn'; S.t = Math.max(TIDE.minTell, Math.min(TIDE.bellWarn, dur(S.T, 'warn'))); S.toll = 0; S.wd = S.t; S.hold = 0; }
     } else if (v.t === 'sluice' && S.T.mode !== 'manual') { S.hold = v.hold ?? TIDE.sluiceHold; }
     else if (v.t === 'lever') { v.thrown = !v.thrown; if (S.T.mode === 'manual') S.ph = (S.ph === 'high') ? 'low' : 'high'; }
     return { ...v, tide: S.id, key: verbKey(S.T, v) };
@@ -180,7 +180,7 @@ export function lintTide(L, o = {}) {
   for (const T of L.tides || []) {
     const id = T.id || '?';
     if (!(T.hi < T.lo)) bad.push(id + ': hi (' + T.hi + ') must be above lo (' + T.lo + ')');
-    if (T.mode !== 'manual') for (const ph of ['warn', 'turn']) if (dur(T, ph) < TIDE.minTell) bad.push(id + ': the ' + ph + ' tell is shorter than ' + TIDE.minTell + ' s');
+    if (T.mode !== 'manual') for (const ph of ['warn', 'turn']) { const raw = ((T.cycle || {})[ph] ?? TIDE.cycle[ph]) / (T.rate || 1); if (raw < TIDE.minTell) bad.push(id + ': the ' + ph + ' tell is shorter than ' + TIDE.minTell + ' s (' + raw.toFixed(2) + '; the kit stretches it, declare it)'); }
     if (T.mode !== 'manual' && (T.rate || 1) > 2.5) bad.push(id + ': rate ' + T.rate + ' is past the readable cap 2.5');
     for (const pid of T.pools || []) if (!(L.pools || []).some(p => p.id === pid)) bad.push(id + ': pool ' + pid + ' is not in L.pools');
     for (const f of T.floats || []) if (!(f.top < f.y)) bad.push(id + ': float ' + f.id + ' has no range (top ' + f.top + ', rest ' + f.y + ')');
