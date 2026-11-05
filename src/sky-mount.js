@@ -151,6 +151,15 @@ export const prone = P => (P.mountDown || 0) > 0;
 /* anything that would PLANT on a floor (a stone, a consecrated patch, a dropped arrow, a glyph ring, a lava bomb's ring) plants on the
    back here: the nearest point on its surface. Kits read it through the hands (lane S3 wires the per-kit ones). */
 export function plantOnBack(b, x) { const [a, z] = walkable(b, 2); const px = clamp(x, a, z); return { x: px, y: surfaceY(b, px) }; }
+/* IS (x, y) THE DRAKE? The back's body (from its surface down `depth` px) and its two walls (the neck spines 28 px tall, the tail fin 24).
+   The level is open sky with no tiles: a kit verb that scans tiles for a floor (a planted stone, a dropped arrow, a fire ring, a wall
+   bounce) and a foe that stands (S2's imps) asks this instead - lane S3 routes each kit's floor test through the hands' solidAt. */
+export function solidAt(b, x, y, depth = 24) {
+  if (x < b.x0 || x > b.x1) return false; const s = surfaceY(b, x);
+  if (y >= s && y <= s + depth) return true;
+  if (x <= b.x0 + b.wall) return y >= s - 24; if (x >= b.x1 - b.wall) return y >= s - 28;
+  return false;
+}
 /* the sky fight is lit (the eruption, the ash glow): THE SUN PRIEST's radiance fills on the back (rec - the report's question) */
 export const litAt = b => !!b.lit;
 

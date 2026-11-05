@@ -45,7 +45,10 @@ export function makeSkyMountHands(api) {
   function knock(P) { if (!P.mount || !on()) return false; SK.knockDown(P); api.number(P.x, P.y - 28, 'KNOCKED DOWN', '#ff6b6b'); return true; }
   function cam(VW, VH) { const b = on() && back(); return b ? SK.camFor(b, VW, VH) : null; }
   function aiWalk(p, goal, keys) { const b = p.mount; if (!b || !on()) return false; SK.aiKeys(p, b, goal, keys); return true; }
-  return { on, back, update, pre, foot, knock, cam, aiWalk,
+  /* for S2/S3: is (x, y) the drake (its body or a wall)? where does a thing planted at x sit? (null / x off a skyMount level) */
+  const solidAt = (x, y) => { const b = on() && back(); return !!b && SK.solidAt(b, x, y); };
+  const plant = x => { const b = on() && back(); return b ? SK.plantOnBack(b, x) : null; };
+  return { on, back, update, pre, foot, knock, cam, aiWalk, solidAt, plant,
     drawSky: (g, VW, VH, time, parallax) => { const b = on() && back(); if (b) paintSky(g, b, VW, VH, time, parallax); },
     drawDrake: (g, cx, cy, time) => { const b = on() && back(); if (b) paintDrake(g, b, cx, cy, time); } };
 }

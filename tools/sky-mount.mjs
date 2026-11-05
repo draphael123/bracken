@@ -191,5 +191,34 @@ for (const d of [1, -1]) {
   ok(at('SKH.knock(P)') < at('else if (armoured) { P.vx = dir * 60; }') && at('else if (armoured) { P.vx = dir * 60; }') - at('SKH.knock(P)') < 300, 'the knock-down sits in the throw chain ahead of the armoured rock');
   ok(at('camX = Math.max(x0, Math.min(x1, camX)); camY = Math.max(0, Math.min(LH * TS - VH, camY));') < at('SKH.cam(VW, VH)'), 'the camera lock comes after the camera clamp'); }
 
+/* 13. THE DRAKE AS FOOTING FOR WHAT IS NOT A HERO (S2's imps, S3's planted verbs) */
+{ const b = mk(); b.bank.ang = 8 * D2R;
+  ok(SK.solidAt(b, b.cx, SK.surfaceY(b, b.cx) + 1) && !SK.solidAt(b, b.cx, SK.surfaceY(b, b.cx) - 2), 'solidAt: the back\'s body is solid, the air over it is not (on a tilt too)');
+  ok(SK.solidAt(b, b.x1 - 2, SK.surfaceY(b, b.x1) - 20) && SK.solidAt(b, b.x0 + 2, SK.surfaceY(b, b.x0) - 20), 'solidAt: the neck spines and the tail fin stand over the back');
+  ok(!SK.solidAt(b, b.x1 + 30, b.y0 + 5) && !SK.solidAt(b, b.cx, b.y0 + 60), 'solidAt: past the drake and under its belly is sky');
+  const imp = { x: b.cx + 30, y: b.y0 - 60, vx: 0, vy: 0, w: 10, h: 12 }; let landed = false;
+  for (let i = 0; i < 120; i++) { const py = imp.y; imp.vy = Math.min(300, imp.vy + 900 * DT); imp.y += imp.vy * DT; const r = SK.footStep(imp, b, py, { dt: DT }); if (r.landed) landed = true; }
+  ok(landed && near(imp.y, SK.surfaceY(b, imp.x), 0.01), 'an imp dropped on the back stands on it through the same footStep (S2 hook)'); }
+
+/* 14. THE HANDS (the main.js glue), driven with a stand-in api: update mounts every hero, pre/foot keep them, knock knocks down, the camera locks, leaving undoes it */
+{ const { makeSkyMountHands } = await import('../src/sky-mount-hands.js');
+  const T = { SOLID: 1 }; const painter = (W, H) => ({ grid: new Uint8Array(W * H), ents: [] });
+  let L = SK.buildSkyLab({ painter, T }); const nums = [], sfx = [], BK = {};
+  const ps = [{ x: 296, y: 240, vx: 0, vy: 0, w: 10, h: 14, hurt: 0, inv: 0 }, { x: 310, y: 240, vx: 0, vy: 0, w: 10, h: 14, hurt: 0, inv: 0, ai: true }];
+  const H = makeSkyMountHands({ L: () => L, players: () => ps, number: (x, y, t) => nums.push(t), sfx: k => sfx.push(k), solid: 1, bk: () => BK });
+  H.update(DT); const b = H.back();
+  ok(b && ps.every(p => p.mount === b && p.onMover === b && p.ground), 'hands.update: both heroes (one an AI) are on the back');
+  ok(!!BK.skyMount && typeof BK.skyMount.bank === 'function', 'the lab handles are on BK.skyMount (bank / phase / hold / kingLand)');
+  BK.skyMount.bank(1); let told = false; for (let i = 0; i < 200; i++) { H.update(DT); for (const p of ps) { H.pre(p); const py = p.y; p.ground = false; p.vy += 1000 * DT; p.y += p.vy * DT; H.foot(p, py, DT, {}); } if (b.bank.state === 'tilt' && b.bank.dir === 1) told = true; }
+  ok(told && nums.some(t => /DRAKE BANKS/.test(t)) && sfx.includes('roar'), 'BK.skyMount.bank(1): the drake tells (a line, its roar) and banks toward the neck');
+  ok(ps.every(p => near(p.y, SK.surfaceY(b, p.x), 0.01)), 'and both heroes ride it');
+  ok(H.knock(ps[0]) && SK.prone(ps[0]) && nums.includes('KNOCKED DOWN'), 'hands.knock: knocked down, said');
+  const c = H.cam(320, 180); ok(c && c.x === SK.camFor(b, 320, 180).x, 'hands.cam: locked');
+  const k = {}; ok(H.aiWalk(ps[1], ps[0].x - 20, k) && (k.left || k.right || Math.abs(ps[1].x - (ps[0].x - 20)) <= 6), 'hands.aiWalk: the AI partner walks on the back');
+  ok(H.solidAt(b.cx, SK.surfaceY(b, b.cx) + 2) && H.plant(b.cx).y === SK.surfaceY(b, b.cx), 'hands.solidAt / plant answer for the back');
+  L = { W: 10, H: 10 }; H.update(DT);
+  ok(ps.every(p => !p.mount && p.onMover !== b), 'off a skyMount level: every hero is off the back, nothing left on him');
+  ok(H.cam(320, 180) === null && H.knock(ps[0]) === false && H.foot(ps[0], 0, DT) === null, 'and every hook is a no-op'); }
+
 console.log(`\n${pass} ok, ${fail} failed`);
 if (fail) { console.log('FAILED:\n  ' + fails.join('\n  ')); process.exit(1); }
