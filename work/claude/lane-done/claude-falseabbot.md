@@ -72,7 +72,7 @@ Branch `claude/falseabbot`, off `claude/monastery3-1105`, in worktree `bracken-l
 - **Not yet run:** it is a browser run (see BROWSER OWED).
 
 ## NODE RESULTS (MON3=1, each tool run on its own; tools/check.mjs not run)
-- **`tools/false-abbot3.mjs` (new): 44 checks, all pass.** It runs on the house the level really builds:
+- **`tools/false-abbot3.mjs` (new): 47 checks, all pass.** It runs on the house the level really builds:
   - the building's geometry
   - both openings in both phases
   - the turn-about
