@@ -1,0 +1,22 @@
+// node tools/coop-unlock.mjs - ITEM / UNLOCK CREDIT (claude/cooppr, Daniel 11-04): a boss beaten and a boss's weapon reach a seat's OWN save through the credit.
+import * as CS from '../src/coop-save.js';
+let bad = 0; const ok = (c, m) => { if (!c) { bad++; console.log('FAIL', m); } else console.log('ok  ', m); };
+const mem = () => { const m = new Map(); return { getItem: k => (m.has(k) ? m.get(k) : null), setItem: (k, v) => m.set(k, String(v)), removeItem: k => m.delete(k), key: i => [...m.keys()][i] ?? null, get length() { return m.size; }, _m: m }; };
+const st = mem(), key = CS.slotKey(2);
+const seat = CS.freshSeat('pyro', 2), led = CS.newLedger(seat);
+CS.noteFlag(led, 'bossDown:warcairn'); CS.noteFlag(led, 'swords:chiefaxes'); CS.noteFlag(led, 'burningOpen');
+CS.noteFlag(led, 'bossDown:__proto__'); CS.noteFlag(led, 'nonsense:x'); CS.noteFlag(led, 'swords:a b');
+ok(led.flags.length === 3, 'only the three good flags are noted: ' + led.flags.join(','));
+led.view.xp.pyro = 300; led.view.coins = 40;
+const c1 = CS.nextCredit(led, null, true);
+ok(c1 && c1.flags.length === 3, 'credit carries the flags');
+const r = CS.applyCredit(st, key, c1);
+ok(r.ok && r.progress.bossDown && r.progress.bossDown.warcairn === true, 'bossDown.warcairn written to HIS save');
+ok(r.progress.swords && r.progress.swords.chiefaxes === true, 'swords.chiefaxes written');
+ok(r.progress.burningOpen === 1, 'the old flag still lands');
+const r2 = CS.applyCredit(st, key, c1); ok(r2.dup, 'same credit twice = nothing paid twice');
+const dirty = { ...c1, seq: 2, flags: ['bossDown:warcairn', '__proto__', 'bossDown:../x', 'swords:' + 'x'.repeat(60), 'bossDown:church'] };
+const r3 = CS.applyCredit(st, key, dirty);
+ok(r3.ok && r3.progress.bossDown.church === true && Object.keys(r3.progress.bossDown).length === 2, 'junk flags dropped, a good one lands: ' + Object.keys(r3.progress.bossDown));
+const x = CS.applyCredit(mem(), key, { ...c1, seq: 1 }, { xpOnly: true }); ok(x.ok && !x.progress.bossDown, 'a linked AI (xpOnly) takes no unlocks');
+console.log(bad ? 'FAILED ' + bad : 'ALL OK'); process.exit(bad ? 1 : 0);

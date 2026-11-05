@@ -1733,6 +1733,8 @@ function drawPings(cx, cy) {
     g.restore();
   }
 }
+/* (claude/cooppr, Daniel 11-04) A BOSS'S REWARD GOES TO EVERY SEAT'S OWN SAVE: the beaten boss (the road to buying the hero it opens) and his weapon ride the ledger's flags like the Burning Village's (src/coop-save.js UNLOCK_RE). A default AI / lent seat has no save and takes nothing. */
+function partyUnlock(kind, id) { if (!coop()) return; for (const p of players) if (p !== players[0] && p.prof && !p.ai && p.prof.led) CS.noteFlag(p.prof.led, kind + ':' + id); }
 function goDown(killer) {
   P.down = L && L.tavern ? DOWN_T_TAVERN : DOWN_T; P.reviveT = 0;   /* (claude/tavern) the sparring bell's down is shorter, and harmless */ P.hp = 0; P.killer = killer || null;
   P.atk = -1; P.block = false; P.wBrace = false; P.wthArm = false; P.wthHold = 0; wthSpears = []; P.rgGuard = false; P.plunge = false; P.dodge = 0; P.aegis = false; P.warding = false; P.fwUp = false; P.fwT = 0; P.fwRec = 0; P.fwCd = 0; P.cMode = null; P.fbHold = 0; P.stoking = false; P.stokeT = 0; P.deflectT = 0; P.deflectRec = 0; P.perch = 0; P.vaultCarry = 0;
@@ -4832,7 +4834,7 @@ function gainXp(n) { n = Math.round(n); if (!(n > 0)) return;
    on the list (or the wood is finished) and pays XP_AGAIN. The list is saved with the XP, so leaving a wood and coming back is no way round it. */
 function xpKill(e) { if (!e || e.xpPaid || !e.xpKey || e.harmless || !xpWood()) return; e.xpPaid = true;
   /* (claude/coopai) THE XP SHARE (Daniel 11-04): in co-op the first kill pays FULL to every hero that damaged the foe, each in HIS pass (his hero, his save, his catch-up and soft cap);
-     an AI or lent seat with no save of his own folds into player one, so a partner that takes the kill never costs him the XP. Solo: the old one-hero path. HOOK (COOPPING lane): items/charm credit rides here. */
+     an AI or lent seat with no save of his own folds into player one, so a partner that takes the kill never costs him the XP. Solo: the old one-hero path. (claude/cooppr: a boss's reward credit rides the ledger flags, partyUnlock.) */
   if (players && players.length > 1 && coop()) { const who = XPS.payeesOf(e, passOn, players); for (const q of who) { if (q === passOn) xpPay(e); else asPlayer(q, () => xpPay(e)); } return; }
   xpPay(e); }
 function xpPay(e) {
@@ -12221,7 +12223,7 @@ function queenWinded(e, blocked) {
 }
 function queenDies(who) {
   if (bossSelectFight && bossSelectFight.row.kind === 'boss' && bossSelectFight.row.t === who?.t) bossSelectRecord();
-  if (!bossJumpOn && !rushOn() && who?.t === L.arena?.boss) { PROG.bossDown = PROG.bossDown || {}; PROG.bossDown[curId()] = true; saveProgress(); }
+  if (!bossJumpOn && !rushOn() && who?.t === L.arena?.boss) { PROG.bossDown = PROG.bossDown || {}; PROG.bossDown[curId()] = true; partyUnlock('bossDown', curId()); saveProgress(); }
   setView('normal'); bossWon = 2.2; bossActive = false; camLock = null; tongue = null; slowT = 1.0; fires = fires.filter(f => f.life < 900); music.play(L.music || 'theme');
   for (const e of enemies) if (e.alive && (((e.t === 'wasp' || e.t === 'hopper') && e.drone) || e.archCalled)) { e.alive = false; burst(e.x, e.y - 3, 8, COLS[e.t], 70, 0.5); spawnCorpse(e, 1); }   /* (and the Archmage's apprentice goes down with him) */
   setWall(L.arena.wallL, false); setWall(L.arena.wallR, false);
@@ -12336,7 +12338,7 @@ function bossEnd(e) {
       shakeCam(9); zoomKick(1.14, 0.6); killFlash = 0.12; if (PBH) PBH.end(e);
       /* (claude/church2) HE IS BEATEN: the hero he is opens in the shop for silver (feat 'boss:church', the Death Knight's rule). Set on his death in his own level - not in a
          boss rush; a save that already owns the hero keeps him whatever this says */
-      if (!rushOn() && !SET.invincible && curId() === 'church') { PROG.bossDown = PROG.bossDown || {}; if (!PROG.bossDown.church) { PROG.bossDown.church = true; saveProgress(); number(e.x, e.y - 60, 'THE PALADIN CAN BE HAD IN THE SHOP', '#ffd36b'); } }
+      if (!rushOn() && !SET.invincible && curId() === 'church') { PROG.bossDown = PROG.bossDown || {}; if (!PROG.bossDown.church) { PROG.bossDown.church = true; partyUnlock('bossDown', 'church'); saveProgress(); number(e.x, e.y - 60, 'THE PALADIN CAN BE HAD IN THE SHOP', '#ffd36b'); } }
       for (let i = 0; i < 30; i++) parts.push({ x: x + (Math.random() - 0.5) * 30, y: y - Math.random() * 40, vx: (Math.random() - 0.5) * 80, vy: -40 - Math.random() * 80, life: 1.6, max: 1.6, col: ['#d8dce4', '#d8b040', '#fff6c8'][i % 3], size: 2, grav: 200 });
       say('THE CHURCH IS STILL', '#ffd36b'); break; }
     case 'fogknight': { /* THE FOG LIFTS: the plate falls in a heap on the towpath, empty, and the fog goes off over the water toward the canal */
@@ -12493,7 +12495,7 @@ function hqDown() {
 // The Chieftain's death is not the end: the hall burns from the floor up and you climb the rafters to the way out.
 function chiefDies() {
   if (bossSelectFight && bossSelectFight.row.kind === 'boss' && bossSelectFight.row.t === 'chief') bossSelectRecord();
-  if (!bossJumpOn && !rushOn()) { PROG.bossDown = PROG.bossDown || {}; PROG.bossDown[curId()] = true; saveProgress(); }
+  if (!bossJumpOn && !rushOn()) { PROG.bossDown = PROG.bossDown || {}; PROG.bossDown[curId()] = true; partyUnlock('bossDown', curId()); saveProgress(); }
   SFX.bossDown();
   setView('normal'); bossActive = false; camLock = null; slowT = 1.0; music.play(L.music || 'theme');
   setWall(L.arena.wallL, false); setWall(L.arena.wallR, false);
@@ -23657,7 +23659,7 @@ function unbDied(e) {
   /* HE IS BEATEN: the hero he is opens in the shop (his feat 'boss:unburied', and his gold route). Set on his death in his own
      level - not on clearing it, and not in a boss rush. A save that already owns the hero keeps him whatever this says. */
   if (e.t === 'bloodknight' && !rushOn() && !SET.invincible && curId() === 'unburied') { PROG.bossDown = PROG.bossDown || {};
-    if (!PROG.bossDown.unburied) { PROG.bossDown.unburied = true; saveProgress(); number(e.x, e.y - 60, 'THE BLOOD KNIGHT CAN BE HAD IN THE SHOP', '#c8b6ff'); } }
+    if (!PROG.bossDown.unburied) { PROG.bossDown.unburied = true; partyUnlock('bossDown', 'unburied'); saveProgress(); number(e.x, e.y - 60, 'THE BLOOD KNIGHT CAN BE HAD IN THE SHOP', '#c8b6ff'); } }
 }
 function unbReset() {
   UNB_FIELD = UNBF.newField(L, TS);
@@ -30242,7 +30244,7 @@ EHP.bzchief = BZCM.BZC.hp; EHP.drummer = WCM.WC.drummer.hp; KNOCK_SKIP.add('bzch
    is flipped; until then THE BERSERKER is sold as he always was), and anyone who beats him earns THE CHIEFTAIN'S AXES (a weapon skin: Q4). Set on his defeat in his own level - not in
    a boss rush, not with the invincible setting. A slot that already owns the Berserker keeps him (no refund) and the card says so */
 function bzchiefBeaten(e) { if (rushOn() || SET.invincible || curId() !== 'warcairn') return;
-  PROG.bossDown = PROG.bossDown || {}; PROG.bossDown.warcairn = true; PROG.swords = PROG.swords || {}; const axesNew = !PROG.swords.chiefaxes; PROG.swords.chiefaxes = true; saveProgress();
+  PROG.bossDown = PROG.bossDown || {}; PROG.bossDown.warcairn = true; partyUnlock('bossDown', 'warcairn'); PROG.swords = PROG.swords || {}; const axesNew = !PROG.swords.chiefaxes; PROG.swords.chiefaxes = true; partyUnlock('swords', 'chiefaxes'); saveProgress();
   const owned = !!(PROG.heroes && PROG.heroes.berserker); number(e.x, e.y - 70, owned ? BZCM.BZC_SAY.winOwned : BZCM.BZC_SAY.winNew, owned ? '#ff9a5c' : '#c8b6ff');
   hintSay('tip', 6, 'THE BERSERKER CHIEFTAIN YIELDS. ' + (owned ? "HIS AXES ARE YOURS: THE CHIEFTAIN'S AXES, IN THE STORE'S WEAPONS." : 'THE BERSERKER WILL FIGHT FOR YOU - 10 SILVER IN THE STORE.' + (axesNew ? ' AND HIS AXES ARE YOURS.' : ''))); }
 PBH = makePaladinHands({ heroT: () => hero(), burnTick: () => BURN_TICK, g: () => g, get hfx() { return HFX; }, get L() { return L; }, get players() { return players; }, get boss() { return boss; }, get bossActive() { return bossActive; }, TS, EHP, sfx: SFX, hero: () => P, enemies: () => enemies, time: () => time, VW: () => VW, VH: () => VH,
