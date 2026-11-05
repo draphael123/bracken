@@ -33,8 +33,8 @@ const key = (x, y) => x + ',' + y;
 const doorTiles = d => { const o = []; for (let y = d.opens[1]; y <= d.opens[3]; y++) for (let x = d.opens[0]; x <= d.opens[2]; x++) o.push([x, y]); return o; };
 
 export function sunRoomsInit(L) {
-  return { rooms: (L.sunRooms || []).map(def => ({ def, clock: 0, mirrors: def.mirrors.map(m => ({ ...m, cd: 0 })),
-    doors: def.doors.map(d => ({ ...d, mode: d.mode || 'latch', open: !!d.startOpen, lit: false, shutT: 0 })), res: null, pres: null })) };
+  return { rooms: (L.sunRooms || []).map(def => ({ def, clock: 0, mirrors: (def.mirrors || []).map(m => ({ ...m, cd: 0 })),
+    doors: (def.doors || []).map(d => ({ ...d, mode: d.mode || 'latch', open: !!d.startOpen, lit: false, shutT: 0 })), res: null, pres: null })) };
 }
 function sourcesOf(room) {
   const out = [];
