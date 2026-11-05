@@ -12,10 +12,10 @@ try {
   const r = await pg.evalp(`(async()=>{const {LEVELS}=await import('/src/level.js');BK.manualSimulation=true;const out=[];
     const snap=()=>{const c=document.createElement('canvas');c.width=640;c.height=360;const g=c.getContext('2d');g.imageSmoothingEnabled=false;g.drawImage(BK.buf,0,0,640,360);return c.toDataURL('image/png');};
     for(const [skin,lv] of ${JSON.stringify(ROWS.filter(r => !only || only.has(r[0])))}){
-      const idx=LEVELS.findIndex(l=>l.id===lv);BK.setHero('knight');BK.reset({fresh:true});BK.load(idx);BK.start();BK.god=true;BK.sim(30);
-      const e=BK.enemies().find(q=>q.cnSkin===skin&&q.alive);if(!e){out.push({tag:skin+'-MISSING',png:snap()});continue;}
-      BK.tp(Math.round(e.x/16)-9,Math.round(e.y/16)-1);BK.sim(20);out.push({tag:skin+'-idle',png:snap()});
-      for(let k=0;k<240;k++){BK.step(1);const d=e.draw>0||(e.mode==='tell')||(e.tellT>0);if(d){out.push({tag:skin+'-tell',png:snap()});break;}}
+      const idx=LEVELS.findIndex(l=>l.id===lv);BK.setHero('knight');BK.reset({fresh:true});BK.load(idx);BK.start();BK.god=true;BK.sim(200);
+      const e=BK.enemies().find(q=>q.cnSkin===skin&&q.alive&&!q.dozing&&!q.horn);if(!e){out.push({tag:skin+'-MISSING',png:snap()});continue;}
+      BK.tp(Math.round(e.x/16)-7,Math.round(e.y/16)-1);BK.sim(20);out.push({tag:skin+'-idle',png:snap()});
+      for(let k=0;k<900;k++){BK.step(1);const d=e.draw>0.3||e.mode==='biteTell'||(e.mode==='tell')||(e.tellT>0);if(d){out.push({tag:skin+'-tell',png:snap()});break;}}
       for(let k=0;k<20;k++)BK.step(1);out.push({tag:skin+'-after',png:snap()});
       for(let k=0;k<30;k++)BK.step(1);out.push({tag:skin+'-later',png:snap()});
     }
