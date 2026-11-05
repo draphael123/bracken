@@ -265,7 +265,7 @@ export function walkJs(c) { return `(async()=>{const c=${JSON.stringify(c)},h=c.
     /* woke at a shrine (or put back on the bank by deep water): the walk picks up from the route node nearest him, never past where it had got; fresh hands */
     if(sub&&(q.dead>0||Math.abs(q.x-px0)>3*TS))popSub(false);
     if(duelE&&(q.dead>0||!duelE.alive))duelEnd(!duelE.alive&&!(q.dead>0));
-    if(dead0&&!(q.dead>0)&&q.hp>0){ri=nearest(0,riBest+1)[0];riSince=ri;lastProg=frames;bot=makeBot(BK,{fightThrough:c.fight!==false});climb=null;}
+    if(dead0&&!(q.dead>0)&&q.hp>0){ri=nearest(0,riBest+1)[0];riSince=ri;riMax=ri;lastProg=frames;   /* (claude/nestwalk2: the progress clock restarts at the shrine he woke at - the old best node stayed in riMax, so the re-walk of 40 columns he had already won (the nest stair after a death at 286) counted for nothing and was reported STUCK at 246,19) */bot=makeBot(BK,{fightThrough:c.fight!==false});climb=null;}
     else if(!resumeAt&&!(q.dead>0)&&Math.abs(q.x-px0)>3*TS){ri=nearest(0,riBest+1)[0];riSince=ri;bot=makeBot(BK,{fightThrough:c.fight!==false});climb=null;}
     if(!(q.dead>0)&&q.hp>0)track();
     if(sub){if(ri>=R.length-2&&dist(R.length-1)<3*TS)popSub(true);else if(frames-lastProg>900||frames-sub.f0>4800)popSub(false);}
