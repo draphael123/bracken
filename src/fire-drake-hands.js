@@ -11,6 +11,7 @@
 // main.js calls: spawnBoss, owns, on, update, take, spare, drawBoss, drawOver, barName, end, read, show, clear, phase. src/lab.js reads show() + fdPlan.
 import * as FDM from './fire-drake.js';
 import { BOSS_PHASE } from './boss-music.js';
+import * as DS from './redraw/fire_drake_set.js';   /* (claude/drakeart) the seal, chains, ring, ledges, vents, crests */
 import * as DA from './redraw/fire_drake_art.js';   /* (claude/drakeart) its drawn sprites, one per pose */
 const { FD, FD_SAY, POSE } = FDM;
 const R = Math.round;
@@ -154,24 +155,19 @@ export function makeFireDrakeHands(ctx) {
   H.drawOver = (g, cx, cy, time) => { const Ar = A(); if (!S || !Ar) return; const G = S.G, X = v => R(v - cx), Y = v => R(v - cy), e = ctx.boss && ctx.boss.t === 'firedrake' ? ctx.boss : null;
     const blink = Math.floor(time * 12) % 2 ? '#ff6b6b' : '#fff6e0', ring = FDM.ringOf(S), fy = Y(G.floorY);
     /* THE SEAL: a rune disc in the floor, cracked by the tears, split when it is beaten */
-    ell(g, X(G.seal), fy + 1, 28, 5, C.seal); g.strokeStyle = C.rune; g.globalAlpha = 0.5 + 0.3 * Math.sin(time * 3); g.beginPath(); g.ellipse(X(G.seal), fy + 1, 22, 3.5, 0, 0, 7); g.stroke(); g.globalAlpha = 1;
-    for (let i = 0; i < S.sealStage; i++) limb(g, X(G.seal) - 14 + i * 12, fy - 1, X(G.seal) - 8 + i * 12, fy + 4, i === 2 ? C.magmaL : C.magma, 2);
+    try { g.drawImage(DS.sealSprite(Math.min(3, S.sealStage), !!(e && e.alive && (e.mode === 'slamTell' || e.mode === 'tearTell'))), X(G.seal) - 42, fy - 9); } catch { ell(g, X(G.seal), fy + 1, 28, 5, C.seal); }
     /* THE SCORCHED RING: always visible at the chain's reach; it glows when a chain is taut */
     const taut = e && e.alive && (e.mode === 'lungeTell' || e.mode === 'lunge' || e.mode === 'jerked' || (e.mode === 'dive' && e.jerk) || Math.abs(Math.abs(e.x - G.seal) - (ring - FD.head)) < 3);
-    if (!S.won) { g.globalAlpha = taut ? 0.6 + 0.3 * Math.sin(time * 16) : 0.55; g.strokeStyle = taut ? C.ring : C.scorch; g.lineWidth = 2; g.beginPath(); g.ellipse(X(G.seal), fy + 1, ring, 4, 0, 0, 7); g.stroke(); g.lineWidth = 1; g.globalAlpha = 1;
-      for (const sd of [-1, 1]) { rect(g, X(G.seal + sd * ring) - 1, fy - 3, 2, 6, taut ? C.ring : '#6a2a14'); } }
+    if (!S.won) DS.drawRing(g, X(G.seal), fy, ring, taut, time);
     /* THE CHAINS: from the seal to its collar, sagging to the floor - straight and white-hot when taut */
-    if (e && e.alive && S.chains > 0) { const f = e.face || 1, col = { x: e.x + f * 22, y: G.floorY - 22 - (e.air || 0) };
-      for (let i = 0; i < S.chains; i++) { const ax = G.seal + (i - (S.chains - 1) / 2) * 8, ay = G.floorY - 1;
-        g.strokeStyle = taut ? (Math.floor(time * 20 + i) % 2 ? C.chainHot : '#ffffff') : C.chain; g.lineWidth = 2; g.setLineDash([3, 2]); g.beginPath(); g.moveTo(X(ax), Y(ay));
-        if (taut) g.lineTo(X(col.x), Y(col.y)); else g.quadraticCurveTo(X((ax + col.x) / 2), Y(G.floorY + 2), X(col.x), Y(col.y)); g.stroke(); g.setLineDash([]); g.lineWidth = 1; } }
+    if (e && e.alive && S.chains > 0) { const f = e.face || 1, col = S.collarPx && S.collarPx.x !== undefined ? S.collarPx : { x: e.x + f * 22, y: G.floorY - 22 - (e.air || 0) };
+      for (let i = 0; i < S.chains; i++) { const ax = G.seal + (i - (S.chains - 1) / 2) * 8, ay = G.floorY - 1; DS.drawChain(g, X(ax), Y(ay), X(col.x), Y(col.y), taut ? 0 : 8 + i * 2, taut, time, i); } }
     /* THE LEDGES (greybox basalt) until P3 sinks them */
-    if (!S.sunk) for (const [a, b, h] of G.ledges) { rect(g, X(a), Y(G.floorY - h), b - a, 4, '#3a3036'); rect(g, X(a), Y(G.floorY - h) + 4, b - a, 1, '#1a1418'); }
+    if (!S.sunk) for (const [a, b, h] of G.ledges) DS.drawLedge(g, X(a), Y(G.floorY - h), b - a, time);
     /* THE VENTS (P3): told glow, then the geyser */
-    for (const v of S.vents) { if (v.t > 0) { g.globalAlpha = 0.5 + 0.4 * Math.sin(time * 18); ell(g, X(v.x), fy, FD.vent.w + 2, 3, '#ff4a1a'); g.globalAlpha = 1; }
-      else { const hh = FD.vent.h * Math.min(1, -v.t / 0.12); rect(g, X(v.x - FD.vent.w), fy - hh, FD.vent.w * 2, hh, C.magma); rect(g, X(v.x - FD.vent.w / 2), fy - hh, FD.vent.w, hh, C.magmaL); } }
+    for (const v of S.vents) DS.drawVent(g, X(v.x), fy, FD.vent.w, FD.vent.h, v.t > 0, v.t > 0 ? 0 : -v.t / 0.12, time);
     /* THE MAGMA CRESTS (P3 slam): jump them */
-    for (const w of S.waves) { for (let q = -FD.slam.crest; q <= FD.slam.crest; q += 2) { const hh = R(Math.cos(q / FD.slam.crest * Math.PI / 2) * FD.slam.clear); rect(g, X(w.x + q), fy - hh, 2, hh + 1, hh > 5 ? C.magmaL : C.magma); } }
+    for (const w of S.waves) { for (let q = -FD.slam.crest; q <= FD.slam.crest; q += 2) DS.drawCrest(g, X(w.x), fy, q, R(Math.cos(q / FD.slam.crest * Math.PI / 2) * FD.slam.clear), time); }
     if (e && e.alive) {
       const f = e.face || 1, jx = FDM.jawX(e);
       /* THE BREATH: its reach told faint red while it inhales; the fire itself on the release */
