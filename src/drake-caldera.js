@@ -27,7 +27,7 @@ export function buildDrakeCaldera({ painter, T, TS }) {
   const seal = ((DC.x0 + DC.x1 + 1) / 2) * TS;                     // 496: the seal's centre, the middle of the caldera floor
   return {
     W, H, grid: L.grid, ents: L.ents, START: { x: DC.start, y: FLOOR - 1 }, pools: [], falls: [], moversExtra: [], drakeLab: true, music: 'theme',
-    palette: { dress: 'none', near: 'none', haze: 'rgba(200,90,40,0.18)', sky: [[60, 24, 18], [150, 60, 30]] }, ambient: [{ x0: 0, x1: W * TS, kind: 'blaze2' }],   /* a volcanic caldera: no forest kit, no birdsong */
+    palette: { dress: 'none', near: 'none', noFg: true, noNear: true, haze: 'rgba(200,90,40,0.18)', sky: [[60, 24, 18], [150, 60, 30]] }, ambient: [{ x0: 0, x1: W * TS, kind: 'blaze2' }],   /* a volcanic caldera: no forest kit, no birdsong */
     arena: { x0: DC.x0 * TS, x1: (DC.x1 + 1) * TS, floor: FLOOR * TS, trigger: DC.trigger * TS, wallL: DC.wallL, wallR: DC.wallR, boss: 'firedrake', music: 'boss3',
       tint: '#a03a1a', tintA: 0.12, seal,
       ledges: DC.ledges.map(([a, b]) => [a * TS, (b + 1) * TS, (FLOOR - DC.ledgeRow) * TS]),
