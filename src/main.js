@@ -2170,6 +2170,7 @@ function allyRoute(p, one, S) {
 }
 /* the x it should walk to this frame given its route: the lip of the first climb or drop (and 'jump' when it stands at a climb's lip), or null when the route is flat */
 function allyRouteGoal(p, S) {
+  S.hop = false;
   const r = S.route; if (!r || r.length < 2) return null;
   const row = r[0][1]; let k = 1; while (k < r.length && r[k][1] === row) k++;
   if (k >= r.length) return null;   /* flat to him: the plain x goal */
@@ -2177,10 +2178,10 @@ function allyRouteGoal(p, S) {
   /* (claude/coopvert) COMMITTED: once at the lip it walks to the landing and stays committed for 1.5 s - it used to flip between 'the lip' and 'the landing' as it crossed the 10 px
      line and jiggle on a one-tile ledge (Sky Road) without ever leaving it. The walker itself makes the jump across a gap; a climb needs the hop at the lip. */
   const cm = S.commit;
-  if (cm && p.aiT < cm.until && cm.lip === lip[0] + "," + lip[1]) { if (land[1] < lip[1] && p.ground && p.aiT % 14 === 0) apress('jump'); return land[0] * TS + 8; }
+  if (cm && p.aiT < cm.until && cm.lip === lip[0] + "," + lip[1]) { if (land[1] < lip[1]) { S.hop = true; if (p.ground && p.aiT % 14 === 0) apress('jump'); } return land[0] * TS + 8; }
   if (Math.abs(p.x - lx) <= 10 && p.ground) {   /* at the lip: up needs the hop, down is a step */
-    S.commit = { until: p.aiT + 90, lip: lip[0] + "," + lip[1] };
-    if (land[1] < lip[1] && p.aiT % 14 === 0) apress('jump');
+    S.commit = { until: p.aiT + 90, lip: lip[0] + "," + lip[1], landX: land[0] * TS + 8, up: land[1] < lip[1] };
+    if (land[1] < lip[1]) { S.hop = true; if (p.aiT % 14 === 0) apress('jump'); }
     return land[0] * TS + 8; }
   return lx;
 }
@@ -2268,8 +2269,13 @@ function allyTick() {
   else if (hold) goal = hold.x;
   /* (claude/coopai) a leader on another row: the route's first lip is the goal (see allyRoute); no route for 1.5 s = hold and let the told catch-up come */
   const tgt = p.pingHold || one;   /* (claude/cooppr) the route goes to a marked spot while one is held */
-  if (one !== p && !S.raft && (Math.abs(tgt.y - p.y) > 24 || S.stuckT > 0.8)) { allyRoute(p, tgt, S); const rg = allyRouteGoal(p, S); if (rg !== null) goal = rg; S.noWayT = S.noWay ? (S.noWayT || 0) + fdt : 0; if (S.noWayT > 1.5 && dLead > AIC.CATCH.near) { S.wait = true; keys.left = keys.right = false; return; } } else { S.noWayT = 0; S.route = null; S.noWay = false; }
+  if (one !== p && !S.raft && (Math.abs(tgt.y - p.y) > 24 || S.stuckT > 0.8)) { allyRoute(p, tgt, S); const rg = allyRouteGoal(p, S); if (rg !== null) goal = rg; else if (S.commit && !p.ground && p.aiT < S.commit.until) { goal = S.commit.landX; S.hop = S.commit.up; }   /* (claude/coopvert) in the air on a committed hop: steer to the landing, not back at his x */ S.noWayT = S.noWay ? (S.noWayT || 0) + fdt : 0; if (S.noWayT > 1.5 && dLead > AIC.CATCH.near) { S.wait = true; keys.left = keys.right = false; return; } } else { S.noWayT = 0; S.route = null; S.noWay = false; }
+  S.hopHeld = false;
   p.aiWalk(allySafeGoal(goal));
+  /* (claude/coopvert) a climb's hop is HELD while it rises: the walker lets go of the key, and a tap is a one-tile hop that never clears the next ledge up (the Hornet's Nest well) */
+  if (S.hop && !holdOff && (p.ground || p.vy < 0) && !p.climb && !p.swim) { keys.jump = true; S.hopHeld = true; }
+  /* ...and in the air on a committed hop it steers to the landing itself: the walker lets the air carry it, and it drifted off the ledge it had just cleared */
+  if (S.commit && !p.ground && !p.climb && !p.swim && p.aiT < S.commit.until && !holdOff && one !== p) { const dx = S.commit.landX - p.x; keys.left = dx < -3; keys.right = dx > 3; }
   if (holdOff) { keys.left = keys.right = false; keys.block = LABMOD.SHIELDED(h); p.abuf = 0; }   /* and the buffered swing goes with it, or a press from two frames back still takes the beat */
 }
 /* ==================== end of the co-op block ==================== */

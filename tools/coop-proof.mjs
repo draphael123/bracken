@@ -5,7 +5,9 @@
    PORT=8789 node tools/coop-proof.mjs [bleed,ping]   (SHOTS=dir for the screenshots) */
 import { writeFileSync } from 'node:fs';
 import { openLevelPage } from './boss-level.mjs';
-const WANT = (process.argv.slice(2).find(a => !a.startsWith('--')) || 'bleed,ping,xp,ai').split(','), fails = [];
+import { LEVELS } from '../src/level.js';
+import { routeOf } from './level-walk.mjs';
+const WANT = (process.argv.slice(2).find(a => !a.startsWith('--')) || 'bleed,ping,xp,ai,vert').split(','), fails = [];
 const OUT = process.env.SHOTS || 'C:/Users/Daniel Raphael/.claude/bracken-lanes/scratch/lane-reports';
 const ok = (c, m) => { if (!c) { fails.push(m); console.log('  FAIL ' + m); } else console.log('  ok   ' + m); };
 const pg = await openLevelPage({ audio: false, fonts: false }), E = x => pg.evalp(x, 600000);
@@ -104,6 +106,25 @@ try {
     ok(!r.haveFoe || (r.foePing === 'foe' && r.foeHit > 0), 'the AI fights a pinged foe (nearest ' + r.foeNear + ' px, dealt ' + r.foeHit + ')');
     await E(`(async()=>{await __a();const q=BK.players().find(p=>p.ai);BK.god=true;BK.sim(60);q.aiS=Object.assign(q.aiS||{},{wait:true});q.leash=0;BK.draw1();return 1})()`);
     await shot('aicue');
+  }
+
+  if (WANT.includes('vert')) {
+    /* (claude/coopvert) VERTICAL FOLLOW: the AI stands on a ledge, player one holds still where the route goes UP or DOWN from it; the AI must get to him on its own legs (no catch-up puff) */
+    console.log('vert');
+    const pick = (id, rise) => { const r = routeOf(LEVELS.find(l => l.id === id)); let best = null;
+      for (let i = 0; i < r.length; i++) for (let j = i + 1; j < Math.min(r.length, i + 14); j++) { const dy = r[j][1] - r[i][1], dx = Math.abs(r[j][0] - r[i][0]); if ((rise ? -dy : dy) >= 4 && dx <= 10 && (!best || dx + Math.abs(dy) < best.k)) best = { a: r[i], b: r[j], k: dx + Math.abs(dy) }; }
+      return best; };
+    const cases = [['hornetsnest', true, 'a climb'], ['hornetsnest', false, 'a drop'], ['skyroad', true, 'a Sky Road hop up'], ['skyroad', false, 'a Sky Road drop'], ['spire', true, 'a spire climb']];
+    for (const [id, rise, what] of cases) {
+      const c = pick(id, rise); if (!c) { console.log('  (no ' + what + ' pair in ' + id + ')'); continue; }
+      const r = await E(`(async()=>{for(const k in BK.keys)BK.keys[k]=false;BK.manualSimulation=true;BK.SET.speed=1;BK.coopEnd();BK.reset({fresh:true});await BK.allyReady();BK.aiComp.arm(['warden'],['balanced'],1);const {LEVELS}=await import('/src/level.js');BK.load(LEVELS.findIndex(l=>l.id==='${id}'));BK.start();BK.sim(5);BK.god=true;BK.enemies().forEach(e=>e.alive=false);
+        const ps=BK.players(),a=ps[0],q=ps.find(p=>p.ai),A=${JSON.stringify(c.a)},B=${JSON.stringify(c.b)};
+        a.x=B[0]*16+8;a.y=(B[1]+1)*16-1;a.vx=a.vy=0;q.x=A[0]*16+8;q.y=(A[1]+1)*16-1;q.vx=q.vy=0;a.face=1;const l0=q.leashes||0;let best=1e9,at=-1;
+        for(let f=0;f<60*7;f++){a.vx=0;BK.sim(1);const d=Math.abs(q.x-a.x)/16+Math.abs(q.y-a.y)/16;if(d<best){best=d;}if(at<0&&Math.abs(q.x-a.x)<28&&Math.abs(q.y-a.y)<30)at=f;}
+        return {best:+best.toFixed(1),at:at<0?-1:+(at/60).toFixed(1),pulls:(q.leashes||0)-l0,end:[Math.round(q.x),Math.round(q.y),Math.round(a.x),Math.round(a.y)]};})()`);
+      console.log('    ' + id + ' ' + what + ' ' + JSON.stringify(c) + ' ' + JSON.stringify(r));
+      ok(r.at >= 0 && r.pulls === 0, 'the AI gets to him on its own legs: ' + what + ' in ' + id + ' (' + (r.at >= 0 ? r.at + ' s' : 'never, best ' + r.best + ' tiles') + ', ' + r.pulls + ' pulls)');
+    }
   }
   ok(!pg.errors.length, 'no page errors: ' + pg.errors.slice(0, 3).join(' | '));
 } finally { pg.close(); }

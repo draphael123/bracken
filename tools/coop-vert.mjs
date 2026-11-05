@@ -36,7 +36,7 @@ try {
     ok(r.reached, id + ': player one walked the route (' + r.lifts + ' lifts)');
     ok(r.near / Math.max(1, r.samples) >= (+process.env.NEAR || 0.5), id + ': AI near him most of the climb (' + Math.round(100 * r.near / Math.max(1, r.samples)) + '%)');
     ok(r.maxApart <= (+process.env.APART || 12), id + ': never apart longer than the catch-up allows (' + r.maxApart + ' s)');
-    ok(r.pulls - r.lifts <= (+process.env.PULLS || 6), id + ': catch-up puffs beyond the harness lifts stay rare (. + (r.pulls - r.lifts) + .)');
+    ok(r.pulls - r.lifts <= (+process.env.PULLS || 6), id + ': catch-up puffs beyond the harness lifts stay rare (' + (r.pulls - r.lifts) + ')');
   }
 } finally { pg.close(); }
 console.log(fails.length ? '\ncoop-vert: ' + fails.length + ' FAILED' : '\ncoop-vert: GREEN');
