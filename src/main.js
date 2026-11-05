@@ -135,7 +135,7 @@ import * as OPF from './order-paladin.js'; import * as UPF from './undead-priest
 import { makeHurricane3 } from './hurricane3.js'; let H3H = null; import { makePowderMonkeys, PM as PMKC } from './powder-monkey.js'; import { bakeMonkeySet } from './redraw/powder_monkey_art.js'; let PMK = null;   /* (claude/flotilla4) THE POWDER MONKEY, a shared foe: lit grenades you strike back (src/powder-monkey.js) */   /* THE HURRICANE DECK 3 (claude/hurricane3): she sinks in steps, her waist floods, her casks run, her rods draw the sky (src/hurricane3.js) */
 import { makeTowpathHands } from './towpath-hands.js'; import { makeFogKnightHands, bakeFogKnightCard } from './fog-knight-hands.js'; import * as FKG from './fog-knight.js'; import * as FWR from './fog-wraith.js'; let TPH = null, FKH = null; let CHH = null, FL2H = null, ADH = null, F3H = null; import { makeFlotilla3, F3, F3_SAY } from './flotilla3.js'; import { bakePirateSkins } from './redraw/pirate_skins.js';   /* (claude/flotilla3) THE FLOTILLA 3: his broadside, the laid guns, the grapnel boarder, the keg roller's keg (src/flotilla3.js) */ import { makeAdmiralHands, bakeAdmiralCard } from './fleetlord-hands.js'; import * as ADMG from './flotilla-boss.js';   /* (claude/flotilla3) THE ADMIRAL (src/flotilla-boss.js) holds the flotilla now; the Champion stays registered for the Keep */ import { makeFlotilla2 } from './flotilla2.js';   /* (claude/flotilla2) THE ADMIRAL'S CHAMPION's hands (src/fleetlord-champion-hands.js) */ import { makeChampionHands, bakeChampionCard } from './fleetlord-champion-hands.js'; import * as ACG from './fleetlord-champion.js';   /* THE TOWPATH (claude/towpath, the greybox): the locks, the punts, the swing bridges, the lantern in the fog; THE FOG KNIGHT */
 import { makeUnderwellHands } from './underwell-hands.js'; import * as UWA from './redraw/underwell_art.js'; import * as UWT from './redraw/underwell_tiles.js'; import * as UWB from './redraw/underwell_backdrop.js'; let UWH = null;   /* THE UNDERWELL (claude/underwell): its hands (the oil, the torches, the great lamp, the nests, the dry fountain, the cast's twists) */
-import { WTH as WTW, wthTier } from './warden-throw.js';   /* THE WARDEN'S JAVELIN THROW (claude/herofeel): hold C winds three tiers; it replaced the hold-C brace (heroblocksb) */
+import { WTH as WTW, wthTier } from './warden-throw.js'; import * as WTK from './warden-tech.js';   /* (claude/wardenpack) THE WARDEN'S L25-L50 TECHNIQUES (numbers + rules) */   /* THE WARDEN'S JAVELIN THROW (claude/herofeel): hold C winds three tiers; it replaced the hold-C brace (heroblocksb) */
 import { makeCrouchA, CROUCH as CROUCH_A } from './crouch-a.js';   /* THE CROUCH TWISTS, PART A (claude/croucha): the knight's LOW GUARD and SHIELD TRIP, the warden's SET SPEAR and LOW POKE, the freebooter's DUCK AND RELOAD */
 import { TOKENS, tokenBoard, tokenPre, tokenHold, tokenPost, release as tokenRelease, claim as tokenClaim } from './attack-tokens.js';
 import * as GB from './boss-greed.js'; import { makeBossRead, ANGLE as BR_ANGLE, ROLL_SOON, roomBlow as brRoomBlow, GUARD as BR_GUARD } from './boss-read.js'; import { TEMPO, installTempo } from './foe-tempo.js';   /* THE GLOBAL BOSS RULE: x0.05 outside an opening, and the greed reprisal (claude/combat3, Daniel 2026-10-01) */
@@ -821,7 +821,7 @@ const upg = id => upgRank(PROG, hero(), id);
 const thr = (stat, i) => thrOn(PROG, hero(), stat, i);
 let mendSeen = 0;   /* TURNED BLOW: the count of turned blows last frame */
 const GEO_LIFE0 = GEO_K.stone.gnaw, GEO_PERFECT0 = GEO_K.ward.perfect;   /* (claude/geoid: HARD STONE now slows how fast a foe gnaws her stone) */   /* her stone's life and the rune-ward's perfect window before the hero's own perks */
-const cdOf = k => Math.max(0.5, (k === 'summonSkeleton' && isReaper() && tal('gleaner') ? BKIT.BLOOD.host.worms.quick : CD_MAX[k] || 3) - (k === 'whirlwind' && hero() === 'knight' ? 0.5 * upg('ucalm') : 0)) * (perk('focus') ? 0.85 : 1);
+const cdOf = k => Math.max(0.5, (k === 'summonSkeleton' && isReaper() && tal('gleaner') ? BKIT.BLOOD.host.worms.quick : CD_MAX[k] || 3) - (k === 'whirlwind' && hero() === 'knight' ? 0.5 * upg('ucalm') : 0)) * (perk('focus') ? 0.85 : 1) * (isWarden() && k === 'setSpears' ? WTK.rowCd(1, upg('urow')) : 1) * (isWarden() && k === 'harrier' ? WTK.vaultCd(1, tech('wspring'), upg('uvault')) : 1);
 const amul = k => grow(hero(), heroLevel()).skillMultiplier * (1 + RANK_MUL * Math.max(0, skillRank(PROG, hero(), k) - 1)) * (hero() === 'knight' ? 1 + 0.2 * (k === 'shieldThrow' ? upg('uthrow') : k === 'risingCut' ? upg('urise') : 0) : 1); // skill damage grows (and MASTERY, a perk, and the skill's RANK), cooldowns and invulnerability do not
 let treeResetT = 0, talentsBackT = 0, talentsBackWho = '', talentsBackWhy = '';   /* RESET POINTS asks twice; the trees-have-changed notice shows once */
 window.BKT = { fieldsState: () => FLD, cqState: () => (CQH && CQH.show ? CQH.show() : null),   /* (claude/arenapolish) tools/arena-polish-shots.mjs: the moon's clock and the Underwell hall's state */ stk: () => SKD, stkExplode: (x, y, r) => explode(x, y, r, DMG.bomb),   /* (claude/chief3) tools/chief3.mjs: the Stockade's hands, and a blast */ shrineFill: () => shrineFill(),   /* (claude/difficulty) tools/difficulty.mjs: a shrine's refill per mode */ lights: () => lights, get PROG() { return PROG; },   /* (claude/smallfix7) tools/gorm-unlock.mjs: the one-life Gorm clear */ vil: () => ({ grid: VG, fires, parts: parts.length }), vilSplash: (x, y, r, c) => villageSplash(x, y, r, c), vilIgnite: (tx, ty) => ignite(VG, tx, ty, 'burngob'),   /* tools/douse-agree.mjs */ gormUnlock: () => ({ fell: gormFell, live: gormFightLive(), open: !!PROG.burningOpen }), gormDie: () => die({ name: 'TEST', red: false, rule: '' }), gormWin: () => gormBeaten(), krkArmPts: a => krkArmPts(a, L.arena.floor, 0), krakLimp: (e, t) => krakenArmsLimp(e, t), krkTop: (x, n) => krkTop(x, n), krkRoadEnds: () => krkRoadEnds(),   /* (tools/kraken-reach.mjs, tools/kraken-rework.mjs) */
@@ -7689,7 +7689,7 @@ function hudMeterLabel() {
   if (isWarden()) { if (state !== 'play' && state !== 'talk') return null;
     if (P.pinning) return { s: 'X STAB   Z FREE', col: blink ? '#dff0d8' : '#8fd160' };   /* on the spear: the two ways off it */
     if (P.wReachT > 0) return { s: "WARDEN'S REACH " + Math.ceil(P.wReachT), col: blink ? '#dff0d8' : '#8fd160' };
-    if ((P.vigil || 0) >= 100) return { s: 'REACH: UP+C', col: blink ? '#8fd160' : '#dff0d8' };
+    if ((P.vigil || 0) >= 100) return { s: tech('wgreat') ? 'GREAT JAVELIN: UP+C' : tech('wlongline') ? 'LONG LINE: UP+C' : 'REACH: UP+C', col: blink ? '#8fd160' : '#dff0d8' };
     if ((P.deflectT || 0) > 0) return { s: 'TURNING', col: '#8fd160' };
     if ((P.wthHold || 0) > 0) return { s: ['QUICK', 'HEAVY', 'PIN'][P.wthHold - 1], col: '#8fd160' };
     return { s: (P.deflectRec || 0) > 0 ? 'RECOVER' : 'TAP C  DEFLECT   HOLD  JAVELIN', col: '#6a7a62' }; }
@@ -7938,7 +7938,7 @@ function damagePlayer0(fromX, dmg, { up = false, unblockable = false, pierce = f
     if (beat) RP.parried(rpFoe(fromX, who));
     if (f) { if (!beat) { f.stagger = Math.max(f.stagger || 0, (f.maxHp ? 0.2 : 0.4) * (tal('standFast') ? 2 : 1)); f.flash = 0.2; } if (!f.maxHp && !f.mini && !f.elite) f.vx = Math.sign(f.x - P.x) * 150;
       if (tal('counterpoise')) { f.sunder = 2.5; number(f.x, f.y - (f.h || 16) - 22, 'OPENED UP', '#8fd160'); } }   /* COUNTERPOISE */
-    deflectPays(P.x + P.face * 12, P.y - 10, beat);
+    deflectPays(P.x + P.face * 12, P.y - 10, beat); if (beat && tech('wkeep')) wardenKeepOff(f);
     sparks(P.x + P.face * 12, P.y - 10, P.face, 9); number(P.x, P.y - 28, beat ? 'PARRY' : 'TURNED IT', '#ffd36b'); parryBurst();
     return 'blocked';
   }
@@ -8642,7 +8642,7 @@ function impale(e) {
    one rule on the clocks an answer sets, with no hero named in a branch of it. ==== */
 const DEF_LIVE = 0.5, DEF_REC = 0.26, DEF_COST = 9, DEF_REACH = 44, DEF_BUF = 0.15;   /* s live, s of recovery, wind, and how far out along the shaft it swats */
 function deflect() {
-  if (!spend(Math.max(3, Math.round(DEF_COST * (1 - 0.2 * tal('quickShaft')))))) { SFX.buzz(); P.stFlash = 0.3; return; }
+  if (!spend(Math.max(3, Math.round(WTK.deflectCost(DEF_COST, isWarden() ? upg('ushaft') : 0) * (1 - 0.2 * tal('quickShaft')))))) { SFX.buzz(); P.stFlash = 0.3; return; }
   P.deflectT = DEF_LIVE + 0.04 * prk('wdef'); P.deflectRec = DEF_REC * (1 - 0.2 * tal('quickShaft')) * (1 - 0.08 * prk('wrec'));   /* QUICK SHAFT: cheaper, and back in her hands sooner */
   noteVerb('parry'); P.deflectAt = time; SFX.shaftTurn();   /* (claude/riposte: deflectAt - the beat is measured from the press) */
   streaks(P.x + P.face * 14, P.y - 11, P.face, ['#dff0d8', '#c9b27c'], 150);
@@ -9384,7 +9384,7 @@ function gainPlunder(n) { if (!isPirate()) return; const was = (P.plunder || 0) 
 /* ==== THE WARDEN'S METER. VIGIL fills where she is the only hero who can be: at the END of the spear. A tip hit pays
    it, a shaft or haft hit pays nothing, and a charge stopped dead on the braced point pays it most of all - so the bar
    is a running account of how well she has kept them out there. (claude/wardenid: THE REACH BAND - never spent; the PHALANX is a skill.) ==== */
-function gainVigil(n) { if (!isWarden()) return; const was = (P.vigil || 0) >= 100; P.vigil = Math.min(100, (P.vigil || 0) + n * varietyMul()); if (!was && P.vigil >= 100 && !(P.wReachT > 0)) { meterReady('#8fd160'); SFX.vigilFull(); } }   /* (claude/wardenid) a FULL band flashes READY - for WARDEN'S REACH only (tap C) */   /* (claude/wardenid) THE REACH BAND is never spent and never 'ready': it widens the tip (src/warden-id.js) */
+function gainVigil(n) { if (!isWarden()) return; const was = (P.vigil || 0) >= 100; P.vigil = Math.min(100, (P.vigil || 0) + WTK.bandGain(n, upg('uband')) * varietyMul()); if (!was && P.vigil >= 100 && !(P.wReachT > 0)) { meterReady('#8fd160'); SFX.vigilFull(); } }   /* (claude/wardenid) a FULL band flashes READY - for WARDEN'S REACH only (tap C) */   /* (claude/wardenid) THE REACH BAND is never spent and never 'ready': it widens the tip (src/warden-id.js) */
 /* ==== THE PHALANX. The bar used to buy four and a half seconds of her thrusts going through a raised guard, and the
    owner never once saw it happen: the foes that hold a guard are a minority, the buff had no picture, and the whole
    thing was a number telling itself a story. It is ONE BIG MOMENT now. She plants the spear, and a ROW OF SPEARS
@@ -9405,14 +9405,14 @@ function phalanxCast() {   /* (claude/wardenid) THE PHALANX IS A SKILL (id setSp
   const hit = new Set(); let n = 0;
   /* A WIDER ROW: the spears are set closer together and the row is carried further across the room */
   const step = PHX_STEP - (tal('widerRow') ? 5 : 0), reach = PHX_REACH + (tal('widerRow') ? 90 : 0);
-  for (let d = step; d <= reach; d += step) {
-    const x = P.x + P.face * d, tx = Math.floor(x / TS);
+  for (const row of WTK.rowDirs(tech('wring'), P.face)) for (let d = step; d <= (row.reach || reach); d += step) {   /* (claude/wardenpack) ROUND ROW: a short row behind her too */
+    const x = P.x + row.dir * d, tx = Math.floor(x / TS);
     if (isSolid(tx, Math.floor((P.y - 12) / TS))) break;                    /* a wall: the row ends where the room does */
     const ty0 = Math.floor(P.y / TS); let gy = null;
     for (let k = 0; k <= 3 && ty0 + k < LH; k++) if (isSolid(tx, ty0 + k)) { gy = (ty0 + k) * TS; break; }
     if (gy === null && P.swim && inWater(x, P.y - 4)) gy = P.y;               /* BRACED AGAINST THE WATER: with no bed under them the points are set in the water itself, at her own depth */
     if (gy === null) continue;                                              /* a hole in the floor has no ground to come out of */
-    phalanx.push({ x, y: gy, t: 0, delay: n * 0.045, hit, done: false, stay: PHX_LIFE, skill: 'setSpears' });
+    phalanx.push({ x, y: gy, t: 0, delay: (d / step - 1) * 0.045, hit, done: false, stay: PHX_LIFE, skill: 'setSpears' });
     n++;
   }
 }
@@ -10845,7 +10845,7 @@ function updatePlayer(dt) {
     streaks(P.x, P.y - 10, -P.face, ['#dff0d8', '#c9b27c'], 150);
     if (best) { best.stagger = Math.max(best.stagger || 0, 0.5); number(best.x, best.y - (best.h || 16) - 18, 'OVER YOU', '#8fd160'); P.harrierE = best; P.harrierT = 0.42; }   /* (claude/herokit) and she comes down point first: the landing is a stab (below) */
   } else tired(); }
-  if (P.harrierT > 0) { P.harrierT -= dt; if (P.harrierT <= 0) { const he = P.harrierE; P.harrierE = null; if (he && he.alive && !he.harmless && Math.abs(he.x - P.x) < 150 && Math.abs(he.y - P.y) < 50) { hurtAs('light', he, Math.round(swordDmg() * 1.3 * amul('harrier')), P.x, false); if (he.alive) he.stagger = Math.max(he.stagger || 0, he.maxHp ? 0.4 : 1.0); sparks(he.x, he.y - (he.h || 16) / 2, P.face, 8); SFX.thud(); 0; } } }   /* HARRIER's landing (claude/herokit): the point comes down in the back of the one she went over */
+  if (P.harrierT > 0) { P.harrierT -= dt; if (P.harrierT <= 0) { const he = P.harrierE; P.harrierE = null; if (he && he.alive && !he.harmless && Math.abs(he.x - P.x) < 150 && Math.abs(he.y - P.y) < 50) { hurtAs('light', he, Math.round(swordDmg() * 1.3 * amul('harrier')), P.x, false); if (he.alive) he.stagger = Math.max(he.stagger || 0, he.maxHp ? 0.4 : 1.0); sparks(he.x, he.y - (he.h || 16) / 2, P.face, 8); SFX.thud(); wardenSpring(he); } } }   /* HARRIER's landing (claude/herokit): the point comes down in the back of the one she went over */
   if (P.kPoseT > 0) P.kPoseT = Math.max(0, P.kPoseT - dt);   /* the ability's pose (hero-poses.js): art only */
   /* A POSED DODGE IS NOT BLINKED (Daniel, 2026-09-24): while HOLY CHARGE or CINDER STEP is playing its pose, its grace is copied
      here and runs down beside P.inv, and the draw leaves the blink off until it is out. ART ONLY: P.inv itself is not touched */
@@ -11032,10 +11032,10 @@ function updatePlayer(dt) {
     else if (P.perch <= 0) { P.perch = 0; P.canCut = true; P.vy = 60; }   /* she slides down off the point */
   }
   if (isWarden()) {
-    P.vigil = Math.max(0, Math.min(100, P.vigil || 0)); P.castT = Math.max(0, (P.castT || 0) - dt);
+    P.vigil = Math.max(0, Math.min(100, P.vigil || 0)); P.wGreat = !!tech('wgreat'); P.castT = Math.max(0, (P.castT || 0) - dt);
     /* (claude/wardenid) THE REACH BAND DRAINS while something has been on the haft (inside WID.band.hold px, edge to edge) for WID.band.after s: she has let it get inside the spear */
     { let onHaft = false; if (!P.dead && !wardJav) for (const e of kitFoes()) { if (!e.alive || e.harmless || e.gone > 0 || e.turncoat || Math.abs(e.y - P.y) > 30) continue; if (Math.abs(e.x - P.x) - (e.w || 12) / 2 - 5 < WID.band.hold) { onHaft = true; break; } }
-      P.haftT = onHaft ? (P.haftT || 0) + dt : 0; if (P.haftT > WID.band.after && !(P.wReachT > 0)) P.vigil = Math.max(0, P.vigil - WID.band.drain * dt); }
+      P.haftT = onHaft ? (P.haftT || 0) + dt : 0; if (P.haftT > WTK.haftAfter(upg('uhaft')) && !(P.wReachT > 0)) P.vigil = Math.max(0, P.vigil - WID.band.drain * dt); }
     P.blastT = Math.max(0, (P.blastT || 0) - dt);
     /* HER CLOCKS. deflectT is the sweep while it is live, deflectRec the price of one that met nothing, and parryT the
        clock every hero's answer sets - palOpened reads it, so hers is counted down honestly and never left standing. */
@@ -11050,7 +11050,7 @@ function updatePlayer(dt) {
     if (P.wReachT > 0) { P.vigil = 100; P.wReachT -= dt; if (Math.random() < dt * 30) parts.push({ x: P.x + P.face * (10 + Math.random() * 80), y: P.y - 11 + (Math.random() - 0.5) * 3, vx: P.face * 20, vy: -6, life: 0.3, max: 0.3, col: Math.random() < 0.5 ? '#c8ffb0' : '#ffffff', size: 1, grav: 0 }); if (P.wReachT <= 0) wardenReachEnd(); }
     if (cDown && !keys.up && free && !(P.wthRec > 0) && !wardJav && (P.ground || P.swim)) { P.wthArm = true; P.wthHeld = 0; P.wthStepWas = 0; }   /* (claude/herofeel) THE PRESS IS THE DEFLECT; the hold that follows winds the javelin (wthTick) */
     if (cDown && HPK && HPK.plantPress(keys)) P.cBuf = 0;   /* (claude/heropassa) THE WALL PLANT: in the air, pressed into a wall */
-    else if (cDown && keys.up && free && (P.vigil || 0) >= 100 && !(P.wReachT > 0) && !wardJav && (P.ground || P.swim)) { P.cBuf = 0; wardenReachCast(); }   /* (claude/wardenid) A FULL BAND + UP+C (every hero's ultimate; tap C stays the deflect): WARDEN'S REACH (tap C is the deflect always) */
+    else if (cDown && keys.up && free && (P.vigil || 0) >= 100 && !(P.wReachT > 0) && !wardJav && (P.ground || P.swim)) { P.cBuf = 0; if (tech('wgreat')) wardenGreatCast(); else wardenReachCast(); }   /* (claude/wardenid) A FULL BAND + UP+C (every hero's ultimate; tap C stays the deflect): WARDEN'S REACH (tap C is the deflect always) */
     else if (cGo && free && P.deflectRec <= 0 && P.deflectT <= 0) { P.cBuf = 0; deflect(); }   /* THE DEFLECT: a tap, never a hold */
     if (P.deflectT > 0) deflectSwat();
     wthTick(dt, keys, free && !thrown && !(P.drinkT > 0));   /* (claude/herofeel) HOLD C: THE JAVELIN THROW, three tiers (src/warden-throw.js) */
@@ -30336,7 +30336,8 @@ function geomancerKit(dt, canAct, tired) {
 }
 let wardJav = null, spearRain = [];
 const wardPose = () => P.wheelT > 0 && K.R.sweep ? ['sweep', 1 + Math.floor(P.wheelT * 16) % 2] : P.sdN > 0 || P.sdFlash > 0 ? ['atk', P.sdFlash > 0.03 ? 2 : 1] : P.springT === 1 && K.R.vault ? ['vault', 1] : P.springT === 2 && K.R.plunge ? ['plunge', 0] : null;
-const stretchMul = () => P.wReachT > 0 && !wardJav ? WID.reach.mul : P.stretchT > 0 && !wardJav ? 1.5 : 1;   /* (claude/wardenid) WARDEN'S REACH doubles it */
+const wrNums = () => WTK.reachNums(!!tech('wlongline'), SKK.K_WARDEN_REACH);   /* (claude/wardenpack) THE LONG LINE reshapes WARDEN'S REACH; the table otherwise */
+const stretchMul = () => P.wReachT > 0 && !wardJav ? wrNums().mul : P.stretchT > 0 && !wardJav ? 1.5 : 1;   /* (claude/wardenid) WARDEN'S REACH doubles it */
 const kitFoes = () => enemies.filter(e => e.alive && !e.harmless && !(e.gone > 0) && !e.turncoat);
 function wardenKit(dt, canAct, tired) {
   if (!isWarden()) return;
@@ -30441,11 +30442,13 @@ function wthThrow(tier) {
   if (!spend(WTW.cost[tier - 1])) { SFX.buzz(); P.stFlash = 0.4; return; }
   P.wthRec = WTW.rec; P.atk = -1; P.javThrowT = 0.2; kitPose(P, 'javThrow', 0.3); P.vx = -P.face * (20 + 14 * tier);
   SFX.javThrow(); if (tier >= 2) SFX.tipRing(); if (tier === 3) shakeCam(2, P.face * 2); streaks(P.x + P.face * 12, P.y - 12, 3 + 2 * tier, ['#dff0d8', '#fff6e0'], 160 + 40 * tier);
-  wthSpears.push({ x: P.x + P.face * 10, y: P.y - 10, dir: P.face, tier, st: 'fly', dist: 0, life: 0 });
+  { const rg = WTK.javRange(tech('wfar'), WTW.range[tier - 1]); wthSpears.push({ x: P.x + P.face * 10, y: P.y - 10, dir: P.face, tier, st: 'fly', dist: 0, life: 0, range: rg });
+    const tw = WTK.twinSpear(tech('wtwin'), tier); if (tw && spend(tw.cost)) wthSpears.push({ x: P.x + P.face * 10, y: P.y - 10, dir: P.face, tier, st: 'fly', dist: 0, life: 0, range: rg, wait: tw.wait, k: tw.k }); }   /* (claude/wardenpack) TWIN JAVELIN: the quick throw's second spear, a beat later, x0.6 */
 }
 function wthHit(j, e) {
-  const sw = swordDmg(), big = lcBig(e) || !!e.maxHp || !!e.mini, t = j.tier;
-  hurtAs(t === 1 ? 'shot' : 'heavy', e, Math.max(1, Math.round(sw * WTW.dmg[t - 1])), j.x - j.dir * 20, false);
+  if (j.great) { greatHit(j, e); return; }
+  const sw = swordDmg(), big = lcBig(e) || !!e.maxHp || !!e.mini, t = j.tier, far = WTK.farHit(tech('wfar'), Math.abs(e.x - P.x));   /* (claude/wardenpack) FAR POINT */
+  hurtAs(t === 1 ? 'shot' : 'heavy', e, Math.max(1, Math.round(sw * WTK.javMul(WTW.dmg[t - 1], j.k, far, upg('ujav')))), j.x - j.dir * 20, false); if (far.band) { gainVigil(far.band); number(e.x, e.y - (e.h || 16) - 26, 'FAR POINT', '#8fd160'); }
   sparks(e.x, e.y - (e.h || 16) / 2, j.dir, 4 + 3 * t); SFX.tipRing(); hitstop(t === 1 ? 0.04 : 0.07); if (t > 1) shakeCam(2 + t, j.dir * 2);
   if (!e.alive || t === 1) return;
   if (big) { if (!(e.wthCd > time) && !(e.broken > 0)) { e.wthCd = time + WTW.bossCd; e.stagger = Math.max(e.stagger || 0, WTW.bossStagger); e.flash = Math.max(e.flash || 0, 0.15); number(e.x, e.y - (e.h || 16) - 14, 'HEAVY THROW', '#8fd160'); } return; }   /* a boss: hit + flinch, never held */
@@ -30458,12 +30461,13 @@ function updateWthSpears(dt) {
   if (!wthSpears.length) return;
   for (const j of wthSpears) {
     j.life += dt;
-    if (j.st === 'fly') { const step = j.dir * WTW.speed[j.tier - 1] * dt; j.x += step; j.dist += Math.abs(step);
+    if (j.wait > 0) { j.wait -= dt; j.x = P.x + j.dir * 10; j.y = P.y - 10; j.life = 0; if (j.wait > 0) continue; SFX.javThrow(); }   /* (claude/wardenpack) the twin waits in her hand a beat */
+    if (j.st === 'fly') { const step = j.dir * (j.great ? WTK.WT.great.speed : WTW.speed[j.tier - 1]) * dt; j.x += step; j.dist += Math.abs(step);
       if (Math.random() < dt * 30) parts.push({ x: j.x - j.dir * 12, y: j.y, vx: -j.dir * 30, vy: 0, life: 0.15, max: 0.15, col: '#dff0d8', size: 1, grav: 0 });
       const e = kitFoes().find(q => Math.abs(q.x - j.x) < (q.w || 12) / 2 + 4 && j.y > q.y - (q.h || 16) - 4 && j.y < q.y + 2);
       if (e) { wthHit(j, e); j.st = 'back'; }
-      else if (isSolid(Math.floor((j.x + j.dir * 3) / TS), Math.floor(j.y / TS))) { SFX.javStick(); sparks(j.x, j.y, -j.dir, 4); j.st = 'back'; }
-      else if (j.dist >= WTW.range[j.tier - 1]) j.st = 'back'; }
+      else if (isSolid(Math.floor((j.x + j.dir * 3) / TS), Math.floor(j.y / TS))) { SFX.javStick(); sparks(j.x, j.y, -j.dir, 4); if (j.great) greatBurst(j, j.x, j.y, null); j.st = 'back'; }
+      else if (j.dist >= (j.range || (j.great ? WTK.WT.great.range : WTW.range[j.tier - 1]))) j.st = 'back'; }
     else { const dx = P.x - j.x, dy = (P.y - 12) - j.y, d = Math.hypot(dx, dy) || 1; j.x += dx / d * WTW.back * dt; j.y += dy / d * WTW.back * dt; if (d < 12 || j.life > 1.5) j.st = 'gone'; }   /* AT ONCE: it flies back to her hand (a visual - she was never unarmed) */
   }
   wthSpears = wthSpears.filter(j => j.st !== 'gone');
@@ -30479,9 +30483,9 @@ function wthDraw(cx, cy) {
     g.save(); g.globalCompositeOperation = 'lighter'; g.globalAlpha = (0.15 + 0.12 * t) * (0.6 + 0.4 * pulse); g.fillStyle = t === 3 ? '#fff6c8' : '#8fd160';
     g.fillRect(Math.min(x0, x1), hy - 1, Math.abs(x1 - x0), 3); if (t >= 2) { g.globalAlpha = 0.18 * pulse + 0.1 * t; g.fillRect(x1 - f * 4 - (f > 0 ? 0 : 6), hy - 3, 10, 7); } g.restore();
     if (t >= 2) { g.fillStyle = '#dff0d8'; for (let i = 0; i < t; i++) { const k = (time * 3 + i / 3) % 1; g.globalAlpha = 1 - k; g.fillRect(x1 + f * (5 + k * 8), hy - 2 + i * 2 - 1, 1, 1); } g.globalAlpha = 1; } }
-  for (const j of wthSpears) { const x = Math.round(j.x - cx), y = Math.round(j.y - cy), dir = j.st === 'back' ? -j.dir : j.dir, ex = x - dir * 20;
-    g.strokeStyle = '#8a5a32'; g.lineWidth = 1; g.beginPath(); g.moveTo(x + 0.5, y + 0.5); g.lineTo(ex + 0.5, y + 0.5); g.stroke();
-    g.fillStyle = j.tier === 3 ? '#fff6c8' : '#dff0d8'; g.fillRect(x - 1 + (dir > 0 ? 0 : -1), y - 1, 3, 3); g.fillStyle = '#ffffff'; g.fillRect(x + dir, y, 1, 1);
+  for (const j of wthSpears) { if (j.wait > 0) continue; const x = Math.round(j.x - cx), y = Math.round(j.y - cy), dir = j.st === 'back' ? -j.dir : j.dir, ex = x - dir * 20;
+    g.strokeStyle = j.great ? '#c9b27c' : '#8a5a32'; g.lineWidth = j.great ? 2 : 1; g.beginPath(); g.moveTo(x + 0.5, y + 0.5); g.lineTo(ex + 0.5, y + 0.5); g.stroke();
+    g.fillStyle = j.tier === 3 ? '#fff6c8' : '#dff0d8'; g.fillRect(x - 1 + (dir > 0 ? 0 : -1), y - 1, 3, 3); if (j.great) { g.fillStyle = '#8fd160'; g.fillRect(x - 2 + (dir > 0 ? 0 : -1), y - 2, 5, 5); g.fillStyle = '#ffffff'; g.fillRect(x - 1 + (dir > 0 ? 0 : -1), y - 1, 3, 3); }   /* (claude/wardenpack) the great javelin: a bigger head (placeholder art) */ g.fillStyle = '#ffffff'; g.fillRect(x + dir, y, 1, 1);
     g.globalAlpha = j.st === 'back' ? 0.25 : 0.35; g.fillStyle = '#dff0d8'; g.fillRect(Math.min(ex, ex - dir * 10), y, 10, 1); g.globalAlpha = 1; } }
 function callRain() {
   P.blastT = 0.5; P.atk = -1; SFX.rainCall(); shakeCam(3); for (let i = 0; i < 3; i++) parts.push({ streak: true, x: P.x + (i - 1) * 4, y: P.y - 24, vx: (i - 1) * 30, vy: -420, life: 0.4, max: 0.4, col: '#dff0d8', size: 1, grav: 0 });
@@ -30510,7 +30514,7 @@ function drawWardenKit(cx, cy) {
       g.globalAlpha = [0.85, 0.5, 0.28][i]; g.strokeStyle = ['#ffffff', '#dff0d8', '#8fd160'][i]; g.lineWidth = [1.5, 2.5, 4][i]; g.beginPath(); g.ellipse(x, y, 46 - i, 7, 0, Math.min(head, tail), Math.max(head, tail)); g.stroke(); } }
   if (isWarden() && P.sdFlash > 0) { const x = Math.round(P.x - cx), y = Math.round(P.y - cy) - 10, f = P.face, r = P.sdReach || 44;
     g.globalAlpha = Math.min(1, P.sdFlash / 0.07); g.strokeStyle = '#ffffff'; g.lineWidth = 1; g.beginPath(); g.moveTo(x + f * 12, y); g.lineTo(x + f * r, y); g.stroke(); g.fillStyle = '#dff0d8'; g.fillRect(x + f * r - 1, y - 1, 3, 3); }
-  if (isWarden() && P.wReachT > 0 && !wardJav) { const y = Math.round(P.y - cy) - 10, x0 = Math.round(P.x - cx) + P.face * 8, x1 = x0 + P.face * Math.round(44 * WID.reach.mul - 8), pulse = 0.4 + 0.15 * Math.sin(time * 14), swing = P.atk >= 0.04 && P.atk < 0.30;   /* WARDEN'S REACH: the ghost spear, drawn out to the hitbox (the baked frames only reach 44) */
+  if (isWarden() && P.wReachT > 0 && !wardJav) { const y = Math.round(P.y - cy) - 10, x0 = Math.round(P.x - cx) + P.face * 8, x1 = x0 + P.face * Math.round(44 * wrNums().mul - 8), pulse = 0.4 + 0.15 * Math.sin(time * 14), swing = P.atk >= 0.04 && P.atk < 0.30;   /* WARDEN'S REACH: the ghost spear, drawn out to the hitbox (the baked frames only reach 44) */
     g.save(); g.globalAlpha = swing ? 0.85 : pulse; g.strokeStyle = '#c8ffb0'; g.lineWidth = 3; g.beginPath(); g.moveTo(x0, y); g.lineTo(x1, y); g.stroke(); g.globalAlpha = Math.min(1, pulse + 0.3); g.strokeStyle = '#ffffff'; g.lineWidth = 1; g.beginPath(); g.moveTo(x0, y); g.lineTo(x1, y); g.stroke();
     g.fillStyle = '#e8ffe0'; g.beginPath(); g.moveTo(x1 + P.face * 7, y); g.lineTo(x1 - P.face * 3, y - 4); g.lineTo(x1 - P.face * 3, y + 4); g.closePath(); g.fill(); g.restore(); }
   if (isWarden() && P.stretchT > 0 && P.atk >= 0.04 && P.atk < 0.18) { const b = attackBox(); if (b) { const tip = Math.round((P.face > 0 ? b.r : b.l) - cx), y = Math.round(P.y - cy) - 9;
@@ -30973,17 +30977,43 @@ function tipLesson(kind) {
 /* (claude/wardenid) THE LONG THRUST, LANDED (the warden's third jab): what can be driven is knocked back to rest at the point's range (WID.long.keep, so the next jab is a tip too); what cannot (a boss, a mini, a heavy) gives HER a step back instead - the spacing is kept either way */
 /* ==== WARDEN'S REACH, THE ULTIMATE (src/warden-id.js WID.reach; Daniel 11-01). UP+C at a full band: WID.reach.t s of a huge ghostly spear (stretchMul x2, drawn out to the hitbox), every hit the max tip (tipPay),
    knocked back (wardenReachPost), the box a line through everything in it; then one final thrust (wardenReachEnd) and an empty band. ==== */
-function wardenReachCast() { P.wReachT = WID.reach.t; P.atk = -1; P.vx = 0; P.heavy = false; P.runThrough = false; P.blastT = 0.35; trialEvent('meter'); kitPose(P, 'stretch', 0.45);
+function wardenReachCast() { P.wReachT = wrNums().t; P.atk = -1; P.vx = 0; P.heavy = false; P.runThrough = false; P.blastT = 0.35; trialEvent('meter'); kitPose(P, 'stretch', 0.45);
   SFX.vigilFull(); SFX.stretch && SFX.stretch(); SFX.braceSet(); shakeCam(4); zoomKick(1.05, 0.22); rumble(140, 0.6); ringAt(P.x, P.y - 10, 30, '#8fd160', 0.45); ringAt(P.x, P.y - 10, 16, '#dff0d8', 0.3); number(P.x, P.y - 32, "WARDEN'S REACH", '#8fd160'); }
 function wardenReachPost(e) { if (!e || !e.alive || !(P.wReachT > 0)) return;
   if (lcBig(e) || KNOCK_SKIP.has(e.t)) { const nx = e.x + P.face * WID.reach.push; if (!isSolid(Math.floor((nx + P.face * (e.w || 12) / 2) / TS), Math.floor((e.y - 4) / TS))) e.x = nx; return; }   /* a boss or a mini: a small push, nothing else (his resist floor and openings are as authored) */
   knockFoe(e, P.face, WID.reach.knock, { slide: true }); }
-function wardenReachEnd() { P.wReachT = 0; P.vigil = 0; const f = P.face, r = WID.reach.finalLen, hb = f > 0 ? { l: P.x + 2, r: P.x + r, t: P.y - 22, b: P.y + 1 } : { l: P.x - r, r: P.x - 2, t: P.y - 22, b: P.y + 1 };
+function wardenReachEnd() { P.wReachT = 0; P.vigil = 0; const f = P.face, r = wrNums().finalLen, hb = f > 0 ? { l: P.x + 2, r: P.x + r, t: P.y - 22, b: P.y + 1 } : { l: P.x - r, r: P.x - 2, t: P.y - 22, b: P.y + 1 };
   SFX.heavy(); SFX.tipRing(); shakeCam(6, f * 3); hitstop(0.08); zoomKick(1.05, 0.2); ringAt(P.x + f * 40, P.y - 11, 26, '#dff0d8', 0.35); streaks(P.x + f * 20, P.y - 11, 8, ['#ffffff', '#8fd160'], 220);
   for (const e of kitFoes()) { if (!overlap(hb, box(e))) continue; const big = lcBig(e);
-    hurtAs('heavy', e, Math.round(swordDmg() * SKK.K_WARDEN_REACH.final * amul('wardenReach')), P.x, false);
+    hurtAs('heavy', e, Math.round(swordDmg() * wrNums().final * amul('wardenReach')), P.x, false);
     if (!e.alive) continue; if (big) e.stagger = Math.max(e.stagger || 0, WID.reach.bossStagger); else { e.stagger = Math.max(e.stagger || 0, WID.reach.finalStagger); knockFoe(e, f, WID.reach.finalKnock, { slide: true }); } } }
-function wardenLongPost(e) { if (!e || !e.alive || !P.wLong) return; const d = tipReach(e); stats_wlong.hits++;
+/* ==== (claude/wardenpack) THE WARDEN'S L25-L50 EFFECTS (numbers and rules: src/warden-tech.js WT) ==== */
+/* L30 A KEEP-OFF: a blow turned ON THE BEAT drives its attacker out to the point (a boss gives her a step instead); the band pays */
+function wardenKeepOff(f) { if (!f || !f.alive) return; const big = lcBig(f) || !!f.maxHp || !!f.mini || KNOCK_SKIP.has(f.t), r = WTK.keepOff(big, tipReach(f));
+  if (tech('wpoint')) f.wtPoint = time + WTK.WT.point.t;
+  if (r.recoil) P.vx = -P.face * r.recoil;
+  else { f.stagger = Math.max(f.stagger || 0, r.stagger); if (r.kick > 0 && knockFoe(f, Math.sign(f.x - P.x) || P.face, 150, { slide: true })) f.kvx = (Math.sign(f.x - P.x) || P.face) * r.kick; }
+  gainVigil(r.band); number(f.x, f.y - (f.h || 16) - 22, 'KEPT OFF', '#8fd160'); sparks(f.x, f.y - (f.h || 16) / 2, P.face, 6); }
+/* L45 RUN THROUGH: the long thrust's point carries on to the one foe behind the first (x0.6, never twice on one swing) */
+function wardenThrough(e) { const half = (e.w || 12) / 2, t = WTK.thruTarget(kitFoes().filter(q => q !== e && Math.abs(q.y - e.y) < 24 && !(P.hitSet && P.hitSet.has(q))), P.face, P.face > 0 ? e.x + half : e.x - half);
+  if (!t) return; if (P.hitSet) P.hitSet.add(t); hurtAs('light', t, Math.max(1, Math.round(swordDmg() * WTK.WT.thru.k * amul('wardenThru'))), P.x, false);
+  sparks(t.x, t.y - (t.h || 16) / 2, P.face, 6); SFX.tipRing(); if (t.alive && tech('wpoint')) t.wtPoint = time + WTK.WT.point.t; }
+/* L40 B SPRING POINT: the pole-vault's landing stabs the knot round the foe she went over (up to 3 more, x0.8), and fills the band */
+function wardenSpring(he) { if (!tech('wspring') || !he) return; gainVigil(WTK.WT.spring.band);
+  for (const t of WTK.springTargets(kitFoes(), he, true)) { hurtAs('light', t, Math.max(1, Math.round(swordDmg() * WTK.WT.spring.k * amul('harrier'))), P.x, false); if (t.alive && !lcBig(t) && !t.maxHp) t.stagger = Math.max(t.stagger || 0, 0.5); sparks(t.x, t.y - (t.h || 16) / 2, P.face, 6); } }
+/* L50 B THE GREAT JAVELIN: the full band spent on one throw (a tier-3 spear that carries the great flag: wthHit -> greatHit, the wall -> greatBurst) */
+function wardenGreatCast() { P.vigil = 0; P.atk = -1; P.vx = -P.face * 40; P.heavy = false; P.runThrough = false; P.blastT = 0.35; P.wthRec = WTW.rec; trialEvent('meter'); kitPose(P, 'javThrow', 0.4);
+  SFX.vigilFull(); SFX.javThrow(); SFX.tipRing(); shakeCam(5, P.face * 3); zoomKick(1.05, 0.2); rumble(140, 0.6); streaks(P.x + P.face * 12, P.y - 12, 10, ['#fff6c8', '#8fd160'], 260); number(P.x, P.y - 32, 'THE GREAT JAVELIN', '#8fd160');
+  wthSpears.push({ x: P.x + P.face * 10, y: P.y - 10, dir: P.face, tier: 3, great: true, st: 'fly', dist: 0, life: 0, range: WTK.WT.great.range }); }
+function greatHit(j, e) { const G = WTK.WT.great, big = lcBig(e) || !!e.maxHp || !!e.mini;
+  hurtAs('heavy', e, Math.max(1, Math.round(swordDmg() * G.k * amul('wardenGreat'))), j.x - j.dir * 20, false); sparks(e.x, e.y - (e.h || 16) / 2, j.dir, 12); hitstop(0.09); shakeCam(5, j.dir * 3);
+  if (e.alive && !big && !KNOCK_SKIP.has(e.t)) e.stagger = Math.max(e.stagger || 0, 0.4);   /* the first foe: the blow itself is the point; a boss takes the damage and nothing else */
+  greatBurst(j, e.x, e.y - (e.h || 16) / 2, e); }
+function greatBurst(j, x, y, first) { const G = WTK.WT.great; dust(x, y + 8, 8); burst(x, y, 10, ['#fff6c8', '#8fd160', '#dff0d8'], 130, 0.4, 0, 1); ringAt(x, y, 22, '#dff0d8', 0.3);
+  for (const o of kitFoes()) { if (o === first || Math.abs(o.x - x) > G.r || Math.abs((o.y - (o.h || 16) / 2) - y) > G.r) continue; const big = lcBig(o) || !!o.maxHp || !!o.mini, b = WTK.greatBurst(big);
+    hurtAs('heavy', o, Math.max(1, Math.round(swordDmg() * b.k * amul('wardenGreat'))), x, false); if (!o.alive) continue;
+    if (b.stagger > 0) o.stagger = Math.max(o.stagger || 0, b.stagger); if (b.knock > 0 && !KNOCK_SKIP.has(o.t)) knockFoe(o, Math.sign(o.x - x) || j.dir, b.knock, { slide: true }); } }
+function wardenLongPost(e) { if (!e || !e.alive || !P.wLong) return; const d = tipReach(e); stats_wlong.hits++; if (tech('wthrough')) wardenThrough(e);
   if (e.maxHp || e.mini || e.big || KNOCK_SKIP.has(e.t)) { P.vx = -P.face * WID.long.recoil; stats_wlong.recoils++; return; }
   const v = widDrive(d); if (v > 0 && knockFoe(e, P.face, 150, { slide: true })) { e.kvx = P.face * v; stats_wlong.drives++; } }
 const stats_wlong = { hits: 0, drives: 0, recoils: 0 };
@@ -31002,8 +31032,8 @@ function swingDmg(e) { if (P.heavySwing || P.heavy) CM.refund(P, 3);   /* WEIGHT
   if (isPaladin() && P.wrathT > 0) { mul *= 1.4; P.hp = Math.min(P.maxHp, P.hp + Math.max(1, Math.round(P.maxHp * 0.003))); }   /* (PALADIN TUNE: was 0.015) HOLY WRATH (claude/herokit): blows land a bit over a third harder and mend him */
   if (isBz() && BZK) { mul *= BZK.chopLanded(e); if (!P.heavy && !P.heavySwing && !P.swingKind && !P.dashCut && !P.swingRiposte) mul *= BZ_K.flurry.dmg;   /* (claude/berserker2) THE FLURRY: quick chops, each a little lighter */ if (P.heavy && tal('bzSplit') && e.broken > 0) mul *= 2; }   /* THE CHAIN goes on (BITE: a tenth harder on a foe it has cut); SPLITTER: the cross-chop on a broken foe */
   if (isRg()) mul *= RG_K.knife.dmg * (tal('rgLast') && RGK && RGK.arrows() <= 0 ? 2 : 1);   /* (claude/ranger) THE KNIFE: a little lighter than a sword (THE LAST ARROW: twice, with the quiver empty) */
-  if (isWarden()) { if (wardJav) mul *= 0.35; else { mul *= tipPay(e); runThroughDrive(e); if (P.runThrough && L.trial && ++P.rtN === 2) trialEvent('runthrough'); } }   /* (her yard: ONE lunge through two is the run-through) */   /* (bare-handed while the JAVELIN is out: a weak jab, no point to pay) */   /* THE TIP: where along the spear it landed is the whole hero - and the lunge drives what it skewers */
-  if (isWarden() && P.wReachT > 0) mul *= SKK.K_WARDEN_REACH.perHit * amul('wardenReach');   /* (claude/wardenid) swordDmg x k x amul (src/skill-k.js) */
+  if (isWarden()) { if (wardJav) mul *= 0.35; else { const pay = tipPay(e); mul *= pay; { const pt = WTK.pointedHit(tech('wpoint'), pay, e.wtPoint, time, upg('utip')); mul *= pt.mul; if (pt.until > time && !(e.wtPoint > time)) number(e.x, e.y - (e.h || 16) - 18, 'POINTED', '#8fd160'); e.wtPoint = pt.until; } if (P.wLong) mul *= WTK.upMul('long', upg('ulong')); runThroughDrive(e); if (P.runThrough && L.trial && ++P.rtN === 2) trialEvent('runthrough'); } }   /* (her yard: ONE lunge through two is the run-through) */   /* (bare-handed while the JAVELIN is out: a weak jab, no point to pay) */   /* THE TIP: where along the spear it landed is the whole hero - and the lunge drives what it skewers */
+  if (isWarden() && P.wReachT > 0) mul *= wrNums().perHit * amul('wardenReach');   /* (claude/wardenid) swordDmg x k x amul (src/skill-k.js) */
   return extra + Math.round(mul * swordDmg() * (P.swingMul || 1)); }
 /* COUNTERSTROKE (the knight's perfect guard) and RIPOSTE (the freebooter's turned blow): the blade answers by itself, a beat after, at full
    swing damage - late enough that whatever the parry opened is open */
