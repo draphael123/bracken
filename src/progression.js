@@ -90,15 +90,30 @@ export const UPGRADE_MAX = 2;
 export const TECHNIQUES = { knight: KNIGHT_TECH };
 export const UPGRADES = { knight: KNIGHT_UPGRADES };
 export const hasKit = h => !!TECHNIQUES[h];
-export const techniqueFor = (h, n) => (TECHNIQUES[h] || {})[n] || null;
-export const techniqueById = (h, id) => Object.values(TECHNIQUES[h] || {}).find(t => t.id === id) || null;
+/* ==== PICK-1-OF-2 FORKS (claude/ltfork, brief-lategame2-1104 sec 1) ====
+   At FORK_LEVELS (30, 40, 50) a TECHNIQUES entry may be {fork: [A, B]} instead of one technique: the card shows both, takes one, the other is LOCKED until
+   a respec. techniqueFor keeps returning A (a fork's first), so everything that reads one technique per level is unchanged; techniquesAt gives the pair.
+   Save: no new field - ms[n] holds the one id taken, techOn is id-exact. A pair id whose sibling is already taken is IGNORED on load (dropForkClash), never an error.
+   Capstones: both L50 options carry {capstone: true}. Pair rules (A and B differ in role, B obeys the sec 4 law, dps parity) live in tools/ability-law.mjs. */
+export const FORK_LEVELS = [30, 40, 50];
+export const CAPSTONE_LEVEL = 50;
+const forkOf = e => (e && Array.isArray(e.fork)) ? e.fork.filter(Boolean) : null;
+export const isFork = (h, n) => { const f = forkOf((TECHNIQUES[h] || {})[n]); return !!f && f.length > 1; };   /* a real choice: two options (a one-option fork is just that technique) */
+export const techniquesAt = (h, n) => { const e = (TECHNIQUES[h] || {})[n]; if (!e) return []; const f = forkOf(e); return f || [e]; };
+export const techniqueFor = (h, n) => techniquesAt(h, n)[0] || null;
+export const techniqueById = (h, id) => { for (const n of Object.keys(TECHNIQUES[h] || {})) { const t = techniquesAt(h, +n).find(q => q.id === id); if (t) return t; } return null; };
+export const techniqueLevel = (h, id) => { for (const n of Object.keys(TECHNIQUES[h] || {})) if (techniquesAt(h, +n).some(q => q.id === id)) return +n; return 0; };
+/* the siblings of a fork pick: the OTHER ids of the pair this id belongs to ([] for a technique that is not in a real fork) */
+export const forkSiblings = (h, id) => { const n = techniqueLevel(h, id); return n && isFork(h, n) ? techniquesAt(h, n).filter(t => t.id !== id).map(t => t.id) : []; };
+export const forkTaken = (p, h, n) => techniquesAt(h, n).find(t => techOn(p, h, t.id)) || null;   /* which of a level's pair this save holds (null: none yet) */
+export const forkLocked = (p, h, id) => forkSiblings(h, id).some(s => techOn(p, h, s));   /* true: a sibling is taken, this one is locked until a respec */
 export const upgradeById = (h, id) => (UPGRADES[h] || []).find(u => u.id === id) || null;
 /* the cards of THIS hero past 24: TECH_LEVELS and UPGRADE_LEVELS replace the stat pick (a hero with no kit: none) */
 export const kitCardLevels = (h, lv) => hasKit(h) ? TECH_LEVELS.concat(UPGRADE_LEVELS).filter(n => n <= Math.max(0, Math.floor(lv || 0))).length : 0;
 export const milestoneLevels = h => hasKit(h) ? MILESTONES.concat(UPGRADE_LEVELS).sort((a, b) => a - b) : MILESTONES;
 export const isTechLevel = (h, n) => hasKit(h) && TECH_LEVELS.includes(n);
 export const isUpgradeLevel = (h, n) => hasKit(h) && !!UPGRADES[h] && UPGRADE_LEVELS.includes(n);
-export const techniquesArriving = (h, from, to) => TECH_LEVELS.filter(n => n > from && n <= to).map(n => techniqueFor(h, n)).filter(Boolean);   /* what a level-up can OFFER (the card teaches it when it is taken: main.js cardTake) */
+export const techniquesArriving = (h, from, to) => TECH_LEVELS.filter(n => n > from && n <= to).flatMap(n => techniquesAt(h, n));   /* what a level-up can OFFER (the card teaches it when it is taken: main.js cardTake) */
 export const techOn = (p, h, id) => { const c = (p && p.card && object(p.card[h])) ? p.card[h] : null; return !!c && Object.values(c.ms || {}).includes(id); };
 export const upgRank = (p, h, id) => { const c = (p && p.card && object(p.card[h])) ? p.card[h] : null; return c && object(c.up) ? Math.min(UPGRADE_MAX, Math.max(0, c.up[id] | 0)) : 0; };
 /* THE EARLY PERKS: smaller than the L25+ ones. Each is a hook main.js reads through perkOn() */
@@ -188,13 +203,15 @@ const upgNext = (p, h) => (UPGRADES[h] || []).filter(u => upgRank(p, h, u.id) < 
 const upgOpt = (p, h, u) => { const r = upgRank(p, h, u.id) + 1; return { id: u.id + ':' + r, name: u.name + (r > 1 ? ' II' : ' I'), what: u.what[r - 1], up: true, rank: r, upgrade: u.id }; };
 const genericPerk = (p, h, n) => { const o = perkOffer0(p, h, n); return o.find(k => !k.own) || o[0] || null; };
 function techOffer(p, h, n) {
- const out = [], t = TECH_LEVELS.filter(l => l <= n).map(l => techniqueFor(h, l)).filter(Boolean).find(k => !techOn(p, h, k.id)), left = upgNext(p, h);
- if (t) out.push({ id: t.id, name: t.name, what: t.what, tech: true, rec: true, input: t.input, level: Object.entries(TECHNIQUES[h]).find(([, v]) => v === t)[0] | 0 });
+ const out = [], lvl = TECH_LEVELS.filter(l => l <= n).find(l => techniquesAt(h, l).length && !techniquesAt(h, l).some(k => techOn(p, h, k.id))), t = lvl ? techniqueFor(h, lvl) : null, left = upgNext(p, h);
+ if (lvl && isFork(h, lvl)) return techniquesAt(h, lvl).map((k, i) => forkOpt(k, lvl, i === 0));   /* a FORK is the whole card: both techniques, no perk or upgrade to put it off with */
+ if (t) out.push({ id: t.id, name: t.name, what: t.what, tech: true, rec: true, input: t.input, level: lvl });
  if (left[0]) out.push(upgOpt(p, h, left[0]));
  const g = genericPerk(p, h, n); if (g) out.push(g);
  if (out.length && !out[0].rec) out[0] = { ...out[0], rec: true };
  return out.length ? out : perkOffer0(p, h, n);
 }
+const forkOpt = (k, lvl, rec) => ({ id: k.id, name: k.name, what: k.what, tech: true, fork: true, rec, input: k.input, role: k.role, trade: k.trade, capstone: !!k.capstone, level: lvl });
 function upgOffer(p, h, n) {
  const left = upgNext(p, h), out = [];
  if (left[0]) out.push(upgOpt(p, h, left[0]));
@@ -212,13 +229,33 @@ export function pickCard(p, h, stat, lv) {
  const c = ensureCard(p, h); if ((c[stat] || 0) >= CARD_CAP) return 'That one is full: ' + CARD_CAP + ' picks';
  c[stat] = (c[stat] || 0) + 1; return null; }
 export function pickMilestone(p, h, n, perk, lv) {
- if (!milestonesOwed(p, h, lv).includes(n)) return 'No milestone owed'; if (!perkOffer(p, h, n).some(k => k.id === perk)) return 'Not offered';
+ if (!milestonesOwed(p, h, lv).includes(n)) return 'No milestone owed'; if (!perkOffer(p, h, n).some(k => k.id === perk)) return 'Not offered'; if (forkLocked(p, h, perk)) return 'Locked: respec to swap';
  const c = ensureCard(p, h); c.ms[n] = perk;
  const um = /^(\w+):(\d)$/.exec(String(perk)); if (um && upgradeById(h, um[1])) { c.up = object(c.up) ? c.up : {}; c.up[um[1]] = Math.max(c.up[um[1]] | 0, +um[2]); }   /* an upgrade pick records its rank */
  return null; }
 /* THE RESPEC: every pick and every perk of this hero back on the table (picksOwed / milestonesOwed are owed again). The silver is the caller's
    (main.js spends RESPEC_SILVER unless p.cardFree[h], a migrated save's free first one). */
-export function respecCard(p, h) { const c = ensureCard(p, h); c.v = c.e = c.m = 0; c.ms = {}; c.up = {}; if (object(p.cardFree)) delete p.cardFree[h]; return null; }
+export function respecCard(p, h) { const c = ensureCard(p, h); c.v = c.e = c.m = 0; c.ms = {}; c.up = {}; if (object(p.cardFree)) p.cardFree[h] = 0; return null; }   /* (0, not deleted: 'was ever granted' is how grantForkRepick tells a used free respec from a never-given one) */
+/* FORKS-ONLY RESPEC (brief sec 1, Q1 rec): the same price as a respec, but only the fork picks (any pair id, wherever the card deferred it to) are taken back; stats,
+   upgrades and every fixed technique stay. null when it did, 'Nothing' when no fork pick is held. The silver is the caller's (cardFree[h] pays it once). */
+export function respecForks(p, h) { const c = cardOf(p, h); if (!c) return 'Nothing'; let any = false;
+ for (const [k, id] of Object.entries(c.ms || {})) if (forkSiblings(h, id).length) { delete c.ms[k]; any = true; }
+ if (!any) return 'Nothing'; if (object(p.cardFree)) p.cardFree[h] = 0; return null; }
+export const hasForkPick = (p, h) => Object.values((cardOf(p, h) || {}).ms || {}).some(id => forkSiblings(h, id).length > 0);
+/* IGNORE A CLASH: two siblings of one pair on a card (a hand-edited or merged save) keep the lowest milestone key's pick. Not an error: a pulled technique never bricks a save. */
+function dropForkClash(p) { for (const [h, c] of Object.entries(p.card || {})) { if (!object(c) || !object(c.ms) || !TECHNIQUES[h]) continue; const seen = new Set();
+  for (const k of Object.keys(c.ms).sort((a, b) => a - b)) { const n = techniqueLevel(h, c.ms[k]); if (!n || !isFork(h, n)) continue; if (seen.has(n)) delete c.ms[k]; else seen.add(n); } } }
+/* THE ONE FREE FORK RE-PICK: a save that holds a fork-level pick from before the fork existed (the A it chose blind) gets cardFree[h] = 1 once. cardFree[h] === undefined
+   means never granted; 0 means it was used (respecCard / respecForks set 0), so this is idempotent and adds no field. Only a hero with a real fork is touched. */
+export function grantForkRepick(p) { if (!object(p) || !object(p.card)) return false; let any = false; p.cardFree = object(p.cardFree) ? p.cardFree : {};
+ for (const h of Object.keys(p.card)) if (p.cardFree[h] === undefined && hasForkPick(p, h)) { p.cardFree[h] = 1; any = true; } return any; }
+/* THE ROAD TO L50 (brief sec 2): six pips for the level-up card, one per TECH_LEVEL. state: 'taken' (his pick: .picked), 'next' (the one the card owes next) or 'ahead'.
+   .options is the pair at a fork (the capstone pair at 50), each {id, name, input, locked}; the locked one is the sibling of a taken pick. */
+export function roadToL50(p, h, lv) { if (!hasKit(h)) return []; const lvl = Math.max(0, Math.floor(lv || 0)); let nextSeen = false;
+ return TECH_LEVELS.map(n => { const opts = techniquesAt(h, n), got = opts.find(t => techOn(p, h, t.id)) || null, fork = isFork(h, n);
+  const state = got ? 'taken' : (!nextSeen ? (nextSeen = true, 'next') : 'ahead');
+  return { level: n, fork, capstone: n === CAPSTONE_LEVEL, state, reached: lvl >= n, picked: got ? { id: got.id, name: got.name } : null,
+   options: opts.map(t => ({ id: t.id, name: t.name, input: t.input, role: t.role, trade: t.trade, locked: !!got && got.id !== t.id })) }; }); }
 /* THE GROWTH a hero's level and card give. card omitted (undefined) = an even spread; null = no picks yet. */
 export function growthAt(h,lv,card){
  lv=Math.max(0,lv);const ranks=Math.min(lv,24)/12,c=card===undefined?evenCard(lv):(card||{v:0,e:0,m:0,ms:{}}),ms=Object.values(c.ms||{});
@@ -270,6 +307,7 @@ export function validateProgress(p){
   }
  }
  for(const [h,c] of Object.entries(p.card||{})){if(!object(c))throw Error('Invalid card: '+h);for(const k of ['v','e','m'])if(c[k]!==undefined&&(!Number.isInteger(c[k])||c[k]<0||c[k]>CARD_CAP))throw Error('Invalid card pick: '+h);if(c.ms!==undefined&&!object(c.ms))throw Error('Invalid card milestones: '+h);if(c.up!==undefined&&(!object(c.up)||Object.values(c.up).some(r=>!Number.isInteger(r)||r<0||r>UPGRADE_MAX)))throw Error('Invalid card upgrades: '+h);}
+ dropForkClash(p);
  for(const v of Object.values(p.xp||{}))if(!Number.isFinite(v)||v<0)throw Error('Invalid XP. Original save retained.');
  for(const [h,v] of Object.entries(p.skillOwned||{})){if(!object(v))throw Error('Invalid skill ownership: '+h);for(const [id,on] of Object.entries(v))if(on!==true||!skillFor(h,id))throw Error('Invalid owned skill: '+id);}
  for(const [h,v] of Object.entries(p.loadouts||{}))if(!Array.isArray(v)||v.length>MAX_SLOTS||v.some(id=>id!==null&&(!skillFor(h,id)||!p.skillOwned?.[h]?.[id]))||new Set(v.filter(Boolean)).size!==v.filter(Boolean).length)throw Error('Invalid loadout: '+h);
@@ -301,9 +339,9 @@ export function trimSlots(p){
 export function migrateProgress(raw, campaignIds=[]){
  const source=raw===null?'{}':raw;let parsed;try{parsed=JSON.parse(source);}catch{throw Error('Unreadable save. Original save retained.');}
  trimSlots(parsed);validateProgress(parsed);const p=clone(parsed);
- if(p.progressionVersion===PROGRESSION_VERSION){normalizeDeathCost(p);retireRelics(p);migrateHeroes(p);migrateCard(p);migratePyroKit(p);p.bossRecords=p.bossRecords||{};return {progress:p,receipt:p.progressionReceipt,passiveReceipt:p.passiveReceipt,changed:false};}
+ if(p.progressionVersion===PROGRESSION_VERSION){normalizeDeathCost(p);retireRelics(p);migrateHeroes(p);migrateCard(p);grantForkRepick(p);migratePyroKit(p);p.bossRecords=p.bossRecords||{};return {progress:p,receipt:p.progressionReceipt,passiveReceipt:p.passiveReceipt,changed:false};}
  if(!(p.progressionVersion>=1))talentsToSkills(p,parsed,source,campaignIds);
- passivesToLevels(p,source);normalizeDeathCost(p);retireRelics(p);migrateHeroes(p);migrateCard(p);migratePyroKit(p);p.bossRecords=p.bossRecords||{};
+ passivesToLevels(p,source);normalizeDeathCost(p);retireRelics(p);migrateHeroes(p);migrateCard(p);grantForkRepick(p);migratePyroKit(p);p.bossRecords=p.bossRecords||{};
  validateProgress(p);return {progress:p,receipt:p.progressionReceipt,passiveReceipt:p.passiveReceipt,changed:true};
 }
 /* VERSION 0 TO 1: the talent trees became bought skills (the step every version-0 save still takes first). */

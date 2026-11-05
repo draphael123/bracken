@@ -1,6 +1,17 @@
 [
   {
     "date": "2026-11-05",
+    "batch": 143,
+    "lines": [
+      "Geomancer: walk through your own stones, tap DOWN to recall them",
+      "Geomancer's ultimate is now Mountain Collapse: a wave of boulders",
+      "Old Tusker's stomp is a splintered shockwave you can read and jump",
+      "The Hornet's Nest drips dark amber resin, not honey",
+      "Sound on phones unlocks reliably, and the credits list the new music"
+    ]
+  },
+  {
+    "date": "2026-11-05",
     "batch": 142,
     "lines": [
       "Geomancer: DOWN+C detonates stones, crouch for Stone Skin, a rising uppercut",
