@@ -304,6 +304,8 @@ if (take('storm-kit')) results.push(run('storm-kit', process.execPath, ['tools/s
 if (take('sink-sand')) results.push(run('sink-sand', process.execPath, ['tools/sink-sand.mjs']));
 if (take('mirage-kit')) results.push(run('mirage-kit', process.execPath, ['tools/mirage-kit.mjs']));
 if (take('sun-puzzle')) results.push(run('sun-puzzle', process.execPath, ['tools/sun-puzzle.mjs']));
+if (take('mini-no-respawn')) results.push(run('mini-no-respawn', process.execPath, ['tools/mini-no-respawn.mjs']));   /* (claude/sealedpyramid3) B18 */
+if (take('sealed-pyramid3')) results.push(run('sealed-pyramid3', process.execPath, ['tools/sealed-pyramid3.mjs']));   /* (claude/sealedpyramid3) SP3 both ways */
 if (take('pixels')) results.push(run('pixels', process.execPath, ['tools/headless.mjs', 'floats'], { PORT: String(portFor(3)) }));
 /* PLATFORM FEEL (claude/feelplatform, Daniel 10-12): the Game speed range + sub-steps + migration (feel-speed), and the camera lookahead, landings by height and the world's small reactions (feel-platform) */
 /* THE PALISADE WOOD and THE BATTERING BEAST (claude/palisadewood, Node): the road and the old-save unlock, the five areas, every required prop a LOCK, the stake rolls, the shrines,
