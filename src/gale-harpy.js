@@ -140,7 +140,13 @@ export function gustStep(e, dt, w) {
 export const gustFrame = e => e.mode === 'gustTell' ? 4 : e.mode === 'gust' ? 2 : e.mode === 'downed' ? 3 : Math.floor((e.anim || 0) * 7) % 2;
 /* THE TOLD LANE and THE BLAST (GREYBOX, the art lane redraws): in the TELL a dashed gold line runs along her lane with chevrons drifting out (where it will go); a BLAST is a
    tall pale crescent of wind (three nested arcs, grit in it) racing along the lane; turned back it flashes green */
+import * as HFX from './redraw/harpy_fx_art.js';   /* (claude/harpyart) the lane's chevrons and the blast crescent, in pixels */
+let fxOff = false;
 export function drawBlasts(g, e, cx, cy, time) {
+  if (!fxOff) { try {
+    if (e.mode === 'gustTell') HFX.drawGustTell(g, e.x - cx, e.y + 2 - cy, e.face || 1, Math.min(GUST.reach, GUST.v * GUST.life), 1 - Math.max(0, e.gT) / GUST.tell, time);
+    for (const b of e.blasts || []) HFX.drawGustBlast(g, b.x - cx, b.y - cy, b.dir, GUST.h, b.life, !!b.turned, time);
+    return; } catch (err) { fxOff = true; } }
   const R = Math.round;
   if (e.mode === 'gustTell') { const k = 1 - Math.max(0, e.gT) / GUST.tell, y = R(e.y + 2 - cy), x0 = R(e.x - cx), d = e.face || 1, len = Math.min(GUST.reach, GUST.v * GUST.life);
     g.globalAlpha = 0.25 + 0.45 * k; g.fillStyle = '#ffe9a0'; for (let s = 10; s < len; s += 8) g.fillRect(R(x0 + d * s), y, 4, 1);

@@ -204,7 +204,7 @@ export function makeRookeryHands(ctx) {
      flies you along her path (the feather trail, drawn first) and SETS YOU DOWN on the land; JUMP lets go. Then she flies home and sits again. No dive, no knock-down first ---------- */
   const mountX = d => d.mount[0] * TS + 8, mountY = d => (d.mount[1] + 1) * TS;
   /* her perch: sitting on the mount's rock, at the hero's own footing */
-  function perchCarrier(e, d) { Object.assign(e, newCarrier(e.cN ? { cN: e.cN } : {}), { hx: mountX(d), hy: mountY(d) - 7, rkDive: null, rkAim: null, stagger: 0 }); e.x = e.hx; e.y = e.hy; e.mode = 'perch'; e.face = Math.sign(d.land[0] - d.mount[0]) || 1; e.hp = Math.max(e.hp, RIDE.hp); }
+  function perchCarrier(e, d) { Object.assign(e, newCarrier(e.cN ? { cN: e.cN } : {}), { hx: mountX(d), hy: mountY(d) - 7, rkDive: null, rkAim: null, stagger: 0, cnSkin: 'carrierharpy' }); e.x = e.hx; e.y = e.hy; e.mode = 'perch'; e.face = Math.sign(d.land[0] - d.mount[0]) || 1; e.hp = Math.max(e.hp, RIDE.hp); }
   /* her flight: from where she sits, through the cells his FEET pass, to over the land - her body CARRY.under px under his feet */
   const flightPts = (d, fx, fy) => [[fx, fy], ...d.path.map(([x, y]) => [x * TS + 8, y * TS + 8 + CARRY.under]), [d.land[0] * TS + 8, (d.land[1] + 1) * TS - 1 + CARRY.under]];
   function aboard(c, p) { const e = c.e; c.rider = p; p.rkRide = e; p.rkRideHp = p.hp; cBoard(e, flightPts(c.d, e.x, e.y)); p.vx = 0; p.vy = 0; p.ground = false;

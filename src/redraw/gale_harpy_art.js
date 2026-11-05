@@ -67,3 +67,55 @@ export function bakeGaleHarpy() {
   return SET;
 }
 export const SHEET = () => { const out = {}, S = bakeGaleHarpy(); S.R.forEach((c, i) => out['gale-harpy-' + i] = c); return out; };
+
+/* (claude/harpyart) THE GUST HARPY'S OWN SHEET: the gale harpy's profile build in STORM-INDIGO (slate-blue wings, white-blue primaries, pale plumes), with HER frames (src/gale-harpy.js gustFrame):
+   0/1 hover, 2 THE CLAP (both wings slammed forward and together, the blast leaving her), 3 KNOCKED DOWN (grounded: tilted, wings splayed - main draws 3 for the whole downed spell),
+   4 THE TELL (wings flung STRAIGHT UP, chest out, beak open, red eyes), 5 HURT. */
+const STORM = { b: '#5a6cb4', B: '#34428a', d: '#1a2250', l: '#9aaee8', h: '#e0e8ff', ruff: '#e8e8f8', ruffD: '#b8bcd8', plume: '#c8d4ff' };
+const FR_GUST = [
+  { tilt: 0.3, wing: [-2.3, 8, -1.95, 1.05, 7, 12], plume: 0.1 },
+  { tilt: 0.26, wing: [2.5, 7, 2.15, 0.9, 7, 11], tail: 2.15, plume: 0.35 },
+  { tilt: -0.28, cy: 13, wing: [0.25, 7, 0.55, 0.9, 7, 15], legIn: true, tail: 1.9, plume: -0.4, beak: true },
+  { tilt: 1.15, cy: 16, wing: [3.0, 6, 2.7, 1.5, 7, 10], dizzy: true, legIn: true, tail: 3.0 },
+  { tilt: 0.05, cy: 14, wing: [-1.65, 9, -1.62, 0.8, 8, 15], chest: true, beak: true, eye: 'red', plume: -0.1 },
+  { tilt: -0.1, wing: [-2.2, 7, -1.8, 1.3, 7, 11], hurt: true, beak: true, legIn: true },
+];
+let GSET = null;
+export function bakeGustHarpy() {
+  if (GSET) return GSET;
+  const keep = { ...C }; Object.assign(C, STORM);
+  try {
+    const R0 = FR_GUST.map((o, i) => { const [c, g] = canvas(W, H); g.save(); g.translate(OX, OY); bird(g, o); g.restore();
+      if (i === 3) { for (const [x, y] of [[8, 9], [36, 11], [14, 27], [34, 25]]) { R(g, x, y, 3, 1, C.h); R(g, x + 1, y - 1, 1, 1, C.l); } }
+      if (i === 2) { for (const y of [10, 15, 20]) R(g, 36 + (y % 3), y, 5, 1, C.h); }
+      outline(c, OUT); return c; });
+    const w0 = R0.map(c => whiten(c)); GSET = { R: R0, L: R0.map(flipX), white: { R: w0, L: w0.map(flipX) }, ax: AX, ay: AY, w: 14, h: 9 };
+  } finally { Object.assign(C, keep); }
+  return GSET;
+}
+
+/* (claude/harpyart) THE CARRIER HARPY (src/carrier-harpy.js): the crag's pale guano-white bird in the gale harpy's profile build, frames 0-5 as every harpy (hover up / down, dive, downed, aim, hurt) plus
+   6 SITTING (wings folded down along her back, a worn saddle-cloth over her shoulders: oxblood wool, gold trim, a girth strap, a bright glint) and 7 CARRYING (wings beating level, legs tucked, the
+   saddle-cloth streaming, scuffed feathers under a hero's boots). Facing right; flipped for left. */
+const CRAGP = { b: '#c4c2d4', B: '#7a7894', d: '#3a384e', l: '#e8e6f2', h: '#ffffff', ruff: '#f4f2f8', ruffD: '#c0bcd0', face: '#e8dccf', faceD: '#b49a8a', beak: '#e6c668', beakD: '#9a7a2c', plume: '#dcdaf0' };
+const FR_CARRIER = [
+  FR[0], FR[1], FR[2], FR[3], FR[4], FR[5],
+  { tilt: 0.04, cy: 16, wing: [1.8, 5, 1.62, 0.35, 6, 9], plume: 0.2, tail: 2.4, sit: true },
+  { tilt: 0.14, cy: 14, wing: [-0.15, 9, 0.05, 0.7, 8, 14], plume: -0.2, legIn: true, tail: 1.95, carry: true },
+];
+const px0 = (g, x, y, c) => R(g, x, y, 1, 1, c);
+let CSET = null;
+export function bakeCarrierHarpy() {
+  if (CSET) return CSET;
+  const keep = { ...C }; Object.assign(C, CRAGP);
+  try {
+    const R0 = FR_CARRIER.map(o => { const [c, g] = canvas(W, H); g.save(); g.translate(OX, OY); bird(g, o); g.restore();
+      if (o.sit || o.carry) { const sx = 21, sy = o.sit ? 15 : 13;
+        R(g, sx, sy, 6, 7, '#7a2a2a'); R(g, sx, sy, 6, 1, '#e0b040'); R(g, sx, sy + 6, 6, 1, '#e0b040'); R(g, sx + 1, sy + 2, 4, 1, '#a04040'); R(g, sx - 1, sy + 3, 8, 1, '#4a3220'); px0(g, sx + 4, sy + 2, '#fff1a0');
+        if (o.carry) { for (let k = 0; k < 4; k++) R(g, sx - 2 - k * 2, sy + 1 + (k % 2), 3, 2, k % 2 ? '#7a2a2a' : '#a04040'); R(g, sx + 1, sy - 1, 3, 1, '#d8d4e4'); }
+        else R(g, sx - 2, sy + 5, 2, 3, '#7a2a2a'); }
+      outline(c, OUT); return c; });
+    const w0 = R0.map(c => whiten(c)); CSET = { R: R0, L: R0.map(flipX), white: { R: w0, L: w0.map(flipX) }, ax: AX, ay: AY, w: 14, h: 9 };
+  } finally { Object.assign(C, keep); }
+  return CSET;
+}

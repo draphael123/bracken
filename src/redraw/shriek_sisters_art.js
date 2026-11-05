@@ -59,16 +59,33 @@ function body(g, P, p, role, F) {
   const br = P.belly; ellipse(g, 1, cy + 1.5, bw - 3.2, bh - 3.4 + (p.chest ? 1.6 : 0), br); if (role === 'snatcher') { ellipse(g, 0, cy + 1, bw - 1, 2.4, P.faceD); ellipse(g, 1, cy + 1.5, bw - 4, bh - 5, br); }
   for (let q = 0; q < 4; q++) { const yy = cy - 3 + q * 3, ww = Math.round(bw - 3.6 - Math.abs(q - 1.2) * 0.8); R(g, -ww + 2, yy, ww, 1, role === 'snatcher' ? P.faceD : P.light); R(g, -ww + 3, yy + 1, Math.max(1, ww - 2), 1, br); }
   if (F.sac) { ellipse(g, 3, cy - bh + 2 - (P.neck ? 3 : 0) + (p.beak ? 1 : 0), 3 + (p.sac ? 3.4 : p.cone || p.rings || p.chest ? 2 : 0.6), 2.6 + (p.sac ? 2.6 : p.rings || p.cone ? 1.6 : 0.4), P.belly); if (p.sac) { ellipse(g, 2, cy - bh + 1 - (P.neck ? 3 : 0), 2.2, 1.4, '#f8c8c8'); for (let k = -2; k <= 2; k += 2) R(g, 3 + k, cy - bh + 3 - (P.neck ? 3 : 0), 1, 2, '#c06070'); } }   /* (claude/sisters2) THE SHOCK SHRIEK: the sac blown up tight, veins showing */   /* the throat sac: swollen when she screams */
+  if (WOMAN) { ellipse(g, 0, cy - bh + 3.5, bw - 1, 3.6, P.face); ellipse(g, -1, cy - bh + 3, bw - 3, 2.2, '#f6ece0'); R(g, -3, cy - bh + 5, 6, 1, P.faceD); for (let k = -3; k <= 3; k += 2) px(g, k, cy - bh + 6 + (k & 2 ? 1 : 0), P.belly); }   /* (claude/harpyart) bare shoulders and collarbone, the feathers starting below them */
   if (F.bag) satchel(g, cy, bh);   /* THE SNATCHER'S GIFT: her satchel and its strap */
   return { cy, bw, bh };
 }
+/* (claude/harpyart) THE HARPY-WOMEN (Daniel 11-01 #3): a woman's face, long hair streaming back, bare shoulders and a throat, a mouth that SCREAMS (open, fanged) - on the same bird body, wings, crest and talons.
+   false = the old bird heads (same bake, same anchors; nothing else reads it). */
+export const WOMAN = true;
+function harpyHair(g, P, p, role, hx, hy, r0) {   /* behind the face: a mass of hair blown back and down past the shoulder, the strands lit from above; a scream throws it up and out */
+  const up = p.beak || p.rings || p.cone ? 3 : 0, dk = P.dark, md = role === 'shrieker' ? '#8a5a6a' : role === 'snatcher' ? '#5a4228' : '#3a445e';
+  ellipse(g, hx - 3, hy + 3 - up, r0 + 0.5, r0 + 2.5, dk); ellipse(g, hx - 4, hy + 4 - up, r0 - 0.5, r0 + 1.5, md);
+  for (let k = 0; k < 5; k++) { const a = Math.PI * (0.78 + k * 0.1) - (up ? 0.5 : 0); feather(g, hx - 2, hy + 1, a, 10 + (k % 2) * 3 + up, 2.6, k % 2 ? dk : md, null); }
+  R(g, hx - 1, hy - r0 - 1, 6, 2, dk); R(g, hx, hy - r0 - 1, 3, 1, md);   /* the fringe over her brow */
+}
+function harpyMouth(g, P, p, hx, hy, r0, bx, by) {   /* a nose, lips; SCREAMING (p.beak): the jaw dropped, a black throat, a red tongue, two fangs */
+  px(g, bx - 1, by - 1, P.faceD); px(g, bx, by, P.faceD); px(g, bx - 1, by, P.faceD);   /* the nose */
+  if (p.beak) { R(g, bx - 2, by + 1, 5, 4, '#2a0c12'); R(g, bx - 1, by + 4, 3, 1, '#e87878'); px(g, bx - 2, by + 1, '#f8f4ea'); px(g, bx + 2, by + 1, '#f8f4ea'); R(g, bx - 2, by, 5, 1, '#c85a5a'); R(g, bx - 1, by + 5, 3, 1, P.faceD); }
+  else { R(g, bx - 2, by + 2, 5, 1, '#b04a52'); px(g, bx + 2, by + 3, P.faceD); }
+  px(g, hx + 5, hy - 1, P.faceD); R(g, hx - 1, hy + Math.round(r0) - 1, 4, 5, P.face); R(g, hx - 1, hy + Math.round(r0) + 2, 4, 2, P.faceD);   /* a cheek-shade; the neck, bare, and its shadow */
+}
 function head(g, P, p, role, b, F) {
-  const [hx0, hy0] = p.head || [8, -2], hx = Math.round(hx0 * 0.55), hy = Math.round(b.cy - b.bh - 3 + hy0 * 0.5) - (P.neck || 0), r0 = role === 'snatcher' ? 5.6 : role === 'shrieker' ? 4 : 4.6;
+  const [hx0, hy0] = p.head || [8, -2], hx = Math.round(hx0 * 0.55), hy = Math.round(b.cy - b.bh - 3 + hy0 * 0.5) - (P.neck || 0), r0 = (role === 'snatcher' ? 5.6 : role === 'shrieker' ? 4 : 4.6) + (WOMAN ? 1.6 : 0);
   /* the crest / mane first (behind the face) */
   if (F.diverCrest && role !== 'diver') for (let k = 0; k < 5; k++) { const a = -Math.PI * 0.82 + k * 0.12; feather(g, hx - 1, hy - 1, a, 11 - k, 2.2, k % 2 ? '#9aaac4' : '#c8d4e8', '#f4f8ff'); }   /* THE DIVER'S GIFT: her pale swept crest */
   if (F.fan) for (let k = 0; k < 7; k++) { const a = -Math.PI / 2 + (k - 3) * 0.3 + (p.rings ? -0.15 : 0), L = 9 + (k % 2 ? 1 : 3) + (p.beak ? 2 : 0); feather(g, hx - 1, hy - 1, a, L, 2.4, k % 2 ? '#a82820' : P.crest, '#ffd0a0'); }
   if (role === 'diver') for (let k = 0; k < 5; k++) { const a = -Math.PI * 0.82 + k * 0.12; feather(g, hx - 1, hy - 1, a, 9 - k, 2.2, k % 2 ? P.light : P.crest, P.hi); }
   if (role === 'snatcher') for (let k = 0; k < 7; k++) { const a = -Math.PI * 0.95 + k * 0.4; feather(g, hx, hy, a, 7 + (k % 3), 2.6, k % 2 ? P.crest : P.light, P.faceD); }
+  if (WOMAN) harpyHair(g, P, p, role, hx, hy, r0);
   circle(g, hx, hy, r0, P.face); circle(g, hx - 1, hy - 1, r0 - 1.5, role === 'snatcher' ? P.face : '#f2ece0'); R(g, hx - Math.round(r0) + 1, hy + 1, 3, 2, P.faceD);
   /* the eye: red when she is telling; a brow ridge */
   const eye = p.eye === 'red' ? '#ff4a2a' : '#ffe9a0';
@@ -78,7 +95,7 @@ function head(g, P, p, role, b, F) {
   R(g, hx, hy - 2, 4, 1, P.dark);
   /* the beak: hooked; wide open (two halves, a dark mouth, a tongue) when screaming */
   const bx = hx + Math.round(r0) - 1, by = hy + 1;
-  if (p.beak) { fillPoly(g, [[bx, by - 2], [bx + 8, by - 1], [bx + 7, by + 0.5], [bx, by + 0.5]], P.beak); R(g, bx, by + 0.5, 5, 1, '#3a0c10'); fillPoly(g, [[bx, by + 1.5], [bx + 7, by + 5], [bx + 5, by + 6], [bx, by + 3.5]], P.beakD); R(g, bx + 1, by + 2, 3, 1, '#e87878'); R(g, bx + 6, by - 1, 2, 2, P.beakD); }
+  if (WOMAN) harpyMouth(g, P, p, hx, hy, r0, bx, by); else if (p.beak) { fillPoly(g, [[bx, by - 2], [bx + 8, by - 1], [bx + 7, by + 0.5], [bx, by + 0.5]], P.beak); R(g, bx, by + 0.5, 5, 1, '#3a0c10'); fillPoly(g, [[bx, by + 1.5], [bx + 7, by + 5], [bx + 5, by + 6], [bx, by + 3.5]], P.beakD); R(g, bx + 1, by + 2, 3, 1, '#e87878'); R(g, bx + 6, by - 1, 2, 2, P.beakD); }
   else { fillPoly(g, [[bx, by - 2], [bx + 7, by - 0.5], [bx + 6, by + 1.5], [bx + 3, by + 2.2], [bx, by + 2.4]], P.beak); R(g, bx + 5, by + 1, 2, 2, P.beakD); R(g, bx, by + 1, 5, 1, P.beakD); }
   if (role === 'snatcher' || F.bag) { R(g, hx + 1, hy - 3, 1, 4, '#8a2a2a'); }   /* an old scar over the eye */
   return { hx, hy, bx, by, r0 };

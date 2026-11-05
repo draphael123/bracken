@@ -16,4 +16,5 @@ export const GALEP = { h: '#7f9aa6', H: '#3e5662', z: '#1c2a32', F: '#c4d6dc', c
 export const bakeGaleHarpy = () => bakeGaleOwn();
 /* (claude/harpypass) THE GUST HARPY (SPR.gustharpy, src/gale-harpy.js GUST) - GREYBOX: the harpy's six frames in storm blue (4 wings up = her tell, 2 the clap, 3 knocked down). The sonnet art lane gives her own sheet. */
 export const GUSTP = { h: '#7088c4', H: '#33467c', z: '#161e3a', F: '#c4d2f0', c: '#1a2646', C: '#3a5088', k: '#e0d8cc', K: '#a8968a' };
-export const bakeGustHarpy = () => bakeHarpy(GUSTP, false);   /* (claude/rookery2art) her OWN sheet now: src/redraw/gale_harpy_art.js (profile, wings swept back = her tell) */
+import { bakeGustHarpy as bakeGustOwn } from './gale_harpy_art.js';
+export const bakeGustHarpy = () => bakeGustOwn();   /* (claude/rookery2art) her OWN sheet now: src/redraw/gale_harpy_art.js (profile, wings swept back = her tell) */

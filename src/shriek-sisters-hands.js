@@ -19,6 +19,7 @@ import { drawSister } from './redraw/shriek_sisters_art.js';
 import { drawHang } from './redraw/rookery_hang.js';
 import { drawArena, drawWind } from './redraw/rookery_arena_art.js';
 import { bakeSummitSlab, bakeSummitRubble, bakeSummitStone, bakeSummitEcho, bakeBoulder, bakeSummitLip } from './redraw/rookery_world.js';   /* (claude/rookerypolish) the summit's slabs, rubble and stones in the Sisters' Crag stone */
+import * as HFX from './redraw/harpy_fx_art.js';   /* (claude/harpyart) the hatching egg */
 import * as RA from './redraw/shriek_roosts_art.js';   /* (claude/rookery4art) the nests / arms / overhang / steps / vents, the support moves' reads, the fall arc and the turn portraits */
 import { GALE, drawGust } from './gale-harpy.js';   /* (claude/rookery4) THE SNATCHER's WING GUST: the gale harpy's push and its told cone */
 const { SS, ROLES } = SSM;
@@ -289,7 +290,7 @@ export function makeShriekSistersHands(ctx) {
     slabs: S.G.slabs.map(s => ({ x: s.x, st: s.st })), stones: S.stones.length, echoes: S.echoes.length, held: !!S.held, n: JSON.parse(JSON.stringify(S.n)), hurt: { ...(S.hurt || {}) } };
   const X = cx => v => R(v - cx), Y = cy => v => R(v - cy);
   /* (claude/harpypass) a cream egg (7x9) in the nest, a dark crack growing across it as it is about to hatch, and the yellow ! over it */
-  const eggDraw = (g, ex, ey, k, time) => { rect(g, ex - 3, ey - 8, 7, 9, '#f4ecd8'); rect(g, ex - 2, ey - 9, 5, 1, '#f4ecd8'); rect(g, ex + 2, ey - 7, 1, 6, '#d8ccb0'); rect(g, ex - 2, ey - 6, 1, 2, '#ffffff');
+  const eggDraw = (g, ex, ey, k, time) => { try { return HFX.drawEgg(g, ex, ey, k, time); } catch (err) { /* the greybox egg */ } rect(g, ex - 3, ey - 8, 7, 9, '#f4ecd8'); rect(g, ex - 2, ey - 9, 5, 1, '#f4ecd8'); rect(g, ex + 2, ey - 7, 1, 6, '#d8ccb0'); rect(g, ex - 2, ey - 6, 1, 2, '#ffffff');
     if (k > 0.3) { rect(g, ex - 3, ey - 4, 2, 1, '#3a3026'); rect(g, ex - 1, ey - 5, 2, 1, '#3a3026'); if (k > 0.65) rect(g, ex + 1, ey - 4, 2, 1, '#3a3026'); }
     if (Math.floor(time * 6) % 2) { rect(g, ex, ey - 19, 2, 5, '#ffd36b'); rect(g, ex, ey - 13, 2, 2, '#ffd36b'); } };
   /* THE SUMMIT: the slabs (cracked, or rubble growing back), the stones the snatcher left, the shelves' guano, the Roc's peak beyond */
