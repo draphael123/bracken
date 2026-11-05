@@ -2135,6 +2135,7 @@ function allySafeGoal(gx) {
   if (tileAt(tx, ty) === T.SPIKE || tileAt(tx, ty + 1) === T.SPIKE) return P.x;
   if (LABMOD && P.hero !== 'pyro' && LABMOD.fireAt(window.BK, gx, P.y)) return P.x;   /* nor in a fire on the ground (hers does not burn her) */
   if ((L.pools || []).some(q => q.harm && gx > q.x0 - 8 && gx < q.x1 + 8 && P.y > q.y - 12)) return P.x;
+  if (P.ai) { const one = AIC.leadOf(players, P); if (one && one !== P && (L.pools || []).some(q => q.harm && q.deadly && gx > q.x0 - 8 && gx < q.x1 + 8 && one.x > q.x0 - 8 && one.x < q.x1 + 8 && one.y > q.y - 12)) return P.x; }   /* (coopvert2) nor after him into a deadly pool he is standing in */
   if (P.ai && P.onMover == null && movers.some(m => RAFTY(m) && !m.gone && gx > m.x - 6 && gx < m.x + (m.w || 16) + 6 && Math.abs(m.y - P.y) < 28 && !players.some(q => !q.ai && q.onMover === m))) return P.x;   /* (claude/aicompanions) nor onto a raft nobody is on: she would sail off with only the AI aboard */
   return gx;
 }
