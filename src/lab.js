@@ -1,4 +1,4 @@
-import {breathCapacity} from './deepair.js'; import { gormHands, gormSkipRun } from './lab-gorm.js';   /* (claude/gorm2) KING GORM 2 played: his hall's ropes, his glade's hangings, the escape skipped to his glade */ import { motherHands } from './lab-mother.js';   /* (claude/sporewood2) THE MOTHER CAP 2 played */
+import {breathCapacity} from './deepair.js'; import { gormHands, gormSkipRun } from './lab-gorm.js'; import { gqLabState, gqLabStep, gqLabRow } from './lab-gqueen.js';   /* (claude/gq2) THE GOBLIN QUEEN 3's three stages in one row */   /* (claude/gorm2) KING GORM 2 played: his hall's ropes, his glade's hangings, the escape skipped to his glade */ import { motherHands } from './lab-mother.js';   /* (claude/sporewood2) THE MOTHER CAP 2 played */
 import { AMBUSH_TARGET } from './ambush.js';
 import { mulberry } from './px.js'; import { committed, COMMIT, artLim, artRate, ROLL_COST } from './commit.js';   /* bossLab seeds Math.random for the row it is about to fight - see the note over the loop in runbossLab */
 // src/lab.js — THE FIGHT LAB and THE BOSS LAB.
@@ -978,7 +978,9 @@ async function runbossLab(BK, opts) {
     /* (claude/botreads, v2) A TOLD RUN: a charge / rush / bash / ride whose TELL was read (seen within the last 1.5 s) is known to be coming, so the hands answer it
        on its BODY - drawn, moving at you - from the frame it moves, not only once the running pose itself has been seen a reaction late */
     const v2Told = {}, toldRun = ms => LABP.v2 && ms.some(m => f - (v2Told[m] ?? -1e9) < dkF(1.5)) && Math.abs(boss.vx || 0) > 20 && (boss.x - P.x) * boss.vx < 0;
+    const GQS = boss.t === 'gqueen' ? gqLabState() : null, gqSpf = (BK.SET.speed || 1) / 60;   /* (claude/gq2) her hall, the escape, the tower top: the stage clocks + stuns (src/lab-gqueen.js) */
     for (; f < maxF && boss.alive && (!normalHealth || !P.dead); f++) { let owlDuck = false;
+      if (GQS) gqLabStep(BK, boss, f, GQS, opts.gqEscape || LABP.gqEscape || 'play', gqSpf);   /* (claude/gq2) 'skip' = straight to the tower top (gormSkipRun precedent); a played escape stalled past GQ_ESC_STALL s is skipped and flagged */
       if (boss.t === 'king' && gormSkipRun(BK)) { A = BK.L.arena; BK.sim(20); }   /* (claude/gorm2) HIS P1 BAR EMPTIED: the burning wood is walked by the level's walker, not here - the hero goes on to his glade as the flee left him */   /* (claude/owl2) */
       if (LABP.v2 && boss.mode) v2Told[boss.mode] = f;
       if (LABP.v2 && LABP.drinkAt > 0 && BK.drinkFlask && botShouldDrinkBig(P, LABP)) BK.drinkFlask();   /* (claude/survival) the human drinks under drinkAt of the bar, a flask held */
@@ -3229,7 +3231,7 @@ async function runbossLab(BK, opts) {
     const secs = f * (BK.SET.speed || 1) / 60;
     rows.push({ lvl: lvId, boss: boss.t, h, killed: !boss.alive, secs: +secs.toFixed(1), bossHp: hp0, hpLeftPct: boss.alive ? Math.round(100 * boss.hp / hp0) : 0,
       health: {...health,endHp:Math.max(0,P.hp),died:!!P.dead}, outcome: !boss.alive ? (P.dead?'trade':'win') : P.dead&&normalHealth?'death':'timeout',
-      takenPerMin: Math.round(taken / Math.max(1 / 60, secs) * 60), heroHp: P.maxHp, crowned: boss.crowned || 0, swings, smallSwings, smallMissed, opened, damage: boss.damageLedger || {plunge:0,other:0}, ripostes: boss.ripostes || 0, wallOpens: boss.wallOpens || 0, falls, returns: BK.stats().parries - par0, ...(opts.modes ? { modes: modeN, hitBy } : {}), ...(boss.t === 'lance' ? { archers: bowSeen.size, archersCut: [...bowSeen].filter(q => q.hp <= 0).length } : {}), ...(eyes ? { profile: LABP.name, eyes: { ...eyes, guardTells: GSTATS ? GSTATS.tells : 0, guardTried: GSTATS ? GSTATS.tried : 0, guardRaised: GSTATS ? GSTATS.raised || 0 : 0 } } : {}), ...(skillCasts ? { skillCasts } : {}) });
+      takenPerMin: Math.round(taken / Math.max(1 / 60, secs) * 60), heroHp: P.maxHp, crowned: boss.crowned || 0, swings, smallSwings, smallMissed, opened, damage: boss.damageLedger || {plunge:0,other:0}, ripostes: boss.ripostes || 0, wallOpens: boss.wallOpens || 0, falls, returns: BK.stats().parries - par0, ...(opts.modes ? { modes: modeN, hitBy } : {}), ...(GQS ? { gq: gqLabRow(GQS, boss, f, gqSpf) } : {}), ...(boss.t === 'lance' ? { archers: bowSeen.size, archersCut: [...bowSeen].filter(q => q.hp <= 0).length } : {}), ...(eyes ? { profile: LABP.name, eyes: { ...eyes, guardTells: GSTATS ? GSTATS.tells : 0, guardTried: GSTATS ? GSTATS.tried : 0, guardRaised: GSTATS ? GSTATS.raised || 0 : 0 } } : {}), ...(skillCasts ? { skillCasts } : {}) });
     await yieldNow();
     } finally { Math.random = realRandom; if (PERC) { PERC.restore(); PERC = null; } SKH = null; { const p0 = JSON.parse(progRow); for (const k of Object.keys(BK.PROG)) if (!(k in p0)) delete BK.PROG[k]; Object.assign(BK.PROG, p0); } }
   }

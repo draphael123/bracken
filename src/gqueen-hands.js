@@ -544,6 +544,14 @@ export function makeGQueenHands(ctx) {
   H.read = () => S ? { crown: S.crown ? { ...S.crown } : null, rocks: S.rocks.length, portals: S.portals.length, stunUntil: S.stunUntil, stuns: S.stuns, persist: persist ? { ...persist } : null,
     esc: S.esc ? { on: S.esc.on, fireOn: S.esc.fireOn, checked: S.esc.checked } : null,
     roof: S.roof ? { ambushX: S.roof.ambushX, geysers: S.roof.geysers.map(g => ({ x: g.x, at: g.at })), storm: !!S.roof.storm, adds: [...S.roof.adds] } : null } : null;
-  Object.assign(H.test = H.test || {}, { toss: () => { const e = q(); if (e && S) { e.mode = 'crownTossTell'; e.modeT = 0.01; } }, stun: (d, p) => stun(q(), d, p || 0) });
+  /* (claude/gq2) THE LAB'S SKIP (src/lab-gqueen.js, King Gorm's gormSkipRun precedent): from the escape, light the roof shrine (checkpoint + persist 'roof') and take her portal - the tower top
+     begins as if the hero had climbed and stepped in. Only the lab calls it (opts.gqEscape 'skip', or its stall guard). true = it went to the roof. */
+  H.skipRoof = () => {
+    const e = q(), E = L().gqEscape; if (!S || !e || e.stage !== 'escape' || !E) return false;
+    if (!S.esc) startEscape(false);
+    S.esc.checked = true; if (persist) persist.stage = 'roof'; ctx.setCheckpoint(E.check.x * TS + 8, (E.check.y + 1) * TS);
+    S.esc.step = null; toRoof(); return e.stage === 'roof';
+  };
+  Object.assign(H.test = H.test || {}, { toss:() => { const e = q(); if (e && S) { e.mode = 'crownTossTell'; e.modeT = 0.01; } }, stun: (d, p) => stun(q(), d, p || 0) });
   return H;
 }
