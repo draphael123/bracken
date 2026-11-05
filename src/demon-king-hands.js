@@ -151,7 +151,7 @@ export function makeDemonKingHands(ctx) {
   }
   /* screen space: his bar (three segments, one per phase) and the pips */
   function hud(g, VW, VH, time) {
-    if (!on()) return; const w = 150, x = R((VW - w) / 2), y = 10, seg = w / 3;
+    if (!on()) return; const w = 150, x = R((VW - w) / 2), y = 19, seg = w / 3;   /* y 19: UNDER the level timer (top-centre, y 2-15), which his bar sat on at y 10 (S3 browser pass) */
     g.fillStyle = 'rgba(10,8,14,0.8)'; g.fillRect(x - 2, y - 2, w + 4, 8);
     for (let i = 0; i < 3; i++) { const ph = i + 1, hp = Math.max(0, Math.min(f.bar, f.hp - (DK.phases - ph) * f.bar)), sx = x + R((2 - i) * seg);
       g.fillStyle = '#3a1a22'; g.fillRect(sx + 1, y, R(seg) - 2, 4); g.fillStyle = ph === f.ph ? (DKM.kingOpen(f) ? C.gold : '#c0283a') : '#7a2a30'; g.fillRect(sx + 1, y, R((seg - 2) * hp / f.bar), 4); }
