@@ -2076,11 +2076,11 @@ function drawVictory4(px0, pw) {
    harness driving the game through a synchronous run of BK.sim() never unwinds the stack for it to resolve ON. That
    is not a hypothetical: the ally read as completely inert in its first test, and it was this. BK.allyReady() awaits
    it, so the labs and the tools can have the ally on its feet before the first frame they measure. */
-let LABMOD = null, PTMOD = null, WDMOD = null, allyLoading = null;
+let LABMOD = null, PTMOD = null, WDMOD = null, WGMOD = null, allyLoading = null, ALG = null;
 function allyLoad() {
   if (LABMOD && PTMOD && WDMOD) return Promise.resolve(true);
-  if (!allyLoading) allyLoading = Promise.all([import('./lab.js'), import('./playtest.js'), import('./walk-duel.js')])
-    .then(([a, b, c]) => { LABMOD = a; PTMOD = b; WDMOD = c; return true; }).catch(() => { allyLoading = null; return false; });
+  if (!allyLoading) allyLoading = Promise.all([import('./lab.js'), import('./playtest.js'), import('./walk-duel.js'), import('./walk-graph.js').catch(() => null)])
+    .then(([a, b, c, d]) => { LABMOD = a; PTMOD = b; WDMOD = c; WGMOD = d; return true; }).catch(() => { allyLoading = null; return false; });
   return allyLoading;
 }
 const apress = k => { if (k === 'grab') grabPress = true; if (k === 'atk') atkPress = true; else if (k === 'jump') jumpPress = true; else if (k === 'dodge') dodgePress = true; else if (k === 'throw') throwPress = true; if(k==='skill2')skill2Press=true;if(k==='skill3')skill3Press=true;if(k==='skill4')skill4Press=true; };
@@ -2104,6 +2104,42 @@ function allyPurse(p) {
 }
 /* A RAFT, A LIFEBOAT OR A FERRY: a mover that sails off with whoever stands on it - an AI never rides one without a person aboard (it would strand him) */
 const RAFTY = m => !!m && (m.kind === 'raft' || m.kind === 'lifeboat' || !!m.ferry);
+/* (claude/coopai) THE AI'S ROUTE (coopaudit fix 1): the walker is told an x only, so a leader on another ledge left it pushing at a wall until the stuck pull. The level's movement graph
+   (src/walk-graph.js, the walker's own, built once per level on first need) routes it from its footing to his; the first change of row on that route is where it must jump up or step off,
+   so it walks THERE (and hops at the lip) instead of straight at his x. No route for a moment = it holds and waits for the told catch-up instead of testing every wall. */
+function allyGraph() { if (!WGMOD) return null; if (ALG && ALG.L === L) return ALG.g; ALG = { L, g: null }; try { ALG.g = WGMOD.makeGraph(L, T, {}); } catch (err) { ALG.g = null; } return ALG.g; }
+const allyCell = (g, b) => g.near(Math.floor(b.x / TS), Math.floor((b.y - 1) / TS), 1, 2);
+function allyRoute(p, one, S) {
+  const g = allyGraph(); if (!g) { S.route = null; return; }
+  if (S.routeAt !== undefined && p.aiT - S.routeAt < 24 && S.routeFor === one) return;   /* about twice a second, not every frame */
+  S.routeAt = p.aiT; S.routeFor = one;
+  const a = allyCell(g, p), b = allyCell(g, one);
+  if (a < 0 || b < 0) { S.route = null; S.noWay = false; return; }
+  const path = g.path(a, v => v === b, 320);
+  if (!path) { S.route = null; S.noWay = true; return; }
+  S.noWay = false; S.route = path;
+}
+/* the x it should walk to this frame given its route: the lip of the first climb or drop (and 'jump' when it stands at a climb's lip), or null when the route is flat */
+function allyRouteGoal(p, S) {
+  const r = S.route; if (!r || r.length < 2) return null;
+  const row = r[0][1]; let k = 1; while (k < r.length && r[k][1] === row) k++;
+  if (k >= r.length) return null;   /* flat to him: the plain x goal */
+  const lip = r[k - 1], land = r[k], lx = lip[0] * TS + 8;
+  if (Math.abs(p.x - lx) <= 10 && p.ground) {   /* at the lip: up needs the hop, down is a step */
+    if (land[1] < lip[1] && p.aiT % 14 === 0) apress('jump');
+    return land[0] * TS + 8; }
+  return lx;
+}
+/* an AI at a lit shrine the party lit is refilled once per life there (the shrine's own fill already runs for every seat when player one lights it; this covers one that
+   arrives later with its flasks spent - coopaudit fix 5) */
+function allyShrine(p) {
+  const fm = SV.flaskMax(PROG); if ((p.flasks | 0) >= fm) return;
+  const m = p.aiShr || (p.aiShr = {});
+  for (let i = 0; i < shrines.length; i++) { const s = shrines[i]; if (!s.lit || s.broken || m[i] === lifeN || !shrineLights(s, p.x, p.y, p.swim)) continue;
+    m[i] = lifeN; const shr = DFM.df('shrine'), give = shr === 'all' ? fm : shr === 'none' ? 0 : F2.shrineGives(PROG);
+    for (let j = 0; j < give; j++) p.flasks = SV.shrineRefill(p.flasks, fm);
+    if ((p.flasks | 0) > 0) number(p.x, p.y - 30, 'FLASKS', '#9fd8ff'); return; }
+}
 /* (claude/aicompanions) THE AI PARTNER'S HANDS - one frame, inside its own pass (every key it presses is its own). In order:
      ONE    a downed partner is the whole list (AIC.reviveTarget: a human first; SUPPORT lifts player one before anyone): straight at him and stand on him
      TWO    it fell into a hazard and he is still ahead: it WAITS for the catch-up puff (coopLeash, AIC.catchWhy 'wait') - never a second jump at the same gap
@@ -2123,8 +2159,9 @@ function allyTick() {
   if (!p.aiRead) p.aiRead = WDMOD.makeEliteRead({});
   for (const k in keys) keys[k] = false;
   const S = p.aiS || (p.aiS = { best: 1e9, stuckT: 0, wait: false, raft: false });
-  S.wait = false; S.raft = false;
+  S.wait = false; S.raft = false; if (p.aiT % 24 === 0 && S.noWay && !(S.noWayT > 0)) S.noWay = false;
   if (p.down > 0 || p.dead) { S.stuckT = 0; return; }
+  allyShrine(p);   /* (claude/coopai) flasks at a lit shrine */
   p.aiT = (p.aiT || 0) + 1;
   const h = p.hero, one = AIC.leadOf(players, p), fdt = 1 / 60;
   if (RAFTY(p.onMover) && !players.some(q => q !== p && !q.ai && q.onMover === p.onMover)) S.raft = true;
@@ -2144,11 +2181,12 @@ function allyTick() {
   let foe = null, best = 1e9;
   for (const e of enemies) {
     if (!e.alive || e.harmless || e.dying > 0 || e.t === 'folk' || e.t === 'fisher' || e.t === 'dummy') continue;
-    if (Math.abs(e.y - p.y) > 40) continue;
-    const d = Math.abs(e.x - p.x); if (d > B.engage) continue;
+    const dy = Math.abs(e.y - p.y), dx0 = Math.abs(e.x - p.x), ranged = h === 'ranger' || h === 'pyro';   /* (claude/coopai, coopaudit fix 2) a foe a ledge up or down: a ranged kit shoots ~96 px, the rest hop to ~56 when he is close */
+    if (dy > (ranged ? 96 : 56) || (dy > 40 && !ranged && dx0 > 60)) continue;
+    const d = dx0; if (d > B.engage) continue;
     if (one !== p && Math.abs(e.x - one.x) > B.stray + (e.maxHp ? 40 : 0)) continue;   /* a fight that would take it away from him is not its fight */
     if (B.near && one !== p && Math.abs(e.x - one.x) > B.near && !(windingUp(e) && d < 70)) continue;   /* SUPPORT: the ones on him (and one swinging at it) */
-    const s = d - (Math.abs(e.x - one.x) < 60 ? 70 : 0) - (e.maxHp && e.open > 0 ? 200 : 0);
+    const s = d - (Math.abs(e.x - one.x) < 60 ? 70 : 0) - (e.maxHp && e.open > 0 ? 200 : 0) - (e.t === 'shaman' || e.t === 'archer' || e.t === 'priest' || e.cast !== undefined ? 60 : 0) + (dy > 40 ? 30 : 0);   /* casters and archers first; a foe on another ledge after the ones beside it */
     if (s < best) { best = s; foe = e; }
   }
   /* THE LAST HIT ON AN OPENING IS HIS */
@@ -2167,6 +2205,8 @@ function allyTick() {
   if (Math.abs(p.x - one.x) < 10 && Math.abs(p.y - one.y) < 20) goal = one.x + (p.x >= one.x ? 26 : -26);   /* never in his way */
   if (S.raft) goal = one.x;
   if (one === p) goal = p.x;   /* nobody standing to follow: hold */
+  /* (claude/coopai) a leader on another row: the route's first lip is the goal (see allyRoute); no route for 1.5 s = hold and let the told catch-up come */
+  if (one !== p && !S.raft && (Math.abs(one.y - p.y) > 24 || S.stuckT > 0.8)) { allyRoute(p, one, S); const rg = allyRouteGoal(p, S); if (rg !== null) goal = rg; S.noWayT = S.noWay ? (S.noWayT || 0) + fdt : 0; if (S.noWayT > 1.5 && dLead > AIC.CATCH.near) { S.wait = true; keys.left = keys.right = false; return; } } else { S.noWayT = 0; S.route = null; S.noWay = false; }
   p.aiWalk(allySafeGoal(goal));
   if (holdOff) { keys.left = keys.right = false; keys.block = LABMOD.SHIELDED(h); p.abuf = 0; }   /* and the buffered swing goes with it, or a press from two frames back still takes the beat */
 }
@@ -7420,7 +7460,8 @@ function drawPartyMarks(cx, cy, phase = 'back') {
     if (p.leash > 0) { const li = PARTY.leaderOf(players.map(q => ({ x: q.x, dead: q.dead, down: q.down, ai: !!q.ai })), gate ? gate.x : null), ld = players[li];
       g.globalAlpha = 0.4 + 0.5 * p.leash; g.strokeStyle = c.c; g.setLineDash && g.setLineDash([2, 2]); g.beginPath(); g.moveTo(x, y - 10); g.lineTo(Math.round(ld.x - cx), Math.round(ld.y - cy) - 10); g.stroke(); g.setLineDash && g.setLineDash([]); g.globalAlpha = 1;
       if (Math.floor(time * 6) % 2 || p.leash > 0.6) text('CATCH UP', Math.max(30, Math.min(VW - 30, x)), Math.max(8, Math.min(VH - 30, y - 44)), c.c, 'center', 6);
-      bar(Math.max(18, Math.min(VW - 30, x - 10)), Math.max(16, Math.min(VH - 22, y - 37)), 20, 2, p.leash, c.c); } }
+      bar(Math.max(18, Math.min(VW - 30, x - 10)), Math.max(16, Math.min(VH - 22, y - 37)), 20, 2, p.leash, c.c); }
+    if (p.ai && p.aiS && !(p.leash > 0) && !(p.down > 0) && state === 'play') { const w = p.aiS.wait ? 'WAITS' : p.aiS.noWay ? 'NO WAY UP' : p.aiS.stuckT > 1.2 ? 'STUCK' : ''; if (w) text(w, Math.max(30, Math.min(VW - 30, x)), Math.max(8, Math.min(VH - 30, y - 44)), c.c, 'center', 6); } }   /* (claude/coopai, coopaudit fix 7) the AI says why it is not with him, before the catch-up puff does */
   for (const f of leashFx) { g.globalAlpha = Math.min(1, f.t * 2) * 0.6; g.strokeStyle = '#e8e0d0'; g.beginPath(); g.moveTo(Math.round(f.x0 - cx), Math.round(f.y0 - cy) - 8); g.lineTo(Math.round(f.x1 - cx), Math.round(f.y1 - cy) - 8); g.stroke(); g.globalAlpha = 1; }
 }
 Object.assign(SETTING_TIPS, TCH.tips);
