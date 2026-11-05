@@ -4,7 +4,7 @@
      DECOR          a prop the engine would drop / set down at load (a lamp, brazier, bell or sign with no floor)
      BRAZIER / LAMP every brazier, lantern post, bell and checkpoint stands on a tile (never open air), and the board under it is held (a tower under a lookout, a post, a wall)
      CANTILEVER     a hoarding hung off a wall at one end only must carry a post (tools/anchor-lint.mjs 'cantilever') - only the barbican step (147-150,35) is allowed: its pit is backed
-                    with masonry (src/demo-slots.js, 'storm' in DEMO_IDS)
+                    with masonry (src/demo-slots.js, 'storm' in SLOT_IDS)
      WINDOW         every roofed dip open to the map's edge is backed
    node tools/storm-floats.mjs */
 import { LEVELS, T } from '../src/level.js';

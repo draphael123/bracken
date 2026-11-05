@@ -6,7 +6,9 @@
    light coming up from below. tools/demo-floats.mjs gates it (rule WINDOW: every slot found must be backed; HOVER: a solid cell with open void under it to the map edge must be
    inside a backed slot or carry a drawn support). */
 export const SLOT_MAX_W = 4, SLOT_MIN_H = 3;
-export const DEMO_IDS = new Set(['wood', 'hornetsnest', 'marsh', 'fenroad', 'stockade', 'spore', 'rootway', 'underleaf', 'palisadewood', 'kings', 'burning', 'arena_yard', 'storm' /* (claude/lance6) the barbican exit's 4-wide pit under its step (147-150, 36-45) showed the sky */]);
+export const DEMO_IDS = new Set(['wood', 'hornetsnest', 'marsh', 'fenroad', 'stockade', 'spore', 'rootway', 'underleaf', 'palisadewood', 'kings', 'burning', 'arena_yard']);
+/* (claude/lance6) the float-slot backing also covers the Barbican (storm): its 4-wide pit under its step (147-150, 36-45) showed the sky. NOT the demo slice: demo-cut pins DEMO_IDS. */
+export const SLOT_IDS = new Set([...DEMO_IDS, 'storm']);
 /* shaft colours per level (a back wall darker than the stone in front of it); the default is a cool dark stone */
 const STYLE = { kings: { base: '#1d151b', course: '#130d12', lit: '#2a1e26', glow: '#e08a58' } };
 const DEF = { base: '#16161c', course: '#0e0e12', lit: '#202028', glow: '#a0a8c0' };
