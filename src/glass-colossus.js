@@ -389,12 +389,15 @@ export function takeBlow(e, S, dmg, footY, plunge, out = {}) {
   if (S.ward > 0) { S.n.warded++; out.word = 'WARDED'; return 0; }
   const capLeft = () => Math.max(0, e.maxHp * COL.openCap - S.openTaken);
   const opened = (mul) => { const d = Math.min(dmg * mul, capLeft()); S.openTaken += d; out.cap = 'open'; if (capLeft() <= 0.01 && e.open > 0.3) { e.open = 0.3; out.word = 'IT SEALS THE CRACK'; } return d; };
+  /* (claude/colossus4, B15 resist floor: never invulnerable outside the openings and the told ward) under the flag a blow that would CLANK still lands at COL4.floor x, with the word */
+  const floor4 = word => { const d = dmg * COL4.floor; S.n.floorDmg = (S.n.floorDmg || 0) + d; out.word = word; out.cap = 'floor'; return d; };
   if (z === 'legs') { if (S.legPurse > 0) { const d = Math.min(dmg * COL.legMul, S.legPurse); S.legPurse -= d; out.cap = 'leg'; S.n.leg += d; if (S.legPurse <= 0.01) { S.legPurse = 0; out.word = 'THE KNEE CRACKS GLAZE OVER: CLIMB'; } return d; }
-    S.n.glazed++; out.word = S.n.glazed < 4 ? 'GLAZED: CLIMB TO ITS CRACKS' : 'GLAZED'; return 0; }
+    S.n.glazed++; if (G.c4) return floor4(S.n.glazed < 4 ? 'GLAZED: CLIMB TO ITS CRACKS' : 'GLAZED'); out.word = S.n.glazed < 4 ? 'GLAZED: CLIMB TO ITS CRACKS' : 'GLAZED'; return 0; }
   if (z === 'chest' && e.mode === 'cracked') return opened(plunge ? COL.plungeMul : COL.openMul);
   if (z === 'top' && (e.mode === 'blazing' || e.mode === 'dazzled')) return opened(plunge ? COL.plungeMul : COL.openMul);
-  if (z === 'chest' && (e.mode === 'blazing' || e.mode === 'dazzled')) { out.word = e.mode === 'blazing' ? 'HIGHER: THE SHOULDERS' : 'HIGHER: THE CROWN'; return 0; }
-  if (z === 'top' && e.mode === 'cracked') { out.word = 'LOWER: THE CHEST'; return 0; }
+  if (z === 'chest' && (e.mode === 'blazing' || e.mode === 'dazzled')) { if (G.c4) return floor4(e.mode === 'blazing' ? 'HIGHER: THE SHOULDERS' : 'HIGHER: THE CROWN'); out.word = e.mode === 'blazing' ? 'HIGHER: THE SHOULDERS' : 'HIGHER: THE CROWN'; return 0; }
+  if (z === 'top' && e.mode === 'cracked') { if (G.c4) return floor4('LOWER: THE CHEST'); out.word = 'LOWER: THE CHEST'; return 0; }
+  if (G.c4) { S.n.shut++; return floor4(S.n.shut > 4 ? 'SHUT' : S.ph === 1 ? 'SHUT: BAIT ITS LANCE INTO A MIRROR' : 'SHUT: THROW THE LIGHT ON HIM'); }
   S.n.shut++; out.word = S.n.shut > 4 ? 'SHUT' : S.ph === 2 ? 'SHUT: FIRELIGHT ON ITS CRACK OPENS IT' : S.ph === 3 && S.n.shut % 2 ? 'SHUT: A MIRROR TO THE SKY' : 'SHUT: BAIT ITS LANCE INTO A MIRROR'; return 0;
 }
 

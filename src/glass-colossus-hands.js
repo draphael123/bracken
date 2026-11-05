@@ -9,6 +9,7 @@
 import * as CG from './glass-colossus.js';
 import { BOSS_PHASE } from './boss-music.js';
 import * as COA from './redraw/glass_colossus_art.js';
+import * as BP from './beam-path.js'; import { LIGHT4 } from './colossus4.js';   /* (claude/colossus4) the drawn light and its words */
 const { COL } = CG;
 
 const SOUND = { tell: s => s.tell && s.tell(false), tellHard: s => s.tell && s.tell(true), lanceTell: s => (s.charge || s.hiss || s.tell)(), lance: s => (s.zap || s.fireWhoosh || s.heavy)(),
@@ -52,7 +53,8 @@ export function makeColossusHands(ctx) {
     return {
       number: (x, y, t, col) => ctx.number(x, y, t, col), sound: k => { const f = SOUND[k]; if (f) try { f(ctx.sfx); } catch {} }, shake: n => ctx.shake(n),
       music: ph => { BOSS_PHASE.colossus = ph; if (ctx.music) ctx.music(ph > 1 ? 'colossus:p' + ph : 'colossus'); },
-      fx: (k, x, y) => { if (k === 'open') ctx.ring(x, y - 100, 34, '#ffd36b'); else if (k === 'ward') ctx.ring(x, y - 100, 40, '#c8d8e8'); },
+      fx: (k, x, y) => { const up = G.c4 ? 160 : 100; if (k === 'open') ctx.ring(x, y - up, 34, '#ffd36b'); else if (k === 'ward') ctx.ring(x, y - up, 40, '#c8d8e8');
+        else if (k === 'burn') { ctx.ring(x, y - up, 60, '#fff6c8'); ctx.burst(x, y - up, 18, ['#ffffff', '#fff6c8', '#9ae8d0', '#ffd36b'], 120, 0.6); try { (ctx.sfx.crack || ctx.sfx.clank)(); (ctx.sfx.clank || ctx.sfx.thud)(); } catch {} } },   /* (claude/colossus4) THE INSTANT: a white flash ring, the glass bursts, the shatter */
       hit: (bx, d, name, o = {}) => { let any = false; for (const pp of ctx.players) ctx.asPlayer(pp, () => { const P = ctx.hero(); if (!ctx.upright(pp) || P.dead) return;
           if (!ctx.overlap({ l: bx[0], r: bx[1], t: bx[2], b: bx[3] }, ctx.box(P)) || keyed(pp, o.key || name)) return;
           const hp0 = P.hp; hurt(name, () => ctx.damagePlayer(e.x, d, { who: e, name, unblockable: !o.blockable })); if (P.hp < hp0) any = true; }); return any; },
@@ -84,6 +86,7 @@ export function makeColossusHands(ctx) {
     layHolds();
     CG.stepColossus(e, S, dt, heroes(), world(e));
     e.phase = S.ph;
+    if (S.G.c4 && !CG.colOpen(e) && S.ward <= 0) { const w = CG.c4Lights(S).find(l => !l.wall && !l.on); if (w && !S.told['comes' + S.ph]) { S.told['comes' + S.ph] = 1; ctx.number(S.G.stations[w.st], S.G.floor - 60, LIGHT4.comesWord, '#ffd36b'); } }   /* (claude/colossus4: said once a phase; the marker stays drawn) */
     if (!S.told.mirror && e.mode !== 'wake' && S.ph === 1) { S.told.mirror = 1; ctx.number(S.G.cx, S.G.crownY - 50, 'TURN THE MIRROR TO HIM: HIS LANCE COMES BACK INTO HIS CHEST', '#ffd36b'); }   /* (= CG.MIRROR_LINE; a literal for tools/hint-shown) */
   };
   /* E AT A SHELF-MIRROR: the next notch */
@@ -95,7 +98,7 @@ export function makeColossusHands(ctx) {
     if (d <= 0) { e.chipHit = ctx.time(); ctx.sfx.clank && ctx.sfx.clank(); ctx.sparks(fromX + (Math.sign(e.x - fromX) || 1) * 10, P.y - 12, -(Math.sign(e.x - fromX) || 1), 4); }
     return d; };
   /* A BLOW THAT GREW AFTER IT WAS COUNTED (d0 -> d1: the mix-up chain, the riposte, a talent): a crack's opening pays only what its cap has left, a knee only what its purse has (claude/capsfix) */
-  H.fix = (e, d0, d1) => { if (!S || !S.capKind) return d1; let extra = d1 - d0;
+  H.fix = (e, d0, d1) => { if (!S || !S.capKind || S.capKind === 'floor') return d1; let extra = d1 - d0;   /* (claude/colossus4: a resist-floor blow has no purse or cap) */
     if (S.capKind === 'open') { extra = Math.min(extra, Math.max(0, e.maxHp * CG.COL.openCap - S.openTaken)); S.openTaken += extra; if (e.maxHp * CG.COL.openCap - S.openTaken <= 0.01 && e.open > 0.3) { e.open = 0.3; e.guardFx = 0.3; e.guardWord = 'IT SEALS THE CRACK'; } }
     else { extra = Math.min(extra, Math.max(0, S.legPurse)); S.legPurse -= extra; S.n.leg += extra; if (S.legPurse <= 0.01) S.legPurse = 0; }
     return d0 + extra; };
@@ -106,24 +109,33 @@ export function makeColossusHands(ctx) {
 
   /* ---------- DRAWING (src/redraw/glass_colossus_art.js: its own body; the holds and the shelf-mirrors; the relayed light) ---------- */
   /* its holds (glass crystal ledges growing out of it, glowing), the shelf-mirrors with their notch, the relayed firelight and the dawn's beam */
+  /* (claude/colossus4) THE LIGHT, DRAWN THE WHOLE WAY: brazier or sun -> the mirror -> where it lands. On him: it burns (the step opened him this frame). On an empty
+     station: a ring where it lands + the marker HE COMES TO THE LIGHT (he walks there next). On the wall: said so */
+  const drawLight4 = (g, cx, cy, time) => { const G = S.G;
+    for (const l of CG.c4Lights(S)) { BP.drawBeam(g, BP.path(l.pts), cx, cy, time, { kind: l.kind, ring: !l.on, a: l.on ? 1 : 0.85 });
+      if (l.on) continue; if (!l.wall) BP.drawMarker(g, G.stations[l.st], G.floor, cx, cy, time, { word: LIGHT4.comesWord, text: ctx.text });
+      else { const x = R(l.land[0] - cx); if (x > 50 && x < ctx.VW() - 50) ctx.text(LIGHT4.wallWord, x, R(l.land[1] - 14 - cy), '#9aa39a', 'center', 5); } } };
   H.drawBack = (g, cx, cy, time) => { const Ar = A(); if (!S || !Ar) return; const G = S.G, e = ctx.boss;
     /* the gaze: its eyes' light shining west to the wall, where the steps' mirror takes it (until it falls) */
-    if (e && H.gazeOn() && e.mode !== 'sleep') { const ex = R(G.cx - cx) - 14, ey = R(G.floor - 178 - cy), wx = R(G.x0 - cx), wy = R(G.floor - 128 - cy); g.globalCompositeOperation = 'lighter'; g.strokeStyle = 'rgba(150,230,255,0.28)'; g.lineWidth = 4; g.beginPath(); g.moveTo(ex, ey); g.lineTo(wx, wy); g.stroke(); g.strokeStyle = 'rgba(230,252,255,0.8)'; g.lineWidth = 1; g.beginPath(); g.moveTo(ex, ey); g.lineTo(wx, wy); g.stroke(); g.lineWidth = 1; g.globalCompositeOperation = 'source-over'; }
+    if (e && H.gazeOn() && e.mode !== 'sleep') { const ex = R(G.cx - cx) - 14, ey = R(G.floor - (G.eyeH || 175) - 3 - cy), wx = R(G.x0 - cx), wy = R(G.floor - 128 - cy); g.globalCompositeOperation = 'lighter'; g.strokeStyle = 'rgba(150,230,255,0.28)'; g.lineWidth = 4; g.beginPath(); g.moveTo(ex, ey); g.lineTo(wx, wy); g.stroke(); g.strokeStyle = 'rgba(230,252,255,0.8)'; g.lineWidth = 1; g.beginPath(); g.moveTo(ex, ey); g.lineTo(wx, wy); g.stroke(); g.lineWidth = 1; g.globalCompositeOperation = 'source-over'; }
     for (const m of S.mirrors) { const x = R(m.x - cx), y = R(G.floor - cy), w0 = CG.NOTCH_WORD[m.notch], hw = w0.length * 4 + 4; if (x - hw < 0 || x + hw > ctx.VW()) continue; /* (batch75: a label for a mirror off the screen was drawn off it - tools/textfit.mjs OFFSCREEN) */ ctx.text(w0, x, y - 62, m.notch === 'face' ? '#e8f4f8' : m.notch === 'fire' ? '#ffb050' : '#ffd36b', 'center', 5); }
     COA.setBraziers(S.mirrors.map((m, i) => [G.fires[i], { dir: Math.sign(m.x - G.fires[i]) || 1, lit: S.ph === 2 && m.notch === 'fire' }]));   /* (claude/colart) each brazier's flame leans into its mirror once that is turned TO THE FIRE */
     const fl = CG.flank(S);   /* (claude/colossusrework) the fire and the dawn reach him only from his FLANK: a mirror further off says so */
-    for (const m of S.mirrors) if (((S.ph === 2 && m.notch === 'fire') || (S.ph === 3 && m.notch === 'sky')) && !fl.includes(m)) { const x = R(m.x - cx); if (x > 20 && x < ctx.VW() - 20) { COA.drawStub(g, m, G, cx, cy, time, S.ph); ctx.text('TOO FAR FROM HIM', x, R(G.floor - 74 - cy), '#9aa39a', 'center', 5); } }
-    if (S.ph === 2) for (const m of S.mirrors) if (m.notch === 'fire' && fl.includes(m)) { const fx = G.fires[m.i], cr = m.x < G.cx ? G.crack[0] : G.crack[1];
+    if (G.c4) drawLight4(g, cx, cy, time);   /* (claude/colossus4) every light that can open him, drawn the whole way (src/beam-path.js) */
+    if (!G.c4) for (const m of S.mirrors) if (((S.ph === 2 && m.notch === 'fire') || (S.ph === 3 && m.notch === 'sky')) && !fl.includes(m)) { const x = R(m.x - cx); if (x > 20 && x < ctx.VW() - 20) { COA.drawStub(g, m, G, cx, cy, time, S.ph); ctx.text('TOO FAR FROM HIM', x, R(G.floor - 74 - cy), '#9aa39a', 'center', 5); } }
+    if (S.ph === 2 && !G.c4) for (const m of S.mirrors) if (m.notch === 'fire' && fl.includes(m)) { const fx = G.fires[m.i], cr = m.x < G.cx ? G.crack[0] : G.crack[1];
       g.globalCompositeOperation = 'lighter'; g.strokeStyle = 'rgba(255,150,60,0.32)'; g.lineWidth = 6; g.beginPath(); g.moveTo(R(fx - cx), R(G.floor - 24 - cy)); g.lineTo(R(m.x + (m.x < G.cx ? 1 : -1) * 5 - cx), R(G.floor - 38 - cy)); g.lineTo(R(cr - cx), R(G.floor - 6 - cy)); g.stroke();
       g.strokeStyle = 'rgba(255,230,170,0.9)'; g.lineWidth = 1; g.beginPath(); g.moveTo(R(fx - cx), R(G.floor - 24 - cy)); g.lineTo(R(m.x + (m.x < G.cx ? 1 : -1) * 5 - cx), R(G.floor - 38 - cy)); g.lineTo(R(cr - cx), R(G.floor - 6 - cy)); g.stroke(); g.lineWidth = 1; g.globalCompositeOperation = 'source-over'; }
-    if (S.ph === 3) for (const m of S.mirrors) if (m.notch === 'sky' && fl.includes(m)) { g.globalCompositeOperation = 'lighter'; g.strokeStyle = 'rgba(255,230,150,0.3)'; g.lineWidth = 6; g.beginPath(); g.moveTo(R(m.x - cx), R(G.floor - 42 - cy)); g.lineTo(R(G.cx - cx), R(G.crownY - cy)); g.stroke(); g.strokeStyle = 'rgba(255,252,220,0.95)'; g.lineWidth = 1; g.beginPath(); g.moveTo(R(m.x - cx), R(G.floor - 42 - cy)); g.lineTo(R(G.cx - cx), R(G.crownY - cy)); g.stroke(); g.lineWidth = 1; g.globalCompositeOperation = 'source-over'; }
+    if (S.ph === 3 && !G.c4) for (const m of S.mirrors) if (m.notch === 'sky' && fl.includes(m)) { g.globalCompositeOperation = 'lighter'; g.strokeStyle = 'rgba(255,230,150,0.3)'; g.lineWidth = 6; g.beginPath(); g.moveTo(R(m.x - cx), R(G.floor - 42 - cy)); g.lineTo(R(G.cx - cx), R(G.crownY - cy)); g.stroke(); g.strokeStyle = 'rgba(255,252,220,0.95)'; g.lineWidth = 1; g.beginPath(); g.moveTo(R(m.x - cx), R(G.floor - 42 - cy)); g.lineTo(R(G.cx - cx), R(G.crownY - cy)); g.stroke(); g.lineWidth = 1; g.globalCompositeOperation = 'source-over'; }
     for (const m of S.mirrors) COA.drawShelfMirror(g, m, G, cx, cy, time, S.ph);   /* (claude/glasssea2) AFTER the beams: a beam starts at the disc's face, it never crosses the bronze */
     /* the crack under its feet (the swarm's): a dark seam, violet at night, gold when the relay holds it */
     const cw = R(G.crack[1] - G.crack[0]); g.fillStyle = '#04080e'; g.fillRect(R(G.crack[0] - cx), R(G.floor - cy), cw, 3); g.fillStyle = S.ph === 2 ? (CG.relaying(S) ? '#ffb050' : '#9a7ad8') : '#3a9a92'; g.fillRect(R(G.crack[0] - cx), R(G.floor - cy), cw, 1);
   };
   /* IT: the body, drawn by src/redraw/glass_colossus_art.js; its cracks by state */
   H.drawBoss = (g, e, cx, cy, time) => { if (!S) return; e.guardFx = Math.max(0, (e.guardFx || 0) - 1 / 60);
-    COA.drawBody(g, e, S, S.G, cx, cy, time, (e.hurtT || 0) > 0, S.pose || CG.poseOf(e, S, time));   /* (claude/glasssea2) its POSE CLOCK: src/glass-colossus.js poseOf */
+    const sc = S.G.scale || 1, fx0 = R(e.x - cx), fy0 = R(S.G.floor - cy); if (sc !== 1) { g.save(); g.translate(fx0, fy0); g.scale(sc, sc); g.translate(-fx0, -fy0); }   /* (claude/colossus4) x1.6: the greybox scales the old art about his feet (art owed: a native redraw) */
+    COA.drawBody(g, e, S, S.G, cx, cy, time, (e.hurtT || 0) > 0, S.pose || CG.poseOf(e, S, time));
+    if (sc !== 1) g.restore();   /* (claude/glasssea2) its POSE CLOCK: src/glass-colossus.js poseOf */
     COA.drawHolds(g, e, S, S.G, cx, cy, time);   /* the holds grow out of it, so they are drawn on it (the heroes are drawn after) */
   };
   /* OVER EVERYTHING: the lance's line and its end, the rings, the shard marks, the wave, and THE READ (open ring + timer, ward shell, the word) */
@@ -175,8 +187,8 @@ export function makeColossusHands(ctx) {
       if (!faced.length && S.ph === 1) { const P = ctx.hero(), m = S.mirrors.reduce((a, b) => Math.abs(b.x - P.x) < Math.abs(a.x - P.x) ? b : a), x = R(m.x - cx), y = R(G.floor - 84 - cy) + R(Math.sin(time * 6) * 2);
         if (x - 50 >= 0 && x + 50 <= ctx.VW()) { ctx.text('TURN THE MIRROR TO HIM', x, y - 8, Math.floor(time * 4) % 2 ? '#ffd36b' : '#fff6c8', 'center', 6); ctx.text('(E)', x, y + 2, '#fff6c8', 'center', 5); g.fillStyle = '#ffd36b'; for (let i = 0; i < 4; i++) g.fillRect(x - 3 + i, y + 10 + i, 7 - 2 * i, 1);
         } dotted(m.x, G.floor - 38, G.cx, G.hipY - 20, 'rgba(255,211,107,0.3)'); } }   /* (claude/colossusrework: the 64-wide arena puts the nearest mirror off the screen - its words wait until it is on it: tools/textfit OFFSCREEN) */
-    if (S.ph === 2 && !CG.colOpen(e) && S.ward <= 0) for (const sx of [-1, 1]) dotted((G.crack[0] + G.crack[1]) / 2, G.floor - 4, G.cx + sx * 44, G.shoulderY - 10, CG.relaying(S) ? 'rgba(255,176,80,0.7)' : 'rgba(168,136,255,0.35)');
-    if (S.ph === 3 && !CG.colOpen(e) && S.ward <= 0 && !CG.flank(S).some(m => m && m.notch === 'sky')) for (const m of CG.flank(S)) if (m) dotted(m.x, G.floor - 42, G.cx, G.crownY - 4, 'rgba(255,240,190,0.3)');
+    if (S.ph === 2 && !G.c4 && !CG.colOpen(e) && S.ward <= 0) for (const sx of [-1, 1]) dotted((G.crack[0] + G.crack[1]) / 2, G.floor - 4, G.cx + sx * 44, G.shoulderY - 10, CG.relaying(S) ? 'rgba(255,176,80,0.7)' : 'rgba(168,136,255,0.35)');
+    if (S.ph === 3 && !G.c4 && !CG.colOpen(e) && S.ward <= 0 && !CG.flank(S).some(m => m && m.notch === 'sky')) for (const m of CG.flank(S)) if (m) dotted(m.x, G.floor - 42, G.cx, G.crownY - 4, 'rgba(255,240,190,0.3)');
     /* (claude/colossusrework) THE WALK: where he goes (a gold arrow to the station and IT STRIDES), the lifted foot's landing mark (red: the trample) */
     if (S.walk && (e.mode === 'walkTell' || e.mode === 'walk')) { const W = S.walk, tx = R(W.to - cx), y = R(G.floor - cy), a = Math.floor(time * 6) % 2;
       g.fillStyle = '#ffd36b'; g.fillRect(tx - 10, y - 2, 20, 2); for (let i = 0; i < 5; i++) g.fillRect(tx - W.dir * (14 + i) , y - 20 + i, 1, 11 - 2 * i);
@@ -196,6 +208,10 @@ export function makeColossusHands(ctx) {
       ctx.text('! THE LUNGE: OFF THE MIRROR, OR BLOCK', x, y - 84, '#ffd36b', 'center', 6); }
     /* the reflected lance: from the mirror's face back into its chest, in the moment it cracks it */
     if (e.mode === 'cracked' && (e.openT0 || 0) - e.open < 0.5 && S.lastReflect >= 0 && S.mirrors[S.lastReflect]) bounce(S.lastReflect, 1 - ((e.openT0 || 0) - e.open) / 0.5);
+    /* (claude/colossus4) THE INSTANT: a white flash over him for 0.35 s after the light lands; P1/P3 a mirror FACING him on your side - HIS LANCE COMES NEXT */
+    if (G.c4 && S.burnT != null && S.t - S.burnT < 0.35) { const a = 1 - (S.t - S.burnT) / 0.35; g.save(); g.globalCompositeOperation = 'lighter'; g.globalAlpha = 0.6 * a; g.fillStyle = '#fff6e0'; g.fillRect(R(G.cx - cx) - R(COL.w / 2), R(G.floor - COL.h - cy), R(COL.w), COL.h); g.restore(); }
+    if (G.c4 && (S.ph === 1 || S.ph === 3) && e.mode === 'idle' && S.ward <= 0 && S.lock <= 0 && S.t - (S.lanceT ?? -99) >= 6) { const P = ctx.hero(), sd = Math.sign(P.x - G.cx) || 1, m = S.mirrors.find(q => q.notch === 'face' && Math.sign(q.x - G.cx) === sd);
+      if (m) { BP.drawBeam(g, BP.path([[G.cx, G.hipY - 20], [m.x - sd * 6, G.floor - 38], [G.cx, G.hipY - 20]]), cx, cy, time, { kind: 'lance', preview: true, a: 0.7 }); const x = R(m.x - cx); if (x > 60 && x < ctx.VW() - 60) ctx.text(LIGHT4.lanceNext, x, R(G.floor - 96 - cy), '#ffd36b', 'center', 5); } }
     /* THE READ (B10) */
     const zoneY = e.mode === 'cracked' ? G.hipY - 20 : e.mode === 'blazing' ? G.shoulderY - 8 : G.crownY - 4;
     if (CG.colOpen(e)) { const k = Math.max(0, e.open / (e.openT0 || COL.openT)), x = R(G.cx - cx), y = R(zoneY - cy);

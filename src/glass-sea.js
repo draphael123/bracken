@@ -32,7 +32,7 @@
 //                                           relay a fire onto the crack beside it, throwers on the far steps; the vault mirror; the arena's two
 //                                           shelf-mirrors in view
 //   604-667  THE GLASS COLOSSUS    BOSS     src/glass-colossus.js stageColossus (a PUZZLE boss: the rule personified; claude/colossusrework: 64 wide, three stations)
-import { stageColossus, COLOSSUS_STAGE } from './glass-colossus.js';
+import { stageColossus, COLOSSUS_STAGE, useCol4 } from './glass-colossus.js'; import { col4On } from './colossus4.js';   /* (claude/colossus4: the flag) */
 
 export const GLASS = { W: 672, H: 46, base: 34, pit: 44 };   /* (claude/colossusrework: 648 -> 672, the arena 40 -> 64 wide) */
 export const SECTIONS = [['THE GLASS EDGE', 0], ['THE FULGURITE FIELD', 96], ['THE BONE CROSSING', 196], ['THE FORK OBELISK', 296], ['THE SUNKEN HEAD', 372], ['THE COLD FLATS', 452], ['THE COLOSSUS STEPS', 572], ['THE GLASS COLOSSUS', 604]];
@@ -46,7 +46,8 @@ export const ARCS = {
 export const SUNSET_X = 334;   /* the column the sun goes down at (THE FORK OBELISK) */
 
 export function buildGlassSea({ painter, T, TS }) {
-  const { W, H, base: B, pit: PIT } = GLASS;
+  const C4 = useCol4(col4On());   /* (claude/colossus4) OFF = master's level, cell for cell; ON = the 80-wide arena, THE SHATTER-PANES, THE GLYPH COURT (src/colossus4.js) */
+  const { H, base: B, pit: PIT } = GLASS, W = C4 ? 604 + COLOSSUS_STAGE.W + 4 : GLASS.W;
   const L = painter(W, H), { set, block, ent } = L;
   const air = (x0, x1, y0, y1) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) set(x, y, T.AIR); };
   const boards = (x0, x1, y) => { for (let x = x0; x <= x1; x++) set(x, y, T.ONEWAY); };
@@ -185,6 +186,11 @@ export function buildGlassSea({ painter, T, TS }) {
   sign(303, B - 1, 'THE FORK OBELISK. THE SUN GOES DOWN HERE.');
   /* the way to THE SUN TEMPLE (4b, built later): a sealed door in the dune (decor + a sign) */
   decor.push({ kind: 'templeDoor', x: 307, y: B - 1 }); sign(309, B - 1, 'THE SUN TEMPLE. THE WAY IS SHUT.');
+  /* (claude/colossus4, plan-desert-1105 s5 + Q5/Q6) THE GLYPH COURT (src/sun-puzzle.js L.sunRooms, wired by src/sunroom-hands.js): a sun shaft falls on a strike-mirror at 304;
+     struck (to its other slant) it throws the sun EAST onto THE SUN-GLYPH on the Temple door (a sun-LAMP: the told SUN TEMPLE find, on the main road, can't miss - never a lock).
+     THE DESERT PRIEST CACHE (optional, his beam only, never the sun): a sun-seal in the floor at 302-303 - his UP beam on the glyph over it (302, 30) opens it onto a silver.
+     A stele at 301 stops the unturned sun short (a 2-row hop on the road) */
+  if (C4) { block(301, 301, B - 2, B - 1); air(302, 303, B + 1, B + 1); ent('silver', 302, B + 1); sign(305, B - 1, 'A SUN-GLYPH ON THE TEMPLE DOOR. STRIKE THE MIRROR TO THROW THE SUN ON IT.'); }
   /* THE CHAIN: the low sunset ray comes in along row 32 from the west saddle (the source at 313); MIRROR A (316) turns it UP its column to MIRROR B
      (row 23) over the boards; B turns it EAST along row 23 through THE OBELISK's EYE, over the plateau and the Head's gap, onto the sand heap set in
      the giant's cheek (361, 23). The bridge fuses at row 28 over THE SUNKEN HEAD's gap - the only way on */
@@ -222,15 +228,22 @@ export function buildGlassSea({ painter, T, TS }) {
   sign(366, B - 7, 'THE SUNKEN HEAD. CLIMB IT: THE GLOW MARKS THE HOLDS.');
   air(369, 382, 0, 16);                                                     /* the crown's top (row 17) under the open sky */
   fire('crownFire', 373, 16);
-  hunter(379, 16, 'crownHunter');
+  hunter(C4 ? 371 : 379, 16, 'crownHunter');   /* (claude/colossus4: back from the crown's east end - the panes start there, no foe inside a section) */
   /* the back of the skull: off the crown's east end, a long steep slick slope down into the night (rows 17 -> 34) */
-  air(383, 451, 0, 16); { let t = 17; for (let x = 383; x < 400; x++) { air(x, x, 0, t); dnS(x, t); t++; } }
-  air(400, 451, 0, B - 1); ground(400, 451, B);
-  fire('footFire', 404, B - 1);
-  crack('headCrack', 409, 411, B, { swarm: true });                         /* a crack in the fire's light: HELD (the teach: a quiet crack beside a fire) */
-  skitter(410, B - 1, 'flatsSwarm0');
-  sign(406, B - 1, 'NIGHT. THE COLD BITES AWAY FROM FIRE. FIRELIGHT HOLDS THE CRACKS.');
-  hunter(424, B - 1, 'flatsHunter0'); hunter(434, B - 1, 'flatsHunter0');   /* (fix pass) a second hunter at the skull's foot: the mash margin (the mash lows come from here and the crossing) */ thrower(429, B - 4, 'skullTerrace');   /* a thrower on the terrace over the skull's foot */
+  /* (claude/colossus4, level-review-1105: 'THE GLASS SEA 5.7, 0 platforming sections') THE SHATTER-PANES - THE SECTION: the back of the skull is split open; crystal panes
+     (T.CRYST: they craze under your weight and grow back) step down the chasm from the crown to the flats - drop, gap, a 2-row hop UP, drop, gap, drop, the terrace.
+     Seven beats in 31 tiles, no foe inside. A fall is THE CRACK: a blow and back to the crown (no safe footing on the panes - the whole run again) */
+  if (C4) { air(383, 451, 0, 16); air(383, 412, 17, B - 1); crack('skullPanes', 383, 412, B, { dmg: 20 });
+    for (const [x0, x1, y] of [[385, 387, 20], [390, 391, 22], [394, 396, 20], [399, 400, 23], [403, 405, 25], [408, 409, 28]]) for (let x = x0; x <= x1; x++) set(x, y, T.CRYST);
+    air(413, 451, 0, B - 1); ground(413, 451, B); sign(380, 16, 'THE SHATTER-PANES. THE GLASS CRAZES UNDER YOU: KEEP MOVING.'); }
+  else { air(383, 451, 0, 16); { let t = 17; for (let x = 383; x < 400; x++) { air(x, x, 0, t); dnS(x, t); t++; } }
+  air(400, 451, 0, B - 1); ground(400, 451, B); }
+  const HX = C4 ? 14 : 0;   /* (claude/colossus4) the skull's foot moves east past the chasm */
+  fire('footFire', 404 + HX, B - 1);
+  crack('headCrack', 409 + HX, 411 + HX, B, { swarm: true });                         /* a crack in the fire's light: HELD (the teach: a quiet crack beside a fire) */
+  skitter(410 + HX, B - 1, 'flatsSwarm0');
+  sign(406 + HX, B - 1, 'NIGHT. THE COLD BITES AWAY FROM FIRE. FIRELIGHT HOLDS THE CRACKS.');
+  hunter(C4 ? 430 : 424, B - 1, 'flatsHunter0'); hunter(434, B - 1, 'flatsHunter0');   /* (fix pass) a second hunter at the skull's foot: the mash margin (the mash lows come from here and the crossing) */ thrower(429, B - 4, 'skullTerrace');   /* a thrower on the terrace over the skull's foot */
   block(432, 438, B - 3, B - 1); decor.push({ kind: 'ridge', x0: 432, x1: 438, y: B - 3 }); thrower(436, B - 4, 'flatsThrow0');
   fire('flatsFire0', 443, B - 1);
   ent('check', 446, B - 1);                                                 /* CHECKPOINT THREE: the night's first rest */
@@ -256,7 +269,7 @@ export function buildGlassSea({ painter, T, TS }) {
   /* THE ALPHA HUNTER (claude/elitegates, Daniel 10-07): the cut's GATEKEEPER ELITE - the pack's best blade, east of the boiling crack, so the crack and the dark are at your back. The relay is the answer to the cold, not to him: firelight freezes the pack, never the alpha (src/glass-sea-hands.js). The portcullis comes down at 539 over the cut's east mouth and lifts when he dies. */
   foe('cutthroat', 530, B - 1, 'cutAlpha', { cnSkin: 'nighthunter', elite: true, gate: 539 });
   skitter(521, B - 1, 'cutSwarm'); shardAt(536, B - 1);   /* SHARD FIVE, past the boiling crack */
-  fire('flatsFire4', 544, B - 1); ent('check', 548, B - 1);   /* CHECKPOINT (the alpha's): past his gate, beside the fire - the night's second rest */
+  fire('flatsFire4', 544, B - 1); if (!C4) ent('check', 548, B - 1);   /* (claude/colossus4: one checkpoint fewer - Salt & Sanctuary death cost; the steps' one is 52 tiles on) */   /* CHECKPOINT (the alpha's): past his gate, beside the fire - the night's second rest */
   hunter(552, B - 1, 'flatsHunter2'); glassS(556, B - 1, 'flatsScorp2'); thrower(550, B - 4, 'flatsTerrace2');
   crack('flats3', 560, 562, B, { swarm: true });                           /* held by flatsFire5 */
   fire('flatsFire5', 566, B - 1);
@@ -334,6 +347,13 @@ export function buildGlassSea({ painter, T, TS }) {
     music: 'glasssea',
     ambient: [{ x0: 0, x1: SUNSET_X * TS, kind: 'glassday' }, { x0: SUNSET_X * TS, x1: 99999, kind: 'glassnight' }],   /* (fix pass) its own beds: src/audio.js SYNTH_BEDS glassday / glassnight */
     rockZones: [], masonry: [],
+    ...(C4 ? {   /* (claude/colossus4) the flag's additions: the crystal panes, the glyph court + the priest cache (src/sun-puzzle.js), a light-touch mirage (src/mirage-kit.js, wired by the mirage lane), the Temple find */
+      col4: true, hasCryst: true,
+      sunRooms: [{ id: 'glyphCourt', box: [296, 20, 312, B + 1], sources: [{ x: 304, y: 20, dir: 'S' }], mirrors: [{ x: 304, y: B - 2, state: '/' }],
+        doors: [{ id: 'sunGlyph', kind: 'lamp', eye: [307, B - 2] }, { id: 'priestCache', kind: 'cache', eye: [302, B - 4], opens: [302, B, 303, B], optional: true }] }],
+      mirages: [{ id: 'falseShade', kind: 'shade', box: [153, B - 3, 156, B - 1] }],
+      templeSpur: { node: 'suntemple', find: [307, B - 1], lamp: 'sunGlyph', say: 'THE SUN-GLYPH BURNS: THE SUN TEMPLE LIES BEYOND THE FORK' },
+    } : {}),
     palette: { set: 'desert', near: 'none', dress: 'none', noFg: true, noNear: true, haze: 'rgba(160,220,230,0.08)' },
     duskStart: -1, duskLen: 1,
   };
