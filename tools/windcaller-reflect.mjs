@@ -24,7 +24,7 @@ try {
       b.hp=b.maxHp;const [x0,x1,row]=A.ledges[0];b.x=(x0+x1+1)*8;b.y=row*16;b.mode='cast';b.modeT=99;b.ward=0;
       BK.tp(Math.floor(b.x/16)+3,Math.round(A.floor/16)-1);BK.P.face=-1;step(20);clear();return A;};
     const run=(kind,warded)=>{const A=boot();if(warded)b.ward=60;const P=BK.P;const gy=A.floor;let sd=null,blade=null;const f=P.face;
-      if(kind==='bolt'){sd={x:P.x+f*50,y:P.y-12,vx:-f*150,vy:0,g:0,dead:false,life:3.4,bolt:true,owner:b,dmg:36};BK.seeds().push(sd);}
+      if(kind==='bolt'){sd={x:P.x+f*50,y:P.y-12,vx:-f*150,vy:0,g:0,dead:false,life:3.4,bolt:true,owner:b,dmg:38};BK.seeds().push(sd);}
       else{blade={x:P.x+f*110,dir:-f,kind:'low',gy,delay:0,life:2.6,hit:false};b.wc.blades.push(blade);}
       const hp0=P.hp;let fell=false,turned=false,pressed=false;
       for(let i=0;i<60*5;i++){const px=kind==='bolt'?sd.x:blade.x;const d=Math.abs(px-P.x);
