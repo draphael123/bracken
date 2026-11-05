@@ -29,6 +29,7 @@ import {hauntedCoast} from './haunted-coast.js';
 import {stormShipPolish} from './storm-ship.js';
 import {polishCoastAndTown} from './coast-town.js';
 import {addIslandPosts} from './island-posts.js';
+import { buildSkyLab } from './sky-mount.js';   /* (claude/skymount) */
 import {addDemoSupports} from './demo-supports.js';   /* (claude/floatfix) the hidden arena_yard is not run through addIslandPosts: its stair gets its risers here */
 import {crabTrench,underwaterKeep} from './deep-split.js';
 import {stormwreckHarbor,burialCaverns} from './additional-areas.js';
@@ -8121,6 +8122,7 @@ LEVELS.push({ id: 'kitchengate', name: 'THE KITCHEN GATE', sub: "up through the 
    the main road needs it. Its boss: THE BERSERKER CHIEFTAIN (src/bzchief.js) - beating him sells THE BERSERKER (classFor) */
 LEVELS.push({ id: 'warcairn', name: 'THE WAR CAIRN', sub: 'the clan that holds the peak', rule: WC_RULE, build: () => buildWarCairn({ painter, T, TS }), needs: ROAD_OPEN.undercrown ? 'kitchengate' : 'storm', spurOf: 'crown', classFor: 'berserker' });
 /* THE ARENA YARD (claude/arenayard, Daniel 11-03): APPENDED (saves count levels by index). Replaces the open yard as the default training stop; trial_open stays for the tools that use it as a test bed. NO `trial` flag (that turns co-op off): src/arena-yard.js */
+LEVELS.push({ id: 'skylab', name: "THE DRAKE'S BACK", sub: 'lab: the sky fight arena', build: () => buildSkyLab({ painter, T }), hidden: true });   /* (claude/skymount) THE DRAKE'S BACK, a lab: ?level=skylab&hero=<id> (src/sky-mount.js) */
 LEVELS.push({ id: 'arena_yard', name: 'THE ARENA YARD', sub: 'every verb, straw that hits back', build: () => buildArenaYard({ painter, T }), hidden: true });
 
 /* THE MIX. A level that is one creature is one question asked forty times. Some of each crowd is swapped for a

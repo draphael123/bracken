@@ -51,6 +51,7 @@ import {REALM,realmBox,realmWarded,realmFloor,strikeRealm,drawRealm,drawRealmFx,
 import {poolTraps} from './deadly-water.js'; void poolTraps;
 import {fireGrid,ignite,stepFire,douse,squareHeat,cellNear,CATCHING,ALIGHT,BURNT,quench} from './fire-spread.js';   /* THE BURNING VILLAGE's fire */
 import {carpetBox,stepCarpet,knockCarpet,updateCarpet,resetCarpet,drawRug,drawCarpetWorld,drawStormWalls,mountCarpet} from './carpet.js';
+import { makeSkyMountHands } from './sky-mount-hands.js'; let SKH = null;   /* (claude/skymount) THE DRAKE'S BACK: the sky fight's arena, P.mount (src/sky-mount.js); every hook below is a no-op off a skyMount level */
 import {burnSanctum,drawSanctum,drawSanctumDoors,drawSanctumUnder,drawDesertEnd,updateSanctum,openSanctumDoor} from './sanctum.js';   /* THE ARCHMAGE'S SANCTUM: the room behind the door, its floor of fire, and the path out */
 import {updateBuriedDead as stepBuriedDead,updateZombie,bakeDead,deadFrame,drawBuriedDead} from './buried-dead.js';
 import {bakeBuriedDeadKing,kingFrame as deadKingFrame} from './buried-dead-art.js';   /* THE BURIED DEAD'S OWN SPRITE (2026-09-24): a half-risen corpse-king, not the zombie's baker at x3 */
@@ -2166,7 +2167,7 @@ function allyTick() {
   if (Math.abs(p.x - one.x) < 10 && Math.abs(p.y - one.y) < 20) goal = one.x + (p.x >= one.x ? 26 : -26);   /* never in his way */
   if (S.raft) goal = one.x;
   if (one === p) goal = p.x;   /* nobody standing to follow: hold */
-  p.aiWalk(allySafeGoal(goal));
+  if (!(p.mount && SKH && SKH.aiWalk(p, goal, keys))) p.aiWalk(allySafeGoal(goal));   /* (claude/skymount: on the drake's back its tile walker sees no floor - it walks to the goal inside the walls) */
   if (holdOff) { keys.left = keys.right = false; keys.block = LABMOD.SHIELDED(h); p.abuf = 0; }   /* and the buffered swing goes with it, or a press from two frames back still takes the beat */
 }
 /* ==================== end of the co-op block ==================== */
@@ -8019,6 +8020,7 @@ function damagePlayer0(fromX, dmg, { up = false, unblockable = false, pierce = f
   if (P.candle > 0) { P.candle = 0; number(P.x, P.y - 34, 'THE FIRE GOES OUT', '#6a7a7a'); SFX.puff(); }   /* and the Burial Caverns' candle flame (src/burial-expansion.js) */
   const dir = Math.sign(P.x - fromX) || -P.face;
   if (noKnock || (skinR && skinR.noKnock)) { }                                          /* NO BLOW BEHIND IT: running out of air hurts where you are, it does not throw you */
+  else if (P.mount && SKH && SKH.knock(P)) { }                /* (claude/skymount) ON THE DRAKE'S BACK a blow knocks you DOWN where you stand, never back (or off) */
   else if (armoured) { P.vx = dir * 60; }                       /* he rocks, he does not fly: the arc has to finish */
   else { const hcK = P.hcShove ? HC.shove : 1; P.hcShove = false; P.vx = P.ground ? safeKnock(dir * 150 * hcK, dx => knockLandsSafe(P.x + dx, P.y)) : dir * 150 * hcK; P.vy = up ? -230 : -170; P.ground = false; }   /* THE THROW NEVER TAKES HIM OFF A LEDGE INTO A PIT: a shorter throw, or none, when the landing is a drop, spikes or deadly water (src/juice.js safeKnock) */
   if (isPirate() && (P.rum || 0) > 0) dmg = Math.round(dmg * 1.25);   // and he feels it more
@@ -11088,6 +11090,7 @@ function updatePlayer(dt) {
   if (CRB) CRB.update(dt);   /* THE CROUCH TWISTS (src/crouch-b.js): the paladin's prayer, the geomancer's earth sense - each only while P.ducking (claude/bloodknight: the Blood Knight's harvest is gone) */
   if (isReaper()) { if (P.ducking && !P.bkDuckWas) P.bkKneelAt = time; P.bkDuckWas = !!P.ducking; }   /* (claude/bloodknight) when the kneel began: a LOW blow turned within BLOOD.spike.beat of it is a BLOOD SPIKE */
   if (CA) CA.update(dt);   /* THE CROUCH TWISTS (src/crouch-a.js): the warden's set spear watches its point, the freebooter reloads twice as fast */
+  if (P.mount && SKH) SKH.pre(P);   /* (claude/skymount) ON THE DRAKE'S BACK: the back is put under his feet before the mover carry */
   if (P.onMover) { const m = P.onMover; if (P.x + 4 > m.x && P.x - 4 < m.x + m.w && Math.abs(P.y - m.y + (m.fair ? m.dy || 0 : 0)) < 3) {   /* (claude/fairfix3: a fair ride is matched where it stood before this frame's move - a swingboat drops 4 px a frame, past the 3 px of slack) */ P.x += m.dx; P.y += m.dy || 0; } else P.onMover = null; }
 
   /* (THE DASH - tap a way twice: distance, no grace, once in the air - was a move of its own until 2026-09-24. It is THE DODGE now,
@@ -11489,6 +11492,7 @@ else if (P.stepHeld > 0 && !P.swim) { P.stepHeld = Math.max(0, P.stepHeld - dt);
   if (GS > 0 && !P.ground && P.vy >= 0) for (const m of movers) { if (m.broken) continue;
     if (prevY <= m.y + 1 + Math.abs(m.dy || 0) && P.y >= m.y && P.y <= m.y + 12 && P.x + 4 > m.x && P.x - 4 < m.x + m.w) { P.y = m.y; P.vy = 0; P.ground = true; P.groundTile = m.cap ? T.BOUNCER : T.SOLID; P.onMover = m; P.coyote = 0.1; P.kicked = false; }
   }
+  if (P.mount && SKH) SKH.foot(P, prevY, dt, { block: P.block, dodging, coyote: SET.assist ? MOVE.COYOTE_ASSIST : MOVE.COYOTE });   /* (claude/skymount) THE DRAKE'S BACK: its walls, the sky's top, no falling through, the bank's slide */
   /* THE BUD PAD throws you. Landing is the trigger, not a press: the sign says LAND ON IT, and a pad that wanted a button
      would be a jump with extra steps. -420 rises 89 px, where the jump rises 51: enough for the stages a tier over the
      water and the taller bank, with a margin, and never enough for the tier above that. The release does not cut it
@@ -29948,6 +29952,7 @@ GBH = makeGrubbagHands({ get L() { return L; }, get players() { return players &
   spawnFoe: (t, px, py, face) => { const n0 = enemies.length; spawnEnt({ t, x: Math.floor(px / TS), y: Math.round(py / TS) - 1, face }); const q = enemies[n0]; if (q) { q.woke = 1; q.seenP = true; q.x = px; q.y = py; } return q; },
   hitOnce: o => { if (!P || !P.hitSet || P.hitSet.has(o)) return false; P.hitSet.add(o); return true; } });   /* LORD GRUBBAG THE GLUTTON (claude/kitchengate, src/grubbag-hands.js): his pie oven, the serving line's dishes, the belch's rings, the gravy */
 EHP.grubbag = GBG.GB.hp; BEAST_SHORT.grubbag = 'LORD GRUBBAG'; COLS.grubbag = ['#7a8a52', '#6a2a3a', '#ffd36b']; KNOCK_SKIP.add('grubbag'); EHP.butcher = KGM.K.butcher.hp; BEAST_SHORT.butcher = 'THE BUTCHER'; EHP.attendant = KGM.K.attendant.hp; BEAST_SHORT.attendant = 'THE ATTENDANT'; COLS.attendant = ['#6a2a3a', '#efe8da', '#c8ccd4']; COLS.butcher = ['#8a3a2a', '#e8e0d0', '#c8ccd4'];
+SKH = makeSkyMountHands({ L: () => L, players: () => players || [P], number: (x, y, t, c) => number(x, y, t, c), sfx: k => { const f = SFX[{ roar: 'roar', wing: 'throwWhoosh', land: 'pStep' }[k]]; if (typeof f === 'function') f(); }, solid: T.SOLID, bk: () => window.BK });   /* (claude/skymount) */
 /* THE KITCHEN GATE's HANDS (claude/kitchengate, src/kitchen-hands.js): its fires and bellows, the coppers' steam, the great spits, the grease trails and the tallow doors, the overturned pot, the butcher, the recipe pages */
 KGH = makeKitchenHands({ get L() { return L; }, TS, T, sfx: SFX, players: () => players || [P], enemies: () => enemies, time: () => time,
   number: (x, y, t, c) => number(x, y, t, c), burst: (...a) => burst(...a), dust: (x, y, n) => dust(x, y, n), shake: n => shakeCam(n), seen: k => beastSeen(k),
@@ -32419,6 +32424,7 @@ function updateCamera(dt) {
   if (centerLock) { x0 = x1 = Math.max(0, Math.min(LW * TS - VW, (camLock.x0 + camLock.x1) / 2 - VW / 2)); }
   else { x0 = camLock ? camLock.x0 - 8 : 0; x1 = camLock ? camLock.x1 + 8 - VW : LW * TS - VW; }
   camX = Math.max(x0, Math.min(x1, camX)); camY = Math.max(0, Math.min(LH * TS - VH, camY));
+  { const sc = SKH && SKH.cam(VW, VH); if (sc) { camX = sc.x; camY = sc.y; } }   /* (claude/skymount) THE SKY FIGHT's view is locked on the drake: the sky goes by, not the hero */
   // a level with its insides in a band of rock (Stormhold): from the street you never see into the band, and from a room you never see the street
   if (L.indoorRow !== undefined) { const edge = (L.indoorRow + 1) * TS; if (P.y > edge) camY = Math.max(camY, edge); else camY = Math.min(camY, edge - VH);
     // inside one of the cellars and halls: frame the whole room, ceiling and all, when it fits (the camera sat on the
@@ -32645,6 +32651,7 @@ function update(dt) {
      A press is read once (the first sub-step); a hitstop or a screen change ends the frame's remaining sub-steps; the camera and the weather run once, on world time. */
   const sub = wdtAll > dt * 1.0001 ? Math.ceil(wdtAll / dt - 1e-6) : 1, stateIn = state;
   for (let si = 0; si < sub; si++) { const wdt = wdtAll / sub; if (si) { clearPresses(); if (stop > 0 || state !== stateIn) break; }
+  if (SKH) SKH.update(wdt);   /* (claude/skymount) THE DRAKE'S BACK: the wingbeat, the bank, every hero on it */
   updateMovers(wdt); danceAfterBoss(); for (const pp of players) asPlayer(pp, () => ptMasked(pp, () => { if (!PTK.before(pp, wdt)) { HERO_HAND = true; try { updatePlayer(wdt); } finally { HERO_HAND = false; } } PTK.after(pp, wdt); })); coopWatch(); if (TAVO) TAVO.tick(wdt); if (YARD) YARD.tick(wdt); PTK.tick(wdt); updateEnemies(wdt); tokenPost(TK, enemies, tkApi, wdt); P = players[0]; emitAt(null); updateWisp(wdt); updateSlide(wdt); updateOverhangs(wdt); updateChase(wdt); updateStairs(wdt); updateFlood(wdt); traceBeams(wdt); updateProps(wdt); updateVillage(wdt); if (L.timber) updateTimber(wdt, attackBox()); if (L.ballast) updateBallast(wdt); if (L.hoists) updateHoists(wdt); if (L.deep) updateDeep(wdt); updateBreathCue(wdt); if (L.hush) updateHush(wdt); updateCrystal(wdt); updateSpans(wdt); updatePyres(wdt); updateCorpses(wdt); updateShots(wdt); updateParticles(wdt); }
   updateWeather(dt); updateCamera(dt * Math.max(1, SET.speed || 1));
   updatePolish(dt); fogMark(dt);
@@ -33922,6 +33929,7 @@ function drawWorld(cx, cy, showPlayer) {
   drawStormClouds(cx, cy); // the weather itself: banks of it at their own speeds, lit from underneath when the sky goes
   if (!L.night && (!(L.weather || []).length || !weatherAt().includes('rain'))) for (const c of clouds) { const x = Math.round(c.x - cx * 0.1), y = Math.round(c.y + bgDY(cy) * 0.05); g.globalAlpha = 0.85; g.drawImage(CLOUD[c.k], ((x % (VW + 160)) + VW + 160) % (VW + 160) - 80, y); g.globalAlpha = 1; }
   if (L.arenaYard) ARB.drawArenaBack(g, cx, cy, VW, VH, time, { floor: L.arenaYard.floor * TS, cheer: YARD ? YARD.st.cheer : 0, gate: L.arenaYard.gate ? [L.arenaYard.gate[0] * TS, L.arenaYard.gate[1] * TS] : null });   /* (claude/arenayardart) THE ARENA SET's sky, far towers and CROWD STAND (it cheers on a PERFECT: YARD.st.cheer), src/redraw/arena_backdrop.js */
+  if (L.skyMount && SKH) SKH.drawSky(g, VW, VH, time, SET.parallax);   /* (claude/skymount) THE SKY FIGHT's sky: greybox parallax by altitude (src/sky-mount-draw.js) */
   if (L.sealedpyramid) SPB.drawBackdrop(g, cx, cy, VW, VH, L, time, bgDY(cy));   /* THE SEALED PYRAMID's face: far pyramids and THE APEX with its gilded capstone (claude/spart, src/redraw/sealed_pyramid_backdrop.js) */
   if (L.hornetsNest) HNB.drawBackdrop(g, cx, cy, VW, VH, L, time, bgDY(cy), SET.parallax === 'full');   /* (claude/hornetsnestart) THE HORNET'S NEST's own pine wood, the ancient pine, the nest's paper wall and resin lights, the brood hall's vault (src/redraw/hornets_nest_backdrop.js) */
   if (curId() === 'wood' || curId() === 'marsh') HNB.drawNeighbourPine(g, cx, cy, VW, VH, curId(), bgDY(cy), time);   /* (claude/hornetsnest2) the great pine and its paper nest on the horizon: past the Lumber Trail's clearing (the road climbs on to it), behind MARSH WOOD's start (you came down it) */
@@ -35017,6 +35025,7 @@ function drawWorld(cx, cy, showPlayer) {
   for (const f of fish) { g.save(); g.translate(Math.round(f.x - cx), Math.round(f.y - cy)); g.rotate(Math.atan2(f.vy, f.vx) * 0.6); if (f.vx < 0) g.scale(-1, 1); g.drawImage(FISH, -3, -2); g.restore(); }
   if(L.sanctum&&L.carpetUp&&!L.sandWalk&&!mageRealm()&&!(L.arena&&L.arena.ascent))drawSanctumUnder(g,L.arena,cx,cy);   /* his hall is closed at the bottom: under the fire is stone, not the parapet and its lantern (round 2) */
   if (PUPH && PUPH.on()) PUPH.drawRig(cx, cy, time);   /* THE PUPPETEER's rig and strings (slack grey, taut gold), after the bodies they hold */
+  if (L.skyMount && SKH) SKH.drawDrake(g, cx, cy, time);   /* (claude/skymount) THE DRAKE under the heroes (greybox) */
   drawCarpetWorld(g,L,P,cx,cy,time);{const gh=enemies.find(q=>q.t==='greathound'&&q.alive);if(gh)GHD.drawHound(g,gh,cx,cy,time,L.mini&&L.mini.boss==='greathound'?L.mini.floor:gh.y);}drawSextonFx(cx,cy);drawMinerPicks(g,cx,cy);{const wm=boss&&boss.t==='winchmaster'&&boss.alive?boss:null;if(wm)drawWinchFx(g,wm,winchC(wm),cx,cy,time);}if(WRK&&WRK.on())WRK.draw(g,cx,cy,time);if(GMH&&GMH.on())GMH.drawFront(g,cx,cy,time);/* (claude/gorm2) KING GORM 2's told layer: the archers' arcs, the rock's arc, the fire, the cones, the logs, the quake */{const gw=enemies.find(q=>q.t==='gravewarden'&&q.alive);if(gw)drawGraveWarden(g,gw,cx,cy,time,(L.mini||L.arena).floor);}{const ab=boss&&boss.t==='abbot'&&boss.alive?boss:null;if(L.arena&&L.arena.boss==='abbot')drawAbbotRopes(g,abbotRopes(),L.arena.y0,L.arena.floor,cx,cy,time,ab);if(ab&&L.arena)drawFalseAbbot(g,ab,cx,cy,time,L.arena.floor);}if(L.witch&&(L.mini||L.arena))drawHedgeWarden(g,enemies.find(q=>q.t==='hedgewarden'),hedgeBraziers(),cx,cy,time,(L.mini||L.arena).floor);drawUndeadMage(g,boss?.t==='undeadmage'?boss:null,cx,cy,time);if(boss?.t==='undeadmage'){drawRealmFx(g,boss,cx,cy,time,P,(s,x,y,col,z)=>text(s,x,y,col,'center',z||6));drawTear(g,boss,cx,cy,time);drawMageActs(g,boss,cx,cy,time,(s,x,y,col,z)=>text(s,x,y,col,'center',z||6));}for(const q of enemies)if(q.t==='magechase'&&q.alive){drawUndeadMage(g,q,cx,cy,time);drawStairReel(g,q,cx,cy,time);}if(L.arena?.carpet&&boss?.t==='undeadmage'&&!mageRealm())drawStormWalls(g,L.arena,boss.squeeze||0,cx,cy,time,VW,VH);
   if (L.witch) drawRoots(g, L.hedgeRoots, L.witch, cx, cy, time);   /* THE ROOTS crawling, THE ROOTED GARDEN's braziers and its shivering hedges (hedge-warden.js) */
   if(L.witch&&L.arena&&L.arena.rune)drawRune(g,L.arena.rune,cx,cy,time);   /* (claude/bosswave2) THE RUNE COLUMN in his arena */
