@@ -196,7 +196,11 @@ ok(MC.swReach >= 44 && MC.swReach > MC.leverReach, 'a SWITCH answers E from ' + 
     ok(FMG.takeBlade(S, 10) === 10, 'while you stand on his cart a blade is whole');
     for (let i = 0; i < 200 && !x.release; i++) FMG.stepForeman(S, e, 1 / 60, [], C(x)); ok(x.release === 'lurch' && S.ward > 0 && log.includes(FMG.FOREMAN_LINES.lurch), 'then a told LURCH throws you off - back into your own cart - and he braces');
     const y = {}; FMG.stepForeman(S, e, 1 / 60, [{ ...h, x: FMG.foremanX(S) - 6 }], C(y)); ok(y.braced > 0 && !y.board && S.n.braced === 1, 'a landing on him while he is braced is turned (a clank, a sliver: B15)');
-    ok(FMG.takeBlade(S, 10) === Math.round(10 * F.armour), 'and a blade from the cart is x' + F.armour + ' again');
+    ok(FMG.takeBlade(S, 10) === Math.round(10 * F.bracedPoke) && F.bracedPoke >= 0.4 && F.bracedPoke <= 0.5, 'braced: a blade from the cart is a small safe poke x' + F.bracedPoke + ' (foreman2: no dead time, never invulnerable)');
+    { const T = { ...S, ward: 0 }; ok(FMG.takeBlade(T, 10) === Math.round(10 * F.armour), 'and unbraced, off his cart, it is x' + F.armour + ' again'); }
+    ok(F.wardT >= 2.5 && F.wardT <= 3.2, 'the brace is ~3 s (foreman2: was 4.5): ' + F.wardT);
+    for (const [st, ch] of Object.entries(F.chain)) { const jumps = ch.filter(m => m === 'tip' || m === 'points').length, answers = ch.filter(m => m === 'pick' || m === 'ram' || m === 'boom').length;
+      ok(jumps <= 2 && ch.includes('boom') + ch.includes('ram') + ch.includes('pick') > 0 && answers >= 1 && ch.includes('drift'), 'chain stage ' + st + ': ' + jumps + ' jump threats (<= 2) and a brake/duck answer among ' + answers + ' (foreman2)'); }
     /* THE MISSED BOARDING (Daniel 10-12): once the spikes have RISEN (drawn, a sound, the word) a landing on his rim costs the full bump and throws you back */
     ok(log.includes(FMG.FOREMAN_LINES.spikesUp), 'the spikes come up TOLD: ' + FMG.FOREMAN_LINES.spikesUp);
     for (let i = 0; i < Math.ceil(F.spikeRise * 60) + 2; i++) FMG.stepForeman(S, e, 1 / 60, [], C({}));
