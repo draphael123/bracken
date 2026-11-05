@@ -7,7 +7,7 @@ const mk = h => ({ card: { [h]: { v: 0, e: 0, m: 0, ms: {} } } });
 
 check('shape', () => {
   assert.deepEqual(PR.TECH_LEVELS, [25, 30, 35, 40, 45, 50]); assert.equal(PR.UPGRADE_LEVELS.length, 10);
-  assert(PR.hasKit('knight')); assert(!PR.hasKit('pyro'));
+  assert(PR.hasKit('knight')); assert(!PR.hasKit('paladin'));
   for (const h of Object.keys(PR.TECHNIQUES)) {
     assert.deepEqual(Object.keys(PR.TECHNIQUES[h]).map(Number), PR.TECH_LEVELS, h + ' needs one technique per tech level');
     const ids = new Set(); for (const t of PR.TECH_LEVELS.flatMap(n => PR.techniquesAt(h, n))) { assert(t.id && t.name && t.what && t.teach && t.input, h + ' ' + t.id + ' text'); assert(!ids.has(t.id)); ids.add(t.id); }
@@ -43,7 +43,7 @@ check('upgrades rank I then II', () => {
 check('picks owed', () => {
   assert.equal(PR.picksOwed(mk('knight'), 'knight', 24), 24); assert.equal(PR.picksOwed(mk('knight'), 'knight', 25), 24, 'L25 is a tech card, not a stat pick');
   assert.equal(PR.picksOwed(mk('knight'), 'knight', 50), 34, '50 levels - 6 tech - 10 upgrade'); assert.equal(PR.milestonesOwed(mk('knight'), 'knight', 50).length, 4 + 6 + 10);
-  assert.equal(PR.picksOwed(mk('pyro'), 'pyro', 50), 50, 'a hero with no kit keeps a stat pick every level'); assert.equal(PR.milestonesOwed(mk('pyro'), 'pyro', 50).length, 10);
+  assert.equal(PR.picksOwed(mk('paladin'), 'paladin', 50), 50, 'a hero with no kit keeps a stat pick every level'); assert.equal(PR.milestonesOwed(mk('paladin'), 'paladin', 50).length, 10);
 });
 check('respec + save shape', () => {
   const p = mk('knight'); PR.pickMilestone(p, 'knight', 25, 'kcounter', 50); PR.pickMilestone(p, 'knight', 27, PR.perkOffer(p, 'knight', 27)[0].id, 50);
@@ -112,5 +112,11 @@ check('road to L50', () => withForks(() => {
   assert(r[5].capstone && r[5].options.length === 2 && r[5].options.every(o => !o.locked) && !r[0].fork); assert.deepEqual(PR.roadToL50(mk('warden'), 'warden', 50), []);
 }));
 check('knight forks are real: L30 / L40 / L50 pairs, roles differ, B is not the default', () => { for (const n of PR.FORK_LEVELS) { assert(PR.isFork('knight', n)); const [a, b] = PR.techniquesAt('knight', n); assert(a.role && b.role && a.role !== b.role && b.trade === a.trade); } assert.deepEqual(PR.techniquesAt('knight', 50).map(t => t.id), ['kcharge2', 'kwheel']); assert(!PR.isFork('knight', 25) && !PR.isFork('knight', 35) && !PR.isFork('knight', 45)); });
+check('pyro kit (claude/pyropack): forks at 30/40/50, roles differ, shared trade, capstone pair [pstar,pshower], eight upgrades', () => {
+  for (const n of PR.FORK_LEVELS) { assert(PR.isFork('pyro', n)); const [a, b] = PR.techniquesAt('pyro', n); assert(a.role && b.role && a.role !== b.role && b.trade === a.trade, 'L' + n); }
+  assert.deepEqual(PR.techniquesAt('pyro', 50).map(t => t.id), ['pstar', 'pshower']); assert(PR.techniquesAt('pyro', 50).every(t => t.capstone));
+  assert(!PR.isFork('pyro', 25) && !PR.isFork('pyro', 35) && !PR.isFork('pyro', 45)); assert.equal(PR.UPGRADES.pyro.length, 8);
+  const p = mk('pyro'); assert.equal(PR.perkOffer(p, 'pyro', 25)[0].id, 'pkindle'); assert(PR.hasKit('pyro'));
+});
 if (bad.length) { console.log('TECH-CARDS: ' + bad.length + ' problem(s)\n  - ' + bad.join('\n  - ')); process.exit(1); }
 console.log('Tech cards: a kit hero is dealt TECH (technique first, RECOMMENDED), UPGRADE and STAT cards L25-L50; a skipped technique is offered again; upgrades rank I then II; picks owed, respec, save validation and old-save migration hold; a hero with no kit keeps the old card.');

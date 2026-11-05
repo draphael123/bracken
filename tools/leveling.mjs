@@ -45,14 +45,14 @@ check('card', () => {
   assert.equal(PR.pickCard(p, 'knight', 'x', 3), 'Unknown pick'); PR.pickCard(p, 'knight', 'e', 3); PR.pickCard(p, 'knight', 'm', 3); assert.equal(PR.pickCard(p, 'knight', 'v', 3), 'No pick owed');
   const q = { card: { warden: { v: 25, e: 0, m: 0, ms: {} } } }; assert.match(PR.pickCard(q, 'warden', 'v', 30), /full/); assert.equal(PR.pickCard(q, 'warden', 'e', 30), null);
   assert.equal(PR.growthAt('warden', 50, { v: 40, e: 0, m: 0 }).hp, PR.growthAt('warden', 50, { v: 25, e: 0, m: 0 }).hp, 'a stat past the cap still grows');
-  const r = { card: { pyro: { v: 9, e: 8, m: 8, ms: {} } } };
-  assert.deepEqual(PR.milestonesOwed(r, 'pyro', 4), []); assert.deepEqual(PR.milestonesOwed(r, 'pyro', 24), [5, 10, 15, 20]); assert.deepEqual(PR.milestonesOwed(r, 'pyro', 50), [5, 10, 15, 20, 25, 30, 35, 40, 45, 50]);   /* LEVELING2: four early milestones under the six */
-  const taken = new Set(); for (const n of PR.MILESTONES) { const offer = PR.perkOffer(r, 'pyro', n); assert(offer.length >= 1 && offer.length <= 3); assert(offer.every(o => !taken.has(o.id)), 'offered a perk twice');
-    assert.equal(PR.pickMilestone(r, 'pyro', n, offer[0].id, 50), null); taken.add(offer[0].id); }
-  assert.equal(taken.size, 10); assert.equal(PR.pickMilestone(r, 'pyro', 25, 'iron', 50), 'No milestone owed'); assert(PR.perkOn(r, 'pyro', [...taken][0]));
+  const r = { card: { paladin: { v: 9, e: 8, m: 8, ms: {} } } };
+  assert.deepEqual(PR.milestonesOwed(r, 'paladin', 4), []); assert.deepEqual(PR.milestonesOwed(r, 'paladin', 24), [5, 10, 15, 20]); assert.deepEqual(PR.milestonesOwed(r, 'paladin', 50), [5, 10, 15, 20, 25, 30, 35, 40, 45, 50]);   /* LEVELING2: four early milestones under the six */
+  const taken = new Set(); for (const n of PR.MILESTONES) { const offer = PR.perkOffer(r, 'paladin', n); assert(offer.length >= 1 && offer.length <= 3); assert(offer.every(o => !taken.has(o.id)), 'offered a perk twice');
+    assert.equal(PR.pickMilestone(r, 'paladin', n, offer[0].id, 50), null); taken.add(offer[0].id); }
+  assert.equal(taken.size, 10); assert.equal(PR.pickMilestone(r, 'paladin', 25, 'iron', 50), 'No milestone owed'); assert(PR.perkOn(r, 'paladin', [...taken][0]));
   assert.equal(PR.pickMilestone({ card: {} }, 'knight', 25, 'iron', 24), 'No milestone owed');
   assert.notEqual(JSON.stringify(PR.perkOffer({}, 'knight', 25)), JSON.stringify(PR.perkOffer({}, 'warden', 25)), 'every hero sees the same hand');
-  PR.respecCard(r, 'pyro'); assert.equal(PR.picksOwed(r, 'pyro', 50), 50); assert.equal(PR.milestonesOwed(r, 'pyro', 50).length, 10);
+  PR.respecCard(r, 'paladin'); assert.equal(PR.picksOwed(r, 'paladin', 50), 50); assert.equal(PR.milestonesOwed(r, 'paladin', 50).length, 10);
   assert(PR.growthAt('knight', 30, { v: 10, e: 10, m: 10, ms: { 25: 'heart' } }).hp > PR.growthAt('knight', 30, { v: 10, e: 10, m: 10, ms: {} }).hp, 'GREAT HEART does nothing');
   assert(PR.growthAt('knight', 30, { v: 10, e: 10, m: 10, ms: { 25: 'arcane' } }).skillMultiplier > PR.growthAt('knight', 30, { v: 10, e: 10, m: 10 }).skillMultiplier, 'MASTERY does nothing');
   assert.equal(PR.RESPEC_SILVER, 3); assert.equal(PR.PERKS.length >= 8, true); assert.equal(PR.CARD_CAP, 25);
@@ -75,7 +75,7 @@ check('early milestones', () => {
   /* the hero's own is a different hand per hero, and every id of every hero is unique */
   assert.equal(new Set(PR.ALL_HERO_PERKS.map(k => k.id)).size, 18);   /* (berserkerport: two a hero, eight heroes; claude/ranger: nine) */
   assert.equal(PR.levelsToPerk(0), 5); assert.equal(PR.levelsToPerk(7), 3); assert.equal(PR.levelsToPerk(20), 5); assert.equal(PR.levelsToPerk(49), 1); assert.equal(PR.levelsToPerk(50), null);
-  assert.deepEqual(PR.techniquesArriving('pyro', 0, 50), []); assert.deepEqual(PR.TECH_LEVELS, [25, 30, 35, 40, 45, 50]);   /* the technique hook: a hero with no kit offers none (claude/knightid: the knight's six are tools/tech-cards.mjs) */
+  assert.deepEqual(PR.techniquesArriving('paladin', 0, 50), []); assert.deepEqual(PR.TECH_LEVELS, [25, 30, 35, 40, 45, 50]);   /* the technique hook: a hero with no kit offers none (claude/knightid: the knight's six are tools/tech-cards.mjs) */
 });
 check('stat thresholds', () => {
   const card = (v, e, m) => ({ card: { knight: { v, e, m, ms: {} } } });
