@@ -76,9 +76,18 @@ function coneStrip(seed, h, hot) { return once(BD, 'cone' + seed, () => { const 
     if (hot) { px(g, mid - 1, h - top - 5, C.fire); px(g, mid, h - top - 5, C.em); rect(g, mid - 2, h - top - 4, 4, 1, C.fire); for (let k = 0; k < 5; k++) rect(g, mid - 1 + (k % 2 ? 1 : -1) * (k >> 1), h - top + k * 5, 1, 3, C.red); }
     x += w - 24; i++; }
   return c; }); }
-function wallStrip() { return once(BD, 'wall', () => { const W = 256, H = 150, [c, g] = canvas(W, H);
-  rect(g, 0, 0, W, H, '#1e1a24'); for (let x = 0; x < W; x += 14) { const w = 10 + ((x * 7) % 5); rect(g, x, 0, w, H, (x / 14) & 1 ? '#25222c' : '#2e2a36'); rect(g, x, 0, 1, H, C.b0); rect(g, x + w - 2, 0, 1, H, '#403c4a'); for (let y = 6 + (x % 9); y < H; y += 22) rect(g, x + 1, y, w - 3, 1, C.b0); }
-  for (let k = 0; k < 7; k++) { const x = (k * 41 + 13) % W, y = 20 + (k * 29) % (H - 40); line(g, x, y, x + 6, y + 9, C.red); line(g, x + 6, y + 9, x + 3, y + 18, C.fire); px(g, x + 6, y + 9, C.emH); }
+function wallStrip() { return once(BD, 'wall', () => { const W = 256, H = 150, [c, g] = canvas(W, H), hs = (a, b) => { let h = (Math.imul(a | 0, 73856093) ^ Math.imul(b | 0, 19349663)) >>> 0; h = Math.imul(h ^ (h >>> 13), 1274126177) >>> 0; return h; };
+  /* (claude/drakeroom) the caldera's wall is a rough-cut BASALT face, not vertical boards: irregular black blocks in staggered courses, lit on their top-left edges, dark in the joints, ember seams running through the joints */
+  rect(g, 0, 0, W, H, '#14101a');
+  const rows = [0, 22, 41, 66, 84, 109, 127, H];
+  for (let r = 0; r + 1 < rows.length; r++) { const y0 = rows[r], y1 = rows[r + 1], hh = y1 - y0; let x = -((hs(r, 1) % 20));
+    while (x < W) { const bw = 26 + hs(r, x + 99) % 30, k = hs(x, r) % 5, col = ['#221e2a', '#2a2632', '#1c1824', '#262230', '#302c3a'][k], x0 = Math.max(0, x), x1 = Math.min(W, x + bw);
+      if (x1 > x0) { rect(g, x0, y0, x1 - x0, hh, '#0c0910'); rect(g, x0 + 1, y0 + 1, x1 - x0 - 2, hh - 2, col);
+        rect(g, x0 + 1, y0 + 1, x1 - x0 - 2, 1, '#403c4c'); rect(g, x0 + 1, y0 + 1, 1, hh - 2, '#363242'); rect(g, x1 - 2, y0 + 2, 1, hh - 3, '#14101a'); rect(g, x0 + 2, y1 - 2, x1 - x0 - 3, 1, '#14101a');
+        for (let q = 0; q < 5; q++) px(g, x0 + 3 + hs(x, r * 7 + q) % Math.max(1, x1 - x0 - 6), y0 + 3 + hs(r, x + q * 13) % Math.max(1, hh - 6), q & 1 ? '#3a3646' : '#16121c'); }
+      x += bw; } }
+  for (let k = 0; k < 8; k++) { const r = (hs(k, 4) % (rows.length - 1)), y = rows[r + 1] - 1, x = (k * 33 + 9 + hs(k, 8) % 14) % (W - 30), len = 14 + hs(k, 2) % 14;
+    for (let i = 0; i < len; i++) { const yy = y + (i % 7 === 3 ? 1 : 0); px(g, x + i, yy, i % 5 === 2 ? C.emH : i & 1 ? C.fire : C.red); if (hs(k, i) % 4 === 0) px(g, x + i, yy + 1, C.red); } }
   return c; }); }
 export function drawBackdrop(g, cx, cy, VW, VH, L, time, dY, full) {
   g.drawImage(skyStrip(), 0, 0, 1, 128, 0, 0, VW, VH);
