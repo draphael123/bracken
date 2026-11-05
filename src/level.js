@@ -2581,7 +2581,7 @@ function undercrown() {
   slab('works1', 57, 69, 29, 34);
   slab('works2', 72, 83, 29, 34, { states: { '-1': 'cracked' } });
   /* THE SQUAD UNDER THE SPAN: a timberman keeping it up and two navvies at the west end of it */
-  if (UC3) ent('miner', 64, 33, { face: -1, cnSkin: 'navvy', fireman: true });   /* (claude/undercrown3) THE FIREMAN: wet sacking and a candle on a pole - he burns the gas off ON PURPOSE */
+  if (UC3) ent('miner', 64, 33, { face: -1, cnSkin: 'fireman', fireman: true });   /* (claude/undercrown3) THE FIREMAN: wet sacking and a candle on a pole - he burns the gas off ON PURPOSE */
   else ent('propman', 64, 33, { face: -1, cnSkin: 'timberman' });
   ent('miner', 58, 33, { face: -1, cnSkin: 'navvy' }); ent('miner', 60, 33, { face: -1, cnSkin: 'navvy' });
   ent('rockgoblin', 75, 33, { face: -1, cnSkin: 'bonechucker' }); ent('snuffer', 68, 33, { face: -1, cnSkin: 'lampsnuffer' });

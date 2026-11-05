@@ -22,6 +22,7 @@ import * as FDM from './firedamp.js';
 import { FD } from './firedamp.js';
 import * as FP from './fallen-pillar.js';
 import { FALLEN } from './fallen-pillar.js';
+import * as UA from './redraw/uc3_art.js';   /* (claude/uc3art) the gas, the doors, the cage, the pole, the rubble */
 
 export const UC3K = {
   dmgHero: 22,        // a hero in the burning band (unblockable; a duck is the answer)
@@ -38,11 +39,11 @@ export const UC3K = {
 export const UC3_WORDS = ['FIREDAMP', 'IT FLARES', 'SCORCHED', 'OPEN', 'SHUT', 'HE VAULTS IT', 'HE DUCKS UNDER'];
 
 export function makeUndercrown3Hands(ctx) {
-  let st = null, cages = [], doors = [], said = {}, flareCd = new WeakMap(), lightCdT = 0;
+  let st = null, cages = [], doors = [], said = {}, flareCd = new WeakMap(), lightCdT = 0, blasts = [], soots = [], artOff = false;   /* (claude/uc3art) blasts: the roll of fire (0.6 s); soots: what a burn left under the roof, for the level */
   const sfx = n => { const f = ctx.sfx && ctx.sfx[n]; if (typeof f === 'function') f(); };
   const on = () => !!(ctx.L && ctx.L.uc3 && ctx.L.firedamp && st);
   function reset() {
-    const L = ctx.L; st = null; cages = []; doors = []; said = {};
+    const L = ctx.L; st = null; cages = []; doors = []; said = {}; blasts = []; soots = [];
     if (!L || !L.uc3 || !L.firedamp) return;
     st = FDM.makeFiredamp(L.firedamp);
     for (const e of L.ents || []) {
@@ -64,6 +65,7 @@ export function makeUndercrown3Hands(ctx) {
 
   function blast(c, box) {
     const TS = ctx.TS, players = ctx.players();
+    blasts.push({ box: { l: box.l, r: box.r, t: box.t, b: box.b }, age: 0 }); soots.push({ l: box.l, w: box.r - box.l, t: c.y0 * TS, d: Math.max(6, box.b - box.t), seed: soots.length + 1 }); if (soots.length > 14) soots.shift();
     sfx('thunder'); sfx('heavy'); ctx.shake(8);
     for (let x = box.l; x < box.r; x += 10) { const y = box.t + Math.random() * Math.max(4, box.b - box.t); ctx.parts.push({ x, y, vx: (Math.random() - 0.5) * 60, vy: (Math.random() - 0.5) * 30, life: 0.5, max: 0.5, col: Math.random() < 0.5 ? '#ffd36b' : '#ff9a5c', size: 3, grav: -20, fire: true }); }
     ctx.number((box.l + box.r) / 2, box.t + 10, 'FIREDAMP', '#ff9a5c');
@@ -121,8 +123,9 @@ export function makeUndercrown3Hands(ctx) {
     /* the canaries */
     const P = ctx.hero();
     for (const k of cages) { const s = FDM.canary(k.c); if (s.silent) continue; k.songT -= dt;
-      if (k.songT <= 0) { k.songT = s.gap; if (Math.hypot(k.x - P.x, k.y - P.y) < 220) { sfx('bird'); ctx.number(k.x + (Math.random() - 0.5) * 6, k.y - 20, '~', '#ffe6a0'); } } }
+      if (k.songT <= 0) { k.songT = s.gap; k.sing = 0.6; if (Math.hypot(k.x - P.x, k.y - P.y) < 220) { sfx('bird'); ctx.number(k.x + (Math.random() - 0.5) * 6, k.y - 20, '~', '#ffe6a0'); } } }
     lightCdT = Math.max(0, lightCdT - dt);
+    for (const b of blasts) b.age += dt; blasts = blasts.filter(b => b.age < 0.7); for (const k of cages) k.sing = Math.max(0, (k.sing || 0) - dt);
   }
 
   /* THE FIREMAN (a miner with e.fireman): true = this frame was his */
@@ -184,7 +187,24 @@ export function makeUndercrown3Hands(ctx) {
 
   /* ---- DRAWN (greybox) ---- */
   function drawBand(g, cx, cy, VW, VH, time) {
-    if (!on()) return; const TS = ctx.TS;
+    if (!on()) return;
+    if (!artOff) { try { return artBand(g, cx, cy, VW, VH, time); } catch (err) { artOff = true; console.warn('uc3 art off (greybox):', err && err.message); } }
+    greyBand(g, cx, cy, VW, VH, time);
+  }
+  function artBand(g, cx, cy, VW, VH, time) {
+    const TS = ctx.TS;
+    for (const sc of soots) { const l = sc.l - cx; if (l + sc.w < 0 || l > VW) continue; UA.drawSoot(g, l, sc.w, sc.t - cy, sc.d, sc.seed); }
+    for (const c of st.chambers) {
+      const l = c.x0 * TS - cx, r = (c.x1 + 1) * TS - cx, t = c.y0 * TS - cy, d = FDM.bandPx(c);
+      if (r < 0 || l > VW || t > VH || t + FDM.roomPx(c) < 0 || d < 1) continue;
+      UA.drawGas(g, l, t, r - l, d, time, { hot: c.fuse > 0, rdy: FDM.ready(c), fill: c.fill });
+    }
+    for (const b of blasts) UA.drawBlast(g, { l: b.box.l - cx, r: b.box.r - cx, t: b.box.t - cy, b: b.box.b - cy }, b.age);
+    for (const w of doors) { const x = w.x - cx; if (x < -12 || x > VW + 12) continue; UA.drawBrattice(g, x, w.y0 - cy, w.y1 - cy, !!w.d.open, time, w.hitCd > 0 ? w.hitCd / 0.45 : 0); }
+    for (const k of cages) { const x = k.x - cx; if (x < -12 || x > VW + 12) continue; UA.drawCage(g, x, k.y - cy, time, !!FDM.canary(k.c).silent, (k.sing || 0) / 0.6, k.c.fill); }
+  }
+  function greyBand(g, cx, cy, VW, VH, time) {
+    const TS = ctx.TS;
     for (const c of st.chambers) {
       const l = c.x0 * TS - cx, r = (c.x1 + 1) * TS - cx, t = c.y0 * TS - cy, d = FDM.bandPx(c);
       if (r < 0 || l > VW || t > VH || t + FDM.roomPx(c) < 0 || d < 1) continue;
@@ -202,11 +222,14 @@ export function makeUndercrown3Hands(ctx) {
       const s = FDM.canary(k.c); g.fillStyle = '#ffd34a'; g.fillRect(x - 1, s.silent ? y - 13 : y - 16, 3, 2); }
   }
   function drawFireman(g, e, cx, cy, time) {
-    if (!e.fireman || !e.alive) return; const x = Math.round(e.x + e.face * 6 - cx), yb = Math.round(e.y - 8 - cy), top = e.mode === 'fireTell' ? Math.round(e.y - 34 - cy) : Math.round(e.y - 24 - cy);
+    if (!e.fireman || !e.alive) return;
+    if (!artOff) { try { const top0 = e.mode === 'fireTell' ? Math.round(e.y - 34 - cy) : Math.round(e.y - 24 - cy); return UA.drawPole(g, e.x + e.face * 6 - cx, e.y - 8 - cy, top0, e.face, time, e.mode === 'fireTell'); } catch (err) { artOff = true; } } const x = Math.round(e.x + e.face * 6 - cx), yb = Math.round(e.y - 8 - cy), top = e.mode === 'fireTell' ? Math.round(e.y - 34 - cy) : Math.round(e.y - 24 - cy);
     g.fillStyle = '#5a4a36'; g.fillRect(x, top, 1, yb - top); g.fillStyle = (Math.floor(time * 12) % 2) ? '#ffd36b' : '#fff6c8'; g.fillRect(x - 1, top - 3, 3, 3);
   }
   const read = () => (on() ? { chambers: FDM.read(st), doors: st.doors.map(d => ({ id: d.id, open: d.open })), fuse: st.chambers.some(c => c.fuse > 0) } : null);
   /* for the lab: the chamber a point is in, with its band */
   const chamber = (x, y) => { if (!on()) return null; const c = FDM.chamberAt(st, x, y); return c ? { id: c.id, fill: c.fill, ready: FDM.ready(c), fuse: c.fuse, band: FDM.bandBottom(c), y0: c.y0 * ctx.TS } : null; };
-  return { on, reset, tombReset, update, fireman, princeTick, princeMode, princeCross, princeWatch, princeK, drawBand, drawFireman, read, chamber, state: () => st };
+  /* (claude/uc3art) the rubble chocks / heaps under a fallen slab: main.js calls it after the slabs, before the creatures */
+  function drawRubble(g, slabs, cx, cy, TS, time) { if (!on() || artOff) return; try { for (const rt of slabs) UA.drawFallenRubble(g, rt, cx, cy, TS, time); } catch (err) { artOff = true; } }
+  return { on, reset, drawRubble, tombReset, update, fireman, princeTick, princeMode, princeCross, princeWatch, princeK, drawBand, drawFireman, read, chamber, state: () => st };
 }

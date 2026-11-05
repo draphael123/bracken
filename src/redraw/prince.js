@@ -353,13 +353,37 @@ export function bakeBuriedPrince() {
     legs: { near: [[X + 10, FL - 12], [X + 12, FL]], far: [[X - 8, FL - 12], [X - 11, FL]] },
     near: { el: [X + 9, FL - 52], hd: [X + 10, FL - 67] }, far: { el: [X - 3, FL - 51], hd: [X - 4, FL - 66] }, beam: [[X - 16, FL - 71], [X + 22, FL - 70]],
     fx: [[X - 14, FL - 4, ['n.N']], [X + 16, FL - 3, ['.N', 'n.']], [X + 2, FL - 60, ['N']], [X - 10, FL - 64, ['.n']]] });
+  /* (claude/uc3art) THE TOMB'S FIREDAMP AND FALLEN SLABS: his coil + leap (the told hop), his duck, the spark he strikes himself, and SCORCHED (frames 24-28, appended after the heave) */
+  const coil = frame({ chest: [X + 4, FL - 31], hip: [X, FL - 20], head: [X + 9, FL - 42], ha: 18, crown: 'on', eyes: 'flare', lean: 2, sw: 1, hem: FL - 7, cloakHem: FL - 2,
+    legs: { near: [[X + 10, FL - 10], [X + 12, FL]], far: [[X - 6, FL - 10], [X - 9, FL]] },
+    near: { el: [X - 2, FL - 26], hd: [X - 8, FL - 18] }, far: { el: [X + 3, FL - 24], hd: [X - 3, FL - 15] }, swordN: [[X - 8, FL - 18], 148, 24],
+    fx: [[X - 12, FL - 3, ['n.N']], [X + 14, FL - 2, ['.N']]] });
+  const leap = frame({ chest: [X + 8, FL - 50], hip: [X + 5, FL - 37], head: [X + 14, FL - 62], ha: 8, crown: 'on', eyes: 'flare', jaw: 'open', lean: 3, sw: 4, hem: FL - 22, cloakHem: FL - 16,
+    legs: { near: [[X + 13, FL - 29], [X + 15, FL - 18]], far: [[X + 4, FL - 27], [X - 1, FL - 17]] },
+    near: { el: [X + 15, FL - 52], hd: [X + 21, FL - 60] }, far: { el: [X + 1, FL - 50], hd: [X - 3, FL - 58] }, swordN: [[X + 21, FL - 60], 30, 24] });
+  const duck = frame({ chest: [X + 8, FL - 30], hip: [X + 2, FL - 22], head: [X + 17, FL - 35], ha: 40, crown: 'on', eyes: 'flare', lean: 5, sw: 1, hem: FL - 8, cloakHem: FL - 3,
+    legs: { near: [[X + 9, FL - 11], [X + 13, FL]], far: [[X - 3, FL - 10], [X - 8, FL]] },
+    near: { el: [X + 13, FL - 24], hd: [X + 20, FL - 18] }, far: { el: [X + 3, FL - 22], hd: [X + 5, FL - 14] }, swordF: [[X + 5, FL - 14], 88, 24] });
+  const spark = frame({ chest: [X + 1, FL - 43], hip: [X, FL - 28], head: [X + 5, FL - 55], ha: 22, crown: 'on', eyes: 'flare', sw: 1, legs: STAND,
+    near: { el: [X + 8, FL - 37], hd: [X + 15, FL - 40] }, far: { el: [X + 4, FL - 36], hd: [X + 12, FL - 36] }, planted: [[X - 8, FL - 27], 90, 24],
+    fx: [[X + 18, FL - 43, ['.y.', 'yey', '.y.']], [X + 24, FL - 38, ['y']], [X + 15, FL - 47, ['y']], [X + 22, FL - 46, ['.y']], [X + 13, FL - 36, ['e']]] });
+  const scorchedF = frame({ chest: [X - 2, FL - 38], hip: [X + 1, FL - 26], head: [X - 3, FL - 50], ha: 34, crown: 'on', eyes: 'dim', jaw: 'open', lean: -3, sw: 2,
+    legs: { near: [[X + 6, FL - 14], [X + 8, FL]], far: [[X - 5, FL - 13], [X - 10, FL]] },
+    near: { el: [X + 4, FL - 44], hd: [X + 2, FL - 53] }, far: { el: [X - 7, FL - 37], hd: [X - 9, FL - 46] }, swordN: [[X + 2, FL - 53], -150, 22],
+    fx: [[X - 6, FL - 62, ['k.K']], [X + 4, FL - 66, ['.k']], [X - 12, FL - 58, ['K']], [X + 9, FL - 60, ['.K.k']]] });
+  /* SCORCHED reads as burnt, not just posed: every body colour dragged toward soot, the brightest edges left as embers */
+  const sootPass = cv => { const g2 = cv.getContext('2d'), img = g2.getImageData(0, 0, cv.width, cv.height), d = img.data, o = [0x1b, 0x16, 0x26];
+    for (let i = 0; i < d.length; i += 4) { if (!d[i + 3] || (d[i] === o[0] && d[i + 1] === o[1] && d[i + 2] === o[2])) continue; const px_ = (i / 4) % cv.width, py = Math.floor(i / 4 / cv.width), ember = (px_ * 13 + py * 7) % 37 === 0;
+      if (ember) { d[i] = 0xff; d[i + 1] = 0x8a; d[i + 2] = 0x2c; continue; } d[i] = Math.round(d[i] * 0.42 + 14); d[i + 1] = Math.round(d[i + 1] * 0.38 + 12); d[i + 2] = Math.round(d[i + 2] * 0.4 + 16); }
+    g2.putImageData(img, 0, 0); return cv; };
   const frames = [frame(idleO), frame(idleBO), frame(walkA), frame(walkB), frame(walkC), cutTell, cut, sinkTell, sunk, rise, callTell, call,
-    crownTell, crownThrow, snuffTell, snuff, frame(bare(idleO)), frame(bare(walkA)), frame(bare(walkC)), buried, reel, collapse, hurt, heave];
+    crownTell, crownThrow, snuffTell, snuff, frame(bare(idleO)), frame(bare(walkA)), frame(bare(walkC)), buried, reel, collapse, hurt, heave,
+    coil, leap, duck, spark, sootPass(scorchedF)];
   return pack(frames, X + 1, FL + 2, 22, 60);
 }
 // the names main.js reads frames by, in the order bakeBuriedPrince packs them
 export const PRINCE_F = { idle: 0, idleB: 1, walk: [2, 3, 4], cutTell: 5, cut: 6, sinkTell: 7, sunk: 8, rise: 9, callTell: 10, call: 11,
-  crownTell: 12, crownThrow: 13, snuffTell: 14, snuff: 15, bareIdle: 16, bareWalk: [17, 18], buried: 19, reel: 20, dead: 21, hurt: 22, heave: 23 };
+  crownTell: 12, crownThrow: 13, snuffTell: 14, snuff: 15, bareIdle: 16, bareWalk: [17, 18], buried: 19, reel: 20, dead: 21, hurt: 22, heave: 23, coil: 24, leap: 25, duck: 26, spark: 27, scorched: 28 };   /* (claude/uc3art) 24-28 */
 
 // ---------- A COURTIER ----------
 const CP = { o: OUT, x: '#f2ecd6', b: '#d8cfb4', B: '#9a9078', q: '#120e16', e: '#b8ffb4', c: '#7a4a70', C: '#4e2c48', y: '#c9a84a', Y: '#7e6630', n: '#6c5a44', N: '#3e3228' };
