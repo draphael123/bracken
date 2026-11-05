@@ -291,6 +291,13 @@ export const STUCK = {
     { id: 'kg-spit3', zone: [470, 8, 485, 21], at: [474, 21], done: ['kgbellows', 474, 21, 'on'], line: 'THE GALLERY IS TOO HIGH: STRIKE THE BELLOWS, RIDE A SPIT UP' },
     { id: 'kg-door2', zone: [511, 13, 524, 21], at: [513, 21], done: ['kgbellows', 513, 21, 'on'], line: 'THE BUTTERY DOOR: STRIKE THE BELLOWS, LET IT BURN' },
   ],
+  /* THE HEART OF THE MOUNTAIN (claude/heartlevel): the three heart vents the route rides up, and the ward-stone the forty-tile crust needs (strike it: the crust holds a while) */
+  heart: [
+    { id: 'hm-vent1', zone: [33, 18, 46, 25], at: [44, 25], glint: 'stall', line: 'THE VENT IN THE FLOOR IS THE WAY UP THE WALL' },
+    { id: 'hm-ward1', zone: [105, 30, 116, 41], at: [114, 41], glint: 'stall', line: 'THE WARD-STONE HOLDS THE LONG CRUST' },
+    { id: 'hm-vent2', zone: [189, 28, 196, 35], at: [194, 35], glint: 'stall', line: 'THE VENT IN THE FLOOR IS THE WAY UP' },
+    { id: 'hm-vent3', zone: [268, 36, 282, 43], at: [281, 43], glint: 'stall', line: 'THE VENT IN THE FLOOR IS THE WAY UP' },
+  ],
   /* THE WAR CAIRN (claude/warcairn): the two drum gates the route needs (strike the drum: its gate swings open a few seconds) */
   warcairn: [
     { id: 'wc-gorge', zone: [55, 58, 64, 68], at: [81, 62], done: ['wcrope', 81, 62, 'on'], line: 'FROM THE EDGE, HOLD UP: LOB A HATCHET AT THE ROPE POST' },   /* (claude/warcairn2) the gorge's hauled bridge: a thrown hatchet cuts its rope */

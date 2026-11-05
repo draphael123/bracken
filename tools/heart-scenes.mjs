@@ -20,7 +20,7 @@ const A = TRM.entryFor('drakelab'), B = TRM.entryFor('skylab');
 /* ---- THE ROWS ---- */
 ok(!!A && A.to === 'skylab' && A.scene === 'seal' && A.chain === true, 'row A: drakelab > skylab, scene "seal", a chain row');
 ok(!!B && B.to === 'breach' && B.scene === 'escape' && B.chain === true, 'row B: skylab > breach, scene "escape", a chain row');
-ok(TRM.TABLE.filter(e => e.chain).length === 2, 'exactly two chain rows');
+ok(TRM.TABLE.filter(e => e.chain).length === 4 && ['drakelab', 'skylab', 'heart', 'heartsky'].every(id => TRM.TABLE.some(e => e.chain && e.from === id)), 'exactly four chain rows: the lab road (drakelab, skylab) and THE HEART OF THE MOUNTAIN ROAD (heart, heartsky; claude/heartlevel)');
 ok(A.beats.map(b => b.id).join() === 'seal,fade' && B.beats.map(b => b.id).join() === 'escape,fade', 'each row is ONE scene beat then the fade (no walk, no open: the party is already where it stands)');
 ok(A.beats.every(b => b.id === 'fade' || TRM.isSceneBeat(b)) && B.beats.every(b => b.id === 'fade' || TRM.isSceneBeat(b)), 'the scene beats are scene beats (sc: true) - main.js starts in the scene');
 ok(Math.abs(A.beats[0].dur - HS.SEAL.dur) < 1e-9 && Math.abs(B.beats[0].dur - HS.ESCAPE.dur) < 1e-9, 'beat lengths are the scene constants');

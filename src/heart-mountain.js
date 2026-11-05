@@ -176,7 +176,7 @@ export function buildHeartMountain({ painter, T, TS }) {
   channel('F', 297, 330, 31, [[297, 304, 'f1'], [305, 312, 'f2'], [315, 322, 'f3'], [323, 330, 'f4']], { pillars: [[313, 314]] });
   ward('w5', 313, 31, ['f3', 'f4']);
   vent(314, 31, 12, 300);                                    /* on the stub: the beat's breath carries you up through the hole in the rock over it, into a pocket (a silver) */
-  block(309, 320, 4, 22); air(311, 318, 19, 21); air(313, 314, 22, 22);   /* the cone's rock over the stub, hollow, a hole in its floor over the vent */
+  block(309, 320, 4, 22); air(311, 318, 19, 21); air(313, 315, 22, 22);   /* the cone's rock over the stub, hollow, a hole in its floor over the vent */
   ent('silver', 317, 21); coins([311, 21], [312, 21]);
   leaper(301, 31, 'doorL1'); leaper(325, 31, 'doorL2');
   foe('wight', 309, 31, 'doorB'); foe('wight', 319, 31, 'doorB');

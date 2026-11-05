@@ -29986,7 +29986,7 @@ FDH = makeFireDrakeHands({ get L() { return L; }, get players() { return players
 /* THE HEART OF THE MOUNTAIN's HANDS (claude/heartlevel, src/heart-mountain-hands.js): the beat, the crust, the ward-stones, the heart vents, THE MAGMA LEAPER */
 HRT = makeHeartHands({ get L() { return L; }, TS, T, sfx: SFX, players: () => (players && players.length ? players : [P]), enemies: () => enemies, time: () => time, hero: () => P,
   number: (x, y, t, c) => number(x, y, t, c), burst: (...a) => burst(...a), dust: (x, y, n) => dust(x, y, n), shake: n => shakeCam(n), seen: k => beastSeen(k), ring: (x, y, r, c) => ringAt(x, y, r, c, 0.4),
-  cellSet: (x, y, t) => { if (x >= 0 && y >= 0 && x < LW && y < LH) cellSet(x, y, t); }, footAt: (tx, ty) => { const t = tileAt(tx, ty); return isSolid(tx, ty) || isOneWay(t) || t === T.PLANK; },
+  cellSet: (x, y, t) => { if (x >= 0 && y >= 0 && x < LW && y < LH) cellSet(x, y, t); }, footAt: (tx, ty) => { const t = tileAt(tx, ty); return isSolid(tx, ty) || isOneWay(t) || t === T.PLANK; }, solidAt: (tx, ty) => isSolid(tx, ty),
   hitOnce: o => { if (!P || !P.hitSet || P.hitSet.has(o)) return false; P.hitSet.add(o); return true; }, hint: m => hintSay('mechanic', 7, m) });
 EHP.firedrake = FDM_FD.hp; POISE_SKIP.add('firedrake');   /* (claude/drakewire) its bar (src/fire-drake.js FD.hp: 2600, the tune lane's); no poise break - its opening is the chain's jerk */
 BBH = makeBatteringBeastHands({ get L() { return L; }, get players() { return players && players.length ? players : [P]; }, get boss() { return boss; }, get bossActive() { return bossActive; }, TS, T, EHP, sfx: SFX, hero: () => P, heroId: () => hero(), time: () => time, VW: () => VW, VH: () => VH,

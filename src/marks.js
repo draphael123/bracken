@@ -387,6 +387,7 @@ export const MARK = {
 // hand: tools/answer-tags.mjs fails on a told blow with no row, a row with no blow, and a ! that is not a block.
 /* ANSWER:BEGIN */
 export const ANSWER = {
+  'leaper|leapTell': 'dodge', 'leaper|biteTell': 'block',   /* (claude/heartlevel) THE MAGMA LEAPER: out of its line as it comes up; its snap is a !, a block */
   'forgemaster|anvilTell': 'jump', 'forgemaster|bellowsTell': 'block', 'forgemaster|breathTell': 'dodge', 'forgemaster|dragTell': 'jump', 'forgemaster|dropTell': 'dodge', 'forgemaster|hurlTell': 'jump', 'forgemaster|ladleTell': 'dodge', 'forgemaster|pourTell': 'dodge', 'forgemaster|slamTell': 'dodge', 'forgemaster|sprayTell': 'block', 'forgemaster|tongsTell': 'block', 'forgemaster|whirlTell': 'jump',   /* (batch125 integ, answer-tags) THE FORGEMASTER: the hammer, the pour, the ingots and his drop leave the floor to you; the anvil, the chain and the hurled cart go under a jump; steam and HAMMER AND TONGS are blocked */
   'grubbag|lobTell': 'dodge', 'grubbag|flingTell': 'jump', 'grubbag|sweepTell': 'jump', 'grubbag|greaseTell': 'dodge', 'grubbag|bellTell': 'dodge', 'attendant|aim': 'block', 'attendant|bashTell': 'block', 'grubbag|belchTell': 'jump', 'grubbag|grabTell': 'jump', 'butcher|raise': 'dodge', 'butcher|wind': 'block',   /* (claude/kitchengate) */
   'greathound|lungeTell': 'block', 'greathound|pounceTell': 'dodge', 'greathound|snapTell': 'block', 'greathound|boughTell': 'dodge',   /* (claude/hound) out of the red rings */   /* (claude/sweep1) THE GREAT HOUND: block the lunge (it skids past, open), out from under the pounce, block the snap */
@@ -667,6 +668,7 @@ export const ANSWER = {
 // A SHOT FROM ABOVE STILL FINDS A DUCKER: a high seed passes over only while it flies near level (src/duck.js seedOver).
 /* HEIGHT:BEGIN */
 export const HEIGHT = {
+  'leaper|leapTell': 'low', 'leaper|biteTell': 'low',   /* (claude/heartlevel) it comes up from the floor; its bite is at the floor */
   'forgemaster|anvilTell': 'low', 'forgemaster|bellowsTell': 'low', 'forgemaster|breathTell': 'low', 'forgemaster|dragTell': 'low', 'forgemaster|dropTell': 'low', 'forgemaster|hurlTell': 'low', 'forgemaster|ladleTell': 'low', 'forgemaster|pourTell': 'low', 'forgemaster|slamTell': 'low', 'forgemaster|sprayTell': 'low', 'forgemaster|tongsTell': 'low', 'forgemaster|whirlTell': 'low',   /* (batch125 integ) THE FORGEMASTER: hammer, steam, chain, ingots and cart all reach the floor */
   'grubbag|lobTell': 'low', 'grubbag|flingTell': 'low', 'grubbag|sweepTell': 'low', 'grubbag|greaseTell': 'low', 'grubbag|bellTell': 'low', 'attendant|aim': 'low', 'attendant|bashTell': 'low', 'grubbag|belchTell': 'low', 'grubbag|grabTell': 'low', 'butcher|raise': 'low', 'butcher|wind': 'low',   /* (claude/kitchengate) */
   'waterthief|slashTell': 'low',   /* (claude/welltown) as the cutthroat's */

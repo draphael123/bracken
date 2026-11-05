@@ -19,7 +19,7 @@
 export const HM = {
   beat: { tell: 1.2, surge: 1.4 },
   ward: { hold: 10, warn: 2, spent: 2.5, box: 10 },
-  leaper: { hp: 18, dmg: 14, bite: 10, near: 7 * 16, rise: 12 * 16, under: 26, leapVy: -380, maxVx: 150, g: 900, thrash: 1.5, biteTell: 0.45, bite: 0.2, jaw: 24, flopVy: -220, flopVx: 70 },
+  leaper: { hp: 18, dmg: 14, out: 3.0, near: 7 * 16, rise: 12 * 16, under: 26, leapVy: -380, maxVx: 150, g: 900, thrash: 1.5, biteTell: 0.45, bite: 0.2, jaw: 24, flopVy: -220, flopVx: 70 },
 };
 export const HM_SAY = {
   beat: 'THE HEART BEATS', melt: 'THE CRUST MELTS', cool: 'THE CRUST COOLS', held: 'THE CRUST HOLDS', harden: 'THE CRUST HARDENS', spent: 'THE WARD IS SPENT',
@@ -140,13 +140,16 @@ export function makeHeartHands(ctx) {
       case 'thrash': case 'biteTell': case 'bite': {
         if (!footAt(e.x, e.y + 2)) { e.mode = 'fall'; e.vy = 0; break; }            /* the crust it lay on melted: back into the magma */
         const p = heroes().find(q => Math.abs(q.x - e.x) < K.jaw && Math.abs(q.y - e.y) < 20);
-        if (e.mode === 'thrash') { if (p && e.modeT > 0.2) { e.mode = 'biteTell'; e.modeT = K.biteTell; e.face = p.x >= e.x ? 1 : -1; }
-          else if (e.modeT <= 0) { const mid = (e.home.x0 + e.home.x1) / 2; e.mode = 'flop'; e.vy = K.flopVy; e.vx = Math.sign(mid - e.x || 1) * K.flopVx; } }
+        e.outT = (e.outT || 0) + dt;
+        if (e.mode === 'thrash') { if (p && e.modeT > 0.2 && e.outT < K.out - K.biteTell) { e.mode = 'biteTell'; e.modeT = K.biteTell; e.face = p.x >= e.x ? 1 : -1; }
+          else if (e.modeT <= 0 || e.outT >= K.out) { e.outT = 0; const mid = (e.home.x0 + e.home.x1) / 2; e.mode = 'flop'; e.vy = K.flopVy; e.vx = Math.sign(mid - e.x || 1) * K.flopVx; } }
         else if (e.mode === 'biteTell') { if (e.modeT <= 0) { e.mode = 'bite'; e.modeT = K.bite; } }
         else if (e.modeT <= 0) { e.mode = 'thrash'; e.modeT = 0.6; }
         break; }
       case 'flop': { e.vy += K.g * dt; e.x += e.vx * dt; e.y += e.vy * dt;
-        if (e.vy > 0 && e.y > e.home.y + 4) sink(e); else if (e.vy > 0 && footAt(e.x, e.y) && e.y < e.home.y - 2) { e.mode = 'thrash'; e.modeT = 0.5; e.vy = 0; e.y = Math.floor(e.y / TS) * TS; }
+        /* it dives back THROUGH the crust (it is the magma's own: one-way crust does not stop it); only rock does */
+        const rockAt = (x, y) => (ctx.solidAt ? ctx.solidAt(Math.floor(x / TS), Math.floor(y / TS)) : false);
+        if (e.vy > 0 && e.y > e.home.y + 4) sink(e); else if (e.vy > 0 && rockAt(e.x, e.y) && e.y < e.home.y - 2) { e.mode = 'thrash'; e.modeT = 0.5; e.vy = 0; e.y = Math.floor(e.y / TS) * TS; }
         break; }
       default: sink(e);
     }
