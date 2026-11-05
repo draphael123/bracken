@@ -16,6 +16,8 @@
 //   arc at the hero (its body is the blow: src/main.js BODY_BLOW). In the air it is a target like any other. Where it lands on footing it THRASHES (open), snaps if you
 //   stand at its jaw ('biteTell' ! then 'bite'), then FLOPS back to the magma. Footing that melts under it drops it back in. Cut it down and the channel is quiet.
 // Every capital line it says is an HM_SAY line (src/hint-lines.js lists them).
+import * as HA from './redraw/heart_art.js';   /* (claude/art4) THE HEART's art: every draw below tries it first and keeps the greybox as the fallback */
+let artOff = false;   /* a throwing art call turns the art off for the session (the greybox draws) */
 export const HM = {
   beat: { tell: 1.2, surge: 1.4 },
   ward: { hold: 10, warn: 2, spent: 2.5, box: 10 },
@@ -162,8 +164,20 @@ export function makeHeartHands(ctx) {
 
   /* ---------- GREYBOX DRAWING (the art lane replaces these) ---------- */
   const glow = () => (!S ? 0 : S.surgeT > 0 ? 1 : S.telling ? 1 - Math.max(0, tellLeft()) / HM.beat.tell : 0);
+  /* (claude/art4) THE ART: the chains, the crust, the ward-stones (and the lines they hold) */
+  const artWorld = (g, cx, cy, VW, VH, time, k) => {
+    const lv = L(), Wd = lv.W || 390;
+    for (const ch of lv.hmChains || []) { const x = ch.x * TS + 8 - cx; if (x < -8 || x > VW + 8) continue; HA.drawHeartChain(g, x, ch.y0 * TS - cy, (ch.y1 + 1) * TS - cy, ch.x / Wd * 0.5, k, time, ch.x); }
+    for (const st of S.crust.values()) { const c = st.c, x0 = c.x0 * TS - cx, x1 = (c.x1 + 1) * TS - cx, y = c.y * TS - cy; if (x1 < 0 || x0 > VW || y < -16 || y > VH + 16) continue;
+      const hw = heldBy(st); HA.drawCrust(g, x0, x1, y, k, st.melted ? 'melted' : hw ? (hw.holdT < HM.ward.warn ? 'warn' : 'held') : 'cool', time, c.x0); }
+    for (const wd of S.wards.values()) { const w = wd.w, x = wardX(w) - cx, y = wardY(w) - cy; if (x < -140 || x > VW + 140) continue;
+      if (wd.holdT > 0) for (const id of w.holds) { const st = S.crust.get(id); if (!st) continue; HA.drawWardLine(g, x, y - 18, (st.c.x0 + st.c.x1 + 1) * TS / 2 - cx, st.c.y * TS - cy, time); }
+      HA.drawWard(g, x, y, wd.holdT, HM.ward.warn, wd.spentT, time, k); }
+  };
+  H.glow = () => glow();
   H.drawWorld = (g, cx, cy, VW, VH, time) => {
     if (!S) return; const k = glow();
+    if (!artOff) { try { artWorld(g, cx, cy, VW, VH, time, k); return; } catch (err) { artOff = true; } }
     /* THE CHAINS: iron links from the rock, warm where they near the seal */
     for (const ch of L().hmChains || []) { const x = ch.x * TS + 8 - cx; if (x < -8 || x > VW + 8) continue;
       for (let yy = ch.y0 * TS; yy < (ch.y1 + 1) * TS; yy += 6) { const y = yy - cy; if (y < -8 || y > VH + 8) continue; const odd = (yy / 6) & 1;
@@ -186,17 +200,25 @@ export function makeHeartHands(ctx) {
         for (const id of w.holds) { const st = S.crust.get(id); if (!st) continue; const mx = (st.c.x0 + st.c.x1 + 1) * TS / 2 - cx, my = st.c.y * TS - cy; g.beginPath(); g.moveTo(Math.round(x) + 0.5, Math.round(y) - 16); g.lineTo(Math.round(mx) + 0.5, Math.round(my) + 0.5); g.stroke(); }
         g.globalAlpha = 1; } }
   };
+  /* (claude/art4) the pieces main.js asks for by name: the fumarole, the magma's skin, the seal's door (over the tiles), the backdrop */
+  H.drawVent = (g, pr, cx, cy, time) => { if (artOff || !S) return false; try { const x = pr.x - cx, y = pr.y - cy; if (x < -40 || x > 540) return true; HA.drawHeartVent(g, x, y, 9, pr.h || 192, pr.active ? 'blow' : pr.warm ? 'warm' : 'still', S.telling ? 1 - Math.max(0, tellLeft()) / HM.beat.tell : 0, time, pr.x); return true; } catch (err) { artOff = true; return false; } };
+  H.drawPools = (g, p, x0, x1, y, cx, cy, time) => { if (artOff || !S) return; try { HA.drawMagmaSkin(g, x0, x1, y, glow(), S.surgeT > 0 ? 1 : 0, time, p.x0, Math.min(40, Math.max(8, (p.bottom || p.y + 40) - p.y))); } catch (err) { artOff = true; } };
+  H.drawFront = (g, cx, cy, VW, VH, time) => { if (artOff || !S) return; try { const A = L().arena; if (!A) return; const x = A.wallL * TS - cx; if (x < -60 || x > VW + 60) return; const fl = A.floor / TS;
+    HA.drawSealDoor(g, x, (fl - 6) * TS - cy, fl * TS - cy, !!(ctx.solidAt && ctx.solidAt(A.wallL, fl - 3)), glow(), time); } catch (err) { artOff = true; } };
+  H.drawBackdrop = (g, cx, cy, VW, VH, lv, time, dY, full) => { if (artOff) return false; try { const h = lead(), zone = h ? Math.max(0, Math.min(1, h.x / (TS * (lv.W || 390)))) : 0; HA.drawHeartBackdrop(g, cx, cy, VW, VH, lv, time, dY, full, glow(), zone); return true; } catch (err) { artOff = true; return false; } };
   /* the caldera ledges' basalt columns (L.structures kind 'hmColumn'): drawn while the ledge stands (THE FIRE DRAKE's P3 sinks it) */
   H.drawStructure = (g, kind, l, r, t, b, x0) => {
     if (kind !== 'hmColumn') return false;
     const lv = L(), z = lv && (lv.structures || []).find(q => q.kind === kind && q.x0 === x0);
     if (z && lv.grid[z.top * lv.W + z.x0] === T.AIR) return true;   /* sunk with its ledge */
+    if (!artOff) { try { HA.drawColumn(g, l, r, t, b, now()); return true; } catch (err) { artOff = true; } }
     g.fillStyle = COL.col; g.fillRect(l + 4, t + 6, r - l - 8, b - t - 6); g.fillStyle = COL.colL; g.fillRect(l + 4, t + 6, 1, b - t - 6); g.fillRect(r - 6, t + 6, 1, b - t - 6);
     return true;
   };
   /* THE MAGMA LEAPER (greybox): a dark-scaled eel-fish with an ember belly; under the magma only its shadow and the bubbles of its tell */
   H.drawFoe = (g, e, cx, cy, time) => {
     const x = Math.round(e.x - cx), y = Math.round(e.y - cy), f = e.face || 1;
+    if (!artOff) { try { HA.drawLeaper(g, x, y, f, e.mode, e.vy, time, e.hurtT > 0, e.home ? e.home.y - cy : y, e.mode === 'leapTell' ? 1 - Math.max(0, tellLeft()) / HM.beat.tell : 0); return; } catch (err) { artOff = true; } }
     if (e.mode === 'under') { if (!e.home) return; const sy = Math.round(e.home.y - cy) + 4; g.globalAlpha = 0.35; g.fillStyle = COL.leap; g.fillRect(x - 7, sy, 14, 2); g.globalAlpha = 1; return; }
     if (e.mode === 'leapTell') { const sy = Math.round(e.home.y - cy); for (let i = 0; i < 4; i++) { const bx = x - 8 + ((i * 7 + Math.floor(time * 20)) % 16), by = sy - ((time * 30 + i * 5) % 8); g.fillStyle = i & 1 ? COL.magmaL : COL.hot; g.fillRect(bx, Math.round(by), 2, 2); }
       g.globalAlpha = 0.5 + 0.5 * Math.sin(time * 18); g.fillStyle = COL.magmaL; g.fillRect(x - 9, sy - 1, 18, 2); g.globalAlpha = 1; return; }
