@@ -33,6 +33,7 @@
 // B15: warded he takes 0.4 (the floor), told by the clank and WARDED in main.js; downed by the house, double.
 // PURE: no DOM, no main.js. Everything the world does is a call on `c`; the house's layout is c.A.house (pixels, built by
 // main.js from the level's arena.house). Proved by tools/false-abbot.mjs.
+import { pealRing, kindleFlare } from './redraw/abbot_chapel_art.js';   /* (claude/abbotart) the peal's ring in bronze, the brazier catching (rect pixels only) */
 export const ABBOT = {
   hp: 3700, walk: 30, keep: 44, cd: 1.5, cdP2: 1.15,
   tell: { censer: 0.7, cast: 0.7, swing: 0.8, gleam: 0.8, coals: 0.75, rite: 2.6, knell: 1.0 },
@@ -620,6 +621,7 @@ export function drawFalseAbbot(g, e, cx, cy, time, floorY) {
   if (e.mode === 'pealTell') { const k = 1 - Math.max(0, e.modeT) / ABBOT3.tell.peal, p = 0.5 + 0.5 * Math.sin(time * 22);
     g.globalAlpha = 0.3 + 0.5 * k * p; g.strokeStyle = '#ff6b6b'; g.lineWidth = 2; g.beginPath(); g.ellipse(x, fy - 1, 14 + 30 * k, 4, 0, 0, Math.PI * 2); g.stroke(); g.lineWidth = 1; g.globalAlpha = 1; }
   for (const w of e.waves || []) { const wx = Math.round(w.x - cx), wy = Math.round(w.y - cy);
+    if (e.m3) { pealRing(g, wx, wy, w.dir, time); continue; }   /* (m3) bronze on the boards: the art pass's ring */
     for (const [r, a0, col] of [[9, 0.9, '#ffe08a'], [14, 0.55, '#ff9a6b']]) { g.globalAlpha = a0; g.strokeStyle = col; g.lineWidth = 2; g.beginPath(); g.ellipse(wx, wy - 2, r * 0.6, r, 0, Math.PI * 0.95, Math.PI * 2.05); g.stroke(); }
     g.lineWidth = 1; g.globalAlpha = 0.7; g.fillStyle = '#d8d0c0'; for (let i = 1; i < 4; i++) g.fillRect(wx - w.dir * i * 6, wy - 2 - ((i * 3 + Math.round(time * 30)) % 5), 2, 1); g.globalAlpha = 1; }
   /* (m3) THE FLOOR GOES, told: a red mark on the chapel floor where the belfry floor will come down, the vault cracking over it */
@@ -798,7 +800,8 @@ export function drawAbbotHouse(g, e, H, cx, cy, time, floorY, basketK) {
     R(BRZ[1], sx - 7, fy - 11, 15, 2); R(BRZ[3], sx - 7, fy - 11, 15, 1); R(BRZ[2], sx - 6, fy - 9, 13, 7); R(BRZ[3], sx + 2, fy - 9, 5, 7); R(BRZ[0], sx - 6, fy - 3, 13, 1);
     for (const dx of [-4, -1, 2, 5]) R(dx & 1 ? '#ff9a3c' : GOLD, sx + dx, fy - 7 + (dx & 1), 1, 2);   /* the coals through the piercing */
     R(BRZ[1], sx - 6, fy - 14, 13, 3); R(BRZ[3], sx - 6, fy - 14, 13, 1); R(BRZ[4], sx, fy - 16, 1, 2);
-    glow(sx, fy - 10, 14 + 2 * p, 0.28); }
+    glow(sx, fy - 10, 14 + 2 * p, 0.28);
+    if (H.m3 && e.mode === 'riteTell') kindleFlare(g, sx, fy, 1 - Math.max(0, e.modeT) / ABBOT.tell.rite, time); }   /* (m3) the brazier CATCHING as he kneels at it */
   /* ---- THE GREAT BELL, once he is beaten down: a pillar of light from the roof, rings of its note, and the way there from him ---- */
   if (alive && e.mode === 'beaten' && H.bellX !== undefined) { const gx = Math.round(H.bellX - cx), by = fy - 30;
     g.globalAlpha = 0.14 + 0.1 * p; R(GOLD, gx - 9, 0, 18, by); g.globalAlpha = 0.22 + 0.12 * p; R('#fffbe0', gx - 4, 0, 8, by); g.globalAlpha = 1;

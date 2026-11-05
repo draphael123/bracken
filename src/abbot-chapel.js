@@ -33,7 +33,7 @@ export function layAbbotChapel({ T, TS, W, set, at, block, air, boards, rope, en
   ledge(24, 26, 23); ledge(18, 20, 20); ent('vault', 19, 19); coins([25, 22]);   /* off the first course, two corbels west: a mason's niche - the old relic VAULT's spot moves here (src/relics.js pays a silver into it) */
   ledge(44, 46, 11); ledge(41, 43, 8); ents.unshift({ t: 'silver', x: 42, y: 7 });   /* up in the bell-cote, two courses over its bells: the level's top silver (FIRST in the list, so the relic vault below moves the middle one, as the old belfry's did) */
   facades.push([42, 47, 5, 13, 'monkArch', { spans: true, belfry: true }]);   /* THE BELL-COTE on the west gable: its open arches, its bells hung over the sill (art: bells) */
-  deco(44, 13, 'bellFrame', 0); deco(46, 13, 'bellFrame', 1);
+  deco(44, 13, 'bellFrame', 0); deco(46, 13, 'bellFrame', 1);   /* (the art draws a bronze bell in each) */
   // THE SHORTCUT (Salt & Sanctuary): the bell on the sill lets its rope down the west front to the leads - after a death, the trapdoor and the rope
   ent('tbell', 42, 13, { rope: [39, 14, 28] });
   ent('sign', 33, 29, { text: 'THE WEST FRONT. CLIMB ITS STONES TO THE BELFRY ARCH. THE BELL AT THE TOP LETS A ROPE DOWN.' });
@@ -64,8 +64,8 @@ export function layAbbotChapel({ T, TS, W, set, at, block, air, boards, rope, en
   boards(60, 24, 21);                                              /* THE ROOD, hung from the piers' bells */
   boards(60, 27, 3); boards(78, 27, 3);                            /* the steps up */
   hangers.push([55, 25, 29], [59, 25, 29], [81, 25, 29], [85, 25, 29]);
-  for (const x of [64, 68, 72]) { boards(x, 29, 3); deco(x + 1, 29, 'pew', 0); }   /* THE PEWS (a step up each): the congregation is called up out of them */
-  deco(91, 29, 'shrine', 1); deco(90, 29, 'candelabra', 0); deco(50, 29, 'statue', 1, { defaced: true });   /* the altar; the founder in a goblin helmet */
+  for (const x of [64, 68, 72]) boards(x, 29, 3);   /* THE PEWS (a step up each): the congregation is called up out of them */
+  deco(50, 29, 'statue', 1, { defaced: true });   /* the founder in a goblin helmet (the altar, the pews and the piers are drawn by src/redraw/abbot_chapel_art.js from house.art) */
   ent('sign', 52, 29, { text: 'HIS ROOD HANGS FROM TWO BELLS. STRIKE ONE WITH HIM ON IT: IT DROPS WITH HIM.' });
   ent('sign', 86, 29, { text: 'HE LIGHTS HIS BRAZIERS TO PRAY. RIDE THE SMOKE UP AND COME DOWN ON HIM.' });
   ent('abbot', 72, 29);
@@ -82,6 +82,14 @@ export function layAbbotChapel({ T, TS, W, set, at, block, air, boards, rope, en
         braziers: [{ smoke: 50.5, spot: 52.5 }, { smoke: 91, spot: 89.5 }], ropes: [57, 71, 85], land: [50, 92], floorSpans: [[49, 76], [81, 93]], callAt: [60, 65, 85], landX: 66 }],
     collapse: { hole: [77, 80, 19], rubble: [[77, 79, 21], [73, 75, 27]] },
     bars: [{ x0: 48, x1: 48, y0: 11, y1: 13, open: 'AIR' }, { x0: 92, x1: 92, y0: 19, y1: 19, open: 'NET' }],
+    /* WHERE THE ART GOES (src/redraw/abbot_chapel_art.js, claude/abbotart: drawing only, in tiles) */
+    art: { courses: [14, 17, 20, 23, 26], drips: [[18, 20], [24, 23], [30, 20], [30, 26], [35, 17], [35, 23], [41, 14]],
+      lancets: [[18, 23.7, 2.2], [21, 23.7, 2.2], [27, 17.7, 2.2], [28, 23.7, 2.2], [34, 20.7, 2.2], [34, 26.7, 2.2], [39, 17.7, 2.2], [40, 23.7, 2.2], [43, 20.7, 2.2], [43, 26.7, 2.2]],
+      moss: [[18, 28, 3], [22, 29, 2], [36, 27, 2], [28, 29, 1]],
+      corbels: corbels.filter(c => !(c[0] === 40 && c[2] === 14)), buttress: [46, 47, 15, 29], offsets: [20, 25], sill: [40, 47, 14], bells: [[44, 13, 0], [46, 13, 1]], leads: [1, 47, 30],
+      truss: { rows: [5], bays: [[49, 63], [64, 78], [79, 93]] },
+      pews: [[64, 29, 0], [68, 29, 1], [72, 29, 2]], piers: [[55, 59], [81, 85]], piersY: [24, 30], rood: [60, 80, 24], altar: [91, 30],
+      hole: [77, 80, 19], rubble: [[77, 79, 21], [73, 75, 27]] },
     climb: [[74, 27], [74, 24], [78, 21], [82, 19]],   /* the way up after the floor goes (the lab's hands walk it): the rubble, the rood over it, the rubble under the hole, the belfry floor */
   };
   const arena = { x0: 49 * TS, x1: 94 * TS, floor: 30 * TS, y0: 22 * TS, trigger: 50 * TS, wallL: 48, wallR: 94, boss: 'abbot', music: 'roc', house,

@@ -237,6 +237,7 @@ import { bakeRimewright } from './redraw/frost.js';
 import {updateSalvageCaptain,drawSalvageCaptain} from './salvage-captain.js';
 import {bakeHangingHouse,paintHouseSmoke} from './redraw/hanging-town.js';
 import * as HV from './hanging-village.js';   /* THE HANGING VILLAGE: each floor's own ground, the cliff behind them and their landmarks (docs/briefs/hanging-village-rework.md) */
+import * as ACA from './redraw/abbot_chapel_art.js';   /* (claude/abbotart) the False Abbot's building: the west front, the belfry, the chapel (behind house.m3) */
 import * as M3ART from './redraw/mon3_art.js';   /* (claude/art4) MONASTERY 3's art (behind L.monk.m3: only the new layout sets it) */
 import * as MON from './redraw/monastery.js';   /* THE MONASTERY ON THE CLIFF: its stone, rooms, bells, wheels, baskets and braziers, the fledgling and the temple guardian */
 import { bakeVillageTiles } from './village_tiles.js';
@@ -27027,7 +27028,8 @@ function drawMonkBack(cx, cy) { if (L.arena && L.arena.boss === 'abbot' && L.are
     MON.drawCloudBank(g, L.cloudLine, cx, cy, VW, VH, time); }
   MON.drawHangers(g, M.hangers || [], cx, cy, VW, VH);
   MON.drawFlags(g, M.flags || [], cx, cy, VW, VH, time);
-  if (M.m3) M3ART.drawBack(g, M, cx, cy, VW, VH, time);   /* (claude/art4) MONASTERY 3: the flue's soot, the dovecote nook, the cells, the dorter's hangings, the hoist's plate */
+  if (M.m3) M3ART.drawBack(g, M, cx, cy, VW, VH, time);
+  if (M.m3 && L.arena && L.arena.house && L.arena.house.art) ACA.drawBack(g, L.arena.house, cx, cy, VW, VH, time);   /* (claude/abbotart) the west front's wall face, the belfry's truss, the braziers' soot */   /* (claude/art4) MONASTERY 3: the flue's soot, the dovecote nook, the cells, the dorter's hangings, the hoist's plate */
 }
 function updateCastleProps(dt, hb) {
   for (const pr of props) {
@@ -34190,7 +34192,8 @@ function drawWorld(cx, cy, showPlayer) {
   if (L.arena && L.arena.drops) OWA.drawDrops(g, L.arena, cx, cy, time, TS, bossActive && boss && boss.t === 'owl' && boss.alive && (boss.mode === 'gustTell' || boss.mode === 'gust') ? 1 : 0);   /* (claude/owl3art) THE DROP: the void, the broken planks, the rope ends */
   if (L.fields) drawFieldsTiles(cx, cy);   /* the phantom planks, the bales, the buildings' skins */
   if (L.mage) { drawMageTiles(cx, cy); drawArchImages(cx, cy); }   /* THE MAGE'S FOLLY: the tower's skins, the hedges, the holes, the cracks, the stacks and the ice; and the Archmage's images, behind every creature */
-  if (L.monk && L.monk.m3) M3ART.drawFront(g, L.monk, cx, cy, VW, VH, time);   /* (claude/art4) MONASTERY 3: the feast cloths, the chandeliers' irons, the bunks' straw, the spires' guano */
+  if (L.monk && L.monk.m3) M3ART.drawFront(g, L.monk, cx, cy, VW, VH, time);
+  if (L.monk && L.monk.m3 && L.arena && L.arena.house && L.arena.house.art) ACA.drawFront(g, L.arena.house, cx, cy, VW, VH, time, !!L.abbotFallen);   /* (claude/abbotart) corbels, sill, bells, pews, piers, rood, altar, the hole and the rubble */   /* (claude/art4) MONASTERY 3: the feast cloths, the chandeliers' irons, the bunks' straw, the spires' guano */
   if (L.hc2Kit) HC2A.drawFront(g, L, cx, cy, time, VW, VH);   /* (claude/highcrown2art) arch rings, corbels, the murder-hole slot, the stair door (over the tiles, under the creatures) */
   drawCrumbles(cx, cy);   /* THE FALLING TOWER's failing stone: over its own skin, so its cracks are never painted out */
   if (L.ftSupports) drawSupports(g, L, cx, cy, time, VW, VH); if (L.chase3 && boss && boss.t === 'undeadmage') drawChase3(g, boss, cx, cy, time, VW);   /* (claude/fallingtower3) THE CRACKED PILLARS, and the crack he runs across a floor */
