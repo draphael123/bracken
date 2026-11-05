@@ -18,7 +18,7 @@ for (const k of ['fire', 'crowd', 'barn']) {
   if (!NAMES.includes(k)) fails.push(`AMBIENT_NAMES lacks the '${k}' bed`);
   if (!audioSrc.includes('  ' + k + '() {')) fails.push(`src/audio.js SYNTH_BEDS has no ${k}() bed`);
 }
-const SKIP = id => /^(trial_|custom|arena_yard)/.test(id);   /* (rel141: the Arena Yard is an open training yard, not a campaign level) */
+const SKIP = id => /^(trial_|custom|arena_yard|duel_pit)/.test(id);   /* (rel141: the Arena Yard is an open training yard, not a campaign level) */
 const FOREST_OK = new Set(['wood', 'kings', 'hornetsnest', 'spore']);   /* (integ117: SPOREWOOD 2's glade, columns 0-100, is the wood's morning - the art lane's one-bed-a-place ambient opens on the forest, then drip, water, cave, wind, deep) */   /* (integ116: THE HORNET'S NEST is a spur up the Lumber Trail's great pine - its outer thirds are the wood) a wood is a wood: no other level plays the birds */
 const SET = ['dovecote', 'lychgate', 'stocks'];
 /* reasoned exemptions, Daniel to overrule: the Monastery's churchyard (its graves, yew and lychgate) and its garden dovecote, and the Hanging Village's one
