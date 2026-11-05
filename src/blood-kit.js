@@ -109,7 +109,7 @@ export function payBlood(p, pct, free = false) {
   const c = Math.max(1, Math.round(p.maxHp * pct));
   if (free) { debtAdd(p, c); p.bdLast = p.hp; return c; }
   const hp0 = p.hp; p.hp = hp0 <= 1 ? hp0 : Math.max(1, hp0 - c); const paid = hp0 - p.hp;
-  p.bdLast = p.hp; if (paid > 0) { p.bd = (p.bd || 0) + paid; debtClamp(p); p.bdHold = BLOOD.debt.hold; p.bdRate = p.bd / Math.max(0.1, BLOOD.debt.drainT - BLOOD.debt.hold); }
+  p.bdLast = p.hp; if (paid > 0) { p.bd = (p.bd || 0) + paid; debtClamp(p); p.bdHold = BLOOD.debt.hold + (p.bdHoldPlus || 0); p.bdRate = p.bd / Math.max(0.1, BLOOD.debt.drainT - BLOOD.debt.hold); }
   return paid;
 }
 /* (claude/bkkit2) DRAIN's tick of `n` blood: into the debt first (all of it), the rest heals `over` of itself. Returns the health given. */
@@ -142,7 +142,7 @@ export function debtStep(p, dt, { freeze = false, dead = false } = {}) {
   p.bd = Math.max(0, p.bd - (p.bdRate || p.bd / D.drainT) * dt);
 }
 export function debtAdd(p, n) { const D = BLOOD.debt; if (!(n > 0)) return; p.bkAnswered = false;   /* (claude/bkrework) a new debt re-arms THE ANSWER */
-  p.bd = (p.bd || 0) + n; debtClamp(p); p.bdHold = D.hold; p.bdRate = p.bd / Math.max(0.1, D.drainT - D.hold); }
+  p.bd = (p.bd || 0) + n; debtClamp(p); p.bdHold = D.hold + (p.bdHoldPlus || 0); p.bdRate = p.bd / Math.max(0.1, D.drainT - D.hold); }
 export function debtClamp(p) { const D = BLOOD.debt; p.bd = Math.max(0, Math.min(p.bd || 0, D.cap * p.maxHp, Math.max(0, p.maxHp - p.hp))); }
 /* a landed blow of his that did `dmg`: part of the segment comes back as health. Returns the health given. */
 export function debtReclaim(p, n) { if (!(p.bd > 0) || !(n > 0) || !(p.hp > 0)) return 0; const r = Math.min(p.bd, n, Math.max(0, p.maxHp - p.hp)); p.hp += r; p.bd -= r; p.bdLast = p.hp;
@@ -164,7 +164,7 @@ const BLOODLESS = new Set(['construct', 'turret', 'hourglass', 'hourglassking', 
 export function sprayKind(t, mat) { if (BLOODLESS.has(t) || ['stone', 'metal', 'crystal', 'shell', 'wood', 'clockwork', 'glass'].includes(mat)) return 'sparks';
   if (['bone', 'chitin', 'fungus', 'spirit'].includes(mat)) return 'dust'; return 'blood'; }
 /* (claude/bkblood) THE BLOOD LASH's box: past the drag's steel (rhythmBox step 2) the whip reaches lash.reach more at chest height, from lash.from of the art clock */
-export function lashBox(x, y, face, atk, steelR) { const L = BLOOD.lash; if (atk < L.from || atk >= 0.24) return null; const r0 = steelR - 2, r1 = steelR + L.reach;
+export function lashBox(x, y, face, atk, steelR, reach = BLOOD.lash.reach) { const L = BLOOD.lash; if (atk < L.from || atk >= 0.24) return null; const r0 = steelR - 2, r1 = steelR + reach;   /* (claude/bkpack) reach: CRIMSON REACH lengthens the whip */
   return face > 0 ? { l: x + r0, r: x + r1, t: y - L.top, b: y - L.bot } : { l: x - r1, r: x - r0, t: y - L.top, b: y - L.bot }; }
 /* ALL of it back (the parries) */
 export const debtReclaimAll = p => debtReclaim(p, p.bd || 0);
@@ -193,7 +193,7 @@ export const GUARD = { share: 1, notches: 3, life: 12, boost: 1, stop: [0.06, 0.
 /* the ward's blood price: `n` health leaves him and the WHOLE of it lies on the bar as debt. Returns what was paid. */
 export function guardPay(p, n) { if (!(n > 0)) return 0; p.hp -= n; p.bdLast = p.hp; debtAdd(p, n * GUARD.share); return n; }
 /* the notches a blade has (they run dry `life` s after the last), and one more drunk */
-export const notchesOf = (p, now) => (p.bkNotch || 0) > 0 && now - (p.bkNotchAt ?? -99) <= GUARD.life ? p.bkNotch : 0;
-export function notchDrink(p, now) { const n = Math.min(GUARD.notches, notchesOf(p, now) + 1); p.bkNotch = n; p.bkNotchAt = now; return n; }
+export const notchesOf = (p, now, life = GUARD.life) => (p.bkNotch || 0) > 0 && now - (p.bkNotchAt ?? -99) <= life ? p.bkNotch : 0;   /* (claude/bkpack) life: BLADE DRINKS+ II keeps a notch 20 s */
+export function notchDrink(p, now, need = GUARD.notches, life = GUARD.life) { const n = Math.min(need, notchesOf(p, now, life) + 1);   /* (claude/bkpack) need: BLADE DRINKS+ I lifts the heavy at two notches */ p.bkNotch = n; p.bkNotchAt = now; return n; }
 /* a hold's tier with the blade drunk: one higher once the notches are full (T1 on the clock becomes T2), never past T5, and nothing before T1 */
-export const boostTier = (tier, notches) => tier >= 1 && notches >= GUARD.notches ? Math.min(5, tier + GUARD.boost) : tier;
+export const boostTier = (tier, notches, need = GUARD.notches) => tier >= 1 && notches >= need ? Math.min(5, tier + GUARD.boost) : tier;

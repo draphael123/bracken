@@ -103,6 +103,7 @@ import * as WR from './world-react.js'; import * as UIH from './ui-hud.js'; impo
 import * as PA from './pyro-art.js'; import * as PYB from './pyro-boss.js';   /* (claude/pyroboss2) THE PYROMANCER 2's numbers and pure rules */   /* (claude/pyroarttune) THE PYRO KIT'S ART: the ward dome, the fireball sizes, the blast, the stoke crown, the burn-mark brand, the eruption and its word */
 import { makeFlameWard, WARD as FW_K } from './flame-ward.js';   /* THE FLAME WARD (claude/pyrokit): tap C, a 0.45 s dome of fire - a parry in its first 0.15 s, a block after, it burns what touches it (it replaced the down-held EMBER FLARE) */
 import { DK2, selfFloor as dkFloor, priceOf as dkPriceOf, rhythmStep as dkStep, cleaveMul as dkCleaveMul, dragDrain as dkDragDrain, rhythmBox as dkRhythmBox, crescentBox as dkCrescentBox, RHYTHM_NAMES as DK_RHYTHM } from './dk2.js';   /* (claude/dk2b) THE DEATH KNIGHT 2: the blood price, the drain, the rhythm, the grave kneel */
+import * as BKT from './bk-tech.js';   /* (claude/bkpack) THE BLOOD KNIGHT's L25-L50 techniques: numbers + pure rules (tools/bk-tech.mjs plays them in node) */
 import * as BKIT from './blood-kit.js';   /* (claude/bloodknight) THE BLOOD KNIGHT's BLOOD KIT: BLOOD DEBT, BLOOD PRICE, the five-tier heavy, BLOOD SPIKE (scratch/brief-bloodknight-1017.md 2-5) */
 import { makeCrouchB } from './crouch-b.js'; let CRB = null; import { makeHolyGround, HG, spendLight, pipsOf } from './holy-ground.js'; let HGR = null; import { makeHolyFx } from './holy-fx.js'; let HFX = null;   /* (claude/palart) the hammer of light, SMITE's glow and column, holy waves: src/holy-fx.js */   /* (claude/paladin2) HOLY GROUND: the paladin's circle and his spent Light */ import { makeCrouchHint } from './crouch-hint.js'; let CRH = null;   /* (claude/crouchfix) THE FIRST-CROUCH HINT: each hero is told his twist the first time he crouches */
 import * as PM from './puppeteer.js'; import { makePuppeteerHands } from './puppeteer-hands.js'; import { bakePuppeteer, bakeMarionette, bakeHarlequin, bakeAcrobat, bakeMasterpiece } from './redraw/puppeteer_art.js'; let PUPH = null;   /* THE PUPPETEER (claude/puppeteer): the Maskwright's Theatre's boss - src/puppeteer.js the fight, src/puppeteer-hands.js its hands, src/redraw/puppeteer_art.js the art */   /* PER-HERO CROUCH TWISTS, PART B (claude/crouchb): the paladin kneels in prayer, the geomancer senses the earth, the death knight harvests a body */
@@ -820,7 +821,7 @@ const upg = id => upgRank(PROG, hero(), id);
 const thr = (stat, i) => thrOn(PROG, hero(), stat, i);
 let mendSeen = 0;   /* TURNED BLOW: the count of turned blows last frame */
 const GEO_LIFE0 = GEO_K.stone.gnaw, GEO_PERFECT0 = GEO_K.ward.perfect;   /* (claude/geoid: HARD STONE now slows how fast a foe gnaws her stone) */   /* her stone's life and the rune-ward's perfect window before the hero's own perks */
-const cdOf = k => Math.max(0.5, (k === 'summonSkeleton' && isReaper() && tal('gleaner') ? BKIT.BLOOD.host.worms.quick : CD_MAX[k] || 3) - (k === 'whirlwind' && hero() === 'knight' ? 0.5 * upg('ucalm') : 0)) * (perk('focus') ? 0.85 : 1);
+const cdOf = k => Math.max(0.5, (k === 'summonSkeleton' && isReaper() && tal('gleaner') ? BKIT.BLOOD.host.worms.quick : CD_MAX[k] || 3) - (k === 'whirlwind' && hero() === 'knight' ? 0.5 * upg('ucalm') : 0)) * (perk('focus') ? 0.85 : 1) * (k === 'boneArmor' && hero() === 'reaper' ? BKT.UP.mailMul(upg('umail')) : 1);   /* (claude/bkpack) THIN BLOOD */
 const amul = k => grow(hero(), heroLevel()).skillMultiplier * (1 + RANK_MUL * Math.max(0, skillRank(PROG, hero(), k) - 1)) * (hero() === 'knight' ? 1 + 0.2 * (k === 'shieldThrow' ? upg('uthrow') : k === 'risingCut' ? upg('urise') : 0) : 1); // skill damage grows (and MASTERY, a perk, and the skill's RANK), cooldowns and invulnerability do not
 let treeResetT = 0, talentsBackT = 0, talentsBackWho = '', talentsBackWhy = '';   /* RESET POINTS asks twice; the trees-have-changed notice shows once */
 window.BKT = { fieldsState: () => FLD, cqState: () => (CQH && CQH.show ? CQH.show() : null),   /* (claude/arenapolish) tools/arena-polish-shots.mjs: the moon's clock and the Underwell hall's state */ stk: () => SKD, stkExplode: (x, y, r) => explode(x, y, r, DMG.bomb),   /* (claude/chief3) tools/chief3.mjs: the Stockade's hands, and a blast */ shrineFill: () => shrineFill(),   /* (claude/difficulty) tools/difficulty.mjs: a shrine's refill per mode */ lights: () => lights, get PROG() { return PROG; },   /* (claude/smallfix7) tools/gorm-unlock.mjs: the one-life Gorm clear */ vil: () => ({ grid: VG, fires, parts: parts.length }), vilSplash: (x, y, r, c) => villageSplash(x, y, r, c), vilIgnite: (tx, ty) => ignite(VG, tx, ty, 'burngob'),   /* tools/douse-agree.mjs */ gormUnlock: () => ({ fell: gormFell, live: gormFightLive(), open: !!PROG.burningOpen }), gormDie: () => die({ name: 'TEST', red: false, rule: '' }), gormWin: () => gormBeaten(), krkArmPts: a => krkArmPts(a, L.arena.floor, 0), krakLimp: (e, t) => krakenArmsLimp(e, t), krkTop: (x, n) => krkTop(x, n), krkRoadEnds: () => krkRoadEnds(),   /* (tools/kraken-reach.mjs, tools/kraken-rework.mjs) */
@@ -2738,7 +2739,7 @@ function spawnEntities() {
     if(L.sanctum&&!L.sandWalk){L.sanctum.open=false;L.sanctum.outOpen=0;L.sanctum.out=null;}
   } else if (typeof P !== 'undefined' && P && P.carpet) P.carpet = null;   /* a rug ridden out of the tower (quit mid-fight) must not fly into the next level: carpetBox reads L.arena and threw every frame */
   eliteWatch();   /* an elite cut down in the same beat the hero fell (the world is still in its hitstop) is written down before the board is reset */
-  shots = []; bodies = []; risen = []; rbolts = []; bkWorms = []; bkBolts = []; bkDrains = []; bloodBolts = []; bkWaves = []; bkStreams = []; bkDecals = []; hands = []; moons = []; thrownScythe = null; grips = []; unholy = []; severs = []; wakes = []; phalanx = []; if (typeof P !== 'undefined' && P) P.ballast = null; if (typeof P !== 'undefined' && P) P.carry = null; if (typeof P !== 'undefined' && P) { P.leech = null; P.plankPose = null; P.plankPoseT = 0; } if (PTK) PTK.reset(); if (typeof P !== 'undefined' && P) { P.harvest = 0; P.reaping = 0; P.loaded = true; P.reloadT = 0; P.plunder = 0; P.rum = 0; P.vigil = 0; P.pinning = null; P.riding = null; P.spinning = null; P.holyLandT = 0; P.runThrough = false; }
+  shots = []; bodies = []; risen = []; rbolts = []; bkWorms = []; bkBolts = []; bkDrains = []; bloodBolts = []; bkWaves = []; bkTechReset(); bkStreams = []; bkDecals = []; hands = []; moons = []; thrownScythe = null; grips = []; unholy = []; severs = []; wakes = []; phalanx = []; if (typeof P !== 'undefined' && P) P.ballast = null; if (typeof P !== 'undefined' && P) P.carry = null; if (typeof P !== 'undefined' && P) { P.leech = null; P.plankPose = null; P.plankPoseT = 0; } if (PTK) PTK.reset(); if (typeof P !== 'undefined' && P) { P.harvest = 0; P.reaping = 0; P.loaded = true; P.reloadT = 0; P.plunder = 0; P.rum = 0; P.vigil = 0; P.pinning = null; P.riding = null; P.spinning = null; P.holyLandT = 0; P.runThrough = false; }
   if (L.arena && L.arena.boss === 'queen') L.arena.comb = { rows: [], n: 0 };
   crumbleReset(L, { setSpr: (i, s) => { if (tileSpr) tileSpr[i] = s; } });   /* THE ROTTEN BRIDGES are whole again on every attempt (B4) */
   for (const v of L.gasVents || []) { v.litT = 0; v.burnt = false; } if (typeof P !== 'undefined' && P) { P.candle = 0; P.snuffed = false; } for (const pp of (players || [])) { pp.dance = 0; pp.danceCue = 0; pp.danceMax = 0; pp.idleLongT = 0; }   /* and every gas vent cold, the fire out of your hand */ whirlInit(L, marks);   /* a whirlpool whose lever was struck stays still through a death: marks keeps it */ if (L.keepCrumbles) keepCrumbleReset(); washReset(); strikeReset(); tideReset(); causeReset(); lamps = []; deathFx = []; if (typeof P !== 'undefined' && P) P.wick = 0; webs = []; shards = []; crackAt = {}; crystT = {}; enemies = []; eliteList = []; seeds = []; movers = []; corpses = []; waves = []; bombs = []; fires = []; props = []; lights = []; bridges = []; foxes = []; clouds2 = []; roots = []; shelfT = {}; mother = null; boss = null; throneBlock = null; talkTo = null; talk = null; slide = null; flood = null; burnT = {}; beams = []; meltT = {}; bossActive = false; bossWon = 0; bossBeat = null; actCard = null; camLock = null; impacts = []; rings = []; escape = null; thrown = null; deco = []; pwaves = []; rain = []; bolts = []; vines = []; rocks = []; glassPatches = []; miniActive = false; miniDone = false;
@@ -7539,7 +7540,7 @@ const big2 = (() => { const m = new WeakMap(); return c => { if (!c || !c.width)
    same baked type as the numbers, once per event; the same word then waits MOVE_WORD_GAP before it floats again, so a run of parries
    is one PARRY and not a column of them. Every other capitalised string is still kept off the screen, the trial keeps its own panel
    for these, and the Hit numbers option off turns the words off with the numbers. (tools/popclutter.mjs counts what floats over a tell.) */
-const MOVE_WORDS = new Set([/* (claude/rel142, hint-shown) the Geomancer's detonate and Stone Skin words: */ 'DETONATE', 'SKIN BROKEN', 'GLANCE', /* (claude/smallfix10, hint-shown) said but never drawn until now: */ 'ROCK BREAKS', 'AVALANCHE', 'KNOCKED UP', 'REELED', 'MARKED', 'CHAIN: FULL', 'CHAIN ', 'STANDING ORDERS', 'THE SHIELD CHARGE', 'SHOVED', 'LONG GUARD', 'VOLLEY NEEDS 2 ARROWS', "WARDEN'S REACH", 'GREAT ARROW x', 'STEADY x', 'FAR x', 'GREAT ARROW', 'DRAW BROKEN', 'THROWN BACK', 'LONG SHOT', 'STEADY SHOT', 'PUSH KICK', 'PUSHED', 'SHAKY', 'SHAKING', 'BLOOD STEP', 'BLOODWORMS', 'DRAIN', 'RED GROUND', 'NOTHING TO DRAIN', /* (claude/bkkit2) THE RED HOST's casts float, as every hero's skill words */ 'BURNED BACK', 'LOOSED BACK', 'HALLOWED BACK', 'THROWN HOME', /* (claude/moorpass) the Windcaller's bolt, sent home by the ranger, the paladin, the Blood Knight */ /* (claude/moorpyro) the Windcaller's bolt, set alight and sent home */ 'SHIELDED', 'SHIELD BROKEN', 'OVER IT', 'UNDER IT', /* (claude/foepass) the ward-release parry, the affix shell, a told attack answered */ 'GRAVE KNEEL', 'BLOOD PRICE', 'THE FULL PRICE', 'THE BLOOD IS LOST', 'NO BLOOD LEFT TO PAY', /* (claude/bloodknight) the five tiers, the spike, the low guard */ 'REND', 'SUNDER', 'CRIMSON CRESCENT', 'EXSANGUINATE', 'BLOOD MOON', 'NEEDS BLOOD DEBT', 'GUARD CRACKED', 'BLOOD SPIKE', 'RED REQUIEM', 'HEMORRHAGE', 'DEBT DRAIN', 'THE ANSWER', 'BLOOD LASH', 'VITAE FULL', 'LOW GUARD', 'UNDER THE BLADE', 'THE KNEEL BREAKS', 'HAMMER OF DAWN', 'SAFE LANDING', 'BOARDED', 'OFF THE BACK', 'TOO BIG TO RIDE', 'TOO HEAVY TO RIDE', 'EARTHFALL', 'A STEP OF STONE', 'MOUNTAIN COLLAPSE', 'COLLAPSE', 'RECALL', 'RECALLED', 'AXE SPIN', 'SHREDDED', 'BRACED IT', 'TOOK IT', 'CRACKED', 'FRENZY', 'SWEPT', 'BRACED', 'INK', 'THE WAVE', 'HE SHAKES IT', 'HIS EYE', 'THE EYE IS SHUT', /* (claude/kraken2) told on the road: the wave's shove and the crest's lee, the ink, the climb's shake, his eye */ 'FINISHER', 'RICOCHET', 'SECOND WIND', 'DASH ATTACK', 'OFF BALANCE', 'LAUNCHED', 'TRIPPED', 'BROKEN', 'PARRY', 'PARRIED', 'RIPOSTE', 'TURNED IT', 'EVADED', 'SHOULDERED', 'SLAM', 'OPENED UP', 'OFF THE GROUND', 'SHAKEN LOOSE', 'POWDER AND STEEL', 'TOO EARLY: AT THE FLASH', 'LEVEL UP', 'PINNED', 'IN THE EYE', 'GLANCES OFF', 'HE IS UNDER', 'MIXED UP', 'GLANCES', 'CARRIED UP', 'GUARD BROKEN', 'KNOCKED DOWN', 'ON ITS BACK', 'DISARMED', 'AGAINST THE WALL', 'BOWLED OVER', 'ON THE SPIKES', 'OFF THE EDGE', 'INTO THE WATER', 'PUSHED BACK', "THE QUEEN'S BOWS", 'COVERED', 'EXECUTED', 'IMMOLATED', 'REAPED', 'RUN THROUGH', 'SMITTEN', 'SHATTERED', 'SKEWERED', 'CLEAVED', 'TOO STRONG', 'BROUGHT DOWN', 'QUARRY', 'PIERCING SHOT', 'BOW-BASH', 'SNARED', 'CHECKED', 'THROUGH', 'OUT OF ARROWS', 'QUIVER FULL', 'THE WILD HUNT', 'NO QUARRY', 'WIND BACK', 'ARROW RECALL', 'NO ARROWS OUT', 'HEAVY THROW', 'PIN THROW', 'KNOCKED BACK', 'JAVELIN DROPPED', ...GLU.WORDS,
+const MOVE_WORDS = new Set([/* (claude/rel142, hint-shown) the Geomancer's detonate and Stone Skin words: */ 'DETONATE', 'SKIN BROKEN', 'GLANCE', /* (claude/bkpack) */ 'REAPED', 'CRIMSON REACH', 'WARD LANCE', 'PLANT THE BLADE', 'PAY IT FORWARD', 'MORTGAGE', 'UNBOUND', 'THE RECKONING', 'RECKONED', /* (claude/smallfix10, hint-shown) said but never drawn until now: */ 'ROCK BREAKS', 'AVALANCHE', 'KNOCKED UP', 'REELED', 'MARKED', 'CHAIN: FULL', 'CHAIN ', 'STANDING ORDERS', 'THE SHIELD CHARGE', 'SHOVED', 'LONG GUARD', 'VOLLEY NEEDS 2 ARROWS', "WARDEN'S REACH", 'GREAT ARROW x', 'STEADY x', 'FAR x', 'GREAT ARROW', 'DRAW BROKEN', 'THROWN BACK', 'LONG SHOT', 'STEADY SHOT', 'PUSH KICK', 'PUSHED', 'SHAKY', 'SHAKING', 'BLOOD STEP', 'BLOODWORMS', 'DRAIN', 'RED GROUND', 'NOTHING TO DRAIN', /* (claude/bkkit2) THE RED HOST's casts float, as every hero's skill words */ 'BURNED BACK', 'LOOSED BACK', 'HALLOWED BACK', 'THROWN HOME', /* (claude/moorpass) the Windcaller's bolt, sent home by the ranger, the paladin, the Blood Knight */ /* (claude/moorpyro) the Windcaller's bolt, set alight and sent home */ 'SHIELDED', 'SHIELD BROKEN', 'OVER IT', 'UNDER IT', /* (claude/foepass) the ward-release parry, the affix shell, a told attack answered */ 'GRAVE KNEEL', 'BLOOD PRICE', 'THE FULL PRICE', 'THE BLOOD IS LOST', 'NO BLOOD LEFT TO PAY', /* (claude/bloodknight) the five tiers, the spike, the low guard */ 'REND', 'SUNDER', 'CRIMSON CRESCENT', 'EXSANGUINATE', 'BLOOD MOON', 'NEEDS BLOOD DEBT', 'GUARD CRACKED', 'BLOOD SPIKE', 'RED REQUIEM', 'HEMORRHAGE', 'DEBT DRAIN', 'THE ANSWER', 'BLOOD LASH', 'VITAE FULL', 'LOW GUARD', 'UNDER THE BLADE', 'THE KNEEL BREAKS', 'HAMMER OF DAWN', 'SAFE LANDING', 'BOARDED', 'OFF THE BACK', 'TOO BIG TO RIDE', 'TOO HEAVY TO RIDE', 'EARTHFALL', 'A STEP OF STONE', 'MOUNTAIN COLLAPSE', 'COLLAPSE', 'RECALL', 'RECALLED', 'AXE SPIN', 'SHREDDED', 'BRACED IT', 'TOOK IT', 'CRACKED', 'FRENZY', 'SWEPT', 'BRACED', 'INK', 'THE WAVE', 'HE SHAKES IT', 'HIS EYE', 'THE EYE IS SHUT', /* (claude/kraken2) told on the road: the wave's shove and the crest's lee, the ink, the climb's shake, his eye */ 'FINISHER', 'RICOCHET', 'SECOND WIND', 'DASH ATTACK', 'OFF BALANCE', 'LAUNCHED', 'TRIPPED', 'BROKEN', 'PARRY', 'PARRIED', 'RIPOSTE', 'TURNED IT', 'EVADED', 'SHOULDERED', 'SLAM', 'OPENED UP', 'OFF THE GROUND', 'SHAKEN LOOSE', 'POWDER AND STEEL', 'TOO EARLY: AT THE FLASH', 'LEVEL UP', 'PINNED', 'IN THE EYE', 'GLANCES OFF', 'HE IS UNDER', 'MIXED UP', 'GLANCES', 'CARRIED UP', 'GUARD BROKEN', 'KNOCKED DOWN', 'ON ITS BACK', 'DISARMED', 'AGAINST THE WALL', 'BOWLED OVER', 'ON THE SPIKES', 'OFF THE EDGE', 'INTO THE WATER', 'PUSHED BACK', "THE QUEEN'S BOWS", 'COVERED', 'EXECUTED', 'IMMOLATED', 'REAPED', 'RUN THROUGH', 'SMITTEN', 'SHATTERED', 'SKEWERED', 'CLEAVED', 'TOO STRONG', 'BROUGHT DOWN', 'QUARRY', 'PIERCING SHOT', 'BOW-BASH', 'SNARED', 'CHECKED', 'THROUGH', 'OUT OF ARROWS', 'QUIVER FULL', 'THE WILD HUNT', 'NO QUARRY', 'WIND BACK', 'ARROW RECALL', 'NO ARROWS OUT', 'HEAVY THROW', 'PIN THROW', 'KNOCKED BACK', 'JAVELIN DROPPED', ...GLU.WORDS,
   /* (batch97 integ 10-17, hint-shown) the hero-pass and ranger feats and two old shared words - short, they float */
   'ORDER LOST', 'THE ORDER', 'VOLLEY', /* (batch122) THE HORNSMAN's horn words */ 'STONE SHRUG', 'BARGE', 'FLINCHES', 'DAZZLED', 'SHRUGGED', 'HOPPED', 'SHIELD-STEP', 'INTERRUPTED', 'VALIANT', 'COUNTER-THRUST', 'WALL PLANT', 'PULLED FREE', 'SNATCHED', 'FLUNG BACK', 'DAWNFALL', 'UNDER IT'])   /* (claude/ranger: her finisher, her mark, her shots, the bash, the snare, the quiver) */;   /* (claude/riposte) TOO STRONG: a red !! or a bolt met on the parry beat - it floats like OPEN, never a hint box */   /* (part 2: the finishers' own names, src/finishers.js - they are what the finisher says, so they are shown) */   /* (the last five: the knight's third cut, paid where it threw them - THIRD_WORD) */   /* (the last five: the starter kits' moves as they land - the bought rising cut, the heavy cut's two stages, THE WHEEL, DISARM) */   /* PINNED is the Warden's, and the only word her spear is allowed to say. (Not RUN THROUGH: that is the freebooter's FINISHER name, and no hero's finisher floats - putting it on this list would have started his doing it.) */
 const moveWord = t => MOVE_WORDS.has(t) || (m => !!m && MOVE_WORDS.has(m[1]))(/^(\D*?)\d[\d.]*$/.exec(t));   /* (claude/smallfix10) a move word + a trailing number ('GREAT ARROW x2.0', 'CHAIN 3') floats as its stem, listed in MOVE_WORDS with the space / x kept */
@@ -7692,9 +7693,9 @@ function hudMeterLabel() {
     // WHAT HIS KEYS DO RIGHT NOW: hold C for the ward, and with a full blood HOLD F for the surge - and it says
     // which. While the ward is up it says what letting go will be (DK_KEYS.hud).
     const full = (P.harvest || 0) >= 100, wk = Math.min(1, (P.wardG || 0) / wardCap()), b6 = Math.floor(time * 6) % 2;
-    const frz = (P.bkReqT || 0) > 0;   /* (claude/bkrework) in HEMORRHAGE it says so */
-    return { s: P.warding ? (wk >= 1 ? DK_KEYS.hud.full : DK_KEYS.hud.nova) : frz ? DK_KEYS.hud.frenzy : full ? DK_KEYS.hud.surge : DK_KEYS.hud.ward,
-      col: P.warding ? (wk >= 1 ? (b6 ? '#ffd0d0' : '#ff4a5a') : '#ff9a9a') : frz ? (b6 ? '#ffd0d0' : '#ff4a5a') : full ? (blink ? '#c0283a' : '#ff9a9a') : '#6a7a62' }; }
+    const frz = (P.bkReqT || 0) > 0 || (P.bkRecT || 0) > 0;   /* (claude/bkrework) in HEMORRHAGE it says so (claude/bkpack: and in THE RECKONING) */
+    return { s: P.warding ? (wk >= 1 ? DK_KEYS.hud.full : DK_KEYS.hud.nova) : frz ? ((P.bkRecT || 0) > 0 ? 'RECKONING' : DK_KEYS.hud.frenzy) : full ? (tech('breckon') ? 'UP+C  RECKONING' : DK_KEYS.hud.surge) : bkForwardReady() ? 'UP+C  PAY FORWARD' : DK_KEYS.hud.ward,
+      col: P.warding ? (wk >= 1 ? (b6 ? '#ffd0d0' : '#ff4a5a') : '#ff9a9a') : frz ? (b6 ? '#ffd0d0' : '#ff4a5a') : full || bkForwardReady() ? (blink ? '#c0283a' : '#ff9a9a') : '#6a7a62' }; }
   return null;
 }
 let hintHoldT = 0;
@@ -7849,6 +7850,7 @@ function damagePlayer0(fromX, dmg, { up = false, unblockable = false, pierce = f
     if (src && dmg > 0 && ((src === boss && bossActive) || src.xpRole === 'mini')) { const bf = bpDmg(bpActOf(curId(), ((bpDepths || (bpDepths = depthsOf(LEVELS)))[curId()]) || 1).act, src !== boss, src); if (bf !== 1) { const d0 = dmg; dmg = Math.max(1, Math.round(dmg * bf)); if (pct <= 0) dmg = bpCap(d0, dmg, P.maxHp, diffNow().take * (1 + 0.28 * bossTierOf(curId()))); } }   /* (claude/flasklever) the act's pressure dial: every blow of his that lands */
     if (src && src.drone && (src.t === 'wasp' || src.t === 'hopper') && dmg > 0) dmg = Math.max(1, Math.round(dmg * DRONE_HIT)); if (src) dmg = RX.tier(src, dmg); if (src && src.fa === 'heavy' && dmg > 0) dmg = Math.round(dmg * FOA.blowMul(src));   /* (claude/foepass) a HEAVY affix hits harder */ if (src && dmg > 0 && L.foeHit && (src.wKey || src.cnSkin) && L.foeHit[src.wKey || src.cnSkin]) dmg = Math.round(dmg * L.foeHit[src.wKey || src.cnSkin]); if (src && dmg > 0 && src.lcMul && src.lcMul !== 1) dmg = Math.max(1, Math.round(dmg * src.lcMul)); }   /* (claude/litchurch) THE LIT CHURCH: a priest's blows by his room's light (src/lit-church-hands.js lcMul: lit x1.3, dark x0.7) */   /* (RX.tier: a later act's common foe hits harder - src/foe-react.js ACTS) */   /* (claude/bosswave2) THE FIRST BOSSES' SWARMS STING, THEY DO NOT KILL: under WEIGHT the Hornet Queen's drones and the Bullfrog's hoppers did most of a hero's dying (a drone's touch was 24 of 110) */   /* A MINI HITS HARDER (claude/combat3): he keeps his damage taken, and his blows land GREED.miniHit harder */   /* DISARMED: it fights bare */   /* who / blow / name: for the line under a death (killerOf) - the creature, its blow's name, or a hazard's name */
   if (!(dmg > 0)) dmg = 10; // a missing table entry must never poison the health bar
+  if (isReaper() && dmg > 0 && !P.dead) { if (tech('bunbound') && (P.bkReqT || 0) > 0) dmg = Math.max(1, Math.ceil(dmg * BKT.BT.unbound.take)); if ((P.bkRecT || 0) > 0) bkReckonTake(who || updFoe, dmg); }   /* (claude/bkpack) REQUIEM UNBOUND: a quarter more taken; THE RECKONING: every blow is returned as a bleed */
   if (window.BK && window.BK.blowRec) { const q = who || updFoe; if (q && (q === boss || q.xpRole === 'mini')) { const k = q.t + (q.xpRole === 'mini' ? ':mini' : '') + ' ' + (blow || name || '?'), v = pct > 0 ? P.maxHp * pct : dmg * diffNow().take * (1 + 0.28 * bossTierOf(curId())), R = window.BK.blowRec, c = R[k] || (R[k] = { max: 0, n: 0, sum: 0 }); c.n++; c.sum = (c.sum || 0) + Math.round(v); if (v > c.max) c.max = Math.round(v); } }   /* (claude/oneshotcap) tools/blow-census.mjs: the biggest single blow a boss or mini lands (or is turned from), after every table and the dial. Off (null) in play. */
   if (!P.dead && P.dodge > 0 && (P.dodgeInv === undefined || P.dodgeInv > 0) && tal('evasion') && !isPyro() && !isPaladin() && time - (P.evadeAt || -9) > 0.7) { P.evadeAt = time; CM.refund(P, 20); P.evadeCutT = time + 1; number(P.x, P.y - 24, 'EVADED', '#8fd160'); SFX.dodge(); } // EVASION
   if (!P.dead && isReaper() && P.dodge > 0 && (P.dodgeInv === undefined || P.dodgeInv > 0) && P.kPoseK === 'shadowStep' && (who || updFoe) && time - (P.bkPerfectAt ?? -9) >= BKIT.BLOOD.step.cd) bkPerfectStep();   /* (claude/bloodstep) THE BLOOD STEP's PERFECT STEP: stepped through a blow in the last moment */
@@ -9222,6 +9224,7 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow, tag = blow) { const raw0 = dmg,
     burst(e.x, e.y - e.h / 2, e.t === 'queen' ? 40 : 12, COLS[e.t], 100, 0.6);
     sparks(e.x, e.y - e.h / 2, dir, 6);
     spawnCorpse(e, dir); beastSlain(e.cnSkin || e.t);
+    if (isReaper() && e.bleed > 0 && !e.harmless && upg('ulast')) bkVitae(BKT.UP.lastVitae(upg('ulast')));   /* (claude/bkpack) LAST DRINK */
     /* THE KILL HEALS (claude/survival, Daniel 10-07): the HEART CHARM, VIGOR 10's BLOOD DRAWN and the BLOODLETTER perk, halved (3/1/2) and capped at 5 a kill (src/survival.js KILL_HEAL) */
     { const kh = !e.harmless && P.hp > 0 && P.hp < P.maxHp ? SV.killHeal({ charm: PROG.charm === 'heart', bloodDrawn: !!thr('v', 0), bloodletter: !!perk('leech') && !isReaper() })   /* (claude/bkrework Q6: BLOODLETTER heals no Blood Knight) */ : 0; if (kh > 0) { P.hp = Math.min(P.maxHp, P.hp + kh); number(P.x, P.y - 30, '+' + kh, '#8fd160'); } }
     if (e.t === 'shardling') { burst(e.x, e.y - 6, 18, ['#bfe6f5', '#eefaff', '#7aa8c8'], 130, 0.7, 320, 2); ringAt(e.x, e.y - 6, 22, '#bfe6f5', 0.35); SFX.crack();
@@ -9589,7 +9592,7 @@ const lcBig = e => e === boss || !!e.mini || !!(L.arena && L.arena.boss === e.t)
 /* THE ULTIMATES (claude/ults): who has one, what makes it ready, what fires it. The Warden's Reach and the Pyromancer's Meteor Fall register here with one line each when their lanes land. */
 ultRegister('knight', { name: 'SHIELD CHARGE', ready: () => (P.links || 0) >= KC.max && !lcOn() && (P.ground || P.swim) && !P.climb, fire: () => { lastCharge(); return true; } });
 ultRegister('geomancer', { name: 'MOUNTAIN COLLAPSE', ready: () => !!GEO && GEO.avalancheReady() && (P.ground || P.swim), fire: () => { const ok = GEO.avalanche(); if (ok) trialEvent('meter'); return ok; } });
-ultRegister('reaper', { name: 'RED REQUIEM', ready: () => bkRequiemReady(), fire: () => bkRequiem() });   /* (claude/bkrework) UP+C at a full VITAE, grounded (replaces CRIMSON FRENZY on HOLD F) */
+ultRegister('reaper', { name: 'RED REQUIEM', ready: () => bkRequiemReady() || bkForwardReady(), fire: () => bkRequiemReady() ? (tech('breckon') ? bkReckon() : bkRequiem()) : bkForward() });   /* (claude/bkpack) THE RECKONING (L50 B) is cast instead of the Requiem; PAY IT FORWARD (L40 A) is the same chord on a debt without a full VITAE */   /* (claude/bkrework) UP+C at a full VITAE, grounded (replaces CRIMSON FRENZY on HOLD F) */
 ultRegister('ranger', { name: 'GREAT ARROW', ready: () => !!RGK && RGK.greatReady(), fire: () => RGK.greatArrow() });
 function lastCharge() {
   trialEvent('meter'); P.links = 0; P.linkT = 0; P.linkKeep = 0; P.lcBrace = LC_BRACE; P.lcLeft = 0; P.lcDir = P.face; P.lcHit = new Set();
@@ -10007,7 +10010,7 @@ function updateRisen(dt) {
   hands = hands.filter(h => h.life > 0);
 }
 function drawRisen(cx, cy) {
-  drawBloodBolts(cx, cy); drawBkWaves(cx, cy); drawBkHost(cx, cy);
+  drawBloodBolts(cx, cy); drawBkWaves(cx, cy); drawBkTech(cx, cy); drawBkHost(cx, cy);
   for (const h of hands) { if (h.delay > 0) continue; const x = Math.round(h.x - cx), y = Math.round(h.y - cy), k = Math.min(1, h.life * 2);
     g.globalAlpha = k; const up = Math.min(1, (1.4 - h.life) * 8 + 0.3);   /* (claude/bkkit2) CRIMSON TIDE: grasping spikes of blood up out of the floor (they were hands) */
     for (const [dx, hh] of [[-4, 10], [0, 14], [3, 9]]) { const H = Math.round(hh * up); for (let j = 0; j < H; j++) { const wdt = Math.max(1, Math.round(3 * (1 - j / H))); g.fillStyle = j > H - 3 ? '#ff4a5a' : j & 1 ? '#7a1020' : '#a01a2a'; g.fillRect(x + dx - (wdt >> 1), y - j, wdt, 1); } }
@@ -10171,7 +10174,7 @@ function drawGrips(cx, cy) {
 // a foe in it wades (slowed - never a boss or a mini), bleeds, is marked and is bitten every tick; HE, standing in it, holds his debt (it does not drain) and
 // every bite of it gives a drop of that debt back. It holds a PLACE: fight on it.
 function unholyGround() { const Q = HOST().pool;
-  unholy.push({ o: P, x: P.x, y: P.y, r: Q.r, life: Q.life + tal('unholyGround'), max: Q.life + tal('unholyGround'), tick: 0, dmg: Math.max(1, Math.round(Q.dmg * amul('unholyGround'))) + 2 * tal('graveGoods'), seed: Math.random() * 9 });
+  unholy.push({ o: P, x: P.x, y: P.y, r: Q.r, life: (Q.life + tal('unholyGround')) * BKT.UP.poolMul(upg('uwell')), max: (Q.life + tal('unholyGround')) * BKT.UP.poolMul(upg('uwell')), tick: 0, dmg: Math.max(1, Math.round(Q.dmg * amul('unholyGround'))) + 2 * tal('graveGoods'), seed: Math.random() * 9 });
   SFX.squelch(); SFX.splash ? SFX.splash() : SFX.puff(); shakeCam(3); P.castT = 0.3; kitPose(P, 'unholy', 0.35);
   ringAt(P.x, P.y - 4, Q.r, '#c0283a', 0.4); number(P.x, P.y - 30, 'RED GROUND', '#ff6b6b');
   for (let i = 0; i < 18; i++) parts.push({ x: P.x + (Math.random() - 0.5) * Q.r * 2, y: P.y, vx: (Math.random() - 0.5) * 30, vy: -30 - Math.random() * 60, life: 0.8, max: 0.8, col: Math.random() < 0.5 ? '#c0283a' : '#3a0a10', size: 2, grav: 300 });
@@ -10571,7 +10574,7 @@ function attackBox0() {
   // THE SWATHE. It lands LATE - the blade is behind him for the first third of it - and then it is
   // everywhere at once. The window is where the weight of the thing lives.
   if (isReaper() && P.atk >= 0.12 && P.atk < 0.24) { const st = dkStep(P.combo), b = dkRhythmBox(P.x, P.y, P.face, P.atk, st, tal('longHaft'));
-    if (b && st === 2 && !P.heavy && !P.swingKind && !P.plunge && !P.dashCut) { const lb = BKIT.lashBox(P.x, P.y, P.face, P.atk, Math.abs((P.face > 0 ? b.r : b.l) - P.x)); if (lb) { P.bkLashOut = time; return { l: Math.min(b.l, lb.l), r: Math.max(b.r, lb.r), t: b.t, b: b.b }; } }   /* (claude/bkblood) THE BLOOD LASH: the third cut's blood whips out past the steel */
+    if (b && st === 2 && !P.heavy && !P.swingKind && !P.plunge && !P.dashCut) { const lb = BKIT.lashBox(P.x, P.y, P.face, P.atk, Math.abs((P.face > 0 ? b.r : b.l) - P.x), bkLashReach()); if (lb) { P.bkLashOut = time; return { l: Math.min(b.l, lb.l), r: Math.max(b.r, lb.r), t: b.t, b: b.b }; } }   /* (claude/bkblood) THE BLOOD LASH: the third cut's blood whips out past the steel */
     return b; }   /* (claude/dk2b) THE RED RHYTHM: the rising diagonal, the hook along the shins, the drag from overhead (src/dk2.js; the windows are the old cleave's, its clock quicker) */
   if (isPirate() && P.atk >= 0.03 && P.atk < 0.15) return P.face > 0 ? { l: P.x + 2, r: P.x + 22, t: P.y - 19, b: P.y - 1 } : { l: P.x - 22, r: P.x - 2, t: P.y - 19, b: P.y - 1 };   // a cutlass is long and it is fast
   if (P.atk >= 0.04 && P.atk < 0.16) return P.face > 0 ? { l: P.x + 2, r: P.x + 22, t: P.y - 17, b: P.y - 1 } : { l: P.x - 22, r: P.x - 2, t: P.y - 17, b: P.y - 1 };
@@ -10582,7 +10585,7 @@ function spend(cost) {
   /* (the price, the delay and the exhausted state are all trySpend's) */
 }
 function updatePlayer(dt) {
-  if (isReaper() && P.bkStepAt !== time) { P.bkStepAt = time; BKIT.debtStep(P, dt, { freeze: P.charge > 0 || P.bkPoolHold > time || (P.bkReqT || 0) > 0 || (P.wardHeld > 0) || P.warding, dead: !!P.dead }); bkBloodStep(dt);   /* (claude/bkrework) the debt holds while the BLOOD WARD is up (the held blade already froze it) and through HEMORRHAGE; VITAE, the Requiem's clock, the heartbeat, the idle drip */   /* (claude/bkkit2: and standing in his RED GROUND) */ }   /* (claude/bloodknight) BLOOD DEBT, before every early way out (a hurt, a ride, the dead): once a frame */
+  if (isReaper() && P.bkStepAt !== time) { P.bkStepAt = time; BKIT.debtStep(P, dt, { freeze: P.charge > 0 || P.bkPoolHold > time || (P.bkReqT || 0) > 0 || (P.bkRecT || 0) > 0 || (P.wardHeld > 0) || P.warding, dead: !!P.dead }); bkBloodStep(dt);   /* (claude/bkrework) the debt holds while the BLOOD WARD is up (the held blade already froze it) and through HEMORRHAGE; VITAE, the Requiem's clock, the heartbeat, the idle drip */   /* (claude/bkkit2: and standing in his RED GROUND) */ }   /* (claude/bloodknight) BLOOD DEBT, before every early way out (a hurt, a ride, the dead): once a frame */
   P.ducking = false; P.crouch = 0;   /* (set again below, once the hero is known to be on his feet: every early way out of here - down, dead, flying, a ride, the carpet, the Folly's ceiling - is not a duck) */
   if (GS > 0) { P.fRelease = isReaper() && P.fHeld > 0 && !keys.throw;   /* (claude/witchfix: once a frame - a turned-over hero's own update runs again inside flipPlayer, and must not eat the release) */
   if(P.fRelease || P.dead || P.down > 0) P.fHeld = 0; }
@@ -10956,7 +10959,8 @@ function updatePlayer(dt) {
     /* (claude/bloodknight) BLOOD DEBT: what he was hit for lies on the bar as a red segment and drains (not while the blade is wound); BLOOD PRICE on DOWN+C */
     P.bkEdgeT = Math.max(0, (P.bkEdgeT || 0) - dt); P.bkPriceCd = Math.max(0, (P.bkPriceCd || 0) - dt);
     { const cDown = keys.block && !P.bkCWas; P.bkCWas = !!keys.block;
-      if (cDown && keys.down && free && P.ground && !P.swim && !(P.wardHeld > 0)) { if (bkPrice()) P.cHeld = -99; } }   /* (cHeld -99: the C held after the price does not stand the ward up) */
+      if (cDown && keys.down && free && P.ground && !P.swim && !(P.wardHeld > 0)) { if (tech('bplant') && !((P.bkPlantCd || 0) > 0)) { P.bkDcT = 0.0001; P.cHeld = -99; } else if (bkPrice()) P.cHeld = -99; }   /* (claude/bkpack) PLANT THE BLADE: with it owned a DOWN+C waits for its release - a tap is still BLOOD PRICE, a 0.6 s hold plants */
+      if (P.bkDcT > 0) { if (keys.block && keys.down && free && P.ground) { P.bkDcT += dt; P.cHeld = -99; if (P.bkDcT >= BKT.BT.plant.hold) { P.bkDcT = 0; P.cHeld = -99; bkPlant(); } } else { const held = P.bkDcT; P.bkDcT = 0; if (held > 0 && free && P.ground && !P.swim && !keys.block) bkPrice(); } } }   /* (cHeld -99: the C held after the price does not stand the ward up) */
     /* (claude/bkrework) HOLD F is inert now: F is just his first equipped skill; the full VITAE bar is spent on UP+C (RED REQUIEM, ultRegister above). */
     if (keys.block) { P.cHeld = (P.cHeld || 0) + dt;
       const wardCut = (P.atk >= 0 || P.recSwing) && attacking && !stunned && !dodging && !P.plunge && !P.dashCut && !(P.blastT > 0) && !(P.wardHeld > 0) && CM.swingLeft('reaper', P) <= CM.DK_WARD_CUT;   /* (claude/dkhero) THE WARD CUTS THE LAST 0.25 s OF HIS SWING */
@@ -27874,7 +27878,7 @@ function wardFoe(fromX) { const f = nearFoe(fromX); if (f) return f;
 function wardStop(dmg, fromX) {
   const cap = wardCap();
   if ((P.wardG || 0) >= cap - 0.5) { wardBreak(fromX); return 'broken'; }
-  const blood = yardSafe() ? 0 : Math.max(1, Math.round(dmg * WARD_PRICE * diffNow().take * (1 + 0.28 * hitTierOf(curId())) * coopTake()));   /* a trial never hurts */
+  const blood = yardSafe() ? 0 : Math.max(1, Math.round(dmg * WARD_PRICE * BKT.UP.wardMul(upg('ugblood')) * diffNow().take * (1 + 0.28 * hitTierOf(curId())) * coopTake()));   /* a trial never hurts */
   if (blood >= P.hp) return 'bled';
   if (!SET.invincible) BKIT.guardPay(P, blood); P.bkPayAt = time; P.wardDmg = (P.wardDmg || 0) + blood; if (blood > 0) number(P.x, P.y - 20, '-' + blood + ' DEBT', '#c0283a');   /* (claude/heroblocksa) THE BLOOD-PAID GUARD: all of what the ward costs lies on the bar as DEBT (a win-back, not a loss), and the bar flashes where it was paid */
   P.wardG = Math.min(cap, (P.wardG || 0) + (8 + dmg * 0.9) * (1 + 0.12 * prk('dward')));
@@ -27890,11 +27894,12 @@ function bkGuardFx(k, sd, dmg, x, y) { const G = BKIT.GUARD, hv = dmg >= G.heavy
   if (SFX.bkGuard) SFX.bkGuard(k, dk); ringAt(x, y, 12 + 8 * k, '#ff4a5a', 0.26); streaks(x, y, 10 + (hv ? 6 : 0), ['#ffd0d0', '#ff4a5a', '#7a1020'], 150 + 60 * k); impactAt(x, y, 'steel');
   for (let i = 0; i < 8 + Math.round(8 * k); i++) parts.push({ x: x + (Math.random() - 0.5) * 6, y: y + (Math.random() - 0.5) * 18, vx: -sd * (30 + Math.random() * 130), vy: -30 - Math.random() * 120, life: 0.4, max: 0.4, col: i % 3 === 0 ? '#ffd0d0' : i % 3 === 1 ? '#ff4a5a' : '#7a1020', size: i % 4 ? 1 : 2, grav: 460 }); }
 /* THE BLADE DRINKS: each blow the ward holds fills a notch (blood runs up the steel); three, and the next held heavy comes down a tier higher (bkTier / bkHeavyStart) */
-function bkDrink(sd) { const was = BKIT.notchesOf(P, time), n = BKIT.notchDrink(P, time); if (n === was) return;
+function bkDrink(sd) { const was = BKIT.notchesOf(P, time, bkLife()), n = BKIT.notchDrink(P, time, bkNeed(), bkLife()); if (n === was) return;
   const x = P.x + P.face * 14, y = P.y - 6 - 8 * n; ringAt(x, y, 6 + 2 * n, '#ff4a5a', 0.3);
   for (let i = 0; i < 5; i++) parts.push({ x: x + (Math.random() - 0.5) * 3, y: P.y - 4, vx: P.face * (Math.random() * 14), vy: -50 - Math.random() * 60, life: 0.4, max: 0.4, col: i % 2 ? '#c0283a' : '#ff6b6b', size: 1, grav: -30 });
   if (n >= BKIT.GUARD.notches) { number(P.x, P.y - 44, 'THE BLADE DRINKS', '#ff4a5a'); ringAt(P.x + P.face * 14, P.y - 20, 20, '#ffd0d0', 0.4); if (SFX.bloodDraw) SFX.bloodDraw(); if (SFX.tell) SFX.tell(true); } }
-const bkNotches = () => BKIT.notchesOf(P, time);
+const bkNotches = () => BKIT.notchesOf(P, time, bkLife());
+const bkNeed = () => BKT.UP.notchNeed(upg('ubdrink')), bkLife = () => BKT.UP.notchLife(upg('ubdrink'));   /* (claude/bkpack) BLADE DRINKS+: two notches lift the heavy; a notch lasts 20 s */
 /* THE WARD BREAKS: a full ward struck again. It comes apart in shards with its own sound, what it held is gone (no nova, no healing), he
    reels, and it will not stand up again for WARD_BROKEN. The blow itself goes on into damagePlayer at half. */
 function wardBreak(fromX) {
@@ -27946,7 +27951,7 @@ function bloodNova(k0, second) {
   if (hit) gainHarvest(3 * hit);
   if (!second) {
     void marked;   /* (claude/bkrework Q6: THE NOVA HEALS NOTHING NOW - the blood the ward cost him is debt on the bar, won back by his blows. DEEP RED / DEEP DRAW have no heal to add to; the L25-50 BK lane re-points them.) */
-    if ((P.wardDmg || 0) > 0) trialEvent('ward');
+    if ((P.wardDmg || 0) > 0) { trialEvent('ward'); if (tech('blance')) bkLance(P.wardDmg); }   /* (claude/bkpack) WARD LANCE: the chip the guard drank flies out ahead of the nova */
     if (gv >= cap - 0.5 && tal('overflow')) { P.novaT = 0.35; P.novaK = k; }   /* OVERFLOW */
     P.wardG = 0; P.wardDmg = 0; P.wardFull = false; }
   novas.push({ x: P.x, y: P.y, R, t: 0, life: 0.3 + 0.12 * Math.min(1.4, k), k });
@@ -28102,7 +28107,7 @@ function graveFall() {
    It replaces THE DEATH KNIGHT 2's held price (the blade drinking his blood as X was held) and its drink-backs: X held is THE FIVE-TIER HEAVY,
    his sustain is BLOOD DEBT (reclaimed by his landed blows), BLOOD PRICE is DOWN+C, and the crouch's low block on the beat is BLOOD SPIKE. ==== */
 const bkQuick = () => 1 - 0.1 * Math.max(0, tal('heavy') - 1);   /* the heavy node's rank: quicker to wind a point, as the knight's cutAt */
-const bkTier = () => BKIT.boostTier(BKIT.tierFor(P.atkHeld || 0, P.bd || 0, P.maxHp, bkQuick()), bkNotches());   /* (claude/heroblocksa) THE BLADE DRINKS: three notches and the hold's tier comes one higher */
+const bkTier = () => BKIT.boostTier(BKIT.tierFor(P.atkHeld || 0, P.bd || 0, P.maxHp, bkQuick()), bkNotches(), bkNeed());   /* (claude/heroblocksa) THE BLADE DRINKS: three notches and the hold's tier comes one higher */
 /* (claude/chargetiers) THE RANGER'S THREE-TIER DRAW: the wind's quickness (STEADY DRAW, the knee, the technique rank - heavyWind over her base draw), whether a bow draw is up, and the tier it has reached (src/ranger.js RG.tiers) */
 const rgQuick = () => heavyWind() / RG_K.draw.wind;
 const rgDrawing = () => isRg() && !!RGK && RGK.bowReady() && (P.charge || 0) > 0;
@@ -28145,8 +28150,8 @@ function bkReleasePose(R) { const st = P.bkTier || 3, k = BK_REL_KEY[st], ph = P
 let bkWaves = [];   /* T3 CRIMSON CRESCENT's travelling waves */
 /* THE TIER, LET GO (fireHeavy, after startSwing): its multiplier; T4/T5 SPEND the debt into it */
 function bkHeavyStart(st) { const T = BKIT.BLOOD.tiers; st = Math.max(1, Math.min(5, st | 0));
-  if (bkNotches() >= BKIT.GUARD.notches) { P.bkNotch = 0; P.bkDrunk = (P.bkDrunk || 0) + 1; number(P.x, P.y - 40, 'DRUNK', '#ff4a5a'); streaks(P.x + P.face * 16, P.y - 18, 8, ['#ff4a5a', '#ffd0d0'], 160); }   /* (claude/heroblocksa) the drunk blade is spent on the blow it raised */
-  P.bkTier = st; P.bkSpent = 0; P.bkLanded = false; P.bkVolley = false; P.swingMul = T.mul[st] + 0.15 * Math.max(0, tal('heavy') - 1);
+  if (bkNotches() >= bkNeed()) { P.bkNotch = 0; P.bkDrunk = (P.bkDrunk || 0) + 1; number(P.x, P.y - 40, 'DRUNK', '#ff4a5a'); streaks(P.x + P.face * 16, P.y - 18, 8, ['#ff4a5a', '#ffd0d0'], 160); }   /* (claude/heroblocksa) the drunk blade is spent on the blow it raised */
+  P.bkSwingId = (P.bkSwingId || 0) + 1; P.bkTier = st; P.bkSpent = 0; P.bkLanded = false; P.bkVolley = false; P.swingMul = T.mul[st] + 0.15 * Math.max(0, tal('heavy') - 1);
   if (st >= 4 && bkFed()) { const s = BKIT.debtSpend(P); P.bkSpent = s; P.swingMul *= BKIT.spendMul(s, P.maxHp); if (s > 0) { number(P.x, P.y - 40, '-' + Math.round(s), '#ff4a5a'); motes(P.x, P.y - 14, 6, 8, ['#ff4a5a', '#7a1020']); } }   /* (claude/bkfeel) BLOOD-FED: the debt is spent into the blow; half of it comes back as it lands (bkFedHeal) */
   number(P.x, P.y - 34, T.names[st], T.cols[st]); P.bkNames = (P.bkNames || 0) + 1; trialEvent('tier' + st); }
 /* THE TIER COMES DOWN (the art's live frame): what each one does beside its blade */
@@ -28155,7 +28160,7 @@ function bkHeavyLive() { const st = P.bkTier || 1, T = BKIT.BLOOD.tiers, x = P.x
   if (st === 1) { SFX.slash ? SFX.slash() : SFX.pSlash(); streaks(x, y + 6, 8, ['#ffd0d0', '#ff4a5a'], 140); }   /* REND: a quick low cleave */
   if (st === 2) { SFX.crack(); ringAt(x, P.y - 4, 16, '#ff6b6b', 0.25); dust(x, P.y, 6); }   /* SUNDER: the overhead comes down on the guard */
   if (st === 3) { SFX.dkWard(); dkArcs.push({ x: P.x, y: P.y, face: P.face, n: 3, t: 0, life: 0.3 });   /* CRIMSON CRESCENT: the arc, and the wave that runs on from it */
-    bkWaves.push({ x: P.x + P.face * 20, y: P.y, face: P.face, t: 0, dmg: Math.round(swordDmg() * BKIT.BLOOD.wave.mul * (1 + 0.15 * Math.max(0, tal('heavy') - 1))), hit: new Set(P.hitSet) }); }
+    bkWaves.push({ x: P.x + P.face * 20, y: P.y, face: P.face, t: 0, dmg: Math.round(swordDmg() * BKIT.BLOOD.wave.mul * (1 + 0.15 * Math.max(0, tal('heavy') - 1))), hit: new Set(P.hitSet), life: BKIT.BLOOD.wave.life * BKT.UP.waveMul(upg('ucres')) }); }
   if (st === 4) { SFX.squelch(); ringAt(x + P.face * 10, y + 4, 12, '#d0182c', 0.3); streaks(x, y + 4, 12, ['#ffffff', '#ff4a5a', '#7a1020'], 220); }   /* EXSANGUINATE: the point goes in */
   if (st === 5) bkMoon();   /* BLOOD MOON: the slam and the geyser */
   for (let i = 0; i < 6 + 3 * st; i++) { const a = -Math.PI * 0.75 + Math.PI * 1.1 * (i / (6 + 3 * st)), r = 26 + 3 * st;
@@ -28173,13 +28178,13 @@ function bkMoon() { const M = BKIT.BLOOD.moon, dmg = Math.round(swordDmg() * M.m
   if (hit.size && !P.bkLanded) { P.bkLanded = true; bkFedHeal(); } }   /* (claude/bkfeel) a geyser that finds something is the BLOOD-FED landing too */
 function bkBleed(e, st) { const s = BKIT.BLOOD.tiers.bleed[st] || 2; e.bleed = Math.max(e.bleed || 0, s); e.bleedN = Math.max(e.bleedN || 0, st >= 4 ? 2 : 1); }
 function updateBkWaves(dt) { const W = BKIT.BLOOD.wave;
-  for (const w of bkWaves) { w.t += dt; const nx = w.x + w.face * W.sp * dt;
-    if (isSolid(Math.floor(nx / TS), Math.floor((w.y - 8) / TS))) { w.t = W.life; burst(w.x, w.y - 8, 6, ['#c0283a', '#7a1020'], 50, 0.3); continue; } w.x = nx;   /* a wall stops it */
+  for (const w of bkWaves) { w.t += dt; const nx = w.x + w.face * (w.sp || W.sp) * dt;
+    if (isSolid(Math.floor(nx / TS), Math.floor((w.y - 8) / TS))) { w.t = 99; burst(w.x, w.y - 8, 6, ['#c0283a', '#7a1020'], 50, 0.3); continue; } w.x = nx;   /* a wall stops it */
     if (Math.random() < dt * 60) parts.push({ x: w.x, y: w.y - Math.random() * 18, vx: w.face * 20, vy: -20 - Math.random() * 30, life: 0.3, max: 0.3, col: Math.random() < 0.5 ? '#c0283a' : '#ff9aa6', size: 1, grav: 30 });
     for (const e of enemies) { if (!e.alive || e.harmless || e.gone > 0 || w.hit.has(e)) continue;
       if (Math.abs(e.x - w.x) > (e.w || 16) / 2 + 8 || e.y < w.y - 30 || e.y - (e.h || 16) > w.y + 2) continue;
-      w.hit.add(e); hurtAs('heavy', e, w.dmg, w.x - w.face * 10, false); markFoe(e); if (e.alive) bkBleed(e, 3); burst(e.x, e.y - (e.h || 16) / 2, 8, ['#c0283a', '#ff6b6b', '#3a0a10'], 70, 0.4); bkReclaim(w.dmg, e); } }
-  bkWaves = bkWaves.filter(w => w.t < W.life); }
+      w.hit.add(e); hurtAs('heavy', e, w.dmg, w.x - w.face * 10, false); markFoe(e); if (e.alive) bkBleed(e, w.bleedSt || 3); burst(e.x, e.y - (e.h || 16) / 2, 8, ['#c0283a', '#ff6b6b', '#3a0a10'], 70, 0.4); if (!w.noReclaim) bkReclaim(w.dmg, e); } }   /* (claude/bkpack) a technique's wave (WARD LANCE, PAY IT FORWARD) carries its own sp / life / bleedSt and drinks nothing back */
+  bkWaves = bkWaves.filter(w => w.t < (w.life || W.life)); }
 /* (claude/bloodknightart) THE CRIMSON CRESCENT, a baked pixel sprite (was an ellipse): a thick crescent bulging ahead, a white-hot rim, a dark outline, three shimmer frames; flipped for facing left */
 let bkWaveSpr = null;
 function bkWaveSprites() { if (bkWaveSpr) return bkWaveSpr; bkWaveSpr = [];
@@ -28191,9 +28196,9 @@ function bkWaveSprites() { if (bkWaveSpr) return bkWaveSpr; bkWaveSpr = [];
     bkWaveSpr.push(c); }
   return bkWaveSpr; }
 function drawBkWaves(cx, cy) { const W = BKIT.BLOOD.wave, spr = bkWaveSprites();
-  for (const w of bkWaves) { const k = w.t / W.life, x = Math.round(w.x - cx), y = Math.round(w.y - cy), f = w.face, c = spr[Math.floor(w.t * 14) % 3], sy = 1 - 0.35 * k, h = Math.round(c.height * sy);
+  for (const w of bkWaves) { const k = w.t / (w.life || W.life), x = Math.round(w.x - cx), y = Math.round(w.y - cy), f = w.face, c = spr[Math.floor(w.t * 14) % 3], sy = 1 - 0.35 * k, sc = w.scale || 1, h = Math.round(c.height * sy * sc);
     g.globalAlpha = 0.5 * (1 - k); g.fillStyle = '#7a1020'; for (let i = 1; i <= 3; i++) g.fillRect(x - f * (6 + i * 4), y - h / 2 - 3 + i * 3, 3, 1);   /* the trail it drags */
-    g.globalAlpha = Math.min(1, 1.4 * (1 - k)); g.save(); g.translate(x, y - h + 1); g.scale(f > 0 ? 1 : -1, 1); g.drawImage(c, -4, 0, c.width, h); g.restore(); g.globalAlpha = 1; } }
+    g.globalAlpha = Math.min(1, 1.4 * (1 - k)); g.save(); g.translate(x, y - h + 1); g.scale(f > 0 ? 1 : -1, 1); g.drawImage(c, -4, 0, Math.round(c.width * sc), h); g.restore(); g.globalAlpha = 1; } }
 /* A BLOW OF HIS THAT LANDS RECLAIMS BLOOD DEBT (never above where he was before the hit: it fills the red segment and no more) */
 function bkReclaim(dmg, e, weight) { if (!isReaper()) return 0;
   if (!(P.bd > 0)) return 0;   /* (claude/bkrework) no debt, nothing comes back - and no passive lifesteal of any kind (Q6) */
@@ -28212,7 +28217,7 @@ function bkTeach(k) { const t = BK_TEACH[k]; if (!t || state !== 'play' || !L ||
 /* once a frame for him (beside BLOOD DEBT's step): VITAE drinks what was reclaimed, the frenzy's clock, THE HEARTBEAT, the dripping blade, the streams */
 function bkBloodStep(dt) {
   if ((P.bkVitIn || 0) > 0) { const gain = BKIT.vitaeOf(P.bkVitIn, P.maxHp); P.bkVitIn = 0; bkVitae(gain); }
-  bkRequiemStep(dt);
+  bkRequiemStep(dt); bkTechStep(dt);
   const H = BKIT.heartOf(P.bd, P.maxHp); P.bkHeartK = H.k;
   if (H.bps > 0 && !P.dead && state === 'play') { P.bkBeatT = (P.bkBeatT || 0) - dt; if (P.bkBeatT <= 0) { P.bkBeatT = 1 / H.bps; P.bkBeatAt = time; P.bkBeats = (P.bkBeats || 0) + 1; if (SFX.bkHeart) SFX.bkHeart(H.k); } } else P.bkBeatT = 0;
   if ((P.bd || 0) >= 0.08 * P.maxHp && !P.dead) bkTeach('rally');
@@ -28245,12 +28250,12 @@ function bkSpray(e) { const k = BKIT.sprayKind(e.t, MAT[e.t]), x = e.x, y = e.y 
   else if (k === 'sparks') chips(x, y, d, 8, ['#fff6c8', '#ffd34a', '#ffffff', '#ff6b6b'], 210, 420, 1, true);
   else chips(x, y, d, 6, ['#8a7a6a', '#5a4a40', '#7a1020'], 120, 520, 1); }
 /* THE BLOOD LASH lands: the whip bleeds it (lash.bleed s), and says its name once a swing */
-function bkLashHit(e) { bkDecal(e.x, e.y, 2, true); if (e.alive && !e.harmless) { e.bleed = Math.max(e.bleed || 0, BKIT.BLOOD.lash.bleed + (P.bkDrain3 ? BKIT.BLOOD.drain3.bleed - BKIT.BLOOD.lash.bleed : 0)); e.bleedN = Math.max(e.bleedN || 0, 1); } P.bkLashHits = (P.bkLashHits || 0) + 1;
+function bkLashHit(e) { bkDecal(e.x, e.y, 2, true); if (e.alive && !e.harmless) { e.bleed = Math.max(e.bleed || 0, BKIT.BLOOD.lash.bleed + (P.bkDrain3 ? BKIT.BLOOD.drain3.bleed - BKIT.BLOOD.lash.bleed : 0) + BKT.UP.lashBleed(upg('ulash'))); e.bleedN = Math.max(e.bleedN || 0, 1); if (BKT.UP.lashMark(upg('ulash'))) markFoe(e); bkReachHook(e); }   /* (claude/bkpack) DEEP LASH: a second longer, and marked; CRIMSON REACH hooks it */ P.bkLashHits = (P.bkLashHits || 0) + 1;
   if (!P.bkLashSaid) { P.bkLashSaid = true; number(P.x, P.y - 32, P.bkDrain3 ? BKIT.BLOOD.drain3.name : 'BLOOD LASH', '#ff4a5a'); if (SFX.bkLash) SFX.bkLash(); } }
 /* ==== (claude/bkrework 11-04, plan-bloodknight-1103.md) RED REQUIEM (UP+C at a full VITAE, grounded; it replaced CRIMSON FRENZY on HOLD F). A told 0.45 s windup (helm flare + the toll), then the greatsword is driven into the ground:
    a blood GEYSER column and a crimson ring (requiem.ring px) hit everything near for swordDmg x SKK.K.redRequiem. A common foe is staggered and bleeds; a BOSS or mini is not (no stagger, no stun: the resist floor holds) -
    but every foe it hits is branded with HEMORRHAGE for requiem.hemT s: his blows on it land x1.25 and drink back ALL of themselves, and his debt does not drain. No invulnerability (B15); while it lasts he is UNFLINCHING to light blows. ==== */
-function bkRequiemReady() { return isReaper() && !P.dead && (P.harvest || 0) >= 100 && P.ground && !P.swim && !((P.bkReqT || 0) > 0) && !((P.bkReqWind || 0) > 0) && !(P.hurt > 0); }
+function bkRequiemReady() { return isReaper() && !P.dead && (P.harvest || 0) >= 100 && !((P.bkCapCd || 0) > 0) && !((P.bkRecT || 0) > 0) && P.ground && !P.swim && !((P.bkReqT || 0) > 0) && !((P.bkReqWind || 0) > 0) && !(P.hurt > 0); }
 function bkRequiem() { const R = BKIT.BLOOD.requiem; trialEvent('meter'); P.bkReqWind = R.windup; P.blastT = R.windup + 0.3; P.atk = -1; P.atkRec = 0; P.heavy = false; P.charge = 0; P.vx = 0;
   number(P.x, P.y - 34, R.name, '#ff4a5a'); if (SFX.bkToll) SFX.bkToll(); else SFX.tell(true); ringAt(P.x, P.y - 12, 22, '#c0283a', R.windup); ringAt(P.x, P.y - 24, 10, '#ffd0d0', 0.3);
   for (let i = 0; i < 12; i++) { const a = (i / 12) * 6.28; parts.push({ x: P.x + Math.cos(a) * 14, y: P.y - 12 + Math.sin(a) * 10, vx: -Math.cos(a) * 40, vy: -Math.sin(a) * 30 - 20, life: 0.4, max: 0.4, col: i % 2 ? '#ff4a5a' : '#ffd0d0', size: 1, grav: 0 }); }
@@ -28259,8 +28264,8 @@ function bkRequiemStep(dt) { const R = BKIT.BLOOD.requiem;
   if ((P.bkReqWind || 0) > 0) { if (P.dead || P.hurt > 0 || !P.ground) { P.bkReqWind = 0; P.blastT = 0; if (!P.dead) number(P.x, P.y - 34, 'BROKEN', '#7a1020'); P.bkReqBroken = (P.bkReqBroken || 0) + 1; }   /* the windup is told AND can be broken: no meter is spent until it lands */
     else { P.vx = 0; P.bkReqWind -= dt; if (Math.random() < dt * 30) parts.push({ x: P.x + P.face * 10 + (Math.random() - 0.5) * 8, y: P.y - 14 - Math.random() * 10, vx: 0, vy: -50, life: 0.35, max: 0.35, col: Math.random() < 0.5 ? '#ff4a5a' : '#ffd0d0', size: 1, grav: -20 }); if (P.bkReqWind <= 0) { P.bkReqWind = 0; bkRequiemImpact(); } } }
   if ((P.bkReqT || 0) > 0) { P.bkReqT = P.dead ? 0 : Math.max(0, P.bkReqT - dt); P.bkReqTime = (P.bkReqTime || 0) + dt;
-    if (P.bkReqT <= 0 && !P.dead) { for (const e of enemies) e.hem = 0; SFX.puff && SFX.puff(); } } }
-function bkRequiemImpact() { const R = BKIT.BLOOD.requiem; P.harvest = 0; P.bkReqT = R.hemT; P.bkReqs = (P.bkReqs || 0) + 1; P.bkReqAt = time; P.bkReqHits = 0; P.blastT = 0.3;
+    if (P.bkReqT <= 0 && !P.dead) { for (const e of enemies) e.hem = 0; SFX.puff && SFX.puff(); if (tech('bunbound')) bkUnboundNova(); } } }   /* (claude/bkpack) REQUIEM UNBOUND ends in a nova */
+function bkRequiemImpact() { const R = BKIT.BLOOD.requiem; P.harvest = 0; if (tech('bunbound')) P.bkCapCd = 40; P.bkReqT = R.hemT; P.bkReqs = (P.bkReqs || 0) + 1; P.bkReqAt = time; P.bkReqHits = 0; P.blastT = 0.3;
   const dmg = Math.max(1, Math.round(swordDmg() * SKK.K.redRequiem * amul('redRequiem'))), gx = P.x + P.face * 12;
   ringAt(gx, P.y - 6, R.ring, '#c0283a', 0.5); ringAt(gx, P.y - 6, R.ring * 0.55, '#ff4a5a', 0.4); ringAt(gx, P.y - 6, 22, '#ffd0d0', 0.3);
   for (let j = 0; j < 3; j++) dkGraves.push({ x: gx + (j - 1) * 7, y: P.y, t: 0, life: 0.7, reach: 30 + j * 10, seed: Math.floor(Math.random() * 1e6), spike: true });   /* the geyser column: BLOOD SPIKE's erupting tongues, tall (placeholder art) */
@@ -28269,12 +28274,99 @@ function bkRequiemImpact() { const R = BKIT.BLOOD.requiem; P.harvest = 0; P.bkRe
   for (const e of enemies) { if (!e.alive || e.harmless || e.turncoat) continue; if (Math.abs(e.x - P.x) > R.ring + (e.w || 12) / 2 || Math.abs((e.y - (e.h || 16) / 2) - (P.y - 12)) > 56 + (e.h || 16) / 2) continue;
     const big = !!(e.maxHp || e.mini || e.big); hurtAs('heavy', e, dmg, P.x, false); P.bkReqHits++;
     if (e.alive) { e.hem = R.hemT; if (!big) { e.stagger = Math.max(e.stagger || 0, R.stagger); e.vx = 0; } e.bleed = Math.max(e.bleed || 0, R.bleed); e.bleedN = Math.max(e.bleedN || 0, 1); } } }
+/* ==== (claude/bkpack, Daniel 11-04 11:19 / 11:24, brief-l50abilities sec 6.5 + brief-lategame2 sec 3) THE BLOOD KNIGHT'S L25-L50 TECHNIQUES. Data: src/tech-bloodknight.js; numbers and pure rules: src/bk-tech.js (BKT; tools/bk-tech.mjs
+   plays them in node). Read through tech(id) / upg(id). The law: every blow is swordDmg x k (bkDmg), no flat damage, no new heal (the debt reclaim stays the only one), a boss takes the damage and its resist floor and
+   never a free stagger or pin, one hit-stop a cast, FX dice are Math.random on particles only. State lives on P (per seat). ==== */
+let bkHooks = [], bkTechQ = [];   /* CRIMSON REACH's hooked foes {e, n}; BLOOD ECHO's afterimages and THE RECKONING's returned bleeds {kind, t, e, dmg | per, left} */
+const bkDmg = k => BKT.dmgOf(swordDmg(), k, grow(hero(), heroLevel()).skillMultiplier);
+const bkBigFoe = e => !!(e.maxHp || e.mini || e.big || lcBig(e));
+function bkTechReset() { bkHooks = []; bkTechQ = []; P.bkRite = null; P.bkRecT = 0; P.bkDcT = 0; P.bkMortN = 0; P.bkMortT = 0; }
+const bkLashReach = () => tech('breach') ? BKT.BT.reach.px : BKIT.BLOOD.lash.reach;
+/* L25 REAP THE BLEED: a REND (T1) that finds a bleeding foe pops what is left of the bleed as one blow (before the heavy puts its own bleed on) */
+function bkReap(e) { if (!e.alive || e.harmless || !(e.bleed > 0)) return; const k = BKT.reapK(e.bleed), dmg = bkDmg(k); e.bleed = 0; e.bleedN = 0;
+  hurtAs('heavy', e, dmg, P.x, false); P.bkReaps = (P.bkReaps || 0) + 1; number(e.x, e.y - (e.h || 16) - 24, 'REAPED', '#ff4a5a');
+  burst(e.x, e.y - (e.h || 16) / 2, 12, ['#c0283a', '#ff6b6b', '#3a0a10'], 90, 0.45); if (SFX.squelch) SFX.squelch(); shakeCam(2, P.face); }
+/* L30 A CRIMSON REACH: the lash that lands hooks the foe (up to three, small ones, never a boss or a heavy one) and the step below draws it to a heap before him */
+function bkReachHook(e) { if (!tech('breach') || !e.alive || e.harmless || bkBigFoe(e) || e.noGrav || HEAVY.has(e.t) || bkHooks.length >= BKT.BT.reach.n || bkHooks.some(h => h.e === e)) return;
+  bkHooks.push({ e, n: bkHooks.length, t: 0 }); if (bkHooks.length === 1) { number(P.x, P.y - 34, 'CRIMSON REACH', '#ff4a5a'); if (SFX.bkLash) SFX.bkLash(); } }
+/* L30 B WARD LANCE: the nova of a let-go ward is joined by a lance of the blood the guard drank */
+function bkLance(chip) { const k = BKT.lanceK(chip, P.maxHp); if (!(k > 0)) return; const Lc = BKT.BT.lance;
+  bkWaves.push({ x: P.x + P.face * 14, y: P.y, face: P.face, t: 0, dmg: bkDmg(k), hit: new Set(), sp: Lc.sp, life: Lc.life, scale: 0.8, noReclaim: true, bleedSt: 2 });
+  number(P.x, P.y - 42, 'WARD LANCE', '#ff4a5a'); ringAt(P.x + P.face * 14, P.y - 16, 12, '#ffd0d0', 0.2); if (SFX.bkLash) SFX.bkLash(); else SFX.tell(true); P.bkLances = (P.bkLances || 0) + 1; }
+/* L35 PLANT THE BLADE (hold DOWN+C): a blood rite on the floor for a while */
+function bkPlant() { const R = BKT.BT.plant; P.bkPlantCd = R.cd; P.bkRite = { x: P.x, y: P.y, t: R.life, tick: 0, heal: 0 }; P.vx = 0; P.bkPlants = (P.bkPlants || 0) + 1;
+  number(P.x, P.y - 36, 'PLANT THE BLADE', '#ff4a5a'); ringAt(P.x, P.y - 4, R.r, '#7a1020', 0.5); ringAt(P.x, P.y - 4, 24, '#ff4a5a', 0.3); SFX.heavy(); if (SFX.bloodDraw) SFX.bloodDraw(); hitstop(0.117); shakeCam(4);
+  for (let i = 0; i < 14; i++) parts.push({ x: P.x + P.face * 10 + (Math.random() - 0.5) * 6, y: P.y - 2, vx: (Math.random() - 0.5) * 90, vy: -50 - Math.random() * 60, life: 0.45, max: 0.45, col: Math.random() < 0.5 ? '#c0283a' : '#5a0a14', size: 1, grav: 300 });
+  return true; }
+/* L40 A PAY IT FORWARD (UP+C with debt >= 30%, VITAE not full): all the debt leaves him as a red wave. Burned, not healed. */
+function bkForwardReady() { return isReaper() && tech('bforward') && !P.dead && P.ground && !P.swim && !(P.hurt > 0) && !((P.bkFwdCd || 0) > 0) && !((P.bkReqWind || 0) > 0) && BKT.forwardReady(P.bd || 0, P.maxHp); }
+function bkForward() { const F = BKT.BT.forward, spent = BKIT.debtSpend(P), k = BKT.forwardK(spent, P.maxHp); if (!(k > 0)) return false; P.bkFwdCd = F.cd; P.bkForwards = (P.bkForwards || 0) + 1; P.blastT = 0.3; P.vx = 0; P.atk = -1; P.atkRec = 0; P.heavy = false; P.charge = 0;
+  bkWaves.push({ x: P.x + P.face * 18, y: P.y, face: P.face, t: 0, dmg: bkDmg(k), hit: new Set(), sp: F.sp, life: F.life, scale: 1.7, noReclaim: true, bleedSt: 4 });
+  number(P.x, P.y - 38, 'PAY IT FORWARD', '#ff4a5a'); number(P.x, P.y - 52, '-' + Math.round(spent) + ' DEBT', '#c0283a'); ringAt(P.x + P.face * 14, P.y - 14, 26, '#c0283a', 0.4); if (SFX.bkRequiem) SFX.bkRequiem(); else { SFX.bloodDraw(); SFX.heavy(); }
+  hitstop(0.117); shakeCam(6, P.face); rumble(160, 0.6); return true; }
+/* L40 B MORTGAGE (BLOOD PRICE a second time within a breath): more debt, and the next three blows land harder. No heal. */
+function bkMortgage() { const M = BKT.BT.mort, free = yardSafe() || SET.invincible; if (!free && P.hp <= 1) return false; const paid = BKIT.payBlood(P, M.pct, free); if (!(paid > 0)) return false;
+  P.bkMortN = M.n; P.bkMortT = M.t; P.bkMortCd = M.cd; P.bkMortSeen = -1; P.bkMortgages = (P.bkMortgages || 0) + 1; P.bkEdgeT = Math.max(P.bkEdgeT || 0, M.t); P.bkPriceCd = BKIT.BLOOD.price.cd;
+  number(P.x, P.y - 22, '-' + paid, '#c0283a'); number(P.x, P.y - 36, 'MORTGAGE', '#ff4a5a'); SFX.bloodDraw(); SFX.tell(true); hitstop(0.05); ringAt(P.x + P.face * 6, P.y - 14, 24, '#7a1020', 0.4);
+  for (let i = 0; i < 18; i++) parts.push({ x: P.x + P.face * 4 + (Math.random() - 0.5) * 6, y: P.y - 10 - Math.random() * 8, vx: P.face * (20 + Math.random() * 60), vy: -70 - Math.random() * 60, life: 0.55, max: 0.55, col: Math.random() < 0.6 ? '#c0283a' : '#ff6b6b', size: Math.random() < 0.4 ? 2 : 1, grav: 220 });
+  return true; }
+/* a blow of his lands: MORTGAGE's x1.4 for the next three swings (the swing id: one swing is one blow however many foes it finds) */
+function bkMortMul() { if (!(P.bkMortT > 0)) return 1; if (P.bkMortSeen !== P.bkSwingId) { if (!(P.bkMortN > 0)) return 1; P.bkMortSeen = P.bkSwingId; P.bkMortN--; } return BKT.BT.mort.mul; }
+/* L45 BLOOD ECHO: in HEMORRHAGE a rhythm cut that lands is repeated by a red afterimage a beat later */
+function bkEcho(e) { bkTechQ.push({ kind: 'echo', t: BKT.BT.echo.delay, e, dmg: bkDmg(BKT.BT.echo.k) }); }
+/* L50 A REQUIEM UNBOUND: every blow on a branded foe adds to the HEMORRHAGE clock; it ends in a blood nova */
+function bkUnboundHit(e) { const was = P.bkReqT; P.bkReqT = BKT.unboundClock(P.bkReqT); e.hem = Math.max(e.hem || 0, P.bkReqT); if (P.bkReqT > was + 0.01 && !(P.bkUnbSaid > time)) { P.bkUnbSaid = time + 1.5; number(P.x, P.y - 40, '+' + BKT.BT.unbound.per + ' S', '#ff4a5a'); } }
+function bkUnboundNova() { const U = BKT.BT.unbound, dmg = bkDmg(U.k); P.bkNovas = (P.bkNovas || 0) + 1; ringAt(P.x, P.y - 12, U.r, '#c0283a', 0.5); ringAt(P.x, P.y - 12, U.r * 0.55, '#ff4a5a', 0.35); number(P.x, P.y - 38, 'UNBOUND', '#ff4a5a');
+  if (SFX.dkNova) SFX.dkNova(1.2); hitstop(0.12); shakeCam(7); zoomKick(1.06, 0.3); rumble(220, 0.8);
+  for (let i = 0; i < 30; i++) { const a = i / 30 * 6.28; parts.push({ x: P.x + Math.cos(a) * 8, y: P.y - 12 + Math.sin(a) * 6, vx: Math.cos(a) * U.r * 2.4, vy: Math.sin(a) * U.r * 1.3, life: 0.35, max: 0.35, col: i % 2 ? '#c0283a' : '#ff9a9a', size: 2, grav: 0 }); }
+  for (const e of enemies) { if (!e.alive || e.harmless || e.turncoat || e.gone > 0) continue; if (Math.abs(e.x - P.x) > U.r + (e.w || 12) / 2 || Math.abs((e.y - (e.h || 16) / 2) - (P.y - 12)) > 50 + (e.h || 16) / 2) continue;
+    hurtAs('heavy', e, dmg, P.x, false); if (e.alive) { bkBleed(e, 3); if (!bkBigFoe(e)) { e.stagger = Math.max(e.stagger || 0, 0.4); } } } }
+/* L50 B THE RECKONING (replaces the Requiem cast): 8 s, every blow he takes bleeds its attacker; the debt does not drain; at the end half of it is repaid as health */
+function bkReckon() { const R = BKT.BT.reckon; trialEvent('meter'); P.harvest = 0; P.bkRecT = R.t; P.bkRecs = (P.bkRecs || 0) + 1; P.bkCapCd = 40; P.blastT = 0.25; P.vx = 0; P.atk = -1; P.atkRec = 0; P.heavy = false; P.charge = 0;
+  number(P.x, P.y - 36, 'THE RECKONING', '#ff4a5a'); ringAt(P.x, P.y - 12, 26, '#c0283a', 0.6); ringAt(P.x, P.y - 24, 10, '#ffd0d0', 0.3); if (SFX.bkToll) SFX.bkToll(); else SFX.tell(true); hitstop(0.06); shakeCam(3);
+  for (let i = 0; i < 12; i++) { const a = (i / 12) * 6.28; parts.push({ x: P.x + Math.cos(a) * 14, y: P.y - 12 + Math.sin(a) * 10, vx: -Math.cos(a) * 40, vy: -Math.sin(a) * 30 - 20, life: 0.4, max: 0.4, col: i % 2 ? '#ff4a5a' : '#ffd0d0', size: 1, grav: 0 }); }
+  return true; }
+function bkReckonTake(src, dmg) { if (!src || !src.alive || src.harmless || src.turncoat || src === P) return; const R = BKT.BT.reckon, cap = BKT.reckonCap(swordDmg()); let per = BKT.reckonTick(dmg); src.bkRecSum = src.bkRecSum || 0;
+  if (src.bkRecSum >= cap) return; per = Math.min(per, Math.max(1, Math.round((cap - src.bkRecSum) / R.ticks))); src.bkRecSum += per * R.ticks; if (!src.bkRecSaid) { src.bkRecSaid = true; number(src.x, src.y - (src.h || 16) - 22, 'RECKONED', '#ff4a5a'); }
+  bkTechQ.push({ kind: 'bleed', t: R.over / R.ticks, e: src, per, left: R.ticks }); src.bleed = Math.max(src.bleed || 0, R.over); src.bleedN = Math.max(src.bleedN || 0, 1); }
+function bkReckonEnd() { const rp = BKT.reckonRepay(P.bd || 0), hp0 = P.hp; if (rp > 0) { BKIT.debtReclaim(P, rp); P.bkVitIn = 0; bkRecPulse(hp0); number(P.x, P.y - 40, '+' + Math.round(P.hp - hp0), '#8fd160'); }   /* the repay is the heal; the vitae it would have fed is not paid */
+  P.bd = 0; P.bdHold = 0; P.bdLast = P.hp; for (const e of enemies) { e.bkRecSum = 0; e.bkRecSaid = false; } ringAt(P.x, P.y - 12, 34, '#8fd160', 0.4); SFX.puff && SFX.puff(); }
+/* once a frame for him (bkBloodStep): the timers and the live parts of the techniques above */
+function bkTechStep(dt) {
+  P.bdHoldPlus = BKT.UP.debtHold(upg('udebt'));
+  for (const k of ['bkPlantCd', 'bkFwdCd', 'bkMortCd', 'bkMortT', 'bkCapCd']) if (P[k] > 0) P[k] = Math.max(0, P[k] - dt);
+  if (!(P.bkMortT > 0)) P.bkMortN = 0;
+  if (P.dead) { bkHooks = []; bkTechQ = []; P.bkRite = null; P.bkRecT = 0; P.bkDcT = 0; return; }
+  /* PLANT THE BLADE */
+  const Rr = P.bkRite;
+  if (Rr) { const R = BKT.BT.plant; Rr.t -= dt; if (Rr.t <= 0) { P.bkRite = null; } else {
+      Rr.tick -= dt; if (Rr.tick <= 0) { Rr.tick = R.tick; for (const e of enemies) { if (!e.alive || e.harmless || e.turncoat || e.gone > 0) continue; if (Math.abs(e.x - Rr.x) > R.r + (e.w || 12) / 2 || Math.abs(e.y - Rr.y) > R.band) continue; e.bleed = Math.max(e.bleed || 0, R.bleed); e.bleedN = Math.max(e.bleedN || 0, 1); } }
+      if (Math.abs(P.x - Rr.x) <= R.r && Math.abs(P.y - Rr.y) <= R.band && (P.bd || 0) > 0) { const x = Math.min(P.bd, BKT.riteExtra(P.bdRate || 0, dt)); if (x > 0) { P.bd -= x; const h = Math.min(x, Math.max(0, BKT.riteHealBudget(P.maxHp) - Rr.heal), Math.max(0, P.maxHp - P.hp)); if (h > 0) { P.hp += h; Rr.heal += h; } P.bdLast = P.hp; } }
+      if (Math.random() < dt * 24) { const a = Math.random() * 6.28, d = Math.random() * R.r; parts.push({ x: Rr.x + Math.cos(a) * d, y: Rr.y - 1, vx: 0, vy: -16 - Math.random() * 20, life: 0.5, max: 0.5, col: Math.random() < 0.5 ? '#c0283a' : '#7a1020', size: 1, grav: -10 }); } } }
+  /* CRIMSON REACH: the hooked foes slide in to a heap before him */
+  for (const h of bkHooks) { const e = h.e; h.t += dt; if (!e.alive || h.t > 0.5 || bkBigFoe(e)) { h.done = true; continue; } const want = BKT.hookSpot(P.x, P.face, h.n), dx = want - e.x; if (Math.abs(dx) <= 1.5) { h.done = true; continue; }
+    const nx = e.x + Math.sign(dx) * Math.min(Math.abs(dx), BKT.BT.reach.sp * dt); if (isSolid(Math.floor(nx / TS), Math.floor((e.y - 6) / TS))) { h.done = true; continue; } e.x = nx; e.vx = 0; e.stagger = Math.max(e.stagger || 0, 0.3); }
+  if (bkHooks.some(h => h.done)) bkHooks = bkHooks.filter(h => !h.done);
+  for (const q of bkTechQ) { q.t -= dt; if (q.t > 0) continue; const e = q.e; if (!e || !e.alive) { q.done = true; continue; }
+    if (q.kind === 'echo') { q.done = true; hurtAs('light', e, q.dmg, P.x, false); burst(e.x, e.y - (e.h || 16) / 2, 6, ['#c0283a', '#ff6b6b'], 70, 0.3); streaks(e.x, e.y - (e.h || 16) / 2, P.face, ['#ff4a5a', '#ffd0d0'], 120); if (SFX.squelch) SFX.squelch(); }
+    else { hurtAs('light', e, q.per, P.x, false); q.left--; q.t = BKT.BT.reckon.over / BKT.BT.reckon.ticks; if (q.left <= 0) q.done = true; } }
+  if (bkTechQ.some(q => q.done)) bkTechQ = bkTechQ.filter(q => !q.done);
+  /* THE RECKONING's clock */
+  if ((P.bkRecT || 0) > 0) { P.bkRecT = Math.max(0, P.bkRecT - dt); if (Math.random() < dt * 20) parts.push({ x: P.x + (Math.random() - 0.5) * 16, y: P.y - 8 - Math.random() * 22, vx: 0, vy: -24, life: 0.4, max: 0.4, col: Math.random() < 0.5 ? '#ffd0d0' : '#c0283a', size: 1, grav: -16 }); if (P.bkRecT <= 0) bkReckonEnd(); }
+}
+/* DRAWN (world): the planted rite on the floor, the hooked foes' taut lines (placeholder art: flat reds, no new sprite) */
+function drawBkTech(cx, cy) { if (!isReaper()) return; const calm = SET.reduceMotion || !SET.flashes, Rr = P.bkRite;
+  if (Rr) { const R = BKT.BT.plant, x = Math.round(Rr.x - cx), y = Math.round(Rr.y - cy), k = Math.min(1, Rr.t / 0.6), pulse = calm ? 0.5 : 0.35 + 0.15 * Math.sin(time * 5);
+    g.save(); g.globalAlpha = 0.28 * k * (0.8 + pulse); g.fillStyle = '#5a0a14'; g.beginPath(); g.ellipse(x, y - 1, R.r, 9, 0, 0, 6.283); g.fill(); g.globalAlpha = 0.7 * k; g.strokeStyle = '#c0283a'; g.lineWidth = 1; g.beginPath(); g.ellipse(x, y - 1, R.r, 9, 0, 0, 6.283); g.stroke();
+    for (let i = 0; i < 16; i++) { const a = i / 16 * 6.283; g.beginPath(); g.moveTo(x + Math.cos(a) * 6, y - 1 + Math.sin(a) * 1); g.lineTo(x + Math.cos(a) * R.r * (0.7 + 0.25 * ((i * 7) % 3) / 2), y - 1 + Math.sin(a) * 9 * 0.9); g.stroke(); }
+    g.globalAlpha = 1; g.fillStyle = '#2a0408'; g.fillRect(x - 1, y - 20, 3, 20); g.fillStyle = '#9aa0aa'; g.fillRect(x, y - 19, 1, 18); g.fillStyle = '#7a1020'; g.fillRect(x - 4, y - 21, 9, 2); g.restore(); }   /* the greatsword stood in the floor */
+  for (const h of bkHooks) { const e = h.e; if (!e || !e.alive) continue; g.save(); g.strokeStyle = '#3a0610'; g.lineWidth = 3; g.beginPath(); g.moveTo(Math.round(P.x - cx), Math.round(P.y - cy - 14)); g.lineTo(Math.round(e.x - cx), Math.round(e.y - cy - (e.h || 16) / 2)); g.stroke(); g.strokeStyle = '#ff4a5a'; g.lineWidth = 1; g.stroke(); g.restore(); } }
 /* (claude/bkrework) VITAE: n points (0-100 bar) - from the blood he wins back (bkBloodStep) and from his own landed blows (BLOOD.vitae.gain). Nothing fills it while the Requiem winds or runs (the bar is its clock). */
-function bkVitae(n) { if (!isReaper() || P.dead || !(n > 0) || (P.bkReqT || 0) > 0 || (P.bkReqWind || 0) > 0) return;
+function bkVitae(n) { if (!isReaper() || P.dead || !(n > 0) || (P.bkReqT || 0) > 0 || (P.bkRecT || 0) > 0 || (P.bkReqWind || 0) > 0) return;
   const was = (P.harvest || 0) >= 100; P.harvest = Math.min(100, (P.harvest || 0) + n); P.bkVitae = (P.bkVitae || 0) + n;
   if (!was && P.harvest >= 100) { meterReady('#c0283a'); number(P.x, P.y - 52, 'VITAE FULL', '#ff4a5a'); bkTeach('vitae'); } }
 /* (claude/bkrework) swing start: THE ANSWER (the first cut out of a debt drives him a step in; once per new debt) and the DEBT DRAIN tell (the third cut) */
-function bkSwingStart() { const A = BKIT.BLOOD.answer; P.bkDrain3 = false;
+function bkSwingStart() { const A = BKIT.BLOOD.answer; P.bkDrain3 = false; P.bkSwingId = (P.bkSwingId || 0) + 1;
   if (!P.heavySwing && P.combo === 1 && !P.bkAnswered && (P.bd || 0) >= A.min * P.maxHp && (P.ground || P.swim) && !(P.bkReqWind > 0)) { P.bkAnswered = true; P.bkAnswerT = A.t; P.bkAnswers = (P.bkAnswers || 0) + 1; number(P.x, P.y - 32, 'THE ANSWER', '#ff6b6b'); streaks(P.x + P.face * 6, P.y - 10, 4, ['#ffd0d0', '#ff4a5a'], 120); }
   if (P.heavySwing && !P.swingKind && !P.dashCut) { P.bkDrain3 = true; P.bkDrain3s = (P.bkDrain3s || 0) + 1; ringAt(P.x + P.face * 8, P.y - 14, 12, '#ff4a5a', 0.2); if (SFX.bkDebtDrain) SFX.bkDebtDrain(); } }
 /* DRAWN (world): the frenzy's glow on his armour, the lash's whip, the streams of drops flying into him */
@@ -28307,7 +28399,7 @@ function drawBkBlood(cx, cy) { const px = Math.round(P.x - cx), py = Math.round(
     g.globalAlpha = k; g.fillStyle = '#ffd0d0'; g.fillRect(ex, ey, 2, 1); g.fillStyle = fl > 0.8 ? '#ffffff' : '#ff6b7a'; g.fillRect(ex, ey, 1, 1); g.fillRect(ex + 1, ey, 1, 1);
     g.globalAlpha = k * fl; g.fillStyle = '#ff4a5a'; g.fillRect(ex - 3, ey, 2, 1); g.fillRect(ex + 3, ey, 2, 1); g.fillRect(ex, ey - 3, 1, 2); g.fillRect(ex + 1, ey - 3, 1, 2); g.globalAlpha = 1; }
   if (P.atk >= BKIT.BLOOD.lash.from && P.atk < 0.27 && !P.heavy && !P.swingKind && !P.plunge && !P.dashCut && dkStep(P.combo) === 2) {   /* THE BLOOD LASH: a whip of blood thrown off the point past the steel, cracking out and falling back */
-    const L2 = BKIT.BLOOD.lash, k = Math.min(1, (P.atk - L2.from) / 0.06), back = P.atk > 0.22 ? (P.atk - 0.22) / 0.05 : 0, tp = bkBladePoint(), rx = tp ? Math.round(tp.x - cx) : px + f * 29, ry = tp ? Math.round(tp.y - cy) : py - 14, len = 3 + L2.reach * k * (1 - 0.6 * back), S = bkWhipSprites();
+    const L2 = BKIT.BLOOD.lash, k = Math.min(1, (P.atk - L2.from) / 0.06), back = P.atk > 0.22 ? (P.atk - 0.22) / 0.05 : 0, tp = bkBladePoint(), rx = tp ? Math.round(tp.x - cx) : px + f * 29, ry = tp ? Math.round(tp.y - cy) : py - 14, len = 3 + bkLashReach() * k * (1 - 0.6 * back), S = bkWhipSprites();
     g.save(); g.translate(rx, ry); g.scale(f, 1); let lastY = 0, i = 0;
     for (let d = 0; d < len; d += 5, i++) { const t = d / Math.max(1, len), wy = Math.round(calm ? -t * 2 : Math.sin(t * 9 - time * 30) * 2 * t - t * 3 + back * t * 6), set = t < 0.38 ? S.thick : t < 0.72 ? S.mid : S.thin, spr = set[i % 2];
       g.drawImage(spr, d, wy - (spr.height >> 1)); lastY = wy; }
@@ -28341,6 +28433,7 @@ function bkPerfectStep() { const B = BKIT.BLOOD.step; P.bkPerfectAt = time; P.bk
   for (let i = 0; i < 9; i++) parts.push({ x: P.x + (Math.random() - 0.5) * 8, y: P.y - 6 - Math.random() * 16, vx: -P.face * (10 + Math.random() * 50), vy: -50 - Math.random() * 50, life: 0.45, max: 0.45, col: Math.random() < 0.5 ? '#c0283a' : '#ff6b6b', size: Math.random() < 0.4 ? 2 : 1, grav: 220 }); }
 /* BLOOD PRICE (DOWN+C, on his knee): he opens a vein - the price goes on the bar as BLOOD DEBT - and his blade is BLOOD-EDGED a while */
 function bkPrice() { const B = BKIT.BLOOD.price, free = yardSafe() || SET.invincible;   /* (a trial never hurts: the price is shown, not taken) */
+  if (tech('bmort') && BKT.mortReady(time - (P.bkPriceAt ?? -99), P.bkMortCd || 0)) return bkMortgage();   /* (claude/bkpack) MORTGAGE: the second DOWN+C in a breath */
   if ((P.bkPriceCd || 0) > 0) return false;
   if (!free && P.hp <= 1) { number(P.x, P.y - 30, 'NO BLOOD LEFT TO PAY', '#7a1020'); SFX.buzz(); return false; }
   const paid = BKIT.payPrice(P, free); if (!(paid > 0)) return false;
@@ -28350,8 +28443,10 @@ function bkPrice() { const B = BKIT.BLOOD.price, free = yardSafe() || SET.invinc
   for (let i = 0; i < 14; i++) parts.push({ x: P.x + P.face * 4 + (Math.random() - 0.5) * 6, y: P.y - 10 - Math.random() * 6, vx: P.face * (20 + Math.random() * 40), vy: -60 - Math.random() * 50, life: 0.5, max: 0.5, col: Math.random() < 0.6 ? '#c0283a' : '#ff6b6b', size: Math.random() < 0.4 ? 2 : 1, grav: 200 });   /* the vein opened over the blade */
   return true; }
 /* A CUT OF HIS THAT LANDS (after heroCut, every foe it finds) */
-function dkLanded(e) { if (!e) return; bkSpray(e);   /* (claude/bkblood) BLOODY BLOWS: blood off flesh, sparks off stone and steel */
+function dkLanded(e) { if (!e) return; bkSpray(e);
+  if (e.alive && tech('bunbound') && (P.bkReqT || 0) > 0 && (e.hem || 0) > 0) bkUnboundHit(e);   /* (claude/bkpack) REQUIEM UNBOUND: a blow on a branded foe feeds the clock */   /* (claude/bkblood) BLOODY BLOWS: blood off flesh, sparks off stone and steel */
   if (P.heavy && P.bkTier) { const st = P.bkTier;   /* THE TIER'S BLOW: every heavy BLEEDS; SUNDER cracks the guard; T1-3 reclaim debt, T4/T5 spent it */
+    if (st === 1 && tech('breap')) bkReap(e);   /* (claude/bkpack) REAP THE BLEED: before the heavy puts its own bleed on */
     if (e.alive) bkBleed(e, st);
     if (st === 2 && e.alive) { if (lcBig(e)) { e.stagger = Math.max(e.stagger || 0, 0.3); const m = poiseMax(e); if (m && !(e.broken > 0) && !(e.poiseCd > 0)) { e.poise = Math.min(m, (e.poise || 0) + m * 0.3); if (e.poise >= m) addPoise(e, 1, P.x, false); } }
       else if (!(e.broken > 0)) { e.broken = 1.3; e.guardT = 0; e.vx = 0; e.knock = 0; number(e.x, e.y - e.h - 20, 'GUARD CRACKED', '#ff6b6b'); breakBeat(e); } }
@@ -28362,6 +28457,7 @@ function dkLanded(e) { if (!e) return; bkSpray(e);   /* (claude/bkblood) BLOODY 
   const rhy = !P.plunge && !P.swingKind && !P.dashCut, third = rhy && dkStep(P.combo) === 2;
   bkReclaim(swordDmg() * (P.swingMul || 1), e, third ? 'third' : 'light');   /* the rhythm, the sweep, the rise, the dash cut and the drop: each blow that lands reclaims (claude/bkrework: by weight - the third cut wins back the most of a light blow) */
   if (rhy && !P.bkGained) { P.bkGained = true; bkVitae(BKIT.vitaeGain(third ? 'third' : 'cut')); }   /* (claude/bkrework) VITAE from his offence: one landed cut a swing */
+  if (rhy && tech('becho') && (P.bkReqT || 0) > 0 && e.alive) bkEcho(e);   /* (claude/bkpack) BLOOD ECHO: in HEMORRHAGE each rhythm cut that lands is repeated a beat later */
   if (third) bkLashHit(e);   /* (claude/bkblood) THE BLOOD LASH: the third cut's whip bleeds what it lands on */
   if (P.plunge || P.swingKind || P.dashCut) return;   /* (the rhythm is the chain on his feet, not the sweep, the rise, the dash cut or the drop) */
   const st = dkStep(P.combo);
@@ -31012,7 +31108,7 @@ function swingDmg(e) { if (P.heavySwing || P.heavy) CM.refund(P, 3);   /* WEIGHT
   if (isPaladin() && HGR && HGR.standing(P)) mul *= HG.hitMul; else if (isPaladin() && e === boss) mul *= HG.bossOutMul;   /* (claude/paltune) off his ground a boss takes his blows a little harder: the circle is his edge on a still boss, not on a roaming one */   /* (claude/paladin2) ON HOLY GROUND his maul lands harder */
   if (isPaladin() && P.wrathT > 0) { mul *= 1.4; P.hp = Math.min(P.maxHp, P.hp + Math.max(1, Math.round(P.maxHp * 0.003))); }   /* (PALADIN TUNE: was 0.015) HOLY WRATH (claude/herokit): blows land a bit over a third harder and mend him */
   if (isBz() && BZK) { mul *= BZK.chopLanded(e); if (!P.heavy && !P.heavySwing && !P.swingKind && !P.dashCut && !P.swingRiposte) mul *= BZ_K.flurry.dmg;   /* (claude/berserker2) THE FLURRY: quick chops, each a little lighter */ if (P.heavy && tal('bzSplit') && e.broken > 0) mul *= 2; }   /* THE CHAIN goes on (BITE: a tenth harder on a foe it has cut); SPLITTER: the cross-chop on a broken foe */
-  if (isReaper()) { if ((e.hem || 0) > 0) mul *= BKIT.BLOOD.requiem.hemMul; if (P.bkDrain3 && !P.heavy) mul *= BKIT.BLOOD.drain3.mul; }   /* (claude/bkrework) HEMORRHAGE: his blows on a branded foe land x1.25 (a multiplier only: the boss's own floor and guards apply after); the DEBT DRAIN cut is heavier */
+  if (isReaper()) { if ((e.hem || 0) > 0) mul *= BKIT.BLOOD.requiem.hemMul; if (P.bkDrain3 && !P.heavy) { mul *= BKIT.BLOOD.drain3.mul; if (tech('breach')) mul *= BKT.lashFarMul(e.x - P.x, true); } mul *= bkMortMul(); }   /* (claude/bkpack) CRIMSON REACH: the far end of the long whip hits half as hard; MORTGAGE: the next three blows x1.4 */   /* (claude/bkrework) HEMORRHAGE: his blows on a branded foe land x1.25 (a multiplier only: the boss's own floor and guards apply after); the DEBT DRAIN cut is heavier */
   if (isRg()) mul *= RG_K.knife.dmg * (tal('rgLast') && RGK && RGK.arrows() <= 0 ? 2 : 1);   /* (claude/ranger) THE KNIFE: a little lighter than a sword (THE LAST ARROW: twice, with the quiver empty) */
   if (isWarden()) { if (wardJav) mul *= 0.35; else { mul *= tipPay(e); runThroughDrive(e); if (P.runThrough && L.trial && ++P.rtN === 2) trialEvent('runthrough'); } }   /* (her yard: ONE lunge through two is the run-through) */   /* (bare-handed while the JAVELIN is out: a weak jab, no point to pay) */   /* THE TIP: where along the spear it landed is the whole hero - and the lunge drives what it skewers */
   if (isWarden() && P.wReachT > 0) mul *= SKK.K_WARDEN_REACH.perHit * amul('wardenReach');   /* (claude/wardenid) swordDmg x k x amul (src/skill-k.js) */
@@ -35248,7 +35344,7 @@ function drawWorld(cx, cy, showPlayer) {
       if (isReaper() && !P.dead && !((P.bkReqT || 0) > 0) && ((P.bd || 0) > 0.4 || (P.wardFlash || 0) > 0)) { const G = BKIT.GUARD, dk = Math.min(1, (P.bd || 0) / Math.max(1, BKIT.BLOOD.debt.cap * P.maxHp)), calm = SET.reduceMotion || !SET.flashes;   /* (claude/heroblocksa) THE ARMOUR GLOWS WITH THE DEBT: a crimson pulse faster and deeper as he owes more, a flare on a held blow (steady in reduce-motion / flashes off) */
         drawTinted(K, key, frame, P.x - cx, P.y - cy + dY, dFace, sx * (2 - br) * hs, sy * br * hs, swimRot, '#ff1e32', Math.min(G.glow, (0.04 + 0.2 * dk) * (calm ? 0.8 : 0.55 + 0.45 * Math.sin(time * (5 + 9 * dk))) + (P.wardFlash || 0) * 0.9)); }
       if (isReaper() && !P.dead && bkNotches() > 0) { const n = bkNotches(), nx = Math.round(P.x - cx) + P.face * 15, ny = Math.round(P.y - cy) - 4, full = n >= BKIT.GUARD.notches;   /* (claude/heroblocksa) THE BLADE DRINKS, SEEN: a notch of blood a blow up the steel, the full blade pulsing */
-        for (let i = 0; i < BKIT.GUARD.notches; i++) { g.fillStyle = i < n ? (full && Math.floor(time * 8) % 2 ? '#ffd0d0' : '#ff3a50') : 'rgba(60,10,18,0.55)'; g.fillRect(nx - 1, ny - 7 * i - 4, 3, 5); g.fillStyle = 'rgba(0,0,0,0.5)'; g.fillRect(nx - 1, ny - 7 * i, 3, 1); } }
+        for (let i = 0; i < bkNeed(); i++) { g.fillStyle = i < n ? (full && Math.floor(time * 8) % 2 ? '#ffd0d0' : '#ff3a50') : 'rgba(60,10,18,0.55)'; g.fillRect(nx - 1, ny - 7 * i - 4, 3, 5); g.fillStyle = 'rgba(0,0,0,0.5)'; g.fillRect(nx - 1, ny - 7 * i, 3, 1); } }
       if (isReaper() && (P.bkReqT || 0) > 0 && !P.dead) { const Fz = BKIT.BLOOD.requiem, ramp = Math.min(1, (Fz.hemT - P.bkReqT) / 0.2, P.bkReqT / 0.5), calm = SET.reduceMotion || !SET.flashes;   /* (claude/bkbloodart) CRIMSON FRENZY: the PLATE itself takes the red (a tint over the frame he is drawn in; steady in reduce-motion / flashes off) */
         drawTinted(K, key, frame, P.x - cx, P.y - cy + dY, dFace, sx * (2 - br) * hs, sy * br * hs, swimRot, '#ff1e32', Math.max(0, ramp) * (calm ? 0.26 : 0.2 + 0.1 * Math.sin(time * 16))); }   /* (claude/dkhero) THE PLATE TAKES THE BLOW: a dark steel flash */
       if (hero() === 'knight' && lcOn()) {   /* THE LAST CHARGE: a gold light on the face of the shield, pulsing, brace and rush */
@@ -36823,7 +36919,7 @@ function render() {
       g.fillStyle = '#8c8a7e'; g.fillRect(4, hy - 1, 7, 6); g.fillStyle = '#a8a696'; g.fillRect(4, hy - 1, 7, 1); g.fillStyle = '#6f9a4a'; g.fillRect(5, hy - 2, 3, 1); g.fillStyle = '#e8a83a'; g.fillRect(7, hy + 1, 1, 2);   /* a little standing stone for the icon */
       if (hudMeter) meterPrompt(hudMeter, hy); }
     if (isReaper()) { const hy = HY, full = (P.harvest || 0) >= 100;
-      const frz = (P.bkReqT || 0) > 0, vf = frz ? P.bkReqT / BKIT.BLOOD.requiem.hemT : (P.harvest || 0) / 100;   /* (claude/bkrework) VITAE; in HEMORRHAGE the bar is the 8 s clock, running out */
+      const frz = (P.bkReqT || 0) > 0 || (P.bkRecT || 0) > 0, vf = (P.bkReqT || 0) > 0 ? Math.min(1, P.bkReqT / BKIT.BLOOD.requiem.hemT) : (P.bkRecT || 0) > 0 ? P.bkRecT / BKT.BT.reckon.t : (P.harvest || 0) / 100;   /* (claude/bkrework) VITAE; in HEMORRHAGE the bar is the 8 s clock, running out */
       bar(15, hy, 45, 4, vf, frz ? (Math.floor(time * 14) % 2 ? '#ffd0d0' : '#ff2a3a') : full ? (Math.floor(time * 10) % 2 ? '#ff9a9a' : '#c0283a') : '#a01a2e', vf);
       { const ic = ['....o....', '....o....', '...oho...', '...oro...', '..ohrro..', '.oohrrro.', '.orrrrRo.', '.orrrrRo.', '.orrrRRo.', '..oRRRo..', '...ooo...'], PC = { o: '#2a0408', h: '#ffb0b8', r: frz ? (Math.floor(time * 14) % 2 ? '#ff6b7a' : '#ff2a3a') : full ? '#ff4a5a' : '#c0283a', R: '#7a1020' };
         ic.forEach((row, yy) => { for (let xx = 0; xx < row.length; xx++) if (row[xx] !== '.') { g.fillStyle = PC[row[xx]]; g.fillRect(3 + xx, hy - 5 + yy, 1, 1); } });   /* (claude/bkbloodart) VITAE's own icon: a drop of blood (it was the little greatsword, which is the weapon, not the meter) */
