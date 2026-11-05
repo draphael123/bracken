@@ -107,4 +107,4 @@ tools/check.mjs was NOT run.
    - Alt: DUCK_ROOM 10 -> 4, so standing heroes must duck at about 0.9.
 
 ## Final tip
-`fdea8adb3` plus this report commit.
+`e21997f0a` (claude/undercrown3, pushed).
