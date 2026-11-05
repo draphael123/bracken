@@ -247,6 +247,7 @@ function knightFrame({ legs = 'stand', dy = 0, dx = 0, sword = null, arm = null,
     px(g, ...at(len), '#ffffff');                                        // the point, the brightest pixel she owns
   }
   if (stave && BODY_REF === RG_BODY) { if (stave[4] !== 'back') rgBowAt(g, stave, dx, dy, nock); }   /* (claude/ranger) THE RANGER'S LONGBOW: her rig is the Geomancer's, and where the staff would be the bow is */
+  else if (stave && BODY_REF === RM_BODY) rmStaffAt(g, stave, dx, dy, glow);   /* (claude/rimebinder) HER STAFF OF FROZEN BONE where the geode staff would be */
   else if (stave) { /* THE GEOMANCER'S STAFF (round 3, 2026-09-24: Daniel played her and the standing stone on a shaft read as a CLUB, or a
        SHOVEL). Now a TALL STAFF: a gnarled shaft one pixel through that wanders a pixel either way along its length, with knots
        standing off it; an iron-shod BUTT (the end she strikes the ground with); and at the top an AMBER GEODE held in STONE CLAWS
@@ -5411,8 +5412,46 @@ const GEO_PLUME = [
    rune and on its crown; the hood and robe are undyed wool, so the one green thing on her head is gone and the face reads human. */
 /* (2026-09-24, THE REWORK: the robe goes SLATE - b/B, sleeves and legs S/w - and the plates g/G/h are the pale worked stone) */
 const GEO_PAL = { s: '#8f928c', S: '#4e514d', b: '#6d706b', B: '#353735', m: '#6f9a4a', r: '#e0a040', k: '#cfa47c', w: '#5a5a54', W: '#2e2a24', y: '#e8a83a', v: '#18181c', g: '#aaa694', G: '#67645a', h: '#d6d1bc' };
-export function bakeGeomancer(skin = {}, previewOnly = false) {
-  KP = Object.assign({}, KP0, GEO_PAL, skin); BODY_REF = GEO_BODY; PLUME_REF = GEO_PLUME;
+/* ==== THE RIMEBINDER (claude/rimebinder 11-05, scratch/brief-rimebinder-1023.md): A PLACEHOLDER RIG - the art lane draws her properly (ART OWED). She is
+   baked on the Geomancer's rig (the tall-staff poses: bakeGeomancer(skin, prev, 'rm')) with her own body, her own palette and her STAFF OF FROZEN BONE
+   (rmStaffAt) wherever the geode staff would be. What should say RIMEBINDER at game scale (brief LOOK): pale ice-blue and bone-white, a FROST-CRACKED CROWN
+   over a pale face, robes rimed white at the hem - apart from the Blood Knight's crimson and the Undead Archmage's grey-violet. Her own keys (rmBolt, rmLance,
+   rmRaise, rmShatter, rmUlt) borrow the Geomancer's cast/blast frames until the art lane redraws them. ==== */
+const RM_BODY = [
+  '..c.c.c...',     /* 0  THE CROWN: three points of cracked ice */
+  '..cCcCc...',     /* 1  its band */
+  '.BbbbbbB..',     /* 2  the hood under it */
+  '.Bbvvvvb..',     /* 3  the hood's mouth, in shadow */
+  '.Bbvkkkb..',     /* 4  her face, pale */
+  '.hBbkkbBh.',     /* 5  the jaw; a bone clasp each side */
+  'hhBbbbBhh.',     /* 6  A MANTLE OF BONE on her shoulders */
+  'gyBbbbBgy.',     /* 7  rime on the bone, a cold glint */
+  'GGSbbbSGG.',     /* 8  the sleeves */
+  '..BbbbB...',     /* 9 */
+  '.wywwyw...',     /* 10 the girdle, ice-studded */
+];
+const RM_PLUME = [
+  ['..c.c.c...', '..cCcCc...', '.BbbbbbB..'],
+  ['..c.c.c...', '..cCcCc...', '.BbbbbbB..'],
+  ['...c.c.c..', '..cCcCc...', '.BbbbbbB..'],   /* the crown's points glint a pixel as she breathes */
+];
+/* b/B the robe (a cold slate-blue, white at the shadow line); c/C the crown (ice / its crack); h the bone mantle; g/G rime and its shadow; k the face (pale, blue-white);
+   v the hood's mouth; s/S the sleeves; w/W girdle and boots; y the ice glints; m/r (the Geomancer's moss and amber) turned cold */
+const RM_PAL = { s: '#9ab4c8', S: '#4a6070', b: '#5a7a94', B: '#2a3a4a', c: '#dff4ff', C: '#8fd0f0', h: '#e8e2d0', g: '#bfe6f5', G: '#6a8aa0', k: '#e6eef4', v: '#10161c', w: '#4a5a68', W: '#1e2830', y: '#ffffff', m: '#8fd0f0', r: '#bfe6f5' };
+/* HER STAFF OF FROZEN BONE: a pale shaft (a long bone, knuckled), a crust of ice up its top third, and at its head a SKULL-SHAPED knot of ice with a cold light in it */
+function rmStaffAt(g, spec, dx, dy, glow) {
+  const [x0, y0, x1, y1] = spec.slice(0, 4).map((v, i) => v + (i & 1 ? dy : dx));
+  const len = Math.hypot(x1 - x0, y1 - y0) || 1, ax = (x1 - x0) / len, ay = (y1 - y0) / len;
+  for (let t = 0; t <= len; t += 0.5) { const x = Math.round(x0 + ax * t), y = Math.round(y0 + ay * t), k = t / len;
+    px(g, x, y, k > 0.66 ? '#bfe6f5' : (Math.floor(t) % 5 === 0 ? '#c8c0a8' : '#e8e2d0')); }
+  const hx = Math.round(x1), hy = Math.round(y1);   /* the head: a knot of ice, two dark sockets, a light */
+  for (const [u, v, col] of [[-1, -1, '#dff4ff'], [0, -2, '#ffffff'], [1, -1, '#dff4ff'], [-1, 0, '#8fd0f0'], [1, 0, '#8fd0f0'], [0, 0, '#ffffff'], [0, 1, '#bfe6f5'], [-1, -2, '#bfe6f5'], [1, -2, '#bfe6f5']]) px(g, hx + u, hy + v, col);
+  if (glow) px(g, hx, hy - 1, '#ffffff');
+}
+export function bakeRimebinder(skin = {}, previewOnly = false) { return bakeGeomancer(skin, previewOnly, 'rm'); }
+export function bakeGeomancer(skin = {}, previewOnly = false, rm = false) {
+  if (rm === 'rm') { KP = Object.assign({}, KP0, RM_PAL, skin); BODY_REF = RM_BODY; PLUME_REF = RM_PLUME; } else {   /* (claude/rimebinder) THE RIMEBINDER is baked on her rig: bakeRimebinder */
+  KP = Object.assign({}, KP0, GEO_PAL, skin); BODY_REF = GEO_BODY; PLUME_REF = GEO_PLUME; }
   const sh = [BX + 8, BY + 7], [X, Y] = sh, OFF = [BX + 2, BY + 7], WIDE = 12;
   const o = (x, y, col) => [X - BX + x, Y - BY + y, col];
   const A = '#e8a83a', D = '#c9b27c', M = '#8c8a7e';
@@ -5564,6 +5603,8 @@ export function bakeGeomancer(skin = {}, previewOnly = false) {
   F.blast = [TK({ dy: -2, legs: 'wide', sho: 1, arm: [X, Y, X + 4, Y - 8], arm2: [OFF[0], OFF[1], X - 4, Y - 8], stave: [X - 8, Y - 9, X + 8, Y - 10], plume: 1 }),
     TK({ wide: 4, dy: 1, legs: 'wide', arm: [X, Y, X + 4, Y + 3], arm2: [OFF[0], OFF[1], X - 5, Y + 2], stave: [X + 8, Y + 9, X + 8, Y - 9], plume: 2, glow: [X + 8, Y - 6], bits: [o(6, 9, D), o(10, 9, D), o(4, 9, M), o(12, 9, M)] })];
   geoKitPoses(F, sh);
+  if (rm === 'rm') { const c = F.cast || F.blast, b = F.blast || c, h = F.heavy || b;   /* (claude/rimebinder) HER KEYS, BORROWED until the art lane draws them (ART OWED): bolt / raise = the cast, lance = the heavy, shatter / ult = the blast */
+    F.rmBolt = c; F.rmLance = h; F.rmRaise = c; F.rmShatter = b; F.rmUlt = b; }
   smearPass(F, SMEAR_COL.stone);   /* the strike beats get their arc (claude/herokeys) */
   const R = F, L = {}; for (const k in F) L[k] = mirror(F[k]);
   const white = {}; for (const k in F) white[k] = Array.isArray(F[k]) ? F[k].map(c => whiten(c)) : whiten(F[k]);

@@ -13,7 +13,8 @@ export const FIRST = {
   geomancer: 'TAP DOWN: RECALL YOUR STONES TO YOUR FEET.',   /* (claude/geofix, Daniel 11-04: STONE SKIN and EARTH SENSE are retired) */   /* (claude/geocrouch: STONE SKIN is her crouch; the old EARTH SENSE line is FIRST_SENSE, said only with GEO.pop.skin false) */
   reaper: 'DOWN: A LOW GUARD. KNEEL AS ANY BLOW LANDS: BLOOD SPIKE.',   /* (claude/bkkit2: any blow on the beat) */   /* (claude/bloodknight: the harvest is gone; DOWN+C is BLOOD PRICE) */
   berserker: 'DOWN TO COIL, A WAY, LET GO: POUNCE. FULL: DOWN+C.',
-  ranger: 'HOLD DOWN AND TAP C: A SNARE AT YOUR FEET.',   /* (claude/ranger) */
+  ranger: 'HOLD DOWN AND TAP C: A SNARE AT YOUR FEET.',
+  rimebinder: 'DOWN AND C BESIDE A RIME CORPSE: SHATTER IT.',   /* (claude/rimebinder) */   /* (claude/ranger) */
 };
 export const FIRST_SENSE = 'HOLD DOWN: WHAT HIDES IN THE GROUND SHOWS.';
 /* the flags the twists' own teaching lines leave: a hero who has one has been told */

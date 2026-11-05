@@ -16,6 +16,7 @@ export const JUMP_FEEL = {
   reaper:    { w: 1.00, stretch: 1.00, land: 1.00, landT: 1.00, dust: 1.00, ant: 0.08 },   /* Blood Knight: medium (the greatsword drag already sells his weight) */
   pirate:    { w: 0.92, stretch: 1.12, land: 0.90, landT: 0.88, dust: 0.92, ant: 0.07 },
   ranger:    { w: 0.84, stretch: 1.22, land: 0.82, landT: 0.82, dust: 0.84, ant: 0.06 },
+  rimebinder: { w: 0.9, stretch: 1.12, land: 0.9, landT: 0.9, dust: 0.8, ant: 0.07 },   /* (claude/rimebinder: the Geomancer's robe, lighter) */
   pyro:      { w: 0.80, stretch: 1.26, land: 0.78, landT: 0.78, dust: 0.80, ant: 0.06 },
 };
 const NEUTRAL = { w: 1, stretch: 1, land: 1, landT: 1, dust: 1, ant: 0.08 };

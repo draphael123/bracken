@@ -159,7 +159,8 @@ const HEROES_C = {
   warden:     ['deflect', tk => 'TAP ' + tk.c + ' DEFLECT, HOLD BRACE'],   /* (claude/heroblocksb) hold = the spear-haft brace; (claude/wardenid) the third jab is the long thrust (the hint line) */
   geomancer:  ['rune-ward', tk => 'HOLD ' + tk.c + '  (SHE IS PLANTED)'],   /* (claude/ults) the ultimate is the shared row below */
   berserker:  ['take it', tk => 'HOLD ' + tk.c + ' (FULL: DOWN+' + tk.c + ' FRENZY)'],
-  ranger:     ['bash / guard', tk => 'TAP ' + tk.c + ' BASH, HOLD GUARD'],   /* (claude/heroblocksb) hold = the bow guard; the bash on the beat is still her parry */
+  ranger:     ['bash / guard', tk => 'TAP ' + tk.c + ' BASH, HOLD GUARD'],
+  rimebinder: ['ice wall', tk => 'TAP ' + tk.c + ' PARRY, HOLD WALL'],   /* (claude/rimebinder) her UP+C RAISE and DOWN+C SHATTER rows are below */   /* (claude/heroblocksb) hold = the bow guard; the bash on the beat is still her parry */
 };
 import { ROW as PLUNGE_ROW } from './plunges.js';
 import { ultRow } from './ultimate.js';
@@ -174,9 +175,9 @@ export function cardRows({ hero = 'knight', binds = emptyBinds(), prof = 'pad1',
     ['move', stock ? 'ARROWS / WASD' : k1('left') + ' ' + k1('right') + ' (MOVE)', 'STICK'],
     ['emote', k1('dance') + ': DANCE, MOVE TO STOP', pd('dance')],
     ['jump', jumpKeys, pd('jump')],
-    [hero === 'ranger' ? 'shoot / knife' : 'swing', atkKeys, pd('atk')],
+    [hero === 'ranger' ? 'shoot / knife' : hero === 'rimebinder' ? 'bolt / staff' : 'swing', atkKeys, pd('atk')],
     [hero === 'ranger' ? 'down shot' : (PLUNGE_ROW[hero] || ['plunge'])[0], k1('down') + '+SWING IN AIR', pd('down') + '+' + pd('atk')],
-    [hero === 'knight' ? 'heavy cut' : hero === 'geomancer' ? 'fault line' : hero === 'berserker' ? 'double chop' : hero === 'ranger' ? 'draw' : 'heavy blow', hero === 'geomancer' || hero === 'ranger' ? 'HOLD SWING, LET GO' : hero === 'knight' ? 'HOLD SWING, LET GO' : 'HOLD SWING', 'HOLD ' + pd('atk')],
+    [hero === 'knight' ? 'heavy cut' : hero === 'geomancer' ? 'fault line' : hero === 'berserker' ? 'double chop' : hero === 'ranger' ? 'draw' : hero === 'rimebinder' ? 'rime lance' : 'heavy blow', hero === 'geomancer' || hero === 'ranger' ? 'HOLD SWING, LET GO' : hero === 'knight' ? 'HOLD SWING, LET GO' : 'HOLD SWING', 'HOLD ' + pd('atk')],
     hero === 'berserker' ? ['cross-chop', 'SWING x5 IN A RUN', pd('atk') + ' x5'] : hero === 'geomancer' ? ['stone fist', 'SWING x3: KNOCKS UP', pd('atk') + ' x3'] : hero === 'ranger' ? ['push kick', 'KNIFE x3 IN A RUN', pd('atk') + ' x3'] : [hero === 'knight' ? 'shield bash' : 'third cut', hero === 'knight' ? 'SWING x3: BREAKS A GUARD' : 'SWING x3 IN A RUN', pd('atk') + ' x3'],   /* (claude/ranger: no run of three - her row is the snare) */   /* (claude/berserker2: his flurry runs five) */
     [hero === 'ranger' ? 'rising shot' : 'rising cut', k1('up') + '+SWING', pd('up') + '+' + pd('atk')],
     ['low sweep', k1('down') + '+SWING', pd('down') + '+' + pd('atk')],
@@ -188,6 +189,7 @@ export function cardRows({ hero = 'knight', binds = emptyBinds(), prof = 'pad1',
     [cRow[0], cRow[1](tk), pd('block')],
     ...(hero === 'paladin' ? [['hammer throw', k1('up') + '+' + tk.c + '  (THREE PIPS)', pd('up') + '+' + pd('block')], ['tap ' + tk.c + ' spends', 'SMITE 1-2 RADIANCE 3-4 SUN 5', pd('block')]] : []),   /* (claude/paladin2) THE LIGHT SPENT */
     ...(hero === 'berserker' ? [['axe throw', k1('up') + '+' + tk.c + '  (PICK IT UP)', pd('up') + '+' + pd('block')]] : []),   /* THE BERSERKER's off axe (src/berserker.js throwAxe) */
+    ...(hero === 'rimebinder' ? [['raise', k1('up') + '+' + tk.c + ': A RIME CORPSE', pd('up') + '+' + pd('block')], ['shatter', k1('down') + '+' + tk.c + ': A RIME CORPSE', pd('down') + '+' + pd('block')]] : []),   /* THE RIMEBINDER (claude/rimebinder) */
     ...(hero === 'ranger' ? [['bow / knife', kb('stance') + ': BOW / KNIFE', pd('stance')]] : []),   /* THE RANGER's stance swap (her UP+C is the shared ultimate row above) */
     ['dodge', hero === 'ranger' ? k1('dodge') + ': BACKFLIP, OR TAP A WAY TWICE' : hero === 'warden' ? k1('dodge') + ' BACK, OR TAP A WAY TWICE' : 'TAP A WAY TWICE, OR ' + kb('dodge'), pd('dodge')],
     ['', 'TELLS ARE TIMED FOR ONE PRESS', pd('dodge')],

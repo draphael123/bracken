@@ -91,6 +91,19 @@ enemies = [foe({ x: P.x + 50, hp: 200 }), foe({ x: P.x + 80, hp: 200 })]; P.st =
 ok(enemies[0].hp < 200 && enemies[1].hp < 200, 'the PIERCING LANCE goes through the line');
 { const c0 = K.corpses().length; enemies = [foe({ x: P.x + 50, hp: 2, hp0: 30 })]; enemies[0].chill = 0; P.rmCd = 0; talents = {}; CH.tick(enemies[0], 0);
   const realChill = CH.chill; K.release(P, 3); run(0.6); ok(K.corpses().length === c0 + 1, 'the RIME-MAKER (T3) leaves a corpse'); }
+// ---- THE L25-L50 TECHNIQUES THAT LIVE IN THE MODULE ----
+{ talents = { court: 1 }; enemies = [foe({ x: P.x + 30, hp: 5, hp0: 40 })]; P.rmBar = 100; const t0 = K.thralls().length; K.longWinter(); run(0.05);
+  ok(K.thralls().length > t0 && K.thralls().some(t => t.full), 'THE FROZEN COURT: what the winter fells stands up whole'); run(20); }
+{ talents = { hoarfrost: 1 }; const c0 = K.corpses().length; mk(P.x + 12); enemies.push(foe({ x: P.x + 30, hp: 3, hp0: 30 })); P.rmShatCd = 0; P.st = 100;
+  run(0.02, { block: true, down: true }); run(0.05, {}); ok(K.corpses().length === c0 + 1, 'HOARFROST: the shards rime what they kill (' + (K.corpses().length - c0) + ')'); }
+{ talents = { graveCharge: 1 }; for (const c of K.corpses()) c.life = 0; mk(P.x + 10); P.rmBar = 40; run(0.02, { block: true, up: true }); run(0.02, {});
+  for (const c of K.corpses()) c.life = 0; const v2 = foe({ x: P.x + 70, hp: 500, hp0: 500 }); enemies.push(v2); K.thralls()[0] && (K.thralls()[0].x = P.x + 20); P.rmShatCd = 0; P.st = 100;
+  run(0.02, { block: true, down: true }); run(0.02, {}); ok(v2.hp < 500, 'GRAVE CHARGE: her own thrall bursts twice as wide (' + v2.hp + ')'); }
+{ talents = { bound: 1 }; mk(P.x + 10); P.rmBar = 80; run(0.02, { block: true, up: true }); run(0.02, {}); for (const c of K.corpses()) c.life = 0;
+  const th = K.thralls().find(t => t.o === P); th.x = P.x + 10; th.life = 2; P.rmBar = 40; run(0.02, { block: true, up: true }); run(0.02, {});
+  ok(th.life > 10, 'BOUND IN ICE: raise on her own thrall refreezes it (' + th.life.toFixed(1) + ' s)'); talents = {}; run(30); }
+{ talents = { thrallUp: 2, lifeUp: 2 }; mk(P.x + 10); P.rmBar = 40; run(0.02, { block: true, up: true }); run(0.02, {}); const t = K.thralls().slice(-1)[0];
+  ok(t && Math.abs(t.k - 0.65) < 1e-9 && t.max === RIME.thrall.life + 4, 'the thrall upgrades (k ' + (t && t.k) + ', life ' + (t && t.max) + ')'); talents = {}; run(20); }
 // ---- THE L25-L50 FORK PACK + THE LADDER ----
 const levels = Object.keys(RIME_TECH).map(Number); ok(levels.join() === '25,30,35,40,45,50', 'six tech levels');
 for (const lv of [30, 40, 50]) { const f = RIME_TECH[lv].fork; ok(Array.isArray(f) && f.length === 2 && f[0].trade === f[1].trade && f[0].role !== f[1].role, 'a fork at L' + lv); if (lv === 50) ok(f.every(o => o.capstone), 'the L50 pair are capstones'); }

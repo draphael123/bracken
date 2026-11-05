@@ -25,7 +25,8 @@ export const COMMIT = {   /* WEIGHT-T (10-04): the brief's numbers x0.6, measure
   geomancer: { light: 0.096, third: 0.192, up: 0.096, heavy: 0.168 }, /* the fault line; (claude/geoid) THE STONE FIST, her third jab, recovers a beat longer (+0.06): the price of the knock-up */
   paladin:   { light: 0.102, third: 0.132, up: 0.102, heavy: 0.18 },
   reaper:    { light: 0.102, third: 0.132, up: 0.102, heavy: 0.18 },
-  ranger:    { light: 0.072, third: 0.108, up: 0.072, heavy: 0.144 },  /* (claude/ranger) THE KNIFE: quick and light (her shots set their own beat, src/ranger.js rgCd) */
+  ranger:    { light: 0.072, third: 0.108, up: 0.072, heavy: 0.144 },
+  rimebinder: { light: 0.096, third: 0.132, up: 0.096, heavy: 0.168 },  /* (claude/rimebinder) THE STAFF: the Geomancer's beat (her bolts set their own, src/rimebinder.js rmCd) */  /* (claude/ranger) THE KNIFE: quick and light (her shots set their own beat, src/ranger.js rgCd) */
   berserker: { light: 0.06, third: 0.12, up: 0.084, heavy: 0.162 },   /* (claude/berserker2: THE FLURRY recovers quicker - 0.084 -> 0.06; its fifth, the cross-chop, keeps 'third') */   /* THE BERSERKER (claude/berserker): his 10-04 numbers x0.6 like everyone's (WEIGHT-T) - light like the knight's, the cross-chop a beat longer */
 };
 /* THE LIGHT SWING'S PRICE for the heroes whose swing is not their sword's (the rest pay sword().cost): the freebooter 9 -> 10 (brief) */
@@ -98,9 +99,9 @@ export const STAM = {
   stepFree: true, stepDelay: 0.2,   /* THE WARDEN'S BACK-STEP is spacing, not a roll: it keeps the regen running, with a 0.2 s delay */
 };
 /* THE ROLL: what it costs and how long it is untouchable. Heavy heroes roll heavier (Daniel 10-02, Q4). WEIGHT-T: the brief's x0.9 */
-export const ROLL_COST = { knight: 22, warden: 22, pyro: 22, geomancer: 22, pirate: 20, paladin: 25, reaper: 25, berserker: 22, ranger: 20 };   /* (claude/ranger: light) */   /* (berserker 24 x0.9) */
+export const ROLL_COST = { knight: 22, warden: 22, pyro: 22, geomancer: 22, pirate: 20, paladin: 25, reaper: 25, berserker: 22, ranger: 20, rimebinder: 22 };   /* (claude/ranger: light) */   /* (berserker 24 x0.9) */
 export const STEP_BACK_COST = 15;   /* the warden's back-step (it was 13) */
-export const ROLL_LEN = { knight: 0.30, warden: 0.18, pyro: 0.34, geomancer: 0.33, pirate: 0.30, paladin: 0.30, reaper: 0.32, berserker: 0.28, ranger: 0.34 };   /* (claude/ranger: the backflip hangs a beat longer) */   /* (THE BERSERKER's shoulder roll: short) */
+export const ROLL_LEN = { knight: 0.30, warden: 0.18, pyro: 0.34, geomancer: 0.33, pirate: 0.30, paladin: 0.30, reaper: 0.32, berserker: 0.28, ranger: 0.34, rimebinder: 0.32 };   /* (claude/ranger: the backflip hangs a beat longer) */   /* (THE BERSERKER's shoulder roll: short) */
 export const ROLL_SHAVE_CAP = 4;    /* the most the shaves (level ranks, LIGHT STEP) take off a roll's base cost */
 /* AN INVULNERABLE DASH (Lunge, Cinder Step, Holy Charge, Boarding Party, Harrier) follows the roll's rules: its grace is the roll's share of
    it, never more than the roll's, and it costs at least the hero's roll + 4 */

@@ -182,7 +182,7 @@ function voice(name, v = 0.5, rate = 1, lp = 0, delay = 0) {
 const VOK = (kit, act) => { const fb = { alert: 'attack', effort: 'heavy', heavy: 'attack', jump: 'attack', die: 'hurt', attack: 'alert' };
   for (const a of [act, fb[act]]) { const n = 'vo_' + kit + '_' + a; if (clips[n] && clips[n].some(Boolean)) return n; } return 'vo_' + kit; };
 // THE HEROES' OWN VOICES. The knight grunted with a pitched goblin; now each hero is a person.
-const HERO_KIT = { knight: { kit: 'm5', rate: 1 }, paladin: { kit: 'm3', rate: 0.88 }, pirate: { kit: 'm1', rate: 1 }, reaper: { kit: 'dk', rate: 0.92, lp: 3400 }, pyro: { kit: 'f3', rate: 1 }, warden: { kit: 'wd', rate: 1 }, geomancer: { kit: 'gm', rate: 0.82, lp: 3200 }, berserker: { kit: 'ob', rate: 0.95, lp: 4200 }, ranger: { kit: 'rg', rate: 1 } };   /* (claude/audiovoices 10-18) NINE HEROES, NINE THROATS: only the knight, the paladin, the pirate and the pyromancer share a kit with nobody; the Death Knight (Little Robot evil voices), the berserker (orc growls), the warden and the ranger (each their own pack takes, see tools/build-voices-1018.mjs) no longer borrow the knight's man or the pyromancer's three clips. The geomancer is the one kit that is still the women's f3 pitched down for effort (hurt and death are her own low takes). */   /* THE RANGER (claude/ranger): the women's kit, pitched a little up and lightened */   /* THE BERSERKER: the knight's man, pitched down and roughened - the loudest throat of them */   /* THE GEOMANCER: the same woman's kit again, pitched lowest and darkened: the heaviest of the three */   /* the same voice as the pyromancer, pitched down: a steadier woman, and not a second of the same one */
+const HERO_KIT = { knight: { kit: 'm5', rate: 1 }, paladin: { kit: 'm3', rate: 0.88 }, pirate: { kit: 'm1', rate: 1 }, reaper: { kit: 'dk', rate: 0.92, lp: 3400 }, pyro: { kit: 'f3', rate: 1 }, warden: { kit: 'wd', rate: 1 }, geomancer: { kit: 'gm', rate: 0.82, lp: 3200 }, berserker: { kit: 'ob', rate: 0.95, lp: 4200 }, ranger: { kit: 'rg', rate: 1 }, rimebinder: { kit: 'f3', rate: 0.88, lp: 2400 } };   /* (claude/audiovoices 10-18) NINE HEROES, NINE THROATS: only the knight, the paladin, the pirate and the pyromancer share a kit with nobody; the Death Knight (Little Robot evil voices), the berserker (orc growls), the warden and the ranger (each their own pack takes, see tools/build-voices-1018.mjs) no longer borrow the knight's man or the pyromancer's three clips. The geomancer is the one kit that is still the women's f3 pitched down for effort (hurt and death are her own low takes). */   /* THE RANGER (claude/ranger): the women's kit, pitched a little up and lightened */   /* THE BERSERKER: the knight's man, pitched down and roughened - the loudest throat of them */   /* THE GEOMANCER: the same woman's kit again, pitched lowest and darkened: the heaviest of the three */   /* the same voice as the pyromancer, pitched down: a steadier woman, and not a second of the same one */
 function heroVo(act, v) { const k = HERO_KIT[heroVoice] || HERO_KIT.knight; return voice(VOK(k.kit, act), v, k.rate, k.lp || 0); }
 
 // the body thud under a landed blow (SFX.impact): material layer + a heavier one for a heavy blow; the hero's weapon weight sets the pitch
@@ -227,11 +227,11 @@ function bell(f, dur = 0.8, v = 0.1, delay = 0) { tone('sine', f, f * 0.998, dur
 // for as long as she holds it. Enemies keep the shared sounds; only the player's calls come through here.
 let landTier = 0;   /* the tier of the landing being played (main.js passes it to SFX.pLand) */
 let heroVoice = 'knight', stepN = 0, jetSrc = null, jetGain = null;
-export function setHeroVoice(h) { heroVoice = h === 'pyro' || h === 'paladin' || h === 'pirate' || h === 'reaper' || h === 'warden' || h === 'geomancer' || h === 'berserker' || h === 'ranger' ? h : 'knight'; }   /* (claude/shipfix) THE BERSERKER was missing here and spoke with the knight's throat: HERO_KIT has had his kit all along */
+export function setHeroVoice(h) { heroVoice = h === 'pyro' || h === 'paladin' || h === 'pirate' || h === 'reaper' || h === 'warden' || h === 'geomancer' || h === 'berserker' || h === 'ranger' || h === 'rimebinder' ? h : 'knight'; }   /* (claude/shipfix) THE BERSERKER was missing here and spoke with the knight's throat: HERO_KIT has had his kit all along */
 const vary = f => f * (0.94 + Math.random() * 0.12);
 const chain = (v = 0.03, n = 3) => { for (let i = 0; i < n; i++) tone('square', vary(3000 + i * 260), 2400, 0.03, v, i * 0.022); noise(0.05, v * 2.2, 4200, 1.6); };
 /* WEAPON FAMILY PER HERO for the plain swing: air = swish volume, blade = sword-swing volume, r = rate (lower = heavier/longer weapon), low = a low RPG swing under it, fire = embers. (Weapon classes are the lane's reading of each kit; see the lane report.) */
-const SWING = { knight: { air: 0.2, blade: 0.2, r: 1 }, paladin: { air: 0.22, blade: 0.14, r: 0.78, low: 0.2 }, pirate: { air: 0.18, blade: 0.18, r: 1.14 }, reaper: { air: 0.26, blade: 0.12, r: 0.7, low: 0.16 }, pyro: { air: 0.22, blade: 0, r: 0.85, fire: 1 }, warden: { air: 0.3, blade: 0, r: 1.2 }, geomancer: { air: 0.24, blade: 0, r: 0.6, low: 0.3 }, berserker: { air: 0.2, blade: 0.18, r: 0.72, low: 0.22 }, ranger: { air: 0.2, blade: 0.14, r: 1.26 } };
+const SWING = { knight: { air: 0.2, blade: 0.2, r: 1 }, paladin: { air: 0.22, blade: 0.14, r: 0.78, low: 0.2 }, pirate: { air: 0.18, blade: 0.18, r: 1.14 }, reaper: { air: 0.26, blade: 0.12, r: 0.7, low: 0.16 }, pyro: { air: 0.22, blade: 0, r: 0.85, fire: 1 }, warden: { air: 0.3, blade: 0, r: 1.2 }, geomancer: { air: 0.24, blade: 0, r: 0.6, low: 0.3 }, berserker: { air: 0.2, blade: 0.18, r: 0.72, low: 0.22 }, ranger: { air: 0.2, blade: 0.14, r: 1.26 }, rimebinder: { air: 0.22, blade: 0.1, r: 0.92, low: 0.12 } };
 const crackle = (n = 4, d0 = 0) => { for (let i = 0; i < n; i++) tone('square', vary(1600 + Math.random() * 1400), 700, 0.018, 0.035, d0 + i * (0.02 + Math.random() * 0.03)); };
 export const SFX = {
   resetSteps() { stepN = 0; },   /* (claude/harness) the footstep count back to nought for a fresh body: every other step draws a Math.random (vary), so a lab fight inherited the last one's parity */
@@ -448,6 +448,7 @@ export const SFX = {
      the geomancer's stone skin, the freebooter's cutlasses scraping, the death knight's blade bound low. */
   parryTone(who) { switch (who) {
     case 'warden': file('imp_wood', 0.3, 1.3); tone('triangle', vary(1500), 900, 0.1, 0.05); noise(0.05, 0.1, 3200, 1.4); break;
+    case 'rimebinder': bell(1976, 0.4, 0.05); tone('triangle', vary(2400), 1400, 0.08, 0.05); noise(0.12, 0.12, 5200, 1.6); break;   /* (claude/rimebinder) ice cracking on the beat */
     case 'ranger': file('imp_wood', 0.34, 1.1); tone('triangle', vary(900), 520, 0.08, 0.06); tone('sine', 220, 160, 0.12, 0.08); break;   /* (claude/ranger) the yew of the bow knocking the blade aside */
     case 'berserker': file('imp_steelH', 0.4, 0.8); tone('sine', 110, 60, 0.2, 0.14); noise(0.08, 0.16, 700, 0.6); break;
     case 'paladin': bell(1175, 0.5, 0.06); bell(1760, 0.4, 0.03, 0.02); file('r_chime', 0.16, 1.5); break;
@@ -2109,6 +2110,7 @@ Object.assign(SFX, {
     else if (h === 'pirate') { T('square', [392, 494, 587, 494, 587, 784, 587, 494, 392], 0.11, 0.06, 0.1); T('triangle', [196, 196, 196, 196], 0.14, 0.12, 0.225); }
     else if (h === 'reaper') { bell(147, 1.1, 0.16); bell(110, 1.3, 0.16, 0.55); pad('sawtooth', 110, 165, 1.1, 0.05, 0.6, 700); T('triangle', [220, 277, 330], 0.5, 0.06, 0.15, 0.75); }
     else if (h === 'geomancer') { [165, 220, 165, 196, 247, 196].forEach((f, i) => { tone('sine', f, f * 0.6, 0.16, 0.16, i * 0.15); noise(0.05, 0.12, 700 + (i % 3) * 250, 1.2, i * 0.15); }); pad('triangle', 165, 220, 1.0, 0.05, 0.05, 900); }
+    else if (h === 'rimebinder') { [1568, 1319, 1175, 988, 1175].forEach((f, i) => bell(f, 0.7, 0.05, i * 0.16)); pad('sine', 147, 220, 1.2, 0.05, 0.1, 900); noise(0.6, 0.04, 6000, 1.4, 0.3); }   /* (claude/rimebinder) THE WINTER BELLS: high and falling, a cold pad under */
     else if (h === 'ranger') { T('triangle', [392, 523, 392, 659, 784], 0.22, 0.09, 0.14); pad('triangle', 196, 196, 0.9, 0.05, 0.1, 1200); noise(0.2, 0.05, 3000, 1.2, 0.6); }   /* (claude/ranger) THE HUNTING HORN: a call out over the trees */
     else if (h === 'berserker') { [0, 1, 2, 3, 4, 5].forEach(i => { tone('square', i % 2 ? 1180 : 980, 600, 0.05, 0.05, i * 0.16); tone('sine', 82, 50, 0.14, 0.2, i * 0.16 + 0.08); }); pad('sawtooth', 98, 110, 0.9, 0.04, 0.1, 700); }   /* THE AXE DRUM: steel on steel, a stamp under each */
     else if (h === 'warden') { noise(0.3, 0.1, 2600, 1.1); tone('triangle', 300, 1200, 0.28, 0.06); T('triangle', [440, 587, 740, 880], 0.2, 0.09, 0.11, 0.3); bell(1760, 0.6, 0.05, 0.75); }
@@ -2150,6 +2152,18 @@ Object.assign(SFX, {
   bzKillHeal() { tone('triangle', 330, 494, 0.18, 0.05); },
   /* THE RANGER (claude/ranger): the string let go (v: 0 a quick shot, 1 a draw, 2 a full one), an arrow into wood or stone, one taken back into the quiver,
      the bow-bash, the snare set and the snare biting, the backflip, the mark, the hawk */
+  /* THE RIMEBINDER (claude/rimebinder, synth placeholders - AUDIO OWED: a recorded pass): the bolt / lance loosed (t 0..3), a lance tier arriving, a freeze, the wall
+     raised and struck, a corpse rimed, a raise, a shatter, a thrall's shard, the mist, THE LONG WINTER */
+  rmBolt(t = 0) { tone('triangle', vary(1800 - t * 200), 900, 0.06 + t * 0.03, 0.05 + t * 0.02); noise(0.06 + t * 0.03, 0.08 + t * 0.03, 5600, 1.6); if (t >= 2) bell(1568, 0.3, 0.04); },
+  rmTier(st = 1) { bell([0, 1175, 1568, 2093][st] || 1175, 0.35, 0.05); noise(0.08, 0.05, 6000, 1.6); },
+  rmFreeze() { tone('square', vary(2600), 1800, 0.04, 0.04); noise(0.18, 0.12, 4800, 1.4); bell(2349, 0.3, 0.03, 0.03); },
+  rmWall(hit) { if (hit) { tone('triangle', vary(1200), 600, 0.08, 0.07); noise(0.1, 0.12, 3600, 1.2); } else { noise(0.2, 0.1, 4200, 1.3); tone('sine', 300, 900, 0.18, 0.04); } },
+  rmCorpse() { bell(1760, 0.5, 0.035); noise(0.25, 0.05, 6400, 1.6); },
+  rmRaise() { pad('sine', 110, 165, 0.7, 0.06, 0, 700); bell(880, 0.6, 0.05, 0.1); noise(0.3, 0.08, 3000, 1.2); },
+  rmShatter() { noise(0.22, 0.2, 5200, 1.2); tone('square', vary(3200), 1400, 0.05, 0.05); bell(2637, 0.3, 0.04, 0.02); tone('sine', 120, 60, 0.15, 0.1); },
+  rmShard() { tone('triangle', vary(2200), 1400, 0.04, 0.035); },
+  rmMist() { noise(0.35, 0.08, 2400, 0.9); },
+  rmUlt() { noise(1.2, 0.12, 3000, 1.0); [784, 659, 523, 392].forEach((f, i) => bell(f, 0.8, 0.05, i * 0.12)); tone('sine', 98, 49, 0.8, 0.12); },
   rgLoose(v = 0) { noise(0.08 + v * 0.03, 0.12 + v * 0.05, 2400 - v * 400, 1.3); tone('triangle', vary(220 + v * 30), 140, 0.06 + v * 0.03, 0.06 + v * 0.03); if (v >= 2) tone('sine', 110, 70, 0.14, 0.08); },
   rgThunk() { file('imp_wood', 0.22, 1.4); tone('square', vary(300), 180, 0.04, 0.04); },
   rgTick() { tone('square', 1500, 1500, 0.025, 0.03); },
@@ -2186,7 +2200,7 @@ const FOOT = {
 };
 const FOOT_HERO = {   /* w: weight (volume), r: pitch, l: the gear layer (arm = plate and mail, lth = leather, cloth = robe), a: its level */
   knight: { w: 1, l: 'arm', a: 0.7 }, paladin: { w: 1.25, r: 0.9, l: 'arm', a: 1 }, reaper: { w: 1.3, r: 0.8, l: 'arm', a: 0.9 }, berserker: { w: 1.1, r: 0.88, l: 'arm', a: 0.45 },
-  pirate: { w: 1, l: 'lth', a: 0.8 }, ranger: { w: 0.8, l: 'lth', a: 0.6 }, warden: { w: 0.9, l: 'lth', a: 0.6 }, geomancer: { w: 0.8, l: 'cloth', a: 0.7 }, pyro: { w: 0.65, r: 1.08, l: 'cloth', a: 0.8 },
+  pirate: { w: 1, l: 'lth', a: 0.8 }, ranger: { w: 0.8, l: 'lth', a: 0.6 }, rimebinder: { w: 0.75, l: 'cloth', a: 0.65 }, warden: { w: 0.9, l: 'lth', a: 0.6 }, geomancer: { w: 0.8, l: 'cloth', a: 0.7 }, pyro: { w: 0.65, r: 1.08, l: 'cloth', a: 0.8 },
 };
 let footHero = false, footSpd = 0, footTier = 0;   /* set by the pStep / pLand wrappers for the call; foes and the skid call SFX.step / SFX.land bare */
 const footReady = () => !!(ac && sfxFiles && clips.step_grass && clips.step_grass.some(Boolean));

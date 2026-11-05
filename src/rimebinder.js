@@ -74,7 +74,7 @@ export function makeRimebinder(api) {
   const mine = (o, p) => o === p;
   const ofP = (arr, p) => arr.filter(t => mine(t.o, p));
   const dmgOf = (k, id) => Math.max(1, Math.round(api.swordDmg() * k * (id ? api.amul(id) : 1)));
-  const fill = (p, n) => { const m = RIME.bar.max; p.rmBar = Math.min(m, (p.rmBar || 0) + n * RIME.perk.bar * (T().grave ? 1.25 : 1)); };
+  const fill = (p, n) => { const m = RIME.bar.max; p.rmBar = Math.min(m, (p.rmBar || 0) + n * RIME.perk.bar * (T().grave ? 1.25 : 1) * (1 + 0.1 * (T().barUp || 0))); };   /* (GRAVE HUNGER, the L25+ upgrade) */
   const chillAmt = a => a * (T().deep ? 1.2 : 1);
   /* chill a foe for her: freezes are counted, the bar takes its share, a BRITTLE foe is told */
   function chillFoe(p, e, a) { const r = CH.chill(e, chillAmt(a), p, now());
@@ -87,7 +87,7 @@ export function makeRimebinder(api) {
   const pointBlank = p => api.enemies.some(e => e.alive && !e.harmless && !(e.gone > 0) && front(p, e, RIME.staff.reach));
   function shoot(p, tier, k) { const L = RIME.lance, t = Math.max(0, Math.min(3, tier | 0));
     const b = { x: p.x + p.face * 8, y: p.y - 15, vx: p.face * L.vx[t], x0: p.x, range: L.range[t] * (t && T().longLance ? 1.2 : 1), tier: t, pierce: L.pierce[t], hit: new Set(), life: 2,
-      dmg: dmgOf(k != null ? k : t ? L.dmg[t] : RIME.bolt.dmg, null), chill: t ? L.chill[t] : RIME.bolt.chill, mark: t === 3, o: p };
+      dmg: dmgOf(k != null ? k : t ? L.dmg[t] : RIME.bolt.dmg, null), chill: (t ? L.chill[t] : RIME.bolt.chill) * (t ? 1 : 1 + 0.15 * (T().boltUp || 0)), mark: t === 3, o: p };   /* (COLDER BOLT) */
     p.rmBolts.push(b); return b; }
   function boltShot(p) { if (!api.spend(RIME.bolt.st)) { api.tired(); return false; }
     shoot(p, 0); stats.bolts++; p.rmCd = RIME.bolt.cd * (T().quickBolt ? RIME.bolt.quick : 1); api.kitPose(p, 'rmBolt', 0.2);
@@ -121,11 +121,13 @@ export function makeRimebinder(api) {
           api.sparks(b.x, b.y, Math.sign(b.vx), 3 + b.tier); api.burst(b.x, b.y, 4 + 2 * b.tier, ['#bfe6f5', '#ffffff'], 50, 0.3, 0, 1);
           if (!e.alive && b.tier >= 2 && T().splinter) splinter(p, e.x, e.y - 8);
           if (!b.pierce) { b.life = 0; break; } } } }
+    for (const b of p.rmBolts) if (b.life <= 0 && b.tier >= 2 && T().sleet && !b.sleet) { b.sleet = true; const x0 = b.x0 + Math.sign(b.vx) * 10, half = Math.abs(b.x - x0) / 2;   /* SLEET (L30 B): a strip of sleet under the lance's flight, 3 s */
+      if (half > 8) mists.push({ o: p, x: (x0 + b.x) / 2, y: b.y + 11, r: half, life: 3, max: 3, through: new Set(), floor: true }); }
     p.rmBolts = p.rmBolts.filter(b => b.life > 0); }
   function puff(x, y, t) { api.burst(x, y, 3 + t, ['#dff4ff', '#8fd0f0'], 30, 0.25, 0, 1); }
   function splinter(p, x, y) { for (const d of [-1, 0, 1]) shards.push({ x, y, vx: d * 160 || 0.01, vy: d ? -60 : -180, life: 0.5, o: p, dmg: dmgOf(0.3), hit: new Set(), grav: 500, chill: 0.3 }); }
   /* ---------------- C: THE ICE WALL AND THE PARRY ---------------- */
-  const beatLen = () => api.tap() * RIME.parry.beat * (T().wide ? 4 / 3 : 1);
+  const beatLen = () => api.tap() * RIME.parry.beat * (T().wide ? 4 / 3 : 1) + 0.03 * (T().beatUp || 0);   /* (COLD BEAT, the upgrade) */
   const onBeat = p => p.rmTapAt !== undefined && api.time - p.rmTapAt <= beatLen() + 1e-6 && !(p.rmTapSpent);
   function guardStep(p, dt, keys, ctx) {
     const cDown = !!keys.block && !keys.up && !keys.down;
@@ -155,7 +157,7 @@ export function makeRimebinder(api) {
       api.number(p.x, p.y - 28, 'RIME PARRY', '#bfe6f5'); api.noteParry(); api.trialEvent('parry'); return 'blocked'; }
     if (!p.rmGuard || !fr) return null;
     if (unblockable || (pierce && !proj)) return null;      /* a RED blow and a bolt go through the wall */
-    const cost = Math.max(2, Math.round(api.blockCost(dmg) * (proj ? RIME.guard.proj : RIME.guard.melee) * (T().hard ? 0.75 : 1)));
+    const cost = Math.max(2, Math.round(api.blockCost(dmg) * (proj ? RIME.guard.proj : RIME.guard.melee) * (T().hard ? 0.75 : 1) * [1, 0.85, 0.75][T().wallUp || 0]));   /* (THICK WALL) */
     p.st -= cost; p.stDelay = api.ST.delay; api.SFX.rmWall ? api.SFX.rmWall(true) : api.SFX.clank();
     api.burst(p.x + p.face * 11, p.y - 12, 6, ['#bfe6f5', '#ffffff'], 60, 0.3, 200, 1);
     if (T().rime && foe && foe.alive && !proj) chillFoe(p, foe, 0.35);
@@ -170,13 +172,15 @@ export function makeRimebinder(api) {
     const life = RIME.corpse.life * RIME.perk.linger * (by === P() && T().linger ? 1.5 : 1);
     Object.assign(c, { vx: 0, vy: Math.max(0, c.vy || 0), spin: 0, rot: 0, life, max: life, rime: true, rimeHp0: e.hp0 || e.maxHpBase || 10, rimeRanged: isRanged(e), rimeBy: by, rimeT: e.t, rimeW: e.w || 12, rimeH: e.h || 14 });
     corpses.push(c); stats.corpses++; fill(by, RIME.bar.kill);
+    if ((by.rmCourtT || 0) > now()) { raiseCorpse(by, c, true); return true; }   /* THE FROZEN COURT (L50 A): what THE LONG WINTER fells stands up whole */
     api.number(e.x, e.y - (e.h || 14) - 4, 'RIME', '#dff4ff'); api.SFX.rmCorpse ? api.SFX.rmCorpse() : api.SFX.clank(); return true; }
-  const liveCorpses = () => { corpses = corpses.filter(c => c.rime && c.life > 0.05); return corpses; };
+  const liveCorpses = () => { const all = api.allCorpses ? api.allCorpses() : null; corpses = corpses.filter(c => c.rime && c.life > 0.05 && (!all || all.includes(c))); return corpses; };   /* (a level that clears main.js's corpses clears hers) */
   const near = (p, list, r) => { let best = null, bd = r; for (const c of list) { const d = Math.hypot(c.x - p.x, (c.y - p.y) * 1.5); if (d <= bd) { bd = d; best = c; } } return best; };
   const corpseNear = (p, r = RIME.corpse.reach) => near(p, liveCorpses(), r);
   const consume = c => { c.rime = false; c.life = 0.01; c.max = Math.max(c.max, 0.01); };
   /* ---------------- UP+C: RAISE ---------------- */
   function raiseCorpse(p, c, full) { const T0 = T(), s = thrallStats(c.rimeHp0, c.rimeRanged, full, T0);
+    s.k *= 1 + 0.15 * (T0.thrallUp || 0); s.life += 2 * (T0.lifeUp || 0);   /* (HARDER THRALLS, DEEP FREEZE: the upgrades) */
     const th = { o: p, x: c.x, y: c.y, vx: 0, vy: 0, face: p.face, t: c.rimeT, set: c.set || null, ct: c.t, frame0: 0, w: c.rimeW, h: c.rimeH, ...s, max: s.life, hpMax: s.hp, cd: 0.5, anim: 0, rise: 0.4, ground: false, full };
     consume(c); const own = ofP(thralls, p);
     if (own.length >= RIME.thrall.cap) { const old = own.sort((a, b) => a.life - b.life)[0]; melt(old, true); }
@@ -185,14 +189,16 @@ export function makeRimebinder(api) {
     api.number(th.x, th.y - th.h - 8, full ? 'RISEN WHOLE' : 'RISE', '#dff4ff'); api.SFX.rmRaise ? api.SFX.rmRaise() : api.SFX.ui(); return th; }
   function raise(p) { ensure(p); const T0 = T(), cost = raiseCost(T0);
     if ((p.rmBar || 0) < cost) { say(p, 'THE RIME BAR: A THIRD TO RAISE'); return false; }
-    const c = corpseNear(p); if (!c) { say(p, 'NO RIME CORPSE NEAR'); api.teach && api.teach('raise'); return false; }
+    const c = corpseNear(p);
+    if (!c && T().bound) { const th = near(p, ofP(thralls, p), RIME.corpse.reach); if (th) { p.rmBar -= cost; th.life = Math.min(th.max + 10, th.life + 10); th.hp = th.hpMax; api.ringAt(th.x, th.y - 8, 14, '#ffffff', 0.35); api.number(th.x, th.y - th.h - 8, 'BOUND IN ICE', '#dff4ff'); return true; } }   /* BOUND IN ICE (L40 A) */
+    if (!c) { say(p, 'NO RIME CORPSE NEAR'); api.teach && api.teach('raise'); return false; }
     p.rmBar -= cost; raiseCorpse(p, c, false); api.trialEvent('raise'); return true; }
   function say(p, s) { if (!p.rmSaid || api.time - p.rmSaid > 1.2) { p.rmSaid = api.time; api.number(p.x, p.y - 26, s, '#9aa39a'); } }
   /* ---------------- DOWN+C: SHATTER ---------------- */
-  function burstAt(p, x, y, k, chillA, r) { api.shakeCam(3, 0); api.hitstop(0.05); api.ringAt(x, y - 8, r, '#bfe6f5', 0.32); api.burst(x, y - 8, 18, ['#ffffff', '#bfe6f5', '#8fd0f0'], 140, 0.5, 300, 2);
+  function burstAt(p, x, y, k, chillA, r0) { const r = r0 * (1 + 0.15 * (T().shatterUp || 0)) * (T().hoarfrost ? 1.2 : 1);   /* (WIDE SHATTER; HOARFROST L35: the shards fly further) */ api.shakeCam(3, 0); api.hitstop(0.05); api.ringAt(x, y - 8, r, '#bfe6f5', 0.32); api.burst(x, y - 8, 18, ['#ffffff', '#bfe6f5', '#8fd0f0'], 140, 0.5, 300, 2);
     api.SFX.rmShatter ? api.SFX.rmShatter() : api.SFX.crack();
     for (const e of api.enemies) { if (!e.alive || e.harmless || e.gone > 0) continue; if (Math.hypot(e.x - x, (e.y - (e.h || 14) / 2) - (y - 8)) > r + (e.w || 12) / 2) continue;
-      const fz = (e.frozen || 0) > 0; chillFoe(p, e, chillA); api.hurtAs('throw', e, Math.round(dmgOf(k, 'rmShatter') * (fz ? RIME.shatter.frozenMul : 1) * brittle(e)), x, false); } }
+      const fz = (e.frozen || 0) > 0; chillFoe(p, e, chillA); if (T().hoarfrost) e.rmMarkT = now() + 0.3;   /* HOARFROST (L35): what the shards kill lies as a new rime corpse */ api.hurtAs('throw', e, Math.round(dmgOf(k, 'rmShatter') * (fz ? RIME.shatter.frozenMul : 1) * brittle(e)), x, false); } }
   function shatter(p) { ensure(p); if ((p.rmShatCd || 0) > 0) return false;
     const own = ofP(thralls, p), c = corpseNear(p), t = near(p, own, RIME.corpse.reach);
     const tgt = c && (!t || Math.hypot(c.x - p.x, c.y - p.y) <= Math.hypot(t.x - p.x, t.y - p.y)) ? c : t;
@@ -200,11 +206,12 @@ export function makeRimebinder(api) {
     if (!api.spend(RIME.shatter.st)) { api.tired(); return false; }
     p.rmShatCd = RIME.shatter.cd; stats.shatters++; fill(p, RIME.bar.shatter); api.kitPose(p, 'rmShatter', 0.25);
     if (tgt === c) consume(c); else { tgt.life = 0; tgt.shattered = true; }
+    if (tgt !== c && T().graveCharge) { burstAt(p, tgt.x, tgt.y, 2.2, 1.0, RIME.shatter.r * 2); api.number(tgt.x, tgt.y - 30, 'GRAVE CHARGE', '#ffffff'); api.trialEvent('shatter'); return true; }   /* GRAVE CHARGE (L40 B): her own thrall goes up twice as wide and hard */
     burstAt(p, tgt.x, tgt.y, RIME.shatter.k, RIME.shatter.chill, RIME.shatter.r); api.number(tgt.x, tgt.y - 24, 'SHATTER', '#ffffff'); api.trialEvent('shatter'); return true; }
   /* ---------------- THE ULTIMATE: THE LONG WINTER ---------------- */
   const ultReady = () => { const p = P(); ensure(p); return (p.rmBar || 0) >= RIME.bar.max - 1e-6; };
   function longWinter() { const p = P(); ensure(p); if (!ultReady()) return false; const U = RIME.ult;
-    p.rmBar = 0; stats.ults++; api.kitPose(p, 'rmUlt', 0.5); api.zoomKick(1.08, 0.3); api.shakeCam(6, 0); api.hitstop(0.1);
+    p.rmBar = 0; stats.ults++; if (T().court) p.rmCourtT = now() + 0.3; api.kitPose(p, 'rmUlt', 0.5); api.zoomKick(1.08, 0.3); api.shakeCam(6, 0); api.hitstop(0.1);
     api.number(p.x, p.y - 34, 'THE LONG WINTER', '#ffffff'); api.SFX.rmUlt ? api.SFX.rmUlt() : api.SFX.crack();
     for (let i = 0; i < 3; i++) api.ringAt(p.x, p.y - 10, U.r * (0.4 + 0.3 * i), '#bfe6f5', 0.3 + 0.12 * i);
     for (let i = 0; i < 40; i++) api.parts.push({ x: p.x + (Math.random() - 0.5) * U.r * 2, y: p.y - 60 - Math.random() * 40, vx: -40 + Math.random() * 20, vy: 60 + Math.random() * 60, life: 1, max: 1, col: Math.random() < 0.5 ? '#ffffff' : '#bfe6f5', size: 1, grav: 0 });
