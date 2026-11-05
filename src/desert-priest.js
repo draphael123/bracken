@@ -194,6 +194,8 @@ export function makePriest(api) {
     for (const q of p.spPatches) { q.t -= dt; q.burnT -= dt; if (q.burnT <= 0) { q.burnT = 0.5;
       for (const e of api.enemies) { if (!live(e) || !undead(e)) continue; const b = api.box(e), by = tile(e.y - 1); if (by === q.y && tile(b.r - 0.01) >= q.x0 && tile(b.l) <= q.x1) api.hurtAs('shot', e, Math.max(1, Math.round(api.swordDmg() * DP.consecrate.burn * 0.5)), p.x, false); } } }
     p.spPatches = p.spPatches.filter(q => q.t > 0);
+    if (K('sphalo') && api.seeds) for (const s of api.seeds) { if (s.dead || s.reflected || s.owner === p || s.unblockable) continue; const tx = tile(s.x), ty = tile(s.y);   /* HALLOWED GROUND (L30 B): a shot crossing his ground burns out */
+      if (p.spPatches.some(q => q.kind === 'consecrate' && tx >= q.x0 && tx <= q.x1 && ty <= q.y && ty >= q.y - 2)) { s.dead = true; api.sparks(s.x, s.y, 1, 3); } }
     // SUNFALL: the plunge lands in a ring of light
     if (p.spWasPlunge && !p.plunge && (p.ground || p.swim)) sunfall(p);
     p.spWasPlunge = !!p.plunge;

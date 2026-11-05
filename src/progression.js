@@ -2,12 +2,13 @@ import {LEGACY_NODES, SKILLS} from './progression-catalog.js';
 import {levelOfXp, xpFloor, LV_MAX} from './xp.js';
 import {retireRelics} from './relics.js';   /* THE RELICS ARE GONE: an old save's found-relic tick is dropped and its vault silver paid */
 import {KNIGHT_TECH, KNIGHT_UPGRADES} from './tech-knight.js';   /* THE L25-L50 KITS, one file a hero (claude/knightid; a hero lane adds its file and one line below) */
+import {PRIEST_TECH_FLAT, PRIEST_UPGRADES} from './tech-priest.js';   /* (claude/desertpriest) THE DESERT PRIEST's: forks at 30/40/50 in kfork's shape; FLAT (each fork's A) until claude/kfork merges - then PRIEST_TECH */
 import {normalizeDeathCost} from './death-cost.js';   /* THE DEATH COST's save shape: an older save has none, and gets an empty one (everything it holds is banked) */
 export {LEGACY_NODES, SKILLS};
 /* 2 (2026-09-24): PASSIVES COME WITH LEVELS, ABILITIES ARE BOUGHT (docs/briefs/hero-kits.md 1b). A passive is no longer sold
    or slotted: it is on from the hero level the catalog gives it. Version 1 saves are migrated by passivesToLevels below. */
 export const PROGRESSION_VERSION = 2;
-export const HERO_IDS = ['knight','pyro','paladin','pirate','reaper','warden','geomancer','berserker','ranger'];   /* THE GEOMANCER (2026-09-24): a third starter; THE BERSERKER (2026-10-04): the fourth default; THE RANGER (claude/ranger, 2026-10-14): the fourth free starter in his place */
+export const HERO_IDS = ['knight','pyro','paladin','pirate','reaper','warden','geomancer','berserker','ranger','sunpriest'];   /* THE GEOMANCER (2026-09-24): a third starter; THE BERSERKER (2026-10-04): the fourth default; THE RANGER (claude/ranger, 2026-10-14): the fourth free starter in his place */   /* (claude/desertpriest) THE DESERT PRIEST, id 'sunpriest' (the reflect-kit row's): a save may hold him; he is sold/picked only when hero-roster PRIEST_SHIPS (or the lab unlock) */
 const object = v => !!v && typeof v === 'object' && !Array.isArray(v);
 const clone = v => JSON.parse(JSON.stringify(v));
 /* ONE ABILITY SLOT, A SECOND AT LEVEL 30, AND TWO IS THE MOST (Daniel 2026-11-01: "by default the player can only have ONE ability equipped... once you
@@ -87,8 +88,8 @@ export const isMinor = n => MILESTONES_MINOR.includes(n);
 export const TECH_LEVELS = [25, 30, 35, 40, 45, 50];
 export const UPGRADE_LEVELS = [27, 29, 32, 34, 37, 39, 42, 44, 47, 49];
 export const UPGRADE_MAX = 2;
-export const TECHNIQUES = { knight: KNIGHT_TECH };
-export const UPGRADES = { knight: KNIGHT_UPGRADES };
+export const TECHNIQUES = { knight: KNIGHT_TECH, sunpriest: PRIEST_TECH_FLAT };   /* (claude/desertpriest: at the claude/kfork merge, PRIEST_TECH - the forks) */
+export const UPGRADES = { knight: KNIGHT_UPGRADES, sunpriest: PRIEST_UPGRADES };
 export const hasKit = h => !!TECHNIQUES[h];
 export const techniqueFor = (h, n) => (TECHNIQUES[h] || {})[n] || null;
 export const techniqueById = (h, id) => Object.values(TECHNIQUES[h] || {}).find(t => t.id === id) || null;
@@ -125,6 +126,7 @@ export const HERO_PERKS = {
  geomancer: [{ id: 'gstone', name: 'HARD STONE', what: 'FOES GNAW HER STONE A FIFTH SLOWER' }, { id: 'gward', name: 'WIDE RUNE', what: 'THE RUNE-WARD PERFECT WINDOW GROWS' }],
  ranger: [{ id: 'rgquiver', name: 'FULL QUIVER', what: 'THE QUIVER REFILLS A FIFTH SOONER' }, { id: 'rgfocus', name: 'PATIENT EYE', what: 'FOCUS FILLS A FIFTH FASTER' }],   /* (claude/ranger: 4% a rank, as the berserker's) */
  berserker: [{ id: 'bzstoke', name: 'STOKED', what: 'RAGE FILLS A FIFTH FASTER' }, { id: 'bzstout', name: 'STOUT BRACE', what: 'TAKE IT: THE BEAT IS A FIFTH LONGER' }],   /* (berserkerport: rank 5 = +20%, 4% a rank like the geomancer's) */
+ sunpriest: [{ id: 'spsun', name: 'SUNWARD', what: 'RADIANCE FILLS A FIFTH FASTER' }, { id: 'spflare', name: 'BRIGHT FLARE', what: 'THE FLARE COSTS A FIFTH LESS' }],   /* (claude/desertpriest: 4% a rank, as the ranger's) */
 };
 /* THE PYROMANCER'S L10 CARD (claude/pyrokit, Daniel 10-30 20:51 + 10-31 08:41): THE JET and THE EMBER SHOT left her base kit ('structurally too different'
    beside the held fireball) and are a CHOICE at her level-10 milestone, beside WILDFIRE (her own perk, ranked as ever). The card is the milestone's
@@ -223,7 +225,7 @@ export function respecCard(p, h) { const c = ensureCard(p, h); c.v = c.e = c.m =
 export function growthAt(h,lv,card){
  lv=Math.max(0,lv);const ranks=Math.min(lv,24)/12,c=card===undefined?evenCard(lv):(card||{v:0,e:0,m:0,ms:{}}),ms=Object.values(c.ms||{});
  const v=Math.min(CARD_CAP,c.v||0),e=Math.min(CARD_CAP,c.e||0),m=Math.min(CARD_CAP,c.m||0),tv=taperPicks(v),te=taperPicks(e),tm=Math.floor(taperPicks(m));
- const hp0=({knight:100,pyro:88,paladin:120,pirate:90,reaper:95,warden:100,geomancer:95,berserker:105,ranger:110}[h]||100)+freeHp(lv)+8*tv;
+ const hp0=({knight:100,pyro:88,paladin:120,pirate:90,reaper:95,warden:100,geomancer:95,berserker:105,ranger:110,sunpriest:85}[h]||100)+freeHp(lv)+8*tv;
  return {hp:Math.round(hp0*(ms.includes('heart')?1.1:1)),stamina:100+freeStamina(lv)+12*te,damage:freeDamage(lv)+Math.floor(ranks*(h==='reaper'?1.5:1))+tm,ranks,techniqueRank:Math.floor(ranks),skillMultiplier:skillScale(lv)*(ms.includes('arcane')?1.15:1),picks:{v,e,m}};
 }
 /* THE CARD'S MIGRATION (cardV 1): a save from before the card has levels and no picks. Every hero with XP gets his levels as an even spread

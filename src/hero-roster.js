@@ -11,14 +11,19 @@ import { keepCorruptCopy, LASTGOOD, CORRUPT, safeSet } from './save-safety.js';
 
 export const ROSTER_KEY = 'bracken.roster';
 export const STARTERS = ['knight', 'warden', 'geomancer', 'ranger'];   /* (claude/ranger, Daniel 10-12: THE RANGER is the fourth free starter; THE BERSERKER is bought - a roster that holds him keeps him) */
-export const HERO_IDS = ['knight', 'warden', 'geomancer', 'ranger', 'berserker', 'pyro', 'paladin', 'pirate', 'reaper'];
+export const HERO_IDS = ['knight', 'warden', 'geomancer', 'ranger', 'berserker', 'pyro', 'paladin', 'pirate', 'reaper', 'sunpriest'];   /* (claude/desertpriest) THE DESERT PRIEST: a roster may hold him (a slot that owns him keeps him) */
 export const HERO_RULE_SHIPS = false;
 /* THE WAR CAIRN's SWITCH (claude/warcairn, scratch/brief-crownpath-1028.md Q2/Q5, Daniel 10-28): false until THE WAR CAIRN ships (after its art pass). Flip it IN THE BATCH THAT SHIPS
    THE LEVEL and THE BERSERKER is no longer sold to anyone who has not beaten THE BERSERKER CHIEFTAIN (feat 'boss:warcairn', then 10 silver - the Blood Knight's rule; src/main.js
    HEROES reads it). A slot or a device roster that already owns him keeps him either way (lockOf only gates heroes you do not own), and gets THE CHIEFTAIN'S AXES for beating him */
-export const WARCAIRN_SHIPS = true;   /* flipped in BATCH129 (Daniel approved War Cairn 10-29; music picks approved) */
+export const WARCAIRN_SHIPS = true;
+/* THE DESERT PRIEST's SWITCH (claude/desertpriest, Daniel 11-04 22:19: the 12th hero, unlocked from the desert arc). false until THE SUN TEMPLE (the desert arc's
+   light level, docs/desert-arc-brief.md) ships after its art pass: until then he is in no pick, no store and no co-op list, and a save cannot buy him. The LAB
+   UNLOCK opens him on one page without touching a save: ?priest=1 (main.js SP_OPEN), or ?level=<id>&hero=sunpriest / ?boss=<id>&hero=sunpriest (bossLab, tune lanes).
+   Flip it IN THE BATCH THAT SHIPS THE SUN TEMPLE: his card then reads HOW.sunpriest (clear the temple, then 10 silver or 800 gold - BZ_WIN's rule). */
+export const PRIEST_SHIPS = false;   /* flipped in BATCH129 (Daniel approved War Cairn 10-29; music picks approved) */
 /* the lines a locked card says (size 6, 320 wide: textfit heropick strict). Hero-specific where the way in is not just the store. */
-const HOW = { reaper: 'BEAT HIM IN THE UNBURIED, THEN BUY: 10 SILVER', ...(WARCAIRN_SHIPS ? { berserker: 'BEAT HIM AT THE WAR CAIRN, THEN BUY: 10 SILVER' } : {}) };
+const HOW = { reaper: 'BEAT HIM IN THE UNBURIED, THEN BUY: 10 SILVER', sunpriest: 'CLEAR THE SUN TEMPLE, THEN BUY: 10 SILVER', ...(WARCAIRN_SHIPS ? { berserker: 'BEAT HIM AT THE WAR CAIRN, THEN BUY: 10 SILVER' } : {}) };
 export const howTo = (h, ruleShips = HERO_RULE_SHIPS) => ruleShips ? 'BEAT HIM, THEN 10 SILVER' : (HOW[h] || 'BUY IN THE STORE - 10 SILVER');
 
 const get = (s, k) => { try { return s.getItem(k); } catch { return null; } };
