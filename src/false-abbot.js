@@ -56,14 +56,33 @@ export const ABBOT = {
   adds: 2, addsP2: 2, addEvery: 8, addEveryP2: 6, daze: 2.2,   /* (claude/abbot3: P2 3 every 4.2 s - the knight died to sprigs while he walked to the basket: the house is the fight, not his congregation) */
   order: ['censer', 'cast', 'swing', 'gleam', 'censer', 'coals', 'cast', 'swing', 'gleam', 'knell'],   /* the rite is NOT in here: it is his heartbeat, taken the moment the ward lapses */
 };
+/* THE FALSE ABBOT IN THE MONASTERY 3 (claude/falseabbot, Daniel 11-02 15:55 #4: "the False Abbot uses the building"; only where the house says m3 -
+   src/abbot-chapel.js, behind MON3. Without it, every line below is the ABBOT above, untouched). TWO PHASES, ONE MAIN OPENING, ONE SECOND:
+     P1 THE CHAPEL   (hp > 50%) his rood hangs from two bells; his braziers flank the altar.
+     THE FLOOR GOES  at 50% he rings for the bells: the belfry floor over the nave falls into the chapel as rubble steps (told), and he takes the rope up.
+     P2 THE BELFRY   (< 50%) the towers' bridges hang from bells; THE PEAL runs along the beams; THE KNELL; the great bell is the last blow (kept).
+   MAIN OPENING (both phases): strike the bell with him on its bridge - it drops with him (the P1 that "is perfectly fine", Daniel 10-29, now all fight).
+   SECOND OPENING (both phases): he LIGHTS A BRAZIER to pray - its smoke lifts you - COME DOWN ON HIM while he prays or is warded by it.
+   His rite takes turns, bridge then brazier, so both openings show in each phase. THE CONGREGATION CALL (told) raises his flock from the pews. */
+export const ABBOT3 = {
+  p2At: 0.5,
+  tell: { call: 0.9, peal: 0.9, collapse: 1.6 },
+  callN: 2, addsCap: 3,                       /* the call raises two, never past three of his at once */
+  peal: { speed: 230, half: 10, dmg: 16, lift: -150 },   /* THE PEAL: a ring along the boards he stands on, both ways, 230 px/s; a hero ON those boards in its 10 px is struck (jump it: red, told) */
+  belowNudge: 7,                              /* P2, you still below in the chapel: every 7 s he tells you where he is */
+  order1: ['censer', 'cast', 'call', 'swing', 'gleam', 'censer', 'coals', 'cast', 'swing', 'gleam'],
+  order2: ['censer', 'peal', 'cast', 'swing', 'gleam', 'call', 'censer', 'peal', 'knell', 'swing'],
+};
+const RITE3_SAY = { bridge: 'HE PRAYS ON THE BRIDGE: STRIKE ITS BELL', brazier: 'HE LIGHTS HIS BRAZIER: RIDE THE SMOKE, COME DOWN ON HIM' };
 /* EVERY MODE IS ITS KEY PLUS 'Tell' - no exceptions, because the one exception there was (coals -> coalTell) cost two
    debugging passes in the tool that reads them back. A convention with a hole in it is not a convention. */
 const TELL = what => what + 'Tell';
-const SAY = { censerTell: 'THE CENSER', castTell: 'THE CHAIN', swingTell: 'THE BELL ROPE: OFF THE MARK', gleamTell: 'FALSE LIGHT', coalsTell: 'THE COALS', knellTell: 'HE RINGS IT HIMSELF' };
+const SAY = { censerTell: 'THE CENSER', castTell: 'THE CHAIN', swingTell: 'THE BELL ROPE: OFF THE MARK', gleamTell: 'FALSE LIGHT', coalsTell: 'THE COALS', knellTell: 'HE RINGS IT HIMSELF',
+  pealTell: 'THE PEAL: JUMP THE RING', callTell: 'THE CONGREGATION CALL', collapseTell: 'HE RINGS FOR THE BELLS: THE FLOOR GOES' };   /* (the last three: the house m3 only) */
 /* (claude/abbotp2, Daniel 10-29: "it needs to be clear in phase 2 how you actually hurt him") P2's three lines are routed (src/hint-lines.js CALL_LINES) and said in the hint box; P1 and P3 keep theirs as they were */
 export const CHAIR_SAY = { cut: 'HE CUTS HIS BRIDGES: TO HIS CHAIR', ride: 'RIDE HIS BASKET DOWN: THE CHAIR COMES WITH IT', spill: 'HIS CHAIR COMES DOWN: HE IS THROWN OUT' };
 const RITE_SAY = ['', 'HE PRAYS ON THE BRIDGE: STRIKE ITS BELL', CHAIR_SAY.ride, 'HE PRAYS AT THE WHEEL: COME DOWN ON HIM'];
-const RED = new Set(['swingTell', 'coalsTell', 'knellTell']);
+const RED = new Set(['swingTell', 'coalsTell', 'knellTell', 'pealTell']);
 /* THE OPENING: the house has turned on him (downed), or he is falling with it */
 export const abbotOpen = e => e.mode === 'downed' || e.mode === 'fall';
 export const abbotBlessed = e => (e.blessT || 0) > 0;
@@ -96,6 +115,8 @@ export function abbotFrame(e) {
     case 'gleamTell': return 18; case 'gleam': return 19;
     case 'downed': return 16; case 'beaten': return 22; case 'fall': return 21;
     case 'sleep': case 'wake': return 0;
+    case 'pealTell': case 'peal': case 'collapseTell': return 15;   /* (m3) he strikes a bell / rings for the bells: the knell's pose until the art pass draws its own */
+    case 'callTell': case 'call': return 14;                        /* (m3) arms up over the pews: the rite's flare */
   }
   if (e.hurtT > 0) return 17;
   return Math.abs(e.vx || 0) > 3 ? 1 + Math.floor((e.anim || 0) * 5) % 2 : 0;
@@ -107,6 +128,10 @@ const clampX = (A, x, pad = 20) => Math.max((A.landLo ?? A.x0 + pad), Math.min((
    bridges: [{x0,x1,bells:[x..]}], chairX, chairY, basketX, wheels: [{x, spotX, smokeX}], bellX }. Without a house (old rigs) he is
    the old floor-only Abbot. e.br[i]: bridge i is hung; e.brGone: phase two cut them for good. */
 const house = c => c.A && c.A.house;
+const isM3 = c => { const H = house(c); return !!(H && H.m3); };
+/* (m3) the floor's runs in this storey (the belfry floor has the hole THE FLOOR GOES left in it): where he may stand, and where a peal runs */
+const floorRunAt = (H, x) => (H && H.floorSpans || []).find(s => x >= s[0] - 2 && x <= s[1] + 2) || null;
+const onFloor = (H, x) => { if (!H || !H.floorSpans) return x; if (floorRunAt(H, x)) return x; let best = x, d0 = 1e9; for (const [a, b] of H.floorSpans) for (const q of [a + 12, b - 12]) if (Math.abs(q - x) < d0) { d0 = Math.abs(q - x); best = q; } return best; };
 export function abbotHighSpans(e, H) {
   if (!H) return [];
   const iv = H.spans.map(s => [s[0], s[1]]);
@@ -129,12 +154,12 @@ function goTo(e, c, to, rite) { e.swGoal = { ...to, rite: !!rite }; begin(e, 'sw
 function placeFor(e, c, P) {   /* where a rope to the hero puts him: on the boards you stand on, or the floor under you */
   const H = house(c), floor = c.A.floor;
   if (H && abbotLevelOf(e, H, P, floor) === 'high') { const s = spanAt(e, H, P.x); return { x: Math.max(s[0] + 6, Math.min(s[1] - 6, P.x)), y: H.deckY, deck: 'high' }; }
-  return { x: P.x, y: floor, deck: 'floor' };
+  return { x: H && H.m3 ? onFloor(H, P.x) : P.x, y: floor, deck: 'floor' };
 }
 /* HE FALLS WITH IT: off a dropped bridge, out of a dropped chair - the house has answered the blow, and he lands STUNNED */
 function drop(e, c, why) {
   e.mode = 'fall'; e.modeT = 2; e.vy = 0; e.vx = 0; e.blessT = 0; e.spoilBy = null; e.deck = 'floor'; e.fallWhy = why;
-  e.houseN = (e.houseN || 0) + 1;
+  e.houseN = (e.houseN || 0) + 1; if (c.A && c.A.house && c.A.house.m3) { e.x = onFloor(c.A.house, e.x); e.bellN = (e.bellN || 0) + 1; e.smoke = null; }   /* (m3) he lands beside the hole in the belfry floor, never in it */
   if (c.breakBlessings) c.breakBlessings();
   c.say(why, false); c.sound('break'); c.shake(4);
 }
@@ -146,7 +171,7 @@ function downed(e, c) {
 }
 function begin(e, what, c) {
   const { P, A } = c;
-  e.mode = TELL(what); e.modeT = what === 'rite' ? (ABBOT.riteT[e.phase || 1] ?? ABBOT.tell.rite) : ABBOT.tell[what];
+  e.mode = TELL(what); e.modeT = what === 'rite' ? (ABBOT.riteT[e.phase || 1] ?? ABBOT.tell.rite) : (ABBOT.tell[what] ?? ABBOT3.tell[what]);
   e.face = Math.sign(P.x - e.x) || e.face || 1;
   if (what === 'swing') {
     /* THE BELL ROPE, always TOWARD you, onto the spot you stand on - or, with a goal (his rite's place, the boards you
@@ -157,7 +182,8 @@ function begin(e, what, c) {
     else if (to.deck === 'high') tx = to.x;
     else if (e.deck !== 'floor') tx = clampX(A, to.x);   /* down off the boards: onto the spot under you */
     else { const dir = e.face, d = Math.min(ABBOT.swingMax, Math.max(ABBOT.swingMin, Math.abs(P.x - e.x))); tx = clampX(A, e.x + dir * d); }
-    e.sw0 = e.x; e.swY0 = e.y; e.swTo = tx; e.swY = to.y ?? A.floor; e.swDeck = to.deck || 'floor'; e.swRite = !!(e.swGoal && e.swGoal.rite);
+    if (isM3(c) && (to.deck || 'floor') === 'floor' && !to.stage) tx = onFloor(house(c), tx);   /* (m3) never onto the hole in the belfry floor */
+    e.sw0 = e.x; e.swY0 = e.y; e.swTo = tx; e.swY = to.y ?? A.floor; e.swDeck = to.deck || 'floor'; e.swRite = !!(e.swGoal && e.swGoal.rite); e.swStage = (e.swGoal && e.swGoal.stage) || 0;
     e.face = Math.sign(e.swTo - e.x) || e.face;
     e.swGoal = null;
     const mid = (e.sw0 + e.swTo) / 2, ropes = A.ropes || [];
@@ -165,8 +191,14 @@ function begin(e, what, c) {
     c.sound('rope');   /* the rope jerks and its bell clangs FIRST: that is the tell, heard and drawn (drawFalseAbbot) */
   }
   if (what === 'gleam') { e.lightAim = clampX(A, P.x); e.lightY = P.ground === false ? A.floor : P.y; }
+  if (what === 'rite' && isM3(c)) {   /* (m3) the bridge, or the brazier he LIGHTS to pray at: its smoke rises at once (the second opening) */
+    e.riteAt = e.phase || 1; e.riteDev = e.riteDevNext || 'bridge';
+    e.modeT = e.riteDev === 'brazier' ? ABBOT.riteT[3] : ABBOT.riteT[1];   /* the bridge 3.2 s, the brazier 3.4 s (the chair's 5 s is gone with the chair) */
+    if (e.riteDev === 'brazier') { const b = house(c).braziers[e.riteBz || 0]; e.smoke = { x: b.smokeX, bz: e.riteBz || 0 }; c.sound('puff'); if (c.kindle) c.kindle(b); }
+    e.riteDevNext = e.riteDev === 'bridge' ? 'brazier' : 'bridge';   /* turn and turn about: both openings show in every phase */
+    c.say(RITE3_SAY[e.riteDev], false, true); return; }
   if (what === 'rite') { e.riteAt = e.phase || 1; if (e.riteAt === 3 && house(c)) { const w = house(c).wheels[e.riteWheel || 0]; e.smoke = { x: w.smokeX }; } }
-  c.say(what === 'rite' ? RITE_SAY[e.riteAt] || 'HE PRAYS' : SAY[e.mode], RED.has(e.mode), what === 'rite');   /* the rite throws no blow, so it wears no mark: it says what to do instead */
+  c.say(what === 'rite' ? RITE_SAY[e.riteAt] || 'HE PRAYS' : SAY[e.mode], RED.has(e.mode), what === 'rite' || what === 'call' || what === 'collapse');   /* the rite throws no blow, so it wears no mark: it says what to do instead */
 }
 /* THE GREAT BELL, RUNG BY THE PLAYER. It is the LAST BLOW now (Daniel 10-26: "rung once he is beaten down - not the whole
    fight"): beaten down, the note goes through him and he is done ('finish'). Any other time it only rings ('cold'). */
@@ -193,13 +225,16 @@ export function abbotWheelStruck(e, i) { if (abbotPraying(e) && e.riteAt === 3 &
    were the way up to it. (In phases one and two a plunge on him praying spoils the rite, as it always did.) */
 export function abbotPlunge(e, c) {
   if (!e || !e.alive) return false;
+  /* (m3) THE SECOND OPENING, either phase: come down on him while he prays at the brazier he lit, or while its smoke still wards him */
+  if (e.m3) { if ((abbotPraying(e) && e.riteDev === 'brazier' || abbotBlessed(e) && e.smoke) && !abbotOpen(e) && e.mode !== 'beaten' && e.mode !== 'collapseTell') { e.smoke = null; e.houseN = (e.houseN || 0) + 1; e.plungeN = (e.plungeN || 0) + 1; downed(e, c); c.say('COME DOWN ON HIM: THE RITE BREAKS', false); return true; }
+    return abbotSpoil(e, 'plunge'); }
   if ((e.phase || 1) === 3 && (abbotPraying(e) || abbotBlessed(e)) && !abbotOpen(e) && e.mode !== 'beaten') { e.smoke = null; e.houseN = (e.houseN || 0) + 1; downed(e, c); c.say('COME DOWN ON HIM: THE RITE BREAKS', false); return true; }
   return abbotSpoil(e, 'plunge');
 }
 /* THE FINALE'S FLOOR: in phase three a blow that would take him under 5% beats him DOWN instead (he kneels at that
    floor, and the great bell is the last blow). Once a window, then he can die to the blade too (beatCd) - never a wall. */
 export function abbotClamp(e, dmg) {
-  if (!e || (e.phase || 1) !== 3 || e.mode === 'beaten' || (e.beatCd || 0) > 0) return dmg;
+  if (!e || (e.phase || 1) !== (e.m3 ? 2 : 3) || e.mode === 'beaten' || (e.beatCd || 0) > 0) return dmg;   /* (m3: the belfry is his last phase) */
   const fl = Math.ceil(e.maxHp * ABBOT.beatAt);
   if (e.hp - dmg < fl) { e.beatNow = true; return Math.max(0, e.hp - fl); }
   return dmg;
@@ -224,6 +259,8 @@ function stepBridges(e, dt, c) {
 /* the phase changes: each one changes the house (B5) */
 function phaseTo(e, n, c) {
   const H = house(c); e.phase = n;
+  /* (m3) THE FLOOR GOES: no chair, no wheel - he rings for the bells (the next time his hands are free: never out of a fall or a downing) */
+  if (H && H.m3) { if (n === 2) { e.collapsePend = true; c.sound('roar'); } return; }
   if (n === 2) { c.say(CHAIR_SAY.cut, true); c.sound('roar'); if (c.intro) c.intro(e);   /* (claude/abbotclear) the told camera beat: chair -> rope -> basket */
     if (H) { e.br = e.br || H.bridges.map(() => true);
       H.bridges.forEach((b, i) => { if (e.br[i] && c.bridge) c.bridge(i, false); e.br[i] = false; });
@@ -243,17 +280,20 @@ export function updateFalseAbbot(e, dt, c) {
   e.deck ??= 'floor'; if (e.y === undefined || e.deck === 'floor' && e.mode !== 'swing' && e.mode !== 'fall') e.y = floor;
   e.phase ??= 1;
   if (H) { e.br = e.br || H.bridges.map(() => true); e.brT = e.brT || H.bridges.map(() => 0); }
-  const fr = e.hp / e.maxHp;
+  const fr = e.hp / e.maxHp, m3 = !!(H && H.m3); e.m3 = m3;
+  if (m3) { if (e.phase < 2 && fr <= ABBOT3.p2At) phaseTo(e, 2, c); }   /* (m3) two phases: the chapel, the belfry */
+  else {
   if (e.phase < 2 && fr <= ABBOT.p2At) phaseTo(e, 2, c);
-  if (e.phase < 3 && fr <= ABBOT.p3At) phaseTo(e, 3, c);
-  stepOrb(e, dt, c); stepBridges(e, dt, c);
+  if (e.phase < 3 && fr <= ABBOT.p3At) phaseTo(e, 3, c); }
+  stepOrb(e, dt, c); stepBridges(e, dt, c); if (m3) stepWaves(e, dt, c);
+  if (m3 && e.smoke && !abbotPraying(e) && !abbotBlessed(e)) e.smoke = null;   /* (m3) the brazier he lit smokes while it wards him, and goes out with the ward */
   /* the chair rides the basket: in it, he goes where it goes - and far enough down, it spills him (P2's opening) */
   if (H && e.deck === 'chair' && e.mode !== 'swing' && e.mode !== 'swingTell') { const k = c.basketK ? c.basketK() : 0; e.y = abbotChairY(H, floor, k); e.x = H.chairX;
     if (k >= ABBOT.spillAt && e.mode !== 'swing') { e.deck = 'floor'; drop(e, c, CHAIR_SAY.spill); e.vy = 120; if (c.spill) c.spill(e); } }   /* the payoff: a hit-stop, a dust burst, the chair swinging empty (main.js) */
   /* standing on boards that are not there any more (a bridge dropped under him some other way): he falls */
   if (H && e.deck === 'high' && e.mode !== 'swing' && e.mode !== 'fall' && !spanAt(e, H, e.x)) drop(e, c, 'THE BRIDGE GOES WITH HIM');
   // ---- THE CONGREGATION, all the way through: it does not stop for his windups ----
-  if (e.mode !== 'downed' && e.mode !== 'beaten' && c.adds && c.summon) {
+  if (!m3 && e.mode !== 'downed' && e.mode !== 'beaten' && c.adds && c.summon) {   /* (m3: the congregation comes when he CALLS it - a told move, not a clock) */
     if (e.addT <= 0) { e.addT = e.phase >= 2 ? ABBOT.addEveryP2 : ABBOT.addEvery;
       if (c.adds() < (e.phase >= 2 ? ABBOT.addsP2 : ABBOT.adds)) c.summon(); }
   }
@@ -268,6 +308,13 @@ export function updateFalseAbbot(e, dt, c) {
     if (e.y >= floor) { e.y = floor; downed(e, c); e.riteCd = Math.max(e.riteCd || 0, ABBOT.downCd); } return; }
   // ---- THE OPENING: the house answered the blow and he is down ----
   if (e.mode === 'downed') { e.vx = 0; if (e.modeT <= 0) { e.mode = 'stalk'; e.cd = 1.0; e.riteCd = Math.max(e.riteCd || 0, ABBOT.downCd); c.say('HE GETS UP', false); } return; }
+  // ---- (m3) THE FLOOR GOES: told (the dust, the red mark), then the rubble comes down and he takes the rope up into the belfry ----
+  if (e.mode === 'collapseTell') { e.vx = 0; if (e.modeT > 0) return;
+    if (c.collapse) c.collapse(true);
+    const S2 = c.stage ? c.stage(2) : null; e.cd = 0;
+    if (S2) goTo(e, c, { x: S2.landX, y: S2.floor, deck: 'floor', stage: 2 }); else e.mode = 'stalk';
+    return; }
+  if (m3 && (e.mode === 'call' || e.mode === 'peal')) { if (e.modeT <= 0) { e.mode = 'stalk'; e.cd = ABBOT.cdP2; } return; }
   // ---- the windups ----
   if (e.mode.endsWith('Tell')) {
     /* he turns to you through every windup but two: on the rope he has already chosen where he lands, and on his knees
@@ -287,6 +334,13 @@ export function updateFalseAbbot(e, dt, c) {
       return; }
     if (e.mode === 'castTell') { e.mode = 'cast'; e.modeT = 0.45; e.castHit = false; e.castX = e.x + e.face * Math.min(ABBOT.castRange, Math.max(60, Math.abs(P.x - e.x) + 20)); c.sound('throw'); return; }
     if (e.mode === 'swingTell') { e.mode = 'swing'; e.modeT = ABBOT.swingT; c.sound('whoosh'); return; }
+    if (e.mode === 'callTell') { e.mode = 'call'; e.modeT = 0.5; c.sound('bless');   /* (m3) THE CONGREGATION CALL: up out of the pews (main.js: c.summon at the house's callAt) */
+      const n = Math.max(0, Math.min(ABBOT3.callN, ABBOT3.addsCap - (c.adds ? c.adds() : 0))); for (let i = 0; i < n; i++) if (c.summon) c.summon(i);
+      e.callN = (e.callN || 0) + 1; return; }
+    if (e.mode === 'pealTell') { e.mode = 'peal'; e.modeT = 0.5; c.sound('bell'); c.shake(3);   /* (m3) THE PEAL: a ring each way along the boards he stands on */
+      const run = e.deck === 'high' && H ? spanAt(e, H, e.x) : (floorRunAt(H, e.x) || [A.x0, A.x1]);
+      if (run) { e.waves = e.waves || []; for (const dir of [-1, 1]) e.waves.push({ x: e.x, dir, y: e.y, lo: run[0], hi: run[1], hit: false }); }
+      e.pealN = (e.pealN || 0) + 1; return; }
     if (e.mode === 'gleamTell') { e.mode = 'gleam'; e.modeT = 0.35; c.sound('throw');
       e.orb = { x0: e.x + e.face * 8, y0: e.y - 52, tx: e.lightAim ?? P.x, ty: e.lightY ?? floor, t: 0, T: ABBOT.lightT };
       return; }
@@ -294,7 +348,7 @@ export function updateFalseAbbot(e, dt, c) {
       const sp = H && e.deck === 'high' ? spanAt(e, H, e.x) : null;
       for (let i = 0; i < ABBOT.coals; i++) { const fx = e.x + e.face * (ABBOT.coalFrom + i * ABBOT.coalStep); if (sp && (fx < sp[0] || fx > sp[1])) continue; c.fire(fx, ABBOT.coalLife, i * 0.06, e.y); }
       return; }
-    if (e.mode === 'riteTell') { e.mode = 'rite'; e.modeT = 0.5; c.sound('bless'); e.smoke = null;
+    if (e.mode === 'riteTell') { e.mode = 'rite'; e.modeT = 0.5; c.sound('bless'); if (!(e.m3 && e.riteDev === 'brazier')) e.smoke = null;
       /* HE BLESSES HIMSELF TOO, and the prayer HEALS him: that is the whole difference between him and the priest downstairs */
       e.blessT = ABBOT.bless; e.hp = Math.min(e.maxHp, e.hp + Math.ceil(e.maxHp * ABBOT.heal)); e.riteN = (e.riteN || 0) + 1;
       const n = c.blessFlock ? c.blessFlock(ABBOT.blessR, ABBOT.bless, ABBOT.mend) : 0;
@@ -328,6 +382,10 @@ export function updateFalseAbbot(e, dt, c) {
     e.x = e.sw0 + (e.swTo - e.sw0) * k; e.vx = 0; e.swLift = ABBOT.swingH * Math.sin(Math.PI * s); e.y = y0 + (y1 - y0) * k - e.swLift;
     if (e.modeT > 0) return;
     e.x = e.swTo; e.y = y1; e.swLift = 0; e.deck = e.swDeck || 'floor';
+    if (e.swStage) { const to = e.swStage; e.swStage = 0;   /* (m3) up the rope into the belfry: the chapel's rood is hauled back as he goes, and the belfry's bridges are his now */
+      if (c.bridge && e.br) e.br.forEach((up, i) => { if (!up) c.bridge(i, true); });
+      e.stage = to; e.br = null; e.brT = null; e.brTold = null; e.waves = null; e.riteDevNext = 'bridge'; e.riteCd = Math.max(e.riteCd || 0, 6);   /* (the climb up after him is not a race against a heal) */
+      c.say('HE WAITS AT THE BELLS: UP THE FALLEN FLOOR', false, true); }
     if (e.swRite) { e.swRite = false; e.cd = 0; begin(e, 'rite', c); return; }   /* he came to pray: no slam, he kneels */
     e.mode = 'land'; e.modeT = ABBOT.landT;
     c.sound('heavy'); c.shake(5); if (c.dust) c.dust(e.x, e.y);
@@ -342,6 +400,7 @@ export function updateFalseAbbot(e, dt, c) {
     return; }
   // ---- PROCESSING: slow, heavy, always coming ----
   if (e.deck === 'chair') { goTo(e, c, placeFor(e, c, P)); return; }   /* not praying, he does not sit up there: down to you */
+  if (m3) return stepM3(e, dt, c);   /* (m3) the chapel and the belfry: his own choices below */
   const lvl = H ? abbotLevelOf(e, H, P, floor) : 'floor', same = !H || (lvl === 'high') === (e.deck === 'high');
   const d = P.x - e.x, ad = Math.abs(d); e.face = Math.sign(d) || e.face;
   const sp = H && e.deck === 'high' ? spanAt(e, H, e.x) : null;
@@ -384,6 +443,61 @@ export function updateFalseAbbot(e, dt, c) {
     if (what === 'knell' && e.deck !== 'floor') what = 'censer';
   }
   begin(e, what, c);
+}
+/* (m3) WHAT HE DOES WITH HIS HANDS FREE in the chapel and the belfry: walk to you, ring for the bells once past half, kneel at the bridge or the
+   brazier turn about, and the order of the storey he is in. You still below him in the chapel (phase two): the false light and the call reach you,
+   he does not come down (and every few seconds he says where he is) */
+function stepM3(e, dt, c) {
+  const { P, A } = c, floor = A.floor, H = house(c);
+  if (e.collapsePend && e.mode === 'stalk' && !P.dead) { e.collapsePend = false; e.smoke = null; e.blessT = 0; e.waves = null; e.vx = 0;
+    begin(e, 'collapse', c); if (c.collapseTell) c.collapseTell(); return; }
+  const below = (e.stage || 1) === 2 && P.y > floor + 24;
+  const lvl = below ? 'below' : abbotLevelOf(e, H, P, floor), same = !below && (lvl === 'high') === (e.deck === 'high');
+  const d = P.x - e.x, ad = Math.abs(d); e.face = Math.sign(d) || e.face;
+  const sp = e.deck === 'high' ? spanAt(e, H, e.x) : null;
+  const want = same && ad > ABBOT.keep ? e.face : 0, nx = e.x + want * ABBOT.walk * dt;
+  if (nx > A.x0 + 20 && nx < A.x1 - 20 && (sp ? (nx > sp[0] + 4 && nx < sp[1] - 4) : !!floorRunAt(H, nx))) e.x = nx; e.vx = want * ABBOT.walk;
+  if (below && !P.dead) { e.belowT = (e.belowT || 0) + dt; if (e.belowT >= ABBOT3.belowNudge) { e.belowT = 0; c.say('HE WAITS AT THE BELLS: UP THE FALLEN FLOOR', false, true); if (c.nudgeUp) c.nudgeUp(); } } else e.belowT = 0;
+  if (e.cd > 0 || P.dead) return;
+  /* THE RITE, his heartbeat: the bridge by you (the main opening) or the brazier by you (the second), turn about */
+  if ((e.blessT || 0) <= 0 && e.riteCd <= 0) {
+    const near = xs => Math.min(...xs.map(x => Math.abs(x - P.x)));
+    const ups = H.bridges.map((b, i) => ({ b, i })).filter(q => bridgeUp(e, q.i));
+    let dev = e.riteDevNext || 'bridge'; if (dev === 'bridge' && !ups.length) dev = 'brazier'; e.riteDevNext = dev;
+    if (dev === 'bridge') { const q = ups.reduce((a, b) => near(a.b.bells) <= near(b.b.bells) ? a : b);
+      const bx = q.b.bells.reduce((a, b) => Math.abs(a - P.x) <= Math.abs(b - P.x) ? a : b), w = q.b.x1 - q.b.x0, mid = w < 160 ? (q.b.x0 + q.b.x1) / 2 : Math.max(q.b.x0 + 24, Math.min(q.b.x1 - 24, bx < (q.b.x0 + q.b.x1) / 2 ? q.b.x0 + 56 : q.b.x1 - 56)); e.riteBr = q.i;
+      if (e.deck === 'high' && Math.abs(e.x - mid) < 24 && !spanAt0(H, e.x)) { begin(e, 'rite', c); return; }
+      goTo(e, c, { x: mid, y: H.deckY, deck: 'high' }, true); return; }
+    const bi = H.braziers.reduce((b, z, i) => Math.abs(z.spotX - P.x) < Math.abs(H.braziers[b].spotX - P.x) ? i : b, 0), z = H.braziers[bi]; e.riteBz = bi;
+    if (e.deck === 'floor' && Math.abs(e.x - z.spotX) < 20) { begin(e, 'rite', c); return; }
+    goTo(e, c, { x: z.spotX, y: floor, deck: 'floor' }, true); return; }
+  const order = (e.stage || 1) === 2 ? ABBOT3.order2 : ABBOT3.order1, room = !!(c.adds && c.summon) && c.adds() < ABBOT3.addsCap;
+  let what;
+  if (below) what = (e.far = !e.far) || !room ? 'gleam' : 'call';
+  else if (!same) what = (e.far = !e.far) ? 'gleam' : 'swing';
+  else {
+    what = order[e.turn++ % order.length];
+    if (what === 'call' && !room) what = 'censer';
+    if (what === 'peal' && ad < 40) what = 'censer';                                   /* under his hand the ring is not a thing you could jump: the censer */
+    if (what === 'censer' && ad > ABBOT.censerR + 26) what = 'cast';
+    if (what === 'cast' && ad > ABBOT.castRange + 30) what = (e.far = !e.far) ? 'gleam' : 'swing';
+    if (what === 'cast' && ad < 40) what = 'censer';
+    if (what === 'gleam' && ad < 50) what = 'censer';
+    if (what === 'knell' && c.bellCold && c.bellCold()) what = 'peal';
+    if (what === 'swing' && ad < ABBOT.swingMin) what = 'censer';
+    if (ad > ABBOT.farAt && !['knell', 'swing', 'gleam', 'peal', 'call'].includes(what)) what = (e.far = !e.far) ? 'gleam' : 'swing';
+    if (what === 'knell' && e.deck !== 'floor') what = 'censer';
+  }
+  begin(e, what, c);
+}
+/* a bridge's boards are not a tower's: the house's always-there spans (he kneels OUT on the bridge, under no tower) */
+const spanAt0 = (H, x) => (H.spans || []).some(s => x >= s[0] - 2 && x <= s[1] + 2);
+/* (m3) THE PEAL in flight: each ring runs to the end of its boards; a hero standing on them in its reach is struck (in the air, it passes under you) */
+function stepWaves(e, dt, c) {
+  if (!e.waves || !e.waves.length) return; const { P } = c, K = ABBOT3.peal;
+  for (const w of e.waves) { w.x += w.dir * K.speed * dt;
+    if (!w.hit && !P.dead && P.ground !== false && Math.abs(P.y - w.y) < 8 && Math.abs(P.x - w.x) < K.half) { w.hit = true; const r = c.hit(w.x - w.dir * 8, K.dmg, true, 'THE PEAL'); if (r) c.shove(w.dir * 120, K.lift); } }
+  e.waves = e.waves.filter(w => w.x >= w.lo && w.x <= w.hi);
 }
 /* THE BELFRY'S ROPES: each from the roof beam to head height with its little bell at the top - the one he is about to
    take JERKS and its bell swings (the tell), and the one he is on runs to his hands. Drawn whenever the belfry is. */
@@ -502,6 +616,18 @@ export function drawFalseAbbot(g, e, cx, cy, time, floorY) {
   if (e.mode === 'fall') { g.fillStyle = '#d8d0c0'; g.globalAlpha = 0.6;   /* THE FALL (claude/abbot3art): speed streaks above him, and a dust of the boards he came off */
     for (let i = 0; i < 6; i++) g.fillRect(Math.round(x - 15 + i * 6), Math.round(fy - 66 + (time * 150 + i * 23) % 30), 1, 7);
     g.fillStyle = '#a49c8c'; for (let i = 0; i < 4; i++) g.fillRect(Math.round(x - 9 + i * 6 + Math.sin(time * 20 + i) * 2), Math.round(fy - 58 + (time * 60 + i * 11) % 16), 2, 1); g.globalAlpha = 1; }
+  /* (m3) THE PEAL: each ring a bronze-gold shock running along the boards - two arcs over the plank, the boards' dust kicked up behind it - RED in its tell */
+  if (e.mode === 'pealTell') { const k = 1 - Math.max(0, e.modeT) / ABBOT3.tell.peal, p = 0.5 + 0.5 * Math.sin(time * 22);
+    g.globalAlpha = 0.3 + 0.5 * k * p; g.strokeStyle = '#ff6b6b'; g.lineWidth = 2; g.beginPath(); g.ellipse(x, fy - 1, 14 + 30 * k, 4, 0, 0, Math.PI * 2); g.stroke(); g.lineWidth = 1; g.globalAlpha = 1; }
+  for (const w of e.waves || []) { const wx = Math.round(w.x - cx), wy = Math.round(w.y - cy);
+    for (const [r, a0, col] of [[9, 0.9, '#ffe08a'], [14, 0.55, '#ff9a6b']]) { g.globalAlpha = a0; g.strokeStyle = col; g.lineWidth = 2; g.beginPath(); g.ellipse(wx, wy - 2, r * 0.6, r, 0, Math.PI * 0.95, Math.PI * 2.05); g.stroke(); }
+    g.lineWidth = 1; g.globalAlpha = 0.7; g.fillStyle = '#d8d0c0'; for (let i = 1; i < 4; i++) g.fillRect(wx - w.dir * i * 6, wy - 2 - ((i * 3 + Math.round(time * 30)) % 5), 2, 1); g.globalAlpha = 1; }
+  /* (m3) THE FLOOR GOES, told: a red mark on the chapel floor where the belfry floor will come down, the vault cracking over it */
+  if (e.mode === 'collapseTell' && e.collapseMark) { const m = e.collapseMark, k = 1 - Math.max(0, e.modeT) / ABBOT3.tell.collapse, x0 = Math.round(m.x0 - cx), x1 = Math.round(m.x1 - cx), my = Math.round(m.y - cy), ty = Math.round(m.top - cy);
+    g.globalAlpha = 0.3 + 0.5 * k; g.strokeStyle = '#ff6b6b'; g.lineWidth = 2; g.beginPath(); g.ellipse((x0 + x1) / 2, my - 1, (x1 - x0) / 2 + 6, 5, 0, 0, Math.PI * 2); g.stroke(); g.lineWidth = 1;
+    g.fillStyle = '#2a1c0c'; for (let i = 0; i < 5; i++) { const cxk = x0 + (i + 0.5) * (x1 - x0) / 5; g.fillRect(Math.round(cxk + Math.sin(i * 7) * 3), ty + 16, 1, Math.round(3 + 6 * k)); }   /* cracks in the vault */
+    g.fillStyle = '#a49c8c'; for (let i = 0; i < 10; i++) g.fillRect(Math.round(x0 + ((i * 37) % Math.max(1, x1 - x0))), Math.round(ty + 16 + ((time * 120 + i * 29) % Math.max(1, my - ty - 16))), 1, 2);   /* grit falling */
+    g.globalAlpha = 1; }
   if (e.mode === 'downed') { const k = 0.5 + 0.5 * Math.sin(time * 10); g.globalAlpha = 0.35 + 0.35 * k; g.strokeStyle = '#8fd160'; g.lineWidth = 2;
     g.beginPath(); g.ellipse(x, fy - 2, 28 + k * 3, 6, 0, 0, Math.PI * 2); g.stroke(); g.lineWidth = 1; g.globalAlpha = 1; }
 }
@@ -652,6 +778,10 @@ export function drawAbbotHouse(g, e, H, cx, cy, time, floorY, basketK) {
     for (let t = 0; t < 12; t++) { const an = time * 5 + t * Math.PI / 6; g.globalAlpha = 0.55 + 0.35 * p; R(t % 3 ? BRZ[3] : BRZ[4], wx + Math.cos(an) * 14 - 1, wy + Math.sin(an) * 14 - 1, t % 3 ? 2 : 3, t % 3 ? 2 : 3); }   /* the ring: studs counting round */
     for (let t = 0; t < 5; t++) { const an = -time * 3.4 + t * 1.26, rr = 19 + (t & 1) * 3; g.globalAlpha = 0.75; R(t & 1 ? CLOTH[3] : '#efe6d2', wx + Math.cos(an) * rr, wy + Math.sin(an) * rr * 0.8, 2, 4); }   /* prayer strips in the draught of it */
     g.globalAlpha = 1; g.lineWidth = 1; for (let t = 0; t < 3; t++) { const ph2 = (time * 0.9 + t / 3) % 1; g.globalAlpha = (1 - ph2) * 0.55; g.strokeStyle = GOLD; g.beginPath(); g.arc(wx, wy, 11 + ph2 * 12, 0, Math.PI * 2); g.stroke(); } g.globalAlpha = 1; }
+  /* ---- (m3) HIS BRAZIERS, COLD: three bronze feet and a dark bowl, until he lights one to pray (then the lit one is drawn below, with its smoke) ---- */
+  for (const z of H.braziers || []) { if (alive && e.smoke && Math.abs(e.smoke.x - z.smokeX) < 2) continue; const sx = Math.round(z.smokeX - cx); if (!onX(sx)) continue;
+    R(BRZ[0], sx - 7, fy - 2, 3, 2); R(BRZ[0], sx + 5, fy - 2, 3, 2); R(BRZ[0], sx - 1, fy - 2, 3, 2);
+    R(BRZ[1], sx - 7, fy - 11, 15, 2); R(BRZ[2], sx - 7, fy - 11, 15, 1); R(BRZ[1], sx - 6, fy - 9, 13, 7); R(BRZ[0], sx - 6, fy - 3, 13, 1); R('#3a3430', sx - 5, fy - 10, 11, 2); }
   /* ---- HIS CENSER, SET DOWN ON ITS BRAZIER, AND THE SMOKE THAT LIFTS YOU ---- */
   if (alive && e.smoke) { const sx = Math.round(e.smoke.x - cx), N = 15;
     /* the column: puffs of incense billowing up and widening, warm at the foot, pale and thin at the head */
