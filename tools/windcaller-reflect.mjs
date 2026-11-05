@@ -24,11 +24,11 @@ try {
       b.hp=b.maxHp;const [x0,x1,row]=A.ledges[0];b.x=(x0+x1+1)*8;b.y=row*16;b.mode='cast';b.modeT=99;b.ward=0;
       BK.tp(Math.floor(b.x/16)+3,Math.round(A.floor/16)-1);BK.P.face=-1;step(20);clear();return A;};
     const run=(kind,warded)=>{const A=boot();if(warded)b.ward=60;const P=BK.P;const gy=A.floor;let sd=null,blade=null;const f=P.face;
-      if(kind==='bolt'){sd={x:P.x+f*50,y:P.y-12,vx:-f*150,vy:0,g:0,dead:false,life:3.4,bolt:true,owner:b,dmg:30};BK.seeds().push(sd);}
-      else{blade={x:P.x+f*50,dir:-f,kind:'low',gy,delay:0,life:2.6,hit:false};b.wc.blades.push(blade);}
+      if(kind==='bolt'){sd={x:P.x+f*50,y:P.y-12,vx:-f*150,vy:0,g:0,dead:false,life:3.4,bolt:true,owner:b,dmg:39};BK.seeds().push(sd);}
+      else{blade={x:P.x+f*110,dir:-f,kind:'low',gy,delay:0,life:2.6,hit:false};b.wc.blades.push(blade);}
       const hp0=P.hp;let fell=false,turned=false,pressed=false;
       for(let i=0;i<60*5;i++){const px=kind==='bolt'?sd.x:blade.x;const d=Math.abs(px-P.x);
-        if(!pressed&&d<30){K.block=true;pressed=true;}
+        if(!pressed&&d<(kind==='bolt'?30:75)){K.block=true;pressed=true;}
         if(pressed&&i>0&&d>40&&(kind==='bolt'?sd.reflected:true))K.block=false;
         step(1);
         if(kind==='bolt'?sd.reflected:(b.wc.blades.every(q=>q!==blade)&&BK.seeds().some(s=>s.reflected&&s.bolt)))turned=true;
