@@ -76,7 +76,8 @@ export function buildRookery({ painter, T, TS }) {
   const rides = [];
   const ride = (id, o) => { const d = { id, x: o.mount[0], mount: [o.mount[0], r(o.mount[1])], roost: [o.roost[0], r(o.roost[1])], path: o.path.map(([x, y]) => [x, r(y)]), land: [o.land[0], r(o.land[1])], breaks: o.breaks || null };
     rides.push(d); ent('harpy', d.roost[0], d.roost[1] - 1, { squad: 'ride-' + id, rk: { rkRide: id } }); return d; };
-  const gale = (x, y, squad) => ent('galeharpy', x, r(y), { squad, perch: true });   /* (claude/rookery2) THE GALE HARPY (src/gale-harpy.js): her perch is anchored too */   /* a bone nest on a ledge (greybox, drawn by the hands): an egg cache - silver or coins sit in it */
+  const gale = (x, y, squad) => ent('galeharpy', x, r(y), { squad, perch: true });
+  const gust = (x, y, squad) => ent('gustharpy', x, r(y), { squad, perch: true });   /* (claude/harpypass) THE GUST HARPY (src/gale-harpy.js GUST): she hovers a jump over you and claps a blast along it - knock her down */   /* (claude/rookery2) THE GALE HARPY (src/gale-harpy.js): her perch is anchored too */   /* a bone nest on a ledge (greybox, drawn by the hands): an egg cache - silver or coins sit in it */
 
   block(0, 0, 0, H - 1);                                                            /* the world's west edge */
 
@@ -108,7 +109,7 @@ export function buildRookery({ painter, T, TS }) {
   plank(69, 72, 39); coins([70, 38], [72, 38]);
   /* (claude/rookery2) THE FIRST RIDE (TEACH, REQUIRED - safe: the gully floor is under the whole ride): the way out of the gully is a face five high, no jump climbs it.
      Stand on her mount; block her dive (or step off it: she hits the rock), and as she climbs, GRAB HER TALONS (UP) - she carries you up and shakes you off on the ledge */
-  sign(74, 41, 'BLOCK HER DIVE, THEN GRAB HER TALONS (UP) AS SHE CLIMBS.');
+  sign(74, 41, 'A CARRIER HARPY SITS BY THE FACE. JUMP ON HER BACK: SHE FLIES YOU UP.');   /* (claude/harpypass) every ride is a perched CARRIER HARPY now (src/carrier-harpy.js) */
   ride('firstRide', { mount: [81, 41], roost: [78, 33], path: [[82, 37], [84, 35]], land: [87, 36] });
   ground(85, 98, 37);                                                               /* the ledge over the gully (five up) */
   /* THE FIRST ROOST (the area's exam, REQUIRED): a cliff five rows high (no jump); a cracked slab over it. Bait her onto the mark at its foot: the slab slides
@@ -175,6 +176,7 @@ export function buildRookery({ painter, T, TS }) {
   /* THE WIND GAP (A14): pillars over the gully and one timed updraft to the high pillar; a diver and a crow string while you jump. A fall is a climb (the boards
      up the gully's west side) */
   sign(250, 13, 'THE WIND GAP. A FALL IS A LONG CLIMB.');
+  sign(248, 13, 'A GUST HARPY BLOWS YOU OUT OF A JUMP. KNOCK HER DOWN, THEN CROSS.');   /* (claude/harpypass) THE GUST HARPY taught where a fall is a climb (the gully floor, the boards and the updraft back) */
   ground(251, 278, 26);                                                             /* the gully floor below */
   plank(251, 252, 23); plank(252, 254, 20); plank(251, 252, 17);                   /* the climb back up (claude/rookery2: the boards off the wall two wide - a lip, tools/anchor-lint.mjs) */
   /* the stepping shelves: wind-cut rock ledges jutting off the pillars behind (one-way: the gully floor under them is one floor, walked back to the climb) */
@@ -183,7 +185,7 @@ export function buildRookery({ painter, T, TS }) {
   ent('vent', 264, r(25), { wind: true, period: 4.5, on: 2.6, h: 18 * TS, w: 20, lift: 270 });   /* the gully's updraft: from the floor to over shelf three (five over shelf two: no jump) */
   plank(267, 269, 10);                                                              /* shelf three: the high one (the updraft's) */
   plank(273, 275, 11);                                                              /* shelf four (down one) */
-  foe('harpy', 263, 6, 'windGap'); foe('crow', 270, 5, 'windGap'); foe('crow', 276, 6, 'windGap');
+  foe('harpy', 263, 6, 'windGap'); foe('crow', 270, 5, 'windGap'); gust(277, 7, 'windGap');   /* (claude/harpypass: the last crow is a GUST HARPY over shelf four - her blast crosses the jumps off shelf three and four; she drops onto the far lip or the gully floor) */
   coins([256, 15], [261, 14], [264, 20], [264, 14], [268, 9], [275, 10]); ent('silver', 264, r(25));   /* SILVER THREE: on the gully floor under the updraft (the fall pays) */
   ground(278, 294, 10);
   /* THE BROKEN SPAN (REMIX, REQUIRED): a cracked pillar on the lip; a shrieker over it - her mark on you there brings every dive down on its foot */
@@ -237,7 +239,7 @@ export function buildRookery({ painter, T, TS }) {
   coins([367, 7], [370, 9], [374, 8], [377, 11], [381, 10], [384, 14], [388, 13], [390, 17]);
   gale(386, 7, 'galeSpires');
   coins([379, 29], [381, 29], [383, 29], [386, 29], [387, 29], [386, 27], [387, 27]); deco(380, 29, 'bones', 1);   /* the gorge floor: a fall pays a little - the climb back is the cost */
-  foe('crow', 375, 3, 'galeSpires');
+  gust(376, 5, 'galeSpires');   /* (claude/harpypass, was a crow) THE GUST HARPY over the first spires: the gale ahead beats you back, she blows you out of the hops - the gorge's updrafts lift a fall back */
   /* THE NEST FACE: two stepped crag faces, climbed on bone shelves lashed to each (two wide, three rows apart); a second gale harpy on the upper face's top beats down the climb -
      her gust peels you off a shelf onto the one below (or the gorge) */
   ground(392, 397, 23);                                                            /* the basin at the foot of the face */

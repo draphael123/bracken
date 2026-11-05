@@ -22,7 +22,8 @@ import { canvas, flipX, whiten } from './px.js';
 import * as RKW from './redraw/rookery_world.js';
 import { drawHang, drawLegs } from './redraw/rookery_hang.js';
 import * as RKA from './redraw/rookery_anchor_art.js';
-import { GALE, GALE_SAY, galeStep, drawGust } from './gale-harpy.js';   /* (claude/rookery2) THE GALE HARPY: a shared foe module (Windcaller 4 and the Roc reuse it) */   /* (claude/rookeryart) the cracked rocks, nests, roosts, the area plate: drawn there */
+import { GALE, GALE_SAY, galeStep, drawGust, GUST, GUST_SAY, gustStep, drawBlasts } from './gale-harpy.js';   /* (claude/harpypass) + THE GUST HARPY (the same shared file) */
+import { CARRY, CARRY_SAY, newCarrier, boards as cBoards, grabs as cGrabs, board as cBoard, carryStep, riderAt } from './carrier-harpy.js';   /* (claude/harpypass) THE CARRIER HARPY: every ride is hers now */   /* (claude/rookery2) THE GALE HARPY: a shared foe module (Windcaller 4 and the Roc reuse it) */   /* (claude/rookeryart) the cracked rocks, nests, roosts, the area plate: drawn there */
 /* THE SHRIEKER's skin (greybox): the crag harpy's frames, darkened to a blood-red (her crest is drawn over her: harpyOver) - main.js SPR.shrieker */
 export function bakeShriekerSet(Hs) {
   const R = Hs.R.map(c => { const [o, g] = canvas(c.width, c.height); g.drawImage(c, 0, 0); g.globalCompositeOperation = 'source-atop'; g.fillStyle = 'rgba(130,28,36,0.5)'; g.fillRect(0, 0, c.width, c.height); g.globalCompositeOperation = 'source-over'; return o; });
@@ -38,8 +39,8 @@ export const K = { aim: 0.75, diveV: 300, diveDmg: 8, stun: 2.2, respawn: 4.5, m
 export const KIND = { drop: 'crackfloor', span: 'crackpillar', nest: 'cracknest', steps: 'crackslab' };   /* the ent kind at a mark (src/rookery.js) - the guide's done names it */
 export const RK_SAY = {
   scream: 'SHE SCREAMS: OFF THE MARK', breaks: 'HER DIVE BREAKS THE ROCK', drop: 'THE FLOOR GIVES WAY', span: 'THE PILLAR FALLS ACROSS', nest: 'THE NEST COMES DOWN',
-  steps: 'THE SLAB SLIDES DOWN', ride: 'BLOCK HER DIVE, THEN GRAB HER TALONS: UP', grab: 'UP: GRAB', riding: 'SHE CARRIES YOU: JUMP LETS GO', shook: 'SHE SHAKES YOU OFF', letGo: 'YOU LET GO',
-  knocked: 'KNOCKED OFF HER TALONS', through: 'SHE FLIES THROUGH IT', gust: GALE_SAY.gust, broken: GALE_SAY.broken, braced: GALE_SAY.braced, shoved: GALE_SAY.shoved, stunned: 'STUNNED IN THE RUBBLE', roost: 'THE ROOST SENDS ANOTHER', marked: 'THE SHRIEKER MARKS YOU',
+  steps: 'THE SLAB SLIDES DOWN', ride: CARRY_SAY.perch, grab: 'JUMP ON', riding: CARRY_SAY.aboard, shook: CARRY_SAY.set, letGo: CARRY_SAY.letGo,
+  knocked: CARRY_SAY.knocked, blast: GUST_SAY.blast, gustDown: GUST_SAY.down, turned: GUST_SAY.turned, blastShoved: GUST_SAY.shoved, through: 'SHE FLIES THROUGH IT', gust: GALE_SAY.gust, broken: GALE_SAY.broken, braced: GALE_SAY.braced, shoved: GALE_SAY.shoved, stunned: 'STUNNED IN THE RUBBLE', roost: 'THE ROOST SENDS ANOTHER', marked: 'THE SHRIEKER MARKS YOU',
 };
 /* the cells a cracked rock lays (or opens) when it breaks: [x, y, 'S'|'O'|'A'] - also read by src/reachcore.js and tools/rookery.mjs */
 export function crackCells(d, solidAt) {
@@ -83,7 +84,7 @@ export function makeRookeryHands(ctx) {
     for (const e of ctx.enemies()) if (e.alive && (e.t === 'harpy' || e.t === 'shrieker')) { e.rkDive = null; e.rkAim = null;
       if (e.rkRoost) { const c = S.cs.get(e.rkRoost); if (c && !c.e) c.e = e; }
       if (e.rkShriek) { e.rkCd = 1.5; e.rkSm = 'hover'; }
-      if (e.rkRide) { const c = S.rides.get(e.rkRide); if (c && !c.e) c.e = e; e.rdCd = 0.6; e.rdLift = true; e.hp = Math.max(e.hp, RIDE.hp); } }
+      if (e.rkRide) { const c = S.rides.get(e.rkRide); if (c && !c.e) { c.e = e; perchCarrier(e, c.d); } } }
     for (const p of ctx.players()) if (p) p.rkRide = null;
   };
 
@@ -148,7 +149,9 @@ export function makeRookeryHands(ctx) {
     }
     /* (claude/rookery2) THE RIDE ROOSTS: a ride harpy cut down, another is sent */
     for (const c of S.rides.values()) { const d = c.d; if (c.e && c.e.alive) continue; if (c.e && !c.e.alive) { c.e = null; c.respawnT = K.respawn; }
-      if ((c.respawnT -= dt) <= 0 && P && Math.abs(P.x - mountX(d)) < 26 * TS) { const e = ctx.spawn('harpy', d.roost[0], d.roost[1]); if (e) { e.rkRide = d.id; e.hp = Math.max(e.hp, RIDE.hp); e.rdCd = 1; e.rdLift = true; c.e = e; S.n.respawns++; } c.respawnT = K.respawn; } }
+      if ((c.respawnT -= dt) <= 0 && P && Math.abs(P.x - mountX(d)) < 26 * TS) { const e = ctx.spawn('harpy', d.mount[0], d.mount[1]); if (e) { e.rkRide = d.id; perchCarrier(e, d); c.e = e; S.n.respawns++; } c.respawnT = K.respawn; } }
+    /* (claude/harpypass) A HERO WHO LANDS ON A CARRIER'S BACK is aboard */
+    for (const p of ps) if (p && !p.dead && !p.rkRide && !p.ground) for (const c of S.rides.values()) { const e = c.e; if (e && e.alive && !c.rider && cBoards(e, p)) { aboard(c, p); break; } }
     for (const p of ps) if (p && p.rkRide && (!p.rkRide.alive || p.dead)) dropRider(p, 'shook');
     /* THE SHRIEKER'S MARKS fade */
     for (const m of S.marks) m.t -= dt; S.marks = S.marks.filter(m => m.t > 0);
@@ -161,13 +164,14 @@ export function makeRookeryHands(ctx) {
   H.harpy = (e, dt) => {
     if (!S || !e.alive) return false;
     if (e.rkShriek) return shriekerStep(e, dt);
-    if (e.t === 'galeharpy') { galeStep(e, dt, galeW()); if (e.stagger > 0) e.stagger = Math.max(0, e.stagger - dt); return true; }   /* (claude/rookery2) THE GALE HARPY (src/gale-harpy.js) */
+    if (e.t === 'galeharpy') { galeStep(e, dt, galeW()); if (e.stagger > 0) e.stagger = Math.max(0, e.stagger - dt); return true; }
+    if (e.t === 'gustharpy') { gustStep(e, dt, gustW()); if (e.stagger > 0) e.stagger = Math.max(0, e.stagger - dt); return true; }   /* (claude/harpypass) THE GUST HARPY (src/gale-harpy.js) */
+    if (e.rkRide && rideStep(e, dt)) return true;   /* (claude/harpypass) THE CARRIER HARPY: she never dives, never aims */   /* (claude/rookery2) THE GALE HARPY (src/gale-harpy.js) */
     if (e.rkDive) { diveStep(e, dt); return true; }
     if (e.rkAim) { e.rkAim.t -= dt; e.face = Math.sign(e.rkAim.tx - e.x) || e.face; e.mode = 'aim';
       e.x += (Math.sin((e.anim || 0) * 9) * 6) * dt;   /* (she shivers on the air, wings back) */
       if (e.stagger > 0) { e.rkAim = null; e.mode = 'rise'; e.modeT = 1; return true; }
       if (e.rkAim.t <= 0) { if (ctx.time() - S.lastGust < GALE.noStack) e.rkAim.t = 0.05; else startDive(e); } return true; }   /* (claude/rookery2: never a dive in a gust's window) */
-    if (e.rkRide && rideStep(e, dt)) return true;   /* (claude/rookery2) A RIDE HARPY: her mount, her lift, her path */
     /* her OWN dive (the plain crag-harpy AI) that comes down on a mark breaks it */
     if (e.mode === 'dive') { const c = crackAt(e.x, e.y + 10); if (c && e.y + 10 > markY(c.d, TS) - 10) { smash(c, e); e.mode = 'downed'; e.modeT = K.stun; e.stagger = K.stun; e.vy = -40; S.n.stunned++; return true; } }
     return false;
@@ -183,7 +187,7 @@ export function makeRookeryHands(ctx) {
         const tx = P.x, ty = P.rkRide ? P.y - 4 : P.ground ? P.y : (() => { const t = Math.floor(P.x / TS); for (let y = Math.floor(P.y / TS); y < (L().H || 60); y++) if (ctx.solidAt(t, y) || ctx.tileAt(t, y) === ctx.T.ONEWAY) return y * TS; return P.y; })();
         S.marks.push({ x: tx, y: ty, t: Q.mark, T: Q.mark }); if (once('marked')) say(tx, ty - 40, 'marked', '#ff6b6b'); sfx('screech'); sfx('queenShriek');
         /* every harpy in earshot dives AT THE MARK, one after another */
-        const callers = ctx.enemies().filter(q => q.alive && q !== e && q.t === 'harpy' && !q.rkShriek && !q.rkDive && !q.rkAim && !(q.stagger > 0) && q.mode !== 'downed' && q.mode !== 'ride' && q.mode !== 'lift' && Math.abs(q.x - tx) < Q.call * TS && Math.abs(q.y - ty) < 14 * TS)
+        const callers = ctx.enemies().filter(q => q.alive && q !== e && q.t === 'harpy' && !q.rkShriek && !q.rkRide && !q.rkDive && !q.rkAim && !(q.stagger > 0) && q.mode !== 'downed' && q.mode !== 'ride' && q.mode !== 'lift' && Math.abs(q.x - tx) < Q.call * TS && Math.abs(q.y - ty) < 14 * TS)
           .sort((a, b) => Math.abs(a.x - tx) - Math.abs(b.x - tx)).slice(0, 3);
         callers.forEach((q, i) => { startAim(q, tx, ty, 0.45 + i * Q.gap, 'call'); S.n.called++; }); }
       return true; }
@@ -196,60 +200,64 @@ export function makeRookeryHands(ctx) {
     return true;
   }
 
-  /* ---------- (claude/rookery2) CATCH A RIDE ---------- */
+  /* ---------- (claude/harpypass) CATCH A RIDE = THE CARRIER HARPY (src/carrier-harpy.js; Daniel 11-02 21:49): she SITS on her mount, JUMP ON HER BACK (or UP beside her) and she
+     flies you along her path (the feather trail, drawn first) and SETS YOU DOWN on the land; JUMP lets go. Then she flies home and sits again. No dive, no knock-down first ---------- */
   const mountX = d => d.mount[0] * TS + 8, mountY = d => (d.mount[1] + 1) * TS;
+  /* her perch: sitting on the mount's rock, at the hero's own footing */
+  function perchCarrier(e, d) { Object.assign(e, newCarrier(e.cN ? { cN: e.cN } : {}), { hx: mountX(d), hy: mountY(d) - 7, rkDive: null, rkAim: null, stagger: 0 }); e.x = e.hx; e.y = e.hy; e.mode = 'perch'; e.face = Math.sign(d.land[0] - d.mount[0]) || 1; e.hp = Math.max(e.hp, RIDE.hp); }
+  /* her flight: from where she sits, through the cells his FEET pass, to over the land - her body CARRY.under px under his feet */
+  const flightPts = (d, fx, fy) => [[fx, fy], ...d.path.map(([x, y]) => [x * TS + 8, y * TS + 8 + CARRY.under]), [d.land[0] * TS + 8, (d.land[1] + 1) * TS - 1 + CARRY.under]];
+  function aboard(c, p) { const e = c.e; c.rider = p; p.rkRide = e; p.rkRideHp = p.hp; cBoard(e, flightPts(c.d, e.x, e.y)); p.vx = 0; p.vy = 0; p.ground = false;
+    S.n.rides++; S.n.grabs++; c.n++; sfx('screech'); if (once('riding')) say(p.x, p.y - 40, 'riding', '#ffd36b'); }
   function dropRider(p, why) { const e = p.rkRide; p.rkRide = null; if (!e) return; const c = S.rides.get(e.rkRide); if (c) c.rider = null;
-    if (why === 'jump') { p.vy = -RIDE.hop; S.n.letGo++; if (once('letGo')) say(p.x, p.y - 30, 'letGo', '#c8d8e8'); }
-    else { p.vy = 20; if (why === 'knocked') { S.n.knocked++; say(p.x, p.y - 30, 'knocked', '#ff6b6b'); } else { S.n.shook++; if (once('shook')) say(p.x, p.y - 30, 'shook', '#c8d8e8'); } }
-    p.ground = false; p.vx = 0; e.mode = 'rise'; e.modeT = 1.2; e.rdCd = RIDE.cd + 1; e.rdLift = true; e.rdOff = null; }
+    if (why === 'jump') { p.vy = -RIDE.hop; S.n.letGo++; if (e.cN) e.cN.letGo++; if (once('letGo')) say(p.x, p.y - 30, 'letGo', '#c8d8e8'); }
+    else if (why === 'set') { p.vy = 0; S.n.shook++; if (once('shook')) say(p.x, p.y - 30, 'shook', '#c8d8e8'); }
+    else { p.vy = 20; S.n.knocked++; if (e.cN) e.cN.knocked++; say(p.x, p.y - 30, 'knocked', '#ff6b6b'); }
+    p.ground = false; p.vx = 0;
+    if (e.cMode === 'carry') { const k = Math.min(1, e.cT / e.cTT); e.cMode = 'home'; e.cT = (1 - k) * e.cTT / CARRY.homeK; } }   /* let go mid-flight: she turns for home from there */
   function rideStep(e, dt) {
-    const c = S.rides.get(e.rkRide); if (!c) return false; const d = c.d, ps = ctx.players().filter(p => p && !p.dead);
-    if (e.mode === 'ride') { const p = c.rider;
-      if (!p || p.rkRide !== e || p.dead) { if (p && p.rkRide === e) p.rkRide = null; c.rider = null; e.mode = 'rise'; e.modeT = 1.2; e.rdCd = RIDE.cd; return true; }
-      e.rdT += dt; const k = Math.min(1, e.rdT / e.rdTT), [x, y] = alongPts(e.rdPts, k), o = e.rdOff || (e.rdOff = [0, 0]);
-      o[0] -= o[0] * Math.min(1, dt * RIDE.spring); o[1] -= o[1] * Math.min(1, dt * RIDE.spring);
-      e.face = Math.sign(x - e.x) || e.face; e.x = x + o[0]; e.y = y + o[1];
+    const c = S.rides.get(e.rkRide); if (!c) return false; e.hp = Math.max(e.hp, RIDE.hp);   /* (no blow needed, none wanted: she shrugs them off) */
+    if (!e.cMode) perchCarrier(e, c.d);
+    const p = c.rider;
+    if (e.cMode === 'carry' && (!p || p.rkRide !== e || p.dead)) { if (p && p.rkRide === e) p.rkRide = null; c.rider = null; const k = Math.min(1, e.cT / e.cTT); e.cMode = 'home'; e.cT = (1 - k) * e.cTT / CARRY.homeK; }
+    const r = carryStep(e, dt);
+    if (e.cMode === 'carry' || r === 'landed') {
       /* A HARPY'S FLIGHT BREAKS WHAT IT HITS: a cracked arm on her path (a hung nest) goes as she passes */
-      for (const q of S.cs.values()) if (q.state === 'whole' && q.d.load === 'nest' && q.d.x !== undefined && Math.hypot(e.x - (q.d.x * TS + 8), e.y + 8 - (q.d.top * TS + 8)) < 22) { smash(q, e); if (once('through')) say(e.x, e.y - 30, 'through', '#8fd160'); }
-      if (k >= 1) dropRider(p, 'shook');
-      return true; }
-    if (e.mode === 'lift') { e.modeT -= dt; e.y -= RIDE.liftV * dt;
-      if (e.modeT <= 0) { e.mode = 'rise'; e.modeT = 1.2; e.rdCd = RIDE.cd; e.rdLift = true; } return true; }
-    if (e.mode === 'rise' && !e.rdLift) { e.mode = 'lift'; e.modeT = RIDE.lift; e.rdLift = true; e.stagger = 0; if (once('grab')) say(e.x, e.y - 26, 'grab', '#ffd36b'); return true; }   /* knocked down, she climbs: GRAB HER */
-    if (e.mode === 'downed' || e.mode === 'rise' || e.mode === 'dive' || e.mode === 'aim') return false;   /* (the plain AI drops her and lifts her home; a bait dive is handled above) */
-    /* hover at her roost: she dives only at a hero on her MOUNT (on his feet) */
-    e.rdCd = (e.rdCd || 0) - dt; e.mode = 'hover'; e.y += (e.hy + Math.sin((e.anim || 0) * 2.1) * 4 - e.y) * Math.min(1, dt * 3); e.x += (e.hx + Math.sin((e.anim || 0) * 1.1) * 6 - e.x) * Math.min(1, dt * 3);
-    const P = ps.find(p => p.ground && Math.abs(p.x - mountX(d)) < RIDE.zone * TS && Math.abs(p.y - mountY(d)) < 10);
-    if (P) e.face = Math.sign(P.x - e.x) || e.face;
-    if (P && e.rdCd <= 0 && !(e.stagger > 0) && ctx.time() - S.lastGust > GALE.noStack) { startAim(e, P.x, P.y, RIDE.aim, 'ride'); e.rdLift = false; if (once('ride')) say(mountX(d), mountY(d) - 44, 'ride', '#ffd36b'); }
+      for (const q of S.cs.values()) if (q.state === 'whole' && q.d.load === 'nest' && q.d.x !== undefined && Math.hypot(e.x - (q.d.x * TS + 8), e.y - 8 - (q.d.top * TS + 8)) < 24) { smash(q, e); if (once('through')) say(e.x, e.y - 30, 'through', '#8fd160'); } }
+    if (r === 'landed' && c.rider) { const q = c.rider; const [fx, fy] = riderAt(e); q.x = fx; q.y = fy; dropRider(q, 'set'); }
     return true;
   }
-  /* GRAB HER TALONS (main.js updatePlayer, for the hero it is moving: UP held or GRAB pressed) - true = he has her */
+  /* UP (or GRAB) beside a sitting carrier (main.js updatePlayer, for the hero it is moving) - true = he is aboard */
   H.tryGrab = p => { if (!S || !p || p.dead || p.rkRide) return false;
-    for (const c of S.rides.values()) { const e = c.e; if (!e || !e.alive || e.mode !== 'lift' || c.rider) continue;
-      if (Math.abs(p.x - e.x) < RIDE.reach && p.y - e.y > -12 && p.y - e.y < 52) { c.rider = p; p.rkRide = e; p.rkRideHp = p.hp; e.mode = 'ride'; e.rdT = 0; e.rdOff = [0, 0];
-        e.rdPts = ridePts(c.d, e.x, e.y, TS); const tot = alongPts(e.rdPts, 1)[2]; e.rdTT = Math.max(RIDE.minT, Math.min(RIDE.maxT, tot / RIDE.v));
-        S.n.rides++; S.n.grabs++; c.n++; sfx('screech'); if (once('riding')) say(p.x, p.y - 40, 'riding', '#ffd36b'); return true; } }
+    for (const c of S.rides.values()) { const e = c.e; if (!e || !e.alive || c.rider || !cGrabs(e, p)) continue; aboard(c, p); return true; }
     return false; };
-  /* THE RIDE (main.js updatePlayer hands a carried hero here instead of moving him): he hangs from her talons; JUMP lets go. false = not riding (any more) */
+  /* THE RIDE (main.js updatePlayer hands a carried hero here instead of moving him): he stands on her back; JUMP lets go. false = not riding (any more) */
   H.ride = (p, jump) => { const e = p.rkRide; if (!S || !e) { p.rkRide = null; return false; }
-    if (!e.alive || e.mode !== 'ride') { dropRider(p, 'shook'); return false; }
+    if (!e.alive || e.cMode !== 'carry') { dropRider(p, e.alive ? 'set' : 'knocked'); return false; }
     if (jump) { dropRider(p, 'jump'); return false; }
-    p.x = e.x;   /* (only a HARPY'S DIVE that finds him knocks him off her talons - diveStep; a crow's peck just hurts) */ p.y = e.y + RIDE.hang; p.vx = 0; p.vy = 0; p.ground = false; p.onMover = null; return true; };
+    const [fx, fy] = riderAt(e); p.x = fx; p.y = fy; p.vx = 0; p.vy = 0; p.ground = false; p.onMover = null; return true; };   /* (only a HARPY'S DIVE that finds him knocks him off - diveStep) */
   /* THE GALE HARPY's world (src/gale-harpy.js) */
+  const heroesW = () => ctx.players().filter(p => p && !p.dead).map(p => ({ x: p.x, y: p.y, ground: !!p.ground, vy: p.vy || 0, alive: true, key: p, blocking: !!(p.block || p.blocking || (ctx.guarding && ctx.guarding(p))), answer: !!(ctx.answering && ctx.answering(p)), p,
+      push: (vx, vy, t) => { if (p.rkRide) { const e = p.rkRide; if (e.cOff) { e.cOff[0] += vx * 0.12; e.cOff[1] += vy * 0.05; } return; } p.vx = vx; if (t) p.gustT = Math.max(p.gustT || 0, t); if (vy) { p.vy = Math.min(p.vy || 0, vy); p.ground = false; } } }));
   const galeW = () => ({ time: () => ctx.time(), lastDive: () => S.lastDive, gusted: t => { S.lastGust = t; S.n.gusts++; },
-    heroes: () => ctx.players().filter(p => p && !p.dead).map(p => ({ x: p.x, y: p.y, ground: !!p.ground, alive: true, blocking: !!(p.block || p.blocking), p,
-      push: (vx, vy) => { if (p.rkRide) { const e = p.rkRide; if (e.rdOff) { e.rdOff[0] += vx * 0.12; e.rdOff[1] += vy * 0.05; } return; } p.vx = vx; if (vy) { p.vy = Math.min(p.vy || 0, vy); p.ground = false; } } })),
-    riders: () => [...S.rides.values()].filter(c => c.rider && c.e && c.e.rdOff).map(c => ({ x: c.e.x, y: c.e.y + RIDE.hang, shove: (dx, dy) => { c.e.rdOff[0] += dx; c.e.rdOff[1] += dy; } })),
+    heroes: heroesW,
+    riders: () => [...S.rides.values()].filter(c => c.rider && c.e && c.e.cOff).map(c => ({ x: c.e.x, y: c.e.y - CARRY.under, shove: (dx, dy) => { c.e.cOff[0] += dx; c.e.cOff[1] += dy; } })),
     say: (x, y, t, col) => ctx.number(x, y, t, col), sound: k => k === 'gust' ? sfx('whoosh', 'throwWhoosh', 'tell') : k === 'broken' ? sfx('clank', 'thud') : sfx('tell', 'screech'),
     mark: (e, m) => ctx.number(e.x, e.y - 14, m, '#ffd36b'), seen: () => ctx.seen && ctx.seen('galeharpy'), firstTell: e => { if (once('gust')) say(e.x, e.y - 30, 'gust', '#ffd36b'); } });
   H.galeW = () => S ? galeW() : null;
+  /* (claude/harpypass) THE GUST HARPY's world (src/gale-harpy.js gustStep): the heroes as the gale sees them (a guard braces, the hero's perfect guard TURNS THE BLAST BACK), rock, the footing under her when she is knocked out of the air */
+  const gustW = () => ({ time: () => ctx.time(), lastDive: () => S.lastDive, heroes: heroesW, solid: (x, y) => ctx.solidAt(Math.floor(x / TS), Math.floor(y / TS)),
+    floorBelow: (x, y) => { const tx = Math.floor(x / TS); for (let ty = Math.max(0, Math.floor(y / TS)); ty < (L().H || 60); ty++) if (ctx.solidAt(tx, ty) || ctx.tileAt(tx, ty) === ctx.T.ONEWAY) return ty * TS; return null; },
+    voidY: (L().H || 60) * TS + 32, kill: e => { e.alive = false; },
+    say: (x, y, t, col) => ctx.number(x, y, t, col), sound: k => k === 'blast' ? sfx('whoosh', 'throwWhoosh', 'tell') : k === 'down' ? sfx('screech', 'thud') : k === 'turned' ? sfx('clank', 'whoosh') : k === 'thud' ? sfx('thud', 'heavy') : sfx('tell', 'screech'),
+    mark: (e, m) => ctx.number(e.x, e.y - 14, m, '#ffd36b'), seen: () => ctx.seen && ctx.seen('gustharpy'), firstTell: e => { if (once('blast')) say(e.x, e.y - 30, 'blast', '#ffd36b'); } });
+  H.gustW = () => S ? gustW() : null;
 
   /* ---------- THE GUIDE's props (src/stuck-spots.js reads `on`), the tools, the pilot bot ---------- */
   H.props = () => { if (!S) return []; const out = [];
     for (const c of S.cs.values()) { const d = c.d; out.push({ t: KIND[d.load], id: c.id, x: markX(d, TS), y: markY(d, TS), on: c.state !== 'whole' }); }
     return out; };
-  H.rideOf = id => { const c = S && S.rides.get(id); return c ? { d: c.d, mode: c.e && c.e.alive ? c.e.mode : 'gone', x: c.e ? c.e.x : 0, y: c.e ? c.e.y : 0, aim: c.e && c.e.rkAim ? { x: c.e.rkAim.tx, t: c.e.rkAim.t } : null, rider: c.rider || null } : null; };
+  H.rideOf = id => { const c = S && S.rides.get(id); return c ? { d: c.d, mode: c.e && c.e.alive ? (c.e.cMode || c.e.mode) : 'gone', x: c.e ? c.e.x : 0, y: c.e ? c.e.y : 0, aim: c.e && c.e.rkAim ? { x: c.e.rkAim.tx, t: c.e.rkAim.t } : null, rider: c.rider || null } : null; };
   H.hoist = id => { const c = S && S.cs.get(id); return c ? { state: c.state === 'whole' ? 'hang' : 'cut', d: c.d } : null; };
   H.breakCrack = id => { const c = S && S.cs.get(id); return c ? smash(c, null) : false; };
   H.read = () => S ? { cracks: [...S.cs.values()].map(c => ({ id: c.id, load: c.d.load, state: c.state, harpy: !!(c.e && c.e.alive) })), rides: [...S.rides.values()].map(c => ({ id: c.id, n: c.n, mode: c.e && c.e.alive ? c.e.mode : 'gone', x: c.e ? c.e.x : 0, y: c.e ? c.e.y : 0, rider: !!c.rider })), marks: S.marks.length, banner: S.banner ? S.banner.name : null, sec: S.sec, n: JSON.parse(JSON.stringify(S.n)) } : null;
@@ -297,16 +305,17 @@ export function makeRookeryHands(ctx) {
         g.fillStyle = 'rgba(255,233,160,' + (0.5 + 0.3 * pu).toFixed(2) + ')'; g.fillRect(rx - 2, ry - 8, 5, 1); g.fillRect(rx - 1, ry - 7, 3, 1); g.fillRect(rx, ry - 6, 1, 1); }
       { const gouge = (x, y) => { g.fillStyle = '#32283a'; g.fillRect(x, y, 1, 3); g.fillRect(x + 2, y, 1, 3); g.fillRect(x + 4, y, 1, 3); g.fillStyle = '#ece8e0'; g.fillRect(x, y - 1, 1, 1); g.fillRect(x + 2, y - 1, 1, 1); g.fillRect(x + 4, y - 1, 1, 1); };
         gouge(R(mx - 11 - cx), R(my - 3 - cy)); gouge(R(mx + 6 - cx), R(my - 3 - cy)); g.fillStyle = '#e6e4ec'; g.fillRect(R(mx - 2 - cx), R(my - 2 - cy), 3, 1); g.fillRect(R(mx + 2 - cx), R(my - 1 - cy), 2, 1); }   /* her mount: claw gouges in the stone, a feather and a splash of guano */
-      if (e && e.alive && e.mode === 'lift') { const x = R(e.x - cx), y = R(e.y - cy), a = 0.55 + 0.4 * Math.sin(time * 12); g.globalAlpha = a; g.fillStyle = '#ffd36b'; for (const [sx2, sy2] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) { const bx = x + sx2 * 14, by = y + 2 + sy2 * 14; g.fillRect(sx2 > 0 ? bx - 4 : bx, sy2 > 0 ? by - 1 : by, 5, 2); g.fillRect(sx2 > 0 ? bx - 1 : bx, sy2 > 0 ? by - 4 : by, 2, 5); } g.globalAlpha = 1;   /* (claude/rookery2art) four gold corner brackets round her, not a box */
+      if (e && e.alive && e.cMode === 'perch' && !c.rider && ctx.players().some(p => p && !p.dead && Math.abs(p.x - e.x) < CARRY.near * 2 && Math.abs(p.y - e.y) < CARRY.near)) { const x = R(e.x - cx), y = R(e.y - cy), a = 0.55 + 0.4 * Math.sin(time * 12);   /* (claude/harpypass) a hero near a sitting carrier: the brackets and JUMP ON over her back */ g.globalAlpha = a; g.fillStyle = '#ffd36b'; for (const [sx2, sy2] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) { const bx = x + sx2 * 14, by = y + 2 + sy2 * 14; g.fillRect(sx2 > 0 ? bx - 4 : bx, sy2 > 0 ? by - 1 : by, 5, 2); g.fillRect(sx2 > 0 ? bx - 1 : bx, sy2 > 0 ? by - 4 : by, 2, 5); } g.globalAlpha = 1;   /* (claude/rookery2art) four gold corner brackets round her, not a box */
         if (ctx.text) ctx.text(RK_SAY.grab, x, y - 22, Math.floor(time * 8) % 2 ? '#ffd36b' : '#fff6e0', 'center', 6); }
-      if (e && e.alive && e.mode === 'ride' && c.rider) drawHang(g, R(e.x - cx), R(e.y - cy) + 2, R(c.rider.y - cy), time, { lean: (e.rdOff ? Math.max(-6, Math.min(6, e.rdOff[0] * 0.25)) : 0) }); }
+      if (e && e.alive && e.cMode === 'perch' && !c.rider) { const x = R(e.x - cx), y = R(e.y - cy) - 8, a = 0.5 + 0.4 * Math.sin(time * 6); g.globalAlpha = a; g.fillStyle = '#ffd36b'; g.fillRect(x - 5, y, 11, 1); g.fillRect(x - 3, y - 1, 7, 1); g.globalAlpha = 1; } }   /* (claude/harpypass) her SADDLE GLINT: a gold bar on her back - she is a ride (the carrier's tell: the art lane draws her sitting, wings folded) */
     /* THE AREA PLATE */
     if (S.banner) { const a = Math.max(0, Math.min(1, S.banner.t / 0.6, (3.4 - S.banner.t) / 0.4)); RKW.drawPlate(g, S.banner.name, VW, a, ctx.text); }
   };
   /* a harpy's overlay: the shrieker's crest and her scream rings */
   H.harpyOver = (g, e, cx, cy, time) => { if (!S || !e.alive) return; const x = R(e.x - cx), y = R(e.y - cy);
     if (e.t === 'galeharpy') { drawGust(g, e, cx, cy, time); return; }
-    if (e.rkRide && e.mode === 'lift') drawLegs(g, x, y + 3, time);   /* (claude/rookery2art) her legs hang open, claws spread: GRAB them */   /* (claude/rookery2) her cone: told dashed in the tell, streaks in the beat */
+    if (e.t === 'gustharpy') { drawBlasts(g, e, cx, cy, time); return; }   /* (claude/harpypass) THE GUST HARPY: her told lane, her blast */
+    if (e.rkRide && e.mode === 'carry') drawLegs(g, x, y + 3, time);   /* (claude/harpypass) a carrier in flight: her legs tucked under the rider */   /* (claude/rookery2) her cone: told dashed in the tell, streaks in the beat */
     if (e.rkShriek) { rect(g, x - 3, y - 12, 2, 5, '#c0302a'); rect(g, x, y - 13, 2, 6, '#e04a3a'); rect(g, x + 3, y - 12, 2, 5, '#c0302a');
       if (e.rkSm === 'tell') { const k = (time * 3) % 1; g.strokeStyle = 'rgba(255,90,74,' + (1 - k).toFixed(2) + ')'; g.beginPath(); g.arc(x + e.face * 6, y - 4, 6 + k * 22, 0, Math.PI * 2); g.stroke(); } } };
   /* THE SKY AND THE LANDMARKS (parallax): the cold pearl sky and its sun, THE ROC'S PEAK ahead (growing as you climb), THE MONASTERY far below and behind (sinking) - drawn by src/redraw/rookery_backdrop.js (claude/rookeryart; the greybox's flat silhouettes are gone) */

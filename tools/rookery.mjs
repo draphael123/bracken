@@ -14,6 +14,7 @@ import { ROOKERY, SECTIONS, RK_RULE, ARCS } from '../src/rookery.js';
 import { makeRookeryHands, RK_SAY, K, crackCells, markX, markY } from '../src/rookery-hands.js';
 import { SAY_LINES } from '../src/hint-lines.js';
 import * as SSM from '../src/shriek-sisters.js';
+import * as GHM from '../src/gale-harpy.js';
 import { POSE as POSE_SS, makeShriekSistersHands } from '../src/shriek-sisters-hands.js';
 const TS = 16;
 let bad = 0; const ok = (c, m) => { console.log((c ? '  ok   ' : '  FAIL ') + m); if (!c) bad++; };
@@ -123,20 +124,37 @@ ok(Object.values(RK_SAY).every(s => SAY_LINES.has(s)), 'every capital line the r
   ok(H.read().n.screams >= 1 && said.includes(RK_SAY.marked) && H.read().marks >= 1, 'THE SHRIEKER screams and MARKS the hero\'s spot (a red ring)');
   ok(H.read().n.called > n0 && foes.some(e => e.alive && e.rkAim && e.t === 'harpy'), 'every harpy near dives AT THE MARK (' + (H.read().n.called - n0) + ' called)');
   ok(foes.filter(e => e.rkAim).every(e => Math.abs(e.rkAim.tx - P.x) < 1), 'they aim at the MARK, not at the hero (off it, they hit the rock)');
-  /* 6. (claude/rookery2) CATCH A RIDE: on her mount she dives; stepped off, she hits the rock and lies a beat; she LIFTS - grab her - she carries the hero along her path and shakes
-     him off over the land; JUMP lets go mid-ride */
+  /* 6. (claude/harpypass) CATCH A RIDE = THE CARRIER HARPY (src/carrier-harpy.js; Daniel 11-02 21:49): she SITS on her mount - no dive, no knock-down first; a hero who lands on her
+     back is aboard, she flies her path and SETS HIM DOWN on the land, flies home and sits again; UP beside her boards too; JUMP lets go mid-flight (she turns home) */
   for (const e of foes) if (!e.rkRide) e.alive = false; for (const e of foes) if (e.rkAim) e.rkAim = null;
-  const rd = L.rkRides.find(d => d.id === 'firstRide'), rh = foes.find(e => e.rkRide === 'firstRide'); Object.assign(rh, { alive: true, mode: 'hover', x: rh.hx, y: rh.hy, rkAim: null, rkDive: null }); H.reset(); rh.rdCd = 0;
-  P.x = rd.mount[0] * TS + 8; P.y = (rd.mount[1] + 1) * TS; P.ground = true; P.dead = false; P.hp = 100; step(0.1);
-  ok(rh.rkAim && said.includes(RK_SAY.ride), 'a hero on her MOUNT: she aims her dive at him (BLOCK HER DIVE, THEN GRAB HER TALONS)');
-  P.x -= 30; let lifted = false; step(3, () => { if (rh.mode === 'lift') lifted = true; return false; }); ok(lifted || rh.mode === 'lift', 'stepped off: she hits the rock, lies a beat, then LIFTS (UP: GRAB)');
-  rh.mode = 'lift'; rh.modeT = 1; rh.x = P.x + 8; rh.y = P.y - 30; const got = H.tryGrab(P);
-  ok(got && P.rkRide === rh && rh.mode === 'ride', 'UP near her as she lifts: he has her talons (she carries him)');
-  let ticks = 0; step(4, () => { ticks++; if (P.rkRide) H.ride(P, false); return false; });
-  ok(!P.rkRide && Math.abs(P.x - (rd.land[0] * TS + 8)) < 10 && P.y < (rd.land[1] + 1) * TS, 'she flies her path and SHAKES HIM OFF over the land (' + Math.round(P.x / TS) + ',' + Math.round(P.y / TS) + ')');
-  rh.mode = 'lift'; rh.modeT = 1; rh.x = P.x; rh.y = P.y - 30; H.tryGrab(P); step(0.3, () => { if (P.rkRide) H.ride(P, false); }); const ok1 = H.ride(P, true);
-  ok(!ok1 && !P.rkRide && P.vy < 0, 'JUMP lets go mid-ride (normal air control: a hop)');
+  const rd = L.rkRides.find(d => d.id === 'firstRide'), rh = foes.find(e => e.rkRide === 'firstRide'); Object.assign(rh, { alive: true, rkAim: null, rkDive: null, cMode: null }); H.reset();
+  const mx = rd.mount[0] * TS + 8, my = (rd.mount[1] + 1) * TS;
+  ok(L.rkRides.every(d => { const e = foes.find(q => q.rkRide === d.id); return e && e.cMode === 'perch' && Math.abs(e.x - (d.mount[0] * TS + 8)) < 1 && Math.abs(e.y - ((d.mount[1] + 1) * TS - 7)) < 3; }), 'every ride\'s harpy SITS ON HER MOUNT (a carrier on her perch): ' + L.rkRides.map(d => d.id).join(', '));
+  P.x = mx; P.y = my; P.ground = true; P.dead = false; P.hp = 100; P.vy = 0; dmg.length = 0; step(2);
+  ok(!rh.rkAim && !rh.rkDive && rh.cMode === 'perch' && !dmg.length && !P.rkRide, 'a hero standing on her mount: she never dives, never aims, never hurts - she sits (no knock-down first)');
+  P.x = mx + 4; P.y = rh.y - 16; P.ground = false; P.vy = 120; step(1 / 60);
+  ok(P.rkRide === rh && rh.cMode === 'carry' && said.includes(RK_SAY.riding), 'a hero FALLING ONTO HER BACK is aboard: ' + RK_SAY.riding);
+  let maxDy = 0; step(5, () => { if (P.rkRide) { H.ride(P, false); maxDy = Math.max(maxDy, Math.abs(P.y - (rh.y - 9))); } return false; });
+  ok(!P.rkRide && Math.abs(P.x - (rd.land[0] * TS + 8)) < 10 && Math.abs(P.y - (rd.land[1] + 1) * TS) < 12 && maxDy < 1.5, 'he rides STANDING ON HER BACK along her path; she SETS HIM DOWN over the land (' + Math.round(P.x / TS) + ',' + Math.round(P.y / TS) + ')');
+  ok(rh.cMode === 'perch' && Math.abs(rh.x - mx) < 2, 'then she flies her path home, empty, and SITS again on her mount');
+  step(0.7); P.x = mx + 6; P.y = my; P.ground = true; P.vy = 0; const got = H.tryGrab(P);
+  ok(got && P.rkRide === rh && rh.cMode === 'carry', 'UP (or GRAB) beside her: aboard (the same answer as the old talon grab)');
+  step(0.4, () => { if (P.rkRide) H.ride(P, false); }); const ok1 = H.ride(P, true);
+  ok(!ok1 && !P.rkRide && P.vy < 0 && rh.cMode === 'home', 'JUMP lets go mid-flight (a hop, full air control) - and she turns for home from there');
+  step(4); rh.hp = 30; rh.stagger = 0.4; const hp0 = rh.hp; step(0.2);
+  ok(rh.alive && rh.cMode === 'perch' && rh.cN.startled >= 1 && rh.hp >= hp0, 'a blow on a sitting carrier STARTLES her (she flaps up a beat) - she never needs knocking down, never dies of it');
+  P.x = mx; P.y = rh.y - 16; P.ground = false; P.vy = 100; step(1 / 60); ok(!P.rkRide, 'startled, she cannot be boarded until she settles (' + rh.cStartle.toFixed(2) + ' s)'); step(0.8);
   ok(H.read().n.rides >= 2 && H.read().n.shook >= 1 && H.read().n.letGo >= 1, 'the ride counters: ' + JSON.stringify({ rides: H.read().n.rides, shook: H.read().n.shook, letGo: H.read().n.letGo }));
+  /* 7. (claude/harpypass) THE GUST HARPY in the rookery's hands: placed, stepped by H.harpy (src/gale-harpy.js gustStep) */
+  const gents = L.ents.filter(e => e.t === 'gustharpy');
+  ok(gents.length >= 2 && gents.some(e => e.squad === 'windGap') && gents.some(e => e.squad === 'galeSpires'), 'THE GUST HARPY: taught over THE WIND GAP (a fall is a climb), again over THE GALE SPIRES (' + gents.map(e => e.squad + '@' + e.x).join(', ') + ')');
+  const ge = gents.find(e => e.squad === 'windGap'), gh = { t: 'gustharpy', x: ge.x * TS + 8, y: (ge.y + 1) * TS, hx: ge.x * TS + 8, hy: (ge.y + 1) * TS, alive: true, mode: 'hover', anim: 0, stagger: 0, face: -1, ...GHM.newGust() };
+  foes.push(gh); P.dead = false; P.rkRide = null; P.x = gh.x - 90; P.y = gh.y + 30; P.ground = false; P.vy = 0; P.vx = 0; P.block = false;
+  let told = false, blasted = false, vx = 0; step(GHM.GUST.first + GHM.GUST.tell + 1.2, () => { P.ground = false; P.y = gh.y + 12; if (gh.mode === 'gustTell') told = true; if (gh.blasts.length) blasted = true; if (P.vx) vx = Math.min(vx, P.vx); });
+  ok(H.harpy(gh, 0) === true && told && blasted && vx < -100 && said.includes(RK_SAY.blast), 'in the rookery: she TELLS (wings up), claps a BLAST, and it throws an airborne hero along it (vx ' + Math.round(vx) + ')');
+  gh.stagger = 0.3; step(0.1); ok(gh.gMode === 'downed' || gh.gMode === 'grounded', 'a blow KNOCKS HER OUT OF THE AIR');
+  step(1.5); ok(gh.gMode === 'grounded' && gh.y > gh.hy + 2 * TS, 'she falls to the footing under her and lies grounded (' + Math.round((gh.y - gh.hy) / TS) + ' rows down)');
+  gh.alive = false;
 }
 
 // ---- THE SHRIEK SISTERS (pure) ----

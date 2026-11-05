@@ -81,6 +81,7 @@ export const BY_HAND = {
   'royalboar|tell':'!',   /* THE ROYAL BOAR (src/royal-boar.js): its charge a shield turns (it stands dazed) */
   'thief|swipeTell':'!!','spitcap|spitTell':'!','sapper|shoveTell':'!','drone|burstTell':'!!','drone|puffTell':'!',   /* (claude/sporewood2) THE DRONE swells, then bursts where it hangs: no shield turns a burst */   /* (claude/sweepact12: the new told attacks of the inline families - updateEnemies, not an update* function) */
   'galeharpy|galeTell':'!',   /* (claude/rookery2) THE GALE HARPY (src/gale-harpy.js, by hand: a module foe): her gust a shield BRACES (half the shove, no lift) - yellow */
+  'gustharpy|gustTell':'!',   /* (claude/harpypass) THE GUST HARPY (src/gale-harpy.js, by hand): her blast a guard BRACES, a perfect guard turns back - yellow */
   'shrieksister|diveTell':'!!','shrieksister|screamTell':'!!','shrieksister|dropTell':'!!','shrieksister|snatchTell':'!!','shrieksister|waveTell':'!',   /* THE SHRIEK SISTERS (claude/rookery, src/shriek-sisters.js, by hand): the dive a shield turns (she is knocked down) is still a red !! - off the line is the read; the wave a yellow ! */
   'galeharpy|galeTell':'!',   /* (claude/rookery2) THE GALE HARPY (src/gale-harpy.js, by hand: a module foe): her gust a shield BRACES (half the shove, no lift) - yellow */
   'shrieksister|chainTell':'!!','shrieksister|rakeTell':'!','shrieksister|shockTell':'!','shrieksister|echoTell':'!!','shrieksister|grabTell':'!!',
@@ -245,7 +246,7 @@ export const MARK = {
   'forgemaster|ladleTell': '!!', 'forgemaster|leapTell': '', 'forgemaster|pourTell': '!!', 'forgemaster|slamTell': '!!', 'forgemaster|sprayTell': '!', 'forgemaster|tongsTell': '!',
   'forgemaster|whirlTell': '!!', 'frog|crouch': '!', 'frog|flopTell': '!!', 'frog|snapTell': '!', 'frog|spitTell': '!', 'frog|swarmTell': '',
   'frog|tongueTell': '!', 'gaffer|ekHookTell': '!', 'gaffer|ekSpinTell': '!!', 'gaffer|haftTell': '!', 'gaffer|hookTell': '!!', 'galeharpy|aim': '!',
-  'galeharpy|galeTell': '!', 'gangleader|crossTell': '!', 'gangleader|cut2Tell': '!', 'gangleader|cutTell': '!', 'gangleader|dashTell': '!!', 'gangleader|riposteTell': '!!',
+  'galeharpy|galeTell': '!', 'gustharpy|gustTell': '!', 'gangleader|crossTell': '!', 'gangleader|cut2Tell': '!', 'gangleader|cutTell': '!', 'gangleader|dashTell': '!!', 'gangleader|riposteTell': '!!',
   'gangleader|throwTell': '!', 'gangleader|whirlTell': '!!', 'gargoyle|breathTell': '!', 'gargoyle|diveTell': '!!', 'gargoyle|fireballTell': '!', 'gargoyle|flareTell': '!!',
   'gar|lungeTell': '!', 'goat|charge': '!', 'goat|ekButtTell': '!', 'goat|ekStampTell': '!!', 'gobmage|boltTell': '!', 'gobmage|lobTell': '!',
   'gobmage|runeTell': '!!', 'gobpriest|bellTell': '!', 'gobpriest|censerTell': '!', 'gobpriest|riteTell': '', 'gorgecrab|boulderTell': '!!', 'gorgecrab|crushTell': '!!',
@@ -460,7 +461,7 @@ export const ANSWER = {
   'wickerman|throwTell': 'jump', 'wickerman|swingTell': 'block',   // (claude/fairfix6) THE WICKER MAN: its fire rolls along the ground - jump it (or strike it back); its arms the shield takes
   'willowisp|flareTell': 'block',   // THE FOG CANAL: the false lantern flares (a yellow !) - the shield turns the burst, as every yellow ! does
   'hare|run': 'block',
-  'harpy|aim': 'block', 'shrieker|aim': 'block', 'galeharpy|galeTell': 'block', 'galeharpy|aim': 'block', 'shrieksister|diveTell': 'dodge', 'shrieksister|screamTell': 'dodge', 'shrieksister|dropTell': 'dodge', 'shrieksister|snatchTell': 'jump', 'shrieksister|waveTell': 'block',   /* (claude/rookery) her scream marks your spot: get off it */
+  'harpy|aim': 'block', 'shrieker|aim': 'block', 'galeharpy|galeTell': 'block', 'galeharpy|aim': 'block', 'gustharpy|gustTell': 'block', 'shrieksister|diveTell': 'dodge', 'shrieksister|screamTell': 'dodge', 'shrieksister|dropTell': 'dodge', 'shrieksister|snatchTell': 'jump', 'shrieksister|waveTell': 'block',   /* (claude/rookery) her scream marks your spot: get off it */
   'shrieksister|chainTell': 'dodge', 'shrieksister|rakeTell': 'block', 'shrieksister|shockTell': 'block', 'shrieksister|echoTell': 'dodge', 'shrieksister|grabTell': 'dodge', 'shrieksister|pebbleTell': 'dodge', 'shrieksister|markTell': 'dodge', 'shrieksister|gustTell': 'block',   /* (claude/sisters2) the rake: block it (or jump it); the shock: brace (or roll); off the echo's tile; roll through the grab (or jump it) */
   'haunt|throwTell': 'block',
   'hearthgob|raise': 'block',
@@ -736,7 +737,7 @@ export const HEIGHT = {
   'grindylow|deckTell': 'low', 'grindylow|boardTell': 'low',
   'grindylow|rippleTell': 'low',
   'hare|run': 'low',
-  'harpy|aim': 'low', 'shrieker|aim': 'low', 'galeharpy|galeTell': 'low', 'galeharpy|aim': 'low', 'shrieksister|diveTell': 'low', 'shrieksister|screamTell': 'low', 'shrieksister|dropTell': 'low', 'shrieksister|snatchTell': 'low', 'shrieksister|waveTell': 'low',
+  'harpy|aim': 'low', 'shrieker|aim': 'low', 'galeharpy|galeTell': 'low', 'galeharpy|aim': 'low', 'gustharpy|gustTell': 'high', 'shrieksister|diveTell': 'low', 'shrieksister|screamTell': 'low', 'shrieksister|dropTell': 'low', 'shrieksister|snatchTell': 'low', 'shrieksister|waveTell': 'low',
   'shrieksister|chainTell': 'low', 'shrieksister|rakeTell': 'low', 'shrieksister|shockTell': 'low', 'shrieksister|echoTell': 'low', 'shrieksister|grabTell': 'low', 'shrieksister|pebbleTell': 'low', 'shrieksister|markTell': 'low', 'shrieksister|gustTell': 'low',   /* (claude/sisters2) */
   'haunt|throwTell': 'low',
   'hearthgob|raise': 'low',
