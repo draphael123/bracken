@@ -1632,14 +1632,16 @@ const keysRead = () => { const o = {}; for (const k in keys) o[k] = keys[k]; ret
 const keysWrite = o => { for (const k in keys) delete keys[k]; Object.assign(keys, o); };
 const pressRead = () => ({ grab: grabPress, jump: jumpPress, atk: atkPress, dodge: dodgePress, throw: throwPress, skill2: skill2Press, skill3: skill3Press, skill4: skill4Press, talk: talkPress, flask: flaskPress, stance: stancePress, ping: pingPress, up: upPress, down: downPress, left: leftPress, right: rightPress });
 const pressWrite = o => { pingPress = !!o.ping; stancePress = !!o.stance; flaskPress = !!o.flask; grabPress = !!o.grab; jumpPress = !!o.jump; atkPress = !!o.atk; dodgePress = !!o.dodge; throwPress = !!o.throw; skill2Press = !!o.skill2; skill3Press = !!o.skill3; skill4Press = !!o.skill4; talkPress = !!o.talk; upPress = !!o.up; downPress = !!o.down; leftPress = !!o.left; rightPress = !!o.right; };
+let seatHostHero = null;
 function asPlayer(p, fn) {
   if (!coop()) return fn();                                        /* the single-player call, unchanged */
-  if (p === players[0]) { const wP = P, wPass = passOn, sw = profStack.length && profStack[profStack.length - 1].prof ? profIn(null) : 0; P = p; passOn = p; try { return fn(); } finally { if (sw) profOut(); P = wP; passOn = wPass; } }   /* (inside a profiled seat's pass: player one's own values) */
+  if (p === players[0]) { const wP = P, wPass = passOn, wHero = PROG.hero, sw = profStack.length && profStack[profStack.length - 1].prof ? profIn(null) : 0; P = p; passOn = p; if (wPass && wPass !== p && seatHostHero) PROG.hero = seatHostHero; try { return fn(); } finally { if (sw) profOut(); P = wP; passOn = wPass; PROG.hero = wHero; } }   /* (claude/coopproof) nested in a seat's pass (the XP share pays player one from inside a lent seat's kill): HIS hero again, not the seat's - the XP went to the lent hero's row */   /* (inside a profiled seat's pass: player one's own values) */
+  const wSH = seatHostHero; if (!wSH) seatHostHero = PROG.hero;   /* (claude/coopproof) the host's hero, held while a seat's pass runs */
   const wP = P, wH = PROG.hero, wK = K, wKeys = keysRead(), wPress = pressRead(), wPass = passOn, sw = p.prof ? profIn(p.prof) : profStack.length && profStack[profStack.length - 1].prof ? profIn(null) : 0;   /* (claude/coopprogress) HIS OWN SAVE for his pass */
   P = p; PROG.hero = p.hero; if (p.set) K = p.set; passOn = p;
   keysWrite(p.keys); pressWrite(p.press);
   try { return fn(); }
-  finally { if (sw) profOut(); p.keys = keysRead(); p.press = pressRead(); P = wP; PROG.hero = wH; K = wK; passOn = wPass; keysWrite(wKeys); pressWrite(wPress); }
+  finally { seatHostHero = wSH; if (sw) profOut(); p.keys = keysRead(); p.press = pressRead(); P = wP; PROG.hero = wH; K = wK; passOn = wPass; keysWrite(wKeys); pressWrite(wPress); }
 }
 function nearestHero(e) { let b = null, bd = 1e9;
   for (const p of players) { if (!upright(p)) continue; const d = Math.abs(p.x - e.x) + Math.abs(p.y - e.y) * 0.5; if (d < bd) { bd = d; b = p; } }
@@ -37378,7 +37380,7 @@ window.BK = { setView: m => setView(m), env: () => ({ hurt: (e, d, x) => hurtEne
     cam: () => ({ wide: partyCam.wide, view: viewMode, VW, VH, want: desiredView() }), leash: () => players.map(p => ({ n: p.n, m: p.leash || 0, why: p.leashWhy || '', pulls: p.leashes || 0 })), leashFx: () => leashFx.length,
     party: () => players.map(p => ({ n: p.n, hero: p.hero, src: p.src || null, ai: !!p.ai, sword: p.sword || null, colour: PARTY.colourOf(PROG.tavern, p.n).id, x: p.x, y: p.y, walkIn: p.walkIn || 0, down: p.down || 0 })),
     want: () => coopWant, seats: () => wantSeats(), next: () => partyNextLevel(), saveParty: () => partySave(), roster: () => partyRoster(), levelIndex: () => levelIndex,   /* (claude/partypersist) */ joins: () => tavJoins, hint: () => ({ t: hintT, msg: hintMsg }), record: v => { if (v !== undefined) PROG.tavern = v === null ? undefined : v; return PROG.tavern; }, prog: () => PROG, save: () => { saveProgress(); return true; }, drawMarks: () => drawPartyMarks, toMap: () => tavernToMap(), padJoin: (gps, claimed) => tavernPadJoin(gps, claimed || new Set()), p1Pad: v => { if (v !== undefined) p1Pad = v; return p1Pad; } },
-  pings: () => PINGS.list().map(p => ({ n: p.n, kind: p.kind, ai: p.ai, t: p.t, x: p.x, y: p.y })), coopDeaths: () => deaths, coopFell: () => coopFall,   /* (claude/coopproof) probe reads */
+  asPlayer: (p, fn) => asPlayer(p, fn), pings: () => PINGS.list().map(p => ({ n: p.n, kind: p.kind, ai: p.ai, t: p.t, x: p.x, y: p.y })), coopDeaths: () => deaths, coopFell: () => coopFall,   /* (claude/coopproof) probe reads */
   coopDown: n => { const p = players[n || 0]; if (!p) return 'no such hero'; asPlayer(p, () => goDown({ name: 'THE HARNESS', red: false, rule: '' })); return p.hero + ' down ' + p.down; },
   allyReady: () => allyLoad(),
   /* (claude/aicompanions) AI COMPANIONS, for tools/ai-companion.mjs: seat one from the board's own api, the party's scale, each AI seat's state, a party armed for the next wood */

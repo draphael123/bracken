@@ -5,7 +5,7 @@
    PORT=8789 node tools/coop-proof.mjs [bleed,ping]   (SHOTS=dir for the screenshots) */
 import { writeFileSync } from 'node:fs';
 import { openLevelPage } from './boss-level.mjs';
-const WANT = (process.argv.slice(2).find(a => !a.startsWith('--')) || 'bleed,ping,ai').split(','), fails = [];
+const WANT = (process.argv.slice(2).find(a => !a.startsWith('--')) || 'bleed,ping,xp,ai').split(','), fails = [];
 const OUT = process.env.SHOTS || 'C:/Users/Daniel Raphael/.claude/bracken-lanes/scratch/lane-reports';
 const ok = (c, m) => { if (!c) { fails.push(m); console.log('  FAIL ' + m); } else console.log('  ok   ' + m); };
 const pg = await openLevelPage({ audio: false, fonts: false }), E = x => pg.evalp(x, 600000);
@@ -65,6 +65,26 @@ try {
     await shot('pings');
     await E(`(()=>{const b=BK.players()[1];BK.coopDown(1);BK.sim(3);b.press.ping=true;BK.sim(2);b.press.ping=false;BK.sim(20);return 1;})()`);
     await shot('downed');
+  }
+  if (WANT.includes('xp')) {
+    console.log('xp');
+    const r = await E(`(async()=>{const o={};const FOE=()=>BK.enemies().find(z=>z.alive&&!z.boss&&!z.harmless&&z.xpKey&&z.hp>0&&z.t!=='bat');
+      /* A. 2 humans (P2 lent, no save): P2 hurts, P1 kills -> P1 paid once */
+      await __w('wood');BK.sim(200);let ps=BK.players(),a=ps[0],b=ps[1];BK.god=true;let e=FOE();o.haveFoe=!!e;
+      const hero=a.hero||BK.PROG.hero;const x0=BK.heroXp(hero);
+      BK.asPlayer(b,()=>BK.env().hurt(e,1,b.x));BK.env().hurt(e,9999,a.x);BK.sim(3);o.A={paid:BK.heroXp(hero)-x0,hitBy:(e.hitBy||[]).length};
+      /* B. a SECOND foe killed by P2 alone (lent seat folds into P1) */
+      e=BK.enemies().find(z=>z.alive&&!z.boss&&!z.harmless&&z.xpKey&&z.hp>0&&z.t!=='bat'&&z!==e);const x1=BK.heroXp(hero);
+      if(e){BK.asPlayer(b,()=>BK.env().hurt(e,9999,b.x));BK.sim(3);}o.B={have:!!e,paid:BK.heroXp(hero)-x1};
+      /* C. an AI partner takes the kill: P1 is still paid */
+      BK.coopEnd();BK.reset({fresh:true});await BK.allyReady();BK.aiComp.arm(['warden'],['aggressive'],1);const {LEVELS}=await import('/src/level.js');BK.load(LEVELS.findIndex(l=>l.id==='wood'));BK.start();BK.sim(200);
+      ps=BK.players();a=ps[0];const q=ps.find(p=>p.ai);BK.god=true;e=BK.enemies().find(z=>z.alive&&!z.boss&&!z.harmless&&z.xpKey&&z.hp>0&&z.t!=='bat');const x2=BK.heroXp(a.hero||BK.PROG.hero);
+      if(e){BK.asPlayer(q,()=>BK.env().hurt(e,9999,q.x));BK.sim(3);}o.C={have:!!e,paid:BK.heroXp(a.hero||BK.PROG.hero)-x2};
+      return o;})()`);
+    console.log('    ' + JSON.stringify(r));
+    ok(r.haveFoe && r.A.paid > 0 && r.A.hitBy >= 1, 'P1 kills a foe P2 also hit: paid (' + r.A.paid + ')');
+    ok(!r.B.have || r.B.paid > 0, 'a lent seat\'s kill folds into player one: paid (' + r.B.paid + ')');
+    ok(!r.C.have || r.C.paid > 0, 'an AI partner\'s kill still pays player one (' + r.C.paid + ')');
   }
   if (WANT.includes('ai')) {
     console.log('ai');
