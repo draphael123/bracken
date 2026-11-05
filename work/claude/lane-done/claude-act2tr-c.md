@@ -1,5 +1,5 @@
 # ACT II TRANSITIONS - LANE C (claude/act2tr, on top of lane B 0800e77e) - 11-04
-Status: CODE-ONLY, node checks green, NO browser run (release gate running: scratch/GATE-RUNNING.flag). Not merged, not deployed. Tip = `git log -1 claude/act2tr`. ACT2_BUILT = ['A','B','C'].
+Status: CODE-ONLY, node checks green, NO browser run (release gate running: scratch/GATE-RUNNING.flag). Not merged, not deployed. Tip = 91ba9c8c (this file rides the same commit). ACT2_BUILT = ['A','B','C'].
 
 ## The 3 big scenes (src/transitions.js TABLE; TODO-LANE-C placeholders gone)
 All: thin letterbox bars (entry.bar 12), ONE caption line drawn by main.js (entry.caption {text, at}), skippable after 0.8 s, dialogue-free, ARRIVE into the next level (no endOnMap), 1-4 seats, reduce-motion handled.
