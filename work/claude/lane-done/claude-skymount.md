@@ -38,7 +38,7 @@ is the hidden lab level. The Demon King is NOT built (lane S2) - the hooks he ne
   `SKH.update(wdt)` before `updateMovers`; `SKH.pre(P)` right before the mover carry; `SKH.foot(...)` right after the mover landing;
   `else if (P.mount && SKH && SKH.knock(P)) { }` in damagePlayer0's throw chain; the camera lock after the camera clamp; the AI partner's walk
   (`p.aiWalk` skipped on the back); `SKH.drawSky` in the backdrop pass; `SKH.drawDrake` before drawCarpetWorld (under the heroes).
-- `src/level.js`: the hidden lab `LEVELS.push({ id: 'skylab', ..., hidden: true })` + its import.
+- `src/dressing.js`: the lab's empty ground kit + allowlist (2 lines; tools/dressing.mjs). `src/level.js`: the hidden lab `LEVELS.push({ id: 'skylab', ..., hidden: true })` + its import.
 - `tools/sky-mount.mjs` (new): the node check, 175 checks, ~1 s.
 
 ## How to stand on it (browser - owed tonight)
@@ -74,7 +74,7 @@ is the hidden lab level. The Demon King is NOT built (lane S2) - the hooks he ne
 Moving and blade/shot fighting work for every hero (the back is the mover; blows and projectiles live in the air). Verbs that scan tiles do not
 find the back yet: the GEOMANCER's planted stones / fault line / rolling stone / pillars (src/geomancer.js floorRow, isSolid), the RANGER's dropped
 arrows (src/ranger.js: they fall through - "walked over as usual" needs them to lie on the back), the DOWN_STRIKE plunge rings (main.js gates
-plungeWave on `!P.onMover`: the knight/warden/pyro/pirate stomp rings do not fire on the back - the plunge's own hit does), the SUN PRIEST's
+plungeWave on `!P.onMover`: the knight/warden/pyro/pirate stomp rings do not fire on the back - the plunge's own hit does), the DESERT PRIEST's (sun-priest.js)
 consecrate patch + radiance (light tiles), and any thrown weapon that sticks in a floor or bounces off a wall (javelin, hatchet, hammer).
 REC for S3: route each one's floor test through `SKH.solidAt(x, y)` / `SKH.plant(x)` when `P.mount` (one guard per verb); S2's imps stand via
 `footStep` on the back exactly as a hero does (proved in the node check).
@@ -89,5 +89,14 @@ REC for S3: route each one's floor test through `SKH.solidAt(x, y)` / `SKH.plant
 4. Bank cadence is TELL TO TELL (P1 12 s, P2 9, P3 7 between tells, so ~9/6/4 s of level back between banks). REC: yes as built; S5 tunes it.
 5. Heroes stand UPRIGHT on a tilted back (not rotated with it), as a person on a deck. REC: upright; S4 may lean the sprite 1 px on a full tilt.
 
-## SWEEP (the remaining LEVELS-iterating node tools)
-(filled in below when the sweep finishes)
+## SWEEP (the other node tools that build every LEVELS entry)
+- Ran clean (exit 0, no skylab line): curve-gate, curve-shape, curve, deadends, deadly-water, demo-cut, demo-save-carry, elites, fire-mage,
+  floating-geometry, foe-footing, foe-pass, goblin-lint, ground-depth, keys, killzones, knock-into-exams, level-quality.
+- **dressing was RED on the lab** ("skylab needs its own ground kit") -> fixed: `src/dressing.js` gets `GROUND_KITS.skylab` (density 0, no kinds) and
+  `ALLOWED_DECORATIONS.skylab = []` (2 appended lines, as the tavern's). dressing now passes.
+- hintlevel red is PRE-EXISTING and not this lane's ("the gate has holes": SWAPUI / reeveCoat / FL2H hint lines in main.js; no skylab).
+  mash-bot / level-walk exit 2 = they need a PORT/args (usage), not a failure.
+- NOT CONCLUSIVE - timed out (the PC was loaded by other lanes; at the end even 12 s tools timed out): boss-jump, death-cost, drawn-solids, ending,
+  feel-platform, flasks2, gate-openers, geomancer, hero-trials, lab-order, lethal-water, level-reach, and the whole 63+ tail (levelling-runtime ..
+  uiscreens, ~50 tools). **OWED: the QUICK gate / nightly full suite on this branch is the real word on whether a hidden lab level trips any of
+  them** - if one does, the fix is a per-tool skip or a lab entry as above (arena_yard and tavern set the pattern).
