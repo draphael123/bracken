@@ -17,6 +17,6 @@ try {
   for (const [m, ph] of [['boltTell', 1], ['boltRelease', 1], ['swoopTell', 1], ['whipTell', 2], ['feintTell', 2], ['doubleTell', 2], ['downed', 2], ['repulseTell', 2], ['tumble', 2], ['summonTell', 3], ['downed', 3]]) { const r = await force(m, ph); if (r !== 'ok') { console.log(m, r); continue; } await shot('king-' + m + '-p' + ph); }
   await E('BK.skyMount.phase(2)'); await E('BK.sim(420)'); await force('float', 2); await shot('high-p2');
   await E('BK.skyMount.phase(3)'); await E('BK.sim(420)'); await force('float', 3); await shot('ash-p3');
-  await force('summonTell', 3, 1.0, 0.8); await shot('p3-glyph'); await E(`(()=>{const f=BK.demonKing.f();f.mode='summon';f.mT=0;f.T=0.4;})()`); await E('BK.sim(90)'); await shot('p3-imps');
+  await force('summonTell', 3, 1.0, 0.8); await shot('p3-glyph'); await E(`(()=>{const p=BK.players()[0];for(const dx of [34,-36]){BK.enemies().push({t:'imp',x:p.x+dx,y:p.y-26,w:10,h:12,hp:20,maxHp:20,alive:true,dying:0,vx:0,vy:0,face:dx>0?-1:1,flash:0,stagger:0,anim:0,mode:'hover',modeT:0,cd:5,noGrav:true,cnSkin:'demonimp',dkImp:true});}BK.demonKing.f().rest=99;BK.sim(20);})()`); await shot('p3-imps');
   console.log('errors', pg.errors.length ? pg.errors.slice(0, 5) : 'none');
 } finally { pg.close(); }
