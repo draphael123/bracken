@@ -278,6 +278,9 @@ export function buildOreRoad({ painter, T }) {
      the teeth so a fall costs a climb rather than a life, and the rope out of it stands at its west lip where you can see it
      from the bottom (C5). */
   for (let y = YARD + 1; y <= YARD + 3; y++) for (let x = 22; x <= 34; x++) set(x, y, T.AIR);
+  /* THE BROKEN RAILS (claude/oreroadfix): a two-tile cut in the yard's floor where a rail tie has gone, with the spikes of the cut-off in it - the first jump of the level, one tile from the first checkpoint, so the crusher is the second and not the first. Rails and ties are art owed. */
+  for (let y = YARD + 1; y <= YARD + 2; y++) for (let x = 7; x <= 8; x++) set(x, y, T.AIR);
+  spikes(7, 8, YARD + 2);
   set(22, YARD + 3, T.SOLID); set(34, YARD + 3, T.SOLID); spikes(23, 33, YARD + 3);   /* a lip at each end to land on, the teeth between them */
   plat(24, YARD, 2); plat(28, YARD - 1, 2); plat(32, YARD, 2);                  // the feed chutes: the way across, over the teeth
   rope(21, YARD + 1, YARD + 3); rope(35, YARD + 1, YARD + 3);                   // and a way out at both ends, in plain sight from the bottom of it
@@ -388,7 +391,7 @@ export function buildOreRoad({ painter, T }) {
   ent('check', 300, 30); ent('check', 330, 30);
   ent('sign', 276, FOOT_ROW, { text: 'THE SPAN CAME DOWN HERE. THE BED OF IT IS ALL BROKEN ORE - MIND THE GAPS.' });
   /* THE RAIL GAUNTLET (claude/oreroadfix): the span is a crossing, not a fight - the crew that stood on its decks (sapper, rockgoblin, gaffer) is moved to the wreck head and its gantry, where the crossing ends; the goat and the sheargob are two bats over the gaps (fliers cost 1 a head, the pacing bucket stays under a fight) */
-  ent('bat', 290, 24); ent('bat', 286, 26);
+  ent('bat', 316, 24); ent('bat', 322, 22);
   ent('tippler', 307, 25, { face: -1 });                                        // on the highest piece of the fallen tower, tipping onto the deck below it
   /* THE WRECK HEAD'S GANTRY (a second height, claude/oreroadfix): a catwalk over the head, up a rope at its east end, where the crew from the decks now waits */
   plat(327, 25, 13); rope(328, 26, 30);
