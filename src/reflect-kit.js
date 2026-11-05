@@ -40,7 +40,7 @@ export const REFLECT_KIT = {
     block: 'crossed axes held: pops', notes: '' },
   ranger: { name: 'THE RANGER', normal: ['any arrow (tapped or drawn)', 'knife', 'DOWN+X shot'], power: { look: 'BOW-BASH', input: 'tap C as the bolt lands', via: 'parry' },
     powerAlso: { tag: 'shot', steady: true, look: 'STEADY SHOT through the bolt' },
-    block: 'a late bash: pops', notes: 'arrows that fall on the back stay on the drake (lane S3: src/ranger.js floor test through SKH.solidAt)' },
+    block: 'none: the bash is a parry only (a bash off the beat is a hit - she has no held guard; she rolls or ducks)', notes: 'arrows that fall on the back stay on the drake (lane S3: ranger.js isSolid through SKH.solidAt, wired in main.js)' },
   rimebinder: { name: 'THE RIMEBINDER', normal: ['staff', 'frost bolt', 'rime lance'], power: { look: 'ICE WALL', input: 'tap C as the bolt lands (her parry)', via: 'parry' },
     block: 'ice wall held: pops', notes: 'her THRALLS do not return bolts (no free pips) - the thrall is not her hand', exclude: ['thrall'] },
   demonhunter: { name: 'THE DEMON HUNTER', normal: ['blades', 'dash-through cut'], power: { look: 'THE DASH ON THE BEAT', input: 'dash through the bolt as it lands (i-frame pass)', via: 'parry' },
@@ -54,7 +54,7 @@ export const KIT_IDS = Object.keys(REFLECT_KIT);
 export const kitOf = id => REFLECT_KIT[id] || DEFAULT_KIT;
 
 /* ONE CLASSIFIER, every hero. meet:
-     { via: 'blow' | 'shot', tag, who? ('thrall'...), tier?, steady? }   a hero hand met a bolt in flight
+     { via: 'blow' | 'shot', tag (string or array), who? ('thrall'...), tier?, steady? }   a hero hand met a bolt in flight
      { via: 'body', result: 'blocked' | 'hit' | false, parried: bool }   the bolt reached the hero's body (damagePlayer's answer)
    -> 'power' | 'normal' | 'block' | 'hit' | 'miss' | null (null: it does not touch the bolt) */
 export function classify(heroId, meet) {
@@ -67,8 +67,9 @@ export function classify(heroId, meet) {
     return 'miss';   /* i-frames, a roll, a duck: it flies on */
   }
   if (meet.who && K.exclude && K.exclude.includes(meet.who)) return null;
-  if (NOT_A_RETURN.has(meet.tag)) return null;
+  const tags = [].concat(meet.tag ?? []);   /* main.js tags a blow with a string OR an array (an arrow: ['heavy', 'shot']) */
+  if (tags.some(t => NOT_A_RETURN.has(t))) return null;
   const pa = K.powerAlso;
-  if (pa && meet.tag === pa.tag && (pa.minTier === undefined || (meet.tier ?? -1) >= pa.minTier) && (!pa.steady || meet.steady === true)) return 'power';
+  if (pa && tags.includes(pa.tag) && (pa.minTier === undefined || (meet.tier ?? -1) >= pa.minTier) && (!pa.steady || meet.steady === true)) return 'power';
   return 'normal';
 }

@@ -52,7 +52,9 @@ export function makeDemonKingHands(ctx) {
   function struck(e, dmg, tag) {
     if (!f || e.t !== 'hellbolt') return false;
     const b = f.bolts.find(q => q.id === e.dkBolt); if (!b || b.st !== 'in' || resolving === b.id) return true;
-    const how = RK.classify(ctx.heroId(), { via: tag === 'shot' ? 'shot' : 'blow', tag });
+    const tags = [].concat(tag ?? []), has = k => tags.includes(k), Pn = ctx.P(), hid = ctx.heroId();   /* a tag is a string or an array (an arrow: ['heavy', 'shot']) */
+    /* S3: the second power verbs the table names (reflect-kit powerAlso): the Blood Knight's heavy at tier 2+ (P.bkTier, set when the heavy is loosed) and the Ranger's STEADY SHOT (her pierce arrow, tagged 'steady' in ranger.js: a heavy shot that goes through the line - every drawn heavy arrow is ['heavy','shot'], only the steady one has the third tag) */
+    const how = RK.classify(hid, { via: has('shot') ? 'shot' : 'blow', tag: tags, tier: hid === 'reaper' && has('heavy') && Pn ? (Pn.bkTier | 0) : undefined, steady: hid === 'ranger' && has('steady') });
     if (how === 'normal' || how === 'power') { const i = Math.max(0, heroes().indexOf(ctx.P())); DKM.meet(f, b, how, i); ctx.burst(b.x, b.y, 8, [C.ret, C.gold]); }
     return true;
   }
