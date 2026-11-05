@@ -32,7 +32,7 @@ export const BROOD = { near: 120, pulse: 3.2, n: 2 };
 export const NEST_SAY = { take: 'A SMOKE POT: CARRY IT, OR ATTACK TO THROW IT', down: 'YOU SET THE POT DOWN: IT SMOULDERS', dropped: 'A BLOW: YOU DROP THE POT', broke: 'THE POT BREAKS: SMOKE',
   cut: 'CUT LOOSE', crushed: 'THE COMB COMES DOWN ON IT', stacked: 'IT LANDS ON THE COMB BELOW', pulse: '!!', smash: 'SMASHED', hatch: 'IT HATCHES', sticky: 'FRESH COMB: IT HOLDS YOUR FEET', regrow: 'A POT SMOULDERS AGAIN', drip: 'RESIN: IT HOLDS YOUR FEET' };
 export const NEST_HINT = { pot: 'E TAKES A SMOKE POT. CARRIED, THE SWARMS NEAR YOU GO QUIET - YOU CANNOT SWING, BUT YOU CAN JUMP. ATTACK THROWS IT: WHERE IT BREAKS, THE SMOKE STAYS.',
-  comb: 'ANY BLOW CUTS A HANGING COMB LOOSE. IT DROPS DOWN ITS GOLD LINE AND LANDS AS A STEP.', brood: 'A PULSING BROOD CELL IS ABOUT TO HATCH: ONE BLOW SMASHES IT.' };
+  queen: 'THROW AT HER: HOLD UP AND ATTACK, AND LOB THE POT AT THE QUEEN. SMOKE ON HER GROUNDS HER.', comb: 'ANY BLOW CUTS A HANGING COMB LOOSE. IT DROPS DOWN ITS GOLD LINE AND LANDS AS A STEP.', brood: 'A PULSING BROOD CELL IS ABOUT TO HATCH: ONE BLOW SMASHES IT.' };
 /* THE HERO'S POSE HOOKS (the art lane draws them for every hero, like the Fen Road's plank: main.js reads none yet): P.potPose = 'carry' (the pot held out on its
    bail, smoke trailing), 'throw' (the pot swung up and let go: SMOKE_POSES throwT) */
 export const SMOKE_POSES = ['carry', 'throw'];
@@ -126,7 +126,7 @@ export function makeNestHands(ctx) {
     const top = landRow(c); c.y = top * TS; c.vy = 0; c.st = 'down'; c.cells = [];
     const stacked = (() => { for (let x = c.x0; x <= c.x1; x++) if (combs.some(o => o !== c && o.st === 'down' && o.cells && o.cells.some(([cx, cy]) => cx === x && cy === top + c.rows))) return true; return false; })();
     for (let y = top; y < top + c.rows; y++) for (let x = c.x0; x <= c.x1; x++) { ctx.cellSet(x, y, ctx.T.ONEWAY); c.cells.push([x, y]); }
-    if (c.hq && honey.some(h => h.kind === 'flood')) { splashes.push({ x: (c.x0 + c.x1 + 1) * TS / 2, y: (top + c.rows) * TS, w: (c.x1 - c.x0 + 1) * TS, t: 0 }); ctx.burst((c.x0 + c.x1 + 1) * TS / 2, (top + c.rows) * TS - 6, c.last ? 22 : 12, ['#ffd36b', '#fff4b0', '#c47a14', '#e0a020'], 110, 0.7); ctx.sfx.squelch && ctx.sfx.squelch(); }   /* (claude/hornets2art) a comb dropped into the resin: it splashes */
+    if (c.hq && honey.some(h => h.kind === 'flood')) { splashes.push({ x: (c.x0 + c.x1 + 1) * TS / 2, y: (top + c.rows) * TS, w: (c.x1 - c.x0 + 1) * TS, t: 0 }); ctx.burst((c.x0 + c.x1 + 1) * TS / 2, (top + c.rows) * TS - 6, c.last ? 22 : 12, ['#b8914f', '#d8c08a', '#6a4014', '#8a5a1e'], 110, 0.7); ctx.sfx.squelch && ctx.sfx.squelch(); }   /* (claude/hornets2art) a comb dropped into the resin: it splashes */
     W.n.landed++; ctx.sfx.thud && ctx.sfx.thud(); ctx.dust((c.x0 + c.x1 + 1) * TS / 2, (top + c.rows) * TS, 10);
     if (stacked) ctx.number((c.x0 + c.x1 + 1) * TS / 2, top * TS - 10, NEST_SAY.stacked, '#ffd36b');
     const box = { l: c.x0 * TS, r: (c.x1 + 1) * TS, t: top * TS, b: (top + c.rows) * TS };
@@ -150,8 +150,8 @@ export function makeNestHands(ctx) {
       else if (d.st === 'fall') {
         d.vy = Math.min(520, d.vy + DRIP.g * dt); const dy = d.vy * dt, n = Math.max(1, Math.ceil(dy / 4)); let landed = false;
         for (let i = 0; i < n && !landed; i++) { d.y += dy / n;
-          for (const pp of heroes) { if (pp.x + 5 > px - DRIP.hw && pp.x - 5 < px + DRIP.hw && pp.y > d.y - 2 && pp.y - 22 < d.y) { W.n.dripHit++; if (ctx.dripHit) ctx.dripHit(pp, DRIP.dmg); pp.syrupT = Math.max(pp.syrupT || 0, DRIP.syrup); ctx.burst(px, d.y, 6, ['#e0a020', '#ffd36b', '#a8600a'], 50, 0.5); ctx.number(pp.x, pp.y - 34, NEST_SAY.drip, '#e0b040'); landed = true; break; } }
-          if (!landed && ctx.solidPx(px, d.y + 2, true)) { const row = Math.floor((d.y + 2) / TS); W.addHoney(px - 10, px + 10, row, DRIP.splash, 'glob'); ctx.burst(px, d.y, 5, ['#e0a020', '#ffd36b', '#a8600a'], 40, 0.4); landed = true; }
+          for (const pp of heroes) { if (pp.x + 5 > px - DRIP.hw && pp.x - 5 < px + DRIP.hw && pp.y > d.y - 2 && pp.y - 22 < d.y) { W.n.dripHit++; if (ctx.dripHit) ctx.dripHit(pp, DRIP.dmg); pp.syrupT = Math.max(pp.syrupT || 0, DRIP.syrup); ctx.burst(px, d.y, 6, ['#8a5a1e', '#b8914f', '#4a2a0e'], 50, 0.5); ctx.number(pp.x, pp.y - 34, NEST_SAY.drip, '#e0b040'); landed = true; break; } }
+          if (!landed && ctx.solidPx(px, d.y + 2, true)) { const row = Math.floor((d.y + 2) / TS); W.addHoney(px - 10, px + 10, row, DRIP.splash, 'glob'); ctx.burst(px, d.y, 5, ['#8a5a1e', '#b8914f', '#4a2a0e'], 40, 0.4); landed = true; }
           if (d.y > Lv.H * TS) landed = true; }
         if (landed) { d.st = 'wait'; d.t = 0; falling--; } } } };
   /* ---------- ONE FRAME ---------- */
@@ -211,6 +211,7 @@ export function makeNestHands(ctx) {
         if (pulsing.t <= 0) { pulsing.st = 'hatched'; W.n.hatched++; ctx.sfx.buzz && ctx.sfx.buzz(); ctx.number(pulsing.x, pulsing.y - 24, NEST_SAY.hatch, '#ff6b6b'); for (let i = 0; i < BROOD.n; i++) ctx.spawnHornet(pulsing.x + (i ? 10 : -10), pulsing.y - 20 - i * 6); } }
       else for (const k of cells) { if (k.st !== 'idle') continue; if (ctx.players().some(pp => !pp.dead && Math.abs(pp.x - k.x) < BROOD.near && Math.abs(pp.y - k.y) < 60)) { k.st = 'pulse'; k.t = BROOD.pulse; ctx.number(k.x, k.y - 22, NEST_SAY.pulse, '#ff6b6b'); ctx.sfx.buzz && ctx.sfx.buzz(); if (!ctx.told('brood')) { ctx.tell('brood'); ctx.hint(NEST_HINT.brood); } break; } } }
     near = reachable(P);
+    if (near && inHall(near.x) && !P.dead && !ctx.told('queen')) { ctx.tell('queen'); ctx.tell('queen'); ctx.hint(NEST_HINT.queen); }   /* (claude/nestpolish) the first pot in reach in the Queen's hall: THROW AT HER, once per save */
     arc = held(P) && !P.dead ? (() => { const h = handAt(P), a = CT.aimOf('smokepot', P.face || 1, ctx.keys ? ctx.keys() : {}), v = { vx: a.vx, vy: a.vy };
       return CT.predictArc('smokepot', h.x, h.y, v, ctx.solidPx, { stopAt: (x, y) => foeAt(x, y) || (ctx.onQueen && ctx.onQueen(x, y, null)) }); })() : null;
   };
@@ -241,7 +242,7 @@ export function makeNestHands(ctx) {
     /* HONEY: a glossy amber skin on the footing (the hall's flood is drawn by her hands; here the globs' splashes, fading) */
     for (const h of honey) { if (h.kind === 'flood') continue; const x = h.x0 - cx, w = h.x1 - h.x0, y = h.row * TS - cy; if (x > VW + 20 || x + w < -20) continue; HNHY.patch(g, x, y, w, h.t, h.t0, time); }
     /* THE SMOKE STANDS: a clay pot on a tripod of sticks, smouldering */
-    for (const s of stands) { const x = R(s.x - cx), y = R(s.y - cy); if (x < -30 || x > VW + 30) continue; if (s.hall && s.st === 'empty') HNP.standEmpty(g, x, y, time, s.t < 1 ? 1 - s.t : 0); else HNP.stand(g, x, y, time); }   /* (a hall stand whose pot is taken or burst: the bare tripod, its smoke thickening over the last second) */
+    for (const s of stands) { const x = R(s.x - cx), y = R(s.y - cy); if (x < -30 || x > VW + 30) continue; if (s.st === 'full') HNP.glow(g, x, y - 20, time, s.hall ? 1 : 0.7); if (s.hall && s.st === 'empty') HNP.standEmpty(g, x, y, time, s.t < 1 ? 1 - s.t : 0); else HNP.stand(g, x, y, time); }   /* (a hall stand whose pot is taken or burst: the bare tripod, its smoke thickening over the last second) */
     /* RESIN DRIPS (claude/hornetsnest2art): the string, the nub, the bead swelling on its thinning neck and pinching off, then the glossy drop */
     for (const d of drips) { const px = d.x * TS + 8, x = R(px - cx), y = R(d.y0 * TS - cy); if (x < -20 || x > VW + 20) continue; HNSAG.drip(g, d, x, y, DRIP.tell, time, HNHY.glob, d.top < d.y0 - 1 ? R(d.top * TS - cy) : y, cy); }
     /* THE BROOD CELLS: a capped wax pocket; pulsing, it swells, reddens and cracks */
@@ -268,7 +269,7 @@ export function makeNestHands(ctx) {
   W.drawOver = (g, cx, cy, time) => {
     if (!W.on()) return; const P = ctx.P();
     /* THE POTS: in the hand, set down, in flight - and the smoke a carried one throws round you (its reach drawn: the rule's state) */
-    for (const q of pots) { const x = R(q.x - cx), y = R(q.y - cy); HNP.pot(g, x, y + 3, time, true);
+    for (const q of pots) { const x = R(q.x - cx), y = R(q.y - cy); if (q.state !== 'held') HNP.glow(g, x, y - 5, time, 0.8); HNP.pot(g, x, y + 3, time, true);
       if (q.state === 'held' && q.holder) { g.globalAlpha = 0.16 + 0.06 * Math.sin(time * 3); g.strokeStyle = '#c8d0d8'; g.beginPath(); g.arc(R(q.holder.x - cx), R(q.holder.y - 14 - cy), SMOKE.aura, 0, 7); g.stroke(); g.globalAlpha = 1; }
       if (q.state === 'rest') { g.globalAlpha = 0.12; g.fillStyle = '#c8d0d8'; g.beginPath(); g.arc(x, y - 8, SMOKE.aura * Math.min(1, q.smoulder / 2), 0, 7); g.fill(); g.globalAlpha = 1; } }
     for (const c of clouds) { HNP.cloud(g, c.x - cx, c.y - cy, c.r, Math.min(1, c.t / (c.hall ? 1.0 : 1.2)), time); HNSAG.bloom(g, c.x - cx, c.y - cy, c.r, (c.t0 || c.t) - c.t); }   /* (claude/hornetsnest2art) a pot's burst: flash, ring, clay shards */

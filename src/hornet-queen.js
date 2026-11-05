@@ -38,6 +38,7 @@ export const HQ = {
   dive: { aim: [0.9, 0.72], held: 0.55, heldEvery: 3, speed: [250, 285], v0: 60, acc: 950, aimH: 96, dmg: 46, half: 9, skim: 0.4, chip: 0.5 },   /* chip: a plain block of the stoop STAGGERS her but jars a share of it through (a parry takes it clean) */   /* the stoop STARTS SLOW and gathers (v0 -> speed at acc): from her aim height a stoop takes ~0.3 s - leave as it gathers */
   stuck: { t: [3.0, 2.6], mul: 1.5 },
   winded: { t: 1.7, mul: 2 },
+  crash: 0.55, fallFrame: 0.085,   /* (claude/nestpolish) THE FALL, drawn: a tumble frame every fallFrame s, then the crash and HQ.crash s of stillness before the dazed loop (art timings: the dazed stun is the same) */
   dazed: { t: [3.0, 2.6], mul: 1.5, r: 30, h: 56, g: 900, cd: 8, cdCloak: 2, rFog: 56, tFog: 4.0, inFog: 0.25 },   /* (claude/hornetsnest2) THE FOG GROUNDS HER: a pot that breaks ON her, or her body 0.25 s inside a hall fog cloud (rFog / tFog: src/hornets-nest-hands.js SMOKE.hallR / hallT), in ANY flying mode, folds her wings and she FALLS (g px/s^2) to the floor; the stun t (P1, P2) starts ON LANDING, then the thrash and the ward. After a grounding she is wary of fog for cd s (a cloud she flies into is fanned off: no chain-lock); in P2 the first fog on a cloaked queen only strips the cloak (then cdCloak). r / h: the old low rule (a carried or set-down pot under her in a dive / sweep / circle) stays */
   ward: 2.6, thrash: 0.5,
   sweep: { tell: 0.65, speed: 165, y: 13, dmg: 36, half: 12, chip: 0.65 },   /* a plain block JARS (half comes through) and she sweeps on; a PARRY staggers her; or jump her */
@@ -107,7 +108,7 @@ export function stepQueen(e, S, dt, hs, w) {
   S.ward = Math.max(0, S.ward - dt); e.ward = S.ward; S.cloak = Math.max(0, S.cloak - dt); e.cloak = S.cloak;
   stepChunks(S, dt, hs, w); stepStingers(S, dt, hs, w);
   if (e.mode === 'sleep' || e.mode === 'away') return;
-  e.modeT -= dt; e.anim = (e.anim || 0) + dt;
+  e.modeT -= dt; e.anim = (e.anim || 0) + dt; if (e.crashT > 0) e.crashT = Math.max(0, e.crashT - dt);   /* (claude/nestpolish) the crash's beat of stillness: art only, the stun clock above is untouched */
   const P = hs.find(h => h.alive) || hs[0];
   if (S.stage === 2) { combsOnHer(e, S, w); stepP2(e, S, dt, P, w, hs); } else stepP1(e, S, dt, P, w, hs);
 }
@@ -211,7 +212,7 @@ export function dazed(e, S, w) {
   if (S.ward > 0 || hqOpen(e) || e.mode === 'thrash' || e.mode === 'tearTell' || e.mode === 'tear' || e.mode === 'wake' || e.mode === 'enter' || e.mode === 'away' || e.mode === 'sleep') return false;
   if (S.stage === 2 && S.cloak > 0) { S.cloak = 0; e.cloak = 0; S.n.cloakOff++; e.smokeCd = HQ.dazed.cdCloak; w.number(e.x, e.y - HQ.h - 18, HQ_SAY.cloakOff, '#c8d0d8'); w.sound('scatter'); return true; }
   const stun = HQ.dazed.t[S.stage === 2 ? 1 : 0];
-  e.mode = 'dazed'; e.fall = 1; e.modeT = stun; e.openT0 = stun; e.vx = 0; e.vy = 0; e.smokeCd = HQ.dazed.cd; e.fogT = 0; S.n.dazed++; S.act++;
+  e.mode = 'dazed'; e.fall = 1; e.fallT = 0; e.crashT = 0; e.modeT = stun; e.openT0 = stun; e.vx = 0; e.vy = 0; e.smokeCd = HQ.dazed.cd; e.fogT = 0; S.n.dazed++; S.act++;
   w.sound('dazed'); w.fx('open', e.x, e.y); w.number(e.x, e.y - HQ.h - 18, HQ_SAY.dazed, '#8fd160'); return true;
 }
 /* where a falling queen lands: the hall's floor, or a perch / a comb cut down into the resin under her (their top) */
@@ -222,8 +223,8 @@ function fallFloor(e, S) { let y = S.G.h.floor;
 /* THE DROP: wings folded, she falls; the stun starts on landing (the timer is held full while she falls: she is OPEN all the way down) */
 function fogFall(e, S, dt, w) {
   const D = HQ.dazed, stun = D.t[S.stage === 2 ? 1 : 0], fl = fallFloor(e, S);
-  e.vy = (e.vy || 0) + D.g * dt; e.y += e.vy * dt; e.modeT = stun; e.openT0 = stun;
-  if (e.y >= fl) { e.y = fl; e.vy = 0; e.fall = 0; w.sound('fall'); w.shake(4); w.dust(e.x, fl, 10); if (S.stage === 2 && w.splash) w.splash(e.x, fl); S.n.grounded = (S.n.grounded || 0) + 1; }
+  e.vy = (e.vy || 0) + D.g * dt; e.y += e.vy * dt; e.modeT = stun; e.openT0 = stun; e.fallT = (e.fallT || 0) + dt;
+  if (e.y >= fl) { e.y = fl; e.vy = 0; e.fall = 0; e.fallT = 0; e.crashT = HQ.crash; w.sound('fall'); w.shake(4); w.dust(e.x, fl, 16);   /* (claude/nestpolish) the crash: a bigger dust burst, then HQ.crash s of stillness (the stun clock is the same) */ if (S.stage === 2 && w.splash) w.splash(e.x, fl); S.n.grounded = (S.n.grounded || 0) + 1; }
 }
 /* ---------- HER DEATH: THE FALLING NEST - the nest tears loose and comb comes down the trunk at the hero, each chunk told by a red ring on the ledge it will hit ---------- */
 export function stepEscape(S, dt, hs, w) {

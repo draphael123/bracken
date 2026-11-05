@@ -17,6 +17,7 @@
 //                   the first opening is noticed openDiscover s late.
 // Its dice are its OWN stream (seeded from the row's key), so the boss's own rolls are not shifted by the eyes.
 import { mulberry } from './px.js';
+import { ultHas, ultReady } from './ultimate.js'; import { ULT_RANGE } from './bot-profile.js';   /* (claude/botbuilt) the generic ultimate hand */
 const FIELDS = ['mode', 'modeT', 'open', 'greedT'];
 /* (claude/botreads) WHAT ELSE IS DRAWN, per boss: flags and counters a plan reads that ARE on the screen (a pose, a colour, pips), but that
    a player sees only a reaction late. Each change of one is seen after its own triangular reaction (no misread), on its own dice stream
@@ -29,6 +30,8 @@ const gauss = r => { let u = 0, v = 0; while (u === 0) u = r(); v = r(); return 
 export function makePerception(BK, prof, key, boss, opts = {}) {
   const rng = mulberry(seedOf('eyes|' + key)), FPS = 60, spd = () => BK.SET.speed || 1;
   const msF = ms => Math.max(1, Math.round(ms / 1000 * FPS));
+  /* (claude/botbuilt) PERSON: a per-seed player (skillSpread) and fatigue (reactions slower after fatigueAfter s). Both are 1 for every other profile, so their rows are byte-identical. */
+  const skillK = prof.skillSpread ? prof.skillSpread[0] + (prof.skillSpread[1] - prof.skillSpread[0]) * mulberry(seedOf('skill|' + key))() : 1, rtk = () => skillK * (prof.fatigueAfter && f / FPS >= prof.fatigueAfter ? prof.fatigueMult : 1);
   const S = new Map(), seenTells = new Map(), stats = { reads: 0, rtSum: 0, misreads: 0, greeds: 0, unseen: 0, heard: 0 };
   /* (claude/walker) boss === null: THE LEVEL WALKER's eyes (tools/level-walk.mjs). The same reads on every level foe; GREED is a hit landed on
      any tracked foe (its hp went down while a swing was out). With a boss nothing here changes: the same dice in the same order. */
@@ -60,7 +63,7 @@ export function makePerception(BK, prof, key, boss, opts = {}) {
       if (!st) { st = { mode: e.mode, pm: e.mode, pT: e.modeT, pAt: f, seenT: e.modeT, err: 0, pend: null, open: e.open, pOpen: vis ? e.open : 0, openAt: -1, greedT: e.greedT, pGreed: vis ? e.greedT : 0, greedAt: -1 }; S.set(e, st); }
       /* a NEW pose: when will the player see it, and as what */
       if (e.mode !== st.mode) { st.mode = e.mode; const w = winding(e);
-        let rt = tri(rng, prof.rtMin, prof.rtMode, prof.rtMax), how = 'seen';
+        let rt = (tri(rng, prof.rtMin, prof.rtMode, prof.rtMax) * rtk()), how = 'seen';
         if (w && !marked(e)) rt += prof.rtUnmarked || 0;
         if (!vis) { if (w && Math.abs(e.x - p.x) < 420) { rt += prof.rtHeard || 0; how = 'heard'; } else how = 'unseen'; }
         let as = e.mode, sure = true;
@@ -70,7 +73,7 @@ export function makePerception(BK, prof, key, boss, opts = {}) {
           n.set(e.mode, times + 1); st.k2 = key2; st.rough = prof.first && times < (prof.learnAfter || 2) ? (prof.firstTiming || 2) : 1; }
         st.pend = { at: f + msF(rt), as, sure, how, real: e.mode, w };
         if (how === 'unseen') st.pend.at = Infinity; else { stats.reads++; stats.rtSum += rt; if (how === 'heard') stats.heard++; } }
-      if (st.pend && st.pend.at === Infinity && vis) st.pend.at = f + msF(tri(rng, prof.rtMin, prof.rtMode, prof.rtMax));   /* it came on screen: now it can be seen */
+      if (st.pend && st.pend.at === Infinity && vis) st.pend.at = f + msF((tri(rng, prof.rtMin, prof.rtMode, prof.rtMax) * rtk()));   /* it came on screen: now it can be seen */
       /* GREED hides what starts now until the swings are out */
       if (st.pend && f >= st.pend.at && !(greedSwings > 0 && f < greedUntil && st.pend.w)) {
         st.pm = st.pend.as; st.pAt = f; st.err = gauss(rng) * (prof.timingSd || 0) * (st.rough || 1); st.pend = null; }
@@ -79,15 +82,15 @@ export function makePerception(BK, prof, key, boss, opts = {}) {
       else if (typeof st.seenT === 'number') st.pT = st.seenT - (f - (st.seenF ?? f)) * spd() / FPS;
       /* OPEN and the greed ring: seen on their way in a reaction late (the first opening of a first attempt later still); gone at once */
       const o = e.open > 0; if (!o) { st.pOpen = e.open; st.openAt = -1; }
-      else if (st.openAt < 0) { let rt = tri(rng, prof.rtMin, prof.rtMode, prof.rtMax) * (prof.openRt || 1); if (e === boss && prof.first && openSeen === 0) rt += (prof.openDiscover || 0) * 1000; if (e === boss) openSeen++; st.openAt = f + msF(rt); st.pOpen = 0; }
+      else if (st.openAt < 0) { let rt = (tri(rng, prof.rtMin, prof.rtMode, prof.rtMax) * rtk()) * (prof.openRt || 1); if (e === boss && prof.first && openSeen === 0) rt += (prof.openDiscover || 0) * 1000; if (e === boss) openSeen++; st.openAt = f + msF(rt); st.pOpen = 0; }
       if (o && st.openAt >= 0 && f >= st.openAt && vis) st.pOpen = e.open;
-      const g = e.greedT > 0; if (!g) { st.pGreed = e.greedT; st.greedAt = -1; } else if (st.greedAt < 0) { st.greedAt = f + msF(tri(rng, prof.rtMin, prof.rtMode, prof.rtMax)); st.pGreed = 0; }
+      const g = e.greedT > 0; if (!g) { st.pGreed = e.greedT; st.greedAt = -1; } else if (st.greedAt < 0) { st.greedAt = f + msF((tri(rng, prof.rtMin, prof.rtMode, prof.rtMax) * rtk())); st.pGreed = 0; }
       if (g && st.greedAt >= 0 && f >= st.greedAt && vis) st.pGreed = e.greedT;
       st.vis = vis; if (!boss) st.hp0 = e.hp;
       /* (claude/botreads) THE OTHER DRAWN THINGS (DRAWN): each change queued, seen a reaction late and in order, only while he is on the screen */
       const D = drawnOf(e); if (D) { st.d = st.d || {};
         for (const k of D) { const v = e[k]; let q = st.d[k]; if (!q) q = st.d[k] = { seen: v, last: v, Q: [] };
-          if (v !== q.last) { q.last = v; q.Q.push({ v, at: f + msF(tri(rngD, prof.rtMin, prof.rtMode, prof.rtMax)) }); }
+          if (v !== q.last) { q.last = v; q.Q.push({ v, at: f + msF((tri(rngD, prof.rtMin, prof.rtMode, prof.rtMax) * rtk())) }); }
           while (q.Q.length && f >= q.Q[0].at && vis) q.seen = q.Q.shift().v; } }
     }
     for (const e of S.keys()) if (!e.alive) S.delete(e);
@@ -103,17 +106,25 @@ export function makePerception(BK, prof, key, boss, opts = {}) {
     if (enemies0) { BK.enemies = enemies0; enemies0 = null; } BK.labGreedy = false; BK.labSlip = false; }
   update();   /* (frame nought: what is on the screen as the fight begins is seen at once) */
   for (const st of S.values()) { st.pm = st.mode; st.pend = null; }
+  if (prof.skillSpread) stats.skill = Math.round(skillK * 100) / 100;
   return { update, apply, restore, stats: () => ({ ...stats, rtMean: stats.reads ? Math.round(stats.rtSum / stats.reads) : null }), get greedy() { return greedSwings > 0 && f < greedUntil; } };
 }
 /* THE SKILLS A PLAYER CASTS (claude/bot2 #3, opts.skills): whatever is in his slots (BK.skillAt), cast at the boss when it is ready, in its
    range, the hero free and not about to be hit by a windup he can see (or the boss OPEN), with a roll's wind kept back, at most one cast a
    second. A generic hand, the same for every boss: a player's skill use is not boss-specific either. */
 export function makeSkillHands(BK, boss, h, RANGE, rollCost, v2 = false, bk = false) {
-  const KEYS = ['throw', 'skill2', 'skill3'], P = () => BK.P; let last = -9, casts = {};
+  const KEYS = ['throw', 'skill2', 'skill3'], P = () => BK.P; let last = -9, casts = {}, pend = -1;
   return { casts: () => casts, step() {
     const p = P(); if (!p || p.dead || (h === 'reaper' && !v2) || p.atk >= 0 || (p.dodge > 0) || !boss.alive) return;
-    const now = BK.time; if (now - last < 1 * (BK.SET.speed || 1)) return;
+    const now = BK.time;
     const open = boss.open > 0, wind = !!(BK.windingUp && BK.windingUp(boss)) && !open, dx = boss.x - p.x, edge = Math.abs(dx) - (boss.w || 20) / 2;
+    /* (claude/botbuilt, bot audit G1) THE GENERIC ULTIMATE HAND: any hero with an ultimate registered (src/ultimate.js) presses UP+C at a full meter, the boss in the hero's reach and not winding up (or OPEN). Counted: casts.ultTry presses, casts.ult those that spent the meter. */
+    if (ultHas(h)) { if (pend >= 0 && !ultReady(h)) { casts.ult = (casts.ult || 0) + 1; pend = -1; } else if (pend >= 0 && now - pend > 0.5) pend = -1;
+      const R = ULT_RANGE[h] || ULT_RANGE.default, ad = Math.abs(dx);
+      if (pend < 0 && ultReady(h) && !p.cWas && (p.ground || p.swim) && !(p.charge > 0) && !p.rgGreat && !wind && ad >= (R.min || 0) && ad <= R.ad && Math.abs(boss.y - p.y) <= R.dy) {
+        const k = BK.keys; p.face = Math.sign(dx) || p.face; k.left = false; k.right = false; k.jump = false; k.up = true; k.block = true; pend = now; casts.ultTry = (casts.ultTry || 0) + 1; return; } }
+    if (now - last < 1 * (BK.SET.speed || 1)) return;
+    if (boss.t === 'king' && h === 'warden') return;   /* (claude/bosstune) KING GORM, WARDEN: no plain skill casts (the knight's slam and the pyro's meteor do fine, 5/6 and 6/6). His fight is a choreography (lab-gorm.js: ropes, rings, rolls, jumps); measured on the warden, a javelin cast (even only into his openings) costs the stamina and the opening it needs: built 0-1/6 with casts vs 4/6 with none vs 6/6 bare. The ultimate hand above still fires. */
     if (h === 'reaper' && (p.harvest >= 100 || p.fHeld > 0 || p.warding || p.hurt > 0 || p.castT > 0 || p.bkDrainOn)) return;   /* (claude/bkkit2: nor over a DRAIN he is holding) */   /* (claude/dkhero) his F key is also the surge: never press it while the blood is full; never over a ward */
     if (wind && h === 'reaper' && Math.abs(boss.y - p.y) <= 48 && edge <= (RANGE.boneArmor || 160) && !(p.boneArmor > 0)) {   /* OSSUARY MAIL: a tell seen in reach, a shell for the next three blows */
       for (let i = 0; i < 3; i++) { const T = globalThis.BKT, id = T && T.skillAt ? T.skillAt(i) : null; if (id !== 'boneArmor' || (p.cds && p.cds[id] > 0) || p.st < 26 + rollCost) continue;

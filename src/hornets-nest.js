@@ -186,9 +186,10 @@ export function buildHornetsNest({ painter, T, TS }) {
   hang('gallery', 195, 206, 26, 1, { bridge: true });
   sign(191, 29, 'THE COMB OVER THE GAP IS WIDER THAN THE GAP. CUT IT FROM THE PILLAR: IT LANDS ACROSS.');
   coins([207, 28], [210, 28]);
-  hornet(176, 22, { squad: 'gallery' }); hornet(185, 23, { squad: 'gallery' }); hornet(199, 24, { squad: 'gallery' });   /* (the curve tune: a third over the bridge gap) */   /* two hornets patrol over the sagging combs (a pot carried quiets them) */
-  stinger(194, 29, { squad: 'gallery' });                     /* the pillar's stinger */
-  drone(209, 29, { squad: 'gallery' });                       /* a comb drone on the exit ledge */
+  /* (claude/nestpolish, the platforming rule: no fight INSIDE a section) the gallery's hornets keep its two ENDS - the sill (a hornet over the stand at 170, so a carried pot still quiets it) and the exit floor (two hornets, the stinger, the drone) - and the sagging combs, the pillar and the bridge are clear */
+  hornet(166, 24, { squad: 'gallery' }); hornet(214, 23, { squad: 'gallery' }); hornet(217, 24, { squad: 'gallery' });   /* (the curve tune kept its three: one at the sill, two at the exit) */
+  stinger(215, 31, { squad: 'gallery' });                     /* the exit floor's stinger (was the pillar's) */
+  drone(217, 31, { squad: 'gallery' });                       /* a comb drone on the exit floor (was the exit ledge) */
   drip(180, 22, 2.6, 0); drip(185, 22, 2.6, 1.3); drip(201, 22, 2.6, 0.65); drip(209, 22, 2.6, 1.95);   /* resin from the paper roof on a string, its nub six rows over the footing (the camera shows ~11 rows: the bead swells in view): over the second and third combs, the gap (it lands on the bridge once cut), the ledge */
   coins([211, 28], [212, 28]);   /* (a level holds exactly three silvers: the new sections pay in gold) */
 
@@ -207,10 +208,11 @@ export function buildHornetsNest({ painter, T, TS }) {
   sign(318, 47, 'UP THE EAST WALL ON THE PENDANT COMBS. A DRIP SWELLS, THEN FALLS. WATCH THE ONE ABOVE YOU.');
   sign(300, 11, 'DOWN THE WEST SIDE, THEN UP THE EAST. THE COMB WALL BELOW IS STICKY.');
   sign(336, 26, 'THE NEXT COMB IS TOO HIGH. CUT THE ONE HUNG OVER YOU: IT LANDS AS THE STEP.');
-  hornet(312, 16, { squad: 'well', perch: true }); hornet(318, 30, { squad: 'well', perch: true });
-  fat(340, 37, { squad: 'well' });                            /* the amber hornet at row 38 east: its globs on the rungs */
-  stinger(306, 26, { squad: 'well', perch: true }); stinger(343, 9, { squad: 'well', perch: true });   /* (the curve tune: a stinger on the west shelves, one guarding the exit shelf) */
-  swarm(333, 24, { squad: 'well' });                          /* the swarm by the overhang: a pot carried up (or lobbed) quiets it */
+  /* (claude/nestpolish, the platforming rule) the well's foes keep its ENDS: the lip (two hornets and a stinger over the stair's wall top, west) and the exit shelf (the stinger, the amber hornet and the swarm over the nursery's floor, east); the shelves, the bed, the rungs and the overhang are clear */
+  hornet(293, 6, { squad: 'well' }); hornet(296, 7, { squad: 'well' });
+  fat(352, 8, { squad: 'well' });                             /* the amber hornet: at the nursery's door, its globs on the exit shelf */
+  stinger(291, 7, { squad: 'well' }); stinger(343, 9, { squad: 'well', perch: true });   /* (the curve tune: a stinger at the lip, one guarding the exit shelf) */
+  swarm(349, 8, { squad: 'well' });                           /* the swarm at the exit: a pot carried up (or lobbed) quiets it */
   shelf(311, 314, 33); coins([312, 32], [313, 32]);   /* a dead-end pendant off the west shelves: a purse of gold (the level's three silvers are the old ones) */
   drip(336, 40, 2.6, 0); drip(331, 37, 2.6, 0.9); drip(337, 34, 2.6, 1.7); drip(332, 31, 2.6, 0.5); drip(336, 20, 2.6, 1.3);   /* resin from the rungs above: each lands on the rung under it (staggered: a route is always open) */
 
@@ -314,7 +316,7 @@ export function buildHornetsNest({ painter, T, TS }) {
     squadBands: [{ lo: 500, hi: 519, spots: 0, why: "THE MARSH EDGE: the last columns (past the second water) are the marsh's bank and the gate - the way out after her death" }],
     hornetsNest: true, palette: { dress: 'wood' }, /* integ116: names the forest kit it has always painted with (tools/skins.mjs: nothing falls through unnamed) */ combs, wax: wax.concat(hallWax), smokers: smokers.concat(hallSmokers), hallSmokers, drips, broodCells: cells, crumbles, reachSpans,
     sections: SECTIONS.map(([name, x0, x1]) => ({ id: name.toLowerCase().replace(/[^a-z]+/g, '-').replace(/^-|-$/g, ''), name, x0, x1 })),
-    tints: [[0, 79, [214, 196, 120], 0.10], [80, 168, [220, 190, 120], 0.14], [169, 218, [226, 176, 80], 0.15], [219, 297, [230, 170, 70], 0.16], [298, 347, [226, 160, 60], 0.17], [348, 394, [200, 120, 70], 0.18], [395, 432, [220, 150, 50], 0.18], [433, 453, [120, 150, 110], 0.10], [454, 519, [120, 160, 110], 0.12]],   /* the pine's green-gold, the paper's parchment, the comb's amber (gallery, stair, well) deepening to the brood's red-amber, then out under the pine to the marsh's green */
+    tints: [[0, 79, [214, 196, 120], 0.10], [80, 168, [220, 190, 120], 0.14], [169, 218, [170, 140, 100], 0.13], [219, 297, [170, 135, 95], 0.14], [298, 347, [165, 125, 85], 0.14], [348, 394, [170, 100, 70], 0.16], [395, 432, [170, 125, 85], 0.14], [433, 453, [120, 150, 110], 0.10], [454, 519, [120, 160, 110], 0.12]],   /* the pine's green-gold, the paper's parchment, the comb's amber (gallery, stair, well) deepening to the brood's red-amber, then out under the pine to the marsh's green */
     music: 'hornetnest',   /* claude/hornetmusic: "Cathedral in the forest (ambient loop)" by congusbongus, CC0 */
     ambient: [{ x0: 0, x1: 80 * TS, kind: 'forest' }, { x0: 80 * TS, x1: 433 * TS, kind: 'cave' }, { x0: 433 * TS, x1: 99999, kind: 'forest' }],
     arena: { x0: HALL.x0 * TS, x1: (HALL.x1 + 1) * TS, floor: HALL.floor * TS, trigger: HALL.trigger * TS, wallL: HALL.wallL, wallR: HALL.wallR, boss: 'hornetqueen', music: 'hornetqueen', tint: '#e0a040', tintA: 0.12, fx: 'dust', stage: 1,

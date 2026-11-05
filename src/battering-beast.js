@@ -42,8 +42,8 @@
 //                     and topples into the clearing as ROLLING TIMBERS (jump them; a deck is over them; a wreck stops them). The first slam leaves THE BREACH for
 //                     the rest of the fight: a gap in the palisade and a RUBBLE STEP (solid) against the east wall - the timbers never reach it, the wall-ram does.
 export const BB = {
-  hp: 960, w: 56, h: 40, markH: 60,
-  walk: 46, rest: [0.5, 0.3],
+  hp: 1700, w: 56, h: 40, markH: 60,
+  walk: 46, rest: [0.35, 0.2],
   armour: 0.45, above: 1, wardMul: 0.4,
   p2: 0.5,
   charge: { tell: [1.15, 0.92], speed: 280, sp2: 1.08, dmg: 18, hitH: 24, minD: 110 },
@@ -64,7 +64,7 @@ export const BB = {
   unchain: { tell: 1.0, adds: 2, addHp: 2.4 },
   harness: { loose: 2.6, mul: 2, cap: 0.08 },
   bz: { hurt: 1.6 },
-  py: { hurt: 0.85 },   /* (claude/palisade2art) PYRO's pool is the smallest (126 hp at L7) and the bot dies to the charge at 13-31% boss left: his blows from the beast land at 0.92 (the berserker's bz precedent, the other way) */
+  py: { hurt: 1.0 },   /* (claude/palisade2art) PYRO's pool is the smallest (126 hp at L7) and the bot dies to the charge at 13-31% boss left: his blows from the beast land at 0.92 (the berserker's bz precedent, the other way) */
 };
 export const BB_SAY = { wake: 'THE BATTERING BEAST', rule: 'KNOCK OUT A SCAFFOLD PROP: ON HIM, OR IN HIS PATH, HE STICKS IN THE WRECK.', p2: 'THE CHAINS SNAP',
   stuck: 'STUCK IN THE WRECK', dazed: 'HE CRASHES INTO THE WALL', gate: 'THE OLD GATE HOLDS', bounce: 'IT BOUNCES OFF HIM: WARDED', ward: 'HE TEARS OUT OF THE TIMBER',

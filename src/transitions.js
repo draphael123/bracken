@@ -52,8 +52,8 @@ export const TABLE = [
     beats: [{ id: 'open', dur: 1.5 }, { id: 'walk', dur: 2.4, max: 3.6 }, { id: 'fade', dur: 0.7 }],
     open: { col: 502, rows: [19, 24], kind: 'palisade' }, arrive: { ferry: false, walk: 1.3 } },
   { from: 'kings', to: 'burning', scene: 'smoke', when: { burningOpen: true },   /* KING GORM falls (a clean fight: the spur is OPEN): the court road, and SMOKE on the horizon - the village is burning */
-    beats: [{ id: 'walk', dur: 1.6, max: 2.8 }, { id: 'smoke', dur: 8.0, sc: true }, { id: 'fade', dur: 0.8 }],
-    walk: { to: 478 }, endOnMap: true, arrive: null },   /* (Daniel 11-02 17:53) NOT auto-loaded: after the smoke the party ends on the WORLD MAP with the spur node lit (the player chooses to go) */
+    beats: [{ id: 'walk', dur: 1.6, max: 2.8 }, { id: 'smoke', dur: 5.4, sc: true }, { id: 'fade', dur: 0.8 }],
+    walk: { to: 478 }, endOnMap: true, arrive: null, bar: 12 },   /* (Daniel 11-02 17:53) NOT auto-loaded: after the smoke the party ends on the WORLD MAP with the spur node lit (the player chooses to go) */
   { from: 'kings', to: 'scree', scene: null, when: { burningOpen: false },   /* GORM fell the party in a life (the spur stays shut): the plain walk-out onto the road to the Scree Path (beyond the demo) */
     beats: [{ id: 'walk', dur: 2.0, max: 3.0 }, { id: 'fade', dur: 0.7 }], walk: { to: 478 }, arrive: { ferry: false, walk: 1.3 } },
 ];
@@ -105,7 +105,7 @@ export const length = entry => entry.beats.reduce((n, b) => n + b.dur, 0);
 
 /* LETTERBOX BARS (px of each bar, 0..BAR): slide in over the first 0.5 s of the transition, stay through the scenes, slide out over the arrival */
 export const BAR = 22;
-export const barIn = t => BAR * Math.min(1, Math.max(0, t / 0.5));
+export const barIn = (t, bar = BAR) => bar * Math.min(1, Math.max(0, t / 0.5));   /* bar: a row may carry a thinner one (entry.bar: the Kingswood beat) */
 export const barOut = (t, dur) => BAR * Math.min(1, Math.max(0, (dur - t) / 0.6));
 
 /* THE WALK: every hero to `target` x (px) at a speed that finishes in about `want` seconds from wherever he is: never slower than WALK_MIN (a hero beside the exit
@@ -152,12 +152,27 @@ export function roadHero(i, n, s, VW) {
   return { x: from + (to - from) * e, walking: true, settled: s >= ROAD.inT };
 }
 
-/* ------------------------------------------------------------- THE SMOKE SCENE (scene 'smoke': KINGSWOOD -> THE BURNING VILLAGE). Gorm is down; the party walks out along the court road and STOPS on the rise: smoke on the horizon, the sky going to ember. */
-export const SMOKE = { dur: 8.0, inT: 2.4, stopX: 0.30 };
+/* ------------------------------------------------------------- THE SMOKE SCENE (scene 'smoke': KINGSWOOD -> THE BURNING VILLAGE; REDONE claude/kingscene, Daniel 11-04: a short cinematic beat, ~5.4 s).
+   Gorm is down. s: seconds since the scene began. The party walks out onto the court road (0 .. inT), the leader stoops and PICKS UP Gorm's crown (pickAt), raises it (liftT), looks BACK at the wood
+   (backAt) as the smoke begins to rise, the WAR HORN sounds (hornAt), then turns and the camera pans slowly right (panAt, panDur) to a CLOSER, bigger burning village; the line THE VILLAGE BURNS
+   comes up (wordAt). The beat after it is the fade, then the MAP with the spur lit (the 11-02 rule: it never auto-loads the village). Reduce-motion: no pan, no zoom - the view dissolves instead. */
+export const SMOKE = { dur: 5.4, inT: 1.0, stopX: 0.27, pickAt: 1.15, liftT: 0.8, backAt: 2.3, hornAt: 2.4, turnAt: 3.0, panAt: 3.0, panDur: 2.2, wordAt: 3.3, bar: 12, panPx: 210 };
 export function smokeHero(i, n, s, VW) {
-  const to = VW * SMOKE.stopX + i * 13, from = -24 - i * 14, k = clamp01(s / SMOKE.inT), e = smooth(k);
+  const to = VW * SMOKE.stopX - i * 14, from = -24 - i * 14, k = clamp01(s / SMOKE.inT), e = smooth(k);
   return { x: from + (to - from) * e, walking: s < SMOKE.inT - 0.1 };
 }
-/* how tall the columns have grown (0..1) and how red the sky has gone (0..1): the plumes rise first, the glow follows */
-export const smokeRise = s => smooth((s - 1.2) / 5.2);
-export const smokeGlow = s => smooth((s - 2.0) / 5.0);
+/* the leader's stance: stoop 0..1 (bent to the crown), crown 0 (on the road) .. 1 (raised overhead), face (1 right, -1 left: the look back), walking (the pan carries them on) */
+export function smokeStance(s, reduce = false) {
+  const stoop = s < SMOKE.pickAt ? 0 : s < SMOKE.pickAt + 0.4 ? smooth((s - SMOKE.pickAt) / 0.25) : 1 - smooth((s - SMOKE.pickAt - 0.4) / 0.35);
+  const crown = smooth((s - SMOKE.pickAt - 0.3) / SMOKE.liftT);
+  const face = s >= SMOKE.backAt && s < SMOKE.turnAt ? -1 : 1;
+  const walking = s < SMOKE.inT - 0.1 || (!reduce && s >= SMOKE.panAt + 0.2 && s < SMOKE.panAt + SMOKE.panDur);
+  return { stoop: clamp01(stoop), crown, face, walking };
+}
+/* the camera: 0 (the wood's rise) .. 1 (the village close). Reduce-motion does not move the camera: it is a quick settle (a dissolve in the art), never a slow slide */
+export const smokePan = (s, reduce = false) => (reduce ? (s >= SMOKE.panAt + 0.25 ? 1 : 0) : smooth((s - SMOKE.panAt) / SMOKE.panDur));
+/* how tall the columns have grown (0..1) and how red the sky has gone (0..1): the plumes rise as he looks back, the glow follows */
+export const smokeRise = s => smooth((s - SMOKE.backAt + 0.4) / 2.8);
+export const smokeGlow = s => smooth((s - 1.0) / 3.6);
+/* the caption's opacity (0..1) */
+export const smokeWord = s => smooth((s - SMOKE.wordAt) / 0.6);

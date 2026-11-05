@@ -9962,7 +9962,7 @@
   }
  },
  "hornetsnest": {
-  "hash": "0523739b4e62",
+  "hash": "478fd2889454",
   "boss": {
    "boss": "hornetqueen",
    "wins": 0,
@@ -10063,19 +10063,19 @@
    ]
   },
   "carried": {
-   "from": "9381ecb8e4f9",
+   "from": "cbade46ed6c3",
    "parts": [
     "boss"
    ]
   },
   "level": {
    "knight": {
-    "deaths": 2,
+    "deaths": 1,
     "minHpPct": 0,
-    "hpLostPct": 200,
-    "hits": 16,
+    "hpLostPct": 190,
+    "hits": 15,
     "walked": 100,
-    "lifts": 44,
+    "lifts": 45,
     "held": 3,
     "duels": 1,
     "boardLifts": 0,
@@ -10083,15 +10083,15 @@
     "pulls": 0,
     "ridden": {},
     "machines": true,
-    "frames": 11391,
-    "kills": 3,
+    "frames": 11396,
+    "kills": 4,
     "heroLevel": 1
    },
    "warden": {
-    "deaths": 2,
+    "deaths": 1,
     "minHpPct": 0,
-    "hpLostPct": 200,
-    "hits": 16,
+    "hpLostPct": 188,
+    "hits": 15,
     "walked": 100,
     "lifts": 45,
     "held": 3,
@@ -10102,16 +10102,16 @@
     "ridden": {},
     "machines": true,
     "frames": 13440,
-    "kills": 6,
+    "kills": 7,
     "heroLevel": 1
    },
    "pyro": {
     "deaths": 1,
     "minHpPct": 0,
-    "hpLostPct": 177,
-    "hits": 12,
+    "hpLostPct": 197,
+    "hits": 14,
     "walked": 100,
-    "lifts": 43,
+    "lifts": 44,
     "held": 3,
     "duels": 1,
     "boardLifts": 0,
@@ -10119,8 +10119,8 @@
     "pulls": 0,
     "ridden": {},
     "machines": true,
-    "frames": 11743,
-    "kills": 3,
+    "frames": 11747,
+    "kills": 2,
     "heroLevel": 1
    }
   }
