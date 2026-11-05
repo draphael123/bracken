@@ -160,7 +160,7 @@ const rows = [], cache = existsSync(MASH_FILE) ? JSON.parse(readFileSync(MASH_FI
 const wantLevels = has('all') ? LEVELS.filter(l => !/^(shop|trial_|custom)/.test(l.id)).map(l => l.id) : free.flatMap(x => x.split(','));
 const modeLevel = has('level') || has('all'), modeBoss = !has('level') || has('all');
 if (!wantLevels.length) { console.log('usage: node tools/mash-bot.mjs [--level] <id>[,<id>..] | --all  [--write] [--l1] [--probe] [--assert <id>]'); process.exit(2); }
-const lvOf = id => Math.max(1, depth[id] ?? 1);
+const lvOf = id => process.env.MASH_LEVEL ? +process.env.MASH_LEVEL : Math.max(1, depth[id] ?? 1);   /* (claude/skytune, as claude/draketune) MASH_LEVEL=N: a hidden lab row has no depth - judge the masher at the hero level the row is tuned for */
 if (has('lite')) process.env.BRACKEN_LITE = '1';   /* (claude/botmem) opt-in smaller browser (cdp.mjs LITE_ARGS) */
 const { recycler } = await import('./page-recycle.mjs'), infraKilled = [];
 const rc = recycler({ init: async p => { await p.evalp(pageSrc); await p.evalp(diffJs()); } });   /* (claude/botmem) a fresh page every ~6 BK.loads; one labelled rerun if memguard killed the page */
