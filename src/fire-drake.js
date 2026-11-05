@@ -1,5 +1,5 @@
 // src/fire-drake.js - THE FIRE DRAKE, the HEART OF THE MOUNTAIN's first boss (a MINI), as a PURE fight (claude/heartplan, Daniel 11-04 17:28/17:29;
-// design: work/claude/lane-done/claude-heartplan.md). GREYBOX: not wired into main.js yet - lane D1 (DRAKEWIRE) writes src/fire-drake-hands.js.
+// design: work/claude/lane-done/claude-heartplan.md). (claude/drakewire) WIRED: src/fire-drake-hands.js binds it to the world (main.js thin hooks; the lab room src/drake-caldera.js).
 // tools/fire-drake.mjs is its check; tools/fire-drake-lab.mjs its node lab (a first win-rate read before bossLab can see it).
 // HEADER (design-standard B1 / B3 / B5 / B10 / B15 / B16):
 //   THE SEAL'S GUARDIAN, CHAINED TO IT. Three white-hot chains run from the seal in the middle of the caldera to its collar; their reach is a SCORCHED
@@ -86,7 +86,7 @@ export function stepDrake(e, S, dt, heroes, w) {
   const face = () => { if (P) e.face = Math.sign(P.x - e.x) || e.face; };
   const lo = bodyMax(S, -1), hi = bodyMax(S, 1), fy = G.floorY;
   /* BEATEN: whatever it was doing (never mid-air: it lands first) */
-  if (e.hp <= 0 && !e.beaten && !fdAir(e)) { e.beaten = true; e.mode = 'beaten'; e.modeT = FD.beaten.lunge; face(); S.waves = []; S.vents = []; w.sound('roar'); w.mark('!!'); return; }
+  if ((e.hp <= 0 || e.spent) && !e.beaten && !fdAir(e)) { e.beaten = true; e.mode = 'beaten'; e.modeT = FD.beaten.lunge; face(); S.waves = []; S.vents = []; w.sound('roar'); w.mark('!!'); return; }
   switch (e.mode) {
     case 'wake': if (e.modeT <= 0) { e.mode = 'walk'; S.restT = 0.8; w.number(e.x, fy - 70, FD_SAY.rule, '#ffd36b'); } return;
     case 'walk': {
@@ -197,7 +197,7 @@ function stepVents(S, dt, P, w) {
 }
 /* ---------- A BLOW ON IT (B15) -> [what lands, the word or null]. It is never 0 while the fight is on. ---------- */
 export function takeBlow(e, S, dmg) {
-  if (e.mode === 'down' || e.mode === 'sleep' || e.beaten) return [0, null];
+  if (e.mode === 'down' || e.mode === 'sleep' || e.beaten || e.spent) return [0, null];   /* (claude/drakewire) e.spent: its bar is empty and the hands hold it off the death path (BEATEN, not killed) - the fight is over, not a ward */
   if (S.ward > 0 || e.mode === 'rise') return [Math.max(1, Math.round(dmg * FD.wardMul)), 'WARDED'];
   if (e.mode === 'jerked') { const d = Math.round(dmg * FD.jerk.mul), left = S.purse ?? Infinity; if (d >= left) { S.purse = 0; e.modeT = 0; return [Math.max(1, Math.round(left)), null]; } S.purse = left - d; return [d, null]; }
   if (e.mode === 'pant') return [Math.max(1, Math.round(dmg * FD.pantMul)), null];
