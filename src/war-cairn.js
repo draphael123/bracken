@@ -44,7 +44,7 @@ export const ARCS = {
   cornice: { teach: [166, 172], test: [287, 292], exam: [332, 336] },
   hatchet: { teach: [76, 79], develop: [282, 285] },
   throw: { teach: [58, 82], test: [188, 196], remix: [276, 282], exam: [358, 366] },   /* (claude/warcairn2) THE THROWN HATCHET: the gorge's bridge rope, the yard's stone, the guard's totem, the champion's stone */
-  guard: { teach: [250, 256], test: [280, 284], exam: [360, 366] },
+  guard: { teach: [250, 256], test: [280, 284], exam: [302, 306] },
 };
 /* the clan's skins (src/main.js L.reskin): every clansman is a reskin of a proven foe - THE CLAN IS HUMAN (no goblin anywhere in it) */
 export const WC_RESKIN = { soldier: 'clanaxe', javelin: 'clanthrower', shield: 'clanguard', heavy: 'clanchamp', berserker: 'clanrunner', harpy: 'cragharpy' };
@@ -222,20 +222,23 @@ export function buildWarCairn({ painter, T, TS }) {
   rock(334, 336, 16);                                      /* step FOUR, the crest (feet 15) */
   cornice(d9, 'ledge', 337, 338, 16);                      /* THE CREST'S SNOW: the beat shakes it loose (wait for it to settle) */
   rock(339, 339, 16); rock(340, 340, 19); rock(341, 341, 22); rock(342, 342, 25);   /* the far side down by four stages (the ring's wall was here: it is the stair down now) */
-  foe('goat', 376, 27, 'rams3', { face: -1 });             /* the ram that stood on the ledge now waits in the ring */
+  foe('goat', 367, 27, 'rams3', { face: -1 });             /* the ram that stood on the ledge now waits in the ring */
+  span(307, 310, 22, 25); span(318, 322, 19, 22);   /* slate spans on posts over steps one and two: the second heights up the cairn (coins) */
+  coins([308, 21], [320, 18]);
+  foe('shield', 304, 27, 'faceGuard3');                    /* the third crossed-axe guard stands at the FOOT of the climb (not on it): the exam of the guard arc is left for him to hold the climb's door */
   deco(306, 27, 'totem'); deco(335, 15, 'totem', 1); coins([314, 24], [326, 21], [332, 17], [335, 14]);
 
   // ================= 4. THE CLAN RING (340-386): SET PIECE C, THE EXAM =================
   rock(341, 391, 28);                                      /* the ring's floor (feet 27) */
-  block(383, 384, 25, 27);                                 /* its low stone wall at the stair end (three rows: over it with a jump); the west wall is the climb's stair down */
+  air(376, 378, 28, 30); air(381, 383, 28, 30);            /* (claude/warcairnfix) THE STAIR'S TWO DITCHES: the ring's last columns before the shrine are two three-row ditches (a jump each); the low wall that stood here is gone */
   block(355, 358, 25, 27); block(368, 371, 25, 27);        /* two tiers of seats */
-  span(343, 354, 23, 28); span(359, 361, 23, 28); span(365, 367, 23, 28); span(372, 382, 23, 28);   /* the rim's slate walk on its posts: the clan watches from up here */
+  span(343, 354, 23, 28); span(359, 361, 23, 28); span(365, 367, 23, 28); span(372, 375, 23, 28);   /* the rim's slate walk on its posts: the clan watches from up here */
   hang('ring', 'stone', 362, 363, 21, 22, 2);   /* (claude/warcairn2) EXAM: A HANGING CAIRN STONE over the champion's ground, between the rim's spans - drop it on him from the rim (it stays: a step) */
   rack('ring', 346, 27);
   const d10 = drum('ring1', 348, 27), d11 = drum('ring2', 378, 27);
   foe('drummer', 351, 27, 'ring', { drum: 'ring1', drums: ['ring1', 'ring2'] });
   foe('heavy', 363, 27, 'ring', { elite: true, gate: 386 });   /* THE CLAN CHAMPION: crossed axes (his guard) and the flurry - he holds the way out of the ring to the summit (an elite's gate) */
-  foe('soldier', 374, 27, 'ring'); foe('soldier', 356, 24, 'ringSeat'); foe('berserker', 369, 24, 'ringSeat', { awake: false });   /* (claude/warcairn2) a runner asleep on the seats */
+  foe('soldier', 370, 27, 'ring'); foe('soldier', 356, 24, 'ringSeat'); foe('berserker', 369, 24, 'ringSeat', { awake: false });   /* (claude/warcairn2) a runner asleep on the seats */
   foe('harpy', 352, 16, 'ringSky');   /* (claude/warcairn2) a crag harpy over the ring's rim */
   sign(344, 27, 'THE CLAN RING. TAKE THEIR DRUMS AND THE CHAMPION STUMBLES WITH THE REST.');
   deco(357, 24, 'bones'); coins([350, 27], [366, 27], [370, 24], [380, 27]);
