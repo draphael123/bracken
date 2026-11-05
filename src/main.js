@@ -9342,6 +9342,7 @@ const inJet = (x, y, pad = 6) => { const j = jetBox(); return !!j && x > j.l - p
 // Hold the attack after a swing and the hero winds up: the knight takes the blade over his head, the
 // pyromancer gathers the flame back low, the paladin stands the maul straight up. Let go and it lands. It
 // costs twice the stamina of a swing, it goes through a guard, and it is slower than mashing on purpose.
+const DTAP = { tap: 0.18, gap: 0.3 };   /* (claude/knightkit) the knight's double-tap C: the first tap's longest hold, and the longest press-to-press */
 const HEAVY_START = 0.14;                                     // how long the key is down before the wind-up shows
 const heavyWind = () => (isPirate() && ((P.hotT || 0) > time || (P.catchShotT || 0) > time)) || spearheadReady() ? 0.04 : (isGeo() ? GEO_K.wind : isBz() ? 0.36 : isRg() ? RG_K.draw.wind * (tal('rgSteady') ? 0.8 : 1) * (P.rgKneel ? RG_K.kneel.wind : 1) : 0.32) - 0.05 * Math.max(0, tal('heavy') - 1);   /* (THE GEOMANCER winds longer: her wind runs FAULT LINE out, geomancer.js) */ // and how long the wind-up itself takes (HOT BARREL: next to none)
 const heavyMul = () => 2 + 0.15 * Math.max(0, tal('heavy') - 1);
@@ -11072,8 +11073,11 @@ function updatePlayer(dt) {
   if (isBz() && BZK) BZK.update(dt, keys, { stunned, dodging, attacking, guardOk: CM.guardOk(P) });   /* (WEIGHT: no brace while EXHAUSTED - it is a guard) */   /* THE BERSERKER'S C: the brace; full rage, THE FRENZY; UP+C the axe throw - and his rage, frenzy and thrown axe (src/berserker.js) */
   if (hero() === 'knight') { // C held = the shield. THREE LINKS and UP + C on the ground is THE SHIELD CHARGE (the ultimate input above).
     P.links = Math.max(0, Math.min(KC.max, P.links | 0)); chainTick(dt);
-    const cDown = keys.block && !P.cWas; P.cWas = !!keys.block;
-    if (cDown && keys.up && HPK && !stunned && !dodging && !attacking && !P.plunge && !rushing() && !thrown && (P.ground || P.swim)) HPK.bashPress();   /* (claude/heropassa) UP+C: THE SHIELD BASH - never the last charge, never a raised shield */
+    const cDown = keys.block && !P.cWas, cWas0 = !!P.cWas; P.cWas = !!keys.block;
+    /* (claude/knightkit, Daniel 11-05) DOUBLE-TAP C = THE SHIELD BASH: two quick TAPS (the first let go inside DTAP.tap s, the second pressed inside DTAP.gap s of the first). The first tap raises the shield as it always did; a held C, or a tap that came after a long hold, never counts. */
+    let dtapBash = false; if (cDown) { dtapBash = !!P.cTapShort && time - (P.cTapAt || -9) <= DTAP.gap; P.cTapAt = time; P.cTapShort = false; if (dtapBash) P.cTapShort = false; }
+    else if (cWas0 && !keys.block) P.cTapShort = time - (P.cTapAt || -9) <= DTAP.tap;
+    if (cDown && (keys.up || dtapBash) && HPK && !stunned && !dodging && !attacking && !P.plunge && !rushing() && !thrown && (P.ground || P.swim)) { if (HPK.bashPress() && dtapBash) { P.cTapShort = false; P.block = false; P.blockT = 0; } }   /* (claude/heropassa) UP+C: THE SHIELD BASH - never the last charge, never a raised shield */
     else if (cDown && keys.up && P.links >= KC.max && !stunned && !dodging && !attacking && !P.plunge && !rushing() && !thrown && (!(P.ground || P.swim) || P.climb)) {   /* (claude/ults) the SHIELD CHARGE is UP+C now (the ultimate input above); in the air it only says why */
       if (!PROG.lcFooting) { PROG.lcFooting = 1; saveProgress(); hintSay('mechanic', 4.5, 'THE SHIELD CHARGE NEEDS FOOTING: UP+C ON THE GROUND OR IN THE WATER. THE CHAIN IS KEPT.'); }   /* said once a save; the bar is not spent */
     }
