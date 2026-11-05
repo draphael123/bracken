@@ -110,9 +110,9 @@ try {
     { reset();const pr=tb(1);b.x=pr.gx;ring(pr);let pin=0,open=false;run(140,()=>{safe();P.x=pr.x-10;P.y=pr.y;if(b.mode!=='pinned'&&!pin){b.x=pr.gx;b.vx=0;hold();b.answer=null;if(b.mode!=='guard'){b.mode='guard';}}if(b.mode==='pinned'){pin=Math.max(pin,b.modeT);open=open||BK.bossOpen(b);}});
       out.under={pin:+pin.toFixed(2),open,mul:b.pinMul||0}; run(260,()=>{safe();hold();}); }
     /* THE BELL with him away: HE ANSWERS (a charge at the tower), the gate drops ahead of him, he runs into it - OVERRUN */
-    { reset();const pr=tb(3);b.x=pr.gx-150;b.face=1;ring(pr);let couch=null,over=0,open=false,closed=false;
-      run(300,()=>{safe();P.x=pr.x-10;P.y=pr.y;if(b.mode==='couch'&&!couch)couch={toward:Math.sign(pr.gx-b.x)===b.face};if(BK.L.grid[pr.gy1*BK.L.W+pr.gate]!==0)closed=true;if(b.mode==='overrun'){over=Math.max(over,b.modeT);open=open||BK.bossOpen(b);}if(over&&b.mode!=='overrun')hold();});
-      out.away={couch,closed,over:+over.toFixed(2),open,x:Math.round(b.x-pr.gx)}; run(200,()=>{safe();hold();}); }
+    { reset();const pr=tb(3);b.x=pr.gx-150;b.face=1;ring(pr);let couch=null,over=0,smul=0,open=false,closed=false;
+      run(300,()=>{safe();P.x=pr.x-10;P.y=pr.y;if(b.mode==='couch'&&!couch)couch={toward:Math.sign(pr.gx-b.x)===b.face};if(BK.L.grid[pr.gy1*BK.L.W+pr.gate]!==0)closed=true;if(b.mode==='overrun'||b.mode==='stunned'){over=Math.max(over,b.modeT);smul=Math.max(smul,b.stunMul||0);open=open||BK.bossOpen(b);}if(over&&b.mode!=='overrun'&&b.mode!=='stunned')hold();});
+      out.away={couch,closed,over:+over.toFixed(2),smul,open,x:Math.round(b.x-pr.gx)}; run(200,()=>{safe();hold();}); }
     /* A WHIFFED CHARGE: OVERRUN */
     { reset();b.x=A.x0+100;P.x=b.x+200;P.y=fl;b.face=1;b.mode='couch';b.modeT=0.01;b.chargeAt=null;let over=0;run(260,()=>{safe();if(b.mode==='charge'||b.mode==='couch'){P.y=fl-48;P.x=Math.min(P.x,b.x+200);}if(b.mode==='overrun')over=Math.max(over,b.modeT);if(over&&b.mode!=='overrun')hold();});out.whiff={over:+over.toFixed(2)}; }
     /* LANCE 5, P1: THE PIVOT - a hero behind him: he plants and turns, told, and only then moves */
@@ -157,7 +157,7 @@ console.log(JSON.stringify(r));
 const fails = []; const ok = (c, m) => { if (!c) fails.push(m); };
 ok(r.active === true && !r.mounted && r.box[0] === 26 && r.box[1] === 40, 'the fight starts, ON FOOT, one 26x40 box: ' + JSON.stringify(r.box));
 ok(r.under.pin >= 3 && r.under.open && r.under.mul >= 1.5, 'a bell rung with him under its gate PINS him, 3 s+, open: ' + JSON.stringify(r.under));
-ok(r.away.couch && r.away.couch.toward && r.away.closed && r.away.over >= 1.4 && r.away.open, 'rung with him away: HE ANSWERS THE BELL, and runs into the dropped gate (OVERRUN): ' + JSON.stringify(r.away));
+ok(r.away.couch && r.away.couch.toward && r.away.closed && r.away.over >= 1.4 && r.away.open && r.away.smul >= 3.5, 'rung with him away: HE ANSWERS THE BELL, and runs into the dropped gate (lance6: STUNNED x3.5): ' + JSON.stringify(r.away));
 ok(r.whiff.over >= 1.4, 'a whiffed charge ends OVERRUN: ' + JSON.stringify(r.whiff));
 ok(r.pivot.frames >= 14 && r.pivot.faced >= 14, 'LANCE 5: a hero behind him - a told PIVOT (~0.3 s) before he faces you: ' + JSON.stringify(r.pivot));
 ok(r.fwd.vx === 1, 'LANCE 5: NO BACKWARD CHARGE - the charge goes the way he faced: ' + JSON.stringify(r.fwd));
