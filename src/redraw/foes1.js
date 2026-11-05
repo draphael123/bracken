@@ -138,7 +138,9 @@ export function bakeHopper(color = 'green') {
 }
 
 // ---------- HARPY ----------
-export function bakeHarpy(over = {}, shriek = false) {   /* (claude/rookeryart) over = a palette swap (THE ROOKERY's pale crag harpy); shriek = the HARPY SHRIEKER: a crest fan and a throat sac on the same frames */
+import { bakeWomanHarpy } from './gale_harpy_art.js';
+export function bakeHarpy(over = {}, shriek = false) {
+  if (!shriek && !Object.keys(over).length) return bakeWomanHarpy('moor');   /* (claude/harpyart2) THE MOOR HARPY is a harpy-woman now (profile, big head, arm-wings); the 18x13 grid below is the retired frontal bird-woman, kept for a palette-swapped caller */   /* (claude/rookeryart) over = a palette swap (THE ROOKERY's pale crag harpy); shriek = the HARPY SHRIEKER: a crest fan and a throat sac on the same frames */
   const P = Object.assign({}, EP, { h: '#8a8478', H: '#5a5448', z: '#3a2e22', F: '#b8b0a0', c: '#40344a', C: '#6e5e78', k: '#dcbc9c', K: '#a8805e', r: '#ff4a3a', R: '#8f2f28', m: '#c9a83a', M: '#8a6a1a', t: '#f0e8d8', Y: '#fff1a0' }, over);
   const f = spr(P);
   // hovering she faces you, turned a touch to her right (the flip handles the other side)

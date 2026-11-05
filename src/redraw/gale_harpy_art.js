@@ -55,6 +55,7 @@ function bird(g, o) {
   const hx = Math.round(hd[0]), hy = Math.round(hd[1]);
   ellipse(g, hx - 2, hy + 1, 5.2, 5.6, C.hair); ellipse(g, hx - 2, hy + 1.5, 4.2, 4.8, C.hairL);
   for (const [da, L] of [[-0.45, 11], [-0.2, 13], [0.05, 14], [0.3, 12], [0.55, 10]]) feather(g, hx - 3, hy, Math.PI + da + (o.plume || 0) * 1.6 + (tilt > 0.7 ? -tilt * 0.5 : 0), L, 2.8, da > 0 ? C.hairL : C.hair, C.hairL);   /* long hair streaming back in the wind */
+  if (o.crest) for (let k = 0; k < 7; k++) { const a = -Math.PI / 2 + (k - 3) * 0.32 - 0.15; feather(g, hx - 1, hy - 3, a, 8 + (k % 2 ? 0 : 2) + (o.beak ? 2 : 0), 2.4, k % 2 ? '#a82820' : '#e04a3a', '#ffd0a0'); }   /* THE SHRIEKER'S red crest fan */
   circle(g, hx, hy, 4.4, C.face); R(g, hx - 4, hy + 1, 3, 3, C.faceD); R(g, hx - 1, hy + 4, 4, 2, C.face);
   ellipse(g, hx - 1, hy - 2.6, 4.9, 2.4, C.hair); R(g, hx - 3, hy - 4, 6, 1, C.hairL); R(g, hx + 1, hy - 3, 3, 1, C.hair);                                   /* the crown of hair and the fringe */
   const ex = hx + 1, ey = hy - 1;
@@ -138,4 +139,30 @@ export function bakeCarrierHarpy() {
     const w0 = R0.map(c => whiten(c)); CSET = { R: R0, L: R0.map(flipX), white: { R: w0, L: w0.map(flipX) }, ax: AX, ay: AY, w: 14, h: 9 };
   } finally { Object.assign(C, keep); }
   return CSET;
+}
+
+/* (claude/harpyart2) THE CRAG, MOOR AND SHRIEKER FOES as harpy-women too (they were 18x13 frontal bird-women). Same profile build and the same six frames every harpy reads (0 hover wings up, 1 hover wings down, 2 THE DIVE (along the air, wings
+   swept back, talons out in front), 3 DOWNED (tumbled, dizzy), 4 AIM / the stoop or the scream (wings flung up, beak open, red eyes), 5 HURT); only the palette (and, for the shrieker, the red crest fan) differs.
+   kind: 'moor' (the Moor's grey-brown harpy), 'crag' (the Rookery's slate-violet one), 'shrieker' (rose, red crest). Facing right; flipped for left. */
+const WPAL = {
+  moor: { crest: null, b: '#8a8478', B: '#5a5448', d: '#2e261c', l: '#b8b0a0', h: '#e8e0d0', ruff: '#dcd4c0', ruffD: '#a89e88', face: '#e0c8aa', faceD: '#a8805e', plume: '#8a8478', hair: '#3a2a1c', hairL: '#6e5a40' },
+  crag: { crest: null, b: '#6c6a8a', B: '#3e3c5c', d: '#1e1c30', l: '#a8a6c8', h: '#f0eef8', ruff: '#d8d4e8', ruffD: '#9490b0', face: '#ece0d0', faceD: '#b49a8a', plume: '#a8a6c8', hair: '#14122a', hairL: '#3a3862' },
+  shrieker: { b: '#a85a6a', B: '#6a2e3e', d: '#3a1624', l: '#e09aa8', h: '#ffe0e4', ruff: '#f6d4d8', ruffD: '#c08490', face: '#f0d4c4', faceD: '#c09484', plume: '#e09aa8', hair: '#8a2a3a', hairL: '#d85a6a', crest: '#e04a3a' },
+};
+const FR_W = [FR[0], FR[1],
+  { tilt: 1.15, cy: 15, wing: [-2.85, 7, -2.75, 0.9, 7, 13], tail: 3.0, legIn: false, plume: -0.1 },                       /* 2 THE DIVE: lying along the air, wings swept back */
+  FR[3],
+  { tilt: 0.05, cy: 14, wing: [-1.65, 9, -1.62, 0.8, 8, 15], chest: true, beak: true, eye: 'red', plume: -0.1 },       /* 4 THE STOOP / THE SCREAM: wings flung up */
+  FR[5]];
+const WSETS = {};
+export function bakeWomanHarpy(kind) {
+  if (WSETS[kind]) return WSETS[kind];
+  const keep = { ...C }; Object.assign(C, WPAL[kind] || WPAL.moor);
+  try {
+    const R0 = FR_W.map((o, i) => { const [c, g] = canvas(W, H); g.save(); g.translate(OX, OY); bird(g, { ...o, crest: !!C.crest }); g.restore();
+      if (i === 3) { for (const [x, y] of [[10, 16], [38, 20], [16, 36], [36, 34]]) { R(g, x, y, 3, 1, C.h); R(g, x + 1, y - 1, 1, 1, C.l); } for (const [x, y] of [[23, 12], [30, 11], [26, 15]]) { R(g, x, y, 2, 2, '#ffe9a0'); R(g, x, y, 1, 1, '#fff'); } }
+      outline(c, OUT); return c; });
+    const w0 = R0.map(c => whiten(c)); WSETS[kind] = { R: R0, L: R0.map(flipX), white: { R: w0, L: w0.map(flipX) }, ax: AX, ay: AY, w: 14, h: 7 };
+  } finally { Object.assign(C, keep); }
+  return WSETS[kind];
 }
