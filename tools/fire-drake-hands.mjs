@@ -85,7 +85,7 @@ S2.won = true; S2.downE = { x: G.seal, face: 1 }; boss2.alive = false; H2.drawOv
 const rd = f => fs.readFileSync(path.join(root, f), 'utf8');
 const main = rd('src/main.js'), lab = rd('src/lab.js'), greed = rd('src/boss-greed.js'), bread = rd('src/boss-read.js'), hl = rd('src/hint-lines.js');
 for (const s of ["import { makeFireDrakeHands } from './fire-drake-hands.js'", "case 'firedrake': { const a = FDH ? FDH.spawnBoss(base)", "if (e.t === 'firedrake' && FDH) dmg = FDH.take(e, dmg, tag)",
-  "e.t === 'firedrake' && FDH && FDH.spare(e)", 'if (FDH && FDH.owns(e)) { if (bossActive && e === boss) FDH.update(e, dt); continue; }', 'FDH.drawBoss(g, e, cx, cy, time)', 'if (FDH && FDH.on()) FDH.drawOver(g, cx, cy, time)',
+  "e.t === 'firedrake' && FDH && FDH.spare(e)", "if (FDH && FDH.owns(e)) { if (bossActive && e === boss) { beastSeen('firedrake'); FDH.update(e, dt); } continue; }", 'FDH.drawBoss(g, e, cx, cy, time)', 'if (FDH && FDH.on()) FDH.drawOver(g, cx, cy, time)',
   "boss.t === 'firedrake' && FDH ? FDH.barName(boss)", 'fireDrakeHands: () => FDH', 'FDH = makeFireDrakeHands(', 'EHP.firedrake = FDM_FD.hp', "POISE_SKIP.add('firedrake')", 'if (FDH) FDH.clear()'])
   ok(main.includes(s), 'main.js is missing the hook: ' + s);
 { const sp = main.indexOf('FDH.spare(e)'), kill = main.indexOf('  if (e.hp <= 0) {', sp); ok(sp > 0 && kill > sp && kill - sp < 1500, 'the spare must run just before hurtEnemy0 kills it'); }

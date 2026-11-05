@@ -189,3 +189,9 @@ export function drakeSprite(mode, pose, time, flash) {
   s = { c: outline(c, OUT), collar: meta.collar, jaw: meta.jaw }; cache.set(key, s); return s;
 }
 export function clearDrakeSprites() { cache.clear(); }
+/* HIS BESTIARY CARD (claude/drakeroom): two of his poses (stalking, the breath's windup) shrunk to the card's 66 px - main.js SPR.firedrakeCard (the bestiary reads SPR[t + 'Card'].R) */
+export function bakeDrakeCard(POSE, flipX) {
+  const fr = ['walk', 'breathTell'].map((m, i) => { const s = drakeSprite(m, POSE[m] || POSE.walk, i * 0.3, false), [c, g] = canvas(66, 40); g.imageSmoothingEnabled = false; g.drawImage(s.c, 1, 2, 64, 33);
+    const img = g.getImageData(0, 0, c.width, c.height), d = img.data; for (let q = 3; q < d.length; q += 4) d[q] = d[q] > 110 ? 255 : 0; g.putImageData(img, 0, 0); return outline(c, OUT); });
+  const white = fr.map(c => whiten(c)); return { R: fr, L: fr.map(flipX), white: { R: white, L: white.map(flipX) }, ax: 33, ay: 31, w: 40, h: 26 };
+}
