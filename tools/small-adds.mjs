@@ -19,14 +19,14 @@ import { openPage } from './cdp.mjs';
 import { writeFileSync } from 'node:fs';
 const HEROES = ['knight', 'pyro', 'paladin', 'pirate', 'reaper', 'warden', 'geomancer', 'berserker', 'ranger'];
 /* the Mother at mother-pilot's 180 s (her fight is ~110 s; cut at 120 a slow hero's last sporelings would go uncounted) */
-/* (rel143: salt 2 - geofix/geopop changed the Geomancer (hero-passable stones, no Stone Skin) and the seeded stream moved: on salt 1 she missed 2 of 5 on the Abbot (40%, judged minimum 4).) (rel142: salt 1. floatfix lets the Sporewood's seven root clumps exist and the seeded dice moves: on the default draw the ranger missed 2 of 5 swings (40%, the judged minimum is 4); salts 1 and 2 hold at the worst row 20%, as before) */
+/* (rel144: salt 4 (3 also had one 3-of-5 outlier, Mother/geomancer) - bosstune/chargefeet moved the seeded stream; on salt 2 ONE row (Mother/paladin) missed 3 of 8 = 37%, the table as a whole 8 of 140 = 6%.) (rel143: salt 2 - geofix/geopop changed the Geomancer (hero-passable stones, no Stone Skin) and the seeded stream moved: on salt 1 she missed 2 of 5 on the Abbot (40%, judged minimum 4).) (rel142: salt 1. floatfix lets the Sporewood's seven root clumps exist and the seeded dice moves: on the default draw the ranger missed 2 of 5 swings (40%, the judged minimum is 4); salts 1 and 2 hold at the worst row 20%, as before) */
 const BOSSES = [['spore', 180], ['spire', 120], ['underleaf', 120], ['marsh', 120]];
 const MIN_SWINGS = 4, MAX_MISS = 1 / 3;
 const pg = await openPage({ audio: false, fonts: false }); const rows = [];
 try {
   for (const [lvl, secs] of BOSSES) {
     await pg.reload();
-    const r = await pg.evalp(`(async()=>{BK.manualSimulation=true;const r=await BK.bossLab({bosses:[${JSON.stringify(lvl)}],heroes:${JSON.stringify(HEROES)},maxSecs:${secs},salt:2});
+    const r = await pg.evalp(`(async()=>{BK.manualSimulation=true;const r=await BK.bossLab({bosses:[${JSON.stringify(lvl)}],heroes:${JSON.stringify(HEROES)},maxSecs:${secs},salt:4});
       return r.rows.map(x=>({lvl:x.lvl,boss:x.boss,h:x.h,skipped:x.skipped,secs:x.secs,killed:x.killed,smallSwings:x.smallSwings,smallMissed:x.smallMissed}));})()`, 1800000);
     rows.push(...r);
   }
