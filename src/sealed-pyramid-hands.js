@@ -101,7 +101,7 @@ export function makeSealedPyramidHands(ctx) {
     ctx.sfx.click ? ctx.sfx.click() : ctx.sfx.clank && ctx.sfx.clank();
     if (near) { const wx = by.who.x, wy = by.who.y - 24;
       if (!by.hero) number(wx, wy, t.kind === 'block' ? 'HE TREADS THE PLATE: THE BLOCK!' : t.kind === 'darts' ? 'HE TREADS THE PLATE: THE DARTS!' : t.kind === 'gas' ? 'HE TREADS THE PLATE: THE GAS!' : t.kind === 'oil' ? 'HE TREADS THE PLATE: THE FIRE!' : t.kind === 'flood' ? 'HE TREADS THE PLATE: THE SLUICE!' : 'HE TREADS THE PLATE: THE STONE!', '#ff9a5c');
-      else number(wx, wy, t.kind === 'block' ? 'CLICK: THE BLOCK FALLS' : t.kind === 'darts' ? 'CLICK: THE DARTS FLY' : t.kind === 'gas' ? 'CLICK: THE GAS HISSES' : t.kind === 'oil' ? 'CLICK: THE BRAZIER TIPS' : t.kind === 'flood' ? 'CLICK: THE SLUICE OPENS' : 'CLICK: THE STONE RUNS', '#ffd36b'); }
+      else number(wx, wy, t.kind === 'block' ? 'CLICK: THE BLOCK FALLS' : t.kind === 'darts' ? 'CLICK: THE DARTS FLY' : t.kind === 'gas' ? (d.sand ? 'CLICK: THE HOPPER OPENS: THE SAND' : 'CLICK: THE GAS HISSES') : t.kind === 'oil' ? 'CLICK: THE BRAZIER TIPS' : t.kind === 'flood' ? 'CLICK: THE SLUICE OPENS' : 'CLICK: THE STONE RUNS', '#ffd36b'); }
     if (t.kind === 'gas' || t.kind === 'flood') ctx.sfx.hiss && ctx.sfx.hiss();
     if (t.kind === 'block') ctx.burst((d.zone[0] + d.zone[1] + 1) / 2 * ts, (d.slot[3] + 1) * ts, 8, ['#d8c8a0', '#a89070'], 40, 0.5);
     if (t.kind === 'stone') ctx.shake(t.def.great ? 4 : 2);
@@ -129,7 +129,7 @@ export function makeSealedPyramidHands(ctx) {
     const d = t.def, ts = TS();
     const press = pressedBy(t), now = press.length > 0, fresh = now && !t.pressed; t.pressed = now;
     const speedUp = d.arena && ctx.bossPhase && ctx.bossPhase() >= 3 ? 0.6 : 1;
-    if (t.st === 'ready') { if (d.tk && ctx.trapLive && !ctx.trapLive(d)) return;   /* (claude/pyramidboss) the burial chamber's traps are inert until THE COFFIN KING's phase two arms them */
+    if (t.st === 'ready') { if ((d.tk || d.ck) && ctx.trapLive && !ctx.trapLive(d)) return;   /* (claude/sealedpyramid3: d.ck - the Coffin King's seal traps, live from the phase they arm in) */   /* (claude/pyramidboss) the burial chamber's traps are inert until THE COFFIN KING's phase two arms them */
       if (fresh) arm(t, press.find(p => p.boss) || press[0]); return; }
     t.t -= dt;
     if (t.st === 'armed') { if (t.t > 0) return; fire(t); return; }
@@ -152,8 +152,8 @@ export function makeSealedPyramidHands(ctx) {
   /* THE EMBALMERS' GAS (claude/pyramidlevel): a green cloud stands in the reach for gasT s; what stands in it is struck once (a hero a share + the venom, the tomb's foes unmade) */
   function stepGas(t, dt) { const d = t.def, ts = TS();
     if (t.st === 'firing') { t.left -= dt; const box = { l: d.zone[0] * ts, r: (d.zone[1] + 1) * ts, t: d.zone[2] * ts, b: (d.zone[3] + 1) * ts };
-      const wasHit = K.n.heroHit; strike(t, box, t.key, 'THE EMBALMERS\' GAS'); if (K.n.heroHit > wasHit) for (const pp of ctx.players) if (!pp.dead && over(box, bodyBox({ x: pp.x, y: pp.y, w: 12, h: 18 }))) pp.venomT = Math.max(pp.venomT || 0, TRAP_GAS.venom);
-      if (Math.random() < dt * 30) ctx.burst((d.zone[0] + Math.random() * (d.zone[1] - d.zone[0] + 1)) * ts, (d.zone[3] + 1) * ts - 4, 1, ['#a6e04a', '#6a9a3a'], 26, 0.7);
+      const wasHit = K.n.heroHit; strike(t, box, t.key, d.sand ? 'THE SAND-POUR' : 'THE EMBALMERS\' GAS'); if (K.n.heroHit > wasHit && !d.sand) for (const pp of ctx.players) if (!pp.dead && over(box, bodyBox({ x: pp.x, y: pp.y, w: 12, h: 18 }))) pp.venomT = Math.max(pp.venomT || 0, TRAP_GAS.venom);
+      if (Math.random() < dt * 30) ctx.burst((d.zone[0] + Math.random() * (d.zone[1] - d.zone[0] + 1)) * ts, (d.zone[3] + 1) * ts - 4, 1, d.sand ? ['#e8d0a0', '#c8a868'] : ['#a6e04a', '#6a9a3a'], 26, 0.7);   /* (claude/sealedpyramid3: d.sand - THE HOURGLASS's sand-pour rides the gas machine: a column standing in its reach a beat, no venom) */
       if (t.left <= 0) { t.st = 'reset'; t.t = Math.max(0.4, d.reset - d.gasT); ctx.sfx.ratchet && ctx.sfx.ratchet(); } return; }
     if (t.st === 'reset' && t.t <= 0) t.st = 'ready'; }
   /* THE OIL CHANNEL (claude/pyramidlevel): the brazier tips at its head and the fire RUNS the channel at runV, then the whole channel burns burnT s; what stands in the burning stretch is struck once */
@@ -437,6 +437,11 @@ export function makeSealedPyramidHands(ctx) {
     for (const t of K.traps) { const d = t.def; if (!['gas', 'oil', 'flood'].includes(t.kind) || !vis(d.zone[0] - 6, d.zone[1] + 6)) continue;
       if (t.kind === 'gas') { const jr = (d.jetRow ?? d.zone[3] + 1) * ts - cy;
         for (const j of d.jets || []) TA.gasJet(g, j * ts - cx, jr, t.st === 'armed', time);
+        if (d.sand) { const x = d.zone[0] * ts - cx, w = (d.zone[1] - d.zone[0] + 1) * ts, y = (d.zone[2] - 1) * ts - cy, b = (d.zone[3] + 1) * ts - cy;   /* (claude/sealedpyramid3) THE HOURGLASS (greybox, art owed): the hopper's mouth, a trickle when armed, the pour when it fires */
+          g.fillStyle = '#5e4c34'; g.fillRect(R(x), R(y) - 4, w, 4); g.fillStyle = '#d8aa40'; g.fillRect(R(x) + 2, R(y) - 3, w - 4, 1);
+          if (t.st === 'armed') { g.fillStyle = '#e8d0a0'; for (let i = 0; i < 6; i++) g.fillRect(R(x + w / 2 - 6 + i * 2), R(y + ((time * 200 + i * 23) % 40)), 1, 3); }
+          if (t.st === 'firing') { const a = Math.max(0, Math.min(1, t.left / 0.3, (d.gasT - t.left) / 0.15)); g.globalAlpha = 0.75 * a; g.fillStyle = '#c8a868'; g.fillRect(R(x + 4), R(y), w - 8, R(b - y)); g.globalAlpha = 0.9 * a; g.fillStyle = '#e8d0a0';
+            for (let i = 0; i < 18; i++) g.fillRect(R(x + 5 + (i * 11) % (w - 10)), R(y + ((time * 420 + i * 31) % (b - y))), 1, 5); g.globalAlpha = 0.8 * a; g.fillStyle = '#a08050'; g.fillRect(R(x), R(b) - 6, w, 6); g.globalAlpha = 1; } continue; }
         if (t.st === 'firing') { const a = Math.max(0, Math.min(1, t.left / 0.4, (d.gasT - t.left) / 0.3)); const x = d.zone[0] * ts - cx, y = d.zone[2] * ts - cy, w = (d.zone[1] - d.zone[0] + 1) * ts, h = (d.zone[3] - d.zone[2] + 1) * ts;
           TA.gasCloud(g, x, y, w, h, a, time); } }
       if (t.kind === 'oil') { const fy = (d.zone[3] + 1) * ts - cy, x0 = d.chan[0] * ts - cx, x1 = (d.chan[1] + 1) * ts - cx;

@@ -30,6 +30,7 @@
 //   REDS are only the leap, the roll and the curse (so a shield answers most of him).
 // PURE: no DOM, no main.js. The world is a context `c` (src/tomb-king-hands.js binds it). tkPlan is the boss lab's HUMAN bot (src/lab.js).
 
+import { ckPlan } from './coffin-king.js';   /* (claude/sealedpyramid3) */
 export const TK = {
   hp: 5000, w: 30, h: 40, markH: 54,
   openMul: 1.7, openCap: 0.09, openT: 3.6, clampT: 0.6, wardT: 3.0, wardMul: 0.4, resist: 0.4, resist3: 0.55, lidless: 0.4,
@@ -89,7 +90,7 @@ export function newFight(G) {
     n: { opens: 0, byKind: { block: 0, darts: 0, weight: 0 }, glanced: 0, wards: 0, warded: 0, sealed: 0, levers: 0, leverHits: 0, onPlate: 0, trips: 0, called: 0, cuts: 0, reels: 0, moves: {}, capped: 0 } };
 }
 export const tPhase = e => (e.hp <= e.maxHp * TK.p3 ? 3 : e.hp <= e.maxHp * TK.p2 ? 2 : 1);
-export const tkOpen = e => !!e && e.mode === 'flipped' && (e.open || 0) > 0;
+export const tkOpen = e => !!e && (e.mode === 'flipped' || e.mode === 'burst' || e.mode === 'downed') && (e.open || 0) > 0;   /* (claude/sealedpyramid3: + SP3's lid burst and his downed P3 - src/coffin-king.js ckOpen; master never sets those modes) */
 export const tkLidless = e => !!e && (e.mode === 'lidless' || e.mode === 'throw');
 /* he PRESSES a plate (heavy stone) whenever he is not walking or in the air: he steps over them as he walks (src/sealed-pyramid-hands.js pressedBy asks this) */
 export const tkPresses = e => !!e && e.alive && !['walk', 'leap', 'sleep', 'wake', 'flipped', 'clamp', 'die', 'drop'].includes(e.mode);
@@ -320,6 +321,7 @@ export function takeBlow(e, S, dmg) {
    -> { gx, face, atk, jump, dodge, block, down, up, why } */
 export const PLAN = { react: 0.25, miss: 0.12, missLever: 0.15, leverWait: 6 };
 export function tkPlan(s) {
+  if (s && s.S && s.S.ck) return ckPlan(s);   /* (claude/sealedpyramid3) SP3's COFFIN KING: the lab's tombking branch hands his own reading over (src/coffin-king.js) */
   const { P, e, S, reach } = s, G = S.G, out = { gx: null, face: P.face, atk: false, jump: false, dodge: false, block: false, down: false, up: false, why: '' };
   const mem = s.mem || {}, rng = s.rng || Math.random, t = s.t || 0;
   mem.seen = mem.seen || new Map(); mem.roll = mem.roll || new Map(); if (mem.seen.size > 600) { mem.seen.clear(); mem.roll.clear(); }

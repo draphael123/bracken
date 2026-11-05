@@ -9,7 +9,7 @@
 // the pharaoh in his wrappings showing). THE SHARED READ (B10): FLIPPED = a gold ring and a timer bar; WARDED = a pale ring and the word; SEALED = a turned
 // share CLANKS, sparks and says SEALED (the first times: what to do about it).
 // main.js calls: spawnBoss, owns, on, update, take, trapHit, strike, phase, trapsOn, pressers, drawBack, drawBoss, drawOver, barName, end, read, show, clear.
-import * as TKM from './tomb-king.js'; import * as KA from './redraw/sealed_pyramid_king.js';
+import * as TKM from './tomb-king.js'; import { makeCoffinKingHands } from './coffin-king-hands.js'; import * as KA from './redraw/sealed_pyramid_king.js';
 import { BOSS_PHASE } from './boss-music.js';
 import { canvas, flipX, whiten } from './px.js';
 const { TK } = TKM;
@@ -46,7 +46,17 @@ export const POSE = {
 const drawStanding = (g, p, flash, time, ph) => KA.drawStanding(g, p, flash, time, ph, TK), drawLying = (g, p, flash, time) => KA.drawLying(g, p, flash, time, TK);
 export const bakeTombKingCard = () => KA.bakeCard(POSE, TK);   /* HIS BESTIARY CARD: two of his poses (walk, the slam's windup) - the contract the cast sheets keep */
 
+/* (claude/sealedpyramid3) SEALED PYRAMID 3: whenever the burial chamber carries arena.ck (SP3 on, src/sealed-pyramid3.js) the fight is THE COFFIN KING 'ESCAPE + BREAK
+   THE SEALS' (src/coffin-king.js + src/coffin-king-hands.js); otherwise master's sarcophagus below. main.js keeps calling the same names. */
+const TK_HANDS = ['show', 'on', 'owns', 'phase', 'clear', 'trapsOn', 'pressers', 'spawnBoss', 'update', 'trapHit', 'strike', 'take', 'barName', 'end', 'read', 'deadNear', 'reeled', 'drawBack', 'drawBoss', 'drawOver'];
 export function makeTombKingHands(ctx) {
+  const old = makeSarcophagusHands(ctx), ck = makeCoffinKingHands(ctx), H = {};
+  const pick = () => (ctx.L && ctx.L.arena && ctx.L.arena.ck ? ck : old);
+  for (const k of TK_HANDS) H[k] = (...a) => pick()[k](...a);
+  H.clear = () => { old.clear(); ck.clear(); };
+  return H;
+}
+function makeSarcophagusHands(ctx) {
   let S = null;
   const H = {};
   const A = () => (ctx.L && ctx.L.arena && ctx.L.arena.boss === 'tombking' ? ctx.L.arena : null);
