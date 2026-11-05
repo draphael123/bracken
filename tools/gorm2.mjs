@@ -44,7 +44,7 @@ ok(L.squadBands.some(b => b.lo === 640 && b.spots === 0), 'no squad stands in hi
 ok(L.lastArena === L.glade, "the route runs to his glade (L.lastArena: tools/pacing's goal)");
 
 console.log('THE GLADE');
-const gl = L.glade; ok(gl && gl.boss === 'king' && gl.music === 'gorm' && solid(gl.wallL + 1, 14) && solid(gl.wallR - 1, 14), 'his glade is an arena with a floor (his music stays gorm)');
+const gl = L.glade; ok(gl && gl.boss === 'king' && gl.music === 'gormglade' && solid(gl.wallL + 1, 14) && solid(gl.wallR - 1, 14), 'his glade is an arena with a floor (his music: the glade cut, gormglade - claude/greathound, Daniel 11-05 P2 more intense)');
 const kinds = G.glade.hangs.map(h => h.kind).sort().join(','); ok(kinds === 'cage,cage,hive,log', 'in the oak hang two cages, a log trap and a beehive: ' + kinds);
 ok(G.glade.hangs.every(h => h.x > gl.x0 && h.x < gl.x1 && h.y0 <= gl.floor - 64 && h.pegs.every(p => p > gl.x0 && p < gl.x1 && solid(Math.floor(p / TS), 14))), 'each hangs over the floor, over his head, with its pegs on the floor');
 ok(G.glade.trunkX > gl.x0 && G.glade.trunkX < gl.x1, 'THE GREAT OAK stands in his glade');

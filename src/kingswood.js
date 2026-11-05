@@ -286,7 +286,7 @@ export function buildKingswood({ painter, T, TS }) {
   block(W - 1, W - 1, 0, H - 1);                                                   /* the world's east edge */
 
   const [G0, G1] = KINGSWOOD.glade;
-  const glade = { x0: G0 * TS, x1: G1 * TS, floor: 14 * TS, trigger: (G0 + 6) * TS, wallL: G0 - 1, wallR: G1 + 1, boss: 'king', music: 'gorm', tint: '#d9583c', tintA: 0.14, fx: 'embers', glade: true };
+  const glade = { x0: G0 * TS, x1: G1 * TS, floor: 14 * TS, trigger: (G0 + 6) * TS, wallL: G0 - 1, wallR: G1 + 1, boss: 'king', music: 'gormglade', tint: '#d9583c', tintA: 0.14, fx: 'embers', glade: true };
   /* (claude/gorm2) KING GORM 2's data (src/gorm-hands.js): his hall's ropes, decks, archers' marks and heaps; the burning wood's fire line, burning floors and branches; the glade's oak and hangings */
   const gorm = {
     hall: { x0: A0 * TS, x1: A1 * TS, floor: 14 * TS, order: [1, 3, 0, 4, 2],
