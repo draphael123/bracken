@@ -54,6 +54,13 @@ import { buildWarCairn, WC_RULE } from './war-cairn.js';   /* (claude/warcairn) 
 export const RULE_WOOD = 'FOUR STROKES FELL A MARKED PINE, AND IT FALLS THE WAY IT LEANS: ACROSS A GAP, UP A CLIFF, OR ON WHOEVER STANDS UNDER IT.';
 // level.js — the level registry. Each level paints a tile grid with a tiny DSL and returns it.
 export const TS = 16;
+/* THE UNDERCROWN 3 (claude/undercrown3, the OPUS greybox; plan-undercrown-1104.md A, Daniel 11-04): FIREDAMP (src/firedamp.js) and fallen pillars that never
+   trap anyone (src/fallen-pillar.js). OFF until its art pass merges (art before live): master keeps THE UNDERCROWN 2. ?uc3=1 in the page, or BRACKEN_UC3=1
+   for a node tool, turns it on for the labs and the lanes; the art lane flips UC3_SHIPS in the batch that ships it. */
+export const UC3_SHIPS = false;
+const uc3Asked = () => { try { if (typeof location !== 'undefined' && /[?&]uc3=1(&|$)/.test(location.search || '')) return true; } catch (e) { /* no page */ }
+  try { return typeof process !== 'undefined' && !!process.env && process.env.BRACKEN_UC3 === '1'; } catch (e) { return false; } };
+export const UC3 = UC3_SHIPS || uc3Asked();
 export const T = { AIR: 0, SOLID: 1, ONEWAY: 2, SPIKE: 3, CRATE: 4, REED: 5, PALISADE: 7, PLANK: 8, NET: 9, BOUNCER: 10, SHELF: 11, PORT: 12, CLIMB: 13, RAIL: 14, SOFT: 15, ICE: 16, WEB: 17, CRYST: 18 };
 /* THE SLOPES, ids 20-25 (docs/slopes-integration.md). A slope is a floor whose height varies across the tile, and it is
    NEITHER solid nor a one-way: isSolid and isOneWay in main.js do not name these ids and must not learn them. R rises to
@@ -2495,6 +2502,31 @@ function theMonastery() {
 // (a wall across it, behind you) -> THE GOBLIN PRINCE, pinned under his own roof.
 // It is the way IN to Highcrown now: the hole the castle stands on, walked from the Stormhold road up into the castle's foundations.
 // ============================================================================================
+/* (claude/undercrown3) THE FIREDAMP OF THE UNDERCROWN 3 (src/firedamp.js): every chamber is a box of tiles (y0 its roof row), every door joins two.
+   TEACH (the first workings: the fireman lights it, a wind door routes it, the slabs' holes drain it up) -> REMIX (the flooded level's west half fills
+   and its floor lamp burns it; the bridge slab's hole drains it) -> EXAM (the stope's roof: lit from the stage, its blast takes the hung walkway's
+   posts) -> the barrow breathes into the last drift (its slab down flat dams it) -> THE PRINCE'S TOMB fills from his second phase. */
+const UC3_FIREDAMP = {
+  chambers: [
+    { id: 'landing', x0: 40, x1: 51, y0: 30, y1: 33 },
+    { id: 'works', x0: 52, x1: 85, y0: 30, y1: 33, src: 0.07 },
+    { id: 'worksUp', x0: 56, x1: 84, y0: 25, y1: 28 },
+    { id: 'floodW', x0: 10, x1: 56, y0: 50, y1: 55, src: 0.06 },
+    { id: 'floodE', x0: 57, x1: 90, y0: 50, y1: 55 },
+    { id: 'stope', x0: 6, x1: 96, y0: 88, y1: 111, src: 0.035 },
+    { id: 'barrow', x0: 96, x1: 150, y0: 131, y1: 140, src: 0.04 },
+    { id: 'drift', x0: 10, x1: 95, y0: 137, y1: 140 },
+    { id: 'tomb', x0: 30, x1: 74, y0: 156, y1: 166, on: false, src: 0.05 },   /* (off until his second phase: src/undercrown3.js) */
+  ],
+  doors: [
+    { id: 'bratW', a: 'works', b: 'landing', brattice: true },              /* the wind door at the landing (shut) */
+    { id: 'works1Hole', a: 'works', b: 'worksUp', up: true, slab: 'works1' }, { id: 'works2Hole', a: 'works', b: 'worksUp', up: true, slab: 'works2' },
+    { id: 'bratF', a: 'floodW', b: 'floodE', brattice: true },
+    { id: 'floodHole', a: 'floodW', b: null, up: true, slab: 'flood' },      /* the bridge slab's course: swung, it is a hole the west level drains up */
+    { id: 'driftDam', a: 'barrow', b: 'drift', open: true, slab: 'drift', dam: true },   /* the barrow breathes into the drift until its slab DAMS it */
+  ],
+  plugs: [],
+};
 function undercrown() {
   const L = painter(154, 196);
   const { block, floor, plat, ent, coins, set } = L;
@@ -2541,18 +2573,22 @@ function undercrown() {
   gallery(40, 86, 34, 4);
   rail(56, 84, 34); ent('cart', 82, 33, { auto: true, dir: -1, speed: 110 });
   boards(47, 49, 34);   /* a landing off the ladder */
-  ent('minerlamp', 54, 33, { lit: true }); ent('minerlamp', 70, 33, { lit: true });
-  ent('sign', 52, 33, { text: 'A POST AT EACH END. THE END YOU CUT IS THE END THAT COMES DOWN, ON WHATEVER IS UNDER IT.' });
+  ent('minerlamp', 54, 33, { lit: !UC3 }); ent('minerlamp', 70, 33, { lit: !UC3 });   /* (claude/undercrown3) cold in the gassy workings: a lamp lit here is the flame */
+  ent('sign', 52, 33, { text: UC3 ? 'FIREDAMP GATHERS UNDER THE ROOF. WHEN THE CANARY STOPS, A FLAME BURNS IT ALONG THE ROOF - DUCK UNDER IT.' : 'A POST AT EACH END. THE END YOU CUT IS THE END THAT COMES DOWN, ON WHATEVER IS UNDER IT.' });
+  if (UC3) { ent('brattice', 51, 33, { door: 'bratW', y0: 30 }); ent('canarycage', 55, 33, { chamber: 'works' });
+    ent('sign', 49, 33, { text: 'A WIND DOOR. STRIKE IT OPEN OR SHUT: THE GAS GOES WHERE THE AIR GOES.' }); }
   cut(56, 84, 25, 28); interiors.push([56, 84, 25, 28, 'mine']);   /* the working over the gallery: row 29 is the slabs' course */
   slab('works1', 57, 69, 29, 34);
   slab('works2', 72, 83, 29, 34, { states: { '-1': 'cracked' } });
   /* THE SQUAD UNDER THE SPAN: a timberman keeping it up and two navvies at the west end of it */
-  ent('propman', 64, 33, { face: -1, cnSkin: 'timberman' }); ent('miner', 58, 33, { face: -1, cnSkin: 'navvy' }); ent('miner', 60, 33, { face: -1, cnSkin: 'navvy' });
+  if (UC3) ent('miner', 64, 33, { face: -1, cnSkin: 'navvy', fireman: true });   /* (claude/undercrown3) THE FIREMAN: wet sacking and a candle on a pole - he burns the gas off ON PURPOSE */
+  else ent('propman', 64, 33, { face: -1, cnSkin: 'timberman' });
+  ent('miner', 58, 33, { face: -1, cnSkin: 'navvy' }); ent('miner', 60, 33, { face: -1, cnSkin: 'navvy' });
   ent('rockgoblin', 75, 33, { face: -1, cnSkin: 'bonechucker' }); ent('snuffer', 68, 33, { face: -1, cnSkin: 'lampsnuffer' });
   ent('sentry', 79, 33, { section: 'works', range: 9, face: -1, cnSkin: 'minewarden' });
   ent('bell', 76, 33, { section: 'works' });
   ent('deco', 62, 33, { kind: 'wares' }); ent('deco', 77, 33, { kind: 'barrels' });
-  ent('sign', 44, 33, { text: 'THE WARDEN\'S BELL SHUTS THE GALLERY. THE WORKING OVERHEAD STILL GOES THROUGH.' });
+  ent('sign', 44, 33, { text: UC3 ? 'THE BLAST TAKES EVERY POST IN THE BAND. A CUT POST OPENS A HOLE: THE GAS GOES UP IT.' : 'THE WARDEN\'S BELL SHUTS THE GALLERY. THE WORKING OVERHEAD STILL GOES THROUGH.' });
   coins([54, 32], [60, 32], [66, 32], [72, 32], [78, 32]);
   coins([58, 27], [64, 27], [70, 27], [76, 27], [82, 27]);
   ent('deco', 59, 28, { kind: 'barrels' }); ent('minerlamp', 74, 28, { lit: false });
@@ -2581,7 +2617,9 @@ function undercrown() {
   ent('sign', 64, 55, { text: 'GAS SITS IN THE LOW PLACES. THE WATER IS DEAD: NOBODY SWIMS IT.' });
   ent('vault', 80, 55);
   ent('minerlamp', 62, 55, { lit: true }); ent('minerlamp', 78, 55, { lit: true }); ent('minerlamp', 12, 55, { lit: true });
-  ent('gas', 56, 55); ent('gas', 14, 55);
+  if (UC3) { ent('canarycage', 18, 55, { chamber: 'floodW' }); ent('brattice', 57, 55, { door: 'bratF', y0: 50 });
+    ent('sign', 60, 55, { text: 'THE WEST LEVEL IS FULL OF IT. ITS FLOOR LAMP TAKES IT WHEN IT COMES DOWN THAT FAR. CUT THE SLAB AND IT GOES UP THE HOLE.' }); }
+  else { ent('gas', 56, 55); ent('gas', 14, 55); }
   coins([22, 53], [26, 53], [48, 53], [52, 53], [60, 54], [68, 54], [76, 54], [86, 54], [12, 54], [16, 54]);
   shaft(6, 6, 56, 88);
   ent('clinger', 7, 74, { face: 1 });
@@ -2600,11 +2638,12 @@ function undercrown() {
   plat(10, 90, 6); plat(17, 94, 6); plat(24, 98, 6); plat(22, 106, 6);   /* the stages down the west wall: off the rope, and down to the near walkway */
   for (let x = 40; x <= 56; x++) set(x, 100, T.PLANK);             /* the hung walkway: the slab (its posts stand on the walkways under it) */
   slab('stope', 40, 56, 100, 112);
-  ent('sign', 32, 111, { text: 'CUT THE NEAR POST AND THE HUNG WALKWAY SWINGS DOWN TO YOU. MIND WHAT IS UNDER ITS FAR END.' });
+  ent('sign', 32, 111, { text: UC3 ? 'CUT THE NEAR POST AND THE WALKWAY SWINGS DOWN TO YOU. OR LIGHT THE ROOF GAS FROM THE STAGE: ITS POSTS GO WITH IT. THEN GET DOWN.' : 'CUT THE NEAR POST AND THE HUNG WALKWAY SWINGS DOWN TO YOU. MIND WHAT IS UNDER ITS FAR END.' });
+  if (UC3) { ent('minerlamp', 26, 97, { lit: false }); ent('canarycage', 19, 93, { chamber: 'stope' }); }   /* (claude/undercrown3) the stage's cold lamp: in the band at READY */
   ent('troll', 61, 111, { face: -1 });                            /* the far walkway's elite, a crag troll come down the old workings: on footing, the water behind him */
   ent('miner', 54, 111, { face: -1, cnSkin: 'navvy' }); ent('rockgoblin', 64, 111, { face: -1, cnSkin: 'bonechucker' });
   ent('shardling', 34, 111, { face: 1 }); ent('snuffer', 42, 111, { face: -1, cnSkin: 'lampsnuffer' });
-  ent('gas', 18, 121);   /* the stope's floor breathes too */
+  if (!UC3) ent('gas', 18, 121);   /* the stope's floor breathes too */
   ent('check', 10, 121);   /* (claude/undercrown2art) the shrine at the shaft's foot, on the stope's dry west floor (where a fall down the shaft or the walkway ladder lands you): the route from the flooded level's shrine to the barrow's had 238 tiles with none (checkpoint-gaps) */
   ent('rockgoblin', 26, 121, { face: 1, cnSkin: 'bonechucker' }); ent('miner', 90, 121, { face: -1, cnSkin: 'navvy' }); ent('bonegob', 84, 121, { face: -1 });
   ent('bat', 40, 94); ent('bat', 62, 96);
@@ -2640,7 +2679,7 @@ function undercrown() {
   ent('bonegob', 138, 140, { face: -1 }); ent('bonegob', 124, 140, { face: -1 }); ent('bonegob', 110, 140, { face: 1 });
   ent('bonearcher', 122, 135, { face: -1 }); ent('bonegob', 100, 140, { face: 1 });
   ent('bat', 130, 133);
-  ent('gas', 116, 140); ent('gas', 130, 140);
+  if (UC3) ent('canarycage', 140, 140, { chamber: 'barrow' }); else { ent('gas', 116, 140); ent('gas', 130, 140); }
   for (const [x, k, v] of [[102, 'stone', 0], [108, 'bones', 0], [114, 'stone', 1], [118, 'bones', 1], [128, 'stone', 0], [132, 'bones', 0], [140, 'stone', 1], [106, 'banner', 0]]) ent('deco', x, 140, { kind: k, ...(v ? { v } : {}) });
   ent('minerlamp', 144, 140, { lit: true }); ent('minerlamp', 112, 140, { lit: false }); ent('minerlamp', 98, 140, { lit: true });
   coins([106, 136], [122, 135], [124, 135], [136, 136], [142, 139], [128, 139], [114, 139], [102, 139]);
@@ -2648,7 +2687,7 @@ function undercrown() {
   // ---- 5. THE LAST DRIFT. West along a low drift over the Prince's pit, the barrow's dead behind you. Its last slab is a WALL: cut both
   //         posts and it drops across the drift, and nothing that walks gets over it. ----
   cut(10, 95, 137, 140); interiors.push([10, 95, 137, 140, 'mine']);
-  ent('sign', 82, 140, { text: 'THE LAST DRIFT. BOTH POSTS DOWN AND THE SLAB IS A WALL ACROSS IT: WHAT WALKS CANNOT FOLLOW.' });
+  ent('sign', 82, 140, { text: UC3 ? 'THE LAST DRIFT. THE BARROW\'S GAS RUNS DOWN IT TO THE LAMP. BOTH POSTS DOWN AND THE SLAB DAMS IT.' : 'THE LAST DRIFT. BOTH POSTS DOWN AND THE SLAB IS A WALL ACROSS IT: WHAT WALKS CANNOT FOLLOW.' });
   ent('minerlamp', 74, 140, { lit: false }); ent('minerlamp', 40, 140, { lit: true }); ent('deco', 62, 140, { kind: 'barrels' });
   ent('rockgoblin', 30, 140, { face: 1, cnSkin: 'bonechucker' }); ent('miner', 50, 140, { face: 1, cnSkin: 'navvy' });
   ent('snuffer', 34, 140, { face: 1, cnSkin: 'lampsnuffer' });
@@ -2656,7 +2695,7 @@ function undercrown() {
   /* THE PRINCE'S TITHE: a working over the drift that nobody walled up because nobody could reach it. ONE post and the slab is a ramp up into it */
   cut(54, 72, 132, 135); interiors.push([54, 72, 132, 135, 'mine']);
   ent('silver', 70, 134); ent('deco', 56, 135, { kind: 'coffer' }); ent('minerlamp', 64, 135, { lit: false });
-  ent('gas', 46, 140);
+  if (UC3) ent('canarycage', 48, 140, { chamber: 'drift' }); else ent('gas', 46, 140);
   coins([78, 139], [70, 139], [54, 139], [46, 139], [38, 139], [22, 139], [16, 139]);
   shaft(10, 6, 141, 166);
 
@@ -2680,6 +2719,7 @@ function undercrown() {
   ent('deco', 39, 166, { kind: 'bones' }); ent('deco', 67, 166, { kind: 'bones', v: 1 }); ent('deco', 70, 166, { kind: 'banner' });
   coins([40, 165], [54, 165], [68, 165]);
   ent('prince', 51, 166, { face: -1 });                            /* in his sarcophagus, under the middle slab */
+  if (UC3) ent('canarycage', 44, 166, { chamber: 'tomb' });         /* (claude/undercrown3) his tomb gasses up from his second phase */
   ent('gate', 90, 166);
 
   // EVERY LADDER IS HUNG LAST (a gallery cut after a ladder erases its rungs). Nothing is dug after this line.
@@ -2688,6 +2728,7 @@ function undercrown() {
   return {
     W: L.W, H: L.H, grid: L.grid, ents: L.ents, START: { x: 4, y: 23 }, pools, falls: [], moversExtra: movers, interiors,
     waterHurts: true,   /* (claude/undercrown2, A10) a fall in the dead water costs health and hands you back to the last dry ground - not a death */
+    ...(UC3 ? { uc3: true, firedamp: UC3_FIREDAMP } : {}),   /* (claude/undercrown3) THE HOLE BREATHES: src/firedamp.js chambers, wind doors, slab holes and dams */
     timber: true, slabs, reachSlabs: [{ slab: 'adit', hinge: 1 }, { slab: 'flood', flat: true }, { slab: 'stope', hinge: 1 }, { slab: 'drift', hinge: 1, optional: true }],   /* the slabs the way on needs, cut as the signs say (src/reachcore.js) */
     hasCryst: true, dark: 0.14, edgeLit: 'rgba(255,226,176,0.9)', underground: true, ucKit: true,   /* (claude/undercrown2art) its own tile kit, walls, slabs, posts and lights (src/redraw/undercrown_*.js) */
     duskStart: -1, duskLen: 1, music: 'barrows', night: true, glowNight: true, nightA: 0.12,
