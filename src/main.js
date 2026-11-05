@@ -4826,7 +4826,8 @@ function drawCard() { const u = cardUi; if (!u) return; const h = hero(), lv = h
   const owed = picksOwed(PROG, h, lv), mso = milestonesOwed(PROG, h, lv).length, calm = SET.reduceMotion;
   const slide = u.fresh && !calm ? Math.max(0, 1 - Math.min(1, u.t / 0.35)) : 0, oy = Math.round(slide * slide * 70);
   text(c ? (c.kind === 'perk' ? (c.opts[0] && c.opts[0].fork ? 'LEVEL ' + c.n + ': CHOOSE YOUR PATH' : isTechLevel(h, c.n) ? 'LEVEL ' + c.n + ': A NEW MOVE' : isUpgradeLevel(h, c.n) ? 'LEVEL ' + c.n + ': AN UPGRADE' : isMinorMs(c.n) ? 'LEVEL ' + c.n + ': A SMALL PERK' : 'LEVEL ' + c.n + ': A MILESTONE') : 'LEVEL UP: CHOOSE ONE') : 'THE LEVEL CARD', VW / 2, 6 - oy, UI.title, 'center', 12);
-  text((HERO_SHORT[h] || h).toUpperCase() + '  LEVEL ' + lv + (owed + mso ? '   ' + (owed + mso) + ' TO CHOOSE' : ''), VW / 2, 22 - oy, UI.dim, 'center', 6);
+  const road = roadToL50(PROG, h, lv);   /* (forkproof) the strip needs the foot of the card: its next-perk line moves up under the name */
+  text((HERO_SHORT[h] || h).toUpperCase() + '  LEVEL ' + lv + (owed + mso ? '   ' + (owed + mso) + ' TO CHOOSE' : ''), VW / 2, road.length ? 18 - oy : 22 - oy, UI.dim, 'center', 6);
   const opts = c ? c.opts : CARD, n = Math.max(1, opts.length), gap = 6, cw = Math.floor((VW - 16 - gap * (n - 1)) / n), top = 34 + oy, statCard = !c || c.kind === 'stat', ch = statCard ? 94 : 78;
   opts.forEach((k, i) => { const x = 8 + i * (cw + gap), sel = !!c && i === u.i, stat = !c || c.kind === 'stat', full = stat && (cd[k.id] || 0) >= CARD_CAP, own = !!k.own;
     g.fillStyle = sel ? 'rgba(60,80,50,0.92)' : 'rgba(26,24,36,0.92)'; g.fillRect(x, top, cw, ch);
@@ -4846,10 +4847,9 @@ function drawCard() { const u = cardUi; if (!u) return; const h = hero(), lv = h
     TCH.hit(x, top, cw, ch, () => { if (!c) return; if (u.i === i) cardTake(i); else { u.i = i; SFX.ui(); } }); });
   const below = top + ch + 5;
   const nx = levelsToPerk(lv, h), nm = nextMilestone(lv, h);
-  text(nm === null ? 'EVERY PERK IS YOURS' : nx + (nx === 1 ? ' LEVEL' : ' LEVELS') + ' TO YOUR NEXT PERK (LEVEL ' + nm + ')', VW / 2, below, UI.gold, 'center', 6);
+  text(nm === null ? 'EVERY PERK IS YOURS' : nx + (nx === 1 ? ' LEVEL' : ' LEVELS') + ' TO YOUR NEXT PERK (LEVEL ' + nm + ')', VW / 2, road.length ? 26 - oy : below, UI.gold, 'center', 6);
   const perks = Object.entries(cd.ms || {}).sort((a, b) => a[0] - b[0]).map(([, id]) => perkName(id)).filter(Boolean);
-  const road = roadToL50(PROG, h, lv);
-  if (perks.length) wrap('PERKS: ' + perks.join(', '), VW - 20, 6).slice(0, road.length ? 1 : 3).forEach((ln, j) => text(ln, VW / 2, below + 10 + j * 8, UI.sel, 'center', 6));
+  if (perks.length && !road.length) wrap('PERKS: ' + perks.join(', '), VW - 20, 6).slice(0, 3).forEach((ln, j) => text(ln, VW / 2, below + 10 + j * 8, UI.sel, 'center', 6));
   if (road.length) drawRoadToL50(road, VH - 46);
   const help = u.msgT > 0 ? u.msg : c ? 'LEFT/RIGHT  Z TAKE IT  ESC LATER  ' + moreKey() + ' RESPEC' : 'Z OR ESC BACK   ' + moreKey() + ' RESPEC (' + ((PROG.cardFree || {})[h] ? 'FREE ONCE' : RESPEC_SILVER + ' SILVER') + ')';
   text(fitName(help, VW - 16, 6), VW / 2, VH - 12, u.msgT > 0 ? UI.gold : UI.sel, 'center', 6);
@@ -4857,13 +4857,15 @@ function drawCard() { const u = cardUi; if (!u) return; const h = hero(), lv = h
 const isMinorMs = n => n <= 20;
 /* THE ROAD TO L50 (claude/ltfork, brief-lategame2 sec 2): the six technique levels as a strip of pips on the level-up card. A taken pip names the pick (green; at a fork the
    other option is struck dim: LOCKED), the next pip is lit, the rest are dim; a fork shows both names, one per line; L50 is a gold-framed double slot (the two capstones). */
+/* a pip is ~7 letters wide: a long technique name shows its last word (COUNTER-THRUST: THRUST, LONG GUARD: GUARD), cut only if that still will not go */
+function pipName(n, w) { if (inkW(n, 6) <= w) return n; const l = String(n).split(/[ -]/).pop(); return inkW(l, 6) <= w ? l : fitText(l, w, 6); }
 function drawRoadToL50(road, y) { const n = road.length, gap = 3, pw = Math.floor((VW - 16 - gap * (n - 1)) / n), ph = 31;
   road.forEach((r, i) => { const x = 8 + i * (pw + gap), lit = r.state === 'next', col = r.state === 'taken' ? '#8fd160' : lit ? UI.sel : UI.dim;
     g.fillStyle = 'rgba(26,24,36,0.85)'; g.fillRect(x, y, pw, ph); g.strokeStyle = r.capstone ? '#ffd36b' : lit ? UI.sel : 'rgba(255,255,255,0.16)'; g.lineWidth = 1; g.strokeRect(x + 0.5, y + 0.5, pw - 1, ph - 1);
-    text('L' + r.level + (r.capstone ? ' CAPSTONE' : r.fork ? ' FORK' : ''), x + pw / 2, y + 2, r.capstone ? '#ffd36b' : col, 'center', 6);
-    if (r.state === 'taken' && !r.fork) text(fitName(r.picked.name, pw - 4, 6), x + pw / 2, y + 12, col, 'center', 6);
-    else if (r.fork) r.options.forEach((o, j) => text(fitName((o.locked ? 'X ' : r.state === 'taken' ? '> ' : '') + o.name, pw - 4, 6), x + pw / 2, y + 12 + j * 9, o.locked ? UI.dim : r.state === 'taken' ? '#8fd160' : col, 'center', 6));
-    else if (r.options[0]) text(fitName(r.options[0].name, pw - 4, 6), x + pw / 2, y + 12, col, 'center', 6); }); }
+    text('L' + r.level + (r.capstone ? ' CAP' : r.fork ? ' FORK' : ''), x + pw / 2, y + 2, r.capstone ? '#ffd36b' : col, 'center', 6);
+    if (r.state === 'taken' && !r.fork) text(pipName(r.picked.name, pw - 4), x + pw / 2, y + 12, col, 'center', 6);
+    else if (r.fork) r.options.forEach((o, j) => text((o.locked ? 'X ' : r.state === 'taken' ? '> ' : '') + pipName(o.name, pw - 4 - (o.locked || r.state === 'taken' ? 12 : 0)), x + pw / 2, y + 12 + j * 9, o.locked ? UI.dim : r.state === 'taken' ? '#8fd160' : col, 'center', 6));
+    else if (r.options[0]) text(pipName(r.options[0].name, pw - 4), x + pw / 2, y + 12, col, 'center', 6); }); }
 /* THE SIM (tools/xp.mjs): the campaign in the order it opens - a secret wood straight after the wood that opens it - priced by the same
    xpFoe the kills use. A straight run kills XP_KILL_NORMAL of what a wood holds, every mini and boss, and takes the share; a full clear
    takes everything and every quest as well. old is the level the count of woods gave. */

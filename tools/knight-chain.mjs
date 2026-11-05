@@ -3,7 +3,7 @@
    a guard), the heavy cut is ONE fixed weight, the SHIELD RAM (no grace, a link opens a guard), UP+C at 3 links is the SHIELD CHARGE, and the L25-L50 techniques do what
    their card says. Real page, real input. One headless browser. */
 import { openPage } from './cdp.mjs';
-const WANT = (process.env.ONLY || 'chain,riders,bash,heavy,ram,charge,tech').split(',');
+const WANT = (process.env.ONLY || 'chain,riders,bash,heavy,ram,charge,tech,hook').split(',');
 const pg = await openPage({ audio: false, fonts: false });
 const fail = [], t = (ok, msg) => { if (!ok) fail.push(msg); };
 const R = {};
@@ -93,6 +93,14 @@ try {
     t(k.linkCutAt > 0 && k.linkCutAt < 28 && k.linkCutLinks === 1 && k.linkCutBroken > 0, 'LINK CUT (kfork): HOLD X with a link spends it, the heavy falls before 0.5 s and breaks the guard: ' + JSON.stringify(k));
     t(k.wheelHurt > 0 && k.wheelBroke && k.wheelLinks === 0 && k.wheelNoCharge, 'THE BREAKING WHEEL (kfork): UP+C at three links hurls the shield (not the charge), hurts and breaks the guard it crosses, spends the links: ' + JSON.stringify(k));
     t(k.ironLinks === 2, 'IRON LINKS II: five idle seconds do not drop a link: ' + JSON.stringify(k));
+  }
+  if (WANT.includes('hook')) {   /* (claude/forkproof) SHIELD HOOK: the throw strikes an archer, the shield turns for home and drags it along the floor; a boss is never hooked */
+    R.hook = await ev(`
+      const run=(ms,tp,dx)=>{const [e]=__set([[tp,dx]],{ms,skills:{shieldThrow:true},loadout:['shieldThrow']});const p=P();p.face=1;e.face=-1;BK.press('throw');let f=0,d0=Math.abs(e.x-p.x),dmin=d0,hooked=false,hp0=e.hp;while(f++<140){BK.sim(1);e.cd=99;dmin=Math.min(dmin,Math.abs(e.x-p.x));}return {d0:Math.round(d0),dmin:Math.round(dmin),hooked,hurt:hp0-e.hp,stag:+(e.stagger||0).toFixed(2),alive:e.alive};};
+      o.hook=run({40:'kshook'},'archer',110);o.plain=run({},'archer',110);o.shield=run({40:'kshook'},'shield',60);`);
+    const h = R.hook;
+    t(h.hook.hurt > 0 && h.hook.dmin <= 24 && h.plain.dmin > 60, 'SHIELD HOOK (forkproof): the thrown shield hooks an archer and drags it to ~14 px; without the technique it stays: ' + JSON.stringify(h));
+    t(h.shield.dmin >= h.shield.d0 - 40, 'SHIELD HOOK: a non-ranged foe is struck but not dragged: ' + JSON.stringify(h));
   }
 } finally { pg.close(); }
 console.log(JSON.stringify(R));
