@@ -16,6 +16,7 @@ import { PLAN as RT_PAL } from './paladin-boss.js'; import { PLAN as RT_PUP } fr
 import { gbPlan, gbOpen, PLAN as RT_GB } from './grubbag.js'; import { bzcPlan, bzcOpen } from './bzchief.js';   /* THE BERSERKER CHIEFTAIN (claude/warcairn): the bot reads his tells, the hatchet, the split - and works the drums in his frenzy - off his own module */   /* LORD GRUBBAG THE GLUTTON (claude/kitchengate): the bot reads his tells, the rings, the belch's waves, the gravy, the grab - and works the pie oven - off his own module */
 import { bbPlan, bbOpen, PLAN as RT_BB } from './battering-beast.js';   /* THE BATTERING BEAST (claude/palisadewood): the bot reads his tells, the stakes' rings, the volley lanes, the timbers and the clearing's scaffolds off his own module */
 import { hqPlan } from './hornet-queen-plan.js'; import { hqOpen } from './hornet-queen.js';   /* THE HORNET QUEEN 2 (claude/hornetsnest): the bot reads her tells, the rings, the stingers, her loop and works her rules */ import { otPlan, otOpen, PLAN as RT_OT, OT as OT_K, underLine as OT_UNDER } from './old-tusker.js'; import { btPlan, btOpen } from './bog-troll.js'; const OT_W = OT_K.w; const GEO_FELL = false;   /* THE BOG TROLL (claude/fenroad): the bot reads the bubbles, the bulge, his tells and the rings off his own module, and works the lure */   /* OLD TUSKER (claude/oldtusker): the bot reads his tells, the clods, the waves and the clearing's pines off his own module */
+import { dkPlan } from './demon-king.js';   /* (claude/skytune) THE DEMON KING in bossLab: the skylab row */
 import { fdPlan, fdOpen } from './fire-drake.js';   /* THE FIRE DRAKE (claude/drakewire): the bot works THE CHAIN RULE (src/fire-drake.js fdPlan) */
 import { ssPlan, ssOpen, PLAN as RT_SS } from './shriek-sisters.js';   /* THE SHRIEK SISTERS (claude/rookery): the bot reads the red lines (and their lock), the rocks' rings, the marks, the wave, the snatch off their own module */
 const PLAN_CLOCKS = [RT_SS, RT_GB, RT_BB, RT_OT, RT_QUEEN, RT_DJINN, RT_DRILL, RT_FOREMAN, RT_COL, RT_FOG, RT_GANG, RT_CRAB, RT_HAWK, RT_HOUR, RT_HUNT, RT_LANT, RT_PAL, RT_PUP, RT_MAT, RT_SCARAB];
@@ -851,13 +852,14 @@ async function runbossLab(BK, opts) {
        paladin for a second on whatever he is dropped on, and at the Roc's door that is the glass over the shaft */
     BK.reset();
     /* A LEVEL'S MINI, fought the same way: opts.mini puts the bot in L.mini's room against L.mini's boss, not the arena's */
-    const L = BK.L; let A = opts.mini ? L.mini : L.arena; out.progress++;   /* (claude/gorm2: let - KING GORM's fight moves from his hall to his glade) */
+    const L = BK.L; let A = opts.mini ? L.mini : L.arena; if (!A && L.skyMount) A = { boss: 'demonking', sky: true, floor: 0, trigger: 0 }; out.progress++;   /* (claude/skytune) the sky fight has no arena: the hero stands on the drake's back where the level put him */   /* (claude/gorm2: let - KING GORM's fight moves from his hall to his glade) */
     if (!A) { rows.push({ lvl: lvId, h, skipped: opts.mini ? 'no mini' : 'no arena' }); continue; }
     /* A MINI IS THE ONE MARKED mini: the Weaver's level has small spiders, the Boatswain's ship has bosuns, the Overman's tomb has propmen - the first of the kind found was one of those */
     const boss = BK.enemies().find(e => e.t === A.boss && e.alive && (!opts.mini || e.mini));
     if (!boss) { rows.push({ lvl: lvId, h, skipped: 'no boss' }); continue; }
     for (const e of BK.enemies()) if (e !== boss && !e.maxHp) e.alive = false;
-    if (A.carpet) { BK.board(); BK.sim(30); }   /* THE SKY FIGHT: its fight starts when the carpet is boarded */
+    if (A.sky) { BK.sim(90); }
+    else if (A.carpet) { BK.board(); BK.sim(30); }   /* THE SKY FIGHT: its fight starts when the carpet is boarded */
     else { if (A.start) BK.tp(A.start[0], A.start[1]); else BK.tp(Math.round(A.trigger / 16) + (A.reverse?-1:1), Math.round(A.floor / 16) - 1);   /* A.start: a room whose floor is no place to stand (the Gate Gargoyle's spikes) says where the fight begins */ if (opts.nudge) BK.P.x += opts.nudge; BK.sim(30); }   /* opts.nudge: start a few px off, for reps of a fight no dice reach (the Deep and the Hurricane replay identically under any seed) */
     /* THE QUARTERMASTER GOES UP HER SHIP: the playtest walker knows ropes, steps and ledges, so it follows her deck to deck */
     const walker = boss.t === 'quarter' ? PT.makeBot(BK) : null; if (walker && !LABP.v2) walker.drink = false;   /* (claude/survival) the legacy bot never drinks: its rows stay what they were */
@@ -926,7 +928,7 @@ async function runbossLab(BK, opts) {
         if (dkS.hp >= 0 && P.hp < dkS.hp - 0.5) { dkS.hitF = f; if (P.atk >= 0) dkS.hitSwF = f; } dkS.hp = P.hp; }
       if(!normalHealth){P.hp = P.maxHp; P.dead = 0;} // refill mode observes health separately; stamina must be earned back by the real recovery rule
       const hum=BK.labHuman!==false;if(P.st<(hum?(ROLL_COST[h]||24)+2:12))P.labRest=true;if(P.st>=(hum?Math.min(60,P.maxSt*.65):Math.min(48,P.maxSt*.6)))P.labRest=false;   /* WEIGHT: rest before the bar is below a roll (it was below 12), back in at 60 (it was 48) */
-      if(P.labRest&&!P.plunge&&boss.t!=='windcaller'&&boss.t!=='hourglassking'&&boss.t!=='scarabmother'&&boss.t!=='tombking'&&boss.t!=='oldtusker'&&boss.t!=='shrieksisters'&&boss.t!=='batteringbeast'&&boss.t!=='grubbag'&&boss.t!=='hornetqueen'&&boss.t!=='bogtroll'&&boss.t!=='firedrake'&&boss.t!=='matriarch'&&boss.t!=='colossus'&&boss.t!=='greatdrill'&&boss.t!=='mother'&&boss.t!=='undeadmage'&&boss.t!=='pyromancer'&&boss.t!=='gravewarden'&&boss.t!=='hedgewarden'&&boss.t!=='gargoyle'&&boss.t!=='winchmaster'&&boss.t!=='duneworm'&&boss.t!=='lanterneater'&&boss.t!=='cisternqueen'&&boss.t!=='gangleader'&&boss.t!=='djinn'&&boss.t!=='hawkmistress'&&boss.t!=='fogknight'&&boss.t!=='huntmaster'&&boss.t!=='owl'&&boss.t!=='champion'&&boss.t!=='admiral'&&boss.t!=='frog'){   /* (claude/owl3: and the Owl Reeve's - a rest stood still on her pellets' marks and backed blind toward THE DROP; her hands wait by a lamp in their own branch, still off every mark) */   /* (and the Dune Worm's: his hands rest inside their own branch, still off every tell - a rest that backed off blind stood in his sinkholes) */   /* (the Winchmaster's too, round three: its floor is the pit, and this rest backs 30 px away from him - off his ledge into the spikes, measured, over and over) */   /* (the Mother's pilot rests inside its own branch: resting used to stand it still under her vines) */
+      if(P.labRest&&!P.plunge&&boss.t!=='windcaller'&&boss.t!=='hourglassking'&&boss.t!=='scarabmother'&&boss.t!=='tombking'&&boss.t!=='oldtusker'&&boss.t!=='shrieksisters'&&boss.t!=='batteringbeast'&&boss.t!=='grubbag'&&boss.t!=='hornetqueen'&&boss.t!=='bogtroll'&&boss.t!=='firedrake'&&boss.t!=='demonking'&&boss.t!=='matriarch'&&boss.t!=='colossus'&&boss.t!=='greatdrill'&&boss.t!=='mother'&&boss.t!=='undeadmage'&&boss.t!=='pyromancer'&&boss.t!=='gravewarden'&&boss.t!=='hedgewarden'&&boss.t!=='gargoyle'&&boss.t!=='winchmaster'&&boss.t!=='duneworm'&&boss.t!=='lanterneater'&&boss.t!=='cisternqueen'&&boss.t!=='gangleader'&&boss.t!=='djinn'&&boss.t!=='hawkmistress'&&boss.t!=='fogknight'&&boss.t!=='huntmaster'&&boss.t!=='owl'&&boss.t!=='champion'&&boss.t!=='admiral'&&boss.t!=='frog'){   /* (claude/owl3: and the Owl Reeve's - a rest stood still on her pellets' marks and backed blind toward THE DROP; her hands wait by a lamp in their own branch, still off every mark) */   /* (and the Dune Worm's: his hands rest inside their own branch, still off every tell - a rest that backed off blind stood in his sinkholes) */   /* (the Winchmaster's too, round three: its floor is the pit, and this rest backs 30 px away from him - off his ledge into the spikes, measured, over and over) */   /* (the Mother's pilot rests inside its own branch: resting used to stand it still under her vines) */
         k.left=k.right=k.up=k.down=k.jump=k.block=k.atk=k.throw=false;
         const wet=(L.pools||[]).some(q=>P.x>q.x0&&P.x<q.x1&&P.y>q.y);
         if(wet&&P.ground){BK.press('jump');P.labJump=24;}if(P.labJump>0){P.labJump--;k.jump=true;}
@@ -1861,6 +1863,32 @@ async function runbossLab(BK, opts) {
         if(pl.atk&&P.atk<0){P.face=pl.face||P.face;BK.press('atk');swings++;}
         if(smOpen(boss)&&!wasOpen)opened++;wasOpen=smOpen(boss);
         const was=P.hp,m0=boss.mode;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(m0,Math.max(0,was-P.hp));if(opts.onFrame)await opts.onFrame({boss,P,f,h,lvl:lvId,open:smOpen(boss),why:pl.why});if(f%600===599)await yieldNow();continue;
+      }
+      if(boss.t==='demonking'){
+        /* THE DEMON KING (claude/skytune): src/demon-king.js dkPlan reads what a player sees - the bolt coming (the gold ring), the swoop/whip lines, the bomb rings, the gold knockdown window.
+           A reading player answers each bolt ONCE: swing it back (65%), guard it (25%: held C for a shield, a tap on the beat for a deflector), or miss it (10%); ducks the swoop and a high whip,
+           jumps a low whip, steps off a bomb ring, and runs to him and cuts while he is DOWN. He is never chased otherwise (chip is x0.4). */
+        k.left=k.right=k.up=k.down=k.jump=k.block=k.atk=false;
+        const KH=BK.demonKing,F=KH&&KH.f();
+        if(f===0||!P.labDkMem)P.labDkMem={ch:{},rd:{}};
+        const pl=F?dkPlan(F,{x:P.x,y:P.y},LAB_REACH[h]+(h==='pyro'?40:6)):{swing:null,parry:null,duck:false,jump:false,stepTo:null,hit:false};
+        const mem=P.labDkMem;let guard=false;
+        if(pl.swing!=null){ if(mem.ch[pl.swing]===undefined){const r=Math.random();mem.ch[pl.swing]=r<0.65?'swing':r<0.9?'guard':'miss';}
+          const bq=F.bolts.find(q=>q.id===pl.swing);
+          if(mem.ch[pl.swing]==='swing'&&P.atk<0&&!P.labRest&&bq){P.face=bq.x>=P.x?1:-1;BK.press('atk');swings++;}
+          else if(mem.ch[pl.swing]==='guard'&&bq){P.face=bq.x>=P.x?1:-1;guard=true;} }
+        const readIt=key=>{if(mem.rd[key]===undefined)mem.rd[key]=Math.random()<0.85;return mem.rd[key];};
+        const key=(F?F.mode:'')+(F?Math.floor(F.t/2):0);
+        if((pl.duck||pl.jump)&&!readIt(key)){}
+        else { if(pl.duck&&P.ground)k.down=true; if(pl.jump&&P.ground&&(P.labJumpF===undefined||f-P.labJumpF>14)){BK.press('jump');P.labJumpF=f;P.labJump=16;} }
+        if(P.labJump>0){P.labJump--;k.jump=true;}
+        if(pl.stepTo!=null&&(!F.rings.length||readIt('b'+Math.floor(F.t/3)))&&Math.abs(pl.stepTo-P.x)>3)k[pl.stepTo>P.x?'right':'left']=true;
+        if(guard)k.block=SHIELDED(h)?true:DEFLECTS(h)?DEFLECT_TAP(f):(f%30<4);
+        if(pl.hit&&F){ P.face=F.x>=P.x?1:-1; if(P.atk<0&&!P.labRest){BK.press('atk');swings++;} }
+        if(F&&F.open!==undefined&&F.open&&!wasOpen)opened++;const op=!!(F&&(F.mode==='downed'));if(op&&!wasOpen)opened++;wasOpen=op;
+        const was=P.hp,m0=boss.mode;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(m0,Math.max(0,was-P.hp));
+        if(F&&F.beaten){boss.alive=false;}
+        if(opts.onFrame)await opts.onFrame({boss,P,f,h,lvl:lvId,open:op});if(f%600===599)await yieldNow();continue;
       }
       if(boss.t==='firedrake'){
         /* THE FIRE DRAKE (claude/drakewire): src/fire-drake.js fdPlan reads what a player sees - the scorched ring, its tells a reaction late, the dive's red ring, the crests, the vents' glow -
