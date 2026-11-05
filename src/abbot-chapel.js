@@ -78,7 +78,7 @@ export function layAbbotChapel({ T, TS, W, set, at, block, air, boards, rope, en
       { floor: 30, deck: 24, roof: 19, spans: [[55, 59], [81, 85]], bridges: [{ x0: 60, x1: 80, bells: [57.5, 83.5] }],
         braziers: [{ smoke: 51, spot: 53.5 }, { smoke: 89, spot: 86.5 }], ropes: [63, 70, 77], land: [50, 92], floorSpans: [[49, 93]], callAt: [65, 69, 73] },
       { floor: 19, deck: 13, roof: 4, spans: [[54, 58], [67, 74], [83, 87]], bridges: [{ x0: 59, x1: 66, bells: [55.5] }, { x0: 75, x1: 82, bells: [86.5] }],
-        braziers: [{ smoke: 50.5, spot: 52.5 }, { smoke: 90, spot: 88 }], ropes: [57, 71, 85], land: [50, 92], floorSpans: [[49, 76], [81, 93]], callAt: [60, 65, 85], landX: 66 }],
+        braziers: [{ smoke: 50.5, spot: 52.5 }, { smoke: 91, spot: 89.5 }], ropes: [57, 71, 85], land: [50, 92], floorSpans: [[49, 76], [81, 93]], callAt: [60, 65, 85], landX: 66 }],
     collapse: { hole: [77, 80, 19], rubble: [[77, 79, 21], [73, 75, 27]] },
     bars: [{ x0: 48, x1: 48, y0: 11, y1: 13, open: 'AIR' }, { x0: 92, x1: 92, y0: 19, y1: 19, open: 'NET' }],
     climb: [[74, 27], [70, 24], [78, 21], [82, 19]],   /* the way up after the floor goes (the lab's hands walk it): the rubble, the rood, the rubble, the belfry floor */
