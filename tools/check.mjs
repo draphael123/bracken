@@ -306,6 +306,14 @@ if (take('palisadewood')) results.push(run('palisadewood', process.execPath, ['t
    the pie and the choke, the dishes, the phases, the poses (its own line: the big list is edited by every lane); and its page smoke */
 if (take('kitchengate')) results.push(run('kitchengate', process.execPath, ['tools/kitchengate.mjs']));
 if (take('kitchengate-probe')) results.push(run('kitchengate-probe', process.execPath, ['tools/kitchengate-probe.mjs'], { PORT: String(portFor(7)) }));
+/* HEART OF THE MOUNTAIN (claude/heartinteg; own lines, the big list is edited by every lane): the fire drake (node), the sky mount (node), the Demon King (node), the reflect kit (node) + its two browser probes, the scene chain (node) */
+if (take('fire-drake')) results.push(run('fire-drake', process.execPath, ['tools/fire-drake.mjs']));
+if (take('sky-mount')) results.push(run('sky-mount', process.execPath, ['tools/sky-mount.mjs']));
+if (take('demon-king')) results.push(run('demon-king', process.execPath, ['tools/demon-king.mjs']));
+if (take('reflect-kit')) results.push(run('reflect-kit', process.execPath, ['tools/reflect-kit.mjs']));
+if (take('heart-scenes')) results.push(run('heart-scenes', process.execPath, ['tools/heart-scenes.mjs']));
+if (take('reflect-probe')) results.push(run('reflect-probe', process.execPath, ['tools/reflect-probe.mjs'], { PORT: String(portFor(7)) }));
+if (take('reflect-owed')) results.push(run('reflect-owed', process.execPath, ['tools/reflect-owed.mjs'], { PORT: String(portFor(7)) }));
 /* THE WAR CAIRN and THE BERSERKER CHIEFTAIN (claude/warcairn, Node): the told spur off Highcrown, the five areas, start + two shrines, every drum gate / required slab / the gorge's
    hatchet a LOCK, no goblins, the hands in a fake world (the beat, war-rage, the stumble, the surge, gates, slabs, cornices, an arrow is a beat), his B15 floors, BREAK THE BEAT,
    the stuck cross-chop, P3's own drum, the poses, the bot, the WARCAIRN_SHIPS unlock (its own line: the big list is edited by every lane); and its page smoke */
