@@ -129,7 +129,7 @@ export function buildFogCanal({ painter, T, TS }) {
   /* THE LOW BRIDGE: a footbridge over the pound whose timbers hang to a hand over the deck on its far half. Duck under on the offside, or keep to the towpath side */
   block(56, 58, 34, 35); beams.push({ x0: px(56), x1: px(59), y: 40 * TS - 2 - 9, dmg: 10, name: 'THE LOW BRIDGE', side: 'off' });
   archer(57, 33, 'the low bridge');                                          /* in the thin fog: he looses at her lantern-lit deck as she comes under */
-  boards(59, 37, 9); bargee(61, 36, 'the towpath'); bargee(65, 36, 'the towpath');
+  boards(59, 37, 9); bargee(61, 36, 'the towpath');   /* (claude/fogcanalfix) two towpath bargees, not three: the hop up to the first lock is its own beat */
   coins([47, 36], [53, 36], [61, 36], [64, 36]);
 
   // ---------------- 2. THE FIRST LOCK (68-81) AND THE MILL (82-121) ----------------
@@ -156,7 +156,8 @@ export function buildFogCanal({ painter, T, TS }) {
   block(86, 103, 15, 15); coins([86, 14], [87, 14], [88, 14], [89, 14]);     /* (claude/canalfix, UPGRADE D) THE MILL ATTIC: a loft floor under the roof, up off the top floor's east end, the miller's last coins at its far end (a pocket) */
   /* (claude/canalfix, review fixes 9 and 11) the mill's two on-foot bargees hook from THE WHARF FLOOR now, down at her deck as she comes in under it and
      while the mill bridge holds her there; the mill-top archer guards the bridge's capstan; the mill checkpoint is gone (Daniel, 10-01: fewer) */
-  bargee(92, 29, 'the mill wharf'); bargee(98, 29, 'the mill wharf');
+  /* (claude/fogcanalfix) THE MILL CLIMB IS A CLEAN RUN: the wharf's two dockhands came off it (the climb is the level's first platforming section, x80-127); one waits on the far bank by the capstan now, beside its archer */
+  bargee(119, 29, 'the mill bridge');
   coins([88, 26], [95, 23], [89, 20], [97, 17]);
   ent('mend', 102, 17);
   post(101, 29); grindy(104, 33, 'under the mill wharf');                            /* under the wharf floor: it comes aboard while the bridge holds her */
@@ -206,7 +207,7 @@ export function buildFogCanal({ painter, T, TS }) {
   wisp(166, 28, [168, 32], 'the fog wall lure');
   boarder(168, 31); boarder(170, 31); boarder(172, 31);                      /* UPGRADE C: THE BOARDING GANG, waiting in the fog wall (a skiff brings them to her bow) */
   boards(176, 25, 6); archer(178, 24, 'the fog wall footbridge');                       /* a footbridge high over the fog wall */
-  grindy(179, 33, 'the fog wall water');                                           /* under her second stop: it comes aboard while you are at the horn */
+  /* (claude/fogcanalfix) the fog wall's water grindylow is gone: the boarding gang, the footbridge archer and the pier's bargee are the wall's fight; the wall is three beats of fight, not four */
   boards(175, 30, 11); horn(183, 29, ['F2'], 6);                             /* THE PIER and its horn, in the thick of it: a long jetty over the water she stalls under, wherever the bank horn's clear ran out */
   coins([159, 29], [173, 29], [182, 29]);
   ent('mend', 182, 29); post(185, 29); bargee(184, 29, 'the second horn');   /* the pier's bargee, by its horn: he hooks at her deck below */
@@ -225,11 +226,11 @@ export function buildFogCanal({ painter, T, TS }) {
   const P4 = reach('P4', 232, 333, 23, 18, 18); block(232, 247, 24, H - 1);   /* (claude/canal4) the summit pound runs on into the legging tunnel (section 5) */
   gate('G6', 231, 17, 22, L4, P4); block(231, 231, 23, H - 1);
   block(186, 197, 39, 39);                                                   /* (under the mill pound's end) */
-  sluice(197, 32, 'L2'); sluice(208, 32, 'L2'); grindy(201, 28, 'the set lock');   /* the drain paddle on the lower gate's face, the fill paddle on the upper's; the grindylow up in the full chamber */
-  boards(203, 25, 6); bargee(206, 24, 'the first chamber ledge');                         /* a ledge over the first chamber: he waits for her to come up to him */
+  sluice(197, 32, 'L2'); sluice(208, 32, 'L2'); grindy(199, 28, 'the set lock');   /* the drain paddle on the lower gate's face, the fill paddle on the upper's; the grindylow up in the full chamber */
+  boards(203, 25, 6);                                                        /* a ledge over the first chamber (claude/fogcanalfix: its bargee came off the lock run - the stranded grindylow at the gate is the chamber's whole fight; the balance beam's bargee is the flight's only dockhand now) */
   boards(215, 16, 4); ladder(214, 16, 27); sluice(217, 15, 'L3');           /* THE BALANCE BEAM over the second chamber, its ladder and its paddle */
   bargee(216, 15, 'the balance beam');
-  grindy(218, 28, 'the second chamber');                                             /* the second chamber's steps */
+  /* (claude/fogcanalfix) THE FLIGHT IS A CLEAN LOCK RUN: the second chamber's grindylow came off it (chamber one keeps the stranded one, UPGRADE A) - paddle, ride, ladder, summit bridge, swing, mouth: the level's second platforming section */
   ladder(230, 16, 22);                                                       /* up the summit gate's face to its top */
   weedWater.push([232, 236, 'P4']); weed(232, 236, 18);
   /* THE SUMMIT BRIDGE (TWIST: across, it is YOUR way over the weed to the last paddle; then it holds the barge, and it must be swung behind you) */
@@ -279,7 +280,7 @@ export function buildFogCanal({ painter, T, TS }) {
   air(279, 298, 11, 13);   /* (claude/canal5) THE LEGGERS' RECESS: the vault stands three rows higher over the ledges - under the tunnel's own roof a hero on a ledge had 2 px over his head, so the gap could not be jumped at all (Daniel 10-06: "glitchy, awkward") */
   post(284, 14); sign(281, 14, 'STOP-PLANKS HOLD HER. A WINDLASS ON THE LEDGE WINDS THEM UP.');
   bargee(291, 14, 'the stop-planks'); archer(297, 14, 'the stop-planks');   /* the watchman sees only the lit: the ledge lantern by the gap, or her own */
-  grindy(286, 18, 'the stop-planks water'); grindy(293, 18, 'the stop-planks water');   /* (claude/batch73) the grindylows are on the water, the bargee and the archer on the planks: two squads, one floor each (sprinkle-cap) */
+  grindy(293, 18, 'the stop-planks water');   /* (claude/batch73) the grindylows are on the water, the bargee and the archer on the planks: two squads, one floor each (sprinkle-cap) */
   rib(277);
   /* THE NEST (REMIX): low beams over a nest; THE MOON SHAFT, open to the sky, lights her whatever her lantern says */
   rib(301); rib(305, 1); rib(311); rib(316);
@@ -287,7 +288,7 @@ export function buildFogCanal({ painter, T, TS }) {
   air(307, 308, 2, 13); air(304, 306, 2, 4);   /* (claude/canal5) its GRATING (rows 0-1) is iron, and SOLID: the shaft was open to the sky - up its ladder and out over the hill, and she never followed (Daniel 10-06) */ boards(307, 5, 1); ladder(308, 3, 17); coins([304, 4], [305, 4], [306, 4]);   /* the shaft, and a niche off its top: the leggers' stores (a pocket) */
   wisp(314, 16, [318, 17], 'the nest light');                                 /* a cold light ahead in the dark, where no lantern is */
   /* THE DEEP LOCK (EXAM): the last reach's ledge (a lamplighter, its lantern, a watchman, the paddle), the gallery over the chamber, its ladder */
-  lamplighter(324, 14, 'the last reach'); post(326, 14); archer(330, 14, 'the last reach');
+  grindy(327, 18, 'the last reach'); lamplighter(324, 14, 'the last reach'); post(326, 14); archer(330, 14, 'the last reach');
   air(323, 323, 12, 13); sign(323, 14, 'THE DEEP LOCK. STRIKE ITS PADDLE AND SHE GOES DOWN TO THE BASIN.');
   const L6 = reach('L6', 335, 344, 49, 44, 18, 'hi', { rate: 52, needsHer: true });   /* (claude/canal5) needsHer: its paddle will not drain it with her outside it (she was shut out behind its upper gate) */ block(335, 344, 50, H - 1); air(335, 344, 14, 14);
   ledge(322, 343);                                                            /* the last reach's ledge, on over the upper gate as the gallery over the chamber (laid after the chamber is carved) */
