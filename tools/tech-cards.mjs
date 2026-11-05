@@ -112,5 +112,11 @@ check('road to L50', () => withForks(() => {
   assert(r[5].capstone && r[5].options.length === 2 && r[5].options.every(o => !o.locked) && !r[0].fork); assert.deepEqual(PR.roadToL50(mk('warden'), 'warden', 50), []);
 }));
 check('knight forks are real: L30 / L40 / L50 pairs, roles differ, B is not the default', () => { for (const n of PR.FORK_LEVELS) { assert(PR.isFork('knight', n)); const [a, b] = PR.techniquesAt('knight', n); assert(a.role && b.role && a.role !== b.role && b.trade === a.trade); } assert.deepEqual(PR.techniquesAt('knight', 50).map(t => t.id), ['kcharge2', 'kwheel']); assert(!PR.isFork('knight', 25) && !PR.isFork('knight', 35) && !PR.isFork('knight', 45)); });
+check('ranger kit (claude/rangerpack): forks at 30/40/50, roles differ, shared trade, capstone pair [rlong,rstorm], eight upgrades', () => {
+  for (const n of PR.FORK_LEVELS) { assert(PR.isFork('ranger', n)); const [a, b] = PR.techniquesAt('ranger', n); assert(a.role && b.role && a.role !== b.role && b.trade === a.trade, 'L' + n); }
+  assert.deepEqual(PR.techniquesAt('ranger', 50).map(t => t.id), ['rlong', 'rstorm']); assert(PR.techniquesAt('ranger', 50).every(t => t.capstone));
+  assert(!PR.isFork('ranger', 25) && !PR.isFork('ranger', 35) && !PR.isFork('ranger', 45)); assert.equal(PR.UPGRADES.ranger.length, 8);
+  const p = mk('ranger'); assert.equal(PR.perkOffer(p, 'ranger', 25)[0].id, 'rtrue'); assert(PR.hasKit('ranger'));
+});
 if (bad.length) { console.log('TECH-CARDS: ' + bad.length + ' problem(s)\n  - ' + bad.join('\n  - ')); process.exit(1); }
 console.log('Tech cards: a kit hero is dealt TECH (technique first, RECOMMENDED), UPGRADE and STAT cards L25-L50; a skipped technique is offered again; upgrades rank I then II; picks owed, respec, save validation and old-save migration hold; a hero with no kit keeps the old card.');

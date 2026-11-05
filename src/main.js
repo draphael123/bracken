@@ -180,7 +180,7 @@ import { gearTier } from './gear-tiers.js';   /* VISUAL GEAR TIERS (claude/geart
 import { makeGeomancer, GEO as GEO_K, geoTierAt, geoTierFor } from './geomancer.js';   /* and her kit: the stone she raises and what she does with it */   /* EVERY ABILITY HAS A BODY: the pose an active plays while it fires */
 import { bakeBerserkerHero } from './chars.js'; import { makeBerserker, BZ as BZ_K, smallFoe as bzSmall, bzTierFor, bzTierAt } from './berserker.js'; import { makeCrouchC } from './crouch-c.js';   /* THE BERSERKER (claude/berserker, 2026-10-04): his rig, his kit, and WORKING UP */
 import { ultRegister, ultHas, ultReady, ultFire, ultCue, ULT_LINE } from './ultimate.js';   /* (claude/ults) ONE ULTIMATE INPUT: UP + C at a full meter, for every hero */
-import { bakeRanger } from './chars.js'; import { makeRanger, RG as RG_K, rgTierFor, rgTierAt, rgWinEnd, rgShakyAt } from './ranger.js';
+import { bakeRanger } from './chars.js'; import { makeRanger, RG as RG_K, rgTierFor, rgTierAt, rgWinEnd, rgShakyAt } from './ranger.js'; import * as RTK from './ranger-tech.js';   /* (claude/rangerpack) the Ranger's L25-L50 kit */
 import { WID, tipStart as widTipStart, bandPay as widBandPay, longBox as widLongBox, driveSpeed as widDrive } from './warden-id.js'; /* (claude/wardenid) THE WARDEN'S IDENTITY PASS: the long thrust (third jab), the reach band, the phalanx skill, the pole-vault */ import { makeHeroPass, HP as HP_K, TIP as TIP_K, tipMul } from './hero-pass.js';   /* (claude/heropassa) HERO PASS A: one dodge a hero, the knight's SHIELD BASH + VALIANT STRIKE, the warden's COUNTER-THRUST + WALL PLANT + LOW HOP, the tip up to 2x */   /* THE RANGER (claude/ranger, 2026-10-14): her rig and her kit - the bow, the quiver, the knife, focus, the bash, the snare */
 import * as RFP from './reef_props.js';
 import * as FLP from './flot_props.js';
@@ -821,7 +821,7 @@ const upg = id => upgRank(PROG, hero(), id);
 const thr = (stat, i) => thrOn(PROG, hero(), stat, i);
 let mendSeen = 0;   /* TURNED BLOW: the count of turned blows last frame */
 const GEO_LIFE0 = GEO_K.stone.gnaw, GEO_PERFECT0 = GEO_K.ward.perfect;   /* (claude/geoid: HARD STONE now slows how fast a foe gnaws her stone) */   /* her stone's life and the rune-ward's perfect window before the hero's own perks */
-const cdOf = k => Math.max(0.5, (k === 'summonSkeleton' && isReaper() && tal('gleaner') ? BKIT.BLOOD.host.worms.quick : CD_MAX[k] || 3) - (k === 'whirlwind' && hero() === 'knight' ? 0.5 * upg('ucalm') : 0)) * (perk('focus') ? 0.85 : 1);
+const cdOf = k => Math.max(0.5, (k === 'summonSkeleton' && isReaper() && tal('gleaner') ? BKIT.BLOOD.host.worms.quick : CD_MAX[k] || 3) - (k === 'whirlwind' && hero() === 'knight' ? 0.5 * upg('ucalm') : 0)) * (perk('focus') ? 0.85 : 1) * (k === 'rgVolley' && hero() === 'ranger' ? RTK.upMul('volley', upg('uvolley')) : 1);   /* (claude/rangerpack) VOLLEY DRILL */
 const amul = k => grow(hero(), heroLevel()).skillMultiplier * (1 + RANK_MUL * Math.max(0, skillRank(PROG, hero(), k) - 1)) * (hero() === 'knight' ? 1 + 0.2 * (k === 'shieldThrow' ? upg('uthrow') : k === 'risingCut' ? upg('urise') : 0) : 1); // skill damage grows (and MASTERY, a perk, and the skill's RANK), cooldowns and invulnerability do not
 let treeResetT = 0, talentsBackT = 0, talentsBackWho = '', talentsBackWhy = '';   /* RESET POINTS asks twice; the trees-have-changed notice shows once */
 window.BKT = { fieldsState: () => FLD, cqState: () => (CQH && CQH.show ? CQH.show() : null),   /* (claude/arenapolish) tools/arena-polish-shots.mjs: the moon's clock and the Underwell hall's state */ stk: () => SKD, stkExplode: (x, y, r) => explode(x, y, r, DMG.bomb),   /* (claude/chief3) tools/chief3.mjs: the Stockade's hands, and a blast */ shrineFill: () => shrineFill(),   /* (claude/difficulty) tools/difficulty.mjs: a shrine's refill per mode */ lights: () => lights, get PROG() { return PROG; },   /* (claude/smallfix7) tools/gorm-unlock.mjs: the one-life Gorm clear */ vil: () => ({ grid: VG, fires, parts: parts.length }), vilSplash: (x, y, r, c) => villageSplash(x, y, r, c), vilIgnite: (tx, ty) => ignite(VG, tx, ty, 'burngob'),   /* tools/douse-agree.mjs */ gormUnlock: () => ({ fell: gormFell, live: gormFightLive(), open: !!PROG.burningOpen }), gormDie: () => die({ name: 'TEST', red: false, rule: '' }), gormWin: () => gormBeaten(), krkArmPts: a => krkArmPts(a, L.arena.floor, 0), krakLimp: (e, t) => krakenArmsLimp(e, t), krkTop: (x, n) => krkTop(x, n), krkRoadEnds: () => krkRoadEnds(),   /* (tools/kraken-reach.mjs, tools/kraken-rework.mjs) */
@@ -9591,7 +9591,7 @@ const lcBig = e => e === boss || !!e.mini || !!(L.arena && L.arena.boss === e.t)
 /* THE ULTIMATES (claude/ults): who has one, what makes it ready, what fires it. The Warden's Reach and the Pyromancer's Meteor Fall register here with one line each when their lanes land. */
 ultRegister('knight', { name: 'SHIELD CHARGE', ready: () => (P.links || 0) >= KC.max && !lcOn() && !(tech('kwheel') && thrown) && (P.ground || P.swim) && !P.climb, fire: () => { if (tech('kwheel')) wheelThrow(); else lastCharge(); return true; } });
 ultRegister('geomancer', { name: 'MOUNTAIN COLLAPSE', ready: () => !!GEO && GEO.avalancheReady() && (P.ground || P.swim), fire: () => { const ok = GEO.avalanche(); if (ok) trialEvent('meter'); return ok; } });
-ultRegister('ranger', { name: 'GREAT ARROW', ready: () => !!RGK && RGK.greatReady(), fire: () => RGK.greatArrow() });
+ultRegister('ranger', { get name() { return tech('rstorm') ? 'ARROW STORM' : tech('rlong') ? 'LONG DRAW' : 'GREAT ARROW'; }, ready: () => !!RGK && RGK.greatReady(), fire: () => RGK.greatArrow() });
 function lastCharge() {
   trialEvent('meter'); P.links = 0; P.linkT = 0; P.linkKeep = 0; P.lcBrace = LC_BRACE; P.lcLeft = 0; P.lcDir = P.face; P.lcHit = new Set();
   P.block = false; P.atk = -1; P.heavy = false; P.heavySwing = false; P.bashing = false; P.charge = 0; P.atkHeld = 0; P.chargeFull = false; P.rush = 0; P.rushRec = 0; P.vx = 0;
@@ -9755,7 +9755,7 @@ function updateCharge(dt) {
         if (SFX.rgTier) SFX.rgTier(st, RGK.focusFull()); else SFX.cutStage(st); P.rpTintT = Math.max(P.rpTintT || 0, 0.05 + 0.015 * st);
         ringAt(tx, ty, 5 + 3 * st, col, 0.3); if (st >= 2) ringAt(P.x, P.y - 14, 10 + 4 * st, col, 0.22); burst(tx, ty, 2 + 3 * st, [col, '#ffffff'], 50, 0.3, -30, 1); if (st === 3) shakeCam(1.5); }
       if (rgShaky() && !P.rgShakeSaid) { P.rgShakeSaid = true; number(P.x, P.y - 28, 'SHAKING', '#9aa39a'); shakeCam(1, 0); }   /* (claude/rangerid) held past the steady window: the hand shakes */
-      if (P.atkHeld >= rgWinEnd(rgQuick(), HEAVY_START, RGK.focusFull()) + RG_K.tiers.auto * rgQuick()) { P.rgTierWant = 1; P.rgShakyWant = 1; P.rgShown = 0; fireHeavy(); }   /* held past the window long enough, it goes by itself (shaky) */
+      if (P.atkHeld >= rgWinEnd(rgQuick(), HEAVY_START, RGK.focusFull(), rgWinX()) + RG_K.tiers.auto * rgQuick()) { P.rgTierWant = 1; P.rgShakyWant = 1; P.rgShown = 0; fireHeavy(); }   /* held past the window long enough, it goes by itself (shaky) */
       return; }
     if (isBz()) { const st = bzTierNow(); P.chargeFull = st >= 1;   /* (claude/chargetiers) THE BERSERKER'S RAGE WIND-UP: each tier arrives with a growl that climbs (SFX.bzTier), a red ring at the axes, a breath of red on him, the meter's segment + name (drawBzMeter) */
       if (st > (P.bzShown || 0)) { P.bzShown = st; P.bzTierAt = time; const T = BZ_K.tiers, tx = P.x + P.face * 4, ty = P.y - 30, col = T.cols[st];
@@ -28008,7 +28008,7 @@ function drawBzMeter(cx, cy) { const T = BZ_K.tiers, q = bzQuick(), hot = (P.rag
     under: () => hot, underCols: ['#ff6b4a', '#ff2a1a'] }); }
 /* (claude/chargetiers) THE RANGER'S THREE: the long shot, the piercing shot, the triple shot - bone, green, amber - and a green underline under T2/T3 while her focus is full (they go FOCUSED) */
 function drawRgMeter(cx, cy) { const T = RG_K.tiers, q = rgQuick(), foc = RGK.focusFull();
-  drawTierMeter(cx, cy, { n: 2, sw: 9, dy: 38, ends: [rgTierAt(1, q, HEAVY_START), rgWinEnd(q, HEAVY_START, foc)], cols: T.cols, names: T.names, labels: T.label, st: rgTier(), at: P.rgTierAt, bg: 'rgba(12,14,8,0.82)', well: 'rgba(70,80,50,0.5)', fill: 'rgba(220,226,200,0.75)',
+  drawTierMeter(cx, cy, { n: 2, sw: 9, dy: 38, ends: [rgTierAt(1, q, HEAVY_START), rgWinEnd(q, HEAVY_START, foc, rgWinX())], cols: T.cols, names: T.names, labels: T.label, st: rgTier(), at: P.rgTierAt, bg: 'rgba(12,14,8,0.82)', well: 'rgba(70,80,50,0.5)', fill: 'rgba(220,226,200,0.75)',
     under: i => i >= 1 && foc, underCols: ['#dfffb0', '#9fdc6a'] }); }   /* (claude/rangerid) TWO SEGMENTS: the full draw, then the STEADY window (a full FOCUS widens it - the green underline) */
 function drawPriceBlade(cx, cy) { if (!(P.charge > 0) || !P.ground && !P.swim) return; const st = bkTier(); if (!st) return; const n = [0, 1, 2, 3, 5, 6][st];   /* (claude/bloodknight) THE TIER'S GLOW: deeper and hotter every tier (T5 white-hot) */
   const fr = n >= DK2.price.ticks ? 3 : n >= 3 ? 2 : n >= 2 ? 1 : 0, [ox, oy] = DK_TIP[fr], x = Math.round(P.x + P.face * ox - cx), y = Math.round(P.y + oy - cy), full = n >= DK2.price.ticks, r = 3 + n, pulse = 0.55 + 0.25 * Math.sin(time * (8 + n * 2)) + (P.dkBladeT > 0 ? 0.3 : 0);
@@ -28124,8 +28124,9 @@ const bkTier = () => BKIT.boostTier(BKIT.tierFor(P.atkHeld || 0, P.bd || 0, P.ma
 /* (claude/chargetiers) THE RANGER'S THREE-TIER DRAW: the wind's quickness (STEADY DRAW, the knee, the technique rank - heavyWind over her base draw), whether a bow draw is up, and the tier it has reached (src/ranger.js RG.tiers) */
 const rgQuick = () => heavyWind() / RG_K.draw.wind;
 const rgDrawing = () => isRg() && !!RGK && RGK.bowReady() && (P.charge || 0) > 0;
-const rgTier = () => rgTierFor(P.atkHeld || 0, rgQuick(), HEAVY_START, !!RGK && RGK.focusFull());   /* (claude/rangerid) 0 partial, 1 the LONG SHOT (full draw), 2 the STEADY window (empowered) */
-const rgShaky = () => rgShakyAt(P.atkHeld || 0, rgQuick(), HEAVY_START, !!RGK && RGK.focusFull());   /* held past the steady window: the hand shakes */
+const rgWinX = () => RTK.winExtra(!!tech('rbreath'), upg('ustead'));   /* (claude/rangerpack) STEADY BREATH + STILL HAND: the steady window's extra seconds */
+const rgTier = () => rgTierFor(P.atkHeld || 0, rgQuick(), HEAVY_START, !!RGK && RGK.focusFull(), rgWinX());   /* (claude/rangerid) 0 partial, 1 the LONG SHOT (full draw), 2 the STEADY window (empowered) */
+const rgShaky = () => rgShakyAt(P.atkHeld || 0, rgQuick(), HEAVY_START, !!RGK && RGK.focusFull(), rgWinX());   /* held past the steady window: the hand shakes */
 /* (claude/chargetiers) THE BERSERKER'S RAGE WIND-UP (src/berserker.js BZ.tiers): the wind's quickness (heavyWind over his base, x rage / frenzy), the tier the hold has reached, and the start of each blow */
 const bzQuick = () => heavyWind() / BZ_K.tiers.at[0] * ((P.frenzyT || 0) > 0 ? BZ_K.tiers.frenzyQ : (P.rage || 0) >= BZ_K.rage.high ? BZ_K.tiers.rageQ : 1);
 const bzTierNow = () => bzTierFor(P.atkHeld || 0, bzQuick(), HEAVY_START);
@@ -29724,7 +29725,7 @@ function berserkerKit(dt, canAct, tired) {
 const rgTal = () => ({ deep: tal('rgDeep'), steady: tal('rgSteady'), fletch: tal('rgFletch'), far: tal('rgFar'), bodkin: tal('rgBodkin'), twin: tal('rgTwin'), eagle: tal('rgEagle'),
   keen: tal('rgKeen'), longMark: tal('rgLongMark'), snares: tal('rgSnares'), toothed: tal('rgToothed'), trail: tal('rgTrail'), kill: tal('rgKill'), apex: tal('rgApex'),
   bashLong: tal('rgBashLong'), bashBack: tal('rgBashBack'), highFlip: tal('rgHighFlip'), softStep: tal('rgSoftStep'), airDraw: tal('rgAirDraw'), cover: tal('rgCover'), last: tal('rgLast') });
-RGK = makeRanger({ boltHome: s => sendBoltHome(s, 'snatch'), get P() { return P; }, get enemies() { return enemies; }, get seeds() { return seeds; }, get parts() { return parts; }, get time() { return time; }, get LH() { return LH; }, get LW() { return LW; }, get boss() { return boss; }, TS, SFX,
+RGK = makeRanger({ tech: id => tech(id), upg: id => upg(id), boltHome: s => sendBoltHome(s, 'snatch'), get P() { return P; }, get enemies() { return enemies; }, get seeds() { return seeds; }, get parts() { return parts; }, get time() { return time; }, get LH() { return LH; }, get LW() { return LW; }, get boss() { return boss; }, TS, SFX,
   isRg: () => isRg(), tal: rgTal, spend: c => spend(c), tired: () => { P.stFlash = 0.35; }, blockCost: d => CM.blockCost(d, tal('steady')), STAM: CM.STAM, exhaust: p => CM.exhaust(p), ST, teachGuard: () => braceLesson(),   /* (claude/heroblocksb) the bow guard's price */
   isSolid: (x, y) => isSolid(x, y), tileAt: (x, y) => tileAt(x, y), isOneWay: t => isOneWay(t), knockSkip: e => KNOCK_SKIP.has(e.t), box: b => box(b), overlap: (a, b) => overlap(a, b),
   hurtAs: (b, e, d, x, pl) => hurtAs(b, e, d, x, pl), swordDmg: () => swordDmg(), amul: k => amul(k), number: (x, y, t, c) => number(x, y, t, c), sparks: (x, y, d, n) => sparks(x, y, d, n), dust: (x, y, n) => dust(x, y, n),
