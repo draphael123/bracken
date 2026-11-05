@@ -116,8 +116,8 @@ function flue(g, lx, y0, y1, Z, seed) {
 }
 /* the barrow / tomb: a segmental arch across the room's top between two pilasters */
 function vaultRib(g, lx, w, ty, Z) {
-  archRing(g, lx, lx + w, ty + 12, 9, 5, Z);
-  for (const p0 of [lx - 4, lx + w - 2]) { R(g, p0, ty + 6, 6, 8, Z.s[3]); R(g, p0, ty + 6, 6, 1, Z.s[5]); R(g, p0, ty + 13, 6, 1, Z.joint); }
+  archRing(g, lx, lx + w, ty + 20, 13, 6, Z);
+  for (const p0 of [lx - 5, lx + w - 3]) { R(g, p0, ty + 14, 8, 16, Z.s[3]); R(g, p0, ty + 14, 8, 1, Z.s[6]); R(g, p0, ty + 14, 1, 16, Z.s[5]); R(g, p0 + 7, ty + 14, 1, 16, Z.s[1]); R(g, p0 - 1, ty + 29, 10, 2, Z.s[4]); }
 }
 
 /* the rooms: called after UCA.paintRoom has painted the back wall. g's origin = tile (tx0, ty0). true = something drawn */
