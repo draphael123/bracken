@@ -2574,7 +2574,7 @@ function undercrown() {
   rail(56, 84, 34); ent('cart', 82, 33, { auto: true, dir: -1, speed: 110 });
   boards(47, 49, 34);   /* a landing off the ladder */
   ent('minerlamp', 54, 33, { lit: !UC3 }); ent('minerlamp', 70, 33, { lit: !UC3 });   /* (claude/undercrown3) cold in the gassy workings: a lamp lit here is the flame */
-  ent('sign', 52, 33, { text: UC3 ? 'FIREDAMP GATHERS UNDER THE ROOF. WHEN THE CANARY STOPS, A FLAME BURNS IT ALONG THE ROOF - DUCK UNDER IT.' : 'A POST AT EACH END. THE END YOU CUT IS THE END THAT COMES DOWN, ON WHATEVER IS UNDER IT.' });
+  ent('sign', 52, 33, { text: UC3 ? 'FIREDAMP GATHERS UNDER THE ROOF. WHEN THE CANARY STOPS, A FLAME BURNS IT. DUCK UNDER IT.' : 'A POST AT EACH END. THE END YOU CUT IS THE END THAT COMES DOWN, ON WHATEVER IS UNDER IT.' });
   if (UC3) { ent('brattice', 51, 33, { door: 'bratW', y0: 30 }); ent('canarycage', 55, 33, { chamber: 'works' });
     ent('sign', 49, 33, { text: 'A WIND DOOR. STRIKE IT OPEN OR SHUT: THE GAS GOES WHERE THE AIR GOES.' }); }
   cut(56, 84, 25, 28); interiors.push([56, 84, 25, 28, 'mine']);   /* the working over the gallery: row 29 is the slabs' course */
@@ -2618,7 +2618,7 @@ function undercrown() {
   ent('vault', 80, 55);
   ent('minerlamp', 62, 55, { lit: true }); ent('minerlamp', 78, 55, { lit: true }); ent('minerlamp', 12, 55, { lit: true });
   if (UC3) { ent('canarycage', 18, 55, { chamber: 'floodW' }); ent('brattice', 57, 55, { door: 'bratF', y0: 50 });
-    ent('sign', 60, 55, { text: 'THE WEST LEVEL IS FULL OF IT. ITS FLOOR LAMP TAKES IT WHEN IT COMES DOWN THAT FAR. CUT THE SLAB AND IT GOES UP THE HOLE.' }); }
+    ent('sign', 60, 55, { text: 'THE GAS FILLS DOWN TO THE FLOOR LAMP AND GOES. A CUT SLAB LETS IT UP THE HOLE.' }); }
   else { ent('gas', 56, 55); ent('gas', 14, 55); }
   coins([22, 53], [26, 53], [48, 53], [52, 53], [60, 54], [68, 54], [76, 54], [86, 54], [12, 54], [16, 54]);
   shaft(6, 6, 56, 88);
@@ -2638,7 +2638,7 @@ function undercrown() {
   plat(10, 90, 6); plat(17, 94, 6); plat(24, 98, 6); plat(22, 106, 6);   /* the stages down the west wall: off the rope, and down to the near walkway */
   for (let x = 40; x <= 56; x++) set(x, 100, T.PLANK);             /* the hung walkway: the slab (its posts stand on the walkways under it) */
   slab('stope', 40, 56, 100, 112);
-  ent('sign', 32, 111, { text: UC3 ? 'CUT THE NEAR POST AND THE WALKWAY SWINGS DOWN TO YOU. OR LIGHT THE ROOF GAS FROM THE STAGE: ITS POSTS GO WITH IT. THEN GET DOWN.' : 'CUT THE NEAR POST AND THE HUNG WALKWAY SWINGS DOWN TO YOU. MIND WHAT IS UNDER ITS FAR END.' });
+  ent('sign', 32, 111, { text: UC3 ? 'CUT THE NEAR POST, OR LIGHT THE ROOF GAS FROM THE STAGE AND GET DOWN.' : 'CUT THE NEAR POST AND THE HUNG WALKWAY SWINGS DOWN TO YOU. MIND WHAT IS UNDER ITS FAR END.' });
   if (UC3) { ent('minerlamp', 26, 97, { lit: false }); ent('canarycage', 19, 93, { chamber: 'stope' }); }   /* (claude/undercrown3) the stage's cold lamp: in the band at READY */
   ent('troll', 61, 111, { face: -1 });                            /* the far walkway's elite, a crag troll come down the old workings: on footing, the water behind him */
   ent('miner', 54, 111, { face: -1, cnSkin: 'navvy' }); ent('rockgoblin', 64, 111, { face: -1, cnSkin: 'bonechucker' });
@@ -2687,7 +2687,7 @@ function undercrown() {
   // ---- 5. THE LAST DRIFT. West along a low drift over the Prince's pit, the barrow's dead behind you. Its last slab is a WALL: cut both
   //         posts and it drops across the drift, and nothing that walks gets over it. ----
   cut(10, 95, 137, 140); interiors.push([10, 95, 137, 140, 'mine']);
-  ent('sign', 82, 140, { text: UC3 ? 'THE LAST DRIFT. THE BARROW\'S GAS RUNS DOWN IT TO THE LAMP. BOTH POSTS DOWN AND THE SLAB DAMS IT.' : 'THE LAST DRIFT. BOTH POSTS DOWN AND THE SLAB IS A WALL ACROSS IT: WHAT WALKS CANNOT FOLLOW.' });
+  ent('sign', 82, 140, { text: UC3 ? 'THE LAST DRIFT. THE BARROW\'S GAS RUNS DOWN IT. BOTH POSTS DOWN AND THE SLAB DAMS IT.' : 'THE LAST DRIFT. BOTH POSTS DOWN AND THE SLAB IS A WALL ACROSS IT: WHAT WALKS CANNOT FOLLOW.' });
   ent('minerlamp', 74, 140, { lit: false }); ent('minerlamp', 40, 140, { lit: true }); ent('deco', 62, 140, { kind: 'barrels' });
   ent('rockgoblin', 30, 140, { face: 1, cnSkin: 'bonechucker' }); ent('miner', 50, 140, { face: 1, cnSkin: 'navvy' });
   ent('snuffer', 34, 140, { face: 1, cnSkin: 'lampsnuffer' });

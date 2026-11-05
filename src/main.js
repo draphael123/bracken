@@ -19970,7 +19970,7 @@ function updatePrince(e, dt) {
       want = ad > 50 ? e.face * (p2 ? 58 : 44) : ad < 24 ? -e.face * 30 : 0;
       for (const k of ['cutT', 'sinkT', 'callT', 'crownT', 'snuffT']) e[k] -= dt;
       /* (claude/undercrown2) NO SAFE PERCH: a hero up a fallen slab out of his reach is not left there - he heaves at the slab and it comes off its hinge */
-      e.perchT = (!P.dead && P.y < floor - 48 && Math.abs(P.x - e.x) < 220) ? (e.perchT || 0) + dt : 0;
+      e.perchT = (!P.dead && P.y < floor - (L.uc3 ? 40 : 48) && Math.abs(P.x - e.x) < 220)   /* (claude/undercrown3: a fallen SHELF is 48 px up - a perch too) */ ? (e.perchT || 0) + dt : 0;
       if (e.modeT > 0 || P.dead) break;
       if (e.perchT > 1.5) { const hv = [...SLAB_RT.values()].filter(s => s.tomb && (s.state === 'ramp' || s.state === 'flat')).sort((a, b) => Math.abs((a.x0 + a.x1 + 1) * 8 - P.x) - Math.abs((b.x0 + b.x1 + 1) * 8 - P.x))[0];
         if (hv) { e.perchT = 0; e.heave = hv; e.mode = 'heaveTell'; e.modeT = 0.8; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); number(e.x, e.y - e.h - 24, 'HE HEAVES AT THE SLAB', '#ff6b6b'); SFX.rumble(); break; } }
