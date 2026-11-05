@@ -94,5 +94,5 @@ ok(/firedrake: e => fdOpen\(e\) \|\| fdSoft\(e\)/.test(greed) && greed.includes(
 ok(bread.includes("firedrake: e => (e.ward > 0 ? TURN.WARDED : 'SCALES')"), 'src/boss-read.js: the turn word');
 ok(hl.includes('...Object.values(FD_SAY)'), 'src/hint-lines.js: FD_SAY');
 /* NOT LIVE: the drake is on no road, in no rush, in no boss select, no bestiary card until its art merges */
-ok(!/\{ lv: 'drakelab'/.test(main) && !/beastSeen\('firedrake'\)/.test(main), 'the drake is in the rush or the bestiary before its art (art before live)');
+ok(!/\{ lv: 'drakelab'/.test(main) && /beastSeen\('firedrake'\)/.test(main) && /SPR\.firedrakeCard/.test(main), 'the drake has its bestiary card + beastSeen (drakeroom) and is still in no rush row');
 console.log('fire-drake-hands: ' + n + ' checks ok (' + frames + ' frames, ' + blows + ' blows, hits ' + JSON.stringify(Object.fromEntries(Object.entries(byName).map(([k, v]) => [k, v.length]))) + ')');
