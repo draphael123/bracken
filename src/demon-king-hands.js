@@ -144,6 +144,8 @@ export function makeDemonKingHands(ctx) {
     g.save();
     if (p.body === 'tumble') { g.translate(0, -26); g.rotate(f.mT * 12); g.translate(0, 26); }
     if (fl < 0) g.scale(-1, 1);
+    if (!s.halo) s.halo = KA.kingHalo(s);
+    g.globalAlpha = 0.5; for (const [ox, oy] of [[-1, 0], [1, 0], [0, -1], [0, 1]]) g.drawImage(s.halo, -s.ax + ox, -s.ay + oy); g.globalAlpha = 1;   /* an ember rim so he reads against the dark-red sky and the drake */
     g.drawImage(s.c, -s.ax, -s.ay); g.restore();
     const hx = fl * (s.hand[0] - s.ax), hy = s.hand[1] - s.ay - 4, k = clamp01(f.mT / Math.max(0.01, f.T));
     if (p.orb === 'grow' || p.orb === 'dim') KA.drawHandOrb(g, hx, hy, k, p.orb, time);

@@ -79,7 +79,7 @@ export function drawDrake(g, b, cx, cy, time) {
     { const fin = MA.finWall(); g.drawImage(fin, X(b.x0) - 1, R(sy(b.x0 + 3)) - 29); }
     { const head = MA.neckHead(telling ? (b.bank.t > 0.62 ? 'roar' : 'tell') : tilting ? 'tell' : 'calm'), bob = Math.round(flap * 1.5); g.drawImage(head, X(b.x1) - MA.NECK_AT.x + 3, R(sy(b.x1)) - MA.NECK_AT.y + 3 + bob); }
     { const sp = MA.spineWall(); g.drawImage(sp, X(b.x1) - 12, R(sy(b.x1 - 3)) - 33); }
-    { const rx = b.x1 - 42; g.drawImage(wingNear, X(rx) - MA.WING_ROOT.x, R(sy(rx)) - MA.WING_ROOT.y + 10 + (telling ? 6 : 0)); }
+    { const rx = b.x1 - 42; g.drawImage(wingNear, X(rx) - MA.WING_ROOT.x, R(sy(rx)) - MA.WING_ROOT.y + 28 + (telling ? 6 : 0)); }
     /* embers shed from the belly (the volcano's heat under it) */
     for (let i = 0; i < 7; i++) { const t = (time * 0.7 + i * 0.143) % 1, x = b.x0 + 14 + ((i * 47) % (b.len - 28)), y = sy(x) + 32 - 12 * Math.sin(((x - b.x0) / b.len) * Math.PI) + 3 + t * 22;
       g.fillStyle = t < 0.4 ? '#ffe08a' : t < 0.7 ? '#ff7a2a' : '#7a2a1c'; g.fillRect(X(x), R(y), 1, 1); }

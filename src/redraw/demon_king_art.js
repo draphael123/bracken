@@ -111,6 +111,8 @@ export function kingSprite(spec, flash = false) {
   s = { c, ax: A.ax, ay: A.ay, hand: [hx, hy], prone }; void handSp; void fl; void ellipse; cache.set(key, s); return s;
 }
 
+export const kingHalo = s => whiten(s.c, '#ff6a2a');
+
 /* ---- BOLTS: the hellbolt (red-black orb, white core), the feint (dim, cracked, no core), the returns (pale gold / white-gold), the bat-back (red flash). draw straight onto the world ctx ---- */
 const hexn = h => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
 void hexn;
