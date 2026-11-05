@@ -29,6 +29,7 @@
 // ART IS PLACEHOLDER (readable shapes, src/sealed-pyramid-hands.js drawTombHalf): lane C draws the kit (work/claude/lane-done/claude-pyramidlevel.md ART list).
 
 /* THE ROWS of the second half (floors) */
+import { sp3On, UPDRAFT, CK_SLOT, ckTraps, ckPool } from './sealed-pyramid3.js';   /* (claude/sealedpyramid3) SEALED PYRAMID 3 behind its flag */
 export const TH = { hall: 57, upper: 51, gas: 51, gasHi: 48, oil: 48, oilHi: 42, cistern: 48, lip: 42, crypt: 54, landing: 30, stair: 34, burial: 24, W: 1052 };
 /* THE ARENA SLOTS: MINI_SLOT is the Scarab Mother's lair (her antechamber, mid-level) - since claude/pyramidboss she is the level's MINI there (L.mini; her east door
    is its portcullis, L.mini.gate); BOSS_SLOT is the burial chamber at the end - THE COFFIN KING's arena (L.arena, src/tomb-king.js).
@@ -210,7 +211,7 @@ export function buildTombHalf(B) {
   traps.push({ id: 'stairDarts', kind: 'darts', plates: [[985, 987, LD - 4]], zone: [963, 999, LD - 8, LD - 7], wall: 962, dir: 1, rows: [LD - 8, LD - 7], reset: 3.8, section: 'exam' });
   ent('tplate', 985, LD - 5, { trap: 'stairDarts' }); ent('dartwall', 962, LD - 7, { trap: 'stairDarts' });
   decor.push({ kind: 'dartholes', x: 962, y0: LD - 8, y1: LD - 7 });
-  sign(960, LD - 1, 'THE KING\'S STAIR. THE OLD COURSES GIVE UNDER YOU: DO NOT STAND.');
+  sign(960, LD - 1, sp3On() ? UPDRAFT.sign : 'THE KING\'S STAIR. THE OLD COURSES GIVE UNDER YOU: DO NOT STAND.');   /* (claude/sealedpyramid3) the well's breath, told where it sets you down */
   lamp(968, 18); lamp(990, 18);
   /* the top: the landing before the burial chamber (floor BU) */
   const BU = TH.burial;
@@ -232,22 +233,32 @@ export function buildTombHalf(B) {
   for (const l of S.ledges) { ledge('ledge', l.x0, l.x1, l.y); decor.push({ kind: 'chains', x0: l.x0, x1: l.x1, y: l.y }); }   /* the side ledges on their chains */
   /* THE CHAMBER'S TRAPS (the level's own engine, src/sealed-pyramid-hands.js; `tk`: inert until his phase two arms them): the west and east blocks in their ceiling
      slots, the middle plate's two dart walls (each fires its wall's side of the floor - the plate between them is clear of both) */
-  for (const [x0, x1] of S.slots) air(x0, x1, S.roof - 2, S.roof - 1);
-  const [pw, pm, pe] = S.plates, [sw, se] = S.slots;
-  traps.push({ id: 'tkBlockW', kind: 'block', plates: [[pw[0], pw[1], F]], zone: [sw[0], sw[1], S.roof, F - 1], slot: [sw[0], sw[1], S.roof - 2, S.roof - 1], land: F - 1, reset: 6.0, arena: true, tk: true, section: 'boss' });
-  traps.push({ id: 'tkBlockE', kind: 'block', plates: [[pe[0], pe[1], F]], zone: [se[0], se[1], S.roof, F - 1], slot: [se[0], se[1], S.roof - 2, S.roof - 1], land: F - 1, reset: 6.0, arena: true, tk: true, section: 'boss' });
-  traps.push({ id: 'tkDartsW', kind: 'darts', plates: [[pm[0], pm[1], F]], zone: [S.x0, pm[0] - 1, F - 2, F - 1], wall: S.westDoor.col, dir: 1, rows: [F - 2, F - 1], reset: 6.0, arena: true, tk: true, section: 'boss' });
-  traps.push({ id: 'tkDartsE', kind: 'darts', plates: [[pm[0], pm[1], F]], zone: [pm[1] + 1, S.x1, F - 2, F - 1], wall: S.eastDoor.col, dir: -1, rows: [F - 2, F - 1], reset: 6.0, arena: true, tk: true, section: 'boss' });
-  ent('tplate', pw[0], F - 1, { trap: 'tkBlockW' }); ent('tblock', sw[0], S.roof - 1, { trap: 'tkBlockW' }); ent('tplate', pe[0], F - 1, { trap: 'tkBlockE' }); ent('tblock', se[0], S.roof - 1, { trap: 'tkBlockE' });
-  ent('tplate', pm[0], F - 1, { trap: 'tkDartsW' }); ent('dartwall', S.westDoor.col, F - 1, { trap: 'tkDartsW' }); ent('dartwall', S.eastDoor.col, F - 1, { trap: 'tkDartsE' });
-  decor.push({ kind: 'dartholes', x: S.westDoor.col, y0: F - 2, y1: F - 1 }, { kind: 'dartholes', x: S.eastDoor.col, y0: F - 2, y1: F - 1 });
-  ent('tombking', S.king, F - 1, { face: -1 });                                                              /* HE STANDS ASLEEP where the placeholder great sarcophagus stood */
+  if (sp3On()) {   /* (claude/sealedpyramid3) THE COFFIN KING 'ESCAPE + BREAK THE SEALS': the chamber's four SEAL TRAPS (src/sealed-pyramid3.js CK_SLOT) - the oil (rope), the darts
+    (chain), the sand-pour (the hourglass), the sluice (wax). The player fires them; each plate stands outside its own line; nothing falls on him (no block, no slab) */
+    for (const d of ckTraps()) traps.push(d);
+    for (const t of CK_SLOT.traps) ent('tplate', t.plate[0], t.plate[2] - 1, { trap: t.id });
+    const hop = CK_SLOT.traps.find(t => t.id === 'ckSand').hopper; air(hop[0], hop[1], S.roof - 2, S.roof - 1); decor.push({ kind: 'ceilslot', x0: hop[0], x1: hop[1], y: S.roof - 2 });   /* THE HOURGLASS's hopper in the roof */
+    decor.push({ kind: 'dartholes', x: S.eastDoor.col, y0: F - 2, y1: F - 1 });
+    pools.push(ckPool(TS));   /* the chamber's floor water (dry until the sluice): src/sealed-pyramid-hands.js floodPool moves it */
+    ent('tombking', S.king, F - 1, { face: -1 });
+  } else {
+    for (const [x0, x1] of S.slots) air(x0, x1, S.roof - 2, S.roof - 1);
+    const [pw, pm, pe] = S.plates, [sw, se] = S.slots;
+    traps.push({ id: 'tkBlockW', kind: 'block', plates: [[pw[0], pw[1], F]], zone: [sw[0], sw[1], S.roof, F - 1], slot: [sw[0], sw[1], S.roof - 2, S.roof - 1], land: F - 1, reset: 6.0, arena: true, tk: true, section: 'boss' });
+    traps.push({ id: 'tkBlockE', kind: 'block', plates: [[pe[0], pe[1], F]], zone: [se[0], se[1], S.roof, F - 1], slot: [se[0], se[1], S.roof - 2, S.roof - 1], land: F - 1, reset: 6.0, arena: true, tk: true, section: 'boss' });
+    traps.push({ id: 'tkDartsW', kind: 'darts', plates: [[pm[0], pm[1], F]], zone: [S.x0, pm[0] - 1, F - 2, F - 1], wall: S.westDoor.col, dir: 1, rows: [F - 2, F - 1], reset: 6.0, arena: true, tk: true, section: 'boss' });
+    traps.push({ id: 'tkDartsE', kind: 'darts', plates: [[pm[0], pm[1], F]], zone: [pm[1] + 1, S.x1, F - 2, F - 1], wall: S.eastDoor.col, dir: -1, rows: [F - 2, F - 1], reset: 6.0, arena: true, tk: true, section: 'boss' });
+    ent('tplate', pw[0], F - 1, { trap: 'tkBlockW' }); ent('tblock', sw[0], S.roof - 1, { trap: 'tkBlockW' }); ent('tplate', pe[0], F - 1, { trap: 'tkBlockE' }); ent('tblock', se[0], S.roof - 1, { trap: 'tkBlockE' });
+    ent('tplate', pm[0], F - 1, { trap: 'tkDartsW' }); ent('dartwall', S.westDoor.col, F - 1, { trap: 'tkDartsW' }); ent('dartwall', S.eastDoor.col, F - 1, { trap: 'tkDartsE' });
+    decor.push({ kind: 'dartholes', x: S.westDoor.col, y0: F - 2, y1: F - 1 }, { kind: 'dartholes', x: S.eastDoor.col, y0: F - 2, y1: F - 1 });
+    ent('tombking', S.king, F - 1, { face: -1 });                                                              /* HE STANDS ASLEEP where the placeholder great sarcophagus stood */
+  }
   lamp(S.x0 + 4, S.roof + 6); lamp(S.x1 - 4, S.roof + 6); lamp(Math.round((S.x0 + S.x1) / 2), S.roof + 3);
   air(S.eastDoor.col + 1, TH.W - 2, F - 6, F - 1);
   ent('gate', S.gate, F - 1);                                                                                /* THE LEVEL'S GATE: it opens once THE COFFIN KING is down (gateAfterBoss) */
   /* THE ARENA (L.arena): his walls shut both doors; `tk` hands src/tomb-king.js the chamber's fittings */
   const arena = { x0: S.x0 * TS, x1: (S.x1 + 1) * TS, floor: F * TS, trigger: (S.x0 + 3) * TS, wallL: S.westDoor.col, wallR: S.eastDoor.col, boss: 'tombking', music: 'tombking',
-    tint: '#c8a040', tintA: 0.07, start: [S.x0 + 4, F - 1], y0: S.roof * TS, y1: (F + 1) * TS, tk: S };
+    tint: '#c8a040', tintA: 0.07, start: [S.x0 + 4, F - 1], y0: S.roof * TS, y1: (F + 1) * TS, tk: S, ...(sp3On() ? { ck: CK_SLOT } : {}) };
 
   return { traps, tombs, gasVents, crumble, pools, arena };
 }

@@ -41,7 +41,7 @@ export const CK_SLOT = {
 export function ckTraps() {
   return CK_SLOT.traps.map(t => { const { plate, ...d } = t; return { ...JSON.parse(JSON.stringify(d)), plates: [plate.slice()], arena: true, ck: t.ph, section: 'boss' }; });
 }
-export const ckPool = TS => ({ id: 'ckFlood', x0: 1007 * TS, x1: 1047 * TS, y: 24 * TS, swim: true, clear: true, bottom: 24 * TS, crypt: true, dry: true });
+export const ckPool = TS => ({ id: 'ckFlood', x0: 1007 * TS, x1: 1047 * TS, y: 21 * TS + 4, swim: true, clear: true, bottom: 24 * TS, crypt: true });
 
 /* ---------- THE KING'S STAIR's WELL (tiles 963-1003, its spike row 34): THE WELL'S BREATH ----------
    x0..x1: the spike columns it owns; back: the tile a hero is set down on (the stair's foot, the high door's landing, floor row 30); pct: the told share of the bar */

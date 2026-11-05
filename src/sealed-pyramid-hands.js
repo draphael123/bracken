@@ -415,6 +415,11 @@ export function makeSealedPyramidHands(ctx) {
       if (t.kind === 'stone' && !t.vis && d.drop && t.st !== 'firing') { const x = d.home * ts + 16 - cx, y = (d.drop[1] + 1) * ts - cy; rect(g, x - 14, y - 4, 28, 4, COL.stoneD); rect(g, x - 14, y - 4, 28, 1, COL.stone); }
     }
     drawTombHalf(g, cx, cy, time, vis);
+    /* (claude/sealedpyramid3) THE WELL'S BREATH (greybox; art owed): the scarab well's air rises - slow sand motes always (the rule told before you fall), a column where it lifts a hero */
+    if (L.spUpdraft && vis(L.spUpdraft.x0, L.spUpdraft.x1 + 1)) { const U = L.spUpdraft, by = U.row * ts - cy, top = by - 9 * ts;
+      for (let i = 0; i < 26; i++) { const x = (U.x0 + ((i * 37) % (U.x1 - U.x0 + 1))) * ts + 8 - cx, k = ((time * 0.35 + i * 0.137) % 1), y = by - k * (by - top); g.globalAlpha = 0.5 * (1 - k); g.fillStyle = i % 3 ? '#e8d0a0' : '#c8a868'; g.fillRect(R(x + Math.sin(time * 2 + i) * 3), R(y), 1, 2); }
+      for (const pp of ctx.players) if (pp.spLift) { const x = pp.x - cx; g.globalAlpha = 0.28; g.fillStyle = '#e8d0a0'; g.fillRect(R(x - 10), R(top), 20, R(by - top)); g.globalAlpha = 0.5; for (let k = 0; k < 8; k++) g.fillRect(R(x - 9 + ((k * 5 + time * 60) % 18)), R(by - ((time * 300 + k * 40) % (by - top))), 1, 4); }
+      g.globalAlpha = 1; }
     for (const q of K.darts) ART.dart(g, R(q.x - cx), R(q.y - cy), q.dir);
     /* THE COUNTERWEIGHTS: a stone block under each mover's top, its chains up to the wheel; a pale top where it is a plate */
     for (const m of ctx.movers()) { if (!m.pyr) continue; const x = m.x - cx, y = m.y - cy; if (x < -60 || x > vw + 60) continue;

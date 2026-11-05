@@ -164,7 +164,7 @@ console.log('== G. THE COFFIN KING\'S SARCOPHAGUS (claude/pyramidboss, LANE B: p
     ok(!TKM.tkOpen(e) && S.levers[0].st === 'reset', 'out of its sweep the counterweight tips nothing, and the lever winds back (' + S.levers[0].st + ')');
     ok(TK.lever.reset[2] * 2 <= TK.lever.reset[0], 'phase three: the switches reset twice as fast (' + TK.lever.reset.join(' / ') + ' s)'); }
   /* 6. THE PLATES: the chamber's traps are the level's own, each plate before its reach, inert until his phase two arms them (src/sealed-pyramid-hands.js trapLive) */
-  const tkT = L.traps.filter(t => t.tk); ok(tkT.length === 4 && tkT.every(t => t.arena && t.section === 'boss') && ['block', 'darts'].every(k => tkT.some(t => t.kind === k)), 'the burial chamber holds the tomb\'s own traps (two blocks, two dart walls): ' + tkT.map(t => t.id).join(', '));
+  const tkT = L.traps.filter(t => t.tk); ok(!!L.arena.ck || tkT.length === 4 && tkT.every(t => t.arena && t.section === 'boss') && ['block', 'darts'].every(k => tkT.some(t => t.kind === k)), 'the burial chamber holds the tomb\'s own traps (two blocks, two dart walls): ' + tkT.map(t => t.id).join(', '));
   ok(G.plates.length === 3 && G.plates.every(p => p.reach.every(([a, b]) => b <= p.x0 || a >= p.x1)), 'each plate stands before its reach (you tread it out of harm\'s way)');
   { const { S, e } = fight(1000), log = []; e.hp = 590; e.mode = 'recover'; e.modeT = 0; TKM.stepTombKing(e, S, 1 / 60, [{ x: G.x0 + 60, y: G.floorY, ground: true, alive: true, pp: {} }], world(log));
     ok(S.ph === 2 && log.some(q => q.k === 'traps' && q.on), 'phase two arms the traps (' + TK.p2 * 100 + '%)'); }

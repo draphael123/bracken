@@ -46,6 +46,7 @@
 //   963-1006 THE KING'S STAIR (A14 platforming), 1007-1047 THE BURIAL CHAMBER (BOSS_SLOT: THE COFFIN KING, src/tomb-king.js - claude/pyramidboss), the gate at 1049.
 //   The same rule: the gas jets, the oil channels and the sluices are TRAPS fired from PLATES; the tombs release the dead (mummies tread plates, the tomb guard does not).
 import { stageScarabMother, SM_STAGE } from './scarab-mother.js';
+import { sp3On, UPDRAFT } from './sealed-pyramid3.js';   /* (claude/sealedpyramid3) */
 import { buildTombHalf, TH, ARCS2, SECTIONS2, SPOTS2, MINI_SLOT, BOSS_SLOT } from './sealed-pyramid-tombs.js';
 export { MINI_SLOT, BOSS_SLOT } from './sealed-pyramid-tombs.js';   /* (claude/pyramidlevel) THE ARENA SLOTS for lane B: the Scarab Mother's lair mid-level, the burial chamber at the end */
 
@@ -283,6 +284,7 @@ export function buildSealedPyramid({ painter, T, TS }) {
     sandstorm: { x0: 0, x1: 76 * TS, dirs: [-1, -1, -1] },   /* THE FACE's storm (src/sealed-pyramid-hands.js on src/desert-rules.js's clock) */
     quest: { n: 4, item: 'scarabseal', name: 'SEALS', done: 'FOUR SEALS: THE SEALED TOMB OPENS', thanks: 'THE SEALED TOMB OPENS' },
     sections: Object.fromEntries(SECTIONS.map(([n, x]) => [n, x])),
+    ...(sp3On() ? { spUpdraft: { ...UPDRAFT } } : {}),   /* (claude/sealedpyramid3) THE KING'S STAIR's well: THE WELL'S BREATH (main.js spikeBite reads it; src/sealed-pyramid3.js) */
     squadBands: [{ lo: 1000, hi: 1199, spots: 0, why: 'THE BURIAL CHAMBER: columns 1000-1199 are the Coffin King arena (a shrine at 1003 before it) - no squad stands in a boss arena, as the canal and the theatre' }],
     calm: [[0, W - 1, 0, H - 1]],   /* placed wholly by hand: nothing sprinkled */
     checkRun: 220,   /* (A10b: a shrine a section - 170, 252, 337, 448 | her lair | 615, 737, 858, 1003 before the burial chamber) */
