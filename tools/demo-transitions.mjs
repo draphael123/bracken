@@ -26,7 +26,7 @@ for (let i = 0; i < ROAD.length - 1; i++) {
 ok('the spur row kings > burning (scene smoke, plays only when the spur is open) and the shut-spur fallback kings > scree exist', rowOf('kings', 'burning') && rowOf('kings', 'burning').scene === 'smoke' && rowOf('kings', 'burning').when.burningOpen === true && rowOf('kings', 'scree') && rowOf('kings', 'scree').when.burningOpen === false);
 ok('entryFor honours when: kings with the spur open -> burning, shut -> scree; every other level ignores the flags', TRM.entryFor('kings', undefined, { burningOpen: true }).to === 'burning' && TRM.entryFor('kings', undefined, { burningOpen: false }).to === 'scree' && TRM.entryFor('marsh', undefined, {}).to === 'fenroad' && TRM.entryFor('marsh', undefined, { burningOpen: true }).to === 'fenroad');
 ok('no row for the wood > marsh ferry any more (the road runs through the nest) and every row\'s `from` is unique per flag state', !rowOf('wood', 'marsh') && TRM.TABLE.every((e, i) => TRM.TABLE.findIndex(q => q.from === e.from && JSON.stringify(q.when || {}) === JSON.stringify(e.when || {})) === i));
-for (const e of TRM.TABLE) {
+for (const e of TRM.TABLE.filter(q => !q.chain)) {   /* (claude/scenes) the Heart chain rows are pinned by tools/heart-scenes.mjs */
   const key = e.from + '>' + e.to, ids = e.beats.map(b => b.id), last = ids[ids.length - 1], hasScene = e.beats.some(TRM.isSceneBeat);
   ok(key + ': beats walk -> (scene) -> fade, fade last, walk before any scene, an open beat (if any) first', ids.includes('walk') && last === 'fade' && (!ids.includes('open') || ids[0] === 'open') && (!hasScene || ids.indexOf('walk') < e.beats.findIndex(TRM.isSceneBeat)), ids.join());
   ok(key + ': a scene row has scene beats and a scene name, a walk-out has neither', !!e.scene === hasScene, JSON.stringify([e.scene, hasScene]));
@@ -46,7 +46,7 @@ for (const e of TRM.TABLE) {
   ok(key + ': the walk cannot run past its cap if a hero never arrives', t2 <= e.beats.find(b => b.id === 'walk').max + 0.05, t2.toFixed(2));
 }
 /* ---- every `to` is the NEXT level on the road (needs), or a spur hanging off the level ---- */
-for (const e of TRM.TABLE) {
+for (const e of TRM.TABLE.filter(q => !q.chain)) {   /* (claude/scenes) the Heart chain rows are pinned by tools/heart-scenes.mjs */
   const re = new RegExp("id: '" + e.to + "'[^\\n]*?needs: '([a-z]+)'"), m = levelSrc.match(re);
   const spur = /opensOn: \{ level: '([a-z]+)'/.exec((levelSrc.match(new RegExp("id: '" + e.to + "'[^\\n]*\\n?[^\\n]*opensOn: \\{ level: '[a-z]+'")) || [''])[0]);
   ok(e.from + '>' + e.to + ': level.js has ' + e.to + ' needing ' + e.from + (spur ? ' (or a spur: opensOn ' + spur[1] + ')' : ''), (m && m[1] === e.from) || (spur && spur[1] === e.from), m ? m[1] : 'no needs found');
@@ -123,7 +123,7 @@ if (process.argv.includes('--browser')) {
     return { base, end: r };
   };
   try {
-    for (const e of TRM.TABLE) {
+    for (const e of TRM.TABLE.filter(q => !q.chain)) {   /* (claude/scenes) the Heart chain rows are pinned by tools/heart-scenes.mjs */
       const key = e.from + '>' + e.to, fl = e.from === 'kings' && e.to === 'scree';
       if (process.env.DT_ONLY && key !== process.env.DT_ONLY) continue;   /* (claude/kingscene) DT_ONLY=kings>burning [DT_SEATS=3] [DT_REDUCE=1]: one row, six pictures through the beat */
       const shots = SHOTS ? (process.env.DT_ONLY === 'kings>burning' ? [0.9, 1.9, 2.7, 3.7, 4.5, 5.2].map((pt, i) => ({ n: 'k' + (i + 1), ph: 'smoke', pt })) : e.scene ? [{ n: 'a', ph: e.beats.find(TRM.isSceneBeat).id, pt: 1.6 }, { n: 'b', ph: e.beats.find(TRM.isSceneBeat).id, pt: e.beats.find(TRM.isSceneBeat).dur * 0.5 }, { n: 'c', ph: e.beats.find(TRM.isSceneBeat).id, pt: e.beats.find(TRM.isSceneBeat).dur * 0.9 }].concat(e.scene === 'ferry' ? [{ n: 'd', ph: 'ride', pt: 4.5 }, { n: 'e', ph: 'ride', pt: 7.0 }] : []) : e.open ? (process.env.DT_GATES ? [{ n: 'g', ph: 'open', pt: 0.15 }, { n: 'h', ph: 'open', pt: 0.6 }] : []).concat([{ n: 'a', ph: 'open', pt: 1.25 }, { n: 'b', ph: 'walk', pt: 1.2 }]) : [{ n: 'a', ph: 'walk', pt: 0.4 }]) : null;

@@ -15,6 +15,7 @@ import * as KA from './redraw/demon_king_art.js';   /* (claude/skyart) his sprit
 const { DK } = DKM;
 const R = Math.round;
 let artBad = false;
+export const WON_AFTER = 2.6;   /* (claude/scenes) seconds from his 'beaten' to the hand-off to scene B */
 /* his sounds -> main.js SFX names that exist (the art lane S4 adds his own: SOUND list in the lane report) */
 const SND = { dkHum: ['dkHum', 'mageBolt', 'charge'], dkThrow: ['dkThrow', 'throwWhoosh'], dkHumDim: ['dkHumDim', 'charge'], dkFizzle: ['dkFizzle', 'fizzle', 'pStep'], dkHumTwo: ['dkHumTwo', 'mageBolt', 'charge'],
   dkShriek: ['dkShriek', 'queenShriek', 'roar'], dkSwoop: ['dkSwoop', 'throwWhoosh'], dkChain: ['dkChain', 'clank'], dkCrack: ['dkCrack', 'crack'], dkChant: ['dkChant', 'callerChant', 'charge'],
@@ -88,8 +89,10 @@ export function makeDemonKingHands(ctx) {
       else if (e.k === 'sound') sound(e.id);
       else if (e.k === 'knockdown') ctx.shake(5);
       else if (e.k === 'crash') { ctx.shake(8); ctx.burst(f.x, f.y, 24, ['#3a2a26', C.vein, C.smoke]); ctx.ring(f.x, f.y - 8, 30, C.gold); }
-      else if (e.k === 'beaten') { ctx.shake(10); const BK = ctx.bk && ctx.bk(); if (BK) BK.demonKingBeaten = (BK.demonKingBeaten || 0) + 1; }   /* lane SC: scene B starts here */
+      else if (e.k === 'beaten') { ctx.shake(10); const BK = ctx.bk && ctx.bk(); if (BK) BK.demonKingBeaten = (BK.demonKingBeaten || 0) + 1; }   /* lane SC: scene B starts here (after WON_AFTER s, below) */
     }
+    /* (claude/scenes) HE IS KNOCKED DOWN FOR GOOD: his scream and the crash play out (WON_AFTER s), then main.js ends the fight - the clear is credited and SCENE B (the escape) begins. Once. */
+    if (f.beaten && !f.wonCalled) { f.wonT = (f.wonT || 0) + dt; if (f.wonT >= WON_AFTER) { f.wonCalled = true; if (ctx.won) ctx.won(); } }
     /* sync the entities: him, and one per bolt coming AT the heroes (a return cannot be struck again) */
     const prone = f.mode === 'downed' || f.mode === 'repulseTell' || f.mode === 'beaten';
     king.x = f.x; king.y = f.y; king.w = prone ? DK.proneW : DK.w; king.h = prone ? DK.proneH : DK.h; king.hp = f.hp; king.maxHp = 3 * f.bar; king.mode = f.mode; king.face = f.face; king.alive = true; king.vx = king.vy = 0;
@@ -186,5 +189,7 @@ export function makeDemonKingHands(ctx) {
     if (ctx.text) ctx.text('THE DEMON KING', VW / 2, y + 7, '#e8d8c8', 'center', 6);
     for (let i = 0; i < DK.knock.pips; i++) { const px = R(VW / 2 - 12 + i * 12), py = y + 18, lit = i < f.pips; g.fillStyle = lit ? C.gold : 'rgba(255,255,255,0.18)'; g.fillRect(px - 2, py, 5, 5); if (lit && f.pips >= 2) { g.fillStyle = '#ffffff'; g.fillRect(px - 1, py + 1, 3, 3); } }
   }
-  return { on, owns, struck, take, update, draw, hud, clear, impDmg: () => DK.imps.dmg, fight: () => f, king: () => king };
+  /* (claude/scenes) A DEATH IN THE SKY FIGHT RESTARTS IT AT MOUNT-UP: a fresh fight (his bars full) the next frame, nothing of the old one left (src/heart-scenes.js checkpointOf) */
+  function restart() { if (f || king) clear(); }
+  return { on, owns, struck, take, update, draw, hud, clear, restart, impDmg: () => DK.imps.dmg, fight: () => f, king: () => king };
 }

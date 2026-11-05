@@ -14,6 +14,7 @@
    the state after a skip is the state after a full watch (the next level, the arrival) - skipping only drops the pictures.
    WHEN IT PLAYS: policy() below. ON BY DEFAULT since the art pass (claude/transwmart; ?trans=0 is the off switch); the Settings row TRANSITIONS (ALWAYS / FIRST TIME /
    NEVER, default FIRST TIME) is honoured inside that. The flag gate is gone. */
+import { ROWS as HEART_ROWS } from './heart-scenes.js';   /* (claude/scenes) the Heart of the Mountain's two scenes: drakelab > skylab (SEAL) and skylab > breach (ESCAPE) */
 export const MIN_SKIP = 0.8;
 export const FADE_SKIP = 0.3;
 export const TABLE = [
@@ -57,6 +58,7 @@ export const TABLE = [
   { from: 'kings', to: 'scree', scene: null, when: { burningOpen: false },   /* GORM fell the party in a life (the spur stays shut): the plain walk-out onto the road to the Scree Path (beyond the demo) */
     beats: [{ id: 'walk', dur: 2.0, max: 3.0 }, { id: 'fade', dur: 0.7 }], walk: { to: 478 }, arrive: { ferry: false, walk: 1.3 } },
 ];
+TABLE.push(...HEART_ROWS);   /* (claude/scenes) chain rows: never dropped (see forceSkip); the pictures are the scene beats */
 /* the row for a level. ctx: the flags a row's `when` asks for ({ burningOpen: bool }); a row with no when always matches. */
 export const entryFor = (from, to, ctx = {}) => TABLE.find(e => e.from === from && (to === undefined || e.to === to) && (!e.when || Object.keys(e.when).every(k => !!e.when[k] === !!ctx[k]))) || null;
 /* a scene beat (shore, ride, road, smoke...) is one that carries sc, or the ferry's own two */
@@ -73,6 +75,9 @@ export function policy({ off = false, mode = 'first', seen = false } = {}) {
   return true;
 }
 
+/* (claude/scenes) A CHAIN ROW (entry.chain) is the road itself (drakelab > sky fight > map), so it is never dropped when the pictures do not play (a replay, NEVER, ?trans=0): it starts already SKIPPED -
+   straight to the short fade, the state the same as after a skip. forceSkip(tl) does that to a fresh timeline. */
+export function forceSkip(tl) { const i = tl.beats.findIndex(b => b.id === 'fade'); if (i < 0) return tl; tl.skipped = true; tl.i = i; tl.pt = 0; tl.beats[i] = { ...tl.beats[i], dur: FADE_SKIP }; tl.log.push('skip'); return tl; }
 /* THE TIMELINE: a tiny state machine. t: seconds since it began; i: the beat; pt: seconds in the beat. */
 export function start(entry, { reduce = false } = {}) {
   const beats = entry.beats.map(b => ({ ...b }));

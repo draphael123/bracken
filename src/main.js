@@ -225,6 +225,7 @@ import { bossZooms, miniZooms } from './boss-view.js';
 import * as AC from './act-cards.js';
 import * as SC from './secrets.js';   /* THE SECRETS SYSTEM (claude/secrets): one registry for every hidden path - toasts, the map's '?', the journal, the hero line */
 import * as TRM from './transitions.js';   /* (claude/transwm) THE LEVEL TRANSITIONS: the timeline and the table */
+import * as HS from './heart-scenes.js';   /* (claude/scenes) THE HEART'S TWO SCENES: timing, cues, the checkpoint (the pictures: src/transitions-heart.js via TRA) */
 import * as TRA from './transitions-art.js';   /* (claude/actcards) ACT CARDS + THE BOSS-KILL BEAT */
 import { hallHolds } from './tower-hall.js';   /* THE FALLING TOWER's hall at the top of the tower: nothing from the crown wanders into it (round 3) */   /* WHICH FIGHTS ARE FOUGHT ZOOMED OUT: one list for the wake and for desiredView() */
 import * as DPP from './deep_props.js';
@@ -4528,6 +4529,11 @@ function respawn() { if (bossSelectFight) bossSelectFight.began = false; lifeN++
   dcRespawn();
   coopRegroup();   /* the room is back: whoever else is in the party is stood up at the same shrine, not left in the old one */
   chaseRespawn();
+  if (L.skyMount) { if (DKH) DKH.restart(); if (SKH) SKH.restart(); }   /* (claude/scenes) THE SKY FIGHT's checkpoint is MOUNT-UP: a death restarts the fight there (fresh King, the back at phase 1); flasks are refilled by the respawn above */
+}
+function skyWon() {   /* (claude/scenes) THE DEMON KING is knocked down (src/demon-king-hands.js, WON_AFTER s after his 'beaten'): the clear is credited, then SCENE B (the escape -> THE BREACH card -> the map) */
+  if (state !== 'play' || TRN || !L || !L.skyMount) return;
+  setView('normal'); winLevel(); trnBegin();
 }
 // the order is not the story order: a rush wants a ramp with a pulse in it, and the minis are the breathers
 // THE ORDER THEY ARE MET IN. The rush used to run in the order they happened to be written down, which put
@@ -29986,7 +29992,7 @@ GBH = makeGrubbagHands({ get L() { return L; }, get players() { return players &
   hitOnce: o => { if (!P || !P.hitSet || P.hitSet.has(o)) return false; P.hitSet.add(o); return true; } });   /* LORD GRUBBAG THE GLUTTON (claude/kitchengate, src/grubbag-hands.js): his pie oven, the serving line's dishes, the belch's rings, the gravy */
 EHP.grubbag = GBG.GB.hp; BEAST_SHORT.grubbag = 'LORD GRUBBAG'; COLS.grubbag = ['#7a8a52', '#6a2a3a', '#ffd36b']; KNOCK_SKIP.add('grubbag'); EHP.butcher = KGM.K.butcher.hp; BEAST_SHORT.butcher = 'THE BUTCHER'; EHP.attendant = KGM.K.attendant.hp; BEAST_SHORT.attendant = 'THE ATTENDANT'; COLS.attendant = ['#6a2a3a', '#efe8da', '#c8ccd4']; COLS.butcher = ['#8a3a2a', '#e8e0d0', '#c8ccd4'];
 SKH = makeSkyMountHands({ L: () => L, players: () => players || [P], number: (x, y, t, c) => number(x, y, t, c), sfx: k => { const f = SFX[{ roar: 'drakeBank', wing: 'drakeWing', land: 'pStep' }[k]]; if (typeof f === 'function') f(); }, solid: T.SOLID, bk: () => window.BK });   /* (claude/skymount) */
-DKH = makeDemonKingHands({ L: () => L, players: () => players || [P], P: () => P, enemies: () => enemies, asPlayer: (p, fn) => asPlayer(p, fn), damage: (x, d, o) => damagePlayer(x, d, o), rpStamp: () => P.rpLookAt, heroId: () => hero(), swordDmg: () => swordDmg(), hurtAs: (t, e, d, x) => hurtAs(t, e, d, x, false), spawnImp: (x, y) => { const n0 = enemies.length; spawnEnt({ t: 'imp', x: Math.floor(x / TS), y: Math.floor(y / TS) - 1 }); const m = enemies.length > n0 ? enemies[n0] : null; if (m) { m.x = x; m.y = y - 2; } return m; }, number: (x, y, t, c) => number(x, y, t, c), text: (...a) => text(...a), sfx: SFX, shake: n => shakeCam(n), ring: (x, y, r, c) => ringAt(x, y, r, c, 0.4), burst: (x, y, n, c) => burst(x, y, n, c, 110, 0.6), scale: () => (1 + 0.25 * (TIER_BOSS[curId()] || 0)) * (diffNow().bhp || 1) * coopMul() /* (claude/skytune) every boss bar takes the mode and the party (COOP.hp 2/2.6/3.2) at spawn, as line 3279 does for a level's own boss */, skh: () => SKH, bk: () => window.BK });   /* (claude/demonking) */
+DKH = makeDemonKingHands({ L: () => L, players: () => players || [P], P: () => P, enemies: () => enemies, asPlayer: (p, fn) => asPlayer(p, fn), damage: (x, d, o) => damagePlayer(x, d, o), rpStamp: () => P.rpLookAt, heroId: () => hero(), swordDmg: () => swordDmg(), hurtAs: (t, e, d, x) => hurtAs(t, e, d, x, false), spawnImp: (x, y) => { const n0 = enemies.length; spawnEnt({ t: 'imp', x: Math.floor(x / TS), y: Math.floor(y / TS) - 1 }); const m = enemies.length > n0 ? enemies[n0] : null; if (m) { m.x = x; m.y = y - 2; } return m; }, number: (x, y, t, c) => number(x, y, t, c), text: (...a) => text(...a), sfx: SFX, shake: n => shakeCam(n), ring: (x, y, r, c) => ringAt(x, y, r, c, 0.4), burst: (x, y, n, c) => burst(x, y, n, c, 110, 0.6), scale: () => (1 + 0.25 * (TIER_BOSS[curId()] || 0)) * (diffNow().bhp || 1) * coopMul() /* (claude/skytune) every boss bar takes the mode and the party (COOP.hp 2/2.6/3.2) at spawn, as line 3279 does for a level's own boss */, skh: () => SKH, bk: () => window.BK, won: () => skyWon() });   /* (claude/demonking) */
 /* THE KITCHEN GATE's HANDS (claude/kitchengate, src/kitchen-hands.js): its fires and bellows, the coppers' steam, the great spits, the grease trails and the tallow doors, the overturned pot, the butcher, the recipe pages */
 KGH = makeKitchenHands({ get L() { return L; }, TS, T, sfx: SFX, players: () => players || [P], enemies: () => enemies, time: () => time,
   number: (x, y, t, c) => number(x, y, t, c), burst: (...a) => burst(...a), dust: (x, y, n) => dust(x, y, n), shake: n => shakeCam(n), seen: k => beastSeen(k),
@@ -32332,25 +32338,27 @@ function lookaheadOn() { return !SET.reduceMotion && SET.lookAhead !== false && 
 let trnForce = null, TRN = null, trnArrive = null;   /* trnForce: null = the default (ON), true = on, false = off (the tools' switch, like ?trans=0) */
 const trnOff = () => q.get('trans') === '0' || trnForce === false;   /* (claude/transwmart) the art is in: transitions are ON BY DEFAULT; ?trans=0 is the off switch (the TRANSITIONS setting governs the rest) */
 function trnEnv() {
-  return { g, VW, VH, time, n: players.length, reduce: !!SET.reduceMotion,
+  return { g, VW, VH, time, n: players.length, reduce: !!SET.reduceMotion, text: (str, x, y, col, al, sz) => text(str, x, y, col, al, sz),
     drawHero: (i, x, y, face, key, frame) => { const set = (i > 0 && players[i] && players[i].set) || K; drawSet(set, key, frame, x, y, face, false); },
     drawFerryman: (x, y, face, frame) => { if (SPR.ferryman) drawSet(SPR.ferryman, null, frame, x, y, face, false); } };
 }
 function trnBegin() {
   if (TRN || !L || !LEVELS[levelIndex] || rushOn() || bossSelectFight || edTesting || L.trial || L.shop) return false;
   const entry = TRM.entryFor(LEVELS[levelIndex].id, undefined, { burningOpen: !!PROG.burningOpen }); if (!entry) return false;   /* (claude/demotransitions) a row may ask for flags (Kingswood: the spur open or shut) */
-  const to = LEVELS.findIndex(l => l.id === entry.to); if (to < 0) return false;
-  if (DS.DEMO && DS.demoLocked(LEVELS[to])) return false;   /* (claude/demoend) the demo's last wood walks out to nothing: Gorm's win card, then the END CARD */
-  if (LEVELS[to].needs !== LEVELS[levelIndex].id && !(LEVELS[to].opensOn && LEVELS[to].opensOn.level === LEVELS[levelIndex].id)) return false;   /* (claude/demotransitions) or a SPUR that hangs off this level (Kingswood -> the Burning Village) */   /* (claude/smallfix5) the table's target must be the NEXT level on the road: the Lumber Trail's ferry carried the party to MARSH WOOD past THE HORNET'S NEST (marsh needs hornetsnest). No row, no cutscene: the normal win card, then the road */
+  const to = LEVELS.findIndex(l => l.id === entry.to); if (to < 0 && !entry.mapOnly) return false;   /* (claude/scenes) mapOnly: the target is a map node, not a level */
+  if (to >= 0 && DS.DEMO && DS.demoLocked(LEVELS[to])) return false;   /* (claude/demoend) the demo's last wood walks out to nothing: Gorm's win card, then the END CARD */
+  if (!entry.chain && LEVELS[to].needs !== LEVELS[levelIndex].id && !(LEVELS[to].opensOn && LEVELS[to].opensOn.level === LEVELS[levelIndex].id)) return false;   /* (claude/demotransitions) or a SPUR that hangs off this level (Kingswood -> the Burning Village) */   /* (claude/smallfix5) the table's target must be the NEXT level on the road: the Lumber Trail's ferry carried the party to MARSH WOOD past THE HORNET'S NEST (marsh needs hornetsnest). No row, no cutscene: the normal win card, then the road */
   const key = entry.from + '>' + entry.to;
-  if (!TRM.policy({ off: trnOff(), mode: TRM.modeOf(SET.transitions), seen: !!(PROG.transSeen && PROG.transSeen[key]) })) return false;
+  const plays = TRM.policy({ off: trnOff(), mode: TRM.modeOf(SET.transitions), seen: !!(PROG.transSeen && PROG.transSeen[key]) }); if (!plays && !entry.chain) return false;   /* (claude/scenes) a CHAIN row is the road itself: never dropped, only skipped */
   PROG.transSeen = PROG.transSeen || {}; PROG.transSeen[key] = 1; saveProgress();
   const target = entry.walk && entry.walk.to ? entry.walk.to * TS : LW * TS + 16;   /* (claude/demotransitions) walk.to: a column (Kingswood's arena is mid-level) */
   TRN = { entry, to, tl: TRM.start(entry, { reduce: SET.reduceMotion }), opened: false, loading: false, target, scene: false,
     pos: players.map(p => ({ x: p.x, y: p.y, hop: 0, v: 0, face: 1, arrived: false, speed: TRM.walkSpeed(Math.max(0, target - p.x)) })) };
-  BUG.evlog('transition ' + key); slowT = 0; stop = 0;
+  if (!plays) TRM.forceSkip(TRN.tl); else if (TRM.isSceneBeat(TRN.tl.beats[0])) { TRN.scene = true; trnAmbient(entry.scene); }   /* (claude/scenes) a row that OPENS on its scene (the Heart's two) starts in it; a skipped chain row starts at its short fade */
+  BUG.evlog('transition ' + key + (plays ? '' : ' (skipped)')); slowT = 0; stop = 0;
   return true;
 }
+const trnAmbient = sc => ambient.set(sc === 'smoke' ? 'forest' : sc === 'seal' ? 'blaze2' : sc === 'escape' ? 'highair' : 'water');   /* (claude/scenes) the scene's air */
 function trnOpenWay() {
   const o = TRN.entry.open; if (!o) return;
   if (o.kind === 'light') { for (let r = o.rows[0]; r <= o.rows[1]; r += 2) burst(o.col * TS + 8, r * TS + 8, 3, ['#ffe9a8', '#fff6d0'], 40, 1.0, -10, 1); if (SFX.gateLift) SFX.gateLift(); return; }   /* (claude/demotransitions) no wall in this arena: only the light beyond */
@@ -32370,10 +32378,11 @@ function trnUpdate(dt) {
     players.forEach((p, i) => { const q2 = tr.pos[i]; if (!q2 || q2.arrived) return; const w = TRM.walkStep(q2.x, tr.target, dt, q2.speed); q2.x = w.x; q2.v = w.v; q2.arrived = w.arrived; q2.hop = TRM.hopY(q2.x, tr.entry.open ? tr.entry.open.col : -9, TS); if (!w.arrived) ready = false; });
     if (players[0] && tr.pos[0]) { P.x = tr.pos[0].x; P.vx = tr.pos[0].v * 0.6; P.face = 1; }
   }
-  const entered = TRM.step(tl, dt, { press: anyPress, ready });
+  const s0 = trnSceneS(tl), entered = TRM.step(tl, dt, { press: anyPress, ready });
+  if ((tr.entry.scene === 'seal' || tr.entry.scene === 'escape') && !tl.skipped && TRM.isSceneBeat(tl.beats[tl.i])) { for (const n of HS.cuesBetween(tr.entry.scene === 'seal' ? HS.SEAL_CUES : HS.ESCAPE_CUES, s0, trnSceneS(tl))) { const fn = SFX[n]; if (typeof fn === 'function') { try { fn(); } catch { } } } }   /* (claude/scenes) the Heart scenes' sounds, once each as the scene clock crosses them (none when skipped) */
   if (tl.skipped && !tr.skipNoted) { tr.skipNoted = true; BUG.evlog('transition skipped'); }
   for (const e of entered) {
-    if (!tr.scene && e !== 'fade' && e !== 'done' && TRM.isSceneBeat(tl.beats[tl.i])) { tr.scene = true; ambient.set(tr.entry.scene === 'smoke' ? 'forest' : 'water'); if (SFX.step) SFX.step(); }   /* (claude/demotransitions) the first scene beat, whatever the scene */
+    if (!tr.scene && e !== 'fade' && e !== 'done' && TRM.isSceneBeat(tl.beats[tl.i])) { tr.scene = true; trnAmbient(tr.entry.scene); if (SFX.step) SFX.step(); }   /* (claude/demotransitions) the first scene beat, whatever the scene */
     if (e === 'ride') { if (SFX.pole) SFX.pole(); if (SFX.creak) SFX.creak(); SFX.splash(); }
     if (e === 'done') { trnFinish(); return; }
   }
@@ -32385,7 +32394,7 @@ function trnUpdate(dt) {
 let mapSpurLit = null;   /* (Daniel 11-02) the kings > burning row ends ON THE MAP: the spur node pulses until a level starts */
 function trnFinish() {
   const tr = TRN, entry = tr.entry; tr.loading = true;
-  if (entry.endOnMap) { TRN = null; trnArrive = null; setView('normal'); state = 'map'; gotoLevelNode(levelIndex); const k = NODES.findIndex(n => n.id === entry.to); if (k >= 0) { map.node = k; map.seg = NODE_AT[k]; map.t = 0; map.walking = 0; PROG.mapNode = k; PROG.mapNodeId = NODES[k].id; mapSpurLit = { id: entry.to, t: 0 }; } music.play(menuTrack()); transT = 1; transKind = 'fade'; return; }
+  if (entry.endOnMap) { TRN = null; trnArrive = null; setView('normal'); state = 'map'; if (!entry.mapOnly || NODES.some(n => n.level === levelIndex)) gotoLevelNode(levelIndex);   /* (claude/scenes) a hidden lab is on no node: the map keeps where it was */ const k = NODES.findIndex(n => n.id === entry.to); if (k >= 0) { map.node = k; map.seg = NODE_AT[k]; map.t = 0; map.walking = 0; PROG.mapNode = k; PROG.mapNodeId = NODES[k].id; mapSpurLit = { id: entry.to, t: 0 }; } music.play(menuTrack()); transT = 1; transKind = 'fade'; return; }
   loadThen(tr.to, () => { TRN = null; startGame(); trnArriveBegin(entry); });
 }
 /* THE ARRIVAL: the next level begins with the heroes standing on the ferry at its start; they step off (their hands are taken), the bars slide out, control returns */
@@ -32409,7 +32418,7 @@ function trnArriveTick(dt) {
 function trnDrawScene() {
   const tr = TRN, tl = tr.tl, env = trnEnv(), s = trnSceneS(tl);
   env.bank = tr.entry.bank || 'wood';
-  if (tr.entry.scene === 'road') TRA.drawRoadScene(env, s); else if (tr.entry.scene === 'smoke') TRA.drawSmokeScene(env, s); else TRA.drawFerryScene(env, s);   /* (claude/demotransitions) */
+  if (tr.entry.scene === 'seal') TRA.drawSealScene(env, s); else if (tr.entry.scene === 'escape') TRA.drawEscapeScene(env, s); else if (tr.entry.scene === 'road') TRA.drawRoadScene(env, s); else if (tr.entry.scene === 'smoke') TRA.drawSmokeScene(env, s); else TRA.drawFerryScene(env, s);   /* (claude/demotransitions) */
   if (TRM.phase(tl) === 'fade') { const k = Math.min(1, tl.pt / tl.beats[tl.i].dur); g.fillStyle = 'rgba(5,4,10,' + (k * k).toFixed(3) + ')'; g.fillRect(0, 0, VW, VH); }
 }
 function trnDrawWorldOver(cx, cy) {
@@ -36734,7 +36743,7 @@ function render() {
     g.fillStyle = gr; g.fillRect(0, 0, VW, VH);
     g.globalAlpha = 0.10 * k; g.fillStyle = '#f6f6ee'; g.fillRect(0, 0, VW, VH); g.globalAlpha = 1;
   }
-  if (DKH) DKH.hud(g, VW, VH, time);   /* (claude/demonking) his three-phase bar and the pips */
+  if (DKH && !TRN) DKH.hud(g, VW, VH, time);   /* (claude/scenes) none over a transition's scene */   /* (claude/demonking) his three-phase bar and the pips */
   if (flash > 0 && SET.flashes && !SET.reduceMotion) { g.fillStyle = 'rgba(255,80,80,' + (flash * 2.5) + ')'; g.fillRect(0, 0, VW, VH); }
   if (state === 'talk' && talk) { // the words: a box along the bottom, the speaker named, a glyph for the next page
     const big = !!SET.bigText; const sz = big ? TYPE.big : 8; const bw = VW - 24, bx = 12; const body = talk.lines[talk.i] || ''; const lines = wrap(body, bw - 16, sz); const lh = big ? 18 : 10, nh = talk.name ? lh : 0; const bh = 14 + lines.length * lh + nh + 8;   /* (+8: the page count and the next glyph have a row of their own, off the last line) */
