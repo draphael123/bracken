@@ -322,7 +322,7 @@ export function frameOf(e) {
     case 'stab': return 'stab';
     case 'planted': return loop('planted', 'plantedB', 2.5);
     case 'wallTell': return 'wallTell';
-    case 'shieldwall': return loop('shieldwall', 'shieldwallB', 2);
+    case 'shieldwall': return loop('shieldwall', 'shieldwallB', mv ? 7 : 2);   /* (claude/lance146) advancing behind the wall: the pose steps at a walking beat, so his feet are seen to move */
     case 'wallTurned': return 'turned';
     case 'stumble': case 'reel': return a < 0.35 ? 'stagger' : 'staggerB';
     case 'pinned': return loop('pinned', 'pinnedB', 3);
