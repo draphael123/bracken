@@ -76,6 +76,8 @@ export const CALL_LINES = new Set([
   'THE PIT WIND THROWS YOU OUT', 'YOU RIDE THE DEVIL UP', 'THE DEVIL LIFTS YOU', 'GALE BLADES: DUCK THE HIGH, JUMP THE LOW',
   /* claude/windcaller3: THE WINDCALLER 3 - the phases change the wind, his blast, his step away, the gale home, the falling ledge, and his opening */
   'THE WIND TURNS: READ THE FLAGS', 'THE STORM: THE EAST LEDGE GIVES', 'HE GATHERS THE WIND: STEP BACK', 'THE GALE TAKES YOU HOME', 'THE LEDGE FALLS', 'HIS OWN BOLT: HE FALLS - CUT HIM',
+  /* claude/windcaller5: a blade turned back (every hero's parry takes his bolt AND his blades) */
+  'TURNED BACK',
   /* claude/moorpyro: fire sends his bolt home (the pyromancer's answer to him) */
   'HIS BOLT BURNS HOME: HE FALLS - CUT HIM', 'YOUR FIRE SENDS HIS BOLT HOME',
   /* claude/moorpass: the ranger's snatch, the paladin's aegis, the Blood Knight's ward let go send his bolt home too */
