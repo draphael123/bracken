@@ -50,7 +50,8 @@ Online co-op is host-streams / guests-send-inputs: an online guest is just a sea
 - `node tools/pvp-duel.mjs pure,sim`: all ok, 45 pure checks and a 216-match abstract sim. Every match ended (500 rounds, 0 by time). The abstract win shares say nothing about balance: equal DPS was built in.
 - `node --check` passes on main.js, level.js, tavern.js and tavern-art.js.
 - Ran individually, ok: dressing, one-new-foe, sealed-pyramid (240), ambient-landmarks, geom-report, checkpoints, checkpoint-stand (71 levels), music-levelstart, signs, skins.
-- See the copy in `scratch\lane-reports\pvpduel.md` for the rest of the pure-tool results.
+- Also ok: platforming-lint (rc 0; its FAIL(rpt) rows are on wood / burning / hanging only and have nothing to do with the duel), ground-depth (71 levels), goblin-lint, push-blocks, shop-theme, answer-tags (duel_pit listed with no tags, as expected).
+- NOT run: visible-supports (it was slow, so I stopped it), and occluders, foe-footing, threat-holes, ambush-listed, npc-removal. These are pure node tools for the nightly suite; I did not run anything that opens a browser.
 
 ## Browser owed (proof lane, one browser)
 1. `node tools/pvp-duel.mjs duel`: AI vs AI for all 36 hero pairs at N=2, then N=4 for any hero near the 80% bar. It checks that every match ends, blows land, there are no flasks, and no hero wins over 80%.
