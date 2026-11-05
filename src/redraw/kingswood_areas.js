@@ -135,7 +135,7 @@ const AREAS = [
       for (let x = 126; x < 204; x += 5 + ((r() * 7) | 0)) { const k = (r() * 4) | 0, by = Math.min(surf(L, x), 39 * TS); out.push({ x: x * TS - 14, w: 30, draw: g => {
         if (k === 0) { rc(g, x * TS - 1, by - 22, 3, 22, '#3a2412'); rc(g, x * TS - 1, by - 22, 1, 22, '#8a5a32'); rc(g, x * TS + 11, by - 22, 3, 22, '#3a2412'); for (let q = 0; q < 6; q++) { rc(g, x * TS + 1, by - 20 + q * 3, 10, 1, '#6a5a3a'); rc(g, x * TS + 1 + q * 2, by - 20, 1, 16, '#6a5a3a'); } }
         else if (k === 1) { for (let dy = 0; dy < 12; dy++) { const w = 11 - dy * 0.4 + (dy < 2 ? -3 : 0); rc(g, x * TS + 6 - w, by - 12 + dy, w * 2, 1, dy % 3 === 0 ? '#a8924a' : '#c9aa5a'); } rc(g, x * TS + 5, by - 14, 2, 2, '#a8924a'); }
-        else if (k === 2) { rc(g, x * TS - 2, by - 26, 18, 2, '#3a2412'); rc(g, x * TS - 2, by - 8, 18, 2, '#3a2412'); for (let q = 0; q < 4; q++) { rc(g, x * TS + q * 5, by - 34 - (q % 2) * 3, 1, 28, '#5a3a1e'); rc(g, x * TS - 1 + q * 5, by - 38 - (q % 2) * 3, 3, 5, '#c0c0c8'); } }
+        else if (k === 2) { for (const lx of [x * TS - 2, x * TS + 14]) { rc(g, lx, by - 28, 3, 28, '#2a1a0c'); rc(g, lx, by - 28, 1, 28, '#5a3a1e'); }   /* (claude/smallfix15) legs: the rack stood 6 px off the ground on nothing */ rc(g, x * TS - 2, by - 26, 18, 2, '#3a2412'); rc(g, x * TS - 2, by - 8, 18, 2, '#3a2412'); for (let q = 0; q < 4; q++) { rc(g, x * TS + q * 5, by - 34 - (q % 2) * 3, 1, 34 + (q % 2) * 3, '#5a3a1e'); rc(g, x * TS - 1 + q * 5, by - 38 - (q % 2) * 3, 3, 5, '#c0c0c8'); } }
         else { for (let q = 0; q < 9; q++) { rc(g, x * TS - 6 + q * 3, by - 5 - (hash(x, q) % 5), 1, 5 + (hash(x, q) % 5), q % 2 ? '#8a7a2a' : '#c9a83a'); } } } }); }
       return out; },
     lights: [[131 * TS, 39 * TS - 150, 30, 0.18], [160 * TS, 39 * TS - 192, 32, 0.18], [189 * TS, 39 * TS - 172, 30, 0.18]] },
@@ -233,3 +233,4 @@ export function drawAreas(g, cx, cy, VW, VH, time, dY, full, L) {
 }
 /* (claude/gorm2art) bake an area's chunks now (the level's load): the hall, the burning wood and the glade, so the fight never hitches on a first look */
 export function warmAreas(L, ids) { for (const A of AREAS) { if (!ids.includes(A.id)) continue; const n = Math.ceil((A.x1 - A.x0) * TS / CH); for (let ci = 0; ci < n; ci++) chunk(A, ci, L); } }
+export const AREAS_FOR_LINT = AREAS;   /* (claude/smallfix15) tools/painted-anchors.mjs reads the painted features in node */
