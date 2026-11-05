@@ -151,7 +151,7 @@ const first = (binds, prof, action) => labelFor(binds, prof, action, 1);
 /* ============================== THE PER-HERO CONTROLS CARD ==============================
    Rows are [what, keys, pad]. The words are the hero's; the keys are whatever the player has bound (tokens: the first key of the action). */
 const HEROES_C = {
-  knight:     ['shield', tk => 'HOLD ' + tk.c + (tk.toggle ? ' (TOGGLE)' : '') + ': ON THE BEAT = A LINK' + (tk.toggle ? '' : '. TAP TWICE = BASH')],   /* (claude/knightkit) double-tap C = THE SHIELD BASH (a toggle's second tap lowers the shield, so UP + C is the bash there) */   /* (claude/knightid) the guard chain */
+  knight:     ['shield', tk => 'HOLD ' + tk.c + (tk.toggle ? ' (TOGGLE)' : '') + ': ON THE BEAT = A LINK'],   /* (claude/knightkit) the double-tap C bash is told on the shield-bash row below (a toggle's second tap lowers the shield, so UP + C is the bash there) */   /* (claude/knightid) the guard chain */
   pyro:       ['fire ward', tk => 'TAP ' + tk.c + ' WARD, HOLD FIREBALL'],   /* (claude/pyrokit) */
   paladin:    ['conviction', tk => 'TAP ' + tk.c + ' SPEND, HOLD AEGIS'],   /* (PALADIN 3) the tap spends Conviction by tier */
   pirate:     ['hook / catch', tk => 'TAP ' + tk.c + ' CATCH, HOLD HOOK'],   /* (claude/heroblocksa) the tap is the HOOK CATCH (src/hook-catch.js) */
@@ -176,8 +176,8 @@ export function cardRows({ hero = 'knight', binds = emptyBinds(), prof = 'pad1',
     ['jump', jumpKeys, pd('jump')],
     [hero === 'ranger' ? 'shoot / knife' : 'swing', atkKeys, pd('atk')],
     [hero === 'ranger' ? 'down shot' : (PLUNGE_ROW[hero] || ['plunge'])[0], k1('down') + '+SWING IN AIR', pd('down') + '+' + pd('atk')],
-    [hero === 'knight' ? 'heavy cut' : hero === 'geomancer' ? 'fault line' : hero === 'berserker' ? 'double chop' : hero === 'ranger' ? 'draw' : 'heavy blow', hero === 'geomancer' || hero === 'ranger' ? 'HOLD SWING, LET GO' : hero === 'knight' ? 'HOLD SWING, LET GO. HOLD LONGER: QUAKE' : 'HOLD SWING', 'HOLD ' + pd('atk')],
-    hero === 'berserker' ? ['cross-chop', 'SWING x5 IN A RUN', pd('atk') + ' x5'] : hero === 'geomancer' ? ['stone fist', 'SWING x3: KNOCKS UP', pd('atk') + ' x3'] : hero === 'ranger' ? ['push kick', 'KNIFE x3 IN A RUN', pd('atk') + ' x3'] : [hero === 'knight' ? 'shield bash' : 'third cut', hero === 'knight' ? 'SWING x3: BREAKS A GUARD' : 'SWING x3 IN A RUN', pd('atk') + ' x3'],   /* (claude/ranger: no run of three - her row is the snare) */   /* (claude/berserker2: his flurry runs five) */
+    [hero === 'knight' ? 'heavy cut' : hero === 'geomancer' ? 'fault line' : hero === 'berserker' ? 'double chop' : hero === 'ranger' ? 'draw' : 'heavy blow', hero === 'geomancer' || hero === 'ranger' ? 'HOLD SWING, LET GO' : hero === 'knight' ? 'HOLD SWING (LONG: QUAKE)' : 'HOLD SWING', 'HOLD ' + pd('atk')],
+    hero === 'berserker' ? ['cross-chop', 'SWING x5 IN A RUN', pd('atk') + ' x5'] : hero === 'geomancer' ? ['stone fist', 'SWING x3: KNOCKS UP', pd('atk') + ' x3'] : hero === 'ranger' ? ['push kick', 'KNIFE x3 IN A RUN', pd('atk') + ' x3'] : [hero === 'knight' ? 'shield bash' : 'third cut', hero === 'knight' ? (blockToggle ? 'SWING x3, OR UP+' + tk.c : 'SWING x3, OR TAP ' + tk.c + ' x2') : 'SWING x3 IN A RUN', pd('atk') + ' x3'],   /* (claude/ranger: no run of three - her row is the snare) */   /* (claude/berserker2: his flurry runs five) */
     [hero === 'ranger' ? 'rising shot' : 'rising cut', k1('up') + '+SWING', pd('up') + '+' + pd('atk')],
     ['low sweep', k1('down') + '+SWING', pd('down') + '+' + pd('atk')],
     /* THE CROUCH: every hero ducks (src/duck.js); the Pyromancer's held still is also STOKE (claude/pyrokit: the EMBER FLARE left down for the ward on C) */
