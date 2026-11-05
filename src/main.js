@@ -11077,7 +11077,7 @@ function updatePlayer(dt) {
     /* (claude/knightkit, Daniel 11-05) DOUBLE-TAP C = THE SHIELD BASH: two quick TAPS (the first let go inside DTAP.tap s, the second pressed inside DTAP.gap s of the first). The first tap raises the shield as it always did; a held C, or a tap that came after a long hold, never counts. */
     let dtapBash = false; if (cDown) { dtapBash = !!P.cTapShort && time - (P.cTapAt || -9) <= DTAP.gap; P.cTapAt = time; P.cTapShort = false; if (dtapBash) P.cTapShort = false; }
     else if (cWas0 && !keys.block) P.cTapShort = time - (P.cTapAt || -9) <= DTAP.tap;
-    if (cDown && (keys.up || dtapBash) && HPK && !stunned && !dodging && !attacking && !P.plunge && !rushing() && !thrown && (P.ground || P.swim)) { if (HPK.bashPress() && dtapBash) { P.cTapShort = false; P.block = false; P.blockT = 0; } }   /* (claude/heropassa) UP+C: THE SHIELD BASH - never the last charge, never a raised shield */
+    if (cDown && (keys.up || dtapBash) && HPK && !stunned && !dodging && !attacking && !P.plunge && !rushing() && !thrown && (P.ground || P.swim)) { if (HPK.bashPress(dtapBash && !keys.up) && dtapBash) { P.cTapShort = false; P.block = false; P.blockT = 0; } }   /* (claude/heropassa) UP+C: THE SHIELD BASH - never the last charge, never a raised shield */
     else if (cDown && keys.up && P.links >= KC.max && !stunned && !dodging && !attacking && !P.plunge && !rushing() && !thrown && (!(P.ground || P.swim) || P.climb)) {   /* (claude/ults) the SHIELD CHARGE is UP+C now (the ultimate input above); in the air it only says why */
       if (!PROG.lcFooting) { PROG.lcFooting = 1; saveProgress(); hintSay('mechanic', 4.5, 'THE SHIELD CHARGE NEEDS FOOTING: UP+C ON THE GROUND OR IN THE WATER. THE CHAIN IS KEPT.'); }   /* said once a save; the bar is not spent */
     }
@@ -29754,7 +29754,7 @@ RGK = makeRanger({ boltHome: s => sendBoltHome(s, 'snatch'), get P() { return P;
   gadgetNear: (p, reach) => gadgetInKnifeReach(p, reach),   /* (claude/smallfix12) */   /* (claude/riposte: her BOW-BASH on the beat is the shared parry) */
   poiseLean: (e, n) => { const m = poiseMax(e); if (!m || !e.alive || e.broken > 0 || e.poiseCd > 0) return; e.poise = Math.min(m, (e.poise || 0) + n); e.poiseT = 2.5; if (e.poise >= m) addPoise(e, 1, P.x, false); } });
 HPK = makeHeroPass({ get P() { return P; }, get enemies() { return enemies; }, get parts() { return parts; }, get time() { return time; }, get boss() { return boss; }, TS, SFX, CM,
-  hero: () => hero(), tal: k => tal(k), spend: c => spend(c), tired: () => { P.stFlash = 0.35; }, stDelay: () => ST.delay, blocked: () => { blocks++; },
+  hero: () => hero(), tal: k => tal(k), spend: c => spend(c), tired: () => { P.stFlash = 0.35; }, guardedFoe: e => guardedFoe(e), stDelay: () => ST.delay, blocked: () => { blocks++; },
   gainResolve: n => gainResolve(n), lcOn: () => lcOn(), blowLow: q => blowLow(q || updFoe, time), windingUp: e => windingUp(e), flinch: e => flinch(e),
   guardBreak: () => { P.st = 0; P.stFlash = 0.5; P.block = false; P.rush = 0; SFX.guardBreak(); SFX.gasp(); shakeCam(5, -P.face * 4); hitstop(0.1); P.hurt = CM.STAM.breakStagger; P.guardTired = CM.STAM.breakTired; CM.exhaust(P); number(P.x, P.y - 22, 'GUARD BREAK', '#ffd36b'); },
   isSolid: (x, y) => isSolid(x, y), knockSkip: e => KNOCK_SKIP.has(e.t), knockFoe: (e, d, p, o) => knockFoe(e, d, p, o), tipReach: e => tipReach(e), box: b => box(b), overlap: (a, b) => overlap(a, b),
