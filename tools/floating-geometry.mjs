@@ -12,7 +12,8 @@
 import { LEVELS, T } from '../src/level.js';
 
 export const FIXED = ['theatre'];   /* claude/theatre3: the Maskwright's Theatre, fixed and gated */
-const args = process.argv.slice(2), only = args.filter(a => !a.startsWith('-'));
+const IS_MAIN = (process.argv[1] || '').split(/[\\/]/).pop() === 'floating-geometry.mjs';   /* float-triage.mjs imports floating() */
+const args = IS_MAIN ? process.argv.slice(2) : [], only = args.filter(a => !a.startsWith('-'));
 const built = new Map(); const build = d => { if (!built.has(d.id)) { try { built.set(d.id, d.build()); } catch (e) { built.set(d.id, null); } } return built.get(d.id); };
 
 /* the groups of a level that float: [{ n, x0, x1, y0, y1, kinds }] */
@@ -35,7 +36,9 @@ export function floating(L) {
   return out;
 }
 
-const campaign = LEVELS.filter(d => !(d.hidden && !d.secret) && !/^(shop|trial_|custom)/.test(d.id));
+export { build };
+export const campaign = LEVELS.filter(d => !(d.hidden && !d.secret) && !/^(shop|trial_|custom)/.test(d.id));
+if (IS_MAIN) {
 const pick = only.length ? campaign.filter(d => only.includes(d.id)) : campaign;
 let fails = 0; const report = [];
 for (const d of pick) { const L = build(d); if (!L || !L.grid) continue; const hits = floating(L);
@@ -45,3 +48,4 @@ for (const d of pick) { const L = build(d); if (!L || !L.grid) continue; const h
 if (report.length) console.log('REPORT (not gated; for the levels\' own lanes):\n  ' + report.join('\n  '));
 if (fails) { console.log('floating-geometry: ' + fails + ' gated level(s) have geometry attached to nothing'); process.exit(1); }
 console.log('ok  floating-geometry  ' + FIXED.join(', ') + ': nothing hangs from nothing (' + report.length + ' other level(s) reported)');
+}
