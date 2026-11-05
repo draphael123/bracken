@@ -1,6 +1,7 @@
 import './bug-report.js';   /* FIRST: the console and error taps REPORT A BUG reads must be in before any other module speaks */
 import { bossSelectRows, bossKey, bossRecordNext } from './bossselect.js';
 import { drawBasketOutline } from './false-abbot.js';
+import { MON3 } from './mon3-flag.js';   /* (claude/falseabbot) the False Abbot's card in THE MONASTERY 3 */
 import { ABBOT, updateFalseAbbot as stepFalseAbbot, drawFalseAbbot, drawAbbotRopes, abbotFrame, abbotOpen, abbotTake, abbotBellRung, abbotBlessed, abbotInChair, abbotBridgeBell, abbotWheelStruck, abbotPlunge, abbotClamp, drawAbbotHouse } from './false-abbot.js';   /* THE FALSE ABBOT, the Monastery's boss (2026-09-22), in place of the Roc */
 import { layoutPlates, plateNodes, placePanel, plateLabel, panelSize } from './map-plates.js';
 import { bakeFalseAbbot } from './redraw/false_abbot.js';
@@ -6387,6 +6388,8 @@ const BEASTS = [
   { t: 'troll', name: 'HILL TROLL', sub: 'boulder-thrower', desc: 'Slow, mossy, taller than a door. From range it hurls a boulder in an arc at where you are going: watch the shadow and the whistle. Up close it swats, heavy but blockable. Its hide is soft: the sword and the plunge both bite.' },
   { t: 'ram', name: 'THE RAM LORD', sub: 'lord of the fold', desc: 'His horns turn a blade from the front: go round him, or come down on him from above. Two overhangs lean out over his fold on dry-stone props: when he stands under one (its prop glints gold), knock the prop out and the cliff comes down on him - STUNNED, a gold ring, and your blows land SIX times over. (The prop glows gold, a gold arrow shows above it, grit falls and the cliff shakes: that is your cue.) Dodge his charge and he hits the wall: a shorter opening, blows land six times over. After each he shakes it off and is WARDED a moment. Two-thirds down, the fold floor slides toward the wall and he banks off it; a third down, the cliff rains rock and he sweeps his horns all the way round - jump it.' },
 ];
+/* (claude/falseabbot) THE MONASTERY 3's False Abbot (behind MON3): his own chapel and the belfry over it - the card says what hurts him there */
+if (MON3) { const ab = BEASTS.find(q => q.t === 'abbot'); if (ab) ab.desc = "The priest's superior, in a cope that fits and a mitre that does not, holding mass in his own chapel under the bells. His ward comes from the house, and a warded Abbot takes less than half of every blow. So turn the house on him. His rood and his belfry bridges hang from bells: strike a bell while he kneels on its bridge and it drops with him. He lights a brazier to pray: ride its smoke up and come down on him. Past half his blood he brings the belfry floor down and fights on among the bells, where a struck bell's ring runs along the beams: jump it. When he is beaten down, the great bell is the last blow."; }
 function beastRec(t) { PROG.beasts = PROG.beasts || {};
   /* HE WAS THE PYROMANDER UNTIL 2026-09-22, and the bestiary is keyed by type id: carry the old record over the
      first time anything asks for the new one, or every save that ever met him loses its seen and slain. The old id
