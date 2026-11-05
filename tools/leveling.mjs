@@ -73,7 +73,7 @@ check('early milestones', () => {
     assert.equal(PR.HERO_PERKS[h].length, 2, h + ' needs two options'); }
   assert.equal(PR.PERKS.length + PR.MINOR_PERKS.length >= 16, true); assert.equal(PR.MINOR_PERKS.length >= 8, true);
   /* the hero's own is a different hand per hero, and every id of every hero is unique */
-  assert.equal(new Set(PR.ALL_HERO_PERKS.map(k => k.id)).size, 18);   /* (berserkerport: two a hero, eight heroes; claude/ranger: nine) */
+  assert.equal(new Set(PR.ALL_HERO_PERKS.map(k => k.id)).size, 20);   /* (berserkerport: two a hero, eight heroes; claude/ranger: nine; claude/desertpriest: ten) */
   assert.equal(PR.levelsToPerk(0), 5); assert.equal(PR.levelsToPerk(7), 3); assert.equal(PR.levelsToPerk(20), 5); assert.equal(PR.levelsToPerk(49), 1); assert.equal(PR.levelsToPerk(50), null);
   assert.deepEqual(PR.techniquesArriving('pyro', 0, 50), []); assert.deepEqual(PR.TECH_LEVELS, [25, 30, 35, 40, 45, 50]);   /* the technique hook: a hero with no kit offers none (claude/knightid: the knight's six are tools/tech-cards.mjs) */
 });
