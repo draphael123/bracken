@@ -15,9 +15,6 @@ export const CAST_SWAPS = {
     { from: 'archer', to: 'gobmage', every: 3, x0: 200, min: 3 },     /* a mage on the wall for every third bow: ranged for ranged */
     { from: 'pike', to: 'sapper', every: 3, x0: 300, min: 2 },        /* a bomber for every third pike on the east stretch */
   ],
-  scree: [
-    { from: 'sprig', to: 'thief', every: 5, x0: 100, min: 2 },        /* cutpurses on the path */
-  ],
   hanging: [
     { from: 'sprig', to: 'thief', every: 3, min: 1 },               /* the village's thief, up in the boughs */
   ],
