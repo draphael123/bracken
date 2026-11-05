@@ -2158,11 +2158,15 @@ function allyRoute(p, one, S) {
   const g = allyGraph(); if (!g) { S.route = null; return; }
   if (S.routeAt !== undefined && p.aiT - S.routeAt < 24 && S.routeFor === one) return;   /* about twice a second, not every frame */
   S.routeAt = p.aiT; S.routeFor = one;
-  const a = allyCell(g, p), b = allyCell(g, one);
-  if (a < 0 || b < 0) { S.route = null; S.noWay = false; return; }
+  /* (claude/coopvert) a body in mid-air has no footing under it, so the route used to drop to 'none' for the length of every jump and the walker fell back to pushing at his x: both ends
+     remember the last footing they stood on (a leader up to 2.5 s old, itself up to 1 s) and route from there */
+  let a = allyCell(g, p), b = allyCell(g, one);
+  if (a >= 0 && p.ground) { S.selfCell = a; S.selfAt = p.aiT; } else if (a < 0 && S.selfCell !== undefined && p.aiT - S.selfAt < 60) a = S.selfCell;
+  if (b >= 0 && (one.ground || one.onMover != null)) { S.leadCell = b; S.leadAt = p.aiT; } else if (b < 0 && S.leadCell !== undefined && p.aiT - S.leadAt < 150) b = S.leadCell;
+  if (a < 0 || b < 0) { if (!(S.route && p.aiT - (S.routeOk || 0) < 40)) S.route = null; S.noWay = false; return; }
   const path = g.path(a, v => v === b, 320);
   if (!path) { S.route = null; S.noWay = true; return; }
-  S.noWay = false; S.route = path;
+  S.noWay = false; S.route = path; S.routeOk = p.aiT;
 }
 /* the x it should walk to this frame given its route: the lip of the first climb or drop (and 'jump' when it stands at a climb's lip), or null when the route is flat */
 function allyRouteGoal(p, S) {
