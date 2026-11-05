@@ -32,7 +32,7 @@ export const KNIGHT_TECH = {
     { role: 'close', trade: 'CLOSE OR FAR', capstone: true, id: 'kcharge2', name: 'THE LONG CHARGE', input: 'TAP C AT 3 LINKS', k: 0.9, cd: 0, cost: 0,
       what: 'THE SHIELD CHARGE ENDS IN A SECOND, WIDER SLAM',
       teach: 'THE SHIELD CHARGE NOW CHAINS A SECOND SLAM, WIDER THAN THE FIRST, A BEAT AFTER IT' },
-    { id: 'kwheel', name: 'THE BREAKING WHEEL', input: 'TAP C AT 3 LINKS', role: 'far', trade: 'CLOSE OR FAR', capstone: true, k: 1.5, cd: 0, cost: 0, links: 3,
+    { id: 'kwheel', name: 'THE BREAKING WHEEL', input: 'TAP C AT 3 LINKS', role: 'far', trade: 'CLOSE OR FAR', capstone: true, k: 1.2, cd: 0, cost: 0, links: 3,
       what: 'THREE LINKS SPENT: THE SHIELD IS HURLED DOWN THE ROOM THROUGH EVERY GUARD IT CROSSES, AND ROLLS HOME',
       teach: 'UP+C AT THREE LINKS NOW HURLS THE SHIELD THE LENGTH OF THE ROOM: EVERY GUARD IT CROSSES IS BROKEN, THE BIG ONES JUST TAKE THE BLOW. IT RETURNS TO YOUR HAND' } ] },
 };

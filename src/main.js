@@ -7670,7 +7670,7 @@ function heroMeterFrac() { return ((hero() === 'knight' ? (lcOn() ? 100 : (P.lin
 function hudMeterLabel() {
   const blink = Math.floor(time * 4) % 2;
   { const u = (state === 'play' || state === 'talk') ? ultCue(hero(), blink) : null; if (u) return u; }   /* (claude/ults) ONE cue for every hero: ULT READY: UP+C */
-  if (hero() === 'knight') { if (lcOn()) return { s: 'CHARGE!', col: '#ffd36b' }; return (P.links || 0) >= KC.max ? { s: 'SHIELD CHARGE: UP+C', col: blink ? '#ffd36b' : '#fff6c8' } : null; }
+  if (hero() === 'knight') { if (lcOn()) return { s: 'CHARGE!', col: '#ffd36b' }; return (P.links || 0) >= KC.max ? { s: (tech('kwheel') ? 'BREAKING WHEEL: UP+C' : 'SHIELD CHARGE: UP+C'), col: blink ? '#ffd36b' : '#fff6c8' } : null; }
   if (isPyro()) return P.full ? { s: 'METEOR FALL: UP + C', col: blink ? '#ffd36b' : '#fff6c8' } : null;   /* (claude/pyrokit2: it was CONFLAGRATION: C, and PYRE before) */
   if (isPaladin()) { const p = pipsOf(P);   /* (PALADIN 3) what a tap of C spends now */
     if (p >= HG.conv.pips) return { s: 'SUNFALL: C', col: blink ? '#ffd36b' : '#fff6c8' };
@@ -9584,7 +9584,7 @@ const lcOn = () => P.lcBrace > 0 || P.lcLeft > 0;
    hedge knight carry a maxHp for their bars and are ordinary foes, and the charge goes through them like anyone else */
 const lcBig = e => e === boss || !!e.mini || !!(L.arena && L.arena.boss === e.t) || !!(L.mini && L.mini.boss === e.t && (e.mini || !(L.ents || []).some(q => q.t === e.t && q.mini)));
 /* THE ULTIMATES (claude/ults): who has one, what makes it ready, what fires it. The Warden's Reach and the Pyromancer's Meteor Fall register here with one line each when their lanes land. */
-ultRegister('knight', { name: 'SHIELD CHARGE', ready: () => (P.links || 0) >= KC.max && !lcOn() && (P.ground || P.swim) && !P.climb, fire: () => { lastCharge(); return true; } });
+ultRegister('knight', { name: 'SHIELD CHARGE', ready: () => (P.links || 0) >= KC.max && !lcOn() && !(tech('kwheel') && thrown) && (P.ground || P.swim) && !P.climb, fire: () => { if (tech('kwheel')) wheelThrow(); else lastCharge(); return true; } });
 ultRegister('geomancer', { name: 'MOUNTAIN COLLAPSE', ready: () => !!GEO && GEO.avalancheReady() && (P.ground || P.swim), fire: () => { const ok = GEO.avalanche(); if (ok) trialEvent('meter'); return ok; } });
 ultRegister('ranger', { name: 'GREAT ARROW', ready: () => !!RGK && RGK.greatReady(), fire: () => RGK.greatArrow() });
 function lastCharge() {
@@ -9700,7 +9700,7 @@ const knightWinding = () => hero() === 'knight' && (P.charge > 0 || (P.atkHeld |
 function heavyCut(stage) {
   P.atk = 0; P.hitSet.clear(); P.heavy = true; P.cutQuaked = false;
   P.vx = P.face * 70;
-  startSwing(); P.cutStage = stage; P.combo = 3; P.heavySwing = true; P.swingMul = (P.punishCut ? 2.0 : CUT_MUL[stage]) + 0.15 * Math.max(0, tal('heavy') - 1); P.punishCut = false;   /* (claude/knightid: VALIANT is the riposte FINISHER now; PUNISH (L35) is x2.0 on a broken foe) */   /* (after startSwing, which sets it from the run) */
+  startSwing(); P.cutStage = stage; P.combo = 3; P.heavySwing = true; P.swingMul = (P.punishCut || P.linkCutWant ? 2.0 : CUT_MUL[stage]) + 0.15 * Math.max(0, tal('heavy') - 1); P.punishCut = false; P.cutLink = !!P.linkCutWant; P.linkCutWant = false;   /* (claude/knightid: VALIANT is the riposte FINISHER now; PUNISH (L35) is x2.0 on a broken foe) */   /* (after startSwing, which sets it from the run) */
   SFX.heavyCut(stage); shakeCam(1 + stage, P.face * 2); zoomKick(1.02 + 0.015 * stage, 0.16);
   streaks(P.x + P.face * 10, P.y - 24, 6 + 2 * stage, [CUT_COL[stage], '#fff6e0'], 120); }
 /* WHAT EACH STAGE DOES TO WHAT IT LANDS ON, after the heavy blow has done everything a heavy blow does (the swing pass) */
@@ -9710,7 +9710,8 @@ function cutHit(e) {
     if (m && !(e.broken > 0) && !(e.poiseCd > 0)) { e.poise = Math.min(m, (e.poise || 0) + m * (st === 3 ? 0.35 : 0.25)); if (e.poise >= m) addPoise(e, 1, P.x, false); }
     hitstop(0.1); return; }
   if (st === 3 && floorFoe(e, 1.8)) { number(e.x, e.y - e.h - 20, 'KNOCKED DOWN', '#ff8a4c'); return; }
-  if (!(e.broken > 0)) { e.broken = 1.3; e.guardT = 0; e.vx = 0; e.knock = 0; number(e.x, e.y - e.h - 20, 'GUARD BROKEN', '#ffd36b'); breakBeat(e); } }
+  if (!(e.broken > 0)) { e.broken = 1.3; e.guardT = 0; e.vx = 0; e.knock = 0; number(e.x, e.y - e.h - 20, 'GUARD BROKEN', '#ffd36b'); breakBeat(e); }
+  if (P.cutLink && !(e.maxHp || e.mini || e.noGrav)) { e.vx = P.face * 190; e.knock = 0; e.stagger = Math.max(e.stagger || 0, 0.45); dust(e.x, e.y, 5); } }   /* LINK CUT: the front man is shoved back along the floor (a boot-scuff of dust, nothing flies) */
 /* ON ITS BACK: a knockdown (the heavy cut's third stage, the Warden's WHEEL). It is BROKEN - stood still, open, every blow on it
    landing as on an opening - and drawn lying down (poseOf) until it gets up. Bosses, minis and what cannot be thrown are rocked instead. */
 function floorFoe(e, secs) {
@@ -9736,6 +9737,7 @@ function updateCharge(dt) {
   }
   P.atkHeld = (P.atkHeld || 0) + dt;
   if (hero() === 'knight' && tech('kpunish') && P.atkHeld >= HEAVY_START && P.atkHeld < cutAt(0)) { const t = punishTarget(); if (t) { P.cutWant = 2; P.punishCut = true; P.cutShown = 0; fireHeavy(); P.atkHeld = 0; P.charge = 0; P.chargeFull = false; keys.atk = false; return; } }   /* PUNISH (L35): a guard-broken foe in reach takes the heavy cut AT ONCE */
+  if (hero() === 'knight' && tech('klinkcut') && (P.links | 0) >= 1 && !lcOn() && P.atkHeld >= HEAVY_START + 0.1 && P.atkHeld < cutAt(0) && P.st >= heavyCost()) { P.links--; P.linkT = 0; P.linkKeep = 0; P.cutWant = 2; P.linkCutWant = true; P.cutShown = 0; number(P.x, P.y - 40, 'LINK CUT', '#c9d1dc'); fireHeavy(); P.atkHeld = 0; P.charge = 0; P.chargeFull = false; keys.atk = false; return; }   /* LINK CUT (L30 B, claude/kfork): HOLD X with a link in the chain spends it - the heavy cut falls a beat sooner (0.24 s, not 0.5), breaks the guard and shoves the front man */
   const was = P.charge || 0;
   P.charge = Math.max(0, P.atkHeld - HEAVY_START);
   if (was <= 0 && P.charge > 0) { SFX.charge(); P.cutShown = 0; P.rgShown = 0; P.rgShakeSaid = false; if (isReaper()) { P.bkShown = 0; P.bkDrySaid = false; } }
@@ -32235,13 +32237,46 @@ function updatePwaves(dt) {
   }
   pwaves = pwaves.filter(w => w.life > 0);
 }
+/* SHIELD HOOK (L40 B, claude/kfork): the thrown shield catches the shooter it strikes by the rim and drags it home along the floor - a scrape of dust, a taut chain, nothing glowing.
+   Only a foot-soldier on the ground: no boss, no mini, no flier, nothing pinned; it stops at a wall or when the shooter is at arm length, and lets go dazed. */
+const hookable = e => !e.maxHp && !e.mini && !lcBig(e) && !e.noGrav && !e.pinned && !['wasp', 'drone', 'bell'].includes(e.t);
+function hookDrag(s, dt) { const e = s.hook; if (!e || !e.alive || e.gone > 0) { s.hook = null; return; }
+  const gap = Math.abs(P.x - e.x) - 14; e.vx = 0; e.stagger = Math.max(e.stagger || 0, 0.3); if (e.guardT > 0) e.guardT = 0; if (gap <= 0) return;
+  const dir = Math.sign(P.x - e.x) || 1, nx = e.x + dir * Math.min(gap, (300 + s.t * 60) * dt);
+  if (isSolid(Math.floor((nx + dir * 5) / TS), Math.floor((e.y - 4) / TS))) { hookRelease(s); return; }
+  e.x = nx; if (Math.random() < dt * 40) dust(e.x, e.y, 1); }
+function hookRelease(s) { const e = s.hook; s.hook = null; if (!e || !e.alive) return; e.stagger = Math.max(e.stagger || 0, 0.9); e.vx = 0; number(e.x, e.y - (e.h || 16) - 22, 'DRAGGED', '#c9d1dc'); dust(e.x, e.y, 6); }
+/* THE BREAKING WHEEL (L50 B capstone, claude/kfork): three links spent, the shield is hurled the length of the room (about 13 tiles) along the floor at a roll, through every guard it
+   crosses (each ordinary foe: a heavy blow, its guard BROKEN, 1.2 outbound, 0.6 on the way home), then rolls back to his hand. A boss or a mini stops it dead (a blow, no free
+   stagger and no guard drop: the boss law's OPEN rule is the only door), and a wall stops it with a clank. Not the Long Charge: he does not move, and the shield is away
+   (no shield to raise, no heavy cut) until it is caught. */
+function wheelThrow() {
+  trialEvent('meter'); P.links = 0; P.linkT = 0; P.linkKeep = 0; P.block = false; P.atk = -1; P.heavy = false; P.heavySwing = false; P.bashing = false; P.charge = 0; P.atkHeld = 0; P.chargeFull = false; P.rush = 0; P.rushRec = 0; P.vx = 0;
+  thrown = { x: P.x + P.face * 6, y: P.y - 9, dir: P.face, t: 0, back: false, hit: new Set(), hitB: new Set(), wheel: true };
+  kitPose(P, 'toss', 0.4); if (SFX.lcCry) SFX.lcCry(); SFX.throwWhoosh(); zoomKick(1.04, 0.2); shakeCam(2, P.face * 2); squash(0.85, 1.15, 0.1); dust(P.x + P.face * 8, P.y, 10);
+  number(P.x, P.y - 34, 'THE BREAKING WHEEL', '#c9d1dc'); }
+function wheelHits(s, sb) {
+  if (Math.random() < 0.8) dust(s.x, s.y + 9, 2);
+  const set = s.back ? s.hitB : s.hit;
+  for (const e of enemies) { if (!e.alive || set.has(e) || e.harmless || e.gone > 0 || e.turncoat || !overlap(sb, box(e))) continue; set.add(e);
+    if (e.t === 'drone') { if (!s.back) { s.back = true; SFX.clank(); sparks(s.x, s.y, -s.dir, 3); } continue; }
+    const big = lcBig(e);
+    hurtAs('shot', e, Math.max(2, Math.round(swordDmg() * (s.back ? 0.6 : 1.2) * amul('kwheel'))), s.x - s.dir * 10, false);
+    impactAt(s.x, s.y, 'steel'); SFX.clank(); shakeCam(2, s.dir * 2); if (!e.alive) continue;
+    if (big) { if (!s.back) { s.back = true; sparks(s.x, s.y, -s.dir, 6); } continue; }   /* a boss or a mini stops the wheel: the blow, and nothing more */
+    if (e.maxHp) continue;   /* a duelist's bar: the blow only */
+    if (e.guardT > 0) e.guardT = 0;
+    if (!s.back && !(e.broken > 0)) { e.broken = 1.3; e.vx = 0; e.knock = 0; number(e.x, e.y - e.h - 20, 'GUARD BROKEN', '#ffd36b'); breakBeat(e); }
+    e.stagger = Math.max(e.stagger || 0, 0.6); } }
 function updateThrown(dt) {
   if (!thrown) return; const s = thrown; s.t += dt;
-  if (!s.back) { s.x += s.dir * 290 * dt; s.y += Math.sin(s.t * 14) * 8 * dt; const wall = isSolid(Math.floor((s.x + s.dir * 7) / TS), Math.floor(s.y / TS)); if (s.t > 0.5 || wall) { s.back = true; if (wall) { SFX.clank(); sparks(s.x, s.y, -s.dir, 4); } } }
-  else { const dx = P.x - s.x, dy = (P.y - 9) - s.y, d = Math.hypot(dx, dy) || 1; if (d < 10 || s.t > 3) { thrown = null; SFX.shieldCatch(); impactAt(P.x + P.face * 6, P.y - 9, 'steel'); return; } const sp = 300 + s.t * 60; s.x += dx / d * sp * dt; s.y += dy / d * sp * dt; }
-  const sb = { l: s.x - 6, r: s.x + 6, t: s.y - 6, b: s.y + 6 };
+  if (!s.back) { s.x += s.dir * (s.wheel ? 340 : 290) * dt; s.y += Math.sin(s.t * 14) * 8 * dt; const wall = isSolid(Math.floor((s.x + s.dir * 7) / TS), Math.floor(s.y / TS)); if (s.t > (s.wheel ? 0.62 : 0.5) || wall) { s.back = true; if (wall) { SFX.clank(); sparks(s.x, s.y, -s.dir, 4); } } }
+  else { const dx = P.x - s.x, dy = (P.y - 9) - s.y, d = Math.hypot(dx, dy) || 1; if (d < 10 || s.t > 3) { if (s.hook) hookRelease(s); thrown = null; SFX.shieldCatch(); impactAt(P.x + P.face * 6, P.y - 9, 'steel'); return; } const sp = 300 + s.t * 60; s.x += dx / d * sp * dt; s.y += dy / d * sp * dt; }
+  if (s.back && s.hook) hookDrag(s, dt);
+  const sb = s.wheel ? { l: s.x - 8, r: s.x + 8, t: s.y - 9, b: s.y + 9 } : { l: s.x - 6, r: s.x + 6, t: s.y - 6, b: s.y + 6 };
   const RANGED = ['archer', 'spit', 'shaman', 'wasp', 'drone', 'bell', 'thief'];
-  if (!s.back) for (const e of enemies) { if (!e.alive || s.hit.has(e) || !overlap(sb, box(e))) continue; s.hit.add(e); if (e.t === 'drone') { s.back = true; SFX.clank(); sparks(s.x, s.y, -s.dir, 3); break; }   /* (claude/sporewood2: the shield takes THE MOTHER CAP 2 at her hide's share) */ const ranged = RANGED.includes(e.t); hurtAs('shot', e,Math.round(swordDmg() * (ranged ? SKK.K.shieldThrowFar : SKK.K.shieldThrowNear) * amul('shieldThrow')), s.x - s.dir * 10, false); if (e.guardT > 0) e.guardT = 0; if (e.alive && !e.maxHp) e.stagger = Math.max(e.stagger || 0, ranged ? 1.6 : 0.8); impactAt(s.x, s.y, 'steel'); SFX.clank(); if (ranged) number(e.x, e.y - e.h - 14, 'STRUCK', '#c9d1dc'); if (e.maxHp || e.mini) { s.back = true; break; } }   /* (claude/herokit) it goes THROUGH the small and stuns what it hits (a guard dropped, a shooter reeling), and cuts again on the way home */
+  if (s.wheel) wheelHits(s, sb);
+  else if (!s.back) for (const e of enemies) { if (!e.alive || s.hit.has(e) || !overlap(sb, box(e))) continue; s.hit.add(e); if (e.t === 'drone') { s.back = true; SFX.clank(); sparks(s.x, s.y, -s.dir, 3); break; }   /* (claude/sporewood2: the shield takes THE MOTHER CAP 2 at her hide's share) */ const ranged = RANGED.includes(e.t); hurtAs('shot', e,Math.round(swordDmg() * (ranged ? SKK.K.shieldThrowFar : SKK.K.shieldThrowNear) * amul('shieldThrow')), s.x - s.dir * 10, false); if (e.guardT > 0) e.guardT = 0; if (e.alive && !e.maxHp) e.stagger = Math.max(e.stagger || 0, ranged ? 1.6 : 0.8); impactAt(s.x, s.y, 'steel'); SFX.clank(); if (ranged) number(e.x, e.y - e.h - 14, 'STRUCK', '#c9d1dc'); if (ranged && tech('kshook') && !s.hook && e.alive && hookable(e)) { s.hook = e; s.back = true; number(e.x, e.y - e.h - 28, 'HOOKED', '#c9d1dc'); } if (e.maxHp || e.mini) { s.back = true; break; } }   /* (claude/herokit) it goes THROUGH the small and stuns what it hits (a guard dropped, a shooter reeling), and cuts again on the way home */
   else for (const e of enemies) { if (!e.alive || s.hitB.has(e) || !overlap(sb, box(e))) continue; s.hitB.add(e); hurtAs('shot', e, Math.round(swordDmg() * SKK.K.shieldThrowBack * amul('shieldThrow')), s.x + s.dir * 10, false); impactAt(s.x, s.y, 'steel'); }
   for (const sd of seeds) if (!sd.dead && !sd.reflected && overlap(sb, { l: sd.x - 3, r: sd.x + 3, t: sd.y - 3, b: sd.y + 3 })) { sd.dead = true; parries++; SFX.parry(); sparks(sd.x, sd.y, -s.dir, 4); number(sd.x, sd.y - 8, 'SWATTED', '#8fd160'); }
   for (const pr of props) if (pr.t === 'puffball' && !pr.popped && overlap(sb, { l: pr.x - 7, r: pr.x + 7, t: pr.y - 12, b: pr.y })) { pr.popped = true; SFX.crack(); burst(pr.x, pr.y - 6, 12, ['#e8e0d0', '#c8bcb0'], 60, 0.5); clouds2.push({ x: pr.x, y: pr.y - 6, r: 14, life: 2 }); }
@@ -35273,7 +35308,7 @@ function drawWorld(cx, cy, showPlayer) {
   drawReflections(cx, cy); drawWater(cx, cy, true); if (L.frogCourt) { FCA.drawWater(g, L, cx, cy, time, boss && boss.t === 'frog' ? boss : null, movers); FCA.drawFlies(g, L, cx, cy, time); } drawPadsAfloat(cx, cy); if (L.marsh3) M3A.drawWater(g, L, cx, cy, time, T); if (L.fenroad) FRA.drawWater(g, L, cx, cy, time, T); if (CANAL) CNH.drawCanalWater(CANAL, g, CNX, cx, cy, VW, VH, time);   /* THE FOG CANAL's sheen and lantern reflections */ drawSwimmers(); drawFalls(cx, cy); drawBore(cx, cy); drawHeraldWave(cx, cy); drawSpouts(cx, cy); drawFins(cx, cy); drawBalls(cx, cy); drawWash(cx, cy); drawStrike(cx, cy); drawSea(cx, cy); drawBreath(cx, cy); drawFlaskDrink(cx, cy); drawAirHint(cx, cy);
   for (const b of birds) drawSet(BIRD, null, Math.floor(b.t * 12) % 2, b.x - cx, b.y - cy, Math.sign(b.vx) || 1, false);
   drawCritters(cx, cy);
-  if (thrown) { const s = thrown; g.save(); g.translate(Math.round(s.x - cx), Math.round(s.y - cy)); g.rotate(s.t * 22 * s.dir); g.drawImage(SHIELD_ICON, -5, -6); g.restore(); if (Math.random() < 0.5) parts.push({ x: s.x, y: s.y, vx: 0, vy: 0, life: 0.15, max: 0.15, col: '#c9d1dc', size: 1, grav: 0 }); }
+  if (thrown) { const s = thrown; g.save(); g.translate(Math.round(s.x - cx), Math.round(s.y - cy)); g.rotate(s.t * (s.wheel ? 30 : 22) * s.dir); if (s.wheel) g.scale(1.5, 1.5); g.drawImage(SHIELD_ICON, -5, -6); g.restore(); if (s.hook && s.hook.alive) { g.strokeStyle = '#8a8f98'; g.lineWidth = 1; g.beginPath(); g.moveTo(Math.round(s.x - cx), Math.round(s.y - cy)); g.lineTo(Math.round(s.hook.x - cx), Math.round(s.hook.y - (s.hook.h || 16) / 2 - cy)); g.stroke(); }   /* the hook's chain */ if (Math.random() < 0.5) parts.push({ x: s.x, y: s.y, vx: 0, vy: 0, life: 0.15, max: 0.15, col: '#c9d1dc', size: 1, grav: 0 }); }
   for (const r of rings) { const k = r.t / r.life; g.globalAlpha = 1 - k; g.strokeStyle = r.col; g.lineWidth = k < 0.5 ? 2 : 1; g.beginPath(); g.arc(Math.round(r.x - cx), Math.round(r.y - cy), 2 + r.r * Math.pow(k, 0.6), 0, 7); g.stroke(); }
   g.globalAlpha = 1; g.lineWidth = 1;
   for (const i of impacts) { const set = i.kind === 'steel' ? PROP.impactSteel : i.kind === 'red' ? PROP.impactRed : PROP.impact; const c = set[i.t < 0.07 ? 0 : 1]; const sc = i.kind === 'plunge' ? 1.5 : 1; g.drawImage(c, Math.round(i.x - cx - 8 * sc), Math.round(i.y - cy - 8 * sc), 16 * sc, 16 * sc); }
