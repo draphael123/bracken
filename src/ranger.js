@@ -216,7 +216,7 @@ export function makeRanger(api) {
     const TC = RG.tiers.cols[tier] || '#ffffff', word = RG.tiers.names[tier];
     if (tier === 2) {   /* THE STEADY SHOT (let go inside the window): flat, through the whole line, and its distance bonus doubled */
       stats.pierces++; stats.steady++;
-      const a = loose(p, { kind: 'pierce', vx: p.face * RG.pierce.vx, vy: 0, g: 0, dmg: dmgBase() * RG.pierce.dmg, tag: ['heavy', 'shot'], pierce: true, focus: RG.sweet.draw, range: RG.pierce.range * far * (focusFull(p) ? 1.25 : 1) }); a.full = true; a.emp = true;
+      const a = loose(p, { kind: 'pierce', vx: p.face * RG.pierce.vx, vy: 0, g: 0, dmg: dmgBase() * RG.pierce.dmg, tag: ['heavy', 'shot', 'steady'], pierce: true, focus: RG.sweet.draw, range: RG.pierce.range * far * (focusFull(p) ? 1.25 : 1) }); a.full = true; a.emp = true;
       api.number(p.x, p.y - 28, word, RG.tiers.label[2]); api.shakeCam(3, p.face * 2); api.zoomKick(1.04, 0.18); api.streaks(p.x + p.face * 12, p.y - 13, 8, ['#dfffb0', TC], 160);
     } else {
       const kn = p.rgKneel ? RG.kneel : null;   /* (claude/heropassa) THE KNEELING DRAW: flatter, further, more Focus from the sweet spot, loosed low */

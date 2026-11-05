@@ -49,7 +49,7 @@ export const LEVEL_DMG = { causeway: 0.8, church: 0.7, palisadewood: 1.8 };   /*
    elites only), the purse four then five wide, a mashed foe guards its second cut. A new arc's level lane lists its ids in `levels` and adds them to FOEPASS (src/foe-pass.js). */
 export const ACTS_LATE = [
   { act: 6, name: 'THE FROZEN REACH', cap: 4, dmg: 3.75, hp: 1.15, mashAt: 2, levels: [] },
-  { act: 7, name: 'THE FIRE MOUNTAIN', cap: 4, dmg: 4.5, hp: 1.2, mashAt: 2, levels: ['drakelab'] },
+  { act: 7, name: 'THE FIRE MOUNTAIN', cap: 4, dmg: 4.5, hp: 1.2, mashAt: 2, levels: ['drakelab', 'skylab'] },
   { act: 8, name: 'THE DEMON HOLD', cap: 5, dmg: 5.25, hp: 1.3, mashAt: 2, levels: [] },
 ];
 /* a level not in the table (a new one, a trial, the shop) takes the act of its depth on the gate chain, else act 1 */
