@@ -51,7 +51,7 @@ import { lanceLookouts } from './lance-support.js';   /* THE QUEEN'S LANCE: the 
 import { highcrownTwo } from './highcrown2.js';
 import { buildArenaYard } from './arena-yard.js';   /* (claude/arenayard, Daniel 11-03) THE ARENA YARD: the one shared practice yard (src/arena-yard.js) */
 import { buildWarCairn, WC_RULE } from './war-cairn.js';   /* (claude/warcairn) THE WAR CAIRN: the Berserker's told spur off HIGHCROWN (scratch/brief-crownpath-1028.md) */   /* (claude/highcrown2) HIGHCROWN 2: the pieces laid after the cuts, in the cut level's columns */
-import { buildDrakeCaldera } from './drake-caldera.js';   /* (claude/drakewire) THE CALDERA: THE FIRE DRAKE's hidden lab room (not on any road; art before live) */
+import { buildDrakeCaldera } from './drake-caldera.js'; import { buildHeartMountain, HEART_RULE } from './heart-mountain.js';   /* (claude/heartlevel) THE HEART OF THE MOUNTAIN: the volcano's inside down to the seal (hidden until its art pass and the mountain's map sheet) */   /* (claude/drakewire) THE CALDERA: THE FIRE DRAKE's hidden lab room (not on any road; art before live) */
 /* THE LUMBER TRAIL's rule (claude/lumbertrail): src/order-chapters.js TWISTS.timber quotes it */
 export const RULE_WOOD = 'FOUR STROKES FELL A MARKED PINE, AND IT FALLS THE WAY IT LEANS: ACROSS A GAP, UP A CLIFF, OR ON WHOEVER STANDS UNDER IT.';
 // level.js — the level registry. Each level paints a tile grid with a tiny DSL and returns it.
@@ -8128,6 +8128,12 @@ LEVELS.push({ id: 'arena_yard', name: 'THE ARENA YARD', sub: 'every verb, straw 
 /* THE CALDERA (claude/drakewire, lane D1 of claude/heartplan): APPENDED, HIDDEN - THE FIRE DRAKE's lab room (src/drake-caldera.js, src/fire-drake-hands.js). Not on any road
    (no needs, hidden): bossLab and the page tools fight the drake here until THE HEART OF THE MOUNTAIN's greybox carries it; the row stays hidden after (saves count levels by index) */
 LEVELS.push({ id: 'drakelab', name: 'THE CALDERA', sub: 'the fire drake, chained to the seal (lab room)', build: () => buildDrakeCaldera({ painter, T, TS }), hidden: true });
+/* THE HEART OF THE MOUNTAIN (claude/heartlevel, the OPUS GREYBOX, 11-05; Daniel 11-04 17:28/17:29, 11-05 08:08): APPENDED (saves count levels by index). HIDDEN until its art pass merges
+   and the mountain's map sheet exists (art before live): no map node yet (src/heart-mountain.js HEART_NODES, src/main.js HEART_ON_MAP). needs 'sealedpyramid' is a PLACEHOLDER so the gate
+   chain can measure it (tools/one-new-foe.mjs): its real predecessor is the mountain's V2 (THE LAVA TUBES), not built. THE FIRE DRAKE is its mini boss; scene A then loads 'heartsky' */
+LEVELS.push({ id: 'heart', name: 'THE HEART OF THE MOUNTAIN', sub: 'down through the burning inside of the mountain, to the seal', rule: HEART_RULE, build: () => buildHeartMountain({ painter, T, TS }), hidden: true, needs: 'sealedpyramid' });
+/* THE HEART'S SKY FIGHT (claude/heartlevel): the skylab arena (src/sky-mount.js) under the Heart's own name - scene A (the seal breaks) loads it at mount-up; the King's fall plays scene B and ends on the map (THE BREACH) */
+LEVELS.push({ id: 'heartsky', name: 'THE HEART OF THE MOUNTAIN', sub: "the sky over the eruption, on the drake's back", build: () => Object.assign(buildSkyLab({ painter, T }), { heartSky: true }), hidden: true });
 
 /* THE MIX. A level that is one creature is one question asked forty times. Some of each crowd is swapped for a
    creature from elsewhere, standing on the same spot, so the second half of a level asks something the first did

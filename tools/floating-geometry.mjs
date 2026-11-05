@@ -11,7 +11,7 @@
      node tools/floating-geometry.mjs <id> ...    just those levels, every hit listed */
 import { LEVELS, T } from '../src/level.js';
 
-export const FIXED = ['theatre'];   /* claude/theatre3: the Maskwright's Theatre, fixed and gated */
+export const FIXED = ['theatre', 'heart'];   /* (claude/heartlevel) THE HEART OF THE MOUNTAIN: gated from its greybox (hidden until its art pass: read by id below) */   /* claude/theatre3: the Maskwright's Theatre, fixed and gated */
 const args = process.argv.slice(2), only = args.filter(a => !a.startsWith('-'));
 const built = new Map(); const build = d => { if (!built.has(d.id)) { try { built.set(d.id, d.build()); } catch (e) { built.set(d.id, null); } } return built.get(d.id); };
 
@@ -19,6 +19,7 @@ const built = new Map(); const build = d => { if (!built.has(d.id)) { try { buil
 export function floating(L) {
   const W = L.W, H = L.H, g = L.grid, seen = new Uint8Array(W * H), out = [];
   const machine = new Set();   /* the theatre's flats, drawn where the tools walk them: they run on their tracks */
+  for (const z of L.floatMachines || []) for (let y = z.y0; y <= z.y1; y++) for (let x = z.x0; x <= z.x1; x++) machine.add(y * W + x);   /* (claude/heartlevel) a level's own machine cells (THE FIRE DRAKE's sinking ledges) */
   for (const f of (L.theatre && L.theatre.flats) || []) { const pos = f.tools === 'A' ? f.a : f.b;
     if (f.axis === 'y') { for (let y = pos; y < pos + f.h; y++) for (let x = f.x0; x <= f.x1; x++) machine.add(y * W + x); }
     else for (let y = f.y0; y <= f.y1; y++) for (let x = pos; x < pos + f.w; x++) machine.add(y * W + x); }
@@ -36,7 +37,7 @@ export function floating(L) {
 }
 
 const campaign = LEVELS.filter(d => !(d.hidden && !d.secret) && !/^(shop|trial_|custom)/.test(d.id));
-const pick = only.length ? campaign.filter(d => only.includes(d.id)) : campaign;
+const pick = only.length ? LEVELS.filter(d => only.includes(d.id)) : campaign.concat(LEVELS.filter(d => FIXED.includes(d.id) && !campaign.includes(d)));   /* (claude/heartlevel) a hidden level named by id, or gated in FIXED, is read too */
 let fails = 0; const report = [];
 for (const d of pick) { const L = build(d); if (!L || !L.grid) continue; const hits = floating(L);
   if (!hits.length) continue;

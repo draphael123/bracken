@@ -17,7 +17,7 @@ import { LEVELS, T } from '../src/level.js';
 import { islandsOf } from '../src/island-posts.js';
 import { supportsOf } from './solid-islands.mjs';
 import { anchorAt, anchorNeeds } from '../src/rookery-anchors.js';
-export const GATE = ['rookery'];
+export const GATE = ['rookery', 'heart'];   /* (claude/heartlevel) THE HEART OF THE MOUNTAIN: gated from its greybox */
 export const OVER = 1.25, LIP = 2, THIN = 2;
 const STAND_PROPS = new Set(['sign', 'check', 'torch', 'lantern', 'gibbet', 'deco']);
 export function anchorFaults(L) {

@@ -186,6 +186,8 @@ export const THREAT = { crackfloor: 0, crackpillar: 0, cracknest: 0, crackslab: 
   /* THE WAR CAIRN (claude/warcairn): THE BERSERKER CHIEFTAIN is a boss: a 6. THE DRUMMER beats more than he fights (a shove): a 1.5. The drums, the drum gates, the chained slabs,
      the snow cornices and the driven hatchets are things you work, not foes */
   bzchief: 6, drummer: 1.5, wcdrum: 0, wcgate: 0, wcslab: 0, wccornice: 0, wchold: 0, wcrope: 0,
+  /* THE HEART OF THE MOUNTAIN (claude/heartlevel): THE MAGMA LEAPER leaps on the beat and bites where it lands: a 1.5. The crust, the ward-stones and the chains are things you work, not foes */
+  leaper: 1.5, hmcrust: 0, hmward: 0, hmchain: 0,
 };
 
 // THE INDEX, also in one place: what a level CONTAINS, not how a player does. Deliberately crude and

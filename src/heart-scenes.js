@@ -110,9 +110,13 @@ export const ROWS = [
   { from: 'drakelab', to: 'skylab', scene: 'seal', chain: true, beats: [{ id: 'seal', dur: SEAL.dur, sc: true }, { id: 'fade', dur: 0.9 }], arrive: null },
   /* B: THE DEMON KING is KNOCKED DOWN (skylab; the Heart's sky fight): the escape, THE BREACH card, then the WORLD MAP (mapOnly: its target is the map's node, not a level to load). */
   { from: 'skylab', to: 'breach', scene: 'escape', chain: true, mapOnly: true, endOnMap: true, beats: [{ id: 'escape', dur: ESCAPE.dur, sc: true }, { id: 'fade', dur: 1.0 }], arrive: null },
+  /* (claude/heartlevel) THE HEART OF THE MOUNTAIN's own road: the level ('heart', its caldera the drake's arena) -> A -> its sky fight ('heartsky') -> B -> the map (THE BREACH).
+     The two lab rows above stay for bossLab and the page tools (drakelab / skylab are hidden labs) */
+  { from: 'heart', to: 'heartsky', scene: 'seal', chain: true, beats: [{ id: 'seal', dur: SEAL.dur, sc: true }, { id: 'fade', dur: 0.9 }], arrive: null },
+  { from: 'heartsky', to: 'breach', scene: 'escape', chain: true, mapOnly: true, endOnMap: true, beats: [{ id: 'escape', dur: ESCAPE.dur, sc: true }, { id: 'fade', dur: 1.0 }], arrive: null },
 ];
 
 /* ---------- THE CHECKPOINT (Daniel rec 2) ----------
    Scene A ends by loading the sky fight's level, so the level's start IS mount-up. A death in the sky fight restarts the fight there: a fresh fight (king bars full), the back reset to phase 1,
    every hero back on it, flasks refilled (respawn's deathRefill, the same as at any shrine). It does NOT replay the drake. Pure answer for the node check and for main.js's respawn hook. */
-export function checkpointOf(levelId) { return levelId === SEAL.mount || levelId === 'heart-sky' ? { at: 'mount-up', freshFight: true, resetBack: true, refillFlasks: true, replaysDrake: false } : null; }
+export function checkpointOf(levelId) { return levelId === SEAL.mount || levelId === 'heartsky' || levelId === 'heart-sky' ? { at: 'mount-up', freshFight: true, resetBack: true, refillFlasks: true, replaysDrake: false } : null; }

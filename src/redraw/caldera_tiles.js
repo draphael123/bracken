@@ -79,7 +79,7 @@ function ledge(x, l, r) {
 }
 /* THE HOOK: the cell's own tile, or null. The floor mass = the rows at/under the arena floor between the walls; every other solid (the lintel, the west edge, the far wall) is columnar basalt */
 export function caldTile(t, x, y, at, T, L) {
-  if (!L || !L.drakeLab) return null;
+  if (!L || !(L.drakeLab || L.caldKit)) return null;   /* (claude/heartlevel) THE HEART OF THE MOUNTAIN wears the caldera's basalt too */
   const air = (dx, dy) => at(x + dx, y + dy) === T.AIR;
   if (t === T.ONEWAY) return ledge(x, at(x - 1, y) !== T.ONEWAY, at(x + 1, y) !== T.ONEWAY);
   if (t !== T.SOLID) return null;

@@ -235,7 +235,7 @@ export const MARK = {
   'djinn|upsurgeTell': '!!', 'djinn|waveTell': '!!', 'djinn|whirlTell': '!!', 'drone|burstTell': '!!', 'drone|puffTell': '!', 'drownedcaptain|comboTell': '!',
   'drownedcaptain|lungeTell': '!', 'drownedking|anchorTell': '!', 'drownedking|debtTell': '!', 'drownedking|diveTell': '!!', 'drownedking|gulpTell': '!!', 'drownedking|haulTell': '!',
   'drownedking|ramTell': '!!', 'drownedking|slamTell': '!!', 'drownedking|whirlTell': '!!', 'drownedknight|comboTell': '!', 'drownedknight|lungeTell': '!', 'drummer|count': '',
-  'drummer|shoveTell': '!', 'drunk|bottleTell': '!!', 'drunk|lobTell': '!', 'duneworm|breathTell': '!', 'duneworm|lungeTell': '!!', 'duneworm|rippleTell': '!!',
+  'drummer|shoveTell': '!', 'leaper|leapTell': '!!', 'leaper|biteTell': '!',   /* (claude/heartlevel) THE MAGMA LEAPER: it rises under you on the beat's tell (!!), it snaps where it lands (!) */ 'drunk|bottleTell': '!!', 'drunk|lobTell': '!', 'duneworm|breathTell': '!', 'duneworm|lungeTell': '!!', 'duneworm|rippleTell': '!!',
   'duneworm|swallowTell': '!!', 'duneworm|sweepTell': '!!', 'eel|leapTell': '!', 'eel|lungeTell': '!', 'eel|pinchTell': '!', 'eel|shockTell': '!!',
   'eel|snapTell': '!', 'eel|strikeTell': '!', 'eel|thrustTell': '!', 'emberwisp|dartTell': '!', 'emberwisp|flareTell': '!!', 'familiar|slamTell': '!!',
   'familiar|spitTell': '!', 'familiar|swipeTell': '!', 'familiar|walk': '!', 'farmhand|swingTell': '!', 'feeler|lashTell': '!', 'fledgling|peckTell': '!',

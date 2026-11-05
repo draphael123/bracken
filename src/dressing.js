@@ -1121,5 +1121,7 @@ GROUND_KITS.sealedpyramid={density:0,kinds:[]};   /* THE SEALED PYRAMID (claude/
 ALLOWED_DECORATIONS.sealedpyramid=[];
 GROUND_KITS.palisadewood={density:0,kinds:[]};   /* THE PALISADE WOOD (claude/palisadewood; BATCH120 integ): nothing is sprinkled - the level's own deco rows dress it by hand */
 ALLOWED_DECORATIONS.palisadewood=['mushroom','fern','stump','timber','fruitTree','gobPennant','spearRack','stakeFence','cart','siege','batteringRam','barrels','plantedSpears','moss','rock'];   /* the level's own dressing: the goblins' stake line, siege gear and carts among the wood's stumps and fruit trees */
+GROUND_KITS.heart={density:0,kinds:[]}; ALLOWED_DECORATIONS.heart=[];   /* THE HEART OF THE MOUNTAIN (claude/heartlevel): basalt and magma, nothing sprinkled - no timber, no logs (theme fit) */
+GROUND_KITS.heartsky={density:0,kinds:[]}; ALLOWED_DECORATIONS.heartsky=[];   /* its sky fight: open sky, no ground to dress */
 GROUND_KITS.skylab={density:0,kinds:[]};   /* THE DRAKE'S BACK lab (claude/skymount): open sky, no ground to dress */
 ALLOWED_DECORATIONS.skylab=[];
