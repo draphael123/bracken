@@ -2,6 +2,7 @@ import './bug-report.js';   /* FIRST: the console and error taps REPORT A BUG re
 import { bossSelectRows, bossKey, bossRecordNext } from './bossselect.js';
 import { drawBasketOutline } from './false-abbot.js';
 import { ABBOT, updateFalseAbbot as stepFalseAbbot, drawFalseAbbot, drawAbbotRopes, abbotFrame, abbotOpen, abbotTake, abbotBellRung, abbotBlessed, abbotInChair, abbotBridgeBell, abbotWheelStruck, abbotPlunge, abbotClamp, drawAbbotHouse } from './false-abbot.js';   /* THE FALSE ABBOT, the Monastery's boss (2026-09-22), in place of the Roc */
+import * as MFX from './map-fx.js';
 import { layoutPlates, plateNodes, placePanel, plateLabel, plateLines, panelSize } from './map-plates.js';
 import { bakeFalseAbbot } from './redraw/false_abbot.js';
 import { stepFuse, fuseLeft, drawBurningBackdrop, drawPixelSmoke, drawTownFlame, drawSmokeColumn, BEAM, SMOKE } from './burning-village.js'; import { blazeAt, drawBlazingHouse, drawBlazingFront, FRONT } from './village-blaze.js'; import * as VWA from './village-water.js'; import * as CTW from './carry-throw.js';   /* (claude/burnvillage2) THROW WATER: the jug, the stun and the steam ward (src/village-water.js); the told arc (src/carry-throw.js) */   /* THE BURNING VILLAGE's stakes and its fire behind the town (2026-09-23) */
@@ -5531,11 +5532,15 @@ function drawMap() {
         else { const mx = cx0 + (cw >> 1), my = cy0 + (chh >> 1); g.fillStyle = '#fff4c8'; const v = { right: [1, 0], left: [-1, 0], down: [0, 1], up: [0, -1] }[key], px = -v[1], py = v[0];
           for (let a = -2; a <= 2; a++) g.fillRect(mx + v[0] * a - (a === 0 ? 0 : 0), my + v[1] * a, 1, 1);   /* the shaft */
           g.fillRect(mx - v[0] * 2, my - v[1] * 2, 1, 1); for (let a = 1; a <= 2; a++) { g.fillRect(mx + v[0] * (2 - a) + px * a, my + v[1] * (2 - a) + py * a, 1, 1); g.fillRect(mx + v[0] * (2 - a) - px * a, my + v[1] * (2 - a) - py * a, 1, 1); } } } } }
+  { const fxo = { time, camY: mapCamY, VW, VH, reduced: !!SET.reduceMotion, weather: SET.weather, nodes: NODES.filter(n => !nodeSecret(n)), locked: nodeLocked, cleared: n => !!(PROG[LEVELS[n.level].id] && PROG[LEVELS[n.level].id].cleared) };   /* (claude/mappolish, Daniel 11-05: map life - src/map-fx.js) */
+    MFX.drawMills(g, fxo); MFX.drawNodeStates(g, fxo);
+    const sto = NODES.filter(n => n.kind === 'store' && !nodeLocked(n)); MFX.drawTravellers(g, { ...fxo, PATH, legs: sto.slice(1).map((n, i) => [NODE_AT[NODES.indexOf(sto[i])], NODE_AT[NODES.indexOf(n)]]) }); }
   const [px, py] = mapPos();
   updateMapLife(0.016, px, py); drawMapLife();
   g.drawImage(PROP.shadow, Math.round(px) - 6, Math.round(py) - 1);
   for (const b of mapBirds) { b.t += 0.016; const bx = b.cx + Math.cos(b.t * 0.6) * b.r, by = b.cy + Math.sin(b.t * 0.6) * b.r * 0.4; drawSet(BIRD, null, Math.floor(b.t * 10) % 2, bx, by, Math.sin(b.t * 0.6) < 0 ? 1 : -1, false); }
   for (const c of mapClouds) g.drawImage(MAPCLOUD[c.k].img, Math.round(c.x / 2) * 2, Math.round(c.y / 2) * 2);   /* (hard-edged pixel clouds, ordered 2x2 checker body: see-through without being soft) */
+  { const open = NODES.filter(n => !nodeSecret(n) && !nodeLocked(n)); MFX.drawWeather(g, { time, camY: mapCamY, VW, VH, reduced: !!SET.reduceMotion, weather: SET.weather }); MFX.drawFog(g, { time, camY: mapCamY, VW, VH, reduced: !!SET.reduceMotion, frontierY: open.length ? Math.min(...open.map(n => n.y)) : undefined }); }   /* (claude/mappolish) weather, and the fog over what is not reached yet */
   if (map.walking) map.lastDir = map.walking < 0 ? -1 : 1;
   { // the road not yet walked: dotted, past the last node you can enter
     let last = 0; for (let k = 0; k < NODES.length; k++) if (!NODES[k].spur && !nodeLocked(NODES[k])) last = k; const from = NODE_AT[last]; g.fillStyle = 'rgba(20,16,30,0.55)';   /* FROM THE LAST REQUIRED NODE WALKED, not the highest unlocked index (map-redesign §2d/§6.4) - a spur that unlocks out of order used to switch the whole dotted section off */ for (let sgi = from; sgi < PATH.length - 1; sgi++) { const a = PATH[sgi], b = PATH[sgi + 1]; const len = Math.hypot(b[0] - a[0], b[1] - a[1]); for (let d = 0; d < len; d += 6) { const t = d / len; g.fillRect(Math.round(a[0] + (b[0] - a[0]) * t) - 1, Math.round(a[1] + (b[1] - a[1]) * t) - 1, 3, 3); } } }
