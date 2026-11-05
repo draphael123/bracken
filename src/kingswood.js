@@ -36,6 +36,7 @@ export const ARCS = {
   march: { exam: [306, 416] },
 };
 
+const KENNEL_B = true;   /* (claude/greathound) GROUP B - the kennel cage + phase two's royal boar on the horn (needs art before live: the release may set this false) */
 export function buildKingswood({ painter, T, TS }) {
   const { W, H } = KINGSWOOD;
   const L = painter(W, H), { set, block, ent } = L;
@@ -138,6 +139,10 @@ export function buildKingswood({ painter, T, TS }) {
   ent('torch', 178, 25); ent('torch', 196, 25); ent('cage', 180, 25, { kind: 'bird' });
   ent('greathound', 192, 25, { mini: true }); ent('chainpost', 197, 25);
   sign(194, 25, 'THE KENNEL HOUND IS CHAINED HERE. CUT ITS CHAIN: IT BITES HIM.');   /* (claude/greathound, audit rec 1) the chain post TAUGHT: three blows and it runs at him; its bite stuns him and opens him a little (src/great-hound.js GH.bite) */
+  /* GROUP B (claude/greathound, audit recs 2 + 3; Daniel 11-05: needs its art pass before live, the SAT cut) - KENNEL_B false leaves the whole of it off:
+     THE KENNEL CAGE: one royal rope over the yard, its peg at the yard's west end in reach of the floor - drop it on him as he crosses under it and he is CAGED
+     (a held opening, src/great-hound.js houndCaged). Optional, once an attempt (a death hangs it again). THE KING'S HORN (phase two): a royal boar charges the yard. */
+  if (KENNEL_B) rope('kennelCage', { x: 190, top: 17, hang: 21, cleat: [183, 25], load: 'cage', kennel: true });
   plank(185, 188, 23);   /* (claude/greathound, audit rec 5) THE KENNELMEN'S FEEDING GALLERY: the boards the meat is thrown down from, three rows over the yard - strike him from above (whole); the boughs find it, and he leaps at it (L.mini.deck) */
   sign(177, 25, 'GREAT HOUND: JUMP THE LUNGE, DODGE THE POUNCE, KILL THE PUPS. A BLOCK SKIDS IT.', { pyro: 'GREAT HOUND: JUMP THE LUNGE, DODGE THE POUNCE, KILL THE PUPS. IT HATES FIRE.', paladin: 'GREAT HOUND: JUMP THE LUNGE, DODGE THE POUNCE, KILL THE PUPS. THE AEGIS SKIDS IT.' });
   gate(199, 20, 25);
@@ -302,7 +307,7 @@ export function buildKingswood({ painter, T, TS }) {
         { id: 'gladeCageB', kind: 'cage', x: (639 + SH) * TS, top: 5 * TS, y0: 8 * TS, pegs: [(636 + SH) * TS, (642 + SH) * TS], pegY: 14 * TS }] },
   };
   const arena = { x0: A0 * TS, x1: A1 * TS, floor: 14 * TS, trigger: (A0 + 6) * TS, wallL: A0 - 1, wallR: A1 + 1, boss: 'king', music: 'gorm', tint: '#c9463d', tintA: 0.12, fx: 'embers' };
-  const mini = { x0: 176 * TS, x1: 198 * TS, floor: 26 * TS, trigger: 181 * TS, wallL: 175, gate: 199, boss: 'greathound', hound2: true, deck: { x0: 185 * TS, x1: 189 * TS, y: 23 * TS } };   /* (claude/greathound) hound2: KINGSWOOD'S HOUND 2 (src/great-hound.js); deck: the feeding gallery's boards (plank 185-188, row 23) */
+  const mini = { x0: 176 * TS, x1: 198 * TS, floor: 26 * TS, trigger: 181 * TS, wallL: 175, gate: 199, boss: 'greathound', hound2: true, hound2B: KENNEL_B, deck: { x0: 185 * TS, x1: 189 * TS, y: 23 * TS } };   /* (claude/greathound) hound2: KINGSWOOD'S HOUND 2 (src/great-hound.js); deck: the feeding gallery's boards (plank 185-188, row 23) */
   return {
     W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: 39 }, pools: [], falls: [], moversExtra: movers,
     arena, mini, kwood: true, hoists, glade, gorm, lastArena: glade, crumbles, kwoodCrumbles: true,

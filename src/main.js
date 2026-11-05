@@ -9234,7 +9234,7 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow, tag = blow) { const raw0 = dmg,
     if (e.t === 'folk') number(e.x, e.y - 18, 'SHAME', '#9aa39a');
     if (e.t === 'gargoyle') { for (const q of enemies) if (q.alive && q.fromGarg) { q.alive = false; spawnCorpse(q, Math.sign(q.x - e.x) || 1); } }   /* THE WHELPS HE CALLED CRUMBLE WITH HIM */
     if (e.t === 'master') { for (const h of enemies) if (h.alive && h.t === 'hound' && (h.pack || h.held)) { h.alive = false; burst(h.x, h.y - 3, 6, COLS.hound, 50, 0.4); } }   /* no whistle, no pack */
-    if (e.t === 'greathound') { for (const h of enemies) if (h.alive && h.t === 'hound' && h.pack) { h.alive = false; burst(h.x, h.y - 3, 6, COLS.hound, 50, 0.4); } miniEnd(e); }
+    if (e.t === 'greathound') { for (const h of enemies) if (h.alive && ((h.t === 'hound' && h.pack) || (h.t === 'royalboar' && h.kennel))) { h.alive = false; burst(h.x, h.y - 3, 6, COLS.hound, 50, 0.4); } miniEnd(e); }
     if (e.t === 'scarabmother' && e.mini && SMH) SMH.end(e);   /* (claude/pyramidboss) THE SCARAB MOTHER as a mini: her brood and her marks go with her */
     if (miniActive && e.mini && L.mini && e.t === L.mini.boss) { shakeCam(7); zoomKick(1.14, 0.5); burst(e.x, e.y - e.h / 2, 22, COLS[e.t] || ['#e8dcc0'], 110, 0.9); miniEnd(e); }
   } else {
@@ -19441,6 +19441,14 @@ function updateGreatHound(e, dt) {
     if (e.modeT <= 0) { e.mode = 'idle'; e.modeT = 0.3; } return; }
   if (h2 && p2 && !e.p2Beat && e.mode === 'idle') { e.p2Beat = true; e.mode = 'packBlood'; e.modeT = GHN.p2Beat; e.vx = 0; e.pounceT = Math.min(e.pounceT, GHN.p2Beat + 0.4);   /* THE PACK BLOOD: phase two told, and its first move is the double pounce */
     number(e.x, e.y - e.h - 24, 'THE PACK BLOOD: HE POUNCES TWICE', '#ff6b6b'); SFX.roar(); SFX.bark(); ringAt(e.x, e.y - 8, 30, '#ff6b6b', 0.5); shakeCam(4); }
+  if (h2 && L.mini.hound2B && p2 && e.p2Beat) {   /* (claude/greathound, Group B) THE KING'S HORN: told from the far wall, then a royal boar charges the yard */
+    const boar = enemies.find(q => q.alive && q.t === 'royalboar' && q.kennel);
+    if (e.hornAt > 0) { e.hornAt -= dt; if (e.hornAt <= 0) { const x = e.hornSide > 0 ? M.x1 - 18 : M.x0 + 18; const b = RBM.newRoyalBoar(x, M.floor, { called: true, face: -e.hornSide, hp: EHP.royalboar, passes: 1 }); b.kennel = true; enemies.push(b); burst(x, M.floor - 8, 10, ['#5c3c28', '#c9b27c'], 70, 0.5); SFX.hornBlast(); } }
+    else { e.hornT = (e.hornT === undefined ? GHN.horn.first : e.hornT) - dt;
+      if (e.hornT <= 0 && !boar && (e.hornN || 0) < GHN.horn.max && !P.dead) { e.hornN = (e.hornN || 0) + 1; e.hornT = GHN.horn.every; e.hornAt = GHN.horn.tell; e.hornSide = P.x < (M.x0 + M.x1) / 2 ? 1 : -1;
+        const hx = e.hornSide > 0 ? M.x1 - 18 : M.x0 + 18; number(hx, M.floor - 40, "THE KING'S HORN: A BOAR COMES", '#ffd36b'); ringAt(hx, M.floor - 10, 26, '#ffd36b', GHN.horn.tell); SFX.hornDraw(); } }
+    if (boar && boar.mode === 'charge' && !boar.gored && e.mode !== 'pounce' && e.mode !== 'leap' && Math.abs(boar.x - e.x) < 24 && Math.abs(boar.y - e.y) < 16) { boar.gored = true; boar.stagger = 1.0;   /* BAITED INTO HIM: the boar gores him (and is dazed) */
+      e.mode = 'stun'; e.modeT = GHN.horn.gore; e.stagger = GHN.horn.gore; e.vx = 0; e.pounceAgain = false; e.secondPounce = false; GHD.houndSoft(e, GHN.horn.gore, GHN.land.mul); number(e.x, e.y - e.h - 12, 'THE BOAR GORES HIM: HIT HIM', '#8fd160'); SFX.yelp(); shakeCam(3); } }
   const pups = enemies.filter(h => h.alive && h.t === 'hound' && h.pup);
   for (const k of ['lungeT', 'pounceT', 'howlT', 'boughT']) e[k] -= dt;
   GHD.houndWardStep(e, dt, q => { number(q.x, q.y - q.h - 12, 'HIS WARD: HE SHAKES IT OFF', '#9ab0c0'); SFX.clank(); });   /* B3 (claude/hound): an opening over, nothing opens him again for GH.wardT s - told; he is still hit for real */
@@ -30036,7 +30044,8 @@ RKH = makeRookeryHands({ get L() { return L; }, TS, T, sfx: SFX, players: () => 
 KWH = makeKingswoodHands({ get L() { return L; }, TS, T, sfx: SFX, props: () => props, players: () => players || [P], enemies: () => enemies, time: () => time,
   number: (x, y, t, c) => number(x, y, t, c), burst: (...a) => burst(...a), dust: (x, y, n) => dust(x, y, n), shake: n => shakeCam(n), overlap: (a, b) => overlap(a, b), box: e => box(e), boxOf: p => box(p),
   asPlayer: (p, fn) => asPlayer(p, fn), damage: (x, d, o) => damagePlayer(x, d, o), hurt: (e, d, x) => hurtEnemy(e, d, x, false), cellSet: (x, y, t) => { if (x >= 0 && y >= 0 && x < LW && y < LH) cellSet(x, y, t); },
-  solidAt: (tx, ty) => isSolid(tx, ty), tileAt: (tx, ty) => tileAt(tx, ty), moveBody: (e, dx, dy) => moveBody(e, dx, dy, false), text: (s, x, y, c, a) => text(s, x, y, c, a), talking: () => state === 'talk', oak: (...a) => KWOAK(...a) });
+  solidAt: (tx, ty) => isSolid(tx, ty), tileAt: (tx, ty) => tileAt(tx, ty), moveBody: (e, dx, dy) => moveBody(e, dx, dy, false), text: (s, x, y, c, a) => text(s, x, y, c, a), talking: () => state === 'talk', oak: (...a) => KWOAK(...a),
+  cageBig: (e) => { if (e.t === 'greathound' && L.mini && L.mini.hound2B && GHD.houndCaged(e, (q, t, c) => number(q.x, q.y - q.h - 12, t, c))) { SFX.yelp(); SFX.clank(); shakeCam(4); } } });   /* (claude/greathound) THE KENNEL CAGE (Group B) */
 /* THE PALISADE WOOD's HANDS (claude/palisadewood, src/palisade-hands.js): its props, the stake-setter's walls, the palisade on the skyline */
 PWH = makePalisadeHands({ get L() { return L; }, TS, T, sfx: SFX, players: () => players || [P], enemies: () => enemies, time: () => time,
   number: (x, y, t, c) => number(x, y, t, c), burst: (...a) => burst(...a), dust: (x, y, n) => dust(x, y, n), shake: n => shakeCam(n), overlap: (a, b) => overlap(a, b), box: e => box(e), boxOf: p => box(p),
@@ -30052,7 +30061,7 @@ GMH = makeGormHands({ get L() { return L; }, TS, T, sfx: SFX, music: on => music
 GKC = { arena: () => L.arena, P: () => P, hands: GMH, enemies: () => enemies, gormData: () => L.gorm, number: (x, y, t, c) => number(x, y, t, c), sfx: SFX, shake: n => shakeCam(n), zoom: (s, t) => zoomKick(s, t), dust: (x, y, n) => dust(x, y, n), burst: (...a) => burst(...a), part: o => parts.push(o),
   ring: (x, y, r, c, l) => ringAt(x, y, r, c, l), damage: (x, d, o) => damagePlayer(x, d, o), moveBody: (e, dx, dy) => moveBody(e, dx, dy, false), dmg: { grab: DMG.gormGrab, litter: DMG.litter, sweep: DMG.gormSweep, club: DMG.gormClub }, music: on => music.lift && music.lift(on) };
 RBC = { P: () => P, TS, solid: (tx, ty) => isSolid(tx, ty), oneWay: (tx, ty) => isOneWay(tileAt(tx, ty)), moveBody: (e, dx, dy) => moveBody(e, dx, dy, false), damage: (x, d, o) => damagePlayer(x, d, o), number: (x, y, t, c) => number(x, y, t, c),
-  dust: (x, y, n) => dust(x, y, n), part: o => parts.push(o), sfx: SFX, get x0() { return L.arena ? L.arena.x0 : undefined; }, get x1() { return L.arena ? L.arena.x1 : undefined; } };
+  dust: (x, y, n) => dust(x, y, n), part: o => parts.push(o), sfx: SFX, get x0() { const A = miniActive && L.mini && L.mini.hound2B ? L.mini : L.arena; return A ? A.x0 : undefined; }, get x1() { const A = miniActive && L.mini && L.mini.hound2B ? L.mini : L.arena; return A ? A.x1 : undefined; } };   /* (claude/greathound) the King's horn calls a boar into the kennel: its room is the yard */
 /* UNDERLEAF 2's HANDS (claude/underleaf2, src/hush-hands.js): main.js owns the world; the module owns the pots, the streets, the toll, the Bellman and the Grandmother's rules */
 HUH = makeHushHands({ get L() { return L; }, TS, T, sfx: SFX, props: () => props, enemies: () => enemies, P: () => P, keys: () => keys, time: () => time, LW: () => LW, LH: () => LH, VW: () => VW,
   number: (x, y, t, c) => number(x, y, t, c), word: (x, y, t, c) => turnWord(x, y, t, c), ring: (x, y, r, c, l) => ringAt(x, y, r, c, l), burst: (...a) => burst(...a), part: o => parts.push(o), shake: n => shakeCam(n),

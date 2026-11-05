@@ -64,7 +64,7 @@ assert.equal(TURN_WORD.greathound, 'GO ROUND', 'his turned blow says GO ROUND');
 { const deck = { x0: 100, x1: 164, y: 368 }; assert.ok(onDeck(deck, 130, 368) && !onDeck(deck, 130, 416) && !onDeck(deck, 200, 368), 'onDeck: on the gallery boards only');
   assert.ok(boughHits(130, 130, 368, 416, deck) && !boughHits(130, 130, 368, 416), 'the boughs find a hero on the gallery (and only where there is one)'); }
 const kw = readFileSync(new URL('../src/kingswood.js', import.meta.url), 'utf8');
-assert.ok(kw.includes('hound2: true, deck: {') && kw.includes('CUT ITS CHAIN: IT BITES HIM'), 'Kingswood: hound2 on, the gallery deck, the chain post taught by a sign');
+assert.ok(kw.includes('hound2: true,') && kw.includes('deck: { x0: 185') && kw.includes('CUT ITS CHAIN: IT BITES HIM'), 'Kingswood: hound2 on, the gallery deck, the chain post taught by a sign');
 assert.ok(src.includes('h2 && p2 && !e.secondPounce) { e.secondPounce = true; e.pounceAgain = true;') && src.includes("e.pounceAgain) { e.pounceAgain = false; e.stagger = 0; tell('!!'"), 'phase two: the double pounce, its second told');
 assert.ok(src.includes("tell('!', '#ffd36b', GHN.leap.tell, 'leapTell')") && MARK['greathound|leapTell'] === '!', 'the gallery leap is told and marked');
 assert.ok(src.includes('if (h2 && !(e.ghWard > 0)) GHD.houndSoft(e, GHN.land.t, GHN.land.mul)'), 'the landing opens him (not in his ward)');

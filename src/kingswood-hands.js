@@ -76,6 +76,7 @@ export function makeKingswoodHands(ctx) {
     if (d.load === 'span') { h.state = 'down'; layCells(d); S.n.bridges++; if (once('bridge')) say(x, h.ly - 24, 'bridge', '#8fd160'); return; }
     const bx = crushBox(h, d);
     for (const e of ctx.enemies()) if (e.alive && !e.maxHp && ctx.overlap(bx, ctx.box(e))) { h.hit.add(e); ctx.hurt(e, d.land ? 999 : (d.crush || ROPE.crush), x); S.n.crushed++; if (once('crushed')) say(e.x, e.y - 20, 'crushed', '#8fd160'); }
+    if (d.load === 'cage' && ctx.cageBig) for (const e of ctx.enemies()) if (e.alive && e.maxHp && !h.hit.has(e) && ctx.overlap(bx, ctx.box(e))) { h.hit.add(e); ctx.cageBig(e, d, x); }   /* (claude/greathound) a cage on a big foe: main.js decides (the Great Hound in his kennel is CAGED) */
     for (const p of ctx.players()) if (p && !p.dead && ctx.overlap(bx, ctx.boxOf(p))) ctx.asPlayer(p, () => { ctx.damage(x, ROPE.cageDmg, { up: true, unblockable: true, name: d.load === 'log' ? 'THE LOG' : 'THE CAGE' });
       if (d.load === 'cage') { p.caged = ROPE.caged; say(p.x, p.y - 24, 'caged', '#ff6b6b'); } if (d.land) { p.y = d.land[1] * TS; p.vy = 0; } });
     if (d.load === 'cage') { h.state = 'down'; if (d.land) { layCells(d); S.n.steps++; if (once('step')) say(x, h.ly - 40, 'step', '#8fd160'); } return; }

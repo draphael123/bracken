@@ -31,7 +31,18 @@ export const GH = {
   land: { t: 1.2, mul: 1.25, again: 0.35, tell2: 0.4 },
   leap: { tell: 0.45, every: 2.6, vy: -330 },
   wake: 1.5, p2Beat: 1.0,
+  /* GROUP B (L.mini.hound2B): THE KENNEL CAGE holds him GH.cage.t s - a real opening (x openMul, the third-of-him cap, the ward after); in his ward it glances off.
+     THE KING'S HORN (phase two): a told horn from the yard's far wall, GH.horn.tell s, then a ROYAL BOAR (the meadow's, no new foe) charges the yard -
+     jump it, or bait it into him: a boar that runs into him GORES him (a stun and the short window). At most GH.horn.max boars a fight, one at a time. */
+  cage: { t: 2.4 },
+  horn: { first: 3.0, every: 15, tell: 1.1, max: 2, gore: 1.4 },
 };
+/* the kennel cage landed on him (src/kingswood-hands.js land -> main.js cageBig) */
+export function houndCaged(e, say) {
+  if (e.ghWard > 0) { e.mode = 'stun'; e.modeT = 0.6; e.stagger = 0.6; if (say) say(e, 'THE CAGE GLANCES OFF', '#9ab0c0'); return false; }
+  e.mode = 'stun'; e.modeT = GH.cage.t; e.stagger = GH.cage.t; e.vx = 0; e.open = GH.cage.t; e.openN = (e.openN || 0) + 1; e.pounceAgain = false; e.secondPounce = false;
+  if (say) say(e, 'CAGED: HIT HIM', '#8fd160'); return true;
+}
 export const houndOpen = e => !!e && e.open > 0;
 export const houndWard = e => !!e && e.ghWard > 0;
 /* a hero's blow, struck from fromX (air: off the ground over him). Returns what comes off the bar, and whether his jaws turned part of it */
