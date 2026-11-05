@@ -1,0 +1,40 @@
+name: Private Skyroad lookup controlled Game guide
+on:
+  push:
+    branches: [codex/load-perf]
+    paths:
+      - tools/skyroad-capability-lookup-guide-nov05/**
+      - tools/skyroad-capability-lookup-guide-nov05*.mjs
+      - .github/workflows/skyroad-capability-lookup-guide-nov05.yml
+permissions: {contents: read}
+jobs:
+  native:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          ref: 1a576c3f4511b6856df9fb4738df5aaae9987e81
+          path: span-game
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.11.1'
+      - name: Controlled whole-Game material and exactness guide
+        run: node --import ./tools/private-hero-profile-guard-preload-nov01.mjs tools/skyroad-capability-lookup-guide-nov05.mjs
+        env:
+          FIXED_ART_GAME: span-game
+          FIXED_ART_LOADER_OUT: ${{ runner.temp }}/skyroad-capability-lookup-guide-nov05
+          BRACKEN_GUARD_GAME: span-game
+          BRACKEN_GUARD_PROFILE: tools/browser-profile.mjs
+          BRACKEN_GUARD_PROFILE_SHA256: 9d38b09c585f0054e40125c63b2435e61e8cd6f5cc53e6011edf62178c8c2184
+          BRACKEN_GUARD_READBACK: ${{ runner.temp }}/skyroad-guide-strict-profile.jsonl
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: skyroad-capability-lookup-guide-nov05
+          path: |
+            ${{ runner.temp }}/skyroad-capability-lookup-guide-nov05/
+            ${{ runner.temp }}/skyroad-guide-strict-profile.jsonl
+          if-no-files-found: error
