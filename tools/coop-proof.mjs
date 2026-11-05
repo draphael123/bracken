@@ -5,7 +5,7 @@
    PORT=8789 node tools/coop-proof.mjs [bleed,ping]   (SHOTS=dir for the screenshots) */
 import { writeFileSync } from 'node:fs';
 import { openLevelPage } from './boss-level.mjs';
-const WANT = (process.argv.slice(2).find(a => !a.startsWith('--')) || 'bleed,ping').split(','), fails = [];
+const WANT = (process.argv.slice(2).find(a => !a.startsWith('--')) || 'bleed,ping,ai').split(','), fails = [];
 const OUT = process.env.SHOTS || 'C:/Users/Daniel Raphael/.claude/bracken-lanes/scratch/lane-reports';
 const ok = (c, m) => { if (!c) { fails.push(m); console.log('  FAIL ' + m); } else console.log('  ok   ' + m); };
 const pg = await openLevelPage({ audio: false, fonts: false }), E = x => pg.evalp(x, 600000);
@@ -65,6 +65,25 @@ try {
     await shot('pings');
     await E(`(()=>{const b=BK.players()[1];BK.coopDown(1);BK.sim(3);b.press.ping=true;BK.sim(2);b.press.ping=false;BK.sim(20);return 1;})()`);
     await shot('downed');
+  }
+  if (WANT.includes('ai')) {
+    console.log('ai');
+    await E(`window.__a=async()=>{for(const k in BK.keys)BK.keys[k]=false;BK.manualSimulation=true;BK.SET.speed=1;BK.coopEnd();BK.reset({fresh:true});await BK.allyReady();BK.aiComp.arm(['warden'],['aggressive'],1);const {LEVELS}=await import('/src/level.js');BK.load(LEVELS.findIndex(l=>l.id==='wood'));BK.start();BK.sim(300);return BK.players().length;};true`);
+    const r = await E(`(async()=>{await __a();const ps=BK.players(),a=ps[0],q=ps.find(p=>p.ai),o={n:ps.length};BK.god=true;
+      BK.enemies().forEach(e=>{if(e.alive&&Math.abs(e.x-a.x)<500)e.alive=false;});
+      a.face=1;a.vx=0;BK.sim(90);o.gap0=Math.round(q.x-a.x);
+      __y('y');BK.sim(2);const sp=BK.pings().find(p=>p.n===a.n);o.spot=sp&&sp.kind;const sx=sp?sp.x:0;
+      let best=999;for(let f=0;f<60*3.5;f++){a.vx=0;BK.sim(1);best=Math.min(best,Math.abs(q.x-sx));}o.spotBest=Math.round(best);o.spotDx=Math.round(sx-a.x);
+      BK.sim(60*5);const e=BK.enemies().find(z=>z.alive&&!z.boss&&!z.fly&&!z.flying&&z.ground!==false&&z.hp>0&&z.t!=='bat');o.haveFoe=!!e;
+      if(e){a.x=e.x-60;a.y=e.y;a.vx=0;q.x=a.x-80;q.y=a.y;q.vx=0;BK.sim(40);a.x=e.x-60;a.y=e.y;a.face=1;BK.sim(1);const hp0=e.hp;__y('y');BK.sim(2);const fp=BK.pings().find(p=>p.n===a.n);o.foePing=fp&&fp.kind;
+        let near=999;for(let f=0;f<60*6&&e.alive;f++){a.vx=0;BK.sim(1);near=Math.min(near,Math.abs(q.x-e.x));}o.foeNear=Math.round(near);o.foeHit=Math.round(hp0-(e.alive?e.hp:0));}
+      return o;})()`);
+    console.log('    ' + JSON.stringify(r));
+    ok(r.n === 2, 'P1 + an AI partner');
+    ok(r.spot === 'spot' && r.spotBest <= 28, 'the AI walks to a spot ping (' + r.spotBest + ' px from it, ping ' + r.spotDx + ' px ahead of P1)');
+    ok(!r.haveFoe || (r.foePing === 'foe' && r.foeHit > 0), 'the AI fights a pinged foe (nearest ' + r.foeNear + ' px, dealt ' + r.foeHit + ')');
+    await E(`(async()=>{await __a();const q=BK.players().find(p=>p.ai);BK.god=true;BK.sim(60);q.aiS=Object.assign(q.aiS||{},{wait:true});q.leash=0;BK.draw1();return 1})()`);
+    await shot('aicue');
   }
   ok(!pg.errors.length, 'no page errors: ' + pg.errors.slice(0, 3).join(' | '));
 } finally { pg.close(); }
