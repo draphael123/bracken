@@ -233,9 +233,10 @@ export function buildGlassSea({ painter, T, TS }) {
   /* (claude/colossus4, level-review-1105: 'THE GLASS SEA 5.7, 0 platforming sections') THE SHATTER-PANES - THE SECTION: the back of the skull is split open; crystal panes
      (T.CRYST: they craze under your weight and grow back) step down the chasm from the crown to the flats - drop, gap, a 2-row hop UP, drop, gap, drop, the terrace.
      Seven beats in 31 tiles, no foe inside. A fall is THE CRACK: a blow and back to the crown (no safe footing on the panes - the whole run again) */
-  if (C4) { air(383, 451, 0, 16); air(383, 412, 17, B - 1); crack('skullPanes', 383, 412, B, { dmg: 20 });
-    for (const [x0, x1, y] of [[385, 387, 20], [390, 391, 22], [394, 396, 20], [399, 400, 23], [403, 405, 25], [408, 409, 28]]) for (let x = x0; x <= x1; x++) set(x, y, T.CRYST);
-    air(413, 451, 0, B - 1); ground(413, 451, B); sign(380, 16, 'THE SHATTER-PANES. THE GLASS CRAZES UNDER YOU: KEEP MOVING.'); }
+  if (C4) { air(383, 451, 0, 16); air(383, 411, 17, B - 1); crack('skullPanes', 383, 411, B, { dmg: 20 });
+    for (const [x0, x1, y] of [[385, 387, 20], [390, 391, 22], [394, 396, 20], [399, 400, 23], [403, 405, 25], [408, 409, 28]]) { for (let x = x0; x <= x1; x++) set(x, y, T.CRYST); const sx = (x0 + x1) >> 1; block(sx, sx, y + 1, PIT - 1); }   /* each pane crowns a fused-glass spire from the chasm floor (anchored: nothing floats; a shattered pane leaves the spire's tip) */
+    air(412, 451, 0, B - 1); block(412, 412, 29, H - 1); { const t = fall(413, 29, 5, false); ground(418, 451, t); }   /* the skull's knuckle (row 29) and a steep SLICK run off it to the flats: the slick remix stays */
+    sign(380, 16, 'THE SHATTER-PANES. THE GLASS CRAZES UNDER YOU: KEEP MOVING.'); }
   else { air(383, 451, 0, 16); { let t = 17; for (let x = 383; x < 400; x++) { air(x, x, 0, t); dnS(x, t); t++; } }
   air(400, 451, 0, B - 1); ground(400, 451, B); }
   const HX = C4 ? 14 : 0;   /* (claude/colossus4) the skull's foot moves east past the chasm */
@@ -297,7 +298,7 @@ export function buildGlassSea({ painter, T, TS }) {
   // ================= THE GLASS TERRACES AND THE DUNES (a high road over the low one; no long level stretch) =================
   /* THE TERRACES: lightning-fused glass shelves (one-way) three rows over the sand - a high road beside the low one, never over a crack the rule bridges, a cliff the
      first mirror's stair climbs, the obelisk's chain or the steps' exam */
-  for (const [x0, x1, y] of [[50, 66, B - 8], [77, 97], [158, 168], [183, 189], [194, 214], [290, 296], [413, 441], [453, 479], [544, 557], [564, 570]]) boards(x0, x1, y ?? B - 3);
+  for (const [x0, x1, y] of [[50, 66, B - 8], [77, 97], [158, 168], [183, 189], [194, 214], [290, 296], [C4 ? 419 : 413, 441], [453, 479], [544, 557], [564, 570]]) boards(x0, x1, y ?? B - 3);
   /* THE DUNES: a long level stretch of sand gets a low glass dune (a row up over two columns, two across, a row down) where nothing stands - every glass slope is slick */
   { const busy = new Set(); for (const e of L.ents) for (let d = -2; d <= 2; d++) busy.add(e.x + d);
     for (const m of mirrors) for (let d = -3; d <= 3; d++) busy.add(m.x + d);

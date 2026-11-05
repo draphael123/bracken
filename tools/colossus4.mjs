@@ -11,7 +11,7 @@ import { LEVELS, T } from '../src/level.js';
 import * as CG from '../src/glass-colossus.js';
 import * as BP from '../src/beam-path.js';
 import { STAGE4, COL4, LIGHT4, COL4_SHIPS } from '../src/colossus4.js';
-import { lintSunRooms } from '../src/sun-puzzle.js';
+import { lintSunRooms } from '../src/sun-puzzle.js'; import { lintMirages } from '../src/mirage-kit.js';
 import { makeOpaque } from '../src/light.js';
 import { isSlope } from '../src/slopes.js';
 const args = process.argv.slice(2), opt = (k, d) => { const a = args.find(x => x.startsWith('--' + k + '=')); return a ? a.slice(k.length + 3) : d; };
@@ -90,6 +90,7 @@ function checks() {
   ok(!on.ents.some(e => e.x >= 382 && e.x <= 413 && !['sign', 'gscrack', 'gsheap', 'stray', 'silver', 'coin'].includes(e.t)), 'no foe inside the panes section (382-413)');
   ok(on.cracks.some(c => c.id === 'skullPanes' && !c.soft && c.y === 34), 'a fall off the panes is THE CRACK (a blow, back to the crown), never a death');
   const lint = lintSunRooms(on, at, makeOpaque(T, isSlope)); ok(lint.length === 0, 'THE GLYPH COURT lints clean (lamp + an optional priest cache beamable from footing): ' + lint.join('; '));
+  { const ml = lintMirages(on, at); ok(on.mirages.length === 1 && ml.length === 0, 'the light-touch mirage (a false shade on the glare) lints clean - a trick, never a trap: ' + ml.join('; ')); }
   ok(on.sunRooms[0].doors.some(d => d.kind === 'cache' && d.optional) && !on.sunRooms[0].doors.some(d => d.kind === 'sun'), 'the glyph court locks nothing: a lamp (the Temple find) + one optional PRIEST CACHE (Q5)');
   ok(on.templeSpur && on.templeSpur.node === 'suntemple' && on.templeSpur.find[0] < 334, 'the SUN TEMPLE find is on the main road before the sunset (Q6: can\'t miss)');
   ok(on.ents.some(e => e.t === 'silver' && e.x === 302 && e.y === 35) && at(302, 34) === T.SOLID && at(302, 35) === T.AIR, 'the cache: a silver under a sun-seal in the floor (solid until his light opens it)');
