@@ -219,5 +219,5 @@ export function buildSkyLab({ painter }) {
   const x0 = LAB.backCol * 16, y = LAB.backRow * 16;
   return { W: LAB.W, H: LAB.H, grid: L.grid, ents: L.ents, START: { x: LAB.backCol + 4, y: LAB.backRow - 1 }, pools: [], falls: [], moversExtra: [], interiors: [], ambient: [{ x0: 0, x1: LAB.W * 16, kind: 'highair' }],
     skyMount: { x0, y, len: SKM.BACK.len, phase: 1, lab: true }, duskStart: -1, duskLen: 1, noFallDeath: true,
-    palette: { set: 'arena', sky: 'autumn', near: 'none', noFg: true, noNear: true, haze: 'rgba(200,90,40,0.10)', grass: '#3a2a26', grassL: '#5a3a30', grassD: '#24161a', dirt: '#24161a', dirtL: '#3a2a26', dirtD: '#160e12' } };
+    palette: { set: 'arena', sky: 'autumn', near: 'none', noFg: true, noNear: true, dress: 'arena', haze: 'rgba(200,90,40,0.10)', grass: '#3a2a26', grassL: '#5a3a30', grassD: '#24161a', dirt: '#24161a', dirtL: '#3a2a26', dirtD: '#160e12' } };
 }
