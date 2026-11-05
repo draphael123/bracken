@@ -17,10 +17,8 @@ export const GENERIC_MAX = 0.60, MIN_KINDS = 8;
 export const GOB_OK = { harbor: 'shelved on purpose: the only level with no map node (tools/one-new-foe.mjs GRANDFATHERED too)' };
 /* before the Queen, over GENERIC_MAX today. The number is a CEILING. These are the DEMO levels: claude/demofoes already gave them their pass (11-03) and this lane does not churn them. */
 export const GENERIC_OVER = {
-  stockade: [0.78, 'demo level, post-demo cast pass (archer/sprig/shield/hound/brute; only sapper, chief and the towers are its own)'],
-  underleaf: [0.88, 'demo level, post-demo cast pass (sprig 18 + rockgoblin 10 of 47)'],
-  palisadewood: [0.92, 'demo level, post-demo cast pass (its own foe is the hornsman)'],
-  kings: [0.66, 'demo level, post-demo cast pass (the goblin King\'s court is camp goblins)'],
+  stockade: [0.64, 'post-demo pass (claude/foevariety): fire/rock archers + club sprigs + sappers; the rest of its generics are scripted tower/gate/cook roles (stk keys) a swap row must not touch'],
+  palisadewood: [0.58, 'post-demo pass (claude/foevariety): club sprigs, fire/rock archers, sappers; hound/brute/shield are its taught lessons'],
 };
 export const FEW_KINDS = {
   caravan: [7, 'a desert one-biome level: its cast is the bandit set + sand beasts'],
