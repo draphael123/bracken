@@ -26,13 +26,14 @@ export function layAbbotChapel({ T, TS, W, set, at, block, air, boards, rope, en
   /* ================= THE WEST FRONT: THE ROOFTOP CLIMB (outside, x1-47) ================= */
   // the leads over the aisle are the crawl's slab (row 30); the trapdoor at 35-45 comes up here. The west front is a cliff of dressed stone with its
   // string-courses and buttress offsets standing out of it: the ledges, three rows apart, turning back and forth up to the belfry's arch.
-  const ledge = (x0, x1, y) => { block(x0, x1, y, y); masonry.push([x0, x1, y, y]); };
+  const corbels = [];   /* the string-courses are corbels keyed into the west front (the art draws the wall behind them): stone, declared as islands, not laid floors */
+  const ledge = (x0, x1, y) => { block(x0, x1, y, y); corbels.push([x0, x1, y, y]); };
   ledge(30, 32, 26); ledge(35, 37, 23); ledge(30, 32, 20); ledge(35, 37, 17);
-  ledge(40, 47, 14);                                               /* the bell-cote's sill: the last ledge, under the bells, at the arch */
-  ledge(24, 26, 23); ent('silver', 25, 22);                        /* off the first course: a mason's niche (a secret off the route) */
-  ledge(44, 46, 11); ent('silver', 45, 10);                        /* up in the bell-cote over the sill, between its bells (the second) */
-  facades.push([38, 47, 3, 13, 'monkArch', { spans: true, belfry: true }]);   /* THE BELL-COTE on the west gable: its open arches, its bells hung over the sill (art: bells) */
-  deco(38, 13, 'bellFrame', 0); deco(46, 13, 'bellFrame', 1);
+  block(40, 47, 14, 14); block(46, 47, 15, 29); masonry.push([42, 47, 14, 14], [46, 47, 15, 29]); corbels.push([40, 41, 14, 14]);   /* the bell-cote's SILL, the last ledge, under the bells at the arch - on the west front's BUTTRESS, down to the leads */
+  ledge(24, 26, 23); ledge(18, 20, 20); ent('vault', 19, 19); coins([25, 22]);   /* off the first course, two corbels west: a mason's niche - the old relic VAULT's spot moves here (src/relics.js pays a silver into it) */
+  ledge(44, 46, 11); ledge(41, 43, 8); ents.unshift({ t: 'silver', x: 42, y: 7 });   /* up in the bell-cote, two courses over its bells: the level's top silver (FIRST in the list, so the relic vault below moves the middle one, as the old belfry's did) */
+  facades.push([42, 47, 5, 13, 'monkArch', { spans: true, belfry: true }]);   /* THE BELL-COTE on the west gable: its open arches, its bells hung over the sill (art: bells) */
+  deco(44, 13, 'bellFrame', 0); deco(46, 13, 'bellFrame', 1);
   // THE SHORTCUT (Salt & Sanctuary): the bell on the sill lets its rope down the west front to the leads - after a death, the trapdoor and the rope
   ent('tbell', 42, 13, { rope: [39, 14, 28] });
   ent('sign', 33, 29, { text: 'THE WEST FRONT. CLIMB ITS STONES TO THE BELFRY ARCH. THE BELL AT THE TOP LETS A ROPE DOWN.' });
@@ -45,7 +46,7 @@ export function layAbbotChapel({ T, TS, W, set, at, block, air, boards, rope, en
   block(94, 94, 3, 29);                                            /* the east wall */
   block(48, 94, 3, 4);                                             /* the belfry roof (sky over it: the bells are heard, not seen, from outside) */
   block(48, 94, 19, 19);                                           /* THE BELFRY FLOOR: the chapel's vault */
-  masonry.push([48, 48, 3, 29], [94, 94, 3, 29], [48, 94, 3, 4], [48, 94, 19, 19]);
+  masonry.push([48, 48, 3, 10], [48, 48, 14, 29], [94, 94, 3, 29], [48, 94, 3, 4], [48, 94, 19, 19]);
   interiors.push([49, 93, 5, 18, 'monkTower'], [49, 93, 20, 29, 'monkChapel']);
   rope(92, 19, 29);                                                /* THE GREAT BELL'S ROPE, down through its hole in the floor into the chapel */
 
@@ -86,5 +87,6 @@ export function layAbbotChapel({ T, TS, W, set, at, block, air, boards, rope, en
   const arena = { x0: 49 * TS, x1: 94 * TS, floor: 30 * TS, y0: 22 * TS, trigger: 50 * TS, wallL: 48, wallR: 94, boss: 'abbot', music: 'roc', house,
     tint: '#e8c88a', tintA: 0.10, fx: 'motes' };
   /* calm: no sprinkled garrison up here - the climb has its harpy, the belfry and the chapel are his (the fight is the room) */
-  return { arena, calm: [1, 94, 0, 29], island:[[48, 94, 3, 19, 'the belfry over the Abbot\'s chapel: its roof, walls and floor are one building on the crawl\'s slab']] };
+  return { arena, calm: [1, 94, 0, 29], island: corbels.map(([x0, x1, y0, y1]) => [x0, x1, y0, y1, 'a string-course corbel keyed into the west front (the art draws the wall face behind it)'])
+    .concat([[48, 94, 3, 19, 'the belfry over the Abbot\'s chapel: its roof, walls and floor are one building on the crawl\'s slab']]) };
 }

@@ -594,6 +594,7 @@ if (MON3) STUCK.spire = [
   { id: 'm3-wheel-rood', zone: [24, 66, 44, 73], at: [36, 73], glint: 'stall', line: 'THE ROOD WHEEL: TURN ITS STAIR TO THE TRAPDOOR' },
   { id: 'm3-bell-rope-2', zone: [1, 50, 12, 55], at: [6, 55], line: "THE GUARDIAN DOOR BELL: A WAY BACK UP FROM THE DORTER ROOF" },
   ...STUCK.spire.filter(q => q.id === 'sp-wheel-3'),
+  { id: 'm3-bell-rope-3', zone: [38, 10, 47, 13], at: [42, 13], line: 'THE BELL-COTE BELL: ITS ROPE IS A WAY BACK UP THE WEST FRONT' },   /* (claude/falseabbot) the rooftop climb's shortcut */
 ];
 export const STUCK_HANDS = {
   /* THE LIT CHURCH (claude/litchurch): every lamp the route needs glints - first the fire that gives the flame, then the lamp (src/lit-church-hands.js handsState:
