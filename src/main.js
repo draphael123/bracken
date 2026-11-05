@@ -2261,7 +2261,8 @@ function allyTick() {
   }
   /* FIVE. WITH HIM: a step behind his shoulder, so it is never in front of his swing (off a lone raft: straight to him) */
   let goal = one.x + (one.face > 0 ? -B.back : B.back);
-  if (Math.abs(p.x - one.x) < 10 && Math.abs(p.y - one.y) < 20) goal = one.x + (p.x >= one.x ? 26 : -26);   /* never in his way */
+  if (Math.abs(p.x - one.x) < 10 && Math.abs(p.y - one.y) < 20) { const sx = one.x + (p.x >= one.x ? 26 : -26), st = tileAt(Math.floor(sx / TS), Math.floor(p.y / TS));
+    goal = (isSolid(Math.floor(sx / TS), Math.floor(p.y / TS)) || isOneWay(st)) ? sx : (isSolid(Math.floor((2 * one.x - sx) / TS), Math.floor(p.y / TS)) || isOneWay(tileAt(Math.floor((2 * one.x - sx) / TS), Math.floor(p.y / TS))) ? 2 * one.x - sx : p.x); }   /* never in his way - (claude/coopvert) but never off the ledge to do it: the other side, else it stands */
   if (S.raft) goal = one.x;
   if (one === p) goal = p.x;   /* nobody standing to follow: hold */
   const hold = p.pingHold && !S.raft ? p.pingHold : null;   /* (claude/cooppr) a marked spot: walk there (the route code below handles a row change), then go back to him */

@@ -120,10 +120,10 @@ try {
       const r = await E(`(async()=>{for(const k in BK.keys)BK.keys[k]=false;BK.manualSimulation=true;BK.SET.speed=1;BK.coopEnd();BK.reset({fresh:true});await BK.allyReady();BK.aiComp.arm(['warden'],['balanced'],1);const {LEVELS}=await import('/src/level.js');BK.load(LEVELS.findIndex(l=>l.id==='${id}'));BK.start();BK.sim(5);BK.god=true;BK.enemies().forEach(e=>e.alive=false);
         const ps=BK.players(),a=ps[0],q=ps.find(p=>p.ai),A=${JSON.stringify(c.a)},B=${JSON.stringify(c.b)};
         a.x=B[0]*16+8;a.y=(B[1]+1)*16-1;a.vx=a.vy=0;q.x=A[0]*16+8;q.y=(A[1]+1)*16-1;q.vx=q.vy=0;a.face=1;const l0=q.leashes||0;let best=1e9,at=-1;
-        for(let f=0;f<60*7;f++){a.vx=0;BK.sim(1);const d=Math.abs(q.x-a.x)/16+Math.abs(q.y-a.y)/16;if(d<best){best=d;}if(at<0&&Math.abs(q.x-a.x)<28&&Math.abs(q.y-a.y)<30)at=f;}
+        for(let f=0;f<60*7;f++){a.vx=0;BK.sim(1);const d=Math.abs(q.x-a.x)/16+Math.abs(q.y-a.y)/16;if(d<best){best=d;}if(at<0&&q.ground&&Math.abs(q.x-a.x)<28&&Math.abs(q.y-a.y)<30&&(q.leashes||0)===l0)at=f;}
         return {best:+best.toFixed(1),at:at<0?-1:+(at/60).toFixed(1),pulls:(q.leashes||0)-l0,end:[Math.round(q.x),Math.round(q.y),Math.round(a.x),Math.round(a.y)]};})()`);
       console.log('    ' + id + ' ' + what + ' ' + JSON.stringify(c) + ' ' + JSON.stringify(r));
-      ok(r.at >= 0 && r.pulls === 0, 'the AI gets to him on its own legs: ' + what + ' in ' + id + ' (' + (r.at >= 0 ? r.at + ' s' : 'never, best ' + r.best + ' tiles') + ', ' + r.pulls + ' pulls)');
+      ok(r.at >= 0, 'the AI gets to him on its own legs: ' + what + ' in ' + id + ' (' + (r.at >= 0 ? r.at + ' s' : 'never, best ' + r.best + ' tiles') + ', ' + r.pulls + ' pulls; a puff before it arrived does not count)');
     }
   }
   ok(!pg.errors.length, 'no page errors: ' + pg.errors.slice(0, 3).join(' | '));
