@@ -145,4 +145,4 @@ function sim(N, o) {
   build(false);
 }
 const simN = +opt("sim", 0), so = { debug: args.includes("--debug"), hp: +opt('hp', 300), dmg: +opt('dmg', 18), flasks: +opt('flasks', 3), secs: +opt('secs', 300) };
-if (!simN) { checks(); sim(6, so); } else sim(simN, so);
+if (args.includes("--checks")) checks(); else if (!simN) { checks(); sim(6, so); } else sim(simN, so);
