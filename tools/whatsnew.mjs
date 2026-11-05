@@ -72,7 +72,7 @@ try {
   const hist = await pg.evalp('BK.wnHist().map(h => ({ id: h.id, n: h.entries.length }))'), tagged = new Set(data.flatMap(e => e.lines.flatMap(l => (typeof l === 'object' ? l.lv : []))));
   assert.ok(hist.some(h => h.id === 'wood'), 'the first level is listed'); assert.ok(hist.length < tagged.size, 'levels the player has not unlocked are hidden (' + hist.length + ' of ' + tagged.size + ' tagged)');
   r = await pg.evalp(REC); for (const x of r) assert.ok(x.x0 >= 24 && x.x0 + x.w <= VW - 24 && x.y0 >= 6 && x.y0 + x.h <= VH - 6, 'tab 2 inside the panel: ' + x.s + ' ' + JSON.stringify(x));
-  for (let k = 0; k <= hist.length; k++) { await KEY('Enter', 'Enter', 13); r = await pg.evalp(REC); for (const x of r) assert.ok(x.x0 >= 24 && x.x0 + x.w <= VW - 24 && x.y0 >= 6 && x.y0 + x.h <= VH - 6, 'filter ' + k + ' inside the panel: ' + x.s); }
+  for (let k = 0; k <= hist.length; k++) { await KEY('z', 'KeyZ', 90); r = await pg.evalp(REC); for (const x of r) assert.ok(x.x0 >= 24 && x.x0 + x.w <= VW - 24 && x.y0 >= 6 && x.y0 + x.h <= VH - 6, 'filter ' + k + ' inside the panel: ' + x.s); }
   assert.equal(await pg.evalp("BK.wnFilter"), '', 'the filter wraps back to ALL'); await KEY('ArrowLeft', 'ArrowLeft', 37);
   assert.equal(await pg.evalp('BK.wnTab'), 0, 'LEFT goes back to UPDATES');
   for (const type of ['keyDown', 'keyUp']) await pg.send('Input.dispatchKeyEvent', { type, key: 'Escape', code: 'Escape', windowsVirtualKeyCode: 27 });
