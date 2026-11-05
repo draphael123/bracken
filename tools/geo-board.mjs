@@ -37,7 +37,7 @@ try {
   assert(out.gnaw.minhp < out.gnaw.hp0, 'a foe pressed on a stone costs it hp ' + JSON.stringify(out.gnaw));
   assert(out.ram.small.gone && out.ram.big.gone && out.ram.big.open, 'a charge breaks it outright, a mini is opened up ' + JSON.stringify(out.ram));
   assert.deepEqual(out.fist.ups, [false, false, true], 'only the third jab knocks up ' + JSON.stringify(out.fist));
-  assert(out.topple.n >= 3 && out.topple.after === 0 && out.topple.erupting >= 3 && out.topple.rolled >= 3 && out.topple.hurt > 0, 'UP+C at a FULL board (3): every stone erupts, then rolls as a boulder, the stones are spent, the foe is hurt ' + JSON.stringify(out.topple));
+  assert(out.topple.n >= 3 && out.topple.after === 0 && out.topple.hurt > 0, 'UP+C at a FULL board (3) = MOUNTAIN COLLAPSE (claude/geofix: the eruption + roll became a wave of boulders over the screen): the stones are spent, the foe is hurt ' + JSON.stringify(out.topple));
   assert(out.one.after === 2 && out.one.rolled === 0, 'two stones are not a full board: no avalanche ' + JSON.stringify(out.one));
   assert(out.room.had >= 1 && out.room.same, 'leaving the room puts the grid back ' + JSON.stringify(out.room));
   assert.deepEqual(pg.errors, []);

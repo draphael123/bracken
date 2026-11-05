@@ -7,6 +7,7 @@ export const CC_BY = [   /* [MUSIC_CREDITS key, track, composer, licence, the li
   ['harvestfair', 'Dark Carnival', 'Machine', 'CC-BY 3.0', 'creativecommons.org/licenses/by/3.0'],
   ['mineworks', 'At Work', 'HorrorPen', 'CC-BY 3.0', 'creativecommons.org/licenses/by/3.0'],
   ['blacklord', 'For the Black Lord', 'Ronhul Maggot', 'CC-BY 4.0', 'creativecommons.org/licenses/by/4.0'],   /* THE DEATH KNIGHT's theme (claude/dk3) */
+  ['unburied', 'March of the Wizards', 'Aureolus_Omicron', 'CC-BY 4.0', 'https://creativecommons.org/licenses/by/4.0/', ['"March of the Wizards"', 'by Aureolus_Omicron (OpenGameArt.org)', 'Licensed under CC-BY 4.0', 'opengameart.org/content/march-of-the-wizards']],   /* licence audit M1 (11-04): was missing from the page */
   ['undeadmage', 'Colossal Boss Battle Theme', 'Matthew Pablo', 'CC-BY 3.0', 'creativecommons.org/licenses/by/3.0'],   /* THE UNDEAD ARCHMAGE (claude/archmage2b): matthewpablo.com */
   ['puppeteer', 'Dissonant Waltz', 'Yubatake', 'CC-BY 4.0', 'creativecommons.org/licenses/by/4.0'],   /* THE PUPPETEER's fight (claude/puppeteer2, Daniel's pick 10-02) */
   /* THE RED GORGE (claude/redgorge-fix, Daniel 10-02): Kevin MacLeod asks for this credit word for word - the page shows it whole, a line at a time */

@@ -3780,7 +3780,7 @@ export function trialSteps(hero) {
       ['flash', 2, 'THE WARD: TAP C AS HIS SWORD FLASHES. IT RISES ON THE BEAT AND EMPOWERS YOU. TWICE.', [['swornsword', 18]], 'TAP LB AS IT FLASHES'],
       ['tells', 2, 'ONE YELLOW ! : THE WARD TAKES IT. TWO RED !! : IT BREAKS THROUGH, SO GET CLEAR. DO BOTH.', [['hedgeknight', 18]], 'TAP LB FOR !    B OR A FOR !!', MARKS],
       ['stonefall', 2, 'EARTHFALL: JUMP, THEN DOWN+X BETWEEN THEM. THE LANDING IS A SHOCKWAVE. LAND IT TWICE.', [['dummy', 13], ['dummy', 17]], 'A, THEN DOWN+X'],
-      ['meter', 1, 'STONES STAND UNTIL BROKEN. THREE UP, UP+C: THE AVALANCHE. RAISED FOR YOU HERE.', [['dummy', 12], ['sprig', 18]], 'UP + LB WITH THREE STONES UP'],
+      ['meter', 1, 'STONES STAND UNTIL BROKEN. THREE UP, UP+C: MOUNTAIN COLLAPSE. RAISED FOR YOU HERE.', [['dummy', 12], ['sprig', 18]], 'UP + LB WITH THREE STONES UP'],
       SKILL],
     /* THE BERSERKER'S YARD (claude/berserker, 2026-10-04): his verbs. THE CHAIN (the run goes on only while the chops land, so it is taught on
        straw that takes them; claude/berserker2: a FLURRY of five, the fifth THE CROSS-CHOP), THE DOUBLE CHOP (his held X), TAKE IT on the beat (C: the crossed axes, a parry on the beat, rage off it), the marks

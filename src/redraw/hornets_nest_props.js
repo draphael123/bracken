@@ -44,7 +44,7 @@ export function slab(g, x, y, w, h, set, time) {
 /* the paper stalk a hanging comb hangs from: a tapering neck of paper, ribbed. x mid, y from the top of the comb up to `len` */
 export function stalk(g, mid, y, len) { for (let q = 0; q < len; q++) { const t = q / Math.max(1, len), hw = 2 + Math.round(t * 2) + (q % 5 === 0 ? 1 : 0); R(g, PAPER[(q >> 2) & 1 ? 2 : 1], mid - hw, y - q - 1, hw * 2, 1); R(g, PAPER[3], mid - hw, y - q - 1, 1, 1); R(g, PAPER[0], mid + hw - 1, y - q - 1, 1, 1); } }
 export function glintDrips(g, x, y, w, time) { for (let xx = 5; xx < w - 3; xx += 9) { const ph = (time * 0.7 + xx * 0.137) % 1, len = 2 + Math.round(Math.sin(ph * 3.1) * 3 * (ph < 0.8 ? ph : 1.6 - ph) + 2);
-  R(g, '#d08a2a', x + xx, y, 1, len); if (ph > 0.65) R(g, '#f6aa50', x + xx, y + len, 1, 1); } }
+  R(g, '#7a4e1a', x + xx, y, 1, len); if (ph > 0.65) R(g, '#a87a34', x + xx, y + len, 1, 1); } }
 
 /* ---------------- the smoke stand ---------------- */
 function standSprite() { return once('stand', () => { const [c, g] = canvas(26, 30);
@@ -91,6 +91,8 @@ const puffSprite = col => once('puff' + col, () => { const [c, g] = canvas(32, 3
   gr.addColorStop(0, `rgba(${r},${gg},${b},0.95)`); gr.addColorStop(0.55, `rgba(${r},${gg},${b},0.55)`); gr.addColorStop(1, `rgba(${r},${gg},${b},0)`); g.fillStyle = gr; g.fillRect(0, 0, 32, 32); return c; });
 const puff = (g, x, y, r, a, col) => { g.globalAlpha = a; g.drawImage(puffSprite(col), Math.round(x - r), Math.round(y - r), Math.round(r * 2), Math.round(r * 2)); g.globalAlpha = 1; };
 export function smokeCurl(g, x, y, time, n = 4) { for (let k = 0; k < n; k++) { const ph = (time * 0.45 + k / n) % 1, rr = 3 + ph * 7, px_ = x + Math.sin(time * 1.6 + k * 2 + ph * 4) * (2 + ph * 5), py = y - ph * 34; puff(g, px_, py, rr, 0.7 * (1 - ph) * (ph < 0.1 ? ph * 10 : 1), k % 2 ? '#aab0b8' : '#d0d6dc'); } }
+/* (claude/nestpolish) a soft pulsing glow behind a throwable smoke pot (a stand's pot, one set down): a warm pale halo, so the pot reads as a thing to take and throw */
+export function glow(g, x, y, time, k = 1) { puff(g, x, y, 15 + 2 * Math.sin(time * 2.6 + x * 0.05), k * (0.26 + 0.12 * Math.sin(time * 2.6 + x * 0.05)), '#ffd890'); }
 export function cloud(g, x, y, r, k, time) { const n = 11;
   for (let i = 0; i < n; i++) { const a = i * 2.4 + time * (0.3 + (i % 3) * 0.12), rr = r * (0.25 + 0.5 * ((i * 37) % 10) / 10), px_ = x + Math.cos(a) * rr * 0.75, py = y + Math.sin(a * 1.3) * rr * 0.4, pr = r * (0.34 + 0.12 * ((i * 13) % 5) / 5);
     puff(g, px_ + pr * 0.15, py + pr * 0.2, pr, 0.34 * k, '#6a7078'); puff(g, px_, py, pr, 0.4 * k, i % 3 === 0 ? '#9aa0a8' : i % 3 === 1 ? '#c8d0d8' : '#e8ecf0'); }
