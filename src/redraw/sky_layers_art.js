@@ -29,7 +29,7 @@ export function gradientTile(top, bot, glow, VW, VH) {
 /* a seamless billow band: overlapping lumpy blobs, dark body, lit crescents underneath where the lava glow reaches, dithered edges */
 function billow(w, h, seed, pal, o = {}) {
   const [c, g] = canvas(w, h), rnd = mulberry(seed), n = o.n || 14;
-  const blobs = []; for (let i = 0; i < n; i++) blobs.push({ x: (i + rnd() * 0.7) * w / n, y: h * (0.25 + rnd() * 0.5), rx: w / n * (0.9 + rnd() * 1.3), ry: h * (0.16 + rnd() * 0.22) });
+  const blobs = []; for (let i = 0; i < n; i++) blobs.push({ x: (i + rnd() * 0.7) * w / n, y: h * (0.3 + rnd() * 0.45), rx: w / n * (0.6 + rnd() * 0.9), ry: h * (0.1 + rnd() * 0.16) });
   blobs.sort((a, b) => a.y - b.y);
   for (const b of blobs) for (const ox of [-w, 0, w]) ellipse(g, b.x + ox, b.y, b.rx, b.ry, pal[0], pal[1]);
   for (const b of blobs) for (const ox of [-w, 0, w]) { ellipse(g, b.x + ox - 1, b.y - b.ry * 0.18, b.rx * 0.82, b.ry * 0.68, pal[1], pal[2]); }
@@ -45,7 +45,7 @@ function billow(w, h, seed, pal, o = {}) {
 /* a seamless ridge line: summed sines on integer harmonics (so the tile wraps), crest lit by the glow, a few lava threads down the slopes */
 function ridge(w, h, seed, pal, o = {}) {
   const [c, g] = canvas(w, h), rnd = mulberry(seed), ph = [rnd() * TAU, rnd() * TAU, rnd() * TAU, rnd() * TAU], amp = o.amp || h * 0.5, base = o.base || h * 0.45;
-  const top = x => { const u = x / w * TAU; return Math.round(base - (Math.sin(u * 2 + ph[0]) * 0.5 + Math.sin(u * 5 + ph[1]) * 0.32 + Math.sin(u * 11 + ph[2]) * 0.16 + Math.sin(u * 23 + ph[3]) * 0.08) * amp * 0.5 - amp * 0.3); };
+  const top = x => { const u = x / w * TAU, rg = k => 1 - Math.abs(Math.sin(u * k + ph[k % 4])); return Math.round(base - (rg(3) * 0.5 + rg(7) * 0.32 + rg(13) * 0.16 + rg(29) * 0.08) * amp * 0.9); };
   for (let x = 0; x < w; x++) { const y0 = Math.max(0, top(x));
     for (let y = y0; y < h; y++) { const t = (y - y0) / Math.max(1, h - y0); g.fillStyle = y === y0 ? pal[3] : t < 0.06 ? pal[2] : t < 0.5 ? (((x + y) & 1) ? pal[1] : pal[0]) : pal[0]; g.fillRect(x, y, 1, 1); } }
   const threads = o.threads === undefined ? 5 : o.threads;
@@ -59,7 +59,8 @@ function cone(W, H, seed, pal, o = {}) {
   for (let y = 0; y < H; y++) { const t = y / (H - 1), half = hw(t), cx = W / 2;
     for (let x = Math.ceil(cx - half); x <= Math.floor(cx + half); x++) { const dx = (x - cx) / half, near = 1 - Math.abs(dx);
       const glow = Math.max(0, 1 - t * 1.8) * 0.9 + (o.hot || 0);                              /* lit from the crater: warm near the top */
-      let col = t < 0.03 ? pal[4] : (y % 7 === 0 ? pal[0] : (dx > 0.55 ? pal[0] : dx < -0.6 ? pal[0] : (near > 0.5 ? pal[2] : pal[1])));
+      const gully = ((x * 13 + (y >> 3) * 5) % 11) < 2;
+      let col = t < 0.03 ? pal[4] : (gully ? pal[0] : (dx > 0.62 ? pal[0] : dx < -0.7 ? pal[0] : (near > 0.5 ? (((x + y) & 3) === 0 ? pal[1] : pal[2]) : pal[1])));
       if (glow > 0.2 && near > 0.35 && (((x + y) & 1) === 0 || glow > 0.55)) col = glow > 0.55 ? pal[3] : pal[2];
       if (dx > 0.75 && ((x + y) & 1)) col = pal[0];
       g.fillStyle = col; g.fillRect(x, y, 1, 1); } }

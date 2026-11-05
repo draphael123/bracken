@@ -52,10 +52,11 @@ export function backTile() {
       const u = x / BACK.w, d = depth(u) + 3;
       for (let y = 0; y < d; y++) {
         const t = y / d;                                   /* 0 = back, 1 = belly line */
-        const cell = ((x + (Math.floor(y / 4) & 1) * 3) % 6), edge = cell === 0 || (y % 4) === 3;   /* staggered scale cells */
+        const row = Math.floor(y / 4), lx = (x + (row & 1) * 3) % 6, ly = y % 4;
+        const edge = (ly === 3 && lx >= 1 && lx <= 4) || (ly === 2 && (lx === 0 || lx === 5)), hl = ly === 0 && lx >= 1 && lx <= 3;   /* overlapping scalloped scales */
         let col = t < 0.12 ? K.hide[4] : t < 0.3 ? K.hide[3] : t < 0.62 ? K.hide[2] : t < 0.84 ? K.hide[1] : K.hide[0];
-        if (edge && t > 0.12) col = t < 0.6 ? K.hide[1] : K.hide[0];
-        else if (!edge && t > 0.12 && t < 0.7 && ((x + y) & 1) === 0 && cell === 2) col = K.hide[3];
+        if (edge && t > 0.1) col = t < 0.6 ? K.hide[1] : K.hide[0];
+        else if (hl && t > 0.1 && t < 0.75) col = K.hide[3];
         if (t > 0.86) col = ((x + y) & 1) ? K.belly[0] : K.hide[0];      /* belly line: pale scutes catching the glow from below */
         if (t > 0.92) col = ((x >> 1) & 1) ? K.belly[1] : K.belly[0];
         g.fillStyle = col; g.fillRect(x, y, 1, 1);
@@ -83,8 +84,8 @@ export function backTile() {
 export function neckHead(v = 'calm') {
   return memo('nh' + v, () => {
     const [c, g] = canvas(104, 74), tell = v === 'tell', roar = v === 'roar';
-    const A = [NECK_AT.x + 2, NECK_AT.y], B = tell ? [40, 54] : [34, 50], E = tell ? [80, 38] : [84, 24];
-    const pts = [], ws = []; for (let i = 0; i <= 18; i++) { const t = i / 18; pts.push(bez(A, B, E, t)); ws.push(lerp(15, 9.5, t)); }
+    const A = [NECK_AT.x + 2, NECK_AT.y], B = tell ? [20, 40] : [14, 34], E = tell ? [80, 38] : [82, 22];
+    const pts = [], ws = []; for (let i = 0; i <= 18; i++) { const t = i / 18; pts.push(bez(A, B, E, t)); ws.push(lerp(13, 8, t)); }
     /* far horn first (behind the skull) */
     const hx = E[0], hy = E[1], a = tell ? 0.42 : roar ? -0.25 : 0.02;       /* heading: + = nose down */
     const P = (x, y) => { const [rx, ry] = rot(x, y, a); return [hx + rx, hy + ry]; };
@@ -144,8 +145,9 @@ export function wingSprite(flap = 0, near = true) {
   const q = Math.round(Math.max(-1, Math.min(1, flap)) * 3) / 3;
   return memo('wing' + q + near, () => {
     const [c, g] = canvas(112, 90), t = (q + 1) / 2, R = [WING_ROOT.x, WING_ROOT.y];
-    const up = { w: [76, 12], tips: [[26, 4], [16, 26], [34, 48]] }, dn = { w: [74, 72], tips: [[22, 84], [14, 62], [36, 40]] };
-    const W = [lerp(up.w[0], dn.w[0], t), lerp(up.w[1], dn.w[1], t)], tips = up.tips.map((u, i) => [lerp(u[0], dn.tips[i][0], t), lerp(u[1], dn.tips[i][1], t)]);
+    const up = { w: [78, 12], tips: [[28, 4], [14, 22], [32, 44]] }, md = { w: [78, 36], tips: [[22, 24], [10, 44], [30, 64]] }, dn = { w: [74, 72], tips: [[24, 86], [10, 64], [34, 42]] };
+    const a = t < 0.5 ? up : md, b = t < 0.5 ? md : dn, u = t < 0.5 ? t * 2 : (t - 0.5) * 2;
+    const W = [lerp(a.w[0], b.w[0], u), lerp(a.w[1], b.w[1], u)], tips = a.tips.map((p, i) => [lerp(p[0], b.tips[i][0], u), lerp(p[1], b.tips[i][1], u)]);
     const M = K.wing, dk = near ? 0 : 1;
     /* the membrane: arm -> tips, scalloped trailing edge between the finger tips */
     const edge = []; for (let i = 0; i < tips.length - 1; i++) { const a = tips[i], b = tips[i + 1], mid = [(a[0] + b[0]) / 2 + 3, (a[1] + b[1]) / 2 + 2]; edge.push(a, mid); } edge.push(tips[tips.length - 1]);
@@ -158,7 +160,7 @@ export function wingSprite(flap = 0, near = true) {
     for (const tp of tips) line(g, W[0], W[1], tp[0], tp[1], K.horn[dk ? 0 : 1]);
     seg(g, R[0] + 4, R[1] + 2, W[0], W[1], 4, 2.5, K.hide[dk ? 1 : 2]); line(g, R[0] + 4, R[1], W[0], W[1] - 1, K.hide[3]);
     px(g, W[0], W[1] - 2, K.horn[2]); px(g, W[0] - 1, W[1] - 3, K.horn[3]); px(g, W[0] + 1, W[1] - 3, K.horn[2]);       /* the thumb claw */
-    circle(g, R[0] + 2, R[1] + 3, 5, K.hide[dk ? 1 : 2], K.hide[0]);                                                      /* the shoulder muscle */
+    circle(g, R[0] + 2, R[1] + 3, 3.5, K.hide[dk ? 1 : 2], K.hide[0]);                                                      /* the shoulder muscle */
     return finish(c);
   });
 }
