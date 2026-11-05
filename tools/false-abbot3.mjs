@@ -142,7 +142,7 @@ let up = null;
     q.P.x = q.e.stage === 2 ? 64 * TS : 70 * TS; q.P.y = q.H().floor;
     if (q.e.mode === 'beaten') { abbotBellRung(q.e, 0, q.c); return true; } });
   ok(lo >= 0.4, `every blow all fight is worth at least ${lo} (B15 floor 0.4)`);
-  ok(r.e.finished === true, `a scripted fight (bells struck, plunges taken, blades between) reaches the finale and the great bell finishes him (phase ${r.e.phase}, ${r.log.collapse} collapse)`); }
+  ok(r.e.finished === true, `a scripted fight (bells struck, plunges taken, blades between) reaches the finale and the great bell finishes him (phase ${r.e.phase}, ${r.log.collapse} collapse, ${Math.round(r.e.anim)} s, openings: ${r.e.houseN || 0})`); }
 
 console.log(fails ? `\n${fails} FAILED` : '\nall false abbot 3 checks pass');
 process.exit(fails ? 1 : 0);
