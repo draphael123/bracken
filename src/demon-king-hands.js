@@ -25,7 +25,7 @@ const C = { skin: '#2a2230', skinL: '#463a4a', vein: '#ff7a2a', smoke: 'rgba(40,
 export function makeDemonKingHands(ctx) {
   // ctx: { L(), players(), P(), enemies(), asPlayer(p, fn), damage(fromX, dmg, o) -> 'hit'|'blocked'|false, rpStamp() -> P.rpLookAt, heroId(), swordDmg(),
   //        hurtAs(tag, e, dmg, fromX), spawnImp(x, y) -> entity, number(x, y, t, col), sfx: SFX, shake(n), ring(x, y, r, col), burst(x, y, n, cols), scale(), skh(), bk() }
-  let f = null, king = null, resolving = 0; const ents = new Map();   /* resolving: the id of the bolt that is REACHING a hero right now (S3: a guard's own foe-hit - the Blood Knight's ward return, a flame ward's burn - must not return it as a NORMAL blow before the parry stamp makes it a POWER one) */
+  let f = null, king = null, resolving = 0, flvl = null; const ents = new Map();   /* resolving: the id of the bolt that is REACHING a hero right now (S3: a guard's own foe-hit - the Blood Knight's ward return, a flame ward's burn - must not return it as a NORMAL blow before the parry stamp makes it a POWER one) */
   const lvl = () => { const L = ctx.L(); return L && L.skyMount && !L.skyMount.noKing ? L : null; };
   const back = () => { const S = ctx.skh && ctx.skh(); return S ? S.back() : null; };
   const on = () => !!(f && lvl());
@@ -37,7 +37,7 @@ export function makeDemonKingHands(ctx) {
     ents.clear(); f = null; king = null;
   }
   function spawn(b) {
-    f = DKM.newFight(b, { scale: ctx.scale ? ctx.scale() : 1 });
+    flvl = ctx.L(); f = DKM.newFight(b, { scale: ctx.scale ? ctx.scale() : 1 });
     king = { t: 'demonking', x: f.x, y: f.y, w: DK.w, h: DK.h, hp: f.hp, maxHp: 3 * f.bar, alive: true, dying: 0, noGrav: true, face: -1, flash: 0, stagger: 0, anim: 0, vx: 0, vy: 0, mode: 'enter', modeT: 0, dk: true };
     ctx.enemies().push(king); labHooks();
   }
@@ -68,6 +68,7 @@ export function makeDemonKingHands(ctx) {
   function update(dt) {
     const L = lvl(), b = L && back();
     if (!L || !b) { if (f || king) clear(); return; }
+    if (f && flvl !== L) clear();   /* (S3) the SAME lab level loaded AGAIN is a new fight (a retry / a restart at mount-up): the old fight - beaten, or in phase 3 - must not carry over */
     if (!f) spawn(b);
     const hs = heroes().map(p => ({ x: p.x, y: p.y, h: 14, duck: !!(p.ducking || p.lowSlide), down: p.mountDown || 0, dead: !!p.dead }));
     const imps = ctx.enemies().filter(e => e.dkImp && e.alive).length;

@@ -24,7 +24,7 @@ try {
     const rk = window.__rk = {};
     const idle = () => { for (const k in K) K[k] = false; BK.unpress(); };
     rk.setup = h => { idle(); BK.manualSimulation = true; BK.SET.speed = 1; BK.setHero(h); BK.reset({ fresh: true }); try { BKT.setHeroLevel(h, 30); } catch (e) {} try { BK.applyUpgrades(); } catch (e) {}
-      BK.load(IDX); BK.state = 'play'; for (let i = 0; i < 120 && !(BK.demonKing && BK.demonKing.f()); i++) BK.sim(1); rk.freeze(); BK.sim(30); return !!(BK.demonKing && BK.demonKing.f()); };
+      const old = BK.demonKing && BK.demonKing.f(); BK.load(IDX); BK.state = 'play'; for (let i = 0; i < 120 && !(BK.demonKing && BK.demonKing.f() && BK.demonKing.f() !== old); i++) BK.sim(1); rk.freeze(); BK.sim(30); return !!(BK.demonKing && BK.demonKing.f()); };
     rk.freeze = () => { const f = BK.demonKing.f(); f.mode = 'hang'; f.mT = 0; f.T = 1e9; f.bolts.length = 0; return f; };
     rk.reset = () => { idle(); const P = BK.P; const f = rk.freeze(); if (P.rgQ !== undefined) { P.rgQ = 9; P.rgArrows = []; } for (let i = 0; i < 40; i++) { P.hp = P.maxHp; P.inv = 0; P.hurt = 0; P.st = P.maxSt; P.mountDown = 0; BK.sim(1); } P.face = 1; P.vx = 0; return f; };
     rk.bolt = (f, dx, dy, high) => { const P = BK.P, b = { id: ++f.id, x: P.x + P.face * dx, y: P.y + dy, vx: 0, vy: 0, r: 7, st: 'in', high: !!high, v: 150, volley: 0, life: 99, g: 0, touched: [], tgt: 0 }; f.bolts.push(b); BK.sim(1); b.life = 99; return b; };
