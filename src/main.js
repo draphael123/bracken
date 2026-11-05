@@ -25914,7 +25914,7 @@ function updateLance(e, dt) {
   }
   const free = e.mode === 'charge' || e.mode === 'vaultUp' || e.mode === 'stab' || e.mode === 'buffeted' || e.mode === 'updraft' || e.mode === 'tossedAir';
   /* (claude/lance146, Daniel 11-05 photo) NO SLIDING IN A POSE: a move told by a held frame (the thrust, the sweep, the volley, the pennant, the wall tell, the skewer, a stun) used to inherit the walk's speed and glide on it for ~0.5 s with his feet still. Those modes stand: speed is cut the frame they begin. (Knock-backs - reel, stumble, whipped, overrun, skid - and the shield wall's advance keep theirs: they have their own frames.) */
-  if (!free && want === 0 && LANCE_STAND.has(e.mode)) e.vx = 0;
+  if (!free && LANCE_STAND.has(e.mode)) { want = 0; e.vx = 0; }
   if (!free) e.vx += (want - e.vx) * Math.min(1, dt * (e.mode === 'reel' || e.mode === 'stumble' || e.mode === 'overrun' || e.mode === 'skid' || e.mode === 'whipped' ? 2 : 5));
   /* HE HOPS A GAP HE TORE (a man in plate steps over two planks) */
   if (!free && e.grounded && Math.abs(want) > 1 && lanceDeckGone(e.x + Math.sign(want) * 18) && Math.abs(e.y - floor) < 4) { e.vy = -330; e.vx = Math.sign(want) * 130; e.hopT = 0.7; }
