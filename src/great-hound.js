@@ -40,7 +40,7 @@ export const GH = {
 /* the kennel cage landed on him (src/kingswood-hands.js land -> main.js cageBig) */
 export function houndCaged(e, say) {
   if (e.ghWard > 0) { e.mode = 'stun'; e.modeT = 0.6; e.stagger = 0.6; if (say) say(e, 'THE CAGE GLANCES OFF', '#9ab0c0'); return false; }
-  e.mode = 'stun'; e.modeT = GH.cage.t; e.stagger = GH.cage.t; e.vx = 0; e.open = GH.cage.t; e.openN = (e.openN || 0) + 1; e.pounceAgain = false; e.secondPounce = false;
+  e.caged = true; e.mode = 'stun'; e.modeT = GH.cage.t; e.stagger = GH.cage.t; e.vx = 0; e.open = GH.cage.t; e.openN = (e.openN || 0) + 1; e.pounceAgain = false; e.secondPounce = false;
   if (say) say(e, 'CAGED: HIT HIM', '#8fd160'); return true;
 }
 export const houndOpen = e => !!e && e.open > 0;

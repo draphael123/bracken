@@ -15,7 +15,7 @@
 //   fight while they march: a hero ABOVE the road is not seen and they pass under him and out through the side gate; a hero on the road in front of
 //   them, or a blow or a drop on one, turns the whole court on him. The pegs over the road are the ambush.
 // Every capital line it says goes through ctx.number with a line listed here (KW_SAY) and in src/hint-lines.js.
-import * as KP from './redraw/kingswood_props.js'; import { deckCell } from './redraw/kingswood_tiles.js';   /* (claude/kingswood2art) the ropes', loads', procession's and side gate's pictures */
+import * as KP from './redraw/kingswood_props.js'; import * as HBA from './redraw/hound_b_art.js';   /* (claude/art4) the kennel gibbet + the feeding gallery */ import { deckCell } from './redraw/kingswood_tiles.js';   /* (claude/kingswood2art) the ropes', loads', procession's and side gate's pictures */
 export const ROPE = { g: 900, vmax: 520, crush: 30, cageDmg: 16, caged: 1.0, logW: 3, logH: 14, logV: 150, logDmg: 26, logHero: 14, logMax: 40, dropTell: 0 };
 export const MARCH = { v: 60, see: 72, seeY: 14, wake: 150, exitT: 0.6 };
 export const KW_SAY = {
@@ -168,7 +168,7 @@ export function makeKingswoodHands(ctx) {
       if (Math.max(px, ccx, lxs) < -80 || Math.min(px, ccx, lxs) > VW + 80) continue;
       const up = h.state === 'hang';
       /* EVERY PULLEY HANGS FROM A BOUGH */
-      { const sd = (hash(d.id) & 1) ? 1 : -1, sg = hash(d.id) % 997, br = KP.boughRun(py, sd, sg), tcol = Math.floor((px + br.run + cx) / TS); let ty = Math.floor((py + cy) / TS) + 1; while (ty < lv.H && ty < d.top + 22 && !ctx.solidAt(tcol, ty)) ty++;
+      if (d.kennel) { try { HBA.drawGibbet(g, px, py, R(lv.mini.floor - cy), (d.x * TS) < ((lv.mini.x0 + lv.mini.x1) / 2) ? 1 : -1, time); } catch (e) { /* the pulley hangs bare */ } } else { const sd = (hash(d.id) & 1) ? 1 : -1, sg = hash(d.id) % 997, br = KP.boughRun(py, sd, sg), tcol = Math.floor((px + br.run + cx) / TS); let ty = Math.floor((py + cy) / TS) + 1; while (ty < lv.H && ty < d.top + 22 && !ctx.solidAt(tcol, ty)) ty++;
         KP.drawBough(g, px, py, sd, sg, time, ctx.solidAt(tcol, ty) ? R(ty * TS - cy) + 1 : null); }   /* (claude/floatfix2) the limb grows from a trunk that stands on the road */ KP.drawPulley(g, px, py, time);
       if (h.state === 'gone') { if (d.load === 'log') KP.drawSplitLog(g, lxs, ly, loadW(d), h.goneT || 0); KP.drawPeg(g, ccx, ccy, false, false, time); continue; }
       KP.drawPeg(g, ccx, ccy, up, up && !d.boss && !d.locked, time);
@@ -185,6 +185,8 @@ export function makeKingswoodHands(ctx) {
       else if (d.load === 'cage') { if (h.state === 'down' && d.land) KP.drawCage(g, R(d.land[0] * TS + TS - cx), R((d.land[1] + 2) * TS - cy), true, time); else KP.drawCage(g, lxs, ly, h.state === 'down', time, h.state === 'hang' ? 1.2 : 0); }
       else if (d.load === 'log') KP.drawLog(g, lxs, ly, loadW(d), time, h.state === 'roll', h.turn || 0);
     }
+    /* (claude/art4) THE KENNEL YARD's feeding gallery: posts, braces, a rail, meat-hooks */
+    if (lv.mini && lv.mini.hound2 && lv.mini.deck) { const dk = lv.mini.deck, gx0 = R(dk.x0 - cx), gx1 = R(dk.x1 - cx); if (gx1 > -40 && gx0 < VW + 40) { try { HBA.drawGallery(g, gx0, gx1, R(dk.y - cy), R(lv.mini.floor - cy), time); } catch (e) { /* bare boards */ } } }
     /* the area banner: the name of the place you have come into */
     if (S.banner && ctx.text && !(ctx.talking && ctx.talking())) {   /* (claude/kingsfix) not under a sign or a talk page: the banner is the same words, and the box stretched from it to the page */ const a = Math.min(1, S.banner.t / 0.6, (3.4 - S.banner.t) / 0.4 + 0.2); g.globalAlpha = Math.max(0, Math.min(1, a)); g.fillStyle = 'rgba(30,14,8,0.62)'; g.fillRect(VW / 2 - 110, 26, 220, 18);
       g.fillStyle = '#e0b040'; g.fillRect(VW / 2 - 110, 26, 220, 1); g.fillRect(VW / 2 - 110, 43, 220, 1); ctx.text(S.banner.name, VW / 2, 31, '#ffe9b0', 'center'); g.globalAlpha = 1; }
