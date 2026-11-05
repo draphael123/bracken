@@ -28,7 +28,7 @@ export function savePng(dataUrl, path) {
 /* THE PAGE SIDE. Sent as source (no closures over this file); everything hangs off window.__AUD. */
 export function pageLib() {
   const BK = window.BK, A = window.__AUD = {}, TS = 16;
-  A.SKIP_LEVELS = new Set(['shop', 'shopCrag', 'shopSea', 'custom', 'trial_open', 'trial_knight', 'trial_pyro', 'trial_paladin', 'trial_pirate', 'trial_reaper', 'arena_yard']);   /* (claude/arenayard) the shared practice yard is not a level to audit */
+  A.SKIP_LEVELS = new Set(['shop', 'shopCrag', 'shopSea', 'custom', 'trial_open', 'trial_knight', 'trial_pyro', 'trial_paladin', 'trial_pirate', 'trial_reaper', 'arena_yard', 'drakelab']);   /* (claude/arenayard) the shared practice yard is not a level to audit */
   /* every placed creature, by type: the first level that places one and where. Bosses come from L.arena / L.mini. */
   A.habitats = async function () {
     const lvm = await import('/src/level.js'); A.LEVELS = lvm.LEVELS; const out = {};

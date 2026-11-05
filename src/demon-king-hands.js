@@ -11,8 +11,10 @@
 import * as DKM from './demon-king.js';
 import * as RK from './reflect-kit.js';
 import { surfaceY } from './sky-mount.js';
+import * as KA from './redraw/demon_king_art.js';   /* (claude/skyart) his sprites, bolts, glyph, bomb, bar, pips; the greybox below is the fallback if one throws */
 const { DK } = DKM;
 const R = Math.round;
+let artBad = false;
 /* his sounds -> main.js SFX names that exist (the art lane S4 adds his own: SOUND list in the lane report) */
 const SND = { dkHum: ['dkHum', 'mageBolt', 'charge'], dkThrow: ['dkThrow', 'throwWhoosh'], dkHumDim: ['dkHumDim', 'charge'], dkFizzle: ['dkFizzle', 'fizzle', 'pStep'], dkHumTwo: ['dkHumTwo', 'mageBolt', 'charge'],
   dkShriek: ['dkShriek', 'queenShriek', 'roar'], dkSwoop: ['dkSwoop', 'throwWhoosh'], dkChain: ['dkChain', 'clank'], dkCrack: ['dkCrack', 'crack'], dkChant: ['dkChant', 'callerChant', 'charge'],
@@ -80,7 +82,7 @@ export function makeDemonKingHands(ctx) {
       else if (e.k === 'hit') hurtHero(e.hero, e.x, e.dmg, e.name);
       else if (e.k === 'returnHit') { const p = heroes()[e.hero] || ctx.P(); ctx.asPlayer(p, () => { ctx.hurtAs(DK.returnTag, king, Math.max(1, R(ctx.swordDmg() * e.mul)), e.x); });
         ctx.ring(king.x, king.y - DK.h / 2, e.power ? 26 : 18, e.power ? C.pow : C.ret); ctx.number(king.x, king.y - DK.h - 8, e.power ? 'POWER  +2' : '+1', e.power ? C.pow : C.gold); ctx.shake(e.power ? 4 : 2); }
-      else if (e.k === 'spawnImp') { const m = ctx.spawnImp(e.x, e.y); if (m) { m.dkImp = true; m.dkSkin = 'demon'; ctx.burst(e.x, e.y - 6, 14, [C.glyph, C.red]); } }
+      else if (e.k === 'spawnImp') { const m = ctx.spawnImp(e.x, e.y); if (m) { m.dkImp = true; m.dkSkin = 'demon'; m.cnSkin = 'demonimp'; ctx.burst(e.x, e.y - 6, 14, [C.glyph, C.red]); } }
       else if (e.k === 'clearImps') { for (const m of ctx.enemies()) if (m.dkImp && m.alive) { m.alive = false; ctx.burst(m.x, m.y - 6, 10, [C.smoke, C.red]); } }
       else if (e.k === 'say') ctx.number(f.x, f.y - DK.h - (e.big ? 26 : 16), e.text, e.big ? C.gold : '#e8d8c8');
       else if (e.k === 'sound') sound(e.id);
@@ -104,7 +106,10 @@ export function makeDemonKingHands(ctx) {
   function drawKing(g, cx, cy, time) {
     const p = DKM.poseOf(f), X = R(f.x - cx), Y = R(f.y - cy), fl = f.face, b = back();
     g.save(); g.translate(X, Y);
-    if (p.body === 'prone') {   /* on the drake's back, flat */
+    let drawn = false;
+    if (!artBad) { try { drawn = artKing(g, p, fl, time); } catch (e) { artBad = true; if (typeof console !== 'undefined') console.warn('demon king art failed, greybox', e); drawn = false; } }
+    if (drawn) { /* painted: see artKing */ }
+    else if (p.body === 'prone') {   /* on the drake's back, flat */
       g.fillStyle = C.skin; g.fillRect(-20, -9, 40, 9); g.fillStyle = C.skinL; g.fillRect(-20, -9, 40, 2); g.fillStyle = C.vein; for (let i = -16; i < 18; i += 7) g.fillRect(i, -6, 3, 1);
       g.fillStyle = C.horn; g.fillRect(fl * 18, -13, 2, 5); g.fillRect(fl * 22, -12, 2, 4); g.fillStyle = C.eye; g.fillRect(fl * 16, -7, 2, 1);
       if (p.orb === 'ring') { g.strokeStyle = '#100810'; g.lineWidth = 2; g.beginPath(); g.arc(0, -6, 10 + (f.mT / f.T) * 30, 0, 7); g.stroke(); g.lineWidth = 1; }
@@ -136,15 +141,34 @@ export function makeDemonKingHands(ctx) {
     if (b && f.mode === 'whipTell') { const s = surfaceY(b, b.cx) - cy, yy = f.whipHi ? s - 18 : s - 3; g.fillStyle = 'rgba(255,74,58,' + (0.35 + 0.35 * Math.sin(time * 20)) + ')'; g.fillRect(R(b.x0 - cx), R(yy), b.len, 2); }
     if (b && f.mode === 'whip') { const s = surfaceY(b, b.cx) - cy, yy = f.whipHi ? s - 18 : s - 3; g.fillStyle = '#e8e0d0'; g.fillRect(R(b.x0 - cx), R(yy), b.len, 1); }
   }
+  /* the painted king: his sprite (pose x phase x 2 frames), the orb in his hand, the ring of the repulse. Returns true when drawn. */
+  function artKing(g, p, fl, time) {
+    const frame = Math.floor(time * 3) % 2, s = KA.kingSprite({ body: p.body, arm: p.arm, scream: p.scream, cape: p.cape, ph: f.ph, frame });
+    g.save();
+    if (p.body === 'tumble') { g.translate(0, -26); g.rotate(f.mT * 12); g.translate(0, 26); }
+    if (fl < 0) g.scale(-1, 1);
+    if (!s.halo) s.halo = KA.kingHalo(s);
+    g.globalAlpha = 0.5; for (const [ox, oy] of [[-1, 0], [1, 0], [0, -1], [0, 1]]) g.drawImage(s.halo, -s.ax + ox, -s.ay + oy); g.globalAlpha = 1;   /* an ember rim so he reads against the dark-red sky and the drake */
+    g.drawImage(s.c, -s.ax, -s.ay); g.restore();
+    const hx = fl * (s.hand[0] - s.ax), hy = s.hand[1] - s.ay - 4, k = clamp01(f.mT / Math.max(0.01, f.T));
+    if (p.orb === 'grow' || p.orb === 'dim') KA.drawHandOrb(g, hx, hy, k, p.orb, time);
+    if (p.orb === 'two') { KA.drawHandOrb(g, hx, hy, k, 'grow', time); KA.drawHandOrb(g, -hx, hy, k, 'grow', time + 0.3); }
+    if (p.orb === 'glyph') KA.drawGlyph(g, 0, -66, k, time, false);
+    if (p.orb === 'ring') { g.strokeStyle = '#100810'; g.lineWidth = 2; g.beginPath(); g.arc(0, -6, 10 + k * 30, 0, 7); g.stroke(); g.strokeStyle = '#c0283a'; g.lineWidth = 1; g.beginPath(); g.arc(0, -6, 12 + k * 30, 0, 7); g.stroke(); }
+    return true;
+  }
   function drawMark(g, x, y, mark, time) { g.fillStyle = mark === '!!' ? C.red : C.gold; const n = mark.length; for (let i = 0; i < n; i++) { g.fillRect(x - n * 2 + i * 4, y, 2, 6); g.fillRect(x - n * 2 + i * 4, y + 8, 2, 2); } }
   const clamp01 = v => (v < 0 ? 0 : v > 1 ? 1 : v);
   function draw(g, cx, cy, time) {
     if (!on()) return; const b = back();
     for (const r of f.rings) { const x = R(r.x - cx), y = R(surfaceY(b, r.x) - cy), k = clamp01(r.t / r.T);
-      if (r.kind === 'glyph') { g.strokeStyle = C.glyph; g.beginPath(); g.ellipse(x, y - 1, 10, 3, 0, 0, 7); g.stroke(); g.fillStyle = C.glyph; g.fillRect(x - 1, y - 2 - R(k * 8), 2, 2); }
+      if (!artBad && r.kind === 'glyph') KA.drawGlyph(g, x, y - 1, k, time, true);
+      else if (!artBad) { g.strokeStyle = Math.floor(time * 10) % 2 ? C.red : '#ffb04a'; g.beginPath(); g.ellipse(x, y - 1, DK.bombs.r, 4, 0, 0, 7); g.stroke(); KA.drawBomb(g, x, R(y - 120 * (1 - k)), time); }
+      else if (r.kind === 'glyph') { g.strokeStyle = C.glyph; g.beginPath(); g.ellipse(x, y - 1, 10, 3, 0, 0, 7); g.stroke(); g.fillStyle = C.glyph; g.fillRect(x - 1, y - 2 - R(k * 8), 2, 2); }
       else { g.strokeStyle = Math.floor(time * 10) % 2 ? C.red : '#ffb04a'; g.beginPath(); g.ellipse(x, y - 1, DK.bombs.r, 4, 0, 0, 7); g.stroke(); orb(g, x, R(y - 120 * (1 - k)), 4, '#ffb04a', '#a8301a', null, null); } }
     drawKing(g, cx, cy, time);
     for (const q of f.bolts) { const x = R(q.x - cx), y = R(q.y - cy);
+      if (!artBad) { try { KA.drawBolt(g, x, y, q.r, q.st === 'in' ? (q.feint ? 'feint' : 'in') : q.st, time, q.vx || 0, q.vy || 0); continue; } catch (e) { artBad = true; } }
       if (q.st === 'in') { orb(g, x, y, q.r, C.boltRim, C.bolt, C.core); g.strokeStyle = C.gold; g.globalAlpha = 0.7; g.beginPath(); g.arc(x, y, q.r + 3, 0, 7); g.stroke(); g.globalAlpha = 1; }   /* the gold ring: returnable */
       else if (q.st === 'bat') orb(g, x, y, q.r, C.red, '#ff8a7a', C.core, 'rgba(255,74,58,0.5)');
       else { const pw = q.st === 'pow'; g.fillStyle = pw ? 'rgba(255,251,232,0.4)' : 'rgba(242,226,160,0.35)'; for (let i = 1; i <= 3; i++) { g.beginPath(); g.arc(R(x - q.vx * 0.012 * i), R(y - q.vy * 0.012 * i), q.r - i, 0, 7); g.fill(); }
@@ -152,7 +176,10 @@ export function makeDemonKingHands(ctx) {
   }
   /* screen space: his bar (three segments, one per phase) and the pips */
   function hud(g, VW, VH, time) {
-    if (!on()) return; const w = 150, x = R((VW - w) / 2), y = 19, seg = w / 3;   /* y 19: UNDER the level timer (top-centre, y 2-15), which his bar sat on at y 10 (S3 browser pass) */
+    if (!on()) return; const w = 150, x = R((VW - w) / 2), y = 19, seg = w / 3;   /* y 19: UNDER the level timer (S3) */
+    if (!artBad) { try { KA.drawKingBar(g, VW / 2, y, w, [1, 2, 3].map(ph => Math.max(0, Math.min(f.bar, f.hp - (DK.phases - ph) * f.bar)) / f.bar), f.ph, DKM.kingOpen(f), time);
+      if (ctx.text) ctx.text('THE DEMON KING', VW / 2, y + 7, '#e8d8c8', 'center', 6);
+      for (let i = 0; i < DK.knock.pips; i++) KA.drawPip(g, VW / 2 - 12 + i * 12, y + 20, i < f.pips, f.pips >= 2, time); return; } catch (e) { artBad = true; } }
     g.fillStyle = 'rgba(10,8,14,0.8)'; g.fillRect(x - 2, y - 2, w + 4, 8);
     for (let i = 0; i < 3; i++) { const ph = i + 1, hp = Math.max(0, Math.min(f.bar, f.hp - (DK.phases - ph) * f.bar)), sx = x + R((2 - i) * seg);
       g.fillStyle = '#3a1a22'; g.fillRect(sx + 1, y, R(seg) - 2, 4); g.fillStyle = ph === f.ph ? (DKM.kingOpen(f) ? C.gold : '#c0283a') : '#7a2a30'; g.fillRect(sx + 1, y, R((seg - 2) * hp / f.bar), 4); }

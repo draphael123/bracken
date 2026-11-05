@@ -61,7 +61,7 @@ assert.ok(EHP.size > 80, 'only ' + EHP.size + ' creatures read out of EHP: the p
    leaves them wherever the array put them - so campaign-order.mjs reads all three gates. */
 const rows = [];
 for (const lv of LEVELS) {
-  if (/^(shop|trial|custom|tavern|arena_yard)/.test(lv.id)) continue;   /* (rel141: the Arena Yard is hidden, gate-less, off the road - a yard like the trial yards) */
+  if (/^(shop|trial|custom|tavern|arena_yard|drakelab|skylab)/.test(lv.id)) continue;   /* (claude/drakewire) THE CALDERA (drakelab): THE FIRE DRAKE's hidden lab room, on no road - not a campaign level */   /* (rel141: the Arena Yard is hidden, gate-less, off the road - a yard like the trial yards) */
   let L; try { L = lv.build(); } catch { continue; }
   const roster = new Set((L.ents || []).filter(e => e && e.t && EHP.has(e.t)).map(e => e.t));
   for (const r of (L.garrison || [])) if (Array.isArray(r) && EHP.has(r[0])) roster.add(r[0]);
