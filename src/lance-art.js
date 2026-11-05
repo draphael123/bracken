@@ -326,7 +326,7 @@ export function frameOf(e) {
     case 'wallTurned': return 'turned';
     case 'stumble': case 'reel': return a < 0.35 ? 'stagger' : 'staggerB';
     case 'pinned': return loop('pinned', 'pinnedB', 3);
-    case 'rung': return loop('rung', 'rungB', 2);
+    case 'rung': case 'stunned': return loop('rung', 'rungB', 2);
     case 'whipped': return 'whipped';
     case 'split': return a < 0.35 ? 'split' : 'splitB';
     /* (claude/lance5art) LANCE 5's own poses: the pivot (the stamp, then the turn), the rising skewer (the brace, the thrust up, the look up), the gust, the updraft's tumble, the toss */

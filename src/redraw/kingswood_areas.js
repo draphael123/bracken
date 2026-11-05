@@ -33,10 +33,10 @@ function trunk(g, cx, top, bot, w, seed, pal, rooted = true) {
 }
 const TRUNKPAL = [['#1a0c10', '#3a1c1c', '#52281e', '#74382a'], ['#1c1014', '#40201e', '#58301f', '#7e4228']];
 /* a banner on a pole (standing) or a long cloth hung from a bough: v 0 crimson / 1 green */
-function banner(g, x, top, w, h, v, hung) {
+function banner(g, x, top, w, h, v, hung, groundY) {   /* groundY: a standing banner's pole is driven to the ground under it (it stopped 8 px short and read as floating: Daniel 11-05) */
   const cl = v ? ['#0e2a14', '#1f4a2a', '#3a7a40'] : [W.redD, W.red, W.redL];
   if (hung) { rc(g, x - w / 2 - 2, top, w + 4, 3, '#3a2412'); rc(g, x - w / 2 - 2, top, w + 4, 1, W.woodL); rc(g, x - w / 2 - 3, top, 2, 3, W.gold); rc(g, x + w / 2 + 1, top, 2, 3, W.gold); }
-  else { rc(g, x - 1, top - 4, 3, h + 40, '#1e1208'); rc(g, x - 1, top - 4, 2, h + 40, W.wood); rc(g, x - 2, top - 6, 5, 3, W.gold); rc(g, x - w / 2 - 2, top, w + 4, 2, '#3a2412'); rc(g, x - w / 2 - 3, top - 1, 2, 4, W.gold); rc(g, x + w / 2 + 1, top - 1, 2, 4, W.gold); }
+  else { const pl = groundY != null ? groundY + 2 - (top - 4) : h + 40; rc(g, x - 1, top - 4, 3, pl, '#1e1208'); rc(g, x - 1, top - 4, 2, pl, W.wood); rc(g, x - 2, top - 6, 5, 3, W.gold); rc(g, x - w / 2 - 2, top, w + 4, 2, '#3a2412'); rc(g, x - w / 2 - 3, top - 1, 2, 4, W.gold); rc(g, x + w / 2 + 1, top - 1, 2, 4, W.gold); }
   const y0 = top + 3; rc(g, x - w / 2, y0, w, h, cl[0]); rc(g, x - w / 2 + 1, y0, w - 2, h - 2, cl[1]); rc(g, x - w / 2 + 1, y0, 3, h - 2, cl[2]);
   for (let k = 0; k < 3; k++) rc(g, x - w / 2 + 6 + k * Math.max(4, w / 4), y0 + 2, 1, h - 6, cl[0]);
   rc(g, x - w / 2, y0, w, 2, W.gold); rc(g, x - w / 2, y0 + 2, w, 1, W.goldD); rc(g, x - w / 2, y0 + h - 3, w, 1, W.gold);
@@ -118,7 +118,7 @@ const AREAS = [
   { id: 'road', x0: 0, x1: 122, y0: 288, y1: 656, alpha: 0.9,
     feats(L) { const out = [], r = mulberry(7101);
       /* banners on tall poles down the verge, a lantern string between each pair, milestones between */
-      for (let x = 8; x < 122; x += 11 + ((r() * 3) | 0)) { const by = surf(L, x); out.push({ x: x * TS, w: 40, draw: (g, ox) => banner(g, x * TS, by - 74, 18, 30, (x / 11 | 0) % 3 === 2 ? 1 : 0, false) }); }
+      for (let x = 8; x < 122; x += 11 + ((r() * 3) | 0)) { const by = surf(L, x); out.push({ x: x * TS, w: 40, draw: (g, ox) => banner(g, x * TS, by - 74, 18, 30, (x / 11 | 0) % 3 === 2 ? 1 : 0, false, by) }); }
       for (let x = 8; x < 108; x += 22) { const x1 = x + 11, y0 = surf(L, x) - 70, y1 = surf(L, Math.min(x1, 121)) - 70; if (Math.abs(y0 - y1) < 40) out.push({ x: x * TS, w: 11 * TS + 8, draw: g => stringLine(g, x * TS, y0, x1 * TS, y1, 14, 3, x) }); }
       for (const x of [13, 29, 70, 104]) out.push({ x: x * TS - 12, w: 24, draw: g => stone(g, x * TS, surf(L, x)) });
       /* the checkpoint's gate frame, on the road before its wall */
@@ -135,7 +135,7 @@ const AREAS = [
       for (let x = 126; x < 204; x += 5 + ((r() * 7) | 0)) { const k = (r() * 4) | 0, by = Math.min(surf(L, x), 39 * TS); out.push({ x: x * TS - 14, w: 30, draw: g => {
         if (k === 0) { rc(g, x * TS - 1, by - 22, 3, 22, '#3a2412'); rc(g, x * TS - 1, by - 22, 1, 22, '#8a5a32'); rc(g, x * TS + 11, by - 22, 3, 22, '#3a2412'); for (let q = 0; q < 6; q++) { rc(g, x * TS + 1, by - 20 + q * 3, 10, 1, '#6a5a3a'); rc(g, x * TS + 1 + q * 2, by - 20, 1, 16, '#6a5a3a'); } }
         else if (k === 1) { for (let dy = 0; dy < 12; dy++) { const w = 11 - dy * 0.4 + (dy < 2 ? -3 : 0); rc(g, x * TS + 6 - w, by - 12 + dy, w * 2, 1, dy % 3 === 0 ? '#a8924a' : '#c9aa5a'); } rc(g, x * TS + 5, by - 14, 2, 2, '#a8924a'); }
-        else if (k === 2) { rc(g, x * TS - 2, by - 26, 18, 2, '#3a2412'); rc(g, x * TS - 2, by - 8, 18, 2, '#3a2412'); for (let q = 0; q < 4; q++) { rc(g, x * TS + q * 5, by - 34 - (q % 2) * 3, 1, 28, '#5a3a1e'); rc(g, x * TS - 1 + q * 5, by - 38 - (q % 2) * 3, 3, 5, '#c0c0c8'); } }
+        else if (k === 2) { for (const lx of [x * TS - 2, x * TS + 14]) { rc(g, lx, by - 28, 3, 28, '#2a1a0c'); rc(g, lx, by - 28, 1, 28, '#5a3a1e'); }   /* (claude/smallfix15) legs: the rack stood 6 px off the ground on nothing */ rc(g, x * TS - 2, by - 26, 18, 2, '#3a2412'); rc(g, x * TS - 2, by - 8, 18, 2, '#3a2412'); for (let q = 0; q < 4; q++) { rc(g, x * TS + q * 5, by - 34 - (q % 2) * 3, 1, 34 + (q % 2) * 3, '#5a3a1e'); rc(g, x * TS - 1 + q * 5, by - 38 - (q % 2) * 3, 3, 5, '#c0c0c8'); } }
         else { for (let q = 0; q < 9; q++) { rc(g, x * TS - 6 + q * 3, by - 5 - (hash(x, q) % 5), 1, 5 + (hash(x, q) % 5), q % 2 ? '#8a7a2a' : '#c9a83a'); } } } }); }
       return out; },
     lights: [[131 * TS, 39 * TS - 150, 30, 0.18], [160 * TS, 39 * TS - 192, 32, 0.18], [189 * TS, 39 * TS - 172, 30, 0.18]] },
@@ -233,3 +233,4 @@ export function drawAreas(g, cx, cy, VW, VH, time, dY, full, L) {
 }
 /* (claude/gorm2art) bake an area's chunks now (the level's load): the hall, the burning wood and the glade, so the fight never hitches on a first look */
 export function warmAreas(L, ids) { for (const A of AREAS) { if (!ids.includes(A.id)) continue; const n = Math.ceil((A.x1 - A.x0) * TS / CH); for (let ci = 0; ci < n; ci++) chunk(A, ci, L); } }
+export const AREAS_FOR_LINT = AREAS;   /* (claude/smallfix15) tools/painted-anchors.mjs reads the painted features in node */

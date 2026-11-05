@@ -61,7 +61,11 @@ for (const [k, v] of [['couch', X.couch], ['vault', X.vault.tell]]) assert.ok(v 
 assert.ok(X.heavyGap >= 0.8 && HEAVY_MODES.has('couch') && HEAVY_MODES.has('vaultTell'), 'a guard after every heavy');
 assert.ok(X.overrun >= 1.5 && X.bell.pin >= 3 && X.great.pin >= 3 && X.rung >= 2 && X.whipped >= 1.5 && X.vault.planted >= 1.5, 'his openings are long enough to take');
 for (const [k, m] of Object.entries(X.open)) assert.ok(m >= 1.5 && m <= 2, 'opening ' + k + ' pays 1.5-2x: ' + m);
-assert.ok(X.bell.mul >= 1.5 && X.great.mul <= 2 && X.bare >= 0.4 && X.bare < 1, 'B15: pinned 1.5-2x, shieldless >= 0.4');
+assert.ok(X.bell.mul >= 3 && X.bell.mul <= 4 && X.great.mul >= 3 && X.great.mul <= 4 && X.stun.gate.mul >= 3 && X.stun.gate.mul <= 4 && X.bare >= 0.4 && X.bare < 1, 'claude/lance6 (Daniel 11-04): a gate that catches him STUNS him at 3-4x (B15 allows 1.5-2x for every other opening), shieldless >= 0.4');
+assert.ok(X.stun.gate.t >= 2.5 && X.stun.spear.t >= 1 && X.stun.spear.mul >= 1.5 && X.stun.spear.mul <= 2 && X.stun.spear.every >= 3, 'claude/lance6: the stun windows are long enough to take; a sent-back spear pays 1.5-2x, at most one every 3 s or more');
+{ const zs = L.zipLines.filter(z => /^span[0-9]$/.test(z.id || '')); assert.equal(zs.length, 3, 'claude/lance6: a span line over each span the signal ropes do not cover');
+  for (const z of zs) { ZL.norm(z); assert.equal(z.dir, 0, z.id + ' is flat: a hero rides the way he faces (either way over a gap)'); assert.equal(z.signal, undefined, z.id + ' is not a signal (never cut)');
+    assert.ok(z.x1 - z.x0 >= 15 * TS, z.id + ' crosses its whole span'); assert.ok(Math.abs((A.floor - 3 * TS) - z.y0) < 24 && z.y0 < A.floor - 3 * TS, z.id + ' is a body over the lookout deck (UP from it, a touch from a jump off the boards)'); } }
 assert.ok(X.p2 > X.p3 && X.p2 < 1 && X.p3 > 0.15, 'the phases in order');
 assert.ok(X.pivot >= 0.25 && X.pivot <= 0.4, 'LANCE 5: the pivot is a told ~0.3 s');
 assert.ok(X.skewer.tell >= 0.5 && X.skewer.tell <= 0.85, 'LANCE 5: the rising skewer is told like a MEDIUM (0.5-0.85 s): ' + X.skewer.tell);
@@ -106,9 +110,9 @@ try {
     { reset();const pr=tb(1);b.x=pr.gx;ring(pr);let pin=0,open=false;run(140,()=>{safe();P.x=pr.x-10;P.y=pr.y;if(b.mode!=='pinned'&&!pin){b.x=pr.gx;b.vx=0;hold();b.answer=null;if(b.mode!=='guard'){b.mode='guard';}}if(b.mode==='pinned'){pin=Math.max(pin,b.modeT);open=open||BK.bossOpen(b);}});
       out.under={pin:+pin.toFixed(2),open,mul:b.pinMul||0}; run(260,()=>{safe();hold();}); }
     /* THE BELL with him away: HE ANSWERS (a charge at the tower), the gate drops ahead of him, he runs into it - OVERRUN */
-    { reset();const pr=tb(3);b.x=pr.gx-150;b.face=1;ring(pr);let couch=null,over=0,open=false,closed=false;
-      run(300,()=>{safe();P.x=pr.x-10;P.y=pr.y;if(b.mode==='couch'&&!couch)couch={toward:Math.sign(pr.gx-b.x)===b.face};if(BK.L.grid[pr.gy1*BK.L.W+pr.gate]!==0)closed=true;if(b.mode==='overrun'){over=Math.max(over,b.modeT);open=open||BK.bossOpen(b);}if(over&&b.mode!=='overrun')hold();});
-      out.away={couch,closed,over:+over.toFixed(2),open,x:Math.round(b.x-pr.gx)}; run(200,()=>{safe();hold();}); }
+    { reset();const pr=tb(3);b.x=pr.gx-150;b.face=1;ring(pr);let couch=null,over=0,smul=0,open=false,closed=false;
+      run(300,()=>{safe();P.x=pr.x-10;P.y=pr.y;if(b.mode==='couch'&&!couch)couch={toward:Math.sign(pr.gx-b.x)===b.face};if(BK.L.grid[pr.gy1*BK.L.W+pr.gate]!==0)closed=true;if(b.mode==='overrun'||b.mode==='stunned'){over=Math.max(over,b.modeT);smul=Math.max(smul,b.stunMul||0);open=open||BK.bossOpen(b);}if(over&&b.mode!=='overrun'&&b.mode!=='stunned')hold();});
+      out.away={couch,closed,over:+over.toFixed(2),smul,open,x:Math.round(b.x-pr.gx)}; run(200,()=>{safe();hold();}); }
     /* A WHIFFED CHARGE: OVERRUN */
     { reset();b.x=A.x0+100;P.x=b.x+200;P.y=fl;b.face=1;b.mode='couch';b.modeT=0.01;b.chargeAt=null;let over=0;run(260,()=>{safe();if(b.mode==='charge'||b.mode==='couch'){P.y=fl-48;P.x=Math.min(P.x,b.x+200);}if(b.mode==='overrun')over=Math.max(over,b.modeT);if(over&&b.mode!=='overrun')hold();});out.whiff={over:+over.toFixed(2)}; }
     /* LANCE 5, P1: THE PIVOT - a hero behind him: he plants and turns, told, and only then moves */
@@ -153,7 +157,7 @@ console.log(JSON.stringify(r));
 const fails = []; const ok = (c, m) => { if (!c) fails.push(m); };
 ok(r.active === true && !r.mounted && r.box[0] === 26 && r.box[1] === 40, 'the fight starts, ON FOOT, one 26x40 box: ' + JSON.stringify(r.box));
 ok(r.under.pin >= 3 && r.under.open && r.under.mul >= 1.5, 'a bell rung with him under its gate PINS him, 3 s+, open: ' + JSON.stringify(r.under));
-ok(r.away.couch && r.away.couch.toward && r.away.closed && r.away.over >= 1.4 && r.away.open, 'rung with him away: HE ANSWERS THE BELL, and runs into the dropped gate (OVERRUN): ' + JSON.stringify(r.away));
+ok(r.away.couch && r.away.couch.toward && r.away.closed && r.away.over >= 1.4 && r.away.open && r.away.smul >= 3.5, 'rung with him away: HE ANSWERS THE BELL, and runs into the dropped gate (lance6: STUNNED x3.5): ' + JSON.stringify(r.away));
 ok(r.whiff.over >= 1.4, 'a whiffed charge ends OVERRUN: ' + JSON.stringify(r.whiff));
 ok(r.pivot.frames >= 14 && r.pivot.faced >= 14, 'LANCE 5: a hero behind him - a told PIVOT (~0.3 s) before he faces you: ' + JSON.stringify(r.pivot));
 ok(r.fwd.vx === 1, 'LANCE 5: NO BACKWARD CHARGE - the charge goes the way he faced: ' + JSON.stringify(r.fwd));
@@ -166,7 +170,7 @@ ok(r.rung.mode === 'rung' && r.rung.t >= 2 && r.rung.open, 'a plunge on his helm
 ok(r.whip.wh >= 1.4 && r.whip.open && r.whip.cut, 'a rope post struck with him under its run WHIPS him, out of his shield wall: ' + JSON.stringify(r.whip));
 ok(r.p3.phase === 3 && r.p3.mode === 'fallback' && Math.abs(r.p3.home) < 30, 'at 33% he falls back under the main gate: ' + JSON.stringify(r.p3));
 ok(r.great.towersUp, 'LANCE 5: in the last stand the tower bells are hauled up (the great bell\'s fight)');
-ok(r.great.pin >= 3.5 && r.great.mul >= 2 && r.great.bare, 'THE GREAT BELL pins him (x2) and its bars SPLIT his shield: ' + JSON.stringify(r.great));
+ok(r.great.pin >= 3.5 && r.great.mul >= 3 && r.great.bare, 'THE GREAT BELL pins him (x4) and its bars SPLIT his shield: ' + JSON.stringify(r.great));
 ok(r.great.front >= 40 && r.great.front <= 85, 'shieldless, a front blow lands at ~0.7 (no wall, B15): ' + r.great.front);
 ok(r.stones.n >= 2 && r.stones.gaps >= 1, 'THE STONES ring the deck and break the planks: ' + JSON.stringify(r.stones));
 ok(r.dead && r.slam === 1 && r.activeAfter === false, 'his death slams the main gate and ends the fight');

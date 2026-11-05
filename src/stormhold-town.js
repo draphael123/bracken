@@ -337,7 +337,13 @@ export function stormholdTown({ painter, T, TS }) {
   // ---- THE TOWERS' ROPES: from each top deck's east edge down to the foot of its own gate. UP grabs, JUMP lets go. ----
   const rope = (x0, top, x1, endRow, groundRow) => ({ x0: x0 * TS + 8, y0: top * TS - 12, x1: x1 * TS + 8, y1: endRow * TS - 12,
     posts: [[x0 * TS + 8, top * TS - 12, top * TS], [x1 * TS + 8, endRow * TS - 12, groundRow * TS]] });
-  const zipLines = [rope(52, T1.top, 88, 36, 36), rope(226, T2.top, 252, 34, 34), ...haul, ...signal];   /* (stormhold4) the Wall Watch's rope is HAUL LINE A (the teach); then B and L1-L4 (src/haul-lines.js), then the Lance's signal ropes */   /* each rope ends ON its landing's floor (the hero's feet = the rope + 12) */
+  /* (claude/lance6, Daniel 11-04: "ZIP LINES you jump to dodge his charges and to cross where the bridge breaks") THE SPAN LINES: the three spans the signal ropes do not
+     cover (pier 0 -> 1, 2 -> 3, 4 -> 5 - the signals run tower 1 -> 2, 3 -> 4, 5 -> 6) each get a plain flat line a body-length over the lookout deck: a pole on the west
+     pier's lookout, the far end made off to the next tower's wall. Flat (dir 0), so a hero rides the way he FACES - east over a gap he tore, or back west. Taken from the
+     lookout with UP, or by a touch from any jump off the deck (the jump's apex reaches it); a rider's feet hang at the lookout's height, 54 px over the deck - over his
+     charge's reach (28 x 46). Not a signal: never cut, no post to strike; every hero's reach is the same rope. */
+  const spanLines = [0, 2, 4].map(k => { const px0 = P0 + k * 18, y = (BY - 3) * TS - 18; return { x0: (px0 + 1) * TS + 8, y0: y, x1: (px0 + 18) * TS, y1: y, id: 'span' + (k + 1), posts: [[(px0 + 1) * TS + 8, y, (BY - 3) * TS]] }; });
+  const zipLines = [rope(52, T1.top, 88, 36, 36), rope(226, T2.top, 252, 34, 34), ...haul, ...signal, ...spanLines];   /* (stormhold4) the Wall Watch's rope is HAUL LINE A (the teach); then B and L1-L4 (src/haul-lines.js), then the Lance's signal ropes */   /* each rope ends ON its landing's floor (the hero's feet = the rope + 12) */
   const watchtowers = [T1, T2, T3];
 
   // THE LADDERS, LAST: nothing is dug after this line
@@ -346,6 +352,9 @@ export function stormholdTown({ painter, T, TS }) {
   return {
     watchtowers, structures: scaffolds, zipLines, ropes: zipLines, noDoorKeys: true, mangonel, zipTransfer: true,   /* (stormhold4) THE MANGONEL (src/haul-lines.js); the reach model rides rope to rope here (src/reachcore.js) */
    /* every key hangs on a tower: the play bot's stall answer 'go and find a door' (src/playtest.js) has nothing to find */
+    routeSupports: [{ x: W - 12, y: BY - 5, bottom: BY }, { x: W - 9, y: BY - 5, bottom: BY },
+      /* the hoardings that hang off a wall on one end only (tools/anchor-lint.mjs 'cantilever'): a timber post at the free end down to the ledge / ground under it */
+      { x: 330, y: 29, bottom: 34 }, { x: 330, y: 34, bottom: 38 }, { x: 330, y: 38, bottom: 42 }, { x: 330, y: 42, bottom: 44 }, { x: 385, y: 20, bottom: 25 }, { x: 440, y: 14, bottom: 22 }, { x: 438, y: 30, bottom: 42 }],   /* (claude/lance6) THE GREAT BELL's hoarding is a gallery cantilevered off the gatehouse wall: two timber posts stand it on the deck (a 6-board run 5 columns off its anchor read as floating; art only, not in the level hash) */
     W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: 36 }, pools: [], falls: [], moversExtra: [], interiors: [[98, 146, 31, 35, 'stone']],   /* THE BARBICAN's passage: not a house, the gate's own vault - drawn as laid stone overhead, and the snow stays out */ bridges, houses: [], masonry, facades, masonryKit: 'limestone', climbLook: true,
     calm: [[39, 53, 19, 35], [212, 227, 16, 33], [322, 334, 27, 43], [383, 396, 18, 28], [396, 447, 12, 41], [556, 576, 14, 36]],   /* (stormhold4) and the haul tower and the barbican: the climbs between the lines */   /* the climbs carry their own authored encounters: the garrison stays off them (F4: a climb, then a fight) */
     playtestSections: STORM_TOWN.SECTIONS,

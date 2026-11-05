@@ -2,7 +2,8 @@ import './bug-report.js';   /* FIRST: the console and error taps REPORT A BUG re
 import { bossSelectRows, bossKey, bossRecordNext } from './bossselect.js';
 import { drawBasketOutline } from './false-abbot.js';
 import { ABBOT, updateFalseAbbot as stepFalseAbbot, drawFalseAbbot, drawAbbotRopes, abbotFrame, abbotOpen, abbotTake, abbotBellRung, abbotBlessed, abbotInChair, abbotBridgeBell, abbotWheelStruck, abbotPlunge, abbotClamp, drawAbbotHouse } from './false-abbot.js';   /* THE FALSE ABBOT, the Monastery's boss (2026-09-22), in place of the Roc */
-import { layoutPlates, plateNodes, placePanel, plateLabel, panelSize } from './map-plates.js';
+import * as MFX from './map-fx.js';
+import { layoutPlates, plateNodes, placePanel, plateLabel, plateLines, panelSize } from './map-plates.js';
 import { bakeFalseAbbot } from './redraw/false_abbot.js';
 import { stepFuse, fuseLeft, drawBurningBackdrop, drawPixelSmoke, drawTownFlame, drawSmokeColumn, BEAM, SMOKE } from './burning-village.js'; import { blazeAt, drawBlazingHouse, drawBlazingFront, FRONT } from './village-blaze.js'; import * as VWA from './village-water.js'; import * as CTW from './carry-throw.js';   /* (claude/burnvillage2) THROW WATER: the jug, the stun and the steam ward (src/village-water.js); the told arc (src/carry-throw.js) */   /* THE BURNING VILLAGE's stakes and its fire behind the town (2026-09-23) */
 import { PASSIVE_GLYPH } from './skill-glyphs.js';   /* every passive's glyph, by hero and id */
@@ -564,7 +565,7 @@ Object.assign(EHP, { burieddead: 950 });   /* (claude/retune2) THE REFIT RETUNE'
 EHP.king = GORM.hp1;   /* (claude/gorm2: P1 of three acts - was 1170 for the whole fight, claude/curvec4a; P2 is GORM.hp2 / hp1 of it) */
 EHP.mother = MC2K.hp;   /* (claude/sporewood2) THE MOTHER CAP 2: her bar is her own now (the heart node is gone) */
 EHP.gqueen = 3300;   /* (claude/curvec4a; claude/highcrown2: 1450 -> 3300 - B15 lets 0.4 of a blade through her plate, so she is a longer fight: 90-150 s with flasks) */
-EHP.lance = 4650;   /* (claude/lance5: 4850 -> 4650 with the storm rework - see scratch/lane-reports/lance5.md) */   /* (claude/lance4tune: 4500 -> 4850 with per-hero tuning - LANCE4.heroDmg (a hero's blows on him) and DUEL_HERO.lance (his blows on the hero): n=108 human+flasks L18 k/w/p 61% / 61% / 69% = 64%, wins 90-150 s mostly; HP alone was a cliff for the knight (4500: 83% -> 4600+: 21-38%) while pyro stayed 88%) */   /* (claude/lance4: 3000 -> 4500 - on foot with his bells and ropes the bot won 94% at 3000, 89% at 4000, 83% at 4300, 56% at 4600 (n=18 each); a first cut toward 60-70% and 90-150 s, the tune lane owns the band) */   /* (claude/stormhold3: 2800 -> 3000, the rework in band) */   /* (claude/curvec4a) */
+EHP.lance = 3000;   /* (claude/lance6, Daniel 11-04: "way too spongy - over 5k HP shown, more than later bosses") 4650 -> 3000. WHY 5k: the number on the bar is base x DIFF.bhp (normal 0.9) x (1 + 0.25 x TIER_BOSS.storm 1.2 = 1.3) = 4650 x 1.17 = 5440; now 3000 x 1.17 = 3510 (the Queen's 3300 shows 3940, Grubbag 3600 shows ~4300). No phase heal exists. Rates owed: scratch/lane-reports/lance6.md */   /* was 4650: */   /* (claude/lance5: 4850 -> 4650 with the storm rework - see scratch/lane-reports/lance5.md) */   /* (claude/lance4tune: 4500 -> 4850 with per-hero tuning - LANCE4.heroDmg (a hero's blows on him) and DUEL_HERO.lance (his blows on the hero): n=108 human+flasks L18 k/w/p 61% / 61% / 69% = 64%, wins 90-150 s mostly; HP alone was a cliff for the knight (4500: 83% -> 4600+: 21-38%) while pyro stayed 88%) */   /* (claude/lance4: 3000 -> 4500 - on foot with his bells and ropes the bot won 94% at 3000, 89% at 4000, 83% at 4300, 56% at 4600 (n=18 each); a first cut toward 60-70% and 90-150 s, the tune lane owns the band) */   /* (claude/stormhold3: 2800 -> 3000, the rework in band) */   /* (claude/curvec4a) */
 EHP.windcaller = 1000;   /* (claude/windcaller4, Daniel 10-26: "lower his health a little") 1300 -> 1000 (-23%): the loop (three blows, he falls) and the still-only attacks set the fight's length now. */ /* (claude/moorpyro) 1400 -> 1150: the pyromancer can open him now (fire sends his bolt home); the knight still loses most fights to his thorns. (claude/moorpass) 1150 -> 1300: the summit room pass (stone under the east ledge, his fall clear of the strip, the Last Charge pulls up at thorns) and every hero his own way to send the bolt home */
 
 /* THE FODDER STANDS UP LONGER (docs/combat-tuning.md, measured 2026-09-22). Three in four common fights ended in ONE swing. Scaling
@@ -824,7 +825,7 @@ const GEO_LIFE0 = GEO_K.stone.gnaw, GEO_PERFECT0 = GEO_K.ward.perfect;   /* (cla
 const cdOf = k => Math.max(0.5, (k === 'summonSkeleton' && isReaper() && tal('gleaner') ? BKIT.BLOOD.host.worms.quick : CD_MAX[k] || 3) - (k === 'whirlwind' && hero() === 'knight' ? 0.5 * upg('ucalm') : 0)) * (perk('focus') ? 0.85 : 1);
 const amul = k => grow(hero(), heroLevel()).skillMultiplier * (1 + RANK_MUL * Math.max(0, skillRank(PROG, hero(), k) - 1)) * (hero() === 'knight' ? 1 + 0.2 * (k === 'shieldThrow' ? upg('uthrow') : k === 'risingCut' ? upg('urise') : 0) : 1); // skill damage grows (and MASTERY, a perk, and the skill's RANK), cooldowns and invulnerability do not
 let treeResetT = 0, talentsBackT = 0, talentsBackWho = '', talentsBackWhy = '';   /* RESET POINTS asks twice; the trees-have-changed notice shows once */
-window.BKT = { fieldsState: () => FLD, cqState: () => (CQH && CQH.show ? CQH.show() : null),   /* (claude/arenapolish) tools/arena-polish-shots.mjs: the moon's clock and the Underwell hall's state */ stk: () => SKD, stkExplode: (x, y, r) => explode(x, y, r, DMG.bomb),   /* (claude/chief3) tools/chief3.mjs: the Stockade's hands, and a blast */ shrineFill: () => shrineFill(),   /* (claude/difficulty) tools/difficulty.mjs: a shrine's refill per mode */ lights: () => lights, get PROG() { return PROG; },   /* (claude/smallfix7) tools/gorm-unlock.mjs: the one-life Gorm clear */ vil: () => ({ grid: VG, fires, parts: parts.length }), vilSplash: (x, y, r, c) => villageSplash(x, y, r, c), vilIgnite: (tx, ty) => ignite(VG, tx, ty, 'burngob'),   /* tools/douse-agree.mjs */ gormUnlock: () => ({ fell: gormFell, live: gormFightLive(), open: !!PROG.burningOpen }), gormDie: () => die({ name: 'TEST', red: false, rule: '' }), gormWin: () => gormBeaten(), krkArmPts: a => krkArmPts(a, L.arena.floor, 0), krakLimp: (e, t) => krakenArmsLimp(e, t), krkTop: (x, n) => krkTop(x, n), krkRoadEnds: () => krkRoadEnds(),   /* (tools/kraken-reach.mjs, tools/kraken-rework.mjs) */
+window.BKT = { get heroFrames() { return K; }, fieldsState: () => FLD, cqState: () => (CQH && CQH.show ? CQH.show() : null),   /* (claude/arenapolish) tools/arena-polish-shots.mjs: the moon's clock and the Underwell hall's state */ stk: () => SKD, stkExplode: (x, y, r) => explode(x, y, r, DMG.bomb),   /* (claude/chief3) tools/chief3.mjs: the Stockade's hands, and a blast */ shrineFill: () => shrineFill(),   /* (claude/difficulty) tools/difficulty.mjs: a shrine's refill per mode */ lights: () => lights, get PROG() { return PROG; },   /* (claude/smallfix7) tools/gorm-unlock.mjs: the one-life Gorm clear */ vil: () => ({ grid: VG, fires, parts: parts.length }), vilSplash: (x, y, r, c) => villageSplash(x, y, r, c), vilIgnite: (tx, ty) => ignite(VG, tx, ty, 'burngob'),   /* tools/douse-agree.mjs */ gormUnlock: () => ({ fell: gormFell, live: gormFightLive(), open: !!PROG.burningOpen }), gormDie: () => die({ name: 'TEST', red: false, rule: '' }), gormWin: () => gormBeaten(), krkArmPts: a => krkArmPts(a, L.arena.floor, 0), krakLimp: (e, t) => krakenArmsLimp(e, t), krkTop: (x, n) => krkTop(x, n), krkRoadEnds: () => krkRoadEnds(),   /* (tools/kraken-reach.mjs, tools/kraken-rework.mjs) */
   /* THE HARNESS LEVEL (HARNESSCARD): a bot hero at level n is n XP-levels AND n card picks spread evenly (the migrated-save spread), the stats a real player who spent his picks has; xp alone reads a no-card hero (-8 hp a Vigor pick, -12 stamina an Endurance pick, -1 damage a Might). Tools only: a real player chooses his own picks. */
   setHeroLevel: (h, n) => { PROG.xp = PROG.xp || {}; PROG.card = PROG.card || {}; PROG.xp[h] = n > 0 ? xpFloor(n) : 0; PROG.card[h] = evenCard(n > 0 ? n : 0); return heroLevel(h); }, TREE, TBR, TREE_WHO, tal, skillIcon: k => skillIcon(k), talIcon: (i, w) => talIcon(i, w), TAL_KIND: (i, w) => TAL_KIND(i, w), ptsTotal, ptsSpent, ptsLeft, branchPts, nodeState, capOf, resetTalents, heroLevel, LV_GROW, CAP_NEED, PTS_CAP,
   skillNow: () => skillNow(), skill2Now: () => skill2Now(), skillAt: i => skillAt(i), loadoutSafe: () => loadoutSafe(), get saveBlocked() { return saveBlocked; }, get saveFail() { return saveFail; }, saveNow: () => saveProgress(), eraseAskNow: () => eraseAsk, slotHealth: i => slotHealthOf(i), get fixAsk() { return fixAsk; }, get fixI() { return fixI; }, get bugSnapshot() { return bugSnapshot; }, inputSnapshot: ()=>pressRead(), padState: gp=>padState(gp), touchPress: k=>touchPressName(k), tipPay: e => tipPay(e), swordDmg: () => swordDmg(), perfectWindow: () => perfectWindow(), dodgeCost: () => dodgeCost(), get P() { return P; },
@@ -2874,7 +2875,7 @@ function spawnEnt(e) {
       case 'chief': boss = { ...base, t: 'chief', w: 22, h: 34, hp: EHP.chief, maxHp: EHP.chief, mode: 'sleep', modeT: 0, face: -1, phase: 1, last: '', stance: 'club', swapN: 0, leapT: 3 }; enemies.push(boss); break;
       case 'cage': { const op = marks.has('cage:' + e.x); props.push({ t: 'cage', x: px, y: py, kind: e.kind || 'bird', open: op, hp: 2, tx: e.x }); if (op && e.kind === 'squire') props.push({ t: 'npc', x: px, y: py, kind: 'squire', anim: 0 }); break; }
       case 'barrel': props.push({ t: 'barrel', x: px, y: py, x0: px, y0: py, vx: 0, rolling: false, fuse: 0, gone: false, respawnT: 0 }); break;
-      case 'brazier': props.push({ t: 'brazier', x: px, y: py, lit: true, tipped: false, city: !!e.city }); break;   /* city: the Tollmaster's, which never go out and never tip (claude/lamplit2) */
+      case 'brazier': props.push({ t: 'brazier', x: px, y: py + (curId() === 'storm' && (tileAt(e.x, e.y + 1) === T.ONEWAY || tileAt(e.x, e.y + 1) === T.PLANK) ? 3 : 0) /* (claude/lance6, Daniel 11-04 'floating braziers'): a deck board is drawn 3 px down its tile, so a brazier on one hung 3 px above it - set it on the board like the plank decos */, lit: true, tipped: false, city: !!e.city }); break;   /* city: the Tollmaster's, which never go out and never tip (claude/lamplit2) */
       case 'rack': props.push({ t: 'rack', x: px, y: py, kind: e.kind || 'club', hp: 3, broken: false }); break;
       case 'wisp': props.push({ t: 'wisp', x: px, y: py, y0: py, cut: false, ph: Math.random() * 6 }); break;
       case 'dog': props.push({ t: 'dog', x: px, y: py, vx: 0, vy: 0, w: 12, h: 7, face: 1, anim: 0, barkT: 0, sit: 0 }); break;
@@ -3117,8 +3118,8 @@ function spawnEnt(e) {
       case 'firebox': { props.push({ t: 'firebox', x: px, y: py, x0: e.x0, x1: e.x1, y0: e.y0, y1: e.y1, burnT: 0, coolT: 0, cells: [], pending: [] });
         /* a fresh attempt finds the ice where the cutters left it */
         if (e.x0 !== undefined && grid0 && tileSpr) { let ch = false; for (let ty = e.y0; ty <= e.y1; ty++) for (let tx = e.x0; tx <= e.x1; tx++) { const i = ty * LW + tx; if (grid0[i] === T.ICE && L.grid[i] !== T.ICE) { L.grid[i] = T.ICE; tileSpr[i] = null; ch = true; } } if (ch) resolveTiles(); } } break;
-      case 'gatebell': props.push(BGATE.makeGateBell(e, px, py, TS)); break;   /* (stormhold4) THE GATEHOUSE BELL and the bridgehead's gate tower: they run to it, the gate drops on them (src/bell-gate.js) */
-      case 'lancebell': props.push({ t: 'lancebell', x: px, y: py, gate: e.gate, gx: e.great ? (e.gate + 1) * TS : e.gate * TS + 8, gy0: e.gy0, gy1: e.gy1, great: !!e.great, tower: e.tower, ringT: -1, tolled: 0, rewind: 0, rings: [], down: 0, pinned: null, up: false }); break;   /* (claude/lance4) THE QUEEN'S LANCE's gate-tower bells and the main gate's great bell (src/lance-support.js) */
+      case 'gatebell': props.push(BGATE.makeGateBell(e, px, py + (curId() === 'storm' && (tileAt(e.x, e.y + 1) === T.ONEWAY || tileAt(e.x, e.y + 1) === T.PLANK) ? 3 : 0), TS)); break;   /* (stormhold4) THE GATEHOUSE BELL and the bridgehead's gate tower: they run to it, the gate drops on them (src/bell-gate.js) */
+      case 'lancebell': props.push({ t: 'lancebell', x: px, y: py + (curId() === 'storm' && (tileAt(e.x, e.y + 1) === T.ONEWAY || tileAt(e.x, e.y + 1) === T.PLANK) ? 3 : 0), gate: e.gate, gx: e.great ? (e.gate + 1) * TS : e.gate * TS + 8, gy0: e.gy0, gy1: e.gy1, great: !!e.great, tower: e.tower, ringT: -1, tolled: 0, rewind: 0, rings: [], down: 0, pinned: null, up: false }); break;   /* (claude/lance4) THE QUEEN'S LANCE's gate-tower bells and the main gate's great bell (src/lance-support.js) */
       case 'winch': props.push({ t: 'winch', x: px, y: py, gate: e.gate, gy0: e.gy0, gy1: e.gy1, open: 0, spin: 0, hold: e.hold || 6, drop: !!e.drop, bossGate: !!e.bossGate, bell: !!e.bell }); break;
       case 'weight': props.push({ t: 'weight', x: px, y: e.y * TS, len: (e.len || 3) * TS, state: 'hang', fy: 0, vy: 0, lamp: !!e.lamp, hang: !!e.hang, gq: !!e.gq, crane: !!e.crane, unstable: !!e.unstable, downT: 0 }); break;
       case 'timber': props.push({ t: 'timber', x: px, y: py, x0: e.x0, x1: e.x1, row: e.row, floor: e.floor,
@@ -3235,7 +3236,7 @@ function spawnEnt(e) {
           while (ty > 1 && n++ < 5 && !isSolid(e.x, ty - 1)) ty--;
           if (!isSolid(e.x, ty - 1)) break;                 /* nothing to hang it from: it does not exist */
           gy = ty; }
-        /* a standing one was set down on its floor at load (groundEnts) */ const pyg = (gy + 1) * TS; /* snapped onto the surface: a spire a row low sank into the rock, a row high floated */ const onPlank = !e.hang && tileAt(e.x, gy + 1) === T.PLANK; // a bridge plank's board sits a few pixels down its tile: stand things on the board, not in the air over it
+        /* a standing one was set down on its floor at load (groundEnts) */ const pyg = (gy + 1) * TS; /* snapped onto the surface: a spire a row low sank into the rock, a row high floated */ const onPlank = !e.hang && (tileAt(e.x, gy + 1) === T.PLANK || (curId() === 'storm' && tileAt(e.x, gy + 1) === T.ONEWAY));   /* (claude/lance6: the Long Bridge's lookout decks are one-way boards, drawn 3 px down too) */ // a bridge plank's board sits a few pixels down its tile: stand things on the board, not in the air over it
         deco.push({ k: 'deco', kind: e.kind, x: px - Math.floor(c.width / 2), y: e.hang ? gy * TS - spritePad(c)[0] : pyg - c.height + spritePad(c)[1] + (onPlank && !L.unburied ? 3 : 0), c, bg: true, anim: K[2] || null, ph: Math.random() * 6, stand: decoStands(e), hang: decoHangs(e), moor: e.kind === 'airBell' ? moorOf(e.x, gy) : 0 }); if (e.kind === 'lilyLantern') lights.push({ x: px, y: pyg - 6, r: 34, glow: true, pink: true }); if (e.kind === 'bothy') lights.push({ x: px + 8, y: pyg - 12, r: 44, glow: true }); if (e.kind === 'cabin') lights.push({ x: px - 11, y: pyg - 11, r: 40, glow: true }); if (L.unburied) { const ul = UBS.lightOf(e, px, pyg); if (ul) lights.push(ul); }   /* the field's fires and windows (claude/unburiedart) */ if (e.kind === 'airBell') lights.push({ x: px, y: pyg - 16, r: 52, torch: true });
         if (e.kind === 'lanternDeck' && e.v !== 0) lights.push({ x: px, y: pyg - 18, r: 36, torch: true });
         if (e.kind === 'lamppost') lights.push({ x: px, y: pyg - 28, r: 44, glow: true }); if (e.kind === 'candelabra') lights.push({ x: px, y: pyg - 22, r: 34, glow: true, warm: true });   /* THE MAGE'S FOLLY: its lamps and its candles */
@@ -4996,7 +4997,7 @@ const WOOD_NODES = [
   { id: 'spore', kind: 'level', level: 3, x: 199, y: 38, plate: 'above', name: 'SPOREWOOD' },
   { id: 'rootway', kind: 'level', level: LEVELS.findIndex(l => l.id === 'rootway'), x: 221, y: 68, plate: 'right', name: 'THE ROOTWAY' },   /* THE ROOTWAY (claude/rootway): between SPOREWOOD and KINGSWOOD (Daniel 10-07): the only spot map-spacing passes near them, so the road dips south to it and climbs back to Kingswood (the map lane may relay the sheet) */
   { id: 'underleaf', kind: 'level', level: LEVELS.findIndex(l => l.id === 'underleaf'), x: 196, y: 72, plate: 'below', name: 'UNDERLEAF' },   /* UNDERLEAF (claude/underleaf4, Daniel 10-25): back on the WOOD sheet, ON the road between THE ROOTWAY and THE PALISADE WOOD (it was a crag node between Scree and Hanging, claude/underorder 10-24) */
-  { id: 'palisadewood', kind: 'level', level: LEVELS.findIndex(l => l.id === 'palisadewood'), x: 178, y: 58, plate: 'below', board: 'PALE', name: 'THE PALISADE WOOD' },   /* THE PALISADE WOOD (claude/palisadewood, Daniel 10-15): ON the road between THE ROOTWAY and KINGSWOOD */
+  { id: 'palisadewood', kind: 'level', level: LEVELS.findIndex(l => l.id === 'palisadewood'), x: 178, y: 58, plate: 'below', name: 'THE PALISADE WOOD' },   /* THE PALISADE WOOD (claude/palisadewood, Daniel 10-15): ON the road between THE ROOTWAY and KINGSWOOD */
   { id: 'kings', kind: 'level', level: 4, x: 141, y: 24, name: 'KINGSWOOD' },
 ];
 /* the road itself, and nothing but: the Burning Village hangs off it on a spur (NODES `spur: true`); UNDERLEAF is ON it (between Kingswood and the Scree Path) */
@@ -5494,7 +5495,7 @@ function drawMap() {
   for (const nd of NODES) {
     if (nodeSecret(nd)) continue;               /* it is not on the map until you have earned it */
     TCH.hit(nd.x - 13, nd.y - Math.round(mapCamY) - 15, 26, 28, () => mapTap(nd));
-    g.drawImage(MAPSIGN, nd.x + 8, nd.y - 12);
+    /* (claude/mappolish: the blank signpost beside every node is gone - an empty board told the player nothing) */
     const lk = nodeLocked(nd); const p = nd.kind === 'level' ? PROG[LEVELS[nd.level].id] : null;
     /* THE ICON, on the disc itself: one per level (never two alike, docs/map-icons.png is the contact sheet),
        one shared coin for every store. The RIM around it is the one thing that changes frame to frame - gold
@@ -5531,11 +5532,15 @@ function drawMap() {
         else { const mx = cx0 + (cw >> 1), my = cy0 + (chh >> 1); g.fillStyle = '#fff4c8'; const v = { right: [1, 0], left: [-1, 0], down: [0, 1], up: [0, -1] }[key], px = -v[1], py = v[0];
           for (let a = -2; a <= 2; a++) g.fillRect(mx + v[0] * a - (a === 0 ? 0 : 0), my + v[1] * a, 1, 1);   /* the shaft */
           g.fillRect(mx - v[0] * 2, my - v[1] * 2, 1, 1); for (let a = 1; a <= 2; a++) { g.fillRect(mx + v[0] * (2 - a) + px * a, my + v[1] * (2 - a) + py * a, 1, 1); g.fillRect(mx + v[0] * (2 - a) - px * a, my + v[1] * (2 - a) - py * a, 1, 1); } } } } }
+  { const fxo = { time, camY: mapCamY, VW, VH, reduced: !!SET.reduceMotion, weather: SET.weather, nodes: NODES.filter(n => !nodeSecret(n)), locked: nodeLocked, cleared: n => !!(PROG[LEVELS[n.level].id] && PROG[LEVELS[n.level].id].cleared) };   /* (claude/mappolish, Daniel 11-05: map life - src/map-fx.js) */
+    MFX.drawMills(g, fxo); MFX.drawNodeStates(g, fxo);
+    const sto = NODES.filter(n => n.kind === 'store' && !nodeLocked(n)); MFX.drawTravellers(g, { ...fxo, PATH, legs: sto.slice(1).map((n, i) => [NODE_AT[NODES.indexOf(sto[i])], NODE_AT[NODES.indexOf(n)]]) }); }
   const [px, py] = mapPos();
   updateMapLife(0.016, px, py); drawMapLife();
   g.drawImage(PROP.shadow, Math.round(px) - 6, Math.round(py) - 1);
   for (const b of mapBirds) { b.t += 0.016; const bx = b.cx + Math.cos(b.t * 0.6) * b.r, by = b.cy + Math.sin(b.t * 0.6) * b.r * 0.4; drawSet(BIRD, null, Math.floor(b.t * 10) % 2, bx, by, Math.sin(b.t * 0.6) < 0 ? 1 : -1, false); }
   for (const c of mapClouds) g.drawImage(MAPCLOUD[c.k].img, Math.round(c.x / 2) * 2, Math.round(c.y / 2) * 2);   /* (hard-edged pixel clouds, ordered 2x2 checker body: see-through without being soft) */
+  { const open = NODES.filter(n => !nodeSecret(n) && !nodeLocked(n)); MFX.drawWeather(g, { time, camY: mapCamY, VW, VH, reduced: !!SET.reduceMotion, weather: SET.weather }); MFX.drawFog(g, { time, camY: mapCamY, VW, VH, reduced: !!SET.reduceMotion, frontierY: open.length ? Math.min(...open.map(n => n.y)) : undefined }); }   /* (claude/mappolish) weather, and the fog over what is not reached yet */
   if (map.walking) map.lastDir = map.walking < 0 ? -1 : 1;
   { // the road not yet walked: dotted, past the last node you can enter
     let last = 0; for (let k = 0; k < NODES.length; k++) if (!NODES[k].spur && !nodeLocked(NODES[k])) last = k; const from = NODE_AT[last]; g.fillStyle = 'rgba(20,16,30,0.55)';   /* FROM THE LAST REQUIRED NODE WALKED, not the highest unlocked index (map-redesign §2d/§6.4) - a spur that unlocks out of order used to switch the whole dotted section off */ for (let sgi = from; sgi < PATH.length - 1; sgi++) { const a = PATH[sgi], b = PATH[sgi + 1]; const len = Math.hypot(b[0] - a[0], b[1] - a[1]); for (let d = 0; d < len; d += 6) { const t = d / len; g.fillRect(Math.round(a[0] + (b[0] - a[0]) * t) - 1, Math.round(a[1] + (b[1] - a[1]) * t) - 1, 3, 3); } } }
@@ -5570,9 +5575,10 @@ function drawMap() {
   for (const nd of NODES) {
     if (nodeSecret(nd)) continue;
     const lk = nodeLocked(nd), here = NODES[map.node] === nd;
+    if (lk && nd.kind === 'level' && !LEVELS[nd.level].secret) continue;   /* (claude/mappolish, Daniel 11-05) a place you cannot enter yet is a dot: its name board shows once it is reached; stores and the '? ? ?' secrets keep theirs */
     const lbl = nd.kind === 'store' ? (nd.id === 'highstore' ? 'HIGH STORE' : 'STORE') : (LEVELS[nd.level].secret && nodeLocked(nd)) ? '? ? ?' : plateLabel(nd.board || LEVELS[nd.level].name);
     const p = nd.kind === 'level' ? PROG[LEVELS[nd.level].id] : null;
-    const twoLine = false;   /* (one-line boards: the strip is on the info card) */
+    const twoLine = plateAt.get(nd.id).h > 10;   /* (one-line boards: the strip is on the info card; only a name too long for its crowded spot, THE PALISADE WOOD, is two lines) */
     const pl = plateAt.get(nd.id), tw = pl.w, th = twoLine ? pl.h : Math.min(10, pl.h);   /* (a place you cannot enter yet is a one-line board; the layout kept room for the two-line one) */
     const lx = pl.x + pl.w / 2, ly = pl.y;
     /* A BOARD PUSHED AWAY FROM ITS NODE points back at it. On a crowded road the long names get shoved wherever there is room,
@@ -5585,7 +5591,7 @@ function drawMap() {
     g.fillStyle = here ? UI.sel : ART.OUT; g.fillRect(bx0, by0, tw, th);
     g.fillStyle = lk ? '#2a2634' : '#4e3520'; g.fillRect(bx0 + 1, by0 + 1, tw - 2, th - 2);
     if (!lk) { g.fillStyle = '#6e4d2c'; g.fillRect(bx0 + 1, by0 + 1, tw - 2, 1); }
-    text(lbl, bx0 + Math.round(tw / 2), by0 + 2, lk ? '#b4b4c4' : here ? UI.title : UI.text, 'center', 6);
+    plateLines(lbl, twoLine).forEach((ln, li) => text(ln, bx0 + Math.round(tw / 2), by0 + 2 + li * 7, lk ? '#b4b4c4' : here ? UI.title : UI.text, 'center', 6));
   }
   g.restore(); g.__mapWorld = false;   /* (from here on it is the screen's own: the frame, header, card and footer are not allowed off the edge) */
   drawSecretReveal();   /* (claude/secrets) */
@@ -5596,7 +5602,7 @@ function drawMap() {
   { const region = mapCamY < INLAND_Y - 60 ? 'THE DESERT' : mapCamY < COAST_Y - 60 ? 'THE ROAD INLAND' : mapCamY < CRAG_Y - 60 ? 'THE COAST' : mapCamY < WOOD_Y - 60 ? 'THE CRAGS' : 'THE WOOD'; if (region !== map.region) { map.region = region; map.regionT = map.regionT === undefined ? 0 : 2.2; } map.regionT = Math.max(0, (map.regionT || 0) - 1 / 60); const cardTop = !map.walking && mapPanelFor(NODES[map.node]).y < 52;   /* (the region's name is not drawn under an info card that sits at the top: it would print over the card's text) */
   if (map.regionT > 0 && !cardTop && !secretFx) { const a = Math.min(1, map.regionT > 1.8 ? (2.2 - map.regionT) / 0.4 : map.regionT / 0.6); g.globalAlpha = a; text(region, VW / 2 + 1, 41, '#3a2214', 'center', 12); text(region, VW / 2, 40, UI.title, 'center', 12); g.globalAlpha = 1; } }
   g.fillStyle = '#151022'; g.fillRect(0, 0, VW, 19); g.fillStyle = 'rgba(217,194,140,0.5)'; g.fillRect(0, 19, VW, 1); { const hn = mapCamY < INLAND_Y - 60 ? 'THE DESERT' : mapCamY < COAST_Y - 60 ? 'THE ROAD INLAND' : mapCamY < CRAG_Y - 60 ? 'THE COAST' : mapCamY < WOOD_Y - 60 ? 'THE CRAGS' : 'THE WOOD', bg = inkW(hn, 8) <= 90; text(hn, 6, bg ? 5 : 7, UI.title, 'left', bg ? 8 : 6); }   /* (THE ROAD INLAND drops to the small hand, so the counters beside it do not collide) */
-  if (DS.DEMO) DEND.mapCaption(g, text, textW, VW, time, NODES[map.node] && NODES[map.node].id, !!NODES[map.node] && nodeLocked(NODES[map.node]), [...plateAt.values()].map(p => ({ x: p.x, y: p.y - Math.round(mapCamY), w: p.w, h: Math.min(10, p.h) })));   /* (claude/batch143) the demo's map says the road goes on - at Kingswood and on any shut node (src/demo-end.js) */
+  if (DS.DEMO) DEND.mapCaption(g, text, textW, VW, time, NODES[map.node] && NODES[map.node].id, !!NODES[map.node] && nodeLocked(NODES[map.node]), [...plateAt.values()].map(p => ({ x: p.x, y: p.y - Math.round(mapCamY), w: p.w, h: p.h })));   /* (claude/batch143) the demo's map says the road goes on - at Kingswood and on any shut node (src/demo-end.js) */
   /* AND THE SECRETS COUNT ONCE YOU HAVE FOUND THEM. `!lv.hidden` left both of them out of the woods
      walked and the medals in the game, so a player who beat the Undercrown was still told 17 woods and 51
      medals. They join the count the moment you have set foot in one, which is also when it stops being a
@@ -5604,9 +5610,9 @@ function drawMap() {
   { const real = LEVELS.filter(lv => (!lv.hidden || (lv.secret && PROG[lv.id])) && !DS.demoLocked(lv));   /* (smallfix14) the demo counts its own slice (12 woods, 36 medals), not the full game's totals */ const cl = real.filter(lv => PROG[lv.id] && PROG[lv.id].cleared).length;
     const md = real.reduce((n, lv) => n + ((PROG[lv.id] && PROG[lv.id].medal) || 0), 0), mdMax = real.length * 3;
     const hn2 = mapCamY < INLAND_Y - 60 ? 'THE DESERT' : mapCamY < COAST_Y - 60 ? 'THE ROAD INLAND' : mapCamY < CRAG_Y - 60 ? 'THE COAST' : mapCamY < WOOD_Y - 60 ? 'THE CRAGS' : 'THE WOOD', hdrW = inkW(hn2, inkW(hn2, 8) <= 90 ? 8 : 6), hx = Math.max(92, Math.round(6 + hdrW + 10));   /* (the counters start after the region's name: THE ROAD INLAND ran under the flag) */
-    g.drawImage(FLAG, hx, 4); text(cl + '/' + real.length, hx + 12, 7, UI.dim, 'left', 6);
-    MPX.fillDisc(g, hx + 48, 9, 3, md >= mdMax ? MEDAL_COL[3] : '#8a8378'); g.fillStyle = ART.OUT; g.fillRect(hx + 47, 8, 2, 2);
-    text(md + '/' + mdMax, hx + 56, 7, UI.dim, 'left', 6); } g.drawImage(PROP.coin[Math.floor(time * 8) % 4], VW - 62, 5); text(String(PROG.coins), VW - 6, 6, '#ffd34a', 'right'); { g.drawImage(PROP.silver[Math.floor(time * 6 + 2) % 4], VW - 112, 5); text(String(silverAvail()), VW - 78, 6, '#dfe8ff', 'right'); }
+    /* (claude/mappolish, Daniel 11-05) LABELLED: two short rows, a word before each count, so '21/53' and '40/159' say what they count */
+    text('LEVELS', hx, 3, UI.dim, 'left', 6); text(cl + '/' + real.length, hx + 40, 3, UI.title, 'left', 6);
+    text('MEDALS', hx, 11, md >= mdMax ? MEDAL_COL[3] : UI.dim, 'left', 6); text(md + '/' + mdMax, hx + 40, 11, UI.title, 'left', 6); } g.drawImage(PROP.coin[Math.floor(time * 8) % 4], VW - 62, 5); text(String(PROG.coins), VW - 6, 6, '#ffd34a', 'right'); { g.drawImage(PROP.silver[Math.floor(time * 6 + 2) % 4], VW - 112, 5); text(String(silverAvail()), VW - 78, 6, '#dfe8ff', 'right'); }
   const nd = NODES[map.node];
   if (!map.walking) {
     const store = nd.kind === 'store';
@@ -5614,7 +5620,7 @@ function drawMap() {
     const cx0 = pp.x, cy0 = pp.y;   /* the corner (and the camera height, in updateMap) that hides nothing around this node: placePanel */
     panel(cx0, cy0, cw, ch, UI.sel, 'parchment');
     { const secret = nd.kind === 'level' && LEVELS[nd.level].secret && nodeLocked(nd);
-      { const nm0 = secret ? '? ? ?' : nd.name, big = inkW(nm0, 8) <= cw - 52; text(big ? nm0 : fitText(nm0, cw - 52, 6), cx0 + 8, cy0 + (big ? 5 : 6), UI.title, 'left', big ? 8 : 6); } }   /* (a long name drops to the small hand rather than being cut: THE MASKWRIGHT'S THEATRE) */
+      { const nm0 = secret ? '? ? ?' : nd.name, nmW = (store || secret) ? cw - 52 : cw - 84, big = inkW(nm0, 8) <= nmW; text(big ? nm0 : fitText(nm0, nmW, 6), cx0 + 8, cy0 + (big ? 5 : 6), UI.title, 'left', big ? 8 : 6); } }   /* (a long name drops to the small hand rather than being cut: THE MASKWRIGHT'S THEATRE) */
     if (store) text(nodeLocked(nd) ? 'SHUT UNTIL THE SCREE PATH IS WALKED' : 'Z  enter', cx0 + 8, cy0 + 16, UI.dim, 'left', 6);
     else {
       const lv = LEVELS[nd.level], id = lv.id, p = PROG[id] || {};
@@ -5629,6 +5635,7 @@ function drawMap() {
       // top right: how hard this wood is meant to be
       const pips = 1 + Math.round(tierOf(id) * 4);
       for (let i = 0; i < 5; i++) { g.fillStyle = i < pips ? '#c9463d' : 'rgba(255,255,255,0.15)'; g.fillRect(cx0 + cw - 8 - (5 - i) * 6, cy0 + 6, 4, 4); }
+      text('DANGER', cx0 + cw - 8 - 5 * 6 - 3, cy0 + 5, '#c9463d', 'right', 6);   /* (claude/mappolish) named, so the red squares do not read as the HARD setting at the foot of the card */
       text(MPX.fitBlurb(MAP_BLURB[id] || lv.sub || '', cw - 16, t => textW(t, 6)), cx0 + 8, cy0 + 13, UI.dim, 'left', 6);   /* ONE WHOLE LINE (src/map-blurbs.js): the old two-page blurb cut a sentence in half ("only blue in"), and the dots that paged it were a second form for one value */
       /* A POSTCARD of the country this node sits in, and beside it: your best, the three medal times, what is found and what is owed (the old card said "OPEN" and "0/?") */
       MCARD.drawPostcard(g, cx0 + 8, cy0 + 21, 40, 30, MCARD.regionAt(nd.y, { INLAND: INLAND_Y, COAST: COAST_Y, CRAG: CRAG_Y, WOOD: WOOD_Y }), !!(lv.night || lv.dark), time);
@@ -6157,7 +6164,7 @@ const BEASTS = [
   { t: 'sweep', name: 'CHIMNEY SWEEP', sub: 'up the flue', desc: 'He lives in the stacks. Walk past and he comes up out of one with a handful of soot, throws it, and stays up a moment to watch it land: that moment is the only time you can reach him. Then he is back down the flue.' },
   { t: 'stormshaman', name: 'STORM SHAMAN', sub: 'the weather is his', desc: 'A goblin with a staff who stands at the far end of a span and throws the storm at whoever is crossing it. His bolts are slow: strike one, or take it on a shield, and it goes back at him.' },
   { t: 'seawitch', name: 'THE SEA WITCH', sub: 'she signed the articles too', desc: "The ship's conjuror, in the crew's own coat, with a storm lantern on her crook. She marks a spot on the deck and the sky finds it a second later: no shield turns lightning, so move. Out of the weather she throws it by hand instead, slow enough to strike out of the air or send back off a shield." },
-  { t: 'lance', name: "THE QUEEN'S LANCE", sub: 'he holds the Long Bridge', desc: "The Queen's champion, on foot with a war lance and a tower shield: his shield faces you, and he must plant and turn to face you again. Ring a gate tower's bell from its lookout and he answers with a charge - the third toll drops its gate, on him or in his way. When the storm comes a rung bell calls a gust that drives him into the gaps he tore: the teeth and the updraft throw him up stunned. Ride the signal ropes over him (mind his rising skewer) and drop on his helm, or cut a post while he is under its line. Mind his spears and the gatehouse: ballista, oil, the mangonel's stones. At the last he holds the main gate - ring the great bell and it comes down on him." },
+  { t: 'lance', name: "THE QUEEN'S LANCE", sub: 'he holds the Long Bridge', desc: "The Queen's champion, on foot with a war lance and a tower shield: his shield faces you, and he must plant and turn to face you again. Ring a gate tower's bell from its lookout and he answers with a charge - the third toll drops its gate, on him or in his way. When the storm comes a rung bell calls a gust that drives him into the gaps he tore: the teeth and the updraft throw him up stunned. A gate that catches him is a STUN: he takes triple. Dodge a spear and it comes back at him. Ride the ropes over him (mind his rising skewer) and drop on his helm, or cut a post while he is under its line. Mind his spears and the gatehouse: ballista, oil, the mangonel's stones. At the last he holds the main gate - ring the great bell and it comes down on him." },
   { t: 'snuffer', name: 'THE SNUFFER', sub: 'lamp-killer', desc: 'It is not hunting you. It walks the boughs putting the village out, one lantern at a time, and the Reeve is glad of it. It swings the pole if you crowd it. Light what it snuffs, or cut it and the lamps stay lit.' },
   { t: 'sailer', name: 'SAIL GOBLIN', sub: 'carried, not driven', desc: 'A plank of sail and no way to steer. In the lull she shuffles at you and is nothing. When the gust takes her she is a battering ram: block her and she spills, or step aside and let the stone take her. THE MASTHEAD is the biggest of them.' },
   { t: 'horn', name: 'HORNBLOWER', sub: 'a gale of his own', desc: 'A goblin on a mound with a ram\'s horn. He winds it at you and a horn\'s worth of wind comes with it: on the ground it slides you back, in the air it throws you. Get under it or get to him; one good cut and he stops blowing.' },
@@ -7826,7 +7833,7 @@ BOSS_HIT.gqueen = 2.15;   /* (claude/highcrown2: kept at 2.15 with the B15 floor
 BOSS_HIT.spider = 0.85;   /* (claude/curvec4a) */
 BOSS_HIT.forgemaster = 2.1;   /* (claude/forgemaster: 1.55 -> 2.1 on the rails, L16) */   /* (claude/curvec4a) */
 BOSS_HIT.mother = 1.5;   /* (claude/curvec4a) */
-const DUEL_HERO = { closedhelm: { knight: 1, reaper: 0.7, pyro: 2.2 /* (claude/bkbot, Daniel 10-23: THE BLOOD KNIGHT took 1.0 = twice the knight; 0.7) */ /* (claude/waymeetpal, act-IV band 57-63: hp 3600 -> 3900, knight 0.62 -> 0.5, warden 2.2 -> 2.8, pyro 1.7 -> 2.2; 78% -> 60% n=24, human+flasks) */ }, lance: { knight: 1, pyro: 1.42 /* (claude/lance4tune: the on-foot Lance, n=72 at 4650: knight 21% warden 67% pyro 88% - the melee hero eats his reach, the ranged one stands off */ }, gqueen: { knight: 1, pyro: 2.2 } /* (claude/knightid, Daniel Q11: the knight's hidden-handicap rows are DELETED = 1.0; the kit answers now) */ /* (claude/highcrown2: THE GOBLIN QUEEN 2 at 1.0 each read knight 2/6, warden 3/6, pyro 6/6 with flasks, hp 3300) */ };   /* (claude/stormhold3: the rework reset them - his charge, volley and pennant reach the kiters now; was warden 2.4, pyro 2.6) */   /* (claude/wardgap) THE WAYMEET PALADIN and THE LANCE, PER HERO (as CAP_HERO; the lance hit the kiters for 0-30 a fight): the warden out-ranges him and won 12/12 while the knight stood in his sword at 3/10 - his blows on the hero, the wall untouched */
+const DUEL_HERO = { closedhelm: { knight: 1, reaper: 0.7, pyro: 2.2 /* (claude/bkbot, Daniel 10-23: THE BLOOD KNIGHT took 1.0 = twice the knight; 0.7) */ /* (claude/waymeetpal, act-IV band 57-63: hp 3600 -> 3900, knight 0.62 -> 0.5, warden 2.2 -> 2.8, pyro 1.7 -> 2.2; 78% -> 60% n=24, human+flasks) */ }, lance: { knight: 1.2, warden: 1.65, geomancer: 0.7, ranger: 1.4, pyro: 2.0 /* (claude/lance6proof 11-05: n=12 built+flasks 44/60 = 73%: kn 9 wa 11 ge 5 ra 10 py 9 of 12 -> kn 1.1>1.2 wa 1.35>1.65 ge 0.85>0.7 ra 1.2>1.4 py 1.9>2.0) */ /* (claude/lance6 proof 11-04: after the HP cut n=27 built+flasks 74%: kn 4/5 wa 5/5 ge 2/6 ra 4/5 py 5/6 -> his blows up on warden/ranger/pyro, geomancer eased) */ /* (claude/lance4tune: the on-foot Lance, n=72 at 4650: knight 21% warden 67% pyro 88% - the melee hero eats his reach, the ranged one stands off */ }, gqueen: { knight: 1, pyro: 2.2 } /* (claude/knightid, Daniel Q11: the knight's hidden-handicap rows are DELETED = 1.0; the kit answers now) */ /* (claude/highcrown2: THE GOBLIN QUEEN 2 at 1.0 each read knight 2/6, warden 3/6, pyro 6/6 with flasks, hp 3300) */ };   /* (claude/stormhold3: the rework reset them - his charge, volley and pennant reach the kiters now; was warden 2.4, pyro 2.6) */   /* (claude/wardgap) THE WAYMEET PALADIN and THE LANCE, PER HERO (as CAP_HERO; the lance hit the kiters for 0-30 a fight): the warden out-ranges him and won 12/12 while the knight stood in his sword at 3/10 - his blows on the hero, the wall untouched */
 const CAP_HERO = { knight: 1, pyro: 0.85, paladin: 0.7, pirate: 0.45, reaper: 1.6, geomancer: 1.0, berserker: 0.7 }, CAP_OPEN = { pirate: 1.2, berserker: 1.1 };   /* (claude/hurricane3 FINISH+TUNE: 70% top edge, ranger 4/12 -> knight/warden/reaper/berserker a notch harder, ranger softer + his openings pay x1.5) */   /* (claude/hurricane3) THE CAPTAIN 3 on his yards: the hurricane2tune per-hero table was for the flat-deck fight (warden 1.45, knight 0.77...) - reset, re-measured below (tools/boss-rates.mjs --profile=human) */   /* (claude/hurricane2tune) THE CAPTAIN, PER HERO: after the guard fixes the warden still won 12/12 and the knight 5/12 - she out-ranges his sabre and deflects the cuts she does draw (each deflect is an opening), the knight stands in the sabre and blocks few; the cause is the heroes' kits, so the Captain's blows land a little lighter on the two who stand in them and heavier on her (measured at 24 seeds a hero, tools/boss-rates.mjs --profile=human) */   /* (claude/hurricane2) THE CAPTAIN 2: tied to the storm, his openings earned off the sea and the sky - tuned WITH flasks (tools/boss-rates.mjs --profile=human); on its own line (merge care) */   /* (claude/dk2tune) THE DEATH KNIGHT: how hard his own blows land - the knight went 0/N (3 flasks and all) at 1.0; on its own line (merge care) */
 const LP_HERO = { tollmaster: { knight: 1, paladin: 1.3 }, lampreeve: { knight: 1, paladin: 0.95 } }; /* (claude/knightid, Daniel Q11: the knight's hidden-handicap rows are DELETED = 1.0; the kit answers now) */   /* (claude/lamplit3tune) on its own line (merge care), see damagePlayer0 */
 function damagePlayer0(fromX, dmg, { up = false, unblockable = false, pierce = false, noKnock = false, who = null, blow = null, name = null, geo = false, low = false, pct = 0, spare = false } = {}) {   /* (claude/ft4b) spare: it hurts but never kills - THE FALLING TOWER's collapse front (Daniel 10-29 #2) */
@@ -10481,6 +10488,10 @@ function attackBox() { const b = attackBox0(); if (b && P.finisher && P.atk >= 0
 function gadgetInKnifeReach(p, reach) { const hit = (x, y, lo, hi) => { const dx = (x - p.x) * p.face; return dx > -8 && dx < reach + 10 && y >= p.y - hi - 4 && y <= p.y - lo + 4; };
   if (typeof CANAL !== 'undefined' && CANAL && CANAL.props) for (const q of CANAL.props) if (q.t !== 'lamp' && hit(q.x, q.y, -2, 24)) return true;
   if (L && L.ents) for (const q of L.ents) if (q.t === 'qwindlass' && hit(q.x * TS + 8, (q.y + 1) * TS, 0, 26)) return true;
+  /* (claude/lance6proof) THE QUEEN'S LANCE: a bell, a signal rope's post and a STUCK volley spear in knife reach are point-blank too - the ranger's tap would shoot an arrow past them (she could neither ring a tower bell nor send his spear back) */
+  for (const q of props) if (q.t === 'lancebell' && hit(q.x, q.y, 0, 26)) return true;
+  if (L && L.zipLines) for (const z of L.zipLines) if (z.signal !== undefined && z.post && hit(z.post[0], z.post[1], 0, 24)) return true;
+  if (boss && boss.t === 'lance' && boss.lz) for (const sp of boss.lz.spears) if (sp.stuck > 0 && hit(sp.x, sp.y, 0, 26)) return true;
   return false; }
 function attackBox0() {
   if (CA && (P.caTrip || P.caPoke) && P.swingKind === 'sweep') { const b = CA.box(); if (b) return b === 'none' ? null : b; }   /* THE SHIELD TRIP and THE LOW POKE (src/crouch-a.js) */
@@ -25619,7 +25630,7 @@ function lanceSurf(x, row0) { const tx = Math.floor(x / TS); for (let ty = Math.
 const lanceOnLookout = (A, q) => q.ground !== false && (A.lookouts || []).some(([x0, x1, row]) => q.x > x0 * TS - 6 && q.x < (x1 + 1) * TS + 6 && Math.abs(q.y - row * TS) < 6);
 const lanceDeckGone = x => tileAt(Math.floor(x / TS), Math.floor(L.arena.floor / TS)) === T.AIR;
 const LANCE_AIR = new Set(['vaultUp', 'perch', 'stab', 'updraft', 'tossedAir']);
-function lanceState(e) { return e.lz || (e.lz = { cracks: [], gaps: new Set(), spears: [], stones: [], bolt: null, oil: null, gateK: 0, gateDrop: 0, slam: 0, crossed: new Set(), pen: 0 }); }
+function lanceState(e) { return e.lz || (e.lz = { cracks: [], gaps: new Set(), spears: [], backs: [], sendAt: -99, stones: [], bolt: null, oil: null, gateK: 0, gateDrop: 0, slam: 0, crossed: new Set(), pen: 0 }); }
 /* A SPAN SPLINTERS (P2 on): told first (the middle planks crack and shake for LANCE4.crack.tell s), then they go. Never more than
    LANCE4.crack.max gaps on the bridge, never two in one span; the planks come back when you do (mendAll, on a death). */
 function lanceCrack(e, i) { const Z = lanceState(e), A = L.arena, s = A.spans[i]; if (!s || Z.gaps.has(i) || Z.cracks.some(c => c.i === i) || Z.gaps.size + Z.cracks.length >= LANCE4.crack.max) return;
@@ -25666,7 +25677,7 @@ function lanceRest(e) { e.mode = 'guard'; e.modeT = 0.4; e.stagger = 0; e.guardH
 let lanceDev = false;
 function lanceHurtDev(e, dmg, x) { lanceDev = true; try { hurtEnemy(e, dmg, x, false); } finally { lanceDev = false; } }
 /* (claude/lance5) A LANDED BLOW KNOCKS HIM BACK a little (P1 + P2; braced, pinned or in the air he does not budge) - near a gap, that is the point */
-const LANCE_NOKB = new Set(['sleep', 'wake', 'couch', 'charge', 'pinned', 'vaultTell', 'vaultUp', 'perch', 'stab', 'updraft', 'tossedAir', 'haul', 'fallback', 'wallTell', 'shieldwall', 'skewer', 'buffeted']);
+const LANCE_NOKB = new Set(['sleep', 'wake', 'couch', 'charge', 'pinned', 'stunned', 'vaultTell', 'vaultUp', 'perch', 'stab', 'updraft', 'tossedAir', 'haul', 'fallback', 'wallTell', 'shieldwall', 'skewer', 'buffeted']);
 function lanceKnock(e, fromX) { if (!e.alive || e.phase > 2 || LANCE_NOKB.has(e.mode)) return; e.kbV = (Math.sign(e.x - fromX) || -e.face) * LANCE4.kb.v; e.kbT = LANCE4.kb.t; }
 /* (claude/lance5) THE GAPS IN THE BRIDGE (px), read off the deck itself: planks he tore, a stone broke */
 function lanceHoles() { const A = L.arena, row = Math.floor(A.floor / TS), out = []; let a = -1;
@@ -25693,14 +25704,21 @@ function lanceGust(e, pr) { const X = LANCE4, Z = lanceState(e), dir = pr.gustDi
 /* AN OPENING OR A PHASE TURN ENDS WHATEVER HE WAS IN: a bell's bars let go of him */
 function lanceFree(e) { for (const pr of props) if (pr.t === 'lancebell' && pr.pinned === e) { pr.pinned = null; if (pr.great) lanceState(e).gateDrop = Math.max(lanceState(e).gateDrop, 0.6); } e.vx = 0; }
 /* HIS OPENINGS PAY (B15: 1.5-2x): pinned under a bell's gate its own multiplier, the rest LANCE4.open */
-const lanceOpenMul = e => e.mode === 'pinned' ? (e.pinMul || LANCE4.bell.mul) : (LANCE4.open[e.mode] || 1.5);
+const lanceOpenMul = e => e.mode === 'pinned' ? (e.pinMul || LANCE4.bell.mul) : e.mode === 'stunned' ? (e.stunMul || LANCE4.stun.gate.mul) : (LANCE4.open[e.mode] || 1.5);
 /* THE SHIELD SPLITS (P3): the main gate's bars split it the first time they take him, or he casts it off LANCE4.castOff s into his last stand */
 function lanceSplit(e, byBars) { e.bare = true; e.mode = 'split'; e.modeT = LANCE4.split; e.stagger = e.modeT; e.vx = -e.face * 30; e.answer = null;
   number(e.x, e.y - e.h - 16, byBars ? LANCE_SAY.split : LANCE_SAY.castOff, '#8fd160'); SFX.crack(); SFX.clank(); shakeCam(5);
   SHA.splinters(parts, e.x, e.y, e.face); }
+/* (claude/lance6) STUNNED: the one state a gate that caught him on a charge and a spear sent back share - its clock (stunMax) is what the bar over his helm counts down */
+function lanceStun(e, t, mul) { lanceFree(e); e.mode = 'stunned'; e.modeT = t; e.stunMax = t; e.stunMul = mul; e.stagger = t; e.vx = 0; e.answer = null; e.gated = (e.gated || 0) + 1; }
+/* (claude/lance6) HIS OWN SPEAR, SENT BACK: a spear you dodged (rolled or dashed through its landing, or a miss by a hair) or a stuck one you strike flies back to him and STUNS him
+   (LANCE4.stun.spear). Never in the air / while he is pinned or stunned already, and at most one return every stun.spear.every s: a told reward, not a loop. */
+function lanceSendBack(e, s, why) { const Z = lanceState(e), S = LANCE4.stun.spear;
+  if (!e.alive || !bossActive || time - Z.sendAt < S.every || LANCE_AIR.has(e.mode) || e.mode === 'pinned' || e.mode === 'stunned' || e.mode === 'sleep' || e.mode === 'wake') return false;
+  Z.sendAt = time; s.stuck = 0; Z.backs.push({ x: s.x, y: s.y - 14, x0: s.x, y0: s.y - 14, t: 0 }); SFX.throwWhoosh(); number(s.x, s.y - 34, why, '#8fd160'); return true; }
 /* THE BELL'S GATE COMES DOWN ON HIM: pinned under the bars (the bars' own blow lands whole), open at its multiplier */
 function lancePin(e, pr) { const X = LANCE4, great = !!pr.great, B = great ? X.great : X.bell, Z = lanceState(e);
-  lanceFree(e); e.mode = 'pinned'; e.modeT = B.pin; e.stagger = B.pin; e.vx = 0; e.pinMul = B.mul; e.answer = null; e.gated = (e.gated || 0) + 1; pr.pinned = e;
+  lanceFree(e); e.mode = 'pinned'; e.modeT = B.pin; e.stagger = B.pin; e.vx = 0; e.pinMul = B.mul; e.stunMax = B.pin; e.answer = null; e.gated = (e.gated || 0) + 1; pr.pinned = e;
   if (great) { Z.gateDrop = 1; if (!e.bare) e.splitDue = true; }
   number(e.x, e.y - e.h - 14, great ? LANCE_SAY.great : LANCE_SAY.gate, '#8fd160'); hitstop(0.1); zoomKick(1.1, 0.3); shakeCam(7);
   burst(pr.gx, e.y - e.h, 14, ['#8a8a9c', '#c9c9d6'], 90, 0.5);
@@ -25759,7 +25777,13 @@ function updateLance(e, dt) {
   Z.cracks = Z.cracks.filter(c => c.t > 0);
   for (const s of Z.spears) { if (s.stuck > 0) { s.stuck -= dt; continue; } s.t -= dt;
     if (s.t <= 0) { s.stuck = X.volley.stick; SFX.stone(); dust(s.x, s.y, 4);
-      if (!P.dead && Math.abs(P.x - s.x) < X.volley.hit && P.y > s.y - 30 && P.y < s.y + 4) { const res = damagePlayer(s.x, DMG.lanceVolley, { unblockable: true, up: true, name: 'THE SPEAR VOLLEY' }); if (res === 'hit') P.vx = Math.sign(P.x - s.x || 1) * 90; } } }
+      if (!P.dead && Math.abs(P.x - s.x) < X.volley.hit && P.y > s.y - 30 && P.y < s.y + 4) { const res = damagePlayer(s.x, DMG.lanceVolley, { unblockable: true, up: true, name: 'THE SPEAR VOLLEY' }); if (res === 'hit') P.vx = Math.sign(P.x - s.x || 1) * 90;
+        else if (!P.dead && (P.dodge > 0 || P.dash > 0 || P.inv > 0)) lanceSendBack(e, s, LANCE_SAY.dodged); }   /* rolled / dashed through it */
+      else if (!P.dead && Math.abs(P.x - s.x) < X.volley.hit + X.stun.spear.near && P.y > s.y - 30 && P.y < s.y + 4) lanceSendBack(e, s, LANCE_SAY.dodged); } }   /* a miss by a hair */
+  if (X.stun.spear.strike && P.atk >= 0 && !P.dead && bossActive) { const hb = attackBox(); for (const s of Z.spears) if (s.stuck > 0 && !P.hitSet.has(s) && hb && overlap(hb, { l: s.x - 8, r: s.x + 8, t: s.y - 26, b: s.y })) { P.hitSet.add(s); lanceSendBack(e, s, LANCE_SAY.struck); } }   /* strike a stuck spear: it is hurled back */
+  for (const b of Z.backs) { b.t += dt / X.stun.spear.fly; const k = Math.min(1, b.t), tx = e.x, ty = e.y - e.h * 0.55; b.x = b.x0 + (tx - b.x0) * k; b.y = b.y0 + (ty - b.y0) * k - Math.sin(k * Math.PI) * 26;
+    if (b.t >= 1 && !b.done) { b.done = true; if (e.alive && !LANCE_AIR.has(e.mode) && e.mode !== 'pinned' && e.mode !== 'stunned') { const S = X.stun.spear; lanceStun(e, S.t, S.mul); number(e.x, e.y - e.h - 14, LANCE_SAY.sentBack, '#8fd160'); SFX.clank(); SFX.stone(); hitstop(0.07); shakeCam(4); sparks(e.x, e.y - e.h * 0.55, -e.face, 6); lanceHurtDev(e, Math.round(S.dmg / S.mul), b.x0); } } }
+  Z.backs = Z.backs.filter(b => !b.done);
   Z.spears = Z.spears.filter(s => s.t > 0 || s.stuck > 0);
   for (const s of Z.stones) { if (s.done) { s.done -= dt; continue; } s.t -= dt;
     if (s.t <= 0) { s.done = 0.5; SFX.stone(); SFX.heavy(); shakeCam(4); dust(s.x, s.y, 10); burst(s.x, s.y - 4, 10, ['#8a8a9c', '#5a5a68', '#c9b27c'], 90, 0.6);
@@ -25881,6 +25905,7 @@ function updateLance(e, dt) {
     case 'perch': want = 0; e.face = Math.sign(e.stab.x - e.x) || e.face; if (e.modeT <= 0) { const T0 = 0.42; e.mode = 'stab'; e.modeT = 1.2; e.vx = (e.stab.x - e.x) / T0; e.vy = (e.stab.y - e.y) / T0 - 500 * T0; e.airT = 0; e.dropThru = true; SFX.leap(); } break;
     case 'stab': e.airT += dt; break;
     // ======== HIS OPENINGS (lanceOpen): the bell's bars, the rung helm, the whipped line, the point stuck, the wall turned, parried ========
+    case 'stunned': want = 0; e.vx = 0; if (e.modeT <= 0) lanceRest(e); break;   /* (claude/lance6) into a dropped gate, or his own spear sent back */
     case 'pinned': want = 0; e.vx = 0; if (e.modeT <= 0) { if (e.splitDue) { e.splitDue = false; lanceSplit(e, true); } else lanceRest(e); } break;
     case 'split': want = 0; if (e.modeT <= 0) lanceRest(e); break;
     case 'rung': case 'whipped': case 'planted': case 'wallTurned': case 'stumble': want = 0; if (e.modeT <= 0) lanceRest(e); break;
@@ -25912,8 +25937,10 @@ function updateLance(e, dt) {
       e.mode = 'updraft'; lanceHurtDev(e, Math.max(0, Math.min(e.hp - 1, Math.round(e.maxHp * X.storm.spike))), e.x);   /* the teeth land whole (not an opening's multiplier) */
       e.afterLift = e.phase !== ph ? e.mode : null; e.mode = 'updraft'; e.modeT = 3; e.stagger = 0; e.answer = null; e.airT = 0; e.liftX = (h[0] + h[1]) / 2; e.landX = lanceLandX(e.liftX); e.vy = -X.storm.lift; SFX.throwWhoosh(); } }
   /* WHAT HE RAN INTO mid-charge: a dropped tower gate (or a barricade, which goes) - OVERRUN against it, open */
-  if (r.hitX && e.mode === 'charge') { smashBarricade(barricadeAt(e.x + e.face * 14, e.y - 10), e); e.mode = 'overrun'; e.modeT = X.overrun; e.stagger = e.modeT; e.vx = 0; SFX.heavy(); SFX.clank(); shakeCam(6);
-    number(e.x, e.y - e.h - 14, LANCE_SAY.intoGate, '#8fd160'); }
+  if (r.hitX && e.mode === 'charge') { const into = props.find(q => q.t === 'lancebell' && !q.great && q.down > 0 && Math.abs(q.gx - (e.x + e.face * 14)) < 22);   /* (claude/lance6) a bell's gate across his lane: STUNNED, x3.5 */
+    smashBarricade(barricadeAt(e.x + e.face * 14, e.y - 10), e); SFX.heavy(); SFX.clank(); shakeCam(6); e.vx = 0;
+    if (into) { const S = X.stun.gate; lanceStun(e, S.t, S.mul); number(e.x, e.y - e.h - 14, LANCE_SAY.intoGate, '#8fd160'); hitstop(0.08); zoomKick(1.08, 0.25); burst(e.x + e.face * 14, e.y - 20, 12, ['#8a8a9c', '#c9c9d6'], 90, 0.5); lanceHurtDev(e, Math.round(S.dmg / S.mul), e.x + e.face * 14); }
+    else { e.mode = 'overrun'; e.modeT = X.overrun; e.stagger = e.modeT; number(e.x, e.y - e.h - 14, LANCE_SAY.intoGate, '#8fd160'); } }
 }
 /* (claude/lance5) THE STORM, DRAWN (greybox - the art lane owns the look): the UPDRAFT rising out of every gap while the storm blows (pale streaks going up);
    a bell's GUST told while it tolls (wind arrows along the deck, the way it will blow) and blowing (long streaks); the RISING SKEWER's column over him
@@ -25959,6 +25986,7 @@ function drawLanceBridge(cx, cy) { const e = boss, Z = e && e.lz, A = L.arena; i
   if (Z.oil) { const O = Z.oil, x0 = Math.round(O.x0 - cx), w = Math.round(O.x1 - O.x0), oy = Math.round(O.y - cy);
     if (!O.on) { const k = 1 - O.t / LANCE4.oil.tell; g.globalAlpha = 0.3 + 0.5 * k; g.strokeStyle = '#ff9a5c'; g.lineWidth = 1; g.strokeRect(x0 + 0.5, oy - 6.5, w - 1, 6); g.fillStyle = '#c9a040'; g.fillRect(x0 + w / 2 - 2, oy - 120, 4, Math.round(114 * k)); g.globalAlpha = 1; }
     else { g.globalAlpha = 0.55; g.fillStyle = '#3a2410'; g.fillRect(x0, oy - 2, w, 2); g.globalAlpha = 1; } }
+  for (const b of Z.backs || []) { const bx = Math.round(b.x - cx), by = Math.round(b.y - cy), d = Math.sign(e.x - b.x0) || 1; g.fillStyle = '#5a3a22'; g.fillRect(bx - 9, by - 1, 18, 2); g.fillStyle = '#c9d1dc'; g.fillRect(bx + (d > 0 ? 8 : -12), by - 2, 4, 4); g.fillStyle = '#8fd160'; g.globalAlpha = 0.5; g.fillRect(bx - d * 14, by, 8, 1); g.globalAlpha = 1; }   /* (claude/lance6) his spear, flying back */
   for (const z of L.zipLines || []) if (z.signal !== undefined && z.post) drawRopeCut(g, z, cx, cy, time, e.alive && e.phase >= 2);
   if (A.mainGate) { const gx = A.mainGate * TS - cx, top = 26 * TS - cy, full = 4 * TS, pin = e.alive && e.mode === 'pinned' && e.pinMul >= LANCE4.great.mul;
     let down = Math.round(full * (e.alive ? Math.max(Z.gateK, Z.gateDrop) : 1)); if (pin) down = Math.max(4, Math.min(full, Math.round(e.y - e.h - 26 * TS)));
@@ -25971,7 +25999,10 @@ function drawLanceBridge(cx, cy) { const e = boss, Z = e && e.lz, A = L.arena; i
 }
 /* HIS READ OVER HIM (B10): open, the green ring (lanceOpen); HELM RUNG, stars round the helm; a heavy's planted-foot stamp, a dust ring */
 function drawLanceRead(e, cx, cy) { const x = Math.round(e.x - cx), y = Math.round(e.y - cy);
-  if (e.mode === 'rung' || e.mode === 'tossed') SHA.drawStars(g, x, y - e.h - 6, time);
+  if (e.mode === 'rung' || e.mode === 'tossed' || e.mode === 'stunned' || e.mode === 'pinned') SHA.drawStars(g, x, y - e.h - 6, time);
+  if ((e.mode === 'stunned' || e.mode === 'pinned') && e.stunMax > 0) { const k = Math.max(0, Math.min(1, e.modeT / e.stunMax)), mul = e.mode === 'pinned' ? (e.pinMul || LANCE4.bell.mul) : (e.stunMul || 1), bw = 30, by = y - e.h - 26;   /* (claude/lance6) STUNNED: the word, the x-multiplier and a clock that runs out over his helm */
+    g.fillStyle = '#10140c'; g.fillRect(x - bw / 2 - 1, by - 1, bw + 2, 5); g.fillStyle = k > 0.3 ? '#8fd160' : '#ffd36b'; g.fillRect(x - bw / 2, by, Math.max(1, Math.round(bw * k)), 3);
+    text('STUNNED  X' + (Math.round(mul * 10) / 10), x, by - 10, '#8fd160', 'center', 6); }
   if (e.mode === 'pivot') LSA.drawPivotRing(g, x, y, Math.max(0, Math.min(1, 1 - e.modeT / LANCE4.pivot)), Math.sign(P.x - e.x) || e.face);   /* (claude/lance5art) the ring he stamps and the way he is about to face */
   if (e.stampT > 0) SHA.drawStamp(g, x, y, 1 - e.stampT / 0.3, e.face); }
 const GUARD_WALL = e => BR_GUARD[e.t] === 'wall' && !(e.t === 'lance' && e.bare);   /* (claude/lance4) THE LANCE without his shield (P3) has no wall: x0.7 from anywhere */
@@ -25984,7 +26015,7 @@ const WALL_HINT = { lance: LANCE_SAY.tip, closedhelm: 'HIS WARD FACES YOU. GO RO
   captain: 'HIS FRONT IS GUARDED - ON THE WAVE TOO. CUT HIM FROM BEHIND OR FROM ABOVE; KNOCKED FLAT, HE IS OPEN.' };
 /* (claude/keyscore, B13 + B15) HIS OPENINGS are what he is LEFT in, not the blow itself: stuck, reeling, stumbling, over his front foot, his hands empty. In his thrust,
    sweep and guard swing he is a wall like any other moment (0.4 into it, whole round or over) - the knight mash bot took him 2/6 when every active frame paid x1.5 */
-const lanceOpen = e => e.mode === 'tossed' || e.mode === 'buffeted' || e.mode === 'pinned' || e.mode === 'overrun' || e.mode === 'rung' || e.mode === 'whipped' || e.mode === 'planted' || e.mode === 'reel' || e.mode === 'stumble' || e.mode === 'recover' || e.mode === 'wallTurned' || e.mode === 'split';   /* (claude/lance4) the bell's bars, the overrun, the rung helm, the whipped line, the point stuck, parried, over his front foot, the wall turned, the shield splitting */
+const lanceOpen = e => e.mode === 'tossed' || e.mode === 'buffeted' || e.mode === 'pinned' || e.mode === 'overrun' || e.mode === 'rung' || e.mode === 'whipped' || e.mode === 'planted' || e.mode === 'reel' || e.mode === 'stumble' || e.mode === 'recover' || e.mode === 'wallTurned' || e.mode === 'split' || e.mode === 'stunned';   /* (claude/lance6: STUNNED - into a gate / a spear sent back) (claude/lance4) the bell's bars, the overrun, the rung helm, the whipped line, the point stuck, parried, over his front foot, the wall turned, the shield splitting */
 /* WHEN A RUN AT HIM IS A RUN AT A WALL: coming at you, or with the shield already coming round. Everything else he
    is standing on his feet for, and a dash attack takes them out from under him (hurtEnemy0) */
 const LANCE_BRACED = new Set(['skewerTell', 'skewer', 'updraft', 'tossedAir', 'buffeted', 'tossed', 'sleep', 'wake', 'couch', 'charge', 'skid', 'volleyTell', 'volley', 'pennantTell', 'pennant', 'haul', 'vaultTell', 'vaultUp', 'perch', 'stab', 'wallTell', 'shieldwall', 'fallback']);   /* (claude/lance4) never knocked off balance coming at you, in the air, behind his planted shield, or signalling the towers */

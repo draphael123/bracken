@@ -1,6 +1,17 @@
 [
   {
     "date": "2026-11-05",
+    "batch": 145,
+    "lines": [
+      "The world map is repainted: plates, a clearer header, DANGER pips and living campfires",
+      "The Knight no longer doubles his shield while charging",
+      "Grubbag fights with a hook and chains, and hits harder",
+      "Lance reworked, and the Ranger bell and spear are fixed",
+      "Kingswood banner poles and spear racks now stand on the ground"
+    ]
+  },
+  {
+    "date": "2026-11-05",
     "batch": 144,
     "lines": [
       "After Kingswood the war horn sounds and the village burns on the horizon",
