@@ -66,6 +66,9 @@ try {
     ok(r.n.imps >= 1 && r.maxImps >= 1 && r.maxImps <= 2, 'imps are summoned in phase 3, never more than 2 at once: ' + r.n.imps + ' summoned, max ' + r.maxImps);
     ok(r.skin.includes('demon'), "the imps carry the demon skin tag (lane S4 paints it): " + JSON.stringify(r.skin));
     ok(r.n.bombs >= 1, 'lava bombs fall in phase 3: ' + r.n.bombs);
+    // the imps' fire (a seed with an imp owner): off the Mage's Folly there is no MG - the first throw used to crash updateImp
+    const fire = await pg.evalp('(()=>{ const f = __ro.f(); let n = 0, hp0 = BK.P.hp; BK.god = false; for (let i = 0; i < 60 * 40 && n < 1; i++) { BK.sim(1); n += BK.seeds().filter(s => s.owner && s.owner.dkImp && !s.dead).length ? 1 : 0; } BK.god = true; return { n, imps: BK.enemies().filter(e => e.dkImp && e.alive).length }; })()', 300000);
+    ok(fire.n >= 1, 'an imp throws fire on the back (a hostile bolt, no Mage Folly needed): ' + JSON.stringify(fire));
     // pictures: get an imp up and a bomb ring up
     const got = await pg.evalp(`(()=>{ const f = __ro.f(); let a = false, b = false; const out = {}; for (let i = 0; i < 60 * 120 && !(a && b); i++) { BK.sim(1);
         if (!a && BK.enemies().some(e => e.dkImp && e.alive)) { a = true; out.imp = true; window.__ro.keepImp = 1; }
