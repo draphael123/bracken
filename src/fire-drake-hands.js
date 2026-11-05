@@ -11,6 +11,7 @@
 // main.js calls: spawnBoss, owns, on, update, take, spare, drawBoss, drawOver, barName, end, read, show, clear, phase. src/lab.js reads show() + fdPlan.
 import * as FDM from './fire-drake.js';
 import { BOSS_PHASE } from './boss-music.js';
+import * as DA from './redraw/fire_drake_art.js';   /* (claude/drakeart) its drawn sprites, one per pose */
 const { FD, FD_SAY, POSE } = FDM;
 const R = Math.round;
 /* B16: every move its own sound. A 'drake*' sound first (D2 adds them to src/audio.js), then a stand-in that no other drake move uses */
@@ -144,6 +145,10 @@ export function makeFireDrakeHands(ctx) {
   /* ---------- THE DRAWING ---------- */
   H.drawBoss = (g, e, cx, cy, time) => { if (!S) return; e.guardFx = Math.max(0, (e.guardFx || 0) - 1 / 60);
     const f = e.face || 1, x = e.x - cx, y = S.G.floorY - cy, flash = (e.hurtT || 0) > 0 || (e.flash || 0) > 0.06, p = POSE[e.mode] || POSE.walk;
+    const air = e.air || 0; let spr = null; try { spr = DA.drakeSprite(e.mode, p, time, flash); } catch { spr = null; }
+    if (spr) { g.save(); g.translate(R(x), R(y - air)); g.scale(f, 1); g.drawImage(spr.c, -DA.DRAKE_ANCHOR.ax, -DA.DRAKE_ANCHOR.ay);
+      if (S.ward > 0) { g.globalAlpha = 0.35 + 0.25 * Math.sin(time * 6); g.strokeStyle = '#c8d8e8'; g.lineWidth = 2; g.beginPath(); g.ellipse(0, -16, 36, 14, 0, 0, 7); g.stroke(); g.lineWidth = 1; g.globalAlpha = 1; } g.restore();
+      S.collarPx = { x: e.x + f * spr.collar[0], y: S.G.floorY + spr.collar[1] - air }; S.jawPx = { x: e.x + f * spr.jaw[0], y: S.G.floorY + spr.jaw[1] - air }; return; }
     const jaw = {}; g.save(); g.translate(R(x), R(y)); g.scale(f, 1); drawDrake(g, p, { time, flash, air: e.air || 0, ward: S.ward > 0, jaw }); g.restore();
     S.jawPx = { x: e.x + f * (jaw.x || FD.head), y: S.G.floorY + (jaw.y || -30) }; };
   H.drawOver = (g, cx, cy, time) => { const Ar = A(); if (!S || !Ar) return; const G = S.G, X = v => R(v - cx), Y = v => R(v - cy), e = ctx.boss && ctx.boss.t === 'firedrake' ? ctx.boss : null;
