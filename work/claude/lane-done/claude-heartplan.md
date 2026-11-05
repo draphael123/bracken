@@ -5,12 +5,14 @@ PLANNING + a node-only greybox of the drake. Nothing wired into main.js, nothing
 ## 0. What changed on the branch
 - `src/fire-drake.js` - THE FIRE DRAKE as a pure fight (bog-troll style): one numbers table `FD` (the tune lane's), `geom`, `newFight`, `stepDrake`,
   `takeBlow` (B15), `fdOpen`/`fdTelling`/`readOf` (B10), `POSE` (B16 windup != release), the bot plan `fdPlan` + `PLAN` clock, `FD_SAY` lines.
-- `tools/fire-drake.mjs` - node check (~1 s, no browser): B15 floor, the chain rule (lunge past the ring = JERKED, inside = bite), purse cap, the
-  phase tears (once each, told, never through an opening), every told move has two poses, the bot steps outside the ring / jumps the tail / gets off a
-  dive ring, beaten = it tears the last chain and falls (never killed).
-- `tools/fire-drake-lab.mjs` - the NODE LAB ENTRY: a 1-D duel of the real `stepDrake` vs. a hero model per kit (reach, blow, swing time, hp, flasks,
-  parry/roll) driven by `fdPlan` with the human reaction clock; prints win% / time / hp left per hero over n seeds. A first read for the tune lane
-  BEFORE the drake is wired; the real number is bossLab after wiring (lane D1 below). `node tools/fire-drake-lab.mjs --n=12`.
+- `tools/fire-drake.mjs` - node check (78 checks, ~1 s, no browser): B15 floor in every mode, the chain rule (lunge past the ring = JERKED, inside = a
+  bite that reaches you), the aim follows then holds, purse cap, the bait spot is past the claw of a drake at its chain's end in all 3 phases, a hero at
+  its jaw is clawed not lunged at, the chain sweep covers the bait band low, dive past the ring jerked from the air, the tears (once each, told, never
+  through a jerk), P3 waves low + vents glow 1 s first, beaten = last chain parts and it falls (never killed), B16 two pictures per told move, the bot.
+- `tools/fire-drake-lab.mjs` - the NODE LAB ENTRY: a 1-D duel of the real `stepDrake` vs. a hero model per kit (reach, blow, swing time, L40 hp/damage
+  from progression.js growthAt, 3 flasks with the real flaskHeal, parry/roll) driven by `fdPlan` with the human reaction clock; late-game scaling copied
+  from main.js (boss hp x (1 + 0.25 x TIER_BOSS), blows x the act's dmg 3.0). Prints win% / median time / hp left / what hurt, per hero.
+  `node tools/fire-drake-lab.mjs --n=12 [--miss=0.25] [--mash] [--hero=knight]`. A first read BEFORE wiring; the real number is bossLab (lanes D1/D3).
 
 ## 1. Story beats (the order of the level's end)
 1. THE SEAL CHAMBER: the caldera floor, a round obsidian SEAL in the middle, the FIRE DRAKE CHAINED TO IT by three white-hot chains (it is the seal's
@@ -31,7 +33,7 @@ PLANNING + a node-only greybox of the drake. Nothing wired into main.js, nothing
 B1 (the boss is the level's rule personified): the Heart's fire half is about heat and reach; the drake is BOUND. Its chains have a drawn reach: a
 SCORCHED RING on the floor round the seal at the chain's length (always visible, glows when a chain is taut).
 - Its LUNGE goes straight at you. Inside the ring it BITES (red !!, roll through it or be out of the line). Outside the ring the chain SNAPS TAUT: it is
-  yanked back, crashes on its side: JERKED - the gold ring + bar (B10), blows x1.75, one jerk worth at most 18% of its bar (a purse, like Bog Troll).
+  yanked back, crashes on its side: JERKED - the gold ring + bar (B10), blows x1.75, one jerk worth at most 15% of its bar (a purse, like Bog Troll).
 - Outside the ring it BREATHES: a cone that starts ~30 px from its jaw, so the safe place from the breath is UNDER ITS CHIN, inside the ring - where the
   claws and tail are. The fight is a DANCE ACROSS THE RING: out to bait the lunge, in to dodge the breath, out again.
 - After the breath it PANTS (smoke from the nostrils, 1.0 s): a soft window x1.0. Outside openings its scales turn blows: x0.5 (B15 floor is 0.4;
@@ -41,30 +43,34 @@ SCORCHED RING on the floor round the seal at the chain's length (always visible,
 ### Phases (one new move per phase, B5; P2 a different fight: it FLIES)
 | Phase | bar | chain ring (px from the seal centre) | new |
 |---|---|---|---|
-| P1 THREE CHAINS | 100-60% | 110 | claw, tail, breath, lunge |
-| P2 TWO CHAINS (tears one: told 1.6 s roar, the seal cracks stage 1) | 60-30% | 160 | THE WING GUST + DIVE (it flies; a dive past the ring is jerked out of the air) |
-| P3 ONE CHAIN (tears another: seal stage 2, the caldera starts to erupt) | 30-0% | 205 | THE MAGMA SLAM (shockwave both ways: jump the crest) + floor VENTS erupt on a cycle (told glow) |
+| P1 THREE CHAINS | 100-60% | 100 | claw, tail, breath, lunge, THE CHAIN SWEEP |
+| P2 TWO CHAINS (tears one: told 1.6 s roar, the seal cracks stage 1) | 60-30% | 145 | THE WING GUST + DIVE (it flies; a dive past the ring is jerked out of the air) |
+| P3 ONE CHAIN (tears another: seal stage 2, the caldera starts to erupt) | 30-0% | 185 | THE MAGMA SLAM (shockwave both ways: jump the crest) + floor VENTS erupt on a cycle (told glow) |
 | BEATEN | 0 | - | it lunges once more, the LAST chain parts, it falls on the seal: scene A |
 
-The arena is ~30 tiles (480 px) wide with the seal in the middle: the P3 ring leaves a ~20 px band at each wall PLUS two basalt LEDGES (24 px high,
-outside the P2 ring) - the breath is a floor-to-chest cone and does not reach a ledge, the dive does. Ledges are the safe lure in P1, not in P2+.
+The arena is 32 tiles (512 px) wide with the seal in the middle. THE BAIT SPOT = past the ring AND past the claw of a drake standing at its chain's
+end: ring + claw reach - head + 18 = 154 / 199 / 239 px from the seal (the P3 one is a thin band at the wall). It is NOT a safe spot: THE CHAIN
+SWEEP (below) sweeps exactly that band, and the breath and the dive reach it. Rec extra: two basalt LEDGES (24 px high, outside the P2 ring) the
+breath and the low sweep cannot reach - a breather in P1/P2; they sink in the magma in P3.
 
 ### Move list (tells by phase P1/P2/P3; damage = hp off the hero; every move has its OWN windup pose, release pose and sound - B16)
 | Move | mark | tell s | release | hitbox / answer | dmg |
 |---|---|---|---|---|---|
-| CLAW RAKE | ! yellow | 0.70/0.60/0.55 (foreleg reared, claws glow) | 0.18 s swipe | 72 px ahead, 30 high - block/parry/step out | 18 |
+| CLAW RAKE | ! yellow | 0.70/0.60/0.55 (foreleg reared, claws glow) | 0.18 s swipe | 66 px ahead, 30 high - block/parry/step out | 18 |
+| CHAIN SWEEP | !! red | 0.80/0.70/0.65 (grips a chain in its jaws) | 0.3 s | LOW along the band ring-12 .. ring+80 on your side: JUMP (it punishes camping at the bait spot) | 16 |
 | TAIL LASH | !! red | 0.80/0.70/0.65 (tail coils, scale rattle) | 0.25 s sweep | 90 px behind + 40 ahead, LOW (14 px): JUMP | 20 |
-| FLAME BREATH | !! red | 1.00/0.90/0.85 (chest glows through scales, neck back, inhale) | cone 0.9 s, ticks 0.3 s | 30..(ring+140) px ahead, floor to 34 px: get under the chin or onto a ledge (P1) | 9 / tick |
+| FLAME BREATH | !! red | 1.00/0.90/0.85 (chest glows through scales, neck back, inhale) | 2 ticks (0, 0.3 s) | 30..(ring+140) px past the jaw, floor to 22 px: under the chin, behind it, a ledge, or a jump timed on the release | 12 / tick |
 | PANT (after breath) | gold soft | - | 1.0 s | x1.0 | - |
 | CHAIN LUNGE | !! red + taut chains glow | 0.85/0.80/0.75 (crouch, wings half open, links white-hot) | 0.35 s dash to min(hero, ring) | inside: BITE r 22 (roll / leave the line); outside: JERKED | 26 |
-| JERKED (opening) | gold ring + bar | - | 3.5/3.0/2.6 s | x1.75, purse 18% of bar, then WARD 2.5 s x0.4 | - |
+| JERKED (opening) | gold ring + bar | - | 3.2/2.8/2.4 s | x1.75, purse 15% of bar, then WARD 2.5 s x0.4 | - |
 | WING GUST + DIVE (P2+) | !! red ring | crouch 0.8, hover 1.2 (gust pushes you 60 px/s away from the seal), ring 0.9 | slam r 34 | leave the ring on the floor; past the chain's ring the dive is jerked mid-air -> JERKED | 24 |
 | MAGMA SLAM (P3) | !! red | 1.0 (both forelegs high, seal glows) | wave 175 px/s both ways, crest 9 high | JUMP the crest; vents erupt after it | 22 |
 | VENTS (P3, environmental) | red glow | 1.0 glow | 0.8 s geyser, 24 wide | step off the glow | 20 |
 | CHAIN TEAR (phase change) | roar | 1.6 | - | no damage; it is NOT open (B3 shell-free: blows x0.5) | - |
 
-AI: walks inside its ring toward you (44 px/s, P3 54); close (< 80 px) claw 55% / tail 45% (tail 80% if you are behind it); outside the ring lunge 50% /
-breath 50% (P2+ dive 30% of those); never the same move three times running; rest 0.55/0.45/0.4 s between moves.
+AI: walks inside its ring toward you (44/48/54 px/s); in its claw's reach (< 76 px) it ALWAYS claws (55%) or lashes (45%; 80% tail if you are behind
+it), ring or no ring - a hero at its jaw is not baiting; past the claw and the ring: P2+ dive 30%, P3 a slam every 3rd pick, else lunge 40% (20% right
+after a jerk: it is warier of its chain) / sweep / breath; never the same move three times running; rest 0.55/0.45/0.4 s.
 
 ### HP / EHP
 - Rec EHP.firedrake = 2600 (FD.hp). Peers in the table: forgemaster 1800 (mini), lampreeve 2000 (mini), homunculus 2400, skeleton king 2400,
@@ -198,6 +204,13 @@ Order: D1 -> (D2 || S1) -> S2 -> (S3 || SC || S4) -> D3 + S5. Nothing goes live 
 8. The rally: does he bat returns back in P1 too? REC: NO - P1 teaches the plain return; the rally starts in P2 (40%) and P3 (70%).
 
 ## 7. Checks run
-- `node tools/fire-drake.mjs` - see the run line in the commit / below.
-- `node tools/fire-drake-lab.mjs --n=12` - first read below (a 1-D model, NOT bossLab: the tune lane re-reads after wiring).
-- No browser run (none needed: the module is pure and not wired). No suite run (nothing in main.js changed).
+- `node tools/fire-drake.mjs` -> `fire-drake: 78 checks ok`.
+- `node tools/fire-drake-lab.mjs --n=12` (L40, tier 2.6, act 3.0, 3 flasks): miss 0.10 -> pooled 100% (108/108), median 77-115 s, ~50% hp left;
+  miss 0.25 -> pooled 94% (knight/geomancer/ranger 83%). MASH BOT (--mash, n=6): pooled 7% - 0/6 for 8 kits, RANGER 4/6 (her "mash" taps arrows from
+  88 px, outside the claw = actually the right spacing; the real ranger mash must be re-read in bossLab - flagged for D3).
+  READ: the 1-D model is a CEILING (perfect footing, no poise/stamina/knock-back, every tell read 0.25 s late, its misses fall back to a safe spot).
+  It proves the SHAPE: every kit wins by the rule, fights run 77-116 s (target 75-110), the damage comes from the breath and the P3 crests, a mash
+  loses. The band (70-80%) is set in bossLab after D1 - hp, the jerk purse and the tells are the knobs, all in FD.
+- No browser run (not needed: pure, not wired). No suite (main.js untouched; only new files).
+- Bugs the lab found and fixed on the way: the bait spot sat inside the claw (a mash bot "baited" by accident); the breath's per-tick key bumped the
+  fight's act counter (the bot re-read the tell every tick and walked into the fire); a 0.9 s breath could not be avoided from the bait spot.
