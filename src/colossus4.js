@@ -32,5 +32,5 @@ export const STAGE4 = { W: 80, cc: 40, stations: [20, 40, 60], mirrors: [10, 30,
 export const COL4 = { floor: 0.4, w: 115, h: 320, stompFoot: 48, sweepIn: 64, crackFoot: 48, footOut: 45, trampleW: 24, walkV: 68, lungeReach: 520 };
 /* THE LIGHT: the dawn sun stands in the EAST (a sky-mirror throws it WEST, onto his crown at the station 10 columns on); a brazier sits on its mirror's OUTER
    side and a mirror TO THE FIRE throws its light on along the floor INWARD (onto his crack at the station 10 columns on) */
-export const LIGHT4 = { throwCols: 10, sunRay: [6, 26], burnWord: 'THE DAWN BURNS HIM', fireWord: 'THE FIRE BURNS HIM: HIS SHOULDERS BLAZE', comesWord: 'HE COMES TO THE LIGHT',
-  wallWord: 'THE LIGHT FALLS ON THE WALL', lanceNext: 'HIS LANCE COMES NEXT: STAND BEHIND THE MIRROR' };
+export const LIGHT4 = { throwCols: 10, sunRay: [6, 26], burnWord: 'THE DAWN BURNS HIM', fireWord: 'THE FIRE BURNS HIM', comesWord: 'HE COMES TO THE LIGHT',
+  wallWord: 'THE LIGHT FALLS ON THE WALL', lanceNext: 'HIS LANCE COMES NEXT' };

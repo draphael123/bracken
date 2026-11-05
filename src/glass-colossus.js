@@ -290,7 +290,7 @@ export function stepColossus(e, S, dt, heroes, c) {
   if (G.c4 && S.ph > 1 && S.ward <= 0 && S.lock <= 0 && !C4_HOLD.includes(e.mode)) { const l = c4Lights(S).find(q => q.on);
     if (l) { S.n.burn = (S.n.burn || 0) + 1; S.burnT = S.t; S.burnBy = l; S.marks = []; S.plates = []; S.gaze = null; S.lunge = null; S.crack = null; S.sweep = null; S.walk = null; if (l.kind === 'dawn') S.n.dazzle++; else S.n.held++;
       beginOpen(e, S, l.kind === 'dawn' ? 'dazzled' : 'blazing', l.kind === 'dawn' ? COL.openCrown : COL.openShoulders, l.m.i, c); c.fx && c.fx('burn', e.x, e.y); c.shake && c.shake(4);
-      c.number(e.x, (l.kind === 'dawn' ? G.crownY : G.shoulderY) - 26, l.kind === 'dawn' ? LIGHT4.burnWord : LIGHT4.fireWord, '#ffd36b'); return; } }
+      c.number(e.x, G.floor - 140, l.kind === 'dawn' ? LIGHT4.burnWord : LIGHT4.fireWord, '#ffd36b'); return; } }   /* (the words where a hero on the floor reads them: at 320 px his crown is above a 180 px screen) */
   if (!G.c4 && S.ph === 3 && S.ward <= 0 && !['lance', 'shards', 'stomp', 'shake', 'wave', 'sweep', 'quake', 'crack', 'gaze', 'lunge', 'walk', 'walkTell'].includes(e.mode)) { const m = flank(S).find(q => q && q.notch === 'sky');   /* (claude/colossusrework: the dawn from his FLANK) */ if (m) { S.n.dazzle++; S.marks = []; beginOpen(e, S, 'dazzled', COL.openCrown, m.i, c); c.number(e.x, G.crownY - 26, 'THE DAWN BURNS ITS CROWN: DAZZLED', '#ffd36b'); return; } }
   e.modeT = (e.modeT || 0) - dt;
   switch (e.mode) {

@@ -113,8 +113,9 @@ export function makeColossusHands(ctx) {
      station: a ring where it lands + the marker HE COMES TO THE LIGHT (he walks there next). On the wall: said so */
   const drawLight4 = (g, cx, cy, time) => { const G = S.G;
     for (const l of CG.c4Lights(S)) { BP.drawBeam(g, BP.path(l.pts), cx, cy, time, { kind: l.kind, ring: !l.on, a: l.on ? 1 : 0.85 });
-      if (l.on) continue; if (!l.wall) BP.drawMarker(g, G.stations[l.st], G.floor, cx, cy, time, { word: LIGHT4.comesWord, text: ctx.text });
-      else { const x = R(l.land[0] - cx); if (x > 50 && x < ctx.VW() - 50) ctx.text(LIGHT4.wallWord, x, R(l.land[1] - 14 - cy), '#9aa39a', 'center', 5); } } };
+      if (l.on) continue; const fits = (x, w) => x - (w.length * 4 + 4) >= 0 && x + w.length * 4 + 4 <= ctx.VW();   /* (tools/textfit OFFSCREEN: words wait until they fit) */
+      if (!l.wall) { const x = R(G.stations[l.st] - cx); BP.drawMarker(g, G.stations[l.st], G.floor, cx, cy, time, fits(x, LIGHT4.comesWord) ? { word: LIGHT4.comesWord, text: ctx.text } : {}); }
+      else { const x = R(l.land[0] - cx); if (fits(x, LIGHT4.wallWord)) ctx.text(LIGHT4.wallWord, x, R(l.land[1] - 14 - cy), '#9aa39a', 'center', 5); } } };
   H.drawBack = (g, cx, cy, time) => { const Ar = A(); if (!S || !Ar) return; const G = S.G, e = ctx.boss;
     /* the gaze: its eyes' light shining west to the wall, where the steps' mirror takes it (until it falls) */
     if (e && H.gazeOn() && e.mode !== 'sleep') { const ex = R(G.cx - cx) - 14, ey = R(G.floor - (G.eyeH || 175) - 3 - cy), wx = R(G.x0 - cx), wy = R(G.floor - 128 - cy); g.globalCompositeOperation = 'lighter'; g.strokeStyle = 'rgba(150,230,255,0.28)'; g.lineWidth = 4; g.beginPath(); g.moveTo(ex, ey); g.lineTo(wx, wy); g.stroke(); g.strokeStyle = 'rgba(230,252,255,0.8)'; g.lineWidth = 1; g.beginPath(); g.moveTo(ex, ey); g.lineTo(wx, wy); g.stroke(); g.lineWidth = 1; g.globalCompositeOperation = 'source-over'; }
@@ -211,7 +212,7 @@ export function makeColossusHands(ctx) {
     /* (claude/colossus4) THE INSTANT: a white flash over him for 0.35 s after the light lands; P1/P3 a mirror FACING him on your side - HIS LANCE COMES NEXT */
     if (G.c4 && S.burnT != null && S.t - S.burnT < 0.35) { const a = 1 - (S.t - S.burnT) / 0.35; g.save(); g.globalCompositeOperation = 'lighter'; g.globalAlpha = 0.6 * a; g.fillStyle = '#fff6e0'; g.fillRect(R(G.cx - cx) - R(COL.w / 2), R(G.floor - COL.h - cy), R(COL.w), COL.h); g.restore(); }
     if (G.c4 && (S.ph === 1 || S.ph === 3) && e.mode === 'idle' && S.ward <= 0 && S.lock <= 0 && S.t - (S.lanceT ?? -99) >= 6) { const P = ctx.hero(), sd = Math.sign(P.x - G.cx) || 1, m = S.mirrors.find(q => q.notch === 'face' && Math.sign(q.x - G.cx) === sd);
-      if (m) { BP.drawBeam(g, BP.path([[G.cx, G.hipY - 20], [m.x - sd * 6, G.floor - 38], [G.cx, G.hipY - 20]]), cx, cy, time, { kind: 'lance', preview: true, a: 0.7 }); const x = R(m.x - cx); if (x > 60 && x < ctx.VW() - 60) ctx.text(LIGHT4.lanceNext, x, R(G.floor - 96 - cy), '#ffd36b', 'center', 5); } }
+      if (m) { BP.drawBeam(g, BP.path([[G.cx, G.hipY - 20], [m.x - sd * 6, G.floor - 38], [G.cx, G.hipY - 20]]), cx, cy, time, { kind: 'lance', preview: true, a: 0.7 }); const x = R(m.x - cx), hw = LIGHT4.lanceNext.length * 4 + 4; if (x - hw >= 0 && x + hw <= ctx.VW()) ctx.text(LIGHT4.lanceNext, x, R(G.floor - 96 - cy), '#ffd36b', 'center', 5); } }
     /* THE READ (B10) */
     const zoneY = e.mode === 'cracked' ? G.hipY - 20 : e.mode === 'blazing' ? G.shoulderY - 8 : G.crownY - 4;
     if (CG.colOpen(e)) { const k = Math.max(0, e.open / (e.openT0 || COL.openT)), x = R(G.cx - cx), y = R(zoneY - cy);
