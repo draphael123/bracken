@@ -18,6 +18,7 @@
 export const PVP_SHIPS = true;   /* THE FLAG: false hides the title row, the tavern pit's DUEL card and the RANKINGS board (the pit goes back to COMING SOON) */
 export const DUEL = {
   hp: 100, scale: 0.8, probe: 40, iframe: 0.4,
+  heroMul: {},   /* (proof146b) per-hero PvP trim hook (empty): a warden trim of x0.8 and x0.5 did NOT move the bot-duel warden win rate (24/24, 7/8): the edge is not blow weight */
   juggle: { n: 3, t: 1.5, inv: 1.1 },
   round: { count: 3, fightT: 90, sdLen: 45, timeUp: 150, ko: 2.4, toWin: 2, maxRounds: 5 },
   sd: { from: 1.5, to: 3 },
@@ -187,7 +188,7 @@ export function makeDuel(api) {
     const att = attackerOf({ victim, pass: api.passOn(), fromX, fromY: victim.y - 10, owned, seats: st.seats, upright: api.upright });
     st.stats.blows++;
     if (!att) { if (api.passOn() === victim) st.stats.self++; else st.stats.nobody++; return true; }
-    const pd = pvpDamage(dmg, st.norm.get(att) ?? 1, st.m.clock);
+    const pd = pvpDamage(dmg, (st.norm.get(att) ?? 1) * (DUEL.heroMul[att.hero] ?? 1), st.m.clock);
     const { r, landed } = api.damage(victim, fromX, DUEL.probe, proxyOf(att));
     if (r === 'blocked') { st.stats.blocked++; return true; }
     if (r !== 'hit' || !(landed > 0)) return true;

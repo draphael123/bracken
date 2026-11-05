@@ -110,15 +110,19 @@ if (WANT.includes('duel')) {
   const { openPage } = await import('./cdp.mjs');
   const N = +(process.env.N || 2), CAP_S = 6 * 60;
   const pairs = process.env.PAIRS ? process.env.PAIRS.split(',').map(p => p.split(':')) : BOT_HEROES.flatMap((a, i) => BOT_HEROES.slice(i + 1).map(b => [a, b]));
-  const pg = await openPage({ audio: false, fonts: false, seed: 5 }); const E = e => pg.evalp(e);
+  let pg = await openPage({ audio: false, fonts: false, seed: 5 }); const E = e => pg.evalp(e);   /* (proof146b) a fresh page every RECYCLE matches (one page crashed after ~10 matches), and one retry on a crashed page */
+  const RECYCLE = +(process.env.RECYCLE || 6); let nPage = 0; const openDI = () => E(`(async()=>{const {LEVELS}=await import('/src/level.js');window.__DI=LEVELS.findIndex(l=>l.id==='duel_pit');return window.__DI;})()`);
   const won = {}, played = {};
   try {
-    await E(`(async()=>{const {LEVELS}=await import('/src/level.js');window.__DI=LEVELS.findIndex(l=>l.id==='duel_pit');return window.__DI;})()`);
+    await openDI();
+    const fresh = async () => { try { await pg.close?.(); } catch (e) {} pg = await openPage({ audio: false, fonts: false, seed: 5 }); nPage = 0; await openDI(); };
     for (const [a, b] of pairs) for (let s = 1; s <= N; s++) {
-      const r = await E(`(async()=>{BK.manualSimulation=true;for(const k in BK.keys)BK.keys[k]=false;BK.setHero('${a}');BK.reset({fresh:true});BK.applyUpgrades();BK.load(__DI);BK.start();BK.coopStart('${b}',false);BK.sim(10);
+      if (nPage >= RECYCLE) await fresh(); nPage++;
+      const run1 = () => E(`(async()=>{BK.manualSimulation=true;for(const k in BK.keys)BK.keys[k]=false;BK.setHero('${a}');BK.reset({fresh:true});BK.applyUpgrades();BK.load(__DI);BK.start();BK.coopStart('${b}',false);BK.sim(10);
         const D=BK.duel();const began=D.begin({bots:'all',seed:${s * 31}});const dc0=JSON.stringify(BK.PROG?BK.PROG.dc||null:null);let f=0;
         while(f<${CAP_S * 60}&&D.debug().m&&D.debug().m.phase!=='over'){BK.sim(60);f+=60;}
         const d=D.debug(),fl=BK.players().map(p=>p.flasks|0);return {began,phase:d.m&&d.m.phase,winner:d.m&&d.m.winner,rounds:d.m&&d.m.log.length,secs:f/60,stats:d.stats,seats:d.seats,flasks:fl,state:BK.state};})()`);
+      let r; try { r = await run1(); } catch (e) { console.log('  note ' + a + ' v ' + b + ' #' + s + ': ' + String(e.message || e).slice(0, 80) + ' -> fresh page, retry'); await fresh(); r = await run1(); }
       const tag = a + ' v ' + b + ' #' + s;
       ok(r.began && r.phase === 'over' && r.state === 'play', tag + ': the match ENDS inside ' + CAP_S + ' s (' + r.secs + ' s, ' + r.rounds + ' rounds, winner P' + r.winner + ')');
       ok(r.stats && r.stats.landed > 0, tag + ': heroes land blows on each other (' + JSON.stringify(r.stats) + ')');
