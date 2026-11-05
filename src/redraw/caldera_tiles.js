@@ -89,3 +89,5 @@ export function caldTile(t, x, y, at, T, L) {
   if (inFloor && !aU) return fill(x, y, Math.max(0, y - fr - 1), aL, aR, false, aD);
   return column(x, y, aU, aL, aR, aD);
 }
+/* THE DOOR: the 6-row arena wall that shuts when the drake wakes (main.js setWall) is a slab of the same columnar basalt with a hot seam, not the forest's thorn wall */
+export function sealTile(x, y) { return column(x, y, false, false, false, false); }
