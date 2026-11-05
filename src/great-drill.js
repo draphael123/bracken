@@ -42,31 +42,31 @@ export const DRILL = {
   plateW: 62, cabIn: 30, cabW: 30, plateH: 40, cabH: 40, stackX: 150,
   contactDmg: 48, contactCd: 1.0, shove: 60,
   armour: 0.4,                          /* B15: outside the jam a blow on the cab takes this */
-  rockTell: 1.1, rockDmg: 48, rockW: 26,
-  revTell: 1.25, revV: 230, revT: 0.42, revHold: 0.4, revBack: 120, revDmg: 47,
+  rockTell: 1.3, rockDmg: 48, rockW: 26,
+  revTell: 1.45, revV: 230, revT: 0.42, revHold: 0.4, revBack: 120, revDmg: 47,
   oreFirst: 3.5, oreEvery: [8.5, 8.0, 7.5], chuteTell: 1.1, oreDmg: 32, oreFly: 300, orePull: 70,
   leverLead: 230, leverReach: 30, leverDump: 0.45,   /* THE CHUTE'S POINTS LEVER: it rises this far ahead of you and comes down the tunnel at cruise; thrown, the chute dumps (this long) into its gears */
   jamT: 4.2, jamMul: 2.3, jamCap: 0.15, wardT: 3.0, drift: 45,
-  dynTell: 0.5, dynFuse: 1.3, dynR: 24, dynDmg: 41,                    /* DYNAMITE: the arm back (told), then the stick's fuse on your line - it bursts where you are if you hold */
-  lungeTell: 1.0, lungeT: 0.45, lungeDmg: 45, lungeHead: 16,          /* THE SPIN-UP LUNGE: the whine, then its head down your line at head height (px over the line) */
-  chainTell: 0.9, chainFly: 0.3, chainT: 2.2, chainPull: 95, chainDmg: 23,   /* THE GRAPPLE CHAIN: the hook swings, flies; snagged, your cart is dragged at it this fast */
-  collapseTell: 1.25, collapseW: 30, collapseDmg: 47, collapseApart: 150,     /* ROOF COLLAPSE: two spots - where you will be if you hold, and this far ahead of it */
+  dynTell: 0.7, dynFuse: 1.5, dynR: 24, dynDmg: 41,                    /* DYNAMITE: the arm back (told), then the stick's fuse on your line - it bursts where you are if you hold */
+  lungeTell: 1.2, lungeT: 0.45, lungeDmg: 45, lungeHead: 16,          /* THE SPIN-UP LUNGE: the whine, then its head down your line at head height (px over the line) */
+  chainTell: 1.1, chainFly: 0.3, chainT: 2.2, chainPull: 95, chainDmg: 23,   /* THE GRAPPLE CHAIN: the hook swings, flies; snagged, your cart is dragged at it this fast */
+  collapseTell: 1.45, collapseW: 30, collapseDmg: 47, collapseApart: 150,     /* ROOF COLLAPSE: two spots - where you will be if you hold, and this far ahead of it */
   phase2: 0.6, phase3: 0.3, phaseT: 2.0,
   /* (deeprails4) THE GEARS: a bank's health (a few blows at campaign level), the stall a broken one costs it (an OPEN of its own: >= 3 s, its own purse), the held
      purse at a shut gate. The Sonnet tune lane owns these (and the fight's hp) - greybox numbers */
   gearHp: 100, gearHp3: 70, heroTake: { knight: 1, pyro: 1.15 },   /* (deeprails6tune) gearHp3: P3's jump banks are cheaper (the winning fights' P3 ran +27% on the old one); heroTake: what its blows cost each hero (the knight lives in its reach, pyro stands off: 12 seeds read k 42% / w 75% / p 82%) */
   gearStallT: 3.0, gearStallCap: 0.05, heldCap: 0.12, gearW: 16,
-  gap: [0.45, 0.35, 0.25],
+  gap: [0.55, 0.45, 0.35],
   /* (deeprails5, Daniel 10-14: +2 told attacks tied to the gears / rails) THE SPARE CUTTER (P2, the SPIN-UP GEAR's): told (its boom lifts a spare cutter disc, the gear spins up,
      '!! A CUTTER: STRIKE IT BACK'), then bowled down your line at shin height - STRIKE IT as it reaches you and it flies back into its own gears (cutterBite off a bank), or JUMP it.
      THE RAIL CLAW (P3, the CHAIN WINCH's): told (the claw drops on its chain behind the rig, the stretch of your line it will rip marked red, '!! THE CLAW: PUMP AND JUMP'), then
      that stretch of rail is TORN and comes down the tunnel at you with the world - too long for a cruising jump (clawW): PUMP AND JUMP it (the level's pump gap) or change line */
-  cutterTell: 0.9, cutterFly: 0.45, cutterLead: 50, cutterV: 160, cutterDmg: 26, cutterR: 9, cutterH: 16, cutterBite: 55, cutterBackV: 420,   /* (bowled: it flies cutterFly s off the boom - its landing marked on your line, cutterLead px ahead of you - then rolls at you) */
-  clawTell: 1.1, clawW: 92, clawDmg: 32,   /* (clawW: + a cart's width it is 0.45 s under a pumped jump (0.62 s aloft), 0.69 s under a cruising one - it falls short) */
+  cutterTell: 1.1, cutterFly: 0.45, cutterLead: 50, cutterV: 160, cutterDmg: 26, cutterR: 9, cutterH: 16, cutterBite: 55, cutterBackV: 420,   /* (bowled: it flies cutterFly s off the boom - its landing marked on your line, cutterLead px ahead of you - then rolls at you) */
+  clawTell: 1.3, clawW: 92, clawDmg: 32,   /* (clawW: + a cart's width it is 0.45 s under a pumped jump (0.62 s aloft), 0.69 s under a cruising one - it falls short) */
   /* (deeprails6, Daniel 10-29 #2: 'one more attack in P1') THE SLAG LADLE (P1, THE ROOF WINCH's - its boom hoists the ladle; break the winch and it is gone too. deeprails6: the brief's rec was the dynamite feed, but the feed is the bank every player breaks first and the ladle was never seen - question in the lane report): told (the boom rises over the cab with a
      ladle of slag, the line it aims at marked, '!! SLAG LADLE: CHANGE LINE'), then the glob flies (harmless, its landing marked) and POOLS on your line ladleLead px ahead of
      you - a red-orange strip, ladlePool s, coming down the tunnel with the world: a cart that rides through it is burnt. Change line (P1 has three), or jump it */
-  ladleTell: 0.9, ladleFly: 0.4, ladleLead: 120, ladlePool: 2.5, ladleW: 40, ladleDmg: 14,
+  ladleTell: 1.1, ladleFly: 0.4, ladleLead: 120, ladlePool: 2.5, ladleW: 40, ladleDmg: 14,
   /* (deeprails6, Daniel 10-29 #1: 'ONE rail in the last phase, and tension') P3 ONE RAIL: the roof takes the LOW and the HIGH lines (sealT: the rubble coming down, a cart on the
      LOW line is bucked up onto the MID rail - told, never teleported); THE RIG CLOSES as its bar falls (its home closeR px nearer you at the end) */
   sealT: 0.7, buckV: 430, closeR: 70,
@@ -258,7 +258,7 @@ export function stepDrill(e, S, dt, heroes, c) {
       if (name === 'rocks') { const clear = ls.length === 2 ? ls.find(l => l !== hl) : ls.filter(l => l !== hl)[S.n.rocks % 2]; S.n.rocks++;
         S.rocks = ls.filter(l => l !== clear).map((lane, j) => ({ lane, x: Math.min(rearX(S) - 20, near.x + DRILL.cruise * DRILL.rockTell + (j ? 18 : 0)), t: DRILL.rockTell, id: S.n.rocks * 3 + j }));
         e.mode = 'rockTell'; S.mT = DRILL.rockTell; c.sound && c.sound('tell'); if (!S.told.rocks) { S.told.rocks = 1; c.number(rearX(S) - 40, G.laneY[2] - 40, 'IT CRACKS THE ROOF: OFF THE SHADOWS', '#ffb070'); } }
-      else if (name === 'reverse') { e.mode = 'revTell'; S.mT = S.ph === 3 ? DRILL.revTell * 0.85 : DRILL.revTell; S.n.reverse++; c.sound && c.sound('klaxon');
+      else if (name === 'reverse') { e.mode = 'revTell'; S.mT = S.ph === 3 ? DRILL.revTell * 0.92 : DRILL.revTell; S.n.reverse++; c.sound && c.sound('klaxon');
         c.number(rearX(S) - 30, G.laneY[2] - 40, S.told.rev ? '!! REVERSE' : S.highDown ? '!! IT BACKS AT YOU: BRAKE' : '!! IT BACKS AT YOU: BRAKE, OR JUMP UP', '#ff6b6b'); S.told.rev = 1; }
       else if (name === 'dynamite') { e.mode = 'dynTell'; S.mT = DRILL.dynTell; S.n.dynamite++; c.sound && c.sound('tellHard');
         const two = S.ph >= 2 && ls.length > 1, lanes = two ? [hl, ls.filter(l => l !== hl)[S.n.dynamite % (ls.length - 1)]] : [hl];
