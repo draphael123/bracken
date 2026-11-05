@@ -81,7 +81,7 @@ export function layAbbotChapel({ T, TS, W, set, at, block, air, boards, rope, en
         braziers: [{ smoke: 50.5, spot: 52.5 }, { smoke: 91, spot: 89.5 }], ropes: [57, 71, 85], land: [50, 92], floorSpans: [[49, 76], [81, 93]], callAt: [60, 65, 85], landX: 66 }],
     collapse: { hole: [77, 80, 19], rubble: [[77, 79, 21], [73, 75, 27]] },
     bars: [{ x0: 48, x1: 48, y0: 11, y1: 13, open: 'AIR' }, { x0: 92, x1: 92, y0: 19, y1: 19, open: 'NET' }],
-    climb: [[74, 27], [70, 24], [78, 21], [82, 19]],   /* the way up after the floor goes (the lab's hands walk it): the rubble, the rood, the rubble, the belfry floor */
+    climb: [[74, 27], [74, 24], [78, 21], [82, 19]],   /* the way up after the floor goes (the lab's hands walk it): the rubble, the rood over it, the rubble under the hole, the belfry floor */
   };
   const arena = { x0: 49 * TS, x1: 94 * TS, floor: 30 * TS, y0: 22 * TS, trigger: 50 * TS, wallL: 48, wallR: 94, boss: 'abbot', music: 'roc', house,
     tint: '#e8c88a', tintA: 0.10, fx: 'motes' };

@@ -2681,7 +2681,7 @@ async function runbossLab(BK, opts) {
          verb: the bridge's bell under its tower (P1), the basket ridden down (P2), his censer's smoke ridden up and a plunge (P3).
          Beaten down at the end, the great bell. Every device is struck, ridden or plunged by the bot's own keys: nothing is
          done for it. The house's layout is on him (boss.H, the basket mover boss.basketM), as main.js hands it to src/false-abbot.js. */
-      else if (boss.t === 'abbot') { const H = boss.H, fl = A.floor, bl = BK.props().find(p => p.t === 'tbell' && p.abbot);
+      else if (boss.t === 'abbot') { const H = boss.H, fl = H && H.m3 ? H.floor : A.floor, bl = BK.props().find(p => p.t === 'tbell' && p.abbot);   /* (claude/falseabbot) the m3 house: the storey he fights in */
         const reachB = LAB_REACH[h] || 22, onHigh = P.ground && P.y < fl - 20, bossLow = Math.abs(boss.y - fl) < 20;
         const far = Math.abs(boss.x - P.x) > 70 || !bossLow;
         const add = BK.enemies().filter(q => q.alive && q !== boss && !q.boss && Math.abs(q.y - P.y) < 26 && Math.abs(q.x - P.x) < (far ? 150 : LAB_REACH[h] + 18)).sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0];
@@ -2697,7 +2697,16 @@ async function runbossLab(BK, opts) {
           const side = Math.sign(P.x - x) || 1, at = x + side * Math.max(6, Math.min(reachB - 4, half + reachB - 10));
           if (Math.abs(P.x - at) < 8 && P.ground && P.atk < 0) { goal = null; P.face = -side; k.block = false; BK.press('atk'); swings++; } else goal = at; };
         strike = false;
-        if (H && onHigh && !boss.smoke) { const row = Math.floor((P.y + 1) / 16), isB = x => { const t = L.grid[row * L.W + x]; return t === T.ONEWAY || t === T.PLANK; };   /* off the boards: the fight is on the floor - walk off the nearer end of the run you stand on */
+        /* (claude/falseabbot) THE MONASTERY 3: after THE FLOOR GOES, up after him by the house's climb (the rubble, the rood, the rubble, up through the hole): jump
+           straight up through each board over you, and only steer for the next once you are above it; and THE PEAL coming along your boards is jumped */
+        const below3 = H && H.m3 && (boss.stage || 1) === 2 && P.y > fl + 24;
+        const peal3 = H && H.m3 && P.ground && (boss.waves || []).find(w => Math.abs(w.y - P.y) < 8 && Math.sign(P.x - w.x) === w.dir && Math.abs(P.x - w.x) < 40);
+        if (below3 && H.climb) { const st = H.climb.find(s => s[1] < P.y - 4) || H.climb[H.climb.length - 1], prev = H.climb[Math.max(0, H.climb.indexOf(st) - 1)];
+          if (P.ground) { const ax = st === H.climb[H.climb.length - 1] ? prev[0] : st[0];   /* the last is the belfry floor beside the hole: go up from under the hole */
+            if (Math.abs(P.x - ax) > 6) goal = ax; else { goal = null; if (!(P.labJump > 0)) { BK.press('jump'); P.labJump = 16; } } }
+          else goal = P.y < st[1] - 6 ? st[0] : null; }
+        else if (peal3) { goal = null; if (!(P.labJump > 0)) { BK.press('jump'); P.labJump = 10; } }
+        else if (H && onHigh && !boss.smoke) { const row = Math.floor((P.y + 1) / 16), isB = x => { const t = L.grid[row * L.W + x]; return t === T.ONEWAY || t === T.PLANK; };   /* off the boards: the fight is on the floor - walk off the nearer end of the run you stand on */
           let xl = Math.floor(P.x / 16), xr = xl; while (xl > 1 && isB(xl - 1)) xl--; while (xr < L.W - 2 && isB(xr + 1)) xr++;
           goal = P.x - xl * 16 < (xr + 1) * 16 - P.x ? xl * 16 - 12 : (xr + 1) * 16 + 12; }
         else if (burn) { const line = (BK.fires() || []).filter(q => !(q.delay > 0) && q.life > 0.3 && Math.abs(q.y - P.y) < 12 && Math.abs(q.x - burn.x) < 130), lo = Math.min(...line.map(q => q.x)), hi = Math.max(...line.map(q => q.x));
