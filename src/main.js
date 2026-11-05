@@ -4864,7 +4864,7 @@ function drawRoadToL50(road, y) { const n = road.length, gap = 3, pw = Math.floo
     g.fillStyle = 'rgba(26,24,36,0.85)'; g.fillRect(x, y, pw, ph); g.strokeStyle = r.capstone ? '#ffd36b' : lit ? UI.sel : 'rgba(255,255,255,0.16)'; g.lineWidth = 1; g.strokeRect(x + 0.5, y + 0.5, pw - 1, ph - 1);
     text('L' + r.level + (r.capstone ? ' CAP' : r.fork ? ' FORK' : ''), x + pw / 2, y + 2, r.capstone ? '#ffd36b' : col, 'center', 6);
     if (r.state === 'taken' && !r.fork) text(pipName(r.picked.name, pw - 4), x + pw / 2, y + 12, col, 'center', 6);
-    else if (r.fork) r.options.forEach((o, j) => text((o.locked ? 'X ' : r.state === 'taken' ? '> ' : '') + pipName(o.name, pw - 4 - (o.locked || r.state === 'taken' ? 12 : 0)), x + pw / 2, y + 12 + j * 9, o.locked ? UI.dim : r.state === 'taken' ? '#8fd160' : col, 'center', 6));
+    else if (r.fork) r.options.forEach((o, j) => text((!o.locked && r.state === 'taken' ? '> ' : '') + pipName(o.name, pw - 4 - (!o.locked && r.state === 'taken' ? 12 : 0)), x + pw / 2, y + 12 + j * 9, o.locked ? UI.dim : r.state === 'taken' ? '#8fd160' : col, 'center', 6));
     else if (r.options[0]) text(pipName(r.options[0].name, pw - 4), x + pw / 2, y + 12, col, 'center', 6); }); }
 /* THE SIM (tools/xp.mjs): the campaign in the order it opens - a secret wood straight after the wood that opens it - priced by the same
    xpFoe the kills use. A straight run kills XP_KILL_NORMAL of what a wood holds, every mini and boss, and takes the share; a full clear
