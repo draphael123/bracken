@@ -53,8 +53,8 @@ export function resetBack(b, phase = 1) {
   Object.assign(b, { t: 0, bob: 0, scroll: 0, phase, alt: SKM.ALT[phase - 1], hold: 0, climb: null, y: b.y0, dx: 0, dy: 0, events: [] });
   b.bank = { state: 'level', t: 0, dir: 0, ang: 0, n: 0 }; b.nextBank = bankGap(b); return b;
 }
-/* the time to the next bank's tell, by phase, +- jitter */
-export function bankGap(b) { const B = SKM.BANK, base = B.every[clamp(b.phase, 1, 3) - 1]; return base * (1 + (b.rnd() * 2 - 1) * B.jitter); }
+/* the LEVEL time to the next bank's tell: the phase's cadence (tell to tell, +- jitter) less the bank just flown (tell + tilt + recover) */
+export function bankGap(b) { const B = SKM.BANK, base = B.every[clamp(b.phase, 1, 3) - 1]; return Math.max(1, base * (1 + (b.rnd() * 2 - 1) * B.jitter) - (B.tell + B.hold + B.recover)); }
 export const bankDeg = b => b.bank.ang / D2R;
 /* the back's surface height at x (world px): the flat line, the wingbeat, and the bank's tilt about the middle (positive angle = the
    right side, the neck's, is LOWER: y grows to the right) */
