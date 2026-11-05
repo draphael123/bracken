@@ -7,7 +7,9 @@
      ALLOWED  listed in tools/float-allow.json with a reason (floating on purpose; an entry that matches nothing fails, so it cannot outlive what it excuses)
      INTERIOR a declared L.interiors box covers most of the group: a building / ship / hold whose frame is PAINTED, so the data cannot say whether it is
               held up (needs eyes)
-     REAL     everything else: tiles (rock, planks, spikes, palisade) with nothing holding them up, ranked by size x how much air is under them
+     ART-HELD solid-islands.mjs finds something DRAWN that holds it (a frame, a structure, a house, a rope, a post) but not a post every 4 columns: the data says held, the
+              ART must show it (needs eyes)
+     REAL     everything else (solid-islands.mjs finds nothing drawn under it at all): tiles (rock, planks, spikes, palisade) with nothing holding them up, ranked by size x how much air is under them
    NEAR marks a REAL group with a 1-2 tile gap to other rock (a data fix: fill the gap).
      node tools/float-triage.mjs              the ranked REAL list (gate: a REAL group in a GATE level, or a stale ALLOWED entry, fails)
      node tools/float-triage.mjs <id> ...     only those levels, every class listed
@@ -16,9 +18,10 @@ import { readFileSync } from 'node:fs';
 import { T } from '../src/level.js';
 import { campaign, build, floating } from './floating-geometry.mjs';
 import { hungAt } from '../src/demo-supports.js';
+import { islands, supportsOf, ALLOW as SI_ALLOW } from './solid-islands.mjs';   /* the repo's own drawn-support rule (posts, hangers, frames) and its reasoned allowances */
 
 /* levels whose REAL list must stay empty (gate). Add a level here when its list reaches 0. */
-export const GATE = ['theatre'];
+export const GATE = ['theatre', 'welltown', 'witchlight', 'skyroad', 'glasssea'];
 const LEDGE_KINDS = new Set(['ONEWAY', 'PLANK', 'REED', 'SHELF', 'RAIL', 'BOUNCER', 'CRYST', 'NET']);
 const BOARD_T = new Set([T.AIR, T.NET, T.ONEWAY, T.PLANK, T.REED, T.SHELF]);
 const ALLOW = JSON.parse(readFileSync(new URL('./float-allow.json', import.meta.url), 'utf8')).allow;
@@ -80,10 +83,13 @@ export function triage(id, L) {
     const hb = heldBy(L, h); if (hb.ok) { r.cls = 'HUNG'; r.why = 'every column within ' + REACH + ' of a post / hanger (' + hb.anchors + ' anchored cols)'; out.push(r); continue; }
     if (m && m.mover && h.n <= MOVER_MAX) { r.cls = 'MOVER-NEAR'; r.why = m.mover + ' beside it (does not hold it up: needs eyes)'; out.push(r); continue; }
     const it = interiorOf(L, h); if (it) { r.cls = 'INTERIOR'; r.why = it; out.push(r); continue; }
+    const isl = islands(L).find(i => i.x0 === h.x0 && i.x1 === h.x1 && i.y0 === h.y0 && i.y1 === h.y1), held = isl ? supportsOf(L, isl) : [];
+    if (held.length) { r.cls = 'ART-HELD'; r.why = 'drawn support: ' + [...new Set(held)].join(', '); out.push(r); continue; }
     const au = airUnder(L, h), ng = nearGap(L, h);
     r.cls = 'REAL'; r.near = ng.d <= 2 ? ng : null;
     r.score = Math.round(h.n * (0.25 + au.open / Math.max(1, au.cols)));
     if (hb.anchors) r.score = Math.round(r.score * 0.6);
+    r.si = (SI_ALLOW[id] || [])[1] || null;
     r.why = (hb.anchors ? 'SPARSE posts (' + hb.anchors + ' anchored cols, worst gap ' + hb.worst + '); ' : 'no post / hanger; ') + au.open + '/' + au.cols + ' columns have 3+ rows of air under them' + (r.near ? '; NEAR: ' + r.near.d + '-tile gap to other rock at ' + r.near.at : '');
     out.push(r);
   }
@@ -94,12 +100,12 @@ export function triage(id, L) {
 const all = []; const pick = only.length ? campaign.filter(d => only.includes(d.id)) : campaign;
 for (const d of pick) { const L = build(d); if (!L || !L.grid) continue; all.push(...triage(d.id, L)); }
 const by = c => all.filter(r => r.cls === c);
-const fmt = r => r.level + ' ' + r.kinds.join('+') + ' x' + r.n + ' @' + r.x0 + '-' + r.x1 + ',' + r.y0 + '-' + r.y1 + (r.score !== undefined ? ' score ' + r.score : '') + ' - ' + (r.why || '');
+const fmt = r => r.level + ' ' + r.kinds.join('+') + ' x' + r.n + ' @' + r.x0 + '-' + r.x1 + ',' + r.y0 + '-' + r.y1 + (r.score !== undefined ? ' score ' + r.score : '') + ' - ' + (r.why || '') + (r.si ? ' [solid-islands allowance: ' + r.si.slice(0, 110) + ']' : '');
 if (asJson) { console.log(JSON.stringify(all)); process.exit(0); }
-if (only.length) { for (const c of ['REAL', 'INTERIOR', 'MOVER-NEAR', 'HUNG', 'MACHINE', 'ALLOWED', 'STALE']) for (const r of by(c)) console.log(c.padEnd(9) + fmt(r)); }
+if (only.length) { for (const c of ['REAL', 'INTERIOR', 'MOVER-NEAR', 'ART-HELD', 'HUNG', 'MACHINE', 'ALLOWED', 'STALE']) for (const r of by(c)) console.log(c.padEnd(9) + fmt(r)); }
 else { console.log('REAL floaters, ranked:'); for (const r of by('REAL').sort((a, b) => b.score - a.score)) console.log('  ' + fmt(r)); }
 const bad = all.filter(r => (r.cls === 'REAL' && GATE.includes(r.level)) || r.cls === 'STALE');
 for (const r of bad) console.log('FAIL ' + fmt(r));
-console.log(['LEDGE', 'MACHINE', 'HUNG', 'ALLOWED', 'INTERIOR', 'MOVER-NEAR', 'REAL', 'STALE'].map(c => c + ' ' + by(c).length).join('  '));
+console.log(['LEDGE', 'MACHINE', 'HUNG', 'ALLOWED', 'INTERIOR', 'MOVER-NEAR', 'ART-HELD', 'REAL', 'STALE'].map(c => c + ' ' + by(c).length).join('  '));
 if (bad.length) process.exit(1);
-console.log('ok  float-triage  ' + by('REAL').length + ' real, ' + (by('INTERIOR').length + by('MOVER-NEAR').length) + ' needs-eyes over ' + pick.length + ' level(s)');
+console.log('ok  float-triage  ' + by('REAL').length + ' real, ' + (by('INTERIOR').length + by('MOVER-NEAR').length + by('ART-HELD').length) + ' needs-eyes over ' + pick.length + ' level(s)');

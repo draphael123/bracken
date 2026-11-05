@@ -1,1 +1,8 @@
-{ "allow": [] }
+{ "allow": [
+  { "level": "welltown", "x0": 151, "x1": 151, "y0": 10, "y1": 19, "why": "the Gang Leader's gate wall (src/well-town.js 147: his wall shuts behind you at 151), a stage door hung in the arch" },
+  { "level": "welltown", "x0": 473, "x1": 473, "y0": 12, "y1": 21, "why": "the Kasbah gateway wall (src/well-town.js 263: the mini's door), a stage door in a passage" },
+  { "level": "welltown", "x0": 514, "x1": 514, "y0": 12, "y1": 21, "why": "the Kasbah gateway wall (src/well-town.js 263: the mini's gate), a stage door in a passage" },
+  { "level": "witchlight", "x0": 400, "x1": 560, "y0": 8, "y1": 22, "why": "rune-stone tips of the Witchlight Stair: the stair hangs in a void by design (solid-islands ALLOW witchlight, FREE_LEN)" },
+  { "level": "skyroad", "x0": 345, "x1": 380, "y0": 4, "y1": 21, "why": "cloud-stone pillars ending in a drawn cloud puff: the sky road floats by design (solid-islands ALLOW skyroad)" },
+  { "level": "glasssea", "x0": 172, "x1": 180, "y0": 21, "y1": 21, "why": "a glass pedestal ending free over the sea (solid-islands ALLOW glasssea)" }
+] }
