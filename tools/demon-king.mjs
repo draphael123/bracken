@@ -280,7 +280,7 @@ function duel(kit, seed, kind = 'read') {
   ok(wins / tot >= 0.25, `the READING bot wins a share (the BAND is S5's in bossLab, not this model's) (${Math.round(100 * wins / tot)}% pooled; the 1-D-ish model is a ceiling, S5 tunes the band in bossLab)`);
   ok(mw / tot < wins / tot - 0.25, `a MASH bot does far worse (${Math.round(100 * mw / tot)}% vs ${Math.round(100 * wins / tot)}%)`);
   ok(mashPowers === 0, 'the mash bot never lands a power return');
-  ok(med(knocks) >= 6, `knockdowns are the fight (median ${med(knocks)} a fight)`); }
+  ok(med(knocks) >= 3, `knockdowns are the fight (S5 cut the bars: >= 1 a phase) (median ${med(knocks)} a fight)`); }
 { /* where the damage comes from: knockdowns + returns are the main damage, chip the minority */
   const r = duel('knight', 4242); const d = r.f.n.dealt, all = Object.values(d).reduce((s, v) => s + v, 0), main = (d.downed || 0) + (d.return || 0);
   ok(all > 0 && main / all >= 0.75, `knockdowns + returns are the main damage (${Math.round(100 * main / all)}% of what landed; chip ${Math.round(100 * (1 - main / all))}%)`); }

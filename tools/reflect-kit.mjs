@@ -38,7 +38,7 @@ const one = (src, needle, m) => ok(src.split(needle).length === 2, m);
 one(rd('src/main.js'), 'SKH && SKH.solidAt(x * TS + TS / 2, y * TS + 1)', "main.js: the Ranger's arrows meet the drake's back once (ranger isSolid through SKH.solidAt)");
 one(rd('src/ranger.js'), "tag: ['heavy', 'shot', 'steady']", 'ranger.js: the steady arrow carries the steady tag once');
 one(rd('src/main.js'), "'djinn', 'demonking', 'hellbolt']);", 'main.js: the king and his bolts carry no poise bar (no finisher can run on him) once');
-one(rd('src/main.js'), 'else seeds.push({ x: sx, y: sy, vx: dx / dd * 150, vy: dyy / dd * 150, dead: false, life: 2.2, bolt: true, owner: e, dmg: DMG.imp });', 'main.js: an imp off the Mage Folly throws a plain hostile bolt once');
+one(rd('src/main.js'), 'else seeds.push({ x: sx, y: sy, vx: dx / dd * 150, vy: dyy / dd * 150, dead: false, life: 2.2, bolt: true, owner: e, dmg: e.dkImp && DKH ? DKH.impDmg() : DMG.imp });', 'main.js: an imp off the Mage Folly throws a plain hostile bolt once');
 const H = rd('src/demon-king-hands.js');
 ok(/resolving === b\.id/.test(H) && /resolving = boltId/.test(H), "demon-king-hands: a bolt that is reaching a hero cannot be returned as a normal blow by that hero's own guard");
 ok(/flvl !== L/.test(H) && /flvl = ctx.L()/.test(H), 'demon-king-hands: a level loaded again starts a NEW fight');
