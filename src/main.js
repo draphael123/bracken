@@ -4996,7 +4996,7 @@ const WOOD_NODES = [
   { id: 'spore', kind: 'level', level: 3, x: 199, y: 38, plate: 'above', name: 'SPOREWOOD' },
   { id: 'rootway', kind: 'level', level: LEVELS.findIndex(l => l.id === 'rootway'), x: 221, y: 68, plate: 'right', name: 'THE ROOTWAY' },   /* THE ROOTWAY (claude/rootway): between SPOREWOOD and KINGSWOOD (Daniel 10-07): the only spot map-spacing passes near them, so the road dips south to it and climbs back to Kingswood (the map lane may relay the sheet) */
   { id: 'underleaf', kind: 'level', level: LEVELS.findIndex(l => l.id === 'underleaf'), x: 196, y: 72, plate: 'below', name: 'UNDERLEAF' },   /* UNDERLEAF (claude/underleaf4, Daniel 10-25): back on the WOOD sheet, ON the road between THE ROOTWAY and THE PALISADE WOOD (it was a crag node between Scree and Hanging, claude/underorder 10-24) */
-  { id: 'palisadewood', kind: 'level', level: LEVELS.findIndex(l => l.id === 'palisadewood'), x: 178, y: 58, plate: 'below', board: 'PALE', name: 'THE PALISADE WOOD' },   /* THE PALISADE WOOD (claude/palisadewood, Daniel 10-15): ON the road between THE ROOTWAY and KINGSWOOD */
+  { id: 'palisadewood', kind: 'level', level: LEVELS.findIndex(l => l.id === 'palisadewood'), x: 178, y: 58, plate: 'below', name: 'THE PALISADE WOOD' },   /* THE PALISADE WOOD (claude/palisadewood, Daniel 10-15): ON the road between THE ROOTWAY and KINGSWOOD */
   { id: 'kings', kind: 'level', level: 4, x: 141, y: 24, name: 'KINGSWOOD' },
 ];
 /* the road itself, and nothing but: the Burning Village hangs off it on a spur (NODES `spur: true`); UNDERLEAF is ON it (between Kingswood and the Scree Path) */
@@ -5494,7 +5494,7 @@ function drawMap() {
   for (const nd of NODES) {
     if (nodeSecret(nd)) continue;               /* it is not on the map until you have earned it */
     TCH.hit(nd.x - 13, nd.y - Math.round(mapCamY) - 15, 26, 28, () => mapTap(nd));
-    g.drawImage(MAPSIGN, nd.x + 8, nd.y - 12);
+    /* (claude/mappolish: the blank signpost beside every node is gone - an empty board told the player nothing) */
     const lk = nodeLocked(nd); const p = nd.kind === 'level' ? PROG[LEVELS[nd.level].id] : null;
     /* THE ICON, on the disc itself: one per level (never two alike, docs/map-icons.png is the contact sheet),
        one shared coin for every store. The RIM around it is the one thing that changes frame to frame - gold
@@ -5570,6 +5570,7 @@ function drawMap() {
   for (const nd of NODES) {
     if (nodeSecret(nd)) continue;
     const lk = nodeLocked(nd), here = NODES[map.node] === nd;
+    if (lk && nd.kind === 'level' && !LEVELS[nd.level].secret) continue;   /* (claude/mappolish, Daniel 11-05) a place you cannot enter yet is a dot: its name board shows once it is reached; stores and the '? ? ?' secrets keep theirs */
     const lbl = nd.kind === 'store' ? (nd.id === 'highstore' ? 'HIGH STORE' : 'STORE') : (LEVELS[nd.level].secret && nodeLocked(nd)) ? '? ? ?' : plateLabel(nd.board || LEVELS[nd.level].name);
     const p = nd.kind === 'level' ? PROG[LEVELS[nd.level].id] : null;
     const twoLine = false;   /* (one-line boards: the strip is on the info card) */
@@ -5604,9 +5605,9 @@ function drawMap() {
   { const real = LEVELS.filter(lv => (!lv.hidden || (lv.secret && PROG[lv.id])) && !DS.demoLocked(lv));   /* (smallfix14) the demo counts its own slice (12 woods, 36 medals), not the full game's totals */ const cl = real.filter(lv => PROG[lv.id] && PROG[lv.id].cleared).length;
     const md = real.reduce((n, lv) => n + ((PROG[lv.id] && PROG[lv.id].medal) || 0), 0), mdMax = real.length * 3;
     const hn2 = mapCamY < INLAND_Y - 60 ? 'THE DESERT' : mapCamY < COAST_Y - 60 ? 'THE ROAD INLAND' : mapCamY < CRAG_Y - 60 ? 'THE COAST' : mapCamY < WOOD_Y - 60 ? 'THE CRAGS' : 'THE WOOD', hdrW = inkW(hn2, inkW(hn2, 8) <= 90 ? 8 : 6), hx = Math.max(92, Math.round(6 + hdrW + 10));   /* (the counters start after the region's name: THE ROAD INLAND ran under the flag) */
-    g.drawImage(FLAG, hx, 4); text(cl + '/' + real.length, hx + 12, 7, UI.dim, 'left', 6);
-    MPX.fillDisc(g, hx + 48, 9, 3, md >= mdMax ? MEDAL_COL[3] : '#8a8378'); g.fillStyle = ART.OUT; g.fillRect(hx + 47, 8, 2, 2);
-    text(md + '/' + mdMax, hx + 56, 7, UI.dim, 'left', 6); } g.drawImage(PROP.coin[Math.floor(time * 8) % 4], VW - 62, 5); text(String(PROG.coins), VW - 6, 6, '#ffd34a', 'right'); { g.drawImage(PROP.silver[Math.floor(time * 6 + 2) % 4], VW - 112, 5); text(String(silverAvail()), VW - 78, 6, '#dfe8ff', 'right'); }
+    /* (claude/mappolish, Daniel 11-05) LABELLED: two short rows, a word before each count, so '21/53' and '40/159' say what they count */
+    text('LEVELS', hx, 3, UI.dim, 'left', 6); text(cl + '/' + real.length, hx + 40, 3, UI.title, 'left', 6);
+    text('MEDALS', hx, 11, md >= mdMax ? MEDAL_COL[3] : UI.dim, 'left', 6); text(md + '/' + mdMax, hx + 40, 11, UI.title, 'left', 6); } g.drawImage(PROP.coin[Math.floor(time * 8) % 4], VW - 62, 5); text(String(PROG.coins), VW - 6, 6, '#ffd34a', 'right'); { g.drawImage(PROP.silver[Math.floor(time * 6 + 2) % 4], VW - 112, 5); text(String(silverAvail()), VW - 78, 6, '#dfe8ff', 'right'); }
   const nd = NODES[map.node];
   if (!map.walking) {
     const store = nd.kind === 'store';
@@ -5629,6 +5630,7 @@ function drawMap() {
       // top right: how hard this wood is meant to be
       const pips = 1 + Math.round(tierOf(id) * 4);
       for (let i = 0; i < 5; i++) { g.fillStyle = i < pips ? '#c9463d' : 'rgba(255,255,255,0.15)'; g.fillRect(cx0 + cw - 8 - (5 - i) * 6, cy0 + 6, 4, 4); }
+      text('DANGER', cx0 + cw - 8 - 5 * 6 - 3, cy0 + 5, '#c9463d', 'right', 6);   /* (claude/mappolish) named, so the red squares do not read as the HARD setting at the foot of the card */
       text(MPX.fitBlurb(MAP_BLURB[id] || lv.sub || '', cw - 16, t => textW(t, 6)), cx0 + 8, cy0 + 13, UI.dim, 'left', 6);   /* ONE WHOLE LINE (src/map-blurbs.js): the old two-page blurb cut a sentence in half ("only blue in"), and the dots that paged it were a second form for one value */
       /* A POSTCARD of the country this node sits in, and beside it: your best, the three medal times, what is found and what is owed (the old card said "OPEN" and "0/?") */
       MCARD.drawPostcard(g, cx0 + 8, cy0 + 21, 40, 30, MCARD.regionAt(nd.y, { INLAND: INLAND_Y, COAST: COAST_Y, CRAG: CRAG_Y, WOOD: WOOD_Y }), !!(lv.night || lv.dark), time);
