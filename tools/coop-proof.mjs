@@ -126,18 +126,17 @@ try {
       ok(r.at >= 0, 'the AI gets to him on its own legs: ' + what + ' in ' + id + ' (' + (r.at >= 0 ? r.at + ' s' : 'never, best ' + r.best + ' tiles') + ', ' + r.pulls + ' pulls; a puff before it arrived does not count)');
     }
     /* (claude/coopvert2) THE FALLING TOWER'S PIT: the AI fell into the orrery pit's poison three times. (a) falling past the ledge by a few pixels it steers onto the ledge, not into the pool;
-       (b) with a foe over the pit it does not step off the ledge in the duel */
-    for (const [what, ax, ay, foe] of [['falling beside the pit ledge', 622, 2300, false], ['a foe over the pit, on its ledge', 484, 2399, true]]) {
-      const r = await E(`(async()=>{for(const k in BK.keys)BK.keys[k]=false;BK.manualSimulation=true;BK.SET.speed=1;BK.coopEnd();BK.reset({fresh:true});await BK.allyReady();BK.aiComp.arm(['warden'],['balanced'],1);const {LEVELS}=await import('/src/level.js');BK.load(LEVELS.findIndex(l=>l.id==='fallingtower'));BK.start();BK.sim(5);BK.god=true;BK.enemies().forEach(e=>e.alive=false);
-        const ps=BK.players(),a=ps[0],q=ps.find(p=>p.ai);a.x=${foe ? 520 : 700};a.y=2399;a.vx=a.vy=0;a.face=1;q.x=${ax};q.y=${ay};q.vx=q.vy=0;q.hp=q.maxHp;const d0=q.score.deaths;let low=0;
-        ${foe ? "const e=BK.enemies().find(x=>x.t==='apprentice')||BK.enemies()[0];if(e){e.alive=true;e.dying=0;e.hp=e.maxHp||40;e.x=440;e.y=2380;}" : ''}
-        for(let f=0;f<60*4;f++){a.vx=0;a.x=${foe ? 520 : 700};BK.sim(1);low=Math.max(low,q.y);}
+       (b) on a pillar's edge with player one on the next pillar over a 2-tile gap: it crosses (or stays) and is never down in the poison */
+    for (const [what, ax, ay, foe] of [['falling in the gap between two pillars', 455, 2330, false], ['a pillar edge, player one on the next pillar', 440, 2399, true]]) {
+      const r = await E(`(async()=>{for(const k in BK.keys)BK.keys[k]=false;BK.manualSimulation=true;BK.SET.speed=1;BK.coopEnd();BK.reset({fresh:true});await BK.allyReady();BK.aiComp.arm(['warden'],['balanced'],1);const {LEVELS}=await import('/src/level.js');BK.load(LEVELS.findIndex(l=>l.id==='fallingtower'));BK.start();BK.sim(5);BK.god=true;window.NOGUARD=${!!process.env.NOGUARD};BK.enemies().forEach(e=>e.alive=false);
+        const ps=BK.players(),a=ps[0],q=ps.find(p=>p.ai);a.x=500;a.y=2399;a.vx=a.vy=0;a.face=1;q.x=${ax};q.y=${ay};q.vx=q.vy=0;q.hp=q.maxHp;const d0=q.score.deaths;let low=0;
+                for(let f=0;f<60*4;f++){a.vx=0;a.vy=0;a.x=500;a.y=2399;BK.sim(1);low=Math.max(low,q.y);}
         return {y:Math.round(q.y),x:Math.round(q.x),low:Math.round(low),down:q.down||0,deaths:q.score.deaths-d0};})()`);
       console.log('    pit ' + what + ' ' + JSON.stringify(r));
       ok(!(r.down > 0) && r.deaths === 0 && r.low < 2430, 'the AI stays out of the pit poison: ' + what + ' (lowest y ' + r.low + ', down ' + r.down + ')');
     }
   }
-  ok(!pg.errors.length, 'no page errors: + pg.errors.slice(0, 3).join(' | '));
+  ok(!pg.errors.length, 'no page errors: ' + pg.errors.slice(0, 3).join(' | '));
 } finally { pg.close(); }
 console.log(fails.length ? '\ncoop-proof: ' + fails.length + ' FAILED' : '\ncoop-proof: GREEN');
 process.exit(fails.length ? 1 : 0);

@@ -2135,7 +2135,7 @@ function allySafeGoal(gx) {
   if (tileAt(tx, ty) === T.SPIKE || tileAt(tx, ty + 1) === T.SPIKE) return P.x;
   if (LABMOD && P.hero !== 'pyro' && LABMOD.fireAt(window.BK, gx, P.y)) return P.x;   /* nor in a fire on the ground (hers does not burn her) */
   if ((L.pools || []).some(q => q.harm && gx > q.x0 - 8 && gx < q.x1 + 8 && P.y > q.y - 12)) return P.x;
-  if (P.ai) { const one = AIC.leadOf(players, P); if (one && one !== P && (L.pools || []).some(q => q.harm && q.deadly && gx > q.x0 - 8 && gx < q.x1 + 8 && one.x > q.x0 - 8 && one.x < q.x1 + 8 && one.y > q.y - 12)) return P.x; }   /* (coopvert2) nor after him into a deadly pool he is standing in */
+  if (P.ai && !window.NOGUARD) { const one = AIC.leadOf(players, P); if (one && one !== P && (L.pools || []).some(q => q.harm && q.deadly && gx > q.x0 - 8 && gx < q.x1 + 8 && one.x > q.x0 - 8 && one.x < q.x1 + 8 && one.y > q.y - 12)) return P.x; }   /* (coopvert2) nor after him into a deadly pool he is standing in */
   if (P.ai && P.onMover == null && movers.some(m => RAFTY(m) && !m.gone && gx > m.x - 6 && gx < m.x + (m.w || 16) + 6 && Math.abs(m.y - P.y) < 28 && !players.some(q => !q.ai && q.onMover === m))) return P.x;   /* (claude/aicompanions) nor onto a raft nobody is on: she would sail off with only the AI aboard */
   return gx;
 }
@@ -2154,11 +2154,14 @@ function allyLanding(x, y, maxRows) {
 }
 /* in the air: when the column it is falling down ends in a pool or spikes, steer to the nearest column (within 5 tiles) that lands safely; on the ground in a fight: never step off a ledge it
    cannot land from (the duel hands walked it into the pit's poison) */
-function allyAirGuard(p) {
+function allyAirGuard(p) { if (window.NOGUARD) return;
   if (p.climb || p.swim || p.onMover != null) return;
-  if (!p.ground) { if (p.vy < 0 || allyLanding(p.x, p.y, 99).ok) return;
-    for (let k = 1; k <= 10; k++) for (const d of (p.vx < 0 || (p.vx === 0 && p.face < 0) ? [-1, 1] : [1, -1])) { const x = p.x + d * k * 8; if (allyLanding(x, p.y, 99).ok && !isSolid(Math.floor(x / TS), Math.floor((p.y - 6) / TS))) { keys.left = d < 0; keys.right = d > 0; return; } }
-    return; }
+  if (!p.ground) {   /* where it will LAND at the speed it has (the walker's drift carried it past the pit ledge's end), not under it now */
+    if (p.vy < 0) return;
+    const ld = allyLanding(p.x, p.y, 99), t = Math.max(0.05, Math.min(1, (ld.y - p.y) / Math.max(p.vy, 150))), xp = p.x + p.vx * t * 0.85;
+    if (ld.ok && allyLanding(xp, p.y, 99).ok) return;
+    let bx = null, bd = 1e9; for (let k = 0; k <= 12; k++) for (const d of [1, -1]) { const x = xp + d * k * 8; if (allyLanding(x, p.y, 99).ok && !isSolid(Math.floor(x / TS), Math.floor((p.y - 6) / TS)) && Math.abs(x - xp) < bd) { bd = Math.abs(x - xp); bx = x; } }
+    if (bx === null) return; const dx = bx - xp; keys.left = dx < -3; keys.right = dx > 3; return; }
   const dir = keys.right ? 1 : keys.left ? -1 : 0; if (!dir || keys.jump || jumpPress) return;   /* (a jump at the lip is a gap crossing, not a step off) */
   const ld = allyLanding(p.x + dir * 12, p.y, 5);   /* a floor about level with its feet ahead is no ledge */
   if (ld.y > p.y + 2 && !ld.ok) keys.left = keys.right = false;
