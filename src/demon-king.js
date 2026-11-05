@@ -16,11 +16,11 @@
 import { surfaceY, kingLandX, holdBank, beginClimb, walkable } from './sky-mount.js';
 
 export const DK = {
-  bar: 600, phases: 3,                                     // EHP.demonking = 3 x 1200 (heartplan: Gorm pattern hp1/hp2/hp3)
+  bar: 550, phases: 3,                                     // EHP.demonking = 3 x 1200 (heartplan: Gorm pattern hp1/hp2/hp3)
   w: 24, h: 40, proneW: 40, proneH: 16,
   enter: 1.6,                                               // he flies in over the neck (no attack)
   hover: { up: 74, lead: 92, speed: 80, bob: 4, xPad: 40 }, // feet this far over the back; this far ahead of his mark; drift speed; over the back +- xPad
-  rest: [1.15, 1.0, 0.9],                                  // s between moves per phase
+  rest: [1.4, 1.25, 1.1],                                  // s between moves per phase
   weights: [                                                 // what he picks, per phase (never the same move three times running)
     { bolt: 0.72, swoop: 0.28 },
     { bolt: 0.30, feint: 0.18, double: 0.20, swoop: 0.14, whip: 0.18 },
