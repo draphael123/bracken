@@ -25,6 +25,11 @@ export function makeGQueenHands(ctx) {
   const sfx = k => { const f = ctx.sfx[k]; if (f) f(); };
   const sign = v => (v < 0 ? -1 : 1);
   const G = GQ3;
+  /* (claude/gq2) EVERY SEAT (1-4 heroes): the hits below test each hero still on his feet, with main.js's asPlayer swap (ctx.eachHero), as the game's other bosses do;
+     a fake world / single player without it is the one hero. allHeroes = every seat, downed too (the portal step takes the whole party). */
+  const seats = fn => { if (ctx.eachHero) ctx.eachHero(fn); else { const p = ctx.P(); if (p && !p.dead) fn(p); } };
+  const everyone = fn => { if (ctx.allHeroes) ctx.allHeroes(fn); else fn(ctx.P()); };
+  const target = () => (ctx.target ? ctx.target() : ctx.P()) || ctx.P();
   H.on = () => !!(L() && L().arena && L().arena.boss === 'gqueen');
   /* STAGE ACROSS DEATH (as King Gorm's persist): once her P1 bar has emptied, P1 is never fought again. persist = { stage: 'escape' | 'roof' } until a new level load. */
   let persist = null, hallSnap = null;
@@ -86,7 +91,7 @@ export function makeGQueenHands(ctx) {
     S.crown = null; S.rocks = []; S.portals = []; S.cast = null;
     persist = { stage: 'escape' };
     ctx.endFight(); ctx.shutWest(); ctx.layEscape();
-    if (P0 && !P0.dead) fullHeal(P0);
+    everyone(P1 => { if (P1 && !P1.dead) fullHeal(P1); });   /* (claude/gq2) the WHOLE PARTY is fully healed (each seat out of his own save: asPlayer swaps PROG for flaskMax) */
     const E = L().gqEscape; if (E) ctx.setCheckpoint(E.start.x * TS + 8, (E.start.y + 1) * TS);   /* escapeStart, on T1 */
     ctx.number(e.x, e.y - e.h - 30, GQ_SAY.flee, '#ff6b5c'); sfx('bellow'); ctx.shake(8); ctx.zoom(1.12, 0.5);
     ctx.hint('SHE HAS FLED THROUGH A PORTAL AND THE HALL IS ON FIRE. CLIMB OUT THROUGH THE ROOF - AND FOLLOW HER.');
@@ -116,61 +121,66 @@ export function makeGQueenHands(ctx) {
   }
   function gqRed(x, dmg, name, extra) { return ctx.damage(x, dmg, { unblockable: true, name, ...(extra || {}) }); }
   function escapeStep(dt) {
-    const E = L().gqEscape, esc = S.esc, P0 = ctx.P(), A = L().arena, t = now();
+    const E = L().gqEscape, esc = S.esc, A = L().arena, t = now();
     if (!E || !esc || !esc.on) return;
     if (!esc.musicSet) { esc.musicSet = true; ctx.music('gqescape'); }
-    if (P0.dead) return;
-    const inHall = P0.x > A.x0 && P0.x < A.x1 && P0.y > 10 * TS;
     if (t >= esc.graceUntil) esc.fireOn = true;
-    /* the floor of the hall burns: a gentle tick and a push up, never a death pit (the blow spares: it hurts, it does not kill) */
-    if (esc.fireOn && inHall && P0.ground && P0.y >= A.floor - 3) {
-      esc.fireT -= dt;
-      if (esc.fireT <= 0) { esc.fireT = G.esc.fireEvery; gqRed(P0.x, G.esc.fire, 'THE BURNING FLOOR', { spare: true, noKnock: true }); P0.vy = -G.esc.push; P0.ground = false; ctx.burst(P0.x, A.floor - 2, 6, ['#ff9a5c', '#ffd36b', '#ff6b2c'], 60, 0.4); }
-    } else esc.fireT = Math.min(esc.fireT, 0.25);
-    /* the two hall portals fan shards at you while you are in the hall (yellow, dodgeable: no queen to send a parry back to) */
+    const here = []; seats(p => here.push(p));
+    if (!here.length) return;
+    const inHallP = p => p.x > A.x0 && p.x < A.x1 && p.y > 10 * TS;
+    /* the floor of the hall burns: a gentle tick and a push up, never a death pit (the blow spares: it hurts, it does not kill). Each hero has his own tick clock */
+    seats(P1 => {
+      if (esc.fireOn && inHallP(P1) && P1.ground && P1.y >= A.floor - 3) {
+        P1.gqFireT = (P1.gqFireT ?? 0.4) - dt;
+        if (P1.gqFireT <= 0) { P1.gqFireT = G.esc.fireEvery; gqRed(P1.x, G.esc.fire, 'THE BURNING FLOOR', { spare: true, noKnock: true }); P1.vy = -G.esc.push; P1.ground = false; ctx.burst(P1.x, A.floor - 2, 6, ['#ff9a5c', '#ffd36b', '#ff6b2c'], 60, 0.4); }
+      } else P1.gqFireT = Math.min(P1.gqFireT ?? 0.25, 0.25);
+    });
+    /* the two hall portals fan shards at you while you are in the hall (yellow, dodgeable: no queen to send a parry back to) - at a hero still in the hall */
+    const inHall = here.find(inHallP);
     if (esc.fireOn && inHall) {
       esc.fanT -= dt;
       if (esc.fanT <= 0 && esc.cueT <= 0) { esc.cueT = G.esc.cue; ctx.number(E.hallPortals[0].x * TS, E.hallPortals[0].y * TS - 14, '!', '#ffd36b'); sfx('portalOpen'); }
-      if (esc.cueT > 0) { esc.cueT -= dt; if (esc.cueT <= 0) { esc.fanT = G.esc.fan; for (const hp of E.hallPortals) fan(hp.x * TS + 8, hp.y * TS + 8, P0.x, P0.y - 8, true); } }
+      if (esc.cueT > 0) { esc.cueT -= dt; if (esc.cueT <= 0) { esc.fanT = G.esc.fan; for (const hp of E.hallPortals) fan(hp.x * TS + 8, hp.y * TS + 8, inHall.x, inHall.y - 8, true); } }
     }
-    /* the burning rafter T4 and the roof slates go under a foot: each tile 0.6 s after you stood on it, relaid after a while */
-    for (const tier of E.tiers) if (tier.collapse) crumble(S.coll, tier.row, tier.x0, tier.x1, 'lay', G.esc.collapse, G.esc.relay, P0);
-    crumble(S.slate, E.slates.row, E.slates.x0, E.slates.x1, 'restore', G.esc.slate, G.esc.slateRelay, P0);
-    /* the roof's shrine: lit when you reach it */
-    if (!esc.checked && Math.abs(P0.x - (E.check.x * TS + 8)) < 20 && Math.abs(P0.y - (E.check.y + 1) * TS) < 30) {
+    /* the burning rafter T4 and the roof slates go under a foot: each tile 0.6 s after a hero stood on it, relaid after a while */
+    for (const tier of E.tiers) if (tier.collapse) crumble(S.coll, tier.row, tier.x0, tier.x1, 'lay', G.esc.collapse, G.esc.relay, here);
+    crumble(S.slate, E.slates.row, E.slates.x0, E.slates.x1, 'restore', G.esc.slate, G.esc.slateRelay, here);
+    /* the roof's shrine: lit when any hero reaches it */
+    const atShrine = here.find(p => Math.abs(p.x - (E.check.x * TS + 8)) < 20 && Math.abs(p.y - (E.check.y + 1) * TS) < 30);
+    if (!esc.checked && atShrine) {
       esc.checked = true; if (persist) persist.stage = 'roof'; ctx.setCheckpoint(E.check.x * TS + 8, (E.check.y + 1) * TS); sfx('sting');
       ctx.burst(E.check.x * TS + 8, E.check.y * TS, 14, ['#ffd36b', '#fff6c8', '#8fd160'], 50, 0.9); ctx.number(E.check.x * TS + 8, E.check.y * TS - 20, GQ_SAY.check, '#ffd36b');
       ctx.hint(GQ_SAY.step + '. SHE WAITS ON THE OTHER SIDE.');
     }
-    /* HER PORTAL: walk into it. A short swirl, then the tower top: your own choice, told */
+    /* HER PORTAL: walk into it (any hero: the party follows him through). A short swirl, then the tower top: your own choice, told */
     if (esc.step) {
-      const k = (t - esc.step.t0) / G.esc.step; P0.vx = 0; P0.inv = Math.max(P0.inv || 0, 0.6);
+      const k = (t - esc.step.t0) / G.esc.step, P0 = esc.step.p || ctx.P(); P0.vx = 0; P0.inv = Math.max(P0.inv || 0, 0.6);
       if (Math.random() < dt * 60) ctx.part({ x: P0.x + (Math.random() - 0.5) * 12, y: P0.y - 8 + (Math.random() - 0.5) * 16, vx: 0, vy: -30, life: 0.3, max: 0.3, col: '#b28cff', size: 2, grav: 0, glow: true });
       if (k >= 1) { esc.step = null; toRoof(); }
     } else {
-      const px = E.portal.x * TS + 8;
-      if (Math.abs(P0.x - px) < 9 && Math.abs(P0.y - (E.portal.y + 1) * TS) < 24) { esc.step = { t0: t }; sfx('portalOpen'); ctx.number(px, E.portal.y * TS - 10, GQ_SAY.step, '#b28cff'); }
+      const px = E.portal.x * TS + 8, who = here.find(p => Math.abs(p.x - px) < 9 && Math.abs(p.y - (E.portal.y + 1) * TS) < 24);
+      if (who) { esc.step = { t0: t, p: who }; sfx('portalOpen'); ctx.number(px, E.portal.y * TS - 10, GQ_SAY.step, '#b28cff'); }
     }
   }
-  /* a crumbling run of tiles (a row, x0..x1): standing on a tile starts its clock; at the end of it the tile is gone, and comes back (laid / restored) after relay seconds */
-  function crumble(map, row, x0, x1, back, delay, relay, P0) {
+  /* a crumbling run of tiles (a row, x0..x1): a hero standing on a tile starts its clock; at the end of it the tile is gone, and comes back (laid / restored) after relay seconds. heroes: the seats standing */
+  function crumble(map, row, x0, x1, back, delay, relay, heroes) {
     const t = now();
-    if (P0.ground && Math.abs(P0.y - row * TS) < 3) { const c = Math.floor(P0.x / TS); if (c >= x0 && c <= x1 && !map.has(c)) { map.set(c, { at: t + delay, gone: false }); ctx.dust(c * TS + 8, row * TS, 3); sfx('crack'); } }
+    for (const P0 of heroes) if (P0.ground && Math.abs(P0.y - row * TS) < 3) { const c = Math.floor(P0.x / TS); if (c >= x0 && c <= x1 && !map.has(c)) { map.set(c, { at: t + delay, gone: false }); ctx.dust(c * TS + 8, row * TS, 3); sfx('crack'); } }
     for (const [c, m] of map) {
       if (!m.gone && t >= m.at) { m.gone = true; m.back = t + relay; ctx.tiles(row, c, c, 'drop'); ctx.burst(c * TS + 8, row * TS + 4, 6, ['#5a5a68', '#8a5a32', '#ff9a5c'], 60, 0.5); }
       else if (m.gone && t >= m.back) { ctx.tiles(row, c, c, back); map.delete(c); }
     }
   }
-  /* the portal step: the hero is set down at the tower top's portal exit, her arena becomes the tower top's, and phase two begins (bossStart: the name card, the walls, the music) */
+  /* the portal step: the WHOLE PARTY is set down at the tower top's portal exit (seat n a step aside, as a respawn), her arena becomes the tower top's, and phase two begins (bossStart: the name card, the walls, the music) */
   function toRoof() {
-    const e = ctx.boss(), RA = L().arenaRoof, P0 = ctx.P(); if (!e || !RA) return;
+    const e = ctx.boss(), RA = L().arenaRoof; if (!e || !RA) return;
     if (S.esc) S.esc.on = false;
     S.rocks = []; S.portals = [];
     e.stage = 'roof'; e.phase = 3; e.hidden = false; e.alive = true; e.hp = e.maxHp = G.hp2; e.x = RA.x1 - 6 * TS; e.y = RA.floor; e.vx = 0; e.vy = 0; e.face = -1;
-    P0.x = RA.exit.x * TS + 8; P0.y = (RA.exit.y + 1) * TS; P0.vx = 0; P0.vy = 0; P0.face = 1;
+    let n = 0; everyone(P1 => { P1.x = RA.exit.x * TS + 8 + ([0, 14, 28, 42][n++] ?? 14); P1.y = (RA.exit.y + 1) * TS; P1.vx = 0; P1.vy = 0; P1.face = 1; });
     ctx.enterRoof();
     roofBegin(e);
-    ctx.burst(P0.x, P0.y - 10, 18, ['#b28cff', '#e8dcff', '#2a1a3a'], 90, 0.7);
+    const P0 = ctx.P(); ctx.burst(P0.x, P0.y - 10, 18, ['#b28cff', '#e8dcff', '#2a1a3a'], 90, 0.7);
   }
   function roofBegin(e) { S.roof = { lash: 0, ambushCd: 6, geyserCd: 4, lashCd: 2, stormAt: null, stormBreakAt: 0, adds: new Set(), hatch: null, geysers: [], banner: null, orbit: null }; }
   /* ---------------- PHASE TWO: THE TOWER TOP ---------------- */
@@ -225,8 +235,8 @@ export function makeGQueenHands(ctx) {
       case 'lashHighTell': case 'lashLowTell': e.face = sign(d) || e.face;
         if (e.modeT <= 0) {
           const high = e.mode === 'lashHighTell'; e.mode = high ? 'lashHigh' : 'lashLow'; e.modeT = 0.3; sfx('slash'); ctx.shake(3); R0.whip = { t0: tt, high, face: e.face };
-          const front = sign(d) === e.face && ad < G.roof.lashReach;
-          if (front && !P0.dead && (high ? !ctx.ducking() : P0.y > RA.floor - 6)) gqRed(e.x, G.roof.lashDmg, 'HER BANNER LASH', {});
+          seats(P1 => { const d1 = P1.x - e.x, front = sign(d1) === e.face && Math.abs(d1) < G.roof.lashReach;   /* (claude/gq2) every seat in front of her */
+            if (front && !P1.dead && (high ? !ctx.ducking() : P1.y > RA.floor - 6)) gqRed(e.x, G.roof.lashDmg, 'HER BANNER LASH', {}); });
         }
         return 0;
       case 'lashHigh': case 'lashLow': if (e.modeT <= 0) { e.mode = 'rec'; e.modeT = 0.5; } return 0;
@@ -236,7 +246,7 @@ export function makeGQueenHands(ctx) {
         if (e.modeT <= 0) {
           ctx.burst(e.x, e.y - 26, 14, ['#3a2a4a', '#7a4aa0'], 60, 0.5); e.x = R0.ambushX; e.y = RA.floor; e.vy = 0; e.vx = 0; e.alpha = 1; e.face = sign(P0.x - e.x) || 1;
           ctx.burst(e.x, e.y - 26, 16, ['#3a2a4a', '#c9a0ff'], 70, 0.5); e.mode = 'ambushOut'; e.modeT = 0.32; sfx('snort');
-          if (!P0.dead && P0.ground && Math.abs(P0.x - e.x) < 64) gqHit(e.x, G.roof.ambushDmg, e, 'HER AMBUSH');   /* yellow: turned on the beat, it pays a riposte */
+          seats(P1 => { if (!P1.dead && P1.ground && Math.abs(P1.x - e.x) < 64) gqHit(e.x, G.roof.ambushDmg, e, 'HER AMBUSH'); });   /* (claude/gq2) every seat */   /* yellow: turned on the beat, it pays a riposte */
         }
         return 0; }
       case 'ambushOut': e.alpha = 1; if (e.modeT <= 0) { e.mode = 'rec'; e.modeT = 0.6; } return 0;
@@ -247,7 +257,7 @@ export function makeGQueenHands(ctx) {
       case 'hallLeap': e.airT += dt;
         if ((e.onGround && e.airT > 0.2) || e.modeT <= 0) { e.vx = 0; e.mode = 'quake'; e.modeT = 0.45; sfx('forgeHammer'); sfx('heavy'); ctx.shake(9); ctx.zoom(1.08, 0.25); ctx.dust(e.x, e.y, 18);
           for (const dd of [-1, 1]) ctx.wave({ x: e.x + dd * 30, y: RA.floor, dir: dd, life: 1.4, sp: 190, royal: true });
-          if (!P0.dead && P0.ground && Math.abs(P0.x - e.x) < 70 && Math.abs(P0.y - e.y) < 30) gqRed(e.x, 20, 'HER STOMP', { up: true }); }
+          seats(P1 => { if (!P1.dead && P1.ground && Math.abs(P1.x - e.x) < 70 && Math.abs(P1.y - e.y) < 30) gqRed(e.x, 20, 'HER STOMP', { up: true }); }); }   /* (claude/gq2) every seat */
         return 0;
       case 'quake': if (e.modeT <= 0) { e.mode = 'rec'; e.modeT = 0.45; } return 0;
       case 'rec': case 'slamRec': if (e.modeT <= 0) { e.mode = 'roofStand'; e.modeT = 0.5; } return 0;
@@ -261,7 +271,7 @@ export function makeGQueenHands(ctx) {
     const e = q(), R0 = S.roof, P0 = ctx.P(), RA = L().arena, tt = now(); if (!e || !R0 || e.stage !== 'roof') return;
     for (const g of R0.geysers) {
       if (!g.done && tt >= g.at) { g.done = true; g.until = tt + 0.28; ctx.dust(g.x, RA.floor, 6); ctx.burst(g.x, RA.floor - 6, 10, ['#5a5a68', '#8a5a32', '#ff9a5c'], 110, 0.5); sfx('crack'); }
-      if (g.done && tt < g.until && !g.hit && !P0.dead && Math.abs(P0.x - g.x) < 11 && P0.y > RA.floor - 10) { g.hit = true; gqRed(g.x, G.roof.geyserDmg, 'THE RUBBLE GEYSER', { up: true }); }
+      if (g.done && tt < g.until) seats(P1 => { const hs = g.hits || (g.hits = new Set()); if (!hs.has(P1) && !P1.dead && Math.abs(P1.x - g.x) < 11 && P1.y > RA.floor - 10) { hs.add(P1); g.hit = true; gqRed(g.x, G.roof.geyserDmg, 'THE RUBBLE GEYSER', { up: true }); } });   /* (claude/gq2) once a hero, every seat */
     }
     R0.geysers = R0.geysers.filter(g => tt < g.at + 0.6);
     stormStep(dt);
@@ -283,12 +293,14 @@ export function makeGQueenHands(ctx) {
     const st = R0.storm; st.ang += dt * Math.PI * 2 / cc.orbitTurn;
     const x = e.x + Math.cos(st.ang) * cc.orbitR, y = e.y - 30 + Math.sin(st.ang) * cc.orbitR * 0.55, vx = -Math.sin(st.ang);
     st.x = x; st.y = y; if (Math.random() < dt * 30) ctx.part({ x, y, vx: 0, vy: 0, life: 0.25, max: 0.25, col: '#ffd36b', size: 1, grav: 0, glow: true });
-    if (P0.dead || now() < st.hitAt) return;
-    if (ctx.overlap({ l: x - G.crown.r - 1, r: x + G.crown.r + 1, t: y - G.crown.r, b: y + G.crown.r }, ctx.hurtBox())) {
-      st.hitAt = now() + cc.orbitHit;
-      const h = gqHit(x - sign(vx) * 12, cc.orbitDmg, e, 'HER CROWN STORM');
-      if (h.parried) { R0.storm = null; R0.stormAt = now() + cc.stormRegrow; ctx.ring(x, y, 16, '#fff6c8', 0.3); stun(e, cc.stormStun, cc.stormHp, GQ_SAY.crowned); }
-    }
+    seats(P1 => {   /* (claude/gq2) every seat */
+      if (P1.dead || now() < st.hitAt || R0.storm !== st) return;
+      if (ctx.overlap({ l: x - G.crown.r - 1, r: x + G.crown.r + 1, t: y - G.crown.r, b: y + G.crown.r }, ctx.hurtBox())) {
+        st.hitAt = now() + cc.orbitHit;
+        const h = gqHit(x - sign(vx) * 12, cc.orbitDmg, e, 'HER CROWN STORM');
+        if (h.parried) { R0.storm = null; R0.stormAt = now() + cc.stormRegrow; ctx.ring(x, y, 16, '#fff6c8', 0.3); stun(e, cc.stormStun, cc.stormHp, GQ_SAY.crowned); }
+      }
+    });
   }
   H.test = H.test || {}; H.test.roof = () => S && S.roof;
   H.test.begin = () => { const e = q(); if (e && S) roofBegin(e); };
@@ -329,7 +341,8 @@ export function makeGQueenHands(ctx) {
     } else if (c.state === 'floor') {
       return;
     }
-    if ((c.state === 'out' || c.state === 'back') && !c.hit && !P0.dead) {
+    if ((c.state === 'out' || c.state === 'back') && !c.hit) seats(P0 => {   /* (claude/gq2) every seat: the first hero it meets takes it (or parries it) */
+      if (c.hit || P0.dead || S.crown !== c || !(c.state === 'out' || c.state === 'back')) return;
       const hb = ctx.hurtBox();
       if (ctx.overlap({ l: c.x - cc.r - 1, r: c.x + cc.r + 1, t: c.y - cc.r + 1, b: c.y + cc.r - 1 }, hb)) {
         c.hit = true;
@@ -339,7 +352,7 @@ export function makeGQueenHands(ctx) {
           else { c.state = 'home'; c.home = true; ctx.ring(c.x, c.y, 16, '#fff6c8', 0.3); sfx('clank'); }
         } else if (h.res === 'blocked') { c.state = 'floor'; c.vx = 0; c.y = Math.min(c.y + 10, (L().arena ? L().arena.floor : c.y) - 3); c.t = 0; sfx('clank'); ctx.dust(c.x, c.y, 6); ctx.number(c.x, c.y - 14, GQ_SAY.clank, '#c9c9d6'); }
       }
-    }
+    });
   }
   /* ---------------- THE PORTAL CAST (rock shards) ---------------- */
   /* tell 1.0 s (the sceptre up), then 2 portals (3 in P1b) open at fixed hall-wall anchors at least 90 px from you; each glows 0.9 s with three faint fan lines, and they fire 0.35 s apart: a fan
@@ -364,7 +377,7 @@ export function makeGQueenHands(ctx) {
     return pc.glow + (picks.length - 1) * pc.gap + 0.7;
   }
   function portalStep(dt) {
-    const P0 = ctx.P(), pc = G.portal, t = now();
+    const P0 = target(), pc = G.portal, t = now();   /* (claude/gq2) the hero she means (main.js: the nearest on his feet), not always seat one */
     for (const p of S.portals) {
       if (p.fired) { if (t - p.firedAt > 0.35) p.dead = true; continue; }
       p.aimX = P0.x; p.aimY = P0.y - 8;   /* the faint fan lines follow you until it fires */
@@ -396,13 +409,14 @@ export function makeGQueenHands(ctx) {
       }
       r.x += r.vx * dt; r.y += r.vy * dt;
       if (r.t > 4 || ctx.solid(Math.floor(r.x / TS), Math.floor(r.y / TS))) { r.dead = true; ctx.dust(r.x, r.y, 3); continue; }
-      if (!P0.dead && ctx.overlap({ l: r.x - pc.r, r: r.x + pc.r, t: r.y - pc.r, b: r.y + pc.r }, ctx.hurtBox())) {
+      seats(P1 => {   /* (claude/gq2) every seat: the first hero it meets */
+        if (r.dead || r.home || P1.dead || !ctx.overlap({ l: r.x - pc.r, r: r.x + pc.r, t: r.y - pc.r, b: r.y + pc.r }, ctx.hurtBox())) return;
         r.dead = true;
         const h = gqHit(r.x - sign(r.vx) * 12, pc.dmg, e, 'A PORTAL SHARD');
-        if (h.parried && !r.esc) { r.dead = false; r.home = true; ctx.ring(r.x, r.y, 12, '#fff6c8', 0.25); sfx('clank'); }
+        if (h.parried && !r.esc && e) { r.dead = false; r.home = true; ctx.ring(r.x, r.y, 12, '#fff6c8', 0.25); sfx('clank'); }
         else if (h.parried) { ctx.ring(r.x, r.y, 12, '#c9c9d6', 0.25); sfx('clank'); }
         else { ctx.burst(r.x, r.y, 5, ['#b28cff', '#8a8a9c'], 50, 0.3); }
-      }
+      });
     }
     S.rocks = S.rocks.filter(r => !r.dead);
   }

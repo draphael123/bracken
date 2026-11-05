@@ -29864,7 +29864,9 @@ GQH = makeGQueenHands({ get L() { return L; }, TS, T, sfx: SFX, P: () => P, enem
   endFight: () => { bossActive = false; camLock = null; setView('normal'); if (L.arena) { setWall(L.arena.wallL, false); setWall(L.arena.wallR, false); } },
   shutWest: () => { const A = L.arena; if (A) setWallAt(A.wallL, true, A.floor); }, layEscape: () => gqEscapeLay(), tiles: (row, x0, x1, how) => gqTiles(row, x0, x1, how), spawnEnt: e => spawnEnt(e),
   setCheckpoint: (x, y) => { checkpoint = { x, y }; }, flaskMax: () => SV.flaskMax(PROG), music: n => music.play(n), hint: m => hintSay('mechanic', 6, m),
-  enterRoof: () => { Object.assign(L.arena, L.arenaRoof); bossStart(); }, wave: w => waves.push(w), ducking: () => !!P.ducking });
+  enterRoof: () => { Object.assign(L.arena, L.arenaRoof); bossStart(); }, wave: w => waves.push(w), ducking: () => !!P.ducking,
+  /* (claude/gq2) 1-4 SEATS: her hits test every hero on his feet (asPlayer: P, PROG and the keys are his for the call), the portal step and the flee's heal take the whole party, her portals aim at the hero she means */
+  eachHero: fn => { for (const pp of players) asPlayer(pp, () => { if (upright(pp)) fn(P); }); }, allHeroes: fn => { for (const pp of players) asPlayer(pp, () => fn(P)); }, target: () => (coop() && boss ? nearestHero(boss) : P) });
 GKC = { arena: () => L.arena, P: () => P, hands: GMH, enemies: () => enemies, gormData: () => L.gorm, number: (x, y, t, c) => number(x, y, t, c), sfx: SFX, shake: n => shakeCam(n), zoom: (s, t) => zoomKick(s, t), dust: (x, y, n) => dust(x, y, n), burst: (...a) => burst(...a), part: o => parts.push(o),
   ring: (x, y, r, c, l) => ringAt(x, y, r, c, l), damage: (x, d, o) => damagePlayer(x, d, o), moveBody: (e, dx, dy) => moveBody(e, dx, dy, false), dmg: { grab: DMG.gormGrab, litter: DMG.litter, sweep: DMG.gormSweep, club: DMG.gormClub }, music: on => music.lift && music.lift(on) };
 RBC = { P: () => P, TS, solid: (tx, ty) => isSolid(tx, ty), oneWay: (tx, ty) => isOneWay(tileAt(tx, ty)), moveBody: (e, dx, dy) => moveBody(e, dx, dy, false), damage: (x, d, o) => damagePlayer(x, d, o), number: (x, y, t, c) => number(x, y, t, c),
