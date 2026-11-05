@@ -285,6 +285,41 @@ function duel(kit, seed, kind = 'read') {
   const r = duel('knight', 4242); const d = r.f.n.dealt, all = Object.values(d).reduce((s, v) => s + v, 0), main = (d.downed || 0) + (d.return || 0);
   ok(all > 0 && main / all >= 0.75, `knockdowns + returns are the main damage (${Math.round(100 * main / all)}% of what landed; chip ${Math.round(100 * (1 - main / all))}%)`); }
 
+/* ================= THE HANDS, end to end with a stand-in main.js ================= */
+{ const { makeSkyMountHands } = await import('../src/sky-mount-hands.js'); const { makeDemonKingHands } = await import('../src/demon-king-hands.js');
+  const L = { skyMount: { x0: 224, y: 240, len: 192, phase: 1, lab: true } }; let lvl = L; const enemies = [], said = [], snd = [];
+  const P = { x: 0, y: 0, w: 10, h: 14, vx: 0, vy: 0, hp: 200, rpLookAt: 0, dead: false }; let cur = P, nextGuard = null, hurtLog = [], spawned = 0;
+  const BK = {}, SFX = new Proxy({}, { get: (t, k) => () => snd.push(k) });
+  const SKH = makeSkyMountHands({ L: () => lvl, players: () => [P], number: () => {}, sfx: () => {}, solid: 1, bk: () => BK });
+  const H = makeDemonKingHands({ L: () => lvl, players: () => [P], P: () => cur, enemies: () => enemies, asPlayer: (p, fn) => { const o = cur; cur = p; try { fn(); } finally { cur = o; } },
+    damage: (x, d, o) => { hurtLog.push(o.name); if (nextGuard === 'parry') { cur.rpLookAt += 1; return 'blocked'; } if (nextGuard === 'block') return 'blocked'; cur.hp -= d; return 'hit'; },
+    rpStamp: () => cur.rpLookAt, heroId: () => 'knight', swordDmg: () => 45, hurtAs: (t, e, d) => { const dd = H.take(e, d, t); e.hp -= dd; },
+    spawnImp: (x, y) => { spawned++; const m = { t: 'imp', x, y, alive: true }; enemies.push(m); return m; }, number: (x, y, t) => said.push(t), sfx: SFX, shake: () => {}, ring: () => {}, burst: () => {}, scale: () => 1, skh: () => SKH, bk: () => BK });
+  for (let i = 0; i < 30; i++) { SKH.update(DT); H.update(DT); }
+  ok(H.on() && enemies.filter(e => e.t === 'demonking').length === 1 && P.mount, 'on the lab level: the king spawns once, the hero is on the back');
+  ok(!!BK.demonKing && typeof BK.demonKing.knock === 'function', 'the lab handles: BK.demonKing');
+  const f = H.fight(); f.mode = 'boltTell'; f.mT = 0; f.T = 0.01; let be = null;
+  for (let i = 0; i < 5 && !be; i++) { SKH.update(DT); H.update(DT); be = enemies.find(e => e.t === 'hellbolt'); }
+  ok(!!be && be.w === 18, 'a hellbolt in flight is an entity in enemies (any blow box / projectile can hit it)');
+  const hpS = f.hp; ok(H.owns(be) && H.struck(be, 40, 'light') === true && !f.bolts.some(q => q.st === 'in'), 'a blow on it (hurtEnemy0) RETURNS it - handled, no damage');
+  H.update(DT); ok(!enemies.some(e => e.t === 'hellbolt'), 'a returned bolt is no longer an entity (cannot be struck twice)');
+  const hp0 = hpS; for (let i = 0; i < 300 && f.hp === hp0; i++) { SKH.update(DT); H.update(DT); if (process.argv.includes('--dbg') && i % 20 === 0) console.log(i, f.mode, f.bolts.map(b => b.st + ' ' + Math.round(b.x) + ',' + Math.round(b.y)).join(' '), Math.round(f.x), Math.round(f.y), f.hp); }
+  ok(f.hp < hp0 && hp0 - f.hp === 54 && f.pips === 1, `it lands: swordDmg 45 x1.2 = ${hp0 - f.hp} through hurtAs('reflect') whole, one pip`);
+  ok(enemies.find(e => e.t === 'demonking').hp === f.hp, 'his entity\'s hp follows the fight');
+  /* a bolt reaching the hero: parried -> power; blocked -> pop; hit -> hurt */
+  const reach = guard => { nextGuard = guard; f.mode = 'boltTell'; f.mT = 0; f.T = 0.01; f.bolts = []; hurtLog = []; let q = null;
+    for (let i = 0; i < 400; i++) { SKH.update(DT); H.update(DT); q = q || f.bolts.find(b => b.st === 'in'); if (hurtLog.length) break; } return q; };
+  let q = reach('parry'); ok(q && q.st === 'pow', 'parried on the beat (RP.parried stamped): a POWER return');
+  q = reach('block'); ok(q && q.st === 'gone' && said.includes('BLOCKED'), 'a held guard off the beat: BLOCKED, it pops');
+  const hpH = P.hp; q = reach(null); ok(q && q.st === 'gone' && P.hp < hpH && hurtLog[0] === 'HELLBOLT', 'no answer: the HELLBOLT hits (main.js knocks him DOWN on the back)');
+  const k = enemies.find(e => e.t === 'demonking'); f.mode = 'float'; ok(H.take(k, 100, 'light') === 40, 'his entity takes x0.4 through take()');
+  f.mode = 'downed'; ok(H.take(k, 100, 'light') === 150, '...and x1.5 downed');
+  f.ph = 3; f.mode = 'float'; f.rest = 0; f.impCd = 0; f.last = []; f.rnd = (() => { let i = 0; return () => [0.99, 0.5, 0.2, 0.7, 0.4][i++ % 5]; })();
+  for (let i = 0; i < 60 * 8 && !spawned; i++) { SKH.update(DT); H.update(DT); f.mode === 'float' && (f.rest = Math.min(f.rest, 0.1)); }
+  ok(spawned > 0 && enemies.filter(e => e.dkImp).length === spawned, `P3: imps spawned through the hands (${spawned}), tagged dkImp`);
+  lvl = { }; SKH.update(DT); H.update(DT);
+  ok(!H.on() && !enemies.some(e => H.owns(e)) && enemies.filter(e => e.dkImp).every(e => !e.alive), 'off the level: the king, his bolts and his imps are gone'); }
+
 /* ================= main.js / level wiring ================= */
 const MAIN = existsSync('src/main.js') ? readFileSync('src/main.js', 'utf8') : '';
 const once = (re, m) => { const n = (MAIN.match(re) || []).length; ok(n === 1, `${m} (${n}x)`); };
@@ -294,7 +329,7 @@ if (MAIN.includes('demon-king-hands')) {
   once(/if \(DKH\) DKH\.update\(wdt\)/g, 'main.js steps the fight once a frame');
   once(/DKH && DKH\.owns\(e\) && DKH\.struck\(e, dmg, tag\)/g, 'hurtEnemy0: a blow on a bolt is a return');
   once(/DKH && DKH\.owns\(e\)\) dmg = DKH\.take\(e, dmg, tag\)/g, 'hurtEnemy0: B15 + the phase line on him, last');
-  once(/if \(DKH && DKH\.owns\(e\)\) continue;/g, 'updateEnemies skips his entities (the hands step them)');
+  once(/if \(DKH && DKH\.owns\(e\)\) continue;\s*\/\* \(claude\/demonking\) stepped/g, 'updateEnemies skips his entities (the hands step them)');
   once(/DKH && DKH\.owns\(e\)\) continue;\s*\/\* \(claude\/demonking\) drawn/g, 'drawEnemies skips them (the hands draw them)');
   once(/if \(L\.skyMount && DKH\) DKH\.draw\(g, cx, cy, time\)/g, 'the world pass draws him + the bolts');
   once(/if \(DKH\) DKH\.hud\(g, VW, VH, time\)/g, 'the HUD pass draws his bar + pips');

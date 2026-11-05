@@ -52,6 +52,7 @@ import {poolTraps} from './deadly-water.js'; void poolTraps;
 import {fireGrid,ignite,stepFire,douse,squareHeat,cellNear,CATCHING,ALIGHT,BURNT,quench} from './fire-spread.js';   /* THE BURNING VILLAGE's fire */
 import {carpetBox,stepCarpet,knockCarpet,updateCarpet,resetCarpet,drawRug,drawCarpetWorld,drawStormWalls,mountCarpet} from './carpet.js';
 import { makeSkyMountHands } from './sky-mount-hands.js'; let SKH = null;   /* (claude/skymount) THE DRAKE'S BACK: the sky fight's arena, P.mount (src/sky-mount.js); every hook below is a no-op off a skyMount level */
+import { makeDemonKingHands } from './demon-king-hands.js'; let DKH = null;   /* (claude/demonking) THE DEMON KING's sky fight on the drake's back (src/demon-king.js, src/reflect-kit.js); every hook is a no-op off a skyMount level */
 import {burnSanctum,drawSanctum,drawSanctumDoors,drawSanctumUnder,drawDesertEnd,updateSanctum,openSanctumDoor} from './sanctum.js';   /* THE ARCHMAGE'S SANCTUM: the room behind the door, its floor of fire, and the path out */
 import {updateBuriedDead as stepBuriedDead,updateZombie,bakeDead,deadFrame,drawBuriedDead} from './buried-dead.js';
 import {bakeBuriedDeadKing,kingFrame as deadKingFrame} from './buried-dead-art.js';   /* THE BURIED DEAD'S OWN SPRITE (2026-09-24): a half-risen corpse-king, not the zombie's baker at x3 */
@@ -8934,6 +8935,7 @@ function greedHit(e, fromX, blow) {
 }
 function hurtEnemy0(e, dmg, fromX, plunge, blow, tag = blow) { const raw0 = dmg, pl = !!plunge || blowHas(tag, 'plunge');
   if(e.t==='magechase')return;
+  if (DKH && DKH.owns(e) && DKH.struck(e, dmg, tag)) return 0;   /* (claude/demonking) A BLOW OR A SHOT MEETS HIS BOLT: it turns for home (src/reflect-kit.js) - no damage, no number */
   if (e.t === 'shrieksister') { if (SSH) SSH.hit(e, dmg, fromX, pl); return; }   /* (claude/rookery) A SISTER takes her own blow (B15: ON THE WING 0.4, low whole, STUNNED x2 capped, WARDED 0.4) - src/shriek-sisters.js */
   if (e.t === 'shrieksisters') { if (!e.ssPass && !e.passThrough) return; e.ssPass = false; e.passThrough = false; }   /* THE ANCHOR: no blade reaches it; the last sister's fall is handed through so it dies the way every boss does */
   if (e.t === 'wickling') { if (WKH) WKH.struck(e); return; }   /* (claude/lamplit3) THE WICKLING: any blow and it swells and bursts into fire (told) - the blow itself does nothing else */   /* THE SPIRAL STAIR: he is run down, not fought - out of reach, and a blow that does reach him does nothing (kept first: tools/tower-chase.mjs reads the head of this function) */
@@ -9185,6 +9187,7 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow, tag = blow) { const raw0 = dmg,
   const dpV = blow && tag ? rpVerbOf(tag, rpSkillBlow()) : null; if (blow && dmg > 0 && !glance && !P.jetHit) DP.gain(e, Math.min(dmg, Math.max(0, e.hp)), dpV, RP.chainOf(P));   /* (claude/damagepct) THE DAMAGE %: a landed hero blow adds its verb's weight of what it took (a burn, a hazard, a foe's fire add nothing) */
   const dpHeavy = !!P.heavy || dpV === 'heavy' || dpV === 'riposte' || dpV === 'plunge', dpP = dpBossLike(e) ? 0 : DP.pctOf(e);   /* (claude/damagepct) a boss's % only lengthens his break */
   if (e.fa === 'shielded' && e.faShell > 0 && blow && dmg > 0 && !glance && !P.jetHit) dmg = FOA.shellTake(e, dmg, amV, e.keyHit === time, FA_API);   /* (claude/foepass) THE SHELL: x0.4 into it (never immune), a heavy / plunge / riposte / ability / the right tool shatters it (src/foe-affix.js) */
+  if (DKH && DKH.owns(e)) dmg = DKH.take(e, dmg, tag);   /* (claude/demonking) THE DEMON KING (B15): x0.4 outside his knockdown, x1.5 downed, a return whole; never past a phase line, never 0 */
   e.hp -= dmg; if (e.trainer && e.hp <= 0) e.hp = e.hp0;   /* a trial's man is straw inside */ e.flash = glance ? 0.05 : 0.12; e.hitDir = Math.sign(e.x - fromX) || e.face || 1; if (e.t !== 'queen' && !glance && !P.jetHit) e.stagger = hitStagger(dmg, P.heavy) * DP_stun(dpP, dpHeavy) * DFM.df('stagger');   /* (claude/difficulty) x the mode's stagger */   /* (claude/damagepct) the hitstun grows with the % (a light blow's a little, a heavy's a lot) */ e.sq = glance ? 0.06 : 0.16;
   impactAt(e.x + (Math.sign(e.x - fromX) || 1) * -3, e.y - e.h / 2 - (plunge ? 4 : 0), plunge ? 'plunge' : MAT[e.t] === 'steel' ? 'steel' : 'hit');
   if (e.t === 'gill' || e.t === 'heart') P.grace = Math.max(P.grace, 0.7); else if (e.t === 'queen' || e.t === 'frog' || e.t === 'chief' || e.t === 'ram') P.grace = Math.max(P.grace, 0.3); // landing a hit on a boss is never punished
@@ -28809,6 +28812,7 @@ function updateEnemies(dt) {
     if (faDt !== null) { dt = faDt; faDt = null; }   /* (claude/foepass) a HASTED foe's fast clock stops with it */
     disarmTick(); updFoe = e; updSeedN = seeds.length;   /* DISARM: whose blow this is, and what it throws (knightKit) */
     if (!e.alive) continue;
+    if (DKH && DKH.owns(e)) continue;   /* (claude/demonking) stepped by the hands */
     /* WHO THIS ONE MEANS BY "the player": the nearest hero still on his feet. One line, and every creature and every
        boss in the game answers to whichever of them walked into it, with no branch of its own. (P is put back to
        player one at the call site the moment the sweep is over.) */
@@ -29953,6 +29957,7 @@ GBH = makeGrubbagHands({ get L() { return L; }, get players() { return players &
   hitOnce: o => { if (!P || !P.hitSet || P.hitSet.has(o)) return false; P.hitSet.add(o); return true; } });   /* LORD GRUBBAG THE GLUTTON (claude/kitchengate, src/grubbag-hands.js): his pie oven, the serving line's dishes, the belch's rings, the gravy */
 EHP.grubbag = GBG.GB.hp; BEAST_SHORT.grubbag = 'LORD GRUBBAG'; COLS.grubbag = ['#7a8a52', '#6a2a3a', '#ffd36b']; KNOCK_SKIP.add('grubbag'); EHP.butcher = KGM.K.butcher.hp; BEAST_SHORT.butcher = 'THE BUTCHER'; EHP.attendant = KGM.K.attendant.hp; BEAST_SHORT.attendant = 'THE ATTENDANT'; COLS.attendant = ['#6a2a3a', '#efe8da', '#c8ccd4']; COLS.butcher = ['#8a3a2a', '#e8e0d0', '#c8ccd4'];
 SKH = makeSkyMountHands({ L: () => L, players: () => players || [P], number: (x, y, t, c) => number(x, y, t, c), sfx: k => { const f = SFX[{ roar: 'roar', wing: 'throwWhoosh', land: 'pStep' }[k]]; if (typeof f === 'function') f(); }, solid: T.SOLID, bk: () => window.BK });   /* (claude/skymount) */
+DKH = makeDemonKingHands({ L: () => L, players: () => players || [P], P: () => P, enemies: () => enemies, asPlayer: (p, fn) => asPlayer(p, fn), damage: (x, d, o) => damagePlayer(x, d, o), rpStamp: () => P.rpLookAt, heroId: () => hero(), swordDmg: () => swordDmg(), hurtAs: (t, e, d, x) => hurtAs(t, e, d, x, false), spawnImp: (x, y) => { const n0 = enemies.length; spawnEnt({ t: 'imp', x: Math.floor(x / TS), y: Math.floor(y / TS) - 1 }); const m = enemies.length > n0 ? enemies[n0] : null; if (m) { m.x = x; m.y = y - 2; } return m; }, number: (x, y, t, c) => number(x, y, t, c), text: (...a) => text(...a), sfx: SFX, shake: n => shakeCam(n), ring: (x, y, r, c) => ringAt(x, y, r, c, 0.4), burst: (x, y, n, c) => burst(x, y, n, c, 110, 0.6), scale: () => 1 + 0.25 * (TIER_BOSS[curId()] || 0), skh: () => SKH, bk: () => window.BK });   /* (claude/demonking) */
 /* THE KITCHEN GATE's HANDS (claude/kitchengate, src/kitchen-hands.js): its fires and bellows, the coppers' steam, the great spits, the grease trails and the tallow doors, the overturned pot, the butcher, the recipe pages */
 KGH = makeKitchenHands({ get L() { return L; }, TS, T, sfx: SFX, players: () => players || [P], enemies: () => enemies, time: () => time,
   number: (x, y, t, c) => number(x, y, t, c), burst: (...a) => burst(...a), dust: (x, y, n) => dust(x, y, n), shake: n => shakeCam(n), seen: k => beastSeen(k),
@@ -32652,6 +32657,7 @@ function update(dt) {
   const sub = wdtAll > dt * 1.0001 ? Math.ceil(wdtAll / dt - 1e-6) : 1, stateIn = state;
   for (let si = 0; si < sub; si++) { const wdt = wdtAll / sub; if (si) { clearPresses(); if (stop > 0 || state !== stateIn) break; }
   if (SKH) SKH.update(wdt);   /* (claude/skymount) THE DRAKE'S BACK: the wingbeat, the bank, every hero on it */
+  if (DKH) DKH.update(wdt);   /* (claude/demonking) THE DEMON KING: his moves, his bolts (entities in enemies), the returns, the knockdowns */
   updateMovers(wdt); danceAfterBoss(); for (const pp of players) asPlayer(pp, () => ptMasked(pp, () => { if (!PTK.before(pp, wdt)) { HERO_HAND = true; try { updatePlayer(wdt); } finally { HERO_HAND = false; } } PTK.after(pp, wdt); })); coopWatch(); if (TAVO) TAVO.tick(wdt); if (YARD) YARD.tick(wdt); PTK.tick(wdt); updateEnemies(wdt); tokenPost(TK, enemies, tkApi, wdt); P = players[0]; emitAt(null); updateWisp(wdt); updateSlide(wdt); updateOverhangs(wdt); updateChase(wdt); updateStairs(wdt); updateFlood(wdt); traceBeams(wdt); updateProps(wdt); updateVillage(wdt); if (L.timber) updateTimber(wdt, attackBox()); if (L.ballast) updateBallast(wdt); if (L.hoists) updateHoists(wdt); if (L.deep) updateDeep(wdt); updateBreathCue(wdt); if (L.hush) updateHush(wdt); updateCrystal(wdt); updateSpans(wdt); updatePyres(wdt); updateCorpses(wdt); updateShots(wdt); updateParticles(wdt); }
   updateWeather(dt); updateCamera(dt * Math.max(1, SET.speed || 1));
   updatePolish(dt); fogMark(dt);
@@ -34564,6 +34570,7 @@ function drawWorld(cx, cy, showPlayer) {
   for (const fx of deathFx) drawDeathFx(g, fx, cx, cy);   GLU.drawLines(g, cx, cy, time);   /* (claude/lategameb) a scout's taut RECALL LINE (src/foe-glue.js) */   /* what they were made of, after the bodies and before the living */
   if (boss && boss.t === 'lance' && boss.lz) drawLanceBridge(cx, cy);   /* (claude/stormhold3) the cracks, the spears' shadows, the ballista's line, the oil's strip, the main gate: drawn where YOU are */
   for (const e of enemies) {
+    if (DKH && DKH.owns(e)) continue;   /* (claude/demonking) drawn by the hands */
     if (OKD.isKnightT(e.t)) { OK.draw(g, e, cx, cy); if (e.elite) OK.drawBanner(g, e, cx, cy, TS); }   /* (claude/order) what a knight leaves on the floor and in the air, and HIS CHAPTER'S BANNER on the gate he holds (src/order-knights.js) */
     if (e.behind) continue;   /* (claude/fairfix3) round the back of the chair-o-plane: drawn small behind its mast (src/redraw/fair_newrides.js) */
     if (e.alive && (e.poise > 0 || e.broken > 0 || e.dmgPct >= 1) && !(e === boss || e.xpRole === 'mini' || (e.elite && Math.abs(P.x - e.x) < EL.near && Math.abs(P.y - e.y) < 110))) drawPoise(e, cx, cy);   /* the stagger bar over its head (claude/riposte: a boss's, a mini's and a near elite's is under their health instead) */
@@ -35026,6 +35033,7 @@ function drawWorld(cx, cy, showPlayer) {
   if(L.sanctum&&L.carpetUp&&!L.sandWalk&&!mageRealm()&&!(L.arena&&L.arena.ascent))drawSanctumUnder(g,L.arena,cx,cy);   /* his hall is closed at the bottom: under the fire is stone, not the parapet and its lantern (round 2) */
   if (PUPH && PUPH.on()) PUPH.drawRig(cx, cy, time);   /* THE PUPPETEER's rig and strings (slack grey, taut gold), after the bodies they hold */
   if (L.skyMount && SKH) SKH.drawDrake(g, cx, cy, time);   /* (claude/skymount) THE DRAKE under the heroes (greybox) */
+  if (L.skyMount && DKH) DKH.draw(g, cx, cy, time);   /* (claude/demonking) THE DEMON KING, his bolts and rings (greybox) */
   drawCarpetWorld(g,L,P,cx,cy,time);{const gh=enemies.find(q=>q.t==='greathound'&&q.alive);if(gh)GHD.drawHound(g,gh,cx,cy,time,L.mini&&L.mini.boss==='greathound'?L.mini.floor:gh.y);}drawSextonFx(cx,cy);drawMinerPicks(g,cx,cy);{const wm=boss&&boss.t==='winchmaster'&&boss.alive?boss:null;if(wm)drawWinchFx(g,wm,winchC(wm),cx,cy,time);}if(WRK&&WRK.on())WRK.draw(g,cx,cy,time);if(GMH&&GMH.on())GMH.drawFront(g,cx,cy,time);/* (claude/gorm2) KING GORM 2's told layer: the archers' arcs, the rock's arc, the fire, the cones, the logs, the quake */{const gw=enemies.find(q=>q.t==='gravewarden'&&q.alive);if(gw)drawGraveWarden(g,gw,cx,cy,time,(L.mini||L.arena).floor);}{const ab=boss&&boss.t==='abbot'&&boss.alive?boss:null;if(L.arena&&L.arena.boss==='abbot')drawAbbotRopes(g,abbotRopes(),L.arena.y0,L.arena.floor,cx,cy,time,ab);if(ab&&L.arena)drawFalseAbbot(g,ab,cx,cy,time,L.arena.floor);}if(L.witch&&(L.mini||L.arena))drawHedgeWarden(g,enemies.find(q=>q.t==='hedgewarden'),hedgeBraziers(),cx,cy,time,(L.mini||L.arena).floor);drawUndeadMage(g,boss?.t==='undeadmage'?boss:null,cx,cy,time);if(boss?.t==='undeadmage'){drawRealmFx(g,boss,cx,cy,time,P,(s,x,y,col,z)=>text(s,x,y,col,'center',z||6));drawTear(g,boss,cx,cy,time);drawMageActs(g,boss,cx,cy,time,(s,x,y,col,z)=>text(s,x,y,col,'center',z||6));}for(const q of enemies)if(q.t==='magechase'&&q.alive){drawUndeadMage(g,q,cx,cy,time);drawStairReel(g,q,cx,cy,time);}if(L.arena?.carpet&&boss?.t==='undeadmage'&&!mageRealm())drawStormWalls(g,L.arena,boss.squeeze||0,cx,cy,time,VW,VH);
   if (L.witch) drawRoots(g, L.hedgeRoots, L.witch, cx, cy, time);   /* THE ROOTS crawling, THE ROOTED GARDEN's braziers and its shivering hedges (hedge-warden.js) */
   if(L.witch&&L.arena&&L.arena.rune)drawRune(g,L.arena.rune,cx,cy,time);   /* (claude/bosswave2) THE RUNE COLUMN in his arena */
@@ -36663,6 +36671,7 @@ function render() {
     g.fillStyle = gr; g.fillRect(0, 0, VW, VH);
     g.globalAlpha = 0.10 * k; g.fillStyle = '#f6f6ee'; g.fillRect(0, 0, VW, VH); g.globalAlpha = 1;
   }
+  if (DKH) DKH.hud(g, VW, VH, time);   /* (claude/demonking) his three-phase bar and the pips */
   if (flash > 0 && SET.flashes && !SET.reduceMotion) { g.fillStyle = 'rgba(255,80,80,' + (flash * 2.5) + ')'; g.fillRect(0, 0, VW, VH); }
   if (state === 'talk' && talk) { // the words: a box along the bottom, the speaker named, a glyph for the next page
     const big = !!SET.bigText; const sz = big ? TYPE.big : 8; const bw = VW - 24, bx = 12; const body = talk.lines[talk.i] || ''; const lines = wrap(body, bw - 16, sz); const lh = big ? 18 : 10, nh = talk.name ? lh : 0; const bh = 14 + lines.length * lh + nh + 8;   /* (+8: the page count and the next glyph have a row of their own, off the last line) */
