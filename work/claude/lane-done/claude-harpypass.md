@@ -31,7 +31,7 @@ Daniel's line: priority-1016 '!! 11-02 21:49 / 21:51' + '!! 11-05 07:44' (pulled
 **THE SISTERS REWORK** (the mechanical half of Daniel's 11-01 17:23 list; the redraw is the art lane's)
 1. **The nests hatch.** A nest still **hanging** on its arm hatches a harpy chick: a **ROC FLEDGLING**, the Rookery's existing small weak foe, so hit, death, bestiary and art come for free.
    - The egg **rocks in the nest** for 1.4 s first (greybox egg with a growing crack, a yellow `!`, and the first one says `A NEST HATCHES: KNOCK IT DOWN TO STOP IT`).
-   - First egg 8 s after the wake, then every 11 s, **max 2 chicks alive**.
+   - First egg 10 s after the wake, then every 15 s, **max 1 chick alive** (built as 8 / 11 / cap 2, cut after the bossLab: see 3).
    - A nest **knocked down** never hatches again, so the main opening is now also the way to stop the adds. An egg whose nest falls mid-rock is lost.
    - The chicks are removed when the fight ends.
 2. **The yellow projectile (the Shrieker's SHRIEK WAVE): 25% slower and a longer tell.**
@@ -79,7 +79,13 @@ Daniel's line: priority-1016 '!! 11-02 21:49 / 21:51' + '!! 11-05 07:44' (pulled
   - All six rides in the real game: perch > carry > home, set down on the land.
   - The hung nest is broken by the carrier's flight.
   - Every cracked rock, the shrieker, the gale harpy, and the sisters' wake / stun / 0.4x all pass. No page error.
-- **Sisters bossLab n=6** (practiced, kit flasks, knight/warden/pyro x2): SEE SECTION 3b (filled in when it finished).
+- **Sisters bossLab n=6** (`boss-rates.mjs rookery --ways=practiced --seeds=2`, profile human, kit flasks, L14), as built with **chicks cap 2 / every 11 s**: **0/6 (0% [0-39]) LOW**.
+  - The bot died at 85-147 s with the sisters at 1-66% left; it took 250-268 each fight.
+  - The 11-01 rookery4tune final (n=24/hero, same tool and profile) read **68%**, with deaths ~136 s and wins at 160-215 s. So the bot now dies ~30-50 s sooner.
+  - Most likely cause: **the chicks**. Two fledglings peck for 10 each, and the boss bot does not swat adds. The slower wave only comes after the Snatcher falls, so it should not have mattered.
+  - Not proven: no master baseline was run, because of the browser cap. Bot changes since 11-01 (botbuilt / botstats 11-03) are the other suspect.
+  - **What I changed after the run:** chicks cut to **cap 1, first 10 s, every 15 s**. This is UNMEASURED.
+  - **The tune lane must:** (1) run master n=6 as a baseline, (2) run this branch, (3) teach the boss bot to swat a chick (or give chicks a lower peck), then tune to 60-70% with flasks.
 
 ## 4. OWED
 - **ART (sonnet):**
@@ -104,4 +110,5 @@ Daniel's line: priority-1016 '!! 11-02 21:49 / 21:51' + '!! 11-05 07:44' (pulled
 3. **A perched carrier in the Sisters' arena** to the Shrieker's perch? Rec **no** (built: no). The overhang steps and the post-Snatcher vents already go there, and a free lift would cheapen the cornered opening.
 4. **"Burn a nest"**: the nests stop hatching only when **knocked down** (the arm-break opening). Rec: keep that as the one way (built); a pyro-burn rule can come with the redraw if wanted.
 5. **Shriek wave HEAVY at 1.0 s (REC, built)**, or keep it MEDIUM at 0.76 s, the band top (only ~9% longer)? Rec heavy: it is the move Daniel named.
+7. **Chick numbers**: rec **cap 1, every 15 s** (now set, unmeasured) and the tune lane decides. Alternative: cap 2 as Daniel's note said, with the sisters' HP trimmed to pay for it.
 6. **Wind Gap and Gale Spires crows -> gust harpies (REC, built)**, or add them on top of the crows? Rec replace: the same foe count, the new threat.

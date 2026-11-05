@@ -92,7 +92,7 @@ export const SS = {
   /* (claude/harpypass, Daniel 11-01 17:23) THE NESTS HATCH: a nest still HANGING on its arm hatches a harpy chick (a ROC FLEDGLING, the rookery's small weak foe) - its egg ROCKS in the nest
      first (tell s: a yellow !, the egg drawn rocking, a crack of shell) - every `every` s from `first` s after the wake, at most `cap` chicks alive. A nest KNOCKED DOWN (its arm broken: the
      main opening) never hatches again; a rocking egg whose nest falls is lost */
-  chick: { first: 8, every: 11, tell: 1.4, cap: 2 },                  /* THE UPDRAFTS (plugged until the Snatcher falls): the way up to the roost tier once her gusts are gone */
+  chick: { first: 10, every: 15, tell: 1.4, cap: 1 },   /* (claude/harpypass: built 8 / 11 / cap 2 - the n=6 bossLab read 0/6 with the boss bot dying ~30 s sooner than the 11-01 tune (it never swats the chicks); cut to one chick at a time, UNMEASURED - the tune lane owns it) */                  /* THE UPDRAFTS (plugged until the Snatcher falls): the way up to the roost tier once her gusts are gone */
 };
 /* (claude/rookery4) THE SUMMIT'S ROOSTS (tile columns from the arena's west edge, rows over the summit floor): the Diver's low nest, the Snatcher's two side nests (she takes the nearer),
    the Shrieker's perch (the level's plank, L.arena.perchS) over THE CRACKED OVERHANG - its foot on the floor; broken, it slides down as STEPS up to her perch. Two UPDRAFT VENTS. */
