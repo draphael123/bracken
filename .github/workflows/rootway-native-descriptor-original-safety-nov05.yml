@@ -1,0 +1,50 @@
+name: Rootway native descriptor columns remaining original safety checks
+on:
+  push:
+    branches: [codex/load-perf]
+    paths:
+      - tools/rootway-native-descriptor-original-safety-nov05/**
+      - .github/workflows/rootway-native-descriptor-original-safety-nov05.yml
+permissions: {contents: read}
+jobs:
+  safety:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {fixture: loading-screen, scope: memory}
+          - {fixture: load-leak, scope: memory}
+          - {fixture: gear-tiers, scope: publicApi}
+          - {fixture: hero-roster, scope: publicApi}
+          - {fixture: tavern, scope: publicApi}
+          - {fixture: tavern-menu, scope: publicApi}
+          - {fixture: online-coop, scope: publicApi}
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0}
+      - uses: actions/checkout@v4
+        with:
+          ref: 1a576c3f4511b6856df9fb4738df5aaae9987e81
+          path: sprite-publication-safety-game
+          fetch-depth: 0
+      - uses: actions/checkout@v4
+        with:
+          ref: 1a576c3f4511b6856df9fb4738df5aaae9987e81
+          path: sprite-publication-original-tools
+      - uses: actions/setup-node@v4
+        with: {node-version: '24.11.1'}
+      - name: Exact Rootway source with unchanged original standalone fixture
+        run: node tools/rootway-native-descriptor-original-safety-nov05/${{ matrix.fixture }}.mjs
+        env:
+          PRIVATE_HERO_GAME: sprite-publication-safety-game
+          PRIVATE_HERO_ORIGINAL_TOOLS: sprite-publication-original-tools
+          PRIVATE_HERO_SAFETY_SCOPE: ${{ matrix.scope }}
+          PRIVATE_HERO_SAFETY_OUT: ${{ runner.temp }}/rootway-native-descriptor-original-safety-${{ matrix.fixture }}-nov05
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rootway-native-descriptor-original-safety-${{ matrix.fixture }}-nov05
+          path: ${{ runner.temp }}/rootway-native-descriptor-original-safety-${{ matrix.fixture }}-nov05/
+          if-no-files-found: error
