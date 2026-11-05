@@ -45,7 +45,7 @@ export function restFor(tileAt, slab) {
 }
 
 /* A BODY'S VIEW OF THE FALLEN CELLS. cells: Map(index -> kind) of every cell a fallen slab put down (W = the level's width in tiles).
-   o.drop: DOWN + JUMP (a ramp drops you through, as a board does); o.ghost: the Prince mid-duck (or the failsafe): fallen cells are air to him. */
+   o.drop: DOWN + JUMP or the RUNNING SLIDE (a ramp drops you through as a board does; the slide goes in under its foot); o.ghost: the Prince mid-duck (or the failsafe): fallen cells are air to him. */
 export function fallenView(ta, W, cells, b, o = {}) {
   if (!cells || !cells.size) return ta;
   return (tx, ty) => {
@@ -91,12 +91,21 @@ export function pillarAhead(spans, e, dir) {
   return best;
 }
 
-/* HOW HE CROSSES IT: 'hop' onto a shelf or a bridge (its top is one-way: he lands on it, walks it, steps off), 'duck' under a ramp; null when he is
-   held (stunned/pinned/reeling stays put) or there is nothing in the way */
-export function princeCross(e, spans, dir) {
+/* ROOM OVER A SHELF for a body h px tall standing on its top, along its whole span (a hanging wall over the tomb floor is no room for him) */
+const solidT = t => t === T.SOLID || t === T.CRATE || t === T.PALISADE || t === T.PORT || t === T.CLIMB || t === T.SOFT || t === T.ICE || t === T.WEB;
+export function roomOver(ta, p, h, w = 24) {   /* (w: he stays on its top until his far edge leaves it - a wall a body-width past its end counts) */
+  const y0 = Math.floor((p.top - h) / TS), y1 = Math.floor((p.top - 1) / TS);
+  for (let x = Math.floor((p.l - w) / TS); x <= Math.floor((p.r + w - 1) / TS); x++) for (let y = y0; y <= y1; y++) if (solidT(ta(x, y))) return false;
+  return true;
+}
+/* HOW HE CROSSES IT: 'hop' onto a shelf or a bridge (its top is one-way: he lands on it, walks it, steps off) when there is room over it for him,
+   'duck' under a ramp - or through a shelf with no room over it, bent double (a one-way course has no sides); null when he is held
+   (stunned/pinned/reeling stays put) or there is nothing in the way. ta (optional): the tiles, for the room over a shelf */
+export function princeCross(e, spans, dir, ta = null) {
   if (HELD.has(e.mode) || princeStays(e)) return null;
   const p = pillarAhead(spans, e, dir); if (!p) return null;
-  return { how: p.kind === 'ramp' ? 'duck' : 'hop', pillar: p, dir };
+  const hop = p.kind !== 'ramp' && (!ta || roomOver(ta, p, e.h + 4, e.w + 2));
+  return { how: hop ? 'hop' : 'duck', pillar: p, dir };
 }
 
 /* THE WATCHDOG. w: { x, t } kept per body. Returns true while he is stuck: wants to move, is not held, and has moved under 2 px in STUCK_T s */

@@ -168,7 +168,7 @@ export function makeUndercrown3Hands(ctx) {
   function princeCross(e, want) {
     if (!ctx.L || !ctx.L.uc3 || !want || e.mode !== 'stalk') return false;
     const spans = FP.pillarSpans(ctx.slabs().filter(s => s.tomb));
-    const x = FP.princeCross(e, spans, Math.sign(want)); if (!x) return false;
+    const x = FP.princeCross(e, spans, Math.sign(want), ctx.tileAt || null); if (!x) return false;
     e.crossDir = x.dir; e.crossP = x.pillar; e.n = e.n || {};
     if (x.how === 'hop') { e.mode = 'hopTell'; e.modeT = FALLEN.HOP_TELL; e.n.hop = (e.n.hop || 0) + 1; ctx.number(e.x, e.y - e.h - 12, 'HE VAULTS IT', '#c9b27c'); }
     else { e.mode = 'duckTell'; e.modeT = FALLEN.DUCK_TELL; e.n.duck = (e.n.duck || 0) + 1; ctx.number(e.x, e.y - e.h - 12, 'HE DUCKS UNDER', '#c9b27c'); }

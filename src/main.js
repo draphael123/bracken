@@ -7468,7 +7468,7 @@ const MB = { allowDrop: false, P: null };    /* ONE object, reused - moveBody ru
 const heroTileAt = (tx, ty) => { const t = tileAt(tx, ty); return t === T.SOLID && GEO.stoneAt(tx, ty) ? T.ONEWAY : t; };
 function moveBody(b, dx, dy, allowDrop = false) {
   let ta = (GEO && GEO.hasStones() && (b === P || (players && players.includes(b)))) ? heroTileAt : tileAt;
-  if (FALLEN_CELLS.size) ta = FLN.fallenView(ta, LW, FALLEN_CELLS, b, { drop: allowDrop, ghost: !!b.fpGhost });   /* (claude/undercrown3) A FALLEN PILLAR NEVER TRAPS: under a ramp it is no ceiling and no wall */
+  if (FALLEN_CELLS.size) ta = FLN.fallenView(ta, LW, FALLEN_CELLS, b, { drop: allowDrop || !!b.lowSlide, ghost: !!b.fpGhost });   /* (claude/undercrown3) A FALLEN PILLAR NEVER TRAPS: under a ramp it is no ceiling and no wall */
   if (!SLOPES_ON && !SLAB_PHYS) return moveBodySquare(b, dx, dy, ta, allowDrop, P);
   MB.allowDrop = allowDrop; MB.P = P;
   return moveBodySlopes(b, dx, dy, ta, MB);
@@ -11310,7 +11310,7 @@ else if (P.stepHeld > 0 && !P.swim) { P.stepHeld = Math.max(0, P.stepHeld - dt);
   }
   else if (P.jbuf > 0 && !P.rgRecall && (P.ground || P.coyote > 0) && !stunned && !P.plunge && (!dodging || P.dash > 0) && !P.block && !P.aegis && !rushing() && !(P.braceT > 0)) {   /* a jump out of the dodge is a running jump, as out of the dash: it ends the dodge and keeps the pace */
     if (P.dash > 0 && dodging) { P.dodge = 0; P.dodgeInv = 0; P.dash = 0; }
-    if (keys.down && P.ground && isOneWay(P.groundTile)) { P.drop = 0.2; P.jbuf = 0; }
+    if (keys.down && P.ground && (isOneWay(P.groundTile) || (FALLEN_CELLS.size && P.groundTile >= 20 && P.groundTile <= 25 && onFallen(P)))) { P.drop = 0.2; P.jbuf = 0; }   /* (claude/undercrown3) a fallen slab's ramp drops you through like a board */
     else { P.vy = JUMPV * (PROG.charm === 'feather' ? 1.09 : 1); P.ground = false; P.coyote = 0; P.jbuf = 0;
       // WHAT THE ROPE GAVE YOU, YOU KEEP: leaving a swing or a raft at speed used to drop you to a walking pace
       if (P.onMover && P.onMover.dx) { const carry = P.onMover.dx * 60; P.vx += Math.max(-190, Math.min(190, carry)); if (Math.abs(carry) > 60) streaks(P.x, P.y - 10, -Math.sign(carry), ['#fff6e0', '#c9d1dc'], 80); }
@@ -27296,6 +27296,7 @@ function updateSlabs(dt) {
   if (L.uc3) fallenSync();
 }
 /* (claude/undercrown3) THE FALLEN CELLS, as the slabs lie now: a ramp's slope cells and a shelf's one-way courses (src/fallen-pillar.js) */
+const onFallen = b => { const i = Math.floor((b.y - 1) / TS) * LW + Math.floor(b.x / TS); return FALLEN_CELLS.has(i) || FALLEN_CELLS.has(i + LW); };
 function fallenSync() { FALLEN_CELLS.clear(); if (!L || !L.uc3) return; for (const rt of SLAB_RT.values()) if (rt.state === 'ramp' || rt.state === 'flat') for (const i of (rt.cells || [])) FALLEN_CELLS.set(i, rt.state); }
 /* THE SLAB, DRAWN: swinging on its hinge, lying as a ramp on exactly its tiles, falling, or down flat; and an end that sags over a cut post */
 function drawSlabs(cx, cy) {
@@ -29890,7 +29891,7 @@ MCH = makeMinecartHands({ get L() { return L; }, get players() { return players;
   killFoe: e => { if (e.alive) hurtEnemy(e, Math.max(9999, (e.hp || 0) + 1), e.x, false); }, hitFoe: (e, d) => { if (e.alive) hurtEnemy(e, d, e.x, false); }, movers: () => movers, questGot: () => straysGot.size, chaseRunning: () => chases.some(c => c.st.phase === 'run'), drillTread: p => (GDH ? GDH.tread(p) : null), forgeState: n => (FGR ? FGR.state(n) : '') });
 FGR = makeForgeRails({ get L() { return L; }, TS, T, sfx: SFX, hero: () => P, enemies: () => enemies, movers: () => movers, time: () => time, VW: () => VW, attackBox: () => attackBox(), overlap: (a, b) => overlap(a, b),
   cellSet: (x, y, t) => { if (x >= 0 && y >= 0 && x < LW && y < LH) cellSet(x, y, t); }, number: (x, y, t, c) => number(x, y, t, c), burst: (...a) => burst(...a), sparks: (...a) => sparks(...a), shake: n => shakeCam(n) });   /* (claude/forgemaster) */
-U3H = makeUndercrown3Hands({ get L() { return L; }, TS, DUCK_H, sfx: SFX, get parts() { return parts; }, players: () => players, enemies: () => enemies, props: () => props, hero: () => P,
+U3H = makeUndercrown3Hands({ get L() { return L; }, TS, DUCK_H, tileAt: (x, y) => tileAt(x, y), sfx: SFX, get parts() { return parts; }, players: () => players, enemies: () => enemies, props: () => props, hero: () => P,
   slabs: () => [...SLAB_RT.values()], embers: () => embers, fires: () => fires, attackBox: () => attackBox(), number: (x, y, t, c) => number(x, y, t, c), shake: n => shakeCam(n),
   asPlayer: (p, fn) => asPlayer(p, fn), damagePlayer: (...a) => damagePlayer(...a), hurtEnemy: (e, d, x) => hurtEnemy(e, d, x, false), cutPost: pr => { pr.broken = false; slabCut(pr); },
   cellSet: (x, y, t) => { if (x >= 0 && y >= 0 && x < LW && y < LH) cellSet(x, y, t); }, resolveTiles: () => resolveTiles(), hint: (k, msg) => hintSay('tip', 4.5, msg) });   /* (claude/undercrown3) THE UNDERCROWN 3: src/undercrown3.js */
