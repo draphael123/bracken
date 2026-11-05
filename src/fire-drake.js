@@ -18,22 +18,22 @@
 //   Demon King). S.done = true; the hands keep it off the normal death path - it carries you in the sky fight.
 //   Every told move has its OWN windup pose, release pose and sound (B16: POSE below, tools/fire-drake.mjs proves windup != release).
 export const FD = {
-  hp: 2600, w: 64, h: 44, head: 30,             // head: the jaw's distance ahead of its body centre (the chain's ring is measured to the JAW)
+  hp: 3400, w: 64, h: 44, head: 30,             // head: the jaw's distance ahead of its body centre (the chain's ring is measured to the JAW)
   hide: 0.5, wardMul: 0.4, tearMul: 0.5, pantMul: 1.0,
   p2: 0.6, p3: 0.3,
   ring: [100, 145, 185],                         // the chain's reach (px from the seal centre to the jaw) by phase. THE BAIT SPOT is past the ring AND past its claw
                                                  // from the chain's end (baitOf): ring + claw.reach - head + 18 = 154 / 199 / 239 px - inside a 32-tile caldera's 248 (the wall band)
   walkV: [44, 48, 54], rest: [0.55, 0.45, 0.4], near: 80,
-  claw: { tell: [0.7, 0.6, 0.55], t: 0.18, reach: 66, back: 10, h: 30, dmg: 18, rec: 0.45 },
-  tail: { tell: [0.8, 0.7, 0.65], t: 0.25, back: 90, ahead: 40, h: 14, dmg: 20, rec: 0.5 },
-  breath: { tell: [1.0, 0.9, 0.85], t: 0.5, tick: 0.3, gap: 30, over: 140, h: 22, dmg: 12, pant: 1.0 },   // two ticks (0, 0.3 s): under its chin, behind it, on a ledge - or a jump timed on the release clears it
-  sweep: { tell: [0.8, 0.7, 0.65], t: 0.3, inside: 12, over: 80, h: 12, dmg: 16, rec: 0.55, share: 0.45 },   // THE CHAIN SWEEP: the band from ring - inside to ring + over, low (jump it)
-  lunge: { tell: [0.85, 0.8, 0.75], lock: 0.25, v: 420, biteR: 22, dmg: 26, rec: 0.5, share: 0.4, after: 0.2 },   // lock: the lunge's aim holds this long before launch; share / after: its pick share outside the ring (after a jerk)
+  claw: { tell: [0.7, 0.6, 0.55], t: 0.18, reach: 66, back: 10, h: 30, dmg: 27, rec: 0.45 },
+  tail: { tell: [0.8, 0.7, 0.65], t: 0.25, back: 90, ahead: 40, h: 14, dmg: 30, rec: 0.5 },
+  breath: { tell: [1.0, 0.9, 0.85], t: 0.5, tick: 0.3, gap: 30, over: 140, h: 22, dmg: 18, pant: 1.0 },   // two ticks (0, 0.3 s): under its chin, behind it, on a ledge - or a jump timed on the release clears it
+  sweep: { tell: [0.8, 0.7, 0.65], t: 0.3, inside: 12, over: 80, h: 12, dmg: 24, rec: 0.55, share: 0.45 },   // THE CHAIN SWEEP: the band from ring - inside to ring + over, low (jump it)
+  lunge: { tell: [0.85, 0.8, 0.75], lock: 0.25, v: 420, biteR: 22, dmg: 39, rec: 0.5, share: 0.4, after: 0.2 },   // lock: the lunge's aim holds this long before launch; share / after: its pick share outside the ring (after a jerk)
   jerk: { t: [3.2, 2.8, 2.4], mul: 1.75, cap: 0.15, rise: 0.6, ward: 2.5 },
   tear: { tell: 1.6 },
-  dive: { crouch: 0.8, hover: 1.2, ring: 0.9, air: 70, gust: 60, r: 34, h: 24, dmg: 24, rec: 0.6, share: 0.3 },
-  slam: { tell: 1.0, t: 0.3, v: 175, crest: 13, clear: 9, dmg: 22, rec: 0.6, every: 3 },
-  vent: { every: 3.2, glow: 1.0, t: 0.8, w: 12, h: 60, dmg: 20 },
+  dive: { crouch: 0.8, hover: 1.2, ring: 0.9, air: 70, gust: 60, r: 34, h: 24, dmg: 36, rec: 0.6, share: 0.3 },
+  slam: { tell: 1.0, t: 0.3, v: 175, crest: 13, clear: 9, dmg: 33, rec: 0.6, every: 3 },
+  vent: { every: 3.2, glow: 1.0, t: 0.8, w: 12, h: 60, dmg: 30 },
   beaten: { lunge: 0.7, fall: 1.4 },
 };
 export const FD_SAY = { wake: 'THE FIRE DRAKE', rule: 'IT IS CHAINED TO THE SEAL. BAIT ITS LUNGE PAST THE SCORCHED RING.', jerked: 'THE CHAIN HOLDS IT', ward: 'ITS SCALES BLAZE',
