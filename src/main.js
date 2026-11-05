@@ -147,6 +147,7 @@ import { makePartnerThrow, WORDS as PT_WORDS, PT as PTC } from './partner-throw.
 import { makeKnockInto, throwWhy as kiWhy, guardedOf as kiGuarded, WORDS as KI_WORDS, weightOf as kiWeight } from './knock-into.js'; import { COVER as RX_COVER, heroAbove as raAbove, sidestepTick as raSidestep, REACT_AIR as RX_AIR } from './foe-react.js'; import * as AP from './anti-plunge.js'; import * as KA from './ki-art.js'; import { knockRows as kiRows } from './knock-data.js';   /* (claude/kifollow) the knock-into ART (spines, armed states, poses, entry FX: src/ki-art.js) and the per-act hazard DATA (src/knock-data.js) */   /* (claude/knockinto) ANTI-PLUNGE: the THORNED elite's and the Spike Goblin's spines drawn on the body and told, the spitter's sidestep (src/anti-plunge.js, src/foe-react.js REACT_AIR) */   /* (claude/knockinto) KNOCK FOES INTO THE LEVEL: the throw along the blow, weight-scaled, and the hazard it lands in (src/knock-into.js) */
 import * as OKD from './order-chapters.js'; import { installOrder, bakeBase as okBakeBase, bakeCardFor as okBakeCard, frameOf as okFrame } from './order-knights.js';   /* (claude/order) THE ROAD WARDENS: four knight bodies as ELITE KINDS (src/order-knights.js) and who holds which level (src/order-chapters.js) */
 import { makeDamagePct, stunMul as DP_stun, shoveMul as DP_shove } from './damage-pct.js';   /* (claude/damagepct) DAMAGE % STAGGER, Smash-style: every hero blow builds a foe's %, and the % weighs the shove, the hitstun and the throw (src/damage-pct.js) */
+import * as FTK from './freebooter-tech.js'; /* (claude/freebooterpack) THE FREEBOOTER'S L25-L50 TECHNIQUES (numbers + rules) */
 import { CATCH as HC, catchVerdict, seedVerdict, shotMulFor } from './hook-catch.js';   /* (claude/heroblocksa, Daniel 10-30 21:56) THE FREEBOOTER'S HOOK CATCH: tap C is a ~0.4 s snap that blocks, catches thrown things and flings them back (scratch/brief-pyrokit-1101.md 7a) */
 import { makeRiposte, PARRY as RP_K, PARRY_ART as RP_ART, verbOf as rpVerbOf } from './riposte.js';   /* (claude/riposte) THE UNIVERSAL PARRY -> RIPOSTE, THE POISE BAR's openings, THE MIX-UP CHAIN (src/riposte.js) */   /* THE BREAK ON EVERY COMMON FOE, AND OPEN WHILE IT LASTS (src/poise-break.js) */
 import { FIN, FINISH_OK, finishReady, finishFoe } from './finishers.js';
@@ -821,7 +822,7 @@ const upg = id => upgRank(PROG, hero(), id);
 const thr = (stat, i) => thrOn(PROG, hero(), stat, i);
 let mendSeen = 0;   /* TURNED BLOW: the count of turned blows last frame */
 const GEO_LIFE0 = GEO_K.stone.gnaw, GEO_PERFECT0 = GEO_K.ward.perfect;   /* (claude/geoid: HARD STONE now slows how fast a foe gnaws her stone) */   /* her stone's life and the rune-ward's perfect window before the hero's own perks */
-const cdOf = k => Math.max(0.5, (k === 'summonSkeleton' && isReaper() && tal('gleaner') ? BKIT.BLOOD.host.worms.quick : CD_MAX[k] || 3) - (k === 'whirlwind' && hero() === 'knight' ? 0.5 * upg('ucalm') : 0)) * (perk('focus') ? 0.85 : 1);
+const cdOf = k => Math.max(0.5, (k === 'summonSkeleton' && isReaper() && tal('gleaner') ? BKIT.BLOOD.host.worms.quick : CD_MAX[k] || 3) - (k === 'whirlwind' && hero() === 'knight' ? 0.5 * upg('ucalm') : 0)) * (perk('focus') ? 0.85 : 1) * (isPirate() && k === 'powderKeg' ? FTK.kegCd(1, upg('ukeg')) : 1) * (isPirate() && k === 'boarding' ? FTK.boardCd(1, tech('fquick')) : 1);
 const amul = k => grow(hero(), heroLevel()).skillMultiplier * (1 + RANK_MUL * Math.max(0, skillRank(PROG, hero(), k) - 1)) * (hero() === 'knight' ? 1 + 0.2 * (k === 'shieldThrow' ? upg('uthrow') : k === 'risingCut' ? upg('urise') : 0) : 1); // skill damage grows (and MASTERY, a perk, and the skill's RANK), cooldowns and invulnerability do not
 let treeResetT = 0, talentsBackT = 0, talentsBackWho = '', talentsBackWhy = '';   /* RESET POINTS asks twice; the trees-have-changed notice shows once */
 window.BKT = { fieldsState: () => FLD, cqState: () => (CQH && CQH.show ? CQH.show() : null),   /* (claude/arenapolish) tools/arena-polish-shots.mjs: the moon's clock and the Underwell hall's state */ stk: () => SKD, stkExplode: (x, y, r) => explode(x, y, r, DMG.bomb),   /* (claude/chief3) tools/chief3.mjs: the Stockade's hands, and a blast */ shrineFill: () => shrineFill(),   /* (claude/difficulty) tools/difficulty.mjs: a shrine's refill per mode */ lights: () => lights, get PROG() { return PROG; },   /* (claude/smallfix7) tools/gorm-unlock.mjs: the one-life Gorm clear */ vil: () => ({ grid: VG, fires, parts: parts.length }), vilSplash: (x, y, r, c) => villageSplash(x, y, r, c), vilIgnite: (tx, ty) => ignite(VG, tx, ty, 'burngob'),   /* tools/douse-agree.mjs */ gormUnlock: () => ({ fell: gormFell, live: gormFightLive(), open: !!PROG.burningOpen }), gormDie: () => die({ name: 'TEST', red: false, rule: '' }), gormWin: () => gormBeaten(), krkArmPts: a => krkArmPts(a, L.arena.floor, 0), krakLimp: (e, t) => krakenArmsLimp(e, t), krkTop: (x, n) => krkTop(x, n), krkRoadEnds: () => krkRoadEnds(),   /* (tools/kraken-reach.mjs, tools/kraken-rework.mjs) */
@@ -1086,15 +1087,32 @@ function drawSkillFx(cx, cy) {
 let hammers = [], kegs = [];   /* (claude/herokit) kegs: the freebooter's POWDER KEG, fuse lit */ // the paladin's consecrated ground, and his blessed hammers in flight
 function updateKegs(dt) {
   for (const k of kegs) { k.t += dt;
-    if (!k.boom && k.t >= k.fuse) { k.boom = true; k.life = 0.3; ringAt(k.x, k.y - 6, 56, '#ffd36b', 0.35); burst(k.x, k.y - 8, 18, ['#fff6c8', '#ffd36b', '#ff9a5c', '#5c3a1d'], 160, 0.5, 120, 2); shakeCam(7); SFX.crack(); SFX.heavy();
+    if (k.great && !k.boom && FTK.kegRolling(k.t, isSolid(Math.floor((k.x + k.dir * 8) / TS), Math.floor((k.y - 4) / TS)))) k.x += k.dir * FTK.FT.keg.speed * dt;   /* (claude/freebooterpack) THE GREAT KEG rolls on along the deck, then sits lit */
+    if (!k.boom && k.t >= k.fuse) { k.boom = true; k.life = 0.3; ringAt(k.x, k.y - 6, k.great ? 80 : 56, '#ffd36b', 0.35); burst(k.x, k.y - 8, 18, ['#fff6c8', '#ffd36b', '#ff9a5c', '#5c3a1d'], 160, 0.5, 120, 2); shakeCam(k.great ? 9 : 7); SFX.crack(); SFX.heavy();
+      if (k.great) greatKegBlast(k, false); else
       for (const e of enemies) { if (!e.alive || e.harmless || e.gone > 0 || Math.abs(e.x - k.x) > 52 || Math.abs(e.y - k.y) > 40) continue; hurtAs('shot', e, Math.round(swordDmg() * SKK.K.powderKeg * amul('powderKeg')), k.x, false); if (e.alive && !e.maxHp) { e.vx = (Math.sign(e.x - k.x) || 1) * 260; e.vy = -140; e.stagger = Math.max(e.stagger || 0, 0.9); } } }
     else if (k.boom) k.life -= dt; }
   kegs = kegs.filter(k => !k.boom || k.life > 0);
 }
+/* (claude/freebooterpack) L50 B THE GREAT KEG's blast: swordDmg x k x amul on everything within r, ONCE (a boss takes the damage and nothing else); shot = the pistol set it off: wider and heavier */
+function greatKegBlast(k, shot) {
+  const was = k.boom; k.boom = true; if (shot || !was) k.life = 0.3; const bl = FTK.kegBlast(shot, false);
+  if (shot) { ringAt(k.x, k.y - 6, bl.r, '#fff6c8', 0.4); burst(k.x, k.y - 8, 26, ['#fff6c8', '#ffd36b', '#ff9a5c', '#5c3a1d'], 220, 0.6, 120, 2); shakeCam(11); zoomKick(1.08, 0.25); hitstop(0.08); SFX.crack(); SFX.heavy(); number(k.x, k.y - 30, 'SHOT KEG', '#ffd34a'); }
+  for (const e of enemies) { if (!e.alive || e.harmless || e.gone > 0 || Math.abs(e.x - k.x) > bl.r || Math.abs(e.y - k.y) > 50) continue;
+    const big = lcBig(e) || !!e.maxHp || !!e.mini, b = FTK.kegBlast(shot, big);
+    hurtAs('shot', e, Math.max(1, Math.round(swordDmg() * b.k * amul('powderKeg'))), k.x, false); if (!e.alive) continue;
+    if (b.stagger > 0 && !KNOCK_SKIP.has(e.t)) { e.stagger = Math.max(e.stagger || 0, b.stagger); e.vx = (Math.sign(e.x - k.x) || 1) * b.knock; e.vy = -180; } }
+}
+function pirateGreatKeg() { P.plunder = 0; P.atk = -1; P.vx = -P.face * 40; P.blastT = 0.35; trialEvent('meter'); kitPose(P, 'keg', 0.4); reloadPistol('');   /* (the ball is seated: the keg is shot to blow it at once) */
+  kegs.push({ x: P.x + P.face * 40, y: P.y, t: 0, fuse: FTK.FT.keg.fuse, boom: false, life: 0, great: true, dir: P.face }); SFX.coin(); SFX.throwWhoosh(); SFX.sting(); shakeCam(4, P.face * 2); number(P.x, P.y - 32, 'THE GREAT KEG', '#ffd34a'); }
+function pirateRaid() { P.plunder = 0; P.raidT = FTK.FT.raid.t; P.atk = -1; P.blastT = 0.3; trialEvent('meter'); kitPose(P, 'rum', 0.4); reloadPistol('');
+  SFX.coin(); SFX.sting(); shakeCam(5); zoomKick(1.05, 0.2); ringAt(P.x, P.y - 12, 46, '#ffd34a', 0.4); number(P.x, P.y - 32, 'THE RAIDING HOUR', '#ffd34a');
+  for (let i = 0; i < 20; i++) parts.push({ x: P.x, y: P.y - 12, vx: (Math.random() - 0.5) * 300, vy: -80 - Math.random() * 140, life: 0.8, max: 0.8, col: Math.random() < 0.6 ? '#ffd34a' : '#fff6c8', size: 2, grav: 420 }); }
 function drawKegs(cx, cy) {
   for (const k of kegs) { if (k.boom) continue; const x = Math.round(k.x - cx), y = Math.round(k.y - cy), blink = Math.floor(k.t * (6 + 10 * k.t)) % 2;
+    g.save(); if (k.great) { g.translate(x, y); g.scale(1.8, 1.8); g.translate(-x, -y); }   /* (claude/freebooterpack) the great keg: the same keg drawn big (placeholder art) */
     g.fillStyle = '#5c3a1d'; g.fillRect(x - 4, y - 8, 8, 8); g.fillStyle = '#7c8797'; g.fillRect(x - 4, y - 6, 8, 1); g.fillRect(x - 4, y - 3, 8, 1);
-    g.fillStyle = blink ? '#fff6c8' : '#ff9a5c'; g.fillRect(x, y - 11, 1, 3); g.fillRect(x - 1, y - 12, 3, 1); }
+    g.fillStyle = blink ? '#fff6c8' : '#ff9a5c'; g.fillRect(x, y - 11, 1, 3); g.fillRect(x - 1, y - 12, 3, 1); g.restore(); }
 }
 function updateHoly(dt) {
   updateKegs(dt);
@@ -7681,7 +7699,7 @@ function hudMeterLabel() {
     if (p >= HG.conv.pips) return { s: 'SUNFALL: C', col: blink ? '#ffd36b' : '#fff6c8' };
     if (p >= 4) return { s: 'RADIANCE+: C  THROW: UP+C', col: '#fff6c8' }; if (p >= 3) return { s: 'RADIANCE: C  THROW: UP+C', col: '#ffd36b' }; if (p >= 2) return { s: 'TWIN SMITE: C', col: '#ffe6a0' }; if (p >= 1) return { s: 'SMITE: C', col: '#e8c870' };
     if (P.ducking && (P.kneelT || 0) >= HG.pray.settle) return { s: 'PRAYING', col: '#fff6c8' }; return null; }   /* (PALADIN 4) the empowered versions, and the prayer */
-  if (isPirate()) return (P.plunder || 0) >= 100 ? { s: 'BLACK FLAG: C', col: blink ? '#ffd34a' : '#fff6c8' } : null;
+  if (isPirate()) return (P.plunder || 0) >= 100 ? { s: tech('fkeg') ? 'GREAT KEG: UP+C' : tech('fraid') ? 'RAIDING HOUR: UP+C' : 'BLACK FLAG: C', col: blink ? '#ffd34a' : '#fff6c8' } : null;
   if (isRg()) { if (state !== 'play' && state !== 'talk') return null; if (RGK && RGK.greatDrawing()) return { s: 'DRAWING', col: '#ffd36b' }; if (RGK && RGK.arrows() <= 0) return { s: 'QUIVER EMPTY', col: '#9aa39a' }; return null; }   /* (claude/ranger) HUNTER'S FOCUS full: the mark waits on UP+C; an empty quiver, say so */
   if (isBz()) { if (state !== 'play' && state !== 'talk') return null; if ((P.frenzyT || 0) > 0) return { s: 'FRENZY', col: blink ? '#ff4a3a' : '#ffb08a' }; if ((P.rage || 0) >= 100) return { s: 'FRENZY: DOWN+C', col: blink ? '#ff4a3a' : '#ffd0b0' };
     if (P.bzAxe) return { s: 'ONE AXE', col: '#c9b27c' }; if ((P.braceT || 0) > 0) return { s: 'TAKE IT', col: '#ff9a5c' }; return null; }   /* RAGE: full, the frenzy waits on C; one axe in the air, say so */
@@ -7911,7 +7929,7 @@ function damagePlayer0(fromX, dmg, { up = false, unblockable = false, pierce = f
   /* (claude/heroblocksa, src/hook-catch.js) THE HOOK CATCH: the snap's first HC.perfect s is a PERFECT CATCH (the weapon snagged, the foe staggered, the ball seated, the next shot point-blank); the rest of it a plain
      catch at a block's price; a heavy blow breaks through it and shoves him; a red one is never caught */
   if (isPirate() && P.parryW > 0 && front) {
-    const hv = catchVerdict({ age: time - (P.catchAt ?? -9), dmg, front, red: unblockable, pierce });
+    const hv = catchVerdict({ age: time - (P.catchAt ?? -9), dmg, front, red: unblockable, pierce, perfect: fbCatch().perfect });   /* (claude/freebooterpack) SLIPKNOT: the perfect beat runs longer */
     if (hv === 'perfect') {
       const f = RP.parried(rpFoe(fromX, who));   /* (claude/riposte) THE CUTLASS BIND: the same shared parry reaction (the riposte window) */
       if (f && !f.maxHp && !f.mini && !f.elite) f.vx = Math.sign(f.x - P.x) * HC.snag.push;
@@ -8330,6 +8348,7 @@ function spawnCorpse(e, dir) {
   if (e.t === 'closedhelm') e.lastFrame = 12;   /* he goes down on one knee, the sword in the ground */
   if (e.t === 'duneworm') { e.lastSet = SPR.duneworm; e.lastFrame = DFA.DW_F.dead; e.lastBigF = 1; if (L.arena) e.y = L.arena.floor; }   /* THE DUNE WORM goes down out along the sand, wherever he was */
   if ((e === boss || e.mini) && e.lastSet) { bossBodies.push({ set: e.lastSet, frame: e.t === 'prince' ? PRINCE_F.dead : e.t === 'archmage' ? (e.fam ? MF.FAMILIAR_F.dead : MF.ARCHMAGE_F.dead) : e.t === 'strawking' ? SK.STRAWKING_F.dead : e.t === 'wickerqueen' ? WQN.WQ_F.dead : e.t === 'puppeteer' ? PM.PUP_F.dead : e.t === 'gangleader' ? 16 : e.t === 'cisternqueen' ? CQA.CQ_F.dead : e.t === 'djinn' ? DJA.DJ_F.dead : e.t === 'gorgecrab' ? RGA.CRAB_F.dead : (e.lastFrame || 0), x: e.x, y: e.y, face: e.face || 1, big: e.lastBigF || 1, t: 0, dur: (e.t === 'grandmother' && e.gm3) || e.t === 'lance' ? 2.2 : 1.4, seqF: e.t === 'grandmother' && e.gm3 ? UL3G.deathFrame : e.t === 'lance' ? LNA.deathFrame : null, rider: e.lastRider || null }); (e.t==='bellcrab'?SFX.seaBell:SFX.gobDieLow)(); return; }   /* a boss leaves a body, not a tumble */
+  if (isPirate() && P.raidT > 0 && !P.dead) CM.refund(P, FTK.FT.raid.wind);   /* (claude/freebooterpack) THE RAIDING HOUR: a kill buys wind back */
   if (isPirate() && !P.loaded && !P.dead) reloadPistol('');   /* a kill seats a ball: it used to be any coin, which made the pistol free */
   const c = { t: e.t, color: e.color, x: e.x, y: e.y, vx: 0, vy: 0, rot: 0, spin: 0, face: e.face, life: 1, max: 1, frame: 0, grav: 900, bounced: false, ground: false };
   const rsk = reskinSet(e); if (rsk) c.set = rsk; if (OKD.isKnightT(e.t)) { c.frame = 9; c.kn = 10; }   /* (claude/orderart) a knight goes over backwards (frame 9) and lies as the heap (10) when he lands */
@@ -9165,7 +9184,7 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow, tag = blow) { const raw0 = dmg,
   dmg = RP.payoff(e, dmg, blow);   /* (claude/riposte) THE RIPOSTE: x2 into a parried foe or elite (the knight's OPENED UP folded in - his cut is heavy on top), x1.5 into a boss's riposte opening */
   if (dmg > 0 && tag && !glance && e.alive && !e.harmless && !P.jetHit) { RP.landed(P, rpVerbOf(tag, rpSkillBlow())); dmg = Math.round(dmg * RP.chainMul(P)); }   /* (claude/riposte) THE MIX-UP CHAIN: a landed verb, and its pips */
   if (dmg > 0 && isPaladin() && !hurtKnock && P.atk >= 0 && (e.quakedUntil || 0) > time) { e.quakedUntil = 0; dmg = Math.round(dmg * 1.6); number(e.x, e.y - e.h - 26, 'SHAKEN LOOSE', '#ffe6a0'); }   /* PALADIN: the quake, then the maul on what it shook */
-  if (dmg > 0 && isPirate() && P.atk >= 0 && !P.heavySwing && (e.powderUntil || 0) > time) { dmg = Math.round(dmg * 1.5); if (!e.powderSaid) { e.powderSaid = true; number(e.x, e.y - e.h - 26, 'POWDER AND STEEL', '#ffd34a'); } }   /* PIRATE: the ball, then the cutlass into the man it staggered */
+  if (dmg > 0 && isPirate() && P.atk >= 0 && !P.heavySwing && (e.powderUntil || 0) > time) { const st = FTK.steelCut(!!tech('fsteel'), true, !e.powderSaid); dmg = Math.round(dmg * 1.5 * st.mul); if (!e.powderSaid) { e.powderSaid = true; number(e.x, e.y - e.h - 26, 'POWDER AND STEEL', '#ffd34a'); if (st.plunder) { gainPlunder(st.plunder); number(e.x, e.y - e.h - 38, 'STEEL AFTER SMOKE', '#ffd34a'); } } }   /* (claude/freebooterpack) L25 STEEL AFTER SMOKE: the first cut into the mark is x1.2 more and pays plunder */   /* PIRATE: the ball, then the cutlass into the man it staggered */
   if (dmg > 0 && !hurtKnock && (P.atk >= 0 || plunge) && (e.knock > 0 || e.carried > 0) && (e.launchedT || 0) > time) { dmg = Math.round(dmg * 1.3); if (!e.airSaid) { e.airSaid = true; number(e.x, e.y - e.h - 26, 'OFF THE GROUND', '#8fd160'); } }   /* ANY HERO: the rising cut, then the blow while it hangs */
   const finishCut = dmg>0 && !glance && !e.trainer && !e.maxHp && !e.mini && !e.elite && !FINISH_SKIP.has(e.t) && !P.jetHit && P.atk>=0 && (P.swingRiposte || (P.heavy && e.face && Math.sign(fromX-e.x)===-e.face));
   if(finishCut){if(e.rpPaidAt!==time)dmg=Math.round(dmg*COMBAT.finishMul);   /* (claude/riposte) a PARRY's riposte is paid ONCE, by the shared x2 (src/riposte.js payoff) - the finisher's x2.2 no longer stacks on it; it still finishes a low foe */
@@ -9354,7 +9373,7 @@ const heavyWind = () => (isPirate() && ((P.hotT || 0) > time || (P.catchShotT ||
 const heavyMul = () => 2 + 0.15 * Math.max(0, tal('heavy') - 1);
 const heavyCost = () => Math.round((isPaladin() ? 28 : sword().cost) * 2.2);
 const PISTOL_RELOAD = 8;                          // it loads itself in eight seconds, or the moment gold reaches him
-const reloadTime = () => PISTOL_RELOAD * (1 - 0.08 * prk('preload'));
+const reloadTime = () => FTK.reloadOf(PISTOL_RELOAD * (1 - 0.08 * prk('preload')), upg('uload'), P.raidT > 0);   /* (claude/freebooterpack) QUICK LOAD; THE RAIDING HOUR reseats it at once */
 /* EVERY METER SAYS IT IS FULL THE SAME WAY: the same chime, a ring in the meter's colour, and READY over the hero.
    Five heroes, five meters, one tap of C to spend each - so changing hero is not learning a new HUD. */
 function meterReady(col) { SFX.lightFull(); ringAt(P.x, P.y - 10, 22, col, 0.4); number(P.x, P.y - 30, 'READY', col); }
@@ -9377,7 +9396,7 @@ function piratePurse(plunder) {
   if (tal('shareOut')) P.hp = Math.min(P.maxHp, P.hp + 2); if (tal('greased')) CM.refund(P, 6);
   if (tal('paidInGold') && P.cds) for (const k in P.cds) P.cds[k] = Math.max(0, P.cds[k] - 0.33);
 }
-function gainPlunder(n) { if (!isPirate()) return; const was = (P.plunder || 0) >= 100; P.plunder = Math.min(100, (P.plunder || 0) + n * varietyMul() * (1 + 0.33 * tal('deepPockets'))); if (!was && P.plunder >= 100) meterReady('#ffd34a'); }
+function gainPlunder(n) { if (!isPirate()) return; const was = (P.plunder || 0) >= 100; P.plunder = Math.min(100, (P.plunder || 0) + FTK.purseGain(n, upg('upurse')) * varietyMul() * (1 + 0.33 * tal('deepPockets'))); if (!was && P.plunder >= 100) meterReady('#ffd34a'); }
 /* THE KNIGHT'S METER. RESOLVE fills where he is the only hero who can stand: a blow taken on the shield, a perfect
    guard most of all, and a third cut landing. Full, a tap of C on the ground is THE LAST CHARGE: he blocks to build it and
    charges to spend it. Nothing fills it while the charge is running. */
@@ -10242,7 +10261,7 @@ let shots = [];   // the tracer of a pistol ball, drawn for a breath after it ha
 function throwHook() {
   if (!spend(15)) { SFX.buzz(); number(P.x, P.y - 24, 'NO WIND FOR IT', '#9aa39a'); return; }
   P.hookCd = 0.8; P.castT = 0.3; trialEvent('hook'); SFX.pSlash();
-  const reach = 96 + 16 * tal('longLine'), y0 = P.y - 12;
+  const reach = FTK.hookReach(96 + 16 * tal('longLine'), upg('uhook')), y0 = P.y - 12;   /* (claude/freebooterpack) LONG GRAPNEL */
   let foe = null, fd = 1e9;
   for (const e of enemies) { if (!e.alive || e.harmless || e.gone > 0 || e.maxHp) continue;
     const d = (e.x - P.x) * P.face; if (d < 8 || d > reach) continue;
@@ -10252,6 +10271,8 @@ function throwHook() {
     foe.vx = -P.face * 340; foe.vy = -120; foe.stagger = Math.max(foe.stagger || 0, 0.9); foe.flash = 0.15;
     hurtEnemy(foe, 6 + 2 * tal('longLine'), P.x, false); if (tal('haulCut')) { P.combo = 4; P.runHoldT = time + 1; number(P.x, P.y - 30, 'FOUR', '#ffd36b'); }   /* HAUL AND CUT */
     if (Math.random() < 0.8) dropCoinAt(foe.x, foe.y - 8);
+    if (tech('fhaul') && foe.alive) { const hn = FTK.haulNums(true); hurtAs('light', foe, Math.max(1, Math.round(swordDmg() * hn.k * amul('keelhaul'))), P.x, false);   /* (claude/freebooterpack) HAUL AND BALL: cut on the way (x0.6), powder-marked, the next ball instant + point-blank */
+      if (foe.alive) { foe.powderUntil = time + hn.mark; foe.powderSaid = false; } P.catchShotT = time + HC.shotT; reloadPistol(''); number(P.x, P.y - 28, 'BALL READY', '#fff6c8'); }
     SFX.clank(); number(foe.x, foe.y - foe.h - 10, 'HAULED', '#ffd36b'); return;
   }
   // nothing to pull: look for something to pull himself TO - a rope, a net, a rail, a plank
@@ -10268,7 +10289,8 @@ function throwHook() {
 /* ==== THE HOOK CATCH (claude/heroblocksa, src/hook-catch.js; Daniel 10-30 21:56). TAP C: the grapnel whips across his front for a ~0.4 s snap (parryW, from the PRESS; parryCd = the wait to the next).
    The first HC.perfect s is a PERFECT CATCH (hookCatchPerfect: weapon snagged, ball seated, the next ball point-blank; a thrown thing is flung back); the rest a plain catch (hookCatchBlock); a heavy blow breaks
    through (damagePlayer0). HOLD C past HC.hold is still the hook THROW (throwHook above). ==== */
-function hookCatchRaise() { P.parryW = HC.snap; P.catchAt = time; P.catchHit = false; P.parryCd = HC.cd; SFX.pSlash(); if (SFX.hookSnap) SFX.hookSnap(); }
+const fbCatch = () => FTK.catchNums(!!tech('fslip'), HC);   /* (claude/freebooterpack) SLIPKNOT: the catch's wait and perfect beat */
+function hookCatchRaise() { P.parryW = HC.snap; P.catchAt = time; P.catchHit = false; P.parryCd = fbCatch().cd; SFX.pSlash(); if (SFX.hookSnap) SFX.hookSnap(); }
 function hookCatchPerfect(f) {
   const x = P.x + P.face * 10, y = P.y - 9;
   noteVerb('parry'); P.parryW = 0; P.catchHit = true; CM.refund(P, HC.refund); P.parryT = 0.22; parries++; blocks++; trialEvent('parry');
@@ -10280,7 +10302,7 @@ function hookCatchPerfect(f) {
   sparks(x, y, P.face, 10);
 }
 function hookCatchBlock(dmg, fromX, bc) {
-  P.st -= bc; P.stDelay = ST.delay; P.parryW = 0; P.catchHit = true; blocks++; trialEvent('block');
+  bc = FTK.catchCost(bc, upg('ucatchw')); P.st -= bc;   /* (claude/freebooterpack) STEADY CATCH */ P.stDelay = ST.delay; P.parryW = 0; P.catchHit = true; blocks++; trialEvent('block');
   const sd = Math.sign(fromX - P.x) || P.face, push = guardPush(dmg), hard = dmg >= JUICE.heavyTaken, bj = JUICE[hard ? 'blockHeavy' : 'block'];
   P.vx = -sd * push * 0.6; hitstop(bj.stop); shakeCam(bj.shake, -sd * bj.kick); SFX[bj.sfx](); impactAt(P.x + sd * 9, P.y - 9, 'steel'); ringAt(P.x + sd * 8, P.y - 9, 10, '#c9b27c', 0.2);
   sparks(P.x + sd * 9, P.y - 8, sd, 7); number(P.x, P.y - 28, 'CAUGHT', '#c9b27c');
@@ -10289,7 +10311,7 @@ function hookCatchSeeds() {
   const age = time - (P.catchAt ?? -9), f = P.face, bx = { l: Math.min(P.x - 4 * f, P.x + HC.reach * f), r: Math.max(P.x - 4 * f, P.x + HC.reach * f), t: P.y - 26, b: P.y + 2 };
   for (const s of seeds) {
     if (s.dead || s.reflected || s.chain || s.net || s.web || (s.x - P.x) * f < -4 || !overlap(bx, { l: s.x - 3, r: s.x + 3, t: s.y - 3, b: s.y + 3 })) continue;
-    const v = seedVerdict({ age, red: !!(s.noBlock || s.unblockable), pierce: !!s.pierce }); if (v === 'none') continue;
+    const v = seedVerdict({ age, red: !!(s.noBlock || s.unblockable), pierce: !!s.pierce, perfect: fbCatch().perfect }); if (v === 'none') continue;
     if (v === 'drop' && P.st < 8) continue;   /* no wind left to hold the line: it lands */
     P.catchHit = true; P.parryW = 0; blocks++; trialEvent('block');
     if (v === 'fling') {
@@ -10302,7 +10324,7 @@ function hookCatchSeeds() {
   }
 }
 function drawHookSnap(cx, cy) {
-  const age = time - (P.catchAt ?? time), k = Math.max(0, Math.min(1, age / HC.snap)), f = P.face, x = Math.round(P.x - cx) + f * 3, y = Math.round(P.y - 12 - cy), perfect = age <= HC.perfect;
+  const age = time - (P.catchAt ?? time), k = Math.max(0, Math.min(1, age / HC.snap)), f = P.face, x = Math.round(P.x - cx) + f * 3, y = Math.round(P.y - 12 - cy), perfect = age <= fbCatch().perfect;
   const a0 = f > 0 ? -1.3 : Math.PI - 1.3, a1 = f > 0 ? 1.3 : Math.PI + 1.3, ae = a0 + (a1 - a0) * Math.min(1, k * 2.2);
   g.save(); g.strokeStyle = perfect ? '#ffd34a' : '#c9b27c'; g.lineWidth = perfect ? 2 : 1; g.globalAlpha = 1 - k * 0.6; g.beginPath(); g.arc(x, y, 14, a0, ae, f < 0); g.stroke();
   g.fillStyle = '#c9d1dc'; g.fillRect(Math.round(x + Math.cos(ae) * 14) - 2, Math.round(y + Math.sin(ae) * 14) - 2, 4, 4); g.restore();
@@ -10358,18 +10380,21 @@ function firePistol() {
     const d = (e.x - x0) * P.face; if (d < -6 || d > reach) continue;
     if (e.y - e.h - 6 > y0 || e.y + 8 < y0) continue;
     if (d < bd) { bd = d; best = e; } }
+  { const gk = FTK.kegInLine(kegs, x0, y0, P.face, reach); if (gk && (!best || (gk.x - x0) * P.face <= bd)) { shots.push({ x0, y0, x1: gk.x, y1: y0, life: 0.12 }); greatKegBlast(gk, true); return; } }   /* (claude/freebooterpack) THE GREAT KEG in the ball's line goes off at once, bigger */
   const end = best ? best.x : x0 + P.face * reach;
   shots.push({ x0, y0, x1: end, y1: y0, life: 0.12 });
   for (let i = 0; i < 12; i++) parts.push({ x: x0, y: y0, vx: P.face * (70 + Math.random() * 180), vy: (Math.random() - 0.5) * 70, life: 0.3, max: 0.3, col: Math.random() < 0.4 ? '#fff6c8' : Math.random() < 0.7 ? '#ffd36b' : '#9aa39a', size: 2, grav: -30 });
   ringAt(x0, y0, 10, '#ffd36b', 0.2);
   if (best) {
-    const pbm = shotMulFor(hcLive, bd), dmg = Math.round((26 + 6 * tal('heavy')) * (1 + 0.075 * LV_GROW()) * ((best.stagger > 0 && tal('deadEye')) ? 2 : 1) * pbm);
+    const pbm = shotMulFor(hcLive, bd), far = FTK.shotFar(!!tech('flong'), bd), dmg = Math.round((26 + 6 * tal('heavy')) * (1 + 0.075 * LV_GROW()) * ((best.stagger > 0 && tal('deadEye')) ? 2 : 1) * pbm * FTK.ballMul(upg('uball'), far));   /* (claude/freebooterpack) LONG SHOT + HOT BALL: a multiplier on the ball, never a flat hit */
+    if (far.plunder) { gainPlunder(far.plunder); number(best.x, best.y - best.h - 44, 'LONG SHOT', '#ffd34a'); }
     if (pbm > 1) { number(best.x, best.y - best.h - 34, 'POINT BLANK', '#ffd34a'); shakeCam(7, P.face * 4); hitstop(0.08); ringAt(x0, y0, 16, '#fff6c8', 0.3); }
     const was = best.hp;
     if (best.t === 'dummy') trialEvent('heavyblow');
     if (best.guardT > 0) best.guardT = 0;                      // a ball does not care what is raised in front of it
     hurtAs(['heavy', 'shot'], best, dmg, x0 - P.face * 40, false);   /* the freebooter's held blow is a ball: it counts as both */
     pistolRicochet(best, dmg);   /* RICOCHET (LEVELING2): the ball glances on to a second foe */
+    if (tech('fsplinter')) for (const t of FTK.splinterTargets(kitFoes().filter(q => !(lcBig(q) || q.maxHp || q.mini)), best, true)) { hurtAs('shot', t, Math.max(1, Math.round(swordDmg() * FTK.FT.splinter.k * amul('broadside'))), best.x, false); if (t.alive) { t.stagger = Math.max(t.stagger || 0, FTK.FT.splinter.stagger); sparks(t.x, t.y - (t.h || 16) / 2, P.face, 5); } }   /* (claude/freebooterpack) L45 SPLINTER SHOT: x0.6 on up to three small foes beside the one hit */
     if (best.alive) { best.powderUntil = time + 2.5; best.powderSaid = false; number(best.x, best.y - best.h - 26, 'MARKED', '#ffd34a'); }   /* the cutlass knows where to go now */
     if (best.alive && !best.maxHp) { best.stagger = Math.max(best.stagger || 0, 0.9); best.vx = P.face * 300; best.vy = Math.min(best.vy || 0, -90); }
     else if (best.alive) best.stagger = Math.max(best.stagger || 0, 0.4);
@@ -10706,8 +10731,9 @@ function updatePlayer(dt) {
   if (isPirate() && skillPress('powderKeg') && cdReady('powderKeg') && canAct()) { if (spend(26)) { cdSet('powderKeg'); P.castT = 0.3; kitPose(P, 'keg', 0.35); kegs.push({ x: P.x + P.face * 44, y: P.y, t: 0, fuse: 1, boom: false, life: 0 }); SFX.throwWhoosh(); 0; } else tired(); }
   // HEAVY SEAS (freebooter, L20): the deck heaves and a wave sweeps everything ahead off its feet
   if (isPirate() && skillPress('heavySeas') && cdReady('heavySeas') && canAct()) { if (spend(30)) { cdSet('heavySeas'); P.castT = 0.35; kitPose(P, 'seas', 0.4);
-    for (const e of lateFoes(160, 50)) { if (Math.sign(e.x - P.x) !== P.face) continue; hurtEnemy(e, Math.round(swordDmg() * SKK.K.heavySeas * amul('heavySeas')), P.x, false); if (e.alive) { if (e.maxHp) e.stagger = Math.max(e.stagger || 0, 0.3); else { e.vx = P.face * 340; e.vy = -100; e.stagger = Math.max(e.stagger || 0, 1.3); } } }
-    for (let i = 0; i < 26; i++) parts.push({ x: P.x + P.face * (8 + Math.random() * 140), y: P.y - Math.random() * 12, vx: P.face * (120 + Math.random() * 160), vy: -40 - Math.random() * 90, life: 0.5, max: 0.5, col: Math.random() < 0.5 ? '#bfe6f5' : '#e8f4f0', size: 2, grav: 140 });
+    const tn = FTK.tideNums(!!tech('ftide'), 160); let tc = 0;   /* (claude/freebooterpack) L40 A HIGH TIDE: reach x1.5, the small down 2.0 s, a coin from each of up to 3 */
+    for (const e of lateFoes(tn.reach, 50)) { if (Math.sign(e.x - P.x) !== P.face) continue; hurtEnemy(e, Math.round(swordDmg() * SKK.K.heavySeas * amul('heavySeas')), P.x, false); if (e.alive) { if (e.maxHp) e.stagger = Math.max(e.stagger || 0, 0.3); else { e.vx = P.face * 340; e.vy = -100; e.stagger = Math.max(e.stagger || 0, tn.stagger); if (tn.coins && tc < tn.coins) { tc++; dropCoinAt(e.x, e.y - 10); } } } }
+    for (let i = 0; i < 26; i++) parts.push({ x: P.x + P.face * (8 + Math.random() * (tn.reach - 20)), y: P.y - Math.random() * 12, vx: P.face * (120 + Math.random() * 160), vy: -40 - Math.random() * 90, life: 0.5, max: 0.5, col: Math.random() < 0.5 ? '#bfe6f5' : '#e8f4f0', size: 2, grav: 140 });
     shakeCam(6, P.face * 3); SFX.heavy(); SFX.splash ? SFX.splash() : SFX.puff(); 0; } else tired(); }
   // BLOOD MAIL (the blood knight, L14; id boneArmor, it was OSSUARY MAIL - claude/bloodknight): three blows are cut to two fifths, for twelve seconds
   if (isReaper() && skillPress('boneArmor') && cdReady('boneArmor') && canAct()) { if (spend(26)) { cdSet('boneArmor'); P.boneArmor = 3; P.boneArmorT = 12; P.castT = 0.3; kitPose(P, 'bone', 0.4); ringAt(P.x, P.y - 10, 30, '#ff4a5a', 0.45); burst(P.x, P.y - 10, 12, ['#7a1020', '#ff9aa6'], 70, 0.5); 0; SFX.clank(); } else tired(); }
@@ -10756,7 +10782,7 @@ function updatePlayer(dt) {
       if (Math.sign(e.x - P.x) !== P.face || Math.abs(e.x - P.x) > len + 10) continue;
       if (e.y - e.h - 10 > y0 || e.y + 10 < y0) continue;
       if (e.guardT > 0) e.guardT = 0;                                  /* nothing blocks a ball */
-      hurtAs('shot', e, Math.round(swordDmg() * SKK.K.broadside * amul('broadside')), P.x, false); sparks(e.x, e.y - e.h / 2, P.face, 8);
+      hurtAs('shot', e, Math.round(swordDmg() * SKK.K.broadside * amul('broadside') * FTK.upMul('broad', upg('ubroad'))), P.x, false); sparks(e.x, e.y - e.h / 2, P.face, 8);
       if (!e.maxHp) { e.stagger = Math.max(e.stagger || 0, 0.7); e.vx = P.face * 240; } }
     for (let i = 0; i < 18; i++) parts.push({ x: P.x + P.face * 12, y: y0, vx: P.face * (80 + Math.random() * 220), vy: (Math.random() - 0.5) * 80, life: 0.35, max: 0.35, col: Math.random() < 0.4 ? '#fff6c8' : Math.random() < 0.7 ? '#ffd36b' : '#9aa39a', size: 2, grav: -20 });
     SFX.crack(); SFX.heavy(); shakeCam(8, P.face * 4); zoomKick(1.08, 0.28); hitstop(0.05);
@@ -10806,9 +10832,9 @@ function updatePlayer(dt) {
     SFX.mend(); number(P.x, P.y - 26, 'RUM', '#e0b040'); motes(P.x, P.y - 10, 10, 8);
     for (let i = 0; i < 8; i++) parts.push({ x: P.x, y: P.y - 14, vx: (Math.random() - 0.5) * 60, vy: -40 - Math.random() * 40, life: 0.6, max: 0.6, col: '#c9843a', size: 2, grav: 90 }); }
   if (isPirate() && skillPress('boarding') && cdReady('boarding') && canAct()) { if (spend(CM.dashCost('pirate', 25))) {   /* WEIGHT (10-03): 25 -> 26, grace 0.35 -> 0.2 s */ cdSet('boarding');
-    const reach = 80 + 14 * tal('boarding');
+    const reach = FTK.boardReach(80 + 14 * tal('boarding'), !!tech('fquick'));   /* (claude/freebooterpack) L40 B QUICK BOARD: 40 px further, back in half the time, the first foe cut pays plunder */
     P.hookT = { x: P.x + P.face * reach, y: P.y - 14, life: 0.24 };
-    P.vx = P.face * 420; P.vy = -60; P.inv = Math.max(P.inv, CM.dashInv(0.35)); P.castT = 0.25; P.ground = false; P.coyote = 0; P.onMover = null;
+    P.vx = P.face * (tech('fquick') ? 480 : 420); P.vy = -60; P.inv = Math.max(P.inv, CM.dashInv(0.35)); P.boardPaid = false; P.castT = 0.25; P.ground = false; P.coyote = 0; P.onMover = null;
     SFX.pDodge(); streaks(P.x, P.y - 12, -P.face, ['#c9b27c', '#fff6e0'], 170);
     const cut = new Set();
     P.boardT = 0.35; P.boardHit = cut; kitPose(P, 'board', 0.35); } else number(P.x, P.y - 22, 'TIRED', '#ffd36b'); }
@@ -10870,6 +10896,7 @@ function updatePlayer(dt) {
   if (isPirate() && P.boardT > 0 && P.boardHit) { for (const e of enemies) { if (!e.alive || e.harmless || P.boardHit.has(e)) continue;
     if (Math.abs(e.x - P.x) < e.w / 2 + 12 && Math.abs((e.y - e.h / 2) - (P.y - 12)) < 22) { P.boardHit.add(e);
       hurtAs('dash', e, Math.round(swordDmg() * (SKK.K.boardingBase + SKK.K.boardingTal * tal('boarding')) * amul('boarding')), P.x, false); if (e.alive && !e.maxHp) { e.stagger = Math.max(e.stagger || 0, 0.7); e.vx = P.face * 180; }
+      if (tech('fquick') && !P.boardPaid) { P.boardPaid = true; gainPlunder(FTK.FT.quick.plunder); number(e.x, e.y - e.h - 22, 'QUICK BOARD', '#ffd34a'); }
       sparks(e.x, e.y - e.h / 2, P.face, 6); } } }
   if (isPirate() && !P.loaded) { P.reloadT = Math.max(0, (P.reloadT || 0) - dt); if (P.reloadT <= 0) reloadPistol(''); }
   if (isPirate() && P.loaded && !P.barrels) P.barrels = 1 + tal('secondBarrel');
@@ -10986,11 +11013,12 @@ function updatePlayer(dt) {
     if (P.novaT > 0) { P.novaT -= dt; if (P.novaT <= 0 && !P.dead) bloodNova(P.novaK, true); }   /* OVERFLOW: the second burst */
   }
   if (isPirate()) {
-    P.plunder = Math.max(0, Math.min(100, P.plunder || 0)); P.castT = Math.max(0, (P.castT || 0) - dt); P.blastT = Math.max(0, (P.blastT || 0) - dt);
+    P.plunder = Math.max(0, Math.min(100, P.plunder || 0)); P.fbCap = tech('fkeg') ? 'keg' : tech('fraid') ? 'raid' : ''; if (P.raidT > 0) P.raidT = Math.max(0, P.raidT - dt); P.castT = Math.max(0, (P.castT || 0) - dt); P.blastT = Math.max(0, (P.blastT || 0) - dt);
     const cDown = keys.block && !P.cWas; P.cWas = !!keys.block;
     const free = !stunned && !dodging && !P.plunge && !attacking && !(P.blastT > 0);   /* WEIGHT: the parry no longer opens mid-swing */
     /* (claude/heroblocksa) TAP C = THE HOOK CATCH: the snap goes up on the PRESS (it used to open on the release); HOLD C past HC.hold is the hook THROW, as it was */
-    if (cDown && free && P.plunder >= 100) { blackFlag(); P.cHeld = -99; }
+    if (cDown && free && P.plunder >= 100 && !P.fbCap) { blackFlag(); P.cHeld = -99; }
+    else if (cDown && keys.up && free && P.plunder >= 100 && P.fbCap && (P.ground || P.swim)) { P.cHeld = -99; if (P.fbCap === 'keg') pirateGreatKeg(); else pirateRaid(); }   /* (claude/freebooterpack) A FULL PURSE + UP+C (every hero's ultimate; tap C stays the hook catch): the picked capstone replaces BLACK FLAG */
     else {
       if (cDown && free && !(P.parryCd > 0)) hookCatchRaise();
       if (keys.block) { P.cHeld = (P.cHeld || 0) + dt; if (P.cHeld >= HC.hold && free && !P.catchHit && !(P.hookCd > 0) && !P.hookT) { P.parryW = 0; throwHook(); } }
@@ -31001,6 +31029,7 @@ function swingDmg(e) { if (P.heavySwing || P.heavy) CM.refund(P, 3);   /* WEIGHT
   if (isPaladin() && HGR && HGR.standing(P)) mul *= HG.hitMul; else if (isPaladin() && e === boss) mul *= HG.bossOutMul;   /* (claude/paltune) off his ground a boss takes his blows a little harder: the circle is his edge on a still boss, not on a roaming one */   /* (claude/paladin2) ON HOLY GROUND his maul lands harder */
   if (isPaladin() && P.wrathT > 0) { mul *= 1.4; P.hp = Math.min(P.maxHp, P.hp + Math.max(1, Math.round(P.maxHp * 0.003))); }   /* (PALADIN TUNE: was 0.015) HOLY WRATH (claude/herokit): blows land a bit over a third harder and mend him */
   if (isBz() && BZK) { mul *= BZK.chopLanded(e); if (!P.heavy && !P.heavySwing && !P.swingKind && !P.dashCut && !P.swingRiposte) mul *= BZ_K.flurry.dmg;   /* (claude/berserker2) THE FLURRY: quick chops, each a little lighter */ if (P.heavy && tal('bzSplit') && e.broken > 0) mul *= 2; }   /* THE CHAIN goes on (BITE: a tenth harder on a foe it has cut); SPLITTER: the cross-chop on a broken foe */
+  if (isPirate()) mul *= FTK.upMul('cut', upg('ucut')) * FTK.raidMul(P.raidT > 0);   /* (claude/freebooterpack) SHARP STEEL; L50 A THE RAIDING HOUR: swordDmg x k x amul, the cutlass x1.25 for 7 s */
   if (isRg()) mul *= RG_K.knife.dmg * (tal('rgLast') && RGK && RGK.arrows() <= 0 ? 2 : 1);   /* (claude/ranger) THE KNIFE: a little lighter than a sword (THE LAST ARROW: twice, with the quiver empty) */
   if (isWarden()) { if (wardJav) mul *= 0.35; else { mul *= tipPay(e); runThroughDrive(e); if (P.runThrough && L.trial && ++P.rtN === 2) trialEvent('runthrough'); } }   /* (her yard: ONE lunge through two is the run-through) */   /* (bare-handed while the JAVELIN is out: a weak jab, no point to pay) */   /* THE TIP: where along the spear it landed is the whole hero - and the lunge drives what it skewers */
   if (isWarden() && P.wReachT > 0) mul *= SKK.K_WARDEN_REACH.perHit * amul('wardenReach');   /* (claude/wardenid) swordDmg x k x amul (src/skill-k.js) */

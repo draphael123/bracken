@@ -260,6 +260,7 @@ export const KNIGHT_CUT = 0.56, knightCutAt = e => KNIGHT_CUT;   /* (claude/knig
 /* (claude/ults) ONE ULTIMATE INPUT: UP + C. The knight's charge needs links; the geomancer's AVALANCHE a full board; the ranger's GREAT ARROW a full Focus and a foe in her line (she roots for the draw) */
 export const ULT_BOT = (BK, P, h, ad, dy) => { if (P.cWas || !(P.ground || P.swim) || P.atk >= 0 || P.charge > 0 || P.rgGreat) return false;
   if (h === 'geomancer') { const G = BK.geo && BK.geo(); return !!G && G.avalancheReady() && ad < 220 && Math.abs(dy) < 40; }
+  if (h === 'pirate') return (P.plunder || 0) >= 100 && !!P.fbCap && (P.fbCap === 'keg' ? ad > 60 && ad < 200 && Math.abs(dy) < 30 : ad < 110 && Math.abs(dy) < 40);   /* (claude/freebooterpack) UP+C at a FULL purse: THE RAIDING HOUR with a foe close, THE GREAT KEG with one down the deck (a pick sets P.fbCap) */
   if (h === 'ranger') { const R = BK.rgk && BK.rgk(); return !!R && R.greatReady() && ad > 50 && ad < 300 && Math.abs(dy) < 30; }
   return false; };
 /* (claude/geopop e) DOWN+C: the geomancer blows her board when two or more stones stand and a foe is in the radius of one (an AVALANCHE at a full board is spent first - ULT_BOT) */
@@ -428,7 +429,7 @@ function labBotFrame(BK, h, e, f) {
   { const fire = fireAt(BK, P.x, P.y); if (fire && !(h === 'pyro')) { const away = Math.sign(P.x - fire.x) || -Math.sign(d) || 1; k.left = away < 0; k.right = away > 0; k.atk = false; k.block = false; } }   /* (her own fire does not burn her) */
   if (h === 'knight' && !threat && !k.atk && !(P.charge > 0) && LAST_CHARGE(P, ad, e.y - P.y)) { k.left = false; k.right = false; k.up = true; k.block = true; }
   if (h === 'geomancer' && !threat && !k.atk && !(k.up && k.block) && DET_BOT(BK, P, h)) { k.left = false; k.right = false; k.up = false; k.down = true; k.block = true; }   /* (claude/geopop) DOWN+C: DETONATE (the ultimate below overrides it at a full board) */
-  if ((h === 'geomancer' || h === 'ranger') && !threat && !k.atk && ULT_BOT(BK, P, h, ad, e.y - P.y)) { P.face = Math.sign(d) || P.face; k.left = false; k.right = false; k.up = true; k.block = true; }   /* (claude/ults) UP+C at a full meter */
+  if ((h === 'geomancer' || h === 'ranger' || h === 'pirate') && !threat && !k.atk && ULT_BOT(BK, P, h, ad, e.y - P.y)) { P.face = Math.sign(d) || P.face; k.left = false; k.right = false; k.up = true; k.block = true; }   /* (claude/ults) UP+C at a full meter */
   { const sn = snatchNow(BK, h); if (sn) { P.face = Math.sign(sn.x - P.x) || P.face; k.block = !P.cWas; k.up = false; k.down = false; } }   /* (claude/heropassa) ARROW SNATCH */
   return { defend, swing };
 }
@@ -3089,7 +3090,7 @@ async function runbossLab(BK, opts) {
       { const sn = snatchNow(BK, h); if (sn) { P.face = Math.sign(sn.x - P.x) || P.face; k.block = !P.cWas; } }   /* (claude/heropassa) ARROW SNATCH */
       if (h === 'knight' && !valiantWall && open && !tell && !rushing && !k.block && LAST_CHARGE(P, ad, boss.y - P.y)) { P.face = Math.sign(d) || P.face; k.left = false; k.right = false; k.jump = false; k.up = true; k.block = true; }
       if (h === 'geomancer' && !tell && !rushing && !k.block && DET_BOT(BK, P, h)) { k.left = false; k.right = false; k.jump = false; k.up = false; k.down = true; k.block = true; }   /* (claude/geopop) DOWN+C: DETONATE (the ultimate below overrides it at a full board) */
-      if ((h === 'geomancer' || h === 'ranger') && !tell && !rushing && !k.block && ULT_BOT(BK, P, h, ad, boss.y - P.y)) { P.face = Math.sign(d) || P.face; k.left = false; k.right = false; k.jump = false; k.up = true; k.block = true; }   /* (claude/ults) UP+C at a full meter */
+      if ((h === 'geomancer' || h === 'ranger' || h === 'pirate') && !tell && !rushing && !k.block && ULT_BOT(BK, P, h, ad, boss.y - P.y)) { P.face = Math.sign(d) || P.face; k.left = false; k.right = false; k.jump = false; k.up = true; k.block = true; }   /* (claude/ults) UP+C at a full meter */
       /* (claude/bztune) THE BERSERKER'S OWN KEYS. FRENZY IS DOWN+C at a full bar (a plain C there is TAKE IT, which the beat-taps already use);
          the bar is spent as a player spends it - near the boss, between his tells. THE POUNCE: coiled (DOWN held 0.4 s) then DOWN let go with a way held,
          a gap-closer used from range, a few times a fight (not a spam). TAKE IT stays on the beat taps above. */
