@@ -1,0 +1,30 @@
+# claude/skyart - S4 SKYART: the sky fight's art + sounds (lane report, Sonnet, 11-04)
+Branch `claude/skyart` off `claude/demonking` b1f75709, merged `claude/drakeart` e3530930 (clean) and `claude/skymount` 7163b352 (S1b fixes: one-new-foe / skins skylab; one trivial conflict in tools/one-new-foe.mjs, resolved). Not merged to master, not deployed.
+
+## What changed (art / draw / audio; main.js 2 one-liners)
+- `src/redraw/sky_mount_art.js` (new): the drake as a flying MOUNT, same drake as D2's (hide ramp, bone horns, belly, iron collar + ring with a BROKEN chain trailing, ember cracks, the old chain scars): back+flank tile (scalloped scales, dorsal scutes, ember cracks, belly lit by the volcano), neck+head (calm / tell = lowered, gold eye, jaws ajar / roar = open, ember throat), 5 tail-sway frames, wings (7 flap steps, near + far), neck-wall spines, tail-wall fin.
+- `src/sky-mount-draw.js`: drawSky / drawDrake now paint the art (body sheared in 2 px slices to the tilting, bobbing surface; embers shed under the belly; the bank's tell turns the head, dips the near wing, roars). The greybox is kept as `greySky/greyDrake` and takes over if a sprite throws.
+- `src/redraw/sky_layers_art.js` (new): 3 altitudes x 4 layers by the ids in SKY (rim-ash/ranges/cone/embers, high-ash/ranges/cone/cloud, ash-column/ranges/cone/embers), baked once per view size (dithered 16-step gradient, seamless billow bands, ridged mountain lines with lava threads, concave stratovolcano with lava channels + lit crater, streak clouds); animated per frame: eruption plume + lava fountains (rim), lava bombs arcing out of the throat (high), lightning in the column (ash), parallax embers. Scene pieces for lane SC (exported, not wired): `sealLight`, `plume`, `breachCrack`, `rimLanding`.
+- `src/redraw/demon_king_art.js` (new): THE DEMON KING, one sprite per POSE x PHASE (25 poses x 3) + `kingHalo`; REGAINING POWER: P1 half-formed (crumbling cracked-black-glass chest, one horn a snapped stub, no crown, dim veins, orange eyes, smoke where the legs go), P2 both horns + crown + shoulder shards + hot veins + gold eyes, P3 tall ember-tipped crown, great pauldrons, smoke-wings, ghost legs forming, white-gold eyes + a web of veins; the broken seal chain on one wrist. Also: hellbolt (trail, crimson rim, white core, orbiting sparks, gold "returnable" ring), feint orb (cold, cracked, no core), bat-back (red flare), normal return (gold comet), POWER return (white-gold, cross flare, chiming ring), hand orb (grows), summon glyph (on his head and flat on the back), lava bomb, the 3-segment bone-and-iron BAR and ember-gem PIPS (two lit = white-gold).
+- `src/demon-king-hands.js`: draws all of the above (try/catch -> falls back to S2's greybox); he gets an ember rim so he reads against the red sky.
+- IMPS: `demonimp` skin in `src/redraw/variety_skins.js` (black-glass body, ember-red cracks, white-gold flame; pink imp / orange fire imp / green venom imp stay distinct; the hands set `cnSkin = 'demonimp'`). Not a goblin (goblin-lint ok).
+- `src/audio.js`: 26 synthesized sounds, one per told move (B16): dkHum, dkThrow, dkHumDim, dkFizzle, dkHumTwo, dkShriek, dkSwoop, dkChain, dkCrack, dkChant, impShriek, dkGather, dkBlast, dkClaw, dkBat, dkPowerChime, dkReturnCrack, dkPowerHit, dkReturnHit, dkTumble, dkCrash, dkScream, dkBomb, dkEruption, dkLaugh (for scene A) + drakeBank, drakeWing (the mount).
+- `src/main.js` (2 one-liners, both commented claude/skyart): `else if (L.skyMount) {}` in the backdrop chain (without it the wood's green far/mid trees painted over the sky behind the drake - visible in the first shots), and the SKH sfx map now maps roar -> drakeBank, wing -> drakeWing.
+- Tools: `tools/sky-art.mjs` (node sheet + lint), `tools/sky-art-shots.mjs` (browser shots).
+
+## Checks
+- node: sky-art 89 checked, 0 bad (every part drawn, 25 poses x 3 phases one size, hand on the sprite, flash silhouette = sprite, windup != release for all 8 told moves at all 3 phases, every pose differs P1/P2/P3); sky-mount 175 ok; demon-king 262 ok; goblin-lint ok; anchor-lint ok; dressing ok; skins ok; one-new-foe ok (after the skymount merge); fire-drake-art 26 poses 0 bad; node --check on main.js, audio.js, hands, draw, all redraw files. tools/check.mjs NOT run.
+- browser (one headless, ~2.8 GB free): `node tools/sky-art-shots.mjs`, console errors none. Shots in C:\Users\Daniel Raphael\.claude\bracken-lanes\scratch\lane-reports\: skyart-rim-p1-idle, -bolt-in-flight, -return-flying, -bank-tell, -bank-tilt, -king-<move>-p<phase> (boltTell, boltRelease, swoopTell, whipTell, feintTell, doubleTell, downed, repulseTell, tumble, summonTell, downed p3), -high-p2, -ash-p3, -p3-glyph, -p3-imps .png; node sheets skyart-node-mount / -king / -sky .png.
+
+## Owed / honest gaps
+1. Ear check of the 26 sounds (synth only; no CC0 samples sourced). Not heard.
+2. The near wing is a large flat sail (reads, but is the roughest piece); the P3 `ash` altitude is darker/redder than the rim but not hugely different at 320x180 (the haze overlay lifts it). A second pass with Daniel's eye.
+3. Not shot: power-return, bat-back, feint orb in play, lava bomb + landing ring, bar at <100%, a hero other than the knight, mobile/low parallax, a climb mid-blend (altitudes shot after the climb finished), co-op.
+4. The imps are the existing imp sprite recoloured (same shape, bat wings); fine for "not a goblin", a bespoke shape is possible.
+5. Scene pieces (sealLight, plume, breachCrack, rimLanding) are exported but unshot; lane SC wires and judges them.
+6. Merged claude/skymount's tip (S1b skylab skips) so the lints are green; the integ merge will see the same commits.
+
+## Questions for Daniel (rec built)
+1. Should the King's tumble keep the 12 rad/s spin (S2's greybox rotate) or drop to a flat tilt? REC: keep (0.6 s, reads as a knock-down); art rotates about his body centre.
+2. Imps: recolour (built) or a bespoke fiend sprite? REC: recolour for now, bespoke only if they still read as the Folly's imps in play.
+3. Ember rim on the King against the sky (built) - OK, or pure silhouette? REC: keep the rim; without it he vanished into the red sky.
