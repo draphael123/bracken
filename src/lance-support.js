@@ -52,8 +52,8 @@ export const LANCE4 = {
   storm: { spike: 0.05, lift: 480, tossed: 2.2, tossedEvery: 5, liftHero: 430, gust: { v: 165, t: 1.6, buffet: 1.2 } },   // P2 THE STORM: his fall onto the teeth (of his max), the UPDRAFT that throws him up (opening), the hero's lift; a rung bell's GUST
   /* (claude/lance6, Daniel 11-04) STUNNED: a gate that catches him on a charge (the bars on him: pinned, or he runs into a dropped one) and a spear sent back at him leave him STUNNED -
      the clock over his helm, a green ring, stars. The bell's pin pays x3.5 (was 1.6), the great bell's x4 (was 2). The bars' own blow (bell.dmg / great.dmg) still lands whole. */
-  stun: { gate: { t: 3.0, mul: 3.5, dmg: 30 },   // he RAN INTO a dropped tower gate (the third toll across his lane): stunned this long
-          spear: { t: 1.4, mul: 2, dmg: 45, fly: 0.5, near: 10, every: 5, strike: true } },   // a DODGED spear (rolled / dashed through it, or a miss by less than near px past the point) or a STUCK one you strike: it flies back to him in fly s and stuns him t s; at most one return every s
+  stun: { gate: { t: 2.6, mul: 3.5, dmg: 30 },   // he RAN INTO a dropped tower gate (the third toll across his lane): stunned this long
+          spear: { t: 1.2, mul: 2, dmg: 45, fly: 0.5, near: 10, every: 7, strike: true } },   // a DODGED spear (rolled / dashed through it, or a miss by less than near px past the point) or a STUCK one you strike: it flies back to him in fly s and stuns him t s; at most one return every s
   gateClose: 40,                 // s the main gate takes to come down in P3 (it stops at 85% until he falls, then SLAMS)
 };
 export const HEAVY_MODES = new Set(['couch', 'vaultTell']);   // the moves of the HEAVY class (tempo rule: never two back to back)

@@ -3,7 +3,7 @@
 //  SPAN LINES (span1/3/5: flat, either way over a gap): UP from the west lookout takes the line and rides it east to the far tower; a jump from the deck boards touches it;
 //  and the same lines ridden WEST (face west, UP from the far end), all alive and unhurt.
 //  STUN: the gate (bell rung with him away): stunned 3.0 s at x3.5, the clock (stunMax) is set; a blow lands harder.
-//  SPEARS: a volley spear dodged (rolled with the real dodge key) / missed by < 10 px / struck while stuck flies back in 0.5 s and STUNS him 1.4 s x2;
+//  SPEARS: a volley spear dodged (rolled with the real dodge key) / missed by < 10 px / struck while stuck flies back in 0.5 s and STUNS him 1.2 s x2;
 //  (a hitstop runs on the wall clock, so each case naps 300 ms first.)  a spear landing far off does not; one return per 5 s; none while he is stunned; the stun ignores his shield.
 import { openPage } from './cdp.mjs';
 import { mkdirSync, writeFileSync } from 'node:fs';
@@ -45,7 +45,7 @@ const PAGE = hero => `(async()=>{const {LEVELS}=await import('/src/level.js');co
   const bells=BK.props().filter(p=>p.t==='lancebell'),tb=k=>bells.find(p=>p.tower===k);
   { await nap();calm();const pr=tb(3);b.x=pr.gx-150;b.face=1;P.rgStance='knife';P.x=pr.x-10;P.y=pr.y;P.vx=P.vy=0;P.face=1;P.atk=-1;BK.press('atk');let st=0,mul=0,mx=0,open=false;
     run(300,()=>{safe();P.x=pr.x-10;P.y=pr.y;if(b.mode==='stunned'){st=Math.max(st,b.modeT);mul=Math.max(mul,b.stunMul||0);mx=b.stunMax||0;open=open||BK.bossOpen(b);}if(st&&b.mode!=='stunned')hold();});
-    row('gate: he runs into the dropped gate, STUNNED 3 s at x3.5, open',st>=2.9&&mul>=3.5&&mx>=2.9&&open,'stun '+st+' mul '+mul+' max '+mx+' open '+open); }
+    row('gate: he runs into the dropped gate, STUNNED 2.6 s at x3.5, open',st>=2.5&&mul>=3.5&&mx>=2.5&&open,'stun '+st+' mul '+mul+' max '+mx+' open '+open); }
   { await nap();calm();b.mode='guard';b.modeT=1;const hp0=b.hp;P.x=b.x-26;P.y=fl;P.face=1;P.vx=0;P.atk=-1;BK.press('atk');run(14,safe);const plain=hp0-b.hp;
     calm();b.mode='stunned';b.modeT=3;b.stunMax=3;b.stunMul=3.5;b.stagger=3;const hp1=b.hp;P.x=b.x-26;P.y=fl;P.face=1;P.vx=0;P.atk=-1;BK.press('atk');run(14,i=>{safe();b.modeT=3;});const stun=hp1-b.hp;
     row('stunned: a blow lands harder than at guard',stun>0&&stun>=plain*1.5,'guard '+plain+' stunned '+stun); }
@@ -53,19 +53,19 @@ const PAGE = hero => `(async()=>{const {LEVELS}=await import('/src/level.js');co
   const backsOrStun=n=>{let backs=false,stun=0,mul=0,mx=0;run(n,i=>{safe();hold();const z=b.lz;if(z.backs.length)backs=true;if(b.mode==='stunned'){stun=Math.max(stun,b.modeT);mul=b.stunMul;mx=b.stunMax;}});return{backs,stun:+stun.toFixed(2),mul,mx,sp:b.lz.spears.length,mode:b.mode,sendAt:+b.lz.sendAt.toFixed(1),px:Math.round(P.x),inv:+P.inv.toFixed(1)};};
   { await nap();calm();P.x=A.x0+300;P.y=fl;P.face=1;P.vx=0;P.ground=true;P.st=P.maxSt;P.inv=0;const hp0=P.hp;spearAt(P.x+6,0.07);K.right=true;BK.press('dodge');let backs=false,hit=false,stun=0,mul=0;
     run(80,i=>{hold();if(b.lz.backs.length)backs=true;if(b.mode==='stunned'){stun=Math.max(stun,b.modeT);mul=b.stunMul;}if(P.hp<hp0)hit=true;});K.right=false;
-    row('spear: ROLLED through (real dodge key), it flies back and STUNS him 1.4 s x2, unhurt',backs&&stun>=1.3&&mul===2&&!hit,'backs '+backs+' stun '+stun+' mul '+mul+' hp lost '+(hp0-P.hp)); }
+    row('spear: ROLLED through (real dodge key), it flies back and STUNS him 1.2 s x2, unhurt',backs&&stun>=1.1&&mul===2&&!hit,'backs '+backs+' stun '+stun+' mul '+mul+' hp lost '+(hp0-P.hp)); }
   { await nap();calm();P.x=A.x0+300;P.y=fl;P.vx=0;P.ground=true;const hp0=P.hp;spearAt(P.x-18,0.12);const r=backsOrStun(60);
-    row('spear: a MISS by < 10 px past the point sends it back',r.backs&&r.stun>=1.3&&P.hp===hp0,JSON.stringify(r)+' hp '+(hp0-P.hp)); }
+    row('spear: a MISS by < 10 px past the point sends it back',r.backs&&r.stun>=1.1&&P.hp===hp0,JSON.stringify(r)+' hp '+(hp0-P.hp)); }
   { await nap();calm();P.x=A.x0+300;P.y=fl;P.vx=0;const hp0=P.hp;spearAt(P.x-60,0.12);const r=backsOrStun(60);
     row('spear: one that lands 60 px away is only a spear (no return)',!r.backs&&!r.stun&&P.hp===hp0,JSON.stringify(r)); }
   { await nap();calm();P.x=A.x0+300;P.y=fl;P.vx=0;P.face=1;P.atk=-1;spearAt(P.x+18,0.01,1.4);BK.press('atk');const r=backsOrStun(50);
-    row('spear: STRIKE a stuck spear and it is hurled back, stunning him',r.backs&&r.stun>=1.3,JSON.stringify(r)); }
+    row('spear: STRIKE a stuck spear and it is hurled back, stunning him',r.backs&&r.stun>=1.1,JSON.stringify(r)); }
   { await nap();calm();P.x=A.x0+300;P.y=fl;P.vx=0;spearAt(P.x-18,0.05);const r1=backsOrStun(60);b.mode='guard';b.modeT=0.5;b.stagger=0;spearAt(P.x-18,0.05);const r2=backsOrStun(40);
-    row('spear: at most one return per 5 s',r1.backs&&!r2.backs,'first '+JSON.stringify(r1)+' second '+JSON.stringify(r2)); }
+    row('spear: at most one return per 7 s',r1.backs&&!r2.backs,'first '+JSON.stringify(r1)+' second '+JSON.stringify(r2)); }
   { await nap();calm();P.x=A.x0+300;P.y=fl;P.vx=0;b.mode='stunned';b.modeT=2;b.stunMax=3;b.stunMul=3.5;spearAt(P.x-18,0.05);let backs=false;run(40,i=>{safe();hold();b.modeT=2;if(b.lz.backs.length)backs=true;});
     row('spear: none while he is already stunned',!backs,'backs '+backs); }
   { await nap();calm();P.x=A.x0+300;P.y=fl;P.vx=0;b.bare=false;b.shield=true;b.shielded=true;spearAt(P.x-18,0.05);const r=backsOrStun(60);
-    row('spear: the stun ignores his shield',r.backs&&r.stun>=1.3,JSON.stringify(r)); }
+    row('spear: the stun ignores his shield',r.backs&&r.stun>=1.1,JSON.stringify(r)); }
   if(SHOT){await nap();calm();P.x=b.x-50;P.y=fl;b.mode='stunned';b.modeT=2.2;b.stunMax=3;b.stunMul=3.5;run(6,i=>{safe();b.modeT=2.2;});snap('stun-clock-'+HERO);}
   return {rows,shots}; })()`;
 const t0 = Date.now(); let bad = 0, total = 0;
