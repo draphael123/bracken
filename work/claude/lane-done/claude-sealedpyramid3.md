@@ -120,4 +120,4 @@ wind sound. THE MOTHER: wing sweep windup (wing cases up) + release, the swarm b
    holds 70-80. Alt: tune to 60-65 as the brief said.
 
 ## Final tip
-(filled at the end)
+claude/sealedpyramid3 FINAL TIP 23d0d15b9 (pushed; the tip line itself is in the scratch copy). Not merged, not deployed. Start the browser lane with ?sp3=1 and the n=6 boss-rates rows; flip MINIS_STAY_DOWN on its own (Q1).
