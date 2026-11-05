@@ -19149,12 +19149,12 @@ const CALLER_RISE = 150;   /* px/s he rises on the wind (phase three, off the le
    an opening (B3, s); the storm's crumble; his guard while warded (B15: never below 0.4); x CALLER_OPEN_MUL in an opening; a bolt sent back counts as UP CLOSE
    within CALLER_NEAR px. THE LOOP: CALLER_HITS blows beside him on his ledge and he falls. CALLER_AFTER: s of still after a gust before he moves again */
 const CALLER_P2 = 0.66, CALLER_P3 = 0.33, CALLER_CAST = [2.0, 1.8, 1.6], CALLER_STEP_V = 150, CALLER_WARD = 3, CALLER_GALE_TELL = 1.3, CALLER_CRUMBLE = 2.2,
-  CALLER_GUARD = 0.4, CALLER_OPEN_MUL = 2, CALLER_NEAR = 120, CALLER_BOLT_DMG = 38, CALLER_STONE_DMG = 35, CALLER_LEDGE_SHOVE = 170, CALLER_HITS = 3, CALLER_AFTER = 0.2, CALLER_FOLLOW = 0.5,
-  CALLER_BLAST_R = 46, CALLER_BLAST_WAIT = [0.8, 0.7, 0.6], CALLER_BLAST_TELL = 1.0, CALLER_BLAST_CD = [5, 4, 3.5], CALLER_BLAST_DMG = 42,   /* HIS BLAST: how near, how long you stand there before he gathers it, its tell, its rest a phase, what it costs */
-  CALLER_HURL_TELL = 0.8, CALLER_HURL_CD = [5, 4.5, 4], CALLER_HURL_V = 300, CALLER_HURL_H = 20, CALLER_HURL_DMG = 25, CALLER_HURL_SHOVE = 330,   /* THE GUST HURL: tell, rest a phase, speed, how high the wall stands (jump it), its blow and its shove */
+  CALLER_GUARD = 0.4, CALLER_OPEN_MUL = 2, CALLER_NEAR = 120, CALLER_BOLT_DMG = 39, CALLER_STONE_DMG = 36, CALLER_LEDGE_SHOVE = 170, CALLER_HITS = 3, CALLER_AFTER = 0.2, CALLER_FOLLOW = 0.5,
+  CALLER_BLAST_R = 46, CALLER_BLAST_WAIT = [0.8, 0.7, 0.6], CALLER_BLAST_TELL = 1.0, CALLER_BLAST_CD = [5, 4, 3.5], CALLER_BLAST_DMG = 44,   /* HIS BLAST: how near, how long you stand there before he gathers it, its tell, its rest a phase, what it costs */
+  CALLER_HURL_TELL = 0.8, CALLER_HURL_CD = [5, 4.5, 4], CALLER_HURL_V = 300, CALLER_HURL_H = 20, CALLER_HURL_DMG = 26, CALLER_HURL_SHOVE = 330,   /* THE GUST HURL: tell, rest a phase, speed, how high the wall stands (jump it), its blow and its shove */
   CALLER_DEVIL_TELL = 0.8, CALLER_DEVIL_CD = [6, 5.5, 5], CALLER_DEVIL_V = 110, CALLER_DEVIL_LIFE = 4.5, CALLER_DEVIL_DMG = 18, CALLER_DEVIL_RIDE = 0.42, CALLER_DEVIL_LIFT = 290,   /* THE DUST DEVIL: tell, rest, roll speed, life, blow on foot, ride (s at lift px/s: ~120 px, over a ledge) */
-  CALLER_DRAFT_TELL = 1.0, CALLER_DRAFT_CD = [0, 5.5, 5], CALLER_DRAFT_R = 22, CALLER_DRAFT_DMG = 30, CALLER_DRAFT_PIN = 0.6,   /* THE DOWNDRAFT (phase two on): the ring's tell, rest, radius, blow, pin */
-  CALLER_BLADE_TELL = 0.9, CALLER_BLADE_CD = 5, CALLER_BLADE_GAP = 0.35, CALLER_BLADE_V = 210, CALLER_BLADE_DMG = 25,   /* THE GALE BLADES (phase three): tell, rest, gap between the three, speed, each blade's blow */
+  CALLER_DRAFT_TELL = 1.0, CALLER_DRAFT_CD = [0, 5.5, 5], CALLER_DRAFT_R = 22, CALLER_DRAFT_DMG = 31, CALLER_DRAFT_PIN = 0.6,   /* THE DOWNDRAFT (phase two on): the ring's tell, rest, radius, blow, pin */
+  CALLER_BLADE_TELL = 0.9, CALLER_BLADE_CD = 5, CALLER_BLADE_GAP = 0.35, CALLER_BLADE_V = 210, CALLER_BLADE_DMG = 26,   /* THE GALE BLADES (phase three): tell, rest, gap between the three, speed, each blade's blow */
   CALLER_PIT_PCT = 0.05, CALLER_PIT_LIFT = 430;   /* THE PIT: its chip (a share of max health) and the throw out */
 /* HIS OPENING IS THE FALL (claude/bosswave1; claude/windcaller3): open only when he is DOWN - knocked off his ledge by his own bolt sent back up close
    or by his own howl braced through - both the big fall (the one a mash never earns). On his ledge he is a duelist (callerTake): whole, but he steps away. */
