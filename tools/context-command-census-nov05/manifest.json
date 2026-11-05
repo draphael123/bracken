@@ -1,13 +1,13 @@
 {
   "proof": {
-    "time": "2026-11-05T14:47:55.867Z",
+    "time": "2026-11-05T15:32:14.994Z",
     "gameController": "1a576c3f4511b6856df9fb4738df5aaae9987e81",
     "gameSource": "dc02ecc059959b795f76dee47665b54f349d4e2f",
     "gameTree": "9d8acbb7f3182c1d29ac71f4a3b0227224446718",
     "baselineMainSha256": "1573d2d744b753e5611b021d97b70b013f7e2e6773640b707ae85d5ab5dae594",
     "strictProfileSha256": "9d38b09c585f0054e40125c63b2435e61e8cd6f5cc53e6011edf62178c8c2184",
     "observerSha256": "47f24588333fab0025ff4ef886643d2c804b461ed12d135330c57dfd5ea42056",
-    "scope": "One original Task3 main/sharedUI document, unchanged Game bytes, phone915x412/DPR2.625/4xCPU/display2402x1082 and wide640x360 Game. Boot, Rootway and DeepRails load/sim5/render2/collection stage snapshots. Native canvas methods transparently forwarded by diagnostic wrappers; weak creation-callsite provenance and successful method counts only.",
+    "scope": "One original Task3 main/sharedUI document; phone915x412/DPR2.625/4xCPU/display2402x1082 and wide640x360 Game. Boot; Rootway/DeepRails load plus first render0 (applies original wide view), sim5/render2, then collection. Weak creation-callsite native method counts only.",
     "reason": "Existing live-canvas census reports dimensions/liveness but not drawing-command concentration. Native sampling attribution is terminal Unknown and is not repeated. Identify a distinct material factory from live native drawing-command volume before considering another algorithm; do not repackage rejected painters.",
     "newQuestion": "Which live creation callsites concentrate native drawing calls and large per-canvas command counts? Are late increments from a different unreviewed factory or already-rejected paths?",
     "instrumentationLimits": "Wrapping prototypes changes function reflection, execution cost and observer ordering. Counts reflect executed calls, not retained PaintOpBuffer capacity, malloc bytes, eligible optimization or original test pass. WeakRef liveness is not a strong ownership graph. This diagnostic cannot explain the original64level spike by itself. No timing trial, fullSPR traversal, native sampler, heap snapshot, flush/eviction optimization or original assertion replay.",
@@ -20,7 +20,14 @@
     "rendererMb": 1536,
     "admissionMb": 4352,
     "adopted": false,
-    "overallWorkComplete": false
+    "overallWorkComplete": false,
+    "boundedSetupRecovery": {
+      "priorRun": 42048683223,
+      "priorResult": "outputs/receipts/context-command-census-nov05-result.json",
+      "sourceMainSha256": "1573d2d744b753e5611b021d97b70b013f7e2e6773640b707ae85d5ab5dae594",
+      "cause": "Original loadG calls setView('normal'); render applies SET.zoom='wide'. A load-only sample before render remains320x180.",
+      "repair": "Add original BK.step(0) before each load sample and label it load-first-render0. Keep original640x360 assertion, source bytes, observer, limits and zero original assertion/timing trials."
+    }
   },
   "baseline": [
     {
