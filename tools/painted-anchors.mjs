@@ -12,12 +12,17 @@ const ctx = () => { const st = {}; return new Proxy(st, { get(t, k) { if (k === 
   if (k === 'drawImage') return (im, x, y, w, h) => { if (cur && typeof x === 'number') cur.push({ x, y, w: w || im.width || 0, h: h || im.height || 0, col: 'img', img: true }); };
   if (k in t) return t[k]; if (k === 'canvas') return {}; return (..._a) => ({ addColorStop() {} }); }, set(t, k, v) { t[k] = v; return true; } }); };
 globalThis.document = { createElement: () => { const c = { width: 0, height: 0 }; c.getContext = () => ctx(); return c; } };
+const NC = await import('./node-canvas.mjs');
 const { LEVELS, T } = await import('../src/level.js');
-const KW = await import('../src/redraw/kingswood_areas.js');
+const KW = await import('../src/redraw/kingswood_areas.js'), CH = await import('../src/redraw/church_set.js'), KS = await import('../src/redraw/ksar_set.js');
 export const TS = 16, MAXGAP = 24, GATE = [];
+const setV = (L, g) => ({ g, cx: 0, cy: 0, vw: 1e9, vh: 1e9, time: 1, L, T, noGlow: true, lit: () => true, glow: 1, stubs: 3, paladinLight: 1 });   /* (the churchart / ksar sets: one call paints the whole level) */
+const whole = fn => L => [{ x: 0, w: 0, whole: true, area: 'set', draw: g => { const keep = globalThis.document; NC.install(); try { fn(L, g); } finally { globalThis.document = keep; } } }];
 /* [level id, module label, features(L) -> [{x, w, draw(g)}]] */
 export const SOURCES = [
   ['kings', 'redraw/kingswood_areas.js', L => KW.AREAS_FOR_LINT.flatMap(A => A.feats(L).map(f => ({ ...f, area: A.id })))],
+  ['church', 'redraw/church_set.js (paintWorld)', whole((L, g) => { const S = CH; S.paintWorld(setV(L, g), S.plan(L, T)); })],
+  ['ksar', 'redraw/ksar_set.js (paintWorld)', whole((L, g) => { const S = KS; S.paintWorld(setV(L, g), S.plan(L, T)); })],
 ];
 const solid = t => t === T.SOLID || t === T.PORT || t === T.CRATE || t === T.PALISADE;
 export function groundBelow(L, px, py) { const c = Math.floor(px / TS); if (c < 0 || c >= L.W) return null;
@@ -29,9 +34,9 @@ export function paintedFaults(L, feats) {
     /* poles */
     const seen = new Set();
     for (const r of rs) { if (r.img || (r.w > 9 && r.h < 40) || r.h < 24) continue; const foot = r.y + r.h, cx = r.x + r.w / 2, gy = groundBelow(L, cx, r.y + 1); if (gy === null) continue; const gap = gy - foot;
-      if (gap >= 1 && gap <= MAXGAP) { const k = Math.round(cx) + ',' + Math.round(foot); if (!seen.has(k)) { seen.add(k); out.push({ kind: 'pole', x: Math.round(cx) / TS, y: Math.round(foot), gap, why: (f.area ? f.area + ' ' : '') + 'upright ' + r.w + 'x' + r.h + ' ends ' + gap + ' px above the ground' }); } } }
+      if (gap >= 1 && gap <= MAXGAP && !rs.some(o => o !== r && !o.img && o.x <= cx && cx < o.x + o.w && o.y <= foot + 1 && foot + 1 < o.y + o.h)) {   /* (a painted block under its foot - a dais, a step - holds it) */ const k = Math.round(cx) + ',' + Math.round(foot); if (!seen.has(k)) { seen.add(k); out.push({ kind: 'pole', x: Math.round(cx) / TS, y: Math.round(foot), gap, why: (f.area ? f.area + ' ' : '') + 'upright ' + r.w + 'x' + r.h + ' ends ' + gap + ' px above the ground' }); } } }
     /* whole feature stands */
-    const cxm = (x0 + x1) / 2, gy = groundBelow(L, cxm, bot - 1); if (gy !== null) { const gap = gy - bot; if (gap >= 1 && gap <= MAXGAP && top > gy - 140 && x1 - x0 < 90 && !seen.size) out.push({ kind: 'stand', x: Math.round(cxm) / TS, y: Math.round(bot), gap, why: (f.area ? f.area + ' ' : '') + 'feature (' + Math.round(x1 - x0) + 'x' + Math.round(bot - top) + ') ends ' + gap + ' px above the ground' }); }
+    const cxm = (x0 + x1) / 2, gy = groundBelow(L, cxm, bot - 1); if (!f.whole && gy !== null) { const gap = gy - bot; if (gap >= 1 && gap <= MAXGAP && top > gy - 140 && x1 - x0 < 90 && !seen.size) out.push({ kind: 'stand', x: Math.round(cxm) / TS, y: Math.round(bot), gap, why: (f.area ? f.area + ' ' : '') + 'feature (' + Math.round(x1 - x0) + 'x' + Math.round(bot - top) + ') ends ' + gap + ' px above the ground' }); }
   }
   return out;
 }
