@@ -34,7 +34,7 @@ import { MOVE, SPRING_MOVE, WARDEN_SPEAR, heroRunMul, sprintK as sprintKOf } fro
 import * as HC2A from './redraw/highcrown2_art.js';   /* (claude/highcrown2art) HIGHCROWN 2's art: stone slabs, the tall hall, piers and chains, arch rings, the hoist, the grate and the bells */
 import * as KGT from './redraw/kitchen_tiles.js'; import * as KGA from './redraw/kitchen_art.js';   /* THE KITCHEN GATE's art (claude/kitchengateart): tile kit, halls, dressing, ambient, machines, the butcher */
 import * as UCT from './redraw/undercrown_tiles.js'; import * as UCA from './redraw/undercrown_art.js';   /* THE UNDERCROWN's art (claude/undercrown2art): tile kit, walls, slabs, posts, lights */
-import * as USL from './undercrown-slabs.js';   /* THE UNDERCROWN'S SLABS (claude/undercrown2): a span on two posts that hinges into a ramp or drops flat */
+import * as USL from './undercrown-slabs.js'; import * as FLN from './fallen-pillar.js'; import { makeUndercrown3Hands, UC3_WORDS } from './undercrown3.js'; let U3H = null;   /* (claude/undercrown3) FIREDAMP + fallen pillars that never trap (flag-gated: L.uc3) */   /* THE UNDERCROWN'S SLABS (claude/undercrown2): a span on two posts that hinges into a ramp or drops flat */
 import { levelHasSlopes, moveBodySquare, moveBodySlopes, isSlope, footSlope, slideStep, slideKeepAt, aheadTile, slopeRise, slopeGrade, hillTop, hillAcc, hillBleed } from './slopes.js'; import { slopeTile } from './redraw/ground-slopes.js';   /* a slope in the level's own ground (claude/fairlevel) */
 import * as DF from './desert-foes.js';   /* THE SUNKEN CARAVAN: the scorpion, the vulture and the sand goblin, as pure state machines */
 import { makeLesserDjinnHands } from './lesser-djinn-hands.js'; import * as LDA from './redraw/lesser_djinn_art.js'; let LDH = null;   /* (claude/djinn3) THE LESSER DJINN: the will-o'-the-wisp's AI (the ember wisp's, cold) under the Djinn's skins - sand a pour makes mud, fire a pour douses */
@@ -2754,6 +2754,7 @@ function spawnEntities() {
   if (LPF) LPF.reset(); if (WKH) WKH.reset();   /* (claude/lamplit3) the oil laid again (a burnt tar net stays burnt: marks), the thrown fire gone */
   if (POH) POH.reset();   /* (claude/underleaf3) HER JARS back on their shelves; what grew and what burnt stays for the attempt */
   lampHandsReset();
+  FALLEN_CELLS.clear(); if (U3H) U3H.reset();   /* (claude/undercrown3) the gas as built, every door as hung */
 }
 function spawnEnt(e) {
   if (e.ifDrained !== undefined && !marks.has('pool:' + e.ifDrained * TS)) return; // lives on the channel floor: only once the water is gone
@@ -2998,7 +2999,8 @@ function spawnEnt(e) {
       case 'tidegate': props.push({ t: 'tidegate', x: px, y: py, col: e.x, y0: e.y0, y1: e.y1, mode: e.mode, open: false }); break;   /* THE LONG WATER's TIDE GATES (updateTideGates) */
       case 'dropcage': props.push({ t: 'dropcage', x: px, y: py, y0: py, dropped: false, landed: 0, hit: new Set(), boss: !!e.boss, resetT: 0, big: !!(e.boss && L.kwood) }); break;   /* (claude/kingsfix2) King Gorm's hall cages are BIG (src/gorm-hands.js drawCage; the catch below is wider) */
       case 'pushblock': movers.push(newPushBlock(px, py)); if (e.mantlet) UNBF.mantlet(movers[movers.length - 1], e); break;   /* PUSHABLE BLOCKS: a mover, so standing on it and resetting it on death/checkpoint come free (backlog #12) */
-      case 'miner': enemies.push({ ...base, t: 'miner', w: 10, h: 11, hp: EHP.miner, speed: 26, mode: 'walk', modeT: 0, digT: 0, glass: !!e.glass }); break;
+      case 'miner': enemies.push({ ...base, t: 'miner', w: 10, h: 11, hp: EHP.miner, speed: 26, mode: 'walk', modeT: 0, digT: 0, glass: !!e.glass, ...(e.fireman ? { fireman: true } : {}) }); break;   /* (claude/undercrown3) fireman: THE FIREMAN (src/undercrown3.js) */
+      case 'brattice': case 'canarycage': break;   /* (claude/undercrown3) a wind door and a caged canary: src/undercrown3.js keeps them (reset) */
       case 'tippler': enemies.push({ ...base, t: 'tippler', w: 12, h: 12, hp: EHP.tippler, speed: 0, mode: 'idle', modeT: 0, cd: 1 + Math.random() }); break;
       case 'sheargob': enemies.push({ ...base, t: 'sheargob', w: 10, h: 12, hp: EHP.sheargob, speed: 30, mode: 'walk', modeT: 0, cd: 0.8 }); break;
       case 'gaffer': enemies.push({ ...base, t: 'gaffer', w: 10, h: 11, hp: EHP.gaffer, speed: 24, mode: 'walk', modeT: 0, cd: 0.6 }); break;
@@ -7459,13 +7461,14 @@ const isOneWay = t => t === T.ONEWAY || t === T.REED || t === T.PLANK || t === T
    git at the pre-slopes commit 9e0e28a (fuzz on 2,000 grids and every campaign level: 0 frames differ), and
    tools/slopes-trace.mjs proves the swap frame-for-frame in the real page on four shipped levels.
    isSolid and isOneWay above are deliberately NOT taught ids 20-25: a slope is neither solid nor a one-way. */
-let SLAB_PHYS = false, SLAB_MASK = new Set(), SLAB_RT = new Map();   /* (claude/undercrown2) a level with SLABS lands their ramps as slope tiles at run time: moveBody takes the slope path there too; the ramp cells are drawn as the slab, not by the tile painter */
+let SLAB_PHYS = false, SLAB_MASK = new Set(), SLAB_RT = new Map(); const FALLEN_CELLS = new Map();   /* (claude/undercrown3) every cell a fallen slab lies in (L.uc3 only): src/fallen-pillar.js fallenView */   /* (claude/undercrown2) a level with SLABS lands their ramps as slope tiles at run time: moveBody takes the slope path there too; the ramp cells are drawn as the slab, not by the tile painter */
 let SLOPES_ON = false;                       /* set in loadLevel off the level's own grid: 30 levels pay nothing for this */
 const MB = { allowDrop: false, P: null };    /* ONE object, reused - moveBody runs for every body every frame */
 /* (claude/geofix, Daniel 11-04) THE GEOMANCER'S OWN STONES NEVER OBSTRUCT A HERO: to a hero body (her or a co-op hand) a standing stone cell of hers is a ONE-WAY ledge - the walk and the dodge pass through its sides, the top still holds a foot (the step) - while foes read the same cell as the rock it is. */
 const heroTileAt = (tx, ty) => { const t = tileAt(tx, ty); return t === T.SOLID && GEO.stoneAt(tx, ty) ? T.ONEWAY : t; };
 function moveBody(b, dx, dy, allowDrop = false) {
-  const ta = (GEO && GEO.hasStones() && (b === P || (players && players.includes(b)))) ? heroTileAt : tileAt;
+  let ta = (GEO && GEO.hasStones() && (b === P || (players && players.includes(b)))) ? heroTileAt : tileAt;
+  if (FALLEN_CELLS.size) ta = FLN.fallenView(ta, LW, FALLEN_CELLS, b, { drop: allowDrop, ghost: !!b.fpGhost });   /* (claude/undercrown3) A FALLEN PILLAR NEVER TRAPS: under a ramp it is no ceiling and no wall */
   if (!SLOPES_ON && !SLAB_PHYS) return moveBodySquare(b, dx, dy, ta, allowDrop, P);
   MB.allowDrop = allowDrop; MB.P = P;
   return moveBodySlopes(b, dx, dy, ta, MB);
@@ -7535,6 +7538,7 @@ const MOVE_WORDS = new Set([/* (claude/rel142, hint-shown) the Geomancer's deton
   'ORDER LOST', 'THE ORDER', 'VOLLEY', /* (batch122) THE HORNSMAN's horn words */ 'STONE SHRUG', 'BARGE', 'FLINCHES', 'DAZZLED', 'SHRUGGED', 'HOPPED', 'SHIELD-STEP', 'INTERRUPTED', 'VALIANT', 'COUNTER-THRUST', 'WALL PLANT', 'PULLED FREE', 'SNATCHED', 'FLUNG BACK', 'DAWNFALL', 'UNDER IT'])   /* (claude/ranger: her finisher, her mark, her shots, the bash, the snare, the quiver) */;   /* (claude/riposte) TOO STRONG: a red !! or a bolt met on the parry beat - it floats like OPEN, never a hint box */   /* (part 2: the finishers' own names, src/finishers.js - they are what the finisher says, so they are shown) */   /* (the last five: the knight's third cut, paid where it threw them - THIRD_WORD) */   /* (the last five: the starter kits' moves as they land - the bought rising cut, the heavy cut's two stages, THE WHEEL, DISARM) */   /* PINNED is the Warden's, and the only word her spear is allowed to say. (Not RUN THROUGH: that is the freebooter's FINISHER name, and no hero's finisher floats - putting it on this list would have started his doing it.) */
 const moveWord = t => MOVE_WORDS.has(t) || (m => !!m && MOVE_WORDS.has(m[1]))(/^(\D*?)\d[\d.]*$/.exec(t));   /* (claude/smallfix10) a move word + a trailing number ('GREAT ARROW x2.0', 'CHAIN 3') floats as its stem, listed in MOVE_WORDS with the space / x kept */
 for (const w of KI_WORDS) MOVE_WORDS.add(w);
+for (const w of UC3_WORDS) MOVE_WORDS.add(w);   /* (claude/undercrown3) FIREDAMP, IT FLARES, SCORCHED, OPEN/SHUT, HE VAULTS IT, HE DUCKS UNDER */
 for (const w of Object.values(LANCE_WORD)) MOVE_WORDS.add(w);   /* (claude/lance4) THE QUEEN'S LANCE's move words float over him (HE CHARGES, SPEARS, STONES...) */
 for (const w of [...GORM_WORDS, ...Object.values(RBM.RB_SAY)]) MOVE_WORDS.add(w);   /* (claude/gorm2) KING GORM 2's short words float over the spot (CAUGHT, WARDED, HIGH: DUCK...) */
 for (const w of [...FOA.WORDS, ...TA.WORDS, 'THROWN BACK']) MOVE_WORDS.add(w);   /* (claude/foepass) the affix's shell, a told attack answered OVER / UNDER it, and the Death Knight's ward-release parry (it said RETURNED, which was never drawn) */   /* (claude/knockinto) INTO THE SPIKES / OFF THE EDGE / INTO THE FIRE ...: what a throw ended in is said */
@@ -19881,6 +19885,7 @@ function tombHint(key, msg) { const k = 'tomb' + key; if (PROG[k] > 1) return; P
 // EVERY ATTEMPT FINDS THE TOMB AS IT WAS BUILT: the roof his sets held, the rubble they left, and the dark as it was.
 function tombReset() {
   const A = L && L.arena; if (!A || A.boss !== 'prince') return;
+  if (U3H) U3H.tombReset();   /* (claude/undercrown3) clean air in the tomb, every attempt */
   if (L.darkBase === undefined) L.darkBase = L.dark || 0;
   L.dark = L.darkBase;
   for (const rt of SLAB_RT.values()) if (rt.tomb) { for (const i of (rt.cells || [])) SLAB_MASK.delete(i); rt.cells = []; rt.saved = null; rt.state = 'up'; rt.ramp = rt.flat = null; rt.heaps = []; rt.anim = 0; for (const q of rt.posts) { q.broken = false; q.hp = q.hp0; } }   /* (claude/undercrown2) his slabs as built */
@@ -19903,7 +19908,7 @@ function princeBuried(e, rt) {
 function princeHurt(e, dmg, tag) {
   if (e.mode === 'sunk') { SFX.stone(); dust(e.crack || e.x, L.arena.floor, 4); if (!(e.saidT > 0)) { e.saidT = 1; number(e.crack || e.x, L.arena.floor - 14, 'UNDER THE DIRT', '#9aa39a'); } return null; }
   let k = 1;
-  if (e.mode === 'buried') k *= 2; else if (e.mode === 'reel') k *= 1.5;
+  if (e.mode === 'buried') k *= 2; else if (e.mode === 'reel') k *= 1.5; else if (e.mode === 'scorched') k *= 2;   /* (claude/undercrown3) SCORCHED: the gas took him */
   if (e.bare > 0) k *= 1.5;
   if (princeShrouded(e)) { k *= 0.45;   /* (claude/undercrown2, B15: was 0.35, under the 0.4 floor) */ if (!(e.saidT > 0)) { e.saidT = 1.5; number(e.x, e.y - e.h - 8, 'THE DARK TAKES IT', '#9aa39a'); } }
   else if (princeLight(e)) k *= 1.25;
@@ -19950,6 +19955,9 @@ function updatePrince(e, dt) {
      1.5 s after, his sink waits (the audit saw two of his blinks fall in or right after his own openings) */
   if (e.mode === 'reel' || e.mode === 'buried' || e.bare > 0 || princeLight(e)) e.noSinkT = 1.5; else e.noSinkT = Math.max(0, (e.noSinkT || 0) - dt);
   let want = 0;
+  if (U3H && L.uc3) U3H.princeTick(e, dt);   /* (claude/undercrown3) the tomb breathes from P2; in P3 he strikes a spark himself */
+  const u3w = (U3H && L.uc3) ? U3H.princeMode(e, dt) : null;   /* (claude/undercrown3) his hop, his duck, his spark and SCORCHED */
+  if (u3w !== null) want = u3w; else
   switch (e.mode) {
     /* HE GETS UP. The lid goes, and he comes up out of the box he was forgotten in */
     case 'wake': { e.x = e.tombX; e.y = e.tombY; e.vx = 0; const sc = props.find(p => p.t === 'sarcophagus');
@@ -20031,10 +20039,11 @@ function updatePrince(e, dt) {
       break;
   }
   if (e.mode === 'sunk') return;
+  if (U3H && L.uc3) { if (e.mode === 'stalk' && want && U3H.princeCross(e, want)) want = 0; U3H.princeWatch(e, dt, want); }   /* (claude/undercrown3) a fallen pillar in his way: a told hop or duck; stuck 2 s, he is let through */
   if (e.stagger > 0 && e.mode !== 'reel' && e.mode !== 'cut') want = 0;
   e.vy += 1000 * dt; if (e.vy > 400) e.vy = 400;
   e.vx += (want - e.vx) * Math.min(1, dt * 6);
-  const r = moveBody(e, e.vx * dt, e.vy * dt, false); if (r.ground) e.vy = 0;
+  const r = moveBody(e, e.vx * dt, e.vy * dt, false); if (r.ground) e.vy = 0; e.onGround = r.ground;
   /* A MOUND IS A STEP, NOT A WALL: he climbs the rubble a set left rather than stand against it */
   if (r.hitX && r.ground && want) e.vy = -260;
   e.x = Math.max(A.x0 + 18, Math.min(A.x1 - 18, e.x));
@@ -20111,7 +20120,8 @@ function courtierDig(e, dt) {
 function princeFrame(e) { const F = PRINCE_F, m = e.mode, mv = Math.abs(e.vx) > 8, step = Math.floor(e.anim * 5);
   if (m === 'wake') return e.modeT > 1.0 ? F.sunk : F.rise;
   const pose = { cutTell: F.cutTell, cut: F.cut, sinkTell: F.sinkTell, sunk: F.sunk, rise: F.rise, callTell: F.callTell, call: F.call, crownTell: F.crownTell,
-    crownThrow: F.crownThrow, heaveTell: F.heave, snuffTell: F.snuffTell, snuff: F.snuff, buried: F.buried, reel: F.reel }[m];
+    crownThrow: F.crownThrow, heaveTell: F.heave, snuffTell: F.snuffTell, snuff: F.snuff, buried: F.buried, reel: F.reel,
+    lightTell: F.snuffTell, scorched: F.reel, hopTell: F.sinkTell, hop: F.rise, duckTell: F.heave, duck: F.heave }[m];   /* (claude/undercrown3: greybox poses - the art lane draws his spark, scorch, hop and duck) */
   if (pose !== undefined) return pose;
   if (e.bare > 0) return mv ? F.bareWalk[step % 2] : F.bareIdle;
   return mv ? F.walk[step % 3] : (Math.floor(e.anim * 0.8) % 2 ? F.idleB : F.idle); }
@@ -27238,7 +27248,7 @@ function slabCut(pr) {
   if (rt.state === 'swing') slabLand(rt);
   if (rt.state === 'ramp' && !slabHolds(rt)) { slabClear(rt); rt.ramp = null; resolveTiles(); slabFall(rt); }
 }
-function slabFall(rt) { const f = USL.flatFor(tileAt, rt); if (!f) { rt.state = 'gone'; return; } rt.state = 'fall'; rt.anim = 0; rt.flat = f; rt.fromY = (rt.row - rt.deep + 1) * TS; number((rt.x0 + rt.x1 + 1) * TS / 2, rt.row * TS - 8, 'IT DROPS FLAT', '#ff9a5c'); }
+function slabFall(rt) { const f = L.uc3 ? FLN.restFor(tileAt, rt) : USL.flatFor(tileAt, rt);   /* (claude/undercrown3) down on a floor it rests on its rubble: a SHELF over a crawl gap */ if (!f) { rt.state = 'gone'; return; } rt.state = 'fall'; rt.anim = 0; rt.flat = f; rt.fromY = (rt.row - rt.deep + 1) * TS; number((rt.x0 + rt.x1 + 1) * TS / 2, rt.row * TS - 8, 'IT DROPS FLAT', '#ff9a5c'); }
 /* what was under the part that came down. surf(x) is the slab's top at x; a body whose head is above it and whose feet are under it took it */
 function slabHit(rt, surf, thick) {
   const l = rt.x0 * TS - 4, r = (rt.x1 + 1) * TS + 4, inIt = (b, h) => { if (b.x < l || b.x > r || b.y <= rt.row * TS) return null; const sy = surf(b.x); if (sy === null) return null; return b.y >= sy - 1 && b.y - h < sy + thick ? sy : null; };
@@ -27260,7 +27270,7 @@ function slabLand(rt) { const r = rt.ramp; rt.state = 'ramp'; slabPlace(rt, r.ce
   slabHit(rt, x => USL.rampY(r, x), 10); slabRubble(rt, r.foot[0] + (r.hinge > 0 ? 6 : -6), r.foot[1]);
   slabFx(rt, 'ONE POST CUT: THE ROOF SWINGS DOWN ON THE OTHER INTO A RAMP. CUT BOTH AND IT DROPS FLAT.'); }
 function slabLandFlat(rt) { const f = rt.flat; rt.state = 'flat'; slabPlace(rt, f.cells, false);
-  slabHit(rt, () => f.row * TS, f.deep * TS); slabRubble(rt, rt.x0 * TS + 4, f.row * TS + f.deep * TS); slabRubble(rt, (rt.x1 + 1) * TS - 4, f.row * TS + f.deep * TS);
+  slabHit(rt, () => f.row * TS, (f.kind === 'shelf' ? f.land - f.row : f.deep) * TS); if (L.uc3 && U3H) fallenSync(); slabRubble(rt, rt.x0 * TS + 4, f.row * TS + f.deep * TS); slabRubble(rt, (rt.x1 + 1) * TS - 4, f.row * TS + f.deep * TS);
   slabFx(rt, 'BOTH POSTS CUT: THE SLAB DROPS FLAT - A BRIDGE OVER A GAP, A WALL ACROSS A GALLERY.'); }
 /* PUT BACK UP (the Prince's diggers at the winch): the roof course, the floor under it and both posts as built */
 function slabReprop(rt, hp) {
@@ -27283,7 +27293,10 @@ function updateSlabs(dt) {
         q.creakT = (q.creakT || 0) - dt; if (q.creakT <= 0) { q.creakT = 1.4 + Math.random(); SFX.stone(); } } }
     for (const h of rt.heaps) h.t = Math.min(1, h.t + dt * 2);
   }
+  if (L.uc3) fallenSync();
 }
+/* (claude/undercrown3) THE FALLEN CELLS, as the slabs lie now: a ramp's slope cells and a shelf's one-way courses (src/fallen-pillar.js) */
+function fallenSync() { FALLEN_CELLS.clear(); if (!L || !L.uc3) return; for (const rt of SLAB_RT.values()) if (rt.state === 'ramp' || rt.state === 'flat') for (const i of (rt.cells || [])) FALLEN_CELLS.set(i, rt.state); }
 /* THE SLAB, DRAWN: swinging on its hinge, lying as a ramp on exactly its tiles, falling, or down flat; and an end that sags over a cut post */
 function drawSlabs(cx, cy) {
   if (L.ucKit) { UCA.drawSlabs(g, SLAB_RT, cx, cy, VW, time, bossActive); return; }   /* (claude/undercrown2art) the slab, the swing, the ramp's foot, the flat bridge / wall, the heaps, the diggers' winch: src/redraw/undercrown_art.js */
@@ -27329,6 +27342,7 @@ function drawTimberSet(pr, cx, cy) {
 // a set nobody has looked at in two hundred years: it groans before it goes, and the dust comes first
 function updateTimber(dt, hb) {
   if (SLAB_PHYS) updateSlabs(dt);
+  if (U3H && U3H.on()) U3H.update(dt);   /* (claude/undercrown3) FIREDAMP: the gas, the doors, the flames, the blasts, the canaries */
   for (const pr of props) {
     if (pr.t === 'timber' && pr.broken && pr.tomb && pr.saved) { if (bossActive && boss && boss.alive) { pr.regrowT -= dt; if (pr.regrowT <= 0) tombRegrow(pr); } continue; }
     if (pr.t !== 'timber' || pr.broken) continue;
@@ -29148,7 +29162,7 @@ function updateEnemies(dt) {
     if (e.t === 'snuffer') { updateSnuffer(e, dt); continue; }
     if (e.t === 'sailer') { if (e.mini) beastSeen('sailer'); updateSailer(e, dt); continue; }
     if (e.t === 'troll') { if (e.hill) updateHillTroll(e, dt); else updateTroll(e, dt); continue; }
-    if (e.t === 'miner') { updateMiner(e, dt); continue; }
+    if (e.t === 'miner') { if (e.fireman && U3H && U3H.fireman(e, dt)) continue; updateMiner(e, dt); continue; }
     if (e.t === 'bat') { updateBat(e, dt); continue; }
     if (e.t === 'grub') { updateGrub(e, dt); continue; }
     if (e.t === 'crow') { updateCrow(e, dt); continue; } if (e.t === 'horn') { if (e.whistle) updateWhipper(e, dt); else updateHorn(e, dt); continue; } if (e.t === 'bale') { updateBale(e, dt); continue; }
@@ -29876,6 +29890,10 @@ MCH = makeMinecartHands({ get L() { return L; }, get players() { return players;
   killFoe: e => { if (e.alive) hurtEnemy(e, Math.max(9999, (e.hp || 0) + 1), e.x, false); }, hitFoe: (e, d) => { if (e.alive) hurtEnemy(e, d, e.x, false); }, movers: () => movers, questGot: () => straysGot.size, chaseRunning: () => chases.some(c => c.st.phase === 'run'), drillTread: p => (GDH ? GDH.tread(p) : null), forgeState: n => (FGR ? FGR.state(n) : '') });
 FGR = makeForgeRails({ get L() { return L; }, TS, T, sfx: SFX, hero: () => P, enemies: () => enemies, movers: () => movers, time: () => time, VW: () => VW, attackBox: () => attackBox(), overlap: (a, b) => overlap(a, b),
   cellSet: (x, y, t) => { if (x >= 0 && y >= 0 && x < LW && y < LH) cellSet(x, y, t); }, number: (x, y, t, c) => number(x, y, t, c), burst: (...a) => burst(...a), sparks: (...a) => sparks(...a), shake: n => shakeCam(n) });   /* (claude/forgemaster) */
+U3H = makeUndercrown3Hands({ get L() { return L; }, TS, DUCK_H, sfx: SFX, get parts() { return parts; }, players: () => players, enemies: () => enemies, props: () => props, hero: () => P,
+  slabs: () => [...SLAB_RT.values()], embers: () => embers, fires: () => fires, attackBox: () => attackBox(), number: (x, y, t, c) => number(x, y, t, c), shake: n => shakeCam(n),
+  asPlayer: (p, fn) => asPlayer(p, fn), damagePlayer: (...a) => damagePlayer(...a), hurtEnemy: (e, d, x) => hurtEnemy(e, d, x, false), cutPost: pr => { pr.broken = false; slabCut(pr); },
+  cellSet: (x, y, t) => { if (x >= 0 && y >= 0 && x < LW && y < LH) cellSet(x, y, t); }, resolveTiles: () => resolveTiles(), hint: (k, msg) => hintSay('tip', 4.5, msg) });   /* (claude/undercrown3) THE UNDERCROWN 3: src/undercrown3.js */
 GDH = makeDrillHands({ get L() { return L; }, get players() { return players; }, get boss() { return boss; }, get bossActive() { return bossActive; }, TS, T, EHP, sfx: SFX, cellSet: (x, y, t) => { if (x >= 0 && y >= 0 && x < LW && y < LH) cellSet(x, y, t); }, hero: () => P, enemies: () => enemies, time: () => time, VW: () => VW, VH: () => VH,
   number: (x, y, t, c) => number(x, y, t, c), text: (...a) => text(...a), burst: (...a) => burst(...a), sparks: (...a) => sparks(...a), shake: n => shakeCam(n), attackBox: () => attackBox(), cartOf: pp => (MCH ? MCH.cart(pp) : null), duckClears: (b, y) => duckClears(b, y),
   damagePlayer: (...a) => damagePlayer(...a), asPlayer: (p, fn) => asPlayer(p, fn), upright: p => upright(p), overlap: (a, b) => overlap(a, b), box: b => box(b), music: n => { if (bossActive) music.play(n); }, hurtBoss: (e, d) => hurtEnemy(e, d, e.x, false) });   /* (deeprails4: the held blows, landing as its gears give) */
@@ -34240,6 +34258,7 @@ function drawWorld(cx, cy, showPlayer) {
       g.fillStyle = 'rgba(240,250,255,0.8)'; g.fillRect(x - 6, y0, 14, 2);
       if (Math.random() < 0.3) parts.push({ x: pr.x + (Math.random() - 0.5) * 14, y: pr.y0 + 2, vx: (Math.random() - 0.5) * 20, vy: 10, life: 0.4, max: 0.4, col: '#e8f4ff', size: 1, grav: 60 }); } }
   if (SLAB_PHYS) drawSlabs(cx, cy);
+  if (U3H && U3H.on()) { U3H.drawBand(g, cx, cy, VW, VH, time); for (const e of enemies) if (e.fireman) U3H.drawFireman(g, e, cx, cy, time); }   /* (claude/undercrown3, greybox) the gas band, the wind doors, the canaries, the fireman's pole */
   if (SKD && SKD.on()) SKD.drawBack(g, cx, cy, time);   /* (claude/chief3art) THE POWDER STORE's rack, tarp, spare kegs and sacks, behind the barrels that stand before it */
   for (const pr of props) {
     if (pr.x < cx - 40 || pr.x > cx + VW + 40) { if (pr.t !== 'felltree' || !pr.felled) continue; const sp = fellSpan(pr.ent || { x: pr.tx, y: pr.ty, len: pr.len, dir: pr.dir }); if (sp[1] < cx - 8 || sp[0] > cx + VW + 8) continue; }   /* (claude/lumberfix) a felled pine draws while ANY part of it is on screen, not only while its stump is */
@@ -37216,7 +37235,7 @@ window.BK = { setView: m => setView(m), env: () => ({ hurt: (e, d, x) => hurtEne
   wth: () => ({ arm: !!P.wthArm, held: +(P.wthHeld || 0).toFixed(2), hold: P.wthHold || 0, rec: +(P.wthRec || 0).toFixed(2), spears: wthSpears.map(q => ({ st: q.st, tier: q.tier, x: Math.round(q.x) })) }),   /* (claude/herofeel) the javelin throw, read by tools/heroblocks-b.mjs */
   ward: () => FWARD ? FWARD.read() : null, wardReset: () => FWARD && FWARD.resetStats(), pyroKit: () => ({ cMode: P.cMode || null, cHeld: P.cHeld || 0, fbHold: P.fbHold || 0, stoking: !!P.stoking, heat: P.heat || 0, full: !!P.full, jet: !!P.jet, cards: { jet: pyroCard('jet'), ember: pyroCard('ember') }, balls: embers.filter(b => b.fb).map(b => ({ fb: b.fb, x: b.x, y: b.y, vx: b.vx, r: b.r, life: b.life })), embers: embers.length, K: PYRO_KIT, W: FW_K }), pyroMarked: e => pyroMarked(e), pyStacks: e => pyStacks(e), pyStack: (e, n) => pyStack(e, n, 'lab'), pyroMark: e => burnMark(e), render: () => render(), conflag: () => castMeteorFall(), meteorFall: () => castMeteorFall(), meteorNow: () => pyMeteor ? { ...pyMeteor } : null, lbTier: () => lbTier(), pyroCard: id => pyroCard(id), wardenBrace: () => WBR ? WBR.read() : null,   /* (claude/pyrokit: tools/pyro-kit.mjs, tools/ember-flare.mjs) */ crouchA: () => CA ? CA.read() : null, crouchAReset: () => CA && CA.resetStats(),   /* THE CROUCH TWISTS, PART A (tools/crouch-a.mjs) */   /* THE EMBER WARD (tools/ember-flare.mjs) */
   crouchB: () => CRB ? CRB.read() : null, holy: () => HGR ? HGR.read() : null, holyHands: () => HGR, holyHurt: (p, x, d, o) => asPlayer(p, () => damagePlayer(x, d, o)),   /* (claude/paladin2) tools/paladin-kit.mjs: a blow on either hero */ lanternEater: () => LEH ? LEH.read() : null, lanternEaterHands: () => LEH, gangLeader: () => GLH ? GLH.read() : null, gangLeaderHands: () => GLH, frogCourt: () => (FKC && boss && boss.t === 'frog' && L.arena && L.arena.frogChase ? { ...FKC.show(), chase: true, st: boss.st, tst: boss.tst, phase: boss.phase, royal: L.arena.royal.map(r => ({ x0: r.x0, x1: r.x1, cx: r.cx, top: L.arena.floor })), bank: [L.arena.x0, L.arena.lanes[0].x0], lanes: L.arena.lanes.map(q => ({ x0: q.x0, x1: q.x1 })),
-    pads: movers.filter(m => m.kind === 'pad' && m.x > L.arena.x0 && m.x < L.arena.x1).map((m, i) => ({ id: i, x: m.x + m.w / 2, w: m.w, y: m.y0, sink: m.sink, firm: !!m.firm, slap: m.slapT > 0, shuf: !!m.shufTo, on: P.onMover === m })), reel: !!P.frogReel, tongueMax: tongue ? tongue.max : FROGK.tongue.max[(boss.phase || 1) >= 2 ? 1 : 0] } : null),   /* (claude/marsh2) THE BULLFROG KING's court for the lab's hands and tools/marsh2-beats.mjs */ bzchiefHands: () => BZH, warCairnHands: () => WCH, /* (claude/warcairn) */ hawkMistressHands: () => HMH, fogKnightHands: () => FKH, championHands: () => CHH, flotilla2: () => FL2H, flotilla3: () => F3H, champion: () => (CHH ? CHH.read() : null), admiralHands: () => ADH, h3: () => (H3H && H3H.on() ? H3H : null), h3read: () => (H3H && H3H.on() ? H3H.read() : null), cap3: () => ({ tiers: capTiers(), nets: (capArena() || {}).nets || [], plats: capTiers().concat((capArena() || {}).plats || []), lines: i => capLinesOn(i), rodX: capRodX(), inCol: x => capInCol(x), tierAt: y => capTierAt(y), nearTier: (y, e) => capNearTier(y, e), dry: (e, i) => capDry(e, i), net: (a, b, x) => capNetJoin(a, b, x), CAP2, CAP3, rod: H3H ? H3H.bossRodState() : null, told: k => (H3H ? H3H.rodTold(k) : false), seaY: H3H ? H3H.seaY() : 0 }),   /* (claude/hurricane3) THE HURRICANE 3 and THE CAPTAIN 3, for tools/hurricane3.mjs and the lab */ admiral: () => (ADH ? ADH.read() : null), fogKnight: () => (FKH ? FKH.read() : null), towpathHands: () => TPH, paladinHands: () => PBH, deaconHands: () => DCH, paladin: () => (PBH ? PBH.read() : null), hourglassKingHands: () => HGK, buriedCityHands: () => BCH, scarabMotherHands: () => SMH, scarabMother: () => (SMH ? SMH.read() : null), tombKingHands: () => TKH, oldTuskerHands: () => OTH, shriekSistersHands: () => SSH, batteringBeast: () => (BBH ? BBH.read() : null), batteringBeastHands: () => BBH, grubbagHands: () => GBH, grubbag: () => (GBH ? GBH.read() : null), kitchen: () => KGH, kitchenRead: () => (KGH ? KGH.read() : null), nestHands: () => HNS, hornetQueenHands: () => HQH, /* (claude/hornetsnest) */ bogTrollHands: () => BTH, fenRoadHands: () => FRH, fenRoad: () => (FRH ? FRH.read() : null), fenPlanks: () => (FPK ? FPK.read() : null), fenPlanksHands: () => FPK, oldTusker: () => (OTH ? OTH.read() : null), tombKing: () => (TKH ? TKH.read() : null), sealedPyramidHands: () => PYH, sealedPyramidRead: () => (PYH ? PYH.read() : null), lesserDjinn: () => LDH, wickerMan: () => WMH, skyroad: () => SKY, minecart: () => MCH, forgeRails: () => FGR, drillHands: () => GDH, rocEyrie: () => ROCE, rootway: () => RWH, kwood: () => KWH, rookery: () => RKH, pwood: () => PWH, sporewood: () => SWH, motherCap: () => (MC2H ? MC2H.read() : null), motherCapHands: () => MC2H, huntmaster: () => HNH, snares: () => SNR, pods: () => HPD, cisternQueen: () => CQH ? CQH.read() : null, cisternQueenHands: () => CQH, colossusHands: () => COH, djinn: () => DJH ? DJH.read() : null, djinnHands: () => DJH, gorgeCrab: () => GCH ? GCH.read() : null, gorgeCrabHands: () => GCH, matriarch: () => MTH ? MTH.read() : null, matriarchHands: () => MTH, puppeteer: () => PUPH ? PUPH.read() : null, puppeteerHands: () => PUPH, crouchBReset: () => CRB && CRB.resetStats(), crouchHint: () => CRH ? CRH.read() : null, crouchHintReset: () => CRH && CRH.reset(),   /* (claude/crouchfix) */   /* THE CROUCH TWISTS (tools/crouch-b.mjs) */
+    pads: movers.filter(m => m.kind === 'pad' && m.x > L.arena.x0 && m.x < L.arena.x1).map((m, i) => ({ id: i, x: m.x + m.w / 2, w: m.w, y: m.y0, sink: m.sink, firm: !!m.firm, slap: m.slapT > 0, shuf: !!m.shufTo, on: P.onMover === m })), reel: !!P.frogReel, tongueMax: tongue ? tongue.max : FROGK.tongue.max[(boss.phase || 1) >= 2 ? 1 : 0] } : null),   /* (claude/marsh2) THE BULLFROG KING's court for the lab's hands and tools/marsh2-beats.mjs */ bzchiefHands: () => BZH, warCairnHands: () => WCH, /* (claude/warcairn) */ hawkMistressHands: () => HMH, fogKnightHands: () => FKH, championHands: () => CHH, flotilla2: () => FL2H, flotilla3: () => F3H, champion: () => (CHH ? CHH.read() : null), admiralHands: () => ADH, h3: () => (H3H && H3H.on() ? H3H : null), h3read: () => (H3H && H3H.on() ? H3H.read() : null), cap3: () => ({ tiers: capTiers(), nets: (capArena() || {}).nets || [], plats: capTiers().concat((capArena() || {}).plats || []), lines: i => capLinesOn(i), rodX: capRodX(), inCol: x => capInCol(x), tierAt: y => capTierAt(y), nearTier: (y, e) => capNearTier(y, e), dry: (e, i) => capDry(e, i), net: (a, b, x) => capNetJoin(a, b, x), CAP2, CAP3, rod: H3H ? H3H.bossRodState() : null, told: k => (H3H ? H3H.rodTold(k) : false), seaY: H3H ? H3H.seaY() : 0 }),   /* (claude/hurricane3) THE HURRICANE 3 and THE CAPTAIN 3, for tools/hurricane3.mjs and the lab */ admiral: () => (ADH ? ADH.read() : null), fogKnight: () => (FKH ? FKH.read() : null), towpathHands: () => TPH, paladinHands: () => PBH, deaconHands: () => DCH, paladin: () => (PBH ? PBH.read() : null), hourglassKingHands: () => HGK, buriedCityHands: () => BCH, scarabMotherHands: () => SMH, scarabMother: () => (SMH ? SMH.read() : null), tombKingHands: () => TKH, oldTuskerHands: () => OTH, shriekSistersHands: () => SSH, batteringBeast: () => (BBH ? BBH.read() : null), batteringBeastHands: () => BBH, grubbagHands: () => GBH, grubbag: () => (GBH ? GBH.read() : null), kitchen: () => KGH, kitchenRead: () => (KGH ? KGH.read() : null), nestHands: () => HNS, hornetQueenHands: () => HQH, /* (claude/hornetsnest) */ bogTrollHands: () => BTH, fenRoadHands: () => FRH, fenRoad: () => (FRH ? FRH.read() : null), fenPlanks: () => (FPK ? FPK.read() : null), fenPlanksHands: () => FPK, oldTusker: () => (OTH ? OTH.read() : null), tombKing: () => (TKH ? TKH.read() : null), sealedPyramidHands: () => PYH, sealedPyramidRead: () => (PYH ? PYH.read() : null), lesserDjinn: () => LDH, wickerMan: () => WMH, skyroad: () => SKY, minecart: () => MCH, forgeRails: () => FGR, drillHands: () => GDH, uc3: () => (U3H ? U3H.read() : null), uc3Chamber: (x, y) => (U3H ? U3H.chamber(x, y) : null), fallen: () => ({ cells: FALLEN_CELLS.size, spans: FLN.pillarSpans([...SLAB_RT.values()]) }),   /* (claude/undercrown3) FIREDAMP and the fallen pillars, for the lab and the tools */ rocEyrie: () => ROCE, rootway: () => RWH, kwood: () => KWH, rookery: () => RKH, pwood: () => PWH, sporewood: () => SWH, motherCap: () => (MC2H ? MC2H.read() : null), motherCapHands: () => MC2H, huntmaster: () => HNH, snares: () => SNR, pods: () => HPD, cisternQueen: () => CQH ? CQH.read() : null, cisternQueenHands: () => CQH, colossusHands: () => COH, djinn: () => DJH ? DJH.read() : null, djinnHands: () => DJH, gorgeCrab: () => GCH ? GCH.read() : null, gorgeCrabHands: () => GCH, matriarch: () => MTH ? MTH.read() : null, matriarchHands: () => MTH, puppeteer: () => PUPH ? PUPH.read() : null, puppeteerHands: () => PUPH, crouchBReset: () => CRB && CRB.resetStats(), crouchHint: () => CRH ? CRH.read() : null, crouchHintReset: () => CRH && CRH.reset(),   /* (claude/crouchfix) */   /* THE CROUCH TWISTS (tools/crouch-b.mjs) */
   telling: e => !!e && windingUp(e), markOf: e => markOf(e), markShown: e => !!e && windingUp(e) ? markOf(e) : '',
   dmgCommon: () => Object.fromEntries(Object.keys(DMG_COMMON).map(k => [k, [DMG_COMMON[k], DMG[k]]])), duck: () => ({ H: DUCK_H, ducking: !!P.ducking, box: duckBox(P), ducked: P.ducked || 0, tells: tellsDrawn, braced: braced(), clears: y => duckClears(P, y), high: e => blowHigh(e, time), lane: e => laneOf(tellKey(e)), height: e => heightOf(tellKey(e)) }),   /* THE UNIVERSAL DUCK, for tools/duck.mjs and the bot (src/duck.js) */ marksMissed: () => marksMissed(),   /* the mark the screen holds over a windup, and every windup the table had no row for */
   sim(n = 1) { for (let i = 0; i < n; i++) { update(STEP); clearPresses(); } },   /* the same, without the draw: the playtest bot renders when it wants to look */

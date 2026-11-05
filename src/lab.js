@@ -609,6 +609,7 @@ function lampPlan(BK, boss, A, P, R) {
   return null;
 }
 function princeTarget(BK, boss, A, P) {
+  { const u = princeGas(BK, boss, A, P); if (u) return u; }   /* (claude/undercrown3) THE UNDERCROWN 3's tomb gas: duck a fuse, flare a lamp into a ready band he is in */
   if (['sunk', 'buried', 'sleep', 'wake', 'rise'].includes(boss.mode)) return null;
   /* A LAMP IS TRIED FOR THREE SECONDS AND THEN LEFT: a bot that never lights it must not spend the fight walking to it and back */
   const lamps = BK.props().filter(p => p.t === 'minerlamp' && p.x > A.x0 - 8 && p.x < A.x1 + 8 && p.y > A.floor - 200 && p.y <= A.floor + 4);
@@ -622,6 +623,22 @@ function princeTarget(BK, boss, A, P) {
   if (sb) { const mid = (sb.x0 + sb.x1 + 1) * 8, want = boss.x < mid ? -1 : 1, posts = sb.posts.filter(q => !q.broken), post = posts.find(q => q.end === want) || posts[0];
     if (post) return { x: post.x + post.end * 13, at: post.x }; }
   return null;
+}
+/* (claude/undercrown3) THE TOMB'S GAS, played as a player reads it (BK.uc3Chamber: the band drawn on the screen, the canary):
+   - a fuse burning in the chamber you stand in: DUCK (stand still, DOWN) until it has gone - the band burns the roof, not the floor;
+   - his tomb READY and his top in the band (he is up on a fallen shelf, or the band is deep): go to the nearest LIT lamp and strike it - it
+     FLARES into the gas, and he is SCORCHED (x2) when it goes; then duck.
+   Returns { x, at } (stand at x, strike toward at), { x, duck: true }, or null. P.labU3Duck holds the duck for a few frames (read in the boss loop). */
+function princeGas(BK, boss, A, P) {
+  if (!BK.uc3Chamber) return null;
+  const here = BK.uc3Chamber(P.x, P.y - 4);
+  if (here && here.fuse > 0) { P.labU3Duck = 10; return { x: P.x, at: P.x, duck: true }; }
+  if (['sunk', 'buried', 'sleep', 'wake', 'scorched'].includes(boss.mode)) return null;
+  const tomb = BK.uc3Chamber(boss.x, boss.y - 4); if (!tomb || !tomb.ready || tomb.fuse > 0) return null;
+  if (boss.y - (boss.h || 60) > tomb.band) return null;   /* (his top is under the band: a blast would miss him) */
+  const lamps = BK.props().filter(p => p.t === 'minerlamp' && p.lit && p.x > A.x0 - 8 && p.x < A.x1 + 8 && Math.abs(p.y - A.floor) < 8);
+  const lp = lamps.sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0]; if (!lp || Math.abs(lp.x - P.x) > 200) return null;
+  return { x: lp.x + (P.x < lp.x ? -12 : 12), at: lp.x };
 }
 /* THE BOSSES A RUN OPENS. One so far: the Queen's Lance, whose plate turns every blade until he is committed - and whose
    own gate now says a DASH ATTACK into his guard puts him off balance. The hands for it are the dash branch of strike()
@@ -2571,7 +2588,7 @@ async function runbossLab(BK, opts) {
          a lamp; with him standing under a timber set, cut its post from outside the span it holds */
       else if (boss.t === 'prince' && boss.mode === 'sunk') goal = P.x + (Math.sign(P.x - (boss.markX || boss.x)) || 1) * 60;
       else if (boss.t === 'prince' && (princeT = princeTarget(BK, boss, A, P))) { goal = princeT.x;
-        if (Math.abs(princeT.x - P.x) < 8 && P.atk < 0) { P.face = Math.sign(princeT.at - P.x) || P.face; BK.press('atk'); swings++; } }
+        if (Math.abs(princeT.x - P.x) < 8 && P.atk < 0 && !princeT.duck) { P.face = Math.sign(princeT.at - P.x) || P.face; BK.press('atk'); swings++; } }
       /* THE HORNET QUEEN'S SWARM closes over her while two of her drones are up and turns most of a blow (hurtEnemy0),
          so the hands thin it first, the way her hint says. A drone posts a tile and a half over the floor and darts at
          you, so it is taken with the rising cut when it is above and a plain one when it comes down. */
@@ -3003,6 +3020,7 @@ async function runbossLab(BK, opts) {
         if (h === 'ranger' && P.labRs && Math.abs(gd) <= 4) { k.left = k.right = false; k.down = true; k.atk = false; }
         /* THE TOMB'S RUBBLE IS A STEP: walking and not moving there means a mound in the way, and a player hops it */
         if (boss.t === 'prince' && (k.left || k.right) && P.ground && Math.abs(P.vx) < 4 && f % 15 === 0) BK.press('jump');
+        if (boss.t === 'prince' && P.labU3Duck > 0) { P.labU3Duck--; k.left = k.right = k.jump = k.atk = k.up = false; k.down = true; }   /* (claude/undercrown3) under the burning band */
         /* AND WATER HAS A SECOND AXIS. Outside the Deep's own swimming branch the hands only ever walked left and
            right, so when the Tollmaster fills his square the bot floated at the surface with him on the stones below
            it: every hero stalled between 3% and 27% of him, which is his flood phase and nothing else. A swimmer
