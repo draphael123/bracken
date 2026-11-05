@@ -9342,6 +9342,7 @@ const inJet = (x, y, pad = 6) => { const j = jetBox(); return !!j && x > j.l - p
 // Hold the attack after a swing and the hero winds up: the knight takes the blade over his head, the
 // pyromancer gathers the flame back low, the paladin stands the maul straight up. Let go and it lands. It
 // costs twice the stamina of a swing, it goes through a guard, and it is slower than mashing on purpose.
+const DTAP = { tap: 0.18, gap: 0.3 };   /* (claude/knightkit) the knight's double-tap C: the first tap's longest hold, and the longest press-to-press */
 const HEAVY_START = 0.14;                                     // how long the key is down before the wind-up shows
 const heavyWind = () => (isPirate() && ((P.hotT || 0) > time || (P.catchShotT || 0) > time)) || spearheadReady() ? 0.04 : (isGeo() ? GEO_K.wind : isBz() ? 0.36 : isRg() ? RG_K.draw.wind * (tal('rgSteady') ? 0.8 : 1) * (P.rgKneel ? RG_K.kneel.wind : 1) : 0.32) - 0.05 * Math.max(0, tal('heavy') - 1);   /* (THE GEOMANCER winds longer: her wind runs FAULT LINE out, geomancer.js) */ // and how long the wind-up itself takes (HOT BARREL: next to none)
 const heavyMul = () => 2 + 0.15 * Math.max(0, tal('heavy') - 1);
@@ -9692,9 +9693,9 @@ function lcSlam(dir, big) {
      ~1.1 s  THE KNOCKDOWN    and it goes down on its back, and the blade into the floor sends a short shockwave both ways
    THE RISK is the wind-up itself: he cannot raise the shield while the sword is up, and a blow that lands on him drops it.
    Let go before the first stage and nothing comes down. Held past CUT_AUTO it comes down by itself. ==== */
-const CUT_AT = [0.5, 9, 9], CUT_AUTO = 1.8, CUT_MUL = [0, 1.75, 1.75, 1.75], CUT_COL = [null, '#fff6e0', '#ffd36b', '#ff8a4c'];   /* (claude/knightid, Daniel 10-31 Q4: ONE fixed heavy cut - 0.5 s, it breaks a guard, no tiers; the ladder belongs to the Blood Knight now. The big hit is the RIPOSTE FINISHER) */
+const CUT_AT = [0.5, 0.9, 9], CUT_AUTO = 1.8, QUAKE = { st: 1.5, cd: 2.5, reach: 48, sp: 160, life: 0.3 }, CUT_MUL = [0, 1.75, 1.75, 1.75], CUT_COL = [null, '#fff6e0', '#ffd36b', '#ff8a4c'];   /* (claude/knightid, Daniel 10-31 Q4: ONE fixed heavy cut - 0.5 s, it breaks a guard, no tiers; the ladder belongs to the Blood Knight now. The big hit is the RIPOSTE FINISHER) */
 const cutAt = i => CUT_AT[i] * (1 - 0.1 * Math.max(0, tal('heavy') - 1));   /* the old node's second rank: quicker to wind a point */
-const cutStage = held => held >= cutAt(0) ? 2 : 0;   /* one stage (2: the guard-break), never 1 or 3 */
+const cutStage = held => held >= cutAt(1) && time >= (P.quakeReadyAt || 0) ? 3 : held >= cutAt(0) ? 2 : 0;   /* (claude/knightkit, Daniel 11-05) stage 2 = the guard-break chop at 0.5 s; stage 3 = the FULL CHARGE at 0.9 s: the same chop plus the ground-shaker (cutQuake), once per QUAKE.cd - on its cooldown a full hold is only the chop */
 const punishTarget = () => enemies.find(e => e.alive && !e.harmless && !(e.gone > 0) && e.broken > 0 && Math.abs((e.x - P.x)) < 34 && Math.sign(e.x - P.x || P.face) === P.face && Math.abs(e.y - P.y) < 30) || null;   /* a foe STANDING BROKEN in the cut's reach */
 const knightWinding = () => hero() === 'knight' && (P.charge > 0 || (P.atkHeld || 0) >= HEAVY_START);
 function heavyCut(stage) {
@@ -9707,8 +9708,8 @@ function heavyCut(stage) {
 function cutHit(e) {
   const st = P.cutStage || 0, big = lcBig(e); if (st < 2 || !e.alive) return;
   dust(e.x, e.y, 6); chips(e.x - P.face * 3, e.y - (e.h || 16) / 2, P.face, 7, ['#c9d1dc', '#fff6e0', '#8a8272'], 160, 520, 1); shakeCam(3, P.face * 2); hitstop(0.04);   /* (claude/chargefeet) WEIGHT: the cut lands with grit, a shake and a beat of stillness; the damage is the same */
-  if (big) { e.stagger = Math.max(e.stagger || 0, st === 3 ? 0.5 : 0.3); const m = poiseMax(e);
-    if (m && !(e.broken > 0) && !(e.poiseCd > 0)) { e.poise = Math.min(m, (e.poise || 0) + m * (st === 3 ? 0.35 : 0.25)); if (e.poise >= m) addPoise(e, 1, P.x, false); }
+  if (big) { e.stagger = Math.max(e.stagger || 0, 0.3); const m = poiseMax(e);   /* (knightkit: the full charge is the chop on a boss - the same bite of the bar, never more) */
+    if (m && !(e.broken > 0) && !(e.poiseCd > 0)) { e.poise = Math.min(m, (e.poise || 0) + m * 0.25); if (e.poise >= m) addPoise(e, 1, P.x, false); }
     hitstop(0.1); return; }
   if (st === 3 && floorFoe(e, 1.8)) { number(e.x, e.y - e.h - 20, 'KNOCKED DOWN', '#ff8a4c'); return; }
   if (!(e.broken > 0)) { e.broken = 1.3; e.guardT = 0; e.vx = 0; e.knock = 0; number(e.x, e.y - e.h - 20, 'GUARD BROKEN', '#ffd36b'); breakBeat(e); } }
@@ -9719,8 +9720,8 @@ function floorFoe(e, secs) {
   e.broken = Math.max(e.broken || 0, secs); e.floored = time + secs; e.floorAt = time; e.vx = 0; e.knock = 0; e.guardT = 0;
   dust(e.x, e.y, 6); breakBeat(e); return true; }
 function cutQuake() {
-  const x = P.x + P.face * 22; SFX.cutQuake(); shakeCam(6, P.face * 2); zoomKick(1.06, 0.2); ringAt(x, P.y - 2, 22, '#ff8a4c', 0.35); dust(x, P.y, 10); impactAt(x, P.y - 2, 'stone');
-  for (const d of [-1, 1]) pwaves.push({ x: x + d * 6, y: P.y, dir: d, life: 0.32, sp: 230, hit: new Set(P.hitSet), dmg: Math.round(swordDmg() * 0.4), down: true }); }   /* (not again on what the blade itself struck) */
+  const x = P.x + P.face * 22; P.quakeReadyAt = time + QUAKE.cd; SFX.cutQuake(); shakeCam(6, P.face * 2); zoomKick(1.06, 0.2); ringAt(x, P.y - 2, 22, '#ff8a4c', 0.35); ringAt(P.x, P.y - 2, 30, '#ffd36b', 0.4); dust(x, P.y, 10); dust(P.x - P.face * 14, P.y, 6); impactAt(x, P.y - 2, 'stone');   /* (knightkit) the ground-shaker: both ways from his feet, QUAKE.reach (3 tiles), then QUAKE.cd before the next */
+  for (const d of [-1, 1]) pwaves.push({ x: P.x + d * 8, y: P.y, dir: d, life: QUAKE.life, sp: QUAKE.sp, hit: new Set(P.hitSet), dmg: Math.round(swordDmg() * 0.4), down: true }); }   /* (not again on what the blade itself struck) */
 function updateCharge(dt) {
   if (!tal('heavy') || P.dead || state !== 'play') { P.atkHeld = 0; P.charge = 0; return; }
   if (isPirate() && !P.loaded) { if (keys.atk && !(P.emptySaid > 0)) { P.emptySaid = 1.2; SFX.clank(); number(P.x, P.y - 26, 'EMPTY', '#9aa39a'); } P.atkHeld = 0; P.charge = 0; return; }
@@ -9773,7 +9774,7 @@ function updateCharge(dt) {
       parts.push({ x: P.x + P.face * (isPyro() ? 10 : 2) + (Math.random() - 0.5) * 10, y: P.y - 18 - Math.random() * 14, vx: 0, vy: -30, life: 0.3, max: 0.3, col, size: 1, grav: -20 }); }
     if (hero() === 'knight') { const st = cutStage(P.atkHeld);   /* THE HEAVY CUT'S STAGES: a ring and a note at the blade as each one arrives */
       if (st > (P.cutShown || 0)) { P.cutShown = st; const tip = cutTip(); SFX.cutStage(st); ringAt(tip.x, tip.y, 6 + 4 * st, CUT_COL[st], 0.3); burst(tip.x, tip.y, 3 + 3 * st, [CUT_COL[st], '#ffffff'], 50, 0.3, -30, 1); if (st === 3) shakeCam(1.5); }
-      if (P.atkHeld >= CUT_AUTO) { P.cutShown = 0; P.cutWant = 3; fireHeavy(); }
+      if (P.atkHeld >= CUT_AUTO) { P.cutShown = 0; P.cutWant = cutStage(P.atkHeld); fireHeavy(); }
       return; }
     if (k >= 1 && !P.chargeFull) { P.chargeFull = true; SFX.tell(true); ringAt(P.x, P.y - 14, 14, isPyro() ? '#ff9a5c' : isPaladin() ? '#ffe6a0' : '#dfe8ff', 0.3); shakeCam(1.5); }
     if (isPaladin()) verdictMark();   /* (PALADIN 3) a SIGIL a beat on the nearest foes ahead */
@@ -10382,7 +10383,8 @@ function fireHeavy() { noteVerb('heavy'); P.amHeavyAt = time; P.amHeavyHit = fal
     if (!spend(tier ? RG_K.tiers.st[tier] : RG_K.draw.st)) { SFX.clank(); P.stFlash = 0.35; return; } RGK.release(w, tier, shk); return; }   /* (no wind: the bar's red flash says so) */
   const wound = Math.min(1, (P.charge || 0) / heavyWind());   /* how far it was wound when it was let go: the length of the knight's charge */
   P.atkHeld = 0; P.charge = 0; P.chargeFull = false;
-  if (!spend(isGeo() && (P.geoTierWant || 0) === 1 ? Math.round(heavyCost() * GEO_K.tiers.st[1]) : heavyCost())) { SFX.clank(); number(P.x, P.y - 26, 'NO WIND FOR IT', '#9aa39a'); P.geoTierWant = 0; return; }   /* (claude/chargetiers: her STONE SHARD costs half) */
+  let cutPaid = false; if (hero() === 'knight' && P.cutWant === 3) { if (spend(Math.round(heavyCost() * QUAKE.st))) cutPaid = true; else P.cutWant = 2; }   /* (knightkit) the full charge costs half again; too tired for it, it is the plain chop (charged below) */
+  if (!cutPaid && !spend(isGeo() && (P.geoTierWant || 0) === 1 ? Math.round(heavyCost() * GEO_K.tiers.st[1]) : heavyCost())) { SFX.clank(); number(P.x, P.y - 26, 'NO WIND FOR IT', '#9aa39a'); P.geoTierWant = 0; return; }   /* (claude/chargetiers: her STONE SHARD costs half) */
   if (hero() === 'knight') { heavyCut(P.cutWant || 1); P.cutWant = 0; return; }   /* THE HEAVY CUT (it was shieldCharge(wound): THE SHIELD CHARGE) */
   if (isPaladin()) { verdictStrike(); return; }   /* (PALADIN 3) VERDICT: no hammer swing - light strikes every marked foe */
   if (isGeo() && GEO) { P.atk = 0; P.hitSet.clear(); P.heavy = true; P.heavySwing = false; P.vx = 0; P.combo = 3; P.geoTier = P.geoTierWant || 0; P.geoTierWant = 0; GEO.faultHeavy(wound, P.geoTier); shakeCam(P.geoTier === 1 ? 1 : 3); return; }   /* (claude/chargetiers: the tier the hold reached - 0 the short crack, 1 the shard, 2 the fault line, 3 the pillar) */   /* FAULT LINE: the butt struck into the ground, and the crack does the hitting (attackBox is shut for it) */
@@ -11071,8 +11073,11 @@ function updatePlayer(dt) {
   if (isBz() && BZK) BZK.update(dt, keys, { stunned, dodging, attacking, guardOk: CM.guardOk(P) });   /* (WEIGHT: no brace while EXHAUSTED - it is a guard) */   /* THE BERSERKER'S C: the brace; full rage, THE FRENZY; UP+C the axe throw - and his rage, frenzy and thrown axe (src/berserker.js) */
   if (hero() === 'knight') { // C held = the shield. THREE LINKS and UP + C on the ground is THE SHIELD CHARGE (the ultimate input above).
     P.links = Math.max(0, Math.min(KC.max, P.links | 0)); chainTick(dt);
-    const cDown = keys.block && !P.cWas; P.cWas = !!keys.block;
-    if (cDown && keys.up && HPK && !stunned && !dodging && !attacking && !P.plunge && !rushing() && !thrown && (P.ground || P.swim)) HPK.bashPress();   /* (claude/heropassa) UP+C: THE SHIELD BASH - never the last charge, never a raised shield */
+    const cDown = keys.block && !P.cWas, cWas0 = !!P.cWas; P.cWas = !!keys.block;
+    /* (claude/knightkit, Daniel 11-05) DOUBLE-TAP C = THE SHIELD BASH: two quick TAPS (the first let go inside DTAP.tap s, the second pressed inside DTAP.gap s of the first). The first tap raises the shield as it always did; a held C, or a tap that came after a long hold, never counts. */
+    let dtapBash = false; if (cDown) { dtapBash = !!P.cTapShort && time - (P.cTapAt || -9) <= DTAP.gap; P.cTapAt = time; P.cTapShort = false; if (dtapBash) P.cTapShort = false; }
+    else if (cWas0 && !keys.block) P.cTapShort = time - (P.cTapAt || -9) <= DTAP.tap;
+    if (cDown && (keys.up || dtapBash) && HPK && !stunned && !dodging && !attacking && !P.plunge && !rushing() && !thrown && (P.ground || P.swim)) { if (HPK.bashPress(dtapBash && !keys.up) && dtapBash) { P.cTapShort = false; P.block = false; P.blockT = 0; } }   /* (claude/heropassa) UP+C: THE SHIELD BASH - never the last charge, never a raised shield */
     else if (cDown && keys.up && P.links >= KC.max && !stunned && !dodging && !attacking && !P.plunge && !rushing() && !thrown && (!(P.ground || P.swim) || P.climb)) {   /* (claude/ults) the SHIELD CHARGE is UP+C now (the ultimate input above); in the air it only says why */
       if (!PROG.lcFooting) { PROG.lcFooting = 1; saveProgress(); hintSay('mechanic', 4.5, 'THE SHIELD CHARGE NEEDS FOOTING: UP+C ON THE GROUND OR IN THE WATER. THE CHAIN IS KEPT.'); }   /* said once a save; the bar is not spent */
     }
@@ -29762,7 +29767,7 @@ RGK = makeRanger({ boltHome: s => sendBoltHome(s, 'snatch'), get P() { return P;
   gadgetNear: (p, reach) => gadgetInKnifeReach(p, reach),   /* (claude/smallfix12) */   /* (claude/riposte: her BOW-BASH on the beat is the shared parry) */
   poiseLean: (e, n) => { const m = poiseMax(e); if (!m || !e.alive || e.broken > 0 || e.poiseCd > 0) return; e.poise = Math.min(m, (e.poise || 0) + n); e.poiseT = 2.5; if (e.poise >= m) addPoise(e, 1, P.x, false); } });
 HPK = makeHeroPass({ get P() { return P; }, get enemies() { return enemies; }, get parts() { return parts; }, get time() { return time; }, get boss() { return boss; }, TS, SFX, CM,
-  hero: () => hero(), tal: k => tal(k), spend: c => spend(c), tired: () => { P.stFlash = 0.35; }, stDelay: () => ST.delay, blocked: () => { blocks++; },
+  hero: () => hero(), tal: k => tal(k), spend: c => spend(c), tired: () => { P.stFlash = 0.35; }, guardedFoe: e => guardedFoe(e), stDelay: () => ST.delay, blocked: () => { blocks++; },
   gainResolve: n => gainResolve(n), lcOn: () => lcOn(), blowLow: q => blowLow(q || updFoe, time), windingUp: e => windingUp(e), flinch: e => flinch(e),
   guardBreak: () => { P.st = 0; P.stFlash = 0.5; P.block = false; P.rush = 0; SFX.guardBreak(); SFX.gasp(); shakeCam(5, -P.face * 4); hitstop(0.1); P.hurt = CM.STAM.breakStagger; P.guardTired = CM.STAM.breakTired; CM.exhaust(P); number(P.x, P.y - 22, 'GUARD BREAK', '#ffd36b'); },
   isSolid: (x, y) => isSolid(x, y), knockSkip: e => KNOCK_SKIP.has(e.t), knockFoe: (e, d, p, o) => knockFoe(e, d, p, o), tipReach: e => tipReach(e), box: b => box(b), overlap: (a, b) => overlap(a, b),
@@ -36952,10 +36957,10 @@ function render() {
       // THE HEAVY BLOW, WINDING UP: a bar over his head that fills, and goes gold and wide when it is there
       if (hero() === 'knight' && knightWinding() && !P.dead) {   /* THE HEAVY CUT'S THREE STAGES: three pips over him, each lit in its own colour as it arrives */
         const bx = Math.round(P.x - cx) - 12, by = Math.round(P.y - cy) - 38, h = P.atkHeld || 0;
-        g.fillStyle = 'rgba(10,8,20,0.78)'; g.fillRect(bx - 1, by - 1, 26, 5);
-        for (let i = 0; i < 3; i++) { const a = i ? cutAt(i - 1) : HEAVY_START, b = cutAt(i), k = Math.max(0, Math.min(1, (h - a) / (b - a)));
-          g.fillStyle = 'rgba(160,170,190,0.35)'; g.fillRect(bx + i * 8, by, 7, 3); g.fillStyle = k >= 1 ? CUT_COL[i + 1] : 'rgba(200,205,220,0.8)'; g.fillRect(bx + i * 8, by, Math.round(7 * k), 3);
-          if (k >= 1) { g.fillStyle = 'rgba(255,255,255,0.5)'; g.fillRect(bx + i * 8, by, 7, 1); } } }
+        g.fillStyle = 'rgba(10,8,20,0.78)'; g.fillRect(bx - 1, by - 1, 26, 5);   /* (claude/knightkit) TWO pips: the chop (0.5 s, gold) and the FULL CHARGE (0.9 s, orange; it stays grey while the quake is on its cooldown) */
+        for (let i = 0; i < 2; i++) { const a = i ? cutAt(0) : HEAVY_START, b = cutAt(i), k = Math.max(0, Math.min(1, (h - a) / (b - a))), cd = i === 1 && time < (P.quakeReadyAt || 0);
+          g.fillStyle = 'rgba(160,170,190,0.35)'; g.fillRect(bx + i * 13, by, 12, 3); g.fillStyle = k >= 1 && !cd ? CUT_COL[i + 2] : 'rgba(200,205,220,0.8)'; g.fillRect(bx + i * 13, by, Math.round(12 * k), 3);
+          if (k >= 1 && !cd) { g.fillStyle = 'rgba(255,255,255,0.5)'; g.fillRect(bx + i * 13, by, 12, 1); } } }
       else if (isReaper() && (P.charge || 0) > 0 && !P.dead) drawBkMeter(cx, cy);
       else if (rgDrawing() && !P.dead) drawRgMeter(cx, cy);
       else if (bzWinding() && !P.dead) drawBzMeter(cx, cy);
