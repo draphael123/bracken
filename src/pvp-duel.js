@@ -128,7 +128,7 @@ export function botThink(me, foe, s, rnd, dt) {
   if (s.think <= 0) {   /* a decision a tenth of a second, held in between: hands, not a frame-perfect machine */
     s.think = 0.1 + rnd() * 0.06; s.held = {};
     if (dist > want + 8) s.held.move = dir;
-    else if (ranged && dist < want - 18) s.held.move = -dir;   /* the caster and the bow back off to their range */
+    else if (ranged && dist < want - 18 && dist > 30 && s.stuckT < 0.3) s.held.move = -dir;   /* the caster and the bow back off to their range - cornered or in his face, they fight where they stand (the bow knifes point-blank) */
     const foeSwing = foe.atk >= 0 || !!foe.plunge;
     if (foeSwing && dist < 44 && s.dodgeCd <= 0 && rnd() < 0.18) { press.dodge = true; s.dodgeCd = 1.2 + rnd(); }
     else if (foeSwing && dist < 40 && rnd() < 0.45) s.blockT = 0.25 + rnd() * 0.2;
@@ -153,6 +153,7 @@ export function rng(seed) { let a = (seed >>> 0) || 1; return () => { a |= 0; a 
           float(x, y, txt, col), callout(s), hint(s, t), sfx(k), colourOf(n) -> { c, name }, tagOf(p), heroName(h), heroes(), text, board, TS,
           damage(victim, fromX, probe, whoProxy) -> { r, landed }, norm(p) -> 0..1, p1Press() -> {..}, eatPress(), keysWrite(o), pressWrite(o),
           rankOf(p) -> { key, name } | null, ls() -> localStorage | null, leave(), enter(botHero), card hooks } */
+export const isBotSeat = p => !!p && (!!p.duelBot || !!(p.src && p.src.kind === 'duelbot'));
 export function makeDuel(api) {
   const st = { m: null, seats: [], prox: new Map(), hits: new Map(), norm: new Map(), bots: new Map(), card: null, ranks: false, result: null, rnd: rng(7), stats: { blows: 0, landed: 0, blocked: 0, self: 0, nobody: 0, kos: 0, breaks: 0, rounds: 0, matches: 0 }, banner: null, seed: 7 };
   const on = () => PVP_SHIPS && !!api.L() && !!api.L().duelPit && !!st.m;
@@ -163,7 +164,7 @@ export function makeDuel(api) {
 
   function proxyOf(p) {
     let e = st.prox.get(p);
-    if (!e) { e = { t: 'duelist', pvpSeat: p, x: p.x, y: p.y, w: DUEL.proxy.w, h: DUEL.proxy.h, hp: DUEL.hp, alive: false, harmless: false, face: p.face || 1, flash: 0, stagger: 0, anim: 0, vx: 0, vy: 0, mode: 'duel', noXp: true }; st.prox.set(p, e); }
+    if (!e) { e = { t: 'duelist', pvpSeat: p, x: p.x, y: p.y, w: DUEL.proxy.w, h: DUEL.proxy.h, hp: DUEL.hp, maxHp: DUEL.hp, alive: false, harmless: false,   /* maxHp: a BIG body to every kit (no throw, no wall-slam, no knock-into chain on a proxy: the hero is knocked back by damagePlayer) */  face: p.face || 1, flash: 0, stagger: 0, anim: 0, vx: 0, vy: 0, mode: 'duel', noXp: true }; st.prox.set(p, e); }
     return e;
   }
   /* the proxies stand where the seats stand; a seat's own is OFF in his own pass; all are off outside a fight */
@@ -195,7 +196,7 @@ export function makeDuel(api) {
     const hits = st.hits.get(victim) || []; st.hits.set(victim, hits);
     const g = juggleGrace(hits, api.time());
     victim.duelGrace = api.time() + g.inv;
-    victim.inv = Math.max(victim.inv || 0, g.inv); mirror(victim);   /* (the seat IS the body: no pass needed to write it) */
+    victim.inv = g.inv; mirror(victim);   /* PvP grace replaces the PvE mercy (damagePlayer set 0.8) */   /* (the seat IS the body: no pass needed to write it) */
     api.float(victim.x, victim.y - 30, api.tagOf(att) + ' -' + loss, col(att));   /* WHO HIT WHOM: the number in the hitter's colour, his tag on it */
     if (g.broke) { st.stats.breaks++; api.float(victim.x, victim.y - 42, 'BREAK', '#bfe6f5'); }
     if (victim.duelHp <= 0) ko(victim, att);
@@ -218,7 +219,7 @@ export function makeDuel(api) {
   function begin(o = {}) {
     if (!PVP_SHIPS || !api.L() || !api.L().duelPit) return false;
     st.seed = o.seed ?? ((Date.now() & 0xffff) || 7); st.rnd = rng(st.seed);
-    for (const p of api.players().slice()) if (p.duelBot) api.seatDrop(p);
+    for (const p of api.players().slice()) if (isBotSeat(p) && p !== api.players()[0]) api.seatDrop(p);
     if (o.bots === 'all') for (const p of api.players()) { p.duelBot = true; st.bots.set(p, freshBot()); }
     const want = Math.max(DUEL.seats.min, Math.min(DUEL.seats.max, o.seats || 0));
     const botHeroes = o.botHeroes || [o.botHero || 'knight'];
@@ -231,7 +232,7 @@ export function makeDuel(api) {
     placeAll(); sync(null); api.sfx('bell');
     return true;
   }
-  function end() { clearProxies(); for (const p of api.players().slice()) if (p.duelBot) api.seatDrop(p); for (const p of api.players()) { p.duelBot = false; p.duelHp = 0; } st.bots.clear(); st.m = null; st.seats = []; }
+  function end() { clearProxies(); for (const p of api.players().slice()) if (isBotSeat(p) && p !== api.players()[0]) api.seatDrop(p); for (const p of api.players()) { p.duelBot = false; p.duelHp = 0; } st.bots.clear(); st.m = null; st.seats = []; }
 
   /* ===== hands: once a frame per seat, in his own pass, BEFORE the buffers read the presses ===== */
   function hands(p) {
@@ -255,6 +256,8 @@ export function makeDuel(api) {
 
   /* ===== once a frame, after the passes (never inside one: a load, a rematch's new seats or a leave would change the party under the loop) ===== */
   function post(dt) {
+    if (st.m && !(api.L() && api.L().duelPit)) end();   /* left the pit some other way (the title, a load): the bots go, the proxies go */
+    else if (!st.m) for (const p of api.players().slice(1)) if (isBotSeat(p)) api.seatDrop(p);   /* a duel bot never follows the party out */
     const w = st.want; st.want = null;
     if (w && w.k === 'enter' && PVP_SHIPS) { api.enter(w.bot); return; }
     if (w && w.k === 'leave' && on()) { api.leave(); return; }
@@ -279,10 +282,11 @@ export function makeDuel(api) {
   function banner(txt, c, t) { st.banner = { txt, c, t, at: api.time() }; }
   function finish() {
     const m = st.m; st.stats.matches++;
-    const rows = st.seats.map(p => { const id = idOf(p), rk = p.duelBot ? null : api.rankOf(p); return { p, id, won: m.winner === id, rounds: m.wins[id] || 0, pts: matchPoints(m, id), key: rk ? rk.key : null, name: rk ? rk.name : null, hero: p.hero }; });
+    const practice = st.seats.some(p => p.duelBot);   /* a duel with a bot in it is PRACTICE: unranked (no points farmed off the bot) */
+    const rows = st.seats.map(p => { const id = idOf(p), rk = practice ? null : api.rankOf(p); return { p, id, won: m.winner === id, rounds: m.wins[id] || 0, pts: matchPoints(m, id), key: rk ? rk.key : null, name: rk ? rk.name : null, hero: p.hero }; });
     const ls = api.ls(); let ranked = false;
     if (ls) { const R = recordMatch(loadRanks(ls), rows.map(r => ({ key: r.key, name: r.name, hero: r.hero, won: r.won, rounds: r.rounds, pts: r.pts }))); ranked = saveRanks(ls, R); }
-    st.result = { winner: m.winner, rows: rows.map(r => ({ n: r.id, tag: api.tagOf(r.p), hero: r.hero, won: r.won, rounds: r.rounds, pts: r.pts, ranked: !!r.key, name: r.name, dealt: r.p.duelDealt || 0 })), ranked };
+    st.result = { practice, winner: m.winner, rows: rows.map(r => ({ n: r.id, tag: api.tagOf(r.p), hero: r.hero, won: r.won, rounds: r.rounds, pts: r.pts, ranked: !!r.key, name: r.name, dealt: r.p.duelDealt || 0 })), ranked };
     const w = seatById(m.winner); banner(w ? label(w) + ' WINS THE DUEL' : 'A DRAWN DUEL', w ? col(w) : '#fff6e0', 999); api.sfx('win');
   }
 
@@ -352,8 +356,8 @@ export function makeDuel(api) {
       const w = 220, h = 62 + st.result.rows.length * 9 + 80, x = Math.round(VW / 2 - w / 2), y = Math.round(VH / 2 - h / 2) + 8;
       api.board(x, y, w, h);
       const W0 = seatById(st.result.winner); T(W0 ? label(W0) + ' WINS' : 'A DRAWN DUEL', x + w / 2, y + 5, W0 ? col(W0) : '#fff6e0', 'center', 8);
-      T('ROUNDS  DEALT  POINTS', x + w - 6, y + 17, '#9aa39a', 'right', 8);
-      st.result.rows.forEach((r, k) => { const p = seatById(r.n), yy = y + 27 + k * 9; T(r.tag + ' ' + api.heroName(r.hero) + (r.ranked ? '' : ' (UNRANKED)'), x + 6, yy, p ? col(p) : '#c2c9c2', 'left', 8); T(r.rounds + '   ' + r.dealt + '   +' + r.pts, x + w - 6, yy, '#fff6e0', 'right', 8); });
+      T(st.result.practice ? 'PRACTICE: UNRANKED' : '', x + 6, y + 17, '#9aa39a', 'left', 8); T('ROUNDS  DEALT  POINTS', x + w - 6, y + 17, '#9aa39a', 'right', 8);
+      st.result.rows.forEach((r, k) => { const p = seatById(r.n), yy = y + 27 + k * 9; T(r.tag + ' ' + api.heroName(r.hero) + (r.ranked || st.result.practice ? '' : ' (GUEST)'), x + 6, yy, p ? col(p) : '#c2c9c2', 'left', 8); T(r.rounds + '   ' + r.dealt + '   +' + r.pts, x + w - 6, yy, '#fff6e0', 'right', 8); });
       const ry = y + 31 + st.result.rows.length * 9; drawRanks(x + 6, ry, w - 12, 5);
       T('JUMP: REMATCH    E: BACK TO THE INN', x + w / 2, y + h - 10, '#a8e06e', 'center', 8);
     }
