@@ -32298,7 +32298,7 @@ function lookaheadOn() { return !SET.reduceMotion && SET.lookAhead !== false && 
 let trnForce = null, TRN = null, trnArrive = null;   /* trnForce: null = the default (ON), true = on, false = off (the tools' switch, like ?trans=0) */
 const trnOff = () => q.get('trans') === '0' || trnForce === false;   /* (claude/transwmart) the art is in: transitions are ON BY DEFAULT; ?trans=0 is the off switch (the TRANSITIONS setting governs the rest) */
 function trnEnv() {
-  return { g, VW, VH, time, n: players.length, reduce: !!SET.reduceMotion,
+  return { g, VW, VH, time, n: players.length, reduce: !!SET.reduceMotion, text: (str, x, y, col, al, sz) => text(str, x, y, col, al, sz),
     drawHero: (i, x, y, face, key, frame) => { const set = (i > 0 && players[i] && players[i].set) || K; drawSet(set, key, frame, x, y, face, false); },
     drawFerryman: (x, y, face, frame) => { if (SPR.ferryman) drawSet(SPR.ferryman, null, frame, x, y, face, false); } };
 }

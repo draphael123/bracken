@@ -23,6 +23,7 @@ const smooth = v => { v = clamp01(v); return v * v * (3 - 2 * v); };
 const memo = new Map(); const once = (k, fn) => { if (!memo.has(k)) memo.set(k, fn()); return memo.get(k); };
 const mk = (w, h, fn, line = true) => { const [c, g] = canvas(w, h); fn(g); return line ? outline(c, OUT) : c; };
 
+export { drawSealScene, drawEscapeScene } from './transitions-heart.js';   /* (claude/scenes) the Heart's two scenes */
 export function drawBars(g, VW, VH, bar) {
   if (bar <= 0.5) return; const b = Math.round(bar);
   g.fillStyle = '#05040a'; g.fillRect(0, 0, VW, b); g.fillRect(0, VH - b, VW, b);
