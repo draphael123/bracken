@@ -44,6 +44,10 @@ function addIslandPostsBase(L, id, T) {
   if (!POST_LEVELS.has(id) || !L || !L.grid) return L;
   const MAX = DROP[id] || MAX_DROP, W = L.W, H = L.H, g = L.grid, boards = new Set([T.ONEWAY, T.PLANK]);
   const have = new Set((L.routeSupports || []).map(p => p.x + ',' + p.y)); if (!L.routeSupports) L.routeSupports = [];
+  /* (claude/grubhook2) THE HOOK STACK's two shelves hang on iron chains from the roof (no posts through the attendants' rope under them; the chain keeps to the west end of each board, clear of the hero hook's rope) */
+  if (id === 'kitchengate' && L.arena && L.arena.plats) for (const [a, b, y] of L.arena.plats) for (const x of [a, b]) { if (x === b && y < L.arena.plats[0][2]) { have.add(x + ',' + y); continue; } L.routeSupports.push({ x, y, bottom: y + 2, top: Math.floor(L.arena.y0 / 16), kind: 'kgchain' }); have.add(x + ',' + y); }
+  /* the hero hook's rope starts hung from the roof on its own chain (an anchor, not a rope in the air) */
+  { const rb = (L.zipLines || []).find(z => z.id === 'kg-arena-b'); if (rb) { const row = Math.floor(rb.y0 / 16) + 1; L.routeSupports.push({ x: Math.floor(rb.x0 / 16), y: row, bottom: row + 2, top: Math.floor(L.arena.y0 / 16), kind: 'kgchain', xPx: rb.x0, yPx: rb.y0 - 2, anchor: true }); } }
   for (const s of islandsOf(L, T)) {
     const boardsOnly = s.raw.every(k => boards.has(k)), cellSet = new Set(s.cells);
     for (const j of s.cells) { const x = j % W, y = (j / W) | 0;

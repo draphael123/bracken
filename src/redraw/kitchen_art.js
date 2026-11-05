@@ -510,6 +510,13 @@ export function drawMeatRail(g, z, cx, cy, clock, VW = 1e5) {
     const [tx, ty] = y1 < y0 ? [x1, y1] : [x0, y0], a = clock * 4; ellipse(g, R(tx), R(ty) - 7, 6, 6, OUT); ellipse(g, R(tx), R(ty) - 7, 5, 5, IRON[2]); ellipse(g, R(tx), R(ty) - 7, 2, 2, IRON[4]);
     for (let q = 0; q < 4; q++) line(g, R(tx), R(ty) - 7, R(tx + Math.cos(a + q * 1.57) * 5), R(ty - 7 + Math.sin(a + q * 1.57) * 5), IRON[5], 1); }
 }
+/* (claude/grubhook2) A HUNG SHELF's chain: a forged ring bolted to the roof, a run of black iron links, a hook-and-cleat clamped over the board's edge. p: { x, y (the board's row), top (the roof row) } in tiles */
+export function drawKgChain(g, p, cx, cy) {
+  const X = Math.round((p.xPx != null ? p.xPx : p.x * 16 + 7) - cx), y0 = Math.round(p.top * 16 - cy), y1 = Math.round((p.yPx != null ? p.yPx : p.y * 16) - cy);
+  rect(g, X - 3, y0, 7, 3, OUT); rect(g, X - 2, y0, 5, 2, IRON[3]); rect(g, X - 1, y0, 3, 1, IRON[5]); px(g, X - 3, y0 + 1, IRON[1]); px(g, X + 3, y0 + 1, IRON[1]);   /* the roof plate and its rivets */
+  for (let y = y0 + 3, i = 0; y < y1 - 5; y += 3, i++) { if (i & 1) { rect(g, X - 1, y, 3, 3, OUT); rect(g, X, y, 1, 3, IRON[4]); } else { rect(g, X - 2, y, 5, 3, OUT); rect(g, X - 1, y + 1, 3, 1, IRON[2]); px(g, X - 1, y, IRON[4]); } }   /* link, edge-on link */
+  rect(g, X - 3, y1 - 5, 7, 4, OUT); rect(g, X - 2, y1 - 5, 5, 2, IRON[3]); rect(g, X - 2, y1 - 3, 5, 1, IRON[1]); px(g, X - 1, y1 - 5, IRON[5]);   /* the shelf clamp */
+}
 export function drawProp(g, kind, x, y, time, seed) {
   if (kind === 'oven') {   /* a brick bread oven: domed, an iron door ajar on the fire, a peel and a flue */
     rect(g, x - 24, y - 4, 48, 4, OUT); rect(g, x - 23, y - 3, 46, 3, '#6a5a4c');
