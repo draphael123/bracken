@@ -5,7 +5,7 @@
 // THE LAW (brief-l50abilities sec 4): every blow is swordDmg x k (K.dmg), no flat damage; a boss takes the damage and an OPEN (e.disarmOpenT), never a free stagger, a
 // pin or an immunity; a foe takes at most `perFoe` hits from one use; one hit-stop per cast; FX dice are Math.random on particles only (game dice are untouched).
 export const GT = {
-  sling: { k: 1.3, vx: 250, vy: -170, g: 520, life: 1.4, cd: 3, cost: 20, pierce: 1, r: 5 },
+  sling: { k: 1.3, vx: 270, vy: -60, g: 300, life: 1.4, cd: 3, cost: 20, pierce: 1, r: 5 },   /* a low lob: ~140 px, grazing the ground foes' height the whole way */
   topple: { k: 0.9, len: 60, t: 0.42, hold: 1.0, band: 16 },
   step: { cells: 2, maxCells: 4, cd: 2, cost: 10, reach: 14, floorTol: 10 },
   well: { r: 45, t: 1.2, k: 0.6, cd: 14, pull: 70, slowC: 0.45, slowB: 0.8, band: 26, down: 0.9 },
@@ -34,7 +34,7 @@ export function makeGeoTech(api, K) {
     const p = P(), S = GT.sling; if (!T('gsling') || !p.ground || cdLeft('geoSlingAt') > 0) return false;
     if (!api.spend(S.cost)) { api.SFX.clank && api.SFX.clank(); api.number(p.x, p.y - 26, 'NO WIND FOR IT', '#9aa39a'); return false; }
     p.geoSlingAt = api.time + S.cd; api.kitPose && api.kitPose(p, 'gHeave', 0.3);
-    slings.push({ x: p.x + p.face * 10, y: p.y - 16, vx: p.face * S.vx, vy: S.vy, hit: new Set(), n: 0, life: S.life, spin: 0, dir: p.face, stopped: false });
+    slings.push({ x: p.x + p.face * 10, y: p.y - 12, vx: p.face * S.vx, vy: S.vy, hit: new Set(), n: 0, life: S.life, spin: 0, dir: p.face, stopped: false });
     api.dust(p.x + p.face * 10, p.y, 6); api.SFX.geoRise && api.SFX.geoRise(); api.shakeCam(1, p.face);   /* the grind on the lift */
     api.number(p.x, p.y - 34, 'SLINGSTONE', C.rune); return true;
   }

@@ -117,5 +117,15 @@ check('road to L50', () => withForks(() => {
   assert(r[5].capstone && r[5].options.length === 2 && r[5].options.every(o => !o.locked) && !r[0].fork); assert.deepEqual(PR.roadToL50(mk('warden'), 'warden', 50), []);
 }));
 check('knight today (no B yet) is unchanged', () => { for (const n of PR.FORK_LEVELS) assert(!PR.isFork('knight', n)); });
+/* ==== THE GEOMANCER'S KIT (claude/geopack): real data, three forks, the capstone pair, nine upgrades (effects + the fake-world plays: tools/geo-tech.mjs) ==== */
+check('geomancer kit: forks at 30 / 40 / 50 with differing roles, one trade line a pair, the capstone pair, nine upgrades', () => {
+  assert(PR.hasKit('geomancer')); assert.deepEqual(Object.keys(PR.TECHNIQUES.geomancer).map(Number), PR.TECH_LEVELS);
+  for (const n of PR.TECH_LEVELS) assert.equal(PR.isFork('geomancer', n), PR.FORK_LEVELS.includes(n), 'L' + n);
+  for (const n of PR.FORK_LEVELS) { const [a, b] = PR.techniquesAt('geomancer', n); assert.notEqual(a.role, b.role, 'L' + n + ' roles'); assert(a.trade && a.trade === b.trade, 'L' + n + ' trade'); assert.equal(PR.techniqueFor('geomancer', n).id, a.id); }
+  assert.deepEqual(PR.techniquesAt('geomancer', 50).map(t => t.id), ['gfault', 'ghost']); assert(PR.techniquesAt('geomancer', 50).every(t => t.capstone && t.cd >= 40));
+  assert.deepEqual(PR.techniquesAt('geomancer', 30).map(t => t.id), ['gtopple', 'gstep']); assert.deepEqual(PR.techniquesAt('geomancer', 40).map(t => t.id), ['gshatter', 'gcairn']);
+  assert.equal(PR.UPGRADES.geomancer.length, 9); const p = mk('geomancer'); for (const n of PR.TECH_LEVELS) { const o = PR.perkOffer(p, 'geomancer', n); assert(o[0].tech && o[0].rec); assert.equal(PR.pickMilestone(p, 'geomancer', n, o[0].id, 50), null); }
+  assert(PR.techOn(p, 'geomancer', 'gfault') && !PR.techOn(p, 'geomancer', 'ghost') && PR.forkLocked(p, 'geomancer', 'ghost'));
+});
 if (bad.length) { console.log('TECH-CARDS: ' + bad.length + ' problem(s)\n  - ' + bad.join('\n  - ')); process.exit(1); }
 console.log('Tech cards: a kit hero is dealt TECH (technique first, RECOMMENDED), UPGRADE and STAT cards L25-L50; a skipped technique is offered again; upgrades rank I then II; picks owed, respec, save validation and old-save migration hold; a hero with no kit keeps the old card.');
