@@ -79,6 +79,10 @@ try {
       { /* upgrades: IRON LINKS II holds the chain longer; SHIELD TIMING widens the window */
         __set([],{up:{ukeep:2,utime:2}});const p=P();p.links=2;p.linkKeep=0;p.linkT=0;BK.sim(60*5);o.ironLinks=p.links;
         o.win=+BKT.perfectWindow().toFixed(3); }
+      { /* (claude/kfork) LINK CUT: HOLD X with a link spends it and the guard-breaking heavy falls at ~0.25 s */
+        const [e]=__set([['shield',16]],{ms:{30:'klinkcut'}});const p=P();p.links=2;e.guardT=9;BK.keys.atk=true;let f=0,at=-1;while(f++<40){BK.sim(1);e.x=p.x+16;if(p.heavy&&at<0)at=f;}BK.keys.atk=false;o.linkCutAt=at;o.linkCutLinks=p.links;o.linkCutBroken=+(e.broken||0).toFixed(2); }
+      { /* (claude/kfork) THE BREAKING WHEEL: three links, UP+C, the shield goes down the room, breaks the guard it crosses and a boss is not freed */
+        const [a]=__set([['shield',90]],{ms:{50:'kwheel'}});const p=P();p.links=3;a.guardT=9;a.hp=a.hp0=a.maxHp0=5000;const h0=a.hp;__ultC();let f=0,bk=0;while(f++<100){BK.sim(1);bk=Math.max(bk,a.broken||0);}o.wheelHurt=h0-a.hp;o.wheelBroke=bk>0;o.wheelLinks=p.links;o.wheelNoCharge=!(p.lcBrace>0||p.lcLeft>0); }
     `);
     const k = R.tech;
     t(k.punishAt > 0 && k.punishAt < 24, 'PUNISH: the heavy falls at once on a broken foe (not at 0.5 s): ' + JSON.stringify(k));
@@ -86,6 +90,8 @@ try {
     t(k.rally === 3 && k.cd > 15, 'STANDING ORDERS: hold C, tap X rallies three cuts and starts the 18 s clock: ' + JSON.stringify(k));
     t(k.second, 'THE LONG CHARGE: the shield charge chains a second slam: ' + JSON.stringify(k));
     t(k.counter && k.stEnd >= k.stEndPlain + 8 && k.cbroken > 0, 'COUNTER-THRUST: the riposte cut pays the stamina back (against the same cut without it) and opens the guard: ' + JSON.stringify(k));
+    t(k.linkCutAt > 0 && k.linkCutAt < 28 && k.linkCutLinks === 1 && k.linkCutBroken > 0, 'LINK CUT (kfork): HOLD X with a link spends it, the heavy falls before 0.5 s and breaks the guard: ' + JSON.stringify(k));
+    t(k.wheelHurt > 0 && k.wheelBroke && k.wheelLinks === 0 && k.wheelNoCharge, 'THE BREAKING WHEEL (kfork): UP+C at three links hurls the shield (not the charge), hurts and breaks the guard it crosses, spends the links: ' + JSON.stringify(k));
     t(k.ironLinks === 2, 'IRON LINKS II: five idle seconds do not drop a link: ' + JSON.stringify(k));
   }
 } finally { pg.close(); }
