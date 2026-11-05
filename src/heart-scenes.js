@@ -36,12 +36,12 @@ export const sealEruptK = s => smooth((s - SEAL.eruptAt) / SEAL.eruptUp);
 /* the King's rise: 0 at the seal's floor .. 1 out of the top of the screen. Half-formed all the way (phase 1 sprite). */
 export function kingRiseK(s) { return smooth((s - SEAL.kingAt) / SEAL.kingRise); }
 export const kingPoseA = s => (s < SEAL.kingAt + 1.0 ? 'rise' : s < SEAL.kingAt + 2.2 ? 'laugh' : 'rise');
-/* where his FOOT is (screen y) given the floor line fy: starts under the floor, comes up into view (to ~fy-48), hangs there laughing (a slow bob), then climbs out the top of the frame */
+/* where his FOOT is (screen y) given the floor line fy: starts under the floor, comes up into view (to ~fy-36), hangs there laughing (a slow bob), then climbs out the top of the frame */
 export function kingYA(s, fy) {
   const t = clamp01((s - SEAL.kingAt) / SEAL.kingRise);
-  if (t < 0.38) return lerp(fy + 30, fy - 46, smooth(t / 0.38));
-  if (t < 0.66) return fy - 46 - Math.sin((t - 0.38) / 0.28 * Math.PI) * 4;
-  const k = (t - 0.66) / 0.34; return lerp(fy - 46, -70, k * k);
+  if (t < 0.38) return lerp(fy + 30, fy - 36, smooth(t / 0.38));
+  if (t < 0.66) return fy - 36 - Math.sin((t - 0.38) / 0.28 * Math.PI) * 4;
+  const k = (t - 0.66) / 0.34; return lerp(fy - 36, -70, k * k);
 }
 /* the drake: 'down' (lies on the split seal) -> 'rise' (lifts its head) -> 'walk' (up on its legs, neck lowered to you) -> 'takeoff' -> 'hover' */
 export function drakePoseA(s) {
