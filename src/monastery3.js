@@ -22,6 +22,7 @@
    dorter roof). A bell rope is a tbell with `rope: [x, y0, y1]` (src/main.js lays its NET when struck, and a struck one stays down).
    Every room's art is the old level's own kit (monkTower/monkScript/monkRefectory/... facades and interiors): the look is kept. */
 
+import { layAbbotChapel } from './abbot-chapel.js';   /* (claude/falseabbot) rows 0-31: the rooftop climb, the belfry and the Abbot's chapel */
 export function rebuildMonastery3(R, { T, TS }) {
   const W = R.W, H = R.H, g = R.grid, CUT = 58;
   const set = (x, y, v) => { if (x >= 0 && y >= 0 && x < W && y < H) g[y * W + x] = v; };
@@ -276,14 +277,19 @@ export function rebuildMonastery3(R, { T, TS }) {
   ent('tbell', 6, 55, { rope: [1, 57, 145] });
   ent('sign', 9, 55, { text: 'THE ROPE WELL\'S BELL. STRIKE IT AND ITS ROPE UNROLLS TO THE DORTER ROOF.' });
 
+  /* (claude/falseabbot, Daniel 11-02 15:55 #4 + #6) THE FALSE ABBOT USES THE BUILDING, and the way to him is a ROOFTOP CLIMB: rows 0-31 (src/abbot-chapel.js) */
+  const AB = layAbbotChapel({ T, TS, W, set, at, block, air, boards, rope, ent, deco, coins, ents, movers, facades, masonry, interiors, hangers, flags });
+  islands.push(...AB.island);
+
   /* ---- what the art pass reads (art before live): the new props carry their kinds; nothing below is a tile ---- */
   const tall = { top: CLOUD * TS, bottom: 218 * TS, col: '64,70,84', deepest: 0.26 };
   const out = Object.assign({}, R, {
     grid: g, ents, islands: islands.concat([[3, 58, 56, 118, "the crag under the chapel and the guardian's floor: only the rope well parts it from the map wall"], [82, 82, 116, 118, 'the shelf between the broken floor and the crevice, under the east tower'], [3, 3, 119, 139, 'the rope well wall, down the outside of the crag'], [19, 26, 119, 120, 'the hoist hub crag under the shelf'], [13, 94, 163, 165, 'the dorter floor, on the chimney breast and the cells'], [3, 12, 163, 184, 'the kitchen chimney breast: only the rope well parts it from the map wall']]), moversExtra: movers, facades, masonry, interiors, crumbles, darkZones, cloudLine: CLOUD, tall, mon3: true,
     monk: { flags, hangers, boards: (R.monk && R.monk.boards) || [], tables },
     kits: [[18, 94, 203, 217, { density: 0.3, kinds: ['herbBed', 'skep'] }]],
-    calm: (R.calm || []).concat([GARTH_CALM]),
+    calm: (R.calm || []).concat([GARTH_CALM, AB.calm]),
     START: { x: 4, y: 217 },
+    arena: AB.arena, belfry: null,   /* (claude/falseabbot) the new building's fight; the old belfry's backdrop (the Roc's) is not drawn over it */
   });
   return out;
 }
