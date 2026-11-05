@@ -114,9 +114,13 @@ const PAGE = `(async (hero, levelId) => {
       cellTp(tx, ty); k.up = true; k.jump = true; BK.press('jump'); let got = false; for (let f = 0; f < 50 && !got; f++) { BK.sim(1); got = P.zip === z; } k.up = false; k.jump = false;
       row('gantry: ' + what + ' cannot reach the line (a jump with UP held) before the cage drops', !got, 'caught the line from ' + what + ': ' + JSON.stringify(info(P))); } }
   return rows; })(`;
-const t0 = Date.now(); let bad = 0, total = 0;
+const t0 = Date.now(); let bad = 0, total = 0, first = true;
 const onlyLv = (process.argv.find(a => a.startsWith('--levels=')) || '').slice(9).split(',').filter(Boolean);
 for (const lvId of ['storm', 'rootway'].filter(l => !onlyLv.length || onlyLv.includes(l))) for (const h of (only.length ? only : HEROES)) {
+  /* (claude/smallfix15) A FRESH DOCUMENT PER HERO: one hero is ~35 BK.load() of Stormhold (rope x 5 scenes + this tool's own lines) and the Rootway ~12 more, each baking its canvases, and the old
+     single page ran all seven heroes x both levels (~300 loads) without a reload - the renderer's heap climbed until Chrome killed the tab (Inspector.targetCrashed, also seen once on kitchengate4-keys,
+     on master, and worst when the PC is short of RAM). Reloading (tools/cdp.mjs reload: new document, same seeded Math.random) hands the heap back between heroes; each hero is independent anyway (fresh() resets). */
+  if (!first) await pg.reload(); first = false;
   const rows = await pg.evalp(PAGE + JSON.stringify(h) + ',' + JSON.stringify(lvId) + ')', 600000);
   const fails = rows.filter(r => !r.ok), skipped = rows.filter(r => r.skipped).length;
   console.log((fails.length ? 'FAIL ' : ' ok  ') + lvId.padEnd(8) + h.padEnd(10) + (rows.length - skipped - fails.length) + '/' + (rows.length - skipped) + ' lines of play pass' + (skipped ? ' (' + skipped + ' not on this level)' : ''));
@@ -124,7 +128,7 @@ for (const lvId of ['storm', 'rootway'].filter(l => !onlyLv.length || onlyLv.inc
   bad += fails.length; total += rows.length - skipped;
   if (h === (only.length ? only : HEROES)[0]) for (const r of rows) console.log('      ' + (r.skipped ? '-' : r.ok ? '+' : 'x') + ' ' + r.name + (r.frames ? ' (' + r.frames + ' frames)' : ''));
 }
-console.log('errors', JSON.stringify(pg.errors.slice(0, 3)));
+console.log('errors', JSON.stringify(pg.errors.slice(0, 3)), pg.dead ? ' PAGE DEAD: ' + pg.dead + (pg.killedByGuard() ? ' (memguard killed it)' : '') : '');
 pg.close();
 assert.equal(pg.errors.length, 0, 'no page errors');
 assert.equal(bad, 0, bad + ' of ' + total + ' lines of real-key play failed');
