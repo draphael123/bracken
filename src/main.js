@@ -34005,7 +34005,7 @@ function drawWorld(cx, cy, showPlayer) {
   if (WCH && WCH.on() && SET.parallax !== 'off') WCH.drawFar(g, cx, cy, VW, VH, time);   /* (claude/warcairnart) HIGHCROWN far below and THE GREAT CAIRN ahead on the skyline */
   if (MRH && MRH.on() && SET.parallax !== 'off') MRH.drawFar(g, cx, cy, VW, VH, time);   /* GALE MOOR: the goblins' windmill frame on the horizon */
   if (L.oreRoad && SET.parallax !== 'off') drawOreBackdrop(g, VW, VH, cx, time, cy);   /* THE ORE ROAD: her castle on its peak, and the far pylons marching to it */   /* THE WITCHLIGHT STAIR: its tower stands in front of the far hills, behind the near ones */
-  if (BG.nearTrees && !L.arenaYard && !L.colosseum && !L.rootway && !L.lumberKit && !L.fenroad && !L.hornetsNest && !L.pwood && !L.rookery && !(L.ul3 && SET.parallax !== 'off') && !(L.sporewood2 && SET.parallax !== 'off')) { g.globalAlpha = 0.85; drawLayer(BG.nearTrees, 0.45, VH - 300, cx, cy); g.globalAlpha = 1; }
+  if (BG.nearTrees && !L.drakeLab && !L.arenaYard && !L.colosseum && !L.rootway && !L.lumberKit && !L.fenroad && !L.hornetsNest && !L.pwood && !L.rookery && !(L.ul3 && SET.parallax !== 'off') && !(L.sporewood2 && SET.parallax !== 'off')) { g.globalAlpha = 0.85; drawLayer(BG.nearTrees, 0.45, VH - 300, cx, cy); g.globalAlpha = 1; }
   if (L.palette && L.palette.near === 'harbour') HB.drawHarbourLayer(g, 'near', BG.near, 0.55, VH - 265, cx, bgDY(cy), time, VW, VH);
   else if (L.hornetsNest) { if (SET.parallax !== 'off') HNB.drawNear(g, cx, cy, VW, VH, L, time, bgDY(cy)); }   /* (claude/hornetsnestart) pollen and boughs outside; wax motes, far hornets and the nest's close warm edge inside */
   else if (L.fenroad) { if (SET.parallax !== 'off') FNB.drawNear(g, cx, cy, VW, VH, L, time, bgDY(cy)); }

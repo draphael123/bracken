@@ -77,7 +77,7 @@ function coneStrip(seed, h, hot) { return once(BD, 'cone' + seed, () => { const 
     x += w - 24; i++; }
   return c; }); }
 function wallStrip() { return once(BD, 'wall', () => { const W = 256, H = 150, [c, g] = canvas(W, H);
-  rect(g, 0, 0, W, H, C.b1); for (let x = 0; x < W; x += 14) { const w = 10 + ((x * 7) % 5); rect(g, x, 0, w, H, (x / 14) & 1 ? '#2a2024' : '#32282c'); rect(g, x, 0, 1, H, C.b0); rect(g, x + w - 2, 0, 1, H, '#3e3236'); for (let y = 6 + (x % 9); y < H; y += 22) rect(g, x + 1, y, w - 3, 1, C.b0); }
+  rect(g, 0, 0, W, H, '#1e1a24'); for (let x = 0; x < W; x += 14) { const w = 10 + ((x * 7) % 5); rect(g, x, 0, w, H, (x / 14) & 1 ? '#25222c' : '#2e2a36'); rect(g, x, 0, 1, H, C.b0); rect(g, x + w - 2, 0, 1, H, '#403c4a'); for (let y = 6 + (x % 9); y < H; y += 22) rect(g, x + 1, y, w - 3, 1, C.b0); }
   for (let k = 0; k < 7; k++) { const x = (k * 41 + 13) % W, y = 20 + (k * 29) % (H - 40); line(g, x, y, x + 6, y + 9, C.red); line(g, x + 6, y + 9, x + 3, y + 18, C.fire); px(g, x + 6, y + 9, C.emH); }
   return c; }); }
 export function drawBackdrop(g, cx, cy, VW, VH, L, time, dY, full) {
