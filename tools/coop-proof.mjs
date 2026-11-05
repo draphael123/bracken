@@ -106,6 +106,9 @@ try {
     ok(!r.haveFoe || (r.foePing === 'foe' && r.foeHit > 0), 'the AI fights a pinged foe (nearest ' + r.foeNear + ' px, dealt ' + r.foeHit + ')');
     await E(`(async()=>{await __a();const q=BK.players().find(p=>p.ai);BK.god=true;BK.sim(60);q.aiS=Object.assign(q.aiS||{},{wait:true});q.leash=0;BK.draw1();return 1})()`);
     await shot('aicue');
+    /* (claude/coopvert2) the other two cues, live: NO WAY UP and STUCK over its head (read them in coopproof-aicue-noway.png / -stuck.png) */
+    await E(`(()=>{const q=BK.players().find(p=>p.ai);q.aiS=Object.assign(q.aiS||{},{wait:false,noWay:true,stuckT:0});q.leash=0;return 1})()`); await shot('aicue-noway');
+    await E(`(()=>{const q=BK.players().find(p=>p.ai);q.aiS=Object.assign(q.aiS||{},{wait:false,noWay:false,stuckT:2});q.leash=0;return 1})()`); await shot('aicue-stuck');
   }
 
   if (WANT.includes('vert')) {
