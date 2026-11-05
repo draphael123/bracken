@@ -48,6 +48,7 @@ import { hedgeOpen } from './hedge-warden.js';
 import { brOpen, bkOpen } from './unburied-foes.js';
 import { wardenOpen as graveOpen } from './grave-warden.js';
 import { rocEyrieOpen } from './roc-eyrie.js';   /* THE ROC on her EYRIE (claude/skyroad) */
+import { fdOpen, fdSoft } from './fire-drake.js';   /* THE FIRE DRAKE (claude/drakewire) */
 
 /* (claude/fallingtower2) THE UNDEAD ARCHMAGE IS ON chipBy 0: INVULNERABLE outside his openings and soft windows - Daniel's EXPLICIT B15 EXCEPTION
    (10-08, him only: every projectile of his can be struck back, and that is the answer). Every other boss keeps the resistance floor. */
@@ -114,6 +115,7 @@ export const OPEN_RULE = {
   bzchief: e => bzcOpen(e),                                                 // THE BERSERKER CHIEFTAIN (claude/warcairn): a beat in his frenzy - he LOSES THE BEAT; or his whiffed cross-chop's axes in the stone
   paladinboss: e => pbOpen(e),                                               // THE PALADIN (claude/litchurch): his light starved, he FALTERS on one knee - open
   bogtroll: e => btOpen(e),                                                  // THE BOG TROLL (claude/fenroad): STUCK in a rotten section he burst up through
+  firedrake: e => fdOpen(e) || fdSoft(e),                                  // THE FIRE DRAKE (claude/drakewire): JERKED by its chain (a lunge or a dive past the scorched ring), or PANTING after its breath (x1: a blow there is not greed)
   hornetqueen: e => hqOpen(e),                                               // THE HORNET QUEEN 2 (claude/hornetsnest): STUCK in comb/wood, STAGGERED off a shield, DAZED by smoke under her, PINNED under a pine or the last comb
   grubbag: e => e.mode === 'stun' || e.mode === 'hot' || e.mode === 'drop',                                        // (claude/kitchengate4: + KNOCKED OFF HIS FEET, the platter drop)  LORD GRUBBAG (claude/kitchengate): STUNNED by a bomb / TOO HOT from a chilli he gulped off the serving line (src/grubbag.js, claude/kitchengate2)
   shrieksisters: e => e.mode === 'open',                                    // THE SHRIEK SISTERS (claude/rookery): a sister STUNNED in the rubble (a dive into cracked rock) or knocked down - the anchor reads 'open' (src/shriek-sisters-hands.js)
@@ -147,6 +149,7 @@ export const OPEN_RULE = {
 export const NO_GREED = new Set(['pyromancer']);
 /* (claude/minecart) THE GREAT DRILL is on OWN_WARD: its number is its own (src/great-drill.js takeBlow: the cab ALWAYS takes a whole blow - B13/B14, Daniel 10-07 - x2 jammed, nothing while warded); greed is still counted */
 export const OWN_WARD = new Set(['grubbag', 'shrieksisters', 'batteringbeast', 'mother', 'hornetqueen', 'bogtroll', 'oldtusker', 'tombking', 'scarabmother', 'hourglassking', 'greatdrill', 'puppeteer', 'wickerqueen', 'lanterneater', 'duneworm', 'colossus', 'winchmaster']);   /* (claude/duneworm2) THE DUNE WORM's ward is his CROWN PLATES (src/dune-worm.js wormTake): nothing from the front, whole from behind or on his reared belly, double tangled - B11's guard by angle, not a chip to wait out (B13) */
+OWN_WARD.add('firedrake');   /* (claude/drakewire) THE FIRE DRAKE's number is its own (src/fire-drake.js takeBlow: scales x0.5, warded x0.4 - the B15 floor; never a twentieth) */
 /* NO OPENING IN CODE, OR NO BLADE EVER REACHES THE BODY: left at full damage (a boss-wave TODO), never made unbeatable */
 export const NO_OPENING = {
   /* (claude/sporewood2) mother: off this list - THE MOTHER CAP 2 has an opening (her knot) and her own number (OWN_WARD: 0.4 sealed, x2 open) */
