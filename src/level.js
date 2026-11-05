@@ -2731,7 +2731,7 @@ function undercrown() {
     ...(UC3 ? { uc3: true, firedamp: UC3_FIREDAMP } : {}),   /* (claude/undercrown3) THE HOLE BREATHES: src/firedamp.js chambers, wind doors, slab holes and dams */
     timber: true, slabs, reachSlabs: [{ slab: 'adit', hinge: 1 }, { slab: 'flood', flat: true }, { slab: 'stope', hinge: 1 }, { slab: 'drift', hinge: 1, optional: true }],   /* the slabs the way on needs, cut as the signs say (src/reachcore.js) */
     hasCryst: true, dark: 0.14, edgeLit: 'rgba(255,226,176,0.9)', underground: true, ucKit: true,   /* (claude/undercrown2art) its own tile kit, walls, slabs, posts and lights (src/redraw/undercrown_*.js) */
-    duskStart: -1, duskLen: 1, music: UC3 ? 'underkeep' : 'barrows', night: true, glowNight: true, nightA: 0.12,   /* (claude/uc3finish) UC3: 'Sinking Feeling' (Umplix, CC0, already credited): echoing harp and a slow low synth, the hush of a roof about to sweat gas; master keeps barrows */
+    duskStart: -1, duskLen: 1, music: UC3 ? 'cave' : 'barrows', night: true, glowNight: true, nightA: 0.12,   /* (claude/uc3finish) UC3: '8-Bit Cave Loop' (Wolfgang_, CC0, already credited, nothing else plays it): a mine's own theme, a low steady pulse for a roof about to sweat gas; master keeps barrows (underkeep was tried: THE DEEP-SPLIT keep plays it, level-quality calls that BORROWED) */
     tall: { top: 10 * TS, bottom: 168 * TS, col: '18,16,22', deepest: 0.12 },
     palette: { sky: 'crag', far: 'crag', mid: 'crag', near: 'crag', dress: 'none', ledges: 'staging', haze: 'rgba(30,26,34,0.2)', murkCol: '#3e3846', murkLit: '#7a5a34', farDim: 0.28, footLip: ['#f0be7c', 0.62],
       grass: '#5a4a3a', grassL: '#6e5c48', grassD: '#3a2e22', dirt: '#3a3028', dirtL: '#4a3e32', dirtD: '#241d18',
