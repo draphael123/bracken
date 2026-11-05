@@ -12142,6 +12142,7 @@ function queenDies(who) {
   if (bossSelectFight && bossSelectFight.row.kind === 'boss' && bossSelectFight.row.t === who?.t) bossSelectRecord();
   if (!bossJumpOn && !rushOn() && who?.t === L.arena?.boss) { PROG.bossDown = PROG.bossDown || {}; PROG.bossDown[curId()] = true; saveProgress(); }
   setView('normal'); bossWon = 2.2; bossActive = false; camLock = null; tongue = null; slowT = 1.0; fires = fires.filter(f => f.life < 900); music.play(L.music || 'theme');
+  if (L.arena && L.arena.house && L.arena.house.m3) abbotBars(false);   /* (claude/falseabbot) his chapel's ways open again */
   for (const e of enemies) if (e.alive && (((e.t === 'wasp' || e.t === 'hopper') && e.drone) || e.archCalled)) { e.alive = false; burst(e.x, e.y - 3, 8, COLS[e.t], 70, 0.5); spawnCorpse(e, 1); }   /* (and the Archmage's apprentice goes down with him) */
   setWall(L.arena.wallL, false); setWall(L.arena.wallR, false);
   if (DFM.mode() === 'normal' && !rushOn() && !bossJumpOn && curId() === CAMPAIGN_END) DFM.unlockMaster();   /* (claude/difficulty) MASTER UNLOCKS once any save beats the current final main-road boss on Normal (device-wide) */
@@ -20841,18 +20842,47 @@ function summonGraveZombies(e,n){let live=enemies.filter(q=>q.alive&&q.graveAdd)
 const abbotBell = () => props.find(pr => pr.t === 'tbell' && pr.abbot) || null;
 /* (claude/abbot2) THE BELFRY'S ROPES he swings on (tiles), and where he may come down: between the two thorn beds (4-12, 80-90) */
 const ABBOT_ROPES = [26, 42, 70], ABBOT_LAND = [14, 79];
-const abbotRopes = () => ABBOT_ROPES.map(t => t * TS + 8);
+const abbotRopes = () => { const H = L.arena && L.arena.house && L.arena.house.m3 ? abbotHouse() : null; return H ? H.ropes : ABBOT_ROPES.map(t => t * TS + 8); };   /* (claude/falseabbot: the storey's own ropes) */
 const abbotFlock = r => enemies.filter(q => q.alive && q.fromAbbot && Math.abs(q.x - (boss ? boss.x : 0)) < r);
 /* (claude/abbot3) THE HOUSE THAT BLESSES HIM, in pixels (src/false-abbot.js reads it as c.A.house): the level's arena.house is in tiles */
 let abbotHouseP = null, abbotHouseOf = null;
 function abbotHouse() {
   const h = L.arena && L.arena.house; if (!h) return null;
+  if (h.m3) return abbotStageHouse(h, boss && boss.t === 'abbot' ? (boss.stage || 1) : 1);   /* (claude/falseabbot) THE MONASTERY 3: the storey he fights in */
   if (abbotHouseOf === h && abbotHouseP) { if (abbotHouseP.bellX === undefined) { const b0 = abbotBell(); if (b0) abbotHouseP.bellX = b0.x; } return abbotHouseP; }
   const bell = abbotBell();
   abbotHouseOf = h; abbotHouseP = { deckY: h.deck * TS, spans: h.spans.map(([a, b]) => [a * TS, (b + 1) * TS]), bridges: h.bridges.map(b => ({ x0: b.x0 * TS, x1: (b.x1 + 1) * TS, bells: b.bells.map(x => x * TS), tiles: [b.x0, b.x1, h.deck] })),
     chairX: h.chair.x * TS, chairY: h.chair.row * TS, basketY0: h.basket.row * TS, pulleyY: h.pulleyRow * TS, basketX: h.basket.x * TS, wheels: h.wheels.map(w => ({ x: (w.pivot[0] + 1) * TS + 8, spotX: w.spot * TS, smokeX: w.smoke * TS })), bellX: bell ? bell.x : undefined };
   return abbotHouseP;
 }
+/* (claude/falseabbot, Daniel 11-02 15:55 #4) THE MONASTERY 3's HOUSE (src/abbot-chapel.js): two storeys, each a house in the shape src/false-abbot.js reads -
+   stage 1 the Abbot's chapel (floor 30), stage 2 the belfry over it (floor 19). Pixels here; the layout's tiles there. */
+let abbotStageP = null, abbotStageOf = null;
+function abbotStageHouse(h, n) {
+  if (abbotStageOf !== h) { abbotStageOf = h; abbotStageP = []; }
+  const last = n === h.stages.length;
+  if (abbotStageP[n]) { if (last && abbotStageP[n].bellX === undefined) { const b0 = abbotBell(); if (b0) abbotStageP[n].bellX = b0.x; } return abbotStageP[n]; }
+  const s = h.stages[n - 1], bell = last ? abbotBell() : null, C = h.collapse;
+  return (abbotStageP[n] = { m3: true, n, floor: s.floor * TS, deckY: s.deck * TS, roofY: s.roof * TS,
+    spans: s.spans.map(([a, b]) => [a * TS, (b + 1) * TS]), bridges: s.bridges.map(b => ({ x0: b.x0 * TS, x1: (b.x1 + 1) * TS, bells: b.bells.map(x => x * TS), tiles: [b.x0, b.x1, s.deck] })),
+    braziers: s.braziers.map(z => ({ x: z.smoke * TS, smokeX: z.smoke * TS, spotX: z.spot * TS })), ropes: s.ropes.map(t => t * TS + 8), landLo: s.land[0] * TS, landHi: s.land[1] * TS,
+    floorSpans: s.floorSpans.map(([a, b]) => [a * TS, (b + 1) * TS]), callAt: s.callAt.map(x => x), landX: (s.landX ?? (s.floorSpans[0][0] + s.floorSpans[0][1]) / 2) * TS,
+    climb: n === 2 && h.climb ? h.climb.map(([x, y]) => [x * TS + 8, y * TS]) : null,
+    hole: n === 1 && C ? { x0: C.hole[0] * TS, x1: (C.hole[1] + 1) * TS, top: C.hole[2] * TS } : null, bellX: bell ? bell.x : undefined });
+}
+/* THE FLOOR GOES (on) / laid again (off, every try): the belfry floor's cells over the nave, and the rubble steps they land as */
+function abbotCollapse(on) { const h = L.arena && L.arena.house, C = h && h.collapse; if (!C) return; const [x0, x1, row] = C.hole;
+  for (let x = x0; x <= x1; x++) { const k = row * LW + x, want = on ? T.AIR : T.SOLID; if (L.grid[k] !== want) { L.grid[k] = want; tileSpr[k] = null; } }
+  for (const [a, b, y] of C.rubble) for (let x = a; x <= b; x++) { const k = y * LW + x, want = on ? T.ONEWAY : T.AIR; if (L.grid[k] === T.AIR || L.grid[k] === T.ONEWAY) { L.grid[k] = want; tileSpr[k] = null; } }
+  resolveTiles(); L.abbotFallen = !!on;
+  if (on) { const mid = (x0 + x1 + 1) * TS / 2; shakeCam(8); rumble(300, 0.9); (SFX.crack || SFX.thud)(); SFX.heavy && SFX.heavy(); hitstop(0.1);
+    burst(mid, row * TS + 16, 30, ['#a49c8c', '#6a645a', '#d8d0c0'], 140, 0.9); for (const [a, b, y] of C.rubble) dust((a + b + 1) * TS / 2, y * TS, 10);
+    number(mid, row * TS + 40, 'THE FLOOR GOES: CLIMB AFTER HIM', '#e8a83a');
+    if (!(PROG.abbotFloorTold > 1)) { PROG.abbotFloorTold = (PROG.abbotFloorTold || 0) + 1; hintSay('mechanic', 4, 'THE BELFRY FLOOR HAS COME DOWN: CLIMB THE RUBBLE AND THE ROOD UP AFTER HIM.'); } } }
+/* the ways out of his chapel, shut while he fights (the belfry arch, the great bell's rope through its hole), open again before and after */
+function abbotBars(shut) { const h = L.arena && L.arena.house; if (!h || !h.bars) return;
+  for (const b of h.bars) for (let y = b.y0; y <= b.y1; y++) for (let x = b.x0; x <= b.x1; x++) { const k = y * LW + x, want = shut ? T.SOLID : T[b.open]; if (L.grid[k] !== want) { L.grid[k] = want; tileSpr[k] = null; } }
+  resolveTiles(); }
 const abbotBasket = () => movers.find(m => m.abbotBasket) || null;
 const abbotBasketK = () => { const m = abbotBasket(); return m ? Math.max(0, Math.min(1, (m.y - m.y0) / (m.y1 - m.y0))) : 0; };
 /* a bridge's tiles taken up (it drops) and laid again (hauled back) */
@@ -20873,6 +20903,9 @@ function abbotTrap(open) { const t = L.arena && L.arena.house && L.arena.house.t
   resolveTiles(); }
 /* THE HOUSE LAID FRESH (his spawn - every try): the bridges hung, his wheel and its boards taken away, the basket back up */
 function abbotHouseReset() { const h = L.arena && L.arena.house; if (!h) return;
+  if (h.m3) { abbotIntro = null; abbotCtxE = null; abbotStageOf = null; abbotUpTold = false;   /* (claude/falseabbot) every try: both storeys' bridges hung, the floor laid again, the ways in open */
+    for (const s of h.stages) for (const b of s.bridges) for (let x = b.x0; x <= b.x1; x++) { const k = s.deck * LW + x; if (L.grid[k] === T.AIR) { L.grid[k] = T.ONEWAY; tileSpr[k] = null; } }
+    abbotCollapse(false); abbotBars(false); return; }
   abbotIntro = null; abbotPulseT = abbotFlareT = abbotNudgeT = 0; abbotNudgePan = null; abbotNudged = false;
   abbotHouseP = null; abbotHouseOf = null; abbotCtxE = null; const H = abbotHouse(); if (!H) return;
   for (let i = 0; i < H.bridges.length; i++) { const [x0, x1, row] = H.bridges[i].tiles; for (let x = x0; x <= x1; x++) { const k = row * LW + x; if (L.grid[k] === T.AIR) { L.grid[k] = T.ONEWAY; tileSpr[k] = null; } } }
@@ -20889,7 +20922,7 @@ function abbotHouseReset() { const h = L.arena && L.arena.house; if (!h) return;
 /* THE BRIDGES' BELLS, struck from the floor under their towers; and his censer's SMOKE, which lifts you (phase three) */
 function abbotHouseStep(dt, hb) {
   const H = L.arena && L.arena.house ? abbotHouse() : null, b = boss && boss.t === 'abbot' && boss.alive && bossActive ? boss : null; if (!H) return;
-  const fl = L.arena.floor;
+  const fl = H.m3 ? H.floor : L.arena.floor;   /* (claude/falseabbot) the bells and the smoke are the storey's he fights in */
   /* (claude/abbotp2) P2's READ: while he sits in the chair the hint box names the action (the callout repeats at most every 4 s), the first two chairs of a save say it longer, and the windlass clicks as the basket is ridden down */
   const bk = abbotBasketK();
   if (abbotIntro) { abbotIntro.t += dt; P.inv = Math.max(P.inv || 0, 0.3); if (abbotIntro.t >= ABBOT_INTRO_T || (anyPress && abbotIntro.t > 0.35) || !b || b.phase !== 2) abbotIntro = null; }
@@ -20915,7 +20948,7 @@ function abbotHouseStep(dt, hb) {
     if (!(PROG.abbotBridgeTold > 1)) { PROG.abbotBridgeTold = (PROG.abbotBridgeTold || 0) + 1; hintSay('mechanic', 4, 'A BELL DROPS THE BRIDGE IT HOLDS. STRIKE IT WITH HIM ON THE BRIDGE.'); } });
   if (b && b.smoke && !P.dead && Math.abs(P.x - b.smoke.x) < ABBOT.smokeW && P.y <= fl + 2 && P.y > fl - ABBOT.smokeH) { P.vy = Math.min(P.vy, -ABBOT.smokeLift); P.ground = false; P.plunge = false; if (Math.random() < dt * 30) parts.push({ x: b.smoke.x + (Math.random() - 0.5) * 16, y: P.y, vx: 0, vy: -120, life: 0.4, max: 0.4, col: '#ece4d8', size: 1, grav: 0 }); }
 }
-let abbotChairHinted = false, abbotRideK = 0, abbotRideT = 0, abbotRideN = 0;
+let abbotChairHinted = false, abbotRideK = 0, abbotRideT = 0, abbotRideN = 0, abbotUpTold = false;
 /* (claude/abbotclear, Daniel 10-30: ~100 kills and still unclear what hurts him in phase two) THE FIGHT SHOWS THE ANSWER:
    - the INTRO BEAT: when he cuts his bridges the camera goes chair -> along the rope -> the basket (the rope drawn as one gold line), ~1.9 s, any press skips it; he holds his attacks and you cannot be hurt meanwhile
    - the basket is outlined in gold and pulses, a dotted ghost of the chair marks where it lands, a gauge shows the ride to the spill, a prompt shows when you are near
@@ -20937,7 +20970,8 @@ let abbotCtxE = null, abbotCtxC = null;
 function abbotCtx(e) { if (abbotCtxE === e && abbotCtxC) return abbotCtxC; abbotCtxE = e; return (abbotCtxC = abbotMakeCtx(e)); }
 function updateFalseAbbotBoss(e, dt) {
   const A = L.arena; if (!A) return;
-  if (!e.trapShut && A.house && A.house.trap) { e.trapShut = true; abbotTrap(false); }   /* the ringing floor's trapdoor is BARRED once he is up: a plunge or a crouch on it does not drop you into the well mid-fight */
+  if (!e.trapShut && A.house && A.house.trap) { e.trapShut = true; abbotTrap(false); }
+  if (!e.barred && A.house && A.house.m3) { e.barred = true; abbotBars(true); }   /* (claude/falseabbot) his chapel's ways out shut once he is up */   /* the ringing floor's trapdoor is BARRED once he is up: a plunge or a crouch on it does not drop you into the well mid-fight */
   if (abbotIntro) { e.H = abbotHouse(); e.basketM = abbotBasket(); return; }   /* (claude/abbotclear) the told camera beat: he holds his attacks while the camera shows the answer */
   stepFalseAbbot(e, dt, abbotCtx(e));
   e.x = Math.max(A.x0 + 16, Math.min(A.x1 - 16, e.x));
@@ -20946,6 +20980,30 @@ function updateFalseAbbotBoss(e, dt) {
 function abbotMakeCtx(e) {
   const A = L.arena;
   const bell = abbotBell();
+  if (A.house && A.house.m3) return abbotMakeCtx3(e, abbotMakeCtx0(e, A, bell));
+  return abbotMakeCtx0(e, A, bell);
+}
+/* (claude/falseabbot) THE MONASTERY 3's hands on top of the old ones: the floor, the house, the ropes and the landing are the storey he is in
+   (getters: the ctx is kept for the fight and he changes storey mid-fight); the congregation comes up out of the pews when he calls; the floor goes */
+function abbotMakeCtx3(e, c) {
+  const A = L.arena, h = A.house;
+  const Aw = { x0: A.x0, x1: A.x1, y0: A.y0 };
+  Object.defineProperties(Aw, { house: { get: () => abbotHouse(), enumerable: true }, floor: { get: () => abbotHouse().floor, enumerable: true },
+    ropes: { get: () => abbotHouse().ropes, enumerable: true }, landLo: { get: () => abbotHouse().landLo, enumerable: true }, landHi: { get: () => abbotHouse().landHi, enumerable: true } });
+  c.A = Aw;
+  c.stage = n => { const s = abbotStageHouse(h, n); return { floor: s.floor, landX: s.landX }; };
+  c.collapse = on => abbotCollapse(on);
+  c.collapseTell = () => { const H = abbotStageHouse(h, 1); if (H.hole) e.collapseMark = { x0: H.hole.x0, x1: H.hole.x1, y: H.floor, top: H.hole.top }; shakeCam(3); SFX.crack && SFX.crack(); };
+  c.kindle = z => { burst(z.smokeX, abbotHouse().floor - 10, 10, ['#ff9a3c', '#ffe08a'], 60, 0.5); };
+  c.nudgeUp = () => { if (!abbotUpTold) { abbotUpTold = true; hintSay('mechanic', 4, 'HE IS UP IN THE BELFRY: CLIMB THE FALLEN FLOOR - THE RUBBLE, THE ROOD, THE RUBBLE - AND STRIKE HIS BELLS THERE.'); } };
+  /* THE CONGREGATION CALL: they come up out of the pews (the chapel) or the stairs' heads (the belfry), his own - the bell dazes them with him */
+  c.summon = i => { const H = abbotHouse(), xs = H.callAt || [], tx = xs.length ? xs[((i || 0) + (e.callN || 0)) % xs.length] : Math.floor(e.x / TS), ty = Math.floor(H.floor / TS) - 1;
+    const n0 = enemies.length; spawnEnt({ t: Math.random() < 0.12 ? 'archer' : 'sprig', x: tx, y: ty, face: Math.sign(P.x - tx * TS) || 1 });
+    for (let k = n0; k < enemies.length; k++) { enemies[k].fromAbbot = true; enemies[k].seenP = true; }
+    burst(tx * TS + 8, H.floor - 8, 8, ['#6faa4a', '#e8a83a'], 50, 0.4); };
+  return c;
+}
+function abbotMakeCtx0(e, A, bell) {
   return { P, A: { x0: A.x0, x1: A.x1, floor: A.floor, y0: A.y0, ropes: abbotRopes(), landLo: ABBOT_LAND[0] * TS, landHi: ABBOT_LAND[1] * TS, house: abbotHouse() },
     bridge: (i, up) => abbotBridgeTiles(i, up), basketK: () => abbotBasketK(), phase3: () => abbotPhase3(),
     intro: q => abbotIntroStart(),
@@ -26952,7 +27010,9 @@ function drawBasket(m, cx, cy) {
   g.strokeStyle = '#c8b088'; g.lineWidth = 1; g.beginPath(); g.moveTo(hx + side * 9 + 0.5, hy); g.lineTo(x + 16.5, y - 10); g.lineTo(x + 2.5, y - 2); g.moveTo(x + 16.5, y - 10); g.lineTo(x + 30.5, y - 2); g.stroke();
   g.drawImage(M.basket, x - 1, y - 3);
 }
-function drawMonkBack(cx, cy) { if (L.arena && L.arena.boss === 'abbot' && L.arena.house) { const ab = boss && boss.t === 'abbot' ? boss : null; drawAbbotHouse(g, ab, abbotHouse(), cx, cy, time, L.arena.floor, abbotBasketK()); }   /* (claude/abbot3) THE HOUSE THAT BLESSES HIM */
+function drawMonkBack(cx, cy) { if (L.arena && L.arena.boss === 'abbot' && L.arena.house && L.arena.house.m3) { const ab = boss && boss.t === 'abbot' ? boss : null, h = L.arena.house;   /* (claude/falseabbot) both storeys: the one he is in with him, the other at rest */
+    for (let n = 1; n <= h.stages.length; n++) { const S = abbotStageHouse(h, n); drawAbbotHouse(g, ab && (ab.stage || 1) === n ? ab : null, S, cx, cy, time, S.floor, 0); } }
+  else if (L.arena && L.arena.boss === 'abbot' && L.arena.house) { const ab = boss && boss.t === 'abbot' ? boss : null; drawAbbotHouse(g, ab, abbotHouse(), cx, cy, time, L.arena.floor, abbotBasketK()); }   /* (claude/abbot3) THE HOUSE THAT BLESSES HIM */
   const M = L.monk;
   if (L.cloudLine !== undefined) { const above = Math.max(0, Math.min(1, (L.cloudLine * TS - (camY + VH / 2)) / (24 * TS)));
     if (above > 0) { g.globalAlpha = 0.1 * above; g.fillStyle = '#ffc890'; g.fillRect(0, 0, VW, VH); g.globalAlpha = 1; }   /* over the cloud the sun is on everything behind the stone */
@@ -35078,7 +35138,7 @@ function drawWorld(cx, cy, showPlayer) {
   for (const f of fish) { g.save(); g.translate(Math.round(f.x - cx), Math.round(f.y - cy)); g.rotate(Math.atan2(f.vy, f.vx) * 0.6); if (f.vx < 0) g.scale(-1, 1); g.drawImage(FISH, -3, -2); g.restore(); }
   if(L.sanctum&&L.carpetUp&&!L.sandWalk&&!mageRealm()&&!(L.arena&&L.arena.ascent))drawSanctumUnder(g,L.arena,cx,cy);   /* his hall is closed at the bottom: under the fire is stone, not the parapet and its lantern (round 2) */
   if (PUPH && PUPH.on()) PUPH.drawRig(cx, cy, time);   /* THE PUPPETEER's rig and strings (slack grey, taut gold), after the bodies they hold */
-  drawCarpetWorld(g,L,P,cx,cy,time);{const gh=enemies.find(q=>q.t==='greathound'&&q.alive);if(gh)GHD.drawHound(g,gh,cx,cy,time,L.mini&&L.mini.boss==='greathound'?L.mini.floor:gh.y);}drawSextonFx(cx,cy);drawMinerPicks(g,cx,cy);{const wm=boss&&boss.t==='winchmaster'&&boss.alive?boss:null;if(wm)drawWinchFx(g,wm,winchC(wm),cx,cy,time);}if(WRK&&WRK.on())WRK.draw(g,cx,cy,time);if(GMH&&GMH.on())GMH.drawFront(g,cx,cy,time);/* (claude/gorm2) KING GORM 2's told layer: the archers' arcs, the rock's arc, the fire, the cones, the logs, the quake */{const gw=enemies.find(q=>q.t==='gravewarden'&&q.alive);if(gw)drawGraveWarden(g,gw,cx,cy,time,(L.mini||L.arena).floor);}{const ab=boss&&boss.t==='abbot'&&boss.alive?boss:null;if(L.arena&&L.arena.boss==='abbot')drawAbbotRopes(g,abbotRopes(),L.arena.y0,L.arena.floor,cx,cy,time,ab);if(ab&&L.arena)drawFalseAbbot(g,ab,cx,cy,time,L.arena.floor);}if(L.witch&&(L.mini||L.arena))drawHedgeWarden(g,enemies.find(q=>q.t==='hedgewarden'),hedgeBraziers(),cx,cy,time,(L.mini||L.arena).floor);drawUndeadMage(g,boss?.t==='undeadmage'?boss:null,cx,cy,time);if(boss?.t==='undeadmage'){drawRealmFx(g,boss,cx,cy,time,P,(s,x,y,col,z)=>text(s,x,y,col,'center',z||6));drawTear(g,boss,cx,cy,time);drawMageActs(g,boss,cx,cy,time,(s,x,y,col,z)=>text(s,x,y,col,'center',z||6));}for(const q of enemies)if(q.t==='magechase'&&q.alive){drawUndeadMage(g,q,cx,cy,time);drawStairReel(g,q,cx,cy,time);}if(L.arena?.carpet&&boss?.t==='undeadmage'&&!mageRealm())drawStormWalls(g,L.arena,boss.squeeze||0,cx,cy,time,VW,VH);
+  drawCarpetWorld(g,L,P,cx,cy,time);{const gh=enemies.find(q=>q.t==='greathound'&&q.alive);if(gh)GHD.drawHound(g,gh,cx,cy,time,L.mini&&L.mini.boss==='greathound'?L.mini.floor:gh.y);}drawSextonFx(cx,cy);drawMinerPicks(g,cx,cy);{const wm=boss&&boss.t==='winchmaster'&&boss.alive?boss:null;if(wm)drawWinchFx(g,wm,winchC(wm),cx,cy,time);}if(WRK&&WRK.on())WRK.draw(g,cx,cy,time);if(GMH&&GMH.on())GMH.drawFront(g,cx,cy,time);/* (claude/gorm2) KING GORM 2's told layer: the archers' arcs, the rock's arc, the fire, the cones, the logs, the quake */{const gw=enemies.find(q=>q.t==='gravewarden'&&q.alive);if(gw)drawGraveWarden(g,gw,cx,cy,time,(L.mini||L.arena).floor);}{const ab=boss&&boss.t==='abbot'&&boss.alive?boss:null;const abH=L.arena&&L.arena.house&&L.arena.house.m3?abbotHouse():null;/* (claude/falseabbot) the storey he fights in */if(L.arena&&L.arena.boss==='abbot')drawAbbotRopes(g,abbotRopes(),abH?abH.roofY:L.arena.y0,abH?abH.floor:L.arena.floor,cx,cy,time,ab);if(ab&&L.arena)drawFalseAbbot(g,ab,cx,cy,time,abH?abH.floor:L.arena.floor);}if(L.witch&&(L.mini||L.arena))drawHedgeWarden(g,enemies.find(q=>q.t==='hedgewarden'),hedgeBraziers(),cx,cy,time,(L.mini||L.arena).floor);drawUndeadMage(g,boss?.t==='undeadmage'?boss:null,cx,cy,time);if(boss?.t==='undeadmage'){drawRealmFx(g,boss,cx,cy,time,P,(s,x,y,col,z)=>text(s,x,y,col,'center',z||6));drawTear(g,boss,cx,cy,time);drawMageActs(g,boss,cx,cy,time,(s,x,y,col,z)=>text(s,x,y,col,'center',z||6));}for(const q of enemies)if(q.t==='magechase'&&q.alive){drawUndeadMage(g,q,cx,cy,time);drawStairReel(g,q,cx,cy,time);}if(L.arena?.carpet&&boss?.t==='undeadmage'&&!mageRealm())drawStormWalls(g,L.arena,boss.squeeze||0,cx,cy,time,VW,VH);
   if (L.witch) drawRoots(g, L.hedgeRoots, L.witch, cx, cy, time);   /* THE ROOTS crawling, THE ROOTED GARDEN's braziers and its shivering hedges (hedge-warden.js) */
   if(L.witch&&L.arena&&L.arena.rune)drawRune(g,L.arena.rune,cx,cy,time);   /* (claude/bosswave2) THE RUNE COLUMN in his arena */
   if(L.witch){drawGargoyleWorld(g,boss&&boss.t==='gargoyle'?boss:null,cx,cy,time,P,text);drawSlabShards(g,L.shards,cx,cy);}   /* (claude/witchfix: the read's words, and the broken slabs' pieces falling) */
