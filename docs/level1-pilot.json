@@ -517,16 +517,17 @@
   "bare": true
  },
  "kitchengate": {
-  "hash": "69431e8dfcec",
+  "hash": "bcbe3ce05dd0",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 43,
-  "deaths": 2,
+  "hits": 46,
+  "deaths": 1,
   "kills": 34,
-  "lifts": 63,
+  "lifts": 61,
   "walked": 100,
-  "bare": true
+  "bare": true,
+  "seed": 1
  },
  "rookery": {
   "hash": "5d6586808301",
