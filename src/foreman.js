@@ -38,7 +38,7 @@ export const FOREMAN = {
   boomTell: 0.75, boomT: 0.32, boomDmg: 27, boomHead: 16,
   tipTell: 0.7, tipV: 150, tipN: 2, tipApart: 0.45, tipDmg: 18, tipR: 7, tipBack: 40,
   /* (foreman2, the audit's idea 1) the chain by what each move ASKS: pick = brake/pump off the mark, ram = brake out, boom = duck, tip/points = JUMP (the two jump THREATS), drift = the opening (jump ON him). Every stage: at most 2 jump threats (stage 2 had tip, tip, points: three), and a brake or a duck among them. */
-  chain: { 0: ['pick', 'drift', 'boom', 'pick', 'drift'], 1: ['ram', 'pick', 'drift', 'boom', 'points', 'ram', 'drift'], 2: ['ram', 'tip', 'drift', 'boom', 'pick', 'points', 'ram', 'drift'] },
+  chain: { 0: ['pick', 'drift', 'boom', 'pick', 'drift'], 1: ['ram', 'pick', 'drift', 'boom', 'points', 'ram', 'drift'], 2: ['ram', 'tip', 'drift', 'boom', 'pick', 'points', 'pick', 'drift'] },
   bracedPoke: 0.5,   /* (foreman2) a blade from your cart while he is braced: x0.5 (a small safe poke in the stance - still >= the 0.4 floor; he is never invulnerable) */
 };
 export const FOREMAN_LINES = { points: '!! THE POINTS: JUMP THE GAP', pointsAgain: '!! THE POINTS', boom: '!! THE BOOM: DUCK', boomAgain: '!! THE BOOM', tip: '!! HE TIPS ORE: JUMP', tipAgain: '!! ORE', slows: 'HE SLOWS: JUMP ON HIM', slowsAgain: 'HE SLOWS', ram: '!! HE BRAKES HARD: RAM', stomp: 'STOMPED! STRIKE HIM', lurch: '!! HE LURCHES', braced: 'BRACED: HIS SPIKES ARE UP', spikesUp: '!! SPIKES UP: DO NOT LAND', spikesWait: 'SPIKES UP: WAIT', spikesDown: 'SPIKES DOWN: JUMP ON HIM', spiked: 'SPIKED! THROWN BACK',
