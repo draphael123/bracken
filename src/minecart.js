@@ -311,7 +311,7 @@ export function buildMinecart({ painter, T, TS }) {
   sign(639, B - 1, 'THE WRECK. ON FOOT THROUGH THE YARD: A CART WAITS AT ITS END. JUMP INTO IT.');
   block(645, 662, B - 2, B - 1);             /* THE LOADING DECK: two up (a fight on footing - a big platform) */
   foe('sapper', 651, B - 3, { squad: 'wkSapper' }); foe('brute', 661, B - 3, { squad: 'wkBrute' }); foe('sapper', 669, B - 1, { squad: 'wkSapper2' });   /* (the brute holds the deck's far edge: the fight is up on the platform) */
-  block(655, 660, B - 7, B - 7); foe('archer', 658, B - 8, { squad: 'wkArcher' });   /* an archer on the yard's gantry over the deck */
+  block(655, 660, B - 7, B - 7); decor.push({ kind: 'ledge', x0: 655, x1: 660, row: B - 7 }); foe('archer', 658, B - 8, { squad: 'wkArcher' });   /* an archer on the yard's gantry over the deck */
   ent('coin', 648, B - 3); ent('coin', 650, B - 3); ore(661, B - 5);
   tell(648, 674, 'A CART: JUMP INTO IT');                                 /* (deeprails5 #4, TAUGHT ONCE HERE - a sign, this tell, the glint: src/stuck-spots.js mc-board-wreck) */
   sign(670, B - 1, 'THE CART IS PARKED. JUMP INTO IT: THE GATE OPENS WHEN YOU ARE IN.');
@@ -330,7 +330,7 @@ export function buildMinecart({ painter, T, TS }) {
   tell(712, 736, 'DEEP GAP, THEN DUCK, SWITCH');
   ground(716, 735, B);
   boostGap(736, B); exams.push([731, 745]);
-  block(737, 742, B - 7, B - 7); foe('tippler', 740, B - 8, { squad: 'wTip' });
+  block(737, 742, B - 7, B - 7); decor.push({ kind: 'ledge', x0: 737, x1: 742, row: B - 7 }); foe('tippler', 740, B - 8, { squad: 'wTip' });
   foe('bat', 739, B - 4, { squad: 'wGapBat' });
   /* DUCK + SWITCH, REMIXED (deeprails3): off the deep gap, under the works' low roof - a beam, the switch, its bridge (a cheap fall: the exam is the gap) */
   ground(744, 756, B);
