@@ -2170,7 +2170,12 @@ function allyRouteGoal(p, S) {
   const row = r[0][1]; let k = 1; while (k < r.length && r[k][1] === row) k++;
   if (k >= r.length) return null;   /* flat to him: the plain x goal */
   const lip = r[k - 1], land = r[k], lx = lip[0] * TS + 8;
+  /* (claude/coopvert) COMMITTED: once at the lip it walks to the landing and stays committed for 1.5 s - it used to flip between 'the lip' and 'the landing' as it crossed the 10 px
+     line and jiggle on a one-tile ledge (Sky Road) without ever leaving it. The walker itself makes the jump across a gap; a climb needs the hop at the lip. */
+  const cm = S.commit;
+  if (cm && p.aiT < cm.until && cm.lip === lip[0] + "," + lip[1]) { if (land[1] < lip[1] && p.ground && p.aiT % 14 === 0) apress('jump'); return land[0] * TS + 8; }
   if (Math.abs(p.x - lx) <= 10 && p.ground) {   /* at the lip: up needs the hop, down is a step */
+    S.commit = { until: p.aiT + 90, lip: lip[0] + "," + lip[1] };
     if (land[1] < lip[1] && p.aiT % 14 === 0) apress('jump');
     return land[0] * TS + 8; }
   return lx;
