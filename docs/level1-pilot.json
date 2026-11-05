@@ -192,16 +192,17 @@
   "bare": true
  },
  "underleaf": {
-  "hash": "090c845c0531",
+  "hash": "3aece68e2c9d",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
   "hits": 21,
-  "deaths": 1,
-  "kills": 31,
-  "lifts": 90,
+  "deaths": 0,
+  "kills": 42,
+  "lifts": 88,
   "walked": 100,
-  "bare": true
+  "bare": true,
+  "seed": 1
  },
  "scree": {
   "hash": "1e7b6c7c6795",
@@ -372,16 +373,17 @@
   "bare": true
  },
  "stockade": {
-  "hash": "c856eba07270",
+  "hash": "66a5ca67af78",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
   "hits": 27,
   "deaths": 1,
-  "kills": 13,
-  "lifts": 131,
+  "kills": 14,
+  "lifts": 135,
   "walked": 100,
-  "bare": true
+  "bare": true,
+  "seed": 1
  },
  "spore": {
   "hash": "a75db34c3cbd",
@@ -468,28 +470,30 @@
   "bare": true
  },
  "fenroad": {
-  "hash": "fa0d4facf968",
+  "hash": "068b8d7d2402",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 32,
-  "deaths": 4,
-  "kills": 33,
-  "lifts": 84,
+  "hits": 34,
+  "deaths": 3,
+  "kills": 36,
+  "lifts": 80,
   "walked": 100,
-  "bare": true
+  "bare": true,
+  "seed": 1
  },
  "kings": {
-  "hash": "4fa2c72f5952",
+  "hash": "ad935bfc138d",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 27,
+  "hits": 22,
   "deaths": 3,
-  "kills": 37,
-  "lifts": 84,
+  "kills": 40,
+  "lifts": 81,
   "walked": 100,
-  "bare": true
+  "bare": true,
+  "seed": 1
  },
  "hornetsnest": {
   "hash": "478fd2889454",
@@ -505,26 +509,27 @@
   "seed": 1
  },
  "palisadewood": {
-  "hash": "8c1d63865e73",
+  "hash": "3b3f12cba4f1",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 13,
+  "hits": 21,
   "deaths": 0,
-  "kills": 84,
-  "lifts": 87,
+  "kills": 85,
+  "lifts": 81,
   "walked": 100,
-  "bare": true
+  "bare": true,
+  "seed": 1
  },
  "kitchengate": {
-  "hash": "bcbe3ce05dd0",
+  "hash": "d31d263b68be",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 46,
-  "deaths": 1,
-  "kills": 34,
-  "lifts": 61,
+  "hits": 40,
+  "deaths": 3,
+  "kills": 37,
+  "lifts": 59,
   "walked": 100,
   "bare": true,
   "seed": 1
