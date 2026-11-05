@@ -171,7 +171,8 @@ export function highcrownTwo(R, { T, TS }) {
 
   // ============ HER HALL (B15 retune, brief item 3): two of her six chandeliers go (fewer openings; a cut one is spent for the round - src/main.js gqChandsHang), the sign says what her plate does now
   R.ents = R.ents.filter(e => !(e.t === 'weight' && e.gq && (e.x === 565 || e.x === 596)));
-  for (const e of R.ents) if (e.t === 'sign' && /HER PLATE TURNS BLADES/.test(e.text || '')) e.text = 'HER PLATE TURNS MOST OF A BLADE. BREAK THE PILLAR SHE STANDS BY: IT FALLS ON HER.';
+  R.ents = R.ents.filter(e => e.t !== 'qpillar' && e.t !== 'rod');   /* (claude/gqueen3) belt and braces: no pillar, no roof rod */
+  for (const e of R.ents) if (e.t === 'weight' && e.gq) e.scenery = true;   /* her chandeliers are scenery now: nothing cuts one down, nothing is pinned by one */
 
   // ============ THE SHRINES (A10c: the end of each area's exam, and one before her door) ============
   for (const [x, y] of HC2.SHRINES) ent('check', x, y);
@@ -205,6 +206,34 @@ export function highcrownTwo(R, { T, TS }) {
     let b = y + 1; while (b < H && at(x, b) !== T.SOLID && at(x, b) !== T.ONEWAY) b++;
     if (at(x - 1, y) === T.SOLID || at(x1 + 1, y) === T.SOLID) { for (let c = x; c <= x1; c += (x1 - x > 8 ? 6 : 4)) R.hcDeco.push({ k: 'corbel', x: c, y: y + 7 / 16, n: 1 }); if (x1 - x > 2) R.hcDeco.push({ k: 'corbel', x: x1, y: y + 7 / 16, n: 1 }); }
     else if (b - y <= 14) { for (const c of x1 > x ? [x, x1] : [x]) (R.routeSupports || (R.routeSupports = [])).push({ x: c, y, bottom: b, kind: 'hcpier' }); }
+  }
+  /* ============ GOBLIN QUEEN 3 (claude/gqueen3, scratch/plan-goblinqueen3-1104.md): THE ESCAPE UP THE BURNING HALL, AND THE TOWER TOP ============
+     Her hall is cols 559-602 (rows 10-19 air, the hall's roof rows 8-9, the roof walk rows 0-7 over it with three chimney stacks 565-569 / 579-583 / 593-597 and a step plank either side).
+     The escape is LAID AT RUNTIME (main.js gqEscapeLay, at the flee): five burning rafters, the hole through the roof, a stretch of slates; this table is its layout (tiles: [x0, x1, row]).
+     Every tier is one tile thick (a one-way), no more than three rows above what the hero stands on, and no gap wider than two tiles. */
+  { const A = R.arena;
+    R.gqEscape = {
+      tiers: [{ x0: 561, x1: 569, row: 17, name: 'T1' }, { x0: 572, x1: 582, row: 15, name: 'T2' }, { x0: 585, x1: 595, row: 13, name: 'T3' }, { x0: 576, x1: 584, row: 11, name: 'T4', collapse: true }, { x0: 566, x1: 575, row: 11, name: 'T5' }, { x0: 572, x1: 575, row: 9, name: 'T6' }],   // T6 is the step inside the hole (the old rubble's last stone): T5 -> T6 -> the roof, two short hops
+      start: { x: 565, y: 16 },                      // the escapeStart checkpoint: on T1, laid at the flee
+      check: { x: 601, y: 7 }, portal: { x: 602, y: 7 },   // the roof's shrine, and HER PORTAL beside it on the last stretch of the roof walk (the stacks stand at 593-597)
+      hallPortals: [{ x: A.x0 / TS + 4, y: 13 }, { x: A.x1 / TS - 4, y: 15 }],   // the two that stay open and fan shards while you are in the hall
+      slates: { x0: 587, x1: 591, row: 8 },          // the roof tiles over the hall that go, told, under a foot (one row: the second stays)
+      throwers: [{ t: 'javelin', x: 581, y: 3 }, { t: 'javelin', x: 595, y: 3 }],   // on the stacks' tops
+      route: [[565, 16], [577, 14], [590, 12], [580, 10], [570, 10], [574, 7], [577, 5], [581, 3], [585, 5], [588, 7], [591, 5], [595, 3], [599, 5], [601, 7]],
+      supports: [],
+    };
+    R.gqEscape.tiers.forEach((t, i) => { for (const x of [t.x0 + 1, t.x1 - 1]) R.gqEscape.supports.push({ tier: i, x, y: t.row, bottom: t.row + 2, top: 10, kind: 'chain' }); });
+    ent('sign', 599, 5, { text: 'THE FIRE HAS TAKEN HER HALL. UP, OUT THROUGH THE ROOF, AND STEP INTO HER PORTAL.' });
+    /* THE TOWER TOP: a sealed rooftop island east of the hall, reached only by her portal (cols 609-664 are new, all stone; the deck is carved out of it) */
+    const W0 = R.W, W2 = W0 + 56, g2 = new Uint8Array(W2 * R.H).fill(T.SOLID);
+    for (let y = 0; y < R.H; y++) g2.set(R.grid.subarray(y * W0, y * W0 + W0), y * W2);
+    R.grid = g2; R.W = W2;
+    const S2 = (x, y, v) => { g2[y * W2 + x] = v; };
+    for (let y = 1; y <= 19; y++) for (let x = 612; x <= 660; x++) S2(x, y, T.AIR);   // the deck: nineteen rows of sky over a floor at row 20, a ceiling of stone so nothing leaves it
+    for (const x of [612, 660]) for (let y = 17; y <= 19; y++) S2(x, y, T.SOLID);   // the battlements at both ends
+    for (const x of [636, 637]) for (let y = 17; y <= 19; y++) S2(x, y, T.SOLID);   // ONE chimney stack in the middle: for vertical play, never a pillar, never an opening
+    ent('deco', 624, 19, { kind: 'banner', v: 1 }); ent('deco', 648, 19, { kind: 'banner', v: 0 }); ent('torch', 618, 19); ent('torch', 654, 19);
+    R.arenaRoof = { x0: 612 * TS, x1: 660 * TS, floor: 20 * TS, wallL: 611, wallR: 661, boss: 'gqueen', music: 'gqjudge', tint: '#7a2a1a', tintA: 0.1, fx: 'dust', noWall: true, exit: { x: 614, y: 19 }, hatches: [616, 656], stack: [636, 637], poles: [624, 648] };
   }
   return R;
 }

@@ -3186,9 +3186,9 @@ function highcrown() {
      load-bearing drums of stone, floor to ceiling, between her chandeliers and clear of her windows (final columns 899, 904, 911). She lands beside
      one to hold court: break it then, three blows, and it comes down on her - pinned, as the chandelier pins her (main.js gqPin) - and a heap of
      rubble to stand on. They stand again for her third round. */
-  for (const x of [217, 222, 229]) ent('qpillar', x, 19, { top: 10 });
+  /* (claude/gqueen3) the pillars are gone: her hall is an open floor under a bell and a grate */
   for (const x of [214, 220, 226, 232, 238, 245]) ent('weight', x, 10, { len: 6, lamp: true, hang: true, gq: true }); // her chandeliers: when she stands, she throws at them - and a jump and a swing cuts one down on HER
-  ent('sign', 209, 19, { text: 'HER PLATE TURNS BLADES. BREAK THE PILLAR SHE HOLDS COURT BESIDE: IT COMES DOWN ON HER.' });
+  ent('sign', 209, 19, { text: 'HER PLATE TURNS BLADES. PARRY HER CROWN OR A PORTAL SHARD AND SHE IS STUNNED.' });
   /* HER HALL'S BELL AND ITS GRATE (claude/bosswave2: the level's rule in her fight - EVERY HALL HAS A BELL, AND A GATE THAT DROPS WITH IT; the
      audit's "the Queen ignores it"). A grate hangs between her middle pillars on the bell's rope: strike the bell while she stands under it and the
      grate comes down on HER - pinned, as a pillar or a chandelier pins her (main.js gqPin). Rung while she is anywhere else, it only shuts the hall. */
@@ -3197,7 +3197,7 @@ function highcrown() {
   // the roof: three peaks with an iron rod on each, and a step up to each
   block(214, 218, 4, 7); block(228, 232, 4, 7); block(242, 246, 4, 7);
   plat(211, 6, 3); plat(219, 6, 3); plat(225, 6, 3); plat(233, 6, 3); plat(239, 6, 3); plat(247, 6, 3);
-  ent('rod', 216, 3); ent('rod', 230, 3); ent('rod', 244, 3);
+  /* (claude/gqueen3) the roof rods went with the roof phase: the old peaks are chimney stacks for the escape */
 
   // FOUR FLOORS, FOUR ROOMS. The whole keep was drawn with her throne room's wall, so you came up out of the
   // armoury into what looked like her hall and the Queen seemed to be standing right behind the smith. Each
