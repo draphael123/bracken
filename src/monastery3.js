@@ -131,6 +131,7 @@ export function rebuildMonastery3(R, { T, TS }) {
   // THE KITCHEN at the west end: the hearth, the stockpot, and the flue over it - and the first checkpoint
   deco(4, 199, 'hearth', 0); deco(10, 199, 'mugShelf', 0);
   ent('check', 3, 199);
+  ent('gobpriest', 11, 199, { face: -1, censer: true });   /* THE CENSER-SWINGER (15:55 #3): he tends the hearth brazier, and smothers it under whoever rides it */
   ent('sign', 9, 199, { text: 'THE KITCHEN FLUE. THE HEARTH\'S BRAZIERS STILL BREATHE: RIDE THE SMOKE UP THE CHIMNEY.' });
 
   /* ================= THE KITCHEN FLUE (tight vertical, 15:55 #1): x6-10, the kitchen's ceiling up to the scriptorium; then the L, east ================= */
@@ -213,7 +214,7 @@ export function rebuildMonastery3(R, { T, TS }) {
   boards(50, 125, 4); rope(53, 119, 124);
   ent('sign', 36, 125, { text: 'OLD TIMBER. STAND ON IT AND IT COUNTS DOWN, THEN IT GOES - BACK A FEW SECONDS LATER.' });
   // under the broken shelf, crag SPIRES up off the roof: the birds' perches, and yours
-  for (const [x0, top] of [[55, 127], [61, 129], [66, 127], [72, 129], [77, 127]]) block(x0, x0 + 2, top, 145);
+  for (const [x0, top, w] of [[55, 127, 3], [61, 129, 3], [66, 127, 3], [72, 129, 3], [77, 127, 5]]) block(x0, x0 + w - 1, top, 145);
   // the last: a rope from the east tower's foot - grab it from the last spire and climb up through the tower's floor
   hatch(83, 116, 4); rope(84, 117, 131);
   // birds on the outside: harpies over the drop, fledglings on the spires, bats round the hoist's crag
@@ -267,7 +268,7 @@ export function rebuildMonastery3(R, { T, TS }) {
   ent('sign', 30, 73, { text: 'THE ROOD WHEEL. STRIKE IT AND ITS STAIR TURNS: ONE WAY THE RELICS, THE OTHER THE TRAPDOOR.' });
   // the congregation and its priest, and the saints they defaced
   ent('gobpriest', 12, 84, { face: 1 });                               /* he leads the rite from the altar steps */
-  ent('rockgoblin', 22, 83, { face: 1 }); ent('sentry', 32, 83, { face: 1 }); ent('gobmage', 42, 83, { face: 1 }); ent('rockgoblin', 47, 83, { face: 1 });
+  ent('rockgoblin', 22, 83, { face: 1 }); ent('sentry', 32, 83, { face: 1 }); ent('gobpriest', 39, 84, { face: 1, censer: true }); ent('rockgoblin', 47, 83, { face: 1 });
   for (const [x, y, k, v, o] of [[8, 84, 'statue', 0, { defaced: true }], [16, 84, 'candelabra', 0], [27, 84, 'candelabra', 1], [52, 84, 'statue', 1, { defaced: true }], [10, 73, 'bookshelf', 0], [26, 58, 'lectern', 0]]) deco(x, y, k, v, o || {});
   coins([21, 83], [26, 83], [33, 83], [46, 83], [10, 73], [20, 73], [32, 68], [28, 64], [24, 60], [44, 62], [48, 60]);
   // THE SECOND SHORTCUT, at the guardian's door: a bell whose rope goes down the rope well to the dorter roof

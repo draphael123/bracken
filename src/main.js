@@ -3091,7 +3091,7 @@ function spawnEnt(e) {
         lights.push(pr.city ? { x: px, y: py - 40, r: (L.lpDark && L.lpDark.lampR) || 66, lantern: pr } : { x: px, y: py - 30, r: pr.owl ? 78 : 50, glow: true, lantern: pr }); break; }
       case 'shardling': enemies.push({ ...base, t: 'shardling', w: 9, h: 11, hp: EHP.shardling, speed: 40, mode: 'walk', modeT: 0 }); break;
       case 'fledgling': enemies.push({ ...base, t: 'fledgling', w: 10, h: 9, hp: EHP.fledgling, speed: 44, mode: 'walk', modeT: 0.6 + Math.random(), hopT: 0 }); break;
-      case 'gobpriest': enemies.push({ ...base, t: 'gobpriest', w: 10, h: 16, hp: EHP.gobpriest, speed: 34, mode: 'keep', modeT: 0, cd: PRIEST.first + Math.random(), censerCd: 1 + Math.random(), bellCd: 0 }); break;   /* the monks' robe on a goblin: see updateGobPriest */
+      case 'gobpriest': enemies.push({ ...base, t: 'gobpriest', w: 10, h: 16, hp: EHP.gobpriest, speed: 34, mode: 'keep', modeT: 0, cd: PRIEST.first + Math.random(), censerCd: 1 + Math.random(), bellCd: 0, censer: !!e.censer, home: e.censer ? px : undefined }); break;   /* the monks' robe on a goblin: see updateGobPriest */
       case 'gobmage': enemies.push({ ...base, t: 'gobmage', w: 10, h: 16, hp: EHP.gobmage, speed: MAGE.speed, mode: 'keep', modeT: 0, cd: 0.8 + Math.random(), boltCd: 0, runeCd: 2 + Math.random() }); break;   /* the goblin with the book: see updateGobMage */
       case 'pwheel': props.push({ t: 'pwheel', x: px, y: py, a: e.a, b: e.b, st: e.st || 0, from: e.st || 0, turnT: 0, cool: 0, spin: 0, pivot: e.pivot }); break;   /* THE MONASTERY: a prayer wheel and its stair */
       case 'tbell': props.push({ t: 'tbell', x: px, y: e.hang ? e.y * TS + 20 : py, top: (e.top !== undefined ? e.top : e.y) * TS, span: e.span || null, rope: e.rope || null, offer: !!e.offer, roc: !!e.roc, abbot: !!e.abbot, guard: !!e.guard, hang: !!e.hang, cool: 0, ring: 0, swing: 0, lowerT: 0, key: 'tbell:' + e.x + ',' + e.y, down: !!((e.span || e.rope) && marks.has('tbell:' + e.x + ',' + e.y)) }); break;   /* and a bell: a bridge, the guardian's crack, or the Roc's fall */
@@ -22445,6 +22445,15 @@ function updateGobPriest(e, dt) {
       if (e.modeT <= 0) { e.mode = 'censer'; e.modeT = 0.4; e.censerCd = PRIEST.censerCd + Math.random(); priestThrow(e); SFX.priestCenser(); }
       break;
     case 'censer': e.vx = 0; if (e.modeT <= 0) e.mode = 'keep'; break;
+    /* (claude/monastery3-1105) THE CENSER-SWINGER (Daniel 11-02 15:55 #3; ent flag `censer` on a goblin priest - its own sprite and card are the art pass's):
+       it tends the monks' braziers, and when you ride one it swings its pot into the bowl and SMOTHERS it - the smoke dies under you. Told (!, the
+       censer's sound, the swing pose); a blow on the swing throws it off; a smothered brazier comes back after its usual cool (CENSER.cool). */
+    case 'snuffTell': e.vx = 0; { const v = e.snuffAt; if (v) e.face = Math.sign(v.x - e.x) || e.face; }
+      if (Math.random() < dt * 16) parts.push({ x: e.x + e.face * 7, y: e.y - 18, vx: (Math.random() - 0.5) * 8, vy: -20, life: 0.6, max: 0.6, col: '#d8d0c0', size: 1, grav: -16 });
+      if (e.stagger > 0) { e.mode = 'keep'; e.snuffCd = 1.5; break; }
+      if (e.modeT <= 0) { const v = e.snuffAt; e.mode = 'censer'; e.modeT = 0.4; e.snuffCd = 4 + Math.random();
+        if (v) { v.forceT = 0; v.coolT = CENSER.cool; v.active = false; burst(v.x, v.y - 12, 10, ['#6a6058', '#9aa39a', '#d8d0c0'], 50, 0.5); number(v.x, v.y - 30, 'SMOTHERED', '#9aa39a'); SFX.priestCenser(); } }
+      break;
     case 'bellTell': e.vx = 0; e.face = Math.sign(d) || e.face;
       if (e.stagger > 0) { e.mode = 'keep'; e.bellCd = 1.2; break; }
       if (e.modeT <= 0) { e.mode = 'bell'; e.modeT = 0.3; e.bellCd = PRIEST.bellCd; SFX.priestBell(); ringAt(e.x + e.face * 9, e.y - 9, 14, '#e8a83a', 0.25);
@@ -22454,7 +22463,10 @@ function updateGobPriest(e, dt) {
     case 'broken': e.vx *= Math.pow(0.01, dt); if (e.modeT <= 0) e.mode = 'keep'; break;
     default: e.mode = 'keep';
       if (sees) e.face = Math.sign(d) || e.face;
-      if (!sees || e.stagger > 0) want = 0;
+      e.snuffCd = (e.snuffCd || 0) - dt;
+      const smother = e.censer && e.onGround && !(e.stagger > 0) && e.snuffCd <= 0 ? props.find(v => v.t === 'vent' && v.incense && v.active && Math.abs(v.x - e.x) < 64 && Math.abs(v.y - e.y) < 24 && !P.dead && Math.abs(P.x - v.x) < 16 && P.y <= v.y + 2 && P.y > v.y - v.h - 8) : null;
+      if (smother) { e.mode = 'snuffTell'; e.modeT = 0.5; e.snuffAt = smother; e.vx = 0; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.priestCenserTell(); }
+      else if (!sees || e.stagger > 0) want = 0;
       else if (e.cd <= 0 && e.onGround && priestFlock(e).some(q => q.hp < fullHp(q) || !(q.blessT > 1.5))) {
         e.mode = 'riteTell'; e.modeT = PRIEST.tell; e.vx = 0; number(e.x, e.y - e.h - 12, 'THE RITE', '#e8a83a'); SFX.priestRite(); }
       else if (e.bellCd <= 0 && e.onGround && ad < PRIEST.bellR && Math.abs(P.y - e.y) < 26) {   /* THE BELL: you are in its face */
@@ -22462,6 +22474,7 @@ function updateGobPriest(e, dt) {
       else if (e.censerCd <= 0 && e.onGround && ad > PRIEST.censerMin && ad < PRIEST.censerMax && Math.abs(P.y - e.y) < 70 && drunkArcClear(e, P.x, surfaceUnder(P.x, P.y - 8))) {   /* THE CENSER: you are across the room */
         e.aimX = P.x; e.aimY = surfaceUnder(P.x, P.y - 8); e.mode = 'censerTell'; e.modeT = PRIEST.censerTell; e.vx = 0; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.priestCenserTell(); }
       else if (ad < 72) { if (!(e.backT > 0) && !(e.holdT > 0)) { e.backT = 0.5; e.holdT = 1.5; } if (e.backT > 0) want = -Math.sign(d) * e.speed; }   /* it has no answer up close, so it gives ground - a step at a time, in a robe: it cannot outwalk a hero who follows it */
+      else if (e.censer && e.home !== undefined && Math.abs(e.home - e.x) > 24) want = Math.sign(e.home - e.x) * e.speed * 0.8;   /* the censer-swinger goes back to its brazier */
       else { const fl = priestFlock(e, 200), near = fl.sort((a, b) => Math.abs(a.x - e.x) - Math.abs(b.x - e.x))[0];   /* and otherwise it keeps within reach of its flock */
         if (near && Math.abs(near.x - e.x) > PRIEST.reach * 0.6 && Math.abs(P.x - near.x) > 40) want = Math.sign(near.x - e.x) * e.speed * 0.8; }
   }
@@ -34783,7 +34796,7 @@ function drawWorld(cx, cy, showPlayer) {
     else if (e.t === 'owl') frame = e.mode === 'gustTell' ? 13 : e.mode === 'gust' ? 14 : e.mode === 'pelletTell' ? 15 : e.mode === 'pellet' ? ((e.pel || []).some(p => p.t < 0.3) ? 16 : 0) : e.mode === 'swoopTell' ? (e.swAt ? 8 : 6) : e.mode === 'lampFall' ? 5 : e.mode === 'shakeTell' ? (Math.floor(e.anim * 16) % 2 ? 1 : 2) : e.mode === 'douseTell' ? 3 : e.mode === 'douseDive' ? 6 : e.mode === 'pinned' || e.mode === 'perchDown' ? 10 : e.mode === 'perchFall' ? 19 : e.mode === 'ropeTell' ? 17 + (Math.floor(e.anim * 14) % 2) : e.mode === 'skim' ? 9 : e.mode === 'skimTell' ? (e.skimAt ? 8 : 6) : e.mode === 'stuckTalons' ? 11 : e.mode === 'crash' || e.mode === 'grounded' || e.mode === 'dazzled' ? 4 : e.mode === 'hootTell' ? 3 : e.mode === 'plunge' ? 12 : e.mode === 'riseUp' || e.mode === 'stalk' ? 1 + Math.floor(e.anim * 9) % 2 : e.mode === 'screech' || e.mode === 'screechTell' ? 3 : e.mode === 'sit' || e.mode === 'sleep' || e.mode === 'wake' || e.mode === 'fanTell' || e.mode === 'fan' ? 0 : e.mode === 'swoop' ? 9 : e.mode === 'land' ? 7 : e.mode === 'takeoff' ? (Math.floor(e.anim * 14) % 2 ? 1 : 2) : e.mode === 'fly' ? (e.modeT > 2.4 ? 1 + Math.floor(e.anim * 9) % 2 : 5) : e.mode === 'carry' ? 1 + Math.floor(e.anim * 8) % 2 : 1 + Math.floor(e.anim * 8) % 2;
     else if (e.t === 'shardling') frame = e.mode === 'bristle' || e.mode === 'shedTell' || e.mode === 'shed' || e.mode === 'flickTell' || e.mode === 'flick' ? 2 : Math.abs(e.vx) > 4 ? Math.floor(e.anim * 8) % 2 : 0;
     else if (e.t === 'fledgling') frame = e.mode === 'peckTell' ? 2 : e.mode === 'peck' ? 3 : !e.onGround ? 4 : Math.abs(e.vx) > 4 ? Math.floor(e.anim * 8) % 2 : 0;
-    else if (e.t === 'gobpriest') frame = e.mode === 'riteTell' || e.mode === 'rite' ? 3 + Math.floor(e.anim * 5) % 2 : e.mode === 'censerTell' ? 5 : e.mode === 'censer' ? 6 : e.mode === 'bellTell' ? 7 : e.mode === 'bell' ? 8 : e.mode === 'broken' ? 9 : Math.abs(e.vx) > 4 ? 1 + Math.floor(e.anim * 6) % 2 : 0;   /* the censer up and swinging on the rite; knocked back when it breaks */
+    else if (e.t === 'gobpriest') frame = e.mode === 'riteTell' || e.mode === 'rite' ? 3 + Math.floor(e.anim * 5) % 2 : (e.mode === 'censerTell' || e.mode === 'snuffTell') ? 5 : e.mode === 'censer' ? 6 : e.mode === 'bellTell' ? 7 : e.mode === 'bell' ? 8 : e.mode === 'broken' ? 9 : Math.abs(e.vx) > 4 ? 1 + Math.floor(e.anim * 6) % 2 : 0;   /* the censer up and swinging on the rite; knocked back when it breaks */
     else if (e.t === 'gobmage' && FMR.isFireMage(e)) frame = FMA.fireMageFrame(e);   /* (claude/pyroboss2) THE FIRE MAGE's own poses: the lob drawn back and flung, the ward, doused */
     else if (e.t === 'gobmage') frame = e.mode === 'boltTell' ? 3 : e.mode === 'bolt' ? 4 : e.mode === 'runeTell' || e.mode === 'rune' ? 5 : Math.abs(e.vx) > 4 ? 1 + Math.floor(e.anim * 6) % 2 : 0;   /* the book held out, thrown open, and up over the hat for the rune */
     else if (e.t === 'gqueen') frame = GQ_FRAME[e.mode] !== undefined ? (typeof GQ_FRAME[e.mode] === 'function' ? GQ_FRAME[e.mode](e) : GQ_FRAME[e.mode]) : 3;
