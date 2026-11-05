@@ -61,7 +61,7 @@ function blackFire(g, x, y, h, w, k, time, reduce, a = 1) {
   if (k <= 0.01) return;
   g.globalAlpha = a;
   for (let i = 0; i < 26; i++) {
-    const t = ((reduce ? 0 : time * 0.45) + i / 26) % 1, up = t * h * k, r = 3 + (1 - Math.abs(t - 0.4)) * 6 * (w / 24), px_ = x + Math.sin(i * 2.3 + (reduce ? 0 : time * 1.3)) * (w * 0.35) * (0.4 + t);
+    const t = ((reduce ? 0 : time * 0.45) + i / 26) % 1, up = t * h * k, r = 2 + (1 - Math.abs(t - 0.4)) * 4 * (w / 24), px_ = x + Math.sin(i * 2.3 + (reduce ? 0 : time * 1.3)) * (w * 0.45) * (0.4 + t);
     circle(g, px_, y - up, r, i % 3 ? '#0c0509' : '#1a0c14', '#050204'); if (i % 4 === 0) circle(g, px_ - r * 0.3, y - up - r * 0.3, r * 0.45, '#2a1420');
     if (i % 5 === 0) dot(g, '#ff7a2a', px_ + r, y - up); if (i % 7 === 0) dot(g, '#ffb04a', px_ - r, y - up + 1);
   }
@@ -80,7 +80,7 @@ export function drawSealScene(env, s) {
   safe('seal', () => { const sp = DSET.sealSprite(3, glow); g.drawImage(sp, sealX - 42, fy - 10); });
   if (lk > 0.01) safe('light', () => SL.sealLight(g, sealX, fy + 2, fy - 8, lk, calm ? 0.5 : time));
   const fk = HS.sealFireK(s) * (1 - smooth((s - HS.SEAL.kingAt - 2.4) / 2) * 0.55);
-  blackFire(g, sealX, fy + 3, 40, 22, fk, time, calm, 0.9);
+  blackFire(g, sealX, fy + 3, 34, 26, fk, time, calm, 0.8);
   /* the drake, lying on the seal's right edge, then up, then away */
   const dm = HS.drakePoseA(s), lift = HS.drakeLiftA(s);
   safe('drake', () => { const sp = DA.drakeSprite(dm, DRAKE_POSE[dm] || DRAKE_POSE.walk, time, false), A = DA.DRAKE_ANCHOR; blit(g, sp.c, A.ax, A.ay, drakeX, fy + 6 - lift, false); });
@@ -88,9 +88,9 @@ export function drawSealScene(env, s) {
   const rk = HS.kingRiseK(s);
   if (rk > 0.001 && rk < 0.999) safe('king', () => {
     const pose = HS.kingPoseA(s), spec = pose === 'laugh' ? { body: 'float', arm: 'spread', scream: true, ph: 1, frame: Math.floor(time * 3) % 2 } : { body: 'rise', arm: 'down', ph: 1, frame: Math.floor(time * 3) % 2 };
-    const k = KA.kingSprite(spec), A = KA.KING_ANCHOR, ky = lerp(fy + 22, -A.h - 10, rk);
+    const k = KA.kingSprite(spec), A = KA.KING_ANCHOR, ky = HS.kingYA(s, fy);
     g.globalAlpha = clamp01(rk * 6) * 0.55; g.drawImage(KA.kingHalo ? KA.kingHalo(k) : k.c, R(sealX - A.ax), R(ky - A.ay)); g.globalAlpha = 1; blit(g, k.c, k.ax, k.ay, sealX, ky, false); });
-  blackFire(g, sealX + 2, fy + 5, 12, 20, fk, time + 3, calm, 0.95);
+  blackFire(g, sealX + 2, fy + 5, 10, 22, fk, time + 3, calm, 0.9);
   /* the party */
   for (let i = 0; i < n; i++) { const h = HS.heroA(i, n, s, VW); env.drawHero(i, R(h.x), R(fy + 6 - h.y), 1, h.walking ? 'run' : 'idle', h.walking ? Math.floor(time * 12) + i * 2 : Math.floor(time * 4.5) + i); }
   /* embers off the floor, more after the break */
@@ -129,8 +129,8 @@ export function drawEscapeScene(env, s) {
   /* the rim, under the drake as it lands */
   if (gk > 0.01) safe('rim', () => SL.rimLanding(g, -6, R(BACK_Y + E.drakeLand + 28), 230, time));
   /* the drake (the real mount), flown up out of frame while the camera follows the King down, and back in to land */
-  b.t = s; b.y = BACK_Y + yOff; b.bank.state = s >= E.twistAt && s < E.blastAt + 0.9 ? 'tell' : 'level'; b.bank.t = s >= E.blastAt - 0.2 ? 0.7 : 0.3; b.bank.ang = 0;
-  const sY = b.y + (gk > 0.95 ? 0 : Math.sin(s * Math.PI * 2 * 0.55) * 2);
+  b.t = s; b.y0 = BACK_Y + yOff; b.bob = gk > 0.95 ? 0 : Math.sin(s * Math.PI * 2 * 0.55) * 2; b.bank.state = s >= E.twistAt && s < E.blastAt + 0.9 ? 'tell' : 'level'; b.bank.t = s >= E.blastAt - 0.2 ? 0.7 : 0.3; b.bank.ang = 0;
+  const sY = b.y0 + b.bob;
   if (yOff > -125) safe('drake', () => { paintDrake(g, b, 0, 0, time); });
   /* the King: down on the neck, flung off, smoke wings + laugh over the back, the dive into the crater */
   const kp = HS.kingPoseB(s), neckX = b.x1 - 10, hoverX = R(VW * 0.52 + Math.sin(time * 1.6) * 5), hoverY = R(96 + Math.sin(time * 2.1) * 3);

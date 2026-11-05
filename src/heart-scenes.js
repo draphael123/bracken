@@ -18,7 +18,7 @@ export const SEAL = {
   lightAt: 1.2, lightUp: 2.0,          // the white column rises 1.2 -> 3.2 s
   laughAt: 2.4,                        // the laugh under the floor (sound)
   fireAt: 3.4, fireUp: 1.4,            // the black fire column
-  kingAt: 3.8, kingRise: 2.6,          // he rises out of it 3.8 -> 6.4 s and on up the throat
+  kingAt: 3.8, kingRise: 3.2,          // he rises out of it 3.8 -> 7.0 s: emerges, hangs and laughs in view, then climbs out the top of the frame (kingYA)
   eruptAt: 5.6, eruptUp: 1.6,          // the volcano erupts behind him
   drakeStirAt: 6.4, drakeUpAt: 7.2,    // it lifts its head, then drags itself up
   neckAt: 7.8,                         // lowers its neck to you
@@ -30,12 +30,19 @@ export const SEAL = {
 };
 /* cues the main.js loop plays once as the scene clock crosses them: [time, SFX name] (every name is a real SFX; audio.js) */
 export const SEAL_CUES = [[0.5, 'dkCrash'], [1.2, 'dkChain'], [2.4, 'dkLaugh'], [3.4, 'dkBlast'], [5.4, 'dkEruption'], [7.0, 'drakeBank'], [9.8, 'drakeWing'], [10.4, 'drakeWing']];
-export const sealLightK = s => smooth((s - SEAL.lightAt) / SEAL.lightUp) * (1 - smooth((s - SEAL.kingAt - 1.6) / 2.0) * 0.7);
+export const sealLightK = s => smooth((s - SEAL.lightAt) / SEAL.lightUp) * (1 - smooth((s - SEAL.kingAt - 1.6) / 3.0));
 export const sealFireK = s => smooth((s - SEAL.fireAt) / SEAL.fireUp);
 export const sealEruptK = s => smooth((s - SEAL.eruptAt) / SEAL.eruptUp);
 /* the King's rise: 0 at the seal's floor .. 1 out of the top of the screen. Half-formed all the way (phase 1 sprite). */
 export function kingRiseK(s) { return smooth((s - SEAL.kingAt) / SEAL.kingRise); }
-export const kingPoseA = s => (s < SEAL.kingAt + 1.1 ? 'rise' : s < SEAL.kingAt + 2.3 ? 'laugh' : 'rise');
+export const kingPoseA = s => (s < SEAL.kingAt + 1.0 ? 'rise' : s < SEAL.kingAt + 2.2 ? 'laugh' : 'rise');
+/* where his FOOT is (screen y) given the floor line fy: starts under the floor, comes up into view (to ~fy-48), hangs there laughing (a slow bob), then climbs out the top of the frame */
+export function kingYA(s, fy) {
+  const t = clamp01((s - SEAL.kingAt) / SEAL.kingRise);
+  if (t < 0.38) return lerp(fy + 30, fy - 46, smooth(t / 0.38));
+  if (t < 0.66) return fy - 46 - Math.sin((t - 0.38) / 0.28 * Math.PI) * 4;
+  const k = (t - 0.66) / 0.34; return lerp(fy - 46, -70, k * k);
+}
 /* the drake: 'down' (lies on the split seal) -> 'rise' (lifts its head) -> 'walk' (up on its legs, neck lowered to you) -> 'takeoff' -> 'hover' */
 export function drakePoseA(s) {
   if (s < SEAL.drakeStirAt) return 'down'; if (s < SEAL.drakeUpAt) return 'rise'; if (s < SEAL.takeoffAt) return 'walk';
