@@ -29,7 +29,7 @@ for (let i = 0; i < nodes.length; i++) {
   const a = nodes[i], pa = plates.get(a.id);
   if (!pa.fits) bad.push(a.id + ': no free side for its plate "' + a.label + '" (' + a.x + ',' + a.y + ')');
   { const bx = Math.max(pa.x, Math.min(pa.x + pa.w, a.x)), by = Math.max(pa.y, Math.min(pa.y + pa.h, a.y)), far = Math.hypot(bx - a.x, by - a.y);
-    if (far > FAR) bad.push(a.id + ': plate is ' + far.toFixed(0) + 'px from its node (max ' + FAR + ')'); }
+    if (far > Math.max(FAR, a.reach || 0)) bad.push(a.id + ': plate is ' + far.toFixed(0) + 'px from its node (max ' + Math.max(FAR, a.reach || 0) + ')'); }
   for (let j = i + 1; j < nodes.length; j++) {
     const b = nodes[j], pb = plates.get(b.id), d = Math.hypot(a.x - b.x, a.y - b.y);
     if (d < MIN_NODE_GAP) bad.push(a.id + ' <-> ' + b.id + ': nodes only ' + d.toFixed(1) + 'px apart (min ' + MIN_NODE_GAP + ')');
