@@ -43,6 +43,7 @@ import { sweepFront as wqSweepFront } from './wicker-queen.js';   /* (claude/fai
 import { WINCH as WM_K, winchFloors } from './winchmaster.js';   /* THE WINCHMASTER's phase three (claude/winch4): his reaches and the floors he fights on, read off his own module (winchFloors reads OR.ARENA) */   /* THE MARK TABLE: every red !! in it is a tell the bot steps out of, never guards */
 
 // LAB_REACH is each hero's real reach (attackBox in main.js): how far the blow actually lands.
+const DK_REACH_IMP = h => (h === 'pyro' ? 60 : 14);
 const DK_REACH = { warden: 32, pyro: 110 };   /* (claude/skytune) how far off a bolt the demon-king hands start a cut: a bolt is a small target, a polearm's LAB_REACH is its longest tip */
 export const LAB_REACH = { knight: 22, pyro: 30, paladin: 20, pirate: 20, reaper: 29, warden: 40, geomancer: 24, berserker: 18, ranger: 16 };   /* (claude/ranger: her KNIFE lands 17 out; with arrows in the quiver the hands stand off at RANGER_STAND - rgReach below) */   /* (claude/berserker2: THE FLURRY lands 19 out - shorter than his old chop's 21) */   /* (berserker: his chop lands its head 19-21 out: he has almost no reach) */   /* (geomancer: the stone of her stave lands 21-26 out) */   /* her point lands at 44: the bot stands just inside it, where the TIP zone is */
 /* LAB_STAND, THE HAND'S CHOSEN DISTANCE (BOT BUG A, Daniel, 2026-09-25: "stands one pixel outside its own reach").
@@ -1881,6 +1882,9 @@ async function runbossLab(BK, opts) {
           if(mem.ch[pl.swing]==='swing'&&P.atk<0&&bq){P.face=bq.x>=P.x?1:-1;BK.press('atk');swings++;}
           else if(mem.ch[pl.swing]==='guard'&&bq){P.face=bq.x>=P.x?1:-1;if(SHIELDED(h)||DEFLECTS(h))guard=true;else if(P.ground&&(P.labDodgeF===undefined||f-P.labDodgeF>30)){BK.press('dodge');P.labDodgeF=f;}} }   /* a guard for a shield / a deflector, a roll through it for the rest */
         if(dodging) { if(pl.duck&&P.ground)k.down=true; if(pl.jump&&P.ground&&(P.labJumpF===undefined||f-P.labJumpF>14)){BK.press('jump');P.labJumpF=f;P.labJump=16;} }
+        /* P3: the imps are 20 hp foes that throw at the hero - a player cuts the near one down (walk under it, face it, cut) */
+        const imp=!told&&pl.swing==null&&!pl.hit?BK.enemies().filter(e=>e.dkImp&&e.alive&&Math.abs(e.x-P.x)<150).sort((a,b)=>Math.abs(a.x-P.x)-Math.abs(b.x-P.x))[0]:null;
+        if(imp){const dx=imp.x-P.x;if(Math.abs(dx)>(LAB_REACH[h]+DK_REACH_IMP(h))*0.6)k[dx>0?'right':'left']=true;else{P.face=dx>=0?1:-1;if(P.atk<0&&Math.abs(imp.y-P.y)<70){BK.press('atk');swings++;}}}
         if(P.labJump>0){P.labJump--;k.jump=true;}
         if(pl.stepTo!=null&&(!F.rings.length||readIt('b'+Math.floor(F.t/3)))&&Math.abs(pl.stepTo-P.x)>3)k[pl.stepTo>P.x?'right':'left']=true;
         if(guard)k.block=SHIELDED(h)?true:DEFLECT_TAP(f);
