@@ -124,7 +124,7 @@ async function pageTextFit(input) {
     for (const c of rec.filter(r => r.kind === 'cut')) report('TRUNCATED', screen, c, { out: c.out, maxW: c.maxW });
     const pagedS = new Set(rec.filter(r => r.kind === 'paged').map(r => r.s));   /* a description with a page key reaches its every line */
     if (!opts.paged) for (const w of rec.filter(r => r.kind === 'wrap' && !pagedS.has(r.s))) { const later = texts.filter(t => t.i > w.i).map(t => t.s.trim());
-      const drawn = w.lines.filter(l => later.some(s => s === l.trim() || l.trim().startsWith(s) || l.trim().endsWith(s))).length;
+      const drawn = w.lines.filter(l => later.some(s => s === l.trim() || (s.length > 1 && (l.trim().startsWith(s) || l.trim().endsWith(s))))).length;   /* (a one-letter scroll arrow, 'v', is not the start of 'village': claude/wnseedproof) */
       if (drawn > 0 && drawn < w.lines.length) report('CLIPPED', screen, w, { lines: w.lines.length, drawn }); }
     if (opts.cover) { const v = BK.view, P = BK.P, hx = P.x - Math.max(0, Math.min(BK.L.W * 16 - v.VW, v.x)), hy = P.y - Math.max(0, Math.min(BK.L.H * 16 - v.VH, v.y));
       const box = rec.filter(r => r.kind === 'rect' && r.i < (texts[0] ? texts.find(t => opts.cover(t)) || texts[0] : { i: 0 }).i).pop();

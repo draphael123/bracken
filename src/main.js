@@ -36019,10 +36019,12 @@ function drawWhatsNew() {
     g.fillStyle = 'rgba(143,209,96,0.18)'; g.fillRect(Math.round(VW / 2 - cw / 2), y + 30, cw, 9);
     text('< ' + lab + ' >', VW / 2, y + 31, UI.text, 'center', 6); }
   const rs = hist ? WN.levelRows((s, mw) => wrap(s, mw, 6), w - 24, hist, wnFilter, wnName) : WN.rows((s, mw) => wrap(s, mw, 6), w - 24);
-  wnLimit = Math.max(0, rs.length - vis); wnScroll = Math.min(wnScroll, wnLimit);
+  /* (claude/wnseedproof) THE LAST ROW MUST BE REACHABLE: the layout below spends 2px on every date gap and drops a wrapped line that will not fit whole, so 'rows - vis' ran short and the end of the list (a 3-line Platforming row) could never scroll into view. The limit is the first scroll from which the whole tail fits. */
+  const wnEnd = s0 => { let yy = top, i = s0, lead = true; for (; i < rs.length && yy + RH <= bot; i++) { const r = rs[i]; if (r.cont && lead) continue; lead = false; if (r.more && yy + RH * 2 > bot) break; if (r.kind === 'head' && r.gap && i > s0 && yy + RH * 2 <= bot) yy += 2; yy += RH; } return i; };
+  wnLimit = 0; while (wnLimit < rs.length - 1 && wnEnd(wnLimit) < rs.length) wnLimit++; wnScroll = Math.min(wnScroll, wnLimit);
   if (!rs.length) text(hist ? 'no level news yet' : 'nothing to report yet', VW / 2, top + 6, UI.dim, 'center', 6);
-  let yy = top;
-  for (let i = wnScroll; i < rs.length && yy + RH <= bot; i++) { const r = rs[i]; if (r.cont && i === wnScroll) continue; if (r.more && yy + RH * 2 > bot) break;   /* (claude/bloodknight) never half a wrapped line at an edge (textfit CLIPPED once the list grew) */ if (r.kind === 'head') { if (r.gap && i > wnScroll && yy + RH * 2 <= bot) yy += 2; text(r.s, x + 12, yy, '#8fd160', 'left', 6); } else text(r.s, x + 12, yy, UI.text, 'left', 6); yy += RH; }
+  let yy = top, lead = true;   /* (claude/wnseedproof) skip EVERY leading continuation line: a 3-line row cut at its second line used to show its third alone */
+  for (let i = wnScroll; i < rs.length && yy + RH <= bot; i++) { const r = rs[i]; if (r.cont && lead) continue; lead = false; if (r.more && yy + RH * 2 > bot) break;   /* (claude/bloodknight) never half a wrapped line at an edge (textfit CLIPPED once the list grew) */ if (r.kind === 'head') { if (r.gap && i > wnScroll && yy + RH * 2 <= bot) yy += 2; text(r.s, x + 12, yy, '#8fd160', 'left', 6); } else text(r.s, x + 12, yy, UI.text, 'left', 6); yy += RH; }
   if (wnScroll > 0) text('^', x + w - 10, top - 8, UI.dim, 'right', 6);   /* (redclean 11-02) in the gap under the title, not over the first row's last word (textfit whatsnew scroll 99) */
   if (wnScroll < wnLimit) text('v', x + w - 10, y + h - 21, UI.dim, 'right', 6);   /* (integ111) was y+h-30, inside the last text row: it collided with the Paladin line once the list grew; now in the gap above the footer */
   TCH.hit(x + w - 44, y + h - 16, 40, 11, () => { state = 'title'; SFX.menuClose(); }); text('BACK', x + w - 10, y + h - 14, UI.sel, 'right', 6);
