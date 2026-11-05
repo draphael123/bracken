@@ -119,7 +119,7 @@ function eruption(g, x, y, W, fx, time, alpha, seed) {
     for (let i = 0; i < F; i++) for (let k = 0; k < 4; k++) { const t = (time * 0.9 + i * 0.37 + k * 0.045) % 1, vx = Math.sin(i * 5.1) * 26, px_ = x + vx * t, py = y - (62 + (i % 3) * 14) * t + 80 * t * t;
       px(g, px_, py, k === 0 ? '#ffe08a' : k === 1 ? '#ff9a3a' : '#ff5a1a'); }
     if (fx === 'bombs') for (let i = 0; i < 3; i++) { const t = (time * 0.35 + i / 3) % 1, bx = x + (i - 1) * 18 * t * 2.2, by = y - 150 * t + 190 * t * t - 12; circle(g, bx, by, 3, '#3a1008'); circle(g, bx, by, 2, '#ff7a2a', '#a8301a'); px(g, bx - 1, by - 1, '#ffe08a'); px(g, bx, by - 5, '#ff9a3a'); }
-    if (fx === 'lightning' && Math.floor(time * 3 + x) % 7 === 0) { let lx = x + 6, ly = y - 90; g.fillStyle = '#e8d8ff'; for (let k = 0; k < 7; k++) { const nx = lx + (((k * 7 + R(x)) % 9) - 4), ny = ly + 11; line(g, lx, ly, nx, ny, k % 2 ? '#e8d8ff' : '#ffffff'); lx = nx; ly = ny; } g.globalAlpha = alpha * 0.18; g.fillStyle = '#c8b0ff'; g.fillRect(x - 60, y - 140, 120, 150); }
+    if (fx === 'lightning' && Math.floor(time * 3 + x) % 7 === 0) { let lx = x + 6, ly = y - 90; g.fillStyle = '#e8d8ff'; for (let k = 0; k < 7; k++) { const nx = lx + (((k * 7 + R(x)) % 9) - 4), ny = ly + 11; line(g, lx, ly, nx, ny, k % 2 ? '#e8d8ff' : '#ffffff'); lx = nx; ly = ny; } g.globalAlpha = alpha * 0.22; { const fl = g.createRadialGradient(x, y - 70, 4, x, y - 70, 80); fl.addColorStop(0, '#d8c4ff'); fl.addColorStop(1, 'rgba(200,176,255,0)'); g.fillStyle = fl; g.fillRect(x - 80, y - 150, 160, 160); } }   /* (claude/scenes) the flash was a hard-edged 120x150 rectangle; now a soft glow */
   }
   g.globalAlpha = 1; void W;
 }

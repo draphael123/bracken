@@ -24,6 +24,8 @@ export const SEAL = {
   neckAt: 7.8,                         // lowers its neck to you
   climbAt: 8.4, climbT: 1.2,           // you climb on (8.4 -> 9.6)
   takeoffAt: 9.8,                      // wings, off the ground
+  layout: { seal: 0.32, drake: 0.60, home: 0.10 },   // x as a share of the screen width: the split seal (the King rises here), the drake's centre, where you stand
+  backY: 36,                           // how high above the floor the drake's back is when it stands
   mount: 'skylab',                     // where the scene ends: the sky fight, at mount-up
 };
 /* cues the main.js loop plays once as the scene clock crosses them: [time, SFX name] (every name is a real SFX; audio.js) */
@@ -44,10 +46,10 @@ export const drakeLiftA = s => (s < SEAL.takeoffAt ? 0 : 6 + (s - SEAL.takeoffAt
 /* hero i of n: stood left of the seal; walks to the drake's flank when it kneels; climbs on (an arc up its side onto the back); then rides with it.
    Returns { x, y (px ABOVE the floor), walking, onBack } on a screen VW wide. */
 export function heroA(i, n, s, VW) {
-  const home = VW * 0.20 + i * 13, flank = VW * 0.54 + i * 5, back = VW * 0.60 - i * 4;
+  const dx = VW * SEAL.layout.drake, home = VW * SEAL.layout.home + i * 13, flank = dx - 52 + i * 5, back = dx + 2 - i * 5;
   const wk = smooth((s - SEAL.neckAt + 0.3) / 0.9), cl = smooth((s - SEAL.climbAt) / SEAL.climbT);
   const x = s < SEAL.neckAt - 0.3 ? home : cl > 0 ? lerp(flank, back, cl) : lerp(home, flank, wk);
-  const y = cl > 0 ? Math.sin(cl * Math.PI * 0.5) * 18 + cl * 5 : 0;
+  const y = cl > 0 ? Math.sin(cl * Math.PI * 0.5) * (SEAL.backY - 6) + cl * 6 : 0;
   return { x, y: y + drakeLiftA(s), walking: s >= SEAL.neckAt - 0.3 && cl <= 0 && wk < 1, onBack: cl >= 1 };
 }
 /* the camera shake (px) the scene asks for at s: the seal's break, the eruption. Reduce-motion: 0 */
@@ -55,20 +57,23 @@ export function shakeA(s, reduce) { if (reduce) return 0; return Math.max(0, 1 -
 
 /* ---------- SCENE B ---------- */
 export const ESCAPE = {
-  dur: 16.0,
+  dur: 17.0,
+  backX0: 4,                   // the drake's back, left end (screen px)
   runAt: 0.4, runT: 2.2,       // you run up the back
   twistAt: 2.8, blastAt: 3.5,  // the drake twists its head, blasts him off
   flyAt: 3.5, flyT: 1.6,       // he is flung up and away
   wingsAt: 5.0,                // he catches himself on wings of smoke
   laughAt: 5.8,
+  panAt: 6.6, panT: 1.8,       // the camera tips DOWN after him: the drake rises out of the top of the frame, the volcano comes up from below
   diveAt: 7.0, diveT: 1.6,     // dives into the crater
-  crackAt: 8.0, crackT: 2.4,   // the caldera cracks open beneath him
-  glideAt: 9.4, landAt: 12.0,  // the drake glides down, lands on the rim
-  stepOffAt: 12.6,
-  cardAt: 12.4, cardIn: 1.0,   // the card (to the end of the scene)
+  crackAt: 8.4, crackT: 2.2,   // the caldera cracks open beneath him
+  glideAt: 9.6, landAt: 12.0,  // the drake glides back into frame, lands on the rim
+  stepOffAt: 12.2, stepOffT: 1.4,
+  cardAt: 13.6, cardIn: 1.0,   // the card (to the end of the scene)
+  drakeAway: -130, drakeLand: -40, mouthPan: 112, mouthLand: 142,   // px: the drake's height offset when it is out of frame / landed, the crater mouth's y at the dive / at the landing
 };
 export const ESCAPE_CARD = { title: 'THE BREACH', line: 'HE IS NOT DONE. NOR ARE YOU.' };
-export const ESCAPE_CUES = [[0.05, 'dkScream'], [3.4, 'drakeBank'], [3.6, 'dkBlast'], [5.8, 'dkLaugh'], [7.2, 'dkSwoop'], [8.2, 'dkEruption'], [8.4, 'dkCrash'], [11.8, 'drakeWing'], [12.2, 'pStep'], [12.4, 'dkChain']];
+export const ESCAPE_CUES = [[0.05, 'dkScream'], [3.4, 'drakeBank'], [3.6, 'dkBlast'], [5.8, 'dkLaugh'], [7.2, 'dkSwoop'], [8.4, 'dkEruption'], [8.6, 'dkCrash'], [11.8, 'drakeWing'], [13.1, 'pStep'], [13.6, 'dkChain']];
 export const crackK = s => smooth((s - ESCAPE.crackAt) / ESCAPE.crackT);
 export const cardK = s => smooth((s - ESCAPE.cardAt) / ESCAPE.cardIn);
 export const kingFlyK = s => clamp01((s - ESCAPE.flyAt) / ESCAPE.flyT);
@@ -77,10 +82,15 @@ export const glideK = s => smooth((s - ESCAPE.glideAt) / (ESCAPE.landAt - ESCAPE
 export function kingPoseB(s) {
   if (s < ESCAPE.flyAt) return 'prone'; if (s < ESCAPE.wingsAt) return 'tumble'; if (s < ESCAPE.diveAt) return s >= ESCAPE.laughAt ? 'laugh' : 'wings'; return s < ESCAPE.diveAt + ESCAPE.diveT ? 'dive' : 'gone';
 }
+/* the drake's height offset (px, 0 = flying level, negative = up): out of the top of the frame while the camera follows the King down, back in as it glides, landed at drakeLand */
+export function drakeYB(s) { const o = smooth((s - ESCAPE.panAt) / ESCAPE.panT), back = smooth((s - ESCAPE.glideAt) / (ESCAPE.landAt - ESCAPE.glideAt)); return s < ESCAPE.glideAt ? ESCAPE.drakeAway * o : lerp(ESCAPE.drakeAway, ESCAPE.drakeLand, back); }
+/* the crater mouth's y on screen: below the frame until the camera tips, up at mouthPan for the dive and the crack, down to mouthLand as the drake lands */
+export function mouthYB(s, VH) { const o = smooth((s - ESCAPE.panAt) / ESCAPE.panT), back = smooth((s - ESCAPE.glideAt) / (ESCAPE.landAt - ESCAPE.glideAt)); return s < ESCAPE.glideAt ? lerp(VH + 14, ESCAPE.mouthPan, o) : lerp(ESCAPE.mouthPan, ESCAPE.mouthLand, back); }
+/* hero i of n: runs up the back, stands; at stepOffAt walks back along it to the tail and DROPS onto the rim (drop = px below the back line). face -1 once he turns for the tail. */
 export function heroB(i, n, s, VW) {
-  const k = smooth((s - ESCAPE.runAt) / ESCAPE.runT), x0 = VW * 0.20 + i * 11, x1 = VW * 0.50 + i * 11;
-  const off = smooth((s - ESCAPE.stepOffAt) / 1.0);
-  return { x: lerp(x0, x1, k) + off * 24, running: s > ESCAPE.runAt && k < 1, off: s >= ESCAPE.stepOffAt };
+  const X0 = ESCAPE.backX0, k = smooth((s - ESCAPE.runAt) / ESCAPE.runT), a = X0 + 24 + i * 11, z = X0 + 112 + i * 11, tail = X0 + 16 + i * 10;
+  const off = clamp01((s - ESCAPE.stepOffAt) / ESCAPE.stepOffT), w = smooth(off / 0.7), drop = smooth((off - 0.7) / 0.3) * 28;
+  return { x: off > 0 ? lerp(z, tail, w) : lerp(a, z, k), drop, running: (s > ESCAPE.runAt && k < 1) || (off > 0 && off < 1), off: s >= ESCAPE.stepOffAt, face: off > 0 ? -1 : 1 };
 }
 
 /* ---------- cues ---------- */

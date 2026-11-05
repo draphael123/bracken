@@ -56,38 +56,41 @@ function calderaBack(VW, VH, fy) {
     return c;
   });
 }
-/* a column of BLACK FIRE: dark billows with ember edges, rising from (x, y) to k * h (k 0..1), width w; reads as the cloud the King steps out of */
-function blackFire(g, x, y, h, w, k, time, reduce) {
+/* BLACK FIRE: dark billows with ember edges rising from (x, y) to k * h, width w, drawn at alpha a - a low cloud the King steps out of (behind him) and a thin puff in front of his smoke */
+function blackFire(g, x, y, h, w, k, time, reduce, a = 1) {
   if (k <= 0.01) return;
-  for (let i = 0; i < 34; i++) {
-    const t = ((reduce ? 0 : time * 0.45) + i / 34) % 1, up = t * h * k, r = 4 + (1 - Math.abs(t - 0.4)) * 7 * (w / 24), px_ = x + Math.sin(i * 2.3 + (reduce ? 0 : time * 1.3)) * (w * 0.35) * (0.4 + t);
+  g.globalAlpha = a;
+  for (let i = 0; i < 26; i++) {
+    const t = ((reduce ? 0 : time * 0.45) + i / 26) % 1, up = t * h * k, r = 3 + (1 - Math.abs(t - 0.4)) * 6 * (w / 24), px_ = x + Math.sin(i * 2.3 + (reduce ? 0 : time * 1.3)) * (w * 0.35) * (0.4 + t);
     circle(g, px_, y - up, r, i % 3 ? '#0c0509' : '#1a0c14', '#050204'); if (i % 4 === 0) circle(g, px_ - r * 0.3, y - up - r * 0.3, r * 0.45, '#2a1420');
     if (i % 5 === 0) dot(g, '#ff7a2a', px_ + r, y - up); if (i % 7 === 0) dot(g, '#ffb04a', px_ - r, y - up + 1);
   }
+  g.globalAlpha = 1;
 }
 export function drawSealScene(env, s) {
-  const { g, VW, VH, time, n, reduce } = env, fy = R(VH * 0.78), sealX = R(VW * 0.55), calm = !!reduce;
+  const { g, VW, VH, time, n, reduce } = env, fy = R(VH * 0.78), sealX = R(VW * HS.SEAL.layout.seal), drakeX = R(VW * HS.SEAL.layout.drake), calm = !!reduce;
   const shk = HS.shakeA(s, calm), sx = shk ? R(Math.sin(time * 61) * shk) : 0, sy2 = shk ? R(Math.cos(time * 47) * shk * 0.6) : 0;
   g.save(); g.translate(sx, sy2);
   g.drawImage(calderaBack(VW, VH, fy), 0, 0);
   /* the eruption: the sky behind the throat goes orange, the plume stands over the rim */
   const ek = HS.sealEruptK(s);
-  if (ek > 0.01) { g.fillStyle = 'rgba(255,110,40,' + (0.30 * ek).toFixed(3) + ')'; g.fillRect(0, 0, VW, fy - 20); safe('plume', () => SL.plume(g, R(VW * 0.5), R(VH * 0.50), 0.7 + 0.8 * ek, time)); }
+  if (ek > 0.01) { g.fillStyle = 'rgba(255,110,40,' + (0.30 * ek).toFixed(3) + ')'; g.fillRect(0, 0, VW, fy); safe('plume', () => SL.plume(g, R(VW * 0.5), R(VH * 0.50), 0.7 + 0.8 * ek, time)); }
   /* the split seal and the light through it */
   const lk = HS.sealLightK(s), glow = s > HS.SEAL.lightAt;
   safe('seal', () => { const sp = DSET.sealSprite(3, glow); g.drawImage(sp, sealX - 42, fy - 10); });
   if (lk > 0.01) safe('light', () => SL.sealLight(g, sealX, fy + 2, fy - 8, lk, calm ? 0.5 : time));
-  /* the drake, lying on the seal, then up, then away */
-  const dm = HS.drakePoseA(s), lift = HS.drakeLiftA(s), dx = sealX - 6;
-  safe('drake', () => { const sp = DA.drakeSprite(dm, DRAKE_POSE[dm] || DRAKE_POSE.walk, time, false), A = DA.DRAKE_ANCHOR; blit(g, sp.c, A.ax, A.ay, dx, fy + 6 - lift, false); });
-  /* the King: half-formed, up out of the seal and on up the throat */
+  const fk = HS.sealFireK(s) * (1 - smooth((s - HS.SEAL.kingAt - 2.4) / 2) * 0.55);
+  blackFire(g, sealX, fy + 3, 40, 22, fk, time, calm, 0.9);
+  /* the drake, lying on the seal's right edge, then up, then away */
+  const dm = HS.drakePoseA(s), lift = HS.drakeLiftA(s);
+  safe('drake', () => { const sp = DA.drakeSprite(dm, DRAKE_POSE[dm] || DRAKE_POSE.walk, time, false), A = DA.DRAKE_ANCHOR; blit(g, sp.c, A.ax, A.ay, drakeX, fy + 6 - lift, false); });
+  /* the King: half-formed, up out of the seal and on up the throat (his smoke tail IS his legs: the thin puff of fire stands in front of its root) */
   const rk = HS.kingRiseK(s);
   if (rk > 0.001 && rk < 0.999) safe('king', () => {
     const pose = HS.kingPoseA(s), spec = pose === 'laugh' ? { body: 'float', arm: 'spread', scream: true, ph: 1, frame: Math.floor(time * 3) % 2 } : { body: 'rise', arm: 'down', ph: 1, frame: Math.floor(time * 3) % 2 };
-    const k = KA.kingSprite(spec), A = KA.KING_ANCHOR, ky = lerp(fy + 16, -A.h - 10, rk);
-    g.globalAlpha = clamp01(rk * 6); g.drawImage(KA.kingHalo ? KA.kingHalo(k) : k.c, R(sealX - A.ax), R(ky - A.ay)); g.globalAlpha = 1; blit(g, k.c, k.ax, k.ay, sealX, ky, false); });
-  /* the black fire stands in front of his legs (smoke where the legs go) */
-  blackFire(g, sealX, fy + 4, 74, 26, HS.sealFireK(s) * (1 - smooth((s - HS.SEAL.kingAt - 2.4) / 2) * 0.55), time, calm);
+    const k = KA.kingSprite(spec), A = KA.KING_ANCHOR, ky = lerp(fy + 22, -A.h - 10, rk);
+    g.globalAlpha = clamp01(rk * 6) * 0.55; g.drawImage(KA.kingHalo ? KA.kingHalo(k) : k.c, R(sealX - A.ax), R(ky - A.ay)); g.globalAlpha = 1; blit(g, k.c, k.ax, k.ay, sealX, ky, false); });
+  blackFire(g, sealX + 2, fy + 5, 12, 20, fk, time + 3, calm, 0.95);
   /* the party */
   for (let i = 0; i < n; i++) { const h = HS.heroA(i, n, s, VW); env.drawHero(i, R(h.x), R(fy + 6 - h.y), 1, h.walking ? 'run' : 'idle', h.walking ? Math.floor(time * 12) + i * 2 : Math.floor(time * 4.5) + i); }
   /* embers off the floor, more after the break */
@@ -99,57 +102,52 @@ export function drawSealScene(env, s) {
 }
 
 /* ------------------------------------------------------------------ SCENE B: THE ESCAPE */
-const BACK_X0 = 34;
-let bb = null;   /* the one back the scene draws (reset per scene) */
-function backFor(VW, s) {
-  if (!bb || s < 0.05) bb = newBack({ x0: BACK_X0, y: 112, len: 192, phase: 3 }, () => 0.5);
+const BACK_Y = 112;   /* the drake's back line while it flies level (screen px) */
+let bb = null;   /* the one back the scene draws (reset at the start of each watch) */
+function backFor(s) {
+  if (!bb || s < 0.05) bb = newBack({ x0: HS.ESCAPE.backX0, y: BACK_Y, len: 192, phase: 3 }, () => 0.5);
   return bb;
 }
-function volcano(g, VW, VH, cx, cy, k, time, reduce) {
-  /* the near cone: a big dark flank with the crater mouth at (cx, cy); lava runs, then THE CORRUPTION (violet-black) pours out of the crack */
+/* the near cone with its crater mouth at (cx, my); k = the crack: violet-black CORRUPTION pours down the flank from the mouth */
+function volcano(g, VH, cx, my, k) {
   const W = 150;
-  g.fillStyle = '#1a0e12'; g.beginPath(); g.moveTo(cx - W, VH + 4); g.lineTo(cx - 34, cy + 2); g.lineTo(cx + 34, cy + 2); g.lineTo(cx + W, VH + 4); g.fill();
-  g.fillStyle = '#2c1a1c'; g.beginPath(); g.moveTo(cx - W + 24, VH + 4); g.lineTo(cx - 34, cy + 2); g.lineTo(cx - 22, cy + 2); g.lineTo(cx - W + 60, VH + 4); g.fill();
-  for (let i = 0; i < 6; i++) { const t = (i + 0.5) / 6, x = lerp(cx - 30, cx - W + 40, t) + (i % 2 ? 6 : 0); line(g, cx - 30 + i * 12, cy + 4, R(x + (i - 2) * 6), VH, i % 2 ? '#7a2a14' : '#a8401a'); }
-  rect(g, '#3a2020', cx - 34, cy, 68, 2);
-  /* THE MOUTH: lit from below */
-  rect(g, '#ff5a1a', cx - 28, cy + 1, 56, 1); rect(g, '#ffb04a', cx - 14, cy + 1, 28, 1);
-  if (k > 0.01) { for (let i = 0; i < 7; i++) { const t = i / 6, x0 = cx + (t - 0.5) * 56, ex = cx + (t - 0.5) * W * 2.0, cl = Math.min(1, k * 1.4 - t * 0.2); if (cl <= 0) continue;
-      line(g, R(x0), cy + 3, R(lerp(x0, ex, cl)), R(lerp(cy + 3, VH, cl)), i % 2 ? '#3a0f3a' : '#1a0818'); line(g, R(x0), cy + 3, R(lerp(x0, ex, cl)), R(lerp(cy + 3, VH, cl)) - 1, i % 2 ? '#7a2a6a' : '#5a1a50'); } }
+  g.fillStyle = '#1a0e12'; g.beginPath(); g.moveTo(cx - W, VH + 70); g.lineTo(cx - 34, my + 2); g.lineTo(cx + 34, my + 2); g.lineTo(cx + W, VH + 70); g.fill();
+  g.fillStyle = '#2c1a1c'; g.beginPath(); g.moveTo(cx - W + 24, VH + 70); g.lineTo(cx - 34, my + 2); g.lineTo(cx - 22, my + 2); g.lineTo(cx - W + 60, VH + 70); g.fill();
+  for (let i = 0; i < 6; i++) line(g, cx - 30 + i * 12, my + 4, R(lerp(cx - 30, cx - W + 40, (i + 0.5) / 6) + (i - 2) * 6), VH + 60, i % 2 ? '#7a2a14' : '#a8401a');
+  rect(g, '#3a2020', cx - 34, my, 68, 2);
+  rect(g, '#ff5a1a', cx - 28, my + 1, 56, 1); rect(g, '#ffb04a', cx - 14, my + 1, 28, 1);
+  if (k > 0.01) for (let i = 0; i < 7; i++) { const t = i / 6, x0 = cx + (t - 0.5) * 56, ex = cx + (t - 0.5) * W * 2.0, cl = Math.min(1, k * 1.4 - t * 0.2); if (cl <= 0) continue;
+    line(g, R(x0), my + 3, R(lerp(x0, ex, cl)), R(lerp(my + 3, VH + 60, cl)), i % 2 ? '#3a0f3a' : '#1a0818'); line(g, R(x0), my + 3, R(lerp(x0, ex, cl)), R(lerp(my + 3, VH + 60, cl)) - 1, i % 2 ? '#7a2a6a' : '#5a1a50'); }
 }
 export function drawEscapeScene(env, s) {
-  const { g, VW, VH, time, n, reduce } = env, calm = !!reduce, E = HS.ESCAPE, b = backFor(VW, s);
-  const cxm = R(VW * 0.74), cym = R(VH * 0.80);   /* the crater mouth */
-  const gk = HS.glideK(s);
+  const { g, VW, VH, time, n, reduce } = env, calm = !!reduce, E = HS.ESCAPE, b = backFor(s), ck = HS.crackK(s);
+  const cxm = R(VW * 0.74), my = R(HS.mouthYB(s, VH)), yOff = HS.drakeYB(s), gk = HS.glideK(s);
   /* the sky: the 'ash' altitude, scrolling left past a drake flying right */
   safe('sky', () => SL.paintAltitude(g, SKY.ash, { scroll: calm ? 40 : s * 60 }, VW, VH, time, 0, 1, true, layerShift));
-  /* the crater and the cone, drawn low; the corruption pours down it after the crack */
-  volcano(g, VW, VH, cxm, cym + R(gk * 30), HS.crackK(s), time, calm);
-  const ck = HS.crackK(s);
-  if (ck > 0.01) { safe('breach', () => SL.breachCrack(g, cxm, cym + R(gk * 30) - 1, 52, ck, calm ? 0.5 : time)); }
-  /* the rim rises to meet the landing */
-  if (gk > 0.01) safe('rim', () => SL.rimLanding(g, -6, R(lerp(VH, VH - 40, smooth(gk * 1.2))), 150, time));
-  /* the drake (the real mount): sinks toward the rim as it glides */
-  b.t = s; b.y = lerp(b.y0, b.y0 + 22, gk); b.bank.state = s >= E.twistAt && s < E.blastAt + 0.9 ? 'tell' : 'level'; b.bank.t = s >= E.blastAt - 0.2 ? 0.7 : 0.3; b.bank.ang = 0;
-  const surf = x => b.y + (Math.sin(b.t * Math.PI * 2 * 0.55) * (gk > 0.95 ? 0 : 2));
-  safe('drake', () => { paintDrake(g, b, 0, 0, time); });
-  const sY = surf(0);
-  /* the King: down on the neck, flung off, smoke wings + laugh, the dive into the crater */
-  const kp = HS.kingPoseB(s), neckX = b.x1 - 10;
+  /* the crater and the cone; the crack opens in its mouth and the corruption pours down it */
+  if (my < VH + 10) { volcano(g, VH, cxm, my, ck); if (ck > 0.01) safe('breach', () => SL.breachCrack(g, cxm, my - 1, 52, ck, calm ? 0.5 : time)); }
+  /* the rim, under the drake as it lands */
+  if (gk > 0.01) safe('rim', () => SL.rimLanding(g, -6, R(BACK_Y + E.drakeLand + 28), 230, time));
+  /* the drake (the real mount), flown up out of frame while the camera follows the King down, and back in to land */
+  b.t = s; b.y = BACK_Y + yOff; b.bank.state = s >= E.twistAt && s < E.blastAt + 0.9 ? 'tell' : 'level'; b.bank.t = s >= E.blastAt - 0.2 ? 0.7 : 0.3; b.bank.ang = 0;
+  const sY = b.y + (gk > 0.95 ? 0 : Math.sin(s * Math.PI * 2 * 0.55) * 2);
+  if (yOff > -125) safe('drake', () => { paintDrake(g, b, 0, 0, time); });
+  /* the King: down on the neck, flung off, smoke wings + laugh over the back, the dive into the crater */
+  const kp = HS.kingPoseB(s), neckX = b.x1 - 10, hoverX = R(VW * 0.52 + Math.sin(time * 1.6) * 5), hoverY = R(96 + Math.sin(time * 2.1) * 3);
   if (kp !== 'gone') safe('king', () => {
     let x = neckX, y = sY, flip = false, spec = { body: 'prone', arm: 'out', ph: 3, frame: 0 };
-    if (kp === 'tumble') { const t = HS.kingFlyK(s); x = lerp(neckX, VW + 30, t); y = sY - Math.sin(t * Math.PI) * 70 - t * 24; spec = { body: 'tumble', arm: 'flail', scream: true, ph: 3, frame: Math.floor(time * 6) % 2 }; }
-    else if (kp === 'wings' || kp === 'laugh') { x = VW * 0.78 + Math.sin(time * 1.6) * 6; y = 58 + Math.sin(time * 2.1) * 4; flip = true; spec = kp === 'laugh' ? { body: 'float', arm: 'spread', cape: 'flare', scream: true, ph: 3, frame: Math.floor(time * 4) % 2 } : { body: 'rise', arm: 'spread', cape: 'flare', ph: 3, frame: Math.floor(time * 3) % 2 }; }
-    else if (kp === 'dive') { const t = HS.diveK(s); x = lerp(VW * 0.78, cxm, t * t); y = lerp(58, cym + R(gk * 30) + 6, t * t); flip = x < VW * 0.78 - 1; spec = { body: 'flat', arm: 'clawFwd', cape: 'flare', ph: 3, frame: Math.floor(time * 8) % 2 }; }
+    if (kp === 'tumble') { const t = HS.kingFlyK(s); x = lerp(neckX, VW * 0.52, t); y = lerp(sY, 96, t) - Math.sin(t * Math.PI) * 54; spec = { body: 'tumble', arm: 'flail', scream: true, ph: 3, frame: Math.floor(time * 6) % 2 }; }
+    else if (kp === 'wings' || kp === 'laugh') { x = hoverX; y = hoverY; flip = true; spec = kp === 'laugh' ? { body: 'float', arm: 'spread', cape: 'flare', scream: true, ph: 3, frame: Math.floor(time * 4) % 2 } : { body: 'rise', arm: 'spread', cape: 'flare', ph: 3, frame: Math.floor(time * 3) % 2 }; }
+    else if (kp === 'dive') { const t = HS.diveK(s), q = t * t; x = lerp(VW * 0.52, cxm, q); y = lerp(96, my + 8, q); flip = false; spec = { body: 'flat', arm: 'clawFwd', cape: 'flare', ph: 3, frame: Math.floor(time * 8) % 2 }; }
     const k = KA.kingSprite(spec); blit(g, k.c, k.ax, k.ay, x, y, flip); });
   /* the drake's blast: a cone of fire from its jaws toward where he was, a breath's worth */
   { const bt = s - E.blastAt; if (bt > -0.1 && bt < 0.9) { const k = clamp01(bt / 0.35) * (1 - clamp01((bt - 0.5) / 0.4)), hx = b.x1 + 78, hy = sY - 6;
       for (let i = 0; i < 26; i++) { const t = (i / 26 + (calm ? 0 : time * 2.2)) % 1, x = hx + t * 120 * k, y = hy - t * 38 * k + Math.sin(i * 2.7 + time * 9) * (2 + t * 6), r = 2 + t * 6 * k; circle(g, R(x), R(y), r, t < 0.25 ? '#fff0c0' : t < 0.55 ? '#ffb04a' : '#c8501a', t < 0.55 ? '#a8301a' : '#3a1a14'); } } }
-  /* the party: running up the back, then stood; stepping off onto the rim at the end */
-  for (let i = 0; i < n; i++) { const h = HS.heroB(i, n, s, VW), sx0 = h.x, fyh = sY + 1 + (h.off ? 4 * gk : 0); env.drawHero(i, R(sx0), R(fyh), 1, h.running || (h.off && s < E.stepOffAt + 1) ? 'run' : 'idle', h.running ? Math.floor(time * 12) + i * 2 : Math.floor(time * 4.5) + i); }
+  /* the party: running up the back, then stood; walking back to the tail and dropping onto the rim at the end */
+  if (yOff > -125) for (let i = 0; i < n; i++) { const h = HS.heroB(i, n, s, VW); env.drawHero(i, R(h.x), R(sY + 1 + h.drop), h.face, h.running ? 'run' : 'idle', h.running ? Math.floor(time * 12) + i * 2 : Math.floor(time * 4.5) + i); }
   /* ash and sparks across everything */
   for (let i = 0; i < 26; i++) { const sp = 30 + hash(i + 3) * 50, x = (((hash(i) * (VW + 40)) - (calm ? 0 : s * sp)) % (VW + 40) + VW + 40) % (VW + 40) - 10, y = (hash(i + 7) * VH + (calm ? 0 : s * 10 * (i % 2 ? 1 : -1))) % VH; dot(g, i % 3 ? '#7a6a64' : '#ff9a3a', x, (y + VH) % VH); }
-  /* the breach's violet bloom under the cone */
+  /* the breach's violet bloom */
   if (ck > 0.01) { g.fillStyle = 'rgba(90,20,90,' + (0.16 * ck).toFixed(3) + ')'; g.fillRect(0, 0, VW, VH); }
   /* the card */
   const cd = HS.cardK(s);

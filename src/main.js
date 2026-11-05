@@ -36697,7 +36697,7 @@ function render() {
     g.fillStyle = gr; g.fillRect(0, 0, VW, VH);
     g.globalAlpha = 0.10 * k; g.fillStyle = '#f6f6ee'; g.fillRect(0, 0, VW, VH); g.globalAlpha = 1;
   }
-  if (DKH) DKH.hud(g, VW, VH, time);   /* (claude/demonking) his three-phase bar and the pips */
+  if (DKH && !TRN) DKH.hud(g, VW, VH, time);   /* (claude/scenes) none over a transition's scene */   /* (claude/demonking) his three-phase bar and the pips */
   if (flash > 0 && SET.flashes && !SET.reduceMotion) { g.fillStyle = 'rgba(255,80,80,' + (flash * 2.5) + ')'; g.fillRect(0, 0, VW, VH); }
   if (state === 'talk' && talk) { // the words: a box along the bottom, the speaker named, a glyph for the next page
     const big = !!SET.bigText; const sz = big ? TYPE.big : 8; const bw = VW - 24, bx = 12; const body = talk.lines[talk.i] || ''; const lines = wrap(body, bw - 16, sz); const lh = big ? 18 : 10, nh = talk.name ? lh : 0; const bh = 14 + lines.length * lh + nh + 8;   /* (+8: the page count and the next glyph have a row of their own, off the last line) */
