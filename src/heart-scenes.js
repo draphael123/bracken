@@ -68,7 +68,7 @@ export const ESCAPE = {
   cardAt: 12.4, cardIn: 1.0,   // the card (to the end of the scene)
 };
 export const ESCAPE_CARD = { title: 'THE BREACH', line: 'HE IS NOT DONE. NOR ARE YOU.' };
-export const ESCAPE_CUES = [[0.0, 'dkScream'], [3.4, 'drakeBank'], [3.6, 'dkBlast'], [5.8, 'dkLaugh'], [7.2, 'dkSwoop'], [8.2, 'dkEruption'], [8.4, 'dkCrash'], [11.8, 'drakeWing'], [12.2, 'pStep'], [12.4, 'dkChain']];
+export const ESCAPE_CUES = [[0.05, 'dkScream'], [3.4, 'drakeBank'], [3.6, 'dkBlast'], [5.8, 'dkLaugh'], [7.2, 'dkSwoop'], [8.2, 'dkEruption'], [8.4, 'dkCrash'], [11.8, 'drakeWing'], [12.2, 'pStep'], [12.4, 'dkChain']];
 export const crackK = s => smooth((s - ESCAPE.crackAt) / ESCAPE.crackT);
 export const cardK = s => smooth((s - ESCAPE.cardAt) / ESCAPE.cardIn);
 export const kingFlyK = s => clamp01((s - ESCAPE.flyAt) / ESCAPE.flyT);
