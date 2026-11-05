@@ -186,5 +186,5 @@ export function makeDemonKingHands(ctx) {
     if (ctx.text) ctx.text('THE DEMON KING', VW / 2, y + 7, '#e8d8c8', 'center', 6);
     for (let i = 0; i < DK.knock.pips; i++) { const px = R(VW / 2 - 12 + i * 12), py = y + 18, lit = i < f.pips; g.fillStyle = lit ? C.gold : 'rgba(255,255,255,0.18)'; g.fillRect(px - 2, py, 5, 5); if (lit && f.pips >= 2) { g.fillStyle = '#ffffff'; g.fillRect(px - 1, py + 1, 3, 3); } }
   }
-  return { on, owns, struck, take, update, draw, hud, clear, fight: () => f, king: () => king };
+  return { on, owns, struck, take, update, draw, hud, clear, impDmg: () => DK.imps.dmg, fight: () => f, king: () => king };
 }
