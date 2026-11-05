@@ -16,7 +16,7 @@
 import { surfaceY, kingLandX, holdBank, beginClimb, walkable } from './sky-mount.js';
 
 export const DK = {
-  bar: 1000, phases: 3,                                     // EHP.demonking = 3 x 1200 (heartplan: Gorm pattern hp1/hp2/hp3)
+  bar: 900, phases: 3,                                     // EHP.demonking = 3 x 1200 (heartplan: Gorm pattern hp1/hp2/hp3)
   w: 24, h: 40, proneW: 40, proneH: 16,
   enter: 1.6,                                               // he flies in over the neck (no attack)
   hover: { up: 74, lead: 92, speed: 80, bob: 4, xPad: 40 }, // feet this far over the back; this far ahead of his mark; drift speed; over the back +- xPad
@@ -25,17 +25,17 @@ export const DK = {
     { bolt: 0.72, swoop: 0.28 },
     { bolt: 0.30, feint: 0.18, double: 0.20, swoop: 0.14, whip: 0.18 },
     { bolt: 0.26, feint: 0.14, double: 0.20, swoop: 0.10, whip: 0.14, summon: 0.16 } ],
-  bolt: { r: 7, v: [150, 170, 185], tell: [0.70, 0.60, 0.55], release: 0.2, dmg: 22, life: 4.5, chestUp: 8, headUp: 16, g: 260, highK: 0.8 },
+  bolt: { r: 7, v: [150, 170, 185], tell: [0.70, 0.60, 0.55], release: 0.2, dmg: 15, life: 4.5, chestUp: 8, headUp: 16, g: 260, highK: 0.8 },
   ret: { v: 210, mul: 1.2, pips: 1, turn: 7, r: 14, life: 4 },          // a NORMAL return: pale gold, homing, swordDmg x1.2, one pip
   power: { v: 320, mul: 2.0, pips: 2, turn: 12 },                       // a POWER return: white-gold, swordDmg x2.0, two pips, never batted
   rally: { chance: [0, 0.4, 0.7], tell: 0.25, speedUp: 0.15, max: 3 },  // P1 none (rec Q8); +15% speed a volley; at most 3 volleys a rally
   feint: { tell: 0.6, real: 0.4 },
   double: { tell: 0.8, gap: 0.35, t: 0.5 },
-  swoop: { tell: 0.9, t: 0.5, dmg: 30, band: [24, 10], rise: 22, reach: 14, hang: 0.4 },   // band: px over the surface (top, bottom) = head height: DUCK / roll / jump
-  whip: { tell: 0.85, t: 0.3, dmg: 32, hang: 1.0, low: [6, 0], high: [24, 10], at: 30 },  // LOW = jump, HIGH = duck; he hangs low after (chip)
+  swoop: { tell: 0.9, t: 0.5, dmg: 20, band: [24, 10], rise: 22, reach: 14, hang: 0.4 },   // band: px over the surface (top, bottom) = head height: DUCK / roll / jump
+  whip: { tell: 0.85, t: 0.3, dmg: 22, hang: 1.0, low: [6, 0], high: [24, 10], at: 30 },  // LOW = jump, HIGH = duck; he hangs low after (chip)
   knock: { pips: 3, tumble: 0.6, down: [5.0, 4.5, 4.0], repulse: 0.6, repR: 44, repDmg: 6, ward: 2.0, bankPad: 0.5 },
-  imps: { tell: 1.0, cap: 2, cd: 7, n: 2, gap: 34, dmg: 3.5, hp: 20 },    // the existing 'imp' foe (20 hp), reskinned demon-red by S4
-  bombs: { every: 5.0, jitter: 0.3, tell: 1.1, r: 14, dmg: 26, n: [1, 2] },
+  imps: { tell: 1.0, cap: 2, cd: 7, n: 2, gap: 34, dmg: 2.5, hp: 20 },    // the existing 'imp' foe (20 hp), reskinned demon-red by S4
+  bombs: { every: 5.0, jitter: 0.3, tell: 1.1, r: 14, dmg: 18, n: [1, 2] },
   fall: 1.2, climb: 5.0,                                     // the phase change: his last fall + scream, then the drake climbs (S1 beginClimb)
   mul: { downed: 1.5, chip: 0.4 },                           // B15: x0.4 everywhere outside the knockdown (never lower), x1.5 downed
   returnTag: 'reflect',                                      // a returned bolt lands through hurtAs('reflect', ...): whole, never chipped
