@@ -15,7 +15,7 @@ globalThis.document = { createElement: () => { const c = { width: 0, height: 0 }
 const NC = await import('./node-canvas.mjs');
 const { LEVELS, T } = await import('../src/level.js');
 const KW = await import('../src/redraw/kingswood_areas.js'), CH = await import('../src/redraw/church_set.js'), KS = await import('../src/redraw/ksar_set.js');
-export const TS = 16, MAXGAP = 24, GATE = [];
+export const TS = 16, MAXGAP = 24, GATE = ['kings', 'church', 'ksar'];
 const setV = (L, g) => ({ g, cx: 0, cy: 0, vw: 1e9, vh: 1e9, time: 1, L, T, noGlow: true, lit: () => true, glow: 1, stubs: 3, paladinLight: 1 });   /* (the churchart / ksar sets: one call paints the whole level) */
 const whole = fn => L => [{ x: 0, w: 0, whole: true, area: 'set', draw: g => { const keep = globalThis.document; NC.install(); try { fn(L, g); } finally { globalThis.document = keep; } } }];
 /* [level id, module label, features(L) -> [{x, w, draw(g)}]] */
