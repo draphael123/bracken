@@ -8,7 +8,7 @@
    node tools/great-hound.mjs */
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { GH, houndTake, houndWardStep, boughSpots, boughHits } from '../src/great-hound.js';
+import { GH, houndTake, houndWardStep, boughSpots, boughHits, houndSoft, onDeck } from '../src/great-hound.js';
 import { CHIP_MINI, FULL_DAMAGE, chipped, OPEN_RULE } from '../src/boss-greed.js';
 import { MARK, ANSWER, BY_HAND } from '../src/marks.js';
 import { CALL_LINES } from '../src/hint-lines.js';
@@ -56,4 +56,16 @@ assert.ok(GH.bough.tell >= 0.75 && GH.bough.tellP2 >= 0.6, 'THE BOUGHS is told l
   assert.ok(boughHits(300, 305, 200, 200) && !boughHits(300, 300 + GH.bough.r + 2, 200, 200), 'a bough hits on its ring only');
   const free = [...Array(81).keys()].map(i => 260 + i).filter(x => s.every(b => !boughHits(b, x, 200, 200))); assert.ok(free.length > 10, 'there is floor between the rings to stand on'); }
 assert.equal(TURN_WORD.greathound, 'GO ROUND', 'his turned blow says GO ROUND');
+/* KINGSWOOD'S HOUND 2 (claude/greathound, Daniel 11-05): the bite pays, the landing opens, phase two pounces twice, the gallery */
+{ const e = hound(); houndSoft(e, GH.bite.t, GH.bite.mul); const r = houndTake(e, 20, 140, false, true);
+  assert.equal(r.turned, false, 'bitten, a blow into his face is not turned'); assert.equal(r.dmg, Math.round(20 * GH.bite.mul), 'bitten: x GH.bite.mul from any side');
+  assert.ok(GH.bite.mul <= 1.5 && GH.land.mul <= 1.5 && GH.bite.t <= 2.5 && GH.land.t <= 1.5, 'the bite and the landing are SHORT windows, not openings');
+  houndSoft(e, 0.5, 2); assert.equal(e.softT, GH.bite.t, 'a shorter window does not replace a longer one'); }
+{ const deck = { x0: 100, x1: 164, y: 368 }; assert.ok(onDeck(deck, 130, 368) && !onDeck(deck, 130, 416) && !onDeck(deck, 200, 368), 'onDeck: on the gallery boards only');
+  assert.ok(boughHits(130, 130, 368, 416, deck) && !boughHits(130, 130, 368, 416), 'the boughs find a hero on the gallery (and only where there is one)'); }
+const kw = readFileSync(new URL('../src/kingswood.js', import.meta.url), 'utf8');
+assert.ok(kw.includes('hound2: true, deck: {') && kw.includes('CUT ITS CHAIN: IT BITES HIM'), 'Kingswood: hound2 on, the gallery deck, the chain post taught by a sign');
+assert.ok(src.includes('h2 && p2 && !e.secondPounce) { e.secondPounce = true; e.pounceAgain = true;') && src.includes("e.pounceAgain) { e.pounceAgain = false; e.stagger = 0; tell('!!'"), 'phase two: the double pounce, its second told');
+assert.ok(src.includes("tell('!', '#ffd36b', GHN.leap.tell, 'leapTell')") && MARK['greathound|leapTell'] === '!', 'the gallery leap is told and marked');
+assert.ok(src.includes('if (h2 && !(e.ghWard > 0)) GHD.houndSoft(e, GHN.land.t, GHN.land.mul)'), 'the landing opens him (not in his ward)');
 console.log('great-hound: never on the chip, hit for real from every side (front x' + GH.front + ', behind and above whole, open x' + GH.openMul + '), a told ward, the pups kept, THE BOUGHS told and answered');
