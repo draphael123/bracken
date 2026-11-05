@@ -6,13 +6,14 @@
 // Margins (px past a hand's slack, per hero) are in work/claude/lane-done/claude-gaps.md. Two things learned: a ceiling over the take-off caps the jump (Scree's
 // ridge ledges sat on row 3 under the map's top: LOWERED, not narrowed; the Monastery's corridor under the low floor), and a NET is footing, so a rope can be widened.
 
+import { MON3 } from './mon3-flag.js';
 export const GAPS = {
   /* THE SCREE PATH, the ridge road's three stepping ledges (218-220 > 224-226 > 230-232 > 236-238): each landing ledge a tile longer toward the one before, gaps 3 -> 2 */
   scree: c => { c.fill(217, 238, 3, 3, c.T.AIR); c.ledge(218, 220, 4); c.ledge(223, 226, 4); c.ledge(229, 232, 4); c.ledge(235, 238, 4); },
   /* THE HANGING VILLAGE, the rope net (103-104) to the rock lip (99): the net a column wider (the lip a tile out shortened the route past the bridge set-piece: hanging-exam) */
   hanging: c => { c.col(103, 102, 38); },
   /* THE MONASTERY, the stair slab (60,138) back to the corridor floor (50-57, row 137) under the low floor: the corridor a tile longer */
-  spire: c => { c.ledge(58, 59, 137); },
+  spire: c => { if (!MON3) c.ledge(58, 59, 137); },   /* (claude/monastery3-1105) the old layout's corridor: not in THE MONASTERY 3 */
   /* HIGHCROWN: the scaffold 166-168 > the wall block 173 (gap 4); the scaffold 139 from the rampart block 131-135 (gap 3, up 1) */
   crown: (c, L) => { c.ledge(169, 169, 60, c.T.PLANK); for (const e of c.ents) if (e.t === 'scaffold' && e.x === 166 && e.y === 60) e.x1 = 169; c.col(135, 136, 64); },
   /* THE SHIPWRECK REEF: the rock shelf (462) two tiles toward the rope net (456-457) */

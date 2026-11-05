@@ -102,8 +102,8 @@ export function rebuildMonastery3(R, { T, TS }) {
   block(41, 58, 215, 217); block(59, 74, 212, 217); block(75, W - 2, 209, 217);
   masonry.push([41, 58, 215, 217], [59, 74, 212, 217], [75, 94, 209, 217]);
   /* THE GARTH'S PRAYER WHEEL (the old level's first lesson, moved out into the garden): turned to the dovecote; strike it and its stair climbs to the trapdoor */
-  wheel(209, 85, 207, 2, 'b'); air(81, 83, 201, 202); coins([82, 202]); masonry.push([80, 84, 200, 200]);   /* its other stair goes up into the dovecote's nook in the refectory's floor */
-  ent('sign', 78, 208, { text: 'A PRAYER WHEEL. STRIKE IT AND ITS STAIR TURNS. STRIKE IT AGAIN AND IT TURNS BACK.' });
+  wheel(208, 85, 207, 2, 'b'); air(81, 83, 201, 202); coins([82, 202]); masonry.push([80, 84, 200, 200]);   /* its other stair goes up into the dovecote's nook in the refectory's floor */
+  ent('sign', 78, 208, { text: 'A PRAYER WHEEL IN THE GARTH. STRIKE IT AND ITS STAIR TURNS. STRIKE IT AGAIN AND IT TURNS BACK.' });
   hatch(89, 200, 5);
   for (const [x, y, k, v] of [[20, 217, 'beanpoles', 0], [30, 217, 'fruitTree', 0], [36, 217, 'herbBed', 0], [44, 214, 'skep', 0], [47, 214, 'skep', 1], [52, 214, 'herbBed', 1],
     [62, 211, 'fruitTree', 1], [70, 211, 'well', 0], [78, 208, 'herbBed', 0], [76, 208, 'fruitTree', 2], [92, 208, 'dovecote', 0]]) deco(x, y, k, v);
@@ -190,7 +190,7 @@ export function rebuildMonastery3(R, { T, TS }) {
   ent('sign', 84, 162, { text: 'THE DORTER. THE MONKS SLEPT HERE. THE GOBLINS DO NOW.' });
   coins([25, 155], [32, 155], [56, 155], [62, 155], [82, 155], [44, 158], [10, 160]);
   // THE WEST END: the ladder to the roof hatch, and THE FIRST SHORTCUT - a bell whose rope goes down the monks' rope well to the kitchen
-  hatch(4, 146, 7); boards(8, 149, 3); brazier(5, 163, 14, { phase: 1.0, lift: 210 });   /* the dormitory's warming brazier still breathes: its smoke goes up to the roof hatch */
+  hatch(4, 146, 7); boards(8, 149, 3); set(11, 149, T.NET); brazier(5, 163, 14, { phase: 1.0, lift: 210 });   /* the dormitory's warming brazier still breathes: its smoke goes up to the roof hatch */
   boards(1, 163, 2); air(1, 2, 164, 165); air(1, 2, 166, 184);        /* the rope well's trapdoor in the dorter floor, and the well down the chimney breast to the kitchen */
   ent('tbell', 9, 162, { rope: [1, 164, 199] });
   ent('sign', 12, 162, { text: 'A BELL OVER THE ROPE WELL. STRIKE IT AND ITS ROPE UNROLLS TO THE KITCHEN: A QUICK WAY BACK UP.' });
@@ -230,20 +230,21 @@ export function rebuildMonastery3(R, { T, TS }) {
   // THE BROKEN FLOOR: the shelf is gone between the towers - the drawbridge or the long fall to the cliff path
   air(58, 81, 116, 118);
   // the west tower: a laid pier with its belfry stage open over it
-  block(50, 57, 91, 118); masonry.push([50, 57, 91, 118]);
+  block(50, 57, 91, 118); masonry.push([50, 57, 91, 115]);
   block(50, 50, 85, 90); set(57, 88, T.SOLID); boards(51, 88, 6);       /* its belfry: a landing three rows over the bridge's end, under the chapel's trapdoor */
-  facades.push([50, 57, 85, 118, 'monkTower', { stage: 3 }]);
+  facades.push([50, 57, 85, 115, 'monkTower', { stage: 3 }]);
   // the east tower: walls, a door at the foot, the bell rope up the inside, the bell on its top
   const BX = 82; block(BX, BX, 92, 115); block(BX + 7, BX + 7, 92, 115);
   boards(BX, 91, 8); rope(BX + 3, 92, 115); boards(BX + 4, 94, 3);
   masonry.push([BX, BX, 92, 115], [BX + 7, BX + 7, 92, 115]); interiors.push([BX + 1, BX + 6, 92, 115, 'monkTower']);
-  facades.push([BX - 1, BX + 8, 86, 118, 'monkTower', { stage: 5 }]);
+  facades.push([BX, BX + 7, 59, 115, 'monkTower', { stage: 5 }]);   /* the tower goes on up past its bell to the guardian hall's floor, and carries it */
+  facades.push([58, BX, 59, 62, 'monkArch', { spans: true }]);   /* and an arch from the chapel's east wall to the tower carries the hall floor over the drawbridge */
   ent('tbell', BX + 4, 90, { span: [58, 81, 91] });                    /* THE DRAWBRIDGE: strike it and the bridge comes down to the west tower */
   ent('sign', BX + 5, 115, { text: 'THE BELL TOWERS. STRIKE THE BELL AT THE TOP AND WHAT HANGS FROM ITS TOWER COMES DOWN.' });
   // the drawbridge beats (tools/monastery3-beats.mjs, kept): a harpy and a fledgling over the broken floor, a priest waiting on the far tower
   ent('harpy', 66, 86, { face: 1 }); ent('fledgling', 74, 88, { face: -1 }); ent('gobpriest', 54, 90, { face: 1 });
   coins([62, 90], [68, 90], [74, 90], [86, 93], [86, 100], [86, 107]);
-  for (const [x, y, k, v] of [[92, 115, 'prayerFlags', 0], [60, 115, 'bellFrame', 1]]) deco(x, y, k, v);
+  for (const [x, y, k, v] of [[92, 115, 'prayerFlags', 0], [51, 90, 'bellFrame', 1]]) deco(x, y, k, v);
   flags.push([57, 86, 82, 84], [10, 140, 30, 120]);
 
   /* ================= THE CHAPEL (rows 59-84, x4-57): pews and the goblin congregation, a priest leading it (15:55 #2) ================= */
@@ -260,7 +261,7 @@ export function rebuildMonastery3(R, { T, TS }) {
   brazier(42, 85, 11, { phase: 0.6 });
   ent('sign', 44, 84, { text: "THE ALTAR'S CENSER STILL BREATHES. STAND IN THE SMOKE." });
   // A PRAYER WHEEL on the loft: turned to the old relic niche at the west wall; strike it and its stair faces the choir loft and the trapdoor
-  wheel(74, 35, 71, 6, 'a');                                           /* turned to the relic niche; strike it and its stair climbs west to the trapdoor */
+  wheel(73, 35, 71, 6, 'a');                                           /* turned to the relic niche; strike it and its stair climbs west to the trapdoor */
   air(47, 49, 57, 58); ent('silver', 48, 58);                         /* the relic niche, cut up into the hall's floor: the monks' last silver, where the wheel's other stair goes */
   masonry.push([46, 50, 56, 56]);
   ent('sign', 30, 73, { text: 'THE ROOD WHEEL. STRIKE IT AND ITS STAIR TURNS: ONE WAY THE RELICS, THE OTHER THE TRAPDOOR.' });
@@ -277,7 +278,7 @@ export function rebuildMonastery3(R, { T, TS }) {
   /* ---- what the art pass reads (art before live): the new props carry their kinds; nothing below is a tile ---- */
   const tall = { top: CLOUD * TS, bottom: 218 * TS, col: '64,70,84', deepest: 0.26 };
   const out = Object.assign({}, R, {
-    grid: g, ents, moversExtra: movers, facades, masonry, interiors, crumbles, darkZones, islands, cloudLine: CLOUD, tall, mon3: true,
+    grid: g, ents, islands: islands.concat([[3, 58, 56, 118, "the crag under the chapel and the guardian's floor: only the rope well parts it from the map wall"], [82, 82, 116, 118, 'the shelf between the broken floor and the crevice, under the east tower'], [3, 3, 119, 139, 'the rope well wall, down the outside of the crag'], [19, 26, 119, 120, 'the hoist hub crag under the shelf'], [13, 94, 163, 165, 'the dorter floor, on the chimney breast and the cells'], [3, 12, 163, 184, 'the kitchen chimney breast: only the rope well parts it from the map wall']]), moversExtra: movers, facades, masonry, interiors, crumbles, darkZones, cloudLine: CLOUD, tall, mon3: true,
     monk: { flags, hangers, boards: (R.monk && R.monk.boards) || [], tables },
     kits: [[18, 94, 203, 217, { density: 0.3, kinds: ['herbBed', 'skep'] }]],
     calm: (R.calm || []).concat([GARTH_CALM]),

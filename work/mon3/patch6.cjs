@@ -1,0 +1,14 @@
+const fs=require('fs');const f='src/monastery3.js';let L=fs.readFileSync(f,'utf8').split('\n');
+const set=(n,txt)=>{L[n-1]=txt;};
+set(257,"  for (const x of [19, 24, 30, 36, 46]) boards(x, 84, 3);");
+set(258,"  // THE ALTAR'S CENSER, the way up: the brazier by the sanctuary step lifts you onto the rood loft");
+set(259,"  boards(4, 74, 37);                                                   /* the rood loft, keyed into the west wall */");
+set(260,"  brazier(42, 85, 11, { phase: 0.6 });");
+set(261,"  ent('sign', 44, 84, { text: 'THE ALTAR\'S CENSER STILL BREATHES. STAND IN THE SMOKE.' });");
+set(263,"  wheel(74, 35, 71, 6, 'a');                                           /* turned to the relic niche; strike it and its stair climbs west to the trapdoor */");
+set(264,"  air(47, 49, 57, 58); ent('silver', 48, 58);                         /* the relic niche, cut up into the hall's floor: the monks' last silver, where the wheel's other stair goes */");
+set(265,"  masonry.push([46, 50, 56, 56]);");
+set(266,"  ent('sign', 30, 73, { text: 'THE ROOD WHEEL. STRIKE IT AND ITS STAIR TURNS: ONE WAY THE RELICS, THE OTHER THE TRAPDOOR.' });");
+L[269]=L[269].replace("[10, 74, 'bookshelf', 0]","[10, 73, 'bookshelf', 0]");
+set(271,"  coins([21, 83], [26, 83], [33, 83], [46, 83], [10, 73], [20, 73], [32, 68], [28, 64], [24, 60], [44, 62], [48, 60]);");
+fs.writeFileSync(f,L.join('\n'));console.log('ok');

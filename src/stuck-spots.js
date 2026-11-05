@@ -9,7 +9,7 @@
 //     off: { prop: value }                not while the hero stands on a mover with those properties
 //     steps: [ {zone?, at/ats/mover, line, done?, when?}, ... ] }   an ordered chain: the first step that is not done
 // Columns and rows are the FINAL built tiles (the same numbers the signs and entities carry).
-import { uwX, UW_SPILL, UW_RES } from './underwell.js';   /* (claude/underwell3) THE UNDERWELL's spots are written in its columns before the two water sections were let in */
+import { uwX, UW_SPILL, UW_RES } from './underwell.js'; import { MON3 } from './mon3-flag.js';   /* (claude/monastery3-1105) THE MONASTERY 3's own spots, behind its flag */   /* (claude/underwell3) THE UNDERWELL's spots are written in its columns before the two water sections were let in */
 /* an Underwell spot in the old columns, put where it stands now: its zone, its thing, and a fire.<col> key */
 const uwSpot = s => ({ ...s, ...(s.zone ? { zone: [uwX(s.zone[0]), s.zone[1], uwX(s.zone[2]), s.zone[3]] } : {}), ...(s.steps ? { steps: s.steps.map(uwSpot) } : {}),
   ...(s.at ? { at: [uwX(s.at[0]), s.at[1]] } : {}), ...(s.is && /^fire\.\d+$/.test(s.is[0]) ? { is: ['fire.' + uwX(+s.is[0].slice(5)), s.is[1]] } : {}) });
@@ -580,6 +580,21 @@ export const STUCK = {
    `is: [name, value]` is a state the hands report (gate.falls: open | shut | full, jam: closed | open); `key` names the glint to the pilots; `dy`: the glint's lift (px).
    The order is the order of the old nextThing list: the first spot with a step that fits wins. Append a level's spots; do not reorder. */
 const WHOLE = [0, 0, 999, 999];
+/* (claude/monastery3-1105) THE MONASTERY 3 (src/monastery3.js, behind src/mon3-flag.js): every machine its route needs, one spot each (tools/stuck.mjs) */
+if (MON3) STUCK.spire = [
+  { id: 'm3-wheel-garth', zone: [78, 203, 92, 209], at: [86, 208], glint: 'stall', line: 'THE GARTH WHEEL TURNS ITS STAIR TO THE TRAPDOOR' },
+  { id: 'm3-flue-1', zone: [1, 193, 11, 199], at: [7, 199], glint: 'stall', line: 'THE HEARTH BRAZIER: RIDE ITS SMOKE UP THE FLUE' },
+  { id: 'm3-flue-2', zone: [8, 188, 11, 192], at: [10, 191], line: 'A COLD CENSER ON THE LEDGE: IT ANSWERS A BLOW' },
+  { id: 'm3-flue-3', zone: [5, 179, 9, 184], at: [7, 183], glint: 'stall', line: 'THE LAST FLUE BRAZIER: UP, AND EAST INTO THE SCRIPTORIUM' },
+  { id: 'm3-dorter-vent', zone: [1, 155, 10, 162], at: [5, 162], glint: 'stall', line: 'THE DORMITORY BRAZIER: ITS SMOKE GOES UP TO THE ROOF HATCH' },
+  { id: 'm3-bell-rope-1', zone: [6, 158, 14, 162], at: [9, 162], line: 'THE BELL OVER THE ROPE WELL: A WAY BACK UP FROM THE KITCHEN' },
+  { id: 'm3-hoist', zone: [12, 124, 30, 140], mover: { cw: 'm3cw0' }, line: "THE MONKS' HOIST: STAND IN ONE BASKET, RIDE THE OTHER UP" },
+  { id: 'm3-drawbridge', zone: [82, 86, 90, 91], at: [86, 90], done: ['tbell', 86, 90, 'down'], line: 'THE BELL ON THE TOWER LETS THE DRAWBRIDGE DOWN' },
+  { id: 'm3-altar', zone: [36, 79, 48, 84], at: [42, 84], glint: 'stall', line: 'THE ALTAR CENSER: ITS SMOKE LIFTS YOU TO THE ROOD LOFT' },
+  { id: 'm3-wheel-rood', zone: [24, 66, 44, 73], at: [36, 73], glint: 'stall', line: 'THE ROOD WHEEL: TURN ITS STAIR TO THE TRAPDOOR' },
+  { id: 'm3-bell-rope-2', zone: [1, 50, 12, 55], at: [6, 55], line: "THE GUARDIAN DOOR BELL: A WAY BACK UP FROM THE DORTER ROOF" },
+  ...STUCK.spire.filter(q => q.id === 'sp-wheel-3'),
+];
 export const STUCK_HANDS = {
   /* THE LIT CHURCH (claude/litchurch): every lamp the route needs glints - first the fire that gives the flame, then the lamp (src/lit-church-hands.js handsState:
      need.<lamp> fire / lamp / done, lamp.<id> lit / dark, door.<id> open / shut, stubs due / short); the bellows, the key desk, the seal lamp and the well glint as the
@@ -920,6 +935,7 @@ export const STUCK_SIGNS = {
   spire: { add: [{ x: 14, y: 131, text: 'THE BOOK-HOIST. STEP IN A BASKET: THE OTHER COMES DOWN.' }] },
   stockade: { add: [{ x: 134, y: 19, text: 'A CRANK WORKS THE PALISADE GATE. STRIKE IT.' }] },
 };
+if (MON3) delete STUCK_SIGNS.spire;   /* (claude/monastery3-1105) the old book hoist's sign: the new layout signs its own hoist */
 export function applyStuckSigns(L, id) {
   const S = STUCK_SIGNS[id]; if (!S || !L || !L.ents) return L;
   for (const f of S.fix || []) { const e = L.ents.find(q => q.t === 'sign' && q.x === f.x); if (e) e.text = f.text; }

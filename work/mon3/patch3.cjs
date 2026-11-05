@@ -1,0 +1,10 @@
+const fs=require('fs');const f='src/monastery3.js';let s=fs.readFileSync(f,'utf8');
+const rep=(a,b)=>{const n=s.split(a).length-1;if(n!==1)throw new Error('match '+n+': '+a.slice(0,70));s=s.replace(a,b);};
+rep("block(85, 89, 177, 177); boards(90, 177, 3); set(93, 177, T.SOLID);","block(85, 89, 177, 177); boards(90, 177, 3); block(93, 94, 177, 177);");
+rep("boards(85, 172, 3); block(88, 93, 172, 172);","boards(85, 172, 3); block(88, 94, 172, 172);");
+rep("block(85, 90, 167, 167); boards(91, 167, 3);","block(85, 90, 167, 167); boards(91, 167, 3); set(94, 167, T.SOLID);");
+rep("masonry.push([85, 93, 177, 177], [85, 93, 172, 172], [85, 93, 167, 167]);","masonry.push([85, 94, 177, 177], [85, 94, 172, 172], [85, 94, 167, 167]);");
+rep("boards(90, 180, 4); boards(85, 175, 3); boards(91, 170, 3); boards(85, 166, 3);","boards(91, 180, 4); boards(85, 175, 3); boards(92, 170, 3); boards(85, 166, 3);");
+rep("interiors.push([85, 93, 166, 181, 'monkTower']);","interiors.push([85, 94, 166, 181, 'monkTower']);");
+rep("for (const x of [20, 25, 30, 35, 40, 45]) boards(x, 84, 3);","for (const x of [19, 24, 36, 41, 46]) boards(x, 84, 3);");
+fs.writeFileSync(f,s);console.log('ok');
