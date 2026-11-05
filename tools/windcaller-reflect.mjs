@@ -28,8 +28,8 @@ try {
       else{blade={x:P.x+f*110,dir:-f,kind:'low',gy,delay:0,life:2.6,hit:false};b.wc.blades.push(blade);}
       const hp0=P.hp;let fell=false,turned=false,pressed=false;
       for(let i=0;i<60*5;i++){const px=kind==='bolt'?sd.x:blade.x;const d=Math.abs(px-P.x);
-        if(!pressed&&d<(kind==='bolt'?30:75)){K.block=true;pressed=true;}
-        if(pressed&&i>0&&d>40&&(kind==='bolt'?sd.reflected:true))K.block=false;
+        if(!pressed&&d<(kind==='blade'&&hero==='paladin'?58:30)){K.block=true;pressed=true;}
+        if(pressed&&i>0&&(kind==='bolt'?(d>40&&sd.reflected):b.wc.blades.every(q=>q!==blade)))K.block=false;
         step(1);
         if(kind==='bolt'?sd.reflected:(b.wc.blades.every(q=>q!==blade)&&BK.seeds().some(s=>s.reflected&&s.bolt)))turned=true;
         if(b.mode==='fallen'){fell=true;break;}}
