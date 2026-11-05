@@ -125,14 +125,14 @@ export function rebuildMonastery3(R, { T, TS }) {
   boards(13, 191, 12);                                                 /* the reader's pulpit gallery, keyed into the kitchen wall */
   rope(46, 185, 189); boards(42, 190, 9);                              /* a chandelier on its chain: a board ring hung from the roof */
   rope(70, 185, 189); boards(66, 190, 9);
-  for (const [x, k, v] of [[18, 'bench', 0], [36, 'longTable', 0], [52, 'bench', 1], [70, 'longTable', 1], [83, 'lectern', 0]]) deco(x, 199, k, v);
+  for (const [x, k, v] of [[18, 'bench', 0], [52, 'bench', 1], [83, 'lectern', 0]]) deco(x, 199, k, v);
   deco(20, 190, 'lectern', 1); deco(14, 190, 'bookpile', 0);
   deco(84, 194, 'lootHeap', 1);                                        /* the high table: what they took, heaped where the abbot ate */
   coins([20, 196], [37, 195], [54, 196], [70, 195], [83, 194], [46, 189], [70, 189]);
   // THE KITCHEN at the west end: the hearth, the stockpot, and the flue over it - and the first checkpoint
   deco(4, 199, 'hearth', 0); deco(10, 199, 'mugShelf', 0);
   ent('check', 3, 199);
-  ent('gobpriest', 11, 199, { face: -1, censer: true });   /* THE CENSER-SWINGER (15:55 #3): he tends the hearth brazier, and smothers it under whoever rides it */
+  ent('gobpriest', 11, 199, { face: -1, censer: true, cnSkin: 'censerswinger' });   /* THE CENSER-SWINGER (15:55 #3): he tends the hearth brazier, and smothers it under whoever rides it */
   ent('sign', 9, 199, { text: 'THE KITCHEN FLUE. THE HEARTH\'S BRAZIERS STILL BREATHE: RIDE THE SMOKE UP THE CHIMNEY.' });
 
   /* ================= THE KITCHEN FLUE (tight vertical, 15:55 #1): x6-10, the kitchen's ceiling up to the scriptorium; then the L, east ================= */
@@ -269,7 +269,7 @@ export function rebuildMonastery3(R, { T, TS }) {
   ent('sign', 30, 73, { text: 'THE ROOD WHEEL. STRIKE IT AND ITS STAIR TURNS: ONE WAY THE RELICS, THE OTHER THE TRAPDOOR.' });
   // the congregation and its priest, and the saints they defaced
   ent('gobpriest', 12, 84, { face: 1 });                               /* he leads the rite from the altar steps */
-  ent('rockgoblin', 22, 83, { face: 1 }); ent('sentry', 32, 83, { face: 1 }); ent('gobpriest', 39, 84, { face: 1, censer: true }); ent('rockgoblin', 47, 83, { face: 1 });
+  ent('rockgoblin', 22, 83, { face: 1 }); ent('sentry', 32, 83, { face: 1 }); ent('gobpriest', 39, 84, { face: 1, censer: true, cnSkin: 'censerswinger' }); ent('rockgoblin', 47, 83, { face: 1 });
   for (const [x, y, k, v, o] of [[8, 84, 'statue', 0, { defaced: true }], [16, 84, 'candelabra', 0], [27, 84, 'candelabra', 1], [52, 84, 'statue', 1, { defaced: true }], [10, 73, 'bookshelf', 0], [26, 58, 'lectern', 0]]) deco(x, y, k, v, o || {});
   coins([21, 83], [26, 83], [33, 83], [46, 83], [10, 73], [20, 73], [32, 68], [28, 64], [24, 60], [44, 62], [48, 60]);
   // THE SECOND SHORTCUT, at the guardian's door: a bell whose rope goes down the rope well to the dorter roof
@@ -285,7 +285,11 @@ export function rebuildMonastery3(R, { T, TS }) {
   const tall = { top: CLOUD * TS, bottom: 218 * TS, col: '64,70,84', deepest: 0.26 };
   const out = Object.assign({}, R, {
     grid: g, ents, islands: islands.concat([[3, 58, 56, 118, "the crag under the chapel and the guardian's floor: only the rope well parts it from the map wall"], [82, 82, 116, 118, 'the shelf between the broken floor and the crevice, under the east tower'], [3, 3, 119, 139, 'the rope well wall, down the outside of the crag'], [19, 26, 119, 120, 'the hoist hub crag under the shelf'], [13, 94, 163, 165, 'the dorter floor, on the chimney breast and the cells'], [3, 12, 163, 184, 'the kitchen chimney breast: only the rope well parts it from the map wall']]), moversExtra: movers, facades, masonry, interiors, crumbles, darkZones, cloudLine: CLOUD, tall, mon3: true,
-    monk: { flags, hangers, boards: (R.monk && R.monk.boards) || [], tables },
+    monk: { flags, hangers, boards: (R.monk && R.monk.boards) || [], tables,
+      /* (claude/art4) what the art pass paints (src/redraw/mon3_art.js): where the dressing goes, as data */
+      m3: { chandeliers: [[46, 185, 190, 42, 50], [70, 185, 190, 66, 74]], flue: [[6, 10, 168, 199]], nooks: [[81, 83, 201, 202]], cells: [[85, 94, 166, 181]],
+        dorter: [[1, 27, 162, 151], [30, 57, 162, 151], [60, 93, 162, 151]], bunks: [[22, 159, 6], [30, 159, 6], [52, 159, 6], [60, 159, 6], [24, 156, 4], [30, 156, 4], [54, 156, 4], [60, 156, 4]],
+        hubs: [[22 * TS + 8, 121 * TS]], spires: [[55, 127, 3], [61, 129, 3], [66, 127, 3], [72, 129, 3], [77, 127, 5]] } },
     kits: [[18, 94, 203, 217, { density: 0.3, kinds: ['herbBed', 'skep'] }]],
     calm: (R.calm || []).concat([GARTH_CALM, AB.calm]),
     START: { x: 4, y: 217 },
