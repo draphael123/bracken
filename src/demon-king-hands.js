@@ -39,7 +39,7 @@ export function makeDemonKingHands(ctx) {
     ents.clear(); f = null; king = null;
   }
   function spawn(b) {
-    flvl = ctx.L(); f = DKM.newFight(b, { scale: ctx.scale ? ctx.scale() : 1 });
+    flvl = ctx.L(); f = DKM.newFight(b, { scale: (ctx.scale ? ctx.scale() : 1) * (DK.coop.hp[Math.min(heroes().length, DK.coop.hp.length - 1)] || 1) });   /* (claude/skytune) DK.coop.hp: the sky fight's own extra bar per seat count, on top of COOP.hp (the AI partner swats bolts) */
     king = { t: 'demonking', x: f.x, y: f.y, w: DK.w, h: DK.h, hp: f.hp, maxHp: 3 * f.bar, alive: true, dying: 0, noGrav: true, face: -1, flash: 0, stagger: 0, anim: 0, vx: 0, vy: 0, mode: 'enter', modeT: 0, dk: true };
     ctx.enemies().push(king); labHooks();
   }
