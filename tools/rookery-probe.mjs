@@ -24,9 +24,9 @@ try {
   /* (claude/rookery2) CATCH A RIDE, in the real game: on her mount, step off her dive; under her as she climbs, GRAB; ridden, she shakes you off at her land */
   const ride=k=>{const d=BK.L.rkRides.find(q=>q.id===k),s=Math.sign(d.land[0]-d.mount[0])||1;tp(d.mount[0],d.mount[1]);const o={aim:0,lift:0,rode:0,land:null,modes:[],want:d.land};
     for(let i=0;i<900&&!o.land;i++){const r=RK.rideOf(k);if(o.modes[o.modes.length-1]!==r.mode)o.modes.push(r.mode);P.hp=P.maxHp;
-      if(r.aim&&!o.aim){o.aim=1;P.x=r.aim.x-s*44;P.vx=0;}
+      if(r.aim)o.aim=1;   /* (claude/harpypass) a carrier never aims: o.aim stays 0 */
       if(!o.rode&&(r.mode==='downed'||r.mode==='rise')){P.x=r.x;P.vx=0;}
-      if(r.mode==='lift'){o.lift=1;BK.press('grab');}
+      if(r.mode==='perch'&&!o.rode){o.lift=1;P.x=r.x;P.vx=0;BK.press('grab');}   /* (claude/harpypass) THE CARRIER sits on her mount: UP / GRAB beside her */
       if(P.rkRide)o.rode=1;else if(o.rode&&P.ground)o.land=[Math.floor(P.x/16),Math.floor((P.y-1)/16)];
       BK.sim(1);}
     return o;};
@@ -56,7 +56,7 @@ try {
     out.bar=SH.barName(b);out.n=JSON.parse(JSON.stringify(S.n));}
   BK.manualSimulation=false;return out;})()`, 240000);
   console.log(JSON.stringify(r));
-  for (const [k, d] of Object.entries(r.rides || {})) ok(d.aim && d.lift && d.rode && d.land && Math.abs(d.land[0] - d.want[0]) <= 3 && Math.abs(d.land[1] - d.want[1]) <= 1, k + ': her dive, her lift, the grab, the ride - shaken off at ' + JSON.stringify(d.land) + ' ' + d.modes.join('>'));
+  for (const [k, d] of Object.entries(r.rides || {})) ok(!d.aim && d.lift && d.rode && d.land && Math.abs(d.land[0] - d.want[0]) <= 3 && Math.abs(d.land[1] - d.want[1]) <= 1, k + ': THE CARRIER sits (no dive), UP beside her, the ride on her back - set down at ' + JSON.stringify(d.land) + ' ' + d.modes.join('>'));
   ok(r.hungNest === 'broken', 'THE HUNG NEST: her flight through its arm broke it (' + r.hungNest + ')');
   ok(r.gale && r.gale.tell && r.gale.gust && r.gale.vx < -60, 'THE GALE HARPY tells (wings back), beats her gust and shoves the hero west ' + JSON.stringify(r.gale));
   for (const k of ['firstFloor', 'roostSlab', 'firstNest', 'firstPillar', 'eggNest', 'ledgeSlab', 'spanPillar', 'lastNest']) ok(r[k] && r[k][0] && r[k][1] === 'broken', k + ': on the mark she screams and aims; off it, her dive BREAKS it ' + JSON.stringify(r[k]));

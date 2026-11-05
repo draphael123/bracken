@@ -256,12 +256,10 @@ export function makeBot(BK, opts = {}) {   /* opts.fightThrough (claude/foepass)
         if (job) { const { d, r, mx, s } = job;
           if (tick.rdJob !== d.id) { tick.rdJob = d.id; tick.rdT = 0; } else if (++tick.rdT > 1500) { tick.rdNo.set(d.id, tick.frameR + 1200); tick.rdJob = null; }
           const go = (x, tol = 4) => { keys.left = x < P.x - tol; keys.right = x > P.x + tol; keys.jump = false; hold = 0; still = 0; tick.jumping = 0; return null; };
-          if (r.mode === 'lift') { if (Math.abs(r.x - P.x) < 14 && P.ground) { keys.left = keys.right = false; if (tick.rdT % 6 === 0) BK.press('grab'); keys.up = true; return null; } return go(r.x, 3); }
+          /* (claude/harpypass) THE CARRIER HARPY sits on her mount: walk to her, UP / GRAB beside her (a human jumps on her back); away on her flight home, wait on the mount */
+          if (r.mode === 'perch') { if (Math.abs(r.x - P.x) < 10 && P.ground) { keys.left = keys.right = false; if (tick.rdT % 6 === 0) BK.press('grab'); keys.up = true; return null; } keys.up = false; return go(r.x, 3); }
           keys.up = false;
-          if (r.aim) { const ax = r.aim.x; if (Math.abs(P.x - ax) < 34) return go(ax - s * 44, 2); keys.left = keys.right = false; return null; }   /* off her line, back the way he came */
-          if (r.mode === 'dive') { keys.left = keys.right = false; return null; }
-          if (r.mode === 'downed' || r.mode === 'rise') return go(r.x, 6);   /* under her: she climbs from where she fell */
-          return go(mx, 4); }   /* on her mount: wait for her dive */
+          return go(mx, 4); }   /* she is flying home: wait on her mount */
         tick.rdJob = null; keys.up = false; } }
     // ---- (claude/warcairn2) A THROW HOIST (THE WAR CAIRN's hauled bridge: src/war-cairn-hatchets.js): near its throw spot with it still up - to the rack, E (a hatchet), to the
     //   spot, face the way, UP for a lob (d.aim), ATTACK. Ten seconds and he gives it up for twenty, like a cleat.
