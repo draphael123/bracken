@@ -55,10 +55,10 @@ const pageSrc = `(() => {
       if (BKT.PROG[o.id]) BKT.PROG[o.id].mini = false;   /* a mini beaten in an earlier row is not spawned again (the boss lab does the same) */
       if (o.mini === 2) { BKT.PROG[o.id] = BKT.PROG[o.id] || {}; BKT.PROG[o.id].mini = true; BKT.PROG[o.id].mini2 = false; }   /* (claude/forgemaster) a level's SECOND mini (THE DEEP RAILS' Forgemaster): the first counts as down */
       BK.setHero(o.hero); BK.reset({ fresh: true }); BK.load(LEVELS.findIndex(l => l.id === o.id)); BK.start(); BK.god = false; BK.sim(10); BK.reset();
-      const L = BK.L, A = o.mini === 2 ? (L.mini2 && L.mini === L.mini2 ? L.mini : null) : o.mini ? L.mini : L.arena; if (!A) return { skipped: o.mini ? 'no mini' : 'no arena' };
+      const L = BK.L; let A = o.mini === 2 ? (L.mini2 && L.mini === L.mini2 ? L.mini : null) : o.mini ? L.mini : L.arena; if (!A && L.skyMount && !o.mini) A = { boss: 'demonking', sky: true }; if (!A) return { skipped: o.mini ? 'no mini' : 'no arena' };   /* (claude/skytune) the sky fight has no arena */
       const boss = BK.enemies().find(e => e.t === A.boss && e.alive && (!o.mini || e.mini)); if (!boss) return { skipped: 'no boss' };
       for (const e of BK.enemies()) if (e !== boss && !e.maxHp) e.alive = false;
-      if (A.carpet) { BK.board(); BK.sim(30); } else { if (A.start) BK.tp(A.start[0], A.start[1]); else BK.tp(Math.round(A.trigger / 16) + (A.reverse ? -1 : 1), Math.round(A.floor / 16) - 1); BK.sim(30); }
+      if (A.sky) BK.sim(90); else if (A.carpet) { BK.board(); BK.sim(30); } else { if (A.start) BK.tp(A.start[0], A.start[1]); else BK.tp(Math.round(A.trigger / 16) + (A.reverse ? -1 : 1), Math.round(A.floor / 16) - 1); BK.sim(30); }
       const P = BK.P, k = BK.keys, reach = LAB_REACH[o.hero] || 22, maxF = o.secs * 60, hp0 = boss.maxHp || boss.hp; P.hp = P.maxHp; P.dead = 0;
       let f = 0, lost = 0, swings = 0, landed = 0, reprisal = 0, calmBlow = -99, chip = [], low = hp0, maxBlowHp = boss.hp;
       const attackish = /tell|wind|swing|slam|charge|dive|lunge|cleave|smash|stomp|spin|volley|fire|cast|summon|bash|rush|sweep|stab|throw|roar|howl|breath/i;
@@ -68,7 +68,7 @@ const pageSrc = `(() => {
         if (Math.abs(dx) > Math.min(reach * 0.7, 14) + edge * 0.5) k[dx > 0 ? 'right' : 'left'] = true; else if (Math.abs(dx) > 6) k[dx > 0 ? 'right' : 'left'] = true;
         if (P.swim) { if (dy < -10) k.up = true; else if (dy > 10) k.down = true; }
         if (P.atk < 0) { BK.press('atk'); swings++; }
-        const before = P.hp, bhp = boss.hp, m0 = boss.mode; BK.sim(1);
+        const before = P.hp, bhp = boss.hp, m0 = boss.mode; BK.sim(1); if (A.sky && BK.demonKing && BK.demonKing.f() && BK.demonKing.f().beaten) boss.alive = false;
         const d = Math.max(0, before - Math.max(0, P.hp)); lost += d; if (boss.hp < bhp - 1e-6) { landed++; if (!attackish.test(m0 || '')) calmBlow = f; }
         if (d > 0 && f - calmBlow <= 30) reprisal += d; low = Math.min(low, boss.hp);
         if (o.probe && (f === 240 || f === 720 || f === 1500 || f === 3000) && boss.alive && !P.dead) {   /* THE CHIP PROBE: a clean 10-point blow on him NOW (outside any opening the bot made), measured and given back */
