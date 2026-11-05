@@ -34,8 +34,8 @@ export const DK = {
   swoop: { tell: 0.9, t: 0.5, dmg: 14, band: [24, 10], rise: 22, reach: 14, hang: 0.4 },   // band: px over the surface (top, bottom) = head height: DUCK / roll / jump
   whip: { tell: 0.85, t: 0.3, dmg: 15, hang: 1.0, low: [6, 0], high: [24, 10], at: 30 },  // LOW = jump, HIGH = duck; he hangs low after (chip)
   knock: { pips: 3, tumble: 0.6, down: [6.0, 5.5, 5.0], repulse: 0.6, repR: 44, repDmg: 6, ward: 2.0, bankPad: 0.5 },
-  imps: { tell: 1.0, cap: 2, cd: 7, n: 2, gap: 34, dmg: 1.8, hp: 20 },    // the existing 'imp' foe (20 hp), reskinned demon-red by S4
-  bombs: { every: 5.0, jitter: 0.3, tell: 1.1, r: 14, dmg: 12, n: [1, 2] },
+  imps: { tell: 1.0, cap: 2, cd: 9, n: 2, gap: 34, dmg: 1.2, hp: 20 },    // the existing 'imp' foe (20 hp), reskinned demon-red by S4
+  bombs: { every: 6.0, jitter: 0.3, tell: 1.1, r: 14, dmg: 10, n: [1, 2] },
   fall: 1.2, climb: 5.0,                                     // the phase change: his last fall + scream, then the drake climbs (S1 beginClimb)
   coop: { hp: [1, 1, 2.2, 2.8, 3.4] },                     // (claude/skytune) extra bar by seat count on top of COOP.hp 1/1/1.5.. (S5: the AI partner took the solo 61% to 12/12)
   mul: { downed: 1.5, chip: 0.4 },                           // B15: x0.4 everywhere outside the knockdown (never lower), x1.5 downed
