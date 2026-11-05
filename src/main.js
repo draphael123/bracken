@@ -104,7 +104,7 @@ import * as PA from './pyro-art.js'; import * as PYB from './pyro-boss.js';   /*
 import { makeFlameWard, WARD as FW_K } from './flame-ward.js';   /* THE FLAME WARD (claude/pyrokit): tap C, a 0.45 s dome of fire - a parry in its first 0.15 s, a block after, it burns what touches it (it replaced the down-held EMBER FLARE) */
 import { DK2, selfFloor as dkFloor, priceOf as dkPriceOf, rhythmStep as dkStep, cleaveMul as dkCleaveMul, dragDrain as dkDragDrain, rhythmBox as dkRhythmBox, crescentBox as dkCrescentBox, RHYTHM_NAMES as DK_RHYTHM } from './dk2.js';   /* (claude/dk2b) THE DEATH KNIGHT 2: the blood price, the drain, the rhythm, the grave kneel */
 import * as BKIT from './blood-kit.js';   /* (claude/bloodknight) THE BLOOD KNIGHT's BLOOD KIT: BLOOD DEBT, BLOOD PRICE, the five-tier heavy, BLOOD SPIKE (scratch/brief-bloodknight-1017.md 2-5) */
-import { makeCrouchB } from './crouch-b.js'; let CRB = null; import { makeHolyGround, HG, spendLight, pipsOf } from './holy-ground.js'; let HGR = null; import { makeHolyFx } from './holy-fx.js'; let HFX = null;   /* (claude/palart) the hammer of light, SMITE's glow and column, holy waves: src/holy-fx.js */   /* (claude/paladin2) HOLY GROUND: the paladin's circle and his spent Light */ import { makeCrouchHint } from './crouch-hint.js'; let CRH = null;   /* (claude/crouchfix) THE FIRST-CROUCH HINT: each hero is told his twist the first time he crouches */
+import { makeCrouchB } from './crouch-b.js'; let CRB = null; import { makeHolyGround, HG, spendLight, pipsOf } from './holy-ground.js'; import * as PALPK from './paladin-tech.js';   /* (claude/paladinpack) THE PALADIN'S L25-L50 KIT (numbers + rules) */ let HGR = null; import { makeHolyFx } from './holy-fx.js'; let HFX = null;   /* (claude/palart) the hammer of light, SMITE's glow and column, holy waves: src/holy-fx.js */   /* (claude/paladin2) HOLY GROUND: the paladin's circle and his spent Light */ import { makeCrouchHint } from './crouch-hint.js'; let CRH = null;   /* (claude/crouchfix) THE FIRST-CROUCH HINT: each hero is told his twist the first time he crouches */
 import * as PM from './puppeteer.js'; import { makePuppeteerHands } from './puppeteer-hands.js'; import { bakePuppeteer, bakeMarionette, bakeHarlequin, bakeAcrobat, bakeMasterpiece } from './redraw/puppeteer_art.js'; let PUPH = null;   /* THE PUPPETEER (claude/puppeteer): the Maskwright's Theatre's boss - src/puppeteer.js the fight, src/puppeteer-hands.js its hands, src/redraw/puppeteer_art.js the art */   /* PER-HERO CROUCH TWISTS, PART B (claude/crouchb): the paladin kneels in prayer, the geomancer senses the earth, the death knight harvests a body */
 import { makeGuardian, TG as TGN } from './temple-guardian.js'; let TGM = null;   /* THE TEMPLE GUARDIAN, reworked (claude/monastery2): bells and its own blocks stagger it, bigger, off the x0.05 chip */
 import * as MCA from './redraw/minecart_art.js'; import * as LEM from './lantern-eater.js'; import { makeLanternEaterHands } from './lantern-eater-hands.js'; import { bakeCard as bakeLanternEaterCard } from './redraw/lanterneater_art.js'; let LEH = null;   /* THE LANTERN-EATER (claude/lanterneater, Daniel 10-07): THE FOG CANAL's boss on the raft - src/lantern-eater.js the fight, src/lantern-eater-hands.js its hands, src/redraw/lanterneater_art.js the art. (JENNY GREENTEETH, the boss before it, is benched unwired in src/benched/ - saved for a future mini) */
@@ -821,7 +821,7 @@ const upg = id => upgRank(PROG, hero(), id);
 const thr = (stat, i) => thrOn(PROG, hero(), stat, i);
 let mendSeen = 0;   /* TURNED BLOW: the count of turned blows last frame */
 const GEO_LIFE0 = GEO_K.stone.gnaw, GEO_PERFECT0 = GEO_K.ward.perfect;   /* (claude/geoid: HARD STONE now slows how fast a foe gnaws her stone) */   /* her stone's life and the rune-ward's perfect window before the hero's own perks */
-const cdOf = k => Math.max(0.5, (k === 'summonSkeleton' && isReaper() && tal('gleaner') ? BKIT.BLOOD.host.worms.quick : CD_MAX[k] || 3) - (k === 'whirlwind' && hero() === 'knight' ? 0.5 * upg('ucalm') : 0)) * (perk('focus') ? 0.85 : 1);
+const cdOf = k => Math.max(0.5, (k === 'summonSkeleton' && isReaper() && tal('gleaner') ? BKIT.BLOOD.host.worms.quick : CD_MAX[k] || 3) - (k === 'whirlwind' && hero() === 'knight' ? 0.5 * upg('ucalm') : 0) - (isPaladin() ? PALPK.coolCut(upg('pucool')) : 0)) * (perk('focus') ? 0.85 : 1);
 const amul = k => grow(hero(), heroLevel()).skillMultiplier * (1 + RANK_MUL * Math.max(0, skillRank(PROG, hero(), k) - 1)) * (hero() === 'knight' ? 1 + 0.2 * (k === 'shieldThrow' ? upg('uthrow') : k === 'risingCut' ? upg('urise') : 0) : 1); // skill damage grows (and MASTERY, a perk, and the skill's RANK), cooldowns and invulnerability do not
 let treeResetT = 0, talentsBackT = 0, talentsBackWho = '', talentsBackWhy = '';   /* RESET POINTS asks twice; the trees-have-changed notice shows once */
 window.BKT = { fieldsState: () => FLD, cqState: () => (CQH && CQH.show ? CQH.show() : null),   /* (claude/arenapolish) tools/arena-polish-shots.mjs: the moon's clock and the Underwell hall's state */ stk: () => SKD, stkExplode: (x, y, r) => explode(x, y, r, DMG.bomb),   /* (claude/chief3) tools/chief3.mjs: the Stockade's hands, and a blast */ shrineFill: () => shrineFill(),   /* (claude/difficulty) tools/difficulty.mjs: a shrine's refill per mode */ lights: () => lights, get PROG() { return PROG; },   /* (claude/smallfix7) tools/gorm-unlock.mjs: the one-life Gorm clear */ vil: () => ({ grid: VG, fires, parts: parts.length }), vilSplash: (x, y, r, c) => villageSplash(x, y, r, c), vilIgnite: (tx, ty) => ignite(VG, tx, ty, 'burngob'),   /* tools/douse-agree.mjs */ gormUnlock: () => ({ fell: gormFell, live: gormFightLive(), open: !!PROG.burningOpen }), gormDie: () => die({ name: 'TEST', red: false, rule: '' }), gormWin: () => gormBeaten(), krkArmPts: a => krkArmPts(a, L.arena.floor, 0), krakLimp: (e, t) => krakenArmsLimp(e, t), krkTop: (x, n) => krkTop(x, n), krkRoadEnds: () => krkRoadEnds(),   /* (tools/kraken-reach.mjs, tools/kraken-rework.mjs) */
@@ -1101,8 +1101,9 @@ function updateHoly(dt) {
   if (HGR) HGR.update(dt);   /* (claude/paladin2) HOLY GROUND: src/holy-ground.js - the burn, the slow mend, the motes */
   for (const m of hammers) { m.t += dt; const u = Math.min(1, m.t / 1.4), out = Math.sin(u * Math.PI), a = m.t * 9; m.x = m.x0 + m.dir * out * (m.reach || 112); m.y = m.y0 + Math.sin(a) * 9 * out;   /* (claude/herokit) it was a spiral that never left his side (0-10 damage a cast): out to 112 px and back, striking all it passes */
     if (Math.random() < dt * 30) parts.push({ x: m.x, y: m.y, vx: 0, vy: 0, life: 0.3, max: 0.3, col: '#fff6c8', size: 1, grav: 0, glow: true });
-    for (const e of enemies) { if (!e.alive || e.harmless) continue; const last = m.hit.get(e) || -9; if (m.t - last < 0.5) continue; if (overlap({ l: m.x - 6, r: m.x + 6, t: m.y - 6, b: m.y + 6 }, box(e))) { m.hit.set(e, m.t); hurtAs('shot', e, m.dmg || 5, m.x, false); if (m.burn && e.alive) e.burn = Math.max(e.burn || 0, 1.2); sparks(m.x, m.y, m.dir, 5); } } }
+    for (const e of enemies) { if (!e.alive || e.harmless) continue; const last = m.hit.get(e) || -9; if (m.t - last < 0.5) continue; if (overlap({ l: m.x - 6, r: m.x + 6, t: m.y - 6, b: m.y + 6 }, box(e))) { m.hit.set(e, m.t); hurtAs('shot', e, Math.round((m.dmg || 5) * PALPK.homeMul(m.home, m.t >= 0.7)), m.x, false); m.struck = (m.struck || 0) + 1; if (m.burn && e.alive) e.burn = Math.max(e.burn || 0, 1.2); sparks(m.x, m.y, m.dir, 5); } } }
   if (HFX) { HFX.update(dt); for (const m of hammers) if (m.t >= 1.4 && !m.caught) { m.caught = true; const hd = holyHand(); HFX.catchAt(hd.x, hd.y); } }   /* (claude/palart) THE CATCH: a ring and motes at the hand it comes home to */
+  for (const m of hammers) if (m.t >= 1.4 && !m.paid) { m.paid = true; const pp = PALPK.homePip(m.home, m.struck); if (pp > 0) { convGain(pp, false); number(P.x, P.y - 40, 'CAUGHT', '#fff6c8'); } }   /* (claude/paladinpack) HAMMER HOMECOMING: the catch pays a pip */
   hammers = hammers.filter(m => m.t < 1.4);
 }
 /* (claude/palart) the off hand a thrown hammer comes home to (art only - the hit box still flies back to where it was thrown) */
@@ -7678,7 +7679,7 @@ function hudMeterLabel() {
   if (hero() === 'knight') { if (lcOn()) return { s: 'CHARGE!', col: '#ffd36b' }; return (P.links || 0) >= KC.max ? { s: (tech('kwheel') ? 'BREAKING WHEEL: UP+C' : 'SHIELD CHARGE: UP+C'), col: blink ? '#ffd36b' : '#fff6c8' } : null; }
   if (isPyro()) return P.full ? { s: 'METEOR FALL: UP + C', col: blink ? '#ffd36b' : '#fff6c8' } : null;   /* (claude/pyrokit2: it was CONFLAGRATION: C, and PYRE before) */
   if (isPaladin()) { const p = pipsOf(P);   /* (PALADIN 3) what a tap of C spends now */
-    if (p >= HG.conv.pips) return { s: 'SUNFALL: C', col: blink ? '#ffd36b' : '#fff6c8' };
+    if (p >= HG.conv.pips) return { s: tech('pplance') ? 'LANCES: UP+C  SUNFALL: C' : tech('ppnoon') ? 'LONG NOON: C' : 'SUNFALL: C', col: blink ? '#ffd36b' : '#fff6c8' };
     if (p >= 4) return { s: 'RADIANCE+: C  THROW: UP+C', col: '#fff6c8' }; if (p >= 3) return { s: 'RADIANCE: C  THROW: UP+C', col: '#ffd36b' }; if (p >= 2) return { s: 'TWIN SMITE: C', col: '#ffe6a0' }; if (p >= 1) return { s: 'SMITE: C', col: '#e8c870' };
     if (P.ducking && (P.kneelT || 0) >= HG.pray.settle) return { s: 'PRAYING', col: '#fff6c8' }; return null; }   /* (PALADIN 4) the empowered versions, and the prayer */
   if (isPirate()) return (P.plunder || 0) >= 100 ? { s: 'BLACK FLAG: C', col: blink ? '#ffd34a' : '#fff6c8' } : null;
@@ -8006,6 +8007,7 @@ function damagePlayer0(fromX, dmg, { up = false, unblockable = false, pierce = f
   /* (PLATED took a twentieth off every blow; it is the shield at his back now) */
   { const cloak = tal('ashCloak'); if (cloak && (P.ashT || 0) > 0) dmg = Math.max(1, Math.round(dmg * (1 - 0.12 * cloak))); } // ASH CLOAK / THE SHROUD, for a moment after a roll
   if (isBz() && BZK) { const d0 = dmg; dmg = Math.max(1, Math.round(dmg * BZK.takeMul())); P.bzSur = Math.max(0, dmg - d0); }
+  if (isPaladin() && P.noonT > 0) dmg = Math.max(1, Math.round(dmg * PALPK.noonTake(tech('ppnoon'), P.noonT)));   /* (claude/paladinpack) THE LONG NOON: a fifth off what lands on him */
   if (WCH && WCH.raging(P)) dmg = Math.max(1, Math.round(dmg * WCM.WC.rage.taken));   /* (claude/warcairn) WAR-RAGE's price: a quarter more taken (the Berserker's frenzy in miniature) */   /* (claude/berserker2: what the frenzy ADDED is his own cost - lethal never lets it kill him) */   /* THE FRENZY: x1.25 (THICK HIDE: x1.1); HARDEN two thirds; SCARRED a fifth off below a third of his health */
   if (P.cryT > 0) dmg = Math.max(1, Math.round(dmg * 0.75)); // the war cry: blows land a quarter lighter
   if (isPyro() && FWARD) dmg = Math.max(1, Math.round(dmg * FWARD.exposed()));   /* A MISTIMED WARD (src/flame-ward.js): rooted and exposed, a blow costs a quarter more */
@@ -10924,11 +10926,11 @@ function updatePlayer(dt) {
   }
   P.aegis = false;
   if (isPaladin()) { // (claude/paladin2) C tapped = CONSECRATE (in his circle: EMPOWER, a full bar JUDGEMENT). C held = AEGIS. UP + C = THE HAMMER THROW.
-    P.light = Math.max(0, Math.min(100, P.light || 0)); P.castT = Math.max(0, (P.castT || 0) - dt); P.blastT = Math.max(0, (P.blastT || 0) - dt);
+    P.light = Math.max(0, Math.min(100, P.light || 0)); P.castT = Math.max(0, (P.castT || 0) - dt); P.blastT = Math.max(0, (P.blastT || 0) - dt); palTechUpdate(dt);
     const cDown = keys.block && !P.cWas; P.cWas = !!keys.block;
     const free = !stunned && !dodging && !P.plunge && !attacking && !(P.blastT > 0);
-    if (cDown && free && keys.up) { castHammer(); P.cHeld = -99; }   /* THE HAMMER THROW (Light spent) - and the hold that follows is not an aegis */
-    else if (keys.block) { P.cHeld = (P.cHeld || 0) + dt; if (P.cHeld >= 0.16 && free && (P.ground || P.swim) && P.st > 0 && CM.guardOk(P) && !(P.aegisCd > 0)) { P.aegisT = (P.aegisT || 0) + dt; if (P.aegisT > 1.5 && !tal('unwavering')) { P.aegisCd = 2; P.aegisT = 0; SFX.guardBreak(); ringAt(P.x, P.y - 10, 14, '#9a8a60', 0.3); } /* the ward holds a breath and a half, then it must rest */ } if (P.cHeld >= 0.16 && free && (P.ground || P.swim) && P.st > 0 && CM.guardOk(P) && !(P.aegisCd > 0)) { P.aegis = true; P.st = Math.max(0, P.st - HG.ward.drain * dt * (1 - 0.15 * tal('stalwart'))); if (tal('sanctuary')) P.hp = Math.min(P.maxHp, P.hp + 0.6 * dt); P.stDelay = ST.delay; if (!P.aegisWas) { P.aegisUpT = time; SFX.block(); ringAt(P.x, P.y - 10, 18, '#fff6c8', 0.3); } } }
+    if (cDown && free && keys.up) { if (PALPK.lanceReady(tech('pplance'), pipsOf(P))) castLances(); else castHammer(); P.cHeld = -99; }   /* THE HAMMER THROW (Light spent) - and the hold that follows is not an aegis */
+    else if (keys.block) { P.cHeld = (P.cHeld || 0) + dt; if (P.cHeld >= 0.16 && free && (P.ground || P.swim) && P.st > 0 && CM.guardOk(P) && !(P.aegisCd > 0)) { P.aegisT = (P.aegisT || 0) + dt; if (P.aegisT > 1.5 && !tal('unwavering')) { P.aegisCd = 2; P.aegisT = 0; SFX.guardBreak(); ringAt(P.x, P.y - 10, 14, '#9a8a60', 0.3); } /* the ward holds a breath and a half, then it must rest */ } if (P.cHeld >= 0.16 && free && (P.ground || P.swim) && P.st > 0 && CM.guardOk(P) && !(P.aegisCd > 0)) { P.aegis = true; P.st = Math.max(0, P.st - HG.ward.drain * dt * (1 - 0.15 * tal('stalwart')) * PALPK.upMul('ward', upg('puward'))); if (tal('sanctuary')) P.hp = Math.min(P.maxHp, P.hp + 0.6 * dt); P.stDelay = ST.delay; if (!P.aegisWas) { P.aegisUpT = time; SFX.block(); ringAt(P.x, P.y - 10, 18, '#fff6c8', 0.3); } } }
     else { if (P.cHeld > 0 && P.cHeld < 0.16 && free) convictionTap(); P.cHeld = 0; P.aegisT = 0; }   /* (PALADIN 3) a tap SPENDS CONVICTION by tier */
     P.bulwark = !!(P.aegis && P.ground && !(keys.left && keys.right) && (P.face > 0 ? keys.right : keys.left));   /* BULWARK ADVANCE: the aegis held and pressing ahead - a slow walk behind it that shoves */
     if (P.bulwark) bulwarkShove();
@@ -30999,6 +31001,7 @@ function swingDmg(e) { if (P.heavySwing || P.heavy) CM.refund(P, 3);   /* WEIGHT
   if (tal('vengeance') && (P.venge || 0) > 0) { extra = P.venge; P.venge = 0; number(e.x, e.y - e.h - 14, 'VENGEANCE', '#c9d1dc'); } if (P.heavySwing) { if (!e.maxHp || tal('concuss')) { e.stagger = Math.max(e.stagger || 0, isPaladin() ? 1.2 : 0.6); if (!e.maxHp && !(P.bashing && e.mini) && !P.wLong) e.vx = P.face * 170; }   /* (claude/wardenid: the long thrust DRIVES them to the point instead: wardenLongPost) */ sparks(e.x, e.y - e.h / 2, P.face, 8); shakeCam(2.5, P.face * 2); }
   if (isPirate() && bossActive && (e.maxHp || e.mini) && time - (P.bossPurseAt || -9) > 1.2) { P.bossPurseAt = time; piratePurse(false); }   /* his coin passives still pay in a coinless arena (piratePurse) */
   if (isPaladin() && HGR && HGR.standing(P)) mul *= HG.hitMul; else if (isPaladin() && e === boss) mul *= HG.bossOutMul;   /* (claude/paltune) off his ground a boss takes his blows a little harder: the circle is his edge on a still boss, not on a roaming one */   /* (claude/paladin2) ON HOLY GROUND his maul lands harder */
+  if (isPaladin()) mul *= palBlowMul(e);   /* (claude/paladinpack) HALLOWED STEEL, BRANDING LIGHT, THE LONG NOON */
   if (isPaladin() && P.wrathT > 0) { mul *= 1.4; P.hp = Math.min(P.maxHp, P.hp + Math.max(1, Math.round(P.maxHp * 0.003))); }   /* (PALADIN TUNE: was 0.015) HOLY WRATH (claude/herokit): blows land a bit over a third harder and mend him */
   if (isBz() && BZK) { mul *= BZK.chopLanded(e); if (!P.heavy && !P.heavySwing && !P.swingKind && !P.dashCut && !P.swingRiposte) mul *= BZ_K.flurry.dmg;   /* (claude/berserker2) THE FLURRY: quick chops, each a little lighter */ if (P.heavy && tal('bzSplit') && e.broken > 0) mul *= 2; }   /* THE CHAIN goes on (BITE: a tenth harder on a foe it has cut); SPLITTER: the cross-chop on a broken foe */
   if (isRg()) mul *= RG_K.knife.dmg * (tal('rgLast') && RGK && RGK.arrows() <= 0 ? 2 : 1);   /* (claude/ranger) THE KNIFE: a little lighter than a sword (THE LAST ARROW: twice, with the quiver empty) */
@@ -31027,7 +31030,7 @@ let pyres = [];
 const PYRE_DMG = 42, PYRE_SPLASH = 16;
 // THE PALADIN'S LIGHT: it comes from the maul landing and from whatever the Aegis turns aside, and it goes on
 // mending or on JUDGEMENT.
-function gainLight(n) { const was = (P.light || 0) >= 100; P.light = Math.min(100, (P.light || 0) + n * varietyMul() * (1 + 0.1 * tal('radiance')) * (1 + 0.08 * prk('llight'))); if (!was && P.light >= 100) { SFX.lightFull(); number(P.x, P.y - 30, 'READY', '#ffd36b'); ringAt(P.x, P.y - 10, 22, '#fff6c8', 0.4); } }
+function gainLight(n) { const was = (P.light || 0) >= 100; P.light = Math.min(100, (P.light || 0) + n * varietyMul() * (1 + 0.1 * tal('radiance')) * (1 + 0.08 * prk('llight')) * PALPK.upMul('faith', upg('pufaith'))); if (!was && P.light >= 100) { SFX.lightFull(); number(P.x, P.y - 30, 'READY', '#ffd36b'); ringAt(P.x, P.y - 10, 22, '#fff6c8', 0.4); } }
 /* (claude/paladin2) HOLY GROUND - THE PALADIN'S C (src/holy-ground.js). A TAP: outside his circle (or with none) he PLANTS it at his feet; inside it
    the tap SPENDS LIGHT - the full bar is JUDGEMENT, HG.empower.cost EMPOWERS it (a flare, wider, longer, twice as hot), and with too little to
    spend it is planted again where he stands. MEND is gone from the tap: the circle mends him slowly instead (LITANY doubles it, MERCY gives
@@ -31038,13 +31041,34 @@ function gainLight(n) { const was = (P.light || 0) >= 100; P.light = Math.min(10
    his holy ground (mend, burn, x hitMul, the partner aegis) as a ring at his feet that TRAVELS WITH HIM for base + perPip s a pip spent. The planted circle is gone. */
 function convGain(n, perfect) { const was = pipsOf(P); P.light = Math.min(100, (P.light || 0) + n * HG.conv.pip); const now = pipsOf(P);
   if (now > was) { ringAt(P.x, P.y - 12, 10 + 2 * now, '#ffd36b', 0.25); if (now >= HG.conv.pips && was < HG.conv.pips) { SFX.lightFull(); number(P.x, P.y - 30, 'CONVICTION', '#ffd36b'); } else if (perfect) number(P.x, P.y - 36, '+2', '#fff6c8'); } }
-function hallowAura(pips) { if (!HGR || P.dead) return; const n = tal('consecrate'), c0 = HGR.of(P), life = HG.aura.base + HG.aura.perPip * pips + 1.5 * n;
+function hallowAura(pips) { if (!HGR || P.dead) return; const n = tal('consecrate'), c0 = HGR.of(P), life = HG.aura.base + HG.aura.perPip * pips + 1.5 * n + PALPK.auraAdd(upg('pulong'));
   if (c0 && c0.aura) { c0.life = c0.max = Math.max(c0.life, life); HGR.flare(c0);  return; }
   const c = HGR.plant(P, P.x, P.y, { r: HG.aura.r + 6 * n, life }); c.aura = true; trialEvent('hallow'); }
+/* ==== THE PALADIN'S L25-L50 KIT (claude/paladinpack; numbers + rules src/paladin-tech.js, data src/tech-paladin.js) ==== every blow swordDmg x k, a boss takes damage only, a foe takes at most 3 lances */
+function palBlowMul(e) { let m = PALPK.steelMul(tech('ppsteel'), P.palSteelAt || 0, time); if (m > 1) P.palSteelAt = 0;   /* HALLOWED STEEL: the next swing after a perfect guard, once */
+  const b = PALPK.brandMul(tech('ppbrand'), (e && e.palBrand) || 0, time); if (b > 1) e.palBrand = 0; m *= b;   /* BRANDING LIGHT: spent on the blow */
+  return m * PALPK.noonBlow(tech('ppnoon'), P.noonT || 0); }   /* THE LONG NOON */
+function wardNova() { const N = PALPK.PT.nova; ringAt(P.x, P.y - 10, N.r, '#fff6c8', 0.4); ringAt(P.x, P.y - 10, N.r * 0.6, '#ffd36b', 0.3); motes(P.x, P.y - 10, 12, N.r); SFX.judgement(); number(P.x, P.y - 34, 'WARD NOVA', '#fff6c8');
+  const dmg = Math.round(swordDmg() * N.k);
+  for (const e of PALPK.novaTargets(enemies.filter(q => q.alive && !q.harmless && q.gone <= 0), P.x, P.y)) { hurtAs('light', e, dmg, P.x, false); if (e.alive && !e.maxHp && !e.mini && !e.elite) e.stagger = Math.max(e.stagger || 0, N.stagger); } }
+function startNoon() { P.noonT = PALPK.PT.noon.t; if (HGR && !P.dead) { const c0 = HGR.of(P); if (c0 && c0.aura) { c0.life = c0.max = Math.max(c0.life, P.noonT); HGR.flare(c0); } }
+  number(P.x, P.y - 46, 'THE LONG NOON', '#fff6c8'); ringAt(P.x, P.y - 10, 34, '#ffe6a0', 0.5); motes(P.x, P.y - 8, 18, 30); }
+function castLances() { if (P.dead || P.hurt > 0 || P.asleep > 0 || P.palLances || pipsOf(P) < 5) return; P.light = 0;
+  trialEvent('meter'); noteVerb('cast'); P.castT = 0.4; P.rootT = Math.max(P.rootT || 0, 0.3); kitPose(P, 'sunfall', 0.5); hallowAura(5); SFX.lightFull(); shakeCam(3); number(P.x, P.y - 34, 'HEAVEN LANCES', '#fff6c8'); ringAt(P.x, P.y - 12, 26, '#fff6c8', 0.4);
+  const foes = enemies.filter(e => e.alive && !e.harmless && e.gone <= 0 && !e.turncoat), who = PALPK.lanceTargets(foes, P.x, P.face);
+  P.palLances = { t: 0.3, stopped: false, list: who.map((e, i) => ({ e, x: e ? e.x : P.x + P.face * (60 + i * 40) })) }; }
+function lanceFall(s, L) { const e = s.e && s.e.alive ? s.e : null, x = e ? e.x : s.x, y = e ? e.y : P.y;
+  if (HFX) HFX.verdict(x, y); ringAt(x, y - 2, 12, '#fff6c8', 0.35); SFX.judgement(); shakeCam(2); if (!e) return;
+  if (!L.stopped) { L.stopped = true; hitstop(0.05); }
+  hurtAs('heavy', e, Math.round(swordDmg() * PALPK.PT.lance.k), P.x, false); if (e.alive && !e.maxHp && !e.mini && !e.elite) e.stagger = Math.max(e.stagger || 0, PALPK.PT.lance.stagger); }
+function palTechUpdate(dt) { P.palCap = tech('pplance') ? 'lances' : tech('ppnoon') ? 'noon' : '';   /* (the lab bot reads the capstone he owns) */
+  if (P.noonT > 0) { P.noonT = Math.max(0, P.noonT - dt); if (Math.random() < dt * 14) parts.push({ x: P.x + (Math.random() - 0.5) * 24, y: P.y - 4, vx: 0, vy: -30, life: 0.5, max: 0.5, col: '#fff6c8', size: 1, grav: 0, glow: true }); }
+  const L = P.palLances; if (!L) return; if (P.dead) { P.palLances = null; return; }
+  L.t -= dt; while (L.list.length && L.t <= 0) { lanceFall(L.list.shift(), L); L.t += PALPK.PT.lance.gap; } if (!L.list.length) P.palLances = null; }
 /* (PALADIN 4, Daniel 10-15 ~18:20) EVERY PIP COUNTS: the in-between pips EMPOWER the tier below - 1 SMITE, 2 TWIN SMITE (it strikes twice), 3 RADIANCE,
    4 RADIANCE+ (a bigger burst that mends him a little), 5 SUNFALL. A tap spends what its version costs. */
 function convictionTap() { if (P.dead) return; const p = pipsOf(P);
-  if (p >= HG.conv.pips) { castJudgement(); hallowAura(5); number(P.x, P.y - 34, 'SUNFALL', '#fff6c8'); kitPose(P, 'sunfall', 0.5); if (HFX) HFX.sunfall(P.x, P.y); return; }
+  if (p >= HG.conv.pips) { castJudgement(); hallowAura(5); if (tech('ppnoon')) startNoon(); number(P.x, P.y - 34, 'SUNFALL', '#fff6c8'); kitPose(P, 'sunfall', 0.5); if (HFX) HFX.sunfall(P.x, P.y); return; }
   if (p >= 4) { radiance(true); return; }
   if (p >= 3) { radiance(false); return; }
   if (p >= 2) { twinSmite(); return; }
@@ -31054,7 +31078,7 @@ function convictionTap() { if (P.dead) return; const p = pipsOf(P);
 function smiteStrike(second) { const S = HG.smiteQ; noteVerb('cast'); P.castT = 0.22; const emp = second || P.twinT > 0; kitPose(P, second ? 'smiteB' : 'smiteQ', 0.25);   /* (PALADIN 4 ART) TWIN SMITE: both blows are the EMPOWERED look, the second its own backhand pose */
   const x0 = P.x + P.face * 14; if (HFX) HFX.smite(x0, P.y, emp); SFX.judgement(); ringAt(x0, P.y - 10, second ? 20 : 16, '#ffffff', 0.3); if (!second) number(P.x, P.y - 30, P.twinT > 0 ? 'TWIN SMITE' : 'SMITE', '#fff6c8');
   const hb = P.face > 0 ? { l: P.x, r: P.x + S.reach, t: P.y - 30, b: P.y + 2 } : { l: P.x - S.reach, r: P.x, t: P.y - 30, b: P.y + 2 };
-  for (const e of enemies) { if (!e.alive || e.harmless || e.gone > 0 || !overlap(hb, box(e))) continue; hurtAs('light', e, Math.round(swordDmg() * S.mul), P.x, false); if (e.alive && !e.maxHp && !e.mini) e.stagger = Math.max(e.stagger || 0, S.stagger); } }
+  for (const e of enemies) { if (!e.alive || e.harmless || e.gone > 0 || !overlap(hb, box(e))) continue; hurtAs('light', e, Math.round(swordDmg() * S.mul * PALPK.upMul('smite', upg('pusmite'))), P.x, false); if (e.alive) e.palBrand = PALPK.brandUntil(tech('ppbrand'), time); if (e.alive && !e.maxHp && !e.mini) e.stagger = Math.max(e.stagger || 0, S.stagger); } }
 function smiteQ() { if (!spendLight(P, HG.smiteQ.cost)) return; trialEvent('smite'); smiteStrike(false); hallowAura(1); }
 function twinSmite() { if (!spendLight(P, HG.twin.cost)) return; trialEvent('twinsmite'); P.twinT = HG.twin.gap; smiteStrike(false); hallowAura(2); }   /* (the second blow: the paladin block's P.twinT) */
 function radiance(plus) { const B = plus ? HG.burstPlus : HG.burst; if (!spendLight(P, B.cost)) return; trialEvent(plus ? 'radiancePlus' : 'sanctify'); noteVerb('cast'); P.castT = 0.35; P.rootT = Math.max(P.rootT || 0, 0.25); kitPose(P, plus ? 'radiancePlus' : 'radiance', plus ? 0.55 : 0.45); if (HFX) HFX.radiance(P.x, P.y - 8, B.r, plus);
@@ -31071,25 +31095,25 @@ function lightWardTakes(fromX, dmg, pierce, who) { const W = HG.ward, beat = tal
   if (pierce && !(beat && (who || updFoe))) { number(P.x, P.y - 30, 'THROUGH THE WARD', '#ff6b6b'); SFX.pierce(); return null; }
   trialEvent('aegis');
   if (beat) { const f = RP.parried(rpFoe(fromX, who)); if (f && !f.maxHp && !f.mini && !f.elite) f.vx = Math.sign(f.x - P.x) * 160;   /* (claude/riposte) THE LIGHT-WARD raised on the beat is every paladin's parry (MOVING FORTRESS: a longer beat) */
-    noteVerb('parry'); P.parryT = 0.22; parries++; blocks++; trialEvent('parry'); convGain(HG.conv.parry / HG.conv.pip, true); holyFlash(f); SFX.parry(); hitstop(0.09); zoomKick(1.04, 0.2); ringAt(P.x + P.face * 9, P.y - 9, 18, '#fff6c8', 0.3); number(P.x, P.y - 28, 'PARRY', '#fff6c8'); parryBurst(); return 'blocked'; }   /* A PERFECT GUARD: +2 CONVICTION and a HOLY FLASH */
+    noteVerb('parry'); P.parryT = 0.22; parries++; blocks++; trialEvent('parry'); convGain(HG.conv.parry / HG.conv.pip + PALPK.truePips(upg('putrue')), true); if (tech('ppsteel')) P.palSteelAt = time; holyFlash(f); SFX.parry(); hitstop(0.09); zoomKick(1.04, 0.2); ringAt(P.x + P.face * 9, P.y - 9, 18, '#fff6c8', 0.3); number(P.x, P.y - 28, 'PARRY', '#fff6c8'); parryBurst(); return 'blocked'; }   /* A PERFECT GUARD: +2 CONVICTION and a HOLY FLASH */
   const lands = dmg * diffNow().take * (1 + 0.28 * hitTierOf(curId())) * coopTake();
   if (P.st < CM.blockCost(dmg, tal('steady')) || lands >= W.big * P.maxHp) {   /* BROKEN: the knight's rules */
     P.st = 0; P.stFlash = 0.5; P.aegis = false; P.aegisT = 0; SFX.guardBreak(); SFX.gasp(); shakeCam(5, -P.face * 4); hitstop(0.1); ringAt(P.x, P.y - 10, 18, '#9a8a60', 0.3);
     P.hurt = CM.STAM.breakStagger; P.guardTired = CM.STAM.breakTired; CM.exhaust(P); number(P.x, P.y - 22, 'WARD BROKEN', '#ffd36b'); if (HFX) HFX.shatter(P.x, P.y - 12); P.wardBroken = (P.wardBroken || 0) + 1; return 'half'; }
-  blocks++; P.wardHitAt = time; P.wardBlocks = (P.wardBlocks || 0) + 1; if (P.wardBlocks % W.per === 0) convGain(1, false);   /* +1 CONVICTION every second block */
+  blocks++; P.wardHitAt = time; P.wardBlocks = (P.wardBlocks || 0) + 1; if (P.wardBlocks % W.per === 0) convGain(1, false); if (PALPK.novaDue(tech('ppnova'), P.wardBlocks)) wardNova();   /* +1 CONVICTION every second block */
   if (tal('retribution')) { const f = nearFoe(fromX); if (f && !f.maxHp) { f.stagger = Math.max(f.stagger || 0, 0.9); f.flash = 0.15; } }
   P.stDelay = ST.delay; hitstop(0.05); shakeCam(1.5); SFX.aegis(); ringAt(P.x, P.y - 10, 16, '#ffd36b', 0.25); streaks(P.x + P.face * 10, P.y - 12, 8, ['#fff6c8', '#ffd36b'], 150); const sd = Math.sign(fromX - P.x) || P.face; sparks(P.x + sd * 11, P.y - 10, sd, 6); return 'blocked'; }
 /* (PALADIN 4, Daniel 10-15 ~17:20) SANCTUARY STEP - his dodge, NOT a brace: a quick step the way he holds (a roll's grace, a little shorter), and a small patch of holy
    light where he stood for HG.patch.life s: foes crossing it are slowed, a partner in it mends (src/holy-ground.js patch). HEAVY TREAD still sends its quake ahead */
 function sanctuaryStep(dir, air) { const S = HG.step; P.sStep = true; P.shoulder = 0;
   P.dodge = P.dodgeMax = S.t; P.dodgeInv = Math.min(S.inv, CM.STAM.rollInv); if (P.dash > 0) { P.dash = P.dodge; P.dashDur = P.dash; }
-  if (!P.swim) P.vx = dir * S.speed * (perk('stride') ? 1.12 : 1);
-  if (HGR && !air && !P.swim && P.ground) { HGR.patch(P, P.x, P.y, tal('warded') ? { life: HG.patch.life * 1.75 } : {});   /* WARDED (re-pointed 10-17, was 'the aegis covers your back': the Light-ward is all round now): the patch of light lasts 3.5 s, not 2 */ motes(P.x, P.y - 4, 6, 10); }
+  if (!P.swim) P.vx = dir * PALPK.stepSpeed(S.speed, tech('ppsun')) * (perk('stride') ? 1.12 : 1);
+  if (HGR && !air && !P.swim && P.ground) { HGR.patch(P, P.x, P.y, { life: PALPK.patchLife(HG.patch.life * (tal('warded') ? 1.75 : 1), tech('ppsun'), upg('pustep')) });   /* WARDED (re-pointed 10-17, was 'the aegis covers your back': the Light-ward is all round now): the patch of light lasts 3.5 s, not 2 */ motes(P.x, P.y - 4, 6, 10); }
   if (tal('heavyTread') && P.ground) { pwaves.push({ x: P.x + dir * 10, y: P.y, dir, life: 0.8, sp: 240, hit: new Set() }); shakeCam(2); }   /* HEAVY TREAD: a quake rolls on ahead of it */
   ringAt(P.x, P.y - 2, 12, '#ffe6a0', 0.22); trialEvent('step'); }
 /* (PALADIN 4, Daniel 10-15 ~17:30) DAWNFALL - the plunge lands a PILLAR OF LIGHT at (x, y): a small burst round it (damage; a common foe staggered - the slam on the struck
    foe, hammerSlam, keeps its guard / poise break), his HALLOWED AURA lit where he lands for HG.dawn.aura s, +1 CONVICTION if it struck a foe. struck: the foe the slam hit */
-function dawnfall(x, y, struck) { const D = HG.dawn; let hit = !!struck;
+function dawnfall(x, y, struck) { const D = PALPK.pillar(HG.dawn, tech('ppdawn')); let hit = !!struck;
   for (const e of enemies) { if (!e.alive || e.harmless || e.gone > 0 || e === struck || Math.abs(e.x - x) > D.r + (e.w || 12) / 2 || Math.abs((e.y - (e.h || 16) / 2) - (y - 10)) > D.dy) continue;
     hurtAs('light', e, Math.round(swordDmg() * D.mul), x, false); hit = true; if (e.alive && !e.maxHp && !e.mini && !e.elite) e.stagger = Math.max(e.stagger || 0, D.stagger); }
   if (HFX) HFX.dawn(x, y, D.r); ringAt(x, y - 2, D.r, '#ffe6a0', 0.4); ringAt(x, y - 2, D.r * 0.5, '#fff6c8', 0.3); motes(x, y - 8, 14, 18); SFX.medal && SFX.medal();
@@ -31121,7 +31145,7 @@ function bulwarkShove() { const hb = P.face > 0 ? { l: P.x + 4, r: P.x + 16, t: 
     if (!(e.bulwarkT > time)) { e.bulwarkT = time + 0.35; e.vx = P.face * 170; e.vy = Math.min(e.vy || 0, -60); e.knock = Math.max(e.knock || 0, 0.3); e.kvx = e.vx; e.kvy = e.vy; e.knockAir = 0; e.bounced = false; e.slammed = false; e.stagger = Math.max(e.stagger || 0, 0.4); SFX.aegis(); sparks(e.x, e.y - 10, P.face, 3); trialEvent('bulwark'); } } }
 /* VERDICT (the held X): a golden SIGIL on the nearest foe ahead, one more every HG.verdict.every s up to max (reach, not through walls) */
 function sightClear(x0, y0, x1, y1) { const n = Math.ceil(Math.hypot(x1 - x0, y1 - y0) / 6); for (let i = 1; i < n; i++) { const x = x0 + (x1 - x0) * i / n, y = y0 + (y1 - y0) * i / n; if (isSolid(Math.floor(x / TS), Math.floor(y / TS))) return false; } return true; }
-function verdictMark() { const V = HG.verdict; P.verdict = (P.verdict || []).filter(e => e.alive); const every = pipsOf(P) >= HG.verdictUp.from ? HG.verdictUp.fast : V.every, want = Math.min(V.max, 1 + Math.floor((P.charge || 0) / every));   /* (PALADIN 4) at 3+ pips a sigil every HG.verdictUp.fast s */
+function verdictMark() { const V = PALPK.verdictNums(HG.verdict, tech('ppeye')); P.verdict = (P.verdict || []).filter(e => e.alive); const every = pipsOf(P) >= HG.verdictUp.from ? HG.verdictUp.fast : V.every, want = Math.min(V.max, 1 + Math.floor((P.charge || 0) / every));   /* (PALADIN 4) at 3+ pips a sigil every HG.verdictUp.fast s */
   while (P.verdict.length < want) { let best = null, bd = 1e9;
     for (const e of enemies) { if (!e.alive || e.harmless || e.gone > 0 || e.turncoat || P.verdict.includes(e)) continue; const dx = (e.x - P.x) * P.face, dy = Math.abs((e.y - (e.h || 16) / 2) - (P.y - 12));
       if (dx < -6 || dx > V.reach || dy > V.dy || !sightClear(P.x, P.y - 12, e.x, e.y - (e.h || 16) / 2)) continue; const d = Math.abs(dx) + dy * 0.5; if (d < bd) { bd = d; best = e; } }
@@ -31132,7 +31156,8 @@ function verdictStrike() { const V = HG.verdict, marked = (P.verdict || []).filt
   const pp = pipsOf(P), judged = pp >= HG.verdictUp.judged, patches = pp >= HG.verdictUp.from; if (judged) trialEvent('judged'); kitPose(P, judged ? 'vRelJ' : 'vRel', 0.3);
   SFX.judgement(); shakeCam(judged ? 7 : 5, P.face * 2); zoomKick(1.05, 0.2); hitstop(0.05); number(P.x, P.y - 32, judged ? 'JUDGED' : marked.length ? 'VERDICT x' + marked.length : 'VERDICT', '#fff6c8');
   const dmg = Math.round(swordDmg() * heavyMul() * V.mul);
-  const strike = e => { if (HFX) { if (judged) HFX.judged(e.x, e.y); else HFX.verdict(e.x, e.y); } ringAt(e.x, e.y - 2, 12, '#fff6c8', 0.35);
+  let eyePaid = false; const strike = e => { { const ep = PALPK.eyePip(tech('ppeye'), !!(e.maxHp || e.mini || e.elite), eyePaid); if (ep > 0) { eyePaid = true; convGain(ep, false); } }   /* (claude/paladinpack) JUDGE EYE: a strike on a big foe pays a pip, once a cast */
+    if (HFX) { if (judged) HFX.judged(e.x, e.y); else HFX.verdict(e.x, e.y); } ringAt(e.x, e.y - 2, 12, '#fff6c8', 0.35);
     if (judged && !e.maxHp && !e.mini && (e.rxGuard > 0 || e.guardT > 0 || (e.raHigh || 0) >= 1)) { e.rxGuard = 0; e.guardT = 0; e.raHigh = 0; e.broken = Math.max(e.broken || 0, 1.2); e.vx = 0; number(e.x, e.y - (e.h || 16) - 26, 'GUARD BROKEN', '#ffd36b'); }   /* JUDGED: through the guard */
     hurtAs('heavy', e, dmg, P.x, false); if (e.alive && !e.maxHp && !e.mini && (!e.elite || judged)) e.stagger = Math.max(e.stagger || 0, e.elite ? HG.verdictUp.eliteStagger : 0.8);
     if (patches && HGR) HGR.patch(P, e.x, e.y); };
@@ -31158,7 +31183,7 @@ function empowerCircle(c) { if (!spendLight(P, HG.empower.cost)) return false; c
    HAMMER (the passive) sends it a third further and it sets what it strikes alight */
 function castHammer() { if (P.dead || P.hurt > 0 || P.asleep > 0) return; const T = HG.throw;
   if (!spendLight(P, T.cost)) { SFX.buzz(); P.stFlash = 0.3; number(P.x, P.y - 24, 'THROW: 3 CONVICTION', '#9aa39a'); return; } hallowAura(3);
-  const bh = tal('blessedHammer') > 0; hammers.push({ x0: P.x, y0: P.y - 12, dir: P.face, t: 0, x: P.x, y: P.y - 12, hit: new Map(), reach: T.reach * (bh ? 1.33 : 1), dmg: Math.round(T.dmg * (1 + 0.075 * LV_GROW())), burn: bh });
+  const bh = tal('blessedHammer') > 0; hammers.push({ x0: P.x, y0: P.y - 12, dir: P.face, t: 0, x: P.x, y: P.y - 12, hit: new Map(), reach: T.reach * (bh ? 1.33 : 1), dmg: Math.round(T.dmg * (1 + 0.075 * LV_GROW()) * PALPK.upMul('hammer', upg('puhammer'))), burn: bh, home: tech('pphome'), struck: 0 });
   trialEvent('hammer'); SFX.throwWhoosh(); SFX.lightFull(); P.castT = 0.25; kitPose(P, 'hurlH', 0.35); }
 function castJudgement() { trialEvent('judgement'); P.light = 0; P.blastT = 0.5; P.inv = Math.max(P.inv, 0.6); P.vx = 0; judgementFall(); if (tal('doubleJudge')) P.judge2T = 0.55; }   /* DOUBLE JUDGEMENT: the sky answers twice */
 function judgementFall() { SFX.judgement(); shakeCam(9); zoomKick(1.12, 0.35); killFlash = 0.035; hitstop(0.08); // a white flash: the red one is for being hurt

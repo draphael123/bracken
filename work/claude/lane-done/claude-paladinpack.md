@@ -1,0 +1,1 @@
+# claude/paladinpack - Paladin L25-L50 kit (forks 30/40/50, capstones HEAVEN LANCES / THE LONG NOON). Code only; full report: scratch\lane-reports\palreaperpacks.md. Not merged, not deployed, no browser opened.
