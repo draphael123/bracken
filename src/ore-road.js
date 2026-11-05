@@ -292,6 +292,7 @@ export function buildOreRoad({ painter, T }) {
   block(13, 13, YARD - 3, YARD - 2);
   walls.push(makeWall(13, 13, YARD - 3, YARD - 2, 'ore', oreBias(13), ORES[oreBias(13)]));
   block(51, 67, YARD - 7, YARD - 7); block(52, 54, YARD - 6, YARD - 1);         // the loading house: its roof, and its west wall, with the road through under it
+  plat(38, YARD - 5, 13);                                                       /* THE FEED GANTRY (a second height, claude/oreroadfix): a catwalk over the cart rail, off the loading house's roof rope - the high road, with the ore the carts miss */
   plat(55, YARD - 3, 12);                                                       // its loft, where the loaders work
   rope(56, YARD - 4, YARD); rope(51, YARD - 8, YARD);                           // up to the loft, and on up through a hole in the roof to the tipping frame
   ent('sign', 4, YARD, { text: 'THE ORE ROAD. THE BUCKETS ARE THE ONLY FLOOR OVER THE GORGE, AND THEY COME ON A CLOCK.' });
@@ -380,15 +381,18 @@ export function buildOreRoad({ painter, T }) {
      not a place you are asked to stand: it is what is under the gaps, and it is drawn so you can see that before you jump. */
   block(281, 314, WRECK_BED + 1, H - 1);                                        // the shelf the wreck lies on, as far as the wreck goes
   spikes(281, 314, WRECK_BED);
-  plat(283, 33, 12); plat(297, 31, 12); plat(311, 33, 12);                      // the fallen decks: two-tile gaps between them
+  plat(283, 33, 12); plat(297, 31, 12); plat(311, 32, 4); plat(317, 32, 6);         // the fallen decks: two-tile gaps between them, and the third is broken across the middle (THE RAIL GAUNTLET, oreroadfix: the way over is jumps and a climb, and nothing fights you on it)
   block(325, 339, 31, H - 1);                                                   // the wreck's head, up against the pillar
-  plat(289, 28, 6); plat(303, 26, 6); plat(315, 28, 6);                         // the upper wreckage: the coin road, and where the fliers come at you
-  rope(288, 29, 32); rope(304, 27, 30); rope(316, 29, 32);
+  plat(283, 28, 12); plat(303, 26, 6); plat(315, 28, 6);                         // the upper wreckage: the coin road, and where the fliers come at you
+  rope(288, 29, 32); rope(304, 27, 30); rope(318, 29, 31);
   ent('check', 300, 30); ent('check', 330, 30);
   ent('sign', 276, FOOT_ROW, { text: 'THE SPAN CAME DOWN HERE. THE BED OF IT IS ALL BROKEN ORE - MIND THE GAPS.' });
-  meet('THE WRECK', 283, 322, [['sapper', 300, 30], ['rockgoblin', 314, 32], ['goat', 320, 32], ['sheargob', 292, 27], ['gaffer', 318, 27]]);
+  /* THE RAIL GAUNTLET (claude/oreroadfix): the span is a crossing, not a fight - the crew that stood on its decks (sapper, rockgoblin, gaffer) is moved to the wreck head and its gantry, where the crossing ends; the goat and the sheargob are two bats over the gaps (fliers cost 1 a head, the pacing bucket stays under a fight) */
+  ent('bat', 290, 24); ent('bat', 286, 26);
   ent('tippler', 307, 25, { face: -1 });                                        // on the highest piece of the fallen tower, tipping onto the deck below it
-  meet('THE WRECK HEAD', 325, 339, [['heavy', 332, 30], ['miner', 337, 30], ['sprig', 328, 30]]);
+  /* THE WRECK HEAD'S GANTRY (a second height, claude/oreroadfix): a catwalk over the head, up a rope at its east end, where the crew from the decks now waits */
+  plat(327, 25, 13); rope(328, 26, 30);
+  meet('THE WRECK HEAD', 325, 339, [['heavy', 332, 30], ['miner', 337, 30], ['sprig', 328, 30], ['sapper', 335, 30], ['rockgoblin', 330, 30], ['gaffer', 333, 24]]);
   /* a second ore wall (item 1): a nub above the wreck head's own walkable top (row 30), well clear of its three foes and the
      silver/tippler further west - this section leans gem, so this one pops gem */
   block(334, 334, 28, 29);
@@ -785,7 +789,7 @@ export const WORKS = [
   ['rockgoblin', 146, 36, { k: 'sort', at: 149 }],                       /* THE SORTING YARD: the table under the sorting floor */
   ['heavy', 188, 36, { k: 'winch', at: 188, shaft: 186, top: 28 }],       /* THE SORTING TOWER: the lift cage up to the middle deck */
   ['sapper', 236, 27, { k: 'sack', from: 230, to: 237 }],                /* THE TIPPLE HOUSE */
-  ['sapper', 300, 30, { k: 'sack', from: 298, to: 307 }],                /* THE COLLAPSED SPAN: salvage off the fallen deck */
+  ['sapper', 335, 30, { k: 'sack', from: 329, to: 335 }],                /* THE WRECK HEAD: salvage off the fallen deck (moved off the span, oreroadfix) */
   ['heavy', 343, 29, { k: 'winch', at: 342, shaft: 340, top: 22 }],       /* THE BRAKEMAN'S HUT: the hoist up the pillar */
   ['rockgoblin', 414, 12, { k: 'cart', load: 417, tip: 410 }],           /* THE WINCH HOUSE's entry deck: the rail yard, tipped onto the spoil (moved off THE ORE SHAFT) */
   ['sapper', 452, 12, { k: 'sack', from: 453, to: 458 }],                /* THE DRUM YARD, the landing off the shaft */
