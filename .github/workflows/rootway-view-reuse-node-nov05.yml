@@ -1,0 +1,43 @@
+name: Pure Rootway private-view original Node checks
+on:
+  workflow_dispatch:
+  push:
+    branches: [codex/load-perf]
+    paths:
+      - tools/rootway-view-reuse-native-nov05/node-*.json
+      - tools/rootway-view-reuse-native-nov05/node-*.mjs
+permissions: {contents: read}
+jobs:
+  safety:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix: {fixture: [canvas-retirement-selftest, rootway]}
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0}
+      - uses: actions/checkout@v4
+        with:
+          ref: 1a576c3f4511b6856df9fb4738df5aaae9987e81
+          path: sprite-publication-safety-game
+          fetch-depth: 0
+      - uses: actions/checkout@v4
+        with:
+          ref: 1a576c3f4511b6856df9fb4738df5aaae9987e81
+          path: sprite-publication-original-tools
+      - uses: actions/setup-node@v4
+        with: {node-version: '24.11.1'}
+      - name: Previously unexecuted original fixture, unchanged source and strict1536MB
+        run: node tools/rootway-view-reuse-native-nov05/node-${{ matrix.fixture }}.mjs
+        env:
+          PRIVATE_HERO_GAME: sprite-publication-safety-game
+          PRIVATE_HERO_ORIGINAL_TOOLS: sprite-publication-original-tools
+          PRIVATE_HERO_SAFETY_SCOPE: publicApi
+          PRIVATE_HERO_SAFETY_OUT: ${{ runner.temp }}/rootway-view-reuse-node-${{ matrix.fixture }}-nov05
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rootway-view-reuse-node-${{ matrix.fixture }}-nov05
+          path: ${{ runner.temp }}/rootway-view-reuse-node-${{ matrix.fixture }}-nov05/
+          if-no-files-found: error
