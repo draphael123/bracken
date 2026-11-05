@@ -8,8 +8,9 @@
 //     TELL    the last HM.beat.tell s before the beat: the crust's cracks glow, the rumble, '!' over the crust a hero stands on (told, never a surprise).
 //     SURGE   HM.beat.surge s from the beat: every crust that is not HELD melts (its cells to air: a hero on it drops into the magma - a fire pool, BURNED, handed back to
 //             the last bank by src/main.js L.waterHurts; a foe on it burns there, hazardFoe), every heart vent blows, every leaper that was told leaps.
-//   A WARD-STONE: ANY blow that lands on it HOLDS its crusts through the NEXT surge (held = cool grey, a frost-white rim, a line to the stone); struck DURING a surge its
-//     melted crusts HARDEN AT ONCE. After the surge it held through, it is SPENT HM.ward.spent s (dark), then it can be struck again.
+//   A WARD-STONE: ANY blow that lands on it HOLDS its crusts HM.ward.hold s, beat or no beat (held = cool grey, a frost-white rim, a line to the stone; its rune flickers the
+//     last HM.ward.warn s - told); struck DURING a surge its melted crusts HARDEN AT ONCE. A hold never ends inside a surge (it waits the surge out). Then the stone is
+//     SPENT HM.ward.spent s (dark), then it can be struck again. (A hold is TIME, not one beat: the slowest hero, the blood knight, must cross the longest held crust in it.)
 // THE MAGMA LEAPER (e.t 'leaper', the level's ONE new foe): it lives in its channel's magma (L.pools, fire). UNDER: a dark shape that follows you along the channel.
 //   On the TELL, if a hero is over its channel and near: 'leapTell' - bubbles where it will come up, a red !! (src/marks.js). On THE BEAT: 'leap' - out of the magma in an
 //   arc at the hero (its body is the blow: src/main.js BODY_BLOW). In the air it is a target like any other. Where it lands on footing it THRASHES (open), snaps if you
@@ -17,7 +18,7 @@
 // Every capital line it says is an HM_SAY line (src/hint-lines.js lists them).
 export const HM = {
   beat: { tell: 1.2, surge: 1.4 },
-  ward: { spent: 2.5, box: 10 },
+  ward: { hold: 10, warn: 2, spent: 2.5, box: 10 },
   leaper: { hp: 18, dmg: 14, bite: 10, near: 7 * 16, rise: 12 * 16, under: 26, leapVy: -380, maxVx: 150, g: 900, thrash: 1.5, biteTell: 0.45, bite: 0.2, jaw: 24, flopVy: -220, flopVx: 70 },
 };
 export const HM_SAY = {
@@ -42,8 +43,8 @@ export function makeHeartHands(ctx) {
   H.reset = () => {
     const lv = L(); if (!lv || !lv.heartLevel) { S = null; return; }
     S = { phase: 0, surgeT: 0, telling: false, beats: 0, said: new Set(), crust: new Map(), wards: new Map(), zone: 0 };
-    for (const c of lv.hmCrust || []) S.crust.set(c.id, { c, melted: false, held: 0, by: null });
-    for (const w of lv.hmWards || []) S.wards.set(w.id, { w, holding: false, spentT: 0, struckT: -9 });
+    for (const c of lv.hmCrust || []) S.crust.set(c.id, { c, melted: false });
+    for (const w of lv.hmWards || []) S.wards.set(w.id, { w, holdT: 0, spentT: 0 });
     /* the crust and the chains are drawn here (drawWorld), not by the tile kit: clear their baked tiles (cellSet nulls a cell's sprite when it changes) */
     for (const { c } of S.crust.values()) for (let x = c.x0; x <= c.x1; x++) { ctx.cellSet(x, c.y, T.AIR); ctx.cellSet(x, c.y, T.ONEWAY); }
     for (const ch of lv.hmChains || []) for (let y = ch.y0; y <= ch.y1; y++) { ctx.cellSet(ch.x, y, T.AIR); ctx.cellSet(ch.x, y, T.CLIMB); }
@@ -53,6 +54,8 @@ export function makeHeartHands(ctx) {
   const periodAt = x => { const tx = Math.floor(x / TS); for (const [a, b, p] of L().hmZones || []) if (tx >= a && tx <= b) return p; return 0; };
   const lead = () => { const hs = heroes(); if (!hs.length) return null; return hs.reduce((a, b) => (b.x > a.x ? b : a)); };
   const surging = () => !!S && S.surgeT > 0;
+  const heldBy = st => { for (const wd of S.wards.values()) if (wd.holdT > 0 && wd.w.holds.includes(st.c.id)) return wd; return null; };
+  H.held = id => { const st = S && S.crust.get(id); return !!(st && heldBy(st)); };
   const tellLeft = () => (S && S.period ? (1 - S.phase) * S.period : 99);
   H.surging = surging;
   H.telling = () => !!S && S.telling;
@@ -61,19 +64,19 @@ export function makeHeartHands(ctx) {
   const harden = st => { if (!st.melted) return; st.melted = false; const c = st.c; for (let x = c.x0; x <= c.x1; x++) ctx.cellSet(x, c.y, T.ONEWAY); };
   const beat = () => {
     S.beats++; S.surgeT = HM.beat.surge; S.telling = false;
-    for (const st of S.crust.values()) { if (st.held > 0) continue; melt(st); }
+    for (const st of S.crust.values()) { if (heldBy(st)) continue; melt(st); }
     const h = lead(); if (h) { if (once('beat')) say(h.x, h.y - 40, 'beat', '#ff9a5c'); }
     sfx('dkEruption', 'rumble', 'puff'); if (ctx.shake) ctx.shake(2);
     for (const e of (ctx.enemies ? ctx.enemies() : [])) if (H.owns(e) && e.alive && e.mode === 'leapTell') leapOff(e);
   };
   const surgeEnd = () => {
-    for (const st of S.crust.values()) { if (st.held > 0) { st.held--; if (!st.held) st.by = null; } harden(st); }
-    for (const wd of S.wards.values()) if (wd.holding && ![...S.crust.values()].some(st => st.by === wd.w.id)) { wd.holding = false; wd.spentT = HM.ward.spent; }
+    for (const st of S.crust.values()) harden(st);
   };
   H.update = dt => {
     if (!S || !H.on()) return;
     const h = lead(); const p = h ? periodAt(h.x) : 0; S.period = p;
-    for (const wd of S.wards.values()) if (wd.spentT > 0) wd.spentT = Math.max(0, wd.spentT - dt);
+    for (const wd of S.wards.values()) { if (wd.spentT > 0) wd.spentT = Math.max(0, wd.spentT - dt);
+      if (wd.holdT > 0) { wd.holdT -= dt; if (wd.holdT <= 0) { if (S.surgeT > 0) wd.holdT = 0.01; else { wd.holdT = 0; wd.spentT = HM.ward.spent; } } } }   /* (a hold waits a surge out: it never drops you mid-melt) */
     if (S.surgeT > 0) { S.surgeT -= dt; if (S.surgeT <= 0) { S.surgeT = 0; surgeEnd(); } }
     if (!p) { S.telling = false; return; }                                  /* the caldera: no beat (and the crust stays as it is) */
     S.phase += dt / p;
@@ -82,7 +85,7 @@ export function makeHeartHands(ctx) {
     if (S.telling && !was) {
       sfx('rumble', 'charge');
       /* told: '!' over the crust a hero stands on; the leapers in reach rise under the heroes over their channel */
-      for (const hh of heroes()) { const st = crustUnder(hh); if (st && st.held <= 0) say(hh.x, hh.y - 30, '!', '#ff6b6b'); }
+      for (const hh of heroes()) { const st = crustUnder(hh); if (st && !heldBy(st)) say(hh.x, hh.y - 30, '!', '#ff6b6b'); }
       for (const e of (ctx.enemies ? ctx.enemies() : [])) if (H.owns(e) && e.alive && e.mode === 'under') tellLeap(e);
       if (h && once('crustHint') && ctx.hint) ctx.hint(HM_SAY.crustHint);
     }
@@ -99,10 +102,10 @@ export function makeHeartHands(ctx) {
     for (const wd of S.wards.values()) { const w = wd.w, x = wardX(w), y = wardY(w), box = { l: x - HM.ward.box, r: x + HM.ward.box, t: y - 26, b: y };
       if (!(hb.l < box.r && hb.r > box.l && hb.t < box.b && hb.b > box.t)) continue; if (ctx.hitOnce && !ctx.hitOnce(wd)) continue;
       if (wd.spentT > 0) { if (once('spent')) say(x, y - 36, 'spent', '#a8a0b8'); continue; }
-      if (wd.holding) continue;
-      wd.holding = true; wd.struckT = now();
+      if (wd.holdT > 0) continue;
+      wd.holdT = HM.ward.hold;
       let hard = false;
-      for (const id of w.holds) { const st = S.crust.get(id); if (!st) continue; st.held = 1; st.by = w.id; if (st.melted) { harden(st); hard = true; } }
+      for (const id of w.holds) { const st = S.crust.get(id); if (!st) continue; if (st.melted) { harden(st); hard = true; } }
       say(x, y - 36, hard ? 'harden' : 'held', '#bfe6ff'); sfx('chime', 'ui', 'puff');
       if (ctx.ring) ctx.ring(x, y - 12, 26, COL.rune);
       if (ctx.burst) ctx.burst(x, y - 14, 12, [COL.rune, COL.heldL, '#ffffff'], 70, 0.5);
@@ -151,7 +154,7 @@ export function makeHeartHands(ctx) {
   };
   /* ---------- tools ---------- */
   H.read = () => S && { phase: +S.phase.toFixed(3), period: S.period || 0, surging: surging(), telling: S.telling, beats: S.beats,
-    crust: [...S.crust.values()].map(st => ({ id: st.c.id, melted: st.melted, held: st.held })), wards: [...S.wards.values()].map(wd => ({ id: wd.w.id, holding: wd.holding, spent: wd.spentT > 0 })) };
+    crust: [...S.crust.values()].map(st => ({ id: st.c.id, melted: st.melted, held: !!heldBy(st) })), wards: [...S.wards.values()].map(wd => ({ id: wd.w.id, holding: wd.holdT > 0, holdT: +wd.holdT.toFixed(2), spent: wd.spentT > 0 })) };
   H.state = () => S;
 
   /* ---------- GREYBOX DRAWING (the art lane replaces these) ---------- */
@@ -165,7 +168,7 @@ export function makeHeartHands(ctx) {
     /* THE CRUST: dark cooled skin with cracks that glow toward the beat; HELD = cool grey with a frost rim; MELTED = nothing (the magma shows) */
     for (const st of S.crust.values()) { const c = st.c, x0 = c.x0 * TS - cx, x1 = (c.x1 + 1) * TS - cx, y = c.y * TS - cy; if (x1 < 0 || x0 > VW || y < -16 || y > VH + 16) continue;
       if (st.melted) { g.globalAlpha = 0.35; g.fillStyle = COL.magmaL; g.fillRect(x0, y + 12, x1 - x0, 2); g.globalAlpha = 1; continue; }
-      const held = st.held > 0;
+      const hw = heldBy(st), held = !!hw && !(hw.holdT < HM.ward.warn && Math.sin(time * 22) > 0.3);   /* (the last HM.ward.warn s it flickers: told) */
       g.fillStyle = held ? COL.held : COL.crust; g.fillRect(x0, y, x1 - x0, 7); g.fillStyle = held ? COL.heldL : COL.crustL; g.fillRect(x0, y, x1 - x0, 1);
       if (!held) { g.fillStyle = k > 0.66 ? COL.hot : COL.crack; g.globalAlpha = 0.25 + 0.75 * k;
         for (let xx = c.x0 * TS + 5; xx < (c.x1 + 1) * TS - 3; xx += 11) { const sx = xx - cx; g.fillRect(sx, y + 2, 3, 1); g.fillRect(sx + 2, y + 3, 1, 3); g.fillRect(sx - 1, y + 5, 2, 1); }
@@ -174,9 +177,9 @@ export function makeHeartHands(ctx) {
     /* THE WARD-STONES: an obsidian standing stone, its rune lit while it holds (a thin line to each crust it holds), dark while spent */
     for (const wd of S.wards.values()) { const w = wd.w, x = wardX(w) - cx, y = wardY(w) - cy; if (x < -20 || x > VW + 20) continue;
       g.fillStyle = COL.ward; g.fillRect(Math.round(x) - 4, Math.round(y) - 22, 9, 22); g.fillStyle = COL.wardL; g.fillRect(Math.round(x) - 4, Math.round(y) - 22, 1, 22); g.fillRect(Math.round(x) - 3, Math.round(y) - 23, 7, 1);
-      const lit = wd.holding ? 1 : wd.spentT > 0 ? 0 : 0.45 + 0.2 * Math.sin(time * 3);
+      const holding = wd.holdT > 0, lit = holding ? (wd.holdT < HM.ward.warn ? 0.5 + 0.5 * Math.sin(time * 22) : 1) : wd.spentT > 0 ? 0 : 0.45 + 0.2 * Math.sin(time * 3);
       g.fillStyle = wd.spentT > 0 ? COL.runeOff : COL.rune; g.globalAlpha = Math.max(0.3, lit); g.fillRect(Math.round(x) - 1, Math.round(y) - 18, 3, 3); g.fillRect(Math.round(x), Math.round(y) - 14, 1, 6); g.fillRect(Math.round(x) - 2, Math.round(y) - 11, 5, 1); g.globalAlpha = 1;
-      if (wd.holding) { g.strokeStyle = COL.rune; g.globalAlpha = 0.35; g.lineWidth = 1;
+      if (holding) { g.strokeStyle = COL.rune; g.globalAlpha = 0.35; g.lineWidth = 1;
         for (const id of w.holds) { const st = S.crust.get(id); if (!st) continue; const mx = (st.c.x0 + st.c.x1 + 1) * TS / 2 - cx, my = st.c.y * TS - cy; g.beginPath(); g.moveTo(Math.round(x) + 0.5, Math.round(y) - 16); g.lineTo(Math.round(mx) + 0.5, Math.round(my) + 0.5); g.stroke(); }
         g.globalAlpha = 1; } }
   };

@@ -10,8 +10,8 @@
 //     to air: a hero on it drops into the magma - BURNED, handed back to the last bank, L.waterHurts), every HEART VENT blows (a lift: ride it up). Then the crust cools again.
 //     THE ERUPTION BUILDS: the beat quickens the deeper you go (HM.zones: 7.0 s at the throat, 4.5 s at the seal's door).
 //   A CRUST (L.hmCrust, ent 'hmcrust'): cooled magma over a magma channel - one-way footing between beats.
-//   A WARD-STONE (L.hmWards, ent 'hmward'): an obsidian standing stone of the seal's old keepers. ANY blow on it HOLDS its crusts through the NEXT beat (struck during a
-//     surge, they harden at once). Then it is SPENT a moment. It is the verb: the long channels are crossed on a held crust, the leapers fought on one.
+//   A WARD-STONE (L.hmWards, ent 'hmward'): an obsidian standing stone of the seal's old keepers. ANY blow on it HOLDS its crusts a while (HM.ward.hold s, beat or no beat;
+//     struck during a surge, they harden at once). Then it is SPENT a moment. It is the verb: the long channels are crossed on a held crust, the leapers fought on one.
 //   A HEART VENT (ent 'vent' with heart: true): a fumarole that blows only on the beat (src/main.js reads HMH.ventOn).
 //   THE SEAL'S CHAINS (L.hmChains, ent 'hmchain'): the three great chains run up through the rock from the seal - T.CLIMB columns hung from the roof.
 //   BASALT RAFTS ('mover', stone): slabs drifting on the magma lake.
@@ -22,7 +22,7 @@
 // FOUR NAMED AREAS + THE CALDERA (TEACH -> TEST -> REMIX -> EXAM). Columns; rows: smaller is higher. Start + TWO shrines (Daniel: fewer; Salt & Sanctuary death cost) - and the
 // drake's own shrine, set by the split seal when it is beaten (the sky fight's checkpoint is mount-up, src/heart-scenes.js checkpointOf).
 //      0-104  THE THROAT         TEACH: the first crust (a sign, nothing on it), the first heart vent (the only way up), the first leaper (channel B, a pillar to wait on)
-//    105-196  THE CHAIN GALLERY  TEACH THE WARD: a 30-tile channel no run crosses between two beats - strike the ward-stone. TEST: a ward, a leaper and the dead on the crust
+//    105-196  THE CHAIN GALLERY  TEACH THE WARD: a 40-tile channel no run crosses between two beats - strike the ward-stone. TEST: a ward, a leaper and the dead on the crust
 //    197-282  THE MAGMA LAKE     SHRINE ONE. REMIX: basalt rafts and pillars over the lake, a crust held by a ward on a pillar, three leapers, a heart vent out
 //    283-349  THE SEAL'S DOOR    EXAM: a crust floor over magma in four spans, two wards (one on a stub pillar), two leapers, the dead and an elite paladin; SHRINE TWO
 //    350-383  THE CALDERA        THE FIRE DRAKE (mini boss), chained to the seal
@@ -37,15 +37,15 @@ export const ZONES = [[0, 104, 7.0], [105, 196, 6.0], [197, 282, 5.2], [283, 349
 export const ARCS = {
   crust: { teach: [24, 32], test: [71, 86], remix: [257, 265], exam: [297, 330] },
   vent: { teach: [44, 44], test: [194, 194], remix: [281, 281], exam: [314, 314] },
-  ward: { teach: [114, 146], test: [168, 188], remix: [255, 265], exam: [296, 330] },
-  leaper: { teach: [71, 86], test: [117, 146], remix: [231, 267], exam: [297, 330] },
+  ward: { teach: [114, 156], test: [175, 188], remix: [255, 265], exam: [296, 330] },
+  leaper: { teach: [71, 86], test: [117, 156], remix: [231, 267], exam: [297, 330] },
 };
 export const HM_SIGNS = {
   lore: 'THE MOUNTAIN IS HOLLOW TO ITS HEART. THE DEAD WENT DOWN BEFORE YOU, TO BREAK WHAT IS SEALED THERE.',
   crust: 'THE HEART BEATS: THE CRUST MELTS. WATCH ITS CRACKS GLOW - CROSS BETWEEN THE BEATS.',
   vent: 'ON THE BEAT THE VENTS BLOW. STAND ON ONE AND RIDE IT UP.',
   leaper: 'THE MAGMA HAS TEETH. ON THE BEAT A LEAPER JUMPS AT YOU: CUT IT IN THE AIR, OR WAIT ON THE PILLAR.',
-  ward: 'A WARD-STONE OF THE OLD KEEPERS. STRIKE IT: THE CRUST NEAR IT HOLDS THROUGH THE NEXT BEAT.',
+  ward: 'A WARD-STONE OF THE OLD KEEPERS. STRIKE IT: THE CRUST NEAR IT HOLDS A WHILE, BEAT OR NO BEAT.',
   lake: 'THE LAKE. RIDE THE BASALT; THE WARD ON THE PILLAR HOLDS THE LAST CRUST.',
   door: "THE SEAL'S DOOR. THE HEART BEATS FAST HERE.",
   drake: 'THE CALDERA. THE FIRE DRAKE IS CHAINED TO THE SEAL: BAIT ITS LUNGE PAST THE SCORCHED RING.',
@@ -96,8 +96,6 @@ export function buildHeartMountain({ painter, T, TS }) {
   sign(22, 25, HM_SIGNS.crust);
   coins([26, 24], [28, 24], [30, 24]);
   rock(33, 46, 25);
-  block(36, 37, 21, 25); block(33, 41, 18, 20);              /* a basalt TABLE on its stem over the bank: off the vent's breath to the left, a second height (coins) */
-  coins([34, 17], [38, 17]);
   foe('wight', 39, 25, 'throatA', { face: -1 });
   vent(44, 25, 13, 320);                                     /* TEACH THE VENT: the throat's wall is nine rows high - the beat's breath is the only way up */
   sign(41, 25, HM_SIGNS.vent);
@@ -124,22 +122,22 @@ export function buildHeartMountain({ painter, T, TS }) {
   air(111, 116, 22, 25);                                     /* a POCKET in the shaft's wall, off the chain's side (a silver) */
   ent('silver', 115, 25); coins([112, 25], [113, 25]);
   coins([110, 30], [110, 36]);
-  ward('w1', 114, 41, ['c1a', 'c1b', 'c1c']);
+  ward('w1', 114, 41, ['c1a', 'c1b', 'c1c', 'c1d']);
   sign(111, 41, HM_SIGNS.ward);
-  channel('C', 117, 146, 41, [[117, 126, 'c1a'], [127, 136, 'c1b'], [137, 146, 'c1c']]);   /* THE WARD TAUGHT: thirty tiles - no run crosses it between two beats; a held crust does */
+  /* THE WARD TAUGHT - THE LOCK: forty tiles of crust. The fastest hero's sprint (the pyromancer, 122 px/s) needs 5.1 s to cross it and the crust stands 4.6 s between two
+     beats here (6.0 - 1.4): no run crosses it. A held crust (HM.ward.hold, 10 s) carries the slowest hero (the blood knight, 74 px/s: 8.6 s) - tools/heart-level.mjs proves both */
+  channel('C', 117, 156, 41, [[117, 126, 'c1a'], [127, 136, 'c1b'], [137, 146, 'c1c'], [147, 156, 'c1d']]);
   leaper(131, 41, 'leaperC');
-  coins([121, 40], [131, 40], [141, 40]);
-  rock(147, 160, 41);
-  foe('wight', 149, 41, 'galleryA'); foe('bonearcher', 158, 38, 'galleryA', { face: -1 }); foe('husk', 155, 41, 'galleryA');
-  block(157, 160, 39, 41);                                   /* a basalt step the archer stands on (a second height) */
-  block(151, 152, 39, 41); block(148, 155, 36, 38);          /* a basalt TABLE on its stem: up off the archer's step (a second height over the dead) */
-  coins([149, 35], [154, 35]);
-  rock(161, 164, 38); rock(165, 167, 35);
-  coins([162, 37], [166, 34]);
-  ward('w2', 167, 35, ['d1', 'd2']);
-  channel('D', 168, 188, 35, [[168, 177, 'd1'], [178, 188, 'd2']]);   /* TEST: a ward, a leaper and the dead on the crust */
-  leaper(176, 35, 'leaperD'); foe('wight', 183, 35, 'galleryD', { face: -1 });
-  coins([172, 34], [182, 34]);
+  coins([121, 40], [131, 40], [141, 40], [151, 40]);
+  rock(157, 170, 41);
+  foe('wight', 159, 41, 'galleryA'); foe('bonearcher', 169, 38, 'galleryA', { face: -1 }); foe('husk', 165, 41, 'galleryA');
+  block(167, 170, 39, 41);                                   /* a basalt step the archer stands on (a second height) */
+  rock(171, 173, 38); rock(174, 175, 35);
+  coins([172, 37], [174, 34]);
+  ward('w2', 175, 35, ['d1', 'd2']);
+  channel('D', 176, 188, 35, [[176, 182, 'd1'], [183, 188, 'd2']]);   /* TEST: a ward, a leaper and the dead on the crust */
+  leaper(180, 35, 'leaperD'); foe('wight', 186, 35, 'galleryD', { face: -1 });
+  coins([179, 34], [185, 34]);
   rock(189, 196, 35);
   vent(194, 35, 14, 330);                                    /* up out of the gallery on the beat (eleven rows) */
   coins([190, 35]);
@@ -148,6 +146,8 @@ export function buildHeartMountain({ painter, T, TS }) {
   // ================= 3. THE MAGMA LAKE (197-282): SHRINE ONE, REMIX =================
   rock(197, 214, 24);
   ent('check', 203, 24);                                     /* SHRINE ONE */
+  block(199, 211, 4, 15); air(200, 212, 12, 14); chain('c4', 212, 15, 21);   /* a CHAIN up from the shrine into a hollow of the cone's rock (coins: a breather's look over the lake) */
+  coins([202, 14], [205, 14], [208, 14]);
   foe('emberwisp', 210, 20, 'lakeTop');
   foe('wight', 211, 24, 'lakeTop');
   rock(215, 220, 31); rock(221, 224, 37); rock(225, 230, 43);   /* down the lake's wall */
@@ -182,7 +182,9 @@ export function buildHeartMountain({ painter, T, TS }) {
   foe('wight', 309, 31, 'doorB'); foe('wight', 319, 31, 'doorB');
   coins([300, 30], [309, 30], [319, 30], [327, 30]);
   rock(331, 349, 31);
-  block(336, 339, 28, 31); foe('bonearcher', 338, 27, 'doorC', { face: -1 });   /* the archer's step at the door */
+  block(331, 343, 4, 22); air(332, 342, 19, 21); chain('c5', 343, 22, 28);   /* the cone's rock over the door, hollow: up a chain from the floor (coins, and a look down on the door) */
+  coins([334, 21], [337, 21], [340, 21]);
+  block(336, 339, 30, 31); foe('bonearcher', 338, 29, 'doorC', { face: -1 });   /* the archer's step at the door (two rows: up and over it) */
   foe('husk', 344, 31, 'doorElite', { elite: true, gate: 350 });               /* THE CINDER HUSK: the door's keeper, an elite (its gate is the caldera's door) */
   ent('check', 347, 31);                                     /* SHRINE TWO: the drake's retry point, at the caldera's door */
 
