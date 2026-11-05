@@ -2138,6 +2138,30 @@ function allySafeGoal(gx) {
   if (P.ai && P.onMover == null && movers.some(m => RAFTY(m) && !m.gone && gx > m.x - 6 && gx < m.x + (m.w || 16) + 6 && Math.abs(m.y - P.y) < 28 && !players.some(q => !q.ai && q.onMover === m))) return P.x;   /* (claude/aicompanions) nor onto a raft nobody is on: she would sail off with only the AI aboard */
   return gx;
 }
+/* (claude/coopvert2, Falling Tower: the AI went down in the orrery pit's poison three times) WHERE A FALL FROM x LANDS: the first floor under (x, y) - { y, ok }. Not ok = a harm pool (or spikes)
+   at the bottom, nothing to stand on, or a drop of more than 'maxRows' tiles. */
+function allyLanding(x, y, maxRows) {
+  const tx = Math.floor(x / TS), r0 = Math.floor((y - 1) / TS);
+  for (let ty = r0 + 1; ty < LH && ty <= r0 + 40; ty++) {
+    const t = tileAt(tx, ty);
+    if (t === T.SPIKE) return { y: ty * TS, ok: false };
+    if (isSolid(tx, ty) || (isOneWay(t) && ty * TS >= y - 2)) {
+      const top = ty * TS;
+      const wet = (L.pools || []).some(q => q.harm && x > q.x0 - 4 && x < q.x1 + 4 && top >= q.y - 6);
+      return { y: top, ok: !wet && ty - r0 <= maxRows }; } }
+  return { y: LH * TS, ok: false };
+}
+/* in the air: when the column it is falling down ends in a pool or spikes, steer to the nearest column (within 5 tiles) that lands safely; on the ground in a fight: never step off a ledge it
+   cannot land from (the duel hands walked it into the pit's poison) */
+function allyAirGuard(p) {
+  if (p.climb || p.swim || p.onMover != null) return;
+  if (!p.ground) { if (p.vy < 0 || allyLanding(p.x, p.y, 99).ok) return;
+    for (let k = 1; k <= 10; k++) for (const d of [-1, 1]) { const x = p.x + d * k * 8; if (allyLanding(x, p.y, 99).ok && !isSolid(Math.floor(x / TS), Math.floor((p.y - 6) / TS))) { keys.left = d < 0; keys.right = d > 0; return; } }
+    return; }
+  const dir = keys.right ? 1 : keys.left ? -1 : 0; if (!dir) return;
+  const ld = allyLanding(p.x + dir * 12, p.y, 5);   /* a floor about level with its feet ahead is no ledge */
+  if (ld.y > p.y + 2 && !ld.ok) keys.left = keys.right = false;
+}
 /* (claude/aicompanions) A LINKED COMPANION EARNS XP ONLY (brief 10-14): silver stays with YOUR save. Its pass plays out of its own save's view (asPlayer), so a coin
    it bends down for lands in that view's purse - here, between frames (no overlay up), it moves into player one's purse and the view's goes back to what it was. */
 function allyPurse(p) {
@@ -2257,6 +2281,7 @@ function allyTick() {
     if (one !== p && foe !== pinged) { const away = one.x > p.x ? 'left' : 'right'; if (Math.abs(p.x - one.x) > B.stray && keys[away]) keys[away] = false; }   /* never further from him than its behaviour strays */
     if (B.guard && p.hp < p.maxHp * B.guard) { keys.atk = false; atkPress = false; p.abuf = 0; if (LABMOD.SHIELDED(h) && windingUp(foe)) keys.block = true; }   /* hurt and careful: it only defends */
     if ((keys.left || keys.right) && allySafeGoal(p.x + (keys.right ? 12 : -12)) === p.x) keys.left = keys.right = false;   /* never onto spikes, into fire or a harm pool for a fight */
+    allyAirGuard(p);
     return;
   }
   /* FIVE. WITH HIM: a step behind his shoulder, so it is never in front of his swing (off a lone raft: straight to him) */
@@ -2271,12 +2296,13 @@ function allyTick() {
   /* (claude/coopai) a leader on another row: the route's first lip is the goal (see allyRoute); no route for 1.5 s = hold and let the told catch-up come */
   const tgt = p.pingHold || one;   /* (claude/cooppr) the route goes to a marked spot while one is held */
   if (one !== p && !S.raft && (Math.abs(tgt.y - p.y) > 24 || S.stuckT > 0.8)) { allyRoute(p, tgt, S); const rg = allyRouteGoal(p, S); if (rg !== null) goal = rg; else if (S.commit && !p.ground && p.aiT < S.commit.until) { goal = S.commit.landX; S.hop = S.commit.up; }   /* (claude/coopvert) in the air on a committed hop: steer to the landing, not back at his x */ S.noWayT = S.noWay ? (S.noWayT || 0) + fdt : 0; if (S.noWayT > 1.5 && dLead > AIC.CATCH.near) { S.wait = true; keys.left = keys.right = false; return; } } else { S.noWayT = 0; S.route = null; S.noWay = false; }
-  S.hopHeld = false;
+  S.hopHeld = false; S.dbgGoal = goal;
   p.aiWalk(allySafeGoal(goal));
   /* (claude/coopvert) a climb's hop is HELD while it rises: the walker lets go of the key, and a tap is a one-tile hop that never clears the next ledge up (the Hornet's Nest well) */
   if (S.hop && !holdOff && (p.ground || p.vy < 0) && !p.climb && !p.swim) { keys.jump = true; S.hopHeld = true; }
   /* ...and in the air on a committed hop it steers to the landing itself: the walker lets the air carry it, and it drifted off the ledge it had just cleared */
   if (S.commit && !p.ground && !p.climb && !p.swim && p.aiT < S.commit.until && !holdOff && one !== p) { const dx = S.commit.landX - p.x; keys.left = dx < -3; keys.right = dx > 3; }
+  allyAirGuard(p);
   if (holdOff) { keys.left = keys.right = false; keys.block = LABMOD.SHIELDED(h); p.abuf = 0; }   /* and the buffered swing goes with it, or a press from two frames back still takes the beat */
 }
 /* ==================== end of the co-op block ==================== */
