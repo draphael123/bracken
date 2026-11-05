@@ -48,4 +48,4 @@ Basalt/magma crust (cooled skin, glowing cracks, melt anim, held frost tint), wa
 6. Map: THE HEART and THE BREACH node rows are data only (HEART_NODES) until the map lane lays the mountain/demon sheet. REC keep.
 
 ## Final tip
-TIP_LINE
+claude/heartlevel 507a11519 (pushed; the report commit itself - the scratch copy names this tip). Not merged, not deployed.
