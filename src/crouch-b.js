@@ -120,7 +120,7 @@ export function makeCrouchB(api) {
   function update(dt) {
     const p = P(), h = api.hero();
     for (const [k, t] of seen) if (t <= api.time || (k.alive === false) || k.broken || (k.alive !== undefined && !hiding(k))) seen.delete(k);   /* a creature that has come up is plain to see */
-    if (h === 'paladin') kneel(dt, p); else if (h === 'geomancer') { if (skinOn()) skin(dt, p); else { skinOff(p); sense(dt, p); } } else skinOff(p);
+    if (h === 'paladin') kneel(dt, p); else if (h === 'geomancer') { skinOff(p); p.senseT = 0; } else skinOff(p);   /* (claude/geofix, Daniel 11-04) STONE SKIN and EARTH SENSE are both RETIRED: the geomancer's crouch is a plain duck (a TAP of DOWN is RECALL THE STONES, main.js) */
   }
   /* ---- THE GEOMANCER: STONE SKIN ---- */
   function skinOff(p) { p.skinUp = false; p.skinRegen = 1; }

@@ -177,5 +177,10 @@ for (const stage of [1, 2]) { const { S, e } = stage === 1 ? fresh(1) : p2fight(
   c.st = 'down'; c.y = (HN.HALL.floor - c.rows) * TS; const last = S.combs.find(q => q.last); const P2 = { x: c.x1p - 5, y: c.y, ground: true, face: 1, atk: -1, vy: 0 };
   for (th = 0; th < 2 * Math.PI; th += 0.01) { S.loop.th = th; const q = HQM.loopAhead(S, 0.25); if (HQM.underComb(last, q)) break; } const q1 = HQM.loopAt(S, S.loop.th); e.x = q1.x; e.y = q1.y;
   const out2 = hqPlan({ P: P2, e, S, reach: 22, shield: true, dodge: true, t: 2, mem: {}, rng: () => 0.99, v2: true, stands: [] }); ok(out2.atk && out2.up && /last comb/.test(out2.why), 'P2: from the cut comb it cuts THE LAST COMB as she comes under ("' + out2.why + '")'); }
+/* (claude/nestpolish) THE LOB: a pot in hand and her body on the high arc: UP + ATTACK; out of the arc, or wary (smokeCd), no throw */
+{ const { S, e } = fresh(1); const P = { x: S.G.h.mid - 55, y: S.G.h.floor, ground: true, face: 1, atk: -1, vy: 0, held: true }; e.mode = 'aim'; e.x = S.G.h.mid; e.y = S.G.h.floor - 95;
+  const out = hqPlan({ P, e, S, reach: 22, shield: false, dodge: true, t: 1, mem: {}, stands: [] }); ok(out.atk && out.up && /lob the pot/.test(out.why), 'bot: a pot in hand and her in the arc: it lobs it (UP + ATTACK): "' + out.why + '"');
+  e.y = S.G.h.floor - 200; const o2 = hqPlan({ P, e, S, reach: 22, shield: false, dodge: true, t: 1, mem: {}, stands: [] }); ok(!/lob the pot/.test(o2.why), 'bot: she is out of the arc: no lob');
+  e.y = S.G.h.floor - 95; e.smokeCd = 4; const o3 = hqPlan({ P, e, S, reach: 22, shield: false, dodge: true, t: 1, mem: {}, stands: [] }); ok(!/lob the pot/.test(o3.why), 'bot: she is wary of smoke (smokeCd): no lob'); }
 
 console.log('hornets-nest: ' + n + ' checks ok');

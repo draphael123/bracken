@@ -17,3 +17,6 @@ audits/*/
 
 # THE PLAYTEST RECORDER's files (src/playrec.js): a player's own fight logs, read by tools/bot-calibrate.mjs, never committed
 playtest-logs/
+
+# the trimmed itch.io build (tools/build-itch.mjs): generated, never committed
+dist-itch/

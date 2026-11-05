@@ -58,14 +58,14 @@ export const STK_SAY = {
    he sees you; reach: a hall pile this far (px) from where you blew is the one he walks to. CRUSH: open (s) under the logs, hit: the knock (of his max), drip: what a
    crushed crew gives back (of yours) */
 export const CHIEF_LURE = { walk: 84, walk2: 96, look: 1.7, look2: 1.3, stand: 0.8, cd: 10, near: 24, reach: 8 * 16, maxWalk: 3.2 };
-export const CRUSH = { open: 2.8, hit: 0.04, drip: 0.1 };
+export const CRUSH = { open: 3.4, hit: 0.04, drip: 0.1 };
 const LURE_MODES = new Set(['walk', 'landed', 'toRack', 'rainLoose', 'sweep', 'kegThrow']);
 export const LURE = { r: 15 * 16, ry: 11 * 16, t: 6, cd: 2.4, near: 40, spread: 9, speed: 70, crewSpeed: 125 };
 export const PILE = { creak: 0.35, half: 26, dmgHero: 14, shake: 4 };
 export const GATE = { r: 16 * 16, delay: 0.5 };
 /* (claude/chief3) HIS WAR HORN and HIS POWDER (see the header). draw: the ground wind (s), draw2 at his second wind; hits: blows that silence it;
    first/every/every2: s to the first wind and between winds; open: the SILENCED window (s); crew: what it calls; deckAt/deckDraw: the tower's one wind */
-export const HORN = { draw: 3.0, draw2: 2.5, hits: 2, first: 8, every: 17, every2: 14, open: 2.6, crew: ['sprig', 'sprig'], crewMax: 2, deckAt: 3, deckDraw: 3.2 };
+export const HORN = { draw: 3.0, draw2: 2.5, hits: 2, first: 8, every: 17, every2: 14, open: 3.2, crew: ['sprig', 'sprig'], crewMax: 2, deckAt: 3, deckDraw: 3.2 };
 /* tell: his heave (s); fuse: from the throw (s); kickMin: a struck keg's fuse at least this; kickV: its roll (px/s); r: the blast; open: BLASTED (s);
    minD: he heaves only past this range; cd: s between his kegs; towerR: a blast this near his tower's legs takes both lashings; deckEvery: every Nth deck shot */
 const HORN_BLOW_AT = 0.28;   /* (claude/chief3art) the draw's share spent raising the horn (frame 22); after it he blows (frame 23) */

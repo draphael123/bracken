@@ -209,47 +209,15 @@ if (!(Math.abs(rate - HOLYRATE) < 2)) bad.push(`paladin: his light filled ${rate
     if (PL.wardUp) bad.push('paladin: a guard came up while he knelt'); }
   const PH = R.palHigh;
   if (PH.err) bad.push(PH.err); else { if (PH.lost > 0) bad.push(`paladin: the armour's high swing found him kneeling for ${PH.lost}`); if (!(PH.ducked > 0)) bad.push('paladin: the high swing did not go over him by the duck'); }
-  // ---- THE GEOMANCER ----
-  const G = R.geo;
-  if (G.nearMode0 !== 'buried' || G.farMode0 !== 'buried') bad.push(`geomancer: the test's dead men did not start buried (${G.nearMode0}, ${G.farMode0})`);
-  if (G.seenStanding) bad.push(`geomancer: ${G.seenStanding} shown while she stood`);
-  if (!G.nearSeen) bad.push(`geomancer: a buried dead man 5.5 tiles off (inside ${SENSE.R} px) was not shown: ${JSON.stringify(G.seen)}`);
-  if (!G.midSeen) bad.push(`geomancer: a buried dead man 7.5 tiles off (inside the ${SENSE.R} px, eight-tile sense) was not shown`);
-  if (SENSE.R !== 128) bad.push(`geomancer: the sense reach is ${SENSE.R} px, the design is eight tiles (128)`);
-  if (G.farSeen) bad.push('geomancer: a buried dead man 9 tiles off (outside the sense) was shown');
-  if (!G.wallSeen) bad.push('geomancer: a breakable wall four tiles off was not shown');
-  if (!(G.found >= 2)) bad.push(`geomancer: the find counted ${G.found} (want the dead man and the wall)`);
-  if (G.nearMode !== 'buried' || G.nearHp !== G.nearHp0 || G.nearModeEnd !== 'buried') bad.push(`geomancer: the sense woke or hurt what it found (mode ${G.nearMode}/${G.nearModeEnd}, hp ${G.nearHp}/${G.nearHp0})`);
-  if (G.box !== DUCK_H) bad.push(`geomancer: the sense is not the duck (hurt box ${G.box})`);
-  if (G.pose !== 'sense') bad.push(`geomancer: sensing, she is drawn as '${G.pose}', not her sense`);
-  if (!(G.seenAfter >= 2)) bad.push(`geomancer: what she found was gone before the after-glow (${SENSE.after} s) ran (${G.seenAfter} left)`);
-  if (G.seenLate) bad.push(`geomancer: ${G.seenLate} still shown well after the after-glow`);
-  if (R.geoHigh.lost > 0 || !(R.geoHigh.ducked > 0)) bad.push(`geomancer: the armour's high swing did not go over her sensing (lost ${R.geoHigh.lost})`);
-  // ---- THE GEOMANCER: STONE SKIN ----
-  { const S = R.skin, near = (a, b, t = 1) => Math.abs(a - b) <= t;
-    if (SKIN.settle !== 0.15 || SKIN.mulCommon !== 0.5 || SKIN.mulBoss !== 0.75 || SKIN.hp !== 3 || SKIN.reform !== 3.0 || SKIN.regenMul !== 1.5) bad.push('skin: the numbers are not the approved plan: ' + JSON.stringify(SKIN));
-    if (S.earlyUp) bad.push('skin: set before SKIN.settle (' + SKIN.settle + ' s)');
-    if (!S.earlyUp && !near(S.earlyLost, S.baseY, 1)) bad.push('skin: a blow before the skin set did not land whole (' + S.earlyLost + ' vs ' + S.baseY + ' standing)');
-    if (!S.up) bad.push('skin: down held past SKIN.settle did not set the skin');
-    if (S.box !== DUCK_H) bad.push('skin: the stone skin is not the duck (hurt box ' + S.box + ')');
-    if (S.pose !== 'gSkin') bad.push("skin: skinned, she is drawn as '" + S.pose + "', not her stone-skin pose");
-    if (!near(S.yLost, S.baseY * SKIN.mulCommon, 1.5) || !(S.yLost < S.baseY)) bad.push('skin: a yellow blow from a common foe cost ' + S.yLost + ' (standing ' + S.baseY + ', want ~' + S.baseY * SKIN.mulCommon + ')');
-    if (S.yVx > 5) bad.push('skin: a blow on the skin threw her (vx ' + S.yVx + '); no knock-back');
-    if (!S.yDuck || !S.yUp || S.yHurt > 0) bad.push('skin: a yellow blow stood her up out of the skin: ' + JSON.stringify({ duck: S.yDuck, up: S.yUp, hurt: S.yHurt }));
-    if (S.yHits !== 1) bad.push('skin: one blow counted ' + S.yHits + ' hits');
-    if (!S.afterTwo.up || S.afterTwo.hits !== 2 || !S.twoDuck) bad.push('skin: two blows (the yellow one above and this) should leave the skin up and her down: ' + JSON.stringify({ afterTwo: S.afterTwo, duck: S.twoDuck }));
-    if (S.crack.up || S.crack.ducking || S.crack.cracks !== 1 || !near(S.crack.reform, SKIN.reform, 0.4) || S.crack.vx > 5) bad.push('skin: the third blow should crack it, stand her, start the ' + SKIN.reform + ' s re-form and throw her nowhere: ' + JSON.stringify(S.crack));
-    if (S.mid.up || !(S.mid.reform > 0)) bad.push('skin: it re-formed before SKIN.reform s: ' + JSON.stringify(S.mid));
-    if (!S.reformed.up || S.reformed.hits !== 0) bad.push('skin: it did not re-form SKIN.reform s after the crack: ' + JSON.stringify(S.reformed));
-    if (!near(S.bLost, S.baseY * SKIN.mulBoss, 1.5) || !(S.bLost > S.yLost)) bad.push('skin: a blow from a boss / mini cost ' + S.bLost + ' (standing ' + S.baseY + ', want ~' + S.baseY * SKIN.mulBoss + ', more than a common foe\'s ' + S.yLost + ')');
-    if (!near(S.redLost, S.baseR, 1)) bad.push('skin: a RED blow did not land whole (' + S.redLost + ' vs ' + S.baseR + ' standing)');
-    if (S.red.up || S.red.breaks !== 1 || !(S.red.reform > 0)) bad.push('skin: a RED blow did not break the skin: ' + JSON.stringify(S.red));
-    if (!S.hazUp0 || S.hazHits) bad.push('skin: a hazard share counted as a blow on the skin: ' + JSON.stringify({ up: S.hazUp0, hits: S.hazHits }));
-    if (!(S.regenOn > 0) || !near(S.regenOn / S.regenOff, SKIN.regenMul, 0.15)) bad.push('skin: the stamina did not come back ' + SKIN.regenMul + 'x as fast (' + S.regenOn.toFixed(2) + ' vs ' + S.regenOff.toFixed(2) + ')');
-    if (S.exitRelease) bad.push('skin: releasing down left the skin up'); if (S.exitJump) bad.push('skin: a jump left the skin up');
-    if (S.kept.hits !== 2) bad.push('skin: tapping down again gave a fresh skin (its blows should still count): ' + JSON.stringify(S.kept));
-    if (R.skinHigh.lost > 0 || !(R.skinHigh.ducked > 0)) bad.push("skin: the armour's high swing did not go over her skinned (lost " + R.skinHigh.lost + ")");
-    console.log('skin', JSON.stringify(S)); }
+  // ---- THE GEOMANCER: STONE SKIN and EARTH SENSE are BOTH RETIRED (claude/geofix, Daniel 11-04: a TAP of DOWN is RECALL THE STONES now, tools/geofix-shots.mjs recall) - her crouch is the plain duck ----
+  { const G = R.geo, S = R.skin, near = (a, b, t = 1.5) => Math.abs(a - b) <= t;
+    if (G.seenStanding || G.nearSeen || G.midSeen || G.farSeen || G.wallSeen || G.found > 0) bad.push('geomancer: EARTH SENSE is retired but something was shown: ' + JSON.stringify(G));
+    if (G.box !== DUCK_H) bad.push(`geomancer: the crouch is not the duck (hurt box ${G.box})`);
+    if (G.pose === 'sense' || G.pose === 'gSkin') bad.push(`geomancer: crouching, she is drawn as '${G.pose}' (a retired pose)`);
+    if (S.up || S.earlyUp) bad.push('skin: STONE SKIN is retired but it set: ' + JSON.stringify({ up: S.up, earlyUp: S.earlyUp }));
+    if (!near(S.yLost, S.baseY) || !near(S.bLost, S.baseY * 1.0 + (S.bLost - S.baseY) * 0)) bad.push('skin: a blow while crouched is no longer reduced (lost ' + S.yLost + ' vs ' + S.baseY + ')');
+    if (!(S.regenOn > 0) || !near(S.regenOn / S.regenOff, 1, 0.15)) bad.push('skin: the stamina regen is no longer boosted while she crouches (' + S.regenOn + ' / ' + S.regenOff + ')');
+    console.log('geomancer crouch (retired twists)', JSON.stringify({ pose: G.pose, box: G.box, skinUp: S.up, yLost: S.yLost, baseY: S.baseY })); }
   // ---- THE DEATH KNIGHT ----
   const D = R.dk;
   if (!D.killed || !(D.bodies > 0)) bad.push(`blood knight: the sprig he killed left no body (${D.bodies})`);
@@ -267,7 +235,7 @@ if (!(Math.abs(rate - HOLYRATE) < 2)) bad.push(`paladin: his light filled ${rate
   if (!(Bt.palWalk.walked < -20) || !(Bt.palWalk.light > 50)) bad.push(`bot: the paladin did not walk to a holy light four tiles off and kneel there: ${JSON.stringify(Bt.palWalk)}`);
   if (!(Bt.palNone.light > 10) || !(Bt.palNone.planned > 0)) bad.push(`bot: with no holy light near, calm and low, the paladin did not PRAY where he stood (claude/paladin4: prayer works anywhere now - a design change, stated; was: he must not kneel): ${JSON.stringify(Bt.palNone)}`);
   if (Bt.palNear.planned > 0) bad.push(`bot: the paladin knelt with a topiary three tiles off: ${JSON.stringify(Bt.palNear)}`);
-  if (!(Bt.geo.senses > 0)) bad.push(`bot: calm, the geomancer did not look: ${JSON.stringify(Bt.geo)}`);
+  if (Bt.geo.senses > 0) bad.push(`bot: the geomancer sensed (retired): ${JSON.stringify(Bt.geo)}`);
   if (Bt.dk.planned > 0 || Math.abs(Bt.dk.walked) > 4) bad.push(`bot: the blood knight walked to a body (he draws none now): ${JSON.stringify(Bt.dk)}`);
   // ---- OTHER HEROES ----
   for (const o of R.others) {

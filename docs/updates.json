@@ -1,6 +1,29 @@
 [
   {
     "date": "2026-11-05",
+    "batch": 144,
+    "lines": [
+      "After Kingswood the war horn sounds and the village burns on the horizon",
+      "Phone title screen: full thumb-sized rows, PREVIOUS / MORE paging, whole tagline",
+      "The Hornet's Nest: glowing smoke pots, tidier fights, a deeper nest, lob pots at the Queen",
+      "The Knight charges on the move, kicking up dust and sparks as he walks",
+      "The Pyromancer's fireball grows as you hold it, and at full it is a little sun",
+      "Early bosses retuned: more health and longer openings, so the fights are fairer"
+    ]
+  },
+  {
+    "date": "2026-11-05",
+    "batch": 143,
+    "lines": [
+      "Geomancer: walk through your own stones, tap DOWN to recall them",
+      "Geomancer's ultimate is now Mountain Collapse: a wave of boulders",
+      "Old Tusker's stomp is a splintered shockwave you can read and jump",
+      "The Hornet's Nest drips dark amber resin, not honey",
+      "Sound on phones unlocks reliably, and the credits list the new music"
+    ]
+  },
+  {
+    "date": "2026-11-05",
     "batch": 142,
     "lines": [
       "Geomancer: DOWN+C detonates stones, crouch for Stone Skin, a rising uppercut",
