@@ -15,7 +15,7 @@ const rgbOf = h => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), pa
 const mix = (a, b, t) => { const A = rgbOf(a), B = rgbOf(b); return '#' + [0, 1, 2].map(i => Math.round(A[i] + (B[i] - A[i]) * t).toString(16).padStart(2, '0')).join(''); };
 const rc = (g, x, y, w, h, c) => { g.fillStyle = c; g.fillRect(Math.round(x), Math.round(y), Math.round(w), Math.round(h)); };
 const TS = 16;
-let WHOLE = false; export const setPass = v => { WHOLE = !!v; };   /* main.js: true around the whole-view drawRoom('mine') call */
+let WHOLE = false; export const setPass = v => { WHOLE = !!v; }; export const isWholePass = () => WHOLE;   /* main.js: true around the whole-view drawRoom('mine') call */
 
 /* ============================ THE WALL TEXTURES (64 x 64, world-locked) ============================ */
 function wallTex(zone, lit) {
