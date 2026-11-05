@@ -70,7 +70,9 @@ function depth(f, x, y) {
   if (x < l || x >= r || y < t || y >= b) return -1;
   const m = Math.min(x - l, r - x, y - t, b - y), half = Math.min(r - l, b - t) / 2; return Math.min(1, m / Math.max(8, half * 0.5));   /* a box: full a quarter-span in from its edges */
 }
-export function classOf(f) { const s = f.strength || 0; return s <= PULL.swim * PULL.drift ? 'drift' : s <= PULL.swim * PULL.strong ? 'strong' : 'rip'; }
+/* the class is by its EFFECTIVE grip at the core: a whirl's swirl goes round you, only sqrt(1 - swirl^2) of it pulls you in */
+export const gripOf = f => (f.strength || 0) * curveOf(f.curve)(1) * (f.kind === 'whirl' ? Math.sqrt(1 - Math.min(0.95, f.swirl ?? 0.6) ** 2) : 1);
+export function classOf(f) { const s = gripOf(f); return s <= PULL.swim * PULL.drift ? 'drift' : s <= PULL.swim * PULL.strong ? 'strong' : 'rip'; }
 
 export function pullStep(F, dt, tide = {}) {
   const ev = [];
@@ -179,7 +181,7 @@ export function lintPulls(L, o = {}) {
     if (classOf(f) === 'rip') {
       const window = f.cycle && (f.cycle.off || 0) >= 1, posts = (f.posts || []).length > 0, spanPx = f.ring ? f.ring[2] * TS : Math.min(f.box[2] - f.box[0] + 1, f.box[3] - f.box[1] + 1) * TS;
       const dashOut = spanPx <= PULL.dashReach * 2 || f.dashOut === true;
-      if (!window && !posts && !dashOut) bad.push(id + ': a RIP (' + f.strength + ' px/s > ' + Math.round(PULL.swim * PULL.strong) + ') with no answer - give it a post, a release window (cycle.off >= 1) or keep it within two dashes across');
+      if (!window && !posts && !dashOut) bad.push(id + ': a RIP (' + Math.round(gripOf(f)) + ' px/s grip > ' + Math.round(PULL.swim * PULL.strong) + ') with no answer - give it a post, a release window (cycle.off >= 1) or keep it within two dashes across');
       if ((f.strength || 0) * PULL.dash > PULL.swim * PULL.strong) bad.push(id + ': even a dash cannot slip it (' + f.strength + ' px/s)');
     }
     if (f.lethal && !(f.cycle || (f.posts || []).length)) bad.push(id + ': a lethal core needs a post or a release window');

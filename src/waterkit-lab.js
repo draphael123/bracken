@@ -22,7 +22,7 @@ export const WATERKIT_LAB = {
   pulls: [
     { id: 'drift', kind: 'current', box: [12, 34, 20, 40], dir: [1, 0], strength: 40, curve: 'flat' },
     { id: 'channel', kind: 'current', box: [30, 33, 38, 40], dir: [1, 0], strength: 70, curve: 'ease', tide: 'basin', phases: { rise: -1, fall: 1 } },
-    { id: 'eddy', kind: 'whirl', ring: [48, 36, 4], strength: 120, curve: 'edge', swirl: 0.6, cycle: { off: 3, tell: 1.5, on: 4 }, posts: [[45, 35]], col: '#d8eef0' },
+    { id: 'eddy', kind: 'whirl', ring: [48, 36, 4], strength: 150, curve: 'edge', swirl: 0.6, cycle: { off: 3, tell: 1.5, on: 4 }, posts: [[45, 35]], col: '#d8eef0' },
     { id: 'gust', kind: 'away', box: [8, 24, 14, 30], at: [6, 27], strength: 50, curve: 'flat', water: false, weight: { hero: 1, foe: 0.4, shot: 1.5 } },
   ],
 };
