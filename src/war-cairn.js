@@ -44,7 +44,7 @@ export const ARCS = {
   cornice: { teach: [166, 172], test: [287, 292], exam: [332, 336] },
   hatchet: { teach: [76, 79], develop: [282, 285] },
   throw: { teach: [58, 82], test: [188, 196], remix: [276, 282], exam: [358, 366] },   /* (claude/warcairn2) THE THROWN HATCHET: the gorge's bridge rope, the yard's stone, the guard's totem, the champion's stone */
-  guard: { teach: [250, 256], test: [280, 284], exam: [318, 322] },
+  guard: { teach: [250, 256], test: [280, 284], exam: [360, 366] },
 };
 /* the clan's skins (src/main.js L.reskin): every clansman is a reskin of a proven foe - THE CLAN IS HUMAN (no goblin anywhere in it) */
 export const WC_RESKIN = { soldier: 'clanaxe', javelin: 'clanthrower', shield: 'clanguard', heavy: 'clanchamp', berserker: 'clanrunner', harpy: 'cragharpy' };
@@ -209,21 +209,25 @@ export function buildWarCairn({ painter, T, TS }) {
   coins([286, 27]);
   coins([290, 33], [297, 33], [299, 27], [302, 30]);
   sign(262, 33, 'THE LOW LINE IS LONG. THE HIGH DRUM ON THE CAIRN-STACK SWINGS TWO SLABS: THE SHORT WAY.');
-  rock(304, 310, 28); foe('goat', 306, 27, 'rams2', { face: -1 });   /* (claude/warcairn2) A RAM by the drum */
-  const d8 = drum('face3', 309, 27);
-  slab(d8, 'face3a', 311, 317, 28);
-  rock(318, 322, 28);
-  const d9 = drum('face4', 321, 27);
-  foe('shield', 319, 27, 'faceGuard3');
-  slab(d9, 'face4a', 323, 329, 28);
-  rock(330, 331, 28);
-  cornice(d9, 'ledge', 332, 336, 28);
-  rock(337, 340, 28); foe('goat', 339, 27, 'rams3', { face: -1 });   /* (claude/warcairn2) A RAM on the ledge at the ring's wall */
-  deco(306, 27, 'totem'); deco(338, 27, 'totem', 1); coins([314, 27], [326, 27], [334, 27]);
+  /* (claude/warcairnfix) THE CAIRN-STACK CLIMB (a platforming section, x304-343): the flat high line is a real climb - four 3-row steps up the cairn (rock, a chained slab to the
+     next, rock, slab, rock...), the crest bridged by old snow (a cornice), and the far side coming down by three 3-row stages into the ring. Nothing stands on it: the ram
+     went to the low line, the third guard and the ledge ram came off. The route cannot hop the pillars flat - each stands 3 rows over what leads to it */
+  rock(304, 306, 28); rock(307, 310, 25);                  /* the foot of the climb, then step ONE (feet 24) */
+  const d8 = drum('face3', 309, 24); foe('goat', 283, 33, 'rams2', { face: -1 });   /* (claude/warcairn2) A RAM: now on the low line, by the hatchet in the cairn-stack's face */
+  slab(d8, 'face3a', 311, 317, 25);                        /* the slab swings level with step one */
+  rock(318, 322, 22);                                      /* step TWO (feet 21) */
+  const d9 = drum('face4', 321, 21);
+  slab(d9, 'face4a', 323, 329, 22);
+  rock(330, 333, 19);                                      /* step THREE (feet 18) */
+  rock(334, 336, 16);                                      /* step FOUR, the crest (feet 15) */
+  cornice(d9, 'ledge', 337, 338, 16);                      /* THE CREST'S SNOW: the beat shakes it loose (wait for it to settle) */
+  rock(339, 339, 16); rock(340, 340, 19); rock(341, 341, 22); rock(342, 342, 25);   /* the far side down by four stages (the ring's wall was here: it is the stair down now) */
+  foe('goat', 376, 27, 'rams3', { face: -1 });             /* the ram that stood on the ledge now waits in the ring */
+  deco(306, 27, 'totem'); deco(335, 15, 'totem', 1); coins([314, 24], [326, 21], [332, 17], [335, 14]);
 
   // ================= 4. THE CLAN RING (340-386): SET PIECE C, THE EXAM =================
   rock(341, 391, 28);                                      /* the ring's floor (feet 27) */
-  block(341, 342, 25, 27); block(383, 384, 25, 27);        /* its low stone wall (three rows: over it with a jump) */
+  block(383, 384, 25, 27);                                 /* its low stone wall at the stair end (three rows: over it with a jump); the west wall is the climb's stair down */
   block(355, 358, 25, 27); block(368, 371, 25, 27);        /* two tiers of seats */
   span(343, 354, 23, 28); span(359, 361, 23, 28); span(365, 367, 23, 28); span(372, 382, 23, 28);   /* the rim's slate walk on its posts: the clan watches from up here */
   hang('ring', 'stone', 362, 363, 21, 22, 2);   /* (claude/warcairn2) EXAM: A HANGING CAIRN STONE over the champion's ground, between the rim's spans - drop it on him from the rim (it stays: a step) */
