@@ -71,10 +71,10 @@ export function triage(id, L) {
   for (const h of floating(L)) {
     const mass = h.kinds.some(k => !LEDGE_KINDS.has(k)), w = h.x1 - h.x0 + 1;
     const r = { level: id, ...h, w };
-    const BODY = h.n >= 1000;   /* the level's own bulk (a ship hull, a sea of rock) joined to nothing but the sea: not a ledge in the air */
+    const BODY = h.n >= 1000;   /* the level own bulk (a ship hull, a sea of rock) joined to nothing but the sea: not a ledge in the air */
     const al = allowFor(id, h); if (al) { used.add(al); r.cls = 'ALLOWED'; r.why = al.why; out.push(r); continue; }
     if (!mass) { r.cls = 'LEDGE'; out.push(r); continue; }
-    if (BODY) { r.cls = 'INTERIOR'; r.why = 'BODY: ' + h.n + ' tiles, the level's own mass (needs eyes)'; out.push(r); continue; }
+    if (BODY) { r.cls = 'INTERIOR'; r.why = 'BODY: ' + h.n + ' tiles, the level own mass (needs eyes)'; out.push(r); continue; }
     const m = machineNear(L, h);
     if (m && m.strong) { r.cls = 'MACHINE'; r.why = m.strong; out.push(r); continue; }
     const hb = heldBy(L, h); if (hb.ok) { r.cls = 'HUNG'; r.why = 'every column within ' + REACH + ' of a post / hanger (' + hb.anchors + ' anchored cols)'; out.push(r); continue; }
