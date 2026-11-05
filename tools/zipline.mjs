@@ -28,8 +28,8 @@ const PAGE = `(async (hero, levelId) => {
   const row = (name, ok, why, extra) => rows.push({ name, ok: !!ok, why: ok ? '' : why, ...extra });
   const info = P => ({ x: Math.round(P.x), y: Math.round(P.y), ground: !!P.ground, zip: !!P.zip, dead: !!(P.dead > 0), hurt: P.hurt > 0 });
 
-  const n = (() => { const { L } = fresh(); return L.zipLines.filter(z => z.signal === undefined && !(z.haul && z.haul !== 'A')).length; })();   /* (stormhold4) and the haul lines past A are tools/stormhold4.mjs's */   /* (claude/lance4) the towers' ropes; the Lance's signal ropes (on his bridge, appended last) are tools/lance4.mjs's */
-  for (let i = 0; i < n; i++) {
+  const IDX = (() => { const { L } = fresh(); return L.zipLines.map((z, i) => i).filter(i => L.zipLines[i].signal === undefined && !/^span/.test(L.zipLines[i].id || '') && !(L.zipLines[i].haul && L.zipLines[i].haul !== 'A')); })();   /* (claude/lance6proof) INDICES, not a count: the Lance's span lines are appended after the haul lines, so zipLines[0..n) took haul lines B/L1/L2 for ropes and never reached the spans; those FLAT lines (either way over a gap) are tools/lance6-page.mjs's */   /* (stormhold4) and the haul lines past A are tools/stormhold4.mjs's */   /* (claude/lance4) the towers' ropes; the Lance's signal ropes (on his bridge, appended last) are tools/lance4.mjs's */
+  for (const i of IDX) {
     let { L, P, k } = fresh(); let z = L.zipLines[i]; const tag = 'rope ' + (i + 1);
     const xa = Math.min(z.x0, z.x1), xb = Math.max(z.x0, z.x1), east = z.y1 > z.y0 === z.x1 > z.x0 ? 1 : -1;
     const hi = z.y0 <= z.y1 ? [z.x0, z.y0] : [z.x1, z.y1], lo = z.y0 <= z.y1 ? [z.x1, z.y1] : [z.x0, z.y0];

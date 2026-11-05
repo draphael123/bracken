@@ -660,7 +660,7 @@ const LANCE_RT = o => o.t < 0.85;
       stands off in his guard, rung anyway (he answers with a charge, and runs into the gate). P2 A ROPE POST: struck when he stands under that
       rope's run and the post is a few strides off. P3 THE GREAT BELL: up the last lookout onto the gatehouse hoarding, rung when he is under the gate. */
 function lanceDuty(BK, boss, P, A, open) {
-  if (boss.t !== 'lance' || open || !boss.alive || ['pinned', 'rung', 'whipped', 'split', 'haul', 'fallback', 'buffeted', 'tossed', 'updraft', 'tossedAir'].includes(boss.mode)) return null;
+  if (boss.t !== 'lance' || open || !boss.alive || ['pinned', 'stunned', 'rung', 'whipped', 'split', 'haul', 'fallback', 'buffeted', 'tossed', 'updraft', 'tossedAir'].includes(boss.mode)) return null;
   const bells = BK.props().filter(q => q.t === 'lancebell'), air = ['vaultUp', 'perch', 'stab'].includes(boss.mode);
   if (boss.phase === 1) { const b = bells.filter(q => !q.great && !q.up && !(q.rewind > 0) && !(q.ringT >= 0) && Math.abs(q.x - P.x) < 200 && Math.abs(boss.x - q.gx) > 24).sort((a, c) => Math.abs(a.x - P.x) - Math.abs(c.x - P.x))[0];
     if (!b) return null; const toward = boss.mode === 'charge' && Math.sign(b.gx - boss.x) === Math.sign(boss.vx || 0), eta = toward ? Math.abs(b.gx - boss.x) / 236 : 9;
