@@ -70,14 +70,17 @@ export function armourFront(g, x, y, time, rams, stun) {
   rc(g, x - 16, y - 15, 32, 11, MP.i0); rc(g, x - 15, y - 14, 30, 9, MP.i2);                                      /* the body, from the lid down to the skirts */
   rc(g, x - 16, y - 15, 32, 2, MP.i4); rc(g, x - 16, y - 15, 32, 1, MP.i5); rc(g, x - 16, y - 13, 32, 1, MP.i1);   /* THE LID: the rim he is stood on */
   for (let i = 0; i < 3; i++) { const px = x - 15 + i * 10, gone = i < (rams || 0);   /* (foreman2) each stomp KNOCKS A PLATE OFF: the first stomp the near-end one, then the next - the bare frame and the dark tub show through, a hanging bolt, scorch */
-    if (gone) { rc(g, px + 1, y - 12, 8, 7, '#0c0a0e'); rc(g, px + 1, y - 12, 8, 1, MP.i1); rc(g, px + 1, y - 6, 8, 1, MP.i0); rc(g, px + 4, y - 12, 1, 7, MP.i2); rc(g, px + 1, y - 9, 8, 1, MP.i2);   /* the bare ribs */
-      rc(g, px + 2, y - 11, 1, 1, MP.i5); rc(g, px + 7, y - 8, 1, 3, MP.i4); rc(g, px + 8, y - 5, 1, 1, MP.i5); rc(g, px + 2, y - 7, 2, 1, MP.t3);   /* a torn rivet, a bolt hanging, rust */
-      add(g, () => { g.globalAlpha = 0.18 + 0.08 * Math.sin(time * 5 + i); rc(g, px + 2, y - 10, 6, 4, '#ff7a30'); }); continue; }
+    if (gone) continue;
     rc(g, px + 1, y - 12, 8, 7, MP.i3); rc(g, px + 1, y - 12, 8, 1, MP.i5); rc(g, px + 1, y - 6, 8, 1, MP.i0);
     if ((rams || 0) > 0 && i === (rams || 0)) { rc(g, px + 3, y - 10, 3, 2, MP.i1); rc(g, px + 6, y - 11, 1, 3, MP.i0); }   /* the next plate is dented and next to go */
     rc(g, px + 2, y - 11, 1, 1, MP.i5); rc(g, px + 7, y - 11, 1, 1, MP.i5); }
   rc(g, x - 16, y - 9, 32, 3, HAZ[0]); for (let i = 0; i < 32; i += 6) { rc(g, x - 16 + i, y - 9, 3, 3, HAZ[1]); }   /* its hazard strip */
   rc(g, x - 16, y - 9, 32, 1, 'rgba(255,255,255,0.18)');
+  for (let i = 0; i < Math.min(3, rams || 0); i++) { const px = x - 15 + i * 10;   /* (foreman2) the plate's hole, over the hazard strip too: bare ribs, the dark tub, a bolt hanging, a torn edge, a rust glow */
+    rc(g, px, y - 13, 10, 9, '#0c0a0e'); rc(g, px, y - 13, 10, 1, MP.i1); rc(g, px + 4, y - 13, 1, 9, MP.i2); rc(g, px, y - 9, 10, 1, MP.i2);
+    rc(g, px - 1, y - 12, 1, 2, MP.i4); rc(g, px + 10, y - 7, 1, 2, MP.i4); rc(g, px + 1, y - 4, 2, 1, MP.i4); rc(g, px + 6, y - 4, 3, 1, MP.i4);
+    rc(g, px + 2, y - 11, 1, 1, MP.i5); rc(g, px + 7, y - 7, 1, 3, MP.i4); rc(g, px + 8, y - 4, 1, 1, MP.i5); rc(g, px + 2, y - 7, 2, 1, MP.t3);
+    add(g, () => { g.globalAlpha = 0.2 + 0.1 * Math.sin(time * 5 + i); rc(g, px + 1, y - 11, 8, 6, '#ff7a30'); }); }
   rc(g, x - 17, y - 14, 1, 10, MP.i3); rc(g, x + 16, y - 14, 1, 10, MP.i2);                                         /* end plates */
 }
 export function armourCart(g, x, y, time, v, rams, stun) { armourBack(g, x, y, time, v, rams, stun); armourFront(g, x, y, time, rams, stun); }
