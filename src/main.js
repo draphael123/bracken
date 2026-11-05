@@ -25764,7 +25764,7 @@ function lancePhase(e) { const X = LANCE4;
   else if (e.phase === 2 && e.hp <= e.maxHp * X.p3) { e.phase = 3; lanceFree(e); e.mode = 'fallback'; e.modeT = 5; e.stagger = 0; e.p3T = 0; e.answer = null; lanceState(e).gust = null;
     for (const pr of props) if (pr.t === 'lancebell' && !pr.great) { pr.up = true; pr.ringT = -1; }   /* (claude/lance5) the last stand is the great bell's: the tower crews haul theirs up */
     number(e.x, e.y - e.h - 16, LANCE_SAY.fallback, '#ff6b6b'); number(e.x, e.y - e.h - 28, LANCE_SAY.portcullis, '#ffd36b'); SFX.roar(); SFX.clank(); shakeCam(6); zoomKick(1.1, 0.4); hintSay('tip', 4.5, LANCE_SAY.tip3); } }
-const LANCE_STAND = new Set(['wake', 'pennantTell', 'pennant', 'haul', 'thrustTell', 'thrust', 'thrustRec', 'recover', 'sweepTell', 'sweep', 'sweepRec', 'volleyTell', 'volley', 'wallTell', 'couch', 'pivot', 'skewerTell', 'skewer', 'skewerRec', 'tossed', 'vaultTell', 'perch', 'stunned', 'pinned', 'split', 'rung', 'planted', 'wallTurned']);   /* (claude/lance146) modes drawn as a held pose: x must not change in them
+const LANCE_STAND = new Set(['wake', 'pennantTell', 'pennant', 'haul', 'thrustTell', 'thrust', 'thrustRec', 'recover', 'sweepTell', 'sweep', 'sweepRec', 'volleyTell', 'volley', 'wallTell', 'couch', 'pivot', 'skewerTell', 'skewer', 'skewerRec', 'tossed', 'vaultTell', 'perch', 'stunned', 'pinned', 'split', 'rung', 'planted', 'wallTurned']);   /* (claude/lance146) modes drawn as a held pose: x must not change in them */
 function updateLance(e, dt) {
   const A = L.arena, floor = A.floor, X = LANCE4, Z = lanceState(e);
   e.modeT -= dt; e.anim += dt; e.hitT = Math.max(0, e.hitT - dt); e.guardHold = Math.max(0, (e.guardHold || 0) - dt); e.stampT = Math.max(0, (e.stampT || 0) - dt);
