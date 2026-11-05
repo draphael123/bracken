@@ -137,7 +137,7 @@ export function createTouch(env) {
         const top = ins.t + mb, bot = H - ins.b - m, pauseR = Math.min(0.4 * s, wi * 0.35), limit = top + 2 * pauseR + 0.14 * s, avail = bot - limit, cx1 = (bx0 + bx1) / 2, pos = {};
         let ok = false, f = Math.min(1, size());
         if (baseOf() === 'simple') {   // one column, the thumb at the bottom: ATTACK, JUMP, DEFEND, SKILL, then the two contextual ones
-          const order = [...(hasStance() ? ['atk', 'jump', 'defend', 'stance', 'skill', 'interact', 'ctx'] : ['atk', 'jump', 'defend', 'skill', 'interact', 'ctx']), ...(hasPing() ? ['ping'] : [])], wt = { atk: 1, jump: 0.88, defend: 0.82, skill: 0.78, interact: 0.74, ctx: 0.66, stance: 0.62, ping: 0.58 };
+          const order = [...(hasStance() ? ['atk', 'jump', 'defend', 'stance', 'skill', 'interact', 'ctx'] : ['atk', 'jump', 'defend', 'skill', 'interact', 'ctx']), ...(hasPing() ? ['ping'] : [])], wt = { atk: 1, jump: 0.88, defend: 0.82, skill: 0.78, interact: 0.74, ctx: 0.66, stance: 0.62, ping: 0.64 };
           const rmax = Math.min(wi / 2, 0.95 * s) * Math.max(0.7, f); let used = 0; for (const k of order) used += 2 * rmax * wt[k] + 0.12 * rmax;
           const k2 = Math.min(1, avail / used); if (k2 >= 0.5) { ok = true; let y = bot; for (const k of order) { const r = rmax * k2 * wt[k]; pos[k] = [cx1, y - r, r]; y -= 2 * r + 0.12 * rmax * k2; } }
         } else {   // FULL: two columns of five rows (ATTACK on the outer edge)
