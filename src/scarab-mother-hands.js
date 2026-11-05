@@ -11,6 +11,7 @@ import { BOSS_PHASE } from './boss-music.js';
 import * as MOM from './redraw/sealed_pyramid_mother.js';
 import * as CAST from './redraw/sealed_pyramid_cast.js';
 import { whiten } from './px.js';
+import { duckBox } from './duck.js'; import { sp3On } from './sealed-pyramid3.js';   /* (claude/sealedpyramid3) her two new moves behind SP3; the sweep flies over a crouch */
 const { SM } = SMM;
 
 const SOUND = { tell: s => s.tell && s.tell(false), tellHard: s => s.tell && s.tell(true), charge: s => (s.roar || s.boom || s.thud)(), snap: s => (s.slash || s.tell)(),
@@ -41,7 +42,7 @@ export function makeScarabMotherHands(ctx) {
   function unpit() { if (!pitted.length) return; for (const [x, y, v] of pitted) ctx.cellSet(x, y, v); pitted = []; }
 
   H.spawnBoss = base => { const Ar = A(); if (!Ar) return null; unpit();
-    S = SMM.newFight(SMM.geom(Ar, ctx.TS)); BOSS_PHASE.scarabmother = 1;
+    S = SMM.newFight(SMM.geom(Ar, ctx.TS)); S.sp3 = sp3On(); BOSS_PHASE.scarabmother = 1;
     const e = { ...base, t: 'scarabmother', w: SM.w, h: SM.h, hp: ctx.EHP.scarabmother, maxHp: ctx.EHP.scarabmother, noGrav: true, markH: SM.markH, face: -1, mode: 'sleep', modeT: 0, open: 0, phase: 1, boss: true };
     e.y = S.G.floorY; ME = e; if (base.mini) e.mini = true; for (const pp of ctx.players) pp.smKeys = null; return e; };
 
@@ -61,7 +62,7 @@ export function makeScarabMotherHands(ctx) {
         else if (k === 'splash') ctx.burst(x, y - 4, 10, ['#9ad04a', '#d8f080'], 70, 0.5);
         else if (k === 'brood') ctx.burst(x, y - 4, 8, ['#2a5a3e', '#7ad08a'], 60, 0.5); },
       hit: (bx, d, name, o = {}) => { let any = false; for (const pp of ctx.players) ctx.asPlayer(pp, () => { const P = ctx.hero(); if (!ctx.upright(pp) || P.dead) return;
-          if (!ctx.overlap({ l: bx[0], r: bx[1], t: bx[2], b: bx[3] }, ctx.box(P)) || keyed(pp, o.key || name)) return;
+          if (!ctx.overlap({ l: bx[0], r: bx[1], t: bx[2], b: bx[3] }, o.high ? duckBox(P) : ctx.box(P)) || keyed(pp, o.key || name)) return;
           const hp0 = P.hp; hurt(name, () => ctx.damagePlayer(e.x, d, { who: e, name, unblockable: !o.blockable, noKnock: !!o.noKnock })); if (P.hp < hp0) any = true; }); return any; },
     };
   }
@@ -92,7 +93,7 @@ export function makeScarabMotherHands(ctx) {
     e.chipHit = t; S.n.shell++; e.guardFx = 0.25; e.guardWord = S.n.shell < 6 ? 'HER SHELL: LURE HER INTO A TRAP' : 'HER SHELL';
     ctx.sfx.clank && ctx.sfx.clank(); ctx.sparks(e.x + (Math.sign(ctx.hero().x - e.x) || 1) * 14, e.y - 16, Math.sign(ctx.hero().x - e.x) || 1, 4); return dmg * SM.resist; };
   H.barName = e => 'THE SCARAB MOTHER' + (SMM.smOpen(e) ? '  ' + (SMM.OPEN_NAME[e.openKind] || 'OPEN') : S && S.ward > 0 ? '  WARDED' : '');
-  H.end = e => { if (S) { S.glob = null; S.puddles = []; S.stones = []; S.brood = []; S.mound = null; S.seethe = null; S.erupt = null; S.leapQ = null; S.dropQ = null; } BOSS_PHASE.scarabmother = 1; };
+  H.end = e => { if (S) { S.glob = null; S.puddles = []; S.stones = []; S.brood = []; S.mound = null; S.seethe = null; S.erupt = null; S.leapQ = null; S.dropQ = null; S.sweep = null; S.ball = null; } BOSS_PHASE.scarabmother = 1; };
   H.read = () => S && { mode: ME && ME.mode, ph: S.ph, cycle: S.cycle, ward: S.ward, open: ME ? ME.open : 0, openKind: ME && ME.openKind, brood: S.brood.length, n: JSON.parse(JSON.stringify(S.n)), hurt: { ...(S.hurt || {}) } };
 
   /* ---------- DRAWING (claude/spart: every move its OWN baked pose - src/redraw/sealed_pyramid_mother.js; B16) ---------- */
@@ -104,7 +105,7 @@ export function makeScarabMotherHands(ctx) {
   /* the pose for a mode: her windup and her release are never the same picture (B16) */
   const poseOf = (e, time) => { const m = e.mode, wk = Math.floor(time * 7) & 1 ? 'walk1' : 'walk0';
     if (m === 'sleep') return 'sleep'; if (m === 'wake') return 'wake'; if (m === 'chargeTell') return Math.floor(time * 9) & 1 ? 'rake1' : 'rake0'; if (m === 'charge') return 'charge'; if (m === 'skid') return 'skid'; if (m === 'dazed') return 'dazed';
-    if (m === 'snapTell') return 'snapTell'; if (m === 'snap') return 'snap'; if (m === 'spitTell') return 'spitTell'; if (m === 'burrowTell') return 'burrowTell'; if (m === 'burrowUp') return 'burrowUp'; if (m === 'quakeTell') return 'quakeTell'; if (m === 'leapTell') return 'leapTell'; if (m === 'leap' || m === 'drop') return 'leap'; if (m === 'perch') return 'walk0'; if (m === 'eruptTell') return 'digTell'; if (m === 'eruptUp') return 'eruptUp'; if (m === 'quake') return 'quake';
+    if (m === 'snapTell' || m === 'sweepTell') return 'snapTell'; if (m === 'sweep') return 'charge'; if (m === 'ballTell') return 'skid'; if (m === 'ball') return 'walk1'; if (m === 'snap') return 'snap'; if (m === 'spitTell') return 'spitTell'; if (m === 'burrowTell') return 'burrowTell'; if (m === 'burrowUp') return 'burrowUp'; if (m === 'quakeTell') return 'quakeTell'; if (m === 'leapTell') return 'leapTell'; if (m === 'leap' || m === 'drop') return 'leap'; if (m === 'perch') return 'walk0'; if (m === 'eruptTell') return 'digTell'; if (m === 'eruptUp') return 'eruptUp'; if (m === 'quake') return 'quake';
     if (m === 'recover' && S && S.glob && S.glob.t < 0.3) return 'spit';
     if (m === 'open') return e.openKind === 'block' ? 'pinned' : e.openKind === 'darts' ? (Math.floor(time * 10) & 1 ? 'stuck1' : 'stuck0') : (Math.floor(time * 9) & 1 ? 'flipped1' : 'flipped0');
     if (m === 'walk' || m === 'back') return wk; return 'walk0'; };
@@ -121,6 +122,7 @@ export function makeScarabMotherHands(ctx) {
     g.save(); g.translate(R(x), R(y)); g.scale(f, 1);
     /* (claude/pyramidboss) PLACEHOLDER POSES for her two new moves (lane C draws them; B16: each its own windup and release): the LEAP-SLAM's crouch (squashed low, a
        hind leg cocked) and its jump (reared, rising); the BURROW-UP's dig (sunk to the shoulders in the floor) and its eruption (thrown up nose-first) */
+    if (m === 'sweepTell') { g.translate(Math.sin(time * 60), 0); g.scale(1, 1.12); } else if (m === 'sweep') g.rotate(0.18); else if (m === 'ballTell') g.scale(1.08, 0.88); else if (m === 'ball') g.rotate(-0.2);   /* (claude/sealedpyramid3) placeholders */
     if (m === 'leap' || m === 'drop') g.rotate(-0.16); else if (m === 'eruptTell') { g.translate(0, 6); g.beginPath(); g.rect(-60, -90, 120, 84); g.clip(); } else if (m === 'eruptUp') { g.translate(0, -4); g.rotate(-0.22); }
     g.drawImage(P, -MOM.CX, -P.height);
     if (flash) { g.globalAlpha = 0.9; g.drawImage(whiteOf(k), -MOM.CX, -P.height); g.globalAlpha = 1; }
@@ -138,6 +140,10 @@ export function makeScarabMotherHands(ctx) {
     if (S.erupt) { const q = S.erupt, x = R(q.x - cx), y = R(G.floorY - cy); for (let i = 0; i < 6; i++) { const a = time * 16 + i * 1.7; g.fillStyle = i % 2 ? C.sand : C.sandD; g.fillRect(R(x + Math.cos(a) * 10), R(y - 2 - Math.abs(Math.sin(a * 1.3)) * 6), 2, 2); }
       if (q.fixed) { g.strokeStyle = Math.floor(time * 12) % 2 ? '#ff6b6b' : '#fff6e0'; g.beginPath(); g.ellipse(x, y - 1, SM.erupt.r, 4, 0, 0, 7); g.stroke(); g.globalAlpha = 0.25; g.fillStyle = '#ff9a5c'; g.fillRect(x - SM.erupt.r, R(G.ledge.y - 30 - cy), SM.erupt.r * 2, y - R(G.ledge.y - 30 - cy)); g.globalAlpha = 1; } }
     const blink = Math.floor(time * 12) % 2 ? '#ff6b6b' : '#fff6e0';
+    /* (claude/sealedpyramid3) THE WING SWEEP's swarm (a dark buzzing band at head height) and THE DUNG BALL (a rolling ball of dung and sand) - greybox, art owed */
+    if (e.mode === 'sweepTell') { for (let i = 0; i < 6; i++) { g.fillStyle = i % 2 ? '#2a5a3e' : '#7ad08a'; g.fillRect(R(e.x - cx + Math.cos(time * 30 + i) * 22), R(e.y - SM.h - 6 - cy + Math.sin(time * 26 + i) * 4), 2, 2); } }
+    if (S.sweep) { const q = S.sweep, x = R(q.x - cx), y0 = R(G.floorY - SM.sweep.top - cy); for (let i = 0; i < 22; i++) { const a = time * 40 + i * 1.9; g.fillStyle = i % 3 ? '#1e3a28' : '#7ad08a'; g.fillRect(R(x + Math.cos(a) * SM.sweep.w * (i % 4) / 3), R(y0 + 2 + Math.abs(Math.sin(a * 0.7)) * (SM.sweep.top - SM.sweep.bot - 4)), 2, 1); } }
+    if (S.ball) { const q = S.ball, x = R(q.x - cx), y = R(G.floorY - SM.ball.r - cy); ell(g, x, y, SM.ball.r, SM.ball.r, '#5a4028'); ell(g, x - 2, y - 2, SM.ball.r - 3, SM.ball.r - 3, '#7a5a38'); g.fillStyle = '#c8a868'; for (let k = 0; k < 4; k++) { const a = q.spin + k * 1.57; g.fillRect(R(x + Math.cos(a) * (SM.ball.r - 3)), R(y + Math.sin(a) * (SM.ball.r - 3)), 2, 2); } }
     for (const p of S.puddles) { const a = Math.min(1, p.t), px0 = p.x - cx, py0 = G.floorY - cy; g.globalAlpha = 0.65 * a; ell(g, px0, py0 - 1, SM.puddleR, 3.4, '#2a4a14'); ell(g, px0, py0 - 2, SM.puddleR - 2, 2.6, C.acid); g.globalAlpha = a;   /* an acid pool: a dark rim, a bright skin */
       for (let i = 0; i < 4; i++) { const bb = (time * 3 + i * 0.4) % 1; g.fillStyle = C.acidL; g.fillRect(R(px0 - 10 + i * 6), R(py0 - 3 - bb * 6), 1 + (i & 1), 1 + (i & 1)); } g.globalAlpha = 1; }
     if (S.glob) { const q = S.glob, kk = Math.min(1, q.t / SM.spitFly), gy = G.floorY - 30 - Math.sin(kk * Math.PI) * 50; ell(g, q.x - cx, gy - cy, 4, 4, '#2a4a14'); ell(g, q.x - cx, gy - cy, 3, 3, C.acid); g.fillStyle = C.acidL; g.fillRect(R(q.x - cx) - 2, R(gy - cy) - 2, 2, 1);

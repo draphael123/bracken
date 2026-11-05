@@ -12,7 +12,7 @@ const { CK } = CKM;
 
 const SOUND = { tell: s => s.tell && s.tell(false), tellHard: s => s.tell && s.tell(true), slam: s => (s.boom || s.thud)(), roar: s => (s.roar || s.boom)(), open: s => (s.crack || s.clank)(),
   clamp: s => (s.clank || s.thud)(), thud: s => (s.thud || s.stone || s.clank)(), roll: s => (s.boom || s.thud)(), grab: s => (s.slash || s.tell)(), chain: s => (s.clank || s.slash)(),
-  lash: s => (s.slash || s.tell)(), throw: s => (s.throwWhoosh || s.slash)(), cut: s => (s.clank || s.slash)(), rumble: s => (s.boom || s.crack || s.thud)(), seal: s => (s.crack || s.clank)() };
+  lash: s => (s.slash || s.tell)(), hurl: s => (s.throwWhoosh || s.slash)(), cut: s => (s.clank || s.slash)(), rumble: s => (s.boom || s.crack || s.thud)(), seal: s => (s.crack || s.clank)() };
 const C = { stone: '#9c8660', stoneL: '#cdb88a', stoneD: '#5e4c34', ink: '#1c140c', gold: '#d8aa40', goldL: '#f6dc80', lapis: '#2e4a8a', linen: '#e0d4b0', linenD: '#a89870',
   rope: '#8a5a2c', chain: '#8c949c', wax: '#b8282c', glass: '#e8d0a0', water: '#9fd0e8' };
 const SEAL_COL = { rope: C.rope, chain: C.chain, wax: C.wax, glass: C.glass };
@@ -104,12 +104,12 @@ export function makeCoffinKingHands(ctx) {
   }
   /* the free king (P3): a tall bandaged figure, gold mask, chains hanging from his wrists */
   function king(g, pose, time) {
-    const lean = pose === 'lungeTell' ? 0.25 : pose === 'lunge' ? -0.35 : 0, crouch = pose === 'lungeTell' || pose === 'throwTell' ? 4 : 0;
+    const lean = pose === 'lungeTell' ? 0.25 : pose === 'lunge' ? -0.35 : 0, crouch = pose === 'lungeTell' || pose === 'hurlTell' ? 4 : 0;
     g.save(); g.rotate(lean); const h = CK.h3 - crouch;
     rect(g, -7, -h, 14, h - 12, C.linenD); for (let i = 0; i < 7; i++) rect(g, -7, -h + 4 + i * 4, 14, 2, i % 2 ? C.linen : '#c8bc98');
     rect(g, -5, -12, 4, 12, C.linenD); rect(g, 2, -12, 4, 12, C.linenD);   /* legs */
     rect(g, -6, -h - 10, 12, 11, C.gold); rect(g, -4, -h - 6, 2, 2, C.ink); rect(g, 2, -h - 6, 2, 2, C.ink); rect(g, -7, -h - 12, 14, 3, C.lapis);
-    const armUp = pose === 'throwTell' || pose === 'throw'; rect(g, 6, armUp ? -h - 14 : -h + 4, 4, armUp ? 16 : 16, C.linen); rect(g, -10, armUp ? -h - 14 : -h + 4, 4, 16, C.linen);
+    const armUp = pose === 'hurlTell' || pose === 'hurl'; rect(g, 6, armUp ? -h - 14 : -h + 4, 4, armUp ? 16 : 16, C.linen); rect(g, -10, armUp ? -h - 14 : -h + 4, 4, 16, C.linen);
     g.strokeStyle = C.chain; g.beginPath(); g.moveTo(10, -h + 18); g.lineTo(14 + Math.sin(time * 6) * 2, -h + 30); g.stroke();
     g.restore(); }
 
@@ -126,7 +126,7 @@ export function makeCoffinKingHands(ctx) {
     if (S.ph >= 3 && !['flipped'].includes(m)) {   /* THE FREE KING */
       if (m === 'downed') { g.rotate(-1.45); king(g, 'walk', time); }
       else { if (m === 'walk' || m === 'fetch') g.translate(0, -(Math.floor(time * 10) & 1)); king(g, m, time);
-        if (S.coffin && S.coffin.held) { g.save(); g.translate(0, m === 'throwTell' ? -CK.h3 - 10 : -CK.h3 + 6); g.rotate(m === 'throwTell' ? 0 : 1.5707); g.scale(0.55, 0.55); coffin(g, CK.w, CK.h, 0, time, [], 3, false); g.restore(); } } }
+        if (S.coffin && S.coffin.held) { g.save(); g.translate(0, m === 'hurlTell' ? -CK.h3 - 10 : -CK.h3 + 6); g.rotate(m === 'hurlTell' ? 0 : 1.5707); g.scale(0.55, 0.55); coffin(g, CK.w, CK.h, 0, time, [], 3, false); g.restore(); } } }
     else {
       const hop = m === 'walk' ? Math.abs(Math.sin(time * 8)) * 6 : 0, lid = m === 'burst' || m === 'flipped' ? 1 : m === 'clamp' ? Math.max(0, e.modeT / CK.clampT) : S.ph >= 2 ? 0.28 : 0;
       g.translate(0, -hop);
@@ -146,7 +146,7 @@ export function makeCoffinKingHands(ctx) {
     if ((e.mode === 'leapTell' || e.mode === 'leap') && S.leap) { const q = S.leap; g.globalAlpha = 0.35 + 0.25 * Math.sin(time * 14); g.fillStyle = '#10060a'; g.beginPath(); g.ellipse(X(q.tx), Y(q.ty) - 1, CK.leap.r, 4, 0, 0, 7); g.fill(); g.globalAlpha = 1; g.strokeStyle = blink; g.strokeRect(X(q.tx) - CK.leap.r, Y(q.ty) - 3, CK.leap.r * 2, 3); }
     if (S.whip) { const f = S.whip.dir, k = Math.min(1, S.whip.t / (CK.whip.t * 0.6)), x1 = e.x + f * (hw + CK.whip.reach * k); g.strokeStyle = C.chain; g.lineWidth = 2; g.beginPath(); g.moveTo(X(e.x), Y(e.y - 30)); g.quadraticCurveTo(X((e.x + x1) / 2), Y(e.y - 50), X(x1), Y(G.floorY - 12)); g.stroke(); g.lineWidth = 1; }
     if (e.mode === 'tumble') for (let k = 0; k < 5; k++) rect(g, X(e.x - (S.tumble ? S.tumble.dir : 1) * (24 + k * 5)), Y(G.floorY) - 2 - (k % 2), 3, 2, '#a89070');
-    if (S.mark && e.mode === 'throwTell') { g.strokeStyle = blink; g.beginPath(); g.ellipse(X(S.mark.x), Y(S.mark.y) - 1, CK.thrw.r, 4, 0, 0, 7); g.stroke(); }
+    if (S.mark && e.mode === 'hurlTell') { g.strokeStyle = blink; g.beginPath(); g.ellipse(X(S.mark.x), Y(S.mark.y) - 1, CK.thrw.r, 4, 0, 0, 7); g.stroke(); }
     if (S.coffin && !S.coffin.held) { g.save(); g.translate(X(S.coffin.x), Y(S.coffin.y)); if (S.coffin.fly) g.rotate(time * 8); else g.rotate(1.5707); g.scale(0.7, 0.7); g.translate(0, CK.h / 2 - (S.coffin.fly ? 0 : 6)); coffin(g, CK.w, CK.h, 0, time, [], 3, false); g.restore(); }
     if (S.hold) { const pp = S.hold.pp; for (let k = 0; k < 4; k++) rect(g, X(pp.x) - 8, Y(pp.y) - 13 + k * 3, 16, 1, k & 1 ? C.linenD : C.linen); }
     /* HIS SEALS (what binds him now, and what breaks each) */

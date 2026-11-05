@@ -43,7 +43,7 @@ export const TRAP_OF = { rope: 'THE OIL', chain: 'THE DARTS', glass: 'THE SAND-P
 export const MOVES = {
   slamTell: { mark: '!', answer: 'block', ph: [1, 2] }, tumbleTell: { mark: '!!', answer: 'jump', ph: [1, 2] }, grabTell: { mark: '!', answer: 'block', ph: [1, 2, 3] },
   leapTell: { mark: '!!', answer: 'dodge', ph: [1, 2, 3] }, whipTell: { mark: '!', answer: 'duck', ph: [2, 3] }, lungeTell: { mark: '!', answer: 'block', ph: [3] },
-  throwTell: { mark: '!!', answer: 'dodge', ph: [3] },
+  hurlTell: { mark: '!!', answer: 'dodge', ph: [3] },
 };
 export const ATTACKS = Object.keys(MOVES).map(k => k.replace(/Tell$/, ''));
 export const MOVE_NAME = { slam: 'THE COFFIN SLAM', tumble: 'THE TUMBLE', grab: 'HIS HANDS', squeeze: 'HIS GRIP', toss: 'HIS GRIP', leap: 'THE COFFIN LEAP', whip: 'THE CHAIN WHIP',
@@ -168,11 +168,11 @@ export function pickMove(e, S, P, rng = Math.random) {
   const has = m => MOVES[m + 'Tell'].ph.includes(ph);
   if (S.dwell.t >= CK.dwell && S.leapCdT <= 0 && S.dwell.plat) return 'leap';   /* THE ANTI-CROWD MOVE: you have stood there too long */
   if (ph >= 3 && S.coffin && !S.coffin.held) return 'fetch';
-  if (pl === 'W' || pl === 'E') { w.grab = ad < 90 ? 3 : 0; w.whip = 3; w.throw = 2.5; w.tumble = 0.5; }
+  if (pl === 'W' || pl === 'E') { w.grab = ad < 90 ? 3 : 0; w.whip = 3; w.hurl = 2.5; w.tumble = 0.5; }
   else if (ad < 84) { w.slam = 3; w.grab = 3; w.whip = 1.5; w.lunge = 3; }
-  else if (ad < 180) { w.tumble = 2.5; w.whip = 2.5; w.lunge = 2; w.grab = 0.8; w.throw = 1.5; }
-  else { w.tumble = 3; w.throw = 3; w.whip = 0.8; w.lunge = 1; }
-  if (S.throwCdT > 0 || !S.coffin || !S.coffin.held) w.throw = 0;
+  else if (ad < 180) { w.tumble = 2.5; w.whip = 2.5; w.lunge = 2; w.grab = 0.8; w.hurl = 1.5; }
+  else { w.tumble = 3; w.hurl = 3; w.whip = 0.8; w.lunge = 1; }
+  if (S.throwCdT > 0 || !S.coffin || !S.coffin.held) w.hurl = 0;
   let tot = 0; const list = [];
   for (const [m, v] of Object.entries(w)) { if (!v || !has(m) || m === S.last) continue; list.push([m, v]); tot += v; }
   if (!list.length) return ph >= 3 ? (S.last !== 'lunge' ? 'lunge' : 'grab') : (S.last !== 'grab' ? 'grab' : 'slam');
@@ -188,8 +188,8 @@ function nextMove(e, S, P, c) {
     case 'lunge': tell(e, S, c, 'lungeTell', CK.lunge.tell); return;
     case 'leap': { const pl = S.dwell.plat, L = ledgeOf(G, pl), tx = L ? Math.max(L.x0 + 20, Math.min(L.x1 - 20, P.x)) : clampX(G, P.x, 26), ty = L ? L.y : G.floorY;
       S.leap = { x0: e.x, y0: G.floorY, tx, ty, t: 0, key: 'leap' + (S.act + 1), plat: pl }; S.leapCdT = CK.leapCd + CK.leap.tell; S.dwell.t = 0; tell(e, S, c, 'leapTell', CK.leap.tell); return; }
-    case 'throw': { const pl = platOf(G, P), L = pl === 'W' || pl === 'E' ? ledgeOf(G, pl) : null; S.mark = { x: clampX(G, P.x, 26), y: L ? L.y : G.floorY }; S.throwCdT = CK.throwCd;
-      tell(e, S, c, 'throwTell', CK.thrw.tell); return; }
+    case 'hurl': { const pl = platOf(G, P), L = pl === 'W' || pl === 'E' ? ledgeOf(G, pl) : null; S.mark = { x: clampX(G, P.x, 26), y: L ? L.y : G.floorY }; S.throwCdT = CK.throwCd;
+      tell(e, S, c, 'hurlTell', CK.thrw.tell); return; }
     case 'fetch': setMode(e, 'fetch', 4); c.number(e.x, e.y - 60, CK_SAY.fetch, '#e8d0a0'); return;
   }
   setMode(e, 'walk', 0.5);
@@ -226,8 +226,8 @@ function stepMove(e, S, dt, P, c) {
     case 'lunge': { const q = S.lunge; if (q) { e.x = clampX(G, e.x + q.dir * (CK.lunge.dist / CK.lunge.t) * dt, hw + 4);
         c.hit([e.x - hw - 10, e.x + hw + 10, G.floorY - 40, G.floorY], CK.dmg.lunge, MOVE_NAME.lunge, { blockable: true, key: q.key }); }
       if (e.modeT <= 0) { S.lunge = null; gap(); } return; }
-    case 'throwTell': if (e.modeT <= 0) { const m = S.mark || { x: P.x, y: G.floorY }; setMode(e, 'throw', 0.4); c.sound('throw'); S.coffin = { x: e.x, y: G.floorY - 60, held: false, fly: { x0: e.x, y0: G.floorY - 60, tx: m.x, ty: m.y, t: 0, key: 'coffin' + S.act } }; S.mark = null; } return;
-    case 'throw': if (e.modeT <= 0) gap(); return;
+    case 'hurlTell': if (e.modeT <= 0) { const m = S.mark || { x: P.x, y: G.floorY }; setMode(e, 'hurl', 0.4); c.sound('hurl'); S.coffin = { x: e.x, y: G.floorY - 60, held: false, fly: { x0: e.x, y0: G.floorY - 60, tx: m.x, ty: m.y, t: 0, key: 'coffin' + S.act } }; S.mark = null; } return;
+    case 'hurl': if (e.modeT <= 0) gap(); return;
     default: setMode(e, 'walk', 0.5);
   }
 }
@@ -294,7 +294,7 @@ export function ckPlan(s) {
         if (onLedge) { out.gx = offLedge(); out.why = 'down off the ledge: the whip'; return out; } out.down = true; out.gx = P.x; out.why = 'duck the whip'; return out; }
       if ((e.mode === 'lungeTell' || e.mode === 'lunge') && dx < CK.lunge.dist + hw + 30 && (P.x - kx) * (e.face || 1) > 0) { if (s.shield) { out.block = true; out.face = Math.sign(kx - P.x) || 1; out.why = 'block the claws'; return out; }
         if (P.ground) { out.jump = true; out.gx = kx - side * 20; out.why = 'jump over his lunge'; return out; } }
-      if (e.mode === 'throwTell' || (S.coffin && S.coffin.fly)) { const m = S.mark || (S.coffin && S.coffin.fly ? { x: S.coffin.fly.tx, y: S.coffin.fly.ty } : null);
+      if (e.mode === 'hurlTell' || (S.coffin && S.coffin.fly)) { const m = S.mark || (S.coffin && S.coffin.fly ? { x: S.coffin.fly.tx, y: S.coffin.fly.ty } : null);
         if (m && Math.abs(P.x - m.x) < CK.thrw.r + 20) { out.gx = onLedge ? offLedge() : clamp(m.x + (P.x < m.x ? -1 : 1) * (CK.thrw.r + 34)); out.why = 'off the coffin\'s mark'; return out; } }
     } }
   /* 2. OPEN: strike him; WARDED: off him */

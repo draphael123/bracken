@@ -45,7 +45,18 @@ export const SM = {
   quakeTell: 1.0, quakeFall: 0.6, quakeR: 15,
   brood: { every: 6.5, max: 3, speed: 72, seethe: 0.8, biteCd: 1.0, w: 10, h: 7 },
   reset3: 0.6,
-  dmg: { charge: 30, snap: 32, spit: 25, puddle: 8, burrow: 34, quake: 31, brood: 10, leap: 34, erupt: 34 },
+  dmg: { charge: 30, snap: 32, spit: 25, puddle: 8, burrow: 34, quake: 31, brood: 10, leap: 34, erupt: 34, sweep: 26, ball: 32 },
+  /* (claude/sealedpyramid3, SP3 only - S.sp3) TWO NEW TOLD MOVES, each its own windup and release and its own answer (brief item 3; the band is the plan's 70-80, Q7):
+     THE WING SWEEP '!' (her wing cases lift and buzz: then a swarm of her scarabs sweeps the floor at a standing hero's head, out from her - DUCK it, or be on the ledge)
+     THE DUNG BALL '!!' (she backs onto a great ball of tomb-dung and sand, then kicks it: it rolls the floor to the wall and bursts - JUMP it, or be on the ledge) */
+  sweep: { tell: 0.7, v: 300, len: 360, w: 22, top: 22, bot: 9, t: 0.25 },
+  ball: { tell: 0.85, v: 240, r: 11, kick: 0.35 },
+};
+/* (claude/sealedpyramid3) SP3's cycles: phase one gains THE WING SWEEP, phase two THE DUNG BALL (it adds the burrow too - STATED CHANGE to B5, like the King's) */
+export const CYCLES_SP3 = {
+  1: [['charge', 'snap', 'sweep', 'spit', 'charge'], ['sweep', 'charge', 'snap', 'spit'], ['charge', 'spit', 'sweep', 'charge', 'snap']],
+  2: [['burrow', 'charge', 'ball', 'snap', 'spit'], ['ball', 'charge', 'burrow', 'sweep', 'charge'], ['spit', 'charge', 'ball', 'burrow', 'snap']],
+  3: [['quake', 'charge', 'ball', 'burrow', 'snap'], ['sweep', 'charge', 'quake', 'spit', 'ball'], ['burrow', 'ball', 'charge', 'quake', 'snap']],
 };
 /* EVERY CYCLE CHANGES: the order of each pass, by phase (cycle k uses [k % n]); ONE NEW MOVE A PHASE (B5) */
 export const CYCLES = {
@@ -58,8 +69,9 @@ export const MOVES = {
   chargeTell: { mark: '!!', answer: 'jump' }, snapTell: { mark: '!', answer: 'block' }, spitTell: { mark: '!', answer: 'block' },
   burrowTell: { mark: '!!', answer: 'dodge' }, quakeTell: { mark: '!!', answer: 'dodge' },
   leapTell: { mark: '!!', answer: 'dodge' }, eruptTell: { mark: '!!', answer: 'dodge' },   /* (claude/pyramidboss) the two that answer crowding */
+  sweepTell: { mark: '!', answer: 'duck' }, ballTell: { mark: '!!', answer: 'jump' },   /* (claude/sealedpyramid3, SP3 only) */
 };
-export const MOVE_NAME = { charge: 'HER CHARGE', snap: 'HER MANDIBLES', spit: 'HER SPIT', puddle: 'THE BURNING SPIT', burrow: 'HER BURROW', quake: 'A FALLING STONE', brood: 'HER BROOD', leap: 'HER LEAP-SLAM', erupt: 'HER BURROW-UP' };
+export const MOVE_NAME = { charge: 'HER CHARGE', snap: 'HER MANDIBLES', spit: 'HER SPIT', puddle: 'THE BURNING SPIT', burrow: 'HER BURROW', quake: 'A FALLING STONE', brood: 'HER BROOD', leap: 'HER LEAP-SLAM', erupt: 'HER BURROW-UP', sweep: 'HER WING SWEEP', ball: 'HER DUNG BALL' };
 export const OPEN_NAME = { block: 'PINNED', darts: 'STUCK', stone: 'FLIPPED' };
 
 /* ---------- THE ANTECHAMBER ---------- */
@@ -147,10 +159,10 @@ export function stepScarabMother(e, S, dt, h, c) {
   stepErupt(e, S, dt, P, c);
   if (e.open > 0) e.open = Math.max(0, e.open - dt);
   if (S.ward > 0) S.ward = Math.max(0, S.ward - dt); e.ward = S.ward;
-  stepGlob(S, dt, c); stepPuddles(S, dt, c); stepStones(S, dt, c);
+  stepGlob(S, dt, c); stepPuddles(S, dt, c); stepStones(S, dt, c); stepSweep(S, dt, c); stepBall(S, dt, c);
   if (S.ph >= 2) stepBrood(e, S, dt, h, c);
   if (e.mode === 'sleep') return;
-  if (e.mode === 'wake') { if (e.modeT <= 0) { S.script = CYCLES[1][0].slice(); S.step = 0; setMode(e, 'walk', 0.6); } return; }
+  if (e.mode === 'wake') { if (e.modeT <= 0) { S.script = (S.sp3 ? CYCLES_SP3 : CYCLES)[1][0].slice(); S.step = 0; setMode(e, 'walk', 0.6); } return; }
   /* THE PHASES: a new one waits for the blow in hand and never cuts an opening short */
   const want = sPhase(e);
   if (want > S.ph && !smOpen(e) && (e.mode === 'walk' || e.mode === 'recover' || e.mode === 'back')) {
@@ -178,7 +190,7 @@ function nextMove(e, S, P, c) {
     if (S.leapCd <= 0 && ((D.k === 'L' && D.t >= SM.leap.ledge) || (D.k === 'F' && D.t >= SM.leap.camp))) { const ty = D.k === 'L' ? G.ledge.y : G.floorY, tx = D.k === 'L' ? Math.max(G.ledge.x0 + 16, Math.min(G.ledge.x1 - 16, P.x)) : clampX(G, P.x);
       S.leapCd = SM.leap.cd; D.t = 0; S.n.leaps = (S.n.leaps || 0) + 1; S.leapQ = { x0: e.x, tx, ty, t: 0, key: 'leap' + (S.act + 1), ledge: D.k === 'L' }; e.face = Math.sign(tx - e.x) || e.face; tell(e, S, c, 'leapTell', SM.leap.tell); return; }
     if (S.ph >= 2 && S.eruptCd <= 0 && D.t >= SM.erupt.camp) { S.eruptCd = SM.erupt.cd; D.t = 0; S.n.erupts = (S.n.erupts || 0) + 1; tell(e, S, c, 'eruptTell', SM.erupt.tell); return; } }
-  if (!S.script || S.step >= S.script.length) { S.cycle++; S.n.cycles++; const set = CYCLES[S.ph]; S.script = set[S.cycle % set.length].slice(); S.step = 0; }
+  if (!S.script || S.step >= S.script.length) { S.cycle++; S.n.cycles++; const set = (S.sp3 ? CYCLES_SP3 : CYCLES)[S.ph]; S.script = set[S.cycle % set.length].slice(); S.step = 0; }
   const m = S.script[S.step++], dx = P.x - e.x, ad = Math.abs(dx), G = S.G;
   e.face = Math.sign(dx) || e.face;
   switch (m) {
@@ -188,6 +200,8 @@ function nextMove(e, S, P, c) {
       S.closeIn = false; S.closeTries = 0; S.n.snaps++; tell(e, S, c, 'snapTell', SM.snapTell); return;
     case 'spit': S.n.spits++; tell(e, S, c, 'spitTell', SM.spitTell); S.mark = { x: clampX(G, P.x), k: 'spit' }; return;
     case 'burrow': S.n.burrows++; tell(e, S, c, 'burrowTell', SM.burrowTell); return;
+    case 'sweep': S.n.sweeps = (S.n.sweeps || 0) + 1; tell(e, S, c, 'sweepTell', SM.sweep.tell); return;   /* (claude/sealedpyramid3) */
+    case 'ball': S.n.balls = (S.n.balls || 0) + 1; tell(e, S, c, 'ballTell', SM.ball.tell); return;
     case 'quake': { S.n.quakes++; tell(e, S, c, 'quakeTell', SM.quakeTell); const r = c.rng ? c.rng : Math.random, xs = [clampX(G, P.x)];
       for (let k = 0; k < 2; k++) { let x = G.x0 + 40 + r() * (G.x1 - G.x0 - 80); if (Math.abs(x - xs[0]) < 40) x = clampX(G, x + 70 * (r() < 0.5 ? -1 : 1)); xs.push(x); }
       S.stones = xs.map((x, i) => ({ x, t: SM.quakeTell + SM.quakeFall, key: 'quake' + S.act + '.' + i })); return; }
@@ -230,12 +244,26 @@ function stepMove(e, S, dt, P, c) {
         c.hit([q.x - SM.erupt.r, q.x + SM.erupt.r, G.ledge.y - 30, G.floorY + 2], SM.dmg.erupt, MOVE_NAME.erupt, { key: q.key }); S.erupt = null; } return;
     case 'eruptUp': if (e.modeT <= 0) after(0.5); return;
     case 'quake': if (e.modeT <= 0) after(0.4); return;
+    /* (claude/sealedpyramid3) THE WING SWEEP: wing cases up and buzzing (the tell), then the swarm goes out low along the floor from her (stepSweep) */
+    case 'sweepTell': e.face = Math.sign(P.x - e.x) || e.face; if (e.modeT <= 0) { const d = e.face || 1; setMode(e, 'sweep', SM.sweep.t); S.sweep = { x0: e.x + d * SM.w / 2, x: e.x + d * SM.w / 2, dir: d, key: 'sweep' + S.act }; c.sound('seethe'); } return;
+    case 'sweep': if (e.modeT <= 0) after(); return;
+    /* THE DUNG BALL: she backs onto it (the tell), then kicks it - it rolls to the wall (stepBall) */
+    case 'ballTell': e.face = Math.sign(P.x - e.x) || e.face; if (e.modeT <= 0) { const d = e.face || 1; setMode(e, 'ball', SM.ball.kick); S.ball = { x: e.x + d * (SM.w / 2 + SM.ball.r + 2), dir: d, spin: 0, key: 'ball' + S.act }; c.sound('charge'); } return;
+    case 'ball': if (e.modeT <= 0) after(); return;
     default: setMode(e, 'walk', 0.5);
   }
 }
 /* (claude/pyramidboss) THE BURROW-UP's trail: it runs under the hero you are (the ledge too) for SM.erupt.run s, then it STOPS in a ring (told) SM.erupt.fix s before she comes up */
 function stepErupt(e, S, dt, P, c) { const q = S.erupt; if (!q || e.mode !== 'erupting') return; if (!q.fixed && e.modeT <= SM.erupt.fix) { q.fixed = true; c.sound('tellHard'); }
   if (!q.fixed) { const d = P.x - q.x; q.x = clampX(S.G, q.x + Math.sign(d) * Math.min(Math.abs(d), SM.erupt.v * dt)); } }
+/* (claude/sealedpyramid3) THE WING SWEEP's swarm: a band at a standing hero's head (over a crouch: o.high), out along the floor to its length or the wall */
+function stepSweep(S, dt, c) { const q = S.sweep; if (!q) return; q.x += q.dir * SM.sweep.v * dt; const G = S.G;
+  c.hit([q.x - SM.sweep.w, q.x + SM.sweep.w, G.floorY - SM.sweep.top, G.floorY - SM.sweep.bot], SM.dmg.sweep, MOVE_NAME.sweep, { blockable: true, high: true, key: q.key, noKnock: true });
+  if (Math.abs(q.x - q.x0) > SM.sweep.len || q.x < G.x0 + 6 || q.x > G.x1 - 6) S.sweep = null; }
+/* THE DUNG BALL: it rolls the floor to the wall and bursts there (a jump clears it; a shield does not turn it) */
+function stepBall(S, dt, c) { const q = S.ball; if (!q) return; const G = S.G; q.x += q.dir * SM.ball.v * dt; q.spin += q.dir * SM.ball.v * dt / SM.ball.r;
+  c.hit([q.x - SM.ball.r, q.x + SM.ball.r, G.floorY - SM.ball.r * 2, G.floorY], SM.dmg.ball, MOVE_NAME.ball, { key: q.key });
+  if (q.x < G.x0 + SM.ball.r + 2 || q.x > G.x1 - SM.ball.r - 2) { c.fx('rubble', q.x, G.floorY); c.shake(3); c.sound('thud'); S.ball = null; } }
 /* the glob she spits: an arc to its mark, then a burning puddle */
 function stepGlob(S, dt, c) { const q = S.glob; if (!q) return; q.t += dt; const k = Math.min(1, q.t / SM.spitFly); q.x = q.x0 + (q.tx - q.x0) * k;
   if (k >= 1) { c.hit([q.tx - SM.spitR, q.tx + SM.spitR, S.G.floorY - 30, S.G.floorY + 2], SM.dmg.spit, MOVE_NAME.spit, { blockable: true, key: q.key }); S.puddles.push({ x: q.tx, t: SM.puddleT, tick: 0, key: q.key }); c.fx('splash', q.tx, S.G.floorY); S.glob = null; } }
@@ -286,6 +314,11 @@ export function smPlan(s) {
     if (!q.ledge && !onL && Math.abs(P.x - q.tx) < SM.leap.r + 26) { out.gx = safeX(q.tx + (P.x < q.tx ? -1 : 1) * (SM.leap.r + 44)); if (e.mode === 'leap' && !s.noRoll && Math.abs(P.x - q.tx) < SM.leap.r + 6) out.dodge = true; out.why = 'out from under her leap'; return out; } }
   if (S.erupt && S.erupt.fixed && Math.abs(P.x - S.erupt.x) < SM.erupt.r + 12 && seenFor('er' + S.act)) { const onL = P.ground && Math.abs(P.y - G.ledge.y) < 6;
     out.gx = onL ? ((P.x - G.ledge.x0 < G.ledge.x1 - P.x) ? G.ledge.x0 - 22 : G.ledge.x1 + 22) : safeX(S.erupt.x + (P.x < S.erupt.x ? -1 : 1) * (SM.erupt.r + 26)); if (!s.noRoll && !onL && e.modeT < 0.2) out.dodge = true; out.why = 'out of the burrow-up\'s ring'; return out; }
+  /* 0c. (claude/sealedpyramid3) THE WING SWEEP (duck it) and THE DUNG BALL (jump it) */
+  if ((e.mode === 'sweepTell' || S.sweep) && seenFor('sw' + S.act) && !roll('swm' + S.act, s.v2 ? 0 : PLAN.miss) && P.ground && Math.abs(P.y - G.floorY) < 6) { const q = S.sweep, toward = q ? (P.x - q.x) * q.dir > 0 : (P.x - kx) * (e.face || 1) > 0;
+    if (toward && (!q || Math.abs(P.x - q.x) < 70)) { if (s.shield && roll('swb' + S.act, 0.4)) { out.block = true; out.face = Math.sign(kx - P.x) || 1; out.why = 'block the swarm'; return out; } out.down = true; out.gx = P.x; out.why = 'duck the wing sweep'; return out; } }
+  if (S.ball && seenFor('bl' + S.act) && !roll('blm' + S.act, s.v2 ? 0 : PLAN.miss) && P.ground) { const q = S.ball, toward = (P.x - q.x) * q.dir > 0, gap = Math.abs(P.x - q.x);
+    if (toward && gap < 52) { out.jump = true; out.gx = P.x + q.dir * 16; out.why = 'jump the dung ball'; return out; } if (toward && gap < 140) { out.gx = P.x; out.why = 'ready to jump the ball'; return out; } }
   /* 1. THE BROOD at its feet: cut it down */
   const bb = S.brood.filter(b => b.alive).sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0];
   if (bb && Math.abs(bb.x - P.x) < 26 && !(e.mode === 'charge' && dx < 120)) { swing(bb.x); out.gx = P.x; out.down = false; out.why = 'cut the brood'; return out; }
