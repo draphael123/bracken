@@ -332,7 +332,7 @@ if (MAIN.includes('demon-king-hands')) {
   once(/if \(DKH && DKH\.owns\(e\)\) continue;\s*\/\* \(claude\/demonking\) stepped/g, 'updateEnemies skips his entities (the hands step them)');
   once(/DKH && DKH\.owns\(e\)\) continue;\s*\/\* \(claude\/demonking\) drawn/g, 'drawEnemies skips them (the hands draw them)');
   once(/if \(L\.skyMount && DKH\) DKH\.draw\(g, cx, cy, time\)/g, 'the world pass draws him + the bolts');
-  once(/if \(DKH\) DKH\.hud\(g, VW, VH, time\)/g, 'the HUD pass draws his bar + pips');
+  once(/if \(DKH( && !TRN)?\) DKH\.hud\(g, VW, VH, time\)/g, 'the HUD pass draws his bar + pips');
 } else console.log('  (main.js hooks not wired yet - skipped)');
 
 console.log(`\ndemon-king: ${pass} ok, ${fail} failed`);
