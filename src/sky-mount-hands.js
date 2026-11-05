@@ -48,7 +48,9 @@ export function makeSkyMountHands(api) {
   /* for S2/S3: is (x, y) the drake (its body or a wall)? where does a thing planted at x sit? (null / x off a skyMount level) */
   const solidAt = (x, y) => { const b = on() && back(); return !!b && SK.solidAt(b, x, y); };
   const plant = x => { const b = on() && back(); return b ? SK.plantOnBack(b, x) : null; };
-  return { on, back, update, pre, foot, knock, cam, aiWalk, solidAt, plant,
+  /* (claude/scenes) the sky fight's restart at mount-up: the back at phase 1, level, everyone off it (update() puts them back on at the spawn slots) */
+  function restart() { const b = on() && back(); if (!b) return; SK.resetBack(b, 1); for (const p of heroes()) if (p.mount) SK.dismount(p); }
+  return { on, back, update, pre, foot, knock, cam, aiWalk, solidAt, plant, restart,
     drawSky: (g, VW, VH, time, parallax) => { const b = on() && back(); if (b) paintSky(g, b, VW, VH, time, parallax); },
     drawDrake: (g, cx, cy, time) => { const b = on() && back(); if (b) paintDrake(g, b, cx, cy, time); } };
 }
