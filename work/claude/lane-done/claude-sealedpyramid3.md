@@ -85,7 +85,7 @@ only (the level's other spike cells keep the shared rule - asserted). Rising san
 - New filenames vs ad-block words (ad/admiral/banner/track/pixel/promo/analytics/beacon): `sealed-pyramid3.js`, `mini-keep.js`, `coffin-king.js`, `coffin-king-hands.js`,
   `mini-no-respawn.mjs`, `sealed-pyramid3.mjs` - clean.
 
-LINTS: (filled below)
+LINTS (SP3=1, exit 0 each; flag-off outputs identical where compared): one-new-foe, answer-tags, tells (1137 marks rows), boss-read, goblin-lint, dressing, platforming-lint, checkpoint-gaps, checkpoint-stand, checkpoint-thin, checkpoint-rule, checkpoints. A pure-node smoke of src/coffin-king-hands.js (update + all three draws, 240 s through P1-P3 incl. a FLIP) ran without error.
 
 ## Browser owed (none opened; all with `?sp3=1` unless said)
 1. `tools/level1-pilot.mjs sealedpyramid --write` then `tools/mash-bot.mjs sealedpyramid --level sealedpyramid --write` with SP3 on (level THEN boss) - the level-quality pilot/mash rows (a flag-on hash; decide whether the stamp is taken at the flag flip).
