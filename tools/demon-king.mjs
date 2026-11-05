@@ -69,10 +69,10 @@ ok(DK.bolt.tell.every(t => t >= 0.5) && DK.swoop.tell >= 0.8 && DK.whip.tell >= 
   for (const m of modes) { f.mode = m; f.hp = 3600; f.ph = 1; const d = DKM.take(f, 100, 'light'); if (m === 'beaten') ok(d === 0, 'beaten: the fight is over (the scene)'); else ok(d >= 40, `B15 floor in ${m}: a 100 blow lands ${d} (>= 40)`); }
   f.mode = 'downed'; f.hp = 3600; ok(DKM.take(f, 100, 'light') === 150, 'DOWNED: blows x1.5');
   f.mode = 'float'; f.hp = 3600; ok(DKM.take(f, 100, 'reflect') === 100, 'a returned bolt lands whole (tag reflect)');
-  f.mode = 'float'; f.hp = 2410; ok(DKM.take(f, 500, 'reflect') === 10 && f.hp === 2400, 'never past the phase line (P1 stops at 2400)');
+  f.mode = 'float'; f.hp = DK.bar * 2 + 10; ok(DKM.take(f, 500, 'reflect') === 10 && f.hp === DK.bar * 2, 'never past the phase line (P1 stops at 2 bars)');
   f.ph = 3; f.hp = 50; f.mode = 'downed'; DKM.take(f, 999, 'light'); ok(f.hp === 1, 'P3: never 0 - he is beaten, not killed (hp 1)');
   ok(DKM.floorOf({ ph: 1, bar: 1200 }) === 2400 && DKM.floorOf({ ph: 2, bar: 1200 }) === 1200 && DKM.floorOf({ ph: 3, bar: 1200 }) === 1, 'phase floors 2400 / 1200 / 1');
-  const s = mk(5, { scale: 1.65 }).f; ok(s.bar === 1980 && s.hp === 5940, 'late-game scale: 3 x 1200 x (1 + 0.25 x tier)'); }
+  const s = mk(5, { scale: 1.65 }).f; ok(s.bar === Math.round(DK.bar * 1.65) && s.hp === 3 * s.bar, 'late-game scale: 3 x 1200 x (1 + 0.25 x tier)'); }
 
 /* ================= THE RETURN RULE: pips, knockdown, landing ================= */
 { const { b, f } = mk(7); const hs = [hero(b, b.x0 + 60)]; settle(f, b, hs);
@@ -188,7 +188,7 @@ function phaseRun(phase, T = 240, imps = 0, seed = 40) {
 
 /* ================= THE PHASE CHANGE, THE END ================= */
 { const { b, f } = mk(70); const hs = [hero(b, b.x0 + 60)]; settle(f, b, hs);
-  f.mode = 'downed'; f.mT = 0; f.T = 3; DKM.take(f, 5000, 'light'); ok(f.hp === 2400, 'P1 bar emptied: held at the line');
+  f.mode = 'downed'; f.mT = 0; f.T = 3; DKM.take(f, 5000, 'light'); ok(f.hp === DK.bar * 2, 'P1 bar emptied: held at the line');
   let ev = run(f, b, hs, DK.fall + 0.1); ok(ev.some(e => e.k === 'phaseFall') && ev.some(e => e.k === 'climb' && e.phase === 2) && b.climb, 'his last fall + scream, then THE DRAKE CLIMBS (S1 beginClimb)');
   ok(b.hold > 0, 'no bank during the climb');
   ev = run(f, b, hs, DK.climb + 0.1); ok(f.ph === 2 && f.pips === 0 && ev.some(e => e.k === 'phase' && e.phase === 2), 'phase 2 begins after the climb, pips clean');
