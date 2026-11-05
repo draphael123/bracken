@@ -63,7 +63,8 @@ try {
       BK.enemies().forEach(e=>e.alive=false);BK.ambushes().forEach(a=>a.st='done');const L=BK.L;
       if(flat){for(let x=2;x<40;x++)for(let y=1;y<L.H;y++)L.grid[y*L.W+x]=y>=22?1:0;BK.tp(10,21);}
       BK.sim(30);BK.P.hp=BK.P.maxHp;BK.P.inv=0;BK.P.st=BK.P.maxSt;BK.P.face=1;};
-    window.__inside=()=>{const G=BK.geo(),P=BK.P,bs=[P,...BK.enemies().filter(e=>e.alive&&!(e.gone>0))].map(b=>({l:b.x-b.w/2,r:b.x+b.w/2,t:b.y-b.h,b:b.y}));
+    /* (claude/geofix: the HERO may stand in her stones now - they are one-way for heroes - so the sweep below counts FOES inside rock only) */
+    window.__inside=(foesOnly)=>{const G=BK.geo(),P=BK.P,bs=[...(foesOnly?[]:[P]),...BK.enemies().filter(e=>e.alive&&!(e.gone>0))].map(b=>({l:b.x-b.w/2,r:b.x+b.w/2,t:b.y-b.h,b:b.y}));
       for(const p of G.pieces())if(p.tile===1)for(const c of p.cells){const cb={l:c.tx*16,r:c.tx*16+16,t:c.ty*16,b:c.ty*16+16};if(bs.some(b=>b.l<cb.r&&b.r>cb.l&&b.t<cb.b&&b.b>cb.t))return true;}return false;};
     window.__raise=()=>{const P=BK.P;P.st=P.maxSt;BK.geo().raiseWall();BK.sim(2);P.face=-P.face;};   /* (RAISE WALL is PARKED - no longer her C - and still held to THE CAP here) */
     return 1})()`);
@@ -167,7 +168,7 @@ try {
     for(const [id,i] of ids){__geo(['stoneStep'],false,i);const L=BK.L,W=L.W,H=L.H;const g0=Array.from(L.grid);let tried=0,inside=0,raised=0;
       for(let x=3;x<W-3&&tried<24;x+=5){let fy=-1;for(let y=2;y<H-1;y++){const t=L.grid[y*W+x];if(t===0&&L.grid[(y+1)*W+x]===1&&L.grid[(y-1)*W+x]===0){fy=y;break;}}if(fy<0)continue;
         tried++;BK.tp(x,fy);BK.P.vx=0;BK.P.vy=0;BK.sim(3);if(!BK.P.ground)continue;BK.P.st=BK.P.maxSt;BK.P.face=tried%2?1:-1;__raise();BK.keys.atk=true;BK.sim(36);BK.keys.atk=false;BK.sim(2);BK.P.cds={};BK.press('throw');BK.sim(2);
-        raised+=BK.geo().pieces().length;for(let f=0;f<60*8;f++){BK.sim(1);if(f%6===0&&__inside())inside++;}}
+        raised+=BK.geo().pieces().length;for(let f=0;f<60*8;f++){BK.sim(1);if(f%6===0&&__inside(true))inside++;}}
       const standing=BK.geo().pieces().length;BK.geo().clear();rows.push({id,tried,raised,inside,same:g0.every((v,k)=>v===L.grid[k]),left:BK.geo().pieces().length,standing});}
     return rows})()`);
   /* HER STAFF, off the baked pixels of her own set */
@@ -223,8 +224,9 @@ try {
   out.pop.cap = await pg.evalp(`(()=>{const P=()=>BK.P,G=()=>BK.geo(),K=BK.keys;const run=(txs)=>{__g2();const px=Math.floor(P().x/16);const e=__pfoe(110);e.w=44;BK.sim(2);e.px=BK.P.x+110;e.x=e.px;const fc=Math.floor(e.px/16);
       txs.forEach(d=>__stone(fc+d));BK.sim(2);const n0=G().standing(),hp0=e.hp;K.down=true;K.block=true;BK.sim(2);K.block=false;for(let i=0;i<40;i++){BK.sim(1);__pin([e]);}K.down=false;return {n0,hurt:hp0-e.hp,left:G().standing(),cap:G().lastDet()}};
     return {one:run([-3]),three:run([-3,2,3])}})()`);
+  /* (claude/geofix: AVALANCHE became MOUNTAIN COLLAPSE - no eruptions now; er is 3 while G().collapsing() runs: UP+C at a full board still starts it) */
   out.pop.ult = await pg.evalp(`(()=>{const P=()=>BK.P,G=()=>BK.geo(),K=BK.keys;__g2();const px=Math.floor(P().x/16),d0=G().tierStats().detonates||0;[px+3,px+6,px+9].forEach(__stone);BK.sim(2);const n0=G().standing();
-    K.up=true;K.block=true;BK.sim(2);K.block=false;K.up=false;const er=G().erupts().length;BK.sim(5);return {n0,er,left:G().standing(),dets:(G().tierStats().detonates||0)-d0,det:G().detonating()}})()`);
+    K.up=true;K.block=true;BK.sim(2);K.block=false;K.up=false;const er=G().collapsing()?3:0;BK.sim(5);return {n0,er,left:G().standing(),dets:(G().tierStats().detonates||0)-d0,det:G().detonating()}})()`);
   out.pop.switches = await pg.evalp(`(()=>{const P=()=>BK.P,G=()=>BK.geo(),K=BK.keys,POP=BK.geoK.pop;const r={};
     POP.fistPlant=false;__g2();__combo();r.plant=G().standing();POP.fistPlant=true;
     POP.detonate=false;__g2();const px=Math.floor(P().x/16),d0=G().tierStats().detonates||0;__stone(px+3);__stone(px+5);BK.sim(2);K.down=true;K.block=true;BK.sim(3);K.block=false;K.down=false;BK.sim(20);r.det=G().standing();r.dets=(G().tierStats().detonates||0)-d0;POP.detonate=true;
@@ -318,7 +320,7 @@ try {
     assert(O.cap.one.n0 === 1 && O.cap.three.n0 === 3 && O.cap.three.left === 0 && O.cap.one.hurt > 0 && O.cap.three.hurt > O.cap.one.hurt, 'POP e: both runs spent their stones and hurt the foe, three harder than one (' + J + ')');
     assert(O.cap.three.cap.blasts === 2 && O.cap.three.cap.shards === 3 && O.cap.one.cap.blasts === 1, 'POP e: PER-FOE CAP - one foe in all three stones\' radius takes 2 blasts and 3 shards (2 x 1.0 + 3 x 0.4 = 3.2x sword), not 3 and 9 (' + J + ')');
     assert(O.ult.n0 === 3 && O.ult.er >= 3 && O.ult.left === 0 && O.ult.dets === 0 && !O.ult.det, 'POP e: UP+C at 3 stones is still AVALANCHE, not a detonate (' + J + ')');
-    assert(O.switches.plant === 0 && O.switches.det === 2 && O.switches.dets === 0 && O.switches.flags === 'bossStone,detonate,feel,fistPlant,skin,upper', 'POP: the kill switches turn fistPlant and detonate off (' + J + ')');
+    assert(O.switches.plant === 0 && O.switches.det === 2 && O.switches.dets === 0 && O.switches.flags === 'bossStone,detonate,feel,fistPlant,recall,skin,upper', 'POP: the kill switches turn fistPlant and detonate off (' + J + ')');
     assert(!O.bot.one && O.bot.two && !O.bot.twoNoFoe && !O.bot.three && !O.bot.other && !O.bot.afterCd, 'POP e: the bot learns DOWN+C - at >= 2 stones with a foe in a stone\'s radius, not at 1, not with no foe, not at a full board (that is the AVALANCHE), not in the 5 s cd (' + J + ')');
     assert(O.boss.before === 0 && O.boss.active && O.boss.first === 1, 'POP b: a boss start leaves ONE stone standing (' + J + ')');
     assert(O.boss.cleared === 0 && O.boss.retryActive && O.boss.retry === 1, 'POP b: and again after a retry (' + J + ')');

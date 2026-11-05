@@ -10,11 +10,11 @@ check('shape', () => {
   assert(PR.hasKit('knight')); assert(!PR.hasKit('pyro'));
   for (const h of Object.keys(PR.TECHNIQUES)) {
     assert.deepEqual(Object.keys(PR.TECHNIQUES[h]).map(Number), PR.TECH_LEVELS, h + ' needs one technique per tech level');
-    const ids = new Set(); for (const t of Object.values(PR.TECHNIQUES[h])) { assert(t.id && t.name && t.what && t.teach && t.input, h + ' ' + t.id + ' text'); assert(!ids.has(t.id)); ids.add(t.id); }
+    const ids = new Set(); for (const t of PR.TECH_LEVELS.flatMap(n => PR.techniquesAt(h, n))) { assert(t.id && t.name && t.what && t.teach && t.input, h + ' ' + t.id + ' text'); assert(!ids.has(t.id)); ids.add(t.id); }
     assert((PR.UPGRADES[h] || []).length >= 8, h + ' upgrades'); for (const u of PR.UPGRADES[h]) assert(u.what.length === 2 && !ids.has(u.id), h + ' ' + u.id);
   }
   /* the ability law, statically: every technique k is a multiplier (never flat), the AoE ceiling for the knight is 1.00 (brief sec 4) */
-  for (const t of Object.values(PR.TECHNIQUES.knight)) assert(t.k === null || (t.k > 0 && t.k <= 2.2), 'k ' + t.id);
+  for (const t of PR.TECH_LEVELS.flatMap(n => PR.techniquesAt('knight', n))) assert(t.k === null || (t.k > 0 && t.k <= 2.2), 'k ' + t.id);
 });
 check('cards in order', () => {
   const p = mk('knight'); let tech = [];
@@ -61,5 +61,61 @@ check('old save migrates', () => {
 check('no-kit hero offer unchanged', () => {
   const o = PR.perkOffer(mk('warden'), 'warden', 25); assert.equal(o.length, 3); assert(!o.some(k => k.tech || k.up)); assert(o.some(k => k.own));
 });
+/* ==== PICK-1-OF-2 FORKS (claude/ltfork): a synthetic pair is put on the knight's L30 / L50 for these checks and taken off again ==== */
+const withForks = fn => { const T = PR.TECHNIQUES.knight, save = { 30: T[30], 40: T[40], 50: T[50] };
+  const B = (id, role, extra) => ({ id, name: id.toUpperCase(), what: 'B WHAT', teach: 'B TEACH', input: 'X', k: 1, cd: 0, cost: 0, role, ...extra });
+  T[30] = { fork: [{ ...save[30], role: 'defence' }, B('kbtest30', 'offence')] };
+  T[40] = { fork: [{ ...save[40], role: 'defence' }, B('kbtest40', 'control')] };
+  T[50] = { fork: [{ ...save[50], role: 'offence', capstone: true }, B('kbtest50', 'defence', { capstone: true })] };
+  try { fn(); } finally { Object.assign(T, save); } };
+check('fork data shape', () => withForks(() => {
+  assert.deepEqual(PR.FORK_LEVELS, [30, 40, 50]);
+  for (const n of PR.FORK_LEVELS) { assert(PR.isFork('knight', n)); const [a, b] = PR.techniquesAt('knight', n); assert.equal(PR.techniqueFor('knight', n).id, a.id, 'techniqueFor stays A'); assert.notEqual(a.role, b.role, 'roles differ'); assert.equal(PR.techniqueById('knight', b.id).id, b.id, 'byId finds B'); assert.equal(PR.techniqueLevel('knight', b.id), n); assert.deepEqual(PR.forkSiblings('knight', a.id), [b.id]); }
+  assert(!PR.isFork('knight', 25)); assert.equal(PR.techniquesAt('knight', 25).length, 1); assert(PR.techniquesAt('knight', 50).every(t => t.capstone));
+}));
+check('fork card: both, no put-off, A recommended', () => withForks(() => {
+  const p = mk('knight'); assert.equal(PR.pickMilestone(p, 'knight', 25, 'kcounter', 50), null);
+  const o = PR.perkOffer(p, 'knight', 30); assert.equal(o.length, 2); assert(o.every(k => k.tech && k.fork)); assert(o[0].rec && !o[1].rec); assert.equal(o[0].id, 'kadvance'); assert.equal(o[1].id, 'kbtest30');
+  assert.equal(PR.pickMilestone(p, 'knight', 30, 'kbtest30', 50), null); assert(PR.techOn(p, 'knight', 'kbtest30')); assert(!PR.techOn(p, 'knight', 'kadvance'));
+  assert(PR.forkLocked(p, 'knight', 'kadvance')); assert(!PR.forkLocked(p, 'knight', 'kbtest30'));
+  const next = PR.perkOffer(p, 'knight', 35); assert.equal(next[0].id, 'kpunish', 'the next card is the next technique');
+}));
+check('fork deferred to a later card is still a two-option card', () => withForks(() => {
+  const p = mk('knight'); PR.pickMilestone(p, 'knight', 25, 'kcounter', 50);
+  const o = PR.perkOffer(p, 'knight', 31 > 30 ? 35 : 35); /* L30 untaken, the L35 card re-offers the L30 pair */ assert.deepEqual(o.map(k => k.id), ['kadvance', 'kbtest30']);
+  assert.equal(PR.pickMilestone(p, 'knight', 35, 'kadvance', 50), null); assert(PR.forkLocked(p, 'knight', 'kbtest30'));
+  assert.equal(PR.pickMilestone(p, 'knight', 40, 'kbtest30', 50), 'Not offered');   /* the card at 40 is the L35 technique now; and a locked sibling is never taken */
+}));
+check('locked sibling refused', () => withForks(() => {
+  const p = mk('knight'); p.card.knight.ms = { 25: 'kcounter', 30: 'kadvance' };
+  assert.equal(PR.pickMilestone(p, 'knight', 35, 'kbtest30', 50), 'Not offered');   /* L35 card is the punish card, B30 not in it */
+  p.card.knight.ms = { 25: 'kcounter', 30: 'kadvance', 35: 'kpunish' };
+  assert.equal(PR.forkTaken(p, 'knight', 30).id, 'kadvance');
+}));
+check('respec forks only', () => withForks(() => {
+  const p = { card: { knight: { v: 3, e: 2, m: 1, ms: { 25: 'kcounter', 30: 'kbtest30', 35: 'kpunish', 40: 'klong', 27: 'ukeep:1', 50: 'kbtest50' }, up: { ukeep: 1 } } }, cardFree: { knight: 0 } };
+  assert(PR.hasForkPick(p, 'knight')); assert.equal(PR.respecForks(p, 'knight'), null);
+  assert.deepEqual(Object.values(p.card.knight.ms).sort(), ['kcounter', 'kpunish', 'ukeep:1'].sort()); assert.equal(p.card.knight.v, 3); assert.equal(p.card.knight.up.ukeep, 1);
+  assert.equal(PR.respecForks(p, 'knight'), 'Nothing'); assert.equal(p.cardFree.knight, 0);
+  PR.respecCard(p, 'knight'); assert.equal(p.cardFree.knight, 0, 'a used free respec stays used (0, not re-granted)');
+}));
+check('free fork re-pick: granted once, idempotent', () => withForks(() => {
+  const raw = JSON.stringify({ progressionVersion: 2, xp: { knight: 83400 }, card: { knight: { v: 17, e: 16, m: 7, ms: { 25: 'kcounter', 30: 'kadvance' } } }, cardV: 1, hero: 'knight' });
+  const a = PR.migrateProgress(raw, []).progress; assert.equal(a.cardFree.knight, 1, 'a fork-A holder gets the one free re-pick');
+  const b = PR.migrateProgress(JSON.stringify(a), []).progress; assert.equal(b.cardFree.knight, 1);
+  PR.respecForks(b, 'knight'); assert.equal(b.cardFree.knight, 0); const c = PR.migrateProgress(JSON.stringify(b), []).progress; assert.equal(c.cardFree.knight, 0, 'not re-granted after it was spent');
+}));
+check('clashing siblings are ignored, never an error', () => withForks(() => {
+  const p = { card: { knight: { v: 0, e: 0, m: 0, ms: { 30: 'kadvance', 35: 'kbtest30' } } } }; assert.doesNotThrow(() => PR.validateProgress(p));
+  assert.deepEqual(p.card.knight.ms, { 30: 'kadvance' }, 'the lower milestone key wins');
+  assert.doesNotThrow(() => PR.validateProgress({ card: { knight: { v: 0, e: 0, m: 0, ms: { 30: 'gone-technique' } } } }));
+}));
+check('road to L50', () => withForks(() => {
+  const p = mk('knight'); PR.pickMilestone(p, 'knight', 25, 'kcounter', 50); PR.pickMilestone(p, 'knight', 30, 'kbtest30', 50);
+  const r = PR.roadToL50(p, 'knight', 33); assert.equal(r.length, 6); assert.deepEqual(r.map(x => x.state), ['taken', 'taken', 'next', 'ahead', 'ahead', 'ahead']);
+  assert(r[1].fork && r[1].picked.id === 'kbtest30' && r[1].options.find(o => o.id === 'kadvance').locked && !r[1].options.find(o => o.id === 'kbtest30').locked);
+  assert(r[5].capstone && r[5].options.length === 2 && r[5].options.every(o => !o.locked) && !r[0].fork); assert.deepEqual(PR.roadToL50(mk('warden'), 'warden', 50), []);
+}));
+check('knight today (no B yet) is unchanged', () => { for (const n of PR.FORK_LEVELS) assert(!PR.isFork('knight', n)); });
 if (bad.length) { console.log('TECH-CARDS: ' + bad.length + ' problem(s)\n  - ' + bad.join('\n  - ')); process.exit(1); }
 console.log('Tech cards: a kit hero is dealt TECH (technique first, RECOMMENDED), UPGRADE and STAT cards L25-L50; a skipped technique is offered again; upgrades rank I then II; picks owed, respec, save validation and old-save migration hold; a hero with no kit keeps the old card.');
