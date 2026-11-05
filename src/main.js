@@ -273,6 +273,7 @@ import * as HSWP from './hero-swap.js';   /* (claude/hubpolish) THE SWAP HERO PA
 import { makeShopLife } from './shop-life.js';   /* (claude/hubpolish) THE SHOPS ARE ALIVE */
 import { LS } from './loading-screen.js';   /* THE LOADING SCREEN (claude/loadbar): a true progress bar and the hero's dance over every slow load */
 import { isCallout, calloutText } from './hint-lines.js';   /* THE HINT LINES THAT WERE NEVER SHOWN (claude/hintsweep) */
+import * as PNG from './ping.js'; const PINGS = PNG.makePings();   /* (claude/cooppr) PINGS / MARKERS: one button marks a foe or a spot; the AI partner reads it */
 import * as XPS from './xp-share.js';   /* (claude/coopai) CO-OP XP SHARE: kill and boss XP in full to every hero that damaged the foe */
 import * as AIC from './ai-companion.js';   /* AI COMPANIONS (claude/aicompanions, brief-aicompanions.md 10-14): linked / default, the four behaviours, the catch-up, the lighter scaling - the pure half; allyTick below is the hands */
 import * as CS from './coop-save.js'; import * as PBOARD from './party-board.js';   /* CO-OP PROGRESSION step 1 (claude/coopprogress): a partner plays HIS OWN hero out of HIS OWN save slot and what he earns goes back to it (src/coop-save.js); THE PARTY BOARD, the tavern's seats: JOIN / INVITE / AI PARTNER (src/party-board.js) */
@@ -1628,8 +1629,8 @@ const upright = p => !p.dead && !(p.down > 0);
 /* the held keys and the one-shot presses, read and written as a set: these are the hands, and a pass swaps them */
 const keysRead = () => { const o = {}; for (const k in keys) o[k] = keys[k]; return o; };
 const keysWrite = o => { for (const k in keys) delete keys[k]; Object.assign(keys, o); };
-const pressRead = () => ({ grab: grabPress, jump: jumpPress, atk: atkPress, dodge: dodgePress, throw: throwPress, skill2: skill2Press, skill3: skill3Press, skill4: skill4Press, talk: talkPress, flask: flaskPress, stance: stancePress, up: upPress, down: downPress, left: leftPress, right: rightPress });
-const pressWrite = o => { stancePress = !!o.stance; flaskPress = !!o.flask; grabPress = !!o.grab; jumpPress = !!o.jump; atkPress = !!o.atk; dodgePress = !!o.dodge; throwPress = !!o.throw; skill2Press = !!o.skill2; skill3Press = !!o.skill3; skill4Press = !!o.skill4; talkPress = !!o.talk; upPress = !!o.up; downPress = !!o.down; leftPress = !!o.left; rightPress = !!o.right; };
+const pressRead = () => ({ grab: grabPress, jump: jumpPress, atk: atkPress, dodge: dodgePress, throw: throwPress, skill2: skill2Press, skill3: skill3Press, skill4: skill4Press, talk: talkPress, flask: flaskPress, stance: stancePress, ping: pingPress, up: upPress, down: downPress, left: leftPress, right: rightPress });
+const pressWrite = o => { pingPress = !!o.ping; stancePress = !!o.stance; flaskPress = !!o.flask; grabPress = !!o.grab; jumpPress = !!o.jump; atkPress = !!o.atk; dodgePress = !!o.dodge; throwPress = !!o.throw; skill2Press = !!o.skill2; skill3Press = !!o.skill3; skill4Press = !!o.skill4; talkPress = !!o.talk; upPress = !!o.up; downPress = !!o.down; leftPress = !!o.left; rightPress = !!o.right; };
 function asPlayer(p, fn) {
   if (!coop()) return fn();                                        /* the single-player call, unchanged */
   if (p === players[0]) { const wP = P, wPass = passOn, sw = profStack.length && profStack[profStack.length - 1].prof ? profIn(null) : 0; P = p; passOn = p; try { return fn(); } finally { if (sw) profOut(); P = wP; passOn = wPass; } }   /* (inside a profiled seat's pass: player one's own values) */
@@ -1691,7 +1692,7 @@ function partyToWant() {
 }
 const wantSeats = () => !coopWant ? [] : coopWant.seats && coopWant.seats.length ? coopWant.seats : [{ hero: coopWant.hero, ally: !!coopWant.ally }];
 function partyStart() { const seats = wantSeats(); if (!seats.length) { if (coop()) coopEnd(); return; } coopStart(seats[0].hero, seats[0].ally, seats); }
-function coopEnd() { if (PTK) PTK.reset(); players = [players[0]]; coopFall = false; }
+function coopEnd() { PINGS.clear(); if (PTK) PTK.reset(); players = [players[0]]; coopFall = false; }
 /* WHEREVER ONE OF THEM WAKES, THEY ALL DO. A respawn puts the whole room back, so leaving the other lying where
    the old room used to be would leave him in a wood that no longer exists. */
 /* ONE BODY WAKES AT THE LAST SHRINE (whole-room regroup and a lone bleed-out share it): full health and stamina, flasks refilled, a breath of grace. Runs in his own pass. */
@@ -1706,6 +1707,32 @@ function coopRegroup() {
    clock over his head. His partner stands on him for a breath and a half, a green ring fills, and he is back at a
    third of his health with a moment of grace. If the clock runs out with nobody there, or both of them are down
    at once, the pair of them wake at the last shrine and each is charged a death. */
+/* (claude/cooppr, Daniel 11-04) PING / MARK. The press is read in the pinger's own pass: a foe ahead of him, else the floor a few steps ahead; a downed hero marks HELP on himself. One per seat, a few seconds, in the seat's colour (drawPings); the host draws it, so online guests see it in the stream. The AI reads a person's ping in allyTick. */
+const pingFoeOk = e => e.alive && !e.harmless && !(e.dying > 0) && e.t !== 'folk' && e.t !== 'fisher' && e.t !== 'dummy';
+function pingFloor(x, y) { const tx = Math.max(0, Math.min(LW - 1, Math.floor(x / TS))), t0 = Math.max(0, Math.floor(y / TS) - 2); for (let ty = t0; ty < Math.min(LH, t0 + 10); ty++) if (isSolid(tx, ty) || isOneWay(tileAt(tx, ty))) return ty * TS; return y; }
+function pingRead() {
+  if (!pingPress) return; pingPress = false;
+  if (!coop() || state !== 'play' || P.dead) return;
+  const t = PNG.pickTarget(P, enemies.filter(pingFoeOk), pingFloor); PINGS.put(P.n, t, !!P.ai);
+  if (t.kind === 'help') SFX.sting(); else SFX.ui();
+  ringAt(t.x, t.y - 4, t.kind === 'foe' ? 16 : 12, PARTY.colourOf(PROG.tavern, P.n).c, 0.35);
+}
+function drawPings(cx, cy) {
+  const ls = PINGS.list(); if (!ls.length) return;
+  for (const p of ls) {
+    const c = p.kind === 'help' ? { c: '#ff6b6b' } : p.ai ? { c: '#c9a0ff' } : PARTY.colourOf(PROG.tavern, p.n), fade = p.t < 0.8 ? p.t / 0.8 : 1, bob = Math.round(Math.sin(time * 8) * 2);
+    const top = p.kind === 'foe' ? (p.foe.h || 24) + 10 : p.kind === 'help' ? 40 : 18, sx = Math.round(p.x - cx), sy = Math.round(p.y - cy);
+    g.save(); g.globalAlpha = fade; g.fillStyle = c.c; g.strokeStyle = c.c; g.lineWidth = 1;
+    if (sx < 6 || sx > VW - 6) { const ex = sx < 6 ? 5 : VW - 5, dir = sx < 6 ? -1 : 1, ey = Math.max(14, Math.min(VH - 14, sy - top)); g.beginPath(); g.moveTo(ex, ey); g.lineTo(ex - dir * 6, ey - 4); g.lineTo(ex - dir * 6, ey + 4); g.closePath(); g.fill(); text('P' + p.n, ex - dir * 14, ey + 2, c.c, 'center', 6); }   /* off the picture: an arrow on the edge it is past */
+    else {
+      if (p.kind !== 'foe') { g.beginPath(); g.ellipse(sx, sy, 7 + Math.sin(time * 6), 3, 0, 0, Math.PI * 2); g.stroke(); }
+      const ty = sy - top + bob; g.beginPath(); g.moveTo(sx, ty); g.lineTo(sx - 4, ty - 6); g.lineTo(sx + 4, ty - 6); g.closePath(); g.fill();   /* the down-pointing marker */
+      g.fillRect(sx - 1, ty - 12, 2, 6);
+      text(p.kind === 'help' ? 'HELP' : (p.ai ? 'ALLY' : 'P' + p.n), sx, ty - 14, c.c, 'center', 6);
+    }
+    g.restore();
+  }
+}
 function goDown(killer) {
   P.down = L && L.tavern ? DOWN_T_TAVERN : DOWN_T; P.reviveT = 0;   /* (claude/tavern) the sparring bell's down is shorter, and harmless */ P.hp = 0; P.killer = killer || null;
   P.atk = -1; P.block = false; P.wBrace = false; P.wthArm = false; P.wthHold = 0; wthSpears = []; P.rgGuard = false; P.plunge = false; P.dodge = 0; P.aegis = false; P.warding = false; P.fwUp = false; P.fwT = 0; P.fwRec = 0; P.fwCd = 0; P.cMode = null; P.fbHold = 0; P.stoking = false; P.stokeT = 0; P.deflectT = 0; P.deflectRec = 0; P.perch = 0; P.vaultCarry = 0;
@@ -1715,7 +1742,7 @@ function goDown(killer) {
   burst(P.x, P.y - 8, 14, ['#c9463d', '#8f2f28', '#c9d1dc'], 90, 0.7);
 }
 function downedPlayer(dt) {
-  P.down -= dt; if (P.down <= 0) { if (L && L.tavern) { tavernStandUp(P); return; } if (P.ai && players.some(q => !q.ai && upright(q))) { allyStandUp(P); return; } if (players.some(q => q !== P && upright(q))) P.bled = true; else coopFall = true; }   /* (claude/cooppr, Daniel 11-04) BLED OUT with somebody still standing: HE alone wakes at the shrine and pays his own cost (coopWatch); everybody down at once is still the party wipe */   /* (claude/aicompanions) an AI's clock running out never sends the party to the shrine while a person stands: it gets up beside him */   /* (claude/tavern) NOTHING IN THE INN ENDS: the clock out stands you up */
+  P.down -= dt; if (P.down <= 0) { if (L && L.tavern) { tavernStandUp(P); return; } if (P.ai && players.some(q => !q.ai && upright(q))) { allyStandUp(P); return; } if (players.some(q => q !== P && upright(q))) { P.bled = true; P.down = 0.001; } else coopFall = true; }   /* (claude/cooppr, Daniel 11-04) BLED OUT with somebody still standing: HE alone wakes at the shrine and pays his own cost (coopWatch); everybody down at once is still the party wipe */   /* (claude/aicompanions) an AI's clock running out never sends the party to the shrine while a person stands: it gets up beside him */   /* (claude/tavern) NOTHING IN THE INN ENDS: the clock out stands you up */
   P.inv = Math.max(0, P.inv - dt); P.hurt = Math.max(0, P.hurt - dt);
   P.hpShown += (0 - P.hpShown) * Math.min(1, dt * 6);
   const want = (keys.left ? -1 : 0) + (keys.right ? 1 : 0);          /* THE CRAWL: a third of a walk, along the floor and nowhere else */
@@ -1730,7 +1757,7 @@ function downedPlayer(dt) {
   P.anim += dt;
 }
 function reviveBy(helper) {
-  P.down = 0; P.reviveT = 0; P.dead = 0; P.hp = Math.max(1, Math.round(P.maxHp / (thrOn(PROG, helper.hero || PROG.hero, 'v', 1) ? 2 : 3))); P.hpShown = P.hp;
+  PINGS.drop(P.n); P.down = 0; P.reviveT = 0; P.dead = 0; P.hp = Math.max(1, Math.round(P.maxHp / (thrOn(PROG, helper.hero || PROG.hero, 'v', 1) ? 2 : 3))); P.hpShown = P.hp;
   P.st = P.maxSt; P.inv = 2; P.killer = null;
   helper.score.revives++; if (TAVO) TAVO.revived(helper, P);   /* (claude/tavern) the REVIVE drill */
   SFX.mend(); SFX.sting(); ringAt(P.x, P.y - 10, 20, '#8fd160', 0.4); motes(P.x, P.y - 10, 12, 10);
@@ -1761,7 +1788,7 @@ function bleedBack() {
   const p = P; p.score.deaths++; p.dcDone = false; deathCost(p, p.killer); deaths++; gormNoteDeath();
   const A = bossActive ? L.arena : miniActive ? L.mini : null, inFight = A && Number.isFinite(A.wallL) && Number.isFinite(A.floor);
   coopWakeBody();
-  p.down = 0; p.reviveT = 0; p.dead = 0; p.killer = null; p.inv = 2; if (p.ai) p.aiS = null;
+  p.down = 0; p.reviveT = 0; p.dead = 0; p.killer = null; p.inv = 2; if (p.ai) p.aiS = null; PINGS.drop(p.n);
   if (inFight) { p.x = (A.wallL + 2) * TS + 8; p.y = A.floor; if (moveBodyClear(p)) { p.x = checkpoint.x; p.y = checkpoint.y; } }   /* the walls are shut: he is let back in at the arena's entry, not locked out at the shrine */
   SFX.mend(); ringAt(p.x, p.y - 10, 20, '#c9d1dc', 0.4); motes(p.x, p.y - 10, 10, 8);
   number(p.x, p.y - 36, inFight ? 'BACK IN THE FIGHT' : 'BACK AT THE SHRINE', '#ff6b6b'); callout(PARTY.tagOf(p) + (inFight ? ' RETURNS' : ' WAKES AT THE SHRINE'));
@@ -2190,16 +2217,20 @@ function allyTick() {
   /* THREE. THE FLASK */
   if ((p.flasks | 0) > 0 && !(p.drinkT > 0) && p.hp < p.maxHp * B.flask && p.ground && !p.climb && !(p.hurt > 0) && !(p.dodge > 0) && p.atk < 0 && !p.carry
     && !enemies.some(e => e.alive && windingUp(e) && Math.abs(e.x - p.x) < 80 && Math.abs(e.y - p.y) < 40)) tryDrink();
+  /* (claude/cooppr, Daniel 11-04) A PERSON'S PING: a marked foe is fought first (and followed past the usual stray and reach), a marked spot is walked to for a few seconds */
+  const pg = PINGS.aiRead(), pinged = pg && pg.kind === 'foe' ? pg.foe : null;
+  p.pingHold = PNG.holdSpot(p.pingHold, pg, time);
   /* FOUR. THE FOE */
   let foe = null, best = 1e9;
   for (const e of enemies) {
     if (!e.alive || e.harmless || e.dying > 0 || e.t === 'folk' || e.t === 'fisher' || e.t === 'dummy') continue;
-    const dy = Math.abs(e.y - p.y), dx0 = Math.abs(e.x - p.x), ranged = h === 'ranger' || h === 'pyro';   /* (claude/coopai, coopaudit fix 2) a foe a ledge up or down: a ranged kit shoots ~96 px, the rest hop to ~56 when he is close */
-    if (dy > (ranged ? 96 : 56) || (dy > 40 && !ranged && dx0 > 60)) continue;
-    const d = dx0; if (d > B.engage) continue;
-    if (one !== p && Math.abs(e.x - one.x) > B.stray + (e.maxHp ? 40 : 0)) continue;   /* a fight that would take it away from him is not its fight */
-    if (B.near && one !== p && Math.abs(e.x - one.x) > B.near && !(windingUp(e) && d < 70)) continue;   /* SUPPORT: the ones on him (and one swinging at it) */
-    const s = d - (Math.abs(e.x - one.x) < 60 ? 70 : 0) - (e.maxHp && e.open > 0 ? 200 : 0) - (e.t === 'shaman' || e.t === 'archer' || e.t === 'priest' || e.cast !== undefined ? 60 : 0) + (dy > 40 ? 30 : 0);   /* casters and archers first; a foe on another ledge after the ones beside it */
+    const dy = Math.abs(e.y - p.y), dx0 = Math.abs(e.x - p.x), ranged = h === 'ranger' || h === 'pyro', isPing = e === pinged;   /* (claude/coopai, coopaudit fix 2) a foe a ledge up or down: a ranged kit shoots ~96 px, the rest hop to ~56 when he is close */
+    if (!isPing && (dy > (ranged ? 96 : 56) || (dy > 40 && !ranged && dx0 > 60))) continue;
+    if (isPing && dy > 96) continue;
+    const d = dx0; if (d > (isPing ? B.engage + 120 : B.engage)) continue;
+    if (!isPing && one !== p && Math.abs(e.x - one.x) > B.stray + (e.maxHp ? 40 : 0)) continue;   /* a fight that would take it away from him is not its fight */
+    if (!isPing && B.near && one !== p && Math.abs(e.x - one.x) > B.near && !(windingUp(e) && d < 70)) continue;   /* SUPPORT: the ones on him (and one swinging at it) */
+    const s = d - (Math.abs(e.x - one.x) < 60 ? 70 : 0) - (e.maxHp && e.open > 0 ? 200 : 0) - (e.t === 'shaman' || e.t === 'archer' || e.t === 'priest' || e.cast !== undefined ? 60 : 0) + (dy > 40 ? 30 : 0) - (isPing ? 300 : 0);   /* (a person's ping first of all) casters and archers first; a foe on another ledge after the ones beside it */
     if (s < best) { best = s; foe = e; }
   }
   /* THE LAST HIT ON AN OPENING IS HIS */
@@ -2208,7 +2239,7 @@ function allyTick() {
   if (foe && !holdOff && !S.raft) {
     p.aiF = (p.aiF || 0) + 1;
     LABMOD.labDuelFrame(window.BK, h, foe, p.aiF, 'human', p.aiRead);
-    if (one !== p) { const away = one.x > p.x ? 'left' : 'right'; if (Math.abs(p.x - one.x) > B.stray && keys[away]) keys[away] = false; }   /* never further from him than its behaviour strays */
+    if (one !== p && foe !== pinged) { const away = one.x > p.x ? 'left' : 'right'; if (Math.abs(p.x - one.x) > B.stray && keys[away]) keys[away] = false; }   /* never further from him than its behaviour strays */
     if (B.guard && p.hp < p.maxHp * B.guard) { keys.atk = false; atkPress = false; p.abuf = 0; if (LABMOD.SHIELDED(h) && windingUp(foe)) keys.block = true; }   /* hurt and careful: it only defends */
     if ((keys.left || keys.right) && allySafeGoal(p.x + (keys.right ? 12 : -12)) === p.x) keys.left = keys.right = false;   /* never onto spikes, into fire or a harm pool for a fight */
     return;
@@ -2218,8 +2249,12 @@ function allyTick() {
   if (Math.abs(p.x - one.x) < 10 && Math.abs(p.y - one.y) < 20) goal = one.x + (p.x >= one.x ? 26 : -26);   /* never in his way */
   if (S.raft) goal = one.x;
   if (one === p) goal = p.x;   /* nobody standing to follow: hold */
+  const hold = p.pingHold && !S.raft ? p.pingHold : null;   /* (claude/cooppr) a marked spot: walk there (the route code below handles a row change), then go back to him */
+  if (hold && Math.abs(hold.x - p.x) < 10 && Math.abs(hold.y - p.y) < 24) p.pingHold = null;
+  else if (hold) goal = hold.x;
   /* (claude/coopai) a leader on another row: the route's first lip is the goal (see allyRoute); no route for 1.5 s = hold and let the told catch-up come */
-  if (one !== p && !S.raft && (Math.abs(one.y - p.y) > 24 || S.stuckT > 0.8)) { allyRoute(p, one, S); const rg = allyRouteGoal(p, S); if (rg !== null) goal = rg; S.noWayT = S.noWay ? (S.noWayT || 0) + fdt : 0; if (S.noWayT > 1.5 && dLead > AIC.CATCH.near) { S.wait = true; keys.left = keys.right = false; return; } } else { S.noWayT = 0; S.route = null; S.noWay = false; }
+  const tgt = p.pingHold || one;   /* (claude/cooppr) the route goes to a marked spot while one is held */
+  if (one !== p && !S.raft && (Math.abs(tgt.y - p.y) > 24 || S.stuckT > 0.8)) { allyRoute(p, tgt, S); const rg = allyRouteGoal(p, S); if (rg !== null) goal = rg; S.noWayT = S.noWay ? (S.noWayT || 0) + fdt : 0; if (S.noWayT > 1.5 && dLead > AIC.CATCH.near) { S.wait = true; keys.left = keys.right = false; return; } } else { S.noWayT = 0; S.route = null; S.noWay = false; }
   p.aiWalk(allySafeGoal(goal));
   if (holdOff) { keys.left = keys.right = false; keys.block = LABMOD.SHIELDED(h); p.abuf = 0; }   /* and the buffered swing goes with it, or a press from two frames back still takes the beat */
 }
@@ -6926,7 +6961,7 @@ function selectStart() {
 // ---------- input ----------
 const keys = {};
 let grabPress = false;   /* (claude/partnerthrow) GRAB: lift / throw your partner, or throw what you carry */
-let throwPress = false, skill2Press = false, skill3Press = false, skill4Press = false, talkPress = false, padLast = false, flaskPress = false, stancePress = false;   /* flaskPress: THE FLASK (claude/survival) */ // padLast: the last press came from a gamepad (prompts show pad glyphs)
+let throwPress = false, skill2Press = false, skill3Press = false, skill4Press = false, talkPress = false, padLast = false, flaskPress = false, stancePress = false, pingPress = false;   /* flaskPress: THE FLASK (claude/survival) */ // padLast: the last press came from a gamepad (prompts show pad glyphs)
 let jumpUpKey = false;   /* the jump press this frame came from a key that is UP too (ArrowUp, W): see UP_SLASH */
 let jumpPress = false, atkPress = false, dodgePress = false, pausePress = false, anyPress = false, upPress = false, downPress = false, leftPress = false, rightPress = false, confirmPress = false, talentsPress = false, mapPress = false;
 const isKey = (e, names) => names.includes(e.key) || names.includes(e.code);
@@ -6964,6 +6999,7 @@ addEventListener('keydown', e => {
   if (isKey(e, KEYS.skill2)) skill2Press = true;
   if(e.key.toLowerCase()===SET.skill3Key)skill3Press=true;if(e.key.toLowerCase()===SET.skill4Key)skill4Press=true;
   if (isKey(e, KEYS.stance)) stancePress = true;   /* THE RANGER's STANCE */
+  if (isKey(e, KEYS.ping)) pingPress = true;   /* (claude/cooppr) PING / MARK */
   if (isKey(e, KEYS.flask)) flaskPress = true;   /* THE FLASK: drink (src/survival.js) */
   if (isKey(e, KEYS.talk)) { talkPress = true; keys.talk = true; }   /* (survival2) held: BREAK THE SHRINE is a hold */
   padLast = false;
@@ -7026,7 +7062,7 @@ function padIntoPlayer(gp, st, p) {
   const now = padState(gp, 'pad2'), rose = k => now[k] && !st.prev[k];
   if (Object.values(now).some(Boolean)) initAudio();
   const pr = p.press;
-  for (const k of ['jump', 'atk', 'dodge', 'throw', 'grab', 'skill2', 'skill3', 'skill4', 'talk', 'flask', 'stance', 'left', 'right', 'up', 'down']) if (rose(k)) pr[k] = true;
+  for (const k of ['jump', 'atk', 'dodge', 'throw', 'grab', 'skill2', 'skill3', 'skill4', 'talk', 'flask', 'stance', 'ping', 'left', 'right', 'up', 'down']) if (rose(k)) pr[k] = true;
   if (rose('pause') && L && L.tavern && state === 'play') pausePress = true;   /* (claude/tavernname) A JOINED PLAYER'S START opens the inn's settings menu, as player one's does */
   const rgBack = false;   /* (claude/rangerhud) a ranger's BACK is her BOW / KNIFE: it does not dance */
   for (const k of ['jump', 'atk', 'dodge', 'block', 'throw', 'left', 'right', 'down', 'up', 'dance']) { const dn = k === 'dance' && rgBack ? false : now[k]; if (dn) p.keys[k] = true; else if (k === 'dance' ? (st.prev[k] || rgBack) : st.prev[k]) p.keys[k] = false; }   /* (dance: the BACK button, the EMOTE key - each player's own) */
@@ -7063,7 +7099,7 @@ function pollGamepad() {
   if (used) { pad.prev = now; return; }
   const rose = k => now[k] && !pad.prev[k];
   if (Object.values(now).some(Boolean)) { initAudio(); if (Object.keys(now).some(rose)) { anyPress = true; padLast = true; p1Pad = gp.index; } }   /* (claude/tavern) p1Pad: the pad player one plays on, never a joiner's */
-  if (rose('jump')) { jumpPress = true; confirmPress = true; } if (rose('atk')) atkPress = true; if (rose('dodge')) dodgePress = true; if (rose('throw')) throwPress = true; if (rose('skill2')) skill2Press = true; if(rose('skill3'))skill3Press=true;if(rose('skill4'))skill4Press=true;if(rose('flask'))flaskPress=true; if (rose('stance')) stancePress = true; if (rose('talk')) talkPress = true; if (rose('grab')) grabPress = true; if (rose('pause')) pausePress = true; if (rose('map')) mapPress = true; if (rose('talents')) talentsPress = true; if (padRaw.a && state !== 'play') confirmPress = true;   /* (A always chooses in a menu, whatever jump was rebound to) */
+  if (rose('jump')) { jumpPress = true; confirmPress = true; } if (rose('atk')) atkPress = true; if (rose('dodge')) dodgePress = true; if (rose('throw')) throwPress = true; if (rose('skill2')) skill2Press = true; if(rose('skill3'))skill3Press=true;if(rose('skill4'))skill4Press=true;if(rose('flask'))flaskPress=true; if (rose('ping')) pingPress = true; if (rose('stance')) stancePress = true; if (rose('talk')) talkPress = true; if (rose('grab')) grabPress = true; if (rose('pause')) pausePress = true; if (rose('map')) mapPress = true; if (rose('talents')) talentsPress = true; if (padRaw.a && state !== 'play') confirmPress = true;   /* (A always chooses in a menu, whatever jump was rebound to) */
   if (rose('left')) leftPress = true; if (rose('right')) rightPress = true; if (rose('up')) upPress = true; if (rose('down')) downPress = true;
   const rgBack = false;   /* (claude/rangerhud) a ranger's BACK is her BOW / KNIFE: it does not dance */
   for (const k of ['jump', 'atk', 'dodge', 'block', 'throw', 'left', 'right', 'down', 'dance', 'talk']) { const dn = k === 'dance' && rgBack ? false : now[k]; if (dn) keys[k] = true; else if (k === 'dance' ? (pad.prev[k] || rgBack) : pad.prev[k]) keys[k] = false; }
@@ -7122,7 +7158,7 @@ function padRawTick(gps) {
 // a TOUCH settings tab, assists and haptics. This is only the glue: what a press MEANS lives here, what a thumb DOES lives there.
 const touchPressName = k => { initAudio(); anyPress = true; padLast = false;
   if (k === 'jump') { jumpPress = true; jumpUpKey = false; } else if (k === 'confirm') confirmPress = true; else if (k === 'atk') atkPress = true; else if (k === 'dodge') dodgePress = true; else if (k === 'throw') throwPress = true;
-  else if (k === 'grab') grabPress = true; else if (k === 'skill2') skill2Press = true; else if (k === 'skill3') skill3Press = true; else if (k === 'skill4') skill4Press = true; else if (k === 'talk') talkPress = true; else if (k === 'pause') pausePress = true; else if (k === 'map') mapPress = true; else if (k === 'flask') flaskPress = true; else if (k === 'stance') stancePress = true;
+  else if (k === 'grab') grabPress = true; else if (k === 'skill2') skill2Press = true; else if (k === 'skill3') skill3Press = true; else if (k === 'skill4') skill4Press = true; else if (k === 'talk') talkPress = true; else if (k === 'pause') pausePress = true; else if (k === 'map') mapPress = true; else if (k === 'flask') flaskPress = true; else if (k === 'stance') stancePress = true; else if (k === 'ping') pingPress = true;
   else if (k === 'left') leftPress = true; else if (k === 'right') rightPress = true; else if (k === 'up') upPress = true; else if (k === 'down') downPress = true; };
 /* WHAT INTERACT WOULD DO NOW (src/touch-interact.js reads the same reach tests the keyboard path does) */
 const touchCtxObj = () => ({ P, state, props, talkers, L, enemies, flask: () => (P.flasks | 0) > 0 && P.hp < P.maxHp && !(P.drinkT > 0) && (P.ground || P.carpet || P.swim) ? { label: 'FLASK ' + P.flasks, key: 'flask', dim: P.hp > P.maxHp * 0.6 } : null, warping: !!warp, talking: !!talk, shopRoom: !!(L && L.shop), hasKey: n => hasKey(n),
@@ -7136,7 +7172,7 @@ const touchAutoFace = kind => { if (state !== 'play' || !P || P.dead || P.hurt >
 const touchSkillInfo = i => { const sk = skillAt(i); if (!sk) return null; const cd = skillCd(sk), max = sk === 'summonSkeleton' ? cdOf(sk) : CD_MAX[sk] || 3, busy = (sk === 'shieldThrow' && thrown) || cd > 0;
   return { id: sk, icon: skillIcon(sk), k: busy ? (cd > 0 ? Math.min(1, cd / max) : 1) : 0, secs: cd }; };
 const TCH = createTouch({ disp, dg, q, SET, save: () => saveSettings(), geom: () => ({ DPR, DEV: DPR_DEV, S, offX, offY }), state: () => state, keys, initAudio: () => initAudio(),
-  stance: () => null, press: touchPressName, skillOn: i => !!skillAt(i), skillInfo: touchSkillInfo, phoneMode: v => { PHONE_MODE = v; }, verb: touchVerbNow, ctx: touchCtxNow, autoFace: touchAutoFace,
+  stance: () => null, ping: () => coop() && state === 'play', press: touchPressName, skillOn: i => !!skillAt(i), skillInfo: touchSkillInfo, phoneMode: v => { PHONE_MODE = v; }, verb: touchVerbNow, ctx: touchCtxNow, autoFace: touchAutoFace,
   speed: () => (P ? Math.abs(P.vx || 0) : 0), padUsed: () => padLast, touched: () => { padLast = false; } });
 const touchOn = TCH.on, touchZones = () => TCH.allButtons();
 /* ONLINE CO-OP (src/online.js): what the host's half may read and do. arm() is the co-op pick's own confirm (coopWant; in a wood he stands up beside player one, as the
@@ -7481,7 +7517,7 @@ Object.assign(SETTING_TIPS, TCH.tips);
 {
   if (touchOn && !SET.touchInit) { SET.touchInit = 1; if (SET.parts === 'normal' && SET.parallax === 'full') TCH.applyLite(true); saveSettings(); } }   /* A PHONE'S FIRST RUN: lighter particles and fewer backdrop layers, unless the player had already chosen */
 const drawTouch = () => TCH.draw();
-function clearPresses() { swapPress = false; grabPress = false; jumpPress = atkPress = dodgePress = pausePress = anyPress = upPress = downPress = leftPress = rightPress = confirmPress = throwPress = skill2Press = skill3Press = skill4Press = talkPress = talentsPress = mapPress = flaskPress = false; stancePress = false; jumpUpKey = false;
+function clearPresses() { swapPress = false; grabPress = false; jumpPress = atkPress = dodgePress = pausePress = anyPress = upPress = downPress = leftPress = rightPress = confirmPress = throwPress = skill2Press = skill3Press = skill4Press = talkPress = talentsPress = mapPress = flaskPress = false; stancePress = false; pingPress = false; jumpUpKey = false;
   if (players) for (const p of players) if (p !== players[0] && p.press) p.press = {}; }   /* the other hands are one-shot too, and are emptied on the same beat */
 
 // ---------- collision ----------
@@ -8816,7 +8852,7 @@ function ptPass() {
     return sv; }
   if (r.eat) {   /* CARRYING HIM: no swing, roll, guard, skill or flask - the same rule as carrying a bucket */
     atkPress = false; keys.atk = false; P.abuf = 0; dodgePress = false; keys.dodge = false; P.dbuf = 0; keys.block = false; keys.throw = false;
-    throwPress = skill2Press = skill3Press = skill4Press = flaskPress = stancePress = false; }
+    throwPress = skill2Press = skill3Press = skill4Press = flaskPress = stancePress = pingPress = false; }
   return null;
 }
 function ptMasked(p, fn) {
@@ -10632,6 +10668,7 @@ function updatePlayer(dt) {
   if(P.fRelease || P.dead || P.down > 0) P.fHeld = 0; }
   // The water ends an airborne chain once the downstroke has stopped; treading water must recover wind.
   if (P.ground || (P.swim && !P.plunge)) P.plungeN=0;
+  pingRead();   /* (claude/cooppr) a downed hero can ping too: HELP */
   if (P.down > 0) { downedPlayer(dt); return; }   /* DOWN, not dead: he crawls, and his partner can pick him up */
   if (P.dead) { const dw = P.dead; P.dead -= dt; if (dw > 0.6 && P.dead <= 0.6) { dust(P.x - P.face * 10, P.y, 8); SFX.thud(); } if (P.dead <= 0) { if (rushOn()) { rushDied(); } else if (SET.iron && lives <= 0 && !bossSelectFight) { state = 'gameover'; setView('normal'); music.play(menuTrack()); SFX.roar(); } else respawn(); } return; }
   if (P.fly && flight) { for (const k of ['inv', 'grace', 'hurt', 'stFlash', 'sqT']) P[k] = Math.max(0, (P[k] || 0) - dt); P.hpShown += (P.hp - P.hpShown) * Math.min(1, dt * 6); flyPlayer(dt); return; }
@@ -32705,7 +32742,7 @@ function update(dt) {
      A press is read once (the first sub-step); a hitstop or a screen change ends the frame's remaining sub-steps; the camera and the weather run once, on world time. */
   const sub = wdtAll > dt * 1.0001 ? Math.ceil(wdtAll / dt - 1e-6) : 1, stateIn = state;
   for (let si = 0; si < sub; si++) { const wdt = wdtAll / sub; if (si) { clearPresses(); if (stop > 0 || state !== stateIn) break; }
-  updateMovers(wdt); danceAfterBoss(); for (const pp of players) asPlayer(pp, () => ptMasked(pp, () => { if (!PTK.before(pp, wdt)) { HERO_HAND = true; try { updatePlayer(wdt); } finally { HERO_HAND = false; } } PTK.after(pp, wdt); })); coopWatch(); if (TAVO) TAVO.tick(wdt); if (YARD) YARD.tick(wdt); PTK.tick(wdt); updateEnemies(wdt); tokenPost(TK, enemies, tkApi, wdt); P = players[0]; emitAt(null); updateWisp(wdt); updateSlide(wdt); updateOverhangs(wdt); updateChase(wdt); updateStairs(wdt); updateFlood(wdt); traceBeams(wdt); updateProps(wdt); updateVillage(wdt); if (L.timber) updateTimber(wdt, attackBox()); if (L.ballast) updateBallast(wdt); if (L.hoists) updateHoists(wdt); if (L.deep) updateDeep(wdt); updateBreathCue(wdt); if (L.hush) updateHush(wdt); updateCrystal(wdt); updateSpans(wdt); updatePyres(wdt); updateCorpses(wdt); updateShots(wdt); updateParticles(wdt); }
+  updateMovers(wdt); danceAfterBoss(); for (const pp of players) asPlayer(pp, () => ptMasked(pp, () => { if (!PTK.before(pp, wdt)) { HERO_HAND = true; try { updatePlayer(wdt); } finally { HERO_HAND = false; } } PTK.after(pp, wdt); })); coopWatch(); PINGS.tick(wdt); if (TAVO) TAVO.tick(wdt); if (YARD) YARD.tick(wdt); PTK.tick(wdt); updateEnemies(wdt); tokenPost(TK, enemies, tkApi, wdt); P = players[0]; emitAt(null); updateWisp(wdt); updateSlide(wdt); updateOverhangs(wdt); updateChase(wdt); updateStairs(wdt); updateFlood(wdt); traceBeams(wdt); updateProps(wdt); updateVillage(wdt); if (L.timber) updateTimber(wdt, attackBox()); if (L.ballast) updateBallast(wdt); if (L.hoists) updateHoists(wdt); if (L.deep) updateDeep(wdt); updateBreathCue(wdt); if (L.hush) updateHush(wdt); updateCrystal(wdt); updateSpans(wdt); updatePyres(wdt); updateCorpses(wdt); updateShots(wdt); updateParticles(wdt); }
   updateWeather(dt); updateCamera(dt * Math.max(1, SET.speed || 1));
   updatePolish(dt); fogMark(dt);
   flash = Math.max(0, flash - dt);
@@ -36702,7 +36739,7 @@ function render() {
     if (z !== 1) { g.save(); g.translate(VW / 2, VH * 0.55); g.scale(z, z); g.translate(-VW / 2, -VH * 0.55); }
     drawWorld(cx, cy, !heroHidden && !TRN);   /* (the readability pass draws the frame once without him, to know which pixels are him) */
     if (TRN || trnArrive) trnDrawWorldOver(cx, cy);   /* (claude/transwm) the heroes' walk-out, the arrival ferry */
-    if (!heroHidden && !TRN) drawPartyMarks(cx, cy, 'front');   /* (claude/tavern) the rings' near halves and the tags: over the near layer and the night's wash, so they always read */
+    if (!heroHidden && !TRN) drawPartyMarks(cx, cy, 'front'); if (!TRN) drawPings(cx, cy);   /* (claude/tavern) the rings' near halves and the tags: over the near layer and the night's wash, so they always read */
     if (z !== 1) g.restore();
     if (tilt) g.restore();
     drawSeaHud();
