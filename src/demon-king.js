@@ -71,8 +71,8 @@ export const DK_SAY = { enter: 'THE DEMON KING', teach: 'STRIKE HIS BOLT BACK AT
 
 const clamp = (v, a, b) => (v < a ? a : v > b ? b : v);
 const ph1 = f => clamp(f.ph, 1, 3) - 1;
-export const floorOf = f => (f.ph >= DK.phases ? 1 : (DK.phases - f.ph) * DK.bar);   /* hp never under this in a phase (P3: 1 - he is beaten, not killed) */
-export const barOf = f => clamp(f.hp - (DK.phases - f.ph) * DK.bar, 0, DK.bar);
+export const floorOf = f => (f.ph >= DK.phases ? 1 : (DK.phases - f.ph) * f.bar);   /* hp never under this in a phase (P3: 1 - he is beaten, not killed) */
+export const barOf = f => clamp(f.hp - (DK.phases - f.ph) * f.bar, 0, f.bar);
 const OPEN = new Set(['downed']);
 const NO_FALL = new Set(['enter', 'tumble', 'downed', 'repulseTell', 'repulse', 'fall', 'climb', 'beaten']);
 const NO_BAT = new Set(['tumble', 'downed', 'repulseTell', 'repulse', 'fall', 'climb', 'beaten', 'swoop']);
@@ -82,8 +82,8 @@ export const kingLow = f => ['swoop', 'whip', 'hang', 'whipTell'].includes(f.mod
 export const mulOf = f => (kingOpen(f) ? DK.mul.downed : DK.mul.chip);
 
 export function newFight(back, o = {}) {
-  const ph = o.phase || 1, rnd = o.rnd || Math.random;
-  const f = { ph, hp: DK.phases * DK.bar - (ph - 1) * DK.bar, mode: 'enter', mT: 0, T: DK.enter, t: 0, x: back.x1 + 40, y: back.y0 - DK.hover.up - 60, face: -1,
+  const ph = o.phase || 1, rnd = o.rnd || Math.random, bar = Math.round(DK.bar * (o.scale || 1));   /* scale: main.js's late-game boss health (1 + 0.25 x TIER_BOSS) */
+  const f = { ph, bar, hp: DK.phases * bar - (ph - 1) * bar, mode: 'enter', mT: 0, T: DK.enter, t: 0, x: back.x1 + 40, y: back.y0 - DK.hover.up - 60, face: -1,
     pips: 0, bolts: [], rings: [], last: [], rest: 0, bombT: DK.bombs.every, impCd: 0, id: 0, tgt: 0, rnd, back, events: [], landX: null, side: 1, whipHi: false,
     swoop: null, said: {}, beaten: false, queue: [], heroes: [],
     n: { bolts: 0, feints: 0, doubles: 0, swoops: 0, whips: 0, summons: 0, bombs: 0, imps: 0, returns: 0, powers: 0, blocks: 0, bats: 0, knocks: 0, pips: 0,
