@@ -14,9 +14,9 @@ const line = (g, a, b, c, d, col, t) => { if (![a, b, c, d].every(Number.isFinit
 
 const OUT = '#1b1626';
 const ROLE = {
-  diver: { body: '#4a5470', dark: '#232a3e', light: '#6c7a9a', hi: '#dce6f4', belly: '#9aa6bc', crest: '#c8d4e8', face: '#e8e0d4', faceD: '#b8a898', beak: '#e8c870', beakD: '#a88838', talon: '#d8c890', size: 1.2, nf: 10, wlen: 40, fan: 0.09, tail: 5, bar: true, bw: 6.8, bh: 9.5, cy: -15, cov: 4, lt: 2, tl: 1.15 },
-  shrieker: { body: '#c4a2ac', dark: '#6e4a5a', light: '#e6d2d6', hi: '#fff0f0', belly: '#f8eeea', crest: '#e04a3a', face: '#f0dccc', faceD: '#c8a496', beak: '#e0b060', beakD: '#a07830', talon: '#d8c090', size: 1.18, nf: 8, wlen: 30, fan: 0.17, tail: 2, bar: false, bw: 6, bh: 12, cy: -18, neck: 6, cov: 3, lt: 2, tl: 1.0 },
-  snatcher: { body: '#8a7048', dark: '#3e2e1a', light: '#b8966a', hi: '#e4cc9c', belly: '#d8c8a0', crest: '#c8a060', face: '#dcc4a4', faceD: '#a88c6c', beak: '#d8b060', beakD: '#8a6a28', talon: '#e8dcb0', size: 1.26, nf: 8, wlen: 36, fan: 0.14, tail: 3, bar: true, bw: 11.5, bh: 11, cy: -15, cov: 4, lt: 3, tl: 1.55, barred: true },
+  diver: { body: '#4a5470', dark: '#232a3e', light: '#6c7a9a', hi: '#dce6f4', belly: '#9aa6bc', crest: '#c8d4e8', face: '#e8e0d4', faceD: '#b8a898', beak: '#e8c870', beakD: '#a88838', talon: '#d8c890', bod: '#8494bc', bodL: '#b4c2e0', bodD: '#4a547a', hair: '#222a44', hairD: '#1c2438', hairL: '#6a7a9c', sash: '#dce6f4', sashL: '#e8c870', eyeC: '#4a7ab0', sw: 7, ww: 4.5, hr: 7, size: 1.2, nf: 10, wlen: 46, fan: 0.09, tail: 5, bar: true, bw: 6.8, bh: 9.5, cy: -15, cov: 4, lt: 2, tl: 1.15 },
+  shrieker: { body: '#c4a2ac', dark: '#6e4a5a', light: '#e6d2d6', hi: '#fff0f0', belly: '#f8eeea', crest: '#e04a3a', face: '#f0dccc', faceD: '#c8a496', beak: '#e0b060', beakD: '#a07830', talon: '#d8c090', bod: '#e4b8c4', bodL: '#f8e4e8', bodD: '#a8707e', hair: '#d0728a', hairD: '#7a3248', hairL: '#f0a0b4', sash: '#c02a2a', sashL: '#f0c860', eyeC: '#a04a6a', sw: 6, ww: 4, hr: 6.5, size: 1.18, nf: 8, wlen: 36, fan: 0.17, tail: 2, bar: false, bw: 6, bh: 12, cy: -18, neck: 3, cov: 3, lt: 2, tl: 1.0 },
+  snatcher: { body: '#8a7048', dark: '#3e2e1a', light: '#b8966a', hi: '#e4cc9c', belly: '#d8c8a0', crest: '#c8a060', face: '#dcc4a4', faceD: '#a88c6c', beak: '#d8b060', beakD: '#8a6a28', talon: '#e8dcb0', bod: '#b08a54', bodL: '#dcb880', bodD: '#6a4e2a', hair: '#6a4a28', hairD: '#3a2814', hairL: '#b08a52', sash: '#6a4a2a', sashL: '#e4cc9c', eyeC: '#7a5a2a', sw: 9, ww: 6, hr: 7.5, size: 1.26, nf: 8, wlen: 42, fan: 0.14, tail: 3, bar: true, bw: 11.5, bh: 11, cy: -15, cov: 4, lt: 3, tl: 1.55, barred: true },
 };
 const memo = new Map();
 const AX = 80, AY = 92, CW = 160, CH = 101;   /* (claude/sisters2: 92 -> 116 wide, so the snatcher's level wings - the jar, the rake, the grab - are not clipped) */   /* the canvas, and the talons' point in it */
@@ -35,7 +35,7 @@ function wing(g, r, sx, sy, s, el, P0, fold, shade, F) {
   const dark = shade, c0 = dark ? P.dark : P.body, c1 = dark ? P.body : P.light, bars = P.barred && !dark ? P.dark : null;
   const nSec = Math.max(4, Math.round(nf * 0.62)), nPri = nf - nSec + 2;
   for (let i = 0; i < nSec; i++) {                                                  /* secondaries, from the wrist in toward the shoulder */
-    const t = 1 - i / nSec * 0.85, ox = sx + (wx - sx) * t, oy = sy + (wy - sy) * t, d = (1.15 - 0.25 * t) * tr + (fold ? 0.5 : 0);
+    const t = 1 - i / nSec * 0.5, ox = sx + (wx - sx) * t, oy = sy + (wy - sy) * t, d = (1.15 - 0.25 * t) * tr + (fold ? 0.5 : 0);
     feather(g, Math.round(ox), Math.round(oy), A(base + d), Math.round(P.wlen * (0.42 + 0.12 * Math.sin(Math.PI * (1 - t) * 0.9 + 0.5))), 3.4 + (P.cov > 3 ? 0.8 : 0), i % 2 ? c0 : c1, P.dark, bars);
   }
   for (let k = 0; k < nPri; k++) {                                                  /* primaries, fanned from the wrist */
@@ -43,62 +43,83 @@ function wing(g, r, sx, sy, s, el, P0, fold, shade, F) {
     feather(g, wx - s * 2, wy, A(ang), Math.round(lenk * (1 - wr * 0.3)), 3.4 + (P.cov > 3 ? 0.8 : 0), k % 2 ? c0 : c1, P.dark, bars);
   }
   const th = P.cov > 3 ? 8 : 6;                                                      /* the arm: leading edge, lit along its top */
-  line(g, Math.round(sx), Math.round(sy), Math.round(wx), Math.round(wy), c0, th);
-  line(g, Math.round(sx), Math.round(sy) - 2, Math.round(wx), Math.round(wy) - 2, c1, 2);
-  line(g, Math.round(sx), Math.round(sy) + 3, Math.round(wx), Math.round(wy) + 3, dark ? P.dark : P.dark, 1);
-  for (let q = 0; q < 3; q++) { const t = 0.12 + q * 0.2, cx = sx + (wx - sx) * t, cy = sy + (wy - sy) * t; feather(g, Math.round(cx), Math.round(cy), A(base + 0.95), 6 + q, 3, dark ? P.dark : P.light, c0); }   /* coverts over the root */
+  { const ex = sx + (wx - sx) * 0.46, ey = sy + (wy - sy) * 0.46;                                                       /* (claude/harpyart2) THE ARM: a bare woman's arm from the shoulder to the elbow ... */
+    line(g, Math.round(sx), Math.round(sy), Math.round(ex), Math.round(ey), P.faceD, 5); line(g, Math.round(sx), Math.round(sy) - 1, Math.round(ex), Math.round(ey) - 1, P.face, 3);
+    line(g, Math.round(ex), Math.round(ey), Math.round(wx), Math.round(wy), c0, th - 2);                                   /* ... then the feathered leading edge out to the wrist */
+    ellipse(g, Math.round(ex), Math.round(ey), 3, 3, c0); }
+  line(g, Math.round(sx + (wx - sx) * 0.46), Math.round(sy + (wy - sy) * 0.46) - 2, Math.round(wx), Math.round(wy) - 2, c1, 2);
+  for (let q = 0; q < 3; q++) { const t = 0.5 + q * 0.14, cx = sx + (wx - sx) * t, cy = sy + (wy - sy) * t; feather(g, Math.round(cx), Math.round(cy), A(base + 0.95), 6 + q, 3, dark ? P.dark : P.light, c0); }   /* coverts over the root */
   if (P.bar && !dark) { const bx = sx + (wx - sx) * 1.5, by = sy + (wy - sy) * 1.5; line(g, Math.round(bx), Math.round(by) - 2, Math.round(bx + s * Math.cos(base + 0.55) * 11), Math.round(by + Math.sin(base + 0.55) * 11), P.hi, 2); }   /* the white bar across the wing */
+  { const ar = Math.atan2(wy - sy, wx - sx), hk = P.face;                                                           /* (claude/harpyart2) THE HAND at the wing's joint: a small pale fist and three dark claw-fingers pointing along the arm */
+    ellipse(g, Math.round(wx), Math.round(wy), 2.6, 2.4, hk); px(g, Math.round(wx), Math.round(wy) - 1, '#f6eee2');
+    for (const d of [-0.55, 0, 0.55]) { const fx = wx + Math.cos(ar + d) * 4.5, fy = wy + Math.sin(ar + d) * 4.5; line(g, Math.round(wx), Math.round(wy), Math.round(fx), Math.round(fy), P.faceD, 1); px(g, Math.round(fx), Math.round(fy), '#1b1626'); } }
+}
+/* (claude/harpyart2) HARPY-WOMEN, REDRAWN (Daniel 11-05: "they still look like birds"). The old build was a bird (oval body, small head) with a face stuck on. This is a WOMAN: a big head (radius ~7, 15 px: eyes, brows, nose,
+   lips, long hair), a neck, bare shoulders, a feather bodice (V neckline, a sash at the waist), a feather skirt; her ARMS ARE THE WINGS (the arm leaves the shoulder, a clawed hand at the wrist, the flight feathers
+   from there); bird legs and talons below the skirt. Per-role: shoulder half-width sw, head radius hr, waist half-width ww, hair colours (hair, hairD, hairL), sash colour. */
+export const WOMAN = true;
+const LAY = (P, sp) => ({ sh: sp ? -13 : -25, hip: sp ? -6 : -13, sw: P.sw || 7, ww: P.ww || 4.5 });
+function hairLocks(g, P, p, role, hx, hy, r0) {   /* long hair: a mass behind the head, then locks streaming back and down past the shoulders to the waist; a scream throws it out and up */
+  const up = p.beak || p.rings || p.cone || p.sac ? 1 : 0, dk = P.hairD, md = P.hair, lt = P.hairL, len = role === 'snatcher' ? 24 : 27;
+  for (let k = 0; k < 7; k++) { const a = up ? Math.PI * (0.98 + k * 0.045) : Math.PI * (0.5 + k * 0.05) + 0.12; feather(g, hx - 2 - (up ? 1 : k * 0.9 - 1), hy + (up ? 1 : 4), a, len + (k % 3) * 2 - (up ? 8 : 0) - (up ? 0 : 4), 3.6, k % 2 ? dk : md, lt); }
+  ellipse(g, hx - 3, hy + 2, r0 + 1.5, r0 + 2.5, dk); ellipse(g, hx - 3.5, hy + 3, r0, r0 + 1.5, md); ellipse(g, hx - 5, hy, 2, r0 - 1, lt);
+}
+function face(g, P, p, role, hx, hy, r0) {
+  const R0 = Math.round(r0);
+  circle(g, hx, hy, r0, P.face); ellipse(g, hx + 1, hy + 2, r0 - 1, r0 - 1.5, P.face); circle(g, hx - 1, hy - 1, r0 - 2, '#f6eee2');   /* the skull, a narrower jaw, a lit cheek */
+  R(g, hx - R0 + 1, hy + 2, 3, 3, P.faceD); R(g, hx + 3, hy + 3, 3, 2, '#e8b8a8');                                                                  /* shade at the hairline; a blush */
+  R(g, hx - 1, hy + R0 - 1, 4, 5, P.face); R(g, hx - 1, hy + R0 + 3, 4, 2, P.faceD);                                                                  /* the neck, bare, with the jaw's shadow */
+  const eye = p.eye === 'red' ? '#ff3a1a' : P.eyeC || '#3a5a7a';
+  const ey = hy, ex0 = hx + 1, ex1 = hx + 5;
+  if (p.dead) for (const x of [ex0, ex1]) { px(g, x, ey - 1, '#1b0a0a'); px(g, x + 2, ey - 1, '#1b0a0a'); px(g, x + 1, ey, '#1b0a0a'); px(g, x, ey + 1, '#1b0a0a'); px(g, x + 2, ey + 1, '#1b0a0a'); }
+  else if (p.hurt) for (const x of [ex0, ex1]) { R(g, x, ey, 3, 1, '#1b0a0a'); px(g, x + 3, ey - 1, '#1b0a0a'); }
+  else for (const x of [ex0, ex1]) { R(g, x, ey - 1, 3, 3, '#fffaf0'); R(g, x + 1, ey - 1, 2, 3, eye); px(g, x + 2, ey, '#10080c'); R(g, x, ey - 2, 3, 1, '#1b0a0a'); if (p.eye === 'red') px(g, x + 1, ey - 1, '#ffd0a0'); }   /* wide eyes: white, iris, pupil, a lash line */
+  R(g, ex0 - 1, ey - 4, 4, 1, P.hairD); R(g, ex1 - 1, ey - 4 + (p.eye === 'red' ? 1 : 0), 4, 1, P.hairD);                                           /* the brows (slanted down in the glare) */
+  px(g, hx + 7, hy + 2, P.faceD); px(g, hx + 6, hy + 3, P.faceD); px(g, hx + 7, hy + 3, P.faceD);                                                       /* the nose, past the edge of the cheek */
+  const mx = hx + 3, my = hy + 5;
+  if (p.beak) { R(g, mx - 1, my - 1, 6, 5, '#2a0c12'); R(g, mx, my + 2, 4, 2, '#e87878'); px(g, mx - 1, my - 1, '#f8f4ea'); px(g, mx + 4, my - 1, '#f8f4ea'); px(g, mx, my, '#f8f4ea'); px(g, mx + 3, my, '#f8f4ea'); R(g, mx - 1, my - 2, 6, 1, '#d04a58'); R(g, mx, my + 4, 4, 1, P.faceD); }   /* the SCREAM: jaw dropped, a black throat, a tongue, fangs, red lips */
+  else { R(g, mx - 1, my, 6, 1, '#c04858'); R(g, mx, my + 1, 4, 1, '#9a3444'); px(g, mx + 5, my, P.faceD); }                                     /* red lips, set */
 }
 function body(g, P, p, role, F) {
-  const sp = !!p.sprawl, cy = sp ? -9 : P.cy, bw = P.bw, bh = sp ? 5.5 + (P.bh - 9) * 0.4 : P.bh;
-  if (P.neck && !sp) { const hx0 = Math.round(((p.head || [8, -2])[0]) * 0.55), top = cy - bh + 2, hy1 = cy - bh - 3 + Math.round(((p.head || [8, -2])[1]) * 0.5) - P.neck; for (let yy = hy1 + 2; yy <= top; yy++) { const t = (yy - hy1) / Math.max(1, top - hy1), nx = Math.round(hx0 * (1 - t) - 2), nw = 4 + Math.round(t * 2); R(g, nx, yy, nw, 1, P.light); R(g, nx + nw - 2, yy, 2, 1, P.belly); R(g, nx, yy, 1, 1, P.body); } }   /* THE SHRIEKER'S NECK: the long pale throat under her head */
-  /* tail: fanned feathers below the body */
-  if (!sp) for (let k = 0; k < P.tail; k++) { const a = Math.PI / 2 + (k - (P.tail - 1) / 2) * 0.22; feather(g, 0, cy + bh - 2, a, role === 'diver' ? 11 : 7, 2.4, k % 2 ? P.dark : P.body, P.hi); }
-  ellipse(g, 0, cy, bw, bh, P.body); ellipse(g, -1.2, cy - 0.5, bw - 2, bh - 1.5, P.light);
-  /* the breast: pale feathers in rows (barred for the snatcher) */
-  const br = P.belly; ellipse(g, 1, cy + 1.5, bw - 3.2, bh - 3.4 + (p.chest ? 1.6 : 0), br); if (role === 'snatcher') { ellipse(g, 0, cy + 1, bw - 1, 2.4, P.faceD); ellipse(g, 1, cy + 1.5, bw - 4, bh - 5, br); }
-  for (let q = 0; q < 4; q++) { const yy = cy - 3 + q * 3, ww = Math.round(bw - 3.6 - Math.abs(q - 1.2) * 0.8); R(g, -ww + 2, yy, ww, 1, role === 'snatcher' ? P.faceD : P.light); R(g, -ww + 3, yy + 1, Math.max(1, ww - 2), 1, br); }
-  if (F.sac) { ellipse(g, 3, cy - bh + 2 - (P.neck ? 3 : 0) + (p.beak ? 1 : 0), 3 + (p.sac ? 3.4 : p.cone || p.rings || p.chest ? 2 : 0.6), 2.6 + (p.sac ? 2.6 : p.rings || p.cone ? 1.6 : 0.4), P.belly); if (p.sac) { ellipse(g, 2, cy - bh + 1 - (P.neck ? 3 : 0), 2.2, 1.4, '#f8c8c8'); for (let k = -2; k <= 2; k += 2) R(g, 3 + k, cy - bh + 3 - (P.neck ? 3 : 0), 1, 2, '#c06070'); } }   /* (claude/sisters2) THE SHOCK SHRIEK: the sac blown up tight, veins showing */   /* the throat sac: swollen when she screams */
-  if (WOMAN) { ellipse(g, 0, cy - bh + 3.5, bw - 1, 3.6, P.face); ellipse(g, -1, cy - bh + 3, bw - 3, 2.2, '#f6ece0'); R(g, -3, cy - bh + 5, 6, 1, P.faceD); for (let k = -3; k <= 3; k += 2) px(g, k, cy - bh + 6 + (k & 2 ? 1 : 0), P.belly); }   /* (claude/harpyart) bare shoulders and collarbone, the feathers starting below them */
-  if (F.bag) satchel(g, cy, bh);   /* THE SNATCHER'S GIFT: her satchel and its strap */
-  return { cy, bw, bh };
-}
-/* (claude/harpyart) THE HARPY-WOMEN (Daniel 11-01 #3): a woman's face, long hair streaming back, bare shoulders and a throat, a mouth that SCREAMS (open, fanged) - on the same bird body, wings, crest and talons.
-   false = the old bird heads (same bake, same anchors; nothing else reads it). */
-export const WOMAN = true;
-function harpyHair(g, P, p, role, hx, hy, r0) {   /* behind the face: a mass of hair blown back and down past the shoulder, the strands lit from above; a scream throws it up and out */
-  const up = p.beak || p.rings || p.cone ? 3 : 0, dk = P.dark, md = role === 'shrieker' ? '#8a5a6a' : role === 'snatcher' ? '#5a4228' : '#3a445e';
-  ellipse(g, hx - 3, hy + 3 - up, r0 + 0.5, r0 + 2.5, dk); ellipse(g, hx - 4, hy + 4 - up, r0 - 0.5, r0 + 1.5, md);
-  for (let k = 0; k < 5; k++) { const a = Math.PI * (0.78 + k * 0.1) - (up ? 0.5 : 0); feather(g, hx - 2, hy + 1, a, 10 + (k % 2) * 3 + up, 2.6, k % 2 ? dk : md, null); }
-  R(g, hx - 1, hy - r0 - 1, 6, 2, dk); R(g, hx, hy - r0 - 1, 3, 1, md);   /* the fringe over her brow */
-}
-function harpyMouth(g, P, p, hx, hy, r0, bx, by) {   /* a nose, lips; SCREAMING (p.beak): the jaw dropped, a black throat, a red tongue, two fangs */
-  px(g, bx - 1, by - 1, P.faceD); px(g, bx, by, P.faceD); px(g, bx - 1, by, P.faceD);   /* the nose */
-  if (p.beak) { R(g, bx - 2, by + 1, 5, 4, '#2a0c12'); R(g, bx - 1, by + 4, 3, 1, '#e87878'); px(g, bx - 2, by + 1, '#f8f4ea'); px(g, bx + 2, by + 1, '#f8f4ea'); R(g, bx - 2, by, 5, 1, '#c85a5a'); R(g, bx - 1, by + 5, 3, 1, P.faceD); }
-  else { R(g, bx - 2, by + 2, 5, 1, '#b04a52'); px(g, bx + 2, by + 3, P.faceD); }
-  px(g, hx + 5, hy - 1, P.faceD); R(g, hx - 1, hy + Math.round(r0) - 1, 4, 5, P.face); R(g, hx - 1, hy + Math.round(r0) + 2, 4, 2, P.faceD);   /* a cheek-shade; the neck, bare, and its shadow */
+  const bd = P.bod || P.body, bl = P.bodL || P.light, bk = P.bodD || P.dark, sp = !!p.sprawl, L = LAY(P, sp), { sh, hip, sw, ww } = L, ch = p.chest ? 1 : 0;
+  /* TAIL feathers (the diver's long fork, the others' short fan) hang behind the skirt */
+  if (!sp) for (let k = 0; k < P.tail; k++) { const a = Math.PI / 2 + (k - (P.tail - 1) / 2) * 0.22; feather(g, -1, hip + 2, a, role === 'diver' ? 17 : 12, 2.6, k % 2 ? P.dark : P.body, P.hi); }
+  /* the FEATHER SKIRT over the hips: rows of feather tips, wider at the hip, ragged below */
+  const sk0 = hip - 1, sk1 = sp ? hip + 2 : hip + 6;
+  fillPoly(g, [[-ww - 1, sk0], [ww + 1, sk0], [ww + 3, sk1 - 2], [-ww - 3, sk1 - 2]], bd);
+  for (let x = -ww - 3; x <= ww + 2; x += 2) { const dd = (x & 2) ? 2 : 3; R(g, x, sk1 - 2, 2, dd, (x >> 1) & 1 ? bl : bd); R(g, x, sk1 - 2 + dd - 1, 1, 1, bk); }
+  for (let x = -ww - 1; x <= ww; x += 3) R(g, x, sk0 + 1, 1, 3, bk);
+  /* the TORSO: a waist narrower than the shoulders, the bodice of feather rows up to a V neckline; a sash at the waist */
+  fillPoly(g, [[-ww, hip], [ww, hip], [sw - 1 + ch, sh + 2], [-sw + 1 - ch, sh + 2]], bd);
+  fillPoly(g, [[-ww + 2, hip], [ww, hip], [sw - 2 + ch, sh + 2], [-sw + 3, sh + 2]], bl);
+  for (let yy = sh + 6; yy < hip - 1; yy += 3) { const t = (yy - sh) / (hip - sh), hw = Math.round(sw - 1 - (sw - ww - 1) * t); R(g, -hw + 2, yy, hw * 2 - 3, 1, P.belly); R(g, -hw + 3, yy + 1, hw * 2 - 5, 1, bd); }
+  R(g, -ww - 1, hip - 2, ww * 2 + 2, 2, P.sash); R(g, -1, hip - 2, 3, 2, P.sashL);                                                       /* the sash and its clasp */
+  /* bare shoulders, collarbone and the neckline (the skin shows as a V down into the feathers) */
+  fillPoly(g, [[-sw + 1, sh + 1], [sw - 1, sh + 1], [sw - 3, sh - 2], [-sw + 3, sh - 2]], P.face);
+  fillPoly(g, [[-sw + 2, sh + 1], [sw - 2, sh + 1], [1, sh + 7], [-1, sh + 7]], P.face);
+  R(g, -sw + 3, sh + 2, sw * 2 - 6, 1, P.faceD); px(g, 0, sh + 8, P.faceD);
+  R(g, -sw + 1, sh, 3, 2, P.face); R(g, sw - 3, sh, 3, 2, P.face);                                                                     /* the round of each shoulder */
+  R(g, -sw + 2, sh + 2, 1, 4, bl); R(g, sw - 2, sh + 2, 1, 4, bk);
+  if (F.sac) { const sz = p.sac ? 1 : 0; ellipse(g, 1, sh + 2, 5 + sz * 2, 2 + sz * 1.6, '#e89aa4'); if (p.sac) for (let k = -3; k <= 3; k += 3) R(g, 1 + k, sh + 1, 1, 3, '#c06070'); R(g, -4, sh + 4, 10, 1, '#a82820'); }   /* THE SHRIEKER'S GORGET: a pink throat-frill at the neck's base that swells when she screams, a red collar */
+  if (F.bag) satchel(g, hip - 2, 9);                                                                                                   /* THE SNATCHER'S GIFT: her satchel and its strap */
+  return { sh, hip, sw };
 }
 function head(g, P, p, role, b, F) {
-  const [hx0, hy0] = p.head || [8, -2], hx = Math.round(hx0 * 0.55), hy = Math.round(b.cy - b.bh - 3 + hy0 * 0.5) - (P.neck || 0), r0 = (role === 'snatcher' ? 5.6 : role === 'shrieker' ? 4 : 4.6) + (WOMAN ? 1.6 : 0);
-  /* the crest / mane first (behind the face) */
-  if (F.diverCrest && role !== 'diver') for (let k = 0; k < 5; k++) { const a = -Math.PI * 0.82 + k * 0.12; feather(g, hx - 1, hy - 1, a, 11 - k, 2.2, k % 2 ? '#9aaac4' : '#c8d4e8', '#f4f8ff'); }   /* THE DIVER'S GIFT: her pale swept crest */
-  if (F.fan) for (let k = 0; k < 7; k++) { const a = -Math.PI / 2 + (k - 3) * 0.3 + (p.rings ? -0.15 : 0), L = 9 + (k % 2 ? 1 : 3) + (p.beak ? 2 : 0); feather(g, hx - 1, hy - 1, a, L, 2.4, k % 2 ? '#a82820' : P.crest, '#ffd0a0'); }
-  if (role === 'diver') for (let k = 0; k < 5; k++) { const a = -Math.PI * 0.82 + k * 0.12; feather(g, hx - 1, hy - 1, a, 9 - k, 2.2, k % 2 ? P.light : P.crest, P.hi); }
-  if (role === 'snatcher') for (let k = 0; k < 7; k++) { const a = -Math.PI * 0.95 + k * 0.4; feather(g, hx, hy, a, 7 + (k % 3), 2.6, k % 2 ? P.crest : P.light, P.faceD); }
-  if (WOMAN) harpyHair(g, P, p, role, hx, hy, r0);
-  circle(g, hx, hy, r0, P.face); circle(g, hx - 1, hy - 1, r0 - 1.5, role === 'snatcher' ? P.face : '#f2ece0'); R(g, hx - Math.round(r0) + 1, hy + 1, 3, 2, P.faceD);
-  /* the eye: red when she is telling; a brow ridge */
-  const eye = p.eye === 'red' ? '#ff4a2a' : '#ffe9a0';
-  if (p.dead) { px(g, hx + 1, hy - 1, '#1b0a0a'); px(g, hx + 3, hy - 1, '#1b0a0a'); px(g, hx + 2, hy, '#1b0a0a'); px(g, hx + 1, hy + 1, '#1b0a0a'); px(g, hx + 3, hy + 1, '#1b0a0a'); }   /* an X */
-  else if (p.hurt) { R(g, hx, hy, 4, 1, '#1b0a0a'); px(g, hx + 4, hy - 1, '#1b0a0a'); px(g, hx + 4, hy + 1, '#1b0a0a'); }   /* screwed shut, wincing */
-  else { R(g, hx + 1, hy - 1, 2, 2, eye); px(g, hx + 2, hy - 1, '#1b0a0a'); }
-  R(g, hx, hy - 2, 4, 1, P.dark);
-  /* the beak: hooked; wide open (two halves, a dark mouth, a tongue) when screaming */
-  const bx = hx + Math.round(r0) - 1, by = hy + 1;
-  if (WOMAN) harpyMouth(g, P, p, hx, hy, r0, bx, by); else if (p.beak) { fillPoly(g, [[bx, by - 2], [bx + 8, by - 1], [bx + 7, by + 0.5], [bx, by + 0.5]], P.beak); R(g, bx, by + 0.5, 5, 1, '#3a0c10'); fillPoly(g, [[bx, by + 1.5], [bx + 7, by + 5], [bx + 5, by + 6], [bx, by + 3.5]], P.beakD); R(g, bx + 1, by + 2, 3, 1, '#e87878'); R(g, bx + 6, by - 1, 2, 2, P.beakD); }
-  else { fillPoly(g, [[bx, by - 2], [bx + 7, by - 0.5], [bx + 6, by + 1.5], [bx + 3, by + 2.2], [bx, by + 2.4]], P.beak); R(g, bx + 5, by + 1, 2, 2, P.beakD); R(g, bx, by + 1, 5, 1, P.beakD); }
-  if (role === 'snatcher' || F.bag) { R(g, hx + 1, hy - 3, 1, 4, '#8a2a2a'); }   /* an old scar over the eye */
-  return { hx, hy, bx, by, r0 };
+  const [hx0, hy0] = p.head || [8, -2], r0 = P.hr, neck = P.neck || 0;
+  const hx = Math.round(hx0 * 0.55), hy = Math.round(b.sh - r0 - 2 + hy0 * 0.5) - neck;
+  if (neck) for (let yy = hy + Math.round(r0); yy <= b.sh; yy++) { R(g, hx - 1, yy, 4, 1, P.face); R(g, hx + 2, yy, 1, 1, P.faceD); }   /* THE SHRIEKER'S long neck */
+  hairLocks(g, P, p, role, hx, hy, r0);
+  if (role === 'diver') for (let k = 0; k < 5; k++) { const a = -Math.PI * 0.86 + k * 0.1; feather(g, hx - 2, hy - r0 + 2, a, 12 - k, 2.4, k % 2 ? P.light : P.crest, P.hi); }   /* THE DIVER'S swept silver feather-crest, rising from the crown */
+  if (F.fan) for (let k = 0; k < 7; k++) { const a = -Math.PI / 2 + (k - 3) * 0.3 + (p.rings ? -0.15 : 0), Lk = 10 + (k % 2 ? 1 : 3) + (p.beak ? 2 : 0); feather(g, hx - 1, hy - r0 + 2, a, Lk, 2.6, k % 2 ? '#a82820' : P.crest, '#ffd0a0'); }   /* THE SHRIEKER'S red headdress */
+  if (role === 'snatcher') for (let k = 0; k < 6; k++) { const a = -Math.PI * 0.98 + k * 0.5; feather(g, hx, hy - 1, a, 8 + (k % 3), 3.2, k % 2 ? P.hair : P.hairL, P.hairD); }   /* THE SNATCHER'S shaggy mane standing out */
+  face(g, P, p, role, hx, hy, r0);
+  const R0 = Math.round(r0);
+  ellipse(g, hx - 0.5, hy - R0 + 2.8, r0 + 0.4, 3.4, P.hair); ellipse(g, hx - 1, hy - R0 + 2, r0 - 1, 2, P.hairL);                          /* the hair over the crown, parted */
+  for (let k = 0; k < 4; k++) R(g, hx + 3 - k * 2, hy - R0 + 5 + (k % 2), 3, 1, P.hair);                                                     /* the fringe, swept across the brow */
+  R(g, hx - R0 - 1, hy - 2, 2, 8, P.hair);                                                                                              /* a lock falling past the cheek */
+  if (role === 'diver') { R(g, hx + 1, hy - R0 + 3, 2, 4, P.hi); R(g, hx + 4, hy - R0 + 4, 1, 2, P.hi); }                                    /* a white streak at the temple */
+  if (role === 'snatcher' || F.bag) R(g, hx + 2, hy - 4, 1, 5, '#a83a3a');                                                               /* an old scar through the brow */
+  return { hx, hy, bx: hx + R0, by: hy + 3, r0 };
 }
 function talons(g, P, p, role, F) {
   const big = F.big ? 1.3 : 1, st = p.talon || 'hang', sp = !!p.sprawl;
@@ -138,14 +159,14 @@ function bake(role, pose, ph, rockOn, gifts = '') {
   const F = featsOf(role, gifts), P = ROLE[role], [c, g] = canvas(CW, CH), r = mulberry(role.length * 31 + pose.__n.length);
   g.save(); g.translate(AX, AY); g.scale(P.size, P.size); g.translate(0, 0);
   const sp = !!pose.sprawl, beat = pose.flap ? (ph - 1.5) * 0.28 : 0, el = -(pose.wing || 0) - beat, fold = !!pose.fold;
-  const sh = sp ? -14 : -23;
-  /* WINGS: the far (left) one in shade behind the body, then the body, the head, then the near (right) one over it */
-  if (fold) { wing(g, r, pose.tuck ? -3 : -1, sh + 4, -1, pose.tuck ? -1.3 : 2.45 + beat * 0.3, P, true, true, F); }
-  else wing(g, r, -3, sp ? -9 : -19, -1, sp ? -0.3 : el, P, false, true, F);
+  const SHY = sp ? -12 : -24, SX = (P.sw || 7) - 1;   /* (claude/harpyart2) the wing-arms leave the SHOULDERS: x = +-(shoulder half-width - 1), y = shoulder height */
+  /* THE ARMS ARE THE WINGS: the far (left) one in shade behind her, then the body, then the near (right) one over the torso, then the head over both (the raised wing never hides the face), then the legs */
+  if (fold) { wing(g, r, pose.tuck ? -SX + 1 : -SX, SHY + 3, -1, pose.tuck ? -1.3 : 2.45 + beat * 0.3, P, true, true, F); }
+  else wing(g, r, -SX, SHY, -1, sp ? -0.3 : el, P, false, true, F);
   const b = body(g, P, pose, role, F);
+  if (fold) wing(g, r, pose.tuck ? SX - 1 : SX, SHY + 3, 1, pose.tuck ? -1.35 : 2.2 - beat * 0.3, P, true, false, F); else wing(g, r, SX, SHY, 1, sp ? -0.3 : el, P, false, false, F);
   const h = head(g, P, pose, role, b, F);
   talons(g, P, pose, role, F);
-  if (fold) wing(g, r, pose.tuck ? 4 : 2, sh + 5, 1, pose.tuck ? -1.35 : 2.2 - beat * 0.3, P, true, false, F); else wing(g, r, 3, sp ? -9 : -19, 1, sp ? -0.3 : el, P, false, false, F);
   if (pose.feathers) for (let k = 0; k < 7; k++) { const fx = -22 + ((k * 13) % 41), fy = -34 + ((k * 7) % 30); feather(g, fx, fy, 0.5 + k * 0.7, 6, 1.6, k % 2 ? P.light : '#e6e4ec', P.hi); }   /* loose feathers round a falling bird */
   if (pose.rock && rockOn) { g.save(); g.translate(2, 0); rockSprite(g); g.restore(); }
   if (pose.pebble) pebbleSprite(g);
@@ -163,7 +184,7 @@ export function drawSister(g, role, p, flash, time, rocks, gifts) {
   g.save(); g.rotate(p.pitch || 0); g.drawImage(flash ? set.w : set.c, -AX, -AY); g.restore();
   /* the live bits: the dizzy stars, the scream's rings, the wave's cone */
   if (p.stars) for (let k = 0; k < 3; k++) { const a = time * 5 + k * 2.1; R(g, Math.round(4 + Math.cos(a) * 11), Math.round(-33 + Math.sin(a) * 4), 3, 3, '#ffe9a0'); R(g, Math.round(5 + Math.cos(a) * 11), Math.round(-34 + Math.sin(a) * 4), 1, 1, '#ffffff'); }
-  const [hx0, hy0] = p.head || [8, -2], hx = Math.round(set.hd[0]) + 11, hy = Math.round(set.hd[1]) - 2;
+  const [hx0, hy0] = p.head || [8, -2], hx = Math.round(set.hd[0]) + 13, hy = Math.round(set.hd[1]) + 1;
   if (p.rings) { const k = (time * 3) % 1; g.strokeStyle = 'rgba(255,90,74,' + (1 - k).toFixed(2) + ')'; g.lineWidth = 1; g.beginPath(); g.arc(hx, hy + 3, 6 + k * 26, -0.9, 0.9); g.stroke(); g.strokeStyle = 'rgba(255,200,170,' + (0.7 - k * 0.7).toFixed(2) + ')'; g.beginPath(); g.arc(hx, hy + 3, 3 + k * 16, -0.9, 0.9); g.stroke(); }
   /* (claude/sisters2) the signature moves' live bits: the rake's sparks and dust streak, the shock's blast rings, the echo's rings at the floor */
   if (p.sparks) for (let k = 0; k < 4; k++) { const a = (time * 9 + k * 1.7) % 1; R(g, Math.round(14 + a * 10), Math.round(-1 - a * 6 + k), 1, 1, k % 2 ? '#ffe9a0' : '#ffffff'); }
