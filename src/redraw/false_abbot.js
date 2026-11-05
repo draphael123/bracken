@@ -41,7 +41,7 @@ function settle(c) { const g = c.getContext('2d'), img = g.getImageData(0, 0, c.
 const thick = (g, x0, y0, x1, y1, col, w = 2) => { const vert = Math.abs(y1 - y0) > Math.abs(x1 - x0);
   for (let k = 0; k < w; k++) line(g, x0 + (vert ? k : 0), y0 + (vert ? 0 : k), x1 + (vert ? k : 0), y1 + (vert ? 0 : k), col); };
 
-export function bakeFalseAbbot() {
+export function bakeFalseAbbot(m3 = false) {   /* m3: THE MONASTERY 3's four extra poses, 23-26 (claude/abbotart): PEAL TELL, PEAL, CALL, THE FLOOR GOES */
   const W = 80, H = 66, cx = 34;
   /* THE MITRE: two boards sewn to a point, a gold band round the brow, and the two lappets down the back. `tilt` leans it. */
   const mitre = (g, x, y, tilt = 0) => {
@@ -94,7 +94,7 @@ export function bakeFalseAbbot() {
   };
   const smoke = (g, x, y, n = 3) => { for (let k = 0; k < n; k++) px(g, x + (k % 2 ? 1 : -1) * (1 + k), y - 3 - k * 3, k > 1 ? A.smoke : A.coalL); };
 
-  const F = Array.from({ length: 23 }, (_, f) => {
+  const F = Array.from({ length: m3 ? 27 : 23 }, (_, f) => {
     const [c, g] = canvas(W, H); const floor = H - 2, hip = floor - 26, sh = hip - 6, hd = sh - 12;
     if (f === 21) {   // THE FALL (claude/abbot3art, B16): the bridge went out from under him / the chair spilled him. TUMBLING in the air - the cope a flung tent, the boots kicking up, the arms thrown wide, the mitre flying off, the pot out on its chain
       fillPoly(g, [[cx - 14, 30], [cx + 6, 14], [cx + 22, 30], [cx + 14, 50], [cx - 6, 52]], A.M);
@@ -177,6 +177,19 @@ export function bakeFalseAbbot() {
       }
       outline(c, OUT); return settle(c);
     }
+    if (f === 26) {   // (m3) THE FLOOR GOES, told: down on his knuckles with both fists planted on the boards, the mitre thrown back and the mouth open - he is calling the vault down; cracks run from his hands, grit comes off the roof
+      const len = 23, s2 = floor - len;
+      rect(g, cx - 14, floor - 3, 7, 3, A.G); rect(g, cx - 4, floor - 2, 6, 2, A.G); px(g, cx - 14, floor - 3, A.g);
+      cope(g, cx, s2, 5, len, 2);
+      mitre(g, cx + 9, s2 - 9, -5); head(g, cx + 11, s2 - 2, { wide: 1 });
+      arm(g, cx + 8, s2 + 5, cx + 22, floor - 1); arm(g, cx + 3, s2 + 8, cx + 15, floor - 1); hand(g, cx + 23, floor - 2, 1); hand(g, cx + 16, floor - 1, 1);
+      for (const [dx, w] of [[26, 7], [34, 4], [12, 3], [40, 3]]) rect(g, cx + dx, floor - 1, w, 1, '#1b1626');
+      for (const [dx, dy] of [[28, -3], [33, -2], [38, -3], [44, -2]]) px(g, cx + dx, floor + dy, '#1b1626');   // the cracks, running out from his fists
+      for (const [dx, dy, col] of [[24, -9, A.smoke], [30, -14, '#a49c8c'], [37, -11, A.smoke], [43, -17, '#a49c8c'], [20, -16, '#a49c8c'], [33, -22, A.smoke]]) px(g, cx + dx, floor + dy, col);   // grit thrown up
+      for (let k = 0; k < 3; k++) { rect(g, cx - 4 + k * 12, 3 + (k & 1) * 4, 2, 4, '#a49c8c'); px(g, cx - 4 + k * 12, 9 + (k & 1) * 4, A.smoke); }   // and grit coming down from the vault
+      for (let k = 0; k < 3; k++) rect(g, cx - 18 - k * 3, s2 - 6 + k * 5, 5, 1, A.smoke);
+      outline(c, OUT); return settle(c);
+    }
     if (f === 8) {    // ROPE TELL: wound down into a crouch to spring - the cope pooled, the weight forward, ONE FIST REACHING for the rope out in front of the mitre, the other hauled back with the pot swinging on its chain
       const len = 25, s2 = floor - len;
       rect(g, cx - 10, floor - 3, 7, 3, A.G); rect(g, cx + 5, floor - 3, 8, 3, A.G); px(g, cx - 10, floor - 3, A.g); px(g, cx + 5, floor - 3, A.g);
@@ -189,7 +202,7 @@ export function bakeFalseAbbot() {
       outline(c, OUT); return settle(c);
     }
     const ph = f === 1 ? 1 : f === 2 ? 2 : 0;
-    const bend = [3, 18].includes(f) ? -3 : [4, 6, 11, 12, 19].includes(f) ? 4 : f === 7 ? 7 : f === 8 ? 5 : f === 17 ? -5 : 0;
+    const bend = [3, 18, 23].includes(f) ? -3 : [4, 6, 11, 12, 19, 24].includes(f) ? 4 : f === 7 ? 7 : f === 8 ? 5 : f === 17 ? -5 : 0;
     const bob = (f === 1 || f === 9) ? -1 : 0;   /* the whole mass lifts a pixel on the step: under a cope that reaches the floor, the BOB is the walk */
     legs(g, cx, floor - 3, ph); cope(g, cx, sh + bob, bend); mitre(g, cx + bend, hd - 3 + bob, f === 17 ? 5 : bend > 3 ? 2 : 0);
     head(g, cx + 2 + bend, hd + 5 + bob);
@@ -222,6 +235,23 @@ export function bakeFalseAbbot() {
                  px(g, Math.round(cx + 3 + Math.cos(an) * r), Math.round(hd - 17 + Math.sin(an) * r * 0.85), col); } break;
       case 15: { arm(g, cx + 5, sh + 2, cx + 12, sh - 8); arm(g, cx - 4, sh + 4, cx + 10, sh - 2);
                thick(g, cx + 12, sh - 26, cx + 12, sh - 8, '#c8b088', 2); rect(g, cx + 10, sh - 10, 5, 4, A.br[1]); break; }
+      case 23: /* (m3) THE PEAL, told: the censer wound back over his shoulder on its chain, the whole cope leaning away to swing, a bronze gleam running round the pot */
+               arm(g, cx + 6, sh + 3, cx - 10, hd + 4); hand(g, cx - 10, hd + 4); arm(g, cx - 3, sh + 6, cx - 11, sh + 3); chainTo(g, cx - 10, hd + 3, cx - 19, hd - 6); censer(g, cx - 21, hd - 10, 1, 1);
+               for (const [dx, dy] of [[-28, -14], [-14, -26], [-30, -2]]) { px(g, cx + dx, hd + dy + 12, A.br[4]); px(g, cx + dx - 1, hd + dy + 12, A.br[3]); px(g, cx + dx + 1, hd + dy + 12, A.br[3]); px(g, cx + dx, hd + dy + 11, A.br[3]); px(g, cx + dx, hd + dy + 13, A.br[3]); }
+               break;
+      case 24: /* (m3) THE PEAL: the pot swung through low and hard, the arm out straight, the chain taut - and the bronze note leaving it in rings, both ways along the boards */
+               arm(g, cx + 8 + bend, sh + 3, cx + 22, sh + 12); hand(g, cx + 22, sh + 12); arm(g, cx - 3, sh + 6, cx - 10, sh + 14); hand(g, cx - 10, sh + 14, 1);
+               chainTo(g, cx + 23, sh + 13, cx + 29, sh + 17); censer(g, cx + 31, sh + 17, 1, 1);
+               for (const [r, col] of [[7, A.br[4]], [11, A.br[3]], [15, A.br[2]]]) for (let t = 0; t < 26; t++) { const an = -Math.PI * 0.5 + t / 25 * Math.PI; px(g, Math.round(cx + 31 + Math.cos(an) * r * 0.9), Math.round(sh + 20 + Math.sin(an) * r), col); }
+               for (let k = 0; k < 4; k++) { rect(g, cx + 37 + k * 4, floor - 2, 3, 1, k & 1 ? A.br[2] : A.br[4]); rect(g, cx - 14 - k * 4, floor - 2, 3, 1, k & 1 ? A.br[2] : A.br[4]); }
+               break;
+      case 25: /* (m3) THE CONGREGATION CALL: both arms flung wide with the palms up, the head back and the mouth open, the pot swinging free on one wrist - and gold lines going out from the open hands to the pews */
+               head(g, cx + 2 + bend, hd + 4, { wide: 1 });
+               arm(g, cx + 6, sh + 3, cx + 23, sh - 11); hand(g, cx + 23, sh - 11, 1); arm(g, cx - 5, sh + 3, cx - 20, sh - 9); hand(g, cx - 20, sh - 9, 1);
+               chainTo(g, cx - 20, sh - 8, cx - 22, sh + 2); censer(g, cx - 22, sh + 8, 1, 1);
+               for (let k = 0; k < 3; k++) { rect(g, cx + 27 + k * 4, sh - 15 - k * 3, 3, 1, k & 1 ? A.y : A.Yl); rect(g, cx - 31 - k * 4, sh - 13 - k * 3, 3, 1, k & 1 ? A.y : A.Yl); }
+               for (let k = 0; k < 4; k++) { px(g, cx - 14 + k * 9, hd - 18 - (k & 1) * 3, A.Yl); px(g, cx - 15 + k * 9, hd - 18 - (k & 1) * 3, A.y); }
+               break;
       case 17: arm(g, cx + 4, sh + 6, cx + 16, sh + 16); censer(g, cx + 26, sh + 22, 1); chainTo(g, cx + 16, sh + 16, cx + 26, sh + 21); break;
       default: { const sw = f === 1 ? -5 : f === 2 ? 5 : 0;
                arm(g, cx + 6, sh + 5, cx + 12 + sw, sh + 13); censer(g, cx + 16 + sw * 2, sh + 20, 1); chainTo(g, cx + 12 + sw, sh + 13, cx + 16 + sw * 2, sh + 19); smoke(g, cx + 16 + sw * 2, sh + 16, 2); }

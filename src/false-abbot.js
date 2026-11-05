@@ -115,8 +115,8 @@ export function abbotFrame(e) {
     case 'gleamTell': return 18; case 'gleam': return 19;
     case 'downed': return 16; case 'beaten': return 22; case 'fall': return 21;
     case 'sleep': case 'wake': return 0;
-    case 'pealTell': case 'peal': case 'collapseTell': return 15;   /* (m3) he strikes a bell / rings for the bells: the knell's pose until the art pass draws its own */
-    case 'callTell': case 'call': return 14;                        /* (m3) arms up over the pews: the rite's flare */
+    case 'pealTell': return e.m3 ? 23 : 15; case 'peal': return e.m3 ? 24 : 15; case 'collapseTell': return e.m3 ? 26 : 15;   /* (m3) the poses the art pass drew: the swing back, the swing through, the fists on the boards */
+    case 'callTell': case 'call': return e.m3 ? 25 : 14;            /* (m3) both arms flung wide over the pews */
   }
   if (e.hurtT > 0) return 17;
   return Math.abs(e.vx || 0) > 3 ? 1 + Math.floor((e.anim || 0) * 5) % 2 : 0;
