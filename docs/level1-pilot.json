@@ -492,17 +492,17 @@
   "bare": true
  },
  "hornetsnest": {
-  "hash": "cbade46ed6c3",
+  "hash": "478fd2889454",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 20,
+  "hits": 28,
   "deaths": 0,
-  "kills": 58,
-  "lifts": 91,
+  "kills": 54,
+  "lifts": 92,
   "walked": 100,
   "bare": true,
-  "seed": 2
+  "seed": 1
  },
  "palisadewood": {
   "hash": "8c1d63865e73",

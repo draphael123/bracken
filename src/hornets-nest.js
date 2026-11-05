@@ -209,9 +209,9 @@ export function buildHornetsNest({ painter, T, TS }) {
   sign(300, 11, 'DOWN THE WEST SIDE, THEN UP THE EAST. THE COMB WALL BELOW IS STICKY.');
   sign(336, 26, 'THE NEXT COMB IS TOO HIGH. CUT THE ONE HUNG OVER YOU: IT LANDS AS THE STEP.');
   /* (claude/nestpolish, the platforming rule) the well's foes keep its ENDS: the lip (two hornets and a stinger over the stair's wall top, west) and the exit shelf (the stinger, the amber hornet and the swarm over the nursery's floor, east); the shelves, the bed, the rungs and the overhang are clear */
-  hornet(293, 6, { squad: 'well' }); hornet(296, 8, { squad: 'well' });
+  hornet(293, 6, { squad: 'well' }); hornet(296, 7, { squad: 'well' });
   fat(352, 8, { squad: 'well' });                             /* the amber hornet: at the nursery's door, its globs on the exit shelf */
-  stinger(291, 9, { squad: 'well' }); stinger(343, 9, { squad: 'well', perch: true });   /* (the curve tune: a stinger at the lip, one guarding the exit shelf) */
+  stinger(291, 7, { squad: 'well' }); stinger(343, 9, { squad: 'well', perch: true });   /* (the curve tune: a stinger at the lip, one guarding the exit shelf) */
   swarm(349, 8, { squad: 'well' });                           /* the swarm at the exit: a pot carried up (or lobbed) quiets it */
   shelf(311, 314, 33); coins([312, 32], [313, 32]);   /* a dead-end pendant off the west shelves: a purse of gold (the level's three silvers are the old ones) */
   drip(336, 40, 2.6, 0); drip(331, 37, 2.6, 0.9); drip(337, 34, 2.6, 1.7); drip(332, 31, 2.6, 0.5); drip(336, 20, 2.6, 1.3);   /* resin from the rungs above: each lands on the rung under it (staggered: a route is always open) */
