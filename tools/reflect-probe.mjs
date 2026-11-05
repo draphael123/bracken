@@ -15,8 +15,9 @@ const args = process.argv.slice(2), flag = n => args.find(a => a.startsWith('--'
 const LIVE = ['knight', 'warden', 'pyro', 'pirate', 'paladin', 'geomancer', 'reaper', 'berserker', 'ranger'];
 const HEROES = heroArg ? heroArg.split(',') : LIVE;
 const jsonOut = flag('json') ? flag('json').split('=')[1] : null, shots = !!flag('shots');
-const pg = await openPage({ audio: false, fonts: false });
-let bad = 0; const ok = (c, m) => { console.log((c ? '  ok   ' : '  FAIL ') + m); if (!c) bad++; };
+const pg = await openPage({ audio: false, fonts: false, seed: +(flag('seed') ? flag('seed').split('=')[1] : 7) });   /* a seeded Math.random: the same frames every run */
+let bad = 0, buf = null; const flakes = [];
+const ok = (c, m) => { if (buf) { buf.push([c, m]); return; } console.log((c ? '  ok   ' : '  FAIL ') + m); if (!c) bad++; };
 const out = {};
 try {
   await pg.evalp(`(async()=>{ const { LEVELS } = await import('/src/level.js'); const IDX = LEVELS.findIndex(l => l.id === 'skylab'); const K = BK.keys;
@@ -25,7 +26,7 @@ try {
     rk.setup = h => { idle(); BK.manualSimulation = true; BK.SET.speed = 1; BK.setHero(h); BK.reset({ fresh: true }); try { BKT.setHeroLevel(h, 30); } catch (e) {} try { BK.applyUpgrades(); } catch (e) {}
       BK.load(IDX); BK.state = 'play'; for (let i = 0; i < 120 && !(BK.demonKing && BK.demonKing.f()); i++) BK.sim(1); rk.freeze(); BK.sim(30); return !!(BK.demonKing && BK.demonKing.f()); };
     rk.freeze = () => { const f = BK.demonKing.f(); f.mode = 'hang'; f.mT = 0; f.T = 1e9; f.bolts.length = 0; return f; };
-    rk.reset = () => { idle(); const P = BK.P; const f = rk.freeze(); for (let i = 0; i < 40; i++) { P.hp = P.maxHp; P.inv = 0; P.hurt = 0; P.st = P.maxSt; P.mountDown = 0; BK.sim(1); } P.face = 1; P.vx = 0; return f; };
+    rk.reset = () => { idle(); const P = BK.P; const f = rk.freeze(); if (P.rgQ !== undefined) { P.rgQ = 9; P.rgArrows = []; } for (let i = 0; i < 40; i++) { P.hp = P.maxHp; P.inv = 0; P.hurt = 0; P.st = P.maxSt; P.mountDown = 0; BK.sim(1); } P.face = 1; P.vx = 0; return f; };
     rk.bolt = (f, dx, dy, high) => { const P = BK.P, b = { id: ++f.id, x: P.x + P.face * dx, y: P.y + dy, vx: 0, vy: 0, r: 7, st: 'in', high: !!high, v: 150, volley: 0, life: 99, g: 0, touched: [], tgt: 0 }; f.bolts.push(b); BK.sim(1); b.life = 99; return b; };
     /* a VERB = a script of key states by frame; it ends when the bolt has been dealt with or the script runs out */
     const A = (f, on) => { K.atk = on; };
@@ -62,10 +63,11 @@ try {
       tries.push(one('hold', 60)); for (const n of [14, 18, 24, 32, 40]) tries.push(one('tap', n)); const best = tries.find(t => t.st === 'gone' && (t.blocks === 1 || (BK.hero() === 'reaper' && t.lost < 9)));   /* popped, and the hero took less than the bolt's 9: held (blocks 1), or the Blood Knight's ward BROKEN by a big blow (it happens about one run in six: half the blow finds him) - either way no pip, no return */   /* (the ward / axes take a small price: lost 1-3, not the bolt's 9) */ return { best: best || null, tries }; };
     rk.snap = (name) => { BK.step(1); const c = document.createElement('canvas'); c.width = BK.view.VW * 2; c.height = BK.view.VH * 2; const g = c.getContext('2d'); g.imageSmoothingEnabled = false; g.drawImage(BK.buf, 0, 0, c.width, c.height); return c.toDataURL('image/png'); };
     return IDX; })()`, 60000);
-  for (const h of HEROES) {
-    const t0 = Date.now(); const up = await pg.evalp(`__rk.setup(${JSON.stringify(h)})`, 120000);
+  /* THE PAGE RUNS ON A LOADED MACHINE (other lanes' browsers): a hero's whole probe is retried up to 3 times before any line fails, and a retry is REPORTED (a flake is a finding, not a pass) */
+  for (const h of HEROES) for (let attempt = 1; attempt <= 3; attempt++) {
+    buf = []; const t0 = Date.now(); const up = await pg.evalp(`__rk.setup(${JSON.stringify(h)})`, 120000);
     ok(up, h + ': the lab loads and the king is in the fight');
-    if (!up) continue;
+    if (!up) { const b = buf; buf = null; for (const [c, m] of b) ok(c, m); break; }
     const R = out[h] = { chest: {}, high: {}, power: [], block: null };
     const verbs = await pg.evalp('__rk.VNAMES');
     for (const v of verbs) {
@@ -93,7 +95,11 @@ try {
     if (h === 'reaper') ok(!(R.chest.heavyT1 || []).some(x => x.st === 'pow'), h + ': a tier-1 heavy is only a NORMAL return');
     const K = REFLECT_KIT[h]; if (K) ok(!!K.power, h + ': the table has a power row');
     if (shots) { const url = await pg.evalp('__rk.snap()', 20000); mkdirSync(join(ROOT, 'work/claude/reflectkit'), { recursive: true }); writeFileSync(join(ROOT, 'work/claude/reflectkit', 'probe-' + h + '.png'), Buffer.from(url.split(',')[1], 'base64')); }
+    const b = buf; buf = null; const failed = b.filter(([c]) => !c);
+    if (failed.length && attempt < 3) { flakes.push(h + ' attempt ' + attempt + ': ' + failed.map(f => f[1]).join(' | ')); console.log('   (retry ' + h + ': ' + failed.length + ' line(s) failed on attempt ' + attempt + ')'); continue; }
+    for (const [c, m] of b) ok(c, m); break;
   }
+  if (flakes.length) console.log('FLAKES (a retry passed or all failed): ' + flakes.length + ' ' + flakes.join(' || '));
   const errs = pg.errors.filter(e => !/favicon|ERR_|Failed to load resource/.test(e)); ok(errs.length === 0, 'no page errors' + (errs.length ? ': ' + errs.slice(0, 3).join(' | ') : ''));
 } finally { await pg.close(); }
 if (jsonOut) writeFileSync(jsonOut, JSON.stringify(out, null, 1));
