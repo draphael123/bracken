@@ -25,15 +25,15 @@ export const CK = {
   openMul: 1.7, openCap: 0.09, openT: 3.6, flipT: 5.4, flipCap: 0.14, downT: 3.0, downCap: 0.08, clampT: 0.7, wardT: 3.0, wardMul: 0.4,
   resist: [0.4, 0.45, 0.6], p2: 0.65, p3: 0.3,
   walk: [62, 72, 104], keep: [44, 44, 30], gap: [1.5, 1.3, 1.0], firstGap: 1.2, stagger: 0.6, escapeT: 1.6,
-  dwell: 3.5, leapCd: 7.0, throwCd: 6.5,
+  dwell: 4.5, leapCd: 7.0, throwCd: 6.5,   /* (waiting by a plate for his chase IS the rule: the anti-crowd leap comes later than the old king's 3.5 s) */
   slam: { tell: 0.75, reach: 62, h: 42, t: 0.45 },
   tumble: { tell: 0.9, v: 250, len: 280, h: 28, end: 0.7 },
   grab: { tell: 0.7, reach: 58, h: 70, t: 0.35, hold: 1.5, tick: 0.45, pull: 160 },
-  leap: { tell: 0.9, air: 0.7, r: 34, perch: 0.5, drop: 0.35 },
+  leap: { tell: 1.0, air: 0.7, r: 34, perch: 0.5, drop: 0.35 },
   whip: { tell: 0.65, reach: 170, top: 66, bot: 9, t: 0.4 },   /* (a hero stands 14 px, ducked 8 - src/duck.js: the band clears a crouch on the floor; a ledge it sweeps) */
   lunge: { tell: 0.55, dist: 110, t: 0.3 },
   thrw: { tell: 1.0, fly: 0.7, r: 36, lift: 0.8 },
-  dmg: { slam: 40, tumble: 50, grab: 12, squeeze: 9, toss: 18, leap: 60, whip: 30, lunge: 34, coffin: 56 },
+  dmg: { slam: 40, tumble: 46, grab: 12, squeeze: 9, toss: 18, leap: 52, whip: 30, lunge: 34, coffin: 52 },
 };
 export const SEALS = { 1: ['rope', 'chain'], 2: ['glass', 'wax'], 3: [] };
 export const SEAL_OF = { oil: 'rope', darts: 'chain', gas: 'glass', flood: 'wax' };
@@ -278,12 +278,17 @@ export function ckPlan(s) {
   const offLedge = () => { const L = ledgeOf(G, pl); return L.side < 0 ? L.x1 + 18 : L.x0 - 18; };
   if (!P.ground && mem.climbT !== undefined && t - mem.climbT < 0.9) { out.gx = mem.climbX; out.why = 'climbing'; return out; }
   if (s.held || s.reeled) { out.face = Math.sign(kx - P.x) || 1; out.atk = P.atk < 0; out.why = 'tear free of his grip'; return out; }
+  /* 0c. A TRAP LINE BURNING NOW (s.lines: the armed/firing seal traps' reaches) - out of it, never through it */
+  const hot = (s.lines || []).filter(q => q.kind !== 'flood' && P.y > q.y0 - 2 && P.y <= q.y1 + 2);
+  const inHot = x => hot.some(q => x > q.x0 - 8 && x < q.x1 + 8), outHot = x => { for (const q of hot) if (x > q.x0 - 8 && x < q.x1 + 8) x = (x - q.x0 < q.x1 - x && q.x0 - 12 > lo) || q.x1 + 12 > hi ? q.x0 - 12 : q.x1 + 12; return clamp(x); };
+  if (P.ground && inHot(P.x)) { out.gx = outHot(P.x); out.why = 'out of the trap\'s line'; return out; }
   /* 1. HIS TELLS */
   const telling = /Tell$/.test(e.mode) || ['tumble', 'slam', 'grab', 'whip', 'lunge', 'leap'].includes(e.mode) || !!(S.coffin && S.coffin.fly);
-  if (telling) { const key = 'a' + S.act + e.mode, miss = s.v2 ? false : roll(key + 'm', PLAN.miss);
+  if (telling) { const key = 'a' + S.act, miss = s.v2 ? false : roll(key + 'm', PLAN.miss);
     if (seenFor(key) && !miss) {
       if ((e.mode === 'leapTell' || e.mode === 'leap') && S.leap && S.leap.plat === pl && (pl !== 'F' || Math.abs(P.x - S.leap.tx) < CK.leap.r + 26)) {
-        if (onLedge) { out.gx = offLedge(); out.why = 'off the ledge: his leap'; return out; } out.gx = clamp(S.leap.tx + (P.x < S.leap.tx ? -1 : 1) * (CK.leap.r + 44)); out.why = 'out from under his leap'; return out; }
+        if (onLedge) { const L = ledgeOf(G, pl); out.gx = clamp(P.x < S.leap.tx ? L.x0 - 12 : L.x1 + 12); out.why = 'off the ledge: his leap'; return out; }
+        out.gx = clamp(S.leap.tx + (P.x < S.leap.tx ? -1 : 1) * (CK.leap.r + 18)); if (e.mode === 'leap' && Math.abs(P.x - S.leap.tx) < CK.leap.r + 8 && !s.noRoll) out.dodge = true; out.why = 'out from under his leap'; return out; }
       if (e.mode === 'tumble' && S.tumble && onFloor) { const toward = (P.x - kx) * S.tumble.dir > 0; if (toward && dx < 70 && P.ground) { out.jump = true; out.gx = P.x + S.tumble.dir * 20; out.why = 'jump the tumble'; return out; } out.gx = P.x; out.why = 'ready to jump the tumble'; return out; }
       if (e.mode === 'tumbleTell' && onFloor) { out.gx = P.x; out.face = Math.sign(kx - P.x) || 1; out.why = 'his tumble is coming'; return out; }
       if ((e.mode === 'slamTell' || e.mode === 'slam') && dx < CK.slam.reach + hw + 16 && onFloor) { if (s.shield) { out.block = true; out.face = Math.sign(kx - P.x) || 1; out.why = 'block the slam'; return out; }
@@ -298,7 +303,7 @@ export function ckPlan(s) {
         if (m && Math.abs(P.x - m.x) < CK.thrw.r + 20) { out.gx = onLedge ? offLedge() : clamp(m.x + (P.x < m.x ? -1 : 1) * (CK.thrw.r + 34)); out.why = 'off the coffin\'s mark'; return out; } }
     } }
   /* 2. OPEN: strike him; WARDED: off him */
-  if (ckOpen(e)) { if (onLedge && P.ground) { out.gx = offLedge(); out.why = 'down to strike him'; return out; } out.gx = clamp(kx + side * (s.tip ? 30 : 10 + hw)); if (dx < hitR + 4) swing(kx); out.why = 'strike him: ' + (OPEN_NAME[e.openKind] || 'open').toLowerCase(); return out; }
+  if (ckOpen(e)) { if (onLedge && P.ground) { out.gx = offLedge(); out.why = 'down to strike him'; return out; } out.gx = clamp(kx + side * (s.tip ? 30 : 10 + hw)); if (inHot(out.gx)) { out.gx = P.ground && !inHot(P.x) ? P.x : outHot(out.gx); out.why = 'wait for the fire to burn out'; return out; } if (dx < hitR + 4) swing(kx); out.why = 'strike him: ' + (OPEN_NAME[e.openKind] || 'open').toLowerCase(); return out; }
   if (S.ward > 0 || e.mode === 'clamp' || e.mode === 'escape') { out.gx = clamp(onLedge ? P.x : kx + side * 90); out.why = 'his ward: wait'; return out; }
   if (s.rest) { out.gx = clamp(onLedge ? P.x : kx + side * 120); out.why = 'winded: off him'; return out; }
   /* 3. THE RULE: the trap whose seal binds him now (phase two: the sand before the sluice); wait beside its plate, tread it when he is in its line */

@@ -29,9 +29,9 @@ export const minisStayOn = () => MINIS_STAY_DOWN || !!globalThis.__MINISTAY || e
 export const CK_SLOT = {
   seals: { 1: ['rope', 'chain'], 2: ['glass', 'wax'], 3: [] },
   traps: [
-    { id: 'ckOil', kind: 'oil', seal: 'rope', ph: 1, plate: [1007, 1008, 24], head: 1010, chan: [1011, 1023], zone: [1011, 1023, 22, 23], runV: 280, burnT: 1.8, reset: 6.0 },
+    { id: 'ckOil', kind: 'oil', seal: 'rope', ph: 1, plate: [1007, 1008, 24], head: 1010, chan: [1011, 1023], zone: [1011, 1023, 22, 23], runV: 280, burnT: 0.8, reset: 6.0 },
     { id: 'ckDarts', kind: 'darts', seal: 'chain', ph: 1, plate: [1042, 1043, 21], wall: 1047, dir: -1, rows: [22, 23], zone: [1024, 1046, 22, 23], reset: 6.0 },
-    { id: 'ckSand', kind: 'gas', sand: true, seal: 'glass', ph: 2, plate: [1032, 1033, 24], zone: [1024, 1029, 6, 23], hopper: [1024, 1029, 5], gasT: 1.5, reset: 7.0 },
+    { id: 'ckSand', kind: 'gas', sand: true, seal: 'glass', ph: 2, plate: [1032, 1033, 24], zone: [1024, 1029, 6, 23], hopper: [1024, 1029, 5], gasT: 1.0, reset: 7.0 },
     { id: 'ckFlood', kind: 'flood', seal: 'wax', ph: 2, plate: [1012, 1013, 21], sluice: 1047, dir: -1, zone: [1007, 1046, 22, 23], pool: 'ckFlood', low: 24, high: 21, riseT: 1.8, holdT: 3.4, drainT: 2.0, reset: 12.0 },
   ],
   /* where a hero waits for each (the bot's and the reviewer's read): beside the plate, on the side away from the line */
