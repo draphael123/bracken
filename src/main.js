@@ -2,7 +2,7 @@ import './bug-report.js';   /* FIRST: the console and error taps REPORT A BUG re
 import { bossSelectRows, bossKey, bossRecordNext } from './bossselect.js';
 import { drawBasketOutline } from './false-abbot.js';
 import { ABBOT, updateFalseAbbot as stepFalseAbbot, drawFalseAbbot, drawAbbotRopes, abbotFrame, abbotOpen, abbotTake, abbotBellRung, abbotBlessed, abbotInChair, abbotBridgeBell, abbotWheelStruck, abbotPlunge, abbotClamp, drawAbbotHouse } from './false-abbot.js';   /* THE FALSE ABBOT, the Monastery's boss (2026-09-22), in place of the Roc */
-import { layoutPlates, plateNodes, placePanel, plateLabel, panelSize } from './map-plates.js';
+import { layoutPlates, plateNodes, placePanel, plateLabel, plateLines, panelSize } from './map-plates.js';
 import { bakeFalseAbbot } from './redraw/false_abbot.js';
 import { stepFuse, fuseLeft, drawBurningBackdrop, drawPixelSmoke, drawTownFlame, drawSmokeColumn, BEAM, SMOKE } from './burning-village.js'; import { blazeAt, drawBlazingHouse, drawBlazingFront, FRONT } from './village-blaze.js'; import * as VWA from './village-water.js'; import * as CTW from './carry-throw.js';   /* (claude/burnvillage2) THROW WATER: the jug, the stun and the steam ward (src/village-water.js); the told arc (src/carry-throw.js) */   /* THE BURNING VILLAGE's stakes and its fire behind the town (2026-09-23) */
 import { PASSIVE_GLYPH } from './skill-glyphs.js';   /* every passive's glyph, by hero and id */
@@ -5573,7 +5573,7 @@ function drawMap() {
     if (lk && nd.kind === 'level' && !LEVELS[nd.level].secret) continue;   /* (claude/mappolish, Daniel 11-05) a place you cannot enter yet is a dot: its name board shows once it is reached; stores and the '? ? ?' secrets keep theirs */
     const lbl = nd.kind === 'store' ? (nd.id === 'highstore' ? 'HIGH STORE' : 'STORE') : (LEVELS[nd.level].secret && nodeLocked(nd)) ? '? ? ?' : plateLabel(nd.board || LEVELS[nd.level].name);
     const p = nd.kind === 'level' ? PROG[LEVELS[nd.level].id] : null;
-    const twoLine = false;   /* (one-line boards: the strip is on the info card) */
+    const twoLine = plateAt.get(nd.id).h > 10;   /* (one-line boards: the strip is on the info card; only a name too long for its crowded spot, THE PALISADE WOOD, is two lines) */
     const pl = plateAt.get(nd.id), tw = pl.w, th = twoLine ? pl.h : Math.min(10, pl.h);   /* (a place you cannot enter yet is a one-line board; the layout kept room for the two-line one) */
     const lx = pl.x + pl.w / 2, ly = pl.y;
     /* A BOARD PUSHED AWAY FROM ITS NODE points back at it. On a crowded road the long names get shoved wherever there is room,
@@ -5586,7 +5586,7 @@ function drawMap() {
     g.fillStyle = here ? UI.sel : ART.OUT; g.fillRect(bx0, by0, tw, th);
     g.fillStyle = lk ? '#2a2634' : '#4e3520'; g.fillRect(bx0 + 1, by0 + 1, tw - 2, th - 2);
     if (!lk) { g.fillStyle = '#6e4d2c'; g.fillRect(bx0 + 1, by0 + 1, tw - 2, 1); }
-    text(lbl, bx0 + Math.round(tw / 2), by0 + 2, lk ? '#b4b4c4' : here ? UI.title : UI.text, 'center', 6);
+    plateLines(lbl, twoLine).forEach((ln, li) => text(ln, bx0 + Math.round(tw / 2), by0 + 2 + li * 7, lk ? '#b4b4c4' : here ? UI.title : UI.text, 'center', 6));
   }
   g.restore(); g.__mapWorld = false;   /* (from here on it is the screen's own: the frame, header, card and footer are not allowed off the edge) */
   drawSecretReveal();   /* (claude/secrets) */
@@ -5597,7 +5597,7 @@ function drawMap() {
   { const region = mapCamY < INLAND_Y - 60 ? 'THE DESERT' : mapCamY < COAST_Y - 60 ? 'THE ROAD INLAND' : mapCamY < CRAG_Y - 60 ? 'THE COAST' : mapCamY < WOOD_Y - 60 ? 'THE CRAGS' : 'THE WOOD'; if (region !== map.region) { map.region = region; map.regionT = map.regionT === undefined ? 0 : 2.2; } map.regionT = Math.max(0, (map.regionT || 0) - 1 / 60); const cardTop = !map.walking && mapPanelFor(NODES[map.node]).y < 52;   /* (the region's name is not drawn under an info card that sits at the top: it would print over the card's text) */
   if (map.regionT > 0 && !cardTop && !secretFx) { const a = Math.min(1, map.regionT > 1.8 ? (2.2 - map.regionT) / 0.4 : map.regionT / 0.6); g.globalAlpha = a; text(region, VW / 2 + 1, 41, '#3a2214', 'center', 12); text(region, VW / 2, 40, UI.title, 'center', 12); g.globalAlpha = 1; } }
   g.fillStyle = '#151022'; g.fillRect(0, 0, VW, 19); g.fillStyle = 'rgba(217,194,140,0.5)'; g.fillRect(0, 19, VW, 1); { const hn = mapCamY < INLAND_Y - 60 ? 'THE DESERT' : mapCamY < COAST_Y - 60 ? 'THE ROAD INLAND' : mapCamY < CRAG_Y - 60 ? 'THE COAST' : mapCamY < WOOD_Y - 60 ? 'THE CRAGS' : 'THE WOOD', bg = inkW(hn, 8) <= 90; text(hn, 6, bg ? 5 : 7, UI.title, 'left', bg ? 8 : 6); }   /* (THE ROAD INLAND drops to the small hand, so the counters beside it do not collide) */
-  if (DS.DEMO) DEND.mapCaption(g, text, textW, VW, time, NODES[map.node] && NODES[map.node].id, !!NODES[map.node] && nodeLocked(NODES[map.node]), [...plateAt.values()].map(p => ({ x: p.x, y: p.y - Math.round(mapCamY), w: p.w, h: Math.min(10, p.h) })));   /* (claude/batch143) the demo's map says the road goes on - at Kingswood and on any shut node (src/demo-end.js) */
+  if (DS.DEMO) DEND.mapCaption(g, text, textW, VW, time, NODES[map.node] && NODES[map.node].id, !!NODES[map.node] && nodeLocked(NODES[map.node]), [...plateAt.values()].map(p => ({ x: p.x, y: p.y - Math.round(mapCamY), w: p.w, h: p.h })));   /* (claude/batch143) the demo's map says the road goes on - at Kingswood and on any shut node (src/demo-end.js) */
   /* AND THE SECRETS COUNT ONCE YOU HAVE FOUND THEM. `!lv.hidden` left both of them out of the woods
      walked and the medals in the game, so a player who beat the Undercrown was still told 17 woods and 51
      medals. They join the count the moment you have set foot in one, which is also when it stops being a
@@ -5615,7 +5615,7 @@ function drawMap() {
     const cx0 = pp.x, cy0 = pp.y;   /* the corner (and the camera height, in updateMap) that hides nothing around this node: placePanel */
     panel(cx0, cy0, cw, ch, UI.sel, 'parchment');
     { const secret = nd.kind === 'level' && LEVELS[nd.level].secret && nodeLocked(nd);
-      { const nm0 = secret ? '? ? ?' : nd.name, big = inkW(nm0, 8) <= cw - 52; text(big ? nm0 : fitText(nm0, cw - 52, 6), cx0 + 8, cy0 + (big ? 5 : 6), UI.title, 'left', big ? 8 : 6); } }   /* (a long name drops to the small hand rather than being cut: THE MASKWRIGHT'S THEATRE) */
+      { const nm0 = secret ? '? ? ?' : nd.name, nmW = (store || secret) ? cw - 52 : cw - 84, big = inkW(nm0, 8) <= nmW; text(big ? nm0 : fitText(nm0, nmW, 6), cx0 + 8, cy0 + (big ? 5 : 6), UI.title, 'left', big ? 8 : 6); } }   /* (a long name drops to the small hand rather than being cut: THE MASKWRIGHT'S THEATRE) */
     if (store) text(nodeLocked(nd) ? 'SHUT UNTIL THE SCREE PATH IS WALKED' : 'Z  enter', cx0 + 8, cy0 + 16, UI.dim, 'left', 6);
     else {
       const lv = LEVELS[nd.level], id = lv.id, p = PROG[id] || {};
