@@ -46,7 +46,7 @@ export const SS = {
   ward: 2.5,
   slab: { w: 48, regrow: [9, 9, 6.5] },
   scream: { tell: 1.15, cd: [3.8, 3.3, 2.8], mark: 1.6, swoop: 1.9, low: 34 },   /* (claude/rookery3) HEAVY: 0.95 -> 1.15 (head thrown back, a deep cue); the swoop after it is the punish */
-  wave: { tell: 0.7, v: 230, h: 26, dmg: 18, life: 1.8 },   /* (claude/rookery3) MEDIUM */
+  wave: { tell: 1.0, v: 172, h: 26, dmg: 18, life: 2.4 },   /* (claude/harpypass, Daniel 11-01 17:23: 'the YELLOW PROJECTILE ~25% slower + a longer tell') v 230 -> 172 (x0.75), tell 0.7 -> 1.0 (MEDIUM -> HEAVY: her biggest breath; life 1.8 -> 2.4: it runs as far as before, 414 px) */   /* (claude/rookery3: was MEDIUM) */
   rock: { tell: 1.1, fall: 0.62, r: 22, dmg: 28, life: 11, pick: 1.0, carry: 2.2, high: 118, spent: 0.9, low: 40 },   /* (claude/rookery3) HEAVY: 0.8 -> 1.1, 21 -> 24; then SPENT: she sinks low and empty-handed for SS.rock.spent s (whole: the punish) */   /* THE BOULDER DROP (claude/sisters2: carried high, a shadow marker) */
   snatch: { tell: 0.42, v: 320, h: 16, dmg: 15, cd: 6.5 },   /* (claude/rookery3) LIGHT: 0.8 -> 0.42, 22 -> 12 (she sweeps in from the far wall: the crossing is the read) */
   sister: { w: 26, h: 18 },
@@ -88,7 +88,11 @@ export const SS = {
      struck loose from the grab onto her roost: x roost.mul up to roost.cap) - once per `again` s each; r: how near a roost the grab must be for you to land on it */
   roost: { mul: 1, cap: 0.2, again: 12, close: 40, r: 56 },
   ff: { stun: 3, mul: 2, cap: 0.05 },   /* FRIENDLY FIRE: brace on the mark as the Hunter's line locks on it - her dive goes to a roosting sister instead: that one crashes STUNNED, the Hunter DOWN */
-  vent: { lift: 170 },                  /* THE UPDRAFTS (plugged until the Snatcher falls): the way up to the roost tier once her gusts are gone */
+  vent: { lift: 170 },
+  /* (claude/harpypass, Daniel 11-01 17:23) THE NESTS HATCH: a nest still HANGING on its arm hatches a harpy chick (a ROC FLEDGLING, the rookery's small weak foe) - its egg ROCKS in the nest
+     first (tell s: a yellow !, the egg drawn rocking, a crack of shell) - every `every` s from `first` s after the wake, at most `cap` chicks alive. A nest KNOCKED DOWN (its arm broken: the
+     main opening) never hatches again; a rocking egg whose nest falls is lost */
+  chick: { first: 8, every: 11, tell: 1.4, cap: 2 },                  /* THE UPDRAFTS (plugged until the Snatcher falls): the way up to the roost tier once her gusts are gone */
 };
 /* (claude/rookery4) THE SUMMIT'S ROOSTS (tile columns from the arena's west edge, rows over the summit floor): the Diver's low nest, the Snatcher's two side nests (she takes the nearer),
    the Shrieker's perch (the level's plank, L.arena.perchS) over THE CRACKED OVERHANG - its foot on the floor; broken, it slides down as STEPS up to her perch. Two UPDRAFT VENTS. */
@@ -115,7 +119,7 @@ export const SS_SAY = { wake: 'THE SHRIEK SISTERS', rule: 'STAND ON A CRACK. WHE
   pebble: 'A PEBBLE: OFF ITS RING', smark: 'HER SISTER MARKS YOU', gust: 'A WING GUST: BRACE', gustBroken: 'THE GUST IS BROKEN',
   nestFalls: 'THE NEST FALLS', crash: 'SHE CRASHES DOWN: STUNNED', overhang: 'THE OVERHANG SLIDES: STEPS TO HER PERCH', updraft: 'THE UPDRAFT OPENS',
   roost: 'BAIT HER DIVE ONTO A NEST\'S CRACKED ARM: THE NEST FALLS WITH HER SISTER', perch: 'ON HER PERCH', landed: 'STRUCK LOOSE ONTO HER ROOST',
-  ff: 'FRIENDLY FIRE', ffTurn: 'BRACE ON THE MARK AS HER LINE LOCKS: SHE MEETS HER SISTER' };
+  egg: 'A NEST HATCHES: KNOCK IT DOWN TO STOP IT', ff: 'FRIENDLY FIRE', ffTurn: 'BRACE ON THE MARK AS HER LINE LOCKS: SHE MEETS HER SISTER' };
 export const HUNTS = { diver: SS_SAY.hunts, shrieker: SS_SAY.huntsS, snatcher: SS_SAY.huntsN };
 export const OPEN_NAME = { stuck: 'STUNNED', downed: 'DOWN', startled: 'CORNERED' };
 const WING_MODES = new Set(['grow', 'ferry', 'perched', 'hover', 'diveTell', 'rise', 'screamTell', 'scream', 'carry', 'dropTell', 'drop', 'fly', 'snatchTell', 'wake', 'sleep', 'chainTell', 'echoTell', 'echo',
@@ -220,6 +224,7 @@ export function stepSisters(S, dt, heroes, w) {
   for (const m of S.marks) m.t -= dt; S.marks = S.marks.filter(m => m.t > 0);
   stepRocks(S, dt, heroes, w); stepWaves(S, dt, heroes, w); stepPebbles(S, dt, heroes, w);
   stepRoosts(S, dt, heroes, w);
+  stepHatch(S, dt, w);
   stepTurn(S, dt, P, w);
   for (const r of ROLES) { const s = S.sis[r]; if (!s.alive) continue; s.ward = Math.max(0, s.ward - dt); s.cornerCd = Math.max(0, (s.cornerCd || 0) - dt); if (s.mode === 'sleep') continue; s.modeT -= dt; s.cd -= dt;
     if (stepFerry(S, s, dt, P, w)) continue;
@@ -234,6 +239,16 @@ export function stepSisters(S, dt, heroes, w) {
   { const hs = S.sis[S.hunter]; for (const r of ROLES) { const q = S.sis[r]; if (q.alive && r !== S.hunter && ATTACK.has(q.mode)) { S.n.multi++; break; } }
     if (hs && hs.alive && ATTACK.has(hs.mode) && supportBusy(S)) S.n.overlap++; }
   S.snatchCd -= dt; if (!S.held) S.grabCd -= dt;
+}
+/* ---------- (claude/harpypass) THE NESTS HATCH (SS.chick) - w.hatch(nest) spawns the chick, w.chicks() counts those alive ---------- */
+function stepHatch(S, dt, w) {
+  if (!w.hatch || !ROLES.some(r => S.sis[r].alive && S.sis[r].mode !== 'sleep')) return;
+  if (S.egg) { S.egg.t -= dt; if (S.egg.n.st !== 'up') { S.egg = null; S.n.eggsLost = (S.n.eggsLost || 0) + 1; } else if (S.egg.t <= 0) { const n = S.egg.n; S.egg = null; w.hatch(n); S.n.chicks = (S.n.chicks || 0) + 1; w.sound('crack'); } return; }
+  S.hatchT = (S.hatchT ?? SS.chick.first) - dt; if (S.hatchT > 0) return;
+  const up = (S.G.nests || []).filter(n => n.st === 'up');
+  if (!up.length || (w.chicks ? w.chicks() : 0) >= SS.chick.cap) { S.hatchT = 1; return; }
+  const n = up[(S.n.eggs = (S.n.eggs || 0) + 1) % up.length]; S.egg = { n, t: SS.chick.tell, T: SS.chick.tell }; S.hatchT = SS.chick.every;
+  w.number(n.x, n.topUp - 26, S.n.eggs === 1 ? SS_SAY.egg : '!', '#ffd36b'); w.sound('inhale');
 }
 /* ---------- (claude/rookery4) THE TURN ---------- */
 const ROOST_IDLE = new Set(['hover', 'fly', 'rise', 'perched', 'toRoost', 'wake']);

@@ -187,6 +187,9 @@ export function makeShriekSistersHands(ctx) {
       nest: nn => { for (let x = nn.cols[0]; x <= nn.cols[1]; x++) unsetCell(x, nn.rowUp); layNest(nn); ctx.burst(nn.x, nn.topDown - 4, 22, ['#e6dcc0', '#b0a488', '#6a5e4a'], 130, 0.9); ctx.dust(nn.x, S.G.floorY, 12); },
       over: o => { if (ctx.T) for (const st of o.steps) for (let x = st.cols[0]; x <= st.cols[1]; x++) setCell(x, st.row, ctx.T.ONEWAY); ctx.burst((o.slab.x0 + o.slab.x1) / 2, o.slab.y, 26, ['#bf9fa0', '#725a62', '#e4c8c4'], 140, 0.9); ctx.dust(o.footX, S.G.floorY, 12); },
       vents: () => { ctx.shake(3); SOUND.gust(ctx.sfx); },
+      /* (claude/harpypass) THE NESTS HATCH: a ROC FLEDGLING drops out of the nest (the rookery's small weak foe, its own AI); the chicks alive */
+      hatch: nn => { const e = ctx.spawnFoe ? ctx.spawnFoe('fledgling', nn.x, nn.topUp - 2) : null; if (e) { e.ssChick = true; e.face = nn.x < S.G.mid ? 1 : -1; } ctx.burst(nn.x, nn.topUp - 6, 10, ['#f4ecd8', '#d8ccb0', '#a89a78'], 80, 0.6); },
+      chicks: () => ctx.enemies ? ctx.enemies().filter(e => e.ssChick && e.alive && !(e.dying > 0)).length : 0,
       /* THE WING GUST's push (the gale harpy's): braced (block / crouch) half and no lift, else the full shove along the floor */
       gust: (s, h, dir, key) => { const pp = h.pp; let r = null; ctx.asPlayer(pp, () => { const P = ctx.hero(); if (!ctx.upright(pp) || P.dead || pp.ssHeld || keyed(pp, key)) return;
           if (h.block) { P.vx = dir * GALE.push * GALE.brace; r = 'braced'; ctx.number(P.x, P.y - 30, SSM.SS_SAY.braced, '#8fd160'); } else { P.vx = dir * GALE.push; P.vy = Math.min(P.vy || 0, -60); P.ground = false; pp.ssShove = { t: 0.6, dir }; r = 'hit'; } }); return r; },
@@ -281,10 +284,14 @@ export function makeShriekSistersHands(ctx) {
     return true; };
   H.barName = () => { if (!S) return 'THE SHRIEK SISTERS'; const left = ROLES.filter(r => S.sis[r].alive), open = left.find(r => SSM.sisOpen(S.sis[r]));
     return 'THE SHRIEK SISTERS' + (open ? '  ' + SSM.NAME[open] + ' ' + SSM.OPEN_NAME[S.sis[open].mode] : left.length < 3 ? '  ' + left.length + ' LEFT' : ''); };
-  H.end = () => { if (S) { S.rocks = []; S.waves = []; S.marks = []; S.echoes = []; S.held = null; S.ride = null; } unhold(); BOSS_PHASE.shrieksisters = 1; for (const r of ROLES) if (bodies[r]) bodies[r].alive = false; };
+  H.end = () => { if (S) { S.rocks = []; S.waves = []; S.marks = []; S.echoes = []; S.held = null; S.ride = null; S.egg = null; } if (ctx.enemies) for (const e of ctx.enemies()) if (e.ssChick) e.alive = false;   /* (claude/harpypass) the chicks go with the fight */ unhold(); BOSS_PHASE.shrieksisters = 1; for (const r of ROLES) if (bodies[r]) bodies[r].alive = false; };
   H.read = () => S && { hunter: S.hunter, turnT: S.turnT, hand: S.hand, nests: S.G.nests.map(nn => nn.st), over: S.G.over && S.G.over.st, vents: S.G.vents.map(v => v.open), ph: S.ph, p2: S.p2, ride: S.ride ? S.ride.by : null, dead: { ...S.dead }, sis: Object.fromEntries(ROLES.map(r => [r, { mode: S.sis[r].mode, hp: S.sis[r].hp, alive: S.sis[r].alive, ward: S.sis[r].ward, x: S.sis[r].x, y: S.sis[r].y }])),
     slabs: S.G.slabs.map(s => ({ x: s.x, st: s.st })), stones: S.stones.length, echoes: S.echoes.length, held: !!S.held, n: JSON.parse(JSON.stringify(S.n)), hurt: { ...(S.hurt || {}) } };
   const X = cx => v => R(v - cx), Y = cy => v => R(v - cy);
+  /* (claude/harpypass) a cream egg (7x9) in the nest, a dark crack growing across it as it is about to hatch, and the yellow ! over it */
+  const eggDraw = (g, ex, ey, k, time) => { rect(g, ex - 3, ey - 8, 7, 9, '#f4ecd8'); rect(g, ex - 2, ey - 9, 5, 1, '#f4ecd8'); rect(g, ex + 2, ey - 7, 1, 6, '#d8ccb0'); rect(g, ex - 2, ey - 6, 1, 2, '#ffffff');
+    if (k > 0.3) { rect(g, ex - 3, ey - 4, 2, 1, '#3a3026'); rect(g, ex - 1, ey - 5, 2, 1, '#3a3026'); if (k > 0.65) rect(g, ex + 1, ey - 4, 2, 1, '#3a3026'); }
+    if (Math.floor(time * 6) % 2) { rect(g, ex, ey - 19, 2, 5, '#ffd36b'); rect(g, ex, ey - 13, 2, 2, '#ffd36b'); } };
   /* THE SUMMIT: the slabs (cracked, or rubble growing back), the stones the snatcher left, the shelves' guano, the Roc's peak beyond */
   H.drawBack = (g, cx, cy, time) => { if (!S) return; const x = X(cx), y = Y(cy), G = S.G, fy = y(G.floorY);
     drawArena(g, cx, cy, g.canvas.width, g.canvas.height, time, A(), G);   /* (claude/rookery2art) the perch's nest, the shelves' eggs, the monastery on the far crag */
@@ -295,7 +302,8 @@ export function makeShriekSistersHands(ctx) {
     for (const q of S.stones) { const sx = x(q.x), a = q.t < 2 ? (Math.floor(time * 8) % 2 ? 0.4 : 1) : 1; g.globalAlpha = a; g.drawImage(bakeSummitStone(), sx - 10, fy - 11); g.strokeStyle = '#ffd36b'; g.strokeRect(sx - 10.5, fy - 10.5, 21, 11); g.globalAlpha = 1; }
     /* (claude/sisters2) THE ECHO'S CRACKED TILES (bait: the gold glint ring, blinking out as they crumble) and THE LIP at each end of the summit (it blinks while a shock shriek swells) */
     const ew = SS.echo.w; for (const q of S.echoes) { const sx = x(q.x) - ew / 2, a = q.t < 2 ? (Math.floor(time * 8) % 2 ? 0.4 : 1) : 1; g.globalAlpha = a; g.drawImage(bakeSummitEcho(ew), sx, fy - 1); g.strokeStyle = Math.floor(time * 3) % 2 ? '#ffd36b' : 'rgba(255,211,107,0.5)'; g.strokeRect(sx + 0.5, fy - 2.5, ew - 1, 5); g.globalAlpha = 1; }
-    drawRoosts(g, x, y, fy, time);   /* (claude/rookery4) the nests on their cracked arms, the overhang / its steps, the vents */
+    drawRoosts(g, x, y, fy, time);
+    if (S.egg) { const n = S.egg.n, k = 1 - S.egg.t / S.egg.T, rock = Math.sin(time * (10 + 14 * k)) * (1 + 2 * k); eggDraw(g, x(n.x) + R(rock), y(n.topUp) - 5, k, time); }   /* (claude/harpypass) THE ROCKING EGG (greybox, the art lane draws it): it rocks harder as the tell runs out, a crack across it, a yellow ! over the nest */   /* (claude/rookery4) the nests on their cracked arms, the overhang / its steps, the vents */
     const shocking = ROLES.some(r => S.sis[r].alive && S.sis[r].mode === 'shockTell'), E = SS.shock.edge;
     for (const [ex, side] of [[x(G.x0), -1], [x(G.x1) - E, 1]]) { g.drawImage(bakeSummitLip(side), ex, fy - 1);
       if (shocking) { g.globalAlpha = 0.45 + 0.35 * Math.sin(time * 12); g.strokeStyle = '#ff6b6b'; g.strokeRect(ex + 0.5, fy - 3.5, E - 1, 5); g.globalAlpha = 1; } } };

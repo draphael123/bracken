@@ -923,8 +923,8 @@ export const UNTOLD = {};
    'light' (~0.35-0.45 s, low damage, short; a quick flash). Daniel 10-29 live on THE SHRIEK SISTERS: "they attack way too quickly and at the same speed ... a heavy, a light and a medium one".
    A boss that gives its windups a class reads them here (src/shriek-sisters.js TEMPO, drawn and sounded by class in its hands); tools/tells.mjs checks every row is a told windup in MARK */
 export const TEMPO_CLASS = {
-  'shrieksister|chainTell': 'heavy', 'shrieksister|screamTell': 'heavy', 'shrieksister|dropTell': 'heavy',
-  'shrieksister|diveTell': 'medium', 'shrieksister|shockTell': 'medium', 'shrieksister|grabTell': 'medium', 'shrieksister|waveTell': 'medium',
+  'shrieksister|chainTell': 'heavy', 'shrieksister|screamTell': 'heavy', 'shrieksister|dropTell': 'heavy', 'shrieksister|waveTell': 'heavy',   /* (claude/harpypass: the yellow wave's longer tell, Daniel 11-01) */
+  'shrieksister|diveTell': 'medium', 'shrieksister|shockTell': 'medium', 'shrieksister|grabTell': 'medium', 
   'shrieksister|pebbleTell': 'medium', 'shrieksister|markTell': 'medium', 'shrieksister|gustTell': 'medium',   /* (claude/rookery4) the support moves: slow, small */
   'shrieksister|rakeTell': 'light', 'shrieksister|echoTell': 'light', 'shrieksister|snatchTell': 'light',
 };

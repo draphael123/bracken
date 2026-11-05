@@ -446,5 +446,20 @@ ok(Object.values(RK_SAY).every(s => SAY_LINES.has(s)), 'every capital line the r
   ok(!two, 'THE STAGGER: two sisters\' blows never land within ' + SSM.SS.tempo.sep + ' s of each other (a heavy move\'s own strikes aside) - ' + (two ? two + ': ' + [...pairs].slice(0, 4).join(' ') : 'the closest ' + minRel.toFixed(2) + ' s apart over 90 s'));
   ok(S.n.minGap >= SSM.SS.tempo.gap.light - 0.02, 'two independent starts are never closer than ' + SSM.SS.tempo.gap.light + ' s (the closest: ' + S.n.minGap.toFixed(2) + ' s); after a heavy start ' + SSM.SS.tempo.gap.heavy + ' s, a medium ' + SSM.SS.tempo.gap.medium + ' s (' + S.n.held + ' moves held a beat)'); }
 
+// ---- (claude/harpypass) THE SISTERS, Daniel 11-01 17:23: THE NESTS HATCH (a fledgling, cap 2, a knocked-down nest stops) and THE YELLOW WAVE ~25% slower with a longer tell ----
+{ const A = L.arena, said = [], chicks = []; const w = new Proxy({ number: (x, y, t) => said.push(t), hatch: n => chicks.push({ n: n.id, alive: true }), chicks: () => chicks.filter(c => c.alive).length }, { get: (o, k) => k in o ? o[k] : () => null });
+  const S = SSM.newFight(SSM.geom(A, TS)), hero = { x: S.G.mid, y: S.G.floorY, ground: true, alive: true, block: false }; for (const r of SSM.ROLES) { S.sis[r].mode = 'hover'; S.sis[r].cd = 99; } S.turnT = 999; S.supCd = 999; S.grabCd = 99; S.snatchCd = 99;
+  const step = (s, f) => { for (let i = 0; i < Math.round(s * 60); i++) { SSM.stepSisters(S, 1 / 60, [hero], w); for (const r of SSM.ROLES) S.sis[r].hp = S.sis[r].maxHp; if (f && f(i)) return true; } return false; };
+  const C = SSM.SS.chick; let eggAt = -1; step(C.first + 0.1, i => { if (S.egg && eggAt < 0) eggAt = i; });
+  ok(eggAt >= 0 && Math.abs(eggAt / 60 - C.first) < 0.1 && said.includes(SSM.SS_SAY.egg) && !chicks.length, 'THE NESTS HATCH: ' + C.first + ' s after the wake an egg ROCKS in a hanging nest (told: ' + SSM.SS_SAY.egg + ') - ' + C.tell + ' s before it hatches');
+  step(C.tell); ok(chicks.length === 1 && !S.egg, 'it hatches a ROC FLEDGLING out of the nest (' + chicks[0]?.n + ')');
+  step(C.every * 3 + C.tell * 3); ok(chicks.length === C.cap && w.chicks() === C.cap, 'every ' + C.every + ' s another - never more than ' + C.cap + ' alive (' + chicks.length + ' hatched in ' + Math.round(C.first + C.every * 3) + ' s)');
+  chicks.forEach(c => c.alive = false); for (const n of S.G.nests) n.st = 'down'; const n0 = chicks.length; step(C.every * 2 + C.tell);
+  ok(chicks.length === n0, 'a nest KNOCKED DOWN (its arm broken - the main opening) never hatches again: every nest down, no more chicks');
+  const S2 = SSM.newFight(SSM.geom(A, TS)); for (const r of SSM.ROLES) { S2.sis[r].mode = 'hover'; S2.sis[r].cd = 99; } S2.turnT = 999; S2.supCd = 999; S2.hatchT = 0; let lost = false;
+  for (let i = 0; i < 60 && !lost; i++) { SSM.stepSisters(S2, 1 / 60, [hero], w); if (S2.egg && i === 5) S2.egg.n.st = 'down'; lost = (S2.n.eggsLost || 0) > 0; }
+  ok(lost && !S2.egg, 'a rocking egg whose nest is knocked down is LOST (no chick)');
+  ok(Math.abs(SSM.SS.wave.v / 230 - 0.75) < 0.01 && SSM.SS.wave.tell >= 1.0 && SSM.TEMPO.waveTell === 'heavy' && SSM.SS.wave.v * SSM.SS.wave.life >= 230 * 1.8 - 2, 'THE YELLOW WAVE: ' + SSM.SS.wave.v + ' px/s (x0.75 of 230), tell ' + SSM.SS.wave.tell + ' s (HEAVY), and it still runs as far as it did (' + Math.round(SSM.SS.wave.v * SSM.SS.wave.life) + ' px)'); }
+
 console.log(bad ? '\nrookery: ' + bad + ' FAILED' : '\nok  rookery: the road, the old-save rule, the locks, the hands, the sisters');
 process.exit(bad ? 1 : 0);
