@@ -50,6 +50,8 @@ async function borrowedTarget(port) {
 export async function openPage(opts = {}) {
   const t00 = Date.now();
   const PORT = +(process.env.PORT || opts.port || PORT_BASE), URL0 = 'http://localhost:' + PORT + '/';
+  /* (claude/undercrown3) BRACKEN_PAGEQ=uc3=1: extra page flags for every page this opens (THE UNDERCROWN 3 behind its flag: BRACKEN_PAGEQ=uc3=1 node tools/boss-rates.mjs ...) */
+  const PAGEQ = sep => (process.env.BRACKEN_PAGEQ ? sep + process.env.BRACKEN_PAGEQ : '');
   const up = async () => { try { const r = await fetch(URL0, {signal:AbortSignal.timeout(2000)}); return r.ok; } catch { return false; } };
   let server = null;
   if (!(await up())) { server = spawn(process.execPath, ['serve.mjs'], { cwd: ROOT, stdio: 'ignore', env: { ...process.env, PORT: String(PORT), BRACKEN_PARENT: String(process.pid) } }); process.once('exit', () => { try { server.kill(); } catch {} }); for (let i = 0; i < 40 && !(await up()); i++) await sleep(250); }
@@ -103,7 +105,7 @@ export async function openPage(opts = {}) {
      tools were calibrated at (0.6, the default until batch 92 made it 100%), already migrated (speedV3), unless the page has settings of its own. opts.speed overrides it
      (a number), opts.hints (none / low / medium / high; default HIGH: the tools were calibrated on every hint, claude/hintlevel; a NEW player gets MEDIUM from the game itself), opts.speed === false leaves the game's own default and migration alone (tools/settings-tabs.mjs tests those). A tool that sets BK.SET.speed still wins. */
   if (opts.speed !== false) await send('Page.addScriptToEvaluateOnNewDocument', { source: '(()=>{try{if(!localStorage.getItem("bracken.settings"))localStorage.setItem("bracken.settings",JSON.stringify({speed:' + (typeof opts.speed === 'number' ? opts.speed : process.env.BRACKEN_SPEED ? +process.env.BRACKEN_SPEED : 0.6) + ',speedV2:1,speedV3:1,hints:' + JSON.stringify(opts.hints || 'high') + ',hintsV1:1}));}catch(e){}})()' });
-  await send('Page.navigate', { url: URL0 });
+  await send('Page.navigate', { url: URL0 + PAGEQ('?') });
   let ready = false;
   for (let i = 0; i < 480 && !ready && !opts.noWait; i++) { ready = await evalp('typeof window.BK === "object" && !!window.BK.lookPass', 2000).catch(() => false); if (!ready) await sleep(250); }
   if (!ready && !opts.noWait) throw new Error('the page never put up window.BK');   /* opts.noWait: the caller wants the page MID-BOOT (tools/loading-screen.mjs) */
@@ -113,7 +115,7 @@ export async function openPage(opts = {}) {
   if (String(port) !== String(PORT)) throw new Error('the page is on port ' + port + ', not ' + PORT);
   const reload = async () => {
     const previousOrigin = await evalp('localStorage.clear(); window.__labReloading = true; performance.timeOrigin', 10000);
-    const url = URL0 + '?labReload=' + Date.now() + '-' + id;
+    const url = URL0 + '?labReload=' + Date.now() + '-' + id + PAGEQ('&');
     await send('Page.navigate', { url });
     let ready = false;
     /* waits on the CONDITION with a wall-clock deadline: 120 x 100 ms was ~12 s of polls when the page answered at once, and a loaded machine's boot (six lanes, 2026-10) took longer than that */
