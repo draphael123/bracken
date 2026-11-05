@@ -217,7 +217,7 @@ export function buildHeartMountain({ painter, T, TS }) {
       { kind: 'hmward', opens: 'a bridge (the crust it holds stays through the next beat)', hud: 'THE CRUST HOLDS' },
     ],
     structures, floatMachines: A.ledges.map(([a, b]) => ({ x0: a, x1: b, y0: A.ledgeRow, y1: A.ledgeRow, why: "THE FIRE DRAKE's basalt ledges: they stand on drawn columns and sink in its P3 (src/fire-drake-hands.js)" })),
-    duskStart: 99999, duskLen: 1, music: 'musMountain', night: false, glowNight: false,
+    duskStart: 99999, duskLen: 1, music: 'mountain', night: false, glowNight: false,
     palette: { dress: 'none', near: 'none', noFg: true, noNear: true, haze: 'rgba(200,90,40,0.16)', sky: [[40, 16, 14], [130, 50, 26]], ledges: 'rock' },
     ambient: [{ x0: 0, x1: W * TS, kind: 'blaze2' }],
     tints: [[-24, W + 24, [255, 140, 90], 0.05]],

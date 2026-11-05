@@ -33,7 +33,7 @@ export const GATE = ['heart', /* (claude/heartlevel) THE HEART OF THE MOUNTAIN (
 /* A MEASURE THAT IS REPORT-ONLY FOR ONE LEVEL: { levelId: ['measure', ..] }. It is still printed (WARN) and counted in --all, but does not fail the gate.
    Daniel decides when it is lifted; each row carries the TODO and the reason. */
 export const REPORT_ONLY = {
-  heart: ['music', 'pilot', 'mash'],   /* (claude/heartlevel, the greybox, code-only lane) TODO mash: tools/mash-bot.mjs heart --level heart --write needs a browser (owed); TODO music: it plays the unused stock 'musMountain' until Daniel picks its own CC0 track (no download without his go); TODO pilot: tools/level1-pilot.mjs heart --write needs a browser (owed) */
+  heart: ['music', 'pilot', 'mash'],   /* (claude/heartlevel, the greybox, code-only lane) music WIRED 11-05 (Daniel's pick 'Mountain Theme Loop', CC0, shared on purpose with the Scree Path: the lint's BORROWED row stays report-only, plus the caldera boss room boss3); TODO mash: tools/mash-bot.mjs heart --level heart --write needs a browser (owed); TODO music: it plays the unused stock 'musMountain' until Daniel picks its own CC0 track (no download without his go); TODO pilot: tools/level1-pilot.mjs heart --write needs a browser (owed) */
   warcairn: ['music'],   /* (claude/warcairn, the greybox) TODO: THE WAR CAIRN plays the unused stock 'musMountain' and the boss pool's 'boss3' until the art lane brings its own two CC0/CC-BY tracks (drums welcome; Daniel picks, the Palisade precedent) */
   /* (claude/theatre3: the theatre's roles row is lifted - THE PROMPTER, the goblin priest reskinned, is its support; THE FLYMAN, the archer reskinned, throws) */
   skyroad: ['music'],
