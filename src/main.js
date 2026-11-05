@@ -1596,7 +1596,7 @@ const REVIVE_D = 12;       /* how close his partner has to stand, in pixels */
 const REVIVE_T = 1.5;      /* and for how long, in seconds */
 const COOP_RULES = [
   'DOWN, NOT DEAD: STAND BY HIM ' + REVIVE_T + 's TO LIFT HIM',
-  'LEAVE HIM ' + DOWN_T + 's AND YOU BOTH GO BACK TO THE SHRINE',
+  'LEAVE HIM ' + DOWN_T + 's AND HE WAKES AT THE SHRINE ALONE, PAYING HIS OWN COST',
   'SCORED: KILLS, COINS, AND ABOVE ALL REVIVES',
 ];
 const COOP_EDGE = 10;     /* THE SOFT STOP: how near the frame's edge a hero may walk before it holds him */
@@ -1694,11 +1694,13 @@ function partyStart() { const seats = wantSeats(); if (!seats.length) { if (coop
 function coopEnd() { if (PTK) PTK.reset(); players = [players[0]]; coopFall = false; }
 /* WHEREVER ONE OF THEM WAKES, THEY ALL DO. A respawn puts the whole room back, so leaving the other lying where
    the old room used to be would leave him in a wood that no longer exists. */
+/* ONE BODY WAKES AT THE LAST SHRINE (whole-room regroup and a lone bleed-out share it): full health and stamina, flasks refilled, a breath of grace. Runs in his own pass. */
+function coopWakeBody() { Object.assign(P, { x: checkpoint.x + ([0, 14, -14, 28][P.n - 1] ?? 14) * (L && L.tavern ? -1 : 1), y: checkpoint.y, vx: 0, vy: 0, hp: P.maxHp, hpShown: P.maxHp, st: P.maxSt, inv: 1, hurt: 0, dead: 0, down: 0, reviveT: 0, atk: -1, plunge: false, onMover: null, face: 1, block: false, dodge: 0, breath: breathCapacity(L), drownT: 0 }); BRD.clear(P); P.hitSet.clear(); P.flasks = SV.deathRefill(P.flasks, SV.flaskMax(PROG)); if (P.ai) P.aiS = null; seatStamp(P); }
 function coopRegroup() {
   if (!coop()) return;
   if (PTK) PTK.reset();   /* (claude/partnerthrow) a respawn lets everybody go */
   for (const p of players) { if (p === P) continue;
-    asPlayer(p, () => { Object.assign(P, { x: checkpoint.x + ([0, 14, -14, 28][P.n - 1] ?? 14) * (L && L.tavern ? -1 : 1), y: checkpoint.y, vx: 0, vy: 0, hp: P.maxHp, hpShown: P.maxHp, st: P.maxSt, inv: 1, hurt: 0, dead: 0, down: 0, reviveT: 0, atk: -1, plunge: false, onMover: null, face: 1, block: false, dodge: 0, breath: breathCapacity(L), drownT: 0 }); BRD.clear(P); P.hitSet.clear(); P.flasks = SV.deathRefill(P.flasks, SV.flaskMax(PROG)); if (P.ai) P.aiS = null; seatStamp(P); }); }   /* (claude/aicompanions) a respawn restores an AI's flasks too; (claude/coopbalance) and every human seat's, as a solo death does (a flask over the max stays) */
+    asPlayer(p, coopWakeBody); }   /* (claude/aicompanions) a respawn restores an AI's flasks too; (claude/coopbalance) and every human seat's, as a solo death does (a flask over the max stays) */
 }
 /* DOWNED, NOT DEAD. At nothing left a hero goes down where he fell: on his side, no swings, a slow crawl, and a
    clock over his head. His partner stands on him for a breath and a half, a green ring fills, and he is back at a
@@ -1713,7 +1715,7 @@ function goDown(killer) {
   burst(P.x, P.y - 8, 14, ['#c9463d', '#8f2f28', '#c9d1dc'], 90, 0.7);
 }
 function downedPlayer(dt) {
-  P.down -= dt; if (P.down <= 0) { if (L && L.tavern) { tavernStandUp(P); return; } if (P.ai && players.some(q => !q.ai && upright(q))) { allyStandUp(P); return; } coopFall = true; }   /* (claude/aicompanions) an AI's clock running out never sends the party to the shrine while a person stands: it gets up beside him */   /* (claude/tavern) NOTHING IN THE INN ENDS: the clock out stands you up */
+  P.down -= dt; if (P.down <= 0) { if (L && L.tavern) { tavernStandUp(P); return; } if (P.ai && players.some(q => !q.ai && upright(q))) { allyStandUp(P); return; } if (players.some(q => q !== P && upright(q))) P.bled = true; else coopFall = true; }   /* (claude/cooppr, Daniel 11-04) BLED OUT with somebody still standing: HE alone wakes at the shrine and pays his own cost (coopWatch); everybody down at once is still the party wipe */   /* (claude/aicompanions) an AI's clock running out never sends the party to the shrine while a person stands: it gets up beside him */   /* (claude/tavern) NOTHING IN THE INN ENDS: the clock out stands you up */
   P.inv = Math.max(0, P.inv - dt); P.hurt = Math.max(0, P.hurt - dt);
   P.hpShown += (0 - P.hpShown) * Math.min(1, dt * 6);
   const want = (keys.left ? -1 : 0) + (keys.right ? 1 : 0);          /* THE CRAWL: a third of a walk, along the floor and nowhere else */
@@ -1737,6 +1739,7 @@ function reviveBy(helper) {
 }
 function coopWatch() {
   if (!coop()) return;
+  for (const p of players) if (p.bled) { p.bled = false; if (p.down > 0 && players.some(q => q !== p && upright(q))) asPlayer(p, bleedBack); else if (p.down > 0) coopFall = true; }
   if (!coopFall && players.some(upright)) return;
   coopFall = false;
   if (L && L.tavern) { for (const p of players) if (p.down > 0) tavernStandUp(p); return; }   /* (claude/tavern) all of them down in the inn: everybody up, no shrine, no cost */
@@ -1753,6 +1756,16 @@ function allyStandUp(p) { const one = AIC.leadOf(players, p), side = one.face > 
   Object.assign(p, { down: 0, reviveT: 0, dead: 0, hp: Math.max(1, Math.round(p.maxHp / 3)), inv: 2, killer: null, x: one.x + side * PARTY.LEASH.side, y: one.y, vx: 0, vy: 0, onMover: null, atk: -1, plunge: false, dodge: 0, aiS: null }); p.hpShown = p.hp;
   if (moveBodyClear(p)) p.x = one.x; if (p.score) p.score.deaths++; p.aiUps = (p.aiUps || 0) + 1;
   burst(p.x, p.y - 8, 10, ['#e8e0d0', '#c9c0b0', '#8a8f80'], 50, 0.5, -30); callout(PARTY.tagOf(p) + ' GETS BACK UP'); }
+/* (claude/cooppr, Daniel 11-04) BLED OUT, ALONE: his down clock ran out while the other hero still stands. HE wakes at the last shrine (or, in a locked fight, at the arena's entry) and pays HIS OWN death cost - his dropped bundle, his bank stake if he is player one; his partner is not charged and keeps fighting. Runs in the bleeder's pass. */
+function bleedBack() {
+  const p = P; p.score.deaths++; p.dcDone = false; deathCost(p, p.killer); deaths++; gormNoteDeath();
+  const A = bossActive ? L.arena : miniActive ? L.mini : null, inFight = A && Number.isFinite(A.wallL) && Number.isFinite(A.floor);
+  coopWakeBody();
+  p.down = 0; p.reviveT = 0; p.dead = 0; p.killer = null; p.inv = 2; if (p.ai) p.aiS = null;
+  if (inFight) { p.x = (A.wallL + 2) * TS + 8; p.y = A.floor; if (moveBodyClear(p)) { p.x = checkpoint.x; p.y = checkpoint.y; } }   /* the walls are shut: he is let back in at the arena's entry, not locked out at the shrine */
+  SFX.mend(); ringAt(p.x, p.y - 10, 20, '#c9d1dc', 0.4); motes(p.x, p.y - 10, 10, 8);
+  number(p.x, p.y - 36, inFight ? 'BACK IN THE FIGHT' : 'BACK AT THE SHRINE', '#ff6b6b'); callout(PARTY.tagOf(p) + (inFight ? ' RETURNS' : ' WAKES AT THE SHRINE'));
+}
 function tavernStandUp(p) { Object.assign(p, { down: 0, reviveT: 0, dead: 0, hp: p.maxHp, hpShown: p.maxHp, st: p.maxSt, inv: 1, killer: null }); callout('ON YOUR FEET'); SFX.mend(); }
 /* THE EXIT NEEDS BOTH OF THEM: one hero standing in the gate with the other forty tiles back is not a wood finished */
 const atGate = () => !coop() || players.every(p => upright(p) && gate && Math.abs(gate.x - p.x) < 22 && Math.abs(gate.y - p.y) < 36);
@@ -6896,7 +6909,7 @@ function drawCoopPick() {
   { const h = list[coopPick.i] || 'knight';
     wrap(HERO_LOOP[h] || '', VW - 24, 6).forEach((ln, i) => text(ln, VW / 2, top + ch + 13 + i * BODY_LH, UI.text, 'center', 6)); }
   /* HOW CO-OP WORKS, which this screen never said: a fallen hero is DOWN, NOT DEAD (REVIVE_D / REVIVE_T lift him), the stake is
-     DOWN_T - leave him and the PAIR go back to the shrine - and the run is scored with a revive worth five kills. Every line was
+     DOWN_T - leave him and HE alone wakes at the shrine (both down = the pair) - and the run is scored with a revive worth five kills. Every line was
      measured with textW at size 6 against VW - 8: fitText trims silently, so these are written to fit, not trusted to it. */
   COOP_RULES.forEach((ln, i) => text(ln, VW / 2, top + ch + 31 + i * BODY_LH, i === 1 ? '#e8c860' : UI.dim, 'center', 6));
   text('EVERY CREATURE AND BOSS: TWICE THE HEALTH AND HURT', VW / 2, VH - 28, '#ff9a5c', 'center', 6);   /* the old wording ran off both edges at 320 wide, and fitText would not trim it: the line itself is shorter now */
