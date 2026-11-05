@@ -1876,14 +1876,14 @@ async function runbossLab(BK, opts) {
         const mem=P.labDkMem;let guard=false;
         const readIt=key=>{if(mem.rd[key]===undefined)mem.rd[key]=Math.random()<0.85;return mem.rd[key];};
         const key=(F?F.mode:'')+(F?Math.floor(F.t/2):0), dodging=(pl.duck||pl.jump)&&readIt(key), told=F&&/^(swoop|whip)/.test(F.mode)&&readIt(key);   /* told: from the tell on a read player keeps his hands still (a swing in the wind-up is a swing in the way) */   /* a read swoop/whip: no swing while ducking (a duck is not a duck mid-cut) */
-        if(pl.swing!=null&&!told){ if(mem.ch[pl.swing]===undefined){const r=Math.random();mem.ch[pl.swing]=r<0.65?'swing':r<0.9?'guard':'miss';}
+        if(pl.swing!=null&&!told){ if(mem.ch[pl.swing]===undefined){const r=Math.random();mem.ch[pl.swing]=r<0.75?'swing':r<0.95?'guard':'miss';}
           const bq=F.bolts.find(q=>q.id===pl.swing);
           if(mem.ch[pl.swing]==='swing'&&P.atk<0&&bq){P.face=bq.x>=P.x?1:-1;BK.press('atk');swings++;}
-          else if(mem.ch[pl.swing]==='guard'&&bq){P.face=bq.x>=P.x?1:-1;guard=true;} }
+          else if(mem.ch[pl.swing]==='guard'&&bq){P.face=bq.x>=P.x?1:-1;if(SHIELDED(h)||DEFLECTS(h))guard=true;else if(P.ground&&(P.labDodgeF===undefined||f-P.labDodgeF>30)){BK.press('dodge');P.labDodgeF=f;}} }   /* a guard for a shield / a deflector, a roll through it for the rest */
         if(dodging) { if(pl.duck&&P.ground)k.down=true; if(pl.jump&&P.ground&&(P.labJumpF===undefined||f-P.labJumpF>14)){BK.press('jump');P.labJumpF=f;P.labJump=16;} }
         if(P.labJump>0){P.labJump--;k.jump=true;}
         if(pl.stepTo!=null&&(!F.rings.length||readIt('b'+Math.floor(F.t/3)))&&Math.abs(pl.stepTo-P.x)>3)k[pl.stepTo>P.x?'right':'left']=true;
-        if(guard)k.block=SHIELDED(h)?true:DEFLECTS(h)?DEFLECT_TAP(f):(f%30<4);
+        if(guard)k.block=SHIELDED(h)?true:DEFLECT_TAP(f);
         if(pl.hit&&F&&!told){ P.face=F.x>=P.x?1:-1; if(P.atk<0){BK.press('atk');swings++;} }
         if(F&&F.open!==undefined&&F.open&&!wasOpen)opened++;const op=!!(F&&(F.mode==='downed'));if(op&&!wasOpen)opened++;wasOpen=op;
         const was=P.hp,m0=boss.mode;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(m0,Math.max(0,was-P.hp));
