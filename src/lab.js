@@ -43,7 +43,7 @@ import { sweepFront as wqSweepFront } from './wicker-queen.js';   /* (claude/fai
 import { WINCH as WM_K, winchFloors } from './winchmaster.js';   /* THE WINCHMASTER's phase three (claude/winch4): his reaches and the floors he fights on, read off his own module (winchFloors reads OR.ARENA) */   /* THE MARK TABLE: every red !! in it is a tell the bot steps out of, never guards */
 
 // LAB_REACH is each hero's real reach (attackBox in main.js): how far the blow actually lands.
-const DK_REACH = { warden: 26, pyro: 70 };   /* (claude/skytune) how far off a bolt the demon-king hands start a cut: a bolt is a small target, a polearm's LAB_REACH is its longest tip */
+const DK_REACH = { warden: 32, pyro: 110 };   /* (claude/skytune) how far off a bolt the demon-king hands start a cut: a bolt is a small target, a polearm's LAB_REACH is its longest tip */
 export const LAB_REACH = { knight: 22, pyro: 30, paladin: 20, pirate: 20, reaper: 29, warden: 40, geomancer: 24, berserker: 18, ranger: 16 };   /* (claude/ranger: her KNIFE lands 17 out; with arrows in the quiver the hands stand off at RANGER_STAND - rgReach below) */   /* (claude/berserker2: THE FLURRY lands 19 out - shorter than his old chop's 21) */   /* (berserker: his chop lands its head 19-21 out: he has almost no reach) */   /* (geomancer: the stone of her stave lands 21-26 out) */   /* her point lands at 44: the bot stands just inside it, where the TIP zone is */
 /* LAB_STAND, THE HAND'S CHOSEN DISTANCE (BOT BUG A, Daniel, 2026-09-25: "stands one pixel outside its own reach").
    It used to be a second, independently hand-set table - close to LAB_REACH for six heroes, but off by only 2 px
