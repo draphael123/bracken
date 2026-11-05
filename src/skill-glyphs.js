@@ -22,5 +22,8 @@ export const PASSIVE_GLYPH = {
   /* THE RANGER (claude/ranger): the quiver and the draw are shots and an hourglass, the focus and the mark an eye, the snare a ring, the bash a shield, the flip a boot */
   ranger: { rgDeep: 'shot', rgSteady: 'hourglass', rgFletch: 'hourglass', rgFar: 'chev', rgBodkin: 'shot', rgTwin: 'twin', rgEagle: 'eye', rgKeen: 'eye', rgLongMark: 'eye', rgSnares: 'ring', rgToothed: 'ring', rgTrail: 'drop', rgKill: 'skull', rgApex: 'eye',
     rgBashLong: 'shield', rgBashBack: 'reflect', rgHighFlip: 'boot', rgSoftStep: 'boot', rgAirDraw: 'boot', rgCover: 'shot', rgLast: 'blade' },
+  /* THE DESERT PRIEST (claude/desertpriest): the beam is light, the patches cross/light, the disc a shield, the dark an eye */
+  sunpriest: { spLongPlant: 'light', spPierce: 'chev', spColumn: 'light', spSear: 'eye', spRays: 'light', spBurnBack: 'reflect', spNoonBeam: 'light', spWideHoly: 'cross', spLongHoly: 'hourglass', spQuickFill: 'light', spFallPatch: 'fall', spDeepMend: 'cross', spSunriseMend: 'cross', spZenith: 'light',
+    spGlow: 'light', spCheapFlare: 'bolt', spLongBeat: 'shield', spLitReturn: 'reflect', spEmber: 'flame', spHaloMend: 'cross', spNightEyes: 'eye' },
   geomancer: { geoTall: 'pillar', geoLasting: 'slab', geoHardLand: 'fall', geoFourth: 'stones', geoReturn: 'reflect', geoShrapnel: 'shards', geoBulwark: 'shield', geoRumble: 'rune', geoAftershock: 'ring', geoWideQuake: 'wave' },
 };

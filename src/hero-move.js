@@ -25,6 +25,7 @@ export const HERO_RUN = {
   pyro: { ground: 1.15, air: 1.15 }, paladin: { ground: 0.9, air: 0.9 },
   reaper: { ground: 0.8, air: 1 }, geomancer: { ground: 0.92, air: 1 }, berserker: { ground: 1, air: 1 },   /* (berserkerport: his legs are the knight's) */
   ranger: { ground: 1.04, air: 1 },   /* (claude/ranger: light on her feet; her jump is the knight's) */
+  sunpriest: { ground: 1, air: 1 },   /* (claude/desertpriest: a robed walker, the knight's feet) */
 };
 export const HERO_MOVE_IDS = ['knight', 'warden', 'pyro', 'paladin', 'pirate', 'reaper', 'geomancer', 'berserker', 'ranger'];
 export const heroRunMul = (hero, ground) => { const h = HERO_RUN[hero] || HERO_RUN.knight; return ground ? h.ground : h.air; };

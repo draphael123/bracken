@@ -60,6 +60,7 @@ export const PARRY_LOOK = {
   geomancer: { look: 'STONE-SKIN',  input: 'raise the rune-ward (hold C) as the blow lands', col: '#c8bca8' },
   pirate:    { look: 'HOOK CATCH', input: 'tap C as the blow lands (or an arrow flies in)',        col: '#ffd34a' },
   reaper:    { look: 'BLADE BIND',  input: 'let go of the blood ward (C) as the blow lands', col: '#ffd0d0' },
+  sunpriest: { look: 'THE DISC',    input: 'tap C as the blow lands; hold C for THE FLARE (half the bar) turns any blow', col: '#ffe89a' },   /* (claude/desertpriest) */
 };
 /* THE MIX-UP CHAIN */
 export const MIX = { max: 5, per: 0.06, idle: 3.0, word: 3 };   /* word: the pip at which the chain says MIXED UP (the old parallel bonus, folded in: claude/riposteart) */
@@ -72,6 +73,7 @@ export const PARRY_ART = {
   berserker: { hand: [7, -10],  tip: [14, -18], style: 'rage',  glint: '#ffb27a', flash: '#ffb27a', sound: 'berserker' },
   paladin:   { hand: [8, -10],  tip: [8, -22],  style: 'halo',  glint: '#fff6c8', flash: '#fff6c8', sound: 'paladin' },
   pyro:      { hand: [8, -12],  tip: [3, -26],  style: 'ember', glint: '#ffd36b', flash: '#ffb23e', sound: 'pyro' },
+  sunpriest: { hand: [8, -12],  tip: [3, -26],  style: 'halo',  glint: '#fff6c8', flash: '#ffe89a', sound: 'paladin' },   /* (claude/desertpriest) the sun-disc at the staff head (the pyromancer's rig) */
   geomancer: { hand: [8, -10],  tip: [8, -22],  style: 'stone', glint: '#ffe0a0', flash: '#e8c890', sound: 'geomancer' },
   pirate:    { hand: [7, -10],  tip: [13, -18], style: 'steel', glint: '#ffe58a', flash: '#ffd34a', sound: 'pirate' },
   reaper:    { hand: [9, -12],  tip: [9, -26],  style: 'blood', glint: '#ff9aa6', flash: '#ff6b6b', sound: 'reaper' },   /* (claude/bkfeel) crimson, not the old necrotic green glint */

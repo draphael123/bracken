@@ -94,7 +94,7 @@ export function makePriest(api) {
     const ln = beamLine(p); p.spBeam.line = ln;
     if (p.spBeamTick <= 0) { p.spBeamTick = B.tick;
       const upMul = ln.up ? (T().column || K('spzenith') ? 1 : B.up) : 1, sr = p.spSunrise > 0 ? DP.sunrise.beamMult : 1, um = 1 + 0.15 * U('urays');
-      for (const e of ln.hit) { const k = (undead(e) ? B.dead : B.living) * upMul * sr * um * (K('spprism') ? 1 + DP.tech.prism.k : 1);
+      for (const e of ln.hit) { const k = (undead(e) ? B.dead : B.living) * upMul * sr * um * (K('spprism') ? 1 + DP.tech.prism.k : 1) * radMult(p);
         api.hurtAs('shot', e, Math.max(1, Math.round(api.swordDmg() * k * B.tick)), p.x, false); stats.beamTicks++; if (undead(e)) stats.beamDead++;
         if (T().sear && !big(e)) p.spSeared = e;
         p.spBeamHitT = 0.35; }
@@ -182,8 +182,8 @@ export function makePriest(api) {
     discSeeds();
     // RADIANCE: lit fills, the dark drains (SUNRISE: it cannot); NOON's QUICK DAWN, the perk, the upgrade
     const lit = lightsHere(p), fill = DP.rad.fill * (T().quickFill ? 1.25 : 1) * DP.perk.fill * (1 + 0.15 * U('uwell')), drain = DP.rad.drain * (T().glow ? 0.5 : 1) * (1 - 0.2 * U('ustill'));
-    if (p.spSunrise > 0 || p.spHaloT > 0) gain(p, fill * dt); else gain(p, (lit ? fill : -drain) * dt);
-    if (K('spnoon') && p.spRad < 0.25 && !lit) p.spRad = Math.min(0.25, p.spRad + drain * dt);   /* HIGH NOON: never drains under a quarter */
+    const rad0 = p.spRad; if (p.spSunrise > 0 || p.spHaloT > 0) gain(p, fill * dt); else gain(p, (lit ? fill : -drain) * dt);
+    if (K('spnoon') && !lit && p.spRad < 0.25) p.spRad = Math.min(rad0, 0.25);   /* HIGH NOON: the dark never drains it under a quarter */
     if (T().ember && p.spRad < 0.15) p.spRad = 0.15;
     // the patches: mend him, burn the dead
     const onIt = onPatch(p), mendRate = DP.consecrate.mend * (T().deepMend ? 1.5 : 1) * (1 + 0.25 * U('umend')) * (K('spdawn') && p.spSunrise > 0 ? 2 : 1);
