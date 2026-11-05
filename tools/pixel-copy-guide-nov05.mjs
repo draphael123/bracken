@@ -5,7 +5,7 @@ import assert from 'node:assert/strict';
 import {createHash} from 'node:crypto';
 import {execFileSync} from 'node:child_process';
 import {freemem} from 'node:os';
-import {OUT,openFixedArtPage} from './dither-path-guide-page-nov04.mjs';
+import {OUT,openFixedArtPage} from './pixel-copy-guide-page-nov05.mjs';
 import {installLabRenderClock} from './manual-lab-boot.mjs';
 assert(process.env.CI);
 for(const k of ['BRACKEN_RENDERER_MB','BRACKEN_RECYCLE_MB','BRACKEN_LAB_GC'])assert.equal(process.env[k],undefined);
