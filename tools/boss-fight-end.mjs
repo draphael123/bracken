@@ -10,6 +10,7 @@ import { sweepLevels } from './sweep-pages.mjs';
    no output until the end - 'boss-fight-end printed nothing for 40 min'). A level that does not finish is a LOST fight row, which is red. tools/sweep-pages.mjs. */
 const ids = [];
 for (const lv of LEVELS) { let b; try { b = lv.build(); } catch { continue; } if (b.arena || b.mini) ids.push(lv.id); }
+if (process.env.FIGHT_END_ONLY) { const keep = process.env.FIGHT_END_ONLY.split(','); ids.splice(0, ids.length, ...ids.filter(i => keep.includes(i))); }   /* (claude/draketune) FIGHT_END_ONLY=id[,id]: a lane checks its own rows without the full sweep */
 const code = id => `(async()=>{const {LEVELS}=await import('/src/level.js');BK.manualSimulation=true;const rows=[];
 for(const [i,lv] of LEVELS.entries()){if(lv.id!==${JSON.stringify(id)})continue;let b;try{b=lv.build();}catch{continue;}
  for(const kind of ['boss','mini','mini2']){const A0=kind==='boss'?b.arena:kind==='mini2'?b.mini2:b.mini;if(!A0)continue;/* (claude/forgemaster) mini2: a level's second mini - the first counts as down */

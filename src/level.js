@@ -50,6 +50,7 @@ import { lanceLookouts } from './lance-support.js';   /* THE QUEEN'S LANCE: the 
 import { highcrownTwo } from './highcrown2.js';
 import { buildArenaYard } from './arena-yard.js';   /* (claude/arenayard, Daniel 11-03) THE ARENA YARD: the one shared practice yard (src/arena-yard.js) */
 import { buildWarCairn, WC_RULE } from './war-cairn.js';   /* (claude/warcairn) THE WAR CAIRN: the Berserker's told spur off HIGHCROWN (scratch/brief-crownpath-1028.md) */   /* (claude/highcrown2) HIGHCROWN 2: the pieces laid after the cuts, in the cut level's columns */
+import { buildDrakeCaldera } from './drake-caldera.js';   /* (claude/drakewire) THE CALDERA: THE FIRE DRAKE's hidden lab room (not on any road; art before live) */
 /* THE LUMBER TRAIL's rule (claude/lumbertrail): src/order-chapters.js TWISTS.timber quotes it */
 export const RULE_WOOD = 'FOUR STROKES FELL A MARKED PINE, AND IT FALLS THE WAY IT LEANS: ACROSS A GAP, UP A CLIFF, OR ON WHOEVER STANDS UNDER IT.';
 // level.js — the level registry. Each level paints a tile grid with a tiny DSL and returns it.
@@ -8122,6 +8123,9 @@ LEVELS.push({ id: 'kitchengate', name: 'THE KITCHEN GATE', sub: "up through the 
 LEVELS.push({ id: 'warcairn', name: 'THE WAR CAIRN', sub: 'the clan that holds the peak', rule: WC_RULE, build: () => buildWarCairn({ painter, T, TS }), needs: ROAD_OPEN.undercrown ? 'kitchengate' : 'storm', spurOf: 'crown', classFor: 'berserker' });
 /* THE ARENA YARD (claude/arenayard, Daniel 11-03): APPENDED (saves count levels by index). Replaces the open yard as the default training stop; trial_open stays for the tools that use it as a test bed. NO `trial` flag (that turns co-op off): src/arena-yard.js */
 LEVELS.push({ id: 'arena_yard', name: 'THE ARENA YARD', sub: 'every verb, straw that hits back', build: () => buildArenaYard({ painter, T }), hidden: true });
+/* THE CALDERA (claude/drakewire, lane D1 of claude/heartplan): APPENDED, HIDDEN - THE FIRE DRAKE's lab room (src/drake-caldera.js, src/fire-drake-hands.js). Not on any road
+   (no needs, hidden): bossLab and the page tools fight the drake here until THE HEART OF THE MOUNTAIN's greybox carries it; the row stays hidden after (saves count levels by index) */
+LEVELS.push({ id: 'drakelab', name: 'THE CALDERA', sub: 'the fire drake, chained to the seal (lab room)', build: () => buildDrakeCaldera({ painter, T, TS }), hidden: true });
 
 /* THE MIX. A level that is one creature is one question asked forty times. Some of each crowd is swapped for a
    creature from elsewhere, standing on the same spot, so the second half of a level asks something the first did
