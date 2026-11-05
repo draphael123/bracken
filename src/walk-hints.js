@@ -174,7 +174,7 @@ function fenRoad(BK, P) {
 /* THE HORNET'S NEST (claude/hornetsnest, src/hornets-nest-hands.js): the next required comb ahead - stand under it on his own footing and cut it (a RISING CUT: UP+X
    reaches a comb hung three rows over the footing); a chain's high comb from the low one's landed top (the walker climbs onto it as the route says) */
 function hornetsNest(BK, P) {
-  if (!P || typeof BK.nestHands !== 'function') return null; const H = BK.nestHands(); if (!H || !H.on()) return null;
+  if (!P || !P.ground || typeof BK.nestHands !== 'function') return null; const H = BK.nestHands(); if (!H || !H.on()) return null;
   const px = P.x / TS, feet = Math.round(P.y / TS), need = ['first', 'bridge', 'gallery', 'chainA', 'chainB', 'well', 'lastA', 'lastB'];
   const c = H.combs().filter(q => q.st === 'hang' && need.includes(q.id) && q.x1 >= px - 6 && q.x0 <= px + 18 && feet - (q.row + q.rows) >= 2 && feet - (q.row + q.rows) <= 4).sort((a, b) => a.x0 - b.x0)[0];
   if (!c) return null; const mid = c.x0 * TS + 8;   /* under its near (west) end: a bridge comb hangs over the gap it spans, so its middle has no footing under it */
