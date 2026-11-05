@@ -53,14 +53,14 @@ export function plateCost(p, i, nodes, boxes, signs, lms, plates, near) {
   let c = 0;
   for (const j of near || nodes.map((_, k) => k)) { if (j === i) continue; if (OVER(p, boxes[j])) c += 1000; if (OVER(p, plates[j])) c += 1000; if (OVER(p, signs[j])) c += 30; }
   if (OVER(p, boxes[i])) c += 400; if (OVER(p, signs[i], 0)) c += 100;
-  for (const r of lms) if (OVER(p, r)) c += 30;
+  for (const r of lms) if (OVER(p, r)) c += 150;   /* (claude/mappolish: was 30; a long board must not slide over a landmark critter) */
   const n = nodes[i], bx = Math.max(p.x, Math.min(p.x + p.w, n.x)), by = Math.max(p.y, Math.min(p.y + p.h, n.y)), d = Math.hypot(bx - n.x, by - n.y);
   return c + d * 0.6 + (p.y + p.h < n.y - 8 ? 8 : 0);
 }
 export function plateCandidates(nd, VW = 320) { const { tw, th } = plateSize(nd.label, nd.twoLine), list = [];
   for (let dy = -22 - th - 6; dy <= 34; dy += 2) for (let dx = -tw - 14; dx <= tw + 14; dx += 2) {
     const x = Math.max(tw / 2 + 6, Math.min(VW - tw / 2 - 6, nd.x + dx)), p = { x: Math.round(x - tw / 2), y: nd.y + dy, w: tw, h: th };
-    const bx = Math.max(p.x, Math.min(p.x + p.w, nd.x)), by = Math.max(p.y, Math.min(p.y + p.h, nd.y)); if (Math.hypot(bx - nd.x, by - nd.y) <= 25) list.push(p); }
+    const bx = Math.max(p.x, Math.min(p.x + p.w, nd.x)), by = Math.max(p.y, Math.min(p.y + p.h, nd.y)); if (Math.hypot(bx - nd.x, by - nd.y) <= (nd.reach || 25)) list.push(p); }
   return list; }
 export function layoutPlates(nodes, VW = 320) {
   const out = layoutBase(nodes, VW), boxes = nodes.map(nodeBox), signs = nodes.map(signBox), lms = landmarkRects(nodes);
@@ -68,7 +68,7 @@ export function layoutPlates(nodes, VW = 320) {
   const cands = nd => { const { tw, th } = plateSize(nd.label, nd.twoLine), list = [];
     for (let dy = -22 - th - 6; dy <= 34; dy += 3) for (let dx = -tw - 14; dx <= tw + 14; dx += 3) {
       const x = Math.max(tw / 2 + 6, Math.min(VW - tw / 2 - 6, nd.x + dx)), p = { x: Math.round(x - tw / 2), y: nd.y + dy, w: tw, h: th };
-      const bx = Math.max(p.x, Math.min(p.x + p.w, nd.x)), by = Math.max(p.y, Math.min(p.y + p.h, nd.y)); if (Math.hypot(bx - nd.x, by - nd.y) <= 25) list.push(p); }
+      const bx = Math.max(p.x, Math.min(p.x + p.w, nd.x)), by = Math.max(p.y, Math.min(p.y + p.h, nd.y)); if (Math.hypot(bx - nd.x, by - nd.y) <= (nd.reach || 25)) list.push(p); }
     return list; };
   const nearOf = nodes.map((nd, i) => nodes.map((m, j) => j).filter(j => Math.hypot(nodes[j].x - nd.x, nodes[j].y - nd.y) < 190));   /* (a board can only reach ~120 px from its node) */
   const lmsOf = nodes.map(nd => lms.filter(r => Math.hypot(r.x + r.w / 2 - nd.x, r.y + r.h / 2 - nd.y) < 150));
@@ -101,7 +101,7 @@ export const SCREEN = { VW: 320, VH: 180, HEADER: 19, FOOTER: 11, MAPH: 900 };
 export const NEAR = 0;   // what counts as "around the selected node": anything within this many px of it, and its road neighbours, must stay readable
 export const ANCHORS = [0.55, 0.4, 0.7, 0.3, 0.8, 0.25, 0.9, 0.2, 0.35, 0.45, 0.6, 0.65, 0.75, 0.85];   // the node's screen height, as a fraction of VH (0.55 = the map's own default)
 export function panelSize(nd) { return { w: Math.min(SCREEN.VW - 12, 208), h: nd.kind === 'store' ? 26 : 54 }; }   /* 54 of 180 = 30% of the screen (the style guide's cap; it was 58) */
-export function plateNodes(NODES, nameOf) { return NODES.map(n => ({ id: n.id, x: n.x, y: n.y, kind: n.kind, spur: !!n.spur, plate: n.plate, label: n.kind === 'store' ? (n.id === 'highstore' ? 'HIGH STORE' : 'STORE') : plateLabel(nameOf(n)) /* (claude/deeprails2) n.board: a short board name where the full one will not fit (the full name stays on the info card) */, twoLine: TWO_LINE.has(n.id) }   /* ONE-LINE BOARDS (Daniel 10-09): the name only; medal, silver and quest live on the selected node's info card */)); }
+export function plateNodes(NODES, nameOf) { return NODES.map(n => ({ id: n.id, x: n.x, y: n.y, kind: n.kind, spur: !!n.spur, plate: n.plate, label: n.kind === 'store' ? (n.id === 'highstore' ? 'HIGH STORE' : 'STORE') : plateLabel(nameOf(n)) /* (claude/deeprails2) n.board: a short board name where the full one will not fit (the full name stays on the info card) */, twoLine: TWO_LINE.has(n.id), reach: n.id === 'palisadewood' ? 46 : 0 }   /* ONE-LINE BOARDS (Daniel 10-09): the name only; medal, silver and quest live on the selected node's info card */)); }
 const hitR = (a, b) => a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
 /* the nodes beside this one on the road: the last and next ROAD node in list order (a spur: the one it hangs off, and nothing else) */
 export function neighbours(nd, nodes) {
