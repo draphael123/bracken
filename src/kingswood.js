@@ -36,7 +36,7 @@ export const ARCS = {
   march: { exam: [306, 416] },
 };
 
-const KENNEL_B = true;   /* (claude/greathound) GROUP B - the kennel cage + phase two's royal boar on the horn (needs art before live: the release may set this false) */
+const KENNEL_B = false;   /* (claude/greathound) GROUP B - the kennel cage + phase two's royal boar on the horn (needs art before live: the release may set this false) */
 export function buildKingswood({ painter, T, TS }) {
   const { W, H } = KINGSWOOD;
   const L = painter(W, H), { set, block, ent } = L;
