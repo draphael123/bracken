@@ -227,7 +227,7 @@ function bell(f, dur = 0.8, v = 0.1, delay = 0) { tone('sine', f, f * 0.998, dur
 // for as long as she holds it. Enemies keep the shared sounds; only the player's calls come through here.
 let landTier = 0;   /* the tier of the landing being played (main.js passes it to SFX.pLand) */
 let heroVoice = 'knight', stepN = 0, jetSrc = null, jetGain = null;
-export function setHeroVoice(h) { heroVoice = h === 'pyro' || h === 'paladin' || h === 'pirate' || h === 'reaper' || h === 'warden' || h === 'geomancer' || h === 'berserker' || h === 'ranger' ? h : 'knight'; }   /* (claude/shipfix) THE BERSERKER was missing here and spoke with the knight's throat: HERO_KIT has had his kit all along */
+export function setHeroVoice(h) { heroVoice = h === 'pyro' || h === 'paladin' || h === 'pirate' || h === 'reaper' || h === 'warden' || h === 'geomancer' || h === 'berserker' || h === 'ranger' ? h : h === 'demonhunter' ? 'pirate' : 'knight'; }   /* (claude/demonhunter: the freebooter's light blades and throat until his own voice pass) */   /* (claude/shipfix) THE BERSERKER was missing here and spoke with the knight's throat: HERO_KIT has had his kit all along */
 const vary = f => f * (0.94 + Math.random() * 0.12);
 const chain = (v = 0.03, n = 3) => { for (let i = 0; i < n; i++) tone('square', vary(3000 + i * 260), 2400, 0.03, v, i * 0.022); noise(0.05, v * 2.2, 4200, 1.6); };
 /* WEAPON FAMILY PER HERO for the plain swing: air = swish volume, blade = sword-swing volume, r = rate (lower = heavier/longer weapon), low = a low RPG swing under it, fire = embers. (Weapon classes are the lane's reading of each kit; see the lane report.) */

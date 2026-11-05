@@ -159,7 +159,8 @@ const HEROES_C = {
   warden:     ['deflect', tk => 'TAP ' + tk.c + ' DEFLECT, HOLD BRACE'],   /* (claude/heroblocksb) hold = the spear-haft brace; (claude/wardenid) the third jab is the long thrust (the hint line) */
   geomancer:  ['rune-ward', tk => 'HOLD ' + tk.c + '  (SHE IS PLANTED)'],   /* (claude/ults) the ultimate is the shared row below */
   berserker:  ['take it', tk => 'HOLD ' + tk.c + ' (FULL: DOWN+' + tk.c + ' FRENZY)'],
-  ranger:     ['bash / guard', tk => 'TAP ' + tk.c + ' BASH, HOLD GUARD'],   /* (claude/heroblocksb) hold = the bow guard; the bash on the beat is still her parry */
+  ranger:     ['bash / guard', tk => 'TAP ' + tk.c + ' BASH, HOLD GUARD'],
+  demonhunter: ['backstep / banish', tk => 'TAP ' + tk.c + ' BACKSTEP, DOWN+' + tk.c + ' BANISH'],   /* (claude/demonhunter) */   /* (claude/heroblocksb) hold = the bow guard; the bash on the beat is still her parry */
 };
 import { ROW as PLUNGE_ROW } from './plunges.js';
 import { ultRow } from './ultimate.js';

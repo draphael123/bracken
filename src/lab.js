@@ -41,7 +41,7 @@ import { sweepFront as wqSweepFront } from './wicker-queen.js';   /* (claude/fai
 import { WINCH as WM_K, winchFloors } from './winchmaster.js';   /* THE WINCHMASTER's phase three (claude/winch4): his reaches and the floors he fights on, read off his own module (winchFloors reads OR.ARENA) */   /* THE MARK TABLE: every red !! in it is a tell the bot steps out of, never guards */
 
 // LAB_REACH is each hero's real reach (attackBox in main.js): how far the blow actually lands.
-export const LAB_REACH = { knight: 22, pyro: 30, paladin: 20, pirate: 20, reaper: 29, warden: 40, geomancer: 24, berserker: 18, ranger: 16 };   /* (claude/ranger: her KNIFE lands 17 out; with arrows in the quiver the hands stand off at RANGER_STAND - rgReach below) */   /* (claude/berserker2: THE FLURRY lands 19 out - shorter than his old chop's 21) */   /* (berserker: his chop lands its head 19-21 out: he has almost no reach) */   /* (geomancer: the stone of her stave lands 21-26 out) */   /* her point lands at 44: the bot stands just inside it, where the TIP zone is */
+export const LAB_REACH = { knight: 22, pyro: 30, paladin: 20, pirate: 20, reaper: 29, warden: 40, geomancer: 24, berserker: 18, ranger: 16, demonhunter: 22 };   /* (claude/demonhunter: the knight's blade box, 22 out) */   /* (claude/ranger: her KNIFE lands 17 out; with arrows in the quiver the hands stand off at RANGER_STAND - rgReach below) */   /* (claude/berserker2: THE FLURRY lands 19 out - shorter than his old chop's 21) */   /* (berserker: his chop lands its head 19-21 out: he has almost no reach) */   /* (geomancer: the stone of her stave lands 21-26 out) */   /* her point lands at 44: the bot stands just inside it, where the TIP zone is */
 /* LAB_STAND, THE HAND'S CHOSEN DISTANCE (BOT BUG A, Daniel, 2026-09-25: "stands one pixel outside its own reach").
    It used to be a second, independently hand-set table - close to LAB_REACH for six heroes, but off by only 2 px
    for the warden (stand 38, reach 40). The generic goal math (below, "desired") walks to boss.x +/- (LAB_STAND[h] +
@@ -139,7 +139,7 @@ export const WARDEN_TIP = 32;   /* (claude/herokit) the near-edge distance the w
 /* THE BERSERKER'S BRACE IS THE SAME SHAPE IN THE HANDS (claude/berserker): a TAP on the beat of a yellow blow (live 0.3 s, then a beat rooted if it
    met nothing), never held - so wherever the hands sweep the Warden's shaft they set his brace. A full bar makes the same tap his FRENZY, which
    is exactly when a player would take it. DEFLECTS is who taps; BUSY_C is the beat each is spent after one that met nothing. */
-export const DEFLECTS = h => h === 'warden' || h === 'berserker' || h === 'ranger';   /* (claude/ranger: her BOW-BASH is a tap on the beat too) */
+export const DEFLECTS = h => h === 'warden' || h === 'berserker' || h === 'ranger' || h === 'demonhunter';   /* (claude/demonhunter: THE SLIP is a tap of the backstep on the beat) */   /* (claude/ranger: her BOW-BASH is a tap on the beat too) */
 const BUSY_C = (h, P) => h === 'warden' ? (P.blastT || 0) + (P.deflectRec || 0) : h === 'berserker' ? (P.blastT || 0) + (P.braceRec || 0) + (P.pounceRec || 0) : h === 'ranger' ? (P.rgCd || 0) : 0;   /* (claude/berserker2: TAKE IT is held, so his guard up is not "busy" - tapping keeps it up) */
 /* AND ON THE BEAT. A sweep is live a quarter second and then a quarter second spent, so tapping all through a long wind-up leaves half of
    it bare - measured: a hedge knight's swing landed on the spent half one fight in three. A common foe's tell counts its modeT down to
@@ -261,6 +261,7 @@ export const KNIGHT_CUT = 0.56, knightCutAt = e => KNIGHT_CUT;   /* (claude/knig
 export const ULT_BOT = (BK, P, h, ad, dy) => { if (P.cWas || !(P.ground || P.swim) || P.atk >= 0 || P.charge > 0 || P.rgGreat) return false;
   if (h === 'geomancer') { const G = BK.geo && BK.geo(); return !!G && G.avalancheReady() && ad < 220 && Math.abs(dy) < 40; }
   if (h === 'ranger') { const R = BK.rgk && BK.rgk(); return !!R && R.greatReady() && ad > 50 && ad < 300 && Math.abs(dy) < 30; }
+  if (h === 'demonhunter') { const D = BK.dhk && BK.dhk(); return !!D && D.reckonReady() && ad < 170 && Math.abs(dy) < 60; }   /* (claude/demonhunter) THE RECKONING at full fury, the foe in sight */
   return false; };
 /* (claude/geopop e) DOWN+C: the geomancer blows her board when two or more stones stand and a foe is in the radius of one (an AVALANCHE at a full board is spent first - ULT_BOT) */
 export const DET_BOT = (BK, P, h) => { if (h !== 'geomancer' || P.cWas || !(P.ground || P.swim) || P.atk >= 0 || P.charge > 0 || P.blastT > 0) return false; const G = BK.geo && BK.geo(); return !!G && !!G.detonateWorth && G.detonateWorth(); };
@@ -428,7 +429,7 @@ function labBotFrame(BK, h, e, f) {
   { const fire = fireAt(BK, P.x, P.y); if (fire && !(h === 'pyro')) { const away = Math.sign(P.x - fire.x) || -Math.sign(d) || 1; k.left = away < 0; k.right = away > 0; k.atk = false; k.block = false; } }   /* (her own fire does not burn her) */
   if (h === 'knight' && !threat && !k.atk && !(P.charge > 0) && LAST_CHARGE(P, ad, e.y - P.y)) { k.left = false; k.right = false; k.up = true; k.block = true; }
   if (h === 'geomancer' && !threat && !k.atk && !(k.up && k.block) && DET_BOT(BK, P, h)) { k.left = false; k.right = false; k.up = false; k.down = true; k.block = true; }   /* (claude/geopop) DOWN+C: DETONATE (the ultimate below overrides it at a full board) */
-  if ((h === 'geomancer' || h === 'ranger') && !threat && !k.atk && ULT_BOT(BK, P, h, ad, e.y - P.y)) { P.face = Math.sign(d) || P.face; k.left = false; k.right = false; k.up = true; k.block = true; }   /* (claude/ults) UP+C at a full meter */
+  if ((h === 'geomancer' || h === 'ranger' || h === 'demonhunter') && !threat && !k.atk && ULT_BOT(BK, P, h, ad, e.y - P.y)) { P.face = Math.sign(d) || P.face; k.left = false; k.right = false; k.up = true; k.block = true; }   /* (claude/ults) UP+C at a full meter */
   { const sn = snatchNow(BK, h); if (sn) { P.face = Math.sign(sn.x - P.x) || P.face; k.block = !P.cWas; k.up = false; k.down = false; } }   /* (claude/heropassa) ARROW SNATCH */
   return { defend, swing };
 }
@@ -3089,7 +3090,7 @@ async function runbossLab(BK, opts) {
       { const sn = snatchNow(BK, h); if (sn) { P.face = Math.sign(sn.x - P.x) || P.face; k.block = !P.cWas; } }   /* (claude/heropassa) ARROW SNATCH */
       if (h === 'knight' && !valiantWall && open && !tell && !rushing && !k.block && LAST_CHARGE(P, ad, boss.y - P.y)) { P.face = Math.sign(d) || P.face; k.left = false; k.right = false; k.jump = false; k.up = true; k.block = true; }
       if (h === 'geomancer' && !tell && !rushing && !k.block && DET_BOT(BK, P, h)) { k.left = false; k.right = false; k.jump = false; k.up = false; k.down = true; k.block = true; }   /* (claude/geopop) DOWN+C: DETONATE (the ultimate below overrides it at a full board) */
-      if ((h === 'geomancer' || h === 'ranger') && !tell && !rushing && !k.block && ULT_BOT(BK, P, h, ad, boss.y - P.y)) { P.face = Math.sign(d) || P.face; k.left = false; k.right = false; k.jump = false; k.up = true; k.block = true; }   /* (claude/ults) UP+C at a full meter */
+      if ((h === 'geomancer' || h === 'ranger' || h === 'demonhunter') && !tell && !rushing && !k.block && ULT_BOT(BK, P, h, ad, boss.y - P.y)) { P.face = Math.sign(d) || P.face; k.left = false; k.right = false; k.jump = false; k.up = true; k.block = true; }   /* (claude/ults) UP+C at a full meter */
       /* (claude/bztune) THE BERSERKER'S OWN KEYS. FRENZY IS DOWN+C at a full bar (a plain C there is TAKE IT, which the beat-taps already use);
          the bar is spent as a player spends it - near the boss, between his tells. THE POUNCE: coiled (DOWN held 0.4 s) then DOWN let go with a way held,
          a gap-closer used from range, a few times a fight (not a spam). TAKE IT stays on the beat taps above. */

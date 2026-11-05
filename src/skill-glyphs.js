@@ -22,5 +22,9 @@ export const PASSIVE_GLYPH = {
   /* THE RANGER (claude/ranger): the quiver and the draw are shots and an hourglass, the focus and the mark an eye, the snare a ring, the bash a shield, the flip a boot */
   ranger: { rgDeep: 'shot', rgSteady: 'hourglass', rgFletch: 'hourglass', rgFar: 'chev', rgBodkin: 'shot', rgTwin: 'twin', rgEagle: 'eye', rgKeen: 'eye', rgLongMark: 'eye', rgSnares: 'ring', rgToothed: 'ring', rgTrail: 'drop', rgKill: 'skull', rgApex: 'eye',
     rgBashLong: 'shield', rgBashBack: 'reflect', rgHighFlip: 'boot', rgSoftStep: 'boot', rgAirDraw: 'boot', rgCover: 'shot', rgLast: 'blade' },
+  /* THE DEMON HUNTER (claude/demonhunter): the blades are blades and fury a bolt, the brand an eye, banish a skull, the dash a boot, the slip a shield */
+  demonhunter: { dhKeen: 'blade', dhLongChain: 'hourglass', dhScissors: 'twin', dhTwinFury: 'bolt', dhThickSkin: 'shield', dhQuickOil: 'drop', dhUnending: 'bolt',
+    dhLongBrand: 'eye', dhDeepBrand: 'eye', dhBrandFury: 'bolt', dhSpread: 'ring', dhCheapBanish: 'skull', dhWideBanish: 'skull', dhJudgement: 'skull',
+    dhFarDash: 'boot', dhCheapDash: 'boot', dhDashCut: 'chev', dhPassMend: 'drop', dhLongSlip: 'shield', dhStepFury: 'chev', dhGhost: 'reflect' },
   geomancer: { geoTall: 'pillar', geoLasting: 'slab', geoHardLand: 'fall', geoFourth: 'stones', geoReturn: 'reflect', geoShrapnel: 'shards', geoBulwark: 'shield', geoRumble: 'rune', geoAftershock: 'ring', geoWideQuake: 'wave' },
 };
