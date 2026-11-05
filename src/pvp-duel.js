@@ -15,7 +15,7 @@
 // file); guests, online guests and bots are not ranked. Online leaderboard: LATER (needs a backend).
 // BOTS: botThink (pure) drives a 'duelbot' seat - the opponent when one person duels alone, and the hands of tools/pvp-duel.mjs's AI-vs-AI runs.
 
-export const PVP_SHIPS = true;   /* THE FLAG: false hides the title row, the tavern pit's DUEL card and the RANKINGS board (the pit goes back to COMING SOON) */
+export const PVP_SHIPS = false;   /* (proof146b 11-05) OFF until the warden bot-duel edge (16/16, 24/24) is settled; one line to flip, everything else proven */   /* THE FLAG: false hides the title row, the tavern pit's DUEL card and the RANKINGS board (the pit goes back to COMING SOON) */
 export const DUEL = {
   hp: 100, scale: 0.8, probe: 40, iframe: 0.4,
   heroMul: {},   /* (proof146b) per-hero PvP trim hook (empty): a warden trim of x0.8 and x0.5 did NOT move the bot-duel warden win rate (24/24, 7/8): the edge is not blow weight */
@@ -354,12 +354,12 @@ export function makeDuel(api) {
     if (m.phase === 'count') { T('ROUND ' + m.round, VW / 2, VH / 2 - 30, '#fff6e0', 'center', 16); T(String(Math.max(1, Math.ceil(m.t))), VW / 2, VH / 2 - 8, '#ffd36b', 'center', 24); }
     const b = st.banner; if (b && (api.time() - b.at < b.t) && m.phase !== 'count') T(b.txt, VW / 2, VH / 2 - 40, b.c, 'center', b.txt.length > 18 ? 8 : 16);
     if (m.phase === 'over' && st.result) {
-      const w = 220, h = 62 + st.result.rows.length * 9 + 80, x = Math.round(VW / 2 - w / 2), y = Math.round(VH / 2 - h / 2) + 8;
+      const w = 220, h = 72 + st.result.rows.length * 9 + 80, x = Math.round(VW / 2 - w / 2), y = Math.round(VH / 2 - h / 2) + 8;
       api.board(x, y, w, h);
       const W0 = seatById(st.result.winner); T(W0 ? label(W0) + ' WINS' : 'A DRAWN DUEL', x + w / 2, y + 5, W0 ? col(W0) : '#fff6e0', 'center', 8);
-      T(st.result.practice ? 'PRACTICE: UNRANKED' : '', x + 6, y + 17, '#9aa39a', 'left', 8); T('ROUNDS  DEALT  POINTS', x + w - 6, y + 17, '#9aa39a', 'right', 8);
-      st.result.rows.forEach((r, k) => { const p = seatById(r.n), yy = y + 27 + k * 9; T(r.tag + ' ' + api.heroName(r.hero) + (r.ranked || st.result.practice ? '' : ' (GUEST)'), x + 6, yy, p ? col(p) : '#c2c9c2', 'left', 8); T(r.rounds + '   ' + r.dealt + '   +' + r.pts, x + w - 6, yy, '#fff6e0', 'right', 8); });
-      const ry = y + 31 + st.result.rows.length * 9; drawRanks(x + 6, ry, w - 12, 5);
+      if (st.result.practice) T('PRACTICE: UNRANKED', x + w / 2, y + 15, '#9aa39a', 'center', 8); T('ROUNDS  DEALT  POINTS', x + w - 6, y + 25, '#9aa39a', 'right', 8);   /* (proof146b) the two lines each had a row: side by side they overran the 220 px board */
+      st.result.rows.forEach((r, k) => { const p = seatById(r.n), yy = y + 35 + k * 9; T(r.tag + ' ' + api.heroName(r.hero) + (r.ranked || st.result.practice ? '' : ' (GUEST)'), x + 6, yy, p ? col(p) : '#c2c9c2', 'left', 8); T(r.rounds + '   ' + r.dealt + '   +' + r.pts, x + w - 6, yy, '#fff6e0', 'right', 8); });
+      const ry = y + 41 + st.result.rows.length * 9; drawRanks(x + 6, ry, w - 12, 5);
       T('JUMP: REMATCH    E: BACK TO THE INN', x + w / 2, y + h - 10, '#a8e06e', 'center', 8);
     }
   }

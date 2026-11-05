@@ -1710,7 +1710,7 @@ function goDown(killer) {
   P.atk = -1; P.block = false; P.wBrace = false; P.wthArm = false; P.wthHold = 0; wthSpears = []; P.rgGuard = false; P.plunge = false; P.dodge = 0; P.aegis = false; P.warding = false; P.fwUp = false; P.fwT = 0; P.fwRec = 0; P.fwCd = 0; P.cMode = null; P.fbHold = 0; P.stoking = false; P.stokeT = 0; P.deflectT = 0; P.deflectRec = 0; P.perch = 0; P.vaultCarry = 0;
   P.inv = 0.6; P.vx = 0; P.hitSet.clear();
   SFX.gasp(); SFX.thud(); shakeCam(5, 0, 'hurt'); number(P.x, P.y - 30, 'DOWN', '#ff6b6b');
-  if (coop() && coopTipDue(PROG, 'down')) { hintSay('mechanic', 4.5, 'DOWN, NOT DEAD: YOUR PARTNER STANDS ON YOU FOR A MOMENT TO LIFT YOU.'); saveProgress(); }   /* (the first two downs of a save say it) */
+  if (coop() && !(DUELO && DUELO.on()) && coopTipDue(PROG, 'down')) { hintSay('mechanic', 4.5, 'DOWN, NOT DEAD: YOUR PARTNER STANDS ON YOU FOR A MOMENT TO LIFT YOU.'); saveProgress(); }   /* (the first two downs of a save say it) */
   burst(P.x, P.y - 8, 14, ['#c9463d', '#8f2f28', '#c9d1dc'], 90, 0.7);
 }
 function downedPlayer(dt) {
@@ -37252,7 +37252,7 @@ function tick(now) {
   while (acc >= STEP && n < 8) { update(STEP); acc -= STEP; n++; clearPresses(); }
   /* A PICTURE IS DRAWN ONLY WHEN SOMETHING STEPPED (claude/mobile2): the world moves in fixed 1/60 s steps, so a frame that ran none is the picture already on the glass.
      On a 90 or 120 Hz phone (and a 144 Hz monitor) the game drew every refresh - up to twice the work for a picture that had not changed. ?everyframe puts the old way back. */
-  const tr = performance.now(); if (n > 0 || EVERY_FRAME || !drawnOnce || state !== lastDrawnState) { render(); drawnOnce = true; lastDrawnState = state; } const te = performance.now();
+  const tr = performance.now(); if ((n > 0 || EVERY_FRAME || !drawnOnce || state !== lastDrawnState) && !LS.state.busy) { render(); drawnOnce = true; lastDrawnState = state; }   /* (proof146b) never draw the old world over a level load in flight: the bake swaps PROP under it (a TypeError on the tavern -> duel pit load) */ const te = performance.now();
   perf.u += (tr - tu - perf.u) * 0.1; perf.r += (te - tr - perf.r) * 0.1; perf.frames++; if (te - perf.t0 > 500) { perf.fps = Math.round(perf.frames * 1000 / (te - perf.t0)); perf.frames = 0; perf.t0 = te; }
 }
 /* THE NEXT FRAME IS ASKED FOR EVEN IF THIS ONE THREW (claude/perf51): one exception used to end the requestAnimationFrame chain for good, and
