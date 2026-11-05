@@ -25,7 +25,7 @@ const C = { skin: '#2a2230', skinL: '#463a4a', vein: '#ff7a2a', smoke: 'rgba(40,
 export function makeDemonKingHands(ctx) {
   // ctx: { L(), players(), P(), enemies(), asPlayer(p, fn), damage(fromX, dmg, o) -> 'hit'|'blocked'|false, rpStamp() -> P.rpLookAt, heroId(), swordDmg(),
   //        hurtAs(tag, e, dmg, fromX), spawnImp(x, y) -> entity, number(x, y, t, col), sfx: SFX, shake(n), ring(x, y, r, col), burst(x, y, n, cols), scale(), skh(), bk() }
-  let f = null, king = null; const ents = new Map();
+  let f = null, king = null, resolving = 0; const ents = new Map();   /* resolving: the id of the bolt that is REACHING a hero right now (S3: a guard's own foe-hit - the Blood Knight's ward return, a flame ward's burn - must not return it as a NORMAL blow before the parry stamp makes it a POWER one) */
   const lvl = () => { const L = ctx.L(); return L && L.skyMount && !L.skyMount.noKing ? L : null; };
   const back = () => { const S = ctx.skh && ctx.skh(); return S ? S.back() : null; };
   const on = () => !!(f && lvl());
@@ -51,16 +51,16 @@ export function makeDemonKingHands(ctx) {
   /* a blow / shot met a bolt entity (hurtEnemy0, before anything else) -> true = handled (no damage, no number) */
   function struck(e, dmg, tag) {
     if (!f || e.t !== 'hellbolt') return false;
-    const b = f.bolts.find(q => q.id === e.dkBolt); if (!b || b.st !== 'in') return true;
+    const b = f.bolts.find(q => q.id === e.dkBolt); if (!b || b.st !== 'in' || resolving === b.id) return true;
     const how = RK.classify(ctx.heroId(), { via: tag === 'shot' ? 'shot' : 'blow', tag });
     if (how === 'normal' || how === 'power') { const i = Math.max(0, heroes().indexOf(ctx.P())); DKM.meet(f, b, how, i); ctx.burst(b.x, b.y, 8, [C.ret, C.gold]); }
     return true;
   }
   /* B15 + the phase line, last before e.hp -= dmg */
   function take(e, dmg, tag) { if (!f || e !== king) return dmg; const d = DKM.take(f, dmg, tag); if (tag !== DK.returnTag && d > 0 && dmg > d * 1.5 && !(f.saidChip > f.t)) { f.saidChip = f.t + 4; ctx.number(king.x, king.y - DK.h - 12, DKM.kingLow(f) ? 'CHIP - KNOCK HIM DOWN' : 'OUT OF REACH - STRIKE HIS BOLTS BACK', '#9aa39a'); } return d; }
-  function hurtHero(i, fromX, dmg, name) {
-    const p = heroes()[i]; if (!p || p.dead) return null; let out = null;
-    ctx.asPlayer(p, () => { const st = ctx.rpStamp(); const r = ctx.damage(fromX, dmg, { who: king, name, blow: name }); out = { r, parried: ctx.rpStamp() !== st, hero: ctx.heroId() }; });
+  function hurtHero(i, fromX, dmg, name, boltId = 0) {
+    const p = heroes()[i]; if (!p || p.dead) return null; let out = null; resolving = boltId;
+    try { ctx.asPlayer(p, () => { const st = ctx.rpStamp(); const r = ctx.damage(fromX, dmg, { who: king, name, blow: name }); out = { r, parried: ctx.rpStamp() !== st, hero: ctx.heroId() }; }); } finally { resolving = 0; }
     return out;
   }
   function update(dt) {
@@ -71,7 +71,7 @@ export function makeDemonKingHands(ctx) {
     const imps = ctx.enemies().filter(e => e.dkImp && e.alive).length;
     const ev = DKM.stepKing(f, dt, { heroes: hs, imps });
     for (let k = 0; k < ev.length; k++) { const e = ev[k];
-      if (e.k === 'boltAt') { const r = hurtHero(e.hero, e.bolt.x, DK.bolt.dmg, 'HELLBOLT'); if (!r) continue;
+      if (e.k === 'boltAt') { const r = hurtHero(e.hero, e.bolt.x, DK.bolt.dmg, 'HELLBOLT', e.bolt.id); if (!r) continue;
         const how = RK.classify(r.hero, { via: 'body', result: r.r, parried: r.parried }); DKM.resolveBody(f, e.bolt, how, e.hero);
         if (how === 'block') { ctx.number(e.bolt.x, e.bolt.y - 10, DKM.DK_SAY.block, C.ward); ctx.burst(e.bolt.x, e.bolt.y, 10, [C.boltRim, C.bolt]); } }
       else if (e.k === 'hit') hurtHero(e.hero, e.x, e.dmg, e.name);
