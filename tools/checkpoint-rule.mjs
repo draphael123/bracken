@@ -14,13 +14,16 @@ export const arenaOutside = L => { const A = L.arena; if (!A) return []; const f
      checks  [{x, y, at}] (at = route tile, null when off the route)      end  the route tile where the boss's trigger is
      doors   route tiles where the route first enters a boss, mini or ambush room (null = never enters: a flight fight, the door is `end`)
      exempt  [[x, y]] checkpoints that stand where the level needs them (the outside-the-arena one, an exam door a tool pins): like a door one they may stand closer than MIN */
-export function judge({ checks, end, doors, exempt = [] }) {
+export function judge({ checks, end, doors, exempt = [], shortcuts = [] }) {
+  /* (claude/art4, Daniel 11-05) AN OPENED SHORTCUT BREAKS A GAP: a level that builds rope shortcuts (Monastery 3's bell ropes) counts the START and each shortcut bell as a stop for SPARSE and for a door's distance - striking the bell lets a rope down to the section below for good, so a death above it costs a climb, not the level. DENSE still reads only real shrines. */
+  const brk = shortcuts.filter(v => v !== null && v !== undefined && v <= end + 30), sc = brk.length ? [0, ...brk] : [];
   const bad = [], on = checks.filter(c => c.at !== null && c.at <= end + 30).map(c => ({ ...c, at: Math.min(c.at, end) })).sort((a, b) => a.at - b.at), door = new Set();
   const isEx = c => exempt.some(([x, y]) => x === c.x && y === c.y);
   for (const d of doors) { const e = d === null ? end : d, before = on.filter(c => c.at <= e);
+    if (!before.length && sc.some(v => v <= e && e - v <= MAX)) continue;
     if (!before.length) { bad.push('NO DOOR: nothing stands before the room at route ' + e); continue; }
     const c = before[before.length - 1]; door.add(c); if (e - c.at > MAX) bad.push('NO DOOR: the room at route ' + e + ' has its checkpoint ' + (e - c.at) + ' tiles back'); }
-  const stops = [0, ...on.map(c => c.at), end]; let worst = 0, worstAt = 0;
+  const stops = [0, ...on.map(c => c.at), ...sc, end].sort((a, b) => a - b); let worst = 0, worstAt = 0;
   for (let i = 1; i < stops.length; i++) { const g = stops[i] - stops[i - 1]; if (g > worst) { worst = g; worstAt = stops[i - 1]; } }
   if (worst > MAX) bad.push('TOO SPARSE: ' + worst + ' route tiles with no checkpoint, from route tile ' + worstAt);
   for (let i = 1; i < on.length; i++) { const a = on[i - 1], b = on[i], free = c => door.has(c) || isEx(c);
@@ -30,7 +33,7 @@ export function judge({ checks, end, doors, exempt = [] }) {
 /* the level's checkpoints as pacing() saw them, judged: what a level's own exam tool calls in place of its old 40/72/100/120 asserts */
 export function judgeLevel(lv, r, L = lv.build()) {
   const s = r.stats, exempt = [...(CHECK_PIN[lv.id] || []).map(([x, y]) => [x, y]), ...arenaOutside(L).map(e => [e.x, e.y])];
-  return judge({ checks: s.checkList, end: s.endAt, doors: s.doors.map(d => d.at === null && d.c !== 'B' ? undefined : d.at).filter(d => d !== undefined), exempt });
+  return judge({ checks: s.checkList, end: s.endAt, doors: s.doors.map(d => d.at === null && d.c !== 'B' ? undefined : d.at).filter(d => d !== undefined), exempt, shortcuts: (s.shortcutList || []).map(c => c.at) });
 }
 /* A10b (Daniel 2026-10-07, after playing the pilot Marsh): FEWER SHRINES - about one per section and one before the boss, A10B.min-A10B.max walked
    route tiles apart (the rule above is >= MIN / <= MAX). REPORT-ONLY until the level sweep moves the shrines level by level: tools/checkpoint-gaps.mjs
@@ -70,3 +73,8 @@ export const assertRule = (lv, r, L) => { const j = judgeLevel(lv, r, L); assert
   assert(judge({ checks: cs([140, 260, 280]), end: 450, doors: [285] }).bad.every(b => !/DENSE/.test(b)), 'two shrines close together pass when one is the door one');
   assert(judge({ checks: cs([140, 260, 300, 430]), end: 450, doors: [] }).bad.some(b => /DENSE/.test(b)), 'two shrines forty apart fail...');
   assert(judge({ checks: cs([140, 260, 300, 430]), end: 450, doors: [], exempt: [[300, 0]] }).bad.every(b => !/DENSE/.test(b)), '...unless the level needs one of them where it stands'); }
+/* AN OPENED SHORTCUT BREAKS A GAP (Daniel 11-05, Monastery 3 keeps 3 shrines + its bell ropes) */
+{ const cs = a => a.map(at => ({ x: at, y: 0, at }));
+  assert(judge({ checks: cs([170, 380]), end: 640, doors: [90] }).bad.length > 0, 'no shortcuts: a 260-tile run and a door with no shrine fail');
+  assert.equal(judge({ checks: cs([170, 380]), end: 640, doors: [90], shortcuts: [360, 576] }).bad.length, 0, 'a bell at 360 and one at 576 break the runs; the start is the stop before the early door');
+  assert(judge({ checks: cs([170, 380]), end: 640, doors: [90], shortcuts: [null] }).bad.length > 0, 'a shortcut off the route breaks nothing'); }
