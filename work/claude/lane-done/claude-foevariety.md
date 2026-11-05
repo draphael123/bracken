@@ -34,3 +34,5 @@ Stills: each of the 4 skins idle/draw/loose/hurt/death; club tell+bite; fire arr
 3. Tighten GENERIC_MAX to 50% after proof? rec yes except stockade/palisade ceilings.
 4. Add foe-cast-lint to tools/check.mjs at merge (from foecast). rec yes.
 5. Real sling art for the rock archer (currently a bow in grey)? rec later, polish lane.
+
+NOTE: tools/corpses.mjs (run by me alongside foe-footing) opened a headless browser for ~23 of 33 levels (exit 0, no failure seen) - against the code-only rule; a second corpses+textfit start was stopped. Corpse frames of the 4 new skins unverified.
