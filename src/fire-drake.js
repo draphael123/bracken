@@ -8,7 +8,9 @@
 //   most FD.jerk.cap of its bar (a purse), then a told WARD (B3) at x0.4. Outside the ring it BREATHES fire (a low cone that starts ~30 px from its
 //   jaw: UNDER ITS CHIN is safe) and PANTS after (a soft window, x1). Everywhere else its scales turn a blow at FD.hide (>= 0.4, B15) - never 0.
 //   ONE NEW MOVE PER PHASE (B5), P2 a different fight (it flies):
-//     P1 THREE CHAINS (100-60%)  CLAW RAKE (yellow !), TAIL LASH (red !!, low: jump), FLAME BREATH (red !!), CHAIN LUNGE (red !!)
+//     P1 THREE CHAINS (100-60%)  CLAW RAKE (yellow !), TAIL LASH (red !!, low: jump), FLAME BREATH (red !!), CHAIN LUNGE (red !!),
+//                                THE CHAIN SWEEP (red !!: it grips a chain in its jaws and sweeps it LOW along the band just OUTSIDE the ring - the bait spot is not
+//                                a safe spot: jump it)
 //     P2 TWO CHAINS   (60-30%)   it TEARS a chain (told, the seal cracks), the ring grows; + THE WING GUST + DIVE (hover, a red ring at your feet;
 //                                a dive past its ring is jerked out of the air -> JERKED)
 //     P3 ONE CHAIN    (30-0%)    it tears another (the caldera erupts); + THE MAGMA SLAM (a wave both ways: jump the crest) and the floor VENTS (told glow)
@@ -19,13 +21,15 @@ export const FD = {
   hp: 2600, w: 64, h: 44, head: 30,             // head: the jaw's distance ahead of its body centre (the chain's ring is measured to the JAW)
   hide: 0.5, wardMul: 0.4, tearMul: 0.5, pantMul: 1.0,
   p2: 0.6, p3: 0.3,
-  ring: [110, 160, 205],                         // the chain's reach (px from the seal centre to the jaw) by phase
+  ring: [100, 145, 185],                         // the chain's reach (px from the seal centre to the jaw) by phase. THE BAIT SPOT is past the ring AND past its claw
+                                                 // from the chain's end (baitOf): ring + claw.reach - head + 18 = 154 / 199 / 239 px - inside a 32-tile caldera's 248 (the wall band)
   walkV: [44, 48, 54], rest: [0.55, 0.45, 0.4], near: 80,
-  claw: { tell: [0.7, 0.6, 0.55], t: 0.18, reach: 72, back: 10, h: 30, dmg: 18, rec: 0.45 },
+  claw: { tell: [0.7, 0.6, 0.55], t: 0.18, reach: 66, back: 10, h: 30, dmg: 18, rec: 0.45 },
   tail: { tell: [0.8, 0.7, 0.65], t: 0.25, back: 90, ahead: 40, h: 14, dmg: 20, rec: 0.5 },
-  breath: { tell: [1.0, 0.9, 0.85], t: 0.9, tick: 0.3, gap: 30, over: 140, h: 22, dmg: 9, pant: 1.0 },
-  lunge: { tell: [0.85, 0.8, 0.75], lock: 0.25, v: 420, biteR: 22, dmg: 26, rec: 0.5, share: 0.5, after: 0.25 },   // lock: the lunge's aim holds this long before launch; share / after: its pick share outside the ring (after a jerk)
-  jerk: { t: [3.5, 3.0, 2.6], mul: 1.75, cap: 0.18, rise: 0.6, ward: 2.5 },
+  breath: { tell: [1.0, 0.9, 0.85], t: 0.5, tick: 0.3, gap: 30, over: 140, h: 22, dmg: 12, pant: 1.0 },   // two ticks (0, 0.3 s): under its chin, behind it, on a ledge - or a jump timed on the release clears it
+  sweep: { tell: [0.8, 0.7, 0.65], t: 0.3, inside: 12, over: 80, h: 12, dmg: 16, rec: 0.55, share: 0.45 },   // THE CHAIN SWEEP: the band from ring - inside to ring + over, low (jump it)
+  lunge: { tell: [0.85, 0.8, 0.75], lock: 0.25, v: 420, biteR: 22, dmg: 26, rec: 0.5, share: 0.4, after: 0.2 },   // lock: the lunge's aim holds this long before launch; share / after: its pick share outside the ring (after a jerk)
+  jerk: { t: [3.2, 2.8, 2.4], mul: 1.75, cap: 0.15, rise: 0.6, ward: 2.5 },
   tear: { tell: 1.6 },
   dive: { crouch: 0.8, hover: 1.2, ring: 0.9, air: 70, gust: 60, r: 34, h: 24, dmg: 24, rec: 0.6, share: 0.3 },
   slam: { tell: 1.0, t: 0.3, v: 175, crest: 13, clear: 9, dmg: 22, rec: 0.6, every: 3 },
@@ -40,6 +44,7 @@ export const POSE = {
   sleep: { body: 'coiled', head: 'down' }, wake: { body: 'rising', head: 'up' }, walk: { body: 'stalk', head: 'low' }, recover: { body: 'stalk', head: 'shake' },
   clawTell: { body: 'rear', leg: 'up', claws: 'glow' }, claw: { body: 'lean', leg: 'swipe' },
   tailTell: { body: 'coil', tail: 'raised', rattle: true }, tail: { body: 'spin', tail: 'sweep' },
+  sweepTell: { body: 'crouch', jaw: 'chain', chains: 'gripped' }, sweep: { body: 'twist', chains: 'swept' },
   breathTell: { body: 'rear', neck: 'back', chest: 'glow' }, breath: { body: 'brace', neck: 'out', jaw: 'open' }, pant: { body: 'slump', jaw: 'smoke' },
   lungeTell: { body: 'crouch', wings: 'half', chains: 'glow' }, lunge: { body: 'dash', jaw: 'open' }, jerked: { body: 'onSide', chains: 'taut' }, rise: { body: 'rising', scales: 'blaze' },
   tearTell: { body: 'rear', chains: 'strain', roar: true }, takeoff: { body: 'crouch', wings: 'spread' }, hover: { body: 'air', wings: 'beat' },
@@ -47,7 +52,7 @@ export const POSE = {
   slamTell: { body: 'rear', legs: 'high', seal: 'glow' }, slam: { body: 'slam', legs: 'down' },
   beaten: { body: 'lunge', chains: 'snap' }, down: { body: 'collapsed', seal: 'split' },
 };
-const TELLS = new Set(['clawTell', 'tailTell', 'breathTell', 'lungeTell', 'tearTell', 'takeoff', 'hover', 'diveTell', 'slamTell']);
+const TELLS = new Set(['sweepTell', 'clawTell', 'tailTell', 'breathTell', 'lungeTell', 'tearTell', 'takeoff', 'hover', 'diveTell', 'slamTell']);
 export const fdTelling = e => !!e && TELLS.has(e.mode);
 export const fdOpen = e => !!e && e.mode === 'jerked';
 export const fdSoft = e => !!e && e.mode === 'pant';
@@ -59,13 +64,15 @@ export function geom(A, TS = 16) {
 }
 export function newFight(G) {
   return { G, ph: 1, chains: 3, ward: 0, act: 0, restT: 1, last: [], purse: null, waves: [], vents: [], ventT: FD.vent.every, slams: 0, sinceSlam: 0, lastJerk: false, done: false,
-    n: { claw: 0, tail: 0, breath: 0, lunge: 0, bite: 0, jerk: 0, dive: 0, diveJerk: 0, slam: 0, vent: 0, tear: 0 } };
+    n: { sweep: 0, claw: 0, tail: 0, breath: 0, lunge: 0, bite: 0, jerk: 0, dive: 0, diveJerk: 0, slam: 0, vent: 0, tear: 0 } };
 }
 export const ringOf = S => FD.ring[S.ph - 1];
 /* the body x its chain lets it reach on a side (its jaw at the ring) */
 export const bodyMax = (S, side) => S.G.seal + side * (ringOf(S) - FD.head);
 export const outside = (S, x, pad = 0) => Math.abs(x - S.G.seal) > ringOf(S) + pad;
 export const jawX = e => e.x + e.face * FD.head;
+/* where a player stands to bait the lunge on a side: past the ring, and past the claw of a drake standing at its chain's end */
+export const baitOf = (S, side) => S.G.seal + side * (ringOf(S) + FD.claw.reach - FD.head + 18);
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 
 /* ---------- ONE FRAME OF IT. heroes: [{ x, y (feet), ground, alive }]; w = the world:
@@ -100,10 +107,14 @@ export function stepDrake(e, S, dt, heroes, w) {
     case 'tail': { const a = e.x - e.face * FD.tail.back, b = e.x + e.face * FD.tail.ahead;
       w.hit([Math.min(a, b), Math.max(a, b), fy - FD.tail.h, fy + 2], FD.tail.dmg, 'tail', { key: e.hitKey, push: -e.face * 160 });
       if (e.modeT <= 0) { e.mode = 'recover'; e.modeT = FD.tail.rec; } return; }
+    case 'sweepTell': if (e.modeT <= 0) { e.mode = 'sweep'; e.modeT = FD.sweep.t; e.hitKey = 'sw' + S.act; w.sound('chainSweep'); } return;
+    case 'sweep': { const sd = e.sweepSide, a = G.seal + sd * (ringOf(S) - FD.sweep.inside), b = G.seal + sd * (ringOf(S) + FD.sweep.over);
+      w.hit([Math.min(a, b), Math.max(a, b), fy - FD.sweep.h, fy + 2], FD.sweep.dmg, 'sweep', { key: e.hitKey, push: sd * 150 });
+      if (e.modeT <= 0) { e.mode = 'recover'; e.modeT = FD.sweep.rec; } return; }
     case 'breathTell': if (e.modeT <= 0) { e.mode = 'breath'; e.modeT = FD.breath.t; e.tick = 0; w.sound('breath'); } return;
     case 'breath': {
-      e.tick -= dt; if (e.tick <= 0) { e.tick += FD.breath.tick; S.act++; const a = jawX(e) + e.face * FD.breath.gap, b = jawX(e) + e.face * (ringOf(S) + FD.breath.over);
-        w.hit([Math.min(a, b), Math.max(a, b), fy - FD.breath.h, fy + 2], FD.breath.dmg, 'breath', { key: 'br' + S.act }); }
+      e.tick -= dt; if (e.tick <= 0) { e.tick += FD.breath.tick; e.ticks = (e.ticks || 0) + 1; const a = jawX(e) + e.face * FD.breath.gap, b = jawX(e) + e.face * (ringOf(S) + FD.breath.over);
+        w.hit([Math.min(a, b), Math.max(a, b), fy - FD.breath.h, fy + 2], FD.breath.dmg, 'breath', { key: 'br' + S.act + '.' + e.ticks }); }
       if (e.modeT <= 0) { e.mode = 'pant'; e.modeT = FD.breath.pant; e.openT0 = e.modeT; w.number(e.x, fy - 60, FD_SAY.pant, '#ffd36b'); } return; }
     case 'pant': if (e.modeT <= 0) { e.mode = 'walk'; S.restT = FD.rest[i] * 0.5; } return;
     case 'lungeTell': if (e.modeT > FD.lunge.lock && P) e.lockX = P.x;   /* the aim follows you while the chains glow, then holds: a told launch */
@@ -151,16 +162,18 @@ function jerkStart(e, S, w, fromAir) {
 function pick(e, S, P, w) {
   const i = S.ph - 1, d = P.x - e.x, ad = Math.abs(d), behind = Math.sign(d) !== e.face, out = outside(S, P.x, -8), r = Math.random();
   let m;
-  if (ad < FD.near && !out) m = behind ? (r < 0.8 ? 'tail' : 'claw') : (r < 0.55 ? 'claw' : 'tail');
+  /* in its claw's reach it ALWAYS claws or lashes (a hero standing at its jaw is not baiting, ring or no ring); past the claw and the ring it lunges, breathes, dives */
+  if (ad < FD.claw.reach + 10 || (ad < FD.near && !out)) m = behind ? (r < 0.8 ? 'tail' : 'claw') : (r < 0.55 ? 'claw' : 'tail');
   else if (S.ph >= 2 && r < FD.dive.share) m = 'dive';
   else if (S.ph === 3 && S.sinceSlam >= FD.slam.every) m = 'slam';
-  else m = r < (S.lastJerk ? FD.lunge.after : FD.lunge.share) ? 'lunge' : 'breath';   /* (a drake that was just jerked is warier of its chain: it breathes more) */
+  else { const r2 = Math.random(); m = r < (S.lastJerk ? FD.lunge.after : FD.lunge.share) ? 'lunge' : r2 < FD.sweep.share ? 'sweep' : 'breath'; }   /* (a drake that was just jerked is warier of its chain: it breathes more) */
   if (S.last.length >= 2 && S.last[0] === m && S.last[1] === m) m = m === 'lunge' ? 'breath' : 'lunge';
-  S.last.unshift(m); S.last.length = Math.min(S.last.length, 3); S.act++; S.sinceSlam = m === 'slam' ? 0 : (S.sinceSlam || 0) + 1; S.lastJerk = false; if (m === 'claw' || m === 'tail' || m === 'breath') S.n[m]++;
+  S.last.unshift(m); S.last.length = Math.min(S.last.length, 3); S.act++; S.sinceSlam = m === 'slam' ? 0 : (S.sinceSlam || 0) + 1; S.lastJerk = false; if (m === 'claw' || m === 'tail' || m === 'breath' || m === 'sweep') S.n[m]++;
   e.face = Math.sign(d) || e.face;
   switch (m) {
     case 'claw': e.mode = 'clawTell'; e.modeT = FD.claw.tell[i]; w.mark('!'); w.sound('clawTell'); break;
     case 'tail': e.mode = 'tailTell'; e.modeT = FD.tail.tell[i]; w.mark('!!'); w.sound('rattle'); break;
+    case 'sweep': e.mode = 'sweepTell'; e.modeT = FD.sweep.tell[i]; e.sweepSide = Math.sign(P.x - S.G.seal) || 1; w.mark('!!'); w.sound('chainGrip'); break;
     case 'breath': e.mode = 'breathTell'; e.modeT = FD.breath.tell[i]; w.mark('!!'); w.sound('inhale'); w.number(e.x, S.G.floorY - 60, FD_SAY.breath, '#ff9a5c'); break;
     case 'lunge': e.mode = 'lungeTell'; e.modeT = FD.lunge.tell[i]; e.lockX = P.x; w.mark('!!'); w.sound('chains'); break;
     case 'dive': e.mode = 'takeoff'; e.modeT = FD.dive.crouch; e.air = 0; w.mark('!!'); w.sound('takeoff'); break;
@@ -213,7 +226,7 @@ export function fdPlan(s) {
   const roll = (key, pr) => { if (!mem.roll.has(key)) mem.roll.set(key, rng() < pr); return mem.roll.get(key); };
   const lo = G.x0 + 8, hi = G.x1 - 8, cl = x => clamp(x, lo, hi), half = FD.w / 2, ring = ringOf(S);
   const side = Math.sign(P.x - G.seal) || 1, kx = e.x, dx = Math.abs(kx - P.x), hitR = reach + half - 4;
-  const baitX = cl(G.seal + side * (ring + 16)), canBait = Math.abs(baitX - G.seal) > ring + 6;
+  const baitX = cl(baitOf(S, side)), canBait = Math.abs(baitX - G.seal) > ring + FD.claw.reach - FD.head + 6;
   const swing = () => { out.face = Math.sign(kx - P.x) || out.face; out.atk = P.atk < 0; };
   const jump = (why) => { out.jump = P.ground; out.gx = P.x; mem.jumpT = t; mem.jumpX = P.x; out.why = why; return out; };
   if (e.mode === 'down' || e.beaten) { out.gx = P.x; out.why = 'beaten'; return out; }
@@ -221,6 +234,8 @@ export function fdPlan(s) {
   if (!P.ground && mem.jumpT !== undefined && t - mem.jumpT < 0.6) { out.gx = mem.jumpX; out.why = 'in the air'; return out; }
   /* 1. THE CRESTS (P3): jump one as it reaches you */
   for (const v of S.waves) { const d = (P.x - v.x) * v.dir; if (d > -4 && d < FD.slam.v * 0.16 + FD.slam.crest + 4 && seenFor(v.key, s.v2 ? 0.05 : 0.15) && !(!s.v2 && roll(v.key + 'm', PLAN.miss))) return jump('jump the crest'); }
+  /* 1b. THE MAGMA SLAM: close to it as the forelegs come down - jump the crest as it leaves its feet */
+  if (e.mode === 'slamTell' && dx < 70 && e.modeT < 0.14 && seenFor('sl' + S.act, s.v2 ? 0.05 : PLAN.react) && !(!s.v2 && roll('sl' + S.act + 'm', PLAN.miss))) return jump('jump the slam');
   /* 2. A VENT's glow under you: off it */
   for (const v of S.vents) if (v.t > 0 && Math.abs(P.x - v.x) < FD.vent.w + 10 && seenFor(v.key, 0.2)) { out.gx = cl(P.x + (P.x >= v.x ? 1 : -1) * (FD.vent.w + 22)); out.why = 'off the vent'; return out; }
   /* 3. THE DIVE: its red ring at your feet - off it (outward past its chain if that is near: it is jerked) */
@@ -229,7 +244,7 @@ export function fdPlan(s) {
       const away = cl(e.lockX + (P.x >= e.lockX ? 1 : -1) * (FD.dive.r + 18)); out.gx = canBait && Math.abs(baitX - P.x) < Math.abs(away - P.x) + 30 ? baitX : away; out.why = 'off the dive ring'; return out; }
     out.gx = canBait ? baitX : P.x; out.why = 'it flies: outside the ring'; return out; }
   /* 4. ITS TELLS (a reaction late, some misread) */
-  if (fdTelling(e) || e.mode === 'claw' || e.mode === 'tail' || e.mode === 'breath' || e.mode === 'lunge') {
+  if (fdTelling(e) || e.mode === 'claw' || e.mode === 'tail' || e.mode === 'breath' || e.mode === 'lunge' || e.mode === 'sweep') {
     const key = 'a' + S.act + e.mode.replace(/Tell$/, ''), miss = !s.v2 && roll(key + 'm', PLAN.miss);
     if (seenFor(key) && !miss) {
       const f = e.face || 1, rel = (P.x - kx) * f;
@@ -239,12 +254,15 @@ export function fdPlan(s) {
       if (e.mode === 'clawTell' || e.mode === 'claw') { const inBox = rel > -FD.claw.back - 6 && rel < FD.claw.reach + 8;
         if (inBox && s.parry && !roll(key + 'p', 0.35) && (e.mode === 'claw' || e.modeT < 0.14)) { out.block = true; out.gx = P.x; out.face = Math.sign(kx - P.x) || 1; out.why = 'guard the claw'; return out; }
         if (inBox) { out.gx = cl(kx + f * (FD.claw.reach + 20)); if (Math.abs(out.gx - kx) < FD.claw.reach) out.gx = cl(kx - f * (FD.claw.reach + 20)); out.why = 'out of the claw'; return out; } }
+      if (e.mode === 'sweepTell' || e.mode === 'sweep') { const sd = e.sweepSide || 1, rr = (P.x - G.seal) * sd, inBand = rr > ring - FD.sweep.inside - 8 && rr < ring + FD.sweep.over + 8;
+        if (inBand && (e.mode === 'sweep' || e.modeT < 0.12)) return jump('jump the chain');
+        if (inBand) { out.gx = P.x; out.why = 'the chain sweep: ready'; return out; } }
       if (e.mode === 'breathTell' || e.mode === 'breath') {
-        const behind = rel < -4, under = rel > -4 && rel < FD.head + FD.breath.gap - 4;
+        const behind = rel < -4, under = rel > -4 && rel < FD.head + FD.breath.gap - 12;
         if (behind || under) { out.gx = P.x; out.why = behind ? 'behind it: the breath misses' : 'under its chin'; return out; }
-        const chin = cl(kx + f * (FD.head + 8)); if (Math.abs(chin - P.x) < 90) { out.gx = chin; out.why = 'under its chin'; return out; }
-        if (e.mode === 'breath' || e.modeT < 0.15) return jump('jump the breath');
-        out.gx = chin; out.why = 'run under its chin'; return out; }
+        const chin = cl(kx + f * (FD.head + 8)); if (e.mode === 'breathTell' && Math.abs(chin - P.x) < Math.max(0, e.modeT - 0.05) * 85) { out.gx = chin; out.why = 'under its chin'; return out; }
+        if (e.mode === 'breathTell' && e.modeT < 0.1) return jump('jump the breath');
+        out.gx = P.x; out.why = 'too far for its chin: ready to jump'; return out; }
       if (e.mode === 'lungeTell') {
         if (outside(S, P.x, 10)) { out.gx = P.x; out.face = Math.sign(kx - P.x) || 1; out.why = 'outside the ring: let it come'; return out; }
         if (canBait && Math.abs(baitX - P.x) < e.modeT * 85 + 6) { out.gx = baitX; out.why = 'out past the ring'; return out; }
