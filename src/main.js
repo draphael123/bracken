@@ -36942,10 +36942,10 @@ function render() {
       // THE HEAVY BLOW, WINDING UP: a bar over his head that fills, and goes gold and wide when it is there
       if (hero() === 'knight' && knightWinding() && !P.dead) {   /* THE HEAVY CUT'S THREE STAGES: three pips over him, each lit in its own colour as it arrives */
         const bx = Math.round(P.x - cx) - 12, by = Math.round(P.y - cy) - 38, h = P.atkHeld || 0;
-        g.fillStyle = 'rgba(10,8,20,0.78)'; g.fillRect(bx - 1, by - 1, 26, 5);
-        for (let i = 0; i < 3; i++) { const a = i ? cutAt(i - 1) : HEAVY_START, b = cutAt(i), k = Math.max(0, Math.min(1, (h - a) / (b - a)));
-          g.fillStyle = 'rgba(160,170,190,0.35)'; g.fillRect(bx + i * 8, by, 7, 3); g.fillStyle = k >= 1 ? CUT_COL[i + 1] : 'rgba(200,205,220,0.8)'; g.fillRect(bx + i * 8, by, Math.round(7 * k), 3);
-          if (k >= 1) { g.fillStyle = 'rgba(255,255,255,0.5)'; g.fillRect(bx + i * 8, by, 7, 1); } } }
+        g.fillStyle = 'rgba(10,8,20,0.78)'; g.fillRect(bx - 1, by - 1, 26, 5);   /* (claude/knightkit) TWO pips: the chop (0.5 s, gold) and the FULL CHARGE (0.9 s, orange; it stays grey while the quake is on its cooldown) */
+        for (let i = 0; i < 2; i++) { const a = i ? cutAt(0) : HEAVY_START, b = cutAt(i), k = Math.max(0, Math.min(1, (h - a) / (b - a))), cd = i === 1 && time < (P.quakeReadyAt || 0);
+          g.fillStyle = 'rgba(160,170,190,0.35)'; g.fillRect(bx + i * 13, by, 12, 3); g.fillStyle = k >= 1 && !cd ? CUT_COL[i + 2] : 'rgba(200,205,220,0.8)'; g.fillRect(bx + i * 13, by, Math.round(12 * k), 3);
+          if (k >= 1 && !cd) { g.fillStyle = 'rgba(255,255,255,0.5)'; g.fillRect(bx + i * 13, by, 12, 1); } } }
       else if (isReaper() && (P.charge || 0) > 0 && !P.dead) drawBkMeter(cx, cy);
       else if (rgDrawing() && !P.dead) drawRgMeter(cx, cy);
       else if (bzWinding() && !P.dead) drawBzMeter(cx, cy);
