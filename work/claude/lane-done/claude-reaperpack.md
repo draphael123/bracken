@@ -1,0 +1,1 @@
+# claude/reaperpack - the REAPER is the BLOOD KNIGHT (hero id 'reaper'); his L25-L50 pack already exists as claude/bkpack. This branch = claude/kfork + claude/bkpack merged (clean, no conflicts) + the no-kit assertion helper. No second pack was built (it would duplicate). Full report: scratch\lane-reports\palreaperpacks.md. Not merged, not deployed, no browser opened.

@@ -1,7 +1,8 @@
 import {LEGACY_NODES, SKILLS} from './progression-catalog.js';
 import {levelOfXp, xpFloor, LV_MAX} from './xp.js';
 import {retireRelics} from './relics.js';   /* THE RELICS ARE GONE: an old save's found-relic tick is dropped and its vault silver paid */
-import {KNIGHT_TECH, KNIGHT_UPGRADES} from './tech-knight.js';   /* THE L25-L50 KITS, one file a hero (claude/knightid; a hero lane adds its file and one line below) */
+import {KNIGHT_TECH, KNIGHT_UPGRADES} from './tech-knight.js';
+import {BK_TECH, BK_UPGRADES} from './tech-bloodknight.js';   /* (claude/bkpack) the Blood Knight's kit ('reaper') */   /* THE L25-L50 KITS, one file a hero (claude/knightid; a hero lane adds its file and one line below) */
 import {normalizeDeathCost} from './death-cost.js';   /* THE DEATH COST's save shape: an older save has none, and gets an empty one (everything it holds is banked) */
 export {LEGACY_NODES, SKILLS};
 /* 2 (2026-09-24): PASSIVES COME WITH LEVELS, ABILITIES ARE BOUGHT (docs/briefs/hero-kits.md 1b). A passive is no longer sold
@@ -87,8 +88,8 @@ export const isMinor = n => MILESTONES_MINOR.includes(n);
 export const TECH_LEVELS = [25, 30, 35, 40, 45, 50];
 export const UPGRADE_LEVELS = [27, 29, 32, 34, 37, 39, 42, 44, 47, 49];
 export const UPGRADE_MAX = 2;
-export const TECHNIQUES = { knight: KNIGHT_TECH };
-export const UPGRADES = { knight: KNIGHT_UPGRADES };
+export const TECHNIQUES = { knight: KNIGHT_TECH, reaper: BK_TECH };
+export const UPGRADES = { knight: KNIGHT_UPGRADES, reaper: BK_UPGRADES };
 export const hasKit = h => !!TECHNIQUES[h];
 /* ==== PICK-1-OF-2 FORKS (claude/ltfork, brief-lategame2-1104 sec 1) ====
    At FORK_LEVELS (30, 40, 50) a TECHNIQUES entry may be {fork: [A, B]} instead of one technique: the card shows both, takes one, the other is LOCKED until
@@ -260,7 +261,7 @@ export function roadToL50(p, h, lv) { if (!hasKit(h)) return []; const lvl = Mat
 export function growthAt(h,lv,card){
  lv=Math.max(0,lv);const ranks=Math.min(lv,24)/12,c=card===undefined?evenCard(lv):(card||{v:0,e:0,m:0,ms:{}}),ms=Object.values(c.ms||{});
  const v=Math.min(CARD_CAP,c.v||0),e=Math.min(CARD_CAP,c.e||0),m=Math.min(CARD_CAP,c.m||0),tv=taperPicks(v),te=taperPicks(e),tm=Math.floor(taperPicks(m));
- const hp0=({knight:100,pyro:88,paladin:120,pirate:90,reaper:95,warden:100,geomancer:95,berserker:105,ranger:110}[h]||100)+freeHp(lv)+8*tv;
+ const hp0=({knight:100,pyro:88,paladin:120,pirate:90,reaper:105,warden:100,geomancer:95,berserker:105,ranger:110}[h]||100)+freeHp(lv)+8*tv;
  return {hp:Math.round(hp0*(ms.includes('heart')?1.1:1)),stamina:100+freeStamina(lv)+12*te,damage:freeDamage(lv)+Math.floor(ranks*(h==='reaper'?1.5:1))+tm,ranks,techniqueRank:Math.floor(ranks),skillMultiplier:skillScale(lv)*(ms.includes('arcane')?1.15:1),picks:{v,e,m}};
 }
 /* THE CARD'S MIGRATION (cardV 1): a save from before the card has levels and no picks. Every hero with XP gets his levels as an even spread

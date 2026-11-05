@@ -44,4 +44,7 @@ export const K_PYRO = {   // (claude/pyrokit2, Daniel 11-01 11:17) LIVING BOMB a
   livingBombBig: 0.7,    // ...a boss or a mini takes this instead, and never more than the cap in main.js PYRO_KIT.lb.capPct of him (the stacks come every ~3 hits: a full 1.2 would be a +40% boss damage rider)
   meteorFall: 3.0,       // the meter spender: one big hit on everything in the blast (a full bar x1.4 heat = 4.2 sword per foe, then the chain of bursts ~1.7 each), in line with the knight's LAST CHARGE (2.5 sword through a pack, 3 on a boss) and the old CONFLAGRATION (4.0 x 1.4 a marked foe); a boss or mini is capped (PYRO_KIT.mf.capPct)
 };
-export const K = { ...K_FLAT, ...K_LINEAR, ...K_PYRO };
+export const K_BK = {   // (claude/bkrework 11-04, plan-bloodknight-1103 sec 3) RED REQUIEM, the Blood Knight's ultimate (UP+C at a full VITAE): the geyser hits every foe in its ring for swordDmg x k x amul (a boss through the usual resist floor)
+  redRequiem: 6,
+};
+export const K = { ...K_FLAT, ...K_LINEAR, ...K_PYRO, ...K_BK };

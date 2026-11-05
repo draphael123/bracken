@@ -29,7 +29,7 @@ export const COMMIT = {   /* WEIGHT-T (10-04): the brief's numbers x0.6, measure
   berserker: { light: 0.06, third: 0.12, up: 0.084, heavy: 0.162 },   /* (claude/berserker2: THE FLURRY recovers quicker - 0.084 -> 0.06; its fifth, the cross-chop, keeps 'third') */   /* THE BERSERKER (claude/berserker): his 10-04 numbers x0.6 like everyone's (WEIGHT-T) - light like the knight's, the cross-chop a beat longer */
 };
 /* THE LIGHT SWING'S PRICE for the heroes whose swing is not their sword's (the rest pay sword().cost): the freebooter 9 -> 10 (brief) */
-export const SWING_COST = { paladin: 22, pirate: 10, reaper: 23 };   /* the paladin 28 -> 22 (10-04, with STAM.busyRegenBy: 0/8 -> 4/8 of eight boss fights on the human bot; 6/8 before WEIGHT) */
+export const SWING_COST = { paladin: 22, pirate: 10, reaper: 18 };   /* (claude/bkrework 11-04: reaper 23 -> 18, plan-bloodknight-1103 sec 4) */   /* the paladin 28 -> 22 (10-04, with STAM.busyRegenBy: 0/8 -> 4/8 of eight boss fights on the human bot; 6/8 before WEIGHT) */
 export const PISTOL_BLAST = 0.45;   /* the freebooter's shot: blastT 0.34 -> 0.45, and it is a commit like a swing */
 export const PLUNGE_WHIFF = 0.10;   /* a plunge that met nothing lands this much heavier (a CAUGHT plunge - the pogo - is untouched) */
 
@@ -98,7 +98,7 @@ export const STAM = {
   stepFree: true, stepDelay: 0.2,   /* THE WARDEN'S BACK-STEP is spacing, not a roll: it keeps the regen running, with a 0.2 s delay */
 };
 /* THE ROLL: what it costs and how long it is untouchable. Heavy heroes roll heavier (Daniel 10-02, Q4). WEIGHT-T: the brief's x0.9 */
-export const ROLL_COST = { knight: 22, warden: 22, pyro: 22, geomancer: 22, pirate: 20, paladin: 25, reaper: 25, berserker: 22, ranger: 20 };   /* (claude/ranger: light) */   /* (berserker 24 x0.9) */
+export const ROLL_COST = { knight: 22, warden: 22, pyro: 22, geomancer: 22, pirate: 20, paladin: 25, reaper: 22, berserker: 22, ranger: 20 };   /* (claude/bkrework: reaper 25 -> 22) */   /* (claude/ranger: light) */   /* (berserker 24 x0.9) */
 export const STEP_BACK_COST = 15;   /* the warden's back-step (it was 13) */
 export const ROLL_LEN = { knight: 0.30, warden: 0.18, pyro: 0.34, geomancer: 0.33, pirate: 0.30, paladin: 0.30, reaper: 0.32, berserker: 0.28, ranger: 0.34 };   /* (claude/ranger: the backflip hangs a beat longer) */   /* (THE BERSERKER's shoulder roll: short) */
 export const ROLL_SHAVE_CAP = 4;    /* the most the shaves (level ranks, LIGHT STEP) take off a roll's base cost */

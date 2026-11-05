@@ -8,8 +8,7 @@
 //                            A WARD-RELEASE PARRY or a BLOOD SPIKE reclaims ALL of it. T4/T5 heavies SPEND it as power instead.
 //                            (claude/bkblood, Daniel 10-23, scratch/brief-bkblood-1023.md: LOUD + LONGER - ~5 s, more of the blow; each reclaim is a blood stream into him,
 //                            a drink, a '+N'; a heartbeat + a red screen edge while he owes; a bleeding foe gives more back and its bleed ticks feed it a little.)
-//   VITAE + CRIMSON FRENZY   (claude/bkblood) his meter fills ONLY from health he reclaims; full, HOLD F = CRIMSON FRENZY (frenzy.t s: every blow wins back all of itself,
-//                            a capped lifesteal past the debt, quicker cuts, the armour glowing; never invulnerable). It replaced BLOOD SURGE (kills/blocks filled that bar).
+//   VITAE + RED REQUIEM      (claude/bkrework) his meter fills from the blood he reclaims AND from his landed blows (BLOOD.vitae.gain); full, UP+C = RED REQUIEM (a blood geyser + HEMORRHAGE on every foe it hits). CRIMSON FRENZY is gone (it was HOLD F).
 //   THE BLOOD LASH           (claude/bkblood) the rhythm's third cut: the blade's blood whips out lash.reach px past the steel and bleeds what it lands on.
 //   BLOOD PRICE (DOWN+C)     on his knee he opens a vein: price.pct of his max health (never his last point) goes ON THE BAR AS DEBT, and for
 //                            price.buffT s his blade is BLOOD-EDGED (x price.mul). Pay, then hit to win it back - or spend it on a T4/T5 heavy.
@@ -28,7 +27,13 @@ export const BLOOD = {
      reclaim: x the damage of his landed blow that comes back (min reclaimMin hp, never past the segment) */
   /* (claude/bkblood, Daniel 10-23 "better utilize the blood theme ... like Bloodborne, where you're hit you can restore health by attacking": a LOUD, LONGER RALLY - was
      share 0.5, cap 0.25, drainT 3, hold 0.45, reclaim 0.45, reclaimMin 1; now ~5 s to win it back, more of the blow recoverable, a quick cut wins a real piece back) */
-  debt: { share: 0.6, cap: 0.3, drainT: 5, hold: 0.8, reclaim: 0.5, reclaimMin: 2 },   /* (claude/bkblood rates: share 0.65 / cap 0.35 / reclaim 0.6 put him at unburied 12/12, waymeet 11/12 - trimmed, the feedback kept) */
+  debt: { share: 0.7, cap: 0.4, drainT: 8, hold: 2.0, reclaim: 0.5, reclaimMin: 4 },   /* (claude/bkrework 11-04, plan-bloodknight-1103 sec 1 THE LONG RALLY: held 2 s then a slow fade to 8 s; segment 0.7 / cap 0.4; min per blow 4. was share 0.6 cap 0.3 drainT 5 hold 0.8 min 2) */
+  /* (claude/bkrework) REWARD BY WEIGHT: a slow hero's heavy blow wins back MORE of the segment. light cut 0.6, the THIRD cut (DEBT DRAIN) 0.9, a held heavy T1-T3 1.0 of the blow (T4/T5 spend the debt: empower.heal) */
+  reclaimW: { light: 0.6, third: 0.9, heavy: 1.0 },
+  /* (claude/bkrework) THE ANSWER: the FIRST rhythm cut pressed while he owes >= min of max hp (once per new debt) drives him forward px with the swing (BLOOD.lunge's v for t s): no i-frames, walk and swing speed unchanged */
+  answer: { min: 0.03, px: 32, t: 0.15 },
+  /* (claude/bkrework) DEBT DRAIN: the third cut of the rhythm (it was the BLOOD LASH's cut) - told, heavier, drinks through a stream; bleed s on what it lands on; mul of the third cut's blow (on top of the 1.5) */
+  drain3: { name: 'DEBT DRAIN', mul: 1.15, bleed: 2 },   /* (claude/bkblood rates: share 0.65 / cap 0.35 / reclaim 0.6 put him at unburied 12/12, waymeet 11/12 - trimmed, the feedback kept) */
   /* (claude/bkblood) BLEEDING FOES FEED THE RALLY: a blow of his on a bleeding foe reclaims x hitMul; each bleed tick of a foe wins `tick` hp of his debt back (a little) */
   bleed: { hitMul: 1.25, tick: 1 },
   /* (claude/bkblood) THE BLOOD LASH - the third cut of THE RED RHYTHM (the drag): the blood on the blade whips out past the steel for `reach` px more, at chest height
@@ -36,10 +41,13 @@ export const BLOOD = {
   lash: { reach: 24, top: 22, bot: 6, from: 0.15, bleed: 2 },
   /* (claude/bkblood) VITAE - his meter (it was BLOOD SURGE's harvest bar, filled by kills and blocks): it fills ONLY from the health he reclaims - aggression after being
      hit. `per` of his max health reclaimed fills it. FULL + HOLD F = CRIMSON FRENZY (it is his ULT 1 for the three-ultimates system, brief-herometers-1015 !! 10-23) */
-  vitae: { per: 0.6 },   /* (~1-2 frenzies a boss fight with the bot) */
-  /* (claude/bkblood) CRIMSON FRENZY: t s; every landed blow reclaims x reclaim of itself (all of it), past the debt a small lifesteal (steal x the blow, at most stealCap of
-     max health a frenzy); swing x the rhythm's clock; the debt holds (no drain) while it lasts. B15 never-invuln: no invulnerability, no damage resist */
-  frenzy: { t: 5, reclaim: 1, steal: 0.12, stealCap: 0.1, swing: 1.2 },
+  vitae: { per: 0.35, gain: { cut: 4, third: 6, heavy: [0, 6, 8, 10, 12, 14], parry: 20, ward: 3 } },   /* (claude/bkrework: was 0.6 - 57 hp reclaimed filled it; now 33 hp at 95 max) */
+  /* (claude/bkrework, plan sec 2) VITAE ALSO FILLS FROM HIS OFFENCE: a landed rhythm cut +cut, the BLOOD LASH / DEBT DRAIN third cut +third, a held heavy +heavy[tier], a CRIMSON PARRY / BLOOD SPIKE +parry, a blow the ward holds +ward. No drain. */
+
+  /* (claude/bkrework, plan sec 3) RED REQUIEM (UP+C at full VITAE, grounded; replaces CRIMSON FRENZY): windup s told (helm flare + toll), then the greatsword is driven into the ground: a blood GEYSER column + a ring (ring px).
+     Damage swordDmg x k (src/skill-k.js 'redRequiem'). A common foe: stagger s + bleed s. A BOSS / mini: no stagger, no stun (resist floor) - HEMORRHAGE only. HEMORRHAGE hemT s on every foe hit: his blows on it deal hemMul and reclaim hemReclaim (all of the blow),
+     and his debt does not drain while it is on any foe; a damage multiplier ONLY (never breaks a guard or lowers a boss below its floor). UNFLINCHING to light blows for the hemT s (no i-frames, no swing speed-up). */
+  requiem: { name: 'RED REQUIEM', windup: 0.45, ring: 110, stagger: 1.2, bleed: 4, hemT: 8, hemMul: 1.25, hemReclaim: 1, geyserH: 64, unflinch: true },
   /* (claude/bkblood) THE RALLY, FELT: a heartbeat + a red pulse at the screen's edges while he owes - from heartMin of max health, faster and redder with the debt
      (bpm lo..hi at the cap); edge = the pulse's top alpha. The edge is off with REDUCE MOTION or flashes off */
   feel: { heartMin: 0.03, bpmLo: 70, bpmHi: 140, edge: 0.45 },
@@ -60,7 +68,7 @@ export const BLOOD = {
   moon: { reach: 58, mul: 0.9 },
   /* (claude/bkfeel) DEBT EMPOWERS T4/T5: min = the debt (of max hp) that makes the blow BLOOD-FED (said, and the deeper glow); heal = of the spent debt that comes back into him when the
      empowered blow LANDS (never above where he was before the hits, as every reclaim) */
-  empower: { min: 0.03, heal: 0.5 },
+  empower: { min: 0.03, heal: 0.75 },
   /* (claude/bkfeel) THE WARD-RELEASE PARRY'S WEIGHT (Daniel 10-21 "make his PARRY feel more impactful - the Warden's feels good"): stop = the freeze (s; the Warden's deflect 0.07, the
      knight's perfect guard 0.09), slow = the crimson held breath after it (s of the world at slowT's 0.3 speed), flash = the crimson wash (s), push = px the foe stumbles back (it stays in the
      greatsword's reach: the old 240 px/s shove was zeroed by the shared parry reel the next frame), stagger = s it reels, window = s his riposte waits (the shared 0.6 is short for a greatsword;
@@ -101,7 +109,7 @@ export function payBlood(p, pct, free = false) {
   const c = Math.max(1, Math.round(p.maxHp * pct));
   if (free) { debtAdd(p, c); p.bdLast = p.hp; return c; }
   const hp0 = p.hp; p.hp = hp0 <= 1 ? hp0 : Math.max(1, hp0 - c); const paid = hp0 - p.hp;
-  p.bdLast = p.hp; if (paid > 0) { p.bd = (p.bd || 0) + paid; debtClamp(p); p.bdHold = BLOOD.debt.hold; p.bdRate = p.bd / Math.max(0.1, BLOOD.debt.drainT - BLOOD.debt.hold); }
+  p.bdLast = p.hp; if (paid > 0) { p.bd = (p.bd || 0) + paid; debtClamp(p); p.bdHold = BLOOD.debt.hold + (p.bdHoldPlus || 0); p.bdRate = p.bd / Math.max(0.1, BLOOD.debt.drainT - BLOOD.debt.hold); }
   return paid;
 }
 /* (claude/bkkit2) DRAIN's tick of `n` blood: into the debt first (all of it), the rest heals `over` of itself. Returns the health given. */
@@ -118,7 +126,7 @@ export function tierFor(held, debt, maxHp, quick = 1) {
 export const tierByTime = (held, quick = 1) => { let st = 0; for (let i = 0; i < 5; i++) if (held >= BLOOD.tiers.at[i] * quick) st = i + 1; return st; };
 
 /* THE DEBT on a hero-like object p (p.hp, p.maxHp; p.bd the debt, p.bdRate, p.bdHold, p.bdLast the health last frame).
-   Called every frame for him. A drop in health since last frame becomes debt (share), a rise fills it; freeze holds the drain (the blade wound). */
+   Called every frame for him. A drop in health since last frame becomes debt (share), a rise fills it; freeze holds the drain (the blade wound; claude/bkrework: also the BLOOD WARD held up, and HEMORRHAGE on a foe). */
 export function debtStep(p, dt, { freeze = false, dead = false } = {}) {
   const D = BLOOD.debt;
   if (dead) { debtClear(p); return; }
@@ -133,19 +141,21 @@ export function debtStep(p, dt, { freeze = false, dead = false } = {}) {
   if ((p.bdHold || 0) > 0) { p.bdHold -= dt; return; }
   p.bd = Math.max(0, p.bd - (p.bdRate || p.bd / D.drainT) * dt);
 }
-export function debtAdd(p, n) { const D = BLOOD.debt; if (!(n > 0)) return; p.bd = (p.bd || 0) + n; debtClamp(p); p.bdHold = D.hold; p.bdRate = p.bd / Math.max(0.1, D.drainT - D.hold); }
+export function debtAdd(p, n) { const D = BLOOD.debt; if (!(n > 0)) return; p.bkAnswered = false;   /* (claude/bkrework) a new debt re-arms THE ANSWER */
+  p.bd = (p.bd || 0) + n; debtClamp(p); p.bdHold = D.hold + (p.bdHoldPlus || 0); p.bdRate = p.bd / Math.max(0.1, D.drainT - D.hold); }
 export function debtClamp(p) { const D = BLOOD.debt; p.bd = Math.max(0, Math.min(p.bd || 0, D.cap * p.maxHp, Math.max(0, p.maxHp - p.hp))); }
 /* a landed blow of his that did `dmg`: part of the segment comes back as health. Returns the health given. */
 export function debtReclaim(p, n) { if (!(p.bd > 0) || !(n > 0) || !(p.hp > 0)) return 0; const r = Math.min(p.bd, n, Math.max(0, p.maxHp - p.hp)); p.hp += r; p.bd -= r; p.bdLast = p.hp;
   if (r > 0) p.bkVitIn = (p.bkVitIn || 0) + r;   /* (claude/bkblood) every reclaimed point is VITAE (main.js vitaeStep drinks it into the bar) */
   return r; }
 /* (claude/bkblood) what a landed blow of `dmg` wins back: x debt.reclaim, x bleed.hitMul on a bleeding foe, all of it in a CRIMSON FRENZY */
-export const reclaimOf = (dmg, o = {}) => Math.max(BLOOD.debt.reclaimMin, dmg * (o.frenzy ? BLOOD.frenzy.reclaim : BLOOD.debt.reclaim) * (o.bleeding ? BLOOD.bleed.hitMul : 1));
+export const reclaimOf = (dmg, o = {}) => Math.max(BLOOD.debt.reclaimMin, dmg * reclaimWeight(o) * (o.bleeding ? BLOOD.bleed.hitMul : 1));
+/* (claude/bkrework) the share of a blow that comes back: o.hem (a foe in HEMORRHAGE) all of it; else by weight o.weight 'light' | 'third' | 'heavy' (or a number); the old flat 0.5 when none is given */
+export const reclaimWeight = (o = {}) => o.hem ? BLOOD.requiem.hemReclaim : typeof o.weight === 'number' ? o.weight : o.weight ? (BLOOD.reclaimW[o.weight] ?? BLOOD.debt.reclaim) : BLOOD.debt.reclaim;
+/* (claude/bkrework) VITAE a landed blow is worth: kind 'cut' | 'third' | 'heavy' (tier) | 'parry' | 'ward' (the plan's table; 0 for anything else) */
+export function vitaeGain(kind, tier = 0) { const G = BLOOD.vitae.gain; if (kind === 'heavy') return G.heavy[Math.max(0, Math.min(5, tier | 0))] || 0; return G[kind] || 0; }
 /* (claude/bkblood) VITAE: the meter points (0-100) `hp` reclaimed health is worth on a max health of maxHp */
 export const vitaeOf = (hp, maxHp) => Math.max(0, hp) * 100 / Math.max(1, BLOOD.vitae.per * maxHp);
-/* (claude/bkblood) CRIMSON FRENZY's lifesteal past the debt: steal x the blow, never past stealCap x maxHp a frenzy (p.bkStole counts it), never above max health. Returns the heal. */
-export function frenzySteal(p, dmg) { const F = BLOOD.frenzy, room = Math.max(0, F.stealCap * p.maxHp - (p.bkStole || 0)), h = Math.min(room, Math.max(0, dmg) * F.steal, Math.max(0, p.maxHp - p.hp));
-  if (!(h > 0) || !(p.hp > 0)) return 0; p.hp += h; p.bdLast = p.hp; p.bkStole = (p.bkStole || 0) + h; return h; }
 /* (claude/bkblood) THE HEARTBEAT: beats a second for a debt of `bd` on maxHp (0 = no heartbeat), and the edge pulse's strength 0..1 */
 export function heartOf(bd, maxHp) { const F = BLOOD.feel, k = (bd || 0) / Math.max(1, maxHp); if (k < F.heartMin) return { bps: 0, k: 0 };
   const t = Math.min(1, (k - F.heartMin) / Math.max(0.01, BLOOD.debt.cap - F.heartMin)); return { bps: (F.bpmLo + (F.bpmHi - F.bpmLo) * t) / 60, k: 0.35 + 0.65 * t }; }
@@ -154,7 +164,7 @@ const BLOODLESS = new Set(['construct', 'turret', 'hourglass', 'hourglassking', 
 export function sprayKind(t, mat) { if (BLOODLESS.has(t) || ['stone', 'metal', 'crystal', 'shell', 'wood', 'clockwork', 'glass'].includes(mat)) return 'sparks';
   if (['bone', 'chitin', 'fungus', 'spirit'].includes(mat)) return 'dust'; return 'blood'; }
 /* (claude/bkblood) THE BLOOD LASH's box: past the drag's steel (rhythmBox step 2) the whip reaches lash.reach more at chest height, from lash.from of the art clock */
-export function lashBox(x, y, face, atk, steelR) { const L = BLOOD.lash; if (atk < L.from || atk >= 0.24) return null; const r0 = steelR - 2, r1 = steelR + L.reach;
+export function lashBox(x, y, face, atk, steelR, reach = BLOOD.lash.reach) { const L = BLOOD.lash; if (atk < L.from || atk >= 0.24) return null; const r0 = steelR - 2, r1 = steelR + reach;   /* (claude/bkpack) reach: CRIMSON REACH lengthens the whip */
   return face > 0 ? { l: x + r0, r: x + r1, t: y - L.top, b: y - L.bot } : { l: x - r1, r: x - r0, t: y - L.top, b: y - L.bot }; }
 /* ALL of it back (the parries) */
 export const debtReclaimAll = p => debtReclaim(p, p.bd || 0);
@@ -183,7 +193,7 @@ export const GUARD = { share: 1, notches: 3, life: 12, boost: 1, stop: [0.06, 0.
 /* the ward's blood price: `n` health leaves him and the WHOLE of it lies on the bar as debt. Returns what was paid. */
 export function guardPay(p, n) { if (!(n > 0)) return 0; p.hp -= n; p.bdLast = p.hp; debtAdd(p, n * GUARD.share); return n; }
 /* the notches a blade has (they run dry `life` s after the last), and one more drunk */
-export const notchesOf = (p, now) => (p.bkNotch || 0) > 0 && now - (p.bkNotchAt ?? -99) <= GUARD.life ? p.bkNotch : 0;
-export function notchDrink(p, now) { const n = Math.min(GUARD.notches, notchesOf(p, now) + 1); p.bkNotch = n; p.bkNotchAt = now; return n; }
+export const notchesOf = (p, now, life = GUARD.life) => (p.bkNotch || 0) > 0 && now - (p.bkNotchAt ?? -99) <= life ? p.bkNotch : 0;   /* (claude/bkpack) life: BLADE DRINKS+ II keeps a notch 20 s */
+export function notchDrink(p, now, need = GUARD.notches, life = GUARD.life) { const n = Math.min(need, notchesOf(p, now, life) + 1);   /* (claude/bkpack) need: BLADE DRINKS+ I lifts the heavy at two notches */ p.bkNotch = n; p.bkNotchAt = now; return n; }
 /* a hold's tier with the blade drunk: one higher once the notches are full (T1 on the clock becomes T2), never past T5, and nothing before T1 */
-export const boostTier = (tier, notches) => tier >= 1 && notches >= GUARD.notches ? Math.min(5, tier + GUARD.boost) : tier;
+export const boostTier = (tier, notches, need = GUARD.notches) => tier >= 1 && notches >= need ? Math.min(5, tier + GUARD.boost) : tier;

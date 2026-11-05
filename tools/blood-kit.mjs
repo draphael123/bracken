@@ -26,7 +26,7 @@
 //   node tools/blood-kit.mjs            (PORT from tools/ports.mjs, or PORT=)
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { BLOOD, tierFor, tierByTime, debtStep, debtReclaim, debtSpend, payPrice, payBlood, drainGive, reclaimOf, spendMul, vitaeOf, frenzySteal, heartOf, sprayKind, lashBox } from '../src/blood-kit.js';
+import { BLOOD, tierFor, tierByTime, debtStep, debtReclaim, debtSpend, payPrice, payBlood, drainGive, reclaimOf, spendMul, vitaeOf, vitaeGain, reclaimWeight, heartOf, sprayKind, lashBox } from '../src/blood-kit.js';
 import { openPage, ROOT } from './cdp.mjs';
 
 const bad = [];
@@ -55,12 +55,11 @@ const near = (a, b, e = 0.6) => Math.abs(a - b) <= e;
   const dg = { hp: 50, maxHp: M, bd: 4 }; const g1 = drainGive(dg, 10); ok(near(dg.bd, 0) && near(g1, 4 + 6 * BLOOD.host.drain.over) && near(dg.hp, 50 + g1), 'DRAIN did not fill the debt first and heal ' + BLOOD.host.drain.over + ' of the rest: ' + JSON.stringify({ g1, dg }));
   ok(Object.values(BLOOD.host).every(s => s.cd > 0) && BLOOD.spike.any === true, 'BLOOD.host has a spell with no wait, or BLOOD SPIKE is not on any blow');
   const pr2 = { hp: 80, maxHp: M }; debtStep(pr2, 0); const paid = payPrice(pr2); debtStep(pr2, 0); ok(paid === Math.round(M * BLOOD.price.pct) && near(pr2.bd, paid) && pr2.hp === 80 - paid, 'the price is not on the bar as debt: ' + JSON.stringify({ paid, pr2 }));
-  /* (claude/bkblood) THE BLOOD PASS: a LONGER rally (window >= 4.5 s, share >= 0.6, cap >= 0.3), bleeding foes and the frenzy win more back, VITAE fills from what is reclaimed and nothing else,
-     the frenzy's lifesteal is capped, the heartbeat quickens with the debt, flesh bleeds and stone sparks, THE BLOOD LASH reaches past the steel */
-  ok(D.drainT >= 4.5 && D.share >= 0.6 && D.cap >= 0.3 && D.hold >= 0.6, 'the rally is not the LOUD LONGER one (drainT ~5, share ~0.6-0.7, cap ~0.35): ' + JSON.stringify(D));
-  ok(reclaimOf(20, { bleeding: true }) > reclaimOf(20) && reclaimOf(20, { frenzy: true }) >= 20, 'a bleeding foe / the frenzy does not win more back: ' + [reclaimOf(20), reclaimOf(20, { bleeding: true }), reclaimOf(20, { frenzy: true })]);
+  /* (claude/bkblood) THE BLOOD PASS: a LONGER rally (window >= 4.5 s, share >= 0.6, cap >= 0.3), bleeding foes win more back, VITAE fills from what is reclaimed (and, claude/bkrework, from landed blows - tools/blood-rework.mjs),
+     (CRIMSON FRENZY is gone: RED REQUIEM, tools/blood-rework.mjs), the heartbeat quickens with the debt, flesh bleeds and stone sparks, THE BLOOD LASH reaches past the steel */
+  ok(D.drainT >= 7.5 && D.share >= 0.7 && D.cap >= 0.4 && D.hold >= 1.9, 'the rally is not THE LONG RALLY (claude/bkrework: hold 2 s, drain 8 s, share 0.7, cap 0.4): ' + JSON.stringify(D));
+  ok(reclaimOf(20, { bleeding: true }) > reclaimOf(20) && reclaimOf(20, { hem: true }) >= 20, 'a bleeding foe / a HEMORRHAGE brand does not win more back: ' + [reclaimOf(20), reclaimOf(20, { bleeding: true }), reclaimOf(20, { hem: true })]);
   const v = { hp: 50, maxHp: M, bd: 30 }; debtReclaim(v, 10); ok(near(v.bkVitIn, 10) && near(vitaeOf(BLOOD.vitae.per * M, M), 100), 'a reclaim is not VITAE, or ' + BLOOD.vitae.per + ' of max health reclaimed does not fill it: ' + JSON.stringify(v));
-  const fs = { hp: 50, maxHp: M }; let st = 0; for (let i = 0; i < 40; i++) st += frenzySteal(fs, 20); ok(st > 0 && st <= BLOOD.frenzy.stealCap * M + 1e-6, 'the frenzy lifesteal is not capped at ' + BLOOD.frenzy.stealCap + ' of max health: ' + st);
   const h0 = heartOf(0, M), h1 = heartOf(0.1 * M, M), h2 = heartOf(D.cap * M, M); ok(h0.bps === 0 && h1.bps > 0 && h2.bps > h1.bps && h2.k > h1.k, 'the heartbeat does not quicken with the debt: ' + JSON.stringify([h0, h1, h2]));
   ok(sprayKind('brute', undefined) === 'blood' && sprayKind('construct', undefined) === 'sparks' && sprayKind('golem', 'stone') === 'sparks' && sprayKind('skeleton', 'bone') === 'dust', 'blood/sparks by what is struck is off');
   const lb = lashBox(100, 100, 1, 0.2, 31); ok(lb && lb.r - 100 >= 31 + BLOOD.lash.reach - 1 && !lashBox(100, 100, 1, 0.13, 31), 'THE BLOOD LASH does not reach ' + BLOOD.lash.reach + ' px past the steel (late in the cut only): ' + JSON.stringify(lb));
@@ -153,11 +152,11 @@ try {
       const d1 = D().pass(); out.vitae = { got: +(d1.vitae - 0).toFixed(2), drinks: d1.drinks - d0.drinks, sprays: d1.sprays - d0.sprays, kind: d1.sprayKind, beats: d1.beats - d0.beats };
       place(P().maxHp - 30); P().harvest = 0; for (let i = 0; i < 2; i++) { BK.keys.atk = true; BK.press('atk'); BK.sim(2); BK.keys.atk = false; free(); } out.vitae.noDebt = +(P().harvest || 0).toFixed(2);
       dm2.alive = false; const n1 = D().enemies.length; D().spawn({ t: 'brute', x: spot.x, y: spot.y }); const kb = D().enemies[n1]; kb.x = P().x + 20; kb.y = P().y; D().kill(kb); BK.sim(5); out.vitae.kill = +(P().harvest || 0).toFixed(2);
-      place(60); P().harvest = 100; const f0 = D().pass(); BK.keys.throw = true; BK.press('throw'); BK.sim(30); BK.keys.throw = false; BK.sim(2); const f1 = D().pass();
-      out.frenzy = { t: +f1.frenzyT.toFixed(2), n: f1.frenzies - f0.frenzies, vitae: f1.vitae, inv: +f1.inv.toFixed(2) };
-      P().bd = 20; P().bdLast = P().hp; const dm3 = dummy(2), hpF = P().hp; BK.keys.atk = true; BK.press('atk'); BK.sim(2); BK.keys.atk = false; free(); out.frenzy.won = +(P().hp - hpF).toFixed(2); out.frenzy.vitaeAfter = +(P().harvest || 0).toFixed(2);
-      P().bd = 0; P().bdLast = P().hp; P().hp = 50; P().bdLast = 50; for (let i = 0; i < 6; i++) { BK.keys.atk = true; BK.press('atk'); BK.sim(2); BK.keys.atk = false; free(); } out.frenzy.stole = +D().pass().stole.toFixed(2); dm3.alive = false;
-      BK.sim(Math.round(60 * (B().BLOOD.frenzy.t + 0.5))); out.frenzy.over = +D().pass().frenzyT.toFixed(2);
+      /* (claude/bkrework) HOLD F is inert; UP+C at a full VITAE is RED REQUIEM: the told windup, then the geyser hits the straw men, brands them HEMORRHAGE; the bar is its clock (UNVERIFIED in a browser: owed, see the lane report) */
+      place(60); P().harvest = 100; dm2.alive = false; const rq = dummy(3), rqHp = rq.hp; BK.keys.throw = true; BK.press('throw'); BK.sim(40); BK.keys.throw = false; BK.sim(2); const f0 = D().pass(); out.requiem = { holdF: f0.reqs, harvest: P().harvest };
+      P().harvest = 100; BK.keys.up = true; BK.keys.block = true; BK.sim(3); BK.keys.up = false; BK.keys.block = false; const w1 = D().pass().reqWind; BK.sim(40); const f1 = D().pass();
+      out.requiem.wind = +w1.toFixed(2); out.requiem.n = f1.reqs - f0.reqs; out.requiem.t = +f1.reqT.toFixed(2); out.requiem.vitae = f1.vitae; out.requiem.hem = +(rq.hem || 0).toFixed(2); out.requiem.hit = rqHp - rq.hp; out.requiem.inv = +f1.inv.toFixed(2);
+      const hpR = P().hp; P().bd = 20; P().bdLast = P().hp; BK.keys.atk = true; BK.press('atk'); BK.sim(2); BK.keys.atk = false; free(); out.requiem.won = +(P().hp - hpR).toFixed(2); rq.alive = false;
       /* THE LASH: three cuts at a straw man past the steel's reach - only the third (the lash) finds it, and it bleeds */
       place(80); P().combo = 0; const far = dummy(0); far.x = P().x + 46; far.hp = far.maxHp = 9999; const l0 = D().pass(); let w = [0, 0, 0];
       for (let i = 0; i < 3; i++) { const hp1 = D().pass().sprays; BK.keys.atk = true; BK.press('atk'); BK.sim(2); BK.keys.atk = false; let k = 0; while ((P().atk >= 0) && k < 120) { const b = D().box(); if (b) w[i] = Math.max(w[i], b.r - P().x); BK.sim(1); k++; } BK.sim(1); w[i] = [w[i], D().pass().sprays - hp1]; }
@@ -178,7 +177,7 @@ try {
     /* 9. (claude/yardswap, Daniel 11-03) THE HERO TRIAL IS GONE, and its RED HOST step (a lent BLOODWORMS, price shown not taken) with it. In the ARENA YARD a blow from straw costs him NO HEALTH (yardSafe) and his board names his blood moves. OWED: the lent-skill step had no Arena Yard twin (a hero there plays his own loadout). */
     { for (const k in BK.keys) BK.keys[k] = false; BK.setHero('reaper'); BK.reset({ fresh: true }); BKT.PROG.skillOwned.reaper = {}; BKT.PROG.loadouts.reaper = []; BK.applyUpgrades(); BK.load(LEVELS.findIndex(l => l.id === 'arena_yard')); BK.start(); BK.state = 'play'; BK.god = false; BK.sim(30);
       const Y = BK.yard(); Y.open(BK.players()[0]); const bd = Y.Y.st.board; const txt = bd ? bd.b.lines.map(l => l.text).join(' | ') : ''; Y.Y.st.board = null;
-      out.trial = { arena: !!BK.L.arenaYard, board: txt.length, blood: /BLOOD|VITAE|WARD|FRENZY/i.test(txt) }; }
+      out.trial = { arena: !!BK.L.arenaYard, board: txt.length, blood: /BLOOD|VITAE|WARD|REQUIEM/i.test(txt) }; }
     return out; })()`, 240000);
   console.log(JSON.stringify(R, null, 1));
   if (R.err) bad.push(R.err); else {
@@ -219,10 +218,10 @@ try {
     void pct;
     ok(R.trial && R.trial.arena && R.trial.blood, 'the Blood Knight in the Arena Yard: the yard did not load, or his move board names none of his blood moves: ' + JSON.stringify(R.trial));
     /* (claude/bkblood) */
-    ok(R.vitae.got > 0 && R.vitae.drinks >= 1 && R.vitae.sprays >= 2 && R.vitae.kind === 'sparks' /* a straw man is wood: sparks, no blood */ && R.vitae.noDebt === 0 && R.vitae.kill === 0, 'VITAE did not fill from reclaimed blood only (or a drink / blood spray was missing; a kill or a cut with no debt filled it): ' + JSON.stringify(R.vitae));
+    ok(R.vitae.got > 0 && R.vitae.drinks >= 1 && R.vitae.sprays >= 2 && R.vitae.kind === 'sparks' /* a straw man is wood: sparks, no blood */ && R.vitae.noDebt > 0 && R.vitae.noDebt <= 4 * 2 + 0.5 && R.vitae.kill === 0, 'VITAE did not fill from reclaimed blood only (or a drink / blood spray was missing; a kill or a cut with no debt filled it): ' + JSON.stringify(R.vitae));
     ok(R.vitae.beats >= 1, 'no heartbeat while he owed: ' + JSON.stringify(R.vitae));
-    ok(R.frenzy.n === 1 && R.frenzy.t > 0 && R.frenzy.vitae === 0 && R.frenzy.inv === 0, 'HOLD F on full VITAE was not CRIMSON FRENZY (no invulnerability, B15): ' + JSON.stringify(R.frenzy));
-    ok(R.frenzy.won >= 14 && R.frenzy.vitaeAfter === 0 && R.frenzy.stole > 0 && R.frenzy.stole <= BLOOD.frenzy.stealCap * 95 + 0.5 && R.frenzy.over === 0, 'the frenzy did not win a whole blow back, lifesteal (capped) past the debt, keep VITAE empty, or end: ' + JSON.stringify(R.frenzy));
+    ok(R.requiem.holdF === 0 && R.requiem.wind > 0 && R.requiem.n === 1 && R.requiem.t > 0 && R.requiem.vitae === 0 && R.requiem.hem > 0 && R.requiem.hit > 0 && R.requiem.inv === 0, 'UP+C on full VITAE was not RED REQUIEM (HOLD F inert, a told windup, one geyser, HEMORRHAGE on the foe, the bar empty, no invulnerability): ' + JSON.stringify(R.requiem));
+    ok(R.requiem.won >= 14, 'a blow on a HEMORRHAGE foe did not drink back all of itself: ' + JSON.stringify(R.requiem));
     ok(R.lash.w[2][0] >= R.lash.w[1][0] + BLOOD.lash.reach - 4 && R.lash.w[0][1] === 0 && R.lash.w[1][1] === 0 && R.lash.w[2][1] > 0 && R.lash.hits >= 1 && R.lash.bleed, 'THE BLOOD LASH (the third cut) does not reach past the steel and bleed what it finds: ' + JSON.stringify(R.lash));
     ok(R.harvest.healed <= 0, 'crouched over a body he drew ' + R.harvest.healed + ' (the harvest is gone): ' + JSON.stringify(R.harvest));
   }
