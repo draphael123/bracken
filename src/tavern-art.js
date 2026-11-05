@@ -130,7 +130,7 @@ export function target(g, x, fy, time) {
 }
 
 /* ---------------------------------------------------------------- THE DUEL PIT ---------------------------------------------------------------- */
-export function arena(g, x, fy, time, text) {
+export function arena(g, x, fy, time, text, open = false) {   /* (claude/pvpduel) open: the board reads DUEL (BETA) - src/pvp-duel.js PVP_SHIPS */
   const cy = fy + 2;
   ELL(g, x, cy + 1, 25, 4, TP.o1); ELL(g, x, cy, 24, 3, TP.o4); ELL(g, x, cy, 22, 3, TP.o2);                                                                          /* the kerb of the pit, a ring of oak */
   ELL(g, x, cy + 1, 20, 2, '#a8895a'); ELL(g, x, cy + 1, 15, 1, '#c4a674'); R(g, x - 20, cy - 1, 41, 1, '#5a4228'); R(g, x - 18, cy, 37, 1, '#76593a');                /* the sand, and the pit's back wall in shade */
@@ -146,7 +146,7 @@ export function arena(g, x, fy, time, text) {
   R(g, bx, by, 38, 24, TP.o3); R(g, bx, by, 38, 1, TP.o6); R(g, bx, by + 23, 38, 1, TP.o1); R(g, bx, by, 1, 24, TP.o5); R(g, bx + 37, by, 1, 24, TP.o1);
   R(g, bx + 2, by + 2, 34, 20, '#5a1e1a'); R(g, bx + 2, by + 2, 34, 1, '#7a2e26'); R(g, bx + 2, by + 21, 34, 1, '#3a1010');
   for (const px0 of [bx + 3, bx + 34]) for (const py0 of [by + 3, by + 19]) P(g, px0, py0, TP.fe3);
-  text('COMING', x, by + 4, '#f0e6c8', 'center', 6); text('SOON', x, by + 12, '#ff9a5c', 'center', 6);
+  if (open) { text('DUEL', x, by + 4, '#f0e6c8', 'center', 6); text('(BETA)', x, by + 12, '#ffd36b', 'center', 6); } else { text('COMING', x, by + 4, '#f0e6c8', 'center', 6); text('SOON', x, by + 12, '#ff9a5c', 'center', 6); }
   const sw = ((time * 14) % 60) - 12; if (sw >= 0 && sw < 34) { g.globalAlpha = 0.32; for (let j = 0; j < 20; j++) { const xx = bx + 2 + sw + Math.round(j * 0.4); if (xx >= bx + 2 && xx < bx + 36) R(g, xx, by + 2 + j, 2, 1, '#fff'); } g.globalAlpha = 1; }
   /* THE STAGE BOARD for VERSUS, beside it: an empty slate in a chained frame, its two name lines unwritten */
   const sx = x + 30, sy = fy - 34;

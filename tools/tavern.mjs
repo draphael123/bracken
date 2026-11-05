@@ -166,8 +166,8 @@ if (PAGE.length) {
       /* drills board, practice, arena */
       const dr = await E(`(()=>{const p=__P(1);__at(p,${STATIONS.find(s => s.id === 'drills').x});BK.sim(3);__talk(p);return BK.tavern.hint().msg;})()`);
       ok(/THROW/.test(dr) && /REVIVE/.test(dr) && /TEAM HIT/.test(dr), 'THE DRILLS BOARD names the three partner drills: ' + dr.slice(0, 90));
-      const ar = await E(`(()=>{const p=__P(1);__at(p,${STATIONS.find(s => s.id === 'arena').x});BK.sim(3);__talk(p);BK.sim(2);return {st:BK.state,h:BK.tavern.hint().msg,seen:__st('arena').seen};})()`);
-      ok(ar.st === 'play' && /COMING SOON/.test(ar.h) && ar.seen, 'THE DUEL PIT is roped off: COMING SOON, nothing opens: ' + JSON.stringify(ar));
+      const ar = await E(`(()=>{const p=__P(1);__at(p,${STATIONS.find(s => s.id === 'arena').x});BK.sim(3);__talk(p);BK.sim(2);const d=BK.duel?BK.duel():null,card=d&&d.ships?d.debug().card:null;return {st:BK.state,h:BK.tavern.hint().msg,seen:__st('arena').seen,ships:!!(d&&d.ships),card};})()`);   /* (claude/pvpduel) */
+      ok(ar.st === 'play' && ar.seen && (ar.ships ? !!ar.card : /COMING SOON/.test(ar.h)), ar.ships ? 'THE DUEL PIT opens the DUEL (BETA) card (claude/pvpduel, PVP_SHIPS): ' + JSON.stringify(ar) : 'THE DUEL PIT is roped off: COMING SOON, nothing opens: ' + JSON.stringify(ar));
       /* (claude/coopclarity) THE SAVES SIGN: READ opens the co-op guide on its HOW CO-OP SAVES WORK page, closing returns to the inn */
       const sg = await E(`(()=>{const p=__P(1);__at(p,${STATIONS.find(s => s.id === 'saves').x});BK.sim(3);__talk(p);BK.sim(2);const o={st:BK.state,page:BK.ui.coopHelp.page,title:BK.ui.coopHelp.pages()[BK.ui.coopHelp.page].title,seen:__st('saves').seen};BK.state='play';return o;})()`);
       ok(sg.st === 'coophelp' && /HOW CO-OP SAVES WORK/.test(sg.title) && sg.seen, 'THE SAVES SIGN opens the co-op guide on the saves page: ' + JSON.stringify(sg));

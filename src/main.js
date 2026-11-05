@@ -252,7 +252,7 @@ import * as LNA from './lance-art.js';
 import * as SHA from './stormhold-art.js'; import * as LSA from './lance-storm-art.js';   /* (claude/lance5art) THE STORM over the Long Bridge: sky, teeth, updraft, gust, skewer column, pivot ring, the torn pennant (src/lance-storm-art.js) */
 import { bakePaladinBoss, bakeLancer, bakeLancerHorse, bakeGuests, bakeBarkeep, bakeDrunk, bakeTownSpikes } from './redraw/waymeet.js';
 import { LEVELS, T, TS, CUSTOM, eliteGate, FRESH_TWIN, LOST_BANNERS, ROAD_OPEN, trialSteps } from './level.js';
-import { makeArenaYard, gradeOf } from './arena-yard.js'; import * as MVB from './move-board.js';   /* (claude/arenayard, Daniel 11-03) THE ARENA YARD: the one shared practice yard + its move board */
+import { makeDuel, PVP_SHIPS, forgetSlot as duelForget } from './pvp-duel.js';   /* (claude/pvpduel, Daniel 11-05) DUEL (BETA): the tavern's DUEL PIT, hero against hero */ import { makeArenaYard, gradeOf } from './arena-yard.js'; import * as MVB from './move-board.js';   /* (claude/arenayard, Daniel 11-03) THE ARENA YARD: the one shared practice yard + its move board */
 import { floodReach } from './reachcore.js';
 import { updateMageChase, drawRingDoor, inSpiral, newStairFx, updateStairFx, drawStairFx, drawOrrery, drawReel as drawStairReel, ORRERY as STAIR_ORRERY } from './spiral-chase.js';
 /* FALLING TOWER 3 (claude/fallingtower3): THE CHASE through the rooms under his stair (the Undead Archmage's fight, Daniel 10-27) and THE CRACKED PILLARS (the level's verb) */
@@ -479,7 +479,7 @@ function loadSlot(i) { if (i !== slot) coopWant = null; if (coop()) coopEnd(); s
   catch (error) { const h = slotHealthOf(i); if (h.state === 'corrupt') SAFE.keepCorruptCopy(localStorage, slotKey(i), raw);
     saveBlocked = h.state === 'corrupt' ? 'Save ' + (i + 1) + ' is damaged (copy kept): open CHOOSE A SAVE' : error.message; loaded = migrateProgress(null).progress; console.warn('Save protected:', error.message); }
   for (const k in PROG) delete PROG[k]; Object.assign(PROG, loaded); progDefaults(); try { localStorage.setItem('bracken.slot', String(i)); } catch {} rosterNote(); }
-function eraseSlot(i) { try { if (slotHealthOf(i).state !== 'ok' && slotHealthOf(i).state !== 'empty') SAFE.keepCorruptCopy(localStorage, slotKey(i), slotRaw(i)); localStorage.removeItem(slotKey(i) + SAFE.LASTGOOD); SAFE.pruneBackups(localStorage, slotKey(i)); } catch {}
+function eraseSlot(i) { try { duelForget(localStorage, i); } catch {}   /* (claude/pvpduel) an erased save leaves the duel RANKINGS too */ try { if (slotHealthOf(i).state !== 'ok' && slotHealthOf(i).state !== 'empty') SAFE.keepCorruptCopy(localStorage, slotKey(i), slotRaw(i)); localStorage.removeItem(slotKey(i) + SAFE.LASTGOOD); SAFE.pruneBackups(localStorage, slotKey(i)); } catch {}
   try { localStorage.removeItem(slotKey(i)); if (i === 0) localStorage.removeItem('bracken.progress'); } catch {} if (i === slot) { saveBlocked=''; for (const k in PROG) delete PROG[k]; Object.assign(PROG,migrateProgress(null).progress); progDefaults(); } }
 /* THE SAVE BELONGS TO PLAYER ONE. A co-op pass sets PROG.hero to whoever is being updated, and a level won or a
    coin banked inside player two's pass would otherwise write HIS name into the slot as the hero carrying it. */
@@ -1402,7 +1402,7 @@ function resolveTiles() {
     if (L.hornetsNest && (t === T.SOLID || t === T.ONEWAY || t === T.SPIKE)) { const ts = HNT.hnTile(t, x, y, tileAt, T, L); if (ts) { tileSpr[y * LW + x] = ts; tileDeep[y * LW + x] = 0; continue; } }   /* (claude/hornetsnestart) THE HORNET'S NEST's kit: paper shells, comb footing, wax, bark, needle litter (src/redraw/hornets_nest_tiles.js) */
     if (L.lumberKit && L.fellSet && L.fellSet.has(y * LW + x)) { tileSpr[y * LW + x] = null; tileDeep[y * LW + x] = 0; continue; }   /* (claude/lumbertrailart) a felled pine's ramp/plank cells are its trunk (drawn as the trunk), never stepped log stubs */
     if (L.lumberKit && (t === T.SOLID || t === T.ONEWAY)) { const ts = LTT.lumberTile(t, x, y, tileAt, T, L); if (ts) { tileSpr[y * LW + x] = ts; tileDeep[y * LW + x] = solidish(x, y) ? groundDeep[y * LW + x] : 0; continue; } }   /* (claude/lumbertrailart) THE LUMBER TRAIL's tile kit: stumps, corduroy, rock, gravel, the camp's yard, log stacks, the hollow log, log decks */
-    if (L.arenaYard && (t === T.SOLID || t === T.ONEWAY || t === T.NET)) { const ts = ART_AR.arenaTile(t, x, y, tileAt, T, L); if (ts) { tileSpr[y * LW + x] = ts; tileDeep[y * LW + x] = 0; continue; } }   /* (claude/arenayardart) THE ARENA SET's sand, ashlar, oak planks and climbing net */
+    if ((L.arenaYard || L.duelPit) && (t === T.SOLID || t === T.ONEWAY || t === T.NET)) { const ts = ART_AR.arenaTile(t, x, y, tileAt, T, L); if (ts) { tileSpr[y * LW + x] = ts; tileDeep[y * LW + x] = 0; continue; } }   /* (claude/arenayardart) THE ARENA SET's sand, ashlar, oak planks and climbing net */
     if (L.tavern && t === T.SOLID) { const ts = TVT.tavernTile(t, x, y, tileAt, T, L); if (ts) { tileSpr[y * LW + x] = ts; continue; } }   /* THE CROSSROADS INN's own floor, cellar, ceiling and corner posts (claude/tavernart, src/redraw/tavern_tiles.js) */
     if (L.frogCourt && t === T.SOLID) { const ts = FCA.tile(t, x, y, tileAt, T, L); if (ts) { tileSpr[y * LW + x] = ts; tileDeep[y * LW + x] = 0; continue; } }   /* (claude/frogking2art) the three ROYAL PADS (giant leaves on stems) */
     if (L.marsh3 && (t === T.SOLID || t === T.PORT)) { const ts = M3A.tile(t, x, y, tileAt, T, L); if (ts) { tileSpr[y * LW + x] = ts; tileDeep[y * LW + x] = 0; continue; } }   /* (claude/marsh3art) the reed stands and the log boom */
@@ -1620,7 +1620,7 @@ function creditTurn(fromX) {
 }
 var PTK = null;   /* (claude/partnerthrow) the partner-throw hands, made below the knock-into helper */
 const TVA_REPLACED = new Set(['hearth', 'longTable', 'bench', 'counter', 'caskRack', 'mugShelf', 'kegStack', 'hallWindow']);   /* (claude/tavernart) the greybox furniture the inn's room paints itself (src/redraw/tavern_backdrop.js) */
-var TAVO = null, YARD = null;   /* (claude/tavern) THE TAVERN's stations (src/tavern.js makeTavern), made beside the online host's api */
+var TAVO = null, YARD = null, DUELO = null;   /* (claude/tavern) THE TAVERN's stations (src/tavern.js makeTavern), made beside the online host's api */
 let partyCam = { wide: false, t: 0 };   /* (claude/tavern) the shared camera's step out (src/party.js camStep) */
 players = [P]; P.n = 1; P.hero = PROG.hero || 'knight'; P.press = {}; P.score = freshScore();
 let coopFall = false;      /* a down clock ran out: read once, after the passes */
@@ -1722,7 +1722,7 @@ function downedPlayer(dt) {
   const r = moveBody(P, P.vx * dt, P.vy * dt, false);
   P.ground = !!(r && r.ground); if (P.ground) P.vy = 0;
   if (P.y > LH * TS + 30) { P.x = checkpoint.x; P.y = checkpoint.y; P.vy = 0; }   /* crawling off the edge is not a second death: he is put back on the floor */
-  const helper = players.find(q => q !== P && upright(q) && Math.abs(q.x - P.x) < REVIVE_D && Math.abs(q.y - P.y) < 24);
+  const helper = !(DUELO && DUELO.on()) && players.find(q => q !== P && upright(q) && Math.abs(q.x - P.x) < REVIVE_D && Math.abs(q.y - P.y) < 24);   /* (claude/pvpduel: nobody lifts a K.O. in the duel pit) */
   if (helper) { P.reviveT = Math.min(REVIVE_T, P.reviveT + dt * (thrOn(PROG, helper.hero || PROG.hero, 'v', 1) ? 1.5 : 1));   /* VIGOR 20, the one who lifts: STEADY HANDS */ if (P.reviveT >= REVIVE_T) reviveBy(helper); }
   else P.reviveT = Math.max(0, P.reviveT - dt * 0.7);
   P.anim += dt;
@@ -1735,7 +1735,7 @@ function reviveBy(helper) {
   number(P.x, P.y - 32, 'UP', '#8fd160');
   if (coopTipDue(PROG, 'revive')) { hintSay('mechanic', 4.5, 'UP AGAIN AT A THIRD OF YOUR HEALTH, BRIEFLY SAFE. A REVIVE SCORES BEST.'); saveProgress(); }   /* (the first two lifts of a save say it) */
 }
-function coopWatch() {
+function coopWatch() { if (DUELO && DUELO.on()) { coopFall = false; return; }   /* (claude/pvpduel) the duel calls its own rounds: never the shrine */
   if (!coop()) return;
   if (!coopFall && players.some(upright)) return;
   coopFall = false;
@@ -6603,6 +6603,7 @@ function menuConfirm() {
   else if (k === 'Hero') { state = 'herocard'; SFX.uiSel(); }
   else if (k === 'Secrets') { menuKind = 'secrets'; SFX.uiSel(); }   /* (claude/secrets) the journal: found X of Y per act */
   else if ((k === 'Return to map' || k === 'Quit to title') && menuFrom === 'play' && !(menuMsg === 'press again to leave this level' && menuMsgT > 0)) { menuMsg = 'press again to leave this level'; menuMsgT = 2.5; SFX.ui(); }   /* leaving a level you are in asks once */
+  else if (k === 'Return to map' && L && L.duelPit) { duelLeave(); }   /* (claude/pvpduel) out of the duel pit: back to the inn */
   else if (k === 'Return to map' && L && L.arenaYard) { yardLeave(); }   /* (claude/arenayard) out of the yard: back to the inn it was entered from, else the map */
   else if (k === 'Return to map' && L && L.tavern) { tavernToMap(); }   /* (claude/tavernname) out of the inn's door, to the map */
   else if (k === 'Return to map' && rushOn()) { rush = null; setView('normal'); state = 'map'; gotoLevelNode(levelIndex); music.play(menuTrack()); SFX.menuClose(); }
@@ -7311,7 +7312,7 @@ function partyBoardOpen() {
 /* in a hero's own pass: a joiner walking in is walked by the room; a hero at the wardrobe has his keys taken by its card */
 function tavHands(pp) {
   if (!TAVO || !TAVO.on()) return;
-  const pr = pressRead(), walk = TAVO.walking(pp, keys), card = !walk && TAVO.hands(pp, pr, keys);
+  const pr = pressRead(), walk = TAVO.walking(pp, keys), card = !walk && (TAVO.hands(pp, pr, keys) || !!(DUELO && DUELO.cardHands(pp, pr, keys)));   /* (claude/pvpduel) the pit's DUEL (BETA) card eats its opener's keys too */
   if (walk) for (const k in pr) pr[k] = false;
   if (walk || card) pressWrite(pr);
 }
@@ -7352,11 +7353,35 @@ TAVO = makeTavern({ TS, L: () => L, PROG: () => PROG, save: () => saveProgress()
   p1Key: () => (touchOn ? 'TAP' : padLast ? 'UP' : String((KEYS.talk && KEYS.talk[0]) || 'e').toUpperCase()), p1Press: () => pressRead(), eatTalk: () => { talkPress = false; },
   toMap: () => tavernToMap('THE PARTY IS WITH YOU'), takeRoad: () => tavernToMap(coop() ? 'THE PARTY TAKES THE ROAD: ' + players.length : 'ALONE ON THE ROAD'),
   leave: p => { burst(p.x, p.y - 8, 10, ['#e8e0d0', '#8a8f80'], 40, 0.4); callout(PARTY.tagOf(p) + ' LEAVES THE PARTY'); if (p.src && p.src.kind === 'online') ONL.dropGuest(p.src.gid, 'LEFT THE PARTY'); else seatDrop(p); TAVO.door(); },
-  openOnline: () => ONL.open(), openParty: () => partyBoardOpen(), openSaves: () => openCoopHelp('play', SAVES_PAGE),   /* (claude/coopclarity) THE SAVES SIGN: one page of the co-op guide */ practice: () => { partyToWant(); rush = null; setView('normal'); yardEnter(true); },   /* (claude/yardswap) THE INN'S ARENA YARD DOOR (station id 'practice') goes straight into the Arena Yard with the party; the hero trials are gone */
+  openOnline: () => ONL.open(), openParty: () => partyBoardOpen(), openSaves: () => openCoopHelp('play', SAVES_PAGE),   /* (claude/coopclarity) THE SAVES SIGN: one page of the co-op guide */ practice: () => { partyToWant(); rush = null; setView('normal'); yardEnter(true); }, duel: p => !!(PVP_SHIPS && DUELO && DUELO.openCard(p)),   /* (claude/pvpduel) THE DUEL PIT opens the DUEL (BETA) card */   /* (claude/yardswap) THE INN'S ARENA YARD DOOR (station id 'practice') goes straight into the Arena Yard with the party; the hero trials are gone */
   down: p => asPlayer(p, () => goDown({ name: 'THE SPARRING BELL', red: false, rule: '' })), roomCode: () => ONL.code(),
   heroStrip: (x, y, w, cur, p) => tavStrip(x, y, w, cur, p), heroesFor: tavHeroes, setHero: tavSetHero, weapons: tavWeapons, weaponOf: tavWeaponOf, setWeapon: tavSetWeapon,
   heroName: h => HERO_SHORT[h] || String(h).toUpperCase(), weaponName: id => (SWORDS.find(s => s.id === id) || { name: String(id).toUpperCase() }).name });
 /* the touch USE button reads the station a phone player stands at */
+/* ===== (claude/pvpduel, Daniel 11-05) DUEL (BETA): the tavern's DUEL PIT (src/pvp-duel.js the rules, the rounds, the bot, the rankings; src/duel-pit.js the ring) ===== */
+const duelIndex = () => LEVELS.findIndex(l => l.id === 'duel_pit');
+/* THE EFFECTS A HERO LEAVES IN THE WORLD that the world (not his own pass) moves on: tagged with their owner after his pass, so a blow from one of them is his (src/pvp-duel.js attackerOf) */
+const DUEL_OWNED = () => [embers, meteors, fireRings, lanceBeams, moons, pwaves, hammers, kegs, severs, wakes, culls, balls, surge, pyres, realmWaves, dkTrail, dkArcs, dkGraves, bloodBolts, bkWaves, bkWorms, bkBolts, wthSpears, spearRain, risen, unholy];
+function duelTag(pp) { for (const a of DUEL_OWNED()) if (Array.isArray(a)) for (const o of a) if (o && typeof o === 'object' && !o._duelOwn) o._duelOwn = pp; }
+function duelPass(pp, fn) { if (!DUELO || !DUELO.on()) return fn(); DUELO.sync(pp); try { return fn(); } finally { duelTag(pp); DUELO.sync(null); } }
+/* asPlayer, with PLAYER ONE'S OWN HERO when he is reached from inside another seat's pass (asPlayer's player-one path keeps the running seat's PROG.hero) */
+function asSeat(p, fn) { if (p !== players[0] || !passOn || passOn === players[0]) return asPlayer(p, fn); return asPlayer(p, () => { const wH = PROG.hero, wK = K; PROG.hero = p.hero || wH; if (p.set) K = p.set; try { return fn(); } finally { PROG.hero = wH; K = wK; } }); }
+/* the share of this seat's blow that is his LEVEL (and smith edges): the duel weighs every seat at his L1 hand */
+const duelNorm = () => { const base = isPaladin() ? 14 : isPirate() ? 8 : isReaper() ? 16 : isWarden() ? 11 : isGeo() ? 23 : isBz() ? BZ_K.dmg : isRg() ? RG_K.dmg : sword().dmg, add = (PROG.items.edge ? 3 : 0) + (PROG.items.edge2 ? 3 : 0) + (PROG.items.edge3 ? 3 : 0) + (PROG.items.edge4 ? 3 : 0) + grow(hero(), heroLevel()).damage; return base > 0 ? base / Math.max(base, base + add) : 1; };
+function duelEnter(bot) { const i = duelIndex(); if (i < 0 || !PVP_SHIPS) return false; if (TAVO) TAVO.reset(); partyToWant(); rush = null; setView('normal'); loadThen(i, () => { introSeen = true; startGame(); bannerT = 0; if (!DUELO.begin({ botHero: bot })) hintSay('tip', 4, 'THE PIT WANTS TWO: A FRIEND OR A BOT.'); }); return true; }
+function duelLeave() { if (DUELO) DUELO.end(); setView('normal'); partyToWant(); enterTavern(() => duelAtPit(false)); }
+function duelAtPit(open) { const s = TAV_STATIONS.find(q => q.id === 'arena'); if (s) { players[0].x = (s.x - 2) * TS + TS / 2; players[0].face = 1; } if (open && DUELO && PVP_SHIPS) DUELO.openCard(players[0]); }
+DUELO = makeDuel({ L: () => L, players: () => players, time: () => time, TS, asPlayer: asSeat, P: () => P, passOn: () => passOn, upright, enemies: () => enemies, owned: DUEL_OWNED,
+  goDown: (p, k) => asSeat(p, () => { if (!(P.down > 0)) goDown(k); }), seatAdd: sp => seatAdd(sp), seatDrop: p => seatDrop(p),
+  float: (x, y, txt, col) => nums.push({ x, y, txt, col, life: 1.2, vy: -34 }), callout: s => callout(s), hint: (m, t) => hintSay('tip', t, m), sfx: k => { try { (SFX[k] || SFX.ui)(); } catch {} },
+  colourOf: n => PARTY.colourOf(PROG.tavern, n), tagOf: p => PARTY.tagOf(p), heroName: h => HERO_SHORT[h] || String(h).toUpperCase(), heroes: () => coopPickList(),
+  text: (s, x, y, c, a, z) => text(s, x, y, c, a, z), board: (x, y, w, h) => board(x, y, w, h, UI.border, 'rgba(16,13,24,0.94)'),
+  bar: (x, y, w, h, sh, c) => { g.fillStyle = 'rgba(10,8,16,0.85)'; g.fillRect(x - 1, y - 1, w + 2, h + 2); g.fillStyle = '#3a2a2a'; g.fillRect(x, y, w, h); g.fillStyle = c; g.fillRect(x, y, Math.round(w * Math.max(0, Math.min(1, sh))), h); },
+  /* A HERO'S BLOW ON A HERO, through the victim's own guard chain (damagePlayer): a fixed probe on a full bar, so it never kills here - what it took of the probe is the share that landed */
+  damage: (v, fromX, probe, who) => { let out = { r: false, landed: 0 }; asSeat(v, () => { const hp0 = P.hp; P.hp = P.maxHp; const r = damagePlayer(fromX, probe, { who, name: 'THE DUEL' }); out = { r, landed: Math.max(0, P.maxHp - P.hp) }; P.hp = hp0; }); return out; },
+  norm: p => asSeat(p, () => duelNorm()), pressRead: () => pressRead(), eatPress: () => { jumpPress = false; talkPress = false; dodgePress = false; atkPress = false; confirmPress = false; }, keysWrite: o => keysWrite(o), pressWrite: o => pressWrite(o),
+  rankOf: p => p === players[0] ? { key: 'slot' + (slot + 1), name: 'SAVE ' + (slot + 1) } : p.prof && p.prof.dest && p.prof.dest.kind === 'local' && Number.isInteger(p.prof.dest.slot) ? { key: 'slot' + (p.prof.dest.slot + 1), name: 'SAVE ' + (p.prof.dest.slot + 1) } : null,
+  ls: () => { try { return localStorage; } catch { return null; } }, leave: () => duelLeave(), enter: bot => duelEnter(bot) });
 /* ===== (claude/arenayard, Daniel 11-03) THE ARENA YARD: the one shared practice yard (src/arena-yard.js; plan scratch/plan-arenayard-1103.md) ===== */
 let yardFromInn = false, yardPrev = { parries: 0, rp: 0 };
 const yardIndex = () => LEVELS.findIndex(l => l.id === 'arena_yard');
@@ -7830,7 +7855,8 @@ const DUEL_HERO = { closedhelm: { knight: 1, reaper: 0.7, pyro: 2.2 /* (claude/b
 const CAP_HERO = { knight: 1, pyro: 0.85, paladin: 0.7, pirate: 0.45, reaper: 1.6, geomancer: 1.0, berserker: 0.7 }, CAP_OPEN = { pirate: 1.2, berserker: 1.1 };   /* (claude/hurricane3 FINISH+TUNE: 70% top edge, ranger 4/12 -> knight/warden/reaper/berserker a notch harder, ranger softer + his openings pay x1.5) */   /* (claude/hurricane3) THE CAPTAIN 3 on his yards: the hurricane2tune per-hero table was for the flat-deck fight (warden 1.45, knight 0.77...) - reset, re-measured below (tools/boss-rates.mjs --profile=human) */   /* (claude/hurricane2tune) THE CAPTAIN, PER HERO: after the guard fixes the warden still won 12/12 and the knight 5/12 - she out-ranges his sabre and deflects the cuts she does draw (each deflect is an opening), the knight stands in the sabre and blocks few; the cause is the heroes' kits, so the Captain's blows land a little lighter on the two who stand in them and heavier on her (measured at 24 seeds a hero, tools/boss-rates.mjs --profile=human) */   /* (claude/hurricane2) THE CAPTAIN 2: tied to the storm, his openings earned off the sea and the sky - tuned WITH flasks (tools/boss-rates.mjs --profile=human); on its own line (merge care) */   /* (claude/dk2tune) THE DEATH KNIGHT: how hard his own blows land - the knight went 0/N (3 flasks and all) at 1.0; on its own line (merge care) */
 const LP_HERO = { tollmaster: { knight: 1, paladin: 1.3 }, lampreeve: { knight: 1, paladin: 0.95 } }; /* (claude/knightid, Daniel Q11: the knight's hidden-handicap rows are DELETED = 1.0; the kit answers now) */   /* (claude/lamplit3tune) on its own line (merge care), see damagePlayer0 */
 function damagePlayer0(fromX, dmg, { up = false, unblockable = false, pierce = false, noKnock = false, who = null, blow = null, name = null, geo = false, low = false, pct = 0, spare = false } = {}) {   /* (claude/ft4b) spare: it hurts but never kills - THE FALLING TOWER's collapse front (Daniel 10-29 #2) */
-  { const src = who || updFoe; if (src && src.elite && dmg > 0) dmg = Math.max(1, Math.round(dmg * tuneOf(src.t).dmg));   /* (ELITETUNE) per-kind elite damage, elite-kit.js TUNE */
+  const pvpBlow = !!(who && who.pvpSeat);   /* (claude/pvpduel) A HERO'S BLOW IN THE DUEL PIT: no foe table, no difficulty, no co-op rule, no red number - src/pvp-duel.js weighs it */
+  if (!pvpBlow) { const src = who || updFoe; if (src && src.elite && dmg > 0) dmg = Math.max(1, Math.round(dmg * tuneOf(src.t).dmg));   /* (ELITETUNE) per-kind elite damage, elite-kit.js TUNE */
     if (src && src.disarmed && !lcBig(src) && dmg > 0) dmg = Math.max(1, Math.round(dmg * DISARMED_TAKE));
     if (src && src.nip > 0 && dmg > 0) dmg = Math.max(1, Math.round(dmg * src.nip));   /* (claude/underleaf3) A NIP: a summoned small thing bites for a share of its kind's blow (THE GRANDMOTHER 3's brood: src/potion-hands.js GM.broodBite) */
     if (src && src.xpRole === 'mini' && dmg > 0) dmg = Math.round(dmg * GB.GREED.miniHit);
@@ -7986,7 +8012,7 @@ function damagePlayer0(fromX, dmg, { up = false, unblockable = false, pierce = f
     number(P.x, P.y - 22, 'GUARD BREAK', '#ffd36b');
   }
   if (yardSafe()) { P.inv = 0.8; P.hurt = 0.2; flash = 0.08; SFX.pHurt(); P.vx = (Math.sign(P.x - fromX) || -P.face) * 120; P.vy = -120; P.ground = false; return 'hit'; } // a trial never hurts
-  dmg = Math.max(1, Math.round(dmg * diffNow().take * DFM.df('take') * (1 + 0.28 * hitTierOf(curId(), who || updFoe)) * coopTake()));   /* (claude/difficulty) the mode's damage taken (Normal x1) */   /* (IRON HIDE: a milestone perk) */   /* AND TWICE AS HARD: the other half of the co-op rule, on the one line every blow that ever lands on a hero comes through */
+  if (!pvpBlow) dmg = Math.max(1, Math.round(dmg * diffNow().take * DFM.df('take') * (1 + 0.28 * hitTierOf(curId(), who || updFoe)) * coopTake()));   /* (claude/difficulty) the mode's damage taken (Normal x1) */   /* (IRON HIDE: a milestone perk) */   /* AND TWICE AS HARD: the other half of the co-op rule, on the one line every blow that ever lands on a hero comes through */
   /* (claude/lategamea) THE PERMANENT MITIGATION CHAIN passes through SV.mitigationMul's soft floor (x0.6): IRON HIDE, IRON CHARM, RINGMAIL, PLATE, WARDED PLATE */
   dmg = Math.max(1, Math.round(dmg * SV.mitigationMul([perk('iron') ? 0.9 : 1, PROG.charm === 'iron' ? 0.8 : 1, PROG.items.mail ? 0.9 : 1, PROG.items.plate ? 0.9 : 1, PROG.items.mail2 ? 0.9 : 1]) * (isPyro() && tal('heatShield') && (P.heat || 0) >= 50 ? 0.75 : 1)));
   /* (PLATED took a twentieth off every blow; it is the shield at his back now) */
@@ -8027,7 +8053,7 @@ function damagePlayer0(fromX, dmg, { up = false, unblockable = false, pierce = f
   if (isPirate() && (P.rum || 0) > 0) dmg = Math.round(dmg * 1.25);   // and he feels it more
   { const hj = JUICE[takenClass(dmg)]; hitstop(hj.stop); shakeCam(hj.shake, dir * hj.kick, 'hurt'); flash = hj.flash; SFX[hj.sfx](); if (!armoured) squash(1 + hj.squash, 1 - hj.squash, 0.14); rumble(180, 0.8); }   /* THE HERO TAKING ONE: the table's hurt / hurt-heavy row, every hero the same */
   burst(P.x, P.y - 8, 8, ['#e04848', '#ffd36b'], 60, 0.4);
-  number(P.x, P.y - 20, '-' + dmg, '#ff6b6b'); hitsTaken++;
+  if (!pvpBlow) number(P.x, P.y - 20, '-' + dmg, '#ff6b6b'); hitsTaken++;
   if (isPyro() && tal('emberSkin')) { const f = nearFoe(fromX); if (f) { f.burn = Math.max(f.burn || 0, 2.4); flame(f.x, f.y - f.h / 2, 4, 4, 40, 2); } }
   if (P.hp <= 0 && isPyro() && (tal('phoenix') || tal('phoenixTrail')) && !P.phoenixUsed) { P.phoenixUsed = true; P.hp = Math.min(P.maxHp, 20); P.inv = 2; phoenixBurst(); }
   /* (the RED TONIC drunk at once under a quarter is gone: it is a FLASK the player drinks, drinkTick - claude/survival) */
@@ -8048,7 +8074,7 @@ function damagePlayer0(fromX, dmg, { up = false, unblockable = false, pierce = f
    drink stops and the flask goes back on his belt. QUICK DRAUGHT makes the whole drink ~0.5 s (F2.drinkTimes). */
 const flaskHud = { flashT: 0, spillT: 0, last: -1, spills: [], glowT: 0, levelDrinks: 0 };   /* the HUD row's flash and shake, the knocked-away flasks, the rising glow, this wood's drinks */
 const drinkT0 = () => P.drinkDur || SV.FLASK.drinkT, swallowT0 = () => P.swallowAt || SV.FLASK.swallowAt;
-function tryDrink() {
+function tryDrink() { if (DUELO && DUELO.on() && state === 'play') { SFX.buzz(); return false; }   /* (claude/pvpduel) NO FLASKS IN THE DUEL PIT */
   if (state !== 'play' || !P || P.dead || P.down > 0 || yardSafe() || P.drinkT > 0) return false;
   if (!((P.flasks | 0) > 0)) { SFX.buzz(); number(P.x, P.y - 30, 'NO FLASKS', '#9aa39a'); return false; }
   if (P.hp >= P.maxHp) { SFX.buzz(); number(P.x, P.y - 30, 'FULL', '#9aa39a'); return false; }
@@ -8279,6 +8305,7 @@ function die(killer) {
   if (P.dead) return;
   if (window.BK && BK.hitLog) BK.hitLog.push([Math.round(time * 10) / 10, 'DIED', killer && killer.name || '?', Math.round(P.hp), 0]);   /* (claude/marsh2) the lab's hit log names what killed him */
   /* IN CO-OP HE GOES DOWN, NOT OUT - as long as somebody is still standing to come and get him (goDown) */
+  if (DUELO && DUELO.on()) { if (!(P.down > 0)) goDown(killer); return; }   /* (claude/pvpduel) NOBODY DIES IN THE DUEL PIT: a K.O. lies down until the round is called - no shrine, no death cost */
   if (coop() && !(P.down > 0) && players.some(q => q !== P && upright(q))) { goDown(killer); return; }
   P.killer = killer || null; BUG.evlog('died: ' + ((killer && killer.name) || '?') + ' @' + (P.x / TS).toFixed(0) + ',' + (P.y / TS).toFixed(0));
   P.dead = 1.2; deaths++; gormNoteDeath(); P.hp = 0; SFX.pDie(); SFX.jet(false); shakeCam(7, 0, 'hurt'); crowdJeer(true); if (SET.iron) { lives--; if (lives > 0) number(P.x, P.y - 30, lives + (lives === 1 ? ' LIFE LEFT' : ' LIVES LEFT'), '#ff6b6b'); }
@@ -8906,7 +8933,7 @@ const rpCut = () => P.riposteT > 0 || (!!P.swingRiposte && P.atk >= 0);   /* (cl
 function rpAnswerUp() { return hero() === 'knight' ? !!P.block && (P.blockT || 0) < perfectWindow() : isPaladin() ? !!P.aegis && time - (P.aegisUpT ?? -9) < perfectWindow() : isPirate() ? P.parryW > 0
   : isWarden() ? (P.deflectT || 0) > 0 && time - (P.deflectAt ?? -9) <= RP_K.tap * DFM.df('parry') : isBz() ? !!(BZK && BZK.onBeat()) : isRg() ? !!(RGK && RGK.onBeat()) : isPyro() ? !!(P.fwUp && (P.fwT || 0) <= FW_K.perfect) : isGeo() ? !!(GEO && GEO.wardUp() && GEO.wardPerfect()) : isReaper() ? !P.warding && (P.wardSince ?? 9) < WARD_BEAT : false; }
 const rpSkillBlow = () => P.atk < 0 && !P.plunge && time - (P.skillAt ?? -9) < 1.5;
-function hurtEnemy(e, dmg, fromX, plunge) { const tag = BLOW, blow = brRoomBlow(tag) ? null : tag; BLOW = null; if (e && e.t === 'dummy' && TAVO && L && L.tavern) TAVO.dummyHit(e, passOn || players[0]);   /* (claude/tavern) the TEAM HIT drill: whose blow */
+function hurtEnemy(e, dmg, fromX, plunge) { if (e && e.pvpSeat) { BLOW = null; if (DUELO) DUELO.hit(e, dmg, fromX); return; }   /* (claude/pvpduel) A DUELLIST'S PROXY: the blow is a hero's on a hero - src/pvp-duel.js routes it onto that seat through damagePlayer, before any foe rule */ const tag = BLOW, blow = brRoomBlow(tag) ? null : tag; BLOW = null; if (e && e.t === 'dummy' && TAVO && L && L.tavern) TAVO.dummyHit(e, passOn || players[0]);   /* (claude/tavern) the TEAM HIT drill: whose blow */
   if (RGK && dmg > 0 && (e.rgMarkT || 0) > time) dmg = Math.round(dmg * RGK.markMul(e));
   if (WCH && dmg > 0 && e && !e.harmless && WCH.raging(P)) dmg = Math.round(dmg * WCM.WC.rage.dealt);   /* (claude/warcairn) WAR-RAGE: a drum struck - every blow lands a quarter harder a while (src/war-cairn-hands.js) */   /* (claude/ranger) THE RANGER'S MARK: every blow on her quarry lands harder (src/ranger.js) */   /* taken at once, so nothing this blow sets off inherits it */
   /* (claude/keyscore, B14) THE TAG IS EVERY BLOW'S NAME, the BLOW is a HERO'S HAND: a thrown prop ('throw') and a seed sent back ('reflect') reach every boss hook by their tag,
@@ -11768,7 +11795,7 @@ const rushUnlocked = () => godMode() || !!q.get('rush') || !!((PROG.crown || {})
    level (6 rows), so the sub-list never changes its shape. titleOpts is true while the sub-list is up; every tool that wants SETTINGS / SOUND TEST / CONTROLS goes through OPTIONS. */
 let titleOpts = false;
 const titleTop = () => { const base = readSlot(slot) ? ['CONTINUE', 'CHOOSE A SAVE'] : ['NEW GAME', 'CHOOSE A SAVE'];
-  return base.concat(['LOCAL CO-OP', 'ONLINE CO-OP'], rushUnlocked() && !MODES_PARKED && !DS.DEMO ? ['BOSS RUSH'] : [], ['ARENA YARD', 'BOSS SELECT'], MODES_PARKED || DS.DEMO ? [] : ['THE EDITOR'], touchOn ? ["WHAT'S NEW", 'OPTIONS'] : ["WHAT'S NEW", 'OPTIONS', 'GIVE FEEDBACK', 'CREDITS']); };   /* (claude/touchrows) ON TOUCH GIVE FEEDBACK and CREDITS live under OPTIONS: two fewer rows for a thumb */
+  return base.concat(['LOCAL CO-OP', 'ONLINE CO-OP'], rushUnlocked() && !MODES_PARKED && !DS.DEMO ? ['BOSS RUSH'] : [], ['ARENA YARD'], PVP_SHIPS ? ['DUEL (BETA)'] : [], ['BOSS SELECT'], MODES_PARKED || DS.DEMO ? [] : ['THE EDITOR'], touchOn ? ["WHAT'S NEW", 'OPTIONS'] : ["WHAT'S NEW", 'OPTIONS', 'GIVE FEEDBACK', 'CREDITS']); };   /* (claude/touchrows) ON TOUCH GIVE FEEDBACK and CREDITS live under OPTIONS: two fewer rows for a thumb */
 /* REPORT A BUG (pause menu and title OPTIONS): the facts the code carries - never the save (src/bug-report.js). The board is DOM (src/bug-report-ui.js). */
 function bugSnapshot() {
   const up = WN.getUpdates()[0] || {}, inLv = !!(L && LEVELS[levelIndex]) && (state === 'play' || state === 'talk' || state === 'win' || state === 'gameover' || state === 'victory' || (state === 'menu' && menuFrom === 'play')), lv = inLv ? LEVELS[levelIndex] : null, S = {};
@@ -28819,7 +28846,7 @@ function updateEnemies(dt) {
   if (L.witch) updateHedgeRoots(dt);   /* THE HEDGE WARDEN's roots and THE ROOTED GARDEN's */
   for (const e of enemies) {
     if (faDt !== null) { dt = faDt; faDt = null; }   /* (claude/foepass) a HASTED foe's fast clock stops with it */
-    disarmTick(); updFoe = e; updSeedN = seeds.length;   /* DISARM: whose blow this is, and what it throws (knightKit) */
+    if (e.pvpSeat) continue; disarmTick(); updFoe = e; updSeedN = seeds.length;   /* (claude/pvpduel) a duellist's proxy has no AI: it stands where its hero stands */   /* DISARM: whose blow this is, and what it throws (knightKit) */
     if (!e.alive) continue;
     /* WHO THIS ONE MEANS BY "the player": the nearest hero still on his feet. One line, and every creature and every
        boss in the game answers to whichever of them walked into it, with no branch of its own. (P is put back to
@@ -32292,7 +32319,7 @@ function updateParticles(dt) {
   fireflies = fireflies.filter(f => f.life > 0 && f.x > camX - 20 && f.x < camX + VW + 20);
   const autumn = L.palette && L.palette.near === 'autumn';
   /* nothing on THE UNBURIED FIELD has leaves to drop (look pass 2026-09-24): what comes down over it is ash off the old fires, and an ember now and then */
-  const leafCols = L.arenaYard ? ['#e6cc96', '#cfae78', '#f6e6b8', '#d2cab0'] : L.glasssea ? ['#e6fff6', '#9ae8d0', '#ffffff', '#b8f4e0', '#8af0ff'] : L.palette && L.palette.dress === 'battlefield' ? ['#8a8278', '#6a625c', '#a8a098', '#b0603a'] : autumn ? ['#d9782a', '#c9463d', '#e0b040', '#f0a040', '#8a3a1a'] : ['#8fd160', '#e0b040', '#c9463d', '#5aa33e'];
+  const leafCols = (L.arenaYard || L.duelPit) ? ['#e6cc96', '#cfae78', '#f6e6b8', '#d2cab0'] : L.glasssea ? ['#e6fff6', '#9ae8d0', '#ffffff', '#b8f4e0', '#8af0ff'] : L.palette && L.palette.dress === 'battlefield' ? ['#8a8278', '#6a625c', '#a8a098', '#b0603a'] : autumn ? ['#d9782a', '#c9463d', '#e0b040', '#f0a040', '#8a3a1a'] : ['#8fd160', '#e0b040', '#c9463d', '#5aa33e'];
   if (SET.ambient && SET.weather && Math.random() < dt * (autumn ? 9 : 2.5)) leaves.push({ x: camX + Math.random() * (VW + 60) - 30, y: camY - 6, t: Math.random() * 6, life: 9, col: leafCols[(Math.random() * leafCols.length) | 0] });
   for (const l of leaves) { l.t += dt; l.life -= dt; l.y += 22 * dt; l.x += Math.sin(l.t * 2.2) * 18 * dt + 6 * dt; }
   leaves = leaves.filter(l => l.life > 0 && l.y < camY + VH + 10);
@@ -32525,11 +32552,12 @@ function update(dt) {
       if (downPress) { titleI = (titleI + 1) % items.length; SFX.ui(); }
       if (menuTake()) {
         const k = items[titleI]; SFX.uiSel(); music.play(menuTrack());
-        if (['CONTINUE', 'BOSS RUSH', 'ARENA YARD', 'LOCAL CO-OP', 'ONLINE CO-OP'].includes(k) && ['corrupt', 'newer'].includes(slotHealthOf(slot).state)) { state = 'slots'; slotI = slot; slotMsg = 'save ' + (slot + 1) + ' is damaged - Z to fix it'; slotMsgT = 5; eraseAsk = -1; fixAsk = -1; }
+        if (['CONTINUE', 'BOSS RUSH', 'ARENA YARD', 'DUEL (BETA)', 'LOCAL CO-OP', 'ONLINE CO-OP'].includes(k) && ['corrupt', 'newer'].includes(slotHealthOf(slot).state)) { state = 'slots'; slotI = slot; slotMsg = 'save ' + (slot + 1) + ' is damaged - Z to fix it'; slotMsgT = 5; eraseAsk = -1; fixAsk = -1; }
         else if (k === 'CONTINUE') { loadSlot(slot); applySkin(); applyUpgrades(); mapToSaved(); state = 'map'; }
         else if (k === 'NEW GAME' || k === 'CHOOSE A SAVE') { state = 'slots'; slotI = slot; slotMsg = ''; eraseAsk = -1; fixAsk = -1; }
         else if (k === 'BOSS RUSH') { loadSlot(slot); applySkin(); applyUpgrades(); rushStart(); }
         else if (k === 'ARENA YARD') { rush = null; loadSlot(slot); applySkin(); applyUpgrades(); yardEnter(false); }   /* (claude/arenayard) straight into the Arena Yard */
+        else if (k === 'DUEL (BETA)' && PVP_SHIPS) { rush = null; loadSlot(slot); applySkin(); applyUpgrades(); mapToSaved(); enterTavern(() => duelAtPit(true)); }   /* (claude/pvpduel) the inn is the lobby: P1 stands at the DUEL PIT with its card up (friends join as in co-op) */
         else if (k === 'BOSS SELECT') bossSelectOpen('title');
         else if (k === 'LOCAL CO-OP') { loadSlot(slot); applySkin(); applyUpgrades(); mapToSaved(); enterTavern(); }   /* (claude/tavern) CO-OP LIVES IN THE TAVERN now: friends walk in there (a pad's JUMP) */
         else if (k === 'ONLINE CO-OP') { loadSlot(slot); applySkin(); applyUpgrades(); mapToSaved(); enterTavern(() => ONL.open()); }   /* ONLINE CO-OP (src/online.js): the tavern, with its invite board's room card up - host (the same co-op gate) or join with a code */
@@ -32653,6 +32681,7 @@ function update(dt) {
      EACH HERO BUFFERS HIS OWN PRESSES AND HOLDS HIS OWN SWING. In single player asPlayer calls straight through, so
      this is the two lines it always was, in the order it always ran them. */
   for (const pp of players) asPlayer(pp, () => {
+    if (DUELO) DUELO.hands(pp);   /* (claude/pvpduel) the count / K.O. / winner screen hold every seat's hands; a duel bot's hands are written here */
     yardHands(pp);   /* (claude/arenayard) the move board eats its reader's keys */
     tavHands(pp);   /* (claude/tavern) FIRST: a joiner walking in is walked by the room, a hero at the wardrobe has his keys taken by its card (before a double tap could read as a roll) */
     const ptSaved = ptPass();   /* (claude/partnerthrow) GRAB / THROW / WIGGLE: the press is read here, before the buffers; a held or thrown partner's hands are masked for the pass */
@@ -32687,7 +32716,7 @@ function update(dt) {
      A press is read once (the first sub-step); a hitstop or a screen change ends the frame's remaining sub-steps; the camera and the weather run once, on world time. */
   const sub = wdtAll > dt * 1.0001 ? Math.ceil(wdtAll / dt - 1e-6) : 1, stateIn = state;
   for (let si = 0; si < sub; si++) { const wdt = wdtAll / sub; if (si) { clearPresses(); if (stop > 0 || state !== stateIn) break; }
-  updateMovers(wdt); danceAfterBoss(); for (const pp of players) asPlayer(pp, () => ptMasked(pp, () => { if (!PTK.before(pp, wdt)) { HERO_HAND = true; try { updatePlayer(wdt); } finally { HERO_HAND = false; } } PTK.after(pp, wdt); })); coopWatch(); if (TAVO) TAVO.tick(wdt); if (YARD) YARD.tick(wdt); PTK.tick(wdt); updateEnemies(wdt); tokenPost(TK, enemies, tkApi, wdt); P = players[0]; emitAt(null); updateWisp(wdt); updateSlide(wdt); updateOverhangs(wdt); updateChase(wdt); updateStairs(wdt); updateFlood(wdt); traceBeams(wdt); updateProps(wdt); updateVillage(wdt); if (L.timber) updateTimber(wdt, attackBox()); if (L.ballast) updateBallast(wdt); if (L.hoists) updateHoists(wdt); if (L.deep) updateDeep(wdt); updateBreathCue(wdt); if (L.hush) updateHush(wdt); updateCrystal(wdt); updateSpans(wdt); updatePyres(wdt); updateCorpses(wdt); updateShots(wdt); updateParticles(wdt); }
+  updateMovers(wdt); danceAfterBoss(); for (const pp of players) asPlayer(pp, () => duelPass(pp, () => ptMasked(pp, () => { if (!PTK.before(pp, wdt)) { HERO_HAND = true; try { updatePlayer(wdt); } finally { HERO_HAND = false; } } PTK.after(pp, wdt); }))); coopWatch(); if (TAVO) TAVO.tick(wdt); if (DUELO) DUELO.post(wdt); if (YARD) YARD.tick(wdt); PTK.tick(wdt); updateEnemies(wdt); tokenPost(TK, enemies, tkApi, wdt); P = players[0]; emitAt(null); updateWisp(wdt); updateSlide(wdt); updateOverhangs(wdt); updateChase(wdt); updateStairs(wdt); updateFlood(wdt); traceBeams(wdt); updateProps(wdt); updateVillage(wdt); if (L.timber) updateTimber(wdt, attackBox()); if (L.ballast) updateBallast(wdt); if (L.hoists) updateHoists(wdt); if (L.deep) updateDeep(wdt); updateBreathCue(wdt); if (L.hush) updateHush(wdt); updateCrystal(wdt); updateSpans(wdt); updatePyres(wdt); updateCorpses(wdt); updateShots(wdt); updateParticles(wdt); }
   updateWeather(dt); updateCamera(dt * Math.max(1, SET.speed || 1));
   updatePolish(dt); fogMark(dt);
   flash = Math.max(0, flash - dt);
@@ -33966,7 +33995,7 @@ function drawWorld(cx, cy, showPlayer) {
   else if (dk > 0) { g.globalAlpha = dk; g.drawImage(BG.skyDusk, 0, 0, 1, VH, 0, 0, VW, VH); g.drawImage(BG.sun, Math.round(VW * 0.7 - cx * 0.03), Math.round(70 - dk * 30 + bgDY(cy) * 0.1)); g.globalAlpha = 1; }
   drawStormClouds(cx, cy); // the weather itself: banks of it at their own speeds, lit from underneath when the sky goes
   if (!L.night && (!(L.weather || []).length || !weatherAt().includes('rain'))) for (const c of clouds) { const x = Math.round(c.x - cx * 0.1), y = Math.round(c.y + bgDY(cy) * 0.05); g.globalAlpha = 0.85; g.drawImage(CLOUD[c.k], ((x % (VW + 160)) + VW + 160) % (VW + 160) - 80, y); g.globalAlpha = 1; }
-  if (L.arenaYard) ARB.drawArenaBack(g, cx, cy, VW, VH, time, { floor: L.arenaYard.floor * TS, cheer: YARD ? YARD.st.cheer : 0, gate: L.arenaYard.gate ? [L.arenaYard.gate[0] * TS, L.arenaYard.gate[1] * TS] : null });   /* (claude/arenayardart) THE ARENA SET's sky, far towers and CROWD STAND (it cheers on a PERFECT: YARD.st.cheer), src/redraw/arena_backdrop.js */
+  if (L.arenaYard) ARB.drawArenaBack(g, cx, cy, VW, VH, time, { floor: L.arenaYard.floor * TS, cheer: YARD ? YARD.st.cheer : 0, gate: L.arenaYard.gate ? [L.arenaYard.gate[0] * TS, L.arenaYard.gate[1] * TS] : null }); else if (L.duelPit) ARB.drawArenaBack(g, cx, cy, VW, VH, time, { floor: L.duelPit.floor * TS, cheer: DUELO && DUELO.on() && DUELO.st.m.phase !== 'fight' ? 0.7 : 0, gate: null });   /* (claude/pvpduel) the duel pit wears the arena set: the crowd cheers between rounds */   /* (claude/arenayardart) THE ARENA SET's sky, far towers and CROWD STAND (it cheers on a PERFECT: YARD.st.cheer), src/redraw/arena_backdrop.js */
   if (L.sealedpyramid) SPB.drawBackdrop(g, cx, cy, VW, VH, L, time, bgDY(cy));   /* THE SEALED PYRAMID's face: far pyramids and THE APEX with its gilded capstone (claude/spart, src/redraw/sealed_pyramid_backdrop.js) */
   if (L.hornetsNest) HNB.drawBackdrop(g, cx, cy, VW, VH, L, time, bgDY(cy), SET.parallax === 'full');   /* (claude/hornetsnestart) THE HORNET'S NEST's own pine wood, the ancient pine, the nest's paper wall and resin lights, the brood hall's vault (src/redraw/hornets_nest_backdrop.js) */
   if (curId() === 'wood' || curId() === 'marsh') HNB.drawNeighbourPine(g, cx, cy, VW, VH, curId(), bgDY(cy), time);   /* (claude/hornetsnest2) the great pine and its paper nest on the horizon: past the Lumber Trail's clearing (the road climbs on to it), behind MARSH WOOD's start (you came down it) */
@@ -33988,7 +34017,7 @@ function drawWorld(cx, cy, showPlayer) {
     { const gr = g.createLinearGradient(0, 0, 0, VH); gr.addColorStop(0, 'rgba(0,0,0,0.42)'); gr.addColorStop(0.5, 'rgba(0,0,0,0)'); gr.addColorStop(1, 'rgba(0,0,0,0.25)');
       g.fillStyle = gr; g.fillRect(0, 0, VW, VH); }                 /* and the dark closes over the top of it */
   } // under the mountain there is only more mountain
-  else if (SET.parallax !== 'off' && !L.colosseum && !L.sealedpyramid && !L.hornetsNest && !L.arenaYard) { if (L.fields) drawFieldsTower(cx, cy);   /* THE ARCHMAGE'S TOWER, behind the far hills: nearer and brighter the further you go */
+  else if (SET.parallax !== 'off' && !L.colosseum && !L.sealedpyramid && !L.hornetsNest && !L.arenaYard && !L.duelPit) { if (L.fields) drawFieldsTower(cx, cy);   /* THE ARCHMAGE'S TOWER, behind the far hills: nearer and brighter the further you go */
   /* THE FLOTILLA'S HARBOUR is laid for where her camera lives (a deck twenty rows down a forty-row level), not for the bottom of the
      level: the port's horizon a little over the middle of the frame, the moored hulls under it, and each layer's life laid on it */
   if (L.palette && L.palette.far === 'harbour') { const dY = bgDY(cy);
@@ -34038,7 +34067,7 @@ function drawWorld(cx, cy, showPlayer) {
   if (WCH && WCH.on() && SET.parallax !== 'off') WCH.drawFar(g, cx, cy, VW, VH, time);   /* (claude/warcairnart) HIGHCROWN far below and THE GREAT CAIRN ahead on the skyline */
   if (MRH && MRH.on() && SET.parallax !== 'off') MRH.drawFar(g, cx, cy, VW, VH, time);   /* GALE MOOR: the goblins' windmill frame on the horizon */
   if (L.oreRoad && SET.parallax !== 'off') drawOreBackdrop(g, VW, VH, cx, time, cy);   /* THE ORE ROAD: her castle on its peak, and the far pylons marching to it */   /* THE WITCHLIGHT STAIR: its tower stands in front of the far hills, behind the near ones */
-  if (BG.nearTrees && !L.arenaYard && !L.colosseum && !L.rootway && !L.lumberKit && !L.fenroad && !L.hornetsNest && !L.pwood && !L.rookery && !(L.ul3 && SET.parallax !== 'off') && !(L.sporewood2 && SET.parallax !== 'off')) { g.globalAlpha = 0.85; drawLayer(BG.nearTrees, 0.45, VH - 300, cx, cy); g.globalAlpha = 1; }
+  if (BG.nearTrees && !L.arenaYard && !L.duelPit && !L.colosseum && !L.rootway && !L.lumberKit && !L.fenroad && !L.hornetsNest && !L.pwood && !L.rookery && !(L.ul3 && SET.parallax !== 'off') && !(L.sporewood2 && SET.parallax !== 'off')) { g.globalAlpha = 0.85; drawLayer(BG.nearTrees, 0.45, VH - 300, cx, cy); g.globalAlpha = 1; }
   if (L.palette && L.palette.near === 'harbour') HB.drawHarbourLayer(g, 'near', BG.near, 0.55, VH - 265, cx, bgDY(cy), time, VW, VH);
   else if (L.hornetsNest) { if (SET.parallax !== 'off') HNB.drawNear(g, cx, cy, VW, VH, L, time, bgDY(cy)); }   /* (claude/hornetsnestart) pollen and boughs outside; wax motes, far hornets and the nest's close warm edge inside */
   else if (L.fenroad) { if (SET.parallax !== 'off') FNB.drawNear(g, cx, cy, VW, VH, L, time, bgDY(cy)); }
@@ -34602,7 +34631,7 @@ function drawWorld(cx, cy, showPlayer) {
   if (boss && boss.t === 'lance' && boss.lz) drawLanceBridge(cx, cy);   /* (claude/stormhold3) the cracks, the spears' shadows, the ballista's line, the oil's strip, the main gate: drawn where YOU are */
   for (const e of enemies) {
     if (OKD.isKnightT(e.t)) { OK.draw(g, e, cx, cy); if (e.elite) OK.drawBanner(g, e, cx, cy, TS); }   /* (claude/order) what a knight leaves on the floor and in the air, and HIS CHAPTER'S BANNER on the gate he holds (src/order-knights.js) */
-    if (e.behind) continue;   /* (claude/fairfix3) round the back of the chair-o-plane: drawn small behind its mast (src/redraw/fair_newrides.js) */
+    if (e.behind || e.pvpSeat) continue;   /* (claude/pvpduel: a duellist's proxy is never drawn - the hero is) */ /* (claude/fairfix3) round the back of the chair-o-plane: drawn small behind its mast (src/redraw/fair_newrides.js) */
     if (e.alive && (e.poise > 0 || e.broken > 0 || e.dmgPct >= 1) && !(e === boss || e.xpRole === 'mini' || (e.elite && Math.abs(P.x - e.x) < EL.near && Math.abs(P.y - e.y) < 110))) drawPoise(e, cx, cy);   /* the stagger bar over its head (claude/riposte: a boss's, a mini's and a near elite's is under their health instead) */
     if (e.alive && (e === boss || e.xpRole === 'mini')) RP.drawRead(g, e, cx, cy);   /* (claude/riposte) THE SHARED B10 READ for a riposte opening, a poise break, and the B3 ward after */
     if (e.alive && (e === boss || e.xpRole === 'mini') && BR.keyOf(e)) BR.drawKey(g, e, cx, cy, time);   /* B14 (claude/keyscore): HIS KEY, SHOWN - the per-key glyph over a keyed boss or mini (src/boss-read.js KEY_ROWS; none yet: the per-act key lanes add them) */
@@ -35098,7 +35127,7 @@ function drawWorld(cx, cy, showPlayer) {
      one knee, he goes over, and he fades where he fell. Every hero has hurt and crouch, so every hero falls. */
   /* EACH HERO IN HIS OWN PASS. The hundred lines below are the same hundred lines, with P, the hero he is and his
      baked frames set to whoever is being painted. One in the list and asPlayer calls straight through. */
-  if (TAVO) TAVO.draw(g, cx, cy, time); if (L && L.arenaYard) drawYardProps(cx, cy); drawPartyMarks(cx, cy);   /* (claude/tavern) the inn's stations, and each hero's floor ring + tag */
+  if (TAVO) TAVO.draw(g, cx, cy, time); if (L && (L.arenaYard || L.duelPit)) drawYardProps(cx, cy); drawPartyMarks(cx, cy); if (DUELO) DUELO.drawWorld(g, cx, cy);   /* (claude/tavern) the inn's stations, and each hero's floor ring + tag */
   for (const pDraw of players) asPlayer(pDraw, () => {
   if (showPlayer && P.down > 0 && K && K.R) drawDowned(cx, cy);   /* on the floor, with his clock and his partner's ring */
   if (showPlayer && P.dead > 0 && K && K.R) { const k = 1.2 - P.dead, hs = isReaper() ? 1.22 : 1;
@@ -36756,7 +36785,7 @@ function render() {
       flaskRowEnd = R.x + R.w + 1; flaskRowRect = [R.x - sh, R.y, R.w, R.h]; }
     if (campaignTag) text(campaignTag, 4, VH - 9, '#e8d9a0', 'left', 6, 'outline');   /* ?level=/?boss= with &campaign=1 (claude/levelpilot) */
     if (coop()) drawCoopHud();
-    if (TAVO) TAVO.drawHud(VW, VH);   /* (claude/tavern) the wardrobe cards */   // and player two's small plate beside his
+    if (TAVO) TAVO.drawHud(VW, VH); if (DUELO) DUELO.drawHud(VW, VH);   /* (claude/tavern) the wardrobe cards; (claude/pvpduel) the pit's card, the duel's bars, count, banners and winner screen */   // and player two's small plate beside his
     hudG();
     // UNDER THE PLATE, NOT THROUGH IT. y=30 was clear when the plate was 24 tall; the heroes who carry a third
     // bar (pyre, light, plunder, harvest) made it 34, and the label has been lying across their resource ever since.
@@ -37365,6 +37394,7 @@ window.BK = { setView: m => setView(m), env: () => ({ hurt: (e, d, x) => hurtEne
   parts: () => parts, bossBodies: () => bossBodies, get PROP() { return PROP; }, get FLYERS() { return FLYERS; }, get HAS_HURT() { return HAS_HURT; }, get EHP() { return EHP; },
 };
 /* THE HOIST, for the harnesses: the decks (each with its state in .hs), a way to put n loads in one's basket, and the Reeve's cut */
+window.BK.duel = () => ({ D: DUELO, debug: () => DUELO.debug(), enter: bot => duelEnter(bot), begin: o => DUELO.begin(o), leave: () => duelLeave(), atPit: open => duelAtPit(open), index: duelIndex(), ships: PVP_SHIPS, state: () => state });   /* (claude/pvpduel) tools/pvp-duel.mjs */
 window.BK.yard = () => ({ Y: YARD, seeds: () => seeds, enter: fromInn => yardEnter(fromInn), leave: () => yardLeave(), inn: () => yardFromInn, open: p => yardBoardOpen(p || players[0]), nums: () => nums, state: () => state });   /* (claude/arenayard) tools/arena-yard.mjs */
 window.BK.hvr = () => (HVR && HVR.on() ? HVR.read() : null); window.BK.hvrHands = () => HVR;   /* (claude/hanging3) the ropes, for the tools and the bot */
 window.BK.hoists = () => hoistDecks(); window.BK.hoistLoad = (m, n) => { hoistOf(m).load += (n || 1); return hoistOf(m).load; }; window.BK.cutHoist = m => cutHoist(m);
