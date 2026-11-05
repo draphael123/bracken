@@ -1,6 +1,7 @@
 import {LEGACY_NODES, SKILLS} from './progression-catalog.js';
 import {levelOfXp, xpFloor, LV_MAX} from './xp.js';
 import {retireRelics} from './relics.js';   /* THE RELICS ARE GONE: an old save's found-relic tick is dropped and its vault silver paid */
+import {PYRO_TECH, PYRO_UPGRADES} from './tech-pyro.js';   /* (claude/pyropack) THE PYROMANCER'S L25-L50 KIT */
 import {KNIGHT_TECH, KNIGHT_UPGRADES} from './tech-knight.js';   /* THE L25-L50 KITS, one file a hero (claude/knightid; a hero lane adds its file and one line below) */
 import {normalizeDeathCost} from './death-cost.js';   /* THE DEATH COST's save shape: an older save has none, and gets an empty one (everything it holds is banked) */
 export {LEGACY_NODES, SKILLS};
@@ -87,8 +88,8 @@ export const isMinor = n => MILESTONES_MINOR.includes(n);
 export const TECH_LEVELS = [25, 30, 35, 40, 45, 50];
 export const UPGRADE_LEVELS = [27, 29, 32, 34, 37, 39, 42, 44, 47, 49];
 export const UPGRADE_MAX = 2;
-export const TECHNIQUES = { knight: KNIGHT_TECH };
-export const UPGRADES = { knight: KNIGHT_UPGRADES };
+export const TECHNIQUES = { knight: KNIGHT_TECH, pyro: PYRO_TECH };
+export const UPGRADES = { knight: KNIGHT_UPGRADES, pyro: PYRO_UPGRADES };
 export const hasKit = h => !!TECHNIQUES[h];
 /* ==== PICK-1-OF-2 FORKS (claude/ltfork, brief-lategame2-1104 sec 1) ====
    At FORK_LEVELS (30, 40, 50) a TECHNIQUES entry may be {fork: [A, B]} instead of one technique: the card shows both, takes one, the other is LOCKED until
