@@ -48,6 +48,11 @@ export const REFLECT_KIT = {
   sunpriest: { name: 'THE DESERT PRIEST', normal: ['staff blows', 'THE BEAM (hold X) through the bolt', 'SUNFALL ring (the plunge)'], power: { look: 'THE FLARE', input: 'hold C so the flare goes off as the bolt lands', via: 'parry' },
     block: '-', notes: 'kit src/sun-priest.js (light caster, Pyromancer family). His tap C is CONSECRATE (a patch, not a guard), so his beat answer is THE FLARE (it already "stops every wind-up within 3 tiles"); lane S3 adds the RP.parried call to the flare when his kit is wired. Radiance fills on the back (S1: back.lit)' },
 };
+/* THE DESERT PRIEST'S POWER ANSWER (lane S3). His tap C is CONSECRATE, not a guard, so the table's answer is THE FLARE (hold C; src/sun-priest.js flare(): costs half the radiance bar and stops every wind-up within 3 tiles).
+   A flare that goes off within FLARE_BEAT s (the same 0.2 s as a tapped parry) before the bolt reaches him, with the bolt inside the flare's reach, is a POWER return; a flare with no radiance in the bar does not go off, so
+   there is no power answer (that is its cost). When he is wired into main.js his damagePlayer branch calls this with the flare's age and the bolt's offset, and RP.parried on 'power'. flareAge: s since the flare went off (null if none). */
+export const FLARE_BEAT = 0.2;
+export function flareAnswer(flareAge, dx, dy, r = 3 * 16) { return flareAge !== null && flareAge !== undefined && flareAge >= 0 && flareAge <= FLARE_BEAT + 1e-9 && Math.abs(dx) <= r && Math.abs(dy) <= r ? 'power' : null; }
 /* the default a NEW hero inherits (heartplan): any blow or shot returns; its tap-C guard on the beat (or, with none, its charged release) = power */
 export const DEFAULT_KIT = { name: 'ANY NEW HERO', normal: ['any blow', 'any shot'], power: { look: 'ITS GUARD ON THE BEAT', input: 'its tap-C guard on the beat; with none, its charged release', via: 'parry' }, block: 'its held guard: pops', notes: 'inherited rule' };
 export const KIT_IDS = Object.keys(REFLECT_KIT);
