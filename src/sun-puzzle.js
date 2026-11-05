@@ -2,7 +2,7 @@
 // Proved by tools/sun-puzzle.mjs; the level API is docs/desertkit.md.
 //
 // NOT A NEW LIGHT. The model is src/light.js (whole tiles: a beam runs a row or a column from a SOURCE, turns 90 degrees at a '/' or '\' MIRROR, stops at
-// anything opaque, powers the RECEIVER it reaches; sunlight burns the dead; solve() proves a room). Drawing the path is src/beam-path.js's job (the Colossus 4
+// anything opaque, powers the RECEIVER it reaches; sunlight burns the dead; solve() proves a room). Drawing the path is the beam-path module's job (the Colossus 4
 // lane builds it 11-06 on light.js): this kit hands it the segments. What the kit adds is the ROOM: the pieces a level declares and the rules between them -
 //   * SUN-DOORS answer to the SUN ONLY (Daniel 09-21, plan 3j): a sun source's beam on the door's eye opens it. 'latch' stays open; 'hold' stays open only
 //     while lit and is TOLD before it shuts (DOOR.tell s of shaking, then shut - it never shuts on a body: it waits);

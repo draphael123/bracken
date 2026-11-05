@@ -11,7 +11,7 @@
 //   * the FULL READ: at a full meter the hero is SUNSTRUCK - the HUD says so (it is the drain's top rate, 4.5%/s to the floor of 1 hp: never instant
 //     death, never a stun). Leaving the sun stops it at once, as today;
 //   * THE DESERT PRIEST's hook (plan Q4, REC: no immunity - the sun hurts him like everyone - but the sun FILLS his RADIANCE): sunFeed(r) is the multiplier
-//     his kit puts on its radiance fill while he stands in the open sun (one line in src/desert-priest.js at the integ, docs/desertkit.md);
+//     his kit puts on its radiance fill while he stands in the open sun (one line in the claude/desertpriest kit at the integ, docs/desertkit.md);
 //   * every seat (1-4): sunSeats() runs each hero on his own meter, the dead left alone; sunReset() for a respawn / a level change.
 //
 //   const S = sunKitInit(L)                     -> { profile, hot[], cool[], water[] } px boxes from L.sunKit (tiles) + sunstroke's shadeZones(L)

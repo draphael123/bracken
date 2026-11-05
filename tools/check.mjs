@@ -296,6 +296,14 @@ if (take('room-kills')) results.push(run('room-kills', process.execPath, ['tools
 if (take('powder-monkey')) results.push(run('powder-monkey', process.execPath, ['tools/powder-monkey.mjs']));
 /* THE ARENA POLISH PACK (claude/arenapolish, Node): the phase-tint helper (an arena with no tintFn draws its fixed tint untouched; a tintFn eases), the five arenas' opt-ins, the level hash independent of them, every drawing function run in every state */
 if (take('arena-polish')) results.push(run('arena-polish', process.execPath, ['tools/arena-polish.mjs']));
+/* THE DESERT KIT (claude/desertkit, Node only; docs/desertkit.md): THE SUN KIT (profiles, water cools, hot glass, SUNSTRUCK never kills, the Desert Priest's radiance feed),
+   THE STORM KIT (told gusts, per-body carry, lee, shots, sight per seat), SINKING SAND (pits = quicksand.js, dune sand, foes held), MIRAGES (a trick never a trap, the stalker look),
+   SUN PUZZLES (sun-doors sun-only, priest caches beam-only, strikes, hold/latch, chains) - each linting every level that declares it. Own lines: the big list is edited by every lane */
+if (take('sun-kit')) results.push(run('sun-kit', process.execPath, ['tools/sun-kit.mjs']));
+if (take('storm-kit')) results.push(run('storm-kit', process.execPath, ['tools/storm-kit.mjs']));
+if (take('sink-sand')) results.push(run('sink-sand', process.execPath, ['tools/sink-sand.mjs']));
+if (take('mirage-kit')) results.push(run('mirage-kit', process.execPath, ['tools/mirage-kit.mjs']));
+if (take('sun-puzzle')) results.push(run('sun-puzzle', process.execPath, ['tools/sun-puzzle.mjs']));
 if (take('pixels')) results.push(run('pixels', process.execPath, ['tools/headless.mjs', 'floats'], { PORT: String(portFor(3)) }));
 /* PLATFORM FEEL (claude/feelplatform, Daniel 10-12): the Game speed range + sub-steps + migration (feel-speed), and the camera lookahead, landings by height and the world's small reactions (feel-platform) */
 /* THE PALISADE WOOD and THE BATTERING BEAST (claude/palisadewood, Node): the road and the old-save unlock, the five areas, every required prop a LOCK, the stake rolls, the shrines,
