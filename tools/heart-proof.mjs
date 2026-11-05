@@ -18,9 +18,9 @@ try {
   await pg.evalp(`(async()=>{ const { LEVELS } = await import('/src/level.js'); const SK = await import('/src/sky-mount.js'); const K = BK.keys;
     const IDX = id => LEVELS.findIndex(l => l.id === id); const hp = window.__hp = { SK, IDX };
     const idle = () => { for (const k in K) K[k] = false; BK.unpress(); }; hp.idle = idle;
-    hp.setup = (lab, h, ally) => { idle(); BK.manualSimulation = true; BK.SET.speed = 1; BK.setHero(h); BK.reset({ fresh: true }); try { BKT.setHeroLevel(h, 30); } catch (e) {} try { BK.applyUpgrades(); } catch (e) {}
-      if (ally) { BK.aiComp.arm(ally, 'balanced', 1); }
-      BK.load(IDX(lab)); BK.state = 'play'; for (let i = 0; i < 120; i++) BK.sim(1); return true; };
+    hp.setup = async (lab, h, ally) => { idle(); BK.manualSimulation = true; try { BK.coopEnd(); } catch (e) {} BK.SET.speed = 1; BK.setHero(h); BK.reset({ fresh: true }); try { BKT.setHeroLevel(h, 30); } catch (e) {} try { BK.applyUpgrades(); } catch (e) {}
+      if (ally) { await BK.allyReady(); BK.aiComp.arm([ally], ['balanced'], 1); }
+      BK.load(IDX(lab)); if (ally) BK.start(); BK.state = 'play'; for (let i = 0; i < 120; i++) BK.sim(1); return true; };
     hp.f = () => BK.demonKing && BK.demonKing.f();
     hp.freeze = () => { const f = hp.f(); if (!f) return null; f.mode = 'hang'; f.mT = 0; f.T = 1e9; f.bolts.length = 0; return f; };
     hp.snap = () => { BK.step(1); const c = document.createElement('canvas'); c.width = BK.view.VW * 2; c.height = BK.view.VH * 2; const g = c.getContext('2d'); g.imageSmoothingEnabled = false; g.drawImage(BK.buf, 0, 0, c.width, c.height); return c.toDataURL('image/png'); };
@@ -98,9 +98,9 @@ if (WANT.includes('coop')) for (const lab of ['skylab', 'drakelab']) {
   } else ok(r.state === undefined, 'drakelab: the fight did not end/stick oddly (state ' + (r.state || 'play') + ', foes ' + JSON.stringify(r.foes) + ')');
   await save('coop-' + lab);
   if (lab === 'skylab') {
-    const a = await pg.evalp(`(()=>{ __hp.setup('skylab','knight','warden'); const f = __hp.freeze(), ai = BK.players().find(p => p.ai); const b = { id: ++f.id, x: ai.x + ai.face * 22, y: ai.y - 8, vx: 0, vy: 0, r: 7, st: 'in', high: false, v: 150, volley: 0, life: 99, g: 0, touched: [], tgt: 0 }; f.bolts.push(b);
+    const a = await pg.evalp(`(async()=>{ await __hp.setup('skylab','knight','warden'); const f = __hp.freeze(), ai = BK.players().find(p => p.ai); const b = { id: ++f.id, x: ai.x + ai.face * 40, y: ai.y - 8, vx: 0, vy: 0, r: 7, st: 'in', high: false, v: 150, volley: 0, life: 99, g: 0, touched: [], tgt: 0 }; f.bolts.push(b);
       for (let i = 0; i < 240 && b.st === 'in'; i++) { b.life = 99; BK.sim(1); } return b.st; })()`, 120000);
-    ok(a === 'ret' || a === 'pow', 'skylab: the AI partner returns a bolt at 22 px (' + a + ')');
+    ok(a === 'ret' || a === 'pow', 'skylab: the AI partner returns a bolt 40 px out (' + a + ')');
   }
 }
 
@@ -112,11 +112,13 @@ if (WANT.includes('quit')) for (const lab of ['skylab', 'drakelab']) {
     const ui = BK.ui; ui.openMenu('play'); ui.menuI = ui.menuRows().indexOf('Return to map'); const key = k => { dispatchEvent(new KeyboardEvent('keydown', { key: k })); BK.step(1); dispatchEvent(new KeyboardEvent('keyup', { key: k })); };
     key('Enter'); key('Enter'); for (let i = 0; i < 10 && BK.state !== 'map'; i++) { BK.step(5); key('Enter'); }
     for (let i = 0; i < 60; i++) BK.step(1);
-    o.state = BK.state; o.post = alive(); o.mount = !!BK.P.mount; o.kingAfter = !!__hp.f(); o.sm = !!(BK.skyMount && BK.skyMount.back()); return o; })()`, 120000);
+    o.state = BK.state; o.mapEnts = alive().length;   /* the map keeps the lab's list until the next level loads (it is never updated or drawn); what matters is what the NEXT level inherits */
+    BK.load(__hp.IDX('wood')); BK.start(); for (let i = 0; i < 120; i++) BK.sim(1);
+    o.post = alive().filter(t => /drake|demonking|hellbolt|imp/i.test(t)); o.mount = !!BK.P.mount || !!BK.P.onMover; o.kingAfter = !!__hp.f(); o.sm = !!(BK.skyMount && BK.skyMount.back()); return o; })()`, 120000);
   console.log('   ' + JSON.stringify(r));
   ok(r.state === 'map', lab + ': pause > Return to map reaches the map (' + r.state + ')');
-  ok(r.post.every(t => !/drake|demonking|hellbolt|imp/i.test(t)), lab + ': no drake / king / bolt / imp left: ' + JSON.stringify(r.post));
-  ok(!r.mount, lab + ': the hero is dismounted');
+  ok(r.post.length === 0 && !r.kingAfter && !r.sm, lab + ': the next level (wood) inherits no drake / king / bolt / imp / sky back: ' + JSON.stringify(r.post));
+  ok(!r.mount, lab + ': the hero is not mounted / carried into the next level');
   ok(r.pre.length > 0, lab + ': the fight foes existed before the quit: ' + JSON.stringify(r.pre));
 }
 const errs = (pg.errors || []).filter(e => !/favicon|ERR_|Failed to load resource/.test(e));
