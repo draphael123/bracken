@@ -20,12 +20,12 @@ try {
 
   if (WANT.includes('quake')) {
     R.quake = await ev(`const fs=__set([['sprig',-24],['sprig',-44],['sprig',24],['sprig',44],['sprig',90]]);const p=P();const st0=p.st;
-      const keep=()=>{};__hold(60);let down=[0,0,0,0,0],maxF=0;for(let i=0;i<70;i++){BK.sim(1);BK.P.inv=5;fs.forEach((e,k)=>{if(e.floored>0||e.broken>0)down[k]=1;});}
-      o.down=down;o.spent=Math.round(st0-p.st);o.stage=p.cutStage;o.ready=p.quakeReadyAt>0;
+      const keep=()=>{};__hold(60);let down=[0,0,0,0,0],mn=1e9;for(let i=0;i<70;i++){BK.sim(1);BK.P.inv=5;mn=Math.min(mn,p.st);fs.forEach((e,k)=>{if(e.floored>0||e.broken>0)down[k]=1;});}
+      o.down=down;o.spent=Math.round(st0-mn);o.stage=p.cutStage;o.ready=p.quakeReadyAt>0;
       /* the second full hold at once: only the chop (cooldown), costs the plain price */
-      const fs2=__set([['sprig',-30],['sprig',30]]);P().quakeReadyAt=1e9;const s1=P().st;__hold(60);for(let i=0;i<70;i++){BK.P.inv=5;BK.sim(1);}o.cdDown=[fs2[0].floored>0,fs2[1].floored>0];o.cdSpent=Math.round(s1-P().st);
+      const fs2=__set([['sprig',-30],['sprig',30]]);P().quakeReadyAt=1e9;const s1=P().st;let m1=1e9;BK.P.atkHeld=0;BK.keys.atk=true;for(let i=0;i<60;i++){BK.P.inv=5;BK.sim(1);}BK.keys.atk=false;for(let i=0;i<70;i++){BK.P.inv=5;BK.sim(1);m1=Math.min(m1,P().st);}o.cdDown=[fs2[0].floored>0,fs2[1].floored>0];o.cdSpent=Math.round(s1-m1);
       /* a 0.6 s hold: the chop, no quake */
-      const fs3=__set([['sprig',-30],['sprig',30]]);const s3=P().st;__hold(36);for(let i=0;i<70;i++){BK.P.inv=5;BK.sim(1);}o.chopBehind=fs3[0].floored>0;o.chopSpent=Math.round(s3-P().st);
+      const fs3=__set([['sprig',-30],['sprig',30]]);const s3=P().st;let m3=1e9;BK.P.atkHeld=0;BK.keys.atk=true;for(let i=0;i<36;i++){BK.P.inv=5;BK.sim(1);}BK.keys.atk=false;for(let i=0;i<70;i++){BK.P.inv=5;BK.sim(1);m3=Math.min(m3,P().st);}o.chopBehind=fs3[0].floored>0;o.chopSpent=Math.round(s3-m3);
       /* a mini and a boss-class: rocked, never thrown, still hurt */
       const fs4=__set([['sprig',-26,{mini:true}],['sprig',26,{mini:true}]]);fs4.forEach(e=>{e.hp=e.hp0=e.maxHp0=5000;});let hp4=fs4.map(e=>e.hp);__hold(60);let x4=fs4.map(e=>e.x);let fl4=false,mv=0;for(let i=0;i<70;i++){BK.P.inv=5;BK.sim(1);fs4.forEach(e=>{if(e.floored>0)fl4=true;});}
       o.miniFloored=fl4;o.miniHurt=fs4.map((e,k)=>hp4[k]-e.hp);`);
