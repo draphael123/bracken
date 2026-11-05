@@ -2156,9 +2156,9 @@ function allyLanding(x, y, maxRows) {
 function allyAirGuard(p) {
   if (p.climb || p.swim || p.onMover != null) return;
   if (!p.ground) { if (p.vy < 0 || allyLanding(p.x, p.y, 99).ok) return;
-    for (let k = 1; k <= 10; k++) for (const d of [-1, 1]) { const x = p.x + d * k * 8; if (allyLanding(x, p.y, 99).ok && !isSolid(Math.floor(x / TS), Math.floor((p.y - 6) / TS))) { keys.left = d < 0; keys.right = d > 0; return; } }
+    for (let k = 1; k <= 10; k++) for (const d of (p.vx < 0 || (p.vx === 0 && p.face < 0) ? [-1, 1] : [1, -1])) { const x = p.x + d * k * 8; if (allyLanding(x, p.y, 99).ok && !isSolid(Math.floor(x / TS), Math.floor((p.y - 6) / TS))) { keys.left = d < 0; keys.right = d > 0; return; } }
     return; }
-  const dir = keys.right ? 1 : keys.left ? -1 : 0; if (!dir) return;
+  const dir = keys.right ? 1 : keys.left ? -1 : 0; if (!dir || keys.jump || jumpPress) return;   /* (a jump at the lip is a gap crossing, not a step off) */
   const ld = allyLanding(p.x + dir * 12, p.y, 5);   /* a floor about level with its feet ahead is no ledge */
   if (ld.y > p.y + 2 && !ld.ok) keys.left = keys.right = false;
 }
@@ -2185,7 +2185,7 @@ function allyRoute(p, one, S) {
   /* (claude/coopvert) a body in mid-air has no footing under it, so the route used to drop to 'none' for the length of every jump and the walker fell back to pushing at his x: both ends
      remember the last footing they stood on (a leader up to 2.5 s old, itself up to 1 s) and route from there */
   let a = allyCell(g, p), b = allyCell(g, one);
-  if (a >= 0 && p.ground) { S.selfCell = a; S.selfAt = p.aiT; } else if (a < 0 && S.selfCell !== undefined && p.aiT - S.selfAt < 60) a = S.selfCell;
+  if (a >= 0 && p.ground) { S.selfCell = a; S.selfAt = p.aiT; } else if (a < 0 && !p.ground && S.selfCell !== undefined && p.aiT - S.selfAt < 60) a = S.selfCell;   /* (coopvert2) in the air only: standing on a stone the graph has no footing for (a failing floor) it used to route from a footing rows away and walk off the ledge */
   if (b >= 0 && (one.ground || one.onMover != null)) { S.leadCell = b; S.leadAt = p.aiT; } else if (b < 0 && S.leadCell !== undefined && p.aiT - S.leadAt < 150) b = S.leadCell;
   if (a < 0 || b < 0) { if (!(S.route && p.aiT - (S.routeOk || 0) < 40)) S.route = null; S.noWay = false; return; }
   const path = g.path(a, v => v === b, 320);
