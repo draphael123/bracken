@@ -4,6 +4,7 @@
 //   - the PARRY of either one: gqHit() asks damagePlayer and reads the shared parry counter (RP.stats.parries), so every hero's beat path covers it
 //   - STUNNED (the main opening), the flee, the escape up the burning hall, the portal step and phase two on THE TOWER TOP (later commits)
 // Starting numbers are the plan's (tune lane next week). Art = placeholders (frames 2/6/7/15/16 until the art lane).
+import * as GA from './redraw/gqueen_art.js';   /* (claude/gq2art) the art */
 export const GQ3 = {
   stunGuard: 1.5, stunRoof: 3.0,       // s after a stun in which no second stun can land (no stunlock, B12); the stun a parry gives on the tower top
   crown: { cd: 7, cd2: 5.5, tell: 0.8, out: 230, reach: 210, hang: 0.15, back: 260, dmg: 16, home: 340, stun: 3.5, stunHp: 0.04, fetch: 1.2, dy: 14, r: 5 },
@@ -542,6 +543,48 @@ export function makeGQueenHands(ctx) {
     const e = q();
     if (e && e.mode === 'stunned') { for (let k = 0; k < 3; k++) { const a = t * 4 + k * 2.09; g.fillStyle = '#ffd36b'; g.fillRect(Math.round(e.x - cx + Math.cos(a) * 16), Math.round(e.y - 64 - cy + Math.sin(a) * 4), 2, 2); } }
     if (e && e.mode === 'crownTossTell') { const k = 0.5 + 0.5 * Math.sin(t * 30); g.globalAlpha = 0.5 + 0.4 * k; g.fillStyle = '#fff6c8'; g.fillRect(Math.round(e.x - cx + e.face * 6) - 1, Math.round(e.y - 60 - cy), 3, 3); g.globalAlpha = 1; }
+  };
+
+  /* (claude/gq2art) THE ART: the same world, drawn by src/redraw/gqueen_art.js. Any throw falls back to the greybox above for the rest of the session (and says so once). */
+  let artOff = false;
+  function artWorld(g, cx, cy, t) {
+    const E = L().gqEscape, A = L().arena, esc = S.esc, VW0 = (g.canvas && g.canvas.width) || 320;
+    if (E && esc && esc.on) {
+      if (esc.fireOn) GA.drawFloorFire(g, A.x0, A.x1, A.floor, cx, cy, t, VW0);
+      for (const tier of E.tiers) GA.drawRafterFire(g, tier, TS, cx, cy, t);
+      for (const [c, m] of S.slate) if (!m.gone) GA.drawSlateCrack(g, c * TS - cx, E.slates.row * TS - cy, Math.max(0, Math.min(1, 1 - (m.at - t) / G.esc.slate)), t);
+      for (const hp of E.hallPortals) GA.drawPortal(g, hp.x * TS + 8 - cx, hp.y * TS + 8 - cy, t, esc.cueT > 0 ? 1 : 0.4, esc.cueT > 0 ? '#fff6c8' : '#b28cff');
+      GA.drawPortal(g, E.portal.x * TS + 8 - cx, E.portal.y * TS + 2 - cy, t, 0.5 + 0.5 * Math.sin(t * 3), '#b28cff');
+      GA.drawShrine(g, E.check.x * TS + 8 - cx, (E.check.y + 1) * TS - cy, !!esc.checked, t);
+      if (esc.step) GA.drawPortal(g, E.portal.x * TS + 8 - cx, E.portal.y * TS + 2 - cy, t, 1 + Math.min(1, (t - esc.step.t0) / G.esc.step), '#fff6c8');
+    }
+    if (S.fleeP && !(S.fleeP.done && t - S.fleeP.done > 0.6)) GA.drawPortal(g, S.fleeP.x - cx, S.fleeP.y - cy, t, 0.8, '#b28cff');
+    const c = S.crown;
+    if (c) GA.drawCrown(g, c.x - cx, c.y - cy - 3, t, { ang: c.state === 'floor' ? 0.4 : c.spin || 0, home: !!c.home });
+    for (const p of S.portals) {
+      if (!p.fired) { const a0 = Math.atan2(p.aimY - p.y, p.aimX - p.x), k0 = Math.min(1, (t - p.t0) / G.portal.glow);
+        for (let j = 0; j < G.portal.fan; j++) GA.drawAimLine(g, p.x - cx, p.y - cy, a0 + (j - (G.portal.fan - 1) / 2) * G.portal.spread * Math.PI / 180, 150, t, 0.2 + 0.25 * k0); }
+      GA.drawPortal(g, p.x - cx, p.y - cy, t, p.fired ? 1 : Math.min(1, (t - p.t0) / G.portal.glow), p.fired ? '#fff6c8' : '#b28cff');
+    }
+    for (const r of S.rocks) GA.drawShard(g, r.x - cx, r.y - cy, t, { home: !!r.home, vx: r.vx, vy: r.vy, id: r.id | 0 });
+    const R0 = S.roof, e = q();
+    if (R0) {
+      const RA = L().arena;
+      for (const hx of (RA.hatches || [])) GA.drawHatch(g, hx * TS - cx, RA.floor - cy, !!(R0.hatch && R0.hatch.x === hx), t);
+      for (const gy of R0.geysers) GA.drawGeyser(g, gy.x - cx, RA.floor - cy, !!gy.done, gy.done ? Math.max(0, (gy.until - t) / 0.28) : 0, t);
+      if (R0.whip && t - R0.whip.t0 < 0.3 && e) GA.drawLash(g, e.x - cx + R0.whip.face * 14, e.y - (R0.whip.high ? 30 : 5) - cy, R0.whip.face, G.roof.lashReach, (t - R0.whip.t0) / 0.3, t, !!R0.whip.high);
+      if (e && (e.mode === 'lashHighTell' || e.mode === 'lashLowTell')) GA.drawLashTell(g, e.x - cx + e.face * 14, e.y - (e.mode === 'lashHighTell' ? 36 : 5) - cy, e.face, e.mode === 'lashHighTell', t);
+      if (e && e.mode === 'ambushTell') GA.drawPortal(g, R0.ambushX - cx, RA.floor - 14 - cy, t, 1 - e.modeT / G.roof.ambushTell, '#c9a0ff');
+      if (R0.storm && R0.storm.x !== undefined) GA.drawCrown(g, R0.storm.x - cx, R0.storm.y - cy - 3, t, { ang: R0.storm.ang || 0, glow: 1 });
+    }
+    if (e && e.mode === 'stunned') GA.drawStunStars(g, e.x - cx, e.y - 64 - cy, t);
+    if (e && e.mode === 'crownTossTell') GA.drawGlint(g, e.x - cx + e.face * 24, e.y - 56 - cy, t);
+  }
+  const greyWorld = H.drawWorld;
+  H.drawWorld = (g, cx, cy, t) => {
+    if (!S) return;
+    if (artOff) return greyWorld(g, cx, cy, t);
+    try { artWorld(g, cx, cy, t); } catch (err) { artOff = true; console.warn('gqueen art off (greybox):', err && err.message); greyWorld(g, cx, cy, t); }
   };
 
   /* ---------------- TOOLS / BOT ---------------- */
