@@ -3,23 +3,23 @@
     "date": "2026-11-05",
     "batch": 144,
     "lines": [
-      "After Kingswood the war horn sounds and the village burns on the horizon",
-      "Phone title screen: full thumb-sized rows, PREVIOUS / MORE paging, whole tagline",
-      "The Hornet's Nest: glowing smoke pots, tidier fights, a deeper nest, lob pots at the Queen",
-      "The Knight charges on the move, kicking up dust and sparks as he walks",
-      "The Pyromancer's fireball grows as you hold it, and at full it is a little sun",
-      "Early bosses retuned: more health and longer openings, so the fights are fairer"
+      { "s": "After Kingswood the war horn sounds and the village burns on the horizon", "lv": ["kings"] },
+      { "s": "Phone title screen: full thumb-sized rows, PREVIOUS / MORE paging, whole tagline", "lv": [] },
+      { "s": "The Hornet's Nest: glowing smoke pots, tidier fights, a deeper nest, lob pots at the Queen", "lv": ["hornetsnest"] },
+      { "s": "The Knight charges on the move, kicking up dust and sparks as he walks", "lv": [] },
+      { "s": "The Pyromancer's fireball grows as you hold it, and at full it is a little sun", "lv": [] },
+      { "s": "Early bosses retuned: more health and longer openings, so the fights are fairer", "lv": [] }
     ]
   },
   {
     "date": "2026-11-05",
     "batch": 143,
     "lines": [
-      "Geomancer: walk through your own stones, tap DOWN to recall them",
-      "Geomancer's ultimate is now Mountain Collapse: a wave of boulders",
-      "Old Tusker's stomp is a splintered shockwave you can read and jump",
-      "The Hornet's Nest drips dark amber resin, not honey",
-      "Sound on phones unlocks reliably, and the credits list the new music"
+      { "s": "Geomancer: walk through your own stones, tap DOWN to recall them", "lv": [] },
+      { "s": "Geomancer's ultimate is now Mountain Collapse: a wave of boulders", "lv": [] },
+      { "s": "Old Tusker's stomp is a splintered shockwave you can read and jump", "lv": ["wood"] },
+      { "s": "The Hornet's Nest drips dark amber resin, not honey", "lv": ["hornetsnest"] },
+      { "s": "Sound on phones unlocks reliably, and the credits list the new music", "lv": [] }
     ]
   },
   {
