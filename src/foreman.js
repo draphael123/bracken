@@ -23,7 +23,7 @@ export const FOREMAN = {
   driftTell: 0.5, driftV: 84, driftVs: [84, 112, 140], awayV: 120, driftAcc: 420, awayAcc: 300,   /* (drpolish, Daniel 11-04 'a little clunky') his runs EASE: the drift builds up to its pace (driftAcc px/s^2) and the pull-away eases in and out (awayAcc), where each used to snap to full speed */   /* (his drift quickens with each stomp: told by its sparks and its pace) */
   pickTell: 0.7, pickDmg: 31, pickT: 0.45, pick2: 0.3, picks: [1, 2, 3], cutoff: 0,          /* (his pick: lighter than a ledge thrower's - THE DEEP RAILS' curve, deeprails3: the bare level-1 knight died to him in every run) */
   ramTell: 0.8, ramV: 250, ramT: 0.5, ramHold: 0.45,
-  boardT: 0.85, lurchTell: 0.75, wardT: 4.5, lurchVy: -300,
+  boardT: 0.85, lurchTell: 0.75, wardT: 3.0, lurchVy: -300,
   spikeRise: 0.35, spikeDmg: 18, spikeBack: 70,   /* (MISSED BOARDING, Daniel 10-12) spikes are DEADLY once risen (spikeRise s after the ward starts - drawn, a sound, 'SPIKES UP'): the full bump (spikeDmg = bumpDmg) and thrown back spikeBack px */
   stompK: 0.25, bracedK: 0.04,           /* a stomp takes this share of his health; a landing on him BRACED is turned (a clank, this much - B15) */
   armour: 0.4,                          /* B15: a blade from your cart */
@@ -37,7 +37,9 @@ export const FOREMAN = {
      (tipTell), lumps that roll back down the line at you (tipV past the world): jump each as it comes (in the air over it you are clear) */
   boomTell: 0.75, boomT: 0.32, boomDmg: 27, boomHead: 16,
   tipTell: 0.7, tipV: 150, tipN: 2, tipApart: 0.45, tipDmg: 18, tipR: 7, tipBack: 40,
-  chain: { 0: ['pick', 'drift', 'boom', 'pick', 'drift'], 1: ['ram', 'pick', 'drift', 'boom', 'points', 'ram', 'drift'], 2: ['ram', 'tip', 'drift', 'boom', 'points', 'pick', 'tip', 'drift'] },
+  /* (foreman2, the audit's idea 1) the chain by what each move ASKS: pick = brake/pump off the mark, ram = brake out, boom = duck, tip/points = JUMP (the two jump THREATS), drift = the opening (jump ON him). Every stage: at most 2 jump threats (stage 2 had tip, tip, points: three), and a brake or a duck among them. */
+  chain: { 0: ['pick', 'drift', 'boom', 'pick', 'drift'], 1: ['ram', 'pick', 'drift', 'boom', 'points', 'ram', 'drift'], 2: ['ram', 'tip', 'drift', 'boom', 'pick', 'points', 'ram', 'drift'] },
+  bracedPoke: 0.5,   /* (foreman2) a blade from your cart while he is braced: x0.5 (a small safe poke in the stance - still >= the 0.4 floor; he is never invulnerable) */
 };
 export const FOREMAN_LINES = { points: '!! THE POINTS: JUMP THE GAP', pointsAgain: '!! THE POINTS', boom: '!! THE BOOM: DUCK', boomAgain: '!! THE BOOM', tip: '!! HE TIPS ORE: JUMP', tipAgain: '!! ORE', slows: 'HE SLOWS: JUMP ON HIM', slowsAgain: 'HE SLOWS', ram: '!! HE BRAKES HARD: RAM', stomp: 'STOMPED! STRIKE HIM', lurch: '!! HE LURCHES', braced: 'BRACED: HIS SPIKES ARE UP', spikesUp: '!! SPIKES UP: DO NOT LAND', spikesWait: 'SPIKES UP: WAIT', spikesDown: 'SPIKES DOWN: JUMP ON HIM', spiked: 'SPIKED! THROWN BACK',
   armour: 'ARMOURED: JUMP ON HIM', thrown: 'THROWN OFF: BACK IN YOUR CART', start: 'THE FOREMAN: JUMP ON HIS CART' };
@@ -86,12 +88,12 @@ export function stepForeman(S, e, dt, heroes, c) {
       if (name === 'drift') { S.mode = 'driftTell'; S.mT = F.driftTell; S.n.drift++; S.dv = F.driftVs[Math.min(2, S.stomps)]; c.sound('brake'); if (S.ward > 0) c.number(fx, G.topY - 30, FOREMAN_LINES.spikesWait, '#ff6b6b'); else c.number(fx, G.topY - 30, S.told.drift ? FOREMAN_LINES.slowsAgain : FOREMAN_LINES.slows, '#ffd36b'); S.told.drift = 1; }
       else if (name === 'pick') { S.mode = 'pickTell'; S.mT = F.pickTell; S.n.pick++; c.sound('tell'); }
       else if (name === 'boom') { S.mode = 'boomTell'; S.mT = F.boomTell; S.n.boom++; c.sound('tellHard'); c.number(fx, G.topY - 30, S.told.boom ? FOREMAN_LINES.boomAgain : FOREMAN_LINES.boom, '#ff6b6b'); S.told.boom = 1; }
-      else if (name === 'points') { S.mode = 'pointsTell'; S.mT = F.pointsTell; c.sound('tellHard'); c.number(fx, G.topY - 30, S.told.points ? FOREMAN_LINES.pointsAgain : FOREMAN_LINES.points, '#ffd36b'); S.told.points = 1; }
+      else if (name === 'points') { S.mode = 'pointsTell'; S.mT = F.pointsTell; c.sound('tellHard'); c.sound('lever'); c.number(fx, G.topY - 30, S.told.points ? FOREMAN_LINES.pointsAgain : FOREMAN_LINES.points, '#ffd36b'); S.told.points = 1; }
       else if (name === 'tip') { S.mode = 'tipTell'; S.mT = F.tipTell; c.sound('tell'); c.number(fx, G.topY - 30, S.told.tip ? FOREMAN_LINES.tipAgain : FOREMAN_LINES.tip, '#ffd36b'); S.told.tip = 1; }
       else { S.mode = 'ramTell'; S.mT = F.ramTell; S.n.ram++; c.sound('tellHard'); c.number(fx, G.topY - 30, FOREMAN_LINES.ram, '#ff6b6b'); }
       break; }
     case 'driftTell': if (S.mT <= 0) { S.mode = 'drift'; S.vr = 0; } break;
-    case 'pointsTell': if (S.mT <= 0) { S.tipQ = [{ t: 0.001, gap: true }]; S.mode = 'idle'; S.cd = F.gap[Math.min(2, S.stomps)] + 0.5; } break;
+    case 'pointsTell': if (S.mT <= 0) { c.sound('lever'); S.tipQ = [{ t: 0.001, gap: true }]; S.mode = 'idle'; S.cd = F.gap[Math.min(2, S.stomps)] + 0.5; } break;
     case 'drift': S.vr = Math.min(S.dv || F.driftV, (S.vr || 0) + F.driftAcc * dt); S.R -= S.vr * dt; if (S.R <= Math.max(0, hr - 40) || (S.ward > 0 && S.R <= hr + F.halfW + 24)) { S.mode = 'away'; S.va = 0; }   /* (deeprails5) while his SPIKES are up ('SPIKES UP: WAIT') he stops short of you and pulls away - he ran 40 px past you, a bump the told WAIT could not dodge (the BOOM in the chain put more drifts inside the brace) */   /* (he drops back all the way past you - even a cart held at the loop's back edge has him under it) */ break;
     case 'away': S.va = Math.min(F.awayV, (S.va || 0) + F.awayAcc * dt); S.R += Math.min(S.va, Math.max(40, (F.homeR - S.R) * 2.5)) * dt; if (S.R >= F.homeR - 0.5) { S.R = F.homeR; S.va = 0; S.mode = 'idle'; S.cd = F.gap[Math.min(2, S.stomps)]; } break;
     case 'pickTell': if (S.mT <= 0) { if (near) c.lob(near); S.pickQ = Array.from({ length: F.picks[Math.min(2, S.stomps)] }, (_, i) => ({ t: F.pick2 * (i + 1), off: -F.cutoff * (i + 1) }));   /* (stomped once, he throws a second pick a beat after the first: off one mark, onto the next is a hit) */ S.mode = 'idle'; S.cd = F.gap[Math.min(2, S.stomps)] + 0.4; } break;
@@ -118,7 +120,7 @@ export function landOn(S, e, h, c) { const F = FOREMAN, G = S.G, fx = foremanX(S
   S.n.stomps++; S.stomps++; S.mode = 'boarded'; S.mT = F.boardT; S.board = { pp: h.pp, off: Math.max(-F.halfW + 2, Math.min(-5, h.x - fx)), spotX: fx - 40 }; S.n.open++;
   c.board(h, S.board.off); c.stomp(h, Math.ceil(e.maxHp0 * F.stompK), false); c.number(fx, G.topY - 34, FOREMAN_LINES.stomp, '#ffd36b'); c.sound('stomp'); return 'board'; }
 /* A BLADE ON HIM (src/minecart-hands.js knock): whole while you stand on his cart (OPEN), x0.4 from anywhere else (B15) - the word in out.word */
-export function takeBlade(S, dmg, out = {}) { if (foremanOpen(S)) return dmg; out.word = S && S.ward > 0 ? FOREMAN_LINES.braced : FOREMAN_LINES.armour; if (S) S.n.armoured++; return Math.max(1, Math.round(dmg * FOREMAN.armour)); }
+export function takeBlade(S, dmg, out = {}) { if (foremanOpen(S)) return dmg; const braced = !!(S && S.ward > 0); out.word = braced ? FOREMAN_LINES.braced : FOREMAN_LINES.armour; if (S) S.n.armoured++; return Math.max(1, Math.round(dmg * (braced ? FOREMAN.bracedPoke : FOREMAN.armour))); }   /* (foreman2) braced: x0.5, a poke that counts (was x0.4 either way) */
 
 /* ---------- THE BOT (src/lab.js, tools/cart-pilot.mjs): what a player sees, a quarter-second late (a tell misread one time in eight) ----------
    P: { x, y, ground, vy, atk, v (the cart's pace), lane (0 LOW, 1 HIGH, -1 air), boarded }; returns { gx (where to hold on the loop), jump, drop, atk, why } */
