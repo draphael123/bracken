@@ -25,6 +25,7 @@ export const BP = {
   sea: ['#061822', '#0a2a36', '#103e4c', '#1a5666', '#2c7482'],
   glow: ['#ffe9b0', '#ffc878', '#ff9a50'],
   sil: ['#0a0810', '#140e1c', '#201626', '#322236'],                                 /* ship silhouettes, near to far (far = lighter, hazed) */
+  nsil: ['#262a40', '#303650', '#3c4262', '#4c5272'], nsail: ['#343a56', '#40466a', '#4c5278', '#5c6086'], nrim: ['#8a6272', '#b8806e'], nlamp: '#d8b070',   /* the NEAR hulls: hazed toward the sea and the storm light so they sit behind the play space, not on it (claude/pffix) */
   sail: ['#1c1426', '#2e2036', '#4a3040', '#6e4850'],
   lamp: '#ffd36b', fire: ['#ff4a1a', '#ff8a2a', '#ffc84a', '#fff0a0'], smoke: '#2a2024', red: '#8a1e22', rain: '#3a4468', gull: '#1a1218',
 };
@@ -99,19 +100,19 @@ export function bakeNear() {
   return once('near', () => {
     const w = 640, h = 300, rnd = mulberry(8303), wr = wrapper(w), [c, g] = canvas(w, h), life = { lamps: [], flags: [] };
     /* two hulls loom: x, width, top row. Dark, stern gallery windows lit, a quarter-badge, wales, chains; hung with rigging */
-    for (const [x, W2, top, dir] of [[40, 150, 150, 1], [380, 170, 120, -1]]) {
+    for (const [x, W2, top, dir] of [[40, 130, 205, 1], [380, 150, 190, -1]]) {
       for (let i = 0; i < W2; i++) { const u = i / W2, sh = dir > 0 ? (u > 0.8 ? (u - 0.8) * 70 : 0) : (u < 0.2 ? (0.2 - u) * 70 : 0), tp = top + R(sh * 0.5);
-        for (let y = tp; y < h; y++) px(g, wr(x + i), y, y === tp ? BP.rim[0] : y < tp + 3 ? BP.sil[3] : (y - tp) % 6 === 5 ? BP.sil[0] : BP.sil[1]); }
+        for (let y = tp; y < h; y++) px(g, wr(x + i), y, y === tp ? BP.nrim[0] : y < tp + 3 ? BP.nsil[3] : (y - tp) % 6 === 5 ? BP.nsil[0] : BP.nsil[1]); }
       const gx = dir > 0 ? x + W2 - 46 : x + 8;                                                                          /* the stern gallery */
-      for (let k = 0; k < 4; k++) { rect(g, wr(gx + k * 10), top + 20, 7, 10, BP.sil[0]); rect(g, wr(gx + k * 10 + 1), top + 21, 5, 8, k % 2 ? '#c8802e' : BP.lamp); rect(g, wr(gx + k * 10 + 3), top + 21, 1, 8, BP.sil[0]); life.lamps.push([gx + k * 10 + 3, top + 25]); }
-      for (let k = 0; k < 6; k++) { const px0 = x + 12 + k * 22; rect(g, wr(px0), top + 60, 8, 8, BP.sil[0]); rect(g, wr(px0 + 1), top + 61, 6, 2, BP.sil[2]); }   /* gunports */
-      rect(g, wr(x), top + 44, W2, 2, BP.rim[0]); rect(g, wr(x), top + 45, W2, 1, BP.rim[1]);                              /* the wale takes the last light */
-      for (let m = 0; m < 3; m++) { const mx = x + R(W2 * (0.15 + m * 0.34)); rect(g, wr(mx), 0, 3, top, BP.sil[1]); rect(g, wr(mx), 0, 1, top, BP.sil[2]);                    /* the masts rise off the top */
-        for (const yy of [30, 92]) rect(g, wr(mx - 30), yy, 63, 2, BP.sil[1]);                                           /* yards */
-        for (let q = 0; q < 12; q++) line(g, w, mx, 6, mx + (q - 6) * 6, top + 2, BP.sil[2]); }
-      if (dir > 0) { line(g, w, x + W2, top + 8, x + W2 + 60, top - 22, BP.sil[2]); for (let j = 0; j < 26; j++) for (let i = 0; i < j; i++) px(g, wr(x + W2 + 58 - i * 2), top - 22 + j, i === 0 ? BP.rim[0] : BP.sail[0]); }   /* bowsprit + jib */
-      else { for (let j = 0; j < 40; j++) for (let i = 0; i < 12 + ((j * 7) % 5); i++) px(g, wr(x + W2 + 2 + i), top + 6 + j, (i + j) % 9 === 0 ? BP.sail[1] : BP.sail[0]); }   /* a furled/torn sail hanging past her stern */
-      for (let k = 0; k < 3; k++) { const nx = x + 30 + k * 40; for (let a = 0; a < 20; a += 4) { line(g, w, nx + a, top + 70, nx + a, top + 100 + ((a * 3) % 7), BP.sil[2]); } for (let b = 0; b < 24; b += 6) line(g, w, nx, top + 72 + b, nx + 18, top + 72 + b, BP.sil[2]); }   /* cargo net hung down the side */
+      for (let k = 0; k < 4; k++) { rect(g, wr(gx + k * 10), top + 20, 7, 10, BP.nsil[0]); rect(g, wr(gx + k * 10 + 1), top + 21, 5, 8, k % 2 ? '#a07040' : BP.nlamp); rect(g, wr(gx + k * 10 + 3), top + 21, 1, 8, BP.nsil[0]); life.lamps.push([gx + k * 10 + 3, top + 25]); }
+      for (let k = 0; k < 6; k++) { const px0 = x + 12 + k * 22; rect(g, wr(px0), top + 46, 8, 8, BP.nsil[0]); rect(g, wr(px0 + 1), top + 47, 6, 2, BP.nsil[2]); }   /* gunports */
+      rect(g, wr(x), top + 34, W2, 2, BP.nrim[0]); rect(g, wr(x), top + 35, W2, 1, BP.nrim[1]);                              /* the wale takes the last light */
+      for (let m = 0; m < 3; m++) { const mx = x + R(W2 * (0.15 + m * 0.34)); const mt = top - 105; rect(g, wr(mx), mt, 3, top - mt, BP.nsil[1]); rect(g, wr(mx), mt, 1, top - mt, BP.nsil[2]);                    /* the masts rise off the top */
+        for (const yy of [mt + 24, mt + 66]) rect(g, wr(mx - 24), yy, 51, 2, BP.nsil[1]);                                           /* yards */
+        for (let q = 0; q < 12; q++) line(g, w, mx, mt + 4, mx + (q - 6) * 5, top + 2, BP.nsil[2]); }
+      if (dir > 0) { line(g, w, x + W2, top + 8, x + W2 + 60, top - 18, BP.nsil[2]); for (let j = 0; j < 26; j++) for (let i = 0; i < j; i++) px(g, wr(x + W2 + 58 - i * 2), top - 18 + j, i === 0 ? BP.nrim[0] : BP.nsail[0]); }   /* bowsprit + jib */
+      else { for (let j = 0; j < 40; j++) for (let i = 0; i < 12 + ((j * 7) % 5); i++) px(g, wr(x + W2 + 2 + i), top + 6 + j, (i + j) % 9 === 0 ? BP.nsail[1] : BP.nsail[0]); }   /* a furled/torn sail hanging past her stern */
+      for (let k = 0; k < 3; k++) { const nx = x + 30 + k * 40; for (let a = 0; a < 20; a += 4) { line(g, w, nx + a, top + 54, nx + a, top + 80 + ((a * 3) % 7), BP.nsil[2]); } for (let b = 0; b < 24; b += 6) line(g, w, nx, top + 56 + b, nx + 18, top + 56 + b, BP.nsil[2]); }   /* cargo net hung down the side */
     }
     c.life = life; return c; });
 }
@@ -153,7 +154,7 @@ function lifeMid(g, lf, p, VW, t) {
     g.globalAlpha = 1; }
 }
 export function drawNear(g, cx, cy, VW, VH, L, time, dY) {
-  const near = bakeNear(); g.globalAlpha = 0.82; const p = layer(g, near, 0.55, VH - 265, cx, dY, VW, VH); g.globalAlpha = 1;
+  const near = bakeNear(); g.globalAlpha = 0.6; const p = layer(g, near, 0.55, VH - 265, cx, dY, VW, VH); g.globalAlpha = 1;
   if (!p) return;
-  for (let X = p.x0; X < VW; X += p.w) for (const [lx, ly] of near.life.lamps) { const k = 0.7 + 0.3 * Math.sin(time * 5 + lx * 0.2); g.globalAlpha = 0.25 * k; g.fillStyle = BP.lamp; g.fillRect(R(X) + lx - 4, p.y0 + ly - 6, 9, 12); g.globalAlpha = 1; }
+  for (let X = p.x0; X < VW; X += p.w) for (const [lx, ly] of near.life.lamps) { const k = 0.7 + 0.3 * Math.sin(time * 5 + lx * 0.2); g.globalAlpha = 0.16 * k; g.fillStyle = BP.nlamp; g.fillRect(R(X) + lx - 4, p.y0 + ly - 6, 9, 12); g.globalAlpha = 1; }
 }

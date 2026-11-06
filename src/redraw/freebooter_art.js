@@ -55,9 +55,17 @@ function body(P, back) {
   legs.forEach((lg, i) => { const [kx, ky, fx, fy] = lg, hx = i ? 2 : -1; limb(hx, hipY, kx, ky + cr * 0.4, FBP.leather[1], FBP.leather[2]); limb(kx, ky + cr * 0.4, fx, fy, FBP.leather[0], FBP.leather[1]);
     rc(fx - 2, fy - 2, 6, 3, FBP.leather[0]); rc(fx - 2, fy - 2, 5, 1, FBP.leather[2]); rc(kx - 2, ky + cr * 0.4 - 1, 4, 2, FBP.leather[3]); });                  /* boot, its toe, the turned cuff */
   /* the coat: a long skirt to the knee that streams back with `flare`, a gold sash, buttons */
-  const top = shY, bot = hipY + 7 + flare * 2;
-  for (let y = top; y < bot; y++) { const k = (y - top) / Math.max(1, bot - top), wd = 7 + k * 3 + (flare > 0 ? flare * k * 3 : 0), sh = lean * (1 - k) * 0.6;
-    rc(-wd / 2 - sh - (flare > 0 ? flare * k * 3 : 0), y, wd, 1, FBP.coat[y % 5 === 0 ? 1 : 2]); rc(-wd / 2 - sh - (flare > 0 ? flare * k * 3 : 0) + wd - 2, y, 2, 1, FBP.coat[1]); rc(-wd / 2 - sh - (flare > 0 ? flare * k * 3 : 0) + 1, y, 1, 1, FBP.coat[3]); }
+  const top = shY, bot = hipY + 7 + (flare > 0 ? 1 : 0);
+  /* the skirt hangs from the shoulders (no flare shift: the body of the coat is the same in every pose) with a notched hem... */
+  for (let y = top; y < bot; y++) { const k = (y - top) / Math.max(1, bot - top), wd = 7 + k * 3, sh = lean * (1 - k) * 0.6, x0 = -wd / 2 - sh;
+    rc(x0, y, wd, 1, FBP.coat[y % 5 === 0 ? 1 : 2]); rc(x0 + wd - 2, y, 2, 1, FBP.coat[1]); rc(x0 + 1, y, 1, 1, FBP.coat[3]); }
+  rc(-2 + shX * 0.2 - lean * 0.2, bot - 1, 1, 1, FBP.coat[0]);                                                                                  /* the vent at the hem */
+  /* ...and the FLARE is CLOTH, not a wedge: a tail that streams back off the waist, rising as it goes, tapering to a ragged tip, a swell in it (folds, a lit hem), never a straight-edged slab */
+  if (flare > 0) { const up = P.coatUp || 0, wy = top + 8, xE = -5 - lean * 0.05, len = Math.round(2 + flare * 2.6);
+    for (let i = 0; i < len; i++) { const u = i / len, sw = Math.sin(i * 0.7 + flare), yT = Math.round(wy - u * (1 + flare * 0.9) - u * up), yB = Math.round(bot - 1 - u * (bot - wy) * 0.75 - u * flare * 0.8 + sw * 0.7 - u * up * 1.3), x = Math.round(xE - 1 - i);
+      if (yB <= yT) continue; const h = yB - yT;
+      for (let y = yT; y < yB; y++) { const q = (y - yT) / h; rc(x, y, 1, 1, i % 4 === 2 ? FBP.coat[q < 0.5 ? 2 : 1] : q < 0.2 ? FBP.coat[3] : q < 0.7 ? FBP.coat[2] : FBP.coat[1]); }
+      dot(x, yB - 1, FBP.coat[0]); } }
   rc(-1 + shX * 0.2, top + 1, 3, bot - top - 2, FBP.shirt[1]); rc(0 + shX * 0.2, top + 2, 1, 3, FBP.shirt[2]);                                    /* the open coat shows the shirt */
   for (let k = 0; k < 3; k++) dot(-2 + shX * 0.2, top + 3 + k * 3, FBP.sash[2]);
   rc(-5 + lean * 0.2, hipY - 3, 11, 3, FBP.sash[1]); rc(-5 + lean * 0.2, hipY - 3, 11, 1, FBP.sash[3]); rc(4 + lean * 0.2, hipY - 2, 3, 5 + flare, FBP.sash[1]);   /* the sash and its tail */
@@ -105,7 +113,7 @@ const POSE = {
   boardTell: (p, t, o) => ({ lean: -5, crouch: 7, legs: [[-5, -5, -8, 0], [6, -4, 9, 0]], coatFlare: 1, draw: B => { ARM(B, -2, -12); blade(-2, -12, 150, 17); ARM(B, 4, -15, FBP.coat[0], FBP.coat[2]); } }),
   boardAir: (p, t, o) => ({ lean: 6, legs: [[-6, -9, -13, -6], [3, -10, 1, -5]], coatFlare: 3, draw: B => { ARM(B, 16, -25); blade(16, -25, -6, 20, true); ARM(B, -7, -28, FBP.coat[0], FBP.coat[2]); } }),
   plungeTell: (p, t, o) => ({ lean: 1, legs: [[-3, -10, -4, -4], [3, -11, 5, -5]], coatFlare: 1, grin: true, draw: B => { ARM(B, 5, -38); ARM(B, 3, -38, FBP.coat[0], FBP.coat[2]); blade(4, -38, -85, 17); } }),
-  plungeAir: (p, t, o) => ({ lean: 2, legs: [[-3, -12, -2, -8], [4, -12, 4, -7]], coatFlare: 4, headDy: 1, draw: B => { ARM(B, 3, -36); ARM(B, 1, -36, FBP.coat[0], FBP.coat[2]); blade(3, -36, -90, 22, true); } }),
+  plungeAir: (p, t, o) => ({ lean: 2, legs: [[-3, -12, -2, -8], [4, -12, 4, -7]], coatFlare: 4, coatUp: 7, headDy: 1, draw: B => { ARM(B, 3, -36); ARM(B, 1, -36, FBP.coat[0], FBP.coat[2]); blade(3, -36, -90, 22, true); } }),
   plungeRec: (p, t, o) => ({ lean: 4, crouch: 8, legs: [[-4, -4, -7, 0], [6, -4, 9, 0]], headDy: 4, draw: B => { ARM(B, 10, -12); ARM(B, 8, -10, FBP.coat[0], FBP.coat[2]); blade(10, -12, -88, 14); } }),
   stuck: (p, t, o) => { const h = Math.sin(t * 8) * 1.2; return { lean: 6, crouch: 8, legs: [[-5, -5, -9, 0], [9, -9, 13, -1]], headDy: 4 + h * 0.5, eyes: 'open', draw: B => {
     ARM(B, 12, -14 + h); ARM(B, 10, -11 + h, FBP.coat[0], FBP.coat[2]); blade(12, -14 + h, -86, 22);                                                                    /* the blade buried to the quillons, both hands on the hilt */
