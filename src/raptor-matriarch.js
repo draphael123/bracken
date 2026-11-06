@@ -46,6 +46,7 @@
    air as she comes up; a narrow top she lands on throws her, the level's rule) */
 /* (claude/redgorgerework tuning, the human bot with the campaign kit's flasks at 94-100%: her tells a beat quicker - sweep/scree 0.62, dive 0.9 (the pounce kept at 0.72: the warden's step) -
    her beats shorter - skid 1.6, the rake's breath 1.0 - and her wall runs between dives 0.9-1.6 s; damage x1.75 (in dmg's own note)) */
+import * as GF from './gorge-falls.js';   /* (claude/redgorge3) RED GORGE 3's arena: THE THREE FALLS (src/gorge-falls.js). Every RG3 line below is behind G.falls / st.v3 - flag off, none of it runs */
 export const MAT = {
   hp: 900, scale: 1.35, w: 60, h: 46, markH: 76,   /* (claude/redgorgerework tuning: hp 1000 before) (w 44, h 34, markH 56 before claude/matriarch2) */
   openMul: 1.6, openCap: 0.05, beatCap: 0.035, wardT: 3.0,   /* (claude/redgorgerework tuning: openCap 0.045, beatCap 0.04 before - the knight and the pyromancer filled every window, the warden's spear does not) */   /* (fix pass: one opening is openCap of her at most, one BEAT - a skid, the breath after her rake - beatCap: the heavy blades were emptying a beat) */
@@ -110,11 +111,12 @@ export const STAGE = { W: 40, R: 24, top: 22, door: 6, wallRow: 9, bridgeRow: 13
   planks: [6, 32],      /* the dam's loose timbers: they lie in the two wide reaches of the channel, and float up when the dam cracks (claude/redgorgerework: 5 and 33 before - the baskets stand by the banks now) */
   baskets: [{ id: 'W', x0: 4, lever: 'W' }, { id: 'E', x0: 34, lever: 'E' }],   /* (claude/redgorgerework) THE STANDPIPE BASKETS: two tiles each, against each bank, in the channel (its lever's water lifts it) */
   start: 37 };
+const STAGE0 = STAGE;   /* (claude/redgorge3) RG2's stage by name, where a function takes a stage of its own */
 /* the cracks: every gap of two tiles or less between two tops (local columns [a, b]) */
-export const pitsOf = () => { const out = []; for (let i = 1; i < STAGE.tops.length; i++) { const a = STAGE.tops[i - 1].x1 + 1, b = STAGE.tops[i].x0 - 1; if (b >= a && b - a <= 1) out.push([a, b]); } return out; };
+export const pitsOf = (st = STAGE) => { const out = []; for (let i = 1; i < st.tops.length; i++) { const a = st.tops[i - 1].x1 + 1, b = st.tops[i].x0 - 1; if (b >= a && b - a <= 1) out.push([a, b]); } return out; };
 /* sx: the ledge's first column. W = { set, block, ent, air }. Returns the arena (main.js's boss room) */
-export function stageMatriarch(W, T, TS, sx, room0 = 4) {
-  const { block, ent, air } = W, ex = sx + STAGE.W, R = STAGE.R, top = STAGE.top;
+export function stageMatriarch(W, T, TS, sx, room0 = 4, st = STAGE0) {   /* st: the stage (STAGE = RG2's nest ledge; GF.STAGE3 = RED GORGE 3's three falls, claude/redgorge3) */
+  const { block, ent, air } = W, STAGE = st, ex = sx + st.W, R = st.R, top = st.top;
   air(sx, ex - 1, room0, R - 1);
   block(sx - 1, sx - 1, 0, top - STAGE.door - 1); block(ex, ex, 0, top - STAGE.door - 1);   /* the walls over the two doors (at the banks' height) */
   air(sx - 1, sx - 1, top - STAGE.door, top - 1); air(ex, ex, top - STAGE.door, top - 1);
@@ -122,23 +124,28 @@ export function stageMatriarch(W, T, TS, sx, room0 = 4) {
   block(sx - 1, ex, R, R + 2);
   for (const t of STAGE.tops) block(sx + t.x0, sx + t.x1, top, R - 1);
   /* THE CRACKS between the cluster's pillars (two tiles): rubble one row under the tops - a step down and up, never a pit to be stuck in; still under any flood */
-  for (const [a, b] of pitsOf()) block(sx + a, sx + b, R - 1, R - 1);
-  for (const l of STAGE.levers) ent('mlever', sx + l.x, top - 1, { lever: l.id });
+  for (const [a, b] of pitsOf(st)) block(sx + a, sx + b, R - 1, R - 1);
+  if (st.v3) for (const s of st.ledges) for (let x = s.x0; x <= s.x1; x++) W.set(sx + x, s.row, T.ONEWAY);   /* (claude/redgorge3) lever B's rock shelf: a one-way sandstone lip over B1 */
+  for (const l of STAGE.levers) ent('mlever', sx + l.x, st.v3 ? leverRow(st, l) : top - 1, { lever: l.id });
   ent('matriarch', sx + STAGE.start, top - 1, { face: -1 });
   const arena = { x0: sx * TS, x1: ex * TS, floor: top * TS, trigger: (sx + 1) * TS, wallL: sx - 1, wallR: ex, boss: 'matriarch', music: 'matriarch',
-    tint: '#c86a3a', tintA: 0.06, start: [sx + 2, top - 1], y0: room0 * TS, y1: (R + 2) * TS, mat: { sx, R, top } };
+    tint: '#c86a3a', tintA: 0.06, start: [sx + 2, top - 1], y0: room0 * TS, y1: (R + 2) * TS, mat: st.v3 ? { sx, R, top, v3: true, W: st.W } : { sx, R, top } };
   return { arena };
 }
 /* the ledge in world px, from the arena */
+/* (claude/redgorge3) the row a hero stands IN at a lever (its surface row - 1): the channel floor, a top, or a ledge */
+const leverRow = (st, l) => (l.where === 'floor' ? st.R - 1 : l.where === 'top' ? st.top - 1 : l.where - 1);
 export function geom(A, TS = 16) {
-  const q = A.mat, sx = q.sx, X = c => (sx + c) * TS;
+  const q = A.mat, sx = q.sx, X = c => (sx + c) * TS, STAGE = q.v3 ? GF.STAGE3 : STAGE0;
   const tops = STAGE.tops.map(t => ({ ...t, l: X(t.x0), r: X(t.x1 + 1), cx: (X(t.x0) + X(t.x1 + 1)) / 2 }));
   return { TS, x0: X(0), x1: X(STAGE.W), topY: q.top * TS, floorY: q.R * TS, wallY: (STAGE.wallRow + 1) * TS, bridgeY: (STAGE.bridgeRow + 1) * TS, tops,
-    levers: STAGE.levers.map(l => ({ id: l.id, x: X(l.x) + 8 })),
+    levers: STAGE.levers.map(l => (q.v3 ? { id: l.id, x: X(l.x) + 8, y: (leverRow(STAGE, l) + 1) * TS, where: l.where, say: l.say } : { id: l.id, x: X(l.x) + 8 })),
     bridges: STAGE.bridges.map(b => ({ id: b.id, a: X(b.p0) + 8, b: X(b.p1) + 8, mid: (X(b.p0) + X(b.p1)) / 2 + 8 })),
     planks: STAGE.planks.map(c => ({ x: X(c), w: 2 * TS })),
     baskets: STAGE.baskets.map(b => ({ id: b.id, lever: b.lever, l: X(b.x0), r: X(b.x0 + 2), cx: X(b.x0) + TS, y0: q.R * TS - 4, y1: (STAGE.wallRow + 1) * TS + MAT.basketTop })),
-    floodY: q.R * TS - 18, p3Y: q.top * TS + 10, pitY: (q.R - 1) * TS, pits: pitsOf().map(([a, b]) => [X(a), X(b + 1)]) };
+    floodY: q.R * TS - 18, p3Y: q.top * TS + 10, pitY: (q.R - 1) * TS, pits: pitsOf(STAGE).map(([a, b]) => [X(a), X(b + 1)]),
+    ...(q.v3 ? { v3: true, falls: STAGE.falls.map(f => ({ id: f.id, lever: f.lever, cx: X(f.c), l: X(f.c) - GF.F3.hw, r: X(f.c) + GF.F3.hw, lipY: (STAGE.wallRow - 4) * TS })),
+      ledges: STAGE.ledges.map(s => ({ l: X(s.x0), r: X(s.x1 + 1), y: s.row * TS })) } : {}) };
 }
 /* the top under x (a body of half-width hw stands on the highest ground under it), or null over the channel */
 export function topAt(G, x, hw = 0) { let best = null; for (const t of G.tops) if (x + hw > t.l && x - hw < t.r) best = t; return best; }
@@ -148,7 +155,7 @@ export const nearestTop = (G, x, f) => G.tops.filter(t => !f || f(t)).sort((a, b
 /* ---------- ONE FIGHT ---------- */
 export function newFight(G) {
   return { G, ph: 1, cycle: 0, step: 0, script: null, gap: 1, act: 0, behindT: 0, ward: 0, wardSaid: 0,
-    sluice: { W: 1, E: 1 }, pending: [], burst: 0, burstId: 0, wave: null, press: Object.fromEntries(STAGE.baskets.map(b => [b.id, { charge: 0, h: 0, rider: false }])), riderUp: false, flood: false, horn: false, floodId: 0, water: 0,
+    sluice: G.falls ? { A: 1, B: 1, C: 1 } : { W: 1, E: 1 }, falls: G.falls ? GF.newFalls(G) : null, pourN: 0, pressT: MAT.pressT, pending: [], burst: 0, burstId: 0, wave: null, press: Object.fromEntries((G.falls ? G.baskets : STAGE.baskets).map(b => [b.id, { charge: 0, h: 0, rider: false }])), riderUp: false, flood: false, horn: false, floodId: 0, water: 0,
     bridges: { A: 'up', B: 'up' }, perch: null, planks: false, shots: [], bands: [], chain: 0, surgeT: 0, openTaken: 0,
     fly: null, mark: null, told: {},
     n: { cycles: 0, opens: 0, staggers: 0, footing: 0, wasted: 0, releases: 0, pounces: 0, whiffs: 0, dives: 0, stuns: 0, perches: 0, cuts: 0, tangles: 0, volleys: 0, p3Staggers: 0,
@@ -167,7 +174,7 @@ export const matOpen = e => matBig(e) || matBeat(e);
 /* HER GUARD: a blow from in front of her by a hero standing at her height (not above her, not in the air over her) is turned by her talons */
 export const guarded = (e, hx, hy, airborne) => !!e && !matOpen(e) && !(e.broken > 0) && e.mode !== 'sleep' && e.mode !== 'wake' && (e.face || 1) * (hx - e.x) > -6 && !(airborne && hy < e.y - 10) && Math.abs(hy - e.y) < 26;
 
-const nextScript = S => { const set = CYCLES[S.ph]; return set[S.cycle % set.length].slice(); };
+const nextScript = S => { const set = S.G.falls && S.ph === 1 ? GF.CYCLES3_P1 : S.G.falls && S.ph === 2 ? GF.CYCLES3_P2 : CYCLES[S.ph]; return set[S.cycle % set.length].slice(); };   /* (claude/redgorge3: THE FALLS' passes) */
 function setMode(e, m, t) { e.mode = m; e.modeT = t; }
 const clampX = (G, x) => Math.max(G.x0 + 14, Math.min(G.x1 - 14, x));
 const onFloor = (G, e) => e.y > G.topY + 8;
@@ -187,10 +194,14 @@ export function holdDmg(e, S, d) { if (!S || S.ph !== 1 || (S.n.sluiceStuns || 0
 export const holding = (e, S) => !!S && S.ph === 1 && !(S.n.sluiceStuns > 0) && e.hp <= e.maxHp * MAT.p2 + 1.5;
 /* ---------- THE WATER (the hands tell her what the gorge's clock does: c.horn(), c.flood()) ---------- */
 /* E AT A LEVER: the sluice lets the banked flood go. Returns 'released' | 'empty' | 'busy' */
-export function pull(S, id) { if (S.ph === 3) return 'drowned';
+export function pull(S, id) { if (S.G.falls) { const r = GF.pullFall(S, id); syncSluice(S); return r; }   /* (claude/redgorge3) THE FALLS: each lever its own fall */
+  if (S.ph === 3) return 'drowned';
   if (S.ph === 2) { const B = S.press[id]; if (!B) return 'empty'; if (B.charge > 0) return 'busy'; if (!S.sluice[id]) return 'empty'; S.sluice[id] = 0; B.charge = MAT.pressT; S.n.presses = (S.n.presses || 0) + 1; return 'pressed'; }   /* (claude/redgorgerework) THE STANDPIPE */
   if (S.pending.length || S.burst > 0) return 'busy'; if (!S.sluice[id]) return 'empty'; S.sluice[id] = 0; S.pending.push({ id, t: MAT.releaseTell }); S.n.releases++; return 'released'; }
+/* (claude/redgorge3) S.sluice mirrors the falls (1 = full): the hands' and the bot's 'is a lever full' read stays one line */
+function syncSluice(S) { for (const k in S.falls) S.sluice[k] = S.falls[k].st === 'full' ? 1 : 0; }
 function stepWater(e, S, dt, c) {
+  if (S.G.falls) { GF.stepFalls(S, dt, c); syncSluice(S); if (S.ph === 3 && S.water < 1) S.water = Math.min(1, S.water + dt / MAT.riseT); return; }   /* THE FALLS: no horn on her floor (the horn's flood is the gorge's; her arena's water is yours) */
   const G = S.G, horn = !!c.horn(), flood = !!c.flood();
   if (flood && !S.flood) { S.floodId++; if (S.ph < 3 && (!S.sluice.W || !S.sluice.E)) { S.sluice.W = 1; S.sluice.E = 1; c.number((G.x0 + G.x1) / 2, G.topY - 90, 'THE DAM BANKS THE FLOOD: THE SLUICES ARE FULL', '#7ab8e8'); } }
   S.horn = horn; S.flood = flood;
@@ -203,7 +214,7 @@ function stepWater(e, S, dt, c) {
 }
 /* THE STANDPIPE BASKETS (claude/redgorgerework): rise with a rider while their pipe holds pressure, hold, sink when it is spent. h: 0 (the channel floor) .. 1 (her wall) */
 export const wallMode = e => !!e && (e.mode === 'wallRun' || e.mode === 'circle' || e.mode === 'diveTell' || e.mode === 'volleyTell' || e.mode === 'broodTell');
-export const basketY = (G, S, id) => { const b = G.baskets.find(q => q.id === id), B = S.press[id]; return b.y0 - (b.y0 - b.y1) * (B ? B.h : 0); };
+export const basketY = (G, S, id) => { const b = G.baskets.find(q => q.id === id), B = S.press[id], h = B ? B.h : 0; return b.y0 - (b.y0 - b.y1) * (G.falls ? GF.easeRide(h) : h); };   /* (claude/redgorge3: the ride eased - one smooth set piece) */
 function stepBaskets(S, dt, h) { S.riderUp = false;
   for (const b of S.G.baskets) { const B = S.press[b.id]; B.rider = h.some(q => q.alive && q.onBasket === b.id);
     if (B.rider) B.ridden = true;   /* (a hero who has stood on it: it goes up with the pressure, a hop on it does not stop it) */
@@ -246,6 +257,14 @@ export function stepMatriarch(e, S, dt, h, c) {
     fly(e, S, clampX(G, Math.max(t.l + 20, Math.min(t.r - 20, e.x))), G.topY, MAT.hornLeap, 40, 'walk'); return; }
   /* A BURST (yours): THE WAVE comes down the channel from the lever's bank - no warning; the front that reaches her IN THE CHANNEL STUNS her (claude/redgorgerework:
      always - the narrow pillar's throw was the old, unread middle step). Up on the rock, or in the air, the water misses her (said) */
+  /* (claude/redgorge3) A FALL CRASHES DOWN ON HER: under a pouring fall, on the ground, she is STUNNED (knocked down, OPEN, the verb's cap); in the air it misses her (said);
+     in her ward it is shrugged off (said). Once a pour. The fall that stunned her is the one she SHIES from next */
+  if (G.falls && S.ph < 3) { const q = GF.pourOver(S, e.x, MAT.w / 2), F = q && S.falls[q.id];
+    if (q && S.fallSeen !== F.pid) { const grounded = e.mode !== 'fly' && !wallMode(e) && e.y >= G.topY - 2;
+      if (S.ward > 0) { S.fallSeen = F.pid; c.number(e.x, e.y - 64, GF.SAY3.warded, '#9ab0c0'); S.n.warded++; }
+      else if (grounded && !matBig(e)) { S.fallSeen = F.pid; S.n.staggers++; S.n.sluiceStuns = (S.n.sluiceStuns || 0) + 1; S.n.fallStuns = S.n.fallStuns || {}; S.n.fallStuns[q.id] = (S.n.fallStuns[q.id] || 0) + 1;
+        S.shy = q.id; S.pAt = null; S.fly = null; open(e, S, c, 'staggered', MAT.staggerT, MAT.verbCap); c.number(e.x, e.y - 64, GF.SAY3.stun, '#8fd160'); c.fx('stun', e.x, e.y); c.shake(3); return; }
+      else if (!grounded && S.airSaid !== F.pid) { S.airSaid = F.pid; S.n.wasted++; c.number(e.x, e.y - 64, GF.SAY3.air, '#9aa39a'); } } }
   if (S.wave && S.burstSeen !== S.wave.id && S.wave.dir * (S.wave.x - e.x) >= 0) { S.burstSeen = S.wave.id;
     if (S.ward > 0) { c.number(e.x, e.y - 64, SAY.warded, '#9ab0c0'); S.n.warded++; }
     else if (onFloor(G, e) && !matBig(e) && e.mode !== 'fly' && S.ph < 3) { S.n.staggers++; S.n.sluiceStuns = (S.n.sluiceStuns || 0) + 1; S.pAt = null; S.lure = 0;
@@ -269,7 +288,9 @@ export function stepMatriarch(e, S, dt, h, c) {
       if ((e.face || 1) * d < -8) { S.behindT += dt; if (S.behindT > MAT.turn) { e.face = Math.sign(d) || e.face; S.behindT = 0; } } else S.behindT = 0;
       const nx = clampX(G, e.x + Math.sign(d) * MAT.walk * dt);
       /* phase three: never off the tops into the water (she pounces, she does not wade); one and two: she walks the channel too */
-      if (Math.abs(d) > MAT.keep && !(S.ph === 3 && !topAt(G, nx, 20))) e.x = nx;
+      const shyStop = G.falls && S.shy && S.ph === 1 && GF.fallOver(G, nx, MAT.w / 2, q => q.id === S.shy) && !GF.fallOver(G, e.x, MAT.w / 2, q => q.id === S.shy);   /* (claude/redgorge3) she will not walk into the fall that stunned her */
+      if (shyStop && !S.told.shy) { S.told.shy = 1; c.number(e.x, e.y - 64, GF.SAY3.shy, '#ffd36b'); }
+      if (Math.abs(d) > MAT.keep && !(S.ph === 3 && !topAt(G, nx, 20)) && !shyStop) e.x = nx;
       follow(e, S, dt);
       if (e.modeT <= 0) nextMove(e, S, P, c); return; }
     case 'wallRun': { e.y = G.wallY; const want = clampX(G, P.x + (S.runDir || 1) * 70); e.x += Math.sign(want - e.x) * Math.min(Math.abs(want - e.x), MAT.runV * dt); if (Math.abs(want - e.x) < 4) S.runDir = -(S.runDir || 1);
@@ -307,7 +328,7 @@ function nextMove(e, S, P, c) {
   /* THE LURE (claude/redgorgerework): never into the horn (she has warning then, and would leave the lure for the rock) - a lure that cannot come now is
      DUE, and comes at her next move that can; while she HOLDS (the sluice has not stunned her yet, and she will not break) one is due every other move */
   const lureOk = () => S.ph === 1 && (S.sluice.W || S.sluice.E) && !S.pending.length && !(S.burst > 0) && !S.horn && !S.flood && (c.hornIn ? c.hornIn() : 99) > lureT(S, P) + 0.5;
-  if (S.ph === 1 && holding(e, S) && S.step % 2 === 0) S.lureDue = 1;
+  if (S.ph === 1 && holding(e, S) && S.step % 2 === 0 && !G.falls) S.lureDue = 1;   /* (claude/redgorge3: no lure on the falls - you kite her) */
   if (m !== 'lure' && S.lureDue && lureOk()) { S.step--; m = 'lure'; }
   if (m === 'lure') { if (lureOk()) S.lureDue = 0; else { S.lureDue = S.ph === 1 ? 1 : 0; m = 'pounce'; } }
   if (m === 'perch' && S.bridges.A !== 'up' && S.bridges.B !== 'up') m = 'volley';
@@ -348,6 +369,7 @@ function stepMove(e, S, dt, P, h, c) {
       if (e.modeT <= 0) { const lx = S.pAt ? S.pAt.x : P.x; S.pAt = null; let tx = clampX(G, lx), ty = surfY(G, tx, 4); S.leapKind = fol ? 'follow' : 'pounce';
         if (S.ph === 3) { const t = topAt(G, lx, 4) || nearestTop(G, lx); tx = t.kind === 'narrow' ? t.cx : clampX(G, Math.max(t.l + 20, Math.min(t.r - 20, lx))); ty = G.topY; S.target = t; }
         else if (!topAt(G, tx, 4) && ty === G.floorY) ty = G.floorY;
+        if (G.falls && S.shy && S.ph === 1) { const sx2 = clampX(G, GF.shyShift(G, S, tx, MAT.w / 2)); if (sx2 !== tx) { tx = sx2; ty = surfY(G, tx, 4); S.n.shied = (S.n.shied || 0) + 1; if (!S.told.shy) { S.told.shy = 1; c.number(e.x, e.y - 64, GF.SAY3.shy, '#ffd36b'); } } }   /* (claude/redgorge3) her leap lands beside the fall she knows */
         S.lure = 0; S.n.pounces++; if (fol) S.n.follows = (S.n.follows || 0) + 1; c.sound('leap'); e.face = Math.sign(tx - e.x) || f; fly(e, S, tx, ty, fol ? MAT.followFly : MAT.pounceFly, fol ? MAT.pounceArc * 0.7 : MAT.pounceArc, 'land'); } return; }
     case 'rakeTell': if (e.modeT <= 0) { setMode(e, 'rake', MAT.rakeT); S.rakeN = (S.rakeN || 0) + 1; c.sound('slash');
         const got = c.hit([f > 0 ? e.x : e.x - MAT.rakeReach, f > 0 ? e.x + MAT.rakeReach : e.x, e.y - MAT.h, e.y], MAT.dmg.rake, MOVE_NAME.rake, { blockable: true, key: 'rake' + S.act + '.' + S.rakeN });
@@ -451,7 +473,46 @@ function stepBands(e, S, dt, h, c) {
    jumps to the next top as she pounces, and cuts her staggered; it jumps the surge.
    s = { P: { x, y, face, ground, atk, vy }, e, S, reach, shield, t, rng, mem } -> { gx, face, atk, jump, dodge, block, talk, strike, why } */
 export const PLAN = { react: 0.25, miss: 0.12, missLever: 0.15 };
-export function matPlan(s) { const o = matPlan0(s); return s.v2 ? v2Safe(s, o) : o; }   /* (the v2 hands' last word: never walk or roll off the rock into water - v2Safe) */
+export function matPlan(s) { if (s.S && s.S.G && s.S.G.falls) return fallsPlan(s);   /* (claude/redgorge3) THE FALLS: kite + pull */
+  const o = matPlan0(s); return s.v2 ? v2Safe(s, o) : o; }   /* (the v2 hands' last word: never walk or roll off the rock into water - v2Safe) */
+/* (claude/redgorge3) THE FALLS' HUMAN BOT: KITE + PULL. Her blows, her ward, her openings, the basket's ride and phase three are matPlan0's (it is handed a copy of
+   the fight with no full sluice, so none of RG2's lever lines run). On top: phase one BAITS under a full fall she does not shy from (a step towards its lever, so the
+   roll off her mark goes that way), and once she stands under a full fall - her skid, her stalk stopped at you - it runs to THAT fall's lever (up onto the ledge
+   for B) and pulls (a human beat late, PLAN.missLever of the pulls fumbled); it never stands under a fall that is coming. Phase two: she is on the walls and the
+   pipe is empty - a full lever fills it, then matPlan0 boards the basket */
+function fallsPlan(s) {
+  const { P, e, S } = s, G = S.G, mem = s.mem || {}, t = s.t || 0, rng = s.rng || Math.random;
+  const base = matPlan0({ ...s, mem, S: { ...S, sluice: {} } });
+  const out = { ...base }, threat = base.dodge || base.jump || base.block || /mark|roll|sweep|scree|rake|cornered|quill|surge|basket|ward/.test(base.why || '');
+  const lo = G.x0 + 10, hi = G.x1 - 10, clamp = x => Math.max(lo, Math.min(hi, x)), half = MAT.w / 2;
+  const atL = l => Math.abs(P.x - l.x) < 12 && Math.abs(P.y - l.y) < 10;
+  mem.fseen = mem.fseen || {}; const seen = (k, d = PLAN.react) => { if (!(k in mem.fseen)) mem.fseen[k] = t; return t - mem.fseen[k] >= d; };
+  const fumble = k => { mem.froll = mem.froll || {}; if (!(k in mem.froll)) mem.froll[k] = rng() < PLAN.missLever; return mem.froll[k]; };
+  /* to a lever: the floor one is walked to, the bank one is a jump up off the channel floor, the ledge one is up onto B1 and a jump through the shelf */
+  const goLever = (l, why) => { out.gx = l.x; out.dodge = false; out.block = false; out.why = why; const onFloor = P.y > G.topY + 8;
+    if (atL(l)) { out.gx = P.x; return out; }
+    if (l.where === 'top' && onFloor && P.ground) { const t0 = topAt(G, l.x, 2); if (t0 && Math.min(Math.abs(P.x - t0.l), Math.abs(P.x - t0.r)) < 26) out.jump = true; }
+    if (typeof l.where === 'number') { const sh = G.ledges[0], b1 = topAt(G, (sh.l + sh.r) / 2, 2);
+      if (onFloor) { out.gx = clamp(Math.max(b1.l + 10, Math.min(b1.r - 10, P.x))); if (P.ground && Math.min(Math.abs(P.x - b1.l), Math.abs(P.x - b1.r)) < 26) out.jump = true; }
+      else if (P.y > sh.y + 4) { out.gx = clamp(Math.max(sh.l + 8, Math.min(sh.r - 8, l.x))); if (P.ground && P.x > sh.l + 2 && P.x < sh.r - 2) out.jump = true; } }
+    return out; };
+  const under = q => { const F = S.falls[q.id]; return F.st === 'trickle' || F.st === 'pour'; };
+  /* never under a fall that is coming (its trickle is the tell) */
+  const mine = GF.fallOver(G, P.x, 6, under);
+  if (mine && S.ph < 3 && !threat) { const d = P.x < mine.cx ? -1 : 1; out.gx = clamp(d < 0 ? mine.l - 20 : mine.r + 20); out.why = 'out from under the fall'; return out; }
+  if (S.ph === 1 && !threat && !matBig(e) && !(S.ward > 0)) {
+    const grounded = e.mode !== 'fly' && e.y >= G.topY - 2, q = grounded ? GF.fallOver(G, e.x, half, f => GF.fallFull(S, f.id) && f.id !== S.shy) : null;
+    if (q) { const l = G.levers.find(v => v.id === q.lever); const k = 'pull' + S.act + q.id;
+      if (atL(l) && seen(k) && !fumble(k)) { out.gx = P.x; out.talk = true; out.why = 'she is under fall ' + q.id + ': pull'; return out; }
+      return goLever(l, 'she is under fall ' + q.id + ': to its lever'); }
+    if (matBeat(e)) return out;   /* her beat away from a full fall: cut it (matPlan0) */
+    const full = G.falls.filter(f => GF.fallFull(S, f.id) && f.id !== S.shy).sort((a, b) => Math.abs(a.cx - P.x) - Math.abs(b.cx - P.x))[0];
+    if (full) { const l = G.levers.find(v => v.id === full.lever), side = Math.sign(l.x - full.cx) || 1; out.gx = clamp(full.cx + side * 4); out.atk = false; out.why = 'bait her under fall ' + full.id; return out; } }
+  if (S.ph === 2 && !threat && wallMode(e) && S.press.P && !(S.press.P.charge > 0) && S.press.P.h < 0.05) {
+    const l = G.levers.filter(v => GF.fallFull(S, v.id)).sort((a, b) => Math.abs(a.x - P.x) + Math.abs(a.y - P.y) - Math.abs(b.x - P.x) - Math.abs(b.y - P.y))[0];
+    if (l) { if (atL(l) && seen('p2' + S.act + l.id, 0.3)) { out.gx = P.x; out.talk = true; out.why = 'the standpipe: pull'; return out; } return goLever(l, 'the standpipe: to a full lever'); } }
+  return out;
+}
 function matPlan0(s) {
   const { P, e, S, reach } = s, G = S.G, out = { gx: null, face: P.face, atk: false, jump: false, dodge: false, block: false, talk: false, why: '' };
   const mem = s.mem || {}, rng = s.rng || Math.random, t = s.t || 0;
