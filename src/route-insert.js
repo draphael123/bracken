@@ -1,4 +1,4 @@
-/* src/road-insert.js - THE DESERT'S ROAD INSERTS, ONE RULE (claude/greatdune 11-06; plan-desert-1105 s3i: "ONE road-insert migration test for carpet /
+/* src/route-insert.js - THE DESERT'S ROAD INSERTS, ONE RULE (claude/greatdune 11-06; plan-desert-1105 s3i: "ONE road-insert migration test for carpet /
    greatdune / kingspyramid / airship - a save past an insert keeps everything open; the new level shows unplayed, not a wall"). Pure: no DOM.
 
    WHY: the road grew five times before by hand (the palisade, the undercrown, the kitchen gate, the rookery, the hornet's nest - main.js progDefaults),
@@ -10,7 +10,7 @@
        (PROG.roadOpen[before] = 1). A fresh profile, or a save that reaches `after` later, walks the new level.
    An insert that ends the road (before: null) needs no migration: it only adds a level.
    LIVE = the level's own SHIPS flag (art before live). Until then the table is inert: applyInserts changes nothing and roadMigrate writes nothing - the
-   flag-off game is master's, byte for byte. tools/road-insert.mjs proves the rule on master's LEVELS for all four, live and not.
+   flag-off game is master's, byte for byte. tools/route-insert.mjs proves the rule on master's LEVELS for all four, live and not.
 
    main.js: levelLocked reads roadKept(PROG, lv) beside the old per-level flags; progDefaults calls roadMigrate(PROG). level.js calls applyInserts(LEVELS). */
 import { GD_SHIPS } from './great-dune.js';

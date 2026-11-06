@@ -5,7 +5,7 @@
 //
 // THE FLAG: GD_SHIPS = false. Off, src/level.js does not append the row: LEVELS is master's array exactly (no index, no save, no tool moves).
 // On (?gd=1 on the page, globalThis.BRACKEN_GD, or GD=1 in a Node tool's env) the row is appended LAST and HIDDEN (no map node): ?gd=1&level=greatdune.
-// THE ROAD INSERT (buriedcity > greatdune > sealedpyramid) is data in src/road-insert.js, live with GD_SHIPS (art before live) - proved by tools/road-insert.mjs.
+// THE ROAD INSERT (buriedcity > greatdune > sealedpyramid) is data in src/route-insert.js, live with GD_SHIPS (art before live) - proved by tools/route-insert.mjs.
 //
 // THE RULE: THE SAND IS A ROAD IF YOU'RE FAST ENOUGH. Stand still on soft sand and the dune takes you (src/quicksand.js: jump, and keep jumping - never a
 // kill); on the big dunes you drop onto your SHIELD and ride (src/shield-board.js); a wind-skiff bandit rides the dunes beside you (src/sand-skiff.js).
@@ -76,7 +76,7 @@ export function buildGreatDune({ T, TS }) {
   const rockFrom = (x, y) => { for (let yy = y; yy < H; yy++) set(x, yy, T.SOLID); };
   const top = x => base - cols[Math.min(cols.length - 1, Math.max(0, x))].lvl;   /* the ground row of column x */
   const qs = [], sinkSand = [], sinkholes = [];
-  const run = (arr, x, row) => { const last = arr[arr.length - 1]; if (last && last.x1 === x - 1 && last.row === row) last.x1 = x; else arr.push({ x0: x, x1: x, row }); };
+  const run = (arr, x, row) => { const last = arr[arr.length - 1]; if (last && last.x1 === x - 1 && last.row === row) last.x1 = x; else arr.push({ x, x0: x, x1: x, row }); };
   cols.forEach((c, x) => { const r = base - c.lvl;
     if (c.t === 'F' || c.t === 'SS' || c.t === 'SK') { rockFrom(x, r); if (c.t === 'SS') run(sinkSand, x, r); if (c.t === 'SK') run(sinkholes, x, r); }
     else if (c.t === 'QS') { rockFrom(x, r + 1); const last = qs[qs.length - 1]; if (last && last.x1 === x * TS && last.y === r * TS) last.x1 = (x + 1) * TS; else qs.push({ x0: x * TS, x1: (x + 1) * TS, y: r * TS }); }
@@ -99,7 +99,7 @@ export function buildGreatDune({ T, TS }) {
     set(ex - 3, r + 2, T.ONEWAY); set(ex - 2, r + 2, T.ONEWAY);                        /* the ledge under the lip */
     ent('silver', cx0 + 5, r + 4);
     for (let i = 0; i < 5; i++) ent('coin', cx0 + 7 + i, r + 4);
-    caves.push({ swirl: [s.x0, s.x1], row: r, box: [cx0, r + 1, cx1, r + 4], exit: [ex, ex + 1], ledge: [ex - 3, ex - 2, r + 2] });
+    caves.push({ x: s.x0, swirl: [s.x0, s.x1], row: r, box: [cx0, r + 1, cx1, r + 4], exit: [ex, ex + 1], ledge: [ex - 3, ex - 2, r + 2] });
     rockZones.push([cx0, cx1 + 1, r + 5, r + 5]);
   }
 
@@ -162,6 +162,8 @@ export function buildGreatDune({ T, TS }) {
   foe('vulture', marks.qs5 + 1); foe('cutthroat', marks.soft3 + 9);
   foe('sandskiff', marks.skiff3 + 9, { bed: [marks.skiff3 + 1, marks.skiff3 + 17] });
   foe('sandworm', marks.worm2 + 4, { bed: [marks.worm2 + 1, marks.worm2 + 7] });
+  /* THE RACE's own hazards (no squad on the line, but the road is not empty): heads over its basins, a stinger on its soft sand */
+  { const sq = { squad: 'theRace' }; foe('vulture', marks.qs7 + 2, sq); foe('vulture', marks.qs8 + 1, sq); foe('scorpion', marks.soft5 + 7, sq); foe('cutthroat', marks.crest5 + 6, sq); }   /* one squad: the race's road */
   /* THE SKIFF CHIEF at the start line (he waits; you cross it and he sails) */
   const chief = { x: marks.raceline + 3, startX: marks.raceline + 1, finishX: marks.obelisk };
   ent('skiffchief', chief.x, on(chief.x), { face: 1, startX: chief.startX, finishX: chief.finishX });
@@ -177,7 +179,7 @@ export function buildGreatDune({ T, TS }) {
     quicksand: qs, shade, decor, rockZones, masonry, facades, masonryKit: 'limestone', ledgeKit: 'desert',
     sections, marks, greatdune: true,
     dune: { sinkSand, caves, scarabs, obelisk: ob, chief, still: STILL, ground: cols.map((c, x) => top(x)).concat([top(cols.length - 1), top(cols.length - 1)]) },   /* ground: the dune's surface row per column (under any outcrop) */
-    boardZones,
+    boardZones, softSand: sinkSand, sinkholes: caves, scarabs,   /* the same pieces at the top level, where tools/level-quality.mjs counts gadgets (SYSTEM_ARRAYS) */
     duneSlides: [],
     calm: [[0, W - 1, 0, H - 1]],   /* placed wholly by hand: nothing sprinkled */
     checkRun: 260,
