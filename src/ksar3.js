@@ -103,7 +103,7 @@ export function ksar3Tail(api) {
   awning(972, 976, 6, 12);
   sign(966, B - 1, 'THE HIGH LINES: NOTHING UNDER THEM BUT THE WADI.');
   drop(977, 1009);                                                               /* THE DROP: the wadi under the fort (a fall is the end - the exam's death, A10) */
-  const z5 = zipPx(976.5 * TS + 8, 12 * TS - 22, 1000 * TS + 8, 21 * TS - 12), z6 = zipPx(993 * TS + 8, 305, 1011 * TS + 8, 23 * TS - 12);
+  const z5 = zipPx(976.5 * TS + 8, 12 * TS - 22, 1000 * TS + 8, 21 * TS - 12), z6 = zipPx(988 * TS + 8, 290, 1011 * TS + 8, 23 * TS - 12);
   k3.hops.push({ id: 'high', a: z5, b: z6, fatal: true });
   /* R5: the exam roof - two stalkers in the glare, a MIRAGE SHADE (canvas painted on the haze: it does not cool, he stays unseen under it), a real awning; THE RAIDERS' LINE
      from the tallest tower's flank onto it (the exam gong calls two riders; a blade on its post - on R5 - cuts it) */

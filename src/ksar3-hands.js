@@ -110,6 +110,6 @@ export function makeKsar3Hands(ctx) {
     if (F.mark) { const x = R(F.mark.x - cx), y = R(G.floorY - 2 - cy), blink = Math.floor(time * 12) % 2 ? '#ff6b6b' : '#fff6e0'; g.fillStyle = 'rgba(30,10,10,0.55)'; g.fillRect(x - GM.swingR, y, GM.swingR * 2, 3); g.strokeStyle = blink; g.beginPath(); g.moveTo(x - 6, y - 6); g.lineTo(x + 6, y + 2); g.moveTo(x + 6, y - 6); g.lineTo(x - 6, y + 2); g.stroke(); }
     for (const r of F.rehang) if (r.told) { const gg = ((ctx.gongs && ctx.gongs()) || []).find(q => q.id === r.id); if (gg) ctx.text('RE-HANGING', R(gg.x * TS() + 8 - cx), R(G.archY - 8 - cy), '#ff9a5c', 'center', 5); }
   };
-  H.read = () => { const k = state(); return k && { n: { ...k.n }, gm: k.F ? { ph: k.F.ph, n: { ...k.F.n }, mode: k.gm && k.gm.mode, hp: k.gm && k.gm.hp } : null, mirages: k.mir.list.map(m => ({ id: m.def.id, a: +m.alpha.toFixed(2) })) }; };
+  H.read = () => { const k = state(); return k && { n: { ...k.n }, gm: k.F ? { ph: k.F.ph, n: { ...k.F.n }, mode: k.gm && k.gm.mode, hp: k.gm && k.gm.hp, gong: k.F.gong } : null, mirages: k.mir.list.map(m => ({ id: m.def.id, a: +m.alpha.toFixed(2) })) }; };
   return H;
 }

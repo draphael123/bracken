@@ -14,7 +14,7 @@
 //                  MOVE OFF the mark. A cut rope cannot be swung on (no rope left: he slams instead).
 // HIS OPENING (the level's verb, plan s2): CUT A GONG ROPE (a blade on it, src/ksar-hands.js cuts it) - the disc drops (on him if he stands under it: a SMALL
 //   STAGGER only, never the opening itself - plan s2) and he is SILENCED: OPEN x GM.openMul for GM.openT s (the gold ring + timer, B10), at most GM.openCap of
-//   him a window; then a told GM.wardT s ward (B3). GM.rehang s after a cut he hauls a new rope up (told GM.rehangTell s: 'HE RE-HANGS THE GONG') - the gong
+//   him a window - ONLY when it is HIS rope: the gong he walks to / winds up at (GONG STRIKE) or holds (ROPE SWING); any other cut just takes that gong from him; then a told GM.wardT s ward (B3). GM.rehang s after a cut he hauls a new rope up (told GM.rehangTell s: 'HE RE-HANGS THE GONG') - the gong
 //   hangs again, the verb comes back.
 // THE FLOOR (B15): outside an opening his studded coat takes a blow at GM.coat (0.75x) - never invulnerable; in the ward GM.floor (0.4x).
 // PHASES: P1 (100-50%) strike / slam / cymbal; P2 (50-0%) + ROPE SWING, shorter gaps. One windup at a time.
@@ -92,6 +92,9 @@ export function ropeCut(e, F, c, id) {
   let res = 'busy';
   if (Math.abs(g.x - e.x) < 18 && e.alive) { F.stagger = GM.staggerT; F.n.staggers++; res = 'stagger'; c.fx('gongfall', g.x, F.G.floorY); c.number(e.x, e.y - 56, 'THE GONG FALLS ON HIM', '#ffd36b'); }   /* a SMALL stagger only (plan s2) */
   if (!e.alive || e.mode === 'sleep' || e.mode === 'wake' || gmOpen(e) || F.ward > 0) return res;
+  /* HIS ROPE (plan s1.7 'cut his rope'): the gong he walks to / winds up at / swings on. Any other rope cut only takes that gong from him (no call, no swing on it) */
+  const his = ((e.mode === 'toGong' || e.mode === 'strikeTell') && F.gong === id) || ((e.mode === 'swingTell' || e.mode === 'swing') && F.swing && F.swing.gong === id);
+  if (!his) { F.n.cutsIdle = (F.n.cutsIdle || 0) + 1; if (!F.told.idleCut) { F.told.idleCut = 1; c.number(g.x, F.G.archY - 16, 'A GONG LESS FOR HIM - CUT THE ONE HE GOES FOR', '#ffd36b'); } return res === 'stagger' ? res : 'cut'; }
   /* SILENCED: he breaks off whatever he was telling and stands, mallet down, looking for his gong */
   F.swing = null; F.mark = null; F.cym = F.cym && F.cym.back ? F.cym : null;
   setMode(e, 'silenced', GM.openT + 0.05); e.open = GM.openT; e.openT0 = GM.openT; F.openTaken = 0; F.n.opens++; F.n.cutsOpen++; e.pose = 'gmSilenced';
@@ -227,7 +230,7 @@ export function gmPlan(s) {
   if (e.mode === 'slamTell' && near < GM.slamReach + 18 && !late && !wrong && e.modeT < 0.3) { out.dodge = true; out.why = 'roll the slam'; return out; }
   if (gmOpen(e)) { out.gx = e.x - Math.sign(e.x - P.x || 1) * 18; out.atk = near < 30; out.why = 'cut him: silenced'; return out; }
   /* THE VERB: the gong he goes for, else any hanging one */
-  const gs = (s.gongs || []).filter(g => !g.cut); const want = gs.find(g => g.id === F.gong && (e.mode === 'toGong' || e.mode === 'strikeTell')) || (F.ward > 0 ? null : gs.sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0]);
+  const gs = (s.gongs || []).filter(g => !g.cut); const want = gs.find(g => g.id === F.gong && (e.mode === 'toGong' || e.mode === 'strikeTell')) || (F.swing && e.mode === 'swingTell' ? gs.find(g => g.id === F.swing.gong) : null);   /* HIS rope: the one he goes for */
   if (want && !(F.ward > 0)) { out.gx = want.x; out.atk = Math.abs(P.x - want.x) < PLAN.cutR; out.why = 'cut the rope'; return out; }
   out.gx = near > 60 ? e.x : null; out.atk = near < 30 && rng() < 0.3; out.why = 'chip / wait';
   return out;
