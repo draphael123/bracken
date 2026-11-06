@@ -1126,7 +1126,8 @@ const skillCd = k => (P.cds && P.cds[k]) || 0; // every skill keeps its own wait
 const GOLD_CD = 15, goldReady = k => isPirate() && tal('paidInGold') && (PROG.coins || 0) >= GOLD_CD && skillCd(k) > 0;   /* PAID IN GOLD: a wait bought off */
 const cdReady = k => !((P.cds && P.cds[k]) > 0) || goldReady(k), cdSet = k => { noteVerb('skill'); P.skillAt = time;   /* (claude/riposte: a skill's blows are the chain's 'skill' verb) */ if (REC.on) REC.skill(k); trialEvent(k === skillNow() ? 'skillF' : 'skillG'); P.cds = P.cds || {}; if (goldReady(k)) { PROG.coins -= GOLD_CD; number(P.x, P.y - 34, '-' + GOLD_CD + ' GOLD', '#ffd34a'); SFX.coin(); } P.cds[k] = cdOf(k); P.skReady = P.skReady || {}; P.skReady[k] = 0; };
 const skillsOwned = () => skillsFor(hero()).filter(n => n.active && (PROG.skillOwned[hero()]?.[n.id] || trialLend?.has(n.id)));
-const skillAt = index => { const eq = equipped(PROG, hero(), heroLevel()), id = eq[index]; if (skillFor(hero(), id)?.active) return id;
+const skillAt = index => { if (typeof DUELO !== 'undefined' && DUELO && DUELO.on()) return null;   /* (pvpduel3, Daniel 11-06) NO SKILL-SLOT ABILITIES IN THE DUEL PIT: his basic moveset, his own meter and its spender stay */
+  const eq = equipped(PROG, hero(), heroLevel()), id = eq[index]; if (skillFor(hero(), id)?.active) return id;
   /* A TRIAL'S LENT SKILLS fill the F and G the hero has nothing on (Daniel 11-01: he has ONE slot now, so G is lent after his F is taken by his own) */
   if (trialLend && index < 2) { const lent = [...trialLend].filter(k => skillFor(hero(), k)?.active && !eq.includes(k)); return lent[index - eq.slice(0, index).filter(k => skillFor(hero(), k)?.active).length] || null; } return null; };
 const skillNow = () => skillAt(0), skill2Now = () => skillAt(1);
@@ -5883,12 +5884,12 @@ function drawSkills() {   /* the SKILLS tab of the one store: the loadout on F a
 const swapWhy = k => { if (!k || !k.id) return ''; const lock = lockOf(k, PROG, featDone); if (lock) return (lock + (k.silver ? ' (OR ' + k.price + ' SILVER)' : '')).toUpperCase();
   const lv = k.coinNeeds && LEVELS.find(l => l.id === k.coinNeeds);
   return k.silver ? ('BUY HIM AT THE STORE: ' + k.price + ' SILVER' + (k.coinPrice && lv ? ', OR ' + k.coinPrice + ' GOLD AFTER ' + String(lv.name).toUpperCase() : '')) : ('BUY HIM AT THE STORE: ' + k.price + ' GOLD'); };
-function swapHeroTo(id) {
+function swapHeroTo(id, quiet) {   /* quiet (duelroster, Daniel 11-06): a DUEL's pick - nothing is saved and nothing plays; the duel puts the campaign's hero back when it ends */
   if (!(PROG.heroes && PROG.heroes[id]) && !godMode()) return null;
   if (players && players.slice(1).some(p => p.hero === id)) return { no: 'ANOTHER SEAT PLAYS HIM' };
   setEquip('hero', id); applySkin(); applyUpgrades(); if (P) P.hp = Math.min(P.hp, P.maxHp);
   if (players && players[0]) { players[0].hero = id; players[0].set = K; }
-  saveProgress(); SFX.equip(); return (HERO_SHORT[id] || String(id).toUpperCase()) + ' IS YOURS NOW';
+  if (!quiet) { saveProgress(); SFX.equip(); } return (HERO_SHORT[id] || String(id).toUpperCase()) + ' IS YOURS NOW';
 }
 const swapIdle = id => preview('hero:' + id + ':' + PROG.skin + ':' + PROG.sword + ':g' + gearNow(id), () => heroSet(PROG.skin, PROG.sword, 'idle', id, gearNow(id)));
 const SHOPLIFE = makeShopLife();
@@ -6996,6 +6997,8 @@ document.addEventListener('visibilitychange', () => { if (document.hidden && TCH
   const toGame = ev => { const r = disp.getBoundingClientRect(); return [((ev.clientX - r.left) * DPR - offX) / S, ((ev.clientY - r.top) * DPR - offY) / S]; };
   disp.addEventListener('pointerdown', () => { if (pressCard && state === 'title') { initAudio(); dismissPress(); } });   /* a click anywhere on the card is a press */
   disp.addEventListener('contextmenu', ev => { if (state === 'editor') ev.preventDefault(); });
+  disp.addEventListener('mousedown', ev => { if (state === 'play' && DUELO && DUELO.rosterOpen()) { initAudio(); const [x, y] = toGame(ev); if (DUELO.rosterMouse(x, y, true)) ev.preventDefault(); } });   /* (claude/duelroster) the pick screen's mouse: player one clicks a hero, a seat's row, a tab */
+  disp.addEventListener('mousemove', ev => { if (state === 'play' && DUELO && DUELO.rosterOpen()) { const [x, y] = toGame(ev); DUELO.rosterMouse(x, y, false); } });
   disp.addEventListener('mousedown', ev => { if (state !== 'editor') return; initAudio(); const [x, y] = toGame(ev); edMouse(x, y, ev.button, true, false); ev.preventDefault(); });
   disp.addEventListener('mousemove', ev => { if (state !== 'editor') return; const [x, y] = toGame(ev); edMouse(x, y, ev.button, false, true); });
   addEventListener('mouseup', () => { if (state === 'editor') { edPaint = 0; edPainted = null; } });
@@ -7412,8 +7415,9 @@ function duelPass(pp, fn) { if (!DUELO || !DUELO.on()) return fn(); DUELO.sync(p
 /* asPlayer, with PLAYER ONE'S OWN HERO when he is reached from inside another seat's pass (asPlayer's player-one path keeps the running seat's PROG.hero) */
 function asSeat(p, fn) { if (p !== players[0] || !passOn || passOn === players[0]) return asPlayer(p, fn); return asPlayer(p, () => { const wH = PROG.hero, wK = K; PROG.hero = p.hero || wH; if (p.set) K = p.set; try { return fn(); } finally { PROG.hero = wH; K = wK; } }); }
 /* the share of this seat's blow that is his LEVEL (and smith edges): the duel weighs every seat at his L1 hand */
-const duelNorm = () => { const base = isPaladin() ? 14 : isPirate() ? 8 : isReaper() ? 16 : isWarden() ? 11 : isGeo() ? 23 : isBz() ? BZ_K.dmg : isRg() ? RG_K.dmg : sword().dmg, add = (PROG.items.edge ? 3 : 0) + (PROG.items.edge2 ? 3 : 0) + (PROG.items.edge3 ? 3 : 0) + (PROG.items.edge4 ? 3 : 0) + grow(hero(), heroLevel()).damage; return base > 0 ? base / Math.max(base, base + add) : 1; };
-function duelEnter(bot) { const i = duelIndex(); if (i < 0 || !PVP_SHIPS) return false; if (TAVO) TAVO.reset(); partyToWant(); rush = null; setView('normal'); loadThen(i, () => { introSeen = true; startGame(); bannerT = 0; if (!DUELO.begin({ botHero: bot })) hintSay('tip', 4, 'THE PIT WANTS TWO: A FRIEND OR A BOT.'); }); return true; }
+const duelHand = () => { const base = isPaladin() ? 14 : isPirate() ? 8 : isReaper() ? 16 : isWarden() ? 11 : isGeo() ? 23 : isBz() ? BZ_K.dmg : isRg() ? RG_K.dmg : sword().dmg, add = (PROG.items.edge ? 3 : 0) + (PROG.items.edge2 ? 3 : 0) + (PROG.items.edge3 ? 3 : 0) + (PROG.items.edge4 ? 3 : 0) + grow(hero(), heroLevel()).damage; return { base, add }; };
+const duelNorm = () => { const { base, add } = duelHand(); return base > 0 ? base / Math.max(base, base + add) : 1; };
+function duelEnter(bot, settings) { const i = duelIndex(); if (i < 0 || !PVP_SHIPS) return false; if (TAVO) TAVO.reset(); partyToWant(); rush = null; setView('normal'); loadThen(i, () => { introSeen = true; startGame(); bannerT = 0; if (!DUELO.begin(settings ? { settings, botHero: bot } : { botHero: bot })) hintSay('tip', 4, 'THE PIT WANTS TWO: A FRIEND OR A BOT.'); }); return true; }
 function duelLeave() { if (DUELO) DUELO.end(); setView('normal'); partyToWant(); enterTavern(() => duelAtPit(false)); }
 function duelAtPit(open) { const s = TAV_STATIONS.find(q => q.id === 'arena'); if (s) { players[0].x = (s.x - 2) * TS + TS / 2; players[0].face = 1; } if (open && DUELO && PVP_SHIPS) DUELO.openCard(players[0]); }
 DUELO = makeDuel({ L: () => L, players: () => players, time: () => time, TS, asPlayer: asSeat, P: () => P, passOn: () => passOn, upright, enemies: () => enemies, owned: DUEL_OWNED,
@@ -7424,9 +7428,11 @@ DUELO = makeDuel({ L: () => L, players: () => players, time: () => time, TS, asP
   bar: (x, y, w, h, sh, c) => { g.fillStyle = 'rgba(10,8,16,0.85)'; g.fillRect(x - 1, y - 1, w + 2, h + 2); g.fillStyle = '#3a2a2a'; g.fillRect(x, y, w, h); g.fillStyle = c; g.fillRect(x, y, Math.round(w * Math.max(0, Math.min(1, sh))), h); },
   /* A HERO'S BLOW ON A HERO, through the victim's own guard chain (damagePlayer): a fixed probe on a full bar, so it never kills here - what it took of the probe is the share that landed */
   damage: (v, fromX, probe, who) => { let out = { r: false, landed: 0 }; asSeat(v, () => { const hp0 = P.hp; P.hp = P.maxHp; const r = damagePlayer(fromX, probe, { who, name: 'THE DUEL' }); out = { r, landed: Math.max(0, P.maxHp - P.hp) }; P.hp = hp0; }); return out; },
-  norm: p => asSeat(p, () => duelNorm()), pressRead: () => pressRead(), eatPress: () => { jumpPress = false; talkPress = false; dodgePress = false; atkPress = false; confirmPress = false; }, keysWrite: o => keysWrite(o), pressWrite: o => pressWrite(o),
+  norm: p => asSeat(p, () => duelNorm()), hand: p => asSeat(p, () => duelHand()),   /* (pvpduel3) the L1 weight and what his level adds: the LEVEL option */
+  setSeatHero: (p, h) => { if (!h || p.hero === h) return false; if (p === players[0]) { if (!(PROG.heroes && PROG.heroes[h]) && !godMode()) return false; if (players.slice(1).some(q => q.hero === h)) return false; const r = swapHeroTo(h, true); return !!r && !r.no; } p.hero = h; seatBake(p); return true; },   /* (duelroster) quiet: his campaign hero is restored at the duel's end (restoreHero) */ restoreHero: h => { const r = swapHeroTo(h, true); if (r && !r.no) saveProgress(); return !!r && !r.no; }, owns: h => !!(PROG.heroes && PROG.heroes[h]) || godMode() || (players[0] && players[0].hero === h), heroPick: () => PICK.slice(),
+  heroBig: (h, x, y, cw, ch, k, a) => { try { const set = heroPreviewSet(h), src = pickFrame(set, 'idle', 0, 1), w0 = g.globalAlpha; if (a !== undefined) g.globalAlpha = w0 * a; g.drawImage(src, Math.round(set.ax - cw / 2), Math.round(set.ay - 3 - ch), cw, ch, Math.round(x), Math.round(y), Math.round(cw * k), Math.round(ch * k)); g.globalAlpha = w0; } catch {} },   /* (duelroster) the hero's own idle art, scaled */ rect: (x, y, w, h, c) => { g.fillStyle = c; g.fillRect(Math.round(x), Math.round(y), Math.round(w), Math.round(h)); }, frame: (x, y, w, h, c) => { g.strokeStyle = c; g.lineWidth = 1; g.strokeRect(Math.round(x) + 0.5, Math.round(y) + 0.5, Math.round(w) - 1, Math.round(h) - 1); }, fit: (s, w, z) => fitName(s, w, z), inkW: (s, z) => inkW(s, z), keyLabel: a => { try { return CTL.labelFor(SET.binds, padLast ? 'pad1' : 'kb', a, 1); } catch { return String(a).toUpperCase(); } },   /* (pvpduel3) a human's roster pick: player one only a hero he owns (swapHeroTo, as the inn's swap panel); another seat any hero */ pressRead: () => pressRead(), eatPress: () => { jumpPress = false; talkPress = false; dodgePress = false; atkPress = false; confirmPress = false; }, keysWrite: o => keysWrite(o), pressWrite: o => pressWrite(o),
   rankOf: p => p === players[0] ? { key: 'slot' + (slot + 1), name: 'SAVE ' + (slot + 1) } : p.prof && p.prof.dest && p.prof.dest.kind === 'local' && Number.isInteger(p.prof.dest.slot) ? { key: 'slot' + (p.prof.dest.slot + 1), name: 'SAVE ' + (p.prof.dest.slot + 1) } : null,
-  ls: () => { try { return localStorage; } catch { return null; } }, leave: () => duelLeave(), enter: bot => duelEnter(bot) });
+  ls: () => { try { return localStorage; } catch { return null; } }, leave: () => duelLeave(), enter: (bot, settings) => duelEnter(bot, settings) });
 /* ===== (claude/arenayard, Daniel 11-03) THE ARENA YARD: the one shared practice yard (src/arena-yard.js; plan scratch/plan-arenayard-1103.md) ===== */
 let yardFromInn = false, yardPrev = { parries: 0, rp: 0 };
 const yardIndex = () => LEVELS.findIndex(l => l.id === 'arena_yard');
@@ -32852,6 +32858,7 @@ function update(dt) {
   if (state === 'talk') { if (!talk) { state = 'play'; return; } if (pausePress || dodgePress) closeTalk(); else if (talkPress || confirmPress || atkPress) { talk.i++; if (talk.i >= talk.lines.length) closeTalk(); else { SFX.text(); if (talk.who && talk.who.t === 'npc') talk.who.lineI = talk.i; } } return; }
   if (!updateWarp(dt)) { clearPresses(); return; }
   if (edTesting && pausePress) { edResume(); return; } // testing your own wood: ESC goes back to the editor, not the pause menu
+  if (pausePress && DUELO && DUELO.rosterOpen()) { DUELO.rosterEsc(); pausePress = false; }   /* (claude/duelroster) ESC on the pick screen is BACK, not the pause menu */
   if (pausePress) { openMenu('play'); return; }
   if (mapPress && !(L && L.shop)) { openMenu('play'); mapOpen('play'); return; }   /* TAB: straight to the map, and TAB or ESC back to the wood */
   /* THE ALLY PUTS ITS HANDS ON THE KEYS FIRST, inside its own pass, so what follows reads them like anybody else's */
@@ -36943,9 +36950,9 @@ function render() {
     drawBkEdge();   /* (claude/bkblood) THE RALLY's red edge pulse (the Blood Knight with debt; off in reduce motion) */
     if (SET.vignette) { const vg = g.createRadialGradient(VW / 2, VH / 2, VH * 0.55, VW / 2, VH / 2, VH * 1.05); vg.addColorStop(0, 'rgba(10,8,20,0)'); vg.addColorStop(1, 'rgba(10,8,20,0.34)'); g.fillStyle = vg; g.fillRect(0, 0, VW, VH); }
     if (introCardUp()) { const k = Math.min(1, (1.6 - (miniIntroT > 0 ? miniIntroT : boss.modeT)) / 0.35), bh = Math.round(VH * 0.13 * k); g.fillStyle = '#0a0810'; g.fillRect(0, 0, VW, bh); g.fillRect(0, VH - bh, VW, bh); const nm = miniIntroT > 0 ? miniName() : bossTitle(boss); if (k >= 1) { const z = fitSize(nm, Math.min(VW, 320) - 16, [TYPE.title, 8]); text(nm, VW / 2, Math.round((bh - (z >= 12 ? 16 : 8)) / 2), '#ffd36b', 'center', z, 'outline'); } }   /* THE NAME CARD lives in the TOP band (the top fifth), never across the middle: it used to cover the boss's head */   /* on a band of its own, and a name too wide for the card drops a size */
-    const hudMin = SET.hud === 'minimal', HS = hudMin ? 'outline' : 'shadow', HY = SET.iron ? 43 : 31;   /* HY: the row of the hero's own meter. Rows go 8 down from y 4: HP, stamina, FLASK ROW (y 20-28, FLASKS 2 gives the flasks their own row here), the hero's meter, XP */
+    const duelUI = !!(DUELO && DUELO.on()), hudMin = SET.hud === 'minimal' || duelUI, HS = hudMin ? 'outline' : 'shadow', HY = SET.iron ? 43 : 31;   /* HY: the row of the hero's own meter. Rows go 8 down from y 4: HP, stamina, FLASK ROW (y 20-28, FLASKS 2 gives the flasks their own row here), the hero's meter, XP */
     const hudMeter = state === 'talk' ? null : hudMeterLabel(), hudPW = 66, xpRow = xpWood() ? 8 : 0, rgRow = isRg() ? 11 : 0, hudPH = HY + 7 + xpRow + rgRow;   /* (claude/rangerhud) rgRow: the ranger's QUIVER ROW under the XP bar */   /* ONE slim plate: 66 wide (~20% of the 320 view) however long a meter's prompt is - the prompt goes beside it, on a strip (meterPrompt) */   /* (claude/kingsfix) a sign or a talk page is open: the HUD hides the C prompt (TAP C / HOLD C) - the talk panel's title sat on it wherever the sign stood */
-    const hudIdle = hudMin && state === 'play' && P.hp === P.maxHp && P.st >= P.maxSt - 1 && !venomIcon(P, CQG.CQ.venom) && !bossActive && bannerT <= 0 && !hudMeter && !P.swim && !(P.torch > 0) && heroMeterFrac() < 0.01 && !Object.values(P.cds || {}).some(v => v > 0);   /* nothing to say: the bars wait out of sight until something changes */
+    const hudIdle = duelUI || hudMin && state === 'play' && P.hp === P.maxHp && P.st >= P.maxSt - 1 && !venomIcon(P, CQG.CQ.venom) && !bossActive && bannerT <= 0 && !hudMeter && !P.swim && !(P.torch > 0) && heroMeterFrac() < 0.01 && !Object.values(P.cds || {}).some(v => v > 0);   /* nothing to say: the bars wait out of sight until something changes */
     const gShown = g, hudG = () => { g = hudIdle ? NULLG : gShown; }, hudShow = () => { g = gShown; };   /* (what the idle MINIMAL HUD draws, it draws into NULLG: one code path, nothing on the screen) */
     const hudStrip = (x, y, w, h) => { g.fillStyle = 'rgba(10,8,20,0.55)'; g.beginPath(); g.roundRect(x, y, w, h, 2); g.fill(); hudRects.push([x, y, w, h]); };   /* a status strip: what is not a bar sits on one, never floating */
     const meterPrompt = (hm, hy) => { const t = fitText(hm.s, VW - 80, 6), w = inkW(t, 6) + 7; hudStrip(69, hy - 3, w, 9); text(t, 72, hy - 1, hm.col, 'left', 6, 'shadow'); };
@@ -36979,7 +36986,7 @@ function render() {
       if (state === 'play') { flaskHud.flashT = Math.max(0, flaskHud.flashT - dt0); flaskHud.spillT = Math.max(0, flaskHud.spillT - dt0); }
       flaskRowEnd = R.x + R.w + 1; flaskRowRect = [R.x - sh, R.y, R.w, R.h]; }
     if (campaignTag) text(campaignTag, 4, VH - 9, '#e8d9a0', 'left', 6, 'outline');   /* ?level=/?boss= with &campaign=1 (claude/levelpilot) */
-    if (coop()) drawCoopHud();
+    if (coop() && !duelUI) drawCoopHud();   /* (claude/duelroster: the duel draws its own bars; the campaign plate, timer, coin count, hint box and co-op plates stay out of it) */
     if (TAVO) TAVO.drawHud(VW, VH); if (L && L.tavern) OPN.drawCard(g, VW, VH); if (DUELO) DUELO.drawHud(VW, VH);   /* (claude/tavern) the wardrobe cards; (claude/pvpduel) the pit's card, the duel's bars, count, banners and winner screen */   // and player two's small plate beside his
     hudG();
     // UNDER THE PLATE, NOT THROUGH IT. y=30 was clear when the plate was 24 tall; the heroes who carry a third
@@ -37100,7 +37107,7 @@ function render() {
     hudShow();   /* VENOM: green drops under the stamina bar, one a stack (src/venom-hud.js) */
     { const lab = (L && L.shop ? String(PROG.coins || 0) : got + '/' + total), pw = coinPlateW(lab), px0 = VW - 6 - pw;
       for (const f of flyCoins) { const e = 1 - Math.pow(1 - f.t, 3); const x = f.x + (px0 + 4 - f.x) * e, y = f.y + (9 - f.y) * e - Math.sin(f.t * Math.PI) * 14; g.drawImage(PROP.coin[Math.floor(f.t * 12) % 4], Math.round(x), Math.round(y)); }
-      g.globalAlpha = coinA; g.drawImage(PROP.coin[0], px0 + 4, 5); text(lab, VW - 10, 7, '#ffd34a', 'right', 8, HS);
+      g.globalAlpha = duelUI ? 0 : coinA; g.drawImage(PROP.coin[0], px0 + 4, 5); text(lab, VW - 10, 7, '#ffd34a', 'right', 8, HS);
       for (let i = 0; i < silvers.length; i++) { g.fillStyle = silvers[i].got ? '#dfe8ff' : 'rgba(223,232,255,0.28)'; g.beginPath(); g.arc(px0 + 6 + i * 7, 22, 2.5, 0, 7); g.fill(); } g.globalAlpha = 1; }
     { const Q = questOf(); if (Q.item !== 'none') { const n = straysGot.size, done = n >= Q.n, lab = Q.name + ' ' + n + '/' + Q.n, lw = lab.length * 6;
       const ic = Q.item === 'fisher' ? SPR.fisherIcon : Q.item === 'seal' && PROP.reef ? PROP.reef.sealIcon : Q.item === 'manifest' && PROP.reef ? PROP.reef.manifestIcon : Q.item === 'caravanseal' ? (PROP.caravanSealIcon || (PROP.caravanSealIcon = KSA.bakeCaravanSealIcon())) : Q.item === 'gear' ? BCFA.gearIcon(10, 0) : null;   /* (claude/bc4fix) the city's brass gear on GEARS n/5 */   /* (claude/ksarhawk) the Ksar's seal on the quest counter */
@@ -37108,11 +37115,11 @@ function render() {
       text(lab, VW - 10, 34, done ? '#ffd36b' : '#c9b27c', 'right', 6, HS);
       if (ic) g.drawImage(ic, VW - 12 - lw - 10, 31); } }
     if (P.hp > 0 && P.hp <= 30 && state === 'play') { const k = 0.5 + 0.5 * Math.sin(time * (P.hp <= 15 ? 11 : 7)); const vg = g.createRadialGradient(VW / 2, VH / 2, 70, VW / 2, VH / 2, 200); vg.addColorStop(0, 'rgba(180,20,20,0)'); vg.addColorStop(1, 'rgba(180,20,20,' + (0.18 + 0.22 * k) + ')'); g.fillStyle = vg; g.fillRect(0, 0, VW, VH); }
-    if (state === 'play' && SET.timer && !(L && L.shop)) { const ts = fmt(levelTime), tw = inkW(ts, 8) + 12, tx = Math.round(topMid(tw));
+    if (state === 'play' && SET.timer && !(L && L.shop) && !duelUI) { const ts = fmt(levelTime), tw = inkW(ts, 8) + 12, tx = Math.round(topMid(tw));
       g.globalAlpha = UIH.idleAlpha(levelTime, 6, 2, 0.5); if (!hudMin) { g.fillStyle = 'rgba(10,8,20,0.34)'; g.beginPath(); g.roundRect(tx - tw / 2, 2, tw, 13, 3); g.fill(); } hudRects.push([tx - tw / 2, 2, tw, 13]);
       text(ts, tx, 5, '#e8dcc0', 'center', 8, 'outline'); g.globalAlpha = 1; }   /* (thin Silkscreen over the world: a 1px dark outline, not a plate) */
     if (state === 'play' && L && L.opening) OPN.drawStep(g, VW, VH); if (state === 'play' && L && L.trial && L.trial.length) drawTrialStep();   /* (under the hint: a count or a gate going up says so over it) */ if (hintT > 0 && state === 'play' && hintWaits()) { /* THE CARD, THE BANNER AND THE TELLS FIRST: a hint waits for them to go (hintWaits) */ }
-    else if (state === 'play') { if (hintT > 0) hintT -= 1 / 60; if (toastQ.L !== L) { UIH.toastClear(toastQ); toastQ.L = L; } UIH.toastFeed(toastQ, hintMsg, hintT); const tc = UIH.toastTick(toastQ, 1 / 60), k = UIH.toastAlpha(tc); if (tc) {   /* ONE QUEUE, ONE SAFE ZONE (src/ui-hud.js): a toast waits its turn and never sits on the plates, the status row or the boss bar */
+    else if (state === 'play' && !duelUI) { if (hintT > 0) hintT -= 1 / 60; if (toastQ.L !== L) { UIH.toastClear(toastQ); toastQ.L = L; } UIH.toastFeed(toastQ, hintMsg, hintT); const tc = UIH.toastTick(toastQ, 1 / 60), k = UIH.toastAlpha(tc); if (tc) {   /* ONE QUEUE, ONE SAFE ZONE (src/ui-hud.js): a toast waits its turn and never sits on the plates, the status row or the boss bar */
       /* TWO LINES, AND NEVER OVER HIM: the band under the plates, or the foot of the screen (over the boss bar) when he is up in that band */
       const zone = UIH.toastZone(VW, VH, CV ? { left: Math.max(hudPW + 2, hudEnvR), top: 48 + xpRow + rgRow + (deathRecap ? 26 : 0), boss: bossActive || miniActive } : { wide: true, top: Math.max(48 + xpRow, hudPH + 4) + (deathRecap ? 26 : 0), boss: bossActive || miniActive })   /* (only the caravan's sun/water rows stand under the plate on the left; elsewhere the band under the plates is the full width, so a long level-up line is still two lines) */, lines = wrap(tc.msg, zone.w - 16, 6), heroY = P.y - cy, box = UIH.toastBox(zone, lines, BODY_LH, l => inkW(l, 6), [heroY - 28, heroY]), bw = box.w, bh = box.h, hby = box.y, hbx = box.x;
       toastQ.box = [hbx, hby, bw, bh]; g.globalAlpha = k; g.fillStyle = 'rgba(10,8,20,0.9)'; g.beginPath(); g.roundRect(hbx, hby, bw, bh, 4); g.fill();
@@ -37379,6 +37386,7 @@ function render() {
   } else soundNoteT = 0;
   if (REC.on || REC.msgT > 0) REC.draw(g, text, VW);
   if (SET.fps) { g.fillStyle = 'rgba(10,8,20,0.6)'; g.fillRect(2, VH - 12, 118, 10); text(perf.fps + ' FPS  UPDATE ' + perf.u.toFixed(1) + 'MS  DRAW ' + perf.r.toFixed(1) + 'MS', 4, VH - 10, perf.fps < 50 ? '#ff6b6b' : '#8fd160', 'left', 6); }
+  if (state === 'play' && DUELO && DUELO.rosterOpen()) DUELO.drawRoster(VW, VH);   /* (claude/duelroster) the pick screen over EVERYTHING (the world's hint box, timer and coin count drew over it) */
   trnDrawOverlay();   /* (claude/transwm) the letterbox, the skip hint */
   if (SWAPUI.isOpen) SWAPUI.draw();   /* (claude/hubpolish) over the store, the map or the pause menu */
   drawTransition();
@@ -37592,7 +37600,7 @@ window.BK = { setView: m => setView(m), env: () => ({ hurt: (e, d, x) => hurtEne
   parts: () => parts, bossBodies: () => bossBodies, get PROP() { return PROP; }, get FLYERS() { return FLYERS; }, get HAS_HURT() { return HAS_HURT; }, get EHP() { return EHP; },
 };
 /* THE HOIST, for the harnesses: the decks (each with its state in .hs), a way to put n loads in one's basket, and the Reeve's cut */
-window.BK.duel = () => ({ D: DUELO, debug: () => DUELO.debug(), enter: bot => duelEnter(bot), begin: o => DUELO.begin(o), leave: () => duelLeave(), atPit: open => duelAtPit(open), index: duelIndex(), ships: PVP_SHIPS, state: () => state });   /* (claude/pvpduel) tools/pvp-duel.mjs */
+window.BK.duel = () => ({ D: DUELO, debug: () => DUELO.debug(), enter: (bot, settings) => duelEnter(bot, settings), begin: o => DUELO.begin(o), leave: () => duelLeave(), atPit: open => duelAtPit(open), index: duelIndex(), ships: PVP_SHIPS, state: () => state });   /* (claude/pvpduel) tools/pvp-duel.mjs */
 window.BK.lesson = () => ({ O: OPN, enter: fromInn => opnEnter(fromInn), leave: sk => opnLeave(sk), words: () => opnWords(), state: () => state, hp: () => ({ hp: P.hp, max: P.maxHp, flasks: P.flasks }), PROG: () => PROG });   /* (claude/tutorial1) tools/lesson-opening.mjs */
 window.BK.yard = () => ({ Y: YARD, seeds: () => seeds, enter: fromInn => yardEnter(fromInn), leave: () => yardLeave(), inn: () => yardFromInn, open: p => yardBoardOpen(p || players[0]), nums: () => nums, state: () => state });   /* (claude/arenayard) tools/arena-yard.mjs */
 window.BK.hvr = () => (HVR && HVR.on() ? HVR.read() : null); window.BK.hvrHands = () => HVR;   /* (claude/hanging3) the ropes, for the tools and the bot */
