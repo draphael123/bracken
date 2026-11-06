@@ -55,7 +55,7 @@ export function makeWhaleHands(ctx) {
     if (!on()) return null;
     if (e.t === 'gastricpolyp') return GPM.spawnPolyp(base, e, ctx.EHP.gastricpolyp);
     if (e.t === 'parasitequeen') { const A = lv().arena; if (!A) return null;
-      const spots = [{ x: (A.shelves[0][0] + 3) * TS, y: 36 * TS, floor: false }, { x: (A.shelves[1][0] + 3) * TS, y: 36 * TS, floor: false }, { x: (A.valve[0] + 2) * TS, y: 35 * TS, floor: false },
+      const spots = [{ x: (A.shelves[0][0] + 3) * TS, y: 36 * TS, floor: false }, { x: (A.shelves[1][0] + 3) * TS, y: 36 * TS, floor: false }, { x: (A.valve[0] + 2) * TS, y: (A.valveTop || 38) * TS, floor: false },
         { x: A.x0 + 18 * TS, y: A.floor, floor: true }, { x: A.heartX, y: A.floor, floor: true }, { x: A.x1 - 18 * TS, y: A.floor, floor: true }];
       Q = PQM.newFight({ x0: A.x0, x1: A.x1, floor: A.floor, heartX: A.heartX, spots }); WORD = null;
       for (const pp of ctx.players) pp.pqKeys = null;

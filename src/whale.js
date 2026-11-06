@@ -116,10 +116,10 @@ export function buildWhale({ painter, T, TS }) {
   // ================= 1. THE MAW (0-49): TEACH SAFE =================
   block(0, 49, 0, 24);                                                   /* the roof of the mouth */
   rock(0, 49, 36);                                                       /* the root of the tongue: the floor */
-  block(2, 2, 25, 29); block(17, 17, 25, 28); block(36, 36, 25, 28);     /* BALEEN hanging from the roof */
+  block(2, 2, 25, 29); block(17, 17, 25, 28); block(41, 41, 25, 27);     /* BALEEN hanging from the roof */
   sign(2, 35, WH_SIGNS.lore); sign(6, 35, WH_RULE); sign(12, 35, WH_SIGNS.breath);
   coins([8, 35], [11, 35]);
-  plat(4, 33, 4); plat(9, 30, 4); plat(14, 33, 3); plat(26, 33, 4); plat(33, 30, 4); plat(39, 27, 3); ent('silver', 40, 26);   /* BALEEN SHELVES up the cheek: the first silver, high over the membrane (a pocket) */
+  plat(4, 33, 4); plat(9, 30, 4); plat(14, 33, 3); plat(26, 34, 3); plat(30, 32, 3); plat(34, 30, 2); plat(37, 28, 3); ent('silver', 38, 27);   /* BALEEN SHELVES up the cheek: the first silver, high over the membrane (a pocket) */
   air(18, 25, 36, 37); net(18, 36, 37); bile('maw', 18, 25, 38, 38, 36); sign(16, 35, WH_SIGNS.dip);   /* a shallow bile dip: two rows, it cannot kill */
   coins([21, 37], [24, 37]);
   sign(29, 35, WH_SIGNS.nerve); nerve('n1', 32, 35);                     /* TEACH: the first nerve, on the floor, nothing near it */
@@ -167,7 +167,7 @@ export function buildWhale({ painter, T, TS }) {
   block(146, 152, 28, 28); block(130, 138, 33, 33); block(144, 152, 38, 38); net(143, 38, 43);   /* sinew shelves on its walls; sinew up the last one from the sump */
   gust('g2', [130, 17, 152, 43], [0, 1], WH.gust, { fall: 1, rise: -1 });   /* the inhale pulls you down it; the exhale breathes up at you */
   foe('gastricpolyp', 132, 32, { face: 1 }); foe('gastricpolyp', 150, 27, { face: -1 });
-  coins([133, 32], [148, 27], [146, 37]); ent('silver', 151, 27);   /* the second silver: on the gullet's high shelf (the way down misses it) */
+  coins([133, 32], [136, 32], [146, 37]); air(126, 129, 40, 43); ent('silver', 127, 43);   /* the second silver: in an air pocket in the gullet's wall, off its sump (the way on is east) */
   block(153, 170, 17, 35); rock(153, 170, 40);                           /* the east wall, and the passage to the stomach under it */
   sign(145, 37, WH_SIGNS.cardia); nerve('nreq', 149, 37);                /* THE REQUIRED STRIKE: the cardia only opens to a breath you call */
   membrane('cardia', 153, 154, 36, 39, 'sealed');
@@ -187,7 +187,7 @@ export function buildWhale({ painter, T, TS }) {
   block(213, 234, 44, BED - 1); bile('gutB', 213, 234, 44, 43, 33); net(213, 37, 43);
   raft('gutB', 'rB1', 214, 217, 43, 33); raft('gutB', 'rB2', 221, 224, 43, 33); raft('gutB', 'rB3', 228, 231, 43, 33);
   foe('leech', 226, 43);
-  coins([215, 33], [222, 33], [229, 33]);
+  coins([215, 32], [222, 32], [229, 32]);
   rock(235, 262, 33);
   foe('merrowbrute', 248, 32, { elite: true });                         /* THE ELITE: a swallowed merrow brute on the ledge (the void of the ribs behind him) */
   foe('gastricpolyp', 241, 32, { face: 1 });
@@ -196,12 +196,12 @@ export function buildWhale({ painter, T, TS }) {
   // ================= 5. THE RIB CAGE (263-322): THE GUST EXAM OVER THE VOID =================
   block(263, 322, 0, 14);
   air(263, 313, 17, H - 1);                                              /* the void: a fall here is a real death (taught: the bile everywhere before it was a climb) */
-  for (const [x0, top] of [[266, 32], [272, 30], [278, 32], [284, 30], [290, 31], [296, 29], [302, 31], [308, 30]]) block(x0, x0 + 2, top, H - 1);   /* THE RIBS */
+  for (const [x0, top] of [[266, 32], [272, 31], [278, 32], [284, 31], [290, 32], [296, 31], [302, 32], [308, 31]]) block(x0, x0 + 2, top, H - 1);   /* THE RIBS */
   gust('g3', [263, 16, 313, 34], [1, 0], WH.ribGust, { fall: 0.4, rise: -1 });   /* the exhale throws you back toward the maw; the inhale draws you gently on */
-  sign(260, 32, WH_SIGNS.ribs); nerve('nr1', 267, 31); nerve('nr2', 291, 30);
-  coins([273, 29], [285, 29], [297, 28]); plat(272, 26, 3); plat(284, 26, 3); plat(296, 25, 3); plat(308, 26, 3);   /* the high ribs: a second way over (the gust blows hardest up here: nothing shelters you) */
-  foe('gastricpolyp', 285, 29, { face: -1 });
-  ent('silver', 309, 29);
+  sign(260, 32, WH_SIGNS.ribs); nerve('nr1', 267, 31); nerve('nr2', 291, 31);
+  coins([273, 30], [285, 30], [297, 30]); plat(272, 28, 3); plat(284, 28, 3); plat(296, 28, 3); plat(308, 28, 3);   /* the high ribs: a second way over (the gust blows hardest up here: nothing shelters you) */
+  foe('gastricpolyp', 285, 30, { face: -1 });
+  ent('silver', 309, 27);   /* (on the last high rib: a climb off the pillar in the gust) */
   rock(314, 322, 32); ent('check', 318, 31);                             /* SHRINE TWO: the boss door */
   sign(320, 31, WH_SIGNS.boss);
 
@@ -209,10 +209,11 @@ export function buildWhale({ painter, T, TS }) {
   const AS = WH.AS, AE = WH.AE, AF = WH.AF;
   block(AS, 399, 0, 12);
   block(AS, 399, AF, BED - 1);                                           /* the chamber floor (row 40) */
-  block(AS, 328, 36, AF - 1); block(381, AE, 36, AF - 1); block(343, 346, 35, AF - 1);   /* THE SHELVES (top 36) and THE VALVE (top 35) */
-  plat(331, 34, 6); plat(349, 33, 6); plat(372, 34, 6); plat(324, 32, 4); plat(343, 31, 4); plat(382, 32, 4);   /* THE RIBS OF THE CHAMBER: the way up off the floor at the exhale, and off the HEART CRUSH */
+  block(AS, 328, 36, AF - 1); block(381, AE, 36, AF - 1); block(343, 346, 38, AF - 1);   /* THE SHELVES (top 36) and THE VALVE (top 38) */
+  block(329, 330, 38, AF - 1); block(379, 380, 38, AF - 1);   /* a step up to each shelf */
+  plat(331, 34, 6); plat(349, 36, 6); plat(373, 34, 6); plat(352, 32, 3);   /* THE RIBS OF THE CHAMBER: the way up off the floor at the exhale, and off the HEART CRUSH */
   bile('heart', AS, AE, AF, AF, 37.5, { breath: false });               /* the heart's own breath floods the floor 2.5 rows; the shelves and the valve stay dry */
-  nerve('A1', 325, 35, { tides: 'heart', arena: true }); nerve('A2', 345, 34, { tides: 'heart', arena: true }); nerve('A3', 384, 35, { tides: 'heart', arena: true });
+  nerve('A1', 325, 35, { tides: 'heart', arena: true }); nerve('A2', 345, 37, { tides: 'heart', arena: true }); nerve('A3', 384, 35, { tides: 'heart', arena: true });
   ent('parasitequeen', 362, AF - 1, { face: -1 });
   ent('silver', 397, 39);                                                /* (the third silver: behind the heart, after the fight) */
   ent('gate', 394, 39);
@@ -229,7 +230,7 @@ export function buildWhale({ painter, T, TS }) {
     ambient: [{ x0: 0, x1: 99999, kind: 'cave' }],
     tints: [[0, 125, [220, 120, 140], 0.12], [126, 262, [190, 100, 120], 0.16], [263, 322, [160, 80, 110], 0.2], [323, 400, [140, 50, 80], 0.24]],
     arena: { x0: AS * TS, x1: (AE + 1) * TS, floor: AF * TS, y0: 13 * TS, trigger: (AS + 3) * TS, wallL: AS - 1, wallR: AE + 1, boss: 'parasitequeen', music: 'boss4', tint: '#5a1a2a', tintA: 0.12, fx: 'motes',
-      shelves: [[AS, 328], [381, AE]], valve: [343, 346], nerves: ['A1', 'A2', 'A3'], tide: 'heart', heartX: 362 * TS },
+      shelves: [[AS, 328], [381, AE]], valve: [343, 346], valveTop: 38, nerves: ['A1', 'A2', 'A3'], tide: 'heart', heartX: 362 * TS },
   };
 }
 
