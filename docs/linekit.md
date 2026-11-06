@@ -41,7 +41,7 @@ All coordinates are TILES (fractions allowed); a line's `y` is the rope; the rid
 | **snap** | hear the CREAK, jump off in the 1.0 s tell or fall a level | a parted line is strung again after 8 s |
 | **gondola** (`cab`) | step in; it sets off 0.6 s after a seat boards | creak (told) -> snap -> the cab falls and HOOKS ONTO `onto` -> runs it to the dock with every seat in it; empty, a new cab is home 8 s later. Lint flies the fall: it must land on `onto` |
 | **counterweight** | stand in cage B and strike the HOPPER (a stone, 9, outweighs any party) - or one seat rides weight A down to send B up (co-op) | heavier side goes down (seat 1, A tare 0.5); empty 4 s -> stones out -> home |
-| **wind** | told gust (1.2 s); ride WITH it x1.35, AGAINST it x0.6; riders SWAY (up to `sway` px, their hitbox too); a kick or fall in a gust is carried | lee boxes are calm; lint: a lee beside every wind box, and no WINCH line inside one (wind only in its own sections) |
+| **wind** | told gust (1.2 s); ride WITH it x1.35, AGAINST it x0.6; riders SWAY (up to `sway` px, their hitbox too); a kick or fall in a gust is carried | lee boxes are calm; lint: a lee beside every wind box, and no WINCH line inside one (wind only in its own sections) unless the box says `exam: true` (the exam band: winch + wind + Hookjacks; a winch rider only sways) |
 | **side line** (`secret`) | a branch to a pickup | lint: its run ends on a landing that holds a secret |
 
 Calls: `lineInit(L)`, `riderStep(kit, P, inp, dt)` (per seat: `inp = { up, down, left, right, upPress, jumpPress, strike, hb }` -> events `take`, `kick`,

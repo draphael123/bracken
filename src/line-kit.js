@@ -18,6 +18,7 @@
 //     weights: [{ id, a: { x0, x1, top, bot }, b: { x0, x1, top, bot }, rest: 0, tare: 0.5, hopper: [tx, ty], brake: [tx, ty], hold: 3 }],
 //              k = 0: A at its top, B at its bottom; k = 1: A down, B up. Load = seats on it (+ A's tare + stones). Heavier goes down.
 //     winds: [{ id, box: [x0, y0, x1, y1], dir: 1|-1, period: 4, on: 2, told: 1.2, shove: 240, sway: 10, phase }],
+//              exam: true = THE EXAM BAND (Daniel 11-05: winch + wind + Hookjacks): a winch may run through it (sway only - a stroke is a stroke)
 //     lee: [[x0, y0, x1, y1]],  anchors: [[tx, ty]] }      lee rocks (no wind) / pylons a line end may hang from
 //   The level also gives (for lint/sweep): L.landings [[x0, top, x1, bottom]], L.nets (same), L.checkpoints [{ x, y }], L.secrets [[tx, ty]], L.exit [x0, y0, x1, y1].
 //
@@ -380,7 +381,7 @@ export function lintLines(L) {
     if ((w.shove ?? 240) > LK.SHOVE_CAP) bad.push(id + ': shove ' + w.shove + ' over the cap ' + LK.SHOVE_CAP);
     const B = w.box; if (!(D.lee || []).some(l => l[0] <= B[2] + 1 && l[2] >= B[0] - 1 && l[1] <= B[3] + 1 && l[3] >= B[1] - 1)) bad.push(id + ': a wind section with no lee rock beside it (nowhere to rest)');
     const WB = boxPx(B);
-    for (const z of kit.list) if (z.kind === 'winch') for (let x = z.xa; x <= z.xb; x += 8) if (inBox(WB, x, lineY(z, x))) { bad.push(id + ': winch ' + z.id + ' runs into the wind section (wind only in its own sections)'); break; } }
+    if (!w.exam) for (const z of kit.list) if (z.kind === 'winch') for (let x = z.xa; x <= z.xb; x += 8) if (inBox(WB, x, lineY(z, x))) { bad.push(id + ': winch ' + z.id + ' runs into the wind section (wind only in its own sections)'); break; } }
   for (const c of L.checkpoints || []) {
     if (!lands.some(({ b, net }) => !net && c.x >= b[0] && c.x <= b[2] && c.y === b[1])) bad.push('checkpoint ' + c.x + ',' + c.y + ' does not stand on a landing');
     const W = windAt(kit, px(c.x) + 8, px(c.y) - 8); if (W) bad.push('checkpoint ' + c.x + ',' + c.y + ' stands in the wind (put it in a lee)'); }

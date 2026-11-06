@@ -297,6 +297,7 @@ function sweep(hero, seats, lab = labOK) {
     ['a checkpoint in the wind', L => { L.landings.push([48, 44, 52, 45]); L.checkpoints.push({ x: 50, y: 44 }); }, /in the wind/],
     ['no exit', L => { delete L.exit; }, /no exit/],
   ];
+  { const L = lab(); L.lineKit.winds[0].box = [42, 38, 60, 56]; L.lineKit.winds[0].exam = true; ok(!lintLines(L).some(q => /winch .* wind section/.test(q)), 'an EXAM wind section (exam: true) may carry a winch'); }
   for (const [nm, f, re] of cases) { const L = lab(); f(L); const bad = lintLines(L); ok(bad.some(s => re.test(s)), 'lint catches ' + nm + ' (got: ' + (bad.join(' | ') || 'nothing') + ')'); } }
 
 /* 16. THE KIT NEVER TOUCHES THE SHARED ZIP LINE: no kit line in L.zipLines, and zipline.js is not imported */
