@@ -75,7 +75,7 @@ export function makeFreebooterHands(ctx) {
     return dmg * Math.max(FB.k.floor, r.k); };
   H.barName = e => 'THE FREEBOOTER' + (e.mode === 'reload' && e.open > 0 ? '  RELOADING' : e.mode === 'stuck' && e.open > 0 ? '  STUCK IN THE DECK' : S && S.ward > 0 ? '  WARDED' : '');
   H.end = e => { if (S && e && (!e.alive || e.hp <= 0)) { S.dead = { x: e.x, y: e.y, f: e.face || 1, t0: ctx.time() }; ctx.number(e.x, e.y - 70, FBM.FB_SAY.down, '#ffd36b'); } if (S) { S.mark = null; S.aim = null; S.shot = null; } };
-  H.read = () => S && { mode: ctx.boss && ctx.boss.mode, ph: S.ph, ward: S.ward, open: ctx.boss ? ctx.boss.open : 0, sloopIn: sloopIn(), n: { ...S.n }, hurt: { ...S.hurt }, plan: FBM.fbPlan(ctx.boss, S) };
+  H.read = () => S && { mode: ctx.boss && ctx.boss.mode, ph: S.ph, ward: S.ward, open: ctx.boss ? ctx.boss.open : 0, sloopIn: sloopIn(), n: { ...S.n }, hurt: { ...S.hurt }, plan: FBM.fbPlan(ctx.boss, S), G: S.G, mark: S.mark, aim: S.aim };
 
   /* ---------- DRAWING (claude/pfart: src/redraw/freebooter_art.js - his sheet: a pose per mode, windup and release for every move) ---------- */
   /* how long each timed mode runs (the pose's progress p = how much of it is gone); modes not here hold p = 0 */
