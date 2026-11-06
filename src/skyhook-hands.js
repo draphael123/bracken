@@ -147,7 +147,7 @@ export function makeSkyhookHands(ctx) {
     const e = live(); if (!S || !e || !ctx.bossActive) { SOUND.clank(ctx.sfx); return; }
     SKM.leverStruck(e, S, l.id, world(e)); };
   /* A BLOW ON HIM (B15; src/skyhook.js takeBlow) - the turned share clanks and says why */
-  H.take = (e, dmg) => { if (!S) return dmg; const [d, word] = SKM.takeBlow(e, S, dmg);
+  H.take = (e, dmg, tag) => {   /* (tag: the blow's name - every blow is the same to his coat; kept for tools/blow-tags.mjs and a later read) */ if (!S) return dmg; const [d, word] = SKM.takeBlow(e, S, dmg);
     if (word) { e.chipHit = ctx.time(); e.guardFx = 0.25; e.guardWord = word; ctx.sfx.clank && ctx.sfx.clank(); const sd = Math.sign(ctx.hero().x - e.x) || 1; ctx.sparks(e.x + sd * 9, e.y - 16, sd, 3);
       if (!S.told.coat && word === SKM.SKY_SAY.guard) { S.told.coat = 1; ctx.hint && ctx.hint('HIS COAT TURNS HALF A BLOW. STRIKE A LEVER WHILE HE RIDES HIS LINE: IT SLIPS, AND HE COMES DOWN.'); } }
     return d; };

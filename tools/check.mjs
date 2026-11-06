@@ -294,6 +294,7 @@ if (take('rookery')) results.push(run('rookery', process.execPath, ['tools/rooke
 if (take('line-kit')) results.push(run('line-kit', process.execPath, ['tools/line-kit.mjs']));
 /* THE HIGH LINES greybox + THE HOOKJACK (claude/highlines1, Node; src/highlines.js, src/hookjack.js, src/highlines-hands.js): the level lints clean, grid = data, every band present, every drop lands, every hero x1 + knight x2-4 soft-lock sweep, the Hookjack's guard/tell/parry/swipe/noStack/saw/cut/foot and the counter row */
 if (take('highlines')) results.push(run('highlines', process.execPath, ['tools/highlines.mjs']));
+if (take('skyhook')) results.push(run('skyhook', process.execPath, ['tools/skyhook.mjs']));   // (claude/skyhook) SKYHOOK, pure: B15 floor, both openings in both phases, tells before hits, no soft-lock, every hero, co-op, reset
 /* A FOE THE ROOM KILLS GOES DOWN (claude/flotilla4, Daniel 10-27 'dead foes stand there'): every common foe on the build killed by an untagged hurt, a blast and a round shot - dead, never alive at hp <= 0, and its body says how it goes down (c.fall; the common fall tips it onto its back) */
 if (take('room-kills')) results.push(run('room-kills', process.execPath, ['tools/room-kills.mjs']));
 /* THE POWDER MONKEY (claude/flotilla4, a shared foe: src/powder-monkey.js): small and quick, his told lob, the teach placed alone, struck back he goes down, a struck blast fires a deck gun and a keg */
