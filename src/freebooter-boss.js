@@ -25,7 +25,7 @@
 //     THE BOARDING PLUNGE (!! off the red mark)  he springs to the yard; a red mark follows you along the deck and LOCKS; he plunges onto it. Missed: STUCK IN THE
 //                                                DECK = OPEN (1.25x). He also BOARDS across the gap to whichever deck you are on (a hop, told by a whistle).
 export const FB = {
-  hp: 5000, w: 14, h: 30, markH: 44, walk: 62, keep: 46,   /* he likes cutlass range (keep px) */
+  hp: 5250, w: 14, h: 30, markH: 44, walk: 62, keep: 46,   /* he likes cutlass range (keep px) */
   p2: 0.55,
   pistol: { tell: 0.95, lock: 0.3, dmg: 22, reload: 3.6, y: 18, range: 360 },   /* aim at chest height (y px over the feet): jump it, or roll it */
   cuts: { tell: 0.6, n: 5, gap: 0.17, reach: 30, step: 9, dmg: 8, rec: 0.75 },
