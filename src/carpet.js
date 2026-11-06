@@ -98,3 +98,95 @@ export function drawStormWalls(g, A, squeeze, cx, cy, time, VW, VH) {
     if (Math.floor(time * 5 + (x0 & 7)) % 7 === 0) { g.fillStyle = '#e9e9ff'; g.fillRect(edge - 1, 0, 2, VH); }
   }
 }
+
+/* ================= CARPET 2: THE RIDE (claude/carpet, 11-06; plan-desert-1105 s3.g - EXTENDS this file, the Falling Tower keeps
+   every function above exactly as it was). THE FLYING CARPET level (src/flying-carpet.js) rides the Djinn's carpet on its OWN mode,
+   P.carpet + P.crRide (src/carpet-hands.js keeps the state; main.js's carpetPlayer calls the hands instead of stepCarpet there):
+     THE CARPET RIDES THE WIND - IT ONLY HOLDS YOU WHILE IT'S MOVING.
+   - It always flies FORWARD at its air speed `spd` (the auto-scroll IS the carpet: there is no hover). RIGHT pushes, LEFT brakes.
+   - UP climbs and COSTS speed; DOWN dives and GAINS it; level flight drifts back toward cruise. In a THERMAL a climb is free.
+   - Under RIDE.stall it SAGS (told: the rug flutters, 'IT SAGS - DIVE!') and after RIDE.stallWarn it DROPS you: you fall, the rug
+     hangs a breath (RIDE.lag) and then FOLLOWS under you for RIDE.follow s (told) - altitude is the margin; low over the mist a stall kills.
+   - JUMP hops off (it follows under you the same way: land back on it). On footing it comes and lies beside you: walk onto it.
+   - STONE FRAYS IT: a scrape takes RIDE.scrape off the fray bar (told, a grace between scrapes) and costs speed; it mends after a quiet
+     spell. Frayed through, it TEARS and drops you (it comes back, barely holding: RIDE.torn).
+   - BLOCK held = LIE FLAT (the hero's box shrinks to RIDE.duckH: under the arches) and braces against a gust (half).
+   - In an ARENA (R.mode 'arena') the carpet may TURN: brake under RIDE.turnAt while pressing back and it wheels round; a wall wheels it. */
+export const RIDE = { cruise: 110, max: 235, stall: 52, stallWarn: 0.7, diveGain: 90, climbCost: 72, relax: 0.55, recover: 16, push: 40, pushCap: 150, brake: 75,
+  pitchV: 100, sagV: 80, pitchK: 6, w: 5, h: 22, duckH: 9, under: 4, scrape: 0.25, scrapeGrace: 0.6, scrapeSlow: 0.55, mendWait: 3, mend: 0.05, torn: 0.4,
+  lag: 0.45, follow: 1.1, followV: 360, sink: 60, board: [16, 14], hop: -300, kick: 0.8, turnAt: 80, wallTurn: 0.7, hitSlow: 40 };
+export function newRide(o = {}) {
+  return { mode: o.mode || 'run', dir: 1, spd: RIDE.cruise, y0: o.y0 ?? 32, y1: o.y1 ?? 99999, x0: o.x0 ?? -1e9, x1: o.x1 ?? 1e9, fray: 1, scrapeT: 0, quietT: 0, stallT: 0,
+    sag: false, duck: false, rug: null, n: { scrapes: 0, drops: 0, hops: 0, boards: 0, tears: 0 } };
+}
+/* the ridden hero's box against stone: px edges, feet at y, the rug under the feet (RIDE.under) */
+export function rideBox(P, R) { const h = R && R.duck ? RIDE.duckH : RIDE.h; return { l: P.x - RIDE.w, r: P.x + RIDE.w, t: P.y - h, b: P.y + RIDE.under }; }
+export function boxHits(b, solid) {
+  for (let y = b.t; ; y = Math.min(b.b, y + 7)) { for (let x = b.l; ; x = Math.min(b.r, x + 7)) { if (solid(x, y)) return true; if (x >= b.r) break; } if (y >= b.b) break; }
+  return false;
+}
+/* ONE STEP OF THE RIDE. input = { ax, ay (DOWN +1 dives, UP -1 climbs), duck }; W = { solid(px, py), lift(px, py) -> px/s UP (thermal +, downdraft -),
+   wind(px, py) -> { slow (px/s^2 off the air speed: + headwind, - tailwind), vy (px/s, + down) } }. Returns its events: stallWarn, drop {why}, scrape {fray}, turn, wall. */
+export function stepRide(P, R, input, dt, W) {
+  const ev = [], C = P.carpet; if (!C) return ev;
+  C.t += dt; R.scrapeT = Math.max(0, R.scrapeT - dt); R.quietT += dt;
+  const ax = Math.sign(input.ax || 0), ay = Math.sign(input.ay || 0); R.duck = !!input.duck;
+  const lift = W.lift ? W.lift(P.x, P.y) : 0, wind = (W.wind && W.wind(P.x, P.y)) || null;
+  /* THE AIR SPEED */
+  let s = R.spd;
+  if (ay > 0) s += RIDE.diveGain * dt; else if (ay < 0) s -= (lift > 0 ? 0 : RIDE.climbCost) * dt;
+  else if (s > RIDE.cruise) s += (RIDE.cruise - s) * RIDE.relax * dt;
+  else s += Math.min(RIDE.cruise - s, RIDE.recover * dt);   /* level flight recovers slowly: a stall is something you DO (climb, brake, a headwind), not something that just happens */
+  if (ax === R.dir) { if (s < RIDE.pushCap) s = Math.min(RIDE.pushCap, s + RIDE.push * dt); } else if (ax === -R.dir) s -= RIDE.brake * dt;
+  if (wind && wind.slow) s -= wind.slow * (R.duck ? 0.5 : 1) * dt;
+  s = Math.max(0, Math.min(RIDE.max, s));
+  if (R.mode === 'arena' && ax === -R.dir && s < RIDE.turnAt) { R.dir = -R.dir; s = Math.max(s, RIDE.turnAt); ev.push({ t: 'turn' }); }
+  R.spd = s;
+  /* IT ONLY HOLDS YOU WHILE IT'S MOVING */
+  const sag = s < RIDE.stall;
+  if (sag) { if (!R.sag) ev.push({ t: 'stallWarn' }); R.stallT += dt; if (R.stallT >= RIDE.stallWarn) { R.sag = false; R.stallT = 0; ev.push({ t: 'drop', why: 'stall' }); return ev; } }
+  else R.stallT = 0;
+  R.sag = sag;
+  /* THE LINE */
+  const vyT = ay * RIDE.pitchV - lift + (sag ? RIDE.sagV : 0) + ((wind && wind.vy) || 0);
+  P.vx = R.dir * s; P.vy += (vyT - P.vy) * Math.min(1, dt * RIDE.pitchK);
+  const scrape = why => { R.spd *= RIDE.scrapeSlow; R.quietT = 0; if (R.scrapeT > 0) return; R.scrapeT = RIDE.scrapeGrace; R.fray = Math.max(0, R.fray - RIDE.scrape); R.n.scrapes++; ev.push({ t: 'scrape', fray: R.fray, why });
+    if (R.fray <= 0) { R.n.tears++; ev.push({ t: 'drop', why: 'tear' }); } };
+  const x0 = P.x; P.x += P.vx * dt;
+  if (P.x < R.x0) { P.x = R.x0; if (R.mode === 'arena') { R.dir = 1; R.spd *= RIDE.wallTurn; ev.push({ t: 'wall' }); } }
+  if (P.x > R.x1) { P.x = R.x1; if (R.mode === 'arena') { R.dir = -1; R.spd *= RIDE.wallTurn; ev.push({ t: 'wall' }); } }
+  if (boxHits(rideBox(P, R), W.solid)) { P.x = x0; scrape('front'); if (R.mode === 'arena') R.dir = -R.dir; }
+  const y0 = P.y; P.y += P.vy * dt;
+  if (P.y < R.y0) { P.y = R.y0; P.vy = Math.max(0, P.vy); }
+  if (P.y > R.y1) { P.y = R.y1; P.vy = Math.min(0, P.vy); }   /* the ridden carpet skims the mist and no lower (a DROPPED hero falls through it) */
+  if (boxHits(rideBox(P, R), W.solid)) { const down = P.vy > 0; P.y = y0; P.vy = -P.vy * 0.3; scrape(down ? 'under' : 'over'); }
+  if (R.quietT > RIDE.mendWait && R.fray < 1) R.fray = Math.min(1, R.fray + RIDE.mend * dt);
+  C.bob = Math.sin(C.t * 3.1) * (sag ? 3 : CARPET.bob) + (sag ? Math.sin(C.t * 31) : 0);
+  C.tilt += ((P.vy / RIDE.pitchV) * 0.12 * R.dir - C.tilt) * Math.min(1, dt * 6);
+  P.ground = false; P.face = R.dir;
+  return ev;
+}
+/* THE RUG OFF YOUR FEET: lag (it hangs, sinking), follow (it flies under your feet), lost (it gave up: you were too low), park (you are on
+   footing: it lies beside you). Returns 'board' when the hero is on it again (the caller mounts and kicks the speed back up), 'lost' once. */
+export function newRug(x, y, state = 'lag') { return { x, y, state, t: 0, parked: false }; }
+export function rugStep(rug, P, dt, o = {}) {
+  rug.t += dt; const near = Math.abs(P.x - rug.x) < RIDE.board[0] && P.y > rug.y - RIDE.board[1] && P.y < rug.y + 8;
+  if (rug.state === 'lag') { rug.y += RIDE.sink * dt; if (rug.t >= RIDE.lag) { rug.state = 'follow'; rug.t = 0; } return null; }
+  if (rug.state === 'follow') {
+    if (near && (P.vy || 0) >= 0) return 'board';
+    if (P.ground) { rug.state = 'park'; rug.t = 0; rug.parked = false; return null; }
+    if (rug.t > RIDE.follow) { rug.state = 'lost'; rug.t = 0; return 'lost'; }
+    const tx = P.x + (P.vx || 0) * 0.05, ty = P.y + 3, dx = tx - rug.x, dy = ty - rug.y, d = Math.hypot(dx, dy) || 1, st = Math.min(d, RIDE.followV * dt);
+    rug.x += dx / d * st; rug.y += dy / d * st; return null;
+  }
+  if (rug.state === 'park') {
+    if (P.ground && rug.hold) rug.hold = 0;   /* set down from high: it waits till you are on your feet, then follows you again */
+    if (!rug.parked) { const px = P.x + (o.side || P.face || 1) * 22, dx = px - rug.x, dy = (P.y - 2) - rug.y, d = Math.hypot(dx, dy) || 1, st = Math.min(d, RIDE.followV * dt);
+      rug.x += dx / d * st; rug.y += dy / d * st; if (d < 2) rug.parked = true; return null; }
+    if (near && (P.ground || (P.vy || 0) >= 0)) return 'board';
+    if (!P.ground && !near && (P.vy || 0) > 0 && rug.t > (rug.hold || 0.3)) { rug.state = 'follow'; rug.t = 0; }   /* you went over an edge (or jumped from beside it): it follows again */
+    return null;
+  }
+  if (P.ground) { rug.state = 'park'; rug.t = 0; rug.parked = false; }   /* lost, but you came down on a spire or a ledge: it finds you there */
+  return null;   /* lost: it hangs where it stopped; a death brings it back at the checkpoint */
+}

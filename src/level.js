@@ -30,6 +30,7 @@ import {stormShipPolish} from './storm-ship.js';
 import {polishCoastAndTown} from './coast-town.js';
 import {addIslandPosts} from './island-posts.js';
 import {addDemoSupports} from './demo-supports.js';   /* (claude/floatfix) the hidden arena_yard is not run through addIslandPosts: its stair gets its risers here */
+import { buildFlyingCarpet, CR_RULE, carpetOn } from './flying-carpet.js';   /* (claude/carpet) THE FLYING CARPET (the OPUS greybox, behind its flag: src/flying-carpet.js carpetOn) */
 import {crabTrench,underwaterKeep} from './deep-split.js';
 import {stormwreckHarbor,burialCaverns} from './additional-areas.js';
 import { singleAmbush } from './ambush.js';
@@ -8122,6 +8123,11 @@ LEVELS.push({ id: 'kitchengate', name: 'THE KITCHEN GATE', sub: "up through the 
 LEVELS.push({ id: 'warcairn', name: 'THE WAR CAIRN', sub: 'the clan that holds the peak', rule: WC_RULE, build: () => buildWarCairn({ painter, T, TS }), needs: ROAD_OPEN.undercrown ? 'kitchengate' : 'storm', spurOf: 'crown', classFor: 'berserker' });
 /* THE ARENA YARD (claude/arenayard, Daniel 11-03): APPENDED (saves count levels by index). Replaces the open yard as the default training stop; trial_open stays for the tools that use it as a test bed. NO `trial` flag (that turns co-op off): src/arena-yard.js */
 LEVELS.push({ id: 'arena_yard', name: 'THE ARENA YARD', sub: 'every verb, straw that hits back', build: () => buildArenaYard({ painter, T }), hidden: true });
+
+/* THE FLYING CARPET (claude/carpet, the OPUS GREYBOX, 11-06; plan-desert-1105 s1.6, Daniel 11-05): glasssea > carpet > ksar. BEHIND ITS FLAG (src/flying-carpet.js carpetOn: ?carpet=1, CARPET=1):
+   OFF (as shipped) this row is NOT appended - LEVELS is master's array, no index or save moves. ON it is appended HIDDEN (no map node): ?carpet=1&level=carpet.
+   The road insert (ksar.needs = 'carpet', append-only, through the one road-insert migration test) waits for its art (art before live). */
+if (carpetOn()) LEVELS.push({ id: 'carpet', arc: 'the desert', name: 'THE FLYING CARPET', sub: "the Djinn's carpet, and the Sphinx at the High Gate", rule: CR_RULE, build: () => buildFlyingCarpet({ painter, T, TS }), needs: 'glasssea', hidden: true });
 
 /* THE MIX. A level that is one creature is one question asked forty times. Some of each crowd is swapped for a
    creature from elsewhere, standing on the same spot, so the second half of a level asks something the first did
