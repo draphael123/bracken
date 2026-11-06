@@ -73,7 +73,8 @@ import {drawClimbCues} from './haunted-coast.js';
 import {updateDeckBreaks,drawDeckBreaks} from './storm-ship.js';
 import {updateGasVents,drawGasVents,updateGraveFire,drawHandFire,inVentLight,VENT as BVENT,stepBier,updateDrownedHands,drawDrownedHands,DROWN} from './burial-expansion.js'; import {paintBurialRoom,drawSeam as drawBurialSeam,drawBurialMover,bakeCryptLedge,drawCryptPier,bakeBarrowLedge,bakeProcessionLedge} from './burial-looks.js'; import {updateCrumble,drawCrumble,crumbleReset,burialHoles} from './burial-variety.js';
 import {updateKeepPassages,drawKeepPassages} from './keep-passages.js';
-import {whirlInit,updateWhirlpools,drawWhirlpools,strikeLever,whirlKey} from './whirlpools.js';   /* THE KEEP'S WHIRLPOOLS: the pull, the air they burn, and the lever each one shows you (docs/briefs/keep-rework-2.md) */
+import {whirlInit,updateWhirlpools,drawWhirlpools,strikeLever,whirlKey} from './whirlpools.js';
+import { kfOn } from './keep-floods.js'; import { makeKeepFloodsHands } from './keep-floods-hands.js'; let KFH = null;   /* (claude/keepfloods) KEEP 2: THE FLOODGATES + THE DROWNED KING 2, behind KF_SHIPS (?kf=1); null = the live keep */   /* THE KEEP'S WHIRLPOOLS: the pull, the air they burn, and the lever each one shows you (docs/briefs/keep-rework-2.md) */
 import {bakeRouteLedges,drawRouteSupports,drawWorkPlatform} from './route-art.js';
 import { BELL_LOCK_MAX, bellLock } from './bell-lock.js';
 import {bakeBellcrab,bakeBellguard,bakeBellcrabOut,bakeBellShell,BELL,BELL_OUT_F,bellOutFrame} from './bellcrab.js';
@@ -9031,6 +9032,7 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow, tag = blow) { const raw0 = dmg,
   if (e.t === 'prince') { const pd = princeHurt(e, dmg, tag); if (pd === null) return; dmg = pd; }   /* THE TOMB'S MULTIPLIERS: buried, reeling, bareheaded, in the light - or shrouded, or under the floor */
   if (e.t === 'closedhelm' && e.open > 0) { dmg = Math.round(dmg * 2); }   /* the ward is down: the blow finds the man */
   if (e.t === 'lancer') { if (e.mounted && e.mode !== 'blown' && e.mode !== 'rear' && e.mode !== 'reel') dmg = Math.max(1, Math.round(dmg * 0.6)); else if (e.open > 0) dmg = Math.round(dmg * 1.5); }   /* THE BARDING takes some of every cut; in the road he takes all of it */
+  if (e.t === 'drownedking' && KFH && KFH.owns(e)) dmg = KFH.take(e, dmg, pl); else   /* (claude/keepfloods) home x0.4 / beached x1 / pinned x1.5 (k2Take) */
   if (e.t === 'drownedking' && e.open > 0) dmg = Math.round(dmg * 1.35);   /* in the stone or in the floor: every blow lands */
   else if (e.t === 'drownedking' && plunge && P.swim) dmg = Math.max(1, Math.round(dmg * 0.5));   /* A PLUNGE IN HIS WATER HAS NOTHING UNDER IT: you are too light to be down here, and a dive on a swimming king is a cut with no weight behind it (in the stone or in the floor it lands whole) */
   /* THE HOUND MASTER's war-hound takes the cut for him while it stands square under him: a third gets through. Reared,
@@ -13812,7 +13814,7 @@ function updateMerrowBrute(e, dt) {
    him straight back: his moves are here). */
 function updateDrownedKnight(e, dt) {
   const cap = e.t === 'drownedcaptain', C = cap ? DKN.DK.captain : DKN.DK.knight;
-  const wet = (L.pools || []).some(p => p.swim && !p.dry && e.x > p.x0 && e.x < p.x1 && e.y - 8 > p.y && (p.bottom === undefined || e.y - 8 <= p.bottom + 4));
+  const wet = !e.floorBound && (L.pools || []).some(p => p.swim && !p.dry && e.x > p.x0 && e.x < p.x1 && e.y - 8 > p.y && (p.bottom === undefined || e.y - 8 <= p.bottom + 4));   /* (claude/keepfloods) a floodgate chamber's knight is floor-bound: too heavy in his plate to rise */
   e.noGrav = wet; e.swimming = wet;
   if (!e.dkHome) e.dkHome = { x: e.x, y: e.y };
   const ex = e.x, ey = e.y - 10, tx = P.x, ty = P.y - 9, d = tx - ex, dy = ty - ey, ad = Math.abs(d), dist = Math.hypot(d, dy) || 1;
@@ -21865,6 +21867,7 @@ function updateBellguard(e, dt){
 }
 
 function updateDrownedKing(e, dt) {
+  if (KFH && KFH.king(e, dt)) return;   /* (claude/keepfloods) THE DROWNED KING 2 (src/drowned-king2.js) */
   // HE SWIMS. Thirty years at the bottom of the sea and he moves through it like a man through his own hall: he rises off his
   // throne, circles you, comes in close, and throws himself at you down a line he marks first. The room answers him - a charge
   // that meets a pillar, a wall or his own dais leaves him stunned in the stone, and a fall that meets the floor leaves him
@@ -22056,6 +22059,7 @@ function kingGulpPick(e) {
 HAS_HURT.add('drownedking');   /* his last frame is his hurt pose, drawn in king_swim.js */
 /* HIS FRAMES BY WHAT HE IS DOING, and by how he is moving through the water when he is only swimming */
 function kingFrame(e) {
+  if (KFH && KFH.owns(e)) return KFH.frame(e);   /* (claude/keepfloods) the Drowned King 2's moves on the live sheet */
   const m = e.mode, sw = e.swimming;
   if (m === 'sleep') return 0;
   if (m === 'stunned' || m === 'mired' || m === 'reel') return 17;
@@ -30185,6 +30189,7 @@ CHH = makeChampionHands({ get L() { return L; }, get players() { return players;
   damagePlayer: (...a) => damagePlayer(...a), asPlayer: (p, fn) => asPlayer(p, fn), upright: p => upright(p), overlap: (a, b) => overlap(a, b), box: b => box(b), music: n => { if (bossActive) music.play(n); },
   cellSet: (x, y, t) => cellSet(x, y, t), grid0: (x, y) => grid0[y * LW + x], resolve: () => resolveTiles(), turned: (e, x, w, o) => BR.turned(e, x, w, o), props: () => props,
   hazard: (pp, x, y) => asPlayer(pp, () => { damagePlayer(P.x, DMG.splash, { unblockable: true, pct: SV.HAZARD.pct }); if (!P.dead && P.hp > 0) { P.x = x; P.y = y; P.vx = 0; P.vy = 0; P.onMover = null; P.climb = false; P.swim = false; P.inv = Math.max(P.inv || 0, 0.8); } }) });   /* THE ADMIRAL'S CHAMPION (claude/flotilla2) */
+KFH = kfOn() ? makeKeepFloodsHands({ get L() { return L; }, get players() { return players; }, get enemies() { return enemies; }, get boss() { return boss; }, get bossActive() { return bossActive; }, TS, T, hero: () => P, marks: () => marks, life: () => lifeN, time: () => time, poolLevel: (p, y) => poolLevel(p, y), moveBody: (b, dx, dy, d) => moveBody(b, dx, dy, d), isSolid: (x, y) => isSolid(x, y), cellSet: (x, y, t) => cellSet(x, y, t), damagePlayer: (...a) => damagePlayer(...a), number: (x, y, t, c) => number(x, y, t, c), shake: n => shakeCam(n), sfx: SFX }) : null;   /* (claude/keepfloods) */
 ADH = makeAdmiralHands({ sparks: (...a) => sparks(...a), get L() { return L; }, get players() { return players; }, get boss() { return boss; }, get bossActive() { return bossActive; }, TS, EHP, sfx: SFX, hero: () => P, heroId: () => hero(), time: () => time,
   number: (x, y, t, c) => number(x, y, t, c), text: (s, x, ...a) => { const cxw = Math.max(textW(s, 5) / 2 + 4, Math.min(VW - textW(s, 5) / 2 - 4, x)); wordRects.push([cxw - textW(s, 5) / 2, a[0], textW(s, 5), 8]); return text(s, cxw, ...a); },   /* (batch101 integ: a tell word at the view's edge is pulled in so it is whole - textfit OFFSCREEN) */ burst: (...a) => burst(...a), shake: n => shakeCam(n), ring: (x, y, r, c) => ringAt(x, y, r, c, 0.5), hitstop: t => hitstop(t),
   damagePlayer: (...a) => damagePlayer(...a), asPlayer: (p, fn) => asPlayer(p, fn), upright: p => upright(p), overlap: (a, b) => overlap(a, b), box: b => box(b), music: n => { if (bossActive) music.play(n); },
@@ -31535,6 +31540,7 @@ function updateProps(dt) {
     if (p.drainT > 0) { p.drainT -= dt; k = Math.min(k, Math.max(0, (2 - p.drainT) * 0.5)); } // the sluice holds it out
     poolLevel(p, p.base + p.tideLo + (p.tideHi - p.tideLo) * k);
     if (p.bell !== false && p.lastK !== undefined && (p.lastK < 0.97) !== (k < 0.97) && Math.abs(P.x - p.x0) < 900) SFX.seaBell(); p.lastK = k; }
+  if (KFH) KFH.update(dt, hb);   /* (claude/keepfloods) the floodgates (the water kit), the throne's water, the decree gate */
   updateBore(dt); updateTideGates(dt); updateBalls(dt); if (PMK) PMK.update(dt); if (F3H && F3H.on()) F3H.update(dt); if (H3H && H3H.on()) H3H.update(dt); updateWash(dt); updateMasts(dt); updateSea(dt, hb); updateAscent(dt); updateGasVents(L,P,dt,time,x=>{damagePlayer(x,9,{unblockable:true,noKnock:true,name:'THE GAS'});P.venomT=Math.max(P.venomT||0,2.4);number(P.x,P.y-30,'POISONED','#a6e04a');}); if (L.gasVents) updateBurialFire(dt, hb); if (L.crumble) updateCrumble(L,P,dt,{air:T.AIR,spr:i=>tileSpr[i],setSpr:(i,s)=>{tileSpr[i]=s;},emit:p=>parts.push(p),crack:(tx,ty)=>{SFX.crack();burst(tx*TS+8,ty*TS+2,4,['#6a5436','#e8d8b0'],30,0.3);},fall:(tx,ty)=>{SFX.crumble();burst(tx*TS+8,ty*TS+6,8,['#6a5436','#3a2a1c','#a6e04a'],60,0.6);},back:z=>{if(SFX.stone)SFX.stone();for(let x=z.x0;x<=z.x1;x+=2)burst(x*TS+8,z.row*TS+2,2,['#e8d8b0'],20,0.3);}});   /* THE ROTTEN BRIDGES (burial-variety.js): a board cracks with a sound under you and drops half a second later */ if (L.siphons || L.blight) updateKeepPassages(L,P,dt,time,{breathMax:breathCapacity(L),inAir:(x,y)=>!!nearAir(x,y),move:(dx,dy)=>moveBody(P,dx,dy,false),emit:p=>parts.push(p),poison:()=>{if(!(P.venomT>0)){number(P.x,P.y-30,'POISONED','#a6e04a');SFX.hiss&&SFX.hiss();}P.venomT=Math.max(P.venomT||0,2.4);}}); if (L.whirlpools) updateWhirls(dt, hb); if (L.keepCrumbles) updateCrumbles(dt); updateStrikes(dt); updateStreetTide(dt); updateCauseTide(dt); updateFields(dt, hb); updateMage(dt, hb); updateWick(dt); if (LPF && LPF.on()) { if (talkPress && !P.dead && (LPF.interactValve(P) || LPF.interact(P))) talkPress = false; LPF.update(dt, hb); } updateLampHands(dt); updateRush(dt);
   { const fp = (L.pools || []).find(p => p.harm && p.swim && P.swim && P.x > p.x0 && P.x < p.x1 && P.y > p.y); // THE FOUL WATER between the hulls: tar, bilge and whatever they tip over the side
     if (fp && !P.dead) { P.foulT = (P.foulT || 0) - dt;
@@ -35423,6 +35429,7 @@ function drawWorld(cx, cy, showPlayer) {
   C3A.drawOver(g, enemies, cx, cy, time, OPF.isPaladinFoe, UPF.isDeadPriest);   /* (claude/church3) the paladin foe's divine shield and gleam, the undead priest's bolts and casts */
   if (DCH && miniActive) DCH.drawOver(g, cx, cy, time);   /* THE DEACON: his light bar, the holy fire of his arc, the read */   /* THE PALADIN: his marks, the holy floor, his light bar, the read */
   if (KSH && KSH.on()) KSH.drawOver(g, cx, cy, time);   /* THE BANDIT KSAR: the smoke, the blasts, the flashes, the told arc */
+  if (KFH) KFH.drawOver(g, cx, cy, time);   /* (claude/keepfloods) */
   if (TPH && TPH.on()) TPH.drawOver(g, cx, cy, time); if (FKH && FKH.on()) FKH.drawOver(g, cx, cy, time); if (CHH && CHH.on()) CHH.drawOver(g, cx, cy, time); if (ADH && ADH.on()) ADH.drawOver(g, cx, cy, time); if (PMK) PMK.drawOver(g, cx, cy, time); if (F3H && F3H.on()) F3H.drawOver(g, cx, cy, time); if (H3H && H3H.on()) H3H.drawOver(g, cx, cy, time);   /* THE TOWPATH: the fog and its clearings, the lantern; THE FOG KNIGHT: his double, his stance, the burn, the read */
   if (HMH && HMH.on()) HMH.drawOver(g, cx, cy, time);   /* THE HAWK-MISTRESS: her hawk, its marks, and the read */   /* THE RAPTOR MATRIARCH: her marks, the quills, the surge, and the read (open / beat / ward / talons up) */   /* THE GREAT RED CRAB: the boulders' marks, the scuttle's line, ON HIS BACK */
   if (TGM && L.monk) TGM.drawOver(g, cx, cy, time);   /* THE TEMPLE GUARDIAN: the bells' notes, a carried stone's told arc, its gold ring and bar, its ward */
