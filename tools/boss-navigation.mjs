@@ -1,15 +1,19 @@
 import assert from 'node:assert/strict';
 import {openPage} from './cdp.mjs';
+import {LEVELS} from '../src/level.js';
+import {depthsOf} from '../src/campaign-order.js';
+const THEATRE_SALT=+process.env.BN_THEATRE_SALT||3;   /* (claude/knighttune) the row pins ONE fight (bossLab salt): at the theatre depth (33) the knight wins this fight on 10 salts in 12 (n=12 refill: 96-268 s, median win 175 s; salts 6 and 11 time out with 3-4% left), so the row takes salt 3 (175 s, 125 s of margin) and not the unsalted draw (a timeout at 33, 274 s at the old L22) */
+const THEATRE_DEPTH=Math.max(1,depthsOf(LEVELS).theatre??22);   /* (claude/knighttune) the theatre row's knight is the theatre's CAMPAIGN depth (33 since the Kitchen Gate + Rookery; this row said 22) - as tools/puppeteer.mjs's bot row */
 const pg=await openPage({audio:false,fonts:false});
 const THEATRE_SEED=+process.env.BN_THEATRE_SEED||1919, ONLY=process.env.BN_ONLY;   /* (rel146) the theatre row's one seed; BN_ONLY=theatre runs just that row (for finding a seed after a knight change) */
 try {
   for (const [lvl,h] of [['reef','warden'],['longwater','reaper'],['flotilla','knight'],['canal','knight'],['theatre','knight']].filter(([l])=>!ONLY||l===ONLY)) {
     await pg.reload();
     const result=await pg.evalp(`(async()=>{
-      BK.manualSimulation=true;let seed=${lvl==='theatre'?THEATRE_SEED:1919};${lvl==='flotilla'?"{const P0=BKT.PROG;BKT.setHeroLevel('knight',19);P0.skillOwned.knight={};P0.loadouts.knight=[];if(P0.talents)P0.talents.knight={};}":""}${lvl==='theatre'?"(await import('/src/puppeteer.js')).PLAN.goLoft=1;{const P0=BKT.PROG;BKT.setHeroLevel('knight',22);P0.skillOwned.knight={};P0.loadouts.knight=[];if(P0.talents)P0.talents.knight={};}":""}
+      BK.manualSimulation=true;let seed=${lvl==='theatre'?THEATRE_SEED:1919};${lvl==='flotilla'?"{const P0=BKT.PROG;BKT.setHeroLevel('knight',19);P0.skillOwned.knight={};P0.loadouts.knight=[];if(P0.talents)P0.talents.knight={};}":""}${lvl==='theatre'?"(await import('/src/puppeteer.js')).PLAN.goLoft=1;{const P0=BKT.PROG;BKT.setHeroLevel('knight',"+THEATRE_DEPTH+");P0.skillOwned.knight={};P0.loadouts.knight=[];if(P0.talents)P0.talents.knight={};}":""}
       Math.random=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};
       const grounded=new Set(),hulls=new Set();let loft=false,walk=0,swam=0;
-      const r=await BK.bossLab({bosses:[${JSON.stringify(lvl)}],heroes:[${JSON.stringify(h)}],maxSecs:${lvl==='theatre'?300:lvl==='longwater'?240:180},modes:true,onFrame:({P,boss})=>{if(P.ground&&Math.abs(P.y-boss.y)<3)grounded.add(boss.phase);const st=BK.L.arena&&BK.L.arena.stage;if(st&&P.ground&&Math.abs(P.y-st.gallery)<3)loft=true;const lk=BK.L.arena&&BK.L.arena.lock;if(lk){if(P.ground&&P.onMover&&P.onMover.leRaft)walk++;if(P.swim)swam++;}const ac=BK.L.arena&&BK.L.arena.ac&&BK.admiralHands&&BK.admiralHands().show();if(ac&&P.ground&&Math.abs(P.y-ac.G.floorY)<3)hulls.add(P.x<ac.G.gapMid?0:1);if(ac&&boss.mode==='swing')hulls.add('swing:'+(boss.x<ac.G.gapMid?0:1));}});
+      const r=await BK.bossLab({bosses:[${JSON.stringify(lvl)}],${lvl==="theatre"&&THEATRE_SALT?"salt:"+THEATRE_SALT+",":""}heroes:[${JSON.stringify(h)}],maxSecs:${lvl==='theatre'?300:lvl==='longwater'?240:180},modes:true,onFrame:({P,boss})=>{if(P.ground&&Math.abs(P.y-boss.y)<3)grounded.add(boss.phase);const st=BK.L.arena&&BK.L.arena.stage;if(st&&P.ground&&Math.abs(P.y-st.gallery)<3)loft=true;const lk=BK.L.arena&&BK.L.arena.lock;if(lk){if(P.ground&&P.onMover&&P.onMover.leRaft)walk++;if(P.swim)swam++;}const ac=BK.L.arena&&BK.L.arena.ac&&BK.admiralHands&&BK.admiralHands().show();if(ac&&P.ground&&Math.abs(P.y-ac.G.floorY)<3)hulls.add(P.x<ac.G.gapMid?0:1);if(ac&&boss.mode==='swing')hulls.add('swing:'+(boss.x<ac.G.gapMid?0:1));}});
       return {row:r.rows[0],groundedPhases:[...grounded].sort(),hulls:[...hulls].sort(),loft,walk,swam};
     })()`);
     const row=result.row;
