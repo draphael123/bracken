@@ -917,6 +917,8 @@ export const HEIGHT = {
 // here - the lurker's lunge, the hound's leap, the sapper's bomb and the rest - each wind up on a mark now and answer in ANSWER.
 /* (claude/order) THE ROAD WARDENS's answers: a yellow ! is blocked (or PARRIED - the duelist's cut is the lesson), a red !! is dodged; only the duelist's LUNGE runs at chest height (duck under it) - the rest reach the floor */
 for (const t of ORDER_TYPES) for (const [m, v] of Object.entries(ORDER_MARKS)) if (v) { ANSWER[t + '|' + m] = v === '!' ? 'block' : 'dodge'; HEIGHT[t + '|' + m] = m === 'lungeTell' ? 'high' : 'low'; }
+/* (claude/keepfloods) THE DROWNED KING 2 (src/drowned-king2.js K2_TELLS, behind KF_SHIPS): the trident kit, the decree, the cursed king's three */
+for (const [m, mk, an, ht] of [['thrustTell', '!', 'block', 'low'], ['sweepTell', '!!', 'jump', 'low'], ['hurlTell', '!!', 'dodge', 'low'], ['recallTell', '!', 'block', 'low'], ['decreeTell', '!!', 'dodge', 'low'], ['graspTell', '!!', 'jump', 'low'], ['leechTell', '!', 'dodge', 'low'], ['prongTell', '!!', 'dodge', 'low'], ['shellTell', '', '', '']]) { MARK['drownedking|' + m] = mk; if (an) { ANSWER['drownedking|' + m] = an; HEIGHT['drownedking|' + m] = ht; } }
 export const UNTOLD = {};
 /* (claude/rookery3) THE TEMPO CLASS OF A WINDUP: 'heavy' (a long readable windup ~0.9-1.2 s, the biggest pose, a deep cue, hits hard, a long recovery to punish), 'medium' (~0.6-0.75 s),
    'light' (~0.35-0.45 s, low damage, short; a quick flash). Daniel 10-29 live on THE SHRIEK SISTERS: "they attack way too quickly and at the same speed ... a heavy, a light and a medium one".

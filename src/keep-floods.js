@@ -9,7 +9,7 @@
 //
 // THE FLAG: KF_SHIPS = false. OFF: src/keep-expansion.js never calls floodKeep - the keep is master's cell for cell (tools/keep-floods.mjs hashes it).
 // ON (?kf=1 on the page, globalThis.BRACKEN_KF, or KF=1 in a Node tool's env): floodKeep rebuilds the three chambers and the throne's water in place.
-// The tides are declared on L.kfTides, NOT L.tides: claude/water1's generic kit wiring (src/pirate-fleet-hands.js) runs every L.tides level, and the
+// The tides are declared on L.kfTides, NOT L.tides: claude/water1's generic kit wiring (its pirate-fleet hands) runs every L.tides level, and the
 // throne's water must answer the boss, so the keep runs its own tides through the same engine (tools/keep-floods.mjs lints them with lintTide).
 export const KF_SHIPS = false;
 export function kfOn() {
@@ -117,6 +117,7 @@ export function floodKeep(K, T, TS) {
   K.kfThrone = { ...A, levers: A.levers.map(l => l.slice()) };
   for (const e of K.ents) if (e.t === 'sign' && e.x >= 700 && e.x <= 708 && /THRONE ROOM/.test(e.text || '')) e.text = 'THE THRONE ROOM. HIS FLOODGATE DRAINS IT: ON HIS FLOOR HE IS ONLY A MAN. HIS DECREE BRINGS THE SEA BACK.';
   K.kfTides = tides;
+  K.kfLevers = [...KF_CHAMBERS.map(c => ({ x: c.lever[0], y: c.lever[1], chamber: c.id })), ...A.levers.map(([x, y]) => ({ x, y, chamber: 'throne' }))];   /* the level's gadget, as tools/level-quality.mjs counts one (SYSTEM_ARRAYS) */
   K.kfChambers = KF_CHAMBERS.map(c => ({ ...c }));
   K.keepFloods = true;
   return K;

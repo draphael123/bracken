@@ -235,7 +235,7 @@ export function k2Take(e, dmg, plunge) {
 /* the multiplier alone, for the tool (dmg 1000 so rounding never hides a floor) */
 export const k2Mul = (e, plunge) => k2Take(e, 1000, plunge) / 1000;
 
-/* HIS FRAMES (the live king's sheet, src/redraw/king_swim.js; the art lane draws the trident + the cursed model) - see kingFrame in main.js */
+/* HIS FRAMES (the live king's sheet, src/king_swim.js; the art lane draws the trident + the cursed model) - see kingFrame in main.js */
 export function k2Frame(e) {
   const m = e.mode, sw = e.swimming;
   if (m === 'sleep') return 0;
