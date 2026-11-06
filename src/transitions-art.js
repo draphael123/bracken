@@ -365,6 +365,7 @@ const cairnSprite = () => once('cairn', () => mk(18, 24, g => {
 const RAILS = 5;
 /* one rail (len x 13) in the gate's look. pine: the lashed pine log. palisade: a panel of sharpened-log stakes side by side. bog: a bundle of reed stems with cord wraps. leaf: living hedge (leaf clumps, a few flowers + berries). */
 function gateRail(g, len, lit, pal, kind) {
+  if (KIT[kind]) return KIT[kind].rail(g, len, lit, pal);
   if (kind === 'palisade') {
     for (let x = 0; x < len; x += 5) {
       const w = Math.min(4, len - x), tone = hash(x * 0.7 + len) > 0.6 ? 2 : 3;
@@ -399,6 +400,7 @@ function gateRail(g, len, lit, pal, kind) {
 }
 /* a gate post (6 wide) at x,y of height h, in the gate's look: palisade = a sharpened tip; bog = bundled reeds with a frayed head and cord; leaf = a hedge-wrapped post with leaves and a flower; pine = the squared pine */
 function gatePost(g, pal, kind, x, y, h) {
+  if (KIT[kind]) return KIT[kind].post(g, pal, x, y, h);
   if (kind === 'bog') {
     R(g, pal.reed[0], x, y, 6, h); for (let i = 0; i < 6; i++) R(g, pal.reed[1 + (i & 1) + (i === 2 ? 1 : 0)], x + i, y + 1, 1, h - 1); R(g, pal.reed[4], x + 1, y + 1, 1, h - 1);
     for (let j = 6; j < h - 4; j += 12) { R(g, pal.cord, x, y + j, 6, 1); R(g, pal.cordD, x, y + j + 1, 6, 1); }
@@ -429,6 +431,130 @@ const rootArch = () => once('rootArch', () => mk(70, 120, g => {
   for (const [x, y, s] of [[9, 82, 3], [13, 70, 2], [20, 100, 3], [58, 86, 3], [61, 64, 2], [50, 106, 3], [26, 30, 2], [44, 30, 2], [35, 17, 2], [6, 104, 2], [64, 108, 2]]) shroom(x, y, s);
   for (const [x, y] of [[11, 76], [59, 78], [23, 38], [47, 38], [35, 12]]) { P(g, '#b4cc68', x, y); P(g, '#7ac860', x + 1, y + 1); }   /* spore-lights */
 }));
+/* =====================================================================================================================================================================================================
+   ART PASS (claude/act2trart): THE ACT II GATE KITS - each opening its own drawing, in its level's materials (no generic pine). KIT[kind] = { rail(g, len, lit, pal), post(g, pal, x, y, h), head(g, pal, x, hb, HL) }:
+   rail = one of the five falling pieces (len x 13), post = a 6-wide upright, head = the lintel that stays (x = its left, hb = its top, HL = its length, 9 tall). All hashed, no random, no text.
+   rope = the Hanging Village's hoist gate (hemp-wrapped planks, rope coils, a pulley block); bell = the Monastery's great doors (dark oak leaves, bronze straps and rivets, stone jambs, a bronze bell on the lintel);
+   crumble = the Rookery's cliff wall (rough grey blocks with cracks, a rubble lintel); adit = Ore Road's mine mouth (cribbing timbers, iron plates, ore stain, a mine lamp); arch = the Undercrown's bricked arch (moss-stained brick, stone jambs,
+   voussoirs round a keystone); hatch = the kitchen's serving door (vertical oak boards, brass hinge straps and pull, a hung copper pan). */
+const STONE_P = ['#1a1a20', '#34343e', '#50505c', '#72727e', '#96969e'], IRON = ['#22262c', '#3c424a', '#7d868f', '#a8b0b8'];
+const stoneBlock = (g, x, y, w, h, tone, seed) => {
+  R(g, STONE_P[0], x, y, w, h); R(g, STONE_P[tone], x + 1, y + 1, w - 2, h - 2); R(g, STONE_P[Math.min(4, tone + 1)], x + 1, y + 1, w - 2, 1); R(g, STONE_P[Math.max(1, tone - 1)], x + 1, y + h - 2, w - 2, 1);
+  if (hash(seed) > 0.6) P(g, STONE_P[0], x + 2 + Math.floor(hash(seed + 3) * Math.max(1, w - 5)), y + 2 + Math.floor(hash(seed + 5) * Math.max(1, h - 5)));
+};
+const stoneCourses = (g, x, y, w, h, rowH, seed, mossy) => {
+  for (let cy = 0, row = 0; cy < h; cy += rowH, row++) {
+    const hh = Math.min(rowH, h - cy); let bx = -((row * 5 + seed) % 7);
+    while (bx < w) { const bw = 8 + Math.floor(hash(row * 9 + bx + seed) * 7), x0 = Math.max(0, bx), x1 = Math.min(w, bx + bw); if (x1 - x0 > 2) stoneBlock(g, x + x0, y + cy, x1 - x0, hh, 2 + (hash(bx + row * 3 + seed) > 0.55 ? 1 : 0), bx * 3 + row + seed); bx += bw; }
+  }
+  if (mossy) for (let k = 0; k < Math.floor(w / 5); k++) { const mx = x + Math.floor(hash(k + seed * 2) * w), my = y + Math.floor(hash(k + seed * 3) * h); P(g, '#4c6a3a', mx, my); P(g, '#6e9a4c', mx, my - 1 < y ? my : my - 1); if (hash(k + 8) > 0.5) P(g, '#3a5030', mx + 1, my); }
+};
+const ropeWrap = (g, pal, x, y, w, h) => { R(g, pal.cordD, x, y, w, h); for (let j = 0; j < h; j++) { P(g, pal.cord, x + (j % 3), y + j); P(g, pal.cord, x + ((j + 2) % 3) + (w > 3 ? 2 : 0), y + j); } };
+const KIT = {
+  rope: {
+    rail(g, len, lit, pal) {
+      R(g, pal.bark[0], 0, 0, len, 13); R(g, pal.bark[3], 1, 1, len - 2, 5); R(g, pal.bark[5], 1, 1, len - 2, 1); R(g, pal.bark[2], 1, 7, len - 2, 5); R(g, pal.bark[4], 1, 7, len - 2, 1); R(g, pal.bark[1], 1, 12, len - 2, 1);
+      for (let k = 0; k < len / 5; k++) { P(g, pal.bark[1], 2 + Math.floor(hash(k + len) * (len - 5)), 2 + (k & 1) * 6); P(g, pal.bark[5], 3 + Math.floor(hash(k + 11) * (len - 6)), 4 + (k & 1) * 4); }
+      for (const x of [3, len - 8]) { ropeWrap(g, pal, x, 0, 5, 13); P(g, pal.cord, x + 5, 6); P(g, pal.cord, x + 6, 7); P(g, pal.cordD, x + 6, 8); }
+      if (lit) { R(g, pal.cord, len >> 1, 5, 3, 3); P(g, pal.cordD, (len >> 1) + 1, 6); }
+    },
+    post(g, pal, x, y, h) {
+      R(g, pal.bark[0], x, y, 6, h); R(g, pal.bark[3], x + 1, y, 4, h); R(g, pal.bark[5], x + 1, y, 1, h); R(g, pal.bark[1], x + 4, y, 1, h);
+      for (let j = 4; j < h - 8; j += 22) ropeWrap(g, pal, x - 1, y + j, 8, 6);
+      R(g, pal.cut[1], x, y, 6, 2); R(g, pal.bark[0], x - 1, y + h - 5, 8, 5); R(g, pal.bark[2], x, y + h - 4, 6, 3);
+    },
+    head(g, pal, x, hb, HL) {
+      R(g, pal.bark[0], x, hb - 1, HL, 9); R(g, pal.bark[3], x + 1, hb, HL - 2, 4); R(g, pal.bark[5], x + 1, hb, HL - 2, 1); R(g, pal.bark[1], x + 1, hb + 4, HL - 2, 3); R(g, pal.cut[1], x, hb, 2, 7); R(g, pal.cut[1], x + HL - 2, hb, 2, 7);
+      const px = x + (HL >> 1) - 5;   /* a pulley block under the beam: iron cheeks, a wheel, hemp over it */
+      R(g, IRON[0], px, hb + 6, 10, 9); R(g, IRON[1], px + 1, hb + 7, 8, 7); R(g, IRON[3], px + 1, hb + 7, 8, 1); R(g, IRON[0], px + 3, hb + 9, 4, 4); R(g, pal.cord, px + 4, hb + 10, 2, 2);
+      for (let i = 0; i < 8; i++) P(g, i % 3 === 2 ? pal.cordD : pal.cord, px + 5, hb + 15 + i);
+      for (let k = 0; k < 4; k++) { ropeWrap(g, pal, x + 4 + k * ((HL - 14) / 3 | 0), hb - 1, 3, 9); }
+    },
+  },
+  bell: {
+    rail(g, len, lit, pal) {   /* one door leaf: vertical planks, two bronze straps with rivets */
+      R(g, pal.bark[0], 0, 0, len, 13);
+      for (let x = 1; x < len - 1; x += 4) { const w = Math.min(3, len - 1 - x), tone = 3 + (hash(x * 0.7 + len) > 0.5 ? 1 : 0); R(g, pal.bark[tone], x, 1, w, 11); R(g, pal.bark[5], x, 1, 1, 11); R(g, pal.bark[1], x + w - 1, 1, 1, 11); }
+      for (const y of [2, 8]) { R(g, pal.cut[3], 0, y, len, 3); R(g, pal.cut[1], 0, y, len, 1); R(g, pal.cut[4], 0, y + 2, len, 1); for (let x = 3; x < len - 2; x += 6) P(g, pal.cut[0], x, y + 1); }
+      if (lit) { R(g, pal.cut[0], len - 6, 5, 3, 3); P(g, pal.cut[3], len - 5, 6); }   /* a ring-pull on the leaf */
+    },
+    post(g, pal, x, y, h) {   /* a stone jamb with a bronze cap and base band */
+      R(g, STONE_P[0], x, y, 6, h); R(g, STONE_P[2], x + 1, y, 4, h); R(g, STONE_P[4], x + 1, y, 1, h); R(g, STONE_P[1], x + 4, y, 1, h);
+      for (let j = 10; j < h - 4; j += 14) R(g, STONE_P[0], x + 1, y + j, 4, 1);
+      R(g, pal.cut[3], x - 1, y, 8, 3); R(g, pal.cut[0], x - 1, y, 8, 1); R(g, pal.cut[3], x - 1, y + h - 5, 8, 3); R(g, pal.cut[0], x - 1, y + h - 5, 8, 1);
+    },
+    head(g, pal, x, hb, HL) {   /* a stone lintel with carved bands and the bronze bell hung under its middle */
+      R(g, STONE_P[0], x, hb - 1, HL, 9); R(g, STONE_P[2], x + 1, hb, HL - 2, 4); R(g, STONE_P[4], x + 1, hb, HL - 2, 1); R(g, STONE_P[1], x + 1, hb + 4, HL - 2, 3);
+      for (let i = x + 4; i < x + HL - 3; i += 6) P(g, STONE_P[0], i, hb + 2);
+      const bx = x + (HL >> 1) - 4, by = hb + 7;
+      R(g, IRON[1], bx + 3, by, 2, 2); R(g, pal.cut[4], bx + 1, by + 2, 6, 2); R(g, pal.cut[3], bx, by + 4, 8, 2); R(g, pal.cut[2], bx - 1, by + 6, 10, 1); R(g, pal.cut[0], bx + 1, by + 3, 1, 3); R(g, pal.cut[4], bx + 3, by + 7, 2, 2);
+    },
+  },
+  crumble: {
+    rail(g, len, lit, pal) { stoneCourses(g, 0, 0, len, 13, 6 + (lit ? 1 : 0), len + (lit ? 4 : 0), false); for (let k = 0; k < 2; k++) { const cx = 3 + Math.floor(hash(k + len) * (len - 8)); for (let j = 0; j < 8; j++) P(g, STONE_P[0], cx + (j % 3 === 1 ? 1 : 0), 2 + j); } },
+    post(g, pal, x, y, h) {
+      R(g, STONE_P[0], x, y, 6, h); for (let j = 0; j < h; j += 7) { const w = 4 + (hash(j + x) > 0.5 ? 1 : 0); R(g, STONE_P[2 + (j % 14 === 0 ? 1 : 0)], x + 1, y + j, w, 6); R(g, STONE_P[4], x + 1, y + j, 1, 6); R(g, STONE_P[1], x + 1, y + j + 5, w, 1); }
+      P(g, STONE_P[4], x + 2, y - 1); R(g, STONE_P[2], x + 1, y - 2, 3, 2);
+    },
+    head(g, pal, x, hb, HL) {   /* a ragged rubble lintel */
+      R(g, STONE_P[0], x, hb + 1, HL, 8);
+      for (let i = 0; i < HL; i += 3) { const th = 1 + Math.floor(hash(i * 0.7 + 4) * 5); R(g, STONE_P[0], x + i, hb + 1 - th, 3, th + 1); R(g, STONE_P[2 + (i % 2)], x + i, hb + 2 - th, 2, th); R(g, STONE_P[4], x + i, hb + 2 - th, 2, 1); }
+      stoneCourses(g, x + 1, hb + 3, HL - 2, 5, 5, 3, false);
+    },
+  },
+  adit: {
+    rail(g, len, lit, pal) {   /* cribbing: three squared timbers laid across, iron plate and rivets, an ore stain */
+      R(g, pal.bark[0], 0, 0, len, 13);
+      for (let r = 0; r < 3; r++) { const y = 1 + r * 4; R(g, pal.bark[3 - (r === 1 ? 1 : 0)], 1, y, len - 2, 3); R(g, pal.bark[5], 1, y, len - 2, 1); R(g, pal.bark[1], 1, y + 2, len - 2, 1); }
+      R(g, pal.cut[1], 0, 1, 2, 11); R(g, pal.cut[3], 0, 5, 2, 1); R(g, pal.cut[1], len - 2, 1, 2, 11); R(g, pal.cut[3], len - 2, 5, 2, 1);
+      const px = 6 + Math.floor(hash(len) * Math.max(1, len - 22)); R(g, IRON[0], px, 2, 12, 9); R(g, IRON[1], px + 1, 3, 10, 7); R(g, IRON[3], px + 1, 3, 10, 1); for (const [dx, dy] of [[2, 4], [9, 4], [2, 8], [9, 8]]) P(g, IRON[2], px + dx, dy);
+      for (let k = 0; k < 6; k++) P(g, k % 2 ? '#c8783a' : '#8a4a24', 2 + Math.floor(hash(k + len * 2) * (len - 4)), 1 + Math.floor(hash(k + 31) * 11));   /* ore dust */
+    },
+    post(g, pal, x, y, h) {   /* a mine prop: squared timber, an iron band, a wedge at the top */
+      R(g, pal.bark[0], x, y, 6, h); R(g, pal.bark[3], x + 1, y, 4, h); R(g, pal.bark[5], x + 1, y, 1, h); R(g, pal.bark[1], x + 4, y, 1, h);
+      for (let j = 8; j < h - 6; j += 20) { R(g, IRON[0], x - 1, y + j, 8, 4); R(g, IRON[1], x - 1, y + j + 1, 8, 2); R(g, IRON[3], x - 1, y + j + 1, 8, 1); }
+      R(g, pal.cut[2], x - 1, y - 2, 8, 3); R(g, pal.cut[0], x - 1, y - 2, 8, 1); R(g, pal.bark[0], x + 2, y + h - 4, 2, 4);
+    },
+    head(g, pal, x, hb, HL) {   /* the cap timber across the posts, a mine lamp hung from a hook */
+      R(g, pal.bark[0], x, hb - 1, HL, 9); R(g, pal.bark[3], x + 1, hb, HL - 2, 4); R(g, pal.bark[5], x + 1, hb, HL - 2, 1); R(g, pal.bark[1], x + 1, hb + 4, HL - 2, 3); R(g, pal.cut[1], x, hb, 2, 7); R(g, pal.cut[1], x + HL - 2, hb, 2, 7);
+      const lx = x + HL - 12; R(g, IRON[0], lx + 2, hb + 7, 1, 4); R(g, IRON[0], lx, hb + 11, 6, 6); R(g, '#ffd36b', lx + 1, hb + 12, 4, 4); R(g, '#fff2b0', lx + 2, hb + 13, 2, 2); R(g, IRON[1], lx, hb + 11, 6, 1); R(g, IRON[1], lx, hb + 16, 6, 1);
+    },
+  },
+  arch: {
+    rail(g, len, lit, pal) {   /* a bricked-up wall: courses of small brick, light mortar, moss in the joints, one loose brick */
+      R(g, '#6e7a6c', 0, 0, len, 13);
+      for (let r = 0; r < 4; r++) { const y = r * 3 + 1, off = r % 2 ? 3 : 0; for (let x = -off; x < len; x += 6) { const x0 = Math.max(0, x), w = Math.min(5, len - x0, x + 5 - x0); if (w > 0) { const tone = hash(x * 3 + r * 7 + len) > 0.6 ? 3 : 2; R(g, pal.bark[tone], x0, y, w, 2); R(g, pal.bark[5], x0, y, w, 1); } } }
+      for (let k = 0; k < len / 6; k++) { const mx = Math.floor(hash(k + len * 3) * len), my = Math.floor(hash(k + 9) * 13); P(g, '#4c6a3a', mx, my); if (hash(k + 20) > 0.5) P(g, '#7ea05a', mx, Math.max(0, my - 1)); }
+      if (lit) { R(g, '#2a3028', len - 9, 4, 5, 3); R(g, pal.bark[4], len - 10, 5, 3, 2); }
+    },
+    post(g, pal, x, y, h) {   /* the arch's jamb: dressed stone blocks, a plinth */
+      R(g, STONE_P[0], x, y, 6, h); for (let j = 0; j < h; j += 10) { const bh = Math.min(10, h - j); R(g, STONE_P[2 + (j % 20 ? 1 : 0)], x + 1, y + j, 4, bh - 1); R(g, STONE_P[4], x + 1, y + j, 1, bh - 1); R(g, STONE_P[1], x + 4, y + j, 1, bh - 1); }
+      R(g, STONE_P[1], x - 1, y + h - 4, 8, 4); R(g, STONE_P[3], x - 1, y + h - 4, 8, 1); R(g, '#4c6a3a', x, y + h - 5, 3, 1);
+    },
+    head(g, pal, x, hb, HL) {   /* voussoirs: a segmented course with a taller keystone, moss on the top edge */
+      R(g, STONE_P[0], x, hb - 1, HL, 9); const n = Math.max(5, (HL / 7) | 0), sw = HL / n;
+      for (let i = 0; i < n; i++) { const mid = Math.abs(i + 0.5 - n / 2) < 0.6, x0 = Math.round(x + i * sw), w = Math.round(sw) - 1; R(g, STONE_P[mid ? 4 : (i % 2 ? 2 : 3)], x0 + 1, hb - (mid ? 1 : 0), w, mid ? 9 : 8); R(g, STONE_P[mid ? 3 : 1], x0 + 1, hb + 6, w, 1); }
+      for (let k = 0; k < 5; k++) { const mx = x + 2 + Math.floor(hash(k + 4) * (HL - 4)); P(g, '#4c6a3a', mx, hb - 2); P(g, '#7ea05a', mx + 1, hb - 2); }
+    },
+  },
+  hatch: {
+    rail(g, len, lit, pal) {   /* the serving door: vertical oak boards, a brass hinge strap, a round pull on one */
+      R(g, pal.bark[0], 0, 0, len, 13);
+      for (let x = 1; x < len - 1; x += 3) { const w = Math.min(2, len - 1 - x); R(g, pal.bark[3 + ((x / 3 | 0) % 2)], x, 1, w, 11); R(g, pal.bark[5], x, 1, 1, 11); R(g, pal.bark[2], x + w - 1, 1, 1, 11); if (hash(x + len) > 0.7) P(g, pal.bark[1], x, 3 + (x % 7)); }
+      R(g, pal.cut[2], 0, 3, len, 2); R(g, pal.cut[0], 0, 3, len, 1); R(g, pal.cut[4], 0, 4, len, 1); P(g, pal.cut[0], 3, 7); P(g, pal.cut[0], len - 4, 7);
+      if (lit) { R(g, pal.cut[3], len - 9, 7, 4, 4); R(g, pal.cut[0], len - 9, 7, 3, 1); R(g, pal.bark[0], len - 8, 8, 2, 2); }
+    },
+    post(g, pal, x, y, h) {   /* the door frame: oak, a carved groove down the face, brass hinge pins */
+      R(g, pal.bark[0], x, y, 6, h); R(g, pal.bark[4], x + 1, y, 4, h); R(g, pal.bark[5], x + 1, y, 1, h); R(g, pal.bark[2], x + 4, y, 1, h); R(g, pal.bark[1], x + 2, y + 2, 1, h - 4);
+      for (const j of [14, h - 24]) { R(g, pal.cut[2], x - 1, y + j, 8, 3); R(g, pal.cut[0], x - 1, y + j, 8, 1); }
+    },
+    head(g, pal, x, hb, HL) {   /* the lintel, a hook with a copper pan and a ladle hung from it */
+      R(g, pal.bark[0], x, hb - 1, HL, 9); R(g, pal.bark[4], x + 1, hb, HL - 2, 4); R(g, pal.bark[5], x + 1, hb, HL - 2, 1); R(g, pal.bark[2], x + 1, hb + 4, HL - 2, 3); R(g, pal.cut[1], x, hb, 2, 7); R(g, pal.cut[1], x + HL - 2, hb, 2, 7);
+      const px = x + 8; R(g, IRON[0], px + 4, hb + 7, 1, 3); R(g, '#7a3a1e', px, hb + 10, 10, 5); R(g, '#c8743a', px + 1, hb + 10, 8, 3); R(g, '#f0b070', px + 1, hb + 10, 8, 1); R(g, '#5a2a14', px + 1, hb + 14, 8, 1);
+      const lx = x + HL - 14; R(g, IRON[0], lx + 1, hb + 7, 1, 7); R(g, IRON[2], lx, hb + 13, 3, 3); R(g, IRON[1], lx + 1, hb + 14, 1, 1);
+    },
+  },
+};
 export function drawWayGate(env, o, cx, cy, t, opened, time, reduce) {
   const kind = o.kind || 'pine', pal = GATE_PAL[kind] || GATE_PAL.pine, { g } = env, wc = Math.max(1, o.w || 1), GL = 30 + (wc - 1) * 16, XW = (wc - 1) * 16;   /* GL: the gate's length (the rails), XW: the extra width of a 2+ tile gap */
   const X0 = o.col * 16 - cx, GX = X0 - 12, Y0 = o.rows[0] * 16 - cy, Hh = (o.rows[1] - o.rows[0] + 1) * 16, floor = Y0 + Hh;
@@ -451,9 +577,10 @@ export function drawWayGate(env, o, cx, cy, t, opened, time, reduce) {
   } else if (kind === 'leaf') {
     for (let x = 0; x < HL; x++) { const top = hb - 2 - Math.round(Math.sin(x / HL * Math.PI) * 4); for (let y = top; y < hb + 8; y++) { const hh = hash(x * 4.1 + y * 1.7); if (hh > 0.18 || y > hb + 5) P(g, pal.bark[1 + (hh * 5 | 0) % 5], GX - 7 + x, y); } }
     for (let k = 0; k < 6; k++) { const x = GX - 5 + k * (HL - 6) / 5; P(g, pal.cut[0], x, hb - 3 - (k % 2) * 2); P(g, '#f0c850', x + 1, hb - 3 - (k % 2) * 2); }
+  } else if (KIT[kind]) { KIT[kind].head(g, pal, GX - 7, hb, HL);
   } else { R(g, pal.bark[0], GX - 7, hb - 1, HL, 9); R(g, pal.bark[3], GX - 6, hb, HL - 2, 4); R(g, pal.bark[5], GX - 6, hb, HL - 2, 1); R(g, pal.bark[1], GX - 6, hb + 4, HL - 2, 3); R(g, pal.cut[1], GX - 7, hb, 2, 7); R(g, pal.cut[1], GX + 31 + XW, hb, 2, 7); }
   for (const [rx, ph] of [[GX - 2, 0], [GX + 26 + XW, 1.7]]) { const sw = falling && !reduce ? Math.round(Math.sin(time * 2.4 + ph) * Math.min(2, tau * 3)) : 0;
-    if (kind === 'palisade') continue;
+    if (kind === 'palisade' || (KIT[kind] && kind !== 'rope')) continue;
     if (kind === 'leaf') { for (let i = 0; i < 13; i++) P(g, i % 4 === 3 ? pal.bark[5] : pal.bark[3], rx + Math.round(sw * i / 12), hb + 7 + i); P(g, pal.bark[5], rx + sw + 1, hb + 15); P(g, pal.cut[0], rx + sw, hb + 20); continue; }
     for (let i = 0; i < 11; i++) P(g, i % 3 === 2 ? pal.cordD : pal.cord, rx + Math.round(sw * i / 10), hb + 7 + i); R(g, pal.cord, rx - 1 + sw, hb + 18, 3, 2); }
   if (!falling) {
@@ -462,7 +589,7 @@ export function drawWayGate(env, o, cx, cy, t, opened, time, reduce) {
     for (const px of [GX - 4, GX + 20 + XW]) gatePost(g, pal, kind, px + jx, Y0 + 2, Hh);
     for (let i = 0; i < RAILS; i++) g.drawImage(rails[i], GX - 4 + jx, Y0 + 8 + i * 17);
     if (kind === 'pine' || kind === 'palisade') { const bw = 24 + XW; for (let i = 0; i < 28; i++) P(g, pal.bark[1], GX + 1 + Math.round(i * bw / 56) + jx, Y0 + 14 + Math.round(i * 3)); for (let i = 0; i < 28; i++) P(g, pal.bark[4], GX + 2 + Math.round(i * bw / 56) + jx, Y0 + 14 + Math.round(i * 3)); }
-    if (kind !== 'leaf') for (const y of [Y0 + 16, Y0 + Hh - 22]) { R(g, '#3c424a', GX - 4 + jx, y, 6, 3); R(g, '#7d868f', GX - 4 + jx, y, 6, 1); P(g, '#a8b0b8', GX - 3 + jx, y + 1); }
+    if (kind !== 'leaf' && !KIT[kind]) for (const y of [Y0 + 16, Y0 + Hh - 22]) { R(g, '#3c424a', GX - 4 + jx, y, 6, 3); R(g, '#7d868f', GX - 4 + jx, y, 6, 1); P(g, '#a8b0b8', GX - 3 + jx, y + 1); }
     return;
   }
   /* it gives way: each rail falls from its place (closed-form: gravity until the floor, a small bounce), spinning a little and settling on the pile */
