@@ -150,8 +150,9 @@ export function stepRide(P, R, input, dt, W) {
   /* THE LINE */
   const vyT = ay * RIDE.pitchV - lift + (sag ? RIDE.sagV : 0) + ((wind && wind.vy) || 0);
   P.vx = R.dir * s; P.vy += (vyT - P.vy) * Math.min(1, dt * RIDE.pitchK);
-  const scrape = why => { R.spd *= RIDE.scrapeSlow; R.quietT = 0; if (R.scrapeT > 0) return; R.scrapeT = RIDE.scrapeGrace; R.fray = Math.max(0, R.fray - RIDE.scrape); R.n.scrapes++; ev.push({ t: 'scrape', fray: R.fray, why });
+  const scrape = why => { R.quietT = 0; if (R.scrapeT > 0) return; R.scrapeT = RIDE.scrapeGrace; R.spd *= RIDE.scrapeSlow; R.fray = Math.max(0, R.fray - RIDE.scrape); R.n.scrapes++; ev.push({ t: 'scrape', fray: R.fray, why });
     if (R.fray <= 0) { R.n.tears++; ev.push({ t: 'drop', why: 'tear' }); } };
+  if (boxHits(rideBox(P, R), W.solid)) { P.y -= 2; P.vy = Math.min(P.vy, 0); return ev; }   /* boarded (or respawned) touching stone: it rises clear before it flies */
   const x0 = P.x; P.x += P.vx * dt;
   if (P.x < R.x0) { P.x = R.x0; if (R.mode === 'arena') { R.dir = 1; R.spd *= RIDE.wallTurn; ev.push({ t: 'wall' }); } }
   if (P.x > R.x1) { P.x = R.x1; if (R.mode === 'arena') { R.dir = -1; R.spd *= RIDE.wallTurn; ev.push({ t: 'wall' }); } }

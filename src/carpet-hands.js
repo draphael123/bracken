@@ -51,7 +51,7 @@ export function makeCarpetHands(ctx) {
     else { say(p.x, p.y - 34, 'TOO SLOW: IT DROPS YOU - IT WILL COME UNDER YOU', C.red); sfx('buzz'); }
   }
   function board(p, R) {
-    const r = R.rug; mountCarpet(p, { x: r.x, y: r.y + 4 }); R.rug = null; R.n.boards++; R.stallT = 0; R.sag = false;
+    const r = R.rug; mountCarpet(p, { x: r.x, y: r.y - 4 }); R.rug = null; R.n.boards++; R.stallT = 0; R.sag = false;
     R.spd = Math.max(R.spd, RIDE.cruise * RIDE.kick); if (R.fray <= 0) R.fray = RIDE.torn; if (R.mode === 'arena') R.dir = p.face || 1;
     sfx('throwWhoosh', 'leap'); if (once('board')) say(p.x, p.y - 34, 'THE CARPET RISES', C.speed);
   }
