@@ -483,14 +483,14 @@
   "seed": 1
  },
  "kings": {
-  "hash": "3e8f14fda81e",
+  "hash": "63fa63ff6be9",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 25,
+  "hits": 22,
   "deaths": 3,
-  "kills": 32,
-  "lifts": 85,
+  "kills": 38,
+  "lifts": 76,
   "walked": 100,
   "bare": true,
   "seed": 1
