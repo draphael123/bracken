@@ -15,7 +15,7 @@
 //   6 THE COUNTERWEIGHT 118-102  stand in the cage, strike the hopper: the stone outweighs the party and the cage goes up (co-op: ride weight A down)
 //   7 THE GONDOLA     102-  85  SET PIECE: board the cab, it hauls up, CREAKS (told), SNAPS, falls and hooks onto the glide below, docks at the far station
 //   8 THE EXAM        104-  57  winch + exam wind + Hookjacks, NO NETS (a miss falls bands): the cutter's race (E1), two riders on E2 in the gale, one on E3
-//   THE CAVE MOUTH     58-  44  CHECKPOINT 3 (before the boss, always), a short on-foot climb, and THE CAVE MOUTH LANDING: the stub of SKYHOOK's arena
+//   THE CAVE MOUTH     58-  44  CHECKPOINT 3 (before the boss, always), a short on-foot climb, and THE HEAD STATION: SKYHOOK's arena (claude/skyhook)
 //                              (the boss is a LATER lane) and the way on into the Ore Road (the gate)
 // Landings are ONE-WAY decks (iron gantries / rock lips, art owed) so the node sweep (tools/highlines.mjs) and the page agree: nothing bonks a rider from below.
 export const HL = { W: 80, H: 240 };
@@ -60,13 +60,18 @@ export const HL_DATA = {
     [3, 54, 6, 55],      // 31
     [8, 52, 11, 53],     // 32
     [3, 50, 6, 51],      // 33
-    [1, 48, 40, 49],     // 34 THE CAVE MOUTH LANDING (SKYHOOK's arena stub, the exit)
+    [1, 48, 40, 49],     // 34 THE CAVE MOUTH LANDING (SKYHOOK's head station floor, the exit)
+    [8, 40, 12, 41],     // 35 THE WEST GALLERY (claude/skyhook: SKYHOOK's perch; his high line's low end, the west winch's top)
+    [35, 40, 39, 41],    // 36 THE EAST GALLERY (claude/skyhook: his perch by the gate; the high line's high end, the east winch's top)
   ],
   nets: [[15, 234, 33, 235], [41, 222, 60, 223]],   /* the cargo nets under band 1 (rope nets: art owed). The exam has none */
   checkpoints: [{ x: 4, y: 232 }, { x: 75, y: 134 }, { x: 5, y: 58 }],
   secrets: [[49, 203], [27, 142]],
   exit: [30, 44, 40, 48],
-  arena: { x0: 2, x1: 40, floor: 48, boss: 'skyhook', stub: true },   /* SKYHOOK's landing: a LATER lane builds the fight here */
+  /* (claude/skyhook) THE HEAD STATION: SKYHOOK's fight (src/skyhook.js). The stub (40 x 18) is shrunk to 32 x 18 inside a rock arch (cols 7 and 40 hang from the roof to row 41;
+     the walls close rows 42-47 under them). Tiles: perches where he stands, the two TENSION LEVERS on the floor (one under each gallery), his high line, the winch line
+     that tops out at each gallery (he cuts it in phase two), the swing rope's anchor row over the middle */
+  arena: { x0: 8, x1: 39, floor: 48, boss: 'skyhook', wallL: 7, wallR: 40, trigger: 11, perchW: [10, 40], perchE: [37, 40], levers: [['W', 10], ['E', 36]], line: 'HL', winch: { W: 'SW', E: 'SE' }, swingY: 31, music: 'masthead' },
   lineKit: {
     anchors: [[61, 199.536], [43, 151.6], [37, 97.5], [59, 85], [26, 198], [21, 198.5]],   /* iron pylons a line end hangs from (no landing under it) */
     lines: [
@@ -96,6 +101,11 @@ export const HL_DATA = {
       { id: 'E1', kind: 'winch', a: [67, 103], b: [77, 90.5], cut: true },
       { id: 'E2', kind: 'winch', a: [74, 91], b: [44, 73], cut: true },
       { id: 'E3', kind: 'winch', a: [38, 73], b: [14, 57] },
+      /* THE HEAD STATION (claude/skyhook): SKYHOOK's HIGH LINE (a glide west: you may ride it too; he rides it both ways on his crank trolley - a lever slips it), and a grip
+         winch from the floor up to each gallery (phase two: he cuts the one under him while you haul up it; the station floor catches you) */
+      { id: 'HL', kind: 'glide', a: [36.5, 38.6], b: [11, 39.2], cut: true },
+      { id: 'SW', kind: 'winch', a: [20, 46.6], b: [12.5, 38.4], cut: true },
+      { id: 'SE', kind: 'winch', a: [27, 46.6], b: [34.5, 38.4], cut: true },
     ],
     /* 6 THE COUNTERWEIGHT */
     weights: [{ id: 'lift', a: { x0: 3, x1: 6, top: 102, bot: 118 }, b: { x0: 9, x1: 12, top: 102, bot: 118 }, rest: 0, tare: 0.5, hopper: [13, 117] }],
@@ -128,10 +138,12 @@ export function buildHighLines({ painter, T, TS }) {
   block(0, 0, 0, H - 1); block(W - 1, W - 1, 0, H - 1);
   block(1, 14, 233, H - 1);
   block(1, W - 2, 0, 29); block(41, W - 2, 30, 47);               /* the mountain over THE CAVE MOUTH (its chamber is cols 1-40, rows 30-47) */
+  block(7, 7, 30, 41); block(40, 40, 30, 41);                      /* (claude/skyhook) THE HEAD STATION's rock arch: the walls close under it (rows 42-47) */
   block(50, 55, 119, 139);                                         /* the crevice's west wall (under the shelf) */
   /* every landing and net is a one-way deck row (a ledge's top) */
   for (const [x0, top, x1] of D.landings.concat(D.nets)) for (let x = x0; x <= x1; x++) set(x, top, T.ONEWAY);
   for (let x = 1; x <= 14; x++) set(x, 232, T.SOLID);              /* the line-yard is rock, not a deck */
+  for (let x = 7; x <= 40; x++) set(x, 48, T.SOLID);               /* (claude/skyhook) THE HEAD STATION's floor is rock (no dropping out of the fight); cols 1-6 stay a deck - the way up from the steps */
   /* checkpoints (3: Daniel - fewer), the silver, the way on */
   for (const c of D.checkpoints) ent('check', c.x, c.y - 1);
   for (const [sx, sy] of D.secrets) ent('silver', sx, sy);
@@ -173,7 +185,8 @@ export function buildHighLines({ painter, T, TS }) {
   foe('galeharpy', 56, 78, { face: 1 }); foe('crossbow', 45, 73, { face: 1 });
   /* ---- THE CAVE MOUTH ---- */
   sign(9, 57, 'THE CAVE MOUTH. THE ORE ROAD RUNS INTO THE MOUNTAIN FROM HERE.');
-  sign(20, 47, "SKYHOOK'S LANDING.");
+  sign(4, 47, 'THE HEAD STATION. SKYHOOK WORKS THE HIGH LINE HERE.');
+  ent('skyhook', 37, 39, { face: -1 });                           /* (claude/skyhook) SKYHOOK on his east gallery (src/skyhook.js) */
   /* THE HOOKJACKS as foes in main.js's list (src/highlines-hands.js spawn): a rider hangs on his line; a cutter stands at his station */
   for (const hj of D.hookjacks) { const d = D.lineKit.lines.find(q => q.id === hj.line), k = (hj.x - d.a[0]) / (d.b[0] - d.a[0]), ly = d.a[1] + (d.b[1] - d.a[1]) * k;
     const land = hj.role === 'cutter' ? D.landings.find(b => hj.x >= b[0] && hj.x <= b[2] && b[1] >= ly && b[1] - ly <= 3) : null;
@@ -182,12 +195,16 @@ export function buildHighLines({ painter, T, TS }) {
   const lkMovers = [{ lk: 'cab:GD', x0: 24.5, x1: 27.5, top: 102 }, { lk: 'w:lift:A', x0: 3, x1: 7, top: 102 }, { lk: 'w:lift:B', x0: 9, x1: 13, top: 118 }]
     .map(m => ({ kind: 'lift', lk: m.lk, fair: 'lk', x: m.x0 * TS, y: m.top * TS, w: (m.x1 - m.x0) * TS, h: 6, y0: m.top * TS, y1: m.top * TS, speed: 0 }));
   const START = { x: 4, y: 231 };
-  const arena = { x0: D.arena.x0 * TS, x1: (D.arena.x1 + 1) * TS, floor: D.arena.floor * TS, stub: true, boss: null };   /* NO boss yet: the stub (a later lane) */
+  /* (claude/skyhook) THE HEAD STATION as main.js's arena (px), with what src/skyhook.js geom reads: perches, levers, the high line's rope ends, the winch lines, the swing anchor */
+  const Ar = D.arena, hl = D.lineKit.lines.find(d => d.id === Ar.line), [la, lb] = hl.a[0] < hl.b[0] ? [hl.a, hl.b] : [hl.b, hl.a];
+  const arena = { x0: Ar.x0 * TS, x1: (Ar.x1 + 1) * TS, floor: Ar.floor * TS, trigger: Ar.trigger * TS, wallL: Ar.wallL, wallR: Ar.wallR, boss: Ar.boss, music: Ar.music, tint: '#6a7a90', tintA: 0.08,
+    perchW: { x: Ar.perchW[0] * TS + 8, y: Ar.perchW[1] * TS }, perchE: { x: Ar.perchE[0] * TS + 8, y: Ar.perchE[1] * TS }, levers: Ar.levers.map(([id, x]) => ({ id, x: x * TS + 8 })),
+    line: { id: hl.id, xa: la[0] * TS, ya: la[1] * TS, xb: lb[0] * TS, yb: lb[1] * TS }, winch: { ...Ar.winch }, swingY: Ar.swingY * TS };
   return {
     W, H, grid: L.grid, ents: L.ents, START, pools: [], falls: [], moversExtra: lkMovers, interiors: [],
     highlines: true, lineKit: JSON.parse(JSON.stringify(D.lineKit)), hookjacks: D.hookjacks.map(h => ({ ...h })),
     landings: D.landings.map(b => b.slice()), nets: D.nets.map(b => b.slice()), checkpoints: D.checkpoints.map(c => ({ ...c })), secrets: D.secrets.map(s => s.slice()), exit: D.exit.slice(), w: W, h: H,
-    arenaStub: arena,
+    arena,
     squadBands: [{ lo: 0, hi: 99999, spots: 0, why: 'THE HIGH LINES: every foe is placed by hand on its line or station (nothing sprinkled)' }],
     calm: [[0, W - 1, 0, H - 1]],   /* placed wholly by hand: nothing sprinkled */
     checkRun: 99999,                /* three checkpoints (Daniel: fewer); src/level.js must not fill between them */

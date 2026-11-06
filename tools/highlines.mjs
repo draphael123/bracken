@@ -78,7 +78,9 @@ const onLine = (kit, id, x, hero = 'knight') => { const z = kit.lines[id], b = m
     ok(on, e.t + ' at ' + e.x + ',' + e.y + ' stands on a deck'); }
   for (const hj of B.ents.filter(e => e.t === 'hookjack')) ok(HL_DATA.lineKit.lines.some(d => d.id === hj.line), 'a hookjack on a real line (' + hj.line + ')');
   ok(B.ents.filter(e => e.t === 'hookjack').length === HL_DATA.hookjacks.length && B.moversExtra.length === 3 && B.moversExtra.every(m => m.lk), 'the hookjacks are foes in the level; the cab and the weights are movers');
-  ok(B.music === 'skysail' && !B.arenaStub.boss, 'its own music (skysail, free since the Sky Ship left); the arena is a STUB (SKYHOOK is a later lane)');
+  ok(B.music === 'skysail' && B.arena && B.arena.boss === 'skyhook' && B.ents.filter(e => e.t === 'skyhook').length === 1, 'its own music (skysail, free since the Sky Ship left); THE HEAD STATION is the arena of SKYHOOK (claude/skyhook), his ent on his gallery');
+  { const A = B.arena; for (const c of [A.wallL, A.wallR]) for (let y = 30; y <= 41; y++) ok(at(c, y) === T.SOLID, 'the head station: arch over the wall column ' + c + ' at row ' + y);
+    for (let x = A.wallL; x <= A.wallR; x++) ok(at(x, A.floor / TS) === T.SOLID, 'the head station: floor is rock at ' + x + ' (no dropping out of the fight)'); }
 }
 
 /* 3. THE BANDS ARE ALL THERE (Daniel 11-05 15:27) */
@@ -93,7 +95,7 @@ const onLine = (kit, id, x, hero = 'knight') => { const z = kit.lines[id], b = m
   ok(L('GD').cab && L('GD').snap, '7 THE GONDOLA: the cab snaps and falls onto the glide below');
   { const ex = K.winds.find(w => w.exam); ok(ex && ['E1', 'E2', 'E3'].every(id => L(id).kind === 'winch') && D.hookjacks.filter(h => /^E/.test(h.line)).length >= 3, '8 THE EXAM: winches in an exam wind, hookjacks');
     const netTop = Math.min(...D.nets.map(nb => nb[1])); ok(netTop > 200, 'and no nets above the foothold'); }
-  ok(D.arena && D.arena.stub && D.exit, 'THE CAVE MOUTH: the arena stub and the exit'); }
+  ok(D.arena && D.arena.boss === 'skyhook' && D.exit, 'THE CAVE MOUTH: SKYHOOK at the head station and the exit'); }
 
 /* 4. EVERY DROP LANDS ON SOMETHING */
 { const S = statics(lvl()), kit0 = lineInit(lvl()); let drops = 0, far = 0;
