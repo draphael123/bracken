@@ -1,0 +1,73 @@
+name: Sixteen fixed factories native contracts
+on:
+  push:
+    branches: [codex/load-perf]
+    paths:
+      - tools/fixed-cohort-guards-nov06/manifest.json
+      - tools/fixed-cohort-guards-nov06/cases.mjs
+      - tools/fixed-cohort-guards-nov06/component.mjs
+      - tools/fixed-cohort-guards-nov06/node.mjs
+      - .github/workflows/fixed-cohort-guards-nov06.yml
+permissions: {contents: read}
+jobs:
+  native:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      max-parallel: 16
+      matrix:
+        group: [closedhelm-canonical, closedhelm-gpu, closedhelm-active, closedhelm-delayed, closedhelm-before-source-createElement, closedhelm-after-capture-createElement, closedhelm-before-source-getContext, closedhelm-after-capture-getContext, closedhelm-before-source-fillStyle, closedhelm-after-capture-fillStyle, closedhelm-before-source-fillRect, closedhelm-after-capture-fillRect, closedhelm-before-source-arrayIterator, closedhelm-after-capture-arrayIterator, closedhelm-before-source-iteratorNext, closedhelm-after-capture-iteratorNext, closedhelm-before-source-arrayMap, closedhelm-after-capture-arrayMap, closedhelm-before-source-arrayPush, closedhelm-after-capture-arrayPush, closedhelm-before-source-sin, closedhelm-after-capture-sin, closedhelm-before-source-imageDataData, closedhelm-after-capture-imageDataData, closedhelm-before-source-objectLean, closedhelm-after-capture-objectLean, closedhelm-before-source-descriptorValue, closedhelm-after-capture-descriptorValue, closedhelm-before-source-regexpExec, closedhelm-after-capture-regexpExec, abbot-canonical, abbot-gpu, abbot-active, abbot-delayed, abbot-before-source-createElement, abbot-after-capture-createElement, abbot-before-source-arrayIterator, abbot-after-capture-arrayIterator, reefmaw-canonical, reefmaw-gpu, reefmaw-active, reefmaw-delayed, reefmaw-before-source-createElement, reefmaw-after-capture-createElement, reefmaw-before-source-arrayIterator, reefmaw-after-capture-arrayIterator, tollmaster-canonical, tollmaster-gpu, tollmaster-active, tollmaster-delayed, tollmaster-before-source-createElement, tollmaster-after-capture-createElement, tollmaster-before-source-arrayIterator, tollmaster-after-capture-arrayIterator, masthead-canonical, masthead-gpu, masthead-active, masthead-delayed, masthead-before-source-createElement, masthead-after-capture-createElement, masthead-before-source-arrayIterator, masthead-after-capture-arrayIterator, winchmaster-canonical, winchmaster-gpu, winchmaster-active, winchmaster-delayed, winchmaster-before-source-createElement, winchmaster-after-capture-createElement, winchmaster-before-source-arrayIterator, winchmaster-after-capture-arrayIterator, gargoyle-canonical, gargoyle-gpu, gargoyle-active, gargoyle-delayed, gargoyle-before-source-createElement, gargoyle-after-capture-createElement, gargoyle-before-source-arrayIterator, gargoyle-after-capture-arrayIterator, herald-canonical, herald-gpu, herald-active, herald-delayed, herald-before-source-createElement, herald-after-capture-createElement, herald-before-source-arrayIterator, herald-after-capture-arrayIterator, lampreeve-canonical, lampreeve-gpu, lampreeve-active, lampreeve-delayed, lampreeve-before-source-createElement, lampreeve-after-capture-createElement, lampreeve-before-source-arrayIterator, lampreeve-after-capture-arrayIterator, captain-canonical, captain-gpu, captain-active, captain-delayed, captain-before-source-createElement, captain-after-capture-createElement, captain-before-source-arrayIterator, captain-after-capture-arrayIterator, gravewarden-canonical, gravewarden-gpu, gravewarden-active, gravewarden-delayed, gravewarden-before-source-createElement, gravewarden-after-capture-createElement, gravewarden-before-source-arrayIterator, gravewarden-after-capture-arrayIterator, hedgewarden-canonical, hedgewarden-gpu, hedgewarden-active, hedgewarden-delayed, hedgewarden-before-source-createElement, hedgewarden-after-capture-createElement, hedgewarden-before-source-arrayIterator, hedgewarden-after-capture-arrayIterator, quarter-canonical, quarter-gpu, quarter-active, quarter-delayed, quarter-before-source-createElement, quarter-after-capture-createElement, quarter-before-source-arrayIterator, quarter-after-capture-arrayIterator, heavy-canonical, heavy-gpu, heavy-active, heavy-delayed, heavy-before-source-createElement, heavy-after-capture-createElement, heavy-before-source-arrayIterator, heavy-after-capture-arrayIterator, lancerHorse-canonical, lancerHorse-gpu, lancerHorse-active, lancerHorse-delayed, lancerHorse-before-source-createElement, lancerHorse-after-capture-createElement, lancerHorse-before-source-arrayIterator, lancerHorse-after-capture-arrayIterator, guests-canonical, guests-gpu, guests-active, guests-delayed, guests-before-source-createElement, guests-after-capture-createElement, guests-before-source-arrayIterator, guests-after-capture-arrayIterator, abbot-before-source-arrayFrom, abbot-after-capture-arrayFrom, abbot-before-source-arrayIncludes, abbot-after-capture-arrayIncludes, winchmaster-before-source-clearRect, winchmaster-after-capture-clearRect, winchmaster-before-source-putImageData, winchmaster-after-capture-putImageData, reefmaw-before-source-setHas, reefmaw-after-capture-setHas, reefmaw-before-source-setAdd, reefmaw-after-capture-setAdd, lancerHorse-before-source-arrayEntries, lancerHorse-after-capture-arrayEntries, herald-before-source-objectAssign, herald-after-capture-objectAssign, reefmaw-before-source-sqrt, reefmaw-after-capture-sqrt, closedhelm-two-independent-packs, abbot-two-independent-packs, reefmaw-two-independent-packs, tollmaster-two-independent-packs, masthead-two-independent-packs, winchmaster-two-independent-packs, gargoyle-two-independent-packs, herald-two-independent-packs, lampreeve-two-independent-packs, captain-two-independent-packs, gravewarden-two-independent-packs, hedgewarden-two-independent-packs, quarter-two-independent-packs, heavy-two-independent-packs, lancerHorse-two-independent-packs, guests-two-independent-packs]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          ref: 1a576c3f4511b6856df9fb4738df5aaae9987e81
+          path: span-game
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.11.1'
+      - name: Full original native graph snapshot, original scopes and observer captures
+        run: node --import ./tools/private-hero-profile-guard-preload-nov01.mjs tools/fixed-cohort-guards-nov06/component.mjs
+        env:
+          FIXED_COHORT_GROUP: ${{ matrix.group }}
+          FIXED_ART_GAME: span-game
+          FIXED_ART_LOADER_OUT: ${{ runner.temp }}/fixed-cohort-guards-${{ matrix.group }}-nov06
+          BRACKEN_GUARD_GAME: span-game
+          BRACKEN_GUARD_PROFILE: tools/browser-profile.mjs
+          BRACKEN_GUARD_PROFILE_SHA256: 9d38b09c585f0054e40125c63b2435e61e8cd6f5cc53e6011edf62178c8c2184
+          BRACKEN_GUARD_READBACK: ${{ runner.temp }}/skyroad-spans-strict-profile.jsonl
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: fixed-cohort-guards-${{ matrix.group }}-nov06
+          path: |
+            ${{ runner.temp }}/fixed-cohort-guards-${{ matrix.group }}-nov06/
+            ${{ runner.temp }}/skyroad-spans-strict-profile.jsonl
+          if-no-files-found: error
+
+  node:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          ref: 1a576c3f4511b6856df9fb4738df5aaae9987e81
+          path: span-game
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24.11.1"
+      - name: Original Node fixtures and every selected source fallback
+        run: node tools/fixed-cohort-guards-nov06/node.mjs
+        env:
+          FIXED_ART_GAME: span-game
+          FIXED_COHORT_NODE_OUT: ${{ runner.temp }}/fixed-cohort-guards-node-nov06
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: fixed-cohort-guards-node-nov06
+          path: ${{ runner.temp }}/fixed-cohort-guards-node-nov06/
+          if-no-files-found: error
