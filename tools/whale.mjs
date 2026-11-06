@@ -199,7 +199,7 @@ function ribJump(hero, from0, from1, to0, ph) {
     ok(ribJump(hero, fromStart, fromEnd, t0, 'low'), hero + ' crosses ' + fromEnd + '->' + t0 + ' in still air (HOLD)');
     ok(ribJump(hero, fromStart, fromEnd, t0, 'fall'), hero + ' crosses ' + fromEnd + '->' + t0 + ' on the inhale');
     total++; if (!ribJump(hero, fromStart, fromEnd, t0, 'rise')) thrown++; }
-  ok(thrown >= total * 0.8, 'the exhale throws you back off ' + thrown + ' of ' + total + ' rib jumps (cross on the inhale, or call it)'); }
+  ok(thrown >= total * 0.8, 'the exhale throws you back off ' + thrown + ' of ' + total + ' rib jumps (cross on the inhale, or call it)'); console.log('  ribs: the exhale throws back ' + thrown + ' of ' + total + ' hero x rib jumps; still air and inhale cross all'); }
 
 /* ---------- 8. THE GASTRIC POLYP ---------- */
 { const e = GPM.spawnPolyp({ x: 100, y: 200, alive: true }, { face: -1 }), hits = [];
