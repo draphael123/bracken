@@ -6,7 +6,7 @@
 // THE FLAG: KSAR3_SHIPS = false. OFF, src/level.js builds master's Ksar exactly (tools/ksar3.mjs holds its grid+ents hash). ON (?ksar3=1 on the page,
 // globalThis.BRACKEN_KSAR3, or KSAR3=1 in a Node tool's env) the SAME ROAD SLOT ('ksar', needs 'glasssea' - no index, no save moves) builds KSAR 3:
 // master's Ksar 0-795 (the road, the walls, the gate winch, the souq, the powder store, the hawk tower roofs, the powder quarter, the keg alley and its tower) with
-// FIVE checkpoints where it had seven, then THE NEW TAIL (this file) where master had the line to the courtyard + the courtyard:
+// SIX checkpoints where it had seven (over a level 28% longer; three of master's + three of its own), then THE NEW TAIL (this file) where master had the line to the courtyard + the courtyard:
 //   796-904  THE LINES OVER THE SOUQ  TEACH/TEST  rooftop to rooftop on ZIP LINES (src/zipline.js, nothing rebuilt): tower -> roof -> minaret -> roof -> tower, then
 //                                                 THE HOP (jump or drop off one rope onto the one under it). The street under is FOOTING here: a miss costs the walk
 //                                                 back up a stair, never a life (taught safe). THE SUN-SHADE STALKER taught under an awning (plain), then in the glare.
@@ -32,11 +32,13 @@ export function ksar3On() {
 import { stageGongMaster, GM_STAGE } from './gong-master.js';
 import { stageHawkMistress, HM_STAGE } from './hawk-mistress.js';
 
-/* W: the level; KEEP: master's checkpoint columns Ksar 3 keeps (276 past the gate, 489 past the roofs' gauntlet, 702 past the powder quarter); GM / HM: the arenas */
-export const K3 = { W: 1104, keep: [276, 489, 702], gmX: 924, hmX: 1052, hmR: 24, tail: 796,
+/* W: the level; KEEP: master's checkpoint columns Ksar 3 keeps (168 tower three, 392 the store's door, 581 the courtyard door; 276, 489, 702, 808 go) + CHECKS, its own (the alley
+   tower's crown before the lines, the Gong yard's door, the tallest tower's crown): SIX shrines over 1045 route tiles where master stood seven over 817, every gap inside the
+   A10b band (140-260 route tiles, tools/checkpoint-rule.mjs, the survival2 shape; doors exempt) - over the older hard MAX 200 twice (227, 210): Q1 in the lane report; GM / HM: the arenas */
+export const K3 = { W: 1104, keep: [168, 392, 581], gmX: 924, hmX: 1052, hmR: 24, tail: 796,
   oil: [[3, 8], [17, 26], [35, 40]],   /* HM2's oil channels (local roof columns): one on each roof, clear of the shafts */
   sections: [['THE LINES OVER THE SOUQ', 796], ['THE GONG YARD', 905], ['THE HIGH LINES', 964], ['THE TALLEST TOWER', 1023], ["HER ROOF", 1052]],
-  checks: [[912, 23], [1033, 7]] };
+  checks: [[794, 15], [912, 23], [1033, 7]] };
 export const K3_RULE = 'THE FORT ANSWERS ITS GONGS: A RUNG GONG CALLS EVERY BANDIT IN EARSHOT, AND A CUT ROPE SILENCES IT.';
 
 /* THE TAIL: called by buildKsar (src/ksar.js) with its own painters when k3 is set. Returns { stage (HM2's), shafts, fix(out) } */
@@ -54,6 +56,7 @@ export function ksar3Tail(api) {
 
   // ================= 11. THE LINES OVER THE SOUQ (796-904): TEACH -> TEST - the rope is the fort's road; a miss is the street =================
   sign(792, 15, 'THE LINES OVER THE SOUQ: UP TAKES A ROPE. A MISS IS ONLY THE STREET.');
+  ent('check', K3.checks[0][0], K3.checks[0][1]);                                 /* KSAR 3's fourth shrine: the alley tower's crown, before the lines */
   /* R1: the first roof; Z1 from the alley tower's lip down to it */
   block(810, 826, 20, B - 1); k3.roofs.push([810, 826, 20]);
   lineRope(795.5, 15, 810, 19);
@@ -84,10 +87,10 @@ export function ksar3Tail(api) {
   k3.hops.push({ id: 'souq', a: z3, b: z4, fatal: false });
   ent('silver', 886, B - 1);                                                     /* the street under the hop keeps a silver: a miss pays once */
   awning(884, 888, 28, B);
-  /* R3: the roof over THE GONG YARD's door - CHECKPOINT (Ksar 3's fourth) */
+  /* R3: the roof over THE GONG YARD's door - CHECKPOINT (Ksar 3's fifth) */
   block(905, 920, 24, B - 1); k3.roofs.push([905, 920, 24]);
   awning(904, 911, 18, 24);
-  ent('check', K3.checks[0][0], K3.checks[0][1]);
+  ent('check', K3.checks[1][0], K3.checks[1][1]);
   sign(916, 23, 'THE GONG YARD: THE FORT\'S BELL-KEEPER. CUT HIS ROPES.');
 
   // ================= 12. THE GONG YARD (924-963): THE GONG-MASTER (mini) =================
@@ -117,11 +120,11 @@ export function ksar3Tail(api) {
   mirages.push({ id: 'k3roof', kind: 'ledge', box: [1023, 23, 1028, 23] });
   plated(1026, 25, 'k3plate', { face: -1 }); stack('k3kegs', 1023, 25, 'keg', 2);   /* a plated man at the tower's foot and the kegs that strip him (the Ksar's own teach, re-tested) */
 
-  // ================= THE TALLEST TOWER (1031-1036): the climb, the crown's CHECKPOINT (Ksar 3's fifth), THE LAST LINE through her door =================
+  // ================= THE TALLEST TOWER (1031-1036): the climb, the crown's CHECKPOINT (Ksar 3's sixth), THE LAST LINE through her door =================
   stair(1023, 1030, 8, 24);
   block(1031, 1036, 8, B - 1); decor.push({ kind: 'minaret', x0: 1031, x1: 1036, y: 8 });
   awning(1032, 1036, 2, 8);
-  ent('check', K3.checks[1][0], K3.checks[1][1]);
+  ent('check', K3.checks[2][0], K3.checks[2][1]);
   sign(1032, 7, 'THE LAST LINE: HER ROOF. HER HAWK BURNS IF FIRE FINDS IT.');
   drop(1037, K3.hmX - 2);                                                        /* the tower's height: open air to the wadi between the crown and her roof */
   lineRope(1036.5, 7, K3.hmX + 3, K3.hmR - 1, { speed: 200 });

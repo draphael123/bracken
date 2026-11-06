@@ -51,9 +51,9 @@ function geometry() {
   ok(K3.lintKsar3(L, at, T).length === 0, 'lintKsar3 clean: ' + K3.lintKsar3(L, at, T).join('; '));
   ok(MK.lintMirages(L, at).length === 0, 'lintMirages clean (a trick, never a trap): ' + MK.lintMirages(L, at).join('; '));
   const checks = L.ents.filter(e => e.t === 'check').map(e => e.x).sort((a, b) => a - b);
-  ok(checks.join() === '276,489,702,912,1033', 'FIVE checkpoints (master had seven, Daniel 11-06 fewer): ' + checks.join(', '));
+  ok(checks.join() === '168,392,581,794,912,1033', 'SIX checkpoints over 1104 columns (master: seven over 862; Daniel 11-06 fewer): ' + checks.join(', '));
   ok(L.checkRun >= 300, 'the filler adds none between them (checkRun ' + L.checkRun + ')');
-  const gaps = checks.map((x, i) => x - (checks[i - 1] ?? 3)); ok(Math.max(...gaps) <= 300, 'no run over 300 columns between shrines (gaps ' + gaps.join('/') + ')');
+  const gaps = checks.map((x, i) => x - (checks[i - 1] ?? 3)); ok(Math.max(...gaps) <= 230, 'no run over 230 columns between shrines (gaps ' + gaps.join('/') + ')');
   ok(checks.some(x => x > L.mini.x0 / TS - 25 && x < L.mini.x0 / TS) && checks.some(x => x > L.arena.x0 / TS - 30 && x < L.arena.x0 / TS), 'a shrine at each door: the Gong yard and her roof');
   ok(L.mini.boss === 'gongmaster' && L.mini.gm && L.mini.name === 'THE GONG-MASTER', 'the mini: THE GONG-MASTER');
   const gate = L.mini.gate; let port = 0; for (let y = 0; y < L.H; y++) if (at(gate, y) === T.PORT) port++; ok(port === GM_STAGE().door, 'his yard\'s east gate is a portcullis (main.js lifts it when he falls): ' + port + ' cells');
